@@ -262,7 +262,8 @@ if __name__ == "__main__":
 这种噪声先前已经有不少研究了，包含：
 
 1. Pauli-path simualtion截断
-2. 基于图态的随机percolation
+2. [基于图态的随机percolation](/theory/Posts/arXiv%3A2212.08677v2/index.qmd)
 
 这种对量子态的矩阵操作并不是Cliffford操作，强行采用Clifford Formalism可以把它分解成指数多的Clifford的叠加，但这会往线路中引入太多的magicness，从而导致模拟指数难。
+采取2.中的办法，如果线路中没有$T$-gate，那就还好，因为矩阵$\mathbf{\Lambda}$将会一直保持是对角矩阵，这等价于追踪一个$\lambda: \mathbf{r} \in \mathbb{F}_2^{2n}  \to \mathbb{R}$的映射。
 但是注意到这种难度是**纯经典**的，考虑往OSF中引入**经典随机性**来完成这件事。

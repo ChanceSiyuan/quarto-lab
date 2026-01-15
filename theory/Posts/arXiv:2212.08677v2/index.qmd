@@ -1,0 +1,19 @@
+---
+title: "如何追踪含有噪声的稳定子线路？"
+format:
+  html:
+    code-fold: true
+date: "2026-01-13"
+categories: [Realizations]
+jupyter: wolframlanguage14.3
+keep-ipynb: true
+# resources: 
+#   - /notes/quantum_learning_theory/Weingarten_calculus.qmd
+---
+**Links:** https://link.aps.org/doi/10.1103/PhysRevA.107.032424
+
+## Abstract 
+本文给出了一种追踪Pauli噪声+Clifford操作的办法
+
+1. 采用稳定子态的图态表示/基于图态的稳定子模拟方案
+2. 把线路中碰到的所有的Pauli噪声前移+更新，最终转化为在某个已知stabilizer state上做某个复杂的Pauli-$Z$噪声
