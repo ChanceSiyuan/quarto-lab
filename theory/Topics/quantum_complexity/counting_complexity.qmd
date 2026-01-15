@@ -1,0 +1,140 @@
+---
+title: "计数复杂度与 #P (Counting Complexity)"
+date: 2026-01-07
+categories: [Complexity Theory, "#P"]
+description: "关于 #P 复杂类及其在量子计算模拟中作用的笔记。"
+format:
+  html:
+    toc: true
+    number-sections: true
+---
+
+## 1. 基础定义 (Basic Definitions)
+
+::: {.callout-note icon="false"}
+## Definition: Complexity Classes
+
+-   $\mathsf{\#P}$: 函数 $f: \{0,1\}^* \to \{0,1\}^*$ 属于 $\mathsf{\#P}$ 当且仅当 $f(x)$ 计数了一个 $\mathsf{NP}$ 问题在 $x$ 输入下的、具有某个多项式 $p(|x|)$ 长的 certificate 的数目。
+-   $\mathsf{FP}$: 函数 $f:\{0,1\}^* \to \{0,1\}^*$ 属于 $\mathsf{FP}$ 当且仅当存在图灵机在多项式时间内计算 $f(x)$。
+-   $\mathsf{PP}$: $x \in L \Leftrightarrow x$ 可以通过某个 $\mathsf{NP}$ machine 解决，且在 $x$ 输入下的、具有某个多项式 $p(|x|)$ 长的 certificate 的数目超过了 $0.5\times 2^{p(|x|)}$。
+:::
+
+::: {.callout-tip}
+## 注意 (Notes)
+
+1.  **$\mathsf{PP}$ vs $\mathsf{BPP}$**: $\mathsf{PP}$ 类对不在 $x \notin L$ 中的输入不做要求，它完全可以具有 $(0.5 - e^{-|x|})\times 2^{p(|x|)}$ 的例子使得它被接受。反观 $\mathsf{BPP}$，它必须具有 $(0.5 - \varepsilon)\times 2^{p(|x|)}$ 的例子使得它被接受（$\varepsilon$ 是常数）。后者要求更高。这也导致 $\mathsf{PP}$ 无法直接应用，因为 $\mathsf{PP}$ 要重复指数多次采样才能区分。
+2.  若 $\mathsf{FP}$ 的函数满足 $f(x) = O(2^{|x|})$，则可以调用多项式次的 $\mathsf{P}$？
+3.  如果将 $\mathsf{\#P}$ 的输出编码为二进制，它至多具有 $p(|x|)$ 位。$\mathsf{PP}$ 类事实上在判定某个 $\mathsf{\#P}$ 的输出在这种编码下的最高位是 0 还是 1。
+:::
+
+**计数问题和判定问题的关联：**
+事实上，如果有一个快速解决 $\mathsf{PP}$ 问题的算法, 那么可以多次调用这个算法快速解决 $\mathsf{\#P}$ 问题，即 $\mathsf{P}^{\mathsf{PP}} = \mathsf{P}^{\mathsf{\#P}}$。这将计数能力和判定能力相互关联了起来。
+
+---
+
+## 2. Toda's Lemma
+
+::: {.callout-important icon="false"}
+## Lemma (Toda's lemma)
+如果有一个快速解决 $\mathsf{PP}$ 问题的算法，那么可以多次调用这个算法快速解决 $\mathsf{\#P}$ 问题。
+这意味着 $\mathsf{PP} = \mathsf{P} \Leftrightarrow \mathsf{\#P} = \mathsf{FP}$。
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (点击展开)
+
+**关键思路**：证明 $\mathsf{P}^{\mathsf{PP}} = \mathsf{FP}^{\mathsf{\#P}}$。
+
+任给可高效计算函数 $f$，如果我们能分辨输出 $N_0(f), N_1(f)$ 哪个多，那么构建：
+$$
+g(0,x) = f, \quad g(1,x) = \begin{cases} 0 & \text{if } x < R \\ 1 & \text{if } x > R \end{cases}
+$$
+则 $N_0(g) = N_0(f) + R, \quad N_1(g) = N_1(f) + 2^n - R$。比较它两谁大。
+
+**具体构造**：
+对一个 $\mathsf{\#P}$ 函数 $f$，必存在多项式 $p(|x|)$ 和多项式图灵机 $M$ 使得 $f(x) = \#_{M,p}(x)$，即 $M$ 图灵机对 $x$ 输入，具有的长度为 $p(|x|)$ 的 certificate 的数目。
+
+任取 $N \in [0, 2^{p(|x|)}]$，构建多项式时间可停机的图灵机 $M_N(x,u), u\in \{0,1\}^{p(|x|)}$，使得对任意的 $x$，它取 $1$ 当且仅当 $u < N$。这等价于比较 $u$ 和 $N$ 的大小且和 $x$ 无关，因此必定存在且可在多项式时间停机。
+
+考察图灵机 $M+M_N(x,v)$，其中 $v = \{(0,u)| u \in \{0,1\}^{p(|x|)}\} \cup \{(1,u)| u \in \{0,1\}^{p(|x|)}\}$。
+对于前一个集合，输出 $M(x,u)$，对于后一个集合输出 $M_N(x,u)$。
+因此 $M+M_N(x,v)$ 也可以在多项式时间停机，且具有 certificate 的数目是 $N + \#_{M,p}(x)$，输入的长度为 ${p(|x|) + 1}$。
+
+考察如下 Language $L$：
+$$
+\begin{aligned}
+L &=\{x \mid \left|\{u \in \{0,1\}^{p(|x|)+1}: [M+M_N](x,u) = 1\}\right|  \geq \frac{2^{p(|x|)+1}}{2} \} \\
+  &=\{x \mid N + \#_{M,p}(x) \geq {2^{p(|x|)}} \}
+\end{aligned}
+$$
+由定义 $L \in \mathsf{PP}$。若 $\mathsf{PP} = \mathsf{P}$ 则 $L \in \mathsf{P}$，则存在图灵机 $N$ 在多项式时间判定 $x_0$ 是否在这个集合内。
+即判定 $x_0$ 是否满足不等式 $N + \#_{M,p}(x_0) \geq {2^{p(|x_0|)}}$。
+
+由于 $\#_{M,p}(x_0) \in [0, 2^{p(|x|)}]$，则用**二分法**调用 $p(|x_0|)$ 次上述不等式的判定，分别对应不同 $N$ 的输入，即可确定 $\#_{M,p}(x_0)$ 的取值。则 $f \in \mathsf{FP}$。
+:::
+
+---
+
+## 3. 积和式 (Permanent) 与线性光学
+
+如同 $\mathsf{NP}$，可以定义 $\mathsf{\#P}$-complete。
+
+### Example 1: Permanent of matrix
+
+::: {.callout-important icon="false"}
+## Theorem
+任意 $\mathsf{\#SAT}$ 问题可以转化为计算某个具有 $\{0,1\}$ 项的矩阵的 Permanent.
+:::
+
+> **Ref**: [The Permanent of a 0-1 Matrix is #P-Complete](https://shaih.github.io/pubs/01perm.pdf)
+
+**Definition (有向图的环覆盖)**:
+给定有向图 $G$，环覆盖 $C=\{R|R \subseteq E\}$ 是边的子集构成的集合，且满足以下条件：
+1. $\forall R_1\neq R_2 \in C$，它们的节点无交。
+2. $\forall R \in C$ 是有向循环。
+3. $G$ 的每个节点必须是某个 $R \in C$ 的节点。
+
+任给 $n$ 元素交换群中的元素都能分解成独立轮换的乘积，且各个独立轮换相互对易，则 Permanent 定义为：
+$$
+\operatorname{per}(A):=\sum_\sigma\prod_{i=1}^na_{i,\sigma(i)}
+$$
+
+### 线性光学应用 (Linear Optics)
+
+光子具有 $m$ 种空间模式，即光子可能存在的不同光路或位置，每种对应升降算符 $a_i, a_i^\dagger$。光子的量子态经过光学元件会发生酉变换 $\phi(U)$，线性光学元件被定义为具有如下性质 $\phi(U)^\dagger a_i^\dagger \phi(U) = \sum_j U_{ij} a_j^\dagger$。
+
+::: {.callout-important icon="false"}
+## Theorem: Boson Sampling Transition Amplitude
+对于升算符作用于真空态产生的量子态 $T = (t_1,\cdots,t_m)$ 和 $S = (s_1,\cdots,s_m)$，如下等式成立：
+$$
+\bra{S} \phi(U) \ket{T} = \dots \text{(待补充)}
+$$
+:::
+
+::: {.callout-note collapse="true"}
+## Proof Sketch
+由定义，
+$$
+\ket{T} = \frac{(a_1^\dagger)^{t_1} \cdots (a_m ^\dagger)^{t_m}}{\sqrt{t_1! \cdots t_m !}} \ket{0}, \quad \ket{S} = \frac{(a_1^\dagger)^{s_1} \cdots (a_m ^\dagger)^{s_m}}{\sqrt{s_1! \cdots s_m !}} \ket{0}
+$$
+则
+$$
+\bra{S} \phi(U) \ket{T} = \frac1{\sqrt{s_1! \cdots s_m !t_1! \cdots t_m !}}\bra{0}{(a_1^\dagger)^{s_1} \cdots (a_m ^\dagger)^{s_m}}\phi(U){(a_1^\dagger)^{t_1} \cdots (a_m ^\dagger)^{t_m}} \ket{0}
+$$
+:::
+
+---
+
+## 4. 高级相关定理 (Advanced Theorems)
+
+### Toda Theorem
+有了计数 3CNF 可满足性赋值的算法，可以用之求解多项式分层中任意的问题。即 $\mathsf{PH} \subseteq \mathsf{P}^{\mathsf{\#P}}$。
+
+### $\oplus\mathsf{SAT}$ (Parity SAT)
+对任意布尔函数 $\varphi(x), x \in \{0,1\}^n$，定义 $\oplus \varphi(x) = \sum_{x \in \{0,1\}^n}\varphi(x) \text{~mod~} 2$。
+$\oplus\mathsf{SAT}$ 定义为 $\{\varphi(x) \in \text{CNF} \mid \oplus \varphi(x) = 1\}$。
+
+### Valiant-Vazirani Theorem (Relation to RP)
+限制 CNF 要么无解，要么有唯一解，若在这个子集中的 SAT 问题可以求解，则 $\mathsf{NP} = \mathsf{RP}$。
+
+> **哈希函数**: 是一族 $\{0,1\}^n \to \{0,1\}^k$ 的映射，使得在某种函数的随机选择下，对任意的固定输入，输出都在 $\{0,1\}^k$ 上均匀分布。

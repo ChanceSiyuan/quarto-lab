@@ -1,0 +1,56 @@
+project:
+  type: website
+  output-dir: _site
+
+website:
+  title: "Chance's Quantum Lab"
+  navbar:
+    left:
+      - text: "Home Page"
+        href: index.qmd
+      - text: "Theory"
+        href: theory/index.qmd
+      # - text: "Topics"
+      #   href: theory/Topics/index.qmd
+      - text: "Experiment Notes"
+        href: Experiments/index.qmd
+    right:
+      - icon: github
+        href: https://github.com/yourusername
+      - icon: twitter
+        href: https://twitter.com/yourusername
+
+  # 侧边栏设置：只在进入“科研笔记”时显示
+  sidebar:
+    - id: notes
+      title: "笔记目录"
+      contents:
+        - section: "Quantum Complexity"
+          contents:
+            - notes/quantum_complexity/counting_complexity.qmd
+            - notes/quantum_complexity/interactive_proof.qmd
+        # - section: "Quantum Learning Theory"
+        #   contents:
+        #     - notes/quantum_learning_theory/intro.qmd
+
+format:
+  html:
+    html-math-method: katex
+    theme: cosmo          # 你可以换成 flatly, journal, cyborg 等
+    css: styles.css
+    toc: true             # 开启右侧文章目录
+    code-copy: true       # 代码块显示复制按钮
+    citations-hover: true
+
+execute:
+  freeze: true  # <--- 加入这一行 (全局开启缓存)
+# 在最下面添加这几行：
+editor: source # 默认使用源码模式编辑
+
+# 1. 指定参考文献文件
+bibliography: references.bib
+csl: aps.csl  # <--- 指定样式
+
+preview:
+  port: 4200
+  host: "0.0.0.0"

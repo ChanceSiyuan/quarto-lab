@@ -1,0 +1,65 @@
+---
+title: "PDH锁频"
+date: "2026-01-08"
+categories: [Lasers]
+---
+
+## 激光频率锁定的原理
+在冷原子实验中，激光需要与原子的超精细能级发生相互作用，因此对激光频率的稳定性与绝对精度提出了极高要求。通常采用**主动频率稳定**方法来保证激光器频率的长期稳定性。
+频率锁定基于**负反馈控制原理**。首先建立一个稳定的参考频率，并通过特定的光学与电子学手段，将激光频率与该参考频率进行比较，从而获得一个**误差信号**。该误差信号的大小和符号表征了激光频率偏离参考频率的程度。随后，反馈控制电路根据该误差信号对激光器进行实时调节，以最小化频率偏差。
+
+::: {#fig-PDHlock fig-cap="PDH 锁频的实验装置示意图（引用自实验室笔记）" fig-align="center"}
+![](PDHlock.png)
+:::
+
+::: {#fig-PDHerror fig-cap="PDH 锁频产生的误差信号示意图" fig-align="center"}
+![](PDHerror.png)
+:::
+
+本文主要介绍 **Pound–Drever–Hall（PDH）锁频技术**。该方法可实现亚赫兹（$\mathrm{Hz}$）量级的激光频率稳定性，因此在钟态跃迁与高精度原子谱实验中具有重要应用价值。其基本流程如图 @fig-PDHlock 所示。
+频率为 $\omega_0$ 的激光首先通过**电光调制器（EOM）**。EOM 由射频信号  
+$\beta \sin(\Omega t)$ 驱动，使得激光场发生相位调制：
+\begin{align}
+E_1 &= E_0 e^{i \omega_0 t + i \beta \sin(\Omega t)} \\
+&\approx E_0 e^{i \omega_0 t}
++ \frac{1}{2} J_1(\beta) E_0 e^{i(\omega_0 + \Omega)t}
+- \frac{1}{2} J_1(\beta) E_0 e^{i(\omega_0 - \Omega)t},
+\end{align}
+其中 $J_\alpha$ 为第一类贝塞尔函数。由于调制深度 $\beta \ll 1$，高于一阶的调制边带可以忽略。
+
+调制后的激光被耦合进入法布里–珀罗腔（Fabry–Pérot cavity, F-P 腔），并在腔输入镜处发生反射。可以证明，频率为 $\omega$ 的光在腔中的反射复振幅为
+\begin{align}
+F(\omega)
+= r \frac{1 - e^{-i \omega 2L / c}}{1 - r^2 e^{-i \omega 2L / c}},
+\end{align}
+其中 $r$ 为腔镜反射率，$L$ 为腔长。
+当
+\begin{align}
+\omega_n = n \times \frac{2\pi c}{2L},
+\end{align}
+即激光频率与腔模共振条件匹配时，有 $F(\omega_n)=0$，此时理想情况下反射光强为零。
+为实现高效耦合，入射高斯光束的腰位置需与腔输入平面镜重合，并通过腔内凹面镜形成稳定谐振模式。实验中通常借助电荷耦合器件（CCD）对反射光的空间模式进行观察与优化，最终使用光电探测器（PD）测量反射光强。
+考虑 EOM 调制的影响，反射光的总强度可以写为
+\begin{align}
+I_R &= E_0^2 |F(\omega_0)|^2
++ \frac{1}{4} J_1^2(\beta) E_0^2 |F(\omega_0 + \Omega)|^2
++ \frac{1}{4} J_1^2(\beta) E_0^2 |F(\omega_0 - \Omega)|^2 \notag \\
+&\quad + J_1(\beta) E_0^2
+\operatorname{Re}\!\left[
+F(\omega_0) F^*(\omega_0 + \Omega)
+- F^*(\omega_0) F(\omega_0 - \Omega)
+\right] \cos(\Omega t) \notag \\
+&\quad + J_1(\beta) E_0^2
+\operatorname{Im}\!\left[
+F(\omega_0) F^*(\omega_0 + \Omega)
+- F^*(\omega_0) F(\omega_0 - \Omega)
+\right] \sin(\Omega t).
+\end{align}
+
+随后，PD 输出信号被送入射频混频器，与来自同一射频源、但具有相位延迟 $\Phi$ 的参考信号  $\beta \sin(\Omega t + \Phi)$ 相乘。经低通滤波后，仅保留直流分量，其幅度正比于 
+\begin{align}
+F(\omega_0)F^*(\omega_0 + \Omega)- F^*(\omega_0)F(\omega_0 - \Omega)
+\end{align}
+该量在 $\omega_0 = \omega_n$ 附近呈现近似线性且单调的零交叉行为，如图 @fig-PDHerror 所示，因此可作为误差信号用于反馈控制回路，实现激光频率的稳定锁定。
+
+## 相关实验设备信息

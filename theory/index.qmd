@@ -1,0 +1,44 @@
+---
+title: "Theory"
+page-layout: full
+title-block-banner: true
+listing:
+  - id: research-notes          # <--- 为科研笔记定义唯一 ID
+    contents: 
+      - "quantum_complexity/*.qmd"
+      - "quantum_learning_theory/*.qmd"
+    type: table
+    fields: [date, title, categories]
+    sort: "date desc"
+    table-hover: true
+    page-size: 5                # 可选：限制显示数量，避免页面太长
+    
+  - id: daily-posts             # <--- 为日常 Posts 定义唯一 ID
+    contents: Posts
+    sort: "date desc"
+    type: default
+    categories: true
+    sort-ui: true
+    filter-ui: true
+    page-size: 5
+---
+
+## Topics
+
+这里记录量子计算相关话题下的文献整理。
+
+::: {.callout-tip}
+请点击左侧边栏 (Sidebar) 浏览具体的知识分类。
+:::
+
+::: {#research-notes}
+:::
+
+---
+
+## Posts
+
+这里记录我的日常论文速读和会议记录。
+
+::: {#daily-posts}
+:::

@@ -1,0 +1,151 @@
+---
+title: "交互式证明 (Interactive Proofs)"
+date: 2026-01-07
+categories: ["Complexity Theory", "Interactive Proofs"]
+description: "关于交互式证明 (IP, AM, MA) 和图同构 (GI) 的笔记。"
+format:
+  html:
+    toc: true
+    number-sections: true
+---
+
+## 1. 交互模型定义 (Interaction Model)
+
+交互过程可以看作 Verifier ($V$) 和 Prover ($P$) 之间的对话。
+
+-   **一轮交互 (1-round)**: 
+    $$a_1 = V(x), \quad a_2 = P(x,a_1), \quad \text{Output} = V(x,a_1,a_2)$$
+-   **两轮交互 (2-round)**: 
+    $$a_1 = V(x), \quad a_2 = P(x,a_1), \quad a_3=V(x,a_1,a_2), \quad \text{Output} = V(x,a_1,a_2,a_3)$$
+
+更一般地，定义 $k$ 轮交互：
+
+::: {.columns}
+::: {.column width="48%"}
+**$2i$ 轮交互**：
+$$
+\begin{aligned} 
+&a_1 = V(x), a_2=P(x,a_1);\\ 
+&a_3 = V(x,a_1,a_2),a_4 = P(x,a_1,a_2,a_3);\\ 
+&\cdots\\ 
+&a_{2i+1} =V(x,a_1,\cdots,a_{2i}), \\ 
+&\text{Output}= V(x,a_1,\cdots,a_{2i+1}) 
+\end{aligned}
+$$
+:::
+
+::: {.column width="48%"}
+**$2i+1$ 轮交互**：
+$$
+\begin{aligned}
+&a_1 = V(x), a_2=P(x,a_1);\\ 
+&a_3 = V(x,a_1,a_2),a_4 = P(x,a_1,a_2,a_3);\\ 
+&\cdots\\ 
+&a_{2i+1} =V(x,a_1,\cdots,a_{2i}), \\
+&a_{2i+2} = P(x,a_1,\cdots,a_{2i+2});\\ 
+&\text{Output}= V(x,a_1,\cdots,a_{2i+2})
+\end{aligned}
+$$
+:::
+:::
+
+---
+
+## 2. 确定性交互证明 ($\mathsf{dIP}$)
+
+::: {.callout-note icon="false"}
+## Definition: $\mathsf{dIP}$
+$L \subset \{0,1\}^*$ 属于 $\mathsf{dIP}$ 当且仅当存在**确定性**图灵机 $V:\{0,1\}^* \to \{0,1\}^*$，对于输入 $x$，使得:
+
+1.  **Completeness**: 若 $x \in L$，则存在多轮证明函数 $P$（对各种长度输入建立映射 $\{0,1\}^* \to \{0,1\}^*$，不限计算能力），使得 $k \sim \text{poly}(|x|)$ 轮交互过程后输出 1。
+2.  **Soundness**: 若 $x \notin L$，则对**任意**多轮证明函数 $P$，都使得 $k \sim \text{poly}(|x|)$ 轮交互过程后输出 0。
+
+*注：交互过程的每一步 $V$ 的运行时间必须是多项式的 $\text{poly}(|x|)$。*
+:::
+
+::: {.callout-important icon="false"}
+## Theorem
+$$\mathsf{dIP} = \mathsf{NP}$$
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (点击展开)
+**思路**：$\mathsf{dIP}$ 都可以被设计为一个 $\mathsf{NP}$ 问题解决。
+
+对于在 $L$ 中的输入，考虑 $2i$ 或 $2i+1$ 轮交互。只需找个图灵机模拟调用 $V$ 共 $i+2$ 次，并将 $a_1, \dots, a_{2i+1}$ (或 $a_{2i+2}$) 视为 Certificate（证明）。
+
+这个带证明的多项式图灵机做如下模拟：
+$$V(x), V(x,a_1,a_2), \dots, V(x, a_1, \dots, a_{2i+1})$$
+当结果分别输出 $a_1, a_3, \dots$ 且最终 $\text{Output} = 1$ 时，输出 1。
+则 $L$ 中的例子必定输出 1。此外，对于输出 1 的例子，由于对 Prover 的能力（函数 $P$）不做任何限制，则必定在 $\mathsf{dIP}$ 中。
+:::
+
+---
+
+## 3. 概率交互证明 ($\mathsf{IP}$)
+
+::: {.callout-note icon="false"}
+## Definition: $\mathsf{IP}[k]$
+$L \subset \{0,1\}^*$ 属于 $\mathsf{IP}[k]$ 当且仅当存在**概率**图灵机 $V:\{0,1\}^* \to \{0,1\}^*$，对于输入 $x$，使得:
+
+1.  **Completeness**: 若 $x \in L$，则存在证明函数 $P$，使得 $k \sim \text{poly}(|x|)$ 轮交互后输出 1 的概率 $> 2/3$。
+2.  **Soundness**: 若 $x \notin L$，则对**任意**证明函数 $P$，都使得 $k \sim \text{poly}(|x|)$ 轮交互后输出 0 的概率 $> 2/3$。
+:::
+
+[Image of complexity classes diagram showing P, NP, PH, IP, PSPACE]
+
+**直觉与讨论：**
+$\mathsf{IP}$ 很有可能强于 $\mathsf{NP}$（就像我们不知道 $\mathsf{BPP}$ 和 $\mathsf{P}$ 的关系）。
+直觉上，许多 $\mathsf{coNP}$ 问题不知道是否是 $\mathsf{NP}$ 的，因为 $\mathsf{coNP}$ 定义中的 $\forall$ 需要遍历指数多的 Certification。但是 $\mathsf{IP}$ 可以在这指数多的 Certification 上建立一个分布，从而验证一些 $\mathsf{coNP}$ 问题。
+
+### 示例：QNR (Quadratic Non-Residue)
+
+这是一个不知道是否在 $\mathsf{NP}$ 中，但确信在 $\mathsf{IP}$ 中的问题。
+
+**Problem**: 输入 $(a, p)$，$p$ 是素数。判定 $a$ 是否**不是**模 $p$ 的二次剩余（Quadratic Non-Residue）。
+
+**Protocol (一轮交互)**:
+
+1.  **Verifier**:
+    -   在模 $p$ 的二次剩余上建立概率分布 $Q$：随机抽 $r$，计算 $x = r^2 \pmod p$。
+    -   随机用 $a$ 偏移 (shift) 这个分布：随机选 $b \in \{0,1\}$，计算 $r_1 = a^b \cdot x \pmod p$。
+        -   (Case a) 如果 $a$ 是二次剩余，则 $r_1$ 依然是二次剩余（因为乘法构成群），分布不变。
+        -   (Case b) 如果 $a$ 不是，乘积会改变二次剩余的随机分布为 $Q'$（$r_1$ 变成了非二次剩余）。
+    -   发送 $r_1$ 给 Prover。
+2.  **Prover**:
+    -   收到 $r_1$，判断 $r_1$ 是二次剩余还是非二次剩余（Prover 有无限计算能力，可以暴力算）。
+    -   如果 $r_1$ 是二次剩余，猜测 $b=0$，输出 $r_2=0$。
+    -   否则，猜测 $b=1$，输出 $r_2=1$。
+3.  **Verifier**:
+    -   比较 $r_2$ 和 $b$。如果相等，则接受（认为 $a$ 是 QNR）。
+
+> 还有一个 $\mathsf{coNP}$ 问题（图非同构 GNI）已经确信在 $\mathsf{IP}$ 中了，而 $\mathsf{coNP}$ 一般认为强于 $\mathsf{NP}$（否则多项式层级 $\mathsf{PH}$ 会坍缩到第二层）。
+
+---
+
+## 4. Arthur-Merlin 与 Public Coins
+
+私有的随机元是否有必要呢？这引出了 Arthur-Merlin 协议。
+
+### $\mathsf{AM}$ 与 $\mathsf{MA}$ 类
+
+-   **$\mathsf{AM}[k]$**: 在 $\mathsf{IP}[k]$ 的基础上，要求 Verifier 所有的随机掷币结果对 Prover 都是**公开可见**的 (Public Coins)。
+    *这可能会导致 $\mathsf{IP}$ 定义中 Soundness 条件失效，即 Prover 可能更容易欺骗 Verifier。*
+-   **$\mathsf{MA}$**: $\mathsf{AM}[2]$ 的子集。在 $\mathsf{AM}[2]$ 的基础上，让 Verifier 的第一次通信不含有随机性。它等价于“有提示 (Merlin) 的随机 (Arthur) 计算”。
+
+::: {.callout-note icon="false"}
+## Definition: Randomized NP ($\mathsf{MA}$)
+$L \subset \{0,1\}^*$ 属于 $\mathsf{MA}$ 当且仅当存在概率图灵机 $V$，对于输入 $x$：
+
+1.  若 $x \in L$，存在 Certification $r$（由 Prover 提供），使得 $\Pr[V(x,r)=1] > 2/3$。
+2.  若 $x \notin L$，对**任意** Certification $r$，都有 $\Pr[V(x,r)=0] > 2/3$。
+:::
+
+::: {.callout-important icon="false"}
+## Theorem
+$$\mathsf{AM}[k] = \mathsf{AM}[2] = \mathsf{BP} \cdot \mathsf{NP}$$
+:::
+
+### 图同构 (Graph Isomorphism)
+
+Definition ($\mathsf{GI}$): 给定图 $G_1=(V_1,E_1), G_2=(V_2,E_2)$，判定是否存在顶点置换 $\pi$ 使得 $G_1 \cong G_2$。

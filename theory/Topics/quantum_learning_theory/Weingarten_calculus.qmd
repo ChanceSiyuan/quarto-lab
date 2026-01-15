@@ -1,0 +1,260 @@
+---
+title: "The Weingarten calculus"
+categories: [Quantum Learning]
+description: "关于如何算各种矩阵群的k-Fold平均"
+date: 2026-01-08
+format:
+  html:
+    toc: true
+    html-math-method: katex
+    number-sections: true
+---
+
+## Weingarten 演算简介
+
+由于任意算符的 $k$-fold Haar 随机是 $k$ 点 SWAP 算符的线性组合，它可以分解在基底 $\{\mathbb{P}^{d}_{\pi}\}_{\pi \in S_k}$ 上。然而，这不是一组正交归一基，因此分解系数涉及基于系数 $\mathrm{tr}(\mathbb{P}_{\pi}^{d}\cdot A)$ 的更复杂的计算。
+
+::: {.callout-note icon="false"}
+## 引理 (Weingarten calculus) {#lemma:Haar_ave}
+
+对于 $U \in U(d)$ 和 $X \in (\mathbb{C}^d)^{\otimes t} \times (\mathbb{C}^d)^{\otimes t}$，以下恒等式成立：
+$$
+\Phi_t(X) := \int_{\text{Haar}} U^{\otimes t} X U^{\dagger \otimes t} \, dU =\sum_{\tau,\sigma \in S_t} \text{tr}(X\mathbb{P}^{d,\dagger}_{\tau}) \mathrm{Wg}(\tau\sigma^{-1} , d) \mathbb{P}^d_\sigma,
+$$
+其中系数 $\mathrm{Wg}(\tau \sigma^{-1}, d)$ 由以下关系确定：
+$$
+\sum_{\tau\in S_t} \mathrm{Wg}(\tau \sigma^{-1}, d) \text{Tr}(\mathbb{P}^{d,\dagger}_{\tau} \mathbb{P}^{d}_{\rho})= \delta_{\sigma,\rho}.
+$$
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (点击展开)
+
+根据定义，$\Phi_t(X)$ 是 $U^{\otimes t} X (U^\dagger)^{\otimes t}$ 在酉群上的 Haar 平均。
+通过变量代换 $U \to VU$，可以证明对于所有 $V \in U(d)$，我们要有 $V^{\otimes t} \Phi_t(X) (V^\dagger)^{\otimes t} = \Phi_t(X)$。
+
+根据 Schur-Weyl 对偶性 (Schur-Weyl duality)，任何与所有 $V^{\otimes t}$ 对易的算符必须位于置换算符 $\mathbb{P}^d_\rho$ ($\rho \in S_t$) 张成的空间中。
+因此，我们可以写作 $\Phi_t(X) = \sum_{\rho \in S_t} c_\rho \, \mathbb{P}^d_\rho$。
+在两边从右侧乘以 $\mathbb{P}^{d,\dagger}_\tau$ 并取迹，得到 $\text{RHS} = \sum_{\rho \in S_t} c_\rho \, \text{Tr}( \mathbb{P}^d_\rho \mathbb{P}^{d,\dagger}_{\tau})$。
+
+现在计算 LHS：
+$$
+\begin{aligned}
+\text{LHS} = \text{Tr}(\mathbb{P}^{d,\dagger}_{\tau} \Phi_t(X)) 
+&= \text{Tr} \left( \mathbb{P}^{d,\dagger}_{\tau} \int_{\text{Haar}} U^{\otimes t} X (U^\dagger)^{\otimes t} \, dU \right) = \int_{\text{Haar}} \text{Tr} \left( \mathbb{P}^{d,\dagger}_{\tau} U^{\otimes t} X (U^\dagger)^{\otimes t} \right) dU \\
+&= \int_{\text{Haar}} \text{Tr}(\mathbb{P}^d_{\tau} X) \, dU = \text{Tr}(\mathbb{P}^{d,\dagger}_{\tau} X),
+\end{aligned}
+$$
+这是因为迹在酉共轭和 Haar 测度积分下是不变的。因此，我们得到线性方程 $\sum_{\rho \in S_t} c_\rho \, \text{Tr}( \mathbb{P}^d_\rho \mathbb{P}^{d,\dagger}_{\tau})= \text{Tr}(\mathbb{P}^{d,\dagger}_{\tau} X)$。
+将每边乘以 $\mathrm{Wg}(\sigma^{-1} \tau, d)$ 并对 $\tau \in S_t$ 求和，得到：
+$$
+\sum_{\rho \in S_t} c_\rho \sum_{\tau\in S_t}  \mathrm{Wg}(\sigma^{-1} \tau, d)\text{Tr}(\mathbb{P}^{d,\dagger}_{\tau} \mathbb{P}^d_\rho ) =  \sum_{\tau\in S_t}\mathrm{Wg}(\sigma^{-1} \tau, d)\text{Tr}(\mathbb{P}^{d,\dagger}_{\tau} X) = \sum_{\rho \in S_t} c_\rho \delta_{\sigma,\rho} = c_{\sigma}.
+$$
+这里我们利用了以下事实：$G_{\rho \tau}(d) \mathrm{Wg}_{\tau ,\sigma}(d) := \text{Tr}( \mathbb{P}^d_\rho \mathbb{P}^{d,\dagger}_{\tau}) \mathrm{Wg}(\tau\sigma^{-1}, d) = \delta_{\rho,\sigma}$。
+:::
+
+---
+
+## Weingarten 系数的性质
+
+现在我们展示 **Weingarten 系数** $\mathrm{Wg}(\pi\tau^{-1}, d):= \mathrm{Wg}_{\pi,\tau}(d)$ 的一些关键性质。通过定义矩阵 $G_{\tau,\sigma} := \mathrm{tr}(\mathbb{P}^{d}_{\tau}\mathbb{P}^{d,\dagger}_{\sigma}) = d^{c(\tau \sigma^{-1})}$，我们得出结论：如果 $n!\times n!$ 矩阵 $G$ 是可逆的，那么 $\mathrm{Wg}$ 构成了 $G$ 的逆。
+
+然而，根据下文的 Lemma \ref{lemma:inver_cond_G}，例如在 $k>d$ 的情况下（比如 $k=2$ 的单量子比特态上的 3-fold Haar 随机酉变换），$G$ 是不可逆的。
+
+::: {.callout-note icon="false"}
+## 引理 (G 的可逆条件) {#lemma:inver_cond_G}
+Gram 矩阵 $G_{\tau,\sigma}:= \text{tr}(\mathbb{P}^d_{\tau\sigma^{-1}})=d^{c(\tau \sigma^{-1})}$ 可逆当且仅当 $t \leq d$。这里 $c(\tau \sigma^{-1})$ 计数 $\tau\cdot \sigma^{-1}$ 中的循环数。
+:::
+
+在这种情况下，线性方程 $\sum_{\pi \in S_t} G_{\pi,\rho} \, c_\pi = \text{Tr}(\mathbb{P}^{d,\dagger}_{\rho} X)$ 的解不唯一。
+此时，我们将 $\mathrm{Wg}_{\rho,\sigma}(d)$ 定义为 $G_{\pi,\rho}$ 的**伪逆 (pseudo-inverse)**，它仍然满足 $\sum_{\rho} G_{\pi,\rho}\mathrm{Wg}_{\rho\sigma}(d) = \delta_{\pi,\sigma}$。这表明它给出了 $c_{\sigma} =\sum_{\rho} \mathrm{Wg}_{\rho\sigma}(d) \text{Tr}(\mathbb{P}^{d,\dagger}_{\rho} X)$ 的其中一个解，但不是唯一的解。
+
+接下来我们给出 $\mathrm{Wg}_{\sigma,\pi}$ 的解析形式。
+
+::: {.callout-note icon="false"}
+## 引理 (Weingarten 系数解析式)
+
+给定 $\pi,\sigma \in S_t$，**Weingarten 系数**具有如下表达式：
+$$
+\mathrm{Wg}(\sigma\pi^{-1},d):= \frac{1}{(t!)^2}\sum_{\substack{\lambda \vdash t, \ell_m(\lambda)\leq d}}\frac{\chi^{\lambda}(1)^2\chi^\lambda(\sigma\pi^{-1})}{\text{dim}_U(\lambda)}
+$$
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (点击展开)
+
+
+为了简便，我们将 $\text{dim}_{S_t}(\lambda)$ 记为 $\text{dim}\lambda$，并使用 $\text{dim}_{d}(\lambda):= \text{dim}_{S_t}(\lambda)\cdot \text{dim}_{U}(\lambda)$ 来表示嵌入在 $\pi \to \mathbb{P}_{\pi}^d$ 表示中的 $\lambda$ 型不可约表示 (irreps) 的维数。
+根据定义，$\mathrm{Wg}_{\sigma,\pi}(d)$ 是对称矩阵 $G_{\tau,\sigma} =\text{Tr}(\mathbb{P}^d_{\tau} \mathbb{P}^{d,\dagger}_{\sigma})=d^{c(\tau \sigma^{-1})}$ 的右伪逆。
+
+考虑由 $S_t$ 元素张成的线性空间，元素形式为 $v = \sum_{\pi \in S_t} v_{\pi} \pi$。元素 $A_G = \sum_{\pi \in S_t} d^{c(\pi)} \pi$ 在这些向量上诱导了一个线性变换，其矩阵表示为 $(A_G)_{\tau,\sigma}= d^{c(\tau \sigma^{-1})}$，因为：
+$$
+A_G \cdot v = \sum_{\sigma \in S_t} v_{\sigma} A_G \cdot \sigma = \sum_{\sigma \in S_t} v_{\sigma}\sum_{\pi \in S_t} d^{c(\pi)} \pi \cdot \sigma = \sum_{\sigma \in S_t} v_{\sigma}\sum_{\tau \in S_t} d^{c(\tau \sigma^{-1})} \tau = \sum_{\tau \in S_t}\left(\sum_{\sigma}(A_G)_{\tau,\sigma}v_\sigma\right) \tau.
+$$
+因此，首先找到 $A_G$ 的群逆（记为 $A_{G^{-1}}$）就足够了，然后在同一基底上表示它，给出 $A_{G^{-1}} = \sum_{\pi\in S_t}f(\pi)\cdot\pi$，其矩阵表示为 $(A_{G^{-1}})_{\tau,\sigma}= f(\tau\sigma^{-1})$。
+结合定义可得结果：
+$$
+A_G A_{G^{-1}} = e \Rightarrow \sum_{\pi,\sigma}d^{c(\pi)}f(\sigma)\pi \sigma = e \Rightarrow \sum_{\sigma} f(\sigma) d^{c(r\sigma^{-1})} = \sum_{\sigma} f(\sigma) G_{r, \sigma}= \sum_{\sigma}  G_{r,\sigma} f(\sigma)=  \delta_{e,r}
+$$
+这意味着 $f(\sigma) = \mathrm{Wg}_{\sigma,e}(d)$ 且 $\mathrm{Wg}(\sigma \pi^{-1},d) = f(\sigma \pi^{-1})$。
+
+注意到 $g A_G g^{-1} = A_G$，因为 $\pi$ 的循环结构在群共轭下是不变的，我们得出结论 $[A_G,g] = 0,\forall g \in S_t$。根据 Schur 引理 (Schur's Lemma)，$A_G$ 的所有不可约表示 $\forall \lambda \vdash t$ 必须正比于单位元。即：
+$$
+\hat{A}_G(\lambda) = \sum_{\pi \in S_t}d^{c(\pi)} \hat{R}_{\lambda}(\pi) =  \eta_{\lambda} \cdot \mathbb{I}_{\text{dim}(\lambda)} \Rightarrow \eta_{\lambda} = \sum_{\pi \in S_t} d^{c(\pi)} \chi_{\lambda}(\pi)/\text{dim} \lambda.
+$$
+基于 Lemma \ref{lemma:projector_in_lambda} (注：此处引用了原文中未列出的引理)，我们得出结论 $\text{tr}(P_{\lambda}) = \left({\text{dim} \lambda}/{t!}\right) \sum_{\pi \in S_t} \chi_{\lambda}(\pi) d^{c(\pi)} = \text{dim}_d \lambda$。这给出了恒等式 $\eta_{\lambda} = t!\cdot {\text{dim}_d \lambda}/{(\text{dim}\lambda)^2} = t!\cdot {\text{dim}_U \lambda}/{\text{dim}\lambda}$。
+
+注意到 $\text{dim}_U \lambda= \prod_{(i,j) \in \lambda}(d+j-i)/h(i,j)$，根据 Lemma \ref{lemma:irreps_GLd} (注：原文未列出)。如果杨表 (Young-tableaus) $\lambda$ 的最长行满足 $\ell_m(\lambda)>d$，则该值为零。
+这展示了 $\hat{A}_{G}$ 的不可逆性质，因此 $A_G$ 亦然。我们可以通过设定若 $\eta_{\lambda} =0$ 则 $\eta_{\lambda}^{-1} = 0$ 来找到右伪逆 $\hat A_{G^{-1}}$。
+这确定了 $A_{G^{-1}}$ 的所有不可约表示为：
+$$
+\hat{A}_{G^{-1}}(\lambda)= \begin{cases}\left[(\text{dim}\lambda)/\left(t!\cdot \text{dim}_U \lambda\right)\right]\cdot \mathbb{I}_{\text{dim}(\lambda)} &\text{if~}\ell_m(\lambda)\leq d\\ 0&\text{if~}\ell_m(\lambda)>d\end{cases}
+$$
+知道了 $A_{G^{-1}}$ 的所有不可约表示，根据 Lemma \ref{lemma:inv_groupFourier} (注：原文未列出) 即可确定系数：
+$$
+\begin{aligned}
+    f(\pi) &= \frac{1}{t!} \sum_{\lambda \vdash t} \text{dim}(\lambda) \text{tr}\left( \hat{A}_{G^{-1}}(\lambda) \hat R_\lambda(\pi) \right) = \frac{1}{t!} \sum_{\substack{\lambda \vdash t, \ell_m(\lambda)\leq d}} \text{dim}(\lambda) \text{tr}\left( \frac{\text{dim}(\lambda)}{t! \cdot \text{dim}_U(\lambda)}  \hat{R}_\lambda(\pi) \right) \\
+    & = \frac{1}{(t!)^2} \sum_{\substack{\lambda \vdash t, \ell_m(\lambda)\leq d}}  \frac{(\text{dim}(\lambda))^2 \chi^\lambda(\pi)}{\text{dim}_U(\lambda)}.
+\end{aligned}
+$$
+:::
+
+
+### 例子 (Examples)
+
+在 $t = 2, d\geq 2$ 的情况下，我们得到两种类型的置换 $e, (12)$，其中 $\text{dim}_U([1^2]) ={d(d-1)}/{2}, \text{dim}_U([2]) = {d(d+1)}/{2}$ 且 $\text{dim}([1^2]) = 1 =\text{dim}([2])$。基于 $S_2$ 的特征标表，我们列出 Weingarten 系数如下：
+
+::: {.columns}
+::: {.column width="30%"}
+**$S_2$ 的特征标表**
+
+| C.C. | $[1^2]$ | $[2]$ |
+| :---: | :---: | :---: |
+| **Size** | 1 | 1 |
+| $\chi_{[2]}$ | 1 | 1 |
+| $\chi_{[1^2]}$ | 1 | -1 |
+:::
+
+::: {.column width="70%"}
+$$
+\begin{aligned}
+\mathrm{Wg}(e, d) &= \frac{1}{(2!)^2} \left[ \frac{(\chi_{[2]}(e))^2 \chi_{[2]}(e)}{\text{dim}_U([2])} + \frac{(\chi_{[1,1]}(e))^2 \chi_{[1,1]}(e)}{\text{dim}_U([1,1])} \right] \\
+&= \frac{1}{d^2-1}, \\
+\mathrm{Wg}((12), d) &= \frac{1}{(2!)^2} \left[ \frac{(\chi_{[2]}(e))^2 \chi_{[2]}((12))}{\text{dim}_U([2])} + \frac{(\chi_{[1,1]}(e))^2 \chi_{[1,1]}((12))}{\text{dim}_U([1,1])} \right] \\
+&=(-\frac{1}{d})\cdot \frac{1}{d^2-1}.
+\end{aligned}
+$$
+:::
+:::
+
+在 $t = 3, d\geq 3$ 的情况下，有三个共轭类对应于循环类型 $[1^3], [2,1]$ 和 $[3]$。所需的不可约表示 (irreps) 的维数为：
+$$
+\begin{aligned}
+    \dim_U([3]) &= \frac{d(d-1)(d-2)}{6}, \dim_S([3]) = 1 \\
+    \dim_U([2,1]) &= \frac{d(d^2-1)}{3},  \dim_S([2,1]) = 2 \\
+    \dim_U([1^3]) &= \frac{d(d+1)(d+2)}{6} , \dim_S([1^3]) = 1
+\end{aligned}
+$$
+
+基于 $S_3$ 的特征标表，我们列出 Weingarten 系数如下：
+
+::: {.columns}
+::: {.column width="30%"}
+**$S_3$ 的特征标表**
+
+| C.C. | $[1^3]$ | $[2,1]$ | $[3]$ |
+| :---: | :---: | :---: | :---: |
+| **Size** | 1 | 3 | 2 |
+| $\chi_{[1^3]}$ | 1 | 1 | 1 |
+| $\chi_{[2,1]}$ | 2 | 0 | -1 |
+| $\chi_{[3]}$ | 1 | -1 | 1 |
+:::
+
+::: {.column width="70%"}
+$$
+\begin{aligned}
+\mathrm{Wg}(e, d) &= \frac{1}{(3!)^2} \left[ \frac{1^2 \cdot 1}{\dim_U([3])} + \frac{2^2 \cdot 2}{\dim_U([2,1])} + \frac{1^2 \cdot 1}{\dim_U([1^3])} \right] \\
+&= \frac{d^2-2}{d(d^2-1)(d^2-4)}, \\[1em]
+\mathrm{Wg}((12), d) &= \frac{1}{(3!)^2} \left[ \frac{1^2 \cdot (-1)}{\dim_U([3])} + \frac{2^2 \cdot 0}{\dim_U([2,1])} + \frac{1^2 \cdot 1}{\dim_U([1^3])} \right] \\
+&= \frac{-1}{(d^2-1)(d^2-4)}, \\[1em]
+\mathrm{Wg}((123), d) &= \frac{1}{(3!)^2} \left[ \frac{1^2 \cdot 1}{\dim_U([3])} + \frac{2^2 \cdot (-1)}{\dim_U([2,1])} + \frac{1^2 \cdot 1}{\dim_U([1^3])} \right] \\
+&= \frac{2}{d(d^2-1)(d^2-4)}.
+\end{aligned}
+$$
+:::
+:::
+
+在 $t = 3, d=2$ 的情况下，由于 $\dim_U([3])=0$，我们要找伪逆。这消除了杨表 $\lambda = [3]$ 并导致以下结果：
+$$
+\mathrm{Wg}(e, d) = \frac{17}{144},\quad \mathrm{Wg}((12), d) =\frac{1}{144},\quad \mathrm{Wg}((123), d)=-\frac{7}{144}
+$$
+
+在 $X = \ket{\psi}\!\bra{\psi}^{\otimes t}$ 的情况下，我们选择能够统一 $k>d$ 和 $k<d$ 两种情况的结果。
+
+::: {.callout-note icon="false"}
+## 引理 (态 $\ket{\psi}$ 的酉轨道) {#lemma:state_trajectory}
+
+$$
+\mathbb{E}_{\psi \sim \mathrm{Haar}(d)} \ket{\psi}\!\bra{\psi}^{\otimes t} =  \frac{\sum_{\pi \in S_t} S_t(d)}{(t+d-1)(t+d-2)\cdots(d-1) d},
+$$
+其中 $S_t(d) = \sum_{\pi \in S_t} \mathbb{P}^d_\pi$。如果 $t \leq d$，则此分解是唯一的。
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (点击展开)
+
+
+根据 Lemma \ref{lemma:Haar_ave}，我们得出结论 $\forall \rho \in S_t$：
+$$
+\sum_{\pi \in S_t}\text{Tr}(\mathbb{P}_{\rho^{-1}}^d \mathbb{P}_\pi^d) \, c_\pi = \text{Tr}(\mathbb{P}^d_{\rho^{-1}} X) =1
+$$
+我们首先假设算符 $c_{\pi}$ 不依赖于 $\pi$，这给出了 $c_\pi$ 的解如下：
+$$
+\text{Tr}\left(\sum_{\pi \in S_t} \mathbb{P}^d_{\rho^{-1}\pi} \right)c =  \text{Tr}\left(\sum_{\pi \in S_t} \mathbb{P}^d_{\pi} \right)c=1.
+$$
+解 $c_\pi = c$ 是线性方程的解之一。
+为了证明此解是唯一的，我们利用事实：$G_{\pi, \sigma} := \text{Tr}(\mathbb{P}_{\pi^{-1}}^d \mathbb{P}_\sigma^d)$ 是一个可逆矩阵。
+注意到 $(t!)^{-1}\sum_{\pi \in S_t} \mathbb{P}^d_{\pi}$ 是到 $t$-fold 对称空间的投影算符，其维数为 $C_{t+d-1}^t$（即，将 $t$ 个物体放入 $d$ 个篮子的方法的数量）。这给出了结果：
+$$
+\text{Tr}\left(\sum_{\pi \in S_t} \mathbb{P}^d_{\pi} \right) = (t!)C_{t+d-1}^t = (t+d-1)(t+d-2)\cdots(d-1) d.
+$$
+:::
+
+::: {.callout-note icon="false"}
+## 引理 (n-fold Weingarten 演算) {#lemma:2-foldWein}
+
+取独立同分布 (i.i.d.) $V_i \sim \text{Haar}(d), i = 1,\cdots,n$，$X \in \text{Lin}(\mathcal{H}(d^{kn}))$，并定义 $B_{\mathbf{v}}:= \bigotimes_{i =1}^{n} \left(\mathbb{P}_{v_i}^{d}\right)$ 其中 $\mathbf{v} = (v_1,\cdots,v_n) \in S_k^n$，则以下恒等式成立：
+$$
+\Phi_k^{\otimes n}(X):= \mathbb{E}_{V_i \sim \text{Haar}(d)} \left(\bigotimes_{i=1}^n V_i^{\otimes k}\right) X \left(\bigotimes_{i=1}^n V_i^{\dagger\,\otimes k}\right) = \sum_{\mathbf u, \mathbf{v} \in \mathbb{F}_2^n} \text{Wg}^{n}(\mathbf{v}\mathbf{u}^{-1}, d)  \text{tr}\left( B_{\mathbf{u}} X\right)\cdot  B_{\mathbf{v}},
+$$
+其中积 Weingarten 系数由 $\sum_{\mathbf{v}} \text{Wg}^{n}(\mathbf{v}\mathbf{u}^{-1}, d) \text{tr}\left(B_{\mathbf{u}}B_{\mathbf{r}}^\dagger\right) = \delta_{\mathbf{v},\mathbf{r}}$ 确定，其解析表达式为 $\mathrm{Wg}^{n}(\mathbf{v}\mathbf{u}^{-1}, d) = \prod_{i=1}^n\mathrm{Wg}({v}_i{u}_i^{-1}, d)$。具体来说：
+
+对于所有 $\mathbf u,\mathbf v \in S_2^n$：
+$$
+\mathrm{Wg}^{n}(\mathbf{v}\mathbf{u}^{-1}, d) = \left(\frac{1}{d^2 -1}\right)^n \cdot \left(-\frac{1}{d}\right)^{|\mathbf{v}\mathbf{u}^{-1}|},\text{~其中~}|\mathbf{v}\mathbf{u}^{-1}| = \#\{i|v_i \neq u_i\}
+$$
+
+对于所有 $\mathbf u,\mathbf v \in S_3^n$：
+$$
+\mathrm{Wg}^{n}(\mathbf{v}\mathbf{u}^{-1}, d) = \left(\frac{d^2-2}{d(d^2 -1)(d^2-4)}\right)^n \cdot \left(\frac{-d}{d^2-2}\right)^{\#\{i|v_i u_i^{-1} \in [21]\}}\left( \frac{2}{d^2-2}\right)^{\#\{i|v_i u_i^{-1} \in [3]\}}
+$$
+:::
+
+## 应用
+::: {.callout-note icon="false"}
+## 引理 (态 $\ket{\psi}$ 的酉轨道) {#lemma:state_trajectory}
+
+:::
+令$U_{AB}$和$U_{BC}$是两个支持在不同系统上的酉算符，考察unitary ensemble $\{V_{ABC}= U_{AB}U_{BC}\}_{U \sim \mathrm{Haar}}$。
+有：
+$$
+\begin{aligned}
+\Phi_{\mathcal{E}^*}(X) &= \mathbb{E}_{U_{AB}} \left[ U_{AB}^{\otimes k} \left( \mathbb{E}_{U_{BC}} \left[ U_{BC}^{\otimes k} X U_{BC}^{\dagger \otimes k} \right] \right) U_{AB}^{\dagger \otimes k} \right]\\
+&= \mathbb{E}_{U_{AB}} \left[ U_{AB}^{\otimes k} \left(\sum_{\sigma, \tau} \text{Wg}_{BC}(\sigma\tau^{-1}) \cdot \text{Tr}_{BC}\left( X (I_A \otimes \sigma_{BC}^{-1}) \right) \otimes \tau_{B} \otimes \tau_{C}\right) U_{AB}^{\dagger \otimes k} \right]\\
+&= \sum_{\sigma, \tau} \text{Wg}_{BC}(\sigma\tau^{-1}) \cdot \mathbb{E}_{U_{AB}} \left[ U_{AB}^{\otimes k} \left(\text{Tr}_{BC}\left( X (I_A \otimes \sigma_{BC}^{-1}) \right) \otimes \tau_{B} \right) U_{AB}^{\dagger \otimes k} \right]\otimes \tau_{C}\\
+&\hspace{-3em}\mathbb{E}_{U_{AB}} \left[ U_{AB}^{\otimes k} \left(\text{Tr}_{BC}\left( X (I_A \otimes \sigma_{BC}^{-1}) \right) \otimes \tau_{B} \right) U_{AB}^{\dagger \otimes k} \right]\\
+&= \sum_{\tilde{\sigma}, \tilde{\tau}} \text{Wg}_{AB}(\tilde{\sigma}\tilde{\tau}^{-1}) \cdot \text{Tr}_{AB}\left[ \left(\text{Tr}_{BC}\left( X (I_A \otimes \sigma_{BC}^{-1}) \right) \otimes \tau_{B} \right)  \tilde{\sigma}_{AB}^{-1} \right] \cdot \tilde{\tau}_{AB}\\
+&\hspace{-3em}\text{Tr}_{AB}\left[ \left(\text{Tr}_{BC}\left( X (I_A \otimes \sigma_{BC}^{-1}) \right) \otimes \tau_{B} \right)  \tilde{\sigma}_{AB}^{-1} \right]\\
+&=
+\end{aligned}
+$$

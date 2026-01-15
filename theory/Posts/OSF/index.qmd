@@ -1,0 +1,268 @@
+---
+title: "Operator Stabilizer Formalism"
+format:
+  html:
+    code-fold: true
+date: "2026-01-13"
+categories: [Realizations]
+# jupyter: wolframlanguage14.3
+jupyter: python3
+execute: 
+  enabled: true
+keep-ipynb: true
+# resources: 
+#   - /notes/quantum_learning_theory/Weingarten_calculus.qmd
+---
+**Abs**:如果在向量化空间中使用Clifford formalism，会比直接使用更有优势吗？
+
+## OSF和优势
+
+我们知道Clifford $C$ 在Pauli算符 $P \to CPC^\dagger$ 之间做交换。
+考虑Pauli算符的Choi state $|P\rangle\!\rangle \in \mathcal{H} \otimes \mathcal{H}^*$，它在$C \otimes C^{*}$的作用下发生交换 
+$$
+|P\rangle\!\rangle \to |Q\rangle\!\rangle = C \otimes C^{*}|P\rangle\!\rangle 
+$$
+如果我们可以将Choi state of Pauli operator $|P\rangle\!\rangle $通过酉变换$U \in \mathcal{H} \otimes \mathcal{H}^*$ 一一映射到 Computational basis，则所有的Clifford操作的变换$U C \otimes C^* U^\dagger$ 变成是 coherence non-increasing gate。
+我们发现上述变换$U$是存在的：
+\begin{align*}
+    &\{I/\sqrt{2},Z/\sqrt{2},X/\sqrt{2},Y/\sqrt{2}\} \\
+    &\xrightarrow{\mathcal{V}}\{\frac{\ket{00}_{ab}+\ket{11}_{ab}}{\sqrt{2}},\frac{\ket{00}_{ab}-\ket{11}_{ab}}{\sqrt{2}},\frac{\ket{01}_{ab}+\ket{10}_{ab}}{\sqrt{2}},\frac{-i\ket{01}_{ab}+i\ket{10}_{ab}}{\sqrt{2}}\}\\
+    &\xrightarrow{U = CS_{ba}^\dagger H_bCNOT_{ba}}\{\ket{0}_a\ket{0}_b, \ket{0}_a\ket{1}_b, \ket{1}_a\ket{0}_b,\ket{1}_a\ket{1}_b\},\\
+    &\xrightarrow{\mathcal{V}^{-1}}\{\ket{0}\!\bra{0}, \ket{0}\!\bra{1}, \ket{1}\!\bra{0},\ket{1}\!\bra{1}\}.
+\end{align*}
+其中每一个qubit Pauli变成了两个qubit，$a,b$，且$\{I,X,Y,Z\}$分辨与$\ket{\mathbf{P}} \in \{\ket{00},\ket{10},\ket{01},\ket{11}\}$对应，这恰好把$a,b$对应到$X,Z$到个数。
+在这种代换下，可以证明常见的Clifford gate会做如下转换
+
+\begin{align*}
+    CNOT_{12}(\cdot)CNOT_{12} &\to \textbf{CNOT}_{a_1a_2} \textbf{CNOT}_{b_2b_1}(\cdot), \\
+    S^\dagger(\cdot)S &\to \mathbf{CZ}_{ab}\mathbf{CNOT}_{ab}(\cdot),\\
+    H(\cdot)H &\to \mathbf{CZ}_{ab}\textbf{SWAP}_{ab}(\cdot),\\
+    T^\dagger(\cdot)T &\to \textbf{Z}_b\textbf{CH}_{ab}(\cdot),
+\end{align*}
+
+这样，计算 $\mathrm{tr}(P C\ket{0}\!\bra{0}^{\otimes n}C^\dagger)$ 的问题现在就转化成了计算 $2^n \bra{0+}^{\otimes n } \mathbf{C} \ket{\mathbf{P}}$
+
+注意到Original Physical Circuit是左边输入右边输出的。它的输入是compuatational basis（代表初始态是什么），输出是Pauli算符（代表我关心什么算符的均值）。Dual Circuit是右边是输入，左边输出的，且都是从Original Physical Circuit转换而来。每个dual输入的computational basis按照之前的规则由Original Physical Circuit的Pauli输出，每个dual的收尾（最左边）按照之前的规则由Original Physical Circuit的computational basis输入转化而来，例如$|0\rangle \to \frac{\mathbb{I} + Z}{2} \to \sqrt{2^{-1}}(\ket{00} + \ket{01}) = \ket{0}\ket{+}$
+
+为此，我们可以写一个python代码可视化地展现上述线路的转化。
+我利用这个代码展示了三种利用普通Stabilizer Fomalism无法处理的线路，但是在OSF框架下是简单的。
+
+```{python}
+import matplotlib.pyplot as plt
+from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister
+from qiskit.circuit import Qubit, Clbit
+
+class DualCircuitConverter:
+    def __init__(self, original_circuit: QuantumCircuit, 
+                 input_state: str = None, 
+                 output_pauli: str = None):
+        """
+        初始化转换器。
+        
+        Args:
+            original_circuit: 输入的原始物理线路
+            input_state: (可选) 原始线路的输入态，例如 "00"。
+                         如果不提供，默认为 None (不生成测量部分)。
+            output_pauli: (可选) 原始线路关心的输出 Pauli 算符，例如 "ZZ"。
+                          如果不提供，默认为 None (不生成初始态制备)。
+        """
+        self.orig_qc = original_circuit
+        self.n_qubits = original_circuit.num_qubits
+        
+        # 保存边界条件设置
+        self.input_state_str = input_state
+        self.output_pauli_str = output_pauli
+        
+        # 建立 Qubit 到索引的映射
+        self.q_map = {q: i for i, q in enumerate(original_circuit.qubits)}
+        
+        self.dual_qc = None
+        self._build_dual_circuit()
+
+    def _build_dual_circuit(self):
+        """
+        核心转译逻辑：根据 Symplectic Mapping 构建对偶线路。
+        包含：Dual Input (Source) -> Reversed Unitaries -> Dual Output (Sink)
+        """
+        # 创建寄存器
+        reg_a = QuantumRegister(self.n_qubits, 'a')
+        reg_b = QuantumRegister(self.n_qubits, 'b')
+        
+        # 如果需要测量，添加经典寄存器 (大小为 2*N)
+        registers = [reg_a, reg_b]
+        if self.input_state_str:
+            creg = ClassicalRegister(2 * self.n_qubits, 'meas')
+            registers.append(creg)
+        
+        self.dual_qc = QuantumCircuit(*registers)
+        
+        # ==========================================
+        # 1. 设置 Dual Input (对应 Original Output Pauli)
+        # ==========================================
+        if self.output_pauli_str:
+            # 确保长度匹配
+            if len(self.output_pauli_str) != self.n_qubits:
+                raise ValueError("Output Pauli string length must match num_qubits.")
+                
+            # 根据 Pauli 算符制备初始态: I->00, Z->01, X->10, Y->11
+            # 注意：字符串通常对应 q_n...q_0 或 q_0...q_n，这里假设索引对应顺序
+            for i, p_char in enumerate(self.output_pauli_str):
+                p_char = p_char.upper()
+                if p_char == 'Z':   # |0>_a |1>_b
+                    self.dual_qc.x(reg_b[i])
+                elif p_char == 'X': # |1>_a |0>_b
+                    self.dual_qc.x(reg_a[i])
+                elif p_char == 'Y': # |1>_a |1>_b
+                    self.dual_qc.x(reg_a[i])
+                    self.dual_qc.x(reg_b[i])
+            
+            self.dual_qc.barrier(label='Dual Input')
+
+        # ==========================================
+        # 2. 遍历并反向构建 Unitary
+        # ==========================================
+        # 【关键修改】使用 reversed()，因为 Dual 过程是算符的反向传播
+        for instruction in reversed(self.orig_qc.data):
+            op_name = instruction.operation.name
+            qubits = instruction.qubits
+            
+            indices = [self.q_map[q] for q in qubits]
+            
+            if op_name == 'h':
+                # H -> CZ_ab * SWAP_ab
+                idx = indices[0]
+                self.dual_qc.swap(reg_a[idx], reg_b[idx])
+                self.dual_qc.cz(reg_a[idx], reg_b[idx])
+                
+            elif op_name == 's':
+                # S -> CZ_ab * CNOT_ab
+                idx = indices[0]
+                self.dual_qc.cx(reg_a[idx], reg_b[idx])
+                self.dual_qc.cz(reg_a[idx], reg_b[idx])
+                
+            elif op_name == 't':
+                # T -> Z_b * CH_ab
+                idx = indices[0]
+                self.dual_qc.ch(reg_a[idx], reg_b[idx]) 
+                self.dual_qc.z(reg_b[idx])
+                
+            elif op_name == 'cx':
+                # CNOT -> CNOT_a * CNOT_b (reverse direction)
+                c_idx, t_idx = indices[0], indices[1]
+                self.dual_qc.cx(reg_a[c_idx], reg_a[t_idx]) # a: control -> target
+                self.dual_qc.cx(reg_b[t_idx], reg_b[c_idx]) # b: target -> control
+                
+            elif op_name == 'barrier':
+                mapped_qubits = []
+                for idx in indices:
+                    mapped_qubits.append(reg_a[idx])
+                    mapped_qubits.append(reg_b[idx])
+                self.dual_qc.barrier(*mapped_qubits)
+
+        # ==========================================
+        # 3. 设置 Dual Output (对应 Original Input State)
+        # ==========================================
+        if self.input_state_str:
+            self.dual_qc.barrier(label='Dual Output')
+            if len(self.input_state_str) != self.n_qubits:
+                raise ValueError("Input state string length must match num_qubits.")
+
+            # Original |0> -> Choi State |0>_a |+>_b
+            # 为了测量重叠，我们需要将 |+>_b 旋转回 |0> (H gate)，然后测 Z 基
+            for i, s_char in enumerate(self.input_state_str):
+                if s_char == '0':
+                    self.dual_qc.h(reg_b[i])
+                elif s_char == '1':
+                    # Original |1> -> Choi State |1>_a |-> _b (需推导确认，此处演示逻辑)
+                    # 假设我们需要测 |1>_a |->_b
+                    # 对 b 做 H 变回 |1>
+                    self.dual_qc.h(reg_b[i]) 
+            
+            # 测量所有 qubits 到经典寄存器
+            self.dual_qc.measure(reg_a, creg[:self.n_qubits])
+            self.dual_qc.measure(reg_b, creg[self.n_qubits:])
+
+    def draw_comparison(self, scale=1.0):
+        """
+        并排绘制。如果定义了边界条件，Title 会自动更新说明。
+        """
+        fig, axes = plt.subplots(2, 1, figsize=(12 * scale, 10 * scale))
+        
+        # 1. Original
+        self.orig_qc.draw('mpl', ax=axes[0], style='iqp')
+        
+        in_txt = f"|{self.input_state_str}>" if self.input_state_str else "State"
+        out_txt = f"<{self.output_pauli_str}>" if self.output_pauli_str else "Pauli"
+        axes[0].set_title(f"Original Circuit: Input {in_txt} $\\rightarrow$ Measure {out_txt}", fontsize=13)
+        axes[0].set_ylabel("Time $\\rightarrow$")
+
+        # 2. Dual
+        # fold=-1 防止折行，方便看对应关系
+        self.dual_qc.draw('mpl', ax=axes[1], style='iqp', fold=-1)
+        
+        dual_in_txt = f"State({self.output_pauli_str})" if self.output_pauli_str else "Input"
+        dual_out_txt = f"Project({self.input_state_str})" if self.input_state_str else "Output"
+        axes[1].set_title(f"Dual Circuit: Input {dual_in_txt} $\\rightarrow$ Measure {dual_out_txt}", fontsize=13)
+        axes[1].set_ylabel("Time $\\leftarrow$ (Reversed)")
+        
+        plt.tight_layout()
+        plt.show()
+
+# ==========================================
+# 测试用例：带输入输出的完整转化
+# ==========================================
+if __name__ == "__main__":
+    # # 1. 定义物理线路
+    # qc = QuantumCircuit(2)
+    # qc.h(0)          # 产生叠加
+    # qc.cx(0, 1)      # 产生纠缠
+    # qc.s(0)          # 相位门
+    # 1. 定义一个物理线路 (比如一个简单的纠缠制备 + T门旋转)
+    qc = QuantumCircuit(2)
+    
+    # Bell State
+    qc.h(0)
+    qc.s(1)
+    qc.cx(0, 1)
+    qc.barrier() # 添加 barrier 方便看清阶段
+    
+    # Phase gates
+    qc.t(0)      # S on q0
+    qc.t(1)      # T on q1
+    qc.barrier()
+    
+    # Interference
+    qc.cx(1, 0)
+    qc.h(1)
+    # 2. 调用转换器，指定输入输出
+    # 场景：Original 输入 |00>，我们想测量算符 YZ 的期望值
+    # Original: Input="00", Output="YZ"
+    converter = DualCircuitConverter(qc, input_state="00", output_pauli="YZ")
+    
+    # 3. 画图
+    # 预期结果：
+    # - Dual左端 (Input): 对应 YZ。
+    #   q0(Y) -> a0=1, b0=1 (X on a, X on b)
+    #   q1(Z) -> a1=0, b1=1 (X on b)
+    # - 中间: 门顺序反转 (S -> CX -> H)
+    # - Dual右端 (Output): 对应 00。
+    #   b寄存器上会有 H 门用于投影测量
+    converter.draw_comparison()
+```
+
+上述优势都来源于特殊的构造，是的我们能注意到OSF中的 $\mathbf{CH}$ 门可以被简化为H门。从而整个线路变成了一个Clifford线路。
+一个合理的问题是：**对一般的线路，如何注意到线路中不必要的T门，并把他们消除？**
+
+## 模拟含噪声线路
+
+考虑上述设定能否用于具有噪声的线路。
+
+考虑最简单的Pauli噪声，$\Lambda(\rho) = \sum_{\mathbf{r} \in \mathbb{F}_{2}^{2n}} 2^{-n}\lambda_{\mathbf{r}} \sigma_{\mathbf{r}} \mathrm{tr}\left[\rho \sigma_{\mathbf{r}} \right]$ 的Pauli噪声，其对应的是non-unitary矩阵：$\mathbf{\Lambda} := \sum_{P} 2^{-n}\lambda_{\mathbf{r}} \ket{\mathbf{r}} \!\bra{\mathbf{r}}$。
+
+这种噪声先前已经有不少研究了，包含：
+
+1. Pauli-path simualtion截断
+2. 基于图态的随机percolation
+
+这种对量子态的矩阵操作并不是Cliffford操作，强行采用Clifford Formalism可以把它分解成指数多的Clifford的叠加，但这会往线路中引入太多的magicness，从而导致模拟指数难。
+但是注意到这种难度是**纯经典**的，考虑往OSF中引入**经典随机性**来完成这件事。

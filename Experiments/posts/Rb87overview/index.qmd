@@ -1,0 +1,101 @@
+---
+title: "Rb87实验激光汇总"
+date: "2026-01-08"
+categories: [Lasers]
+resources: 
+  - Rb87_properties.pdf  # <--- 加上这一行
+---
+## Rb性质汇总
+
+<object data="Rb87_properties.pdf" type="application/pdf" width="100%" height="800px">
+    <p>您的浏览器无法直接显示 PDF，请<a href="Rb87_properties.pdf">点击此处下载</a>查看。</p>
+</object>
+
+::: {#fig-Rbproperties fig-cap="" fig-align="center"}
+![](RbProperties.png)
+:::
+
+Hefeilab目前的MOT光路如图 @fig-MOThefei 所示：
+
+::: {#fig-MOThefei fig-cap="" fig-align="center"}
+![](MOT.jpg)
+:::
+
+## Cooling laser setup
+
+::: {#fig-coolingdemo fig-cap="" fig-align="center"}
+![](cooling_demo.png)
+:::
+
+涉及的激光波长 780 nm ，主要用于：
+
+### 1. 重泵浦光 (Repumper)
+
+* **跃迁**: 驱动从基态 $5S_{1/2}, F=1$ 到激发态 $5P_{3/2}, F' = 2$ 的跃迁。
+* **功能**: 将掉落到暗态 ($F=1$) 的原子泵浦回循环跃迁 ($F=2$) 中。
+
+::: {.callout-note appearance="simple"}
+**技术实现细节**：
+该激光器首先锁定在 $F = 1 \to F' = 1$ 和 $F = 1 \to F' = 2$ 之间的**交叉峰 (Crossover)** 上，然后通过声光调制器 (AOM) 移频 **+78.5 MHz**，使其精确与 $F = 1 \to F' = 2$ 共振。
+:::
+
+### 2. 冷却光 (Cooling)
+
+* **跃迁**: 驱动从基态 $5S_{1/2}, F=2$ 到激发态 $5P_{3/2}, F' = 3$ 的循环跃迁，需要和Repump一起用。
+* **功能**: MOT 俘获与多普勒冷却。
+
+::: {.callout-tip appearance="simple"}
+**原理**：
+利用激光制冷原理（多普勒冷却），通过红失谐光束产生的散射力将原子减速并囚禁在势阱中心。
+:::
+
+### 3. 泵浦光 (Optical Pumping)
+
+* **跃迁**: 驱动从基态 $5S_{1/2}, F=2$ 到激发态 $5P_{3/2}, F' = 2$ 的跃迁，$\sigma^+$ (+1 偏振) 或 $\sigma^-$，需要和Repump一起用。
+* **功能**: 量子态初始化。
+
+::: {.callout-note appearance="simple"}
+**物理过程**：
+把原子内部的磁量子数“强行”统一到一个特定的状态（暗态）。
+例如：使用 $\sigma^+$ 圆偏振光将原子泵浦到 $|F=2, m_F=2\rangle$ 态（图中 (b) 所示情形）。
+:::
+
+### 4. 去泵浦光 (Depumping)
+
+* **跃迁**: 驱动从基态 $5S_{1/2}, F=2$ 到激发态 $5P_{3/2}, F' = 2$ 的跃迁，不要求偏振，不和Repump一起用。
+* **功能**: 用于状态清洗与辅助读出。将所有 $F=2$ 态原子转移至 $F=1$ 态。
+
+::: {.callout-warning appearance="simple"}
+**读出验证逻辑**：
+量子比特编码在 $F=1$（暗）和 $F=2$（亮）上。
+为了区分“原子处于 $F=1$”和“原子丢失”，通常采用双重成像验证：
+
+1.  **第一张图**：直接成像。看到亮斑 $\rightarrow$ 确认原子处于 $F=2$。
+
+2.  **操作**：使用 Depumping 光将所有 $F=2$ 原子强制赶到 $F=1$。
+
+3.  **第二张图**：再次成像。此时理论上应为全黑。
+    * 这张图用于**扣除背景噪声**（如玻璃反光）。
+    * 如果此时仍有亮斑，说明那是杂散光，而非原子信号。
+:::
+
+### 5. 吹除光 (Push-out / Blow-away)
+
+* **跃迁**: 驱动从基态 $5S_{1/2}, F=2$ 到激发态 $5P_{3/2}, F' = 3$ 的跃迁（共振），不和Repump一起用。。
+* **功能**: 状态选择性清除。
+
+::: {.callout-important appearance="simple"}
+**机制**：
+在读出阶段，为了区分原子是在 $F=2$ 态还是 $F=1$ 态：
+使用一束共振在 $F=2 \to F' = 3$ 的强光照射原子，且**不加**重泵浦光。
+* $F=2$ 原子：发生剧烈散射被推飞。
+* $F=1$ 原子：因大失谐而保留。
+:::
+
+<!-- Lukin文章中的示意图如图 @fig-MOTlukin 所示：
+
+
+::: {#fig-MOTlukin fig-cap="" fig-align="center"}
+![](MOT_realoptics.png)
+::: -->
+
