@@ -1,13 +1,17 @@
 ---
-title: "Experiment Notes"
+lang: zh
 listing:
-  contents: posts        # <--- 这里保持不变，它会自动去钻取子文件夹
-  sort: "date desc"
-  type: default
   categories: true
-  sort-ui: true
+  contents: 
+    - "posts/**/index.qmd"
+    - "!posts/**/*.en.qmd"
   filter-ui: true
+  sort: date desc
+  sort-ui: true
+  type: default
 page-layout: full
+title: Experiment Notes (中文)
 title-block-banner: true
 ---
+
 这里记录实验设置的笔记。

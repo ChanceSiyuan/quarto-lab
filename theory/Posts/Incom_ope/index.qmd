@@ -1,0 +1,75 @@
+---
+categories:
+- Quantum Information
+date: '2026-01-16'
+format:
+  html:
+    code-fold: true
+keep-ipynb: true
+lang: zh
+title: Local estimation of observables
+---
+
+## Review on Linear property estimation
+给定任意算符 $O$，在**局域测量（Local Measurement）方案**的限制下，估计其期望值 $\mathrm{tr}(O\rho)$ 的最优效率是多少？
+
+#### **Case 1:** $O = A_1 \otimes \cdots \otimes A_N, [A_i, A_i^\dagger] = 0$.
+
+此类情形对应于算符可分，且在每个局域位置均**可对角化**（即为正规算符）。这是平凡（trivial）的情形，只需在每个位置分别选取其本征基进行测量即可。
+
+- 例如 $A_i \in \{\mathbb{I},X,Y,Z\}$ 对应于估计 $\mathrm{tr}(P \rho)$。
+- $A_i \in \mathrm{SWAP}\cdot \{\mathbb{I},X,Y,Z\}$ 对应于估计 $\mathrm{tr}({P \rho^2})$。
+其中，尽管 $\mathrm{SWAP}_k\cdot P$ 非厄米算符，但它是可对角化的（易证 $[SP,(SP)^{\dagger}] = SPPS^\dagger - PS^\dagger SP = 0$）。
+
+#### **Case 2:** $O = A_1 \otimes \cdots \otimes A_N, [A_i, A_i^\dagger] \neq 0$.
+
+此类情形对应于算符可分，但在某些位置上**不可对角化**。
+可以通过笛卡尔分解 $A_k := (A_k+A_k^\dagger)/2 + i(A_k - A_k^\dagger)/2$ 将其拆分为厄米部分以实现对角化。
+然而，由于 $A_k+A_k^\dagger$ 与 $A_k - A_k^\dagger$ 不对易（不适配），这将导致测量基的数量呈指数级增长！
+
+  <span style="color:red;">
+  - 能否找到一个 $[A_i, A_i^\dagger] \neq 0$ 且具有实际物理意义的例子？
+  - 这种测量复杂度的困难是本质性的吗？
+  </span>
+
+
+#### **Case 3:** $O =\sum_{P} \alpha_{P} P$.
+
+- **逐项估计（Term-by-term estimation）**。
+- **基于经典影子（Classical shadow based）**。对于单副本，直接执行每个位置的局域 Clifford 随机测量（Local Clifford shadow）。对于 $k$-局域 Pauli 算符（weight-$k$ Pauli observables），样本复杂度为 $3^k$；对于任意 $k$-局域算符，样本复杂度为 $4^k$。
+
+  <span style="color:red;">
+  Question: 若允许双副本局域测量（2-replica Local），是否优于 $3^k/4^k$ 的开销？
+   </span>
+
+  <span style="color:blue;">
+  Answer：是！样本复杂度将从 $3^k$ 降至 $3^{k/2}$，代价是丢失了少许符号信息。
+  </span>
+  
+- **基于去随机化经典影子（Derandomized classical shadow based）**。
+  - 调整每个位置的 Local Clifford 采样分布，使其不再均匀，而是根据 $O$ 进行偏置。
+  - 自适应（Adaptively）地选择下一个待测 Pauli 算符，旨在使测量基尽可能覆盖包含在 $O$ 中的 Pauli 成分。
+  - 一种Channel共同对角化的视角：寻找一个Channel $\Lambda$，使得 $\Lambda(P_1),\cdots, \Lambda(P_n)$ 同时对角化。即使$P_i$ 之间不满足对易关系!
+  - 这给出了局域估计方法效率的一个下界。
+
+    <span style="color:red;">
+    Question: 若允许双副本局域测量（2-replica Local），是否存在更优的去随机化方案来估计 $\mathrm{tr}(O \rho)$？
+    </span>
+
+#### **Case 4:** $ O = \ket{\psi}\!\bra{\psi}$ or $O$ is low rank observable.
+
+  - 当 $\ket{\psi}$ 是稳定子态时，有分解$O = \sum_{P \in S} \ket{\psi}\!\bra{\psi} P$。
+  - 类比Entanglement witness的构造方法，可以考察$O' = \ket{\psi}\!\bra{\psi} + \alpha \mathbb{I}$ 使得算符$O'$可分。
+  
+## A piece-to-piece generalization to non-linear case
+
+为什么这种推广是有意义的？
+
+1. 提升Visual Cooling的效率
+2. 通过分解为Pauli算符允许估计更复杂的非线性量，例如Fisher information
+
+那么该怎么做？
+
+#### LCS的直接推广
+
+#### Non-linear Pauli classical Shadow

@@ -1,26 +1,31 @@
 ---
-title: "Theory"
-page-layout: full
-title-block-banner: true
+lang: zh
 listing:
-  - id: research-notes          # <--- 为科研笔记定义唯一 ID
-    contents: 
-      - "quantum_complexity/*.qmd"
-      - "quantum_learning_theory/*.qmd"
-    type: table
-    fields: [date, title, categories]
-    sort: "date desc"
-    table-hover: true
-    page-size: 5                # 可选：限制显示数量，避免页面太长
-    
-  - id: daily-posts             # <--- 为日常 Posts 定义唯一 ID
-    contents: Posts
-    sort: "date desc"
-    type: default
-    categories: true
-    sort-ui: true
-    filter-ui: true
-    page-size: 5
+- contents:
+  - "Topics/**/*.qmd"
+  - "!Topics/**/*.en.qmd"
+  fields:
+  - date
+  - title
+  - categories
+  id: research-notes
+  page-size: 5
+  sort: date desc
+  table-hover: true
+  type: table
+- categories: true
+  contents: 
+  - "Posts/**/index.qmd"
+  - "!Posts/**/*.en.qmd"
+  filter-ui: true
+  id: daily-posts
+  page-size: 5
+  sort: date desc
+  sort-ui: true
+  type: default
+page-layout: full
+title: Theory (中文)
+title-block-banner: true
 ---
 
 ## Topics

@@ -1,0 +1,68 @@
+---
+categories:
+- Realizations
+date: '2026-01-13'
+format:
+  html:
+    code-fold: true
+jupyter: wolframlanguage14.3
+keep-ipynb: true
+lang: en
+title: Magic based on Pauli spectrum
+---
+
+**Links:** 
+
+## Abstract
+
+This paper defines a measure of magicness for pure states, introduces the Operator Magic (OSE) for an operation $U$, and highlights its properties:
+
+1. It is subsystem additive, faithful, and invariant under Clifford operations.
+2. It reflects the minimum number of T gates in circuit $U$ and also constitutes a lower bound on the unitary stabilizer nullity of $U$.
+3. It analytically calculates how the OSE of a local operator evolves over time under the XXZ Hamiltonian.
+4. It analytically computes the OSE for Haar random unitaries.
+
+## SRE and OSE
+
+Since $\sum_{P}\text{tr}^2(O P) = 2^n\text{tr}(O^2)$, then $p_{\psi}(P) = [2^n\text{tr}(O^2)]^{-1} \text{tr}^2(O P)$ is a probability distribution.
+
+Specifically,
+
+- For a pure state $\psi$, the function $p_{\psi}(x) = \frac{1}{2^n} \text{tr}^2(\psi P_x)$ is a probability distribution, and stabilizer states uniformly support on $|S| = 2^n$ stabilizers $S$.
+- For an operator $O$ with $\mathrm{tr}(OO^\dagger) = d$, the function $p_{O}(x) = \frac{1}{4^n} \text{tr}^2(O P_x)$ is a probability distribution, and Pauli operators are distributed over only one element.
+
+Thus, the collision probability of this distribution clearly describes the stabilizer properties of pure states. We can also compute higher-order collisions to obtain Rényi-$k$ stabilizer entropy.
+
+::: {.callout-note icon="false"}
+## Definition: Stabilizer Renyi Entropy 
+The $k$-stabilizer-Rényi Entropy for a pure state $\psi$ is defined as:
+\begin{align*}
+\mathrm{SRE}_k(\psi) &= \frac{1}{1 - k} \left[\ln \left(\sum_x p_{\psi}^k(x)\right) - \ln \left(\frac{1}{2^{kn}} \cdot 2^n\right)\right]= \frac{1}{1 - k} \mathrm{tr}(O^{\otimes k} T^{A}_{(12)(34)} \otimes T^{\bar{A}}_{(14)(23)})
+\end{align*}
+For an operator $O$, the linearized entanglement is given by:
+$$
+E_{\mathrm{lin}}(O) = \mathrm{tr}(O^{\otimes 4} \cdot T^{A}_{(12)(34)} \otimes T^{\bar{A}}_{(14)(23)})
+$$
+
+:::
+
+We compute the above average for TE-matching operators, considering $O$ under Clifford operations. For simplicity, we consider $O = \ket{0}\!\bra{0}^{\otimes r} \otimes Z^{n - r}$.
+Using the result of the Clifford 4-fold average, we calculate:
+$$
+\mathrm{tr}[O^{\otimes 4} \Lambda^{\pm} T_{\pi}] = \pm d^{-2} \sum_{P \in \mathcal{P}_n} \mathrm{tr}[(O \cdot P)^{\otimes 4} T_{\pi}] + \delta_{\pm,-} \mathrm{tr}(O^{\otimes 4} T_{\pi})
+$$
+It is worth noting the computation of $\sum_{P \in \mathcal{P}_n} (O \cdot P)^{\otimes 4}$ using symplectic notation for Pauli operators:
+$$
+\begin{aligned}
+\sum_{\mathbf{r} \in \mathbb{F}_2^{2n}} \left[(\ket{0}\!\bra{0}^{\otimes s} \otimes Z^{n - s}) \cdot \sigma_{\mathbf r} \right]^{\otimes 4} &= \sum_{\mathbf{r} \in \mathbb{F}_2^{2n}}\delta_{\mathbf{r}^{(s)}_x , \mathbf{0}^{(s)}} \left[\ket{0}\!\bra{0}^{\otimes s} \otimes \sigma_{\mathbf{r}^{(n-s)} + \mathbf{0}^{(n-s)}\mathbf{1}^{(n-s)}}\right]^{\otimes 4}\\
+&=2^{s}\delta_{\mathbf{r}^{(s)}_x , \mathbf{0}^{(s)}}\sum_{\mathbf{r}^{(n-s)} \in \mathbb{F}_2^{2n-2s}} \left[\ket{0}\!\bra{0}^{\otimes s} \otimes \sigma_{\mathbf{r}^{(n-s)} + \mathbf{0}^{(n-s)}\mathbf{1}^{(n-s)}}\right]^{\otimes 4}
+\end{aligned}
+$$
+
+Dividing the permutation group $S_4$ into two categories, one containing only even cycles: $[22]$ or $[4]$, which totals to $C_{4}^2/2 + 2C_3^2 = 9$. The other category contains odd cycles: $[1111],[211],[31]$, totaling $1 + C_4^2 + 2\times C_4^3 = 15$.
+
+
+```{wolfram}
+(* Simple addition to test kernel connectivity *)
+1 + 1
+```

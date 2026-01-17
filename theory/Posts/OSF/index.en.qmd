@@ -1,0 +1,254 @@
+---
+categories:
+- Realizations
+date: '2026-01-13'
+execute:
+  enabled: true
+format:
+  html:
+    code-fold: true
+jupyter: python3
+keep-ipynb: true
+lang: en
+title: Operator Stabilizer Formalism
+---
+
+**Abstract**: Is there an advantage to using Clifford formalism in a vectorized space compared to using it directly?
+
+## OSF and Its Advantages
+
+We know that Clifford $C$ performs a swap between Pauli operators $P \to CPC^\dagger$.
+Consider the Choi state of a Pauli operator $|P\rangle\!\rangle \in \mathcal{H} \otimes \mathcal{H}^*$, which undergoes a transformation under the action of $C \otimes C^{*}$:
+$$
+|P\rangle\!\rangle \to |Q\rangle\!\rangle = C \otimes C^{*}|P\rangle\!\rangle 
+$$
+If we can map the Choi state of a Pauli operator $|P\rangle\!\rangle$ through a unitary transformation $U \in \mathcal{H} \otimes \mathcal{H}^*$ to the computational basis one-to-one, then all Clifford operations' transformations $U C \otimes C^* U^\dagger$ become coherence non-increasing gates.
+We find that such a transformation $U$ exists:
+
+\begin{align*}
+    &\{I/\sqrt{2},Z/\sqrt{2},X/\sqrt{2},Y/\sqrt{2}\} \\
+    &\xrightarrow{\mathcal{V}}\{\frac{\ket{00}_{ab}+\ket{11}_{ab}}{\sqrt{2}},\frac{\ket{00}_{ab}-\ket{11}_{ab}}{\sqrt{2}},\frac{\ket{01}_{ab}+\ket{10}_{ab}}{\sqrt{2}},\frac{-i\ket{01}_{ab}+i\ket{10}_{ab}}{\sqrt{2}}\}\\
+    &\xrightarrow{U = CS_{ba}^\dagger H_bCNOT_{ba}}\{\ket{0}_a\ket{0}_b, \ket{0}_a\ket{1}_b, \ket{1}_a\ket{0}_b,\ket{1}_a\ket{1}_b\},\\
+    &\xrightarrow{\mathcal{V}^{-1}}\{\ket{0}\!\bra{0}, \ket{0}\!\bra{1}, \ket{1}\!\bra{0},\ket{1}\!\bra{1}\}.
+\end{align*}
+
+Here, each single-qubit Pauli operator becomes a two-qubit system with qubits $a,b$, and $\{I,X,Y,Z\}$ correspond to $\ket{\mathbf{P}} \in \{\ket{00},\ket{10},\ket{01},\ket{11}\}$ respectively. This mapping precisely associates $a,b$ with the number of $X$ and $Z$ operators.
+Under this substitution, it can be shown that common Clifford gates transform as follows:
+
+\begin{align*}
+    CNOT_{12}(\cdot)CNOT_{12} &\to \textbf{CNOT}_{a_1a_2} \textbf{CNOT}_{b_2b_1}(\cdot), \\
+    S^\dagger(\cdot)S &\to \mathbf{CZ}_{ab}\mathbf{CNOT}_{ab}(\cdot),\\
+    H(\cdot)H &\to \mathbf{CZ}_{ab}\textbf{SWAP}_{ab}(\cdot),\\
+    T^\dagger(\cdot)T &\to \textbf{Z}_b\textbf{CH}_{ab}(\cdot),
+\end{align*}
+
+Thus, the problem of computing $\mathrm{tr}(P C\ket{0}\!\bra{0}^{\otimes n}C^\dagger)$ is now transformed into calculating $2^{n/2} \bra{0+}^{\otimes n } \mathbf{C} \ket{\mathbf{P}}$.
+
+Note that the Original Physical Circuit has input on the left and output on the right. Its input is in the computational basis (representing the initial state), and its output is a Pauli operator (indicating which Pauli operator's expectation value we care about). The Dual Circuit has input on the right and output on the left, both derived from the Original Physical Circuit. Each dual circuit input's computational basis corresponds to the original physical circuit's Pauli outputs according to the rules above, and each dual circuit's final state (leftmost) is converted from the original physical circuit's computational basis inputs, for example $|0\rangle \to \frac{\mathbb{I} + Z}{2} \to \sqrt{2^{-1}}(\ket{00} + \ket{01}) = \ket{0}\ket{+}$.
+
+To this end, we can write a Python script to visualize the transformation of these circuits.
+Using this code, I demonstrated three types of circuits that are difficult to handle with ordinary Stabilizer Formalism but are simple within the OSF framework.
+
+```{python}
+import matplotlib.pyplot as plt
+from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister
+from qiskit.circuit import Qubit, Clbit
+
+class DualCircuitConverter:
+    def __init__(self, original_circuit: QuantumCircuit, 
+                 input_state: str = None, 
+                 output_pauli: str = None):
+        """
+        Initialize the converter.
+        
+        Args:
+            original_circuit: Input physical circuit
+            input_state: (Optional) Initial state of the original circuit, e.g., "00".
+            output_pauli: (Optional) Output Pauli operator of the original circuit, e.g., "ZZ".
+        """
+        self.orig_qc = original_circuit
+        self.n_qubits = original_circuit.num_qubits
+        
+        self.input_state_str = input_state
+        self.output_pauli_str = output_pauli
+        
+        self.q_map = {q: i for i, q in enumerate(original_circuit.qubits)}
+        
+        self.dual_qc = None
+        self._build_dual_circuit()
+
+    def _build_dual_circuit(self):
+        """
+        Core translation logic: Build dual circuit according to Symplectic Mapping.
+        Contains: Dual Input (Source) -> Reversed Unitaries -> Dual Output (Sink)
+        """
+        reg_a = QuantumRegister(self.n_qubits, 'a')
+        reg_b = QuantumRegister(self.n_qubits, 'b')
+        
+        registers = [reg_a, reg_b]
+        if self.input_state_str:
+            creg = ClassicalRegister(2 * self.n_qubits, 'meas')
+            registers.append(creg)
+        
+        self.dual_qc = QuantumCircuit(*registers)
+        
+        # ==========================================
+        # 1. Set Dual Input (corresponds to Original Output Pauli)
+        # ==========================================
+        if self.output_pauli_str:
+            if len(self.output_pauli_str) != self.n_qubits:
+                raise ValueError("Output Pauli string length must match num_qubits.")
+                
+            for i, p_char in enumerate(self.output_pauli_str):
+                p_char = p_char.upper()
+                if p_char == 'Z':
+                    self.dual_qc.x(reg_b[i])
+                elif p_char == 'X':
+                    self.dual_qc.x(reg_a[i])
+                elif p_char == 'Y':
+                    self.dual_qc.x(reg_a[i])
+                    self.dual_qc.x(reg_b[i])
+            
+            self.dual_qc.barrier(label='Dual Input')
+
+        # ==========================================
+        # 2. Traverse and build Unitary in reverse
+        # ==========================================
+        for instruction in reversed(self.orig_qc.data):
+            op_name = instruction.operation.name
+            qubits = instruction.qubits
+            
+            indices = [self.q_map[q] for q in qubits]
+            
+            if op_name == 'h':
+                idx = indices[0]
+                self.dual_qc.swap(reg_a[idx], reg_b[idx])
+                self.dual_qc.cz(reg_a[idx], reg_b[idx])
+                
+            elif op_name == 's':
+                idx = indices[0]
+                self.dual_qc.cx(reg_a[idx], reg_b[idx])
+                self.dual_qc.cz(reg_a[idx], reg_b[idx])
+                
+            elif op_name == 't':
+                idx = indices[0]
+                self.dual_qc.ch(reg_a[idx], reg_b[idx]) 
+                self.dual_qc.z(reg_b[idx])
+                
+            elif op_name == 'cx':
+                c_idx, t_idx = indices[0], indices[1]
+                self.dual_qc.cx(reg_a[c_idx], reg_a[t_idx])
+                self.dual_qc.cx(reg_b[t_idx], reg_b[c_idx])
+                
+            elif op_name == 'barrier':
+                mapped_qubits = []
+                for idx in indices:
+                    mapped_qubits.append(reg_a[idx])
+                    mapped_qubits.append(reg_b[idx])
+                self.dual_qc.barrier(*mapped_qubits)
+
+        # ==========================================
+        # 3. Set Dual Output (corresponds to Original Input State)
+        # ==========================================
+        if self.input_state_str:
+            self.dual_qc.barrier(label='Dual Output')
+            if len(self.input_state_str) != self.n_qubits:
+                raise ValueError("Input state string length must match num_qubits.")
+
+            for i, s_char in enumerate(self.input_state_str):
+                if s_char == '0':
+                    self.dual_qc.h(reg_b[i])
+                elif s_char == '1':
+                    self.dual_qc.h(reg_b[i]) 
+            
+            self.dual_qc.measure(reg_a, creg[:self.n_qubits])
+            self.dual_qc.measure(reg_b, creg[self.n_qubits:])
+
+    def draw_comparison(self, scale=1.0):
+        """
+        Draw side-by-side comparison. Title updates automatically if boundary conditions are defined.
+        """
+        fig, axes = plt.subplots(2, 1, figsize=(12 * scale, 10 * scale))
+        
+        self.orig_qc.draw('mpl', ax=axes[0], style='iqp')
+        
+        in_txt = f"|{self.input_state_str}>" if self.input_state_str else "State"
+        out_txt = f"<{self.output_pauli_str}>" if self.output_pauli_str else "Pauli"
+        axes[0].set_title(f"Original Circuit: Input {in_txt} $\\rightarrow$ Measure {out_txt}", fontsize=13)
+        axes[0].set_ylabel("Time $\\rightarrow$")
+
+        self.dual_qc.draw('mpl', ax=axes[1], style='iqp', fold=-1)
+        
+        dual_in_txt = f"State({self.output_pauli_str})" if self.output_pauli_str else "Input"
+        dual_out_txt = f"Project({self.input_state_str})" if self.input_state_str else "Output"
+        axes[1].set_title(f"Dual Circuit: Input {dual_in_txt} $\\rightarrow$ Measure {dual_out_txt}", fontsize=13)
+        axes[1].set_ylabel("Time $\\leftarrow$ (Reversed)")
+        
+        plt.tight_layout()
+        plt.show()
+
+# ==========================================
+# Test case: Complete transformation with input and output
+# ==========================================
+if __name__ == "__main__":
+    qc = QuantumCircuit(2)
+    
+    # Bell State
+    qc.h(0)
+    qc.s(1)
+    qc.cx(0, 1)
+    qc.barrier()
+    
+    # Phase gates
+    qc.t(0)
+    qc.t(1)
+    qc.barrier()
+    
+    # Interference
+    qc.cx(1, 0)
+    qc.h(1)
+
+    # Scenario: Original input |00>, we want to measure the expectation value of operator YZ
+    converter = DualCircuitConverter(qc, input_state="00", output_pauli="YZ")
+    
+    # Expected result:
+    # - Dual left side (Input): Corresponds to YZ.
+    #   q0(Y) -> a0=1, b0=1 (X on a, X on b)
+    #   q1(Z) -> a1=0, b1=1 (X on b)
+    # - Middle: Gate sequence reversed (S -> CX -> H)
+    # - Dual right side (Output): Corresponds to 00.
+    #   H gate will be present in the b register for projection measurement
+    converter.draw_comparison()
+```
+
+The advantages above stem from a special construction, allowing us to notice that the $\mathbf{CH}$ gates in OSF can be simplified into H gates. Thus, the entire circuit becomes a Clifford circuit.
+A reasonable question is: **For general circuits, how do we identify unnecessary T-gates and eliminate them?**
+
+## Simulating Noisy Circuits
+
+Consider whether the above setup can be used for noisy circuits.
+This type of noise has been studied extensively, including:
+
+1. Pauli-path simulation truncation
+2. [Random percolation based on graph states](/theory/Posts/arXiv:2212.08677v2/index.qmd)
+
+Consider the simplest form of Pauli noise, $\Lambda(\rho) = \sum_{\mathbf{r} \in \mathbb{F}_{2}^{2n}} 2^{-n}\lambda_{\mathbf{r}} \sigma_{\mathbf{r}} \mathrm{tr}\left[\rho \sigma_{\mathbf{r}} \right]$, which corresponds to a non-unitary matrix: $\mathbf{\Lambda} := \sum_{P} 2^{-n}\lambda_{\mathbf{r}} \ket{\mathbf{r}} \!\bra{\mathbf{r}}$. For local noise, it can even be written in the form $\mathbf{\Lambda} = \bigotimes_{i=1}^n \Omega_i$.
+
+This matrix operation on quantum states is not a Clifford operation; forcing its use within the Clifford formalism would decompose it into an exponentially large sum of Cliffords, which introduces too much magic to the circuit and makes simulation exponentially hard.
+
+If we adopt method 2 above, for the mean $\langle P \rangle = \mathrm{tr}(\Lambda\circ\mathcal{U}_d \cdots \Lambda\circ\mathcal{U}_1[\rho] \cdot P)$:
+
+1. First, convert it to an amplitude of a computational circuit using OSF: $\langle P \rangle  =\bra{0+}^{\otimes n} 2^{n/2} \prod_{i=1}^d (\mathbf{\Lambda} \cdot \mathbf{U}_i)\ket{\mathbf{P}}$
+2. Then, move all the noise to act last:
+$$
+\langle P \rangle  = 2^{n/2}\bra{0+}^{\otimes n} \left(\prod_{i=1}^d \mathbf{\Lambda}_i \right) \cdot \left(\prod_{i=1}^d \mathbf{U}_i\right) \ket{\mathbf{P}}, \mathbf{\Lambda}_i := \left(\prod_{k = 1}^i \mathbf{U}_k \right)\mathbf{\Lambda} \left(\prod_{k = 1}^i \mathbf{U}_k \right)^\dagger
+$$
+
+If the circuit $\mathcal{U}_i$ does not contain a $T$ gate, then it is manageable because each $\mathbf{U}_i$ is an operation that does not generate superposition, and matrix $\mathbf{\Lambda}_i$ will remain diagonal with each mapping $\lambda^{(i)}_{\mathbf{r}}: \mathbf{r} \in \mathbb{F}_2^{2n}  \to \mathbb{R}$ being efficiently computable. This is entirely equivalent to tracking Pauli operators and updating the suppression of Pauli noise on these operators.
+
+When a $\mathbf{CH}$ gate exists in the circuit, it can be seen as splitting the computational basis $\ket{P}$. However, this is completely equivalent to method 1 above. Another approach is to examine updates:
+$$
+\mathbf{CH} \cdot \mathbf{\Lambda} \cdot \mathbf{CH}
+$$
+
+However, note that this difficulty is **purely classical**. Consider introducing **classical randomness** into the OSF to accomplish this task.

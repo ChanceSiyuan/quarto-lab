@@ -1,0 +1,64 @@
+<style>
+  .lang-switch-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+  }
+  
+  .lang-switch-btn {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 20px;
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #495057;
+    text-decoration: none;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .lang-switch-btn:hover {
+    background-color: #e9ecef;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    color: #212529;
+  }
+</style>
+
+<div class="lang-switch-container">
+  <a href="#" id="lang-switch-link" class="lang-switch-btn">
+    <span id="lang-icon">🌐</span>
+    <span id="lang-text">Switch Lang</span>
+  </a>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  const currentPath = window.location.pathname;
+  const link = document.getElementById('lang-switch-link');
+  const text = document.getElementById('lang-text');
+  
+  // 文件结构:
+  // index.html (中文主文件，源自 index.qmd)
+  // index.en.html (英文翻译，源自 index.en.qmd)
+  
+  if (currentPath.endsWith('.en.html')) {
+    // 当前是英文页面 -> 切换到中文 (去掉 .en)
+    text.textContent = "中文阅读";
+    link.href = currentPath.replace('.en.html', '.html');
+  } else if (currentPath.endsWith('.html')) {
+    // 当前是中文页面 -> 切换到英文 (加上 .en)
+    text.textContent = "English";
+    link.href = currentPath.replace('.html', '.en.html');
+  } else if (currentPath.endsWith('/')) {
+    // 目录路径，默认指向 index.html
+    text.textContent = "English";
+    link.href = currentPath + 'index.en.html';
+  }
+});
+</script>

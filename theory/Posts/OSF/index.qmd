@@ -1,18 +1,18 @@
 ---
-title: "Operator Stabilizer Formalism"
+categories:
+- Realizations
+date: '2026-01-13'
+execute:
+  enabled: true
 format:
   html:
     code-fold: true
-date: "2026-01-13"
-categories: [Realizations]
-# jupyter: wolframlanguage14.3
 jupyter: python3
-execute: 
-  enabled: true
 keep-ipynb: true
-# resources: 
-#   - /notes/quantum_learning_theory/Weingarten_calculus.qmd
+lang: zh
+title: Operator Stabilizer Formalism
 ---
+
 **Abs**:如果在向量化空间中使用Clifford formalism，会比直接使用更有优势吗？
 
 ## OSF和优势
@@ -24,12 +24,14 @@ $$
 $$
 如果我们可以将Choi state of Pauli operator $|P\rangle\!\rangle $通过酉变换$U \in \mathcal{H} \otimes \mathcal{H}^*$ 一一映射到 Computational basis，则所有的Clifford操作的变换$U C \otimes C^* U^\dagger$ 变成是 coherence non-increasing gate。
 我们发现上述变换$U$是存在的：
+
 \begin{align*}
     &\{I/\sqrt{2},Z/\sqrt{2},X/\sqrt{2},Y/\sqrt{2}\} \\
     &\xrightarrow{\mathcal{V}}\{\frac{\ket{00}_{ab}+\ket{11}_{ab}}{\sqrt{2}},\frac{\ket{00}_{ab}-\ket{11}_{ab}}{\sqrt{2}},\frac{\ket{01}_{ab}+\ket{10}_{ab}}{\sqrt{2}},\frac{-i\ket{01}_{ab}+i\ket{10}_{ab}}{\sqrt{2}}\}\\
     &\xrightarrow{U = CS_{ba}^\dagger H_bCNOT_{ba}}\{\ket{0}_a\ket{0}_b, \ket{0}_a\ket{1}_b, \ket{1}_a\ket{0}_b,\ket{1}_a\ket{1}_b\},\\
     &\xrightarrow{\mathcal{V}^{-1}}\{\ket{0}\!\bra{0}, \ket{0}\!\bra{1}, \ket{1}\!\bra{0},\ket{1}\!\bra{1}\}.
 \end{align*}
+
 其中每一个qubit Pauli变成了两个qubit，$a,b$，且$\{I,X,Y,Z\}$分辨与$\ket{\mathbf{P}} \in \{\ket{00},\ket{10},\ket{01},\ket{11}\}$对应，这恰好把$a,b$对应到$X,Z$到个数。
 在这种代换下，可以证明常见的Clifford gate会做如下转换
 
@@ -40,7 +42,7 @@ $$
     T^\dagger(\cdot)T &\to \textbf{Z}_b\textbf{CH}_{ab}(\cdot),
 \end{align*}
 
-这样，计算 $\mathrm{tr}(P C\ket{0}\!\bra{0}^{\otimes n}C^\dagger)$ 的问题现在就转化成了计算 $2^n \bra{0+}^{\otimes n } \mathbf{C} \ket{\mathbf{P}}$
+这样，计算 $\mathrm{tr}(P C\ket{0}\!\bra{0}^{\otimes n}C^\dagger)$ 的问题现在就转化成了计算 $2^{n/2} \bra{0+}^{\otimes n } \mathbf{C} \ket{\mathbf{P}}$
 
 注意到Original Physical Circuit是左边输入右边输出的。它的输入是compuatational basis（代表初始态是什么），输出是Pauli算符（代表我关心什么算符的均值）。Dual Circuit是右边是输入，左边输出的，且都是从Original Physical Circuit转换而来。每个dual输入的computational basis按照之前的规则由Original Physical Circuit的Pauli输出，每个dual的收尾（最左边）按照之前的规则由Original Physical Circuit的computational basis输入转化而来，例如$|0\rangle \to \frac{\mathbb{I} + Z}{2} \to \sqrt{2^{-1}}(\ket{00} + \ket{01}) = \ket{0}\ket{+}$
 
@@ -256,14 +258,31 @@ if __name__ == "__main__":
 ## 模拟含噪声线路
 
 考虑上述设定能否用于具有噪声的线路。
-
-考虑最简单的Pauli噪声，$\Lambda(\rho) = \sum_{\mathbf{r} \in \mathbb{F}_{2}^{2n}} 2^{-n}\lambda_{\mathbf{r}} \sigma_{\mathbf{r}} \mathrm{tr}\left[\rho \sigma_{\mathbf{r}} \right]$ 的Pauli噪声，其对应的是non-unitary矩阵：$\mathbf{\Lambda} := \sum_{P} 2^{-n}\lambda_{\mathbf{r}} \ket{\mathbf{r}} \!\bra{\mathbf{r}}$。
-
 这种噪声先前已经有不少研究了，包含：
 
 1. Pauli-path simualtion截断
-2. [基于图态的随机percolation](/theory/Posts/arXiv%3A2212.08677v2/index.qmd)
+2. [基于图态的随机percolation](/theory/Posts/arXiv:2212.08677v2/index.qmd)
+
+
+考虑最简单的Pauli噪声，$\Lambda(\rho) = \sum_{\mathbf{r} \in \mathbb{F}_{2}^{2n}} 2^{-n}\lambda_{\mathbf{r}} \sigma_{\mathbf{r}} \mathrm{tr}\left[\rho \sigma_{\mathbf{r}} \right]$ 的Pauli噪声，其对应的是non-unitary矩阵：$\mathbf{\Lambda} := \sum_{P} 2^{-n}\lambda_{\mathbf{r}} \ket{\mathbf{r}} \!\bra{\mathbf{r}}$。对local noise甚至还可以写为 $\mathbf{\Lambda} = \bigotimes_{i=1}^n \Omega_i$ 的格式
 
 这种对量子态的矩阵操作并不是Cliffford操作，强行采用Clifford Formalism可以把它分解成指数多的Clifford的叠加，但这会往线路中引入太多的magicness，从而导致模拟指数难。
-采取2.中的办法，如果线路中没有$T$-gate，那就还好，因为矩阵$\mathbf{\Lambda}$将会一直保持是对角矩阵，这等价于追踪一个$\lambda: \mathbf{r} \in \mathbb{F}_2^{2n}  \to \mathbb{R}$的映射。
+
+若采取2.中的办法，对于均值 $\langle P \rangle = \mathrm{tr}(\Lambda\circ\mathcal{U}_d \cdots \Lambda\circ\mathcal{U}_1[\rho] \cdot P)$ ：
+
+1. 首先用OSF转化为计算线路的amplitude：$\langle P \rangle  =\bra{0+}^{\otimes n} 2^{n/2} \prod_{i=1}^d (\mathbf{\Lambda} \cdot \mathbf{U}_i)\ket{\mathbf{P}}$
+2. 接着移动所有的噪声到最后作用：
+$$
+\langle P \rangle  = 2^{n/2}\bra{0+}^{\otimes n} \left(\prod_{i=1}^d \mathbf{\Lambda}_i \right) \cdot \left(\prod_{i=1}^d \mathbf{U}_i\right) \ket{\mathbf{P}}, \mathbf{\Lambda}_i := \left(\prod_{k = 1}^i \mathbf{U}_k \right)\mathbf{\Lambda} \left(\prod_{k = 1}^i \mathbf{U}_k \right)^\dagger
+$$
+
+如果线路 $\mathcal{U}_i$ 中没有 $T$ gate，那就还好，因为 $\mathbf{U}_i$ 都是不产生叠加的操作，矩阵 $\mathbf{\Lambda}_i$ 将会一直保持是对角矩阵，且对应的每个映射 $\lambda^{(i)}_{\mathbf{r}}: \mathbf{r} \in \mathbb{F}_2^{2n}  \to \mathbb{R}$ 都是高效可计算的。这完全等价于追踪Pauli算符以及更新Pauli噪声对Pauli算符的压制。
+
+当线路中存在 $\mathbf{CH}$ 门时，可以等效为computational basis $\ket{P}$ 的分裂。但这完全等价于之前的方法1.。还有做法是考察更新：
+$$
+\mathbf{CH} \cdot \mathbf{\Lambda} \cdot \mathbf{CH}
+$$
+
+
+
 但是注意到这种难度是**纯经典**的，考虑往OSF中引入**经典随机性**来完成这件事。
