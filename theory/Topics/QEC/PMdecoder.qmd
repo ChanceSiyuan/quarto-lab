@@ -1,0 +1,285 @@
+---
+categories:
+- Quantum Error Correction
+date: 2026-01-07
+description: 'Notes on Maximal Likelihood Decoding and its application in quantum error correction.'
+format:
+  html:
+    number-sections: true
+    toc: true
+lang: en    
+title: 'Maximal Likelihood Decoding'
+---
+
+# Reduction from MLD to MWPM
+
+Maximal Likelihood Decoding (MLD) involves finding the **most likely** string $\mathbf{c}$ given a syndrome $\mathbf{s}$.
+To do this, we need prior knowledge of **which errors are more likely to occur**, i.e., the error weight distribution $p(\mathbf{e})$.
+
+The so-called MLD problem is rigorously modeled as:
+$$
+\begin{cases}
+\min_{c \in \mathbb{F}_2^n} \sum_{i \in [n]} w_i c_i\\
+\text{s.t.~} \sum_{i \in [n]}H[j,i] c_i = s_j, \forall j \in [m] \cup\{0\}
+\end{cases}\quad \text{(MLD)}
+$$
+where $w_i = \ln \frac{1 - p[i]}{p[i]}$.
+
+## Reduction to MWPM
+If every column of $H$ has at most 2 non-zero elements (each error triggers at most 2 detectors), MLD can be reduced to MWPM with boundaries.
+
+**Definition (Detector Graph):**
+$G=(E,V)$, where $V = [m] \cup \{0\}$. Edges correspond to the columns of $H$.
+* If $|\mathbf{e}_i|=2$ (triggers $x_1, x_2$): Edge is $(x_1, x_2)$.
+* If $|\mathbf{e}_i|=1$ (triggers $x$): Edge is $(x, 0)$ (connecting to boundary).
+
+
+
+::: {.callout-important icon="false"}
+## Lemma (MLD to MWPM)
+The MLD problem on this class of $H$ matrices can be deterministically reduced to MWPM on a Detector Graph in polynomial time.
+:::
+
+::: {.callout-tip collapse="true"}
+## Proof (Click to expand)
+Add a row such that every column of the matrix $\mathbf{H}\in \mathbb{F}_2^{m+1} \times \mathbb{F}_2^n$ has weight $|\mathbf{e}_i| = 2$.
+Correspondingly construct the Detector graph $G$, edge vector $\mathbf c \in \mathbb{F}_2^n$, and vertex vector $\mathbf s \in \mathbb{F}_2^{m+1}$.
+The $\mathbf{H}$ matrix, reflecting errors to syndromes, becomes the boundary mapping $\partial$ from the edge vector $\mathbf c \in \mathbb{F}_2^n$ to the vertex vector $\mathbf s \in \mathbb{F}_2^{m+1}$ on $G$.
+For a given vertex vector $\mathbf{s} \in \mathbb{F}_2^{m+1}$, take the index positions $D \subset V$ of the first $m$ non-zero bits. This corresponds to the boundary of the edges.
+The constraint is interpreted as: Find a set of edges on the DG that has the boundary $D$.
+
+Minimization is equivalent to the following two steps:
+First, exhaust all point pairs $(u,v), u\in D,v\in D \cup \{0\}$.
+This requires repeating $\frac{|D|(|D| - 1)}{2} + |D|$ times.
+Use Dijkstra's algorithm to calculate the shortest path $u \to v$, constructing a fully connected weighted graph of $|D|$ vertices and its boundary point $\{0\}$.
+Second, solve the $\text{MWPM}_b$ problem on this fully connected weighted graph with boundary point $\{0\}$.
+
+These two steps are guaranteed to give the solution to $\text{MLD}$. Therefore, $\text{MLD}$ can be deterministically reduced to $\text{MWPM}_b$ in polynomial time.
+:::
+
+# MWPM and Duality
+
+## Definitions and Primal Problem
+
+
+
+::: {.callout-note}
+## Definition 1: Weighted Graph
+A weighted graph is defined as $G = (V=\{v_i\},E = \{(v_i,v_j), \forall i \neq j\},W= \{w_e \in \mathbb{R}, \forall e \in E\})$.
+
+* A **Matching** of $G$ is a subset $M$ of $E$ such that no two edges in $M$ share a vertex.
+* A **Perfect Matching** of $G$ further requires that every vertex is included in some edge in $M$.
+:::
+
+For $e \in E, M \subset E$, define the vector $\mathbf{x}_M = (x_e)_{e \in E}$ such that:
+$$
+{x}_e =\chi_M(e) := \begin{cases}x_e = 1& \text{if~} e \in M\\x_e = 0& \text{if~} e \notin M\end{cases}
+$$
+
+The minimization task (Integer Weighted Perfect Matching, IWPM) becomes:
+
+$$
+\begin{align}
+\begin{cases}
+ &\min_x \sum_{e \in E} w_e x_e \\
+ &\text{s.t.} \sum_{e \in \delta(\{v_i\})} x_e = 1, \forall v_i \in V  \\
+ &\quad \quad \quad x_e \in \{0,1\}, \forall e \in E
+\end{cases}\quad \text{(IWPM)}
+ \end{align}
+$$
+
+Its feasible region is a finite set of $|E|$-dimensional vectors with components in $\{0,1\}$, corresponding to perfect matchings on the graph.
+
+To perform Relaxation, we introduce the following lemma:
+
+::: {.callout-note}
+## Theorem 1: The Matching Polytope
+
+Define the odd set: $\mathcal{O}(G) = \{U \mid U \subseteq V, |U| = 3, 5, \dots \text{ is odd and } \geq 3\}$
+
+$$
+\begin{align}
+P_1(G) &:=\text{conv}\{\mathbf{x} \mid \forall e \in E, x_e \in \{0,1\}; \forall v\in V, \sum_{e \in \delta(\{v\})} x_e = 1 \} \\
+P_2(G) &:= \text{conv}\{\mathbf{x} \mid \forall e \in E, x_e \geq 0; \forall v \in V, \sum_{e \in \delta(\{v\})} x_e = 1; \forall U \in \mathcal{O}(G), \sum_{e \in \delta(U)} x_e \geq 1\}
+\end{align}
+$$
+
+If $w_e \in \mathbb{Q}$, then $P_1(G) = P_2(G)$.
+:::
+
+::: {.callout-tip collapse="true"}
+## Proof Idea for Theorem 1
+Reference: [https://theory.stanford.edu/~jvondrak/CS369P/lec5.pdf](https://theory.stanford.edu/~jvondrak/CS369P/lec5.pdf)
+
+1.  **$P_1 \subseteq P_2$:** A set $U$ consisting of an odd number of vertices cannot realize a perfect matching internally, so there must be edges connecting to the outside, i.e., $\sum_{e \in \delta(U)} x_e \geq 1$ must hold.
+2.  **$P_2 \subseteq P_1$:** Since $P_2$ is a convex polytope, we only need to prove that the vertices of $P_2$ are contained in $P_1$. Take such a vertex $\mathbf{x}=(x_e)_{e \in E} \in P_2$.
+    * Without loss of generality, we can require $0 < x_e < 1$. If 0 or 1, we can reduce the problem by removing edges or removing edges and vertices to construct a new graph $G'$.
+    * Examine degrees: If $|E| = |V|$, corresponding to a cycle, $\mathbf{x} = (\alpha, 1 - \alpha, \dots)$. Being a vertex implies $\alpha \in \{0,1\}$, which is reducible.
+    * Therefore $|E| > |V|$. Since $\mathbf{x}$ as an $|E|$-dimensional vector is a vertex, constraints must be tight (equalities). There exists $U \in \mathcal{O}(G)$ such that $\sum_{e \in \delta(U)}x_e = 1$.
+    * Examine the contracted graphs $G_a=G/U$ and $G_b =G/(V-U)$ and the vector restrictions $\mathbf{x}_a, \mathbf{x}_b$ on them.
+    * Verify feasibility: The newly added vertices after contraction satisfy degree constraints. Thus $\mathbf{x}_a \in P_{2}(G_a), \mathbf{x}_b \in P_{2}(G_b)$.
+    * Induction: If $\mathbf{x}_a \in P_{1}(G_a)$ and $\mathbf{x}_b \in P_{1}(G_b)$, then $\mathbf{x} \in P_{1}(G)$. Since weights are rational, they can be written as a convex combination of perfect matchings.
+
+**Lemma 1:** For a linear function $f(x)$ and a constraint set $C:=\text{conv}\{x_1,\cdots,x_t\}$, the extremum of $f$ can always be attained at the vertices of the constraint.
+:::
+
+In summary, by relaxing $x_e \in \{0,1\} \to x_e \geq 0$ and adding the **Blossom Condition** ($\forall U \subseteq V, |U| = \text{odd}, \sum_{e \in \delta(U)} x_e \geq 1$), we form the (MWPM) problem. If the optimal solution to (MWPM) is integer, then it must also be the optimal solution to (IWPM), thus completely transforming the integer programming problem into a linear programming problem.
+
+## Dual Problem and KKT Conditions
+
+::: {.callout-note}
+## Lemma 2 (MWPM Primal and Dual)
+
+**Primal Problem (MWPM):**
+$$
+\begin{align}
+\begin{cases}
+ &\min_x \sum_{e \in E} w_e x_e  \\
+ \text{s.t.~}&\quad \sum_{e \in \delta(\{v\})} x_e = 1, \forall v \in V  \\
+ &\sum_{e \in \delta(\mathcal{O})} x_e \geq 1, \forall O \in\mathcal{O}(G) \\
+&x_e \geq 0,~\forall e \in E
+\end{cases}
+ \end{align}
+$$
+
+**Dual Problem ($\overline{\text{MWPM}}$):**
+$$
+\begin{align}
+\begin{cases}
+ &\max_y \sum_v y_v + \sum_O y_O  \\
+ &\text{s.t.~}\quad  \lambda_e =w_e - (y_{v_1}+y_{v_2}) - \left(\sum_{O, e \in \delta(O)} y_O\right) \geq 0  \\
+ &\quad \quad \quad y_O \geq 0
+\end{cases}
+ \end{align}
+$$
+
+**KKT Conditions (Complementary Slackness):**
+$$
+\begin{cases}
+&  \lambda_e x_e = 0, \\
+&y_O \cdot \left[(\sum_{e \in \delta(O)} x_e) -1\right] = 0
+\end{cases}
+$$
+:::
+
+::: {.callout-tip collapse="true"}
+## Proof of Lemma 2
+Define dual feasibility conditions $\lambda_e, y_O \geq 0$, where $\lambda_e$ is also called the slack of $e$. The Lagrangian function is:
+$$
+\begin{align}
+L &= \sum_{e \in E} w_e x_e - \sum_v y_v \cdot \left[(\sum_{e \in \delta(v)} x_e) -1\right] - \sum_O y_O \cdot \left[(\sum_{e \in \delta(O)} x_e) -1\right] - \sum_e\lambda_e x_e\\
+&=\sum_v y_v + \sum_O y_O + \sum_{e \in E} \left[ w_e - (y_{v_1}+y_{v_2}) - \sum_{O, e \in \delta(O)} y_O - \lambda_e \right] x_e
+\end{align}
+$$
+Minimizing with respect to $x_e$ yields finite values only when the coefficient is 0, which gives the definition of the dual constraint $\lambda_e$. At this point, $L$ simplifies to the dual objective function.
+:::
+
+The key to designing the algorithm is: at each step, increase the value of $y$ as much as possible while maintaining primal feasibility, dual feasibility, and stability conditions; ultimately relying on dual slackness conditions to determine termination.
+
+# Blossom Algorithm
+
+MWPM has exponentially many constraints (odd sets $O$), making direct gradient descent infeasible. We utilize the structure of alternating paths.
+
+
+
+## Definitions
+* **M-alternating walk:** A sequence $(v_0,v_1,\cdots,v_t), t\geq 2$ such that $\forall i = 1,\cdots,t-1, |M\cap \{v_{i-1}v_i, v_i v_{i+1}\}|=1$.
+* **M-flower:** An M-alternating walk where $t$ is odd, and $\exists i < t$ such that $v_t = v_i$, and $\forall i,j<t~ v_i \neq v_j$. The subgraph formed by $(v_{i+1},\cdots,v_t)$ is called its **M-blossom**.
+* **M-augmenting path:** An M-alternating walk satisfying $v_0, v_t \notin M$, and is a simple path.
+
+::: {.callout-note}
+## Lemma 3 (Structure of Alternating Walks)
+Let $X$ be the set of unmatched points. Take an undecomposable M-alternating walk $(v_0,\cdots,v_t)$ with $v_0, v_t \in X$. Then it is either an **M-augmenting path**, or it contains an **M-flower** $(v_0,\cdots,v_j)$, where $v_j$ is the index where the repetition first occurs.
+:::
+
+**Definition 3 (Contraction and Uncontraction):**
+Given a graph $G=(E,V)$ and $V_S \subset V$:
+* **Contraction:** $G \to (G/V_S, G_S)$, where $G/V_S$ replaces $V_S$ with a single point.
+* **Uncontraction:** $(G', G_S) \to G$, the reverse process of contraction.
+
+## Algorithm 1 (Blossom)
+
+**Input:** $G = (V,E), \{w_{e}\}$.
+**Output:** MWPM.
+
+1.  **Initialization:** $\Omega = \{\{v\}|v \in V\}, y(\{v\}) = 0, M = \emptyset, G' = (V, \emptyset)$.
+2.  **Loop** until $M$ is a perfect matching of $G'$:
+    a.  Find free points $X$ in $G'$, determine if there exists an M-alternating walk starting from $X$ and ending in $X$.
+    b.  **If it exists**, choose the shortest walk $P=(V_P, E_P)$:
+        i.  **Augmenting path:** Update $M = M \oplus E_P$. **End this step**.
+        ii. **M-flower:** By Lemma 3, it must contain an M-Blossom $B$.
+            1.  Take its M-Blossom $B=(V_B, E_B)$.
+            2.  Contract $V_B$ into a single point in $V'$.
+            3.  Update $M = M - E_B$.
+            4.  Update dual info $\Omega = \Omega \cup \{V_B\}, y(V_B) = 0$. **End this step**.
+    c.  **If it does not exist**, classify vertices in $V'$ as $V' = S \cup T$:
+        * $v' \in S \Leftrightarrow \exists$ odd length M-alt walk from $X$ to $v'$.
+        * $v' \in T \Leftrightarrow \exists$ even length M-alt walk from $X$ to $v'$.
+        i.  **Dual Update:**
+            $$
+            \begin{cases}
+            y(v') = y(v') + \delta & \text{if~} v' \in T\\
+            y(v') = y(v') - \delta & \text{if~} v' \in S
+            \end{cases}
+            $$
+            Choose the largest $\delta$ such that dual feasibility conditions hold:
+            (1) $\lambda_e \geq 0, \forall e \in E$.
+            (2) $y_O \geq 0, \forall O \in \Omega$.
+        ii. **Check Boundary:**
+            * If (1) hits boundary (new edge $\lambda_e=0$): Add these edges to $E'$. **End this step**.
+            * If (2) hits boundary ($y_O=0, O \in \Omega \cap \mathcal{O}(G)$): Uncontract Blossom $(G', O)$. **End this step**.
+
+::: {.callout-note}
+## Complexity Theorem
+Algorithm 1 halts after at most $2|V|^2$ loops. After halting, uncontracting all Blossoms gives an MWPM of G.
+:::
+
+::: {.callout-tip collapse="true"}
+## Complexity Proof Idea
+* Dual objective function is monotonically non-decreasing.
+* Primal/dual feasibility and complementary slackness are maintained throughout.
+* Upper limit on iteration count:
+    * Augment (Case b-i): At most $|V|/2$ times.
+    * Uncontract (Case c-iv): At most $2|V|$ times (hierarchical structure).
+    * Contract (Case b-ii): At most $2|V|$ times.
+    * Add Edge (Case c-iii): At most $3|V|+1$ times.
+    * Total iterations $\approx 3.5|V|^2$.
+* Single loop time is at most $O(|E|)$.
+:::
+
+## Regarding Graphs with Boundaries
+For graphs with a boundary vertex $v_0$, the perfect matching covers all vertices except $v_0$. The formula requires slight adjustments (equality constraints become inequalities, or handled via convex hull optimization).
+
+# Implementation Details
+
+## Dual Space and Primal Initialization
+* Dual space initialization $y_v = 0$.
+* Primal space initialization: Mark every vertex as $+$.
+* Increase $y_v$ by step size $\delta_v$.
+
+## Auxiliary Graph
+To effectively manage alternating trees, dynamically maintain an **Auxiliary Graph** $(V_{aux}, E_{aux})$:
+* **Nodes:** Auxiliary graph node $T \in V_{aux}$ corresponds to an alternating tree in the original graph.
+* **Structure:** Stored using adjacency lists.
+* **Priority Queue (PQ):**
+    * **Node-level PQ (Per tree $T$):**
+        * $pq^{++}(T)$: Edges between $+$ nodes inside tree $T$.
+        * $pq^{+\emptyset}(T)$: Edges from $+$ nodes in tree $T$ to free points ($\emptyset$).
+        * $pq^{-}(T)$: $-$ nodes inside tree $T$ that are Blossoms.
+    * **Edge-level PQ (Per edge $(T, T')$):**
+        * $pq^{++}(T, T')$: Edge connecting $+$ point in $T$ and $+$ point in $T'$.
+        * $pq^{+-}(T, T')$: Edge connecting $+$ in $T$ to $-$ in $T'$.
+        * $pq^{-+}(T, T')$: Edge connecting $-$ in $T$ to $+$ in $T'$.
+
+## Variable Management
+* **Node Dual Variables:** Store base value $\bar{y}_v$ and tree cumulative quantity $\Delta_T$.
+    * Real value $y_v = \bar{y}_v \mp \Delta_T$ (depends on +/- mark).
+* **Edge Slack:** Store base slack $\text{slack}(a)$.
+    * Real slack adjusted based on $\Delta_T$ of the trees the endpoints belong to.
+
+## Dynamic Maintenance (GROW Operation)
+**GROW:** When a free matching edge $(u,v)$ is added to tree $T$ and $u \to -, v \to -$ are set:
+1.  If $u$ is a Blossom, add to $pq^{-}(T)$.
+2.  Update neighbors of $u$: Remove from $pq^{+\emptyset}$, move to $pq^{-+}$ or discard.
+3.  Update neighbors of $v$: Remove from $pq^{+\emptyset}$, move to $pq^{++}$ or $pq^{+-}$.
+4.  **Lazy Update:** Use `CURRENT_EDGE` pointer to avoid $O(|V|^2)$ static memory overhead.

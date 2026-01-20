@@ -7,14 +7,14 @@ format:
     code-fold: true
 jupyter: wolframlanguage14.3
 keep-ipynb: true
-lang: zh
+lang: en
 title: 如何追踪含有噪声的稳定子线路？
 ---
 
 **Links:** https://link.aps.org/doi/10.1103/PhysRevA.107.032424
 
 ## Abstract 
-本文给出了一种追踪Pauli噪声+Clifford操作的办法
+This paper presents a method for tracking Pauli noise plus Clifford operations:
 
-1. 采用稳定子态的图态表示/基于图态的稳定子模拟方案
-2. 把线路中碰到的所有的Pauli噪声前移+更新，最终转化为在某个已知stabilizer state上做某个复杂的Pauli-$Z$噪声
+1. Using the graph state representation of stabilizer states/stabilizer simulation based on graph states
+2. Shifting all encountered Pauli noise forward and updating it, ultimately transforming it into applying a complex Pauli-$Z$ noise on a known stabilizer state.

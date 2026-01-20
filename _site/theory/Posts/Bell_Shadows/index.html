@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.26">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2026-01-20">
+
+<title>Classical Shadows Based on Locally-Entangled Measurements – Chance’s Quantum Lab</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<script src="../../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap-a8976c3e89df70b272bdfba3d2fda974.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script>window.backupDefine = window.define; window.define = undefined;</script><script src="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.js"></script>
+  <script>document.addEventListener("DOMContentLoaded", function () {
+ var mathElements = document.getElementsByClassName("math");
+ var macros = [];
+ for (var i = 0; i < mathElements.length; i++) {
+  var texText = mathElements[i].firstChild;
+  if (mathElements[i].tagName == "SPAN") {
+   katex.render(texText.data, mathElements[i], {
+    displayMode: mathElements[i].classList.contains('display'),
+    throwOnError: false,
+    macros: macros,
+    fleqn: false
+   });
+}}});
+  </script>
+  <script>window.define = window.backupDefine; window.backupDefine = undefined;</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.css">
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../../styles.css">
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Chance’s Quantum Lab</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../index.html"> 
+<span class="menu-text">Home Page</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../theory/index.html"> 
+<span class="menu-text">Theory</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../Experiments/index.html"> 
+<span class="menu-text">Experiment Notes</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/yourusername"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/yourusername"> <i class="bi bi-twitter" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#abstract-and-overview" id="toc-abstract-and-overview" class="nav-link active" data-scroll-target="#abstract-and-overview">Abstract and Overview</a></li>
+  <li><a href="#part-1-core-theoretical-framework" id="toc-part-1-core-theoretical-framework" class="nav-link" data-scroll-target="#part-1-core-theoretical-framework">Part 1: Core Theoretical Framework</a>
+  <ul class="collapse">
+  <li><a href="#rigorous-definitions-intuitions" id="toc-rigorous-definitions-intuitions" class="nav-link" data-scroll-target="#rigorous-definitions-intuitions">1.1 Rigorous Definitions &amp; Intuitions</a>
+  <ul class="collapse">
+  <li><a href="#intuition-example" id="toc-intuition-example" class="nav-link" data-scroll-target="#intuition-example">Intuition &amp; Example</a></li>
+  <li><a href="#intuition-example-1" id="toc-intuition-example-1" class="nav-link" data-scroll-target="#intuition-example-1">Intuition &amp; Example</a></li>
+  <li><a href="#intuition-example-2" id="toc-intuition-example-2" class="nav-link" data-scroll-target="#intuition-example-2">Intuition &amp; Example</a></li>
+  <li><a href="#intuition-example-3" id="toc-intuition-example-3" class="nav-link" data-scroll-target="#intuition-example-3">Intuition &amp; Example</a></li>
+  </ul></li>
+  <li><a href="#main-theorems-key-insights" id="toc-main-theorems-key-insights" class="nav-link" data-scroll-target="#main-theorems-key-insights">1.2 Main Theorems &amp; Key Insights</a>
+  <ul class="collapse">
+  <li><a href="#intuition-of-validity" id="toc-intuition-of-validity" class="nav-link" data-scroll-target="#intuition-of-validity">Intuition of Validity</a></li>
+  <li><a href="#intuition-of-validity-1" id="toc-intuition-of-validity-1" class="nav-link" data-scroll-target="#intuition-of-validity-1">Intuition of Validity</a></li>
+  <li><a href="#intuition-of-validity-2" id="toc-intuition-of-validity-2" class="nav-link" data-scroll-target="#intuition-of-validity-2">Intuition of Validity</a></li>
+  </ul></li>
+  </ul></li>
+  <li><a href="#part-2-technical-deep-dive" id="toc-part-2-technical-deep-dive" class="nav-link" data-scroll-target="#part-2-technical-deep-dive">Part 2: Technical Deep Dive</a>
+  <ul class="collapse">
+  <li><a href="#derivation-of-bell-shadow-channel-eigenvalues" id="toc-derivation-of-bell-shadow-channel-eigenvalues" class="nav-link" data-scroll-target="#derivation-of-bell-shadow-channel-eigenvalues">2.1 Derivation of Bell Shadow Channel Eigenvalues</a></li>
+  <li><a href="#sample-complexity-analysis-for-specific-operators" id="toc-sample-complexity-analysis-for-specific-operators" class="nav-link" data-scroll-target="#sample-complexity-analysis-for-specific-operators">2.2 Sample Complexity Analysis for Specific Operators</a></li>
+  <li><a href="#comparison-with-shallow-shadows" id="toc-comparison-with-shallow-shadows" class="nav-link" data-scroll-target="#comparison-with-shallow-shadows">2.3 Comparison with Shallow Shadows</a></li>
+  <li><a href="#key-takeaways" id="toc-key-takeaways" class="nav-link" data-scroll-target="#key-takeaways">Key Takeaways</a></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Classical Shadows Based on Locally-Entangled Measurements</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">Readings</div>
+    <div class="quarto-category">Quantum Information</div>
+    <div class="quarto-category">Classical Shadows</div>
+  </div>
+  </div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">January 20, 2026</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p><strong>Citation</strong>: Matteo Ippoliti, “Classical shadows based on locally-entangled measurements”, Quantum 8, 1293 (2024)</p>
+<section id="abstract-and-overview" class="level2">
+<h2 class="anchored" data-anchor-id="abstract-and-overview">Abstract and Overview</h2>
+<p>This paper introduces <strong>Bell shadows</strong> and related protocols that use locally-entangled measurements (rather than single-qubit measurements) for classical shadow tomography. The key innovation is using two-qubit Bell measurements, which achieves a <strong>quadratic improvement</strong> in sample complexity (from <span class="math inline">\sim 3^k</span> to <span class="math inline">\sim 3^{k/2}</span>) for compatible operators, at the cost of making some operators unlearnable. The paper shows how tuning the amount of entanglement creates a family of protocols interpolating between Pauli and Bell shadows.</p>
+<p><strong>Main contributions:</strong> 1. Bell shadows protocol using two-qubit entangled measurements 2. Characterization of compatible operators and their improved sample complexity 3. Extension to <span class="math inline">n</span>-qubit GHZ measurements achieving <span class="math inline">\sim (3/2)^k</span> scaling 4. Comparison with shallow shadows showing competitive performance</p>
+<hr>
+</section>
+<section id="part-1-core-theoretical-framework" class="level1">
+<h1>Part 1: Core Theoretical Framework</h1>
+<section id="rigorous-definitions-intuitions" class="level2">
+<h2 class="anchored" data-anchor-id="rigorous-definitions-intuitions">1.1 Rigorous Definitions &amp; Intuitions</h2>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Definition 1: Shadow Channel
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Given an ensemble of random unitaries <span class="math inline">\mathcal{U}</span>, the <strong>shadow channel</strong> <span class="math inline">\mathcal{M}</span> is the linear map relating the quantum state <span class="math inline">\rho</span> to the expected snapshot: <span class="math display">
+\mathbb{E}_{U \sim \mathcal{U}, b \sim U\rho U^\dagger}[\hat{\sigma}] = \mathcal{M}(\rho)
+</span> where <span class="math inline">\hat{\sigma} = U^\dagger |b\rangle\langle b| U</span> is a snapshot obtained by measuring <span class="math inline">U\rho U^\dagger</span> in the computational basis with outcome <span class="math inline">b</span>.</p>
+<p>The <strong>inverted snapshot</strong> is defined as <span class="math inline">\hat{\rho} = \mathcal{M}^{-1}(\hat{\sigma})</span>, which satisfies <span class="math inline">\mathbb{E}[\hat{\rho}] = \rho</span> by construction.</p>
+</div>
+</div>
+<section id="intuition-example" class="level3">
+<h3 class="anchored" data-anchor-id="intuition-example">Intuition &amp; Example</h3>
+<p><strong>Why this definition?</strong> The shadow channel <span class="math inline">\mathcal{M}</span> captures how the measurement protocol “depolarizes” the quantum state. By inverting this channel, we can construct unbiased estimators for state properties.</p>
+<p><strong>Toy Example</strong>: For random Pauli measurements (measuring each qubit in <span class="math inline">X</span>, <span class="math inline">Y</span>, or <span class="math inline">Z</span> basis randomly), the shadow channel factors as: <span class="math display">
+\mathcal{M} = \mathcal{E}_1^{\otimes N}
+</span> where each single-qubit channel <span class="math inline">\mathcal{E}_1</span> acts on Pauli matrices as: <span class="math display">
+\mathcal{E}_1(\sigma^0) = \sigma^0, \quad \mathcal{E}_1(\sigma^\alpha) = \frac{1}{3}\sigma^\alpha \text{ for } \alpha \in \{x,y,z\}
+</span></p>
+<p>This means the identity is preserved, but traceless Paulis are depolarized by a factor of <span class="math inline">1/3</span> (because only 1 out of 3 random basis choices “hits” a given Pauli).</p>
+<p><strong>Physical interpretation</strong>: The shadow channel represents the information loss due to randomized measurements. The factor <span class="math inline">1/3</span> arises because we randomly choose among 3 bases, and only the correct choice contributes useful information.</p>
+<hr>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Definition 2: Shadow Norm
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>For a Pauli operator <span class="math inline">P</span> in an <span class="math inline">N</span>-qubit system with Pauli-invariant measurement ensemble, the <strong>shadow norm</strong> is: <span class="math display">
+\|P\|_{\text{sh}}^2 = \frac{1}{2^N} \text{Tr}(P \mathcal{M}^{-1}(P))
+</span></p>
+<p>This norm determines the sample complexity for learning <span class="math inline">\langle P \rangle</span> to accuracy <span class="math inline">\epsilon</span>: approximately <span class="math inline">\|P\|_{\text{sh}}^2/\epsilon^2</span> measurements are needed.</p>
+</div>
+</div>
+</section>
+<section id="intuition-example-1" class="level3">
+<h3 class="anchored" data-anchor-id="intuition-example-1">Intuition &amp; Example</h3>
+<p><strong>Why this definition?</strong> The shadow norm quantifies how “difficult” it is to learn an operator. The inverse channel <span class="math inline">\mathcal{M}^{-1}</span> appears because we construct inverted snapshots, amplifying the depolarization effect.</p>
+<p><strong>Toy Example</strong>: For random Pauli measurements and a weight-<span class="math inline">k</span> Pauli operator <span class="math inline">P</span>: <span class="math display">
+\|P\|_{\text{sh}}^2 = 3^k
+</span></p>
+<p>This is because <span class="math inline">\mathcal{M}^{-1}</span> inverts the depolarization: <span class="math inline">\mathcal{E}_1^{-1}(\sigma^\alpha) = 3\sigma^\alpha</span> for <span class="math inline">\alpha \neq 0</span>. Since <span class="math inline">P</span> has <span class="math inline">k</span> nontrivial Paulis, we get <span class="math inline">(1/3)^{-k} = 3^k</span>.</p>
+<p><strong>Concrete calculation</strong>: For <span class="math inline">P = X_1 Z_2</span> (weight <span class="math inline">k=2</span>): <span class="math display">
+\mathcal{M}^{-1}(X_1 Z_2) = \mathcal{E}_1^{-1}(X_1) \otimes \mathcal{E}_1^{-1}(Z_2) = 3X_1 \otimes 3Z_2 = 9(X_1 Z_2)
+</span> Thus <span class="math inline">\|X_1 Z_2\|_{\text{sh}}^2 = \frac{1}{4}\text{Tr}(X_1 Z_2 \cdot 9 X_1 Z_2) = \frac{9 \cdot 4}{4} = 9 = 3^2</span>. ✓</p>
+<hr>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Definition 3: Dimer Covering and Compatible Operators
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>A <strong>dimer covering</strong> is a partition of the <span class="math inline">N</span> qubits into <span class="math inline">N/2</span> pairs (dimers).</p>
+<p>A Pauli operator <span class="math inline">P</span> is <strong>compatible</strong> with a dimer covering if its support intersects each dimer in either 0 or 2 sites. Otherwise, <span class="math inline">P</span> is <strong>incompatible</strong>.</p>
+</div>
+</div>
+</section>
+<section id="intuition-example-2" class="level3">
+<h3 class="anchored" data-anchor-id="intuition-example-2">Intuition &amp; Example</h3>
+<p><strong>Why this definition?</strong> Bell measurements on a dimer can only measure operators that act nontrivially on both qubits or neither. Operators acting on only one qubit of a dimer cannot be learned.</p>
+<p><strong>Toy Example</strong>: Consider 4 qubits with dimer covering <span class="math inline">(1,2)</span> and <span class="math inline">(3,4)</span>:</p>
+<p><strong>Compatible operators:</strong> - <span class="math inline">X_1 Z_2</span> (acts on both qubits of dimer 1, none of dimer 2) ✓ - <span class="math inline">X_1 Z_2 \otimes Y_3 Y_4</span> (acts on both qubits of both dimers) ✓ - <span class="math inline">I</span> (acts on no qubits) ✓</p>
+<p><strong>Incompatible operators:</strong> - <span class="math inline">X_1</span> (acts on only one qubit of dimer 1) ✗ - <span class="math inline">X_1 Z_3</span> (acts on one qubit from each dimer) ✗</p>
+<p><strong>Geometric interpretation</strong>: On a 1D chain with nearest-neighbor dimers, compatible operators have “even support” - they touch each dimer an even number of times (0 or 2).</p>
+<hr>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Definition 4: Bell Shadow Channel
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>For Bell measurements on dimers with local scrambling, the shadow channel factors as: <span class="math display">
+\mathcal{M} = \mathcal{E}_2^{\otimes N/2}
+</span> where each two-qubit channel <span class="math inline">\mathcal{E}_2</span> acts on a dimer as: <span class="math display">
+\mathcal{E}_2(\sigma^\alpha \otimes \sigma^\beta) = \lambda_{\alpha\beta} \sigma^\alpha \otimes \sigma^\beta
+</span> with eigenvalues: <span class="math display">
+\lambda_{00} = 1, \quad \lambda_{0\bullet} = \lambda_{\bullet 0} = 0, \quad \lambda_{\bullet\bullet} = \frac{1}{3}
+</span> where <span class="math inline">0</span> denotes identity and <span class="math inline">\bullet</span> denotes any traceless Pauli <span class="math inline">\{x,y,z\}</span>.</p>
+</div>
+</div>
+</section>
+<section id="intuition-example-3" class="level3">
+<h3 class="anchored" data-anchor-id="intuition-example-3">Intuition &amp; Example</h3>
+<p><strong>Why these eigenvalues?</strong> - <span class="math inline">\lambda_{00} = 1</span>: Identity is always preserved - <span class="math inline">\lambda_{0\bullet} = 0</span>: Operators acting on only one qubit cannot be measured (incompatible!) - <span class="math inline">\lambda_{\bullet\bullet} = 1/3</span>: For weight-2 operators, Bell measurements “hit” 3 out of 9 possibilities</p>
+<p><strong>Toy Example</strong>: For a dimer, there are 9 weight-2 Pauli operators: <span class="math inline">\{X,Y,Z\} \otimes \{X,Y,Z\}</span>. A Bell measurement outcome (e.g., <span class="math inline">|XX\rangle = +1</span>, <span class="math inline">|YZ\rangle = -1</span>) tells us about 3 operators: - <span class="math inline">XX = +1</span> (measured directly) - <span class="math inline">YZ = -1</span> (measured directly) - <span class="math inline">ZY = XX \cdot YZ = -1</span> (inferred)</p>
+<p>So we learn 3 out of 9 operators, giving probability <span class="math inline">1/3</span> per dimer.</p>
+<p><strong>Verification</strong>: For <span class="math inline">P = X_1 X_2</span> on a single dimer: <span class="math display">
+\mathcal{E}_2(X_1 X_2) = \lambda_{\bullet\bullet} X_1 X_2 = \frac{1}{3} X_1 X_2
+</span> Thus <span class="math inline">\mathcal{E}_2^{-1}(X_1 X_2) = 3 X_1 X_2</span>, giving <span class="math inline">\|X_1 X_2\|_{\text{sh}}^2 = 3 = 3^{2/2}</span>. ✓</p>
+<hr>
+</section>
+</section>
+<section id="main-theorems-key-insights" class="level2">
+<h2 class="anchored" data-anchor-id="main-theorems-key-insights">1.2 Main Theorems &amp; Key Insights</h2>
+<div class="callout callout-style-default callout-important no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Theorem 1: Bell Shadow Sample Complexity
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>For a weight-<span class="math inline">k</span> Pauli operator <span class="math inline">P</span> that is <strong>compatible</strong> with the dimer covering, the Bell shadow norm is: <span class="math display">
+\|P\|_{\text{sh}}^2 = 3^{k/2}
+</span></p>
+<p>This represents a <strong>quadratic improvement</strong> over random Pauli measurements (<span class="math inline">3^k</span>).</p>
+<p>For <strong>incompatible</strong> operators, <span class="math inline">\|P\|_{\text{sh}}^2 = \infty</span> (not learnable).</p>
+</div>
+</div>
+<section id="intuition-of-validity" class="level3">
+<h3 class="anchored" data-anchor-id="intuition-of-validity">Intuition of Validity</h3>
+<p><strong>Why quadratic improvement?</strong> The key insight is that Bell measurements provide information about <strong>pairs</strong> of qubits simultaneously.</p>
+<p>For a weight-<span class="math inline">k</span> operator compatible with the dimer covering: - It acts nontrivially on <span class="math inline">k/2</span> dimers (since it touches each dimer on 0 or 2 sites) - Each dimer contributes a factor of <span class="math inline">3</span> to the shadow norm (from <span class="math inline">\lambda_{\bullet\bullet}^{-1} = 3</span>) - Total: <span class="math inline">(3)^{k/2} = 3^{k/2}</span></p>
+<p><strong>Comparison with Pauli shadows:</strong> - Pauli: Each of <span class="math inline">k</span> qubits contributes factor <span class="math inline">3</span> → <span class="math inline">3^k</span> - Bell: Each of <span class="math inline">k/2</span> dimers contributes factor <span class="math inline">3</span> → <span class="math inline">3^{k/2}</span></p>
+<p><strong>Why incompatible operators fail?</strong> If <span class="math inline">P</span> acts on only one qubit of a dimer, that dimer contributes <span class="math inline">\lambda_{0\bullet}^{-1} = 1/0 = \infty</span>.</p>
+<p><strong>Verification with toy example</strong>: For <span class="math inline">P = X_1 Z_2 \otimes Y_3 Y_4</span> (weight <span class="math inline">k=4</span>, compatible with dimers <span class="math inline">(1,2)</span> and <span class="math inline">(3,4)</span>): <span class="math display">
+\|P\|_{\text{sh}}^2 = \lambda_{\bullet\bullet}^{-1} \cdot \lambda_{\bullet\bullet}^{-1} = 3 \cdot 3 = 9 = 3^{4/2}
+</span></p>
+<p>This means we need <span class="math inline">\sim 9/\epsilon^2</span> measurements instead of <span class="math inline">\sim 81/\epsilon^2</span> for Pauli shadows - a <strong>9× improvement</strong>!</p>
+<hr>
+<div class="callout callout-style-default callout-important no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Theorem 2: Fraction of Learnable Operators
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The fraction of Pauli operators that are compatible with a dimer covering is: <span class="math display">
+\frac{10^{N/2}}{4^N} \approx 0.79^N
+</span></p>
+<p>This fraction decreases exponentially with system size.</p>
+</div>
+</div>
+</section>
+<section id="intuition-of-validity-1" class="level3">
+<h3 class="anchored" data-anchor-id="intuition-of-validity-1">Intuition of Validity</h3>
+<p><strong>Why this fraction?</strong> For each dimer, we can place: - <span class="math inline">\sigma^0 \otimes \sigma^0</span> (1 option) - identity on both - <span class="math inline">\sigma^\alpha \otimes \sigma^\beta</span> with <span class="math inline">\alpha, \beta \in \{x,y,z\}</span> (9 options) - nontrivial on both</p>
+<p>Total: <span class="math inline">1 + 9 = 10</span> compatible options per dimer.</p>
+<p>Since there are <span class="math inline">N/2</span> dimers and each can independently have 10 options: <span class="math display">
+\text{Compatible operators} = 10^{N/2}
+</span></p>
+<p>Total Pauli operators: <span class="math inline">4^N</span> (each qubit can have <span class="math inline">\{I, X, Y, Z\}</span>).</p>
+<p>Fraction: <span class="math inline">10^{N/2}/4^N = (10/16)^{N/2} = (5/8)^{N/2} \approx 0.79^N</span>.</p>
+<p><strong>Trade-off interpretation</strong>: Bell shadows sacrifice exponentially many operators to achieve quadratic speedup on the remaining ones. This is worthwhile when the operators of interest are geometrically local and compatible with a natural dimer covering.</p>
+<hr>
+<div class="callout callout-style-default callout-important no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Theorem 3: GHZ Shadow Scaling
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>For <span class="math inline">n</span>-qubit GHZ measurements (measuring <span class="math inline">n</span> qubits in the GHZ basis), compatible weight-<span class="math inline">k</span> operators achieve: <span class="math display">
+\|P\|_{\text{sh}}^2 = \left(\frac{3}{2}\right)^k
+</span></p>
+<p>This is the best possible scaling, but applies to an increasingly restricted set of operators as <span class="math inline">n</span> grows.</p>
+</div>
+</div>
+</section>
+<section id="intuition-of-validity-2" class="level3">
+<h3 class="anchored" data-anchor-id="intuition-of-validity-2">Intuition of Validity</h3>
+<p><strong>Why <span class="math inline">(3/2)^k</span>?</strong> GHZ measurements on <span class="math inline">n</span> qubits can measure <span class="math inline">2^{n-1}</span> out of <span class="math inline">3^n</span> weight-<span class="math inline">n</span> operators (the stabilizer group of GHZ states has size <span class="math inline">2^n</span>, but we exclude the identity).</p>
+<p>For large <span class="math inline">n</span>, the ratio approaches: <span class="math display">
+\frac{2^{n-1}}{3^n} \approx \left(\frac{2}{3}\right)^n
+</span></p>
+<p>For a weight-<span class="math inline">k</span> operator touching <span class="math inline">k/n</span> groups of <span class="math inline">n</span> qubits: <span class="math display">
+\|P\|_{\text{sh}}^2 \approx \left(\frac{3}{2}\right)^k
+</span></p>
+<p><strong>Comparison:</strong> - Pauli shadows: <span class="math inline">3^k</span> - Bell shadows (<span class="math inline">n=2</span>): <span class="math inline">3^{k/2} = (\sqrt{3})^k \approx 1.73^k</span> - GHZ shadows (large <span class="math inline">n</span>): <span class="math inline">(3/2)^k = 1.5^k</span></p>
+<p><strong>Trade-off</strong>: As <span class="math inline">n</span> increases, the scaling improves but the fraction of learnable operators decreases even faster: <span class="math inline">\sim (2/3)^{nN/n} = (2/3)^N</span> for <span class="math inline">n</span>-qubit groups.</p>
+<hr>
+</section>
+</section>
+</section>
+<section id="part-2-technical-deep-dive" class="level1">
+<h1>Part 2: Technical Deep Dive</h1>
+<section id="derivation-of-bell-shadow-channel-eigenvalues" class="level2">
+<h2 class="anchored" data-anchor-id="derivation-of-bell-shadow-channel-eigenvalues">2.1 Derivation of Bell Shadow Channel Eigenvalues</h2>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-8-contents" aria-controls="callout-8" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Detailed Derivation (Click to expand)
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-8" class="callout-8-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>We derive the eigenvalues <span class="math inline">\lambda_{\alpha\beta}</span> of the Bell shadow channel <span class="math inline">\mathcal{E}_2</span>.</p>
+<p><strong>Step 1: Express the channel</strong></p>
+<p>The channel acts on a dimer as: <span class="math display">
+\mathcal{E}_2(\rho) = \sum_\alpha \int \text{d}u\, \text{d}v\, \langle\Phi^\alpha| u\otimes v \rho (u \otimes v)^\dagger |\Phi^\alpha\rangle \times (u \otimes v)^\dagger |\Phi^\alpha\rangle\langle\Phi^\alpha| u\otimes v
+</span></p>
+<p>where <span class="math inline">\text{d}u</span>, <span class="math inline">\text{d}v</span> are Haar measures over <span class="math inline">U(2)</span> (using 2-design property of Clifford gates), and <span class="math inline">|\Phi^\alpha\rangle</span> are the four Bell states.</p>
+<p><strong>Step 2: Diagonality in Pauli basis</strong></p>
+<p>Due to local scrambling with random Clifford gates, the channel is diagonal in the Pauli basis: <span class="math display">
+\mathcal{E}_2(\sigma^\alpha \otimes \sigma^\beta) = \lambda_{\alpha\beta} \sigma^\alpha \otimes \sigma^\beta
+</span></p>
+<p><strong>Step 3: Compute eigenvalues</strong></p>
+<p>The eigenvalue is: <span class="math display">
+\lambda_{\alpha\beta} = \frac{1}{4} \text{Tr}[\sigma^\alpha \otimes \sigma^\beta \mathcal{E}_2(\sigma^\alpha\otimes \sigma^\beta)]
+</span></p>
+<p>Substituting the channel expression and using <span class="math inline">\langle\Phi^0| B\otimes C|\Phi^0\rangle = \frac{1}{2}\text{Tr}(BC^T)</span>: <span class="math display">
+\lambda_{\alpha\beta} = \frac{1}{4} \int\text{d}u\, \text{d}v\, [\text{Tr}(u\sigma^\alpha u^\dagger v \sigma^\beta v^\dagger)]^2
+</span></p>
+<p><strong>Key observation</strong>: The integrand depends only on <span class="math inline">u^\dagger v</span>, so one rotation is redundant. We can integrate over <span class="math inline">u^\dagger v</span> alone.</p>
+<p><strong>Step 4: Evaluate specific cases</strong></p>
+<p><strong>Case 1</strong>: <span class="math inline">\alpha = \beta = 0</span> (both identity) <span class="math display">
+\lambda_{00} = \frac{1}{4} \int\text{d}u\, [\text{Tr}(u u^\dagger)]^2 = \frac{1}{4} \cdot 4 = 1
+</span></p>
+<p><strong>Case 2</strong>: <span class="math inline">\alpha = 0, \beta \neq 0</span> (one identity, one traceless) <span class="math display">
+\lambda_{0\bullet} = \frac{1}{4} \int\text{d}u\, [\text{Tr}(u \sigma^\beta u^\dagger)]^2
+</span></p>
+<p>Since <span class="math inline">\sigma^\beta</span> is traceless and <span class="math inline">u</span> is Haar-random, <span class="math inline">\text{Tr}(u \sigma^\beta u^\dagger) = \text{Tr}(\sigma^\beta) = 0</span>. Thus <span class="math inline">\lambda_{0\bullet} = 0</span>.</p>
+<p><strong>Case 3</strong>: <span class="math inline">\alpha, \beta \neq 0</span> (both traceless)</p>
+<p>Using the 2-design property, for traceless Paulis: <span class="math display">
+\int\text{d}u\, (u\sigma^\alpha u^\dagger)_{ij} (u\sigma^\beta u^\dagger)_{kl} = \frac{1}{3}\delta_{\alpha\beta}(\delta_{ik}\delta_{jl} - \frac{1}{2}\delta_{ij}\delta_{kl})
+</span></p>
+<p>After calculation: <span class="math display">
+\lambda_{\bullet\bullet} = \frac{1}{3}
+</span></p>
+<p>This completes the derivation of Eq. (1) in the paper.</p>
+</div>
+</div>
+</div>
+<hr>
+</section>
+<section id="sample-complexity-analysis-for-specific-operators" class="level2">
+<h2 class="anchored" data-anchor-id="sample-complexity-analysis-for-specific-operators">2.2 Sample Complexity Analysis for Specific Operators</h2>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-9-contents" aria-controls="callout-9" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Application to 1D Pauli Strings (Click to expand)
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-9" class="callout-9-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>Setup</strong>: Consider a 1D chain with <span class="math inline">N</span> qubits. We want to learn Pauli string operators of the form <span class="math inline">P = \bigotimes_{i=1}^k \sigma^{\alpha_i}_{x_i}</span> where <span class="math inline">x_1 &lt; x_2 &lt; \cdots &lt; x_k</span> are the support sites.</p>
+<p><strong>Dimer covering strategy</strong>: Use two dimer coverings: 1. <strong>Even covering</strong>: Dimers <span class="math inline">(1,2), (3,4), (5,6), \ldots</span> 2. <strong>Odd covering</strong>: Dimers <span class="math inline">(2,3), (4,5), (6,7), \ldots</span></p>
+<p><strong>Key observation</strong>: Any Pauli string of <strong>even length</strong> <span class="math inline">k</span> is compatible with at least one of these two coverings.</p>
+<p><strong>Proof</strong>: - If <span class="math inline">k</span> is even and the string starts on an odd site, it’s compatible with the even covering - If <span class="math inline">k</span> is even and the string starts on an even site, it’s compatible with the odd covering</p>
+<p><strong>Sample complexity</strong>: For even-length strings, we achieve: <span class="math display">
+\|P\|_{\text{sh}}^2 = 3^{k/2}
+</span></p>
+<p><strong>Comparison with Pauli shadows</strong>: - Pauli: <span class="math inline">3^k</span> measurements - Bell (2 coverings): <span class="math inline">2 \times 3^{k/2}</span> measurements (factor 2 for two coverings)</p>
+<p><strong>Speedup</strong>: For <span class="math inline">k=10</span>: Pauli needs <span class="math inline">\sim 59,000</span> measurements, Bell needs <span class="math inline">\sim 2 \times 243 = 486</span> measurements - a <strong>120× improvement</strong>!</p>
+<p><strong>Limitation</strong>: Odd-length strings are incompatible with both coverings and cannot be learned.</p>
+</div>
+</div>
+</div>
+<hr>
+</section>
+<section id="comparison-with-shallow-shadows" class="level2">
+<h2 class="anchored" data-anchor-id="comparison-with-shallow-shadows">2.3 Comparison with Shallow Shadows</h2>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-10-contents" aria-controls="callout-10" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Performance Comparison (Click to expand)
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-10" class="callout-10-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>Shallow shadows</strong> use variable-depth random circuits to interpolate between Pauli and Clifford measurements. For contiguous Pauli strings in 1D, they achieve: <span class="math display">
+\|P\|_{\text{sh}}^2 \sim k \cdot 2^k
+</span> when tuned to optimal depth <span class="math inline">\sim k</span>.</p>
+<p><strong>Bell shadows</strong> achieve: <span class="math display">
+\|P\|_{\text{sh}}^2 = 3^{k/2}
+</span></p>
+<p><strong>Comparison</strong>: - For <span class="math inline">k=4</span>: Shallow <span class="math inline">\sim 64</span>, Bell <span class="math inline">= 9</span> → Bell wins - For <span class="math inline">k=8</span>: Shallow <span class="math inline">\sim 2048</span>, Bell <span class="math inline">= 81</span> → Bell wins - For <span class="math inline">k=12</span>: Shallow <span class="math inline">\sim 49152</span>, Bell <span class="math inline">= 729</span> → Bell wins</p>
+<p><strong>Key advantage of Bell shadows</strong>: 1. <strong>Simpler protocol</strong>: Only requires two-qubit gates, no variable depth 2. <strong>Lower hardware requirements</strong>: Constant-depth circuit 3. <strong>Better scaling</strong>: <span class="math inline">3^{k/2}</span> vs <span class="math inline">k \cdot 2^k</span> for many operators</p>
+<p><strong>Trade-off</strong>: Bell shadows only work for compatible operators (even-length strings with appropriate dimer covering), while shallow shadows work for all operators but with worse scaling.</p>
+</div>
+</div>
+</div>
+<hr>
+</section>
+<section id="key-takeaways" class="level2">
+<h2 class="anchored" data-anchor-id="key-takeaways">Key Takeaways</h2>
+<ol type="1">
+<li><p><strong>Bell shadows achieve quadratic improvement</strong> in sample complexity (<span class="math inline">3^k \to 3^{k/2}</span>) for compatible operators by using two-qubit entangled measurements.</p></li>
+<li><p><strong>The price is selectivity</strong>: Only <span class="math inline">\sim 0.79^N</span> of all Pauli operators are learnable, but these include many physically-relevant operators (local strings, plaquettes, etc.).</p></li>
+<li><p><strong>The improvement comes from measuring pairs</strong>: Bell measurements provide information about 3 out of 9 weight-2 operators per dimer, vs 1 out of 3 per qubit for Pauli measurements.</p></li>
+<li><p><strong>Scaling can be further improved</strong> to <span class="math inline">(3/2)^k</span> using <span class="math inline">n</span>-qubit GHZ measurements, at the cost of even more restricted operator sets.</p></li>
+<li><p><strong>Practical advantage</strong>: Bell shadows can outperform shallow shadows for many physically-relevant tasks while requiring simpler hardware (constant-depth circuits with only two-qubit gates).</p></li>
+<li><p><strong>Design principle</strong>: Tuning the amount of entanglement in measurement bases creates a family of protocols with different trade-offs between sample complexity and operator coverage.</p></li>
+</ol>
+</section>
+<section id="references" class="level2">
+<h2 class="anchored" data-anchor-id="references">References</h2>
+<div id="refs" role="list">
+
+</div>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

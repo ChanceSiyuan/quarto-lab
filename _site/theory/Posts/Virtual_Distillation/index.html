@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.26">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2026-01-19">
+
+<title>Virtual Distillation for Quantum Error Mitigation – Chance’s Quantum Lab</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<script src="../../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap-a8976c3e89df70b272bdfba3d2fda974.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script>window.backupDefine = window.define; window.define = undefined;</script><script src="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.js"></script>
+  <script>document.addEventListener("DOMContentLoaded", function () {
+ var mathElements = document.getElementsByClassName("math");
+ var macros = [];
+ for (var i = 0; i < mathElements.length; i++) {
+  var texText = mathElements[i].firstChild;
+  if (mathElements[i].tagName == "SPAN") {
+   katex.render(texText.data, mathElements[i], {
+    displayMode: mathElements[i].classList.contains('display'),
+    throwOnError: false,
+    macros: macros,
+    fleqn: false
+   });
+}}});
+  </script>
+  <script>window.define = window.backupDefine; window.backupDefine = undefined;</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.css">
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../../styles.css">
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Chance’s Quantum Lab</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../index.html"> 
+<span class="menu-text">Home Page</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../theory/index.html"> 
+<span class="menu-text">Theory</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../Experiments/index.html"> 
+<span class="menu-text">Experiment Notes</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/yourusername"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/yourusername"> <i class="bi bi-twitter" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#abstract-and-overview" id="toc-abstract-and-overview" class="nav-link active" data-scroll-target="#abstract-and-overview">Abstract and Overview</a></li>
+  <li><a href="#part-1-core-theoretical-framework" id="toc-part-1-core-theoretical-framework" class="nav-link" data-scroll-target="#part-1-core-theoretical-framework">Part 1: Core Theoretical Framework</a>
+  <ul class="collapse">
+  <li><a href="#rigorous-definitions-intuitions" id="toc-rigorous-definitions-intuitions" class="nav-link" data-scroll-target="#rigorous-definitions-intuitions">1.1 Rigorous Definitions &amp; Intuitions</a>
+  <ul class="collapse">
+  <li><a href="#intuition-example" id="toc-intuition-example" class="nav-link" data-scroll-target="#intuition-example">Intuition &amp; Example</a></li>
+  <li><a href="#intuition-example-1" id="toc-intuition-example-1" class="nav-link" data-scroll-target="#intuition-example-1">Intuition &amp; Example</a></li>
+  <li><a href="#intuition-example-2" id="toc-intuition-example-2" class="nav-link" data-scroll-target="#intuition-example-2">Intuition &amp; Example</a></li>
+  </ul></li>
+  <li><a href="#main-theorems-key-insights" id="toc-main-theorems-key-insights" class="nav-link" data-scroll-target="#main-theorems-key-insights">1.2 Main Theorems &amp; Key Insights</a>
+  <ul class="collapse">
+  <li><a href="#intuition-of-validity" id="toc-intuition-of-validity" class="nav-link" data-scroll-target="#intuition-of-validity">Intuition of Validity</a></li>
+  <li><a href="#intuition-of-validity-1" id="toc-intuition-of-validity-1" class="nav-link" data-scroll-target="#intuition-of-validity-1">Intuition of Validity</a></li>
+  <li><a href="#intuition-of-validity-2" id="toc-intuition-of-validity-2" class="nav-link" data-scroll-target="#intuition-of-validity-2">Intuition of Validity</a></li>
+  </ul></li>
+  </ul></li>
+  <li><a href="#part-2-technical-deep-dive" id="toc-part-2-technical-deep-dive" class="nav-link" data-scroll-target="#part-2-technical-deep-dive">Part 2: Technical Deep Dive</a>
+  <ul class="collapse">
+  <li><a href="#proof-of-the-cyclic-shift-trace-identity" id="toc-proof-of-the-cyclic-shift-trace-identity" class="nav-link" data-scroll-target="#proof-of-the-cyclic-shift-trace-identity">2.1 Proof of the Cyclic Shift Trace Identity</a></li>
+  <li><a href="#derivation-of-orthogonal-error-suppression" id="toc-derivation-of-orthogonal-error-suppression" class="nav-link" data-scroll-target="#derivation-of-orthogonal-error-suppression">2.2 Derivation of Orthogonal Error Suppression</a></li>
+  <li><a href="#sample-complexity-and-variance-analysis" id="toc-sample-complexity-and-variance-analysis" class="nav-link" data-scroll-target="#sample-complexity-and-variance-analysis">2.3 Sample Complexity and Variance Analysis</a></li>
+  <li><a href="#key-takeaways" id="toc-key-takeaways" class="nav-link" data-scroll-target="#key-takeaways">Key Takeaways</a></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Virtual Distillation for Quantum Error Mitigation</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">Readings</div>
+  </div>
+  </div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">January 19, 2026</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p><strong>Citation</strong>: William J. Huggins, et al., 2021, Physical Review X</p>
+<section id="abstract-and-overview" class="level2">
+<h2 class="anchored" data-anchor-id="abstract-and-overview">Abstract and Overview</h2>
+<p>This paper proposes <strong>virtual distillation</strong>, a near-term quantum error mitigation strategy that uses <span class="math inline">M</span> copies of a noisy state <span class="math inline">\rho</span> to estimate expectation values with respect to <span class="math inline">\rho^M/\text{Tr}(\rho^M)</span> without explicitly preparing it. The key contributions are:</p>
+<ol type="1">
+<li>A practical protocol using cyclic shift measurements to access <span class="math inline">\text{Tr}(O\rho^M)</span></li>
+<li>Analytical framework showing orthogonal errors are exponentially suppressed while non-orthogonal errors set a performance floor</li>
+<li>Sample complexity analysis and collective measurement improvements</li>
+<li>Numerical demonstrations of multi-order magnitude error suppression</li>
+</ol>
+<hr>
+</section>
+<section id="part-1-core-theoretical-framework" class="level1">
+<h1>Part 1: Core Theoretical Framework</h1>
+<section id="rigorous-definitions-intuitions" class="level2">
+<h2 class="anchored" data-anchor-id="rigorous-definitions-intuitions">1.1 Rigorous Definitions &amp; Intuitions</h2>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Definition 1: Virtual Distillation Estimator
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Given <span class="math inline">M</span> copies of a noisy density matrix <span class="math inline">\rho</span> and an observable <span class="math inline">O</span>, the <strong>virtual distillation estimator</strong> for the error-mitigated expectation value is: <span class="math display">
+\langle O \rangle_{\text{corrected}} := \frac{\text{Tr}(O \rho^M)}{\text{Tr}(\rho^M)}
+</span></p>
+<p>This estimator measures expectation values with respect to the “virtually distilled” state <span class="math inline">\rho^M/\text{Tr}(\rho^M)</span> without explicitly preparing it.</p>
+</div>
+</div>
+<section id="intuition-example" class="level3">
+<h3 class="anchored" data-anchor-id="intuition-example">Intuition &amp; Example</h3>
+<p><strong>Why this definition?</strong> Consider the spectral decomposition <span class="math inline">\rho = \sum_i p_i |i\rangle\langle i|</span> where <span class="math inline">p_0 &gt; p_1 &gt; p_2 &gt; \cdots</span>. Then: <span class="math display">
+\frac{\rho^M}{\text{Tr}(\rho^M)} = \frac{\sum_i p_i^M |i\rangle\langle i|}{\sum_i p_i^M}
+</span></p>
+<p>The relative weight of the <span class="math inline">i</span>-th eigenvector is <span class="math inline">p_i^M/\sum_j p_j^M \approx p_i^M/p_0^M = (p_i/p_0)^M</span>, which decays <strong>exponentially</strong> in <span class="math inline">M</span> for <span class="math inline">i \neq 0</span>.</p>
+<p><strong>Toy Example</strong>: Consider a 2-level system with noisy state: <span class="math display">
+\rho = 0.7|0\rangle\langle 0| + 0.3|1\rangle\langle 1|
+</span></p>
+<p>For <span class="math inline">M=2</span>: <span class="math display">
+\frac{\rho^2}{\text{Tr}(\rho^2)} = \frac{0.49|0\rangle\langle 0| + 0.09|1\rangle\langle 1|}{0.49 + 0.09} = 0.845|0\rangle\langle 0| + 0.155|1\rangle\langle 1|
+</span></p>
+<p>The weight of <span class="math inline">|0\rangle</span> increased from 70% to 84.5%, while <span class="math inline">|1\rangle</span> decreased from 30% to 15.5%. The ratio changed from <span class="math inline">0.3/0.7 \approx 0.43</span> to <span class="math inline">(0.3/0.7)^2 \approx 0.18</span>.</p>
+<p><strong>Physical interpretation</strong>: This “distills” the noisy state toward its dominant eigenvector (closest pure state) by exponentially suppressing contributions from non-dominant eigenvectors.</p>
+<hr>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Definition 2: Cyclic Shift Operator
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>For <span class="math inline">M</span> copies of an <span class="math inline">N</span>-qubit system, the <strong>cyclic shift operator</strong> <span class="math inline">S^{(M)}</span> acts on product states as: <span class="math display">
+S^{(M)}|\psi_1\rangle \otimes |\psi_2\rangle \otimes \cdots \otimes |\psi_M\rangle = |\psi_2\rangle \otimes |\psi_3\rangle \otimes \cdots \otimes |\psi_M\rangle \otimes |\psi_1\rangle
+</span></p>
+<p>For <span class="math inline">M=2</span>, this reduces to the <strong>swap operator</strong>: <span class="math inline">S^{(2)} = \text{SWAP}</span>.</p>
+</div>
+</div>
+</section>
+<section id="intuition-example-1" class="level3">
+<h3 class="anchored" data-anchor-id="intuition-example-1">Intuition &amp; Example</h3>
+<p><strong>Why this operator?</strong> The cyclic shift “threads” multiple copies of <span class="math inline">\rho</span> together in a cycle, enabling us to compute <span class="math inline">\text{Tr}(\rho^M)</span> from measurements on <span class="math inline">\rho^{\otimes M}</span>.</p>
+<p><strong>Toy Example</strong>: For two qubits, the swap operator acts as: <span class="math display">
+S^{(2)}|00\rangle = |00\rangle, \quad S^{(2)}|01\rangle = |10\rangle, \quad S^{(2)}|10\rangle = |01\rangle, \quad S^{(2)}|11\rangle = |11\rangle
+</span></p>
+<p>In matrix form (basis <span class="math inline">\{|00\rangle, |01\rangle, |10\rangle, |11\rangle\}</span>): <span class="math display">
+S^{(2)} = \begin{bmatrix}
+1 &amp; 0 &amp; 0 &amp; 0 \\
+0 &amp; 0 &amp; 1 &amp; 0 \\
+0 &amp; 1 &amp; 0 &amp; 0 \\
+0 &amp; 0 &amp; 0 &amp; 1
+\end{bmatrix}
+</span></p>
+<p><strong>Eigenspaces</strong>: <span class="math inline">S^{(2)}</span> has eigenvalues <span class="math inline">\pm 1</span>: - <span class="math inline">+1</span> eigenspace (symmetric): <span class="math inline">|00\rangle, |11\rangle, (|01\rangle + |10\rangle)/\sqrt{2}</span> - <span class="math inline">-1</span> eigenspace (antisymmetric): <span class="math inline">(|01\rangle - |10\rangle)/\sqrt{2}</span></p>
+<hr>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Definition 3: Symmetrized Observable
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>For an observable <span class="math inline">O</span> acting on a single copy and <span class="math inline">M</span> total copies, the <strong>symmetrized observable</strong> is: <span class="math display">
+O^{(M)} := \frac{1}{M} \sum_{i=1}^M O^{\mathbf{i}}
+</span></p>
+<p>where <span class="math inline">O^{\mathbf{i}}</span> denotes <span class="math inline">O</span> acting on the <span class="math inline">i</span>-th copy (with identity on all other copies).</p>
+</div>
+</div>
+</section>
+<section id="intuition-example-2" class="level3">
+<h3 class="anchored" data-anchor-id="intuition-example-2">Intuition &amp; Example</h3>
+<p><strong>Why symmetrize?</strong> The symmetrized observable commutes with the cyclic shift: <span class="math inline">[O^{(M)}, S^{(M)}] = 0</span>. This allows simultaneous diagonalization, simplifying the measurement protocol.</p>
+<p><strong>Toy Example</strong>: For <span class="math inline">M=2</span> and single-qubit <span class="math inline">Z</span> operator: <span class="math display">
+Z^{(2)} = \frac{1}{2}(Z^{\mathbf{1}} + Z^{\mathbf{2}}) = \frac{1}{2}(Z \otimes I + I \otimes Z)
+</span></p>
+<p>On basis states: <span class="math display">
+Z^{(2)}|00\rangle = |00\rangle, \quad Z^{(2)}|01\rangle = 0, \quad Z^{(2)}|10\rangle = 0, \quad Z^{(2)}|11\rangle = -|11\rangle
+</span></p>
+<p><strong>Verification of commutativity</strong>: Both <span class="math inline">Z^{(2)}</span> and <span class="math inline">S^{(2)}</span> are diagonal in the Bell basis, so they commute.</p>
+<hr>
+</section>
+</section>
+<section id="main-theorems-key-insights" class="level2">
+<h2 class="anchored" data-anchor-id="main-theorems-key-insights">1.2 Main Theorems &amp; Key Insights</h2>
+<div class="callout callout-style-default callout-important no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Theorem 1: Cyclic Shift Trace Identity (Fundamental Identity)
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>For any observable <span class="math inline">O</span> acting on a single system, density matrix <span class="math inline">\rho</span>, and <span class="math inline">M</span> copies: <span class="math display">
+\text{Tr}(O \rho^M) = \text{Tr}(O^{\mathbf{i}} S^{(M)} \rho^{\otimes M})
+</span></p>
+<p>where <span class="math inline">O^{\mathbf{i}}</span> is <span class="math inline">O</span> acting on any subsystem <span class="math inline">i</span> (the choice of <span class="math inline">i</span> doesn’t matter).</p>
+</div>
+</div>
+<section id="intuition-of-validity" class="level3">
+<h3 class="anchored" data-anchor-id="intuition-of-validity">Intuition of Validity</h3>
+<p><strong>Why is this true?</strong> The cyclic shift “closes the loop” in the trace. When we compute <span class="math inline">\text{Tr}(O\rho^M)</span>, we’re summing over indices: <span class="math display">
+\text{Tr}(O\rho^M) = \sum_{i_1, \ldots, i_M} \langle i_1| O\rho |i_M\rangle \langle i_M| \rho |i_{M-1}\rangle \cdots \langle i_2| \rho |i_1\rangle
+</span></p>
+<p>The right-hand side <span class="math inline">\text{Tr}(O^{\mathbf{1}} S^{(M)} \rho^{\otimes M})</span> computes: <span class="math display">
+\sum_{i_1, \ldots, i_M, j_1, \ldots, j_M} \langle j_1, \ldots, j_M| O^{\mathbf{1}} S^{(M)} |i_1, \ldots, i_M\rangle \langle i_1| \rho |j_1\rangle \cdots \langle i_M| \rho |j_M\rangle
+</span></p>
+<p>The cyclic shift <span class="math inline">S^{(M)}</span> permutes the indices so that <span class="math inline">O</span> connects <span class="math inline">i_M</span> to <span class="math inline">j_1</span>, creating the same cyclic structure as <span class="math inline">\text{Tr}(O\rho^M)</span>.</p>
+<p><strong>Verification with toy example</strong>: For <span class="math inline">M=2</span>, <span class="math inline">O=Z</span>, and <span class="math inline">\rho = p_0|0\rangle\langle 0| + p_1|1\rangle\langle 1|</span>:</p>
+<p>Left side: <span class="math display">
+\text{Tr}(Z\rho^2) = p_0^2 - p_1^2
+</span></p>
+<p>Right side: <span class="math display">
+\text{Tr}(Z^{\mathbf{1}} S^{(2)} \rho^{\otimes 2}) = \text{Tr}((Z \otimes I) S^{(2)} (p_0^2|00\rangle\langle 00| + p_0p_1|01\rangle\langle 01| + \cdots))
+</span></p>
+<p>After applying <span class="math inline">S^{(2)}</span> and <span class="math inline">Z^{\mathbf{1}}</span>, we get <span class="math inline">p_0^2 - p_1^2</span>. ✓</p>
+<hr>
+<div class="callout callout-style-default callout-important no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Theorem 2: Orthogonal Error Suppression
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Under the orthogonal error model where errors occur with probability <span class="math inline">p</span> per gate and send the state to orthogonal error states, for a circuit with <span class="math inline">G</span> gates: <span class="math display">
+\text{Fidelity}(\rho_{\text{corrected}}, \rho_{\text{ideal}}) = \frac{\text{Tr}(\rho_0 \rho^M)}{\text{Tr}(\rho^M)} \simeq 1 - Gp^M + O(Gp^{M+1})
+</span></p>
+<p>where <span class="math inline">\rho_0</span> is the ideal state and <span class="math inline">\rho_{\text{corrected}} = \rho^M/\text{Tr}(\rho^M)</span>.</p>
+</div>
+</div>
+</section>
+<section id="intuition-of-validity-1" class="level3">
+<h3 class="anchored" data-anchor-id="intuition-of-validity-1">Intuition of Validity</h3>
+<p><strong>Why exponential suppression?</strong> In the orthogonal error model: <span class="math display">
+\rho = (1-p)^G\rho_0 + \text{(orthogonal error terms)}
+</span></p>
+<p>When we compute <span class="math inline">\rho^M</span>, each term gets raised to the <span class="math inline">M</span>-th power: <span class="math display">
+\rho^M \approx (1-p)^{MG}\rho_0 + \text{(error terms with coefficients } \sim p^M)
+</span></p>
+<p>The key insight is that <strong>errors compound multiplicatively</strong>: to have the ideal state in all <span class="math inline">M</span> copies, we need no errors in any copy, which happens with probability <span class="math inline">(1-p)^{MG}</span>. But to have at least one error in at least one copy requires only probability <span class="math inline">\sim Mp(1-p)^{(M-1)G}</span>, which is suppressed by an extra factor of <span class="math inline">p^{M-1}</span>.</p>
+<p>After normalization by <span class="math inline">\text{Tr}(\rho^M) \approx ((1-p)^M + p^M)^G</span>, the fidelity becomes: <span class="math display">
+\frac{(1-p)^{MG}}{((1-p)^M + p^M)^G} \approx \frac{(1-p)^{MG}}{(1-2p^M)^G} \approx 1 - Gp^M
+</span></p>
+<p><strong>Comparison</strong>: Without virtual distillation, the fidelity is <span class="math inline">\approx 1 - Gp</span>. With <span class="math inline">M=2</span>, we get <span class="math inline">1 - Gp^2</span>, achieving <strong>quadratic error suppression</strong>.</p>
+<hr>
+<div class="callout callout-style-default callout-important no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Theorem 3: Non-Orthogonal Error Floor
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>When noise causes the dominant eigenvector to drift by first-order perturbation <span class="math inline">\Delta</span>, the trace distance between the corrected state and the ideal state satisfies: <span class="math display">
+T(\rho_{\text{corrected}}, \rho_{\text{ideal}}) \geq \Delta \sqrt{\frac{\langle 0^{(1)}|0^{(1)}\rangle}{2}} + O(\Delta^2)
+</span></p>
+<p>where <span class="math inline">|0^{(1)}\rangle</span> is the first-order correction to the dominant eigenvector. This sets a <strong>floor</strong> on the performance of virtual distillation.</p>
+</div>
+</div>
+</section>
+<section id="intuition-of-validity-2" class="level3">
+<h3 class="anchored" data-anchor-id="intuition-of-validity-2">Intuition of Validity</h3>
+<p><strong>Why a floor?</strong> Virtual distillation can only suppress the <strong>relative weights</strong> of non-dominant eigenvectors, but it cannot change the <strong>direction</strong> of the dominant eigenvector itself.</p>
+<p>If noise causes coherent rotation of the state (e.g., over-rotation in a gate), the dominant eigenvector of <span class="math inline">\rho</span> is no longer the ideal state <span class="math inline">|0\rangle</span> but some perturbed state <span class="math inline">|D\rangle = |0\rangle + \Delta|0^{(1)}\rangle + O(\Delta^2)</span>.</p>
+<p>As <span class="math inline">M \to \infty</span>, virtual distillation converges to the pure state <span class="math inline">|D\rangle\langle D|</span>, not <span class="math inline">|0\rangle\langle 0|</span>. The distance between these is: <span class="math display">
+T(|D\rangle\langle D|, |0\rangle\langle 0|) \approx \Delta \|\langle 0^{(1)}\rangle\|
+</span></p>
+<p>This is <strong>first-order</strong> in <span class="math inline">\Delta</span>, meaning even small coherent errors create a floor that cannot be overcome by increasing <span class="math inline">M</span>.</p>
+<p><strong>Physical interpretation</strong>: Stochastic errors create a “cloud” of orthogonal error states around the ideal state. Virtual distillation suppresses this cloud exponentially. But coherent errors <strong>shift the center</strong> of the cloud away from the ideal state, and virtual distillation converges to this shifted center.</p>
+<hr>
+</section>
+</section>
+</section>
+<section id="part-2-technical-deep-dive" class="level1">
+<h1>Part 2: Technical Deep Dive</h1>
+<section id="proof-of-the-cyclic-shift-trace-identity" class="level2">
+<h2 class="anchored" data-anchor-id="proof-of-the-cyclic-shift-trace-identity">2.1 Proof of the Cyclic Shift Trace Identity</h2>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-7-contents" aria-controls="callout-7" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Proof (Click to expand)
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-7" class="callout-7-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>We prove <span class="math inline">\text{Tr}(O \rho^M) = \text{Tr}(O^{\mathbf{i}} S^{(M)} \rho^{\otimes M})</span> by expanding both sides in the computational basis.</p>
+<p><strong>Step 1: Expand the left-hand side</strong></p>
+<p>Without loss of generality, choose <span class="math inline">i=1</span>. Write <span class="math inline">\rho</span> in the computational basis: <span class="math display">
+\rho = \sum_{k,\ell} \rho_{k,\ell} |k\rangle\langle \ell|
+</span></p>
+<p>Then: <span class="math display">
+\rho^M = \sum_{k_1,\ell_1, \ldots, k_M,\ell_M} \rho_{k_1,\ell_1} \cdots \rho_{k_M,\ell_M} |k_1\rangle\langle \ell_1| \cdots |k_M\rangle\langle \ell_M|
+</span></p>
+<p>Taking the trace with <span class="math inline">O</span>: <span class="math display">
+\text{Tr}(O\rho^M) = \sum_{k_1,\ell_1, \ldots, k_M,\ell_M} \rho_{k_1,\ell_1} \cdots \rho_{k_M,\ell_M} \langle \ell_M| O |k_1\rangle \langle \ell_1|k_2\rangle \cdots \langle \ell_{M-1}|k_M\rangle
+</span></p>
+<p><strong>Key observation</strong>: The trace forces <span class="math inline">\ell_1 = k_2, \ell_2 = k_3, \ldots, \ell_{M-1} = k_M</span>, creating a “chain” that closes with <span class="math inline">O</span> connecting <span class="math inline">\ell_M</span> to <span class="math inline">k_1</span>.</p>
+<p><strong>Step 2: Expand the right-hand side</strong></p>
+<p>The cyclic shift operator satisfies: <span class="math display">
+S^{(M)}|i_1, i_2, \ldots, i_M\rangle = |i_2, i_3, \ldots, i_M, i_1\rangle
+</span></p>
+<p>Therefore: <span class="math display">
+\begin{aligned}
+\text{Tr}(O^{\mathbf{1}} S^{(M)} \rho^{\otimes M}) &amp;= \sum_{i_1, \ldots, i_M, j_1, \ldots, j_M, k} O_{k,j_1} \langle j_1, \ldots, j_M| S^{(M)} |i_1, \ldots, i_M\rangle \rho_{i_1,j_1} \cdots \rho_{i_M,j_M} \\
+&amp;= \sum_{i_1, \ldots, i_M, j_1, \ldots, j_M, k} O_{k,j_1} \delta_{j_2,i_1} \delta_{j_3,i_2} \cdots \delta_{j_1,i_M} \rho_{i_1,k} \rho_{i_2,j_2} \cdots \rho_{i_M,j_M}
+\end{aligned}
+</span></p>
+<p><strong>Step 3: Apply the delta functions</strong></p>
+<p>The delta functions force <span class="math inline">j_2 = i_1, j_3 = i_2, \ldots, j_1 = i_M</span>. Substituting: <span class="math display">
+\text{Tr}(O^{\mathbf{1}} S^{(M)} \rho^{\otimes M}) = \sum_{i_1, \ldots, i_M, k} O_{k,i_M} \rho_{i_1,k} \rho_{i_2,i_1} \cdots \rho_{i_M,i_{M-1}}
+</span></p>
+<p><strong>Step 4: Relabel indices</strong></p>
+<p>Relabel <span class="math inline">k \to \ell_M, i_1 \to k_1, i_2 \to k_2, \ldots, i_M \to k_M</span> and <span class="math inline">i_1 \to \ell_1, \ldots, i_{M-1} \to \ell_{M-1}</span>: <span class="math display">
+\text{Tr}(O^{\mathbf{1}} S^{(M)} \rho^{\otimes M}) = \sum_{k_1, \ldots, k_M, \ell_M} O_{k_1,\ell_M} \rho_{k_1,\ell_M} \rho_{k_M,k_{M-1}} \cdots \rho_{k_2,k_1} = \text{Tr}(O\rho^M)
+</span></p>
+<p>This completes the proof. The key insight is that the cyclic shift creates the same index structure as the matrix product <span class="math inline">\rho^M</span>.</p>
+</div>
+</div>
+</div>
+<hr>
+</section>
+<section id="derivation-of-orthogonal-error-suppression" class="level2">
+<h2 class="anchored" data-anchor-id="derivation-of-orthogonal-error-suppression">2.2 Derivation of Orthogonal Error Suppression</h2>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-8-contents" aria-controls="callout-8" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Detailed Derivation (Click to expand)
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-8" class="callout-8-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>Setup</strong>: Consider a circuit with <span class="math inline">G</span> gates. Model each gate as a stochastic channel where with probability <span class="math inline">p</span>, an error occurs and sends the state to a new orthogonal error state. With probability <span class="math inline">1-p</span>, the gate is perfect.</p>
+<p><strong>Step 1: Density matrix after <span class="math inline">G</span> gates</strong></p>
+<p>After <span class="math inline">G</span> gates, the density matrix is a mixture of the ideal state and error states: <span class="math display">
+\rho = (1-p)^G\rho_0 + (1-p)^{G-1}p \sum_{j=1}^G \rho_{j} + (1-p)^{G-2}p^2\sum_{j_1 \neq j_2} \rho_{j_1,j_2} + \cdots
+</span></p>
+<p>where: - <span class="math inline">\rho_0</span> is the ideal state (no errors) - <span class="math inline">\rho_j</span> are states with exactly one error at gate <span class="math inline">j</span> - <span class="math inline">\rho_{j_1,j_2}</span> are states with exactly two errors at gates <span class="math inline">j_1</span> and <span class="math inline">j_2</span> - All these states are mutually orthogonal by assumption</p>
+<p><strong>Step 2: Compute <span class="math inline">\rho^M</span></strong></p>
+<p>Since all states are orthogonal, <span class="math inline">\text{Tr}(\rho_i \rho_j) = \delta_{ij}</span>. Therefore: <span class="math display">
+\rho^M = (1-p)^{MG}\rho_0 + (1-p)^{(M-1)G}p^M \sum_{j=1}^G \rho_j + \cdots
+</span></p>
+<p><strong>Key observation</strong>: Each coefficient gets raised to the <span class="math inline">M</span>-th power. The coefficient of <span class="math inline">\rho_0</span> is <span class="math inline">(1-p)^{MG}</span>, while error terms have coefficients <span class="math inline">\sim p^M</span>.</p>
+<p><strong>Step 3: Compute the purity <span class="math inline">\text{Tr}(\rho^M)</span></strong></p>
+<p><span class="math display">
+\text{Tr}(\rho^M) = (1-p)^{MG} + (1-p)^{(M-1)G}p^M \cdot G + \cdots
+</span></p>
+<p>For small <span class="math inline">p</span>, the dominant terms are: <span class="math display">
+\text{Tr}(\rho^M) \approx (1-p)^{MG} + Gp^M(1-p)^{(M-1)G}
+</span></p>
+<p><strong>Step 4: Compute the fidelity</strong></p>
+<p><span class="math display">
+\text{Fidelity} = \frac{\text{Tr}(\rho_0 \rho^M)}{\text{Tr}(\rho^M)} = \frac{(1-p)^{MG}}{(1-p)^{MG} + Gp^M(1-p)^{(M-1)G}}
+</span></p>
+<p>Dividing numerator and denominator by <span class="math inline">(1-p)^{MG}</span>: <span class="math display">
+\text{Fidelity} = \frac{1}{1 + Gp^M(1-p)^{-G}} \approx \frac{1}{1 + Gp^M} \approx 1 - Gp^M
+</span></p>
+<p><strong>Alternative derivation using binomial expansion</strong>:</p>
+<p>Note that <span class="math inline">\text{Tr}(\rho^M)</span> can be written as: <span class="math display">
+\text{Tr}(\rho^M) = \sum_{\text{all states}} (\text{coefficient})^M = ((1-p)^M + p^M)^G
+</span></p>
+<p>using the multinomial theorem. Then: <span class="math display">
+\text{Fidelity} = \frac{(1-p)^{MG}}{((1-p)^M + p^M)^G}
+</span></p>
+<p>For small <span class="math inline">p</span>: <span class="math inline">(1-p)^M \approx 1 - Mp</span> and <span class="math inline">p^M \approx 0</span>, so: <span class="math display">
+\text{Fidelity} \approx \frac{(1-Mp)^G}{(1-Mp + p^M)^G} \approx (1-Mp)^G (1 + Gp^M) \approx 1 - GMp + Gp^M \approx 1 - Gp^M
+</span></p>
+<p>for <span class="math inline">M \geq 2</span> (since <span class="math inline">p^M \ll Mp</span> for small <span class="math inline">p</span>).</p>
+</div>
+</div>
+</div>
+<hr>
+</section>
+<section id="sample-complexity-and-variance-analysis" class="level2">
+<h2 class="anchored" data-anchor-id="sample-complexity-and-variance-analysis">2.3 Sample Complexity and Variance Analysis</h2>
+<div class="callout callout-style-default callout-important no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Theorem 4: Variance of Virtual Distillation Estimator
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>For <span class="math inline">M=2</span> and <span class="math inline">R</span> measurement repetitions, the variance of the error-mitigated estimator is: <span class="math display">
+\begin{aligned}
+\text{Var}(\langle O \rangle_{\text{corrected}}) \approx \frac{1}{R}\Big(&amp;\frac{1}{\text{Tr}(\rho^2)^2}\big(\frac{1}{2}\text{Tr}(\rho O^2) + \frac{1}{2}\text{Tr}(\rho O)^2 - \text{Tr}(\rho^2 O)^2\big) \\
+&amp;- 2 \frac{\text{Tr}(\rho^2 O)}{\text{Tr}(\rho^2)^3}\big(\text{Tr}(\rho O) - \text{Tr}(\rho^2 O)\text{Tr}(\rho^2)\big) \\
+&amp;+ \frac{\text{Tr}(\rho^2 O)^2}{\text{Tr}(\rho^2)^4}\big(1 - \text{Tr}(\rho^2)^2\big)\Big)
+\end{aligned}
+</span></p>
+</div>
+</div>
+<p><strong>Key insights</strong>:</p>
+<ol type="1">
+<li><p><strong>Pure state limit</strong>: When <span class="math inline">\rho</span> is pure, <span class="math inline">\text{Tr}(\rho^2) = 1</span> and the variance reduces to: <span class="math display">
+\text{Var}(\langle O \rangle_{\text{corrected}}) = \frac{1}{2R}\big(\text{Tr}(\rho O^2) - \text{Tr}(\rho O)^2 \big)
+</span> This is exactly the variance from <span class="math inline">2R</span> independent measurements of <span class="math inline">O</span>.</p></li>
+<li><p><strong>Scaling with purity</strong>: The leading term scales as <span class="math inline">1/\text{Tr}(\rho^2)^2</span>, meaning the number of samples required grows as the purity decreases.</p></li>
+<li><p><strong>Comparison to naive measurement</strong>: Without virtual distillation, measuring <span class="math inline">O</span> on <span class="math inline">\rho</span> requires <span class="math inline">R</span> samples with variance <span class="math inline">\text{Var}(\langle O \rangle) = \frac{1}{R}(\text{Tr}(\rho O^2) - \text{Tr}(\rho O)^2)</span>. Virtual distillation uses <span class="math inline">2R</span> samples but measures a less noisy state, potentially reducing the total error.</p></li>
+</ol>
+<hr>
+</section>
+<section id="key-takeaways" class="level2">
+<h2 class="anchored" data-anchor-id="key-takeaways">Key Takeaways</h2>
+<ol type="1">
+<li><p><strong>Virtual distillation exponentially suppresses orthogonal errors</strong> from <span class="math inline">O(Gp)</span> to <span class="math inline">O(Gp^M)</span>, providing quadratic suppression for <span class="math inline">M=2</span>.</p></li>
+<li><p><strong>Non-orthogonal errors set a performance floor</strong> that scales linearly with the error strength, limiting the benefit of increasing <span class="math inline">M</span>.</p></li>
+<li><p><strong>The technique is most effective for stochastic errors</strong> and offers no protection against purely coherent errors.</p></li>
+<li><p><strong>Sample complexity scales as <span class="math inline">\text{Tr}(\rho^2)^{-2}</span></strong>, which can be improved with collective measurements when many copies are available.</p></li>
+<li><p><strong>Implementation is simple</strong>: For <span class="math inline">M=2</span>, only one additional layer of two-qubit gates is needed.</p></li>
+</ol>
+</section>
+<section id="references" class="level2">
+<h2 class="anchored" data-anchor-id="references">References</h2>
+<div id="refs" role="list">
+
+</div>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

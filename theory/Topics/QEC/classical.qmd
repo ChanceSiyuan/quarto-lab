@@ -1,0 +1,56 @@
+---
+categories:
+- Quantum Error Correction
+date: 2026-01-07
+description: "Notes on classical error correction codes and their decoding."
+format:
+  html:
+    number-sections: true
+    toc: true
+lang: en    
+title: 'Decoding in classical space'
+---
+# Classical Error Correction Codes and Their Decoding
+
+A classical error correction code is a mapping from a shorter string $\mathbf{b} \in \mathbb{F}_2^k$ to a longer string $\mathbf{c} \in \mathbb{F}_2^n$, where $n > k$.
+This information, with added length redundancy, can suppress errors in the following ways:
+
+1. Valid strings must satisfy $\mathbf{H} \cdot \mathbf{c} = \mathbf{0}$.
+2. A string where an error $\mathbf{e} \in \mathbb{F}_2^n$ has occurred must satisfy $\mathbf{H} \cdot (\mathbf{c} + \mathbf{e}) = \mathbf{H} \cdot  \mathbf{e} := \mathbf{s}$, where $\mathbf{s}$ is the observed syndrome.
+3. It guarantees that for all errors with $|\mathbf{e}| < d$, $\mathbf{H} \cdot \mathbf{e} \neq \mathbf{0}$. In other words, the linear system $\mathbf{H} \cdot \mathbf{e} = \mathbf{s}$ has a unique solution under the constraint $|\mathbf{e}| < d$.
+4. Decoding refers to finding the string $\mathbf{c}$ such that $\mathbf{H} \cdot \mathbf{c} = \mathbf{s}$ given the syndrome $\mathbf{s}$. This has a unique solution **assuming the error weight does not exceed $d$**, meaning **exact decoding** is possible from an information-theoretic perspective.
+5. However, in reality, the error weight may exceed $d$, and solving this system of equations for an arbitrary error correction code is NP-complete. Therefore, approximate decoding algorithms are considered.
+
+The figure below shows a classical error correction code and its Tanner graph representation:
+![Classical error correction code and its Tanner graph representation](LDPC.png){#fig-LDPC width=80% fig-align="center"}
+
+For the classical decoding problem:
+
+* $H[j,i]$: Does the $i$-th error trigger the $j$-th syndrome?
+* $p[i]$: The probability of the $i$-th error occurring.
+
+In error correction, there is an additional element: $L[j,i]$: Does the $i$-th error flip the $j$-th logical operator? If it does not flip it, it is not considered an error regardless of its length.
+
+There are two types of decoding algorithms:
+
+1. [MLD](PMdecoder.qmd#MLD)
+2. [BP](TNdecoder.qmd#BP)
+
+## MLD decoding future
+
+- For cases where $|\mathbf{e}_i| > 2$, MLD can be reduced to hypergraph-MWPM, but determining the existence of a hypergraph matching is NP-hard.
+- Considering approximate algorithms for hypergraph-MWPM, there are the following inapproximability theorems:
+  - Unless P=NP, there is no $\Omega(r(G)/\ln(r(G)))$ approximation algorithm, where $r(G)$ is the maximum size of hyperedges in hypergraph $G$ ([Hazan et al., 2006]).
+  - Unless P=NP, there is no $\mathcal{O}(|V(G)|^{1/2−\varepsilon})$ approximation algorithm.
+- Examining the difficulty of the $\text{MLD}$ problem itself:
+  - MLD is NP-complete.
+  - Even when restricted to Reed-Solomon Codes, MLD is NP-hard.
+
+For hypergraphs with special structures, many related algorithms have been designed recently, for example:
+
+http://arxiv.org/abs/2505.13587
+http://arxiv.org/abs/2312.08813
+
+## BP decoding future
+
+## Combination?

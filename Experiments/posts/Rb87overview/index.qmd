@@ -2,100 +2,101 @@
 categories:
 - Lasers
 date: '2026-01-08'
-lang: zh
+lang: en
 resources:
 - Rb87_properties.pdf
-title: Rb87实验激光汇总
+title: Rb87 Laser Summary
+
 ---
 
-## Rb性质汇总
+## Summary of Rb Properties
 
 <object data="Rb87_properties.pdf" type="application/pdf" width="100%" height="800px">
-    <p>您的浏览器无法直接显示 PDF，请<a href="Rb87_properties.pdf">点击此处下载</a>查看。</p>
+    <p>Your browser cannot display PDF directly, please <a href="Rb87_properties.pdf">click here to download</a> and view.</p>
 </object>
 
 ::: {#fig-Rbproperties fig-cap="" fig-align="center"}
 ![](RbProperties.png)
 :::
 
-Hefeilab目前的MOT光路如图 @fig-MOThefei 所示：
+The current MOT optical path in the Hefeilab is shown in Figure @fig-MOThefei:
 
 ::: {#fig-MOThefei fig-cap="" fig-align="center"}
 ![](MOT.jpg)
 :::
 
-## Cooling laser setup
+## Cooling Laser Setup
 
 ::: {#fig-coolingdemo fig-cap="" fig-align="center"}
 ![](cooling_demo.png)
 :::
 
-涉及的激光波长 780 nm ，主要用于：
+The involved laser wavelength is 780 nm, mainly used for:
 
-### 1. 重泵浦光 (Repumper)
+### 1. Repumper Light
 
-* **跃迁**: 驱动从基态 $5S_{1/2}, F=1$ 到激发态 $5P_{3/2}, F' = 2$ 的跃迁。
-* **功能**: 将掉落到暗态 ($F=1$) 的原子泵浦回循环跃迁 ($F=2$) 中。
+* **Transition**: Drives the transition from ground state $5S_{1/2}, F=1$ to excited state $5P_{3/2}, F' = 2$.
+* **Function**: Pumps atoms that have fallen into a dark state ($F=1$) back into the cycling transition ($F=2$).
 
 ::: {.callout-note appearance="simple"}
-**技术实现细节**：
-该激光器首先锁定在 $F = 1 \to F' = 1$ 和 $F = 1 \to F' = 2$ 之间的**交叉峰 (Crossover)** 上，然后通过声光调制器 (AOM) 移频 **+78.5 MHz**，使其精确与 $F = 1 \to F' = 2$ 共振。
+**Technical Implementation Details**:
+The laser is first locked onto the **crossover peak (Crossover)** between $F = 1 \to F' = 1$ and $F = 1 \to F' = 2$, then shifted in frequency by **+78.5 MHz** via an acousto-optic modulator (AOM) to precisely match the resonance at $F = 1 \to F' = 2$.
 :::
 
-### 2. 冷却光 (Cooling)
+### 2. Cooling Light
 
-* **跃迁**: 驱动从基态 $5S_{1/2}, F=2$ 到激发态 $5P_{3/2}, F' = 3$ 的循环跃迁，需要和Repump一起用。
-* **功能**: MOT 俘获与多普勒冷却。
+* **Transition**: Drives a cycling transition from ground state $5S_{1/2}, F=2$ to excited state $5P_{3/2}, F' = 3$, used in conjunction with the Repumper.
+* **Function**: MOT capture and Doppler cooling.
 
 ::: {.callout-tip appearance="simple"}
-**原理**：
-利用激光制冷原理（多普勒冷却），通过红失谐光束产生的散射力将原子减速并囚禁在势阱中心。
+**Principle**:
+Utilizes laser cooling principles (Doppler cooling) by generating scattering forces through red-detuned beams to slow down and trap atoms in a potential well center.
 :::
 
-### 3. 泵浦光 (Optical Pumping)
+### 3. Optical Pumping Light
 
-* **跃迁**: 驱动从基态 $5S_{1/2}, F=2$ 到激发态 $5P_{3/2}, F' = 2$ 的跃迁，$\sigma^+$ (+1 偏振) 或 $\sigma^-$，需要和Repump一起用。
-* **功能**: 量子态初始化。
+* **Transition**: Drives the transition from ground state $5S_{1/2}, F=2$ to excited state $5P_{3/2}, F' = 2$, $\sigma^+$ (+1 polarization) or $\sigma^-$, used in conjunction with the Repumper.
+* **Function**: Quantum state initialization.
 
 ::: {.callout-note appearance="simple"}
-**物理过程**：
-把原子内部的磁量子数“强行”统一到一个特定的状态（暗态）。
-例如：使用 $\sigma^+$ 圆偏振光将原子泵浦到 $|F=2, m_F=2\rangle$ 态（图中 (b) 所示情形）。
+**Physical Process**:
+Forces the magnetic quantum number of atoms to a specific state (dark state).
+For example: Using $\sigma^+$ circularly polarized light pumps atoms into the $|F=2, m_F=2\rangle$ state (as shown in Figure (b)).
 :::
 
-### 4. 去泵浦光 (Depumping)
+### 4. Depumping Light
 
-* **跃迁**: 驱动从基态 $5S_{1/2}, F=2$ 到激发态 $5P_{3/2}, F' = 2$ 的跃迁，不要求偏振，不和Repump一起用。
-* **功能**: 用于状态清洗与辅助读出。将所有 $F=2$ 态原子转移至 $F=1$ 态。
+* **Transition**: Drives the transition from ground state $5S_{1/2}, F=2$ to excited state $5P_{3/2}, F' = 2$, no polarization requirement, not used with Repumper.
+* **Function**: Used for state cleaning and auxiliary readout. Transfers all $F=2$ state atoms to the $F=1$ state.
 
 ::: {.callout-warning appearance="simple"}
-**读出验证逻辑**：
-量子比特编码在 $F=1$（暗）和 $F=2$（亮）上。
-为了区分“原子处于 $F=1$”和“原子丢失”，通常采用双重成像验证：
+**Readout Verification Logic**:
+Quantum bits are encoded in $F=1$ (dark) and $F=2$ (bright).
+To distinguish between "atom is in F=1" and "atom lost", double imaging verification is typically used:
 
-1.  **第一张图**：直接成像。看到亮斑 $\rightarrow$ 确认原子处于 $F=2$。
+1.  **First Image**: Direct imaging. Seeing a bright spot $\rightarrow$ confirms the atom is in $F=2$.
 
-2.  **操作**：使用 Depumping 光将所有 $F=2$ 原子强制赶到 $F=1$。
+2.  **Operation**: Use Depumping light to force all $F=2$ atoms into $F=1$.
 
-3.  **第二张图**：再次成像。此时理论上应为全黑。
-    * 这张图用于**扣除背景噪声**（如玻璃反光）。
-    * 如果此时仍有亮斑，说明那是杂散光，而非原子信号。
+3.  **Second Image**: Re-imaging. This should theoretically be completely dark.
+    * This image is used for **subtracting background noise** (such as glass reflections).
+    * If there are still bright spots, it indicates stray light rather than atomic signals.
 :::
 
-### 5. 吹除光 (Push-out / Blow-away)
+### 5. Push-out / Blow-away Light
 
-* **跃迁**: 驱动从基态 $5S_{1/2}, F=2$ 到激发态 $5P_{3/2}, F' = 3$ 的跃迁（共振），不和Repump一起用。。
-* **功能**: 状态选择性清除。
+* **Transition**: Drives the transition from ground state $5S_{1/2}, F=2$ to excited state $5P_{3/2}, F' = 3$ (resonant), not used with Repumper.
+* **Function**: State-selective removal.
 
 ::: {.callout-important appearance="simple"}
-**机制**：
-在读出阶段，为了区分原子是在 $F=2$ 态还是 $F=1$ 态：
-使用一束共振在 $F=2 \to F' = 3$ 的强光照射原子，且**不加**重泵浦光。
-* $F=2$ 原子：发生剧烈散射被推飞。
-* $F=1$ 原子：因大失谐而保留。
+**Mechanism**:
+During the readout phase, to distinguish between atoms in the $F=2$ state and those in the $F=1$ state:
+A strong beam resonant at $F=2 \to F' = 3$ is used to illuminate the atoms without adding repumping light.
+* $F=2$ atoms: Experience intense scattering and are pushed away.
+* $F=1$ atoms: Remain due to large detuning.
 :::
 
-<!-- Lukin文章中的示意图如图 @fig-MOTlukin 所示：
+<!-- Schematic diagram from Lukin's article as shown in Figure @fig-MOTlukin:
 
 
 ::: {#fig-MOTlukin fig-cap="" fig-align="center"}

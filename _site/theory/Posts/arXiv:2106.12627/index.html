@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.26">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2026-01-07">
+
+<title>Getting Groud states enpower the Neural Networks – Chance’s Quantum Lab</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<script src="../../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap-a8976c3e89df70b272bdfba3d2fda974.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script>window.backupDefine = window.define; window.define = undefined;</script><script src="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.js"></script>
+  <script>document.addEventListener("DOMContentLoaded", function () {
+ var mathElements = document.getElementsByClassName("math");
+ var macros = [];
+ for (var i = 0; i < mathElements.length; i++) {
+  var texText = mathElements[i].firstChild;
+  if (mathElements[i].tagName == "SPAN") {
+   katex.render(texText.data, mathElements[i], {
+    displayMode: mathElements[i].classList.contains('display'),
+    throwOnError: false,
+    macros: macros,
+    fleqn: false
+   });
+}}});
+  </script>
+  <script>window.define = window.backupDefine; window.backupDefine = undefined;</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.css">
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../../styles.css">
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Chance’s Quantum Lab</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../index.html"> 
+<span class="menu-text">Home Page</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../theory/index.html"> 
+<span class="menu-text">Theory</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../Experiments/index.html"> 
+<span class="menu-text">Experiment Notes</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/yourusername"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/yourusername"> <i class="bi bi-twitter" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#abstract-and-my-thoughts" id="toc-abstract-and-my-thoughts" class="nav-link active" data-scroll-target="#abstract-and-my-thoughts">Abstract and My Thoughts</a></li>
+  <li><a href="#ann-and-the-neural-tangent-kernel" id="toc-ann-and-the-neural-tangent-kernel" class="nav-link" data-scroll-target="#ann-and-the-neural-tangent-kernel">ANN and the Neural Tangent Kernel</a></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Getting Groud states enpower the Neural Networks</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">Readings</div>
+  </div>
+  </div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">January 7, 2026</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p><strong>Citation</strong>: Hsin-Yuan Huang, et al., 2022, arXiv:2106.12627</p>
+<section id="abstract-and-my-thoughts" class="level2">
+<h2 class="anchored" data-anchor-id="abstract-and-my-thoughts">Abstract and My Thoughts</h2>
+<p>A family of Hamiltonians <span class="math inline">\{H(x): x \in [-1,1]^m\}</span> is defined, where the parameter <span class="math inline">x</span> can vary continuously over real numbers within a region where the gap of <span class="math inline">H</span> remains constant. The ground state of <span class="math inline">H(x)</span> is denoted by <span class="math inline">\rho(x)</span>. The author proves the following two conclusions:</p>
+<ul>
+<li>If one can prepare quantum states <span class="math inline">\{\{\rho(x), x\}| x \in \mathcal{S}\}</span> and then train a neural network using its classical shadow, it is possible to use a neural network in the Lazy zone to learn the behavior of any few-body operator’s ground state mean values at any <span class="math inline">x \in \mathcal{S}</span>. This operation is also mentioned in the paper <span class="citation" data-cites="Wei_2024">&nbsp;[<a href="#ref-Wei_2024" role="doc-biblioref">1</a>]</span>.</li>
+<li>If one attempts to use a classical algorithm <span class="math inline">\mathcal{A}</span> to learn the behavior of single-operator means on the ground states of arbitrary two-dimensional <span class="math inline">H(x)</span>, it is NP-hard.</li>
+</ul>
+<p>Interesting details/techniques worth learning are:</p>
+<ol type="1">
+<li>How to rigorously prove that learning a smooth function with a neural network is feasible?</li>
+<li>What if this task is extended to quantum states using classical shadows and then transformed into some linear/nonlinear functions of the quantum state?</li>
+<li>Is it really, on average, difficult to compute single-operator means on the ground states of smoothly gapped Hamiltonians? How does the paper prove this?</li>
+</ol>
+</section>
+<section id="ann-and-the-neural-tangent-kernel" class="level2">
+<h2 class="anchored" data-anchor-id="ann-and-the-neural-tangent-kernel">ANN and the Neural Tangent Kernel</h2>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Definition: ANN
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>An artificial neural network (ANN) is a composite mapping defined as follows, where <span class="math inline">\alpha^{(0)}(x) = x</span>, with <span class="math inline">x \in \mathbb{R}^{n_0}</span> being the input corresponding to the number of nodes in the Input layer. The weight matrices <span class="math inline">W^{(l)} \in \mathbb{R}^{n_{l+1} \times n_l}</span> and bias vectors <span class="math inline">b^{(l)} \in \mathbb{R}^{n_{l+1}}</span> correspond to the directed arrows in the diagram, indicating how parameters of a layer are computed from those of the previous layer. Here, <span class="math inline">l=0, \dots, L-1</span> denotes the layers, and the scaling factor <span class="math inline">\frac{1}{\sqrt{n_l}}</span> is used to counteract summation explosion as the width <span class="math inline">n_l \to \infty</span>. <span class="math display">
+\begin{aligned}
+  \tilde{\alpha}^{(l+1)}(x) &amp;= \frac{1}{\sqrt{n_l}} W^{(l)} \alpha^{(l)}(x) + \beta b^{(l)} \quad (\text{pre-activation}) \\
+  \alpha^{(l+1)}(x) &amp;= \sigma(\tilde{\alpha}^{(l+1)}(x)) \quad (\text{activation})
+\end{aligned}
+</span></p>
+</div>
+</div>
+<div id="fig-ANN" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-ANN-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="ANN.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:40.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-ANN-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: Schematic diagram of ANN
+</figcaption>
+</figure>
+</div>
+<p>All weight matrices and bias vectors are collectively represented by a vector <span class="math inline">\theta \in \mathbb{R}^P</span> with dimension <span class="math inline">\sum_{l} n_l(n_{l+1} + 1)</span>. The resulting function is actually a family of functions whose values are composed of <span class="math inline">n_L</span> elements from the set <span class="math inline">\mathcal{F}:=\{f|f:\mathbb{R}^{n_0} \to \mathbb{R}\}</span>. Taking the <span class="math inline">k</span>-th value of the function, where <span class="math inline">k = 1,\cdots,n_L</span>, we define <span class="math inline">\alpha_{\theta}^{(L)}(\cdot) := F_k^{(L)}(\cdot,\theta) \in \mathcal{F}</span>, with <span class="math inline">F_k^{(L)}</span> being a mapping from real parameters to the function space <span class="math inline">\mathbb{R}^P \to \mathcal{F}</span>. The cost function is defined as <span class="math inline">C:\mathcal{F} \to \mathbb{R}</span> and when composed with <span class="math inline">\mathbf{F}^{(L)}</span>, it yields a mapping from parameters to real numbers, i.e., <span class="math inline">C \circ \mathbf{F}^{(L)}: \mathbb{R}^{P} \to \mathbb{R}</span>.</p>
+<div class="callout callout-style-default callout-important no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Lemma: Evolution of ANN Optimization
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Given an ANN parameterized by <span class="math inline">\theta</span>, with the step size being a small and uniform continuous change, and the loss function taken as 2-norm, the evolution of parameters during the entire gradient descent process is denoted as <span class="math inline">\theta(t)</span>. Then, at time <span class="math inline">t</span> for input <span class="math inline">x</span>, the output of the ANN, <span class="math inline">\mathbf F(x,t)</span>, satisfies the following differential equation: <span class="math display">
+\begin{aligned}
+\frac{\partial \mathbf F(x,t)}{\partial t} = \eta \sum_{i} \mathbf \Theta^{(L)}(\theta(t)) (x,x_i) 2[ \mathbf y_i - \mathbf F(x_i,t)],
+\end{aligned}
+</span> where <span class="math inline">\mathbf \Theta^{(L)}(\theta)(x, x') = \sum_{p=1}^P \partial_{\theta_p} \mathbf F^{(L)}(x; \theta) \left[\partial_{\theta_p} \mathbf F^{(L)}(x'; \theta)\right]^T</span> is the Neural Tangent Kernel (NTK), which depends only on the structure of the neural network and not on the input data.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Proof (Click to expand)
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-3" class="callout-3-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>When we say “training a neural network,” the objective function we optimize is <span class="math inline">\mathcal{L}(\theta) = C( \mathbf{F}^{(L)}(\theta) )</span>, and its derivative with respect to <span class="math inline">\theta</span> is given by: <span class="math display">
+\left.\nabla_{\theta}\mathcal{L}\right|_{\theta_0}
+= \sum_{k = 1}^{n_L}\left.\frac{\delta C}{\delta f_k}\right|_{\mathbf{f}_{\theta_0}} \cdot \left.\frac{\partial F_k^{(L)}(\cdot,\theta)}{\partial \theta}\right|_{\theta_0}
+</span> where <span class="math inline">\frac{\delta C}{\delta f_k}</span> is the functional derivative induced by taking the variational derivative with respect to the <span class="math inline">k</span>-th output, and <span class="math inline">\cdot</span> denotes the inner product of two functions. The function <span class="math inline">C(\mathbf{f})</span> is generally taken as <span class="math inline">C(\mathbf{f}) = \sum_{i} \|\mathbf{f}(x_i) - \mathbf{y}_i\|^2_2</span>, which is the squared 2-norm of the difference between an <span class="math inline">n_L</span>-dimensional vector, and its functional derivative is calculated as follows: <span class="math display">
+\begin{aligned}
+\sum_{i} [\mathbf f(x_i) + \varepsilon \mathbf e(x_i) - \mathbf y_i]^2 &amp;= \sum_{i} 2[\mathbf f(x_i)- \mathbf y_i]\mathbf e(x_i) \varepsilon + O(\varepsilon^2)\\
+&amp;= \int_{x} dx \left[ \sum_{i} 2[\mathbf f(x_i)- \mathbf y_i] \delta(x, x_i)\right] \mathbf e(x), \\
+\left.\frac{\delta C}{\delta \mathbf{f}}\right|_{\mathbf{f}_0}&amp;= \sum_{i} 2[\mathbf f_0(x_i)- \mathbf y_i]\delta(x, x_i).
+\end{aligned}
+</span> Therefore, the derivative is: <span class="math display">
+\begin{aligned}
+\left.\nabla_{\theta}\mathcal{L}\right|_{\theta_0}
+&amp;= \int dx \sum_{i} 2[\mathbf F^{(L)}(x_i,\theta)- \mathbf y_i]\delta(x, x_i) \cdot \left.\frac{\partial \mathbf F^{(L)}(x,\theta)}{\partial \theta}\right|_{\theta_0}\\
+&amp;= \sum_{i} 2[\mathbf F^{(L)}(x_i,\theta)- \mathbf y_i] \cdot \left.\frac{\partial \mathbf F^{(L)}(x_i,\theta)}{\partial \theta}\right|_{\theta_0},
+\end{aligned}
+</span> where the <span class="math inline">\cdot</span> denotes the inner product of <span class="math inline">n_L</span>-dimensional vectors. Next, we are concerned with how the function value <span class="math inline">F^{(L)}(x,\theta)</span> changes under parameter updates <span class="math inline">\theta_t \to \theta_{t+1}= \theta_t - \eta_t \left.\nabla_{\theta}\mathcal{L}\right|_{\theta = \theta_t}</span>. Therefore, we compute to the first order in <span class="math inline">\eta_t</span>: <span class="math display">
+\begin{aligned}
+&amp;{\mathbf F^{(L)}(x,\theta_{t+1}) - \mathbf F^{(L)}(x,\theta_t) }\approx  -\eta_t\left.\frac{\partial \mathbf F^{(L)}(x,\theta) }{ \partial \theta}\right|_{\theta_t} \cdot  \left.\nabla_{\theta}\mathcal{L}\right|_{\theta_{t}}\\
+&amp;(k\text{-th term})= -\eta_t\left.\frac{\partial F_k^{(L)}(x,\theta) }{ \partial \theta}\right|_{\theta_t} \cdot  \sum_{i,r}2[F_r^{(L)}(x_i,\theta)- y_{i,r}] \cdot \left.\frac{\partial F_r^{(L)}(x_i,\theta)}{\partial \theta}\right|_{\theta_t}\\
+&amp;= \sum_{i,r}\left. \left\langle\frac{\partial F_k^{(L)}(x,\theta) }{ \partial \theta}, \frac{\partial F_r^{(L)}(x_i,\theta)}{\partial \theta} \right\rangle \cdot 2\eta_t[y_{i,r} - F_r^{(L)}(x_i,\theta)]\right|_{\theta_t}\\
+&amp;(\text{all terms})= \eta_t\left.\sum_{i}\mathbf \Theta^{(L)}(\theta)(x, x_i)  \cdot \mathbf d_i(\theta)\right|_{ \theta = \theta_t}
+\end{aligned}
+</span> The change in the function value at point <span class="math inline">x</span> during the update process is linked by the following Neural Tangent Kernel (NTK): <span class="math display">
+\mathbf{\Theta}^{(L)}(\theta)(x, x') = \sum_{p=1}^P \partial_{\theta_p} \mathbf{F}^{(L)}(x; \theta) \left[\partial_{\theta_p} \mathbf{F}^{(L)}(x'; \theta)\right]^T
+</span> If we further set the step size to be small and uniform, the entire gradient descent process is equivalent to the evolution of the following differential equation: <span class="math display">
+\begin{aligned}
+\frac{\partial \mathbf F(x,t)}{\partial t} = \eta \sum_{i} \mathbf{\Theta}^{(L)}(t) (x,x_i) 2[ \mathbf y_i - \mathbf F(x_i,t)]
+\end{aligned}
+</span></p>
+</div>
+</div>
+</div>
+<section id="the-lazy-zone-lazy-training-region" class="level5">
+<h5 class="anchored" data-anchor-id="the-lazy-zone-lazy-training-region">The Lazy Zone (Lazy Training Region)</h5>
+<p>Consider the case where <span class="math inline">n_L = 1</span> (i.e., scalar output). Define the model output vector on the training set <span class="math inline">\mathbf{u}(t) \in \mathbb{R}^P</span>, where <span class="math inline">[\mathbf u(t)]_{i} := F(x_i,t)</span>. Similarly, define the kernel vector at test point <span class="math inline">x</span> with respect to the training data <span class="math inline">\mathbf{k}(x,t) \in \mathbb{R}^P</span>, whose elements are given by <span class="math inline">[\mathbf{k}(x,t)]_{i} = \Theta^{(L)}(t)(x,x_i)</span>; and the kernel matrix (Gram Matrix) on the training set <span class="math inline">\mathbf{H}^{(L)}(t) \in \mathbb{R}^{P \times P}</span>, whose elements are given by <span class="math inline">\mathbf{H}^{(L)}_{jk}(t):= \Theta^{(L)}(t)(x_j,x_k)</span>. According to the above lemma, the function evolution caused by parameter updates satisfies the following system of differential equations: <span class="math display">
+\left\{\begin{aligned}
+\frac{d\mathbf{u}(t) }{dt} &amp;= 2\eta \mathbf{H}^{(L)}(t)[\mathbf{y}- \mathbf{u}(t)]\\
+\frac{\partial F(x,t)}{\partial t} &amp;= 2\eta \mathbf{k}(x,t)^\top [\mathbf{y}- \mathbf{u}(t)]
+\end{aligned}\right.
+</span></p>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Definition: Lazy Zone
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>If the Neural Tangent Kernel (NTK) remains almost unchanged throughout the entire training evolution, satisfying approximately: <span class="math display">\sup_{t \ge 0} \|\Theta^{(L)}(\theta_t) - \Theta^{(L)}(\theta_0)\| \approx 0,</span> then the neural network is said to be in the Lazy zone (or Linear regime). It can be proven that when an Artificial Neural Network (ANN) is infinitely wide and parameter updates are normalized, the Lazy zone appears <span class="citation" data-cites="jacot2018neural">&nbsp;[<a href="#ref-jacot2018neural" role="doc-biblioref">2</a>]</span>.</p>
+</div>
+</div>
+<p>At this point, it can be assumed that <span class="math inline">\mathbf{H}^{(L)}(t) \equiv \mathbf{H}</span> and <span class="math inline">\mathbf{k}(x,t) \equiv \mathbf{k}(x)</span> are constant matrices/vectors. Under the linearization assumption, the above system of differential equations degenerates into a linear ordinary differential equation. First, solve the first equation (evolution of training set error): <span class="math display">
+\frac{d}{dt}(\mathbf{u}(t) - \mathbf{y}) = -2\eta \mathbf{H} (\mathbf{u}(t) - \mathbf{y}) \implies \mathbf{u}(t) - \mathbf{y} = e^{-2\eta \mathbf{H} t} (\mathbf{u}(0) - \mathbf{y})
+</span> That is, the error term decays exponentially: <span class="math inline">\mathbf{y} - \mathbf{u}(t) = e^{-2\eta \mathbf{H} t} (\mathbf{y} - \mathbf{u}(0))</span>. Substituting this into the second equation and integrating with respect to time <span class="math inline">t</span>, we can find the function variation at any test point <span class="math inline">x</span>: <span class="math display">
+\begin{aligned}
+F(x,t) - F(x,0) &amp;= \int_0^t 2\eta \mathbf{k}(x)^\top e^{-2\eta \mathbf{H} \tau} (\mathbf{y} - \mathbf{u}(0)) d\tau \\
+&amp;= \mathbf{k}(x)^\top (2\eta \mathbf{H})^{-1} (I - e^{-2\eta \mathbf{H} t}) (2\eta \mathbf{H}) (\mathbf{H}^{-1} (\mathbf{y} - \mathbf{u}(0))) \\
+&amp;= \mathbf{k}(x)^\top \mathbf{H}^{-1} (I - e^{-2\eta \mathbf{H} t}) (\mathbf{y} - \mathbf{u}(0))
+\end{aligned}
+</span> Taking the limit as <span class="math inline">t \to \infty</span> (assuming <span class="math inline">\mathbf{H}</span> is positive definite, then <span class="math inline">e^{-2\eta \mathbf{H} t} \to 0</span>), we obtain the final convergence solution of gradient descent: <span class="math display">
+\begin{aligned}
+F(x,\infty) &amp;= F(x,0) + \mathbf{k}(x)^\top \mathbf{H}^{-1}(\mathbf{y} - \mathbf{u}(0)) \\
+&amp;= \underbrace{\mathbf{k}(x)^\top \mathbf{H}^{-1} \mathbf{y}}_{\text{I. Pure kernel regression term (Signal)}} + \underbrace{\left( F(x, 0) - \mathbf{k}(x)^\top \mathbf{H}^{-1} \mathbf{u}(0) \right)}_{\text{II. Initialization residual term (Noise)}}
+\end{aligned}
+</span> The above analytical solution reveals that the final model trained by a neural network in the Lazy zone consists of two parts. The first part (Signal) is the standard kernel ridge regression (KRR) solution (when the regularization coefficient tends to 0). This part is completely determined by the kernel function <span class="math inline">\Theta</span> induced by the network structure and the training labels <span class="math inline">\mathbf{y}</span>, independent of specific random initialization. The second part (Noise) is the residual from initialization. This actually reflects the impact of neural network initialization on the final result. In the infinite-width limit, if an ensemble average over all possible initializations is taken (Ensemble Average), since <span class="math inline">\mathbb{E}[F(x,0)] = 0</span>, this term will vanish and the model will perfectly converge to a pure kernel regression solution. In the “Lazy” zone, parameters hardly move from their initial positions; the network does not learn new “feature representations,” but rather performs simple linear combinations of features formed randomly at initialization (i.e., fixed Kernel).</p>
+<p>Although NTK theory perfectly explains the convergence and generalization properties of over-parameterized networks (without overfitting with time), it cannot explain the tremendous success of modern deep learning on complex tasks such as ImageNet, NLP.</p>
+<ul>
+<li><strong>In the NTK region:</strong> The kernel is static; the model acts like a pre-set dictionary that does not even need to see data and makes predictions by looking up entries (calculating similarity). This is very effective and stable for low-dimensional, smooth functions (such as certain quantum physical quantities).</li>
+<li><strong>In the feature learning region:</strong> Kernel <span class="math inline">\Theta(t)</span> evolves dramatically over time. This allows the model to adaptively learn new kernel functions based on data. Modern neural networks deliberately break out of the Lazy zone by adjusting initialization variance and increasing the learning rate, causing parameters to undergo significant migration.</li>
+</ul>
+<p>Further requirements for nonlinear function <span class="math inline">\sigma</span> include: (i) Lipschitz continuity condition <span class="math inline">|\sigma(u) - \sigma(v)| \le K |u - v|</span>, (ii) twice differentiability: both first derivative <span class="math inline">\sigma'</span> and second derivative <span class="math inline">\sigma''</span> of <span class="math inline">\sigma</span> exist everywhere in the domain <span class="math inline">\mathbb{R}</span>, (iii) bounded second derivative: <span class="math inline">|\sigma''(x)| \le C</span>.</p>
+</section>
+</section>
+<section id="references" class="level2">
+<h2 class="anchored" data-anchor-id="references">References</h2>
+<div id="refs" class="references csl-bib-body" data-entry-spacing="0" role="list">
+<div id="ref-Wei_2024" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[1] </div><div class="csl-right-inline">V. Wei, W. A. Coish, P. Ronagh, and C. A. Muschik, <a href="https://doi.org/10.1103/physrevresearch.6.023250">Neural-shadow quantum state tomography</a>, Physical Review Research <strong>6</strong>, (2024).</div>
+</div>
+<div id="ref-jacot2018neural" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[2] </div><div class="csl-right-inline">A. Jacot, F. Gabriel, and C. Hongler, <a href="https://arxiv.org/abs/1806.07572">Neural tangent kernel: Convergence and generalization in neural networks</a>, (2020).</div>
+</div>
+</div>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

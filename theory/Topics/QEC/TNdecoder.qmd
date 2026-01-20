@@ -1,0 +1,21 @@
+---
+categories:
+- Quantum Error Correction
+- Tensor Network
+date: 2026-01-07
+description: 'Notes on the application of Tensor Networks in quantum error correction.'
+format:
+  html:
+    number-sections: true
+    toc: true
+lang: en    
+title: 'Tensor Network Decoding'
+---
+
+# BP Algorithm
+The MLD algorithm has the following shortcomings:
+1. Knowing the probability of each error occurring a priori, as in MLD, is not a natural assumption.
+2. The occurrence of each error is mutually unrelated. In quantum error correction codes, this means assuming two Pauli errors are independent.
+3. MLD remains NP-hard for arbitrary error correction codes.
+
+The Belief Propagation algorithm is an approximate decoding algorithm that performs approximate decoding by iteratively updating the probabilities of each vertex.

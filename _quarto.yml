@@ -20,10 +20,9 @@ website:
       - icon: twitter
         href: https://twitter.com/yourusername
 
-  # 侧边栏设置：只在进入“科研笔记”时显示
   sidebar:
     - id: notes
-      title: "笔记目录"
+      title: "Contents"
       contents:
         - section: "Quantum Complexity"
           contents:
@@ -36,21 +35,16 @@ website:
 format:
   html:
     html-math-method: katex
-    theme: cosmo          # 你可以换成 flatly, journal, cyborg 等
+    theme: cosmo        
     css: styles.css
-    toc: true             # 开启右侧文章目录
-    code-copy: true       # 代码块显示复制按钮
+    toc: true          
+    code-copy: true       
     citations-hover: true
-    include-after-body: scripts/language_switch.html
 
-execute:
-  freeze: true  # <--- 加入这一行 (全局开启缓存)
-# 在最下面添加这几行：
-editor: source # 默认使用源码模式编辑
+editor: source 
 
-# 1. 指定参考文献文件
 bibliography: references.bib
-csl: aps.csl  # <--- 指定样式
+csl: aps.csl  
 
 preview:
   port: 4200

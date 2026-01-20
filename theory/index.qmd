@@ -1,9 +1,9 @@
 ---
-lang: zh
+lang: en
 listing:
 - contents:
-  - "Topics/**/*.qmd"
-  - "!Topics/**/*.en.qmd"
+  - quantum_complexity/*.qmd
+  - quantum_learning_theory/*.qmd
   fields:
   - date
   - title
@@ -14,9 +14,7 @@ listing:
   table-hover: true
   type: table
 - categories: true
-  contents: 
-  - "Posts/**/index.qmd"
-  - "!Posts/**/*.en.qmd"
+  contents: Posts
   filter-ui: true
   id: daily-posts
   page-size: 5
@@ -24,16 +22,16 @@ listing:
   sort-ui: true
   type: default
 page-layout: full
-title: Theory (中文)
+title: Theory
 title-block-banner: true
 ---
 
 ## Topics
 
-这里记录量子计算相关话题下的文献整理。
+This section records the整理 of literature related to quantum computing.
 
 ::: {.callout-tip}
-请点击左侧边栏 (Sidebar) 浏览具体的知识分类。
+Please click on the left sidebar (Sidebar) to browse specific knowledge categories.
 :::
 
 ::: {#research-notes}
@@ -43,7 +41,7 @@ title-block-banner: true
 
 ## Posts
 
-这里记录我的日常论文速读和会议记录。
+This section documents my daily paper summaries and conference notes.
 
 ::: {#daily-posts}
 :::

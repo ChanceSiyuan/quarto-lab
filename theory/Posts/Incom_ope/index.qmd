@@ -2,75 +2,187 @@
 categories:
 - Quantum Information
 date: '2026-01-16'
+execute:
+  enabled: false
 format:
   html:
     code-fold: true
-keep-ipynb: true
-lang: zh
+jupyter: python3
+lang: en
 title: Local estimation of observables
+keep-ipynb: false
+bibliography: refs.bib
 ---
 
-## Review on Linear property estimation
-给定任意算符 $O$，在**局域测量（Local Measurement）方案**的限制下，估计其期望值 $\mathrm{tr}(O\rho)$ 的最优效率是多少？？
 
-#### **Case 1:** $O = A_1 \otimes \cdots \otimes A_N, [A_i, A_i^\dagger] = 0$.
+:::{.callout-important icon="false"}
+## Linear case:
+- Given an arbitrary operator $O$, what is the optimal efficiency for estimating its expected value $\mathrm{tr}(O\rho)$ under the constraint of **Local Measurement**?
+- Can multiple-copy **Local** strategy benefit the estimation of $\mathrm{tr}(O\rho)$?
+:::
 
-此类情形对应于算符可分，且在每个局域位置均**可对角化**（即为正规算符）。这是平凡（trivial）的情形，只需在每个位置分别选取其本征基进行测量即可。
+Why this question is meaningful?
 
-- 例如 $A_i \in \{\mathbb{I},X,Y,Z\}$ 对应于估计 $\mathrm{tr}(P \rho)$。
-- $A_i \in \mathrm{SWAP}\cdot \{\mathbb{I},X,Y,Z\}$ 对应于估计 $\mathrm{tr}({P \rho^2})$。
-其中，尽管 $\mathrm{SWAP}_k\cdot P$ 非厄米算符，但它是可对角化的（易证 $[SP,(SP)^{\dagger}] = SPPS^\dagger - PS^\dagger SP = 0$）。
-
-#### **Case 2:** $O = A_1 \otimes \cdots \otimes A_N, [A_i, A_i^\dagger] \neq 0$.
-
-此类情形对应于算符可分，但在某些位置上**不可对角化**。
-可以通过笛卡尔分解 $A_k := (A_k+A_k^\dagger)/2 + i(A_k - A_k^\dagger)/2$ 将其拆分为厄米部分以实现对角化。
-然而，由于 $A_k+A_k^\dagger$ 与 $A_k - A_k^\dagger$ 不对易（不适配），这将导致测量基的数量呈指数级增长！
-
-  <span style="color:red;">
-  - 能否找到一个 $[A_i, A_i^\dagger] \neq 0$ 且具有实际物理意义的例子？
-  - 这种测量复杂度的困难是本质性的吗？
-  </span>
+1. Trade off between circuit depth and the replica numbers.
+2. Fundamental! If an information is forbidened locally (such as topological system), would multiple-copy strategy helps?
 
 
-#### **Case 3:** $O =\sum_{P} \alpha_{P} P$.
+:::{.callout-important icon="false"}
+## Non-linear case:
+- Given an arbitrary operator $O$, what is the optimal efficiency for estimating its expected value $\mathrm{tr}(O\rho^2)$ under the constraint of **Local Measurement**?
+:::
 
-- **逐项估计（Term-by-term estimation）**。
-- **基于经典影子（Classical shadow based）**。对于单副本，直接执行每个位置的局域 Clifford 随机测量（Local Clifford shadow）。对于 $k$-局域 Pauli 算符（weight-$k$ Pauli observables），样本复杂度为 $3^k$；对于任意 $k$-局域算符，样本复杂度为 $4^k$。
+Why this question is meaningful?
 
-  <span style="color:red;">
-  Question: 若允许双副本局域测量（2-replica Local），是否优于 $3^k/4^k$ 的开销？
-   </span>
+1. To enhance the efficiency of [Virtual Cooling](../Virtual_Distillation/index.qmd) @huggins2021virtual.
+2. To allow for the estimation of more complex non-linear quantities, such as Fisher information @rath2021quantum, by decomposing into Pauli operators.
 
-  <span style="color:blue;">
-  Answer：是！样本复杂度将从 $3^k$ 降至 $3^{k/2}$，代价是丢失了少许符号信息。
-  </span>
-  
-- **基于去随机化经典影子（Derandomized classical shadow based）**。
-  - 调整每个位置的 Local Clifford 采样分布，使其不再均匀，而是根据 $O$ 进行偏置。
-  - 自适应（Adaptively）地选择下一个待测 Pauli 算符，旨在使测量基尽可能覆盖包含在 $O$ 中的 Pauli 成分。
-  - 一种Channel共同对角化的视角：寻找一个Channel $\Lambda$，使得 $\Lambda(P_1),\cdots, \Lambda(P_n)$ 同时对角化。即使$P_i$ 之间不满足对易关系!
-  - 这给出了局域估计方法效率的一个下界。
+Here below I characterized this problem based on different meaningful subset of operator $O$.
 
-    <span style="color:red;">
-    Question: 若允许双副本局域测量（2-replica Local），是否存在更优的去随机化方案来估计 $\mathrm{tr}(O \rho)$？
-    </span>
+# Local and diagonalizable Operators
 
-#### **Case 4:** $ O = \ket{\psi}\!\bra{\psi}$ or $O$ is low rank observable.
+Case 1: $O = A_1 \otimes \cdots \otimes A_N, [A_i, A_i^\dagger] = 0$.
 
-  - 当 $\ket{\psi}$ 是稳定子态时，有分解$O = \sum_{P \in S} \ket{\psi}\!\bra{\psi} P$。
-  - 类比Entanglement witness的构造方法，可以考察$O' = \ket{\psi}\!\bra{\psi} + \alpha \mathbb{I}$ 使得算符$O'$可分。
-  
-## A piece-to-piece generalization to non-linear case
+This case corresponds to separable operators that are diagonalizable (i.e., normal) at each local position. This is a **trivial scenario** where one simply measures in the eigenbasis of each operator at every location. For example, if $A_i \in \{\mathbb{I},X,Y,Z\}$, it corresponds to estimating $\mathrm{tr}(P\rho)$.
 
-为什么这种推广是有意义的？
+### Answer of  Linear case
+ Trivial? Since already has effecient single-replica local strategy.
 
-1. 提升Visual Cooling的效率
-2. 通过分解为Pauli算符允许估计更复杂的非线性量，例如Fisher information
+### Answer of  Non-linear case
 
-那么该怎么做？
+- If $A_i \in \mathrm{SWAP}\cdot \{\mathbb{I},X,Y,Z\}$, it corresponds to estimating $\mathrm{tr}({P\rho^2})$.
+Here, although $\mathrm{SWAP}_k\cdot P$ is a non-Hermitian operator, it can be diagonalized (it's easy to prove that $[SP,(SP)^\dagger] = SPPS^\dagger - PS^\dagger SP = 0$).
 
-#### LCS的直接推广
+:::{.callout-note icon="false"}
+# A 2-copy Local estimation of $tr(P \rho^2)$
+The value $tr(P \rho^2)$ can be estimated by a 2-copy Local circuit composed of: (i). $\mathrm{CNOT}_{12}$ (ii). Measure $Z$ with result $s_1$ on the second qubit and adaptively apply an $S \cdot H$ gate and measure $Z$ with $s_2$ on the first qubit. Then $\hat{o}:=\prod_{i}\hat{o}_i$ .
+:::
+
+:::{.callout-note collapse="true"}
+# Proof:
+Full-weight Pauli operators can be locally transformed into Pauli $Z$ strings $Z^{\otimes n}$ using local Clifford gates since $HXH = Z$ and $HS^{\dagger}YSH = Z$. 
+In this case, this observable $O_{\mathbf{r}}$ is a tensor product of local non-Hermitian operators $O_{\mathbf{r}} = [(Z \otimes \mathbb{I}) \cdot \mathrm{SWAP}]^{\otimes n}:= A^{\otimes n}$. The local operator $A$, although non-Hermitian, is a normal matrix satisfying $[A,A^\dagger] = 0$, thus it can still be diagonalized under a unitary transformation. Actually, it satisfies the decomposition:
+
+\begin{align}
+    A &= \ket{00}\!\bra{00} - \ket{11}\!\bra{11} + i\ket{\Phi^+}\!\bra{\Phi^+} - i \ket{\Phi^-}\!\bra{\Phi^-}, \\
+    &\text{~with~} \ket{\Phi^+} = \frac{\ket{01} + i \ket{10}}{\sqrt{2}}, \ket{\Phi^-} = \frac{\ket{01} - i \ket{10}}{\sqrt{2}}. 
+\end{align}
+
+Thus we measure locally on the basis $\{\ket{00}\!\bra{00}, \ket{11}\!\bra{11}, \ket{\Phi^+}\!\bra{\Phi^+},\ket{\Phi^-}\!\bra{\Phi^-}\}$ with results $\hat{o}_i \in \{+1,-1,+i,-i\}$, respectively. 
+Since both $\mathrm{Im}(\prod_{i} \hat{o}_i)$ and $\mathrm{Re}(\prod_{i} \hat{o}_i)$ are bounded, based on the Hoeffding inequality, the average $\mathrm{tr}(\rho A^{\otimes n})$ can be estimated by $\hat{o}:=\prod_{i}\hat{o}_i$ efficiently.
+To implement this 2-copy Local circuit, 
+we note that 
+$$
+\mathrm{CNOT} \left\{ 
+  \begin{aligned}&\ket{00}\\ &\ket{11}\\ &\frac{\ket{01} + i \ket{10}}{\sqrt{2}} \\ &\frac{\ket{01} - i \ket{10}}{\sqrt{2}}\end{aligned}
+  \right. 
+  =
+  \left\{ 
+  \begin{aligned}&\ket{00}\\ &\ket{10}\\ &\frac{\ket{01} + i \ket{11}}{\sqrt{2}} \\ &\frac{\ket{01} - i \ket{11}}{\sqrt{2}}\end{aligned}
+  \right. 
+  =  \left\{ 
+  \begin{aligned}&\ket{00}\\ &\ket{10}\\ &(\mathrm{SH} \ket{0}) \ket{1} \\ &(\mathrm{SH }\ket{1}) \ket{1} \end{aligned}
+  \right.
+$$
+
+1. Apply $\mathrm{CNOT}_{12}$ to the first and second qubit.
+2. Measure $Z$ with result $s_1$ on the second qubit. Adaptively apply an $S \cdot H$ gate if $s_1 = 1$, then measure $Z$ with result $s_2$ on the first qubit.
+3. Then we get the estimator $\hat{o}:=\prod_{k} i^{2s_2^{(k)} + s_1^{(k)}}$.
+4. Since we know $\mathrm{tr}(P \rho^2)$ is real-valued, we can directly set $\hat{o} = 0$ if $\hat{o} \in \{+i,-i\}$. Then $\hat{o}:=\mathrm{Re}\left[\prod_{k} i^{2s_2^{(k)} + s_1^{(k)}}\right]$.
+:::
+
+We note that the Purity **CANNOT** be simultaneously estimated using the results of $\mathbf{s}_1$ and $\mathbf{s}_2$ since $\mathrm{SWAP}\ket{\Phi^+} = i \ket{\Phi^-}$.
+In reference @huggins2021virtual, it proposed a simple strategy to estimate $\mathrm{tr}(P \rho^2)$ using 2-replica Local measurement. However, it is noted that:
+
+> <small>
+ "[...] but we note that the inability to parallelize the measurement of commuting multi-qubit observables would make it challenging to profitably combine this approach with sophisticated NISQ measurement strategies, such as the one presented in Ref. 17. **In particular, individual multi-qubit operator must be measured separately using this approach, even if they commute.** This fact increases the overall number of circuit repetitions required for many applications."
+</small>
 
 
-#### Non-linear Pauli classical Shadow
+# Local but non-diagonalizable Operators
+Case 2: $O = A_1 \otimes \cdots \otimes A_N, [A_i, A_i^\dagger] \neq 0$.
+
+- This case corresponds to separable operators that are not diagonalizable at some positions.
+- Application case: estimation of $a^\dagger, a$ on Boson sampling tasks. Estimation of non-Hermitian Hamitonian $H + i \delta$.
+
+### Answer of  Linear case
+
+- One can decompose it into Hermitian parts via the Cartesian decomposition $A+A^\dagger, i(A-A^\dagger)$, but this leads to an exponential growth in the number of measurement bases due to the non-commutativity between $A+A^\dagger$ and $(A-A^\dagger)$!
+- Classical shadow based estimation. Appliable on local and low0rank cases.
+- **Benifits from 2-replica strategy:** we may use the fact that Bell measurement already estimate $\{|\mathrm{tr}(P \rho)|\}_{P}$ with constant additive error $O(n)$ copies.
+
+### Answer of  Non-linear case
+Not investigated yet.
+
+
+# Pure State and Low-rank Observable
+
+Case 3: $O = \ket{\psi}\!\bra{\psi}$ or $O$ is a low-rank observable.
+
+### Answer of  Linear case
+
+- When $\ket{\psi}$ is a stabilizer state, effecient estimation strategy exists based on the decomposition $\ket{\psi}\!\bra{\psi} = 2^{-n}\sum_{P \in \mathcal{S}} P$.
+- By analogy to the construction of entanglement witnesses, one can examine $O':= O + \alpha \mathbb{I}$ such that operator $O'$ is separable.
+- Bell difference sampling can efficiently estiate the average over **All** stabilizer state.
+
+### Answer of  Non-linear case
+
+- The estimation of $\mathrm{tr}(O \rho^2)$ for $O$ being a $r$-rank operator can be estimated using $r$ replica measurements (ancilla assisted) @shin2025resource.
+
+
+# Sum of Pauli Operators
+
+Case 4: $O = \sum_{P}\alpha_P P$ .
+
+### Answer of  Linear case
+- **Classical shadow-based approach**
+  - For [single copy local Clifford](../Shadow_tomography/index.qmd) random measurements at each position, the sample complexity is $3^k$ for weight-$k$ Pauli observables and $4^n$ for arbitrary $n$-local operators.
+  - Entanglement-fixed 2-copy shadow offering simpler implementation. Information complete if not maximumly entangled. Has effeciency $3^{k/2}$ only for **compatiable** $k$-weight Pauli observables. @ippoliti2024classical
+  - Given $\forall P \in \mathcal{P}_n$, It is exponentially hard for 1-replica strategy. @chen2024optimal
+  - For All Pauli oeprators, Informationally effecient using Bell sampling. @chen2024optimal. However, **signal problem** requires more sampling counts. @huang2021information
+
+:::{.callout-important icon="false"}
+## Question
+If **two-replica Local** measurement is allowed, can we go beyond exponential sampling complextiy?
+:::
+
+
+- **Derandomized classical shadow-based approach**:
+  - Adjust the local Clifford sampling distribution at each position, making it biased according to $O$, rather than uniform.  @hadfield2021adaptive
+  - Adaptively select the next Pauli operator to measure (See [Derandomized local shadows](../Pauli_derandomization/index.qmd) for a detailed treatment of derandomization for Pauli measurements.)  @huang2021efficient
+  - A perspective from channel co-diagonalization: find a channel $\Lambda$ such that $O_1,O_2$ are simultaneously diagonalized.  @yang2025measuring
+  - Recently it has been shown that it provides a [lower bound](../shallow_estim/index.qmd) on the efficiency of local estimation methods. @wu2024optimization
+
+
+### Answer of Non-linear case
+
+- **Classical shadow-based approach**
+
+:::{.callout-note icon="false"}
+## Previous result
+- Single-replica measurement with unitary $6$-design for $\{\mathrm{tr}(P \rho^2)\}_{P \in \mathcal{O}}$, reach the lower bound $\Omega(2^{n/2} \cdot \ln(|\mathcal{O}|))$ @du2025optimal.
+- A $k$-replica strategy that constructs classical shadow for ${\rho}^t$. However, the circuit is non-local and can be explicitely constructed in the case $t = 2$ @liu2024auxiliary. 
+- Prohibited for 2-replica strategy, even if non-local operation is allowed and the oeprator is fixed. The sampling complexity is $\Omega(2^{k/2})$ given $k$ is the supports qubit numbers. @du2025optimal @ye2025exponential
+:::
+
+- So I focus on local 2-copy strategy.
+  - [Local 2-copy 3-design shadow](/theory/Topics/Shadow_tomography/multi-copy-shadow.qmd): Information complete. For **weighted purity estimation** and **non-linear Pauli properties**, this approach shows sampling supremacy over Bell sampling in specific parameter regimes.
+  - [Entanglement-fixed 2-copy shadow](/theory/Topics/Shadow_tomography/multi-copy-shadow.qmd/): Information complete only if entanglement is not maximum.
+  - [Random Shifted Bell ssampling](/theory/Topics/Shadow_tomography/multi-copy-shadow.qmd/): Information incomplete. However, it can be used to estimate $\text{tr}(O \rho^2)$ with $\mathcal{O}(n)$ sample complexity. @ippoliti2024classical
+- After finding that all these local 2-replica shadow all have **exponential sampling efficiency**, I guess that: 2-replica estimation of $\{\mathrm{tr}(P\rho^2)\}$ for $\forall P \in \mathcal{P}_n$ is [in general hard](/theory/Topics/Lowerbounds/lowerbounds.qmd).
+- I have found a [4-replica nonlocal upper bound](/theory/Topics/Shadow_tomography/multi-copy-shadow.qmd) that estimates $\{\mathrm{tr}(P\rho^2)\}$ for $\forall P \in \mathcal{P}_n$. So I also suspect that 4-replica **local** strategy estimation is also in general hard.
+
+
+- **Derandomized classical shadow-based approach**:
+
+:::{.callout-important icon="false"}
+## Question
+If two-replica Local measurement is allowed, does there exist an even better derandomization scheme to estimate $\text{tr}(O \rho^2)$?
+:::
+- Bell measurements can efficiently get :
+$$
+O = \alpha_{00}\mathbb{I} \otimes \mathbb{I} + \alpha_{11}X\otimes X + \alpha_{11}Y \otimes Y + \alpha_{11}Z \otimes Z, \|O\|_{\infty} \leq \mathcal{O}(1)
+$$.
+
+
+

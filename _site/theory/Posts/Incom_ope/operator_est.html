@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.26">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2026-01-16">
+
+<title>Local estimation of observables – Chance’s Quantum Lab</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<script src="../../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap-a8976c3e89df70b272bdfba3d2fda974.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script>window.backupDefine = window.define; window.define = undefined;</script><script src="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.js"></script>
+  <script>document.addEventListener("DOMContentLoaded", function () {
+ var mathElements = document.getElementsByClassName("math");
+ var macros = [];
+ for (var i = 0; i < mathElements.length; i++) {
+  var texText = mathElements[i].firstChild;
+  if (mathElements[i].tagName == "SPAN") {
+   katex.render(texText.data, mathElements[i], {
+    displayMode: mathElements[i].classList.contains('display'),
+    throwOnError: false,
+    macros: macros,
+    fleqn: false
+   });
+}}});
+  </script>
+  <script>window.define = window.backupDefine; window.backupDefine = undefined;</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.css">
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../../styles.css">
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Chance’s Quantum Lab</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../index.html"> 
+<span class="menu-text">Home Page</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../theory/index.html"> 
+<span class="menu-text">Theory</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../Experiments/index.html"> 
+<span class="menu-text">Experiment Notes</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/yourusername"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/yourusername"> <i class="bi bi-twitter" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#review-on-linear-property-estimation" id="toc-review-on-linear-property-estimation" class="nav-link active" data-scroll-target="#review-on-linear-property-estimation">Review on Linear Property Estimation</a></li>
+  <li><a href="#a-piece-by-piece-generalization-to-non-linear-case" id="toc-a-piece-by-piece-generalization-to-non-linear-case" class="nav-link" data-scroll-target="#a-piece-by-piece-generalization-to-non-linear-case">A Piece-by-Piece Generalization to Non-linear Case</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Local estimation of observables</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">Quantum Information</div>
+  </div>
+  </div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">January 16, 2026</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="review-on-linear-property-estimation" class="level2">
+<h2 class="anchored" data-anchor-id="review-on-linear-property-estimation">Review on Linear Property Estimation</h2>
+<p>Given an arbitrary operator <span class="math inline">O</span>, what is the optimal efficiency for estimating its expected value <span class="math inline">\mathrm{tr}(O\rho)</span> under the constraint of <strong>Local Measurement</strong>?</p>
+<section id="case-1-o-a_1-otimes-cdots-otimes-a_n-a_i-a_idagger-0." class="level4">
+<h4 class="anchored" data-anchor-id="case-1-o-a_1-otimes-cdots-otimes-a_n-a_i-a_idagger-0.">Case 1: <span class="math inline">O = A_1 \otimes \cdots \otimes A_N, [A_i, A_i^\dagger] = 0</span>.</h4>
+<p>This case corresponds to separable operators that are diagonalizable (i.e., normal) at each local position. This is a trivial scenario where one simply measures in the eigenbasis of each operator at every location.</p>
+<ul>
+<li>For example, if <span class="math inline">A_i \in \{\mathbb{I},X,Y,Z\}</span>, it corresponds to estimating <span class="math inline">\mathrm{tr}(P\rho)</span>.</li>
+</ul>
+</section>
+<section id="case-2-o-a_1-otimes-cdots-otimes-a_n-a_i-a_idagger-neq-0." class="level4">
+<h4 class="anchored" data-anchor-id="case-2-o-a_1-otimes-cdots-otimes-a_n-a_i-a_idagger-neq-0."><strong>Case 2:</strong> <span class="math inline">O = A_1 \otimes \cdots \otimes A_N, [A_i, A_i^\dagger] \neq 0</span>.</h4>
+<ul>
+<li>This case corresponds to separable operators that are not diagonalizable at some positions.</li>
+<li>One can decompose it into Hermitian parts via the Cartesian decomposition <span class="math inline">A+A^\dagger, i(A-A^\dagger)</span>, but this leads to an exponential growth in the number of measurement bases due to the non-commutativity between <span class="math inline">A+A^\dagger</span> and <span class="math inline">(A-A^\dagger)</span>!</li>
+</ul>
+<div class="callout callout-style-default callout-important no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Question
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li>Can one find a practical example where <span class="math inline">[A_i, A_i^\dagger] \neq 0</span>?</li>
+<li>Is this measurement complexity inherently difficult?</li>
+</ul>
+</div>
+</div>
+</section>
+<section id="case-3-o-sum_palpha_p-p-." class="level4">
+<h4 class="anchored" data-anchor-id="case-3-o-sum_palpha_p-p-."><strong>Case 3:</strong> <span class="math inline">O = \sum_{P}\alpha_P P</span> .</h4>
+<ul>
+<li><strong>Term-by-term estimation</strong>.</li>
+<li><strong>Classical shadow-based approach</strong>: For a single copy, perform local Clifford random measurements at each position. The sample complexity is <span class="math inline">3^n</span> for weight-<span class="math inline">n</span> Pauli observables and <span class="math inline">4^n</span> for arbitrary <span class="math inline">n</span>-local operators.</li>
+</ul>
+<div class="callout callout-style-default callout-important no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Question
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li>If two-replica Local measurement is allowed, does it outperform the overhead of ?</li>
+<li>Yes! The sample complexity will drop from to at the cost of losing some phase information.</li>
+</ul>
+</div>
+</div>
+<ul>
+<li><strong>Derandomized classical shadow-based approach</strong>:
+<ul>
+<li>Adjust the local Clifford sampling distribution at each position, making it biased according to <span class="math inline">O</span>, rather than uniform.</li>
+<li>Adaptively select the next Pauli operator to measure (See <a href="../../../theory/Posts/Pauli_derandomization/index.html">Derandomized local shadows</a> for a detailed treatment of derandomization for Pauli measurements.)</li>
+<li>A perspective from channel co-diagonalization: find a channel such that are simultaneously diagonalized. Even if the s do not commute!</li>
+<li>This provides a lower bound on the efficiency of local estimation methods. <span style="color:red;"> Question: If two-replica Local measurement is allowed, does there exist an even better derandomization scheme to estimate ? </span></li>
+</ul></li>
+</ul>
+</section>
+<section id="case-4-o-ketpsibrapsi-or-o-is-a-low-rank-observable." class="level4">
+<h4 class="anchored" data-anchor-id="case-4-o-ketpsibrapsi-or-o-is-a-low-rank-observable."><strong>Case 4:</strong> <span class="math inline">O = \ket{\psi}\!\bra{\psi}</span> or <span class="math inline">O</span> is a low-rank observable.</h4>
+<ul>
+<li>When <span class="math inline">\ket{\psi}</span> is a stabilizer state, there exists a decomposition <span class="math inline">\ket{\psi}\!\bra{\psi} = 2^{-n}\sum_{P \in \mathcal{S}} P</span>.</li>
+<li>By analogy to the construction of entanglement witnesses, one can examine <span class="math inline">O</span> such that operator <span class="math inline">O</span> is separable.</li>
+<li></li>
+</ul>
+</section>
+</section>
+<section id="a-piece-by-piece-generalization-to-non-linear-case" class="level2">
+<h2 class="anchored" data-anchor-id="a-piece-by-piece-generalization-to-non-linear-case">A Piece-by-Piece Generalization to Non-linear Case</h2>
+<p>Given an arbitrary operator <span class="math inline">O</span>, what is the optimal efficiency for estimating its expected value <span class="math inline">\mathrm{tr}(O\rho^2)</span> under the constraint of <strong>Local Measurement</strong>?</p>
+<p>Why is this generalization meaningful?</p>
+<ol type="1">
+<li>To enhance the efficiency of Virtual Cooling.</li>
+<li>To allow for the estimation of more complex non-linear quantities, such as Fisher information, by decomposing into Pauli operators.</li>
+</ol>
+<p>How can it be done?</p>
+<section id="case-1-o-a_1-otimes-cdots-otimes-a_n-a_i-a_idagger-0.-1" class="level4">
+<h4 class="anchored" data-anchor-id="case-1-o-a_1-otimes-cdots-otimes-a_n-a_i-a_idagger-0.-1">Case 1: <span class="math inline">O = A_1 \otimes \cdots \otimes A_N, [A_i, A_i^\dagger] = 0</span>.</h4>
+<ul>
+<li>If <span class="math inline">A_i \in \mathrm{SWAP}\cdot \{\mathbb{I},X,Y,Z\}</span>, it corresponds to estimating <span class="math inline">\mathrm{tr}({P\rho^2})</span>. Here, although <span class="math inline">\mathrm{SWAP}_k\cdot P</span> is a non-Hermitian operator, it can be diagonalized (it’s easy to prove that <span class="math inline">[SP,(SP)^\dagger] = SPPS^\dagger - PS^\dagger SP = 0</span>).</li>
+</ul>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>A 2-copy Local estimation of <span class="math inline">tr(P \rho^2)</span>
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The value <span class="math inline">tr(P \rho^2)</span> can be estimated by a 2-copy Local circuit composed of: (i). <span class="math inline">\mathrm{CNOT}_{12}</span> (ii). Measure <span class="math inline">Z</span> with result <span class="math inline">s_1</span> on the second qubit and adaptively apply an <span class="math inline">S \cdot H</span> gate and measure <span class="math inline">Z</span> with <span class="math inline">s_2</span> on the first qubit. Then <span class="math inline">\hat{o}:=\prod_{i}\hat{o}_i</span> .</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Proof:
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-4" class="callout-4-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>Full-weight Pauli operators can be locally transformed into Pauli <span class="math inline">Z</span> strings <span class="math inline">Z^{\otimes n}</span> using local Clifford gates since <span class="math inline">HXH = Z</span> and <span class="math inline">HS^{\dagger}YSH = Z</span>. In this case, this observable <span class="math inline">O_{\mathbf{r}}</span> is a tensor product of local non-Hermitian operators <span class="math inline">O_{\mathbf{r}} = [(Z \otimes \mathbb{I}) \cdot \mathrm{SWAP}]^{\otimes n}:= A^{\otimes n}</span>. The local operator <span class="math inline">A</span>, although non-Hermitian, is a normal matrix satisfying <span class="math inline">[A,A^\dagger] = 0</span>, thus it can still be diagonalized under a unitary transformation. Actually, it satisfies the decomposition:</p>
+<p><span class="math display">\begin{align}
+    A &amp;= \ket{00}\!\bra{00} - \ket{11}\!\bra{11} + i\ket{\Phi^+}\!\bra{\Phi^+} - i \ket{\Phi^-}\!\bra{\Phi^-}, \\
+    &amp;\text{~with~} \ket{\Phi^+} = \frac{\ket{01} + i \ket{10}}{\sqrt{2}}, \ket{\Phi^-} = \frac{\ket{01} - i \ket{10}}{\sqrt{2}}.
+\end{align}</span></p>
+<p>Thus we measure locally on the basis <span class="math inline">\{\ket{00}\!\bra{00}, \ket{11}\!\bra{11}, \ket{\Phi^+}\!\bra{\Phi^+},\ket{\Phi^-}\!\bra{\Phi^-}\}</span> with results <span class="math inline">\hat{o}_i \in \{+1,-1,+i,-i\}</span>, respectively. Since both <span class="math inline">\mathrm{Im}(\prod_{i} \hat{o}_i)</span> and <span class="math inline">\mathrm{Re}(\prod_{i} \hat{o}_i)</span> are bounded, based on the Hoeffding inequality, the average <span class="math inline">\mathrm{tr}(\rho A^{\otimes n})</span> can be estimated by <span class="math inline">\hat{o}:=\prod_{i}\hat{o}_i</span> efficiently. To implement this 2-copy Local circuit, we note that <span class="math display">
+\mathrm{CNOT} \left\{
+  \begin{aligned}&amp;\ket{00}\\ &amp;\ket{11}\\ &amp;\frac{\ket{01} + i \ket{10}}{\sqrt{2}} \\ &amp;\frac{\ket{01} - i \ket{10}}{\sqrt{2}}\end{aligned}
+  \right.
+  =
+  \left\{
+  \begin{aligned}&amp;\ket{00}\\ &amp;\ket{10}\\ &amp;\frac{\ket{01} + i \ket{11}}{\sqrt{2}} \\ &amp;\frac{\ket{01} - i \ket{11}}{\sqrt{2}}\end{aligned}
+  \right.
+  =  \left\{
+  \begin{aligned}&amp;\ket{00}\\ &amp;\ket{10}\\ &amp;(\mathrm{SH} \ket{0}) \ket{1} \\ &amp;(\mathrm{SH }\ket{1}) \ket{1} \end{aligned}
+  \right.
+</span></p>
+<ol type="1">
+<li>Apply <span class="math inline">\mathrm{CNOT}_{12}</span> to the first and second qubit.</li>
+<li>Measure <span class="math inline">Z</span> with result <span class="math inline">s_1</span> on the second qubit. Adaptively apply an <span class="math inline">S \cdot H</span> gate if <span class="math inline">s_1 = 1</span>, then measure <span class="math inline">Z</span> with result <span class="math inline">s_2</span> on the first qubit.</li>
+<li>Then we get the estimator <span class="math inline">\hat{o}:=\prod_{k} i^{2s_2^{(k)} + s_1^{(k)}}</span>.</li>
+<li>Since we know <span class="math inline">\mathrm{tr}(P \rho^2)</span> is real-valued, we can directly set <span class="math inline">\hat{o} = 0</span> if <span class="math inline">\hat{o} \in \{+i,-i\}</span>. Then <span class="math inline">\hat{o}:=\mathrm{Re}\left[\prod_{k} i^{2s_2^{(k)} + s_1^{(k)}}\right]</span>.</li>
+</ol>
+</div>
+</div>
+</div>
+<p>We note that the Purity <strong>CANNOT</strong> be simultaneously estimated using the results of <span class="math inline">\mathbf{s}_1</span> and <span class="math inline">\mathbf{s}_2</span> since <span class="math inline">\mathrm{SWAP}\ket{\Phi^+} = i \ket{\Phi^-}</span>.</p>
+</section>
+<section id="direct-generalization-of-lcs" class="level4">
+<h4 class="anchored" data-anchor-id="direct-generalization-of-lcs">Direct Generalization of LCS</h4>
+</section>
+<section id="non-linear-pauli-classical-shadow" class="level4">
+<h4 class="anchored" data-anchor-id="non-linear-pauli-classical-shadow">Non-linear Pauli Classical Shadow</h4>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

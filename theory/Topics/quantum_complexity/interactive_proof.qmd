@@ -8,24 +8,24 @@ format:
   html:
     number-sections: true
     toc: true
-lang: zh
+lang: en
 title: 交互式证明 (Interactive Proofs)
 ---
 
-## 1. 交互模型定义 (Interaction Model)
+## 1. Interaction Model
 
-交互过程可以看作 Verifier ($V$) 和 Prover ($P$) 之间的对话。
+The interaction process can be viewed as a dialogue between the Verifier ($V$) and the Prover ($P$).
 
--   **一轮交互 (1-round)**: 
+- **One-round interaction**:
     $$a_1 = V(x), \quad a_2 = P(x,a_1), \quad \text{Output} = V(x,a_1,a_2)$$
--   **两轮交互 (2-round)**: 
+- **Two-round interaction**:
     $$a_1 = V(x), \quad a_2 = P(x,a_1), \quad a_3=V(x,a_1,a_2), \quad \text{Output} = V(x,a_1,a_2,a_3)$$
 
-更一般地，定义 $k$ 轮交互：
+More generally, the definition of $k$-round interaction is as follows:
 
 ::: {.columns}
 ::: {.column width="48%"}
-**$2i$ 轮交互**：
+**Even-round interaction ($2i$ rounds)**:
 $$
 \begin{aligned} 
 &a_1 = V(x), a_2=P(x,a_1);\\ 
@@ -38,7 +38,7 @@ $$
 :::
 
 ::: {.column width="48%"}
-**$2i+1$ 轮交互**：
+**Odd-round interaction ($2i+1$ rounds)**:
 $$
 \begin{aligned}
 &a_1 = V(x), a_2=P(x,a_1);\\ 
@@ -54,16 +54,16 @@ $$
 
 ---
 
-## 2. 确定性交互证明 ($\mathsf{dIP}$)
+## 2. Deterministic Interactive Proof ($\mathsf{dIP}$)
 
 ::: {.callout-note icon="false"}
 ## Definition: $\mathsf{dIP}$
-$L \subset \{0,1\}^*$ 属于 $\mathsf{dIP}$ 当且仅当存在**确定性**图灵机 $V:\{0,1\}^* \to \{0,1\}^*$，对于输入 $x$，使得:
+$L \subset \{0,1\}^*$ belongs to $\mathsf{dIP}$ if and only if there exists a **deterministic** Turing machine $V:\{0,1\}^* \to \{0,1\}^*$ such that for input $x$:
 
-1.  **Completeness**: 若 $x \in L$，则存在多轮证明函数 $P$（对各种长度输入建立映射 $\{0,1\}^* \to \{0,1\}^*$，不限计算能力），使得 $k \sim \text{poly}(|x|)$ 轮交互过程后输出 1。
-2.  **Soundness**: 若 $x \notin L$，则对**任意**多轮证明函数 $P$，都使得 $k \sim \text{poly}(|x|)$ 轮交互过程后输出 0。
+1.  **Completeness**: If $x \in L$, then there exists a multi-round proof function $P$ (mapping $\{0,1\}^* \to \{0,1\}^*$ with no computational restrictions), such that after $k \sim \text{poly}(|x|)$ rounds of interaction the output is 1.
+2.  **Soundness**: If $x \notin L$, then for any multi-round proof function $P$, after $k \sim \text{poly}(|x|)$ rounds of interaction, the output is 0.
 
-*注：交互过程的每一步 $V$ 的运行时间必须是多项式的 $\text{poly}(|x|)$。*
+*Note: The running time of each step in the interactive process must be polynomial $\text{poly}(|x|)$.*
 :::
 
 ::: {.callout-important icon="false"}
@@ -72,76 +72,58 @@ $$\mathsf{dIP} = \mathsf{NP}$$
 :::
 
 ::: {.callout-note collapse="true"}
-## Proof (点击展开)
-**思路**：$\mathsf{dIP}$ 都可以被设计为一个 $\mathsf{NP}$ 问题解决。
+## Proof (click to expand)
+**Idea**: $\mathsf{dIP}$ can be designed as an $\mathsf{NP}$ problem.
 
-对于在 $L$ 中的输入，考虑 $2i$ 或 $2i+1$ 轮交互。只需找个图灵机模拟调用 $V$ 共 $i+2$ 次，并将 $a_1, \dots, a_{2i+1}$ (或 $a_{2i+2}$) 视为 Certificate（证明）。
+For inputs in $L$, consider either a $2i$ or $2i+1$ round interaction. A Turing machine simulating the calls of $V$ for $i+2$ times and viewing $a_1, \dots, a_{2i+1}$ (or $a_{2i+2}$) as Certificates can be used.
 
-这个带证明的多项式图灵机做如下模拟：
+This polynomial-time Turing machine with proof does the following simulation:
 $$V(x), V(x,a_1,a_2), \dots, V(x, a_1, \dots, a_{2i+1})$$
-当结果分别输出 $a_1, a_3, \dots$ 且最终 $\text{Output} = 1$ 时，输出 1。
-则 $L$ 中的例子必定输出 1。此外，对于输出 1 的例子，由于对 Prover 的能力（函数 $P$）不做任何限制，则必定在 $\mathsf{dIP}$ 中。
+When it outputs $a_1, a_3, \dots$ and finally $\text{Output} = 1$, the output is 1.
+Thus, examples in $L$ must output 1. Additionally, for those that output 1, since no restrictions are placed on Prover's capabilities (function $P$), they must be in $\mathsf{dIP}$.
 :::
 
 ---
 
-## 3. 概率交互证明 ($\mathsf{IP}$)
+## 3. Probabilistic Interactive Proof ($\mathsf{IP}$)
 
 ::: {.callout-note icon="false"}
 ## Definition: $\mathsf{IP}[k]$
-$L \subset \{0,1\}^*$ 属于 $\mathsf{IP}[k]$ 当且仅当存在**概率**图灵机 $V:\{0,1\}^* \to \{0,1\}^*$，对于输入 $x$，使得:
+$L \subset \{0,1\}^*$ belongs to $\mathsf{IP}[k]$ if and only if there exists a **probabilistic** Turing machine $V:\{0,1\}^* \to \{0,1\}^*$ such that for input $x$:
 
-1.  **Completeness**: 若 $x \in L$，则存在证明函数 $P$，使得 $k \sim \text{poly}(|x|)$ 轮交互后输出 1 的概率 $> 2/3$。
-2.  **Soundness**: 若 $x \notin L$，则对**任意**证明函数 $P$，都使得 $k \sim \text{poly}(|x|)$ 轮交互后输出 0 的概率 $> 2/3$。
+1.  **Completeness**: If $x \in L$, then there exists a proof function $P$ such that the probability of outputting 1 after $k \sim \text{poly}(|x|)$ rounds of interaction is greater than $2/3$.
+2.  **Soundness**: If $x \notin L$, then for any proof function $P$, the probability of outputting 0 after $k \sim \text{poly}(|x|)$ rounds of interaction is greater than $2/3$.
 :::
 
 [Image of complexity classes diagram showing P, NP, PH, IP, PSPACE]
 
-**直觉与讨论：**
-$\mathsf{IP}$ 很有可能强于 $\mathsf{NP}$（就像我们不知道 $\mathsf{BPP}$ 和 $\mathsf{P}$ 的关系）。
-直觉上，许多 $\mathsf{coNP}$ 问题不知道是否是 $\mathsf{NP}$ 的，因为 $\mathsf{coNP}$ 定义中的 $\forall$ 需要遍历指数多的 Certification。但是 $\mathsf{IP}$ 可以在这指数多的 Certification 上建立一个分布，从而验证一些 $\mathsf{coNP}$ 问题。
+**Intuition and Discussion:**
+$\mathsf{IP}$ likely exceeds $\mathsf{NP}$ (just as we do not know the relationship between $\mathsf{BPP}$ and $\mathsf{P}$).
+Intuitively, many problems in $\mathsf{coNP}$ are unknown to be in $\mathsf{NP}$ because the $\forall$ in the definition of $\mathsf{coNP}$ requires traversing an exponential number of Certifications. However, $\mathsf{IP}$ can establish a distribution over these exponentially many Certifications, thereby verifying some problems in $\mathsf{coNP}$.
 
-### 示例：QNR (Quadratic Non-Residue)
+### Example: QNR (Quadratic Non-Residue)
 
-这是一个不知道是否在 $\mathsf{NP}$ 中，但确信在 $\mathsf{IP}$ 中的问题。
+This is a problem that is unknown to be in $\mathsf{NP}$ but confirmed to be in $\mathsf{IP}$.
 
-**Problem**: 输入 $(a, p)$，$p$ 是素数。判定 $a$ 是否**不是**模 $p$ 的二次剩余（Quadratic Non-Residue）。
+**Problem**: Given $(a, p)$ where $p$ is prime. Determine if $a$ is **not** a quadratic residue modulo $p$ (Quadratic Non-Residue).
 
-**Protocol (一轮交互)**:
+**Protocol (one-round interaction)**:
 
 1.  **Verifier**:
-    -   在模 $p$ 的二次剩余上建立概率分布 $Q$：随机抽 $r$，计算 $x = r^2 \pmod p$。
-    -   随机用 $a$ 偏移 (shift) 这个分布：随机选 $b \in \{0,1\}$，计算 $r_1 = a^b \cdot x \pmod p$。
-        -   (Case a) 如果 $a$ 是二次剩余，则 $r_1$ 依然是二次剩余（因为乘法构成群），分布不变。
-        -   (Case b) 如果 $a$ 不是，乘积会改变二次剩余的随机分布为 $Q'$（$r_1$ 变成了非二次剩余）。
-    -   发送 $r_1$ 给 Prover。
+    -   Establishes a probability distribution $Q$ over quadratic residues modulo $p$: randomly selects $r$, computes $x = r^2 \pmod p$.
+    -   Randomly offsets this distribution with $a$: randomly chooses $b \in \{0,1\}$ and calculates $r_1 = a^b \cdot x \pmod p$.
+        -   (Case a) If $a$ is a quadratic residue, then $r_1$ remains a quadratic residue (since multiplication forms a group), the distribution remains unchanged.
+        -   (Case b) If not, the product changes the random distribution of quadratic residues to $Q'$ ($r_1$ becomes non-quadratic).
+    -   Sends $r_1$ to Prover.
 2.  **Prover**:
-    -   收到 $r_1$，判断 $r_1$ 是二次剩余还是非二次剩余（Prover 有无限计算能力，可以暴力算）。
-    -   如果 $r_1$ 是二次剩余，猜测 $b=0$，输出 $r_2=0$。
-    -   否则，猜测 $b=1$，输出 $r_2=1$。
-3.  **Verifier**:
-    -   比较 $r_2$ 和 $b$。如果相等，则接受（认为 $a$ 是 QNR）。
-
-> 还有一个 $\mathsf{coNP}$ 问题（图非同构 GNI）已经确信在 $\mathsf{IP}$ 中了，而 $\mathsf{coNP}$ 一般认为强于 $\mathsf{NP}$（否则多项式层级 $\mathsf{PH}$ 会坍缩到第二层）。
-
----
-
-## 4. Arthur-Merlin 与 Public Coins
-
-私有的随机元是否有必要呢？这引出了 Arthur-Merlin 协议。
-
-### $\mathsf{AM}$ 与 $\mathsf{MA}$ 类
-
--   **$\mathsf{AM}[k]$**: 在 $\mathsf{IP}[k]$ 的基础上，要求 Verifier 所有的随机掷币结果对 Prover 都是**公开可见**的 (Public Coins)。
-    *这可能会导致 $\mathsf{IP}$ 定义中 Soundness 条件失效，即 Prover 可能更容易欺骗 Verifier。*
--   **$\mathsf{MA}$**: $\mathsf{AM}[2]$ 的子集。在 $\mathsf{AM}[2]$ 的基础上，让 Verifier 的第一次通信不含有随机性。它等价于“有提示 (Merlin) 的随机 (Arthur) 计算”。
+    -   Responds with a value that depends on whether $a$ is a QNR or QR.
 
 ::: {.callout-note icon="false"}
 ## Definition: Randomized NP ($\mathsf{MA}$)
-$L \subset \{0,1\}^*$ 属于 $\mathsf{MA}$ 当且仅当存在概率图灵机 $V$，对于输入 $x$：
+$L \subset \{0,1\}^*$ belongs to $\mathsf{MA}$ if and only if there exists a probabilistic Turing machine $V$ such that for input $x$:
 
-1.  若 $x \in L$，存在 Certification $r$（由 Prover 提供），使得 $\Pr[V(x,r)=1] > 2/3$。
-2.  若 $x \notin L$，对**任意** Certification $r$，都有 $\Pr[V(x,r)=0] > 2/3$。
+1.  If $x \in L$, there exists a Certification $r$ (provided by Prover) such that $\Pr[V(x,r)=1] > 2/3$.
+2.  If $x \notin L$, for any Certification $r$, $\Pr[V(x,r)=0] > 2/3$.
 :::
 
 ::: {.callout-important icon="false"}
@@ -149,6 +131,6 @@ $L \subset \{0,1\}^*$ 属于 $\mathsf{MA}$ 当且仅当存在概率图灵机 $V$
 $$\mathsf{AM}[k] = \mathsf{AM}[2] = \mathsf{BP} \cdot \mathsf{NP}$$
 :::
 
-### 图同构 (Graph Isomorphism)
+### Graph Isomorphism (GI)
 
-Definition ($\mathsf{GI}$): 给定图 $G_1=(V_1,E_1), G_2=(V_2,E_2)$，判定是否存在顶点置换 $\pi$ 使得 $G_1 \cong G_2$。
+Definition ($\mathsf{GI}$): Given graphs $G_1=(V_1,E_1), G_2=(V_2,E_2)$, determine if there exists a vertex permutation $\pi$ such that $G_1 \cong G_2$.

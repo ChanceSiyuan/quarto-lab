@@ -1,0 +1,414 @@
+---
+categories:
+- Readings
+date: '2026-01-19'
+lang: en
+title: Virtual Distillation for Quantum Error Mitigation
+bibliography: refs.bib
+---
+
+**Citation**: William J. Huggins, et al., 2021, Physical Review X
+
+## Abstract and Overview
+
+This paper proposes **virtual distillation**, a near-term quantum error mitigation strategy that uses $M$ copies of a noisy state $\rho$ to estimate expectation values with respect to $\rho^M/\text{Tr}(\rho^M)$ without explicitly preparing it. The key contributions are:
+
+1. A practical protocol using cyclic shift measurements to access $\text{Tr}(O\rho^M)$
+2. Analytical framework showing orthogonal errors are exponentially suppressed while non-orthogonal errors set a performance floor
+3. Sample complexity analysis and collective measurement improvements
+4. Numerical demonstrations of multi-order magnitude error suppression
+
+---
+
+# Part 1: Core Theoretical Framework
+
+## 1.1 Rigorous Definitions & Intuitions
+
+::: {.callout-note icon="false"}
+## Definition 1: Virtual Distillation Estimator
+
+Given $M$ copies of a noisy density matrix $\rho$ and an observable $O$, the **virtual distillation estimator** for the error-mitigated expectation value is:
+$$
+\langle O \rangle_{\text{corrected}} := \frac{\text{Tr}(O \rho^M)}{\text{Tr}(\rho^M)}
+$$
+
+This estimator measures expectation values with respect to the "virtually distilled" state $\rho^M/\text{Tr}(\rho^M)$ without explicitly preparing it.
+:::
+
+### Intuition & Example
+
+**Why this definition?** Consider the spectral decomposition $\rho = \sum_i p_i |i\rangle\langle i|$ where $p_0 > p_1 > p_2 > \cdots$. Then:
+$$
+\frac{\rho^M}{\text{Tr}(\rho^M)} = \frac{\sum_i p_i^M |i\rangle\langle i|}{\sum_i p_i^M}
+$$
+
+The relative weight of the $i$-th eigenvector is $p_i^M/\sum_j p_j^M \approx p_i^M/p_0^M = (p_i/p_0)^M$, which decays **exponentially** in $M$ for $i \neq 0$.
+
+**Toy Example**: Consider a 2-level system with noisy state:
+$$
+\rho = 0.7|0\rangle\langle 0| + 0.3|1\rangle\langle 1|
+$$
+
+For $M=2$:
+$$
+\frac{\rho^2}{\text{Tr}(\rho^2)} = \frac{0.49|0\rangle\langle 0| + 0.09|1\rangle\langle 1|}{0.49 + 0.09} = 0.845|0\rangle\langle 0| + 0.155|1\rangle\langle 1|
+$$
+
+The weight of $|0\rangle$ increased from 70% to 84.5%, while $|1\rangle$ decreased from 30% to 15.5%. The ratio changed from $0.3/0.7 \approx 0.43$ to $(0.3/0.7)^2 \approx 0.18$.
+
+**Physical interpretation**: This "distills" the noisy state toward its dominant eigenvector (closest pure state) by exponentially suppressing contributions from non-dominant eigenvectors.
+
+---
+
+::: {.callout-note icon="false"}
+## Definition 2: Cyclic Shift Operator
+
+For $M$ copies of an $N$-qubit system, the **cyclic shift operator** $S^{(M)}$ acts on product states as:
+$$
+S^{(M)}|\psi_1\rangle \otimes |\psi_2\rangle \otimes \cdots \otimes |\psi_M\rangle = |\psi_2\rangle \otimes |\psi_3\rangle \otimes \cdots \otimes |\psi_M\rangle \otimes |\psi_1\rangle
+$$
+
+For $M=2$, this reduces to the **swap operator**: $S^{(2)} = \text{SWAP}$.
+:::
+
+### Intuition & Example
+
+**Why this operator?** The cyclic shift "threads" multiple copies of $\rho$ together in a cycle, enabling us to compute $\text{Tr}(\rho^M)$ from measurements on $\rho^{\otimes M}$.
+
+**Toy Example**: For two qubits, the swap operator acts as:
+$$
+S^{(2)}|00\rangle = |00\rangle, \quad S^{(2)}|01\rangle = |10\rangle, \quad S^{(2)}|10\rangle = |01\rangle, \quad S^{(2)}|11\rangle = |11\rangle
+$$
+
+In matrix form (basis $\{|00\rangle, |01\rangle, |10\rangle, |11\rangle\}$):
+$$
+S^{(2)} = \begin{bmatrix}
+1 & 0 & 0 & 0 \\
+0 & 0 & 1 & 0 \\
+0 & 1 & 0 & 0 \\
+0 & 0 & 0 & 1
+\end{bmatrix}
+$$
+
+**Eigenspaces**: $S^{(2)}$ has eigenvalues $\pm 1$:
+- $+1$ eigenspace (symmetric): $|00\rangle, |11\rangle, (|01\rangle + |10\rangle)/\sqrt{2}$
+- $-1$ eigenspace (antisymmetric): $(|01\rangle - |10\rangle)/\sqrt{2}$
+
+---
+
+::: {.callout-note icon="false"}
+## Definition 3: Symmetrized Observable
+
+For an observable $O$ acting on a single copy and $M$ total copies, the **symmetrized observable** is:
+$$
+O^{(M)} := \frac{1}{M} \sum_{i=1}^M O^{\mathbf{i}}
+$$
+
+where $O^{\mathbf{i}}$ denotes $O$ acting on the $i$-th copy (with identity on all other copies).
+:::
+
+### Intuition & Example
+
+**Why symmetrize?** The symmetrized observable commutes with the cyclic shift: $[O^{(M)}, S^{(M)}] = 0$. This allows simultaneous diagonalization, simplifying the measurement protocol.
+
+**Toy Example**: For $M=2$ and single-qubit $Z$ operator:
+$$
+Z^{(2)} = \frac{1}{2}(Z^{\mathbf{1}} + Z^{\mathbf{2}}) = \frac{1}{2}(Z \otimes I + I \otimes Z)
+$$
+
+On basis states:
+$$
+Z^{(2)}|00\rangle = |00\rangle, \quad Z^{(2)}|01\rangle = 0, \quad Z^{(2)}|10\rangle = 0, \quad Z^{(2)}|11\rangle = -|11\rangle
+$$
+
+**Verification of commutativity**: Both $Z^{(2)}$ and $S^{(2)}$ are diagonal in the Bell basis, so they commute.
+
+---
+
+## 1.2 Main Theorems & Key Insights
+
+::: {.callout-important icon="false"}
+## Theorem 1: Cyclic Shift Trace Identity (Fundamental Identity)
+
+For any observable $O$ acting on a single system, density matrix $\rho$, and $M$ copies:
+$$
+\text{Tr}(O \rho^M) = \text{Tr}(O^{\mathbf{i}} S^{(M)} \rho^{\otimes M})
+$$
+
+where $O^{\mathbf{i}}$ is $O$ acting on any subsystem $i$ (the choice of $i$ doesn't matter).
+:::
+
+### Intuition of Validity
+
+**Why is this true?** The cyclic shift "closes the loop" in the trace. When we compute $\text{Tr}(O\rho^M)$, we're summing over indices:
+$$
+\text{Tr}(O\rho^M) = \sum_{i_1, \ldots, i_M} \langle i_1| O\rho |i_M\rangle \langle i_M| \rho |i_{M-1}\rangle \cdots \langle i_2| \rho |i_1\rangle
+$$
+
+The right-hand side $\text{Tr}(O^{\mathbf{1}} S^{(M)} \rho^{\otimes M})$ computes:
+$$
+\sum_{i_1, \ldots, i_M, j_1, \ldots, j_M} \langle j_1, \ldots, j_M| O^{\mathbf{1}} S^{(M)} |i_1, \ldots, i_M\rangle \langle i_1| \rho |j_1\rangle \cdots \langle i_M| \rho |j_M\rangle
+$$
+
+The cyclic shift $S^{(M)}$ permutes the indices so that $O$ connects $i_M$ to $j_1$, creating the same cyclic structure as $\text{Tr}(O\rho^M)$.
+
+**Verification with toy example**: For $M=2$, $O=Z$, and $\rho = p_0|0\rangle\langle 0| + p_1|1\rangle\langle 1|$:
+
+Left side:
+$$
+\text{Tr}(Z\rho^2) = p_0^2 - p_1^2
+$$
+
+Right side:
+$$
+\text{Tr}(Z^{\mathbf{1}} S^{(2)} \rho^{\otimes 2}) = \text{Tr}((Z \otimes I) S^{(2)} (p_0^2|00\rangle\langle 00| + p_0p_1|01\rangle\langle 01| + \cdots))
+$$
+
+After applying $S^{(2)}$ and $Z^{\mathbf{1}}$, we get $p_0^2 - p_1^2$. ✓
+
+---
+
+::: {.callout-important icon="false"}
+## Theorem 2: Orthogonal Error Suppression
+
+Under the orthogonal error model where errors occur with probability $p$ per gate and send the state to orthogonal error states, for a circuit with $G$ gates:
+$$
+\text{Fidelity}(\rho_{\text{corrected}}, \rho_{\text{ideal}}) = \frac{\text{Tr}(\rho_0 \rho^M)}{\text{Tr}(\rho^M)} \simeq 1 - Gp^M + O(Gp^{M+1})
+$$
+
+where $\rho_0$ is the ideal state and $\rho_{\text{corrected}} = \rho^M/\text{Tr}(\rho^M)$.
+:::
+
+### Intuition of Validity
+
+**Why exponential suppression?** In the orthogonal error model:
+$$
+\rho = (1-p)^G\rho_0 + \text{(orthogonal error terms)}
+$$
+
+When we compute $\rho^M$, each term gets raised to the $M$-th power:
+$$
+\rho^M \approx (1-p)^{MG}\rho_0 + \text{(error terms with coefficients } \sim p^M)
+$$
+
+The key insight is that **errors compound multiplicatively**: to have the ideal state in all $M$ copies, we need no errors in any copy, which happens with probability $(1-p)^{MG}$. But to have at least one error in at least one copy requires only probability $\sim Mp(1-p)^{(M-1)G}$, which is suppressed by an extra factor of $p^{M-1}$.
+
+After normalization by $\text{Tr}(\rho^M) \approx ((1-p)^M + p^M)^G$, the fidelity becomes:
+$$
+\frac{(1-p)^{MG}}{((1-p)^M + p^M)^G} \approx \frac{(1-p)^{MG}}{(1-2p^M)^G} \approx 1 - Gp^M
+$$
+
+**Comparison**: Without virtual distillation, the fidelity is $\approx 1 - Gp$. With $M=2$, we get $1 - Gp^2$, achieving **quadratic error suppression**.
+
+---
+
+::: {.callout-important icon="false"}
+## Theorem 3: Non-Orthogonal Error Floor
+
+When noise causes the dominant eigenvector to drift by first-order perturbation $\Delta$, the trace distance between the corrected state and the ideal state satisfies:
+$$
+T(\rho_{\text{corrected}}, \rho_{\text{ideal}}) \geq \Delta \sqrt{\frac{\langle 0^{(1)}|0^{(1)}\rangle}{2}} + O(\Delta^2)
+$$
+
+where $|0^{(1)}\rangle$ is the first-order correction to the dominant eigenvector. This sets a **floor** on the performance of virtual distillation.
+:::
+
+### Intuition of Validity
+
+**Why a floor?** Virtual distillation can only suppress the **relative weights** of non-dominant eigenvectors, but it cannot change the **direction** of the dominant eigenvector itself.
+
+If noise causes coherent rotation of the state (e.g., over-rotation in a gate), the dominant eigenvector of $\rho$ is no longer the ideal state $|0\rangle$ but some perturbed state $|D\rangle = |0\rangle + \Delta|0^{(1)}\rangle + O(\Delta^2)$.
+
+As $M \to \infty$, virtual distillation converges to the pure state $|D\rangle\langle D|$, not $|0\rangle\langle 0|$. The distance between these is:
+$$
+T(|D\rangle\langle D|, |0\rangle\langle 0|) \approx \Delta \|\langle 0^{(1)}\rangle\|
+$$
+
+This is **first-order** in $\Delta$, meaning even small coherent errors create a floor that cannot be overcome by increasing $M$.
+
+**Physical interpretation**: Stochastic errors create a "cloud" of orthogonal error states around the ideal state. Virtual distillation suppresses this cloud exponentially. But coherent errors **shift the center** of the cloud away from the ideal state, and virtual distillation converges to this shifted center.
+
+---
+
+# Part 2: Technical Deep Dive
+
+## 2.1 Proof of the Cyclic Shift Trace Identity
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+
+We prove $\text{Tr}(O \rho^M) = \text{Tr}(O^{\mathbf{i}} S^{(M)} \rho^{\otimes M})$ by expanding both sides in the computational basis.
+
+**Step 1: Expand the left-hand side**
+
+Without loss of generality, choose $i=1$. Write $\rho$ in the computational basis:
+$$
+\rho = \sum_{k,\ell} \rho_{k,\ell} |k\rangle\langle \ell|
+$$
+
+Then:
+$$
+\rho^M = \sum_{k_1,\ell_1, \ldots, k_M,\ell_M} \rho_{k_1,\ell_1} \cdots \rho_{k_M,\ell_M} |k_1\rangle\langle \ell_1| \cdots |k_M\rangle\langle \ell_M|
+$$
+
+Taking the trace with $O$:
+$$
+\text{Tr}(O\rho^M) = \sum_{k_1,\ell_1, \ldots, k_M,\ell_M} \rho_{k_1,\ell_1} \cdots \rho_{k_M,\ell_M} \langle \ell_M| O |k_1\rangle \langle \ell_1|k_2\rangle \cdots \langle \ell_{M-1}|k_M\rangle
+$$
+
+**Key observation**: The trace forces $\ell_1 = k_2, \ell_2 = k_3, \ldots, \ell_{M-1} = k_M$, creating a "chain" that closes with $O$ connecting $\ell_M$ to $k_1$.
+
+**Step 2: Expand the right-hand side**
+
+The cyclic shift operator satisfies:
+$$
+S^{(M)}|i_1, i_2, \ldots, i_M\rangle = |i_2, i_3, \ldots, i_M, i_1\rangle
+$$
+
+Therefore:
+$$
+\begin{aligned}
+\text{Tr}(O^{\mathbf{1}} S^{(M)} \rho^{\otimes M}) &= \sum_{i_1, \ldots, i_M, j_1, \ldots, j_M, k} O_{k,j_1} \langle j_1, \ldots, j_M| S^{(M)} |i_1, \ldots, i_M\rangle \rho_{i_1,j_1} \cdots \rho_{i_M,j_M} \\
+&= \sum_{i_1, \ldots, i_M, j_1, \ldots, j_M, k} O_{k,j_1} \delta_{j_2,i_1} \delta_{j_3,i_2} \cdots \delta_{j_1,i_M} \rho_{i_1,k} \rho_{i_2,j_2} \cdots \rho_{i_M,j_M}
+\end{aligned}
+$$
+
+**Step 3: Apply the delta functions**
+
+The delta functions force $j_2 = i_1, j_3 = i_2, \ldots, j_1 = i_M$. Substituting:
+$$
+\text{Tr}(O^{\mathbf{1}} S^{(M)} \rho^{\otimes M}) = \sum_{i_1, \ldots, i_M, k} O_{k,i_M} \rho_{i_1,k} \rho_{i_2,i_1} \cdots \rho_{i_M,i_{M-1}}
+$$
+
+**Step 4: Relabel indices**
+
+Relabel $k \to \ell_M, i_1 \to k_1, i_2 \to k_2, \ldots, i_M \to k_M$ and $i_1 \to \ell_1, \ldots, i_{M-1} \to \ell_{M-1}$:
+$$
+\text{Tr}(O^{\mathbf{1}} S^{(M)} \rho^{\otimes M}) = \sum_{k_1, \ldots, k_M, \ell_M} O_{k_1,\ell_M} \rho_{k_1,\ell_M} \rho_{k_M,k_{M-1}} \cdots \rho_{k_2,k_1} = \text{Tr}(O\rho^M)
+$$
+
+This completes the proof. The key insight is that the cyclic shift creates the same index structure as the matrix product $\rho^M$.
+
+:::
+
+---
+
+## 2.2 Derivation of Orthogonal Error Suppression
+
+::: {.callout-note collapse="true"}
+## Detailed Derivation (Click to expand)
+
+**Setup**: Consider a circuit with $G$ gates. Model each gate as a stochastic channel where with probability $p$, an error occurs and sends the state to a new orthogonal error state. With probability $1-p$, the gate is perfect.
+
+**Step 1: Density matrix after $G$ gates**
+
+After $G$ gates, the density matrix is a mixture of the ideal state and error states:
+$$
+\rho = (1-p)^G\rho_0 + (1-p)^{G-1}p \sum_{j=1}^G \rho_{j} + (1-p)^{G-2}p^2\sum_{j_1 \neq j_2} \rho_{j_1,j_2} + \cdots
+$$
+
+where:
+- $\rho_0$ is the ideal state (no errors)
+- $\rho_j$ are states with exactly one error at gate $j$
+- $\rho_{j_1,j_2}$ are states with exactly two errors at gates $j_1$ and $j_2$
+- All these states are mutually orthogonal by assumption
+
+**Step 2: Compute $\rho^M$**
+
+Since all states are orthogonal, $\text{Tr}(\rho_i \rho_j) = \delta_{ij}$. Therefore:
+$$
+\rho^M = (1-p)^{MG}\rho_0 + (1-p)^{(M-1)G}p^M \sum_{j=1}^G \rho_j + \cdots
+$$
+
+**Key observation**: Each coefficient gets raised to the $M$-th power. The coefficient of $\rho_0$ is $(1-p)^{MG}$, while error terms have coefficients $\sim p^M$.
+
+**Step 3: Compute the purity $\text{Tr}(\rho^M)$**
+
+$$
+\text{Tr}(\rho^M) = (1-p)^{MG} + (1-p)^{(M-1)G}p^M \cdot G + \cdots
+$$
+
+For small $p$, the dominant terms are:
+$$
+\text{Tr}(\rho^M) \approx (1-p)^{MG} + Gp^M(1-p)^{(M-1)G}
+$$
+
+**Step 4: Compute the fidelity**
+
+$$
+\text{Fidelity} = \frac{\text{Tr}(\rho_0 \rho^M)}{\text{Tr}(\rho^M)} = \frac{(1-p)^{MG}}{(1-p)^{MG} + Gp^M(1-p)^{(M-1)G}}
+$$
+
+Dividing numerator and denominator by $(1-p)^{MG}$:
+$$
+\text{Fidelity} = \frac{1}{1 + Gp^M(1-p)^{-G}} \approx \frac{1}{1 + Gp^M} \approx 1 - Gp^M
+$$
+
+**Alternative derivation using binomial expansion**:
+
+Note that $\text{Tr}(\rho^M)$ can be written as:
+$$
+\text{Tr}(\rho^M) = \sum_{\text{all states}} (\text{coefficient})^M = ((1-p)^M + p^M)^G
+$$
+
+using the multinomial theorem. Then:
+$$
+\text{Fidelity} = \frac{(1-p)^{MG}}{((1-p)^M + p^M)^G}
+$$
+
+For small $p$: $(1-p)^M \approx 1 - Mp$ and $p^M \approx 0$, so:
+$$
+\text{Fidelity} \approx \frac{(1-Mp)^G}{(1-Mp + p^M)^G} \approx (1-Mp)^G (1 + Gp^M) \approx 1 - GMp + Gp^M \approx 1 - Gp^M
+$$
+
+for $M \geq 2$ (since $p^M \ll Mp$ for small $p$).
+
+:::
+
+---
+
+## 2.3 Sample Complexity and Variance Analysis
+
+::: {.callout-important icon="false"}
+## Theorem 4: Variance of Virtual Distillation Estimator
+
+For $M=2$ and $R$ measurement repetitions, the variance of the error-mitigated estimator is:
+$$
+\begin{aligned}
+\text{Var}(\langle O \rangle_{\text{corrected}}) \approx \frac{1}{R}\Big(&\frac{1}{\text{Tr}(\rho^2)^2}\big(\frac{1}{2}\text{Tr}(\rho O^2) + \frac{1}{2}\text{Tr}(\rho O)^2 - \text{Tr}(\rho^2 O)^2\big) \\
+&- 2 \frac{\text{Tr}(\rho^2 O)}{\text{Tr}(\rho^2)^3}\big(\text{Tr}(\rho O) - \text{Tr}(\rho^2 O)\text{Tr}(\rho^2)\big) \\
+&+ \frac{\text{Tr}(\rho^2 O)^2}{\text{Tr}(\rho^2)^4}\big(1 - \text{Tr}(\rho^2)^2\big)\Big)
+\end{aligned}
+$$
+:::
+
+**Key insights**:
+
+1. **Pure state limit**: When $\rho$ is pure, $\text{Tr}(\rho^2) = 1$ and the variance reduces to:
+   $$
+   \text{Var}(\langle O \rangle_{\text{corrected}}) = \frac{1}{2R}\big(\text{Tr}(\rho O^2) - \text{Tr}(\rho O)^2 \big)
+   $$
+   This is exactly the variance from $2R$ independent measurements of $O$.
+
+2. **Scaling with purity**: The leading term scales as $1/\text{Tr}(\rho^2)^2$, meaning the number of samples required grows as the purity decreases.
+
+3. **Comparison to naive measurement**: Without virtual distillation, measuring $O$ on $\rho$ requires $R$ samples with variance $\text{Var}(\langle O \rangle) = \frac{1}{R}(\text{Tr}(\rho O^2) - \text{Tr}(\rho O)^2)$. Virtual distillation uses $2R$ samples but measures a less noisy state, potentially reducing the total error.
+
+---
+
+## Key Takeaways
+
+1. **Virtual distillation exponentially suppresses orthogonal errors** from $O(Gp)$ to $O(Gp^M)$, providing quadratic suppression for $M=2$.
+
+2. **Non-orthogonal errors set a performance floor** that scales linearly with the error strength, limiting the benefit of increasing $M$.
+
+3. **The technique is most effective for stochastic errors** and offers no protection against purely coherent errors.
+
+4. **Sample complexity scales as $\text{Tr}(\rho^2)^{-2}$**, which can be improved with collective measurements when many copies are available.
+
+5. **Implementation is simple**: For $M=2$, only one additional layer of two-qubit gates is needed.
+
+## References
+
+::: {#refs}
+:::
