@@ -81,7 +81,8 @@ ul.task-list li input[type="checkbox"] {
 
     const options = {
       valueNames: ['listing-date','listing-title','listing-categories',{ data: ['index'] },{ data: ['categories'] },{ data: ['listing-date-sort'] },{ data: ['listing-title-sort'] }],
-      
+      page: 5,
+    pagination: { item: "<li class='page-item'><a class='page page-link' href='#'></a></li>" },
       searchColumns: ["listing-date","listing-title","listing-author"],
     };
 
@@ -205,6 +206,10 @@ window.Quarto = {
     <a class="nav-link" href="../Experiments/index.html"> 
 <span class="menu-text">Experiment Notes</span></a>
   </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../workspace/workspace.html"> 
+<span class="menu-text">Workspace</span></a>
+  </li>  
 </ul>
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
   <li class="nav-item compact">
@@ -253,7 +258,7 @@ window.Quarto = {
   <li><a href="#posts" id="toc-posts" class="nav-link" data-scroll-target="#posts">Posts</a></li>
   </ul>
 </nav>
-    <h5 class="quarto-listing-category-title">Categories</h5><div class="quarto-listing-category category-default"><div class="category" data-category="">All <span class="quarto-category-count">(13)</span></div><div class="category" data-category="JTIzUA==">#P <span class="quarto-category-count">(1)</span></div><div class="category" data-category="Q2xhc3NpY2FsJTIwU2hhZG93cw==">Classical Shadows <span class="quarto-category-count">(1)</span></div><div class="category" data-category="Q29tcGxleGl0eSUyMFRoZW9yeQ==">Complexity Theory <span class="quarto-category-count">(2)</span></div><div class="category" data-category="SW50ZXJhY3RpdmUlMjBQcm9vZnM=">Interactive Proofs <span class="quarto-category-count">(1)</span></div><div class="category" data-category="UXVhbnR1bSUyMEluZm9ybWF0aW9u">Quantum Information <span class="quarto-category-count">(2)</span></div><div class="category" data-category="UXVhbnR1bSUyMExlYXJuaW5n">Quantum Learning <span class="quarto-category-count">(1)</span></div><div class="category" data-category="UmVhZGluZ3M=">Readings <span class="quarto-category-count">(6)</span></div><div class="category" data-category="UmVhbGl6YXRpb25z">Realizations <span class="quarto-category-count">(3)</span></div></div></div>
+    <h5 class="quarto-listing-category-title">Categories</h5><div class="quarto-listing-category category-default"><div class="category" data-category="">All <span class="quarto-category-count">(17)</span></div><div class="category" data-category="JTIzUA==">#P <span class="quarto-category-count">(1)</span></div><div class="category" data-category="Q2xhc3NpY2FsJTIwU2hhZG93cw==">Classical Shadows <span class="quarto-category-count">(1)</span></div><div class="category" data-category="Q29tcGxleGl0eSUyMFRoZW9yeQ==">Complexity Theory <span class="quarto-category-count">(2)</span></div><div class="category" data-category="SW50ZXJhY3RpdmUlMjBQcm9vZnM=">Interactive Proofs <span class="quarto-category-count">(1)</span></div><div class="category" data-category="UXVhbnR1bSUyMEVycm9yJTIwQ29ycmVjdGlvbg==">Quantum Error Correction <span class="quarto-category-count">(3)</span></div><div class="category" data-category="UXVhbnR1bSUyMEluZm9ybWF0aW9u">Quantum Information <span class="quarto-category-count">(3)</span></div><div class="category" data-category="UXVhbnR1bSUyMExlYXJuaW5n">Quantum Learning <span class="quarto-category-count">(1)</span></div><div class="category" data-category="UmVhZGluZ3M=">Readings <span class="quarto-category-count">(6)</span></div><div class="category" data-category="UmVhbGl6YXRpb25z">Realizations <span class="quarto-category-count">(3)</span></div><div class="category" data-category="U2hhZG93JTIwVG9tb2dyYXBoeQ==">Shadow Tomography <span class="quarto-category-count">(2)</span></div><div class="category" data-category="VGVuc29yJTIwTmV0d29yaw==">Tensor Network <span class="quarto-category-count">(1)</span></div></div></div>
 <!-- main -->
 <main class="content quarto-banner-title-block column-page-left" id="quarto-document-content">
 
@@ -263,7 +268,7 @@ window.Quarto = {
 
 <section id="topics" class="level2">
 <h2 class="anchored" data-anchor-id="topics">Topics</h2>
-<p>This section records the整理 of literature related to quantum computing.</p>
+<p>This section records the literature related to quantum computing.</p>
 <div class="callout callout-style-default callout-tip callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -320,7 +325,35 @@ Categories
 </thead>
 <tbody class="list">
 
-<tr data-index="0" data-categories="UXVhbnR1bSUyMExlYXJuaW5n" data-listing-date-sort="1767801600000" data-listing-file-modified-sort="1768872344805" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="6" data-listing-word-count-sort="1164" data-listing-title-sort="The Weingarten calculus" data-listing-filename-sort="Weingarten_calculus.qmd" onclick="href = this.querySelector('a').getAttribute('href');
+<tr data-index="0" data-categories="UXVhbnR1bSUyMEluZm9ybWF0aW9uJTJDU2hhZG93JTIwVG9tb2dyYXBoeQ==" data-listing-date-sort="1768752000000" data-listing-file-modified-sort="1768879935607" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="17" data-listing-word-count-sort="3382" data-listing-title-sort="Basics of Shadow Tomography" data-listing-filename-sort="intro.qmd" onclick="href = this.querySelector('a').getAttribute('href');
+ if (href) { window.location=href ; return false; }">
+<td>
+<span class="listing-date">Jan 19, 2026</span>
+</td>
+<td>
+<a href="../theory/Topics/Shadow_tomography/intro.html" class="title listing-title">Basics of Shadow Tomography</a>
+</td>
+<td>
+<span class="listing-categories">Quantum Information, Shadow Tomography</span>
+</td>
+
+</tr>
+
+<tr data-index="1" data-categories="UXVhbnR1bSUyMEluZm9ybWF0aW9uJTJDU2hhZG93JTIwVG9tb2dyYXBoeQ==" data-listing-date-sort="1768752000000" data-listing-file-modified-sort="1768893899109" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="54" data-listing-word-count-sort="10790" data-listing-title-sort="Multiple-copy Shadow tomography" data-listing-filename-sort="multicopy.qmd" onclick="href = this.querySelector('a').getAttribute('href');
+ if (href) { window.location=href ; return false; }">
+<td>
+<span class="listing-date">Jan 19, 2026</span>
+</td>
+<td>
+<a href="../theory/Topics/Shadow_tomography/multicopy.html" class="title listing-title">Multiple-copy Shadow tomography</a>
+</td>
+<td>
+<span class="listing-categories">Quantum Information, Shadow Tomography</span>
+</td>
+
+</tr>
+
+<tr data-index="2" data-categories="UXVhbnR1bSUyMExlYXJuaW5n" data-listing-date-sort="1767801600000" data-listing-file-modified-sort="1768872344805" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="6" data-listing-word-count-sort="1164" data-listing-title-sort="The Weingarten calculus" data-listing-filename-sort="Weingarten_calculus.qmd" onclick="href = this.querySelector('a').getAttribute('href');
  if (href) { window.location=href ; return false; }">
 <td>
 <span class="listing-date">Jan 8, 2026</span>
@@ -334,7 +367,7 @@ Categories
 
 </tr>
 
-<tr data-index="1" data-categories="Q29tcGxleGl0eSUyMFRoZW9yeSUyQyUyM1A=" data-listing-date-sort="1767715200000" data-listing-file-modified-sort="1768724007414" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="4" data-listing-word-count-sort="684" data-listing-title-sort="computational complexity of #P (Counting Complexity)" data-listing-filename-sort="counting_complexity.qmd" onclick="href = this.querySelector('a').getAttribute('href');
+<tr data-index="3" data-categories="Q29tcGxleGl0eSUyMFRoZW9yeSUyQyUyM1A=" data-listing-date-sort="1767715200000" data-listing-file-modified-sort="1768724007414" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="4" data-listing-word-count-sort="684" data-listing-title-sort="computational complexity of #P (Counting Complexity)" data-listing-filename-sort="counting_complexity.qmd" onclick="href = this.querySelector('a').getAttribute('href');
  if (href) { window.location=href ; return false; }">
 <td>
 <span class="listing-date">Jan 7, 2026</span>
@@ -348,7 +381,7 @@ Categories
 
 </tr>
 
-<tr data-index="2" data-categories="Q29tcGxleGl0eSUyMFRoZW9yeSUyQ0ludGVyYWN0aXZlJTIwUHJvb2Zz" data-listing-date-sort="1767715200000" data-listing-file-modified-sort="1768638417117" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="4" data-listing-word-count-sort="751" data-listing-title-sort="交互式证明 (Interactive Proofs)" data-listing-filename-sort="interactive_proof.qmd" onclick="href = this.querySelector('a').getAttribute('href');
+<tr data-index="4" data-categories="Q29tcGxleGl0eSUyMFRoZW9yeSUyQ0ludGVyYWN0aXZlJTIwUHJvb2Zz" data-listing-date-sort="1767715200000" data-listing-file-modified-sort="1768638417117" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="4" data-listing-word-count-sort="751" data-listing-title-sort="交互式证明 (Interactive Proofs)" data-listing-filename-sort="interactive_proof.qmd" onclick="href = this.querySelector('a').getAttribute('href');
  if (href) { window.location=href ; return false; }">
 <td>
 <span class="listing-date">Jan 7, 2026</span>
@@ -362,9 +395,54 @@ Categories
 
 </tr>
 
+<tr data-index="5" data-categories="UXVhbnR1bSUyMEVycm9yJTIwQ29ycmVjdGlvbg==" data-listing-date-sort="1767715200000" data-listing-file-modified-sort="1768978803233" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="12" data-listing-word-count-sort="2310" data-listing-title-sort="Maximal Likelihood Decoding" data-listing-filename-sort="PMdecoder.qmd" onclick="href = this.querySelector('a').getAttribute('href');
+ if (href) { window.location=href ; return false; }">
+<td>
+<span class="listing-date">Jan 7, 2026</span>
+</td>
+<td>
+<a href="../theory/Topics/QEC/PMdecoder.html" class="title listing-title">Maximal Likelihood Decoding</a>
+</td>
+<td>
+<span class="listing-categories">Quantum Error Correction</span>
+</td>
+
+</tr>
+
+<tr data-index="6" data-categories="UXVhbnR1bSUyMEVycm9yJTIwQ29ycmVjdGlvbiUyQ1RlbnNvciUyME5ldHdvcms=" data-listing-date-sort="1767715200000" data-listing-file-modified-sort="1768978829197" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="8" data-listing-word-count-sort="1445" data-listing-title-sort="BP-OSD Decoding" data-listing-filename-sort="TNdecoder.qmd" onclick="href = this.querySelector('a').getAttribute('href');
+ if (href) { window.location=href ; return false; }">
+<td>
+<span class="listing-date">Jan 7, 2026</span>
+</td>
+<td>
+<a href="../theory/Topics/QEC/TNdecoder.html" class="title listing-title">BP-OSD Decoding</a>
+</td>
+<td>
+<span class="listing-categories">Quantum Error Correction, Tensor Network</span>
+</td>
+
+</tr>
+
+<tr data-index="7" data-categories="UXVhbnR1bSUyMEVycm9yJTIwQ29ycmVjdGlvbg==" data-listing-date-sort="1767715200000" data-listing-file-modified-sort="1768723971213" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="2" data-listing-word-count-sort="379" data-listing-title-sort="Decoding in classical space" data-listing-filename-sort="classical.qmd" onclick="href = this.querySelector('a').getAttribute('href');
+ if (href) { window.location=href ; return false; }">
+<td>
+<span class="listing-date">Jan 7, 2026</span>
+</td>
+<td>
+<a href="../theory/Topics/QEC/classical.html" class="title listing-title">Decoding in classical space</a>
+</td>
+<td>
+<span class="listing-categories">Quantum Error Correction</span>
+</td>
+
+</tr>
+
 </tbody>
 </table>
 <div class="listing-no-matching d-none">No matching items</div>
+<nav id="research-notes-pagination" class="listing-pagination" aria-label="Page Navigation">
+  <ul class="pagination"></ul>
+</nav>
 </div>
 <hr>
 </section>
@@ -510,34 +588,7 @@ Jan 19, 2026
 </a>
 </div>
 </div>
-<div class="quarto-post image-right" data-index="4" data-categories="UXVhbnR1bSUyMEluZm9ybWF0aW9u" data-listing-date-sort="1768492800000" data-listing-file-modified-sort="1768893091313" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="7" data-listing-word-count-sort="1380">
-<div class="thumbnail"><a href="../theory/Posts/Incom_ope/index.html" class="no-external">
-
-<div class="listing-item-img-placeholder card-img-top" >&nbsp;</div>
-
-</a></div>
-<div class="body">
-<h3 class="no-anchor listing-title">
-<a href="../theory/Posts/Incom_ope/index.html" class="no-external">Local estimation of observables</a>
-</h3>
-<div class="listing-categories">
-
-<div class="listing-category" onclick="window.quartoListingCategory('UXVhbnR1bSUyMEluZm9ybWF0aW9u'); return false;">Quantum Information</div>
-
-</div>
-<div class="delink listing-description"><a href="../theory/Posts/Incom_ope/index.html" class="no-external">
-Why this question is meaningful?
-</a></div>
-</div>
-<div class="metadata">
-<a href="../theory/Posts/Incom_ope/index.html" class="no-external">
-<div class="listing-date">
-Jan 16, 2026
-</div>
-</a>
-</div>
-</div>
-<div class="quarto-post image-right" data-index="5" data-categories="UmVhbGl6YXRpb25z" data-listing-date-sort="1768233600000" data-listing-file-modified-sort="1768638301407" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="2" data-listing-word-count-sort="390">
+<div class="quarto-post image-right" data-index="4" data-categories="UmVhbGl6YXRpb25z" data-listing-date-sort="1768233600000" data-listing-file-modified-sort="1768638301407" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="2" data-listing-word-count-sort="390">
 <div class="thumbnail"><a href="../theory/Posts/operator_magic/index.html" class="no-external">
 
 <div class="listing-item-img-placeholder card-img-top" >&nbsp;</div>
@@ -564,7 +615,7 @@ Jan 13, 2026
 </a>
 </div>
 </div>
-<div class="quarto-post image-right" data-index="6" data-categories="UmVhbGl6YXRpb25z" data-listing-date-sort="1768233600000" data-listing-file-modified-sort="1768663550491" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="14" data-listing-word-count-sort="2659">
+<div class="quarto-post image-right" data-index="5" data-categories="UmVhbGl6YXRpb25z" data-listing-date-sort="1768233600000" data-listing-file-modified-sort="1768663550491" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="14" data-listing-word-count-sort="2659">
 <div class="thumbnail"><a href="../theory/Posts/OSF/index.html" class="no-external">
 
 <p class="card-img-top"><img data-src="Posts/OSF/index_files/figure-html/cell-2-output-1.png"  class="thumbnail-image card-img"/></p>
@@ -591,7 +642,7 @@ Jan 13, 2026
 </a>
 </div>
 </div>
-<div class="quarto-post image-right" data-index="7" data-categories="UmVhbGl6YXRpb25z" data-listing-date-sort="1768233600000" data-listing-file-modified-sort="1768638345082" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="1" data-listing-word-count-sort="49">
+<div class="quarto-post image-right" data-index="6" data-categories="UmVhbGl6YXRpb25z" data-listing-date-sort="1768233600000" data-listing-file-modified-sort="1768638345082" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="1" data-listing-word-count-sort="49">
 <div class="thumbnail"><a href="../theory/Posts/arXiv:2212.08677v2/index.html" class="no-external">
 
 <div class="listing-item-img-placeholder card-img-top" >&nbsp;</div>
@@ -618,7 +669,7 @@ Jan 13, 2026
 </a>
 </div>
 </div>
-<div class="quarto-post image-right" data-index="8" data-categories="UmVhZGluZ3M=" data-listing-date-sort="1767801600000" data-listing-file-modified-sort="1768638275734" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="1" data-listing-word-count-sort="56">
+<div class="quarto-post image-right" data-index="7" data-categories="UmVhZGluZ3M=" data-listing-date-sort="1767801600000" data-listing-file-modified-sort="1768638275734" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="1" data-listing-word-count-sort="56">
 <div class="thumbnail"><a href="../theory/Posts/arXiv:2305.05765/index.html" class="no-external">
 
 <div class="listing-item-img-placeholder card-img-top" >&nbsp;</div>
@@ -645,7 +696,7 @@ Jan 8, 2026
 </a>
 </div>
 </div>
-<div class="quarto-post image-right" data-index="9" data-categories="UmVhZGluZ3M=" data-listing-date-sort="1767715200000" data-listing-file-modified-sort="1768812866474" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="8" data-listing-word-count-sort="1586">
+<div class="quarto-post image-right" data-index="8" data-categories="UmVhZGluZ3M=" data-listing-date-sort="1767715200000" data-listing-file-modified-sort="1768812866474" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="8" data-listing-word-count-sort="1586">
 <div class="thumbnail"><a href="../theory/Posts/arXiv:2106.12627/index.html" class="no-external">
 
 <div class="listing-item-img-placeholder card-img-top" >&nbsp;</div>

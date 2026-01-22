@@ -1,11 +1,12 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" lang="zh-Hans" xml:lang="zh-Hans"><head>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
 <meta name="generator" content="quarto-1.8.26">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
+<meta name="dcterms.date" content="2026-01-07">
 <meta name="description" content="关于交互式证明 (IP, AM, MA) 和图同构 (GI) 的笔记。">
 
 <title>交互式证明 (Interactive Proofs) – Chance’s Quantum Lab</title>
@@ -56,17 +57,17 @@ ul.task-list li input[type="checkbox"] {
   ],
   "show-item-context": false,
   "language": {
-    "search-no-results-text": "没有结果",
-    "search-matching-documents-text": "匹配的文档",
-    "search-copy-link-title": "复制搜索链接",
-    "search-hide-matches-text": "隐藏其它匹配结果",
-    "search-more-match-text": "更多匹配结果",
-    "search-more-matches-text": "更多匹配结果",
-    "search-clear-button-title": "清除",
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
     "search-text-placeholder": "",
-    "search-detached-cancel-button-title": "取消",
-    "search-submit-button-title": "提交",
-    "search-label": "搜索"
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
   }
 }</script>
 
@@ -128,8 +129,8 @@ window.Quarto = {
     <span class="navbar-title">Chance’s Quantum Lab</span>
     </a>
   </div>
-            <div id="quarto-search" class="" title="搜索"></div>
-          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="展开或折叠导航栏" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
   <span class="navbar-toggler-icon"></span>
 </button>
           <div class="collapse navbar-collapse" id="navbarCollapse">
@@ -145,6 +146,10 @@ window.Quarto = {
   <li class="nav-item">
     <a class="nav-link" href="../../../Experiments/index.html"> 
 <span class="menu-text">Experiment Notes</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../workspace/workspace.html"> 
+<span class="menu-text">Workspace</span></a>
   </li>  
 </ul>
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
@@ -171,19 +176,15 @@ window.Quarto = {
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
         <nav id="TOC" role="doc-toc" class="toc-active">
-    <h2 id="toc-title">该页面内容</h2>
+    <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#交互模型定义-interaction-model" id="toc-交互模型定义-interaction-model" class="nav-link active" data-scroll-target="#交互模型定义-interaction-model"><span class="header-section-number">1</span> 1. 交互模型定义 (Interaction Model)</a></li>
-  <li><a href="#确定性交互证明-mathsfdip" id="toc-确定性交互证明-mathsfdip" class="nav-link" data-scroll-target="#确定性交互证明-mathsfdip"><span class="header-section-number">2</span> 2. 确定性交互证明 (<span class="math inline">\mathsf{dIP}</span>)</a></li>
-  <li><a href="#概率交互证明-mathsfip" id="toc-概率交互证明-mathsfip" class="nav-link" data-scroll-target="#概率交互证明-mathsfip"><span class="header-section-number">3</span> 3. 概率交互证明 (<span class="math inline">\mathsf{IP}</span>)</a>
+  <li><a href="#interaction-model" id="toc-interaction-model" class="nav-link active" data-scroll-target="#interaction-model"><span class="header-section-number">1</span> 1. Interaction Model</a></li>
+  <li><a href="#deterministic-interactive-proof-mathsfdip" id="toc-deterministic-interactive-proof-mathsfdip" class="nav-link" data-scroll-target="#deterministic-interactive-proof-mathsfdip"><span class="header-section-number">2</span> 2. Deterministic Interactive Proof (<span class="math inline">\mathsf{dIP}</span>)</a></li>
+  <li><a href="#probabilistic-interactive-proof-mathsfip" id="toc-probabilistic-interactive-proof-mathsfip" class="nav-link" data-scroll-target="#probabilistic-interactive-proof-mathsfip"><span class="header-section-number">3</span> 3. Probabilistic Interactive Proof (<span class="math inline">\mathsf{IP}</span>)</a>
   <ul class="collapse">
-  <li><a href="#示例qnr-quadratic-non-residue" id="toc-示例qnr-quadratic-non-residue" class="nav-link" data-scroll-target="#示例qnr-quadratic-non-residue"><span class="header-section-number">3.1</span> 示例：QNR (Quadratic Non-Residue)</a></li>
-  </ul></li>
-  <li><a href="#arthur-merlin-与-public-coins" id="toc-arthur-merlin-与-public-coins" class="nav-link" data-scroll-target="#arthur-merlin-与-public-coins"><span class="header-section-number">4</span> 4. Arthur-Merlin 与 Public Coins</a>
-  <ul class="collapse">
-  <li><a href="#mathsfam-与-mathsfma-类" id="toc-mathsfam-与-mathsfma-类" class="nav-link" data-scroll-target="#mathsfam-与-mathsfma-类"><span class="header-section-number">4.1</span> <span class="math inline">\mathsf{AM}</span> 与 <span class="math inline">\mathsf{MA}</span> 类</a></li>
-  <li><a href="#图同构-graph-isomorphism" id="toc-图同构-graph-isomorphism" class="nav-link" data-scroll-target="#图同构-graph-isomorphism"><span class="header-section-number">4.2</span> 图同构 (Graph Isomorphism)</a></li>
+  <li><a href="#example-qnr-quadratic-non-residue" id="toc-example-qnr-quadratic-non-residue" class="nav-link" data-scroll-target="#example-qnr-quadratic-non-residue"><span class="header-section-number">3.1</span> Example: QNR (Quadratic Non-Residue)</a></li>
+  <li><a href="#graph-isomorphism-gi" id="toc-graph-isomorphism-gi" class="nav-link" data-scroll-target="#graph-isomorphism-gi"><span class="header-section-number">3.2</span> Graph Isomorphism (GI)</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -211,9 +212,9 @@ window.Quarto = {
 
     
     <div>
-    <div class="quarto-title-meta-heading">发布于</div>
+    <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">2026年1月7日</p>
+      <p class="date">January 7, 2026</p>
     </div>
   </div>
   
@@ -225,17 +226,17 @@ window.Quarto = {
 </header>
 
 
-<section id="交互模型定义-interaction-model" class="level2" data-number="1">
-<h2 data-number="1" class="anchored" data-anchor-id="交互模型定义-interaction-model"><span class="header-section-number">1</span> 1. 交互模型定义 (Interaction Model)</h2>
-<p>交互过程可以看作 Verifier (<span class="math inline">V</span>) 和 Prover (<span class="math inline">P</span>) 之间的对话。</p>
+<section id="interaction-model" class="level2" data-number="1">
+<h2 data-number="1" class="anchored" data-anchor-id="interaction-model"><span class="header-section-number">1</span> 1. Interaction Model</h2>
+<p>The interaction process can be viewed as a dialogue between the Verifier (<span class="math inline">V</span>) and the Prover (<span class="math inline">P</span>).</p>
 <ul>
-<li><strong>一轮交互 (1-round)</strong>: <span class="math display">a_1 = V(x), \quad a_2 = P(x,a_1), \quad \text{Output} = V(x,a_1,a_2)</span></li>
-<li><strong>两轮交互 (2-round)</strong>: <span class="math display">a_1 = V(x), \quad a_2 = P(x,a_1), \quad a_3=V(x,a_1,a_2), \quad \text{Output} = V(x,a_1,a_2,a_3)</span></li>
+<li><strong>One-round interaction</strong>: <span class="math display">a_1 = V(x), \quad a_2 = P(x,a_1), \quad \text{Output} = V(x,a_1,a_2)</span></li>
+<li><strong>Two-round interaction</strong>: <span class="math display">a_1 = V(x), \quad a_2 = P(x,a_1), \quad a_3=V(x,a_1,a_2), \quad \text{Output} = V(x,a_1,a_2,a_3)</span></li>
 </ul>
-<p>更一般地，定义 <span class="math inline">k</span> 轮交互：</p>
+<p>More generally, the definition of <span class="math inline">k</span>-round interaction is as follows:</p>
 <div class="columns">
 <div class="column" style="width:48%;">
-<p><strong><span class="math inline">2i</span> 轮交互</strong>： <span class="math display">
+<p><strong>Even-round interaction (<span class="math inline">2i</span> rounds)</strong>: <span class="math display">
 \begin{aligned}
 &amp;a_1 = V(x), a_2=P(x,a_1);\\
 &amp;a_3 = V(x,a_1,a_2),a_4 = P(x,a_1,a_2,a_3);\\
@@ -245,7 +246,7 @@ window.Quarto = {
 \end{aligned}
 </span></p>
 </div><div class="column" style="width:48%;">
-<p><strong><span class="math inline">2i+1</span> 轮交互</strong>： <span class="math display">
+<p><strong>Odd-round interaction (<span class="math inline">2i+1</span> rounds)</strong>: <span class="math display">
 \begin{aligned}
 &amp;a_1 = V(x), a_2=P(x,a_1);\\
 &amp;a_3 = V(x,a_1,a_2),a_4 = P(x,a_1,a_2,a_3);\\
@@ -259,24 +260,24 @@ window.Quarto = {
 </div>
 <hr>
 </section>
-<section id="确定性交互证明-mathsfdip" class="level2" data-number="2">
-<h2 data-number="2" class="anchored" data-anchor-id="确定性交互证明-mathsfdip"><span class="header-section-number">2</span> 2. 确定性交互证明 (<span class="math inline">\mathsf{dIP}</span>)</h2>
+<section id="deterministic-interactive-proof-mathsfdip" class="level2" data-number="2">
+<h2 data-number="2" class="anchored" data-anchor-id="deterministic-interactive-proof-mathsfdip"><span class="header-section-number">2</span> 2. Deterministic Interactive Proof (<span class="math inline">\mathsf{dIP}</span>)</h2>
 <div class="callout callout-style-default callout-note no-icon callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-<span class="screen-reader-only">注记</span>Definition: <span class="math inline">\mathsf{dIP}</span>
+<span class="screen-reader-only">Note</span>Definition: <span class="math inline">\mathsf{dIP}</span>
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p><span class="math inline">L \subset \{0,1\}^*</span> 属于 <span class="math inline">\mathsf{dIP}</span> 当且仅当存在<strong>确定性</strong>图灵机 <span class="math inline">V:\{0,1\}^* \to \{0,1\}^*</span>，对于输入 <span class="math inline">x</span>，使得:</p>
+<p><span class="math inline">L \subset \{0,1\}^*</span> belongs to <span class="math inline">\mathsf{dIP}</span> if and only if there exists a <strong>deterministic</strong> Turing machine <span class="math inline">V:\{0,1\}^* \to \{0,1\}^*</span> such that for input <span class="math inline">x</span>:</p>
 <ol type="1">
-<li><strong>Completeness</strong>: 若 <span class="math inline">x \in L</span>，则存在多轮证明函数 <span class="math inline">P</span>（对各种长度输入建立映射 <span class="math inline">\{0,1\}^* \to \{0,1\}^*</span>，不限计算能力），使得 <span class="math inline">k \sim \text{poly}(|x|)</span> 轮交互过程后输出 1。</li>
-<li><strong>Soundness</strong>: 若 <span class="math inline">x \notin L</span>，则对<strong>任意</strong>多轮证明函数 <span class="math inline">P</span>，都使得 <span class="math inline">k \sim \text{poly}(|x|)</span> 轮交互过程后输出 0。</li>
+<li><strong>Completeness</strong>: If <span class="math inline">x \in L</span>, then there exists a multi-round proof function <span class="math inline">P</span> (mapping <span class="math inline">\{0,1\}^* \to \{0,1\}^*</span> with no computational restrictions), such that after <span class="math inline">k \sim \text{poly}(|x|)</span> rounds of interaction the output is 1.</li>
+<li><strong>Soundness</strong>: If <span class="math inline">x \notin L</span>, then for any multi-round proof function <span class="math inline">P</span>, after <span class="math inline">k \sim \text{poly}(|x|)</span> rounds of interaction, the output is 0.</li>
 </ol>
-<p><em>注：交互过程的每一步 <span class="math inline">V</span> 的运行时间必须是多项式的 <span class="math inline">\text{poly}(|x|)</span>。</em></p>
+<p><em>Note: The running time of each step in the interactive process must be polynomial <span class="math inline">\text{poly}(|x|)</span>.</em></p>
 </div>
 </div>
 <div class="callout callout-style-default callout-important no-icon callout-titled">
@@ -285,7 +286,7 @@ window.Quarto = {
 <i class="callout-icon no-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-<span class="screen-reader-only">重要</span>Theorem
+<span class="screen-reader-only">Important</span>Theorem
 </div>
 </div>
 <div class="callout-body-container callout-body">
@@ -298,97 +299,76 @@ window.Quarto = {
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-<span class="screen-reader-only">注记</span>Proof (点击展开)
+<span class="screen-reader-only">Note</span>Proof (click to expand)
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
 <div id="callout-3" class="callout-3-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
-<p><strong>思路</strong>：<span class="math inline">\mathsf{dIP}</span> 都可以被设计为一个 <span class="math inline">\mathsf{NP}</span> 问题解决。</p>
-<p>对于在 <span class="math inline">L</span> 中的输入，考虑 <span class="math inline">2i</span> 或 <span class="math inline">2i+1</span> 轮交互。只需找个图灵机模拟调用 <span class="math inline">V</span> 共 <span class="math inline">i+2</span> 次，并将 <span class="math inline">a_1, \dots, a_{2i+1}</span> (或 <span class="math inline">a_{2i+2}</span>) 视为 Certificate（证明）。</p>
-<p>这个带证明的多项式图灵机做如下模拟： <span class="math display">V(x), V(x,a_1,a_2), \dots, V(x, a_1, \dots, a_{2i+1})</span> 当结果分别输出 <span class="math inline">a_1, a_3, \dots</span> 且最终 <span class="math inline">\text{Output} = 1</span> 时，输出 1。 则 <span class="math inline">L</span> 中的例子必定输出 1。此外，对于输出 1 的例子，由于对 Prover 的能力（函数 <span class="math inline">P</span>）不做任何限制，则必定在 <span class="math inline">\mathsf{dIP}</span> 中。</p>
+<p><strong>Idea</strong>: <span class="math inline">\mathsf{dIP}</span> can be designed as an <span class="math inline">\mathsf{NP}</span> problem.</p>
+<p>For inputs in <span class="math inline">L</span>, consider either a <span class="math inline">2i</span> or <span class="math inline">2i+1</span> round interaction. A Turing machine simulating the calls of <span class="math inline">V</span> for <span class="math inline">i+2</span> times and viewing <span class="math inline">a_1, \dots, a_{2i+1}</span> (or <span class="math inline">a_{2i+2}</span>) as Certificates can be used.</p>
+<p>This polynomial-time Turing machine with proof does the following simulation: <span class="math display">V(x), V(x,a_1,a_2), \dots, V(x, a_1, \dots, a_{2i+1})</span> When it outputs <span class="math inline">a_1, a_3, \dots</span> and finally <span class="math inline">\text{Output} = 1</span>, the output is 1. Thus, examples in <span class="math inline">L</span> must output 1. Additionally, for those that output 1, since no restrictions are placed on Prover’s capabilities (function <span class="math inline">P</span>), they must be in <span class="math inline">\mathsf{dIP}</span>.</p>
 </div>
 </div>
 </div>
 <hr>
 </section>
-<section id="概率交互证明-mathsfip" class="level2" data-number="3">
-<h2 data-number="3" class="anchored" data-anchor-id="概率交互证明-mathsfip"><span class="header-section-number">3</span> 3. 概率交互证明 (<span class="math inline">\mathsf{IP}</span>)</h2>
+<section id="probabilistic-interactive-proof-mathsfip" class="level2" data-number="3">
+<h2 data-number="3" class="anchored" data-anchor-id="probabilistic-interactive-proof-mathsfip"><span class="header-section-number">3</span> 3. Probabilistic Interactive Proof (<span class="math inline">\mathsf{IP}</span>)</h2>
 <div class="callout callout-style-default callout-note no-icon callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-<span class="screen-reader-only">注记</span>Definition: <span class="math inline">\mathsf{IP}[k]</span>
+<span class="screen-reader-only">Note</span>Definition: <span class="math inline">\mathsf{IP}[k]</span>
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p><span class="math inline">L \subset \{0,1\}^*</span> 属于 <span class="math inline">\mathsf{IP}[k]</span> 当且仅当存在<strong>概率</strong>图灵机 <span class="math inline">V:\{0,1\}^* \to \{0,1\}^*</span>，对于输入 <span class="math inline">x</span>，使得:</p>
+<p><span class="math inline">L \subset \{0,1\}^*</span> belongs to <span class="math inline">\mathsf{IP}[k]</span> if and only if there exists a <strong>probabilistic</strong> Turing machine <span class="math inline">V:\{0,1\}^* \to \{0,1\}^*</span> such that for input <span class="math inline">x</span>:</p>
 <ol type="1">
-<li><strong>Completeness</strong>: 若 <span class="math inline">x \in L</span>，则存在证明函数 <span class="math inline">P</span>，使得 <span class="math inline">k \sim \text{poly}(|x|)</span> 轮交互后输出 1 的概率 <span class="math inline">&gt; 2/3</span>。</li>
-<li><strong>Soundness</strong>: 若 <span class="math inline">x \notin L</span>，则对<strong>任意</strong>证明函数 <span class="math inline">P</span>，都使得 <span class="math inline">k \sim \text{poly}(|x|)</span> 轮交互后输出 0 的概率 <span class="math inline">&gt; 2/3</span>。</li>
+<li><strong>Completeness</strong>: If <span class="math inline">x \in L</span>, then there exists a proof function <span class="math inline">P</span> such that the probability of outputting 1 after <span class="math inline">k \sim \text{poly}(|x|)</span> rounds of interaction is greater than <span class="math inline">2/3</span>.</li>
+<li><strong>Soundness</strong>: If <span class="math inline">x \notin L</span>, then for any proof function <span class="math inline">P</span>, the probability of outputting 0 after <span class="math inline">k \sim \text{poly}(|x|)</span> rounds of interaction is greater than <span class="math inline">2/3</span>.</li>
 </ol>
 </div>
 </div>
 <p>[Image of complexity classes diagram showing P, NP, PH, IP, PSPACE]</p>
-<p><strong>直觉与讨论：</strong> <span class="math inline">\mathsf{IP}</span> 很有可能强于 <span class="math inline">\mathsf{NP}</span>（就像我们不知道 <span class="math inline">\mathsf{BPP}</span> 和 <span class="math inline">\mathsf{P}</span> 的关系）。 直觉上，许多 <span class="math inline">\mathsf{coNP}</span> 问题不知道是否是 <span class="math inline">\mathsf{NP}</span> 的，因为 <span class="math inline">\mathsf{coNP}</span> 定义中的 <span class="math inline">\forall</span> 需要遍历指数多的 Certification。但是 <span class="math inline">\mathsf{IP}</span> 可以在这指数多的 Certification 上建立一个分布，从而验证一些 <span class="math inline">\mathsf{coNP}</span> 问题。</p>
-<section id="示例qnr-quadratic-non-residue" class="level3" data-number="3.1">
-<h3 data-number="3.1" class="anchored" data-anchor-id="示例qnr-quadratic-non-residue"><span class="header-section-number">3.1</span> 示例：QNR (Quadratic Non-Residue)</h3>
-<p>这是一个不知道是否在 <span class="math inline">\mathsf{NP}</span> 中，但确信在 <span class="math inline">\mathsf{IP}</span> 中的问题。</p>
-<p><strong>Problem</strong>: 输入 <span class="math inline">(a, p)</span>，<span class="math inline">p</span> 是素数。判定 <span class="math inline">a</span> 是否<strong>不是</strong>模 <span class="math inline">p</span> 的二次剩余（Quadratic Non-Residue）。</p>
-<p><strong>Protocol (一轮交互)</strong>:</p>
+<p><strong>Intuition and Discussion:</strong> <span class="math inline">\mathsf{IP}</span> likely exceeds <span class="math inline">\mathsf{NP}</span> (just as we do not know the relationship between <span class="math inline">\mathsf{BPP}</span> and <span class="math inline">\mathsf{P}</span>). Intuitively, many problems in <span class="math inline">\mathsf{coNP}</span> are unknown to be in <span class="math inline">\mathsf{NP}</span> because the <span class="math inline">\forall</span> in the definition of <span class="math inline">\mathsf{coNP}</span> requires traversing an exponential number of Certifications. However, <span class="math inline">\mathsf{IP}</span> can establish a distribution over these exponentially many Certifications, thereby verifying some problems in <span class="math inline">\mathsf{coNP}</span>.</p>
+<section id="example-qnr-quadratic-non-residue" class="level3" data-number="3.1">
+<h3 data-number="3.1" class="anchored" data-anchor-id="example-qnr-quadratic-non-residue"><span class="header-section-number">3.1</span> Example: QNR (Quadratic Non-Residue)</h3>
+<p>This is a problem that is unknown to be in <span class="math inline">\mathsf{NP}</span> but confirmed to be in <span class="math inline">\mathsf{IP}</span>.</p>
+<p><strong>Problem</strong>: Given <span class="math inline">(a, p)</span> where <span class="math inline">p</span> is prime. Determine if <span class="math inline">a</span> is <strong>not</strong> a quadratic residue modulo <span class="math inline">p</span> (Quadratic Non-Residue).</p>
+<p><strong>Protocol (one-round interaction)</strong>:</p>
 <ol type="1">
 <li><strong>Verifier</strong>:
 <ul>
-<li>在模 <span class="math inline">p</span> 的二次剩余上建立概率分布 <span class="math inline">Q</span>：随机抽 <span class="math inline">r</span>，计算 <span class="math inline">x = r^2 \pmod p</span>。</li>
-<li>随机用 <span class="math inline">a</span> 偏移 (shift) 这个分布：随机选 <span class="math inline">b \in \{0,1\}</span>，计算 <span class="math inline">r_1 = a^b \cdot x \pmod p</span>。
+<li>Establishes a probability distribution <span class="math inline">Q</span> over quadratic residues modulo <span class="math inline">p</span>: randomly selects <span class="math inline">r</span>, computes <span class="math inline">x = r^2 \pmod p</span>.</li>
+<li>Randomly offsets this distribution with <span class="math inline">a</span>: randomly chooses <span class="math inline">b \in \{0,1\}</span> and calculates <span class="math inline">r_1 = a^b \cdot x \pmod p</span>.
 <ul>
-<li>(Case a) 如果 <span class="math inline">a</span> 是二次剩余，则 <span class="math inline">r_1</span> 依然是二次剩余（因为乘法构成群），分布不变。</li>
-<li>(Case b) 如果 <span class="math inline">a</span> 不是，乘积会改变二次剩余的随机分布为 <span class="math inline">Q'</span>（<span class="math inline">r_1</span> 变成了非二次剩余）。</li>
+<li>(Case a) If <span class="math inline">a</span> is a quadratic residue, then <span class="math inline">r_1</span> remains a quadratic residue (since multiplication forms a group), the distribution remains unchanged.</li>
+<li>(Case b) If not, the product changes the random distribution of quadratic residues to <span class="math inline">Q'</span> (<span class="math inline">r_1</span> becomes non-quadratic).</li>
 </ul></li>
-<li>发送 <span class="math inline">r_1</span> 给 Prover。</li>
+<li>Sends <span class="math inline">r_1</span> to Prover.</li>
 </ul></li>
 <li><strong>Prover</strong>:
 <ul>
-<li>收到 <span class="math inline">r_1</span>，判断 <span class="math inline">r_1</span> 是二次剩余还是非二次剩余（Prover 有无限计算能力，可以暴力算）。</li>
-<li>如果 <span class="math inline">r_1</span> 是二次剩余，猜测 <span class="math inline">b=0</span>，输出 <span class="math inline">r_2=0</span>。</li>
-<li>否则，猜测 <span class="math inline">b=1</span>，输出 <span class="math inline">r_2=1</span>。</li>
-</ul></li>
-<li><strong>Verifier</strong>:
-<ul>
-<li>比较 <span class="math inline">r_2</span> 和 <span class="math inline">b</span>。如果相等，则接受（认为 <span class="math inline">a</span> 是 QNR）。</li>
+<li>Responds with a value that depends on whether <span class="math inline">a</span> is a QNR or QR.</li>
 </ul></li>
 </ol>
-<blockquote class="blockquote">
-<p>还有一个 <span class="math inline">\mathsf{coNP}</span> 问题（图非同构 GNI）已经确信在 <span class="math inline">\mathsf{IP}</span> 中了，而 <span class="math inline">\mathsf{coNP}</span> 一般认为强于 <span class="math inline">\mathsf{NP}</span>（否则多项式层级 <span class="math inline">\mathsf{PH}</span> 会坍缩到第二层）。</p>
-</blockquote>
-<hr>
-</section>
-</section>
-<section id="arthur-merlin-与-public-coins" class="level2" data-number="4">
-<h2 data-number="4" class="anchored" data-anchor-id="arthur-merlin-与-public-coins"><span class="header-section-number">4</span> 4. Arthur-Merlin 与 Public Coins</h2>
-<p>私有的随机元是否有必要呢？这引出了 Arthur-Merlin 协议。</p>
-<section id="mathsfam-与-mathsfma-类" class="level3" data-number="4.1">
-<h3 data-number="4.1" class="anchored" data-anchor-id="mathsfam-与-mathsfma-类"><span class="header-section-number">4.1</span> <span class="math inline">\mathsf{AM}</span> 与 <span class="math inline">\mathsf{MA}</span> 类</h3>
-<ul>
-<li><strong><span class="math inline">\mathsf{AM}[k]</span></strong>: 在 <span class="math inline">\mathsf{IP}[k]</span> 的基础上，要求 Verifier 所有的随机掷币结果对 Prover 都是<strong>公开可见</strong>的 (Public Coins)。 <em>这可能会导致 <span class="math inline">\mathsf{IP}</span> 定义中 Soundness 条件失效，即 Prover 可能更容易欺骗 Verifier。</em></li>
-<li><strong><span class="math inline">\mathsf{MA}</span></strong>: <span class="math inline">\mathsf{AM}[2]</span> 的子集。在 <span class="math inline">\mathsf{AM}[2]</span> 的基础上，让 Verifier 的第一次通信不含有随机性。它等价于“有提示 (Merlin) 的随机 (Arthur) 计算”。</li>
-</ul>
 <div class="callout callout-style-default callout-note no-icon callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-<span class="screen-reader-only">注记</span>Definition: Randomized NP (<span class="math inline">\mathsf{MA}</span>)
+<span class="screen-reader-only">Note</span>Definition: Randomized NP (<span class="math inline">\mathsf{MA}</span>)
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p><span class="math inline">L \subset \{0,1\}^*</span> 属于 <span class="math inline">\mathsf{MA}</span> 当且仅当存在概率图灵机 <span class="math inline">V</span>，对于输入 <span class="math inline">x</span>：</p>
+<p><span class="math inline">L \subset \{0,1\}^*</span> belongs to <span class="math inline">\mathsf{MA}</span> if and only if there exists a probabilistic Turing machine <span class="math inline">V</span> such that for input <span class="math inline">x</span>:</p>
 <ol type="1">
-<li>若 <span class="math inline">x \in L</span>，存在 Certification <span class="math inline">r</span>（由 Prover 提供），使得 <span class="math inline">\Pr[V(x,r)=1] &gt; 2/3</span>。</li>
-<li>若 <span class="math inline">x \notin L</span>，对<strong>任意</strong> Certification <span class="math inline">r</span>，都有 <span class="math inline">\Pr[V(x,r)=0] &gt; 2/3</span>。</li>
+<li>If <span class="math inline">x \in L</span>, there exists a Certification <span class="math inline">r</span> (provided by Prover) such that <span class="math inline">\Pr[V(x,r)=1] &gt; 2/3</span>.</li>
+<li>If <span class="math inline">x \notin L</span>, for any Certification <span class="math inline">r</span>, <span class="math inline">\Pr[V(x,r)=0] &gt; 2/3</span>.</li>
 </ol>
 </div>
 </div>
@@ -398,7 +378,7 @@ window.Quarto = {
 <i class="callout-icon no-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-<span class="screen-reader-only">重要</span>Theorem
+<span class="screen-reader-only">Important</span>Theorem
 </div>
 </div>
 <div class="callout-body-container callout-body">
@@ -406,9 +386,9 @@ window.Quarto = {
 </div>
 </div>
 </section>
-<section id="图同构-graph-isomorphism" class="level3" data-number="4.2">
-<h3 data-number="4.2" class="anchored" data-anchor-id="图同构-graph-isomorphism"><span class="header-section-number">4.2</span> 图同构 (Graph Isomorphism)</h3>
-<p>Definition (<span class="math inline">\mathsf{GI}</span>): 给定图 <span class="math inline">G_1=(V_1,E_1), G_2=(V_2,E_2)</span>，判定是否存在顶点置换 <span class="math inline">\pi</span> 使得 <span class="math inline">G_1 \cong G_2</span>。</p>
+<section id="graph-isomorphism-gi" class="level3" data-number="3.2">
+<h3 data-number="3.2" class="anchored" data-anchor-id="graph-isomorphism-gi"><span class="header-section-number">3.2</span> Graph Isomorphism (GI)</h3>
+<p>Definition (<span class="math inline">\mathsf{GI}</span>): Given graphs <span class="math inline">G_1=(V_1,E_1), G_2=(V_2,E_2)</span>, determine if there exists a vertex permutation <span class="math inline">\pi</span> such that <span class="math inline">G_1 \cong G_2</span>.</p>
 
 
 </section>
@@ -440,12 +420,12 @@ window.Quarto = {
       // flash "checked"
       button.classList.add('code-copy-button-checked');
       var currentTitle = button.getAttribute("title");
-      button.setAttribute("title", "已复制");
+      button.setAttribute("title", "Copied!");
       let tooltip;
       if (window.bootstrap) {
         button.setAttribute("data-bs-toggle", "tooltip");
         button.setAttribute("data-bs-placement", "left");
-        button.setAttribute("data-bs-title", "已复制");
+        button.setAttribute("data-bs-title", "Copied!");
         tooltip = new bootstrap.Tooltip(button, 
           { trigger: "manual", 
             customClass: "code-copy-button-tooltip",

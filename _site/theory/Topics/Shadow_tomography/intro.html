@@ -8,7 +8,7 @@
 
 <meta name="dcterms.date" content="2026-01-19">
 
-<title>Shadow Tomography Basics – Chance’s Quantum Lab</title>
+<title>Basics of Shadow Tomography – Chance’s Quantum Lab</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -146,6 +146,10 @@ window.Quarto = {
     <a class="nav-link" href="../../../Experiments/index.html"> 
 <span class="menu-text">Experiment Notes</span></a>
   </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../workspace/workspace.html"> 
+<span class="menu-text">Workspace</span></a>
+  </li>  
 </ul>
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
   <li class="nav-item compact">
@@ -192,7 +196,6 @@ window.Quarto = {
   <ul class="collapse">
   <li><a href="#reduction-of-problems" id="toc-reduction-of-problems" class="nav-link" data-scroll-target="#reduction-of-problems">Reduction of problems</a></li>
   <li><a href="#linear-shadows" id="toc-linear-shadows" class="nav-link" data-scroll-target="#linear-shadows">Linear shadows</a></li>
-  <li><a href="#non-linear-shadows." id="toc-non-linear-shadows." class="nav-link" data-scroll-target="#non-linear-shadows.">Non-linear shadows.</a></li>
   </ul></li>
   </ul></li>
   </ul>
@@ -203,7 +206,7 @@ window.Quarto = {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Shadow Tomography Basics</h1>
+<h1 class="title">Basics of Shadow Tomography</h1>
   <div class="quarto-categories">
     <div class="quarto-category">Quantum Information</div>
     <div class="quarto-category">Shadow Tomography</div>
@@ -621,60 +624,6 @@ window.Quarto = {
 <li><p>After measurements ends, Alice tells Bob <span class="math inline">\mathbf{x}_0</span> and Bob decides whether Alice choose <span class="math inline">\rho = \rho_{\mathbf{x}_0}</span> or <span class="math inline">\rho = \mathbb{I}/d</span> through classical post-processing.</p></li>
 </ul>
 <p>We say Bob wins this game if his decision is coincident to Alice’s choice. If there exists a shadow algorithm <span class="math inline">\mathcal{A}</span> for <span class="math inline">\text{tr}(O_x \rho), \forall x= 1 ,\cdots,M</span> within additive error <span class="math inline">\varepsilon</span> and success rate <span class="math inline">1 - \delta</span> using <span class="math inline">N</span> copies, then no matter how Alice changes the distribution <span class="math inline">\mathcal{D}</span>, Bob can win the game with probability <span class="math inline">1 - \delta</span> by first run the shadow algorithm <span class="math inline">\mathcal{A}</span> and then check the value of <span class="math inline">\mathrm{tr}(O_{\mathbf{x}_0} \rho)</span>.</p>
-</section>
-<section id="non-linear-shadows." class="level3">
-<h3 class="anchored" data-anchor-id="non-linear-shadows.">Non-linear shadows.</h3>
-<p>For the non-linear Pauli shadow <span class="math inline">\mathrm{tr}(\rho^2P)</span>, we proved similar reduction by substitutes <span class="math inline">P</span> into <span class="math inline">O_P := 2^{-1}(P \otimes \mathbb{I} +\mathbb{I}\otimes P)\cdot \mathrm{SWAP}^{\otimes n}</span>, as shown below:</p>
-<div class="callout callout-style-default callout-important no-icon callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon no-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Important</span>Lemma
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>Suppose an algorithm get classical shadow for <span class="math inline">\{\mathrm{tr}(P\rho^{2})\}_{P \in \mathcal{O}}</span> with additive error <span class="math inline">\varepsilon</span> and constant success rate <span class="math inline">1- \delta</span> using <span class="math inline">2N</span> copies, then with the same success rate, its result can be used to discriminate mixed state ensemble <span class="math inline">\mathcal{E}_1 = \{\left(\mathbb{I}_{2n} + 3\varepsilon (P\otimes \mathbb{I}) \cdot O_P\right)/2^{2n}\}_{P \in \mathcal{O}}</span> from the maximumly mixed state <span class="math inline">\mathbb{I}_{2n}/2^{2n}</span>.</p>
-</div>
-</div>
-<div class="callout callout-style-default callout-important no-icon callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon no-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Important</span>Lemma
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>Suppose an algorithm get classical shadow for <span class="math inline">\{\mathrm{tr}(P\rho^{2})\}_{P \in \mathcal{O}}</span> with additive error <span class="math inline">\varepsilon</span> and constant success rate <span class="math inline">1- \delta</span>, then with the same success rate, its result can be used to discriminate mixed state ensemble <span class="math inline">\mathcal{E}_1 = \{\left(\mathbb{I} + 3\varepsilon P\right)/d\}_{P \in \mathcal{O}}</span> from the ensemble <span class="math display">\begin{align}
-        \mathcal{E}_2 := \left\{\mathrm{Cl}^\dagger \left(\frac{\mathbb{I} + 3\varepsilon Z}{2} \otimes \psi \right) \mathrm{Cl}\right\}_{\mathrm{Cl} \in \mathrm{Cliff}_{n}(\mathcal{O}), \psi \sim \mathrm{Haar}_{n-1}},\label{eq:nshd_red_ensem}
-\end{align}</span> where <span class="math inline">\mathrm{Cl} \in \mathrm{Cliff}_{n}(\mathcal{O})</span> includes all possible Clifford gates that map <span class="math inline">Z \otimes \mathbb{I}</span> to <span class="math inline">P \in \mathcal{O}</span>.</p>
-</div>
-</div>
-<div class="callout callout-style-default callout-note callout-titled">
-<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-19-contents" aria-controls="callout-19" aria-expanded="false" aria-label="Toggle callout">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Note</span>Proof (Click to expand)
-</div>
-<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
-</div>
-<div id="callout-19" class="callout-19-contents callout-collapse collapse">
-<div class="callout-body-container callout-body">
-<p><em>Proof.</em> Supposed we design an algorithm that estimates <span class="math inline">\{\mathrm{tr}(P\rho^{2})\}_{P \in \mathcal{O}}</span> with <span class="math inline">\varepsilon</span>-additive error and <span class="math inline">1 - \delta</span> correction rate. Then for mixed state <span class="math inline">\rho_0 = (\mathbb{I} + 3 \varepsilon P_0)/d</span> in <span class="math inline">\mathcal{E} _1</span>, estimation gives result <span class="math inline">\mathrm{tr}(P_0\rho^{2}) = 6d^{-1}\varepsilon</span> and vanish for others. For state <span class="math inline">\rho = \mathrm{Cl}_0^\dagger \left(\frac{\mathbb{I} + 3\varepsilon Z}{2} \otimes \psi \right) \mathrm{Cl}_0</span> in <span class="math inline">\mathcal{E}_2</span>, we take <span class="math inline">P_0 \in \mathcal{O}</span> such that <span class="math inline">\mathrm{Cl}_0 P_0 \mathrm{Cl}_0^\dagger = Z \otimes \mathbb{I}_{n-1}</span>. The estimation of <span class="math inline">\mathrm{tr}(P_0\rho^{2})</span> then gives the result <span class="math display">\begin{align}
-        \mathrm{tr}(P_0\rho^{2}) = \mathrm{tr}\left(P_0\mathrm{Cl}_0^\dagger \cdot\left(\frac{\mathbb{I} + 3\varepsilon Z}{2} \right)^2\otimes \psi \cdot \mathrm{Cl}_0\right) = \mathrm{tr}\left[\left(Z\cdot\frac{(1 + 9\varepsilon^2)\mathbb{I} + 6\varepsilon Z}{4} \right)\otimes (\mathbb{I}_{n-1} \cdot \psi) \right]
-        = 3 \varepsilon.
-\end{align}</span> Considering the <span class="math inline">\varepsilon</span> additive error, we can then discriminate <span class="math inline">\mathcal{E}_1</span> and <span class="math inline">\mathcal{E}_2</span> by choosing <span class="math inline">\varepsilon_{\mathrm{th}} \in [(6d^{-1} + 1)\varepsilon, 2 \varepsilon]</span> and checking whether there exists <span class="math inline">P_0 \in \mathcal{O}</span> with <span class="math inline">\mathrm{tr}(P_0\rho^{2}) &gt; \varepsilon_{\mathrm{th}}</span>.&nbsp;◻</p>
-</div>
-</div>
-</div>
-<p>In the discussion of strategy with replica restriction <span class="math inline">k &lt; 4</span>, we are free to replace <span class="math inline">\psi \sim \mathrm{Haar}_{n-1}</span> to <span class="math inline">\psi \sim \mathrm{Cliff}_{n-1}</span>. If we further choose <span class="math inline">\mathcal{O} = \mathcal{P}_n</span> as all Pauli operators, the ensemble in Eq.<a href="#eq:nshd_red_ensem" data-reference-type="eqref" data-reference="eq:nshd_red_ensem">[eq:nshd_red_ensem]</a> can be further simplified as: <span class="math display">\begin{align}
-    \mathcal{E}_2^* := \left\{(1 + 3\varepsilon)/2\ket{0_L}\!\bra{0_L} + (1 - 3\varepsilon)/2\ket{1_L}\!\bra{1_L}\right\}_{\{\ket{0_L},\ket{1_L}\} \in C_{n}},
-\end{align}</span></p>
 
 
 </section>

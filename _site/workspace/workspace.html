@@ -6,10 +6,8 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="dcterms.date" content="2026-01-08">
-<meta name="description" content="关于如何算各种矩阵群的k-Fold平均">
 
-<title>The Weingarten calculus – Chance’s Quantum Lab</title>
+<title>Research Workspace – Chance’s Quantum Lab</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -25,24 +23,24 @@ ul.task-list li input[type="checkbox"] {
 </style>
 
 
-<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
-<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
-<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
-<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
-<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
-<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
-<meta name="quarto:offset" content="../../../">
-<script src="../../../site_libs/quarto-html/quarto.js" type="module"></script>
-<script src="../../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
-<script src="../../../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
-<script src="../../../site_libs/quarto-html/popper.min.js"></script>
-<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
-<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
-<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
-<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
-<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../../site_libs/bootstrap/bootstrap-a8976c3e89df70b272bdfba3d2fda974.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-a8976c3e89df70b272bdfba3d2fda974.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -72,17 +70,17 @@ ul.task-list li input[type="checkbox"] {
 }</script>
 
 
-<link rel="stylesheet" href="../../../styles.css">
+<link rel="stylesheet" href="../styles.css">
 </head>
 
-<body class="nav-fixed quarto-light">
+<body class="nav-fixed fullcontent quarto-light">
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
     <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
-    <a class="navbar-brand" href="../../../index.html">
+    <a class="navbar-brand" href="../index.html">
     <span class="navbar-title">Chance’s Quantum Lab</span>
     </a>
   </div>
@@ -93,16 +91,20 @@ ul.task-list li input[type="checkbox"] {
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll me-auto">
   <li class="nav-item">
-    <a class="nav-link" href="../../../index.html"> 
+    <a class="nav-link" href="../index.html"> 
 <span class="menu-text">Home Page</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="../../../theory/index.html"> 
+    <a class="nav-link" href="../theory/index.html"> 
 <span class="menu-text">Theory</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="../../../Experiments/index.html"> 
+    <a class="nav-link" href="../Experiments/index.html"> 
 <span class="menu-text">Experiment Notes</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link active" href="../workspace/workspace.html" aria-current="page"> 
+<span class="menu-text">Workspace</span></a>
   </li>  
 </ul>
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
@@ -127,36 +129,21 @@ ul.task-list li input[type="checkbox"] {
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
-        
-    </div>
+    
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">The Weingarten calculus</h1>
-  <div class="quarto-categories">
-    <div class="quarto-category">Quantum Learning</div>
-  </div>
-  </div>
-
-<div>
-  <div class="description">
-    关于如何算各种矩阵群的k-Fold平均
-  </div>
+<h1 class="title">Research Workspace</h1>
+<p class="subtitle lead">Collaborative Environment &amp; Internal Discussion Boards</p>
 </div>
+
 
 
 <div class="quarto-title-meta">
 
     
-    <div>
-    <div class="quarto-title-meta-heading">Published</div>
-    <div class="quarto-title-meta-contents">
-      <p class="date">January 8, 2026</p>
-    </div>
-  </div>
   
     
   </div>
@@ -166,26 +153,44 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<p>为了继续推导，我们需要逐步简化和理解每个步骤。我们从之前的表达式开始：</p>
-<p>[ _{^*}(X) = <em>{, } </em>{BC}(^{-1}) <em>{U</em>{AB}} _{C} ]</p>
-<p>我们需要进一步处理中间的期望值部分：</p>
-<p>[ <em>{U</em>{AB}} ]</p>
-<p>根据引理（n-fold Weingarten 演算），我们可以将这个期望值表示为Weingarten函数的和。具体来说，我们有：</p>
-<p>[ <em>{U</em>{AB}} = <em>{, } </em>{AB}(^{-1}) <em>{AB}(Y </em>{AB}^{-1}) ]</p>
-<p>其中 ( Y = <em>{BC}( X (I_A </em>{BC}^{-1}) ) _{B} )。</p>
-<p>将这个结果代入之前的表达式，我们得到：</p>
-<p>[ _{^*}(X) = <em>{, } </em>{BC}(^{-1}) ( <em>{, } </em>{AB}(^{-1}) <em>{AB}(Y </em>{AB}^{-1}) ) _{C} ]</p>
-<p>进一步展开 ( Y ):</p>
-<p>[ Y = <em>{BC}( X (I_A </em>{BC}^{-1}) ) _{B} ]</p>
-<p>因此：</p>
-<p>[ _{^*}(X) = <em>{, } </em>{BC}(^{-1}) ( <em>{, } </em>{AB}(^{-1}) <em>{AB}</em>{AB}^{-1} ) _{C} ]</p>
-<p>简化中间的迹运算：</p>
-<p>[ <em>{AB}= </em>{A}]</p>
-<p>最终结果为：</p>
-<p>[ _{^*}(X) = <em>{, } </em>{BC}(^{-1}) ( <em>{, } </em>{AB}(^{-1}) <em>{A}</em>{AB}^{-1} ) _{C} ]</p>
-<p>这个表达式给出了在unitary ensemble下的期望值的最终形式。</p>
+<div class="callout callout-style-default callout-caution callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Caution</span>Restricted Access
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>This workspace serves as a portal to our private collaboration channels. Access to the discussion boards requires contributor privileges on the associated GitHub repository. Unauthorized access attempts will resolve to a 404 error.</p>
+</div>
+</div>
+<p>Welcome to the internal collaboration hub. This area is designated for asynchronous discussion, peer review of mathematical proofs, and experimental design planning.</p>
+<section id="project-boards" class="level2">
+<h2 class="anchored" data-anchor-id="project-boards">Project Boards</h2>
+<p>Please navigate to the appropriate board based on the research domain:</p>
+<div class="grid">
+<section id="theory-shadow-tomography" class="level3 g-col-12">
+<h3 class="anchored" data-anchor-id="theory-shadow-tomography">Theory: Shadow Tomography</h3>
+<p><i class="bi bi-house"></i> <a href="../workspace/Multi-shadow/index.html"><strong>Progress Page</strong></a> | <i class="bi bi-envelope"></i> <a href="https://github.com/yourusername/your-private-repo/discussions/categories/shadow-tomography"><strong>Overleaf</strong></a> | <i class="bi bi-github"></i> <a href="https://github.com/yourusername/your-private-repo/discussions/categories/shadow-tomography"><strong>Github Board</strong></a> |</p>
+<p><strong>Scope:</strong> Analysis of sample complexity, classical shadows, and variance bounds for multi-copy measurements.</p>
+<p><strong>Relevant Notes:</strong></p>
+<ol type="1">
+<li><a href="../theory/Topics/Shadow_tomography/intro.html">Introduction to Shadow Tomography</a></li>
+<li><a href="../theory/Topics/Shadow_tomography/multicopy.html">Multi-copy Measurement Setup</a></li>
+<li><a href="../theory/Topics/Lowerbounds/lowerbounds.html">Introduction to Lower bound proof</a></li>
+</ol>
+</section>
+</div>
+<hr>
+<section id="access-request" class="level3">
+<h3 class="anchored" data-anchor-id="access-request">Access Request</h3>
+<p>If you are a new collaborator requiring access to the private repository, please contact <strong>Chance</strong> directly or request an invitation via <a href="mailto:your@email.com">email</a>.</p>
 
 
+</section>
+</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">

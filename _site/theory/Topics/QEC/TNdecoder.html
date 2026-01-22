@@ -9,7 +9,7 @@
 <meta name="dcterms.date" content="2026-01-07">
 <meta name="description" content="Notes on the application of Tensor Networks in quantum error correction.">
 
-<title>Tensor Network Decoding – Chance’s Quantum Lab</title>
+<title>BP-OSD Decoding – Chance’s Quantum Lab</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -21,6 +21,41 @@ ul.task-list li input[type="checkbox"] {
   width: 0.8em;
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 </style>
 
@@ -71,6 +106,49 @@ ul.task-list li input[type="checkbox"] {
   }
 }</script>
 
+  <script>window.backupDefine = window.define; window.define = undefined;</script><script src="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.js"></script>
+  <script>document.addEventListener("DOMContentLoaded", function () {
+ var mathElements = document.getElementsByClassName("math");
+ var macros = [];
+ for (var i = 0; i < mathElements.length; i++) {
+  var texText = mathElements[i].firstChild;
+  if (mathElements[i].tagName == "SPAN") {
+   katex.render(texText.data, mathElements[i], {
+    displayMode: mathElements[i].classList.contains('display'),
+    throwOnError: false,
+    macros: macros,
+    fleqn: false
+   });
+}}});
+  </script>
+  <script>window.define = window.backupDefine; window.backupDefine = undefined;</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.css">
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 <link rel="stylesheet" href="../../../styles.css">
 </head>
@@ -104,6 +182,10 @@ ul.task-list li input[type="checkbox"] {
     <a class="nav-link" href="../../../Experiments/index.html"> 
 <span class="menu-text">Experiment Notes</span></a>
   </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../workspace/workspace.html"> 
+<span class="menu-text">Workspace</span></a>
+  </li>  
 </ul>
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
   <li class="nav-item compact">
@@ -133,6 +215,34 @@ ul.task-list li input[type="checkbox"] {
    
   <ul>
   <li><a href="#bp-algorithm" id="toc-bp-algorithm" class="nav-link active" data-scroll-target="#bp-algorithm"><span class="header-section-number">1</span> BP Algorithm</a></li>
+  <li><a href="#decoding-problems-and-surface-code" id="toc-decoding-problems-and-surface-code" class="nav-link" data-scroll-target="#decoding-problems-and-surface-code"><span class="header-section-number">2</span> Decoding Problems and Surface code</a></li>
+  <li><a href="#uai-and-bps" id="toc-uai-and-bps" class="nav-link" data-scroll-target="#uai-and-bps"><span class="header-section-number">3</span> UAI and BPs</a>
+  <ul class="collapse">
+  <li><a href="#the-message-passing-mechanism" id="toc-the-message-passing-mechanism" class="nav-link" data-scroll-target="#the-message-passing-mechanism"><span class="header-section-number">3.1</span> The Message Passing Mechanism</a>
+  <ul class="collapse">
+  <li><a href="#log-likelihood-ratios-llr" id="toc-log-likelihood-ratios-llr" class="nav-link" data-scroll-target="#log-likelihood-ratios-llr"><span class="header-section-number">3.1.1</span> Log-Likelihood Ratios (LLR)</a></li>
+  </ul></li>
+  <li><a href="#bp-algorithm-step-by-step" id="toc-bp-algorithm-step-by-step" class="nav-link" data-scroll-target="#bp-algorithm-step-by-step"><span class="header-section-number">3.2</span> BP Algorithm: Step-by-Step</a>
+  <ul class="collapse">
+  <li><a href="#step-1-initialization" id="toc-step-1-initialization" class="nav-link" data-scroll-target="#step-1-initialization"><span class="header-section-number">3.2.1</span> Step 1: Initialization</a></li>
+  <li><a href="#step-2-parity-to-data-messages" id="toc-step-2-parity-to-data-messages" class="nav-link" data-scroll-target="#step-2-parity-to-data-messages"><span class="header-section-number">3.2.2</span> Step 2: Parity-to-Data Messages</a></li>
+  <li><a href="#step-3-data-to-parity-messages" id="toc-step-3-data-to-parity-messages" class="nav-link" data-scroll-target="#step-3-data-to-parity-messages"><span class="header-section-number">3.2.3</span> Step 3: Data-to-Parity Messages</a></li>
+  <li><a href="#step-4-compute-soft-decisions" id="toc-step-4-compute-soft-decisions" class="nav-link" data-scroll-target="#step-4-compute-soft-decisions"><span class="header-section-number">3.2.4</span> Step 4: Compute Soft Decisions</a></li>
+  <li><a href="#step-5-make-hard-decisions" id="toc-step-5-make-hard-decisions" class="nav-link" data-scroll-target="#step-5-make-hard-decisions"><span class="header-section-number">3.2.5</span> Step 5: Make Hard Decisions</a></li>
+  <li><a href="#step-6-convergence-check" id="toc-step-6-convergence-check" class="nav-link" data-scroll-target="#step-6-convergence-check"><span class="header-section-number">3.2.6</span> Step 6: Convergence Check</a></li>
+  </ul></li>
+  <li><a href="#detailed-code-implementation" id="toc-detailed-code-implementation" class="nav-link" data-scroll-target="#detailed-code-implementation"><span class="header-section-number">3.3</span> 4. Detailed Code Implementation</a>
+  <ul class="collapse">
+  <li><a href="#environment-preparation-and-data-loading" id="toc-environment-preparation-and-data-loading" class="nav-link" data-scroll-target="#environment-preparation-and-data-loading"><span class="header-section-number">3.3.1</span> 4.1 Environment Preparation and Data Loading</a></li>
+  <li><a href="#initialize-decoder" id="toc-initialize-decoder" class="nav-link" data-scroll-target="#initialize-decoder"><span class="header-section-number">3.3.2</span> 4.2 Initialize Decoder</a></li>
+  <li><a href="#decoding-loop-the-loop" id="toc-decoding-loop-the-loop" class="nav-link" data-scroll-target="#decoding-loop-the-loop"><span class="header-section-number">3.3.3</span> 4.3 Decoding Loop (The Loop)</a></li>
+  </ul></li>
+  <li><a href="#current-progress-and-next-steps" id="toc-current-progress-and-next-steps" class="nav-link" data-scroll-target="#current-progress-and-next-steps"><span class="header-section-number">3.4</span> 5. Current Progress and Next Steps</a>
+  <ul class="collapse">
+  <li><a href="#current-progress" id="toc-current-progress" class="nav-link" data-scroll-target="#current-progress"><span class="header-section-number">3.4.1</span> Current Progress</a></li>
+  <li><a href="#next-steps" id="toc-next-steps" class="nav-link" data-scroll-target="#next-steps"><span class="header-section-number">3.4.2</span> Next Steps</a></li>
+  </ul></li>
+  </ul></li>
   </ul>
 </nav>
     </div>
@@ -141,7 +251,7 @@ ul.task-list li input[type="checkbox"] {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Tensor Network Decoding</h1>
+<h1 class="title">BP-OSD Decoding</h1>
   <div class="quarto-categories">
     <div class="quarto-category">Quantum Error Correction</div>
     <div class="quarto-category">Tensor Network</div>
@@ -175,10 +285,260 @@ ul.task-list li input[type="checkbox"] {
 
 <section id="bp-algorithm" class="level1" data-number="1">
 <h1 data-number="1"><span class="header-section-number">1</span> BP Algorithm</h1>
-<p>The MLD algorithm has the following shortcomings: 1. Knowing the probability of each error occurring a priori, as in MLD, is not a natural assumption. 2. The occurrence of each error is mutually unrelated. In quantum error correction codes, this means assuming two Pauli errors are independent. 3. MLD remains NP-hard for arbitrary error correction codes.</p>
+<p>The <a href="../../../PMdecoder.qmd">MLD algorithm</a> has the following shortcomings:</p>
+<ol type="1">
+<li>Knowing the probability of each error occurring a priori, as in MLD, is not a natural assumption.</li>
+<li>The occurrence of each error is mutually unrelated. In quantum error correction codes, this means assuming two Pauli errors are independent.</li>
+<li>MLD remains NP-hard for arbitrary error correction codes.</li>
+</ol>
 <p>The Belief Propagation algorithm is an approximate decoding algorithm that performs approximate decoding by iteratively updating the probabilities of each vertex.</p>
+</section>
+<section id="decoding-problems-and-surface-code" class="level1" data-number="2">
+<h1 data-number="2"><span class="header-section-number">2</span> Decoding Problems and Surface code</h1>
+<p>In the real system, we have the following realization of d=3 rotated surface code graph:</p>
+<div id="fig-rotatedd3" class="quarto-float quarto-figure quarto-figure-center anchored" width="50%" data-fig-align="center">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-rotatedd3-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="rotatedd=3.png" id="fig-rotatedd3" class="img-fluid quarto-figure quarto-figure-center anchored figure-img" style="width:50.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig quarto-uncaptioned" id="fig-rotatedd3-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1
+</figcaption>
+</figure>
+</div>
+<p>Such a quantum circuit can be realized in python code using stim package:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> task <span class="kw">not</span> <span class="kw">in</span> {<span class="st">"x"</span>, <span class="st">"z"</span>}:</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>        <span class="cf">raise</span> <span class="pp">ValueError</span>(<span class="st">"task must be 'x' or 'z'"</span>)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="kw">not</span> <span class="fl">0.0</span> <span class="op">&lt;</span> p <span class="op">&lt;</span> <span class="fl">1.0</span>:</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>        <span class="cf">raise</span> <span class="pp">ValueError</span>(<span class="st">"p must be in (0, 1)"</span>)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    name <span class="op">=</span> <span class="ss">f"surface_code:rotated_memory_</span><span class="sc">{</span>task<span class="sc">}</span><span class="ss">"</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> stim.Circuit.generated(</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>        name,</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>        distance<span class="op">=</span>distance,</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>        rounds<span class="op">=</span>rounds,</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>        after_clifford_depolarization<span class="op">=</span>p,</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>        before_round_data_depolarization<span class="op">=</span>p,</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>        before_measure_flip_probability<span class="op">=</span>p,</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>        after_reset_flip_probability<span class="op">=</span>p,</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>    )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Consider the simplest case where each qubits takes a storage Pauli error <span class="math inline">X,Y,Z</span>, this trigger the detectors in the circuit. The stim package automatically trace how those Pauli errors propagate through the circuit and trigger each detectors. Then it recorded the syndrome in a .dem file, with form:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>error(<span class="fl">0.01911873511075362</span>) D0 D1</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>[...]</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>detector(<span class="dv">0</span>, <span class="dv">4</span>, <span class="dv">0</span>) D0</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The first line means that occurence of certain error is 01911873511075362, and the detectors D0 and D1 are triggered by this error. This .dem data is use as piroi knowledge for the BP decoder.</p>
+</section>
+<section id="uai-and-bps" class="level1" data-number="3">
+<h1 data-number="3"><span class="header-section-number">3</span> UAI and BPs</h1>
+<p>After generating the .dem file, we can reform it to generate the .uai file. It traces the tensor network of the probability.</p>
+<div id="fig-rotatedd3" class="quarto-float quarto-figure quarto-figure-center anchored" width="50%" data-fig-align="center">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-rotatedd3-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="uai.png" id="fig-rotatedd3" class="img-fluid quarto-figure quarto-figure-center anchored figure-img" style="width:50.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig quarto-uncaptioned" id="fig-rotatedd3-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;2
+</figcaption>
+</figure>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>MARKOV</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="dv">24</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="dv">2</span> <span class="dv">2</span> <span class="dv">2</span> <span class="dv">2</span> <span class="dv">2</span> <span class="dv">2</span> <span class="dv">2</span> <span class="dv">2</span> <span class="dv">2</span> <span class="dv">2</span> <span class="dv">2</span> <span class="dv">2</span> <span class="dv">2</span> <span class="dv">2</span> <span class="dv">2</span> <span class="dv">2</span> <span class="dv">2</span> <span class="dv">2</span> <span class="dv">2</span> <span class="dv">2</span> <span class="dv">2</span> <span class="dv">2</span> <span class="dv">2</span> <span class="dv">2</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="dv">286</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="dv">1</span> <span class="dv">0</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="dv">2</span> <span class="dv">0</span> <span class="dv">1</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="dv">2</span> <span class="dv">0</span> <span class="dv">8</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<section id="the-message-passing-mechanism" class="level2" data-number="3.1">
+<h2 data-number="3.1" class="anchored" data-anchor-id="the-message-passing-mechanism"><span class="header-section-number">3.1</span> The Message Passing Mechanism</h2>
+<p>Belief Propagation, often called the <em>sum-product algorithm</em>, is an iterative message-passing algorithm on a factor graph.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Goal
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The objective is to compute the <strong>marginal probability</strong> for each bit <span class="math inline">j</span>: <span class="math display">P_1(e_j) = P(e_j = 1 | \mathbf{s})</span> Given that <span class="math inline">\mathbf{s} = H \cdot \mathbf{e}</span> is the syndrome of the error. This “soft decision” indicates how likely a specific bit is to be flipped.</p>
+</div>
+</div>
+<section id="log-likelihood-ratios-llr" class="level3" data-number="3.1.1">
+<h3 data-number="3.1.1" class="anchored" data-anchor-id="log-likelihood-ratios-llr"><span class="header-section-number">3.1.1</span> Log-Likelihood Ratios (LLR)</h3>
+<p>To ensure numerical stability during computation, BP operates using <strong>Log-Likelihood Ratios</strong> rather than raw probabilities.</p>
+<p><span class="math display">\text{LLR}(e_j) = \log \left( \frac{P(e_j = 0)}{P(e_j = 1)} \right)</span></p>
+<ul>
+<li><strong>LLR &gt; 0:</strong> <span class="math inline">e_j = 0</span> is more likely (the bit is probably correct).</li>
+<li><strong>LLR &lt; 0:</strong> <span class="math inline">e_j = 1</span> is more likely (the bit is probably flipped).</li>
+<li><strong>|LLR|:</strong> The magnitude indicates the confidence level of the decision.</li>
+</ul>
+<p>For a channel with error probability <span class="math inline">p</span>, the initial <strong>channel LLR</strong> is: <span class="math display">p_l = \frac{\log(1 - p)}{p}</span></p>
+</section>
+</section>
+<section id="bp-algorithm-step-by-step" class="level2" data-number="3.2">
+<h2 data-number="3.2" class="anchored" data-anchor-id="bp-algorithm-step-by-step"><span class="header-section-number">3.2</span> BP Algorithm: Step-by-Step</h2>
+<p>The algorithm iterates through specific phases to update beliefs.</p>
+<section id="step-1-initialization" class="level3" data-number="3.2.1">
+<h3 data-number="3.2.1" class="anchored" data-anchor-id="step-1-initialization"><span class="header-section-number">3.2.1</span> Step 1: Initialization</h3>
+<p>Before any message passing occurs, the only information available is the channel prior. We initialize all messages from data nodes (<span class="math inline">v_j</span>) to parity nodes (<span class="math inline">u_i</span>) with the channel LLR.</p>
+<p><span class="math display">m_{v_j \to u_i} := p_l \quad \text{for all edges } (v_j, u_i)</span></p>
+</section>
+<section id="step-2-parity-to-data-messages" class="level3" data-number="3.2.2">
+<h3 data-number="3.2.2" class="anchored" data-anchor-id="step-2-parity-to-data-messages"><span class="header-section-number">3.2.2</span> Step 2: Parity-to-Data Messages</h3>
+<p>Each parity node <span class="math inline">u_i</span> sends a message to each connected data node <span class="math inline">v_j</span>. This step enforces the parity constraints (XOR logic).</p>
+<p><span class="math display">m_{u_i \to v_j} = (-1)^{s_i} \cdot \alpha \cdot \prod_{v'_j \in V(u_i) \setminus v_j} \text{sign}(m_{v'_j \to u_i}) \cdot \min_{v'_j \in V(u_i) \setminus v_j} |m_{v'_j \to u_i}|</span></p>
+<p><strong>Where:</strong> * <span class="math inline">s_i</span> is the <span class="math inline">i</span>-th syndrome bit. * <span class="math inline">\alpha = 1 - 2^{-t}</span> is a damping factor at iteration <span class="math inline">t</span> to aid convergence. * The message excludes the target node <span class="math inline">v_j</span> (extrinsic information).</p>
+</section>
+<section id="step-3-data-to-parity-messages" class="level3" data-number="3.2.3">
+<h3 data-number="3.2.3" class="anchored" data-anchor-id="step-3-data-to-parity-messages"><span class="header-section-number">3.2.3</span> Step 3: Data-to-Parity Messages</h3>
+<p>Each data node <span class="math inline">v_j</span> collects evidence from the channel and its neighboring parity checks to send an update back to the parity nodes.</p>
+<p><span class="math display">m_{v_j \to u_i} = p_l + \sum_{u'_i \in U(v_j) \setminus u_i} m_{u'_i \to v_j}</span></p>
+<p><strong>Intuition:</strong> Why exclude <span class="math inline">u_i</span>? This prevents “echo effects.” If <span class="math inline">v_j</span> simply returned the information <span class="math inline">u_i</span> just gave it, positive feedback loops would artificially inflate confidence without adding new evidence.</p>
+</section>
+<section id="step-4-compute-soft-decisions" class="level3" data-number="3.2.4">
+<h3 data-number="3.2.4" class="anchored" data-anchor-id="step-4-compute-soft-decisions"><span class="header-section-number">3.2.4</span> Step 4: Compute Soft Decisions</h3>
+<p>We calculate the total posterior belief for bit <span class="math inline">j</span> by summing the channel prior and <em>all</em> incoming messages (no exclusion).</p>
+<p><span class="math display">P_1(e_j) = p_l + \sum_{u_i \in U(v_j)} m_{u_i \to v_j}</span></p>
+</section>
+<section id="step-5-make-hard-decisions" class="level3" data-number="3.2.5">
+<h3 data-number="3.2.5" class="anchored" data-anchor-id="step-5-make-hard-decisions"><span class="header-section-number">3.2.5</span> Step 5: Make Hard Decisions</h3>
+<p>We convert the soft LLR beliefs into binary estimates.</p>
+<p><span class="math display"> e_j^{\text{BP}} = \begin{cases}
+1 &amp; \text{if } P_1(e_j) &lt; 0 \quad (\text{likely flipped}) \\
+0 &amp; \text{otherwise} \quad (\text{likely correct})
+\end{cases} </span></p>
+</section>
+<section id="step-6-convergence-check" class="level3" data-number="3.2.6">
+<h3 data-number="3.2.6" class="anchored" data-anchor-id="step-6-convergence-check"><span class="header-section-number">3.2.6</span> Step 6: Convergence Check</h3>
+<p>Finally, we verify if the estimated error vector satisfies the syndrome equation.</p>
+<p><span class="math display">H \cdot \mathbf{e}^{\text{BP}} = \mathbf{s} \quad ?</span></p>
+<ul>
+<li><strong>If Yes:</strong> The algorithm has converged; return <span class="math inline">\mathbf{e}^{\text{BP}}</span>.</li>
+<li><strong>If No:</strong> Return to Step 2 and repeat until the maximum iteration count is reached.</li>
+</ul>
+</section>
+</section>
+<section id="detailed-code-implementation" class="level2" data-number="3.3">
+<h2 data-number="3.3" class="anchored" data-anchor-id="detailed-code-implementation"><span class="header-section-number">3.3</span> 4. Detailed Code Implementation</h2>
+<p>Below is the Python implementation of the core logic. The code has been modularized to separately handle model loading, BP inference, and OSD post-processing.</p>
+<section id="environment-preparation-and-data-loading" class="level3" data-number="3.3.1">
+<h3 data-number="3.3.1" class="anchored" data-anchor-id="environment-preparation-and-data-loading"><span class="header-section-number">3.3.1</span> 4.1 Environment Preparation and Data Loading</h3>
+<p>First, we need to load the error physical model (DEM) and the test data.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> bpdecoderplus.pytorch_bp <span class="im">import</span> (</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    read_model_file, BeliefPropagation,</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    belief_propagate, compute_marginals, apply_evidence</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> bpdecoderplus.dem <span class="im">import</span> load_dem, build_parity_check_matrix</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> bpdecoderplus.syndrome <span class="im">import</span> load_syndrome_database</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> bpdecoderplus.osd <span class="im">import</span> OSDDecoder</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. Load factor graph model (.uai) and error model (.dem)</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> read_model_file(<span class="st">'datasets/sc_d3_r3_p0010_z.uai'</span>)</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>dem <span class="op">=</span> load_dem(<span class="st">'datasets/sc_d3_r3_p0010_z.dem'</span>)</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a><span class="co"># 2. Load pre-generated Syndrome dataset</span></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>syndromes, observables, _ <span class="op">=</span> load_syndrome_database(<span class="st">'datasets/sc_d3_r3_p0010_z.npz'</span>)</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Test set size: </span><span class="sc">{</span><span class="bu">len</span>(syndromes)<span class="sc">}</span><span class="ss">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="initialize-decoder" class="level3" data-number="3.3.2">
+<h3 data-number="3.3.2" class="anchored" data-anchor-id="initialize-decoder"><span class="header-section-number">3.3.2</span> 4.2 Initialize Decoder</h3>
+<p>Here, we construct the parity check matrix and initialize the BP and OSD decoder instances.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Initialize BP decoder</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>bp <span class="op">=</span> BeliefPropagation(model)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Construct parity check matrix H, which is the basis for OSD equation solving</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>H, priors, obs_flip <span class="op">=</span> build_parity_check_matrix(dem)</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Initialize OSD decoder</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Note: This is the Robust OSD module we rewrote specifically to solve the "rank deficiency" problem</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>osd <span class="op">=</span> OSDDecoder(H)</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Parity check matrix shape: </span><span class="sc">{</span>H<span class="sc">.</span>shape<span class="sc">}</span><span class="ss">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="decoding-loop-the-loop" class="level3" data-number="3.3.3">
+<h3 data-number="3.3.3" class="anchored" data-anchor-id="decoding-loop-the-loop"><span class="header-section-number">3.3.3</span> 4.3 Decoding Loop (The Loop)</h3>
+<p>This is the core of the entire program. For each test sample, we sequentially execute BP and OSD.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>predictions <span class="op">=</span> []</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Iterate through the first 1000 samples</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> idx, syndrome <span class="kw">in</span> <span class="bu">enumerate</span>(syndromes[:<span class="dv">1000</span>]):</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    <span class="co"># --- Step 1: Run BP (Detective Phase) ---</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Inject Syndrome into the factor graph</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    evidence <span class="op">=</span> {i<span class="op">+</span><span class="dv">1</span>: <span class="bu">int</span>(syndrome[i]) <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="bu">len</span>(syndrome))}</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    bp_ev <span class="op">=</span> apply_evidence(bp, evidence)</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Iteratively calculate marginal probabilities (Marginals)</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>    state, _ <span class="op">=</span> belief_propagate(bp_ev, max_iter<span class="op">=</span><span class="dv">20</span>, tol<span class="op">=</span><span class="fl">1e-6</span>, damping<span class="op">=</span><span class="fl">0.2</span>)</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>    marginals <span class="op">=</span> compute_marginals(state, bp_ev)</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>    <span class="co"># --- Step 2: Run OSD (Judge Phase) ---</span></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Determine the index range of error variables</span></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>    num_detectors <span class="op">=</span> <span class="bu">len</span>(syndromes[<span class="dv">0</span>])</span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>    error_var_start <span class="op">=</span> num_detectors <span class="op">+</span> <span class="dv">1</span></span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Call OSD solver</span></span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>    <span class="co"># osd.solve will sort columns based on marginals and solve the linear equation system</span></span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>    <span class="co"># osd_order=0 indicates the basic OSD-0 algorithm</span></span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>    estimated_errors <span class="op">=</span> osd.solve(syndrome, marginals, error_var_start, osd_order<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>    <span class="co"># --- Step 3: Verification ---</span></span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Check if a logical error occurred</span></span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a>    predictions.append(np.dot(estimated_errors, obs_flip) <span class="op">%</span> <span class="dv">2</span>)</span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate accuracy</span></span>
+<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a>logical_error_rate <span class="op">=</span> np.mean(np.array(predictions) <span class="op">!=</span> observables[:<span class="dv">1000</span>])</span>
+<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Logical error rate: </span><span class="sc">{</span>logical_error_rate<span class="sc">:.4f}</span><span class="ss">"</span>)</span>
+<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Decoder accuracy: </span><span class="sc">{</span>(<span class="dv">1</span> <span class="op">-</span> logical_error_rate)<span class="sc">:.4f}</span><span class="ss">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="current-progress-and-next-steps" class="level2" data-number="3.4">
+<h2 data-number="3.4" class="anchored" data-anchor-id="current-progress-and-next-steps"><span class="header-section-number">3.4</span> 5. Current Progress and Next Steps</h2>
+<section id="current-progress" class="level3" data-number="3.4.1">
+<h3 data-number="3.4.1" class="anchored" data-anchor-id="current-progress"><span class="header-section-number">3.4.1</span> Current Progress</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>(bpdecoderplus) chance<span class="op">@</span>chancemacbook<span class="op">-</span>air BPDecoderPlus <span class="op">%</span> <span class="op">/</span>Users<span class="op">/</span>chance<span class="op">/</span>BPdecoder<span class="op">/</span>BPDecoderPlus<span class="op">/</span>.venv<span class="op">/</span><span class="bu">bin</span><span class="op">/</span>python <span class="op">/</span>Users<span class="op">/</span>chance<span class="op">/</span>BPdecoder<span class="op">/</span>BPDecoderPlus<span class="op">/</span>run_demo.py</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>Loaded <span class="dv">1000</span> syndromes</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>Syndrome shape: (<span class="dv">1000</span>, <span class="dv">24</span>)</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>Observable shape: (<span class="dv">1000</span>,)</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>H matrix shape: (<span class="dv">24</span>, <span class="dv">286</span>)</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>Number of error mechanisms: <span class="dv">286</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>Evaluating on <span class="dv">1000</span> test samples...</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>  Processed <span class="dv">0</span><span class="op">/</span><span class="dv">1000</span> samples...</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>  Processed <span class="dv">100</span><span class="op">/</span><span class="dv">1000</span> samples...</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>  Processed <span class="dv">200</span><span class="op">/</span><span class="dv">1000</span> samples...</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>  Processed <span class="dv">300</span><span class="op">/</span><span class="dv">1000</span> samples...</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>  Processed <span class="dv">400</span><span class="op">/</span><span class="dv">1000</span> samples...</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>  Processed <span class="dv">500</span><span class="op">/</span><span class="dv">1000</span> samples...</span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>  Processed <span class="dv">600</span><span class="op">/</span><span class="dv">1000</span> samples...</span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>  Processed <span class="dv">700</span><span class="op">/</span><span class="dv">1000</span> samples...</span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>  Processed <span class="dv">800</span><span class="op">/</span><span class="dv">1000</span> samples...</span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>  Processed <span class="dv">900</span><span class="op">/</span><span class="dv">1000</span> samples...</span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>Logical error rate: <span class="fl">0.1930</span></span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>Decoder accuracy: <span class="fl">0.8070</span></span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>(bpdecoderplus) chance<span class="op">@</span>chancemacbook<span class="op">-</span>air BPDecoderPlus <span class="op">%</span> </span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<ul>
+<li><strong>Code Operational</strong>: Successfully ran the <code>datasets/sc_d3_r3_p0010_z</code> dataset.</li>
+<li><strong>Module Integration</strong>: Achieved seamless integration between <code>pytorch_bp</code> (for probability inference) and <code>osd</code> (for linear algebra solving).</li>
+<li><strong>Deprecated Hard Decision</strong>: The commented-out parts of the code show that we have abandoned the simple <code>if p &gt; 0.5</code> hard decision in favor of the mathematically more rigorous <code>osd.solve</code>.</li>
+</ul>
+</section>
+<section id="next-steps" class="level3" data-number="3.4.2">
+<h3 data-number="3.4.2" class="anchored" data-anchor-id="next-steps"><span class="header-section-number">3.4.2</span> Next Steps</h3>
+<p>Currently, the code uses <code>osd_order=0</code> (i.e., the OSD-0 algorithm). Experiments show that for Surface Code, there is still room for improvement using only OSD-0.</p>
+<p>The focus of the upcoming work is:</p>
+<ol type="1">
+<li><strong>Enable OSD-CS</strong>: Increase <code>osd_order</code> (e.g., to 10 or 15) to enable <strong>Combination Sweep</strong>. This will allow the decoder to perform “trial and error” in boundary cases where BP is uncertain, thereby significantly reducing the logical error rate.</li>
+<li><strong>Benchmark on GPUs</strong>.</li>
+<li><strong>Extensions:</strong> Combining BP+OSD decoder with MWPM decoders? A better choice of error type? A rigrous proof for performance on long-loop LDPC-code? A q-LDPC code that ensures a rigrous decoder?</li>
+</ol>
 
 
+</section>
+</section>
 </section>
 
 </main> <!-- /main -->

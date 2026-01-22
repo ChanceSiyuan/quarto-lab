@@ -34,7 +34,7 @@ Why this question is meaningful?
 
 Why this question is meaningful?
 
-1. To enhance the efficiency of [Virtual Cooling](../Virtual_Distillation/index.qmd) @huggins2021virtual.
+1. To enhance the efficiency of [Virtual Cooling](/theory/Posts/Virtual_Distillation/index.qmd) @huggins2021virtual.
 2. To allow for the estimation of more complex non-linear quantities, such as Fisher information @rath2021quantum, by decomposing into Pauli operators.
 
 Here below I characterized this problem based on different meaningful subset of operator $O$.
@@ -136,7 +136,7 @@ Case 4: $O = \sum_{P}\alpha_P P$ .
 
 ### Answer of  Linear case
 - **Classical shadow-based approach**
-  - For [single copy local Clifford](../Shadow_tomography/index.qmd) random measurements at each position, the sample complexity is $3^k$ for weight-$k$ Pauli observables and $4^n$ for arbitrary $n$-local operators.
+  - For [single copy local Clifford](/theory/Topics/Shadow_tomography/intro.qmd) random measurements at each position, the sample complexity is $3^k$ for weight-$k$ Pauli observables and $4^n$ for arbitrary $n$-local operators.
   - Entanglement-fixed 2-copy shadow offering simpler implementation. Information complete if not maximumly entangled. Has effeciency $3^{k/2}$ only for **compatiable** $k$-weight Pauli observables. @ippoliti2024classical
   - Given $\forall P \in \mathcal{P}_n$, It is exponentially hard for 1-replica strategy. @chen2024optimal
   - For All Pauli oeprators, Informationally effecient using Bell sampling. @chen2024optimal. However, **signal problem** requires more sampling counts. @huang2021information
@@ -149,9 +149,9 @@ If **two-replica Local** measurement is allowed, can we go beyond exponential sa
 
 - **Derandomized classical shadow-based approach**:
   - Adjust the local Clifford sampling distribution at each position, making it biased according to $O$, rather than uniform.  @hadfield2021adaptive
-  - Adaptively select the next Pauli operator to measure (See [Derandomized local shadows](../Pauli_derandomization/index.qmd) for a detailed treatment of derandomization for Pauli measurements.)  @huang2021efficient
+  - Adaptively select the next Pauli operator to measure (See [Derandomized local shadows](/theory/Posts/Pauli_derandomization/index.qmd) for a detailed treatment of derandomization for Pauli measurements.)  @huang2021efficient
   - A perspective from channel co-diagonalization: find a channel $\Lambda$ such that $O_1,O_2$ are simultaneously diagonalized.  @yang2025measuring
-  - Recently it has been shown that it provides a [lower bound](../shallow_estim/index.qmd) on the efficiency of local estimation methods. @wu2024optimization
+  - Recently it has been shown that it provides a [lower bound](/theory/Posts/shallow_estim/index.qmd) on the efficiency of local estimation methods. @wu2024optimization
 
 
 ### Answer of Non-linear case
@@ -166,11 +166,11 @@ If **two-replica Local** measurement is allowed, can we go beyond exponential sa
 :::
 
 - So I focus on local 2-copy strategy.
-  - [Local 2-copy 3-design shadow](/theory/Topics/Shadow_tomography/multi-copy-shadow.qmd): Information complete. For **weighted purity estimation** and **non-linear Pauli properties**, this approach shows sampling supremacy over Bell sampling in specific parameter regimes.
-  - [Entanglement-fixed 2-copy shadow](/theory/Topics/Shadow_tomography/multi-copy-shadow.qmd/): Information complete only if entanglement is not maximum.
-  - [Random Shifted Bell ssampling](/theory/Topics/Shadow_tomography/multi-copy-shadow.qmd/): Information incomplete. However, it can be used to estimate $\text{tr}(O \rho^2)$ with $\mathcal{O}(n)$ sample complexity. @ippoliti2024classical
+  - [Local 2-copy 3-design shadow](/theory/Topics/Shadow_tomography/multicopy.qmd): Information complete. For **weighted purity estimation** and **non-linear Pauli properties**, this approach shows sampling supremacy over Bell sampling in specific parameter regimes.
+  - [Entanglement-fixed 2-copy shadow](/theory/Topics/Shadow_tomography/multicopy.qmd): Information complete only if entanglement is not maximum.
+  - [Random Shifted Bell ssampling](/theory/Topics/Shadow_tomography/multicopy.qmd): Information incomplete. However, it can be used to estimate $\text{tr}(O \rho^2)$ with $\mathcal{O}(n)$ sample complexity. @ippoliti2024classical
 - After finding that all these local 2-replica shadow all have **exponential sampling efficiency**, I guess that: 2-replica estimation of $\{\mathrm{tr}(P\rho^2)\}$ for $\forall P \in \mathcal{P}_n$ is [in general hard](/theory/Topics/Lowerbounds/lowerbounds.qmd).
-- I have found a [4-replica nonlocal upper bound](/theory/Topics/Shadow_tomography/multi-copy-shadow.qmd) that estimates $\{\mathrm{tr}(P\rho^2)\}$ for $\forall P \in \mathcal{P}_n$. So I also suspect that 4-replica **local** strategy estimation is also in general hard.
+- I have found a [4-replica nonlocal upper bound](/theory/Topics/Shadow_tomography/multicopy.qmd) that estimates $\{\mathrm{tr}(P\rho^2)\}$ for $\forall P \in \mathcal{P}_n$. So I also suspect that 4-replica **local** strategy estimation is also in general hard.
 
 
 - **Derandomized classical shadow-based approach**:

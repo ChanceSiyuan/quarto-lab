@@ -14,6 +14,8 @@ website:
       #   href: theory/Topics/index.qmd
       - text: "Experiment Notes"
         href: Experiments/index.qmd
+      - text: "Workspace"       # <--- 新增这一行
+        href: workspace/workspace.qmd
     right:
       - icon: github
         href: https://github.com/yourusername
@@ -28,9 +30,14 @@ website:
           contents:
             - notes/quantum_complexity/counting_complexity.qmd
             - notes/quantum_complexity/interactive_proof.qmd
-        # - section: "Quantum Learning Theory"
-        #   contents:
-        #     - notes/quantum_learning_theory/intro.qmd
+        - section: "Quantum Learning Theory"
+          contents:
+            - notes/quantum_learning_theory/intro.qmd
+        - section: "Shadow Tomography"
+          contents:
+            - notes/shadow_tomography/intro.qmd
+            - notes/shadow_tomography/multicopy.qmd
+
 
 format:
   html:
