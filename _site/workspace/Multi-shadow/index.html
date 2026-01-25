@@ -8,7 +8,7 @@
 
 <meta name="dcterms.date" content="2026-01-16">
 
-<title>Local estimation of observables – Chance’s Quantum Lab</title>
+<title>Project Home – Chance’s Quantum Lab</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -21,27 +21,7 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
-/* CSS for citations */
-div.csl-bib-body { }
-div.csl-entry {
-  clear: both;
-  margin-bottom: 0em;
-}
-.hanging-indent div.csl-entry {
-  margin-left:2em;
-  text-indent:-2em;
-}
-div.csl-left-margin {
-  min-width:2em;
-  float:left;
-}
-div.csl-right-inline {
-  margin-left:2em;
-  padding-left:1em;
-}
-div.csl-indent {
-  margin-left: 2em;
-}</style>
+</style>
 
 
 <script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
@@ -62,6 +42,8 @@ div.csl-indent {
 <script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="../../site_libs/bootstrap/bootstrap-a8976c3e89df70b272bdfba3d2fda974.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="../../site_libs/quarto-contrib/live-runtime/live-runtime.js" type="module"></script>
+<link href="../../site_libs/quarto-contrib/live-runtime/live-runtime.css" rel="stylesheet">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -90,49 +72,6 @@ div.csl-indent {
   }
 }</script>
 
-  <script>window.backupDefine = window.define; window.define = undefined;</script><script src="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.js"></script>
-  <script>document.addEventListener("DOMContentLoaded", function () {
- var mathElements = document.getElementsByClassName("math");
- var macros = [];
- for (var i = 0; i < mathElements.length; i++) {
-  var texText = mathElements[i].firstChild;
-  if (mathElements[i].tagName == "SPAN") {
-   katex.render(texText.data, mathElements[i], {
-    displayMode: mathElements[i].classList.contains('display'),
-    throwOnError: false,
-    macros: macros,
-    fleqn: false
-   });
-}}});
-  </script>
-  <script>window.define = window.backupDefine; window.backupDefine = undefined;</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.css">
-
-<script type="text/javascript">
-const typesetMath = (el) => {
-  if (window.MathJax) {
-    // MathJax Typeset
-    window.MathJax.typeset([el]);
-  } else if (window.katex) {
-    // KaTeX Render
-    var mathElements = el.getElementsByClassName("math");
-    var macros = [];
-    for (var i = 0; i < mathElements.length; i++) {
-      var texText = mathElements[i].firstChild;
-      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
-        window.katex.render(texText.data, mathElements[i], {
-          displayMode: mathElements[i].classList.contains('display'),
-          throwOnError: false,
-          macros: macros,
-          fleqn: false
-        });
-      }
-    }
-  }
-}
-window.Quarto = {
-  typesetMath
-};
-</script>
 
 <link rel="stylesheet" href="../../styles.css">
 </head>
@@ -198,26 +137,8 @@ window.Quarto = {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#local-and-diagonalizable-operators" id="toc-local-and-diagonalizable-operators" class="nav-link active" data-scroll-target="#local-and-diagonalizable-operators">Local and diagonalizable Operators</a>
-  <ul class="collapse">
-  <li><a href="#answer-of-linear-case" id="toc-answer-of-linear-case" class="nav-link" data-scroll-target="#answer-of-linear-case">Answer of Linear case</a></li>
-  <li><a href="#answer-of-non-linear-case" id="toc-answer-of-non-linear-case" class="nav-link" data-scroll-target="#answer-of-non-linear-case">Answer of Non-linear case</a></li>
-  </ul></li>
-  <li><a href="#local-but-non-diagonalizable-operators" id="toc-local-but-non-diagonalizable-operators" class="nav-link" data-scroll-target="#local-but-non-diagonalizable-operators">Local but non-diagonalizable Operators</a>
-  <ul class="collapse">
-  <li><a href="#answer-of-linear-case-1" id="toc-answer-of-linear-case-1" class="nav-link" data-scroll-target="#answer-of-linear-case-1">Answer of Linear case</a></li>
-  <li><a href="#answer-of-non-linear-case-1" id="toc-answer-of-non-linear-case-1" class="nav-link" data-scroll-target="#answer-of-non-linear-case-1">Answer of Non-linear case</a></li>
-  </ul></li>
-  <li><a href="#pure-state-and-low-rank-observable" id="toc-pure-state-and-low-rank-observable" class="nav-link" data-scroll-target="#pure-state-and-low-rank-observable">Pure State and Low-rank Observable</a>
-  <ul class="collapse">
-  <li><a href="#answer-of-linear-case-2" id="toc-answer-of-linear-case-2" class="nav-link" data-scroll-target="#answer-of-linear-case-2">Answer of Linear case</a></li>
-  <li><a href="#answer-of-non-linear-case-2" id="toc-answer-of-non-linear-case-2" class="nav-link" data-scroll-target="#answer-of-non-linear-case-2">Answer of Non-linear case</a></li>
-  </ul></li>
-  <li><a href="#sum-of-pauli-operators" id="toc-sum-of-pauli-operators" class="nav-link" data-scroll-target="#sum-of-pauli-operators">Sum of Pauli Operators</a>
-  <ul class="collapse">
-  <li><a href="#answer-of-linear-case-3" id="toc-answer-of-linear-case-3" class="nav-link" data-scroll-target="#answer-of-linear-case-3">Answer of Linear case</a></li>
-  <li><a href="#answer-of-non-linear-case-3" id="toc-answer-of-non-linear-case-3" class="nav-link" data-scroll-target="#answer-of-non-linear-case-3">Answer of Non-linear case</a></li>
-  </ul></li>
+  <li><a href="#current-status" id="toc-current-status" class="nav-link active" data-scroll-target="#current-status">Current status</a></li>
+  <li><a href="#relevant-notes" id="toc-relevant-notes" class="nav-link" data-scroll-target="#relevant-notes">Relevant Notes</a></li>
   </ul>
 </nav>
     </div>
@@ -226,11 +147,8 @@ window.Quarto = {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Local estimation of observables</h1>
-  <div class="quarto-categories">
-    <div class="quarto-category">Quantum Information</div>
-  </div>
-  </div>
+<h1 class="title">Project Home</h1>
+</div>
 
 
 
@@ -252,291 +170,36 @@ window.Quarto = {
 </header>
 
 
-<div class="callout callout-style-default callout-important no-icon callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon no-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Important</span>Linear case:
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<ul>
-<li>Given an arbitrary operator <span class="math inline">O</span>, what is the optimal efficiency for estimating its expected value <span class="math inline">\mathrm{tr}(O\rho)</span> under the constraint of <strong>Local Measurement</strong>?</li>
-<li>Can multiple-copy <strong>Local</strong> strategy benefit the estimation of <span class="math inline">\mathrm{tr}(O\rho)</span>?</li>
-</ul>
-</div>
-</div>
-<p>Why this question is meaningful?</p>
-<ol type="1">
-<li>Trade off between circuit depth and the replica numbers.</li>
-<li>Fundamental! If an information is forbidened locally (such as topological system), would multiple-copy strategy helps?</li>
+<section id="current-status" class="level1">
+<h1>Current status</h1>
+</section>
+<section id="relevant-notes" class="level1">
+<h1>Relevant Notes</h1>
+<ol start="0" type="1">
+<li><a href="../../theory/Posts/Estimation/index.html">Review of local estimation of observables</a></li>
+<li><a href="../../theory/Topics/Shadow_tomography/intro.html">Introduction to Shadow Tomography</a></li>
+<li><a href="../../theory/Topics/Shadow_tomography/multicopy.html">Multi-copy Measurement Setup</a></li>
+<li><a href="../../theory/Topics/Lowerbounds/index.html">Introduction to Lower bound proof</a></li>
 </ol>
-<div class="callout callout-style-default callout-important no-icon callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon no-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Important</span>Non-linear case:
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<ul>
-<li>Given an arbitrary operator <span class="math inline">O</span>, what is the optimal efficiency for estimating its expected value <span class="math inline">\mathrm{tr}(O\rho^2)</span> under the constraint of <strong>Local Measurement</strong>?</li>
-</ul>
-</div>
-</div>
-<p>Why this question is meaningful?</p>
-<ol type="1">
-<li>To enhance the efficiency of <a href="../../theory/Posts/Virtual_Distillation/index.html">Virtual Cooling</a> <span class="citation" data-cites="huggins2021virtual">&nbsp;[<a href="#ref-huggins2021virtual" role="doc-biblioref">1</a>]</span>.</li>
-<li>To allow for the estimation of more complex non-linear quantities, such as Fisher information <span class="citation" data-cites="rath2021quantum">&nbsp;[<a href="#ref-rath2021quantum" role="doc-biblioref">2</a>]</span>, by decomposing into Pauli operators.</li>
-</ol>
-<p>Here below I characterized this problem based on different meaningful subset of operator <span class="math inline">O</span>.</p>
-<section id="local-and-diagonalizable-operators" class="level1">
-<h1>Local and diagonalizable Operators</h1>
-<p>Case 1: <span class="math inline">O = A_1 \otimes \cdots \otimes A_N, [A_i, A_i^\dagger] = 0</span>.</p>
-<p>This case corresponds to separable operators that are diagonalizable (i.e., normal) at each local position. This is a <strong>trivial scenario</strong> where one simply measures in the eigenbasis of each operator at every location. For example, if <span class="math inline">A_i \in \{\mathbb{I},X,Y,Z\}</span>, it corresponds to estimating <span class="math inline">\mathrm{tr}(P\rho)</span>.</p>
-<section id="answer-of-linear-case" class="level3">
-<h3 class="anchored" data-anchor-id="answer-of-linear-case">Answer of Linear case</h3>
-<p>Trivial? Since already has effecient single-replica local strategy.</p>
-</section>
-<section id="answer-of-non-linear-case" class="level3">
-<h3 class="anchored" data-anchor-id="answer-of-non-linear-case">Answer of Non-linear case</h3>
-<ul>
-<li>If <span class="math inline">A_i \in \mathrm{SWAP}\cdot \{\mathbb{I},X,Y,Z\}</span>, it corresponds to estimating <span class="math inline">\mathrm{tr}({P\rho^2})</span>. Here, although <span class="math inline">\mathrm{SWAP}_k\cdot P</span> is a non-Hermitian operator, it can be diagonalized (it’s easy to prove that <span class="math inline">[SP,(SP)^\dagger] = SPPS^\dagger - PS^\dagger SP = 0</span>).</li>
-</ul>
-<div class="callout callout-style-default callout-note no-icon callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon no-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Note</span>A 2-copy Local estimation of <span class="math inline">tr(P \rho^2)</span>
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>The value <span class="math inline">tr(P \rho^2)</span> can be estimated by a 2-copy Local circuit composed of: (i). <span class="math inline">\mathrm{CNOT}_{12}</span> (ii). Measure <span class="math inline">Z</span> with result <span class="math inline">s_1</span> on the second qubit and adaptively apply an <span class="math inline">S \cdot H</span> gate and measure <span class="math inline">Z</span> with <span class="math inline">s_2</span> on the first qubit. Then <span class="math inline">\hat{o}:=\prod_{i}\hat{o}_i</span> .</p>
-</div>
-</div>
-<div class="callout callout-style-default callout-note callout-titled">
-<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Note</span>Proof:
-</div>
-<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
-</div>
-<div id="callout-4" class="callout-4-contents callout-collapse collapse">
-<div class="callout-body-container callout-body">
-<p>Full-weight Pauli operators can be locally transformed into Pauli <span class="math inline">Z</span> strings <span class="math inline">Z^{\otimes n}</span> using local Clifford gates since <span class="math inline">HXH = Z</span> and <span class="math inline">HS^{\dagger}YSH = Z</span>. In this case, this observable <span class="math inline">O_{\mathbf{r}}</span> is a tensor product of local non-Hermitian operators <span class="math inline">O_{\mathbf{r}} = [(Z \otimes \mathbb{I}) \cdot \mathrm{SWAP}]^{\otimes n}:= A^{\otimes n}</span>. The local operator <span class="math inline">A</span>, although non-Hermitian, is a normal matrix satisfying <span class="math inline">[A,A^\dagger] = 0</span>, thus it can still be diagonalized under a unitary transformation. Actually, it satisfies the decomposition:</p>
-<p><span class="math display">\begin{align}
-    A &amp;= \ket{00}\!\bra{00} - \ket{11}\!\bra{11} + i\ket{\Phi^+}\!\bra{\Phi^+} - i \ket{\Phi^-}\!\bra{\Phi^-}, \\
-    &amp;\text{~with~} \ket{\Phi^+} = \frac{\ket{01} + i \ket{10}}{\sqrt{2}}, \ket{\Phi^-} = \frac{\ket{01} - i \ket{10}}{\sqrt{2}}.
-\end{align}</span></p>
-<p>Thus we measure locally on the basis <span class="math inline">\{\ket{00}\!\bra{00}, \ket{11}\!\bra{11}, \ket{\Phi^+}\!\bra{\Phi^+},\ket{\Phi^-}\!\bra{\Phi^-}\}</span> with results <span class="math inline">\hat{o}_i \in \{+1,-1,+i,-i\}</span>, respectively. Since both <span class="math inline">\mathrm{Im}(\prod_{i} \hat{o}_i)</span> and <span class="math inline">\mathrm{Re}(\prod_{i} \hat{o}_i)</span> are bounded, based on the Hoeffding inequality, the average <span class="math inline">\mathrm{tr}(\rho A^{\otimes n})</span> can be estimated by <span class="math inline">\hat{o}:=\prod_{i}\hat{o}_i</span> efficiently. To implement this 2-copy Local circuit, we note that <span class="math display">
-\mathrm{CNOT} \left\{
-  \begin{aligned}&amp;\ket{00}\\ &amp;\ket{11}\\ &amp;\frac{\ket{01} + i \ket{10}}{\sqrt{2}} \\ &amp;\frac{\ket{01} - i \ket{10}}{\sqrt{2}}\end{aligned}
-  \right.
-  =
-  \left\{
-  \begin{aligned}&amp;\ket{00}\\ &amp;\ket{10}\\ &amp;\frac{\ket{01} + i \ket{11}}{\sqrt{2}} \\ &amp;\frac{\ket{01} - i \ket{11}}{\sqrt{2}}\end{aligned}
-  \right.
-  =  \left\{
-  \begin{aligned}&amp;\ket{00}\\ &amp;\ket{10}\\ &amp;(\mathrm{SH} \ket{0}) \ket{1} \\ &amp;(\mathrm{SH }\ket{1}) \ket{1} \end{aligned}
-  \right.
-</span></p>
-<ol type="1">
-<li>Apply <span class="math inline">\mathrm{CNOT}_{12}</span> to the first and second qubit.</li>
-<li>Measure <span class="math inline">Z</span> with result <span class="math inline">s_1</span> on the second qubit. Adaptively apply an <span class="math inline">S \cdot H</span> gate if <span class="math inline">s_1 = 1</span>, then measure <span class="math inline">Z</span> with result <span class="math inline">s_2</span> on the first qubit.</li>
-<li>Then we get the estimator <span class="math inline">\hat{o}:=\prod_{k} i^{2s_2^{(k)} + s_1^{(k)}}</span>.</li>
-<li>Since we know <span class="math inline">\mathrm{tr}(P \rho^2)</span> is real-valued, we can directly set <span class="math inline">\hat{o} = 0</span> if <span class="math inline">\hat{o} \in \{+i,-i\}</span>. Then <span class="math inline">\hat{o}:=\mathrm{Re}\left[\prod_{k} i^{2s_2^{(k)} + s_1^{(k)}}\right]</span>.</li>
-</ol>
-</div>
-</div>
-</div>
-<p>We note that the Purity <strong>CANNOT</strong> be simultaneously estimated using the results of <span class="math inline">\mathbf{s}_1</span> and <span class="math inline">\mathbf{s}_2</span> since <span class="math inline">\mathrm{SWAP}\ket{\Phi^+} = i \ket{\Phi^-}</span>. In reference <span class="citation" data-cites="huggins2021virtual">&nbsp;[<a href="#ref-huggins2021virtual" role="doc-biblioref">1</a>]</span>, it proposed a simple strategy to estimate <span class="math inline">\mathrm{tr}(P \rho^2)</span> using 2-replica Local measurement. However, it is noted that:</p>
-<blockquote class="blockquote">
-<p><small> “[…] but we note that the inability to parallelize the measurement of commuting multi-qubit observables would make it challenging to profitably combine this approach with sophisticated NISQ measurement strategies, such as the one presented in Ref. 17. <strong>In particular, individual multi-qubit operator must be measured separately using this approach, even if they commute.</strong> This fact increases the overall number of circuit repetitions required for many applications.” </small></p>
-</blockquote>
-</section>
-</section>
-<section id="local-but-non-diagonalizable-operators" class="level1">
-<h1>Local but non-diagonalizable Operators</h1>
-<p>Case 2: <span class="math inline">O = A_1 \otimes \cdots \otimes A_N, [A_i, A_i^\dagger] \neq 0</span>.</p>
-<ul>
-<li>This case corresponds to separable operators that are not diagonalizable at some positions.</li>
-<li>Application case: estimation of <span class="math inline">a^\dagger, a</span> on Boson sampling tasks. Estimation of non-Hermitian Hamitonian <span class="math inline">H + i \delta</span>.</li>
-</ul>
-<section id="answer-of-linear-case-1" class="level3">
-<h3 class="anchored" data-anchor-id="answer-of-linear-case-1">Answer of Linear case</h3>
-<ul>
-<li>One can decompose it into Hermitian parts via the Cartesian decomposition <span class="math inline">A+A^\dagger, i(A-A^\dagger)</span>, but this leads to an exponential growth in the number of measurement bases due to the non-commutativity between <span class="math inline">A+A^\dagger</span> and <span class="math inline">(A-A^\dagger)</span>!</li>
-<li>Classical shadow based estimation. Appliable on local and low0rank cases.</li>
-<li><strong>Benifits from 2-replica strategy:</strong> we may use the fact that Bell measurement already estimate <span class="math inline">\{|\mathrm{tr}(P \rho)|\}_{P}</span> with constant additive error <span class="math inline">O(n)</span> copies.</li>
-</ul>
-</section>
-<section id="answer-of-non-linear-case-1" class="level3">
-<h3 class="anchored" data-anchor-id="answer-of-non-linear-case-1">Answer of Non-linear case</h3>
-<p>Not investigated yet.</p>
-</section>
-</section>
-<section id="pure-state-and-low-rank-observable" class="level1">
-<h1>Pure State and Low-rank Observable</h1>
-<p>Case 3: <span class="math inline">O = \ket{\psi}\!\bra{\psi}</span> or <span class="math inline">O</span> is a low-rank observable.</p>
-<section id="answer-of-linear-case-2" class="level3">
-<h3 class="anchored" data-anchor-id="answer-of-linear-case-2">Answer of Linear case</h3>
-<ul>
-<li>When <span class="math inline">\ket{\psi}</span> is a stabilizer state, effecient estimation strategy exists based on the decomposition <span class="math inline">\ket{\psi}\!\bra{\psi} = 2^{-n}\sum_{P \in \mathcal{S}} P</span>.</li>
-<li>By analogy to the construction of entanglement witnesses, one can examine <span class="math inline">O':= O + \alpha \mathbb{I}</span> such that operator <span class="math inline">O'</span> is separable.</li>
-<li>Bell difference sampling can efficiently estiate the average over <strong>All</strong> stabilizer state.</li>
-</ul>
-</section>
-<section id="answer-of-non-linear-case-2" class="level3">
-<h3 class="anchored" data-anchor-id="answer-of-non-linear-case-2">Answer of Non-linear case</h3>
-<ul>
-<li>The estimation of <span class="math inline">\mathrm{tr}(O \rho^2)</span> for <span class="math inline">O</span> being a <span class="math inline">r</span>-rank operator can be estimated using <span class="math inline">r</span> replica measurements (ancilla assisted) <span class="citation" data-cites="shin2025resource">&nbsp;[<a href="#ref-shin2025resource" role="doc-biblioref">3</a>]</span>.</li>
-</ul>
-</section>
-</section>
-<section id="sum-of-pauli-operators" class="level1">
-<h1>Sum of Pauli Operators</h1>
-<p>Case 4: <span class="math inline">O = \sum_{P}\alpha_P P</span> .</p>
-<section id="answer-of-linear-case-3" class="level3">
-<h3 class="anchored" data-anchor-id="answer-of-linear-case-3">Answer of Linear case</h3>
-<ul>
-<li><strong>Classical shadow-based approach</strong>
-<ul>
-<li>For <a href="../../theory/Topics/Shadow_tomography/intro.html">single copy local Clifford</a> random measurements at each position, the sample complexity is <span class="math inline">3^k</span> for weight-<span class="math inline">k</span> Pauli observables and <span class="math inline">4^n</span> for arbitrary <span class="math inline">n</span>-local operators.</li>
-<li>Entanglement-fixed 2-copy shadow offering simpler implementation. Information complete if not maximumly entangled. Has effeciency <span class="math inline">3^{k/2}</span> only for <strong>compatiable</strong> <span class="math inline">k</span>-weight Pauli observables. <span class="citation" data-cites="ippoliti2024classical">&nbsp;[<a href="#ref-ippoliti2024classical" role="doc-biblioref">4</a>]</span></li>
-<li>Given <span class="math inline">\forall P \in \mathcal{P}_n</span>, It is exponentially hard for 1-replica strategy. <span class="citation" data-cites="chen2024optimal">&nbsp;[<a href="#ref-chen2024optimal" role="doc-biblioref">5</a>]</span></li>
-<li>For All Pauli oeprators, Informationally effecient using Bell sampling. <span class="citation" data-cites="chen2024optimal">&nbsp;[<a href="#ref-chen2024optimal" role="doc-biblioref">5</a>]</span>. However, <strong>signal problem</strong> requires more sampling counts. <span class="citation" data-cites="huang2021information">&nbsp;[<a href="#ref-huang2021information" role="doc-biblioref">6</a>]</span></li>
-</ul></li>
-</ul>
-<div class="callout callout-style-default callout-important no-icon callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon no-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Important</span>Question
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>If <strong>two-replica Local</strong> measurement is allowed, can we go beyond exponential sampling complextiy?</p>
-</div>
-</div>
-<ul>
-<li><strong>Derandomized classical shadow-based approach</strong>:
-<ul>
-<li>Adjust the local Clifford sampling distribution at each position, making it biased according to <span class="math inline">O</span>, rather than uniform. <span class="citation" data-cites="hadfield2021adaptive">&nbsp;[<a href="#ref-hadfield2021adaptive" role="doc-biblioref">7</a>]</span></li>
-<li>Adaptively select the next Pauli operator to measure (See <a href="../../theory/Posts/Pauli_derandomization/index.html">Derandomized local shadows</a> for a detailed treatment of derandomization for Pauli measurements.) <span class="citation" data-cites="huang2021efficient">&nbsp;[<a href="#ref-huang2021efficient" role="doc-biblioref">8</a>]</span></li>
-<li>A perspective from channel co-diagonalization: find a channel <span class="math inline">\Lambda</span> such that <span class="math inline">O_1,O_2</span> are simultaneously diagonalized. <span class="citation" data-cites="yang2025measuring">&nbsp;[<a href="#ref-yang2025measuring" role="doc-biblioref">9</a>]</span></li>
-<li>Recently it has been shown that it provides a <a href="../../theory/Posts/shallow_estim/index.html">lower bound</a> on the efficiency of local estimation methods. <span class="citation" data-cites="wu2024optimization">&nbsp;[<a href="#ref-wu2024optimization" role="doc-biblioref">10</a>]</span></li>
-</ul></li>
-</ul>
-</section>
-<section id="answer-of-non-linear-case-3" class="level3">
-<h3 class="anchored" data-anchor-id="answer-of-non-linear-case-3">Answer of Non-linear case</h3>
-<ul>
-<li><strong>Classical shadow-based approach</strong></li>
-</ul>
-<div class="callout callout-style-default callout-note no-icon callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon no-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Note</span>Previous result
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<ul>
-<li>Single-replica measurement with unitary <span class="math inline">6</span>-design for <span class="math inline">\{\mathrm{tr}(P \rho^2)\}_{P \in \mathcal{O}}</span>, reach the lower bound <span class="math inline">\Omega(2^{n/2} \cdot \ln(|\mathcal{O}|))</span> <span class="citation" data-cites="du2025optimal">&nbsp;[<a href="#ref-du2025optimal" role="doc-biblioref">11</a>]</span>.</li>
-<li>A <span class="math inline">k</span>-replica strategy that constructs classical shadow for <span class="math inline">{\rho}^t</span>. However, the circuit is non-local and can be explicitely constructed in the case <span class="math inline">t = 2</span> <span class="citation" data-cites="liu2024auxiliary">&nbsp;[<a href="#ref-liu2024auxiliary" role="doc-biblioref">12</a>]</span>.</li>
-<li>Prohibited for 2-replica strategy, even if non-local operation is allowed and the oeprator is fixed. The sampling complexity is <span class="math inline">\Omega(2^{k/2})</span> given <span class="math inline">k</span> is the supports qubit numbers. <span class="citation" data-cites="du2025optimal">&nbsp;[<a href="#ref-du2025optimal" role="doc-biblioref">11</a>]</span> <span class="citation" data-cites="ye2025exponential">&nbsp;[<a href="#ref-ye2025exponential" role="doc-biblioref">13</a>]</span></li>
-</ul>
-</div>
-</div>
-<ul>
-<li><p>So I focus on local 2-copy strategy.</p>
-<ul>
-<li><a href="../../theory/Topics/Shadow_tomography/multicopy.html">Local 2-copy 3-design shadow</a>: Information complete. For <strong>weighted purity estimation</strong> and <strong>non-linear Pauli properties</strong>, this approach shows sampling supremacy over Bell sampling in specific parameter regimes.</li>
-<li><a href="../../theory/Topics/Shadow_tomography/multicopy.html">Entanglement-fixed 2-copy shadow</a>: Information complete only if entanglement is not maximum.</li>
-<li><a href="../../theory/Topics/Shadow_tomography/multicopy.html">Random Shifted Bell ssampling</a>: Information incomplete. However, it can be used to estimate <span class="math inline">\text{tr}(O \rho^2)</span> with <span class="math inline">\mathcal{O}(n)</span> sample complexity. <span class="citation" data-cites="ippoliti2024classical">&nbsp;[<a href="#ref-ippoliti2024classical" role="doc-biblioref">4</a>]</span></li>
-</ul></li>
-<li><p>After finding that all these local 2-replica shadow all have <strong>exponential sampling efficiency</strong>, I guess that: 2-replica estimation of <span class="math inline">\{\mathrm{tr}(P\rho^2)\}</span> for <span class="math inline">\forall P \in \mathcal{P}_n</span> is <a href="../../theory/Topics/Lowerbounds/lowerbounds.html">in general hard</a>.</p></li>
-<li><p>I have found a <a href="../../theory/Topics/Shadow_tomography/multicopy.html">4-replica nonlocal upper bound</a> that estimates <span class="math inline">\{\mathrm{tr}(P\rho^2)\}</span> for <span class="math inline">\forall P \in \mathcal{P}_n</span>. So I also suspect that 4-replica <strong>local</strong> strategy estimation is also in general hard.</p></li>
-<li><p><strong>Derandomized classical shadow-based approach</strong>:</p></li>
-</ul>
-<div class="callout callout-style-default callout-important no-icon callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon no-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Important</span>Question
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>If two-replica Local measurement is allowed, does there exist an even better derandomization scheme to estimate <span class="math inline">\text{tr}(O \rho^2)</span>?</p>
-</div>
-</div>
-<ul>
-<li>Bell measurements can efficiently get : <span class="math display">
-O = \alpha_{00}\mathbb{I} \otimes \mathbb{I} + \alpha_{11}X\otimes X + \alpha_{11}Y \otimes Y + \alpha_{11}Z \otimes Z, \|O\|_{\infty} \leq \mathcal{O}(1)
-</span>.</li>
-</ul>
 
 
+<script type="ojs-module-contents">
+eyJjb250ZW50cyI6W119
+</script>
+<div id="exercise-loading-indicator" class="exercise-loading-indicator d-none d-flex align-items-center gap-2">
+<div id="exercise-loading-status" class="d-flex gap-2">
 
-</section>
+</div>
+<div class="spinner-grow spinner-grow-sm">
+
+</div>
+</div>
+<script type="vfs-file">
+W10=
+</script>
 </section>
 
-<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body" data-entry-spacing="0" role="list">
-<div id="ref-huggins2021virtual" class="csl-entry" role="listitem">
-<div class="csl-left-margin">[1] </div><div class="csl-right-inline">W. J. Huggins, S. McArdle, T. E. O’Brien, J. Lee, N. C. Rubin, S. Boixo, K. B. Whaley, R. Babbush, and J. R. McClean, Virtual distillation for quantum error mitigation, Physical Review X <strong>11</strong>, 041036 (2021).</div>
-</div>
-<div id="ref-rath2021quantum" class="csl-entry" role="listitem">
-<div class="csl-left-margin">[2] </div><div class="csl-right-inline">A. Rath, C. Branciard, A. Minguzzi, and B. Vermersch, Quantum fisher information from randomized measurements, Physical Review Letters <strong>127</strong>, 260501 (2021).</div>
-</div>
-<div id="ref-shin2025resource" class="csl-entry" role="listitem">
-<div class="csl-left-margin">[3] </div><div class="csl-right-inline">M. Shin, J. Lee, S. Lee, and K. Jeong, Resource-efficient algorithm for estimating the trace of quantum state powers, Quantum <strong>9</strong>, 1832 (2025).</div>
-</div>
-<div id="ref-ippoliti2024classical" class="csl-entry" role="listitem">
-<div class="csl-left-margin">[4] </div><div class="csl-right-inline">M. Ippoliti, Classical shadows based on locally-entangled measurements, Quantum <strong>8</strong>, 1293 (2024).</div>
-</div>
-<div id="ref-chen2024optimal" class="csl-entry" role="listitem">
-<div class="csl-left-margin">[5] </div><div class="csl-right-inline">S. Chen, W. Gong, and Q. Ye, <em>Optimal Tradeoffs for Estimating Pauli Observables</em>, in <em>2024 IEEE 65th Annual Symposium on Foundations of Computer Science (FOCS)</em> (IEEE, 2024), pp. 1086–1105.</div>
-</div>
-<div id="ref-huang2021information" class="csl-entry" role="listitem">
-<div class="csl-left-margin">[6] </div><div class="csl-right-inline">H.-Y. Huang, R. Kueng, and J. Preskill, Information-theoretic bounds on quantum advantage in machine learning, Physical Review Letters <strong>126</strong>, 190505 (2021).</div>
-</div>
-<div id="ref-hadfield2021adaptive" class="csl-entry" role="listitem">
-<div class="csl-left-margin">[7] </div><div class="csl-right-inline">C. Hadfield, Adaptive pauli shadows for energy estimation, arXiv Preprint arXiv:2105.12207 (2021).</div>
-</div>
-<div id="ref-huang2021efficient" class="csl-entry" role="listitem">
-<div class="csl-left-margin">[8] </div><div class="csl-right-inline">H.-Y. Huang, R. Kueng, and J. Preskill, Efficient estimation of pauli observables by derandomization, Physical Review Letters <strong>127</strong>, 030503 (2021).</div>
-</div>
-<div id="ref-yang2025measuring" class="csl-entry" role="listitem">
-<div class="csl-left-margin">[9] </div><div class="csl-right-inline">M. Yang, Y. Huang, and D. Zhou, Measuring incompatible observables with quantum neural networks, arXiv Preprint arXiv:2503.20565 (2025).</div>
-</div>
-<div id="ref-wu2024optimization" class="csl-entry" role="listitem">
-<div class="csl-left-margin">[10] </div><div class="csl-right-inline">B. Wu, Y. Yan, F. Wei, and Z. Liu, Optimization for expectation value estimation with shallow quantum circuits, arXiv Preprint arXiv:2407.19499 (2024).</div>
-</div>
-<div id="ref-du2025optimal" class="csl-entry" role="listitem">
-<div class="csl-left-margin">[11] </div><div class="csl-right-inline">Z. Du, Y. Tang, A. Elben, I. Roth, J. Eisert, and Z. Liu, Optimal randomized measurements for a family of non-linear quantum properties, arXiv Preprint arXiv:2505.09206 (2025).</div>
-</div>
-<div id="ref-liu2024auxiliary" class="csl-entry" role="listitem">
-<div class="csl-left-margin">[12] </div><div class="csl-right-inline">Q. Liu, Z. Li, X. Yuan, H. Zhu, and Y. Zhou, Auxiliary-free replica shadow estimation, arXiv Preprint arXiv:2407.20865 (2024).</div>
-</div>
-<div id="ref-ye2025exponential" class="csl-entry" role="listitem">
-<div class="csl-left-margin">[13] </div><div class="csl-right-inline">Q. Ye, Z. Liu, and D.-L. Deng, Exponential advantage from one more replica in estimating nonlinear properties of quantum states, arXiv Preprint arXiv:2509.24000 (2025).</div>
-</div>
-</div></section></div></main> <!-- /main -->
+</main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
   window.document.addEventListener("DOMContentLoaded", function (event) {
     const icon = "";

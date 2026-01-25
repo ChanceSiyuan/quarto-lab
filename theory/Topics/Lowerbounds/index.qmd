@@ -1,0 +1,81 @@
+---
+categories:
+- Quantum Learning
+date: 2026-01-20
+description: A comprehensive guide to proving information-theoretic lower bounds in quantum learning and state discrimination
+subtitle: "From Le Cam's Method to Symmetric Strategies"
+abstract: |
+  This lecture note presents a systematic toolkit for proving sample complexity lower bounds in quantum information processing tasks. We begin with classical information-theoretic foundations including Le Cam's two-point method and total variation distance bounds, then develop quantum-specific techniques for constrained measurement strategies. Key topics include: (1) restrictions on POVMs from memory, locality, and magic constraints; (2) tree representations of adaptive strategies with chi-squared divergence analysis; (3) hard instance constructions via operator mixed and Haar-assembled ensembles; and (4) simplification techniques using unitary and Clifford symmetries. These methods have broad applications in quantum state tomography, property testing, and quantum machine learning.
+format:
+  html:
+    html-math-method: katex
+    number-sections: true
+    toc: true
+    toc-depth: 3
+lang: en
+title: Toolbox for Proving Lower Bounds
+bibliography: refs.bib
+---
+
+# Introduction
+
+Lower bounds are fundamental in computational and information theory: they establish fundamental limits on what can be achieved regardless of the algorithm or strategy employed. Unlike upper bounds, which demonstrate achievability through explicit constructions, lower bounds prove impossibility results that stem from information-theoretic constraints.
+
+In quantum learning and state discrimination, proving lower bounds requires understanding how information about quantum states can be extracted through measurements. The key insight is that measurement outcomes are classical probability distributions, and the distinguishability of quantum states is ultimately limited by the distinguishability of these induced distributions.
+
+## Overview and Motivation
+
+This lecture note is organized into the following sections:
+
+### [1. Le Cam's Method](lecam_method.qmd)
+Classical information theory foundations including Le Cam's two-point method, which bounds the ability to distinguish probability distributions using total variation distance (TVD). This classical framework provides the foundation for quantum lower bounds.
+
+**Key concepts:** Total variation distance, problem ensembles, average case hardness, coarse graining
+
+### [2. Restrictions on POVMs](povm_restrictions.qmd)
+Formalizing constraints on POVMs arising from practical limitations including limited quantum memory, locality requirements, and magic (non-Clifford) resource constraints.
+
+**Key concepts:** Memory-limited strategies, $(c,k)$ adaptive strategies, locality constraints, stabilizer POVMs
+
+### [3. Tree Representation of Adaptive Strategies](adaptive_strategies.qmd)
+Tree representations for adaptive measurement strategies and likelihood ratio methods to bound their discriminating power via chi-squared divergence.
+
+**Key concepts:** Decision trees, leaves likelihood, chi-squared divergence bounds
+
+### [4. Operator Mixed Ensembles](operator_mixed.qmd)
+Constructing ensembles of quantum states that are provably hard to distinguish, focusing on operator-mixed states including Pauli mixed states.
+
+**Key concepts:** Gibbs state discrimination, signature cancellation, single and multi-replica strategies
+
+### [5. Haar-Assembled Ensembles](haar_ensembles.qmd)
+Hard instance constructions using Haar-random states, including reduced Haar (RH), mixed Haar (MH), and exponential Haar (EH) ensembles.
+
+**Key concepts:** Pure-identity test, purity estimation, Weingarten calculus applications
+
+### [6. Symmetric Strategies](symmetric_strategies.qmd)
+Exploiting unitary and Clifford symmetries to simplify the analysis of optimal measurement strategies.
+
+**Key concepts:** Permutation symmetry, unitary covariance, Clifford symmetrization
+
+## Notation and Conventions
+
+Throughout this note, we use the following notation:
+
+| Symbol | Meaning |
+|--------|---------|
+| $d = 2^n$ | Hilbert space dimension for $n$ qubits |
+| $\mathcal{H}(d)$ | $d$-dimensional Hilbert space |
+| $\mathrm{Herm}(d)$ | Space of $d \times d$ Hermitian matrices |
+| $\mathrm{Lin}(\mathcal{H}_1, \mathcal{H}_2)$ | Linear maps from $\mathcal{H}_1$ to $\mathcal{H}_2$ |
+| $\mathcal{P}_n$ | $n$-qubit Pauli group $\{I, X, Y, Z\}^{\otimes n}$ |
+| $\|p - q\|_{\mathrm{TV}}$ | Total variation distance: $\frac{1}{2}\sum_i \|p(i) - q(i)\|$ |
+| $\rho^{\otimes c}$ | $c$-fold tensor product of state $\rho$ |
+| $\{F_s\}_s$ | POVM with elements indexed by outcome $s$ |
+| $\mathbb{E}_{\sigma \sim \mathcal{E}}[\cdot]$ | Expectation over ensemble $\mathcal{E}$ |
+| $\mathrm{SWAP}$ | Swap operator exchanging two subsystems |
+
+For quantum states, we use $\rho, \sigma$ for density matrices and $\ket{\psi}, \ket{\phi}$ for pure states. The trace norm is $\|A\|_1 = \mathrm{tr}\sqrt{A^\dagger A}$ and the operator norm is $\|A\|_\infty = \max_{\|v\|=1} \|Av\|$.
+
+## Getting Started
+
+Begin with [Le Cam's Method](lecam_method.qmd) for the classical foundations, or jump directly to any section that interests you. Each section is designed to be relatively self-contained while building on the core concepts established in earlier sections.

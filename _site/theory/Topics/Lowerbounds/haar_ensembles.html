@@ -1,0 +1,1300 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.26">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Haar-Assembled Ensembles – Chance’s Quantum Lab</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<script src="../../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap-a8976c3e89df70b272bdfba3d2fda974.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="../../../site_libs/quarto-contrib/live-runtime/live-runtime.js" type="module"></script>
+<link href="../../../site_libs/quarto-contrib/live-runtime/live-runtime.css" rel="stylesheet">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script>window.backupDefine = window.define; window.define = undefined;</script><script src="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.js"></script>
+  <script>document.addEventListener("DOMContentLoaded", function () {
+ var mathElements = document.getElementsByClassName("math");
+ var macros = [];
+ for (var i = 0; i < mathElements.length; i++) {
+  var texText = mathElements[i].firstChild;
+  if (mathElements[i].tagName == "SPAN") {
+   katex.render(texText.data, mathElements[i], {
+    displayMode: mathElements[i].classList.contains('display'),
+    throwOnError: false,
+    macros: macros,
+    fleqn: false
+   });
+}}});
+  </script>
+  <script>window.define = window.backupDefine; window.backupDefine = undefined;</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.css">
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../../styles.css">
+</head>
+
+<body class="nav-sidebar floating nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Chance’s Quantum Lab</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../index.html"> 
+<span class="menu-text">Home Page</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../theory/index.html"> 
+<span class="menu-text">Theory</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../Experiments/index.html"> 
+<span class="menu-text">Experiment Notes</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../workspace/workspace.html"> 
+<span class="menu-text">Workspace</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/yourusername"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/yourusername"> <i class="bi bi-twitter" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../../theory/Topics/Lowerbounds/operator_mixed.html">Hard Instance Constructions</a></li><li class="breadcrumb-item"><a href="../../../theory/Topics/Lowerbounds/haar_ensembles.html">Haar-Assembled Ensembles</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../theory/Topics/Lowerbounds/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Toolbox for Proving Lower Bounds</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Core Concepts</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../theory/Topics/Lowerbounds/lecam_method.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Le Cam’s Method</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../theory/Topics/Lowerbounds/povm_restrictions.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Restrictions on POVMs</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../theory/Topics/Lowerbounds/adaptive_strategies.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Tree Representation of Adaptive Strategies</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Hard Instance Constructions</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../theory/Topics/Lowerbounds/operator_mixed.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Operator Mixed Ensembles</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../theory/Topics/Lowerbounds/haar_ensembles.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Haar-Assembled Ensembles</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Simplification Techniques</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../theory/Topics/Lowerbounds/symmetric_strategies.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Symmetric Strategies</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#sec-haar-ensemble" id="toc-sec-haar-ensemble" class="nav-link active" data-scroll-target="#sec-haar-ensemble"><span class="header-section-number">1</span> Haar-Assembled Ensembles</a>
+  <ul class="collapse">
+  <li><a href="#sec-haar-props" id="toc-sec-haar-props" class="nav-link" data-scroll-target="#sec-haar-props"><span class="header-section-number">1.1</span> Properties of Haar-Assembled Ensembles</a></li>
+  <li><a href="#sec-pure-id-test" id="toc-sec-pure-id-test" class="nav-link" data-scroll-target="#sec-pure-id-test"><span class="header-section-number">1.2</span> Pure-Identity Test</a></li>
+  <li><a href="#sec-1-replica" id="toc-sec-1-replica" class="nav-link" data-scroll-target="#sec-1-replica"><span class="header-section-number">1.3</span> Single-Replica Strategy</a></li>
+  <li><a href="#sec-2-replica-kmem" id="toc-sec-2-replica-kmem" class="nav-link" data-scroll-target="#sec-2-replica-kmem"><span class="header-section-number">1.4</span> Two-Replica Strategy with <span class="math inline">k</span>-Memory</a></li>
+  <li><a href="#sec-mh-test" id="toc-sec-mh-test" class="nav-link" data-scroll-target="#sec-mh-test"><span class="header-section-number">1.5</span> MH-Ensemble Test</a></li>
+  <li><a href="#sec-k-replica" id="toc-sec-k-replica" class="nav-link" data-scroll-target="#sec-k-replica"><span class="header-section-number">1.6</span> The <span class="math inline">k</span>-Replica Strategy</a></li>
+  <li><a href="#sec-eh-test" id="toc-sec-eh-test" class="nav-link" data-scroll-target="#sec-eh-test"><span class="header-section-number">1.7</span> EH-Ensemble Test</a></li>
+  <li><a href="#sec-rh-test" id="toc-sec-rh-test" class="nav-link" data-scroll-target="#sec-rh-test"><span class="header-section-number">1.8</span> RH-Ensemble Test</a></li>
+  <li><a href="#sec-subspace-rh-test" id="toc-sec-subspace-rh-test" class="nav-link" data-scroll-target="#sec-subspace-rh-test"><span class="header-section-number">1.9</span> Subspace RH-Ensemble Test</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../../theory/Topics/Lowerbounds/operator_mixed.html">Hard Instance Constructions</a></li><li class="breadcrumb-item"><a href="../../../theory/Topics/Lowerbounds/haar_ensembles.html">Haar-Assembled Ensembles</a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title">Haar-Assembled Ensembles</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p><a href="../../../theory/Topics/Lowerbounds/index.html">← Back to Index</a></p>
+<section id="sec-haar-ensemble" class="level1" data-number="1">
+<h1 data-number="1"><span class="header-section-number">1</span> Haar-Assembled Ensembles</h1>
+<section id="sec-haar-props" class="level2" data-number="1.1">
+<h2 data-number="1.1" class="anchored" data-anchor-id="sec-haar-props"><span class="header-section-number">1.1</span> Properties of Haar-Assembled Ensembles</h2>
+<p>The lower bound of many problem are find by first reduce this problem to distinguishing one specific state with a state ensemble. One useful state ensembles are constructed from reducing Haar random state.</p>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Definition
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Given a <span class="math inline">D = 2^{n + \log(1/\varepsilon)} = d\cdot \varepsilon^{-1}</span> dimensional Haar random state <span class="math inline">\ket{H} \sim \mathrm{Haar}(D)</span>. The <span class="math inline">2^n</span>-dimensional reduced Haar-induced (<strong>RH</strong>) state is defined as <span class="math inline">\mathcal{E}_{\varepsilon}:=\{\text{tr}_{&gt;n} \ket{H}\!\bra{H}\}_{\ket{H} \sim \mathrm{Haar}(D)}</span>.</p>
+</div>
+</div>
+<p>Depending on the scale of reduced parts, the <span class="math inline">RH</span>-ensemble has tunable purity. We then show in Lemma that the random variable <span class="math inline">\mathrm{tr}(\rho^2), \rho \sim \mathcal{E}^{\mathrm{RH}}_{\varepsilon}</span> is well concentrated and separate from maximum mixed state purity <span class="math inline">1/d</span>. This statement is useful to proving the reduction of <span class="math inline">\mathrm{tr}(\rho^2)</span> problem.</p>
+<div class="callout callout-style-default callout-important no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Lemma
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><span id="lemma:purity_of_RH" data-label="lemma:purity_of_RH"></span> The <span class="math inline">c</span>-copy average of <span class="math inline">\rho \in \mathcal{E}_{\varepsilon}</span> writes: <span class="math display">\begin{align}
+        \mathbb{E}_{\rho \sim \mathcal{E}_{\varepsilon}} \rho^{\otimes c} = \frac{1}{D^{\uparrow c}}\sum_{\pi \in S_c} \varepsilon^{-c(\pi)}\mathbb{P}_{\pi}^{d}.
+\end{align}</span> Furthermore, its purity average and variance writes: <span class="math display">\begin{align}
+        \mathbb{E}_{\rho \sim \mathcal{E}_{\varepsilon}} \mathrm{tr}(\rho^2) = \frac{2^n\varepsilon + 1}{2^n + \varepsilon},\quad \mathrm{Var}_{\rho \sim \mathcal{E}_{\varepsilon}} [\mathrm{tr}(\rho^2)] = \frac{2(2^{2n} - 1)(1/\varepsilon^2-1)}{(2^n/\varepsilon + 1)^2 (2^n/\varepsilon+2)(2^n/\varepsilon+3)}.
+\end{align}</span></p>
+</div>
+</div>
+<div class="proof">
+<p><span class="proof-title"><em>Proof</em>. </span><em>Proof.</em> On going proof... <span class="math display">\begin{align}
+        \mathbb{E}_{\rho \sim \mathcal{E}_{\varepsilon}}\rho^{\otimes c}&amp;=\mathbb{E}_{H \sim \mathrm{Haar}(D)}(\text{tr}_{&gt;n} \ket{H}\!\bra{H})^{\otimes c} = \frac{1}{D^{\uparrow c}}\mathrm{tr}_{&gt;n}(\sum_{\pi \in S_c} \mathbb{P}_{\pi}^{d} \otimes \mathbb{P}_{\pi}^{\varepsilon^{-1}})=\frac{1}{D^{\uparrow c}}\sum_{\pi \in S_c} \varepsilon^{-c(\pi)}\mathbb{P}_{\pi}^{d}.
+\end{align}</span> Then the average of purity can be directly calculate as <span class="math display">\begin{align}
+    \mathbb{E}_{\rho \sim \mathcal{E}_{\varepsilon}} \mathrm{tr}(\rho^2)
+    &amp;=\mathrm{tr}\left(\frac{\varepsilon^{-2} \mathbb{I}_{n}^{\otimes 2}+\varepsilon^{-1} \mathrm{SWAP}^{\otimes n}}{D(D+1)} \cdot \mathrm{SWAP}^{\otimes n}\right) = \frac{\varepsilon^{-2} 2^n + \varepsilon^{-1} 2^{2n}}{2^n\varepsilon^{-1}(2^n \varepsilon^{-1}+1)}= \frac{2^n\varepsilon + 1}{2^n + \varepsilon},\\
+    \mathbb{E}_{\rho \sim \mathcal{E}_{\varepsilon}} [\mathrm{tr}(\rho^2)]^2&amp;=\mathrm{tr}\left(\frac{ \sum_{\pi \in S_4}{\varepsilon^{-c(\pi)}\mathbb{P}_{\pi}^{d}}}{D(D+1)(D+2)(D+3)}\mathbb{P}_{(12)(34)}^{d}\right)=\frac{\sum_{\pi \in S_4}d^{c(\pi \cdot (12)(34))}(1/\varepsilon)^{c(\pi)}}{D(D+1)(D+2)(D+3)}.
+\end{align}</span> Here <span class="math inline">c(\pi)</span> count the number of cycles for permutation <span class="math inline">\pi</span>. To calculate this value, we classify the <span class="math inline">S_4</span> group as shown in Table 1.1. Through denoting <span class="math inline">d_A = 2^n, d_B = 1 / \varepsilon</span>, <span class="math inline">D = d_Ad_B</span>. We get the results <span class="math display">\begin{align}
+        \mathrm{Var}_{\rho \sim \mathcal{E}_{\varepsilon}} [\mathrm{tr}(\rho^2)] &amp;= \frac{d_A^2 d_B^4+2 d_A^3 d_B^3+5 d_A d_B^3+10 d_A^2 d_B^2+5 d_A^3 d_B+d_A^4 d_B^2}{(d_Ad_B)(d_Ad_B+1)(d_Ad_B+2)(d_Ad_B+3)} - \frac{(d_A + d_B)^2}{(d_Ad_B+1)^2}\notag\\
+        &amp;= \frac{2d_B\left[1 + d_A^3 - 2d_A -d_B +d_Ad_B\right]}{(d_Ad_B + 1)^2 (d_Ad_B+2)(d_Ad_B+3)} = \frac{2/\varepsilon\left[1 + 2^{3n} - 2^{2n+1} - 1/\varepsilon +2^n/\varepsilon\right]}{(2^n/\varepsilon + 1)^2 (2^n/\varepsilon+2)(2^n/\varepsilon+3)}
+\end{align}</span></p>
+<div id="tab:S4_terms">
+<table class="caption-top table">
+<caption>Classification of <span class="math inline">S_4</span> to calculate <span class="math inline">\sum_{\pi \in S_4}(d_A)^{c(\pi \cdot (12)(34))}(d_B)^{c(\pi)}</span></caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;"><strong><span class="math inline">\pi</span></strong></th>
+<th style="text-align: center;"><strong>number</strong></th>
+<th style="text-align: center;"><strong><span class="math inline">c(\pi)</span></strong></th>
+<th style="text-align: left;"><strong><span class="math inline">\pi \cdot (12)(34)</span></strong></th>
+<th style="text-align: center;"><strong><span class="math inline">c(\pi \cdot (12)(34))</span></strong></th>
+<th style="text-align: left;"><strong>summation</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><span class="math inline">e</span></td>
+<td style="text-align: center;">1</td>
+<td style="text-align: center;">4</td>
+<td style="text-align: left;">(12)(34)</td>
+<td style="text-align: center;">2</td>
+<td style="text-align: left;"><span class="math inline">d_A^2 d_B^4</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">(12),(34),</td>
+<td style="text-align: center;"><span class="math inline">C_4^2</span></td>
+<td style="text-align: center;">3</td>
+<td style="text-align: left;">(34),(12)</td>
+<td style="text-align: center;">3</td>
+<td style="text-align: left;"><span class="math inline">2 d_A^3 d_B^3</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">4-6 (13),(14),(23),(24)</td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: left;">(1432),(1342),(1243),(1342)</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: left;"><span class="math inline">4 d_A d_B^3</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><span class="math inline">\substack{(123),(321),(124),(421),\\(134),(431),(234),(432)}</span></td>
+<td style="text-align: center;"><span class="math inline">2C_4^3</span></td>
+<td style="text-align: center;">2</td>
+<td style="text-align: left;"><span class="math inline">\substack{(243),(143),(213),(421),\\(134),(431),(234),(432)}</span></td>
+<td style="text-align: center;">2</td>
+<td style="text-align: left;"><span class="math inline">8 d_A^2 d_B^2</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><span class="math inline">\substack{(1234),(1243),(1324),\\(1342),(1423),(1432)}</span></td>
+<td style="text-align: center;">(4-1)!</td>
+<td style="text-align: center;">1</td>
+<td style="text-align: left;">(13)</td>
+<td style="text-align: center;">3</td>
+<td style="text-align: left;"><span class="math inline">6 d_A^3 d_B</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><span class="math inline">\substack{(12)(34),}</span></td>
+<td style="text-align: center;">3</td>
+<td style="text-align: center;">2</td>
+<td style="text-align: left;"><span class="math inline">e</span></td>
+<td style="text-align: center;">4</td>
+<td style="text-align: left;"><span class="math inline">d_A^4 d_B^2</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">4-6 <span class="math inline">\substack{(13)(24),(14)(23)}</span></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: left;"><span class="math inline">(14)(23)</span></td>
+<td style="text-align: center;">2</td>
+<td style="text-align: left;"><span class="math inline">2 d_A^2 d_B^2</span></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>&nbsp;◻</p>
+</div>
+<p>State ensembles can also be constructed from mixing independent Haar random state.</p>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Definition
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><span id="def:MH_ensemble" data-label="def:MH_ensemble"></span> Given a probability <span class="math inline">\{p_r\}_{r = 0}^{m}</span>, defined the multi-variant Haar ensemble (<strong>MH</strong>) as the mix states <span class="math inline">\mathcal{E}^{\mathrm{MH}}_{\mathbf{p}}:=\{p_0 {\mathbb{I}(d)}/{d} + \sum_{j = 1}^{m} p_j \psi_j\}_{\psi_j \sim \mathrm{Haar}(d)}</span>.</p>
+</div>
+</div>
+<p>As a generalization of Lemma, we then try to conclude that for an arbitrary k-replica operator <span class="math inline">O</span>, it is possible to construct two <strong>MH</strong>-ensemble <span class="math inline">\mathcal{E}^{\mathrm{MH}}_{\mathbf{p}},\mathcal{E}^{\mathrm{MH}}_{\mathbf{q}}</span> such that <span class="math inline">\{\mathrm{tr}(O\rho^k)\}_{\rho \sim \mathcal{E}^{\mathrm{MH}}_{\mathbf{p}}}</span> and <span class="math inline">\{\mathrm{tr}(O\rho^k)\}_{\rho \sim \mathcal{E}^{\mathrm{MH}}_{\mathbf{q}}}</span> are well separated and both well concentrated. To prove this, we rewrite the k-replica of <strong>MH</strong>-ensembles as <span class="math display">\begin{align}
+    \mathcal{E}^{\mathrm{MH},\otimes k}_{m} = \left\{\sum_{A_0 \cup \cdots \cup A_m = \{1,\cdots,k\}}\left(p_0^{|A_0|}\prod_{r = 1}^{m} p_r^{ |A_r|}\right)\cdot \psi^{\otimes A_1}_1 \otimes \cdots \otimes \psi^{\otimes A_m}_m \otimes \left(\frac{\mathbb{I}(d)}{d}\right)^{\otimes A_0}\right\}_{\psi_r \sim \mathrm{Haar}(d)},\label{eq:k_rep_MH}
+\end{align}</span> where <span class="math inline">A_0 \cup \cdots \cup A_m = \{1,\cdots,k\}</span> go over all <span class="math inline">(m+1)</span>-partition of <span class="math inline">k</span> elements and <span class="math inline">\psi_r^{A_r}</span> means distributing state <span class="math inline">\psi_r</span> at elements within <span class="math inline">A_r</span>. If we use <span class="math inline">j = (A_1,\cdots,A_m,A_0)</span> to denote a partition of <span class="math inline">\{1,\cdots,k\}</span> and <span class="math inline">p_j = p_0^{|A_0|}\prod_{r = 1}^{m} p_r^{ |A_r|}</span> to denote the mixing rate, and use unitary <span class="math inline">U_j</span> to sort the qudits in an order such that <span class="math inline">\psi_1,\psi_2,\cdots,\psi_m</span> supports on <span class="math inline">\{1,\cdots,|A_1|\},\{|A_1|+1,\cdots,|A_1|+|A_2|\}, \cdots,\{|A_{m}|+1,\cdots,k\}</span> respectively, we get the extended Haar-induced ensemble below.</p>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Definition
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><span id="def:EHI_ensemble" data-label="def:EHI_ensemble"></span> Given <span class="math inline">m</span> Haar random state <span class="math inline">\{\psi_1,\cdots,\psi_m\}</span>, each with dimension <span class="math inline">d_1,\cdots,d_m</span>, multiplicity parameter <span class="math inline">\mathbf{a} \in (\mathbb{Z}_+)^{m} =(a_1,\cdots,a_m)</span>, and the r-dimensional complement state <span class="math inline">\tau</span> such that <span class="math inline">\sum_{k=1}^m a_k\cdot d_k + r  = D</span>. A <span class="math inline">D</span>-dimensional <span class="math inline">(\mathbf{a}^{(j)}, \tau^{(j)})</span> extended Haar-induced (<strong>EH</strong>) ensemble is an ensemble of <span class="math inline">D</span>-dimensional mixed state that is specified by a <span class="math inline">\mathcal{U} := \{p_j,U_j\}_{j = 1}^J</span> unitary mixing of D-dimensional pure state <span class="math inline">\psi_1^{\otimes a_1} \otimes \cdots\otimes \psi_m^{\otimes a_m} \otimes \tau</span>, written as <span class="math display">\begin{align}
+        \mathcal{E}_{\mathcal{U},\mathbf{a}, \tau} := \{\sum_{j= 1}^J p_j U_j \psi_1^{\otimes a^{(j)}_1} \otimes \cdots\otimes \psi_m^{\otimes a^{(j)}_m} \otimes \tau^{(j)} U_j^\dagger\}_{\psi_k \sim \mathrm{Haar}(d_k)}.
+\end{align}</span></p>
+</div>
+</div>
+<p>Thus, it is sufficient to prove that <span class="math inline">\mathrm{tr}(O\sigma), \sigma \sim \mathcal{E}^{\mathrm{EH}}_{\mathbf{a}}</span> is separated and concentrated. For the separated part, we prove the lemma below</p>
+<div class="callout callout-style-default callout-important no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Lemma
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Suppose <span class="math inline">\forall i= 1,\cdots,k, \sum_{r = 1}^m p_r^{i} = \sum_{r = 1}^m q_r^{i}</span> and <span class="math inline">p_0 = q_0</span>, the multi-variant Haar induced ensemble <span class="math inline">\mathcal{E}^{\mathrm{MH}}_{\mathbf{p}}</span> and <span class="math inline">\mathcal{E}^{\mathrm{MH}}_{\mathbf{q}}</span> satisfied <span class="math display">\begin{align}
+        &amp;\forall i= 1,\cdots,k, \mathbb{E}_{\rho \sim \mathcal{E}^{\mathrm{MH}}_{\mathbf{p}}} \rho^i - \mathbb{E}_{\rho \sim \mathcal{E}^{\mathrm{MH}}_{\mathbf{q}}} \rho^i = 0\\
+        &amp;\mathbb{E}_{\rho \sim \mathcal{E}^{\mathrm{MH}}_{\mathbf{p}}} \rho^{k+1} - \mathbb{E}_{\rho \sim \mathcal{E}^{\mathrm{MH}}_{\mathbf{q}}} \rho^{k+1} = (\sum_{r=1}^m p_r^{k+1} - \sum_{r=1}^m q_r^{k+1}) \Delta_{k+1}\\
+\end{align}</span></p>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-6-contents" aria-controls="callout-6" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Proof (Click to expand)
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-6" class="callout-6-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><em>Proof.</em> Refer to Eq.~(eq:k_rep_MH), we conclude that&nbsp;◻</p>
+</div>
+</div>
+</div>
+<p>Then we show the lemma below for the bound of specific <span class="math inline">O</span></p>
+<div class="callout callout-style-default callout-important no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Lemma
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Given <span class="math inline">k+1</span> qudit operator <span class="math inline">O</span>, then <span class="math display">\begin{align}
+        \left|\sum_{\pi \in S_{k+1}^{\mathrm{circ}}} c_{\pi} (O) - \mathrm{tr}(O \Delta_{k+1})\right| \leq \frac{(k+1)^{2k}}{d}.
+\end{align}</span></p>
+</div>
+</div>
+<p>For the second parts, we prove the following Lemma, as a generalization of Levy’s Lemma.</p>
+<div class="callout callout-style-default callout-important no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Lemma
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><span class="math display">\begin{align}
+        \mathrm{Pr}_{\sigma \sim \mathcal{E}^{\mathrm{EH}}_{\mathcal{U},\mathbf{a}, \tau}}\left(\left|\mathrm{tr}(O \sigma) - \mu\right| &gt; t\right) \leq 2 \sum_{r =1}^m e^{-\frac{d_r t^2}{18\pi^3m^2a_r^2\|O\|^2_{\infty}}}
+\end{align}</span></p>
+</div>
+</div>
+</section>
+<section id="sec-pure-id-test" class="level2" data-number="1.2">
+<h2 data-number="1.2" class="anchored" data-anchor-id="sec-pure-id-test"><span class="header-section-number">1.2</span> Pure-Identity Test</h2>
+<p>Perhaps the most simple one are the maximum mixed state <span class="math inline">\mathbb{I}(d)/d</span> with all possible pure state <span class="math inline">\ket{\psi}</span>.</p>
+<div class="problem">
+<p><span id="prob:2k_PItest" data-label="prob:2k_PItest"></span> Design an algorithm using restrained measurements that, given access to a device guaranteed to prepare a state that is either (i)one of pure states <span class="math inline">\ket{\psi}</span> or (ii) the maximally mixed state <span class="math inline">d^{-1}\mathbb{I}</span>, can distinguish between these two cases with an error of at most <span class="math inline">1/2-\varepsilon</span>.</p>
+</div>
+<p>Based on Lemma, in the following we relax the problem with a problem ensemble <span class="math inline">\ket{\psi} \sim \mathrm{Haar}(d)</span>. This reduction is sufficient, while not fully characterize the hardness of pure-identity test. To fully pinned down the hardness, ones should build arbitrary ensemble on pure states and check the hardness. Thus,</p>
+</section>
+<section id="sec-1-replica" class="level2" data-number="1.3">
+<h2 data-number="1.3" class="anchored" data-anchor-id="sec-1-replica"><span class="header-section-number">1.3</span> Single-Replica Strategy</h2>
+<p>We first consider the 1-replica restriction on measurements.</p>
+<p>For a <span class="math inline">T</span>-round 1-replica adaptive strategy <span class="math inline">M_s = F^{u_1}_{s_1} \otimes \cdots \otimes F^{u_T}_{s_T}</span>, we use Lemma and lower bounds its leaves’ likelihood: <span class="math display">\begin{align}
+    \mathbb{E}_{\psi} L_{\psi} = \mathbb{E}_{{\psi} \sim \mathrm{Haar}(d)}\frac{d^{T}\mathrm{tr}(M_s \ket{\psi}\!\bra{\psi}^{\otimes T})}{\mathrm{tr}(M_s)} = \frac{d^T}{d(d+1)\cdots(d+T-1)}  \frac{\mathrm{tr}\left(\sum_{\pi \in S_T}\mathbb{P}^d_{\pi} \cdot M_s\right)}{\mathrm{tr}\left( \bigotimes_{t = 1}^T\left[\mathbb{I}(d)\right]\cdot M_s\right)}.\label{eq:midres_1repPItest}
+\end{align}</span> To do this, we upper bounds each term in the RHS of Eq.~(eq:midres_1repPItest). For the constant, we conclude that <span class="math display">\begin{align}
+    \frac{d^T}{d(d+1)\cdots(d+T-1)}&amp;=\left(1 \cdot (1+\frac{1}{d})\cdots(1+\frac{T-1}{d})\right)^{-1}\geq (1 + T/d)^{-T} \notag \\
+    &amp;=e^{-T\ln(1 + T/d)} \geq e^{-T^2/d}. \label{eq:lb_upfrac}
+\end{align}</span> For the second term, we decomposed <span class="math inline">M_s</span> into its eigenvector through defining <span class="math inline">F_{s_j}^{u_j} =\sum_{s}\lambda_{j,s}{v_{j,s}}</span> with <span class="math inline">\lambda_{j,s_j}\geq 0</span> and writes <span class="math display">\begin{align}
+    {\mathrm{tr}\left(\sum_{\pi \in S_T}\mathbb{P}^d_{\pi} \cdot M_s\right)} &amp;= T!\cdot\sum_{s_1,\cdots,s_T}\lambda_{1,s_1}\cdots\lambda_{T,s_T} \mathrm{tr}\left(\Pi_{sym}{v_{1,s_1} \otimes\cdots\otimes v_{T,s_T}}\right)\\
+    &amp;\geq \sum_{s_1,\cdots,s_T}\lambda_{1,s_1}\cdots \lambda_{T,s_T}={\mathrm{tr}\left( \bigotimes_{t = 1}^T\left[\mathbb{I}(d)\right]\cdot M_s\right)}
+\end{align}</span> Here in the second line we show the lemma below:</p>
+<div class="callout callout-style-default callout-important no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Lemma
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><span id="lemma:sym_prod_lb" data-label="lemma:sym_prod_lb"></span> For <span class="math inline">T</span> numbers of <span class="math inline">d</span>-qudit pure states <span class="math inline">\ket{\psi_1}, \cdots,\ket{\psi_T}</span> and the symmetrization projector <span class="math inline">\Pi_{\mathrm{sym},T} := (T!)^{-1}\sum_{\pi \in S_T} \mathbb{P}^{d}_{\pi}</span>, we conclude that <span class="math inline">\text{tr}\left(\Pi_{\mathrm{sym},T}\bigotimes_{t = 1}^T \ket{\psi_t} \!\bra{\psi_t}\right) \geq (T!)^{-1}.</span></p>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-10-contents" aria-controls="callout-10" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Proof (Click to expand)
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-10" class="callout-10-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><em>Proof.</em>&nbsp;◻</p>
+</div>
+</div>
+</div>
+<p>Thus, we conclude that <span class="math inline">max_{\{M_s = \otimes_{t=1}^{T}F_{s_t}^{u_t}\}_s}\|p_{\mathbb{I}} - p_{\psi}\|_{\mathrm{TV}} \leq 1 - \min_{\{M_s\}_s, s} \mathbb{E}_{\psi} L_{\psi}(s) \leq 1 - e^{-T^2/d} \leq T^2/d</span> based on the first equation in Lemma. This means that to reach success rate <span class="math inline">1/2 + \varepsilon</span>, <span class="math inline">T^2/d \geq 2\varepsilon</span> must be satisfied, thus gives <span class="math inline">T \geq \mathcal{O}({\sqrt{d}})</span>.</p>
+</section>
+<section id="sec-2-replica-kmem" class="level2" data-number="1.4">
+<h2 data-number="1.4" class="anchored" data-anchor-id="sec-2-replica-kmem"><span class="header-section-number">1.4</span> Two-Replica Strategy with <span class="math inline">k</span>-Memory</h2>
+<p>Now we consider a fine-tuned setting of the measurement restriction. We consider <span class="math inline">d = 2^n</span> as <span class="math inline">n</span>-qubits and allow 2-replica measurements but restrained on the <span class="math inline">\{M_s\}_s \subset \mathcal{M}_{2,n}^k</span> as defined in definition. Similar to the 1-replica analysis, we first write its Haar-average leaf likelihood <span class="math display">\begin{align}
+    \mathbb{E}_{\psi} L_{\psi} &amp;= \mathbb{E}_{{\psi} \sim \mathrm{Haar}(d)}\frac{d^{2T}\mathrm{tr}(M_s \ket{\psi}\!\bra{\psi}^{\otimes 2T})}{\mathrm{tr}(M_s)} = \frac{d^{2T}}{d(d+1)\cdots(d+2T-1)}  \frac{\mathrm{tr}\left(\sum_{\pi \in S_{2T}}\mathbb{P}^d_{\pi} \cdot M_s\right)}{\mathrm{tr}\left( \bigotimes_{t = 1}^T\left[\mathbb{I}(d)\right]\cdot M_s\right)}\\
+    &amp;\geq e^{-4d^{-1}T^2}\cdot \frac{\mathrm{tr}\left(\sum_{\pi \in S_{2T}}\mathbb{P}^d_{\pi} \cdot M_s\right)}{\mathrm{tr}\left( S_2^{\otimes T}\cdot M_s\right)} \cdot\prod_{t = 1}^T \frac{\mathrm{tr}\left(\sum_{\pi \in S_2}\mathbb{P}^d_{\pi} \cdot F_{s_t}^{u_t}\right)}{\mathrm{tr}\left(F_{s_t}^{u_t}\right)}\\
+    &amp;\geq (1{-4d^{-1}T^2})\cdot \prod_{t = 1}^T \frac{\mathrm{tr}\left(\sum_{\pi \in S_2}\mathbb{P}^d_{\pi} \cdot F_{s_t}^{u_t}\right)}{\mathrm{tr}\left(F_{s_t}^{u_t}\right)}\geq (1{-4d^{-1}T^2})\left(\frac{2^{2n}}{2^n(2^n+1)}\right)^T \prod_{t = 1}^T \frac{\mathrm{tr}\left(\sum_{\pi \in S_2}\mathbb{P}^d_{\pi} \cdot F_{s_t}^{u_t}\right)}{\mathrm{tr}\left(F_{s_t}^{u_t}\right)} \label{eq:2rep_kmemo_leaflike}
+\end{align}</span> Here in the second line we do the same calculation of Eq.~(eq:lb_upfrac) and insert a value <span class="math inline">\mathrm{tr}\left( S_2^{\otimes T}\cdot M_s\right)</span> in the denominator. The third line is bounded by Lemma below, as a generalization of Lemma.</p>
+<div class="callout callout-style-default callout-important no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Lemma
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><span id="lemma:sepa_S_smaller" data-label="lemma:sepa_S_smaller"></span> Given a semi-positive operator <span class="math inline">F = F_A \otimes F_B</span> that separable on set of qudits <span class="math inline">A</span> and qudits <span class="math inline">B</span>. Denote <span class="math inline">S_a = \sum_{\pi \in S_{|A|}} \mathbb{P}_{\pi}^{d}</span> and similar for <span class="math inline">S_B,S_{A+B}</span>. Then <span class="math inline">\mathrm{tr}\left({S_A \otimes S_B F}\right) \leq \mathrm{tr}\left({S_{A+B}F}\right)</span>.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-12-contents" aria-controls="callout-12" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Proof (Click to expand)
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-12" class="callout-12-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><em>Proof.</em>&nbsp;◻</p>
+</div>
+</div>
+</div>
+<p>For the second inequality in Eq.~(eq:2rep_kmemo_leaflike), we noted that if we use <span class="math inline">M_s = \otimes_{t = 1}^T F_{s_t}^{u_t}</span> to discriminate <span class="math inline">\rho = \mathbb{I}(d^2)/d^2</span> and <span class="math inline">\sigma = [2^n(2^n+1)]^{-1}(\mathbb{I}_n^{\otimes 2} + \mathrm{SWAP}^{\otimes n})</span> in the 2-replica space <span class="math inline">\mathcal{H}(d^2)</span>, the likelihood function satisfied: <span class="math display">\begin{align}
+    L'(s) =\left(\frac{2^{2n}}{2^n(2^n+1)}\right)^T \prod_{t = 1}^T \frac{\mathrm{tr}\left(\sum_{\pi \in S_2}\mathbb{P}^d_{\pi} \cdot F_{s_t}^{u_t}\right)}{\mathrm{tr}\left(F_{s_t}^{u_t}\right)}.
+\end{align}</span> It is thus sufficient to show a upper bound for <span class="math inline">L'</span>. Refer to Lemma, we consider the chi-squared divergence with <span class="math inline">\rho</span> and <span class="math inline">\sigma</span>. <span class="math display">\begin{align}
+    \delta_{\mathcal{M},\rho,\sigma}&amp;=\max_{\{F_s\}_s \in \mathcal{M}^{k}_{2,n}}\sum_{s}\frac{\mathrm{tr}(F_{s})}{4^n}\left[\frac{2^{n}\mathrm{tr}\left[(\mathbb{I}_n^{\otimes 2} + \mathrm{SWAP}^{\otimes n})F_{s}\right]}{(2^n+1)\mathrm{tr}(F_{s})} - 1\right]^2 \notag\\
+    &amp;=\max_{\{F_s\}_s \in \mathcal{M}^{k}_{2,n}}\sum_{s} \frac{\mathrm{tr}(F_s)}{4^n}(2^n+1)^{-2}\left[2^n \frac{\mathrm{tr}(\mathrm{SWAP}^{\otimes n} F_s)}{\mathrm{tr}(F_s)} - 1\right]^2\notag\\
+    &amp;=\max_{\{F_s\}_s \in \mathcal{M}^{k}_{2,n}}\frac{1}{4^n}(2^n+1)^{-2}\left[4^n \sum_{s} \frac{[\mathrm{tr}(\mathrm{SWAP}^{\otimes n} F_s)]^2}{\mathrm{tr}(F_s)} - 2 \times 2^n {\mathrm{tr}\left(\mathrm{SWAP}^{\otimes n}\sum_{s}F_s\right)} + \mathrm{tr}\left(\sum_{s}F_s\right)\right]\notag\\
+    &amp;=\frac{1}{(2^n+1)^{2}}\left[\max_{\{F_s\}_s \in \mathcal{M}^{k}_{2,n}} \sum_{s} \frac{[\mathrm{tr}(\mathrm{SWAP}^{\otimes n} F_s)]^2}{\mathrm{tr}(F_s)} - 1\right].
+\end{align}</span> Here in the last line, we use <span class="math inline">\sum_{s} F_s = \mathbb{I}_{2n}</span> and <span class="math inline">\text{tr}(\mathrm{SWAP}^{\otimes n}) = 2^n</span>. If Bell measurements <span class="math inline">F_{\mathbf{s}} = \Phi_{\mathbf{s}}</span> is allowed, we can verify that <span class="math inline">\sum_{\mathbf{s}}[\mathrm{tr}(\mathrm{SWAP}^{\otimes n} \Phi_{\mathbf{s}})]^2/{\mathrm{tr}(\Phi_{\mathbf{s}})} = 4^n</span>. However, the <span class="math inline">k</span>-memeory restriction on <span class="math inline">F_s</span> prevent this measurement and imposed a upper bound on the MPS-rank of projected basis, as depicted in Lemma. This lower bounds the maximum value as <span class="math inline">\delta_{\mathcal{M},\rho,\sigma}  \leq 2^{k-n} - 2^{-2n}</span>. Based on Lemma, we conclude that <span class="math inline">\mathrm{Pr}_{l \sim p_{\mathbb{I}, \mathcal{T}}}(L'(l) \geq 1 - c_1) \geq 1 - c_2 - c_3\cdot (2^{k-n} - 2^{-2n})T</span>. Then plug into Eq.~(eq:2rep_kmemo_leaflike) to replace <span class="math inline">L'</span> by <span class="math inline">\mathbb{\psi}L_{\psi}</span>, we conclude that <span class="math inline">\forall c_1\in (0,1/3), c_2 &gt; 0, \exists c_3&gt;0</span> such that <span class="math inline">\mathrm{Pr}_{l \sim p_{\mathbb{I}, \mathcal{T}}}\left[\mathbb{E}_{\psi} L_{\psi}(l) \leq (1{-4d^{-1}T^2})(1 - c_1)\right] \leq c_2 + c_3\cdot (2^{k-n} - 2^{-2n})T.</span> Finally, using the second identity in Lemma for <span class="math inline">a</span> being a unique element with <span class="math inline">p^{(a)} = \mathbb{E}_{\psi} p_{\psi, \mathcal{T}}</span>, we must have <span class="math display">\begin{align}
+    2\varepsilon \leq \|p_{\mathbb{I}, \mathcal{T}} - \mathbb{E}_{\psi} p_{\psi, \mathcal{T}}\|_{\mathrm{TV}}
+    &amp;\leq c_2 + c_3\cdot (2^{k-n} - 2^{-2n})T + 1 - (1{-4\times 2^{-n}T^2})(1 - c_1)
+\end{align}</span> Without lose of generality, we set <span class="math inline">\varepsilon = 1/6</span>, i.e., to be <span class="math inline">1/6</span> better than random guessing. We have <span class="math inline">0.2 +  2\gamma T ( -2^{-2n} + 2^{k - n})+3.6\times 2^{-n} T^2 &gt; 1/3</span>, where we take <span class="math inline">c_1= c_2 = 0.1,c_3 = \gamma&gt;0</span>. This gives the inequality <span class="math display">\begin{align}
+\label{eq:T_ineq}
+    T^2 + \frac{\gamma(-2^{-n} + 2^k)}{1.8} T - \frac{2^n}{54} &gt;0.
+\end{align}</span> We conclude that there exist constants <span class="math inline">a_1,a_2</span> that satisfy <span class="math inline">0&lt;a_1 &lt; a_2 \leq (1/2)\cdot [\sqrt{(\gamma /1.8)^2 + 1/9} - \gamma/1.8]</span>, such that <span class="math inline">T &gt; \min\{a_12^{n/2}, a_22^{n-k}\}</span> must be satisfied otherwise <span class="math display">\begin{align}
+    LHS \leq a_1^2 2^n + \frac{\gamma }{1.8}(a_2 2^n) - \frac{2^n}{54}\leq (a_1^2 + \gamma \frac{a_2}{1.8}-1/54)2^n&lt;(a_2^2 +  \frac{\gamma}{1.8}a_2-1/54)2^n &lt; 0,
+\end{align}</span> which is contradictory with Eq.~(eq:T_ineq). This proves the lower bound <span class="math inline">T \geq \Omega(\min\{2^{n/2}, 2^{n-k}\})</span> for the 2-copy k-memory adaptive strategy that solve the purity-identity test problem with <span class="math inline">2/3</span> correct rate.</p>
+</section>
+<section id="sec-mh-test" class="level2" data-number="1.5">
+<h2 data-number="1.5" class="anchored" data-anchor-id="sec-mh-test"><span class="header-section-number">1.5</span> MH-Ensemble Test</h2>
+<p>Now we consider a general case where we supposed to distinguish an arbitrary element within <strong>MH</strong> ensemble from its average.</p>
+<div class="problem">
+<p><span id="prob:MHtest" data-label="prob:MHtest"></span> Design an algorithm that distinguishes between two cases below using restrained measurements at error rate less than <span class="math inline">1/2-\varepsilon</span>. (i)One of state within <span class="math inline">\mathcal{E}_{p} := \{p_0 {\mathbb{I}(d)}/{d} + \sum_{j = 1}^{m} p_j \psi_j\}</span> or (ii) One of state within <span class="math inline">\mathcal{E}_{q}:=\{q_0 {\mathbb{I}(d)}/{d} + \sum_{j = 1}^{m} q_j \psi_j\}</span></p>
+</div>
+<p>It is easy to check that pure-identity test in Problem is a special case of Problem, with <span class="math inline">p_1 = 1, p_m = 0,\forall m \neq 1</span> and <span class="math inline">q_0 = 1, q_m = 0,\forall m \neq 0</span>. However, this problem might be too hard, as <span class="math inline">\mathcal{E}_{p} \cap \mathcal{E}_{q}\neq \emptyset</span> if there exist a distribution <span class="math inline">\lambda</span> such that <span class="math inline">\lambda \succ \{p_j/(1 - p_0)\}_j</span> and <span class="math inline">\lambda \succ \{q_j/(1-q_0)\}_j</span>. We thus relax this problem by setting the problem ensemble as <span class="math inline">\psi_{j} \sim \mathrm{Haar}(d), \forall j=1,\cdots,m</span>. To further fix this testing problem, we also imposed the rank-<span class="math inline">k</span> condition: <span class="math display">\begin{align}
+    \mathbb{E}_{\psi_j\sim \mathrm{Haar}(d)} \left(p_0 {\mathbb{I}(d)}/{d} + \sum_{j = 1}^{m} p_j \psi_j\right)^{\otimes k} = \mathbb{E}_{\psi_j\sim \mathrm{Haar}(d)} \left(q_0 {\mathbb{I}(d)}/{d} + \sum_{j = 1}^{m} q_j \psi_j\right)^{\otimes k}
+\end{align}</span></p>
+</section>
+<section id="sec-k-replica" class="level2" data-number="1.6">
+<h2 data-number="1.6" class="anchored" data-anchor-id="sec-k-replica"><span class="header-section-number">1.6</span> The <span class="math inline">k</span>-Replica Strategy</h2>
+<p>We directly discuss its lower bound under the <span class="math inline">k</span>-replica measurement restrictions.</p>
+</section>
+<section id="sec-eh-test" class="level2" data-number="1.7">
+<h2 data-number="1.7" class="anchored" data-anchor-id="sec-eh-test"><span class="header-section-number">1.7</span> EH-Ensemble Test</h2>
+<div class="problem">
+<p><span id="prob:EAtest" data-label="prob:EAtest"></span> Design an algorithm using restrained measurements to distinguish between two cases below with an error no more than <span class="math inline">1/2-\varepsilon</span>.(i)one of the states <span class="math inline">\rho \in  \mathcal{E}_{\mathcal{U},\mathbf{a},\tau}</span> or (ii) the average mixed state <span class="math inline">\mathbb{E}_{\rho \sim \mathcal{E}_{\mathcal{U},\mathbf{a},\tau} }\rho</span>.</p>
+</div>
+<p>Suppose we adapt the adaptive strategy <span class="math inline">\mathcal{T}</span> with corresponding measurement <span class="math inline">M_s = F^{u_1}_{s_1}\otimes \cdots \otimes F^{u_T}_{s_T}</span>, the measurement results give two distribution: <span class="math display">\begin{align}
+    p_0(s) = \mathrm{tr}\left[ M_s \sum_{\mathbf{j} \in [J]^T}\left(\prod_{t = 1}^T p_{j_t}\right) \bigotimes_{t=1}^{T} \mathbb{E}{\sigma_{j_t}}\right],\quad
+    p_{\psi_1,\cdots,\psi_m}(s) = \mathrm{tr}\left[ M_s \sum_{\mathbf{j} \in [J]^T}\left(\prod_{t = 1}^T p_{j_t}\right) \bigotimes_{t=1}^{T} {\sigma_{j_t}}\right],
+\end{align}</span> where we use abbreviation <span class="math inline">\sigma_{j_t} = U_{j_t} \psi_{1}^{\otimes a_{1}^{(j_t)}} \otimes \cdots \otimes \psi_{m}^{\otimes a_{m}^{(j_t)}} \otimes \tau^{(j_t)} U_{j_t}^\dagger</span> and <span class="math inline">\mathbb{E}\sigma_{j_t} = \mathbb{E}_{\psi_j \sim \mathrm{Haar}(d_j)} U_{j_t} \psi_{1}^{\otimes a_{1}^{(j_t)}} \otimes \cdots \otimes \psi_{m}^{\otimes a_{m}^{(j_t)}} \otimes \tau^{(j_t)} U_{j_t}^\dagger</span>. Lower bounding the Problem require the analysis of the similarity between the distribution <span class="math inline">p_{0}</span> and <span class="math inline">\{p_{\psi_1,\cdots,\psi_m}\}_{\psi_j}</span>. Based on Lemma, we choose <span class="math inline">\psi_k \sim \mathrm{Haar}(d_k)</span>. Then we remove the effects of mixing probability <span class="math inline">p_j</span> in the <strong>EH</strong>-ensemble through the inequality <span class="math display">\begin{align}
+    \|p_{0} - \mathbb{E}p_{\psi_1,\cdots,\psi_m}\|_{\mathrm{TV}} \leq \sum_{j_1,\cdots,j_T \in [J]}\left(\prod_{t = 1}^T p_{j_t}\right) \|q_{0,\mathbf{j}} -  \mathbb{E}q_{\psi_1,\cdots,\psi_m,\mathbf{j}}\|_{\mathrm{TV}}.
+\end{align}</span> It is sufficient to find an upper bound of <span class="math inline">\|q_{0,\mathbf{j}} -  \mathbb{E} q_{\psi_1,\cdots,\psi_m,\mathbf{j}}\|_{\mathrm{TV}}</span> for an arbitrary fixed choice of <span class="math inline">\mathbf{j}</span>. The probability <span class="math inline">q_{0,\mathbf{j}} = \mathrm{tr}\left[ M_s \bigotimes_{t=1}^{T} \mathbb{E}{\sigma_{j_t}}\right]</span> and <span class="math inline">q_{\psi_1,\cdots,\psi_m,\mathbf{j}} = \mathrm{tr}\left[ M_s \bigotimes_{t=1}^{T} {\sigma_{j_t}}\right]</span> are the measurement results distribution with testing strategy <span class="math inline">\{M_s\}_s</span> for two different input states. Defining <span class="math inline">V = U_{j_1}\otimes \cdots \otimes U_{j_T}</span>, an <span class="math inline">m \times T</span> matrix <span class="math inline">\mathbf{A}</span> with <span class="math inline">A_{k,t} := a_{k}^{(j_t)}, {A}_{r,:} = a_{r}^{(j_1)} +\cdots+ a_{r}^{(j_T)}</span>, and <span class="math inline">\zeta = \bigotimes_{t = 1}^T \tau^{(j_t)}</span>, this reduces the <strong>EH</strong>-ensemble to a two-state discrimination problem.</p>
+<div class="problem">
+<p><span id="prob:reduced_EAtest" data-label="prob:reduced_EAtest"></span> Design an algorithm using restrained single-replica measurements that can distinguish between these two states below with an error of at most <span class="math inline">1/2-\varepsilon</span>: (i) <span class="math inline">\rho_{\mathbf{j}} =V \left[\mathbb{E} \psi_1^{\otimes A_{1,:}} \otimes \cdots\otimes \psi_m^{\otimes A_{m,:}} \otimes \xi \right] V^\dagger</span> or (ii) <span class="math inline">\sigma_{\mathbf{j}} = V \left[\bigotimes_{t = 1}^T \left(\mathbb{E} \psi_{1}^{\otimes A_{1,t}} \otimes \cdots \otimes \psi_{m}^{\otimes A_{m,t}} \right) \otimes \xi \right] V^\dagger</span>.</p>
+</div>
+<p>by the virtue of the first inequality in Lemma and it is sufficient to show an upper bound for their likelihood <span class="math display">\begin{align}
+    \|q_{0,\mathbf{j}} -  \mathbb{E} q_{\psi_1,\cdots,\psi_m,\mathbf{j}}\|_{\mathrm{TV}} &amp;\leq 1- \min_{s}\frac{\mathrm{tr}(M_s \rho_{\mathbf{j}})}{\mathrm{tr}(M_s \sigma_{\mathbf{j}})} = 1 - \min_{s}\frac{\mathrm{tr}(M'_s \mathbb{E} \psi_1^{\otimes A_{1,:}} \otimes \cdots\otimes \psi_m^{\otimes A_{m,:}} )}{\mathrm{tr}(M'_s \bigotimes_{t = 1}^T \left[\mathbb{E} \psi_{1}^{\otimes A_{1,t}} \otimes \cdots \otimes \psi_{m}^{\otimes A_{m,t}} \right])}\\
+    &amp;=1 - \frac{\prod_{t = 1}^T \left[d_1^{\uparrow A_{1,t}}\cdots d_m^{\uparrow A_{m,t}}\right]}{d_1^{\uparrow A_{1,:}}\cdots d_m^{\uparrow A_{m,:}}}\max_{s}\frac{\mathrm{tr}(M'_s  S^{A_{1,:}} \otimes \cdots\otimes S^{A_{m,:}} )}{\mathrm{tr}(M'_s \bigotimes_{t = 1}^T \left[ S^{A_{1,t}} \otimes \cdots \otimes S^{A_{m,t}} \right])},\label{eq:midres_EHI}
+\end{align}</span> where we use <span class="math inline">S^{A}</span> to denote the centralizer of permutations <span class="math inline">S_{A} = \sum_{\pi \in S_{A}} \mathbb{P}_{\pi}^{d}</span> that supports on the qudits counted by <span class="math inline">A</span>. We then show the lower bound of the LHS in Eq.~(eq:midres_EHI) through two lemmas below.</p>
+<div class="callout callout-style-default callout-important no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Lemma
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Given <span class="math inline">A = \cup_{k = 1}^{m} \cup_{t = 1}^T A_{k,t}</span> as a partition of qudits set <span class="math inline">A</span>. Ensure that the qudits in subset <span class="math inline">\cup_{t} A_{k,t}</span> have the same dimension <span class="math inline">d_k</span>, such that both <span class="math inline">A_{k,t}</span> and <span class="math inline">\cup_{t} A_{k,t}</span> forms the identical qudits set. Denotes <span class="math inline">S^{A_{k,t}},S^{A_{k,:}}</span> as the representation of permutation group <span class="math inline">S_{|A_{k,t}|}, S_{A_{k,:}}</span> on these identical qudits sets. Then for arbitrary operator <span class="math inline">M</span> that is the product form under the separation <span class="math inline">\left(\cup_{k = 1}^{m}A_{k,1}\right) \cup \cdots \cup \left(\cup_{k = 1}^{m}A_{k,T}\right)</span>, we have: <span class="math display">\begin{align}
+    {\mathrm{tr}(M  S^{A_{1,:}} \otimes \cdots\otimes S^{A_{m,:}} )} \leq {\mathrm{tr}(M \bigotimes_{t = 1}^T \left[ S^{A_{1,t}} \otimes \cdots \otimes S^{A_{m,t}} \right])}.
+\end{align}</span></p>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-14-contents" aria-controls="callout-14" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Proof (Click to expand)
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-14" class="callout-14-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><em>Proof.</em>&nbsp;◻</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-important no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Lemma
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Given a length-T vector <span class="math inline">(v_1,\cdots,v_T)</span> with <span class="math inline">v_i \in \mathbb{Z}_+</span>, the inequality below is satisfied: <span class="math display">\begin{align}
+        \frac{d^{\uparrow y_1} \cdots d^{\uparrow y_T}}{ d^{\uparrow y_1 + \cdots + y_T} } \geq e^{-d^{-1} \left(\sum_{t = 1}^T y_t\right)^2}.
+\end{align}</span></p>
+</div>
+</div>
+</section>
+<section id="sec-rh-test" class="level2" data-number="1.8">
+<h2 data-number="1.8" class="anchored" data-anchor-id="sec-rh-test"><span class="header-section-number">1.8</span> RH-Ensemble Test</h2>
+<div class="problem">
+<p><span id="prob:RHtest" data-label="prob:RHtest"></span> Design an algorithm using restrained measurements to distinguish between two cases below with success rate <span class="math inline">1/2+\delta</span>.(i)the maximum mixed state <span class="math inline">\mathbb{I}/d</span> or (ii) states set with problem ensemble <span class="math inline">\mathcal{E}_{\varepsilon}</span>.</p>
+</div>
+</section>
+<section id="sec-subspace-rh-test" class="level2" data-number="1.9">
+<h2 data-number="1.9" class="anchored" data-anchor-id="sec-subspace-rh-test"><span class="header-section-number">1.9</span> Subspace RH-Ensemble Test</h2>
+<div class="problem">
+<p>Given <strong>RH</strong> ensemble <span class="math inline">\mathcal{E}_{1 - R\delta}, \mathcal{E}_{L\delta}</span>, as defined in Problem, with <span class="math inline">R = (2^{n-1} + 1)/(2^{n-1} - 1 +\delta)</span> and <span class="math inline">L = (1 - 4^{-n+1} - 2^{-n+1} \delta)^{-1}</span>, try to design an algorithm that <span class="math inline">\forall C \in \mathcal{C}</span>, discriminates two subspace-<strong>RH</strong> ensembles below: <span class="math display">\begin{align}
+        &amp;\mathcal{E}_{(1,0),C} := \left\{\sigma_{(1,0),C}:= C \left[\frac{1}{2} \ket{0}\!\bra{0} \otimes \psi + \frac{1}{2} \ket{1}\!\bra{1} \otimes (\mathbb{I}/2^{n-1}) \right] C^{\dagger}\right\}_{\psi \sim \mathrm{Haar}_{n-1}},\\
+        &amp;\mathcal{E}_{(1 - R\delta,U\delta),C} := \left\{ \sigma_{(1 - R\delta,L\delta),C} :=C \left[\frac{1}{2} \ket{0}\!\bra{0} \otimes \rho_{1 - R\delta} + \frac{1}{2} \ket{1}\!\bra{1} \otimes \rho_{L\delta} \right] C^{\dagger}\right\}_{\rho_{\varepsilon} \sim \mathcal{E}_{\varepsilon}}.
+\end{align}</span></p>
+</div>
+<p>This construction ensures that the average purity of <span class="math inline">\mathcal{E}_{(1,0)}</span> and <span class="math inline">\mathcal{E}_{(1 - R\delta,L\delta)}</span> equals each others, as manifest below: <span class="math display">\begin{align}
+    &amp;\mathbb{E}_{\rho \sim \mathcal{E}_{(1,0),C}} \mathrm{tr}\left(\rho^{2}\right) = 1/4 +  (1/4) \cdot (1/2^{n-1}) =  \frac{1}{4}\left(1+\frac{1}{2^{n-1}}\right), \\
+    &amp;\mathbb{E}_{\rho \sim \mathcal{E}_{(1 - R\delta,U\delta),C}} \mathrm{tr}\left(\rho^{2}\right) = \frac{1}{4}\frac{2^{n-1}(1 - R\delta) + 1}{2^{n-1} + 1 - R\delta} + \frac{1}{4}\frac{2^{n-1} L\delta + 1}{2^{n-1} + L\delta} = \frac{1}{4}(1 - \delta) + \frac{1}{4}(\frac{1}{2^{n-1}} + \delta) = \frac{1}{4}\left(1+\frac{1}{2^{n-1}}\right).
+\end{align}</span> We now build uniform distribution on all <span class="math inline">n</span>-qubit Clifford gates <span class="math inline">\mathcal{D}</span>. Since Clifford gate forms a 2-design, we can directly write the average based on the value of average purity <span class="math display">\begin{align}
+    &amp;\rho_0 := \mathbb{E}_{\rho \sim \mathcal{E}_{(1,0),C\sim \mathcal{D}}} \rho^{\otimes 2}=\mathbb{E}_{\rho \sim \mathcal{E}_{(1 - R\delta,U\delta),C\sim \mathcal{D}}} \rho^{\otimes 2} = a\cdot \mathbb{I}_{2n}/2^{2n} + b\cdot \mathrm{SWAP}^{\otimes n}/2^{n}, \\
+    &amp; a + b = 1, \quad 2^{-n} a + 2^{n} b = \text{Avg. Purity} = 4^{-1}(1 + 2^{-n+1}).
+\end{align}</span> Solve the equation for <span class="math inline">a</span> and <span class="math inline">b</span>, we get the result: <span class="math display">\begin{align}
+    \rho_0 = (1 - \mu)  \frac{\mathbb{I}_n^{\otimes 2}}{2^{2n}} + \mu \frac{\mathbb{I}_n^{\otimes 2} + \mathrm{SWAP}^{\otimes n}}{2^n(2^{n} + 1)}, \text{~where~} \mu = 4^{-1} \frac{2^n -2}{2^n - 1}.
+\end{align}</span> This prevents the Lemma giving an efficient 2-replica strategy that discriminates <span class="math inline">\mathcal{E}_{(1,0),C}</span> and <span class="math inline">\mathcal{E}_{(1 - R\delta,U\delta),C}</span>. However, given a fixed <span class="math inline">C \in \mathcal{C}</span>, the average of <span class="math inline">\mathrm{tr}(P \rho^2)</span> for <span class="math inline">P = C^\dagger Z_1 C</span> has a constant gap <span class="math inline">\delta/2</span>: <span class="math display">\begin{align}
+    &amp;\mathbb{E}_{\rho \sim \mathcal{E}_{(1,0),C}} \mathrm{tr}\left(P\rho^{2}\right) = 1/4 -  (1/4) \cdot (1/2^{n-1}) = \frac{1}{4}\left(1- \frac{1}{2^{n-1}}\right) ,\\
+    &amp;\mathbb{E}_{\rho \sim \mathcal{E}_{(1 - R\delta,U\delta),C}} \mathrm{tr}\left(P\rho^{2}\right)  = \frac{1}{4}(1 - \delta) - \frac{1}{4}(\frac{1}{2^{n-1}} + \delta) = \frac{1}{4}\left(1- \frac{1}{2^{n-1}}\right) - \frac{\delta}{2}.
+\end{align}</span> This means that if one can use strategy <span class="math inline">\mathcal{A}</span> to estimate <span class="math inline">\mathrm{tr}(P \rho^2), \forall P \in \{C^\dagger Z_1 C\}_{C \in \mathcal{C}}</span> within additive error <span class="math inline">\delta/4</span>, he can use <span class="math inline">\mathcal{A}</span> to discriminate <span class="math inline">\mathcal{E}_{(1,0),C}</span> and <span class="math inline">\mathcal{E}_{(1 - R\delta,U\delta),C}</span>, as rigorously proved below:</p>
+<div class="callout callout-style-default callout-important no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Lemma
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>An algorithm that estimates <span class="math inline">\mathrm{tr}(P \rho^2), \forall P \in \{C Z_1 C^\dagger\}_{C \in \mathcal{C}}</span> can be used to distinguish <span class="math inline">\mathcal{E}_{(1,0),C}</span> from <span class="math inline">\mathcal{E}_{(1 - R\delta,U\delta),C}</span> for arbitrary distribution on <span class="math inline">\mathcal{C}</span>.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-17-contents" aria-controls="callout-17" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Proof (Click to expand)
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-17" class="callout-17-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><em>Proof.</em>&nbsp;◻</p>
+</div>
+</div>
+</div>
+<p>Now we prove that two-replica strategy that discriminate <span class="math inline">\sigma_{(1,0),C}^{\otimes 2}</span> from <span class="math inline">\sigma_{(1 - R\delta,L\delta),C}^{\otimes 2}</span> require <span class="math inline">\Omega(2^{n})</span> rounds. Given a <span class="math inline">T</span>-round <span class="math inline">2</span>-replica measurement strategy <span class="math inline">M_s = \bigotimes_{t = 1}^{T} F_{s_t}^{u_t}</span>, where <span class="math inline">\{F_{s}^{u}\}_{s}</span> is a POVM on space <span class="math inline">\mathcal{H}(d^2)</span>. Now the <strong>TVD</strong> under this measurement takes the value: <span class="math display">\begin{align}
+    \delta_{\mathrm{tvd}} = \left|\mathrm{tr}\left(M_s  \mathbb{E}_{C}C^{\otimes 2T}\mathbb{E}_{\psi}\left(\sigma_{(1,0),I}^{\otimes 2T} - \sigma_{(1 - R\delta,L\delta),I}^{\otimes 2T}\right)(C^\dagger)^{\otimes 2T}\right)\right|,
+\end{align}</span> where the Haar average takes the value: <span class="math display">\begin{align}
+    \mathbb{E}_{\psi}\sigma_{(1,0),I}^{\otimes 2T} &amp;= \left[\frac{1}{2}\ket{0}\!\bra{0} \otimes \psi  + \frac{1}{2}\ket{1}\!\bra{1} \otimes 2^{-n+1}\mathbb{I}_{n-1}\right]^{\otimes 2T} = \sum_{\mathbf{a} \in \mathbb{F}_2^{2T}} \frac{2^{-2T}\ket{\bar{\mathbf{a}}}\!\bra{\bar{\mathbf{a}}} }{d^{\uparrow |\mathbf{a}|} d^{2T - |\mathbf{a}|}}\otimes\sum_{\pi \in S_{2T}^{\mathbf{a}}} \mathbb{P}_{\pi}^{d},\\
+    \mathbb{E}_{\psi}\sigma_{(1 - R\delta,L\delta),I}^{\otimes 2T} &amp;= \left[\frac{1}{2}\ket{0}\!\bra{0} \otimes \rho_{1 - R\delta} + \frac{1}{2}\ket{1}\!\bra{1} \otimes 2^{-n+1}\rho_{L\delta}\right]^{\otimes 2T} \\
+    &amp;= \sum_{\mathbf{a} \in \mathbb{F}_2^{2T}} {2^{-2T}\ket{\bar{\mathbf{a}}}\!\bra{\bar{\mathbf{a}}}} \otimes \frac{\sum_{\pi \in S_{2T}^{\mathbf{a}}, \sigma \in S_{2T}^{\bar{\mathbf{a}}}} \mathbb{P}_{\pi \sigma}^{d} (1 - R \delta)^{-c(\pi)} (L\delta)^{-c(\sigma)}}{[d/(1 - R\delta)]^{\uparrow |\mathbf{a}|} [d/L\delta]^{\uparrow |\bar{\mathbf{a}}|}},
+\end{align}</span> where <span class="math inline">d = 2^{n-1}</span> and <span class="math inline">S_{2T}^{\mathbf{a}}</span> denoting the permutation contained in position <span class="math inline">\{i|a_i = 1\}</span>. If we defined the operator <span class="math inline">\mathbb{S}^{\mathbf{a}} = \sum_{\pi \in S_{2T}^{\mathbf{a}}} \mathbb{P}_{\pi}^{d}</span> and <span class="math inline">D = 2d = 2^n</span>, we conclude that <span class="math display">\begin{align}
+    \Phi_{\mathrm{U},2T}\left[ \ket{{\mathbf{a}}}\!\bra{{\mathbf{a}}}\otimes\mathbb{S}^{\mathbf{a}}\right] = \sum_{\rho \sigma \in S_{2T}} \mathrm{Wg}_{\rho\sigma}^{D} \mathrm{tr}\left[\ket{{\mathbf{a}}}\!\bra{{\mathbf{a}}}\otimes\mathbb{S}^{\mathbf{a}} \cdot \mathrm{SWAP}_{\sigma} \otimes \mathbb{P}_{\sigma}^{d}\right] \mathbb{P}_{\rho}^{D}.
+\end{align}</span> The trace term can be explicitly calcluated as <span class="math display">\begin{align}
+    &amp;\mathrm{tr}\left[\ket{{\mathbf{a}}}\!\bra{{\mathbf{a}}}\otimes\mathbb{S}^{\mathbf{a}} \cdot \mathrm{SWAP}_{\sigma} \otimes \mathbb{P}_{\sigma}^{d}\right]= \delta_{\mathbf{a}, \sigma{\mathbf{a}}} \sum_{\pi \in S_{2T}^{\mathbf{a}}} \mathrm{tr}\left(\mathbb{P}_{\pi \sigma}^{d}\right) = \delta_{\sigma, \beta \gamma} \sum_{\pi \in S_{2T}^{{\mathbf{a}}}} d^{c(\pi\gamma)} = \delta_{\sigma, \beta \gamma} \frac{d^{\uparrow |\mathbf{a}|}}{d^{|{\mathbf{a}}|}}d^{c(\gamma)}.
+\end{align}</span> Here in the second equality we use the fact that <span class="math inline">\mathbf{a} = \sigma(\mathbf{a})</span> if and only if <span class="math inline">\sigma = \beta \cdot \gamma</span> for <span class="math inline">\beta\in S_{2T}^{\mathbf{a}}</span> and <span class="math inline">\gamma \in S_{2T}^{\bar{\mathbf{a}}}</span>. In the last equality, we use the identity <span class="math display">\begin{align}
+   \forall \gamma \in S_{2T}^{\bar{\mathbf{a}}}, \sum_{\pi\in S_{2T}^{\mathbf{a}}} d^{c(\pi\gamma )} =  \frac{d^{\uparrow |\mathbf{a}|}}{d^{|{\mathbf{a}}|}}d^{c(\gamma)}
+\end{align}</span> Noted that the unitary average of <span class="math inline">\sum_{\mathbf{a}}2^{-2T}\ket{{\mathbf{a}}}\!\bra{{\mathbf{a}}} \otimes \rho_{\mathbf{a}}</span> and <span class="math inline">\sum_{\mathbf{a}}2^{-2T}\ket{\bar{\mathbf{a}}}\!\bra{\bar{\mathbf{a}}}\otimes \rho_{\mathbf{a}}</span> are identical since <span class="math inline">\ket{\mathbf{a}}</span> can be transformed into <span class="math inline">\ket{\bar{\mathbf{a}}}</span> through <span class="math inline">2T</span>-fold unitary <span class="math inline">X^{2T}</span> and Haar random unitary is shift invariant. Thus, the average state <span class="math inline">\rho_0</span> is the linear combination of permutation operators: <span class="math display">\begin{align}
+    &amp;\Phi_{\mathrm{U},2T}\left[ \mathbb{E}_{\psi}\sigma_{(1,0),I}^{\otimes 2T} \right] = \Phi_{\mathrm{U},2T}\left[ \mathbb{E}_{\psi}\sigma_{(0,1),I}^{\otimes 2T} \right] :=\rho_0 =  \Phi_{\mathrm{U},2T}\left[ \sum_{\mathbf{a} \in \mathbb{F}_2^{2T}}\frac{ \ket{{\mathbf{a}}}\!\bra{{\mathbf{a}}}\otimes\mathbb{S}^{\mathbf{a}}}{2^{2T}d^{\uparrow |\mathbf{a}|} d^{2T - |\mathbf{a}|}}\right]\\
+    &amp; = \sum_{\mathbf{a} \in \mathbb{F}_2^{2T}}\sum_{\sigma,\rho \in S_{2T}}\frac{\mathrm{Wg}_{\rho \sigma}^{D}\cdot \delta_{\sigma,\beta\gamma}\frac{d^{\uparrow |\mathbf{a}|}}{d^{|{\mathbf{a}}|}}d^{c(\gamma)}}{2^{2T}d^{\uparrow |\mathbf{a}|} d^{2T - |\mathbf{a}|}} \mathbb{P}_{\rho}^{D}
+    =\sum_{\mathbf{a} \in \mathbb{F}_2^{2T}}\sum_{\rho \in S_{2T}}\sum_{\beta \in S_{2T}^{{\mathbf{a}}},\gamma\in S_{2T}^{\bar{\mathbf{a}}}}\frac{\mathrm{Wg}_{\rho(\beta\gamma)}^{D}\cdot d^{c(\gamma)}}{2^{2T} d^{2T}} \mathbb{P}_{\rho}^{D}
+\end{align}</span> Similarly, we calculate <span class="math display">\begin{align}
+    &amp;\mathrm{tr}\left[\left(\ket{\bar{\mathbf{a}}}\!\bra{\bar{\mathbf{a}}}\otimes \frac{\sum_{\pi \in S_{2T}^{\mathbf{a}}, \nu \in S_{2T}^{\bar{\mathbf{a}}}} \mathbb{P}_{\pi \nu}^{d} (1 - R \delta)^{-c(\pi)} (L\delta)^{-c(\nu)}}{[d/(1 - R\delta)]^{\uparrow |\mathbf{a}|} [d/L\delta]^{\uparrow |\bar{\mathbf{a}}|}}\right)\cdot \mathrm{SWAP}_{\sigma} \otimes \mathbb{P}_{\sigma}^{d}\right]\\
+    &amp;= \delta_{\sigma, \beta\gamma}\sum_{\pi \in S_{2T}^{\mathbf{a}}, \nu \in S_{2T}^{\bar{\mathbf{a}}}}\frac{ d^{c(\pi \nu)} (1 - R \delta)^{-c(\pi \beta^{-1})} (L\delta)^{-c(\nu\gamma^{-1})}}{[d/(1 - R\delta)]^{\uparrow |\mathbf{a}|} [d/L\delta]^{\uparrow |\bar{\mathbf{a}}|}}.
+\end{align}</span> When <span class="math inline">\delta = 0</span>, this expression reduced to <span class="math inline">\delta_{\sigma,\beta\gamma}d^{-2T} d^{c(\gamma)}</span>. We thus Taylor expands this expression in terms of <span class="math inline">\delta</span>. <span class="math display">\begin{align}
+    &amp;\Phi_{\mathrm{U},2T}\left[ \mathbb{E}_{\psi}\sigma_{(1-R\delta,L\delta),I}^{\otimes 2T} \right]  = \sum_{\mathbf{a} \in \mathbb{F}_2^{2T}}\sum_{\rho \in S_{2T}}\sum_{\beta \in S_{2T}^{{\mathbf{a}}},\gamma\in S_{2T}^{\bar{\mathbf{a}}}}\mathrm{Wg}_{\rho(\beta\gamma)}^{D}\cdot \frac{ d^{c(\pi \nu)} (1 - R \delta)^{-c(\pi \beta^{-1})} (L\delta)^{-c(\nu\gamma^{-1})}}{2^{2T}[d/(1 - R\delta)]^{\uparrow |\mathbf{a}|} [d/L\delta]^{\uparrow |\bar{\mathbf{a}}|}} \mathbb{P}_{\rho}^{D}
+\end{align}</span> The difference of two average can then be reform into the discrimination between <span class="math inline">\mathbb{I}_{n}^{\otimes 2T}/d^{2T}</span> from the mixed state <span class="math display">\begin{align}
+    \Phi_{\mathrm{U},2T}\left[ \mathbb{E}_{\psi}\sigma_{(1,0),I}^{\otimes 2T} \right] -\Phi_{\mathrm{U},2T}\left[ \mathbb{E}_{\psi}\sigma_{(1-R\delta,L\delta),I}^{\otimes 2T} \right] =  \mathbb{I}_{n}^{\otimes 2T}/D^{2T} + \left[\sum_{\rho \in S_{2T}} \lambda_{\rho} \mathbb{P}_{\rho}^{D} \right]
+\end{align}</span> This <strong>TVD</strong> is bounded by the leaves likelihood for <span class="math inline">M_s = \otimes_{t =1}^{T} F_{s_t}^{u_t}</span> as <span class="math display">\begin{align}
+    L(s) = \frac{D^{2T}\mathrm{tr}\left(M_s\left[\sum_{\rho \in S_{2T}} \lambda_{\rho} \mathbb{P}_{\rho}^{D} \right]\right)}{\mathrm{tr}\left(M_s\right)}
+    \geq  D^{2T} \prod_{t = 1}^{2T} \frac{\mathrm{tr}\left(F_{s_t}^{u_t}\left[\sum_{\rho \in S_{2}} \lambda'_{\rho} \mathbb{P}_{\rho}^{D} \right]\right)}{\mathrm{tr}\left(F_{s_t}^{u_t}\right)}
+\end{align}</span> This further reduced the problem to the discrimination between <span class="math inline">\mathbb{I}(D)^{\otimes 2}/D^2</span> and <span class="math inline">\sum_{\rho \in S_{2}} \lambda'_{\rho} \mathbb{P}_{\rho}^{D}</span> Based on Lemma, we calculate its chi-square divergence first: <span class="math display">\begin{align}
+    \delta_{\mathcal{D}} &amp;= \max_{\{F_s\}_s \in \mathcal{M}} \sum_{s} \mathrm{tr}\left(\rho_0 F_s\right) \mathbb{E}_{\substack{C \sim \mathcal{D},\psi}} \left[\frac{\mathrm{tr}\left(\sigma_{(1,0),C}^{\otimes 2} F_s\right)}{\mathrm{tr}\left(\rho_0 F_s\right)} - 1\right]^2 = \max_{\{F_s\}_s \in \mathcal{M}} \sum_{s}  \mathbb{E}_{\substack{C \sim \mathcal{D}, \psi}}\frac{\left\{\mathrm{tr} \left[\left(\sigma_{(1,0),C}^{\otimes 2} - \rho_0\right) F_s\right]\right\}^2}{\mathrm{tr}\left(\rho_0F_s\right)} \notag \\
+     &amp;\leq (1 - \mu)^{-1}\max_{\{F_s\}_s \in \mathcal{M}}  \mathbb{E}_{\substack{C \sim \mathcal{D},\psi}}\sum_{s} \frac{2^{2n}\left\{\mathrm{tr} \left[\left(\sigma_{(1,0),C}^{\otimes 2} - \rho_0\right) F_s\right]\right\}^2}{\mathrm{tr}\left(F_s\right)}\\
+     &amp;=(1 - \mu)^{-1}\max_{\{F_s\}_s \in \mathcal{M}}  \sum_{s} \frac{2^{2n}\mathrm{tr} \left[\mathbb{E}_{\substack{C \sim \mathcal{D}}} C^{\otimes 4}\left(\mathbb{E}_{\psi}\left(\sigma_{(1,0),I}^{\otimes 2} - \rho_0\right)^{\otimes 2} \right)(C^\dagger)^{\otimes 4}F_s^{\otimes 2}\right]}{\mathrm{tr}\left(F_s\right)}\\
+     &amp;=(1 - \mu)^{-1}\max_{\ket{\psi_s}}  \sum_{s} {(2^{2n})^2 w_s\mathrm{tr} \left[\mathbb{E}_{\substack{C \sim \mathcal{D}}} C^{\otimes 4}\left(\mathbb{E}_{\psi}\left(\sigma_{(1,0),I}^{\otimes 2} - \rho_0\right)^{\otimes 2} \right)(C^\dagger)^{\otimes 4}\psi_s^{\otimes 2}\right]}.
+\end{align}</span> Here in the third equality we use the fact that <span class="math inline">C^{\otimes 2} \rho_0 (C^{\dagger})^{\otimes 2} = \rho_0</span> and <span class="math inline">\sigma_{(1,0),C} = C^{\otimes 2} \sigma_{(1,0),I} (C^{\dagger})^{\otimes 2}</span>. In the last equality, we plug in <span class="math inline">F_s = 2^{2n} w_s \ket{\psi_s}\!\bra{\psi_s}</span> we calculate the critical term <span class="math display">\begin{align}
+    \mathbb{E}_{\psi}\left(\sigma_{(1,0),I}^{\otimes 2} - \rho_0\right)^{\otimes 2}  =  \mathbb{E}_{\psi}\sigma_{(1,0),I}^{\otimes 4} - \left(\mathbb{E}_{\psi}\sigma_{(1,0),I}^{\otimes 2}\right) \otimes \rho_0 - \rho_0 \otimes \left(\mathbb{E}_{\psi}\sigma_{(1,0),I}^{\otimes 2}\right) +\rho_0^{\otimes 2}.
+\end{align}</span> Again use the fact that <span class="math inline">C^{\otimes 2} \rho_0 (C^{\dagger})^{\otimes 2} = \rho_0</span>, the 4-fold Clifford average of the last three terms reduced to 2-fold Clifford and canceled respectively. Since Clifford forms a 3-design, it can be safely replaced by 2-fold unitary average. Since <span class="math inline">\mathbb{E}_{C \sim \mathcal{D}} C^{\otimes 2}\mathbb{E}_{\psi}\sigma_{(1,0),I}^{\otimes 2} (C^\dagger)^{\otimes 2} = \rho_0</span>, we have: <span class="math display">\begin{align}
+    \mathbb{E}_{C \sim \mathcal{D}}C^{\otimes 4}\mathbb{E}_{\psi}&amp;\left(\sigma_{(1,0),I}^{\otimes 2} - \rho_0\right)^{\otimes 2}(C^\dagger)^{\otimes 4}  = \mathbb{E}_{C \sim \mathcal{D}} C^{\otimes 4} \mathbb{E}_{\psi}\sigma_{(1,0),I}^{\otimes 4}(C^\dagger)^{\otimes 4}  -\rho_0^{\otimes 2}\\
+    &amp;=\Phi_{\mathrm{Cl},4}\left( \mathbb{E}_{\psi}\sigma_{(1,0),I}^{\otimes 4}\right) -\Phi_{\mathrm{U},4}\left(  \mathbb{E}_{\psi}\sigma_{(1,0),I}^{\otimes 4}\right) +\Phi_{\mathrm{U},4}\left(\sigma_{(1,0),I}^{\otimes 4}\right) -\Phi_{\mathrm{U},2}\left(\sigma_{(1,0),I}^{\otimes 2}\right)^{\otimes 2}
+\end{align}</span> where the 4-fold Clifford average of <span class="math inline">\mathbb{E}_{\psi}\sigma_{(1,0),I}^{\otimes 4}</span> is the only left term to be further calculated. For the second difference, we notice that <span class="math inline">\Phi_{\mathrm{U},4}\left(\mathbb{E}_{\psi}\sigma_{(1,0),I}^{\otimes 4}\right) = \Phi_{\mathrm{U},4}\left(\sigma_{(1,0),I}^{\otimes 4}\right)</span>, and <span class="math display">\begin{align}
+    &amp;\Phi_{\mathrm{U},4}\left(\sigma_{(1,0),I}^{\otimes 4}\right) = \sum_{u,v \in S_4}\mathrm{Wg}(uv,d) \mathrm{tr}\left(\mathbb{P}_{v}^{d} \sigma_{(1,0),I}^{\otimes 4}\right) \mathbb{P}_{u}^{d}\\
+    &amp;=
+\end{align}</span> Noted that the <span class="math inline">\Phi_{\mathrm{Cl},2T}</span> shall be decomposed into commutants of <span class="math inline">2T</span>-fold Clifford, which are generated by <span class="math inline">\Omega_4 = \sum_{P \in \mathcal{P}_{n}} P^{\otimes 4}</span>, <span class="math inline">\Omega_6 = \sum_{P \in \mathcal{P}_{n}}P^{\otimes 6}</span>, <span class="math inline">\Omega_{2T} = \sum_{P \in \mathcal{P}_{n}}P^{\otimes 2T}</span> if <span class="math inline">T \mod 2</span> and all the permutations on <span class="math inline">2T</span> copies of <span class="math inline">n</span>-qubit state. Notice that <span class="math inline">\mathrm{tr}\left[\left(\ket{{\mathbf{a}}}\!\bra{{\mathbf{a}}}  - \ket{\bar{\mathbf{a}}}\!\bra{\bar{\mathbf{a}}} \right) \Omega\cdot \mathrm{SWAP}_{\pi}\right] = 0, \forall \pi \in S_{2T}</span> and <span class="math inline">\Omega</span> generated by <span class="math inline">\{\Omega_4,\Omega_6,\Omega_{2T}\}</span> that supports on different parts of <span class="math inline">2T</span>-qubits.</p>
+<p>We the conclude the theorem below:</p>
+<div class="callout callout-style-default callout-important no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Lemma
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Given an operator <span class="math inline">X</span> on <span class="math inline">k</span>-replica</p>
+</div>
+</div>
+<p>also means that <span class="math inline">\mathbb{E}_{\rho \sim \mathcal{E}_{(1,0)}} \rho^{\otimes 2}</span> To show the hardness in the 2-replica strategy, we first check the difference of their <span class="math inline">2</span>-replica average. <span class="math display">\begin{align}
+    \mathbb{E}_{\rho \sim \mathcal{E}_{(2\varepsilon,0)}} \rho^{\otimes 2} &amp;=  C^{\otimes 2} \mathbb{E}_{\rho_{2\varepsilon} \sim \mathcal{E}_{2 \varepsilon}} \left[\frac{1}{2} \ket{0}\!\bra{0} \otimes \rho_{2 \varepsilon} + \frac{1}{2}\ket{1}\!\bra{1} \otimes \mathbb{I}_{n-1}/2^{n-1}\right]^{\otimes 2}(C^\dagger)^{\otimes 2}\\
+    &amp;= \frac{1}{4}C^{\otimes 2}  \ket{00}\!\bra{00} \otimes \left[\frac{\mathbb{I}_{2n-2} + 2\varepsilon\mathrm{SWAP}^{\otimes (n-1)}}{d(d+ 2\varepsilon)} - \left(\frac{\mathbb{I}_{n-1}}{d}\right)^{\otimes 2}\right](C^\dagger)^{\otimes 2} + \left(\frac{\mathbb{I}_{n}}{2^n}\right)^{\otimes 2}\\
+    &amp;= \frac{2\varepsilon }{4} C^{\otimes 2} \ket{00}\!\bra{00} \otimes \frac{d\mathrm{SWAP}^{\otimes (n-1)} - \mathbb{I}_{2n-2}}{d^2(d+2\varepsilon)}(C^\dagger)^{\otimes 2}+ \left(\frac{\mathbb{I}_{n}}{2^n}\right)^{\otimes 2},\text{~where~} d = 2^{n-1}.\\
+    \mathbb{E}_{\rho \sim \mathcal{E}_{(\varepsilon,\varepsilon)}} \rho^{\otimes 2} &amp;= C^{\otimes 2} \left[\left(\frac{\mathbb{I}}{2}\right)^{\otimes 2} \otimes \frac{\mathbb{I}_{2n-2} + \varepsilon\mathrm{SWAP}^{\otimes (n-1)}}{d(d+ \varepsilon)}\right](C^\dagger)^{\otimes 2}\\
+    &amp;=\varepsilon C^{\otimes 2} \frac{\mathbb{I}_2 \otimes \mathrm{SWAP}^{\otimes n-1}}{4d(d+\varepsilon)}(C^\dagger)^{\otimes 2}+\frac{\mathbb{I}_{2n}}{2^n(2^n + 2\varepsilon)}.
+\end{align}</span> Here we use the fact that <span class="math inline">\mathbb{E}_{\rho \sim \mathcal{E}_{\varepsilon}} \rho = \mathbb{I}_{n-1}/d</span> and <span class="math inline">\mathbb{E}_{\rho \sim \mathcal{E}_{\varepsilon}} \rho^{\otimes 2} = \left[\mathbb{I}_{2n-2} + \varepsilon\mathrm{SWAP}^{\otimes (n-1)}\right]/[d(d+ \varepsilon)]</span>. Then their difference <span class="math inline">\Delta_2(C) := \mathbb{E}_{\rho \sim \mathcal{E}_{(2\varepsilon,0)}} \rho^{\otimes 2} - \mathbb{E}_{\rho \sim \mathcal{E}_{(\varepsilon,\varepsilon)}} \rho^{\otimes 2}</span> writes: <span class="math display">\begin{align}
+    \Delta_2(C) : = \frac{2 \varepsilon}{2^{2n}(2^n + 2 \varepsilon)}\mathbb{I}_{2n} + \varepsilon C^{\otimes 2} \left[\frac{\ket{00}\!\bra{00}}{2} \otimes \frac{\mathrm{SWAP}^{\otimes (n-1)} - d^{-1}\mathbb{I}_{2n-2}}{d(d+ 2\varepsilon)} - \frac{\mathbb{I}_2 \otimes \mathrm{SWAP}^{\otimes n-1}}{4d(d+\varepsilon)}\right](C^\dagger)^{\otimes 2}.
+\end{align}</span> This operator has constant 1-norm, thus implies a 2-replica discrimination strategy below:</p>
+<div class="callout callout-style-default callout-important no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Lemma
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>An algorithm that estimates <span class="math inline">\mathrm{tr}(P \rho^2), \forall P \in \{C Z_1 C^\dagger\}_{C \in \mathcal{C}}</span> can be used to distinguish <span class="math inline">\mathcal{E}_{(2\varepsilon, 0)}</span> from <span class="math inline">\mathcal{E}_{(\varepsilon, \varepsilon)}</span>.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-20-contents" aria-controls="callout-20" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Proof (Click to expand)
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-20" class="callout-20-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><em>Proof.</em> As shown by Lemma, the value of <span class="math inline">\mathrm{tr}(P \rho^2) = \mathrm{tr}\left((P\otimes \mathbb{I}) \cdot  \mathrm{SWAP}^{\otimes n} \cdot \rho^{\otimes 2}\right)</span> can be calculated as <span class="math inline">\mathbb{E}_{\rho \in \mathcal{E}_{(\varepsilon, \varepsilon)}}\mathrm{tr}(P \rho^2) = 0</span> and <span class="math display">\begin{align}
+        &amp;\mathbb{E}_{\rho \in \mathcal{E}_{(2\varepsilon, 0)}}\mathrm{tr}(P \rho^2) = \frac{\mathbb{E}_{\rho \in \mathcal{E}_{2\varepsilon}}\mathrm{tr}(P \rho^2) - \mathbb{E}_{\rho \in \mathcal{E}_{0}}\mathrm{tr}(P \rho^2)}{4} = \frac{1}{4}\left[\frac{2^{n} \varepsilon + 1}{2^{n-1} + 2 \varepsilon} - \frac{1}{2^{n-1}}\right] = \frac{2^{2n} - 4}{2^{n+1}(2^n + 4\varepsilon)} \varepsilon.
+\end{align}</span>&nbsp;◻</p>
+</div>
+</div>
+</div>
+<p>However, if we build uniform distribution on all possible Pauli operators, which in turn induces uniform distribution on all <span class="math inline">n</span>-qubit Clifford gates <span class="math inline">\mathcal{D}</span>, the operator <span class="math inline">\mathbb{E}_{C \sim \mathcal{D}} \Delta_2</span> has exponentially small one-norm, as calculated below: <span class="math display">\begin{align}
+    &amp;\mathbb{E}_{C \sim \mathcal{D}} \Delta_2(C) = a \mathrm{SWAP}^{\otimes n} + b \mathbb{I}_{2n}, \text{~with~}\begin{cases}
+        2^n a + 2^{2n}b = 0.\\
+        2^{2n} a + 2^{n}b = \frac{\varepsilon}{2} \cdot \frac{d + 3\varepsilon - \varepsilon d^2}{d(d+\varepsilon)(d + 2 \varepsilon)} .
+    \end{cases}
+\end{align}</span> Thus, we have <span class="math inline">a+b,|a-b| \sim \mathcal{O}(2^{-3n})</span>, and <span class="math inline">\|\mathbb{E}_{C \sim \mathcal{D}} \Delta_2(C)\|_{1} = \mathcal{O}(2^{-n})</span>.</p>
+<p><span class="math display">\begin{align}
+    \delta_{\mathcal{D}} = \max_{\{F_s\}_s \in \mathcal{M}} \sum_{s} \mathrm{tr}\left(\sigma_{(\varepsilon,\varepsilon),C}^{\otimes 2} F_s\right) \mathbb{E}_{C \sim \mathcal{D}} \left[\frac{\mathrm{tr}\left(\sigma_{(2\varepsilon,0),C}^{\otimes 2} F_s\right)}{\mathrm{tr}\left(\sigma_{(\varepsilon,\varepsilon),C}^{\otimes 2} F_s\right)} - 1\right]^2
+\end{align}</span></p>
+<hr>
+<p><a href="../../../theory/Topics/Lowerbounds/operator_mixed.html">← Previous: Operator Mixed Ensembles</a> | <a href="../../../theory/Topics/Lowerbounds/index.html">Back to Index</a> | <a href="../../../theory/Topics/Lowerbounds/symmetric_strategies.html">Next: Symmetric Strategies →</a></p>
+
+
+<script type="ojs-module-contents">
+eyJjb250ZW50cyI6W119
+</script>
+<div id="exercise-loading-indicator" class="exercise-loading-indicator d-none d-flex align-items-center gap-2">
+<div id="exercise-loading-status" class="d-flex gap-2">
+
+</div>
+<div class="spinner-grow spinner-grow-sm">
+
+</div>
+</div>
+<script type="vfs-file">
+W10=
+</script>
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

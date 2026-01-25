@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.26">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2026-01-20">
+
+<title>Local Estimation of Quantum Observables – Chance’s Quantum Lab</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<script src="../../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap-a8976c3e89df70b272bdfba3d2fda974.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="../../../site_libs/quarto-contrib/live-runtime/live-runtime.js" type="module"></script>
+<link href="../../../site_libs/quarto-contrib/live-runtime/live-runtime.css" rel="stylesheet">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script>window.backupDefine = window.define; window.define = undefined;</script><script src="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.js"></script>
+  <script>document.addEventListener("DOMContentLoaded", function () {
+ var mathElements = document.getElementsByClassName("math");
+ var macros = [];
+ for (var i = 0; i < mathElements.length; i++) {
+  var texText = mathElements[i].firstChild;
+  if (mathElements[i].tagName == "SPAN") {
+   katex.render(texText.data, mathElements[i], {
+    displayMode: mathElements[i].classList.contains('display'),
+    throwOnError: false,
+    macros: macros,
+    fleqn: false
+   });
+}}});
+  </script>
+  <script>window.define = window.backupDefine; window.backupDefine = undefined;</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.css">
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../../styles.css">
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Chance’s Quantum Lab</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../index.html"> 
+<span class="menu-text">Home Page</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../theory/index.html"> 
+<span class="menu-text">Theory</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../Experiments/index.html"> 
+<span class="menu-text">Experiment Notes</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../workspace/workspace.html"> 
+<span class="menu-text">Workspace</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/yourusername"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/yourusername"> <i class="bi bi-twitter" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a>
+  <ul class="collapse">
+  <li><a href="#problem-statement" id="toc-problem-statement" class="nav-link" data-scroll-target="#problem-statement">Problem Statement</a></li>
+  <li><a href="#motivation-and-applications" id="toc-motivation-and-applications" class="nav-link" data-scroll-target="#motivation-and-applications">Motivation and Applications</a></li>
+  <li><a href="#notation" id="toc-notation" class="nav-link" data-scroll-target="#notation">Notation</a></li>
+  </ul></li>
+  <li><a href="#preliminaries" id="toc-preliminaries" class="nav-link" data-scroll-target="#preliminaries">Preliminaries</a>
+  <ul class="collapse">
+  <li><a href="#measurement-models" id="toc-measurement-models" class="nav-link" data-scroll-target="#measurement-models">Measurement Models</a></li>
+  <li><a href="#classical-shadows-framework" id="toc-classical-shadows-framework" class="nav-link" data-scroll-target="#classical-shadows-framework">Classical Shadows Framework</a></li>
+  </ul></li>
+  <li><a href="#linear-observable-estimation" id="toc-linear-observable-estimation" class="nav-link" data-scroll-target="#linear-observable-estimation">Linear Observable Estimation</a>
+  <ul class="collapse">
+  <li><a href="#product-observables" id="toc-product-observables" class="nav-link" data-scroll-target="#product-observables">Product Observables</a>
+  <ul class="collapse">
+  <li><a href="#diagonalizable-case" id="toc-diagonalizable-case" class="nav-link" data-scroll-target="#diagonalizable-case">Diagonalizable Case</a></li>
+  <li><a href="#non-diagonalizable-case" id="toc-non-diagonalizable-case" class="nav-link" data-scroll-target="#non-diagonalizable-case">Non-diagonalizable Case</a></li>
+  </ul></li>
+  <li><a href="#low-rank-observables" id="toc-low-rank-observables" class="nav-link" data-scroll-target="#low-rank-observables">Low-rank Observables</a></li>
+  <li><a href="#sec-pauli-sum" id="toc-sec-pauli-sum" class="nav-link" data-scroll-target="#sec-pauli-sum">Sum of Pauli Operators</a>
+  <ul class="collapse">
+  <li><a href="#randomized-methods-classical-shadows" id="toc-randomized-methods-classical-shadows" class="nav-link" data-scroll-target="#randomized-methods-classical-shadows">Randomized Methods (Classical Shadows)</a></li>
+  <li><a href="#derandomized-methods" id="toc-derandomized-methods" class="nav-link" data-scroll-target="#derandomized-methods">Derandomized Methods</a></li>
+  </ul></li>
+  </ul></li>
+  <li><a href="#non-linear-property-estimation" id="toc-non-linear-property-estimation" class="nav-link" data-scroll-target="#non-linear-property-estimation">Non-linear Property Estimation</a>
+  <ul class="collapse">
+  <li><a href="#purity-and-state-moments" id="toc-purity-and-state-moments" class="nav-link" data-scroll-target="#purity-and-state-moments">Purity and State Moments</a></li>
+  <li><a href="#sec-pauli-purity" id="toc-sec-pauli-purity" class="nav-link" data-scroll-target="#sec-pauli-purity">Pauli-weighted Purity</a></li>
+  <li><a href="#multi-copy-strategies" id="toc-multi-copy-strategies" class="nav-link" data-scroll-target="#multi-copy-strategies">Multi-copy Strategies</a>
+  <ul class="collapse">
+  <li><a href="#classical-shadow-based-approaches" id="toc-classical-shadow-based-approaches" class="nav-link" data-scroll-target="#classical-shadow-based-approaches">Classical Shadow-based Approaches</a></li>
+  <li><a href="#hybrid-and-learning-based-methods" id="toc-hybrid-and-learning-based-methods" class="nav-link" data-scroll-target="#hybrid-and-learning-based-methods">Hybrid and Learning-based Methods</a></li>
+  </ul></li>
+  <li><a href="#sec-lower-bounds" id="toc-sec-lower-bounds" class="nav-link" data-scroll-target="#sec-lower-bounds">Complexity Lower Bounds</a></li>
+  </ul></li>
+  <li><a href="#open-questions-and-outlook" id="toc-open-questions-and-outlook" class="nav-link" data-scroll-target="#open-questions-and-outlook">Open Questions and Outlook</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Local Estimation of Quantum Observables</h1>
+<p class="subtitle lead">A Review of Measurement Strategies and Sample Complexity</p>
+  <div class="quarto-categories">
+    <div class="quarto-category">Reviews</div>
+    <div class="quarto-category">Classical Shadows</div>
+  </div>
+  </div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">January 20, 2026</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+<div>
+  <div class="abstract">
+    <div class="block-title">Abstract</div>
+    <p>Estimating expectation values of quantum observables is a fundamental task in quantum computing and quantum many-body physics. This review examines local measurement strategies for estimating both linear properties <span class="math inline">\mathrm{tr}(O\rho)</span> and non-linear properties <span class="math inline">\mathrm{tr}(O\rho^2)</span> of quantum states. The analysis is organized by operator structure: product observables, low-rank operators, and sums of Pauli operators. For each class, the discussion covers single-copy and multi-copy measurement protocols, derandomization techniques, and known complexity lower bounds. The review highlights the fundamental trade-offs between circuit depth and sample complexity, providing a unified perspective on classical shadow methods and their variants.</p>
+  </div>
+</div>
+
+
+</header>
+
+
+<section id="introduction" class="level1">
+<h1>Introduction</h1>
+<section id="problem-statement" class="level2">
+<h2 class="anchored" data-anchor-id="problem-statement">Problem Statement</h2>
+<p>Consider a quantum system described by an <span class="math inline">n</span>-qubit density matrix <span class="math inline">\rho</span>. Two fundamental estimation problems arise in quantum information processing:</p>
+<p><strong>Linear Estimation Problem.</strong> Given an arbitrary operator <span class="math inline">O</span>, determine the optimal sample complexity for estimating <span class="math inline">\mathrm{tr}(O\rho)</span> under local measurement constraints.</p>
+<p><strong>Non-linear Estimation Problem.</strong> Given an arbitrary operator <span class="math inline">O</span>, determine the optimal sample complexity for estimating <span class="math inline">\mathrm{tr}(O\rho^2)</span> under local measurement constraints.</p>
+<p>A central question is whether multi-copy measurement strategies can provide advantages over single-copy protocols when restricted to local operations.</p>
+</section>
+<section id="motivation-and-applications" class="level2">
+<h2 class="anchored" data-anchor-id="motivation-and-applications">Motivation and Applications</h2>
+<p>These estimation problems are motivated by several important applications:</p>
+<ol type="1">
+<li><p><strong>Variational Quantum Algorithms.</strong> Variational quantum eigensolvers (VQE) and related algorithms require efficient estimation of Hamiltonian expectation values <span class="citation" data-cites="huang2020predicting">&nbsp;[<a href="#ref-huang2020predicting" role="doc-biblioref">1</a>]</span>.</p></li>
+<li><p><strong>Quantum Error Mitigation.</strong> Virtual distillation and related error mitigation schemes rely on estimating non-linear properties such as <span class="math inline">\mathrm{tr}(O\rho^2)</span> <span class="citation" data-cites="huggins2021virtual">&nbsp;[<a href="#ref-huggins2021virtual" role="doc-biblioref">2</a>]</span>.</p></li>
+<li><p><strong>Quantum Fisher Information.</strong> Estimation of the quantum Fisher information, which characterizes the sensitivity of quantum states to parameter changes, can be decomposed into Pauli operator estimations <span class="citation" data-cites="rath2021quantum">&nbsp;[<a href="#ref-rath2021quantum" role="doc-biblioref">3</a>]</span>.</p></li>
+<li><p><strong>Fundamental Limits.</strong> Understanding the sample complexity of local estimation reveals fundamental constraints on information extraction from quantum systems, particularly for topologically ordered states where certain information is intrinsically non-local.</p></li>
+</ol>
+</section>
+<section id="notation" class="level2">
+<h2 class="anchored" data-anchor-id="notation">Notation</h2>
+<p>Throughout this review, the following notation is employed:</p>
+<ul>
+<li><span class="math inline">\mathcal{P}_n = \{I, X, Y, Z\}^{\otimes n}</span>: the <span class="math inline">n</span>-qubit Pauli group</li>
+<li><span class="math inline">\mathrm{wt}(P)</span>: the Pauli weight (number of non-identity tensor factors) of <span class="math inline">P \in \mathcal{P}_n</span></li>
+<li><span class="math inline">\|O\|_\infty</span>: the operator norm (largest singular value) of <span class="math inline">O</span></li>
+<li><span class="math inline">\mathrm{SWAP}</span>: the two-qubit swap operator</li>
+</ul>
+</section>
+</section>
+<section id="preliminaries" class="level1">
+<h1>Preliminaries</h1>
+<section id="measurement-models" class="level2">
+<h2 class="anchored" data-anchor-id="measurement-models">Measurement Models</h2>
+<p>Two measurement paradigms are distinguished:</p>
+<p><strong>Single-copy (1-replica) measurements.</strong> Each measurement is performed on a single copy of <span class="math inline">\rho</span>. The measurement outcome is used to construct an unbiased estimator of the target quantity.</p>
+<p><strong>Multi-copy (<span class="math inline">k</span>-replica) measurements.</strong> Measurements are performed jointly on <span class="math inline">k</span> copies of <span class="math inline">\rho</span>, potentially with entangling operations between copies. This framework includes Bell measurements (<span class="math inline">k=2</span>) and more general collective protocols.</p>
+<p>The constraint of <em>local</em> measurements restricts operations to act on individual qubits (or small subsystems) without long-range entanglement within a single copy.</p>
+</section>
+<section id="classical-shadows-framework" class="level2">
+<h2 class="anchored" data-anchor-id="classical-shadows-framework">Classical Shadows Framework</h2>
+<p>The classical shadow formalism <span class="citation" data-cites="huang2020predicting">&nbsp;[<a href="#ref-huang2020predicting" role="doc-biblioref">1</a>]</span> provides a unified approach to observable estimation. Given an ensemble of random unitaries <span class="math inline">\{U_i\}</span> and measurement outcomes <span class="math inline">\{b_i\}</span>, a classical shadow is constructed as: <span class="math display">
+\hat{\rho} = \mathbb{E}_{U,b}[\mathcal{M}^{-1}(U^\dagger |b\rangle\langle b| U)]
+</span> where <span class="math inline">\mathcal{M}</span> is the measurement channel. For local Clifford measurements, this approach achieves sample complexity <span class="math inline">O(3^k)</span> for weight-<span class="math inline">k</span> Pauli observables <span class="citation" data-cites="elben2023randomized">&nbsp;[<a href="#ref-elben2023randomized" role="doc-biblioref">4</a>]</span>.</p>
+<p>Robust variants of classical shadows <span class="citation" data-cites="chen2021robust">&nbsp;[<a href="#ref-chen2021robust" role="doc-biblioref">5</a>]</span> address the challenge of noise in practical implementations.</p>
+</section>
+</section>
+<section id="linear-observable-estimation" class="level1">
+<h1>Linear Observable Estimation</h1>
+<section id="product-observables" class="level2">
+<h2 class="anchored" data-anchor-id="product-observables">Product Observables</h2>
+<p><strong>Definition.</strong> A product observable takes the form <span class="math inline">O = A_1 \otimes \cdots \otimes A_n</span> where each <span class="math inline">A_i</span> acts on a single qubit.</p>
+<section id="diagonalizable-case" class="level3">
+<h3 class="anchored" data-anchor-id="diagonalizable-case">Diagonalizable Case</h3>
+<p>When each local operator satisfies <span class="math inline">[A_i, A_i^\dagger] = 0</span> (i.e., <span class="math inline">A_i</span> is normal), the estimation problem is straightforward. One measures in the eigenbasis of each <span class="math inline">A_i</span> at every position. For instance, if <span class="math inline">A_i \in \{I, X, Y, Z\}</span>, this corresponds to direct Pauli measurement of <span class="math inline">\mathrm{tr}(P\rho)</span>.</p>
+<p><strong>Sample Complexity.</strong> The single-copy local strategy is optimal, requiring <span class="math inline">O(1/\epsilon^2)</span> samples for <span class="math inline">\epsilon</span>-precision estimation.</p>
+</section>
+<section id="non-diagonalizable-case" class="level3">
+<h3 class="anchored" data-anchor-id="non-diagonalizable-case">Non-diagonalizable Case</h3>
+<p>When <span class="math inline">[A_i, A_i^\dagger] \neq 0</span> for some positions, the operators cannot be simultaneously diagonalized. Applications include:</p>
+<ul>
+<li>Estimation of creation/annihilation operators <span class="math inline">a^\dagger, a</span> in bosonic sampling</li>
+<li>Non-Hermitian Hamiltonian dynamics <span class="math inline">H + i\delta</span></li>
+</ul>
+<p><strong>Approaches:</strong></p>
+<ol type="1">
+<li><p><em>Cartesian decomposition:</em> Decompose <span class="math inline">A = (A + A^\dagger)/2 + i(A - A^\dagger)/(2i)</span> into Hermitian parts. However, non-commutativity leads to exponential growth in measurement bases.</p></li>
+<li><p><em>Classical shadow estimation:</em> Applicable for local and low-rank cases with polynomial overhead <span class="citation" data-cites="huang2020predicting">&nbsp;[<a href="#ref-huang2020predicting" role="doc-biblioref">1</a>]</span>.</p></li>
+<li><p><em>Two-replica strategy:</em> Bell measurements can estimate <span class="math inline">\{|\mathrm{tr}(P\rho)|\}_{P}</span> with constant additive error using <span class="math inline">O(n)</span> copies <span class="citation" data-cites="chen2024optimal">&nbsp;[<a href="#ref-chen2024optimal" role="doc-biblioref">6</a>]</span>.</p></li>
+</ol>
+</section>
+</section>
+<section id="low-rank-observables" class="level2">
+<h2 class="anchored" data-anchor-id="low-rank-observables">Low-rank Observables</h2>
+<p><strong>Definition.</strong> An observable <span class="math inline">O</span> is low-rank if <span class="math inline">\mathrm{rank}(O) = r</span> for some <span class="math inline">r \ll 2^n</span>. The special case <span class="math inline">O = |\psi\rangle\langle\psi|</span> corresponds to fidelity estimation.</p>
+<p><strong>Efficient Strategies:</strong></p>
+<ol type="1">
+<li><p><em>Stabilizer states:</em> When <span class="math inline">|\psi\rangle</span> is a stabilizer state with stabilizer group <span class="math inline">\mathcal{S}</span>, the decomposition <span class="math inline">|\psi\rangle\langle\psi| = 2^{-n}\sum_{P \in \mathcal{S}} P</span> enables efficient Pauli measurement.</p></li>
+<li><p><em>Entanglement witness construction:</em> For a general observable <span class="math inline">O</span>, one can examine <span class="math inline">O' = O + \alpha I</span> such that <span class="math inline">O'</span> is separable, analogous to entanglement witness construction.</p></li>
+<li><p><em>Bell difference sampling:</em> This technique efficiently estimates the average over all stabilizer states <span class="citation" data-cites="chen2024optimal">&nbsp;[<a href="#ref-chen2024optimal" role="doc-biblioref">6</a>]</span>.</p></li>
+</ol>
+</section>
+<section id="sec-pauli-sum" class="level2">
+<h2 class="anchored" data-anchor-id="sec-pauli-sum">Sum of Pauli Operators</h2>
+<p><strong>Definition.</strong> A Pauli decomposition takes the form <span class="math inline">O = \sum_{P \in \mathcal{P}_n} \alpha_P P</span>.</p>
+<section id="randomized-methods-classical-shadows" class="level3">
+<h3 class="anchored" data-anchor-id="randomized-methods-classical-shadows">Randomized Methods (Classical Shadows)</h3>
+<p>For single-copy local Clifford random measurements, the sample complexity scales as <span class="citation" data-cites="huang2020predicting">&nbsp;[<a href="#ref-huang2020predicting" role="doc-biblioref">1</a>]</span>:</p>
+<ul>
+<li><span class="math inline">O(3^k/\epsilon^2)</span> for weight-<span class="math inline">k</span> Pauli observables</li>
+<li><span class="math inline">O(4^n/\epsilon^2)</span> for arbitrary <span class="math inline">n</span>-local operators</li>
+</ul>
+<p><strong>Two-copy variants:</strong></p>
+<ul>
+<li><p><em>Entanglement-fixed 2-copy shadow</em> <span class="citation" data-cites="ippoliti2024classical">&nbsp;[<a href="#ref-ippoliti2024classical" role="doc-biblioref">7</a>]</span>: Information-complete if entanglement is not maximal. Achieves efficiency <span class="math inline">O(3^{k/2})</span> for compatible weight-<span class="math inline">k</span> Pauli observables.</p></li>
+<li><p><em>Bell sampling:</em> Informationally efficient for all Pauli operators <span class="citation" data-cites="chen2024optimal">&nbsp;[<a href="#ref-chen2024optimal" role="doc-biblioref">6</a>]</span>, though the signal problem may require additional samples <span class="citation" data-cites="huang2021information">&nbsp;[<a href="#ref-huang2021information" role="doc-biblioref">8</a>]</span>.</p></li>
+</ul>
+<p>A fundamental lower bound establishes that single-replica estimation of all Pauli operators requires exponential sample complexity <span class="citation" data-cites="chen2024optimal">&nbsp;[<a href="#ref-chen2024optimal" role="doc-biblioref">6</a>]</span>.</p>
+</section>
+<section id="derandomized-methods" class="level3">
+<h3 class="anchored" data-anchor-id="derandomized-methods">Derandomized Methods</h3>
+<p><strong>(1) Biased Sampling Methods</strong></p>
+<p>Instead of uniform random Clifford sampling, these methods adjust the measurement distribution based on target Hamiltonian structure:</p>
+<ul>
+<li><p><strong>Locally-biased shadows</strong> <span class="citation" data-cites="hadfield2020locally">&nbsp;[<a href="#ref-hadfield2020locally" role="doc-biblioref">9</a>]</span>: For each qubit position, the local Clifford sampling distribution is biased according to Pauli weights in the Hamiltonian. This reduces variance for observables with structured Pauli decompositions.</p></li>
+<li><p><strong>Adaptive Pauli shadows</strong> <span class="citation" data-cites="hadfield2021adaptive">&nbsp;[<a href="#ref-hadfield2021adaptive" role="doc-biblioref">10</a>]</span>: Combines classical computation with iterative distribution refinement, improving efficiency for molecular Hamiltonians.</p></li>
+</ul>
+<p><strong>(2) Greedy Derandomization</strong></p>
+<ul>
+<li><strong>Iterative greedy selection</strong> <span class="citation" data-cites="huang2021efficient">&nbsp;[<a href="#ref-huang2021efficient" role="doc-biblioref">11</a>]</span>: Systematically replaces random measurements with deterministic ones. For estimating <span class="math inline">L</span> Pauli observables, achieves <span class="math inline">O(\log L)</span> sample complexity by greedily selecting measurement bases that maximize information gain. (See <a href="../../../theory/Posts/Pauli_derandomization/index.html">Derandomized local shadows</a> for details.)</li>
+</ul>
+<p><strong>(3) Commuting Pauli Grouping</strong></p>
+<p>These methods partition Pauli operators into simultaneously measurable groups:</p>
+<ul>
+<li><p><strong>Minimum Clique Cover</strong> <span class="citation" data-cites="verteletskyi2020measurement">&nbsp;[<a href="#ref-verteletskyi2020measurement" role="doc-biblioref">12</a>]</span>: Maps the qubit-wise commuting (QWC) problem to graph coloring. Pauli operators form vertices with edges connecting non-commuting pairs.</p></li>
+<li><p><strong>SORTED INSERTION</strong> <span class="citation" data-cites="crawford2021efficient">&nbsp;[<a href="#ref-crawford2021efficient" role="doc-biblioref">13</a>]</span>: A heuristic exploiting Pauli weight information for efficient groupings with lower computational overhead.</p></li>
+<li><p><strong>Unitary Partitioning</strong> <span class="citation" data-cites="izmaylov2019unitary">&nbsp;[<a href="#ref-izmaylov2019unitary" role="doc-biblioref">14</a>]</span>: General framework for commuting grouping with provable guarantees.</p></li>
+</ul>
+<p><strong>(4) Theoretical Perspectives</strong></p>
+<ul>
+<li><p><strong>Channel co-diagonalization</strong> <span class="citation" data-cites="yang2025measuring">&nbsp;[<a href="#ref-yang2025measuring" role="doc-biblioref">15</a>]</span>: Seeks a quantum channel <span class="math inline">\Lambda</span> such that multiple observables are simultaneously diagonalized.</p></li>
+<li><p><strong>Lower bounds</strong> <span class="citation" data-cites="wu2024optimization">&nbsp;[<a href="#ref-wu2024optimization" role="doc-biblioref">16</a>]</span>: Establishes fundamental <a href="../../../theory/Posts/shallow_estim/index.html">efficiency limits</a> for local estimation with shallow circuits.</p></li>
+</ul>
+</section>
+</section>
+</section>
+<section id="non-linear-property-estimation" class="level1">
+<h1>Non-linear Property Estimation</h1>
+<section id="purity-and-state-moments" class="level2">
+<h2 class="anchored" data-anchor-id="purity-and-state-moments">Purity and State Moments</h2>
+<p>The purity <span class="math inline">\mathrm{tr}(\rho^2)</span> quantifies the mixedness of a quantum state. More generally, state moments <span class="math inline">\mathrm{tr}(\rho^k)</span> characterize the eigenvalue distribution of <span class="math inline">\rho</span> and appear in:</p>
+<ul>
+<li>Rényi entropy estimation: <span class="math inline">S_\alpha(\rho) = \frac{1}{1-\alpha}\log\mathrm{tr}(\rho^\alpha)</span></li>
+<li>Virtual distillation protocols <span class="citation" data-cites="huggins2021virtual">&nbsp;[<a href="#ref-huggins2021virtual" role="doc-biblioref">2</a>]</span></li>
+<li>Entanglement quantification</li>
+</ul>
+</section>
+<section id="sec-pauli-purity" class="level2">
+<h2 class="anchored" data-anchor-id="sec-pauli-purity">Pauli-weighted Purity</h2>
+<p><strong>Definition.</strong> For <span class="math inline">P \in \mathcal{P}_n</span>, the Pauli-weighted purity is <span class="math inline">\mathrm{tr}(P\rho^2)</span>.</p>
+<p>When <span class="math inline">A_i \in \mathrm{SWAP} \cdot \{I, X, Y, Z\}</span>, the operator <span class="math inline">\mathrm{SWAP} \cdot P</span> is non-Hermitian but normal (satisfying <span class="math inline">[SP, (SP)^\dagger] = 0</span>), hence diagonalizable.</p>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Two-copy Local Estimation of <span class="math inline">\mathrm{tr}(P\rho^2)</span>
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The value <span class="math inline">\mathrm{tr}(P\rho^2)</span> can be estimated by a 2-copy local circuit:</p>
+<ol type="1">
+<li>Apply <span class="math inline">\mathrm{CNOT}_{12}</span> between corresponding qubits</li>
+<li>Measure <span class="math inline">Z</span> on the second qubit with result <span class="math inline">s_1</span></li>
+<li>Adaptively apply <span class="math inline">S \cdot H</span> gate if <span class="math inline">s_1 = 1</span>, then measure <span class="math inline">Z</span> on the first qubit with result <span class="math inline">s_2</span></li>
+<li>Construct estimator <span class="math inline">\hat{o} = \mathrm{Re}\left[\prod_k i^{2s_2^{(k)} + s_1^{(k)}}\right]</span></li>
+</ol>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Proof
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>Full-weight Pauli operators can be locally transformed to <span class="math inline">Z^{\otimes n}</span> using local Clifford gates (<span class="math inline">HXH = Z</span>, <span class="math inline">HS^\dagger YSH = Z</span>).</p>
+<p>The observable becomes <span class="math inline">O = [(Z \otimes I) \cdot \mathrm{SWAP}]^{\otimes n} = A^{\otimes n}</span>. The local operator <span class="math inline">A</span>, though non-Hermitian, is normal and admits the spectral decomposition:</p>
+<p><span class="math display">\begin{align}
+    A &amp;= |00\rangle\langle00| - |11\rangle\langle11| + i|\Phi^+\rangle\langle\Phi^+| - i|\Phi^-\rangle\langle\Phi^-|
+\end{align}</span></p>
+<p>where <span class="math inline">|\Phi^\pm\rangle = (|01\rangle \pm i|10\rangle)/\sqrt{2}</span>.</p>
+<p>Measurement in the basis <span class="math inline">\{|00\rangle, |11\rangle, |\Phi^+\rangle, |\Phi^-\rangle\}</span> yields outcomes <span class="math inline">\hat{o}_i \in \{+1, -1, +i, -i\}</span>. Both <span class="math inline">\mathrm{Im}(\prod_i \hat{o}_i)</span> and <span class="math inline">\mathrm{Re}(\prod_i \hat{o}_i)</span> are bounded, so Hoeffding’s inequality ensures efficient estimation.</p>
+<p>The circuit implementation uses: <span class="math display">
+\mathrm{CNOT}|00\rangle = |00\rangle, \quad \mathrm{CNOT}|11\rangle = |10\rangle, \quad \mathrm{CNOT}|\Phi^\pm\rangle = (SH|0/1\rangle)|1\rangle
+</span></p>
+</div>
+</div>
+</div>
+<p><strong>Limitation.</strong> Purity cannot be simultaneously estimated from outcomes <span class="math inline">\mathbf{s}_1, \mathbf{s}_2</span> because <span class="math inline">\mathrm{SWAP}|\Phi^+\rangle = i|\Phi^-\rangle</span>.</p>
+<p>As noted in <span class="citation" data-cites="huggins2021virtual">&nbsp;[<a href="#ref-huggins2021virtual" role="doc-biblioref">2</a>]</span>:</p>
+<blockquote class="blockquote">
+<p>“The inability to parallelize the measurement of commuting multi-qubit observables would make it challenging to profitably combine this approach with sophisticated NISQ measurement strategies. In particular, individual multi-qubit operators must be measured separately using this approach, even if they commute.”</p>
+</blockquote>
+</section>
+<section id="multi-copy-strategies" class="level2">
+<h2 class="anchored" data-anchor-id="multi-copy-strategies">Multi-copy Strategies</h2>
+<section id="classical-shadow-based-approaches" class="level3">
+<h3 class="anchored" data-anchor-id="classical-shadow-based-approaches">Classical Shadow-based Approaches</h3>
+<p><strong>Single-replica bounds:</strong></p>
+<ul>
+<li>Unitary 6-design measurements achieve the lower bound <span class="math inline">\Omega(2^{n/2} \cdot \ln|\mathcal{O}|)</span> for estimating <span class="math inline">\{\mathrm{tr}(P\rho^2)\}_{P \in \mathcal{O}}</span> <span class="citation" data-cites="du2025optimal">&nbsp;[<a href="#ref-du2025optimal" role="doc-biblioref">17</a>]</span>.</li>
+</ul>
+<p><strong>Multi-replica constructions:</strong></p>
+<ul>
+<li><p>A <span class="math inline">k</span>-replica strategy constructing classical shadows for <span class="math inline">\rho^t</span> exists, with explicit construction for <span class="math inline">t=2</span> using non-local circuits <span class="citation" data-cites="liu2024auxiliary">&nbsp;[<a href="#ref-liu2024auxiliary" role="doc-biblioref">18</a>]</span>.</p></li>
+<li><p><em>Local 2-copy 3-design shadow</em> (<a href="../../../theory/Topics/Shadow_tomography/multicopy.html">details</a>): Information-complete with sampling advantages over Bell sampling in specific regimes for weighted purity and non-linear Pauli properties.</p></li>
+<li><p><em>Entanglement-fixed 2-copy shadow</em> (<a href="../../../theory/Topics/Shadow_tomography/multicopy.html">details</a>): Information-complete only when entanglement is non-maximal.</p></li>
+<li><p><em>Random shifted Bell sampling</em> <span class="citation" data-cites="ippoliti2024classical">&nbsp;[<a href="#ref-ippoliti2024classical" role="doc-biblioref">7</a>]</span>: Information-incomplete but achieves <span class="math inline">O(n)</span> sample complexity for <span class="math inline">\mathrm{tr}(O\rho^2)</span>.</p></li>
+</ul>
+</section>
+<section id="hybrid-and-learning-based-methods" class="level3">
+<h3 class="anchored" data-anchor-id="hybrid-and-learning-based-methods">Hybrid and Learning-based Methods</h3>
+<p>The hybrid framework <span class="citation" data-cites="zhou2022hybrid">&nbsp;[<a href="#ref-zhou2022hybrid" role="doc-biblioref">19</a>]</span> combines classical and quantum resources for simulating many-body dynamics with improved efficiency.</p>
+<p>Machine learning approaches <span class="citation" data-cites="huang2022provably">&nbsp;[<a href="#ref-huang2022provably" role="doc-biblioref">20</a>]</span> demonstrate provably efficient estimation for certain classes of quantum many-body properties using classical shadow data.</p>
+</section>
+</section>
+<section id="sec-lower-bounds" class="level2">
+<h2 class="anchored" data-anchor-id="sec-lower-bounds">Complexity Lower Bounds</h2>
+<p><strong>Two-replica hardness.</strong> Even with non-local operations allowed and fixed operator <span class="math inline">O</span>, the sample complexity is <span class="math inline">\Omega(2^{k/2})</span> where <span class="math inline">k</span> is the support size <span class="citation" data-cites="du2025optimal">&nbsp;[<a href="#ref-du2025optimal" role="doc-biblioref">17</a>]</span> <span class="citation" data-cites="ye2025exponential">&nbsp;[<a href="#ref-ye2025exponential" role="doc-biblioref">21</a>]</span>.</p>
+<p><strong>Conjectures:</strong></p>
+<p>Based on the observation that all known local 2-replica shadow protocols exhibit exponential sampling complexity, estimation of <span class="math inline">\{\mathrm{tr}(P\rho^2)\}</span> for all <span class="math inline">P \in \mathcal{P}_n</span> is <a href="../../../theory/Topics/Lowerbounds/lowerbounds.qmd">conjectured to be hard</a> for 2-replica strategies.</p>
+<p>A <a href="../../../theory/Topics/Shadow_tomography/multicopy.html">4-replica non-local upper bound</a> exists for estimating <span class="math inline">\{\mathrm{tr}(P\rho^2)\}</span> for all <span class="math inline">P \in \mathcal{P}_n</span>, suggesting that 4-replica local estimation may also be fundamentally limited.</p>
+</section>
+</section>
+<section id="open-questions-and-outlook" class="level1">
+<h1>Open Questions and Outlook</h1>
+<p>Several important questions remain open:</p>
+<div class="callout callout-style-default callout-important no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Open Question 1
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>If two-replica local measurement is allowed, can the exponential sampling complexity barrier for all Pauli observables be overcome?</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-important no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Open Question 2
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>For non-linear estimation <span class="math inline">\mathrm{tr}(O\rho^2)</span>, does there exist an optimal derandomization scheme under two-replica local constraints?</p>
+</div>
+</div>
+<p><strong>Partial results.</strong> Bell measurements can efficiently estimate observables of the form: <span class="math display">
+O = \alpha_{00} I \otimes I + \alpha_{11} X \otimes X + \alpha_{22} Y \otimes Y + \alpha_{33} Z \otimes Z
+</span> with <span class="math inline">\|O\|_\infty \leq O(1)</span>.</p>
+<p><strong>Future directions:</strong></p>
+<ol type="1">
+<li>Tight characterization of the sample complexity gap between single-copy and multi-copy protocols</li>
+<li>Development of adaptive measurement strategies that interpolate between randomized and deterministic approaches</li>
+<li>Extension of lower bound techniques to broader classes of non-linear properties</li>
+<li>Connections to quantum computational complexity and the role of entanglement in local estimation</li>
+</ol>
+
+
+<script type="ojs-module-contents">
+eyJjb250ZW50cyI6W119
+</script>
+<div id="exercise-loading-indicator" class="exercise-loading-indicator d-none d-flex align-items-center gap-2">
+<div id="exercise-loading-status" class="d-flex gap-2">
+
+</div>
+<div class="spinner-grow spinner-grow-sm">
+
+</div>
+</div>
+<script type="vfs-file">
+W10=
+</script>
+
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body" data-entry-spacing="0" role="list">
+<div id="ref-huang2020predicting" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[1] </div><div class="csl-right-inline">H.-Y. Huang, R. Kueng, and J. Preskill, Predicting many properties of a quantum system from very few measurements, Nature Physics <strong>16</strong>, 1050 (2020).</div>
+</div>
+<div id="ref-huggins2021virtual" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[2] </div><div class="csl-right-inline">W. J. Huggins, S. McArdle, T. E. O’Brien, J. Lee, N. C. Rubin, S. Boixo, K. B. Whaley, R. Babbush, and J. R. McClean, Virtual distillation for quantum error mitigation, Physical Review X <strong>11</strong>, 041036 (2021).</div>
+</div>
+<div id="ref-rath2021quantum" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[3] </div><div class="csl-right-inline">A. Rath, C. Branciard, A. Minguzzi, and B. Vermersch, Quantum fisher information from randomized measurements, Physical Review Letters <strong>127</strong>, 260501 (2021).</div>
+</div>
+<div id="ref-elben2023randomized" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[4] </div><div class="csl-right-inline">A. Elben, S. T. Flammia, H.-Y. Huang, R. Kueng, J. Preskill, B. Vermersch, and P. Zoller, The randomized measurement toolbox, Nature Reviews Physics <strong>5</strong>, 9 (2023).</div>
+</div>
+<div id="ref-chen2021robust" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[5] </div><div class="csl-right-inline">S. Chen, W. Yu, P. Zeng, and S. T. Flammia, Robust shadow estimation, PRX Quantum <strong>2</strong>, 030348 (2021).</div>
+</div>
+<div id="ref-chen2024optimal" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[6] </div><div class="csl-right-inline">S. Chen, W. Gong, and Q. Ye, <em>Optimal Tradeoffs for Estimating Pauli Observables</em>, in <em>2024 IEEE 65th Annual Symposium on Foundations of Computer Science (FOCS)</em> (IEEE, 2024), pp. 1086–1105.</div>
+</div>
+<div id="ref-ippoliti2024classical" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[7] </div><div class="csl-right-inline">M. Ippoliti, Classical shadows based on locally-entangled measurements, Quantum <strong>8</strong>, 1293 (2024).</div>
+</div>
+<div id="ref-huang2021information" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[8] </div><div class="csl-right-inline">H.-Y. Huang, R. Kueng, and J. Preskill, Information-theoretic bounds on quantum advantage in machine learning, Physical Review Letters <strong>126</strong>, 190505 (2021).</div>
+</div>
+<div id="ref-hadfield2020locally" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[9] </div><div class="csl-right-inline">C. Hadfield, S. Bravyi, R. Raymond, and A. Mezzacapo, Measurements of quantum hamiltonians with locally-biased classical shadows, Communications in Mathematical Physics <strong>391</strong>, 951 (2022).</div>
+</div>
+<div id="ref-hadfield2021adaptive" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[10] </div><div class="csl-right-inline">C. Hadfield, Adaptive pauli shadows for energy estimation, arXiv Preprint arXiv:2105.12207 (2021).</div>
+</div>
+<div id="ref-huang2021efficient" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[11] </div><div class="csl-right-inline">H.-Y. Huang, R. Kueng, and J. Preskill, Efficient estimation of pauli observables by derandomization, Physical Review Letters <strong>127</strong>, 030503 (2021).</div>
+</div>
+<div id="ref-verteletskyi2020measurement" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[12] </div><div class="csl-right-inline">V. Verteletskyi, T.-C. Yen, and A. F. Izmaylov, Measurement optimization in the variational quantum eigensolver using a minimum clique cover, The Journal of Chemical Physics <strong>152</strong>, 124114 (2020).</div>
+</div>
+<div id="ref-crawford2021efficient" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[13] </div><div class="csl-right-inline">O. Crawford, B. van Straaten, D. Wang, T. Parks, E. Campbell, and S. Brierley, Efficient quantum measurement of pauli operators in the presence of finite sampling error, Quantum <strong>5</strong>, 385 (2021).</div>
+</div>
+<div id="ref-izmaylov2019unitary" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[14] </div><div class="csl-right-inline">A. F. Izmaylov, T.-C. Yen, R. A. Lang, and V. Verteletskyi, Unitary partitioning approach to the measurement problem in the variational quantum eigensolver method, Journal of Chemical Theory and Computation <strong>16</strong>, 190 (2020).</div>
+</div>
+<div id="ref-yang2025measuring" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[15] </div><div class="csl-right-inline">M. Yang, Y. Huang, and D. Zhou, Measuring incompatible observables with quantum neural networks, arXiv Preprint arXiv:2503.20565 (2025).</div>
+</div>
+<div id="ref-wu2024optimization" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[16] </div><div class="csl-right-inline">B. Wu, Y. Yan, F. Wei, and Z. Liu, Optimization for expectation value estimation with shallow quantum circuits, arXiv Preprint arXiv:2407.19499 (2024).</div>
+</div>
+<div id="ref-du2025optimal" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[17] </div><div class="csl-right-inline">Z. Du, Y. Tang, A. Elben, I. Roth, J. Eisert, and Z. Liu, Optimal randomized measurements for a family of non-linear quantum properties, arXiv Preprint arXiv:2505.09206 (2025).</div>
+</div>
+<div id="ref-liu2024auxiliary" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[18] </div><div class="csl-right-inline">Q. Liu, Z. Li, X. Yuan, H. Zhu, and Y. Zhou, Auxiliary-free replica shadow estimation, arXiv Preprint arXiv:2407.20865 (2024).</div>
+</div>
+<div id="ref-zhou2022hybrid" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[19] </div><div class="csl-right-inline">Y. Zhou, Q. Zheng, C. Yin, Y. Sun, S. Jian, S. Zhang, and Z. Liu, Hybrid framework for simulating quantum many-body dynamics, arXiv Preprint arXiv:2208.08416 (2022).</div>
+</div>
+<div id="ref-huang2022provably" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[20] </div><div class="csl-right-inline">H.-Y. Huang, R. Kueng, G. Torlai, V. V. Albert, and J. Preskill, Provably efficient machine learning for quantum many-body problems, Science <strong>377</strong>, eabk3333 (2022).</div>
+</div>
+<div id="ref-ye2025exponential" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[21] </div><div class="csl-right-inline">Q. Ye, Z. Liu, and D.-L. Deng, Exponential advantage from one more replica in estimating nonlinear properties of quantum states, arXiv Preprint arXiv:2509.24000 (2025).</div>
+</div>
+</div></section></div></main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

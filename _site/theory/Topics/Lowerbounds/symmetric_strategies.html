@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.26">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Symmetric Strategies – Chance’s Quantum Lab</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<script src="../../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap-a8976c3e89df70b272bdfba3d2fda974.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="../../../site_libs/quarto-contrib/live-runtime/live-runtime.js" type="module"></script>
+<link href="../../../site_libs/quarto-contrib/live-runtime/live-runtime.css" rel="stylesheet">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script>window.backupDefine = window.define; window.define = undefined;</script><script src="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.js"></script>
+  <script>document.addEventListener("DOMContentLoaded", function () {
+ var mathElements = document.getElementsByClassName("math");
+ var macros = [];
+ for (var i = 0; i < mathElements.length; i++) {
+  var texText = mathElements[i].firstChild;
+  if (mathElements[i].tagName == "SPAN") {
+   katex.render(texText.data, mathElements[i], {
+    displayMode: mathElements[i].classList.contains('display'),
+    throwOnError: false,
+    macros: macros,
+    fleqn: false
+   });
+}}});
+  </script>
+  <script>window.define = window.backupDefine; window.backupDefine = undefined;</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.css">
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../../styles.css">
+</head>
+
+<body class="nav-sidebar floating nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Chance’s Quantum Lab</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../index.html"> 
+<span class="menu-text">Home Page</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../theory/index.html"> 
+<span class="menu-text">Theory</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../Experiments/index.html"> 
+<span class="menu-text">Experiment Notes</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../workspace/workspace.html"> 
+<span class="menu-text">Workspace</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/yourusername"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/yourusername"> <i class="bi bi-twitter" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../../theory/Topics/Lowerbounds/symmetric_strategies.html">Simplification Techniques</a></li><li class="breadcrumb-item"><a href="../../../theory/Topics/Lowerbounds/symmetric_strategies.html">Symmetric Strategies</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../theory/Topics/Lowerbounds/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Toolbox for Proving Lower Bounds</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Core Concepts</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../theory/Topics/Lowerbounds/lecam_method.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Le Cam’s Method</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../theory/Topics/Lowerbounds/povm_restrictions.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Restrictions on POVMs</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../theory/Topics/Lowerbounds/adaptive_strategies.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Tree Representation of Adaptive Strategies</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Hard Instance Constructions</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../theory/Topics/Lowerbounds/operator_mixed.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Operator Mixed Ensembles</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../theory/Topics/Lowerbounds/haar_ensembles.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Haar-Assembled Ensembles</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Simplification Techniques</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../theory/Topics/Lowerbounds/symmetric_strategies.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Symmetric Strategies</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#subsec:sym_strate" id="toc-subsec:sym_strate" class="nav-link active" data-scroll-target="#subsec\:sym_strate"><span class="header-section-number">1</span> Symmetric Strategies</a>
+  <ul class="collapse">
+  <li><a href="#the-unitary-case-ug-u2n" id="toc-the-unitary-case-ug-u2n" class="nav-link" data-scroll-target="#the-unitary-case-ug-u2n"><span class="header-section-number">1.1</span> The unitary case <span class="math inline">U(G) = U(2^n)</span></a></li>
+  <li><a href="#examples." id="toc-examples." class="nav-link" data-scroll-target="#examples."><span class="header-section-number">1.2</span> Examples.</a></li>
+  <li><a href="#examples.-1" id="toc-examples.-1" class="nav-link" data-scroll-target="#examples.-1"><span class="header-section-number">1.3</span> Examples.</a></li>
+  <li><a href="#the-clifford-case-ug-textcliffordn" id="toc-the-clifford-case-ug-textcliffordn" class="nav-link" data-scroll-target="#the-clifford-case-ug-textcliffordn"><span class="header-section-number">1.4</span> The Clifford case <span class="math inline">U(G) = \text{Clifford}(n)</span></a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../../theory/Topics/Lowerbounds/symmetric_strategies.html">Simplification Techniques</a></li><li class="breadcrumb-item"><a href="../../../theory/Topics/Lowerbounds/symmetric_strategies.html">Symmetric Strategies</a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title">Symmetric Strategies</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p><a href="../../../theory/Topics/Lowerbounds/index.html">← Back to Index</a></p>
+<section id="subsec:sym_strate" class="level1" data-number="1">
+<h1 data-number="1"><span class="header-section-number">1</span> Symmetric Strategies</h1>
+<p>If there is no restriction on the memory-number and the replica number, we can lower-bound the strategy through the symmetric of the property. We first define general testing strategy rigorously.</p>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Definition
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>A property <span class="math inline">\mathcal{P} \subset \mathcal{S}(\mathcal{H})</span> is a set of quantum states. A two-outcome POVM <span class="math inline">\{E,\mathbb{I} - E\}</span> on k-copies of n-qubit states tests the property <span class="math inline">\mathcal{P}</span> iff for certain <span class="math inline">1&gt;\varepsilon_B \geq \varepsilon_A &gt;0</span> and <span class="math inline">\delta = \Theta(1)</span>, <span class="math display">\begin{align}
+         d_{\text{tr}}(\rho, \mathcal{P})  \leq \varepsilon_A \Rightarrow \text{tr}(E \rho^{\otimes k}) \geq 1/2 +\delta,\\
+       d_{\text{tr}}(\rho, \mathcal{P})  \geq \varepsilon_B \Rightarrow \text{tr}(E \rho^{\otimes k}) \leq 1/2 - \delta.
+\end{align}</span></p>
+</div>
+</div>
+<p>Now suppose the testing property <span class="math inline">\mathcal{P}</span>, which is a set of state within <span class="math inline">n</span>-qubit space, is invariant under unitary operation <span class="math inline">U(G)</span> , which is a subgroup of <span class="math inline">U(2)^{\otimes n}</span>. Namely, <span class="math display">\begin{align}
+    \forall \sigma \in \mathcal{P},\forall V \in U(G), V\sigma V^\dagger \in \mathcal{P}.
+\end{align}</span> Then we are prepared to show that it is enough to consider the symmetric version of the strategy rather than an arbitrary POVM within <span class="math inline">n</span>-qubit space, as stated by Lemma below</p>
+<div class="callout callout-style-default callout-important no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Lemma
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><span id="lemma:symmtric_M" data-label="lemma:symmtric_M"></span> Given a <span class="math inline">k</span>-replica strategy <span class="math inline">\{E, \mathbb{I } - E\}</span> for the <span class="math inline">U(G)</span>-symmetric property <span class="math inline">\mathcal{P}</span> on <span class="math inline">n</span>-qubits, the symmetric strategy <span class="math inline">\{\Phi(E), \mathbb{I } - \Phi(E)\}</span> with <span class="math inline">\Phi(E) := |U(G)|^{-1}\sum_{V \in U(G)} V^{\dagger,\otimes k}EV^{\otimes k}</span> and <span class="math inline">\Phi_k(E) := |S_k|^{-1}\sum_{\pi\in S_k} \text{SWAP}_\pi E\cdot\text{SWAP}_\pi</span> has non-decreasing efficiency.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Proof (Click to expand)
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-3" class="callout-3-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><em>Proof.</em> Because the unitary invariant property of <span class="math inline">\mathcal{P}</span> and the non-decreasing property of trace distance under unitary transformation <span class="math inline">d_{\text{tr}}(\cdot,\cdot) = d_{\text{tr}}(U\cdot U^\dagger,U\cdot U^\dagger)</span>, we conclude that <span class="math display">\begin{align}
+       d_{\text{tr}}(\rho, \mathcal{P})  \leq  \varepsilon_A &amp;\Rightarrow \forall U \in U(G),  d_{\text{tr}}(U\rho U^\dagger, \mathcal{P}) \leq  \varepsilon_A \\
+       &amp;\Rightarrow  \forall U \in U(G),\text{tr}( EU^{\otimes k}\rho^{\otimes k} U^{\dagger,\otimes k}) \geq 1/2 + \Theta(1),\\
+       &amp;\Leftrightarrow  \forall U \in U(G),|U(G)|^{-1}\sum_{V \in U(G)}\text{tr}(U^{\dagger,\otimes k} EU^{\otimes k}\rho^{\otimes k} ) \geq 1/2 + \Theta(1),\\
+       &amp;\Leftrightarrow  \forall U \in U(G),\text{tr}(\bar E\rho^{\otimes k} ) \geq 1/2 + \Theta(1)
+\end{align}</span> Similarly, we can prove that <span class="math inline">d_{\text{tr}}(\rho, \mathcal{P})  \geq \varepsilon_B \Rightarrow \text{tr}(\bar E \rho^{\otimes k}) \leq 1/2 - \Theta(1).</span> The same procedure is applied for <span class="math inline">\bar{E} := |S_k|^{-1}\sum_{\pi\in S_k} \text{SWAP}_\pi E\cdot\text{SWAP}_\pi</span>. Thus, we prove that the symmetric strategy <span class="math inline">\{\bar{E}, \mathbb{I } - \bar{E}\}</span> will have at least the same testing efficiency.&nbsp;◻</p>
+</div>
+</div>
+</div>
+<p>Then we discuss the symmetry for the estimation problem.</p>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Definition
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>A quantitative property of states is a map <span class="math inline">f: \rho \to \mathbb{R}</span> with <span class="math inline">\rho \in \mathcal{S}(\mathcal{H})</span> . Given a POVM <span class="math inline">\{M_m\}_{m \in R}</span> on <span class="math inline">k</span>-replica space, an <span class="math inline">k</span>-replica estimator of <span class="math inline">f</span> is an observable <span class="math inline">O \in \text{End}(\mathcal{H}^{\otimes k})</span> such that <span class="math inline">\text{tr}(O \rho^{\otimes k}) = f(\rho)</span>. An estimator <span class="math inline">O</span> is efficient <span class="math inline">k</span>-replica strategy iff <span class="math inline">\text{Var}_{\rho^{\otimes k}}(O)\leq \text{Var}_{\rho^{\otimes k}}(O')</span> for all <span class="math inline">O \in \text{End}(\mathcal{H}^{\otimes k})</span>.</p>
+</div>
+</div>
+<p>We say a quantitative property <span class="math inline">f</span> is invariant under unitary operation <span class="math inline">U(G)</span> iff <span class="math inline">f(U\cdot U^\dagger) = f(\cdot), \forall U \in U(G)</span>. The we gives the symmetric strategy for estimate problem.</p>
+<div class="callout callout-style-default callout-important no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Lemma
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><span id="lemma:symmetric_O" data-label="lemma:symmetric_O"></span> If <span class="math inline">O</span> is a <span class="math inline">k</span>-replica estimator for property <span class="math inline">f</span>. Then the symmetrized estimators <span class="math display">\begin{align}
+        \Phi(O):=  |U(G)|^{-1}\sum_{V \in U(G)} V^{\dagger,\otimes k}OV^{\otimes k},\Phi_{k}(O):= |S_k|^{-1}\sum_{\pi\in S_k} \mathbb{P}_\pi^{d,\dagger} \cdot O\cdot \mathbb{P}_\pi^{d},
+\end{align}</span> always satisfied <span class="math inline">\text{Var}_{\rho^{\otimes k}}(\Phi(O))\leq \text{Var}_{\rho^{\otimes k}}(O),\text{Var}_{\rho^{\otimes k}}(\Phi_k(O))\leq \text{Var}_{\rho^{\otimes k}}(O)</span>.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-6-contents" aria-controls="callout-6" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Proof (Click to expand)
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-6" class="callout-6-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><em>Proof.</em> We will show a more general statement for arbitrary channel that is unital (<span class="math inline">\Phi(\mathbb{I}) = \mathbb{I}</span>), positive (<span class="math inline">\forall \rho \succeq 0, \Phi(\rho) \succeq 0</span>), and satisfied <span class="math inline">\forall O \in \text{Herm}(\mathcal{H}), \text{tr}(\rho \Phi(O)) = \text{tr}(\rho O)</span>. By definition, <span class="math inline">\text{Var}_{\rho}(\Phi(O)) = \text{tr}(\rho \Phi(O)^2) - \text{tr}^2(\rho \Phi(O))  = [\text{tr}(\rho \Phi(O)^2) - \text{tr}(\rho O^2)]+ \text{Var}_{\rho}(O)</span>. According to Theorem, <span class="math inline">\Phi(O^2)-\Phi(O)^2\succeq 0</span>, which shows that <span class="math inline">\text{tr}(\rho \Phi(O)^2)&lt;\text{tr}(\rho \Phi(O^2)) = \text{tr}(\rho O^2)</span>. This directly gives the result <span class="math inline">\text{Var}_{\rho}(\Phi(O)) \leq \text{Var}_{\rho}(O)</span>.&nbsp;◻</p>
+</div>
+</div>
+</div>
+<p>Thanks to the Lemma and Lemma , if we find the lower bound of the sample complexity of all the symmetric POVM and operators, any strategy’s sample complexity is lower bounded by this value.</p>
+<section id="the-unitary-case-ug-u2n" class="level2" data-number="1.1">
+<h2 data-number="1.1" class="anchored" data-anchor-id="the-unitary-case-ug-u2n"><span class="header-section-number">1.1</span> The unitary case <span class="math inline">U(G) = U(2^n)</span></h2>
+<p>The simplest case are properties that is invariant under a unitary transformation. The lemma is useful because any spectrum testing strategy <span class="math inline">\{M,\mathbb{I} - M\}</span> now can be restated as weak Schur sampling followed by classical post-processing&nbsp;<span class="citation" data-cites="montanaro2013survey">&nbsp;[<a href="#ref-montanaro2013survey" role="doc-biblioref">1</a>]</span>, as stated by the theorem below.</p>
+<div class="callout callout-style-default callout-important no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Lemma
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><span id="lemma:symmtric_M_unitary" data-label="lemma:symmtric_M_unitary"></span> Given a testing strategy <span class="math inline">\{M, \mathbb{I } - M\}</span> for unitary invariant property <span class="math inline">\mathcal{P}</span> such that: <span class="math display">\begin{align}
+        \tr(M \rho^{\otimes k}) &amp;\geq 1 - \delta,\forall \rho \in \mathcal{P};\\
+         \tr(M \rho^{\otimes k}) &amp;\leq 1 - f(\varepsilon),\forall \rho ~\varepsilon \text{-far from~} \mathcal{P}.
+\end{align}</span> Another strategy <span class="math inline">\bar{M}</span> such that <span class="math inline">[\bar M,U^{\otimes k}] =0</span> and <span class="math inline">[\bar M,\text{SWAP}_\pi]=0</span> can be constructed with non-decreasing efficiency.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-8-contents" aria-controls="callout-8" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Proof (Click to expand)
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-8" class="callout-8-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><em>Proof.</em> <span class="math inline">M_s =|S_k|^{-1} \sum_{\pi \in S^k}\mathbb{P}_{\pi}^{2^n}\cdot  M \cdot\mathbb{P}_{\pi}^{2^n}</span> have unchanged efficiency because <span class="math inline">\mathbb{P}_{\pi}^{2^n}\cdot  \rho^{\otimes k} \cdot\mathbb{P}_{\pi}^{2^n} = \rho^{\otimes k}</span>. Combined with lemma proves the result.&nbsp;◻</p>
+</div>
+</div>
+</div>
+<p>This construction simplified the analysis because we can reduce arbitrary strategy to a canonical one-<em>weak Shur sampling</em>. To see this, we first cite the lemma in&nbsp;<span class="citation" data-cites="childs2007weak">&nbsp;[<a href="#ref-childs2007weak" role="doc-biblioref">2</a>]</span>, according to the famous Schur-Weyl duality.</p>
+<div class="callout callout-style-default callout-important no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Lemma
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><span id="lemma:SW_dual" data-label="lemma:SW_dual"></span> Given the symmetry group <span class="math inline">S_k</span> , use <span class="math inline">\kappa \vdash k</span> labels the conjugate classes <span class="math inline">K(\kappa)</span> and <span class="math inline">\lambda \vdash k</span> label the irreducible representation with the character function <span class="math inline">\chi_{\lambda}(\cdot)</span> and dimension <span class="math inline">\text{dim}~\lambda</span>. Define the projective measurements <span class="math inline">P_\lambda</span> and the conjugate-class observables <span class="math inline">O_{\kappa}</span> as <span class="math display">\begin{align}
+         P_{\lambda} := (\text{dim}\lambda)({k!})^{-1} \sum_{\pi \in S_k} \chi_{\lambda}(\pi) \mathbb{P}_\pi^d,\quad O_{\kappa} := |K(\kappa)|^{-1} \sum_{\pi \in K(\kappa)}  \mathbb{P}_\pi^d.
+\end{align}</span> If <span class="math inline">\forall U \in \mathbb{C}^{k}</span> and <span class="math inline">\forall \pi \in S_k</span>, the operator <span class="math inline">M</span> on the space <span class="math inline">(\mathbb{C}^d)^{\otimes k}</span> satisfies <span class="math inline">[M,U^{\otimes k}] =0</span> and <span class="math inline">[M,\mathbb{P}_\pi^d]=0</span>, then <span class="math inline">M</span> can be decomposed as <span class="math display">\begin{align}
+         M &amp;= \sum_{\lambda \vdash k} \alpha_{\lambda} P_\lambda,\quad M = \sum_{\kappa \vdash k} \beta_{\kappa} O_\kappa, \label{eq:M_decomp} \\
+&amp;\text{where~}O_{\kappa} = \sum_{\lambda}{(\text{dim}\lambda)^{-1}}\chi_{\lambda}(\kappa) P_{\lambda}. \label{eq:relation_PM}
+\end{align}</span></p>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-10-contents" aria-controls="callout-10" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Proof (Click to expand)
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-10" class="callout-10-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><em>Proof.</em> The proof of this theorem is separated into three steps. First, by Schur-Weyl duality, we know that <span class="math inline">[M,U^{\otimes k}]=0</span> iff <span class="math inline">M</span> is a linear superposition of SWAP gates: <span class="math display">\begin{align}
+\label{eq:M_decomp_mid}
+        M &amp;= \sum_{g \in S_k} f(g) \cdot \text{SWAP}_g.
+\end{align}</span></p>
+<p>Then we show that linear combination of SWAP gates commute with all the SWAP gates iff the superposition coefficient is a class function. According to Eq.~(eq:M_decomp_mid), <span class="math inline">M</span> is the image of group algebra <span class="math inline">m = \sum_{g \in S_k} f(g) g</span> under representation <span class="math inline">\rho(g) = \text{SWAP}_g</span>. Then <span class="math inline">m</span> must commute with arbitray element in <span class="math inline">S_k</span>. <span class="math inline">\forall~ h \in S_k</span>, notice that: <span class="math display">\begin{align}
+        hmh^{-1} &amp;= \sum_{g \in S_k} f(g) \cdot{hgh^{-1}} =\sum_{t \in S_k} f(h^{-1} t h) \cdot{t} =\sum_{g \in S_k} f(g) \cdot g = m
+\end{align}</span> This then imply <span class="math inline">f(g) = f(h^{-1} t h)</span> for all <span class="math inline">h \in S_k</span> and <span class="math inline">f</span> is a class function. Last, given that character functions forms a orthonormal basis for class function, we obtain <span class="math inline">f(g) = \sum_{\lambda}c_{\lambda} \chi_{\lambda}(g)</span>. Plug into Eq.~(eq:M_decomp_mid) gives: <span class="math display">\begin{align}
+             M &amp;=  \sum_{\lambda}c_{\lambda}  \sum_{g \in S_k}\chi_{\lambda}(g)\cdot \text{SWAP}_g =\sum_{\lambda} \alpha_{\lambda} \frac{\text{dim}(V_\lambda)}{k!} \sum_{\pi \in S_k} \chi_{\lambda}(\pi) \text{SWAP}_\pi = \sum_{\lambda} \alpha_{\lambda} P_\lambda
+\end{align}</span> This is indeed a projector based on Lemma proved before. To prove the conclusion (ii), we first noted that <span class="math display">\begin{align}
+     \sum_{\lambda}\frac{1}{\text{dim~}\lambda}\chi_{\lambda}(\kappa) P_{\lambda} &amp;=  \sum_{\pi \in S_k} ({k!})^{-1}\sum_{\lambda}\chi_{\lambda}(\kappa)  \chi_{\lambda}(\pi) \mathbb{P}^d_\pi\\
+     &amp;=|K(\kappa)|^{-1}\sum_{\pi \in K(\kappa)}  \mathbb{P}^d_\pi = O_{\kappa}
+\end{align}</span> Here in the second line we use the second orthogonal identity <span class="math inline">|G|^{-1}\sum_{p}\chi_{p}(\kappa_j)\chi_{p}(\kappa_k) = |K(\kappa_k)|^{-1}\delta_{jk}</span>. Then plug in Eq.~(eq:M_decomp) we get <span class="math display">\begin{align}
+    \sum_{\kappa \vdash k} \beta_{\kappa} O_\kappa =\sum_{\lambda\vdash k}\frac{1}{\text{dim}~\lambda}\left[ \sum_{\kappa \vdash k} \beta_{\kappa} \chi_{\lambda}(\kappa)\right] P_{\lambda}= \sum_{\lambda \vdash k} \alpha_{\lambda} P_\lambda.
+\end{align}</span> This implys the transformation <span class="math inline">(\text{dim}\lambda)\cdot \alpha_{\lambda} =  \sum_{\kappa \vdash k} \beta_{\kappa} \chi_{\lambda}(\kappa)</span>.&nbsp;◻</p>
+</div>
+</div>
+</div>
+</section>
+<section id="examples." class="level2" data-number="1.2">
+<h2 data-number="1.2" class="anchored" data-anchor-id="examples."><span class="header-section-number">1.2</span> Examples.</h2>
+<p>When <span class="math inline">k = 2</span>, the group <span class="math inline">S_2</span> only has two conjugate class <span class="math inline">(2,0)</span> and <span class="math inline">(1,1)</span>. The corresponding projectors are <span class="math inline">P_{(2,0)} = 2^{-1}{(\mathbb{I} + \text{SWAP}_{(1,2)})},P_{(1,1)} = 2^{-1}{(\mathbb{I} - \text{SWAP}_{(1,2)})}</span>. This is just the SWAP test of two identical states, which is widely used for purity test. For larger <span class="math inline">t</span>, the computation of those exact projector is proved to be #P-hard&nbsp;<span class="citation" data-cites="hepler1996complexity">&nbsp;[<a href="#ref-hepler1996complexity" role="doc-biblioref">3</a>]</span>. Fortunately, the realization of projective measurement <span class="math inline">\{P_\lambda\}</span> can be implemented in time <span class="math inline">\text{Poly}(k,\ln d)</span> with generalized phase estimation circuit&nbsp;<span class="citation" data-cites="bacon2006efficient">&nbsp;[<a href="#ref-bacon2006efficient" role="doc-biblioref">4</a>]</span>, which is efficient for <span class="math inline">n</span>-qubits property testing with <span class="math inline">d = 2^n</span>. This is called the <em>weak Schur sampling</em> (<strong>WSS</strong>). Now we characterize the result of <strong>WSS</strong> by polynomials of density matrix’s spectrum.</p>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Definition
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><span id="def:poly" data-label="def:poly"></span> Let <span class="math inline">\mu,\lambda\vdash k</span> be a partition of the replica number <span class="math inline">k</span>. Let <span class="math inline">\mathcal{T}</span> be the set of all semi-standard Young tableaus with shape <span class="math inline">\lambda</span> and alphabet <span class="math inline">\{1,\cdots,d\}</span>. Let <span class="math inline">\#(T,i)</span> be the number of times that the character <span class="math inline">i</span> occurs in the semi-standard Young tableau <span class="math inline">T</span>. Two rank-<span class="math inline">k</span> symmetric polynomials of <span class="math inline">d</span> variables <span class="math inline">\mathbf{x}=(x_1,\cdots,x_d)</span> can be defined below.</p>
+<ul>
+<li><p><em>Schur polynomial</em> (<strong>SP</strong>) is a rank-<span class="math inline">k</span> symmetric polynomial that <span class="math inline">s_{\lambda}(\mathbf x):= \sum_{T}\prod_{i=1}^d x_i^{\#(T,i)}</span></p></li>
+<li><p><em>Power sum polynomial</em> (<strong>PSP</strong>) is a rank-<span class="math inline">k</span> symmetric polynomial that <span class="math inline">M_{\mu}(\mathbf{x}):=\prod_{i=1}^{l(\mu)} \sum_{j=1}^d x_j^{\mu_i}</span></p></li>
+</ul>
+</div>
+</div>
+</section>
+<section id="examples.-1" class="level2" data-number="1.3">
+<h2 data-number="1.3" class="anchored" data-anchor-id="examples.-1"><span class="header-section-number">1.3</span> Examples.</h2>
+<p>If we take <span class="math inline">\lambda = (k,0,\cdots)</span>, we get the <span class="math inline">\sum_{j = 1}^d x_j^k</span>. <strong>SP</strong> and <strong>PSP</strong> can decompose each other, as shown in Lemma below.</p>
+<div class="callout callout-style-default callout-important no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Lemma
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><span id="lemma:sym_poly_decomp" data-label="lemma:sym_poly_decomp"></span> Any rank-<span class="math inline">k</span> power sum polynomial can be decomposed with the rank-<span class="math inline">k</span> symmetric Schur polynomial through <span class="math inline">M_{\mu}(\mathbf{x}) = \sum_{\lambda \vdash k}\chi_{\lambda}(\mu)s_{\lambda}(\mathbf{x})</span>.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-13-contents" aria-controls="callout-13" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Proof (Click to expand)
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-13" class="callout-13-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><em>Proof.</em>&nbsp;◻</p>
+</div>
+</div>
+</div>
+<p>Refer to <span class="citation" data-cites="o2015quantum">&nbsp;[<a href="#ref-o2015quantum" role="doc-biblioref">5</a>]</span>, the distribution of <span class="math inline">\text{tr}(P_{\lambda} \rho^{\otimes k})</span> only relates to the spectrum <span class="math inline">\eta</span> of <span class="math inline">\rho</span>, as proved in Lemma below. Thus, we use <span class="math inline">\text{SW}_{\rho}^k(\lambda)</span> to denote the weak Schur sampling probability <span class="math inline">\text{tr}(P_\lambda \rho^{\otimes k})</span> where <span class="math inline">\lambda</span> is the eigenvalue of the density matrix <span class="math inline">\rho</span>.</p>
+<div class="callout callout-style-default callout-important no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Lemma
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><span id="lemma:WSS_res" data-label="lemma:WSS_res"></span> Defined <span class="math inline">\text{dim}(\lambda)</span> as the number of standard Young tableaus of shape <span class="math inline">\lambda \vdash k</span> and alphabet <span class="math inline">[k]</span>. Then <span class="math inline">\text{SW}_{\rho}^k(\lambda)= \text{dim}(\lambda) \cdot s_\lambda (\eta_1,\cdots,\eta_d)</span> with <span class="math inline">\eta</span> the spectrum of <span class="math inline">\rho</span>. Specifically, we have <span class="math inline">\text{SW}_{d^{-1}\mathbb{I}}^k(\lambda) = {(\text{dim} (\lambda))^2}{(k!)^{-1}} {d^{\uparrow \lambda}}({d^k})^{-1}</span>, where denots <span class="math inline">d^{\uparrow \lambda}: = \prod_{(i,j) \in [\lambda]} (d + j - i)</span> with <span class="math inline">i,j</span> labeling the position of all the lattices in Young tableaus of shape <span class="math inline">\lambda \vdash n</span>,</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-15-contents" aria-controls="callout-15" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Proof (Click to expand)
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-15" class="callout-15-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><em>Proof.</em> <span class="math display">\begin{align}
+\label{eq:Schur_prob}
+        \text{tr}(P_\lambda \rho^{\otimes k}) = (\text{dim}\lambda)({k!})^{-1}\sum_{\pi \in S_k} \chi_{\lambda}(\pi) \text{tr}( \text{SWAP}_\pi \rho^{\otimes k}).
+\end{align}</span> If <span class="math inline">\pi</span> has <span class="math inline">l</span> cycles with cycle length <span class="math inline">\kappa_1\cdots\kappa_l</span> and <span class="math inline">\rho</span> has eigenvalues <span class="math inline">\eta_1,\cdots,\eta_{d}</span>, we noted that <span class="math display">\begin{align}
+        \text{tr}( \text{SWAP}_\pi \rho^{\otimes k}) = \text{tr}(\rho^{\kappa_1})\times \cdots\times\text{tr}(\rho^{\kappa_l}) = M_{\kappa}(\eta).
+\end{align}</span> Plug into Eq.~(eq:Schur_prob) gives <span class="math display">\begin{align}
+        \text{tr}(P_\lambda \rho^{\otimes k}) &amp;= (\text{dim}\lambda)({k!})^{-1}\sum_{\pi \in S_k} \chi_{\lambda}(\pi) M_{\kappa}(\eta)\\
+        &amp;=(\text{dim}\lambda)({k!})^{-1}\sum_{\pi \in S_k} \chi_{\lambda}(\pi) \sum_{\omega \vdash k}\chi_{\omega}(\pi)s_{\omega}(\eta)\\
+        &amp;=(\text{dim}\lambda) \cdot s_{\lambda}(\eta).
+\end{align}</span> Here in the second equality, we use Lemma. In the third equality, we use the orthorgonal equation of group characters <span class="math inline">|G|^{-1} \sum_{g \in G} \chi_{p}^*(g)\chi_{q}(g) = \delta_{pq}</span>.&nbsp;◻</p>
+</div>
+</div>
+</div>
+</section>
+<section id="the-clifford-case-ug-textcliffordn" class="level2" data-number="1.4">
+<h2 data-number="1.4" class="anchored" data-anchor-id="the-clifford-case-ug-textcliffordn"><span class="header-section-number">1.4</span> The Clifford case <span class="math inline">U(G) = \text{Clifford}(n)</span></h2>
+<hr>
+<p><a href="../../../theory/Topics/Lowerbounds/haar_ensembles.html">← Previous: Haar-Assembled Ensembles</a> | <a href="../../../theory/Topics/Lowerbounds/index.html">Back to Index</a></p>
+
+
+<script type="ojs-module-contents">
+eyJjb250ZW50cyI6W119
+</script>
+<div id="exercise-loading-indicator" class="exercise-loading-indicator d-none d-flex align-items-center gap-2">
+<div id="exercise-loading-status" class="d-flex gap-2">
+
+</div>
+<div class="spinner-grow spinner-grow-sm">
+
+</div>
+</div>
+<script type="vfs-file">
+W10=
+</script>
+
+</section>
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body" data-entry-spacing="0" role="list">
+<div id="ref-montanaro2013survey" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[1] </div><div class="csl-right-inline">A. Montanaro and R. de Wolf, <a href="https://arxiv.org/abs/1310.2035">A survey of quantum property testing</a>, (2018).</div>
+</div>
+<div id="ref-childs2007weak" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[2] </div><div class="csl-right-inline">A. M. Childs, A. W. Harrow, and P. Wocjan, <em>Weak Fourier-Schur Sampling, the Hidden Subgroup Problem, and the Quantum Collision Problem</em>, in <em>STACS 2007: 24th Annual Symposium on Theoretical Aspects of Computer Science, Aachen, Germany, February 22-24, 2007. Proceedings 24</em> (Springer, 2007), pp. 598–609.</div>
+</div>
+<div id="ref-hepler1996complexity" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[3] </div><div class="csl-right-inline">C. T. Hepler, On the complexity of computing characters of finite groups., (1996).</div>
+</div>
+<div id="ref-bacon2006efficient" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[4] </div><div class="csl-right-inline">D. Bacon, I. L. Chuang, and A. W. Harrow, Efficient quantum circuits for schur and clebsch-gordan transforms, Physical Review Letters <strong>97</strong>, 170502 (2006).</div>
+</div>
+<div id="ref-o2015quantum" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[5] </div><div class="csl-right-inline">R. O’Donnell and J. Wright, <em>Quantum Spectrum Testing</em>, in <em>Proceedings of the Forty-Seventh Annual ACM Symposium on Theory of Computing</em> (2015), pp. 529–538.</div>
+</div>
+</div></section></div></main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

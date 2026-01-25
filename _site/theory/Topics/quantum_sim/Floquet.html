@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.26">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2026-01-23">
+
+<title>Floquet Engineering: Theory and Applications – Chance’s Quantum Lab</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<script src="../../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap-a8976c3e89df70b272bdfba3d2fda974.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="../../../site_libs/quarto-contrib/live-runtime/live-runtime.js" type="module"></script>
+<link href="../../../site_libs/quarto-contrib/live-runtime/live-runtime.css" rel="stylesheet">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script>window.backupDefine = window.define; window.define = undefined;</script><script src="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.js"></script>
+  <script>document.addEventListener("DOMContentLoaded", function () {
+ var mathElements = document.getElementsByClassName("math");
+ var macros = [];
+ for (var i = 0; i < mathElements.length; i++) {
+  var texText = mathElements[i].firstChild;
+  if (mathElements[i].tagName == "SPAN") {
+   katex.render(texText.data, mathElements[i], {
+    displayMode: mathElements[i].classList.contains('display'),
+    throwOnError: false,
+    macros: macros,
+    fleqn: false
+   });
+}}});
+  </script>
+  <script>window.define = window.backupDefine; window.backupDefine = undefined;</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.css">
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../../styles.css">
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Chance’s Quantum Lab</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../index.html"> 
+<span class="menu-text">Home Page</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../theory/index.html"> 
+<span class="menu-text">Theory</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../Experiments/index.html"> 
+<span class="menu-text">Experiment Notes</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../workspace/workspace.html"> 
+<span class="menu-text">Workspace</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/yourusername"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/yourusername"> <i class="bi bi-twitter" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a></li>
+  <li><a href="#floquet-theory-foundations" id="toc-floquet-theory-foundations" class="nav-link" data-scroll-target="#floquet-theory-foundations">Floquet Theory Foundations</a>
+  <ul class="collapse">
+  <li><a href="#periodic-hamiltonians" id="toc-periodic-hamiltonians" class="nav-link" data-scroll-target="#periodic-hamiltonians">Periodic Hamiltonians</a></li>
+  <li><a href="#floquets-theorem" id="toc-floquets-theorem" class="nav-link" data-scroll-target="#floquets-theorem">Floquet’s Theorem</a></li>
+  </ul></li>
+  <li><a href="#magnus-expansion" id="toc-magnus-expansion" class="nav-link" data-scroll-target="#magnus-expansion">Magnus Expansion</a></li>
+  <li><a href="#engineering-the-heisenberg-hamiltonian" id="toc-engineering-the-heisenberg-hamiltonian" class="nav-link" data-scroll-target="#engineering-the-heisenberg-hamiltonian">Engineering the Heisenberg Hamiltonian</a>
+  <ul class="collapse">
+  <li><a href="#the-native-hamiltonian" id="toc-the-native-hamiltonian" class="nav-link" data-scroll-target="#the-native-hamiltonian">The Native Hamiltonian</a></li>
+  <li><a href="#pulse-sequence-and-toggling-frame" id="toc-pulse-sequence-and-toggling-frame" class="nav-link" data-scroll-target="#pulse-sequence-and-toggling-frame">Pulse Sequence and Toggling Frame</a></li>
+  <li><a href="#transformation-under-pulses" id="toc-transformation-under-pulses" class="nav-link" data-scroll-target="#transformation-under-pulses">Transformation Under Pulses</a></li>
+  <li><a href="#the-three-interval-sequence" id="toc-the-three-interval-sequence" class="nav-link" data-scroll-target="#the-three-interval-sequence">The Three-Interval Sequence</a></li>
+  <li><a href="#emergent-heisenberg-symmetry" id="toc-emergent-heisenberg-symmetry" class="nav-link" data-scroll-target="#emergent-heisenberg-symmetry">Emergent Heisenberg Symmetry</a></li>
+  </ul></li>
+  <li><a href="#connection-to-nmr-and-wahuha-sequence" id="toc-connection-to-nmr-and-wahuha-sequence" class="nav-link" data-scroll-target="#connection-to-nmr-and-wahuha-sequence">Connection to NMR and WAHUHA Sequence</a></li>
+  <li><a href="#modern-applications" id="toc-modern-applications" class="nav-link" data-scroll-target="#modern-applications">Modern Applications</a></li>
+  <li><a href="#further-reading" id="toc-further-reading" class="nav-link" data-scroll-target="#further-reading">Further Reading</a></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Floquet Engineering: Theory and Applications</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">January 23, 2026</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<p>Floquet engineering is a powerful technique for controlling quantum systems using time-periodic driving fields. By carefully designing the driving protocol, one can engineer effective Hamiltonians with desired properties that may not be achievable with static fields alone. This document provides a rigorous treatment of Floquet theory and demonstrates its application to engineering the isotropic Heisenberg Hamiltonian from a native Ising interaction.</p>
+</section>
+<section id="floquet-theory-foundations" class="level2">
+<h2 class="anchored" data-anchor-id="floquet-theory-foundations">Floquet Theory Foundations</h2>
+<section id="periodic-hamiltonians" class="level3">
+<h3 class="anchored" data-anchor-id="periodic-hamiltonians">Periodic Hamiltonians</h3>
+<div class="callout callout-style-simple callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Definition: Periodic Hamiltonian
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>A Hamiltonian <span class="math inline">H(t)</span> is said to be <em>periodic</em> with period <span class="math inline">T</span> if <span class="math display">
+H(t) = H(t + T)
+</span> for all times <span class="math inline">t</span>. The driving frequency is defined as <span class="math inline">\omega = 2\pi/T</span>.</p>
+</div>
+</div>
+<p>The periodicity of the Hamiltonian is the temporal analog of spatial periodicity in crystalline solids, which leads to Bloch’s theorem. Similarly, temporal periodicity leads to Floquet’s theorem.</p>
+</section>
+<section id="floquets-theorem" class="level3">
+<h3 class="anchored" data-anchor-id="floquets-theorem">Floquet’s Theorem</h3>
+<div class="callout callout-style-simple callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Theorem: Floquet’s Theorem
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>For a quantum system governed by a time-periodic Hamiltonian <span class="math inline">H(t) = H(t+T)</span>, the time-evolution operator <span class="math inline">U(t,0)</span> can be factored as <span class="citation" data-cites="Eckardt2017">&nbsp;[<a href="#ref-Eckardt2017" role="doc-biblioref">1</a>]</span>: <span class="math display">
+U(t, 0) = P(t) \, e^{-i H_F t / \hbar}
+</span> where:</p>
+<ul>
+<li><span class="math inline">P(t)</span> is a <strong>periodic micromotion operator</strong> satisfying <span class="math inline">P(t) = P(t+T)</span> and <span class="math inline">P(0) = P(T) = \mathbb{I}</span></li>
+<li><span class="math inline">H_F</span> is a <strong>static Floquet Hamiltonian</strong> (time-independent)</li>
+</ul>
+</div>
+</div>
+<p>The Floquet Hamiltonian <span class="math inline">H_F</span> determines the long-time (stroboscopic) dynamics of the system, while the micromotion operator <span class="math inline">P(t)</span> describes the intra-period oscillations.</p>
+<div class="callout callout-style-simple callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Definition: Effective Hamiltonian
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>In the <strong>high-frequency limit</strong> where the driving frequency <span class="math inline">\omega = 2\pi/T</span> is much larger than the characteristic energy scales of the system, the stroboscopic dynamics at times <span class="math inline">t = nT</span> (integer multiples of the period) are governed by an effective Hamiltonian: <span class="math display">
+H_{\text{eff}} \approx H_F
+</span> This approximation becomes exact in the limit <span class="math inline">\omega \to \infty</span>.</p>
+</div>
+</div>
+</section>
+</section>
+<section id="magnus-expansion" class="level2">
+<h2 class="anchored" data-anchor-id="magnus-expansion">Magnus Expansion</h2>
+<p>The Magnus expansion provides a systematic method to compute the Floquet Hamiltonian as a series expansion <span class="citation" data-cites="Magnus1954 Blanes2009">&nbsp;[<a href="#ref-Magnus1954" role="doc-biblioref">2</a>,<a href="#ref-Blanes2009" role="doc-biblioref">3</a>]</span>.</p>
+<div class="callout callout-style-simple callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Theorem: Magnus Expansion
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The effective Floquet Hamiltonian can be expressed as an infinite series: <span class="math display">
+H_F = \bar{H}^{(0)} + \bar{H}^{(1)} + \bar{H}^{(2)} + \cdots
+</span> where each term <span class="math inline">\bar{H}^{(n)}</span> scales as <span class="math inline">(\omega)^{-n}</span>. The series converges when the driving frequency is sufficiently high relative to the system’s energy scales <span class="citation" data-cites="Blanes2009">&nbsp;[<a href="#ref-Blanes2009" role="doc-biblioref">3</a>]</span>.</p>
+</div>
+</div>
+<p>The first few terms are:</p>
+<p><strong>Zeroth-order (Average Hamiltonian):</strong> <span class="math display">
+\bar{H}^{(0)} = \frac{1}{T} \int_0^T H(t) \, dt
+</span></p>
+<p><strong>First-order correction:</strong> <span class="math display">
+\bar{H}^{(1)} = \frac{1}{2i\hbar T} \int_0^T dt_1 \int_0^{t_1} dt_2 \, [H(t_1), H(t_2)]
+</span></p>
+<div class="callout callout-style-simple callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Corollary: High-Frequency Approximation
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>In the high-frequency limit (<span class="math inline">\omega \gg J/\hbar</span> where <span class="math inline">J</span> is the characteristic interaction strength), the effective Hamiltonian is well-approximated by the time-averaged Hamiltonian: <span class="math display">
+H_{\text{eff}} \approx \bar{H}^{(0)} = \frac{1}{T} \int_0^T H(t) \, dt
+</span> This is the foundation of <strong>Average Hamiltonian Theory</strong> (AHT), widely used in NMR spectroscopy <span class="citation" data-cites="Waugh1968 Levitt2008">&nbsp;[<a href="#ref-Waugh1968" role="doc-biblioref">4</a>,<a href="#ref-Levitt2008" role="doc-biblioref">5</a>]</span>.</p>
+</div>
+</div>
+</section>
+<section id="engineering-the-heisenberg-hamiltonian" class="level2">
+<h2 class="anchored" data-anchor-id="engineering-the-heisenberg-hamiltonian">Engineering the Heisenberg Hamiltonian</h2>
+<p>We now demonstrate how Floquet engineering can transform an anisotropic Ising Hamiltonian into an isotropic Heisenberg Hamiltonian using periodic pulse sequences.</p>
+<section id="the-native-hamiltonian" class="level3">
+<h3 class="anchored" data-anchor-id="the-native-hamiltonian">The Native Hamiltonian</h3>
+<div class="callout callout-style-simple callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Definition: Native Ising Hamiltonian
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Consider a hardware platform (such as superconducting qubits or Rydberg atoms) with a native two-body Ising interaction: <span class="math display">
+H_{\text{native}} = J \sum_{\langle i,j \rangle} \sigma_i^z \sigma_j^z
+</span> where <span class="math inline">J</span> is the coupling strength and <span class="math inline">\langle i,j \rangle</span> denotes nearest-neighbor pairs.</p>
+</div>
+</div>
+<p>This Hamiltonian has a preferred axis (<span class="math inline">z</span>) and does not conserve total spin.</p>
+</section>
+<section id="pulse-sequence-and-toggling-frame" class="level3">
+<h3 class="anchored" data-anchor-id="pulse-sequence-and-toggling-frame">Pulse Sequence and Toggling Frame</h3>
+<div class="callout callout-style-simple callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Definition: Toggling Frame
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>We apply instantaneous global <span class="math inline">\pi/2</span> rotations using the operators: <span class="math display">
+R_\alpha(\theta) = e^{-i \frac{\theta}{2} \sum_k \sigma_k^\alpha}
+</span> for <span class="math inline">\alpha \in \{X, Y, Z\}</span>. The toggling frame Hamiltonian is: <span class="math display">
+\tilde{H}(t) = U_p^\dagger(t) \, H_{\text{native}} \, U_p(t)
+</span> where <span class="math inline">U_p(t)</span> represents the cumulative effect of all pulses up to time <span class="math inline">t</span>.</p>
+</div>
+</div>
+</section>
+<section id="transformation-under-pulses" class="level3">
+<h3 class="anchored" data-anchor-id="transformation-under-pulses">Transformation Under Pulses</h3>
+<div class="callout callout-style-simple callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Warning</span>Lemma: Transformation Under <span class="math inline">\pi/2</span> Pulses
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The Pauli operators transform under <span class="math inline">\pi/2</span> rotations as:</p>
+<ol type="1">
+<li>Under <span class="math inline">R_Y(\pi/2)</span>: <span class="math inline">\sigma^z \to \sigma^x</span>, <span class="math inline">\sigma^x \to -\sigma^z</span>, <span class="math inline">\sigma^y \to \sigma^y</span></li>
+<li>Under <span class="math inline">R_X(\pi/2)</span>: <span class="math inline">\sigma^z \to -\sigma^y</span>, <span class="math inline">\sigma^y \to \sigma^z</span>, <span class="math inline">\sigma^x \to \sigma^x</span></li>
+</ol>
+<p>Therefore, the two-body interaction transforms as: <span class="math display">
+R_Y^\dagger(\pi/2) \, \sigma_i^z \sigma_j^z \, R_Y(\pi/2) = \sigma_i^x \sigma_j^x
+</span> <span class="math display">
+R_X^\dagger(\pi/2) \, \sigma_i^x \sigma_j^x \, R_X(\pi/2) = \sigma_i^y \sigma_j^y
+</span></p>
+</div>
+</div>
+</section>
+<section id="the-three-interval-sequence" class="level3">
+<h3 class="anchored" data-anchor-id="the-three-interval-sequence">The Three-Interval Sequence</h3>
+<p>The pulse sequence divides the period <span class="math inline">T</span> into three equal intervals of duration <span class="math inline">\tau = T/3</span>:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 18%">
+<col style="width: 11%">
+<col style="width: 28%">
+<col style="width: 41%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Interval</th>
+<th>Time</th>
+<th>Pulse Applied</th>
+<th>Effective Hamiltonian</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td><span class="math inline">0 &lt; t &lt; \tau</span></td>
+<td>None</td>
+<td><span class="math inline">H_1 = J \sum_{\langle i,j \rangle} \sigma_i^z \sigma_j^z</span></td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td><span class="math inline">\tau &lt; t &lt; 2\tau</span></td>
+<td><span class="math inline">R_Y(\pi/2)</span></td>
+<td><span class="math inline">H_2 = J \sum_{\langle i,j \rangle} \sigma_i^x \sigma_j^x</span></td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td><span class="math inline">2\tau &lt; t &lt; 3\tau</span></td>
+<td><span class="math inline">R_X(\pi/2)</span></td>
+<td><span class="math inline">H_3 = J \sum_{\langle i,j \rangle} \sigma_i^y \sigma_j^y</span></td>
+</tr>
+</tbody>
+</table>
+<p>A final pulse at <span class="math inline">t = T</span> returns the system to the original frame to close the cycle.</p>
+</section>
+<section id="emergent-heisenberg-symmetry" class="level3">
+<h3 class="anchored" data-anchor-id="emergent-heisenberg-symmetry">Emergent Heisenberg Symmetry</h3>
+<div class="callout callout-style-simple callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Theorem: Emergent SU(2) Symmetry
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Starting from the anisotropic Ising Hamiltonian <span class="math inline">H_{\text{native}} = J \sum_{\langle i,j \rangle} \sigma_i^z \sigma_j^z</span>, the three-interval Floquet sequence produces an effective Hamiltonian with emergent SU(2) symmetry: <span class="math display">
+H_{\text{eff}} = J_{\text{eff}} \sum_{\langle i,j \rangle} \vec{\sigma}_i \cdot \vec{\sigma}_j
+</span> where <span class="math inline">J_{\text{eff}} = J/3</span>.</p>
+</div>
+</div>
+<div class="proof">
+<p><span class="proof-title"><em>Proof</em>. </span><strong>Proof.</strong> Applying Average Hamiltonian Theory in the high-frequency limit (<span class="math inline">T \ll \hbar/J</span>), the effective Hamiltonian is the time-averaged toggling-frame Hamiltonian:</p>
+<p><span class="math display">
+H_{\text{eff}} = \frac{1}{T} \int_0^T \tilde{H}(t) \, dt = \frac{1}{3}(H_1 + H_2 + H_3)
+</span></p>
+<p>Substituting the expressions for each interval:</p>
+<p><span class="math display">
+H_{\text{eff}} = \frac{1}{3} \left( J \sum_{\langle i,j \rangle} \sigma_i^z \sigma_j^z + J \sum_{\langle i,j \rangle} \sigma_i^x \sigma_j^x + J \sum_{\langle i,j \rangle} \sigma_i^y \sigma_j^y \right)
+</span></p>
+<p>Factoring out the coupling constant:</p>
+<p><span class="math display">
+H_{\text{eff}} = \frac{J}{3} \sum_{\langle i,j \rangle} \left( \sigma_i^x \sigma_j^x + \sigma_i^y \sigma_j^y + \sigma_i^z \sigma_j^z \right) = J_{\text{eff}} \sum_{\langle i,j \rangle} \vec{\sigma}_i \cdot \vec{\sigma}_j
+</span></p>
+<p>where <span class="math inline">J_{\text{eff}} = J/3</span>. <span class="math inline">\square</span></p>
+</div>
+<div class="callout callout-style-simple callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Corollary: Conservation of Total Spin
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The engineered Heisenberg Hamiltonian commutes with the total spin operator: <span class="math display">
+[H_{\text{eff}}, \vec{S}_{\text{tot}}] = 0, \quad \text{where} \quad \vec{S}_{\text{tot}} = \frac{1}{2}\sum_i \vec{\sigma}_i
+</span> This SU(2) symmetry was absent in the native Ising Hamiltonian and emerges purely from the Floquet engineering protocol.</p>
+</div>
+</div>
+</section>
+</section>
+<section id="connection-to-nmr-and-wahuha-sequence" class="level2">
+<h2 class="anchored" data-anchor-id="connection-to-nmr-and-wahuha-sequence">Connection to NMR and WAHUHA Sequence</h2>
+<p>The pulse sequence described above is closely related to the <strong>WAHUHA sequence</strong> (Waugh-Huber-Haeberlen) developed in 1968 for solid-state NMR <span class="citation" data-cites="Waugh1968">&nbsp;[<a href="#ref-Waugh1968" role="doc-biblioref">4</a>]</span>. The WAHUHA sequence was designed to average out dipole-dipole interactions in solids, enabling high-resolution NMR spectroscopy.</p>
+<p>The mathematical framework underlying this technique—Average Hamiltonian Theory—was developed extensively in the NMR community and is thoroughly covered in Levitt’s textbook <span class="citation" data-cites="Levitt2008">&nbsp;[<a href="#ref-Levitt2008" role="doc-biblioref">5</a>]</span>. The modern quantum information perspective reframes these classical NMR techniques as instances of Floquet engineering.</p>
+</section>
+<section id="modern-applications" class="level2">
+<h2 class="anchored" data-anchor-id="modern-applications">Modern Applications</h2>
+<p>Floquet engineering has found numerous applications in modern quantum science:</p>
+<ol type="1">
+<li><p><strong>Floquet Topological Insulators</strong>: Lindner et al. <span class="citation" data-cites="Lindner2011">&nbsp;[<a href="#ref-Lindner2011" role="doc-biblioref">6</a>]</span> showed that periodic driving can induce topological phases in otherwise trivial band structures.</p></li>
+<li><p><strong>Quantum Simulation</strong>: Floquet techniques enable the simulation of models with symmetries or interactions not natively available in the hardware platform <span class="citation" data-cites="Oka2019 Maskara2023">&nbsp;[<a href="#ref-Oka2019" role="doc-biblioref">7</a>,<a href="#ref-Maskara2023" role="doc-biblioref">8</a>]</span>.</p></li>
+<li><p><strong>Prethermalization</strong>: In driven many-body systems, there exists a parametrically long prethermal regime where the system behaves as if governed by the Floquet Hamiltonian before eventually heating to infinite temperature <span class="citation" data-cites="Abanin2017">&nbsp;[<a href="#ref-Abanin2017" role="doc-biblioref">9</a>]</span>.</p></li>
+<li><p><strong>Periodically Driven Optical Lattices</strong>: Cold atoms in shaken optical lattices realize a variety of exotic phases through Floquet engineering <span class="citation" data-cites="Eckardt2017">&nbsp;[<a href="#ref-Eckardt2017" role="doc-biblioref">1</a>]</span>.</p></li>
+</ol>
+</section>
+<section id="further-reading" class="level2">
+<h2 class="anchored" data-anchor-id="further-reading">Further Reading</h2>
+<p>For readers seeking to deepen their understanding of Floquet engineering, we recommend:</p>
+<ul>
+<li><strong>Review Articles</strong>: The comprehensive reviews by <span class="citation" data-cites="Oka2019">&nbsp;[<a href="#ref-Oka2019" role="doc-biblioref">7</a>]</span> and <span class="citation" data-cites="Eckardt2017">&nbsp;[<a href="#ref-Eckardt2017" role="doc-biblioref">1</a>]</span> provide excellent introductions to the field.</li>
+<li><strong>Mathematical Foundations</strong>: The Magnus expansion is rigorously treated in <span class="citation" data-cites="Blanes2009">&nbsp;[<a href="#ref-Blanes2009" role="doc-biblioref">3</a>]</span>.</li>
+<li><strong>NMR Perspective</strong>: <span class="citation" data-cites="Levitt2008">&nbsp;[<a href="#ref-Levitt2008" role="doc-biblioref">5</a>]</span> provides the essential background on Average Hamiltonian Theory from the NMR community.</li>
+<li><strong>Topological Applications</strong>: <span class="citation" data-cites="Lindner2011">&nbsp;[<a href="#ref-Lindner2011" role="doc-biblioref">6</a>]</span> is the seminal paper on Floquet topological insulators.</li>
+</ul>
+</section>
+<section id="references" class="level2">
+<h2 class="anchored" data-anchor-id="references">References</h2>
+
+
+<script type="ojs-module-contents">
+eyJjb250ZW50cyI6W119
+</script>
+<div id="exercise-loading-indicator" class="exercise-loading-indicator d-none d-flex align-items-center gap-2">
+<div id="exercise-loading-status" class="d-flex gap-2">
+
+</div>
+<div class="spinner-grow spinner-grow-sm">
+
+</div>
+</div>
+<script type="vfs-file">
+W10=
+</script>
+
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body" data-entry-spacing="0" role="list">
+<div id="ref-Eckardt2017" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[1] </div><div class="csl-right-inline">A. Eckardt, <a href="https://doi.org/10.1103/RevModPhys.89.011004">Colloquium: Atomic quantum gases in periodically driven optical lattices</a>, Reviews of Modern Physics <strong>89</strong>, 011004 (2017).</div>
+</div>
+<div id="ref-Magnus1954" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[2] </div><div class="csl-right-inline">W. Magnus, <a href="https://doi.org/10.1002/cpa.3160070404">On the exponential solution of differential equations for a linear operator</a>, Communications on Pure and Applied Mathematics <strong>7</strong>, 649 (1954).</div>
+</div>
+<div id="ref-Blanes2009" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[3] </div><div class="csl-right-inline">S. Blanes, F. Casas, J.-A. Oteo, and J. Ros, <a href="https://doi.org/10.1016/j.physrep.2008.11.001">The magnus expansion and some of its applications</a>, Physics Reports <strong>470</strong>, 151 (2009).</div>
+</div>
+<div id="ref-Waugh1968" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[4] </div><div class="csl-right-inline">J. S. Waugh, L. M. Huber, and U. Haeberlen, <a href="https://doi.org/10.1103/PhysRevLett.20.180">Approach to high-resolution nmr in solids</a>, Physical Review Letters <strong>20</strong>, 180 (1968).</div>
+</div>
+<div id="ref-Levitt2008" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[5] </div><div class="csl-right-inline">M. H. Levitt, <em>Spin Dynamics: Basics of Nuclear Magnetic Resonance</em>, 2nd ed. (John Wiley &amp; Sons, 2008).</div>
+</div>
+<div id="ref-Lindner2011" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[6] </div><div class="csl-right-inline">N. H. Lindner, G. Refael, and V. Galitski, <a href="https://doi.org/10.1038/nphys1926">Floquet topological insulator in semiconductor quantum wells</a>, Nature Physics <strong>7</strong>, 490 (2011).</div>
+</div>
+<div id="ref-Oka2019" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[7] </div><div class="csl-right-inline">T. Oka and S. Kitamura, <a href="https://doi.org/10.1146/annurev-conmatphys-031218-013423">Floquet engineering of quantum materials</a>, Annual Review of Condensed Matter Physics <strong>10</strong>, 387 (2019).</div>
+</div>
+<div id="ref-Maskara2023" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[8] </div><div class="csl-right-inline">N. Maskara, A. Deshpande, A. M. Kaufman, and M. D. Lukin, <a href="https://arxiv.org/abs/2312.02265">Programmable simulations of molecules and materials with reconfigurable quantum processors</a>, arXiv Preprint (2023).</div>
+</div>
+<div id="ref-Abanin2017" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[9] </div><div class="csl-right-inline">D. A. Abanin, W. De Roeck, W. W. Ho, and F. Huveneers, <a href="https://doi.org/10.1103/PhysRevB.95.014112">Effective hamiltonians, prethermalization, and slow energy absorption in periodically driven many-body systems</a>, Physical Review B <strong>95</strong>, 014112 (2017).</div>
+</div>
+</div></section></div></main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

@@ -1,0 +1,256 @@
+---
+title: "Le Cam's Method"
+subtitle: "Classical Information Theory Foundations"
+format:
+  html:
+    html-math-method: katex
+    number-sections: true
+    toc: true
+    toc-depth: 3
+bibliography: refs.bib
+---
+
+[← Back to Index](index.qmd)
+
+# Le Cam's Method {#sec-lecam}
+
+We first upper bound the ability to distinguish two classical
+distributions $p$ and $q$, as shown in
+the following lemma.
+
+::: {.callout-important icon="false"}
+## Lemma
+
+[]{#lemma:TV_bound label="lemma:TV_bound"} If two distributions $p,q$ on
+set $S = \{1,\cdots,n\}$ has total variance distance (**TVD**)
+$\|p - q\|_{\mathrm {TV}}:=\frac{1}{2}\sum_{i = 1}^n|p(i) - q(i)| \leq \varepsilon$,
+then there is no single sample algorithm $\mathcal{A}: S \to \{p,q\}$
+that $\varepsilon/2$ better than random guessing, in other words,
+satisfied
+$\text{Pr}_{x \sim p}[\mathcal{A}(x) = p] \geq 1/2 + \varepsilon/2$ and
+$\text{Pr}_{x \sim q}[\mathcal{A}(x) = q] \geq 1/2 + \varepsilon/2$.
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+
+*Proof.* It is sufficient to show that for an arbitrary algorithm
+$\mathcal{A}$, either
+$\text{Pr}_{x \sim p}[\mathcal{A}(x) = q] \geq (1-\varepsilon)/2$ or
+$\text{Pr}_{x \sim q}[\mathcal{A}(x) = p] \geq  (1-\varepsilon)/2.$
+Notice that $$\begin{align}
+        \text{Pr}_{x \sim p}[\mathcal{A}(x) = q] + \text{Pr}_{x \sim q}[\mathcal{A}(x) = p] & = 1 - \text{Pr}_{x \sim p}[\mathcal{A}(x) = p] +\text{Pr}_{x \sim q}[\mathcal{A}(x) = p]\\
+        &\geq 1 - \sup_{U \subseteq S} \left |\text{Pr}_{x \sim p}[U] -\text{Pr}_{x \sim q}[U]\right |\\
+        &= 1 - \|p - q\|_{\mathrm{TV}} \geq 1 - \varepsilon.
+\end{align}$$ Then either
+$\text{Pr}_{x \sim p}[\mathcal{A}(x) = q] \geq   (1-\varepsilon)/2$ or
+$\text{Pr}_{x \sim q}[\mathcal{A}(x) = p] \geq  (1-\varepsilon)/2$,
+which means that either
+$\text{Pr}_{x \sim p}[\mathcal{A}(x) = p] \leq   (1+\varepsilon)/2$ or
+$\text{Pr}_{x \sim q}[\mathcal{A}(x) = p] \leq  (1+\varepsilon)/2$. ◻
+:::
+
+A slight generalization of
+Lemma is to distinguish a unique distribution
+$p_0$ and multiple distributions $p_1,\cdots,p_l$ for
+$L =\{1,\cdots,l\}$, where $p_i$ are all distributions over set
+$S=\{1,\cdots,n\}$. We prove a generalized no-go theorem below:
+
+::: {.callout-important icon="false"}
+## Lemma
+
+[]{#lemma:mult_TV_bound label="lemma:mult_TV_bound"} If there exists a
+distribution $\mathcal{D}$ over $L$ such that
+$\delta_{\mathcal{D}}:=\|p_0 - \mathbb{E}_{r\sim \mathcal{D}}[p_{r}]\|_{\mathrm {TV}} \leq \varepsilon$,
+then there is no single-sampling algorithm that distinguishes $p_0$
+between $p_1,\cdots,p_l$ such that it is $\varepsilon/2$ better than
+random guessing.
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+
+*Proof.* We first directly prove this result using
+lemma. If it exists, we can use it as an algorithm
+that distinguishes the distribution
+$q(i):=\mathbb{E}_{r\sim \mathcal{D}}[p_{r}(i)]$ with $p_0(i)$ and it is
+$\varepsilon/2$ better than random guessing. This contradicts the fact
+that
+$\|p_0 - q\|_{\mathrm {TV}} =\|p_0 - \mathbb{E}_{r\sim \mathcal{D}}[p_{r}]\|_{\mathrm {TV}}  \leq \varepsilon$
+according to
+Lemma. ◻
+:::
+
+In
+Lemma, we can try all kinds of distribution
+$\mathcal{D}$ over $L$ and choose the hardest one
+$\delta_{\mathrm{w}} = \min_{\mathcal{D}}\delta_{\mathcal{D}}$. This
+reflects the *worst case information complexity* of this discrimination
+problem.
+
+## Problem Ensemble and Average Case Hardness {#sec-problem-ensemble}
+
+In general, this problem is much harder than two-point discrimination,
+as we are designing a unified algorithm that dealt with multiple
+two-point discrimination $(p_0,p_1),\cdots,(p_0,p_L)$ at the same time.
+One can relax this problem by ensuring that the distribution $p_i$ only
+appears following a fixed distribution $\mathcal{D}$. This reduces the
+problem to a two-point discrimination
+$(p_0,\mathbb{E}_{r \sim \mathcal{D}}p_r)$. Then the value
+$\delta_{\mathcal{D}}$ in
+Lemma is tight. We call it the *average case
+information complexity* under *problem ensemble* $\mathcal{D}$.
+Similarly, we can define multiple-to-multiple tasks that discriminate a
+set of distribution $\mathcal{A}$ from the other set of distribution
+$\mathcal{B}$, whose average case hardness is defined by
+$\|\mathbb{E}_{r \sim \mathcal{D}(A)}p_{r} -\mathbb{E}_{r \sim \mathcal{D}(B)} q_{s}\|_{\mathrm{TVD}}$
+for problem ensemble $\mathcal{D}(\mathcal A)$ and
+$\mathcal{D}(\mathcal B)$.
+
+## Replica Distinguishes Ensemble from Average {#sec-replica-ensemble}
+
+One confusing point is the discrimination of the distribution
+$p_0 = \mathbb{E}_{r\sim \mathcal{D}}[p_{r}]$ and a set of distribution
+$\{p_{r}\}$ with problem ensemble ${r \sim \mathcal{D}}$. By
+Lemma, we cannot distinguish them with
+probability greater than $1/2$ given one-sample. However, under
+k-samples, this is equivalent to the discrimination of
+$p_0(t_1)\cdots p_0(t_k)$ and a set of distribution
+$\{p_{r}(t_1)\cdots p_{r}(t_k)\}$ with problem ensemble
+${r \sim \mathcal{D}}$. We can check that
+$$
+\mathbb{E}_{r\sim \mathcal{D}} \left[p_{r}(t_1)\cdots p_{r}(t_k)\right] \neq p_0(t_1)\cdots p_0(t_k) \\
+=  \left[\mathbb{E}_{r\sim \mathcal{D}}p_{r}(t_1)\right]\cdots \left[\mathbb{E}_{r\sim \mathcal{D}}p_{r}(t_k)\right],
+$$
+thus can be estimated with probability greater than $1/2$.
+
+## Coarse Graining {#sec-coarse-graining}
+
+Intuitively, distinguishing two fine-grained distributions is never more
+difficult than distinguishing their coarse-grained versions. With
+**TVD**, we quantify this intuition as
+Lemma.
+
+::: {.callout-important icon="false"}
+## Lemma
+
+[]{#lemma:TVD_corse label="lemma:TVD_corse"} Given two distribution
+$\mathbf{p}:=\{p_1,\cdots,p_M\},\mathbf{q}:=\{q_1,\cdots,q_M\}$ and
+their coarse graining
+$\mathbf{P}:=\bigcup_{s}\{p_{1,s},\cdots,p_{M,s}\},\mathbf{Q}:=\bigcup_{s}\{q_{1,s},\cdots,q_{M,s}\}$
+such that
+$\sum_{s} p_{k,s} = p_k,\sum_{s} q_{k,s} = q_k, \forall k \in \{1,\cdots,M\}$.
+Then
+$\|\mathbf{P} - \mathbf{Q}\|_{\mathrm{tvd}} \geq \|\mathbf{p} - \mathbf{q}\|_{\mathrm{tvd}}$.
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+
+*Proof.* Since $\|\cdot\|_{\mathrm{tvd}} = 2^{-1}\|\cdot\|_{1}$, we
+conclude that
+$\|\mathbf{P} - \mathbf{Q}\|_{1} = \sum_{k,s}\|p_{k,s} - q_{k,s}\|_{1} \geq  \sum_{k}\|\sum_{s}p_{k,s} - \sum_{s}q_{k,s}\|_{1} = \|\mathbf{p} - \mathbf{q}\|_{1}$ ◻
+:::
+
+## Le Cam's Theorem
+
+The most general form of the
+lemma is Le Cam's bound. We prove this
+theorem and show that
+lemma is a special case of the Le-Cam
+theorem for completeness.
+
+::: {.callout-important icon="false"}
+## Theorem
+
+[]{#theo:Le_Cam label="theo:Le_Cam"} Given a measurable space
+$x \in \mathcal{X}$ and a family of measures
+$P \in \mathcal{P}, P: 2^\mathcal{X} \to [0,1]$. Let
+$\hat \theta:\mathcal{X} \to \mathbb{R}^p$ be an arbitrary estimator of
+the parameters of this family of distributions
+$\theta: \mathcal{P} \to \mathbb{R}^p$. Let
+$D[\cdot,\cdot]:\mathbb{R}^p \times \mathbb{R}^p \to \mathbb{R}_{\geq 0}$
+be a pseudo-metric of the parameter space that is symmetric and
+satisfies the triangular inequality $D(x,y)+D(y,z) \geq D(x,z)$. Take
+two arbitrary subsets $\mathcal{P}_1, \mathcal{P}_2 \subset \mathcal{P}$
+that satisfied
+$\inf_{\substack{P_1 \in \mathcal{P}_1,P_2 \in  \mathcal{P_2}} } D\left[\theta(P_1), \theta(P_2)\right] \geq 2\delta,$
+then the inequality is true: $$\begin{align}
+        \sup_{P \in \mathcal{P}} \left[\int_{x \in \mathcal{X}} dP(x)\cdot D\left[\hat \theta(x),\theta(P)\right]\right] \\
+        &\geq \delta\cdot \sup_{\substack{P_1 \in \text{cov~}\mathcal{P}_1\\P_2 \in \text{cov~} \mathcal{P_2}} } \left[1 - \frac{1}{2}\int_{x \in \mathcal{X}} [dP_1(x) - dP_2(x)]\right].
+\end{align}$$
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+
+*Proof.* We first noted that $$\begin{align}
+          2\sup_{P \in \mathcal{P}} \left[\int_{x \in \mathcal{X}} dP(x)\cdot D\left[\hat\theta(x),\theta(P)\right]\right] \\
+          &\geq  \int_{x \in \mathcal{X}} dP_1(x)\cdot D\left[\hat\theta(x),\theta(P_1)\right] \\
+          &\quad + \int_{x \in \mathcal{X}} dP_2(x)\cdot D\left[\hat\theta(x),\theta(P_2)\right].
+\end{align}$$ Based on the triangular inequality, we have
+$D\left[\hat\theta(x),\theta(P_1)\right]  + D\left[\hat\theta(x),\theta(P_2)\right] \geq D\left[\theta(P_1),\theta(P_2)\right]\geq 2\delta$.
+Thus, for a fixed point $x$, the tuple
+$(f_1/2\delta,f_2/2\delta), \text{where }\begin{cases}f_1(x) =D[ \hat \theta(x),\theta(P_1)], \\f_2(x) =D[ \hat \theta(x),\theta(P_2)],\end{cases}$
+is in the convex set
+$\mathcal{S} =\{(r_1,r_2)\in \mathbb{R}^2| r_1,r_2\geq 0,r_1+r_2 \geq  1\}$.
+Then $\forall P_1 \in \mathcal{P}_1,\forall P_2 \in \mathcal{P}_2$, we
+write the inequality $$\begin{align}
+          2\sup_{P \in \mathcal{P}} \left[\int_{x \in \mathcal{X}} dP(x)\cdot D\left[\hat\theta(x),\theta(P)\right]\right] \\
+          &\geq 2\delta\cdot \left[\int_{x \in \mathcal{X}} \inf_{[r_1(x),r_2(x)] \in \mathcal{S}} \left[dP_1(x)\cdot r_1(x) +  dP_2(x)\cdot r_2(x)\right]\right]\\
+          &\geq   \sup_{\substack{P_1 \in \text{cov~}\mathcal{P}_1\\P_2 \in \text{cov~} \mathcal{P_2}} } 2\delta\cdot \\
+          &\quad \left[\int_{x \in \mathcal{X}} \inf_{[r_1(x),r_2(x)] \in \mathcal{S}} \left[dP_1(x)\cdot r_1(x) +  dP_2(x)\cdot r_2(x)\right]\right].
+\end{align}$$ The RHS satisfied the identity $$\begin{align}
+         \text{RHS} &=2\delta \sup_{\substack{P_1 \in \text{cov~}\mathcal{P}_1\\P_2 \in \text{cov~} \mathcal{P_2}} } \\
+         &\quad \left[\int_{x \in \mathcal{X}} \inf_{ \substack{r_1(x),r_2(x)\geq 0,\\r_1(x)+r_2(x) =  1}} \left[dP_1(x)\cdot r_1(x) +dP_2(x)\cdot r_2(x)\right]\right]\\
+          &=2\delta \sup_{\substack{P_1 \in \text{cov~}\mathcal{P}_1\\P_2 \in \text{cov~} \mathcal{P_2}} } \\
+          &\quad \left[1 +\int_{x \in \mathcal{X}} \inf_{ r_1(x)\in [0, 1]}\left[dP_1(x)\cdot r_1(x) -  dP_2(x)\cdot  r_1(x)\right]\right]\\
+         &=2\delta \sup_{\substack{P_1 \in \text{cov~}\mathcal{P}_1\\P_2 \in \text{cov~} \mathcal{P_2}} } \\
+         &\quad \left[1- \int_{\substack{x \in \mathcal{X}\\P_2(x) \geq P_1(x)}} dP_2(x) -  dP_1(x) \right]\\
+         &=2\delta \sup_{\substack{P_1 \in \text{cov~}\mathcal{P}_1\\P_2 \in \text{cov~} \mathcal{P_2}} } \\
+         &\quad \left[1- \frac{1}{2} \int_{\substack{x \in \mathcal{X}}} |dP_2(x) -  dP_1(x)| \right].
+\end{align}$$ This completes the proof. ◻
+:::
+
+::: {.callout-important icon="false"}
+## Lemma
+
+The
+lemma is a special case of the Le-Cam
+theorem.
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+
+*Proof.* Take the special case that $\mathcal{X} = \{1,\cdots,n\}$,
+$\mathcal{P}_0 =\{p_0(x)\}, \mathcal{P}_1 =\{p_1(x),\cdots,p_l(x)\}$ and
+$\theta(p_i) :=\begin{cases}0&\text{if }i =0,\\1&\text{else}.\end{cases}$
+The estimator and metric are taken as
+$\hat \theta(\cdot): \mathcal{X}\to\{0,1\}$ and $$\begin{align}
+    D(\cdot,\cdot): \{0,1\}^{2} \to \{0,1\}, \\
+    (\theta_1,\theta_2) &\hookrightarrow \begin{cases}1&\text{if }(\theta_1,\theta_2)=(1,0),(0,1),\\ 0 &\text{else}.\end{cases}
+\end{align}$$ It is easy to see that $D(\cdot,\cdot)$ is indeed
+symmetric and satisfies the triangular inequality. This strategy
+distinguished the $\mathcal{P}_0$ and $\mathcal{P}_1$ with success
+probability $$\begin{align}
+    p_{\text{succ}}  &=\min_{i=1,\cdots,l}\left\{ \text{Pr}_{x \sim p_0}[\hat \theta(x) =0 ],\text{Pr}_{x \sim p_i}[\hat \theta(x) =1 ]\right\} \\
+    &= 1 - \max_{i = 1,\cdots,l}\left\{ \text{Pr}_{x \sim p_0}[\hat \theta(x) =1 ],\text{Pr}_{x \sim p_i}[\hat \theta(x) =0 ]\right\}\\
+    &=1 - \max_{p \in \mathcal{P}} E_{x \sim p} D[\hat \theta(x),\theta(p)].
+\end{align}$$ Based on
+Lemma, we conclude the inequality $$\begin{align}
+    \max_{p \in \mathcal{P}} E_{x \sim p} D[\hat \theta(x),\theta(p)] \geq \delta\cdot [1 - \|p_0 - \mathbb{E}_{r\sim \mathcal{D}}[p_{r}]\|_{\mathrm {TV}} ].
+\end{align}$$ Notice that
+$\inf_{\substack{P_1 \in \mathcal{P}_1,P_2 \in  \mathcal{P_2}} } D\left[\theta(P_1), \theta(P_2)\right] \geq 1$,
+we take $\delta = 1/2$, which combine to the final result
+$$\begin{align}
+    p_{\text{succ}} \leq 1 -\frac{1 - \|p_0 - \mathbb{E}_{r\sim \mathcal{D}}[p_{r}]\|_{\mathrm {TV}} }{2} = \frac{1 + \|p_0 - \mathbb{E}_{r\sim \mathcal{D}}[p_{r}]\|_{\mathrm {TV}} }{2} .
+\end{align}$$ Then if
+$\|p_0 - \mathbb{E}_{r\sim \mathcal{D}}[p_{r}]\|_{\mathrm {TV}} \leq \varepsilon$,
+we conclude that $p_{\text{succ}}\leq (1+\varepsilon)/2$ and cannot
+$\varepsilon/2$ better than random guessing. ◻
+:::
+
+---
+
+[← Back to Index](index.qmd) | [Next: POVM Restrictions →](povm_restrictions.qmd)

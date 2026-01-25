@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.26">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Le Cam’s Method – Chance's Quantum Lab</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<script src="../../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap-a8976c3e89df70b272bdfba3d2fda974.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="../../../site_libs/quarto-contrib/live-runtime/live-runtime.js" type="module"></script>
+<link href="../../../site_libs/quarto-contrib/live-runtime/live-runtime.css" rel="stylesheet">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script>window.backupDefine = window.define; window.define = undefined;</script><script src="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.js"></script>
+  <script>document.addEventListener("DOMContentLoaded", function () {
+ var mathElements = document.getElementsByClassName("math");
+ var macros = [];
+ for (var i = 0; i < mathElements.length; i++) {
+  var texText = mathElements[i].firstChild;
+  if (mathElements[i].tagName == "SPAN") {
+   katex.render(texText.data, mathElements[i], {
+    displayMode: mathElements[i].classList.contains('display'),
+    throwOnError: false,
+    macros: macros,
+    fleqn: false
+   });
+}}});
+  </script>
+  <script>window.define = window.backupDefine; window.backupDefine = undefined;</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.css">
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../../styles.css">
+</head>
+
+<body class="nav-sidebar floating nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Chance’s Quantum Lab</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../index.html"> 
+<span class="menu-text">Home Page</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../theory/index.html"> 
+<span class="menu-text">Theory</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../Experiments/index.html"> 
+<span class="menu-text">Experiment Notes</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../workspace/workspace.html"> 
+<span class="menu-text">Workspace</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/yourusername"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/yourusername"> <i class="bi bi-twitter" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../../theory/Topics/Lowerbounds/lecam_method.html">Core Concepts</a></li><li class="breadcrumb-item"><a href="../../../theory/Topics/Lowerbounds/lecam_method.html">Le Cam’s Method</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../theory/Topics/Lowerbounds/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Toolbox for Proving Lower Bounds</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Core Concepts</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../theory/Topics/Lowerbounds/lecam_method.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Le Cam’s Method</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../theory/Topics/Lowerbounds/povm_restrictions.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Restrictions on POVMs</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../theory/Topics/Lowerbounds/adaptive_strategies.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Tree Representation of Adaptive Strategies</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Hard Instance Constructions</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../theory/Topics/Lowerbounds/operator_mixed.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Operator Mixed Ensembles</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../theory/Topics/Lowerbounds/haar_ensembles.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Haar-Assembled Ensembles</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Simplification Techniques</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../theory/Topics/Lowerbounds/symmetric_strategies.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Symmetric Strategies</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#sec-lecam" id="toc-sec-lecam" class="nav-link active" data-scroll-target="#sec-lecam"><span class="header-section-number">1</span> Le Cam’s Method</a>
+  <ul class="collapse">
+  <li><a href="#sec-problem-ensemble" id="toc-sec-problem-ensemble" class="nav-link" data-scroll-target="#sec-problem-ensemble"><span class="header-section-number">1.1</span> Problem Ensemble and Average Case Hardness</a></li>
+  <li><a href="#sec-replica-ensemble" id="toc-sec-replica-ensemble" class="nav-link" data-scroll-target="#sec-replica-ensemble"><span class="header-section-number">1.2</span> Replica Distinguishes Ensemble from Average</a></li>
+  <li><a href="#sec-coarse-graining" id="toc-sec-coarse-graining" class="nav-link" data-scroll-target="#sec-coarse-graining"><span class="header-section-number">1.3</span> Coarse Graining</a></li>
+  <li><a href="#le-cams-theorem" id="toc-le-cams-theorem" class="nav-link" data-scroll-target="#le-cams-theorem"><span class="header-section-number">1.4</span> Le Cam’s Theorem</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../../theory/Topics/Lowerbounds/lecam_method.html">Core Concepts</a></li><li class="breadcrumb-item"><a href="../../../theory/Topics/Lowerbounds/lecam_method.html">Le Cam’s Method</a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title">Le Cam’s Method</h1>
+<p class="subtitle lead">Classical Information Theory Foundations</p>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p><a href="../../../theory/Topics/Lowerbounds/index.html">← Back to Index</a></p>
+<section id="sec-lecam" class="level1" data-number="1">
+<h1 data-number="1"><span class="header-section-number">1</span> Le Cam’s Method</h1>
+<p>We first upper bound the ability to distinguish two classical distributions <span class="math inline">p</span> and <span class="math inline">q</span>, as shown in the following lemma.</p>
+<div class="callout callout-style-default callout-important no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Lemma
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><span id="lemma:TV_bound" data-label="lemma:TV_bound"></span> If two distributions <span class="math inline">p,q</span> on set <span class="math inline">S = \{1,\cdots,n\}</span> has total variance distance (<strong>TVD</strong>) <span class="math inline">\|p - q\|_{\mathrm {TV}}:=\frac{1}{2}\sum_{i = 1}^n|p(i) - q(i)| \leq \varepsilon</span>, then there is no single sample algorithm <span class="math inline">\mathcal{A}: S \to \{p,q\}</span> that <span class="math inline">\varepsilon/2</span> better than random guessing, in other words, satisfied <span class="math inline">\text{Pr}_{x \sim p}[\mathcal{A}(x) = p] \geq 1/2 + \varepsilon/2</span> and <span class="math inline">\text{Pr}_{x \sim q}[\mathcal{A}(x) = q] \geq 1/2 + \varepsilon/2</span>.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Proof (Click to expand)
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><em>Proof.</em> It is sufficient to show that for an arbitrary algorithm <span class="math inline">\mathcal{A}</span>, either <span class="math inline">\text{Pr}_{x \sim p}[\mathcal{A}(x) = q] \geq (1-\varepsilon)/2</span> or <span class="math inline">\text{Pr}_{x \sim q}[\mathcal{A}(x) = p] \geq  (1-\varepsilon)/2.</span> Notice that <span class="math display">\begin{align}
+        \text{Pr}_{x \sim p}[\mathcal{A}(x) = q] + \text{Pr}_{x \sim q}[\mathcal{A}(x) = p] &amp; = 1 - \text{Pr}_{x \sim p}[\mathcal{A}(x) = p] +\text{Pr}_{x \sim q}[\mathcal{A}(x) = p]\\
+        &amp;\geq 1 - \sup_{U \subseteq S} \left |\text{Pr}_{x \sim p}[U] -\text{Pr}_{x \sim q}[U]\right |\\
+        &amp;= 1 - \|p - q\|_{\mathrm{TV}} \geq 1 - \varepsilon.
+\end{align}</span> Then either <span class="math inline">\text{Pr}_{x \sim p}[\mathcal{A}(x) = q] \geq   (1-\varepsilon)/2</span> or <span class="math inline">\text{Pr}_{x \sim q}[\mathcal{A}(x) = p] \geq  (1-\varepsilon)/2</span>, which means that either <span class="math inline">\text{Pr}_{x \sim p}[\mathcal{A}(x) = p] \leq   (1+\varepsilon)/2</span> or <span class="math inline">\text{Pr}_{x \sim q}[\mathcal{A}(x) = p] \leq  (1+\varepsilon)/2</span>. ◻</p>
+</div>
+</div>
+</div>
+<p>A slight generalization of Lemma is to distinguish a unique distribution <span class="math inline">p_0</span> and multiple distributions <span class="math inline">p_1,\cdots,p_l</span> for <span class="math inline">L =\{1,\cdots,l\}</span>, where <span class="math inline">p_i</span> are all distributions over set <span class="math inline">S=\{1,\cdots,n\}</span>. We prove a generalized no-go theorem below:</p>
+<div class="callout callout-style-default callout-important no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Lemma
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><span id="lemma:mult_TV_bound" data-label="lemma:mult_TV_bound"></span> If there exists a distribution <span class="math inline">\mathcal{D}</span> over <span class="math inline">L</span> such that <span class="math inline">\delta_{\mathcal{D}}:=\|p_0 - \mathbb{E}_{r\sim \mathcal{D}}[p_{r}]\|_{\mathrm {TV}} \leq \varepsilon</span>, then there is no single-sampling algorithm that distinguishes <span class="math inline">p_0</span> between <span class="math inline">p_1,\cdots,p_l</span> such that it is <span class="math inline">\varepsilon/2</span> better than random guessing.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Proof (Click to expand)
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-4" class="callout-4-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><em>Proof.</em> We first directly prove this result using lemma. If it exists, we can use it as an algorithm that distinguishes the distribution <span class="math inline">q(i):=\mathbb{E}_{r\sim \mathcal{D}}[p_{r}(i)]</span> with <span class="math inline">p_0(i)</span> and it is <span class="math inline">\varepsilon/2</span> better than random guessing. This contradicts the fact that <span class="math inline">\|p_0 - q\|_{\mathrm {TV}} =\|p_0 - \mathbb{E}_{r\sim \mathcal{D}}[p_{r}]\|_{\mathrm {TV}}  \leq \varepsilon</span> according to Lemma. ◻</p>
+</div>
+</div>
+</div>
+<p>In Lemma, we can try all kinds of distribution <span class="math inline">\mathcal{D}</span> over <span class="math inline">L</span> and choose the hardest one <span class="math inline">\delta_{\mathrm{w}} = \min_{\mathcal{D}}\delta_{\mathcal{D}}</span>. This reflects the <em>worst case information complexity</em> of this discrimination problem.</p>
+<section id="sec-problem-ensemble" class="level2" data-number="1.1">
+<h2 data-number="1.1" class="anchored" data-anchor-id="sec-problem-ensemble"><span class="header-section-number">1.1</span> Problem Ensemble and Average Case Hardness</h2>
+<p>In general, this problem is much harder than two-point discrimination, as we are designing a unified algorithm that dealt with multiple two-point discrimination <span class="math inline">(p_0,p_1),\cdots,(p_0,p_L)</span> at the same time. One can relax this problem by ensuring that the distribution <span class="math inline">p_i</span> only appears following a fixed distribution <span class="math inline">\mathcal{D}</span>. This reduces the problem to a two-point discrimination <span class="math inline">(p_0,\mathbb{E}_{r \sim \mathcal{D}}p_r)</span>. Then the value <span class="math inline">\delta_{\mathcal{D}}</span> in Lemma is tight. We call it the <em>average case information complexity</em> under <em>problem ensemble</em> <span class="math inline">\mathcal{D}</span>. Similarly, we can define multiple-to-multiple tasks that discriminate a set of distribution <span class="math inline">\mathcal{A}</span> from the other set of distribution <span class="math inline">\mathcal{B}</span>, whose average case hardness is defined by <span class="math inline">\|\mathbb{E}_{r \sim \mathcal{D}(A)}p_{r} -\mathbb{E}_{r \sim \mathcal{D}(B)} q_{s}\|_{\mathrm{TVD}}</span> for problem ensemble <span class="math inline">\mathcal{D}(\mathcal A)</span> and <span class="math inline">\mathcal{D}(\mathcal B)</span>.</p>
+</section>
+<section id="sec-replica-ensemble" class="level2" data-number="1.2">
+<h2 data-number="1.2" class="anchored" data-anchor-id="sec-replica-ensemble"><span class="header-section-number">1.2</span> Replica Distinguishes Ensemble from Average</h2>
+<p>One confusing point is the discrimination of the distribution <span class="math inline">p_0 = \mathbb{E}_{r\sim \mathcal{D}}[p_{r}]</span> and a set of distribution <span class="math inline">\{p_{r}\}</span> with problem ensemble <span class="math inline">{r \sim \mathcal{D}}</span>. By Lemma, we cannot distinguish them with probability greater than <span class="math inline">1/2</span> given one-sample. However, under k-samples, this is equivalent to the discrimination of <span class="math inline">p_0(t_1)\cdots p_0(t_k)</span> and a set of distribution <span class="math inline">\{p_{r}(t_1)\cdots p_{r}(t_k)\}</span> with problem ensemble <span class="math inline">{r \sim \mathcal{D}}</span>. We can check that <span class="math display">
+\mathbb{E}_{r\sim \mathcal{D}} \left[p_{r}(t_1)\cdots p_{r}(t_k)\right] \neq p_0(t_1)\cdots p_0(t_k) \\
+=  \left[\mathbb{E}_{r\sim \mathcal{D}}p_{r}(t_1)\right]\cdots \left[\mathbb{E}_{r\sim \mathcal{D}}p_{r}(t_k)\right],
+</span> thus can be estimated with probability greater than <span class="math inline">1/2</span>.</p>
+</section>
+<section id="sec-coarse-graining" class="level2" data-number="1.3">
+<h2 data-number="1.3" class="anchored" data-anchor-id="sec-coarse-graining"><span class="header-section-number">1.3</span> Coarse Graining</h2>
+<p>Intuitively, distinguishing two fine-grained distributions is never more difficult than distinguishing their coarse-grained versions. With <strong>TVD</strong>, we quantify this intuition as Lemma.</p>
+<div class="callout callout-style-default callout-important no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Lemma
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><span id="lemma:TVD_corse" data-label="lemma:TVD_corse"></span> Given two distribution <span class="math inline">\mathbf{p}:=\{p_1,\cdots,p_M\},\mathbf{q}:=\{q_1,\cdots,q_M\}</span> and their coarse graining <span class="math inline">\mathbf{P}:=\bigcup_{s}\{p_{1,s},\cdots,p_{M,s}\},\mathbf{Q}:=\bigcup_{s}\{q_{1,s},\cdots,q_{M,s}\}</span> such that <span class="math inline">\sum_{s} p_{k,s} = p_k,\sum_{s} q_{k,s} = q_k, \forall k \in \{1,\cdots,M\}</span>. Then <span class="math inline">\|\mathbf{P} - \mathbf{Q}\|_{\mathrm{tvd}} \geq \|\mathbf{p} - \mathbf{q}\|_{\mathrm{tvd}}</span>.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-6-contents" aria-controls="callout-6" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Proof (Click to expand)
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-6" class="callout-6-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><em>Proof.</em> Since <span class="math inline">\|\cdot\|_{\mathrm{tvd}} = 2^{-1}\|\cdot\|_{1}</span>, we conclude that <span class="math inline">\|\mathbf{P} - \mathbf{Q}\|_{1} = \sum_{k,s}\|p_{k,s} - q_{k,s}\|_{1} \geq  \sum_{k}\|\sum_{s}p_{k,s} - \sum_{s}q_{k,s}\|_{1} = \|\mathbf{p} - \mathbf{q}\|_{1}</span> ◻</p>
+</div>
+</div>
+</div>
+</section>
+<section id="le-cams-theorem" class="level2" data-number="1.4">
+<h2 data-number="1.4" class="anchored" data-anchor-id="le-cams-theorem"><span class="header-section-number">1.4</span> Le Cam’s Theorem</h2>
+<p>The most general form of the lemma is Le Cam’s bound. We prove this theorem and show that lemma is a special case of the Le-Cam theorem for completeness.</p>
+<div class="callout callout-style-default callout-important no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Theorem
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><span id="theo:Le_Cam" data-label="theo:Le_Cam"></span> Given a measurable space <span class="math inline">x \in \mathcal{X}</span> and a family of measures <span class="math inline">P \in \mathcal{P}, P: 2^\mathcal{X} \to [0,1]</span>. Let <span class="math inline">\hat \theta:\mathcal{X} \to \mathbb{R}^p</span> be an arbitrary estimator of the parameters of this family of distributions <span class="math inline">\theta: \mathcal{P} \to \mathbb{R}^p</span>. Let <span class="math inline">D[\cdot,\cdot]:\mathbb{R}^p \times \mathbb{R}^p \to \mathbb{R}_{\geq 0}</span> be a pseudo-metric of the parameter space that is symmetric and satisfies the triangular inequality <span class="math inline">D(x,y)+D(y,z) \geq D(x,z)</span>. Take two arbitrary subsets <span class="math inline">\mathcal{P}_1, \mathcal{P}_2 \subset \mathcal{P}</span> that satisfied <span class="math inline">\inf_{\substack{P_1 \in \mathcal{P}_1,P_2 \in  \mathcal{P_2}} } D\left[\theta(P_1), \theta(P_2)\right] \geq 2\delta,</span> then the inequality is true: <span class="math display">\begin{align}
+        \sup_{P \in \mathcal{P}} \left[\int_{x \in \mathcal{X}} dP(x)\cdot D\left[\hat \theta(x),\theta(P)\right]\right] \\
+        &amp;\geq \delta\cdot \sup_{\substack{P_1 \in \text{cov~}\mathcal{P}_1\\P_2 \in \text{cov~} \mathcal{P_2}} } \left[1 - \frac{1}{2}\int_{x \in \mathcal{X}} [dP_1(x) - dP_2(x)]\right].
+\end{align}</span></p>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-8-contents" aria-controls="callout-8" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Proof (Click to expand)
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-8" class="callout-8-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><em>Proof.</em> We first noted that <span class="math display">\begin{align}
+          2\sup_{P \in \mathcal{P}} \left[\int_{x \in \mathcal{X}} dP(x)\cdot D\left[\hat\theta(x),\theta(P)\right]\right] \\
+          &amp;\geq  \int_{x \in \mathcal{X}} dP_1(x)\cdot D\left[\hat\theta(x),\theta(P_1)\right] \\
+          &amp;\quad + \int_{x \in \mathcal{X}} dP_2(x)\cdot D\left[\hat\theta(x),\theta(P_2)\right].
+\end{align}</span> Based on the triangular inequality, we have <span class="math inline">D\left[\hat\theta(x),\theta(P_1)\right]  + D\left[\hat\theta(x),\theta(P_2)\right] \geq D\left[\theta(P_1),\theta(P_2)\right]\geq 2\delta</span>. Thus, for a fixed point <span class="math inline">x</span>, the tuple <span class="math inline">(f_1/2\delta,f_2/2\delta), \text{where }\begin{cases}f_1(x) =D[ \hat \theta(x),\theta(P_1)], \\f_2(x) =D[ \hat \theta(x),\theta(P_2)],\end{cases}</span> is in the convex set <span class="math inline">\mathcal{S} =\{(r_1,r_2)\in \mathbb{R}^2| r_1,r_2\geq 0,r_1+r_2 \geq  1\}</span>. Then <span class="math inline">\forall P_1 \in \mathcal{P}_1,\forall P_2 \in \mathcal{P}_2</span>, we write the inequality <span class="math display">\begin{align}
+          2\sup_{P \in \mathcal{P}} \left[\int_{x \in \mathcal{X}} dP(x)\cdot D\left[\hat\theta(x),\theta(P)\right]\right] \\
+          &amp;\geq 2\delta\cdot \left[\int_{x \in \mathcal{X}} \inf_{[r_1(x),r_2(x)] \in \mathcal{S}} \left[dP_1(x)\cdot r_1(x) +  dP_2(x)\cdot r_2(x)\right]\right]\\
+          &amp;\geq   \sup_{\substack{P_1 \in \text{cov~}\mathcal{P}_1\\P_2 \in \text{cov~} \mathcal{P_2}} } 2\delta\cdot \\
+          &amp;\quad \left[\int_{x \in \mathcal{X}} \inf_{[r_1(x),r_2(x)] \in \mathcal{S}} \left[dP_1(x)\cdot r_1(x) +  dP_2(x)\cdot r_2(x)\right]\right].
+\end{align}</span> The RHS satisfied the identity <span class="math display">\begin{align}
+         \text{RHS} &amp;=2\delta \sup_{\substack{P_1 \in \text{cov~}\mathcal{P}_1\\P_2 \in \text{cov~} \mathcal{P_2}} } \\
+         &amp;\quad \left[\int_{x \in \mathcal{X}} \inf_{ \substack{r_1(x),r_2(x)\geq 0,\\r_1(x)+r_2(x) =  1}} \left[dP_1(x)\cdot r_1(x) +dP_2(x)\cdot r_2(x)\right]\right]\\
+          &amp;=2\delta \sup_{\substack{P_1 \in \text{cov~}\mathcal{P}_1\\P_2 \in \text{cov~} \mathcal{P_2}} } \\
+          &amp;\quad \left[1 +\int_{x \in \mathcal{X}} \inf_{ r_1(x)\in [0, 1]}\left[dP_1(x)\cdot r_1(x) -  dP_2(x)\cdot  r_1(x)\right]\right]\\
+         &amp;=2\delta \sup_{\substack{P_1 \in \text{cov~}\mathcal{P}_1\\P_2 \in \text{cov~} \mathcal{P_2}} } \\
+         &amp;\quad \left[1- \int_{\substack{x \in \mathcal{X}\\P_2(x) \geq P_1(x)}} dP_2(x) -  dP_1(x) \right]\\
+         &amp;=2\delta \sup_{\substack{P_1 \in \text{cov~}\mathcal{P}_1\\P_2 \in \text{cov~} \mathcal{P_2}} } \\
+         &amp;\quad \left[1- \frac{1}{2} \int_{\substack{x \in \mathcal{X}}} |dP_2(x) -  dP_1(x)| \right].
+\end{align}</span> This completes the proof. ◻</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-important no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Lemma
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The lemma is a special case of the Le-Cam theorem.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-10-contents" aria-controls="callout-10" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Proof (Click to expand)
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-10" class="callout-10-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><em>Proof.</em> Take the special case that <span class="math inline">\mathcal{X} = \{1,\cdots,n\}</span>, <span class="math inline">\mathcal{P}_0 =\{p_0(x)\}, \mathcal{P}_1 =\{p_1(x),\cdots,p_l(x)\}</span> and <span class="math inline">\theta(p_i) :=\begin{cases}0&amp;\text{if }i =0,\\1&amp;\text{else}.\end{cases}</span> The estimator and metric are taken as <span class="math inline">\hat \theta(\cdot): \mathcal{X}\to\{0,1\}</span> and <span class="math display">\begin{align}
+    D(\cdot,\cdot): \{0,1\}^{2} \to \{0,1\}, \\
+    (\theta_1,\theta_2) &amp;\hookrightarrow \begin{cases}1&amp;\text{if }(\theta_1,\theta_2)=(1,0),(0,1),\\ 0 &amp;\text{else}.\end{cases}
+\end{align}</span> It is easy to see that <span class="math inline">D(\cdot,\cdot)</span> is indeed symmetric and satisfies the triangular inequality. This strategy distinguished the <span class="math inline">\mathcal{P}_0</span> and <span class="math inline">\mathcal{P}_1</span> with success probability <span class="math display">\begin{align}
+    p_{\text{succ}}  &amp;=\min_{i=1,\cdots,l}\left\{ \text{Pr}_{x \sim p_0}[\hat \theta(x) =0 ],\text{Pr}_{x \sim p_i}[\hat \theta(x) =1 ]\right\} \\
+    &amp;= 1 - \max_{i = 1,\cdots,l}\left\{ \text{Pr}_{x \sim p_0}[\hat \theta(x) =1 ],\text{Pr}_{x \sim p_i}[\hat \theta(x) =0 ]\right\}\\
+    &amp;=1 - \max_{p \in \mathcal{P}} E_{x \sim p} D[\hat \theta(x),\theta(p)].
+\end{align}</span> Based on Lemma, we conclude the inequality <span class="math display">\begin{align}
+    \max_{p \in \mathcal{P}} E_{x \sim p} D[\hat \theta(x),\theta(p)] \geq \delta\cdot [1 - \|p_0 - \mathbb{E}_{r\sim \mathcal{D}}[p_{r}]\|_{\mathrm {TV}} ].
+\end{align}</span> Notice that <span class="math inline">\inf_{\substack{P_1 \in \mathcal{P}_1,P_2 \in  \mathcal{P_2}} } D\left[\theta(P_1), \theta(P_2)\right] \geq 1</span>, we take <span class="math inline">\delta = 1/2</span>, which combine to the final result <span class="math display">\begin{align}
+    p_{\text{succ}} \leq 1 -\frac{1 - \|p_0 - \mathbb{E}_{r\sim \mathcal{D}}[p_{r}]\|_{\mathrm {TV}} }{2} = \frac{1 + \|p_0 - \mathbb{E}_{r\sim \mathcal{D}}[p_{r}]\|_{\mathrm {TV}} }{2} .
+\end{align}</span> Then if <span class="math inline">\|p_0 - \mathbb{E}_{r\sim \mathcal{D}}[p_{r}]\|_{\mathrm {TV}} \leq \varepsilon</span>, we conclude that <span class="math inline">p_{\text{succ}}\leq (1+\varepsilon)/2</span> and cannot <span class="math inline">\varepsilon/2</span> better than random guessing. ◻</p>
+</div>
+</div>
+</div>
+<hr>
+<p><a href="../../../theory/Topics/Lowerbounds/index.html">← Back to Index</a> | <a href="../../../theory/Topics/Lowerbounds/povm_restrictions.html">Next: POVM Restrictions →</a></p>
+
+
+<script type="ojs-module-contents">
+eyJjb250ZW50cyI6W119
+</script>
+<div id="exercise-loading-indicator" class="exercise-loading-indicator d-none d-flex align-items-center gap-2">
+<div id="exercise-loading-status" class="d-flex gap-2">
+
+</div>
+<div class="spinner-grow spinner-grow-sm">
+
+</div>
+</div>
+<script type="vfs-file">
+W10=
+</script>
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

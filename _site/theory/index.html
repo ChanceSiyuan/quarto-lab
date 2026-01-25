@@ -43,6 +43,8 @@ ul.task-list li input[type="checkbox"] {
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="../site_libs/bootstrap/bootstrap-a8976c3e89df70b272bdfba3d2fda974.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="../site_libs/quarto-contrib/live-runtime/live-runtime.js" type="module"></script>
+<link href="../site_libs/quarto-contrib/live-runtime/live-runtime.css" rel="stylesheet">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -109,10 +111,10 @@ ul.task-list li input[type="checkbox"] {
     }
 
     const options = {
-      valueNames: ['listing-date','listing-title','listing-author','listing-image','listing-description','listing-categories',{ data: ['index'] },{ data: ['categories'] },{ data: ['listing-date-sort'] },{ data: ['listing-file-modified-sort'] }],
+      valueNames: ['listing-date','listing-title','listing-author','listing-subtitle','listing-image','listing-description','listing-categories',{ data: ['index'] },{ data: ['categories'] },{ data: ['listing-date-sort'] },{ data: ['listing-file-modified-sort'] }],
       page: 5,
     pagination: { item: "<li class='page-item'><a class='page page-link' href='#'></a></li>" },
-      searchColumns: ["listing-date","listing-title","listing-author","listing-image","listing-description","listing-categories"],
+      searchColumns: ["listing-date","listing-title","listing-author","listing-subtitle","listing-image","listing-description","listing-categories"],
     };
 
     window['quarto-listings'] = window['quarto-listings'] || {};
@@ -258,7 +260,7 @@ window.Quarto = {
   <li><a href="#posts" id="toc-posts" class="nav-link" data-scroll-target="#posts">Posts</a></li>
   </ul>
 </nav>
-    <h5 class="quarto-listing-category-title">Categories</h5><div class="quarto-listing-category category-default"><div class="category" data-category="">All <span class="quarto-category-count">(17)</span></div><div class="category" data-category="JTIzUA==">#P <span class="quarto-category-count">(1)</span></div><div class="category" data-category="Q2xhc3NpY2FsJTIwU2hhZG93cw==">Classical Shadows <span class="quarto-category-count">(1)</span></div><div class="category" data-category="Q29tcGxleGl0eSUyMFRoZW9yeQ==">Complexity Theory <span class="quarto-category-count">(2)</span></div><div class="category" data-category="SW50ZXJhY3RpdmUlMjBQcm9vZnM=">Interactive Proofs <span class="quarto-category-count">(1)</span></div><div class="category" data-category="UXVhbnR1bSUyMEVycm9yJTIwQ29ycmVjdGlvbg==">Quantum Error Correction <span class="quarto-category-count">(3)</span></div><div class="category" data-category="UXVhbnR1bSUyMEluZm9ybWF0aW9u">Quantum Information <span class="quarto-category-count">(3)</span></div><div class="category" data-category="UXVhbnR1bSUyMExlYXJuaW5n">Quantum Learning <span class="quarto-category-count">(1)</span></div><div class="category" data-category="UmVhZGluZ3M=">Readings <span class="quarto-category-count">(6)</span></div><div class="category" data-category="UmVhbGl6YXRpb25z">Realizations <span class="quarto-category-count">(3)</span></div><div class="category" data-category="U2hhZG93JTIwVG9tb2dyYXBoeQ==">Shadow Tomography <span class="quarto-category-count">(2)</span></div><div class="category" data-category="VGVuc29yJTIwTmV0d29yaw==">Tensor Network <span class="quarto-category-count">(1)</span></div></div></div>
+    <h5 class="quarto-listing-category-title">Categories</h5><div class="quarto-listing-category category-default"><div class="category" data-category="">All <span class="quarto-category-count">(18)</span></div><div class="category" data-category="JTIzUA==">#P <span class="quarto-category-count">(1)</span></div><div class="category" data-category="Q2xhc3NpY2FsJTIwU2hhZG93cw==">Classical Shadows <span class="quarto-category-count">(2)</span></div><div class="category" data-category="Q29tcGxleGl0eSUyMFRoZW9yeQ==">Complexity Theory <span class="quarto-category-count">(2)</span></div><div class="category" data-category="SW50ZXJhY3RpdmUlMjBQcm9vZnM=">Interactive Proofs <span class="quarto-category-count">(1)</span></div><div class="category" data-category="UXVhbnR1bSUyMEVycm9yJTIwQ29ycmVjdGlvbg==">Quantum Error Correction <span class="quarto-category-count">(3)</span></div><div class="category" data-category="UXVhbnR1bSUyMEluZm9ybWF0aW9u">Quantum Information <span class="quarto-category-count">(3)</span></div><div class="category" data-category="UXVhbnR1bSUyMExlYXJuaW5n">Quantum Learning <span class="quarto-category-count">(1)</span></div><div class="category" data-category="UmVhZGluZ3M=">Readings <span class="quarto-category-count">(6)</span></div><div class="category" data-category="UmVhbGl6YXRpb25z">Realizations <span class="quarto-category-count">(3)</span></div><div class="category" data-category="UmV2aWV3cw==">Reviews <span class="quarto-category-count">(1)</span></div><div class="category" data-category="U2hhZG93JTIwVG9tb2dyYXBoeQ==">Shadow Tomography <span class="quarto-category-count">(2)</span></div><div class="category" data-category="VGVuc29yJTIwTmV0d29yaw==">Tensor Network <span class="quarto-category-count">(1)</span></div></div></div>
 <!-- main -->
 <main class="content quarto-banner-title-block column-page-left" id="quarto-document-content">
 
@@ -476,7 +478,39 @@ Categories
     </div>
 </div>
 <div class="list quarto-listing-default">
-<div class="quarto-post image-right" data-index="0" data-categories="UmVhZGluZ3MlMkNRdWFudHVtJTIwSW5mb3JtYXRpb24lMkNDbGFzc2ljYWwlMjBTaGFkb3dz" data-listing-date-sort="1768838400000" data-listing-file-modified-sort="1768872383116" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="11" data-listing-word-count-sort="2017">
+<div class="quarto-post image-right" data-index="0" data-categories="UmV2aWV3cyUyQ0NsYXNzaWNhbCUyMFNoYWRvd3M=" data-listing-date-sort="1768838400000" data-listing-file-modified-sort="1769155307443" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="8" data-listing-word-count-sort="1567">
+<div class="thumbnail"><a href="../theory/Posts/Estimation/index.html" class="no-external">
+
+<div class="listing-item-img-placeholder card-img-top" >&nbsp;</div>
+
+</a></div>
+<div class="body">
+<h3 class="no-anchor listing-title">
+<a href="../theory/Posts/Estimation/index.html" class="no-external">Local Estimation of Quantum Observables</a>
+</h3>
+<div class="listing-subtitle">
+<a href="../theory/Posts/Estimation/index.html" class="no-external">A Review of Measurement Strategies and Sample Complexity</a>
+</div>
+<div class="listing-categories">
+
+<div class="listing-category" onclick="window.quartoListingCategory('UmV2aWV3cw=='); return false;">Reviews</div>
+
+<div class="listing-category" onclick="window.quartoListingCategory('Q2xhc3NpY2FsJTIwU2hhZG93cw=='); return false;">Classical Shadows</div>
+
+</div>
+<div class="delink listing-description"><a href="../theory/Posts/Estimation/index.html" class="no-external">
+<p>Estimating expectation values of quantum observables is a fundamental task in quantum computing and quantum many-body physics. This review examines local measurement strategies for estimating both linear properties <span class="math inline">\mathrm{tr}(O\rho)</span> and non-linear properties <span class="math inline">\mathrm{tr}(O\rho^2)</span> of quantum states. The analysis is organized by operator structure: product observables, low-rank operators, and sums of Pauli operators. For each class, the discussion covers single-copy and multi-copy measurement protocols, derandomization techniques, and known complexity lower bounds. The review highlights the fundamental trade-offs between circuit depth and sample complexity, providing a unified perspective on classical shadow methods and their variants.</p>
+</a></div>
+</div>
+<div class="metadata">
+<a href="../theory/Posts/Estimation/index.html" class="no-external">
+<div class="listing-date">
+Jan 20, 2026
+</div>
+</a>
+</div>
+</div>
+<div class="quarto-post image-right" data-index="1" data-categories="UmVhZGluZ3MlMkNRdWFudHVtJTIwSW5mb3JtYXRpb24lMkNDbGFzc2ljYWwlMjBTaGFkb3dz" data-listing-date-sort="1768838400000" data-listing-file-modified-sort="1768872383116" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="11" data-listing-word-count-sort="2017">
 <div class="thumbnail"><a href="../theory/Posts/Bell_Shadows/index.html" class="no-external">
 
 <div class="listing-item-img-placeholder card-img-top" >&nbsp;</div>
@@ -486,6 +520,9 @@ Categories
 <h3 class="no-anchor listing-title">
 <a href="../theory/Posts/Bell_Shadows/index.html" class="no-external">Classical Shadows Based on Locally-Entangled Measurements</a>
 </h3>
+<div class="listing-subtitle">
+<a href="../theory/Posts/Bell_Shadows/index.html" class="no-external"></a>
+</div>
 <div class="listing-categories">
 
 <div class="listing-category" onclick="window.quartoListingCategory('UmVhZGluZ3M='); return false;">Readings</div>
@@ -507,7 +544,7 @@ Jan 20, 2026
 </a>
 </div>
 </div>
-<div class="quarto-post image-right" data-index="1" data-categories="UmVhZGluZ3M=" data-listing-date-sort="1768752000000" data-listing-file-modified-sort="1768843990494" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="10" data-listing-word-count-sort="1900">
+<div class="quarto-post image-right" data-index="2" data-categories="UmVhZGluZ3M=" data-listing-date-sort="1768752000000" data-listing-file-modified-sort="1768843990494" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="10" data-listing-word-count-sort="1900">
 <div class="thumbnail"><a href="../theory/Posts/Virtual_Distillation/index.html" class="no-external">
 
 <div class="listing-item-img-placeholder card-img-top" >&nbsp;</div>
@@ -517,6 +554,9 @@ Jan 20, 2026
 <h3 class="no-anchor listing-title">
 <a href="../theory/Posts/Virtual_Distillation/index.html" class="no-external">Virtual Distillation for Quantum Error Mitigation</a>
 </h3>
+<div class="listing-subtitle">
+<a href="../theory/Posts/Virtual_Distillation/index.html" class="no-external"></a>
+</div>
 <div class="listing-categories">
 
 <div class="listing-category" onclick="window.quartoListingCategory('UmVhZGluZ3M='); return false;">Readings</div>
@@ -534,7 +574,7 @@ Jan 19, 2026
 </a>
 </div>
 </div>
-<div class="quarto-post image-right" data-index="2" data-categories="UmVhZGluZ3M=" data-listing-date-sort="1768752000000" data-listing-file-modified-sort="1768790774648" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="9" data-listing-word-count-sort="1689">
+<div class="quarto-post image-right" data-index="3" data-categories="UmVhZGluZ3M=" data-listing-date-sort="1768752000000" data-listing-file-modified-sort="1768790774648" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="9" data-listing-word-count-sort="1689">
 <div class="thumbnail"><a href="../theory/Posts/Pauli_derandomization/index.html" class="no-external">
 
 <div class="listing-item-img-placeholder card-img-top" >&nbsp;</div>
@@ -544,6 +584,9 @@ Jan 19, 2026
 <h3 class="no-anchor listing-title">
 <a href="../theory/Posts/Pauli_derandomization/index.html" class="no-external">Derandomized local shadows</a>
 </h3>
+<div class="listing-subtitle">
+<a href="../theory/Posts/Pauli_derandomization/index.html" class="no-external"></a>
+</div>
 <div class="listing-categories">
 
 <div class="listing-category" onclick="window.quartoListingCategory('UmVhZGluZ3M='); return false;">Readings</div>
@@ -561,7 +604,7 @@ Jan 19, 2026
 </a>
 </div>
 </div>
-<div class="quarto-post image-right" data-index="3" data-categories="UmVhZGluZ3M=" data-listing-date-sort="1768752000000" data-listing-file-modified-sort="1768889865380" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="2" data-listing-word-count-sort="362">
+<div class="quarto-post image-right" data-index="4" data-categories="UmVhZGluZ3M=" data-listing-date-sort="1768752000000" data-listing-file-modified-sort="1768889865380" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="2" data-listing-word-count-sort="362">
 <div class="thumbnail"><a href="../theory/Posts/shallow_estim/index.html" class="no-external">
 
 <div class="listing-item-img-placeholder card-img-top" >&nbsp;</div>
@@ -571,6 +614,9 @@ Jan 19, 2026
 <h3 class="no-anchor listing-title">
 <a href="../theory/Posts/shallow_estim/index.html" class="no-external">Virtual Distillation for Quantum Error Mitigation</a>
 </h3>
+<div class="listing-subtitle">
+<a href="../theory/Posts/shallow_estim/index.html" class="no-external"></a>
+</div>
 <div class="listing-categories">
 
 <div class="listing-category" onclick="window.quartoListingCategory('UmVhZGluZ3M='); return false;">Readings</div>
@@ -588,7 +634,7 @@ Jan 19, 2026
 </a>
 </div>
 </div>
-<div class="quarto-post image-right" data-index="4" data-categories="UmVhbGl6YXRpb25z" data-listing-date-sort="1768233600000" data-listing-file-modified-sort="1768638301407" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="2" data-listing-word-count-sort="390">
+<div class="quarto-post image-right" data-index="5" data-categories="UmVhbGl6YXRpb25z" data-listing-date-sort="1768233600000" data-listing-file-modified-sort="1768638301407" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="2" data-listing-word-count-sort="390">
 <div class="thumbnail"><a href="../theory/Posts/operator_magic/index.html" class="no-external">
 
 <div class="listing-item-img-placeholder card-img-top" >&nbsp;</div>
@@ -598,6 +644,9 @@ Jan 19, 2026
 <h3 class="no-anchor listing-title">
 <a href="../theory/Posts/operator_magic/index.html" class="no-external">Magic based on Pauli spectrum</a>
 </h3>
+<div class="listing-subtitle">
+<a href="../theory/Posts/operator_magic/index.html" class="no-external"></a>
+</div>
 <div class="listing-categories">
 
 <div class="listing-category" onclick="window.quartoListingCategory('UmVhbGl6YXRpb25z'); return false;">Realizations</div>
@@ -615,7 +664,7 @@ Jan 13, 2026
 </a>
 </div>
 </div>
-<div class="quarto-post image-right" data-index="5" data-categories="UmVhbGl6YXRpb25z" data-listing-date-sort="1768233600000" data-listing-file-modified-sort="1768663550491" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="14" data-listing-word-count-sort="2659">
+<div class="quarto-post image-right" data-index="6" data-categories="UmVhbGl6YXRpb25z" data-listing-date-sort="1768233600000" data-listing-file-modified-sort="1768663550491" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="14" data-listing-word-count-sort="2659">
 <div class="thumbnail"><a href="../theory/Posts/OSF/index.html" class="no-external">
 
 <p class="card-img-top"><img data-src="Posts/OSF/index_files/figure-html/cell-2-output-1.png"  class="thumbnail-image card-img"/></p>
@@ -625,6 +674,9 @@ Jan 13, 2026
 <h3 class="no-anchor listing-title">
 <a href="../theory/Posts/OSF/index.html" class="no-external">Operator Stabilizer Formalism</a>
 </h3>
+<div class="listing-subtitle">
+<a href="../theory/Posts/OSF/index.html" class="no-external"></a>
+</div>
 <div class="listing-categories">
 
 <div class="listing-category" onclick="window.quartoListingCategory('UmVhbGl6YXRpb25z'); return false;">Realizations</div>
@@ -642,7 +694,7 @@ Jan 13, 2026
 </a>
 </div>
 </div>
-<div class="quarto-post image-right" data-index="6" data-categories="UmVhbGl6YXRpb25z" data-listing-date-sort="1768233600000" data-listing-file-modified-sort="1768638345082" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="1" data-listing-word-count-sort="49">
+<div class="quarto-post image-right" data-index="7" data-categories="UmVhbGl6YXRpb25z" data-listing-date-sort="1768233600000" data-listing-file-modified-sort="1768638345082" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="1" data-listing-word-count-sort="49">
 <div class="thumbnail"><a href="../theory/Posts/arXiv:2212.08677v2/index.html" class="no-external">
 
 <div class="listing-item-img-placeholder card-img-top" >&nbsp;</div>
@@ -652,6 +704,9 @@ Jan 13, 2026
 <h3 class="no-anchor listing-title">
 <a href="../theory/Posts/arXiv:2212.08677v2/index.html" class="no-external">如何追踪含有噪声的稳定子线路？</a>
 </h3>
+<div class="listing-subtitle">
+<a href="../theory/Posts/arXiv:2212.08677v2/index.html" class="no-external"></a>
+</div>
 <div class="listing-categories">
 
 <div class="listing-category" onclick="window.quartoListingCategory('UmVhbGl6YXRpb25z'); return false;">Realizations</div>
@@ -669,7 +724,7 @@ Jan 13, 2026
 </a>
 </div>
 </div>
-<div class="quarto-post image-right" data-index="7" data-categories="UmVhZGluZ3M=" data-listing-date-sort="1767801600000" data-listing-file-modified-sort="1768638275734" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="1" data-listing-word-count-sort="56">
+<div class="quarto-post image-right" data-index="8" data-categories="UmVhZGluZ3M=" data-listing-date-sort="1767801600000" data-listing-file-modified-sort="1768638275734" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="1" data-listing-word-count-sort="56">
 <div class="thumbnail"><a href="../theory/Posts/arXiv:2305.05765/index.html" class="no-external">
 
 <div class="listing-item-img-placeholder card-img-top" >&nbsp;</div>
@@ -679,6 +734,9 @@ Jan 13, 2026
 <h3 class="no-anchor listing-title">
 <a href="../theory/Posts/arXiv:2305.05765/index.html" class="no-external">学习量子线路的输出会难吗？</a>
 </h3>
+<div class="listing-subtitle">
+<a href="../theory/Posts/arXiv:2305.05765/index.html" class="no-external"></a>
+</div>
 <div class="listing-categories">
 
 <div class="listing-category" onclick="window.quartoListingCategory('UmVhZGluZ3M='); return false;">Readings</div>
@@ -696,7 +754,7 @@ Jan 8, 2026
 </a>
 </div>
 </div>
-<div class="quarto-post image-right" data-index="8" data-categories="UmVhZGluZ3M=" data-listing-date-sort="1767715200000" data-listing-file-modified-sort="1768812866474" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="8" data-listing-word-count-sort="1586">
+<div class="quarto-post image-right" data-index="9" data-categories="UmVhZGluZ3M=" data-listing-date-sort="1767715200000" data-listing-file-modified-sort="1768812866474" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="8" data-listing-word-count-sort="1586">
 <div class="thumbnail"><a href="../theory/Posts/arXiv:2106.12627/index.html" class="no-external">
 
 <div class="listing-item-img-placeholder card-img-top" >&nbsp;</div>
@@ -706,6 +764,9 @@ Jan 8, 2026
 <h3 class="no-anchor listing-title">
 <a href="../theory/Posts/arXiv:2106.12627/index.html" class="no-external">Getting Groud states enpower the Neural Networks</a>
 </h3>
+<div class="listing-subtitle">
+<a href="../theory/Posts/arXiv:2106.12627/index.html" class="no-external"></a>
+</div>
 <div class="listing-categories">
 
 <div class="listing-category" onclick="window.quartoListingCategory('UmVhZGluZ3M='); return false;">Readings</div>
@@ -732,6 +793,20 @@ Jan 7, 2026
 
 
 
+<script type="ojs-module-contents">
+eyJjb250ZW50cyI6W119
+</script>
+<div id="exercise-loading-indicator" class="exercise-loading-indicator d-none d-flex align-items-center gap-2">
+<div id="exercise-loading-status" class="d-flex gap-2">
+
+</div>
+<div class="spinner-grow spinner-grow-sm">
+
+</div>
+</div>
+<script type="vfs-file">
+W10=
+</script>
 </section>
 
 </main> <!-- /main -->
