@@ -701,48 +701,42 @@ Can this be generalized to the high-rank case?
 ## Proof (Click to expand)
 In generalized $\text{tr}(O \rho^2)$ to the high-rank case
 $\text{tr}(O \rho^k)$, we first write the decomposition of $k$-cycle
-permutation as 
+permutation based on the indentity $\mathrm{SWAP}_{(1,\cdots,k)} = \mathrm{SWAP}_{(1,2)}\mathrm{SWAP}_{(2,3)}\cdots \mathrm{SWAP}_{(k-1,k)}$ and $\mathrm{SWAP}_{(r,r+1)} = \sigma_{\mathbf{p}^{(r)}}\otimes \sigma_{\mathbf{p}^{(r)}}$ for $r = 1,\cdots,k-1$, we conclude that:
 $$
 \begin{align*}
-    \text{SWAP}_{(1\cdots k)} = 2^{-k+1}\sum_{\mathbf{p}^{(i)} \in \mathbb{F}_2^2} \sigma_{\mathbf{p}^{(1)}}\otimes \left(\sigma_{\mathbf{p}^{(1)}} \sigma_{\mathbf{p}^{(2)}}\right)\otimes \left(\sigma_{\mathbf{p}^{(2)}} \sigma_{\mathbf{p}^{(3)}}\right)\otimes \cdots \otimes \left(\sigma_{\mathbf{p}^{(k-1)}} \sigma_{\mathbf{p}^{(k)}}\right),
+    \text{SWAP}_{(1\cdots k)} = 2^{-k+1}\sum_{\mathbf{p}^{(i)} \in \mathbb{F}_2^2} \sigma_{\mathbf{p}^{(1)}}\otimes \left(\sigma_{\mathbf{p}^{(1)}} \sigma_{\mathbf{p}^{(2)}}\right)\otimes \left(\sigma_{\mathbf{p}^{(2)}} \sigma_{\mathbf{p}^{(3)}}\right)\otimes \cdots \otimes \left(\sigma_{\mathbf{p}^{(k-1)}}\right),
 \end{align*}
 $$
  This gives the decomposition of the estimator
-$O^{(k)} := \sigma_{\mathbf{r}} \otimes \mathbb{I}_{n}^{\otimes (k-1)} \cdot \text{SWAP}^{\otimes n}$
+$O_{\mathbf{r}}^{(k)} := \sigma_{\mathbf{r}} \otimes \mathbb{I}_{n}^{\otimes (k-1)} \cdot \text{SWAP}^{\otimes n}$
 on $k$-copies of $n$-qubits states as 
-$$\begin{align*}
-    O^{(k)} &= 2^{-(k-1)n}\sum_{\mathbf{p}^{(l>0)} \in \mathbb{F}_2^{2n}}  (\sigma_{\mathbf{r}}\sigma_{\mathbf{p}^{(1)}})\otimes \left(\sigma_{\mathbf{p}^{(1)}} \sigma_{\mathbf{p}^{(2)}}\right)\otimes \left(\sigma_{\mathbf{p}^{(2)}} \sigma_{\mathbf{p}^{(3)}}\right)\otimes \cdots \otimes \left(\sigma_{\mathbf{p}^{(k-2)}} \sigma_{\mathbf{p}^{(k-1)}}\right)\otimes \sigma_{\mathbf{p}^{(k-1)}} \notag \\
-    &= \sum_{\mathbf{p}^{(l>0)} \in \mathbb{F}_2^{2n}}2^{-k+1}\cdot i^{ \sum_{l =1}^{k-1}\mathbf{p}^{(l)}J \mathbf{p}^{(l-1)}} \sigma_{\mathbf{r} + \mathbf{p}^{(1)}} \otimes \sigma_{\mathbf{p}^{(1)} + \mathbf{p}^{(2)}} \otimes \cdots \otimes \sigma_{\mathbf{p}^{(k-2)} + \mathbf{p}^{(k-1)}} \otimes \sigma_{\mathbf{p}^{(k-1)} }
-\end{align*}$$
-Here we denote $\mathbf{r}= \mathbf{p}^{(0)}$. This means
-that this operator satisfied the local decomposition
-$W_{j} = \sigma_{\mathbf{u}}$ with
-$\mathbf{u}(\mathbf{p}_j^{(m)}) = (\mathbf{r}_j + \mathbf{p}^{(1)}_j,\mathbf{p}^{(1)}_j+\mathbf{p}^{(2)}_j, \cdots, \mathbf{p}^{(k-2)}_j+\mathbf{p}^{(k-1)}_j,\mathbf{p}^{(k-1)}_j) \in (\mathbb{F}_{2}^{2})^k$
-and
-$\alpha_{W_j} = 2^{-k+1}i^{ \sum_{l =1}^{k-1}\mathbf{p}_j^{(l)}J \mathbf{p}_j^{(l-1)}}$
-for
-$\mathbf{p}_j^{(m)}, \forall j = 1,\cdots,n, \forall m = 1,\cdots,k-1$
-ranging around $\mathbb{F}_{2}^2$. To simplify the notation, we set two
-of such a vector $\mathbf{u}(\mathbf{p}_j^{(m)})$ and
-$\mathbf{v}(\mathbf{q}_j^{(m)})$ and abbreviate their $j$ index. Use
-@lem-LC-shadow-kcopy
-as $$\begin{align*}
-    \mathbf{V}(O^{(k)}) &= \bigotimes_{j =1}^n \left(\sum_{\mathbf{u},\mathbf{v}}4^{-k+1}i^{ \sum_{l =1}^{k-1}\mathbf{p}^{(l)}J \mathbf{p}^{(l-1)}}\cdot i^{ \sum_{l =1}^{k-1}\mathbf{q}^{(l)}J \mathbf{q}^{(l-1)}} r(\mathbf{u},\mathbf{v})\sigma_{\mathbf{u}}\sigma_{\mathbf{v}}\right)\\
-    &=\bigotimes_{j =1}^n \left(\sum_{\mathbf{u},\mathbf{v}}4^{-k+1}i^{ \sum_{l =1}^{k-1}\mathbf{p}^{(l)}J \mathbf{p}^{(l-1)}+\sum_{l =1}^{k-1}\mathbf{q}^{(l)}J \mathbf{q}^{(l-1)} + \mathbf{v} J{\mathbf{u}}} r(\mathbf{u},\mathbf{v})\sigma_{\mathbf{u} + \mathbf{v}}\right)\\
-    &=\bigotimes_{j =1}^n 
-    \left(\left\{ \begin{aligned}
-        &\sum_{\mathbf{u},\mathbf{v}}4^{-k+1}i^{m(\mathbf{u},\mathbf{v})} \frac{2^k + 1}{2^k + 2} \left[2^k \delta_{\mathbf{u}, \mathbf{v}} + 1 + (-1)^{[\mathbf{v}, \mathbf{u}]}\right]\sigma_{\mathbf{u} + \mathbf{v}} \text{~if~}\mathbf{r} \neq 0\\
-        &\left.\sum_{\mathbf{u},\mathbf{v}}4^{-k+1}i^{m(\mathbf{u},\mathbf{v})} r(\mathbf{u},\mathbf{v})\sigma_{\mathbf{u} + \mathbf{v}} \right|_{\mathbf{r} = 0}
-    \end{aligned}\right.\right) 
-\end{align*}$$ Here in the last equality, we use the rescaling formula from @lem-LC-shadow-kcopy and the fact that $\mathbf{u}=0$ or
-$\mathbf{v}=0$ can only happen if $\mathbf{r}_j = 0$. Thus, in the case
-of $\mathbf{r}_j \neq 0$, we have
-$r(\mathbf{u},\mathbf{v})= (2^k + 1)(2^k + 2)^{-1} \left[2^k \delta_{\mathbf{p}, \mathbf{q}} + 1 + (-1)^{[\mathbf{v}, \mathbf{u}]}\right]$.
-We simplified the first line of
-Eq.[\[eq:trrhok_Var_op\]](#eq:trrhok_Var_op){reference-type="eqref"
-reference="eq:trrhok_Var_op"} term-by-term below. For the first term
-$\sum_{\mathbf{u},\mathbf{v}}2^{2-k}(2^k + 1)(2^k +2)^{-1} i^{m(\mathbf{u}, \mathbf{v})} \delta_{\mathbf{u}, \mathbf{v}} \sigma_{\mathbf{u}+ \mathbf{v}}$.
-This gives the result 
+$$
+\begin{align*}
+    O^{(k)}_{\mathbf{r}} &= 2^{-(k-1)n}\sum_{\mathbf{p}^{(l>0)} \in \mathbb{F}_2^{2n}}  (\sigma_{\mathbf{r}}\sigma_{\mathbf{p}^{(1)}})\otimes \left(\sigma_{\mathbf{p}^{(1)}} \sigma_{\mathbf{p}^{(2)}}\right)\otimes \left(\sigma_{\mathbf{p}^{(2)}} \sigma_{\mathbf{p}^{(3)}}\right)\otimes \cdots \otimes \left(\sigma_{\mathbf{p}^{(k-2)}} \sigma_{\mathbf{p}^{(k-1)}}\right)\otimes \sigma_{\mathbf{p}^{(k-1)}}.
+\end{align*}
+$$
+Here we denote 
+$$
+\mathbf{u}(\mathbf{r},\mathbf{p}^{(1)},\cdots,\mathbf{p}^{(k-1)}) = (\mathbf{r} + \mathbf{p}^{(1)},\mathbf{p}^{(1)}+\mathbf{p}^{(2)}, \cdots, \mathbf{p}^{(k-2)}+\mathbf{p}^{(k-1)},\mathbf{p}^{(k-1)}) \in (\mathbb{F}_{2}^{2})^k
+$$
+and the local operator $O_{\mathbf{r}}^{(k)}$ satisfied the local decomposition
+$W_{\mathbf{u}_{\mathbf{r}}} \propto \sigma_{\mathbf{u}_{\mathbf{r}}}$ with $\mathbf{u}_{\mathbf{r}} = \mathbf{u}(\mathbf{r},\mathbf{p}^{(1)},\cdots,\mathbf{p}^{(k-1)})$ and
+$\mathbf{p}^{(r)} \in \mathbb{F}_{2}^2, \forall r = 1,\cdots,k-1$. 
+To simplify the notation, we set two
+of such a vector $\mathbf{u}_{\mathbf{r}}$ and
+$\mathbf{u}_{\mathbf{r}'}$. Use @lem-LC-shadow-kcopy, we get: 
+$$
+\begin{align*}
+    &v(O^{(k)}_{\mathbf{r}}, O^{(k)}_{\mathbf{r}'}) \\
+    &=4^{-k+1} \sum_{\mathbf{p}^{(l>0)},\mathbf{p}^{',(l>0)} \in \mathbb{F}_2^{2n}}r(\mathbf{u}_{\mathbf{r}},\mathbf{u}_{\mathbf{r}'})(\sigma_{\mathbf{r}}\sigma_{\mathbf{p}^{(1)}}\sigma_{\mathbf{r}'}\sigma_{\mathbf{p}^{',(1)}})\otimes \left(\sigma_{\mathbf{p}^{(1)}} \sigma_{\mathbf{p}^{(2)}}\sigma_{\mathbf{p}^{',(1)}} \sigma_{\mathbf{p}^{',(2)}}\right)\otimes \cdots \\
+    &\quad \otimes \left(\sigma_{\mathbf{p}^{(k-2)}} \sigma_{\mathbf{p}^{(k-1)}}\sigma_{\mathbf{p}^{',(k-2)}} \sigma_{\mathbf{p}^{',(k-1)}}\right)\otimes \sigma_{\mathbf{p}^{(k-1)}}\sigma_{\mathbf{p}^{',(k-1)}} \\
+ &= 4^{-k+1}\sum_{\mathbf{p}^{(l>0)},\mathbf{p}^{',(l>0)} \in \mathbb{F}_2^{2n}}r(\mathbf{u}_{\mathbf{r}},\mathbf{u}_{\mathbf{r}'}) (-1)^{[\mathbf{p}^{(1)}, \mathbf{r}^{'}]+[\mathbf{p}^{(2)}, \mathbf{p}^{'(1)}] + \cdots + [\mathbf{p}^{(k-1)}, \mathbf{p}^{'(k-2)}]} \cdot \\
+ & \quad (\sigma_{\mathbf{r}}\sigma_{\mathbf{r}'}\sigma_{\mathbf{p}^{(1)}}\sigma_{\mathbf{p}^{',(1)}})\otimes \left(\sigma_{\mathbf{p}^{(1)}} \sigma_{\mathbf{p}^{',(1)}}\sigma_{\mathbf{p}^{(2)}} \sigma_{\mathbf{p}^{',(2)}}\right)\otimes \cdots \otimes \left(\sigma_{\mathbf{p}^{(k-2)}} \sigma_{\mathbf{p}^{',(k-2)}} \sigma_{\mathbf{p}^{(k-1)}}\sigma_{\mathbf{p}^{',(k-1)}}\right)\otimes \sigma_{\mathbf{p}^{(k-1)}}\sigma_{\mathbf{p}^{',(k-1)}}\\
+& \quad = 4^{-k+1}\sum_{\mathbf{p}^{(l>0)},\mathbf{p}^{',(l>0)} \in \mathbb{F}_2^{2n}}r(\mathbf{u}_{\mathbf{r}},\mathbf{u}_{\mathbf{r}'}) (-1)^{[\mathbf{p}^{(1)}, \mathbf{r}^{'}]+[\mathbf{p}^{(2)}, \mathbf{p}^{'(1)}] + \cdots + [\mathbf{p}^{(k-1)}, \mathbf{p}^{'(k-2)}]+[\mathbf{p}^{(1)}, \mathbf{p}^{',(1)}] + [\mathbf{p}^{(2)}, \mathbf{p}^{',(2)}] + \cdots + [\mathbf{p}^{(k-1)}, \mathbf{p}^{',(k-1)}]} \cdot \\
+&\quad (\sigma_{\mathbf{r}}\sigma_{\mathbf{r}'}\sigma_{\mathbf{p}^{(1)}+\mathbf{p}^{',(1)}})\otimes \left(\sigma_{\mathbf{p}^{(1)}+\mathbf{p}^{',(1)}}\sigma_{\mathbf{p}^{(2)}+\mathbf{p}^{',(2)}} \right)\otimes \cdots \otimes \left(\sigma_{\mathbf{p}^{(k-2)}+\mathbf{p}^{',(k-2)}} \sigma_{\mathbf{p}^{(k-1)}+\mathbf{p}^{',(k-1)}}\right)\otimes \sigma_{\mathbf{p}^{(k-1)}+\mathbf{p}^{',(k-1)}}.
+\end{align*}
+$$
+ Here we denote $\mathbf{u}_{\mathbf{r}} = (\mathbf{r} + \mathbf{p}^{(1)},\mathbf{p}^{(1)}+\mathbf{p}^{(2)}, \cdots, \mathbf{p}^{(k-2)}+\mathbf{p}^{(k-1)},\mathbf{p}^{(k-1)})$ and $\mathbf{u}_{\mathbf{r}'} = (\mathbf{r}' + \mathbf{p}^{',(1)},\mathbf{p}^{',(1)}+\mathbf{p}^{',(2)}, \cdots, \mathbf{p}^{',(k-2)}+\mathbf{p}^{',(k-1)},\mathbf{p}^{',(k-1)})$.
 $$
 \begin{align*}
     \text{The 1st term} &= \sum_{\mathbf{u}} 2^{2-k}(2^k + 1)(2^k +2)^{-1} i^{m(\mathbf{u},\mathbf{u})} \mathbb{I}_k = 2^{2-k}(2^k + 1)(2^k +2)^{-1} \left(\sum_{\mathbf{p}^{(l>0)}} (-1)^{\sum_{l =1}^{k-1}\left[\mathbf{p}^{(l)},\mathbf{p}^{(l-1)}\right]} \right) \mathbb{I}_k  \notag \\
@@ -751,7 +745,8 @@ $$
         &0 &\text{~if~} k \text{~is even}.
     \end{aligned}\right.
 \end{align*}
-$$ Here in the second line we evaluate the coefficient in two
+$$ 
+Here in the second line we evaluate the coefficient in two
 cases $k = 2s+1$ and $k = 2s+2$, as shown below: 
 $$
 \begin{align*}
