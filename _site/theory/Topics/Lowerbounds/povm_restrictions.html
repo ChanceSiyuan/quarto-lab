@@ -353,10 +353,11 @@ window.Quarto = {
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p><span id="def:crep_kmem_POVMs" data-label="def:crep_kmem_POVMs"></span> A <span class="math inline">(c,k)</span> adaptive strategy repeats <span class="math inline">T</span> rounds of sampling. Within each round, as shown in the process diagram below, it repeatedly adds new copies of n-qubits <span class="math inline">\rho</span> to the k-qubits memory <span class="math inline">\sigma^{(i)}</span> and adaptively implements <span class="math inline">n+k \to k</span> qubits POVMs <span class="math inline">\{M_s^{u}\}</span>. <span class="math display">\begin{align}
-\label{eq:procc_diag}
+<p>A <span class="math inline">(c,k)</span> adaptive strategy repeats <span class="math inline">T</span> rounds of sampling. Within each round, as shown in the process diagram below, it repeatedly adds new copies of n-qubits <span class="math inline">\rho</span> to the k-qubits memory <span class="math inline">\sigma^{(i)}</span> and adaptively implements <span class="math inline">n+k \to k</span> qubits POVMs <span class="math inline">\{M_s^{u}\}</span>. <span class="math display">
+\begin{align*}
         \left[\rho \xrightarrow{\{M_{s_1}\}} \sigma^{(1)} \xrightarrow{\text{Add } \rho}  \rho \otimes \sigma^{(1)}\xrightarrow{\{M_{s_1,s_2}\}} \sigma^{(2)} \xrightarrow{\text{Add } \rho} \cdots  \rho \otimes \sigma^{(c)}\xrightarrow{\{M_{s_1,\cdots,s_c}\}} R_r \right]_{\times T}
-\end{align}</span></p>
+\end{align*}
+</span></p>
 </div>
 </div>
 <p>At the end of each round in a <span class="math inline">(c,k)</span>-adaptive strategy, we get the result <span class="math inline">s_1,s_2,\cdots,s_c</span>, corresponding to the POVM branch <span class="math display">
@@ -365,7 +366,11 @@ window.Quarto = {
 &amp;\quad M_{s_1,s_2}:\mathrm{Lin}(\mathcal{H}(d^{n + k_1}),\mathcal{H}(d^{k_2})), \cdots, \\
 &amp;\quad M_{s_1,s_2,\cdots,s_c}:\mathrm{Lin}(\mathcal{H}(d^{n + k_{c-1}}), \mathbb{C})\}.
 \end{aligned}
-</span> Here the parameter satisifed <span class="math inline">k_1 = \min\{n,k\}, k_2 = \min\{n+k_1,k\},\cdots,k_{c-1} = \min\{n+k_{c-2},k\}</span>. The POVM operator <span class="math inline">\{F_{\mathbf{s}}\}</span> belongs to the linear space <span class="math inline">\mathrm{Lin}(\mathcal{H}(d^{cn}))</span>. When <span class="math inline">k = (c-1)\cdot n</span>, we have <span class="math inline">k_1 = n,k_2 = 2n,\cdots,k_{c-1} = (c-1)n</span>. This means that the last POVM operator supports on the whole linear space <span class="math inline">M_{s_1,s_2,\cdots,s_c}:\mathrm{Lin}(\mathcal{H}(d^{cn}), \mathbb{C})</span>. Thus, the round-POVM operators <span class="math inline">\{F_s\}</span> cover the whole space <span class="math inline">\mathrm{Lin}(\mathcal{H}(d^{cn}))</span> and are equivalent to first storing <span class="math inline">c</span>-copies of <span class="math inline">n</span>-qudit states followed by <span class="math inline">c</span>-copies collective measurements. If <span class="math inline">k &lt; (c-1)n</span>, <span class="math inline">\{F_s\}</span> is restricted which we denoted as the set <span class="math inline">\mathcal{M}_{c,n}^{k}</span>. We show that every element of <span class="math inline">\mathcal{M}_{c,n}^{k}</span> can be realized by rank-1 POVMs within <span class="math inline">\mathcal{M}_{c,n}^{k}</span> and post coarse-graining of the measurement results. Thus, it is sufficient to lower bounding all the rank-1 <span class="math inline">\mathcal{M}_{c,n}^{k}</span> POVMs <span class="math inline">\mathcal{M}_{c,n}^k = \{F_{j}:= 2^{cn}w_j|L_j\rangle\!\langle L_j|\}_{j}</span>, with <span class="math inline">\sum_{j}F_j = \mathbb{I}(d^{cn})</span>.</p>
+</span> Here the memory parameters satisfy the recursion: <span class="math display">k_1 = \min\{n,k\}, \quad k_2 = \min\{n+k_1,k\}, \quad \cdots, \quad k_{c-1} = \min\{n+k_{c-2},k\}.</span> The effective POVM operator <span class="math inline">\{F_{\mathbf{s}}\}</span> acts on the full input space <span class="math inline">\mathrm{Lin}(\mathcal{H}(d^{cn}))</span>. We distinguish two regimes:</p>
+<ul>
+<li><p><strong>Sufficient memory</strong>: <span class="math inline">k \geq (c-1)n</span>: In this case, <span class="math inline">k_j = jn</span> for all <span class="math inline">j</span>, so the final measurement <span class="math inline">M_{s_1,\ldots,s_c}</span> acts on the entire <span class="math inline">cn</span>-qudit space. The round-POVM <span class="math inline">\{F_{\mathbf{s}}\}</span> spans <span class="math inline">\mathrm{Lin}(\mathcal{H}(d^{cn}))</span> and is equivalent to storing all <span class="math inline">c</span> copies before performing a collective measurement.</p></li>
+<li><p><strong>Limited memory</strong>: <span class="math inline">k &lt; (c-1)n</span>: The POVM elements <span class="math inline">\{F_{\mathbf{s}}\}</span> are constrained to a proper subset, which we denote <span class="math inline">\mathcal{M}_{c,n}^{k}</span>. By the rank-1 reduction lemma, every element of <span class="math inline">\mathcal{M}_{c,n}^{k}</span> can be realized by rank-1 POVMs followed by classical coarse-graining. Thus, for lower bounds it suffices to consider rank-1 POVMs of the form: <span class="math display">\mathcal{M}_{c,n}^k = \left\{F_{j} := d^{cn} \, w_j |L_j\rangle\!\langle L_j|\right\}_{j}, \quad \text{with } \sum_{j}F_j = \mathbb{I}(d^{cn}).</span></p></li>
+</ul>
 <div class="callout callout-style-default callout-important no-icon callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -391,21 +396,33 @@ window.Quarto = {
 </div>
 <div id="callout-5" class="callout-5-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
-<p><em>Proof.</em> The operator <span class="math inline">F_s</span> can be constructed from those <span class="math inline">M_s</span> operators through the identity: <span class="math display">\begin{align}
-    \mathrm{tr}(\rho^{\otimes c} F_s) = \sum_{a_c \in [d^{n+k}]}\begin{quantikz}[row sep=0.1cm, column sep=0.1cm]
-        \setwiretype{n}&amp;&amp;&amp;\gate[2]{M_{s_1, s_2}}&amp;\gate[1]{M_{s_1}\vphantom{M_{s_1}^\dagger}}\setwiretype{c}&amp;\gate[1]{\rho}\setwiretype{q}&amp;\gate[1]{M_{s_1}^\dagger}\gategroup[4,steps=6,style={dashed,rounded corners,inner sep=-1pt},label style={label position=below, yshift=0.65cm, xshift=-0.7cm}]{$\ket{L_{s,a_c}}$}&amp;\gate[2]{M_{s_1, s_2}^\dagger}\setwiretype{c}\\
-        \setwiretype{n}&amp;&amp;\gate[2]{\cdots}\setwiretype{n}&amp;\setwiretype{c}&amp;\setwiretype{q}&amp;\gate[1]{\rho}&amp;&amp;&amp;\gate[2]{\cdots}\setwiretype{c}\\
-        \setwiretype{n}&amp;\gate[2]{M_{s_1,\cdots,s_c}}&amp;\setwiretype{c}&amp;\setwiretype{q}&amp;&amp;\gate[1]{\cdot\!\!\cdot\!\!\cdot}&amp;&amp;&amp;&amp;\gate[2]{M_{s_1,\cdots,s_c}^\dagger}\setwiretype{c}\\
-        \lstick{$a_c$|\!|\!\!\!}\setwiretype{c}&amp;&amp;\setwiretype{q}&amp;&amp;&amp;\gate[1]{\rho}&amp;&amp;&amp;&amp;&amp;\setwiretype{c}&amp;\rstick{\!\!\!|\!|$a_c$}
-    \end{quantikz} \label{eq:tensor_network_MPS}
-\end{align}</span> Here we use single line to indicate the <span class="math inline">d</span>-dimensional bond and double line to indicate the <span class="math inline">k_j</span>-dimensional bond. The restriction of such <span class="math inline">(c,k)</span>-POVM operators, which we denoted as the set <span class="math inline">\mathcal{M}_{c,n}^{k}</span>, is equivalent to state that <span class="math inline">\{F_s:= d^{nc}\sum_{a_c}w_{s,a_c}|L_{s,a_c}\rangle\!\langle L_{s,a_c}|\}_s</span> with <span class="math inline">\ket{L_{s,a_c}}</span> a normalized MPS vector on <span class="math inline">c \cdot n</span> qudits with <span class="math inline">d^{k_j}</span> bond dimension: <span class="math display">\begin{align}
-    &amp;\ket{L_{s,a_c}} =\sum_{a_j\in [d^{k_j}]} \ket{L_{s,a_1}}\ket{L_{s,a_1,a_2}}\cdots \ket{L_{s,a_{c-2},a_{c-1}}}\ket{L_{s,a_{c-1},a_c}}, \text{~where~} \forall \ket{e} \in \mathcal{H}(d^n),\\
-    &amp;\langle e|{L_{s,a_1}}\rangle := \langle e|M_{s_1}^{\dagger}|a_1\rangle,\quad \langle e|{L_{s,a_{j-1},a_{j}}}\rangle := \langle e,a_{j-1}|M_{s_1,\cdots,s_j}^{\dagger}|a_{j}\rangle,\forall j&gt;1.
-\end{align}</span> The trace-preserving condition <span class="math inline">\sum_{s_j} M^{\dagger}_{s_1,\cdots,s_j}M_{s_1,\cdots,s_j} = \mathbb{I}(d^n)</span> now transformed into <span class="math display">\begin{align}
-    \sum_{a_j,s_j} \langle e|{L_{s,a_{j-1},a_{j}}}\rangle \langle {L_{s,a_{j-1},a_{j}}}|f\rangle  &amp;=  \sum_{a_j}\langle e,a_{j-1}|M_{s_1,\cdots,s_j}^{\dagger}|a_{j}\rangle\langle a_{j}|M_{s_1,\cdots,s_j}|f,a_{j-1}\rangle\\
+<p>The operator <span class="math inline">F_s</span> can be constructed from those <span class="math inline">M_s</span> operators through the identity: <span id="eq-tensor-network-MPS"><span class="math display">
+\mathrm{tr}(\rho^{\otimes c} F_s) = \sum_{a_c \in [d^{n+k}]} \langle L_{s,a_c}|\rho^{\otimes c}|L_{s,a_c}\rangle
+\tag{1}</span></span></p>
+<div id="fig-mps-povm" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-mps-povm-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="povm_restrictions_files/mediabag/mps-povm-tensor.svg" class="img-fluid figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-mps-povm-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: The MPS tensor network structure for <span class="math inline">|L_{s,a_c}\rangle</span>.
+</figcaption>
+</figure>
+</div>
+<p>Here we use single line to indicate the <span class="math inline">d</span>-dimensional bond and double line to indicate the <span class="math inline">k_j</span>-dimensional bond. The restriction of such <span class="math inline">(c,k)</span>-POVM operators, which we denoted as the set <span class="math inline">\mathcal{M}_{c,n}^{k}</span>, is equivalent to state that <span class="math inline">\{F_s:= d^{nc}\sum_{a_c}w_{s,a_c}|L_{s,a_c}\rangle\!\langle L_{s,a_c}|\}_s</span> with <span class="math inline">\ket{L_{s,a_c}}</span> a normalized MPS vector on <span class="math inline">c \cdot n</span> qudits with <span class="math inline">d^{k_j}</span> bond dimension: <span class="math display">
+\begin{align*}
+    &amp;\ket{L_{s,a_c}} =\sum_{a_j\in [d^{k_j}]} \ket{L_{s,a_1}}\ket{L_{s,a_1,a_2}}\cdots \ket{L_{s,a_{c-2},a_{c-1}}}\ket{L_{s,a_{c-1},a_c}},\\
+    &amp;\text{~where~} \forall \ket{e} \in \mathcal{H}(d^n),\langle e|{L_{s,a_1}}\rangle := \langle e|M_{s_1}^{\dagger}|a_1\rangle\\
+    &amp; \quad \quad \langle e|{L_{s,a_{j-1},a_{j}}}\rangle := \langle e,a_{j-1}|M_{s_1,\cdots,s_j}^{\dagger}|a_{j}\rangle,\forall j&gt;1.
+\end{align*}
+</span> The trace-preserving condition <span class="math inline">\sum_{s_j} M^{\dagger}_{s_1,\cdots,s_j}M_{s_1,\cdots,s_j} = \mathbb{I}(d^n)</span> now transformed into <span class="math display">
+\begin{align*}
+    &amp;\sum_{a_j,s_j} \langle e|{L_{s,a_{j-1},a_{j}}}\rangle \langle {L_{s,a_{j-1},a_{j}}}|f\rangle \\
+    &amp; =  \sum_{a_j}\langle e,a_{j-1}|M_{s_1,\cdots,s_j}^{\dagger}|a_{j}\rangle\langle a_{j}|M_{s_1,\cdots,s_j}|f,a_{j-1}\rangle\\
     &amp;=\sum_{s_j}\langle e,a_{j-1}|M_{s_1,\cdots,s_j}^{\dagger}M_{s_1,\cdots,s_j}|f,a_{j-1}\rangle = \delta_{e,f} \\
-    &amp;\hspace{-5em}\Rightarrow \forall j = 1,\cdots,c,\quad \sum_{a_j,s_j} |{L_{s,a_{j-1},a_{j}}}\rangle \langle {L_{s,a_{j-1},a_{j}}}|= \mathbb{I}(d^n).
-\end{align}</span> Thus, <span class="math inline">\mathcal{M}_{c,n}^k</span> can be implemented through rank-1 MPS-POVMs <span class="math inline">\mathcal{M}_{c,n}^k = \{F_{j}:= 2^{cn}w_j|L_j\rangle\!\langle L_j|\}_{j=(s,a_c)}</span>, with <span class="math inline">\sum_{j}F_j = \mathbb{I}(d^{cn})</span>, followed by classical post-processing rule <span class="math inline">j=(s,a_c) \to s</span>. ◻</p>
+    &amp;\Rightarrow \forall j = 1,\cdots,c,\quad \sum_{a_j,s_j} |{L_{s,a_{j-1},a_{j}}}\rangle \langle {L_{s,a_{j-1},a_{j}}}|= \mathbb{I}(d^n).
+\end{align*}
+</span> Thus, <span class="math inline">\mathcal{M}_{c,n}^k</span> can be implemented through rank-1 MPS-POVMs <span class="math inline">\mathcal{M}_{c,n}^k = \{F_{j}:= 2^{cn}w_j|L_j\rangle\!\langle L_j|\}_{j=(s,a_c)}</span>, with <span class="math inline">\sum_{j}F_j = \mathbb{I}(d^{cn})</span>, followed by classical post-processing rule <span class="math inline">j=(s,a_c) \to s</span>. ◻</p>
 </div>
 </div>
 </div>
@@ -435,17 +452,27 @@ window.Quarto = {
 </div>
 <div id="callout-7" class="callout-7-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
-<p><em>Proof.</em> In the simplest case <span class="math inline">c = 2,d= 2</span>, a MPS state with <span class="math inline">\leq 2^k</span> bond dimension always has Schmidt decomposition <span class="math inline">\ket{L} = \sum_{a = 1}^{2^k} \sqrt{\lambda_a} \ket{\phi_a} \otimes \ket{\psi_a}</span> with <span class="math inline">\sum_a \lambda_a = 1</span>. Take <span class="math inline">P^{\{1,2\}} = P \otimes P,P^{\{1\}} = P \otimes \mathbb{I}_n</span>, then <span class="math display">\begin{align}
-    \mathcal{P}(\{1,2\}) &amp;=  2^{-2n}\sum_{P \in \mathcal{P}_n}  \left|\sum_{a,a'}\sqrt{\lambda_a\lambda_{a'}}\bra{\phi_a}P\ket{\phi_{a'}}\bra{\psi_a}P \ket{\psi_{a'}}\right|^2\notag\\
+<p><em>Proof.</em> In the simplest case <span class="math inline">c = 2,d= 2</span>, a MPS state with <span class="math inline">\leq 2^k</span> bond dimension always has Schmidt decomposition <span class="math inline">\ket{L} = \sum_{a = 1}^{2^k} \sqrt{\lambda_a} \ket{\phi_a} \otimes \ket{\psi_a}</span> with <span class="math inline">\sum_a \lambda_a = 1</span>. Take <span class="math inline">P^{\{1,2\}} = P \otimes P,P^{\{1\}} = P \otimes \mathbb{I}_n</span>, then <span class="math display">
+\begin{align*}
+    &amp;\mathcal{P}(\{1,2\}) \\
+    &amp;=  2^{-2n}\sum_{P \in \mathcal{P}_n}  \left|\sum_{a,a'}\sqrt{\lambda_a\lambda_{a'}}\bra{\phi_a}P\ket{\phi_{a'}}\bra{\psi_a}P \ket{\psi_{a'}}\right|^2\notag\\
     &amp;\leq 2^{-2n}\sum_{P \in \mathcal{P}_n} \left( \sum_{a,a'}\left|\sqrt{\lambda_a\lambda_{a'}}\bra{\phi_a}P\ket{\phi_{a'}}\right|^2\right)\cdot \left(\sum_{a,a'}\left|\bra{\psi_a}P \ket{\psi_{a'}}\right|^2\right) \notag\\
-    &amp;\leq 2^{-2n + k}\sum_{P \in \mathcal{P}_n}  \sum_{a,a'}\lambda_a\lambda_{a'}\left|\bra{\phi_a}P\ket{\phi_{a'}}\right|^2 = 2^{-n + k} \sum_{a,a'}\lambda_a\lambda_{a'}\bra{\phi_a\phi_{a'}}\sum_{P \in \mathcal{P}_n} 2^{-n}P \otimes P\ket{\phi_{a'}\phi_a}\notag\\
+    &amp;\leq 2^{-2n + k}\sum_{P \in \mathcal{P}_n}  \sum_{a,a'}\lambda_a\lambda_{a'}\left|\bra{\phi_a}P\ket{\phi_{a'}}\right|^2 \\
+    &amp;= 2^{-n + k} \sum_{a,a'}\lambda_a\lambda_{a'}\bra{\phi_a\phi_{a'}}\sum_{P \in \mathcal{P}_n} 2^{-n}P \otimes P\ket{\phi_{a'}\phi_a}\notag\\
     &amp;=2^{-n + k} \sum_{a,a'}\lambda_a\lambda_{a'}\bra{\phi_a\phi_{a'}}\ket{\phi_{a}\phi_{a'}} =2^{-n + k},\\
-    \mathcal{P}(\{1\}) &amp;= 2^{-2n}\sum_{P \in \mathcal{P}_n}  \left|\sum_{a,a'}\sqrt{\lambda_a\lambda_{a'}}\bra{\phi_a}P\ket{\phi_{a'}}\bra{\psi_a}\ket{\psi_{a'}}\right|^2 = 2^{-2n}\sum_{P \in \mathcal{P}_n}  \left|\sum_{a}{\lambda_a}\bra{\phi_a}P\ket{\phi_{a}}\right|^2 \notag\\
-    &amp;=2^{-n}  \sum_{a}{\lambda_a\lambda_{a'}}\bra{\phi_a\phi_{a'}}\sum_{P \in \mathcal{P}_n} 2^{-n}P \otimes P\ket{\phi_{a}\phi_{a'}}= 2^{-n}  \sum_{a}{\lambda_a\lambda_{a'}}\bra{\phi_a\phi_{a'}}\ket{\phi_{a'}\phi_{a}}\leq 2^{-n}.
-\end{align}</span> This generalized to <span class="math inline">c&gt;2</span> case by noticing that <span class="math inline">\ket{L} = \sum_{a = 1}^{2^k} \sqrt{\lambda_a} \ket{\phi_a} \otimes \ket{\psi_a}</span> is satisfied for bipartition <span class="math inline">\{1,\cdots,l\} \cup \{l+1,c\}</span>. Take <span class="math inline">l</span> being the least on in set <span class="math inline">S</span>. For special case <span class="math inline">|S| = 1</span>, it is trivially the same as <span class="math inline">c = 2</span> case. For <span class="math inline">|S| \geq 2</span>, the same procedure followed: <span class="math display">\begin{align}
-    \mathcal{P}(S) &amp;=  2^{-2n}\sum_{P \in \mathcal{P}_n}  \left|\sum_{a,a'}\sqrt{\lambda_a\lambda_{a'}}\bra{\phi_a}P^{\{l\}}\ket{\phi_{a'}}\bra{\psi_a}P^{S - \{l\}} \ket{\psi_{a'}}\right|^2\leq 2^{-2n + k}\sum_{P \in \mathcal{P}_n}  \sum_{a,a'}\lambda_a\lambda_{a'}\left|\bra{\phi_a}P^{\{l\}}\ket{\phi_{a'}}\right|^2 \notag \\
-    &amp;= 2^{-n + k} \sum_{a,a'}\lambda_a\lambda_{a'}\bra{\phi_a\phi_{a'}}\sum_{P \in \mathcal{P}_n} 2^{-n}P^{\{l\}} \otimes P^{\{l\}}\ket{\phi_{a'}\phi_a}\leq 2^{-n + k} \sum_{a,a'}\lambda_a\lambda_{a'}=2^{-n + k}.
-\end{align}</span> ◻</p>
+    \mathcal{P}(\{1\}) &amp;= 2^{-2n}\sum_{P \in \mathcal{P}_n}  \left|\sum_{a,a'}\sqrt{\lambda_a\lambda_{a'}}\bra{\phi_a}P\ket{\phi_{a'}}\bra{\psi_a}\ket{\psi_{a'}}\right|^2 \\
+    &amp;= 2^{-2n}\sum_{P \in \mathcal{P}_n}  \left|\sum_{a}{\lambda_a}\bra{\phi_a}P\ket{\phi_{a}}\right|^2 \notag\\
+    &amp;=2^{-n}  \sum_{a}{\lambda_a\lambda_{a'}}\bra{\phi_a\phi_{a'}}\sum_{P \in \mathcal{P}_n} 2^{-n}P \otimes P\ket{\phi_{a}\phi_{a'}}\\
+    &amp;= 2^{-n}  \sum_{a}{\lambda_a\lambda_{a'}}\bra{\phi_a\phi_{a'}}\ket{\phi_{a'}\phi_{a}}\leq 2^{-n}.
+\end{align*}
+</span> This generalized to <span class="math inline">c&gt;2</span> case by noticing that <span class="math inline">\ket{L} = \sum_{a = 1}^{2^k} \sqrt{\lambda_a} \ket{\phi_a} \otimes \ket{\psi_a}</span> is satisfied for bipartition <span class="math inline">\{1,\cdots,l\} \cup \{l+1,c\}</span>. Take <span class="math inline">l</span> being the least on in set <span class="math inline">S</span>. For special case <span class="math inline">|S| = 1</span>, it is trivially the same as <span class="math inline">c = 2</span> case. For <span class="math inline">|S| \geq 2</span>, the same procedure followed: <span class="math display">
+\begin{align*}
+    \mathcal{P}(S) &amp;=  2^{-2n}\sum_{P \in \mathcal{P}_n}  \left|\sum_{a,a'}\sqrt{\lambda_a\lambda_{a'}}\bra{\phi_a}P^{\{l\}}\ket{\phi_{a'}}\bra{\psi_a}P^{S - \{l\}} \ket{\psi_{a'}}\right|^2 \\
+    &amp;\leq 2^{-2n + k}\sum_{P \in \mathcal{P}_n}  \sum_{a,a'}\lambda_a\lambda_{a'}\left|\bra{\phi_a}P^{\{l\}}\ket{\phi_{a'}}\right|^2 \notag \\
+    &amp;= 2^{-n + k} \sum_{a,a'}\lambda_a\lambda_{a'}\bra{\phi_a\phi_{a'}}\sum_{P \in \mathcal{P}_n} 2^{-n}P^{\{l\}} \otimes P^{\{l\}}\ket{\phi_{a'}\phi_a}\\
+    &amp;\leq 2^{-n + k} \sum_{a,a'}\lambda_a\lambda_{a'}=2^{-n + k}.
+\end{align*}
+</span></p>
 </div>
 </div>
 </div>

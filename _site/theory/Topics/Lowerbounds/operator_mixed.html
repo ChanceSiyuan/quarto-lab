@@ -271,17 +271,14 @@ window.Quarto = {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#sec-operator-mixed" id="toc-sec-operator-mixed" class="nav-link active" data-scroll-target="#sec-operator-mixed"><span class="header-section-number">1</span> Operator Mixed Ensembles</a>
+  <li><a href="#sec-general-ops" id="toc-sec-general-ops" class="nav-link active" data-scroll-target="#sec-general-ops"><span class="header-section-number">1</span> General Operators</a>
   <ul class="collapse">
-  <li><a href="#sec-general-ops" id="toc-sec-general-ops" class="nav-link" data-scroll-target="#sec-general-ops"><span class="header-section-number">1.1</span> General Operators</a>
-  <ul class="collapse">
-  <li><a href="#sec-single-copy" id="toc-sec-single-copy" class="nav-link" data-scroll-target="#sec-single-copy"><span class="header-section-number">1.1.1</span> Single-Copy Strategy</a></li>
+  <li><a href="#sec-single-copy" id="toc-sec-single-copy" class="nav-link" data-scroll-target="#sec-single-copy"><span class="header-section-number">1.1</span> Single-Copy Strategy</a></li>
   </ul></li>
-  <li><a href="#pauli-mixed-states" id="toc-pauli-mixed-states" class="nav-link" data-scroll-target="#pauli-mixed-states"><span class="header-section-number">1.2</span> Pauli mixed states</a></li>
-  <li><a href="#single-replica." id="toc-single-replica." class="nav-link" data-scroll-target="#single-replica."><span class="header-section-number">1.3</span> Single replica.</a></li>
-  <li><a href="#sec-single-clifford" id="toc-sec-single-clifford" class="nav-link" data-scroll-target="#sec-single-clifford"><span class="header-section-number">1.4</span> Single Replica with Clifford Restriction</a></li>
-  <li><a href="#sec-multi-replica-memory" id="toc-sec-multi-replica-memory" class="nav-link" data-scroll-target="#sec-multi-replica-memory"><span class="header-section-number">1.5</span> Multi-Replica with Bounded Memory</a></li>
-  </ul></li>
+  <li><a href="#pauli-mixed-states" id="toc-pauli-mixed-states" class="nav-link" data-scroll-target="#pauli-mixed-states"><span class="header-section-number">2</span> Pauli mixed states</a></li>
+  <li><a href="#single-replica." id="toc-single-replica." class="nav-link" data-scroll-target="#single-replica."><span class="header-section-number">3</span> Single replica.</a></li>
+  <li><a href="#sec-single-clifford" id="toc-sec-single-clifford" class="nav-link" data-scroll-target="#sec-single-clifford"><span class="header-section-number">4</span> Single Replica with Clifford Restriction</a></li>
+  <li><a href="#sec-multi-replica-memory" id="toc-sec-multi-replica-memory" class="nav-link" data-scroll-target="#sec-multi-replica-memory"><span class="header-section-number">5</span> Multi-Replica with Bounded Memory</a></li>
   </ul>
 </nav>
     </div>
@@ -308,50 +305,21 @@ window.Quarto = {
 
 
 <p><a href="../../../theory/Topics/Lowerbounds/index.html">← Back to Index</a></p>
-<section id="sec-operator-mixed" class="level1" data-number="1">
-<h1 data-number="1"><span class="header-section-number">1</span> Operator Mixed Ensembles</h1>
-<div class="problem">
-<p><span id="prob:Gibbtest" data-label="prob:Gibbtest"></span> Given access to either (i). A set of state <span class="math inline">{S}_{\mathcal{O}}:=\{(\mathbb{I}+ 3\varepsilon O_x)/d\}_{x \in \{1,\cdots,M\}}</span> or (ii) <span class="math inline">\rho = \mathbb{I}/2^n</span>, try to distinguish between these two cases with an error of at most <span class="math inline">1/2-\varepsilon</span>.</p>
-</div>
-<p>This problem determines the lower bound of classical shadow of <span class="math inline">\{O_x\}_{x \in \{1,\cdots,M\}}</span> and has a special case for discrimination of <span class="math inline">\mathbb{I}/d</span> and Pauli mixed state <span class="math inline">\rho = (\mathbb{I}+ 3\varepsilon P)/2^n</span> with <span class="math inline">P \in \mathcal{P}_n</span>.</p>
-<p>We first get intuition of this task based on Lemma. If we choose distribution on <span class="math inline">\mathcal{O}</span> supports on <span class="math inline">Z_1</span> operators only, we conclude that the value <span class="math inline">\|\mu_1^{(1)} - \mu_2^{(1)}\|_1</span> are separately <span class="math inline">\|3\varepsilon Z_1/2^n\|_1 = \mathrm{tr}\left({3\varepsilon \mathbb{I}/2^n}\right) = 3\varepsilon</span> and <span class="math display">
-\|4^{-n}\sum_{P \in \mathcal{P}}3\varepsilon P/2^n\|_1 \\
-= 3\varepsilon \left[\mathrm{tr}\left(\sqrt{AA^\dagger}\right) \right]^{n} \\
-= 3\varepsilon(\sqrt{3}/2)^n \sim \mathcal{O}(2^{-n}).
-</span> Here we use <span class="math inline">\mathrm{tr}\left(\sqrt{AA^\dagger}\right) = \sum_{\lambda(A)}|\lambda(A)|</span> and <span class="math display">\begin{align}
-A = \frac{I+X+Y+Z}{4} =4^{-1} \begin{pmatrix}2&amp;1- i\\1+i&amp;0\end{pmatrix}, \quad \lambda(A) = {\frac{1 - \sqrt{3}}{4},\frac{1 + \sqrt{3}}{4}}.
-\end{align}</span> This means that even though there exists easy distribution <span class="math inline">\mathrm{Pr}(P)=\delta(P - Z_1)</span> on Pauli operators that can be distinguished with <span class="math inline">\mathbb{I}/d</span> with single replica strategy, there also has distribution <span class="math inline">\mathrm{Pr}(P) = 4^{-n}</span> that might be hard. Based on this intuition, we set up hard distributions as uniform distribution on signed operators <span class="math inline">\{+1,-1\}\times \mathcal{O}</span>. This ensures its average is exactly <span class="math inline">\mathbb{I}/d</span>, thus being hard for 1-replica strategy.</p>
-<section id="sec-general-ops" class="level2" data-number="1.1">
-<h2 data-number="1.1" class="anchored" data-anchor-id="sec-general-ops"><span class="header-section-number">1.1</span> General Operators</h2>
-<section id="sec-single-copy" class="level3" data-number="1.1.1">
-<h3 data-number="1.1.1" class="anchored" data-anchor-id="sec-single-copy"><span class="header-section-number">1.1.1</span> Single-Copy Strategy</h3>
-<p>For shadow tomography of general operator set <span class="math inline">\{O_1,\cdots,O_M\}</span> where <span class="math inline">O_j</span> is an arbitrary <span class="math inline">n</span>-qubits operator, we build hard distribution by rotating Pauli <span class="math inline">Z</span> operators with independent Haar random unitary: <span class="math display">\begin{align}
-    O_{1},\cdots,O_{M/2} &amp;= U_1Z_1U_1^{\dagger}, \cdots, U_{M/2}Z_{M/2}U_{M/2}^{\dagger},\\
-    O_{M/2+1},\cdots,O_{M} &amp;= -U_1Z_1U_1^{\dagger}, \cdots, -U_{M/2}Z_{M/2}U_{M/2}^{\dagger},
-\end{align}</span> where <span class="math inline">U_1,\cdots,U_{M/2}</span> are independent Haar random unitaries. The signature is to ensure its average is <span class="math inline">\mathbb{I}/d</span> such that Lemma cannot give effective single copy strategy. According to Lemma, to distinguish (i) and (ii) with <span class="math inline">2/3</span> correction rate, which is <span class="math inline">\delta= 1/6</span> better that <span class="math inline">1/2</span>, we must have <span class="math inline">1/3=2\delta \leq \|\mathbb{E}_{x} p_{\rho_x} - p_{2^{-n}\mathbb I}\|_{\mathrm{TV}}</span>, where <span class="math inline">x</span> is an arbitrary distribution on <span class="math inline">1,\cdots,M</span>. It is sufficient to take the uniform distribution of <span class="math inline">x</span>. Based on Lemma, <span class="math inline">1/3\leq \|\mathbb{E}_{x} p_{\rho_x} - p_{2^{-n}\mathbb I}\|_{\mathrm{TV}} \leq 1 - \min_{l} \mathbb{E}_{x} L_{x}(l)</span>. According to the rank-1 reduction in Lemma, we calculate the leaves’ likelihood <span class="math inline">\forall l</span> as <span class="math display">\begin{align}
-\mathbb{E}_{x} L_{x}(l) &amp;= \frac{\mathbb{E}_{x} p_{\rho_x}(l)}{p_{2^{-n}\mathbb I}(l)} = \mathbb{E}_{x} \prod_{t = 1}^T \frac{w_{s_t}^{u_t}\bra{\psi_{s_t}^{u_t}}\rho_x \ket{\psi_{s_t}^{u_t}}}{2^{-n}w_{s_t}^{u_t}}=\mathbb{E}_{x} \prod_{t = 1}^T \left(1+ 3\varepsilon\cdot \bra{\psi_{s_t}^{u_t}} O_x \ket{\psi_{s_t}^{u_t}}\right)\notag\\
-&amp;=\mathbb{E}_{x} \text{exp}\left[\sum_{t = 1}^T \ln\left(1+ 3\varepsilon\cdot \bra{\psi_{s_t}^{u_t}} O_x \ket{\psi_{s_t}^{u_t}}\right)\right]\geq \text{exp}\left[\sum_{t = 1}^T \mathbb{E}_{x} \ln\left(1+ 3\varepsilon\cdot \bra{\psi_{s_t}^{u_t}} O_x \ket{\psi_{s_t}^{u_t}}\right)\right]\notag\\
-&amp;=\text{exp}\left[\sum_{t = 1}^T M^{-1} \ln \left(\prod_{x = 1}^{M/2}\left(1+ 3\varepsilon\cdot \bra{\psi_{s_t}^{u_t}} O_x \ket{\psi_{s_t}^{u_t}}\right)\left(1- 3\varepsilon\cdot \bra{\psi_{s_t}^{u_t}} O_x \ket{\psi_{s_t}^{u_t}}\right)\right)\right]\notag\\
-&amp;=\text{exp}\left[\sum_{t = 1}^T M^{-1} \sum_{x = 1}^{M/2}\ln \left(1- 9\varepsilon^2\cdot \bra{\psi_{s_t}^{u_t}} O_x \ket{\psi_{s_t}^{u_t}}^2\right)\right] \notag\\
-&amp;\geq \text{exp}\left[-9\varepsilon^2\sum_{t = 1}^T \frac{2}{M}\sum_{x = 1}^{M/2} \bra{\psi_{s_t}^{u_t}} O_x \ket{\psi_{s_t}^{u_t}}^2\right] \geq \text{exp}\left[-9\varepsilon^2 T \sup_{\ket{\phi}}\frac{2}{M}\sum_{x = 1}^{M/2} \bra{\phi} O_x \ket{\phi}^2\right] \label{eq:sig_canc_TVlb}
-\end{align}</span> Here we use <span class="math inline">\ln(1 - x)\geq -2x, \forall x \in [0,0.796]</span>. This condition is satisfied if and only if <span class="math inline">9\varepsilon^2&lt;0.796, \varepsilon &lt;0.29</span>. Thus for <span class="math inline">\beta =\text{exp}\left[-9\varepsilon^2 T \delta(O_1,\cdots,O_M)\right]</span>, we have <span class="math inline">\text{Pr}_{l \sim p^{(0)}}[L(l) \leq \beta] = 0</span>, which gives the inequality use the fact that <span class="math inline">1 - x \leq e^{-x},\forall x \in \mathbb{R}</span>. <span class="math display">\begin{align}
-&amp;1/3\leq 0 +(1 - \beta) = 1 - e^{-9\varepsilon^2 T \delta(O_1,\cdots,O_M)}  \leq 9\varepsilon^2 T \delta(O_1,\cdots,O_M) \notag\\
-&amp;\Rightarrow T \geq \Omega(\frac{1}{\varepsilon^2 \delta(O_1,\cdots,O_M)}), \text{~where~} \delta(O_1,\cdots,O_M):= \sup_{\ket{\phi}} \frac{2}{M}\sum_{i =1}^{M/2}\bra{\phi} O_i \ket{\phi}^2. \label{eq:LB_shadow_eq}
-\end{align}</span> Now we calculate the value <span class="math inline">\delta(O_1,\cdots,O_M)</span>. Noted that the random variable <span class="math inline">\bra{\phi} O_i \ket{\phi},\{O_i\}_i \sim \mathcal{O}</span> and <span class="math inline">\bra{\psi_i} Z_n \ket{\psi_i}, \ket{\psi_i} \sim \text{Haar}</span> has the same distribution. Thus, it is sufficient to discuss the property of function <span class="math inline">f(\ket{\psi}):= \bra{\psi} Z_n \ket{\psi}</span> with Haar random inputs.</p>
-<div class="callout callout-style-default callout-important no-icon callout-titled">
+<p>Before diving into the technical proof of distinguishability lower bounds, we first build intuition about <strong>when two ensembles are hard to distinguish</strong>.</p>
+<p><strong>Key Insight:</strong> If the <span class="math inline">k</span>-copy averaged states <span class="math inline">\mu^{(k)}_i := \mathbb{E}_{\rho \sim \mathcal{E}_i}[\rho^{\otimes k}]</span> are distinguishable (i.e., have large trace distance), then the ensembles themselves can be efficiently distinguished using <span class="math inline">k</span>-replica measurements.</p>
+<div id="lem-hard_necess1" class="callout callout-style-default callout-important no-icon callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Important</span>Lemma
+Lemma&nbsp;1: (Necessary Condition for Hardness)
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p><span id="lemma:expon_cent_ineq" data-label="lemma:expon_cent_ineq"></span> Given function <span class="math inline">f(\ket{\psi}):= \bra{\psi} Z_n \ket{\psi}</span> with independent Haar random inputs, we conclude that <span class="math display">\begin{align}
-        &amp;\text{Pr}\left[\left|\frac{1}{R}\sum_{i =1}^{R} f(\ket{\psi_i})^2 - \mathbb{E}_{\ket{\psi} \sim \text{Haar}}\left[ f(\ket{\psi})^2\right]\right| \geq t\right] \leq 2 e^{-R \min(t^2/\lambda^2, t/\lambda)},\\
-        &amp; \text{where~} \lambda = 288\pi^3/2^n,\quad \mathbb{E}_{\ket{\psi} \sim \text{Haar}} [f(\ket{\psi_i})^2] = \frac{1}{2^n + 1}
-\end{align}</span></p>
+<p>Given two state ensembles <span class="math inline">\mathcal{E}_1, \mathcal{E}_2</span>, define their <span class="math inline">k</span>-copy moments as <span class="math inline">\mu^{(k)}_i := \mathbb{E}_{\rho \sim \mathcal{E}_i}[\rho^{\otimes k}]</span>. If these moments are <span class="math inline">\varepsilon</span>-distinguishable: <span class="math display">
+\|\mu^{(k)}_1 - \mu^{(k)}_2\|_{1} \geq \varepsilon,
+</span> then there exists a <span class="math inline">k</span>-replica measurement strategy that distinguishes <span class="math inline">\mathcal{E}_1</span> from <span class="math inline">\mathcal{E}_2</span> using only <span class="math inline">O(1/\varepsilon^2)</span> samples.</p>
 </div>
 </div>
 <div class="callout callout-style-default callout-note callout-titled">
@@ -366,29 +334,106 @@ A = \frac{I+X+Y+Z}{4} =4^{-1} \begin{pmatrix}2&amp;1- i\\1+i&amp;0\end{pmatrix},
 </div>
 <div id="callout-2" class="callout-2-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
-<p><em>Proof.</em> ◻</p>
+<p>The trace norm has a variational characterization: <span class="math inline">\|A\|_{1} = \max_{\|O\|_{\infty} \leq 1}\mathrm{tr}(O \cdot A)</span>. Thus, <span class="math inline">\|\mu^{(k)}_1 - \mu^{(k)}_2\|_{1} \geq \varepsilon</span> implies the existence of an observable <span class="math inline">O</span> with <span class="math inline">\|O\|_{\infty} \leq 1</span> such that: <span class="math display">
+\mathrm{tr}(O \mu^{(k)}_1) - \mathrm{tr}(O \mu^{(k)}_2) \geq \varepsilon.
+</span></p>
+<ul>
+<li>(Strategy) Measure <span class="math inline">O</span> on <span class="math inline">k</span>-replica states <span class="math inline">\rho^{\otimes k}</span> and construct an estimator <span class="math inline">\hat{o}</span> for <span class="math inline">\mathrm{tr}(O \mu^{(k)})</span>.</li>
+<li>(Bounded range) Since <span class="math inline">\|O\|_{\infty} \leq 1</span>, we have <span class="math inline">|\mathrm{tr}(O \rho^{\otimes k})| \leq 1</span>.</li>
+<li>(Sample complexity) By Hoeffding’s inequality, <span class="math inline">N = O(\varepsilon^{-2})</span> samples suffice to estimate <span class="math inline">\mathrm{tr}(O \mu^{(k)})</span> with additive error <span class="math inline">\varepsilon/2</span>, which solves the discrimination problem. ◻</li>
+</ul>
 </div>
 </div>
 </div>
-<p>Now given one state <span class="math inline">\ket{\phi}</span>, we proved that with high probability <span class="math inline">\sum_{O \in \mathcal{O}} |\mathcal{O}|^{-1}\bra{\phi} O \ket{\phi}^2</span> will not deviate from its expectation too much, according to the Lemma. Nevertheless, we hope to prove this property for all states <span class="math inline">\phi</span>, that is, to bound the deviation of <span class="math inline">\sup_{\ket{\phi}}\sum_{O \in \mathcal{O}} |\mathcal{O}|^{-1}\bra{\phi} O \ket{\phi}^2</span>. To do this, to first defined an <span class="math inline">\eta</span>-covering set <span class="math inline">\mathcal{N}_{\eta}</span> on the n-qubit pure states, as illustrated in Lemma.</p>
-<div class="callout callout-style-default callout-important no-icon callout-titled">
+<p><strong>Remark (Necessary but not sufficient):</strong> The above lemma provides only a <em>necessary</em> condition for hardness. Even when two ensembles have <strong>identical</strong> <span class="math inline">k</span>-copy moments, adaptive <span class="math inline">k</span>-copy strategies (i.e., the power of classical correlation) may still distinguish them efficiently.</p>
+<ul>
+<li>(Counterexample) Consider the following two ensembles on a single qubit:
+<ul>
+<li><span class="math inline">\mathcal{E}_1 = \{\ket{0}\!\bra{0}, \ket{1}\!\bra{1}\}</span> with probability <span class="math inline">1/2</span> each (Z-basis states)</li>
+<li><span class="math inline">\mathcal{E}_2 = \{\ket{+}\!\bra{+}, \ket{-}\!\bra{-}\}</span> with probability <span class="math inline">1/2</span> each (X-basis states)</li>
+</ul></li>
+<li>(Same 1-copy moments) Both ensembles have identical 1-copy moments: <span class="math inline">\mu_1^{(1)} = \mu_2^{(1)} = \mathbb{I}/2</span>.</li>
+<li>(Different 2-copy moments) However, their 2-copy moments differ:
+<ul>
+<li><span class="math inline">\mu_1^{(2)} = (\ket{00}\!\bra{00} + \ket{11}\!\bra{11})/2</span> (classically correlated)</li>
+<li><span class="math inline">\mu_2^{(2)} = (\ket{++}\!\bra{++} + \ket{--}\!\bra{--})/2</span> (different correlation structure)</li>
+</ul></li>
+<li>(Adaptive 1-copy distinguishes) An adaptive strategy with <span class="math inline">T=2</span> rounds of 1-copy Z-measurements can distinguish them:
+<ul>
+<li>For <span class="math inline">\mathcal{E}_1</span>: outcomes are always correlated — either <span class="math inline">(0,0)</span> or <span class="math inline">(1,1)</span></li>
+<li>For <span class="math inline">\mathcal{E}_2</span>: outcomes are independent random bits — all four outcomes <span class="math inline">(0,0), (0,1), (1,0), (1,1)</span> equally likely</li>
+</ul></li>
+</ul>
+<p>The key insight is that <span class="math inline">T</span> rounds of adaptive <span class="math inline">k</span>-copy measurements can probe the <span class="math inline">kT</span>-copy moments, not just the <span class="math inline">k</span>-copy moments.</p>
+<p>With this intuition in mind, now we reviewed the information lower bound to distinguish Haar random state ensembles. Perhaps the most simple one are the maximum mixed state <span class="math inline">\mathbb{I}(d)/d</span> with operator mixed ensemble. # Operator Mixed Ensembles {#sec-operator-mixed}</p>
+<div id="def-shadow-problem" class="callout callout-style-default callout-note no-icon callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Important</span>Lemma
+Definition&nbsp;1: Problem (Shadow Tomography Lower Bound)
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p><span id="lemma:covering_on_nqubit" data-label="lemma:covering_on_nqubit"></span> An <span class="math inline">\eta</span>-covering set <span class="math inline">\mathcal{N}_{\eta}</span> on the n-qubit pure states is a finite set of n-qubit pure states such that <span class="math display">
-\forall \ket{\phi} \in \mathcal{H}_n, \exists \ket{\psi} \in \mathcal{N}_{\eta}, \\
-\text{s.t.~} \|\ket{\phi} - \ket{\psi}\|_2 \leq \eta.
-</span> The cardinality of <span class="math inline">\mathcal{N}_{\eta}</span> is upper bounded by <span class="math inline">|\mathcal{N}_{\eta}| \leq (1 + 2/\eta)^{2^{n+1}}</span>.</p>
+<p>Given access to either (i) a set of states <span class="math inline">{S}_{\mathcal{O}}:=\{(\mathbb{I}+ 3\varepsilon O_x)/d\}_{x},x \in \{1,\cdots,M\}</span> or (ii) <span class="math inline">\rho = \mathbb{I}/2^n</span>, try to distinguish between these two cases with an error of at most <span class="math inline">1/2-\varepsilon</span>.</p>
+</div>
+</div>
+<p>This problem determines the sample complexity lower bound for classical shadow tomography of observable set <span class="math inline">\{O_x\}_{x \in \{1,\cdots,M\}}</span>. A special case is the discrimination between <span class="math inline">\mathbb{I}/d</span> and Pauli-mixed states <span class="math inline">\rho_P = (\mathbb{I}+ 3\varepsilon P)/2^n</span> with <span class="math inline">P \in \mathcal{P}_n</span>.</p>
+<hr>
+<p><strong>Intuition from <a href="#lem-hard_necess1" class="quarto-xref">Lemma&nbsp;1</a>:</strong> The difficulty of distinguishing two ensembles depends on their <span class="math inline">k</span>-copy moment difference <span class="math inline">\|\mu_1^{(k)} - \mu_2^{(k)}\|_1</span>. Different choices of the operator distribution <span class="math inline">\mathcal{D}</span> on <span class="math inline">\mathcal{O}</span> lead to vastly different hardness:</p>
+<ul>
+<li><p>(Easy case) If <span class="math inline">\mathcal{D}</span> is supported on a single operator, e.g., <span class="math inline">\mathrm{Pr}(O) = \delta(O - Z_1)</span>, then: <span class="math display">
+\|\mu_{\mathcal{D}}^{(1)} - \mu_{\mathbb{I}/d}^{(1)}\|_1 = \|3\varepsilon Z_1/2^n\|_1 = 3\varepsilon = \Theta(1).
+</span> This is easily distinguishable with <span class="math inline">O(1/\varepsilon^2)</span> single-copy measurements.</p></li>
+<li><p>(Hard case) If <span class="math inline">\mathcal{D}</span> is uniform over all <span class="math inline">n</span>-qubit Paulis, i.e., <span class="math inline">\mathrm{Pr}(P) = 4^{-n}</span>, then the averaged state becomes: <span class="math display">
+\mu_{\mathcal{D}}^{(1)} = \mathbb{E}_{P \sim \mathcal{P}_n}\left[\frac{\mathbb{I} + 3\varepsilon P}{2^n}\right] = \frac{\mathbb{I}}{2^n} + \frac{3\varepsilon}{4^n} \sum_{P \in \mathcal{P}_n} \frac{P}{2^n}.
+</span> The trace norm of the difference scales as: <span class="math display">
+\|\mu_{\mathcal{D}}^{(1)} - \mathbb{I}/d\|_1 = 3\varepsilon \cdot \left(\frac{\sqrt{3}}{2}\right)^n = O(2^{-0.21n}),
+</span> where we used the fact that <span class="math inline">\|A^{\otimes n}\|_1 = \|A\|_1^n</span> for <span class="math inline">A = \frac{I+X+Y+Z}{4}</span> with eigenvalues <span class="math inline">\lambda(A) = \frac{1 \pm \sqrt{3}}{4}</span> and <span class="math inline">\|A\|_1 = \frac{\sqrt{3}}{2}</span>.</p></li>
+</ul>
+<hr>
+<p><strong>Key insight:</strong> The trace distance between the averaged states vanishes exponentially when the operator distribution is spread uniformly. This motivates the construction of <strong>hard instances</strong> using signed operator ensembles.</p>
+<p><strong>Hard distribution construction:</strong> To make the 1-copy moments <em>identical</em> (not just close), we use a signed ensemble <span class="math inline">\{+1,-1\} \times \mathcal{O}</span> with uniform distribution. Since <span class="math inline">\mathbb{E}_{s \in \{\pm 1\}}[s \cdot O] = 0</span> for any <span class="math inline">O</span>, this ensures: <span class="math display">
+\mu_{\text{signed}}^{(1)} = \mathbb{E}_{s,O}\left[\frac{\mathbb{I} + 3\varepsilon \cdot s \cdot O}{d}\right] = \frac{\mathbb{I}}{d} = \mu_{\mathbb{I}/d}^{(1)}.
+</span> By <a href="#lem-hard_necess1" class="quarto-xref">Lemma&nbsp;1</a>, any single-copy strategy cannot distinguish these ensembles using 1-copy moment information alone.</p>
+<section id="sec-general-ops" class="level2" data-number="1">
+<h2 data-number="1" class="anchored" data-anchor-id="sec-general-ops"><span class="header-section-number">1</span> General Operators</h2>
+<section id="sec-single-copy" class="level3" data-number="1.1">
+<h3 data-number="1.1" class="anchored" data-anchor-id="sec-single-copy"><span class="header-section-number">1.1</span> Single-Copy Strategy</h3>
+<p>For shadow tomography of general operator set <span class="math inline">\{O_1,\cdots,O_M\}</span> where <span class="math inline">O_j</span> is an arbitrary <span class="math inline">n</span>-qubits operator, we build hard distribution by rotating Pauli <span class="math inline">Z</span> operators with independent Haar random unitary: <span class="math display">\begin{align}
+    O_{1},\cdots,O_{M/2} &amp;= U_1Z_1U_1^{\dagger}, \cdots, U_{M/2}Z_{M/2}U_{M/2}^{\dagger},\\
+    O_{M/2+1},\cdots,O_{M} &amp;= -U_1Z_1U_1^{\dagger}, \cdots, -U_{M/2}Z_{M/2}U_{M/2}^{\dagger},
+\end{align}</span> where <span class="math inline">U_1,\cdots,U_{M/2}</span> are independent Haar random unitaries. The signature is to ensure its average is <span class="math inline">\mathbb{I}/d</span> such that Lemma cannot give effective single copy strategy. According to Lemma, to distinguish (i) and (ii) with <span class="math inline">2/3</span> correction rate, which is <span class="math inline">\delta= 1/6</span> better that <span class="math inline">1/2</span>, we must have <span class="math inline">1/3=2\delta \leq \|\mathbb{E}_{x} p_{\rho_x} - p_{2^{-n}\mathbb I}\|_{\mathrm{TV}}</span>, where <span class="math inline">x</span> is an arbitrary distribution on <span class="math inline">1,\cdots,M</span>. It is sufficient to take the uniform distribution of <span class="math inline">x</span>. Based on Lemma, <span class="math inline">1/3\leq \|\mathbb{E}_{x} p_{\rho_x} - p_{2^{-n}\mathbb I}\|_{\mathrm{TV}} \leq 1 - \min_{l} \mathbb{E}_{x} L_{x}(l)</span>. According to the rank-1 reduction in Lemma, we calculate the leaves’ likelihood <span class="math inline">\forall l</span> as <span class="math display">\begin{align}
+\mathbb{E}_{x} L_{x}(l) &amp;= \frac{\mathbb{E}_{x} p_{\rho_x}(l)}{p_{2^{-n}\mathbb I}(l)} = \mathbb{E}_{x} \prod_{t = 1}^T \frac{w_{s_t}^{u_t}\bra{\psi_{s_t}^{u_t}}\rho_x \ket{\psi_{s_t}^{u_t}}}{2^{-n}w_{s_t}^{u_t}}=\mathbb{E}_{x} \prod_{t = 1}^T \left(1+ 3\varepsilon\cdot \bra{\psi_{s_t}^{u_t}} O_x \ket{\psi_{s_t}^{u_t}}\right)\notag\\
+&amp;=\mathbb{E}_{x} \text{exp}\left[\sum_{t = 1}^T \ln\left(1+ 3\varepsilon\cdot \bra{\psi_{s_t}^{u_t}} O_x \ket{\psi_{s_t}^{u_t}}\right)\right]\geq \text{exp}\left[\sum_{t = 1}^T \mathbb{E}_{x} \ln\left(1+ 3\varepsilon\cdot \bra{\psi_{s_t}^{u_t}} O_x \ket{\psi_{s_t}^{u_t}}\right)\right]\notag\\
+&amp;=\text{exp}\left[\sum_{t = 1}^T M^{-1} \ln \left(\prod_{x = 1}^{M/2}\left(1+ 3\varepsilon\cdot \bra{\psi_{s_t}^{u_t}} O_x \ket{\psi_{s_t}^{u_t}}\right)\left(1- 3\varepsilon\cdot \bra{\psi_{s_t}^{u_t}} O_x \ket{\psi_{s_t}^{u_t}}\right)\right)\right]\notag\\
+&amp;=\text{exp}\left[\sum_{t = 1}^T M^{-1} \sum_{x = 1}^{M/2}\ln \left(1- 9\varepsilon^2\cdot \bra{\psi_{s_t}^{u_t}} O_x \ket{\psi_{s_t}^{u_t}}^2\right)\right] \notag\\
+&amp;\geq \text{exp}\left[-9\varepsilon^2\sum_{t = 1}^T \frac{2}{M}\sum_{x = 1}^{M/2} \bra{\psi_{s_t}^{u_t}} O_x \ket{\psi_{s_t}^{u_t}}^2\right] \geq \text{exp}\left[-9\varepsilon^2 T \sup_{\ket{\phi}}\frac{2}{M}\sum_{x = 1}^{M/2} \bra{\phi} O_x \ket{\phi}^2\right] \label{eq:sig_canc_TVlb}
+\end{align}</span> Here we use <span class="math inline">\ln(1 - x)\geq -2x, \forall x \in [0,0.796]</span>. This condition is satisfied if and only if <span class="math inline">9\varepsilon^2&lt;0.796, \varepsilon &lt;0.29</span>. Thus for <span class="math inline">\beta =\text{exp}\left[-9\varepsilon^2 T \delta(O_1,\cdots,O_M)\right]</span>, we have <span class="math inline">\text{Pr}_{l \sim p^{(0)}}[L(l) \leq \beta] = 0</span>, which gives the inequality use the fact that <span class="math inline">1 - x \leq e^{-x},\forall x \in \mathbb{R}</span>. <span class="math display">\begin{align}
+&amp;1/3\leq 0 +(1 - \beta) = 1 - e^{-9\varepsilon^2 T \delta(O_1,\cdots,O_M)}  \leq 9\varepsilon^2 T \delta(O_1,\cdots,O_M) \notag\\
+&amp;\Rightarrow T \geq \Omega(\frac{1}{\varepsilon^2 \delta(O_1,\cdots,O_M)}), \text{~where~} \delta(O_1,\cdots,O_M):= \sup_{\ket{\phi}} \frac{2}{M}\sum_{i =1}^{M/2}\bra{\phi} O_i \ket{\phi}^2. \label{eq:LB_shadow_eq}
+\end{align}</span> Now we calculate the value <span class="math inline">\delta(O_1,\cdots,O_M)</span>. Noted that the random variable <span class="math inline">\bra{\phi} O_i \ket{\phi},\{O_i\}_i \sim \mathcal{O}</span> and <span class="math inline">\bra{\psi_i} Z_n \ket{\psi_i}, \ket{\psi_i} \sim \text{Haar}</span> has the same distribution. Thus, it is sufficient to discuss the property of function <span class="math inline">f(\ket{\psi}):= \bra{\psi} Z_n \ket{\psi}</span> with Haar random inputs.</p>
+<div id="lem-expon-cent-ineq" class="callout callout-style-default callout-important no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Lemma&nbsp;2: (Exponential Concentration Inequality)
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Given function <span class="math inline">f(\ket{\psi}):= \bra{\psi} Z_n \ket{\psi}</span> with independent Haar random inputs, we have: <span class="math display">
+\begin{align}
+&amp;\text{Pr}\left[\left|\frac{1}{R}\sum_{i =1}^{R} f(\ket{\psi_i})^2 - \mathbb{E}_{\ket{\psi} \sim \text{Haar}}\left[ f(\ket{\psi})^2\right]\right| \geq t\right] \leq 2 e^{-R \min(t^2/\lambda^2, t/\lambda)},\\
+&amp; \text{where~} \lambda = 288\pi^3/2^n,\quad \mathbb{E}_{\ket{\psi} \sim \text{Haar}} [f(\ket{\psi_i})^2] = \frac{1}{2^n + 1}
+\end{align}
+</span></p>
 </div>
 </div>
 <div class="callout callout-style-default callout-note callout-titled">
-<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-5-contents" aria-controls="callout-5" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
@@ -397,7 +442,39 @@ A = \frac{I+X+Y+Z}{4} =4^{-1} \begin{pmatrix}2&amp;1- i\\1+i&amp;0\end{pmatrix},
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-4" class="callout-4-contents callout-collapse collapse">
+<div id="callout-5" class="callout-5-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><em>Proof.</em> ◻</p>
+</div>
+</div>
+</div>
+<p>Now given one state <span class="math inline">\ket{\phi}</span>, we proved that with high probability <span class="math inline">\sum_{O \in \mathcal{O}} |\mathcal{O}|^{-1}\bra{\phi} O \ket{\phi}^2</span> will not deviate from its expectation too much, according to the Lemma. Nevertheless, we hope to prove this property for all states <span class="math inline">\phi</span>, that is, to bound the deviation of <span class="math inline">\sup_{\ket{\phi}}\sum_{O \in \mathcal{O}} |\mathcal{O}|^{-1}\bra{\phi} O \ket{\phi}^2</span>. To do this, to first defined an <span class="math inline">\eta</span>-covering set <span class="math inline">\mathcal{N}_{\eta}</span> on the n-qubit pure states, as illustrated in Lemma.</p>
+<div id="lem-covering" class="callout callout-style-default callout-important no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Lemma&nbsp;3: (Covering Net on n-Qubit States)
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>An <span class="math inline">\eta</span>-covering set <span class="math inline">\mathcal{N}_{\eta}</span> on the n-qubit pure states is a finite set of n-qubit pure states such that <span class="math display">
+\forall \ket{\phi} \in \mathcal{H}_n, \exists \ket{\psi} \in \mathcal{N}_{\eta}, \quad \text{s.t.~} \|\ket{\phi} - \ket{\psi}\|_2 \leq \eta.
+</span> The cardinality of <span class="math inline">\mathcal{N}_{\eta}</span> is upper bounded by <span class="math inline">|\mathcal{N}_{\eta}| \leq (1 + 2/\eta)^{2^{n+1}}</span>.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-7-contents" aria-controls="callout-7" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Proof (Click to expand)
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-7" class="callout-7-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <p><em>Proof.</em> The set of n-qubit pure states corresponds to the unit sphere in the Hilbert space <span class="math inline">\mathcal{H}(n) \cong \mathbb{C}^{2^n}</span>. This complex space of dimension <span class="math inline">2^n</span> is equivalent to a real space of dimension <span class="math inline">D = 2 \cdot 2^n = 2^{n+1}</span>. The states are thus points on the unit sphere <span class="math inline">S^{D-1}</span> in <span class="math inline">\mathbb{R}^D</span>. Let <span class="math inline">\mathcal{N}_{\eta} = \{\ket{\psi_1}, \ket{\psi_2}, \dots, \ket{\psi_M}\}</span> be a maximal set of n-qubit pure states such that the Euclidean distance between any two distinct states in the set is greater than <span class="math inline">\eta</span>. This is known as an <span class="math inline">\eta</span>-packing. We first argue that this set <span class="math inline">\mathcal{N}_{\eta}</span> is also an <span class="math inline">\eta</span>-covering net. If it were not, then <span class="math inline">\exists \ket{\phi} \in \mathcal{H}_n</span> such that <span class="math inline">\forall \ket{\psi_i} \in \mathcal{N}_{\eta} ,\|\ket{\phi} - \ket{\psi_i}\|_2 &gt; \eta</span>, which contradicts the assumption that <span class="math inline">\mathcal{N}_{\eta}</span> is a maximal set. Therefore, any maximal <span class="math inline">\eta</span>-packing is an <span class="math inline">\eta</span>-covering net. The problem is now reduced to finding an upper bound on the size <span class="math inline">M = |\mathcal{N}_{\eta}|</span> of such a packing. Consider a set of open balls <span class="math inline">\{B(\ket{\psi_i}, \eta/2)\}_{i=1}^M</span> of radius <span class="math inline">\eta/2</span> centered at each point of our set <span class="math inline">\mathcal{N}_{\eta}</span>. Since for any <span class="math inline">i \neq j</span>, we have <span class="math inline">\|\ket{\psi_i} - \ket{\psi_j}\|_2 &gt; \eta</span>, the triangle inequality implies that these balls are disjoint. All these disjoint balls are contained within a larger ball of radius <span class="math inline">1 + \eta/2</span> centered at the origin. This is because each <span class="math inline">\ket{\psi_i}</span> is on the unit sphere (norm 1), and any point in the ball <span class="math inline">B(\ket{\psi_i}, \eta/2)</span> has a norm of at most <span class="math inline">\|\ket{\psi_i}\|_2 + \eta/2 = 1 + \eta/2</span>. The total volume of these <span class="math inline">M</span> disjoint balls cannot exceed the volume of the larger containing ball. Let <span class="math inline">V_D(r)</span> be the volume of a <span class="math inline">D</span>-dimensional ball of radius <span class="math inline">r</span>. We have <span class="math inline">\sum_{i=1}^M V_D(\eta/2) \le V_D(1 + \eta/2)</span>. Since all the small balls have the same volume, this simplifies to <span class="math inline">M \cdot V_D(\eta/2) \le V_D(1 + \eta/2)</span>. The volume of a <span class="math inline">D</span>-dimensional ball of radius <span class="math inline">r</span> is given by <span class="math inline">C_D r^D</span> for some constant <span class="math inline">C_D</span> that depends only on the dimension <span class="math inline">D</span>. Thus, we can write <span class="math inline">M \cdot C_D (\eta/2)^D \le C_D (1 + \eta/2)^D</span>. Canceling the constant <span class="math inline">C_D</span> and substituting back the dimension <span class="math inline">D = 2^{n+1}</span>, we get the upper bound on <span class="math inline">M</span> <span class="math display">\begin{align}
     |\mathcal{N}_{\eta}| = M \le \frac{(1 + \eta/2)^D}{(\eta/2)^D} = \left(\frac{1 + \eta/2}{\eta/2}\right)^D = \left(1 + \frac{2}{\eta}\right)^D.
@@ -406,21 +483,21 @@ A = \frac{I+X+Y+Z}{4} =4^{-1} \begin{pmatrix}2&amp;1- i\\1+i&amp;0\end{pmatrix},
 </div>
 </div>
 <p>Then the low-deviation condition that satisfied for arbitrary <span class="math inline">\ket{\phi} \in \mathcal{H}(n)</span> also satisfied on set <span class="math inline">\mathcal{N}_{\eta}</span>, only with a <span class="math inline">|\mathcal{N}_\eta|</span> larger error probability. After this, we show that the function <span class="math inline">g(\ket{\phi}):=\sum_{O \in \mathcal{O}} |\mathcal{O}|^{-1}\bra{\phi} O \ket{\phi}^2</span> is Lipschitz continuous, which means that the difference of function value is upper bounded by the variables difference. Combining the Lipschitz continuity and the property of the <span class="math inline">\eta</span>-covering, we show upper bounds for the value <span class="math inline">\sup_{\ket{\phi}}\sum_{O \in \mathcal{O}} |\mathcal{O}|^{-1}\bra{\phi} O \ket{\phi}^2</span>, as rigrously illustrated in Lemma.</p>
-<div class="callout callout-style-default callout-important no-icon callout-titled">
+<div id="lem-lipschitz-covering" class="callout callout-style-default callout-important no-icon callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Important</span>Lemma
+Lemma&nbsp;4: (Lipschitz Extension via Covering)
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p><span id="lemma:point_to_uniform" data-label="lemma:point_to_uniform"></span> Given an L-Lipschitz continuous function <span class="math inline">f:V \to \mathbb{R}</span> on metric space <span class="math inline">V</span> and an <span class="math inline">\eta</span>-covering set <span class="math inline">\mathcal{N}_{\eta}</span> of <span class="math inline">V</span>, if <span class="math inline">\forall x \in \mathcal{N}_{\eta}, |f(x) - c| &lt; t</span>, then <span class="math inline">\forall x \in V, |f(x) - c| &lt; t + L \eta</span>.</p>
+<p>Given an L-Lipschitz continuous function <span class="math inline">f:V \to \mathbb{R}</span> on metric space <span class="math inline">V</span> and an <span class="math inline">\eta</span>-covering set <span class="math inline">\mathcal{N}_{\eta}</span> of <span class="math inline">V</span>, if <span class="math inline">\forall x \in \mathcal{N}_{\eta}, |f(x) - c| &lt; t</span>, then <span class="math inline">\forall x \in V, |f(x) - c| &lt; t + L \eta</span>.</p>
 </div>
 </div>
 <div class="callout callout-style-default callout-note callout-titled">
-<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-6-contents" aria-controls="callout-6" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-9-contents" aria-controls="callout-9" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
@@ -429,7 +506,7 @@ A = \frac{I+X+Y+Z}{4} =4^{-1} \begin{pmatrix}2&amp;1- i\\1+i&amp;0\end{pmatrix},
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-6" class="callout-6-contents callout-collapse collapse">
+<div id="callout-9" class="callout-9-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <p><em>Proof.</em> By definition, we know that <span class="math inline">\forall x \in V, \exists r_x \in \mathcal{N}_{\eta} \text{~s.t.~} |r_x - x| \leq \eta</span>. Then we conclude <span class="math display">\begin{align}
         \forall x \in V, |f(x) - c| &amp;\leq |f(x) - f(r_x)| + |f(r_x) - c|\leq L\|x - r_x\| + t \leq L\eta + t.
@@ -438,29 +515,39 @@ A = \frac{I+X+Y+Z}{4} =4^{-1} \begin{pmatrix}2&amp;1- i\\1+i&amp;0\end{pmatrix},
 </div>
 </div>
 <p>If we further</p>
-<div class="callout callout-style-default callout-important no-icon callout-titled">
+<div id="thm-single-copy-shadow" class="callout callout-style-default callout-important no-icon callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Important</span>Theorem
+Theorem&nbsp;1: (Single-Copy Shadow Lower Bound)
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>Given a uniform distribution on <span class="math inline">M</span> Pauli observables <span class="math inline">\mathcal{A}:=\{P_1,\cdots,P_M\}</span>, any single-copy learning algorithm that predict <span class="math inline">\{\text{tr}(\rho P)\}_{P \sim \mathcal{A}}</span> with <span class="math inline">\varepsilon</span>-additive error and <span class="math inline">2/3</span> success probability must use <span class="math inline">T \geq \Omega \left(\varepsilon^{-2} \min\{M/\log M, 2^n\}\right)</span> samples.</p>
+<p>Given a uniform distribution on <span class="math inline">M</span> Pauli observables <span class="math inline">\mathcal{A}:=\{P_1,\cdots,P_M\}</span>, any single-copy learning algorithm that predicts <span class="math inline">\{\text{tr}(\rho P)\}_{P \sim \mathcal{A}}</span> with <span class="math inline">\varepsilon</span>-additive error and <span class="math inline">2/3</span> success probability must use <span class="math inline">T \geq \Omega \left(\varepsilon^{-2} \min\{M/\log M, 2^n\}\right)</span> samples.</p>
 </div>
 </div>
 </section>
 </section>
-<section id="pauli-mixed-states" class="level2" data-number="1.2">
-<h2 data-number="1.2" class="anchored" data-anchor-id="pauli-mixed-states"><span class="header-section-number">1.2</span> Pauli mixed states</h2>
-<div class="problem">
-<p><span id="prob:Pauli_mixed_test" data-label="prob:Pauli_mixed_test"></span> Given a subset <span class="math inline">\mathcal{O} \subset \mathcal{P}(n)</span>, try to discriminate (i). A set of state <span class="math inline">{S}_{\mathcal{O}}:=\{\sigma_{P}:=(\mathbb{I}+ 3\varepsilon P)/d\}_{P \in \mathcal{O}}</span> and (ii) <span class="math inline">\rho = \mathbb{I}/2^n</span> with confidence <span class="math inline">1 - \delta</span>.</p>
+<section id="pauli-mixed-states" class="level2" data-number="2">
+<h2 data-number="2" class="anchored" data-anchor-id="pauli-mixed-states"><span class="header-section-number">2</span> Pauli mixed states</h2>
+<div id="def-pauli-mixed-test" class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Definition&nbsp;2: Problem (Pauli Mixed State Discrimination)
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Given a subset <span class="math inline">\mathcal{O} \subset \mathcal{P}(n)</span>, try to discriminate (i) a set of states <span class="math inline">{S}_{\mathcal{O}}:=\{\sigma_{P}:=(\mathbb{I}+ 3\varepsilon P)/d\}_{P \in \mathcal{O}}</span> and (ii) <span class="math inline">\rho = \mathbb{I}/2^n</span> with confidence <span class="math inline">1 - \delta</span>.</p>
+</div>
 </div>
 </section>
-<section id="single-replica." class="level2" data-number="1.3">
-<h2 data-number="1.3" class="anchored" data-anchor-id="single-replica."><span class="header-section-number">1.3</span> Single replica.</h2>
+<section id="single-replica." class="level2" data-number="3">
+<h2 data-number="3" class="anchored" data-anchor-id="single-replica."><span class="header-section-number">3</span> Single replica.</h2>
 <p>Similarly, we set up hard distributions as uniform distribution on signed Pauli operators <span class="math inline">\{+1,-1\}\times \mathcal{O}</span>, where <span class="math inline">\mathcal{O} \subset \{\mathbb{I},X,Y,Z\}</span>. Follow the same procedure of Eq.~(eq:sig_canc_TVlb), we then calculate its rank-1 POVM leaves likelihood as: <span class="math display">\begin{align}
     \mathbb{E}_{s,P} L_{s,P}(l)  \geq \exp\left[-18\varepsilon^2T \sup_{\ket{\phi}} \mathbb{E}_{P\in \mathrm{Uniform}(\mathcal{O})} \bra{\phi} P \ket{\phi}^2\right].
 \end{align}</span> In the case of <span class="math inline">\mathcal{O} = \mathcal{P}_n</span>, we use the identity <span class="math display">
@@ -481,19 +568,19 @@ A = \frac{I+X+Y+Z}{4} =4^{-1} \begin{pmatrix}2&amp;1- i\\1+i&amp;0\end{pmatrix},
     p_{\mathrm{Haar}}(\psi_s) =\frac{\mathrm{tr}(\ket{\psi}\!\bra{\psi}\psi_{s})}{\mathrm{tr}(\mathbb{I}/d\cdot \psi_{s})}= d |\langle {\psi}|{\psi_s}\rangle|^2 \in[0,d], \, p_{\mathcal{P}}(\psi_s) =\frac{\mathrm{tr}(\frac{\mathbb{I} + 3\varepsilon P}{d}\psi_{s})}{\mathrm{tr}(\mathbb{I}/d\psi_{s})}=1 + 3\varepsilon\langle{\psi_s}|P|{\psi_s}\rangle \in [1- 3\varepsilon, 1+ 3\varepsilon].
 \end{align*}</span></p>
 </section>
-<section id="sec-single-clifford" class="level2" data-number="1.4">
-<h2 data-number="1.4" class="anchored" data-anchor-id="sec-single-clifford"><span class="header-section-number">1.4</span> Single Replica with Clifford Restriction</h2>
+<section id="sec-single-clifford" class="level2" data-number="4">
+<h2 data-number="4" class="anchored" data-anchor-id="sec-single-clifford"><span class="header-section-number">4</span> Single Replica with Clifford Restriction</h2>
 <p>When restricted to single-copy (<span class="math inline">c=1</span>) measurements within the Clifford group, the discrimination power is severely limited. This setting corresponds to classical shadows with Clifford measurements.</p>
 <p>For the Pauli-mixed ensemble <span class="math inline">\{(\mathbb{I} + 3\varepsilon P)/d\}_{P \in \mathcal{P}_n}</span>, single-copy Clifford measurements achieve: <span class="math display">\begin{align}
     \max_{\ket{\psi} \in \mathrm{Stab}_n} \mathbb{E}_{P \sim \mathcal{P}_n} \bra{\psi}P\ket{\psi}^2 = \frac{1}{2^n}
 \end{align}</span> since stabilizer states have flat Pauli spectrum (each non-identity Pauli has expectation <span class="math inline">\pm 1</span> or <span class="math inline">0</span>, and the average over the Pauli group vanishes for stabilizer states).</p>
-<div class="callout callout-style-default callout-important no-icon callout-titled">
+<div id="lem-clifford-consequence" class="callout callout-style-default callout-important no-icon callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Important</span>Consequence
+Lemma&nbsp;5: (Clifford Measurement Lower Bound)
 </div>
 </div>
 <div class="callout-body-container callout-body">
@@ -501,26 +588,28 @@ A = \frac{I+X+Y+Z}{4} =4^{-1} \begin{pmatrix}2&amp;1- i\\1+i&amp;0\end{pmatrix},
 </div>
 </div>
 </section>
-<section id="sec-multi-replica-memory" class="level2" data-number="1.5">
-<h2 data-number="1.5" class="anchored" data-anchor-id="sec-multi-replica-memory"><span class="header-section-number">1.5</span> Multi-Replica with Bounded Memory</h2>
+<section id="sec-multi-replica-memory" class="level2" data-number="5">
+<h2 data-number="5" class="anchored" data-anchor-id="sec-multi-replica-memory"><span class="header-section-number">5</span> Multi-Replica with Bounded Memory</h2>
 <p>When multiple copies are available but quantum memory is bounded, there is a tradeoff between the number of copies processed jointly and the total sample complexity.</p>
 <p>Consider strategies that process at most <span class="math inline">c</span> copies jointly with <span class="math inline">k</span> qubits of quantum memory between rounds. The key constraint is: <span class="math display">\begin{align}
     \mathcal{M}^{k}_{c,n} := \left\{\{F_s\}_s : F_s \in \mathcal{L}(\mathcal{H}^{\otimes c}), \, \mathrm{rank}(\sum_s F_s \otimes \ket{s}\bra{s}) \leq 2^k \right\}
 \end{align}</span></p>
 <p>This captures the scenario where the post-measurement classical description is bounded, limiting the information that can be carried forward to subsequent rounds.</p>
-<div class="callout callout-style-default callout-important no-icon callout-titled">
+<div id="lem-memory-tradeoff" class="callout callout-style-default callout-important no-icon callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Important</span>Lemma (Memory-Sample Tradeoff)
+Lemma&nbsp;6: (Memory-Sample Tradeoff)
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>For distinguishing states from the Pauli-mixed ensemble with bounded memory <span class="math inline">k</span> and <span class="math inline">c</span>-copy measurements: <span class="math display">\begin{align}
+<p>For distinguishing states from the Pauli-mixed ensemble with bounded memory <span class="math inline">k</span> and <span class="math inline">c</span>-copy measurements: <span class="math display">
+\begin{align}
     T \geq \frac{2^n}{2^{k + c \cdot n/(c+1)}}
-\end{align}</span></p>
+\end{align}
+</span></p>
 </div>
 </div>
 <p>This interpolates between the single-copy bound (<span class="math inline">c=1</span>: <span class="math inline">T \geq 2^{n/2 - k}</span>) and the multi-copy regime where entangled measurements can achieve polynomial scaling.</p>
@@ -542,7 +631,6 @@ eyJjb250ZW50cyI6W119
 <script type="vfs-file">
 W10=
 </script>
-</section>
 </section>
 
 </main> <!-- /main -->

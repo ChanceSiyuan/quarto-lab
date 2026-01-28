@@ -21,7 +21,27 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
-</style>
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
 
 
 <script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
@@ -325,7 +345,7 @@ window.Quarto = {
 </div>
 </div>
 </div>
-<p>This 2-design unitary ensemble includes the Clifford randomized measurement and the randomized Pauli basis measurement, as proposed in&nbsp;<span class="citation" data-cites="huang2020predicting">&nbsp;[<a href="#ref-huang2020predicting" role="doc-biblioref"><strong>huang2020predicting?</strong></a>]</span>. Consider the unitary ensemble <span class="math inline">\mathcal{E}</span> that Following the previous research, we review the estimation variance in the case with (i)the Clifford ensemble&nbsp;<span class="citation" data-cites="huang2020predicting mele2024introduction">&nbsp;[<a href="#ref-huang2020predicting" role="doc-biblioref"><strong>huang2020predicting?</strong></a>,<a href="#ref-mele2024introduction" role="doc-biblioref"><strong>mele2024introduction?</strong></a>]</span>, (ii)the local Clifford ensemble&nbsp;<span class="citation" data-cites="huang2020predicting">&nbsp;[<a href="#ref-huang2020predicting" role="doc-biblioref"><strong>huang2020predicting?</strong></a>]</span>, and (iii). the Matchgate ensemble.</p>
+<p>This 2-design unitary ensemble includes the Clifford randomized measurement and the randomized Pauli basis measurement, as proposed in&nbsp;<span class="citation" data-cites="huang2020predicting">&nbsp;[<a href="#ref-huang2020predicting" role="doc-biblioref">1</a>]</span>. Consider the unitary ensemble <span class="math inline">\mathcal{E}</span> that Following the previous research, we review the estimation variance in the case with (i)the Clifford ensemble&nbsp;<span class="citation" data-cites="huang2020predicting mele2024introduction">&nbsp;[<a href="#ref-huang2020predicting" role="doc-biblioref">1</a>,<a href="#ref-mele2024introduction" role="doc-biblioref">2</a>]</span>, (ii)the local Clifford ensemble&nbsp;<span class="citation" data-cites="huang2020predicting">&nbsp;[<a href="#ref-huang2020predicting" role="doc-biblioref">1</a>]</span>, and (iii). the Matchgate ensemble.</p>
 </section>
 </section>
 <section id="global-shadow-and-shallow-shadows" class="level2">
@@ -642,11 +662,19 @@ eyJjb250ZW50cyI6W119
 <script type="vfs-file">
 W10=
 </script>
+
 </section>
 </section>
 </section>
 
-</main> <!-- /main -->
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body" data-entry-spacing="0" role="list">
+<div id="ref-huang2020predicting" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[1] </div><div class="csl-right-inline">H.-Y. Huang, R. Kueng, and J. Preskill, Predicting many properties of a quantum system from very few measurements, Nature Physics <strong>16</strong>, 1050 (2020).</div>
+</div>
+<div id="ref-mele2024introduction" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[2] </div><div class="csl-right-inline">A. A. Mele, Introduction to haar measure tools in quantum information: A beginner’s tutorial, Quantum <strong>8</strong>, 1340 (2024).</div>
+</div>
+</div></section></div></main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
   window.document.addEventListener("DOMContentLoaded", function (event) {
     const icon = "";

@@ -1,0 +1,459 @@
+---
+categories:
+- Quantum Error Correction
+date: 2026-01-28
+description: 'Ordered Statistics Decoding: OSD-0, higher-order OSD, and combination sweep strategies for post-processing BP soft decisions.'
+format:
+  html:
+    number-sections: true
+    toc: true
+lang: en
+title: 'Ordered Statistics Decoding (OSD)'
+bibliography: refs.bib
+---
+
+# The Key Insight
+
+The parity check matrix $H$ (size $m \times n$ with $n > m$) has more columns than rows and cannot be directly inverted. However, we can select a subset of $r = \text{rank}(H)$ linearly independent columns to form an invertible $m \times r$ submatrix.
+
+::: {.callout-note icon="false"}
+## Definition
+
+For an $m \times n$ matrix $H$ with $\text{rank}(H) = r$:
+
+- **Basis set** $[S]$: indices of $r$ linearly independent columns
+- **Remainder set** $[T]$: indices of the remaining $k' = n - r$ columns
+- $H_{[S]}$: the $m \times r$ submatrix of columns in $[S]$ (this is invertible!)
+- $H_{[T]}$: the $m \times k'$ submatrix of columns in $[T]$
+:::
+
+OSD resolves split beliefs and **forces a unique solution** by:
+
+1. Choosing the basis selection $[S]$ guided by BP soft decisions
+2. Calculating the matrix inversion on $H_{[S]}$ to eliminate ambiguity
+
+# OSD-0: The Basic Algorithm
+
+Ordered Statistics Decoding (OSD) was introduced by Fossorier and Lin as a soft-decision decoding algorithm for linear block codes that approaches maximum-likelihood performance [@fossorier1995soft]. The algorithm was later extended with computationally efficient variants [@fossorier1996efficient]. For quantum LDPC codes, the BP+OSD combination was shown to be remarkably effective by Panteleev and Kalachev, and further developed by Roffe et al. [@roffe2020decoding].
+
+::: {.callout-note icon="false"}
+## Definition
+
+**OSD-0** finds a solution by:
+
+1. Choosing a "good" basis $[S]$ using BP soft decisions $P_1$
+2. Solving for the basis bits via matrix inversion
+3. Setting all remainder bits to zero
+:::
+
+## Algorithm 2: OSD-0
+
+**Input:**
+
+- Parity matrix $H$ (size $m \times n$, rank $r$)
+- Syndrome $\mathbf{s}$
+- BP soft decisions $P_1(e_1), \ldots, P_1(e_n)$ (from BP algorithm)
+
+**Steps:**
+
+1. **Rank bits by probability:** Sort bit indices by $P_1$ values: most-likely-flipped first. Result: ordered list $[O_{\text{BP}}] = (j_1, j_2, \ldots, j_n)$
+
+2. **Reorder columns:** $H_{[O_{\text{BP}}]}$ = matrix $H$ with columns reordered by $[O_{\text{BP}}]$
+
+3. **Select basis:** Scan left-to-right, select first $r$ linearly independent columns. Basis indices: $[S]$. Remainder indices: $[T]$ (size $k' = n - r$)
+
+4. **Solve on basis:** $\mathbf{e}_{[S]} = H_{[S]}^{-1} \cdot \mathbf{s}$
+
+5. **Set remainder to zero:** $\mathbf{e}_{[T]} = \mathbf{0}$ (zero vector of length $k'$)
+
+6. **Remap to original ordering:** Combine $(\mathbf{e}_{[S]}, \mathbf{e}_{[T]})$ and undo the permutation
+
+**Output:** $\mathbf{e}^{\text{OSD-0}}$ satisfying $H \cdot \mathbf{e}^{\text{OSD-0}} = \mathbf{s}$
+
+## Step 1: Choosing a "Good" Basis (Sorting)
+
+The definition requires selecting basis columns $[S]$ based on BP soft decisions. For quantum error correction, the implementation sorts by **probability descending** rather than reliability $|p - 0.5|$.
+
+```python
+# Sort by probability descending (highest probability first)
+# High-probability errors become pivots; low-probability errors become free variables
+sorted_indices = np.argsort(probs)[::-1]
+```
+
+::: {.callout-tip}
+## Key Point: Why Probability-Based Sorting for Quantum Codes?
+
+Traditional OSD uses reliability $|p - 0.5|$, but this fails for quantum codes where:
+
+- Most qubits have $p \approx 0$ (no error) $\rightarrow$ reliability $\approx 0.5$
+- Identified errors have $p \approx 1$ $\rightarrow$ reliability $\approx 0.5$
+
+Both have similar reliability despite being very different! Sorting by probability directly places likely errors in $[S]$ (pivots) and unlikely errors in $[T]$ (free variables set to 0).
+:::
+
+## Step 2: Solving for Basis Bits (RREF)
+
+Instead of computing $H_{[S]}^{-1}$ explicitly, the code computes the **Reduced Row Echelon Form** (RREF) of the augmented matrix $[H_{\text{sorted}} | \mathbf{s}]$. This is numerically stable and solves the linear system in one pass.
+
+**Example:** Consider a parity check matrix $H$ with 3 checks and 6 variables, and syndrome $\mathbf{s} = (1, 0, 1)^T$. Assume BP has already sorted columns by probability (column 0 = highest probability error). Then the initial augmented matrix $[H_{\text{sorted}} | \mathbf{s}]$ writes:
+
+$$\begin{pmatrix}
+1 & 0 & 1 & 1 & 0 & 1 & | & 1 \\
+1 & 1 & 0 & 0 & 1 & 1 & | & 0 \\
+0 & 1 & 1 & 0 & 1 & 0 & | & 1
+\end{pmatrix}$$
+
+**Iteration 1: Process column 0**
+
+- Find pivot: Row 0 has a 1 in column 0 ✓
+- Eliminate: Row 1 also has 1 in column 0, so XOR row 1 with row 0
+
+$$\begin{pmatrix}
+\mathbf{1} & 0 & 1 & 1 & 0 & 1 & | & 1 \\
+0 & 1 & 1 & 1 & 1 & 0 & | & 1 \\
+0 & 1 & 1 & 0 & 1 & 0 & | & 1
+\end{pmatrix} \quad \text{pivot\_cols} = [0]$$
+
+**Iteration 2: Process column 1**
+
+- Find pivot: Row 1 has a 1 in column 1 ✓
+- Eliminate: Row 2 also has 1 in column 1, so XOR row 2 with row 1
+
+$$\begin{pmatrix}
+\mathbf{1} & 0 & 1 & 1 & 0 & 1 & | & 1 \\
+0 & \mathbf{1} & 1 & 1 & 1 & 0 & | & 1 \\
+0 & 0 & 0 & 1 & 0 & 0 & | & 0
+\end{pmatrix} \quad \text{pivot\_cols} = [0, 1]$$
+
+**Iteration 3: Process column 2**
+
+- Find pivot: No rows have a 1 in column 2 below the current pivot row ✗
+- Skip this column (it becomes a free variable)
+
+**Iteration 4: Process column 3**
+
+- Find pivot: Row 2 has a 1 in column 3 ✓
+- Eliminate: Rows 0 and 1 have 1s in column 3, XOR both with row 2
+
+$$\begin{pmatrix}
+\mathbf{1} & 0 & 1 & 0 & 0 & 1 & | & 1 \\
+0 & \mathbf{1} & 1 & 0 & 1 & 0 & | & 1 \\
+0 & 0 & 0 & \mathbf{1} & 0 & 0 & | & 0
+\end{pmatrix} \quad \text{pivot\_cols} = [0, 1, 3]$$
+
+**Final Result:** Pivot columns $[S] = \{0, 1, 3\}$ (basis variables) and free columns $[T] = \{2, 4, 5\}$ (remainder variables).
+
+In the code, the H matrix is stored as a 2D `int8` array to fully utilize the GPU's integer arithmetic capabilities. The function `compute_rref` implements Gaussian elimination over $\text{GF}(2)$:
+
+```python
+def _get_rref_cached(self, sorted_indices: np.ndarray, syndrome: np.ndarray):
+    # Reorder columns by sorted indices
+    H_sorted = self.H[:, sorted_indices]
+    # Build augmented matrix [H_sorted | s]
+    augmented = np.hstack([H_sorted, syndrome.reshape(-1, 1)]).astype(np.int8)
+    # Compute RREF in-place
+    pivot_cols = self._compute_rref(augmented)
+    return augmented, pivot_cols
+
+def _compute_rref(self, M: np.ndarray) -> List[int]:
+    m, n = M.shape
+    pivot_row = 0
+    pivot_cols = []
+
+    for col in range(n - 1):  # Don't pivot on syndrome column
+        if pivot_row >= m:
+            break
+        # Find a row with 1 in this column
+        candidates = np.where(M[pivot_row:, col] == 1)[0]
+        if len(candidates) == 0:
+            continue  # No pivot in this column
+
+        # Swap to bring pivot to current row
+        swap_r = candidates[0] + pivot_row
+        if swap_r != pivot_row:
+            M[[pivot_row, swap_r]] = M[[swap_r, pivot_row]]
+
+        pivot_cols.append(col)
+
+        # Eliminate all other 1s in this column (XOR in GF(2))
+        rows_to_xor = np.where(M[:, col] == 1)[0]
+        rows_to_xor = rows_to_xor[rows_to_xor != pivot_row]
+        if len(rows_to_xor) > 0:
+            M[rows_to_xor, :] ^= M[pivot_row, :]
+
+        pivot_row += 1
+
+    return pivot_cols
+```
+
+- `pivot_cols`: The column indices where pivots were found. These form the basis set $[S]$.
+- After RREF, the basis submatrix has an identity-like structure, and the syndrome column contains the solution values.
+
+## Step 3: Reading the OSD-0 Solution
+
+Continue from the previous example, the result can be read from the pivot columns and syndrome column $\mathbf{s}$:
+
+- Set free variables to zero: $e_2 = e_4 = e_5 = 0$
+- Read pivot values from the transformed syndrome column:
+  - Row 0: pivot at column 0, syndrome value = 1 $\rightarrow e_0 = 1$
+  - Row 1: pivot at column 1, syndrome value = 1 $\rightarrow e_1 = 1$
+  - Row 2: pivot at column 3, syndrome value = 0 $\rightarrow e_3 = 0$
+- Solution in sorted order: $\mathbf{e}_{\text{sorted}} = (1, 1, 0, 0, 0, 0)$
+
+Verification:
+
+$$H_{\text{sorted}} \cdot \mathbf{e}_{\text{sorted}} = \begin{pmatrix}
+1 & 0 & 1 & 1 & 0 & 1 \\
+1 & 1 & 0 & 0 & 1 & 1 \\
+0 & 1 & 1 & 0 & 1 & 0
+\end{pmatrix} \cdot \begin{pmatrix} 1 \\ 1 \\ 0 \\ 0 \\ 0 \\ 0 \end{pmatrix} = \begin{pmatrix}
+1 \oplus 0 \\
+1 \oplus 1 \\
+0 \oplus 1
+\end{pmatrix} = \begin{pmatrix} 1 \\ 0 \\ 1 \end{pmatrix} = \mathbf{s} \quad \checkmark$$
+
+In the code, the solution is extracted by initializing the solution vector to zeros and updating **only** the pivot positions using the transformed syndrome.
+
+```python
+# OSD-0 Solution: Initialize all bits to 0 (remainder bits stay 0)
+solution_base = np.zeros(self.num_errors, dtype=np.int8)
+
+# Build pivot-to-row mapping and extract solution
+pivot_row_map = {}
+for r in range(augmented.shape[0]):
+    row_pivots = np.where(augmented[r, :self.num_errors] == 1)[0]
+    if len(row_pivots) > 0:
+        col = row_pivots[0]
+        if col in pivot_cols:
+            pivot_row_map[col] = r
+            # Pivot bit = transformed syndrome value
+            solution_base[col] = augmented[r, -1]
+```
+
+- `solution_base = np.zeros(...)`: Ensures $\mathbf{e}_{[T]} = \mathbf{0}$ (OSD-0 constraint).
+- `augmented[r, -1]`: The transformed syndrome value. Since the basis submatrix is now identity-like, this directly gives $\mathbf{e}_{[S]}$.
+
+## Step 4: Inverse Mapping (Unsort)
+
+Finally, the solution is mapped back to the original column ordering:
+
+```python
+# Remap from sorted order back to original order
+estimated_errors = np.zeros(self.num_errors, dtype=int)
+estimated_errors[sorted_indices] = final_solution_sorted
+return estimated_errors
+```
+
+| **Theoretical Step** | **Code Realization (`batch_osd.py`)** |
+|:--------------------|:-------------------------------------|
+| 1. Sort by soft decisions | `np.argsort(probs)[::-1]` (probability descending) |
+| 2. Select basis $[S]$ | `pivot_cols` from `_compute_rref` |
+| 3. Matrix inversion | RREF transforms basis to identity structure |
+| 4. Solve $\mathbf{e}_{[S]}$ | `solution_base[col] = augmented[r, -1]` |
+| 5. Set $\mathbf{e}_{[T]} = \mathbf{0}$ | `np.zeros(...)` initialization |
+| 6. Unsort | `estimated_errors[sorted_indices] = solution` |
+
+: Mapping OSD-0 theory to `batch_osd.py` implementation
+
+# Higher-Order OSD (OSD-$\lambda$)
+
+OSD-0 assumes the remainder error bits are zero ($\mathbf{e}_{[T]} = \mathbf{0}$). While this provides a valid solution, it forces all "correction" work onto the basis bits $[S]$, which may result in a high-weight (improbable) error pattern.
+
+::: {.callout-note icon="false"}
+## Definition
+
+**Higher-order OSD** improves this by testing non-zero configurations for the remainder bits $\mathbf{e}_{[T]}$.
+
+For any chosen hypothesis $\mathbf{e}_{[T]}$, the corresponding basis bits $\mathbf{e}_{[S]}$ are uniquely determined to satisfy the syndrome:
+$$\mathbf{e}_{[S]} = H_{[S]}^{-1} \cdot (\mathbf{s} + H_{[T]} \cdot \mathbf{e}_{[T]})$$
+:::
+
+It is straightforward to show that the constructed error $\mathbf{e} = (\mathbf{e}_{[S]}, \mathbf{e}_{[T]})$ always satisfies the parity check equation $H \cdot \mathbf{e} = \mathbf{s}$ and the OSD-0 is a special case of OSD-$\lambda$ when $\lambda = 0$.
+
+$$\begin{aligned}
+H \cdot \mathbf{e} &= \begin{pmatrix} H_{[S]} & H_{[T]} \end{pmatrix} \cdot \begin{pmatrix} \mathbf{e}_{[S]} \\ \mathbf{e}_{[T]} \end{pmatrix} = H_{[S]} \cdot \mathbf{e}_{[S]} + H_{[T]} \cdot \mathbf{e}_{[T]} \\
+&= H_{[S]} \cdot [H_{[S]}^{-1} \cdot (\mathbf{s} + H_{[T]} \cdot \mathbf{e}_{[T]})] + H_{[T]} \cdot \mathbf{e}_{[T]} \\
+&= I \cdot (\mathbf{s} + H_{[T]} \cdot \mathbf{e}_{[T]}) + H_{[T]} \cdot \mathbf{e}_{[T]} \\
+&= \mathbf{s} + H_{[T]} \cdot \mathbf{e}_{[T]} + H_{[T]} \cdot \mathbf{e}_{[T]} = \mathbf{s} + \mathbf{0} = \mathbf{s}
+\end{aligned}$$
+
+Then the problem changes to finding the minimum soft-weight solution for the remainder bits $\mathbf{e}_{[T]}$.
+
+A naive way to do this is to implement an exhaustive search (OSD-E) testing on all $2^{k'}$ patterns. This guarantees finding the minimum weight solution. Unfortunately, the remainder set $[T]$ has size $k' = n - r$, which is exponentially large in the code parameters $n - r$.
+
+To make this feasible, we restrict the search to the search depth $\lambda$, i.e., the **most suspicious** $\lambda$ bits in $[T]$ (those with highest error probability among free variables) and accelerate this search process by using the GPU.
+
+## Soft-Weight Cost Function
+
+In our code, the OSD uses the **soft-weighted cost** based on log-probabilities [@roffe2020decoding]:
+
+::: {.callout-note icon="false"}
+## Definition
+
+**Soft-Weighted Cost (Log-Probability Weight).** For an error pattern $\mathbf{e} = (e_1, \ldots, e_n)$ with bit-wise error probabilities $p_i = P(e_i = 1)$, the soft-weighted cost is:
+
+$$W_{\text{soft}}(\mathbf{e}) = \sum_{i : e_i = 1} (-\log p_i) = - \sum_{i=1}^n e_i \cdot \log p_i$$
+
+Lower cost indicates a more probable error pattern.
+:::
+
+| **Cost Function** | **Formula** | **Properties** |
+|:-----------------|:-----------|:--------------|
+| Hamming Weight [@hamming1950error] | $W_H(\mathbf{e}) = \sum_i e_i$ | Counts flipped bits; ignores probabilities |
+| Soft Weight (Log-Prob) [@roffe2020decoding] | $W_{\text{soft}}(\mathbf{e}) = -\sum_i e_i \log p_i$ | Weights by $-\log p_i$; approximates ML |
+| Euclidean Distance [@forney1966generalized] | $d_E^2 = \sum_i (r_i - c_i)^2$ | For AWGN channels with continuous signals |
+| LLR-Based Weight [@hagenauer1996iterative] | $W_{\text{LLR}}(\mathbf{e}) = \sum_i e_i |L_i|$ | Uses log-likelihood ratios |
+
+: Comparison of cost functions for selecting the best error pattern
+
+**Why soft weight is preferred for BP+OSD?**
+
+This is because the soft weight approximates the Maximum-Likelihood Decoding (ML) objective [@yue2020revisit]. The ML decoder selects the error pattern $\mathbf{e}^*$ that maximizes the posterior probability:
+$$\mathbf{e}^* = \arg\max_{\mathbf{e}} P(\mathbf{e} | \text{syndrome}).$$
+
+Taking the logarithm (a monotonic transformation), and assuming the errors $e_i$ are independent with probability $P(e_i = 1) = p_i$:
+$$\mathbf{e}^* = \arg\max_{\mathbf{e}} \sum_i [e_i \log p_i + (1-e_i) \log(1-p_i)]$$
+
+For sparse errors where most $e_i = 0$, minimizing $W_{\text{soft}}(\mathbf{e}) = -\sum_i e_i \log p_i$ closely approximates the ML objective.
+
+```python
+def _compute_soft_weight_gpu(self, solutions, probs):
+    # Clip to avoid log(0)
+    probs_clipped = torch.clamp(probs, 1e-10, 1 - 1e-10)
+    # Log-probability weights: -log(p) penalizes flipping low-probability bits
+    log_weights = -torch.log(probs_clipped)
+    # Total cost = sum of weights for flipped bits
+    costs = (solutions * log_weights).sum(dim=1)
+    return costs
+```
+
+# Combination Sweep Strategy (OSD-CS)
+
+To allow for a larger search depth (e.g., $\lambda \approx 50-100$) without exponential cost, we use the **combination sweep** strategy, first proposed for reducing error floors in classical LDPC codes and adapted for quantum codes by Roffe et al. [@roffe2020decoding].
+
+::: {.callout-note icon="false"}
+## Definition
+
+**OSD-CS** assumes the true error pattern on the remainder bits is **sparse**. Instead of checking **all** $2^\lambda$ patterns on $\lambda$ most suspicious bits, it only checks those with low Hamming weight ($w = 0, 1, 2$).
+
+Exhausted on those strings only takes $\binom{\lambda}{0} + \binom{\lambda}{1} + \binom{\lambda}{2} = 1 + \lambda + \frac{\lambda(\lambda-1)}{2}$ candidates.
+
+With $\lambda = 60$: approximately $1 + 60 + 1770 = 1831$ configurations (vs $2^{60}$ for exhaustive search!)
+
+**Algorithm Steps:**
+
+1. **Sort:** Select the $\lambda$ most suspicious positions in $[T]$ (highest probability among free variables).
+2. **Sweep:** Generate candidate vectors $\mathbf{e}_{[T]}$ with:
+   - **Weight 0:** The zero vector (equivalent to OSD-0).
+   - **Weight 1:** All single-bit flips among the $\lambda$ bits.
+   - **Weight 2:** All pairs of bit flips among the $\lambda$ bits.
+3. **Select:** Calculate $\mathbf{e}_{[S]}$ for each candidate, compute the soft-weighted cost, and pick the best one.
+:::
+
+| **Method** | **Complexity** | **Use Case** |
+|:----------|:--------------|:------------|
+| OSD-0 | $O(1)$ | Fastest, baseline performance |
+| OSD-E (Exhaustive) | $O(2^\lambda)$ | Optimal for small $\lambda$ ($\leq 15$) |
+| OSD-CS (Comb. Sweep) | $O(\lambda^2)$ | Near-optimal for large $\lambda$ ($\approx 60$) |
+
+: Comparison of OSD Search Strategies
+
+**Why OSD-CS works for Quantum Codes?**
+
+In the low-error regime relevant for QEC, it is statistically very unlikely that the optimal solution requires flipping 3+ bits in the specific subset of "uncertain" remainder bits. Checking only weights 0, 1, and 2 captures the vast majority of likely error configurations while reducing complexity from exponential to polynomial (quadratic) [@roffe2020decoding].
+
+## OSD-CS Implementation
+
+The GPU-accelerated implementation realizes OSD-CS by explicitly generating sparse error patterns (weights 0, 1, and 2) instead of iterating through all binary combinations.
+
+**Step 1: Generating Sparse Candidates**
+
+```python
+def _generate_osd_cs_candidates(self, k: int, osd_order: int) -> np.ndarray:
+    """Generate OSD-CS (Combination Sweep) candidate strings."""
+    candidates = []
+
+    # Weight 0: Zero vector (OSD-0 baseline)
+    candidates.append(np.zeros(k, dtype=np.int8))
+
+    # Weight 1: Single-bit flips (k candidates)
+    for i in range(k):
+        candidate = np.zeros(k, dtype=np.int8)
+        candidate[i] = 1
+        candidates.append(candidate)
+
+    # Weight 2: Two-bit flips (limited to osd_order)
+    for i in range(min(osd_order, k)):
+        for j in range(i + 1, min(osd_order, k)):
+            candidate = np.zeros(k, dtype=np.int8)
+            candidate[i] = 1
+            candidate[j] = 1
+            candidates.append(candidate)
+
+    return np.array(candidates, dtype=np.int8)
+```
+
+- `np.zeros(k)`: The "baseline" hypothesis (OSD-0 solution).
+- `range(k)` loop: Adds $k$ candidates, each with a single bit flip at index `i`.
+- Nested `range(limit)` loop: Adds $\binom{\lambda}{2}$ candidates, representing pairs of flips at indices $(i, j)$.
+
+**Step 2: Integration into the Solve Loop**
+
+```python
+# Generate candidates based on method
+if osd_method == 'combination_sweep':
+    # OSD-CS: O(λ²) sparse candidates
+    candidates_np = self._generate_osd_cs_candidates(len(search_cols), osd_order)
+else:
+    # Exhaustive: O(2^k) all combinations
+    num_candidates = 1 << len(search_cols)
+    candidates_np = np.array([[(i >> j) & 1 for j in range(len(search_cols))]
+                             for i in range(num_candidates)], dtype=np.int8)
+
+# Transfer to GPU and evaluate all candidates in parallel
+candidates = torch.from_numpy(candidates_np).to(self.device)
+best_solution_sorted = self._evaluate_candidates_gpu(
+    candidates, augmented, search_cols, probs_sorted, pivot_cols
+)
+```
+
+Both methods use the same GPU evaluation function—only the candidate generation differs.
+
+| **Method** | **Candidates** | **Example ($\lambda = 15$)** |
+|:----------|:--------------|:---------------------------|
+| OSD-E | $2^\lambda$ | $32768$ |
+| OSD-CS | $1 + k + \binom{\lambda}{2}$ | $\approx 1 + k + 105$ |
+
+: Number of candidates for OSD-E vs OSD-CS
+
+| **Weight Class** | **Code Realization** |
+|:----------------|:--------------------|
+| Weight 0 | `candidates.append(np.zeros(k))` |
+| Weight 1 | `for i in range(k): candidate[i] = 1` |
+| Weight 2 | `for i in range(limit): for j in range(i+1, limit): ...` |
+
+: Mapping OSD-CS theory to `batch_osd.py` implementation
+
+# BP+OSD Decoder Flow
+
+::: {.callout-tip}
+## Key Point
+
+- If BP succeeds (converges): use BP result — fast!
+- If BP fails: use OSD to resolve degeneracy — always gives valid answer
+:::
+
+The complete BP+OSD decoder workflow:
+
+1. **Run BP** — Get soft decisions $P_1$ values
+2. **Check convergence** — Does $H \cdot \mathbf{e}^{\text{BP}} = \mathbf{s}$?
+3. **If no:** Run OSD-0 using $P_1$ for basis selection
+4. **Optional:** Run OSD-CS (sweep weight-1, weight-2 configurations)
+5. **Return** the minimum soft-weight solution
+
+# Related Topics
+
+- [Classical Error Correction](classical.qmd) - Fundamentals of linear codes
+- [Belief Propagation](TNdecoder.qmd) - Message passing algorithm
+- [Tropical Tensor Networks](tropical_TN.qmd) - Alternative exact decoding approach
+- [BP+OSD Results](BP_OSD_results.qmd) - Performance benchmarks

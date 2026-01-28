@@ -320,7 +320,9 @@ window.Quarto = {
 <p><a href="../../../theory/Topics/Lowerbounds/index.html">← Back to Index</a></p>
 <section id="sec-tree-rep" class="level1" data-number="1">
 <h1 data-number="1"><span class="header-section-number">1</span> Tree Representation of Adaptive Strategies</h1>
-<p>Given an implementable POVM set <span class="math inline">\mathcal{M} = \{\{F_s\}|\{F_s\} \text{~satisfied the restriction.}\}</span>, we can implement those POVMs multiple times, carefully design their order, and even implement them adaptively. Any description of such an adaptive learning protocol are called a <span class="math inline">\mathcal{M}</span>-restrained adaptive strategy. It has the <em>Tree representation</em> <span class="citation" data-cites="chen2021exponential">&nbsp;[<a href="#ref-chen2021exponential" role="doc-biblioref">1</a>]</span>. Roughly speaking, the adaptive structure will first induce a decision tree <span class="math inline">\mathcal{T}</span>. Each branching edges in <span class="math inline">\mathcal{T}</span>, which we denoted as <span class="math inline">\{(u,v_1),\cdots,(u,v_{s_u})\}</span>, was labeled by one of the restrained POVMs <span class="math inline">\{F^{u}_{v_{i}}\}_{i = 1}^{s_u} \in \mathcal{M}</span>. Then any c-copies of state <span class="math inline">\rho \in \mathcal{H}(d^c)</span> will induce a probability distribution <span class="math inline">p_{\rho,\mathcal{T}}(v)</span> on each vertex <span class="math inline">v</span> of the decision graph <span class="math inline">\mathcal{T}</span>.</p>
+<p>Consider a restricted POVM set <span class="math inline">\mathcal{M} = \{\{F_s\} \mid \{F_s\} \text{ satisfies the restriction}\}</span>. In practice, we can apply POVMs from <span class="math inline">\mathcal{M}</span> multiple times, choose their ordering strategically, and even select later measurements based on earlier outcomes. We call any such protocol an <strong><span class="math inline">\mathcal{M}</span>-restrained adaptive strategy</strong>.</p>
+<p>A key insight from <span class="citation" data-cites="chen2021exponential">&nbsp;[<a href="#ref-chen2021exponential" role="doc-biblioref">1</a>]</span> is that every adaptive strategy admits a natural <em>tree representation</em>. The idea is simple: since each measurement outcome determines which measurement to perform next, the entire protocol can be encoded as a decision tree <span class="math inline">\mathcal{T}</span>. Specifically, each internal node <span class="math inline">u</span> corresponds to a measurement step, and its outgoing edges <span class="math inline">\{(u,v_1),\ldots,(u,v_{s_u})\}</span> correspond to the possible outcomes of some POVM <span class="math inline">\{F^{u}_{v_{i}}\}_{i = 1}^{s_u} \in \mathcal{M}</span>.</p>
+<p>Given this tree structure, any <span class="math inline">c</span>-copy state <span class="math inline">\rho \in \mathcal{H}(d^c)</span> induces a probability distribution <span class="math inline">p_{\rho,\mathcal{T}}(v)</span> over the vertices of <span class="math inline">\mathcal{T}</span>, where the probability of reaching vertex <span class="math inline">v</span> is determined by the product of transition probabilities along the path from the root to <span class="math inline">v</span>.</p>
 <div class="callout callout-style-default callout-note no-icon callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -339,32 +341,41 @@ window.Quarto = {
 </ul>
 </div>
 </div>
-<figure id="fig:ill_learnstrat" data-latex-placement="htbp!" class="figure">
-<embed src="Figure/adaptive.pdf" style="width:80.0%">
-<figcaption>
-Illustrations of a <span class="math inline">(<em>c</em> = 3, <em>k</em> &lt; <em>n</em>)</span> adaptive learning strategy and its tree representation <span class="math inline">𝒯</span>. Refer to <span class="citation" data-cites="chen2024optimal"></span>.
+<div id="fig-ill-learnstrat" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-ill-learnstrat-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="adaptive.png" class="img-fluid figure-img" style="width:80.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-ill-learnstrat-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: Illustrations of a <span class="math inline">(c = 3, k &lt; n)</span> adaptive learning strategy and its tree representation <span class="math inline">\mathcal{T}</span>. Refer to <span class="citation" data-cites="chen2024optimal">&nbsp;[<a href="#ref-chen2024optimal" role="doc-biblioref">2</a>]</span>.
 </figcaption>
 </figure>
-<p>To prove that any <span class="math inline">\mathcal{M}</span>-restrained adaptive strategy <span class="math inline">\mathcal{T}</span> cannot distinguish the states <span class="math inline">\rho</span> from a set of state <span class="math inline">\mathcal{S}</span> with <span class="math inline">1/2 + \varepsilon</span> successful rate, it is sufficient to show that <span class="math inline">\forall \mathcal{T}</span>, the distribution <span class="math inline">p_{\rho,\mathcal{T}}(l)</span> and the distribution ensemble <span class="math inline">\{p_{\sigma,\mathcal{T}}(l)\}_{\sigma \in \mathcal{E}}</span> cannot be distinguished <span class="math inline">\varepsilon/2</span> better than random guessing. This recasts the problem in a form that is solvable by applying Lemma. Thus, the distinguishability between <span class="math inline">\rho</span> and <span class="math inline">\mathcal{S}</span> is tightly lower-bounded by <strong>TVD</strong> as <span class="math display">\begin{align}
-\label{eq:tvd}
+</div>
+<p>To prove that any <span class="math inline">\mathcal{M}</span>-restrained adaptive strategy <span class="math inline">\mathcal{T}</span> cannot distinguish the states <span class="math inline">\rho</span> from a set of state <span class="math inline">\mathcal{S}</span> with <span class="math inline">1/2 + \varepsilon</span> successful rate, it is sufficient to show that <span class="math inline">\forall \mathcal{T}</span>, the distribution <span class="math inline">p_{\rho,\mathcal{T}}(l)</span> and the distribution ensemble <span class="math inline">\{p_{\sigma,\mathcal{T}}(l)\}_{\sigma \in \mathcal{E}}</span> cannot be distinguished <span class="math inline">\varepsilon/2</span> better than random guessing. This recasts the problem in a form that is solvable by applying the TVD bounds below. Thus, the distinguishability between <span class="math inline">\rho</span> and <span class="math inline">\mathcal{S}</span> is tightly lower-bounded by <strong>TVD</strong> as <span class="math display">
+\begin{align}
     \delta_{\mathrm{tvd}} :=\max_{\mathcal{T}}\min_{\mathcal{E}}\|p_{\rho,\mathcal{T}}-\mathbb{E}_{\sigma \sim\mathcal{E}} p_{\sigma,\mathcal{T}}\|_{\mathrm{TV}},
-\end{align}</span> where <span class="math inline">\mathcal{E}</span> is an arbitrary distribution on the set <span class="math inline">\mathcal{S}</span>. The analysis of <span class="math inline">\delta_{\mathrm{tvd}}</span> requires brute-force calculation of leaves distribution <span class="math inline">p_{\rho,\mathcal{T}}(l),\mathbb{E}_{\sigma \sim\mathcal{E}} p_{\sigma,\mathcal{T}}(l)</span> on a deep decision tree. We can eschew this by constructing upper-bounds for <strong>TVD</strong> using the <em>Leaves Likelihood</em> <span class="math inline">L(l)</span> and the <em>Edges Likelihood</em> <span class="math inline">L(u,s)</span> of the decision tree. <span class="math display">\begin{align}
+\end{align}
+</span> where <span class="math inline">\mathcal{E}</span> is an arbitrary distribution on the set <span class="math inline">\mathcal{S}</span>. The analysis of <span class="math inline">\delta_{\mathrm{tvd}}</span> requires brute-force calculation of leaves distribution <span class="math inline">p_{\rho,\mathcal{T}}(l),\mathbb{E}_{\sigma \sim\mathcal{E}} p_{\sigma,\mathcal{T}}(l)</span> on a deep decision tree. We can eschew this by constructing upper-bounds for <strong>TVD</strong> using the <em>Leaves Likelihood</em> <span class="math inline">L(l)</span> and the <em>Edges Likelihood</em> <span class="math inline">L(u,s)</span> of the decision tree. <span class="math display">
+\begin{align}
     L_{\sigma}(l) := \frac{p_{\sigma,\mathcal{T}}(l)}{p_{\rho,\mathcal{T}}(l)} ,\quad L_{\sigma}(u,s):= \frac{p_{\sigma,\mathcal{T}}(s|u)}{p_{\rho,\mathcal{T}}(s|u)}.
-\end{align}</span></p>
-<div class="callout callout-style-default callout-important no-icon callout-titled">
+\end{align}
+</span></p>
+<div id="lem-UB_TVD" class="callout callout-style-default callout-important no-icon callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Important</span>Lemma
+Lemma&nbsp;1: (TVD Upper Bound)
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p><span id="lemma:UB_TVD" data-label="lemma:UB_TVD"></span> Given distribution <span class="math inline">p^{(0)}(l)</span> and distribution ensemble <span class="math inline">p^{(a)}(l),a \sim \mathcal{E}</span> with <span class="math inline">L_a(l):=p^{(a)}(l)/p^{(0)}(l)</span>, then for any <span class="math inline">\beta \in (0,1)</span>, the <strong>TVD</strong> satisfied <span class="math display">\begin{align}
-    \|p^{(0)}-\mathbb{E}_a p^{(a)}\|_{\mathrm{TV}} \leq 1 - \min_{l}\mathbb{E}_a L_a(l), \quad
-    \|p^{(0)}-\mathbb{E}_a p^{(a)}\|_{\mathrm{TV}} \leq \text{Pr}_{a\sim \mathcal{E},l \sim p^{(0)}}[L_a(l) \leq \beta] + (1 - \beta)
-\end{align}</span></p>
+<p>Given distribution <span class="math inline">p^{(0)}(l)</span> and distribution ensemble <span class="math inline">p^{(a)}(l),a \sim \mathcal{E}</span> with <span class="math inline">L_a(l):=p^{(a)}(l)/p^{(0)}(l)</span>, then for any <span class="math inline">\beta \in (0,1)</span>, the <strong>TVD</strong> satisfied <span class="math display">
+\begin{align}
+    &amp;\|p^{(0)}-\mathbb{E}_a p^{(a)}\|_{\mathrm{TV}} \leq 1 - \min_{l}\mathbb{E}_a L_a(l),\\
+    &amp;\|p^{(0)}-\mathbb{E}_a p^{(a)}\|_{\mathrm{TV}} \leq \text{Pr}_{a\sim \mathcal{E},l \sim p^{(0)}}[L_a(l) \leq \beta] + (1 - \beta).
+\end{align}
+</span></p>
 </div>
 </div>
 <div class="callout callout-style-default callout-note callout-titled">
@@ -379,37 +390,48 @@ Illustrations of a <span class="math inline">(<em>c</em> = 3, <em>k</em> &lt; <e
 </div>
 <div id="callout-3" class="callout-3-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
-<p><em>Proof.</em> By definition, we have <span class="math display">\begin{align}
-        \|p^{(0)}-\mathbb{E}_a p^{(a)}\|_{\mathrm{TV}} &amp;:= \frac{1}{2}\sum_{l \in \text{leaf}} |p^{(0)}(l) - \mathbb{E}_a p^{(a)}(l)| = \sum_{l \in \text{leaf}} p^{(0)}(l)\cdot \max\{0, 1 -\mathbb{E}_a p^{(a)}(l)/p^{(0)}(l)\}\\
+<p>By definition, we have <span class="math display">
+\begin{align*}
+        &amp;\|p^{(0)}-\mathbb{E}_a p^{(a)}\|_{\mathrm{TV}} := \frac{1}{2}\sum_{l \in \text{leaf}} |p^{(0)}(l) - \mathbb{E}_a p^{(a)}(l)| \\
+        &amp;= \sum_{l \in \text{leaf}} p^{(0)}(l)\cdot \max\{0, 1 -\mathbb{E}_a p^{(a)}(l)/p^{(0)}(l)\}\\
         &amp;\leq \mathbb{E}_a \sum_{l \in \text{leaf}} p^{(0)}(l)\cdot \max\{0, 1 -p^{(a)}(l)/p^{(0)}(l)\}\\
-        &amp;=\left[\sum_{\substack{a,l \in \text{leaf}\\\text{~s.t.~}L_a(l)\leq \beta}}p^{(0)}(l)\cdot \max \{0,1 - L_a(l)\}+\sum_{\substack{a,l \in \text{leaf}\\\text{~s.t.~}L_a(l)&gt;\beta}}p^{(0)}(l)\cdot \max \{0,1 - L_a(l)\}\right].
-\end{align}</span> Here in the first line, we directly get the first inequality because <span class="math display">\begin{align}
-        \sum_{l \in \text{leaf}} p^{(0)}(l)\cdot \max\{0, 1 -\mathbb{E}_a p^{(a)}(l)/p^{(0)}(l)\} \leq \sum_{l \in \text{leaf}} p^{(0)}(l)\cdot \left( 1 - \min_{l}\mathbb{E}_a L_a(l) \right) = 1 - \min_{l}\mathbb{E}_a L_a(l).
-\end{align}</span> In the second line, we use the fact that <span class="math inline">\max \{0, 1- x\}</span> is a convex function, thus <span class="math inline">f(\mathbb{E}_a x_a) \leq \mathbb{E}_a f(x_a)</span>. Because for any <span class="math inline">\beta \in (0,1)</span>, we have <span class="math inline">\begin{cases}
+        &amp;= \!\!\!  \!\!\! \sum_{\substack{a,l \in \text{leaf}\\\text{~s.t.~}L_a(l)\leq \beta}} \!\!\!  \!\!\! p^{(0)}(l)\cdot \max \{0,1 - L_a(l)\}+ \!\!\! \!\!\!  \sum_{\substack{a,l \in \text{leaf}\\\text{~s.t.~}L_a(l)&gt;\beta}} \!\!\!  \!\!\!  p^{(0)}(l)\cdot \max \{0,1 - L_a(l)\}.
+\end{align*}
+</span> Here in the first line, we directly get the first inequality because <span class="math display">
+\begin{align}
+        &amp;\sum_{l \in \text{leaf}} p^{(0)}(l)\cdot \max\{0, 1 -\mathbb{E}_a p^{(a)}(l)/p^{(0)}(l)\} \\
+        &amp;\leq \sum_{l \in \text{leaf}} p^{(0)}(l)\cdot \left( 1 - \min_{l}\mathbb{E}_a L_a(l) \right) \\
+        &amp;= 1 - \min_{l}\mathbb{E}_a L_a(l).
+\end{align}
+</span> In the second line, we use the fact that <span class="math inline">\max \{0, 1- x\}</span> is a convex function, thus <span class="math inline">f(\mathbb{E}_a x_a) \leq \mathbb{E}_a f(x_a)</span>. Because for any <span class="math inline">\beta \in (0,1)</span>, we have <span class="math inline">\begin{cases}
         \max\{0, 1 - L_a(l)\} \leq 1 - \beta, &amp;\text{for } l \text{ s.t. } L_a(l) &gt; \beta,\\
         \max\{0, 1 - L_a(l)\} \leq 1, &amp;\text{for } l \text{ s.t. } L_a(l) \leq \beta,
-    \end{cases}</span>, we obtain <span class="math display">\begin{align}
-        \|p^{(0)}-\mathbb{E}_a p^{(a)}\|_{\mathrm{TV}}  &amp;\leq \sum_{\substack{a,l \in \text{leaf}\\L_a(l)\leq \beta}} p^{(0)}(l) +  (1 - \beta) \sum_{\substack{a,l \in \text{leaf}\\L_a(l)&gt; \beta}} p^{(0)}(l)\\
+    \end{cases}</span> we obtain <span class="math display">
+\begin{align*}
+        &amp;\|p^{(0)}-\mathbb{E}_a p^{(a)}\|_{\mathrm{TV}} \leq \sum_{\substack{a,l \in \text{leaf}\\L_a(l)\leq \beta}} p^{(0)}(l) +  (1 - \beta) \sum_{\substack{a,l \in \text{leaf}\\L_a(l)&gt; \beta}} p^{(0)}(l)\\
         &amp;=  \text{Pr}_{a\sim \mathcal{E},l \sim p^{(0)}}[L_a(l) \leq \beta] +(1 - \beta)\cdot \text{Pr}_{a\sim \mathcal{E},l \sim p^{(0)}}[L_a(l) &gt; \beta]\\
         &amp;\leq \text{Pr}_{a\sim \mathcal{E},l \sim p^{(0)}}[L_a(l) \leq \beta] + (1 - \beta).
-\end{align}</span> ◻</p>
+\end{align*}
+</span></p>
 </div>
 </div>
 </div>
-<p>Then we can simply prove that <span class="math inline">\forall l, \mathbb{E}_{\sigma\sim \mathcal{E}} L_{\sigma}(l) \geq 1 - \delta</span>. Then use the first inequality in Lemma, we have <span class="math inline">\|p_{\rho,\mathcal{T}}-\mathbb{E}_{\sigma \sim\mathcal{E}} p_{\sigma,\mathcal{T}}\|_{\mathrm{TV}} \leq \delta</span>. Or we can prove a fine-tuned upper bound for the probability <span class="math inline">\text{Pr}_{\sigma\sim \mathcal{E}, l \sim p_{\rho,\mathcal{T}}(l)}[L_{\sigma}(l) \leq \beta]</span>. This is found by the proportion of Edges Likelihood <span class="math inline">L_{\sigma}(u,s)</span>, as illustrated by the inequality in the Lemma.</p>
-<div class="callout callout-style-default callout-important no-icon callout-titled">
+<p>Then we can simply prove that <span class="math inline">\forall l, \mathbb{E}_{\sigma\sim \mathcal{E}} L_{\sigma}(l) \geq 1 - \delta</span>. By the first inequality in <a href="#lem-UB_TVD" class="quarto-xref">Lemma&nbsp;1</a>, we have <span class="math inline">\|p_{\rho,\mathcal{T}}-\mathbb{E}_{\sigma \sim\mathcal{E}} p_{\sigma,\mathcal{T}}\|_{\mathrm{TV}} \leq \delta</span>. Alternatively, we can prove a fine-tuned upper bound for the probability <span class="math inline">\text{Pr}_{\sigma\sim \mathcal{E}, l \sim p_{\rho,\mathcal{T}}(l)}[L_{\sigma}(l) \leq \beta]</span> by bounding the edge-wise likelihood <span class="math inline">L_{\sigma}(u,s)</span>, as shown in <a href="#lem-treesim" class="quarto-xref">Lemma&nbsp;2</a>.</p>
+<div id="lem-treesim" class="callout callout-style-default callout-important no-icon callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Important</span>Lemma
+Lemma&nbsp;2: (Tree Simulation)
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p><span id="lemma:UB_Ltail" data-label="lemma:UB_Ltail"></span> If <span class="math inline">\forall u</span> satisfied <span class="math inline">\mathbb{E}_{a\sim \mathcal{E}}\mathbb{E}_{s \sim p^{(0)}(s|u)}[(L_{a}(u,s) - 1)^2] \leq \delta</span>, then for every constant <span class="math inline">c_1 \in (0,1/3), c_2 &gt;0</span>, there exists a constant <span class="math inline">c_3&gt;0</span> such that <span class="math display">\begin{align}
+<p>If <span class="math inline">\forall u</span> satisfied <span class="math inline">\mathbb{E}_{a\sim \mathcal{E}}\mathbb{E}_{s \sim p^{(0)}(s|u)}[(L_{a}(u,s) - 1)^2] \leq \delta</span>, then for every constant <span class="math inline">c_1 \in (0,1/3), c_2 &gt;0</span>, there exists a constant <span class="math inline">c_3&gt;0</span> such that <span class="math display">
+\begin{align}
        \mathrm{Pr}_{a\sim \mathcal{E}, l \sim p^{(0)}}[L_a(l) \leq 1 - c_1] \leq c_2+ c_3\delta T.
-\end{align}</span></p>
+\end{align}
+</span></p>
 </div>
 </div>
 <div class="callout callout-style-default callout-note callout-titled">
@@ -424,7 +446,7 @@ Illustrations of a <span class="math inline">(<em>c</em> = 3, <em>k</em> &lt; <e
 </div>
 <div id="callout-5" class="callout-5-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
-<p><em>Proof.</em> ◻</p>
+<p><em>t.b.c</em> ◻</p>
 </div>
 </div>
 </div>
@@ -439,11 +461,15 @@ Illustrations of a <span class="math inline">(<em>c</em> = 3, <em>k</em> &lt; <e
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p><span id="theo:mart_distinguish_lb" data-label="theo:mart_distinguish_lb"></span> To distinguish <span class="math inline">\rho</span> and a set of state <span class="math inline">\mathcal{S}</span> for a constant success rate <span class="math inline">1/2 + \varepsilon</span>, with restrained POVMs <span class="math inline">\mathcal{M}</span> and classical adaptive strategy, the adaptive measurement rounds <span class="math inline">T</span> must be lower bounded by chi-squared divergence <span class="math inline">T &gt; c \cdot \delta_{\mathcal{M},\rho,\mathcal{S}}^{-1}</span>, where <span class="math display">\begin{align}
+<p>To distinguish <span class="math inline">\rho</span> and a set of state <span class="math inline">\mathcal{S}</span> for a constant success rate <span class="math inline">1/2 + \varepsilon</span>, with restrained POVMs <span class="math inline">\mathcal{M}</span> and classical adaptive strategy, the adaptive measurement rounds <span class="math inline">T</span> must be lower bounded by chi-squared divergence <span class="math inline">T &gt; c \cdot \delta_{\mathcal{M},\rho,\mathcal{S}}^{-1}</span>, where <span class="math display">
+\begin{align}
         \delta_{\mathcal{M},\rho,\mathcal{S}} = \min_{\mathcal{E} \text{~on~} \mathcal{S}} \mathbb{E}_{\sigma \sim \mathcal{E}} \max_{\{F_s\}_s \in \mathcal{M}}\mathbb{E}_{s \sim \mathrm{tr}(\rho F_{s})} \left[\frac{\mathrm{tr}(\sigma F_{s})}{\mathrm{tr}(\rho F_{s})} - 1\right]^2.
-\end{align}</span> Sometimes we use a loosing lower bound <span class="math inline">T &gt; c \cdot \delta_{\mathcal{M},\rho,\mathcal{S} \sim \mathcal{E}}^{-1}</span> where <span class="math display">\begin{align}
+\end{align}
+</span> Sometimes we use a loosing lower bound <span class="math inline">T &gt; c \cdot \delta_{\mathcal{M},\rho,\mathcal{S} \sim \mathcal{E}}^{-1}</span> where <span class="math display">
+\begin{align}
      \delta_{\mathcal{M},\rho,\mathcal{S} \sim \mathcal{E}} := \max_{\{F_s\}_s \in \mathcal{M}}\mathbb{E}_{s \sim \mathrm{tr}(\rho F_{s})} \mathbb{E}_{\sigma \sim \mathcal{E}} \left[\frac{\mathrm{tr}(\sigma F_{s})}{\mathrm{tr}(\rho F_{s})} - 1\right]^2.
-\end{align}</span></p>
+\end{align}
+</span></p>
 </div>
 </div>
 <div class="callout callout-style-default callout-note callout-titled">
@@ -458,64 +484,44 @@ Illustrations of a <span class="math inline">(<em>c</em> = 3, <em>k</em> &lt; <e
 </div>
 <div id="callout-7" class="callout-7-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
-<p><em>Proof.</em> We first defined the likelihood function below: <span class="math display">\begin{align}
-\label{eq:likelihood_func}
-  \mathcal{F}(\mathcal{T},\mathcal{E},\rho) := \max_{u}\mathbb{E}_{\sigma \sim \mathcal{E}} \mathbb{E}_{s \sim p_{\rho,\mathcal{T}}(s|u)} \left[\frac{p_{\sigma,\mathcal{T}}(s|u)}{p_{\rho,\mathcal{T}}(s|u)} - 1\right]^2 = \mathbb{E}_{\sigma \sim \mathcal{E}} \max_{u}\mathbb{E}_{s \sim \mathrm{tr}(\rho F_{s}^{u})} \left[\frac{\mathrm{tr}(\sigma F_{s}^{u})}{\mathrm{tr}(\rho F_{s}^{u})} - 1\right]^2
-\end{align}</span> Combining Lemma and Lemma, this function upper-bounds the <strong>TVD</strong> through inequality <span class="math display">\begin{align}
-    \forall \mathcal{T},\mathcal{E},c_1 \in (0,1/3),c_2&gt;0,&amp;~\|p_{\rho,\mathcal{T}} - \mathbb{E}_{\sigma \sim \mathcal{E}} p_{\sigma,\mathcal{T}}\|_{\mathrm{TV}} \leq c_2 + c_3 \cdot \mathcal{F}(\mathcal{T},\mathcal{E},\rho) \cdot T + c_1,\\
-    \Rightarrow \forall c_1 \in (0,1/3),c_2&gt;0,&amp;~\delta_{\mathrm{tvd}} \leq c_2 + c_3 \cdot \max_{\mathcal{T}}\min_{\mathcal{E}}\mathcal{F}(\mathcal{T},\mathcal{E},\rho) \cdot T + c_1.
-\end{align}</span> Using Lemma, the correct probability <span class="math inline">1/2 + \varepsilon</span> to distinguish <span class="math inline">p_{\rho, \mathcal{T}}</span> from <span class="math inline">\{p_{\sigma,\mathcal{T}}\}_{\sigma \in \mathcal{E}}</span> must satisfy <span class="math display">\begin{align}
-    &amp;1/2 + \varepsilon &lt; 1/2 + \delta_{\mathrm{tvd}}/2 \leq 1/2+{(c_1+c_2)}/{2} + (1/2)c_3\cdot\max_{\mathcal{T}}\min_{\mathcal{E}}\mathcal{F}(\mathcal{T},\mathcal{E},\rho)T\\
-    &amp; \Rightarrow T &gt; \frac{2 \varepsilon - c_1 -c_2}{c_3}\left[\max_{\mathcal{T}}\min_{\mathcal{E}}\mathcal{F}(\mathcal{T},\mathcal{E},\rho)\right]^{-1} \geq c \cdot \left[\min_{\mathcal{E}}\max_{\mathcal{T}}\mathcal{F}(\mathcal{T},\mathcal{E},\rho)\right]^{-1}.
-\end{align}</span> Here in the last inequality we use the max-min inequality <span class="math inline">\max_{\mathcal{T}}\min_{\mathcal{E}}\mathcal{F} \leq \min_{\mathcal{E}}\max_{\mathcal{T}}\mathcal{F}</span>. As long as <span class="math inline">\varepsilon</span> is a constant, we can always tune the value of <span class="math inline">c_1 \in (0,1/3),c_2&gt;0</span> such that the lower bound <span class="math inline">T &gt; c\cdot \max_{\mathcal{T}}\min_{\mathcal{E}}\mathcal{F}^{-1}(\mathcal{T},\mathcal{E}, \rho)</span> is meaningful (i.e., <span class="math inline">c&gt;0</span>). Plug in the definition of <span class="math inline">\mathcal{F}</span>, we get the equation <span class="math inline">T \geq c \cdot \delta_{\mathcal{M},\rho,\mathcal{S}}^{-1}</span>, where <span class="math display">\begin{align}
-    \delta_{\mathcal{M},\rho,\mathcal{S}} = \min_{\mathcal{E}}\max_{\mathcal{T}}\mathcal{F}(\mathcal{T},\mathcal{E}, \rho)
+<p><strong>Step 1: Define the likelihood function.</strong> We first define the maximum edge-wise chi-squared divergence: <span class="math display">
+\begin{align}
+  \mathcal{F}(\mathcal{T},\mathcal{E},\rho)
+   &amp;:= \max_{u}\mathbb{E}_{\sigma \sim \mathcal{E}} \mathbb{E}_{s \sim p_{\rho,\mathcal{T}}(s|u)} \left[\frac{p_{\sigma,\mathcal{T}}(s|u)}{p_{\rho,\mathcal{T}}(s|u)} - 1\right]^2\\
+  &amp; = \mathbb{E}_{\sigma \sim \mathcal{E}} \max_{u}\mathbb{E}_{s \sim \mathrm{tr}(\rho F_{s}^{u})} \left[\frac{\mathrm{tr}(\sigma F_{s}^{u})}{\mathrm{tr}(\rho F_{s}^{u})} - 1\right]^2.
+\end{align}
+</span></p>
+<p><strong>Step 2: Upper-bound the TVD.</strong> Combining <a href="#lem-UB_TVD" class="quarto-xref">Lemma&nbsp;1</a> (second inequality with <span class="math inline">\beta = 1 - c_1</span>) and <a href="#lem-treesim" class="quarto-xref">Lemma&nbsp;2</a>, we obtain: <span class="math display">
+\begin{align*}
+    &amp;\forall \mathcal{T},\mathcal{E},c_1 \in (0,1/3),c_2&gt;0,\\
+    &amp;\|p_{\rho,\mathcal{T}} - \mathbb{E}_{\sigma \sim \mathcal{E}} p_{\sigma,\mathcal{T}}\|_{\mathrm{TV}} \leq c_2 + c_3 \cdot \mathcal{F}(\mathcal{T},\mathcal{E},\rho) \cdot T + c_1,\\
+    &amp;\Rightarrow \forall c_1 \in (0,1/3),c_2&gt;0, \delta_{\mathrm{tvd}} \leq c_2 + c_3 \cdot \max_{\mathcal{T}}\min_{\mathcal{E}}\mathcal{F}(\mathcal{T},\mathcal{E},\rho) \cdot T + c_1.
+\end{align*}
+</span></p>
+<p><strong>Step 3: Lower-bound <span class="math inline">T</span>.</strong> Using <a href="../../../theory/Topics/Lowerbounds/lecam_method.html#lem-TV_bound">Lemma (Le Cam’s Bound)</a> (the relation between distinguishing probability and TVD), the correct probability <span class="math inline">1/2 + \varepsilon</span> to distinguish <span class="math inline">p_{\rho, \mathcal{T}}</span> from <span class="math inline">\{p_{\sigma,\mathcal{T}}\}_{\sigma \in \mathcal{E}}</span> must satisfy <span class="math display">
+\begin{align}
+    &amp;1/2 + \varepsilon &lt; 1/2 + \delta_{\mathrm{tvd}}/2 \\
+    &amp;\leq 1/2+{(c_1+c_2)}/{2} + (1/2)c_3\cdot\max_{\mathcal{T}}\min_{\mathcal{E}}\mathcal{F}(\mathcal{T},\mathcal{E},\rho)T\\
+    &amp; \Rightarrow T &gt; \frac{2 \varepsilon - c_1 -c_2}{c_3}\left[\max_{\mathcal{T}}\min_{\mathcal{E}}\mathcal{F}(\mathcal{T},\mathcal{E},\rho)\right]^{-1} \\
+    &amp;\geq c \cdot \left[\min_{\mathcal{E}}\max_{\mathcal{T}}\mathcal{F}(\mathcal{T},\mathcal{E},\rho)\right]^{-1}.
+\end{align}
+</span> Here in the last inequality we use the max-min inequality <span class="math inline">\max_{\mathcal{T}}\min_{\mathcal{E}}\mathcal{F} \leq \min_{\mathcal{E}}\max_{\mathcal{T}}\mathcal{F}</span>. As long as <span class="math inline">\varepsilon</span> is a constant, we can always tune the value <span class="math inline">c_1 \in (0,1/3),c_2&gt;0</span> such that the lower bound: <span class="math display">
+T &gt; c\cdot \max_{\mathcal{T}}\min_{\mathcal{E}}\mathcal{F}^{-1}(\mathcal{T},\mathcal{E}, \rho)
+</span> is meaningful (i.e., <span class="math inline">c&gt;0</span>). Plug in the definition of <span class="math inline">\mathcal{F}</span>, we get the equation <span class="math inline">T \geq c \cdot \delta_{\mathcal{M},\rho,\mathcal{S}}^{-1}</span>, where <span class="math display">
+\begin{align}
+    \delta_{\mathcal{M},\rho,\mathcal{S}} &amp;= \min_{\mathcal{E}}\max_{\mathcal{T}}\mathcal{F}(\mathcal{T},\mathcal{E}, \rho)\\
     &amp;=\min_{\mathcal{E}} \mathbb{E}_{\sigma \sim \mathcal{E}} \max_{\mathcal{T}}\max_{u}\mathbb{E}_{s \sim \mathrm{tr}(\rho F_{s}^{u})} \left[\frac{\mathrm{tr}(\sigma F_{s}^{u})}{\mathrm{tr}(\rho F_{s}^{u})} - 1\right]^2 \\
     &amp;=\min_{\mathcal{E}} \mathbb{E}_{\sigma \sim \mathcal{E}} \max_{\{F_s\}_s \in \mathcal{M}}\mathbb{E}_{s \sim \mathrm{tr}(\rho F_{s})} \left[\frac{\mathrm{tr}(\sigma F_{s})}{\mathrm{tr}(\rho F_{s})} - 1\right]^2.
-\end{align}</span> Here in the last line, we consider all possible adaptive strategy with POVM restriction <span class="math inline">\{F_s^{u}\} \in \mathcal{M}, \forall u</span>, thus the maximum can be unioned. Sometimes we ignore the minimization over all possible ensemble <span class="math inline">\mathcal{E}</span> over the state set <span class="math inline">\mathcal{S}</span> and give a loose lower bound for the measurement times. We denoted this as: <span class="math display">\begin{align}
+\end{align}
+</span> In the last line, since every node <span class="math inline">u</span> in any tree <span class="math inline">\mathcal{T}</span> is labeled by some POVM in <span class="math inline">\mathcal{M}</span>, maximizing over all trees and all nodes is equivalent to maximizing over <span class="math inline">\mathcal{M}</span> directly.</p>
+<p><strong>Remark (Looser bound):</strong> Sometimes we fix a specific ensemble <span class="math inline">\mathcal{E}</span> instead of optimizing over it, yielding a looser but more tractable bound: <span class="math display">
+\begin{align}
     \delta_{\mathcal{M},\rho,\mathcal{S}} \leq \delta_{\mathcal{M},\rho,\mathcal{S} \sim \mathcal{E}} := \max_{\{F_s\}_s \in \mathcal{M}}\mathbb{E}_{s \sim \mathrm{tr}(\rho F_{s})} \mathbb{E}_{\sigma \sim \mathcal{E}} \left[\frac{\mathrm{tr}(\sigma F_{s})}{\mathrm{tr}(\rho F_{s})} - 1\right]^2.
-\end{align}</span> ◻</p>
-</div>
-</div>
-</div>
-<p>Before dived into complex prove of distinguishability lower bound, it is necessary to build an intuition about which ensemble is hard to distinguished.</p>
-<div class="callout callout-style-default callout-important no-icon callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon no-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Important</span>Lemma
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p><span id="lemma:hard_necess1" data-label="lemma:hard_necess1"></span> Given two state ensemble <span class="math inline">\mathcal{E}_1,\mathcal{E}_2</span>. If <span class="math display">
-\|\mathbb{E}_{\rho \sim \mathcal{E}_1}[\rho^{\otimes k}] - \mathbb{E}_{\rho \sim \mathcal{E}_2}[\rho^{\otimes k}]\|_1 \\
-:= \|\mu^{(k)}_1 - \mu^{(k)}_2\|_{1}\geq \varepsilon,
-</span> then there exists strategy that distinguishes <span class="math inline">\mathcal{E}_1</span> and <span class="math inline">\mathcal{E}_2</span> using <span class="math inline">k</span>-replica measurement for <span class="math inline">O(1/\varepsilon^2)</span> times.</p>
-</div>
-</div>
-<div class="callout callout-style-default callout-note callout-titled">
-<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-9-contents" aria-controls="callout-9" aria-expanded="false" aria-label="Toggle callout">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Note</span>Proof (Click to expand)
-</div>
-<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
-</div>
-<div id="callout-9" class="callout-9-contents callout-collapse collapse">
-<div class="callout-body-container callout-body">
-<p><em>Proof.</em> Define function <span class="math inline">f(A):=\|A\|_1</span>. Since <span class="math inline">f(A)</span> is a closed and convex function, we conclude that <span class="math inline">f(A) = \max_{O}\left[\mathrm{tr}(O\cdot A) - f^*(O)\right]</span>. The conjugate function writes: <span class="math inline">f^{*}(A) = \begin{cases}0 &amp;\text{if~}\|A\|_{\infty}&lt;1\\ +\infty &amp;\text{if else}. \end{cases}</span>, thus we have <span class="math inline">\|A\|_{1} = \max_{\|O\|_{\infty}&lt;1}\mathrm{tr}(O\cdot A)</span>. Thus, the condition <span class="math inline">\|\mu^{(k)}_1 - \mu^{(k)}_2\|_{1}\geq \varepsilon</span> is equivalent to the existence of <span class="math inline">O, \|O\|_{\infty}&lt;1</span> such that <span class="math inline">\mathrm{tr}(O \mu^{(k)}_1) - \mathrm{tr}(O \mu^{(k)}_2) \geq \varepsilon</span>. This means that we can measure operator <span class="math inline">O</span> on <span class="math inline">k</span>-replica state <span class="math inline">\rho^{\otimes k}</span> and construct a direct estimator <span class="math inline">\hat{o}</span> for <span class="math inline">\mathrm{tr}(O \mu^{(k)})</span>. If the estimator <span class="math inline">\hat{o}</span> has <span class="math inline">\leq \varepsilon/2</span> additive error, then it solves the discrimination problem. The condition <span class="math inline">O, \|O\|_{\infty}&lt;1</span> means that <span class="math inline">-1&lt;\mathrm{tr}(O \mu^{(k)}) &lt; 1</span>. We then can use Hoeffding inequality in Theorem to bound the sampling complexity <span class="math inline">N &lt; 2\varepsilon^{-2} \ln(2 \delta^{-1})</span> to constructing <span class="math inline">\hat{o}</span> with <span class="math inline">\leq \varepsilon/2</span> additive error. ◻</p>
-</div>
-</div>
-</div>
-<p>For more general task to distinguish set <span class="math inline">S_1</span> form <span class="math inline">S_2</span>, it is equivalent to build all possible distribution on <span class="math inline">S_1,S_2</span> and check the hardness of these constructed ensemble on <span class="math inline">S_1</span> and <span class="math inline">S_2</span>. However, Lemma is only a necessary condition. Even if two ensembles have similar rank-<span class="math inline">k</span> property, their might still exist efficient <span class="math inline">k</span>-replica measurement strategy. An example is <span class="math inline">\mathbb{I}/d</span> and <span class="math inline">\{\ket{\mathbf{s}}\!\bra{\mathbf{s}}\}_{\mathbf{s}}</span> with <span class="math inline">\mathbf{s}</span> uniformly distributed on <span class="math inline">\mathbb{F}_2^{n}</span>. This is because although <span class="math inline">\mathbb{E}_{\rho \sim \mathcal{E}_1}[\rho^{\otimes k}] = \mathbb{E}_{\rho \sim \mathcal{E}_2}[\rho^{\otimes k}]</span>, we still have <span class="math display">
-\mathbb{E}_{\rho \sim \mathcal{E}_1}[\prod_{i = 1}^{T}\mathrm{tr}(O_i\rho^{\otimes k})] \\
-\neq \mathbb{E}_{\rho \sim \mathcal{E}_2}[\prod_{i = 1}^{T}\mathrm{tr}(O_i\rho^{\otimes k})].
+\end{align}
 </span></p>
-<p>With this intuition in mind, now we reviewed the information lower bound to distinguish Haar random state ensembles. Perhaps the most simple one are the maximum mixed state <span class="math inline">\mathbb{I}(d)/d</span> with operator mixed ensemble.</p>
-<hr>
+</div>
+</div>
+</div>
 <p><a href="../../../theory/Topics/Lowerbounds/povm_restrictions.html">← Previous: POVM Restrictions</a> | <a href="../../../theory/Topics/Lowerbounds/index.html">Back to Index</a> | <a href="../../../theory/Topics/Lowerbounds/operator_mixed.html">Next: Operator Mixed Ensembles →</a></p>
 
 
@@ -539,6 +545,9 @@ W10=
 <div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body" data-entry-spacing="0" role="list">
 <div id="ref-chen2021exponential" class="csl-entry" role="listitem">
 <div class="csl-left-margin">[1] </div><div class="csl-right-inline">S. Chen, J. Cotler, H.-Y. Huang, and J. Li, <a href="https://arxiv.org/abs/2111.05881">Exponential separations between learning with and without quantum memory</a>, (2021).</div>
+</div>
+<div id="ref-chen2024optimal" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[2] </div><div class="csl-right-inline">S. Chen, W. Gong, and Q. Ye, <a href="https://arxiv.org/abs/2404.19105">Optimal tradeoffs for estimating pauli observables</a>, (2024).</div>
 </div>
 </div></section></div></main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">

@@ -13,20 +13,15 @@ bibliography: refs.bib
 
 # Tree Representation of Adaptive Strategies {#sec-tree-rep}
 
-Given an implementable POVM set
-$\mathcal{M} = \{\{F_s\}|\{F_s\} \text{~satisfied the restriction.}\}$,
-we can implement those POVMs multiple times, carefully design their
-order, and even implement them adaptively. Any description of such an
-adaptive learning protocol are called a $\mathcal{M}$-restrained
-adaptive strategy. It has the *Tree
-representation* [@chen2021exponential]. Roughly speaking, the adaptive
-structure will first induce a decision tree $\mathcal{T}$. Each
-branching edges in $\mathcal{T}$, which we denoted as
-$\{(u,v_1),\cdots,(u,v_{s_u})\}$, was labeled by one of the restrained
-POVMs $\{F^{u}_{v_{i}}\}_{i = 1}^{s_u} \in \mathcal{M}$. Then any
-c-copies of state $\rho \in \mathcal{H}(d^c)$ will induce a probability
-distribution $p_{\rho,\mathcal{T}}(v)$ on each vertex $v$ of the
-decision graph $\mathcal{T}$.
+Consider a restricted POVM set $\mathcal{M} = \{\{F_s\} \mid \{F_s\} \text{ satisfies the restriction}\}$.
+In practice, we can apply POVMs from $\mathcal{M}$ multiple times, choose their ordering strategically, and even select later measurements based on earlier outcomes. 
+We call any such protocol an **$\mathcal{M}$-restrained adaptive strategy**.
+
+A key insight from [@chen2021exponential] is that every adaptive strategy admits a natural *tree representation*.
+The idea is simple: since each measurement outcome determines which measurement to perform next, the entire protocol can be encoded as a decision tree $\mathcal{T}$.
+Specifically, each internal node $u$ corresponds to a measurement step, and its outgoing edges $\{(u,v_1),\ldots,(u,v_{s_u})\}$ correspond to the possible outcomes of some POVM $\{F^{u}_{v_{i}}\}_{i = 1}^{s_u} \in \mathcal{M}$.
+
+Given this tree structure, any $c$-copy state $\rho \in \mathcal{H}(d^c)$ induces a probability distribution $p_{\rho,\mathcal{T}}(v)$ over the vertices of $\mathcal{T}$, where the probability of reaching vertex $v$ is determined by the product of transition probabilities along the path from the root to $v$.
 
 ::: {.callout-note icon="false"}
 ## Definition
@@ -45,14 +40,7 @@ POVMs restrained on $\mathcal{M}$. The tree representation of it is
   where $p_{\rho}(s|u) = \text{tr}(F^u_{s} \rho)$ and $p_{\rho}(r) = 1$.
 :::
 
-<figure id="fig:ill_learnstrat" data-latex-placement="htbp!">
-<embed src="Figure/adaptive.pdf" style="width:80.0%" />
-<figcaption>Illustrations of a <span
-class="math inline">(<em>c</em> = 3, <em>k</em> &lt; <em>n</em>)</span>
-adaptive learning strategy and its tree representation <span
-class="math inline">𝒯</span>. Refer to <span class="citation"
-data-cites="chen2024optimal"></span>.</figcaption>
-</figure>
+![Illustrations of a $(c = 3, k < n)$ adaptive learning strategy and its tree representation $\mathcal{T}$. Refer to @chen2024optimal.](adaptive.png){#fig-ill-learnstrat width="80%"}
 
 To prove that any $\mathcal{M}$-restrained adaptive strategy
 $\mathcal{T}$ cannot distinguish the states $\rho$ from a set of state
@@ -61,83 +49,105 @@ to show that $\forall \mathcal{T}$, the distribution
 $p_{\rho,\mathcal{T}}(l)$ and the distribution ensemble
 $\{p_{\sigma,\mathcal{T}}(l)\}_{\sigma \in \mathcal{E}}$ cannot be
 distinguished $\varepsilon/2$ better than random guessing. This recasts
-the problem in a form that is solvable by applying
-Lemma. Thus, the distinguishability between
+the problem in a form that is solvable by applying the TVD bounds below.
+Thus, the distinguishability between
 $\rho$ and $\mathcal{S}$ is tightly lower-bounded by **TVD** as
-$$\begin{align}
-\label{eq:tvd}
+$$
+\begin{align}
     \delta_{\mathrm{tvd}} :=\max_{\mathcal{T}}\min_{\mathcal{E}}\|p_{\rho,\mathcal{T}}-\mathbb{E}_{\sigma \sim\mathcal{E}} p_{\sigma,\mathcal{T}}\|_{\mathrm{TV}},
-\end{align}$$ where $\mathcal{E}$ is an arbitrary distribution on the
+\end{align}
+$$
+where $\mathcal{E}$ is an arbitrary distribution on the
 set $\mathcal{S}$. The analysis of $\delta_{\mathrm{tvd}}$ requires
 brute-force calculation of leaves distribution
 $p_{\rho,\mathcal{T}}(l),\mathbb{E}_{\sigma \sim\mathcal{E}} p_{\sigma,\mathcal{T}}(l)$
 on a deep decision tree. We can eschew this by constructing upper-bounds
 for **TVD** using the *Leaves Likelihood* $L(l)$ and the *Edges
-Likelihood* $L(u,s)$ of the decision tree. $$\begin{align}
+Likelihood* $L(u,s)$ of the decision tree. 
+$$
+\begin{align}
     L_{\sigma}(l) := \frac{p_{\sigma,\mathcal{T}}(l)}{p_{\rho,\mathcal{T}}(l)} ,\quad L_{\sigma}(u,s):= \frac{p_{\sigma,\mathcal{T}}(s|u)}{p_{\rho,\mathcal{T}}(s|u)}.
-\end{align}$$
+\end{align}
+$$
 
-::: {.callout-important icon="false"}
-## Lemma
-
-[]{#lemma:UB_TVD label="lemma:UB_TVD"} Given distribution $p^{(0)}(l)$
+::: {#lem-UB_TVD .callout-important icon="false"}
+## (TVD Upper Bound)
+Given distribution $p^{(0)}(l)$
 and distribution ensemble $p^{(a)}(l),a \sim \mathcal{E}$ with
 $L_a(l):=p^{(a)}(l)/p^{(0)}(l)$, then for any $\beta \in (0,1)$, the
-**TVD** satisfied $$\begin{align}
-    \|p^{(0)}-\mathbb{E}_a p^{(a)}\|_{\mathrm{TV}} \leq 1 - \min_{l}\mathbb{E}_a L_a(l), \quad
-    \|p^{(0)}-\mathbb{E}_a p^{(a)}\|_{\mathrm{TV}} \leq \text{Pr}_{a\sim \mathcal{E},l \sim p^{(0)}}[L_a(l) \leq \beta] + (1 - \beta)
-\end{align}$$
+**TVD** satisfied 
+$$
+\begin{align}
+    &\|p^{(0)}-\mathbb{E}_a p^{(a)}\|_{\mathrm{TV}} \leq 1 - \min_{l}\mathbb{E}_a L_a(l),\\
+    &\|p^{(0)}-\mathbb{E}_a p^{(a)}\|_{\mathrm{TV}} \leq \text{Pr}_{a\sim \mathcal{E},l \sim p^{(0)}}[L_a(l) \leq \beta] + (1 - \beta).
+\end{align}
+$$
 :::
 
 ::: {.callout-note collapse="true"}
 ## Proof (Click to expand)
-
-*Proof.* By definition, we have $$\begin{align}
-        \|p^{(0)}-\mathbb{E}_a p^{(a)}\|_{\mathrm{TV}} &:= \frac{1}{2}\sum_{l \in \text{leaf}} |p^{(0)}(l) - \mathbb{E}_a p^{(a)}(l)| = \sum_{l \in \text{leaf}} p^{(0)}(l)\cdot \max\{0, 1 -\mathbb{E}_a p^{(a)}(l)/p^{(0)}(l)\}\\
+By definition, we have 
+$$
+\begin{align*}
+        &\|p^{(0)}-\mathbb{E}_a p^{(a)}\|_{\mathrm{TV}} := \frac{1}{2}\sum_{l \in \text{leaf}} |p^{(0)}(l) - \mathbb{E}_a p^{(a)}(l)| \\
+        &= \sum_{l \in \text{leaf}} p^{(0)}(l)\cdot \max\{0, 1 -\mathbb{E}_a p^{(a)}(l)/p^{(0)}(l)\}\\
         &\leq \mathbb{E}_a \sum_{l \in \text{leaf}} p^{(0)}(l)\cdot \max\{0, 1 -p^{(a)}(l)/p^{(0)}(l)\}\\
-        &=\left[\sum_{\substack{a,l \in \text{leaf}\\\text{~s.t.~}L_a(l)\leq \beta}}p^{(0)}(l)\cdot \max \{0,1 - L_a(l)\}+\sum_{\substack{a,l \in \text{leaf}\\\text{~s.t.~}L_a(l)>\beta}}p^{(0)}(l)\cdot \max \{0,1 - L_a(l)\}\right].
-\end{align}$$ Here in the first line, we directly get the first
-inequality because $$\begin{align}
-        \sum_{l \in \text{leaf}} p^{(0)}(l)\cdot \max\{0, 1 -\mathbb{E}_a p^{(a)}(l)/p^{(0)}(l)\} \leq \sum_{l \in \text{leaf}} p^{(0)}(l)\cdot \left( 1 - \min_{l}\mathbb{E}_a L_a(l) \right) = 1 - \min_{l}\mathbb{E}_a L_a(l).
-\end{align}$$ In the second line, we use the fact that
+        &= \!\!\!  \!\!\! \sum_{\substack{a,l \in \text{leaf}\\\text{~s.t.~}L_a(l)\leq \beta}} \!\!\!  \!\!\! p^{(0)}(l)\cdot \max \{0,1 - L_a(l)\}+ \!\!\! \!\!\!  \sum_{\substack{a,l \in \text{leaf}\\\text{~s.t.~}L_a(l)>\beta}} \!\!\!  \!\!\!  p^{(0)}(l)\cdot \max \{0,1 - L_a(l)\}.
+\end{align*}
+$$ 
+Here in the first line, we directly get the first
+inequality because 
+$$
+\begin{align}
+        &\sum_{l \in \text{leaf}} p^{(0)}(l)\cdot \max\{0, 1 -\mathbb{E}_a p^{(a)}(l)/p^{(0)}(l)\} \\
+        &\leq \sum_{l \in \text{leaf}} p^{(0)}(l)\cdot \left( 1 - \min_{l}\mathbb{E}_a L_a(l) \right) \\
+        &= 1 - \min_{l}\mathbb{E}_a L_a(l).
+\end{align}
+$$ 
+In the second line, we use the fact that
 $\max \{0, 1- x\}$ is a convex function, thus
 $f(\mathbb{E}_a x_a) \leq \mathbb{E}_a f(x_a)$. Because for any
-$\beta \in (0,1)$, we have $\begin{cases}
+$\beta \in (0,1)$, we have 
+$\begin{cases}
         \max\{0, 1 - L_a(l)\} \leq 1 - \beta, &\text{for } l \text{ s.t. } L_a(l) > \beta,\\
         \max\{0, 1 - L_a(l)\} \leq 1, &\text{for } l \text{ s.t. } L_a(l) \leq \beta,
-    \end{cases}$, we obtain $$\begin{align}
-        \|p^{(0)}-\mathbb{E}_a p^{(a)}\|_{\mathrm{TV}}  &\leq \sum_{\substack{a,l \in \text{leaf}\\L_a(l)\leq \beta}} p^{(0)}(l) +  (1 - \beta) \sum_{\substack{a,l \in \text{leaf}\\L_a(l)> \beta}} p^{(0)}(l)\\
+    \end{cases}$
+we obtain 
+$$
+\begin{align*}
+        &\|p^{(0)}-\mathbb{E}_a p^{(a)}\|_{\mathrm{TV}} \leq \sum_{\substack{a,l \in \text{leaf}\\L_a(l)\leq \beta}} p^{(0)}(l) +  (1 - \beta) \sum_{\substack{a,l \in \text{leaf}\\L_a(l)> \beta}} p^{(0)}(l)\\
         &=  \text{Pr}_{a\sim \mathcal{E},l \sim p^{(0)}}[L_a(l) \leq \beta] +(1 - \beta)\cdot \text{Pr}_{a\sim \mathcal{E},l \sim p^{(0)}}[L_a(l) > \beta]\\
         &\leq \text{Pr}_{a\sim \mathcal{E},l \sim p^{(0)}}[L_a(l) \leq \beta] + (1 - \beta).
-\end{align}$$ ◻
+\end{align*}
+$$
 :::
 
 Then we can simply prove that
 $\forall l, \mathbb{E}_{\sigma\sim \mathcal{E}} L_{\sigma}(l) \geq 1 - \delta$.
-Then use the first inequality in
-Lemma, we have
+By the first inequality in @lem-UB_TVD, we have
 $\|p_{\rho,\mathcal{T}}-\mathbb{E}_{\sigma \sim\mathcal{E}} p_{\sigma,\mathcal{T}}\|_{\mathrm{TV}} \leq \delta$.
-Or we can prove a fine-tuned upper bound for the probability
-$\text{Pr}_{\sigma\sim \mathcal{E}, l \sim p_{\rho,\mathcal{T}}(l)}[L_{\sigma}(l) \leq \beta]$.
-This is found by the proportion of Edges Likelihood $L_{\sigma}(u,s)$,
-as illustrated by the inequality in the
-Lemma.
+Alternatively, we can prove a fine-tuned upper bound for the probability
+$\text{Pr}_{\sigma\sim \mathcal{E}, l \sim p_{\rho,\mathcal{T}}(l)}[L_{\sigma}(l) \leq \beta]$
+by bounding the edge-wise likelihood $L_{\sigma}(u,s)$,
+as shown in @lem-treesim.
 
-::: {.callout-important icon="false"}
-## Lemma
-
-[]{#lemma:UB_Ltail label="lemma:UB_Ltail"} If $\forall u$ satisfied
+::: {#lem-treesim .callout-important icon="false"}
+## (Tree Simulation)
+If $\forall u$ satisfied
 $\mathbb{E}_{a\sim \mathcal{E}}\mathbb{E}_{s \sim p^{(0)}(s|u)}[(L_{a}(u,s) - 1)^2] \leq \delta$,
 then for every constant $c_1 \in (0,1/3), c_2 >0$, there exists a
-constant $c_3>0$ such that $$\begin{align}
+constant $c_3>0$ such that 
+$$
+\begin{align}
        \mathrm{Pr}_{a\sim \mathcal{E}, l \sim p^{(0)}}[L_a(l) \leq 1 - c_1] \leq c_2+ c_3\delta T.
-\end{align}$$
+\end{align}
+$$
 :::
 
 ::: {.callout-note collapse="true"}
 ## Proof (Click to expand)
 
-*Proof.* ◻
+*t.b.c* ◻
 :::
 
 Now we are set to give a lower bound on
@@ -148,125 +158,87 @@ Theorem blow:
 
 ::: {.callout-important icon="false"}
 ## Theorem
-
-[]{#theo:mart_distinguish_lb label="theo:mart_distinguish_lb"} To
-distinguish $\rho$ and a set of state $\mathcal{S}$ for a constant
+To distinguish $\rho$ and a set of state $\mathcal{S}$ for a constant
 success rate $1/2 + \varepsilon$, with restrained POVMs $\mathcal{M}$
 and classical adaptive strategy, the adaptive measurement rounds $T$
 must be lower bounded by chi-squared divergence
 $T > c \cdot \delta_{\mathcal{M},\rho,\mathcal{S}}^{-1}$, where
-$$\begin{align}
+$$
+\begin{align}
         \delta_{\mathcal{M},\rho,\mathcal{S}} = \min_{\mathcal{E} \text{~on~} \mathcal{S}} \mathbb{E}_{\sigma \sim \mathcal{E}} \max_{\{F_s\}_s \in \mathcal{M}}\mathbb{E}_{s \sim \mathrm{tr}(\rho F_{s})} \left[\frac{\mathrm{tr}(\sigma F_{s})}{\mathrm{tr}(\rho F_{s})} - 1\right]^2.
-\end{align}$$ Sometimes we use a loosing lower bound
+\end{align}
+$$
+Sometimes we use a loosing lower bound
 $T > c \cdot \delta_{\mathcal{M},\rho,\mathcal{S} \sim \mathcal{E}}^{-1}$
-where $$\begin{align}
+where 
+$$
+\begin{align}
      \delta_{\mathcal{M},\rho,\mathcal{S} \sim \mathcal{E}} := \max_{\{F_s\}_s \in \mathcal{M}}\mathbb{E}_{s \sim \mathrm{tr}(\rho F_{s})} \mathbb{E}_{\sigma \sim \mathcal{E}} \left[\frac{\mathrm{tr}(\sigma F_{s})}{\mathrm{tr}(\rho F_{s})} - 1\right]^2.
-\end{align}$$
+\end{align}
+$$
 :::
 
 ::: {.callout-note collapse="true"}
 ## Proof (Click to expand)
 
-*Proof.* We first defined the likelihood function below: $$\begin{align}
-\label{eq:likelihood_func}
-  \mathcal{F}(\mathcal{T},\mathcal{E},\rho) := \max_{u}\mathbb{E}_{\sigma \sim \mathcal{E}} \mathbb{E}_{s \sim p_{\rho,\mathcal{T}}(s|u)} \left[\frac{p_{\sigma,\mathcal{T}}(s|u)}{p_{\rho,\mathcal{T}}(s|u)} - 1\right]^2 = \mathbb{E}_{\sigma \sim \mathcal{E}} \max_{u}\mathbb{E}_{s \sim \mathrm{tr}(\rho F_{s}^{u})} \left[\frac{\mathrm{tr}(\sigma F_{s}^{u})}{\mathrm{tr}(\rho F_{s}^{u})} - 1\right]^2
-\end{align}$$ Combining
-Lemma and
-Lemma, this function upper-bounds the **TVD**
-through inequality $$\begin{align}
-    \forall \mathcal{T},\mathcal{E},c_1 \in (0,1/3),c_2>0,&~\|p_{\rho,\mathcal{T}} - \mathbb{E}_{\sigma \sim \mathcal{E}} p_{\sigma,\mathcal{T}}\|_{\mathrm{TV}} \leq c_2 + c_3 \cdot \mathcal{F}(\mathcal{T},\mathcal{E},\rho) \cdot T + c_1,\\
-    \Rightarrow \forall c_1 \in (0,1/3),c_2>0,&~\delta_{\mathrm{tvd}} \leq c_2 + c_3 \cdot \max_{\mathcal{T}}\min_{\mathcal{E}}\mathcal{F}(\mathcal{T},\mathcal{E},\rho) \cdot T + c_1.
-\end{align}$$ Using
-Lemma, the correct probability
+**Step 1: Define the likelihood function.** 
+We first define the maximum edge-wise chi-squared divergence:
+$$
+\begin{align}
+  \mathcal{F}(\mathcal{T},\mathcal{E},\rho)
+   &:= \max_{u}\mathbb{E}_{\sigma \sim \mathcal{E}} \mathbb{E}_{s \sim p_{\rho,\mathcal{T}}(s|u)} \left[\frac{p_{\sigma,\mathcal{T}}(s|u)}{p_{\rho,\mathcal{T}}(s|u)} - 1\right]^2\\
+  & = \mathbb{E}_{\sigma \sim \mathcal{E}} \max_{u}\mathbb{E}_{s \sim \mathrm{tr}(\rho F_{s}^{u})} \left[\frac{\mathrm{tr}(\sigma F_{s}^{u})}{\mathrm{tr}(\rho F_{s}^{u})} - 1\right]^2.
+\end{align}
+$$
+
+**Step 2: Upper-bound the TVD.**
+Combining @lem-UB_TVD (second inequality with $\beta = 1 - c_1$) and @lem-treesim, we obtain:
+$$
+\begin{align*}
+    &\forall \mathcal{T},\mathcal{E},c_1 \in (0,1/3),c_2>0,\\
+    &\|p_{\rho,\mathcal{T}} - \mathbb{E}_{\sigma \sim \mathcal{E}} p_{\sigma,\mathcal{T}}\|_{\mathrm{TV}} \leq c_2 + c_3 \cdot \mathcal{F}(\mathcal{T},\mathcal{E},\rho) \cdot T + c_1,\\
+    &\Rightarrow \forall c_1 \in (0,1/3),c_2>0, \delta_{\mathrm{tvd}} \leq c_2 + c_3 \cdot \max_{\mathcal{T}}\min_{\mathcal{E}}\mathcal{F}(\mathcal{T},\mathcal{E},\rho) \cdot T + c_1.
+\end{align*}
+$$
+
+**Step 3: Lower-bound $T$.**
+Using [Lemma (Le Cam's Bound)](lecam_method.qmd#lem-TV_bound) (the relation between distinguishing probability and TVD), the correct probability
 $1/2 + \varepsilon$ to distinguish $p_{\rho, \mathcal{T}}$ from
 $\{p_{\sigma,\mathcal{T}}\}_{\sigma \in \mathcal{E}}$ must satisfy
-$$\begin{align}
-    &1/2 + \varepsilon < 1/2 + \delta_{\mathrm{tvd}}/2 \leq 1/2+{(c_1+c_2)}/{2} + (1/2)c_3\cdot\max_{\mathcal{T}}\min_{\mathcal{E}}\mathcal{F}(\mathcal{T},\mathcal{E},\rho)T\\
-    & \Rightarrow T > \frac{2 \varepsilon - c_1 -c_2}{c_3}\left[\max_{\mathcal{T}}\min_{\mathcal{E}}\mathcal{F}(\mathcal{T},\mathcal{E},\rho)\right]^{-1} \geq c \cdot \left[\min_{\mathcal{E}}\max_{\mathcal{T}}\mathcal{F}(\mathcal{T},\mathcal{E},\rho)\right]^{-1}.
-\end{align}$$ Here in the last inequality we use the max-min inequality
+$$
+\begin{align}
+    &1/2 + \varepsilon < 1/2 + \delta_{\mathrm{tvd}}/2 \\
+    &\leq 1/2+{(c_1+c_2)}/{2} + (1/2)c_3\cdot\max_{\mathcal{T}}\min_{\mathcal{E}}\mathcal{F}(\mathcal{T},\mathcal{E},\rho)T\\
+    & \Rightarrow T > \frac{2 \varepsilon - c_1 -c_2}{c_3}\left[\max_{\mathcal{T}}\min_{\mathcal{E}}\mathcal{F}(\mathcal{T},\mathcal{E},\rho)\right]^{-1} \\
+    &\geq c \cdot \left[\min_{\mathcal{E}}\max_{\mathcal{T}}\mathcal{F}(\mathcal{T},\mathcal{E},\rho)\right]^{-1}.
+\end{align}
+$$ 
+Here in the last inequality we use the max-min inequality
 $\max_{\mathcal{T}}\min_{\mathcal{E}}\mathcal{F} \leq \min_{\mathcal{E}}\max_{\mathcal{T}}\mathcal{F}$.
-As long as $\varepsilon$ is a constant, we can always tune the value of
-$c_1 \in (0,1/3),c_2>0$ such that the lower bound
-$T > c\cdot \max_{\mathcal{T}}\min_{\mathcal{E}}\mathcal{F}^{-1}(\mathcal{T},\mathcal{E}, \rho)$
+As long as $\varepsilon$ is a constant, we can always tune the value 
+$c_1 \in (0,1/3),c_2>0$ such that the lower bound:
+$$
+T > c\cdot \max_{\mathcal{T}}\min_{\mathcal{E}}\mathcal{F}^{-1}(\mathcal{T},\mathcal{E}, \rho)
+$$
 is meaningful (i.e., $c>0$). Plug in the definition of $\mathcal{F}$, we
 get the equation
 $T \geq c \cdot \delta_{\mathcal{M},\rho,\mathcal{S}}^{-1}$, where
-$$\begin{align}
-    \delta_{\mathcal{M},\rho,\mathcal{S}} = \min_{\mathcal{E}}\max_{\mathcal{T}}\mathcal{F}(\mathcal{T},\mathcal{E}, \rho)
+$$
+\begin{align}
+    \delta_{\mathcal{M},\rho,\mathcal{S}} &= \min_{\mathcal{E}}\max_{\mathcal{T}}\mathcal{F}(\mathcal{T},\mathcal{E}, \rho)\\
     &=\min_{\mathcal{E}} \mathbb{E}_{\sigma \sim \mathcal{E}} \max_{\mathcal{T}}\max_{u}\mathbb{E}_{s \sim \mathrm{tr}(\rho F_{s}^{u})} \left[\frac{\mathrm{tr}(\sigma F_{s}^{u})}{\mathrm{tr}(\rho F_{s}^{u})} - 1\right]^2 \\
     &=\min_{\mathcal{E}} \mathbb{E}_{\sigma \sim \mathcal{E}} \max_{\{F_s\}_s \in \mathcal{M}}\mathbb{E}_{s \sim \mathrm{tr}(\rho F_{s})} \left[\frac{\mathrm{tr}(\sigma F_{s})}{\mathrm{tr}(\rho F_{s})} - 1\right]^2.
-\end{align}$$ Here in the last line, we consider all possible adaptive
-strategy with POVM restriction $\{F_s^{u}\} \in \mathcal{M}, \forall u$,
-thus the maximum can be unioned. Sometimes we ignore the minimization
-over all possible ensemble $\mathcal{E}$ over the state set
-$\mathcal{S}$ and give a loose lower bound for the measurement times. We
-denoted this as: $$\begin{align}
+\end{align}
+$$ 
+In the last line, since every node $u$ in any tree $\mathcal{T}$ is labeled by some POVM in $\mathcal{M}$, maximizing over all trees and all nodes is equivalent to maximizing over $\mathcal{M}$ directly.
+
+**Remark (Looser bound):** Sometimes we fix a specific ensemble $\mathcal{E}$ instead of optimizing over it, yielding a looser but more tractable bound:
+$$
+\begin{align}
     \delta_{\mathcal{M},\rho,\mathcal{S}} \leq \delta_{\mathcal{M},\rho,\mathcal{S} \sim \mathcal{E}} := \max_{\{F_s\}_s \in \mathcal{M}}\mathbb{E}_{s \sim \mathrm{tr}(\rho F_{s})} \mathbb{E}_{\sigma \sim \mathcal{E}} \left[\frac{\mathrm{tr}(\sigma F_{s})}{\mathrm{tr}(\rho F_{s})} - 1\right]^2.
-\end{align}$$ ◻
+\end{align}
+$$
 :::
 
-Before dived into complex prove of distinguishability lower bound, it is
-necessary to build an intuition about which ensemble is hard to
-distinguished.
-
-::: {.callout-important icon="false"}
-## Lemma
-
-[]{#lemma:hard_necess1 label="lemma:hard_necess1"} Given two state
-ensemble $\mathcal{E}_1,\mathcal{E}_2$. If
-$$
-\|\mathbb{E}_{\rho \sim \mathcal{E}_1}[\rho^{\otimes k}] - \mathbb{E}_{\rho \sim \mathcal{E}_2}[\rho^{\otimes k}]\|_1 \\
-:= \|\mu^{(k)}_1 - \mu^{(k)}_2\|_{1}\geq \varepsilon,
-$$
-then there exists strategy that distinguishes $\mathcal{E}_1$ and
-$\mathcal{E}_2$ using $k$-replica measurement for $O(1/\varepsilon^2)$
-times.
-:::
-
-::: {.callout-note collapse="true"}
-## Proof (Click to expand)
-
-*Proof.* Define function $f(A):=\|A\|_1$. Since $f(A)$ is a closed and
-convex function, we conclude that
-$f(A) = \max_{O}\left[\mathrm{tr}(O\cdot A) - f^*(O)\right]$. The
-conjugate function writes:
-$f^{*}(A) = \begin{cases}0 &\text{if~}\|A\|_{\infty}<1\\ +\infty &\text{if else}. \end{cases}$,
-thus we have $\|A\|_{1} = \max_{\|O\|_{\infty}<1}\mathrm{tr}(O\cdot A)$.
-Thus, the condition $\|\mu^{(k)}_1 - \mu^{(k)}_2\|_{1}\geq \varepsilon$
-is equivalent to the existence of $O, \|O\|_{\infty}<1$ such that
-$\mathrm{tr}(O \mu^{(k)}_1) - \mathrm{tr}(O \mu^{(k)}_2) \geq \varepsilon$.
-This means that we can measure operator $O$ on $k$-replica state
-$\rho^{\otimes k}$ and construct a direct estimator $\hat{o}$ for
-$\mathrm{tr}(O \mu^{(k)})$. If the estimator $\hat{o}$ has
-$\leq \varepsilon/2$ additive error, then it solves the discrimination
-problem. The condition $O, \|O\|_{\infty}<1$ means that
-$-1<\mathrm{tr}(O \mu^{(k)}) < 1$. We then can use Hoeffding inequality
-in Theorem to bound the sampling complexity
-$N < 2\varepsilon^{-2} \ln(2 \delta^{-1})$ to constructing $\hat{o}$
-with $\leq \varepsilon/2$ additive error. ◻
-:::
-
-For more general task to distinguish set $S_1$ form $S_2$, it is
-equivalent to build all possible distribution on $S_1,S_2$ and check the
-hardness of these constructed ensemble on $S_1$ and $S_2$. However,
-Lemma is only a necessary condition. Even if
-two ensembles have similar rank-$k$ property, their might still exist
-efficient $k$-replica measurement strategy. An example is $\mathbb{I}/d$
-and $\{\ket{\mathbf{s}}\!\bra{\mathbf{s}}\}_{\mathbf{s}}$ with
-$\mathbf{s}$ uniformly distributed on $\mathbb{F}_2^{n}$. This is
-because although
-$\mathbb{E}_{\rho \sim \mathcal{E}_1}[\rho^{\otimes k}] = \mathbb{E}_{\rho \sim \mathcal{E}_2}[\rho^{\otimes k}]$,
-we still have
-$$
-\mathbb{E}_{\rho \sim \mathcal{E}_1}[\prod_{i = 1}^{T}\mathrm{tr}(O_i\rho^{\otimes k})] \\
-\neq \mathbb{E}_{\rho \sim \mathcal{E}_2}[\prod_{i = 1}^{T}\mathrm{tr}(O_i\rho^{\otimes k})].
-$$
-
-With this intuition in mind, now we reviewed the information lower bound
-to distinguish Haar random state ensembles. Perhaps the most simple one
-are the maximum mixed state $\mathbb{I}(d)/d$ with operator mixed
-ensemble.
-
----
 
 [← Previous: POVM Restrictions](povm_restrictions.qmd) | [Back to Index](index.qmd) | [Next: Operator Mixed Ensembles →](operator_mixed.qmd)

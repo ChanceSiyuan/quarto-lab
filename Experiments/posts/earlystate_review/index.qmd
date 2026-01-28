@@ -1,0 +1,334 @@
+---
+title: "Experimental Review: Early-Stage Rb87 Neutral Atom Quantum Computing"
+date: '2026-01-22'
+lang: en
+bibliography: refs.bib
+csl: ../../../aps.csl
+format:
+  html:
+    code-fold: true
+    toc: true
+    toc-depth: 3
+---
+
+## Abstract
+
+This review surveys experimental advances in early-stage neutral atom quantum computing using static Rb87 arrays with analog Hamiltonian control. We focus on six major research directions: (1) programmable quantum simulation via Floquet engineering, (2) ansatz-free Hamiltonian learning, (3) quantum reservoir computing, (4) combinatorial optimization through MIS/MWIS protocols, (5) lattice gauge theory simulation including string breaking, and (6) non-equilibrium dynamics and cluster nucleation. For each direction, we identify the key experimental demonstration, explain the underlying physics, and contextualize with related work across platforms.
+
+## 1. Introduction
+
+**Scope of this review.** We define "early-stage" experiments as those employing:
+
+- **Static geometric encoding**: Atoms arranged in programmable patterns (lattices, graphs) that remain fixed during quantum evolution
+- **Analog Hamiltonian evolution**: Continuous-time dynamics under the native Rydberg Hamiltonian with global drives and local detuning patterns
+- **No mid-circuit measurement or atom transport**: Readout occurs only at the end of the protocol
+
+The native Hamiltonian of such systems takes the form:
+$$
+H = \frac{\Omega(t)}{2}\sum_i \sigma_i^x - \Delta(t)\sum_i n_i + \sum_{i<j} V_{ij} n_i n_j
+$$
+where $\Omega$ is the global Rabi frequency, $\Delta$ the detuning, and $V_{ij} = C_6/r_{ij}^6$ the van der Waals interaction. The Rydberg blockade—where $V_{ij} > \Omega$ prevents simultaneous excitation—is the central computational resource.
+
+This review covers experiments primarily from the Lukin group (Harvard) and QuEra Computing during 2023–2025. Each section follows a consistent format: **what** was demonstrated, **why** it matters, and **related experiments** across platforms.
+
+## 2. Programmable Quantum Simulation via Floquet Engineering
+
+### 2.1 What
+
+Maskara et al. [@Maskara2023] developed a digital-analog protocol enabling simulation of Heisenberg and other exchange Hamiltonians on static Rydberg arrays. The native Ising-type interaction ($\sigma^z \sigma^z$) is transformed via periodic global pulses that rotate the quantization axis.
+
+[**The Floquet mechanism.**](/theory/Topics/quantum_sim/Floquet.qmd) By applying a sequence of global $\pi/2$ rotations cycling through $X$, $Y$, and $Z$ bases, the time-averaged effective Hamiltonian becomes:
+$$
+H_{\text{eff}} = J\sum_{\langle i,j \rangle} (\sigma_i^x \sigma_j^x + \sigma_i^y \sigma_j^y + \sigma_i^z \sigma_j^z)
+$$
+This isotropic Heisenberg Hamiltonian conserves total spin—a symmetry absent in the native hardware but essential for simulating magnetic materials and molecular spin systems.
+
+**Key demonstration.** The protocol was applied to simulate polynuclear transition-metal catalysts (e.g., Fe-S clusters), extracting energy gaps via snapshot measurements and classical Fourier analysis rather than quantum phase estimation.
+
+### 2.2 Why
+
+- **Chemical relevance**: Transition-metal clusters have strongly correlated, multi-reference ground states that challenge classical density functional theory
+- **Hardware efficiency**: No local gates required—only global pulses respecting static array constraints
+- **Spectroscopy without ancillas**: Energy spectra extracted from time-domain correlation functions
+
+### 2.3 Related Experiments
+
+| Platform | Approach | Reference |
+|----------|----------|-----------|
+| Superconducting qubits | Digital Trotterization of Heisenberg model | @Kim2023Heisenberg |
+| Trapped ions | Native XX interactions for spin chains | @Monroe2021TrappedIon |
+| Cold atoms in optical lattices | Fermi-Hubbard simulation | @Gross2017FermiHubbard |
+
+The Floquet approach is unique in achieving *analog* Heisenberg simulation at scale (>100 qubits) without the depth overhead of digital compilation [@Ebadi2021; @Bluvstein2022].
+
+## 3. Quantum Learning Tasks
+
+### 3.1 Ansatz-Free Hamiltonian Learning
+
+#### 3.1.1 What
+
+Hu et al. [@Hu2025] introduced a protocol to learn unknown Hamiltonians with Heisenberg-limited precision ($\delta \sim 1/t$) without assuming locality or interaction structure.
+
+**Protocol structure:**
+
+1. **Structure learning** ($O(\log n)$ complexity): Identify which atom pairs have non-zero interactions via signal detection in evolved superposition states
+2. **Coefficient learning** ($O(1/\epsilon)$ for precision $\epsilon$): Measure interaction strengths using random Pauli decoupling sequences that isolate individual terms
+
+**Key result.** The protocol successfully recovered the long-range $1/r^6$ tail of van der Waals interactions, distinguishing the true Hamiltonian from truncated nearest-neighbor models.
+
+#### 3.1.2 Why
+
+- **Self-calibration**: Analog simulators can diagnose their own errors without external characterization
+- **Ansatz-free**: Avoids systematic bias from assuming locality cutoffs
+- **Optimal scaling**: Heisenberg limit is the fundamental quantum bound—quadratic improvement over standard approaches
+
+#### 3.1.3 Related Experiments
+
+| Platform | Approach | Reference |
+|----------|----------|-----------|
+| NMR | Hamiltonian tomography via process tomography | @Cory2002NMR |
+| Superconducting | Variational Hamiltonian learning | @Huang2022Variational |
+| Theory | Shadow tomography for observables | @Huang2023Shadow |
+
+The ansatz-free approach addresses a fundamental limitation of variational methods: systematic errors from incorrect model assumptions [@Anshu2021Sample].
+
+### 3.2 Quantum Reservoir Computing
+
+#### 3.2.1 What
+
+QuEra [@QuEra2024Reservoir] demonstrated quantum reservoir computing on a 108-qubit static Rydberg array, representing one of the largest quantum machine learning experiments to date.
+
+**Reservoir mechanism:**
+
+1. **Input encoding**: Classical data encoded into local detunings $\{\Delta_i\}$
+2. **Reservoir evolution**: Native Rydberg dynamics create complex nonlinear feature maps
+3. **Readout**: $Z$-basis measurements provide feature vectors
+4. **Training**: Only a classical linear layer is trained (no quantum parameter optimization)
+
+**Key result.** The quantum kernel showed "comparative advantage" over classical RBF and polynomial kernels for chaotic time-series prediction and certain classification tasks.
+
+#### 3.2.2 Why
+
+- **Avoids barren plateaus**: Fixed quantum dynamics eliminate the trainability issues of variational circuits
+- **Scalability**: 108 qubits—scale difficult to match with digital systems
+- **Near-term utility**: Functions as ML co-processor without error correction
+
+#### 3.2.3 Related Experiments
+
+| Platform | Approach | Reference |
+|----------|----------|-----------|
+| Superconducting | Reservoir computing with fixed transmon dynamics | @Chen2020IBMReservoir |
+| Photonic | Optical reservoir using spatial light modulators | @Larger2012Photonic |
+| Theory | Quantum kernel methods | @Fujii2017Reservoir |
+
+The advantage over classical kernels remains contested and task-dependent, but the demonstration establishes feasibility at unprecedented scale [@Ghosh2019Reservoir].
+
+## 4. Combinatorial Optimization
+
+### 4.1 What
+
+The geometric programmability of optical tweezers creates a direct isomorphism between graph problems and atomic configurations. Two key protocols have emerged:
+
+**Maximum Independent Set (MIS).** Atoms represent graph vertices; edges are encoded via blockade radius. The ground state of:
+$$
+H = -\Delta \sum_i n_i + \sum_{\langle i,j \rangle \in E} V_{ij} n_i n_j
+$$
+with $V_{ij} \gg \Delta$ for edges $(i,j) \in E$ yields the MIS [@Pichler2018MIS].
+
+**Maximum Weight Independent Set (MWIS).** Kim et al. [@MWIS2024] extended MIS by encoding vertex weights $w_i$ into local detunings $\Delta_i$. Higher weights correspond to larger positive detunings, favoring excitation.
+
+**Power grid application.** Finžgar et al. [@PowerGrid2024] mapped the IEEE 39-bus test system to the QuEra Aquila processor, demonstrating industrial-scale optimization via MWIS/MaxCut formulations.
+
+### 4.2 Why
+
+- **Native constraint encoding**: Rydberg blockade *physically* enforces independence constraints
+- **Adiabatic preparation**: Ground states found via continuous detuning sweeps—no gate compilation
+- **Industrial relevance**: Power grid optimization is a concrete near-term application
+
+### 4.3 Related Experiments
+
+| Platform | Approach | Reference |
+|----------|----------|-----------|
+| D-Wave | Quantum annealing for QUBO | @Boixo2016DWave |
+| Gate-based | QAOA for MaxCut | @Farhi2014QAOA |
+| Classical | Simulated annealing, branch-and-bound | Standard |
+
+The unit-disk graph constraint limits direct applicability, but embedding techniques continue to expand the problem class [@Serret2020MIS].
+
+## 5. Fundamental Physics
+
+### 5.1 Lattice Gauge Theories and String Breaking
+
+#### 5.1.1 What
+
+Gonzalez-Cuadra et al. [@StringBreaking2024] observed **string breaking** in a (2+1)D $\mathbb{Z}_2$ lattice gauge theory using atoms arranged in a Kagome lattice.
+
+**Physical setup:**
+
+- **Kagome geometry**: Vertex constraints from blockade enforce local Gauss's law ($\mathbb{Z}_2$ symmetry)
+- **Flux string**: Two static charges connected by a line of Rydberg excitations (electric flux)
+- **Quench dynamics**: System evolves after sudden parameter change
+
+**Key observation.** As string energy increased, the flux tube became unstable and "snapped," creating particle-antiparticle pairs—the first real-time observation of hadronization dynamics on quantum hardware.
+
+#### 5.1.2 Why
+
+- **QCD analog**: String breaking underlies quark confinement in the Standard Model
+- **Beyond classical**: Real-time gauge dynamics are sign-problem limited for Monte Carlo
+- **Geometric synthesis**: No digital encoding—gauge symmetry emerges from lattice structure
+
+#### 5.1.3 Related Experiments
+
+| Platform | Approach | Reference |
+|----------|----------|-----------|
+| Trapped ions | 1D Schwinger model | @Martinez2016Schwinger |
+| Superconducting | Digital LGT simulation | @Mildenberger2022LGT |
+| Theory | Tensor network methods | @Zohar2015LGT |
+
+The (2+1)D observation extends beyond previous 1D demonstrations, accessing genuinely higher-dimensional gauge physics [@Surace2020LGT].
+
+### 5.2 Non-Equilibrium Dynamics and Cluster Nucleation
+
+#### 5.2.1 What
+
+Experiments on 2D Ising arrays [@ClusterNucleation2025] probed **avalanche dynamics** in metastable quantum magnets.
+
+**Protocol:**
+
+1. Prepare system in metastable state (all atoms in ground state with positive detuning)
+2. Apply weak perturbation or thermal fluctuation
+3. Observe propagation of spin-flip domains
+
+**Key observation.** Due to kinetically constrained dynamics (facilitated by blockade), single excitations trigger cascading "avalanches" that nucleate extended clusters. The experiment mapped phase boundaries between confined (clusters shrink) and deconfined (avalanches span system) regimes.
+
+#### 5.2.2 Why
+
+- **Glass physics**: Kinetically constrained models describe jamming and slow relaxation
+- **Non-equilibrium criticality**: Distinct from equilibrium phase transitions
+- **KPZ universality**: Connections to broader non-equilibrium universality classes
+
+#### 5.2.3 Related Experiments
+
+| Platform | Approach | Reference |
+|----------|----------|-----------|
+| Rydberg arrays | Kibble-Zurek mechanism | @Keesling2019KPZ |
+| Cold atoms | KPZ dynamics in 1D | @Wei2022KPZ |
+| Ion traps | Prethermalization dynamics | @Bernien2017KZ |
+
+These experiments establish Rydberg arrays as probes of non-equilibrium statistical mechanics beyond traditional equilibrium simulation.
+
+## 6. Device Parameters and Outlook
+
+To reproduce or extend the experiments described in this review, understanding the hardware specifications of Rb87 neutral atom platforms is essential. This section provides a comprehensive parameter analysis based on current state-of-the-art systems.
+
+### 6.1 System Scale: Atom Number
+
+| System | Qubit Count | Reference |
+|--------|-------------|-----------|
+| QuEra Aquila (public access) | 256 | @Ebadi2021 |
+| Harvard/Lukin lab | 280 physical qubits | @Bluvstein2023 |
+| Caltech/Endres lab | 60 (benchmark) | @Shaw2024 |
+
+The experiments in this review typically require 60–256 atoms in programmable arrays. Current platforms achieve near-deterministic loading through atom rearrangement protocols.
+
+### 6.2 Rydberg Laser and Interaction Parameters
+
+The native Hamiltonian parameters for Rb87 |70S⟩ Rydberg states are [@Saffman2010; @Henriet2020; @QuEra2022]:
+
+| Parameter | Typical Range | Notes |
+|-----------|---------------|-------|
+| **Rabi frequency Ω** | 0–2.5 × 2π MHz | Global drive strength |
+| **Global detuning Δ** | ±20 × 2π MHz | Energy offset from resonance |
+| **$C_6$ coefficient** | 862690 × 2π MHz·μm⁶ | Van der Waals interaction |
+| **Minimum spacing** | 4 μm | Blockade-limited |
+| **Blockade radius** | ~7–10 μm | At typical Ω |
+
+**Excitation scheme.** Two-photon excitation via 780 nm + 480 nm transitions suppresses single-photon scattering while enabling MHz-scale Rabi frequencies. All atoms in the array can be simultaneously driven (global control), with local addressing achieved through spatial light modulators for detuning patterns.
+
+### 6.3 Coherence and Timescales
+
+Decoherence fundamentally limits the circuit depth achievable in analog protocols [@Saffman2010; @Ebadi2021]:
+
+| Timescale | Value | Origin |
+|-----------|-------|--------|
+| **Rydberg state lifetime** | 100–150 μs | Radiative decay of |70S⟩ |
+| **Free-evolution T₂*** | 1–4 μs | Magnetic field noise, laser phase noise |
+| **Spin-echo T₂** | ~100 μs | Dynamical decoupling |
+| **Typical evolution time** | 1–4 μs | Protocol-dependent |
+
+The ratio of coherence time to interaction strength ($\sim V_{ij} \cdot T_2$) determines the effective "circuit depth" in analog terms—currently supporting O(100) coherent many-body oscillation cycles.
+
+### 6.4 Temperature and Cooling Techniques
+
+Atomic temperature affects both positional stability and state preparation fidelity [@Henriet2020; @Ebadi2021]:
+
+| Cooling Stage | Temperature | Purpose |
+|---------------|-------------|---------|
+| Magneto-optical trap (MOT) | ~150 μK | Initial capture |
+| Polarization gradient cooling (PGC) | 10–50 μK | Sub-Doppler cooling |
+| Grey molasses | 1–5 μK | Final stage cooling |
+| **In optical tweezers** | 10–20 μK | Operating temperature |
+
+Sub-recoil temperatures are essential for maintaining atoms at trap centers during μs-timescale evolution without significant motional heating.
+
+### 6.5 Measurement Fidelity and SPAM Errors
+
+State preparation and measurement (SPAM) errors bound the extractable information per shot [@Ebadi2021; @Shaw2024]:
+
+| Parameter | Value | Method |
+|-----------|-------|--------|
+| **Single-atom imaging fidelity** | >99% | Fluorescence imaging |
+| **State preparation fidelity** | ~99.5% | Optical pumping |
+| **Single-shot readout time** | 10–50 ms | Camera exposure |
+| **Total SPAM error** | 1–2% | Combined |
+
+High imaging fidelity enables single-shot readout of the full $n$-atom configuration, critical for extracting correlation functions and observing rare events like string breaking.
+
+### 6.6 Atom Loss and Array Stability
+
+Atom loss during the experimental cycle affects statistics and creates effective disorder [@Henriet2020; @Ebadi2021]:
+
+| Parameter | Value | Notes |
+|-----------|-------|-------|
+| **Per-cycle loss rate** | 0.5–1% | Rydberg decay + off-resonant scattering |
+| **Trap lifetime** | >10 s | Vacuum-limited |
+| **Initial filling fraction** | ~50% | Without rearrangement |
+| **Post-rearrangement filling** | >95% | With atom sorting |
+
+Atom rearrangement protocols achieve near-unity filling of target geometries, though this adds ~100 ms overhead per experimental cycle.
+
+### 6.7 Summary: Reproducing Experiments in This Review
+
+The table below summarizes requirements for each major experiment class:
+
+| Experiment Type | Atoms | Evolution Time | Key Constraint |
+|-----------------|-------|----------------|----------------|
+| Floquet engineering (§2) | 50–100 | 1–2 μs | Pulse timing precision |
+| Hamiltonian learning (§3.1) | 10–50 | 1–4 μs | Shot statistics (~10⁴) |
+| Reservoir computing (§3.2) | 100+ | 1 μs | Local detuning control |
+| MIS/MWIS optimization (§4) | 60–256 | 1–5 μs | Geometry programming |
+| Lattice gauge theory (§5.1) | 50–100 | 2–4 μs | Kagome lattice precision |
+| Cluster nucleation (§5.2) | 100+ | 1–10 μs | 2D array uniformity |
+
+### 6.8 Open Challenges and Near-Term Directions
+
+**Current limitations:**
+
+1. **Coherence**: T₂* of 1–4 μs limits deep analog protocols; improvement requires better magnetic shielding and laser stabilization
+2. **Mid-circuit operations**: No measurement or atom transport during evolution in static arrays
+3. **Connectivity**: Long-range $1/r^6$ interactions but unit-disk graph constraints for optimization
+4. **Verification**: Classical simulation intractable for >50 qubits—requires new benchmarking methods [@Shaw2024]
+
+**Near-term directions:**
+
+- Hybrid digital-analog protocols combining Floquet engineering with optimized waveform control
+- Integration of zero-noise extrapolation and probabilistic error cancellation
+- Extension to fermionic problems via Jordan-Wigner encoding on ladder geometries
+- Cross-platform benchmarking against tensor networks and quantum Monte Carlo
+
+The experiments reviewed demonstrate that static analog neutral atom arrays constitute a productive scientific platform with immediate utility. As atom transport and high-fidelity two-qubit gates mature [@Bluvstein2023], these analog techniques—Floquet sequences, geometric encoding, reservoir dynamics—will remain central to extracting scientific and computational value from neutral atom processors.
+
+## References
+
+::: {#refs}
+:::

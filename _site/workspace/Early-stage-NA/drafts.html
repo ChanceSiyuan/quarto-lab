@@ -1,0 +1,1291 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.26">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2026-01-20">
+
+<title>Magic Square Game: Multi-Copy Assisted Strategies – Chance’s Quantum Lab</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-a8976c3e89df70b272bdfba3d2fda974.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="../../site_libs/quarto-contrib/live-runtime/live-runtime.js" type="module"></script>
+<link href="../../site_libs/quarto-contrib/live-runtime/live-runtime.css" rel="stylesheet">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script>window.backupDefine = window.define; window.define = undefined;</script><script src="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.js"></script>
+  <script>document.addEventListener("DOMContentLoaded", function () {
+ var mathElements = document.getElementsByClassName("math");
+ var macros = [];
+ for (var i = 0; i < mathElements.length; i++) {
+  var texText = mathElements[i].firstChild;
+  if (mathElements[i].tagName == "SPAN") {
+   katex.render(texText.data, mathElements[i], {
+    displayMode: mathElements[i].classList.contains('display'),
+    throwOnError: false,
+    macros: macros,
+    fleqn: false
+   });
+}}});
+  </script>
+  <script>window.define = window.backupDefine; window.backupDefine = undefined;</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.css">
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">Chance’s Quantum Lab</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../index.html"> 
+<span class="menu-text">Home Page</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../theory/index.html"> 
+<span class="menu-text">Theory</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../Experiments/index.html"> 
+<span class="menu-text">Experiment Notes</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../workspace/workspace.html"> 
+<span class="menu-text">Workspace</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/yourusername"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/yourusername"> <i class="bi bi-twitter" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">1. Introduction</a>
+  <ul class="collapse">
+  <li><a href="#the-mermin-peres-magic-square" id="toc-the-mermin-peres-magic-square" class="nav-link" data-scroll-target="#the-mermin-peres-magic-square">1.1 The Mermin-Peres Magic Square</a></li>
+  <li><a href="#connection-to-bell-inequalities-and-contextuality" id="toc-connection-to-bell-inequalities-and-contextuality" class="nav-link" data-scroll-target="#connection-to-bell-inequalities-and-contextuality">1.2 Connection to Bell Inequalities and Contextuality</a></li>
+  <li><a href="#why-perfect-separation-matters" id="toc-why-perfect-separation-matters" class="nav-link" data-scroll-target="#why-perfect-separation-matters">1.3 Why Perfect Separation Matters</a></li>
+  </ul></li>
+  <li><a href="#multi-copy-assisted-strategies" id="toc-multi-copy-assisted-strategies" class="nav-link" data-scroll-target="#multi-copy-assisted-strategies">2. Multi-Copy Assisted Strategies</a>
+  <ul class="collapse">
+  <li><a href="#theoretical-foundations-multi-copy-self-testing" id="toc-theoretical-foundations-multi-copy-self-testing" class="nav-link" data-scroll-target="#theoretical-foundations-multi-copy-self-testing">2.1 Theoretical Foundations: Multi-Copy Self-Testing</a></li>
+  <li><a href="#parallel-repetition-and-error-tolerance" id="toc-parallel-repetition-and-error-tolerance" class="nav-link" data-scroll-target="#parallel-repetition-and-error-tolerance">2.2 Parallel Repetition and Error Tolerance</a></li>
+  <li><a href="#connection-to-shadow-tomography" id="toc-connection-to-shadow-tomography" class="nav-link" data-scroll-target="#connection-to-shadow-tomography">2.3 Connection to Shadow Tomography</a></li>
+  </ul></li>
+  <li><a href="#experimental-challenges-and-opportunities" id="toc-experimental-challenges-and-opportunities" class="nav-link" data-scroll-target="#experimental-challenges-and-opportunities">3. Experimental Challenges and Opportunities</a>
+  <ul class="collapse">
+  <li><a href="#current-state-of-bell-experiments" id="toc-current-state-of-bell-experiments" class="nav-link" data-scroll-target="#current-state-of-bell-experiments">3.1 Current State of Bell Experiments</a></li>
+  <li><a href="#quantum-dot-bell-violation" id="toc-quantum-dot-bell-violation" class="nav-link" data-scroll-target="#quantum-dot-bell-violation">3.2 Quantum Dot Bell Violation</a></li>
+  <li><a href="#scaling-challenges" id="toc-scaling-challenges" class="nav-link" data-scroll-target="#scaling-challenges">3.3 Scaling Challenges</a></li>
+  </ul></li>
+  <li><a href="#neutral-atom-platform-experimental-proposal" id="toc-neutral-atom-platform-experimental-proposal" class="nav-link" data-scroll-target="#neutral-atom-platform-experimental-proposal">4. Neutral Atom Platform Experimental Proposal</a>
+  <ul class="collapse">
+  <li><a href="#why-neutral-atoms" id="toc-why-neutral-atoms" class="nav-link" data-scroll-target="#why-neutral-atoms">4.1 Why Neutral Atoms?</a></li>
+  <li><a href="#proposed-protocol-rydberg-mediated-bell-pairs" id="toc-proposed-protocol-rydberg-mediated-bell-pairs" class="nav-link" data-scroll-target="#proposed-protocol-rydberg-mediated-bell-pairs">4.2 Proposed Protocol: Rydberg-Mediated Bell Pairs</a></li>
+  <li><a href="#magic-square-observable-mapping" id="toc-magic-square-observable-mapping" class="nav-link" data-scroll-target="#magic-square-observable-mapping">4.3 Magic Square Observable Mapping</a></li>
+  <li><a href="#scaling-to-multi-copy" id="toc-scaling-to-multi-copy" class="nav-link" data-scroll-target="#scaling-to-multi-copy">4.4 Scaling to Multi-Copy</a></li>
+  </ul></li>
+  <li><a href="#advantages-and-limitations" id="toc-advantages-and-limitations" class="nav-link" data-scroll-target="#advantages-and-limitations">5. Advantages and Limitations</a>
+  <ul class="collapse">
+  <li><a href="#advantages-of-neutral-atom-platform" id="toc-advantages-of-neutral-atom-platform" class="nav-link" data-scroll-target="#advantages-of-neutral-atom-platform">5.1 Advantages of Neutral Atom Platform</a></li>
+  <li><a href="#limitations-and-challenges" id="toc-limitations-and-challenges" class="nav-link" data-scroll-target="#limitations-and-challenges">5.2 Limitations and Challenges</a></li>
+  <li><a href="#summary-feasibility-assessment" id="toc-summary-feasibility-assessment" class="nav-link" data-scroll-target="#summary-feasibility-assessment">5.3 Summary: Feasibility Assessment</a></li>
+  </ul></li>
+  <li><a href="#future-directions" id="toc-future-directions" class="nav-link" data-scroll-target="#future-directions">6. Future Directions</a>
+  <ul class="collapse">
+  <li><a href="#toward-loophole-free-demonstrations" id="toc-toward-loophole-free-demonstrations" class="nav-link" data-scroll-target="#toward-loophole-free-demonstrations">6.1 Toward Loophole-Free Demonstrations</a></li>
+  <li><a href="#connection-to-quantum-advantage-claims" id="toc-connection-to-quantum-advantage-claims" class="nav-link" data-scroll-target="#connection-to-quantum-advantage-claims">6.2 Connection to Quantum Advantage Claims</a></li>
+  <li><a href="#open-questions" id="toc-open-questions" class="nav-link" data-scroll-target="#open-questions">6.3 Open Questions</a></li>
+  </ul></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Magic Square Game: Multi-Copy Assisted Strategies</h1>
+<p class="subtitle lead">A Review of Robust Quantum Contextuality Demonstrations</p>
+  <div class="quarto-categories">
+    <div class="quarto-category">Reviews</div>
+    <div class="quarto-category">Contextuality</div>
+  </div>
+  </div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">January 20, 2026</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+<div>
+  <div class="abstract">
+    <div class="block-title">Abstract</div>
+    <p>We review the Magic Square Game (Mermin-Peres construction) as a paradigmatic example of quantum contextuality that achieves perfect separation between quantum and classical strategies. We survey multi-copy assisted protocols that enhance robustness through parallel repetition and self-testing, discuss the current state of loophole-free Bell experiments, and evaluate the prospects for large-scale demonstrations on neutral atom platforms. We propose potential experimental implementations using early-stage Rb87 arrays with analog Hamiltonian control, analyzing both the opportunities and fundamental limitations of this approach.</p>
+  </div>
+</div>
+
+
+</header>
+
+
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">1. Introduction</h2>
+<section id="the-mermin-peres-magic-square" class="level3">
+<h3 class="anchored" data-anchor-id="the-mermin-peres-magic-square">1.1 The Mermin-Peres Magic Square</h3>
+<p>The <strong>Magic Square Game</strong> (also known as the Mermin-Peres square) is a nonlocal game that provides one of the cleanest demonstrations of quantum advantage over classical strategies <span class="citation" data-cites="Mermin1990 Peres1990">&nbsp;[<a href="#ref-Mermin1990" role="doc-biblioref">1</a>,<a href="#ref-Peres1990" role="doc-biblioref">2</a>]</span>. Unlike Bell inequalities which exhibit probabilistic violations, the Magic Square achieves <em>perfect</em> separation: quantum players win with certainty, while classical players fail with probability at least 1/9.</p>
+<p><strong>Game Setup.</strong> Two cooperating players, Alice and Bob, share a quantum state but cannot communicate during the game. A referee selects:</p>
+<ul>
+<li>A row <span class="math inline">i \in \{1,2,3\}</span> for Alice</li>
+<li>A column <span class="math inline">j \in \{1,2,3\}</span> for Bob</li>
+</ul>
+<p>Each player must assign values <span class="math inline">\pm 1</span> to three observables in their row/column such that:</p>
+<ul>
+<li>Alice’s row product equals <span class="math inline">+1</span></li>
+<li>Bob’s column product equals <span class="math inline">-1</span></li>
+</ul>
+<p>The players win if Alice and Bob agree on the value at position <span class="math inline">(i,j)</span>.</p>
+<p><strong>The Quantum Winning Strategy.</strong> Alice and Bob share two maximally entangled pairs: <span class="math display">
+|\Psi\rangle = \frac{1}{2}(|00\rangle + |11\rangle)^{\otimes 2}
+</span></p>
+<p>The magic square observables are: <span class="math display">
+\begin{array}{|c|c|c|}
+\hline
+\sigma_z \otimes I &amp; I \otimes \sigma_z &amp; \sigma_z \otimes \sigma_z \\
+\hline
+I \otimes \sigma_x &amp; \sigma_x \otimes I &amp; \sigma_x \otimes \sigma_x \\
+\hline
+\sigma_z \otimes \sigma_x &amp; \sigma_x \otimes \sigma_z &amp; \sigma_y \otimes \sigma_y \\
+\hline
+\end{array}
+</span></p>
+<p>Each row and column contains mutually commuting observables with product <span class="math inline">+I</span> for rows but <span class="math inline">-I</span> for columns (or vice versa, depending on convention). This algebraic constraint makes perfect classical strategies impossible, yet quantum measurements on the shared state always yield consistent answers <span class="citation" data-cites="Aravind2002 Cabello2001">&nbsp;[<a href="#ref-Aravind2002" role="doc-biblioref">3</a>,<a href="#ref-Cabello2001" role="doc-biblioref">4</a>]</span>.</p>
+</section>
+<section id="connection-to-bell-inequalities-and-contextuality" class="level3">
+<h3 class="anchored" data-anchor-id="connection-to-bell-inequalities-and-contextuality">1.2 Connection to Bell Inequalities and Contextuality</h3>
+<p>The Magic Square lies at the intersection of two fundamental quantum phenomena:</p>
+<p><strong>Bell Nonlocality.</strong> The game can be viewed as a two-player nonlocal game where winning correlations violate a Bell-type inequality. The structure is related to the CHSH game <span class="citation" data-cites="CHSH1969 Bell1964">&nbsp;[<a href="#ref-CHSH1969" role="doc-biblioref">5</a>,<a href="#ref-Bell1964" role="doc-biblioref">6</a>]</span> but achieves stronger separation.</p>
+<p><strong>Quantum Contextuality.</strong> More fundamentally, the Magic Square demonstrates Kochen-Specker contextuality <span class="citation" data-cites="Budroni2022">&nbsp;[<a href="#ref-Budroni2022" role="doc-biblioref">7</a>]</span>: the impossibility of assigning pre-determined values to quantum observables independent of measurement context. The <span class="math inline">3 \times 3</span> structure provides a state-independent proof—the contradiction arises from observable algebra alone.</p>
+</section>
+<section id="why-perfect-separation-matters" class="level3">
+<h3 class="anchored" data-anchor-id="why-perfect-separation-matters">1.3 Why Perfect Separation Matters</h3>
+<p>The 100% quantum vs ~89% classical success probability has practical implications:</p>
+<ol type="1">
+<li><strong>Device-independent certification</strong>: Observing perfect (or near-perfect) winning rates certifies entanglement without trusting the measurement devices</li>
+<li><strong>Self-testing</strong>: The winning strategy uniquely identifies the shared state (up to local isometries)</li>
+<li><strong>Cryptographic applications</strong>: Forms the basis for device-independent quantum key distribution <span class="citation" data-cites="Acin2007">&nbsp;[<a href="#ref-Acin2007" role="doc-biblioref">8</a>]</span> and randomness generation <span class="citation" data-cites="Pironio2010">&nbsp;[<a href="#ref-Pironio2010" role="doc-biblioref">9</a>]</span></li>
+</ol>
+<hr>
+</section>
+</section>
+<section id="multi-copy-assisted-strategies" class="level2">
+<h2 class="anchored" data-anchor-id="multi-copy-assisted-strategies">2. Multi-Copy Assisted Strategies</h2>
+<section id="theoretical-foundations-multi-copy-self-testing" class="level3">
+<h3 class="anchored" data-anchor-id="theoretical-foundations-multi-copy-self-testing">2.1 Theoretical Foundations: Multi-Copy Self-Testing</h3>
+<p>A key challenge in practical implementations is noise: real experiments never achieve perfect correlations. <strong>Self-testing</strong> provides a framework for certifying quantum states from observed statistics alone <span class="citation" data-cites="Supic2020">&nbsp;[<a href="#ref-Supic2020" role="doc-biblioref">10</a>]</span>.</p>
+<p><strong>Standard Self-Testing.</strong> For the CHSH game, McKague, Yang, and Scarani showed that observing violation <span class="math inline">\beta \approx 2\sqrt{2}</span> certifies that the shared state is close to a maximally entangled pair <span class="citation" data-cites="McKague2012">&nbsp;[<a href="#ref-McKague2012" role="doc-biblioref">11</a>]</span>: <span class="math display">
+\|\rho - |\Phi^+\rangle\langle\Phi^+|\|_{\text{tr}} \leq f(\beta)
+</span> where <span class="math inline">f(\beta) \to 0</span> as <span class="math inline">\beta \to 2\sqrt{2}</span>.</p>
+<p><strong>Multi-Copy Self-Testing.</strong> The robustness improves dramatically when players share multiple copies. For <span class="math inline">n</span> copies of the state, parallel self-testing achieves:</p>
+<ul>
+<li><strong>Improved error tolerance</strong>: Individual errors can be detected and corrected via majority logic</li>
+<li><strong>Tighter certification bounds</strong>: The effective noise scales as <span class="math inline">\epsilon/\sqrt{n}</span> for <span class="math inline">n</span> independent copies</li>
+<li><strong>Rigidity amplification</strong>: Reichardt, Unger, and Vazirani showed that near-maximal CHSH violation on multiple copies rigidly constrains the global state structure <span class="citation" data-cites="Reichardt2013">&nbsp;[<a href="#ref-Reichardt2013" role="doc-biblioref">12</a>]</span></li>
+</ul>
+</section>
+<section id="parallel-repetition-and-error-tolerance" class="level3">
+<h3 class="anchored" data-anchor-id="parallel-repetition-and-error-tolerance">2.2 Parallel Repetition and Error Tolerance</h3>
+<p><strong>Parallel Repetition Theorem.</strong> When the Magic Square game is played <span class="math inline">n</span> times in parallel, the classical success probability decays exponentially <span class="citation" data-cites="Jain2020">&nbsp;[<a href="#ref-Jain2020" role="doc-biblioref">13</a>]</span>: <span class="math display">
+p_{\text{classical}}^{(n)} \leq (8/9)^{\Omega(n)}
+</span></p>
+<p>This exponential decay means that even small quantum advantages compound into overwhelming statistical separation with sufficient copies.</p>
+<p><strong>Practical Implications for Robust Verification:</strong></p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 15%">
+<col style="width: 21%">
+<col style="width: 24%">
+<col style="width: 38%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Copies <span class="math inline">n</span></th>
+<th>Classical bound</th>
+<th>Quantum (perfect)</th>
+<th>Statistical distinguishability</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td>8/9 ≈ 0.889</td>
+<td>1.0</td>
+<td>Low</td>
+</tr>
+<tr class="even">
+<td>10</td>
+<td>≤ 0.31</td>
+<td>1.0</td>
+<td>High</td>
+</tr>
+<tr class="odd">
+<td>100</td>
+<td>≤ <span class="math inline">10^{-5}</span></td>
+<td>1.0</td>
+<td>Overwhelming</td>
+</tr>
+</tbody>
+</table>
+<p>Even with noise reducing quantum success to ~95%, the exponential classical decay ensures clear separation.</p>
+</section>
+<section id="connection-to-shadow-tomography" class="level3">
+<h3 class="anchored" data-anchor-id="connection-to-shadow-tomography">2.3 Connection to Shadow Tomography</h3>
+<p><strong>Classical Shadows.</strong> Huang, Kueng, and Preskill introduced classical shadow tomography as an efficient method to predict many properties from few measurements <span class="citation" data-cites="Huang2020 Aaronson2018">&nbsp;[<a href="#ref-Huang2020" role="doc-biblioref">14</a>,<a href="#ref-Aaronson2018" role="doc-biblioref">15</a>]</span>. For <span class="math inline">M</span> linear observables, only <span class="math inline">O(\log M)</span> measurements suffice.</p>
+<p><strong>Multi-Copy Shadows.</strong> Recent work shows that multi-copy measurements yield exponential advantages over single-copy strategies for certain quantum learning tasks <span class="citation" data-cites="Noller2025">&nbsp;[<a href="#ref-Noller2025" role="doc-biblioref">16</a>]</span>. This connects to Magic Square verification:</p>
+<ul>
+<li>Each game instance probes specific correlations in the shared state</li>
+<li>Parallel repetition can be viewed as shadow-like sampling of the correlation tensor</li>
+<li>Multi-copy measurements enable more efficient extraction of the relevant witnesses</li>
+</ul>
+<p><strong>Proposed Protocol Integration:</strong></p>
+<ol type="1">
+<li>Prepare <span class="math inline">n</span> copies of the target two-qubit state</li>
+<li>Perform shadow-like random measurements to estimate correlation witnesses</li>
+<li>Post-select on configurations matching Magic Square observable patterns</li>
+<li>Aggregate statistics to certify quantum behavior</li>
+</ol>
+<hr>
+</section>
+</section>
+<section id="experimental-challenges-and-opportunities" class="level2">
+<h2 class="anchored" data-anchor-id="experimental-challenges-and-opportunities">3. Experimental Challenges and Opportunities</h2>
+<section id="current-state-of-bell-experiments" class="level3">
+<h3 class="anchored" data-anchor-id="current-state-of-bell-experiments">3.1 Current State of Bell Experiments</h3>
+<p><strong>Loophole-Free Tests.</strong> The 2015 experiments achieved the first loophole-free Bell inequality violations:</p>
+<ul>
+<li><strong>NV Centers</strong> (Hensen et al.): 1.3 km separation, closing locality and detection loopholes <span class="citation" data-cites="Hensen2015">&nbsp;[<a href="#ref-Hensen2015" role="doc-biblioref">17</a>]</span></li>
+<li><strong>Photons</strong> (Giustina et al., Shalm et al.): High-efficiency detectors and fast random number generation <span class="citation" data-cites="Giustina2015 Shalm2015">&nbsp;[<a href="#ref-Giustina2015" role="doc-biblioref">18</a>,<a href="#ref-Shalm2015" role="doc-biblioref">19</a>]</span></li>
+<li><strong>Superconducting Qubits</strong> (Storz et al.&nbsp;2023): On-chip separation with fast readout <span class="citation" data-cites="Storz2023">&nbsp;[<a href="#ref-Storz2023" role="doc-biblioref">20</a>]</span></li>
+</ul>
+<p>These experiments demonstrate Bell violation but face limitations for Magic Square implementations:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Platform</th>
+<th>Qubits/copies</th>
+<th>Repetition rate</th>
+<th>Key limitation</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>NV centers</td>
+<td>2</td>
+<td>~10 Hz</td>
+<td>Low rate, complex setup</td>
+</tr>
+<tr class="even">
+<td>Photons</td>
+<td>2</td>
+<td>MHz</td>
+<td>Probabilistic sources</td>
+</tr>
+<tr class="odd">
+<td>Superconducting</td>
+<td>2</td>
+<td>kHz</td>
+<td>Limited to on-chip separation</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="quantum-dot-bell-violation" class="level3">
+<h3 class="anchored" data-anchor-id="quantum-dot-bell-violation">3.2 Quantum Dot Bell Violation</h3>
+<p><strong>Recent Progress.</strong> Steinacker et al.&nbsp;(2024) demonstrated high-rate Bell violation using independent quantum dot photon sources <span class="citation" data-cites="Steinacker2024">&nbsp;[<a href="#ref-Steinacker2024" role="doc-biblioref">21</a>]</span>:</p>
+<ul>
+<li><strong>Rate</strong>: &gt;100 kHz entanglement generation</li>
+<li><strong>Fidelity</strong>: ~85% Bell state fidelity</li>
+<li><strong>Scalability</strong>: Independent sources enable parallelization</li>
+</ul>
+<p>This platform shows promise for multi-copy protocols but current fidelities limit Magic Square demonstrations.</p>
+</section>
+<section id="scaling-challenges" class="level3">
+<h3 class="anchored" data-anchor-id="scaling-challenges">3.3 Scaling Challenges</h3>
+<p><strong>Large-Scale Magic Square Requirements:</strong></p>
+<ol type="1">
+<li><strong>Entanglement fidelity</strong>: Need <span class="math inline">F &gt; 0.99</span> per pair for clean demonstrations</li>
+<li><strong>Number of copies</strong>: Statistical significance requires <span class="math inline">n \geq 100</span> parallel instances</li>
+<li><strong>Simultaneous operation</strong>: All copies must be measured in a single experimental shot</li>
+<li><strong>Locality constraints</strong>: Space-like separation requires fast measurements or large distances</li>
+</ol>
+<hr>
+</section>
+</section>
+<section id="neutral-atom-platform-experimental-proposal" class="level2">
+<h2 class="anchored" data-anchor-id="neutral-atom-platform-experimental-proposal">4. Neutral Atom Platform Experimental Proposal</h2>
+<section id="why-neutral-atoms" class="level3">
+<h3 class="anchored" data-anchor-id="why-neutral-atoms">4.1 Why Neutral Atoms?</h3>
+<p>Based on the early-stage capabilities reviewed in our <a href="../../Experiments/posts/earlystate_review/index.html">companion document</a>, neutral atom arrays offer unique advantages for large-scale entanglement demonstrations:</p>
+<p><strong>Platform Specifications (Rb87 Arrays):</strong></p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Parameter</th>
+<th>Value</th>
+<th>Relevance</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Atom count</td>
+<td>256+</td>
+<td>Many parallel copies possible</td>
+</tr>
+<tr class="even">
+<td>Geometry</td>
+<td>Programmable 2D arrays</td>
+<td>Flexible pair arrangements</td>
+</tr>
+<tr class="odd">
+<td>Rabi frequency <span class="math inline">\Omega</span></td>
+<td>0–2.5 MHz</td>
+<td>Fast entanglement generation</td>
+</tr>
+<tr class="even">
+<td>Coherence time</td>
+<td>1–4 μs (T₂*)</td>
+<td>Limits gate depth</td>
+</tr>
+<tr class="odd">
+<td>Measurement fidelity</td>
+<td>&gt;99%</td>
+<td>High-quality readout</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="proposed-protocol-rydberg-mediated-bell-pairs" class="level3">
+<h3 class="anchored" data-anchor-id="proposed-protocol-rydberg-mediated-bell-pairs">4.2 Proposed Protocol: Rydberg-Mediated Bell Pairs</h3>
+<p><strong>Geometry Encoding.</strong> Arrange <span class="math inline">n</span> atom pairs in a 2D array, with each pair separated by blockade radius <span class="math inline">r_b \sim 7</span> μm. Within each pair, atoms are spaced at <span class="math inline">r &lt; r_b</span> to enable strong Rydberg interaction.</p>
+<p><strong>Entanglement Generation via Blockade Gate:</strong></p>
+<ol type="1">
+<li><strong>Initialize</strong>: All atoms in <span class="math inline">|0\rangle</span> (ground state)</li>
+<li><strong>Global Rydberg pulse</strong>: Apply <span class="math inline">\pi</span>-pulse resonant with <span class="math inline">|0\rangle \to |r\rangle</span></li>
+<li><strong>Blockade dynamics</strong>: Within each pair, the blockade prevents double excitation: <span class="math display">
+|00\rangle \xrightarrow{\Omega t = \pi/\sqrt{2}} \frac{1}{\sqrt{2}}(|0r\rangle + |r0\rangle)
+</span></li>
+<li><strong>Transfer</strong>: Map <span class="math inline">|r\rangle \to |1\rangle</span> via additional laser pulse</li>
+</ol>
+<p>The resulting state approximates <span class="math inline">|\Phi^+\rangle = (|00\rangle + |11\rangle)/\sqrt{2}</span> per pair.</p>
+<p><strong>Measurement Protocol:</strong></p>
+<ul>
+<li>Global basis rotations via microwave/Raman transitions</li>
+<li>Single-shot fluorescence imaging of all atoms</li>
+<li>Post-processing correlates pair outcomes</li>
+</ul>
+</section>
+<section id="magic-square-observable-mapping" class="level3">
+<h3 class="anchored" data-anchor-id="magic-square-observable-mapping">4.3 Magic Square Observable Mapping</h3>
+<p>The nine observables of the Magic Square require two qubits each. For implementation on atom pairs:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Observable</th>
+<th>Atom 1 basis</th>
+<th>Atom 2 basis</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\sigma_z \otimes I</span></td>
+<td>Z</td>
+<td>—</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">I \otimes \sigma_z</span></td>
+<td>—</td>
+<td>Z</td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\sigma_z \otimes \sigma_z</span></td>
+<td>Z</td>
+<td>Z</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\sigma_x \otimes I</span></td>
+<td>X</td>
+<td>—</td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">I \otimes \sigma_x</span></td>
+<td>—</td>
+<td>X</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\sigma_x \otimes \sigma_x</span></td>
+<td>X</td>
+<td>X</td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\sigma_z \otimes \sigma_x</span></td>
+<td>Z</td>
+<td>X</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\sigma_x \otimes \sigma_z</span></td>
+<td>X</td>
+<td>Z</td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\sigma_y \otimes \sigma_y</span></td>
+<td>Y</td>
+<td>Y</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Protocol for Each Game Instance:</strong></p>
+<ol type="1">
+<li>Referee announces row <span class="math inline">i</span> (to Alice’s atom) and column <span class="math inline">j</span> (to Bob’s atom)</li>
+<li>Apply appropriate basis rotation to each atom</li>
+<li>Measure in computational basis</li>
+<li>Record correlation at position <span class="math inline">(i,j)</span></li>
+</ol>
+</section>
+<section id="scaling-to-multi-copy" class="level3">
+<h3 class="anchored" data-anchor-id="scaling-to-multi-copy">4.4 Scaling to Multi-Copy</h3>
+<p>With 256 atoms, we can implement up to 128 parallel Bell pairs, enabling:</p>
+<ul>
+<li><strong>Statistical amplification</strong>: ~100 simultaneous game instances</li>
+<li><strong>Error detection</strong>: Majority voting across copies</li>
+<li><strong>Tomographic reconstruction</strong>: Shadow-like sampling of correlation tensor</li>
+</ul>
+<p><strong>Expected Performance:</strong></p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Metric</th>
+<th>Single-copy</th>
+<th>100-copy</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Quantum win rate (ideal)</td>
+<td>100%</td>
+<td>100%</td>
+</tr>
+<tr class="even">
+<td>Quantum win rate (2% SPAM error)</td>
+<td>~96%</td>
+<td>~96%</td>
+</tr>
+<tr class="odd">
+<td>Classical bound</td>
+<td>88.9%</td>
+<td>&lt; 0.1%</td>
+</tr>
+<tr class="even">
+<td>Statistical significance</td>
+<td>Marginal</td>
+<td>Overwhelming</td>
+</tr>
+</tbody>
+</table>
+<hr>
+</section>
+</section>
+<section id="advantages-and-limitations" class="level2">
+<h2 class="anchored" data-anchor-id="advantages-and-limitations">5. Advantages and Limitations</h2>
+<section id="advantages-of-neutral-atom-platform" class="level3">
+<h3 class="anchored" data-anchor-id="advantages-of-neutral-atom-platform">5.1 Advantages of Neutral Atom Platform</h3>
+<p><strong>Programmable Geometry.</strong></p>
+<ul>
+<li>Arbitrary 2D pair arrangements via optical tweezers</li>
+<li>Can encode different game structures (Magic Square, CHSH, GHZ)</li>
+<li>Dynamic reconfiguration between experimental runs</li>
+</ul>
+<p><strong>Large Atom Numbers.</strong></p>
+<ul>
+<li>Current platforms: 256 atoms (QuEra Aquila), 280+ (Harvard) <span class="citation" data-cites="Ebadi2021 Bluvstein2024">&nbsp;[<a href="#ref-Ebadi2021" role="doc-biblioref">22</a>,<a href="#ref-Bluvstein2024" role="doc-biblioref">23</a>]</span></li>
+<li>Enables &gt;100 parallel Bell pairs</li>
+<li>Statistical power for robust certification</li>
+</ul>
+<p><strong>Long Coherence Times.</strong></p>
+<ul>
+<li>T₂* of 1–4 μs sufficient for entanglement + measurement</li>
+<li>Spin-echo sequences can extend to ~100 μs if needed</li>
+<li>Coherence-limited rather than gate-count-limited</li>
+</ul>
+<p><strong>High-Fidelity Readout.</strong></p>
+<ul>
+<li><blockquote class="blockquote">
+<p>99% single-atom detection efficiency</p>
+</blockquote></li>
+<li>Parallel readout of entire array</li>
+<li>Critical for multi-copy protocols</li>
+</ul>
+</section>
+<section id="limitations-and-challenges" class="level3">
+<h3 class="anchored" data-anchor-id="limitations-and-challenges">5.2 Limitations and Challenges</h3>
+<p><strong>No Mid-Circuit Measurement.</strong></p>
+<ul>
+<li>Early-stage platforms lack measurement-based feed-forward</li>
+<li>Cannot implement adaptive strategies or error correction</li>
+<li>All copies measured simultaneously at protocol end</li>
+</ul>
+<p><strong>SPAM Errors.</strong></p>
+<ul>
+<li>Combined state preparation and measurement error: 1–2%</li>
+<li>Limits observable Bell violation to ~96–98%</li>
+<li>Multi-copy amplification essential for clear separation</li>
+</ul>
+<p><strong>Locality Loophole.</strong></p>
+<ul>
+<li>Atoms within array separated by ~μm, not km</li>
+<li>Light travel time across array: ~ps</li>
+<li>Measurement time: ~μs</li>
+<li><strong>Cannot close locality loophole</strong> on current platforms</li>
+</ul>
+<p><strong>Geometric Constraints.</strong></p>
+<ul>
+<li>Rydberg blockade limits minimum spacing</li>
+<li>Pairs must be well-separated to avoid cross-talk</li>
+<li>Reduces effective atom utilization</li>
+</ul>
+</section>
+<section id="summary-feasibility-assessment" class="level3">
+<h3 class="anchored" data-anchor-id="summary-feasibility-assessment">5.3 Summary: Feasibility Assessment</h3>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 29%">
+<col style="width: 44%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Aspect</th>
+<th>Assessment</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Entanglement generation</td>
+<td>✓ Feasible</td>
+<td>Blockade gates demonstrated</td>
+</tr>
+<tr class="even">
+<td>Multi-copy parallel operation</td>
+<td>✓ Feasible</td>
+<td>100+ pairs achievable</td>
+</tr>
+<tr class="odd">
+<td>High-fidelity measurement</td>
+<td>✓ Feasible</td>
+<td>&gt;99% demonstrated</td>
+</tr>
+<tr class="even">
+<td>Statistical separation</td>
+<td>✓ Achievable</td>
+<td>Multi-copy amplification</td>
+</tr>
+<tr class="odd">
+<td>Closing locality loophole</td>
+<td>✗ Not achievable</td>
+<td>Fundamental platform limit</td>
+</tr>
+<tr class="even">
+<td>Closing detection loophole</td>
+<td>✓ Achievable</td>
+<td>High detection efficiency</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Conclusion.</strong> Neutral atom arrays are well-suited for demonstrating <strong>robust multi-copy Magic Square correlations</strong> with clear quantum-classical separation. However, the platform cannot provide <strong>loophole-free</strong> Bell tests due to the locality constraint. The demonstration would serve as:</p>
+<ul>
+<li><strong>Proof-of-concept</strong> for large-scale entanglement verification</li>
+<li><strong>Benchmark</strong> for multi-copy self-testing protocols</li>
+<li><strong>Stepping stone</strong> toward distributed atom networks that could close all loopholes</li>
+</ul>
+<hr>
+</section>
+</section>
+<section id="future-directions" class="level2">
+<h2 class="anchored" data-anchor-id="future-directions">6. Future Directions</h2>
+<section id="toward-loophole-free-demonstrations" class="level3">
+<h3 class="anchored" data-anchor-id="toward-loophole-free-demonstrations">6.1 Toward Loophole-Free Demonstrations</h3>
+<p><strong>Distributed Atom Networks.</strong> To close the locality loophole, Bell pairs could be distributed across spatially separated nodes connected by:</p>
+<ul>
+<li><strong>Photonic links</strong>: Entanglement swapping via intermediate photon interference</li>
+<li><strong>Fiber connections</strong>: km-scale separation with preserved coherence</li>
+<li><strong>Hybrid systems</strong>: Neutral atoms as memory + flying photonic qubits</li>
+</ul>
+</section>
+<section id="connection-to-quantum-advantage-claims" class="level3">
+<h3 class="anchored" data-anchor-id="connection-to-quantum-advantage-claims">6.2 Connection to Quantum Advantage Claims</h3>
+<p>Large-scale Magic Square demonstrations on neutral atoms could provide:</p>
+<ol type="1">
+<li><strong>Certified randomness</strong>: Device-independent random number generation</li>
+<li><strong>Verification protocols</strong>: Benchmarking entanglement quality across arrays</li>
+<li><strong>Foundational tests</strong>: State-independent contextuality at unprecedented scale</li>
+</ol>
+</section>
+<section id="open-questions" class="level3">
+<h3 class="anchored" data-anchor-id="open-questions">6.3 Open Questions</h3>
+<ul>
+<li>Can multi-copy protocols achieve self-testing robustness below 90% single-pair fidelity?</li>
+<li>What is the optimal trade-off between copy number and individual pair quality?</li>
+<li>Can shallow analog circuits generate states suitable for Magic Square beyond Bell pairs?</li>
+</ul>
+<hr>
+</section>
+</section>
+<section id="references" class="level2">
+<h2 class="anchored" data-anchor-id="references">References</h2>
+<div id="refs" class="references csl-bib-body" data-entry-spacing="0" role="list">
+<div id="ref-Mermin1990" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[1] </div><div class="csl-right-inline">N. D. Mermin, <a href="https://doi.org/10.1103/PhysRevLett.65.3373">Simple unified form for the major no-hidden-variables theorems</a>, Physical Review Letters <strong>65</strong>, 3373 (1990).</div>
+</div>
+<div id="ref-Peres1990" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[2] </div><div class="csl-right-inline">A. Peres, <a href="https://doi.org/10.1016/0375-9601(90)90172-K">Incompatible results of quantum measurements</a>, Physics Letters A <strong>151</strong>, 107 (1990).</div>
+</div>
+<div id="ref-Aravind2002" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[3] </div><div class="csl-right-inline">P. K. Aravind, <a href="https://doi.org/10.1119/1.1773173">A simple demonstration of bell’s theorem involving two observers and no probabilities or inequalities</a>, American Journal of Physics <strong>72</strong>, 1303 (2004).</div>
+</div>
+<div id="ref-Cabello2001" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[4] </div><div class="csl-right-inline">A. Cabello, <a href="https://doi.org/10.1103/PhysRevLett.86.1911">Bell’s theorem without inequalities and without probabilities for two observers</a>, Physical Review Letters <strong>86</strong>, 1911 (2001).</div>
+</div>
+<div id="ref-CHSH1969" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[5] </div><div class="csl-right-inline">J. F. Clauser, M. A. Horne, A. Shimony, and R. A. Holt, <a href="https://doi.org/10.1103/PhysRevLett.23.880">Proposed experiment to test local hidden-variable theories</a>, Physical Review Letters <strong>23</strong>, 880 (1969).</div>
+</div>
+<div id="ref-Bell1964" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[6] </div><div class="csl-right-inline">J. S. Bell, <a href="https://doi.org/10.1103/PhysicsPhysiqueFizika.1.195">On the einstein podolsky rosen paradox</a>, Physics Physique Fizika <strong>1</strong>, 195 (1964).</div>
+</div>
+<div id="ref-Budroni2022" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[7] </div><div class="csl-right-inline">C. Budroni, A. Cabello, O. Gühne, M. Kleinmann, and J.-Å. Larsson, <a href="https://doi.org/10.1103/RevModPhys.94.045007">Kochen-specker contextuality</a>, Reviews of Modern Physics <strong>94</strong>, 045007 (2022).</div>
+</div>
+<div id="ref-Acin2007" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[8] </div><div class="csl-right-inline">A. Acín, N. Brunner, N. Gisin, S. Massar, S. Pironio, and V. Scarani, <a href="https://doi.org/10.1103/PhysRevLett.98.230501">Device-independent security of quantum cryptography against collective attacks</a>, Physical Review Letters <strong>98</strong>, 230501 (2007).</div>
+</div>
+<div id="ref-Pironio2010" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[9] </div><div class="csl-right-inline">S. Pironio et al., <a href="https://doi.org/10.1038/nature09008">Random numbers certified by bell’s theorem</a>, Nature <strong>464</strong>, 1021 (2010).</div>
+</div>
+<div id="ref-Supic2020" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[10] </div><div class="csl-right-inline">I. Šupić and J. Bowles, <a href="https://doi.org/10.22331/q-2020-09-30-337">Self-testing of quantum systems: A review</a>, Quantum <strong>4</strong>, 337 (2020).</div>
+</div>
+<div id="ref-McKague2012" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[11] </div><div class="csl-right-inline">M. McKague, T. H. Yang, and V. Scarani, <a href="https://doi.org/10.1088/1751-8113/45/45/455304">Robust self-testing of the singlet</a>, Journal of Physics A: Mathematical and Theoretical <strong>45</strong>, 455304 (2012).</div>
+</div>
+<div id="ref-Reichardt2013" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[12] </div><div class="csl-right-inline">B. W. Reichardt, F. Unger, and U. Vazirani, <a href="https://doi.org/10.1038/nature12035">Classical command of quantum systems</a>, Nature <strong>496</strong>, 456 (2013).</div>
+</div>
+<div id="ref-Jain2020" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[13] </div><div class="csl-right-inline">R. Jain, A. Pereszlényi, and P. Yao, <a href="https://doi.org/10.1137/1.9781611973402.15">A parallel repetition theorem for all entangled games</a>, SIAM Journal on Computing <strong>49</strong>, STOC14 (2020).</div>
+</div>
+<div id="ref-Huang2020" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[14] </div><div class="csl-right-inline">H.-Y. Huang, R. Kueng, and J. Preskill, <a href="https://doi.org/10.1038/s41567-020-0932-7">Predicting many properties of a quantum system from very few measurements</a>, Nature Physics <strong>16</strong>, 1050 (2020).</div>
+</div>
+<div id="ref-Aaronson2018" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[15] </div><div class="csl-right-inline">S. Aaronson, <a href="https://doi.org/10.1137/18M120275X">Shadow tomography of quantum states</a>, SIAM Journal on Computing <strong>49</strong>, STOC18 (2020).</div>
+</div>
+<div id="ref-Noller2025" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[16] </div><div class="csl-right-inline">J. Nöller, V. T. Tran, M. Gachechiladze, and R. Kueng, <a href="https://arxiv.org/abs/2510.08070">An infinite hierarchy of multi-copy quantum learning tasks</a>, arXiv Preprint arXiv:2510.08070 (2025).</div>
+</div>
+<div id="ref-Hensen2015" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[17] </div><div class="csl-right-inline">B. Hensen et al., <a href="https://doi.org/10.1038/nature15759">Loophole-free bell inequality violation using electron spins separated by 1.3 kilometres</a>, Nature <strong>526</strong>, 682 (2015).</div>
+</div>
+<div id="ref-Giustina2015" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[18] </div><div class="csl-right-inline">M. Giustina et al., <a href="https://doi.org/10.1103/PhysRevLett.115.250401">Significant-loophole-free test of bell’s theorem with entangled photons</a>, Physical Review Letters <strong>115</strong>, 250401 (2015).</div>
+</div>
+<div id="ref-Shalm2015" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[19] </div><div class="csl-right-inline">L. K. Shalm et al., <a href="https://doi.org/10.1103/PhysRevLett.115.250402">Strong loophole-free test of local realism</a>, Physical Review Letters <strong>115</strong>, 250402 (2015).</div>
+</div>
+<div id="ref-Storz2023" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[20] </div><div class="csl-right-inline">S. Storz et al., <a href="https://doi.org/10.1038/s41586-023-05885-0">Loophole-free bell inequality violation with superconducting circuits</a>, Nature <strong>617</strong>, 265 (2023).</div>
+</div>
+<div id="ref-Steinacker2024" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[21] </div><div class="csl-right-inline">P. Steinacker et al., <a href="https://doi.org/10.1038/s41467-025-57987-0">Violating bell’s inequality in gate-defined quantum dots</a>, Nature Communications <strong>16</strong>, 3088 (2025).</div>
+</div>
+<div id="ref-Ebadi2021" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[22] </div><div class="csl-right-inline">S. Ebadi, T. T. Wang, H. Levine, A. Keesling, G. Semeghini, A. Omran, D. Bluvstein, R. Samajdar, and M. D. Lukin, <a href="https://doi.org/10.1038/s41586-021-03582-4">Quantum phases of matter on a 256-atom programmable quantum simulator</a>, Nature <strong>595</strong>, 227 (2021).</div>
+</div>
+<div id="ref-Bluvstein2024" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[23] </div><div class="csl-right-inline">D. Bluvstein et al., <a href="https://doi.org/10.1038/s41586-023-06927-3">Logical quantum processor based on reconfigurable atom arrays</a>, Nature <strong>626</strong>, 58 (2024).</div>
+</div>
+</div>
+
+
+<script type="ojs-module-contents">
+eyJjb250ZW50cyI6W119
+</script>
+<div id="exercise-loading-indicator" class="exercise-loading-indicator d-none d-flex align-items-center gap-2">
+<div id="exercise-loading-status" class="d-flex gap-2">
+
+</div>
+<div class="spinner-grow spinner-grow-sm">
+
+</div>
+</div>
+<script type="vfs-file">
+W10=
+</script>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

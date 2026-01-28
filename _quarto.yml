@@ -60,6 +60,7 @@ format:
   html:
     filters:
       - live
+      - tikz
     html-math-method: katex
     theme: cosmo        
     css: styles.css
@@ -71,6 +72,21 @@ editor: source
 
 bibliography: references.bib
 csl: aps.csl  
+
+crossref:
+  custom:
+    - kind: float
+      key: lem
+      reference-prefix: "Lemma"
+      space-before-numbering: true
+    - kind: float
+      key: thm
+      reference-prefix: "Theorem"
+      space-before-numbering: true
+    - kind: float
+      key: def
+      reference-prefix: "Definition"
+      space-before-numbering: true
 
 preview:
   port: 4200

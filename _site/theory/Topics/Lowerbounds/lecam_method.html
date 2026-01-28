@@ -271,12 +271,9 @@ window.Quarto = {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#sec-lecam" id="toc-sec-lecam" class="nav-link active" data-scroll-target="#sec-lecam"><span class="header-section-number">1</span> Le Cam’s Method</a>
+  <li><a href="#sec-lecam" id="toc-sec-lecam" class="nav-link active" data-scroll-target="#sec-lecam">Le Cam’s Method</a>
   <ul class="collapse">
-  <li><a href="#sec-problem-ensemble" id="toc-sec-problem-ensemble" class="nav-link" data-scroll-target="#sec-problem-ensemble"><span class="header-section-number">1.1</span> Problem Ensemble and Average Case Hardness</a></li>
-  <li><a href="#sec-replica-ensemble" id="toc-sec-replica-ensemble" class="nav-link" data-scroll-target="#sec-replica-ensemble"><span class="header-section-number">1.2</span> Replica Distinguishes Ensemble from Average</a></li>
-  <li><a href="#sec-coarse-graining" id="toc-sec-coarse-graining" class="nav-link" data-scroll-target="#sec-coarse-graining"><span class="header-section-number">1.3</span> Coarse Graining</a></li>
-  <li><a href="#le-cams-theorem" id="toc-le-cams-theorem" class="nav-link" data-scroll-target="#le-cams-theorem"><span class="header-section-number">1.4</span> Le Cam’s Theorem</a></li>
+  <li><a href="#le-cams-theorem" id="toc-le-cams-theorem" class="nav-link" data-scroll-target="#le-cams-theorem">Le Cam’s Theorem</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -305,20 +302,20 @@ window.Quarto = {
 
 
 <p><a href="../../../theory/Topics/Lowerbounds/index.html">← Back to Index</a></p>
-<section id="sec-lecam" class="level1" data-number="1">
-<h1 data-number="1"><span class="header-section-number">1</span> Le Cam’s Method</h1>
+<section id="sec-lecam" class="level1">
+<h1>Le Cam’s Method</h1>
 <p>We first upper bound the ability to distinguish two classical distributions <span class="math inline">p</span> and <span class="math inline">q</span>, as shown in the following lemma.</p>
-<div class="callout callout-style-default callout-important no-icon callout-titled">
+<div id="lem-TV_bound" class="callout callout-style-default callout-important no-icon callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Important</span>Lemma
+Lemma&nbsp;1: (Le Cam’s Bound)
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p><span id="lemma:TV_bound" data-label="lemma:TV_bound"></span> If two distributions <span class="math inline">p,q</span> on set <span class="math inline">S = \{1,\cdots,n\}</span> has total variance distance (<strong>TVD</strong>) <span class="math inline">\|p - q\|_{\mathrm {TV}}:=\frac{1}{2}\sum_{i = 1}^n|p(i) - q(i)| \leq \varepsilon</span>, then there is no single sample algorithm <span class="math inline">\mathcal{A}: S \to \{p,q\}</span> that <span class="math inline">\varepsilon/2</span> better than random guessing, in other words, satisfied <span class="math inline">\text{Pr}_{x \sim p}[\mathcal{A}(x) = p] \geq 1/2 + \varepsilon/2</span> and <span class="math inline">\text{Pr}_{x \sim q}[\mathcal{A}(x) = q] \geq 1/2 + \varepsilon/2</span>.</p>
+<p>If two distributions <span class="math inline">p,q</span> on set <span class="math inline">S = \{1,\cdots,n\}</span> has total variance distance (<strong>TVD</strong>) <span class="math inline">\|p - q\|_{\mathrm {TV}}:=\frac{1}{2}\sum_{i = 1}^n|p(i) - q(i)| \leq \varepsilon</span>, then there is no single sample algorithm <span class="math inline">\mathcal{A}: S \to \{p,q\}</span> that <span class="math inline">\varepsilon/2</span> better than random guessing, in other words, satisfied <span class="math inline">\text{Pr}_{x \sim p}[\mathcal{A}(x) = p] \geq 1/2 + \varepsilon/2</span> and <span class="math inline">\text{Pr}_{x \sim q}[\mathcal{A}(x) = q] \geq 1/2 + \varepsilon/2</span>.</p>
 </div>
 </div>
 <div class="callout callout-style-default callout-note callout-titled">
@@ -333,26 +330,30 @@ window.Quarto = {
 </div>
 <div id="callout-2" class="callout-2-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
-<p><em>Proof.</em> It is sufficient to show that for an arbitrary algorithm <span class="math inline">\mathcal{A}</span>, either <span class="math inline">\text{Pr}_{x \sim p}[\mathcal{A}(x) = q] \geq (1-\varepsilon)/2</span> or <span class="math inline">\text{Pr}_{x \sim q}[\mathcal{A}(x) = p] \geq  (1-\varepsilon)/2.</span> Notice that <span class="math display">\begin{align}
-        \text{Pr}_{x \sim p}[\mathcal{A}(x) = q] + \text{Pr}_{x \sim q}[\mathcal{A}(x) = p] &amp; = 1 - \text{Pr}_{x \sim p}[\mathcal{A}(x) = p] +\text{Pr}_{x \sim q}[\mathcal{A}(x) = p]\\
+<p><em>Proof.</em> It is sufficient to show that for an arbitrary algorithm <span class="math inline">\mathcal{A}</span>, either <span class="math inline">\text{Pr}_{x \sim p}[\mathcal{A}(x) = q] \geq (1-\varepsilon)/2</span> or <span class="math inline">\text{Pr}_{x \sim q}[\mathcal{A}(x) = p] \geq  (1-\varepsilon)/2.</span></p>
+<p>Notice that: <span class="math display">
+\begin{align}
+        &amp;\text{Pr}_{x \sim p}[\mathcal{A}(x) = q] + \text{Pr}_{x \sim q}[\mathcal{A}(x) = p]\\
+         &amp; = 1 - \text{Pr}_{x \sim p}[\mathcal{A}(x) = p] +\text{Pr}_{x \sim q}[\mathcal{A}(x) = p]\\
         &amp;\geq 1 - \sup_{U \subseteq S} \left |\text{Pr}_{x \sim p}[U] -\text{Pr}_{x \sim q}[U]\right |\\
         &amp;= 1 - \|p - q\|_{\mathrm{TV}} \geq 1 - \varepsilon.
-\end{align}</span> Then either <span class="math inline">\text{Pr}_{x \sim p}[\mathcal{A}(x) = q] \geq   (1-\varepsilon)/2</span> or <span class="math inline">\text{Pr}_{x \sim q}[\mathcal{A}(x) = p] \geq  (1-\varepsilon)/2</span>, which means that either <span class="math inline">\text{Pr}_{x \sim p}[\mathcal{A}(x) = p] \leq   (1+\varepsilon)/2</span> or <span class="math inline">\text{Pr}_{x \sim q}[\mathcal{A}(x) = p] \leq  (1+\varepsilon)/2</span>. ◻</p>
+\end{align}
+</span> Then either <span class="math inline">\text{Pr}_{x \sim p}[\mathcal{A}(x) = q] \geq   (1-\varepsilon)/2</span> or <span class="math inline">\text{Pr}_{x \sim q}[\mathcal{A}(x) = p] \geq  (1-\varepsilon)/2</span>, which means that either <span class="math inline">\text{Pr}_{x \sim p}[\mathcal{A}(x) = p] \leq   (1+\varepsilon)/2</span> or <span class="math inline">\text{Pr}_{x \sim q}[\mathcal{A}(x) = p] \leq  (1+\varepsilon)/2</span>. ◻</p>
 </div>
 </div>
 </div>
-<p>A slight generalization of Lemma is to distinguish a unique distribution <span class="math inline">p_0</span> and multiple distributions <span class="math inline">p_1,\cdots,p_l</span> for <span class="math inline">L =\{1,\cdots,l\}</span>, where <span class="math inline">p_i</span> are all distributions over set <span class="math inline">S=\{1,\cdots,n\}</span>. We prove a generalized no-go theorem below:</p>
-<div class="callout callout-style-default callout-important no-icon callout-titled">
+<p>A slight generalization of this Lemma is to distinguish a <strong>unique</strong> distribution <span class="math inline">p_0</span> and <strong>multiple</strong> distributions <span class="math inline">p_1,\cdots,p_l</span> for indexes <span class="math inline">L =\{1,\cdots,l\}</span>, where <span class="math inline">p_i</span> are all distributions over set <span class="math inline">S=\{1,\cdots,n\}</span>. We prove a generalized no-go theorem below:</p>
+<div id="lem-mult_TV_bound" class="callout callout-style-default callout-important no-icon callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Important</span>Lemma
+Lemma&nbsp;2: Lemma
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p><span id="lemma:mult_TV_bound" data-label="lemma:mult_TV_bound"></span> If there exists a distribution <span class="math inline">\mathcal{D}</span> over <span class="math inline">L</span> such that <span class="math inline">\delta_{\mathcal{D}}:=\|p_0 - \mathbb{E}_{r\sim \mathcal{D}}[p_{r}]\|_{\mathrm {TV}} \leq \varepsilon</span>, then there is no single-sampling algorithm that distinguishes <span class="math inline">p_0</span> between <span class="math inline">p_1,\cdots,p_l</span> such that it is <span class="math inline">\varepsilon/2</span> better than random guessing.</p>
+<p>If there exists a distribution <span class="math inline">\mathcal{D}</span> over <span class="math inline">L</span> such that <span class="math inline">\delta_{\mathcal{D}}:=\|p_0 - \mathbb{E}_{r\sim \mathcal{D}}[p_{r}]\|_{\mathrm {TV}} \leq \varepsilon</span>, then there is no single-sampling algorithm that distinguishes <span class="math inline">p_0</span> between <span class="math inline">p_1,\cdots,p_l</span> such that it is <span class="math inline">\varepsilon/2</span> better than random guessing.</p>
 </div>
 </div>
 <div class="callout callout-style-default callout-note callout-titled">
@@ -367,36 +368,45 @@ window.Quarto = {
 </div>
 <div id="callout-4" class="callout-4-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
-<p><em>Proof.</em> We first directly prove this result using lemma. If it exists, we can use it as an algorithm that distinguishes the distribution <span class="math inline">q(i):=\mathbb{E}_{r\sim \mathcal{D}}[p_{r}(i)]</span> with <span class="math inline">p_0(i)</span> and it is <span class="math inline">\varepsilon/2</span> better than random guessing. This contradicts the fact that <span class="math inline">\|p_0 - q\|_{\mathrm {TV}} =\|p_0 - \mathbb{E}_{r\sim \mathcal{D}}[p_{r}]\|_{\mathrm {TV}}  \leq \varepsilon</span> according to Lemma. ◻</p>
+<p><em>Proof.</em> We first directly prove this result using lemma. If it exists, we can use it as an algorithm that distinguishes the distribution <span class="math inline">q(i):=\mathbb{E}_{r\sim \mathcal{D}}[p_{r}(i)]</span> with <span class="math inline">p_0(i)</span> and it is <span class="math inline">\varepsilon/2</span> better than random guessing. This contradicts the fact that <span class="math inline">\|p_0 - q\|_{\mathrm {TV}} =\|p_0 - \mathbb{E}_{r\sim \mathcal{D}}[p_{r}]\|_{\mathrm {TV}} := \delta_{\mathcal{D}} \leq \varepsilon</span> according to Lemma. ◻</p>
 </div>
 </div>
 </div>
-<p>In Lemma, we can try all kinds of distribution <span class="math inline">\mathcal{D}</span> over <span class="math inline">L</span> and choose the hardest one <span class="math inline">\delta_{\mathrm{w}} = \min_{\mathcal{D}}\delta_{\mathcal{D}}</span>. This reflects the <em>worst case information complexity</em> of this discrimination problem.</p>
-<section id="sec-problem-ensemble" class="level2" data-number="1.1">
-<h2 data-number="1.1" class="anchored" data-anchor-id="sec-problem-ensemble"><span class="header-section-number">1.1</span> Problem Ensemble and Average Case Hardness</h2>
-<p>In general, this problem is much harder than two-point discrimination, as we are designing a unified algorithm that dealt with multiple two-point discrimination <span class="math inline">(p_0,p_1),\cdots,(p_0,p_L)</span> at the same time. One can relax this problem by ensuring that the distribution <span class="math inline">p_i</span> only appears following a fixed distribution <span class="math inline">\mathcal{D}</span>. This reduces the problem to a two-point discrimination <span class="math inline">(p_0,\mathbb{E}_{r \sim \mathcal{D}}p_r)</span>. Then the value <span class="math inline">\delta_{\mathcal{D}}</span> in Lemma is tight. We call it the <em>average case information complexity</em> under <em>problem ensemble</em> <span class="math inline">\mathcal{D}</span>. Similarly, we can define multiple-to-multiple tasks that discriminate a set of distribution <span class="math inline">\mathcal{A}</span> from the other set of distribution <span class="math inline">\mathcal{B}</span>, whose average case hardness is defined by <span class="math inline">\|\mathbb{E}_{r \sim \mathcal{D}(A)}p_{r} -\mathbb{E}_{r \sim \mathcal{D}(B)} q_{s}\|_{\mathrm{TVD}}</span> for problem ensemble <span class="math inline">\mathcal{D}(\mathcal A)</span> and <span class="math inline">\mathcal{D}(\mathcal B)</span>.</p>
+<section id="worst-case-average-case" class="level4">
+<h4 class="anchored" data-anchor-id="worst-case-average-case">Worst case &amp; average case</h4>
+<p>In <a href="#lem-mult_TV_bound" class="quarto-xref">Lemma&nbsp;2</a>, we optimize over all convex combinations indexed by distributions <span class="math inline">\mathcal{D}</span> over <span class="math inline">\{1,\ldots,L\}</span> and select the hardest instance: <span class="math display">
+  \delta_{\mathrm{w}} = \min_{\mathcal{D}}\delta_{\mathcal{D}}.
+  </span> This quantity reflects the <strong>worst-case</strong> information complexity of the multiple hypothesis discrimination problem. In general, multiple two-point discrimination tasks <span class="math inline">(p_0, p_1), \ldots, (p_0, p_L)</span> are considerably harder than a single two-point discrimination. One natural relaxation is to assume that the alternative hypothesis <span class="math inline">p_i</span> is drawn from a fixed problem ensemble <span class="math inline">\mathcal{D}</span>. This reduces the problem to a single two-point discrimination between <span class="math inline">p_0</span> and the mixture <span class="math inline">\bar{p}_{\mathcal{D}} = \mathbb{E}_{i \sim \mathcal{D}}[p_i]</span>. In this setting, the bound <span class="math inline">\delta_{\mathcal{D}}</span> in the <a href="#lem-mult_TV_bound" class="quarto-xref">Lemma&nbsp;2</a> becomes tight, and we call it the <strong>average-case</strong> information complexity under problem ensemble <span class="math inline">\mathcal{D}</span>.</p>
+<p>This framework extends naturally to many-to-many discrimination tasks, where we distinguish a set of distributions <span class="math inline">\mathcal{A} = \{p_a\}</span> from another set <span class="math inline">\mathcal{B} = \{q_b\}</span>. Given problem ensembles <span class="math inline">\mathcal{D}_{\mathcal{A}}</span> over <span class="math inline">\mathcal{A}</span> and <span class="math inline">\mathcal{D}_{\mathcal{B}}</span> over <span class="math inline">\mathcal{B}</span>, the average-case hardness is characterized by: <span class="math display">
+  \left\|\mathbb{E}_{a \sim \mathcal{D}_{\mathcal{A}}}[p_a] - \mathbb{E}_{b \sim \mathcal{D}_{\mathcal{B}}}[q_b]\right\|_{\mathrm{TV}}.
+  </span></p>
 </section>
-<section id="sec-replica-ensemble" class="level2" data-number="1.2">
-<h2 data-number="1.2" class="anchored" data-anchor-id="sec-replica-ensemble"><span class="header-section-number">1.2</span> Replica Distinguishes Ensemble from Average</h2>
-<p>One confusing point is the discrimination of the distribution <span class="math inline">p_0 = \mathbb{E}_{r\sim \mathcal{D}}[p_{r}]</span> and a set of distribution <span class="math inline">\{p_{r}\}</span> with problem ensemble <span class="math inline">{r \sim \mathcal{D}}</span>. By Lemma, we cannot distinguish them with probability greater than <span class="math inline">1/2</span> given one-sample. However, under k-samples, this is equivalent to the discrimination of <span class="math inline">p_0(t_1)\cdots p_0(t_k)</span> and a set of distribution <span class="math inline">\{p_{r}(t_1)\cdots p_{r}(t_k)\}</span> with problem ensemble <span class="math inline">{r \sim \mathcal{D}}</span>. We can check that <span class="math display">
+<section id="sec-replica-ensemble" class="level4">
+<h4 class="anchored" data-anchor-id="sec-replica-ensemble">Replica Distinguishes Ensemble from Average</h4>
+<p>One confusing point is the discrimination of the distribution <span class="math inline">p_0 = \mathbb{E}_{r\sim \mathcal{D}}[p_{r}]</span> and a set of distribution <span class="math inline">\{p_{r}\}</span> with problem ensemble <span class="math inline">{r \sim \mathcal{D}}</span>.</p>
+<ul>
+<li>By <a href="#lem-mult_TV_bound" class="quarto-xref">Lemma&nbsp;2</a>, we cannot distinguish them with probability greater than <span class="math inline">1/2</span> given one-sample.</li>
+<li>Under k-samples, this is equivalent to the discrimination of <span class="math inline">p_0(t_1)\cdots p_0(t_k)</span> and a set of distribution <span class="math inline">\{p_{r}(t_1)\cdots p_{r}(t_k)\}</span> with problem ensemble <span class="math inline">{r \sim \mathcal{D}}</span>.</li>
+<li>We can check that the <span class="math inline">k&gt;1</span> discrimination isn’t prohibited by calculates: <span class="math display">
 \mathbb{E}_{r\sim \mathcal{D}} \left[p_{r}(t_1)\cdots p_{r}(t_k)\right] \neq p_0(t_1)\cdots p_0(t_k) \\
 =  \left[\mathbb{E}_{r\sim \mathcal{D}}p_{r}(t_1)\right]\cdots \left[\mathbb{E}_{r\sim \mathcal{D}}p_{r}(t_k)\right],
-</span> thus can be estimated with probability greater than <span class="math inline">1/2</span>.</p>
+</span> .</li>
+</ul>
 </section>
-<section id="sec-coarse-graining" class="level2" data-number="1.3">
-<h2 data-number="1.3" class="anchored" data-anchor-id="sec-coarse-graining"><span class="header-section-number">1.3</span> Coarse Graining</h2>
-<p>Intuitively, distinguishing two fine-grained distributions is never more difficult than distinguishing their coarse-grained versions. With <strong>TVD</strong>, we quantify this intuition as Lemma.</p>
-<div class="callout callout-style-default callout-important no-icon callout-titled">
+<section id="sec-coarse-graining" class="level4">
+<h4 class="anchored" data-anchor-id="sec-coarse-graining">Coarse Graining</h4>
+<p>Intuitively, distinguishing two fine-grained distributions is never more difficult than distinguishing their coarse-grained versions. With <strong>TVD</strong>, we quantify this intuition as <a href="#lem-TVD_corse" class="quarto-xref">Lemma&nbsp;3</a>.</p>
+<div id="lem-TVD_corse" class="callout callout-style-default callout-important no-icon callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Important</span>Lemma
+Lemma&nbsp;3: (Coarse Graining)
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p><span id="lemma:TVD_corse" data-label="lemma:TVD_corse"></span> Given two distribution <span class="math inline">\mathbf{p}:=\{p_1,\cdots,p_M\},\mathbf{q}:=\{q_1,\cdots,q_M\}</span> and their coarse graining <span class="math inline">\mathbf{P}:=\bigcup_{s}\{p_{1,s},\cdots,p_{M,s}\},\mathbf{Q}:=\bigcup_{s}\{q_{1,s},\cdots,q_{M,s}\}</span> such that <span class="math inline">\sum_{s} p_{k,s} = p_k,\sum_{s} q_{k,s} = q_k, \forall k \in \{1,\cdots,M\}</span>. Then <span class="math inline">\|\mathbf{P} - \mathbf{Q}\|_{\mathrm{tvd}} \geq \|\mathbf{p} - \mathbf{q}\|_{\mathrm{tvd}}</span>.</p>
+<p>Given two distribution <span class="math inline">\mathbf{p}:=\{p_1,\cdots,p_M\},\mathbf{q}:=\{q_1,\cdots,q_M\}</span> and their coarse graining <span class="math inline">\mathbf{P}:=\bigcup_{s}\{p_{1,s},\cdots,p_{M,s}\},\mathbf{Q}:=\bigcup_{s}\{q_{1,s},\cdots,q_{M,s}\}</span> such that <span class="math inline">\sum_{s} p_{k,s} = p_k,\sum_{s} q_{k,s} = q_k, \forall k \in \{1,\cdots,M\}</span>. Then <span class="math inline">\|\mathbf{P} - \mathbf{Q}\|_{\mathrm{tvd}} \geq \|\mathbf{p} - \mathbf{q}\|_{\mathrm{tvd}}</span>.</p>
 </div>
 </div>
 <div class="callout callout-style-default callout-note callout-titled">
@@ -411,13 +421,13 @@ window.Quarto = {
 </div>
 <div id="callout-6" class="callout-6-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
-<p><em>Proof.</em> Since <span class="math inline">\|\cdot\|_{\mathrm{tvd}} = 2^{-1}\|\cdot\|_{1}</span>, we conclude that <span class="math inline">\|\mathbf{P} - \mathbf{Q}\|_{1} = \sum_{k,s}\|p_{k,s} - q_{k,s}\|_{1} \geq  \sum_{k}\|\sum_{s}p_{k,s} - \sum_{s}q_{k,s}\|_{1} = \|\mathbf{p} - \mathbf{q}\|_{1}</span> ◻</p>
+<p>Since <span class="math inline">\|\cdot\|_{\mathrm{tvd}} = 2^{-1}\|\cdot\|_{1}</span>, we conclude that <span class="math inline">\|\mathbf{P} - \mathbf{Q}\|_{1} = \sum_{k,s}\|p_{k,s} - q_{k,s}\|_{1} \geq  \sum_{k}\|\sum_{s}p_{k,s} - \sum_{s}q_{k,s}\|_{1} = \|\mathbf{p} - \mathbf{q}\|_{1}</span></p>
 </div>
 </div>
 </div>
 </section>
-<section id="le-cams-theorem" class="level2" data-number="1.4">
-<h2 data-number="1.4" class="anchored" data-anchor-id="le-cams-theorem"><span class="header-section-number">1.4</span> Le Cam’s Theorem</h2>
+<section id="le-cams-theorem" class="level2">
+<h2 class="anchored" data-anchor-id="le-cams-theorem">Le Cam’s Theorem</h2>
 <p>The most general form of the lemma is Le Cam’s bound. We prove this theorem and show that lemma is a special case of the Le-Cam theorem for completeness.</p>
 <div class="callout callout-style-default callout-important no-icon callout-titled">
 <div class="callout-header d-flex align-content-center">
@@ -429,10 +439,12 @@ window.Quarto = {
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p><span id="theo:Le_Cam" data-label="theo:Le_Cam"></span> Given a measurable space <span class="math inline">x \in \mathcal{X}</span> and a family of measures <span class="math inline">P \in \mathcal{P}, P: 2^\mathcal{X} \to [0,1]</span>. Let <span class="math inline">\hat \theta:\mathcal{X} \to \mathbb{R}^p</span> be an arbitrary estimator of the parameters of this family of distributions <span class="math inline">\theta: \mathcal{P} \to \mathbb{R}^p</span>. Let <span class="math inline">D[\cdot,\cdot]:\mathbb{R}^p \times \mathbb{R}^p \to \mathbb{R}_{\geq 0}</span> be a pseudo-metric of the parameter space that is symmetric and satisfies the triangular inequality <span class="math inline">D(x,y)+D(y,z) \geq D(x,z)</span>. Take two arbitrary subsets <span class="math inline">\mathcal{P}_1, \mathcal{P}_2 \subset \mathcal{P}</span> that satisfied <span class="math inline">\inf_{\substack{P_1 \in \mathcal{P}_1,P_2 \in  \mathcal{P_2}} } D\left[\theta(P_1), \theta(P_2)\right] \geq 2\delta,</span> then the inequality is true: <span class="math display">\begin{align}
-        \sup_{P \in \mathcal{P}} \left[\int_{x \in \mathcal{X}} dP(x)\cdot D\left[\hat \theta(x),\theta(P)\right]\right] \\
+<p><span id="theo:Le_Cam" data-label="theo:Le_Cam"></span> Given a measurable space <span class="math inline">x \in \mathcal{X}</span> and a family of measures <span class="math inline">P \in \mathcal{P}, P: 2^\mathcal{X} \to [0,1]</span>. Let <span class="math inline">\hat \theta:\mathcal{X} \to \mathbb{R}^p</span> be an arbitrary estimator of the parameters of this family of distributions <span class="math inline">\theta: \mathcal{P} \to \mathbb{R}^p</span>. Let <span class="math inline">D[\cdot,\cdot]:\mathbb{R}^p \times \mathbb{R}^p \to \mathbb{R}_{\geq 0}</span> be a pseudo-metric of the parameter space that is symmetric and satisfies the triangular inequality <span class="math inline">D(x,y)+D(y,z) \geq D(x,z)</span>. Take two arbitrary subsets <span class="math inline">\mathcal{P}_1, \mathcal{P}_2 \subset \mathcal{P}</span> that satisfied <span class="math inline">\inf_{\substack{P_1 \in \mathcal{P}_1,P_2 \in  \mathcal{P_2}} } D\left[\theta(P_1), \theta(P_2)\right] \geq 2\delta,</span> then the inequality is true: <span class="math display">
+\begin{align}
+        &amp;\sup_{P \in \mathcal{P}} \left[\int_{x \in \mathcal{X}} dP(x)\cdot D\left[\hat \theta(x),\theta(P)\right]\right] \\
         &amp;\geq \delta\cdot \sup_{\substack{P_1 \in \text{cov~}\mathcal{P}_1\\P_2 \in \text{cov~} \mathcal{P_2}} } \left[1 - \frac{1}{2}\int_{x \in \mathcal{X}} [dP_1(x) - dP_2(x)]\right].
-\end{align}</span></p>
+\end{align}
+</span></p>
 </div>
 </div>
 <div class="callout callout-style-default callout-note callout-titled">
@@ -447,25 +459,27 @@ window.Quarto = {
 </div>
 <div id="callout-8" class="callout-8-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
-<p><em>Proof.</em> We first noted that <span class="math display">\begin{align}
-          2\sup_{P \in \mathcal{P}} \left[\int_{x \in \mathcal{X}} dP(x)\cdot D\left[\hat\theta(x),\theta(P)\right]\right] \\
+<p><em>Proof.</em> We first noted that <span class="math display">
+\begin{align*}
+          &amp;2\sup_{P \in \mathcal{P}} \left[\int_{x \in \mathcal{X}} dP(x)\cdot D\left[\hat\theta(x),\theta(P)\right]\right] \\
           &amp;\geq  \int_{x \in \mathcal{X}} dP_1(x)\cdot D\left[\hat\theta(x),\theta(P_1)\right] \\
           &amp;\quad + \int_{x \in \mathcal{X}} dP_2(x)\cdot D\left[\hat\theta(x),\theta(P_2)\right].
-\end{align}</span> Based on the triangular inequality, we have <span class="math inline">D\left[\hat\theta(x),\theta(P_1)\right]  + D\left[\hat\theta(x),\theta(P_2)\right] \geq D\left[\theta(P_1),\theta(P_2)\right]\geq 2\delta</span>. Thus, for a fixed point <span class="math inline">x</span>, the tuple <span class="math inline">(f_1/2\delta,f_2/2\delta), \text{where }\begin{cases}f_1(x) =D[ \hat \theta(x),\theta(P_1)], \\f_2(x) =D[ \hat \theta(x),\theta(P_2)],\end{cases}</span> is in the convex set <span class="math inline">\mathcal{S} =\{(r_1,r_2)\in \mathbb{R}^2| r_1,r_2\geq 0,r_1+r_2 \geq  1\}</span>. Then <span class="math inline">\forall P_1 \in \mathcal{P}_1,\forall P_2 \in \mathcal{P}_2</span>, we write the inequality <span class="math display">\begin{align}
-          2\sup_{P \in \mathcal{P}} \left[\int_{x \in \mathcal{X}} dP(x)\cdot D\left[\hat\theta(x),\theta(P)\right]\right] \\
+\end{align*}
+</span> Based on the triangular inequality, we have <span class="math inline">D\left[\hat\theta(x),\theta(P_1)\right]  + D\left[\hat\theta(x),\theta(P_2)\right] \geq D\left[\theta(P_1),\theta(P_2)\right]\geq 2\delta</span>. Thus, for a fixed point <span class="math inline">x</span>, the tuple <span class="math inline">(f_1/2\delta,f_2/2\delta), \text{where }\begin{cases}f_1(x) =D[ \hat \theta(x),\theta(P_1)], \\f_2(x) =D[ \hat \theta(x),\theta(P_2)],\end{cases}</span> is in the convex set <span class="math inline">\mathcal{S} =\{(r_1,r_2)\in \mathbb{R}^2| r_1,r_2\geq 0,r_1+r_2 \geq  1\}</span>. Then <span class="math inline">\forall P_1 \in \mathcal{P}_1,\forall P_2 \in \mathcal{P}_2</span>, we write the inequality <span class="math display">
+\begin{align*}
+          &amp;2\sup_{P \in \mathcal{P}} \left[\int_{x \in \mathcal{X}} dP(x)\cdot D\left[\hat\theta(x),\theta(P)\right]\right] \\
           &amp;\geq 2\delta\cdot \left[\int_{x \in \mathcal{X}} \inf_{[r_1(x),r_2(x)] \in \mathcal{S}} \left[dP_1(x)\cdot r_1(x) +  dP_2(x)\cdot r_2(x)\right]\right]\\
           &amp;\geq   \sup_{\substack{P_1 \in \text{cov~}\mathcal{P}_1\\P_2 \in \text{cov~} \mathcal{P_2}} } 2\delta\cdot \\
           &amp;\quad \left[\int_{x \in \mathcal{X}} \inf_{[r_1(x),r_2(x)] \in \mathcal{S}} \left[dP_1(x)\cdot r_1(x) +  dP_2(x)\cdot r_2(x)\right]\right].
-\end{align}</span> The RHS satisfied the identity <span class="math display">\begin{align}
-         \text{RHS} &amp;=2\delta \sup_{\substack{P_1 \in \text{cov~}\mathcal{P}_1\\P_2 \in \text{cov~} \mathcal{P_2}} } \\
-         &amp;\quad \left[\int_{x \in \mathcal{X}} \inf_{ \substack{r_1(x),r_2(x)\geq 0,\\r_1(x)+r_2(x) =  1}} \left[dP_1(x)\cdot r_1(x) +dP_2(x)\cdot r_2(x)\right]\right]\\
-          &amp;=2\delta \sup_{\substack{P_1 \in \text{cov~}\mathcal{P}_1\\P_2 \in \text{cov~} \mathcal{P_2}} } \\
-          &amp;\quad \left[1 +\int_{x \in \mathcal{X}} \inf_{ r_1(x)\in [0, 1]}\left[dP_1(x)\cdot r_1(x) -  dP_2(x)\cdot  r_1(x)\right]\right]\\
-         &amp;=2\delta \sup_{\substack{P_1 \in \text{cov~}\mathcal{P}_1\\P_2 \in \text{cov~} \mathcal{P_2}} } \\
-         &amp;\quad \left[1- \int_{\substack{x \in \mathcal{X}\\P_2(x) \geq P_1(x)}} dP_2(x) -  dP_1(x) \right]\\
-         &amp;=2\delta \sup_{\substack{P_1 \in \text{cov~}\mathcal{P}_1\\P_2 \in \text{cov~} \mathcal{P_2}} } \\
-         &amp;\quad \left[1- \frac{1}{2} \int_{\substack{x \in \mathcal{X}}} |dP_2(x) -  dP_1(x)| \right].
-\end{align}</span> This completes the proof. ◻</p>
+\end{align*}
+</span> The RHS satisfied the identity <span class="math display">
+\begin{align*}
+         &amp;\text{RHS} =2\delta \sup_{\substack{P_1 \in \text{cov~}\mathcal{P}_1\\P_2 \in \text{cov~} \mathcal{P_2}} }  \left[\int_{x \in \mathcal{X}} \inf_{ \substack{r_1(x),r_2(x)\geq 0,\\r_1(x)+r_2(x) =  1}} \left[dP_1(x)\cdot r_1(x) +dP_2(x)\cdot r_2(x)\right]\right]\\
+          &amp;=2\delta \sup_{\substack{P_1 \in \text{cov~}\mathcal{P}_1\\P_2 \in \text{cov~} \mathcal{P_2}} } \left[1 +\int_{x \in \mathcal{X}} \inf_{ r_1(x)\in [0, 1]}\left[dP_1(x)\cdot r_1(x) -  dP_2(x)\cdot  r_1(x)\right]\right]\\
+         &amp;=2\delta \sup_{\substack{P_1 \in \text{cov~}\mathcal{P}_1\\P_2 \in \text{cov~} \mathcal{P_2}} } \left[1- \int_{\substack{x \in \mathcal{X}\\P_2(x) \geq P_1(x)}} dP_2(x) -  dP_1(x) \right]\\
+         &amp;=2\delta \sup_{\substack{P_1 \in \text{cov~}\mathcal{P}_1\\P_2 \in \text{cov~} \mathcal{P_2}} }  \left[1- \frac{1}{2} \int_{\substack{x \in \mathcal{X}}} |dP_2(x) -  dP_1(x)| \right].
+\end{align*}
+</span> This completes the proof. ◻</p>
 </div>
 </div>
 </div>

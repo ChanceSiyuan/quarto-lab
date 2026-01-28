@@ -11,44 +11,91 @@ bibliography: refs.bib
 
 [← Back to Index](index.qmd)
 
-# Operator Mixed Ensembles {#sec-operator-mixed}
 
-::: problem
-[]{#prob:Gibbtest label="prob:Gibbtest"} Given access to either (i). A
-set of state
-${S}_{\mathcal{O}}:=\{(\mathbb{I}+ 3\varepsilon O_x)/d\}_{x \in \{1,\cdots,M\}}$
-or (ii) $\rho = \mathbb{I}/2^n$, try to distinguish between these two
-cases with an error of at most $1/2-\varepsilon$.
+Before diving into the technical proof of distinguishability lower bounds, we first build intuition about **when two ensembles are hard to distinguish**.
+
+**Key Insight:** If the $k$-copy averaged states $\mu^{(k)}_i := \mathbb{E}_{\rho \sim \mathcal{E}_i}[\rho^{\otimes k}]$ are distinguishable (i.e., have large trace distance), then the ensembles themselves can be efficiently distinguished using $k$-replica measurements.
+
+::: {#lem-hard_necess1 .callout-important icon="false"}
+## (Necessary Condition for Hardness)
+Given two state ensembles $\mathcal{E}_1, \mathcal{E}_2$, define their $k$-copy moments as $\mu^{(k)}_i := \mathbb{E}_{\rho \sim \mathcal{E}_i}[\rho^{\otimes k}]$. If these moments are $\varepsilon$-distinguishable:
+$$
+\|\mu^{(k)}_1 - \mu^{(k)}_2\|_{1} \geq \varepsilon,
+$$
+then there exists a $k$-replica measurement strategy that distinguishes $\mathcal{E}_1$ from $\mathcal{E}_2$ using only $O(1/\varepsilon^2)$ samples.
 :::
 
-This problem determines the lower bound of classical shadow of
-$\{O_x\}_{x \in \{1,\cdots,M\}}$ and has a special case for
-discrimination of $\mathbb{I}/d$ and Pauli mixed state
-$\rho = (\mathbb{I}+ 3\varepsilon P)/2^n$ with $P \in \mathcal{P}_n$.
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
 
-We first get intuition of this task based on
-Lemma. If we choose distribution on
-$\mathcal{O}$ supports on $Z_1$ operators only, we conclude that the
-value $\|\mu_1^{(1)} - \mu_2^{(1)}\|_1$ are separately
-$\|3\varepsilon Z_1/2^n\|_1 = \mathrm{tr}\left({3\varepsilon \mathbb{I}/2^n}\right) = 3\varepsilon$
-and
+The trace norm has a variational characterization: $\|A\|_{1} = \max_{\|O\|_{\infty} \leq 1}\mathrm{tr}(O \cdot A)$.
+Thus, $\|\mu^{(k)}_1 - \mu^{(k)}_2\|_{1} \geq \varepsilon$ implies the existence of an observable $O$ with $\|O\|_{\infty} \leq 1$ such that:
 $$
-\|4^{-n}\sum_{P \in \mathcal{P}}3\varepsilon P/2^n\|_1 \\
-= 3\varepsilon \left[\mathrm{tr}\left(\sqrt{AA^\dagger}\right) \right]^{n} \\
-= 3\varepsilon(\sqrt{3}/2)^n \sim \mathcal{O}(2^{-n}).
+\mathrm{tr}(O \mu^{(k)}_1) - \mathrm{tr}(O \mu^{(k)}_2) \geq \varepsilon.
 $$
-Here we use
-$\mathrm{tr}\left(\sqrt{AA^\dagger}\right) = \sum_{\lambda(A)}|\lambda(A)|$
-and $$\begin{align}
-A = \frac{I+X+Y+Z}{4} =4^{-1} \begin{pmatrix}2&1- i\\1+i&0\end{pmatrix}, \quad \lambda(A) = {\frac{1 - \sqrt{3}}{4},\frac{1 + \sqrt{3}}{4}}.
-\end{align}$$ This means that even though there exists easy distribution
-$\mathrm{Pr}(P)=\delta(P - Z_1)$ on Pauli operators that can be
-distinguished with $\mathbb{I}/d$ with single replica strategy, there
-also has distribution $\mathrm{Pr}(P) = 4^{-n}$ that might be hard.
-Based on this intuition, we set up hard distributions as uniform
-distribution on signed operators $\{+1,-1\}\times \mathcal{O}$. This
-ensures its average is exactly $\mathbb{I}/d$, thus being hard for
-1-replica strategy.
+
+- (Strategy) Measure $O$ on $k$-replica states $\rho^{\otimes k}$ and construct an estimator $\hat{o}$ for $\mathrm{tr}(O \mu^{(k)})$.
+- (Bounded range) Since $\|O\|_{\infty} \leq 1$, we have $|\mathrm{tr}(O \rho^{\otimes k})| \leq 1$.
+- (Sample complexity) By Hoeffding's inequality, $N = O(\varepsilon^{-2})$ samples suffice to estimate $\mathrm{tr}(O \mu^{(k)})$ with additive error $\varepsilon/2$, which solves the discrimination problem. ◻
+:::
+
+**Remark (Necessary but not sufficient):** The above lemma provides only a *necessary* condition for hardness. Even when two ensembles have **identical** $k$-copy moments, adaptive $k$-copy strategies (i.e., the power of classical correlation) may still distinguish them efficiently.
+
+- (Counterexample) Consider the following two ensembles on a single qubit:
+  - $\mathcal{E}_1 = \{\ket{0}\!\bra{0}, \ket{1}\!\bra{1}\}$ with probability $1/2$ each (Z-basis states)
+  - $\mathcal{E}_2 = \{\ket{+}\!\bra{+}, \ket{-}\!\bra{-}\}$ with probability $1/2$ each (X-basis states)
+- (Same 1-copy moments) Both ensembles have identical 1-copy moments: $\mu_1^{(1)} = \mu_2^{(1)} = \mathbb{I}/2$.
+- (Different 2-copy moments) However, their 2-copy moments differ:
+  - $\mu_1^{(2)} = (\ket{00}\!\bra{00} + \ket{11}\!\bra{11})/2$ (classically correlated)
+  - $\mu_2^{(2)} = (\ket{++}\!\bra{++} + \ket{--}\!\bra{--})/2$ (different correlation structure)
+- (Adaptive 1-copy distinguishes) An adaptive strategy with $T=2$ rounds of 1-copy Z-measurements can distinguish them:
+  - For $\mathcal{E}_1$: outcomes are always correlated — either $(0,0)$ or $(1,1)$
+  - For $\mathcal{E}_2$: outcomes are independent random bits — all four outcomes $(0,0), (0,1), (1,0), (1,1)$ equally likely
+
+The key insight is that $T$ rounds of adaptive $k$-copy measurements can probe the $kT$-copy moments, not just the $k$-copy moments.
+
+With this intuition in mind, now we reviewed the information lower bound
+to distinguish Haar random state ensembles. Perhaps the most simple one
+are the maximum mixed state $\mathbb{I}(d)/d$ with operator mixed
+ensemble.
+# Operator Mixed Ensembles {#sec-operator-mixed}
+
+::: {#def-shadow-problem .callout-note icon="false"}
+## Problem (Shadow Tomography Lower Bound)
+Given access to either (i) a set of states ${S}_{\mathcal{O}}:=\{(\mathbb{I}+ 3\varepsilon O_x)/d\}_{x},x \in \{1,\cdots,M\}$ or (ii) $\rho = \mathbb{I}/2^n$, try to distinguish between these two cases with an error of at most $1/2-\varepsilon$.
+:::
+
+This problem determines the sample complexity lower bound for classical shadow tomography of observable set $\{O_x\}_{x \in \{1,\cdots,M\}}$. A special case is the discrimination between $\mathbb{I}/d$ and Pauli-mixed states $\rho_P = (\mathbb{I}+ 3\varepsilon P)/2^n$ with $P \in \mathcal{P}_n$.
+
+---
+
+**Intuition from @lem-hard_necess1:** The difficulty of distinguishing two ensembles depends on their $k$-copy moment difference $\|\mu_1^{(k)} - \mu_2^{(k)}\|_1$. Different choices of the operator distribution $\mathcal{D}$ on $\mathcal{O}$ lead to vastly different hardness:
+
+- (Easy case) If $\mathcal{D}$ is supported on a single operator, e.g., $\mathrm{Pr}(O) = \delta(O - Z_1)$, then:
+$$
+\|\mu_{\mathcal{D}}^{(1)} - \mu_{\mathbb{I}/d}^{(1)}\|_1 = \|3\varepsilon Z_1/2^n\|_1 = 3\varepsilon = \Theta(1).
+$$
+This is easily distinguishable with $O(1/\varepsilon^2)$ single-copy measurements.
+
+- (Hard case) If $\mathcal{D}$ is uniform over all $n$-qubit Paulis, i.e., $\mathrm{Pr}(P) = 4^{-n}$, then the averaged state becomes:
+$$
+\mu_{\mathcal{D}}^{(1)} = \mathbb{E}_{P \sim \mathcal{P}_n}\left[\frac{\mathbb{I} + 3\varepsilon P}{2^n}\right] = \frac{\mathbb{I}}{2^n} + \frac{3\varepsilon}{4^n} \sum_{P \in \mathcal{P}_n} \frac{P}{2^n}.
+$$
+The trace norm of the difference scales as:
+$$
+\|\mu_{\mathcal{D}}^{(1)} - \mathbb{I}/d\|_1 = 3\varepsilon \cdot \left(\frac{\sqrt{3}}{2}\right)^n = O(2^{-0.21n}),
+$$
+where we used the fact that $\|A^{\otimes n}\|_1 = \|A\|_1^n$ for $A = \frac{I+X+Y+Z}{4}$ with eigenvalues $\lambda(A) = \frac{1 \pm \sqrt{3}}{4}$ and $\|A\|_1 = \frac{\sqrt{3}}{2}$.
+
+---
+
+**Key insight:** The trace distance between the averaged states vanishes exponentially when the operator distribution is spread uniformly. This motivates the construction of **hard instances** using signed operator ensembles.
+
+**Hard distribution construction:** To make the 1-copy moments *identical* (not just close), we use a signed ensemble $\{+1,-1\} \times \mathcal{O}$ with uniform distribution. Since $\mathbb{E}_{s \in \{\pm 1\}}[s \cdot O] = 0$ for any $O$, this ensures:
+$$
+\mu_{\text{signed}}^{(1)} = \mathbb{E}_{s,O}\left[\frac{\mathbb{I} + 3\varepsilon \cdot s \cdot O}{d}\right] = \frac{\mathbb{I}}{d} = \mu_{\mathbb{I}/d}^{(1)}.
+$$
+By @lem-hard_necess1, any single-copy strategy cannot distinguish these ensembles using 1-copy moment information alone.
 
 ## General Operators {#sec-general-ops}
 
@@ -97,15 +144,15 @@ same distribution. Thus, it is sufficient to discuss the property of
 function $f(\ket{\psi}):= \bra{\psi} Z_n \ket{\psi}$ with Haar random
 inputs.
 
-::: {.callout-important icon="false"}
-## Lemma
-
- []{#lemma:expon_cent_ineq label="lemma:expon_cent_ineq"} Given function
-$f(\ket{\psi}):= \bra{\psi} Z_n \ket{\psi}$ with independent Haar random
-inputs, we conclude that $$\begin{align}
-        &\text{Pr}\left[\left|\frac{1}{R}\sum_{i =1}^{R} f(\ket{\psi_i})^2 - \mathbb{E}_{\ket{\psi} \sim \text{Haar}}\left[ f(\ket{\psi})^2\right]\right| \geq t\right] \leq 2 e^{-R \min(t^2/\lambda^2, t/\lambda)},\\
-        & \text{where~} \lambda = 288\pi^3/2^n,\quad \mathbb{E}_{\ket{\psi} \sim \text{Haar}} [f(\ket{\psi_i})^2] = \frac{1}{2^n + 1}
-\end{align}$$
+::: {#lem-expon-cent-ineq .callout-important icon="false"}
+## (Exponential Concentration Inequality)
+Given function $f(\ket{\psi}):= \bra{\psi} Z_n \ket{\psi}$ with independent Haar random inputs, we have:
+$$
+\begin{align}
+&\text{Pr}\left[\left|\frac{1}{R}\sum_{i =1}^{R} f(\ket{\psi_i})^2 - \mathbb{E}_{\ket{\psi} \sim \text{Haar}}\left[ f(\ket{\psi})^2\right]\right| \geq t\right] \leq 2 e^{-R \min(t^2/\lambda^2, t/\lambda)},\\
+& \text{where~} \lambda = 288\pi^3/2^n,\quad \mathbb{E}_{\ket{\psi} \sim \text{Haar}} [f(\ket{\psi_i})^2] = \frac{1}{2^n + 1}
+\end{align}
+$$
 :::
 
 ::: {.callout-note collapse="true"}
@@ -124,18 +171,13 @@ To do this, to first defined an $\eta$-covering set $\mathcal{N}_{\eta}$
 on the n-qubit pure states, as illustrated in
 Lemma.
 
-::: {.callout-important icon="false"}
-## Lemma
-
- []{#lemma:covering_on_nqubit label="lemma:covering_on_nqubit"} An
-$\eta$-covering set $\mathcal{N}_{\eta}$ on the n-qubit pure states is a
-finite set of n-qubit pure states such that
+::: {#lem-covering .callout-important icon="false"}
+## (Covering Net on n-Qubit States)
+An $\eta$-covering set $\mathcal{N}_{\eta}$ on the n-qubit pure states is a finite set of n-qubit pure states such that
 $$
-\forall \ket{\phi} \in \mathcal{H}_n, \exists \ket{\psi} \in \mathcal{N}_{\eta}, \\
-\text{s.t.~} \|\ket{\phi} - \ket{\psi}\|_2 \leq \eta.
+\forall \ket{\phi} \in \mathcal{H}_n, \exists \ket{\psi} \in \mathcal{N}_{\eta}, \quad \text{s.t.~} \|\ket{\phi} - \ket{\psi}\|_2 \leq \eta.
 $$
-The cardinality of $\mathcal{N}_{\eta}$ is upper bounded by
-$|\mathcal{N}_{\eta}| \leq (1 + 2/\eta)^{2^{n+1}}$.
+The cardinality of $\mathcal{N}_{\eta}$ is upper bounded by $|\mathcal{N}_{\eta}| \leq (1 + 2/\eta)^{2^{n+1}}$.
 :::
 
 ::: {.callout-note collapse="true"}
@@ -192,14 +234,9 @@ $\sup_{\ket{\phi}}\sum_{O \in \mathcal{O}} |\mathcal{O}|^{-1}\bra{\phi} O \ket{\
 as rigrously illustrated in
 Lemma.
 
-::: {.callout-important icon="false"}
-## Lemma
-
- []{#lemma:point_to_uniform label="lemma:point_to_uniform"} Given an
-L-Lipschitz continuous function $f:V \to \mathbb{R}$ on metric space $V$
-and an $\eta$-covering set $\mathcal{N}_{\eta}$ of $V$, if
-$\forall x \in \mathcal{N}_{\eta}, |f(x) - c| < t$, then
-$\forall x \in V, |f(x) - c| < t + L \eta$.
+::: {#lem-lipschitz-covering .callout-important icon="false"}
+## (Lipschitz Extension via Covering)
+Given an L-Lipschitz continuous function $f:V \to \mathbb{R}$ on metric space $V$ and an $\eta$-covering set $\mathcal{N}_{\eta}$ of $V$, if $\forall x \in \mathcal{N}_{\eta}, |f(x) - c| < t$, then $\forall x \in V, |f(x) - c| < t + L \eta$.
 :::
 
 ::: {.callout-note collapse="true"}
@@ -214,25 +251,16 @@ Then we conclude $$\begin{align}
 
 If we further
 
-::: {.callout-important icon="false"}
-## Theorem
-
-Given a uniform distribution on $M$ Pauli observables
-$\mathcal{A}:=\{P_1,\cdots,P_M\}$, any single-copy learning algorithm
-that predict $\{\text{tr}(\rho P)\}_{P \sim \mathcal{A}}$ with
-$\varepsilon$-additive error and $2/3$ success probability must use
-$T \geq \Omega \left(\varepsilon^{-2} \min\{M/\log M, 2^n\}\right)$
-samples.
+::: {#thm-single-copy-shadow .callout-important icon="false"}
+## (Single-Copy Shadow Lower Bound)
+Given a uniform distribution on $M$ Pauli observables $\mathcal{A}:=\{P_1,\cdots,P_M\}$, any single-copy learning algorithm that predicts $\{\text{tr}(\rho P)\}_{P \sim \mathcal{A}}$ with $\varepsilon$-additive error and $2/3$ success probability must use $T \geq \Omega \left(\varepsilon^{-2} \min\{M/\log M, 2^n\}\right)$ samples.
 :::
 
 ## Pauli mixed states
 
-::: problem
-[]{#prob:Pauli_mixed_test label="prob:Pauli_mixed_test"} Given a subset
-$\mathcal{O} \subset \mathcal{P}(n)$, try to discriminate (i). A set of
-state
-${S}_{\mathcal{O}}:=\{\sigma_{P}:=(\mathbb{I}+ 3\varepsilon P)/d\}_{P \in \mathcal{O}}$
-and (ii) $\rho = \mathbb{I}/2^n$ with confidence $1 - \delta$.
+::: {#def-pauli-mixed-test .callout-note icon="false"}
+## Problem (Pauli Mixed State Discrimination)
+Given a subset $\mathcal{O} \subset \mathcal{P}(n)$, try to discriminate (i) a set of states ${S}_{\mathcal{O}}:=\{\sigma_{P}:=(\mathbb{I}+ 3\varepsilon P)/d\}_{P \in \mathcal{O}}$ and (ii) $\rho = \mathbb{I}/2^n$ with confidence $1 - \delta$.
 :::
 
 ## Single replica.
@@ -298,9 +326,8 @@ $$\begin{align}
 \end{align}$$
 since stabilizer states have flat Pauli spectrum (each non-identity Pauli has expectation $\pm 1$ or $0$, and the average over the Pauli group vanishes for stabilizer states).
 
-::: {.callout-important icon="false"}
-## Consequence
-
+::: {#lem-clifford-consequence .callout-important icon="false"}
+## (Clifford Measurement Lower Bound)
 Single-copy Clifford measurements require $T = \Omega(2^n/\varepsilon^2)$ samples to distinguish $(\mathbb{I} + 3\varepsilon P)/d$ from $\mathbb{I}/d$, matching the information-theoretic lower bound up to constants.
 :::
 
@@ -315,13 +342,14 @@ $$\begin{align}
 
 This captures the scenario where the post-measurement classical description is bounded, limiting the information that can be carried forward to subsequent rounds.
 
-::: {.callout-important icon="false"}
-## Lemma (Memory-Sample Tradeoff)
-
+::: {#lem-memory-tradeoff .callout-important icon="false"}
+## (Memory-Sample Tradeoff)
 For distinguishing states from the Pauli-mixed ensemble with bounded memory $k$ and $c$-copy measurements:
-$$\begin{align}
+$$
+\begin{align}
     T \geq \frac{2^n}{2^{k + c \cdot n/(c+1)}}
-\end{align}$$
+\end{align}
+$$
 :::
 
 This interpolates between the single-copy bound ($c=1$: $T \geq 2^{n/2 - k}$) and the multi-copy regime where entangled measurements can achieve polynomial scaling.

@@ -1,0 +1,287 @@
+---
+categories:
+- Quantum Error Correction
+- Tensor Network
+date: 2026-01-28
+description: 'Tropical tensor networks for exact MAP decoding: tropical semiring, tensor contractions, and backpointer tracking for error recovery.'
+format:
+  html:
+    number-sections: true
+    toc: true
+lang: en
+title: 'Tropical Tensor Network Decoding'
+bibliography: refs.bib
+---
+
+# Introduction
+
+In this section, we introduce a complementary approach to decoding: **tropical tensor networks**. While BP+OSD performs approximate inference followed by algebraic post-processing, tropical tensor networks provide a framework for **exact** maximum a posteriori (MAP) inference by reformulating the problem in terms of tropical algebra.
+
+The key insight is that finding the most probable error configuration corresponds to an optimization problem that can be solved exactly using tensor network contractions in the tropical semiring. This approach is particularly powerful for structured codes where the underlying factor graph has bounded treewidth.
+
+# Tropical Semiring
+
+::: {.callout-note icon="false"}
+## Definition
+
+The **tropical semiring** (also called the **max-plus algebra**) is the algebraic structure $(\mathbb{R} \cup \{-\infty\}, \oplus, \otimes)$ where:
+
+- **Tropical addition**: $a \oplus b = \max(a, b)$
+- **Tropical multiplication**: $a \otimes b = a + b$ (ordinary addition)
+- **Additive identity**: $-\infty$ (since $\max(a, -\infty) = a$)
+- **Multiplicative identity**: $0$ (since $a + 0 = a$)
+:::
+
+::: {.callout-tip}
+## Key Point
+
+The tropical semiring satisfies all semiring axioms:
+
+- Associativity: $(a \oplus b) \oplus c = a \oplus (b \oplus c)$
+- Commutativity: $a \oplus b = b \oplus a$
+- Distributivity: $a \otimes (b \oplus c) = (a \otimes b) \oplus (a \otimes c)$
+
+This algebraic structure allows us to replace standard summation with maximization while preserving the correctness of tensor contractions.
+:::
+
+The tropical semiring was first systematically studied in the context of automata theory and formal languages [@pin1998tropical]. Its connection to optimization problems makes it particularly useful for decoding applications.
+
+| **Operation** | **Standard Algebra** | **Tropical Algebra** |
+|:-------------|:--------------------|:--------------------|
+| "Addition" | $a + b = \text{sum}$ | $a \oplus b = \max(a, b)$ |
+| "Multiplication" | $a \times b = \text{product}$ | $a \otimes b = a + b$ |
+| **Used for** | Marginals | MAP/MPE |
+
+: Comparison of standard and tropical algebra
+
+# From Probabilistic Inference to Tropical Algebra
+
+Recall that the MAP (Maximum A Posteriori) decoding problem seeks:
+$$\mathbf{e}^* = \arg\max_{\mathbf{e} : H \mathbf{e} = \mathbf{s}} P(\mathbf{e})$$
+
+For independent bit-flip errors with probability $p$, the probability factors as:
+$$P(\mathbf{e}) = \prod_{i=1}^n P(e_i) = \prod_{i=1}^n p^{e_i} (1-p)^{1-e_i}$$
+
+Taking the logarithm transforms products into sums:
+$$\log P(\mathbf{e}) = \sum_{i=1}^n \log P(e_i) = \sum_{i=1}^n [e_i \log p + (1-e_i) \log(1-p)]$$
+
+::: {.callout-tip}
+## Key Point
+
+In the log-probability domain:
+
+- **Products become sums**: $\log(P \cdot Q) = \log P + \log Q$
+- **Maximization is preserved**: $\arg\max_x f(x) = \arg\max_x \log f(x)$
+
+This means finding the MAP estimate for a function $\prod_f \phi_f (\mathbf{e}_f)$ is equivalent to:
+$$\mathbf{e}^* = \arg\max_{\mathbf{e} : H \mathbf{e} = \mathbf{s}} \sum_f \log \phi_f (\mathbf{e}_f)$$
+where each factor $\phi_f$ contributes additively in log-space.
+:::
+
+The connection to tropical algebra becomes clear: if we replace standard tensor contractions (sum over products) with tropical contractions (max over sums), we transform marginal probability computation into MAP computation [@pearl1988probabilistic].
+
+| **Operation** | **Standard (Marginals)** | **Tropical (MAP)** |
+|:-------------|:------------------------|:------------------|
+| Combine factors | $\phi_a \cdot \phi_b$ | $\log \phi_a + \log \phi_b$ |
+| Eliminate variable | $\sum_x$ | $\max_x$ |
+| Result | Partition function $Z$ | Max log-probability |
+
+: Correspondence between standard and tropical tensor operations
+
+## Example: Simple Markov Chain
+
+Consider a simple Markov chain with three binary variables $x_1, x_2, x_3 \in \{0, 1\}$ and two factors:
+
+$$P(x_1, x_2, x_3) = \phi_1(x_1, x_2) \cdot \phi_2(x_2, x_3)$$
+
+The partition function in standard algebra sums over all configurations:
+$$Z = \sum_{x_1, x_2, x_3} \phi_1(x_1, x_2) \cdot \phi_2(x_2, x_3)$$
+
+The same structure in tropical algebra computes the maximum log-probability:
+$$Z_{\text{trop}} = \max_{x_1, x_2, x_3} [\log \phi_1(x_1, x_2) + \log \phi_2(x_2, x_3)]$$
+
+::: {.callout-tip}
+## Key Point: Beyond a Change of Language
+
+Tropical tensor networks [@liu2021tropical] provide computational capabilities unavailable in traditional approaches:
+
+1. **Automatic Differentiation for Configuration Recovery**: Backpropagating through tropical contraction yields gradient "masks" that directly identify optimal variable assignments $\mathbf{x}^*$—no separate search phase is needed.
+
+2. **Degeneracy Counting via Mixed Algebras**: By tracking $(Z_{\text{trop}}, n)$ where $n$ counts multiplicities, one simultaneously finds the optimal value AND counts all solutions achieving it in a single contraction pass.
+
+3. **GPU-Accelerated Tropical BLAS**: Tropical matrix multiplication maps to highly optimized GPU kernels, enabling exact ground states for 1024-spin Ising models and 512-qubit D-Wave graphs in under 100 seconds.
+:::
+
+# Tensor Network Representation
+
+A tensor network represents the factorized probability distribution as a graph where nodes of tensors correspond to factors $\phi_f$ and the edges correspond to functions that contract the variables.
+
+::: {.callout-note icon="false"}
+## Definition
+
+Given a factor graph with factors $\{\phi_f\}$ and variables $\{x_i\}$, the corresponding **tensor network** consists of:
+
+- A tensor $T_f$ for each factor, with indices corresponding to the variables in $\phi_f$
+- The **contraction** of the network computes: $\sum_{x_1, \ldots, x_n} \prod_f T_f (\mathbf{x}_f)$
+
+In the tropical semiring, this becomes: $\max_{x_1, \ldots, x_n} \sum_f T_f (\mathbf{x}_f)$
+:::
+
+The efficiency of tensor network contraction depends critically on the **contraction order**—the sequence in which variables are eliminated.
+
+::: {.callout-tip}
+## Key Point
+
+The **treewidth** of the factor graph determines the computational complexity:
+
+- A contraction order exists with complexity $O(n \cdot d^{w+1})$ where $w$ is the treewidth
+- For sparse graphs (like LDPC codes), treewidth can be small, enabling efficient exact inference
+- Tools like `omeco` find near-optimal contraction orders using greedy heuristics
+:::
+
+The contraction process proceeds by repeatedly selecting a variable to eliminate:
+
+```python
+# Conceptual contraction loop (simplified)
+for var in elimination_order:
+    bucket = [tensor for tensor in tensors if var in tensor.indices]
+    combined = tropical_contract(bucket, eliminate=var)
+    tensors.update(combined)
+```
+
+# Backpointer Tracking for MPE Recovery
+
+A critical challenge with tensor network contraction is that it only computes the **value** of the optimal solution (the maximum log-probability), not the **assignment** that achieves it.
+
+::: {.callout-note icon="false"}
+## Definition
+
+A **backpointer** is a data structure that records, for each $\max$ operation during contraction:
+
+- The indices of eliminated variables
+- The $\arg\max$ value for each output configuration
+
+Formally, when computing $\max_x T(y, x)$, we store: $\text{bp}(y) = \arg\max_x T(y, x)$
+:::
+
+The recovery algorithm traverses the contraction tree in reverse:
+
+```python
+# From tropical_in_new/src/primitives.py
+@dataclass
+class Backpointer:
+    """Stores argmax metadata for eliminated variables."""
+    elim_vars: Tuple[int, ...]      # Which variables were eliminated
+    elim_shape: Tuple[int, ...]     # Domain sizes
+    out_vars: Tuple[int, ...]       # Remaining output variables
+    argmax_flat: torch.Tensor       # Flattened argmax indices
+
+def tropical_reduce_max(tensor, vars, elim_vars, track_argmax=True):
+    """Tropical max-reduction with optional backpointer tracking."""
+    # ... reshape tensor to separate kept and eliminated dimensions ...
+    values, argmax_flat = torch.max(flat, dim=-1)
+    if track_argmax:
+        backpointer = Backpointer(elim_vars, elim_shape, out_vars, argmax_flat)
+    return values, backpointer
+```
+
+The recovery algorithm traverses the tree from root to leaves:
+
+```python
+# From tropical_in_new/src/mpe.py
+def recover_mpe_assignment(root) -> Dict[int, int]:
+    """Recover MPE assignment from a contraction tree with backpointers."""
+    assignment: Dict[int, int] = {}
+
+    def traverse(node, out_assignment):
+        assignment.update(out_assignment)
+        if isinstance(node, ReduceNode):
+            # Use backpointer to recover eliminated variable values
+            elim_assignment = argmax_trace(node.backpointer, out_assignment)
+            child_assignment = {**out_assignment, **elim_assignment}
+            traverse(node.child, child_assignment)
+        elif isinstance(node, ContractNode):
+            # Propagate to both children
+            elim_assignment = argmax_trace(node.backpointer, out_assignment)
+            combined = {**out_assignment, **elim_assignment}
+            traverse(node.left, {v: combined[v] for v in node.left.vars})
+            traverse(node.right, {v: combined[v] for v in node.right.vars})
+
+    # Start from root with initial assignment from final tensor
+    initial = unravel_argmax(root.values, root.vars)
+    traverse(root, initial)
+    return assignment
+```
+
+# Application to Error Correction Decoding
+
+For quantum error correction, the MAP decoding problem is:
+$$\mathbf{e}^* = \arg\max_{\mathbf{e} : H \mathbf{e} = \mathbf{s}} P(\mathbf{e})$$
+
+The syndrome constraint $H \mathbf{e} = \mathbf{s}$ can be incorporated as hard constraints (factors that are $-\infty$ for invalid configurations and $0$ otherwise) [@farrelly2020parallel].
+
+| **Aspect** | **BP+OSD** | **Tropical TN** |
+|:----------|:----------|:---------------|
+| Inference type | Approximate marginals | Exact MAP |
+| Degeneracy handling | OSD post-processing | Naturally finds one optimal |
+| Output | Soft decisions → hard | Direct hard assignment |
+| Complexity | $O(n^3)$ for OSD | Exp. in treewidth |
+| Parallelism | Iterative | Highly parallelizable |
+
+: Comparison of BP+OSD and tropical tensor network decoding approaches
+
+::: {.callout-tip}
+## Key Point: Advantages of Tropical Tensor Networks for Decoding
+
+**Advantages:**
+
+- **Exactness**: Guaranteed to find the MAP solution (no local minima)
+- **No iterations**: Single forward pass plus backtracking
+- **Natural for structured codes**: Exploits graph structure via contraction ordering
+
+**Limitations:**
+
+- Complexity grows exponentially with treewidth
+- For dense or high-treewidth codes, may be less efficient than BP+OSD
+- Requires careful implementation of backpointer tracking
+:::
+
+The tensor network approach is particularly well-suited to codes with local structure, such as topological codes where the treewidth grows slowly with system size [@orus2019tensor].
+
+# Complexity Considerations
+
+The computational complexity of tropical tensor network contraction is governed by the **treewidth** of the underlying factor graph.
+
+::: {.callout-note icon="false"}
+## Definition
+
+The **treewidth** $w$ of a graph is the minimum width of any tree decomposition, where width is one less than the size of the largest bag. Intuitively, it measures how "tree-like" the graph is.
+:::
+
+| **Code Type** | **Treewidth** | **Contraction Complexity** |
+|:-------------|:-------------|:-------------------------|
+| 1D repetition | $O(1)$ | $O(n)$ |
+| 2D toric | $O(\sqrt{n})$ | $O(n \cdot 2^{\sqrt{n}})$ |
+| LDPC (sparse) | $O(\log n)$ to $O(\sqrt{n})$ | Varies |
+| Dense codes | $O(n)$ | $O(2^n)$ — intractable |
+
+: Treewidth and complexity for different code families
+
+::: {.callout-tip}
+## Key Point
+
+For LDPC codes used in quantum error correction:
+
+- The sparse parity check matrix leads to bounded-degree factor graphs
+- Greedy contraction order heuristics (like those in `omeco`) often find good orderings
+- The practical complexity is often much better than worst-case bounds suggest
+
+The tropical tensor network approach provides a systematic way to exploit code structure for efficient exact decoding when the treewidth permits.
+:::
+
+# Related Topics
+
+- [Classical Error Correction](classical.qmd) - Fundamentals of linear codes
+- [Belief Propagation](TNdecoder.qmd) - Message passing algorithm
+- [OSD Decoder](OSD_decoder.qmd) - Post-processing for BP
+- [BP+OSD Results](BP_OSD_results.qmd) - Performance benchmarks

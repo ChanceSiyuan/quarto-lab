@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.26">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2026-01-28">
+<meta name="description" content="BP+OSD decoder overview, performance thresholds, complexity analysis, and key takeaways for quantum LDPC code decoding.">
+
+<title>BP+OSD: Overview and Results – Chance’s Quantum Lab</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<script src="../../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap-a8976c3e89df70b272bdfba3d2fda974.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="../../../site_libs/quarto-contrib/live-runtime/live-runtime.js" type="module"></script>
+<link href="../../../site_libs/quarto-contrib/live-runtime/live-runtime.css" rel="stylesheet">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script>window.backupDefine = window.define; window.define = undefined;</script><script src="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.js"></script>
+  <script>document.addEventListener("DOMContentLoaded", function () {
+ var mathElements = document.getElementsByClassName("math");
+ var macros = [];
+ for (var i = 0; i < mathElements.length; i++) {
+  var texText = mathElements[i].firstChild;
+  if (mathElements[i].tagName == "SPAN") {
+   katex.render(texText.data, mathElements[i], {
+    displayMode: mathElements[i].classList.contains('display'),
+    throwOnError: false,
+    macros: macros,
+    fleqn: false
+   });
+}}});
+  </script>
+  <script>window.define = window.backupDefine; window.backupDefine = undefined;</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.css">
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../../styles.css">
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Chance’s Quantum Lab</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../index.html"> 
+<span class="menu-text">Home Page</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../theory/index.html"> 
+<span class="menu-text">Theory</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../Experiments/index.html"> 
+<span class="menu-text">Experiment Notes</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../workspace/workspace.html"> 
+<span class="menu-text">Workspace</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/yourusername"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/yourusername"> <i class="bi bi-twitter" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction"><span class="header-section-number">1</span> Introduction</a>
+  <ul class="collapse">
+  <li><a href="#learning-objectives" id="toc-learning-objectives" class="nav-link" data-scroll-target="#learning-objectives"><span class="header-section-number">1.1</span> Learning Objectives</a></li>
+  <li><a href="#related-topics" id="toc-related-topics" class="nav-link" data-scroll-target="#related-topics"><span class="header-section-number">1.2</span> Related Topics</a></li>
+  </ul></li>
+  <li><a href="#results-and-performance" id="toc-results-and-performance" class="nav-link" data-scroll-target="#results-and-performance"><span class="header-section-number">2</span> Results and Performance</a>
+  <ul class="collapse">
+  <li><a href="#error-threshold" id="toc-error-threshold" class="nav-link" data-scroll-target="#error-threshold"><span class="header-section-number">2.1</span> Error Threshold</a></li>
+  <li><a href="#threshold-behavior" id="toc-threshold-behavior" class="nav-link" data-scroll-target="#threshold-behavior"><span class="header-section-number">2.2</span> Threshold Behavior</a></li>
+  <li><a href="#bp-failure-and-osd-recovery" id="toc-bp-failure-and-osd-recovery" class="nav-link" data-scroll-target="#bp-failure-and-osd-recovery"><span class="header-section-number">2.3</span> BP Failure and OSD Recovery</a></li>
+  <li><a href="#reference-results-from-literature" id="toc-reference-results-from-literature" class="nav-link" data-scroll-target="#reference-results-from-literature"><span class="header-section-number">2.4</span> Reference Results from Literature</a></li>
+  <li><a href="#complexity-analysis" id="toc-complexity-analysis" class="nav-link" data-scroll-target="#complexity-analysis"><span class="header-section-number">2.5</span> Complexity Analysis</a></li>
+  </ul></li>
+  <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary"><span class="header-section-number">3</span> Summary</a>
+  <ul class="collapse">
+  <li><a href="#key-takeaways" id="toc-key-takeaways" class="nav-link" data-scroll-target="#key-takeaways"><span class="header-section-number">3.1</span> Key Takeaways</a></li>
+  <li><a href="#the-bposd-recipe" id="toc-the-bposd-recipe" class="nav-link" data-scroll-target="#the-bposd-recipe"><span class="header-section-number">3.2</span> The BP+OSD Recipe</a></li>
+  <li><a href="#method-comparison" id="toc-method-comparison" class="nav-link" data-scroll-target="#method-comparison"><span class="header-section-number">3.3</span> Method Comparison</a></li>
+  <li><a href="#current-implementation-status" id="toc-current-implementation-status" class="nav-link" data-scroll-target="#current-implementation-status"><span class="header-section-number">3.4</span> Current Implementation Status</a></li>
+  <li><a href="#next-steps" id="toc-next-steps" class="nav-link" data-scroll-target="#next-steps"><span class="header-section-number">3.5</span> Next Steps</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">BP+OSD: Overview and Results</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">Quantum Error Correction</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    BP+OSD decoder overview, performance thresholds, complexity analysis, and key takeaways for quantum LDPC code decoding.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">January 28, 2026</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="introduction" class="level1" data-number="1">
+<h1 data-number="1"><span class="header-section-number">1</span> Introduction</h1>
+<p>This note introduces the <strong>BP+OSD decoder</strong> for quantum error correction:</p>
+<ul>
+<li><strong>BP</strong> = Belief Propagation (a classical decoding algorithm)</li>
+<li><strong>OSD</strong> = Ordered Statistics Decoding (a post-processing technique)</li>
+</ul>
+<p>Together, BP+OSD provides a general-purpose decoder for <strong>quantum LDPC codes</strong> (Low-Density Parity Check codes).</p>
+<section id="learning-objectives" class="level2" data-number="1.1">
+<h2 data-number="1.1" class="anchored" data-anchor-id="learning-objectives"><span class="header-section-number">1.1</span> Learning Objectives</h2>
+<p>By the end of this note, you will understand:</p>
+<ol type="1">
+<li>How classical error correction codes work</li>
+<li>The Belief Propagation algorithm for decoding</li>
+<li>Why BP fails for quantum codes (the degeneracy problem)</li>
+<li>How OSD fixes the degeneracy problem</li>
+<li>The complete BP+OSD decoding algorithm</li>
+</ol>
+</section>
+<section id="related-topics" class="level2" data-number="1.2">
+<h2 data-number="1.2" class="anchored" data-anchor-id="related-topics"><span class="header-section-number">1.2</span> Related Topics</h2>
+<ul>
+<li><a href="../../../theory/Topics/QEC/classical.html">Classical Error Correction</a> - Linear codes, Hamming distance, factor graphs</li>
+<li><a href="../../../theory/Topics/QEC/TNdecoder.html">Belief Propagation</a> - Message passing algorithm details</li>
+<li><a href="../../../theory/Topics/QEC/OSD_decoder.html">OSD Decoder</a> - Ordered Statistics Decoding theory and implementation</li>
+<li><a href="../../../theory/Topics/QEC/tropical_TN.html">Tropical Tensor Networks</a> - Alternative exact decoding approach</li>
+</ul>
+</section>
+</section>
+<section id="results-and-performance" class="level1" data-number="2">
+<h1 data-number="2"><span class="header-section-number">2</span> Results and Performance</h1>
+<section id="error-threshold" class="level2" data-number="2.1">
+<h2 data-number="2.1" class="anchored" data-anchor-id="error-threshold"><span class="header-section-number">2.1</span> Error Threshold</h2>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Definition
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The <strong>threshold</strong> <span class="math inline">p_{\text{th}}</span> is the maximum physical error rate below which the logical error rate decreases with increasing code distance.</p>
+<ul>
+<li>If <span class="math inline">p &lt; p_{\text{th}}</span>: Larger codes <span class="math inline">\rightarrow</span> exponentially better protection</li>
+<li>If <span class="math inline">p &gt; p_{\text{th}}</span>: Larger codes <span class="math inline">\rightarrow</span> worse protection (error accumulates faster than correction)</li>
+</ul>
+</div>
+</div>
+<p>For rotated surface codes under circuit-level depolarizing noise, the theoretical threshold is approximately <strong>0.7%</strong>.</p>
+</section>
+<section id="threshold-behavior" class="level2" data-number="2.2">
+<h2 data-number="2.2" class="anchored" data-anchor-id="threshold-behavior"><span class="header-section-number">2.2</span> Threshold Behavior</h2>
+<p>The threshold behavior is visualized by plotting logical error rate versus physical error rate for different code distances. At the threshold, curves for different distances <strong>cross</strong>.</p>
+<p>Below threshold, increasing distance <span class="math inline">d</span> exponentially suppresses the logical error rate: <span class="math display">p_L \approx A \left(\frac{p}{p_{\text{th}}}\right)^{(d+1)/2}</span></p>
+</section>
+<section id="bp-failure-and-osd-recovery" class="level2" data-number="2.3">
+<h2 data-number="2.3" class="anchored" data-anchor-id="bp-failure-and-osd-recovery"><span class="header-section-number">2.3</span> BP Failure and OSD Recovery</h2>
+<p>The following demonstrates why OSD post-processing is essential for quantum codes:</p>
+<ul>
+<li><strong>BP alone fails</strong> due to degeneracy: the decoder outputs an invalid solution that does not satisfy the syndrome</li>
+<li><strong>BP+OSD successfully decodes</strong>: OSD resolves the split belief by forcing a unique valid solution via matrix inversion</li>
+</ul>
+</section>
+<section id="reference-results-from-literature" class="level2" data-number="2.4">
+<h2 data-number="2.4" class="anchored" data-anchor-id="reference-results-from-literature"><span class="header-section-number">2.4</span> Reference Results from Literature</h2>
+<p>For comparison, the original BP+OSD paper <span class="citation" data-cites="roffe2020decoding">&nbsp;[<a href="#ref-roffe2020decoding" role="doc-biblioref">1</a>]</span> reports thresholds for phenomenological noise:</p>
+<table class="caption-top table">
+<caption>Thresholds under phenomenological noise <span class="citation" data-cites="roffe2020decoding">&nbsp;[<a href="#ref-roffe2020decoding" role="doc-biblioref">1</a>]</span>. Circuit-level thresholds are typically lower (<span class="math inline">0.5</span>–<span class="math inline">1\%</span>).</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;"><strong>Code Family</strong></th>
+<th style="text-align: left;"><strong>BP Only</strong></th>
+<th style="text-align: left;"><strong>BP+OSD-0</strong></th>
+<th style="text-align: left;"><strong>BP+OSD-CS</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Toric</td>
+<td style="text-align: left;">N/A (fails)</td>
+<td style="text-align: left;"><span class="math inline">9.2\%</span></td>
+<td style="text-align: left;"><strong><span class="math inline">9.9\%</span></strong></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Semi-topological</td>
+<td style="text-align: left;">N/A (fails)</td>
+<td style="text-align: left;"><span class="math inline">9.1\%</span></td>
+<td style="text-align: left;"><strong><span class="math inline">9.7\%</span></strong></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Random QLDPC</td>
+<td style="text-align: left;"><span class="math inline">6.5\%</span></td>
+<td style="text-align: left;"><span class="math inline">6.7\%</span></td>
+<td style="text-align: left;"><strong><span class="math inline">7.1\%</span></strong></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="complexity-analysis" class="level2" data-number="2.5">
+<h2 data-number="2.5" class="anchored" data-anchor-id="complexity-analysis"><span class="header-section-number">2.5</span> Complexity Analysis</h2>
+<table class="caption-top table">
+<caption>Complexity analysis of BP+OSD decoder</caption>
+<colgroup>
+<col style="width: 35%">
+<col style="width: 38%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;"><strong>Component</strong></th>
+<th style="text-align: left;"><strong>Complexity</strong></th>
+<th style="text-align: left;"><strong>Notes</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">BP (per iteration)</td>
+<td style="text-align: left;"><span class="math inline">O(n)</span></td>
+<td style="text-align: left;">Linear in block length</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">OSD-0</td>
+<td style="text-align: left;"><span class="math inline">O(n^3)</span></td>
+<td style="text-align: left;">Dominated by Gaussian elimination</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">OSD-<span class="math inline">w</span> combination sweep</td>
+<td style="text-align: left;"><span class="math inline">O\binom{\lambda}{w}</span></td>
+<td style="text-align: left;"><span class="math inline">\lambda \approx 60</span>, <span class="math inline">w = 2</span> gives ~1770 trials</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>Total (OSD-0)</strong></td>
+<td style="text-align: left;"><span class="math inline">O(n^3)</span></td>
+<td style="text-align: left;">Practical for <span class="math inline">n &lt; 10^4</span></td>
+</tr>
+</tbody>
+</table>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Key Point: Practical Performance
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>For a distance-<span class="math inline">d</span> rotated surface code with <span class="math inline">n = d^2</span> data qubits:</p>
+<ul>
+<li><span class="math inline">d = 3</span>: <span class="math inline">n = 9</span>, decoding time <span class="math inline">&lt; 1</span> ms</li>
+<li><span class="math inline">d = 7</span>: <span class="math inline">n = 49</span>, decoding time <span class="math inline">\sim 10</span> ms</li>
+<li><span class="math inline">d = 15</span>: <span class="math inline">n = 225</span>, decoding time <span class="math inline">\sim 1</span> s</li>
+</ul>
+</div>
+</div>
+</section>
+</section>
+<section id="summary" class="level1" data-number="3">
+<h1 data-number="3"><span class="header-section-number">3</span> Summary</h1>
+<section id="key-takeaways" class="level2" data-number="3.1">
+<h2 data-number="3.1" class="anchored" data-anchor-id="key-takeaways"><span class="header-section-number">3.1</span> Key Takeaways</h2>
+<ol type="1">
+<li><p><strong>Classical BP</strong> computes marginal probabilities via message passing on factor graphs</p></li>
+<li><p><strong>Quantum codes suffer from degeneracy</strong>: multiple errors can produce the same syndrome, causing BP to output invalid solutions (split beliefs)</p></li>
+<li><p><strong>OSD resolves degeneracy</strong> by selecting a basis guided by BP soft decisions, then solving via matrix inversion to get a unique valid solution</p></li>
+<li><p><strong>Combination sweep</strong> efficiently improves OSD-0 by testing low-weight configurations of the remainder bits</p></li>
+<li><p><strong>BP+OSD is general</strong>: works for Toric codes, semi-topological codes, and random QLDPC codes, achieving near-optimal thresholds</p></li>
+</ol>
+</section>
+<section id="the-bposd-recipe" class="level2" data-number="3.2">
+<h2 data-number="3.2" class="anchored" data-anchor-id="the-bposd-recipe"><span class="header-section-number">3.2</span> The BP+OSD Recipe</h2>
+<p>The complete decoding algorithm in three steps:</p>
+<ol type="1">
+<li><strong>Run BP</strong> — Get soft decision <span class="math inline">P_1</span> values via message passing</li>
+<li><strong>Run OSD-0</strong> — Use <span class="math inline">P_1</span> for basis selection, solve via matrix inversion</li>
+<li><strong>Sweep</strong> — Try weight-1, weight-2 configurations on remainder bits</li>
+</ol>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Key Point
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li>If BP succeeds (converges): use BP result — fast!</li>
+<li>If BP fails: use OSD to resolve degeneracy — always gives valid answer</li>
+</ul>
+</div>
+</div>
+</section>
+<section id="method-comparison" class="level2" data-number="3.3">
+<h2 data-number="3.3" class="anchored" data-anchor-id="method-comparison"><span class="header-section-number">3.3</span> Method Comparison</h2>
+<table class="caption-top table">
+<caption>Comparison of decoding methods</caption>
+<colgroup>
+<col style="width: 27%">
+<col style="width: 35%">
+<col style="width: 37%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;"><strong>Method</strong></th>
+<th style="text-align: left;"><strong>Strengths</strong></th>
+<th style="text-align: left;"><strong>Weaknesses</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">BP alone</td>
+<td style="text-align: left;">Fast <span class="math inline">O(n)</span>, parallelizable</td>
+<td style="text-align: left;">Fails on degenerate quantum codes</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">OSD-0</td>
+<td style="text-align: left;">Always valid solution</td>
+<td style="text-align: left;"><span class="math inline">O(n^3)</span>, may miss optimal</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">OSD-CS</td>
+<td style="text-align: left;">Near-optimal, polynomial</td>
+<td style="text-align: left;"><span class="math inline">O(\lambda^2)</span> trials needed</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Tropical TN</td>
+<td style="text-align: left;">Exact MAP solution</td>
+<td style="text-align: left;">Exp. in treewidth</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="current-implementation-status" class="level2" data-number="3.4">
+<h2 data-number="3.4" class="anchored" data-anchor-id="current-implementation-status"><span class="header-section-number">3.4</span> Current Implementation Status</h2>
+<p>The current implementation achieves:</p>
+<ul>
+<li><strong>Logical error rate</strong>: ~19.3% (on d=3 surface code with p=0.01)</li>
+<li><strong>Decoder accuracy</strong>: ~80.7%</li>
+<li><strong>Integration</strong>: Seamless integration between <code>pytorch_bp</code> (probability inference) and <code>osd</code> (linear algebra solving)</li>
+</ul>
+</section>
+<section id="next-steps" class="level2" data-number="3.5">
+<h2 data-number="3.5" class="anchored" data-anchor-id="next-steps"><span class="header-section-number">3.5</span> Next Steps</h2>
+<ol type="1">
+<li><p><strong>Enable OSD-CS</strong>: Increase <code>osd_order</code> (e.g., to 10 or 15) to enable <strong>Combination Sweep</strong>. This will allow the decoder to perform “trial and error” in boundary cases where BP is uncertain, thereby significantly reducing the logical error rate.</p></li>
+<li><p><strong>Benchmark on GPUs</strong>: Test performance scaling on GPU hardware.</p></li>
+<li><p><strong>Extensions</strong>:</p>
+<ul>
+<li>Combining BP+OSD decoder with MWPM decoders</li>
+<li>Investigate better choices of error types</li>
+<li>Rigorous proof for performance on long-loop LDPC-codes</li>
+<li>Design q-LDPC codes that ensure rigorous decoder guarantees</li>
+</ul></li>
+</ol>
+
+
+<script type="ojs-module-contents">
+eyJjb250ZW50cyI6W119
+</script>
+<div id="exercise-loading-indicator" class="exercise-loading-indicator d-none d-flex align-items-center gap-2">
+<div id="exercise-loading-status" class="d-flex gap-2">
+
+</div>
+<div class="spinner-grow spinner-grow-sm">
+
+</div>
+</div>
+<script type="vfs-file">
+W10=
+</script>
+
+</section>
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body" data-entry-spacing="0" role="list">
+<div id="ref-roffe2020decoding" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[1] </div><div class="csl-right-inline">J. Roffe, D. R. White, S. Burton, and E. Campbell, Decoding across the quantum low-density parity-check code landscape, Physical Review Research <strong>2</strong>, 043423 (2020).</div>
+</div>
+</div></section></div></main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

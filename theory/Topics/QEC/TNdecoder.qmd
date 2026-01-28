@@ -1,162 +1,258 @@
 ---
 categories:
 - Quantum Error Correction
-- Tensor Network
-date: 2026-01-07
-description: 'Notes on the application of Tensor Networks in quantum error correction.'
+date: 2026-01-28
+description: 'Belief Propagation algorithm for error correction: message passing, LLR representation, convergence, and failure modes in quantum codes.'
 format:
   html:
     number-sections: true
     toc: true
-lang: en    
-title: 'BP-OSD Decoding'
+lang: en
+title: 'Belief Propagation Decoder'
+bibliography: refs.bib
 ---
 
-# BP Algorithm
+# Introduction and Motivation
 
-The [MLD algorithm](/PMdecoder.qmd) has the following shortcomings:
-
-1. Knowing the probability of each error occurring a priori, as in MLD, is not a natural assumption.
-2. The occurrence of each error is mutually unrelated. In quantum error correction codes, this means assuming two Pauli errors are independent.
-3. MLD remains NP-hard for arbitrary error correction codes.
-
-The Belief Propagation algorithm is an approximate decoding algorithm that performs approximate decoding by iteratively updating the probabilities of each vertex.
-
-# Decoding Problems and Surface code
-In the real system, we have the following realization of d=3 rotated surface code graph:
-
-![](rotatedd=3.png){#fig-rotatedd3 width=50% fig-align="center"}
-
-Such a quantum circuit can be realized in python code using stim package:
-
-```python
-    if task not in {"x", "z"}:
-        raise ValueError("task must be 'x' or 'z'")
-    if not 0.0 < p < 1.0:
-        raise ValueError("p must be in (0, 1)")
-
-    name = f"surface_code:rotated_memory_{task}"
-    return stim.Circuit.generated(
-        name,
-        distance=distance,
-        rounds=rounds,
-        after_clifford_depolarization=p,
-        before_round_data_depolarization=p,
-        before_measure_flip_probability=p,
-        after_reset_flip_probability=p,
-    )
-```
-
-Consider the simplest case where each qubits takes a storage Pauli error $X,Y,Z$, this trigger the detectors in the circuit.
-The stim package automatically trace how those Pauli errors propagate through the circuit and trigger each detectors. Then it recorded the syndrome in a .dem file, with form:
-
-```python
-error(0.01911873511075362) D0 D1
-[...]
-detector(0, 4, 0) D0
-```
-The first line means that occurence of certain error is 01911873511075362, and the detectors D0 and D1 are triggered by this error.
-This .dem data is use as piroi knowledge for the BP decoder.
-
-
-# UAI and BPs
-
-After generating the .dem file, we can reform it to generate the .uai file. It traces the tensor network of the probability.
-
-![](uai.png){#fig-rotatedd3 width=50% fig-align="center"}
-
-```python
-MARKOV
-24
-2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
-286
-1 0
-2 0 1
-2 0 8
-```
-
-## The Message Passing Mechanism
-
-Belief Propagation, often called the *sum-product algorithm*, is an iterative message-passing algorithm on a factor graph.
-
-
+The rediscovery of Low-Density Parity-Check (LDPC) codes in the late 1990s marked a paradigm shift in coding theory, transitioning from algebraic decoding algorithms to probabilistic iterative decoding that approaches the Shannon limit [@mackay2003information]. Central to this revolution is the **Belief Propagation** (BP) algorithm [@pearl1988probabilistic], a message-passing protocol that operates on the graphical representation of codes.
 
 ::: {.callout-tip}
-### Goal
-The objective is to compute the **marginal probability** for each bit $j$:
-$$P_1(e_j) = P(e_j = 1 | \mathbf{s})$$
-Given that $\mathbf{s} = H \cdot \mathbf{e}$ is the syndrome of the error. This "soft decision" indicates how likely a specific bit is to be flipped.
+## Key Point: BP in Modern Communications
+
+BP decoding powers critical communication standards:
+
+- Wi-Fi (IEEE 802.11n/ac/ax)
+- Satellite communication (DVB-S2)
+- 5G New Radio
+
+While its practical efficacy is undisputed, the mathematical rigor underlying its convergence behavior involves multiple theoretical frameworks: Density Evolution for asymptotic analysis, Bethe Free Energy for variational optimization, and trapping set theory for failure mechanisms.
 :::
 
-### Log-Likelihood Ratios (LLR)
-To ensure numerical stability during computation, BP operates using **Log-Likelihood Ratios** rather than raw probabilities.
+The convergence of BP is understood through different lenses depending on the regime. In the asymptotic limit of infinite block length, convergence is probabilistic and governed by Density Evolution [@richardson2001capacity]. In finite-length regimes, convergence is variational, linked to minimization of the Bethe Free Energy [@yedidia2003understanding]. However, combinatorial substructures known as trapping sets can arrest decoding, creating error floors [@dolecek2010analysis].
 
-$$\text{LLR}(e_j) = \log \left( \frac{P(e_j = 0)}{P(e_j = 1)} \right)$$
+# The Message Passing Mechanism
 
-* **LLR > 0:** $e_j = 0$ is more likely (the bit is probably correct).
-* **LLR < 0:** $e_j = 1$ is more likely (the bit is probably flipped).
-* **|LLR|:** The magnitude indicates the confidence level of the decision.
+**Belief Propagation** (BP), also called the **sum-product algorithm**, is an iterative message-passing algorithm on the factor graph.
 
-For a channel with error probability $p$, the initial **channel LLR** is:
-$$p_l = \frac{\log(1 - p)}{p}$$
+::: {.callout-note icon="false"}
+## Definition
 
-## BP Algorithm: Step-by-Step
+The goal of BP is to compute, for each bit $j$, the **marginal probability**:
+$$P_1(e_j) = P(e_j = 1 | \mathbf{s}),$$
+given $\mathbf{s} = H \cdot \mathbf{e}$ is the syndrome of the error $\mathbf{e}$.
+This is called a **soft decision** — it tells us how likely each bit is to be flipped.
+:::
 
-The algorithm iterates through specific phases to update beliefs.
+We use the following notation throughout:
 
-### Step 1: Initialization
-Before any message passing occurs, the only information available is the channel prior. We initialize all messages from data nodes ($v_j$) to parity nodes ($u_i$) with the channel LLR.
+- $p$ as the channel error probability (probability each bit flips)
+- $m_{v_j \to u_i}$ as the message from data node $v_j$ to parity node $u_i$
+- $m_{u_i \to v_j}$ as the message from parity node $u_i$ to data node $v_j$
+- Messages represent beliefs about whether $e_j = 1$
 
+## Log-Likelihood Ratios (LLR)
+
+The BP-algorithm requires the quantification of how certain we are about the bit being flipped or not. This is done using **log-likelihood ratios** (LLR).
+
+::: {.callout-note icon="false"}
+## Definition
+
+Instead of probabilities, BP uses **log-likelihood ratios** (LLR) for numerical stability:
+$$\text{LLR}(e_j) = \log \frac{P(e_j = 0)}{P(e_j = 1)}$$
+
+- $\text{LLR} > 0$ means $e_j = 0$ is more likely (bit probably correct)
+- $\text{LLR} < 0$ means $e_j = 1$ is more likely (bit probably flipped)
+- $|\text{LLR}|$ indicates confidence level
+:::
+
+For the channel with error probability $p$, the **channel LLR** is:
+$$p_l = \log \frac{1 - p}{p}$$
+
+Since $p < 0.5$ in practice, we have $p_l > 0$.
+
+# BP Algorithm: Step-by-Step
+
+## Step 1: Initialization
+
+Set the channel LLR:
+$$p_l = \log \frac{1-p}{p}$$
+
+Initialize all messages from data nodes to parity nodes with the channel prior:
 $$m_{v_j \to u_i} := p_l \quad \text{for all edges } (v_j, u_i)$$
 
-### Step 2: Parity-to-Data Messages
-Each parity node $u_i$ sends a message to each connected data node $v_j$. This step enforces the parity constraints (XOR logic).
+**Why?** Before any message passing, the only information we have about each bit is from the **channel itself**. Since each bit flips independently with probability $p$, the initial belief is simply the channel's prior: "this bit is probably correct" (because $p < 0.5$, so $p_l > 0$).
 
+**Code:** The implementation adds small epsilon values for numerical stability:
 
+```python
+# Initialize channel LLRs
+channel_llr = torch.log((1 - channel_probs + 1e-10) / (channel_probs + 1e-10))
 
+# Initialize qubit-to-check messages with channel prior
+msg_q2c = channel_llr[qubit_edges].unsqueeze(0).expand(batch_size, -1).clone()
+msg_c2q = torch.zeros(batch_size, num_edges, device=device)
+```
+
+## Step 2: Parity-to-Data Messages
+
+Each parity node $u_i$ sends a message to each connected data node $v_j$:
+
+**Min-sum form:**
 $$m_{u_i \to v_j} = (-1)^{s_i} \cdot \alpha \cdot \prod_{v'_j \in V(u_i) \setminus v_j} \text{sign}(m_{v'_j \to u_i}) \cdot \min_{v'_j \in V(u_i) \setminus v_j} |m_{v'_j \to u_i}|$$
 
-**Where:**
-* $s_i$ is the $i$-th syndrome bit.
-* $\alpha = 1 - 2^{-t}$ is a damping factor at iteration $t$ to aid convergence.
-* The message excludes the target node $v_j$ (extrinsic information).
+**Sum-Product form:**
+$$m_{u_i \to v_j} = (-1)^{s_i} \cdot 2 \tanh^{-1} \left( \prod_{v'_j \in V(u_i) \setminus v_j} \tanh \left( \frac{m_{v'_j \to u_i}}{2} \right) \right)$$
 
-### Step 3: Data-to-Parity Messages
-Each data node $v_j$ collects evidence from the channel and its neighboring parity checks to send an update back to the parity nodes.
+Where:
 
+- $s_i$ = the $i$-th syndrome bit (given as input, either 0 or 1)
+- $V(u_i) \setminus v_j$ = all neighbors of $u_i$ except $v_j$ (defined in [classical.qmd](classical.qmd))
+- $\text{sign}(x) = +1$ if $x \geq 0$, else $-1$
+- $\alpha = 1 - 2^{-t}$ is a **damping factor** at iteration $t$ (helps convergence)
 
+**Why?** A parity check enforces that XOR of all connected bits equals the syndrome bit $s_i$. The check node tells $v_j$: "Based on what I know about the *other* bits, here's how likely *you* are to be flipped."
+
+If $s_i = 0$, the parity check says "even number of flipped bits." If the other bits all look correct (positive LLR), then $v_j$ should also be correct. If one other bit looks flipped (negative LLR), then $v_j$ should be correct to maintain even parity. The formula computes this XOR-like logic in LLR form.
+
+::: {.callout-tip}
+## Key Point: Second Minimum Trick
+
+To compute $\min_{v'_j \neq v_j} |m_{v'_j}|$ efficiently, we sort all magnitudes once. For each edge: if it holds the minimum, use the second minimum; otherwise use the first minimum. This reduces complexity from $O(d^2)$ to $O(d)$ per check.
+:::
+
+::: {.callout-tip}
+## Key Point: Min-Sum vs Sum-Product
+
+Min-sum is an **approximation** of sum-product, not an equivalent algorithm. The relationship comes from the identity:
+$$2 \tanh^{-1} \left( \prod_i \tanh(x_i / 2) \right) \approx \text{sign} \left( \prod_i x_i \right) \cdot \min_i |x_i|$$
+
+This approximation holds because $\tanh(x/2) \approx \text{sign}(x)$ for large $|x|$, and the product of tanh values is dominated by the smallest magnitude input. The scaling factor $\alpha = 0.625$ in min-sum compensates for the systematic overestimation of confidence that results from this approximation [@chen2005reduced].
+:::
+
+| **Algorithm** | **Formula** | **Trade-off** |
+|:-------------|:-----------|:-------------|
+| Sum-Product | $2 \tanh^{-1}(\prod \tanh(x/2))$ | Exact but slower (tanh/atanh) |
+| Min-Sum | $\alpha \cdot \text{sign}(\prod x) \cdot \min|x|$ | Approximate but faster |
+
+: Comparison of check-to-qubit message algorithms
+
+## Step 3: Data-to-Parity Messages
+
+Each data node $v_j$ sends a message to each connected parity node $u_i$:
 
 $$m_{v_j \to u_i} = p_l + \sum_{u'_i \in U(v_j) \setminus u_i} m_{u'_i \to v_j}$$
 
-**Intuition:** Why exclude $u_i$? This prevents "echo effects." If $v_j$ simply returned the information $u_i$ just gave it, positive feedback loops would artificially inflate confidence without adding new evidence.
+Where $U(v_j) \setminus u_i$ = all parity neighbors of $v_j$ except $u_i$.
 
-### Step 4: Compute Soft Decisions
-We calculate the total posterior belief for bit $j$ by summing the channel prior and *all* incoming messages (no exclusion).
+**Why?** A data node collects evidence from multiple parity checks. Each check provides independent information about whether this bit is flipped. The data node sums up all this evidence (in LLR, multiplication of probabilities becomes addition).
+
+**Intuition:** Why exclude $u_i$? To avoid **echo effects**. If $v_j$ included the message it previously received from $u_i$, that information would bounce back, creating a feedback loop. On a **tree-structured graph**, this exclusion ensures each piece of evidence is counted exactly once, making BP exact. On graphs with cycles, this is an approximation.
+
+::: {.callout-tip}
+## Key Point
+
+**Why subtract?** Instead of computing $n-1$ sums for each of $n$ edges (expensive), we compute one total sum and subtract each term. This reduces complexity from $O(d^2)$ to $O(d)$ per qubit.
+:::
+
+## Step 4: Compute Soft Decisions
+
+For each bit $j$, compute the total belief (sum of all evidence):
 
 $$P_1(e_j) = p_l + \sum_{u_i \in U(v_j)} m_{u_i \to v_j}$$
 
-### Step 5: Make Hard Decisions
-We convert the soft LLR beliefs into binary estimates.
+**Why?** Unlike Step 3, here we include **all** incoming messages (no exclusion). This is the final belief about bit $j$, combining the channel prior with evidence from **every** connected parity check. The result is the log-posterior probability ratio.
 
-$$ e_j^{\text{BP}} = \begin{cases} 
-1 & \text{if } P_1(e_j) < 0 \quad (\text{likely flipped}) \\
-0 & \text{otherwise} \quad (\text{likely correct})
-\end{cases} $$
+::: {.callout-tip}
+## Key Point: Sigmoid Conversion
 
-### Step 6: Convergence Check
-Finally, we verify if the estimated error vector satisfies the syndrome equation.
+The relationship between LLR and probability is:
+$$\text{LLR} = \log \frac{P(0)}{P(1)} \Rightarrow P(1) = \frac{1}{1 + e^{\text{LLR}}} = \sigma(-\text{LLR})$$
+PyTorch's `torch.sigmoid(-total_llr)` computes this efficiently.
+:::
+
+## Step 5: Make Hard Decisions
+
+Convert soft decisions to a binary estimate:
+
+$$e_j^{\text{BP}} = \begin{cases}
+1 & \text{if } P_1(e_j) < 0 \quad \text{(more likely flipped)} \\
+0 & \text{otherwise} \quad \text{(more likely correct)}
+\end{cases}$$
+
+This gives us the BP estimate $\mathbf{e}^{\text{BP}} = (e_1^{\text{BP}}, e_2^{\text{BP}}, \ldots, e_n^{\text{BP}})$.
+
+**Why?** The sign of LLR directly tells us the most likely value: $P_1 > 0$ means $P(e_j = 0) > P(e_j = 1)$, so the bit is probably correct. $P_1 < 0$ means the bit is probably flipped.
+
+## Step 6: Check Convergence
+
+Verify if the estimate satisfies the syndrome equation:
 
 $$H \cdot \mathbf{e}^{\text{BP}} = \mathbf{s} \quad ?$$
 
-* **If Yes:** The algorithm has converged; return $\mathbf{e}^{\text{BP}}$.
-* **If No:** Return to Step 2 and repeat until the maximum iteration count is reached.
+- **If yes:** BP has **converged**. Return $\mathbf{e}^{\text{BP}}$ and soft decisions $P_1$.
+- **If no:** Go back to Step 2 and repeat.
+- **If max iterations reached:** BP has **failed to converge**.
 
+**Why iterate?** On graphs with cycles, a single pass doesn't propagate information globally. Each iteration allows beliefs to travel further through the graph. Eventually, if the error is correctable, the hard decisions will satisfy all parity checks.
 
-## 4. Detailed Code Implementation
+## Damping for Convergence
 
-Below is the Python implementation of the core logic. The code has been modularized to separately handle model loading, BP inference, and OSD post-processing.
+**Theory:** Damping prevents oscillation by mixing old and new messages:
+$$m^{(t+1)} = \gamma \cdot m^{(t)} + (1 - \gamma) \cdot m_{\text{new}}$$
 
-### 4.1 Environment Preparation and Data Loading
+where $\gamma \in [0, 1)$ is the damping factor.
+
+| **Damping Value** | **Behavior** | **Use Case** |
+|:-----------------|:------------|:------------|
+| $\gamma = 0$ | No damping (full update) | Simple graphs, fast convergence |
+| $\gamma = 0.2$ | Light damping | Typical default |
+| $\gamma = 0.5$ | Strong damping | Graphs with short cycles |
+
+: Effect of damping factor on BP convergence
+
+# Why BP Fails on Quantum Codes
+
+## Signal Dilution in High-Weight Checks
+
+Consider a check node with syndrome $s=1$ and channel error probability $p=0.1$ (LLR $\approx 2.2$). The check-to-variable message strength depends on the number of neighbors:
+
+| **Check Weight** | **Message Strength** | **Net LLR** | **Result** |
+|:----------------|:--------------------|:-----------|:----------|
+| 2-bit (classical) | $-2.2$ | $0$ | Correct uncertainty |
+| 4-bit (quantum) | $-1.1$ | $+1.1$ | **False confidence** |
+
+With 4-bit plaquettes, the check message is too weak to overturn the channel prior. The hard decision outputs $\mathbf{e} = \mathbf{0}$, which violates the syndrome constraint $0+0+0+0 = 0 \neq 1$.
+
+## The Degeneracy Problem
+
+::: {.callout-warning}
+## The Degeneracy Problem
+
+In quantum codes, **multiple distinct error patterns** produce the same syndrome and differ only by a stabilizer. BP cannot distinguish between these equivalent patterns.
+:::
+
+::: {.callout-note icon="false"}
+## Definition
+
+Two errors $\mathbf{e}_1$ and $\mathbf{e}_2$ are **degenerate** if:
+$$H \cdot \mathbf{e}_1 = H \cdot \mathbf{e}_2 = \mathbf{s} \quad \text{and} \quad \mathbf{e}_1 + \mathbf{e}_2 \in \text{Stabilizers}$$
+:::
+
+When BP encounters symmetric degenerate errors:
+
+1. Beliefs split equally between solutions ($P(e_i) \approx 0.5$)
+2. Hard decision outputs either $\mathbf{0}$ or the stabilizer $\mathbf{e}_1 + \mathbf{e}_2$
+3. Neither satisfies the syndrome: $H \cdot \mathbf{e}^{\text{BP}} \neq \mathbf{s}$
+
+::: {.callout-tip}
+## Key Point
+
+For quantum codes with high degeneracy (like the Toric code), **BP alone shows no threshold** — increasing code distance makes performance worse, not better. This motivates post-processing techniques like [OSD](OSD_decoder.qmd).
+:::
+
+# Code Implementation
+
+## Environment Preparation and Data Loading
 
 First, we need to load the error physical model (DEM) and the test data.
 
@@ -178,12 +274,11 @@ dem = load_dem('datasets/sc_d3_r3_p0010_z.dem')
 syndromes, observables, _ = load_syndrome_database('datasets/sc_d3_r3_p0010_z.npz')
 
 print(f"Test set size: {len(syndromes)}")
-
 ```
 
-### 4.2 Initialize Decoder
+## Initialize Decoder
 
-Here, we construct the parity check matrix  and initialize the BP and OSD decoder instances.
+Here, we construct the parity check matrix and initialize the BP and OSD decoder instances.
 
 ```python
 # Initialize BP decoder
@@ -197,10 +292,9 @@ H, priors, obs_flip = build_parity_check_matrix(dem)
 osd = OSDDecoder(H)
 
 print(f"Parity check matrix shape: {H.shape}")
-
 ```
 
-### 4.3 Decoding Loop (The Loop)
+## Decoding Loop
 
 This is the core of the entire program. For each test sample, we sequentially execute BP and OSD.
 
@@ -236,50 +330,11 @@ for idx, syndrome in enumerate(syndromes[:1000]):
 logical_error_rate = np.mean(np.array(predictions) != observables[:1000])
 print(f"Logical error rate: {logical_error_rate:.4f}")
 print(f"Decoder accuracy: {(1 - logical_error_rate):.4f}")
-
 ```
 
-## 5. Current Progress and Next Steps
+# Related Topics
 
-### Current Progress
-
-```python
-(bpdecoderplus) chance@chancemacbook-air BPDecoderPlus % /Users/chance/BPdecoder/BPDecoderPlus/.venv/bin/python /Users/chance/BPdecoder/BPDecoderPlus/run_demo.py
-Loaded 1000 syndromes
-Syndrome shape: (1000, 24)
-Observable shape: (1000,)
-H matrix shape: (24, 286)
-Number of error mechanisms: 286
-
-Evaluating on 1000 test samples...
-  Processed 0/1000 samples...
-  Processed 100/1000 samples...
-  Processed 200/1000 samples...
-  Processed 300/1000 samples...
-  Processed 400/1000 samples...
-  Processed 500/1000 samples...
-  Processed 600/1000 samples...
-  Processed 700/1000 samples...
-  Processed 800/1000 samples...
-  Processed 900/1000 samples...
-
-Logical error rate: 0.1930
-Decoder accuracy: 0.8070
-(bpdecoderplus) chance@chancemacbook-air BPDecoderPlus % 
-```
-
-
-* **Code Operational**: Successfully ran the `datasets/sc_d3_r3_p0010_z` dataset.
-* **Module Integration**: Achieved seamless integration between `pytorch_bp` (for probability inference) and `osd` (for linear algebra solving).
-* **Deprecated Hard Decision**: The commented-out parts of the code show that we have abandoned the simple `if p > 0.5` hard decision in favor of the mathematically more rigorous `osd.solve`.
-
-### Next Steps
-
-Currently, the code uses `osd_order=0` (i.e., the OSD-0 algorithm). Experiments show that for  Surface Code, there is still room for improvement using only OSD-0.
-
-The focus of the upcoming work is:
-
-1. **Enable OSD-CS**: Increase `osd_order` (e.g., to 10 or 15) to enable **Combination Sweep**. This will allow the decoder to perform "trial and error" in boundary cases where BP is uncertain, thereby significantly reducing the logical error rate.
-2. **Benchmark on GPUs**.
-3. **Extensions:** Combining BP+OSD decoder with MWPM decoders? A better choice of error type? A rigrous proof for performance on long-loop LDPC-code? A q-LDPC code that ensures a rigrous decoder?
-
+- [Classical Error Correction](classical.qmd) - Fundamentals of linear codes
+- [OSD Decoder](OSD_decoder.qmd) - Post-processing to handle degeneracy
+- [Tropical Tensor Networks](tropical_TN.qmd) - Alternative exact decoding approach
+- [BP+OSD Results](BP_OSD_results.qmd) - Performance benchmarks

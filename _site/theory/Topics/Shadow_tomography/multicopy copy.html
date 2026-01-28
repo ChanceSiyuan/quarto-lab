@@ -1,0 +1,1757 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.26">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2026-01-19">
+
+<title>Multiple-copy Shadow tomography – Chance’s Quantum Lab</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<script src="../../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap-a8976c3e89df70b272bdfba3d2fda974.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="../../../site_libs/quarto-contrib/live-runtime/live-runtime.js" type="module"></script>
+<link href="../../../site_libs/quarto-contrib/live-runtime/live-runtime.css" rel="stylesheet">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script>window.backupDefine = window.define; window.define = undefined;</script><script src="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.js"></script>
+  <script>document.addEventListener("DOMContentLoaded", function () {
+ var mathElements = document.getElementsByClassName("math");
+ var macros = [];
+ for (var i = 0; i < mathElements.length; i++) {
+  var texText = mathElements[i].firstChild;
+  if (mathElements[i].tagName == "SPAN") {
+   katex.render(texText.data, mathElements[i], {
+    displayMode: mathElements[i].classList.contains('display'),
+    throwOnError: false,
+    macros: macros,
+    fleqn: false
+   });
+}}});
+  </script>
+  <script>window.define = window.backupDefine; window.backupDefine = undefined;</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.css">
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../../styles.css">
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Chance’s Quantum Lab</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../index.html"> 
+<span class="menu-text">Home Page</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../theory/index.html"> 
+<span class="menu-text">Theory</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../Experiments/index.html"> 
+<span class="menu-text">Experiment Notes</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../workspace/workspace.html"> 
+<span class="menu-text">Workspace</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/yourusername"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/yourusername"> <i class="bi bi-twitter" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#non-local-pauli-shadow-tomography" id="toc-non-local-pauli-shadow-tomography" class="nav-link active" data-scroll-target="#non-local-pauli-shadow-tomography">Non-local Pauli shadow tomography</a>
+  <ul class="collapse">
+  <li><a href="#examples-non-linear-pauli-shadow" id="toc-examples-non-linear-pauli-shadow" class="nav-link" data-scroll-target="#examples-non-linear-pauli-shadow">Examples: non-linear Pauli shadow</a></li>
+  <li><a href="#examples-a-general-construction" id="toc-examples-a-general-construction" class="nav-link" data-scroll-target="#examples-a-general-construction">Examples: A General construction</a></li>
+  </ul></li>
+  <li><a href="#local-k-copy-3-design-shadow." id="toc-local-k-copy-3-design-shadow." class="nav-link" data-scroll-target="#local-k-copy-3-design-shadow.">Local k-copy 3-design shadow.</a>
+  <ul class="collapse">
+  <li><a href="#application-to-texttro-rhok." id="toc-application-to-texttro-rhok." class="nav-link" data-scroll-target="#application-to-texttro-rhok.">Application to <span class="math inline">\text{tr}(O \rho^k)</span>.</a></li>
+  <li><a href="#application-to-estimate-weighted-purity." id="toc-application-to-estimate-weighted-purity." class="nav-link" data-scroll-target="#application-to-estimate-weighted-purity.">Application to estimate weighted purity.</a></li>
+  </ul></li>
+  <li><a href="#local-2-copy-entanglement-fixed-shadow" id="toc-local-2-copy-entanglement-fixed-shadow" class="nav-link" data-scroll-target="#local-2-copy-entanglement-fixed-shadow">local 2-copy entanglement-fixed shadow</a></li>
+  <li><a href="#random-shifted-bell-sampling" id="toc-random-shifted-bell-sampling" class="nav-link" data-scroll-target="#random-shifted-bell-sampling">Random Shifted Bell sampling</a>
+  <ul class="collapse">
+  <li><a href="#bell-measurement-and-its-restriction" id="toc-bell-measurement-and-its-restriction" class="nav-link" data-scroll-target="#bell-measurement-and-its-restriction">Bell measurement and its restriction</a></li>
+  <li><a href="#a-non-adaptive-randomized-strategy" id="toc-a-non-adaptive-randomized-strategy" class="nav-link" data-scroll-target="#a-non-adaptive-randomized-strategy">A non-adaptive randomized strategy</a></li>
+  </ul></li>
+  <li><a href="#lower-bounds" id="toc-lower-bounds" class="nav-link" data-scroll-target="#lower-bounds">Lower bounds</a>
+  <ul class="collapse">
+  <li><a href="#non-linear-shadows." id="toc-non-linear-shadows." class="nav-link" data-scroll-target="#non-linear-shadows.">Non-linear shadows.</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Multiple-copy Shadow tomography</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">Quantum Information</div>
+    <div class="quarto-category">Shadow Tomography</div>
+  </div>
+  </div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">January 19, 2026</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="non-local-pauli-shadow-tomography" class="level1">
+<h1>Non-local Pauli shadow tomography</h1>
+<p>We have proved the inefficiency of single-copy strategy while an efficient two-copy Bell strategy exists. In analogy, we try to break the lower bound in the last section by extending the single-copy shadow tomography method into the multi-copy case.</p>
+<div id="thm-nonlocal-pauli-shadow" class="callout callout-style-default callout-important no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Theorem&nbsp;1: (Non-local Pauli Shadow Tomography)
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Let <span class="math inline">\mathcal{P}_n</span> be the <span class="math inline">n</span>-qubit Pauli group. Let <span class="math inline">\mathbb{P}^{d}_{\pi}</span> be the permutation operator on <span class="math inline">2k</span> replica of <span class="math inline">n</span>-qubits (<span class="math inline">d = 2^n</span>) and <span class="math inline">\pi =(\mathrm{odds})(\mathrm{even})</span> is 2-cycle permutation on odd labels <span class="math inline">(1,3,5,\cdots,2k-1)</span> and even labels <span class="math inline">(2,4,\cdots,2k)</span> respectively. For any <span class="math inline">P \in \mathcal{P}_n</span>, define the operator: <span class="math inline">A_P =\mathrm{sym}_{\pi}\left[P^{\otimes 2} \otimes (I^{\otimes 2})^{\otimes (k-1)} \right] \cdot \mathbb{P}^{d}_{\pi}</span>. The family of observables <span class="math inline">\mathcal{A} = \{A_P\}_{P \in \mathcal{P}_n}</span> is a commuting family, i.e., <span class="math inline">[A_P, A_Q] = 0</span> for all <span class="math inline">P, Q \in \mathcal{P}_n</span>. Furthermore, its expectation value on <span class="math inline">\rho^{\otimes 2k}</span> is <span class="math inline">\mathrm{tr}(A_P \rho^{\otimes 2k}) = [\mathrm{tr}(P\rho^k)]^2</span>. Therefore, a single projective measurement in the common eigenbasis of <span class="math inline">\mathcal{A}</span> allows for the simultaneous estimation of <span class="math inline">|\mathrm{tr}(P\rho^k)|</span> for all <span class="math inline">P \in \mathcal{P}_n</span>.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Proof (Click to expand)
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>We first prove the commutativity of the family <span class="math inline">\mathcal{A}</span>. Let <span class="math inline">S_P = \mathrm{sym}_{\pi}\left[P^{\otimes 2} \otimes (I^{\otimes 2})^{\otimes (k-1)} \right]</span> and abbreviate <span class="math inline">\pi = \mathbb{P}^d_{\pi}</span>. The operators are <span class="math inline">A_P = S_P \pi</span> and <span class="math inline">A_Q = S_Q \pi</span>. First, <span class="math inline">\pi</span> commutes with <span class="math inline">S_P, \forall P \in \mathcal{P}</span> since <span class="math inline">S_P</span> is symmetrized under repeat operation of <span class="math inline">\pi</span>. Now, the commutator <span class="math inline">[A_P, A_Q]</span> became: <span class="math display">\begin{align*}
+        [A_P, A_Q] &amp;= (S_P \pi) (S_Q \pi) - (S_Q \pi) (S_P \pi) \\
+        &amp;= S_P (S_Q \pi) \pi - S_Q (S_P \pi) \pi \quad \text{(since $\pi$ commutes with $S_P$ and $S_Q$)} \\
+        &amp;= [S_P, S_Q]\pi^2.
+\end{align*}</span> Finally, we show that <span class="math inline">[S_P, S_Q] = 0</span>. This is because each term within <span class="math inline">S_P = \mathrm{sym}_{\pi}\left[P^{\otimes 2} \otimes (I^{\otimes 2})^{\otimes (k-1)} \right]</span> and <span class="math inline">S_Q = \mathrm{sym}_{\pi}\left[Q^{\otimes 2} \otimes (I^{\otimes 2})^{\otimes (k-1)} \right]</span> either have commutators of operators on disjoint subsystems or have two-replica terms with <span class="math inline">[P^{\otimes 2}, Q^{\otimes 2}] = [P \otimes P, Q \otimes Q] = 0</span>. Thus we have <span class="math inline">[S_P, S_Q] = 0</span> for all Pauli operators <span class="math inline">P, Q</span> . Thus, <span class="math inline">[S_P, S_Q] = \mathbf{0}</span>, which implies <span class="math inline">[A_P, A_Q] = \mathbf{0}</span>. We now calculate <span class="math display">\begin{align*}
+        \mathrm{tr}(A_P \rho^{\otimes 2k}) &amp;= \mathrm{tr}[\mathrm{sym}_{\pi}(P^{\otimes 2} \otimes \mathbb{I}^{\otimes 2k-2}) \pi \rho^{\otimes 2k}] = \mathrm{tr}[(P^{\otimes 2} \otimes \mathbb{I}^{\otimes 2k-2}) \pi \rho^{\otimes 2k}]\\
+        &amp;=\mathrm{tr}[(P\rho \otimes \rho^{\otimes k-1}) \mathbb{P}^{d}_{(\mathrm{odds})} \otimes (P\rho \otimes \rho^{\otimes k-1}) \mathbb{P}^{d}_{(\mathrm{even})}]\\
+        &amp;=[\mathrm{tr}(P\rho^k)]^2
+\end{align*}</span> Thus, measuring the commuting family <span class="math inline">\{A_P\}</span> simultaneously yields estimates for <span class="math inline">|\mathrm{tr}(P\rho^k)|</span> for all <span class="math inline">P \in \mathcal{P}_n</span>.&nbsp;◻</p>
+</div>
+</div>
+</div>
+<div id="lem-signal-estim" class="callout callout-style-default callout-important no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Lemma&nbsp;1: (Signal Estimation)
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>If we can estimate <span class="math inline">|\mathrm{tr}(P \rho^k)|, \forall P \in \mathcal{O} \subset \mathcal{P}_n</span> within constant additive error <span class="math inline">\varepsilon</span>, then using a <span class="math inline">\mathcal{O}(\varepsilon^{-4}\log(|\mathcal{O}|))</span> times <span class="math inline">k</span>-replica strategy with <span class="math inline">k \cdot n</span> ancilla qubits, we can construct an estimator <span class="math inline">E_P</span> such that <span class="math inline">|E_P - \mathrm{tr}(P \rho^{k})| \leq 3\varepsilon</span>.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Proof (Click to expand)
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-4" class="callout-4-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>Denoting <span class="math inline">f_P = |\mathrm{tr}(P \rho^k)|</span>. We then construct the quantum state <span class="math inline">\sigma</span> such that <span class="math inline">\left||\mathrm{tr}(P \sigma^k)|- f_P\right| \leq \varepsilon</span>. Such a state <span class="math inline">\sigma</span> always exist and can be constructed if we knew an <span class="math inline">\varepsilon</span> additive error estimator for <span class="math inline">\{f_P\}_{P \in \mathcal{O}}</span>, but might cannot be found computationally efficient. Then we estimate <span class="math inline">\mathrm{tr}(\rho^k P)\cdot \mathrm{tr}(\sigma^k P)</span> by measuring the commuting family <span class="math inline">\{A_P\}_{P\in \mathcal{O}}</span> on state <span class="math inline">\rho^{\otimes k} \otimes \sigma^{\otimes k}</span> for <span class="math inline">\mathcal{O}(\varepsilon^{-4}\log(|\mathcal{O}|))</span> times. This will give us an estimator <span class="math inline">g_P</span> such that <span class="math inline">|g_P - \mathrm{tr}(\rho^k P)\cdot \mathrm{tr}(\sigma^k P)|\leq \varepsilon^2</span>. Now we set <span class="math inline">E_P = 0</span> if <span class="math inline">f_P \leq \varepsilon</span> and <span class="math inline">E_P = g_P/\mathrm{tr}(P \sigma^k)</span> if else. We thus noted that: <span class="math display">\begin{align*}
+        \text{If~} f_P &lt; 2\varepsilon, \quad  |E_P - \mathrm{tr}(P \rho^k)| &amp;= |\mathrm{tr}(P \rho^k)| \leq ||\mathrm{tr}(P \rho^k)| - f_P| + |f_P| \leq 3\varepsilon \\
+        \text{If~} f_P \geq 2\varepsilon, \quad |E_P - \mathrm{tr}(P \rho^k)| &amp;=   
+            |g_P/\mathrm{tr}(P \sigma^k) -\mathrm{tr}(P \rho^k)| \\
+            &amp;= \frac{|g_P - \mathrm{tr}(P \sigma^k) \cdot \mathrm{tr}(P \rho^k)|}{|\mathrm{tr}(P \sigma^k)|}\\
+            &amp;\leq  \frac{|g_P - \mathrm{tr}(P \sigma^k) \cdot \mathrm{tr}(P \rho^k)|}{f_P - \varepsilon}  \leq \frac{\varepsilon^2}{2\varepsilon - \varepsilon} \leq 3\varepsilon.
+\end{align*}</span>&nbsp;</p>
+</div>
+</div>
+</div>
+<section id="examples-non-linear-pauli-shadow" class="level3">
+<h3 class="anchored" data-anchor-id="examples-non-linear-pauli-shadow">Examples: non-linear Pauli shadow</h3>
+<div id="lem-4copy-strategy" class="callout callout-style-default callout-important no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Lemma&nbsp;2: (4-Copy Measurement Strategy for <span class="math inline">k=2</span>)
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>For the case <span class="math inline">k = 2</span>, there exists a measurement protocol on 4 copies of the quantum state that can estimate the commutants <span class="math inline">A_{\mathbf{r}}</span> through a shared eigenbasis measurement. The eigenbasis states <span class="math inline">\ket{\Psi^{s}_{(\mathbf{a}, \mathbf{b})}}</span> with eigenvalues <span class="math inline">\lambda_{(s,\mathbf{a},\mathbf{b})} :=s \cdot 2^{-1}[(-1)^{[\mathbf{r}, \mathbf{a}]} + (-1)^{[\mathbf{r}, \mathbf{b}]}]</span> (where <span class="math inline">s = \pm 1</span>) can be measured using a combination of local gates, computational basis measurements, and GHZ measurements.</p>
+</div>
+</div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="4rep_strat.png" class="img-fluid figure-img"></p>
+<figcaption>A 4-copy strategy for non-linear shadow tomography</figcaption>
+</figure>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-6-contents" aria-controls="callout-6" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Construction and Proof (Click to expand)
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-6" class="callout-6-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>Step 1: Define the commutants</strong></p>
+<p>For <span class="math inline">k = 2</span>, the commutants we choose writes <span class="math inline">\{A_{\mathbf{r}} := {2}^{-1}{(\sigma_{\mathbf{r}}\sigma_{\mathbf{r}}\mathbb{I}_n\mathbb{I}_n + \mathbb{I}_n\mathbb{I}_n\sigma_{\mathbf{r}}\sigma_{\mathbf{r}})} \mathrm{S}_{13}\mathrm{S}_{24}\}_{\mathbf{r} \in \mathbb{F}_2^{2n}}</span>.</p>
+<p><strong>Step 2: Construct the eigenbasis</strong></p>
+<p>Since <span class="math inline">\sigma_{\mathbf{r}} \otimes \sigma_{\mathbf{r}} \ket{\Phi_{\mathbf{a}}} = (-1)^{[\mathbf{r},\mathbf{a}]}\ket{\Phi_{\mathbf{a}}}</span>, the shared eigenbasis of <span class="math inline">\mathcal{A}</span> has the form: <span class="math display">
+\begin{align*}
+   \ket{\Psi^{s}_{(\mathbf{a}, \mathbf{b})}}&amp;=
+   \begin{cases}
+    {2^{-1/2}}\left[{\ket{\Phi_{\mathbf{a}_x \mathbf{a}_z}} \otimes \ket{\Phi_{\mathbf{b}_x\mathbf{b}_z} }+s \ket{\Phi_{\mathbf{b}_x \mathbf{b}_z}} \otimes \ket{\Phi_{\mathbf{a}_x\mathbf{a}_z}}}\right] &amp; \text{if~} \mathbf{a} &lt; \mathbf{b}, \\
+    \ket{\Phi_{\mathbf{a}_x \mathbf{a}_z}}\ket{\Phi_{\mathbf{a}_x \mathbf{a}_z}}&amp; \text{if~} \mathbf{a} = \mathbf{b}.
+\end{cases}
+\end{align*}
+</span> with eigenvalues <span class="math inline">\lambda_{(s,\mathbf{a},\mathbf{b})} :=s \cdot 2^{-1}[(-1)^{[\mathbf{r}, \mathbf{a}]} + (-1)^{[\mathbf{r}, \mathbf{b}]}]</span> and <span class="math inline">s = \pm 1</span>.</p>
+<p><strong>Step 3: Measurement protocol</strong></p>
+<p>After implementing the measurement <span class="math inline">\left\{\ket{\Psi^{s}_{(\mathbf{a}, \mathbf{b})}} \bra{\Psi^{s}_{(\mathbf{a}, \mathbf{b})}}\right\}_{s \in \{+,-\}, \mathbf{a},\mathbf{b} \in \mathbb{F}_2^{2n}}</span> for <span class="math inline">T</span> times and recording the results <span class="math inline">\{(s_t,\mathbf{a}_t, \mathbf{b}_t)\}_{t = 1}^{T}</span>, the average of <span class="math inline">A_{\mathbf{r}} = \sum \lambda_{(\pm,\mathbf{a},\mathbf{b})} \ket{\Psi^{\pm}_{(\mathbf{a}, \mathbf{b})}} \bra{\Psi^{\pm}_{(\mathbf{a}, \mathbf{b})}}</span> can then be estimated by calculating the estimator <span class="math inline">T^{-1}\sum_{t = 1}^{T} \lambda_{(s_t, \mathbf{a}_t,\mathbf{b}_t)}</span>. To realize such a measurement, we refer to construction in&nbsp;<span class="citation" data-cites="liu2024auxiliary">&nbsp;[<a href="#ref-liu2024auxiliary" role="doc-biblioref">1</a>]</span> and noted that <span class="math display">
+\begin{align*}
+    \ket{\Psi^{s}_{\mathbf{a}, \mathbf{b}}}&amp;= \mathrm{CNOT}_{34}\mathrm{CNOT}_{12}\mathrm{H}_3\mathrm{H}_1 \cdot
+\begin{cases}
+    2^{-1/2} \left[{\ket{\mathbf{a}_x \mathbf{a}_z\mathbf{b}_x\mathbf{b}_z} +s \ket{\mathbf{b}_x \mathbf{b}_z\mathbf{a}_x\mathbf{a}_z}}\right] &amp;\text{if~} \mathbf{a} &lt; \mathbf{b}\\
+    \ket{\mathbf{a}_x \mathbf{a}_z\mathbf{b}_x\mathbf{b}_z}&amp;\text{if~} \mathbf{a} = \mathbf{b}
+\end{cases},\\
+&amp;= \mathrm{CNOT}_{34}\mathrm{CNOT}_{12}\mathrm{H}_3\mathrm{H}_1 \mathrm{CNOT}_{13}\mathrm{CNOT}_{24}\cdot
+\begin{cases}
+    2^{-1/2} \left[{\ket{\mathbf{a}_x \mathbf{a}_z} +s \ket{\mathbf{b}_x \mathbf{b}_z}} \right]\ket{\mathbf{a} + \mathbf{b}} &amp;\text{if~} \mathbf{a} &lt; \mathbf{b}\\
+    \ket{\mathbf{a}_x \mathbf{a}_z} \ket{\mathbf{0} \mathbf{0}}&amp;\text{if~} \mathbf{a} = \mathbf{b}
+\end{cases},\\
+&amp;= \mathrm{CNOT}_{34}\mathrm{CNOT}_{12}\mathrm{H}_3\mathrm{H}_1 \mathrm{CNOT}_{13}\mathrm{CNOT}_{24}\cdot
+\begin{cases}
+    2^{-1/2} \left[{\ket{\mathbf{a}^{I}} +s \ket{\bar{\mathbf{a}}^{I}}}\right] \ket{\mathbf{a}^{E}}\ket{\mathbf{a} + \mathbf{b}} &amp;\text{if~} \mathbf{a} &lt; \mathbf{b}\\
+    \ket{\mathbf{a}_x \mathbf{a}_z} \ket{\mathbf{0} \mathbf{0}}&amp;\text{if~} \mathbf{a} = \mathbf{b}
+\end{cases}.
+\end{align*}
+</span></p>
+<p>This disentangles the qubits on the third and fourth copies. Thus, we can locally implement the gate sequence <span class="math inline">\mathrm{CNOT}_{13}\mathrm{CNOT}_{24}\mathrm{H}_3\mathrm{H}_1\mathrm{CNOT}_{12}\mathrm{CNOT}_{34}</span> and then measure the 3rd and 4th copies in the computational basis <span class="math inline">\ket{\mathbf{s}_{3}\mathbf{s}_4}</span>.</p>
+<p><strong>Step 5: Extract measurement outcomes</strong></p>
+<p>The computational basis measurement gives the difference of vectors <span class="math inline">\mathbf{a}</span> and <span class="math inline">\mathbf{b}</span> through: <span class="math display">
+\mathbf{s}_{3} = \mathbf{a}_x + \mathbf{b}_x,\quad \mathbf{s}_{4} = \mathbf{a}_z + \mathbf{b}_z
+</span></p>
+<p>This information indicates a partition of the 1st and 2nd copies of qubits <span class="math inline">\{1,\cdots,2n\} = E \cup I</span>, where: - <span class="math inline">E := \{i \in [2n]| a_i = b_i\}</span> (equal indices) - <span class="math inline">I:= \{i \in [2n]| \bar{a}_i = b_i\} := \{i_1&lt;i_2&lt;\cdots&lt;i_{|I|}\}</span> (inverted indices)</p>
+<p>We then implement: 1. Computational basis measurement <span class="math inline">\ket{\mathbf{s}^{E}}</span> on qubits in set <span class="math inline">E</span> 2. GHZ state measurement <span class="math inline">s^{I}</span> on qubits in set <span class="math inline">I</span>, formalized by the circuit:</p>
+<p><span class="math display">
+\begin{align*}
+    \frac{1}{\sqrt{2}} \left[{\ket{\mathbf{a}^{I}} + s\ket{\bar{\mathbf{a}}^{I}}} \right] &amp;=
+    \begin{cases}
+        \frac{1}{\sqrt{2}} \left(\bigotimes_{i \in I} X_i + Z_{i_1}\right) \ket{\bar{\mathbf{a}}^{I}}  &amp;\text{if~} s = -1,\\
+        \frac{1}{\sqrt{2}} \left(\bigotimes_{i \in I} X_i + Z_{i_1}\right) \ket{{\mathbf{a}}^{I}}  &amp;\text{if~} s = +1,
+    \end{cases}\\
+    &amp;=\left(\prod_{i = i_1}^{i_{|I|-1}}\mathrm{CNOT}_{i,i+1}\right)^{\dagger} H_{i_1} \left(\prod_{i = i_1}^{i_{|I|-1}}\mathrm{CNOT}_{i,i+1}\right) \begin{cases}\ket{\bar{\mathbf{a}}^{I}} &amp;\text{if~}s = -1,\\\ket{{\mathbf{a}}^{I}} &amp;\text{if~}s = 1.\end{cases}
+\end{align*}
+</span> Here we use the fact that since <span class="math inline">\mathbf{a}&lt; \mathbf{b}</span>, we have <span class="math inline">a_{i_1} = 0</span>. This then gives the <span class="math inline">\mathbf{a}</span> vector through <span class="math inline">\mathbf{a}^{E} = {\mathbf{s}^{E}}</span> and <span class="math inline">s = +1, \mathbf{a}^{I} = {s}^{I}</span> if <span class="math inline">a_{i_1} = 0</span>, <span class="math inline">s = -1, \mathbf{a}^{I} = \bar{s}^{I}</span> if <span class="math inline">a_{i_1} = 1</span>.</p>
+</div>
+</div>
+</div>
+</section>
+<section id="examples-a-general-construction" class="level2">
+<h2 class="anchored" data-anchor-id="examples-a-general-construction">Examples: A General construction</h2>
+<p>The construction above is useful in generalization to general non-linear shadow&nbsp;<span class="citation" data-cites="liu2024auxiliary">&nbsp;[<a href="#ref-liu2024auxiliary" role="doc-biblioref">1</a>]</span>. To get a classical shadow of <span class="math inline">\hat{\rho^t}</span>, analogically, we sample <span class="math inline">h(\mathbf b,V):=\mathcal{M}^{-1}(V^\dagger \ket{\mathbf b}\!\bra{\mathbf b}V)</span> with pseudo-probability <span class="math inline">\text{Pr}(V)\cdot\text{Pr}(\mathbf b|V): = \text{Pr}(V)\cdot\bra{\mathbf b} V \rho^t V^\dagger\ket{\mathbf b}</span>. This gives the result <span class="math inline">\mathbb{E}_{V \sim \mathcal{U}}\sum_{\mathbf b}\mathcal{M}^{-1}(V^\dagger \ket{\mathbf b}\!\bra{\mathbf b}V) \bra{\mathbf b} V \rho^t V^\dagger\ket{\mathbf b} = \rho^{t}</span>. But <span class="math inline">\text{Pr}(\mathbf b|V): = \bra{\mathbf b} V \rho^t V^\dagger\ket{\mathbf b}</span> is not a valid probability distribution. Fortunately, it can be effectively realized based on the estimator of <span class="math inline">\bra{\mathbf b} V \rho^t V^\dagger\ket{\mathbf b}</span> in Lemma (gen_swap_est) operator <span class="math inline">\{\ket{\mathbf b}\!\bra{\mathbf b}\}_{\mathbf b \in \{0,1\}^{n}}</span> is mutually commutant and the operator set <span class="math inline">\{Q_{\mathbf b}\}_{\mathbf b}</span>, where <span class="math inline">Q_{\mathbf{b}}:=\text{sym}(\ket{\mathbf b}\!\bra{\mathbf b}) = t^{-1} \sum_{i =1}^{t} \ket{\mathbf{b}}\!\bra{\mathbf{b}}_i</span> fully distinguished the spectrum of <span class="math inline">\text{SWAP}_t^{\otimes n}</span>. We use the common eigenvectors <span class="math inline">\ket{\psi_{\mathbf x}}</span> of the operator set <span class="math inline">\{\text{SWAP}_{t}^{\otimes n}\}\cup \{Q_{\mathbf b}\}_{\mathbf b \in \{0,1\}^n}</span> and calculates <span class="math display">
+\begin{align*}
+\bra{\mathbf b} V \rho^t V^\dagger\ket{\mathbf b} =f(\mathbf{x})\text{Pr}(\mathbf b | \mathbf x)\text{Pr}(\mathbf x | \mathbf V) , \text{~where~}\left\{\begin{aligned} &amp;f(\mathbf{x}):= \bra{\psi_{\mathbf x}}\text{SWAP}_{t}^{\otimes n}\ket{\psi_{\mathbf x}}, \\ &amp;\text{Pr}(\mathbf b | \mathbf x):=\bra{\psi_{\mathbf x}}Q_{\mathbf b}\ket{\psi_{\mathbf x}},\\ &amp;\text{Pr}(\mathbf x | \mathbf V):=\bra{\psi_{\mathbf x}}(V\rho V^\dagger)^{\otimes t}\ket{\psi_{\mathbf x}}.\end{aligned}\right.
+\end{align*}
+</span> Here <span class="math inline">\mathbf{x} \in \mathbb{F}_2^{n\cdot t}</span> labeled different eigenvectors. Then sampling <span class="math inline">h(\mathbf b,V)</span> with pseudo-probability <span class="math inline">\bra{\mathbf b} V \rho^t V^\dagger\ket{\mathbf b}</span> then is equivalent to sample <span class="math inline">f(\mathbf{x})h(\mathbf b,V)</span> with probability <span class="math inline">\text{Pr}(\mathbf b | \mathbf x)\text{Pr}(\mathbf x | \mathbf V)\text{Pr}(V)</span>. If we can build an efficient quantum circuit <span class="math inline">\mathcal{R}\ket{\mathbf x} = \ket{\psi_{\mathbf x}}</span>, this sampling can be realized. Based on this, we first give the form of common eigenvectors <span class="math inline">\ket{\psi_{\mathbf x}}</span> and then discuss the efficient implementation of <span class="math inline">\mathcal{R}</span>. Because <span class="math inline">(\text{SWAP}_{t})^{t} = \mathbb{I}</span>, <span class="math inline">\text{SWAP}_t</span> must have eigenvalue <span class="math inline">e^{i2\pi/t}</span>. This conclusion generalized to <a href="#lem-eigvec-qswap" class="quarto-xref">Lemma&nbsp;3</a> below.</p>
+<div id="lem-eigvec-qswap" class="callout callout-style-default callout-important no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Lemma&nbsp;3: (Common Eigenvectors of SWAP and QSWAP)
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Given <span class="math inline">\mathbf{z} = (\mathbf{z}_1,\cdots,\mathbf{z}_t) \in (\{0,1\}^{n})^t</span> with set <span class="math inline">[\mathbf{z}]:= \{\mathbf z,\tau(\mathbf z),\cdots,\tau^{|[\mathbf z]|-1}(\mathbf z)\}</span>, where the <span class="math inline">t</span>-cyclic permutation <span class="math inline">\tau</span> satisfied <span class="math inline">\tau\circ(\mathbf{z}_1,\cdots,\mathbf{z}_t) = (\mathbf{z}_{\tau(1)},\cdots,\mathbf{z}_{\tau(t)})=(\mathbf{z}_t,\mathbf{z}_1\cdots,\mathbf{z}_{t-1})</span>, the operators <span class="math inline">\{\text{SWAP}_{t}^{\otimes n}\}\cup \{Q_{\mathbf b}\}_{\mathbf b \in \{0,1\}^n}</span> have common eigenvectors labeled by <span class="math inline">[\mathbf{z}],k =0,\cdots, |[\mathbf{z}]|-1</span> as <span class="math inline">\ket{\Psi_{[\mathbf z]}^{k}} = \sqrt{|[\mathbf{z}]|^{-1}} \sum_{r = 0}^{|[\mathbf{z}]| - 1}e^{\frac{(2\pi i)rk}{|[\mathbf{z}]|}} \ket{\tau^{r}(\mathbf z)},</span> with eigenvalue <span class="math inline">\{e^{-2k\pi i/|[\mathbf{z}]|}\} \cup \{t^{-1}\cdot \# (\mathbf{b} = \mathbf{z}_i)\}.</span></p>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-8-contents" aria-controls="callout-8" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Proof (Click to expand)
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-8" class="callout-8-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><em>Proof.</em> This can be proved by direct calculation. <span class="math display">\begin{align*}
+        &amp;\text{SWAP}_{t}^{\otimes n} \ket{\Psi_{[\mathbf z]}^{k}} = \sqrt{|[\mathbf{z}]|^{-1}} \sum_{r = 0}^{|[\mathbf{z}]| - 1}e^{\frac{(2\pi i)rk}{|[\mathbf{z}]|}} \ket{\tau^{r+1}(\mathbf z)} = e^{-2k\pi i/|[\mathbf{z}]|}\ket{\Psi_{[\mathbf z]}^{k}}.\\
+        &amp;Q_{\mathbf b}\ket{\Psi_{[\mathbf z]}^{k}} = \sqrt{|[\mathbf{z}]|^{-1}} \sum_{r = 0}^{|[\mathbf{z}]| - 1}e^{\frac{(2\pi i)rk}{|[\mathbf{z}]|}} Q_{\mathbf b}\ket{\tau^{r}(\mathbf z)} = t^{-1}\cdot \# (\mathbf{b} = \mathbf{z}_i) \ket{\Psi_{[\mathbf z]}^{k}}.
+\end{align*}</span>&nbsp;◻</p>
+</div>
+</div>
+</div>
+<p>Take <span class="math inline">t = 2</span>, the eigenvectors writes <span class="math inline">\{\ket{\mathbf{s}\mathbf{s}}\}_{\mathbf{s} \in \mathbb{F}_2^{n}} \cup \{\sqrt{2^{-1}}(\ket{\mathbf{s}_1{\mathbf{s}_2}}+\ket{{\mathbf{s}_2}\mathbf{s}_1}), \sqrt{2^{-1}}(\ket{\mathbf{s}_1{\mathbf{s}_2}}-\ket{{\mathbf{s}_2}\mathbf{s}_1})\}_{\mathbf{s}_1\neq \mathbf{s}_2 \in \mathbb{F}_2^n}</span>, which counts <span class="math inline">2^n + 2^n(2^n - 1)</span> numbers of linearly independent basis, thus being complete. This leads us to find circuit that transform the <span class="math inline">2n</span>-qubits computational basis into these bases. Specifically, <span class="math display">\begin{align*}
+    \mathcal{R} \ket{\mathbf{s}_1 \mathbf{s}_2} =
+    \left\{
+        \begin{aligned}
+        &amp;\ket{\mathbf{s}_1 \mathbf{s}_2} &amp;&amp;\text{~if~} \mathbf{s}_1 = \mathbf{s}_2 \\
+        &amp;\sqrt{2^{-1}}(\ket{\mathbf{s}_1{\mathbf{s}_2}}+\ket{{\mathbf{s}_2}\mathbf{s}_1}) &amp;&amp;\text{~if~} \mathbf{s}_1 &lt; \mathbf{s}_2 \\
+        &amp;\sqrt{2^{-1}}(-\ket{\mathbf{s}_1{\mathbf{s}_2}}+\ket{{\mathbf{s}_2}\mathbf{s}_1}) &amp;&amp;\text{~if~} \mathbf{s}_1 &gt; \mathbf{s}_2.  
+        \end{aligned}
+        \right.
+\end{align*}</span> This pinned down the measurement cirucit by two steps: (i).Check whether <span class="math inline">\mathbf{s}_1 = \mathbf{s}_2</span> by transversal CNOT gates, (ii).On the different parts, with length <span class="math inline">l &lt; n</span> and most significant position <span class="math inline">p_{m}</span>, implements <span class="math inline">\bar{H}:= \sqrt{2^{-1}} (X^{\otimes l} +Z_{p_m})</span> on those qubits. The step(ii) involved non-local operation within one of the copies. This is why we named it non-local multi-copy (<strong>NLMC</strong>) shadow.</p>
+<section id="efficiency-analysis." class="level4 unnumbered">
+<h4 class="unnumbered anchored" data-anchor-id="efficiency-analysis.">Efficiency analysis.</h4>
+<p>As summarized in <a href="#lem-var-nonlocal-shadow" class="quarto-xref">Lemma&nbsp;4</a>, the variance of <strong>NLMC</strong> shadow to estimate <span class="math inline">\text{tr}(O \rho^t)</span> with unitary sampled from <span class="math inline">V \sim \mathcal{E}</span> is upper bounded by the variance of single-copy shadow to estimate <span class="math inline">\text{tr}(O \rho)</span> with the same unitary ensemble <span class="math inline">V</span>. This means that if <span class="math inline">O</span> is (i).low weight Pauli operators or (ii)low rank operators, <strong>NLMC</strong> shadow will have <span class="math inline">\text{poly}(n)</span> sample complexity by taking <span class="math inline">\mathcal{E} = \text{Cliff}_{n}, \text{Cliff}(2)^{\otimes n}</span> separately, which is exponentially faster compared to single copy shadow tomography in Eq.<a href="#eq:singlecp_shadow_nonlinear" data-reference-type="eqref" data-reference="eq:singlecp_shadow_nonlinear">[eq:singlecp_shadow_nonlinear]</a>.</p>
+<div id="lem-var-nonlocal-shadow" class="callout callout-style-default callout-important no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Lemma&nbsp;4: (Variance of Non-local Pauli Shadow)
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Given <span class="math inline">(\mathbf x, \mathbf b, V)</span> sampled from distribution <span class="math inline">\text{Pr}(\mathbf b | \mathbf x)\text{Pr}(\mathbf x | V)\text{Pr}(V)</span>, the random variable <span class="math inline">\hat{o}_t(\mathbf x, \mathbf b, V) := \text{tr}\left(\mathcal{M}^{-1}(V^\dagger \ket{\mathbf b}\!\bra{\mathbf b}V) O\right)\cdot f(\mathbf x)</span> is an unbiased estimator for <span class="math inline">\text{tr}(O\rho^t)</span>. The variance of this estimator satisfied <span class="math display">\begin{align*}
+     \mathbb{E}_{\mathbf x, \mathbf b, V} \hat{o}_t^2 \leq \mathbb{E}_{V \sim \text{Pr}(V)} \sum_{\mathbb{b}} \bra{\mathbf{b}}V\rho V^\dagger \ket{\mathbf b} \text{tr}^2\left(O \mathcal{M}^{-1}\left(V^\dagger \ket{\mathbf b}\!\bra{\mathbf b}V\right)\right).
+\end{align*}</span> Here the RHS related to the variance to estimate <span class="math inline">\text{tr}(O \rho)</span> with unitary ensemble <span class="math inline">V \sim \text{Pr}(V)</span>.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-10-contents" aria-controls="callout-10" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Proof (Click to expand)
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-10" class="callout-10-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><em>Proof.</em> To show the unbiasedness, according to Eq.<a href="#eq:tpower_shadow" data-reference-type="eqref" data-reference="eq:tpower_shadow">[eq:tpower_shadow]</a>, we noted that <span class="math display">\begin{align*}
+        \mathbb{E}_{V \sim \mathcal{E}} \mathbb{E}_{(\mathbf{x},\mathbf{b}) \sim \text{Pr}(\mathbf{b}|\mathbf{x})\text{Pr}(\mathbf{x}|V)}f(\mathbf x) \cdot V^\dagger \ket{\mathbf b}\!\bra{\mathbf b}V = \mathbb{E}_{V \sim \mathcal{E}}\bra{\mathbf b} V \rho^t V^\dagger\ket{\mathbf b} \cdot V^\dagger \ket{\mathbf b}\!\bra{\mathbf b}V = \mathcal{M}(\rho^t).
+\end{align*}</span>&nbsp;◻</p>
+</div>
+</div>
+</div>
+</section>
+</section>
+</section>
+<section id="local-k-copy-3-design-shadow." class="level1">
+<h1>Local k-copy 3-design shadow.</h1>
+<p>Now we consider the case that we can put <span class="math inline">\rho^{\otimes k}</span> in quantum memory and then implement randomized k-qubits Clifford gate <span class="math inline">U = {U_i}^{\otimes n}</span> with <span class="math inline">U_i \in \mathbf{D}_{3}(2^k)</span> the <span class="math inline">k</span>-qubits gate and forms <span class="math inline">3</span>-design. After this, we measured each qubit in the computational basis.</p>
+<div id="lem-LC-shadow-kcopy" class="callout callout-style-default callout-important no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Lemma&nbsp;5: (Local k-Copy Shadow Variance)
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>In the case of local k-copy randomized measurements on <span class="math inline">\rho^{\otimes k}</span>, let the observable <span class="math inline">O^{(k)}</span> acting on <span class="math inline">n\cdot k</span> qubits have decomposition <span class="math inline">O^{(k)} = \sum_{W} \alpha_{W} W</span>, where <span class="math inline">W = \bigotimes_{i=1}^n W_i</span> and <span class="math inline">W_i \in \{I,X,Y,Z\}^{\otimes k}</span>. Denoting <span class="math inline">\mathcal{C}(W)</span> as the set of <span class="math inline">k</span>-qubit Pauli operator that commute with <span class="math inline">W</span> and <span class="math inline">\delta_{e,S} = 1</span> iff <span class="math inline">e\in S</span>, we define a function <span class="math inline">R:\mathcal{P}_k^{\otimes n} \to \mathbb{R}</span> as <span class="math display">
+\begin{align*}
+        R(W,W') &amp;= \prod_{i = 1}^n r(W_i,W'_i), r(W_i,W'_i) \\
+        &amp;:= \begin{cases}
+            1 &amp;\text{if~}W_i = \mathbb{I}_k \text{~or~}W'_i = \mathbb{I}_k ,\\
+            (2^k+1) \cdot \frac{2^{k-1}\delta_{W_i,W'_i} +\delta_{W_i, \mathcal{C}(W'_i)\backslash \mathbb{I}_k } }{2^{k-1}+1} &amp;\text{if~}W_i \neq \mathbb{I}_k \text{~and~} W'_i \neq \mathbb{I}_k .
+        \end{cases}
+\end{align*}
+</span> we have <span class="math inline">\langle (\hat{o}^{(k)})^2 \rangle_{\rho} =\text{tr} \left(\rho^{\otimes k} \cdot \mathbf{V}(O^{(k)}) \right)</span>, where <span class="math inline">\mathbf{V}(O^{(k)}) := \sum_{W,W'}\alpha_W \alpha_{W'} R(W,W')W W'</span>. Specifically, if we take a local operator <span class="math inline">O^{(k)} = \bigotimes_{i = 1}^n \left(\sum_{W_i \in \mathcal{P}_k}\alpha_{W_i} W_i\right)</span>, we have <span class="math inline">\mathbf{V}(O^{(k)}) :=\bigotimes_{i = 1}^n  \sum_{W_i,W_i'}\alpha_{W_i} \alpha_{W_i'} r(W_i,W_i')W_i W_i'</span>.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-12-contents" aria-controls="callout-12" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Proof (Click to expand)
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-12" class="callout-12-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><em>Proof.</em> By Lemma (onsite_2design) <span class="math inline">\mathcal{D}_{1/(2^k + 1)}^{-1}(\cdot) = (2^k + 1)(\cdot) - \text{tr}(\cdot) \mathbb{I}_k</span> constitute an unbiased estimator of <span class="math inline">\rho^{\otimes k}</span> through the transformation <span class="math inline">\hat{\rho}^{\otimes k} =\mathcal{M}^{-1}(U^\dagger \ket{\mathbf r}\!\bra{\mathbf r} U)=\bigotimes_{i =1}^n\left((2^k + 1)U_i^{\dagger} \ket{\mathbf{r}_{i}}\bra{\mathbf{r}_{i}} U_i - \mathbb{I}_k\right).</span> The second moment is given by <span class="math inline">\langle (\hat{o}^{(2)})^2 \rangle_{\rho} =\mathbb{E}_{U \sim \mathbf{D}_3(2^k)^{\otimes n}}\sum_{\mathbf r}\bra{\mathbf r}U \rho^{\otimes k} U^\dagger \ket{\mathbf{r}} \bra{\mathbf r}U\mathcal{M}^{-1}(O^{(k)}) U^\dagger\ket{\mathbf r}^2</span>. Similar to the proof in Lemma (LC_shadow) the Pauli product basis <span class="math inline">W_i \in \{I,X,Y,Z\}^{\otimes k}</span> that supports on those k qubits located at site <span class="math inline">i</span>. By denoting <span class="math inline">W = W_1\cdots W_n</span>, we have <span class="math inline">O^{(k)} = \sum_{W} \alpha_{W} W</span>. According to Lemma (onsite_2design) <span class="math inline">\mathcal{M}^{-1}</span> acts locally as <span class="math inline">\mathcal{M}_i^{-1}(W_i) = g(W_i) W_i</span>, where the scaling factor <span class="math inline">g(W_i)</span> is determined by <span class="math inline">g(W_i) = \begin{cases} (2^k+1) &amp; \text{if~} W_i \neq \mathbb{I}_k \\ 1 &amp;\text{if~} W_i = \mathbb{I}_k \end{cases}.</span> Use this decomposition and again supposed <span class="math inline">\rho^{\otimes k} = \sum_{s} \beta_s \bigotimes_{i=1}^n \rho_i^{(s)}</span>, where <span class="math inline">\rho_i^{(s)} \in \mathcal{D}(\mathcal{H}_k)</span>, the result involves averaging over the k-qubit 3-design <span class="math inline">U_i \sim \mathbf{D}_3(2^k)</span> as: <span class="math display">
+\begin{align*}
+        \langle (\hat{o}^{(k)})^2 \rangle_{\rho} &amp;= \sum_{W,W'}\alpha_{W}\alpha_{W'}\sum_{s}\beta_s\prod_{i = 1}^n g(W_i)g(W'_i)\sum_{\mathbf{r}_i \in \{0,1\}^k} \left[({\rho}^{(s)}_i \otimes W_i \otimes W'_i) \cdot \mathbb{E}_{U_i} U_i^{\otimes 3}\ket{\mathbf{r}_i}\!\bra{\mathbf{r}_i}^{\otimes 3}U_i^{\otimes 3,\dagger}\right] \\
+        &amp;= \sum_{W,W'}\alpha_{W}\alpha_{W'}\sum_s \beta_s\prod_{i = 1}^n 2^k p \cdot g(W_i)g({W'}_i) \Bigl[ \text{tr}(W_i)\text{tr}(W'_i)\text{tr}({\rho}^{(s)}_i) + \text{tr}({\rho}^{(s)}_i W_i)\text{tr}(W'_i) \notag\\
+        &amp; \qquad\qquad\qquad + \text{tr}(W_i)\text{tr}({\rho}^{(s)}_i W'_i)+\text{tr}({\rho}^{(s)}_i)\text{tr}(W_iW'_i) + \text{tr}(W_i {\rho}^{(s)}_i W'_i) + \text{tr}(W'_i {\rho}^{(s)}_i W_i) \Bigr].
+\end{align*}
+</span></p>
+<p>Here we use the fact that the term <span class="math inline">\ket{E} :=U_i\ket{\mathbf{r}_i}</span> is average over the 3-design states, yielding terms based on the formula <span class="math inline">\mathbb{E} [E^{\otimes 3}] ={d^{-1}(d+1)^{-1}(d+2)^{-1}} \sum_{\pi \in S_3} \mathbb{P}_{\pi}^{(d)}</span> according to Lemma (state_trajectory) site is <span class="math inline">p = 1/(2^k \cdot (2^k+1) \cdot (2^k+2))</span>. We evaluate the expression by considering terms for each site <span class="math inline">i</span>, analogous to the single-copy proof of Lemma (LC_shadow) <span class="math display">\begin{align*}
+        \langle (\hat{o}^{(2)})^2 \rangle_{\rho} &amp;=
+        \sum_{W,W'}\alpha_{W}\alpha_{W'}\sum_{s}\beta_s\prod_{i = 1}^n 2^k p \cdot \begin{cases}
+         1\cdot 1\cdot [2^{2k}+3\cdot 2^k+2]\text{tr}{\rho}^{(s)}_i  &amp;\text{if~} W_i=W_i' = \mathbb I_k,\\
+         1 \cdot (2^k+1) \cdot[2^k + 2]\cdot \text{tr}({\rho}^{(s)}_i W'_i)&amp;\text{if~} W_i = \mathbb I_k \neq W'_i,\\
+         (2^k+1) \cdot 1 \cdot[2^k + 2]\cdot \text{tr}({\rho}^{(s)}_i W_i)&amp;\text{if~} W'_i = \mathbb I_k \neq W_i,\\
+         (2^k+1)^2 \cdot[2^k\delta_{W_i, W'_i}\text{tr}{\rho}^{(s)}_i  + \text{tr}({\rho}^{(s)}_i\{W_i,W_i'\})]&amp;\text{if~} W_i, W'_i \neq \mathbb I_k.
+     \end{cases}\\
+    %  &amp;=\sum_{W,W'}\alpha_{W}\alpha_{W'}\sum_{s}\beta_s\prod_{i = 1}^n \begin{cases}
+    %     \text{tr}{\rho}^{(s)}_i  &amp;\text{if~} W_i=W_i' = \mathbb I_k,\\
+    %      \text{tr}({\rho}^{(s)}_i W'_i)&amp;\text{if~} W_i = \mathbb I_k\neq W'_i,\\
+    %      \text{tr}({\rho}^{(s)}_i W_i)&amp;\text{if~} W'_i = \mathbb I_k\neq W_i,\\
+    %     \frac{2^k+1}{2^k+2} \cdot\text{tr}\left[(2^k\delta_{W_i, W'_i}\mathbb{I}_k  +2\delta_{W_i, \mathcal{C}(W'_i)\backslash \mathbb{I}_k}  W_iW_i'){\rho}^{(s)}_i\right]&amp;\text{if~} W_i, W'_i \neq \mathbb I_k.
+    %  \end{cases}\\
+     &amp;= \sum_{W,W'}\alpha_{W}\alpha_{W'}\cdot \sum_{s}\beta_s\prod_{i = 1}^n \begin{cases}
+        \text{tr}({\rho}^{(s)}_i W_iW'_i)  &amp;\text{if~} W_i=W_i' = \mathbb I_k,\\
+         \text{tr}({\rho}^{(s)}_i W_i W'_i)&amp;\text{if~} W_i = \mathbb I_k\neq W'_i,\\
+         \text{tr}({\rho}^{(s)}_i W_i W'_i)&amp;\text{if~} W'_i = \mathbb I_k\neq W_i,\\
+         \frac{2^k+1}{2^k+2} \cdot\text{tr}\left[{\rho}^{(s)}_i(2^k\delta_{W_i, W'_i}+2\delta_{W_i, \mathcal{C}(W'_i)\backslash \mathbb{I}_k})W_iW_i'\right]&amp;\text{if~} W_i, W'_i \neq \mathbb I_k.
+     \end{cases}\\
+     &amp;=\text{tr}\left( \rho^{\otimes k}\cdot \sum_{W,W' \in \mathcal{P}_k^{\otimes n}} \alpha_{W}\alpha_{W'} R(W,W') W W'\right).
+\end{align*}</span> To prove the second equality, we first defined <span class="math inline">\mathcal{C}(W)</span> as the set of k-qubit Pauli operator that commute with <span class="math inline">W</span> and <span class="math inline">\delta_{e,S} = 1</span> iff <span class="math inline">e\in S</span>, otherwise <span class="math inline">\delta(e,S) = 0</span>. Then we use the fact that <span class="math display">\begin{align*}
+        \forall W_i, W'_i \neq \mathbb I_k, \text{tr}({\rho}^{(s)}_i\{W_i,W_i'\}) = \begin{cases}0 \!\!\!&amp;\text{if~} W'_i \notin \mathcal{C}(W_i)\backslash \mathbb{I}_k\\2\text{tr}(\tilde{\rho}^{(s)}_i W_iW'_i)  \!\!\!&amp;\text{if~} W_i \in \mathcal{C}(W'_i)\backslash \mathbb{I}_k \end{cases} = 2\delta_{W_i, \mathcal{C}(W'_i)\backslash \mathbb{I}_k} \text{tr}(\tilde{\rho}^{(s)}_i W_iW'_i),
+\end{align*}</span> In the last equality, we use the definition <span class="math display">\begin{align*}
+    R(W,W') &amp;= \prod_{i = 1}^n r(W_i,W'_i),  r(W_i,W'_i)
+    &amp;:= \begin{cases}
+        1 &amp;\text{if~}W_i = \mathbb{I}_k \text{~or~}W'_i = \mathbb{I}_k ,\\
+        (2^k+1) \cdot \frac{2^{k-1}\delta_{W_i,W'_i} +\delta_{W_i, \mathcal{C}(W'_i)\backslash \mathbb{I}_k } }{2^{k-1}+1} &amp;\text{if~}W_i \neq \mathbb{I}_k \text{~and~} W'_i \neq \mathbb{I}_k .
+    \end{cases}
+\end{align*}</span>&nbsp;◻</p>
+</div>
+</div>
+</div>
+<p>The inherient difference between the single-copy local Clifford strategy contained in the term <span class="math inline">\delta_{W_i, \mathcal{C}(W'_i)}</span>. In the single-copy case, the center of <span class="math inline">P_i \in \{X,Y,Z\}</span> satisfied <span class="math inline">\mathcal{C}(P_i) = \{P_i, \mathbb{I}\}</span>. However, for example, for the two-qubit Pauli operators, more terms involved. We denote the <span class="math inline">n</span>-qubit Pauli operators as <span class="math inline">\sigma_{\mathbf{r}} = \bigotimes_{i=1}^n \sigma_{{r}_{x,i},{r}_{z,i}} \in \mathcal{P}_n</span> with <span class="math inline">\mathbf{r} = (\mathbf{r}_x = ({r}_{x,1},\cdots,{r}_{x,n}),\mathbf{r}_z = ({r}_{z,1},\cdots,{r}_{z,n})) \in (\mathbb{F}_2^n)^2</span> and <span class="math inline">\{\sigma_{00},\sigma_{01},\sigma_{10},\sigma_{11}\} = \{\mathbb{I}, Z,X,Y = iXZ\}</span>. We denote <span class="math inline">a \oplus b = a + b \mathrm{~mod~}2 = a + b - 2a\cdot b</span> and <span class="math inline">\mathbf{a} \odot \mathbf{b} = (a_1\cdot b_1,\cdots,a_n\cdot b_n)</span> with <span class="math inline">a,b \in \{0,1\}</span>. In the following, we follow the Pauli multiplication rule as proved below <span class="math display">
+\begin{align*}
+         \sigma_{\mathbf{s}}\sigma_{\mathbf{s}'} &amp;= \bigotimes_{j = 1}^n i^{s_{x,j} s_{z,j}} X^{s_{x,j}}Z^{s_{z,j}} \cdot i^{s'_{x,j} s'_{z,j}} X^{s'_{x,j}}Z^{s'_{z,j}} \\
+         &amp;=  \bigotimes_{j = 1}^n X^{s_{x,j}+s_{x,j}'}Z^{s_{z,j}+s_{z,j}'} (-1)^{s_{z,j}\cdot s_{x,j}'} \cdot i^{s_{x,j}s_{z,j}+s_{x,j}'s_{z,j}'} \notag \\
+         &amp;= \sigma_{\mathbf{s}\oplus \mathbf{s}'} (-i)^{(\mathbf{s}_x+ \mathbf{s}_x'-2\mathbf{s}_x\odot\mathbf{s}_x')(\mathbf{s}_z+\mathbf{s}_z' - 2\mathbf{s}_z\odot\mathbf{s}_z')} i^{\mathbf{s}_x\mathbf{s}_z + \mathbf{s}_x'\mathbf{s}_z'}(i)^{2\mathbf{s}_z\mathbf{s}_x'} \\
+         &amp;=i^{\mathbf{s}_x'\mathbf{s}_z - \mathbf{s}_z'\mathbf{s}_x} (-1)^{(\mathbf{s}_x + \mathbf{s}_x') \cdot (\mathbf{s}_z \odot \mathbf{s}_z') + (\mathbf{s}_z + \mathbf{s}_z') \cdot (\mathbf{s}_x \odot \mathbf{s}_x')}\sigma_{\mathbf{s}+ \mathbf{s}'} := i^{\mathbf{s}' J \mathbf{s}} (-1)^{d(\mathbf{s},\mathbf{s}')}\sigma_{\mathbf{s}+ \mathbf{s}'} .
+\end{align*}
+</span> Defined <span class="math inline">[\mathbf{s}', \mathbf{s}]:= \mathbf{s}_x'\cdot \mathbf{s}_z - \mathbf{s}_z'\cdot \mathbf{s}_x \text{~mod~} 2</span> as the binary symplectic product. Use this rule, we calculate <span class="math inline">\sigma_{\mathbf{s}}\cdot \sigma_{\mathbf{s}'}=i^{2\mathbf{s}_x'\cdot \mathbf{s}_z - 2\mathbf{s}_z'\cdot \mathbf{s}_x }  (\sigma_{\mathbf{s}'} \cdot \sigma_{\mathbf{s}}) \Rightarrow [\mathbf{s}, \mathbf{s}'] = 0,</span> and show that <span class="math inline">\mathcal{C}(\sigma_{\mathbf{u}} )\backslash \mathbb{I}_k= \{\sigma_{\mathbf{v}}|\mathbf{v}\in \mathbb{F}_2^k,\mathbf{v}\neq \mathbf{0},[\mathbf{v},\mathbf{u}] = 0\}.</span> This means that <span class="math inline">\delta_{\sigma_{\mathbf{s},\mathcal{C}(\sigma_{\mathbf{s}'} )\backslash \mathbb{I}_k}} = \delta_{\mathbf{s}, \{\mathbf{v}\in \mathbb{F}_2^k|\mathbf{v}\neq \mathbf{0},[\mathbf{v},\mathbf{s}'] = 0\}} = {\left(1 + (-1)^{[\mathbf{s},\mathbf{s}']}\right)}/{2}</span> and <span class="math display">
+\begin{align*}
+&amp;r({\mathbf{s}},{\mathbf{s}'}):=r(\sigma_{\mathbf{s}},\sigma_{\mathbf{s}'}) := \begin{cases}
+            1 &amp;\text{if~}\mathbf{s} = \mathbf{0}\text{~or~}\mathbf{s}' = \mathbf{0} ,\\
+            \frac{2^k+1}{2^{k}+2} \cdot \left[2^{k}\delta_{\mathbf{s},\mathbf{s}'} +1+ (-1)^{[\mathbf{s}',\mathbf{s}]}\right]  &amp;\text{if~}\mathbf{s} \neq \mathbf{0}\text{~and~}\mathbf{s}' \neq \mathbf{0} .
+        \end{cases}
+\end{align*}
+</span></p>
+<p>A generalization of the variance operator <span class="math inline">\mathbf{V}(O^{(k)})</span> is to applied it to two operators <span class="math inline">O_\alpha,O_\beta</span>, as defined below:</p>
+<div id="def-cov-oper" class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Definition&nbsp;1: Definition (Covariance Operator)
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Given two operators with decomposition <span class="math inline">O_\alpha = \sum_{W} \alpha_{W} W, O_\beta = \sum_{W} \beta_{W} W</span> with <span class="math inline">W \in \{\mathbb{I},X,Y,Z\}^{\otimes k}</span>, the we defined the covariance operator as <span class="math display">\begin{align*}
+        \mathbf{V}(O_\alpha,O_\beta) = \sum_{W,W'} \alpha_{W} \beta_{W'} R(W,W') WW',
+\end{align*}</span> where <span class="math inline">R(W,W')</span> is defined in <a href="#lem-LC-shadow-kcopy" class="quarto-xref">Lemma&nbsp;5</a></p>
+</div>
+</div>
+<p>The covariance operator is important due to the Lemma below</p>
+<div id="lem-covariance-decomp" class="callout callout-style-default callout-important no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Lemma&nbsp;6: (Covariance Decomposition)
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Given a k-copy operator <span class="math inline">O = \lambda_{\alpha} O_{\alpha} + \lambda_{\beta} O_{\beta}</span>, we have <span class="math display">\begin{align*}
+        \mathbf{V}(O,O) = \lambda_{\alpha}^2 \mathbf{V}(O_{\alpha},O_{\alpha}) + 2 \lambda_{\alpha} \lambda_{\beta} \mathbf{V}(O_{\alpha},O_{\beta}) + \lambda_{\beta}^2 \mathbf{V}(O_{\beta},O_{\beta}).
+\end{align*}</span></p>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-15-contents" aria-controls="callout-15" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Proof (Click to expand)
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-15" class="callout-15-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>Supposed the decomposition <span class="math inline">O_\alpha = \sum_{W} \alpha_{W} W, O_\beta = \sum_{W} \beta_{W} W</span>, we noted that <span class="math display">
+\begin{align*}
+        \mathbf{V}(O,O) &amp;=  \sum_{W,W'} (\lambda_{\alpha}\alpha_{W} + \lambda_{\beta} \beta_{W})(\lambda_{\alpha}\alpha_{W'} + \lambda_{\beta} \beta_{W'}) R(W,W') WW',\\
+        &amp;=  \sum_{W,W'} \lambda^2_{\alpha}\alpha_{W}\alpha_{W'}R(W,W') WW' +\sum_{W,W'}  \lambda_{\alpha}\lambda_{\beta} \alpha_{W}\beta_{W'}R(W,W') WW' \notag\\
+        &amp; +\sum_{W,W'}  \lambda_{\beta} \lambda_{\alpha}\beta_{W}\alpha_{W'}R(W,W') WW' + \sum_{W,W'} \lambda^2_{\beta}\beta_{W}\beta_{W'}R(W,W') WW'\\
+        &amp;=\lambda_{\alpha}^2 \mathbf{V}(O_{\alpha},O_{\alpha}) + 2 \lambda_{\alpha} \lambda_{\beta} \mathbf{V}(O_{\alpha},O_{\beta}) + \lambda_{\beta}^2 \mathbf{V}(O_{\beta},O_{\beta}).
+\end{align*}
+</span> Here at the last line, we use <a href="#def-cov-oper" class="quarto-xref">Definition&nbsp;1</a> and the fact that <span class="math inline">R(W,W') = R(W',W)</span>. ◻</p>
+</div>
+</div>
+</div>
+<section id="application-to-texttro-rhok." class="level3">
+<h3 class="anchored" data-anchor-id="application-to-texttro-rhok.">Application to <span class="math inline">\text{tr}(O \rho^k)</span>.</h3>
+<p>A critical application of this local multi-copy shadow is to use it to estimate the non-linear term <span class="math inline">\text{tr}(O \rho^k)</span> for arbitrary operator <span class="math inline">O \in \text{Herm}(\mathcal{H}_n)</span>. In the case of <span class="math inline">k  =2</span>, <span class="math inline">\text{tr}((O \otimes \mathbb{I}_n) \text{SWAP}^{\otimes n}\cdot (\rho \otimes \rho))</span> is an unbiased estimator for <span class="math inline">\text{tr}(O \rho^2)</span>. If we decomposed the operator <span class="math inline">O</span> on the Pauli basis, it turns out <span class="math inline">(O \otimes \mathbb{I}_n)\text{SWAP}^{\otimes n} = \sum_{\mathbf{r} \in \mathbb{F}_2^{2n}} (\sigma_{\mathbf{r}} \otimes  \mathbb{I}_n)\text{SWAP}^{\otimes n}:= \sum_{\mathbf{r} \in \mathbb{F}_2^{2n}} O_{\mathbf{r}}</span> Here below we use <a href="#lem-LC-shadow-kcopy" class="quarto-xref">Lemma&nbsp;5</a> of <span class="math inline">O_{\mathbf{r}}</span> explicitly.</p>
+<div id="lem-covar-pauli" class="callout callout-style-default callout-important no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Lemma&nbsp;7: (Covariance Operator of Non-local Pauli Shadow)
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>For the <span class="math inline">k=2</span> local shadow, consider the observable <span class="math inline">O_{\mathbf{r}}= (\sigma_{\mathbf{r}} \otimes \mathbb{I}_n) \cdot \text{SWAP}^{\otimes n}</span> where <span class="math inline">\sigma_{\mathbf{r}} = \bigotimes_{j=1}^n \sigma_{\mathbf{r}_j}</span> is an <span class="math inline">n</span>-qubit Pauli operator with <span class="math inline">\mathbf{r} = (\mathbf{r}_1, \ldots, \mathbf{r}_n) \in (\mathbb{F}_2^2)^n</span>. Let <span class="math inline">\text{wt}(\sigma_{\mathbf{r}})</span> denote the Pauli weight (number of non-identity single-qubit factors). Then the covariance operator factorizes as <span class="math inline">\mathbf{V}(O_{\mathbf{r}}, O_{\mathbf{r}'}) = \bigotimes_{j = 1}^n v(\mathbf{r}_j, \mathbf{r}_j')</span> with <span class="math display">
+    \begin{align}
+        v(\mathbf{r}_j, \mathbf{r}_j') =
+        \left\{\begin{aligned}
+            &amp;\frac{5}{6}\left(\sigma_{\mathbf{r}_j}\otimes \sigma_{\mathbf{r}'_j} +\sigma_{\mathbf{r}'_j}\otimes \sigma_{\mathbf{r}_j} \right)\text{~if~} \mathbf{r}_j, \mathbf{r}_j'  \neq \mathbf{0},\\
+            &amp;\frac{11\mathbb{I}_4}{3} \hspace{5em}\text{~if~} \mathbf{r}_j=\mathbf{r}_j'= \mathbf{0}, \\
+            &amp;\left(\frac{1}{2}\mathbb{I}_2 \otimes \sigma_{\mathbf{r}_j}+ \frac{5}{6}\sigma_{\mathbf{r}_j}\otimes\mathbb{I}_2\right) \text{~if~} \mathbf{r}'_j = \mathbf{0},  \mathbf{r}_j\neq \mathbf{0},\\
+            &amp;\left(\frac{1}{2}\mathbb{I}_2 \otimes \sigma_{\mathbf{r}'_j} + \frac{5}{6}\sigma_{\mathbf{r}'_j}\otimes\mathbb{I}_2\right)\text{~if~} \mathbf{r}_j = \mathbf{0},  \mathbf{r}'_j\neq \mathbf{0}.
+        \end{aligned}\right.
+    \end{align}
+</span> In particular, <span class="math inline">\mathbf{V}(O_{\mathbf{r}},O_{\mathbf{r}}) =  \left({11}/{3}\right)^{n}\cdot \left({5}/{11}\right)^{\text{wt}(\sigma_{\mathbf{r}})} \sigma_{\mathbf{r}} \otimes \sigma_{\mathbf{r}}.</span></p>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-17-contents" aria-controls="callout-17" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Proof (Click to expand)
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-17" class="callout-17-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>Step 1: Pauli expansion of the observable.</strong> We express the observable using the identity <span class="math inline">\text{SWAP} = 2^{-1}\sum_{\mathbf{p} \in \mathbb{F}_2^{2}} \sigma_{\mathbf{p}} \otimes \sigma_{\mathbf{p}}</span>, which extends to <span class="math inline">\text{SWAP}^{\otimes n} = 2^{-n}\sum_{\mathbf{p} \in (\mathbb{F}_2^{2})^n} \sigma_{\mathbf{p}} \otimes \sigma_{\mathbf{p}}</span>. This gives the Pauli decomposition: <span class="math display">
+\begin{align}
+    O_{\mathbf{r}}=  2^{-n}\sum_{\mathbf{p} \in (\mathbb{F}_2^{2})^n} \sigma_{\mathbf{r}}\sigma_{\mathbf{p}}\otimes \sigma_{\mathbf{p}},\quad O_{\mathbf{r}'}=  2^{-n}\sum_{\mathbf{p}' \in (\mathbb{F}_2^{2})^n} \sigma_{\mathbf{r}'}\sigma_{\mathbf{p}'}\otimes \sigma_{\mathbf{p}'}.
+\end{align}
+</span> The operators <span class="math inline">O_{\mathbf{r}}, O_{\mathbf{r}'}</span> admit a local decomposition with <span class="math inline">W_j \propto \sigma_{\mathbf{r}_j + \mathbf{p}_j} \otimes \sigma_{\mathbf{p}_j}</span> and <span class="math inline">W'_j \propto \sigma_{\mathbf{r}'_j + \mathbf{p}'_j} \otimes \sigma_{\mathbf{p}'_j}</span>. Below we suppress the site index <span class="math inline">j</span> for clarity.</p>
+<p><strong>Step 2: Applying the covariance operator definition.</strong> By <a href="#def-cov-oper" class="quarto-xref">Definition&nbsp;1</a>, the covariance operator involves the rescaling function <span class="math inline">r(W,W')</span> from <a href="#lem-LC-shadow-kcopy" class="quarto-xref">Lemma&nbsp;5</a>. For <span class="math inline">k=2</span>, when both <span class="math inline">W_j, W'_j \neq \mathbb{I}_2</span>: <span class="math display">
+r(W_j,W'_j) = 5 \cdot \frac{2\delta_{W_j,W'_j} + \delta_{W_j, \mathcal{C}(W'_j)\setminus \mathbb{I}_2}}{3}.
+</span> For Pauli operators, two non-identity Paulis either commute (<span class="math inline">[\mathbf{a},\mathbf{b}] = 0</span>) or anticommute (<span class="math inline">[\mathbf{a},\mathbf{b}] = 1</span>), where <span class="math inline">[\mathbf{a},\mathbf{b}] := a_1 b_2 + a_2 b_1 \mod 2</span> is the symplectic inner product. This gives: <span class="math display">
+r(\sigma_\mathbf{a} \otimes \sigma_\mathbf{b}, \sigma_\mathbf{c} \otimes \sigma_\mathbf{d}) = \frac{5}{3}\left[2\delta_{\mathbf{a},\mathbf{c}}\delta_{\mathbf{b},\mathbf{d}} + \frac{1 + (-1)^{[\mathbf{a},\mathbf{c}]+[\mathbf{b},\mathbf{d}]}}{2}\right], \quad \text{if } \mathbf{a}\mathbf{b}, \mathbf{c}\mathbf{d} \neq \mathbf{00}.
+</span></p>
+<p>Using Pauli commutation <span class="math inline">\sigma^{\otimes 2}_{\mathbf{p}}\sigma^{\otimes 2}_{\mathbf{p}'} = (-1)^{[\mathbf{p},\mathbf{p}']}\sigma^{\otimes 2}_{\mathbf{p}+\mathbf{p}'}</span> (up to phase), the covariance operator factorizes: <span id="eq-mid-V-Orho2"><span class="math display">
+  \begin{align*}
+        &amp;\mathbf{V}(O_{\mathbf{r}}, O_{\mathbf{r}'}) = 4^{-n} \bigotimes_{j=1}^n \left(\sum_{\mathbf{p}, \mathbf{p}'} (-1)^{[\mathbf{p},\mathbf{r}']}r\left((\mathbf{r}+\mathbf{p})\mathbf{p},(\mathbf{r}'+\mathbf{p}')\mathbf{p}'\right)\sigma_{\mathbf{r}} \sigma_{\mathbf{r}'}\sigma_{\mathbf{p}} \sigma_{\mathbf{p}'} \otimes \sigma_{\mathbf{p}}\sigma_{\mathbf{p}'} \right) \\
+        &amp;=4^{-n} \bigotimes_{j=1}^n \left(\sum_{\mathbf{p}, \mathbf{p}'} (-1)^{[\mathbf{p},\mathbf{r}']+[\mathbf{p},\mathbf{p}']}r\left((\mathbf{r}+\mathbf{p})\mathbf{p},(\mathbf{r}'+\mathbf{p}')\mathbf{p}'\right)\sigma_{\mathbf{r}} \sigma_{\mathbf{r}'}\sigma_{\mathbf{p}+\mathbf{p}'}\otimes \sigma_{\mathbf{p}+\mathbf{p}'} \right) \\
+        &amp;= \bigotimes_{j=1}^n \left( \left\{\begin{aligned}
+            &amp;\frac{5}{24}\sum_{\mathbf{p}, \mathbf{p}'}(-1)^{[\mathbf{p},\mathbf{r}']+[\mathbf{p},\mathbf{p}']} \left[4\delta_{\mathbf{r},\mathbf{r}' }\delta_{\mathbf{p},\mathbf{p}' }+ 1 + (-1)^{[\mathbf{r}+\mathbf{p},\mathbf{r}'+\mathbf{p}']+[\mathbf{p},\mathbf{p}']}\right]\sigma_{\mathbf{r}} \sigma_{\mathbf{r}'}\sigma_{\mathbf{p}+\mathbf{p}'} \otimes \sigma_{\mathbf{p}+\mathbf{p}'} \text{~if~} \mathbf{r},\mathbf{r}' \neq 0\\
+            &amp;4^{-1}\sum_{\mathbf{p}, \mathbf{p}'}(-1)^{[\mathbf{p},\mathbf{p}']} r((\mathbf{r}+\mathbf{p})\mathbf{p},\mathbf{p}'\mathbf{p}')\sigma_{\mathbf{r}} \sigma_{\mathbf{p}+\mathbf{p}'} \otimes \sigma_{\mathbf{p}+\mathbf{p}'}\text{~if~} \mathbf{r}' =0\neq \mathbf{r}\\
+            &amp;4^{-1}\sum_{\mathbf{p}, \mathbf{p}'}(-1)^{[\mathbf{p},\mathbf{r}']+[\mathbf{p},\mathbf{p}']} r(\mathbf{p}\mathbf{p},(\mathbf{r}' + \mathbf{p}')\mathbf{p}') \sigma_{\mathbf{r}'}\sigma_{\mathbf{p}+\mathbf{p}'}\otimes \sigma_{\mathbf{p}+\mathbf{p}'}\text{~if~} \mathbf{r} =0\neq \mathbf{r}'\\
+            &amp;4^{-1}\sum_{\mathbf{p}, \mathbf{p}'}(-1)^{[\mathbf{p}', \mathbf{p}]} r(\mathbf{p}\mathbf{p},\mathbf{p}'\mathbf{p}')\sigma_{\mathbf{p} + \mathbf{p}'} \otimes \sigma_{\mathbf{p}+\mathbf{p}'}\text{~if~} \mathbf{r} = \mathbf{r}'  = 0
+        \end{aligned}\right. \right)\\
+        &amp;:= \bigotimes_{j=1}^n v(\mathbf{r}_j, \mathbf{r}_j')
+        % = \frac{5}{3} \sigma_{\mathbf{r}_j}^{\otimes 2}
+    \end{align*}
+\tag{1}</span></span></p>
+<p><strong>Step 3: Case analysis for the local factor <span class="math inline">v(\mathbf{r}, \mathbf{r}')</span>.</strong></p>
+<p><em>Case 1: <span class="math inline">\mathbf{r}, \mathbf{r}' \neq \mathbf{0}</span>.</em> When both Pauli indices are non-trivial, we have <span class="math inline">\mathbf{r}+\mathbf{p} \neq \mathbf{0}</span> or <span class="math inline">\mathbf{p} \neq \mathbf{0}</span> for all <span class="math inline">\mathbf{p}</span>, so we can apply the rescaling formula from <a href="#lem-LC-shadow-kcopy" class="quarto-xref">Lemma&nbsp;5</a>. The expression separates into three terms: <span class="math display">
+\begin{align}
+    \text{Term 1} &amp;= \sum_{\mathbf{p}} (-1)^{[\mathbf{p},\mathbf{r}']}\cdot \frac{5}{6} \delta_{\mathbf{r},\mathbf{r}'}\sigma_{\mathbf{r}}\sigma_{\mathbf{r}'} \otimes \mathbb{I}_2 = 0, \\
+    \text{Term 2} &amp;= \sum_{\mathbf{p}, \mathbf{p}'}(-1)^{[\mathbf{p},\mathbf{r}']+[\mathbf{p},\mathbf{p}']} \frac{5}{24} \sigma_{\mathbf{r}} \sigma_{ \mathbf{r}'}\sigma_{\mathbf{p} + \mathbf{p}'} \otimes \sigma_{\mathbf{p}+\mathbf{p}'}.
+\end{align}
+</span> Substituting <span class="math inline">\mathbf{u} = \mathbf{p} + \mathbf{p}'</span> and using <span class="math inline">\sum_{\mathbf{p}} (-1)^{[\mathbf{p}, \mathbf{r}'+\mathbf{u}]} = 4\delta_{\mathbf{r}',\mathbf{u}}</span>: <span class="math display">
+\text{Term 2} = \sum_{\mathbf{u}}\delta_{\mathbf{r}',\mathbf{u}} \frac{5}{6} \sigma_{\mathbf{r}} \sigma_{ \mathbf{r}'}\sigma_{\mathbf{u}} \otimes \sigma_{\mathbf{u}} = \frac{5}{6} \sigma_{\mathbf{r}} \otimes \sigma_{\mathbf{r}'}.
+</span> For Term 3 involving <span class="math inline">(-1)^{[\mathbf{r}+\mathbf{p},\mathbf{r}'+\mathbf{p}']+[\mathbf{p},\mathbf{p}']}</span>, expanding and summing over <span class="math inline">\mathbf{p}</span> yields: <span class="math display">
+\text{Term 3} = \sum_{\mathbf{u}}\frac{5}{6}\delta_{\mathbf{r},\mathbf{u}}(-1)^{[\mathbf{r},\mathbf{r}']+[\mathbf{r},\mathbf{u}]}\sigma_{\mathbf{r}}\sigma_{ \mathbf{r}'}\sigma_{\mathbf{u}} \otimes \sigma_{\mathbf{u}} = \frac{5}{6}\sigma_{\mathbf{r}'} \otimes \sigma_{\mathbf{r}}.
+</span> Combining these: <span id="eq-V-case1"><span class="math display">
+\begin{align}
+   v(\mathbf{r}, \mathbf{r}') = \frac{5}{6}\left(\sigma_{\mathbf{r}}\otimes \sigma_{\mathbf{r}'} + \sigma_{\mathbf{r}'}\otimes \sigma_{\mathbf{r}} \right), \quad \text{if } \mathbf{r}, \mathbf{r}'  \neq \mathbf{0}.
+\end{align}
+\tag{2}</span></span></p>
+<p><em>Case 2: <span class="math inline">\mathbf{r} = \mathbf{r}' = \mathbf{0}</span>.</em> We enumerate all 16 terms with <span class="math inline">\mathbf{p}, \mathbf{p}' \in \mathbb{F}_2^2 = \{00, 01, 10, 11\}</span>. The rescaling function takes values <span class="math inline">r(\mathbf{p}\mathbf{p}, \mathbf{p}'\mathbf{p}') \in \{1, 5, 5/3\}</span> depending on whether one or both arguments are <span class="math inline">\mathbf{00}</span>, or whether the two Paulis commute or anticommute. Direct calculation yields: <span class="math display">
+\begin{align}
+    v(\mathbf{0}, \mathbf{0}) &amp;= 4^{-1}\sum_{\mathbf{p},\mathbf{p}'} (-1)^{[\mathbf{p},\mathbf{p}']} r(\mathbf{p}\mathbf{p}, \mathbf{p}'\mathbf{p}')\sigma_{\mathbf{p}+\mathbf{p}'} \otimes \sigma_{\mathbf{p}+\mathbf{p}'} \notag \\
+    &amp;= 4\, \mathbb{I}_2^{\otimes 2} - \frac{1}{3}(X^{\otimes 2}+Z^{\otimes 2}+Y^{\otimes 2}) = \frac{11\mathbb{I}_4 + 4\Pi_{\mathrm{asym}}}{3},
+\end{align}
+</span> where <span class="math inline">\Pi_{\mathrm{asym}} = (\mathbb{I}_4 - \text{SWAP})/2 = (\mathbb{I}_4 - X^{\otimes 2} - Z^{\otimes 2} - Y^{\otimes 2})/4</span>.</p>
+<p><em>Case 3: <span class="math inline">\mathbf{r}' = \mathbf{0}</span>, <span class="math inline">\mathbf{r} \neq \mathbf{0}</span>.</em> Naively applying <a href="#eq-V-case1" class="quarto-xref">Equation&nbsp;2</a> would give <span class="math inline">v(\mathbf{r}, \mathbf{0}) = \frac{5}{6}(\sigma_{\mathbf{r}}\otimes \mathbb{I}_2 + \mathbb{I}_2\otimes \sigma_{\mathbf{r}})</span>. However, this overcounts when <span class="math inline">\mathbf{p}' = \mathbf{0}</span>, since the rescaling function satisfies <span class="math inline">r((\mathbf{r}+\mathbf{p})\mathbf{p}, \mathbf{0}\mathbf{0}) = 1</span> rather than the non-trivial formula. The correction term is: <span class="math display">
+\Delta = -\frac{1}{4}\cdot\frac{5}{6}\sum_{\mathbf{p}} 2\, \sigma_{\mathbf{r}}\sigma_{\mathbf{p}} \otimes \sigma_{\mathbf{p}} + \frac{1}{4} \sum_{\mathbf{p}} \sigma_{\mathbf{r}}\sigma_{\mathbf{p}} \otimes \sigma_{\mathbf{p}} = -\frac{1}{3}(\sigma_{\mathbf{r}} \otimes \mathbb{I}_2)\text{SWAP}.
+</span> Thus: <span class="math display">
+v(\mathbf{r}, \mathbf{0}) = \frac{5}{6}(\mathbb{I}_2 \otimes \sigma_{\mathbf{r}} + \sigma_{\mathbf{r}}\otimes\mathbb{I}_2) - \frac{1}{3}(\sigma_{\mathbf{r}} \otimes \mathbb{I}_2)\text{SWAP}.
+</span> Using <span class="math inline">\Pi_{\mathrm{sym}} + \Pi_{\mathrm{asym}} = \mathbb{I}_4</span> and <span class="math inline">\Pi_{\mathrm{sym}} - \Pi_{\mathrm{asym}} = \text{SWAP}</span>: <span class="math display">
+v(\mathbf{r}, \mathbf{0}) = \left(\frac{1}{2}\Pi_{\mathrm{sym}} + \frac{7}{6}\Pi_{\mathrm{asym}}\right)(\mathbb{I}_2 \otimes \sigma_{\mathbf{r}}) + \frac{5}{6}\sigma_{\mathbf{r}}\otimes\mathbb{I}_2.
+</span> By symmetry, <span class="math inline">v(\mathbf{0}, \mathbf{r}') = \left(\frac{1}{2}\Pi_{\mathrm{sym}} + \frac{7}{6}\Pi_{\mathrm{asym}}\right)(\mathbb{I}_2 \otimes \sigma_{\mathbf{r}'}) + \frac{5}{6}\sigma_{\mathbf{r}'}\otimes\mathbb{I}_2</span>.</p>
+<p><strong>Step 4: Restriction to symmetric subspace.</strong> Since the input state is <span class="math inline">\rho \otimes \rho</span>, which lies in the symmetric subspace, we have <span class="math inline">\text{tr}(\rho \otimes \rho \cdot \Pi_{\mathrm{asym}}) = 0</span>. Therefore, terms proportional to <span class="math inline">\Pi_{\mathrm{asym}}</span> do not contribute, and we can simplify: <span class="math display">
+\begin{align}
+    v(\mathbf{r}_j, \mathbf{r}_j') =
+    \left\{\begin{aligned}
+        &amp;\frac{5}{6}\left(\sigma_{\mathbf{r}_j}\otimes \sigma_{\mathbf{r}'_j} +\sigma_{\mathbf{r}'_j}\otimes \sigma_{\mathbf{r}_j} \right) &amp;\text{if } \mathbf{r}_j, \mathbf{r}_j'  \neq \mathbf{0},\\
+        &amp;\frac{11\mathbb{I}_4}{3} &amp;\text{if } \mathbf{r}_j=\mathbf{r}_j'= \mathbf{0}, \\
+        &amp;\frac{1}{2}\mathbb{I}_2 \otimes \sigma_{\mathbf{r}_j}+ \frac{5}{6}\sigma_{\mathbf{r}_j}\otimes\mathbb{I}_2 &amp;\text{if } \mathbf{r}'_j = \mathbf{0},  \mathbf{r}_j\neq \mathbf{0},\\
+        &amp;\frac{1}{2}\mathbb{I}_2 \otimes \sigma_{\mathbf{r}'_j} + \frac{5}{6}\sigma_{\mathbf{r}'_j}\otimes\mathbb{I}_2 &amp;\text{if } \mathbf{r}_j = \mathbf{0},  \mathbf{r}'_j\neq \mathbf{0}.
+    \end{aligned}\right.
+\end{align}
+</span></p>
+<p><strong>Step 5: Diagonal case <span class="math inline">\mathbf{r} = \mathbf{r}'</span>.</strong> When <span class="math inline">\mathbf{r} = \mathbf{r}'</span>, each local factor simplifies to: <span class="math display">
+v(\mathbf{r}_j, \mathbf{r}_j) = \begin{cases} \frac{5}{3}\sigma_{\mathbf{r}_j}^{\otimes 2} &amp; \text{if } \sigma_{\mathbf{r}_j} \neq \mathbb{I}_2, \\ \frac{11}{3}\mathbb{I}_4 &amp; \text{if } \sigma_{\mathbf{r}_j} = \mathbb{I}_2. \end{cases}
+</span> Hence: <span class="math display">
+\mathbf{V}(O_\mathbf{r},O_\mathbf{r}) = \bigotimes_{j=1}^n v(\mathbf{r}_j, \mathbf{r}_j) = \left(\frac{11}{3}\right)^{n}\left(\frac{5}{11}\right)^{\text{wt}(\sigma_{\mathbf{r}})}\sigma_{\mathbf{r}}^{\otimes 2}. \quad \square
+</span></p>
+</div>
+</div>
+</div>
+<p>We consider the estimation of the simplest operator <span class="math inline">O^{(2)} = \text{SWAP}^{\otimes n} = 2^{-n}(\mathbb{I}\mathbb{I}+XX+YY+ZZ)^{\otimes n}</span>. Based on <a href="#lem-covar-pauli" class="quarto-xref">Lemma&nbsp;7</a>, <span class="math inline">\text{Var}=(11/3)^n</span>, which still requires exponentially large sampling numbers. For the single copy local Clifford shadow, the variance is calculated through: <span class="math display">
+\begin{align*}
+    &amp;\hspace{-1.5cm}\mathbf{V}:= \sum_{W,W' \in \mathcal{P}_2^{\otimes n}} \alpha_{W}\alpha_{W'} R(W,W') W W'= 4^{-n}\bigotimes_{i =1}^n \left(\sum_{W_i,W_i' \in \{\mathbb{I}\mathbb{I},XX,YY,ZZ\}} R(W_i,W'_i) W_i W_i'\right).\notag\\
+   = 4^{-n} &amp;\left( \mathbb{I}\mathbb{I}+XX+YY+ZZ+ XX+9\mathbb{I}\mathbb{I} + YY + 9\mathbb{I}\mathbb{I} +ZZ+ 9\mathbb{I}\mathbb{I}\right)^{\otimes n}\notag\\
+  &amp; \hspace{-1.15cm}= \left(7 \mathbb{I}\mathbb{I} + \frac{1}{2}(XX+YY+ZZ)\right)^{\otimes n}= \left(\frac{13\mathbb{I}\mathbb{I}+2\text{SWAP}}{2}\right)^{\otimes n} = \left(\frac{11\mathbb{I}\mathbb{I}+ 4\Pi_{\mathrm{sym}}}{2}\right)^{\otimes n}.
+\end{align*}
+</span> This gives the variance scaling of <span class="math inline">7.5^n</span>, which being improved to <span class="math inline">4.67^n</span> in the 2-replica local shadow. Noted that the purity estimation strategy using Bell measurements already reach the <span class="math inline">\mathcal{O}(1)</span> sampling complexity.</p>
+<div class="callout callout-style-default callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Question:
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Can this be generalized to the high-rank case?</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-19-contents" aria-controls="callout-19" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Proof (Click to expand)
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-19" class="callout-19-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>In generalized <span class="math inline">\text{tr}(O \rho^2)</span> to the high-rank case <span class="math inline">\text{tr}(O \rho^k)</span>, we first write the decomposition of <span class="math inline">k</span>-cycle permutation as <span class="math display">
+\begin{align*}
+    \text{SWAP}_{(1\cdots k)} = 2^{-k+1}\sum_{\mathbf{p}^{(i)} \in \mathbb{F}_2^2} \sigma_{\mathbf{p}^{(1)}}\otimes \left(\sigma_{\mathbf{p}^{(1)}} \sigma_{\mathbf{p}^{(2)}}\right)\otimes \left(\sigma_{\mathbf{p}^{(2)}} \sigma_{\mathbf{p}^{(3)}}\right)\otimes \cdots \otimes \left(\sigma_{\mathbf{p}^{(k-1)}} \sigma_{\mathbf{p}^{(k)}}\right),
+\end{align*}
+</span> This gives the decomposition of the estimator <span class="math inline">O^{(k)} := \sigma_{\mathbf{r}} \otimes \mathbb{I}_{n}^{\otimes (k-1)} \cdot \text{SWAP}^{\otimes n}</span> on <span class="math inline">k</span>-copies of <span class="math inline">n</span>-qubits states as <span class="math display">\begin{align*}
+    O^{(k)} &amp;= 2^{-(k-1)n}\sum_{\mathbf{p}^{(l&gt;0)} \in \mathbb{F}_2^{2n}}  (\sigma_{\mathbf{r}}\sigma_{\mathbf{p}^{(1)}})\otimes \left(\sigma_{\mathbf{p}^{(1)}} \sigma_{\mathbf{p}^{(2)}}\right)\otimes \left(\sigma_{\mathbf{p}^{(2)}} \sigma_{\mathbf{p}^{(3)}}\right)\otimes \cdots \otimes \left(\sigma_{\mathbf{p}^{(k-2)}} \sigma_{\mathbf{p}^{(k-1)}}\right)\otimes \sigma_{\mathbf{p}^{(k-1)}} \notag \\
+    &amp;= \sum_{\mathbf{p}^{(l&gt;0)} \in \mathbb{F}_2^{2n}}2^{-k+1}\cdot i^{ \sum_{l =1}^{k-1}\mathbf{p}^{(l)}J \mathbf{p}^{(l-1)}} \sigma_{\mathbf{r} + \mathbf{p}^{(1)}} \otimes \sigma_{\mathbf{p}^{(1)} + \mathbf{p}^{(2)}} \otimes \cdots \otimes \sigma_{\mathbf{p}^{(k-2)} + \mathbf{p}^{(k-1)}} \otimes \sigma_{\mathbf{p}^{(k-1)} }
+\end{align*}</span> Here we denote <span class="math inline">\mathbf{r}= \mathbf{p}^{(0)}</span>. This means that this operator satisfied the local decomposition <span class="math inline">W_{j} = \sigma_{\mathbf{u}}</span> with <span class="math inline">\mathbf{u}(\mathbf{p}_j^{(m)}) = (\mathbf{r}_j + \mathbf{p}^{(1)}_j,\mathbf{p}^{(1)}_j+\mathbf{p}^{(2)}_j, \cdots, \mathbf{p}^{(k-2)}_j+\mathbf{p}^{(k-1)}_j,\mathbf{p}^{(k-1)}_j) \in (\mathbb{F}_{2}^{2})^k</span> and <span class="math inline">\alpha_{W_j} = 2^{-k+1}i^{ \sum_{l =1}^{k-1}\mathbf{p}_j^{(l)}J \mathbf{p}_j^{(l-1)}}</span> for <span class="math inline">\mathbf{p}_j^{(m)}, \forall j = 1,\cdots,n, \forall m = 1,\cdots,k-1</span> ranging around <span class="math inline">\mathbb{F}_{2}^2</span>. To simplify the notation, we set two of such a vector <span class="math inline">\mathbf{u}(\mathbf{p}_j^{(m)})</span> and <span class="math inline">\mathbf{v}(\mathbf{q}_j^{(m)})</span> and abbreviate their <span class="math inline">j</span> index. Use <a href="#lem-LC-shadow-kcopy" class="quarto-xref">Lemma&nbsp;5</a> as <span class="math display">\begin{align*}
+    \mathbf{V}(O^{(k)}) &amp;= \bigotimes_{j =1}^n \left(\sum_{\mathbf{u},\mathbf{v}}4^{-k+1}i^{ \sum_{l =1}^{k-1}\mathbf{p}^{(l)}J \mathbf{p}^{(l-1)}}\cdot i^{ \sum_{l =1}^{k-1}\mathbf{q}^{(l)}J \mathbf{q}^{(l-1)}} r(\mathbf{u},\mathbf{v})\sigma_{\mathbf{u}}\sigma_{\mathbf{v}}\right)\\
+    &amp;=\bigotimes_{j =1}^n \left(\sum_{\mathbf{u},\mathbf{v}}4^{-k+1}i^{ \sum_{l =1}^{k-1}\mathbf{p}^{(l)}J \mathbf{p}^{(l-1)}+\sum_{l =1}^{k-1}\mathbf{q}^{(l)}J \mathbf{q}^{(l-1)} + \mathbf{v} J{\mathbf{u}}} r(\mathbf{u},\mathbf{v})\sigma_{\mathbf{u} + \mathbf{v}}\right)\\
+    &amp;=\bigotimes_{j =1}^n
+    \left(\left\{ \begin{aligned}
+        &amp;\sum_{\mathbf{u},\mathbf{v}}4^{-k+1}i^{m(\mathbf{u},\mathbf{v})} \frac{2^k + 1}{2^k + 2} \left[2^k \delta_{\mathbf{u}, \mathbf{v}} + 1 + (-1)^{[\mathbf{v}, \mathbf{u}]}\right]\sigma_{\mathbf{u} + \mathbf{v}} \text{~if~}\mathbf{r} \neq 0\\
+        &amp;\left.\sum_{\mathbf{u},\mathbf{v}}4^{-k+1}i^{m(\mathbf{u},\mathbf{v})} r(\mathbf{u},\mathbf{v})\sigma_{\mathbf{u} + \mathbf{v}} \right|_{\mathbf{r} = 0}
+    \end{aligned}\right.\right)
+\end{align*}</span> Here in the last equality, we use the rescaling formula from <a href="#lem-LC-shadow-kcopy" class="quarto-xref">Lemma&nbsp;5</a> and the fact that <span class="math inline">\mathbf{u}=0</span> or <span class="math inline">\mathbf{v}=0</span> can only happen if <span class="math inline">\mathbf{r}_j = 0</span>. Thus, in the case of <span class="math inline">\mathbf{r}_j \neq 0</span>, we have <span class="math inline">r(\mathbf{u},\mathbf{v})= (2^k + 1)(2^k + 2)^{-1} \left[2^k \delta_{\mathbf{p}, \mathbf{q}} + 1 + (-1)^{[\mathbf{v}, \mathbf{u}]}\right]</span>. We simplified the first line of Eq.<a href="#eq:trrhok_Var_op" data-reference-type="eqref" data-reference="eq:trrhok_Var_op">[eq:trrhok_Var_op]</a> term-by-term below. For the first term <span class="math inline">\sum_{\mathbf{u},\mathbf{v}}2^{2-k}(2^k + 1)(2^k +2)^{-1} i^{m(\mathbf{u}, \mathbf{v})} \delta_{\mathbf{u}, \mathbf{v}} \sigma_{\mathbf{u}+ \mathbf{v}}</span>. This gives the result <span class="math display">
+\begin{align*}
+    \text{The 1st term} &amp;= \sum_{\mathbf{u}} 2^{2-k}(2^k + 1)(2^k +2)^{-1} i^{m(\mathbf{u},\mathbf{u})} \mathbb{I}_k = 2^{2-k}(2^k + 1)(2^k +2)^{-1} \left(\sum_{\mathbf{p}^{(l&gt;0)}} (-1)^{\sum_{l =1}^{k-1}\left[\mathbf{p}^{(l)},\mathbf{p}^{(l-1)}\right]} \right) \mathbb{I}_k  \notag \\
+    &amp;= \left\{\begin{aligned}
+        &amp;\frac{2(2^k + 1)}{2^k +2} \mathbb{I}_k &amp;\text{~if~} k \text{~is odd},\\
+        &amp;0 &amp;\text{~if~} k \text{~is even}.
+    \end{aligned}\right.
+\end{align*}
+</span> Here in the second line we evaluate the coefficient in two cases <span class="math inline">k = 2s+1</span> and <span class="math inline">k = 2s+2</span>, as shown below: <span class="math display">
+\begin{align*}
+    \left.\sum_{\mathbf{p}^{(l&gt;0)}} (-1)^{\sum_{l =1}^{k-1}\left[\mathbf{p}^{(l)},\mathbf{p}^{(l-1)}\right]} \right|_{p^{(0)} = \mathbf{r}_j}&amp;= \sum_{\mathbf{p}^{(l&gt;2)} } \sum_{\mathbf{p}^{(2)} \in \mathbb{F}_2^{2}}\left(\sum_{\mathbf{p}^{(1)} \in \mathbb{F}_2^{2}}(-1)^{\left[\mathbf{p}^{(1)},\mathbf{p}^{(2)}+\mathbf{p}^{(0)}\right]} \right)(-1)^{\sum_{l =3}^{k-1}\left[\mathbf{p}^{(l)},\mathbf{p}^{(l-1)}\right]} \notag\\
+    &amp;=\sum_{\mathbf{p}^{(l&gt;2)} } \sum_{\mathbf{p}^{(2)} \in \mathbb{F}_2^{2}}\left(4\delta_{\mathbf{p}^{(2)},\mathbf{p}^{(0)}} \right)(-1)^{\sum_{l =3}^{k-1}\left[\mathbf{p}^{(l)},\mathbf{p}^{(l-1)}\right]} \notag \\
+    &amp;= 4 \left.\sum_{\mathbf{p}^{(l&gt;2)}} (-1)^{\sum_{l =3}^{k-1}\left[\mathbf{p}^{(l)},\mathbf{p}^{(l-1)}\right]} \right|_{p^{(2)} = \mathbf{r}_j}=4^s\left.\sum_{\mathbf{p}^{(l&gt;2s)}} (-1)^{\sum_{l =2s+1}^{k-1}\left[\mathbf{p}^{(l)},\mathbf{p}^{(l-1)}\right]} \right|_{p^{(2s)} = \mathbf{r}_j}\notag \\
+    &amp; =\left\{\begin{aligned}
+        &amp;4^s \text{~if~} k = 2s+1,\\
+        &amp;4^s \sum_{\mathbf{p}^{(2s+1)}} (-1)^{\left[\mathbf{p}^{(2s+1)}, \mathbf{r}_j\right]} = 0 \text{~if~} k = 2s+2
+    \end{aligned}\right.=\left\{\begin{aligned}2^{k-1} \text{~if~} k \text{~is odd},\\ 0 \text{~if~} k \text{~is even}.\end{aligned}\right.
+\end{align*}
+</span> For the second term in the first line of Eq.<a href="#eq:trrhok_Var_op" data-reference-type="eqref" data-reference="eq:trrhok_Var_op">[eq:trrhok_Var_op]</a>, <span class="math inline">\sum_{\mathbf{u},\mathbf{v}} 4^{-k +1} i^{m(\mathbf{u},\mathbf{v})}(2^k + 1)(2^k+2)^{-1} \sigma_{\mathbf{u}+\mathbf{v}}</span>, we replace all the <span class="math inline">\{\mathbf{q}_j^{(m)}\}</span> variable by <span class="math inline">\{\mathbf{w}_j^{(m)}\}</span> defined as <span class="math inline">\mathbf{w}^{(m)}_j := \mathbf{p}^{(m)}_j+\mathbf{q}^{(m)}_j</span>. Then the phase term <span class="math inline">m(\mathbf{u},\mathbf{v})</span> satisfied: <span class="math display">
+\begin{align*}
+    &amp;m(\mathbf{u},\mathbf{v}):= \sum_{l =1}^{k-1}\left(\mathbf{p}^{(l)}J \mathbf{p}^{(l-1)}+\mathbf{q}^{(l)}J \mathbf{q}^{(l-1)}\right) + \mathbf{v} J{\mathbf{u}} \notag\\
+    &amp;=\sum_{l =1}^{k-1}\left[\mathbf{p}^{(l)}J \mathbf{p}^{(l-1)}+\mathbf{q}^{(l)}J \mathbf{q}^{(l-1)} + \left(\mathbf{q}^{(l)}+\mathbf{q}^{(l-1)}\right)J \left(\mathbf{p}^{(l)}+\mathbf{p}^{(l-1)}\right) \right]+ \mathbf{q}^{(k-1)}J \mathbf{p}^{(k-1)}\notag\\
+    &amp;=\sum_{l =1}^{k-1}\left[\mathbf{p}^{(l)}J \mathbf{p}^{(l-1)}+\left(\mathbf{w}^{(l)} - \mathbf{p}^{(l)}\right)J \left(\mathbf{w}^{(l-1)} - \mathbf{p}^{(l-1)}\right) + \left(\mathbf{w}^{(l)}+\mathbf{w}^{(l-1)}\right)J \left(\mathbf{p}^{(l)}+\mathbf{p}^{(l-1)}\right) \right]+ \mathbf{w}^{(k-1)}J \mathbf{p}^{(k-1)} \notag\\
+    &amp;=\sum_{l =1}^{k-1}\left[2\mathbf{p}^{(l)}J\mathbf{p}^{(l-1)} + 2\mathbf{w}^{(l-1)}J\mathbf{p}^{(l)} + 2\mathbf{w}^{(l-1)}J\mathbf{p}^{(l-1)} - \mathbf{w}^{(l-1)}J\mathbf{p}^{(l-1)}+ \mathbf{w}^{(l)}J\mathbf{p}^{(l)}  + \mathbf{w}^{(l)}J\mathbf{w}^{(l-1)}\right]+ \mathbf{w}^{(k-1)}J \mathbf{p}^{(k-1)} \notag\\
+    &amp;= \sum_{l =1}^{k-1}2\left(\mathbf{p}^{(l)} + \mathbf{w}^{(l-1)}\right) J \left(\mathbf{p}^{(l-1)}+ \mathbf{p}^{(l)}\right)+ \sum_{l=1}^{k-1}\left(\mathbf{w}^{(l)} J \mathbf{p}^{(l)} - \mathbf{w}^{(l-1)} J \mathbf{p}^{(l-1)}\right) + \sum_{l =1}^{k-1} \mathbf{w}^{(l)} J \mathbf{w}^{(l-1)} +\mathbf{w}^{(k-1)}J \mathbf{p}^{(k-1)}\notag\\
+    &amp;= \sum_{l =1}^{k-1}2\left(\mathbf{p}^{(l)} + \mathbf{w}^{(l-1)}\right) J \left(\mathbf{p}^{(l-1)}+ \mathbf{p}^{(l)}\right) +2\mathbf{w}^{(k-1)}J \mathbf{p}^{(k-1)}+ \sum_{l =1}^{k-1} \mathbf{w}^{(l)} J \mathbf{w}^{(l-1)} .
+\end{align*}
+</span> Notice that <span class="math inline">\mathbf{u}_j + \mathbf{v}_j = (\mathbf{w}^{(1)}_j,\mathbf{w}^{(1)}_j+\mathbf{w}^{(2)}_j, \cdots, \mathbf{w}^{(k-2)}_j+\mathbf{w}^{(k-1)}_j,\mathbf{w}^{(k-1)}_j)</span>, we denoting <span class="math inline">\sigma_{\mathbf{w}} = \sigma_{\mathbf{w}^{(1)}} \otimes \sigma_{\mathbf{w}^{(1)} + \mathbf{w}^{(2)}} \otimes  \sigma_{\mathbf{w}^{(k-2)} + \mathbf{w}^{(k-1)}} \otimes \sigma_{\mathbf{w}^{(k-1)}}</span>. This then simplified the second term into <span class="math display">
+\begin{align*}
+    \text{The 2nd term} = 4^{-k +1}\frac{2^k + 1}{2^k+2} \left(\sum_{\mathbf{p}^{(l&gt;0)}}  (-1)^{\sum_{l =1}^{k-1}\left[\mathbf{p}^{(l)} + \mathbf{w}^{(l-1)},\mathbf{p}^{(l-1)}+ \mathbf{p}^{(l)}\right] +\left[\mathbf{w}^{(k-1)},\mathbf{p}^{(k-1)}\right]} \right)\sum_{\mathbf{w}^{(l&gt;0)}}  i^{\sum_{l =1}^{k-1} \mathbf{w}^{(l)} J \mathbf{w}^{(l-1)}}\sigma_{\mathbf{w}}
+\end{align*}
+</span> Here in the second line we evaluate the coefficient in the bracket below <span class="math display">
+\begin{align*}
+    \sum_{\mathbf{p}^{(l&gt;0)}}  (-1)^{\sum_{l =1}^{k-1}\left[\mathbf{p}^{(l)} + \mathbf{w}^{(l-1)},\mathbf{p}^{(l-1)}+ \mathbf{p}^{(l)}\right] +\left[\mathbf{w}^{(k-1)},\mathbf{p}^{(k-1)}\right]} &amp;= \sum_{\mathbf{p}^{(l&gt;0)}}  (-1)^{\sum_{l =1}^{k-1}\left[\mathbf{p}^{(l)},\mathbf{p}^{(l-1)}+\mathbf{w}^{(l-1)}\right]+\sum_{l =1}^{k}\left[\mathbf{w}^{(l-1)},\mathbf{p}^{(l-1)}\right]} \notag\\
+    &amp;= \sum_{\mathbf{p}^{(l&gt;0)}}  (-1)^{\sum_{l =1}^{k-1}\left[\mathbf{p}^{l},\mathbf{p}^{l-1}+\mathbf{w}^{l} + \mathbf{w}^{l-1}\right] }
+\end{align*}
+</span></p>
+</div>
+</div>
+</div>
+</section>
+<section id="application-to-estimate-weighted-purity." class="level2">
+<h2 class="anchored" data-anchor-id="application-to-estimate-weighted-purity.">Application to estimate weighted purity.</h2>
+<p>Local 2-copy 3-design shadow is worse because it is too universal. As a generalization of purity, in the following we consider a set of weighted purity operators and show that the Local 2-copy 3-design shadow has exponentially sampling supremacy compared to the Bell sampling method.</p>
+<div id="lem-max-variance" class="callout callout-style-default callout-important no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Lemma&nbsp;8: (Maximum Variance of Observable)
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Let <span class="math inline">O</span> be a Hermitian operator with the maximum and minimum eigenvalues <span class="math inline">\lambda_{\text{max}}</span> and <span class="math inline">\lambda_{\text{min}}</span>. Then its variance <span class="math inline">\text{Var}_{\rho}(O) := \langle O^2 \rangle_{\rho} - \langle O \rangle_{\rho}^2</span> satisfied <span class="math inline">\sup_{\rho \in \mathcal{D}(\mathcal{H}_n)}\text{Var}_{\rho}(O) = \left( {(\lambda_{\text{max}} - \lambda_{\text{min}})}/{2} \right)^2</span>. This maximum is achieved at pure state such as <span class="math inline">|\psi\rangle = \frac{1}{\sqrt{2}}(|\psi_{\text{max}}\rangle + |\psi_{\text{min}}\rangle)</span>.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-21-contents" aria-controls="callout-21" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Proof (Click to expand)
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-21" class="callout-21-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>The variance of an observable <span class="math inline">O</span> with respect to a quantum state <span class="math inline">\rho</span> is defined as We first show that the function <span class="math inline">f(\rho):= \text{Var}_{\rho}(O)</span> is a concave function of <span class="math inline">\rho</span>. Use the fact that <span class="math inline">[(1 - \theta)x_1 + \theta x_2]^2 \geq (1- \theta)x_1^2 + \theta x_2^2</span> due to the convexity of function <span class="math inline">g(x) = x^2</span>, we have <span class="math display">\begin{align*}
+        f((1- \theta)\rho + \theta \sigma) - (1- \theta)f(\rho) - \theta f(\sigma) = -\left[(1- \theta)\text{tr}(O\rho) + \theta \text{tr}(O\sigma)\right]^2 + (1- \theta)\left[\text{tr}(O\rho)\right]^2 + \theta \left[\text{tr}(O\sigma)\right]^2 \leq 0, \notag
+\end{align*}</span> which showed the concavity of <span class="math inline">f(\rho)</span>. The maximum value of a concave function over a convex set is attained at an extreme point. Therefore, the problem reduces to maximizing the variance over all pure states <span class="math inline">|\psi\rangle,  \text{Var}_{\psi}(O) = \langle\psi|O^2|\psi\rangle - (\langle\psi|O|\psi\rangle)^2</span>. Let <span class="math inline">\{|\lambda_i\rangle\}</span> be the orthonormal eigenbasis of <span class="math inline">O</span> with corresponding eigenvalues <span class="math inline">\{\lambda_i\}</span>, and express pure state <span class="math inline">|\psi\rangle</span> in this basis as <span class="math inline">|\psi\rangle = \sum_i c_i |\lambda_i\rangle</span>, where <span class="math inline">\{p_i:=|c_i|^2\}_i</span> forms a valid probability. Then <span class="math inline">\text{Var}(O) = \sum_i p_i \lambda_i^2 - \left(\sum_i p_i \lambda_i\right)^2 = \sum_{i} p_i(\lambda_i - \bar{\lambda})^2</span>. Keeping <span class="math inline">\bar \lambda</span> unchanged, we should concentrate <span class="math inline">p_i</span> on the most extreme values available <span class="math inline">\lambda_{\text{max}}</span> and <span class="math inline">\lambda_{\text{min}}</span>. Let us consider a distribution where probability <span class="math inline">p</span> is assigned to <span class="math inline">\lambda_{\text{max}}</span> and <span class="math inline">1-p</span> to <span class="math inline">\lambda_{\text{min}}</span>. The variance for this distribution is <span class="math inline">\mathbf{V}(p) = [p\lambda_{\text{max}}^2 + (1-p)\lambda_{\text{min}}^2] - [p\lambda_{\text{max}} + (1-p)\lambda_{\text{min}}]^2</span>. Assuming <span class="math inline">\lambda_{\text{max}} \neq \lambda_{\text{min}}</span>, we can find the maximum by differentiate with respect to <span class="math inline">p</span> and find <span class="math inline">p=1/2</span>. This corresponds to an equal mixture of the minimum and maximum eigenvalues. Substituting <span class="math inline">p=1/2</span> back into the variance expression gives <span class="math display">\begin{align*}
+    \text{Var}_{\text{max}}(O) &amp;= \left[\frac{1}{2}\lambda_{\text{max}}^2 + \frac{1}{2}\lambda_{\text{min}}^2\right] - \left[\frac{1}{2}\lambda_{\text{max}} + \frac{1}{2}\lambda_{\text{min}}\right]^2 = \left( \frac{\lambda_{\text{max}} - \lambda_{\text{min}}}{2} \right)^2.
+\end{align*}</span>&nbsp;◻</p>
+</div>
+</div>
+</div>
+<div id="lem-superm-2copy-shadow" class="callout callout-style-default callout-important no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Lemma&nbsp;9: (Supremum of 2-Copy Shadow Variance)
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Given even numbers of qubits <span class="math inline">n</span> and the local operator <span class="math inline">O_{\alpha}^{(2)}:= \left[2^{-1}\mathbb{I}^{\otimes 2} + (\alpha/2) \cdot(X^{\otimes 2}+Y^{\otimes 2}+Z^{\otimes 2})\right]^{\otimes n}</span>, we can estimate <span class="math inline">\text{tr}(O^{(2)}_{\alpha} \rho^{\otimes 2})</span> using the local 2-copy 3-design shadow and the Bell sampling, with variance <span class="math inline">\text{Var}_{\mathrm{s}}(\rho ,\alpha)</span> and <span class="math inline">\text{Var}_{\mathrm{b}}(\rho ,\alpha)</span> separately. They satisfied <span class="math display">\begin{align*}
+        \sup_{\rho \in \mathcal{D}(\mathcal{H}_n)}\text{Var}_{\mathrm{s}}(\rho ,\alpha) &amp;= \left[{(35\alpha^2 + 6 \alpha +3)}/{12}\right]^n - \min \{[(1+ \alpha)/2]^{2n},[(1- 3\alpha)/2]^{2n} \},\\
+        \sup_{\rho \in \mathcal{D}(\mathcal{H}_n)}\text{Var}_{b}(\rho,\alpha) &amp;= 4^{-1}\left[[(1+ \alpha)/2]^{n}-[(1- 3\alpha)/2]^{n}\right]^2,\\
+        \sup_{\rho \in \mathcal{D}(\mathcal{H}_n)} \left[ \text{Var}_{b}(\rho,\alpha) - \text{Var}_{s}(\rho,\alpha) \right] &amp;= \max \{[(1+ \alpha)/2]^{2n},[(1- 3\alpha)/2]^{2n} \}-\left[\frac{35\alpha^2 + 6\alpha +3}{12}\right]^{n}.
+\end{align*}</span> If <span class="math inline">\alpha \in [-3,0]</span>, then <span class="math inline">\exists \rho \in \mathcal{D}(\mathcal{H}_n) \text{~s.t.~}\text{Var}_{b}(\rho,\alpha)\geq  \text{Var}_{s}(\rho,\alpha)</span>.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-23-contents" aria-controls="callout-23" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Proof (Click to expand)
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-23" class="callout-23-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><em>Proof.</em> To show whether <span class="math inline">O_\alpha^{(2)}</span> can be estimated by Bell sampling method, we noted that it is diagonal under Bell basis. Because <span class="math inline">O_\alpha^{(2)}</span> is a local operator, we can set <span class="math inline">O_\alpha^{(2)} = \bigotimes_{i=1}^n \sum_{s_i} v_{s_i}\ket{\Phi_{s_i}}\!\bra{\Phi_{s_i}}</span> with <span class="math inline">s_i = (a_x^{(i)}a_z^{(i)}) \in\{00,01,10,11\}</span>. Use the identity <span class="math display">\begin{align*}
+        \ket{\Phi_{a_x^{(i)}a_z^{(i)}}}\!\bra{\Phi_{a_x^{(i)}a_z^{(i)}}} =\frac{\mathbb{I}\mathbb{I} + (-1)^{a_x^{(i)}} XX - (-1)^{a_x^{(i)}+a_z^{(i)}}YY + (-1)^{a_z^{(i)}} ZZ}{4},
+\end{align*}</span> we conclude that <span class="math inline">\mathbf{v}:= (v_{00},v_{10},v_{11},v_{01})</span> must satisfy the identity below in order to estimate <span class="math inline">O_\alpha^{(2)}</span> unbiasedly: <span class="math display">\begin{align*}
+        \frac{1}{4} \begin{pmatrix}
+            1&amp;1&amp;-1&amp;1\\
+            1&amp;1&amp;1&amp;-1\\
+            1&amp;-1&amp;-1&amp;-1\\
+            1&amp;-1&amp;1&amp;1
+        \end{pmatrix}\mathbf{v} = \frac{1}{2} \begin{pmatrix}
+            1\\ \alpha \\ \alpha \\ \alpha
+        \end{pmatrix} \Rightarrow \mathbf{v} =  \frac{1}{2}\begin{pmatrix}
+           1+ \alpha \\ 1+ \alpha \\ 1- 3\alpha \\ 1+ \alpha
+        \end{pmatrix}.
+\end{align*}</span> Thus, <span class="math inline">O^{(2)}_{\alpha}</span> is an operator diagonal on Bell basis, with eigenvalue <span class="math inline">\{[(1+ \alpha)/2],[(1- 3\alpha)/2] \}^{n}</span>. Because <span class="math inline">n</span> is even, we have <span class="math inline">\{\lambda_{\max}, \lambda_{\min}\} = \{[(1+ \alpha)/2]^n,[(1- 3\alpha)/2]^n \}</span>. Then based on <a href="#lem-max-variance" class="quarto-xref">Lemma&nbsp;8</a>, the variance of this estimator satisfies <span class="math display">\begin{align*}
+        \sup_{\rho \in \mathcal{D}(\mathcal{H}_n)}\text{Var}_{b}(\rho,\alpha) &amp;= 4^{-1}\left[[(1+ \alpha)/2]^{n}-[(1- 3\alpha)/2]^{n}\right]^2,
+\end{align*}</span> To prove the variance of the shadow method, based on <a href="#lem-LC-shadow-kcopy" class="quarto-xref">Lemma&nbsp;5</a> the variance operator <span class="math inline">\mathbf{V}</span> as <span class="math display">\begin{align*}
+        &amp;\mathbf{V}:= \sum_{W,W' \in \mathcal{P}_2^{\otimes n}} \alpha_{W}\alpha_{W'} R(W,W') W W'= 4^{-n}\bigotimes_{i =1}^n \left(\sum_{W_i,W_i' \in \{\mathbb{I}\mathbb{I},XX,YY,ZZ\}} R(W_i,W'_i) \alpha_{W_i} \alpha_{W_i'}W_i W_i'\right).\notag\\
+       &amp;= 4^{-n}\left( \mathbb{I}\mathbb{I}+\alpha XX+ \alpha YY+ \alpha ZZ + \alpha XX+5 \alpha^2 \mathbb{I}\mathbb{I} -\frac{5}{3} \alpha^2 ZZ -\frac{5}{3} \alpha^2 YY\right.\notag\\
+       &amp;\hspace{1.5cm}\left.+ \alpha YY - \frac{5}{3}\alpha^2 ZZ + 5\alpha^2 \mathbb{I}\mathbb{I}-\frac{5}{3}\alpha^2 XX + \alpha ZZ-\frac{5}{3}\alpha^2 YY- \frac{5}{3}\alpha^2 XX+ 5\alpha^2 \mathbb{I}\mathbb{I}\right)^{\otimes n}\notag\\
+      &amp; = \left(\frac{1 + 15\alpha^2}{4}\mathbb{I}\mathbb{I} - \frac{2 \alpha - \frac{10}{3}\alpha^2}{4}(XX+YY+ZZ)\right)^{\otimes n} = \left(\frac{35\alpha^2 + 6\alpha +3}{12}\mathbb{I}^{\otimes 2} + \frac{10 \alpha^2 - 6\alpha}{3} \Pi_{\mathrm{asym}}\right)^{\otimes n}.
+\end{align*}</span> Here in the second line we use <span class="math inline">\alpha_{W} = \prod_{i =1}^n \alpha_{W_i}</span>, with <span class="math inline">\alpha_{W_i} = \begin{cases}\alpha/2 &amp;\text{if~} W_i = \mathbb{I}^{\otimes 2},\\ 1/2 &amp;\text{if~} W_i = XX,YY,ZZ.\end{cases}</span> In the last equality we use the fact that <span class="math inline">\Pi_{\mathrm{asym}} = (\mathbb{I}_2 - \text{SWAP})/2 = {(\mathbb{I}_2 - XX-YY-ZZ)}/{4}</span>. Then use the fact that the input state is symmetric, <span class="math inline">\text{tr}(\rho \otimes \rho \cdot \prod_{\mathrm{asym}}^{\otimes t} \otimes \mathbb{I}_2^{\otimes(n-t)}) = 0</span>. According to <a href="#lem-LC-shadow-kcopy" class="quarto-xref">Lemma&nbsp;5</a> takes the value <span class="math inline">\langle (\hat{o}^{(k)})^2 \rangle_{\rho} = \text{tr}(\rho \otimes \rho \cdot \mathbf{V}) = \left[{(35\alpha^2 + 6 \alpha +3)}/{12}\right]^n</span>, which leads to the result <span class="math inline">\text{Var}_s(\rho,\alpha) = \left[{(35\alpha^2 + 6 \alpha +3)}/{12}\right]^n - \langle O_\alpha^{(2)} \rangle_{\rho}^2</span>. Again use the convexity of <span class="math inline">\langle O_\alpha^{(2)} \rangle_{\rho}^2</span> with respect to <span class="math inline">\rho</span>, we conclude that <span class="math display">\begin{align*}
+        \sup_{\rho \in \mathcal{D}(\mathcal{H}_n)}\text{Var}_{\mathrm{s}}(\rho ,\alpha) &amp;= \left[{(35\alpha^2 + 6 \alpha +3)}/{12}\right]^n - \min \{[(1+ \alpha)/2]^{2n},[(1- 3\alpha)/2]^{2n} \}.
+\end{align*}</span> To compare this two variance on the same state <span class="math inline">\rho</span>, we first express the Bell sampling variance in terms of second moment average as <span class="math display">\begin{align*}
+        \text{Var}_{\mathrm b}(\rho,\alpha) &amp;=\sum_{\mathbf{s} \in \mathbb{F}_2^{2n}}\text{tr}\left(\rho \otimes \rho\cdot \bigotimes_{i=1}^n\ket{\Phi_{s_i}}\!\bra{\Phi_{s_i}}\right) \prod_{i=1}^n v_{{s}_i}^2 -\langle O^{(2)} \rangle_{\rho}^2 = \text{tr}(\rho^{\otimes 2} \left(O^{(2)}_{\alpha}\right)^2) -\langle O_\alpha^{(2)} \rangle_{\rho}^2.
+\end{align*}</span> Here <span class="math inline">\left(O^{(2)}_{\alpha}\right)^2</span> is again an operator diagonal on the Bell basis with eigenvalue <span class="math inline">\{[(1+ \alpha)/2]^2,[(1- 3\alpha)/2]^2 \}^{n}</span>. We then conclude that <span class="math display">\begin{align*}
+            \sup_{\rho \in \mathcal{D}(\mathcal{H}_n)} \left[ \text{Var}_{b}(\rho,\alpha) - \text{Var}_{s}(\rho,\alpha) \right] &amp;=\sup_{\rho \in \mathcal{D}(\mathcal{H}_n)} \text{tr}(\rho^{\otimes 2} \left(O^{(2)}_{\alpha}\right)^2)  - \left[\frac{35\alpha^2 + 6\alpha +3}{12}\right]^{n} \\
+            &amp;= \max \{[(1+ \alpha)/2]^{2n},[(1- 3\alpha)/2]^{2n} \}-\left[\frac{35\alpha^2 + 6\alpha +3}{12}\right]^{n} \geq 0.
+\end{align*}</span> We conclude that in the region <span class="math inline">\alpha \in [-3,0]</span>, this inequality is satisfied, which means that <span class="math inline">O_\alpha^{(2)}</span> can be more efficient estimated by local 2-copy shadows for certain density matrix <span class="math inline">\rho^{\otimes 2}</span> in this case.&nbsp;◻</p>
+</div>
+</div>
+</div>
+<p>This estimation task in <a href="#lem-superm-2copy-shadow" class="quarto-xref">Lemma&nbsp;9</a> is motivated by the non-linear property <span class="math inline">L_{\gamma}(\rho):= \sum_{P \in \mathcal{P}_n }\gamma^{\mathrm{wt}(P)}\text{tr}(P \rho P \rho)</span>. We find its two-copy estimator as stated by <a href="#lem-otoc-nonlinear" class="quarto-xref">Lemma&nbsp;10</a> below.</p>
+<div id="lem-otoc-nonlinear" class="callout callout-style-default callout-important no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Lemma&nbsp;10: (OTOC Non-linear Estimator)
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The non-linear value <span class="math inline">L_\gamma(\rho)</span> has a two-copy unbiased estimator <span class="math display">\begin{align*}
+        \hat{L}_{\gamma}^{(2)}:= \left[\frac{3\gamma + 1}{2} \mathbb{I}^{\otimes 2} + \frac{1 - \gamma}{2}(X^{\otimes 2} + Y^{\otimes 2} + Z^{\otimes 2})\right]^{\otimes n} .
+\end{align*}</span></p>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-25-contents" aria-controls="callout-25" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Proof (Click to expand)
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-25" class="callout-25-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><em>Proof.</em> Use the fact that <span class="math inline">\text{SWAP} = 2^{-1}(\mathbb{I}^{\otimes 2} + X^{\otimes 2} + Y^{\otimes 2} + Z^{\otimes 2})</span>, we noted that <span class="math display">\begin{align*}
+        \left[\frac{3\gamma + 1}{4} \mathbb{I}^{\otimes 2} + \frac{1 - \gamma}{2}(X^{\otimes 2} + Y^{\otimes 2} + Z^{\otimes 2})\right]\cdot \text{SWAP}   &amp;= \frac{3\gamma + 1}{4} \mathbb{I}^{\otimes 2} + \frac{1 - \gamma}{4}X^{\otimes 2} + \frac{1 - \gamma}{4}Y^{\otimes 2} + \frac{1 - \gamma}{4}Z^{\otimes 2}\notag\\
+        &amp;+\frac{3\gamma + 1}{4} X^{\otimes 2} + \frac{1 - \gamma}{4}\mathbb{I}^{\otimes 2} - \frac{1 - \gamma}{4}Z^{\otimes 2} - \frac{1 - \gamma}{4}Y^{\otimes 2}\notag\\
+        &amp;+\frac{3\gamma + 1}{4} Y^{\otimes 2} - \frac{1 - \gamma}{4}Z^{\otimes 2} + \frac{1 - \gamma}{4}\mathbb{I}^{\otimes 2} - \frac{1 - \gamma}{4}X^{\otimes 2}\notag\\
+        &amp;+\frac{3\gamma + 1}{4} {Z}^{\otimes 2} - \frac{1 - \gamma}{4}Y^{\otimes 2} -\frac{1 - \gamma}{4}X^{\otimes 2} + \frac{1 - \gamma}{4}\mathbb{I}^{\otimes 2}\notag\\
+        &amp;=\mathbb{I}^{\otimes 2}+{\gamma}({X}^{\otimes 2}+{Y}^{\otimes 2}+{Z}^{\otimes 2}).
+\end{align*}</span> Based on the fact that <span class="math inline">\text{tr}(\text{SWAP}^{\otimes n} \rho \otimes \sigma) = \text{tr}(\rho \cdot \sigma)</span>, we conclude that <span class="math display">\begin{align*}
+        \text{tr}(\hat{L}^{(2)} \cdot \rho \otimes \rho) &amp;=  \text{tr}\left( \text{SWAP}^{\otimes n}\cdot (\rho \otimes \rho) \cdot \left[ \mathbb{I}^{\otimes 2}+{\gamma}({X}^{\otimes 2}+{Y}^{\otimes 2}+{Z}^{\otimes 2})\right]^{\otimes n}\right) \\
+        &amp;=\text{tr}\left( \text{SWAP}^{\otimes n} \cdot (\rho \otimes \rho) \sum_{P \in \{\mathbb{I},X,Y,Z\}^{\otimes n}}\gamma^{\text{wt}(P)} P \otimes P\right)\\
+        &amp;= \sum_{P \in \mathcal{P}_n }\gamma^{\mathrm{wt}(P)}\text{tr}(\rho P \rho P ) = L_{\gamma}(\rho).
+\end{align*}</span>&nbsp;◻</p>
+</div>
+</div>
+</div>
+<figure id="fig:comp_shadow_bell" data-latex-placement="htbp!" class="figure">
+<img src="Figure/var_compare.png" style="width:60.0%" class="figure-img">
+<figcaption>
+The comparison of Bell sampling estiamtion method and the two-copy shadow method.
+</figcaption>
+</figure>
+<p>Noticed that <span class="math inline">\hat{L}_{\gamma} = (3\gamma+1)^n {O}_{\alpha}^{(2)}</span> with <span class="math inline">\alpha = {(1-\gamma)}/{(3\gamma + 1)}</span>. Use <a href="#lem-superm-2copy-shadow" class="quarto-xref">Lemma&nbsp;9</a>, we conclude that the variance of Bell sampling methods and 2-copy local 3-design shadow are separately shown below. We compared these variance in Figure&nbsp;<a href="#fig:comp_shadow_bell" data-reference-type="ref" data-reference="fig:comp_shadow_bell">1.1</a>. <span class="math display">\begin{align*}
+    &amp;\sup_{\rho}\text{Var}_s(\hat L_{\gamma}) =  (3\gamma+1)^{2n} \cdot \left[\left[{(35\alpha^2 + 6 \alpha +3)}/{12}\right]^n - \min \{[(1+ \alpha)/2]^{2n},[(1- 3\alpha)/2]^{2n} \}\right],\\
+    &amp;\sup_{\rho}\text{Var}_b(\hat L_{\gamma}) = 4^{-1}(3\gamma+1)^{2n}\left[[(1+ \alpha)/2]^{n}-[(1- 3\alpha)/2]^{n}\right]^2 \\
+    &amp;\sup_{\rho}\left[\text{Var}_b(\hat L_{\gamma}) -\text{Var}_s(\hat L_{\gamma}) \right] = (3\gamma+1)^{2n}\left[\max \{[(1+ \alpha)/2]^{2n},[(1- 3\alpha)/2]^{2n} \}-\left[\frac{35\alpha^2 + 6\alpha +3}{12}\right]^{n}\right].
+\end{align*}</span></p>
+<div id="lem-super-nonli" class="callout callout-style-default callout-important no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Lemma&nbsp;11: (Shadow vs Bell Sampling Comparison)
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>To estimate <span class="math inline">L_{\gamma}(\rho):= \sum_{P \in \mathcal{P}_n }\gamma^{\mathrm{wt}(P)}\text{tr}(P \rho P \rho)</span> for <span class="math inline">\gamma&gt;1</span> or <span class="math inline">\gamma &lt; -0.5</span>, there exist density matrix <span class="math inline">\rho</span>, such as <span class="math inline">\rho = \psi^{\otimes n}, \ket{\psi} = \sqrt{2^{-1}}(i\ket{01}-i\ket{10})</span>, such that the local 2-copy 2-design shadow strategy is better than the Bell sampling method.</p>
+</div>
+</div>
+</section>
+</section>
+<section id="local-2-copy-entanglement-fixed-shadow" class="level1">
+<h1>local 2-copy entanglement-fixed shadow</h1>
+<p>Now we consider the unitary ensemble <span class="math inline">\mathcal{U}_\theta^{\otimes n}</span>. For <span class="math inline">i</span>-th qubit pair <span class="math inline">\bar A_1 \bar A_2</span>, we first independently select single qubit gates <span class="math inline">R_1,R_2 \sim \text{Haar}(2)</span> and implement <span class="math inline">R_1 \otimes R_2</span> on the first qubit <span class="math inline">\bar A_1</span> and the second qubit <span class="math inline">\bar A_2</span>. Then we implement the two-qubit unitary <span class="math display">\begin{align*}
+  U_\theta =  \begin{pmatrix}
+    \sin \theta &amp;0             &amp;0             &amp;\cos \theta\\
+    0           &amp;\sqrt{2^{-1}} &amp;\sqrt{2^{-1}} &amp;0          \\
+    0           &amp;\sqrt{2^{-1}} &amp;-\sqrt{2^{-1}}&amp;0          \\
+    \cos \theta &amp;0             &amp;0             &amp;-\sin \theta
+   \end{pmatrix}.
+\end{align*}</span> and measured on the computational basis to get result <span class="math inline">\mathbf{r} = (\mathbf{r}_1,\cdots,\mathbf{r}_n) \in (\mathbb{F}_2^{2})^{n}</span>. Follow the same proof procedure in Lemma (onsite_2design) channel <span class="math inline">\mathcal{M}</span> as <span class="math display">\begin{align*}
+    \mathcal{M}(\otimes_{i = 1}^n \rho_i)
+    &amp;=\mathbb{E}_{\substack{U = \bigotimes_{i=1}^n\text{U}_i \\ \text{U}_i \sim \mathcal{U}_{\theta_i}}} \sum_{\mathbf{r} \in \mathbb{F}_2^{2n}} \bra{{\mathbf r}} \text{U} (\otimes_{i = 1}^n \rho_i) \text{U}^{\dagger} \ket{{\mathbf r}} \cdot \text{U}^{\dagger} \ket{{\mathbf r}}\!\bra{{\mathbf r}} \text{U} \notag\\
+    &amp;= \text{tr}_{\bar A}\left( \bigotimes_{i = 1}^n\left( \rho_i^{(\bar A)}\otimes \mathbb{I}_2^{(A)}\right) \cdot \bigotimes_{i = 1}^n \sum_{\mathbf{r}_i \in \mathbb{F}_2^2} \mathbb{E}_{\substack{\text{U}_i \sim \mathcal{U}_{\theta_i}}}  (\text{U}_i^{\dagger} \ket{\mathbf{r}_{i}}\bra{\mathbf{r}_{i}} \text{U}_i)^{(\bar A)} \otimes (\text{U}_i^{\dagger} \ket{\mathbf{r}_{i}}\!\bra{\mathbf{r}_{i}} \text{U}_i)^{(A)} \right)\notag\\
+    &amp;=\bigotimes_{i = 1}^n \text{tr}_{\bar A}\left( \left(\begin{aligned}&amp;\rho_i^{(\bar A)}\\&amp;\bigotimes \\ &amp;\mathbb{I}_2^{(A)}\end{aligned}\right) \cdot  \sum_{\mathbf{r}_i \in \mathbb{F}_2^2} \mathbb{E}_{\substack{\text{R} \sim \text{Haar}(2)}}  
+    \left(\begin{aligned}(\text{R}_1\otimes \text{R}_2)^{\dagger} \ket{\phi_{\mathbf{r}_{i}}^{\theta_i}}&amp;\!\bra{\phi_{\mathbf{r}_{i}}^{\theta_i}} (\text{R}_1\otimes \text{R}_2)^{(\bar A)}\\ &amp;\bigotimes \\(\text{R}_1\otimes \text{R}_2)^{\dagger} \ket{\phi_{\mathbf{r}_{i}}^{\theta_i}}&amp;\!\bra{\phi_{\mathbf{r}_{i}}^{\theta_i}} (\text{R}_1\otimes \text{R}_2)^{(A)} \end{aligned}\right)
+    \right) \notag \\
+    &amp;= \bigotimes_{i = 1}^n \sum_{\mathbf{r}_i \in \mathbb{F}_2^2}\text{tr}\left( \ket{\phi_{\mathbf{r}_{i}}^{\theta_i}}\!\bra{\phi_{\mathbf{r}_{i}}^{\theta_i}}^{(\bar A)} \otimes \ket{\phi_{\mathbf{r}_{i}}^{\theta_i}}\!\bra{\phi_{\mathbf{r}_{i}}^{\theta_i}}^{(A)}\cdot B_{\mathbf{v}}\right) \text{tr}_{\bar A} \left( \rho_i^{(\bar A)} \otimes \mathbb{I}_2^{( A)} \cdot B_{\mathbf u}\right) \text{Wg}^2(|\mathbf u - \mathbf v|,2). \notag
+\end{align*}</span> Here in the third line we use the definition <span class="math inline">U_i = U_{\theta_i} \cdot (R_1 \otimes R_2),\ket{\phi_{\mathbf{r}_{i}}^{\theta_i}}:= U_{\theta_i}^\dagger\ket{\mathbf{r}_{i}}</span>. In the last line we use Lemma (2-foldWein) <span class="math inline">B_\mathbf{v} = \text{SWAP}_{\bar A_1,A_1}^{v_1} \otimes \text{SWAP}_{\bar A_2,A_2}^{v_2}</span> and <span class="math inline">\text{Wg}^2(w,2) =\left\{\begin{aligned}
+    {1}/{9} &amp;\text{~if~} w = 0\\
+     -{1}/{18} &amp;\text{~if~} w = 1\\
+     {1}/{36} &amp;\text{~if~} w = 2.
+\end{aligned}\right.</span>. Calculation shows that <span class="math display">\begin{align*}
+    &amp;\sum_{\mathbf{r}_i \in \mathbb{F}_2^2}\text{tr}\left( \ket{\phi_{\mathbf{r}_{i}}^{\theta_i}}\!\bra{\phi_{\mathbf{r}_{i}}^{\theta_i}}^{(\bar A)} \otimes \ket{\phi_{\mathbf{r}_{i}}^{\theta_i}}\!\bra{\phi_{\mathbf{r}_{i}}^{\theta_i}}^{(A)}\cdot B_{\mathbf{v}}\right) = \left\{\begin{aligned}
+        &amp;\qquad 4 &amp;\text{~if~} \mathbf{v} = (0,0),(1,1),\\
+        &amp;2 + \cos^2 (2 \theta_i)&amp;\text{~if~} \mathbf{v} = (0,1),(1,0),
+    \end{aligned}\right. \\
+    &amp;\text{tr}_{\bar A} \left( \rho_i^{(\bar A)} \otimes \mathbb{I}_2^{( A)} \cdot B_{\mathbf u}\right) = \left\{\begin{aligned}
+        &amp;\rho_i^{(1)} \otimes \mathbb{I}^{(2)}&amp;\text{~if~} \mathbf{u} = (1,0),\quad&amp;\mathbb{I}^{(1)}\otimes\rho_i^{(2)} &amp;\text{~if~} \mathbf{u} = (0,1),\\
+        &amp;\rho_i&amp;\text{~if~} \mathbf{u} = (1,1),\quad&amp;\text{tr}\rho_i \cdot \mathbb{I}_2&amp;\text{~if~} \mathbf{u} = (0,0).
+    \end{aligned}\right.
+\end{align*}</span> Combining these two equations gives the channel outputs, as <span class="math display">\begin{align*}
+    \mathcal{M}(\otimes_{i = 1}^n \rho_i) &amp;= \bigotimes_{i = 1}^n \left[ 4 \cdot \left[\frac{1}{9}\text{tr}\rho_i \cdot \mathbb{I}_2 -\frac{1}{18} \mathbb{I}^{(1)}\otimes\rho_i^{(2)} -\frac{1}{18} \rho_i^{(1)} \otimes \mathbb{I}^{(2)} + \frac{1}{36}\rho_i\right]\right.\\
+    &amp;+(2 + \cos^2(2 \theta_i)) \cdot \left[-\frac{1}{18}\text{tr}\rho_i \cdot \mathbb{I}_2 + \frac{1}{9}\mathbb{I}^{(1)}\otimes\rho_i^{(2)} + \frac{1}{36}\rho_i^{(1)} \otimes \mathbb{I}^{(2)}  -\frac{1}{18}\rho_i\right]\\
+    &amp;+(2 + \cos^2(2 \theta_i)) \cdot \left[-\frac{1}{18}\text{tr}\rho_i \cdot \mathbb{I}_2 + \frac{1}{36}\mathbb{I}^{(1)}\otimes\rho_i^{(2)} + \frac{1}{9}\rho_i^{(1)} \otimes \mathbb{I}^{(2)} -\frac{1}{18}\rho_i\right]\\
+    &amp;\left.+4 \cdot \left[\frac{1}{36}\text{tr}\rho_i \cdot \mathbb{I}_2 -\frac{1}{18} \mathbb{I}^{(1)}\otimes\rho_i^{(2)} -\frac{1}{18} \rho_i^{(1)} \otimes \mathbb{I}^{(2)} + \frac{1}{9}\rho_i\right] \right]\\
+    &amp;= \bigotimes_{i = 1}^n\left[\frac{3 - \cos^2(2\theta_i)}{9}(\text{tr}\rho_i \cdot \mathbb{I}_2 + \rho_i) + \frac{5\cos^2(2\theta_i) -6}{36}(\mathbb{I}^{(1)}\otimes\rho_i^{(2)}+ \rho_i^{(1)} \otimes \mathbb{I}^{(2)})\right]\\
+    &amp;=\bigotimes_{i = 1}^n\left[p_1\text{tr}\rho_i \cdot \frac{\mathbb{I}_2}{4} + p_2\rho_i + p_3\cdot \frac{(\mathbb{I}^{(1)}/2)\otimes\rho_i^{(2)}+ \rho_i^{(1)} \otimes (\mathbb{I}^{(2)}/2)}{2}\right].
+\end{align*}</span> where we defined the distribution <span class="math inline">\left\{\begin{aligned}p_1 &amp;= \frac{12 - 4\cos^2(2\theta_i)}{9}, \\ p_2 &amp;= \frac{3 - \cos^2(2\theta_i)}{9},\\ p_3&amp;= \frac{5\cos^2(2\theta_i) -6}{9}&lt;0. \end{aligned}\right.</span> This channel is separable <span class="math inline">\mathcal{M} = \mathcal{M}_{\theta_i}^{\otimes n}</span> and generate no entanglement between different site <span class="math inline">i</span>. But the negativity of <span class="math inline">p_3</span> shows the inherent entangled property of channel <span class="math inline">\mathcal{M}_{\theta}</span> between the first and the second copy. Now we calculate its inverse point-wisely, by first suggesting that <span class="math display">\begin{align*}
+    \rho := \mathcal{M}_{\theta}^{-1}(\sigma) &amp;= q_1 \text{tr} \sigma \cdot \frac{\mathbb{I}_2}{4} + q_2 \sigma + \frac{q_3}{2} (\mathbb{I}^{(1)}/2)\otimes\sigma^{(2)} + \frac{q_3}{2} \sigma^{(1)}\otimes(\mathbb{I}^{(2)}/2). \\
+    \text{tr}\rho &amp;=  (q_1 + q_2 + q_3) \cdot \text{tr} \sigma,\\
+     \rho^{(1)} &amp;= (q_1 + q_3/2)\text{tr}\sigma\cdot(\mathbb{I}^{(1)}/2) + (q_2 + q_3/2) \sigma^{(1)},\\
+     \rho^{(2)} &amp;= (q_1 + q_3/2)\text{tr}\sigma\cdot(\mathbb{I}^{(2)}/2) + (q_2 + q_3/2) \sigma^{(2)}.
+\end{align*}</span> Plug these equations into Eq.<a href="#eq:ent_rest_channel" data-reference-type="eqref" data-reference="eq:ent_rest_channel">[eq:ent_rest_channel]</a>, and use the identity <span class="math inline">\mathcal{M}_{\theta}\left(\mathcal{M}_{\theta}^{-1}(\sigma)\right) = \sigma</span>, we get the equation: <span class="math display">\begin{align*}
+    \sigma = &amp;p_1\text{tr}\rho \cdot \frac{\mathbb{I}_2}{4}+ p_2\rho + \frac{p_3}{2}\cdot {(\mathbb{I}^{(1)}/2)\otimes\rho^{(2)}}+ \frac{p_3}{2}\rho^{(1)} \otimes (\mathbb{I}^{(2)}/2) \\
+    = &amp;p_1(q_1 + q_2 + q_3) \cdot \text{tr} \sigma \cdot (\mathbb{I}_2/4) \notag\\
+    &amp;+ p_2q_1 \text{tr} \sigma \cdot (\mathbb{I}_2/4) + p_2q_2 \sigma + p_2\frac{q_3}{2} (\mathbb{I}^{(1)}/2)\otimes\sigma^{(2)} + p_2\frac{q_3}{2} \sigma^{(1)}\otimes(\mathbb{I}^{(2)}/2)\notag \\
+    &amp;+ ({p_3}/{2})(q_1 + q_3/2)\text{tr}\sigma\cdot(\mathbb{I}_2/4)  + ({p_3}/{2})(q_2 + q_3/2) (\mathbb{I}^{(1)}/2)\otimes\sigma^{(2)}\notag\\
+    &amp;+ ({p_3}/{2})(q_1 + q_3/2)\text{tr}\sigma\cdot(\mathbb{I}_2/4) + ({p_3}/{2})(q_2 + q_3/2) \sigma^{(1)} \otimes (\mathbb{I}^{(2)}/2)\\
+    =&amp;\left[p_1(q_1 + q_2 + q_3) + p_2q_1 +p_3(q_1 + q_3/2)\right]\text{tr} \sigma \cdot (\mathbb{I}_2/4) + p_2q_2 \sigma \notag\\
+    &amp;+ \left[({p_3}/{2})(q_2 + q_3/2) + p_2\frac{q_3}{2} \right]\left((\mathbb{I}^{(1)}/2)\otimes\sigma^{(2)} +\sigma^{(1)} \otimes (\mathbb{I}^{(2)}/2)\right),
+\end{align*}</span> which leads to <span class="math inline">\left\{\begin{aligned}
+    &amp;(p_1+ p_2+p_3)q_1 + p_1q_2 + (p_1+ p_3/2)q_3 = 0,\\
+    &amp;p_2q_2 = 1,\\
+    &amp;p_3q_2 + (p_3/2 + p_2)q_3 = 0.
+\end{aligned}\right.</span>. Use the fact that <span class="math inline">\left\{\begin{aligned}
+    &amp;p_2+p_3/2 = \cos^2(2\theta)/6,\\
+    &amp;p_1 + p_3/2 =1 - \cos^2(2\theta)/6,
+\end{aligned}\right.</span> we get the final result <span class="math display">\begin{align*}
+    \left\{\begin{aligned}
+        &amp;q_1 = -\frac{p_1q_2 + (p_1+ p_3/2)q_3}{p_1+ p_2+p_3} = -4 + \frac{6 - 5\cos^2(2\theta)}{3 - \cos^2(2\theta)} - \frac{6- 5\cos^2(2\theta)}{3 - \cos^2 (2\theta)} \cdot \frac{6}{\cos^2 (2\theta) },\\
+        &amp;q_2 =\frac{1}{p_2}= \frac{9}{3 - \cos^2(2\theta_i)},\quad q_3 = - \frac{p_3}{p_3/2 + p_2}q_2 = \frac{6- 5\cos^2(2\theta)}{3 - \cos^2 (2\theta)} \cdot \frac{6}{\cos^2 (2\theta) }.
+    \end{aligned}\right.
+\end{align*}</span> If we decomposed the inputs into two-qubits Pauli operator <span class="math inline">W_i \in \{\mathbb{I},X,Y,Z\}^{\otimes 2}</span>, we get the result <span class="math display">\begin{align*}
+    \mathcal{M}^{-1}_{\theta}(W_i) = f_{\theta}(W_i) W_i,  f_{\theta}(W_i) = \begin{cases}
+        1&amp; \text{~if~} W_i = \mathbb{I}_2,\\
+        {6}/{\cos^2(2\theta)}&amp; \text{~if~} W_i = \mathbb{I} \otimes P,P\otimes\mathbb{I},  \\
+        {9}/{(3 - \cos^2(2\theta))}&amp; \text{~if~} W_i = P \otimes Q.
+    \end{cases}
+\end{align*}</span> Noted that when <span class="math inline">\theta = \pi /4</span>, which implements local randomized Bell measurements, the inverse channel does not exist. When <span class="math inline">\theta = 0</span>, the inverse channel exists and writes <span class="math display">\begin{align*}
+    \mathcal{M}^{-1}(\otimes_{i=1}^n O_i) =\bigotimes_{i=1}^n \left[ -\frac{13}{2} \text{tr} O_i \cdot \frac{\mathbb{I}_2}{4} + \frac{9}{2}O_i + \frac{3}{2}\left(O_i^{(1)} \otimes \frac{\mathbb{I}}{2} + \frac{\mathbb{I}}{2} \otimes  O_i^{(2)}\right)\right].
+\end{align*}</span> Similarly, we first noted that given a local observable <span class="math inline">O = \otimes_{i=1}^n O_i</span> that supports on local two-copy states <span class="math inline">\otimes_{i=1}^n\rho_i</span>, we can calculate the variance of the estimator as <span class="math display">
+\begin{align*}
+        \langle \hat{o}^2 \rangle_{\rho} &amp;=\mathbb{E}_{U \sim \mathcal{U}_\theta^{\otimes n}}\sum_{\mathbf b \in \mathbb{F}_2^{2n}}\bra{\mathbf b}U {\rho} U^\dagger \ket{\mathbf{b}} \bra{\mathbf b}U{\mathcal{M}}^{-1}({O}) U^\dagger\ket{\mathbf b}^2\\
+        &amp;=\prod_{i = 1}^n \text{tr}
+        \left( \left(\begin{aligned}&amp;\qquad\rho_i\\&amp;\quad\bigotimes \\ &amp;\mathcal{M}_{\theta_i}^{-1}({O_i})\\ &amp;\quad\bigotimes \\ &amp;\mathcal{M}_{\theta_i}^{-1}({O_i})\end{aligned}\right) \cdot  \sum_{\mathbf{r}_i \in \mathbb{F}_2^2} \mathbb{E}_{\substack{\text{R} \sim \text{Haar}(2)}}  
+        \left(\begin{aligned}(\text{R}_1\otimes \text{R}_2)^{\dagger} \ket{\phi_{\mathbf{r}_{i}}^{\theta_i}}&amp;\!\bra{\phi_{\mathbf{r}_{i}}^{\theta_i}} (\text{R}_1\otimes \text{R}_2)\\ &amp;\otimes \\(\text{R}_1\otimes \text{R}_2)^{\dagger} \ket{\phi_{\mathbf{r}_{i}}^{\theta_i}}&amp;\!\bra{\phi_{\mathbf{r}_{i}}^{\theta_i}} (\text{R}_1\otimes \text{R}_2)\\ &amp;\otimes \\(\text{R}_1\otimes \text{R}_2)^{\dagger} \ket{\phi_{\mathbf{r}_{i}}^{\theta_i}}&amp;\!\bra{\phi_{\mathbf{r}_{i}}^{\theta_i}} (\text{R}_1\otimes \text{R}_2) \end{aligned}\right)
+        \right) \\
+        &amp;=\prod_{i = 1}^n \text{tr}\left(\rho_i \otimes \mathcal{M}_{\theta_i}^{-1}(O_i) \otimes \mathcal{M}_{\theta_i}^{-1}(O_i)\cdot B_{\mathbf{v}}\right) \cdot \sum_{\mathbf{r}_i \in \mathbb{F}_2^2}\text{tr}\left(\ket{\phi_{\mathbf{r}_{i}}^{\theta_i}}\!\bra{\phi_{\mathbf{r}_{i}}^{\theta_i}}^{\otimes 3} B_{\mathbf{u}}\right)\cdot \mathrm{Wg}^{n=2}(\mathbf{v}\mathbf{u}^{-1},d = 2).
+\end{align*}
+</span> Here in the last line <span class="math inline">\mathbf{u},\mathbf{v} \in (S_3)^2</span>. Explicit calculation shows that</p>
+<p><span class="math display">
+\begin{align*}
+        &amp;\sum_{\mathbf{r}_i \in \mathbb{F}_2^2}\text{tr}\left(\ket{\phi_{\mathbf{r}_{i}}^{\theta_i}}\!\bra{\phi_{\mathbf{r}_{i}}^{\theta_i}}^{\otimes 3} B_{\mathbf{u}}\right) =
+        \left\{\begin{aligned}
+            &amp;4\text{~if~} u_1\cdot u_2 \in [1^3] \\
+            &amp;2 + \cos^2(2\theta)\text{~if~} u_1\cdot u_2  \in [21] \\
+            &amp;\frac{5 - 3 \sin^2(2\theta)}{2}\text{~if~} u_1\cdot u_2  \in [3].
+        \end{aligned}\right.\\
+        &amp;\mathrm{Wg}^{2}(\mathbf{v}\mathbf{u}^{-1},d = 2) = \left\{\begin{aligned}
+            &amp;\frac{17^2}{144^2}\text{~if~} \mathbf{v}\mathbf{u}^{-1} \in ([1^3],[1^3]) ,\quad \frac{17}{144^2}\text{~if~} \mathbf{v}\mathbf{u}^{-1}  \in ([21],[1^3]),([1^3],[21]) \\
+            &amp;\frac{-17\cdot 7}{144^2}\text{~if~} \mathbf{v}\mathbf{u}^{-1}  \in ([3],[1^3]),([1^3],[3]) ,\quad \frac{1}{144^2}\text{~if~} \mathbf{v}\mathbf{u}^{-1}  \in ([21],[21]) \\
+            &amp;\frac{-7}{144^2}\text{~if~} \mathbf{v}\mathbf{u}^{-1}  \in ([21],[3]),([3],[21]) ,\quad \frac{49}{144^2}\text{~if~} \mathbf{v}\mathbf{u}^{-1}  \in ([3],[3]).
+        \end{aligned}\right.
+\end{align*}
+</span></p>
+</section>
+<section id="random-shifted-bell-sampling" class="level1">
+<h1>Random Shifted Bell sampling</h1>
+<section id="bell-measurement-and-its-restriction" class="level2">
+<h2 class="anchored" data-anchor-id="bell-measurement-and-its-restriction">Bell measurement and its restriction</h2>
+<p>Contrast to conclusion in the last section, we noted that the purity estimation strategy using Bell measurements already reach the <span class="math inline">\mathcal{O}(1)</span> sampling complexity. Bell measurement is a two-copy local measurement strategy. The Bell measurement projector satisfied <span class="math display">
+\begin{align}
+    \ket{\Phi_{00}}\!\bra{\Phi_{00}}&amp;:= \frac{(II + XX - YY + ZZ)}{4},\ket{\Phi_{10}}\!\bra{\Phi_{10}}:= \frac{(II + XX + YY - ZZ)}{4},\\
+    \ket{\Phi_{01}}\!\bra{\Phi_{01}}&amp;:= \frac{(II - XX + YY + ZZ)}{4},\ket{\Phi_{11}}\!\bra{\Phi_{11}}:= \frac{(II - XX - YY - ZZ)}{4}.
+\end{align}
+</span> Thus, in terms of sympletic representation, we have $! = 4^{-n}_{} (-1)^{[, ] + <em>x<em>z}</em>{} </em>{} $ and <span class="math display">
+\begin{align}
+    \mathcal{M}_{I}(\rho^{\otimes 2}) &amp;= 16^{-n}\sum_{\mathbf{r}}  \sum_{\mathbf{p},\mathbf{q}} (-1)^{[\mathbf{r}, \mathbf{p} + \mathbf{q}] + \mathbf{p}_x\cdot \mathbf{p}_z +  \mathbf{q}_x\cdot \mathbf{q}_z}\mathrm{tr}\left[(\sigma_{\mathbf{p}} \otimes \sigma_{\mathbf{p}})\cdot\rho^{\otimes 2}\right] \sigma_{\mathbf{q}} \otimes \sigma_{\mathbf{q}}\\
+    &amp;= 4^{-n}\sum_{\mathbf{p}}\mathrm{tr}\left[(\sigma_{\mathbf{p}} \otimes \sigma_{\mathbf{p}})\cdot\rho^{\otimes 2}\right]\sigma_{\mathbf{p}} \otimes \sigma_{\mathbf{p}}.
+\end{align}
+</span></p>
+<p>In the langurage of shadow tomography, this channel on the two-replica space <span class="math inline">\mathcal{H}(d^2)</span> is not invertible since <span class="math inline">\mathcal{M}_{I}(\sigma_{\mathbf{p}} \otimes \sigma_{\mathbf{q}}) = 0</span> if <span class="math inline">\mathbf{p} \neq \mathbf{q}</span>. However, if we restrained on the operator subspace spanned by <span class="math inline">\mathbf{S}:=\mathrm{span}\{\sigma_{\mathbf{p} }\otimes \sigma_{\mathbf{p}}\}_{\mathbf{p} \in \mathbb{F}_2^{2n}}</span>, this channel takes itself as the inverse. Then given an operator <span class="math inline">O = \sum_{\mathbf{p}} \alpha_{\mathbf{p}} \sigma_{\mathbf{p}} \otimes \sigma_{\mathbf{p}}</span>, we use Bell measurment result <span class="math inline">\{\mathbf{r}\}</span> to construct the shadow estimator <span class="math inline">\hat{o}(\mathbf{r}) = \mathrm{tr}\left[\mathcal{M}_{I}^{-1,\dagger}[O] \ket{\Phi_{\mathbf{r}}}\!\bra{{\Phi_{\mathbf{r}}}}\right]= \mathrm{tr}\left[O \ket{\Phi_{\mathbf{r}}}\!\bra{{\Phi_{\mathbf{r}}}}\right]</span>. This estimator has variance <span class="math inline">\mathrm{tr}(\rho O^2) - \mathrm{tr}^2(\rho O) \leq \left[(\lambda_{\max}(O) - \lambda_{\min}(O))/2\right]^2</span>, as shown by the lemma below:</p>
+<div id="lem-max-variance-bell" class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Lemma&nbsp;12: (Maximum Variance - Bell Shadow)
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Let <span class="math inline">O</span> be a Hermitian operator with the maximum and minimum eigenvalues <span class="math inline">\lambda_{\text{max}}</span> and <span class="math inline">\lambda_{\text{min}}</span>. Then its variance <span class="math inline">\text{Var}_{\rho}(O) := \langle O^2 \rangle_{\rho} - \langle O \rangle_{\rho}^2</span> satisfies <span class="math inline">\sup_{\rho \in \mathcal{D}(\mathcal{H}_n)}\text{Var}_{\rho}(O) = \left( {(\lambda_{\text{max}} - \lambda_{\text{min}})}/{2} \right)^2</span>. This maximum is achieved at pure state such as <span class="math inline">|\psi\rangle = \frac{1}{\sqrt{2}}(|\psi_{\text{max}}\rangle + |\psi_{\text{min}}\rangle)</span>.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-28-contents" aria-controls="callout-28" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Proof
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-28" class="callout-28-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<pre><code>The variance of an observable $O$ with respect to a quantum state $\rho$ is defined as
+We first show that the function $f(\rho):= \text{Var}_{\rho}(O)$ is a concave function of $\rho$. Use the fact that $[(1 - \theta)x_1 + \theta x_2]^2 \geq (1- \theta)x_1^2 + \theta x_2^2$ due to the convexity of function $g(x) = x^2$, we have
+\begin{align}
+    f((1- \theta)\rho + \theta \sigma) - (1- \theta)f(\rho) - \theta f(\sigma) = -\left[(1- \theta)\text{tr}(O\rho) + \theta \text{tr}(O\sigma)\right]^2 + (1- \theta)\left[\text{tr}(O\rho)\right]^2 + \theta \left[\text{tr}(O\sigma)\right]^2 \leq 0, \notag
+\end{align}
+which showed the concavity of $f(\rho)$.
+The maximum value of a concave function over a convex set is attained at an extreme point. Therefore, the problem reduces to maximizing the variance over all pure states $|\psi\rangle,  \text{Var}_{\psi}(O) = \langle\psi|O^2|\psi\rangle - (\langle\psi|O|\psi\rangle)^2 $.
+Let $\{|\lambda_i\rangle\}$ be the orthonormal eigenbasis of $O$ with corresponding eigenvalues $\{\lambda_i\}$, and express pure state $|\psi\rangle$ in this basis as $|\psi\rangle = \sum_i c_i |\lambda_i\rangle$, where $\{p_i:=|c_i|^2\}_i$ forms a valid probability. Then
+$ \text{Var}(O) = \sum_i p_i \lambda_i^2 - \left(\sum_i p_i \lambda_i\right)^2 = \sum_{i} p_i(\lambda_i - \bar{\lambda})^2 $.
+Keeping $\bar \lambda$ unchanged, we should concentrate $p_i$ on the most extreme values available $\lambda_{\text{max}}$ and $\lambda_{\text{min}}$. Let us consider a distribution where probability $p$ is assigned to $\lambda_{\text{max}}$ and $1-p$ to $\lambda_{\text{min}}$. The variance for this distribution is $ \mathbf{V}(p) = [p\lambda_{\text{max}}^2 + (1-p)\lambda_{\text{min}}^2] - [p\lambda_{\text{max}} + (1-p)\lambda_{\text{min}}]^2 $. 
+Assuming $\lambda_{\text{max}} \neq \lambda_{\text{min}}$, we can find the maximum by differentiate with respect to $p$ and find $p=1/2$. This corresponds to an equal mixture of the minimum and maximum eigenvalues.
+Substituting $p=1/2$ back into the variance expression gives 
+\begin{align}
+\text{Var}_{\text{max}}(O) &amp;= \left[\frac{1}{2}\lambda_{\text{max}}^2 + \frac{1}{2}\lambda_{\text{min}}^2\right] - \left[\frac{1}{2}\lambda_{\text{max}} + \frac{1}{2}\lambda_{\text{min}}\right]^2 = \left( \frac{\lambda_{\text{max}} - \lambda_{\text{min}}}{2} \right)^2.
+\end{align}</code></pre>
+</div>
+</div>
+</div>
+<p>This means that Bell shadow can effeciently estimates operators <span class="math inline">O = \sum_{\mathbf{p}} \alpha_{\mathbf{p}} \sigma_{\mathbf{p}} \otimes \sigma_{\mathbf{p}}</span> with bounded <span class="math inline">\infty</span>-norm <span class="math inline">\|O\|_{\infty}</span>. This include the SWAP operator and single Pauli operator <span class="math inline">P \otimes P</span>, which estimates critical values for <span class="math inline">\mathrm{tr}(\rho^2)</span> and <span class="math inline">|\mathrm{tr}(P \rho)|^2</span>. Their estimator writes <span class="math display">
+\begin{align}
+    &amp;\hat{o}_{\mathrm{swap}}(\mathbf{r}) = \mathrm{tr}\left[\mathrm{SWAP}^{\otimes n} \ket{\Phi_{\mathbf{r}}}\!\bra{{\Phi_{\mathbf{r}}}}\right] = 2^{-n}\sum_{\mathbf{p}_x,\mathbf{p}_z} (-1)^{\mathbf{r}_z\mathbf{p}_x + (\mathbf{r}_x + \mathbf{p}_x)\mathbf{p}_z} = (-1)^{\mathbf{r}_z \mathbf{r}_x},\\
+&amp;\hat{o}_{\mathbf{q}}(\mathbf{r}) =\mathrm{tr}\left[\sigma_{\mathbf{q}} \otimes \sigma_{\mathbf{q}} \ket{\Phi_{\mathbf{r}}}\!\bra{{\Phi_{\mathbf{r}}}}\right] =(-1)^{[\mathbf{r}, \mathbf{q}] + \mathbf{q}_x\cdot \mathbf{q}_z},
+\end{align}
+</span> respectively. Both of them are bounded within <span class="math inline">[-1,1]</span>, thus induces two effecient estimation algorithm according to the Hoffding inequality.</p>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Algorithm 1: Estimation of <span class="math inline">\text{tr}(\rho^2)</span>
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>This algorithm estimates the purity of an <span class="math inline">n</span>-qubit density matrix <span class="math inline">\rho</span> using Bell measurements.</p>
+<p>Require: <span class="math inline">n</span>-qubits density matrix <span class="math inline">\rho</span></p>
+<p>Ensure: Estimates <span class="math inline">\text{tr}(\rho^2)</span> within <span class="math inline">\varepsilon</span> additive error and confidence <span class="math inline">1 -\delta</span>.</p>
+<ol type="1">
+<li>Implement <span class="math inline">N \sim 4 \ln(2/\delta)/\varepsilon^2</span> times Bell measurement and get the result <span class="math inline">\mathbf{r}_1, \cdots, \mathbf{r}_N</span>.</li>
+<li>For each result <span class="math inline">\mathbf{r}_i</span>, denotes <span class="math inline">s_i =\mathbf{r}_{i,x}\cdot \mathbf{r}_{i,z}</span>, which indicates the number of Bell measurement result <span class="math inline">(11)</span>.</li>
+<li><strong>Return</strong> <span class="math inline">{M}(\rho) = \sum_{i = 1}^N(-1)^{s_i}/{N}</span>.</li>
+</ol>
+</div>
+</div>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Algorithm 2: Estimation of <span class="math inline">|\text{tr}(\rho P)|^2</span>
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>This algorithm estimates the squared expectation values of a set of Pauli operators. Require: <span class="math inline">n</span>-qubit density matrix <span class="math inline">\rho</span> and a set of target Pauli operator <span class="math inline">\{\sigma_{\mathbf{y}^{(1)}},\cdots,\sigma_{\mathbf{y}^{(M)}}\}</span>.</p>
+<p>Ensure: Collect enough classical information such that <span class="math inline">\forall i, |\text{tr}(\rho \sigma_{\mathbf{y}^{(i)}})|^2</span> can be estimated within <span class="math inline">\varepsilon</span> additive error and <span class="math inline">1 - \delta</span> success rate.</p>
+<ol type="1">
+<li>Implements <span class="math inline">N \sim 4 \ln(2M/\delta)/\varepsilon^2</span> times Bell measurement and restore the result <span class="math inline">\mathbf{r}_1, \cdots, \mathbf{r}_N</span> with <span class="math inline">\mathbf{r}_i \in \mathbb{F}_2^{2n}</span>.</li>
+<li>To estimate <span class="math inline">|\text{tr}(\rho \sigma_{\mathbf{y}})|^2</span>, take the xz decomposition of <span class="math inline">\mathbf y = (\mathbf{y}_x, \mathbf{y}_z)</span>.</li>
+<li>Calculate the average and <strong>Return</strong> <span class="math inline">R =({1}/{N})\cdot\sum_{i = 1}^N(-1)^{[\mathbf r_i, \mathbf y]+\mathbf y_{x} \cdot \mathbf y_z}</span>.</li>
+</ol>
+</div>
+</div>
+</section>
+<section id="a-non-adaptive-randomized-strategy" class="level2">
+<h2 class="anchored" data-anchor-id="a-non-adaptive-randomized-strategy">A non-adaptive randomized strategy</h2>
+<p>Unfortunately, for operators out of <span class="math inline">\mathbf{S}</span> such as <span class="math display">
+\begin{align}
+    O_{\mathbf{q}}:=(\sigma_{\mathbf{q}} \otimes \mathbb{I}_n) \cdot \mathrm{SWAP}^{\otimes n}=2^{-n}\sum_{\mathbf{p}}\sigma_{\mathbf{q}}\sigma_{\mathbf{p}} \otimes \sigma_{\mathbf{p}},
+\end{align}
+</span> which is a critical observable that investigate the value of <span class="math inline">\mathrm{tr}(\sigma_{\mathbf{r}}\rho^2)</span>, Bell sampling lost its capacity. We consider the case <span class="math inline">\mathbf{q}_i \neq 0, \forall i = 1,\cdots,n</span>, otherwise we reorder the terms in <span class="math inline">\sigma_{\mathbf{q}}</span> such that $O = (<em>{’} </em>{n’}) ^{n’} ^{(n -n’)} $, and run algorithms <span class="math inline">\mathcal{A}</span> on the first <span class="math inline">n'</span> qubits and Bell measurement strategy on the last <span class="math inline">(n-n')</span> qubits. Given <span class="math inline">\mathbf{p}</span>, we defined the index set $ A_{}:={i{1,,n}|<em>i {<em>i,}}$. For <span class="math inline">i\in A_{\mathbf{p}}</span>, the Pauli operator <span class="math inline">\sigma_{\mathbf{p}_i}</span> and <span class="math inline">\sigma_{\mathbf{q}_i}</span> are anti-commute. We can then construct $L</em>:= </em>{iA_{}} e^{i <em>{<em>i}} $ and conclude that $ i</em>{} </em>{} =L_<em>{}L</em>^$ on the index set <span class="math inline">A_{\mathbf{p}}</span>. Unfortunately, for the rest indexes <span class="math inline">\bar{A}_{\mathbf{p}}:= \{i \in \{1,\cdots,n\}| \mathbf{p}_i=\mathbf{q}_i\text{~or~} \mathbf{0}\}</span> , there exists no local Clifford that realizes <span class="math inline">\sigma_{\mathbf{p}_i} \otimes \sigma_{\mathbf{p}_i} \to \sigma_{\mathbf{q}_i}\sigma_{\mathbf{p}_i} \otimes \sigma_{\mathbf{p}_i}</span>. In this case, we can separate <span class="math inline">\bar{A}_{\mathbf{p}}</span> into two parts <span class="math inline">R_{\mathbf{p}}:=\{i| \mathbf{p}_i = \mathbf{q}_i\}</span> and <span class="math inline">L_{\mathbf{p}}:=\{i| \mathbf{p}_i = \mathbf{0}\}</span> and conclude that <span class="math display">
+\begin{align}
+\label{eq:2rep_decomp_Prho2}
+    O = 2^{-n}\sum_{\mathbf{p}}\sigma_{\mathbf{q}}\sigma_{\mathbf{p}} \otimes \sigma_{\mathbf{p}}= 2^{-n}\sum_{\mathbf{p}} \bigotimes_{i \in A_{\mathbf{p}}} (-iL_{\mathbf{q}_i} \sigma_{\mathbf{p}_i}L_{\mathbf{q}_i}^{\dagger} \otimes \sigma_{\mathbf{p}_i}) \bigotimes_{i \in R_{\mathbf{p}}} (\mathbb{I} \otimes \sigma_{\mathbf{q}_i}) \bigotimes_{i \in L_{\mathbf{p}}} (\sigma_{\mathbf{q}_i} \otimes \mathbb{I})
+\end{align}
+</span></p>
+<p>For the first part <span class="math inline">A_{\mathbf{p}}</span>, we conjugate one side of Bell projector by local Clifford operation <span class="math inline">L</span> and defined the shifted Bell sampling projector <span class="math display">
+\begin{align}
+    (L \otimes \mathbb{I}_n)\ket{\Phi_{\mathbf{r}}}\!\bra{\Phi_{\mathbf{r}}}(L^\dagger \otimes \mathbb{I}_n) = 4^{-n}\sum_{\mathbf{p}} (-1)^{[\mathbf{r}, \mathbf{p}] + \mathbf{p}_x\cdot \mathbf{p}_z}(L\sigma_{\mathbf{p}}L^{\dagger}) \otimes \sigma_{\mathbf{p}},
+\end{align}
+</span> This then extends the Bell decoherence channel in Eq. into the shifted one: <span class="math display">
+\begin{align}
+    \mathcal{M}_{L}(\rho^{\otimes 2}) = 4^{-n}\sum_{\mathbf{p}}\mathrm{tr}\left[\left[(L\sigma_{\mathbf{p}}L^{\dagger}) \otimes \sigma_{\mathbf{p}}\right]\cdot\rho^{\otimes 2}\right](L\sigma_{\mathbf{p}}L^{\dagger}) \otimes \sigma_{\mathbf{p}}.
+\end{align}
+</span> For the rest part <span class="math inline">R_{\mathbf{p}},L_{\mathbf{p}}</span>, we have to extract the information of insymmetric Pauli operator <span class="math inline">\mathbb{I} \otimes \sigma_{\mathbf{q}}, \sigma_{\mathbf{q}} \otimes \mathbb{I}</span>, which is prohibitive for local conjugated Bell measurement. To overcome this, we implement the <span class="math inline">\sigma_{\mathbf{q}_i}</span> Pauli measurements on the position <span class="math inline">i</span>. This measurement constitutes the Pauli decoherence channel <span class="math display">
+\begin{align}
+    \Lambda_{i}(\cdot ) = (1/2)\mathbb{I}\cdot\mathrm{tr}(\cdot) + (1/2)\mathrm{tr}\left[\sigma_{\mathbf{q}_i} (\cdot)\right] \sigma_{\mathbf{q}_i}.
+\end{align}
+</span> In the observable in Eq.~, we average all possible separation. Since the <span class="math inline">\sigma_{\mathbf{q}_i}</span> Pauli measurements is incompatiable to the Bell measurment, this indicates the naive strategy that uniformly selects a separation <span class="math inline">A \cup ([n]/A)</span> and then implements single-copy <span class="math inline">\sigma_{\mathbf q}</span> Pauli measurement on positions <span class="math inline">[n]/A</span> and <span class="math inline">L_{\mathbf q}</span> conjugated Bell measurement on positions <span class="math inline">A</span>.</p>
+<p>Notice that the measurement of operator <span class="math inline">\sigma_{\mathbf{q}_i}</span> with result <span class="math inline">{r}_i \in \{0,1\}</span> forms the <span class="math inline">n</span>-qubit decoherence channel <span class="math inline">\Lambda_{\mathbf{q}}(\rho) = \bigotimes_{i= 1}^{n} \Lambda_{i}(\rho)</span>, where <span class="math inline">\Lambda_{i}(\cdot ) = (1/2)\mathbb{I}\cdot\mathrm{tr}(\cdot) + (1/2)\mathrm{tr}\left[\sigma_{\mathbf{q}_i} (\cdot)\right] \sigma_{\mathbf{q}_i}</span>. We also denote the channel <span class="math inline">\mathcal{B}_i</span> as the localized shifted Bell decoherence channel as <span class="math display">
+  \begin{align}
+    \mathcal{B}_{i}(\cdot) = 4^{-1}\sum_{\mathbf{p}_i \in \{00,01,10,11\}}\mathrm{tr}\left[\left[(L_{\mathbf{q}_i}\sigma_{\mathbf{p}_i}L_{\mathbf{q}_i}^{\dagger}) \otimes \sigma_{\mathbf{p}_i}\right](\cdot) \right](L_{\mathbf{q}_i}\sigma_{\mathbf{p}_i}L_{\mathbf{q}_i}^{\dagger}) \otimes \sigma_{\mathbf{p}_i}.
+\end{align}
+</span> Then locallly, the shadow channel <span class="math inline">\mathcal{M}</span> induced by strategies is the tensor products of <span class="math inline">\mathcal{M}_i = ({1}/{2}) \mathcal{B}_i + (1/2)\Lambda^{\otimes 2}_{i}</span>. we noted that <span class="math display">
+  \begin{align}
+      \left\{
+      \begin{aligned}
+      &amp;\mathcal{M}_i(\sigma_{\mathbf{q}_i} \otimes \mathbb{I}) = (1/2)\cdot \sigma_{\mathbf{q}_i} \otimes \mathbb{I},\quad \mathcal{M}_i( \mathbb{I}\otimes\sigma_{\mathbf{q}_i}) =(1/2)\cdot \mathbb{I}\otimes\sigma_{\mathbf{q}_i}, \\
+      &amp;\mathcal{M}_i\left[(L_{\mathbf{q}_i}\sigma_{\mathbf{p}_i}L_{\mathbf{q}_i}^{\dagger}) \otimes \sigma_{\mathbf{p}_i}\right]=(1/2)\cdot(L_{\mathbf{q}_i}\sigma_{\mathbf{p}_i}L_{\mathbf{q}_i}^{\dagger}) \otimes \sigma_{\mathbf{p}_i},\forall \mathbf{p}_i \notin \{\mathbf{q}_i,\mathbf{0}\}.\\
+      \end{aligned}
+      \right.
+  \end{align}
+  </span> Then we conclude that <span class="math inline">\mathcal{M}^{-1}(O) = 2^n O</span> . Noted that <span class="math display">
+    \begin{align}
+        &amp;\mathrm{tr}\left[(L_{\mathbf{q}_i} \otimes \mathbb{I})\Phi_{\mathbf{r}_i}(L^\dagger_{\mathbf{q}_i} \otimes \mathbb{I}) \cdot (\sigma_{\mathbf{q}_i} \otimes \mathbb{I})\cdot \mathrm{SWAP}\right] \\
+        &amp;= 4^{-1}\sum_{\mathbf{u}_i} (-1)^{[\mathbf{r}_i, \mathbf{u}_i] +{u}_x\cdot {u}_z}\mathrm{tr}\left[(L_{\mathbf{q}_i} \otimes \mathbb{I})\sigma_{\mathbf{u}_i} \otimes \sigma_{\mathbf{u}_i} (L^\dagger_{\mathbf{q}_i} \otimes \mathbb{I}) \cdot (\sigma_{\mathbf{q}_i} \otimes \mathbb{I})\cdot \mathrm{SWAP}\right]\\
+        &amp;=4^{-1}\sum_{\mathbf{u}_i} (-1)^{[\mathbf{r}_i, \mathbf{u}_i] +{u}_x\cdot {u}_z}\mathrm{tr}\left[L_{\mathbf{q}_i} \sigma_{\mathbf{u}_i} L_{\mathbf{q}_i}^\dagger \sigma_{\mathbf{q}_i}\sigma_{\mathbf{u}_i}\right]=-(i/2)\cdot \sum_{\mathbf{u}_i \notin \{\mathbf{0}, \mathbf{q}_i\}} (-1)^{[\mathbf{r}_i, \mathbf{u}_i] + u_xu_z}.\\
+        &amp;\mathrm{tr}\left[\left(\frac{ \mathbb{I} + r_{i,x} \sigma_{\mathbf{q}_i}}{2}\right)\otimes  \left(\frac{ \mathbb{I} + r_{i,z} \sigma_{\mathbf{q}_i}}{2}\right)\cdot (\sigma_{\mathbf{q}_i} \otimes \mathbb{I})\cdot \mathrm{SWAP}\right]=|\mathbf{r}_i|/2.
+    \end{align}
+</span> We got the estimator <span class="math display">
+    \begin{align}
+        \hat{o}(\{t_i,\mathbf{r}_i\}) =\prod_{i, t_i= 0}\left[-i\cdot \sum_{\mathbf{u}_i \notin \{\mathbf{0}, \mathbf{q}_i\}} (-1)^{[\mathbf{r}_i, \mathbf{u}_i] + u_xu_z} \right]\cdot \prod_{i, t_i= 1}|\mathbf{r}_i|  .
+    \end{align}
+</span> The variance of this estimator is exponentially large since both weight <span class="math inline">|\mathbf{r}_i|</span> and summation $_{_i {, _i}} (-1)^{[_i, _i] + u_xu_z} $ range from <span class="math inline">[-2,2]</span>, which gives exponentially large variance.</p>
+</section>
+</section>
+<section id="lower-bounds" class="level1">
+<h1>Lower bounds</h1>
+<section id="non-linear-shadows." class="level2">
+<h2 class="anchored" data-anchor-id="non-linear-shadows.">Non-linear shadows.</h2>
+<p>For the non-linear Pauli shadow <span class="math inline">\mathrm{tr}(\rho^2P)</span>, we proved similar reduction by substitutes <span class="math inline">P</span> into <span class="math inline">O_P := 2^{-1}(P \otimes \mathbb{I} +\mathbb{I}\otimes P)\cdot \mathrm{SWAP}^{\otimes n}</span>, as shown below:</p>
+<div id="lem-shadow-discrimination" class="callout callout-style-default callout-important no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Lemma&nbsp;13: (Shadow to Discrimination Reduction)
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Suppose an algorithm gets classical shadow for <span class="math inline">\{\mathrm{tr}(P\rho^{2})\}_{P \in \mathcal{O}}</span> with additive error <span class="math inline">\varepsilon</span> and constant success rate <span class="math inline">1- \delta</span> using <span class="math inline">2N</span> copies. Then with the same success rate, its result can be used to discriminate mixed state ensemble <span class="math inline">\mathcal{E}_1 = \{\left(\mathbb{I}_{2n} + 3\varepsilon (P\otimes \mathbb{I}) \cdot O_P\right)/2^{2n}\}_{P \in \mathcal{O}}</span> from the maximally mixed state <span class="math inline">\mathbb{I}_{2n}/2^{2n}</span>.</p>
+</div>
+</div>
+<div id="lem-shadow-ensemble-discrimination" class="callout callout-style-default callout-important no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Lemma&nbsp;14: (Shadow to Ensemble Discrimination)
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Suppose an algorithm gets classical shadow for <span class="math inline">\{\mathrm{tr}(P\rho^{2})\}_{P \in \mathcal{O}}</span> with additive error <span class="math inline">\varepsilon</span> and constant success rate <span class="math inline">1- \delta</span>. Then with the same success rate, its result can be used to discriminate mixed state ensemble <span class="math inline">\mathcal{E}_1 = \{\left(\mathbb{I} + 3\varepsilon P\right)/d\}_{P \in \mathcal{O}}</span> from the ensemble <span class="math display">
+\begin{align*}
+        \mathcal{E}_2 := \left\{\mathrm{Cl}^\dagger \left(\frac{\mathbb{I} + 3\varepsilon Z}{2} \otimes \psi \right) \mathrm{Cl}\right\}_{\mathrm{Cl} \in \mathrm{Cliff}_{n}(\mathcal{O}), \psi \sim \mathrm{Haar}_{n-1}},
+\end{align*}
+</span> where <span class="math inline">\mathrm{Cl} \in \mathrm{Cliff}_{n}(\mathcal{O})</span> includes all possible Clifford gates that map <span class="math inline">Z \otimes \mathbb{I}</span> to <span class="math inline">P \in \mathcal{O}</span>.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-33-contents" aria-controls="callout-33" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Proof (Click to expand)
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-33" class="callout-33-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>Supposed we design an algorithm that estimates <span class="math inline">\{\mathrm{tr}(P\rho^{2})\}_{P \in \mathcal{O}}</span> with <span class="math inline">\varepsilon</span>-additive error and <span class="math inline">1 - \delta</span> correction rate. Then for mixed state <span class="math inline">\rho_0 = (\mathbb{I} + 3 \varepsilon P_0)/d</span> in <span class="math inline">\mathcal{E} _1</span>, estimation gives result <span class="math inline">\mathrm{tr}(P_0\rho^{2}) = 6d^{-1}\varepsilon</span> and vanish for others. For state <span class="math inline">\rho = \mathrm{Cl}_0^\dagger \left(\frac{\mathbb{I} + 3\varepsilon Z}{2} \otimes \psi \right) \mathrm{Cl}_0</span> in <span class="math inline">\mathcal{E}_2</span>, we take <span class="math inline">P_0 \in \mathcal{O}</span> such that <span class="math inline">\mathrm{Cl}_0 P_0 \mathrm{Cl}_0^\dagger = Z \otimes \mathbb{I}_{n-1}</span>. The estimation of <span class="math inline">\mathrm{tr}(P_0\rho^{2})</span> then gives the result <span class="math display">
+\begin{align*}
+        \mathrm{tr}(P_0\rho^{2}) &amp;= \mathrm{tr}\left(P_0\mathrm{Cl}_0^\dagger \cdot\left(\frac{\mathbb{I} + 3\varepsilon Z}{2} \right)^2\otimes \psi \cdot \mathrm{Cl}_0\right) \\
+        &amp;= \mathrm{tr}\left[\left(Z\cdot\frac{(1 + 9\varepsilon^2)\mathbb{I} + 6\varepsilon Z}{4} \right)\otimes (\mathbb{I}_{n-1} \cdot \psi) \right]
+        = 3 \varepsilon.
+\end{align*}
+</span> Considering the <span class="math inline">\varepsilon</span> additive error, we can then discriminate <span class="math inline">\mathcal{E}_1</span> and <span class="math inline">\mathcal{E}_2</span> by choosing <span class="math inline">\varepsilon_{\mathrm{th}} \in [(6d^{-1} + 1)\varepsilon, 2 \varepsilon]</span> and checking whether there exists <span class="math inline">P_0 \in \mathcal{O}</span> with <span class="math inline">\mathrm{tr}(P_0\rho^{2}) &gt; \varepsilon_{\mathrm{th}}</span>.&nbsp;◻</p>
+</div>
+</div>
+</div>
+<p>In the discussion of strategy with replica restriction <span class="math inline">k &lt; 4</span>, we are free to replace <span class="math inline">\psi \sim \mathrm{Haar}_{n-1}</span> to <span class="math inline">\psi \sim \mathrm{Cliff}_{n-1}</span>. If we further choose <span class="math inline">\mathcal{O} = \mathcal{P}_n</span> as all Pauli operators, the ensemble in Eq.<a href="#eq:nshd_red_ensem" data-reference-type="eqref" data-reference="eq:nshd_red_ensem">[eq:nshd_red_ensem]</a> can be further simplified as: <span class="math display">\begin{align*}
+    \mathcal{E}_2^* := \left\{(1 + 3\varepsilon)/2\ket{0_L}\!\bra{0_L} + (1 - 3\varepsilon)/2\ket{1_L}\!\bra{1_L}\right\}_{\{\ket{0_L},\ket{1_L}\} \in C_{n}},
+\end{align*}</span></p>
+
+
+<script type="ojs-module-contents">
+eyJjb250ZW50cyI6W119
+</script>
+<div id="exercise-loading-indicator" class="exercise-loading-indicator d-none d-flex align-items-center gap-2">
+<div id="exercise-loading-status" class="d-flex gap-2">
+
+</div>
+<div class="spinner-grow spinner-grow-sm">
+
+</div>
+</div>
+<script type="vfs-file">
+W10=
+</script>
+
+</section>
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body" data-entry-spacing="0" role="list">
+<div id="ref-liu2024auxiliary" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[1] </div><div class="csl-right-inline">Q. Liu, Z. Li, X. Yuan, H. Zhu, and Y. Zhou, Auxiliary-free replica shadow estimation, arXiv Preprint arXiv:2407.20865 (2024).</div>
+</div>
+</div></section></div></main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

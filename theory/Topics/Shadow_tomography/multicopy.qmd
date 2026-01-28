@@ -12,6 +12,7 @@ jupyter: python3
 lang: en
 title: Multiple-copy Shadow tomography
 keep-ipynb: false
+bibliography: ../Lowerbounds/refs.bib
 ---
 
 
@@ -22,9 +23,8 @@ efficient two-copy Bell strategy exists. In analogy, we try to break the
 lower bound in the last section by extending the single-copy shadow
 tomography method into the multi-copy case.
 
-::: {.callout-important icon="false"}
-## Theorem(Non-local Pauli shadow tomography)
-[]{#theorem:nonlocal_pauli_shadow label="theorem:nonlocal_pauli_shadow"}
+::: {#thm-nonlocal-pauli-shadow .callout-important icon="false"}
+## (Non-local Pauli Shadow Tomography)
 Let $\mathcal{P}_n$ be the $n$-qubit Pauli group. Let
 $\mathbb{P}^{d}_{\pi}$ be the permutation operator on $2k$ replica of
 $n$-qubits ($d = 2^n$) and $\pi =(\mathrm{odds})(\mathrm{even})$ is
@@ -75,10 +75,9 @@ simultaneously yields estimates for $|\mathrm{tr}(P\rho^k)|$ for all
 $P \in \mathcal{P}_n$. ◻
 :::
 
-::: {.callout-important icon="false"}
-## Lemma (Signal estimation)
-
-[]{#lemma:signal_estim label="lemma:signal_estim"} If we can estimate
+::: {#lem-signal-estim .callout-important icon="false"}
+## (Signal Estimation)
+If we can estimate
 $|\mathrm{tr}(P \rho^k)|, \forall P \in \mathcal{O} \subset \mathcal{P}_n$
 within constant additive error $\varepsilon$, then using a
 $\mathcal{O}(\varepsilon^{-4}\log(|\mathcal{O}|))$ times $k$-replica
@@ -115,9 +114,8 @@ $$\begin{align*}
 
 ### Examples: non-linear Pauli shadow
 
-::: {.callout-important icon="false"}
-## Lemma: 4-Copy Measurement Strategy for $k=2$
-
+::: {#lem-4copy-strategy .callout-important icon="false"}
+## (4-Copy Measurement Strategy for $k=2$)
 For the case $k = 2$, there exists a measurement protocol on 4 copies of the quantum state that can estimate the commutants $A_{\mathbf{r}}$ through a shared eigenbasis measurement. The eigenbasis states $\ket{\Psi^{s}_{(\mathbf{a}, \mathbf{b})}}$ with eigenvalues $\lambda_{(s,\mathbf{a},\mathbf{b})} :=s \cdot 2^{-1}[(-1)^{[\mathbf{r}, \mathbf{a}]} + (-1)^{[\mathbf{r}, \mathbf{b}]}]$ (where $s = \pm 1$) can be measured using a combination of local gates, computational basis measurements, and GHZ measurements.
 :::
 
@@ -224,8 +222,7 @@ $\text{Pr}(\mathbf b|V): = \bra{\mathbf b} V \rho^t V^\dagger\ket{\mathbf b}$
 is not a valid probability distribution. Fortunately, it can be
 effectively realized based on the estimator of
 $\bra{\mathbf b} V \rho^t V^\dagger\ket{\mathbf b}$ in
-Lemma [\[lemma:gen_swap_est\]](#lemma:gen_swap_est){reference-type="ref"
-reference="lemma:gen_swap_est"}. Note that the computational projective
+Lemma (gen_swap_est)
 operator
 $\{\ket{\mathbf b}\!\bra{\mathbf b}\}_{\mathbf b \in \{0,1\}^{n}}$ is
 mutually commutant and the operator set $\{Q_{\mathbf b}\}_{\mathbf b}$,
@@ -253,13 +250,11 @@ eigenvectors $\ket{\psi_{\mathbf x}}$ and then discuss the efficient
 implementation of $\mathcal{R}$. Because
 $(\text{SWAP}_{t})^{t} = \mathbb{I}$, $\text{SWAP}_t$ must have
 eigenvalue $e^{i2\pi/t}$. This conclusion generalized to
-Lemma [\[lemma:eigvec_QSWAP\]](#lemma:eigvec_QSWAP){reference-type="ref"
-reference="lemma:eigvec_QSWAP"} below.
+@lem-eigvec-qswap below.
 
-::: {.callout-important icon="false"}
-## Lemma(Common eigenvectors of SWAP and QSWAP)
-
-[]{#lemma:eigvec_QSWAP label="lemma:eigvec_QSWAP"} Given
+::: {#lem-eigvec-qswap .callout-important icon="false"}
+## (Common Eigenvectors of SWAP and QSWAP)
+Given
 $\mathbf{z} = (\mathbf{z}_1,\cdots,\mathbf{z}_t) \in (\{0,1\}^{n})^t$
 with set
 $[\mathbf{z}]:= \{\mathbf z,\tau(\mathbf z),\cdots,\tau^{|[\mathbf z]|-1}(\mathbf z)\}$,
@@ -307,10 +302,7 @@ why we named it non-local multi-copy (**NLMC**) shadow.
 
 #### Efficiency analysis. {#efficiency-analysis. .unnumbered}
 
-As summarized in
-Lemma [\[lemma:var_nonlocal_nonlinear_shadow\]](#lemma:var_nonlocal_nonlinear_shadow){reference-type="ref"
-reference="lemma:var_nonlocal_nonlinear_shadow"}, the variance of
-**NLMC** shadow to estimate $\text{tr}(O \rho^t)$ with unitary sampled
+As summarized in @lem-var-nonlocal-shadow, the variance of **NLMC** shadow to estimate $\text{tr}(O \rho^t)$ with unitary sampled
 from $V \sim \mathcal{E}$ is upper bounded by the variance of
 single-copy shadow to estimate $\text{tr}(O \rho)$ with the same unitary
 ensemble $V$. This means that if $O$ is (i).low weight Pauli operators
@@ -322,11 +314,9 @@ tomography in
 Eq.[\[eq:singlecp_shadow_nonlinear\]](#eq:singlecp_shadow_nonlinear){reference-type="eqref"
 reference="eq:singlecp_shadow_nonlinear"}.
 
-::: {.callout-important icon="false"}
-## Lemma(Variance of non-local Pauli shadow)
-
-[]{#lemma:var_nonlocal_nonlinear_shadow
-label="lemma:var_nonlocal_nonlinear_shadow"} Given
+::: {#lem-var-nonlocal-shadow .callout-important icon="false"}
+## (Variance of Non-local Pauli Shadow)
+Given
 $(\mathbf x, \mathbf b, V)$ sampled from distribution
 $\text{Pr}(\mathbf b | \mathbf x)\text{Pr}(\mathbf x | V)\text{Pr}(V)$,
 the random variable
@@ -356,11 +346,9 @@ $U = {U_i}^{\otimes n}$ with $U_i \in \mathbf{D}_{3}(2^k)$ the
 $k$-qubits gate and forms $3$-design. After this, we measured each qubit
 in the computational basis.
 
-::: {.callout-important icon="false"}
-## Lemma
-
-[]{#lemma:LC_shadow_kcopy label="lemma:LC_shadow_kcopy"} In the case of
-local k-copy randomized measurements on $\rho^{\otimes k}$, let the
+::: {#lem-LC-shadow-kcopy .callout-important icon="false"}
+## (Local k-Copy Shadow Variance)
+In the case of local k-copy randomized measurements on $\rho^{\otimes k}$, let the
 observable $O^{(k)}$ acting on $n\cdot k$ qubits have decomposition
 $O^{(k)} = \sum_{W} \alpha_{W} W$, where $W = \bigotimes_{i=1}^n W_i$
 and $W_i \in \{I,X,Y,Z\}^{\otimes k}$. Denoting $\mathcal{C}(W)$ as the
@@ -390,8 +378,7 @@ $\mathbf{V}(O^{(k)}) :=\bigotimes_{i = 1}^n  \sum_{W_i,W_i'}\alpha_{W_i} \alpha_
 ## Proof (Click to expand)
 
 *Proof.* By
-Lemma [\[lemma:onsite_2design\]](#lemma:onsite_2design){reference-type="ref"
-reference="lemma:onsite_2design"}, we conclude that its inverse is
+Lemma (onsite_2design)
 $\mathcal{D}_{1/(2^k + 1)}^{-1}(\cdot) = (2^k + 1)(\cdot) - \text{tr}(\cdot) \mathbb{I}_k$
 constitute an unbiased estimator of $\rho^{\otimes k}$ through the
 transformation
@@ -399,13 +386,11 @@ $\hat{\rho}^{\otimes k} =\mathcal{M}^{-1}(U^\dagger \ket{\mathbf r}\!\bra{\mathb
 The second moment is given by
 $\langle (\hat{o}^{(2)})^2 \rangle_{\rho} =\mathbb{E}_{U \sim \mathbf{D}_3(2^k)^{\otimes n}}\sum_{\mathbf r}\bra{\mathbf r}U \rho^{\otimes k} U^\dagger \ket{\mathbf{r}} \bra{\mathbf r}U\mathcal{M}^{-1}(O^{(k)}) U^\dagger\ket{\mathbf r}^2$.
 Similar to the proof in
-Lemma [\[lemma:LC_shadow\]](#lemma:LC_shadow){reference-type="ref"
-reference="lemma:LC_shadow"}, we decomposed the operator $O^{(k)}$ on
+Lemma (LC_shadow)
 the Pauli product basis $W_i \in \{I,X,Y,Z\}^{\otimes k}$ that supports
 on those k qubits located at site $i$. By denoting $W = W_1\cdots W_n$,
 we have $O^{(k)} = \sum_{W} \alpha_{W} W$. According to
-Lemma [\[lemma:onsite_2design\]](#lemma:onsite_2design){reference-type="ref"
-reference="lemma:onsite_2design"}, the inverse channel
+Lemma (onsite_2design)
 $\mathcal{M}^{-1}$ acts locally as
 $\mathcal{M}_i^{-1}(W_i) = g(W_i) W_i$, where the scaling factor
 $g(W_i)$ is determined by
@@ -426,13 +411,11 @@ Here we use the fact that the term $\ket{E} :=U_i\ket{\mathbf{r}_i}$ is
 average over the 3-design states, yielding terms based on the formula
 $\mathbb{E} [E^{\otimes 3}] ={d^{-1}(d+1)^{-1}(d+2)^{-1}} \sum_{\pi \in S_3} \mathbb{P}_{\pi}^{(d)}$
 according to
-Lemma [\[lemma:state_trajectory\]](#lemma:state_trajectory){reference-type="ref"
-reference="lemma:state_trajectory"}. With $d=2^k$, the prefactor per
+Lemma (state_trajectory)
 site is $p = 1/(2^k \cdot (2^k+1) \cdot (2^k+2))$. We evaluate the
 expression by considering terms for each site $i$, analogous to the
 single-copy proof of
-Lemma [\[lemma:LC_shadow\]](#lemma:LC_shadow){reference-type="ref"
-reference="lemma:LC_shadow"}. Depending on three cases, we calculate:
+Lemma (LC_shadow)
 $$\begin{align*}
         \langle (\hat{o}^{(2)})^2 \rangle_{\rho} &= 
         \sum_{W,W'}\alpha_{W}\alpha_{W'}\sum_{s}\beta_s\prod_{i = 1}^n 2^k p \cdot \begin{cases}
@@ -513,27 +496,22 @@ $$
 A generalization of the variance operator $\mathbf{V}(O^{(k)})$ is to
 applied it to two operators $O_\alpha,O_\beta$, as defined below:
 
-::: {.callout-note icon="false"}
-## Definition
-
-[]{#def:cov_oper label="def:cov_oper"} Given two operators with
-decomposition
+::: {#def-cov-oper .callout-note icon="false"}
+## Definition (Covariance Operator)
+Given two operators with decomposition
 $O_\alpha = \sum_{W} \alpha_{W} W, O_\beta = \sum_{W} \beta_{W} W$ with
 $W \in \{\mathbb{I},X,Y,Z\}^{\otimes k}$, the we defined the covariance
 operator as $$\begin{align*}
         \mathbf{V}(O_\alpha,O_\beta) = \sum_{W,W'} \alpha_{W} \beta_{W'} R(W,W') WW',
 \end{align*}$$ where $R(W,W')$ is defined in
-Lemma [\[lemma:LC_shadow_kcopy\]](#lemma:LC_shadow_kcopy){reference-type="ref"
-reference="lemma:LC_shadow_kcopy"} before.
+@lem-LC-shadow-kcopy
 :::
 
 The covariance operator is important due to the Lemma below
 
-::: {.callout-important icon="false"}
-## Lemma
-
-[]{#lemma:covariance_decomp label="lemma:covariance_decomp"} Given an
-k-copy operator
+::: {#lem-covariance-decomp .callout-important icon="false"}
+## (Covariance Decomposition)
+Given a k-copy operator
 $O = \lambda_{\alpha} O_{\alpha} + \lambda_{\beta} O_{\beta}$, we have
 $$\begin{align*}
         \mathbf{V}(O,O) = \lambda_{\alpha}^2 \mathbf{V}(O_{\alpha},O_{\alpha}) + 2 \lambda_{\alpha} \lambda_{\beta} \mathbf{V}(O_{\alpha},O_{\beta}) + \lambda_{\beta}^2 \mathbf{V}(O_{\beta},O_{\beta}).
@@ -554,9 +532,7 @@ $$
         &=\lambda_{\alpha}^2 \mathbf{V}(O_{\alpha},O_{\alpha}) + 2 \lambda_{\alpha} \lambda_{\beta} \mathbf{V}(O_{\alpha},O_{\beta}) + \lambda_{\beta}^2 \mathbf{V}(O_{\beta},O_{\beta}).
 \end{align*}
 $$
- Here at the last line, we use the
-definition [\[def:cov_oper\]](#def:cov_oper){reference-type="ref"
-reference="def:cov_oper"} and the fact that $R(W,W') = R(W',W)$. ◻
+ Here at the last line, we use @def-cov-oper and the fact that $R(W,W') = R(W',W)$. ◻
 :::
 
 ### Application to $\text{tr}(O \rho^k)$.
@@ -569,62 +545,52 @@ is an unbiased estimator for $\text{tr}(O \rho^2)$. If we decomposed the
 operator $O$ on the Pauli basis, it turns out
 $(O \otimes \mathbb{I}_n)\text{SWAP}^{\otimes n} = \sum_{\mathbf{r} \in \mathbb{F}_2^{2n}} (\sigma_{\mathbf{r}} \otimes  \mathbb{I}_n)\text{SWAP}^{\otimes n}:= \sum_{\mathbf{r} \in \mathbb{F}_2^{2n}} O_{\mathbf{r}}$
 Here below we use
-Lemma [\[lemma:LC_shadow_kcopy\]](#lemma:LC_shadow_kcopy){reference-type="ref"
-reference="lemma:LC_shadow_kcopy"} to evaluate the covariance operator
+@lem-LC-shadow-kcopy
 of $O_{\mathbf{r}}$ explicitly.
 
-::: {.callout-important icon="false"}
-## Lemma(covariance operator of non-local Pauli shadow)
-
-[]{#lemma:covar_Pauli label="lemma:covar_Pauli"} 
-If we take
-$O_{\mathbf{r}}= (\sigma_{\mathbf{r}} \otimes \mathbb{I}_n) \cdot \text{SWAP}^{\otimes n}$
-for Pauli operator $\sigma_{\mathbf{r}}$ and denote
-$\text{wt}(\sigma_{\mathbf{r}})$ as the weight of this Pauli operator,
-then we have 
+::: {#lem-covar-pauli .callout-important icon="false"}
+## (Covariance Operator of Non-local Pauli Shadow)
+For the $k=2$ local shadow, consider the observable $O_{\mathbf{r}}= (\sigma_{\mathbf{r}} \otimes \mathbb{I}_n) \cdot \text{SWAP}^{\otimes n}$ where $\sigma_{\mathbf{r}} = \bigotimes_{j=1}^n \sigma_{\mathbf{r}_j}$ is an $n$-qubit Pauli operator with $\mathbf{r} = (\mathbf{r}_1, \ldots, \mathbf{r}_n) \in (\mathbb{F}_2^2)^n$. Let $\text{wt}(\sigma_{\mathbf{r}})$ denote the Pauli weight (number of non-identity single-qubit factors). Then the covariance operator factorizes as $\mathbf{V}(O_{\mathbf{r}}, O_{\mathbf{r}'}) = \bigotimes_{j = 1}^n v(\mathbf{r}_j, \mathbf{r}_j')$ with
 $$
-\begin{align*}
-        \mathbf{V}(O_{\mathbf{r}}, O_{\mathbf{r}'}) = (-1)^{[\mathbf{r}, \mathbf{r}']} \bigotimes_{j=1}^n 
-        \left(
-        % \left\{
-        \begin{aligned}
-            &({5}/{3})\cdot \sigma_{\mathbf{r}_j}\otimes \sigma_{\mathbf{r}'_j}~ \text{if~} \mathbf{r}_j, \mathbf{r}_j'  \neq \mathbf{0}\\
-            &({1}/{2})\cdot \mathbb{I} \otimes \sigma_{\mathbf{r}_j} \text{~if~} \mathbf{r}_j' = \mathbf{0},  \mathbf{r}_j\neq \mathbf{0}\\
-            &({1}/{2})\cdot \mathbb{I} \otimes \sigma_{\mathbf{r}'_j} \text{~if~}  \mathbf{r}_j' \neq \mathbf{0},  \mathbf{r}_j = \mathbf{0}\\
-            &(11/3)\cdot \mathbb{I}_2 \text{~if~} \mathbf{r}_j = \mathbf{r}_j'  = 0
-        \end{aligned}
-        % \right. 
-        \right)
-\end{align*}
+    \begin{align}
+        v(\mathbf{r}_j, \mathbf{r}_j') = 
+        \left\{\begin{aligned}
+            &\frac{5}{6}\left(\sigma_{\mathbf{r}_j}\otimes \sigma_{\mathbf{r}'_j} +\sigma_{\mathbf{r}'_j}\otimes \sigma_{\mathbf{r}_j} \right)\text{~if~} \mathbf{r}_j, \mathbf{r}_j'  \neq \mathbf{0},\\
+            &\frac{11\mathbb{I}_4}{3} \hspace{5em}\text{~if~} \mathbf{r}_j=\mathbf{r}_j'= \mathbf{0}, \\
+            &\left(\frac{1}{2}\mathbb{I}_2 \otimes \sigma_{\mathbf{r}_j}+ \frac{5}{6}\sigma_{\mathbf{r}_j}\otimes\mathbb{I}_2\right) \text{~if~} \mathbf{r}'_j = \mathbf{0},  \mathbf{r}_j\neq \mathbf{0},\\
+            &\left(\frac{1}{2}\mathbb{I}_2 \otimes \sigma_{\mathbf{r}'_j} + \frac{5}{6}\sigma_{\mathbf{r}'_j}\otimes\mathbb{I}_2\right)\text{~if~} \mathbf{r}_j = \mathbf{0},  \mathbf{r}'_j\neq \mathbf{0}.
+        \end{aligned}\right.
+    \end{align}
 $$
-Specifically,
-$\mathbf{V}(O_{\mathbf{r}},O_{\mathbf{r}}) =  \left({11}/{3}\right)^{n}\cdot \left({5}/{11}\right)^{\text{wt}(\sigma_{\mathbf{r}})} \sigma_{\mathbf{r}} \otimes \sigma_{\mathbf{r}}.$
+In particular, $\mathbf{V}(O_{\mathbf{r}},O_{\mathbf{r}}) =  \left({11}/{3}\right)^{n}\cdot \left({5}/{11}\right)^{\text{wt}(\sigma_{\mathbf{r}})} \sigma_{\mathbf{r}} \otimes \sigma_{\mathbf{r}}.$
 :::
 
 ::: {.callout-note collapse="true"}
 ## Proof (Click to expand)
 
-*Proof.* We consider the observable
-$O_{\mathbf{r}}= (\sigma_{\mathbf{r}} \otimes \mathbb{I}_n) \cdot \text{SWAP}^{\otimes n}$
-with
-$\mathbf{r} = (\mathbf{r}_1, \cdots, \mathbf{r}_n) \in (\mathbb{F}_2^2)^n$
-and rewrite the observable according to the fact
-$\text{SWAP}^{\otimes n} = 2^{-n}\sum_{\mathbf{p} \in \mathbb{F}_2^{2n}} \sigma_{\mathbf{p}} \otimes \sigma_{\mathbf{p}}$
-as: 
+**Step 1: Pauli expansion of the observable.**
+We express the observable using the identity $\text{SWAP} = 2^{-1}\sum_{\mathbf{p} \in \mathbb{F}_2^{2}} \sigma_{\mathbf{p}} \otimes \sigma_{\mathbf{p}}$, which extends to $\text{SWAP}^{\otimes n} = 2^{-n}\sum_{\mathbf{p} \in (\mathbb{F}_2^{2})^n} \sigma_{\mathbf{p}} \otimes \sigma_{\mathbf{p}}$. This gives the Pauli decomposition:
 $$
-\begin{align*}
-        O_{\mathbf{r}}=  2^{-n}\sum_{\mathbf{p} \in (\mathbb{F}_2^{2})^n} \sigma_{\mathbf{r}}\sigma_{\mathbf{p}}\otimes \sigma_{\mathbf{p}},\quad O_{\mathbf{r}'}=  2^{-n}\sum_{\mathbf{p}' \in (\mathbb{F}_2^{2})^n} \sigma_{\mathbf{r}'}\sigma_{\mathbf{p}'}\otimes \sigma_{\mathbf{p}'}
-\end{align*}
-$$ 
-This means that the operator
-$O_{\mathbf{r}},O_{\mathbf{r}'}$ satisfied the local decomposition
-$\left\{\begin{aligned}W_j \propto \sigma_{\mathbf{r}_j + \mathbf{p}_j} \otimes \sigma_{\mathbf{p}_j}\\ W'_j \propto \sigma_{\mathbf{r}'_j + \mathbf{p}'_j} \otimes \sigma_{\mathbf{p}'_j}\end{aligned}\right.$
-Here below we abbreviate the foot label $j$ for simplicity. Using
-Definition [\[def:cov_oper\]](#def:cov_oper){reference-type="ref"
-reference="def:cov_oper"}, we calculate the covariance operator as
+\begin{align}
+    O_{\mathbf{r}}=  2^{-n}\sum_{\mathbf{p} \in (\mathbb{F}_2^{2})^n} \sigma_{\mathbf{r}}\sigma_{\mathbf{p}}\otimes \sigma_{\mathbf{p}},\quad O_{\mathbf{r}'}=  2^{-n}\sum_{\mathbf{p}' \in (\mathbb{F}_2^{2})^n} \sigma_{\mathbf{r}'}\sigma_{\mathbf{p}'}\otimes \sigma_{\mathbf{p}'}.
+\end{align}
 $$
-\begin{align*}
-        &\mathbf{V}(O_{\mathbf{r}}, O_{\mathbf{r}'}) = 4^{-n} \bigotimes_{j=1}^n \left(\sum_{\mathbf{p}, \mathbf{p}'} (-1)^{[\mathbf{p},\mathbf{r}']}r\left((\mathbf{r}+\mathbf{p})\mathbf{p},(\mathbf{r}'+\mathbf{p}')\mathbf{p}'\right)\sigma_{\mathbf{r}} \sigma_{\mathbf{r}'}\sigma_{\mathbf{p}} \sigma_{\mathbf{p}'} \otimes \sigma_{\mathbf{p}}\sigma_{\mathbf{p}'} \right)  \\
+The operators $O_{\mathbf{r}}, O_{\mathbf{r}'}$ admit a local decomposition with $W_j \propto \sigma_{\mathbf{r}_j + \mathbf{p}_j} \otimes \sigma_{\mathbf{p}_j}$ and $W'_j \propto \sigma_{\mathbf{r}'_j + \mathbf{p}'_j} \otimes \sigma_{\mathbf{p}'_j}$. Below we suppress the site index $j$ for clarity.
+
+**Step 2: Applying the covariance operator definition.**
+By @def-cov-oper, the covariance operator involves the rescaling function $r(W,W')$ from @lem-LC-shadow-kcopy. For $k=2$, when both $W_j, W'_j \neq \mathbb{I}_2$:
+$$
+r(W_j,W'_j) = 5 \cdot \frac{2\delta_{W_j,W'_j} + \delta_{W_j, \mathcal{C}(W'_j)\setminus \mathbb{I}_2}}{3}.
+$$
+For Pauli operators, two non-identity Paulis either commute ($[\mathbf{a},\mathbf{b}] = 0$) or anticommute ($[\mathbf{a},\mathbf{b}] = 1$), where $[\mathbf{a},\mathbf{b}] := a_1 b_2 + a_2 b_1 \mod 2$ is the symplectic inner product. This gives:
+$$
+r(\sigma_\mathbf{a} \otimes \sigma_\mathbf{b}, \sigma_\mathbf{c} \otimes \sigma_\mathbf{d}) = \frac{5}{3}\left[2\delta_{\mathbf{a},\mathbf{c}}\delta_{\mathbf{b},\mathbf{d}} + \frac{1 + (-1)^{[\mathbf{a},\mathbf{c}]+[\mathbf{b},\mathbf{d}]}}{2}\right], \quad \text{if } \mathbf{a}\mathbf{b}, \mathbf{c}\mathbf{d} \neq \mathbf{00}.
+$$
+
+Using Pauli commutation $\sigma_{\mathbf{p}}\sigma_{\mathbf{p}'} = (-1)^{[\mathbf{p},\mathbf{p}']}\sigma_{\mathbf{p}'}\sigma_{\mathbf{p}} = (-1)^{[\mathbf{p},\mathbf{p}']}\sigma_{\mathbf{p}+\mathbf{p}'}$ (up to phase), the covariance operator factorizes:
+$$
+  \begin{align*}
+        &\mathbf{V}(O_{\mathbf{r}}, O_{\mathbf{r}'}) = 4^{-n} \bigotimes_{j=1}^n \left(\sum_{\mathbf{p}, \mathbf{p}'} (-1)^{[\mathbf{p},\mathbf{r}']}r\left((\mathbf{r}+\mathbf{p})\mathbf{p},(\mathbf{r}'+\mathbf{p}')\mathbf{p}'\right)\sigma_{\mathbf{r}} \sigma_{\mathbf{r}'}\sigma_{\mathbf{p}} \sigma_{\mathbf{p}'} \otimes \sigma_{\mathbf{p}}\sigma_{\mathbf{p}'} \right) \\
         &=4^{-n} \bigotimes_{j=1}^n \left(\sum_{\mathbf{p}, \mathbf{p}'} (-1)^{[\mathbf{p},\mathbf{r}']+[\mathbf{p},\mathbf{p}']}r\left((\mathbf{r}+\mathbf{p})\mathbf{p},(\mathbf{r}'+\mathbf{p}')\mathbf{p}'\right)\sigma_{\mathbf{r}} \sigma_{\mathbf{r}'}\sigma_{\mathbf{p}+\mathbf{p}'}\otimes \sigma_{\mathbf{p}+\mathbf{p}'} \right) \\
         &= \bigotimes_{j=1}^n \left( \left\{\begin{aligned}
             &\frac{5}{24}\sum_{\mathbf{p}, \mathbf{p}'}(-1)^{[\mathbf{p},\mathbf{r}']+[\mathbf{p},\mathbf{p}']} \left[4\delta_{\mathbf{r},\mathbf{r}' }\delta_{\mathbf{p},\mathbf{p}' }+ 1 + (-1)^{[\mathbf{r}+\mathbf{p},\mathbf{r}'+\mathbf{p}']+[\mathbf{p},\mathbf{p}']}\right]\sigma_{\mathbf{r}} \sigma_{\mathbf{r}'}\sigma_{\mathbf{p}+\mathbf{p}'} \otimes \sigma_{\mathbf{p}+\mathbf{p}'} \text{~if~} \mathbf{r},\mathbf{r}' \neq 0\\
@@ -633,128 +599,85 @@ $$
             &4^{-1}\sum_{\mathbf{p}, \mathbf{p}'}(-1)^{[\mathbf{p}', \mathbf{p}]} r(\mathbf{p}\mathbf{p},\mathbf{p}'\mathbf{p}')\sigma_{\mathbf{p} + \mathbf{p}'} \otimes \sigma_{\mathbf{p}+\mathbf{p}'}\text{~if~} \mathbf{r} = \mathbf{r}'  = 0
         \end{aligned}\right. \right)\\
         &:= \bigotimes_{j=1}^n v(\mathbf{r}_j, \mathbf{r}_j')
-\end{align*}
-$$ 
-Here in the third equality, we use the fact that if
-$\mathbf{r},\mathbf{r}' \neq  \mathbf{0}$, we cannot have
-$\mathbf{r} + \mathbf{p} = \mathbf{p} = \mathbf 0$ or
-$\mathbf{r}' + \mathbf{p}' = \mathbf{p}' = \mathbf 0$. Thus, we plug in
-the second line in
-Eq.[\[eq:lc_Pauli_rescale\]](#eq:lc_Pauli_rescale){reference-type="eqref"
-reference="eq:lc_Pauli_rescale"}.
+        % = \frac{5}{3} \sigma_{\mathbf{r}_j}^{\otimes 2}
+    \end{align*}
+$$ {#eq-mid-V-Orho2}
 
-In the case of $\mathbf{r}_j,\mathbf{r}'_j \neq 0$, we simplified term
-by term as below 
+**Step 3: Case analysis for the local factor $v(\mathbf{r}, \mathbf{r}')$.**
+
+*Case 1: $\mathbf{r}, \mathbf{r}' \neq \mathbf{0}$.* When both Pauli indices are non-trivial, we have $\mathbf{r}+\mathbf{p} \neq \mathbf{0}$ or $\mathbf{p} \neq \mathbf{0}$ for all $\mathbf{p}$, so we can apply the rescaling formula from @lem-LC-shadow-kcopy. The expression separates into three terms:
 $$
-\begin{align*}
-        \text{the 1st term} &= \sum_{\mathbf{p}} (-1)^{[\mathbf{p},\mathbf{r}']}\cdot \frac{5}{6} \delta_{\mathbf{r},\mathbf{r}'}\sigma_{\mathbf{r}}\sigma_{\mathbf{r}'} \otimes \mathbb{I} =0, \\
-        \text{the 2nd term} &= \sum_{\mathbf{p}, \mathbf{p}'}(-1)^{[\mathbf{p},\mathbf{r}']+[\mathbf{p},\mathbf{p}']} \frac{5}{24} \sigma_{\mathbf{r}} \sigma_{ \mathbf{r}'}\sigma_{\mathbf{p} + \mathbf{p}'} \otimes \sigma_{\mathbf{p}+\mathbf{p}'}= \sum_{\mathbf{p}, \mathbf{u}}(-1)^{[\mathbf{p}, \mathbf{r}']+[\mathbf{p},\mathbf{u}]} \frac{5}{24} \sigma_{\mathbf{r}} \sigma_{ \mathbf{r}'}\sigma_{\mathbf{u}} \otimes \sigma_{\mathbf{u}}\\ 
-        &= \sum_{\mathbf{u}}\delta_{\mathbf{r}',\mathbf{u}} \frac{5}{6} \sigma_{\mathbf{r}} \sigma_{ \mathbf{r}'}\sigma_{\mathbf{u}} \otimes \sigma_{\mathbf{u}} = \frac{5}{6} \sigma_{\mathbf{r}} \otimes \sigma_{\mathbf{r}'},\\
-        %%%%%%%%%%%%%%%%
-        \text{the 3rd term} &= \sum_{\mathbf{p}, \mathbf{u}}(-1)^{[\mathbf{p}, \mathbf{r}']+[\mathbf{p},\mathbf{u}]} \frac{5}{24}\left[(-1)^{[\mathbf{r}+\mathbf{p},\mathbf{r}'+\mathbf{u}-\mathbf{p}]+[\mathbf{p},\mathbf{u}]}\right] \sigma_{\mathbf{r}}\sigma_{ \mathbf{r}'}\sigma_{\mathbf{u}} \otimes \sigma_{\mathbf{u}}\\
-        &=\sum_{\mathbf{p}, \mathbf{u}}\frac{5}{24}\left[(-1)^{[\mathbf{r},\mathbf{r}']+[\mathbf{r},\mathbf{u}]+[\mathbf{r},\mathbf{p}]+[\mathbf{p},\mathbf{u}]}\right]\sigma_{\mathbf{r}}\sigma_{ \mathbf{r}'}\sigma_{\mathbf{u}} \otimes \sigma_{\mathbf{u}}\\
-        &=\sum_{\mathbf{u}}\frac{5}{6}\delta_{\mathbf{r},\mathbf{u}}\left[(-1)^{[\mathbf{r},\mathbf{r}']+[\mathbf{r},\mathbf{u}]}\right]\sigma_{\mathbf{r}}\sigma_{ \mathbf{r}'}\sigma_{\mathbf{u}} \otimes \sigma_{\mathbf{u}} =\frac{5}{6}\sigma_{\mathbf{r}'} \otimes \sigma_{\mathbf{r}} .
-\end{align*}
+\begin{align}
+    \text{Term 1} &= \sum_{\mathbf{p}} (-1)^{[\mathbf{p},\mathbf{r}']}\cdot \frac{5}{6} \delta_{\mathbf{r},\mathbf{r}'}\sigma_{\mathbf{r}}\sigma_{\mathbf{r}'} \otimes \mathbb{I}_2 = 0, \\
+    \text{Term 2} &= \sum_{\mathbf{p}, \mathbf{p}'}(-1)^{[\mathbf{p},\mathbf{r}']+[\mathbf{p},\mathbf{p}']} \frac{5}{24} \sigma_{\mathbf{r}} \sigma_{ \mathbf{r}'}\sigma_{\mathbf{p} + \mathbf{p}'} \otimes \sigma_{\mathbf{p}+\mathbf{p}'}.
+\end{align}
 $$
- Combining all these gives the result of the first line of
-Eq.[\[eq:mid_V_Orho2\]](#eq:mid_V_Orho2){reference-type="eqref"
-reference="eq:mid_V_Orho2"} as 
+Substituting $\mathbf{u} = \mathbf{p} + \mathbf{p}'$ and using $\sum_{\mathbf{p}} (-1)^{[\mathbf{p}, \mathbf{r}'+\mathbf{u}]} = 4\delta_{\mathbf{r}',\mathbf{u}}$:
 $$
-\begin{align*}
-       v({\mathbf{r}_j}, {\mathbf{r}'}_j) =\frac{5}{6}\left(\sigma_{\mathbf{r}_j}\otimes \sigma_{\mathbf{r}'_j} +\sigma_{\mathbf{r}'_j}\otimes \sigma_{\mathbf{r}_j} \right)~ \text{if~} \mathbf{r}_j, \mathbf{r}_j'  \neq \mathbf{0}
-\end{align*}
+\text{Term 2} = \sum_{\mathbf{u}}\delta_{\mathbf{r}',\mathbf{u}} \frac{5}{6} \sigma_{\mathbf{r}} \sigma_{ \mathbf{r}'}\sigma_{\mathbf{u}} \otimes \sigma_{\mathbf{u}} = \frac{5}{6} \sigma_{\mathbf{r}} \otimes \sigma_{\mathbf{r}'}.
+$$
+For Term 3 involving $(-1)^{[\mathbf{r}+\mathbf{p},\mathbf{r}'+\mathbf{p}']+[\mathbf{p},\mathbf{p}']}$, expanding and summing over $\mathbf{p}$ yields:
+$$
+\text{Term 3} = \sum_{\mathbf{u}}\frac{5}{6}\delta_{\mathbf{r},\mathbf{u}}(-1)^{[\mathbf{r},\mathbf{r}']+[\mathbf{r},\mathbf{u}]}\sigma_{\mathbf{r}}\sigma_{ \mathbf{r}'}\sigma_{\mathbf{u}} \otimes \sigma_{\mathbf{u}} = \frac{5}{6}\sigma_{\mathbf{r}'} \otimes \sigma_{\mathbf{r}}.
+$$
+Combining these:
+$$
+\begin{align}
+   v(\mathbf{r}, \mathbf{r}') = \frac{5}{6}\left(\sigma_{\mathbf{r}}\otimes \sigma_{\mathbf{r}'} + \sigma_{\mathbf{r}'}\otimes \sigma_{\mathbf{r}} \right), \quad \text{if } \mathbf{r}, \mathbf{r}'  \neq \mathbf{0}.
+\end{align}
+$$ {#eq-V-case1}
+
+*Case 2: $\mathbf{r} = \mathbf{r}' = \mathbf{0}$.* We enumerate all 16 terms with $\mathbf{p}, \mathbf{p}' \in \mathbb{F}_2^2 = \{00, 01, 10, 11\}$. The rescaling function takes values $r(\mathbf{p}\mathbf{p}, \mathbf{p}'\mathbf{p}') \in \{1, 5, 5/3\}$ depending on whether one or both arguments are $\mathbf{00}$, or whether the two Paulis commute or anticommute. Direct calculation yields:
+$$
+\begin{align}
+    v(\mathbf{0}, \mathbf{0}) &= 4^{-1}\sum_{\mathbf{p},\mathbf{p}'} (-1)^{[\mathbf{p},\mathbf{p}']} r(\mathbf{p}\mathbf{p}, \mathbf{p}'\mathbf{p}')\sigma_{\mathbf{p}+\mathbf{p}'} \otimes \sigma_{\mathbf{p}+\mathbf{p}'} \notag \\
+    &= 4\, \mathbb{I}_2^{\otimes 2} - \frac{1}{3}(X^{\otimes 2}+Z^{\otimes 2}+Y^{\otimes 2}) = \frac{11\mathbb{I}_4 + 4\Pi_{\mathrm{asym}}}{3},
+\end{align}
+$$
+where $\Pi_{\mathrm{asym}} = (\mathbb{I}_4 - \text{SWAP})/2 = (\mathbb{I}_4 - X^{\otimes 2} - Z^{\otimes 2} - Y^{\otimes 2})/4$.
+
+*Case 3: $\mathbf{r}' = \mathbf{0}$, $\mathbf{r} \neq \mathbf{0}$.* Naively applying @eq-V-case1 would give $v(\mathbf{r}, \mathbf{0}) = \frac{5}{6}(\sigma_{\mathbf{r}}\otimes \mathbb{I}_2 + \mathbb{I}_2\otimes \sigma_{\mathbf{r}})$. However, this overcounts when $\mathbf{p}' = \mathbf{0}$, since the rescaling function satisfies $r((\mathbf{r}+\mathbf{p})\mathbf{p}, \mathbf{0}\mathbf{0}) = 1$ rather than the non-trivial formula. The correction term is:
+$$
+\Delta = -\frac{1}{4}\cdot\frac{5}{6}\sum_{\mathbf{p}} 2\, \sigma_{\mathbf{r}}\sigma_{\mathbf{p}} \otimes \sigma_{\mathbf{p}} + \frac{1}{4} \sum_{\mathbf{p}} \sigma_{\mathbf{r}}\sigma_{\mathbf{p}} \otimes \sigma_{\mathbf{p}} = -\frac{1}{3}(\sigma_{\mathbf{r}} \otimes \mathbb{I}_2)\text{SWAP}.
+$$
+Thus:
+$$
+v(\mathbf{r}, \mathbf{0}) = \frac{5}{6}(\mathbb{I}_2 \otimes \sigma_{\mathbf{r}} + \sigma_{\mathbf{r}}\otimes\mathbb{I}_2) - \frac{1}{3}(\sigma_{\mathbf{r}} \otimes \mathbb{I}_2)\text{SWAP}.
+$$
+Using $\Pi_{\mathrm{sym}} + \Pi_{\mathrm{asym}} = \mathbb{I}_4$ and $\Pi_{\mathrm{sym}} - \Pi_{\mathrm{asym}} = \text{SWAP}$:
+$$
+v(\mathbf{r}, \mathbf{0}) = \left(\frac{1}{2}\Pi_{\mathrm{sym}} + \frac{7}{6}\Pi_{\mathrm{asym}}\right)(\mathbb{I}_2 \otimes \sigma_{\mathbf{r}}) + \frac{5}{6}\sigma_{\mathbf{r}}\otimes\mathbb{I}_2.
+$$
+By symmetry, $v(\mathbf{0}, \mathbf{r}') = \left(\frac{1}{2}\Pi_{\mathrm{sym}} + \frac{7}{6}\Pi_{\mathrm{asym}}\right)(\mathbb{I}_2 \otimes \sigma_{\mathbf{r}'}) + \frac{5}{6}\sigma_{\mathbf{r}'}\otimes\mathbb{I}_2$.
+
+**Step 4: Restriction to symmetric subspace.**
+Since the input state is $\rho \otimes \rho$, which lies in the symmetric subspace, we have $\text{tr}(\rho \otimes \rho \cdot \Pi_{\mathrm{asym}}) = 0$. Therefore, terms proportional to $\Pi_{\mathrm{asym}}$ do not contribute, and we can simplify:
+$$
+\begin{align}
+    v(\mathbf{r}_j, \mathbf{r}_j') = 
+    \left\{\begin{aligned}
+        &\frac{5}{6}\left(\sigma_{\mathbf{r}_j}\otimes \sigma_{\mathbf{r}'_j} +\sigma_{\mathbf{r}'_j}\otimes \sigma_{\mathbf{r}_j} \right) &\text{if } \mathbf{r}_j, \mathbf{r}_j'  \neq \mathbf{0},\\
+        &\frac{11\mathbb{I}_4}{3} &\text{if } \mathbf{r}_j=\mathbf{r}_j'= \mathbf{0}, \\
+        &\frac{1}{2}\mathbb{I}_2 \otimes \sigma_{\mathbf{r}_j}+ \frac{5}{6}\sigma_{\mathbf{r}_j}\otimes\mathbb{I}_2 &\text{if } \mathbf{r}'_j = \mathbf{0},  \mathbf{r}_j\neq \mathbf{0},\\
+        &\frac{1}{2}\mathbb{I}_2 \otimes \sigma_{\mathbf{r}'_j} + \frac{5}{6}\sigma_{\mathbf{r}'_j}\otimes\mathbb{I}_2 &\text{if } \mathbf{r}_j = \mathbf{0},  \mathbf{r}'_j\neq \mathbf{0}.
+    \end{aligned}\right.
+\end{align}
 $$
 
-In the case of $\mathbf{r}_j =\mathbf{r}'_j= 0$, the calculation is
-covered in
-Eq.[\[eq:prity_multicopy_shadow_variance\]](#eq:prity_multicopy_shadow_variance){reference-type="eqref"
-reference="eq:prity_multicopy_shadow_variance"}. We calculate by list 16
-terms one-by-one as 
+**Step 5: Diagonal case $\mathbf{r} = \mathbf{r}'$.**
+When $\mathbf{r} = \mathbf{r}'$, each local factor simplifies to:
 $$
-\begin{align*}
-        \text{second line} 
-        &= 4^{-1}\left[(-1)^{0} \cdot 1\cdot  \sigma_{00}^{\otimes 2} +  (-1)^{0} \cdot 1\cdot  \sigma_{01}^{\otimes 2} +(-1)^{0} \cdot 1\cdot   \sigma_{10}^{\otimes 2} + (-1)^{0} \cdot 1\cdot   \sigma_{11}^{\otimes 2}\right. \notag\\
-        &\hspace{0.8cm} + (-1)^{0} \cdot 1\cdot \sigma_{01}^{\otimes 2} + (-1)^{0} \cdot 5\cdot \sigma_{00}^{\otimes 2} + (-1)^{1} \cdot \frac{5}{3}\cdot\sigma_{11}^{\otimes 2} +  (-1)^{1} \cdot \frac{5}{3}\cdot \sigma_{10}^{\otimes 2} \notag\\
-        &\hspace{0.8cm}+ (-1)^{0} \cdot 1\cdot \sigma_{10}^{\otimes 2} +  (-1)^{1} \cdot \frac{5}{3}\cdot \sigma_{11}^{\otimes 2} + (-1)^{0} \cdot 5\cdot \sigma_{00}^{\otimes 2} + (-1)^{1} \cdot \frac{5}{3}\cdot \sigma_{01}^{\otimes 2} \notag\\
-        &\left.\hspace{0.8cm}+ (-1)^{0} \cdot 1\cdot \sigma_{11}^{\otimes 2} + (-1)^{1} \cdot \frac{5}{3}\cdot \sigma_{10}^{\otimes 2} + (-1)^{1} \cdot \frac{5}{3}\cdot \sigma_{01}^{\otimes 2} + (-1)^{0} \cdot 5\cdot \sigma_{00}^{\otimes 2} \right]\\
-        &= 4 \sigma_{00}^{\otimes 2} - \frac{1}{3}(\sigma_{01}^{\otimes 2}+\sigma_{10}^{\otimes 2}+\sigma_{11}^{\otimes 2}) = \frac{11\mathbb{I}_2 + 4 \Pi_{\mathrm{asym}}}{3}.
-\end{align*}
+v(\mathbf{r}_j, \mathbf{r}_j) = \begin{cases} \frac{5}{3}\sigma_{\mathbf{r}_j}^{\otimes 2} & \text{if } \sigma_{\mathbf{r}_j} \neq \mathbb{I}_2, \\ \frac{11}{3}\mathbb{I}_4 & \text{if } \sigma_{\mathbf{r}_j} = \mathbb{I}_2. \end{cases}
 $$
-Here in the last line we use the definition that
-$\Pi_{\mathrm{asym}} = (\mathbb{I}_2 - \text{SWAP})/2 = {(\mathbb{I}_2 -\sigma_{01}^{\otimes 2}-\sigma_{10}^{\otimes 2}-\sigma_{11}^{\otimes 2})}/{4}$.
-
-In the case of $\mathbf{r}'= 0 \neq \mathbf{r}$, if we simply adapt the
-result in Eq.[\[eq:V_eq1\]](#eq:V_eq1){reference-type="eqref"
-reference="eq:V_eq1"}, we will get the result
-$v({\mathbf{r}_j}, {\mathbf{r}_j'}) =({5}/{6})\left(\sigma_{\mathbf{r}}\otimes \mathbb{I} +\mathbb{I}\otimes \sigma_{\mathbf{r}} \right)$.
-However, in the case of $\mathbf{p}' = 0$ during the summation, we
-mistakenly counted the constant
-$r((\mathbf{r}+ \mathbf{p})\mathbf{p}, \mathbf{0}\mathbf{0}) = 1$ into
-$r((\mathbf{r}+ \mathbf{p})\mathbf{p}, \mathbf{0}\mathbf{0}) = (5/6)[4\delta_{\mathbf{r},\mathbf{0}}\delta_{\mathbf{p},\mathbf{0}} +2]$.
-To correct this term, we sum in the case $\mathbf{p}' = 0$ and get the
-result 
+Hence:
 $$
-\begin{align*}
-        \Delta = -4^{-1}(5/6)\sum_{\mathbf{p}} [4\delta_{\mathbf{p},0}\delta_{\mathbf{r},0} + 2]\sigma_{\mathbf{r}}\sigma_{\mathbf{p}} \otimes \sigma_{\mathbf{p}} + 4^{-1} \sum_{\mathbf{p}} \sigma_{\mathbf{r}}\sigma_{\mathbf{p}} \otimes \sigma_{\mathbf{p}} = - \frac{1}{3}(\sigma_{\mathbf{r}} \otimes \mathbb{I})\text{SWAP}.
-\end{align*}
-$$ 
-This correction then gives the correct result
-$$
-\begin{align*}
-        v({\mathbf{r}}, {\mathbf{r}'}) &=\frac{5}{6}\left(\mathbb{I}\otimes \sigma_{\mathbf{r}} +  \sigma_{\mathbf{r}}\otimes\mathbb{I} \right) -  \frac{1}{3}(\sigma_{\mathbf{r}} \otimes \mathbb{I}) \cdot \text{SWAP} = \left(\frac{5}{6} \mathbb{I} - \frac{1}{3}\text{SWAP}\right)(\mathbb{I} \otimes \sigma_{\mathbf{r}}) + \frac{5}{6}\sigma_{\mathbf{r}}\otimes\mathbb{I} \notag\\
-        &= \left(\frac{1}{2} \Pi_{\mathrm{sym}} + \frac{7}{6} \Pi_{\mathrm{asym}}\right)(\mathbb{I} \otimes \sigma_{\mathbf{r}}) + \frac{5}{6}\sigma_{\mathbf{r}}\otimes\mathbb{I} \text{~if~} \mathbf{r}' = \mathbf{0},  \mathbf{r}\neq \mathbf{0}.
-\end{align*}
-$$ 
-Similarly, in the case $\mathbf{r}= 0 \neq \mathbf{r}'$,
-we calculate the correction in the case $\mathbf{p} = 0$ as
-$$
-\begin{align*}
-        \Delta &= -4^{-1}(5/6)\sum_{\mathbf{p}'}[4\delta_{\mathbf{p}',0}\delta_{\mathbf{r}',0} + 2]\sigma_{\mathbf{r}'}\sigma_{\mathbf{p}'} \otimes \sigma_{\mathbf{p}'} + 4^{-1} \sum_{\mathbf{p}'} \sigma_{\mathbf{r}'}\sigma_{\mathbf{p}'} \otimes \sigma_{\mathbf{p}'} = - \frac{1}{3}(\sigma_{\mathbf{r}'} \otimes \mathbb{I})\text{SWAP},\\
-        v({\mathbf{r}}, {\mathbf{r}'}) &= \left(\frac{1}{2} \Pi_{\mathrm{sym}} + \frac{7}{6} \Pi_{\mathrm{asym}}\right)(\mathbb{I} \otimes \sigma_{\mathbf{r}'}) + \frac{5}{6}\sigma_{\mathbf{r}'}\otimes\mathbb{I} \text{~if~} \mathbf{r} = \mathbf{0},  \mathbf{r}'\neq \mathbf{0}.
-\end{align*}
-$$
- Now we conclude the results 
- $$
- \begin{align*}
-        v(\mathbf{r}_j, \mathbf{r}_j') = 
-        \left\{\begin{aligned}
-            &\frac{5}{6}\left(\sigma_{\mathbf{r}_j}\otimes \sigma_{\mathbf{r}'_j} +\sigma_{\mathbf{r}'_j}\otimes \sigma_{\mathbf{r}_j} \right)&\text{~if~} \mathbf{r}_j, \mathbf{r}_j'  \neq \mathbf{0},\\
-            &\frac{11\mathbb{I}_2 + 4 \Pi_{\mathrm{asym}}}{3} &\text{~if~} \mathbf{r}_j=\mathbf{r}_j'= \mathbf{0}, \\
-            &\left(\frac{1}{2} \Pi_{\mathrm{sym}} + \frac{7}{6} \Pi_{\mathrm{asym}}\right)(\mathbb{I} \otimes \sigma_{\mathbf{r}_j})+ \frac{5}{6}\sigma_{\mathbf{r}}\otimes\mathbb{I} &\text{~if~} \mathbf{r}_j' = \mathbf{0},  \mathbf{r}_j\neq \mathbf{0},\\
-            &\left(\frac{1}{2} \Pi_{\mathrm{sym}} + \frac{7}{6} \Pi_{\mathrm{asym}}\right)(\mathbb{I} \otimes \sigma_{\mathbf{r}'_j}) + \frac{5}{6}\sigma_{\mathbf{r}'}\otimes\mathbb{I}&\text{~if~} \mathbf{r}_j = \mathbf{0},  \mathbf{r}'_j\neq \mathbf{0}.
-        \end{aligned}\right.
-\end{align*}
-$$
-Because the input states are restrained in the symmetric
-space $\rho \otimes \rho$, we can safely symmetrize this operator and
-drop the terms that contained the antisymmetric operator and get the
-final result 
-$$
-\begin{align*}
-        v(\mathbf{r}_j, \mathbf{r}_j') = 
-        \left\{\begin{aligned}
-            &\frac{5}{6}\left(\sigma_{\mathbf{r}_j}\otimes \sigma_{\mathbf{r}'_j} +\sigma_{\mathbf{r}'_j}\otimes \sigma_{\mathbf{r}_j} \right)\text{~if~} \mathbf{r}_j, \mathbf{r}_j'  \neq \mathbf{0},
-            \hspace{6em} \frac{11\mathbb{I}_2}{3} \hspace{5em}\text{~if~} \mathbf{r}_j=\mathbf{r}_j'= \mathbf{0}, \\
-            &\left(\frac{1}{2}\mathbb{I} \otimes \sigma_{\mathbf{r}_j}+ \frac{5}{6}\sigma_{\mathbf{r}_j}\otimes\mathbb{I}\right) \text{~if~} \mathbf{r}'_j = \mathbf{0},  \mathbf{r}_j\neq \mathbf{0},
-            \qquad \left(\frac{1}{2}\mathbb{I} \otimes \sigma_{\mathbf{r}'_j} + \frac{5}{6}\sigma_{\mathbf{r}_j'}\otimes\mathbb{I}\right)\text{~if~} \mathbf{r}_j = \mathbf{0},  \mathbf{r}'_j\neq \mathbf{0}.
-        \end{aligned}\right.
-\end{align*}
-$$
- As for the special case with $\mathbf{r} = \mathbf{r}'$,
-we get the result 
-$$
-\begin{align*}
-        \mathbf{V}(O_\mathbf{r},O_\mathbf{r}) = \bigotimes_{i=1}^n \left\{ \begin{aligned}\frac{5}{3}\sigma_{\mathbf{r}_i}^{\otimes 2} &\text{~if~}\sigma_{\mathbf{r}_i} \neq \mathbb{I}_2 \\ \frac{11}{3}\sigma_{\mathbf{r}_i}^{\otimes 2} &\text{~if~}\sigma_{\mathbf{r}_i} = \mathbb{I}_2  \end{aligned} \right. = \left(\frac{11}{3}\right)^{n}\left(\frac{5}{11}\right)^{\text{wt}(\sigma_{\mathbf{r}})}\sigma_{\mathbf{r}}^{\otimes 2}.
-\end{align*}
+\mathbf{V}(O_\mathbf{r},O_\mathbf{r}) = \bigotimes_{j=1}^n v(\mathbf{r}_j, \mathbf{r}_j) = \left(\frac{11}{3}\right)^{n}\left(\frac{5}{11}\right)^{\text{wt}(\sigma_{\mathbf{r}})}\sigma_{\mathbf{r}}^{\otimes 2}. \quad \square
 $$
 :::
 
 We consider the estimation of the simplest operator
 $O^{(2)} = \text{SWAP}^{\otimes n} = 2^{-n}(\mathbb{I}\mathbb{I}+XX+YY+ZZ)^{\otimes n}$.
-Based on
-Lemma [\[lemma:covar_Pauli\]](#lemma:covar_Pauli){reference-type="ref"
-reference="lemma:covar_Pauli"}, this gives the variance
-$\text{Var}=(11/3)^n$, which still requires exponentially large sampling
+Based on @lem-covar-pauli, $\text{Var}=(11/3)^n$, which still requires exponentially large sampling
 numbers. For the single copy local Clifford shadow, the variance is
 calculated through: 
 $$
@@ -802,8 +725,7 @@ $\mathbf{p}_j^{(m)}, \forall j = 1,\cdots,n, \forall m = 1,\cdots,k-1$
 ranging around $\mathbb{F}_{2}^2$. To simplify the notation, we set two
 of such a vector $\mathbf{u}(\mathbf{p}_j^{(m)})$ and
 $\mathbf{v}(\mathbf{q}_j^{(m)})$ and abbreviate their $j$ index. Use
-Lemma [\[lemma:LC_shadow_kcopy\]](#lemma:LC_shadow_kcopy){reference-type="ref"
-reference="lemma:LC_shadow_kcopy"}, we calculate the variance operator
+@lem-LC-shadow-kcopy
 as $$\begin{align*}
     \mathbf{V}(O^{(k)}) &= \bigotimes_{j =1}^n \left(\sum_{\mathbf{u},\mathbf{v}}4^{-k+1}i^{ \sum_{l =1}^{k-1}\mathbf{p}^{(l)}J \mathbf{p}^{(l-1)}}\cdot i^{ \sum_{l =1}^{k-1}\mathbf{q}^{(l)}J \mathbf{q}^{(l-1)}} r(\mathbf{u},\mathbf{v})\sigma_{\mathbf{u}}\sigma_{\mathbf{v}}\right)\\
     &=\bigotimes_{j =1}^n \left(\sum_{\mathbf{u},\mathbf{v}}4^{-k+1}i^{ \sum_{l =1}^{k-1}\mathbf{p}^{(l)}J \mathbf{p}^{(l-1)}+\sum_{l =1}^{k-1}\mathbf{q}^{(l)}J \mathbf{q}^{(l-1)} + \mathbf{v} J{\mathbf{u}}} r(\mathbf{u},\mathbf{v})\sigma_{\mathbf{u} + \mathbf{v}}\right)\\
@@ -812,9 +734,7 @@ as $$\begin{align*}
         &\sum_{\mathbf{u},\mathbf{v}}4^{-k+1}i^{m(\mathbf{u},\mathbf{v})} \frac{2^k + 1}{2^k + 2} \left[2^k \delta_{\mathbf{u}, \mathbf{v}} + 1 + (-1)^{[\mathbf{v}, \mathbf{u}]}\right]\sigma_{\mathbf{u} + \mathbf{v}} \text{~if~}\mathbf{r} \neq 0\\
         &\left.\sum_{\mathbf{u},\mathbf{v}}4^{-k+1}i^{m(\mathbf{u},\mathbf{v})} r(\mathbf{u},\mathbf{v})\sigma_{\mathbf{u} + \mathbf{v}} \right|_{\mathbf{r} = 0}
     \end{aligned}\right.\right) 
-\end{align*}$$ Here in the last equality, we use the identity
-Eq.[\[eq:lc_Pauli_rescale\]](#eq:lc_Pauli_rescale){reference-type="eqref"
-reference="eq:lc_Pauli_rescale"} and the fact that $\mathbf{u}=0$ or
+\end{align*}$$ Here in the last equality, we use the rescaling formula from @lem-LC-shadow-kcopy and the fact that $\mathbf{u}=0$ or
 $\mathbf{v}=0$ can only happen if $\mathbf{r}_j = 0$. Thus, in the case
 of $\mathbf{r}_j \neq 0$, we have
 $r(\mathbf{u},\mathbf{v})= (2^k + 1)(2^k + 2)^{-1} \left[2^k \delta_{\mathbf{p}, \mathbf{q}} + 1 + (-1)^{[\mathbf{v}, \mathbf{u}]}\right]$.
@@ -880,6 +800,67 @@ $$
     &= \sum_{\mathbf{p}^{(l>0)}}  (-1)^{\sum_{l =1}^{k-1}\left[\mathbf{p}^{l},\mathbf{p}^{l-1}+\mathbf{w}^{l} + \mathbf{w}^{l-1}\right] }
 \end{align*}
 $$
+We use the same telescoping technique as the first term. Define $\mathbf{t}^{(l)} := \mathbf{w}^{(l)} + \mathbf{w}^{(l-1)}$ (with $\mathbf{w}^{(0)} = 0$). Summing over $\mathbf{p}^{(1)}$ first, the terms involving $\mathbf{p}^{(1)}$ are:
+$$
+[\mathbf{p}^{1}, \mathbf{p}^{0} + \mathbf{t}^{1}] + [\mathbf{p}^{2}, \mathbf{p}^{1}] = [\mathbf{p}^{1}, \mathbf{p}^{0} + \mathbf{t}^{1} + \mathbf{p}^{2}].
+$$
+This gives $\sum_{\mathbf{p}^{(1)}} (-1)^{[\mathbf{p}^{1}, \mathbf{r}_j + \mathbf{t}^{1} + \mathbf{p}^{2}]} = 4\delta_{\mathbf{p}^{2}, \mathbf{r}_j + \mathbf{t}^{1}}$. Continuing the recursion by pairing $(\mathbf{p}^{(2l-1)}, \mathbf{p}^{(2l)})$:
+$$
+\mathbf{p}^{(2l)} = \mathbf{r}_j + \sum_{m=1}^{2l-1} \mathbf{t}^{(m)} = \mathbf{r}_j + \mathbf{w}^{(2l-1)}.
+$$
+When $\mathbf{w}^{(l)} = \mathbf{0}$ for all $l$ (i.e., $\mathbf{u} = \mathbf{v}$), we have $\mathbf{t}^{(l)} = 0$ and the recursion reduces to the first term's case, giving coefficient $2^{k-1}$ for odd $k$ and $0$ for even $k$. When $\mathbf{w} \neq \mathbf{0}$, the accumulated phase factors lead to cancellation. Specifically, if there exists some $l^*$ such that $\mathbf{w}^{(l^*)} \neq 0$, the inner sum over $\mathbf{p}$ vanishes due to the mismatch in the boundary conditions. Therefore:
+$$
+\sum_{\mathbf{p}^{(l>0)}}  (-1)^{\sum_{l =1}^{k-1}\left[\mathbf{p}^{l},\mathbf{p}^{l-1}+\mathbf{w}^{l} + \mathbf{w}^{l-1}\right] } = \left\{\begin{aligned}&2^{k-1} \text{~if~} k \text{~is odd and } \mathbf{w} = \mathbf{0},\\ &0 \text{~otherwise}.\end{aligned}\right.
+$$
+Since only $\mathbf{w} = \mathbf{0}$ contributes, the second term becomes:
+$$
+\text{The 2nd term} = \left\{\begin{aligned}&\frac{2(2^k + 1)}{2^k+2} \mathbb{I}_k &\text{~if~} k \text{~is odd},\\ &0 &\text{~if~} k \text{~is even}.\end{aligned}\right.
+$$
+
+**Third term: $(-1)^{[\mathbf{v},\mathbf{u}]}$ contribution.**
+
+For the third term $\sum_{\mathbf{u},\mathbf{v}} 4^{-k+1} i^{m(\mathbf{u},\mathbf{v})} \frac{2^k + 1}{2^k+2} (-1)^{[\mathbf{v}, \mathbf{u}]} \sigma_{\mathbf{u}+\mathbf{v}}$, we need to evaluate the symplectic form $[\mathbf{v}, \mathbf{u}]$ in terms of $\mathbf{p}^{(l)}$ and $\mathbf{q}^{(l)}$. Recall that:
+$$
+\mathbf{u} = (\mathbf{r}_j + \mathbf{p}^{(1)}, \mathbf{p}^{(1)}+\mathbf{p}^{(2)}, \ldots, \mathbf{p}^{(k-1)}), \quad \mathbf{v} = (\mathbf{r}_j + \mathbf{q}^{(1)}, \mathbf{q}^{(1)}+\mathbf{q}^{(2)}, \ldots, \mathbf{q}^{(k-1)}).
+$$
+The symplectic form between $k$-tuples is $[\mathbf{v}, \mathbf{u}] = \sum_{m=1}^{k} [\mathbf{v}_m, \mathbf{u}_m]$ where $[\cdot, \cdot]$ on $\mathbb{F}_2^2$ is the standard symplectic form. Using the change of variables $\mathbf{w}^{(m)} = \mathbf{p}^{(m)} + \mathbf{q}^{(m)}$ and expanding:
+$$
+[\mathbf{v}, \mathbf{u}] = \sum_{m=1}^{k-1} [\mathbf{q}^{(m-1)}+\mathbf{q}^{(m)}, \mathbf{p}^{(m-1)}+\mathbf{p}^{(m)}] + [\mathbf{q}^{(k-1)}, \mathbf{p}^{(k-1)}].
+$$
+This additional phase combines with $m(\mathbf{u},\mathbf{v})$ to give a modified exponent. Following the same telescoping analysis: when $\mathbf{w} = \mathbf{0}$, the commutation phase $(-1)^{[\mathbf{v}, \mathbf{u}]}$ reduces to $(-1)^{[\mathbf{u}, \mathbf{u}]} = 1$. When $\mathbf{w} \neq \mathbf{0}$, the sum again vanishes due to the pairing cancellation. Therefore:
+$$
+\text{The 3rd term} = \left\{\begin{aligned}&\frac{2(2^k + 1)}{2^k+2} \mathbb{I}_k &\text{~if~} k \text{~is odd},\\ &0 &\text{~if~} k \text{~is even}.\end{aligned}\right.
+$$
+
+**Combining all terms for $\mathbf{r}_j \neq 0$.**
+
+For the variance operator, we need to consider pairs $(O^{(k)}_\mathbf{r}, O^{(k)}_\mathbf{r})$, which involves the squared space with $2k$ copies. The variance operator factorizes as:
+$$
+\mathbf{V}(O^{(k)}_\mathbf{r}, O^{(k)}_\mathbf{r}) = \bigotimes_{j=1}^n v_k(\mathbf{r}_j, \mathbf{r}_j).
+$$
+For $\mathbf{r}_j \neq 0$, combining the three terms (with their respective $2^k$, $1$, and $(-1)^{[\mathbf{v},\mathbf{u}]}$ coefficients in the rescaling function), and noting that only the $\mathbf{u} = \mathbf{v}$ case contributes non-trivially, the local factor becomes:
+$$
+v_k(\mathbf{r}_j, \mathbf{r}_j) = \frac{2(2^k+1)}{2^k + 2} \sigma_{\mathbf{r}_j}^{\otimes 2} = \frac{2^{k+1} + 2}{2^k + 2} \sigma_{\mathbf{r}_j}^{\otimes 2}.
+$$
+
+**Case: $\mathbf{r}_j = 0$.** 
+
+When $\mathbf{r}_j = 0$, the constraint $\mathbf{u}, \mathbf{v} \neq 0$ is relaxed, and we must include terms where some components of $\mathbf{u}$ or $\mathbf{v}$ vanish. The rescaling function takes the boundary value $r(\mathbf{u},\mathbf{v}) = 1$ when either argument is the identity. Following the same enumeration as in @lem-covar-pauli Case 2, the local factor becomes:
+$$
+v_k(\mathbf{0}, \mathbf{0}) = \frac{2^{2k} + 2^k + 2}{2^k + 2} \mathbb{I}_{2k}.
+$$
+
+**Final Result.**
+
+Combining these local factors:
+$$
+\mathbf{V}(O^{(k)}_\mathbf{r}, O^{(k)}_\mathbf{r}) = \left(\frac{2^{2k} + 2^k + 2}{2^k + 2}\right)^{n-\text{wt}(\sigma_\mathbf{r})} \left(\frac{2^{k+1} + 2}{2^k + 2}\right)^{\text{wt}(\sigma_\mathbf{r})} \sigma_{\mathbf{r}}^{\otimes 2}.
+$$
+Defining the coefficients $c_k^{(0)} := \frac{2^{2k} + 2^k + 2}{2^k + 2}$ and $c_k^{(1)} := \frac{2^{k+1} + 2}{2^k + 2} = \frac{2(2^k+1)}{2^k + 2}$, we have the generalized variance formula:
+$$
+\boxed{\mathbf{V}(O^{(k)}_\mathbf{r}, O^{(k)}_\mathbf{r}) = \left(c_k^{(0)}\right)^n \left(\frac{c_k^{(1)}}{c_k^{(0)}}\right)^{\text{wt}(\sigma_\mathbf{r})} \sigma_{\mathbf{r}}^{\otimes 2}.}
+$$
+For $k=2$: $c_2^{(0)} = \frac{16+4+2}{6} = \frac{22}{6} = \frac{11}{3}$, $c_2^{(1)} = \frac{10}{6} = \frac{5}{3}$, recovering the result from @lem-covar-pauli. $\quad \square$
 :::
 
 ## Application to estimate weighted purity.
@@ -889,11 +870,9 @@ generalization of purity, in the following we consider a set of weighted
 purity operators and show that the Local 2-copy 3-design shadow has
 exponentially sampling supremacy compared to the Bell sampling method.
 
-::: {.callout-important icon="false"}
-## Lemma
-
-[]{#lemma:max_variance label="lemma:max_variance"} Let $O$ be a
-Hermitian operator with the maximum and minimum eigenvalues
+::: {#lem-max-variance .callout-important icon="false"}
+## (Maximum Variance of Observable)
+Let $O$ be a Hermitian operator with the maximum and minimum eigenvalues
 $\lambda_{\text{max}}$ and $\lambda_{\text{min}}$. Then its variance
 $\text{Var}_{\rho}(O) := \langle O^2 \rangle_{\rho} - \langle O \rangle_{\rho}^2$
 satisfied
@@ -937,10 +916,8 @@ $$\begin{align*}
 \end{align*}$$ ◻
 :::
 
-::: {.callout-important icon="false"}
-## Lemma
-
-[]{#lemma:superm_of_2copy_shadow label="lemma:superm_of_2copy_shadow"}
+::: {#lem-superm-2copy-shadow .callout-important icon="false"}
+## (Supremum of 2-Copy Shadow Variance)
 Given even numbers of qubits $n$ and the local operator
 $O_{\alpha}^{(2)}:= \left[2^{-1}\mathbb{I}^{\otimes 2} + (\alpha/2) \cdot(X^{\otimes 2}+Y^{\otimes 2}+Z^{\otimes 2})\right]^{\otimes n}$,
 we can estimate $\text{tr}(O^{(2)}_{\alpha} \rho^{\otimes 2})$ using the
@@ -982,14 +959,10 @@ below in order to estimate $O_\alpha^{(2)}$ unbiasedly: $$\begin{align*}
 basis, with eigenvalue $\{[(1+ \alpha)/2],[(1- 3\alpha)/2] \}^{n}$.
 Because $n$ is even, we have
 $\{\lambda_{\max}, \lambda_{\min}\} = \{[(1+ \alpha)/2]^n,[(1- 3\alpha)/2]^n \}$.
-Then based on
-Lemma [\[lemma:max_variance\]](#lemma:max_variance){reference-type="ref"
-reference="lemma:max_variance"}, the variance of this estimator
-satisfied $$\begin{align*}
+Then based on @lem-max-variance, the variance of this estimator satisfies $$\begin{align*}
         \sup_{\rho \in \mathcal{D}(\mathcal{H}_n)}\text{Var}_{b}(\rho,\alpha) &= 4^{-1}\left[[(1+ \alpha)/2]^{n}-[(1- 3\alpha)/2]^{n}\right]^2,
 \end{align*}$$ To prove the variance of the shadow method, based on
-Lemma [\[lemma:LC_shadow_kcopy\]](#lemma:LC_shadow_kcopy){reference-type="ref"
-reference="lemma:LC_shadow_kcopy"} that proved before, we first evaluate
+@lem-LC-shadow-kcopy
 the variance operator $\mathbf{V}$ as $$\begin{align*}
         &\mathbf{V}:= \sum_{W,W' \in \mathcal{P}_2^{\otimes n}} \alpha_{W}\alpha_{W'} R(W,W') W W'= 4^{-n}\bigotimes_{i =1}^n \left(\sum_{W_i,W_i' \in \{\mathbb{I}\mathbb{I},XX,YY,ZZ\}} R(W_i,W'_i) \alpha_{W_i} \alpha_{W_i'}W_i W_i'\right).\notag\\
        &= 4^{-n}\left( \mathbb{I}\mathbb{I}+\alpha XX+ \alpha YY+ \alpha ZZ + \alpha XX+5 \alpha^2 \mathbb{I}\mathbb{I} -\frac{5}{3} \alpha^2 ZZ -\frac{5}{3} \alpha^2 YY\right.\notag\\
@@ -1003,8 +976,7 @@ $\Pi_{\mathrm{asym}} = (\mathbb{I}_2 - \text{SWAP})/2 = {(\mathbb{I}_2 - XX-YY-Z
 Then use the fact that the input state is symmetric,
 $\text{tr}(\rho \otimes \rho \cdot \prod_{\mathrm{asym}}^{\otimes t} \otimes \mathbb{I}_2^{\otimes(n-t)}) = 0$.
 According to
-lemma [\[lemma:LC_shadow_kcopy\]](#lemma:LC_shadow_kcopy){reference-type="ref"
-reference="lemma:LC_shadow_kcopy"}, this means that the second moments
+@lem-LC-shadow-kcopy
 takes the value
 $\langle (\hat{o}^{(k)})^2 \rangle_{\rho} = \text{tr}(\rho \otimes \rho \cdot \mathbf{V}) = \left[{(35\alpha^2 + 6 \alpha +3)}/{12}\right]^n$,
 which leads to the result
@@ -1028,20 +1000,13 @@ efficient estimated by local 2-copy shadows for certain density matrix
 $\rho^{\otimes 2}$ in this case. ◻
 :::
 
-This estimation task in
-Lemma [\[lemma:superm_of_2copy_shadow\]](#lemma:superm_of_2copy_shadow){reference-type="ref"
-reference="lemma:superm_of_2copy_shadow"} is useful in estimating the
-non-linear property
+This estimation task in @lem-superm-2copy-shadow is motivated by the non-linear property
 $L_{\gamma}(\rho):= \sum_{P \in \mathcal{P}_n }\gamma^{\mathrm{wt}(P)}\text{tr}(P \rho P \rho)$.
-We find its two-copy estimator as stated by
-Lemma [\[lemma:otoc-non-linear\]](#lemma:otoc-non-linear){reference-type="ref"
-reference="lemma:otoc-non-linear"} below.
+We find its two-copy estimator as stated by @lem-otoc-nonlinear below.
 
-::: {.callout-important icon="false"}
-## Lemma
-
-[]{#lemma:otoc-non-linear label="lemma:otoc-non-linear"} The non-linear
-value $L_\gamma(\rho)$ has a two-copy unbiased estimator $$\begin{align*}
+::: {#lem-otoc-nonlinear .callout-important icon="false"}
+## (OTOC Non-linear Estimator)
+The non-linear value $L_\gamma(\rho)$ has a two-copy unbiased estimator $$\begin{align*}
         \hat{L}_{\gamma}^{(2)}:= \left[\frac{3\gamma + 1}{2} \mathbb{I}^{\otimes 2} + \frac{1 - \gamma}{2}(X^{\otimes 2} + Y^{\otimes 2} + Z^{\otimes 2})\right]^{\otimes n} .
 \end{align*}$$
 :::
@@ -1073,10 +1038,7 @@ two-copy shadow method. </figcaption>
 </figure>
 
 Noticed that $\hat{L}_{\gamma} = (3\gamma+1)^n {O}_{\alpha}^{(2)}$ with
-$\alpha = {(1-\gamma)}/{(3\gamma + 1)}$. Use
-Lemma [\[lemma:superm_of_2copy_shadow\]](#lemma:superm_of_2copy_shadow){reference-type="ref"
-reference="lemma:superm_of_2copy_shadow"}, we conclude that the variance
-of Bell sampling methods and 2-copy local 3-design shadow are separately
+$\alpha = {(1-\gamma)}/{(3\gamma + 1)}$. Use @lem-superm-2copy-shadow, we conclude that the variance of Bell sampling methods and 2-copy local 3-design shadow are separately
 shown below. We compared these variance in
 Figure [1.1](#fig:comp_shadow_bell){reference-type="ref"
 reference="fig:comp_shadow_bell"}. $$\begin{align*}
@@ -1085,11 +1047,9 @@ reference="fig:comp_shadow_bell"}. $$\begin{align*}
     &\sup_{\rho}\left[\text{Var}_b(\hat L_{\gamma}) -\text{Var}_s(\hat L_{\gamma}) \right] = (3\gamma+1)^{2n}\left[\max \{[(1+ \alpha)/2]^{2n},[(1- 3\alpha)/2]^{2n} \}-\left[\frac{35\alpha^2 + 6\alpha +3}{12}\right]^{n}\right].
 \end{align*}$$
 
-::: {.callout-important icon="false"}
-## Lemma
-
-[]{#lemma:super_nonli label="lemma:super_nonli"} To estimate
-$L_{\gamma}(\rho):= \sum_{P \in \mathcal{P}_n }\gamma^{\mathrm{wt}(P)}\text{tr}(P \rho P \rho)$
+::: {#lem-super-nonli .callout-important icon="false"}
+## (Shadow vs Bell Sampling Comparison)
+To estimate $L_{\gamma}(\rho):= \sum_{P \in \mathcal{P}_n }\gamma^{\mathrm{wt}(P)}\text{tr}(P \rho P \rho)$
 for $\gamma>1$ or $\gamma < -0.5$, there exist density matrix $\rho$,
 such as
 $\rho = \psi^{\otimes n}, \ket{\psi} = \sqrt{2^{-1}}(i\ket{01}-i\ket{10})$,
@@ -1113,8 +1073,7 @@ $\bar A_2$. Then we implement the two-qubit unitary $$\begin{align*}
 \end{align*}$$ and measured on the computational basis to get result
 $\mathbf{r} = (\mathbf{r}_1,\cdots,\mathbf{r}_n) \in (\mathbb{F}_2^{2})^{n}$.
 Follow the same proof procedure in
-Lemma [\[lemma:onsite_2design\]](#lemma:onsite_2design){reference-type="ref"
-reference="lemma:onsite_2design"}, we calculate the reconstruction
+Lemma (onsite_2design)
 channel $\mathcal{M}$ as $$\begin{align*}
     \mathcal{M}(\otimes_{i = 1}^n \rho_i) 
     &=\mathbb{E}_{\substack{U = \bigotimes_{i=1}^n\text{U}_i \\ \text{U}_i \sim \mathcal{U}_{\theta_i}}} \sum_{\mathbf{r} \in \mathbb{F}_2^{2n}} \bra{{\mathbf r}} \text{U} (\otimes_{i = 1}^n \rho_i) \text{U}^{\dagger} \ket{{\mathbf r}} \cdot \text{U}^{\dagger} \ket{{\mathbf r}}\!\bra{{\mathbf r}} \text{U} \notag\\
@@ -1126,8 +1085,7 @@ channel $\mathcal{M}$ as $$\begin{align*}
 \end{align*}$$ Here in the third line we use the definition
 $U_i = U_{\theta_i} \cdot (R_1 \otimes R_2),\ket{\phi_{\mathbf{r}_{i}}^{\theta_i}}:= U_{\theta_i}^\dagger\ket{\mathbf{r}_{i}}$.
 In the last line we use
-Lemma [\[lemma:2-foldWein\]](#lemma:2-foldWein){reference-type="ref"
-reference="lemma:2-foldWein"} in the $n = 2$ case, with
+Lemma (2-foldWein)
 $B_\mathbf{v} = \text{SWAP}_{\bar A_1,A_1}^{v_1} \otimes \text{SWAP}_{\bar A_2,A_2}^{v_2}$
 and $\text{Wg}^2(w,2) =\left\{\begin{aligned}
     {1}/{9} &\text{~if~} w = 0\\
@@ -1255,10 +1213,9 @@ In the langurage of shadow tomography, this channel on the two-replica space $\m
 However, if we restrained on the operator subspace spanned by $\mathbf{S}:=\mathrm{span}\{\sigma_{\mathbf{p} }\otimes \sigma_{\mathbf{p}}\}_{\mathbf{p} \in \mathbb{F}_2^{2n}}$, this channel takes itself as the inverse.
 Then given an operator $O = \sum_{\mathbf{p}} \alpha_{\mathbf{p}} \sigma_{\mathbf{p}} \otimes \sigma_{\mathbf{p}}$, we use Bell measurment result $\{\mathbf{r}\}$ to construct the shadow estimator $\hat{o}(\mathbf{r}) = \mathrm{tr}\left[\mathcal{M}_{I}^{-1,\dagger}[O] \ket{\Phi_{\mathbf{r}}}\!\bra{{\Phi_{\mathbf{r}}}}\right]= \mathrm{tr}\left[O \ket{\Phi_{\mathbf{r}}}\!\bra{{\Phi_{\mathbf{r}}}}\right]$. This estimator has variance $\mathrm{tr}(\rho O^2) - \mathrm{tr}^2(\rho O) \leq \left[(\lambda_{\max}(O) - \lambda_{\min}(O))/2\right]^2$, as shown by the lemma below:
 
-:::{.callout-note icon="false"}
-## Lemma
-Let $O$ be a Hermitian operator with the maximum and minimum eigenvalues $\lambda_{\text{max}}$ and $\lambda_{\text{min}}$. Then its variance $\text{Var}_{\rho}(O) := \langle O^2 \rangle_{\rho} - \langle O \rangle_{\rho}^2$ satisfied $ \sup_{\rho \in \mathcal{D}(\mathcal{H}_n)}\text{Var}_{\rho}(O) = \left( {(\lambda_{\text{max}} - \lambda_{\text{min}})}/{2} \right)^2$.
-    This maximum is achieved at pure state such as $|\psi\rangle = \frac{1}{\sqrt{2}}(|\psi_{\text{max}}\rangle + |\psi_{\text{min}}\rangle)$.
+::: {#lem-max-variance-bell .callout-note icon="false"}
+## (Maximum Variance - Bell Shadow)
+Let $O$ be a Hermitian operator with the maximum and minimum eigenvalues $\lambda_{\text{max}}$ and $\lambda_{\text{min}}$. Then its variance $\text{Var}_{\rho}(O) := \langle O^2 \rangle_{\rho} - \langle O \rangle_{\rho}^2$ satisfies $\sup_{\rho \in \mathcal{D}(\mathcal{H}_n)}\text{Var}_{\rho}(O) = \left( {(\lambda_{\text{max}} - \lambda_{\text{min}})}/{2} \right)^2$. This maximum is achieved at pure state such as $|\psi\rangle = \frac{1}{\sqrt{2}}(|\psi_{\text{max}}\rangle + |\psi_{\text{min}}\rangle)$.
 :::
 
 :::{.callout-note collapse="true"}
@@ -1407,28 +1364,14 @@ similar reduction by substitutes $P$ into
 $O_P := 2^{-1}(P \otimes \mathbb{I} +\mathbb{I}\otimes P)\cdot \mathrm{SWAP}^{\otimes n}$,
 as shown below:
 
-::: {.callout-important icon="false"}
-## Lemma
-
-Suppose an algorithm get classical shadow for
-$\{\mathrm{tr}(P\rho^{2})\}_{P \in \mathcal{O}}$ with additive error
-$\varepsilon$ and constant success rate $1- \delta$ using $2N$ copies,
-then with the same success rate, its result can be used to discriminate
-mixed state ensemble
-$\mathcal{E}_1 = \{\left(\mathbb{I}_{2n} + 3\varepsilon (P\otimes \mathbb{I}) \cdot O_P\right)/2^{2n}\}_{P \in \mathcal{O}}$
-from the maximumly mixed state $\mathbb{I}_{2n}/2^{2n}$.
+::: {#lem-shadow-discrimination .callout-important icon="false"}
+## (Shadow to Discrimination Reduction)
+Suppose an algorithm gets classical shadow for $\{\mathrm{tr}(P\rho^{2})\}_{P \in \mathcal{O}}$ with additive error $\varepsilon$ and constant success rate $1- \delta$ using $2N$ copies. Then with the same success rate, its result can be used to discriminate mixed state ensemble $\mathcal{E}_1 = \{\left(\mathbb{I}_{2n} + 3\varepsilon (P\otimes \mathbb{I}) \cdot O_P\right)/2^{2n}\}_{P \in \mathcal{O}}$ from the maximally mixed state $\mathbb{I}_{2n}/2^{2n}$.
 :::
 
-::: {.callout-important icon="false"}
-## Lemma
-
-Suppose an algorithm get classical shadow for
-$\{\mathrm{tr}(P\rho^{2})\}_{P \in \mathcal{O}}$ with additive error
-$\varepsilon$ and constant success rate $1- \delta$, then with the same
-success rate, its result can be used to discriminate mixed state
-ensemble
-$\mathcal{E}_1 = \{\left(\mathbb{I} + 3\varepsilon P\right)/d\}_{P \in \mathcal{O}}$
-from the ensemble 
+::: {#lem-shadow-ensemble-discrimination .callout-important icon="false"}
+## (Shadow to Ensemble Discrimination)
+Suppose an algorithm gets classical shadow for $\{\mathrm{tr}(P\rho^{2})\}_{P \in \mathcal{O}}$ with additive error $\varepsilon$ and constant success rate $1- \delta$. Then with the same success rate, its result can be used to discriminate mixed state ensemble $\mathcal{E}_1 = \{\left(\mathbb{I} + 3\varepsilon P\right)/d\}_{P \in \mathcal{O}}$ from the ensemble 
 $$
 \begin{align*}
         \mathcal{E}_2 := \left\{\mathrm{Cl}^\dagger \left(\frac{\mathbb{I} + 3\varepsilon Z}{2} \otimes \psi \right) \mathrm{Cl}\right\}_{\mathrm{Cl} \in \mathrm{Cliff}_{n}(\mathcal{O}), \psi \sim \mathrm{Haar}_{n-1}},

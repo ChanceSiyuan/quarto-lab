@@ -6,10 +6,10 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="dcterms.date" content="2026-01-07">
-<meta name="description" content="Notes on classical error correction codes and their decoding.">
+<meta name="dcterms.date" content="2026-01-28">
+<meta name="description" content="Classical error correction fundamentals: linear codes, Hamming distance, syndrome decoding, probabilistic graphical models, and LDPC codes.">
 
-<title>Decoding in classical space – Chance’s Quantum Lab</title>
+<title>Classical Error Correction – Chance’s Quantum Lab</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -181,11 +181,24 @@ window.Quarto = {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#classical-error-correction-codes-and-their-decoding" id="toc-classical-error-correction-codes-and-their-decoding" class="nav-link active" data-scroll-target="#classical-error-correction-codes-and-their-decoding"><span class="header-section-number">1</span> Classical Error Correction Codes and Their Decoding</a>
+  <li><a href="#linear-codes" id="toc-linear-codes" class="nav-link active" data-scroll-target="#linear-codes"><span class="header-section-number">1</span> Linear Codes</a>
   <ul class="collapse">
-  <li><a href="#mld-decoding-future" id="toc-mld-decoding-future" class="nav-link" data-scroll-target="#mld-decoding-future"><span class="header-section-number">1.1</span> MLD decoding future</a></li>
-  <li><a href="#bp-decoding-future" id="toc-bp-decoding-future" class="nav-link" data-scroll-target="#bp-decoding-future"><span class="header-section-number">1.2</span> BP decoding future</a></li>
-  <li><a href="#combination" id="toc-combination" class="nav-link" data-scroll-target="#combination"><span class="header-section-number">1.3</span> Combination?</a></li>
+  <li><a href="#hamming-weight-and-distance" id="toc-hamming-weight-and-distance" class="nav-link" data-scroll-target="#hamming-weight-and-distance"><span class="header-section-number">1.1</span> Hamming Weight and Distance</a></li>
+  </ul></li>
+  <li><a href="#error-model-and-syndrome" id="toc-error-model-and-syndrome" class="nav-link" data-scroll-target="#error-model-and-syndrome"><span class="header-section-number">2</span> Error Model and Syndrome</a>
+  <ul class="collapse">
+  <li><a href="#the-decoding-problem" id="toc-the-decoding-problem" class="nav-link" data-scroll-target="#the-decoding-problem"><span class="header-section-number">2.1</span> The Decoding Problem</a></li>
+  </ul></li>
+  <li><a href="#probabilistic-graphical-models" id="toc-probabilistic-graphical-models" class="nav-link" data-scroll-target="#probabilistic-graphical-models"><span class="header-section-number">3</span> Probabilistic Graphical Models</a>
+  <ul class="collapse">
+  <li><a href="#undirected-probabilistic-graphical-models" id="toc-undirected-probabilistic-graphical-models" class="nav-link" data-scroll-target="#undirected-probabilistic-graphical-models"><span class="header-section-number">3.1</span> Undirected Probabilistic Graphical Models</a></li>
+  <li><a href="#factor-graphs" id="toc-factor-graphs" class="nav-link" data-scroll-target="#factor-graphs"><span class="header-section-number">3.2</span> Factor Graphs</a></li>
+  <li><a href="#comparing-graph-representations" id="toc-comparing-graph-representations" class="nav-link" data-scroll-target="#comparing-graph-representations"><span class="header-section-number">3.3</span> Comparing Graph Representations</a></li>
+  </ul></li>
+  <li><a href="#ldpc-codes" id="toc-ldpc-codes" class="nav-link" data-scroll-target="#ldpc-codes"><span class="header-section-number">4</span> LDPC Codes</a></li>
+  <li><a href="#decoding-algorithms" id="toc-decoding-algorithms" class="nav-link" data-scroll-target="#decoding-algorithms"><span class="header-section-number">5</span> Decoding Algorithms</a>
+  <ul class="collapse">
+  <li><a href="#mld-decoding-challenges" id="toc-mld-decoding-challenges" class="nav-link" data-scroll-target="#mld-decoding-challenges"><span class="header-section-number">5.1</span> MLD Decoding Challenges</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -195,7 +208,7 @@ window.Quarto = {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Decoding in classical space</h1>
+<h1 class="title">Classical Error Correction</h1>
   <div class="quarto-categories">
     <div class="quarto-category">Quantum Error Correction</div>
   </div>
@@ -203,7 +216,7 @@ window.Quarto = {
 
 <div>
   <div class="description">
-    Notes on classical error correction codes and their decoding.
+    Classical error correction fundamentals: linear codes, Hamming distance, syndrome decoding, probabilistic graphical models, and LDPC codes.
   </div>
 </div>
 
@@ -214,7 +227,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">January 7, 2026</p>
+      <p class="date">January 28, 2026</p>
     </div>
   </div>
   
@@ -226,51 +239,400 @@ window.Quarto = {
 </header>
 
 
-<section id="classical-error-correction-codes-and-their-decoding" class="level1" data-number="1">
-<h1 data-number="1"><span class="header-section-number">1</span> Classical Error Correction Codes and Their Decoding</h1>
-<p>A classical error correction code is a mapping from a shorter string <span class="math inline">\mathbf{b} \in \mathbb{F}_2^k</span> to a longer string <span class="math inline">\mathbf{c} \in \mathbb{F}_2^n</span>, where <span class="math inline">n &gt; k</span>. This information, with added length redundancy, can suppress errors in the following ways:</p>
-<ol type="1">
-<li>Valid strings must satisfy <span class="math inline">\mathbf{H} \cdot \mathbf{c} = \mathbf{0}</span>.</li>
-<li>A string where an error <span class="math inline">\mathbf{e} \in \mathbb{F}_2^n</span> has occurred must satisfy <span class="math inline">\mathbf{H} \cdot (\mathbf{c} + \mathbf{e}) = \mathbf{H} \cdot  \mathbf{e} := \mathbf{s}</span>, where <span class="math inline">\mathbf{s}</span> is the observed syndrome.</li>
-<li>It guarantees that for all errors with <span class="math inline">|\mathbf{e}| &lt; d</span>, <span class="math inline">\mathbf{H} \cdot \mathbf{e} \neq \mathbf{0}</span>. In other words, the linear system <span class="math inline">\mathbf{H} \cdot \mathbf{e} = \mathbf{s}</span> has a unique solution under the constraint <span class="math inline">|\mathbf{e}| &lt; d</span>.</li>
-<li>Decoding refers to finding the string <span class="math inline">\mathbf{c}</span> such that <span class="math inline">\mathbf{H} \cdot \mathbf{c} = \mathbf{s}</span> given the syndrome <span class="math inline">\mathbf{s}</span>. This has a unique solution <strong>assuming the error weight does not exceed <span class="math inline">d</span></strong>, meaning <strong>exact decoding</strong> is possible from an information-theoretic perspective.</li>
-<li>However, in reality, the error weight may exceed <span class="math inline">d</span>, and solving this system of equations for an arbitrary error correction code is NP-complete. Therefore, approximate decoding algorithms are considered.</li>
-</ol>
-<p>The figure below shows a classical error correction code and its Tanner graph representation: <img src="LDPC.png" id="fig-LDPC" class="img-fluid quarto-figure quarto-figure-center anchored" style="width:80.0%" alt="Classical error correction code and its Tanner graph representation"></p>
-<p>For the classical decoding problem:</p>
+<section id="linear-codes" class="level1" data-number="1">
+<h1 data-number="1"><span class="header-section-number">1</span> Linear Codes</h1>
+<p>All arithmetic in this note is performed in <strong>binary</strong> (modulo 2):</p>
 <ul>
-<li><span class="math inline">H[j,i]</span>: Does the <span class="math inline">i</span>-th error trigger the <span class="math inline">j</span>-th syndrome?</li>
-<li><span class="math inline">p[i]</span>: The probability of the <span class="math inline">i</span>-th error occurring.</li>
+<li><span class="math inline">0 + 0 = 0</span>, <span class="math inline">\quad</span> <span class="math inline">1 + 0 = 0 + 1 = 1</span>, <span class="math inline">\quad</span> <span class="math inline">1 + 1 = 0</span></li>
+<li>This is also written as XOR: <span class="math inline">a \oplus b = (a + b) \mod 2</span></li>
+<li>Vectors and matrices use element-wise mod-2 arithmetic</li>
 </ul>
-<p>In error correction, there is an additional element: <span class="math inline">L[j,i]</span>: Does the <span class="math inline">i</span>-th error flip the <span class="math inline">j</span>-th logical operator? If it does not flip it, it is not considered an error regardless of its length.</p>
-<p>There are two types of decoding algorithms:</p>
+<section id="hamming-weight-and-distance" class="level2" data-number="1.1">
+<h2 data-number="1.1" class="anchored" data-anchor-id="hamming-weight-and-distance"><span class="header-section-number">1.1</span> Hamming Weight and Distance</h2>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Definition
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The <strong>Hamming weight</strong> of a binary vector <span class="math inline">\mathbf{v}</span> is the number of 1s it contains: <span class="math inline">|\mathbf{v}| = \sum_i v_i</span>.</p>
+<p>The <strong>Hamming distance</strong> between two vectors <span class="math inline">\mathbf{u}</span> and <span class="math inline">\mathbf{v}</span> is the number of positions where they differ: <span class="math inline">d(\mathbf{u}, \mathbf{v}) = |\mathbf{u} + \mathbf{v}|</span>.</p>
+</div>
+</div>
+<p>For example, for <span class="math inline">\mathbf{v} = (1, 0, 1, 1, 0)</span>: Hamming weight <span class="math inline">|\mathbf{v}| = 3</span>, and for <span class="math inline">\mathbf{u} = (1, 1, 0, 1, 0)</span> and <span class="math inline">\mathbf{v} = (1, 0, 1, 1, 0)</span>: <span class="math inline">\mathbf{u} + \mathbf{v} = (0, 1, 1, 0, 0)</span> and <span class="math inline">d(\mathbf{u}, \mathbf{v}) = 2</span>.</p>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Definition
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>An <strong><span class="math inline">[n, k, d]</span> linear code</strong> <span class="math inline">\mathcal{C}</span> is a set of binary vectors (called <strong>codewords</strong>) where:</p>
+<ul>
+<li><span class="math inline">n</span> is the <strong>block length</strong> (number of bits in each codeword)</li>
+<li><span class="math inline">k</span> is the <strong>dimension</strong> (number of information bits encoded)</li>
+<li><span class="math inline">d</span> is the <strong>minimum distance</strong> (minimum Hamming weight among non-zero codewords)</li>
+<li>The <strong>rate</strong> of the code is <span class="math inline">R = k/n</span></li>
+</ul>
+</div>
+</div>
+<p>A linear code can be defined by an <span class="math inline">m \times n</span> <strong>parity check matrix</strong> <span class="math inline">H</span>:</p>
+<ul>
+<li><span class="math inline">H_{ij}</span> denotes the entry in row <span class="math inline">i</span>, column <span class="math inline">j</span> of matrix <span class="math inline">H</span></li>
+<li><span class="math inline">m</span> is the number of rows in <span class="math inline">H</span> (number of parity checks)</li>
+<li><span class="math inline">n</span> is the number of columns in <span class="math inline">H</span> (number of bits)</li>
+<li><span class="math inline">\text{rank}(H)</span> is the number of linearly independent rows</li>
+</ul>
+<p>By the rank-nullity theorem: <span class="math inline">k = n - \text{rank}(H)</span>.</p>
+<p><strong>Example:</strong> The <strong><span class="math inline">[3, 1, 3]</span> repetition code</strong> encodes 1 bit into 3 bits by triplication.</p>
+<p>Parity check matrix: <span class="math display">H = \begin{pmatrix} 1 &amp; 1 &amp; 0 \\ 0 &amp; 1 &amp; 1 \end{pmatrix}</span></p>
+<p>Verification: <span class="math inline">H \cdot (0,0,0)^T = (0,0)^T</span> ✓ and <span class="math inline">H \cdot (1,1,1)^T = (0,0)^T</span> ✓</p>
+<p>So the codewords are: <span class="math inline">\mathcal{C}_H = \{(0,0,0), (1,1,1)\}</span></p>
+<p>Parameters: <span class="math inline">n = 3</span> bits, <span class="math inline">k = 3 - 2 = 1</span> info bit, <span class="math inline">d = 3</span> (weight of <span class="math inline">(1,1,1)</span>)</p>
+</section>
+</section>
+<section id="error-model-and-syndrome" class="level1" data-number="2">
+<h1 data-number="2"><span class="header-section-number">2</span> Error Model and Syndrome</h1>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Definition
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>In the <strong>binary symmetric channel</strong> (BSC) with error probability <span class="math inline">p</span>:</p>
+<ul>
+<li>Each bit is independently flipped with probability <span class="math inline">p</span></li>
+<li>Original codeword: <span class="math inline">\mathbf{c}</span></li>
+<li>Error pattern: <span class="math inline">\mathbf{e}</span> (a binary vector, <span class="math inline">e_i = 1</span> means bit <span class="math inline">i</span> flipped)</li>
+<li>Received word: <span class="math inline">\mathbf{r} = \mathbf{c} + \mathbf{e}</span></li>
+</ul>
+</div>
+</div>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Definition
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The <strong>syndrome</strong> of a received word <span class="math inline">\mathbf{r}</span> is: <span class="math display">\mathbf{s} = H \cdot \mathbf{r}</span></p>
+<p>Since <span class="math inline">H \cdot \mathbf{c} = \mathbf{0}</span> for any codeword, we have: <span class="math display">\mathbf{s} = H \cdot \mathbf{r} = H \cdot (\mathbf{c} + \mathbf{e}) = H \cdot \mathbf{c} + H \cdot \mathbf{e} = \mathbf{0} + H \cdot \mathbf{e} = H \cdot \mathbf{e}</span></p>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Key Point
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The syndrome depends <strong>only on the error</strong>, not on which codeword was sent! This is what makes syndrome-based decoding possible.</p>
+</div>
+</div>
+<section id="the-decoding-problem" class="level2" data-number="2.1">
+<h2 data-number="2.1" class="anchored" data-anchor-id="the-decoding-problem"><span class="header-section-number">2.1</span> The Decoding Problem</h2>
+<p>Given: Parity check matrix <span class="math inline">H</span> and syndrome <span class="math inline">\mathbf{s} = H \cdot \mathbf{e}</span></p>
+<p>Find: The most likely error <span class="math inline">\mathbf{e}^*</span> that could have produced <span class="math inline">\mathbf{s}</span></p>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Definition
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><strong>Maximum likelihood decoding</strong> finds: <span class="math display">\mathbf{e}^* = \arg\min_{\mathbf{e} : H \cdot \mathbf{e} = \mathbf{s}} |\mathbf{e}|</span></p>
+<p>That is, the minimum Hamming weight error consistent with the syndrome.</p>
+</div>
+</div>
+</section>
+</section>
+<section id="probabilistic-graphical-models" class="level1" data-number="3">
+<h1 data-number="3"><span class="header-section-number">3</span> Probabilistic Graphical Models</h1>
+<p>Before introducing the Belief Propagation algorithm, we need to understand how probabilistic inference problems can be represented as graphs.</p>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Definition
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>A <strong>probabilistic graphical model</strong> (PGM) is a graph-based representation of a probability distribution. Nodes represent random variables, and edges encode conditional independence relationships. PGMs enable efficient inference algorithms by exploiting the structure of the distribution.</p>
+</div>
+</div>
+<p>There are two main families of PGMs:</p>
+<ul>
+<li><strong>Directed graphical models</strong> (Bayesian networks): edges have direction, representing causal relationships</li>
+<li><strong>Undirected graphical models</strong> (Markov networks): edges are undirected, representing symmetric dependencies</li>
+</ul>
+<p>For error correction, we use undirected models because parity constraints are symmetric — no variable “causes” another.</p>
+<section id="undirected-probabilistic-graphical-models" class="level2" data-number="3.1">
+<h2 data-number="3.1" class="anchored" data-anchor-id="undirected-probabilistic-graphical-models"><span class="header-section-number">3.1</span> Undirected Probabilistic Graphical Models</h2>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Definition
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>An <strong>undirected probabilistic graphical model</strong> (also called a <strong>Markov network</strong> or <strong>Markov random field</strong>) represents a joint probability distribution as: <span class="math display">P(\mathbf{x}) = \frac{1}{Z} \prod_{c \in \mathcal{C}} \psi_c (\mathbf{x}_c)</span></p>
+<p>where:</p>
+<ul>
+<li><span class="math inline">\mathbf{x} = (x_1, \ldots, x_n)</span> are random variables</li>
+<li><span class="math inline">\mathcal{C}</span> is a set of <strong>cliques</strong> (fully connected subgraphs)</li>
+<li><span class="math inline">\psi_c (\mathbf{x}_c)</span> is a <strong>potential function</strong> over variables in clique <span class="math inline">c</span></li>
+<li><span class="math inline">Z = \sum_{\mathbf{x}} \prod_c \psi_c (\mathbf{x}_c)</span> is the <strong>partition function</strong> (normalization constant)</li>
+</ul>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Key Point
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The UAI format mentioned in the getting started guide represents exactly this structure: variables (detectors), cliques (error mechanisms), and potential functions (error probabilities).</p>
+</div>
+</div>
+<p>For binary error correction with syndrome <span class="math inline">\mathbf{s}</span>, we want to compute: <span class="math display">P(\mathbf{e} | \mathbf{s}) \propto \prod_c \psi_c (\mathbf{e}_c)</span></p>
+<p>where each potential <span class="math inline">\psi_c</span> encodes a parity constraint.</p>
+</section>
+<section id="factor-graphs" class="level2" data-number="3.2">
+<h2 data-number="3.2" class="anchored" data-anchor-id="factor-graphs"><span class="header-section-number">3.2</span> Factor Graphs</h2>
+<p>To understand the Belief Propagation algorithm, we need the concept of <strong>factor graphs</strong>.</p>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Definition
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>A <strong>factor graph</strong> is a bipartite graph <span class="math inline">G = (V, U, E)</span> representing the parity check matrix <span class="math inline">H</span>:</p>
+<ul>
+<li><strong>Data nodes</strong>: set <span class="math inline">V = \{v_1, v_2, \ldots, v_n\}</span> — each node <span class="math inline">v_j</span> corresponds to each column of <span class="math inline">H</span></li>
+<li><strong>Parity nodes</strong>: set <span class="math inline">U = \{u_1, u_2, \ldots, u_m\}</span> — each node <span class="math inline">u_i</span> corresponds to each row of <span class="math inline">H</span></li>
+<li><strong>Edges</strong>: <span class="math inline">E = \{(v_j, u_i) : H_{ij} = 1\}</span> — connects <span class="math inline">v_j</span> to <span class="math inline">u_i</span> if <span class="math inline">H_{ij} = 1</span></li>
+</ul>
+</div>
+</div>
+<p>The <strong>neighborhoods</strong> of nodes are defined as: <span class="math inline">V(u_i) = \{v_j : H_{ij} = 1\}</span>.</p>
+</section>
+<section id="comparing-graph-representations" class="level2" data-number="3.3">
+<h2 data-number="3.3" class="anchored" data-anchor-id="comparing-graph-representations"><span class="header-section-number">3.3</span> Comparing Graph Representations</h2>
+<p>Three related graph representations appear in coding theory and probabilistic inference:</p>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Definition
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><strong>Comparison of graph representations:</strong></p>
 <ol type="1">
-<li><a href="../../../theory/Topics/QEC/PMdecoder.html#MLD">MLD</a></li>
-<li><a href="../../../theory/Topics/QEC/TNdecoder.html#BP">BP</a></li>
+<li><strong>Undirected Probabilistic Graphical Model (Markov Network)</strong>:
+<ul>
+<li>Nodes = random variables</li>
+<li>Edges = direct dependencies between variables</li>
+<li>Cliques = groups of mutually dependent variables</li>
+<li>Represents: <span class="math inline">P(\mathbf{x}) = \frac{1}{Z} \prod_c \psi_c (\mathbf{x}_c)</span></li>
+</ul></li>
+<li><strong>Factor Graph</strong>:
+<ul>
+<li>Two types of nodes: variable nodes AND factor nodes</li>
+<li>Bipartite structure: edges only between variables and factors</li>
+<li>Explicitly represents factorization of the distribution</li>
+<li>Represents: <span class="math inline">P(\mathbf{x}) = \frac{1}{Z} \prod_i f_i (\mathbf{x}_{N(i)})</span></li>
+</ul></li>
+<li><strong>Tanner Graph</strong>:
+<ul>
+<li>A special case of factor graph for error correction codes</li>
+<li>Variable nodes = bits (columns of <span class="math inline">H</span>)</li>
+<li>Factor nodes = parity checks (rows of <span class="math inline">H</span>)</li>
+<li>Represents: parity check matrix <span class="math inline">H</span> structure</li>
+</ul></li>
 </ol>
-<section id="mld-decoding-future" class="level2" data-number="1.1">
-<h2 data-number="1.1" class="anchored" data-anchor-id="mld-decoding-future"><span class="header-section-number">1.1</span> MLD decoding future</h2>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Key Point
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><strong>Key relationships:</strong></p>
+<ul>
+<li>Factor graphs are a <strong>bipartite refinement</strong> of Markov networks that make the factorization explicit</li>
+<li>Tanner graphs are factor graphs <strong>specialized for linear codes</strong> where factors represent parity constraints</li>
+<li>All three represent the same probability distribution, but factor graphs enable more efficient message-passing algorithms</li>
+<li>The UAI format represents Markov networks (cliques and potentials), while BP operates on the factor graph representation</li>
+</ul>
+</div>
+</div>
+<table class="caption-top table">
+<caption>Comparison of graph representations</caption>
+<colgroup>
+<col style="width: 19%">
+<col style="width: 28%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;"><strong>Property</strong></th>
+<th style="text-align: left;"><strong>Markov Network</strong></th>
+<th style="text-align: left;"><strong>Factor Graph</strong></th>
+<th style="text-align: left;"><strong>Tanner Graph</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Node types</td>
+<td style="text-align: left;">Variables only</td>
+<td style="text-align: left;">Variables + Factors</td>
+<td style="text-align: left;">Bits + Checks</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Graph structure</td>
+<td style="text-align: left;">General</td>
+<td style="text-align: left;">Bipartite</td>
+<td style="text-align: left;">Bipartite</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Edges represent</td>
+<td style="text-align: left;">Dependencies</td>
+<td style="text-align: left;">Factor membership</td>
+<td style="text-align: left;">Parity constraints</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Used for</td>
+<td style="text-align: left;">General inference</td>
+<td style="text-align: left;">Message passing</td>
+<td style="text-align: left;">Code decoding</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">BP efficiency</td>
+<td style="text-align: left;">Less efficient</td>
+<td style="text-align: left;">Efficient</td>
+<td style="text-align: left;">Efficient</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Why use factor graphs for BP?</strong></p>
+<p>The bipartite structure of factor graphs makes message passing natural:</p>
+<ul>
+<li>Messages flow between variables and factors</li>
+<li>Each factor collects evidence from its variables</li>
+<li>Each variable aggregates information from its factors</li>
+<li>No need to handle complex clique structures</li>
+</ul>
+<p>For error correction, the Tanner graph (factor graph) representation is ideal because:</p>
+<ul>
+<li>Parity checks are naturally factors (XOR constraints)</li>
+<li>Bits are naturally variables (error indicators)</li>
+<li>The sparse structure (<span class="math inline">H</span> has few 1s) gives efficient <span class="math inline">O(n)</span> BP iterations</li>
+</ul>
+</section>
+</section>
+<section id="ldpc-codes" class="level1" data-number="4">
+<h1 data-number="4"><span class="header-section-number">4</span> LDPC Codes</h1>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Definition
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>An <strong><span class="math inline">(l, q)</span>-LDPC code</strong> is a linear code whose parity check matrix <span class="math inline">H</span> satisfies:</p>
+<ul>
+<li>Each column has at most <span class="math inline">l</span> ones (each bit is in at most <span class="math inline">l</span> checks)</li>
+<li>Each row has at most <span class="math inline">q</span> ones (each check involves at most <span class="math inline">q</span> bits)</li>
+</ul>
+<p>The matrix <span class="math inline">H</span> is called <strong>sparse</strong> because <span class="math inline">l</span> and <span class="math inline">q</span> are small constants independent of <span class="math inline">n</span>.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Key Point
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>LDPC codes are important because their sparse structure enables efficient decoding via Belief Propagation with complexity <span class="math inline">O(n)</span> per iteration.</p>
+</div>
+</div>
+</section>
+<section id="decoding-algorithms" class="level1" data-number="5">
+<h1 data-number="5"><span class="header-section-number">5</span> Decoding Algorithms</h1>
+<p>There are two main types of decoding algorithms:</p>
+<ol type="1">
+<li><a href="../../../theory/Topics/QEC/PMdecoder.html#MLD">Maximum Likelihood Decoding (MLD)</a></li>
+<li><a href="BP_decoder.qmd">Belief Propagation (BP)</a></li>
+</ol>
+<section id="mld-decoding-challenges" class="level2" data-number="5.1">
+<h2 data-number="5.1" class="anchored" data-anchor-id="mld-decoding-challenges"><span class="header-section-number">5.1</span> MLD Decoding Challenges</h2>
 <ul>
 <li>For cases where <span class="math inline">|\mathbf{e}_i| &gt; 2</span>, MLD can be reduced to hypergraph-MWPM, but determining the existence of a hypergraph matching is NP-hard.</li>
 <li>Considering approximate algorithms for hypergraph-MWPM, there are the following inapproximability theorems:
 <ul>
-<li>Unless P=NP, there is no <span class="math inline">\Omega(r(G)/\ln(r(G)))</span> approximation algorithm, where <span class="math inline">r(G)</span> is the maximum size of hyperedges in hypergraph <span class="math inline">G</span> ([Hazan et al., 2006]).</li>
+<li>Unless P=NP, there is no <span class="math inline">\Omega(r(G)/\ln(r(G)))</span> approximation algorithm, where <span class="math inline">r(G)</span> is the maximum size of hyperedges in hypergraph <span class="math inline">G</span> (Hazan et al., 2006).</li>
 <li>Unless P=NP, there is no <span class="math inline">\mathcal{O}(|V(G)|^{1/2−\varepsilon})</span> approximation algorithm.</li>
 </ul></li>
-<li>Examining the difficulty of the <span class="math inline">\text{MLD}</span> problem itself:
+<li>Examining the difficulty of the MLD problem itself:
 <ul>
 <li>MLD is NP-complete.</li>
 <li>Even when restricted to Reed-Solomon Codes, MLD is NP-hard.</li>
 </ul></li>
 </ul>
 <p>For hypergraphs with special structures, many related algorithms have been designed recently, for example:</p>
-<p>http://arxiv.org/abs/2505.13587 http://arxiv.org/abs/2312.08813</p>
-</section>
-<section id="bp-decoding-future" class="level2" data-number="1.2">
-<h2 data-number="1.2" class="anchored" data-anchor-id="bp-decoding-future"><span class="header-section-number">1.2</span> BP decoding future</h2>
-</section>
-<section id="combination" class="level2" data-number="1.3">
-<h2 data-number="1.3" class="anchored" data-anchor-id="combination"><span class="header-section-number">1.3</span> Combination?</h2>
+<ul>
+<li><a href="http://arxiv.org/abs/2505.13587" class="uri">http://arxiv.org/abs/2505.13587</a></li>
+<li><a href="http://arxiv.org/abs/2312.08813" class="uri">http://arxiv.org/abs/2312.08813</a></li>
+</ul>
 
 
 <script type="ojs-module-contents">
