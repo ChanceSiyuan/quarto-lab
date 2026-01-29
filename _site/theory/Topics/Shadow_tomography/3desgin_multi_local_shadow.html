@@ -228,7 +228,7 @@ window.Quarto = {
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../../theory/Topics/Shadow_tomography/multicopy.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">3-design Multi-copy Local Shadow</span></a>
+ <span class="menu-text">Local k-copy Pauli Shadow Tomography with Entanglement-fixed channel</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -582,7 +582,7 @@ v(\mathbf{r}_j, \mathbf{r}_j) = \begin{cases} \frac{5}{3}\sigma_{\mathbf{r}_j}^{
 </div>
 </div>
 <div class="callout callout-style-default callout-note callout-titled">
-<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-9-contents" aria-controls="callout-9" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-9-contents" aria-controls="callout-9" aria-expanded="true" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
@@ -591,7 +591,7 @@ v(\mathbf{r}_j, \mathbf{r}_j) = \begin{cases} \frac{5}{3}\sigma_{\mathbf{r}_j}^{
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-9" class="callout-9-contents callout-collapse collapse">
+<div id="callout-9" class="callout-9-contents callout-collapse collapse show">
 <div class="callout-body-container callout-body">
 <p>In generalized <span class="math inline">\text{tr}(O \rho^2)</span> to the high-rank case <span class="math inline">\text{tr}(O \rho^k)</span>, we first write the decomposition of <span class="math inline">k</span>-cycle permutation based on the indentity <span class="math inline">\mathrm{SWAP}_{(1,\cdots,k)} = \mathrm{SWAP}_{(1,2)}\mathrm{SWAP}_{(2,3)}\cdots \mathrm{SWAP}_{(k-1,k)}</span> and <span class="math inline">\mathrm{SWAP}_{(r,r+1)} = \sigma_{\mathbf{p}^{(r)}}\otimes \sigma_{\mathbf{p}^{(r)}}</span> for <span class="math inline">r = 1,\cdots,k-1</span>, we conclude that: <span class="math display">
 \begin{align*}
@@ -601,87 +601,98 @@ v(\mathbf{r}_j, \mathbf{r}_j) = \begin{cases} \frac{5}{3}\sigma_{\mathbf{r}_j}^{
 \begin{align*}
     O^{(k)}_{\mathbf{r}} &amp;= 2^{-(k-1)n}\sum_{\mathbf{p}^{(l&gt;0)} \in \mathbb{F}_2^{2n}}  (\sigma_{\mathbf{r}}\sigma_{\mathbf{p}^{(1)}})\otimes \left(\sigma_{\mathbf{p}^{(1)}} \sigma_{\mathbf{p}^{(2)}}\right)\otimes \left(\sigma_{\mathbf{p}^{(2)}} \sigma_{\mathbf{p}^{(3)}}\right)\otimes \cdots \otimes \left(\sigma_{\mathbf{p}^{(k-2)}} \sigma_{\mathbf{p}^{(k-1)}}\right)\otimes \sigma_{\mathbf{p}^{(k-1)}}.
 \end{align*}
-</span> Here we denote <span class="math display">
-\mathbf{u}(\mathbf{r},\mathbf{p}^{(1)},\cdots,\mathbf{p}^{(k-1)}) = (\mathbf{r} + \mathbf{p}^{(1)},\mathbf{p}^{(1)}+\mathbf{p}^{(2)}, \cdots, \mathbf{p}^{(k-2)}+\mathbf{p}^{(k-1)},\mathbf{p}^{(k-1)}) \in (\mathbb{F}_{2}^{2})^k
-</span> and the local operator <span class="math inline">O_{\mathbf{r}}^{(k)}</span> satisfied the local decomposition <span class="math inline">W_{\mathbf{u}_{\mathbf{r}}} \propto \sigma_{\mathbf{u}_{\mathbf{r}}}</span> with <span class="math inline">\mathbf{u}_{\mathbf{r}} = \mathbf{u}(\mathbf{r},\mathbf{p}^{(1)},\cdots,\mathbf{p}^{(k-1)})</span> and <span class="math inline">\mathbf{p}^{(r)} \in \mathbb{F}_{2}^2, \forall r = 1,\cdots,k-1</span>. To simplify the notation, we set two of such a vector <span class="math inline">\mathbf{u}_{\mathbf{r}}</span> and <span class="math inline">\mathbf{u}_{\mathbf{r}'}</span>. Use <a href="#lem-LC-shadow-kcopy" class="quarto-xref">Lemma&nbsp;1</a>, we get: <span class="math display">
+</span> The local operator <span class="math inline">O_{\mathbf{r}}^{(k)}</span> satisfied the local decomposition: <span class="math inline">W_{\mathbf{u}_{\mathbf{r}}} \propto \sigma_{\mathbf{u}_{\mathbf{r}}}</span>. Here we denote <span class="math display">
+\begin{align*}
+\mathbf{u}_{\mathbf{r}} &amp;:= \mathbf{u}(\mathbf{r},\mathbf{p}^{(1)},\cdots,\mathbf{p}^{(k-1)}) \\
+&amp;= (\mathbf{r} + \mathbf{p}^{(1)},\mathbf{p}^{(1)}+\mathbf{p}^{(2)}, \cdots, \mathbf{p}^{(k-2)}+\mathbf{p}^{(k-1)},\mathbf{p}^{(k-1)}) \in (\mathbb{F}_{2}^{2})^k.
+\end{align*}
+</span></p>
+<p>We then set two different vectors of such a vector <span class="math inline">\mathbf{u}_{\mathbf{r}}</span> and <span class="math inline">\mathbf{u}_{\mathbf{r}'}</span>. Based on <a href="#lem-LC-shadow-kcopy" class="quarto-xref">Lemma&nbsp;1</a>, we get: <span class="math display">
 \begin{align*}
     &amp;v(O^{(k)}_{\mathbf{r}}, O^{(k)}_{\mathbf{r}'}) \\
     &amp;=4^{-k+1} \sum_{\mathbf{p}^{(l&gt;0)},\mathbf{p}^{',(l&gt;0)} \in \mathbb{F}_2^{2n}}r(\mathbf{u}_{\mathbf{r}},\mathbf{u}_{\mathbf{r}'})(\sigma_{\mathbf{r}}\sigma_{\mathbf{p}^{(1)}}\sigma_{\mathbf{r}'}\sigma_{\mathbf{p}^{',(1)}})\otimes \left(\sigma_{\mathbf{p}^{(1)}} \sigma_{\mathbf{p}^{(2)}}\sigma_{\mathbf{p}^{',(1)}} \sigma_{\mathbf{p}^{',(2)}}\right)\otimes \cdots \\
     &amp;\quad \otimes \left(\sigma_{\mathbf{p}^{(k-2)}} \sigma_{\mathbf{p}^{(k-1)}}\sigma_{\mathbf{p}^{',(k-2)}} \sigma_{\mathbf{p}^{',(k-1)}}\right)\otimes \sigma_{\mathbf{p}^{(k-1)}}\sigma_{\mathbf{p}^{',(k-1)}} \\
 &amp;= 4^{-k+1}\sum_{\mathbf{p}^{(l&gt;0)},\mathbf{p}^{',(l&gt;0)} \in \mathbb{F}_2^{2n}}r(\mathbf{u}_{\mathbf{r}},\mathbf{u}_{\mathbf{r}'}) (-1)^{[\mathbf{p}^{(1)}, \mathbf{r}^{'}]+[\mathbf{p}^{(2)}, \mathbf{p}^{'(1)}] + \cdots + [\mathbf{p}^{(k-1)}, \mathbf{p}^{'(k-2)}]} \cdot \\
 &amp; \quad (\sigma_{\mathbf{r}}\sigma_{\mathbf{r}'}\sigma_{\mathbf{p}^{(1)}}\sigma_{\mathbf{p}^{',(1)}})\otimes \left(\sigma_{\mathbf{p}^{(1)}} \sigma_{\mathbf{p}^{',(1)}}\sigma_{\mathbf{p}^{(2)}} \sigma_{\mathbf{p}^{',(2)}}\right)\otimes \cdots \otimes \left(\sigma_{\mathbf{p}^{(k-2)}} \sigma_{\mathbf{p}^{',(k-2)}} \sigma_{\mathbf{p}^{(k-1)}}\sigma_{\mathbf{p}^{',(k-1)}}\right)\otimes \sigma_{\mathbf{p}^{(k-1)}}\sigma_{\mathbf{p}^{',(k-1)}}\\
-&amp; \quad = 4^{-k+1}\sum_{\mathbf{p}^{(l&gt;0)},\mathbf{p}^{',(l&gt;0)} \in \mathbb{F}_2^{2n}}r(\mathbf{u}_{\mathbf{r}},\mathbf{u}_{\mathbf{r}'}) (-1)^{[\mathbf{p}^{(1)}, \mathbf{r}^{'}]+[\mathbf{p}^{(2)}, \mathbf{p}^{'(1)}] + \cdots + [\mathbf{p}^{(k-1)}, \mathbf{p}^{'(k-2)}]+[\mathbf{p}^{(1)}, \mathbf{p}^{',(1)}] + [\mathbf{p}^{(2)}, \mathbf{p}^{',(2)}] + \cdots + [\mathbf{p}^{(k-1)}, \mathbf{p}^{',(k-1)}]} \cdot \\
+&amp;  = 4^{-k+1}\sum_{\mathbf{p}^{(l&gt;0)},\mathbf{p}^{',(l&gt;0)} \in \mathbb{F}_2^{2n}}r(\mathbf{u}_{\mathbf{r}},\mathbf{u}_{\mathbf{r}'}) (-1)^{[\mathbf{p}^{(1)}, \mathbf{r}^{'}]+[\mathbf{p}^{(2)}, \mathbf{p}^{'(1)}] + \cdots + [\mathbf{p}^{(k-1)}, \mathbf{p}^{'(k-2)}]+[\mathbf{p}^{(1)}, \mathbf{p}^{',(1)}] + [\mathbf{p}^{(2)}, \mathbf{p}^{',(2)}] + \cdots + [\mathbf{p}^{(k-1)}, \mathbf{p}^{',(k-1)}]} \cdot \\
 &amp;\quad (\sigma_{\mathbf{r}}\sigma_{\mathbf{r}'}\sigma_{\mathbf{p}^{(1)}+\mathbf{p}^{',(1)}})\otimes \left(\sigma_{\mathbf{p}^{(1)}+\mathbf{p}^{',(1)}}\sigma_{\mathbf{p}^{(2)}+\mathbf{p}^{',(2)}} \right)\otimes \cdots \otimes \left(\sigma_{\mathbf{p}^{(k-2)}+\mathbf{p}^{',(k-2)}} \sigma_{\mathbf{p}^{(k-1)}+\mathbf{p}^{',(k-1)}}\right)\otimes \sigma_{\mathbf{p}^{(k-1)}+\mathbf{p}^{',(k-1)}}\\
-&amp; \quad = 4^{-k+1}\sum_{\mathbf{p}^{(l&gt;0)},\mathbf{w}^{(l&gt;0)} \in \mathbb{F}_2^{2n}}r(\mathbf{u}_{\mathbf{r}},\mathbf{u}_{\mathbf{r}'}) (-1)^{[\mathbf{p}^{(1)}, \mathbf{r}^{'}]+[\mathbf{p}^{(2)}, \mathbf{w}^{(1)}+\mathbf{p}^{(1)}] + \cdots + [\mathbf{p}^{(k-1)}, \mathbf{w}^{(k-2)}+\mathbf{p}^{(k-2)}]+[\mathbf{p}^{(1)}, \mathbf{w}^{(1)}] + [\mathbf{p}^{(2)}, \mathbf{w}^{(2)}] + \cdots + [\mathbf{p}^{(k-1)}, \mathbf{w}^{(k-1)}]} \cdot \\
+&amp; = 4^{-k+1}\sum_{\mathbf{p}^{(l&gt;0)},\mathbf{w}^{(l&gt;0)} \in \mathbb{F}_2^{2n}}r(\mathbf{u}_{\mathbf{r}},\mathbf{u}_{\mathbf{r}'}) (-1)^{[\mathbf{p}^{(1)}, \mathbf{r}^{'}]+[\mathbf{p}^{(2)}, \mathbf{w}^{(1)}+\mathbf{p}^{(1)}] + \cdots + [\mathbf{p}^{(k-1)}, \mathbf{w}^{(k-2)}+\mathbf{p}^{(k-2)}]+[\mathbf{p}^{(1)}, \mathbf{w}^{(1)}] + [\mathbf{p}^{(2)}, \mathbf{w}^{(2)}] + \cdots + [\mathbf{p}^{(k-1)}, \mathbf{w}^{(k-1)}]} \cdot \\
 &amp;\quad (\sigma_{\mathbf{r}}\sigma_{\mathbf{r}'}\sigma_{\mathbf{w}^{(1)}})\otimes \left(\sigma_{\mathbf{w}^{(1)}}\sigma_{\mathbf{w}^{(2)}} \right)\otimes \cdots \otimes \left(\sigma_{\mathbf{w}^{(k-2)}} \sigma_{\mathbf{w}^{(k-1)}}\right)\otimes \sigma_{\mathbf{w}^{(k-1)}},
 \end{align*}
-</span> Here in the last inequality, we define <span class="math inline">\mathbf{w}^{(m)} = \mathbf{p}^{(m)} + \mathbf{p}^{',(m)}</span> for <span class="math inline">m = 1,\cdots,k-1</span>. The phase terms can then be refactor as: <span class="math display">
+</span> Here in the last inequality, we define <span class="math inline">\mathbf{w}^{(m)} = \mathbf{p}^{(m)} + \mathbf{p}^{',(m)}</span> for <span class="math inline">m = 1,\cdots,k-1</span>. Based on the <a href="#lem-LC-shadow-kcopy" class="quarto-xref">Lemma&nbsp;1</a>, we have the equality: <span class="math display">
 \begin{align*}
-    \text{phase} &amp;= [\mathbf{p}^{(1)}, \mathbf{r}^{'}]+[\mathbf{p}^{(2)}, \mathbf{w}^{(1)}+\mathbf{p}^{(1)}] + \cdots + [\mathbf{p}^{(k-1)}, \mathbf{w}^{(k-2)}+\mathbf{p}^{(k-2)}]+[\mathbf{p}^{(1)}, \mathbf{w}^{(1)}] + [\mathbf{p}^{(2)}, \mathbf{w}^{(2)}] + \cdots + [\mathbf{p}^{(k-1)}, \mathbf{w}^{(k-1)}]\\
-    &amp;= [\mathbf{p}^{(1)}, \mathbf{r}' + ]
-\end{align*}
-</span> Since <span class="math inline">\mathbf{u}_{\mathbf{r}} = (\mathbf{r} + \mathbf{p}^{(1)},\mathbf{p}^{(1)}+\mathbf{p}^{(2)}, \cdots, \mathbf{p}^{(k-2)}+\mathbf{p}^{(k-1)},\mathbf{p}^{(k-1)})</span> and <span class="math inline">\mathbf{u}_{\mathbf{r}'} = (\mathbf{r}' + \mathbf{p}^{',(1)},\mathbf{p}^{',(1)}+\mathbf{p}^{',(2)}, \cdots, \mathbf{p}^{',(k-2)}+\mathbf{p}^{',(k-1)},\mathbf{p}^{',(k-1)})</span>, we have <span class="math inline">\mathbf{u}_{\mathbf{r}} \neq \mathbf{0}</span> for <span class="math inline">\mathbf{r} \neq \mathbf{0}, \forall \mathbf{p}^{(l&gt;0)} \in \mathbb{F}_2^{2n}</span>. Based on the identity: <span class="math display">
-\begin{align}
-r(\mathbf{u}_{\mathbf{r}},\mathbf{u}_{\mathbf{r}'}) =
-\left\{
+r(\mathbf{u}_{\mathbf{r}},\mathbf{u}_{\mathbf{r}'}) &amp;= \left\{
     \begin{aligned}
-        &amp; \frac{2^k + 1}{2^k + 2} \left[2^k \delta_{\mathbf{r}, \mathbf{r}'} \prod_{m = 1}^{k-1} \delta_{\mathbf{p}^{(m)}, \mathbf{p}^{',(m)}} + 1 + (-1)^{[\mathbf{u}_{\mathbf{r}},\mathbf{u}_{\mathbf{r}'}]}\right] \text{~if~}\mathbf{r},\mathbf{r}' \neq 0\\
+        &amp; \frac{2^k + 1}{2^k + 2} \left[2^k \delta_{\mathbf{r}, \mathbf{r}'} \prod_{m = 1}^{k-1} \delta_{\mathbf{w}^{(m)}, \mathbf{0}} + 1 +  (-1)^{[\mathbf{u}_{\mathbf{r}},\mathbf{u}_{\mathbf{r}'}]}\right] \text{~if~}\mathbf{r},\mathbf{r}' \neq 0\\
         &amp;1 \text{~if else}
     \end{aligned}\right.
-    \end{align}
-</span> We then calculate the <span class="math inline">\mathbf{r},\mathbf{r}' \neq \mathbf{0}</span>, case term by term. <span class="math display">
+    \end{align*}
+</span> Here <span class="math inline">[\mathbf{u}_{\mathbf{r}},\mathbf{u}_{\mathbf{r}'}]</span> is the only term related to <span class="math inline">\mathbf{p}^{(l&gt;0)}</span> with <span class="math display">
 \begin{align*}
-    \text{The 1st term} &amp;= \sum_{\mathbf{u}} 2^{2-k}(2^k + 1)(2^k +2)^{-1} \mathbb{I}_k = 2^{2-k}(2^k + 1)(2^k +2)^{-1} \left(\sum_{\mathbf{p}^{(l&gt;0)}} (-1)^{\sum_{l =1}^{k-1}\left[\mathbf{p}^{(l)},\mathbf{p}^{(l-1)}\right]} \right) \mathbb{I}_k  \notag \\
-    &amp;= \left\{\begin{aligned}
-        &amp;\frac{2(2^k + 1)}{2^k +2} \mathbb{I}_k &amp;\text{~if~} k \text{~is odd},\\
-        &amp;0 &amp;\text{~if~} k \text{~is even}.
-    \end{aligned}\right.
+[\mathbf{u}_{\mathbf{r}},\mathbf{u}_{\mathbf{r}'}] &amp;= [\mathbf{r} + \mathbf{p}^{(1)}, \mathbf{r}' + \mathbf{w}^{(1)} + \mathbf{p}^{(1)}] \\
+&amp;+ \sum_{m=1}^{k-2}[\mathbf{p}^{(m)}+\mathbf{p}^{(m+1)}, \mathbf{w}^{(m)}+\mathbf{w}^{(m+1)}] + [\mathbf{p}^{(k-1)}, \mathbf{w}^{(k-1)}].
 \end{align*}
-</span> Here in the second line we evaluate the coefficient in two cases <span class="math inline">k = 2s+1</span> and <span class="math inline">k = 2s+2</span>, as shown below: <span class="math display">
-\begin{align*}
-    \left.\sum_{\mathbf{p}^{(l&gt;0)}} (-1)^{\sum_{l =1}^{k-1}\left[\mathbf{p}^{(l)},\mathbf{p}^{(l-1)}\right]} \right|_{p^{(0)} = \mathbf{r}_j}&amp;= \sum_{\mathbf{p}^{(l&gt;2)} } \sum_{\mathbf{p}^{(2)} \in \mathbb{F}_2^{2}}\left(\sum_{\mathbf{p}^{(1)} \in \mathbb{F}_2^{2}}(-1)^{\left[\mathbf{p}^{(1)},\mathbf{p}^{(2)}+\mathbf{p}^{(0)}\right]} \right)(-1)^{\sum_{l =3}^{k-1}\left[\mathbf{p}^{(l)},\mathbf{p}^{(l-1)}\right]} \notag\\
-    &amp;=\sum_{\mathbf{p}^{(l&gt;2)} } \sum_{\mathbf{p}^{(2)} \in \mathbb{F}_2^{2}}\left(4\delta_{\mathbf{p}^{(2)},\mathbf{p}^{(0)}} \right)(-1)^{\sum_{l =3}^{k-1}\left[\mathbf{p}^{(l)},\mathbf{p}^{(l-1)}\right]} \notag \\
-    &amp;= 4 \left.\sum_{\mathbf{p}^{(l&gt;2)}} (-1)^{\sum_{l =3}^{k-1}\left[\mathbf{p}^{(l)},\mathbf{p}^{(l-1)}\right]} \right|_{p^{(2)} = \mathbf{r}_j}=4^s\left.\sum_{\mathbf{p}^{(l&gt;2s)}} (-1)^{\sum_{l =2s+1}^{k-1}\left[\mathbf{p}^{(l)},\mathbf{p}^{(l-1)}\right]} \right|_{p^{(2s)} = \mathbf{r}_j}\notag \\
-    &amp; =\left\{\begin{aligned}
-        &amp;4^s \text{~if~} k = 2s+1,\\
-        &amp;4^s \sum_{\mathbf{p}^{(2s+1)}} (-1)^{\left[\mathbf{p}^{(2s+1)}, \mathbf{r}_j\right]} = 0 \text{~if~} k = 2s+2
-    \end{aligned}\right.=\left\{\begin{aligned}2^{k-1} \text{~if~} k \text{~is odd},\\ 0 \text{~if~} k \text{~is even}.\end{aligned}\right.
-\end{align*}
-</span> For the second term in the first line of Eq.<a href="#eq:trrhok_Var_op" data-reference-type="eqref" data-reference="eq:trrhok_Var_op">[eq:trrhok_Var_op]</a>, <span class="math inline">\sum_{\mathbf{u},\mathbf{v}} 4^{-k +1} i^{m(\mathbf{u},\mathbf{v})}(2^k + 1)(2^k+2)^{-1} \sigma_{\mathbf{u}+\mathbf{v}}</span>, we replace all the <span class="math inline">\{\mathbf{q}_j^{(m)}\}</span> variable by <span class="math inline">\{\mathbf{w}_j^{(m)}\}</span> defined as <span class="math inline">\mathbf{w}^{(m)}_j := \mathbf{p}^{(m)}_j+\mathbf{q}^{(m)}_j</span>. Then the phase term <span class="math inline">m(\mathbf{u},\mathbf{v})</span> satisfied: <span class="math display">
-\begin{align*}
-    &amp;m(\mathbf{u},\mathbf{v}):= \sum_{l =1}^{k-1}\left(\mathbf{p}^{(l)}J \mathbf{p}^{(l-1)}+\mathbf{q}^{(l)}J \mathbf{q}^{(l-1)}\right) + \mathbf{v} J{\mathbf{u}} \notag\\
-    &amp;=\sum_{l =1}^{k-1}\left[\mathbf{p}^{(l)}J \mathbf{p}^{(l-1)}+\mathbf{q}^{(l)}J \mathbf{q}^{(l-1)} + \left(\mathbf{q}^{(l)}+\mathbf{q}^{(l-1)}\right)J \left(\mathbf{p}^{(l)}+\mathbf{p}^{(l-1)}\right) \right]+ \mathbf{q}^{(k-1)}J \mathbf{p}^{(k-1)}\notag\\
-    &amp;=\sum_{l =1}^{k-1}\left[\mathbf{p}^{(l)}J \mathbf{p}^{(l-1)}+\left(\mathbf{w}^{(l)} - \mathbf{p}^{(l)}\right)J \left(\mathbf{w}^{(l-1)} - \mathbf{p}^{(l-1)}\right) + \left(\mathbf{w}^{(l)}+\mathbf{w}^{(l-1)}\right)J \left(\mathbf{p}^{(l)}+\mathbf{p}^{(l-1)}\right) \right]+ \mathbf{w}^{(k-1)}J \mathbf{p}^{(k-1)} \notag\\
-    &amp;=\sum_{l =1}^{k-1}\left[2\mathbf{p}^{(l)}J\mathbf{p}^{(l-1)} + 2\mathbf{w}^{(l-1)}J\mathbf{p}^{(l)} + 2\mathbf{w}^{(l-1)}J\mathbf{p}^{(l-1)} - \mathbf{w}^{(l-1)}J\mathbf{p}^{(l-1)}+ \mathbf{w}^{(l)}J\mathbf{p}^{(l)}  + \mathbf{w}^{(l)}J\mathbf{w}^{(l-1)}\right]+ \mathbf{w}^{(k-1)}J \mathbf{p}^{(k-1)} \notag\\
-    &amp;= \sum_{l =1}^{k-1}2\left(\mathbf{p}^{(l)} + \mathbf{w}^{(l-1)}\right) J \left(\mathbf{p}^{(l-1)}+ \mathbf{p}^{(l)}\right)+ \sum_{l=1}^{k-1}\left(\mathbf{w}^{(l)} J \mathbf{p}^{(l)} - \mathbf{w}^{(l-1)} J \mathbf{p}^{(l-1)}\right) + \sum_{l =1}^{k-1} \mathbf{w}^{(l)} J \mathbf{w}^{(l-1)} +\mathbf{w}^{(k-1)}J \mathbf{p}^{(k-1)}\notag\\
-    &amp;= \sum_{l =1}^{k-1}2\left(\mathbf{p}^{(l)} + \mathbf{w}^{(l-1)}\right) J \left(\mathbf{p}^{(l-1)}+ \mathbf{p}^{(l)}\right) +2\mathbf{w}^{(k-1)}J \mathbf{p}^{(k-1)}+ \sum_{l =1}^{k-1} \mathbf{w}^{(l)} J \mathbf{w}^{(l-1)} .
-\end{align*}
-</span> Notice that <span class="math inline">\mathbf{u}_j + \mathbf{v}_j = (\mathbf{w}^{(1)}_j,\mathbf{w}^{(1)}_j+\mathbf{w}^{(2)}_j, \cdots, \mathbf{w}^{(k-2)}_j+\mathbf{w}^{(k-1)}_j,\mathbf{w}^{(k-1)}_j)</span>, we denoting <span class="math inline">\sigma_{\mathbf{w}} = \sigma_{\mathbf{w}^{(1)}} \otimes \sigma_{\mathbf{w}^{(1)} + \mathbf{w}^{(2)}} \otimes  \sigma_{\mathbf{w}^{(k-2)} + \mathbf{w}^{(k-1)}} \otimes \sigma_{\mathbf{w}^{(k-1)}}</span>. This then simplified the second term into <span class="math display">
-\begin{align*}
-    \text{The 2nd term} = 4^{-k +1}\frac{2^k + 1}{2^k+2} \left(\sum_{\mathbf{p}^{(l&gt;0)}}  (-1)^{\sum_{l =1}^{k-1}\left[\mathbf{p}^{(l)} + \mathbf{w}^{(l-1)},\mathbf{p}^{(l-1)}+ \mathbf{p}^{(l)}\right] +\left[\mathbf{w}^{(k-1)},\mathbf{p}^{(k-1)}\right]} \right)\sum_{\mathbf{w}^{(l&gt;0)}}  i^{\sum_{l =1}^{k-1} \mathbf{w}^{(l)} J \mathbf{w}^{(l-1)}}\sigma_{\mathbf{w}}
-\end{align*}
-</span> Here in the second line we evaluate the coefficient in the bracket below <span class="math display">
-\begin{align*}
-    \sum_{\mathbf{p}^{(l&gt;0)}}  (-1)^{\sum_{l =1}^{k-1}\left[\mathbf{p}^{(l)} + \mathbf{w}^{(l-1)},\mathbf{p}^{(l-1)}+ \mathbf{p}^{(l)}\right] +\left[\mathbf{w}^{(k-1)},\mathbf{p}^{(k-1)}\right]} &amp;= \sum_{\mathbf{p}^{(l&gt;0)}}  (-1)^{\sum_{l =1}^{k-1}\left[\mathbf{p}^{(l)},\mathbf{p}^{(l-1)}+\mathbf{w}^{(l-1)}\right]+\sum_{l =1}^{k}\left[\mathbf{w}^{(l-1)},\mathbf{p}^{(l-1)}\right]} \notag\\
-    &amp;= \sum_{\mathbf{p}^{(l&gt;0)}}  (-1)^{\sum_{l =1}^{k-1}\left[\mathbf{p}^{l},\mathbf{p}^{l-1}+\mathbf{w}^{l} + \mathbf{w}^{l-1}\right] }
-\end{align*}
-</span> We use the same telescoping technique as the first term. Define <span class="math inline">\mathbf{t}^{(l)} := \mathbf{w}^{(l)} + \mathbf{w}^{(l-1)}</span> (with <span class="math inline">\mathbf{w}^{(0)} = 0</span>). Summing over <span class="math inline">\mathbf{p}^{(1)}</span> first, the terms involving <span class="math inline">\mathbf{p}^{(1)}</span> are: <span class="math display">
-[\mathbf{p}^{1}, \mathbf{p}^{0} + \mathbf{t}^{1}] + [\mathbf{p}^{2}, \mathbf{p}^{1}] = [\mathbf{p}^{1}, \mathbf{p}^{0} + \mathbf{t}^{1} + \mathbf{p}^{2}].
-</span> This gives <span class="math inline">\sum_{\mathbf{p}^{(1)}} (-1)^{[\mathbf{p}^{1}, \mathbf{r}_j + \mathbf{t}^{1} + \mathbf{p}^{2}]} = 4\delta_{\mathbf{p}^{2}, \mathbf{r}_j + \mathbf{t}^{1}}</span>. Continuing the recursion by pairing <span class="math inline">(\mathbf{p}^{(2l-1)}, \mathbf{p}^{(2l)})</span>: <span class="math display">
-\mathbf{p}^{(2l)} = \mathbf{r}_j + \sum_{m=1}^{2l-1} \mathbf{t}^{(m)} = \mathbf{r}_j + \mathbf{w}^{(2l-1)}.
-</span> When <span class="math inline">\mathbf{w}^{(l)} = \mathbf{0}</span> for all <span class="math inline">l</span> (i.e., <span class="math inline">\mathbf{u} = \mathbf{v}</span>), we have <span class="math inline">\mathbf{t}^{(l)} = 0</span> and the recursion reduces to the first term’s case, giving coefficient <span class="math inline">2^{k-1}</span> for odd <span class="math inline">k</span> and <span class="math inline">0</span> for even <span class="math inline">k</span>. When <span class="math inline">\mathbf{w} \neq \mathbf{0}</span>, the accumulated phase factors lead to cancellation. Specifically, if there exists some <span class="math inline">l^*</span> such that <span class="math inline">\mathbf{w}^{(l^*)} \neq 0</span>, the inner sum over <span class="math inline">\mathbf{p}</span> vanishes due to the mismatch in the boundary conditions. Therefore: <span class="math display">
-\sum_{\mathbf{p}^{(l&gt;0)}}  (-1)^{\sum_{l =1}^{k-1}\left[\mathbf{p}^{l},\mathbf{p}^{l-1}+\mathbf{w}^{l} + \mathbf{w}^{l-1}\right] } = \left\{\begin{aligned}&amp;2^{k-1} \text{~if~} k \text{~is odd and } \mathbf{w} = \mathbf{0},\\ &amp;0 \text{~otherwise}.\end{aligned}\right.
-</span> Since only <span class="math inline">\mathbf{w} = \mathbf{0}</span> contributes, the second term becomes: <span class="math display">
-\text{The 2nd term} = \left\{\begin{aligned}&amp;\frac{2(2^k + 1)}{2^k+2} \mathbb{I}_k &amp;\text{~if~} k \text{~is odd},\\ &amp;0 &amp;\text{~if~} k \text{~is even}.\end{aligned}\right.
 </span></p>
-<p><strong>Third term: <span class="math inline">(-1)^{[\mathbf{v},\mathbf{u}]}</span> contribution.</strong></p>
-<p>For the third term <span class="math inline">\sum_{\mathbf{u},\mathbf{v}} 4^{-k+1} i^{m(\mathbf{u},\mathbf{v})} \frac{2^k + 1}{2^k+2} (-1)^{[\mathbf{v}, \mathbf{u}]} \sigma_{\mathbf{u}+\mathbf{v}}</span>, we need to evaluate the symplectic form <span class="math inline">[\mathbf{v}, \mathbf{u}]</span> in terms of <span class="math inline">\mathbf{p}^{(l)}</span> and <span class="math inline">\mathbf{q}^{(l)}</span>. Recall that: <span class="math display">
-\mathbf{u} = (\mathbf{r}_j + \mathbf{p}^{(1)}, \mathbf{p}^{(1)}+\mathbf{p}^{(2)}, \ldots, \mathbf{p}^{(k-1)}), \quad \mathbf{v} = (\mathbf{r}_j + \mathbf{q}^{(1)}, \mathbf{q}^{(1)}+\mathbf{q}^{(2)}, \ldots, \mathbf{q}^{(k-1)}).
-</span> The symplectic form between <span class="math inline">k</span>-tuples is <span class="math inline">[\mathbf{v}, \mathbf{u}] = \sum_{m=1}^{k} [\mathbf{v}_m, \mathbf{u}_m]</span> where <span class="math inline">[\cdot, \cdot]</span> on <span class="math inline">\mathbb{F}_2^2</span> is the standard symplectic form. Using the change of variables <span class="math inline">\mathbf{w}^{(m)} = \mathbf{p}^{(m)} + \mathbf{q}^{(m)}</span> and expanding: <span class="math display">
-[\mathbf{v}, \mathbf{u}] = \sum_{m=1}^{k-1} [\mathbf{q}^{(m-1)}+\mathbf{q}^{(m)}, \mathbf{p}^{(m-1)}+\mathbf{p}^{(m)}] + [\mathbf{q}^{(k-1)}, \mathbf{p}^{(k-1)}].
-</span> This additional phase combines with <span class="math inline">m(\mathbf{u},\mathbf{v})</span> to give a modified exponent. Following the same telescoping analysis: when <span class="math inline">\mathbf{w} = \mathbf{0}</span>, the commutation phase <span class="math inline">(-1)^{[\mathbf{v}, \mathbf{u}]}</span> reduces to <span class="math inline">(-1)^{[\mathbf{u}, \mathbf{u}]} = 1</span>. When <span class="math inline">\mathbf{w} \neq \mathbf{0}</span>, the sum again vanishes due to the pairing cancellation. Therefore: <span class="math display">
-\text{The 3rd term} = \left\{\begin{aligned}&amp;\frac{2(2^k + 1)}{2^k+2} \mathbb{I}_k &amp;\text{~if~} k \text{~is odd},\\ &amp;0 &amp;\text{~if~} k \text{~is even}.\end{aligned}\right.
-</span></p>
+<p><strong>The first term and the second term</strong></p>
+<p>The first term and second term in <span class="math inline">r(\mathbf{u}_{\mathbf{r}},\mathbf{u}_{\mathbf{r}'})</span> are not related to <span class="math inline">\mathbf{p}^{(l&gt;0)}</span>. The phase terms <span class="math inline">(-1)^{\mathrm{phase}_{1,k-1}}</span> then involves independent variable <span class="math inline">\mathbf{p}^{(l&gt;0)}</span> and can then be sumarized independently.</p>
+<ul>
+<li><p>Begin from: <span class="math display">
+\begin{align*}
+  \text{phase}_{1,k-1} &amp;= \underbrace{[\mathbf{p}^{(1)}, \mathbf{r}^{'}]+[\mathbf{p}^{(2)}, \mathbf{w}^{(1)}+\mathbf{p}^{(1)}] + \cdots + [\mathbf{p}^{(k-1)}, \mathbf{w}^{(k-2)}+\mathbf{p}^{(k-2)}]}_{\text{Group A}}\\
+  &amp;\quad +\underbrace{[\mathbf{p}^{(1)}, \mathbf{w}^{(1)}] + [\mathbf{p}^{(2)}, \mathbf{w}^{(2)}] + \cdots + [\mathbf{p}^{(k-1)}, \mathbf{w}^{(k-1)}]}_{\text{Group B}}
+  \end{align*}
+</span></p></li>
+<li><p>Isolate the terms related to <span class="math inline">\mathbf{p}^{(1)}</span>: <span class="math display">
+  \begin{align*}
+  \text{phase}_{1,k-1} &amp;=  [\mathbf{p}^{(1)}, \mathbf{r}' + \mathbf{w}^{(1)} + \mathbf{p}^{(2)}] \\
+  &amp;\quad + \underbrace{[\mathbf{p}^{(2)}, \mathbf{w}^{(1)}] + \cdots + [\mathbf{p}^{(k-1)}, \mathbf{w}^{(k-2)}+\mathbf{p}^{(k-2)}]}_{\text{Group A}}\\
+  &amp;\quad +\underbrace{[\mathbf{p}^{(2)}, \mathbf{w}^{(2)}] + \cdots + [\mathbf{p}^{(k-1)}, \mathbf{w}^{(k-1)}]}_{\text{Group B}}
+\end{align*}
+</span></p></li>
+<li><p>For this term, sum over <span class="math inline">\mathbf{p}^{(1)} \in \mathbb{F}_2^{2}</span> then gives <span class="math inline">4 \delta_{\mathbf{p}^{(2)},\mathbf{r}' + \mathbf{w}^{(1)} }</span></p></li>
+<li><p>Then sum over <span class="math inline">\mathbf{p}^{(2)} \in \mathbb{F}_2^{2}</span> gives the result <span class="math inline">4  (-1)^{\mathrm{phase}_{1,3}}(-1)^{\mathrm{phase}_{3,k-1}}</span>, with <span class="math inline">\mathrm{phase}_{1,3} = [\mathbf{r}' + \mathbf{w}^{(1)}, \mathbf{w}^{(1)} + \mathbf{w}^{(2)}]</span> and</p></li>
+</ul>
+<p><span class="math display">
+\begin{align*}
+    \text{phase}_{3,k-1} &amp;= \underbrace{[\mathbf{p}^{(3)}, \mathbf{w}^{(1)}+\mathbf{w}^{(2)}+\mathbf{r}']+ \cdots + [\mathbf{p}^{(k-2)}, \mathbf{w}^{(k-2)}+\mathbf{p}^{(k-2)}]}_{\text{Group A}}\\
+    &amp; \quad +\underbrace{ [\mathbf{p}^{(3)}, \mathbf{w}^{(3)}]+ \cdots + [\mathbf{p}^{(k-1)}, \mathbf{w}^{(k-1)}]}_{\text{Group B}}
+\end{align*}
+</span> This term <span class="math inline">\text{phase}_{3,k-1}</span> is exact the same form as <span class="math inline">\text{phase}_{1,k-1}</span>, with the index shifted by 2 and <span class="math inline">\tilde{\mathbf{r}}_{2} = \mathbf{w}^{(1)}+\mathbf{w}^{(2)}+\mathbf{r}'</span>. Do this multiple times, we can then get the general form of <span class="math inline">\text{phase}_{1,k-1}</span>. Define the effective initial vector at step <span class="math inline">2m</span> as: <span class="math display">
+\tilde{\mathbf{r}}_{2m} := \mathbf{r}' + \sum_{l=1}^{2m} \mathbf{w}^{(l)}, \quad \text{with } \tilde{\mathbf{r}}_0 = \mathbf{r}'.
+</span> Each round of the recursion (summing over <span class="math inline">\mathbf{p}^{(2j-1)}, \mathbf{p}^{(2j)}</span> for <span class="math inline">j = 1, 2, \ldots</span>) produces:</p>
+<ol type="1">
+<li>A prefactor of <span class="math inline">4</span> from the delta function <span class="math inline">\sum_{\mathbf{p}^{(2j-1)}} (-1)^{[\mathbf{p}^{(2j-1)}, \cdot]} = 4\delta_{\cdot, \mathbf{0}}</span></li>
+<li>A phase contribution: <span class="math inline">[\tilde{\mathbf{r}}_{2j-2} + \mathbf{w}^{(2j-1)}, \mathbf{w}^{(2j-1)} + \mathbf{w}^{(2j)}]</span></li>
+<li>An update of the effective initial vector: <span class="math inline">\tilde{\mathbf{r}}_{2j-2} \to \tilde{\mathbf{r}}_{2j}</span></li>
+</ol>
+<p><strong>Case 1: <span class="math inline">k = 2s+1</span> (odd).</strong> There are <span class="math inline">(k-1) = 2s</span> variables <span class="math inline">\mathbf{p}^{(1)}, \ldots, \mathbf{p}^{(2s)}</span>, which can be eliminated in <span class="math inline">s</span> complete rounds. After summing over all <span class="math inline">\mathbf{p}^{(l)}</span>: <span class="math display">
+\sum_{\mathbf{p}^{(l&gt;0)}} (-1)^{\text{phase}_{1,k-1}} = 4^s \cdot (-1)^{\sum_{j=1}^{s} [\tilde{\mathbf{r}}_{2j-2} + \mathbf{w}^{(2j-1)}, \mathbf{w}^{(2j-1)} + \mathbf{w}^{(2j)}]} = 2^{k-1} \cdot (-1)^{\text{phase}_{\mathbf{w}}},
+</span> where <span class="math inline">\text{phase}_{\mathbf{w}} := \sum_{j=1}^{s} [\tilde{\mathbf{r}}_{2j-2} + \mathbf{w}^{(2j-1)}, \mathbf{w}^{(2j-1)} + \mathbf{w}^{(2j)}]</span> depends only on <span class="math inline">\{\mathbf{w}^{(l)}\}</span> and <span class="math inline">\mathbf{r}'</span>. In the case <span class="math inline">\mathbf{w}' = \mathbf{0}</span>, we have <span class="math inline">\text{phase}_{\mathbf{w}} = 0</span>.</p>
+<p><strong>Case 2: <span class="math inline">k = 2s+2</span> (even).</strong> There are <span class="math inline">(k-1) = 2s+1</span> variables. After <span class="math inline">s</span> complete rounds, the first <span class="math inline">2s</span> variable cancled and gives phase <span class="math inline">(-1)^{\mathrm{phase}_{\mathrm{w}}}</span> with again the same form as <span class="math inline">\mathrm{phase}_{\mathrm{w}} = \sum_{j=1}^{s} [\tilde{\mathbf{r}}_{2j-2} + \mathbf{w}^{(2j-1)}, \mathbf{w}^{(2j-1)} + \mathbf{w}^{(2j)}]</span>. While one variable <span class="math inline">\mathbf{p}^{(2s+1)}</span> remains. The final sum becomes: <span class="math display">
+\begin{align*}
+4^{s}(-1)^{\mathrm{phase}_{\mathrm{w}}}\sum_{\mathbf{p}^{(2s+1)}} (-1)^{[\mathbf{p}^{(2s+1)}, \tilde{\mathbf{r}}_{2s} + \mathbf{w}^{(2s+1)}]} &amp;= 2^{2s+2}(-1)^{\mathrm{phase}_{\mathrm{w}}}\delta_{\tilde{\mathbf{r}}_{2s} + \mathbf{w}^{(2s+1)}, \mathbf{0}} \\
+&amp;= 2^k (-1)^{\mathrm{phase}_{\mathrm{w}}}\delta_{\mathbf{r}', \sum_{l=1}^{k-1}\mathbf{w}^{(l)}}.
+\end{align*}
+</span> This imposes the constraint <span class="math inline">\mathbf{r}' = \sum_{l=1}^{k-1}\mathbf{w}^{(l)}</span>. Based these calculations, we can then get the final result of the first and second term: <span class="math display">
+\begin{align*}
+&amp;v(O^{(k)}_{\mathbf{r}}, O^{(k)}_{\mathbf{r}'}) \text{'s 1-st and 2-nd terms in case~} \mathbf{r},\mathbf{r}' \neq \mathbf{0} \\
+&amp;=  \sum_{\mathbf{w}^{(l&gt;0)} \in \mathbb{F}_2^{2n}}\left\{
+\begin{aligned}
+&amp;2^{k-1}4^{-k+1}\frac{2^k + 1}{2^k + 2} \left[2^k \delta_{\mathbf{r}, \mathbf{r}'} \prod_{m = 1}^{k-1} \delta_{\mathbf{w}^{(m)}, \mathbf{0}} + 1 \right] \cdot (-1)^{\text{phase}_{\mathbf{w}}} &amp;\text{~if~} k \text{~is odd},\\
+&amp;2^{k}4^{-k+1}\frac{2^k + 1}{2^k + 2} \left[2^k \delta_{\mathbf{r}, \mathbf{r}'} \prod_{m = 1}^{k-1} \delta_{\mathbf{w}^{(m)}, \mathbf{0}} + 1 \right]  \cdot (-1)^{\text{phase}_{\mathbf{w}}}\delta_{\mathbf{r}', \sum_{l=1}^{k-1}\mathbf{w}^{(l)}} &amp;\text{~if~} k \text{~is even}.
+\end{aligned}
+\right. \\
+&amp;\cdot (\sigma_{\mathbf{r}}\sigma_{\mathbf{r}'}\sigma_{\mathbf{w}^{(1)}})\otimes \left(\sigma_{\mathbf{w}^{(1)}}\sigma_{\mathbf{w}^{(2)}} \right)\otimes \cdots \otimes \left(\sigma_{\mathbf{w}^{(k-2)}} \sigma_{\mathbf{w}^{(k-1)}}\right)\otimes \sigma_{\mathbf{w}^{(k-1)}}\\
+&amp;= 2^{-k+1}\frac{2^k + 1}{2^k + 2}\sum_{\mathbf{w}^{(l&gt;0)} \in \mathbb{F}_2^{2n}}\left\{
+\begin{aligned}
+&amp; \left[2^k \delta_{\mathbf{r}, \mathbf{r}'} \prod_{m = 1}^{k-1} \delta_{\mathbf{w}^{(m)}, \mathbf{0}} + (-1)^{\text{phase}_{\mathbf{w}}} \right] &amp;\text{~if~} k \text{~is odd},\\
+&amp;2 \cdot (-1)^{\text{phase}_{\mathbf{w}}}\delta_{\mathbf{r}', \sum_{l=1}^{k-1}\mathbf{w}^{(l)}} &amp;\text{~if~} k \text{~is even}.
+\end{aligned}
+\right. \\
+&amp;\cdot (\sigma_{\mathbf{r}}\sigma_{\mathbf{r}'}\sigma_{\mathbf{w}^{(1)}})\otimes \left(\sigma_{\mathbf{w}^{(1)}}\sigma_{\mathbf{w}^{(2)}} \right)\otimes \cdots \otimes \left(\sigma_{\mathbf{w}^{(k-2)}} \sigma_{\mathbf{w}^{(k-1)}}\right)\otimes \sigma_{\mathbf{w}^{(k-1)}}\\
+\end{align*}
+</span> In the case <span class="math inline">\mathbf{r},\mathbf{r}' \neq \mathbf{0}</span>, we have <span class="math inline">\mathbf{u}_{\mathbf{r}},\mathbf{u}_{\mathbf{r}'} \neq \mathbf{0}</span>. Plug in the definition of <span class="math inline">\text{phase}_{\mathbf{w}}</span>, we get:</p>
+<p><strong>Third term: <span class="math inline">(-1)^{[\mathbf{u}_{\mathbf{r}},\mathbf{u}_{\mathbf{r}'}]}</span></strong></p>
 <p><strong>Combining all terms for <span class="math inline">\mathbf{r}_j \neq 0</span>.</strong></p>
 <p>For the variance operator, we need to consider pairs <span class="math inline">(O^{(k)}_\mathbf{r}, O^{(k)}_\mathbf{r})</span>, which involves the squared space with <span class="math inline">2k</span> copies. The variance operator factorizes as: <span class="math display">
 \mathbf{V}(O^{(k)}_\mathbf{r}, O^{(k)}_\mathbf{r}) = \bigotimes_{j=1}^n v_k(\mathbf{r}_j, \mathbf{r}_j).
@@ -864,6 +875,8 @@ Lemma&nbsp;7: (Shadow vs Bell Sampling Comparison)
 <p>To estimate <span class="math inline">L_{\gamma}(\rho):= \sum_{P \in \mathcal{P}_n }\gamma^{\mathrm{wt}(P)}\text{tr}(P \rho P \rho)</span> for <span class="math inline">\gamma&gt;1</span> or <span class="math inline">\gamma &lt; -0.5</span>, there exist density matrix <span class="math inline">\rho</span>, such as <span class="math inline">\rho = \psi^{\otimes n}, \ket{\psi} = \sqrt{2^{-1}}(i\ket{01}-i\ket{10})</span>, such that the local 2-copy 2-design shadow strategy is better than the Bell sampling method.</p>
 </div>
 </div>
+<hr>
+<p><a href="../../../theory/Topics/Shadow_tomography/intro.html">← Previous: Basics of Shadow Tomography</a> | <a href="../../../theory/Topics/Shadow_tomography/index.html">Back to Index</a> | <a href="../../../theory/Topics/Shadow_tomography/multicopy.html">Next: Local k-copy Pauli Shadow Tomography with Entanglement-fixed channel →</a></p>
 
 
 <script type="ojs-module-contents">
