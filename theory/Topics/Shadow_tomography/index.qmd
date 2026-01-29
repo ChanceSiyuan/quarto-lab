@@ -1,0 +1,111 @@
+---
+categories:
+- Quantum Learning
+- Shadow Tomography
+date: 2026-01-29
+description: A comprehensive collection of notes on classical shadow tomography, covering single-copy and multi-copy protocols, variance analysis, and sample complexity lower bounds
+subtitle: "From Single-Copy to Multi-Copy Strategies"
+abstract: |
+  This lecture note presents a systematic study of classical shadow tomography, mainly focusing on the multi-copy strategies. We begin with the foundational framework of single-copy shadow tomography, including the inverse channel formalism and variance analysis for global and local measurement strategies. Key topics include: (1) unitary ensemble design and the shadow channel inverse; (2) variance bounds for Clifford and local Clifford shadows; (3) multi-copy strategies using k-local 3-design measurements; (4) Bell sampling and non-local multi-copy protocols; and (5) sample complexity lower bounds through reduction to state discrimination. These methods have broad applications in quantum state tomography, property estimation, and quantum machine learning.
+format:
+  html:
+    html-math-method: katex
+    number-sections: true
+    toc: true
+    toc-depth: 3
+lang: en
+title: Classical Shadow Tomography
+bibliography: refs.bib
+---
+
+# Introduction
+
+Classical shadow tomography provides a powerful framework for efficiently estimating many properties of a quantum state using limited measurements. Unlike full quantum state tomography, which requires exponentially many measurements, shadow tomography exploits randomized measurements and classical post-processing to achieve favorable sample complexity for specific classes of observables.
+
+The central insight is that randomized measurements followed by classical reconstruction can yield unbiased estimators for expectation values. The variance of these estimators depends on the choice of measurement ensemble and the structure of the target observables.
+
+## Overview and Motivation
+
+This lecture note is organized into the following sections:
+
+### [1. Basics of Shadow Tomography](intro.qmd)
+Foundation of single-copy shadow tomography, including the general framework, inverse channel formalism, and variance analysis for different unitary ensembles.
+
+**Key concepts:** Shadow channel $\mathcal{M}$, inverse channel $\mathcal{M}^{-1}$, unbiased estimators, global Clifford shadows, local Clifford shadows
+
+### [2. 3-Design Multi-Copy Local Shadow](3desgin_multi_local_shadow.qmd)
+Local k-copy strategies using 3-design unitary ensembles, with detailed variance analysis for multi-replica measurements. Includes applications to non-linear property estimation $\text{tr}(O\rho^k)$ and weighted purity.
+
+**Key concepts:** k-copy shadow variance, covariance operator $\mathbf{V}(O,O')$, OTOC non-linear estimator, shadow vs Bell sampling comparison
+
+### [3. Entanglement-Fixed Shadow](multicopy.qmd)
+Local 2-copy strategies with entanglement-constrained unitaries $\mathcal{U}_\theta^{\otimes n}$, random shifted Bell sampling, and analysis of measurement protocols with fixed entanglement structure.
+
+**Key concepts:** Entanglement-fixed channel $\mathcal{M}_\theta$, shifted Bell sampling, Pauli decoherence channel
+
+### [4. Non-local Multi-Copy Shadow](nonlocal_multicopy.qmd)
+Non-local k-copy strategies for Pauli shadow tomography, exploiting commuting families of observables for simultaneous estimation.
+
+**Key concepts:** Commuting observable families $\{A_P\}$, 4-copy measurement protocols, generalized Bell measurements, SWAP eigenvectors
+
+### [5. Lower Bounds](lowerbound.qmd)
+Sample complexity lower bounds for shadow tomography through reduction to state discrimination problems.
+
+**Key concepts:** Shadow-to-discrimination reduction, hard instance ensembles, information-theoretic lower bounds
+
+## Central Problems
+
+Shadow tomography addresses several fundamental estimation problems:
+
+::: {.callout-note icon="false"}
+## Problem 1: Linear Shadow Tomography
+Given state $\rho$ and operators $\{O_1, \ldots, O_M\}$ with $\|O_i\|_\infty \leq 1$, estimate $\text{tr}(O_i \rho)$ for all $i$ within additive error $\varepsilon$ and success probability $1 - \delta$.
+:::
+
+::: {.callout-note icon="false"}
+## Problem 2: Non-linear Shadow Tomography  
+Given state $\rho$ and operators $\{O_1, \ldots, O_M\}$, estimate non-linear properties $\text{tr}(O_i \rho^k)$ for all $i$ within additive error $\varepsilon$.
+:::
+
+::: {.callout-note icon="false"}
+## Problem 3: Pauli Shadow Tomography
+Estimate $|\text{tr}(P\rho)|^2$ for all $n$-qubit Pauli operators $P \in \mathcal{P}_n$ using minimal quantum resources.
+:::
+
+## Notation and Conventions
+
+Throughout this note, we use the following notation:
+
+| Symbol | Meaning |
+|--------|---------|
+| $d = 2^n$ | Hilbert space dimension for $n$ qubits |
+| $\mathcal{P}_n$ | $n$-qubit Pauli group $\{I, X, Y, Z\}^{\otimes n}$ |
+| $\text{wt}(P)$ | Pauli weight (number of non-identity factors) |
+| $\mathcal{M}$ | Shadow channel from measurement ensemble |
+| $\mathcal{M}^{-1}$ | Inverse shadow channel (reconstruction map) |
+| $\hat{\rho}$ | Classical shadow estimator |
+| $\text{Cliff}(d)$ | Clifford group on $d$-dimensional space |
+| $\text{Cliff}(2)^{\otimes n}$ | Local Clifford group |
+| $\mathbf{D}_t(d)$ | Unitary $t$-design on dimension $d$ |
+| $\text{SWAP}^{\otimes n}$ | $n$-fold tensor product of SWAP operators |
+| $\ket{\Phi_{\mathbf{r}}}$ | Bell basis states indexed by $\mathbf{r} \in \mathbb{F}_2^{2n}$ |
+| $[\mathbf{a}, \mathbf{b}]$ | Symplectic inner product: $a_x b_z - a_z b_x \mod 2$ |
+
+For quantum states, we use $\rho, \sigma$ for density matrices and $\ket{\psi}$ for pure states. The trace norm is $\|A\|_1 = \text{tr}\sqrt{A^\dagger A}$ and the operator norm is $\|A\|_\infty = \max_{\|v\|=1}\|Av\|$.
+
+## Key Results Summary
+
+| Strategy | Observable Class | Sample Complexity |
+|----------|-----------------|-------------------|
+| Global Clifford | Low-rank $O$ | $\mathcal{O}(\text{tr}(O^2)/\varepsilon^2)$ |
+| Local Clifford | $k$-local $O$ | $\mathcal{O}(4^k/\varepsilon^2)$ |
+| Bell Sampling | $P \otimes P$ form | $\mathcal{O}(1/\varepsilon^2)$ |
+| k-copy Local 3-design | $\text{tr}(O\rho^k)$ | $(c_k^{(0)})^n$ scaling |
+| Entanglement-fixed | Restricted observables | Depends on $\theta$ |
+| Non-local Multi-copy | $|\text{tr}(P\rho^k)|$ | $\mathcal{O}(\text{poly}(n))$ |
+
+## Getting Started
+
+Begin with [Basics of Shadow Tomography](intro.qmd) for the foundational framework. For multi-copy strategies, start with [3-Design Multi-Copy Local Shadow](3desgin_multi_local_shadow.qmd) which provides the general variance analysis framework, then explore specialized protocols in [Entanglement-Fixed Shadow](multicopy.qmd) and [Non-local Multi-Copy Shadow](nonlocal_multicopy.qmd).
+
+For readers interested in fundamental limits and sample complexity, see [Lower Bounds](lowerbound.qmd) after understanding the basic protocols. Each section is designed to be relatively self-contained while building on the core concepts established in earlier sections.

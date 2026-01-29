@@ -6,9 +6,10 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="dcterms.date" content="2026-01-13">
+<meta name="dcterms.date" content="2026-01-29">
+<meta name="description" content="A comprehensive collection of notes on classical shadow tomography, covering single-copy and multi-copy protocols, variance analysis, and sample complexity lower bounds">
 
-<title>Magic based on Pauli spectrum – Chance’s Quantum Lab</title>
+<title>Classical Shadow Tomography – Chance’s Quantum Lab</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -119,7 +120,7 @@ window.Quarto = {
 <link rel="stylesheet" href="../../../styles.css">
 </head>
 
-<body class="nav-fixed quarto-light">
+<body class="nav-sidebar floating nav-fixed quarto-light">
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
@@ -170,18 +171,117 @@ window.Quarto = {
 </div>
       </div> <!-- /container-fluid -->
     </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../../theory/Topics/Shadow_tomography/index.html">Classical Shadow Tomography</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+    </div>
+  </nav>
 </header>
 <!-- content -->
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../theory/Topics/Shadow_tomography/index.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Classical Shadow Tomography</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Foundations</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../theory/Topics/Shadow_tomography/intro.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Basics of Shadow Tomography</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Multi-Copy Strategies</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../theory/Topics/Shadow_tomography/3desgin_multi_local_shadow.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">3-design Multi-copy Local Shadow</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../theory/Topics/Shadow_tomography/multicopy.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">3-design Multi-copy Local Shadow</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../theory/Topics/Shadow_tomography/nonlocal_multicopy.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Non-local k-copy Pauli Shadow Tomography</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Lower Bounds</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../../theory/Topics/Shadow_tomography/lowerbound.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Lower bounds for Pauli Shadow Tomography</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
         <nav id="TOC" role="doc-toc" class="toc-active">
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#abstract" id="toc-abstract" class="nav-link active" data-scroll-target="#abstract">Abstract</a></li>
-  <li><a href="#sre-and-ose" id="toc-sre-and-ose" class="nav-link" data-scroll-target="#sre-and-ose">SRE and OSE</a></li>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction"><span class="header-section-number">1</span> Introduction</a>
+  <ul class="collapse">
+  <li><a href="#overview-and-motivation" id="toc-overview-and-motivation" class="nav-link" data-scroll-target="#overview-and-motivation"><span class="header-section-number">1.1</span> Overview and Motivation</a>
+  <ul class="collapse">
+  <li><a href="#basics-of-shadow-tomography" id="toc-basics-of-shadow-tomography" class="nav-link" data-scroll-target="#basics-of-shadow-tomography"><span class="header-section-number">1.1.1</span> 1. Basics of Shadow Tomography</a></li>
+  <li><a href="#design-multi-copy-local-shadow" id="toc-design-multi-copy-local-shadow" class="nav-link" data-scroll-target="#design-multi-copy-local-shadow"><span class="header-section-number">1.1.2</span> 2. 3-Design Multi-Copy Local Shadow</a></li>
+  <li><a href="#entanglement-fixed-shadow" id="toc-entanglement-fixed-shadow" class="nav-link" data-scroll-target="#entanglement-fixed-shadow"><span class="header-section-number">1.1.3</span> 3. Entanglement-Fixed Shadow</a></li>
+  <li><a href="#non-local-multi-copy-shadow" id="toc-non-local-multi-copy-shadow" class="nav-link" data-scroll-target="#non-local-multi-copy-shadow"><span class="header-section-number">1.1.4</span> 4. Non-local Multi-Copy Shadow</a></li>
+  <li><a href="#lower-bounds" id="toc-lower-bounds" class="nav-link" data-scroll-target="#lower-bounds"><span class="header-section-number">1.1.5</span> 5. Lower Bounds</a></li>
+  </ul></li>
+  <li><a href="#central-problems" id="toc-central-problems" class="nav-link" data-scroll-target="#central-problems"><span class="header-section-number">1.2</span> Central Problems</a></li>
+  <li><a href="#notation-and-conventions" id="toc-notation-and-conventions" class="nav-link" data-scroll-target="#notation-and-conventions"><span class="header-section-number">1.3</span> Notation and Conventions</a></li>
+  <li><a href="#key-results-summary" id="toc-key-results-summary" class="nav-link" data-scroll-target="#key-results-summary"><span class="header-section-number">1.4</span> Key Results Summary</a></li>
+  <li><a href="#getting-started" id="toc-getting-started" class="nav-link" data-scroll-target="#getting-started"><span class="header-section-number">1.5</span> Getting Started</a></li>
+  </ul></li>
   </ul>
 </nav>
     </div>
@@ -190,12 +290,19 @@ window.Quarto = {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Magic based on Pauli spectrum</h1>
+<h1 class="title">Classical Shadow Tomography</h1>
+<p class="subtitle lead">From Single-Copy to Multi-Copy Strategies</p>
   <div class="quarto-categories">
-    <div class="quarto-category">Realizations</div>
+    <div class="quarto-category">Quantum Learning</div>
+    <div class="quarto-category">Shadow Tomography</div>
   </div>
   </div>
 
+<div>
+  <div class="description">
+    A comprehensive collection of notes on classical shadow tomography, covering single-copy and multi-copy protocols, variance analysis, and sample complexity lower bounds
+  </div>
+</div>
 
 
 <div class="quarto-title-meta">
@@ -204,64 +311,220 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">January 13, 2026</p>
+      <p class="date">January 29, 2026</p>
     </div>
   </div>
   
     
   </div>
   
+<div>
+  <div class="abstract">
+    <div class="block-title">Abstract</div>
+    <p>This lecture note presents a systematic study of classical shadow tomography for quantum state estimation. We begin with the foundational framework of single-copy shadow tomography, including the inverse channel formalism and variance analysis for global and local measurement strategies. Key topics include: (1) unitary ensemble design and the shadow channel inverse; (2) variance bounds for Clifford and local Clifford shadows; (3) multi-copy strategies using k-local 3-design measurements; (4) Bell sampling and non-local multi-copy protocols; and (5) sample complexity lower bounds through reduction to state discrimination. These methods have broad applications in quantum state tomography, property estimation, and quantum machine learning.</p>
+  </div>
+</div>
 
 
 </header>
 
 
-<p><strong>Links:</strong></p>
-<section id="abstract" class="level2">
-<h2 class="anchored" data-anchor-id="abstract">Abstract</h2>
-<p>This paper defines a measure of magicness for pure states, introduces the Operator Magic (OSE) for an operation <span class="math inline">U</span>, and highlights its properties:</p>
-<ol type="1">
-<li>It is subsystem additive, faithful, and invariant under Clifford operations.</li>
-<li>It reflects the minimum number of T gates in circuit <span class="math inline">U</span> and also constitutes a lower bound on the unitary stabilizer nullity of <span class="math inline">U</span>.</li>
-<li>It analytically calculates how the OSE of a local operator evolves over time under the XXZ Hamiltonian.</li>
-<li>It analytically computes the OSE for Haar random unitaries.</li>
-</ol>
+<section id="introduction" class="level1" data-number="1">
+<h1 data-number="1"><span class="header-section-number">1</span> Introduction</h1>
+<p>Classical shadow tomography provides a powerful framework for efficiently estimating many properties of a quantum state using limited measurements. Unlike full quantum state tomography, which requires exponentially many measurements, shadow tomography exploits randomized measurements and classical post-processing to achieve favorable sample complexity for specific classes of observables.</p>
+<p>The central insight is that randomized measurements followed by classical reconstruction can yield unbiased estimators for expectation values. The variance of these estimators depends on the choice of measurement ensemble and the structure of the target observables.</p>
+<section id="overview-and-motivation" class="level2" data-number="1.1">
+<h2 data-number="1.1" class="anchored" data-anchor-id="overview-and-motivation"><span class="header-section-number">1.1</span> Overview and Motivation</h2>
+<p>This lecture note is organized into the following sections:</p>
+<section id="basics-of-shadow-tomography" class="level3" data-number="1.1.1">
+<h3 data-number="1.1.1" class="anchored" data-anchor-id="basics-of-shadow-tomography"><span class="header-section-number">1.1.1</span> <a href="../../../theory/Topics/Shadow_tomography/intro.html">1. Basics of Shadow Tomography</a></h3>
+<p>Foundation of single-copy shadow tomography, including the general framework, inverse channel formalism, and variance analysis for different unitary ensembles.</p>
+<p><strong>Key concepts:</strong> Shadow channel <span class="math inline">\mathcal{M}</span>, inverse channel <span class="math inline">\mathcal{M}^{-1}</span>, unbiased estimators, global Clifford shadows, local Clifford shadows</p>
 </section>
-<section id="sre-and-ose" class="level2">
-<h2 class="anchored" data-anchor-id="sre-and-ose">SRE and OSE</h2>
-<p>Since <span class="math inline">\sum_{P}\text{tr}^2(O P) = 2^n\text{tr}(O^2)</span>, then <span class="math inline">p_{\psi}(P) = [2^n\text{tr}(O^2)]^{-1} \text{tr}^2(O P)</span> is a probability distribution.</p>
-<p>Specifically,</p>
-<ul>
-<li>For a pure state <span class="math inline">\psi</span>, the function <span class="math inline">p_{\psi}(x) = \frac{1}{2^n} \text{tr}^2(\psi P_x)</span> is a probability distribution, and stabilizer states uniformly support on <span class="math inline">|S| = 2^n</span> stabilizers <span class="math inline">S</span>.</li>
-<li>For an operator <span class="math inline">O</span> with <span class="math inline">\mathrm{tr}(OO^\dagger) = d</span>, the function <span class="math inline">p_{O}(x) = \frac{1}{4^n} \text{tr}^2(O P_x)</span> is a probability distribution, and Pauli operators are distributed over only one element.</li>
-</ul>
-<p>Thus, the collision probability of this distribution clearly describes the stabilizer properties of pure states. We can also compute higher-order collisions to obtain Rényi-<span class="math inline">k</span> stabilizer entropy.</p>
+<section id="design-multi-copy-local-shadow" class="level3" data-number="1.1.2">
+<h3 data-number="1.1.2" class="anchored" data-anchor-id="design-multi-copy-local-shadow"><span class="header-section-number">1.1.2</span> <a href="../../../theory/Topics/Shadow_tomography/3desgin_multi_local_shadow.html">2. 3-Design Multi-Copy Local Shadow</a></h3>
+<p>Local k-copy strategies using 3-design unitary ensembles, with detailed variance analysis for multi-replica measurements. Includes applications to non-linear property estimation <span class="math inline">\text{tr}(O\rho^k)</span> and weighted purity.</p>
+<p><strong>Key concepts:</strong> k-copy shadow variance, covariance operator <span class="math inline">\mathbf{V}(O,O')</span>, OTOC non-linear estimator, shadow vs Bell sampling comparison</p>
+</section>
+<section id="entanglement-fixed-shadow" class="level3" data-number="1.1.3">
+<h3 data-number="1.1.3" class="anchored" data-anchor-id="entanglement-fixed-shadow"><span class="header-section-number">1.1.3</span> <a href="../../../theory/Topics/Shadow_tomography/multicopy.html">3. Entanglement-Fixed Shadow</a></h3>
+<p>Local 2-copy strategies with entanglement-constrained unitaries <span class="math inline">\mathcal{U}_\theta^{\otimes n}</span>, random shifted Bell sampling, and analysis of measurement protocols with fixed entanglement structure.</p>
+<p><strong>Key concepts:</strong> Entanglement-fixed channel <span class="math inline">\mathcal{M}_\theta</span>, shifted Bell sampling, Pauli decoherence channel</p>
+</section>
+<section id="non-local-multi-copy-shadow" class="level3" data-number="1.1.4">
+<h3 data-number="1.1.4" class="anchored" data-anchor-id="non-local-multi-copy-shadow"><span class="header-section-number">1.1.4</span> <a href="../../../theory/Topics/Shadow_tomography/nonlocal_multicopy.html">4. Non-local Multi-Copy Shadow</a></h3>
+<p>Non-local k-copy strategies for Pauli shadow tomography, exploiting commuting families of observables for simultaneous estimation.</p>
+<p><strong>Key concepts:</strong> Commuting observable families <span class="math inline">\{A_P\}</span>, 4-copy measurement protocols, generalized Bell measurements, SWAP eigenvectors</p>
+</section>
+<section id="lower-bounds" class="level3" data-number="1.1.5">
+<h3 data-number="1.1.5" class="anchored" data-anchor-id="lower-bounds"><span class="header-section-number">1.1.5</span> <a href="../../../theory/Topics/Shadow_tomography/lowerbound.html">5. Lower Bounds</a></h3>
+<p>Sample complexity lower bounds for shadow tomography through reduction to state discrimination problems.</p>
+<p><strong>Key concepts:</strong> Shadow-to-discrimination reduction, hard instance ensembles, information-theoretic lower bounds</p>
+</section>
+</section>
+<section id="central-problems" class="level2" data-number="1.2">
+<h2 data-number="1.2" class="anchored" data-anchor-id="central-problems"><span class="header-section-number">1.2</span> Central Problems</h2>
+<p>Shadow tomography addresses several fundamental estimation problems:</p>
 <div class="callout callout-style-default callout-note no-icon callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Note</span>Definition: Stabilizer Renyi Entropy
+<span class="screen-reader-only">Note</span>Problem 1: Linear Shadow Tomography
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>The <span class="math inline">k</span>-stabilizer-Rényi Entropy for a pure state <span class="math inline">\psi</span> is defined as: <span class="math display">\begin{align*}
-\mathrm{SRE}_k(\psi) &amp;= \frac{1}{1 - k} \left[\ln \left(\sum_x p_{\psi}^k(x)\right) - \ln \left(\frac{1}{2^{kn}} \cdot 2^n\right)\right]= \frac{1}{1 - k} \mathrm{tr}(O^{\otimes k} T^{A}_{(12)(34)} \otimes T^{\bar{A}}_{(14)(23)})
-\end{align*}</span> For an operator <span class="math inline">O</span>, the linearized entanglement is given by: <span class="math display">
-E_{\mathrm{lin}}(O) = \mathrm{tr}(O^{\otimes 4} \cdot T^{A}_{(12)(34)} \otimes T^{\bar{A}}_{(14)(23)})
-</span></p>
+<p>Given state <span class="math inline">\rho</span> and operators <span class="math inline">\{O_1, \ldots, O_M\}</span> with <span class="math inline">\|O_i\|_\infty \leq 1</span>, estimate <span class="math inline">\text{tr}(O_i \rho)</span> for all <span class="math inline">i</span> within additive error <span class="math inline">\varepsilon</span> and success probability <span class="math inline">1 - \delta</span>.</p>
 </div>
 </div>
-<p>We compute the above average for TE-matching operators, considering <span class="math inline">O</span> under Clifford operations. For simplicity, we consider <span class="math inline">O = \ket{0}\!\bra{0}^{\otimes r} \otimes Z^{n - r}</span>. Using the result of the Clifford 4-fold average, we calculate: <span class="math display">
-\mathrm{tr}[O^{\otimes 4} \Lambda^{\pm} T_{\pi}] = \pm d^{-2} \sum_{P \in \mathcal{P}_n} \mathrm{tr}[(O \cdot P)^{\otimes 4} T_{\pi}] + \delta_{\pm,-} \mathrm{tr}(O^{\otimes 4} T_{\pi})
-</span> It is worth noting the computation of <span class="math inline">\sum_{P \in \mathcal{P}_n} (O \cdot P)^{\otimes 4}</span> using symplectic notation for Pauli operators: <span class="math display">
-\begin{aligned}
-\sum_{\mathbf{r} \in \mathbb{F}_2^{2n}} \left[(\ket{0}\!\bra{0}^{\otimes s} \otimes Z^{n - s}) \cdot \sigma_{\mathbf r} \right]^{\otimes 4} &amp;= \sum_{\mathbf{r} \in \mathbb{F}_2^{2n}}\delta_{\mathbf{r}^{(s)}_x , \mathbf{0}^{(s)}} \left[\ket{0}\!\bra{0}^{\otimes s} \otimes \sigma_{\mathbf{r}^{(n-s)} + \mathbf{0}^{(n-s)}\mathbf{1}^{(n-s)}}\right]^{\otimes 4}\\
-&amp;=2^{s}\delta_{\mathbf{r}^{(s)}_x , \mathbf{0}^{(s)}}\sum_{\mathbf{r}^{(n-s)} \in \mathbb{F}_2^{2n-2s}} \left[\ket{0}\!\bra{0}^{\otimes s} \otimes \sigma_{\mathbf{r}^{(n-s)} + \mathbf{0}^{(n-s)}\mathbf{1}^{(n-s)}}\right]^{\otimes 4}
-\end{aligned}
-</span></p>
-<p>Dividing the permutation group <span class="math inline">S_4</span> into two categories, one containing only even cycles: <span class="math inline">[22]</span> or <span class="math inline">[4]</span>, which totals to <span class="math inline">C_{4}^2/2 + 2C_3^2 = 9</span>. The other category contains odd cycles: <span class="math inline">[1111],[211],[31]</span>, totaling <span class="math inline">1 + C_4^2 + 2\times C_4^3 = 15</span>.</p>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Problem 2: Non-linear Shadow Tomography
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Given state <span class="math inline">\rho</span> and operators <span class="math inline">\{O_1, \ldots, O_M\}</span>, estimate non-linear properties <span class="math inline">\text{tr}(O_i \rho^k)</span> for all <span class="math inline">i</span> within additive error <span class="math inline">\varepsilon</span>.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Problem 3: Pauli Shadow Tomography
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Estimate <span class="math inline">|\text{tr}(P\rho)|^2</span> for all <span class="math inline">n</span>-qubit Pauli operators <span class="math inline">P \in \mathcal{P}_n</span> using minimal quantum resources.</p>
+</div>
+</div>
+</section>
+<section id="notation-and-conventions" class="level2" data-number="1.3">
+<h2 data-number="1.3" class="anchored" data-anchor-id="notation-and-conventions"><span class="header-section-number">1.3</span> Notation and Conventions</h2>
+<p>Throughout this note, we use the following notation:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 47%">
+<col style="width: 52%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Symbol</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">d = 2^n</span></td>
+<td>Hilbert space dimension for <span class="math inline">n</span> qubits</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\mathcal{P}_n</span></td>
+<td><span class="math inline">n</span>-qubit Pauli group <span class="math inline">\{I, X, Y, Z\}^{\otimes n}</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\text{wt}(P)</span></td>
+<td>Pauli weight (number of non-identity factors)</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\mathcal{M}</span></td>
+<td>Shadow channel from measurement ensemble</td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\mathcal{M}^{-1}</span></td>
+<td>Inverse shadow channel (reconstruction map)</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\hat{\rho}</span></td>
+<td>Classical shadow estimator</td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\text{Cliff}(d)</span></td>
+<td>Clifford group on <span class="math inline">d</span>-dimensional space</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\text{Cliff}(2)^{\otimes n}</span></td>
+<td>Local Clifford group</td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\mathbf{D}_t(d)</span></td>
+<td>Unitary <span class="math inline">t</span>-design on dimension <span class="math inline">d</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\text{SWAP}^{\otimes n}</span></td>
+<td><span class="math inline">n</span>-fold tensor product of SWAP operators</td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\ket{\Phi_{\mathbf{r}}}</span></td>
+<td>Bell basis states indexed by <span class="math inline">\mathbf{r} \in \mathbb{F}_2^{2n}</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">[\mathbf{a}, \mathbf{b}]</span></td>
+<td>Symplectic inner product: <span class="math inline">a_x b_z - a_z b_x \mod 2</span></td>
+</tr>
+</tbody>
+</table>
+<p>For quantum states, we use <span class="math inline">\rho, \sigma</span> for density matrices and <span class="math inline">\ket{\psi}</span> for pure states. The trace norm is <span class="math inline">\|A\|_1 = \text{tr}\sqrt{A^\dagger A}</span> and the operator norm is <span class="math inline">\|A\|_\infty = \max_{\|v\|=1}\|Av\|</span>.</p>
+</section>
+<section id="key-results-summary" class="level2" data-number="1.4">
+<h2 data-number="1.4" class="anchored" data-anchor-id="key-results-summary"><span class="header-section-number">1.4</span> Key Results Summary</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 21%">
+<col style="width: 36%">
+<col style="width: 41%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Strategy</th>
+<th>Observable Class</th>
+<th>Sample Complexity</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Global Clifford</td>
+<td>Low-rank <span class="math inline">O</span></td>
+<td><span class="math inline">\mathcal{O}(\text{tr}(O^2)/\varepsilon^2)</span></td>
+</tr>
+<tr class="even">
+<td>Local Clifford</td>
+<td><span class="math inline">k</span>-local <span class="math inline">O</span></td>
+<td><span class="math inline">\mathcal{O}(4^k/\varepsilon^2)</span></td>
+</tr>
+<tr class="odd">
+<td>Bell Sampling</td>
+<td><span class="math inline">P \otimes P</span> form</td>
+<td><span class="math inline">\mathcal{O}(1/\varepsilon^2)</span></td>
+</tr>
+<tr class="even">
+<td>k-copy Local 3-design</td>
+<td><span class="math inline">\text{tr}(O\rho^k)</span></td>
+<td><span class="math inline">(c_k^{(0)})^n</span> scaling</td>
+</tr>
+<tr class="odd">
+<td>Entanglement-fixed</td>
+<td>Restricted observables</td>
+<td>Depends on <span class="math inline">\theta</span></td>
+</tr>
+<tr class="even">
+<td>Non-local Multi-copy</td>
+<td><span class="math inline">|\text{tr}(P\rho^k)|</span></td>
+<td><span class="math inline">\mathcal{O}(\text{poly}(n))</span></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="getting-started" class="level2" data-number="1.5">
+<h2 data-number="1.5" class="anchored" data-anchor-id="getting-started"><span class="header-section-number">1.5</span> Getting Started</h2>
+<p>Begin with <a href="../../../theory/Topics/Shadow_tomography/intro.html">Basics of Shadow Tomography</a> for the foundational framework. For multi-copy strategies, start with <a href="../../../theory/Topics/Shadow_tomography/3desgin_multi_local_shadow.html">3-Design Multi-Copy Local Shadow</a> which provides the general variance analysis framework, then explore specialized protocols in <a href="../../../theory/Topics/Shadow_tomography/multicopy.html">Entanglement-Fixed Shadow</a> and <a href="../../../theory/Topics/Shadow_tomography/nonlocal_multicopy.html">Non-local Multi-Copy Shadow</a>.</p>
+<p>For readers interested in fundamental limits and sample complexity, see <a href="../../../theory/Topics/Shadow_tomography/lowerbound.html">Lower Bounds</a> after understanding the basic protocols. Each section is designed to be relatively self-contained while building on the core concepts established in earlier sections.</p>
 
 
 <script type="ojs-module-contents">
@@ -278,6 +541,7 @@ eyJjb250ZW50cyI6W119
 <script type="vfs-file">
 W10=
 </script>
+</section>
 </section>
 
 </main> <!-- /main -->

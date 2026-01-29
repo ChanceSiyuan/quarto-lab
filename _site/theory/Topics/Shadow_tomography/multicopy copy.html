@@ -809,11 +809,27 @@ v(\mathbf{r}_j, \mathbf{r}_j) = \begin{cases} \frac{5}{3}\sigma_{\mathbf{r}_j}^{
 &amp;= 4^{-k+1}\sum_{\mathbf{p}^{(l&gt;0)},\mathbf{p}^{',(l&gt;0)} \in \mathbb{F}_2^{2n}}r(\mathbf{u}_{\mathbf{r}},\mathbf{u}_{\mathbf{r}'}) (-1)^{[\mathbf{p}^{(1)}, \mathbf{r}^{'}]+[\mathbf{p}^{(2)}, \mathbf{p}^{'(1)}] + \cdots + [\mathbf{p}^{(k-1)}, \mathbf{p}^{'(k-2)}]} \cdot \\
 &amp; \quad (\sigma_{\mathbf{r}}\sigma_{\mathbf{r}'}\sigma_{\mathbf{p}^{(1)}}\sigma_{\mathbf{p}^{',(1)}})\otimes \left(\sigma_{\mathbf{p}^{(1)}} \sigma_{\mathbf{p}^{',(1)}}\sigma_{\mathbf{p}^{(2)}} \sigma_{\mathbf{p}^{',(2)}}\right)\otimes \cdots \otimes \left(\sigma_{\mathbf{p}^{(k-2)}} \sigma_{\mathbf{p}^{',(k-2)}} \sigma_{\mathbf{p}^{(k-1)}}\sigma_{\mathbf{p}^{',(k-1)}}\right)\otimes \sigma_{\mathbf{p}^{(k-1)}}\sigma_{\mathbf{p}^{',(k-1)}}\\
 &amp; \quad = 4^{-k+1}\sum_{\mathbf{p}^{(l&gt;0)},\mathbf{p}^{',(l&gt;0)} \in \mathbb{F}_2^{2n}}r(\mathbf{u}_{\mathbf{r}},\mathbf{u}_{\mathbf{r}'}) (-1)^{[\mathbf{p}^{(1)}, \mathbf{r}^{'}]+[\mathbf{p}^{(2)}, \mathbf{p}^{'(1)}] + \cdots + [\mathbf{p}^{(k-1)}, \mathbf{p}^{'(k-2)}]+[\mathbf{p}^{(1)}, \mathbf{p}^{',(1)}] + [\mathbf{p}^{(2)}, \mathbf{p}^{',(2)}] + \cdots + [\mathbf{p}^{(k-1)}, \mathbf{p}^{',(k-1)}]} \cdot \\
-&amp;\quad (\sigma_{\mathbf{r}}\sigma_{\mathbf{r}'}\sigma_{\mathbf{p}^{(1)}+\mathbf{p}^{',(1)}})\otimes \left(\sigma_{\mathbf{p}^{(1)}+\mathbf{p}^{',(1)}}\sigma_{\mathbf{p}^{(2)}+\mathbf{p}^{',(2)}} \right)\otimes \cdots \otimes \left(\sigma_{\mathbf{p}^{(k-2)}+\mathbf{p}^{',(k-2)}} \sigma_{\mathbf{p}^{(k-1)}+\mathbf{p}^{',(k-1)}}\right)\otimes \sigma_{\mathbf{p}^{(k-1)}+\mathbf{p}^{',(k-1)}}.
+&amp;\quad (\sigma_{\mathbf{r}}\sigma_{\mathbf{r}'}\sigma_{\mathbf{p}^{(1)}+\mathbf{p}^{',(1)}})\otimes \left(\sigma_{\mathbf{p}^{(1)}+\mathbf{p}^{',(1)}}\sigma_{\mathbf{p}^{(2)}+\mathbf{p}^{',(2)}} \right)\otimes \cdots \otimes \left(\sigma_{\mathbf{p}^{(k-2)}+\mathbf{p}^{',(k-2)}} \sigma_{\mathbf{p}^{(k-1)}+\mathbf{p}^{',(k-1)}}\right)\otimes \sigma_{\mathbf{p}^{(k-1)}+\mathbf{p}^{',(k-1)}}\\
+&amp; \quad = 4^{-k+1}\sum_{\mathbf{p}^{(l&gt;0)},\mathbf{w}^{(l&gt;0)} \in \mathbb{F}_2^{2n}}r(\mathbf{u}_{\mathbf{r}},\mathbf{u}_{\mathbf{r}'}) (-1)^{[\mathbf{p}^{(1)}, \mathbf{r}^{'}]+[\mathbf{p}^{(2)}, \mathbf{w}^{(1)}+\mathbf{p}^{(1)}] + \cdots + [\mathbf{p}^{(k-1)}, \mathbf{w}^{(k-2)}+\mathbf{p}^{(k-2)}]+[\mathbf{p}^{(1)}, \mathbf{w}^{(1)}] + [\mathbf{p}^{(2)}, \mathbf{w}^{(2)}] + \cdots + [\mathbf{p}^{(k-1)}, \mathbf{w}^{(k-1)}]} \cdot \\
+&amp;\quad (\sigma_{\mathbf{r}}\sigma_{\mathbf{r}'}\sigma_{\mathbf{w}^{(1)}})\otimes \left(\sigma_{\mathbf{w}^{(1)}}\sigma_{\mathbf{w}^{(2)}} \right)\otimes \cdots \otimes \left(\sigma_{\mathbf{w}^{(k-2)}} \sigma_{\mathbf{w}^{(k-1)}}\right)\otimes \sigma_{\mathbf{w}^{(k-1)}},
 \end{align*}
-</span> Here we denote <span class="math inline">\mathbf{u}_{\mathbf{r}} = (\mathbf{r} + \mathbf{p}^{(1)},\mathbf{p}^{(1)}+\mathbf{p}^{(2)}, \cdots, \mathbf{p}^{(k-2)}+\mathbf{p}^{(k-1)},\mathbf{p}^{(k-1)})</span> and <span class="math inline">\mathbf{u}_{\mathbf{r}'} = (\mathbf{r}' + \mathbf{p}^{',(1)},\mathbf{p}^{',(1)}+\mathbf{p}^{',(2)}, \cdots, \mathbf{p}^{',(k-2)}+\mathbf{p}^{',(k-1)},\mathbf{p}^{',(k-1)})</span>. <span class="math display">
+</span> Here in the last inequality, we define <span class="math inline">\mathbf{w}^{(m)} = \mathbf{p}^{(m)} + \mathbf{p}^{',(m)}</span> for <span class="math inline">m = 1,\cdots,k-1</span>. The phase terms can then be refactor as: <span class="math display">
 \begin{align*}
-    \text{The 1st term} &amp;= \sum_{\mathbf{u}} 2^{2-k}(2^k + 1)(2^k +2)^{-1} i^{m(\mathbf{u},\mathbf{u})} \mathbb{I}_k = 2^{2-k}(2^k + 1)(2^k +2)^{-1} \left(\sum_{\mathbf{p}^{(l&gt;0)}} (-1)^{\sum_{l =1}^{k-1}\left[\mathbf{p}^{(l)},\mathbf{p}^{(l-1)}\right]} \right) \mathbb{I}_k  \notag \\
+    \text{phase} &amp;= [\mathbf{p}^{(1)}, \mathbf{r}^{'}]+[\mathbf{p}^{(2)}, \mathbf{w}^{(1)}+\mathbf{p}^{(1)}] + \cdots + [\mathbf{p}^{(k-1)}, \mathbf{w}^{(k-2)}+\mathbf{p}^{(k-2)}]+[\mathbf{p}^{(1)}, \mathbf{w}^{(1)}] + [\mathbf{p}^{(2)}, \mathbf{w}^{(2)}] + \cdots + [\mathbf{p}^{(k-1)}, \mathbf{w}^{(k-1)}]\\
+    &amp;= [\mathbf{p}^{(1)}, \mathbf{r}^{'}]+[\mathbf{p}^{(2)}, \mathbf{w}^{(1)}] + \cdots + [\mathbf{p}^{(k-1)}, \mathbf{w}^{(k-2)}] + [\mathbf{p}^{(1)}, \mathbf{w}^{(1)}] + [\mathbf{p}^{(2)}, \mathbf{w}^{(2)}] + \cdots + [\mathbf{p}^{(k-1)}, \mathbf{w}^{(k-1)}]
+\end{align*}
+</span> Since <span class="math inline">\mathbf{u}_{\mathbf{r}} = (\mathbf{r} + \mathbf{p}^{(1)},\mathbf{p}^{(1)}+\mathbf{p}^{(2)}, \cdots, \mathbf{p}^{(k-2)}+\mathbf{p}^{(k-1)},\mathbf{p}^{(k-1)})</span> and <span class="math inline">\mathbf{u}_{\mathbf{r}'} = (\mathbf{r}' + \mathbf{p}^{',(1)},\mathbf{p}^{',(1)}+\mathbf{p}^{',(2)}, \cdots, \mathbf{p}^{',(k-2)}+\mathbf{p}^{',(k-1)},\mathbf{p}^{',(k-1)})</span>, we have <span class="math inline">\mathbf{u}_{\mathbf{r}} \neq \mathbf{0}</span> for <span class="math inline">\mathbf{r} \neq \mathbf{0}, \forall \mathbf{p}^{(l&gt;0)} \in \mathbb{F}_2^{2n}</span>. Based on the identity: <span class="math display">
+\begin{align}
+r(\mathbf{u}_{\mathbf{r}},\mathbf{u}_{\mathbf{r}'}) =
+\left\{
+    \begin{aligned}
+        &amp; \frac{2^k + 1}{2^k + 2} \left[2^k \delta_{\mathbf{r}, \mathbf{r}'} \prod_{m = 1}^{k-1} \delta_{\mathbf{p}^{(m)}, \mathbf{p}^{',(m)}} + 1 + (-1)^{[\mathbf{u}_{\mathbf{r}},\mathbf{u}_{\mathbf{r}'}]}\right] \text{~if~}\mathbf{r},\mathbf{r}' \neq 0\\
+        &amp;1 \text{~if else}
+    \end{aligned}\right.
+    \end{align}
+</span> We then calculate the <span class="math inline">\mathbf{r},\mathbf{r}' \neq \mathbf{0}</span>, case term by term. <span class="math display">
+\begin{align*}
+    \text{The 1st term} &amp;= \sum_{\mathbf{u}} 2^{2-k}(2^k + 1)(2^k +2)^{-1} \mathbb{I}_k = 2^{2-k}(2^k + 1)(2^k +2)^{-1} \left(\sum_{\mathbf{p}^{(l&gt;0)}} (-1)^{\sum_{l =1}^{k-1}\left[\mathbf{p}^{(l)},\mathbf{p}^{(l-1)}\right]} \right) \mathbb{I}_k  \notag \\
     &amp;= \left\{\begin{aligned}
         &amp;\frac{2(2^k + 1)}{2^k +2} \mathbb{I}_k &amp;\text{~if~} k \text{~is odd},\\
         &amp;0 &amp;\text{~if~} k \text{~is even}.
@@ -847,7 +863,39 @@ v(\mathbf{r}_j, \mathbf{r}_j) = \begin{cases} \frac{5}{3}\sigma_{\mathbf{r}_j}^{
     \sum_{\mathbf{p}^{(l&gt;0)}}  (-1)^{\sum_{l =1}^{k-1}\left[\mathbf{p}^{(l)} + \mathbf{w}^{(l-1)},\mathbf{p}^{(l-1)}+ \mathbf{p}^{(l)}\right] +\left[\mathbf{w}^{(k-1)},\mathbf{p}^{(k-1)}\right]} &amp;= \sum_{\mathbf{p}^{(l&gt;0)}}  (-1)^{\sum_{l =1}^{k-1}\left[\mathbf{p}^{(l)},\mathbf{p}^{(l-1)}+\mathbf{w}^{(l-1)}\right]+\sum_{l =1}^{k}\left[\mathbf{w}^{(l-1)},\mathbf{p}^{(l-1)}\right]} \notag\\
     &amp;= \sum_{\mathbf{p}^{(l&gt;0)}}  (-1)^{\sum_{l =1}^{k-1}\left[\mathbf{p}^{l},\mathbf{p}^{l-1}+\mathbf{w}^{l} + \mathbf{w}^{l-1}\right] }
 \end{align*}
+</span> We use the same telescoping technique as the first term. Define <span class="math inline">\mathbf{t}^{(l)} := \mathbf{w}^{(l)} + \mathbf{w}^{(l-1)}</span> (with <span class="math inline">\mathbf{w}^{(0)} = 0</span>). Summing over <span class="math inline">\mathbf{p}^{(1)}</span> first, the terms involving <span class="math inline">\mathbf{p}^{(1)}</span> are: <span class="math display">
+[\mathbf{p}^{1}, \mathbf{p}^{0} + \mathbf{t}^{1}] + [\mathbf{p}^{2}, \mathbf{p}^{1}] = [\mathbf{p}^{1}, \mathbf{p}^{0} + \mathbf{t}^{1} + \mathbf{p}^{2}].
+</span> This gives <span class="math inline">\sum_{\mathbf{p}^{(1)}} (-1)^{[\mathbf{p}^{1}, \mathbf{r}_j + \mathbf{t}^{1} + \mathbf{p}^{2}]} = 4\delta_{\mathbf{p}^{2}, \mathbf{r}_j + \mathbf{t}^{1}}</span>. Continuing the recursion by pairing <span class="math inline">(\mathbf{p}^{(2l-1)}, \mathbf{p}^{(2l)})</span>: <span class="math display">
+\mathbf{p}^{(2l)} = \mathbf{r}_j + \sum_{m=1}^{2l-1} \mathbf{t}^{(m)} = \mathbf{r}_j + \mathbf{w}^{(2l-1)}.
+</span> When <span class="math inline">\mathbf{w}^{(l)} = \mathbf{0}</span> for all <span class="math inline">l</span> (i.e., <span class="math inline">\mathbf{u} = \mathbf{v}</span>), we have <span class="math inline">\mathbf{t}^{(l)} = 0</span> and the recursion reduces to the first term’s case, giving coefficient <span class="math inline">2^{k-1}</span> for odd <span class="math inline">k</span> and <span class="math inline">0</span> for even <span class="math inline">k</span>. When <span class="math inline">\mathbf{w} \neq \mathbf{0}</span>, the accumulated phase factors lead to cancellation. Specifically, if there exists some <span class="math inline">l^*</span> such that <span class="math inline">\mathbf{w}^{(l^*)} \neq 0</span>, the inner sum over <span class="math inline">\mathbf{p}</span> vanishes due to the mismatch in the boundary conditions. Therefore: <span class="math display">
+\sum_{\mathbf{p}^{(l&gt;0)}}  (-1)^{\sum_{l =1}^{k-1}\left[\mathbf{p}^{l},\mathbf{p}^{l-1}+\mathbf{w}^{l} + \mathbf{w}^{l-1}\right] } = \left\{\begin{aligned}&amp;2^{k-1} \text{~if~} k \text{~is odd and } \mathbf{w} = \mathbf{0},\\ &amp;0 \text{~otherwise}.\end{aligned}\right.
+</span> Since only <span class="math inline">\mathbf{w} = \mathbf{0}</span> contributes, the second term becomes: <span class="math display">
+\text{The 2nd term} = \left\{\begin{aligned}&amp;\frac{2(2^k + 1)}{2^k+2} \mathbb{I}_k &amp;\text{~if~} k \text{~is odd},\\ &amp;0 &amp;\text{~if~} k \text{~is even}.\end{aligned}\right.
 </span></p>
+<p><strong>Third term: <span class="math inline">(-1)^{[\mathbf{v},\mathbf{u}]}</span> contribution.</strong></p>
+<p>For the third term <span class="math inline">\sum_{\mathbf{u},\mathbf{v}} 4^{-k+1} i^{m(\mathbf{u},\mathbf{v})} \frac{2^k + 1}{2^k+2} (-1)^{[\mathbf{v}, \mathbf{u}]} \sigma_{\mathbf{u}+\mathbf{v}}</span>, we need to evaluate the symplectic form <span class="math inline">[\mathbf{v}, \mathbf{u}]</span> in terms of <span class="math inline">\mathbf{p}^{(l)}</span> and <span class="math inline">\mathbf{q}^{(l)}</span>. Recall that: <span class="math display">
+\mathbf{u} = (\mathbf{r}_j + \mathbf{p}^{(1)}, \mathbf{p}^{(1)}+\mathbf{p}^{(2)}, \ldots, \mathbf{p}^{(k-1)}), \quad \mathbf{v} = (\mathbf{r}_j + \mathbf{q}^{(1)}, \mathbf{q}^{(1)}+\mathbf{q}^{(2)}, \ldots, \mathbf{q}^{(k-1)}).
+</span> The symplectic form between <span class="math inline">k</span>-tuples is <span class="math inline">[\mathbf{v}, \mathbf{u}] = \sum_{m=1}^{k} [\mathbf{v}_m, \mathbf{u}_m]</span> where <span class="math inline">[\cdot, \cdot]</span> on <span class="math inline">\mathbb{F}_2^2</span> is the standard symplectic form. Using the change of variables <span class="math inline">\mathbf{w}^{(m)} = \mathbf{p}^{(m)} + \mathbf{q}^{(m)}</span> and expanding: <span class="math display">
+[\mathbf{v}, \mathbf{u}] = \sum_{m=1}^{k-1} [\mathbf{q}^{(m-1)}+\mathbf{q}^{(m)}, \mathbf{p}^{(m-1)}+\mathbf{p}^{(m)}] + [\mathbf{q}^{(k-1)}, \mathbf{p}^{(k-1)}].
+</span> This additional phase combines with <span class="math inline">m(\mathbf{u},\mathbf{v})</span> to give a modified exponent. Following the same telescoping analysis: when <span class="math inline">\mathbf{w} = \mathbf{0}</span>, the commutation phase <span class="math inline">(-1)^{[\mathbf{v}, \mathbf{u}]}</span> reduces to <span class="math inline">(-1)^{[\mathbf{u}, \mathbf{u}]} = 1</span>. When <span class="math inline">\mathbf{w} \neq \mathbf{0}</span>, the sum again vanishes due to the pairing cancellation. Therefore: <span class="math display">
+\text{The 3rd term} = \left\{\begin{aligned}&amp;\frac{2(2^k + 1)}{2^k+2} \mathbb{I}_k &amp;\text{~if~} k \text{~is odd},\\ &amp;0 &amp;\text{~if~} k \text{~is even}.\end{aligned}\right.
+</span></p>
+<p><strong>Combining all terms for <span class="math inline">\mathbf{r}_j \neq 0</span>.</strong></p>
+<p>For the variance operator, we need to consider pairs <span class="math inline">(O^{(k)}_\mathbf{r}, O^{(k)}_\mathbf{r})</span>, which involves the squared space with <span class="math inline">2k</span> copies. The variance operator factorizes as: <span class="math display">
+\mathbf{V}(O^{(k)}_\mathbf{r}, O^{(k)}_\mathbf{r}) = \bigotimes_{j=1}^n v_k(\mathbf{r}_j, \mathbf{r}_j).
+</span> For <span class="math inline">\mathbf{r}_j \neq 0</span>, combining the three terms (with their respective <span class="math inline">2^k</span>, <span class="math inline">1</span>, and <span class="math inline">(-1)^{[\mathbf{v},\mathbf{u}]}</span> coefficients in the rescaling function), and noting that only the <span class="math inline">\mathbf{u} = \mathbf{v}</span> case contributes non-trivially, the local factor becomes: <span class="math display">
+v_k(\mathbf{r}_j, \mathbf{r}_j) = \frac{2(2^k+1)}{2^k + 2} \sigma_{\mathbf{r}_j}^{\otimes 2} = \frac{2^{k+1} + 2}{2^k + 2} \sigma_{\mathbf{r}_j}^{\otimes 2}.
+</span></p>
+<p><strong>Case: <span class="math inline">\mathbf{r}_j = 0</span>.</strong></p>
+<p>When <span class="math inline">\mathbf{r}_j = 0</span>, the constraint <span class="math inline">\mathbf{u}, \mathbf{v} \neq 0</span> is relaxed, and we must include terms where some components of <span class="math inline">\mathbf{u}</span> or <span class="math inline">\mathbf{v}</span> vanish. The rescaling function takes the boundary value <span class="math inline">r(\mathbf{u},\mathbf{v}) = 1</span> when either argument is the identity. Following the same enumeration as in <a href="#lem-covar-pauli" class="quarto-xref">Lemma&nbsp;7</a> Case 2, the local factor becomes: <span class="math display">
+v_k(\mathbf{0}, \mathbf{0}) = \frac{2^{2k} + 2^k + 2}{2^k + 2} \mathbb{I}_{2k}.
+</span></p>
+<p><strong>Final Result.</strong></p>
+<p>Combining these local factors: <span class="math display">
+\mathbf{V}(O^{(k)}_\mathbf{r}, O^{(k)}_\mathbf{r}) = \left(\frac{2^{2k} + 2^k + 2}{2^k + 2}\right)^{n-\text{wt}(\sigma_\mathbf{r})} \left(\frac{2^{k+1} + 2}{2^k + 2}\right)^{\text{wt}(\sigma_\mathbf{r})} \sigma_{\mathbf{r}}^{\otimes 2}.
+</span> Defining the coefficients <span class="math inline">c_k^{(0)} := \frac{2^{2k} + 2^k + 2}{2^k + 2}</span> and <span class="math inline">c_k^{(1)} := \frac{2^{k+1} + 2}{2^k + 2} = \frac{2(2^k+1)}{2^k + 2}</span>, we have the generalized variance formula: <span class="math display">
+\boxed{\mathbf{V}(O^{(k)}_\mathbf{r}, O^{(k)}_\mathbf{r}) = \left(c_k^{(0)}\right)^n \left(\frac{c_k^{(1)}}{c_k^{(0)}}\right)^{\text{wt}(\sigma_\mathbf{r})} \sigma_{\mathbf{r}}^{\otimes 2}.}
+</span> For <span class="math inline">k=2</span>: <span class="math inline">c_2^{(0)} = \frac{16+4+2}{6} = \frac{22}{6} = \frac{11}{3}</span>, <span class="math inline">c_2^{(1)} = \frac{10}{6} = \frac{5}{3}</span>, recovering the result from <a href="#lem-covar-pauli" class="quarto-xref">Lemma&nbsp;7</a>. <span class="math inline">\quad \square</span></p>
 </div>
 </div>
 </div>
@@ -991,7 +1039,7 @@ Lemma&nbsp;10: (OTOC Non-linear Estimator)
 </div>
 </div>
 <figure id="fig:comp_shadow_bell" data-latex-placement="htbp!" class="figure">
-<img src="Figure/var_compare.png" style="width:60.0%" class="figure-img">
+<img src="var_compare.png" style="width:60.0%" class="figure-img">
 <figcaption>
 The comparison of Bell sampling estiamtion method and the two-copy shadow method.
 </figcaption>
