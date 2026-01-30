@@ -1,0 +1,374 @@
+---
+title: CZ Gate Simulation for Rb87 Atoms
+date: '2026-01-30'
+lang: en
+categories:
+- Quantum Computing
+- Rydberg Atoms
+---
+
+## Introduction
+
+The controlled-Z (CZ) gate is a fundamental two-qubit gate for quantum computation, implementing a conditional phase flip where the state $\ket{11}$ acquires a $\pi$ phase. In neutral atom quantum computing platforms, the CZ gate is realized through the **Rydberg blockade mechanism**: when two atoms are brought close together and excited to high-lying Rydberg states, their strong van der Waals interaction prevents simultaneous excitation, enabling the conditional dynamics required for entangling operations.
+
+This document presents a comprehensive simulation framework for implementing CZ gates using $^{87}$Rb atoms, following the experimental approach of Evered *et al.* The simulation captures realistic atomic physics including:
+
+- Multi-level atomic structure with hyperfine splitting
+- Two-photon Rydberg excitation with 420 nm and 1013 nm lasers
+- Rydberg blockade interactions via C₆/R⁶ potentials
+- Decoherence from Rydberg decay (radiative and black-body radiation)
+- Intermediate state decay during excitation
+
+The primary goal is to optimize gate parameters (pulse duration, modulation amplitude, detuning) to maximize gate fidelity while accounting for all significant error sources. The simulation achieves fidelities exceeding 99.7% through careful parameter optimization and robust control techniques.
+
+## Atomic Level Structure
+
+The simulation models a 10-level system per atom to accurately capture the relevant physics of the CZ gate operation, as shown in the following figure below:
+
+![Atomic level structure](./Real_Rb_Elevel.png)
+
+### Ground States (Computational Basis)
+
+- $\ket{0}$: $\{5S_{1/2}, F=1, m_F=0\}, \quad \ket{1}$: $\{5S_{1/2}, F=2, m_F=0\}$
+
+According to the $CG$-coefficient, we are able to transfer from the hyperfine-basis into $\{L^2,S^2,J^2,I^2,m_J,m_I\}$ basis:
+\begin{align*}
+\ket{0} = \ket{g_1} &=(5S_{1/2}) \frac{1}{\sqrt{2}}\left[-\{m_j = 1/2, m_I = -1/2\} + \{ m_j = -1/2, m_I = 1/2\}\right], \\
+\ket{1} = \ket{g_0} &=(5S_{1/2}) \frac{1}{\sqrt{2}}\left[\{m_j = 1/2, m_I = -1/2\} +\{m_j = -1/2, m_I = 1/2\}\right].
+\end{align*}
+
+These qubit states are separated by the ground-state hyperfine splitting of **6.835 GHz** and serve as the computational basis.
+
+
+### Intermediate States ($6P_{3/2}$ Manifold)
+The 420 nm laser couples the ground states to three intermediate states with different hyperfine quantum numbers:
+
+- $\ket{e_1}$: $\{6P_{3/2}, F=1, m_F=-1\}$ (detuned by -51 MHz from $F=2$)
+- $\ket{e_2}$: $\{6P_{3/2}, F=2, m_F=-1\}$ (reference level)
+- $\ket{e_3}$: $\{6P_{3/2}, F=3, m_F=-1\}$ (detuned by +87 MHz from $F=2$)
+
+The CG decomposition in the $\{L^2,S^2,J^2,I^2,m_J,m_I\}$ basis:
+\begin{align*}
+\ket{2} = \ket{e_1} &=(6P_{3/2}) \sqrt{\frac{3}{10}}\{m_j = -3/2, m_I = 1/2\} -\sqrt{\frac{2}{5}}\{m_j = -1/2, m_I = -1/2\} +\sqrt{\frac{3}{10}} \{m_j = 1/2, m_I = -3/2\},\\
+\ket{3} = \ket{e_0} &=(6P_{3/2}) \frac{1}{\sqrt{2}}\{m_j = -3/2, m_I = 1/2\} -\frac{1}{\sqrt{2}} \{m_j = 1/2, m_I = -3/2\}, \\
+\ket{4} = \ket{e_2} &=(6P_{3/2}) \frac{1}{\sqrt{5}}\{m_j = -3/2, m_I = 1/2\} +\sqrt{\frac{3}{5}}\{m_j = -1/2, m_I = -1/2\} +\frac{1}{\sqrt{5}} \{m_j = 1/2, m_I = -3/2\}.
+\end{align*}
+
+All three intermediate states contribute to the two-photon excitation process. The excited state lifetime is approximately **26 ns** ($\Gamma_{\text{mid}} \approx 2\pi \times 6$ MHz).
+
+### Rydberg States ($70S_{1/2}$ Manifold)
+The 1013 nm laser drives transitions from intermediate states to Rydberg levels:
+
+- $\ket{r_1}$: $\{70S_{1/2}, m_j=-1/2\}$ (target state for gate operation)
+- $\ket{r_2}$: $\{70S_{1/2}, m_j=+1/2\}$ (off-resonant, detuned by 60 MHz)
+- $\ket{r_P}$: Pooled Rydberg state for black-body radiation transitions (decay rate $\Gamma_{\text{BBR}} = \frac{1}{410.41}$ MHz)
+
+The CG decomposition in the $\{L^2,S^2,J^2,I^2,m_J,m_I\}$ basis:
+\begin{align*}
+\ket{5} = \ket{r_0} &= (70S_{1/2}) \{m_j = -1/2,m_I = 1/2\},\\
+\ket{6} = \ket{r_1} &= (70S_{1/2}) \{m_j = 1/2,m_I = -1/2\}.
+\end{align*}
+
+The choice of $m_j$ basis (rather than $m_F$) reflects that at principal quantum number $n=70$, the fine structure splitting dominates over hyperfine coupling. A magnetic field-induced splitting of ~60 MHz between $\ket{r_1}$ and $\ket{r_2}$ minimizes unwanted excitation to $\ket{r_2}$.
+
+### Loss States
+
+- $\ket{L_0}$, $\ket{L_1}$: States representing population lost from the computational subspace due to decay into other $m_F$ levels (decay rate $\Gamma_{\text{RD}} = \frac{1}{151.55} - \frac{1}{410.41} \approx \frac{1}{241}$ MHz)
+
+This 10-level structure balances computational tractability with physical accuracy. The inclusion of three intermediate states is essential for correctly calculating light shifts and effective Rabi frequencies, while loss states enable tracking of leakage errors.
+
+### Selection Rules and Polarization
+The laser polarizations are chosen to satisfy angular momentum selection rules:
+
+- **420 nm laser**: $\sigma^-$ polarization ($\Delta m_F = -1$) drives $\ket{0}, \ket{1} \to \ket{e_{1,2,3}}$
+- **1013 nm laser**: $\sigma^+$ polarization drives $\ket{e_{1,2,3}} \to \ket{r_1}$
+
+The Clebsch-Gordan coefficients determining transition strengths between hyperfine states are calculated using the [ARC](https://arc-alkali-rydberg-calculator.readthedocs.io/en/latest/getting_started.html) package.
+
+## Two-Photon Rydberg Excitation
+
+### Laser Configuration
+
+The two-photon excitation scheme uses:
+
+1. **420 nm laser** (blue-detuned)
+   - Wavelength: **420 nm**   (frequency ≈ 714 THz)
+   - Polarization: $\sigma^-$
+   - Detuning: $\Delta = -2\pi \times 9.1$ GHz (blue-detuned from 6P₃/₂)
+   - Rabi frequency: $\Omega_{420} \approx 2\pi \times 237$ MHz
+
+2. **1013 nm laser** (near-resonant)
+   - Wavelength: 1013 nm (frequency ≈ 296 THz)
+   - Polarization: $\sigma^+$
+   - Rabi frequency: $\Omega_{1013} \approx 2\pi \times 303$ MHz
+
+The large blue detuning $\Delta$ of the 420 nm laser ensures that the intermediate state population remains negligible during the gate operation, enabling adiabatic elimination.
+
+### Hamiltonian in the Rotating Frame
+
+Starting from the electric dipole interaction Hamiltonian and applying the rotating wave approximation, the system Hamiltonian in the rotating frame becomes:
+
+$$
+\begin{align}
+H' &= \sum_{j = 0}^{m_r}\hbar (\delta + \omega_{r_j} - \omega_{r_0}) \ket{r_j}\!\bra{r_j} + \sum_{j = 0}^{m_e}\hbar (\Delta + \omega_{e_j} - \omega_{e_0}) \ket{e_j}\!\bra{e_j} \\
+&\quad + \sum_{j = 0}^{m_g}\hbar(\omega_{g_j} - \omega_{g_0})\ket{g_j}\!\bra{g_j} \\
+&\quad + \sum_{g,e}\frac{\hbar \Omega_{eg}^{(420)}(t) e^{i \phi_1(t)}}{2} \ket{g}\!\bra{e} + \text{h.c.} \\
+&\quad + \sum_{e,r}\frac{\hbar \Omega_{er}^{(1013)}(t) e^{i \phi_2(t)}}{2} \ket{e}\!\bra{r} + \text{h.c.}
+\end{align}
+$$
+
+Here $\phi_1(t)$ is the time-dependent phase modulation applied to the 420 nm laser (the 1013 nm laser phase is held constant), and the Rabi frequencies $\Omega_{eg}^{(420)}$ and $\Omega_{er}^{(1013)}$ are weighted by Clebsch-Gordan coefficients for each hyperfine transition.
+
+### Adiabatic Elimination of Intermediate States
+
+When $\Delta \gg \Omega_{420}, \Omega_{1013}$, the intermediate state amplitudes remain small and adiabatically follow the ground and Rydberg state amplitudes. Setting $\partial_t \psi_{e_j} = 0$ for all intermediate states $j$, we obtain:
+
+$$
+\psi_{e_j} = -\frac{1}{\Delta} \sum_g \Omega_{ge_j}^{(420)} \psi_g - \frac{1}{\Delta} \sum_r \Omega_{e_jr}^{(1013)} \psi_r
+$$
+
+Substituting back into the Schrödinger equation yields an effective two-level Hamiltonian between the ground manifold $\{\ket{0}, \ket{1}\}$ and the Rydberg state $\ket{r_1}$:
+
+$$
+\begin{align}
+H_{\text{eff}} &= \sum_g \hbar \Delta_{\text{eff},g} \ket{g}\!\bra{g} + \sum_r \hbar \Delta_{\text{eff},r} \ket{r}\!\bra{r} \\
+&\quad + \frac{\hbar \Omega_{\text{eff}}}{2} e^{i\phi_1(t)} \sum_g \ket{g}\!\bra{r_1} + \text{h.c.}
+\end{align}
+$$
+
+where the effective parameters are:
+
+**Effective Rabi frequency:**
+$$
+\Omega_{\text{eff}} = -\frac{\Omega_{1013} \Omega_{420}}{2\Delta}
+$$
+
+In the simulation, $\Omega_{\text{eff}} = 2\pi \times 5$ MHz is achieved with $\Delta = -2\pi \times 9.1$ GHz.
+
+**Light shifts:**
+
+Each laser induces AC Stark shifts on all states it couples:
+
+- **420 nm light shift on $\ket{1}$:**
+
+$$
+\Delta_{\text{LS}}^{(420),\ket{1}} = -\sum_{j=1,2,3} \frac{|\Omega_{1,e_j}^{(420)}|^2}{4\Delta_j} \approx -\frac{4}{3}\frac{\Omega_{420}^2}{4\Delta}
+$$
+
+- **1013 nm light shift on $\ket{r_1}$:**
+$$
+\Delta_{\text{LS}}^{(1013),\ket{r_1}} = -\sum_{j=1,2,3} \frac{|\Omega_{e_j,r_1}^{(1013)}|^2}{4\Delta_j} \approx -\frac{\Omega_{1013}^2}{4\Delta}
+$$
+
+The overall detuning $\delta$ between the two-photon resonance and the Rydberg state includes these light shifts and is dynamically calculated in the simulation to ensure proper resonance conditions.
+
+## Rydberg Blockade and CZ Gate Mechanism
+
+### Van der Waals Interaction
+
+When two Rydberg atoms are separated by distance $R$, they interact via the van der Waals potential:
+
+$$
+V_{\text{int}} = \frac{C_6}{R^6} \ket{r_1 r_1}\!\bra{r_1 r_1}
+$$
+
+For $^{87}\text{Rb}$ atoms in the $70S_{1/2}$ state, $C_6 = 2\pi \times 874 \times 10^3$ MHz·µm⁶. At the typical atom separation of $R = 3$ µm used in the simulation:
+
+$$
+V = \frac{C_6}{R^6} = 2\pi \times 1.20 \text{ GHz}
+$$
+
+This interaction energy is much greater than the effective Rabi frequency $\Omega_{\text{eff}} = 2\pi \times 5$ MHz, placing the system in the **blockade regime** where the doubly-excited state $\ket{r_1 r_1}$ is strongly detuned.、
+
+### Time optimal CZ Gate Implementation
+
+The blockade mechanism implements a CZ gate through state-dependent phase accumulation.
+The **conditional phase** is $\phi_{\text{CZ}} = \phi_{\text{blockade}} - \phi_{\text{dyn}}$ with $\phi_{\text{blockade}}$ and $\phi_{\text{dyn}}$ being the phases accumulated by the $\ket{11}$ and $\ket{00}$, $\ket{01}$, $\ket{10}$ states, respectively.
+By choosing appropriate pulse duration and modulation, phase $\phi_{\text{CZ}}$ is tuned to $\pi$ (up to a global phase), implementing $\text{CZ} = \text{diag}(1, 1, 1, -1)$.
+
+Simple constant-amplitude pulses are sensitive to parameter fluctuations. To achieve robust gate operation, the 420 nm laser phase is modulated according to:
+
+$$
+\phi(t) = A \cos(\omega t - \phi_0) + \delta t
+$$
+
+where:
+
+- $A$ = modulation amplitude (optimized to $A \approx 0.11$)
+- $\omega = \omega_f \Omega_{\text{eff}}$ = modulation frequency (optimized to $\omega_f \approx 1.04$)
+- $\phi_0$ = initial phase offset (optimized to $\phi_0 \approx -0.73$)
+- $\delta$ = linear detuning offset
+- $t_f$ = pulse duration (optimized to $t_f \approx 1.22/\Omega_{\text{eff}}$)
+
+This composite pulse structure creates a broader fidelity plateau in parameter space, providing robustness against laser intensity fluctuations and other experimental imperfections. The optimization (lines 1142-1183 in `full_error_model.py`) uses coordinate descent to find parameters achieving mean fidelity > 99.7%.
+
+## Error Model and Decoherence
+
+### Rydberg State Decay
+
+Rydberg atoms in the 70S₁/₂ state decay through two primary mechanisms:
+
+**1. Black-Body Radiation (BBR) Decay**
+
+Thermal photons at room temperature (T ≈ 300 K) induce transitions to nearby Rydberg states, effectively transferring population to a pooled state $\ket{r_P}$:
+
+$$
+\Gamma_{\text{BBR}} = \frac{1}{410.41} \text{ MHz}
+$$
+
+This corresponds to a lifetime of $\tau_{\text{BBR}} \approx 410$ ns.
+
+**2. Radiative Decay**
+
+Spontaneous emission from 70S₁/₂ back to lower-lying states occurs with rate:
+
+$$
+\Gamma_{\text{RD}} = \frac{1}{151.55} - \frac{1}{410.41} \approx \frac{1}{241} \text{ MHz}
+$$
+
+The decay branches into multiple final states with probabilities determined by Clebsch-Gordan coefficients:
+
+\begin{align}
+\Gamma_{\ket{r_1} \to \ket{0}} &= b_0 \cdot \Gamma_{\text{RD}} \\
+\Gamma_{\ket{r_1} \to \ket{1}} &= b_1 \cdot \Gamma_{\text{RD}} \\
+\Gamma_{\ket{r_1} \to \ket{L_0}} &= b_{L_0} \cdot \Gamma_{\text{RD}} \\
+\Gamma_{\ket{r_1} \to \ket{L_1}} &= b_{L_1} \cdot \Gamma_{\text{RD}}
+\end{align}
+
+The branching ratios $\{b_0, b_1, b_{L_0}, b_{L_1}\}$ are calculated by summing over all allowed intermediate states and final hyperfine levels, weighted by dipole matrix elements (see `rydberg_RD_branch_ratio()` in `full_error_model.py` lines 716-763).
+
+### Intermediate State Decay
+
+During the two-photon excitation, the non-zero amplitude in intermediate states $\ket{e_1}, \ket{e_2}, \ket{e_3}$ leads to spontaneous emission with rate:
+
+$$
+\Gamma_{\text{mid}} = \frac{1}{0.11} \approx 2\pi \times 1.4 \text{ MHz}
+$$
+
+corresponding to the 6P₃/₂ natural linewidth. Each intermediate state decays to the ground hyperfine manifold with state-dependent branching ratios calculated via Clebsch-Gordan coefficients (see `mid_branch_ratio()` in `full_error_model.py` lines 764-785):
+
+$$
+\ket{e_j} \to
+\begin{cases}
+\ket{0} & \text{with probability } b_0^{(j)} \\
+\ket{1} & \text{with probability } b_1^{(j)} \\
+\ket{L_0} & \text{with probability } b_{L_0}^{(j)} \\
+\ket{L_1} & \text{with probability } b_{L_1}^{(j)}
+\end{cases}
+$$
+
+Although the intermediate state population is suppressed by large detuning $\Delta$, decay from these states still contributes to gate infidelity, particularly for longer gate times.
+
+### Lindblad Master Equation
+
+The combined effects of coherent evolution and decoherence are captured by the Lindblad master equation:
+
+\begin{align}
+\frac{d\rho}{dt} = -\frac{i}{\hbar}[H(t), \rho] + \sum_k \Gamma_k \left( L_k \rho L_k^\dagger - \frac{1}{2}\{L_k^\dagger L_k, \rho\} \right)
+\end{align}
+
+where $L_k$ are the Lindblad jump operators corresponding to each decay channel:
+
+- Rydberg BBR decay: $L_{\text{BBR}} = \sqrt{\Gamma_{\text{BBR}}} \ket{r_P}\!\bra{r_1}$
+- Rydberg radiative decay: $L_{\text{RD},i} = \sqrt{b_i \Gamma_{\text{RD}}} \ket{i}\!\bra{r_1}$ for $i \in \{0, 1, L_0, L_1\}$
+- Intermediate state decay: $L_{\text{mid},j,i} = \sqrt{b_i^{(j)} \Gamma_{\text{mid}}} \ket{i}\!\bra{e_j}$ for $j \in \{e_1, e_2, e_3\}$, $i \in \{0, 1, L_0, L_1\}$
+
+The simulation tracks the full two-atom density matrix $\rho \in \mathbb{C}^{100 \times 100}$ (10 levels per atom), enabling accurate modeling of all correlated decay processes.
+
+## Simulation Implementation
+
+### JAX-Based Master Equation Solver
+
+The simulation uses **JAX**, a high-performance numerical computing library with automatic differentiation and GPU acceleration, to solve the master equation. Key features:
+
+**Class Structure:** `jax_atom_Evolution` (lines 23-967)
+- Initializes atomic states, Hamiltonians, and collapse operators
+- Configurable error model flags: `blockade`, `ryd_decay`, `mid_decay`
+- Stores atomic properties using the ARC package
+
+**Sparse Hamiltonian Representation:**
+To improve computational efficiency, the Hamiltonian is stored in sparse format (lines 346-375), representing only non-zero matrix elements and their indices. This reduces memory usage and speeds up matrix-vector multiplications during time evolution.
+
+**JIT Compilation:**
+The integration routine `integrate_rho_jax()` (lines 378-431) uses JAX's just-in-time compilation (`@jax.jit` decorator) to compile the differential equation solver into optimized machine code. This provides ~10-100× speedup compared to pure NumPy implementations.
+
+**Integration Method:**
+The master equation is integrated using JAX's `odeint` function with adaptive stepping and high precision (`rtol=1e-10, atol=1e-10`). The right-hand side of the ODE (lines 393-422) implements:
+
+1. Diagonal Hamiltonian contribution (energy levels + light shifts)
+2. Off-diagonal coherent driving (laser couplings)
+3. Lindblad dissipation terms (all decay channels)
+
+The dissipator is efficiently computed using sparse indexing to avoid explicit matrix multiplications.
+
+### Fidelity Calculation via SSS Protocol
+
+To characterize the CZ gate performance, the simulation uses the **State Superposition Subspace (SSS)** protocol, which measures fidelity over a representative set of 12 input states:
+
+**Input States** (`init_SSS_states()` lines 787-807):
+
+The 12 states span different measurement bases:
+
+1-4. X-basis superpositions: $(\ket{00} \pm \ket{01} \pm \ket{10} + \ket{11})/2$
+5-6. Computational basis: $\ket{00}$, $\ket{11}$
+7-10. Y-basis superpositions: $(\ket{00} \pm i\ket{01} \pm i\ket{10} \pm \ket{11})/2$
+11-12. Phase basis: $(\ket{00} \pm i\ket{11})/\sqrt{2}$
+
+**Fidelity Metric:**
+
+For each input state $\ket{\psi_{\text{in}}}$, the ideal CZ gate produces $\ket{\psi_{\text{ideal}}} = \text{CZ} \cdot \ket{\psi_{\text{in}}}$. The simulated gate produces a (potentially mixed) state $\rho_{\text{sim}}$.
+
+To account for arbitrary single-qubit phase rotations, the fidelity is optimized over a phase parameter $\theta$:
+
+$$
+F(\ket{\psi_{\text{in}}}) = \max_\theta \bra{\psi_{\text{ideal}}} R_z(\theta)^{\otimes 2} \rho_{\text{sim}} R_z(\theta)^{\otimes 2} \ket{\psi_{\text{ideal}}}
+$$
+
+where $R_z(\theta) = \text{diag}(1, e^{i\theta}, 1, \ldots)$ acts on the computational subspace.
+
+The **mean fidelity** averaged over all 12 states serves as the optimization target:
+
+$$
+\bar{F} = \frac{1}{12} \sum_{k=1}^{12} F(\ket{\psi_k})
+$$
+
+See `CZ_fidelity()` (lines 832-859) for implementation details.
+
+### Parameter Optimization
+
+The optimization routine (lines 1142-1183) uses coordinate descent to maximize mean fidelity:
+
+**Optimization Variables:**
+- $t_f$: Gate duration (in units of $1/\Omega_{\text{eff}}$)
+- $A$: Modulation amplitude
+- $\omega_f$: Modulation frequency (in units of $\Omega_{\text{eff}}$)
+- $\phi_0$: Initial phase offset
+- $\delta$: Linear detuning
+
+**Algorithm:**
+1. Initialize parameters to reasonable starting values
+2. For each parameter in sequence:
+   - Scan 5 values in a window around current value
+   - Evaluate mean fidelity for each value (requires 12 master equation integrations per evaluation)
+   - Update parameter to best value
+   - Reduce search window by factor of 2
+3. Repeat until convergence (window size < 0.0001) or fidelity exceeds 99.7%
+
+**Achieved Performance:**
+
+With optimized parameters:
+- $t_f \approx 1.219$ (gate time ≈ 244 ns for $\Omega_{\text{eff}} = 2\pi \times 5$ MHz)
+- Mean fidelity: $\bar{F} > 0.997$
+- Loss probability: $P_{\text{loss}} < 0.003$
+
+The dominant error sources are Rydberg decay (lifetime ~200 ns) and imperfect blockade suppression of the $\ket{r_1 r_1}$ state.
+
+## References
+
+- Evered et al., "High-fidelity parallel entangling gates on a neutral atom quantum computer", *Nature* (2023)
+- Levine et al., "Parallel implementation of high-fidelity multiqubit gates with neutral atoms", *Phys. Rev. Lett.* (2019)
+- Saffman et al., "Quantum information with Rydberg atoms", *Rev. Mod. Phys.* (2010)
+
+## Code
+
+The full simulation code is available in `full_error_model.py`. For theoretical derivations, see `en_v2.tex`.

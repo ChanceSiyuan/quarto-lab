@@ -71,18 +71,20 @@ website:
           contents:
             - theory/Topics/Shadow_tomography/lowerbound.qmd
 
-
 format:
-  html:
-    filters:
-      - live
-      - tikz
+  live-html:
     html-math-method: katex
-    theme: cosmo        
+    theme: cosmo      
     css: styles.css
     toc: true          
     code-copy: true       
     citations-hover: true
+    pyodide:
+      packages:
+        - numpy
+        - scipy
+    filters:
+      - tikz
 
 editor: source 
 

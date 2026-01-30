@@ -9,6 +9,6 @@ echo "📦 正在同步到服务器..."
 # -v: 显示过程
 # -z: 压缩传输
 # --delete: 删除服务器上多余的文件（保持与本地完全一致）
-rsync -avz --delete -e "ssh -p 6000" _site/ chance@199.7.140.178:/home/chance/docker/quarto-lab/workspace/_site/
+rsync -avz --delete -e "ssh -p 6000" _site/ chance@199.7.140.178:/home/chance/quarto-lab/_site/
 
 echo "✅ 发布完成！"

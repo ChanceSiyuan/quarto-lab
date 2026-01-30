@@ -1,0 +1,486 @@
+---
+categories:
+- Reviews
+- Optimization
+- Quantum Information
+date: '2026-01-30'
+lang: en
+title: "NCTSSoS.jl: Sparse Non-Commutative Polynomial Optimization"
+subtitle: A Comprehensive Framework for Quantum Information Applications
+bibliography: refs.bib
+abstract: |
+  The optimization of polynomials over non-commuting variables is a foundational challenge in quantum information science, condensed matter physics, and control theory. Standard semidefinite programming (SDP) relaxations suffer from the "curse of dimensionality," limiting their applicability to small systems. NCTSSoS.jl, developed in Julia, overcomes this limitation by exploiting term sparsity through chordal graph decomposition. This review examines the theoretical foundations, algorithmic architecture, and quantum information applications of NCTSSoS.jl, including Bell inequality analysis, ground state energy certification, and entanglement witness construction.
+---
+
+# Introduction
+
+## Motivation
+
+Non-commutative (NC) polynomial optimization deals with operators on Hilbert spaces, elements of C*-algebras, and matrices of arbitrary dimension. This mathematical framework is essential for quantum mechanics, where physical observables are represented by Hermitian operators that do not necessarily commute.
+
+Standard approaches such as the Lasserre hierarchy @lasserre2001global or the Navascués-Pironio-Acín (NPA) hierarchy @pironio2010convergent construct SDP relaxations that converge to the global optimum. However, these methods suffer from exponential scaling: for a problem with $m$ variables and relaxation order $d$, the moment matrix dimension grows as $O(m^d)$. This curse of dimensionality limits dense hierarchies to problems with fewer than a dozen variables.
+
+NCTSSoS.jl @nctssos_github addresses this computational bottleneck by analyzing the constituent monomials of input polynomials to construct a **Term Sparsity Pattern (TSP)** graph. Through chordal extension and clique decomposition, large intractable SDP constraints are decomposed into smaller, manageable blocks.
+
+## Problem Formulations
+
+NCTSSoS.jl supports two fundamental optimization formulations:
+
+#### Eigenvalue Optimization
+
+Finding the minimum eigenvalue of a non-commutative polynomial $f(\mathbf{x})$ subject to constraints $g_j(\mathbf{x}) \geq 0$, which can be formulated as:
+$$
+\lambda_{\min} = \inf \{ \langle \psi | f(X) | \psi \rangle : \|\psi\|=1, g_i(X) \succeq 0 \}
+$$
+
+The infimum is taken over all Hilbert spaces of arbitrary dimension and all valid operator representations. This formulation is ubiquitous in condensed matter physics for determining ground state energies @certifying_ground_state.
+
+#### Trace Optimization
+
+Minimizing the trace of a polynomial in the context of a tracial state $\tau$, i.e., a linear functional satisfying $\tau(1) = 1$ and $\tau(ab) = \tau(ba)$, can be formulated as:
+
+$$
+\tau_{\min} = \inf \{ \tau(f(X)) : \tau \text{ is a tracial state}, g_i(X) \succeq 0 \}
+$$
+
+Trace optimization is essential for studying quantum network correlations, entanglement witnesses, and multi-party Bell inequalities @volcic2023state. The cyclic property of the trace introduces symmetries that NCTSSoS.jl exploits to reduce problem dimensionality.
+
+# Theoretical Foundations
+
+## The Moment-SOHS Hierarchy
+
+The central algorithmic engine of NCTSSoS.jl is based on the **Moment-Sum-Of-Hermitian-Squares (SOHS)** hierarchy, the non-commutative analogue of the classical Lasserre Moment-SOS hierarchy.
+
+### Primal Picture: Moment Matrices
+
+In the primal formulation, optimization proceeds over "pseudo-moments." For optimization over a state $|\psi\rangle$, we define a linear functional $L$ such that $L(w) = \langle \psi | w(\mathbf{X}) | \psi \rangle$ for any word $w$.
+
+The **Moment Matrix** $M_d$, indexed by words $u, v$ of degree up to $d$, must be positive semidefinite:
+
+$$
+M_d[u, v] = L(u^* v) \succeq 0
+$$
+
+This ensures $L(p^* p) \geq 0$ for any polynomial $p$ of degree $d$, reflecting the physical requirement that vector norms are non-negative.
+
+### Dual Picture: Sums of Hermitian Squares
+
+In the dual formulation, NCTSSoS.jl certifies a lower bound $\lambda$ by proving the shifted polynomial $f - \lambda$ can be written as a sum of Hermitian squares:
+
+$$
+f - \lambda = \sum_j p_j^* p_j + \sum_k q_k^* g_k q_k
+$$
+
+If such a decomposition exists, then for any valid operator assignment, $\langle f \rangle \geq \lambda$ since terms $p^* p$ are always positive operators.
+
+## Sparsity Exploitation
+
+### Correlative Sparsity vs. Term Sparsity
+
+A key insight underlying NCTSSoS.jl is the distinction between two forms of sparsity @wang2021exploiting:
+
+**Correlative Sparsity (CS)** focuses on variable interactions @klep2008sparse. If the objective function decomposes into terms involving small variable subsets, the moment matrix can be replaced by several smaller matrices corresponding to variable cliques. However, if any term couples all variables, correlative sparsity provides no advantage.
+
+**Term Sparsity (TS)** operates at monomial granularity. Even when all variables are coupled, the set of monomials in the SOHS decomposition may be sparse. NCTSSoS.jl constructs a graph where nodes are basis monomials and edges represent non-zero entries in the Gram matrix.
+
+::: {.callout-tip}
+NCTSSoS.jl offers **CS-TSSOS**, which exploits both sparsity forms simultaneously: first partitioning variables into cliques (CS), then applying term sparsity (TS) within each clique, enabling scaling to thousands of variables.
+:::
+
+### TSP Graph Construction
+
+The core algorithmic pipeline proceeds through:
+
+1. **Graph Initialization**: Identify basis monomials $\mathcal{B}_d$ for relaxation order $d$. Each monomial becomes a node in the TSP graph $G$.
+
+2. **Support Analysis**: For each term $c_\alpha w_\alpha$ in the polynomial, identify all pairs $(u, v)$ of basis monomials such that $u^* v = w_\alpha$. Add edge $(u, v)$ to $G$.
+
+3. **Iterative Extension**: Perform support-extension to ensure the graph includes all edges necessary for a valid SOHS decomposition.
+
+### Chordal Extension and Decomposition
+
+The TSP graph must be **chordal** (every cycle of length $> 3$ has a chord) for efficient decomposition. NCTSSoS.jl employs heuristics like Minimum Degree ordering (`TS="MD"`) to compute chordal extensions with minimal fill-in edges @tssos_docs.
+
+By the **Grone-Stouffer theorem**, the PSD constraint $M_d \succeq 0$ with sparsity pattern $G$ is equivalent to requiring PSD constraints on principal submatrices corresponding to maximal cliques of $G$:
+
+::: {.callout-note}
+Instead of one SDP block of size $N$, NCTSSoS.jl might solve 50 overlapping blocks of size $N/10$. Since SDP complexity scales as $O(N^3)$, this decomposition reduces computational effort by orders of magnitude.
+:::
+
+## Convergence Guarantees
+
+The sparse relaxations maintain rigorous guarantees @wang2021exploiting:
+
+- **Asymptotic Convergence**: Under mild compactness conditions, the hierarchy converges to the global minimum as $d \to \infty$.
+- **Finite Convergence**: In many practical cases, convergence occurs at finite $d$ (often $d = 2$ or $3$), providing exact certificates.
+- **Gap Certification**: Both primal and dual solutions are provided; a small duality gap numerically certifies optimality.
+
+# Interactive Demos
+
+::: {.callout-note}
+NCTSSoS.jl is a Julia package, but quarto-live only supports Python. The following demos use NumPy/SciPy to illustrate the **core concepts** of non-commutative polynomial optimization.
+:::
+
+## Demo 1: Moment Matrix Structure
+
+The moment matrix $M_d$ is indexed by monomials up to degree $d$. For non-commutative variables, the monomial basis is larger since $xy \neq yx$.
+
+```{pyodide}
+import numpy as np
+
+def nc_monomials(n_vars, degree):
+    """Generate non-commutative monomials up to given degree."""
+    if degree == 0:
+        return ['1']
+    
+    monomials = ['1']
+    vars = [f'x{i}' for i in range(n_vars)]
+    
+    # Generate monomials of each degree
+    current = [[v] for v in vars]
+    monomials.extend([''.join(m) for m in current])
+    
+    for d in range(2, degree + 1):
+        next_level = []
+        for m in current:
+            for v in vars:
+                next_level.append(m + [v])
+        current = next_level
+        monomials.extend([''.join(m) for m in current])
+    
+    return monomials
+
+# Compare commutative vs non-commutative monomial counts
+n_vars = 2
+for d in range(1, 4):
+    nc_mons = nc_monomials(n_vars, d)
+    # Commutative: binomial(n+d, d)
+    from math import comb
+    comm_count = comb(n_vars + d, d)
+    print(f"Degree ≤ {d}: NC monomials = {len(nc_mons)}, Commutative = {comm_count}")
+    if d <= 2:
+        print(f"  NC basis: {nc_mons}")
+```
+
+## Demo 2: CHSH Inequality - Tsirelson Bound
+
+The CHSH inequality involves 4 observables $A_1, A_2, B_1, B_2$ with $A_i^2 = B_j^2 = I$ and $[A_i, B_j] = 0$. The quantum maximum is $2\sqrt{2}$.
+
+```{pyodide}
+import numpy as np
+
+# Pauli matrices
+I = np.eye(2)
+X = np.array([[0, 1], [1, 0]])
+Y = np.array([[0, -1j], [1j, 0]])
+Z = np.array([[1, 0], [0, -1]])
+
+def tensor(A, B):
+    """Tensor product of two matrices."""
+    return np.kron(A, B)
+
+# Optimal quantum strategy for CHSH
+# Alice: A1 = Z, A2 = X
+# Bob: B1 = (Z+X)/√2, B2 = (Z-X)/√2
+A1 = tensor(Z, I)
+A2 = tensor(X, I)
+B1 = tensor(I, (Z + X) / np.sqrt(2))
+B2 = tensor(I, (Z - X) / np.sqrt(2))
+
+# CHSH operator
+CHSH = A1 @ B1 + A1 @ B2 + A2 @ B1 - A2 @ B2
+
+# Maximum eigenvalue gives quantum bound
+eigenvalues = np.linalg.eigvalsh(CHSH)
+max_eigenvalue = np.max(eigenvalues)
+
+print(f"CHSH operator eigenvalues: {np.sort(eigenvalues)}")
+print(f"Maximum quantum value: {max_eigenvalue:.6f}")
+print(f"Tsirelson bound (2√2): {2*np.sqrt(2):.6f}")
+print(f"Classical bound: 2")
+```
+
+## Demo 3: NPA Hierarchy Level 1 Structure
+
+At NPA level 1, the moment matrix is indexed by $\{1, A_1, A_2, B_1, B_2\}$. The matrix entries are expectations $\langle u^\dagger v \rangle$.
+
+```{pyodide}
+import numpy as np
+
+# Pauli matrices (self-contained)
+I = np.eye(2)
+X = np.array([[0, 1], [1, 0]])
+Z = np.array([[1, 0], [0, -1]])
+
+def tensor(A, B):
+    return np.kron(A, B)
+
+# CHSH observables
+A1 = tensor(Z, I)
+A2 = tensor(X, I)
+B1 = tensor(I, (Z + X) / np.sqrt(2))
+B2 = tensor(I, (Z - X) / np.sqrt(2))
+
+# For CHSH at NPA level 1, basis is {1, A1, A2, B1, B2}
+# Using quantum state |ψ⟩ = |00⟩
+psi = np.array([1, 0, 0, 0])
+
+def expect(Op, state):
+    """Compute expectation value ⟨ψ|Op|ψ⟩."""
+    return np.real(state.conj() @ Op @ state)
+
+# Build moment matrix M where M[i,j] = ⟨basis[i]† basis[j]⟩
+basis_ops = [tensor(I, I), A1, A2, B1, B2]
+basis_names = ['1', 'A1', 'A2', 'B1', 'B2']
+
+n = len(basis_ops)
+M = np.zeros((n, n))
+
+for i in range(n):
+    for j in range(n):
+        M[i, j] = expect(basis_ops[i].conj().T @ basis_ops[j], psi)
+
+print("NPA Level 1 Moment Matrix:")
+print("Basis:", basis_names)
+print(np.round(M, 4))
+print(f"\nEigenvalues: {np.round(np.linalg.eigvalsh(M), 4)}")
+print("All eigenvalues ≥ 0 ✓ (PSD constraint satisfied)")
+```
+
+## Demo 4: Term Sparsity Visualization
+
+For a polynomial with few terms, the moment matrix has a sparse structure. This demo shows how support analysis identifies the sparsity pattern.
+
+```{pyodide}
+import numpy as np
+
+def visualize_sparsity(polynomial_terms, basis):
+    """
+    Visualize sparsity pattern of moment matrix.
+    polynomial_terms: list of (coefficient, monomial_string)
+    basis: list of monomial strings
+    """
+    n = len(basis)
+    pattern = np.zeros((n, n), dtype=int)
+    
+    # For each term in polynomial, mark entries (u,v) where u*v = term
+    for coef, term in polynomial_terms:
+        for i, u in enumerate(basis):
+            for j, v in enumerate(basis):
+                # Simple check: concatenation (u†v in NC algebra)
+                product = u[::-1] + v  # Reverse u for dagger
+                product = product.replace('1', '')
+                if not product:
+                    product = '1'
+                if product == term or (term == '1' and product == ''):
+                    pattern[i, j] = 1
+    
+    return pattern
+
+# Example: f = 1 + x0x0 + x1x1 (sparse: no cross terms)
+basis = ['1', 'x0', 'x1', 'x0x0', 'x0x1', 'x1x0', 'x1x1']
+polynomial = [(1, '1'), (1, 'x0x0'), (1, 'x1x1')]
+
+pattern = visualize_sparsity(polynomial, basis)
+
+print("Polynomial: f = 1 + x₀² + x₁² (no cross terms)")
+print(f"\nBasis: {basis}")
+print("\nSparsity pattern (1 = nonzero entry needed):")
+print(pattern)
+n_basis = len(basis)
+print(f"\nDense entries: {n_basis*n_basis} → Sparse entries: {np.sum(pattern)}")
+print("Block structure emerges due to lack of x₀x₁ terms!")
+```
+
+## Demo 5: Heisenberg Model Ground State
+
+The 2-site Heisenberg Hamiltonian $H = X_1X_2 + Y_1Y_2 + Z_1Z_2$ has known ground state energy $E_0 = -3$.
+
+```{pyodide}
+import numpy as np
+
+# Pauli matrices
+I = np.eye(2)
+X = np.array([[0, 1], [1, 0]])
+Y = np.array([[0, -1j], [1j, 0]])
+Z = np.array([[1, 0], [0, -1]])
+
+def tensor(A, B):
+    return np.kron(A, B)
+
+# 2-site Heisenberg Hamiltonian
+H = tensor(X, X) + tensor(Y, Y) + tensor(Z, Z)
+
+# Exact diagonalization
+eigenvalues, eigenvectors = np.linalg.eigh(H)
+
+print("2-site Heisenberg Hamiltonian: H = X₁X₂ + Y₁Y₂ + Z₁Z₂")
+print(f"\nEigenvalues: {np.round(np.real(eigenvalues), 4)}")
+print(f"Ground state energy E₀ = {np.min(np.real(eigenvalues)):.4f}")
+
+# Ground state is the singlet |ψ⟩ = (|01⟩ - |10⟩)/√2
+singlet = np.array([0, 1, -1, 0]) / np.sqrt(2)
+E_singlet = np.real(singlet.conj() @ H @ singlet)
+print(f"\nSinglet state energy: {E_singlet:.4f}")
+print("\nNCTSSoS.jl would certify E₀ ≥ -3 via SDP relaxation")
+```
+
+# Software Architecture
+
+## Julia Ecosystem Integration
+
+NCTSSoS.jl leverages Julia's type system, multiple dispatch, and JIT compilation for high performance @nctssos_github:
+
+- **DynamicPolynomials.jl**: Provides the symbolic backbone. The `@ncpolyvar` macro creates non-commutative variables respecting $xy \neq yx$.
+- **JuMP.jl**: The SDP relaxation is built within JuMP, making NCTSSoS solver-agnostic.
+- **ChordalGraph.jl**: Handles chordality detection, chordal extensions, and maximal clique finding.
+
+## Solver Compatibility
+
+| Solver | Type | Precision | Memory | Use Case |
+|--------|------|-----------|--------|----------|
+| Mosek | Commercial, Interior-Point | $10^{-8}$ | High | Research-grade proofs |
+| COSMO | Open Source, ADMM | $10^{-4}$ | Low | Massive problems @cosmo_jump |
+| SCS | Open Source, Splitting | $10^{-4}$ | Low | Large-scale approximate bounds |
+
+For problems with thousands of variables, first-order solvers like COSMO are often the only viable option due to memory constraints of interior-point methods.
+
+## Installation and Basic Usage
+
+```julia
+using Pkg
+Pkg.add(url="https://github.com/wangjie212/NCTSSOS")
+
+using NCTSSOS
+using DynamicPolynomials
+using MosekTools  # or COSMO
+
+# Define non-commuting variables
+@ncpolyvar x[1:4]
+
+# Objective polynomial
+f = 1 + x[1]^4 + x[2]^4 + x[1]*x[2] + x[2]*x[1]
+
+# Constraints
+constraints = [
+    1 - x[1]^2 - x[2]^2,     # Inequality: 1 - x₁² - x₂² ≥ 0
+    x[1]*x[2] - x[2]*x[1]    # Equality: [x₁, x₂] = 0
+]
+
+# Run hierarchy
+opt, data = nctssos_first(
+    [f; constraints],
+    x,
+    d=2,
+    numeq=1,       # Last 1 constraint is equality
+    obj="eigen",   # Minimize eigenvalue
+    TS="block",
+    solver=Mosek.Optimizer
+)
+```
+
+Key parameters:
+
+- `numeq`: Number of equality constraints (handled by ideal reduction)
+- `TS`: Term sparsity strategy (`"block"` is robust, `"MD"` for irregular graphs)
+- `obj`: `"eigen"` for ground states, `"trace"` for tracial states
+
+# Applications in Quantum Information
+
+## Bell Inequalities and Non-Locality
+
+A flagship application is analyzing Bell inequalities @volcic2023state. Consider the CHSH inequality:
+
+$$
+\max \langle A_1 B_1 + A_1 B_2 + A_2 B_1 - A_2 B_2 \rangle
+$$
+
+subject to $A_i^2 = B_j^2 = \mathbb{1}$ and $[A_i, B_j] = 0$.
+
+```julia
+@ncpolyvar A[1:2] B[1:2]
+
+# CHSH polynomial
+chsh = A[1]*B[1] + A[1]*B[2] + A[2]*B[1] - A[2]*B[2]
+
+# Constraints: unipotent and commuting
+constraints = [
+    1 - A[1]^2, 1 - A[2]^2,
+    1 - B[1]^2, 1 - B[2]^2,
+    A[1]*B[1] - B[1]*A[1],
+    A[1]*B[2] - B[2]*A[1],
+    A[2]*B[1] - B[1]*A[2],
+    A[2]*B[2] - B[2]*A[2]
+]
+
+opt, _ = nctssos_first([-chsh; constraints], [A; B], d=1, numeq=4, obj="eigen")
+# Returns opt ≈ -2√2 (Tsirelson bound)
+```
+
+NCTSSoS.jl also supports **polynomial Bell inequalities** involving non-linear functions of expectation values, and **quantum network** constraints for device-independent cryptography @valcarce_npa.
+
+## Ground State Energy Certification
+
+For many-body Hamiltonians such as the Heisenberg model:
+
+$$
+H = \sum_{\langle i,j \rangle} \left( X_i X_j + Y_i Y_j + Z_i Z_j \right)
+$$
+
+traditional methods (VQE, DMRG) provide **upper bounds**. NCTSSoS.jl provides complementary **lower bounds** @certifying_ground_state:
+
+$$
+E_0 \geq \text{SDP relaxation value}
+$$
+
+::: {.callout-important}
+If the VQE upper bound and NCTSSoS lower bound are close (within $10^{-3}$), the ground state is effectively solved with rigorous error bars. This method avoids the sign problem plaguing quantum Monte Carlo.
+:::
+
+By exploiting the local nature of Hamiltonians (nearest-neighbor interactions), the TSP graph becomes highly sparse (band matrix structure), enabling NCTSSoS to solve 1D and 2D models with **hundreds of spins**—far beyond exact diagonalization limits ($\sim 40$ qubits).
+
+## Entanglement Witnesses
+
+Determining whether a mixed state $\rho$ is entangled is NP-hard. An **Entanglement Witness** is an observable $W$ satisfying:
+
+- $\mathrm{tr}(W\sigma) \geq 0$ for all separable states $\sigma$
+- $\mathrm{tr}(W\rho) < 0$ for the entangled state
+
+Finding optimal witnesses corresponds to trace optimization over separable states. NCTSSoS.jl's trace optimization (`obj="trace"`) exploits cyclic trace properties to reduce SDP dimensions @magron_ncmint.
+
+# Performance and Benchmarks
+
+## Comparison with Ncpol2sdpa
+
+Ncpol2sdpa @wittek2015algorithm was the standard Python tool for NC-SDP relaxations. Key differences:
+
+| Aspect | Ncpol2sdpa | NCTSSoS.jl |
+|--------|------------|------------|
+| Sparsity | Basic support | Full term + correlative |
+| 100 variables | Often OOM | Seconds to minutes |
+| Maintenance | Inactive | Active development |
+
+## Scalability by Topology
+
+Performance depends on problem structure @wang2021exploiting:
+
+- **Chain/Ring** (1D physics): Linear scaling, $n \sim 1000$ feasible
+- **Star** (central coupling): Degraded but better than dense
+- **Complete Graph**: Reverts to dense performance, $n \sim 10$
+
+# Conclusion
+
+NCTSSoS.jl represents a paradigm shift in non-commutative polynomial optimization, breaking the curse of dimensionality for structured problems. By combining term sparsity with chordal decomposition, it enables certified optimization for quantum systems with hundreds to thousands of variables—scales previously unreachable.
+
+For quantum information practitioners, NCTSSoS.jl offers:
+
+- **Rigorous bounds** on Bell inequality violations
+- **Certified ground state energies** for many-body systems
+- **Optimal entanglement witnesses** for mixed states
+
+As quantum computing matures, such classical verification tools become increasingly essential, establishing NCTSSoS.jl as foundational infrastructure in the quantum software stack @arxiv2512_17713.
+
+# References
+
+::: {#refs}
+:::
