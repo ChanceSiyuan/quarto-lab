@@ -1,6 +1,7 @@
 # 忽略生成文件夹
 .quarto/
 _site/
+site_libs/
 
 # 忽略 Jupyter 缓存
 .ipynb_checkpoints/
@@ -11,7 +12,11 @@ __pycache__/
 
 # 忽略敏感信息 (如果有)
 .env
-venv
+venv/
+.venv/
 /.quarto/
+
+# 忽略生成的 JSON 文件
+**/index-listing.json
 
 **/*.quarto_ipynb
