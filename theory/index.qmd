@@ -2,11 +2,8 @@
 lang: en
 listing:
 - contents:
-  - quantum_complexity/*.qmd
-  - quantum_learning_theory/*.qmd
   - Shadow_tomography/*.qmd
-  - QEC/*.qmd
-  - Lowerbound/*.qmd
+  - Lowerbounds/*.qmd
   fields:
   - date
   - title
@@ -17,7 +14,9 @@ listing:
   table-hover: true
   type: table
 - categories: true
-  contents: Posts
+- contents: 
+  - Posts
+  - Topics
   filter-ui: true
   id: daily-posts
   page-size: 5
@@ -29,22 +28,43 @@ title: Theory
 title-block-banner: true
 ---
 
-## Topics
+This website is built with asisted by Claude Code (claude.ai/code), where I mainly use for task involves:
 
-This section records the literature related to quantum computing.
+- Inspire me by new mathematical tools when I was stuck by certain proof details during creating new proofs.
+- Generate a quick demo code for quick check of ideas, better illustration of concepts, and a go-through explaination of algorithms.
+- Do servey with **REAL** references attached.
 
+Based on this, I separate my theoretical posts into two categories:
+
+- **Readings**: The notes when I read a paper or certain proof details.
+- **Surveys**: A general survey post about a specific topic in quantum computing. during the survey, some specific details will be picked out with a hyperlink to a **Reading** post.
+- **Topics**: I will gradually collect **Readings** with similar topics into a **Topic** post, with a navigate bar on the left sidebar on that page.
+
+## Topics Posts
+
+This section sorts the posts by topics.
 ::: {.callout-tip}
 Please click on the left sidebar (Sidebar) to browse specific knowledge categories.
 :::
 
-::: {#research-notes}
-:::
+Browse curated lecture notes organized by research topic. Each topic contains an index page with comprehensive introduction and linked sub-notes covering specific techniques and methods.
+
+**Current Topics:**
+
+- **[Shadow Tomography](/theory/Topics/Shadow_tomography/)** - Classical shadow protocols from single-copy to multi-copy strategies, variance analysis, and sample complexity bounds
+- **[Lower Bounds](/theory/Topics/Lowerbounds/)** - Toolkit for proving information-theoretic lower bounds using Le Cam's method, POVM restrictions, and ensemble constructions
 
 ---
 
-## Posts
+## Timeline Posts
 
-This section documents my daily paper summaries and conference notes.
+This section documents my poster in a timeline manner.
+
+Recent research notes and paper summaries organized chronologically. Posts are categorized as:
+
+- **Readings** - Paper summaries highlighting key results and techniques
+- **Surveys** - Comprehensive reviews with tutorial-style explanations
 
 ::: {#daily-posts}
 :::
+

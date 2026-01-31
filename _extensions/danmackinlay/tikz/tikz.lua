@@ -237,7 +237,6 @@ $body$
 
       -- Convert PDF to SVG using Inkscape
       local args = {
-        '--pages=1',
         '--export-area-drawing',
         '--export-type=svg',
         '--export-plain-svg',

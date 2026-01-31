@@ -1,14 +1,7 @@
 ---
 categories:
-- Realizations
+- Readings
 date: '2026-01-13'
-execute:
-  enabled: true
-format:
-  html:
-    code-fold: true
-jupyter: python3
-keep-ipynb: true
 lang: en
 title: Operator Stabilizer Formalism
 ---
@@ -49,176 +42,101 @@ Note that the Original Physical Circuit has input on the left and output on the 
 To this end, we can write a Python script to visualize the transformation of these circuits.
 Using this code, I demonstrated three types of circuits that are difficult to handle with ordinary Stabilizer Formalism but are simple within the OSF framework.
 
-```{python}
+::: {.callout-tip}
+**Interactive Code Runner**: The code below runs on the server with full access to qiskit, matplotlib, and other scientific libraries. Click "Run Code" to execute. You can modify the code and experiment with different circuits!
+:::
+
+```{.runpy height="400px"}
+import matplotlib
+matplotlib.use('Agg')  # Non-interactive backend for server
 import matplotlib.pyplot as plt
 from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister
-from qiskit.circuit import Qubit, Clbit
 
 class DualCircuitConverter:
-    def __init__(self, original_circuit: QuantumCircuit, 
-                 input_state: str = None, 
-                 output_pauli: str = None):
-        """
-        Initialize the converter.
-        
-        Args:
-            original_circuit: Input physical circuit
-            input_state: (Optional) Initial state of the original circuit, e.g., "00".
-            output_pauli: (Optional) Output Pauli operator of the original circuit, e.g., "ZZ".
-        """
+    def __init__(self, original_circuit, input_state=None, output_pauli=None):
         self.orig_qc = original_circuit
         self.n_qubits = original_circuit.num_qubits
-        
         self.input_state_str = input_state
         self.output_pauli_str = output_pauli
-        
         self.q_map = {q: i for i, q in enumerate(original_circuit.qubits)}
-        
         self.dual_qc = None
         self._build_dual_circuit()
 
     def _build_dual_circuit(self):
-        """
-        Core translation logic: Build dual circuit according to Symplectic Mapping.
-        Contains: Dual Input (Source) -> Reversed Unitaries -> Dual Output (Sink)
-        """
         reg_a = QuantumRegister(self.n_qubits, 'a')
         reg_b = QuantumRegister(self.n_qubits, 'b')
-        
         registers = [reg_a, reg_b]
         if self.input_state_str:
             creg = ClassicalRegister(2 * self.n_qubits, 'meas')
             registers.append(creg)
-        
         self.dual_qc = QuantumCircuit(*registers)
         
-        # ==========================================
         # 1. Set Dual Input (corresponds to Original Output Pauli)
-        # ==========================================
         if self.output_pauli_str:
-            if len(self.output_pauli_str) != self.n_qubits:
-                raise ValueError("Output Pauli string length must match num_qubits.")
-                
             for i, p_char in enumerate(self.output_pauli_str):
                 p_char = p_char.upper()
-                if p_char == 'Z':
-                    self.dual_qc.x(reg_b[i])
-                elif p_char == 'X':
-                    self.dual_qc.x(reg_a[i])
+                if p_char == 'Z': self.dual_qc.x(reg_b[i])
+                elif p_char == 'X': self.dual_qc.x(reg_a[i])
                 elif p_char == 'Y':
                     self.dual_qc.x(reg_a[i])
                     self.dual_qc.x(reg_b[i])
-            
             self.dual_qc.barrier(label='Dual Input')
 
-        # ==========================================
         # 2. Traverse and build Unitary in reverse
-        # ==========================================
         for instruction in reversed(self.orig_qc.data):
             op_name = instruction.operation.name
-            qubits = instruction.qubits
-            
-            indices = [self.q_map[q] for q in qubits]
-            
+            indices = [self.q_map[q] for q in instruction.qubits]
             if op_name == 'h':
-                idx = indices[0]
-                self.dual_qc.swap(reg_a[idx], reg_b[idx])
-                self.dual_qc.cz(reg_a[idx], reg_b[idx])
-                
+                self.dual_qc.swap(reg_a[indices[0]], reg_b[indices[0]])
+                self.dual_qc.cz(reg_a[indices[0]], reg_b[indices[0]])
             elif op_name == 's':
-                idx = indices[0]
-                self.dual_qc.cx(reg_a[idx], reg_b[idx])
-                self.dual_qc.cz(reg_a[idx], reg_b[idx])
-                
+                self.dual_qc.cx(reg_a[indices[0]], reg_b[indices[0]])
+                self.dual_qc.cz(reg_a[indices[0]], reg_b[indices[0]])
             elif op_name == 't':
-                idx = indices[0]
-                self.dual_qc.ch(reg_a[idx], reg_b[idx]) 
-                self.dual_qc.z(reg_b[idx])
-                
+                self.dual_qc.ch(reg_a[indices[0]], reg_b[indices[0]]) 
+                self.dual_qc.z(reg_b[indices[0]])
             elif op_name == 'cx':
-                c_idx, t_idx = indices[0], indices[1]
-                self.dual_qc.cx(reg_a[c_idx], reg_a[t_idx])
-                self.dual_qc.cx(reg_b[t_idx], reg_b[c_idx])
-                
-            elif op_name == 'barrier':
-                mapped_qubits = []
-                for idx in indices:
-                    mapped_qubits.append(reg_a[idx])
-                    mapped_qubits.append(reg_b[idx])
-                self.dual_qc.barrier(*mapped_qubits)
+                self.dual_qc.cx(reg_a[indices[0]], reg_a[indices[1]])
+                self.dual_qc.cx(reg_b[indices[1]], reg_b[indices[0]])
 
-        # ==========================================
-        # 3. Set Dual Output (corresponds to Original Input State)
-        # ==========================================
+        # 3. Set Dual Output
         if self.input_state_str:
             self.dual_qc.barrier(label='Dual Output')
-            if len(self.input_state_str) != self.n_qubits:
-                raise ValueError("Input state string length must match num_qubits.")
-
             for i, s_char in enumerate(self.input_state_str):
-                if s_char == '0':
-                    self.dual_qc.h(reg_b[i])
-                elif s_char == '1':
-                    self.dual_qc.h(reg_b[i]) 
-            
+                self.dual_qc.h(reg_b[i])
             self.dual_qc.measure(reg_a, creg[:self.n_qubits])
             self.dual_qc.measure(reg_b, creg[self.n_qubits:])
 
-    def draw_comparison(self, scale=1.0):
-        """
-        Draw side-by-side comparison. Title updates automatically if boundary conditions are defined.
-        """
-        fig, axes = plt.subplots(2, 1, figsize=(12 * scale, 10 * scale))
-        
-        self.orig_qc.draw('mpl', ax=axes[0], style='iqp')
-        
-        in_txt = f"|{self.input_state_str}>" if self.input_state_str else "State"
-        out_txt = f"<{self.output_pauli_str}>" if self.output_pauli_str else "Pauli"
-        axes[0].set_title(f"Original Circuit: Input {in_txt} $\\rightarrow$ Measure {out_txt}", fontsize=13)
-        axes[0].set_ylabel("Time $\\rightarrow$")
+    def print_circuits(self):
+        print("=" * 60)
+        print("ORIGINAL CIRCUIT")
+        print("=" * 60)
+        print(self.orig_qc.draw(output='text'))
+        print("\n" + "=" * 60)
+        print("DUAL CIRCUIT (OSF Transformation)")
+        print("=" * 60)
+        print(self.dual_qc.draw(output='text', fold=80))
 
-        self.dual_qc.draw('mpl', ax=axes[1], style='iqp', fold=-1)
-        
-        dual_in_txt = f"State({self.output_pauli_str})" if self.output_pauli_str else "Input"
-        dual_out_txt = f"Project({self.input_state_str})" if self.input_state_str else "Output"
-        axes[1].set_title(f"Dual Circuit: Input {dual_in_txt} $\\rightarrow$ Measure {dual_out_txt}", fontsize=13)
-        axes[1].set_ylabel("Time $\\leftarrow$ (Reversed)")
-        
-        plt.tight_layout()
-        plt.show()
+# Test: Create a circuit with Bell state + T gates
+qc = QuantumCircuit(2)
+qc.h(0)
+qc.s(1)
+qc.cx(0, 1)
+qc.t(0)
+qc.t(1)
+qc.cx(1, 0)
+qc.h(1)
 
-# ==========================================
-# Test case: Complete transformation with input and output
-# ==========================================
-if __name__ == "__main__":
-    qc = QuantumCircuit(2)
-    
-    # Bell State
-    qc.h(0)
-    qc.s(1)
-    qc.cx(0, 1)
-    qc.barrier()
-    
-    # Phase gates
-    qc.t(0)
-    qc.t(1)
-    qc.barrier()
-    
-    # Interference
-    qc.cx(1, 0)
-    qc.h(1)
+# Transform: input |00>, measure YZ expectation
+converter = DualCircuitConverter(qc, input_state="00", output_pauli="YZ")
+converter.print_circuits()
 
-    # Scenario: Original input |00>, we want to measure the expectation value of operator YZ
-    converter = DualCircuitConverter(qc, input_state="00", output_pauli="YZ")
-    
-    # Expected result:
-    # - Dual left side (Input): Corresponds to YZ.
-    #   q0(Y) -> a0=1, b0=1 (X on a, X on b)
-    #   q1(Z) -> a1=0, b1=1 (X on b)
-    # - Middle: Gate sequence reversed (S -> CX -> H)
-    # - Dual right side (Output): Corresponds to 00.
-    #   H gate will be present in the b register for projection measurement
-    converter.draw_comparison()
+print("\n" + "=" * 60)
+print("INTERPRETATION")
+print("=" * 60)
+print("The dual circuit computes: 2^(n/2) * <0+|^n @ C @ |P>")
+print("where |P> encodes the Pauli operator YZ")
+print("Y -> (a=1, b=1), Z -> (a=0, b=1)")
 ```
 
 The advantages above stem from a special construction, allowing us to notice that the $\mathbf{CH}$ gates in OSF can be simplified into H gates. Thus, the entire circuit becomes a Clifford circuit.

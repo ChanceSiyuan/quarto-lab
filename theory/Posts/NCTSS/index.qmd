@@ -1,8 +1,6 @@
 ---
 categories:
-- Reviews
-- Optimization
-- Quantum Information
+- Surveys
 date: '2026-01-30'
 lang: en
 title: "NCTSSoS.jl: Sparse Non-Commutative Polynomial Optimization"
@@ -50,6 +48,30 @@ Trace optimization is essential for studying quantum network correlations, entan
 ## The Moment-SOHS Hierarchy
 
 The central algorithmic engine of NCTSSoS.jl is based on the **Moment-Sum-Of-Hermitian-Squares (SOHS)** hierarchy, the non-commutative analogue of the classical Lasserre Moment-SOS hierarchy.
+
+### Classical Moment-SOS Hierarchy
+By definition, a polynomial $\sigma(x)$ is a Sum-of-Squares if it can be written as $\sigma(x) = \sum_i q_i(x)^2$. Given that $\sigma(x)$ is a rank-$2r$ polynomials, it can be be written in terms of a vector of basis monomials $\mathbf{v}(x)$ and a symmetric matrix $M = \sum_{i} \mathbf{u}_i \mathbf{u}_i^T$ such that 
+$$
+\sigma(x) = \mathbf{v}(x)^T M \mathbf{v}(x) = \sum_{i} \left[\mathbf{u}_i^T \mathbf{v}(x)\right]^2.
+$$
+
+:::{.callout-note icon="false"}
+## Lemma: Sum-of-Squares Decomposition
+A polynomial $\sigma(\mathbf{x})$ is a Sum-of-Squares if and only if there exist a semidefinite matrix $M$ and a vector of basis monomials $\mathbf{v}(\mathbf{x})$ such that $\sigma(\mathbf{x}) = \mathbf{v}(\mathbf{x})^T M \mathbf{v}(\mathbf{x})$.
+:::
+
+The parameter $\mathrm{sos}_{r}(p)$ for a rank-$2r$ polynomial $p(x)$ is 
+$$
+\mathrm{sos}(p) = \max_{\lambda \in \mathbb{R}} \left\{ \lambda : p - \lambda = \sigma + u(1 - \|\mathbf{x}\|^2)\right\},
+$$
+where $u$ is a polynomial of degree $2r-1$ and $\sigma$ is a Sum-of-Squares of degree $2r$.
+
+Another quantity that related to $\mathrm{sos}_{r}(p)$ is $sp_{r}(p)$. To define it, we consider any homogeneous polynomial $p(\mathbf{x})$ of degree $2d$ and $\mathbf{x} = (x_1,\cdots,x_{n})$ involves $n$ variables. 
+Defining a tensor $x^{\otimes d}$ with $d$ indexes, each with $n$ dimensions. The elements $(x^{\otimes d})_{i_1,i_2,\cdots,i_d}$ restores the homogeneous monomial $x_{i_1} x_{i_2} \cdots x_{i_d}$.
+Then the rank-$2d$ homogeneous polynomial $p(\mathbf{x})$ can be written as:
+$$
+p(x) = \langle x^{\otimes d}, \mathbf{M}_p x^{\otimes d} \rangle
+$$
 
 ### Primal Picture: Moment Matrices
 
@@ -117,212 +139,203 @@ The sparse relaxations maintain rigorous guarantees @wang2021exploiting:
 
 # Interactive Demos
 
-::: {.callout-note}
-NCTSSoS.jl is a Julia package, but quarto-live only supports Python. The following demos use NumPy/SciPy to illustrate the **core concepts** of non-commutative polynomial optimization.
+::: {.callout-tip}
+**Interactive Julia Runner**: The code below runs on the server with full Julia environment. Click "Run Code" to execute. You can modify the code and experiment!
 :::
 
 ## Demo 1: Moment Matrix Structure
 
 The moment matrix $M_d$ is indexed by monomials up to degree $d$. For non-commutative variables, the monomial basis is larger since $xy \neq yx$.
 
-```{pyodide}
-import numpy as np
-
-def nc_monomials(n_vars, degree):
+```{.runjulia height="350px"}
+using Combinatorics
+using Pkg
+Pkg.add("NCTSSoS")
+function nc_monomials(n_vars::Int, degree::Int)
     """Generate non-commutative monomials up to given degree."""
-    if degree == 0:
-        return ['1']
+    degree == 0 && return ["1"]
     
-    monomials = ['1']
-    vars = [f'x{i}' for i in range(n_vars)]
+    monomials = ["1"]
+    vars = ["x$i" for i in 0:n_vars-1]
     
     # Generate monomials of each degree
     current = [[v] for v in vars]
-    monomials.extend([''.join(m) for m in current])
+    append!(monomials, [join(m) for m in current])
     
-    for d in range(2, degree + 1):
+    for d in 2:degree
         next_level = []
-        for m in current:
-            for v in vars:
-                next_level.append(m + [v])
+        for m in current
+            for v in vars
+                push!(next_level, vcat(m, [v]))
+            end
+        end
         current = next_level
-        monomials.extend([''.join(m) for m in current])
+        append!(monomials, [join(m) for m in current])
+    end
     
     return monomials
+end
 
 # Compare commutative vs non-commutative monomial counts
 n_vars = 2
-for d in range(1, 4):
+for d in 1:3
     nc_mons = nc_monomials(n_vars, d)
     # Commutative: binomial(n+d, d)
-    from math import comb
-    comm_count = comb(n_vars + d, d)
-    print(f"Degree ≤ {d}: NC monomials = {len(nc_mons)}, Commutative = {comm_count}")
-    if d <= 2:
-        print(f"  NC basis: {nc_mons}")
+    comm_count = binomial(n_vars + d, d)
+    println("Degree ≤ $d: NC monomials = $(length(nc_mons)), Commutative = $comm_count")
+    if d <= 2
+        println("  NC basis: $nc_mons")
+    end
+end
 ```
 
 ## Demo 2: CHSH Inequality - Tsirelson Bound
 
 The CHSH inequality involves 4 observables $A_1, A_2, B_1, B_2$ with $A_i^2 = B_j^2 = I$ and $[A_i, B_j] = 0$. The quantum maximum is $2\sqrt{2}$.
 
-```{pyodide}
-import numpy as np
+```{.runjulia height="380px"}
+# Define variables
+@ncpolyvar A[1:2] B[1:2]
 
-# Pauli matrices
-I = np.eye(2)
-X = np.array([[0, 1], [1, 0]])
-Y = np.array([[0, -1j], [1j, 0]])
-Z = np.array([[1, 0], [0, -1]])
+# CHSH operator (minimizing -CHSH to find max violation)
+obj = -(A[1]*B[1] + A[1]*B[2] + A[2]*B[1] - A[2]*B[2])
 
-def tensor(A, B):
-    """Tensor product of two matrices."""
-    return np.kron(A, B)
+# Constraints
+eq = [A[1]^2 - 1, A[2]^2 - 1, B[1]^2 - 1, B[2]^2 - 1]
+for i in 1:2, j in 1:2
+    push!(eq, A[i]*B[j] - B[j]*A[i])
+end
 
-# Optimal quantum strategy for CHSH
-# Alice: A1 = Z, A2 = X
-# Bob: B1 = (Z+X)/√2, B2 = (Z-X)/√2
-A1 = tensor(Z, I)
-A2 = tensor(X, I)
-B1 = tensor(I, (Z + X) / np.sqrt(2))
-B2 = tensor(I, (Z - X) / np.sqrt(2))
+# Optimization
+level = 1
+pop = [obj; eq]
+vars = [A...; B...]
+opt, data = nctssos_first(pop, vars, level, numeq=length(eq), obj="eigen")
 
-# CHSH operator
-CHSH = A1 @ B1 + A1 @ B2 + A2 @ B1 - A2 @ B2
-
-# Maximum eigenvalue gives quantum bound
-eigenvalues = np.linalg.eigvalsh(CHSH)
-max_eigenvalue = np.max(eigenvalues)
-
-print(f"CHSH operator eigenvalues: {np.sort(eigenvalues)}")
-print(f"Maximum quantum value: {max_eigenvalue:.6f}")
-print(f"Tsirelson bound (2√2): {2*np.sqrt(2):.6f}")
-print(f"Classical bound: 2")
+println("Max quantum value: ", -opt)
 ```
 
 ## Demo 3: NPA Hierarchy Level 1 Structure
 
 At NPA level 1, the moment matrix is indexed by $\{1, A_1, A_2, B_1, B_2\}$. The matrix entries are expectations $\langle u^\dagger v \rangle$.
 
-```{pyodide}
-import numpy as np
+```{.runjulia height="400px"}
+using LinearAlgebra
 
-# Pauli matrices (self-contained)
-I = np.eye(2)
-X = np.array([[0, 1], [1, 0]])
-Z = np.array([[1, 0], [0, -1]])
-
-def tensor(A, B):
-    return np.kron(A, B)
+# Pauli matrices
+I2 = [1.0 0; 0 1]
+X = [0.0 1; 1 0]
+Z = [1.0 0; 0 -1]
 
 # CHSH observables
-A1 = tensor(Z, I)
-A2 = tensor(X, I)
-B1 = tensor(I, (Z + X) / np.sqrt(2))
-B2 = tensor(I, (Z - X) / np.sqrt(2))
+A1 = kron(Z, I2)
+A2 = kron(X, I2)
+B1 = kron(I2, (Z + X) / √2)
+B2 = kron(I2, (Z - X) / √2)
 
 # For CHSH at NPA level 1, basis is {1, A1, A2, B1, B2}
 # Using quantum state |ψ⟩ = |00⟩
-psi = np.array([1, 0, 0, 0])
+ψ = [1.0, 0, 0, 0]
 
-def expect(Op, state):
-    """Compute expectation value ⟨ψ|Op|ψ⟩."""
-    return np.real(state.conj() @ Op @ state)
+expect(Op, state) = real(state' * Op * state)
 
 # Build moment matrix M where M[i,j] = ⟨basis[i]† basis[j]⟩
-basis_ops = [tensor(I, I), A1, A2, B1, B2]
-basis_names = ['1', 'A1', 'A2', 'B1', 'B2']
+basis_ops = [kron(I2, I2), A1, A2, B1, B2]
+basis_names = ["1", "A1", "A2", "B1", "B2"]
 
-n = len(basis_ops)
-M = np.zeros((n, n))
+n = length(basis_ops)
+M = zeros(n, n)
 
-for i in range(n):
-    for j in range(n):
-        M[i, j] = expect(basis_ops[i].conj().T @ basis_ops[j], psi)
+for i in 1:n
+    for j in 1:n
+        M[i, j] = expect(basis_ops[i]' * basis_ops[j], ψ)
+    end
+end
 
-print("NPA Level 1 Moment Matrix:")
-print("Basis:", basis_names)
-print(np.round(M, 4))
-print(f"\nEigenvalues: {np.round(np.linalg.eigvalsh(M), 4)}")
-print("All eigenvalues ≥ 0 ✓ (PSD constraint satisfied)")
+println("NPA Level 1 Moment Matrix:")
+println("Basis: $basis_names")
+display(round.(M, digits=4))
+println("\nEigenvalues: $(round.(eigvals(Symmetric(M)), digits=4))")
+println("All eigenvalues ≥ 0 ✓ (PSD constraint satisfied)")
 ```
 
 ## Demo 4: Term Sparsity Visualization
 
 For a polynomial with few terms, the moment matrix has a sparse structure. This demo shows how support analysis identifies the sparsity pattern.
 
-```{pyodide}
-import numpy as np
-
-def visualize_sparsity(polynomial_terms, basis):
+```{.runjulia height="420px"}
+function visualize_sparsity(polynomial_terms, basis)
     """
     Visualize sparsity pattern of moment matrix.
     polynomial_terms: list of (coefficient, monomial_string)
     basis: list of monomial strings
     """
-    n = len(basis)
-    pattern = np.zeros((n, n), dtype=int)
+    n = length(basis)
+    pattern = zeros(Int, n, n)
     
     # For each term in polynomial, mark entries (u,v) where u*v = term
-    for coef, term in polynomial_terms:
-        for i, u in enumerate(basis):
-            for j, v in enumerate(basis):
+    for (coef, term) in polynomial_terms
+        for (i, u) in enumerate(basis)
+            for (j, v) in enumerate(basis)
                 # Simple check: concatenation (u†v in NC algebra)
-                product = u[::-1] + v  # Reverse u for dagger
-                product = product.replace('1', '')
-                if not product:
-                    product = '1'
-                if product == term or (term == '1' and product == ''):
+                product = reverse(u) * v  # Reverse u for dagger
+                product = replace(product, "1" => "")
+                if product == ""
+                    product = "1"
+                end
+                if product == term || (term == "1" && product == "")
                     pattern[i, j] = 1
+                end
+            end
+        end
+    end
     
     return pattern
+end
 
 # Example: f = 1 + x0x0 + x1x1 (sparse: no cross terms)
-basis = ['1', 'x0', 'x1', 'x0x0', 'x0x1', 'x1x0', 'x1x1']
-polynomial = [(1, '1'), (1, 'x0x0'), (1, 'x1x1')]
+basis = ["1", "x0", "x1", "x0x0", "x0x1", "x1x0", "x1x1"]
+polynomial = [(1, "1"), (1, "x0x0"), (1, "x1x1")]
 
 pattern = visualize_sparsity(polynomial, basis)
 
-print("Polynomial: f = 1 + x₀² + x₁² (no cross terms)")
-print(f"\nBasis: {basis}")
-print("\nSparsity pattern (1 = nonzero entry needed):")
-print(pattern)
-n_basis = len(basis)
-print(f"\nDense entries: {n_basis*n_basis} → Sparse entries: {np.sum(pattern)}")
-print("Block structure emerges due to lack of x₀x₁ terms!")
+println("Polynomial: f = 1 + x₀² + x₁² (no cross terms)")
+println("\nBasis: $basis")
+println("\nSparsity pattern (1 = nonzero entry needed):")
+display(pattern)
+n_basis = length(basis)
+println("\nDense entries: $(n_basis^2) → Sparse entries: $(sum(pattern))")
+println("Block structure emerges due to lack of x₀x₁ terms!")
 ```
 
 ## Demo 5: Heisenberg Model Ground State
 
 The 2-site Heisenberg Hamiltonian $H = X_1X_2 + Y_1Y_2 + Z_1Z_2$ has known ground state energy $E_0 = -3$.
 
-```{pyodide}
-import numpy as np
+```{.runjulia height="350px"}
+using LinearAlgebra
 
 # Pauli matrices
-I = np.eye(2)
-X = np.array([[0, 1], [1, 0]])
-Y = np.array([[0, -1j], [1j, 0]])
-Z = np.array([[1, 0], [0, -1]])
-
-def tensor(A, B):
-    return np.kron(A, B)
+I2 = [1.0 0; 0 1]
+X = [0.0 1; 1 0]
+Y = [0.0 -im; im 0]
+Z = [1.0 0; 0 -1]
 
 # 2-site Heisenberg Hamiltonian
-H = tensor(X, X) + tensor(Y, Y) + tensor(Z, Z)
+H = kron(X, X) + kron(Y, Y) + kron(Z, Z)
 
 # Exact diagonalization
-eigenvalues, eigenvectors = np.linalg.eigh(H)
+eigenvalues = eigvals(Hermitian(real.(H)))
 
-print("2-site Heisenberg Hamiltonian: H = X₁X₂ + Y₁Y₂ + Z₁Z₂")
-print(f"\nEigenvalues: {np.round(np.real(eigenvalues), 4)}")
-print(f"Ground state energy E₀ = {np.min(np.real(eigenvalues)):.4f}")
+println("2-site Heisenberg Hamiltonian: H = X₁X₂ + Y₁Y₂ + Z₁Z₂")
+println("\nEigenvalues: $(round.(real.(eigenvalues), digits=4))")
+println("Ground state energy E₀ = $(round(minimum(real.(eigenvalues)), digits=4))")
 
 # Ground state is the singlet |ψ⟩ = (|01⟩ - |10⟩)/√2
-singlet = np.array([0, 1, -1, 0]) / np.sqrt(2)
-E_singlet = np.real(singlet.conj() @ H @ singlet)
-print(f"\nSinglet state energy: {E_singlet:.4f}")
-print("\nNCTSSoS.jl would certify E₀ ≥ -3 via SDP relaxation")
+singlet = [0, 1, -1, 0] / √2
+E_singlet = real(singlet' * H * singlet)
+println("\nSinglet state energy: $(round(E_singlet, digits=4))")
+println("\nNCTSSoS.jl would certify E₀ ≥ -3 via SDP relaxation")
 ```
 
 # Software Architecture
