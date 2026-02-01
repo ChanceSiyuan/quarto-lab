@@ -140,9 +140,7 @@ $$
         \end{aligned}\right.
 \end{align*}
 $$
-
-# Random Shifted Bell sampling
-
+# Maximum entanglement strategies{#max-entanglement-strategies}
 ## Bell measurement and its restriction
 Contrast to conclusion in the last section, we noted that the purity estimation strategy using Bell measurements already reach the $\mathcal{O}(1)$ sampling complexity.
 Bell measurement is a two-copy local measurement strategy.
@@ -172,21 +170,25 @@ Let $O$ be a Hermitian operator with the maximum and minimum eigenvalues $\lambd
 
 :::{.callout-note collapse="true"}
 ## Proof
-    The variance of an observable $O$ with respect to a quantum state $\rho$ is defined as
-    We first show that the function $f(\rho):= \text{Var}_{\rho}(O)$ is a concave function of $\rho$. Use the fact that $[(1 - \theta)x_1 + \theta x_2]^2 \geq (1- \theta)x_1^2 + \theta x_2^2$ due to the convexity of function $g(x) = x^2$, we have
-    \begin{align}
-        f((1- \theta)\rho + \theta \sigma) - (1- \theta)f(\rho) - \theta f(\sigma) = -\left[(1- \theta)\text{tr}(O\rho) + \theta \text{tr}(O\sigma)\right]^2 + (1- \theta)\left[\text{tr}(O\rho)\right]^2 + \theta \left[\text{tr}(O\sigma)\right]^2 \leq 0, \notag
-    \end{align}
-    which showed the concavity of $f(\rho)$.
-    The maximum value of a concave function over a convex set is attained at an extreme point. Therefore, the problem reduces to maximizing the variance over all pure states $|\psi\rangle,  \text{Var}_{\psi}(O) = \langle\psi|O^2|\psi\rangle - (\langle\psi|O|\psi\rangle)^2 $.
-    Let $\{|\lambda_i\rangle\}$ be the orthonormal eigenbasis of $O$ with corresponding eigenvalues $\{\lambda_i\}$, and express pure state $|\psi\rangle$ in this basis as $|\psi\rangle = \sum_i c_i |\lambda_i\rangle$, where $\{p_i:=|c_i|^2\}_i$ forms a valid probability. Then
-    $ \text{Var}(O) = \sum_i p_i \lambda_i^2 - \left(\sum_i p_i \lambda_i\right)^2 = \sum_{i} p_i(\lambda_i - \bar{\lambda})^2 $.
-    Keeping $\bar \lambda$ unchanged, we should concentrate $p_i$ on the most extreme values available $\lambda_{\text{max}}$ and $\lambda_{\text{min}}$. Let us consider a distribution where probability $p$ is assigned to $\lambda_{\text{max}}$ and $1-p$ to $\lambda_{\text{min}}$. The variance for this distribution is $ \mathbf{V}(p) = [p\lambda_{\text{max}}^2 + (1-p)\lambda_{\text{min}}^2] - [p\lambda_{\text{max}} + (1-p)\lambda_{\text{min}}]^2 $. 
-    Assuming $\lambda_{\text{max}} \neq \lambda_{\text{min}}$, we can find the maximum by differentiate with respect to $p$ and find $p=1/2$. This corresponds to an equal mixture of the minimum and maximum eigenvalues.
-    Substituting $p=1/2$ back into the variance expression gives 
-    \begin{align}
-    \text{Var}_{\text{max}}(O) &= \left[\frac{1}{2}\lambda_{\text{max}}^2 + \frac{1}{2}\lambda_{\text{min}}^2\right] - \left[\frac{1}{2}\lambda_{\text{max}} + \frac{1}{2}\lambda_{\text{min}}\right]^2 = \left( \frac{\lambda_{\text{max}} - \lambda_{\text{min}}}{2} \right)^2.
-    \end{align}
+The variance of an observable $O$ with respect to a quantum state $\rho$ is defined as
+We first show that the function $f(\rho):= \text{Var}_{\rho}(O)$ is a concave function of $\rho$. Use the fact that $[(1 - \theta)x_1 + \theta x_2]^2 \geq (1- \theta)x_1^2 + \theta x_2^2$ due to the convexity of function $g(x) = x^2$, we have
+$$
+\begin{align}
+   f((1- \theta)\rho + \theta \sigma) - (1- \theta)f(\rho) - \theta f(\sigma) = -\left[(1- \theta)\text{tr}(O\rho) + \theta \text{tr}(O\sigma)\right]^2 + (1- \theta)\left[\text{tr}(O\rho)\right]^2 + \theta \left[\text{tr}(O\sigma)\right]^2 \leq 0, \notag
+\end{align}
+$$
+which showed the concavity of $f(\rho)$.
+The maximum value of a concave function over a convex set is attained at an extreme point. Therefore, the problem reduces to maximizing the variance over all pure states $|\psi\rangle,  \text{Var}_{\psi}(O) = \langle\psi|O^2|\psi\rangle - (\langle\psi|O|\psi\rangle)^2 $.
+Let $\{|\lambda_i\rangle\}$ be the orthonormal eigenbasis of $O$ with corresponding eigenvalues $\{\lambda_i\}$, and express pure state $|\psi\rangle$ in this basis as $|\psi\rangle = \sum_i c_i |\lambda_i\rangle$, where $\{p_i:=|c_i|^2\}_i$ forms a valid probability. Then
+$ \text{Var}(O) = \sum_i p_i \lambda_i^2 - \left(\sum_i p_i \lambda_i\right)^2 = \sum_{i} p_i(\lambda_i - \bar{\lambda})^2 $.
+Keeping $\bar \lambda$ unchanged, we should concentrate $p_i$ on the most extreme values available $\lambda_{\text{max}}$ and $\lambda_{\text{min}}$. Let us consider a distribution where probability $p$ is assigned to $\lambda_{\text{max}}$ and $1-p$ to $\lambda_{\text{min}}$. The variance for this distribution is $ \mathbf{V}(p) = [p\lambda_{\text{max}}^2 + (1-p)\lambda_{\text{min}}^2] - [p\lambda_{\text{max}} + (1-p)\lambda_{\text{min}}]^2 $. 
+Assuming $\lambda_{\text{max}} \neq \lambda_{\text{min}}$, we can find the maximum by differentiate with respect to $p$ and find $p=1/2$. This corresponds to an equal mixture of the minimum and maximum eigenvalues.
+Substituting $p=1/2$ back into the variance expression gives 
+$$
+\begin{align}
+\text{Var}_{\text{max}}(O) &= \left[\frac{1}{2}\lambda_{\text{max}}^2 + \frac{1}{2}\lambda_{\text{min}}^2\right] - \left[\frac{1}{2}\lambda_{\text{max}} + \frac{1}{2}\lambda_{\text{min}}\right]^2 = \left( \frac{\lambda_{\text{max}} - \lambda_{\text{min}}}{2} \right)^2.
+\end{align}
+$$
 :::
 This means that Bell shadow can effeciently estimates operators $O = \sum_{\mathbf{p}} \alpha_{\mathbf{p}} \sigma_{\mathbf{p}} \otimes \sigma_{\mathbf{p}}$ with bounded $\infty$-norm $\|O\|_{\infty}$.
 This include the SWAP operator and single Pauli operator $P \otimes P$, which estimates critical values for $\mathrm{tr}(\rho^2)$ and $|\mathrm{tr}(P \rho)|^2$. Their estimator writes 
@@ -242,66 +244,6 @@ $$
     O = 2^{-n}\sum_{\mathbf{p}}\sigma_{\mathbf{q}}\sigma_{\mathbf{p}} \otimes \sigma_{\mathbf{p}}= 2^{-n}\sum_{\mathbf{p}} \bigotimes_{i \in A_{\mathbf{p}}} (-iL_{\mathbf{q}_i} \sigma_{\mathbf{p}_i}L_{\mathbf{q}_i}^{\dagger} \otimes \sigma_{\mathbf{p}_i}) \bigotimes_{i \in R_{\mathbf{p}}} (\mathbb{I} \otimes \sigma_{\mathbf{q}_i}) \bigotimes_{i \in L_{\mathbf{p}}} (\sigma_{\mathbf{q}_i} \otimes \mathbb{I})
 \end{align}
 $$
-
-For the first part $A_{\mathbf{p}}$, we conjugate one side of Bell projector by local Clifford operation $L$ and defined the shifted Bell sampling projector
-$$
-\begin{align}
-    (L \otimes \mathbb{I}_n)\ket{\Phi_{\mathbf{r}}}\!\bra{\Phi_{\mathbf{r}}}(L^\dagger \otimes \mathbb{I}_n) = 4^{-n}\sum_{\mathbf{p}} (-1)^{[\mathbf{r}, \mathbf{p}] + \mathbf{p}_x\cdot \mathbf{p}_z}(L\sigma_{\mathbf{p}}L^{\dagger}) \otimes \sigma_{\mathbf{p}},
-\end{align}
-$$
- This then extends the Bell decoherence channel in Eq.\eqref{eq:Bell_deco} into the shifted one:
-$$
-\begin{align}
-    \mathcal{M}_{L}(\rho^{\otimes 2}) = 4^{-n}\sum_{\mathbf{p}}\mathrm{tr}\left[\left[(L\sigma_{\mathbf{p}}L^{\dagger}) \otimes \sigma_{\mathbf{p}}\right]\cdot\rho^{\otimes 2}\right](L\sigma_{\mathbf{p}}L^{\dagger}) \otimes \sigma_{\mathbf{p}}.
-\end{align}
-$$
-For the rest part $R_{\mathbf{p}},L_{\mathbf{p}}$, we have to extract the information of insymmetric Pauli operator $\mathbb{I} \otimes \sigma_{\mathbf{q}}, \sigma_{\mathbf{q}} \otimes \mathbb{I}$, which is prohibitive for local conjugated Bell measurement.
-To overcome this, we implement the $\sigma_{\mathbf{q}_i}$ Pauli measurements on the position $i$.
-This measurement constitutes the Pauli decoherence channel
-$$
-\begin{align}
-    \Lambda_{i}(\cdot ) = (1/2)\mathbb{I}\cdot\mathrm{tr}(\cdot) + (1/2)\mathrm{tr}\left[\sigma_{\mathbf{q}_i} (\cdot)\right] \sigma_{\mathbf{q}_i}.
-\end{align}
-$$
-In the observable in Eq.~\eqref{eq:2rep_decomp_Prho2}, we average all possible separation.
-Since the $\sigma_{\mathbf{q}_i}$ Pauli measurements is incompatiable to the Bell measurment,  this indicates the naive strategy that uniformly selects a separation $A \cup ([n]/A)$ and then implements single-copy $\sigma_{\mathbf q}$ Pauli measurement on positions $[n]/A$ and $L_{\mathbf q}$ conjugated Bell measurement on positions $A$.
-
-  Notice that the measurement of operator $\sigma_{\mathbf{q}_i}$ with result ${r}_i \in \{0,1\}$ forms the $n$-qubit decoherence channel $\Lambda_{\mathbf{q}}(\rho) = \bigotimes_{i= 1}^{n} \Lambda_{i}(\rho)$, where $\Lambda_{i}(\cdot ) = (1/2)\mathbb{I}\cdot\mathrm{tr}(\cdot) + (1/2)\mathrm{tr}\left[\sigma_{\mathbf{q}_i} (\cdot)\right] \sigma_{\mathbf{q}_i}$. 
-  We also denote the channel $\mathcal{B}_i$ as the localized shifted Bell decoherence channel as 
-$$
-  \begin{align}
-    \mathcal{B}_{i}(\cdot) = 4^{-1}\sum_{\mathbf{p}_i \in \{00,01,10,11\}}\mathrm{tr}\left[\left[(L_{\mathbf{q}_i}\sigma_{\mathbf{p}_i}L_{\mathbf{q}_i}^{\dagger}) \otimes \sigma_{\mathbf{p}_i}\right](\cdot) \right](L_{\mathbf{q}_i}\sigma_{\mathbf{p}_i}L_{\mathbf{q}_i}^{\dagger}) \otimes \sigma_{\mathbf{p}_i}.
-\end{align}
-$$
- Then locallly, the shadow channel $\mathcal{M}$ induced by strategies is the tensor products of $\mathcal{M}_i = ({1}/{2}) \mathcal{B}_i + (1/2)\Lambda^{\otimes 2}_{i}$.
-we noted that
-$$
-  \begin{align}
-      \left\{
-      \begin{aligned}
-      &\mathcal{M}_i(\sigma_{\mathbf{q}_i} \otimes \mathbb{I}) = (1/2)\cdot \sigma_{\mathbf{q}_i} \otimes \mathbb{I},\quad \mathcal{M}_i( \mathbb{I}\otimes\sigma_{\mathbf{q}_i}) =(1/2)\cdot \mathbb{I}\otimes\sigma_{\mathbf{q}_i}, \\
-      &\mathcal{M}_i\left[(L_{\mathbf{q}_i}\sigma_{\mathbf{p}_i}L_{\mathbf{q}_i}^{\dagger}) \otimes \sigma_{\mathbf{p}_i}\right]=(1/2)\cdot(L_{\mathbf{q}_i}\sigma_{\mathbf{p}_i}L_{\mathbf{q}_i}^{\dagger}) \otimes \sigma_{\mathbf{p}_i},\forall \mathbf{p}_i \notin \{\mathbf{q}_i,\mathbf{0}\}.\\
-      \end{aligned}
-      \right.
-  \end{align}
-  $$
-    Then we conclude that $\mathcal{M}^{-1}(O) = 2^n O$ .
-    Noted that
-$$
-    \begin{align}
-        &\mathrm{tr}\left[(L_{\mathbf{q}_i} \otimes \mathbb{I})\Phi_{\mathbf{r}_i}(L^\dagger_{\mathbf{q}_i} \otimes \mathbb{I}) \cdot (\sigma_{\mathbf{q}_i} \otimes \mathbb{I})\cdot \mathrm{SWAP}\right] \\
-        &= 4^{-1}\sum_{\mathbf{u}_i} (-1)^{[\mathbf{r}_i, \mathbf{u}_i] +{u}_x\cdot {u}_z}\mathrm{tr}\left[(L_{\mathbf{q}_i} \otimes \mathbb{I})\sigma_{\mathbf{u}_i} \otimes \sigma_{\mathbf{u}_i} (L^\dagger_{\mathbf{q}_i} \otimes \mathbb{I}) \cdot (\sigma_{\mathbf{q}_i} \otimes \mathbb{I})\cdot \mathrm{SWAP}\right]\\
-        &=4^{-1}\sum_{\mathbf{u}_i} (-1)^{[\mathbf{r}_i, \mathbf{u}_i] +{u}_x\cdot {u}_z}\mathrm{tr}\left[L_{\mathbf{q}_i} \sigma_{\mathbf{u}_i} L_{\mathbf{q}_i}^\dagger \sigma_{\mathbf{q}_i}\sigma_{\mathbf{u}_i}\right]=-(i/2)\cdot \sum_{\mathbf{u}_i \notin \{\mathbf{0}, \mathbf{q}_i\}} (-1)^{[\mathbf{r}_i, \mathbf{u}_i] + u_xu_z}.\\
-        &\mathrm{tr}\left[\left(\frac{ \mathbb{I} + r_{i,x} \sigma_{\mathbf{q}_i}}{2}\right)\otimes  \left(\frac{ \mathbb{I} + r_{i,z} \sigma_{\mathbf{q}_i}}{2}\right)\cdot (\sigma_{\mathbf{q}_i} \otimes \mathbb{I})\cdot \mathrm{SWAP}\right]=|\mathbf{r}_i|/2.
-    \end{align}
-$$
-    We got the estimator
-$$
-    \begin{align}
-        \hat{o}(\{t_i,\mathbf{r}_i\}) =\prod_{i, t_i= 0}\left[-i\cdot \sum_{\mathbf{u}_i \notin \{\mathbf{0}, \mathbf{q}_i\}} (-1)^{[\mathbf{r}_i, \mathbf{u}_i] + u_xu_z} \right]\cdot \prod_{i, t_i= 1}|\mathbf{r}_i|  .
-    \end{align}
-$$
-The variance of this estimator is exponentially large since both weight $|\mathbf{r}_i|$ and summation $\sum_{\mathbf{u}_i \notin \{\mathbf{0}, \mathbf{q}_i\}} (-1)^{[\mathbf{r}_i, \mathbf{u}_i] + u_xu_z} $ range from $[-2,2]$, which gives exponentially large variance.
 
 ---
 

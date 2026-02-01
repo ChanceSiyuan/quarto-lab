@@ -1,18 +1,19 @@
 ---
 date: '2026-01-16'
-execute:
-  enabled: false
-format:
-  html:
-    code-fold: true
-jupyter: python3
 lang: en
+toc: false
 title: Project Home
-keep-ipynb: false
+listing:
+  contents: ./issues/*.qmd
+  type: table
+  fields: [date, title, status]
+  sort: date desc
+  id: issues
 ---
 
 # Current status
-
+::: {#issues}
+:::
 # Relevant Notes
 
 0. [Review of local estimation of observables](/theory/Posts/Estimation/index.qmd)

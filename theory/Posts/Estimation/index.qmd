@@ -3,7 +3,7 @@ categories:
 - Surveys
 date: '2026-01-20'
 lang: en
-title: Local Estimation of Quantum Observables
+title: Local Multi-copy Estimation of Quantum Observables
 subtitle: A Review of Measurement Strategies and Sample Complexity
 bibliography: refs.bib
 abstract: |
@@ -16,9 +16,8 @@ abstract: |
 
 Consider a quantum system described by an $n$-qubit density matrix $\rho$. Two fundamental estimation problems arise in quantum information processing:
 
-**Linear Estimation Problem.** Given an arbitrary operator $O$, determine the optimal sample complexity for estimating $\mathrm{tr}(O\rho)$ under local measurement constraints.
-
-**Non-linear Estimation Problem.** Given an arbitrary operator $O$, determine the optimal sample complexity for estimating $\mathrm{tr}(O\rho^2)$ under local measurement constraints.
+- **Linear Estimation Problem.** Given an arbitrary operator $O$, determine the optimal sample complexity for estimating $\mathrm{tr}(O\rho)$ under local measurement constraints.
+- **Non-linear Estimation Problem.** Given an arbitrary operator $O$, determine the optimal sample complexity for estimating $\mathrm{tr}(O\rho^2)$ under local measurement constraints.
 
 A central question is whether multi-copy measurement strategies can provide advantages over single-copy protocols when restricted to local operations.
 
@@ -32,28 +31,11 @@ These estimation problems are motivated by several important applications:
 
 3. **Quantum Fisher Information.** Estimation of the quantum Fisher information, which characterizes the sensitivity of quantum states to parameter changes, can be decomposed into Pauli operator estimations @rath2021quantum.
 
-4. **Fundamental Limits.** Understanding the sample complexity of local estimation reveals fundamental constraints on information extraction from quantum systems, particularly for topologically ordered states where certain information is intrinsically non-local.
+During this survey, two measurement paradigms are distinguished:
 
-## Notation
+- **Local measurements.** The constraint of *local* measurements restricts operations to act on individual qubits (or small subsystems) without long-range entanglement within a single copy.
+- **Multi-copy ($k$-replica) measurements.** Measurements are performed jointly on $k$ copies of $\rho$, potentially with entangling operations between copies. This framework includes Bell measurements ($k=2$) and more general collective protocols.
 
-Throughout this review, the following notation is employed:
-
-- $\mathcal{P}_n = \{I, X, Y, Z\}^{\otimes n}$: the $n$-qubit Pauli group
-- $\mathrm{wt}(P)$: the Pauli weight (number of non-identity tensor factors) of $P \in \mathcal{P}_n$
-- $\|O\|_\infty$: the operator norm (largest singular value) of $O$
-- $\mathrm{SWAP}$: the two-qubit swap operator
-
-# Preliminaries
-
-## Measurement Models
-
-Two measurement paradigms are distinguished:
-
-**Single-copy (1-replica) measurements.** Each measurement is performed on a single copy of $\rho$. The measurement outcome is used to construct an unbiased estimator of the target quantity.
-
-**Multi-copy ($k$-replica) measurements.** Measurements are performed jointly on $k$ copies of $\rho$, potentially with entangling operations between copies. This framework includes Bell measurements ($k=2$) and more general collective protocols.
-
-The constraint of *local* measurements restricts operations to act on individual qubits (or small subsystems) without long-range entanglement within a single copy.
 
 ## Classical Shadows Framework
 
@@ -219,11 +201,9 @@ As noted in @huggins2021virtual:
 
 - A $k$-replica strategy constructing classical shadows for $\rho^t$ exists, with explicit construction for $t=2$ using non-local circuits @liu2024auxiliary.
 
-- *Local 2-copy 3-design shadow* ([details](/theory/Topics/Shadow_tomography/multicopy.qmd)): Information-complete with sampling advantages over Bell sampling in specific regimes for weighted purity and non-linear Pauli properties.
+- *Local 2-copy 3-design shadow* ([details](/theory/Topics/Shadow_tomography/3desgin_multi_local_shadow.qmd)): Information-complete with sampling advantages over Bell sampling in specific regimes for weighted purity and non-linear Pauli properties.
 
 - *Entanglement-fixed 2-copy shadow* ([details](/theory/Topics/Shadow_tomography/multicopy.qmd)): Information-complete only when entanglement is non-maximal.
-
-- *Random shifted Bell sampling* @ippoliti2024classical: Information-incomplete but achieves $O(n)$ sample complexity for $\mathrm{tr}(O\rho^2)$.
 
 ### Hybrid and Learning-based Methods
 
@@ -235,9 +215,11 @@ Machine learning approaches @huang2022provably demonstrate provably efficient es
 
 **Two-replica hardness.** Even with non-local operations allowed and fixed operator $O$, the sample complexity is $\Omega(2^{k/2})$ where $k$ is the support size @du2025optimal @ye2025exponential.
 
-**Conjectures:**
-
+:::{.callout-important icon="false"}
+## Conjectures
 Based on the observation that all known local 2-replica shadow protocols exhibit exponential sampling complexity, estimation of $\{\mathrm{tr}(P\rho^2)\}$ for all $P \in \mathcal{P}_n$ is [conjectured to be hard](../../Topics/Lowerbounds/index.qmd) for 2-replica strategies.
+:::
+
 
 A [4-replica non-local upper bound](/theory/Topics/Shadow_tomography/multicopy.qmd) exists for estimating $\{\mathrm{tr}(P\rho^2)\}$ for all $P \in \mathcal{P}_n$, suggesting that 4-replica local estimation may also be fundamentally limited.
 

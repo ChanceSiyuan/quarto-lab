@@ -74,18 +74,28 @@ website:
 format:
   live-html:
     html-math-method: katex
-    theme: darkly     
+    theme: 
+      light: flatly
+      dark: darkly
     css: styles.css
-    toc: true          
-    code-copy: true       
+    toc: true
+    code-copy: true
     citations-hover: true
-    pyodide:
-      packages:
-        - numpy
-        - scipy
     filters:
       - tikz
       - code-runner
+
+comments:
+  giscus:
+    repo: "ChanceSiyuan/quarto-lab"
+    repo-id: "R_kgDOREwORA"
+    category: "General"
+    category-id: "DIC_kwDOREwORM4C1teX"
+    mapping: "pathname"
+    reactions-enabled: true
+    loading: lazy
+    input-position: "bottom"
+    theme: "preferred_color_scheme"
 
 editor: source 
 

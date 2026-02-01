@@ -1,0 +1,68 @@
+---
+title: "Test Issue"
+date: 2026-01-31
+categories: [Bug, Quantum]
+status: "Open"
+css: styles.css
+---
+
+::: {.issue-container}
+::: {.issue-title-section}
+# [🔓 Open]{.status-open} Test issue [#1]{.issue-number}
+
+::: {.issue-meta}
+[bug]{.label .label-bug} [enhancement]{.label .label-enhancement}
+:::
+:::
+
+::: {.issue-post}
+::: {.post-header}
+::: {.post-author}
+![Xu Yang](https://ui-avatars.com/api/?name=Xu+Yang&background=0D8ABC&color=fff&size=80){.post-avatar}
+**Xu Yang** opened this issue on Jan 31, 2026
+:::
+:::
+
+::: {.post-body}
+## Problem Description
+
+This is a test issue to demonstrate the GitHub-style interface with Giscus comments integration.
+
+**Todo:**
+
+- [ ] Implement feature X
+- [ ] Write tests
+- [ ] Update documentation
+
+### Example Code
+
+```python
+def quantum_algorithm():
+    # Your implementation
+    pass
+```
+
+### Expected Behavior
+
+The issue page should display with GitHub-style formatting, including:
+- Proper status badges
+- Label badges with appropriate colors
+- Clean bordered containers with rounded corners
+- Dark mode support via CSS variables
+
+### Actual Behavior
+
+Currently being implemented with Quarto divs and custom CSS.
+
+### Technical Details
+
+This implementation uses:
+- Custom CSS for the main post styling
+- Giscus for real GitHub Discussions-based comments
+- Quarto div syntax for semantic structure
+- CSS variables for theme consistency
+:::
+:::
+:::
+
+<!-- Giscus comments will automatically appear below -->
