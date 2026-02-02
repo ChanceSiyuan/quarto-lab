@@ -45,9 +45,8 @@ $\mathbf{V}(O^{(k)}) :=\bigotimes_{i = 1}^n  \sum_{W_i,W_i'}\alpha_{W_i} \alpha_
 
 ::: {.callout-note collapse="true"}
 ## Proof (Click to expand)
-
-*Proof.* By
-Lemma (onsite_2design)
+ By
+[Lemma (Onsite 2design)](/theory/Topics/Shadow_tomography/intro.qmd#lem-onsite_2design)
 $\mathcal{D}_{1/(2^k + 1)}^{-1}(\cdot) = (2^k + 1)(\cdot) - \text{tr}(\cdot) \mathbb{I}_k$
 constitute an unbiased estimator of $\rho^{\otimes k}$ through the
 transformation
@@ -221,17 +220,20 @@ of $O_{\mathbf{r}}$ explicitly.
 ## (Covariance Operator of Non-local Pauli Shadow)
 For the $k=2$ local shadow, consider the observable $O_{\mathbf{r}}= (\sigma_{\mathbf{r}} \otimes \mathbb{I}_n) \cdot \text{SWAP}^{\otimes n}$ where $\sigma_{\mathbf{r}} = \bigotimes_{j=1}^n \sigma_{\mathbf{r}_j}$ is an $n$-qubit Pauli operator with $\mathbf{r} = (\mathbf{r}_1, \ldots, \mathbf{r}_n) \in (\mathbb{F}_2^2)^n$. Let $\text{wt}(\sigma_{\mathbf{r}})$ denote the Pauli weight (number of non-identity single-qubit factors). Then the covariance operator factorizes as $\mathbf{V}(O_{\mathbf{r}}, O_{\mathbf{r}'}) = \bigotimes_{j = 1}^n v(\mathbf{r}_j, \mathbf{r}_j')$ with
 $$
-    \begin{align}
-        v(\mathbf{r}_j, \mathbf{r}_j') = 
-        \left\{\begin{aligned}
-            &\frac{5}{6}\left(\sigma_{\mathbf{r}_j}\otimes \sigma_{\mathbf{r}'_j} +\sigma_{\mathbf{r}'_j}\otimes \sigma_{\mathbf{r}_j} \right)\text{~if~} \mathbf{r}_j, \mathbf{r}_j'  \neq \mathbf{0},\\
-            &\frac{11\mathbb{I}_4}{3} \hspace{5em}\text{~if~} \mathbf{r}_j=\mathbf{r}_j'= \mathbf{0}, \\
-            &\left(\frac{1}{2}\mathbb{I}_2 \otimes \sigma_{\mathbf{r}_j}+ \frac{5}{6}\sigma_{\mathbf{r}_j}\otimes\mathbb{I}_2\right) \text{~if~} \mathbf{r}'_j = \mathbf{0},  \mathbf{r}_j\neq \mathbf{0},\\
-            &\left(\frac{1}{2}\mathbb{I}_2 \otimes \sigma_{\mathbf{r}'_j} + \frac{5}{6}\sigma_{\mathbf{r}'_j}\otimes\mathbb{I}_2\right)\text{~if~} \mathbf{r}_j = \mathbf{0},  \mathbf{r}'_j\neq \mathbf{0}.
-        \end{aligned}\right.
-    \end{align}
+\begin{align}
+    v(\mathbf{r}_j, \mathbf{r}_j') = 
+    \left\{\begin{aligned}
+        &\frac{5}{6}\left(\sigma_{\mathbf{r}_j}\otimes \sigma_{\mathbf{r}'_j} +\sigma_{\mathbf{r}'_j}\otimes \sigma_{\mathbf{r}_j} \right) &\text{if } \mathbf{r}_j, \mathbf{r}_j'  \neq \mathbf{0},\\
+        &\frac{13\mathbb{I}_4 -2 \mathrm{SWAP}}{3} &\text{if } \mathbf{r}_j=\mathbf{r}_j'= \mathbf{0}, \\
+        &\left(-\frac{1}{3}\mathrm{SWAP} + \frac{5}{6}\mathbb{I}_4\right)(\mathbb{I}_2 \otimes \sigma_{\mathbf{r}_j}) + \frac{5}{6}\sigma_{\mathbf{r}_j}\otimes\mathbb{I}_2 &\text{if } \mathbf{r}'_j = \mathbf{0},  \mathbf{r}_j\neq \mathbf{0},\\
+        &\left(-\frac{1}{3}\mathrm{SWAP} + \frac{5}{6}\mathbb{I}_4\right)(\mathbb{I}_2 \otimes \sigma_{\mathbf{r}'_j}) + \frac{5}{6}\sigma_{\mathbf{r}'_j}\otimes\mathbb{I}_2 &\text{if } \mathbf{r}_j = \mathbf{0},  \mathbf{r}'_j\neq \mathbf{0}.
+    \end{aligned}\right.
+\end{align}
 $$
-In particular, $\mathbf{V}(O_{\mathbf{r}},O_{\mathbf{r}}) =  \left({11}/{3}\right)^{n}\cdot \left({5}/{11}\right)^{\text{wt}(\sigma_{\mathbf{r}})} \sigma_{\mathbf{r}} \otimes \sigma_{\mathbf{r}}.$
+In particular, When $\mathbf{r} = \mathbf{r}'$, each local factor simplifies to:
+$$
+v(\mathbf{r}_j, \mathbf{r}_j) = \begin{cases} \frac{5}{3}\sigma_{\mathbf{r}_j}^{\otimes 2} & \text{if } \sigma_{\mathbf{r}_j} \neq \mathbb{I}_2, \\ \frac{13}{3}\mathbb{I}_4 - \frac{2}{3}\mathrm{SWAP}& \text{if } \sigma_{\mathbf{r}_j} = \mathbb{I}_2. \end{cases}
+$$
 :::
 
 ::: {.callout-note collapse="true"}
@@ -300,10 +302,10 @@ $$ {#eq-V-case1}
 $$
 \begin{align}
     v(\mathbf{0}, \mathbf{0}) &= 4^{-1}\sum_{\mathbf{p},\mathbf{p}'} (-1)^{[\mathbf{p},\mathbf{p}']} r(\mathbf{p}\mathbf{p}, \mathbf{p}'\mathbf{p}')\sigma_{\mathbf{p}+\mathbf{p}'} \otimes \sigma_{\mathbf{p}+\mathbf{p}'} \notag \\
-    &= 4\, \mathbb{I}_2^{\otimes 2} - \frac{1}{3}(X^{\otimes 2}+Z^{\otimes 2}+Y^{\otimes 2}) = \frac{11\mathbb{I}_4 + 4\Pi_{\mathrm{asym}}}{3},
+    &= 4\, \mathbb{I}_2^{\otimes 2} - \frac{1}{3}(X^{\otimes 2}+Z^{\otimes 2}+Y^{\otimes 2}) = \frac{13\mathbb{I}_4 -2 \mathrm{SWAP}}{3},
 \end{align}
 $$
-where $\Pi_{\mathrm{asym}} = (\mathbb{I}_4 - \text{SWAP})/2 = (\mathbb{I}_4 - X^{\otimes 2} - Z^{\otimes 2} - Y^{\otimes 2})/4$.
+where $\mathrm{SWAP}= (\mathbb{I}_4 + X^{\otimes 2} + Z^{\otimes 2} + Y^{\otimes 2})/2$.
 
 *Case 3: $\mathbf{r}' = \mathbf{0}$, $\mathbf{r} \neq \mathbf{0}$.* Naively applying @eq-V-case1 would give $v(\mathbf{r}, \mathbf{0}) = \frac{5}{6}(\sigma_{\mathbf{r}}\otimes \mathbb{I}_2 + \mathbb{I}_2\otimes \sigma_{\mathbf{r}})$. However, this overcounts when $\mathbf{p}' = \mathbf{0}$, since the rescaling function satisfies $r((\mathbf{r}+\mathbf{p})\mathbf{p}, \mathbf{0}\mathbf{0}) = 1$ rather than the non-trivial formula. The correction term is:
 $$
@@ -311,62 +313,68 @@ $$
 $$
 Thus:
 $$
-v(\mathbf{r}, \mathbf{0}) = \frac{5}{6}(\mathbb{I}_2 \otimes \sigma_{\mathbf{r}} + \sigma_{\mathbf{r}}\otimes\mathbb{I}_2) - \frac{1}{3}(\sigma_{\mathbf{r}} \otimes \mathbb{I}_2)\text{SWAP}.
+\begin{align*}
+v(\mathbf{r}, \mathbf{0}) &= \frac{5}{6}(\mathbb{I}_2 \otimes \sigma_{\mathbf{r}} + \sigma_{\mathbf{r}}\otimes\mathbb{I}_2) - \frac{1}{3}(\sigma_{\mathbf{r}} \otimes \mathbb{I}_2)\text{SWAP}\\
+& = \left(-\frac{1}{3}\mathrm{SWAP} + \frac{5}{6}\mathbb{I}_4\right)(\mathbb{I}_2 \otimes \sigma_{\mathbf{r}}) + \frac{5}{6}\sigma_{\mathbf{r}}\otimes\mathbb{I}_2.
+\end{align*}
 $$
-Using $\Pi_{\mathrm{sym}} + \Pi_{\mathrm{asym}} = \mathbb{I}_4$ and $\Pi_{\mathrm{sym}} - \Pi_{\mathrm{asym}} = \text{SWAP}$:
-$$
-v(\mathbf{r}, \mathbf{0}) = \left(\frac{1}{2}\Pi_{\mathrm{sym}} + \frac{7}{6}\Pi_{\mathrm{asym}}\right)(\mathbb{I}_2 \otimes \sigma_{\mathbf{r}}) + \frac{5}{6}\sigma_{\mathbf{r}}\otimes\mathbb{I}_2.
-$$
-By symmetry, $v(\mathbf{0}, \mathbf{r}') = \left(\frac{1}{2}\Pi_{\mathrm{sym}} + \frac{7}{6}\Pi_{\mathrm{asym}}\right)(\mathbb{I}_2 \otimes \sigma_{\mathbf{r}'}) + \frac{5}{6}\sigma_{\mathbf{r}'}\otimes\mathbb{I}_2$.
 
-**Step 4: Restriction to symmetric subspace.**
-Since the input state is $\rho \otimes \rho$, which lies in the symmetric subspace, we have $\text{tr}(\rho \otimes \rho \cdot \Pi_{\mathrm{asym}}) = 0$. Therefore, terms proportional to $\Pi_{\mathrm{asym}}$ do not contribute, and we can simplify:
+By symmetry, $v(\mathbf{0}, \mathbf{r}') = \left(-\frac{1}{3}\mathrm{SWAP} + \frac{5}{6}\mathbb{I}_4\right)(\mathbb{I}_2 \otimes \sigma_{\mathbf{r}'}) + \frac{5}{6}\sigma_{\mathbf{r}'}\otimes\mathbb{I}_2$.
+
+ Therefore, we can conclude:
 $$
 \begin{align}
     v(\mathbf{r}_j, \mathbf{r}_j') = 
     \left\{\begin{aligned}
         &\frac{5}{6}\left(\sigma_{\mathbf{r}_j}\otimes \sigma_{\mathbf{r}'_j} +\sigma_{\mathbf{r}'_j}\otimes \sigma_{\mathbf{r}_j} \right) &\text{if } \mathbf{r}_j, \mathbf{r}_j'  \neq \mathbf{0},\\
-        &\frac{11\mathbb{I}_4}{3} &\text{if } \mathbf{r}_j=\mathbf{r}_j'= \mathbf{0}, \\
-        &\frac{1}{2}\mathbb{I}_2 \otimes \sigma_{\mathbf{r}_j}+ \frac{5}{6}\sigma_{\mathbf{r}_j}\otimes\mathbb{I}_2 &\text{if } \mathbf{r}'_j = \mathbf{0},  \mathbf{r}_j\neq \mathbf{0},\\
-        &\frac{1}{2}\mathbb{I}_2 \otimes \sigma_{\mathbf{r}'_j} + \frac{5}{6}\sigma_{\mathbf{r}'_j}\otimes\mathbb{I}_2 &\text{if } \mathbf{r}_j = \mathbf{0},  \mathbf{r}'_j\neq \mathbf{0}.
+        &\frac{13\mathbb{I}_4 -2 \mathrm{SWAP}}{3} &\text{if } \mathbf{r}_j=\mathbf{r}_j'= \mathbf{0}, \\
+        &\left(-\frac{1}{3}\mathrm{SWAP} + \frac{5}{6}\mathbb{I}_4\right)(\mathbb{I}_2 \otimes \sigma_{\mathbf{r}_j}) + \frac{5}{6}\sigma_{\mathbf{r}_j}\otimes\mathbb{I}_2 &\text{if } \mathbf{r}'_j = \mathbf{0},  \mathbf{r}_j\neq \mathbf{0},\\
+        &\left(-\frac{1}{3}\mathrm{SWAP} + \frac{5}{6}\mathbb{I}_4\right)(\mathbb{I}_2 \otimes \sigma_{\mathbf{r}'_j}) + \frac{5}{6}\sigma_{\mathbf{r}'_j}\otimes\mathbb{I}_2 &\text{if } \mathbf{r}_j = \mathbf{0},  \mathbf{r}'_j\neq \mathbf{0}.
     \end{aligned}\right.
 \end{align}
 $$
-
-**Step 5: Diagonal case $\mathbf{r} = \mathbf{r}'$.**
 When $\mathbf{r} = \mathbf{r}'$, each local factor simplifies to:
 $$
-v(\mathbf{r}_j, \mathbf{r}_j) = \begin{cases} \frac{5}{3}\sigma_{\mathbf{r}_j}^{\otimes 2} & \text{if } \sigma_{\mathbf{r}_j} \neq \mathbb{I}_2, \\ \frac{11}{3}\mathbb{I}_4 & \text{if } \sigma_{\mathbf{r}_j} = \mathbb{I}_2. \end{cases}
-$$
-Hence:
-$$
-\mathbf{V}(O_\mathbf{r},O_\mathbf{r}) = \bigotimes_{j=1}^n v(\mathbf{r}_j, \mathbf{r}_j) = \left(\frac{11}{3}\right)^{n}\left(\frac{5}{11}\right)^{\text{wt}(\sigma_{\mathbf{r}})}\sigma_{\mathbf{r}}^{\otimes 2}. \quad \square
+v(\mathbf{r}_j, \mathbf{r}_j) = \begin{cases} \frac{5}{3}\sigma_{\mathbf{r}_j}^{\otimes 2} & \text{if } \sigma_{\mathbf{r}_j} \neq \mathbb{I}_2, \\ \frac{13}{3}\mathbb{I}_4 - \frac{2}{3}\mathrm{SWAP}& \text{if } \sigma_{\mathbf{r}_j} = \mathbb{I}_2. \end{cases}
 $$
 :::
 
 We consider the estimation of the simplest operator
 $O^{(2)} = \text{SWAP}^{\otimes n} = 2^{-n}(\mathbb{I}\mathbb{I}+XX+YY+ZZ)^{\otimes n}$.
-Based on @lem-covar-pauli, $\text{Var}=(11/3)^n$, which still requires exponentially large sampling
+Based on @lem-covar-pauli, $\text{Var} \leq (13/3)^n$, which still requires exponentially large sampling
 numbers. For the single copy local Clifford shadow, the variance is
 calculated through: 
 $$
 \begin{align*}
     &\hspace{-1.5cm}\mathbf{V}:= \sum_{W,W' \in \mathcal{P}_2^{\otimes n}} \alpha_{W}\alpha_{W'} R(W,W') W W'= 4^{-n}\bigotimes_{i =1}^n \left(\sum_{W_i,W_i' \in \{\mathbb{I}\mathbb{I},XX,YY,ZZ\}} R(W_i,W'_i) W_i W_i'\right).\notag\\
    = 4^{-n} &\left( \mathbb{I}\mathbb{I}+XX+YY+ZZ+ XX+9\mathbb{I}\mathbb{I} + YY + 9\mathbb{I}\mathbb{I} +ZZ+ 9\mathbb{I}\mathbb{I}\right)^{\otimes n}\notag\\
-  & \hspace{-1.15cm}= \left(7 \mathbb{I}\mathbb{I} + \frac{1}{2}(XX+YY+ZZ)\right)^{\otimes n}= \left(\frac{13\mathbb{I}\mathbb{I}+2\text{SWAP}}{2}\right)^{\otimes n} = \left(\frac{11\mathbb{I}\mathbb{I}+ 4\Pi_{\mathrm{sym}}}{2}\right)^{\otimes n}. 
+  & \hspace{-1.15cm}= \left(7 \mathbb{I}\mathbb{I} + \frac{1}{2}(XX+YY+ZZ)\right)^{\otimes n}= \left(\frac{13\mathbb{I}\mathbb{I}+2\text{SWAP}}{2}\right)^{\otimes n} \leq \left(\frac{15\mathbb{I}\mathbb{I}}{2}\right)^{\otimes n}. 
 \end{align*}
 $$
  This gives the variance scaling of $7.5^n$, which being
-improved to $4.67^n$ in the 2-replica local shadow. Noted that the
+improved to $4.33^n$ in the 2-replica local shadow. Noted that the
 purity estimation strategy using Bell measurements already reach the
 $\mathcal{O}(1)$ sampling complexity.
 
-:::{.callout-important}
-## Question:
-Can this be generalized to the high-rank case?
+:::{#lem-krep_covar .callout-important icon="false"}
+## (k-replica variance)
+@lem-covar-pauli can be generalized to the $k$-replica case. Denoting $S := \text{SWAP}_{(1\cdots k)}$,
+$$
+\begin{align*}
+v(O^{(k)}_{\mathbf{r}}, O^{(k)}_{\mathbf{r}}) = \left\{ 
+    \begin{aligned}
+    &\frac{2^k+1}{2^k+2}\left[2\,\mathbb{I}^{\otimes k} + 2\left(\sigma_{\mathbf{r}}^{\otimes 2}\otimes\mathbb{I}^{\otimes(k-2)}\right)\cdot S^2\right], \quad k \text{~odd}, \mathbf{r} \neq 0,\\
+    &\frac{2(2^k+1)}{2^k+2}\left(\sigma_{\mathbf{r}}^{\otimes 2}\otimes\mathbb{I}^{\otimes(k-2)}\right)\cdot S^2, \quad k \text{~even},\mathbf{r} \neq 0,\\
+    & \frac{2(2^k-1)}{2^k+2}\,\mathbb{I}^{\otimes k} + \frac{2(2^k+1)}{2^k+2}\,S^2 - \frac{4}{2^k+2}\,S \text{~if~} k \text{~is odd},\mathbf{r} = 0\\
+    & \frac{4\cdot 2^k}{2^k+2}\,\mathbb{I}^{\otimes k} + \frac{2(2^k+1)}{2^k+2}\,S^2 - \frac{4}{2^k+2}\,S \text{~if~} k \text{~is even},\mathbf{r} =0.
+    \end{aligned}
+     \right.
+\end{align*}
+$$
+
 :::
 
-::: {.callout-note collapse="false"}
+::: {.callout-note collapse="true"}
 ## Proof (Click to expand)
 To generalize $\text{tr}(O \rho^2)$ to the higher-rank case
 $\text{tr}(O \rho^k)$, we first write the decomposition of the $k$-cycle
@@ -468,7 +476,6 @@ For **even $k$**: $\text{sum}_{1,k-1}=2^{k}\delta_{\mathbf{r},\mathbf{0}}=0$ sin
 $$
 v(O^{(k)}_{\mathbf{r}}, O^{(k)}_{\mathbf{r}}) = \frac{2(2^k+1)}{2^k+2}\left(\sigma_{\mathbf{r}}^{\otimes 2}\otimes\mathbb{I}^{\otimes(k-2)}\right)\cdot S^2, \quad k \text{~even}.
 $$
-*Verification at $k=2$*: Since $S^2=\mathbb{I}_4$ for $k=2$, the even-$k$ formula gives $\frac{5}{3}\sigma_{\mathbf{r}}^{\otimes 2}$, matching @eq-V-case1. $\checkmark$
 
 
 **Case: $\mathbf{r} = \mathbf{r}' = \mathbf{0}$.**
@@ -511,36 +518,25 @@ v(O^{(k)}_{\mathbf{0}}, O^{(k)}_{\mathbf{0}}) = \left\{
     \end{aligned}
 \right.
 $$
-*Verification at $k=2$*: Since $S^2=\mathbb{I}_4$, the even-$k$ formula gives $\frac{16+10}{6}\mathbb{I}_4 - \frac{4}{6}\text{SWAP} = \frac{13}{3}\mathbb{I}_4 - \frac{2}{3}\text{SWAP}$, matching @eq-V-case1 Case 2. $\checkmark$
-
-*Verification at $k=3$*: Since $S^2=S^{-1}$ for $k=3$, the odd-$k$ formula gives $v = \frac{1}{5}\left(7\,\mathbb{I}^{\otimes 3} + 9\,S^{-1} - 2\,S\right)$. $\checkmark$
-
 :::
+- Verification at $k=1, \mathbf{r} \neq 0$: Since $S=\mathbb{I}_1$ for $k=1$, the odd-$k$ formula gives $\frac{3}{4}(2\mathbf{I}_1+2\mathbf{I}_1) = 3 \mathbf{I}_1$, matching the single-replica local shadow.
+- Verification at $k=2,\mathbf{r} \neq 0$: Since $S^2=\mathbb{I}_4$ for $k=2$, the even-$k$ formula gives $\frac{5}{3}\sigma_{\mathbf{r}}^{\otimes 2}$, matching @eq-V-case1.
+
+- Verification at $k=1,\mathbf{r} = 0$: Since $S=\mathbb{I}_2$, the odd-$k$ formula gives $\frac{2}{4}\mathbb{I} + \frac{6}{4}\mathbb{I} - \frac{4}{4}\mathbb{I}= \mathbb{I} $, matching the efficiency to estimate trivial observable $\mathrm{tr}(\rho)$.
+- Verification at $k=2,\mathbf{r} = 0$: Since $S^2=\mathbb{I}_4$, the even-$k$ formula gives $\frac{16+10}{6}\mathbb{I}_4 - \frac{4}{6}\text{SWAP} = \frac{13}{3}\mathbb{I}_4 - \frac{2}{3}\text{SWAP}$, matching @eq-V-case1 Case 2.
+- Verification at $k=3,\mathbf{r} = 0$: Since $S^2=S^{-1}$ for $k=3$, the odd-$k$ formula gives $v = \frac{1}{5}\left(7\,\mathbb{I}^{\otimes 3} + 9\,S^{-1} - 2\,S\right)$.
 
 ::: {.callout-warning icon="false"}
 ## Remark (Efficiency deterioration as $k\to\infty$)
 
-**Quantitative analysis.** Consider the purity estimator ($\mathbf{r}=\mathbf{0}$) applied to a pure state $\rho=|\psi\rangle\langle\psi|$. Since $S|\psi\rangle^{\otimes k}=S^2|\psi\rangle^{\otimes k}=|\psi\rangle^{\otimes k}$, the per-site second moment for even $k$ evaluates to
+**Quantitative analysis.** Consider the estimator for $\mathrm{tr}(\rho^k)$ ($\mathbf{r}=\mathbf{0}$) applied to a k-replica symmetric state $\rho^{\otimes k}$, the per-site second moment for even $k$ evaluates to
 $$
 \operatorname{tr}\!\bigl(\rho^{\otimes k}\cdot v(\mathbf{0},\mathbf{0})\bigr)
-= \frac{4\cdot 2^k + 2(2^k+1) - 4}{2^k+2}
-= \frac{6\cdot 2^k - 2}{2^k+2}
+\leq \frac{4\cdot 2^k + 2(2^k+1) }{2^k+2}
+= \frac{6\cdot 2^k + 2}{2^k+2}
 \xrightarrow{k\to\infty} 6.
 $$
-At $k=2$ this gives $22/6 = 11/3 \approx 3.67$. For the $n$-qubit purity estimator on a pure state, the worst-case variance is
-$$
-\operatorname{Var} = \left(\frac{6\cdot 2^k - 2}{2^k+2}\right)^n - 1
-\xrightarrow{k\to\infty} 6^n - 1,
-$$
-versus $(11/3)^n - 1 \approx 3.67^n$ at $k=2$. The sample complexity therefore increases by a factor of $(18/11)^n \approx 1.64^n$ in the $k\to\infty$ limit relative to $k=2$.
-
-**Physical explanation — three mechanisms.**
-
-1. **Signal decay.** $\operatorname{tr}(\rho^k) \leq \operatorname{tr}(\rho^2)$ for $k\geq 2$, with exponential decay $\sim \lambda_{\max}^k$ for mixed states, while the variance stays $O(1)$. The signal-to-noise ratio deteriorates exponentially in $k$.
-
-2. **Rescaling blowup.** The inverse measurement channel involves factors of $(2^k+1)$, reflecting that the $k$-qubit Clifford 3-design acts on a $2^k$-dimensional Hilbert space. Larger rescaling amplifies statistical noise.
-
-3. **Literature context.** @Chen_Gong_2024 established a memory–sample complexity tradeoff for purity testing: having $k$ qubits of quantum memory does not improve sample complexity until $k > n/2$, exhibiting a sharp phase transition. This contrasts with Pauli shadow tomography [@Gong_2024_pauli], where the improvement from quantum memory is continuous.
+At $k=2$ this gives $22/6 = 11/3 \approx 4.33$. The sample complexity therefore increases by a factor of $(18/11)^n \approx 1.64^n$ in the $k\to\infty$ limit relative to $k=2$.
 :::
 
 ## Application to estimate weighted purity.

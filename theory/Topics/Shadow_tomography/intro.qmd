@@ -43,10 +43,8 @@ $\rho \to \mathbb{E}_{U \sim \mathcal{U}} \sum_{\mathbf b}\bra{\mathbf b}U \rho 
 :::
 ::::
 
-::: {.callout-important icon="false"}
-## Lemma
-
-[]{#lemma:single_shadow_unbiased label="lemma:single_shadow_unbiased"}
+::: {#lem-single_shadow_unbiased .callout-important icon="false"}
+## (single shadow unbiased)
 The estimator
 $\hat{o}^{(k)} := \text{tr}(O \hat \rho_1\cdots \hat \rho_k)$ is an
 unbiased estimator for the expectation $\text{tr}(O \rho^k)$, where
@@ -58,10 +56,10 @@ reference="alg:classical_shadow"}.
 ::: {.callout-note collapse="true"}
 ## Proof (Click to expand)
 
-*Proof.* $$\begin{align}
+$$\begin{align}
         \mathbb{E}_{\hat \rho} \text{tr}(O \hat \rho_1\cdots \hat \rho_k) &= \mathbb{E}_{U_i \sim \mathcal{U}}\mathbb{E}_{\mathbf{b}_i \sim U_i \rho U_i^\dagger} \text{tr}\left[O \prod_{i =1}^{k}\mathcal{M}^{-1}(U_i^\dagger \ket{\mathbf{b}_i}\!\bra{\mathbf{b}_i} U_i)\right]\\
         &=  \text{tr}\left[O \prod_{i =1}^{k}\mathcal{M}^{-1}(\mathbb{E}_{U_i \sim \mathcal{U}}\mathbb{E}_{\mathbf{b}_i \sim U_i \rho U_i^\dagger}U_i^\dagger \ket{\mathbf{b}_i}\!\bra{\mathbf{b}_i} U_i)\right]=\text{tr}(O \rho^k).
-\end{align}$$ ◻
+\end{align}$$ 
 :::
 
 While we do not care about the computational complexity in the most
@@ -85,10 +83,9 @@ Gaussian unitary ensemble, manybody Gaussian unitary ensemble, and
 locally scrambled unitaries ensemble. In this subsection we summarized
 these results.
 
-::: {.callout-important icon="false"}
-## Lemma
-
-[]{#lemma:onsite_2design label="lemma:onsite_2design"} A $k$-site
+::: {#lem-onsite_2design .callout-important icon="false"}
+## (onsite 2design)
+A $k$-site
 2-design unitary ensembles $\mathbf{D}_{2}(d^k)^{\otimes n}$ separates
 $n\cdot k$ numbers of qudits in to $n$ parts, and independently
 implements $k$-qudit 2-design unitary, as defined in
@@ -107,17 +104,18 @@ $\mathcal{M}(\rho) = {(d + 1)}^{-1} \rho + {d({d + 1})^{-1} \text{tr}\rho} \cdot
 
 ::: {.callout-note collapse="true"}
 ## Proof (Click to expand)
-
-*Proof.* For tensor product inputs
+For tensor product inputs
 $\otimes_{i = 1}^n \rho_i, \rho_i \in \mathcal{D}(\mathcal{H}(d^k))$,
-the channel $\mathcal{M}$ in this case became $$\begin{align}
+the channel $\mathcal{M}$ in this case became 
+$$\begin{align}
     \mathcal{M}(\otimes_{i = 1}^n \rho_i) 
     &=\mathbb{E}_{\substack{U = \bigotimes_{i=1}^n\text{U}_i \\ \text{U}_i \sim \mathbf{D}_{2}(d^k)}} \sum_{\mathbf{r} \in \mathbb{F}_d^{kn}} \bra{{\mathbf r}} \text{U} (\otimes_{i = 1}^n \rho_i) \text{U}^{\dagger} \ket{{\mathbf r}} \cdot \text{U}^{\dagger} \ket{{\mathbf r}}\!\bra{{\mathbf r}} \text{U} \notag\\
     &=\mathbb{E}_{\substack{U = \bigotimes_{i=1}^n\text{U}_i \\ \text{U}_i \sim \mathbf{D}_{2}(d^k)}} \sum_{\mathbf{r} \in \mathbb{F}_d^{kn}} \text{tr}_{\bar A} \left( \left(\otimes_{i = 1}^n \rho_i^{(\bar A)} \otimes \mathbb{I}^{(A)}(d^{kn})\right)\cdot  (\text{U}^{\dagger} \ket{{\mathbf r}}\! \bra{{\mathbf r}} \text{U})^{(\bar A)} \otimes (\text{U}^{\dagger} \ket{{\mathbf r}}\!\bra{{\mathbf r}} \text{U})^{(A)} \right)\notag\\
     &= \text{tr}_{\bar A}\left( \left(\otimes_{i = 1}^n \rho_i^{(\bar A)}\otimes \mathbb{I}^{(A)}(d^{kn})\right) \cdot \bigotimes_{i = 1}^n \sum_{\mathbf{r}_i \in \mathbb{F}_d^k} \mathbb{E}_{\substack{\text{U}_i \sim \mathbf{D}_{2}(d^k)}}  (\text{U}_i^{\dagger} \ket{\mathbf{r}_{i}}\bra{\mathbf{r}_{i}} \text{U}_i)^{(\bar A)} \otimes (\text{U}_i^{\dagger} \ket{\mathbf{r}_{i}}\!\bra{\mathbf{r}_{i}} \text{U}_i)^{(A)} \right)\notag\\
     &=  \text{tr}_{\bar A}\left( \left(\otimes_{i = 1}^n \rho_i^{(\bar A)}\otimes \mathbb{I}^{(A)}(d^{kn})\right) \cdot \bigotimes_{i = 1}^n \sum_{\mathbf{r}_{i}\in \mathbb{F}_d^{k}} \Phi_2(\ket{\mathbf{r}_{i}}\!\bra{\mathbf{r}_{i}}^{\otimes 2})^{(\bar A A)} \right)\notag \\
     &= \text{tr}_{\bar A}\left( \left(\otimes_{i = 1}^n \rho_i^{(\bar A)}\otimes \mathbb{I}^{(A)}(d^{kn})\right) \cdot \bigotimes_{i = 1}^n d^{k} \frac{\mathbb{I}^{(\bar A)}(d^k)\otimes \mathbb{I}^{(A)}(d^k)+ \mathbb{P}_{(12)}^{d,(\bar A A)}}{(d^k+1) \cdot d^k}\right).\label{eq:k_copy_shadow_channel}
-\end{align}$$ Here in the second line, we use the fact that
+\end{align}$$
+Here in the second line, we use the fact that
 $\ket{{r}_x {r}_z} =H_z \text{CNOT}_{zx} \ket{\Phi_{r_xr_z}}$, with
 $H_z \text{CNOT}_{zx} \in \mathbf{D}_{2}(d^k)$. If we expand $\rho$ on
 separable basis $\rho = \bigotimes_{i =1}^n \rho_{i}$, plug in
