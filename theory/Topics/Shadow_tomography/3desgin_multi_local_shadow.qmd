@@ -368,122 +368,180 @@ Can this be generalized to the high-rank case?
 
 ::: {.callout-note collapse="false"}
 ## Proof (Click to expand)
-In generalized $\text{tr}(O \rho^2)$ to the high-rank case
-$\text{tr}(O \rho^k)$, we first write the decomposition of $k$-cycle
-permutation based on the indentity $\mathrm{SWAP}_{(1,\cdots,k)} = \mathrm{SWAP}_{(1,2)}\mathrm{SWAP}_{(2,3)}\cdots \mathrm{SWAP}_{(k-1,k)}$ and $\mathrm{SWAP}_{(r,r+1)} = \sigma_{\mathbf{p}^{(r)}}\otimes \sigma_{\mathbf{p}^{(r)}}$ for $r = 1,\cdots,k-1$, we conclude that:
+To generalize $\text{tr}(O \rho^2)$ to the higher-rank case
+$\text{tr}(O \rho^k)$, we first write the decomposition of the $k$-cycle
+permutation based on the identity $\mathrm{SWAP}_{(1,\cdots,k)} = \mathrm{SWAP}_{(1,2)}\mathrm{SWAP}_{(2,3)}\cdots \mathrm{SWAP}_{(k-1,k)}$ and $\mathrm{SWAP}_{(r,r+1)} = 2^{-1}\sum_{\mathbf{p}^{(r)}}\sigma_{\mathbf{p}^{(r)}}\otimes \sigma_{\mathbf{p}^{(r)}}$. Denoting $S := \text{SWAP}_{(1\cdots k)}$, we obtain:
 $$
 \begin{align*}
-    \text{SWAP}_{(1\cdots k)} = 2^{-k+1}\sum_{\mathbf{p}^{(i)} \in \mathbb{F}_2^2} \sigma_{\mathbf{p}^{(1)}}\otimes \left(\sigma_{\mathbf{p}^{(1)}} \sigma_{\mathbf{p}^{(2)}}\right)\otimes \left(\sigma_{\mathbf{p}^{(2)}} \sigma_{\mathbf{p}^{(3)}}\right)\otimes \cdots \otimes \left(\sigma_{\mathbf{p}^{(k-1)}}\right),
+    S = 2^{-(k-1)}\sum_{\mathbf{p}^{(i)} \in \mathbb{F}_2^2} \sigma_{\mathbf{p}^{(1)}}\otimes \left(\sigma_{\mathbf{p}^{(1)}} \sigma_{\mathbf{p}^{(2)}}\right)\otimes \left(\sigma_{\mathbf{p}^{(2)}} \sigma_{\mathbf{p}^{(3)}}\right)\otimes \cdots \otimes \sigma_{\mathbf{p}^{(k-1)}}.
 \end{align*}
 $$
- This gives the decomposition of the estimator
-$O_{\mathbf{r}}^{(k)} := \sigma_{\mathbf{r}} \otimes \mathbb{I}_{n}^{\otimes (k-1)} \cdot \text{SWAP}^{\otimes n}$
-on $k$-copies of $n$-qubits states as 
+This gives the Pauli decomposition of the estimator
+$O_{\mathbf{r}}^{(k)} := (\sigma_{\mathbf{r}} \otimes \mathbb{I}_{n}^{\otimes (k-1)}) \cdot S^{\otimes n}$
+on $k$ copies of $n$-qubit states as
 $$
 \begin{align*}
     O^{(k)}_{\mathbf{r}} &= 2^{-(k-1)n}\sum_{\mathbf{p}^{(l>0)} \in \mathbb{F}_2^{2n}}  (\sigma_{\mathbf{r}}\sigma_{\mathbf{p}^{(1)}})\otimes \left(\sigma_{\mathbf{p}^{(1)}} \sigma_{\mathbf{p}^{(2)}}\right)\otimes \left(\sigma_{\mathbf{p}^{(2)}} \sigma_{\mathbf{p}^{(3)}}\right)\otimes \cdots \otimes \left(\sigma_{\mathbf{p}^{(k-2)}} \sigma_{\mathbf{p}^{(k-1)}}\right)\otimes \sigma_{\mathbf{p}^{(k-1)}}.
 \end{align*}
 $$
-The local operator $O_{\mathbf{r}}^{(k)}$ satisfied the local decomposition:
-$W_{\mathbf{u}_{\mathbf{r}}} \propto \sigma_{\mathbf{u}_{\mathbf{r}}}$.
-Here we denote 
+Each term in the sum is a $k$-qubit product Pauli $\sigma_{\mathbf{u}_{\mathbf{r}}}$, where the index vector is
 $$
 \begin{align*}
 \mathbf{u}_{\mathbf{r}} &:= \mathbf{u}(\mathbf{r},\mathbf{p}^{(1)},\cdots,\mathbf{p}^{(k-1)}) \\
-&= (\mathbf{r} + \mathbf{p}^{(1)},\mathbf{p}^{(1)}+\mathbf{p}^{(2)}, \cdots, \mathbf{p}^{(k-2)}+\mathbf{p}^{(k-1)},\mathbf{p}^{(k-1)}) \in (\mathbb{F}_{2}^{2})^k.\\
-\mathbf{u}_{\mathbf{r}'} &:= \mathbf{u}(\mathbf{r}',\mathbf{p}^{',(1)},\cdots,\mathbf{p}^{',(k-1)}) \\
-&= (\mathbf{r}' + \mathbf{p}^{',(1)},\mathbf{p}^{',(1)}+\mathbf{p}^{',(2)}, \cdots, \mathbf{p}^{',(k-2)}+\mathbf{p}^{',(k-1)},\mathbf{p}^{',(k-1)}) \in (\mathbb{F}_{2}^{2})^k.
+&= (\mathbf{r} + \mathbf{p}^{(1)},\mathbf{p}^{(1)}+\mathbf{p}^{(2)}, \cdots, \mathbf{p}^{(k-2)}+\mathbf{p}^{(k-1)},\mathbf{p}^{(k-1)}) \in (\mathbb{F}_{2}^{2})^k.
 \end{align*}
 $$
-We then set two different vectors of such a vector $\mathbf{u}_{\mathbf{r}}$ and
-$\mathbf{u}_{\mathbf{r}'}$. 
- Based on @lem-LC-shadow-kcopy, we get: 
+We define two such index vectors $\mathbf{u}_{\mathbf{r}}$ and $\mathbf{u}_{\mathbf{r}'}$ corresponding to summation variables $\{\mathbf{p}^{(l)}\}$ and $\{\mathbf{p}^{',(l)}\}$ respectively. Since $\mathbf{V}$ factorizes over sites (@lem-LC-shadow-kcopy), it suffices to analyze the per-site variance operator:
 $$
 \begin{align*}
-    &v(O^{(k)}_{\mathbf{r}}, O^{(k)}_{\mathbf{r}'}) =4^{-k+1} \sum_{\mathbf{p}^{(l>0)},\mathbf{p}^{',(l>0)} \in \mathbb{F}_2^{2n}}r(\mathbf{u}_{\mathbf{r}},\mathbf{u}_{\mathbf{r}'})(\sigma_{\mathbf{r}}\sigma_{\mathbf{p}^{(1)}}\sigma_{\mathbf{r}'}\sigma_{\mathbf{p}^{',(1)}})\\
+    &v(O^{(k)}_{\mathbf{r}}, O^{(k)}_{\mathbf{r}'}) =4^{-(k-1)} \sum_{\mathbf{p}^{(l>0)},\mathbf{p}^{',(l>0)} \in \mathbb{F}_2^{2}}r(\mathbf{u}_{\mathbf{r}},\mathbf{u}_{\mathbf{r}'})(\sigma_{\mathbf{r}}\sigma_{\mathbf{p}^{(1)}}\sigma_{\mathbf{r}'}\sigma_{\mathbf{p}^{',(1)}})\\
     & \quad\otimes \left(\sigma_{\mathbf{p}^{(1)}} \sigma_{\mathbf{p}^{(2)}}\sigma_{\mathbf{p}^{',(1)}} \sigma_{\mathbf{p}^{',(2)}}\right)\otimes \cdots
-     \otimes \left(\sigma_{\mathbf{p}^{(k-2)}} \sigma_{\mathbf{p}^{(k-1)}}\sigma_{\mathbf{p}^{',(k-2)}} \sigma_{\mathbf{p}^{',(k-1)}}\right)\otimes \sigma_{\mathbf{p}^{(k-1)}}\sigma_{\mathbf{p}^{',(k-1)}} 
+     \otimes \left(\sigma_{\mathbf{p}^{(k-2)}} \sigma_{\mathbf{p}^{(k-1)}}\sigma_{\mathbf{p}^{',(k-2)}} \sigma_{\mathbf{p}^{',(k-1)}}\right)\otimes \sigma_{\mathbf{p}^{(k-1)}}\sigma_{\mathbf{p}^{',(k-1)}}
 \end{align*}
 $$
-
-- **In the case $r(\mathbf{u}_{\mathbf{r}},\mathbf{u}_{\mathbf{r}'}) \equiv 1$**
-The variance operator gives back to the product of $\sigma_{\mathbf{r}} \otimes \mathbb{I}^{\otimes (k-1)} \cdot \mathrm{SWAP}_{k}$ and $\sigma_{\mathbf{r}'} \otimes \mathbb{I}^{\otimes (k-1)} \cdot \mathrm{SWAP}_{k}$ and gives result $\sigma_{\mathbf{r}} \otimes \sigma_{\mathbf{r}'} \otimes \mathbb{I}^{\otimes (k-2)}$.
-
-- **In the case $r(\mathbf{u}_{\mathbf{r}},\mathbf{u}_{\mathbf{r}'}) = (-1)^{[\mathbf{u}_{\mathbf{r}},\mathbf{u}_{\mathbf{r}'}]}$.**
-
-The variance operator gives:
+**Assembling the rescaling function.** For $k$-copy 3-design local shadow, @lem-LC-shadow-kcopy gives:
 $$
 \begin{align*}
-    &v(O^{(k)}_{\mathbf{r}}, O^{(k)}_{\mathbf{r}'}) =4^{-k+1} \sum_{\mathbf{p}^{(l>0)},\mathbf{p}^{',(l>0)} \in \mathbb{F}_2^{2n}}(\sigma_{\mathbf{r}'}\sigma_{\mathbf{p}^{',(1)}}\sigma_{\mathbf{r}}\sigma_{\mathbf{p}^{(1)}})\\
-    & \quad\otimes \left(\sigma_{\mathbf{p}^{',(1)}} \sigma_{\mathbf{p}^{',(2)}}\sigma_{\mathbf{p}^{(1)}} \sigma_{\mathbf{p}^{(2)}}\right)\otimes \cdots
-     \otimes \left(\sigma_{\mathbf{p}^{',(k-2)}} \sigma_{\mathbf{p}^{',(k-1)}}\sigma_{\mathbf{p}^{(k-2)}} \sigma_{\mathbf{p}^{(k-1)}}\right)\otimes \sigma_{\mathbf{p}^{',(k-1)}}\sigma_{\mathbf{p}^{(k-1)}}\\
-     &= \sigma_{\mathbf{r}'} \otimes \sigma_{\mathbf{r}} \otimes \mathbb{I}^{\otimes (k-2)}
-\end{align*}
-$$
-
-- **In the case $r(\mathbf{u}_{\mathbf{r}},\mathbf{u}_{\mathbf{r}'}) = \delta_{\mathbf{u}_{\mathbf{r}},\mathbf{u}_{\mathbf{r}'}}$.**
-
-By definition of $\mathbf{u}_{\mathbf{r}},\mathbf{u}_{\mathbf{r}'}$, it equivalent to the delta function $\delta_{\mathbf{r},\mathbf{r}'}\prod_{m=1}^{k-1}\delta_{\mathbf{p}^{(m)}, \mathbf{p}^{',(m)}}$. Then we have:
-$$
-\begin{align*}
-    &v(O^{(k)}_{\mathbf{r}}, O^{(k)}_{\mathbf{r}'}) =4^{-k+1} \sum_{\mathbf{p}^{(l>0)} }(-1)^{[\mathbf{r},\mathbf{p}^{(1)}]} \sigma_{\mathbf{r}'} \sigma_{\mathbf{r}}\otimes (-1)^{[\mathbf{p}^{(1)}, \mathbf{p}^{(2)}]} \mathbb{I}\otimes \cdots
-     \otimes (-1)^{[\mathbf{p}^{(k-2)}, \mathbf{p}^{(k-1)}]} \mathbb{I}\otimes \mathbb{I}.\\
-     &=4^{-k+1} \sum_{\mathbf{p}^{(l>0)}}(-1)^{[\mathbf{r},\mathbf{p}^{(1)}] + \sum_{m = 1}^{k-2} [\mathbf{p}^{(m)}, \mathbf{p}^{(m+1)}]} \sigma_{\mathbf{r}'} \sigma_{\mathbf{r}}\otimes  \mathbb{I}^{\otimes (k-1)} \\
-     &:=4^{-k+1} \text{sum}_{1,k-1} \cdot \sigma_{\mathbf{r}'} \sigma_{\mathbf{r}} \otimes \mathbb{I}^{\otimes (k-1)}.
-\end{align*}
-$$
-To evaluate the summation, we calculate this recursively:
-$$
-\begin{align*}
-\text{sum}_{1,k-1} &= \sum_{\mathbf{p}^{(l>0)}}(-1)^{[\mathbf{r},\mathbf{p}^{(1)}] + [\mathbf{p}^{(1)}, \mathbf{p}^{(2)}]+\sum_{m = 2}^{k-2} [\mathbf{p}^{(m)}, \mathbf{p}^{(m+1)}]}  = 4\sum_{\mathbf{p}^{(l>1)}}\delta_{\mathbf{r},\mathbf{p}^{(2)}}(-1)^{\sum_{m = 2}^{k-2} [\mathbf{p}^{(m)}, \mathbf{p}^{(m+1)}]}\\
-&=4\sum_{\mathbf{p}^{(l>2)}}(-1)^{ [\mathbf{r}, \mathbf{p}^{(3)}] + \sum_{m = 3}^{k-2} [\mathbf{p}^{(m)}, \mathbf{p}^{(m+1)}]} = 4\text{sum}_{3,k-1}.
-\end{align*}
-$$
-**Case Analysis:**
-We analyze the case analysis for the summation $\text{sum}_{1,k-1}$ in two cases:
-
-- **Case 1: $k = 2s+1$ (odd).** There are $(k-1) = 2s$ variables $\mathbf{p}^{(1)}, \ldots, \mathbf{p}^{(2s)}$, which can be eliminated in $s$ complete rounds. After summing over all $\mathbf{p}^{(l)}$, we get $\text{sum}_{1,k-1} =  4^{s} = 2^{k-1}.$
-- **Case 2: $k = 2s+2$ (even).** There are $(k-1) = 2s+1$ variables. After $s$ complete rounds, the first $2s$ variable cancled and gives $4^s$. While one variable $\mathbf{p}^{(2s+1)}$ remains as term $\sum_{\mathbf{p}^{2s+1}}(-1)^{[\mathbf{r}, \mathbf{p}^{2s+1}]} = \delta_{\mathbf{r}, \mathbf{0}}$. The final sum becomes $\text{sum}_{1,k-1} =  4^{s+1} \delta_{\mathbf{r}, \mathbf{p}^{2s+1}} = 2^{k} \delta_{\mathbf{r}, \mathbf{0}}$.
-
-In conclusion, we get the identity:
-$$
-v(O^{(k)}_{\mathbf{r}}, O^{(k)}_{\mathbf{r}'}) = \left\{
-\begin{aligned}
-    & 2^{-k+1} \sigma_{\mathbf{r}'} \sigma_{\mathbf{r}} \otimes \mathbb{I}^{\otimes (k-1)} \text{~if~} k \text{~is odd}\\
-    & 2^{-k+2} \delta_{\mathbf{r}, \mathbf{0}} \sigma_{\mathbf{r}'} \sigma_{\mathbf{r}} \otimes \mathbb{I}^{\otimes (k-1)} \text{~if~} k \text{~is even}
-\end{aligned}\right.
-$$
-
-For $k$-copy 3-design local shadow, as proved in the @lem-LC-shadow-kcopy, we have the equality:
-$$
-\begin{align*}
-r(\mathbf{u}_{\mathbf{r}},\mathbf{u}_{\mathbf{r}'}) &= \left\{ 
+r(\mathbf{u}_{\mathbf{r}},\mathbf{u}_{\mathbf{r}'}) &= \left\{
     \begin{aligned}
-        & \frac{2^k + 1}{2^k + 2} \left[\underbrace{2^k \delta_{\mathbf{r}, \mathbf{r}'} \prod_{m = 1}^{k-1} \delta_{\mathbf{p}^{(m)}, \mathbf{p}^{',(m)}}}_{\text{1st}} + \underbrace{1}_{\text{2nd}} + \underbrace{(-1)^{[\mathbf{u}_{\mathbf{r}},\mathbf{u}_{\mathbf{r}'}]}}_{\text{3rd}}\right] \text{~if~}\mathbf{u}_{\mathbf{r}},\mathbf{u}_{\mathbf{r}'} \neq 0\\
-        &1 \text{~if else}
+        & \frac{2^k + 1}{2^k + 2} \left[\underbrace{2^k \delta_{\mathbf{u}_{\mathbf{r}}, \mathbf{u}_{\mathbf{r}'}}}_{\text{1st}} + \underbrace{1}_{\text{2nd}} + \underbrace{(-1)^{[\mathbf{u}_{\mathbf{r}},\mathbf{u}_{\mathbf{r}'}]}}_{\text{3rd}}\right] &\text{if~}\mathbf{u}_{\mathbf{r}},\mathbf{u}_{\mathbf{r}'} \neq 0,\\
+        &1 &\text{otherwise.}
     \end{aligned}\right.
     \end{align*}
 $$
-**Case $\mathbf{r} = \mathbf{r}' \neq \mathbf{0}$.**
-In this case $\mathbf{u}_{\mathbf{r}},\mathbf{u}_{\mathbf{r}'} \neq \mathbf{0}$ is always satisfied and each term is calculate before. Combining previous result gives:
+We decompose the rescaling function into three contributions and evaluate each sum over all $\mathbf{p}^{(l)},\mathbf{p}^{',(l)}$.
+
+**Term 2 (identity rescaling, $r \equiv 1$).** Setting $r\equiv 1$, the sum reconstructs the operator product $O^{(k)}_{\mathbf{r}}\cdot O^{(k)}_{\mathbf{r}'}$. Using the conjugation identity $S(\sigma_{\mathbf{r}'}\otimes\mathbb{I}^{\otimes(k-1)})S^{\dagger} = \mathbb{I}\otimes\sigma_{\mathbf{r}'}\otimes\mathbb{I}^{\otimes(k-2)}$, we obtain:
 $$
-v(O^{(k)}_{\mathbf{r}}, O^{(k)}_{\mathbf{r}'}) = \left\{
+O^{(k)}_{\mathbf{r}}\cdot O^{(k)}_{\mathbf{r}'} = (\sigma_{\mathbf{r}}\otimes\mathbb{I}^{\otimes(k-1)})\cdot(\mathbb{I}\otimes\sigma_{\mathbf{r}'}\otimes\mathbb{I}^{\otimes(k-2)})\cdot S^2 = \left(\sigma_{\mathbf{r}} \otimes \sigma_{\mathbf{r}'} \otimes \mathbb{I}^{\otimes (k-2)}\right)\cdot S^2.
+$$
+
+**Term 3 (commutator sign, $r = (-1)^{[\mathbf{u}_{\mathbf{r}},\mathbf{u}_{\mathbf{r}'}]}$).** The phase $(-1)^{[\mathbf{u}_{\mathbf{r}},\mathbf{u}_{\mathbf{r}'}]}$ swaps the Pauli ordering at each site, giving the product with $\mathbf{r}\leftrightarrow\mathbf{r}'$ and $\mathbf{p}\leftrightarrow\mathbf{p}'$ exchanged:
+$$
+O^{(k)}_{\mathbf{r}'}\cdot O^{(k)}_{\mathbf{r}} = \left(\sigma_{\mathbf{r}'} \otimes \sigma_{\mathbf{r}} \otimes \mathbb{I}^{\otimes (k-2)}\right)\cdot S^2.
+$$
+
+**Term 1 (diagonal, $r = 2^k\,\delta_{\mathbf{u}_{\mathbf{r}},\mathbf{u}_{\mathbf{r}'}}$).** By definition, $\delta_{\mathbf{u}_{\mathbf{r}},\mathbf{u}_{\mathbf{r}'}} = \delta_{\mathbf{r},\mathbf{r}'}\prod_{m=1}^{k-1}\delta_{\mathbf{p}^{(m)}, \mathbf{p}^{',(m)}}$. Setting $\mathbf{p}^{',(m)}=\mathbf{p}^{(m)}$, the operator at each site $m\geq 2$ becomes $\sigma_{\mathbf{p}^{(m-1)}}\sigma_{\mathbf{p}^{(m)}}\sigma_{\mathbf{p}^{(m-1)}}\sigma_{\mathbf{p}^{(m)}} = (-1)^{[\mathbf{p}^{(m-1)},\mathbf{p}^{(m)}]}\mathbb{I}$. Thus:
+$$
+\begin{align*}
+     v|_{\text{1st}} &=4^{-(k-1)} \sum_{\mathbf{p}^{(l>0)}}(-1)^{[\mathbf{r},\mathbf{p}^{(1)}] + \sum_{m = 1}^{k-2} [\mathbf{p}^{(m)}, \mathbf{p}^{(m+1)}]} \sigma_{\mathbf{r}'} \sigma_{\mathbf{r}}\otimes  \mathbb{I}^{\otimes (k-1)} \\
+     &=:4^{-(k-1)} \text{sum}_{1,k-1} \cdot \sigma_{\mathbf{r}'} \sigma_{\mathbf{r}} \otimes \mathbb{I}^{\otimes (k-1)}.
+\end{align*}
+$$
+Note that no $S^2$ factor appears here because the paired indices collapse to a scalar phase at each site.
+To evaluate $\text{sum}_{1,k-1}$, we use the recursive identity:
+$$
+\begin{align*}
+\text{sum}_{1,k-1} &= \sum_{\mathbf{p}^{(l>0)}}(-1)^{[\mathbf{r},\mathbf{p}^{(1)}] + [\mathbf{p}^{(1)}, \mathbf{p}^{(2)}]+\sum_{m = 2}^{k-2} [\mathbf{p}^{(m)}, \mathbf{p}^{(m+1)}]}  = 4\sum_{\mathbf{p}^{(l>1)}}\delta_{\mathbf{r},\mathbf{p}^{(2)}}(-1)^{\sum_{m = 2}^{k-2} [\mathbf{p}^{(m)}, \mathbf{p}^{(m+1)}]}\\
+&=4\sum_{\mathbf{p}^{(l>2)}}(-1)^{ [\mathbf{r}, \mathbf{p}^{(3)}] + \sum_{m = 3}^{k-2} [\mathbf{p}^{(m)}, \mathbf{p}^{(m+1)}]} = 4\,\text{sum}_{3,k-1}.
+\end{align*}
+$$
+**Parity analysis of $\text{sum}_{1,k-1}$:**
+
+- **$k = 2s+1$ (odd).** The $(k-1) = 2s$ variables can be eliminated in $s$ complete rounds, giving $\text{sum}_{1,k-1} =  4^{s} = 2^{k-1}.$
+- **$k = 2s+2$ (even).** After $s$ rounds, the first $2s$ variables are eliminated giving $4^s$, while one variable $\mathbf{p}^{(2s+1)}$ remains as $\sum_{\mathbf{p}^{(2s+1)}}(-1)^{[\mathbf{r}, \mathbf{p}^{(2s+1)}]} = 4\,\delta_{\mathbf{r}, \mathbf{0}}$. The final sum is $\text{sum}_{1,k-1} = 2^{k} \delta_{\mathbf{r}, \mathbf{0}}$.
+
+In conclusion:
+$$
+\text{sum}_{1,k-1} = \left\{
+\begin{aligned}
+    & 2^{k-1} &\text{if~} k \text{~is odd},\\
+    & 2^{k} \delta_{\mathbf{r}, \mathbf{0}} &\text{if~} k \text{~is even}.
+\end{aligned}\right.
+$$
+
+We now combine the three terms for each case.
+
+**Case $\mathbf{r} = \mathbf{r}' \neq \mathbf{0}$.**
+Since $\mathbf{r}\neq\mathbf{0}$, the condition $\mathbf{u}_{\mathbf{r}}=\mathbf{0}$ would require all components to vanish, forcing $\mathbf{r}+\mathbf{p}^{(1)}=\mathbf{0},\ldots,\mathbf{p}^{(k-1)}=\mathbf{0}$, hence $\mathbf{r}=\mathbf{0}$, a contradiction. Thus $\mathbf{u}_{\mathbf{r}},\mathbf{u}_{\mathbf{r}'} \neq \mathbf{0}$ always holds and the 3-design formula applies to all terms. The three contributions are:
+
+- **1st term** (delta): Contributes $2^k \cdot 4^{-(k-1)}\text{sum}_{1,k-1}\cdot\mathbb{I}^{\otimes k}$ (since $\mathbf{r}=\mathbf{r}'$ and $\sigma_\mathbf{r}^2=\mathbb{I}$).
+- **2nd term** (constant $=1$): Contributes $(\sigma_{\mathbf{r}}^{\otimes 2}\otimes\mathbb{I}^{\otimes(k-2)})\cdot S^2$.
+- **3rd term** (commutator sign): With $\mathbf{r}=\mathbf{r}'$, this gives $(\sigma_{\mathbf{r}}^{\otimes 2}\otimes\mathbb{I}^{\otimes(k-2)})\cdot S^2$.
+
+For **odd $k$**: $\text{sum}_{1,k-1}=2^{k-1}$, so the delta term gives $2^k\cdot 4^{-(k-1)}\cdot 2^{k-1} = 2$. The full result is:
+$$
+v(O^{(k)}_{\mathbf{r}}, O^{(k)}_{\mathbf{r}}) = \frac{2^k+1}{2^k+2}\left[2\,\mathbb{I}^{\otimes k} + 2\left(\sigma_{\mathbf{r}}^{\otimes 2}\otimes\mathbb{I}^{\otimes(k-2)}\right)\cdot S^2\right], \quad k \text{~odd}.
+$$
+
+For **even $k$**: $\text{sum}_{1,k-1}=2^{k}\delta_{\mathbf{r},\mathbf{0}}=0$ since $\mathbf{r}\neq\mathbf{0}$. The delta term vanishes:
+$$
+v(O^{(k)}_{\mathbf{r}}, O^{(k)}_{\mathbf{r}}) = \frac{2(2^k+1)}{2^k+2}\left(\sigma_{\mathbf{r}}^{\otimes 2}\otimes\mathbb{I}^{\otimes(k-2)}\right)\cdot S^2, \quad k \text{~even}.
+$$
+*Verification at $k=2$*: Since $S^2=\mathbb{I}_4$ for $k=2$, the even-$k$ formula gives $\frac{5}{3}\sigma_{\mathbf{r}}^{\otimes 2}$, matching @eq-V-case1. $\checkmark$
+
+
+**Case: $\mathbf{r} = \mathbf{r}' = \mathbf{0}$.**
+
+When $\mathbf{r} = \mathbf{r}' = \mathbf{0}$, the problem reduces to the estimation of $\mathrm{tr}(\rho^{k})$. Now $\mathbf{u}_{\mathbf{0}}$ can vanish (when all $\mathbf{p}^{(l)}=\mathbf{0}$), so the 3-design formula does not apply uniformly. We compute $v = v_{\text{pretend}} + \Delta$, where $v_{\text{pretend}}$ applies the 3-design formula to all terms (including the boundary where it does not hold), and $\Delta$ corrects for the boundary. This decomposition isolates the boundary correction and makes the algebra more transparent.
+
+**$v_{\text{pretend}}$**: Applying the 3-design formula to the full sum over all $\mathbf{p}^{(l)},\mathbf{p}^{',(l)}$, the three terms give (with $\sigma_\mathbf{0}=\mathbb{I}$):
+
+- **1st term** (delta): $2^k\cdot 4^{-(k-1)}\text{sum}_{1,k-1}\cdot\mathbb{I}^{\otimes k}$. For odd $k$: $\text{sum}_{1,k-1}=2^{k-1}$, giving $2\,\mathbb{I}^{\otimes k}$. For even $k$: $\text{sum}_{1,k-1}=2^k$ (since $\delta_{\mathbf{0},\mathbf{0}}=1$), giving $4\,\mathbb{I}^{\otimes k}$.
+- **2nd + 3rd terms**: Each gives $(\mathbb{I}^{\otimes k})\cdot S^2 = S^2$, totalling $2\,S^2$.
+
+So $v_{\text{pretend}} = \frac{2^k+1}{2^k+2}\left[\text{delta}\cdot\mathbb{I}^{\otimes k}+2\,S^2\right]$.
+
+**Boundary correction $\Delta$**: The boundary is $\{\mathbf{u}_\mathbf{0}=\mathbf{0}\}\cup\{\mathbf{u}'_\mathbf{0}=\mathbf{0}\}$, where $\mathbf{u}_\mathbf{0}=\mathbf{0}$ iff all $\mathbf{p}^{(l)}=\mathbf{0}$ (a single point in $(\mathbb{F}_2^2)^{k-1}$). The actual rescaling is $r=1$ on the boundary, while $v_{\text{pretend}}$ used the 3-design value.
+
+When all $\mathbf{p}^{(l)}=\mathbf{0}$, the operator product summed over $\mathbf{p}'^{(l)}$ gives $2^{-(k-1)}S$ (since $O^{(k)}_\mathbf{0}=S$). By inclusion-exclusion over the three disjoint boundary regions, the boundary sum with $r=1$ is:
+$$
+v_{\text{bdy,actual}} = 2\cdot 2^{-(k-1)}S - 4^{-(k-1)}\mathbb{I}^{\otimes k}.
+$$
+For the 3-design values on the boundary:
+
+- $\mathbf{u}=\mathbf{0}$, $\mathbf{u}'\neq\mathbf{0}$: $r_{\text{3-design}} = \frac{2(2^k+1)}{2^k+2}$ (since $\delta_{\mathbf{0},\mathbf{u}'}=0$ and $(-1)^{[\mathbf{0},\mathbf{u}']}=1$).
+- $\mathbf{u}=\mathbf{u}'=\mathbf{0}$: $r_{\text{3-design}} = 2^k+1$.
+
+By inclusion-exclusion:
+$$
+v_{\text{bdy,3-design}} = \frac{4(2^k+1)}{2^k+2}\left(2^{-(k-1)}S - 4^{-(k-1)}\mathbb{I}\right) + (2^k+1)\cdot 4^{-(k-1)}\mathbb{I}.
+$$
+Computing $\Delta = v_{\text{bdy,actual}} - v_{\text{bdy,3-design}}$ and simplifying:
+$$
+\Delta = -\frac{4}{2^k+2}\left(S + \mathbb{I}^{\otimes k}\right).
+$$
+
+**Final result.** Combining $v_{\text{pretend}}+\Delta$:
+$$
+v(O^{(k)}_{\mathbf{0}}, O^{(k)}_{\mathbf{0}}) = \left\{
     \begin{aligned}
-        & 2^{-k+1}\frac{2^k + 1}{2^k + 2} \left[2^k \delta_{\mathbf{r}, \mathbf{r}'} \prod_{m = 1}^{k-1} \delta_{\mathbf{w}^{(m)}, \mathbf{0}} + 1 \right] \cdot (-1)^{\text{phase}_{\mathbf{w}}} &\text{~if~} k \text{~is odd},\\
-        & 2^{k}4^{-k+1}\frac{2^k + 1}{2^k + 2} \left[0+ \right]&\text{~if~} k \text{~is even}.
+        & \frac{2(2^k-1)}{2^k+2}\,\mathbb{I}^{\otimes k} + \frac{2(2^k+1)}{2^k+2}\,S^2 - \frac{4}{2^k+2}\,S &\text{~if~} k \text{~is odd},\\
+        & \frac{4\cdot 2^k}{2^k+2}\,\mathbb{I}^{\otimes k} + \frac{2(2^k+1)}{2^k+2}\,S^2 - \frac{4}{2^k+2}\,S &\text{~if~} k \text{~is even}.
     \end{aligned}
 \right.
 $$
+*Verification at $k=2$*: Since $S^2=\mathbb{I}_4$, the even-$k$ formula gives $\frac{16+10}{6}\mathbb{I}_4 - \frac{4}{6}\text{SWAP} = \frac{13}{3}\mathbb{I}_4 - \frac{2}{3}\text{SWAP}$, matching @eq-V-case1 Case 2. $\checkmark$
 
-
-**Case: $\mathbf{r} = \mathbf{r}' = \mathbf{0}$.** 
-
-When $\mathbf{r} = \mathbf{r}' = \mathbf{0}$, the problem reduced to the estimation of $\mathrm{tr}(\rho^{k})$ and the variance operator is:
-
+*Verification at $k=3$*: Since $S^2=S^{-1}$ for $k=3$, the odd-$k$ formula gives $v = \frac{1}{5}\left(7\,\mathbb{I}^{\otimes 3} + 9\,S^{-1} - 2\,S\right)$. $\checkmark$
 
 :::
 
+::: {.callout-warning icon="false"}
+## Remark (Efficiency deterioration as $k\to\infty$)
 
+**Quantitative analysis.** Consider the purity estimator ($\mathbf{r}=\mathbf{0}$) applied to a pure state $\rho=|\psi\rangle\langle\psi|$. Since $S|\psi\rangle^{\otimes k}=S^2|\psi\rangle^{\otimes k}=|\psi\rangle^{\otimes k}$, the per-site second moment for even $k$ evaluates to
+$$
+\operatorname{tr}\!\bigl(\rho^{\otimes k}\cdot v(\mathbf{0},\mathbf{0})\bigr)
+= \frac{4\cdot 2^k + 2(2^k+1) - 4}{2^k+2}
+= \frac{6\cdot 2^k - 2}{2^k+2}
+\xrightarrow{k\to\infty} 6.
+$$
+At $k=2$ this gives $22/6 = 11/3 \approx 3.67$. For the $n$-qubit purity estimator on a pure state, the worst-case variance is
+$$
+\operatorname{Var} = \left(\frac{6\cdot 2^k - 2}{2^k+2}\right)^n - 1
+\xrightarrow{k\to\infty} 6^n - 1,
+$$
+versus $(11/3)^n - 1 \approx 3.67^n$ at $k=2$. The sample complexity therefore increases by a factor of $(18/11)^n \approx 1.64^n$ in the $k\to\infty$ limit relative to $k=2$.
+
+**Physical explanation — three mechanisms.**
+
+1. **Signal decay.** $\operatorname{tr}(\rho^k) \leq \operatorname{tr}(\rho^2)$ for $k\geq 2$, with exponential decay $\sim \lambda_{\max}^k$ for mixed states, while the variance stays $O(1)$. The signal-to-noise ratio deteriorates exponentially in $k$.
+
+2. **Rescaling blowup.** The inverse measurement channel involves factors of $(2^k+1)$, reflecting that the $k$-qubit Clifford 3-design acts on a $2^k$-dimensional Hilbert space. Larger rescaling amplifies statistical noise.
+
+3. **Literature context.** @Chen_Gong_2024 established a memory–sample complexity tradeoff for purity testing: having $k$ qubits of quantum memory does not improve sample complexity until $k > n/2$, exhibiting a sharp phase transition. This contrasts with Pauli shadow tomography [@Gong_2024_pauli], where the improvement from quantum memory is continuous.
+:::
 
 ## Application to estimate weighted purity.
 
