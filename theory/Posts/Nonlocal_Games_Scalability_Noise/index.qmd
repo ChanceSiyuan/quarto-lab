@@ -1,0 +1,156 @@
+---
+title: "Scalability and Noise in Non-local Games: A Survey"
+author: "[Your Name/Organization]"
+date: "today's date"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    css: styles.css
+bibliography: refs.bib
+---
+
+## Abstract
+
+[Brief summary of the survey covering scalability challenges and noise effects in non-local games, quantum information applications, and current research directions.]
+
+## 1 Introduction
+
+### 1.1 Context and Motivation
+- Define non-local games in the quantum information context
+- Explain their importance for Bell nonlocality, device independence, and quantum advantage
+- Motivate study of scalability (multiplayer, network scenarios) and noise (detection efficiency, experimental imperfections)
+
+### 1.2 Historical Background
+- Brief history: Bell inequalities (1964) to modern non-local games
+- Key developments: CHSH game, multi-player extensions, networked scenarios
+
+### 1.3 Survey Scope
+- Clarify scope: focus on scalability limitations and noise robustness
+- Outline structure of survey
+
+## 2 Preliminaries
+
+### 2.1 Mathematical Framework
+```{python}
+# Optional code block for illustrating concepts
+import numpy as np
+# Define basic probability distributions, correlation matrices
+```
+
+### 2.2 Basic Definitions
+- **Non-local game $G$**: $(N, X, Y, \pi, V)$ where:
+  - $N$: number of players
+  - $X = X_1 \times \cdots \times X_N$: question sets
+  - $Y = Y_1 \times \cdots \times Y_N$: answer sets
+  - $\pi$: probability distribution over questions
+  - $V$: winning condition function $V(y_1,\ldots,y_N | x_1,\ldots,x_N)$
+
+- **Classical value $\omega_c(G)$**: maximum winning probability with classical strategies
+- **Quantum value $\omega_q(G)$**: maximum with quantum strategies
+- **No-signaling value $\omega_{ns}(G)$**: maximum with no-signaling correlations
+
+### 2.3 Fundamental Examples
+- CHSH game (2-player, 2-question, 2-answer)
+- Magic Square game (pseudo-telepathy)
+- Parallel repetition
+
+## 3 Scalability of Non-local Games
+
+### 3.1 Multiplayer Extensions
+- Graph states and stabilizer games
+- Linear system games
+- Constraint satisfaction problems
+
+### 3.2 Communication Complexity Perspective
+- How non-local games relate to communication complexity
+- Multi-party communication scenarios
+
+### 3.3 Network Non-locality
+- Quantum networks with multiple sources
+- Star networks, chain networks
+- Genuine network non-locality
+
+## 4 Noise Models and Robustness
+
+### 4.1 Common Noise Models
+1. **Detection inefficiency**:
+   - $\eta$: detection efficiency parameter
+   - Fair sampling vs. no-detection loophole
+
+2. **Local noise**:
+   - White noise on shared states
+   - Depolarizing channels: $\rho \rightarrow (1-p)\rho + p\frac{I}{d}$
+
+3. **Communication noise**:
+   - Channel losses
+   - Phase noise in distributed scenarios
+
+### 4.2 Noise Thresholds
+- Critical noise levels for violating Bell inequalities
+- Robustness of specific games (CHSH, Magic Square)
+- Noise thresholds for device-independent protocols
+
+## 5 Scalability under Noise
+
+### 5.1 Scaling Laws
+- How noise accumulates with number of players
+- Asymptotic behavior of $\omega_q(G)$ under noise
+- Critical scaling for device-independent applications
+
+### 5.2 Error Mitigation Strategies
+1. **Error correction codes in non-local games**
+2. **Postselection techniques**
+3. **Noise-adapted measurements**
+
+### 5.3 Numerical Methods
+```{python}
+# Optional: Simulation code for noisy non-local games
+def simulate_noisy_game(noise_level, n_players):
+    # Implementation would go here
+    pass
+```
+
+## 6 Applications and Implications
+
+### 6.1 Device-Independent Protocols
+- Quantum key distribution (DIQKD)
+- Randomness certification
+- Self-testing of quantum devices
+
+### 6.2 Quantum Advantage Demonstrations
+- Noise-robust quantum advantage
+- Experimental implementations review
+
+### 6.3 Complexity Theory Connections
+- Multi-prover interactive proofs (MIP*)
+- Connections to Tsirelson's problem
+
+## 7 Open Problems and Future Directions
+
+### 7.1 Theoretical Challenges
+- Closing gaps between classical/quantum/no-signaling bounds
+- Complexity of computing $\omega_q(G)$ under noise
+- Ultimate limits of device-independent protocols
+
+### 7.2 Experimental Challenges
+- Achieving loophole-free violations at scale
+- Distributed experimental setups
+- Real-world noise characterization
+
+### 7.3 Algorithmic Approaches
+- Machine learning for finding robust non-local games
+- Numerical optimization techniques
+- Automated theorem proving for Bell inequalities
+
+## 8 Conclusion
+
+[Summary of key findings, current state of field, and outlook]
+
+---
+
+## Acknowledgments
+
+[Funding sources, collaborators, etc.]
+
+## References
