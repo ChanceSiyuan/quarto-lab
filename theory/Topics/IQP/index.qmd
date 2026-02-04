@@ -1,0 +1,54 @@
+---
+categories:
+- Index
+date: 2026-02-02
+description: "Classical simulation hardness, IQP supremacy, MBQC realizations, fault-tolerant IQP, and noise effects"
+subtitle: "From Commuting Circuits to Fault-Tolerant Quantum Advantage"
+abstract: |
+  This collection surveys the theory of Instantaneous Quantum Polynomial-time (IQP) circuits and their role in demonstrating quantum computational advantage. We cover: (1) classical simulation theory including strong/weak simulation definitions, Pauli simulation, and GapP-completeness; (2) hardness proofs for multiplicative and additive error approximation via Stockmeyer's algorithm; (3) IQP-specific supremacy arguments including sparse IQP anti-concentration and Ising partition function hardness; (4) measurement-based quantum computing (MBQC) realizations of IQP with experimental certification protocols; (5) fault-tolerant IQP on hypercube codes with XEB validation; and (6) classical simulation algorithms exploiting noise via Pauli path methods.
+lang: en
+title: "IQP Circuit Supremacy"
+bibliography: refs.bib
+---
+
+# Introduction
+
+Instantaneous Quantum Polynomial-time (IQP) circuits are a restricted class of quantum circuits where all gates are diagonal in the $X$-basis, equivalently described as $H^{\otimes n} D H^{\otimes n}$ where $D$ is a diagonal unitary. Despite being non-universal for quantum computation, IQP circuits are believed to be hard to simulate classically, making them prime candidates for demonstrating quantum computational advantage.
+
+This collection is organized into the following sections:
+
+## [1. Classical Simulation Theory](classical_simulation.qmd)
+
+Definitions of strong simulation, weak simulation, and Pauli simulation. The fundamental relationships between these notions, including the proof that strong simulation implies weak simulation via marginal distributions.
+
+**Key concepts:** Strong/weak simulation, Pauli expectation values, Fourier relationship between probabilities and Pauli coefficients
+
+## [2. Hardness of Classical Simulation](hardness_proofs.qmd)
+
+Proofs that classical simulation of quantum circuits is computationally hard. GapP-completeness of exact simulation, hardness of multiplicative error approximation, Stockmeyer's algorithm bridging strong and weak simulation, and additive error hardness under anti-concentration and hiding assumptions.
+
+**Key concepts:** GapP-completeness, multiplicative error, Stockmeyer's algorithm, polynomial hierarchy collapse, anti-concentration
+
+## [3. IQP Supremacy](iqp_supremacy.qmd)
+
+IQP-specific hardness results. Post-selected IQP equals post-BQP, sparse IQP circuits satisfy anti-concentration, and the connection to Ising partition function hardness conjectures.
+
+**Key concepts:** Post-selection universality, sparse IQP, Ising partition functions, average-case hardness
+
+## [4. MBQC-IQP](mbqc_iqp.qmd)
+
+Measurement-based implementations of IQP circuits on cluster states. Experimental setups, supremacy proofs via Ising model hardness, and certification protocols using parent Hamiltonians and graph state verification.
+
+**Key concepts:** Cluster states, teleportation circuits, parent Hamiltonian certification, graph state coloring
+
+## [5. Fault-Tolerant IQP](ft_iqp.qmd)
+
+Hypercube-code IQP (h-IQP) circuits, anti-concentration with in-block CNOT gates, XEB validation under restricted noise models, and Bell sampling for purity verification.
+
+**Key concepts:** h-IQP circuits, logical qubits, XEB-fidelity relationship, Bell measurement verification
+
+## [6. Noise and Classical Simulation](noise_simulation.qmd)
+
+How noise enables classical simulation. Pauli path simulation framework, efficient simulation of Clifford+T IQP under depolarizing noise, and general IQP simulation algorithms.
+
+**Key concepts:** Pauli path integral, Fourier truncation, depolarizing noise threshold, graph-based simulation

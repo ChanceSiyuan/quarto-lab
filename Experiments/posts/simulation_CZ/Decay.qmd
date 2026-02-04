@@ -1,0 +1,114 @@
+---
+title: Atom Decay
+date: '2026-02-03'
+lang: en
+categories:
+- Readings
+---
+
+## Atom Decay
+The Hamiltonian with dual energy levels $\ket{g},\ket{e}$ and single-mode light field (frequency $\omega$) coupled is:
+$$
+\begin{align}
+\mathcal{V} &= \mathbb{P} e \vec{r} \cdot\vec{E} \mathbb{P} \\
+&= e  (\langle e|\vec{r}|g\rangle\sigma_- + \langle g|\vec{r}|e\rangle\sigma_+) \cdot [\sqrt{\frac{\hbar \omega }{2\varepsilon_0}}(\vec{f}(\vec{r}) a + \vec{f}^*(\vec{r}) a^\dagger)].
+\end{align}
+$$
+Using chiral symmetry, it is proved that $\langle g|\vec{r}|g\rangle = \langle e|\vec{r}|e\rangle = 0$. Under the interaction representation, the rotation wave approximation can be obtained:
+$$
+\begin{align}
+    \mathcal{V}(t) = \hbar  [g(r) a^\dagger \sigma_{-} e^{-i\delta t} + g^*(r)a \sigma_{+}e^{i\delta t} ],\quad  \delta = \Delta E/\hbar-\omega,
+\end{align}
+$$
+where $g(r) = e\sqrt{\frac{\hbar \omega}{2\varepsilon_0}} \vec{f}(\vec{r}) \cdot \langle g|\vec{r}|e\rangle$. For multi-mode light fields, similarly, the coupling Hamiltonian becomes:
+$$
+\begin{align}
+    \mathcal{V}(t) = \sum_{k,\zeta} \hbar  [g_{k,\zeta}(\vec{r})a_{k,\zeta}^\dagger \sigma_{-} e^{-i\delta_{k} t} + g^*_{k,\zeta}(\vec{r})a_{k,\zeta} \sigma_{+}e^{i\delta_{k} t} ],\quad  \delta_{k} = \Delta E/\hbar-\omega_{k},
+\end{align}
+$$
+where $g_{k,\zeta}(\vec{r}) = e\sqrt{\frac{\hbar \omega_k}{2\varepsilon_0}} \vec{f}_{k,\zeta}(\vec{r}) \cdot \langle g|\vec{r}|e\rangle$. Assuming that the thermal reservoir is large enough and the coupling with atoms is weak enough, the equation for the evolution of the atomic density matrix can be obtained~\cite{Quantumoptics}:
+$$
+\begin{align}
+\dot\rho_{a}(t) = -\frac{i}{\hbar}Tr_{R} [\mathcal{V}(t), \rho_a(t_i)\otimes\rho_R(t_i)] -\int_{t_i}^t dt' \frac{1}{\hbar^2}Tr_{R} [\mathcal{V}(t), [\mathcal{V}(t'), \rho_a(t)\otimes\rho_R(t_i)]]
+\end{align}
+$${#eq-weak-int-reservoir-evol}
+For the first parts, we see
+$$
+\begin{align} 
+-\frac{i}{\hbar} Tr_{R}[\mathcal{V}(t), \rho_a(t_i)\otimes\rho_R(t_i)] &=-i \sum_{k,\zeta}  Tr_{R}[g_{k,\zeta}(\vec{r})a_{k,\zeta}^\dagger \sigma_{-} e^{-i\delta_{k} t} + c.c. , \rho_a(t_i)\otimes\rho_R(t_i)] \\
+&=-i \sum_{k,\zeta}  Tr_{R}[g_{k,\zeta}(\vec{r})a_{k,\zeta}^\dagger \sigma_{-} e^{-i\delta_{k} t}  , \rho_a(t_i)\otimes\rho_R(t_i)]+c.c. \\
+&=-i \sum_{k,\zeta} g_{k,\zeta}(\vec{r})\langle a_{k,\zeta}^\dagger \rangle  e^{-i\delta_{k} t} [\sigma_{-} , \rho_a(t_i)]+c.c. 
+\end{align}
+$$
+For the second integral, we simplified it as:
+$$
+\begin{align}
+ &\frac{1}{\hbar^2}Tr_{R} [\mathcal{V}(t), [\mathcal{V}(t'),\rho_a(t)\otimes\rho_R(t_i)]] \\
+&= \frac{1}{\hbar} \sum_{\substack{k',\zeta'}}Tr_{R} [ \mathcal{V}(t), [g_{k',\zeta'}(\vec{r})a_{k',\zeta'}^\dagger \sigma_{-} e^{-i\delta_{k'} t'} +c.c.\ , \rho_a(t)\otimes\rho_R(t_i)]]\\
+&= \frac{1}{\hbar}\sum_{\substack{k',\zeta'}}g_{k',\zeta'} (\vec{r})e^{-i\delta_{k'} t'}Tr_{R} [ \mathcal{V}(t), [a_{k',\zeta'}^\dagger \sigma_{-} , \rho_a(t)\otimes\rho_R(t_i)] ] + c.c.\\
+&=\sum_{\substack{k',\zeta'\\k.\zeta}}g_{k',\zeta'} (\vec{r})e^{-i\delta_{k'} t'}Tr_{R} [g_{k,\zeta}(\vec{r})a_{k,\zeta}^\dagger \sigma_{-} e^{-i\delta_{k} t} + g^*_{k,\zeta}(\vec{r})a_{k,\zeta} \sigma_{+}e^{i\delta_{k} t} , [a_{k',\zeta'}^\dagger \sigma_{-} , \rho_a(t)\otimes\rho_R(t_i)] ] + c.c.\\
+&=\sum_{\substack{k',\zeta'\\k.\zeta}}g_{k',\zeta'} (\vec{r})e^{-i\delta_{k'} t'}g_{k,\zeta}(\vec{r})e^{-i\delta_{k} t}Tr_{R} [a_{k,\zeta}^\dagger \sigma_{-}  , [a_{k',\zeta'}^\dagger \sigma_{-} , \rho_a(t)\otimes\rho_R(t_i)] ] \\
+&\quad\quad\quad+ g_{k',\zeta'} (\vec{r})e^{-i\delta_{k'} t'}g^*_{k,\zeta}(\vec{r})e^{i\delta_{k} t}Tr_{R} [a_{k,\zeta} \sigma_{+} , [a_{k',\zeta'}^\dagger \sigma_{-} , \rho_a(t)\otimes\rho_R(t_i)] ] + c.c.\\
+&=\sum_{\substack{k',\zeta'\\k.\zeta}} -g_{k',\zeta'} (\vec{r})g_{k,\zeta}(\vec{r})e^{-i\delta_{k'} t'-i\delta_{k} t} \langle a_{k,\zeta}^\dagger a_{k',\zeta'}^\dagger \rangle  \times 2\sigma_{-}\rho_a(t) \sigma_{-} \\
+&\quad\quad\quad+ g_{k',\zeta'} (\vec{r})g^*_{k,\zeta}(\vec{r})e^{i\delta_{k} t-i\delta_{k'} t'} \langle a_{k,\zeta} a_{k',\zeta'}^\dagger \rangle [\sigma_{+}\sigma_{-}\rho_a(t) - \sigma_{-}\rho_a(t)\sigma_{+}  ]\\
+ &\quad\quad\quad+ g_{k',\zeta'} (\vec{r})g^*_{k,\zeta}(\vec{r})e^{i\delta_{k} t-i\delta_{k'} t'} \langle a_{k',\zeta'}^\dagger a_{k,\zeta}  \rangle  [\rho_a(t)\sigma_{-}\sigma_{+} - \sigma_{+}\rho_a(t)\sigma_{-}]+ c.c.
+\end{align}
+$$
+The photons reservoir coupled to atoms is a canonical ensemble with temperature $T$, and its density matrix is:
+$$
+\begin{align}
+\rho_R = \frac{1}{Z} e^{-\beta H} = \frac{1}{Z} e^{-\beta \sum_{k,\zeta}\hbar \omega_k a_{k,\zeta}^\dagger a_{k,\zeta}} 
+\end{align}
+$$
+Using the condition that the trace of the density matrix is 1, $Z$ can be obtained as follows:
+$$
+\begin{align}
+Z = Tr\ e^{\sum_{k,\zeta}-\beta \hbar \omega_k a_{k,\zeta}^\dagger a_{k,\zeta}} &= \sum_{array~n_{k,\zeta} }\langle n_{k,\zeta} |e^{\sum_{k,\zeta}-\beta \hbar \omega_k a_{k,\zeta}^\dagger a_{k,\zeta}} | n_{k,\zeta} \rangle = \sum_{array~n_{k,\zeta} } \prod_{k,\zeta}e^{-\beta \hbar \omega_k n_{k,\zeta}} \\
+&=\prod_{k,\zeta}\sum_{n_{k,\zeta}=0 }^{\infty}e^{\sum_{k,\zeta} -\beta \hbar \omega_k n_{k,\zeta}} = \prod_{k,\zeta} \frac{1}{1 -e^{-\beta \hbar \omega_k }  }
+\end{align} 
+$$
+We could also calculates non-vanish average as below:
+$$
+\begin{align}
+Tr[\rho_R a_{k_1,\zeta_1}^\dagger a_{k_2,\zeta_2}] &= Z^{-1}\sum_{array~n_{k,\zeta} }\langle n_{k,\zeta} |e^{\sum_{k,\zeta}-\beta \hbar \omega_k a_{k,\zeta}^\dagger a_{k,\zeta}} a_{k_1,\zeta_1}^\dagger a_{k_2,\zeta_2}| n_{k,\zeta} \rangle \\
+&=Z^{-1}  \delta_{k_1k_2,\zeta_1\zeta_2}\sum_{array~n_{k,\zeta} } e^{\sum_{k,\zeta}-\beta \hbar \omega_k n_{k,\zeta}} n_{k_2,\zeta_2} \\
+&=\delta_{k_1k_2,\zeta_1\zeta_2} \frac{1}{e^{\beta\hbar\omega_{k_2}} - 1} := \delta_{k_1k_2,\zeta_1\zeta_2} \bar{n}_{k_2,\zeta_2}.
+\end{align}
+$$
+$$
+\begin{align}
+Tr[\rho_R  a_{k_2,\zeta_2}a_{k_1,\zeta_1}^\dagger] &= Tr[\rho_R  a_{k_1,\zeta_1}^\dagger a_{k_2,\zeta_2}] + Tr\{\rho_R  [a_{k_2,\zeta_2}, a_{k_1,\zeta_1}^\dagger] \} \\
+&=\delta_{k_1k_2,\zeta_1\zeta_2}( \bar{n}_{k_2,\zeta_2}+1).
+\end{align}
+$$
+Plug into @eq-weak-int-reservoir-evol, we see that:
+$$
+\begin{align}
+\dot\rho_{a} &= -\int_{t_i}^t dt'\{\sum_{\substack{k,\zeta}}  g_{k,\zeta} (\vec{r})g^*_{k,\zeta}(\vec{r})e^{i\delta_{k} (t- t')} ( \bar{n}_{k,\zeta}+1) [\sigma_{+}\sigma_{-}\rho_a(t) -\sigma_{-}\rho_a(t)\sigma_{+} ]\\
+ &\quad\quad\quad+ g_{k,\zeta} (\vec{r})g^*_{k,\zeta}(\vec{r})e^{i\delta_{k} (t- t')} \bar{n}_{k,\zeta}[\rho_a(t)\sigma_{-}\sigma_{+} -  \sigma_{+}\rho_a(t)\sigma_{-} ]\}+ c.c.
+\end{align}
+$$
+By introducing the definition of $g_{k,\zeta}$, the equation can be further simplified:
+$$
+\begin{align}
+\sum_{\substack{k,\zeta}}  g_{k,\zeta} (\vec{r})g^*_{k,\zeta}(\vec{r}) &= \sum_{\substack{k,\zeta}}e^2 \frac{\hbar \omega_k}{2\varepsilon_0} |f_{k,\zeta}(\vec{r})|^2 \cdot \varepsilon^i_{k,\zeta}\varepsilon^{j*}_{k,\zeta}\cdot \langle g|r^i|e\rangle  \langle e|r^j|g\rangle 
+\end{align}
+$$
+For light field in free space, $f_{k,\zeta}(\vec{r}) = \frac{1}{\sqrt{V}}e^{i\vec{k}\cdot\vec{r }}$, Moreover, $\sum_{\zeta}\varepsilon^i_{k,\zeta}\varepsilon^{j*}_{k,\zeta} = \delta^{ij} - \hat k^i \hat k ^j$. Then:
+$$
+\begin{align}
+\sum_{\substack{k,\zeta}}  g_{k,\zeta} (\vec{r})g^*_{k,\zeta}(\vec{r}) &= \sum_{k}e^2 \frac{\hbar \omega_k}{2\varepsilon_0} \frac{1}{V} \cdot (\delta^{ij} - \hat k^i \hat k ^j)\cdot \langle g|r^i|e\rangle  \langle e|r^j|g\rangle \\
+&=\frac{V}{(2\pi)^3}\int d^3k ~e^2 \frac{\hbar \omega_k}{2\varepsilon_0} \frac{1}{V} \cdot (\delta^{ij} - \hat k^i \hat k ^j)\cdot \langle g|r^i|e\rangle  \langle e|r^j|g\rangle \\
+&=\frac{1}{(2\pi)^3}\int dk d\theta ~ 2\pi k^2 \sin\theta ~e^2 \frac{\hbar \omega_k}{2\varepsilon_0}  \cdot (1 - \cos^2\theta)\cdot |\langle g|\vec{r}|e\rangle|^2 \\
+&=\frac{4}{3}\frac{1}{(2\pi)^2} |\langle g|e\vec{r}|e\rangle|^2\frac{\hbar c }{2\varepsilon_0}\int dk  k^3   = \frac{\hbar |\langle g|e\vec{r}|e\rangle|^2}{6 \pi^2 \varepsilon_0 c^3}\int d\omega  \omega^3 
+\end{align}
+$$
+We see that $\lim_{t \to \infty}\int_{t_i}^t dt' e^{i\delta_k (t - t')} \approx \pi \delta(\omega_k - \omega_0) +i\times p.v. (\frac{1}{\omega_0 - \omega}), \omega_0 = \Delta E/\hbar$, neglecting the imaginary term, which is one of the contribution to the \textbf{Lamb shifts} after appropriate renormalization. Then
+$$
+\begin{align}
+\dot\rho_{a} &= -\frac{\hbar |\langle g|e\vec{r}|e\rangle|^2\omega_0^3 }{6 \pi \varepsilon_0 c^3}   ( \bar{n}_{k_0,\zeta}+1) [\sigma_{+}\sigma_{-}\rho_a(t) -\sigma_{-}\rho_a(t)\sigma_{+}  ]\\
+ &\quad\quad\quad- \frac{\hbar |\langle g|e\vec{r}|e\rangle|^2\omega_0^3 }{6 \pi \varepsilon_0 c^3}  \bar{n}_{k_0,\zeta}[\sigma_{-}\sigma_{+}\rho_a(t) - \sigma_{+}\rho_a(t)\sigma_{-} ]+ c.c. \\
+&=-(\Gamma/2)   ( \bar{n}_{k_0,\zeta}+1) [\sigma_{+}\sigma_{-}\rho_a(t) -  \sigma_{-}\rho_a(t)\sigma_{+} ]- (\Gamma/2)  \bar{n}_{k_0,\zeta}[\rho_a(t)\sigma_{-}\sigma_{+} -\sigma_{+}\rho_a(t)\sigma_{-} ]+ c.c.,
+\end{align}
+$$
+where $\Gamma = \frac{\hbar |\langle g|e\vec{r}|e\rangle|^2\omega_0^3 }{3 \pi \varepsilon_0 c^3} $. 

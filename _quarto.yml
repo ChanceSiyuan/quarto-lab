@@ -55,6 +55,25 @@ website:
           contents:
             - theory/Topics/Lowerbounds/symmetric_strategies.qmd
 
+    - id: iqp
+      title: "IQP Circuit Supremacy"
+      contents:
+        - theory/Topics/IQP/index.qmd
+        - section: "Classical Simulation Theory"
+          contents:
+            - theory/Topics/IQP/classical_simulation.qmd
+            - theory/Topics/IQP/hardness_proofs.qmd
+        - section: "IQP Supremacy"
+          contents:
+            - theory/Topics/IQP/iqp_supremacy.qmd
+        - section: "Experimental Realizations"
+          contents:
+            - theory/Topics/IQP/mbqc_iqp.qmd
+            - theory/Topics/IQP/ft_iqp.qmd
+        - section: "Noise & Simulation"
+          contents:
+            - theory/Topics/IQP/noise_simulation.qmd
+
     - id: shadow_tomography
       title: "Classical Shadow Tomography"
       contents:
@@ -97,7 +116,7 @@ comments:
     input-position: "bottom"
     theme: "preferred_color_scheme"
 
-editor: source 
+editor: source
 
 bibliography: references.bib
 csl: aps.csl  

@@ -418,7 +418,22 @@ body.quarto-light {
     font-size: 18px;
   }
 }
+/* 评论日期样式补充 */
+.issue-meta-date {
+  color: var(--gh-text-muted);
+  margin-left: 4px;
+}
 
+/* 如果你想让评论之间有更明显的间隔 */
+.issue-post + .issue-post {
+  margin-top: 16px;
+}
+
+/* 让头像在评论区稍微小一点点（可选，对齐原版 GitHub 细节） */
+.post-header .post-avatar {
+  width: 32px;
+  height: 32px;
+}
 /* Giscus Integration Spacing */
 /* ========================================= */
 

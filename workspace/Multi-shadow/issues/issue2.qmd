@@ -1,0 +1,58 @@
+---
+title: "Lower bounds for nonlinear Pauli estimation"
+date: 2026-02-02
+categories: [issue]
+status: "Open"
+css: styles.css
+---
+
+::: {.issue-container}
+::: {.issue-title-section}
+# [🔓 Open]{.status-open} Lower bounds for nonlinear Pauli estimation [#2]{.issue-number}
+
+::: {.issue-meta}
+[theory]{.label .label-bug} [priority: high]{.label .label-enhancement}
+:::
+:::
+
+::: {.post-body}
+## Motivation
+
+Siyuan gave a 4-replica protocol that drops the $\mathcal{P}$-local constraint, achieving sample complexity $O(\log|\mathcal{P}|)$ with a highly nonlocal and adaptive circuit. We want to prove this is **optimal** by ruling out 2-replica and 3-replica possibilities.
+
+## Problem Statement
+
+For a fixed set of Pauli observables $P \in \mathcal{P}$, prove estimation lower and upper bounds on $\{\mathrm{Tr}[P\rho^2] : P \in \mathcal{P}\}$.
+
+### Known Results
+
+| Setting | Complexity | Reference |
+|---|---|---|
+| Naive upper bound (local 2-replica per $P$) | $O(|\mathcal{P}|)$ | Issue #3 |
+| Siyuan's 4-replica (nonlocal, adaptive) | $O(\log|\mathcal{P}|)$ | — |
+
+### Goals
+
+1. **Rule out 3-replica**: Show that no 3-replica protocol (local or nonlocal) can achieve $O(\log|\mathcal{P}|)$ sample complexity.
+2. **Rule out 2-replica**: Show that no 2-replica protocol can achieve $O(\log|\mathcal{P}|)$ sample complexity.
+3. Thereby establish $\Omega(\log|\mathcal{P}|)$ as tight, proving optimality of the 4-replica protocol.
+
+### Relation to Prior Work
+
+This generalizes ["Optimal tradeoffs for estimating Pauli observables"](https://arxiv.org/abs/2404.19105) to the **nonlinear** ($\mathrm{Tr}[P\rho^2]$) setting.
+:::
+:::
+
+
+::: {.issue-post}
+::: {.post-header}
+::: {.post-author}
+**Chance** commented on Feb 2, 2026
+:::
+:::
+
+::: {.post-body}
+- There already exists a 4-replica protocol that achieves $O(\log|\mathcal{P}|)$ sample complexity. You may refer to [Siyuan's 4-replica protocol](/theory/Topics/Shadow_tomography/nonlocal_multicopy.qmd) for details.
+- Lower bounds proof skill is partially introduced in [Lower bounds for Pauli Shadow Tomography](/theory/Topics/Lowerbounds/index.qmd).
+:::
+:::
