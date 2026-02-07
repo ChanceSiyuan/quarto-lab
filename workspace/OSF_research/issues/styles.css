@@ -1,0 +1,442 @@
+/* GitHub-Style Issue Page CSS */
+/* ========================================= */
+
+/* CSS Variables for Light/Dark Mode */
+/* ========================================= */
+
+:root {
+  /* Light mode (default) */
+  --gh-canvas: #ffffff;
+  --gh-border: #d0d7de;
+  --gh-header-bg: #f6f8fa;
+  --gh-text: #24292f;
+  --gh-text-muted: #57606a;
+  --gh-accent-fg: #0969da;
+  --gh-status-open: #1a7f37;
+  --gh-status-closed: #8250df;
+}
+
+/* Dark mode via system preference */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --gh-canvas: #0d1117;
+    --gh-border: #30363d;
+    --gh-header-bg: #161b22;
+    --gh-text: #c9d1d9;
+    --gh-text-muted: #8b949e;
+    --gh-accent-fg: #58a6ff;
+    --gh-status-open: #2da44e;
+    --gh-status-closed: #a371f7;
+  }
+}
+
+/* Dark mode via Quarto theme toggle (overrides system preference) */
+body.quarto-dark {
+  --gh-canvas: #0d1117;
+  --gh-border: #30363d;
+  --gh-header-bg: #161b22;
+  --gh-text: #c9d1d9;
+  --gh-text-muted: #8b949e;
+  --gh-accent-fg: #58a6ff;
+  --gh-status-open: #2da44e;
+  --gh-status-closed: #a371f7;
+}
+
+/* Ensure light mode when Quarto light theme is explicitly selected */
+body.quarto-light {
+  --gh-canvas: #ffffff;
+  --gh-border: #d0d7de;
+  --gh-header-bg: #f6f8fa;
+  --gh-text: #24292f;
+  --gh-text-muted: #57606a;
+  --gh-accent-fg: #0969da;
+  --gh-status-open: #1a7f37;
+  --gh-status-closed: #8250df;
+}
+
+/* Base Typography */
+/* ========================================= */
+
+.issue-container {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--gh-text);
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+/* Issue Title Section */
+/* ========================================= */
+
+.issue-title-section {
+  margin-bottom: 24px;
+}
+
+.issue-title-section h1 {
+  font-size: 32px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  line-height: 1.25;
+  color: var(--gh-text);
+}
+
+/* Status Badges */
+/* ========================================= */
+
+.status-open,
+.status-closed {
+  font-size: 14px;
+  font-weight: 600;
+  padding: 5px 12px;
+  border-radius: 24px;
+  display: inline-block;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+.status-open {
+  background: var(--gh-status-open);
+  color: #ffffff;
+}
+
+.status-closed {
+  background: var(--gh-status-closed);
+  color: #ffffff;
+}
+
+.issue-number {
+  color: var(--gh-text-muted);
+  font-weight: 300;
+  font-size: 32px;
+}
+
+/* Issue Metadata */
+/* ========================================= */
+
+.issue-meta {
+  margin-bottom: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+}
+
+/* Label Badges */
+/* ========================================= */
+
+.label {
+  display: inline-block;
+  padding: 0 7px;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 18px;
+  border-radius: 12px;
+  margin-right: 4px;
+}
+
+.label-bug {
+  background: #d73a4a;
+  color: #ffffff;
+}
+
+.label-enhancement {
+  background: #a2eeef;
+  color: #1f2328;
+}
+
+.label-documentation {
+  background: #0075ca;
+  color: #ffffff;
+}
+
+.label-question {
+  background: #d876e3;
+  color: #ffffff;
+}
+
+.label-wontfix {
+  background: #ffffff;
+  color: #1f2328;
+  border: 1px solid var(--gh-border);
+}
+
+/* Opening Post Container */
+/* ========================================= */
+
+.issue-post {
+  border: 1px solid var(--gh-border);
+  border-radius: 6px;
+  margin-bottom: 24px;
+  overflow: hidden;
+}
+
+/* Post Header */
+/* ========================================= */
+
+.post-header {
+  padding: 16px;
+  background: var(--gh-header-bg);
+  border-bottom: 1px solid var(--gh-border);
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  color: var(--gh-text-muted);
+}
+
+.post-author {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.post-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--gh-border);
+  flex-shrink: 0;
+}
+
+.post-author strong {
+  color: var(--gh-text);
+  font-weight: 600;
+}
+
+/* Post Body */
+/* ========================================= */
+
+.post-body {
+  padding: 16px;
+  background: var(--gh-canvas);
+  color: var(--gh-text);
+}
+
+.post-body h2 {
+  font-size: 24px;
+  font-weight: 600;
+  margin-top: 24px;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--gh-border);
+}
+
+.post-body h3 {
+  font-size: 20px;
+  font-weight: 600;
+  margin-top: 24px;
+  margin-bottom: 16px;
+}
+
+.post-body h4 {
+  font-size: 16px;
+  font-weight: 600;
+  margin-top: 16px;
+  margin-bottom: 8px;
+}
+
+.post-body p {
+  margin-bottom: 16px;
+  line-height: 1.6;
+}
+
+.post-body strong {
+  font-weight: 600;
+  color: var(--gh-text);
+}
+
+.post-body em {
+  font-style: italic;
+}
+
+.post-body a {
+  color: var(--gh-accent-fg);
+  text-decoration: none;
+}
+
+.post-body a:hover {
+  text-decoration: underline;
+}
+
+/* Task Lists */
+/* ========================================= */
+
+.post-body ul {
+  list-style: disc;
+  padding-left: 2em;
+  margin-bottom: 16px;
+}
+
+.post-body ul ul {
+  margin-bottom: 0;
+}
+
+.post-body li {
+  margin: 4px 0;
+}
+
+/* Task list items (checkboxes) */
+.post-body .task-list-item {
+  list-style: none;
+  margin-left: -1.5em;
+}
+
+.post-body input[type="checkbox"] {
+  margin-right: 8px;
+  margin-left: 0;
+  vertical-align: middle;
+}
+
+.post-body ol {
+  list-style: decimal;
+  padding-left: 2em;
+  margin-bottom: 16px;
+}
+
+/* Code Blocks */
+/* ========================================= */
+
+.post-body pre {
+  background: var(--gh-header-bg);
+  border: 1px solid var(--gh-border);
+  border-radius: 6px;
+  padding: 16px;
+  overflow-x: auto;
+  margin-bottom: 16px;
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.post-body code {
+  background: var(--gh-header-bg);
+  padding: 0.2em 0.4em;
+  border-radius: 6px;
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  font-size: 85%;
+}
+
+.post-body pre code {
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
+}
+
+/* Blockquotes */
+/* ========================================= */
+
+.post-body blockquote {
+  padding: 0 1em;
+  color: var(--gh-text-muted);
+  border-left: 4px solid var(--gh-border);
+  margin-bottom: 16px;
+}
+
+.post-body blockquote p {
+  margin-bottom: 8px;
+}
+
+/* Tables */
+/* ========================================= */
+
+.post-body table {
+  border-collapse: collapse;
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.post-body table th,
+.post-body table td {
+  padding: 6px 13px;
+  border: 1px solid var(--gh-border);
+}
+
+.post-body table th {
+  font-weight: 600;
+  background: var(--gh-header-bg);
+}
+
+.post-body table tr {
+  background: var(--gh-canvas);
+}
+
+.post-body table tr:nth-child(2n) {
+  background: var(--gh-header-bg);
+}
+
+/* Horizontal Rule */
+/* ========================================= */
+
+.post-body hr {
+  height: 0.25em;
+  padding: 0;
+  margin: 24px 0;
+  background-color: var(--gh-border);
+  border: 0;
+}
+
+/* Images */
+/* ========================================= */
+
+.post-body img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 6px;
+  margin: 16px 0;
+}
+
+/* Responsive Design */
+/* ========================================= */
+
+@media (max-width: 768px) {
+  .issue-container {
+    padding: 8px;
+  }
+
+  .issue-title-section h1 {
+    font-size: 24px;
+  }
+
+  .issue-number {
+    font-size: 24px;
+  }
+
+  .post-header {
+    padding: 12px;
+  }
+
+  .post-body {
+    padding: 12px;
+  }
+
+  .post-body h2 {
+    font-size: 20px;
+  }
+
+  .post-body h3 {
+    font-size: 18px;
+  }
+}
+/* 评论日期样式补充 */
+.issue-meta-date {
+  color: var(--gh-text-muted);
+  margin-left: 4px;
+}
+
+/* 如果你想让评论之间有更明显的间隔 */
+.issue-post + .issue-post {
+  margin-top: 16px;
+}
+
+/* 让头像在评论区稍微小一点点（可选，对齐原版 GitHub 细节） */
+.post-header .post-avatar {
+  width: 32px;
+  height: 32px;
+}
+/* Giscus Integration Spacing */
+/* ========================================= */
+
+.giscus {
+  margin-top: 32px;
+}

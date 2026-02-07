@@ -1,0 +1,59 @@
+---
+title: "Local Operators, Interpolation & Simulation Complexity Landscape"
+date: 2026-02-07
+categories: [issue]
+status: "Open"
+css: styles.css
+---
+
+::: {.issue-container}
+::: {.issue-title-section}
+# [Open]{.status-open} Local Operators, Interpolation & Simulation Complexity Landscape [#5]{.issue-number}
+
+::: {.issue-meta}
+[enhancement]{.label .label-enhancement} [question]{.label .label-question}
+:::
+:::
+
+::: {.post-body}
+## Problem Description
+
+The draft raises two related open questions that together define a complexity phase diagram for OSF simulation:
+
+**(A) Complexity interpolation** (draft lines 264--267): For mixed observables $O = \ket{0}\!\bra{0}^{\otimes n_1} \otimes Z^{\otimes n_2}$, how does simulation complexity interpolate between the easy ($Z^{\otimes n}$, stabilizer) and hard ($\ket{0}\!\bra{0}^{\otimes n}$, full coherence) regimes?
+
+**(B) Local operator simplifications** (draft lines 383--386): The Blake-Linden super-Clifford framework assumes full-support Pauli strings. When the observable has identity factors ($I$ on some qubits), the GSF should simplify --- but how?
+
+## Specific Gaps
+
+1. **No quantitative interpolation.** The draft notes the two extremes but does not analyze intermediate cases.
+2. **Identity factors not exploited.** An identity factor $I_k$ in the Pauli string means the $a_k$ register qubit is fixed at $\ket{0}$, which should reduce CCZ gates to CZ or $I$. This structural simplification is not formalized.
+3. **Connection to vertex cover unexplored.** The fraction of identity sites should directly control the minimum vertex cover size of the CCZ interaction graph, but this is not proven.
+
+## Plan
+
+- [ ] Numerical experiments: simulate small circuits ($n = 4$--$8$) with varying identity fractions
+- [ ] Analyze $a$-register state as a function of identity support
+- [ ] Prove: identity on qubit $k$ $\Rightarrow$ $a_k = 0$ $\Rightarrow$ all CCZ gates involving $a_k$ reduce
+- [ ] Connect identity fraction to minimum vertex cover size
+- [ ] Map the complexity phase diagram: identity fraction vs. T-depth vs. simulation cost
+- [ ] Compare with IQP hardness results (Bremner-Montanaro-Shepherd 2016)
+
+## Literature
+
+- Blake, Linden 2020 (super-Clifford circuits, quantum scrambling)
+- Bremner, Montanaro, Shepherd 2016 (average-case complexity of IQP)
+- Bouland, Fefferman, Nirkhe, Vazirani 2018 (quantum supremacy and approximate counting)
+
+## Preliminary Analysis
+
+Consider an $n$-qubit observable $O = P_1 \otimes \cdots \otimes P_n$ where $P_k \in \{I, X, Y, Z\}$. Let $S = \{k : P_k = I\}$ be the identity support. In the GSF doubled space:
+
+- For $k \in S$: the $a_k$ qubit is fixed at $\ket{0}$. Any CCZ gate $\textbf{CCZ}_{a_k, \cdot, \cdot}$ reduces to $\textbf{CZ}_{\cdot,\cdot}$ (controlled on $\ket{0}$ = identity).
+- For $k \notin S$: the $a_k$ qubit is active and CCZ gates remain.
+
+The effective interaction graph has vertices only on the active qubits $\bar{S} = \{1,\ldots,n\} \setminus S$. The minimum vertex cover of this reduced graph determines the simulation cost. As $|S|/n \to 1$ (mostly identity), the graph shrinks and simulation becomes efficient. As $|S|/n \to 0$ (full support), we recover the general case.
+
+This suggests a sharp threshold: simulation is efficient when the active support $|\bar{S}|$ is $O(\log n)$, and hard when $|\bar{S}| = \Omega(n)$.
+:::
+:::

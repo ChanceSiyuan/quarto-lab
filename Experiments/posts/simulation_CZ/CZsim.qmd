@@ -1,7 +1,7 @@
 ---
 title: CZ Gate Simulation for Rb87 Atoms
 date: '2026-01-30'
-lang: en
+bibliography: refs.bib
 categories:
 - Quantum Computing
 - Rydberg Atoms
@@ -67,25 +67,41 @@ $$
 
 In the case of $^{87}Rb$, we imposed two laser light $E^{(1)}, \sigma_{-}$ with wavelength $420~\mathrm{nm}$ and $E^{(2)},\sigma_{+}$ with wavelength $1013~\mathrm{nm}$.
  We keep the intensity $E^{(1)},E^{(2)}$ of both the laser unchanged and allow $420~nm$ light change its phase $\phi^{(1)}(t)$.
-According to the $CG$-coefficient, we are able to transfer from the hyperfine-basis into $\{L^2,S^2,J^2,I^2,m_J,m_I\}$ basis.
+Using the notation $\text{CG}(j_1,m_1,j_2,m_2,j_3,m_3) = \langle j_1,m_1, j_2,m_2\ket{j_1,j_2,j_3,m_3}$, we are able to transfer from the hyperfine-basis $\{L^2,S^2,J^2,I^2,F^2,m_F\}$ into $\{L^2,S^2,J^2,I^2,m_J,m_I\}$ basis. For simplicity, we only specify the indexes $\{(J,I)F,m_F\} \to \{(J,I)m_J,m_I\}$ in the following.
+
 $$
 \begin{align*}
-\ket{0} = \ket{g_1} &=(5S_{1/2}) 1/\sqrt{2}\left[-\{m_j = 1/2, m_I = -1/2\} + \{ m_j = -1/2, m_I = 1/2\}\right], \\
-\ket{1} = \ket{g_0} &=(5S_{1/2}) 1/\sqrt{2}\left[\{5S_{1/2}, m_j = 1/2, m_I = -1/2\} +\{5S_{1/2}, m_j = -1/2, m_I = 1/2\}\right], \\
-\ket{2} = \ket{e_1} &=(6P_{3/2}) \sqrt{\frac{3}{10}}\{m_j = -3/2, m_I = 1/2\} -\sqrt{\frac{2}{5}}\{m_j = -1/2, m_I = -1/2\} +\sqrt{\frac{3}{10}} \{m_j = 1/2, m_I = -3/2\},\\
-\ket{3} = \ket{e_0} &=(6P_{3/2}) \frac{1}{\sqrt{2}}\{m_j = -3/2, m_I = 1/2\} -\frac{1}{\sqrt{2}} \{m_j = 1/2, m_I = -3/2\}, \\
-\ket{4} = \ket{e_2} &=(6P_{3/2}) \frac{1}{\sqrt{5}}\{m_j = -3/2, m_I = 1/2\} +\sqrt{\frac{3}{5}}\{m_j = -1/2, m_I = -1/2\} +\frac{1}{\sqrt{5}} \{m_j = 1/2, m_I = -3/2\},\\
-\ket{5} = \ket{r_0} &= (70S_{1/2}) \{m_j = -1/2,m_I = 1/2\},\quad  \ket{6}=\ket{r_1} = (70S_{1/2}) \{m_j = 1/2,m_I = -1/2\}.
+\ket{0} &= \ket{g_1} =\ket{5S_{1/2},F=1,m_F=0} \\
+&= CG(1/2,1/2,1/2,-1/2,1,0)\ket{m_J = 1/2, m_I = -1/2} + CG(1/2,-1/2,1/2,1/2,1,0)\ket{ m_J = -1/2, m_I = 1/2}, \\
+\ket{1} &= \ket{g_0} =\ket{5S_{1/2},F=2,m_F=0} \\
+&= CG(1/2,1/2,1/2,-1/2,2,0)\ket{m_J = 1/2, m_I = -1/2} + CG(1/2,-1/2,1/2,1/2,2,0)\ket{ m_J = -1/2, m_I = 1/2}, \\
+\ket{2} &= \ket{e_1} =\ket{6P_{3/2},F=1,m_F=-1} \\
+&= CG(3/2,-3/2,3/2,1/2,1,-1)\ket{m_J = -3/2, m_I = 1/2} + CG(3/2,-1/2,3/2,-1/2,1,-1)\ket{ m_J = -1/2, m_I = -1/2} + CG(3/2,1/2,3/2,-3/2,1,-1)\ket{ m_J = 1/2, m_I = -3/2}, \\
+\ket{3} &= \ket{e_0} =\ket{6P_{3/2},F=2,m_F=-1} \\
+&= CG(3/2,-3/2,3/2,1/2,2,-1)\ket{m_J = -3/2, m_I = 1/2} + CG(3/2,-1/2,3/2,-1/2,2,-1)\ket{ m_J = -1/2, m_I = 1/2} + CG(3/2,1/2,3/2,-3/2,2,-1)\ket{ m_J = 1/2, m_I = -3/2}, \\
+\ket{4} &= \ket{e_2} =\ket{6P_{3/2},F=3,m_F=-1} \\
+&= CG(3/2,-3/2,3/2,1/2,3,-1)\ket{m_J = -3/2, m_I = 1/2} + CG(3/2,-1/2,3/2,-1/2,3,-1)\ket{ m_J = -1/2, m_I = 1/2} + CG(3/2,1/2,3/2,-3/2,3,-1)\ket{ m_J = 1/2, m_I = -3/2}, \\
+\ket{5} &= \ket{r_0} =\ket{70S_{1/2}} = \ket{m_J = -1/2, m_I = 1/2}, \\
+\ket{6} &= \ket{r_1} =\ket{70S_{1/2}} = \ket{m_J = 1/2, m_I = -1/2}.
 \end{align*}
 $$
+The CG-coefficients involved can be calculated using python package directly, as shown below:
+<!-- ```{python}
+import sympy as sp
+from sympy.physics.quantum import ClebschGordan
+
+j1, m1, j2, m2, j3, m3 = sp.symbols('j1 m1 j2 m2 j3 m3')
+CG = ClebschGordan(j1, m1, j2, m2, j3, m3)
+print(CG.doit())
+``` -->
 We labeled $\Omega_{420}$ as the coupling coefficient:
 $$
-\begin{align}
+\begin{align*}
     \Omega_{420} =: {\langle \{6P_{3/2}, m_j = -3/2, m_I = 1/2\}| e\mathbf{r}\cdot \mathbf{E}_-^{(1)}|\{5S_{1/2}, m_j = -1/2, m_I = 1/2\} \rangle}/{\sqrt{2}\hbar},\\
     \gamma \Omega_{420} = {\langle \{6P_{3/2}, m_j = -1/2, m_I = -1/2\} | e\mathbf{r}\cdot\mathbf{E}_-^{(1)} | \{5S_{1/2}, m_j = 1/2, m_I = -1/2\}\rangle}/{\sqrt{2}\hbar} .
-\end{align}
+\end{align*}
 $$
-Using the notation $\text{CG}(j_1,m_1,j_2,m_2,j_3,m_3) = \langle j_1,m_1, j_2,m_2\ket{j_1,j_2,j_3,m_3}$, we can further express:
+
 $$
 \begin{align*}
 \langle 2| H | 1 \rangle &= \text{CG}(3/2,-3/2,3/2,1/2,1,-1)\Omega_{420}/2 +\text{CG}(3/2,-1/2,3/2,-1/2,1,-1) \gamma \Omega_{420}/2 \\
@@ -140,13 +156,14 @@ $$
 $$
 
 ## Results
-Then we test the phase shift that is robust to amplitude noise.
-This optimized function can be fitted with two trigonometric functions as
+
+Then we test the Time-optimal strategy, as proposed in @jandura2022time. The time-optimal function can be written as:
 $$
 \begin{align}
     \varphi(t) = A_1 \sin(\omega t + \phi_1) + A_2 \cdot \sin(2 \omega t + \phi_2) + \delta t,
 \end{align}
 $$
 with $\omega = 8.71374888 \times 10^{-1} \Omega_{\mathrm{eff}}, A_1 = 8.89646230 \times 10^{-1}, \phi_1 = -8.93893845\times 10^{-1}, A_2 = -6.67698078 \times 10^{-1}, \phi_2 = 1.35391702, \delta =  -1.97859545 \times 10^{-2} \Omega_{\mathrm{eff}}$. The gate time is chosen as $t_{\mathrm{gate}} = 2.62170756 \cdot ({2 \pi}/{\Omega_{\mathrm{eff}}})$. 
+
 
 

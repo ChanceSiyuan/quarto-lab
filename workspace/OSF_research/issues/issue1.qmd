@@ -1,0 +1,47 @@
+---
+title: "CNOT Dual Circuit: Rigorous Proof & CCZ Derivation"
+date: 2026-02-07
+categories: [issue]
+status: "Open"
+css: styles.css
+---
+
+::: {.issue-container}
+::: {.issue-title-section}
+# [Open]{.status-open} CNOT Dual Circuit: Rigorous Proof & CCZ Derivation [#1]{.issue-number}
+
+::: {.issue-meta}
+[theory]{.label .label-documentation} [enhancement]{.label .label-enhancement}
+:::
+:::
+
+::: {.post-body}
+## Problem Description
+
+The OSF draft (lines 83--106) lists all 16 cases of the CNOT dual circuit but provides no derivation. The Boolean function $f = a_1 b_2(1 + b_1 + a_2)$ is claimed without justification, and the connection between rank-3 terms in $f$ and the necessity of CCZ gates is stated but not proven.
+
+## Specific Gaps
+
+1. **Phase origin unclear.** The two sign flips ($\ket{1001} \to -\ket{1111}$ and $\ket{1111} \to -\ket{1001}$) arise from the $Y = iXZ$ convention, but this is not made explicit.
+2. **Boolean function not derived.** The function $f(a_1, b_1, a_2, b_2) = a_1 b_2(1 + b_1 + a_2)$ is presented as a fact. Need to show how the symplectic inner product difference gives $(-1)^f$.
+3. **Degree-$k$ $\leftrightarrow$ $C^kZ$ principle unjustified.** The claim that a degree-$k$ term in the phase polynomial requires a $C^kZ$ gate needs a proof or citation.
+
+## Plan
+
+- [ ] Verify all 16 cases independently (symplectic calculation)
+- [ ] Derive the Boolean function $f$ from the phase discrepancy
+- [ ] Prove or cite: degree-$k$ Boolean phase polynomial $\leftrightarrow$ $C^kZ$ gate decomposition
+- [ ] Write as a self-contained theorem in the draft
+
+## Literature
+
+- Gottesman 1998 (Heisenberg representation of quantum computers)
+- Cui, Gottesman, Krishna 2017 (diagonal gates in the Clifford hierarchy = degree-$k$ phase polynomials)
+
+## Preliminary Analysis
+
+The phase discrepancy between the permuted and actual output states comes from the symplectic inner product. For two-qubit Paulis $P = X^{a_1}Z^{b_1} \otimes X^{a_2}Z^{b_2}$, conjugation by CNOT permutes the Pauli labels. The extra sign is:
+$$(-1)^{f(a_1,b_1,a_2,b_2)} = \frac{\text{phase of actual conjugation}}{\text{phase of naive permutation}}$$
+Expanding: $f = a_1 b_2 + a_1 b_1 b_2 + a_1 a_2 b_2 = a_1 b_2(1 + b_1 + a_2)$ over $\mathbb{F}_2$. The cubic terms $a_1 b_1 b_2$ and $a_1 a_2 b_2$ each require a CCZ gate, giving $\textbf{CCZ}_{a_1 b_2 b_1}\textbf{CCZ}_{a_1 b_2 a_2}$. The quadratic term gives $\textbf{CZ}_{a_1 b_2}$.
+:::
+:::

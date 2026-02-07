@@ -1,0 +1,49 @@
+---
+title: "Noisy Circuit Simulation: Complete the GSF Noise Framework"
+date: 2026-02-07
+categories: [issue]
+status: "Open"
+css: styles.css
+---
+
+::: {.issue-container}
+::: {.issue-title-section}
+# [Open]{.status-open} Noisy Circuit Simulation: Complete the GSF Noise Framework [#4]{.issue-number}
+
+::: {.issue-meta}
+[theory]{.label .label-documentation} [enhancement]{.label .label-enhancement}
+:::
+:::
+
+::: {.post-body}
+## Problem Description
+
+The draft's noise section (lines 552--579) is incomplete. The key transformation $\mathbf{CH} \cdot \mathbf{\Lambda} \cdot \mathbf{CH}$ (where $\mathbf{\Lambda}$ is a Pauli noise channel in the doubled space) is stated but not analyzed. The "classical randomness" simulation approach is mentioned without specification.
+
+## Specific Gaps
+
+1. **$\mathbf{CH} \cdot \mathbf{\Lambda} \cdot \mathbf{CH}$ not computed.** For a general Pauli noise channel $\Lambda(\rho) = \sum_P \lambda_P P\rho P^\dagger$, the dual-space representation $\mathbf{\Lambda}$ is diagonal in the Pauli basis. But after conjugation by $\mathbf{CH}$, the off-diagonal structure is unknown.
+2. **Depolarizing vs. asymmetric noise distinction.** Depolarizing noise ($\lambda_X = \lambda_Y = \lambda_Z$) should stay diagonal through CH (by symmetry), but asymmetric Pauli noise will develop off-diagonal terms. This distinction is not made.
+3. **No concrete algorithm.** The draft suggests noise can be handled via "classical randomness" but gives no pseudocode or complexity analysis.
+
+## Plan
+
+- [ ] Compute $\mathbf{CH} \cdot \mathbf{\Lambda} \cdot \mathbf{CH}$ explicitly for single-qubit Pauli noise
+- [ ] Identify when the result stays diagonal (depolarizing) vs. develops off-diagonal terms (asymmetric)
+- [ ] Analyze the off-diagonal structure: is it sparse? low-rank?
+- [ ] Compare with Pauli-path simulation methods (Aharonov et al. 2023)
+- [ ] Write concrete simulation algorithm with complexity bounds
+
+## Literature
+
+- Aharonov, Gao, Landau, Liu, Vazirani 2023 (polynomial-time classical simulation of noisy IQP, STOC)
+- Shao, Zhang 2024 (simulating noisy quantum circuits via Pauli paths)
+- Fontana, Kikuchi, Caro, et al. 2023 (classical simulation of noisy circuits)
+
+## Preliminary Analysis
+
+**Depolarizing noise** $\Lambda_{\text{dep}}(\rho) = (1-p)\rho + \frac{p}{3}(X\rho X + Y\rho Y + Z\rho Z)$: in the Pauli basis this is diagonal with eigenvalues $(1, 1-\frac{4p}{3}, 1-\frac{4p}{3}, 1-\frac{4p}{3})$. Since CH permutes Paulis, the diagonal structure is preserved. Simulation reduces to reweighting stabilizer paths.
+
+**Asymmetric Pauli noise** $\Lambda(\rho) = (1-p_x-p_y-p_z)\rho + p_x X\rho X + p_y Y\rho Y + p_z Z\rho Z$: when $p_x \neq p_y$, the CH transformation mixes $X$ and $Y$ components, creating off-diagonal terms in the computational basis of the doubled space. These off-diagonal terms represent coherence injected by the noise asymmetry --- precisely the resource that makes simulation harder.
+:::
+:::
