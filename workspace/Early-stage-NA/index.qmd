@@ -1,18 +1,25 @@
 ---
-date: '2026-01-26'
+date: '2026-02-09'
 title: Project Home
 listing:
   contents: ./issues/*.qmd
   type: table
-  fields: [date, title, status]
-  sort: date desc
+  fields: [number, title, status, date]
+  field-display-names:
+    number: 'No.'
+  sort: number asc
   id: issues
 ---
 
 # Current status
 ::: {#issues}
 :::
+
 # Relevant Notes
 
-0. [Review](/Experiments/posts/earlystate_review/index.qmd)
-1. [A robust manifest of magic square supermacy](/theory/Posts/Nonlocal_Games_Survey/index.qmd)
+0. [Experimental Review: Early-Stage Rb87 Neutral Atom Quantum Computing](/theory/Posts/earlystate_review/index.qmd)
+1. [Scalable Quantum Non-Locality: Architectures, Noise Resilience, and Experimental Frontiers](/theory/Posts/Nonlocal_Games_Survey/index.qmd)
+2. [Pseudo-Telepathy and Bell Inequalities](/theory/Posts/Nonlocal_Games_Survey/Stabilizer-non-local_game.qmd)
+3. [Hamiltonian Learning via Bell Measurement](/theory/Posts/Ham_learning/index.qmd)
+4. [Holographic Quantum Dynamics Simulation Survey](/theory/Posts/TN_Quantum_Simulation/index.qmd)
+5. [Nonlocal Multi-Copy Shadow Tomography](/theory/Topics/Shadow_tomography/nonlocal_multicopy.qmd)

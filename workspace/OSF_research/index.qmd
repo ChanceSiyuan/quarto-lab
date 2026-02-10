@@ -4,8 +4,10 @@ title: Project Home
 listing:
   contents: ./issues/*.qmd
   type: table
-  fields: [date, title, status]
-  sort: date desc
+  fields: [number, title, status, date]
+  field-display-names:
+    number: 'No.'
+  sort: number asc
   id: issues
 ---
 

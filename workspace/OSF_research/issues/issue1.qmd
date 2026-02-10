@@ -4,6 +4,8 @@ date: 2026-02-07
 categories: [issue]
 status: "Open"
 css: styles.css
+bibliography: ../refs.bib
+number: 1
 ---
 
 ::: {.issue-container}
@@ -35,8 +37,8 @@ The OSF draft (lines 83--106) lists all 16 cases of the CNOT dual circuit but pr
 
 ## Literature
 
-- Gottesman 1998 (Heisenberg representation of quantum computers)
-- Cui, Gottesman, Krishna 2017 (diagonal gates in the Clifford hierarchy = degree-$k$ phase polynomials)
+- [@Gottesman1998] (Heisenberg representation of quantum computers)
+- [@Cui2017] (diagonal gates in the Clifford hierarchy = degree-$k$ phase polynomials)
 
 ## Preliminary Analysis
 
@@ -45,3 +47,9 @@ $$(-1)^{f(a_1,b_1,a_2,b_2)} = \frac{\text{phase of actual conjugation}}{\text{ph
 Expanding: $f = a_1 b_2 + a_1 b_1 b_2 + a_1 a_2 b_2 = a_1 b_2(1 + b_1 + a_2)$ over $\mathbb{F}_2$. The cubic terms $a_1 b_1 b_2$ and $a_1 a_2 b_2$ each require a CCZ gate, giving $\textbf{CCZ}_{a_1 b_2 b_1}\textbf{CCZ}_{a_1 b_2 a_2}$. The quadratic term gives $\textbf{CZ}_{a_1 b_2}$.
 :::
 :::
+
+## Comments
+<!-- COMMENTS-START -->
+{{< include ../../comments/OSF_research/issues/issue1.md >}}
+<!-- COMMENTS-END -->
+

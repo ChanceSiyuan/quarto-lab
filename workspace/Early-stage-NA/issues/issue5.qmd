@@ -1,0 +1,97 @@
+---
+title: "Virtual Cooling for Observable Estimation on Neutral Atom Arrays"
+date: 2026-02-09
+categories: [issue]
+status: "Open"
+css: styles.css
+bibliography: ../refs.bib
+number: 5
+---
+
+::: {.issue-container}
+::: {.issue-title-section}
+# [🔓 Open]{.status-open} Virtual Cooling for Observable Estimation on Neutral Atom Arrays [#5]{.issue-number}
+
+::: {.issue-meta}
+[enhancement]{.label .label-enhancement} [theory]{.label .label-bug}
+:::
+:::
+
+::: {.post-body}
+## Problem / Opportunity
+
+Virtual distillation (virtual cooling) [@huggins2021virtual] uses $k$ copies of a noisy state $\rho$ to estimate $\text{tr}(O\rho^k)/\text{tr}(\rho^k)$, exponentially suppressing incoherent errors with copy number. However, the standard protocol is restricted to **fixed Pauli observables**: each circuit estimates a single $\text{tr}(P\rho^k)$, requiring $O(4^n)$ circuits for full characterization. See [Virtual Distillation review](/theory/Posts/Virtual_Distillation/index.qmd).
+
+A more efficient strategy extends this to **simultaneous estimation of all Pauli expectations** via non-local $k$-copy shadow tomography, as developed in [Non-local $k$-copy Pauli Shadow Tomography](/theory/Topics/Shadow_tomography/nonlocal_multicopy.qmd). The key result: a commuting family $\{A_P\}_{P \in \mathcal{P}_n}$ can be jointly measured on $\rho^{\otimes 2k}$, yielding $|\text{tr}(P\rho^k)|$ for all $P$ from a single measurement basis.
+
+The open question is **implementation on neutral atom arrays**: this protocol requires adaptive atom transport and GHZ-state-assisted measurements across $2k$ replicas, which is demanding on current hardware.
+
+### Proposed Plan
+
+1. **SPAM error analysis**: Quantify how state preparation and measurement errors propagate through the $k$-copy protocol, particularly the impact on the denominator $\text{tr}(\rho^k)$ which amplifies noise when $\rho$ is highly mixed.
+2. **Adaptive GHZ measurement feasibility**: Analyze the hardware requirements for preparing GHZ states across $2k$ replicas on a neutral atom array---atom transport distances, gate depths, and sensitivity to transport-induced dephasing.
+3. **Gate decomposition for permutation operator**: Compile the permutation operator $\mathbb{P}^d_\pi$ into native Rydberg CZ gates for small $k$ (start with $k=1$: 2-copy SWAP test).
+4. **Comparison with standard virtual distillation**: Benchmark the sample complexity advantage of the non-local shadow protocol vs. observable-by-observable virtual distillation for practically relevant observable sets (e.g., all weight-$\leq w$ Paulis).
+
+### Relevant Literature
+
+- **[@huggins2021virtual]**: Huggins *et al.*, "Virtual distillation for quantum error mitigation," PRX, 2021. *Reason: Foundational virtual cooling protocol that this work generalizes.*
+- **[@Noller2025]**: Nöller *et al.*, "An infinite hierarchy of multi-copy quantum learning tasks," arXiv:2510.08070, 2025. *Reason: Establishes exponential separations between $k$-copy and $(k-1)$-copy strategies.*
+- **[@Piroli2025twocopy]**: Piroli *et al.*, "Experimental shadow tomography beyond single-copy measurements," PRA, 2025. *Reason: First experimental 2-copy shadow tomography demonstration.*
+- **[@Huang2020]**: Huang, Kueng & Preskill, "Predicting many properties of a quantum system from very few measurements," Nature Physics, 2020. *Reason: Single-copy classical shadow baseline for comparison.*
+:::
+:::
+
+::: {.issue-post}
+::: {.post-header}
+::: {.post-author}
+**Chance** commented on Feb 3, 2026
+:::
+:::
+
+::: {.post-body}
+An adaptive moving of atoms and a GHZ state preparation is used in [this strategy](/theory/Topics/Shadow_tomography/nonlocal_multicopy.qmd). We still need to:
+
+- Take into account the SPAM and error mitigation schemes.
+- Is there inherent hardness to implement adaptive GHZ state measurement on neutral atom arrays?
+:::
+:::
+
+::: {.issue-post}
+::: {.post-header}
+::: {.post-author}
+**Claude-Reviewer** commented on Feb 9, 2026
+:::
+:::
+
+::: {.post-body}
+## Preliminary Analysis
+
+The non-local $k$-copy protocol defines a commuting observable family on $2k$ replicas. For $k=1$ (the simplest case), the operator is:
+$$
+A_P = (P \otimes P) \cdot \mathbb{P}^d_\pi, \quad \text{with } \text{tr}(A_P\, \rho^{\otimes 2}) = [\text{tr}(P\rho)]^2.
+$$
+The permutation $\mathbb{P}^d_\pi$ acts as a global SWAP between the two replicas. Since $\{A_P\}$ commute, they share a common eigenbasis, and a single projective measurement in this basis yields $|\text{tr}(P\rho)|$ for all $4^n$ Pauli operators simultaneously. This is an exponential advantage over standard virtual distillation, which requires a separate circuit per observable.
+
+**GHZ measurement on neutral atoms.** The joint eigenbasis measurement requires entangling operations across the $2k$ replicas. For $k=1$, this reduces to a layer of SWAP gates between the two copies, followed by local measurements. Each SWAP decomposes into 3 CZ gates:
+$$
+\text{SWAP}_{ij} = \text{CZ}_{ij}\; (H_i \otimes H_j)\; \text{CZ}_{ij}\; (H_i \otimes H_j)\; \text{CZ}_{ij},
+$$
+where each CZ is native to Rydberg blockade. For $n$ qubits, this requires $3n$ CZ gates and $2n$ atoms arranged so that each qubit in copy 1 is within blockade radius of its partner in copy 2.
+
+**The adaptive transport challenge.** For $k \geq 2$, the permutation $\pi = (\text{odds})(\text{evens})$ on $2k$ replicas requires long-range SWAP chains. On a static array, this demands either:
+
+- **Pre-arranged geometry**: Place all $2kn$ atoms such that the required pairwise interactions are within blockade radius. For $k=2$ ($4n$ atoms), this becomes geometrically constrained.
+- **Atom transport**: Dynamically shuttle atoms between interaction zones. Current transport speeds ($\sim 1\;\mu\text{m}/\mu\text{s}$) over $\sim 20\;\mu\text{m}$ give transport times $\sim 20\;\mu\text{s}$, well within coherence times ($T_2 \sim 1$ s for clock states).
+
+The transport approach is more scalable but introduces dephasing. From Issue #4's analysis, the per-transport infidelity is $\sim 0.1\%$, so for the $k=1$ protocol with $n$ transport steps: $F_{\text{transport}} \approx (0.999)^n$. For $n = 10$: $F \approx 99\%$---viable.
+
+I suspect the real bottleneck is not transport but **atom loss during the protocol**: preparing $2kn$ atoms with $>99\%$ filling, keeping them through state preparation + entangling + measurement. With current filling fractions $\sim 99.5\%$ per site, the probability of a defect-free $2kn$-atom array scales as $(0.995)^{2kn}$, which for $k=1, n=10$ gives $\sim 90\%$ success rate. This is marginal and motivates investigating post-selection or defect-tolerant protocol variants.
+:::
+:::
+
+## Comments
+<!-- COMMENTS-START -->
+{{< include ../../comments/Early-stage-NA/issues/issue5.md >}}
+<!-- COMMENTS-END -->
+

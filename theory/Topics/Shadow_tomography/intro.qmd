@@ -212,38 +212,43 @@ $P_{U}$ with eigenvalue $s(U,\mathbf{b})$. We conclude that
 $\hat o (\{U,\mathbf{b}\})= \sum_{P}\alpha_P f(P,P_{U})s(\mathbf{b})$.
 Then the variance of the estimator $\hat{o}$ can be calculated below.
 
-::: {.callout-important icon="false"}
-## Lemma
+::: {#lem-LC_shadow .callout-important icon="false"}
+## (Variance of k-local shadow)
 
-[]{#lemma:LC_shadow label="lemma:LC_shadow"} Given a the k-local
+Given a the k-local
 operator with Pauli decomposition
 $O =\mathbb{I}_{n-k}\otimes  \sum_{P \in \mathcal{P}(k)} \alpha_{P} P$,
-the unbiased estimator $\hat{o}$ above has variance $$\begin{align}
+the unbiased estimator $\hat{o}$ above has variance 
+$$\begin{align}
         \mathbb{E}_{U,\mathbf{b}}(\hat{o}^2) =\text{tr} \left(\tilde{\rho} \cdot \sum_{P,Q}\alpha_P \alpha_Q f(P,Q)P\cdot Q \right) \leq 4^k\|O\|_{\infty}^2.
-\end{align}$$
+\end{align}
+$$
 :::
 
 ::: {.callout-note collapse="true"}
 ## Proof (Click to expand)
-
-*Proof.* Similarly, we first noted that given an observable
+Similarly, we first noted that given an observable
 $O = \tilde{O} \otimes \mathbb{I}_{n-k}$ that supports on $k$-qubits, we
-have $$\begin{align}
-\label{eq:ave_of_square_LCshadow}
+have 
+$$
+\begin{align*}
         \langle \hat{o}^2 \rangle_{\rho} =\mathbb{E}_{U \sim \text{Cliff}(2)^{\otimes k}}\sum_{\mathbf b}\bra{\mathbf b}U \tilde{\rho} U^\dagger \ket{\mathbf{b}} \bra{\mathbf b}U\tilde{\mathcal{M}}^{-1}(\tilde{O}) U^\dagger\ket{\mathbf b}^2,
-\end{align}$$ where $\tilde{\rho}$ is the reduced state of $\rho$ that
+\end{align*}
+$$ {#eq-ave_of_square_LCshadow}
+ where $\tilde{\rho}$ is the reduced state of $\rho$ that
 supports on $k$-qubits. After this, we expand the k-qubit non-identity
 part within $\tilde{O}$ into the linear combination of Pauli operators
 as
 $\tilde{O} = \sum_{P \in \{\mathbb{I},X,Y,Z\}^{\otimes k}} \alpha_{P} P$
 as well as the reduced state
 $\tilde{\rho} = \sum_{s} \beta_s \bigotimes_{i =1}^n\tilde{\rho}^{(s)}_i$.
-It is thus sufficient to calculate
-Eq.[\[eq:ave_of_square_LCshadow\]](#eq:ave_of_square_LCshadow){reference-type="eqref"
-reference="eq:ave_of_square_LCshadow"} pointwise as $$\begin{align}
+It is thus sufficient to calculate @eq-ave_of_square_LCshadow pointwise as 
+$$
+\begin{align*}
         \langle \hat{o}^2 \rangle_{\rho} &= \sum_{P,Q,s}\beta_s\alpha_{P}\alpha_Q\prod_{i = 1}^n \mathbb{E}_{U \sim \text{Cliff}(2)} \!\!\!\sum_{b_i \in \{0,1\}}\!\!\! \bra{b_i}U \tilde{\rho}_j^{(s)} U^\dagger \ket{b_i} \bra{b_i}U\tilde{\mathcal{M}}^{-1}(P_i) U^\dagger\ket{b_i}\bra{b_i}U\tilde{\mathcal{M}}^{-1}(Q_i) U^\dagger\ket{b_i}\\
         &=\sum_{P,Q,s}\beta_s\alpha_{P}\alpha_Q\prod_{i = 1}^n f(P_i)f(Q_i)\sum_{b_i \in \{0,1\}} \left[(\tilde{\rho}^{(s)}_i \otimes P_i \otimes Q_i)\cdot \mathbb{E}_{U \sim \text{Cliff}(2)} U^{\otimes 3}\ket{b_i}\!\bra{b_i}^{\otimes 3}U^{\otimes 3,\dagger}\right].
-\end{align}$$
+\end{align*}
+$$
 
 Again from
 Lemma [\[lemma:state_trajectory\]](#lemma:state_trajectory){reference-type="ref"

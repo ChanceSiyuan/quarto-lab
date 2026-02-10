@@ -4,6 +4,8 @@ date: 2026-02-07
 categories: [issue]
 status: "Open"
 css: styles.css
+bibliography: ../refs.bib
+number: 4
 ---
 
 ::: {.issue-container}
@@ -36,9 +38,9 @@ The draft's noise section (lines 552--579) is incomplete. The key transformation
 
 ## Literature
 
-- Aharonov, Gao, Landau, Liu, Vazirani 2023 (polynomial-time classical simulation of noisy IQP, STOC)
-- Shao, Zhang 2024 (simulating noisy quantum circuits via Pauli paths)
-- Fontana, Kikuchi, Caro, et al. 2023 (classical simulation of noisy circuits)
+- [@Aharonov2023] (polynomial-time classical simulation of noisy IQP, STOC)
+- [@Shao2024] (simulating noisy quantum circuits via Pauli paths)
+- [@Fontana2023] (classical simulation of noisy circuits)
 
 ## Preliminary Analysis
 
@@ -47,3 +49,9 @@ The draft's noise section (lines 552--579) is incomplete. The key transformation
 **Asymmetric Pauli noise** $\Lambda(\rho) = (1-p_x-p_y-p_z)\rho + p_x X\rho X + p_y Y\rho Y + p_z Z\rho Z$: when $p_x \neq p_y$, the CH transformation mixes $X$ and $Y$ components, creating off-diagonal terms in the computational basis of the doubled space. These off-diagonal terms represent coherence injected by the noise asymmetry --- precisely the resource that makes simulation harder.
 :::
 :::
+
+## Comments
+<!-- COMMENTS-START -->
+{{< include ../../comments/OSF_research/issues/issue4.md >}}
+<!-- COMMENTS-END -->
+

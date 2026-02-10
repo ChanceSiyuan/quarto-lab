@@ -29,7 +29,9 @@
       "WebFetch(domain:journals.aps.org)",
       "WebFetch(domain:en.wikipedia.org)",
       "Bash(/home/chance/quarto-lab/.venv/bin/python:*)",
-      "WebFetch(domain:chanceqlab.com)"
+      "WebFetch(domain:chanceqlab.com)",
+      "Bash(git -C /home/chance/quarto-lab log --oneline -20)",
+      "Bash(git -C /home/chance/quarto-lab diff --name-only)"
     ]
   }
 }

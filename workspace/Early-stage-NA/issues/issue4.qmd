@@ -1,0 +1,79 @@
+---
+title: "Holographic Quantum Dynamics Simulation on Neutral Atom Arrays"
+date: 2026-02-09
+categories: [issue]
+status: "Open"
+css: styles.css
+bibliography: ../refs.bib
+number: 4
+---
+
+::: {.issue-container}
+::: {.issue-title-section}
+# [🔓 Open]{.status-open} Holographic Quantum Dynamics Simulation on Neutral Atom Arrays [#4]{.issue-number}
+
+::: {.issue-meta}
+[enhancement]{.label .label-enhancement} [theory]{.label .label-bug}
+:::
+:::
+
+::: {.post-body}
+## Problem / Opportunity
+
+Holographic quantum dynamics simulation (holoQUADS) [@chertkov2022holographic] encodes the *scale* of condensed matter systems into circuit depth rather than qubit count, by mapping tensor network bond dimensions onto physical qubits and reusing them via mid-circuit measurement and reset (MCMR). This was demonstrated on trapped ions (Honeywell H1), simulating a 32-spin chain on only 9--11 qubits.
+
+**The opportunity for neutral atoms**: Rydberg arrays now reach 6,100+ atoms [@Manetsch2024] with reconfigurable geometry [@Bluvstein2024], and mid-circuit measurement capabilities are emerging (readout loss $<1\%$ using cycling transitions). Unlike trapped ions, neutral atoms can be physically **transported** between zones, enabling the qubit recycling that holoQUADS demands. However, key feasibility questions remain:
+
+1. Can MCMR fidelity on Rydberg arrays match the $>99\%$ threshold needed for deep serial circuits?
+2. Does atom transport introduce decoherence that negates the qubit-saving advantage?
+3. Can the native $ZZ$ interaction (Rydberg blockade) efficiently implement the tensor unitaries required?
+
+### Proposed Plan
+
+1. **MCMR feasibility analysis**: Survey current mid-circuit measurement fidelities on neutral atom platforms; compare with trapped-ion benchmarks from [@chertkov2022holographic].
+2. **Transport-induced decoherence**: Estimate the phase error accumulated during atom transport over typical distances ($\sim 10$--$50\;\mu$m) at transport speeds ($\sim 1\;\mu$m/$\mu$s).
+3. **Gate compilation for tensor unitaries**: Determine the native gate cost of implementing a bond-dimension-$\chi$ tensor unitary using CZ gates from the Rydberg blockade, as a function of $\chi$.
+4. **Propose a benchmark experiment**: Design a holoQUADS simulation of the Self-Dual Kicked Ising model on a neutral atom array, targeting a 16--32 spin chain on $\sim 8$ physical atoms.
+
+### Relevant Literature
+
+- **[@chertkov2022holographic]**: Chertkov *et al.*, "Holographic dynamics simulations with a trapped-ion quantum computer," Nature Physics, 2022. *Reason: Core holoQUADS methodology and trapped-ion benchmark.*
+- **[@maccormack2022simulating]**: MacCormack *et al.*, "Simulating large PEPs tensor networks on small quantum devices," arXiv:2110.00507, 2022. *Reason: Extension to 2D PEPS on small devices.*
+- **[@Bluvstein2024]**: Bluvstein *et al.*, "Logical quantum processor based on reconfigurable atom arrays," Nature, 2024. *Reason: Demonstrates atom transport and mid-circuit operations on neutral atoms.*
+- **[@Manetsch2024]**: Manetsch *et al.*, "A tweezer array with 6,100 highly coherent atomic qubits," Nature, 2025. *Reason: State-of-the-art neutral atom hardware scale.*
+:::
+:::
+
+::: {.issue-post}
+::: {.post-header}
+::: {.post-author}
+**Claude-Reviewer** commented on Feb 9, 2026
+:::
+:::
+
+::: {.post-body}
+## Preliminary Analysis
+
+The central trade-off in holoQUADS is qubits vs. depth: simulating an $N$-site chain requires only $n_q \sim \log_2 \chi$ qubits but circuit depth $D \sim N$. The serial fidelity is:
+$$
+F_{\text{total}} = f_{\text{step}}^N,
+$$
+where $f_{\text{step}}$ includes gate errors, MCMR errors, and transport-induced decoherence. For the experiment to be meaningful, we need $F_{\text{total}} > F_{\text{threshold}}$ where the threshold depends on the observable (correlation functions tolerate more noise than entanglement witnesses).
+
+**Transport decoherence estimate.** During atom transport over distance $d$ at velocity $v$, the dominant dephasing mechanism is differential light shift from the trapping potential. For a tweezer trap depth $U_0 \sim h \times 1$ MHz and transport time $t_{\text{tr}} = d/v$, the accumulated phase uncertainty is:
+$$
+\delta\phi \sim \frac{\delta U_0}{U_0} \cdot \frac{U_0}{\hbar} \cdot t_{\text{tr}} \sim \frac{\delta U_0}{\hbar v} \cdot d.
+$$
+With $\delta U_0/U_0 \sim 10^{-3}$ (achievable with intensity stabilization), $d = 20\;\mu$m, $v = 1\;\mu$m/$\mu$s: $\delta\phi \sim 2\pi \times 0.02$ rad, contributing $<0.1\%$ infidelity per transport step. This is encouraging---transport should not be the bottleneck.
+
+**The real bottleneck is MCMR.** Current neutral atom mid-circuit readout achieves $\sim 99\%$ fidelity with $\sim 1\%$ atom loss. For $N = 32$ sequential MCMR operations, the probability of losing no atoms is $(0.99)^{32} \approx 0.72$. This is marginal but viable, especially if the protocol can post-select on no-loss events or use error mitigation [@huggins2021virtual].
+
+A comparison with the adaptive GHZ measurement strategy for nonlocal multi-copy estimation (see [nonlocal multi-copy](/theory/Topics/Shadow_tomography/nonlocal_multicopy.qmd)) is also relevant: both require atom transport and mid-circuit operations, so feasibility results here directly inform Issue #5.
+:::
+:::
+
+## Comments
+<!-- COMMENTS-START -->
+{{< include ../../comments/Early-stage-NA/issues/issue4.md >}}
+<!-- COMMENTS-END -->
+

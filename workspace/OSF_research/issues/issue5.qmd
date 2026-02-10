@@ -4,6 +4,8 @@ date: 2026-02-07
 categories: [issue]
 status: "Open"
 css: styles.css
+bibliography: ../refs.bib
+number: 5
 ---
 
 ::: {.issue-container}
@@ -41,9 +43,9 @@ The draft raises two related open questions that together define a complexity ph
 
 ## Literature
 
-- Blake, Linden 2020 (super-Clifford circuits, quantum scrambling)
-- Bremner, Montanaro, Shepherd 2016 (average-case complexity of IQP)
-- Bouland, Fefferman, Nirkhe, Vazirani 2018 (quantum supremacy and approximate counting)
+- [@Blake2020] (super-Clifford circuits, quantum scrambling)
+- [@Bremner2016] (average-case complexity of IQP)
+- [@Bouland2018] (quantum supremacy and approximate counting)
 
 ## Preliminary Analysis
 
@@ -57,3 +59,9 @@ The effective interaction graph has vertices only on the active qubits $\bar{S} 
 This suggests a sharp threshold: simulation is efficient when the active support $|\bar{S}|$ is $O(\log n)$, and hard when $|\bar{S}| = \Omega(n)$.
 :::
 :::
+
+## Comments
+<!-- COMMENTS-START -->
+{{< include ../../comments/OSF_research/issues/issue5.md >}}
+<!-- COMMENTS-END -->
+
