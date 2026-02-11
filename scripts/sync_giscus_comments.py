@@ -86,6 +86,16 @@ def graphql_request(token: str, query: str, variables: dict):
     return data.get("data", {})
 
 
+def fetch_repo_id(token: str, owner: str, name: str) -> str:
+    query = """
+    query($owner: String!, $name: String!) {
+      repository(owner: $owner, name: $name) { id }
+    }
+    """
+    data = graphql_request(token, query, {"owner": owner, "name": name})
+    return data["repository"]["id"]
+
+
 def fetch_all_discussions(token: str, owner: str, name: str, category_id: str | None):
     query = """
     query($owner: String!, $name: String!, $first: Int!, $after: String, $categoryId: ID) {
@@ -146,6 +156,35 @@ def fetch_discussion_comments(token: str, discussion_id: str):
     return comments
 
 
+def fetch_discussion_meta(token: str, discussion_id: str) -> tuple[str, str]:
+    query = """
+    query($id: ID!) {
+      node(id: $id) {
+        ... on Discussion { title url }
+      }
+    }
+    """
+    data = graphql_request(token, query, {"id": discussion_id})
+    node = data.get("node") or {}
+    return node.get("title", ""), node.get("url", "")
+
+
+def create_discussion(token: str, repo_id: str, category_id: str, title: str, body: str):
+    query = """
+    mutation($repoId: ID!, $categoryId: ID!, $title: String!, $body: String!) {
+      createDiscussion(input: {repositoryId: $repoId, categoryId: $categoryId, title: $title, body: $body}) {
+        discussion { id title url category { id name } }
+      }
+    }
+    """
+    data = graphql_request(
+        token,
+        query,
+        {"repoId": repo_id, "categoryId": category_id, "title": title, "body": body},
+    )
+    return data["createDiscussion"]["discussion"]
+
+
 def format_date(dt_str: str) -> str:
     dt = datetime.fromisoformat(dt_str.replace("Z", "+00:00"))
     # Format like "Feb 3, 2026" without leading zero
@@ -197,10 +236,46 @@ def write_if_changed(path: Path, content: str) -> bool:
     return True
 
 
+def qmd_from_title(title: str) -> Path | None:
+    if not title:
+        return None
+    path = None
+    if title.startswith("/"):
+        path = title
+    else:
+        m = re.search(r"(/workspace/\\S+)", title)
+        if m:
+            path = m.group(1)
+        elif "workspace/" in title:
+            idx = title.find("workspace/")
+            path = "/" + title[idx:]
+
+    if not path:
+        return None
+
+    if path.endswith(".html"):
+        path = path[:-5] + ".qmd"
+    elif not path.endswith(".qmd"):
+        path = path + ".qmd"
+
+    qmd = ROOT / path.lstrip("/")
+    if not qmd.exists():
+        return None
+    return qmd
+
+
 def main():
     parser = argparse.ArgumentParser(description="Sync giscus discussions into workspace/comments/*.md")
     parser.add_argument("--render", action="store_true", help="Run quarto render if comment files changed")
+    parser.add_argument(
+        "--render-scope",
+        choices=["changed", "project"],
+        default="changed",
+        help="Render only changed issue pages (default) or the full project",
+    )
+    parser.add_argument("--discussion-id", help="GraphQL discussion node ID (single discussion mode)")
     parser.add_argument("--limit", type=int, default=0, help="Limit number of pages (for testing)")
+    parser.add_argument("--create-missing", action="store_true", help="Create missing discussions (requires category-id and token with write access)")
     args = parser.parse_args()
 
     token = os.environ.get("GITHUB_TOKEN")
@@ -220,7 +295,41 @@ def main():
     if mapping and mapping != "pathname":
         print(f"WARNING: giscus mapping is '{mapping}', but this script assumes 'pathname'.", file=sys.stderr)
 
+    if args.discussion_id:
+        title, discussion_url = fetch_discussion_meta(token, args.discussion_id)
+        qmd = qmd_from_title(title)
+        if not qmd:
+            print("ERROR: Could not map discussion title to a local qmd file.", file=sys.stderr)
+            sys.exit(1)
+
+        try:
+            rel_from_workspace = qmd.relative_to(WORKSPACE)
+        except ValueError:
+            print("ERROR: QMD is not under workspace/; skipping.", file=sys.stderr)
+            sys.exit(1)
+
+        comment_path = COMMENTS_ROOT / rel_from_workspace.with_suffix(".md")
+        comments = fetch_discussion_comments(token, args.discussion_id)
+        md = comments_to_markdown(comments) or "*No comments yet.*\n"
+        header = f"<!-- AUTO-GENERATED from {discussion_url or args.discussion_id} -->\n"
+        link = f"[Comment on GitHub]({discussion_url})\n" if discussion_url else ""
+        content = header + "\n" + link + "\n" + md
+        changed = write_if_changed(comment_path, content)
+
+        if args.render and changed:
+            if args.render_scope == "project":
+                subprocess.run(["quarto", "render"], cwd=str(ROOT), check=True)
+            else:
+                subprocess.run(["quarto", "render", str(qmd)], cwd=str(ROOT), check=True)
+        sys.exit(0)
+
     discussions = fetch_all_discussions(token, owner, name, category_id)
+    repo_id = None
+    if args.create_missing:
+        if not category_id:
+            print("ERROR: --create-missing requires giscus category-id.", file=sys.stderr)
+            sys.exit(1)
+        repo_id = fetch_repo_id(token, owner, name)
 
     issue_files = sorted(WORKSPACE.glob("**/issues/issue*.qmd"))
     if args.limit:
@@ -229,6 +338,7 @@ def main():
     changed = False
     synced = 0
     skipped = 0
+    changed_qmds = set()
 
     for qmd in issue_files:
         rel_from_root = qmd.relative_to(ROOT)
@@ -253,9 +363,16 @@ def main():
         comment_path = COMMENTS_ROOT / rel_from_workspace.with_suffix('.md')
 
         if not discussion:
-            content = "<!-- AUTO-GENERATED: no discussion found -->\n\n*No comments yet.*\n"
+            if args.create_missing and repo_id:
+                title = html_path
+                body = f"Auto-created discussion for {html_path}."
+                discussion = create_discussion(token, repo_id, category_id, title, body)
+                discussions.append(discussion)
+            else:
+                content = "<!-- AUTO-GENERATED: no discussion found -->\n\n*No comments yet.*\n"
             if write_if_changed(comment_path, content):
                 changed = True
+                changed_qmds.add(str(qmd))
             skipped += 1
             continue
 
@@ -265,17 +382,24 @@ def main():
             md = "*No comments yet.*\n"
 
         header = f"<!-- AUTO-GENERATED from {discussion['url']} -->\n"
-        content = header + "\n" + md
+        link = f"[Comment on GitHub]({discussion['url']})\n"
+        content = header + "\n" + link + "\n" + md
 
         if write_if_changed(comment_path, content):
             changed = True
+            changed_qmds.add(str(qmd))
         synced += 1
 
     print(f"Synced {synced} discussions, skipped {skipped} pages (no discussion).")
 
     if args.render and changed:
-        print("Changes detected; running quarto render...")
-        subprocess.run(["quarto", "render"], cwd=str(ROOT), check=True)
+        if args.render_scope == "project":
+            print("Changes detected; running full quarto render...")
+            subprocess.run(["quarto", "render"], cwd=str(ROOT), check=True)
+        else:
+            targets = sorted(changed_qmds)
+            print(f"Changes detected; rendering {len(targets)} page(s)...")
+            subprocess.run(["quarto", "render", *targets], cwd=str(ROOT), check=True)
     elif args.render:
         print("No comment changes; skipping quarto render.")
 

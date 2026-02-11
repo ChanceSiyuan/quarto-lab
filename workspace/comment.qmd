@@ -1,0 +1,49 @@
+---
+title: "Write a Comment"
+comments: false
+page-layout: full
+---
+
+# Write a Comment
+
+This page lets you post a comment to the correct discussion. It uses the `term` query parameter to identify the issue.
+
+<div id="comment-info" style="margin: 12px 0; color: #57606a;"></div>
+<div id="giscus-container"></div>
+<div id="giscus-error" style="display:none; margin-top: 12px; padding: 12px; border: 1px solid #d0d7de; background: #f6f8fa; color: #24292f;">
+  Missing `term` parameter. Go back to an issue page and click “Write a comment”.
+</div>
+
+<script>
+(function() {
+  const params = new URLSearchParams(window.location.search);
+  const term = params.get("term") || params.get("pathname");
+  const container = document.getElementById("giscus-container");
+  const error = document.getElementById("giscus-error");
+  const info = document.getElementById("comment-info");
+
+  if (!term) {
+    error.style.display = "block";
+    return;
+  }
+
+  const backHref = term.startsWith("/") ? term : "/" + term;
+  info.innerHTML = `Posting to discussion for <a href="${backHref}">${backHref}</a>`;
+
+  const script = document.createElement("script");
+  script.src = "https://giscus.app/client.js";
+  script.setAttribute("data-repo", "ChanceSiyuan/quarto-lab");
+  script.setAttribute("data-repo-id", "R_kgDOREwORA");
+  script.setAttribute("data-category", "General");
+  script.setAttribute("data-category-id", "DIC_kwDOREwORM4C1teX");
+  script.setAttribute("data-mapping", "specific");
+  script.setAttribute("data-term", term);
+  script.setAttribute("data-reactions-enabled", "1");
+  script.setAttribute("data-input-position", "bottom");
+  script.setAttribute("data-theme", "preferred_color_scheme");
+  script.setAttribute("data-lang", "en");
+  script.crossOrigin = "anonymous";
+  script.async = true;
+  container.appendChild(script);
+})();
+</script>
