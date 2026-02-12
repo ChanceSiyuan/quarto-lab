@@ -22,14 +22,21 @@ $$
 If we can map the Choi state of a Pauli operator $|P\rangle\!\rangle$ through a unitary transformation $U \in \mathcal{H} \otimes \mathcal{H}^*$ to the computational basis one-to-one, then all Clifford operations' transformations $U C \otimes C^* U^\dagger$ become coherence non-increasing gates.
 We find that such a transformation $U$ exists:
 
+$$
 \begin{align*}
     &\{I/\sqrt{2},Z/\sqrt{2},X/\sqrt{2},Y/\sqrt{2}\} \\
     &\xrightarrow{\mathcal{V}}\{\frac{\ket{00}_{ab}+\ket{11}_{ab}}{\sqrt{2}},\frac{\ket{00}_{ab}-\ket{11}_{ab}}{\sqrt{2}},\frac{\ket{01}_{ab}+\ket{10}_{ab}}{\sqrt{2}},\frac{-i\ket{01}_{ab}+i\ket{10}_{ab}}{\sqrt{2}}\}\\
     &\xrightarrow{U = CS_{ba}^\dagger H_bCNOT_{ba}}\{\ket{0}_a\ket{0}_b, \ket{0}_a\ket{1}_b, \ket{1}_a\ket{0}_b,\ket{1}_a\ket{1}_b\},\\
     &\xrightarrow{\mathcal{V}^{-1}}\{\ket{0}\!\bra{0}, \ket{0}\!\bra{1}, \ket{1}\!\bra{0},\ket{1}\!\bra{1}\}.
 \end{align*}
+$$
 
-Here, each single-qubit Pauli operator becomes a two-qubit system with qubits $a,b$, and $\{I,X,Y,Z\}$ correspond to $\ket{\mathbf{P}} \in \{\ket{00},\ket{10},\ket{01},\ket{11}\}$ respectively. This mapping precisely associates $a,b$ with the number of $X$ and $Z$ operators.
+Here, each single-qubit Pauli operator becomes a two-qubit system with qubits $a,b$, and $\{I,X,Y,Z\}$ correspond to $\ket{\mathbf{P}} \in \{\ket{00},\ket{10},\ket{01},\ket{11}\}$ respectively.
+
+:::{.callout-important icon="false"}
+## Question: (Symplectic Representation)
+This corresponds to the sympletic representation of the Pauli operators. Is there a way to understand this from the symplectic geometry perspective?
+:::
 
 :::{#lem-gsf_pauli_to_computational .callout-note icon="false"}
 ## (GSF Pauli to Computational Basis)
@@ -241,7 +248,13 @@ class DualCircuitConverter:
 ## Note 2 (Non-linearity of dual circuit)
 
 - Clifford gate $CNOT$ will generate a non-Clifford gate $CCZ$ in the dual circuit. This is because the non-linear changing of the Pauli phases. This phased gate can be reduced to a Clifford gate when the target qubit is in computational basis.
-- This non-linearty derived from the degeneracy of sympletic representation in the $d = 2$ case. So we expect for general prime $d > 2$, this non-linearity will be removed.
+- This non-linearty derived from the degeneracy of sympletic representation in the $d = 2$ case. So we expect for general prime $d > 2$, this non-linearity will be removed @heinrich2021stabiliser.
+$$
+\begin{align*}
+&\sigma_{\mathbf{r}} \sigma_{\mathbf{s}} = i^{[v_r,v_s]} (-1)^{d(v_r, v_s)} \sigma_{\mathbf{r} \oplus \mathbf{s}}, \forall \mathbf{r}, \mathbf{s} \in \mathbb{F}_2^n \\ 
+&\sigma_{\mathbf{r}} \sigma_{\mathbf{s}} = \omega^{2^{-1}[v_r,v_s]} \sigma_{\mathbf{r} \oplus \mathbf{s}} \forall \mathbf{r}, \mathbf{s} \in \mathbb{F}_d^n, d \text{~is prime and~} d>2
+\end{align*}
+$$
 :::
 
 Based on this, we can demonstrated three types of previous circuits that are difficult to handle with ordinary Stabilizer Formalism but are simple within the GSF framework.
@@ -556,6 +569,13 @@ This type of noise has been studied extensively, including:
 
 1. Pauli-path simulation truncation
 2. [Random percolation based on graph states](/theory/Posts/arXiv:2212.08677v2/index.qmd)
+
+:::{.callout-important icon="false"}
+## Question: (Noisy Circuit Simulation)
+Given $\sum_{i  =1}^m K_i \rho K_i^\dagger$ 
+
+Can This be used to 
+:::
 
 Consider the simplest form of Pauli noise, $\Lambda(\rho) = \sum_{\mathbf{r} \in \mathbb{F}_{2}^{2n}} 2^{-n}\lambda_{\mathbf{r}} \sigma_{\mathbf{r}} \mathrm{tr}\left[\rho \sigma_{\mathbf{r}} \right]$, which corresponds to a non-unitary matrix: $\mathbf{\Lambda} := \sum_{P} 2^{-n}\lambda_{\mathbf{r}} \ket{\mathbf{r}} \!\bra{\mathbf{r}}$. For local noise, it can even be written in the form $\mathbf{\Lambda} = \bigotimes_{i=1}^n \Omega_i$.
 

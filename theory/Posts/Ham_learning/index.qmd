@@ -12,16 +12,106 @@ Hu et al. [@Hu2025] introduced an ansatz-free protocol to learn unknown Hamilton
 
 The algorithm iteratively updates a classical description $\hat{H}_1, \dots, \hat{H}_J$ such that $\|\hat{H}_j - H\|_{\infty} \leq 2^{-j}$.
 
-## Protocol overview
+:::{.callout-important icon="false"}
+## Question: 
+1. Application in the shadow tomography. How about use strategy in this section to learn the $H$ first and then design measurement strategies that targeted on the $H$?
+2. Application weakness? If we don't know the $H$ first, how to design the implementation of $\hat{H}_j$?
+3. The implementation of $\hat{H}_j$ requires Digital control or we can use analog control (i.e., use inherient Rydberg interaction to implement the $\hat{H}_j$)?
+:::
 
-The protocol has two main subroutines applied at each level $j$:
+## Structure learning 
 
-**Structure learning ($\mathcal{A}^{\mathrm{I}}$):** Bell-basis sampling on $n$ entangled pairs, with one half evolved under the *residual* Hamiltonian $\tilde{H}_j = H - \hat{H}_j$, discovers which Pauli terms $P_s$ appear in $H$ with non-negligible weight. Measurement outcomes sample Pauli strings with probability $\propto \mu_s^2$.
+:::{#def-structure_learn .callout-note icon="false"}
+## Structure learning
+Given a Hamiltonian $H = \sum_{s \in \mathcal{S}} \mu_s P_s$ and a prior guess $\hat{H} = \sum_{s \in \mathcal{S}} \hat{\mu_s} P_s$, the structure learning is to find the set of Pauli terms $P_s$ with coefficients $|\mu_s| > \epsilon$ that appear in $H$.
+:::
+
+The first structure learning ($\mathcal{A}^{\mathrm{I}}$) Bell-basis sampling on $n$ entangled pairs, with one half evolved under the *residual* Hamiltonian $\tilde{H}_j = H - \hat{H}_j$, discovers which Pauli terms $P_s$ appear in $H$ with non-negligible weight. Measurement outcomes sample Pauli strings with probability $\propto \mu_s^2$.
+
+The residual Hamiltonian evolution $e^{-i(H-\hat{H}_j)t}$ is synthesized via first-order Trotterization:
+$$
+\begin{align*}
+e^{-i(H-\hat{H}_j)t} \approx \left(e^{-iH(t/r)} e^{i\hat{H}_j(t/r)}\right)^r.
+\end{align*}
+$$
+
+:::{#lem-alg1 .callout-note icon="false"}
+## Bell-basis structure learning
+Given an $n$-qubit Hamiltonian $H$ with $M$ Pauli terms and a coefficient threshold $\mu_m$, the structure learning algorithm $\mathcal{A}^I$, which utilizes $n$ pairs of Bell states and Bell-basis measurements, can identify the support set $\mathcal{S} = \{s : |\mu_s| \ge \mu_m\}$ with probability at least $1-\delta$.
+
+- The number of measurements required is $L = \mathcal{O}\left(M^2 \log(M/\delta)\right)$.
+- The total evolution time required is $T_1 = \mathcal{O}\left(\frac{M \log(M/\delta)}{\mu_m}\right)$.
+- The classical processing time is trivial.
+:::
+
+We can also use ancilla-free structure learning $\mathcal{A}^{I'}$ to achieve the same result, hwoever with more sample complexity and time complexity.
+
+:::{#lem-alg2 .callout-note icon="false"}
+## Ancilla-free structure learning
+Given an $n$-qubit Hamiltonian $H$ with $M$ Pauli terms and a coefficient threshold $\mu_m$, the alternative structure learning algorithm $\mathcal{A}^{I'}$, which utilizes only product state inputs, single-qubit measurements (Population Recovery), and Pauli twirling, can identify the support set $\mathcal{S} = \{s : |\mu_s| \ge \mu_m\}$ with probability at least $1-\delta$.
+
+- The number of input states required is $m = \mathcal{O}\left(M^4 \log(Mn/\delta)\right)$.
+- The total evolution time required is $T'_1 = \mathcal{O}\left(\frac{M^3 \log(Mn/\delta)}{\mu_m}\right)$.
+- The algorithm requires a classical post-processing time of $T^C = \mathcal{O}\left(M^5 n \log(Mn/\delta)\right)$.
+:::
+
+## Coefficient learning
 
 **Coefficient learning ($\mathcal{A}^{\mathrm{II}}$):** For each identified Pauli $P_s$, a Ramsey-like interferometric protocol combined with robust frequency estimation (binary search narrowing the frequency interval by $2/3$ per round) determines the coefficient $\mu_s$.
 
-The residual Hamiltonian evolution $e^{-i(H-\hat{H}_j)t}$ is synthesized via first-order Trotterization:
-$$e^{-i(H-\hat{H}_j)t} \approx \left(e^{-iH(t/r)} e^{i\hat{H}_j(t/r)}\right)^r.$$
+:::{#lem-cancle_other_terms .callout-important icon="false"}
+## Cancellation of other terms
+Given $H = \sum_{s \in \mathcal{S}} \mu_s P_s$ and a set of Pauli operator $\mathcal{K}_{P_s}$ such that contains all Pauli operators that commute with $P_s$, then the average of the Hamiltonian over $\mathcal{K}_{P_s}$ is:
+$$
+\frac{1}{|\mathcal{K}_{P_s}|} \sum_{P \in \mathcal{K}_{P_s}} P H P^\dagger = \mu_s P_s.
+$$
+:::
+
+:::{.callout-note collapse="true"}
+## Proof
+tbc.
+:::
+This lemma reduces the tasks to learning Hamiltonians with multiple Pauli terms to learning Hamiltonians with a single Pauli term, thus can be solved by the Ramsey-like interferometric protocol.
+
+We illustrate how a single term Hamiltonian can be learned using example $H = BZ$ first.
+
+#### Standard Ramsey interferometry
+The most naive way to do this is to evlove $\ket{+}$ state under $e^{-iBZt}$ such that after time $t$, the state is:
+$$
+\begin{align*}
+\ket{+} \to \frac{1}{\sqrt{2}}(e^{-iBt}\ket{0} - e^{iBt}\ket{1}) = \cos(Bt)\ket{0} - i\sin(Bt)\ket{1}
+\end{align*}
+$$
+Measuring on $Y$ basis then gives $P(y,+) = \frac{1}{2}(1 + \sin(2Bt))$ and $P(y,-) = \frac{1}{2}(1 - \sin(2Bt))$. Thus the probability $P(y,+)$ is a valid estimator of $BT$ given $T \sim 1/B$ evolution time. 
+Since $P(y,+) \in [0,1]$,
+Under $N$ shots with result $r_i \in \{1,0\}$, using Hoeffding's inequality, we can show that 
+$$
+Pr \left( \frac{1}{N} \sum_{i=1}^N r_i - P(y,+) \geq \varepsilon' \right) \leq 2e^{-2N (\varepsilon')^2}
+$$
+for at least $1 -\delta$ confidence. Thus we can estimate $BT$ with accuracy $\varepsilon' = \sqrt{2\log(2/\delta)/N}$ and confidence $1-\delta$.
+ Note that $X$ basis is not suitable because $P(x,+) = \frac{1}{2}(1 + \cos(2Bt))$ and $P(x,-) = \frac{1}{2}(1 - \cos(2Bt))$ that scales with $(2Bt)^2$ and requires more shot to reach the same accuracy. We will show below that $X$ basis measurement can also be used to construct a more robust frequency estimation protocol.
+
+#### Heisenberg-limited scaling
+To achieve a Heisenberg-limited scaling, i.e., $O(1/\varepsilon)$, we use hierachy approach.
+
+- $0.1$-precision:  With precision $\varepsilon_1 = 0.1$ and confidence $1 -\delta$, we obtain $\hat{B}^{(1)}$ where $Pr[|\hat{B}^{(1)} - B| < 0.1] > 1 -\delta$. The sensing time is $T_1 = C \cdot \log(1/\delta)$.  
+- $0.01$-precision: Using this initial estimate, effectively evolve the system under a new Hamiltonian $H' = 10(B - \hat{B}^{(1)})Z$. 
+
+This is achieved  by applying the forward evolution $e^{-iB(10t)}$ followed by a corrective inverse evolution $e^{i\hat{B}^{(1)}(10t)}$. Running the SQL protocol on this task gives an estimate $\hat{b}^{(2)}$ for $10(B - \hat{B}^{(1)})$. Our new  estimate for B is $\hat{B}^{(2)} = \hat{B}^{(1)} + \hat{b}^{(2)} / 10$ with error less than 0.01. The sensing time for this stage is $T_2 = C \cdot 10 \cdot \log(1/\delta)$. 
+
+- $10^{-k}$-precision: This process is repeated. At level k, we run SQL to estimate $10^{k-1}(B - \hat{B}^{(k-1)})$, with a sensing time of $T_k = C \cdot 10^{k-1} \cdot \log(1/\delta)$.  After $L = \lceil \log_{10}(1/\varepsilon) \rceil$ levels, the final estimate is $\hat{B} = \hat{B}^{(1)} + \hat{b}^{(2)} / 10 + \hat{b}^{(3)} / 100 + \cdots$. 
+
+The final error is  bounded by $|\hat{B} - B| < 10^{-L} \approx \varepsilon$, and the cumulative failure probability is bounded by $L \cdot \delta$. The total sensing time is the sum of the times from all levels:  $T= \sum_{k=1}^L T_k = \mathcal{O} (10^L \cdot \log(1/\delta)) = \mathcal{O} (\log(1/\delta) \varepsilon^{-1})$. This improved scaling is the Heisenberg Limit.
+
+#### General case and robust frequency estimation
+In reference [@kimmel2015robust], a generalization is proposed to achieve a Heisenberg-limited scaling for a single-qubit Hamiltonian.
+Given an arbitray Pauli operators $P_s$, we construct the input state by:
+
+- From left to right, choose the first psoition where the Pauli operator is non-identity,which we called the *privot qubit*. For this qubit, prepare $Z \to \ket{+}, X \to \ket{0}, Y \to \ket{1}$.
+- For the remaining qubits, prepare the state on their $+1$ eigenstate.
+- For the projective measurement, we measure two Pauli operators $Q_s^+$ and $Q_s^-$ where generated by shifting the privot qubit in Pauli operators $P_s$ (i.e., $X \to \{Z,Y\}$, $Z \to \{X,Y\}$, and $Y \to \{X,Z\}$).
+- Implement the Hierachical Hamiltonian learning protocol.
+
 
 ## Rydberg chain simulation
 

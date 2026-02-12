@@ -156,7 +156,26 @@ $$
 $$
 
 ## Results
+ I don't want to re-optimized the parameters. Do you think the  average fidelity's 
+     setting where a00 are default as 1 can be understood as ignoring the global phase? i.e., in the current gate parameters, we 
+     already get a gate 1,e^{i theta},e^{itheta},e^{i2\theta + \pi} however up to an unknown global phase. We may adjust the 
+     12-sss, bell fidelity's behavior such that it find the global phase by calculating the 00's phase first and then compared 
+     the realized gate with the (e^{i2\phi0},e^{i\phi1 + i \phi0},e^{i\phi1 + i\phi_0 },-e^{i2\phi1}). Note that we expect theta 
+     in the priginal optimization is just \phi1 - \phi0.
 
+To optimized the protocol, we note that in general, the Rydberg interaction implement a gate
+$$
+\begin{align}
+    \ket{00} \to e^{i 2\phi_0} \ket{00}, \ket{01} \to e^{i (\phi_1 + \phi_0)} \ket{01}, \ket{10} \to e^{i (\phi_1 + \phi_0)} \ket{10}, \ket{11} \to -e^{i 2\phi_{11}} \ket{11}.
+\end{align}
+$$
+To optimize. we simulate the whole process given input state $\ket{01}, ket{11}$ and evaluate their overlaps with the evovled states, then we denote $a_{01} =e^{-i \theta}\langle 01 | \psi(t) \rangle, a_{11} =e^{-i2 \theta} \langle 11 | \psi(t) \rangle$. Then the loss function is defined as:
+$$
+ \text{avg}_F = \frac{1}{20} * (|1 + 2 * a01 + a11|^2 + |1 + 2 * a01 - a11|^2 + |1 - 2 * a01 + a11|^2 + |1 - 2 * a01 - a11|^2)
+ $$
+This loss function turns out to be the average fidelity between
+
+The result is shown in Figure @fig-CZ_simulation_result.
 Then we test the Time-optimal strategy, as proposed in @jandura2022time. The time-optimal function can be written as:
 $$
 \begin{align}
