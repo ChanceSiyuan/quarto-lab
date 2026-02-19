@@ -1,0 +1,169 @@
+---
+categories:
+- Readings
+date: '2026-02-17'
+lang: en
+title: OTOC and its simulation
+bibliography: refs.bib
+jupyter: python3
+code-fold: true
+---
+
+Consider a randomized unitary circuit $U$ on $n$ qubits with $D = 2^n$. Let $B$ be a **butterfly operator** — a traceless Pauli operator ($\mathrm{tr}(B) = 0$, $B^2 = I$) — and let $M$ be a **measurement operator** — a Pauli-$Z$ type operator satisfying $M\ket{0^n} = \ket{0^n}$ and $\mathrm{tr}(M) = 0$ (e.g., $M = Z^{\otimes n}$ or any product of $Z$'s and $I$'s excluding the identity).
+
+Define the **time-ordered correlator operator** $C = U^\dagger B U M$. Since $M\ket{0^n} = \ket{0^n}$, the correlator expectation value $\langle 0^n|C|0^n\rangle = \langle 0^n|U^\dagger B U|0^n\rangle$ reduces to a single Pauli expectation.
+
+:::{#lem-correlator_avg .callout-important icon="false"}
+## (Correlator Average)
+If $U$ is sampled from a 2-design, then
+given $B$ a traceless Pauli operator and $M$ a Pauli-$Z$ operator, the time-ordered correlator average $\langle 0^n|U^\dagger B U M|0^n\rangle$ is $0$, with variance $1/(2^n + 1)$.
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+The integral of a projector over the Haar measure yields the maximally mixed state, given $\langle 0^n|U^\dagger B U M|0^n\rangle = x$, we have
+$$
+\mathbb{E}[x] = \mathrm{tr}\left(O \frac{I}{D}\right) = \frac{\mathrm{tr}(O)}{D}
+$$
+Because Pauli operators (like the single-qubit observable $A$, or the butterfly operator $B$ mentioned in the text) are traceless, $\Tr(O) = 0$. Therefore, the mean expectation value is strictly 0. To compute the variance, we need to compute the second moment of the correlator average.
+$$
+\begin{align*}
+\mathbb{E}[x^2] &= \mathbb{E}_{U} \mathrm{tr} \left(B^{\otimes 2} U^{\otimes 2} |0^{2n}\rangle \! \langle 0^{2n}|U^{\dagger, \otimes 2}\right)\\
+&= \mathrm{tr}\left[B^{\otimes 2} \frac{\mathbb{I}_n^{\otimes 2} + \mathrm{SWAP}^{\otimes n}}{2^n(2^n + 1)}\right] = \frac{1}{2^n + 1}
+\end{align*}
+$$
+
+:::
+
+This means that "guessing zero" is a good classical strategy for the time-ordered correlator. To probe genuine scrambling, we need the **out-of-time-order correlator** (OTOC). Setting $\tilde{A} = U^\dagger B U$, define:
+$$
+\mathrm{OTOC} := \langle 0^n | C^2 | 0^n \rangle = \langle 0^n | \tilde{A} M \tilde{A} M | 0^n \rangle
+$$
+This quantity probes the non-commutativity of $\tilde{A}$ and $M$: when they commute (shallow circuit), OTOC $= 1$; when $U$ is deeply scrambling, the OTOC decays toward $0$ [@maldacena2016bound; @roberts2017chaos]. Since $M\ket{0^n} = \ket{0^n}$, the trailing $M$ acts trivially and $\mathrm{OTOC} = \langle 0^n|\tilde{A} M \tilde{A}|0^n\rangle$.
+
+:::{#lem-otoc .callout-important icon="false"}
+## (OTOC Average)
+
+1. If $U$ is shallow such that $[\tilde{A}, M] = 0$, then $\langle 0^n|C^2|0^n\rangle = 1$.
+2. If $U$ is drawn from a **unitary 2-design**, then $\mathbb{E}[\langle 0^n|C^2|0^n\rangle] = -\dfrac{1}{D^2 - 1}$.
+3. Computing $\mathrm{Var}[\langle 0^n|C^2|0^n\rangle]$ requires a **4-design** (since $U$ appears at degree 4 in $\mathbb{E}[x^2]$).
+:::
+
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+
+**Part 1 (Shallow circuit).** When $[\tilde{A}, M] = 0$:
+$$
+C^2 = \tilde{A} M \tilde{A} M = \tilde{A}^2 M^2 = I
+$$
+since $\tilde{A}^2 = (U^\dagger B U)^2 = U^\dagger B^2 U = I$ and $M^2 = I$ (both are Pauli operators). Therefore $\langle 0^n|C^2|0^n\rangle = 1$.
+
+**Part 2 (2-design average).** Let $x = \langle 0^n|\tilde{A} M \tilde{A}|0^n\rangle$ and $\rho_0 = \ket{0^n}\!\bra{0^n}$.
+
+*Step 1 (Replica trick).* Using the trace identity $\mathrm{tr}_{12}(\mathrm{SWAP} \cdot (X \otimes Y)) = \mathrm{tr}(XY)$:
+$$
+x = \mathrm{tr}(\rho_0\, \tilde{A}\, M\, \tilde{A}) = \mathrm{tr}_{12}\!\left(\mathrm{SWAP} \cdot (\rho_0 \otimes M) \cdot (\tilde{A} \otimes \tilde{A})\right)
+$$ {#eq-replica}
+
+*Step 2 (Factor).* $\tilde{A} \otimes \tilde{A} = (U^\dagger)^{\otimes 2}(B \otimes B)\, U^{\otimes 2}$.
+
+*Step 3 (2-design twirl).* Over a unitary 2-design, the Weingarten calculus gives:
+$$
+\mathbb{E}\!\left[(U^\dagger)^{\otimes 2} X\, U^{\otimes 2}\right] = \sum_{\sigma,\tau \in S_2} \mathrm{Wg}(\sigma^{-1}\tau,\, D)\; \mathrm{tr}(P_\sigma\, X)\; P_\tau
+$$
+with $\mathrm{Wg}(e, D) = 1/(D^2-1)$ and $\mathrm{Wg}((12), D) = -1/(D(D^2-1))$. For $X = B \otimes B$:
+
+- $\mathrm{tr}(B \otimes B) = \mathrm{tr}(B)^2 = 0$ (tracelessness of $B$)
+- $\mathrm{tr}(\mathrm{SWAP} \cdot B \otimes B) = \mathrm{tr}(B^2) = D$ (Pauli unitarity)
+
+Substituting:
+$$
+\mathbb{E}[\tilde{A} \otimes \tilde{A}] = \frac{-\,I^{\otimes 2} + D\;\mathrm{SWAP}}{D^2 - 1}
+$$ {#eq-twirl}
+
+*Step 4 (Evaluate).* Inserting @eq-twirl into @eq-replica:
+$$
+\begin{aligned}
+\mathbb{E}[x] &= \frac{1}{D^2-1}\Big(-\,\mathrm{tr}_{12}\!\big(\mathrm{SWAP}\cdot(\rho_0 \otimes M)\big) + D\;\mathrm{tr}_{12}\!\big(\mathrm{SWAP}\cdot(\rho_0 \otimes M)\cdot\mathrm{SWAP}\big)\Big)\\[4pt]
+&= \frac{-\,\mathrm{tr}(\rho_0 M) \;+\; D\;\mathrm{tr}(M)\,\mathrm{tr}(\rho_0)}{D^2-1} = \frac{-1 + 0}{D^2-1} = \boxed{-\frac{1}{D^2-1}}
+\end{aligned}
+$$
+where we used $\mathrm{tr}_{12}(\mathrm{SWAP}\cdot(A \otimes B)) = \mathrm{tr}(AB)$ for the first term, and $\mathrm{SWAP}(A \otimes B)\mathrm{SWAP} = B \otimes A$ (so the second term factorizes as $\mathrm{tr}(M)\,\mathrm{tr}(\rho_0)$), together with $\mathrm{tr}(\rho_0 M) = \bra{0^n}M\ket{0^n} = 1$ and $\mathrm{tr}(M) = 0$.
+
+**Part 3 (Variance requires 4-design).** The second moment $\mathbb{E}[x^2]$ involves $U$ at degree 4 (and $U^\dagger$ at degree 4), since $x$ itself is degree 2 in $U$. The Weingarten integral over $S_4$ has $|S_4| = 24$ permutation pairs. The full computation is omitted; the result scales as $\mathrm{Var}[x] = O(1/D^2)$.
+
+:::
+
+:::{.callout-note icon="false"}
+## Design order comparison
+
+| Quantity | Correlator $\langle 0^n|U^\dagger BU|0^n\rangle$ | OTOC $\langle 0^n|\tilde{A}M\tilde{A}|0^n\rangle$ |
+|----------|-----------|------|
+| $\mathbb{E}[x]$ (mean) | 1-design | **2-design** |
+| $\mathbb{E}[x^2]$ (variance) | 2-design | **4-design** |
+
+The correlator uses $U$ at degree 1; the OTOC at degree 2. Computing $\mathbb{E}[x^2]$ doubles the degree, so the OTOC variance requires Weingarten calculus over $S_4$.
+:::
+
+### Numerical verification
+
+Sample Haar-random unitaries and compare the empirical OTOC mean to $-1/(D^2-1)$.
+
+```{python}
+import numpy as np
+from qiskit.quantum_info import random_unitary
+import matplotlib.pyplot as plt
+
+np.random.seed(42)
+
+fig, axes = plt.subplots(1, 2, figsize=(10, 4))
+
+for idx, n_qubits in enumerate([1, 2]):
+    D = 2**n_qubits
+    n_samples = 5000
+
+    # |0^n>
+    psi = np.zeros(D, dtype=complex)
+    psi[0] = 1.0
+
+    # B: traceless Pauli (X on first qubit, I on rest)
+    X = np.array([[0, 1], [1, 0]], dtype=complex)
+    I2 = np.eye(2, dtype=complex)
+    B = X if n_qubits == 1 else np.kron(X, np.eye(D // 2, dtype=complex))
+
+    # M: Pauli-Z measurement (Z on all qubits), M|0^n> = |0^n>, tr(M) = 0
+    Z = np.array([[1, 0], [0, -1]], dtype=complex)
+    M = Z
+    for _ in range(n_qubits - 1):
+        M = np.kron(M, Z)
+
+    otoc_values = []
+    for _ in range(n_samples):
+        U = random_unitary(D).data
+        A_tilde = U.conj().T @ B @ U  # U†BU
+        x = psi.conj() @ A_tilde @ M @ A_tilde @ psi
+        otoc_values.append(x.real)
+
+    theory_mean = -1 / (D**2 - 1)
+    emp_mean = np.mean(otoc_values)
+
+    print(f"n = {n_qubits}, D = {D}")
+    print(f"  Empirical mean:     {emp_mean:.6f}")
+    print(f"  Theory -1/(D²-1):  {theory_mean:.6f}")
+    print(f"  |Difference|:       {abs(emp_mean - theory_mean):.6f}")
+    print()
+
+    axes[idx].hist(otoc_values, bins=50, density=True, alpha=0.7, color="steelblue")
+    axes[idx].axvline(theory_mean, color="red", linestyle="--", linewidth=2,
+                      label=f"$-1/(D^2-1) = {theory_mean:.4f}$")
+    axes[idx].axvline(emp_mean, color="orange", linestyle="-", linewidth=2,
+                      label=f"empirical = {emp_mean:.4f}")
+    axes[idx].set_xlabel("OTOC value")
+    axes[idx].set_ylabel("Density")
+    axes[idx].set_title(f"$n = {n_qubits}$, $D = {D}$")
+    axes[idx].legend(fontsize=8)
+
+plt.tight_layout()
+plt.show()
+```

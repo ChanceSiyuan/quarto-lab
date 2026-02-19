@@ -1,0 +1,356 @@
+---
+categories:
+- Readings
+date: '2026-02-18'
+lang: en
+title: "Leveraging Analog Quantum Computing with Neutral Atoms for Solvent Configuration Prediction in Drug Discovery"
+bibliography: refs.bib
+draft: true
+---
+
+## Abstract
+
+D'Arcangelo et al. [@d2024leveraging] introduce quantum algorithms for sampling equilibrium water solvent configurations within protein binding sites using analog quantum computing with neutral atoms. The key idea is to couple a quantum placement strategy to the 3D Reference Interaction Site Model (3D-RISM), which predicts continuous solvent distributions. The intrinsic quantum nature of the Rydberg blockade guarantees that water molecules are never placed too close to each other---a constraint imposed by hand in classical approaches. Two algorithms are presented: (1) a full quantum adiabatic evolution (QAE) model using a local Rydberg Hamiltonian, and (2) a hybrid quantum-classical variational quantum algorithm (VQA) using a global Rydberg Hamiltonian with Bayesian optimization. Both are validated on PASQAL's Pulser emulator and a real neutral atom quantum processing unit (QPU).
+
+# The Importance of Water Placement in Drug Design
+
+## Why Solvent Structure Matters
+
+In structure-based drug discovery, the protein binding pocket is not empty---it is densely populated by water molecules. The distribution of these water molecules impacts the protein's structure and determines its overall shape [@samways2021water; @bucher2018water]. Water molecules mediate the interaction between proteins and small-molecule ligands: they can occupy ligand-protein interaction sites, and clusters of water molecules can deeply affect the thermodynamics of ligand binding modes.
+
+Consequently, accounting for protein solvation effects is crucial to reliably model the ligand activity through rational design of ligand properties [@samways2021water; @bucher2018water].
+
+## Thermodynamics of Hydration: Enthalpic vs. Entropic Balance
+
+The binding of a ligand to a protein pocket in an aqueous environment is governed by the Gibbs free energy:
+$$
+\Delta G_{\text{bind}} = \Delta H_{\text{bind}} - T \Delta S_{\text{bind}}
+$$ {#eq-gibbs}
+
+For binding to be spontaneous, $\Delta G_{\text{bind}} < 0$. This is determined by a balance of two contributions:
+
+- **Enthalpic contributions** ($\Delta H$): Breaking interactions between the protein pocket and its bound water, and between the ligand and its solvation shell, costs energy. Forming new protein-ligand contacts and new water-water bonds in bulk solvent releases energy.
+- **Entropic contributions** ($\Delta S$): Binding restricts the ligand's translational and rotational freedom (unfavorable). However, water molecules trapped in a restrictive protein cavity are highly ordered; releasing them into bulk solvent drastically increases their degrees of freedom (highly favorable).
+
+The total free energy can be decomposed into solute and solvent components:
+$$
+\Delta G_{\text{bind}} = (\Delta H_{\text{PL}} - T\Delta S_{\text{PL}}) + (\Delta H_{\text{solv}} - T\Delta S_{\text{solv}})
+$$
+where PL denotes direct protein-ligand interaction and solv denotes solvent reorganization. If a protein pocket is hydrophobic, water molecules inside have restricted movement (low entropy) and poor hydrogen-bonding networks (unfavorable enthalpy). When a ligand enters and ejects these waters, the large $T\Delta S_{\text{solv}}$ gain can dominate, driving binding even if protein-ligand contacts are relatively weak.
+
+:::{.callout-note icon="false"}
+## Definition: Key Terminology
+
+- **Molecular recognition mechanism**: The process by which two molecules identify and bind to each other with high specificity, relying on geometric complementarity (shape) and chemical complementarity (charge matching, hydrogen bond donor/acceptor pairing).
+- **Protein-ligand interface**: The three-dimensional boundary where protein and ligand make contact---the spatial region where non-covalent interactions occur.
+- **Biomolecule structure stability**: The thermodynamic preference of a protein to maintain its functional, folded 3D shape. The hydrophobic effect forces non-polar amino acids into the protein core, maximizing solvent entropy.
+- **Conformational changes**: Structural rearrangements a protein undergoes in response to stimuli such as ligand binding or pH changes.
+:::
+
+## Experimental Limitations and Computational Motivation
+
+The presence of water molecules can be experimentally established using X-ray crystallography, but experiments present accuracy limitations due to poor resolution [@wlodawer2008accuracy]. Crystal structures with resolution $> 2.7$ \AA\ represent a limit for reliable water molecule modeling, making it critical to refine structures using accurate molecular modeling tools.
+
+Grid-based techniques such as 3D-RISM avoid the use of long and expensive sampling methods (e.g., molecular dynamics) while providing continuous solvent density distributions grounded in statistical mechanical integral equation theory [@chandler1972optimized; @chandler1973derivation; @chandler1974equilibrium; @beglov1997integral; @kovalenko2003three; @roy2021biomolecular]. However, 3D-RISM produces a continuous density field $g(\mathbf{r})$, not discrete molecular positions. Decomposing this continuous density into localized atomic positions is computationally challenging, especially as grid resolution increases.
+
+# 3D-RISM Theory
+
+The 3D Reference Interaction Site Model (3D-RISM) computes the solvent density distribution around a solute (e.g., a protein) using statistical mechanical integral equations [@kovalenko2003three; @kovalenko1999self; @luchko2010three]. Rather than tracking every water molecule (as in molecular dynamics), it computes a continuous probability distribution field on a three-dimensional grid.
+
+## Physical Setup
+
+The 3D-RISM theory provides the probability density of all solvent interaction sites $\gamma$ around a solute at position $\mathbf{r}$ as
+$$
+\rho_\gamma(\mathbf{r}) = \rho_\gamma \, g_\gamma(\mathbf{r})
+$$
+where $\rho_\gamma$ is the average number density of site $\gamma$ in the bulk solution, and $g_\gamma(\mathbf{r})$ is the normalized density distribution function. High values of $g_\gamma(\mathbf{r})$ correspond to regions of high solvent concentration relative to bulk, indicating locations of stable water molecules due to strong water-solute interactions.
+
+A realistic grid for drug discovery applications is a cube with 80 points per side, spaced by 0.5 \AA, totaling $\sim 512{,}000$ grid points [@d2024leveraging].
+
+## Solvent Site-Site Susceptibility
+
+:::{.callout-note icon="false"}
+## Definition: Site-Site Susceptibility
+
+For a pure solvent system (VV), the site-site susceptibility $\chi_{\alpha\gamma}^{VV}(r)$ between interaction sites $\alpha$ and $\gamma$ is defined as:
+$$
+\chi_{\alpha\gamma}^{VV}(r) = \omega_{\alpha\gamma}^{VV}(r) + \rho_\alpha \, h_{\alpha\gamma}^{VV}(r)
+$$ {#eq-susceptibility}
+where:
+
+- $\omega_{\alpha\gamma}^{VV}(r)$ is the **intramolecular correlation function**, representing the rigid geometric constraints within a single solvent molecule,
+- $h_{\alpha\gamma}^{VV}(r)$ is the **site-site radial total correlation function** of the pure solvent, computed from 1D-RISM [@chandler1972optimized; @beglov1997integral; @perkyns1992site],
+- $\rho_\alpha$ is the bulk number density of solvent site $\alpha$.
+:::
+
+The subscripts $\alpha$ and $\gamma$ denote **site types** (e.g., O and H in water), not individual atoms. The susceptibility $\chi_{\alpha\gamma}^{VV}(r)$ answers the statistical question: "Standing at any atom of type $\alpha$, what is the total probability of finding an atom of type $\gamma$ at distance $r$?" This probability has two mutually exclusive sources:
+
+1. **Intramolecular** ($\omega_{\alpha\gamma}$): The atom $\gamma$ belongs to the *same* molecule as $\alpha$. For a rigid molecule with fixed bond length $l_{\alpha\gamma}$, this is:
+$$
+\omega_{\alpha\gamma}(r) = \frac{\delta(r - l_{\alpha\gamma})}{4\pi r^2} \quad (\alpha \neq \gamma)
+$$ {#eq-omega-delta}
+The Dirac delta function enforces the rigid geometric constraint. In Fourier space, this transforms to a smooth spherical Bessel function:
+$$
+\hat{\omega}_{\alpha\gamma}(k) = \frac{\sin(k \, l_{\alpha\gamma})}{k \, l_{\alpha\gamma}}
+$$
+
+2. **Intermolecular** ($\rho_\alpha h_{\alpha\gamma}$): The atom $\gamma$ belongs to a *different* molecule. The function $h_{\alpha\gamma}^{VV}(r)$ represents the density fluctuation relative to the uniform background: $\rho_\alpha h(r) = \rho_\alpha g(r) - \rho_\alpha$, where $g(r)$ is the pair distribution function. Separating $\rho_\alpha$ (a macroscopic constant set by temperature, pressure, and concentration) from the dimensionless structural factor $h(r)$ ensures correct physical baseline and convergence of Fourier transforms (since $h(r) \to 0$ as $r \to \infty$, while $g(r) \to 1$).
+
+Physically, $\chi$ acts as a **linear response function** (propagator): it transmits a local perturbation introduced by the solute through the entire hydrogen-bond network of the solvent. It encodes the pure solvent's "DNA"---molecular geometry ($\omega$), hydrogen-bond network structure ($h$), and bulk concentration ($\rho$)---into a single response matrix.
+
+## The 3D-RISM Integral Equation
+
+:::{#thm-tcf .callout-important icon="false"}
+## Theorem: 3D-RISM Total Correlation Function (3D Ornstein-Zernike Equation)
+
+Let $h_\gamma(\mathbf{r})$ be the 3D total correlation function between the solute (U) and solvent site $\gamma$ (V), and $c_\alpha^{UV}(\mathbf{r})$ be the 3D direct correlation function for solvent site $\alpha$. Then:
+$$
+h_\gamma(\mathbf{r}) = \sum_\alpha \int c_\alpha^{UV}(\mathbf{r} - \mathbf{r}') \, \chi_{\alpha\gamma}^{VV}(|\mathbf{r}'|) \, d\mathbf{r}'
+$$ {#eq-3drism-tcf}
+where the sum runs over all solvent sites $\alpha$, and $\chi_{\alpha\gamma}^{VV}$ is the solvent susceptibility (@eq-susceptibility).
+:::
+
+The physical meaning: the total influence of the solute on solvent site $\gamma$ at position $\mathbf{r}$ equals the solute's direct interaction $c^{UV}$ convolved with the solvent's response kernel $\chi^{VV}$. The convolution integral captures how the direct perturbation propagates through the solvent network via indirect, multi-body relay.
+
+The total correlation function connects to the desired density distribution via:
+$$
+h_\gamma(\mathbf{r}) = g_\gamma(\mathbf{r}) - 1
+$$
+
+:::{.callout-note collapse="true"}
+## Proof Sketch (Click to expand)
+
+@eq-3drism-tcf is a generalization of the Ornstein-Zernike (OZ) equation to molecular (polyatomic) systems, originally due to Chandler and Andersen [@chandler1972optimized; @chandler1973derivation].
+
+**Base case (monatomic fluid):** For a simple fluid without molecular structure, the OZ equation in Fourier space is $h(k) = c(k) + c(k)\rho h(k)$. The total correlation $h$ decomposes into a direct spatial correlation $c$ and an indirect correlation mediated by a third particle ($c \cdot \rho \cdot h$).
+
+**Generalization to polyatomic molecules:** For molecules with internal structure, a density fluctuation at site $\alpha$ on molecule 1 is correlated with fluctuations at all sites on the same molecule via $\omega_{\alpha\gamma}$. The total correlation between site $\alpha$ on molecule 1 and site $\gamma$ on molecule 2 is constructed by summing all topological paths:
+
+1. *Direct molecular path* ($\omega c \omega$): Signal propagates within molecule 1 ($\omega$), jumps across the intermolecular gap ($c$), and propagates within molecule 2 ($\omega$).
+2. *Indirect propagating path* ($\omega c \rho h$): Signal leaves molecule 1 via $\omega c$, is weighted by the density $\rho$ of intermediate molecules, and reaches molecule 2 through all remaining interactions ($h$).
+
+Summing these paths yields the RISM equation in Fourier space:
+$$
+\mathbf{h}(k) = \boldsymbol{\omega}(k) \, \mathbf{c}(k) \, \boldsymbol{\omega}(k) + \boldsymbol{\omega}(k) \, \mathbf{c}(k) \, \boldsymbol{\rho} \, \mathbf{h}(k)
+$$
+This is an exact topological identity, not an approximation. The 3D-RISM equation (@eq-3drism-tcf) follows by contracting this matrix equation with the molecular geometry of the solute. $\blacksquare$
+:::
+
+## The Closure Equation
+
+The integral equation (@eq-3drism-tcf) contains two unknown functions ($h$ and $c$). A second equation---the closure relation---is required to close the system.
+
+:::{#thm-hnc .callout-important icon="false"}
+## Theorem: Hypernetted-Chain (HNC) Closure Relation
+
+For a dense liquid in thermal equilibrium at temperature $T$, let $u_\alpha(r)$ be the pair interaction potential, and $h_\alpha(r)$, $c_\alpha(r)$ the total and direct correlation functions. Under the approximation that the many-body diagrammatic Bridge function $B(r) \approx 0$, the pair distribution function satisfies:
+$$
+g_\alpha(r) = \exp\left(-\frac{u_\alpha(r)}{k_B T} + h_\alpha(r) - c_\alpha(r)\right)
+$$ {#eq-hnc}
+:::
+
+:::{.callout-note collapse="true"}
+## Proof Sketch (Click to expand)
+
+1. **Boltzmann distribution:** For two particles in vacuum, $g(r) = \exp(-\beta u(r))$ where $\beta = 1/(k_BT)$.
+
+2. **Potential of mean force (PMF):** In a dense liquid, surrounding molecules modify the effective interaction. The PMF $W(r)$ replaces $u(r)$:
+$$
+g(r) = \exp(-\beta W(r)), \qquad W(r) = u(r) + \Delta W(r)
+$$
+where $\Delta W(r)$ is the solvent-induced shielding potential.
+
+3. **Mayer cluster expansion:** The exact diagrammatic expansion of $\Delta W(r)$ classifies diagrams into:
+   - *Nodal diagrams*: Series-connected, summing to the indirect correlation $h(r) - c(r)$.
+   - *Elementary (bridge) diagrams*: Highly connected, summing to the Bridge function $B(r)$.
+
+   The exact relation is: $-\beta \Delta W(r) = h(r) - c(r) + B(r)$.
+
+4. **HNC approximation:** In dense liquids, complex multi-body bridge diagrams approximately cancel. Setting $B(r) \approx 0$ gives $-\beta \Delta W(r) = h(r) - c(r)$.
+
+5. Substituting back: $g(r) = \exp(-\beta u(r) + h(r) - c(r))$. $\blacksquare$
+:::
+
+In practice, the Kovalenko-Hirata (KH) closure is often used, which modifies the HNC by applying a partial linearization for positive $t_\alpha(r)$:
+$$
+g_\alpha(r) = \begin{cases} \exp(t_\alpha(r)) & \text{if } t_\alpha(r) < 0 \\ \displaystyle\sum_{i=0}^{n} \frac{t_\alpha(r)^i}{i!} & \text{if } t_\alpha(r) \geq 0 \end{cases}
+$$ {#eq-kh-closure}
+where $t_\alpha(r) = -u_\alpha(r)/(k_BT) + h_\alpha(r) - c_\alpha(r)$. When $n=1$, this is the KH closure; when $n=\infty$, it reduces to the full HNC equation.
+
+## 1D-RISM: Pre-computing Pure Solvent Structure
+
+Before solving the 3D problem, the pure solvent's correlation functions $h_{\alpha\gamma}^{VV}(r)$ must be computed via 1D-RISM. In pure solvent without a solute, isotropy reduces the problem from 3D to 1D (functions depend only on scalar distance $r$). In Fourier space, the 1D-RISM equation takes the matrix form:
+$$
+\mathbf{h}(k) = \boldsymbol{\omega}(k) \, \mathbf{c}(k) \, \boldsymbol{\omega}(k) + \boldsymbol{\omega}(k) \, \mathbf{c}(k) \, \boldsymbol{\rho} \, \mathbf{h}(k)
+$$ {#eq-1drism}
+For water, this is a $2 \times 2$ matrix equation (O and H sites). The 1D-RISM iterative algorithm proceeds as:
+
+1. **Input:** Temperature $T$, bulk density $\rho$, bond lengths/angles (generating $\boldsymbol{\omega}(r)$), and pair potential $\mathbf{u}(r)$ (e.g., TIP3P or SPC/E water model).
+2. **Initialize:** Guess $\mathbf{c}(r) = 0$.
+3. **Fourier transform:** Compute $\mathbf{c}(k)$ via 1D-FFT.
+4. **Solve algebraic equation:** Substitute $\mathbf{c}(k)$ and $\boldsymbol{\omega}(k)$ into @eq-1drism to obtain $\mathbf{h}(k)$.
+5. **Inverse transform:** Compute $\mathbf{h}(r)$ via 1D-IFFT.
+6. **Apply closure:** Use $\mathbf{h}(r)$ and $\mathbf{u}(r)$ in @eq-hnc to compute $g(r)$ and update $\mathbf{c}(r)$.
+7. **Check convergence:** If $\|\mathbf{c}^{(k+1)} - \mathbf{c}^{(k)}\| < \epsilon$, stop; otherwise return to step 3.
+
+The output is three smooth 1D curves---$h_{OO}^{VV}(r)$, $h_{OH}^{VV}(r)$, $h_{HH}^{VV}(r)$---encoding the complete microstructure of bulk water (hydrogen-bond lengths, solvation shell positions, etc.).
+
+## 3D-RISM Self-Consistent Iteration
+
+With the pure solvent susceptibility $\chi^{VV}$ pre-computed, the 3D-RISM algorithm solves for $g_\gamma(\mathbf{r})$ around the solute:
+
+1. **Input:** Solute (protein) 3D coordinates, force field parameters (for $u_\alpha^{UV}(\mathbf{r})$), and pre-computed $\chi_{\alpha\gamma}^{VV}(r)$.
+2. **Initialize:** Define a 3D grid around the solute; compute $u_\alpha^{UV}(\mathbf{r})$ on each grid point.
+3. **Iterate:**
+   a. Apply closure (@eq-kh-closure) using current $h$ and $c$ to compute $g(\mathbf{r})$.
+   b. Update: $h(\mathbf{r}) = g(\mathbf{r}) - 1$.
+   c. Solve @eq-3drism-tcf via 3D-FFT (convolution becomes algebraic multiplication in $k$-space) to obtain updated $c(\mathbf{r})$.
+   d. Check convergence of $c(\mathbf{r})$.
+4. **Output:** Converged density distribution $g_\gamma(\mathbf{r})$ on the 3D grid.
+
+# From Continuous Density to the Ising Model
+
+The 3D-RISM density $g(\mathbf{r})$ is continuous, but drug design requires discrete water molecule positions. The authors bridge this gap by interpreting $g(\mathbf{r})$ as a Gaussian mixture [@d2024leveraging].
+
+## Gaussian Mixture Ansatz
+
+Each water molecule randomly oscillates around a stable position. The resulting probability map resembles a Gaussian centered at that position. Thus, the 3D-RISM density is modeled as a sum of single-particle Gaussian distributions:
+
+:::{.callout-note icon="false"}
+## Definition: Gaussian Mixture Decomposition
+
+Let $\mathcal{C} \subset \mathbb{R}^3$ be a protein cavity with normalized density $g: \mathcal{C} \to \mathbb{R}$, $\int_\mathcal{C} g(\mathbf{r})\,d\mathbf{r} = 1$. Restrict candidate Gaussian centers to a finite lattice $Q = \{\mathbf{q}_1, \ldots, \mathbf{q}_M\} \subset \mathcal{C}$. Assign binary variables $n_i \in \{0,1\}$ to each point. The Gaussian mixture approximation is:
+$$
+\sum_{i=1}^M \mathcal{G}(\mathbf{q}_i, \sigma^2) \, n_i
+$$
+where $\mathcal{G}(\boldsymbol{\mu}, \sigma^2)$ is a normalized isotropic Gaussian with mean $\boldsymbol{\mu}$ and variance $\sigma^2$.
+:::
+
+## Derivation of the Ising Model
+
+The optimal assignment of $\{n_i\}$ minimizes the $L^2$ distance:
+$$
+I^2 = \int_\mathcal{C} \left( g(\mathbf{r}) - \sum_{i=1}^M \mathcal{G}(\mathbf{q}_i, \sigma^2)(\mathbf{r}) \, n_i \right)^2 d\mathbf{r}
+$$ {#eq-l2-cost}
+
+Expanding the square yields a classical Ising model:
+$$
+I^2 = K - \sum_{i=1}^M \Gamma_i \, n_i + \sum_{i \neq j} V_{ij} \, n_i n_j
+$$ {#eq-ising-classical}
+where $K$ is a constant, and:
+$$
+\Gamma_i = 2\int_\mathcal{C} g(\mathbf{r}) \, \mathcal{G}(\mathbf{q}_i,\sigma^2)(\mathbf{r}) \, d\mathbf{r} - \int_\mathcal{C} \left(\mathcal{G}(\mathbf{q}_i,\sigma^2)(\mathbf{r})\right)^2 d\mathbf{r}
+$$ {#eq-gamma-coeff}
+$$
+V_{ij} = \int_\mathcal{C} \mathcal{G}(\mathbf{q}_i,\sigma^2)(\mathbf{r}) \, \mathcal{G}(\mathbf{q}_j,\sigma^2)(\mathbf{r}) \, d\mathbf{r}
+$$ {#eq-vij-coeff}
+
+The interaction $V_{ij}$ can be approximated (when Gaussians are far from the boundary) by the convolution of two Gaussians, which is itself a Gaussian:
+$$
+V_{ij} \sim \exp\left(-\alpha |\mathbf{r}_{ij}|^2\right)
+$$
+where $\mathbf{r}_{ij} = \mathbf{q}_j - \mathbf{q}_i$. Thus, @eq-ising-classical is a classical Ising model with **exponentially decaying interactions**.
+
+An additional physical constraint requires $n_i = n_j = 1 \implies |\mathbf{r}_i - \mathbf{r}_j| > R$ for some minimum distance $R > 0$.
+
+## Quantum Ising Model
+
+:::{#thm-quantum-ising .callout-important icon="false"}
+## Theorem: Quantum Ising Formulation of the Water Placement Problem
+
+Replacing the classical binary variable $n_i$ with the quantum number operator $\hat{n}_i = (\hat{\sigma}_i^z + \mathbb{1})/2$ (spectrum $\{0,1\}$) in @eq-ising-classical yields the problem Hamiltonian:
+$$
+\hat{I}^2 = -\sum_{i=1}^M \Gamma_i \, \hat{n}_i + \sum_{i \neq j} V_{ij} \, \hat{n}_i \hat{n}_j
+$$ {#eq-problem-hamiltonian}
+The ground state of $\hat{I}^2$ is the computational basis state $|e^*\rangle$ minimizing $\langle e | \hat{I}^2 | e \rangle$. The water molecule positions and count are:
+$$
+\mathcal{W} = \{\mathbf{q}_i \in Q \mid \langle e^* | \hat{n}_i | e^* \rangle = 1\}, \qquad \mathcal{N} = \sum_{i=1}^M \langle e^* | \hat{n}_i | e^* \rangle
+$$ {#eq-water-positions}
+:::
+
+# Solving with Neutral Atom Quantum Computing
+
+## The Rydberg Hamiltonian
+
+:::{.callout-note icon="false"}
+## Definition: Local Rydberg Hamiltonian
+
+A system of neutral atoms coupled to an optical laser evolves under the time-dependent Hamiltonian:
+$$
+\hat{H}(t) = \sum_{i=1}^M \Omega_i(t) \hat{\sigma}_i^x - \sum_{i=1}^M \Delta_i(t) \hat{n}_i + \sum_{i<j} \frac{C_6}{|\mathbf{r}_{ij}|^6} \hat{n}_i \hat{n}_j
+$$ {#eq-rydberg-local}
+where $\Omega_i(t)$ is the Rabi frequency, $\Delta_i(t)$ is the detuning, and $C_6/|\mathbf{r}_{ij}|^6$ is the van der Waals interaction between Rydberg excitations [@henriet2020quantum].
+:::
+
+Comparing @eq-problem-hamiltonian and @eq-rydberg-local reveals a structural similarity: both are Ising-type Hamiltonians with a one-body linear term and a two-body interaction term. The key difference is that the Rydberg interaction decays as $r^{-6}$ (power-law) while the problem interaction $V_{ij}$ decays exponentially. However, the $r^{-6}$ Rydberg interaction naturally enforces the Rydberg blockade: two nearby atoms cannot both be excited simultaneously, which precisely implements the minimum-distance constraint between water molecules. This is a **native quantum advantage**---classical approaches like Placevent [@masters2018placevent] or GAsol [@fusani2018optimal] must impose this constraint by hand, risking suboptimal local solutions.
+
+At $\Omega = 0$ and $\Delta > 0$, the ground state of @eq-rydberg-local corresponds to a solution of the Maximum Independent Set (MIS) problem [@max_indep_set2009] on the graph defined by the atom array.
+
+## Quantum Adiabatic Evolution (QAE)
+
+The QAE algorithm exploits the adiabatic theorem [@farhi2001quantum]: if a quantum system is initialized in the ground state of a known, easy-to-prepare Hamiltonian $\hat{H}(0)$, and the Hamiltonian is slowly deformed to a target Hamiltonian $\hat{H}(1)$ encoding the optimization problem, the system remains in the instantaneous ground state at all times (provided the evolution is slow enough).
+
+**Algorithm (QAE):**
+
+1. **Compute coefficients:** From the 3D-RISM density $g(\mathbf{r})$ and qubit positions $Q = \{\mathbf{q}_i\}$, compute $\Gamma_i$ via @eq-gamma-coeff.
+2. **Map to detunings:** Use a heuristic mapping:
+$$
+\tilde{\Delta}_i = \Gamma_i - \frac{1}{|N(i)|}\sum_{j \in N(i)} \Gamma_j, \quad \Delta_i = \tilde{\Delta}_i \frac{\Delta_{\max}}{\max_i |\tilde{\Delta}_i|}
+$$
+where $N(i)$ denotes nodes within Rydberg blockade distance of node $i$.
+3. **Design adiabatic pulse:** Initialize with $\Omega_i(0) = 0$, $\Delta_i(0) = -c$ (large negative), so the ground state is $|0\rangle^{\otimes M}$. Ramp $\Omega$ through a maximum and back to zero, while ramping $\Delta_i$ from negative to the computed final values.
+4. **Measure:** Sample the final state in the computational basis. The bitstring with the minimal cost according to @eq-problem-hamiltonian gives the water placement solution.
+
+This algorithm requires local addressing (qubit-specific $\Omega_i(t)$, $\Delta_i(t)$), which is not available on current-generation neutral atom QPUs. It was tested using the Pulser classical emulator [@silverio2022pulser].
+
+## Variational Quantum Algorithm (VQA)
+
+To work with current hardware limitations (global-only control), a VQA is developed using the **global Rydberg Hamiltonian**:
+$$
+\hat{H}(t) = \Omega(t) \sum_{i=1}^M \hat{\sigma}_i^x - \Delta(t) \sum_{i=1}^M \hat{n}_i + \sum_{i<j} \frac{C_6}{|\mathbf{r}_{ij}|^6} \hat{n}_i \hat{n}_j
+$$ {#eq-rydberg-global}
+
+**Algorithm (VQA):**
+
+1. **Initialize Bayesian optimizer** with $n_r$ random laser parameter sets.
+2. **For each cycle** $k = 1, \ldots, n_c$:
+   a. Propose laser parameters $(\Omega_k(t), \Delta_k(t))$ via Bayesian minimization (or random if $k \leq n_r$).
+   b. Evolve the system under @eq-rydberg-global to obtain $|\Psi_k\rangle$.
+   c. Evaluate cost function: $J_k = \langle \Psi_k | \hat{I}^2 | \Psi_k \rangle$ via sampling.
+3. **Select optimal parameters:** $(\Omega^*, \Delta^*) = \arg\min_k J_k$.
+4. **Final evolution** with optimal parameters; select the best basis state from sampling.
+
+The cost function is the expectation value of the problem Hamiltonian (@eq-problem-hamiltonian), evaluated by summing contributions from each sampled basis state. The optimization searches over the space of laser pulse shapes, parametrized by $m$ discretization points for each of $\Omega(t)$ and $\Delta(t)$.
+
+# Experimental Validation
+
+## MUP-I Protein Test Case
+
+The algorithms are tested on the Major Urinary Protein (MUP-I) complexed with 2-sec-butyl-4,5-dihydrothiazole (PDB: 1i06). The crystal structure reveals two structural water molecules near the ligand, which are clearly visible as high-density spots in the 3D-RISM density.
+
+Since current QPUs operate on 2D registers, the 3D-RISM density is sliced into 2D planes (6 slices separated by 0.5 \AA). Each slice is smoothed with a Laplacian of Gaussian filter and covered with a qubit register (4--14 qubits). The registers are fitted to the QPU trap layout.
+
+## QAE Emulation Results
+
+For each register, an adiabatic pulse is designed and simulated via Pulser. Sampling 1000 times from the final state and selecting the bitstring with minimal cost yields the water placement solution. The algorithm successfully identifies density maxima across all 6 slices.
+
+## QPU Experimental Measurements
+
+A simplified version was implemented on PASQAL's Fresnel QPU (87-Rb atoms in the Ground-Rydberg basis) [@henriet2020quantum; @silverio2022pulser]. Using constant global pulses, the expectation value of the projector $|b_i\rangle\langle b_i|$ (corresponding to the known solution) was measured across a 2D parameter space (detuning vs. pulse duration). Experimental results are compatible with theoretical predictions, demonstrating that meaningful solutions belong to the physically accessible configuration space of the QPU.
+
+The error model accounts for: static array spacing uncertainty ($\sim 1\%$), spatial $\Omega$ inhomogeneity ($\sim 4\%$), shot-to-shot $\Omega$ fluctuations ($\sim 5\%$), effective decay rate $\Gamma_{\text{eff}}/2\pi = 0.05$ MHz, and detection errors ($\varepsilon = 2\%$, $\varepsilon' = 18\%$).
+
+## VQA Emulation on 3D-RISM Slices
+
+The VQA was tested on MUP-I density slices with 50 Bayesian optimization cycles and 200 samples per wavefunction. For a 6-qubit register, the algorithm found the best bitstring $|101001\rangle$ corresponding to three water molecules, with additional high-probability states $|010100\rangle$ and $|010001\rangle$. The algorithm exhibits equivalent performance across all slices.
+
+# Conclusions and Perspectives
+
+This work introduces the Quantum-3D-RISM (Q-3D-RISM) family of algorithms [@d2024leveraging] that combine continuous solvent density predictions (3D-RISM) with quantum optimization on neutral atom QPUs. Key contributions:
+
+1. **Ising model formulation:** The water placement problem is cast as a classical Ising model with exponentially decaying interactions, naturally suited for Rydberg atom arrays.
+2. **Native quantum advantage:** The Rydberg blockade automatically enforces the physical constraint that water molecules cannot overlap, eliminating a manual step required in classical methods.
+3. **Two algorithmic paradigms:** QAE (local addressing, next-generation devices) and VQA (global addressing, current devices) are both demonstrated.
+4. **Experimental validation:** First application of analog quantum computing to the protein solvation problem on a real cold-atom device.
+
+Current limitations include the qubit count ($\leq 14$) and the need for 2D slicing of 3D densities. Future work will leverage next-generation QPUs with local addressing and time-dependent pulses, enabling larger-scale simulations. The relatively constant noise levels with increasing system size in analog quantum computing provide optimism for scaling [@d2024leveraging].

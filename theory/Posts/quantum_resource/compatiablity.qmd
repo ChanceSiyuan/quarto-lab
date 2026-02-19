@@ -1,0 +1,276 @@
+---
+title: "Quantum Resource Theory of Compatibility"
+categories:
+- Surveys
+date: '2026-02-18'
+lang: en
+draft: true
+bibliography: refs.bib
+---
+
+This note develops the quantum resource theory @gour2018resource for the compatibility of quantum instruments.
+
+
+# Compatibility of Quantum Instruments
+
+::: {#def-compatibility .callout-note icon="false"}
+##  (Compatibility)
+A collection of instruments $\{I_{a|x}\}_{a,x}$ is **compatible** if there exists a single mother instrument $\{\mathcal{M}_\lambda\}_\lambda$ and a conditional probability distribution $p(a|x,\lambda)$ such that
+$$
+I_{a|x}(\rho) = \sum_\lambda p(a|x, \lambda)\, \mathcal{M}_\lambda(\rho)
+$$ {#eq-compatibility}
+for all input states $\rho$, settings $x$, and outcomes $a$.
+:::
+
+The mother instrument $\mathcal{M}_\lambda$ performs the actual quantum measurement. The setting $x$ only routes the classical label $\lambda$ through the stochastic map $p(a|x,\lambda)$ without ever touching the quantum state again.
+If we define $E_{a|x} = \sum_\lambda p(a|x,\lambda)\,G_\lambda$ as the **joint measurability** @uola2015one for a set of POVMs operators $\{E_{a|x}\}$, we then can prove that this definition is covered by the instrument compatibility.
+
+::: {#lem-instrument-povm .callout-important icon="false"}
+##  (Instrument compatibility implies joint measurability)
+For entanglement-breaking instruments $I_{a|x}(\rho) = \operatorname{tr}(E_{a|x}\,\rho)\,\sigma_{a|x}$, if the instruments are compatible then the underlying POVMs $\{E_{a|x}\}_a$ are joint measurabile. In particular, the prepared states $\sigma_{a|x}$ play no role: the trace operation annihilates them.
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+
+Assume the instruments are compatible with mother instrument $\mathcal{M}_\lambda$. Take the trace of both sides of @eq-compatibility:
+$$
+\operatorname{tr}(I_{a|x}(\rho)) = \sum_\lambda p(a|x,\lambda)\,\operatorname{tr}(\mathcal{M}_\lambda(\rho)).
+$$
+The left side evaluates to $\operatorname{tr}(E_{a|x}\,\rho)\,\operatorname{tr}(\sigma_{a|x}) = \operatorname{tr}(E_{a|x}\,\rho)$ since $\sigma_{a|x}$ is normalized. Writing $\operatorname{tr}(\mathcal{M}_\lambda(\rho)) = \operatorname{tr}(G_\lambda\,\rho)$ for the mother POVM elements $G_\lambda$, we obtain
+$$
+\operatorname{tr}(E_{a|x}\,\rho) = \operatorname{tr}\!\left(\sum_\lambda p(a|x,\lambda)\,G_\lambda\;\rho\right) \quad \forall\,\rho,
+$$
+which forces $E_{a|x} = \sum_\lambda p(a|x,\lambda)\,G_\lambda$. This is exactly joint measurability. $\blacksquare$
+:::
+
+::: {#lem-eb-mother .callout-important icon="false"}
+##  (Rank-1 POVM element forces EB form)
+If a CP map $\mathcal{M}$ has a rank-1 POVM element $G = |g\rangle\!\langle g|$, then $\mathcal{M}$ is entanglement-breaking:
+$$
+\mathcal{M}(\rho) = \langle g|\rho|g\rangle\;\tau
+$$
+for a fixed state $\tau$ independent of $\rho$.
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+
+Write $\mathcal{M}(\rho) = \sum_i K_i \rho K_i^\dagger$ in Kraus form. The POVM element satisfies $\sum_i K_i^\dagger K_i = |g\rangle\!\langle g|$. Since each $K_i^\dagger K_i \geq 0$ and their sum is rank-1, every $K_i^\dagger K_i$ must be proportional to $|g\rangle\!\langle g|$: write $K_i^\dagger K_i = c_i\,|g\rangle\!\langle g|$ with $c_i \geq 0$ and $\sum_i c_i = 1$. Each $K_i$ therefore has rank at most 1, so $K_i = \sqrt{c_i}\,|f_i\rangle\!\langle g|$ for some unit vector $|f_i\rangle$. Substituting:
+$$
+\mathcal{M}(\rho) = \sum_i c_i\,|f_i\rangle\!\langle g|\rho|g\rangle\!\langle f_i| = \langle g|\rho|g\rangle \sum_i c_i\,|f_i\rangle\!\langle f_i| = \operatorname{tr}(|g\rangle\!\langle g|\,\rho)\;\tau,
+$$
+where $\tau = \sum_i c_i\,|f_i\rangle\!\langle f_i|$ is a valid density matrix. $\blacksquare$
+:::
+
+We conjecture that joint measurability can help us understand the compatibility of entanglement-breaking instruments, as stated by the lemma below.
+
+::: {#lem-eb-compatibility .callout-note icon="false"}
+##  (EB instrument compatibility)
+For entanglement-breaking instruments $I_{a|x}(\rho) = \operatorname{tr}(E_{a|x}\,\rho)\,\sigma_{a|x}$ with rank-1 projective $\{E_{a|x}\}_a$ (non-degenerate PVMs), compatibility requires:
+
+1. The projectors commute: $[E_{a|x}, E_{a'|x'}] = 0$ for all cross-setting pairs.
+2. The prepared states are consistent: there exist joint states $\tau_\lambda$ such that coarse-graining over the mother instrument outcomes reproduces $\sigma_{a|x}$ for every setting.
+
+Condition 1 alone is necessary but **not** sufficient — conflicting output states $\sigma_{a|x}$ can prevent compatibility even when the measurements commute.
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+
+**Necessity of condition 1** follows from @lem-instrument-povm: instrument compatibility implies joint measurability, and sharp projective measurements are compatible iff they commute.
+
+**Necessity of condition 2.** Assume the projectors commute, so they share a joint eigenbasis with joint projectors $G_{a,b} = E_{a|0}\,E_{b|1}$. Since $E_{a|x}$ are rank-1, each nonzero $G_{a,b}$ is also rank-1. By @lem-eb-mother, the mother instrument branches take the EB form $\mathcal{M}_{a,b}(\rho) = \operatorname{tr}(G_{a,b}\,\rho)\,\tau_{a,b}$ for some states $\tau_{a,b}$. Marginalizing over $b$ for setting $x=0$:
+$$
+\sum_b \mathcal{M}_{a,b}(\rho) = \sum_b \operatorname{tr}(G_{a,b}\,\rho)\,\tau_{a,b} \stackrel{!}{=} \operatorname{tr}(E_{a|0}\,\rho)\,\sigma_{a|0}.
+$$
+Since $E_{a|0} = \sum_b G_{a,b}$, the right side becomes $\sum_b \operatorname{tr}(G_{a,b}\,\rho)\,\sigma_{a|0}$. For this to hold for all $\rho$, we need $\tau_{a,b} = \sigma_{a|0}$ whenever $G_{a,b} \neq 0$. Applying the same argument to setting $x=1$ forces $\tau_{a,b} = \sigma_{b|1}$. Together: $\sigma_{a|0} = \sigma_{b|1}$ for every pair $(a,b)$ with $G_{a,b} \neq 0$.
+
+**Insufficiency of condition 1 alone.** Choose commuting projectors $E_{a|0} = |a\rangle\!\langle a|$ and $E_{b|1} = |b\rangle\!\langle b|$ in the same computational basis, but set $\sigma_{0|0} = |+\rangle\!\langle +|$ and $\sigma_{0|1} = |0\rangle\!\langle 0|$. The joint projector $G_{0,0} = |0\rangle\!\langle 0|$ is nonzero, yet $\sigma_{0|0} \neq \sigma_{0|1}$, so no valid $\tau_{0,0}$ exists. The instruments are incompatible despite commuting measurements. $\blacksquare$
+:::
+
+
+::: {#lem-sharp-incompatible .callout-important icon="false"}
+##  (Sharp non-commuting measurements are incompatible)
+If two instruments have sharp (rank-1 projective) POVM elements $E_{a|x}$ that do not commute, then no mother instrument exists.
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+
+Suppose for contradiction that a mother POVM $\{G_\lambda\}$ exists with $E_{a|x} = \sum_\lambda p(a|x,\lambda)\,G_\lambda$. Consider a rank-1 projector $E_{0|0} = |0\rangle\!\langle 0|$. Since $|0\rangle\!\langle 0|$ is rank-1 and equals a sum of positive operators $p(0|0,\lambda)\,G_\lambda$, every contributing $G_\lambda$ (with $p(0|0,\lambda)>0$) must satisfy $G_\lambda \propto |0\rangle\!\langle 0|$.
+
+Now consider $E_{+|1} = |+\rangle\!\langle +| = \sum_\lambda p(+|1,\lambda)\,G_\lambda$. By the same rank-1 argument, every contributing $G_\lambda$ must satisfy $G_\lambda \propto |+\rangle\!\langle +|$.
+
+For any $\lambda$ where both $p(0|0,\lambda)>0$ and $p(+|1,\lambda)>0$, we need $G_\lambda$ proportional to both $|0\rangle\!\langle 0|$ and $|+\rangle\!\langle +|$ simultaneously. Since these are distinct rank-1 projectors, the only possibility is $G_\lambda = 0$. Repeating for all outcome pairs forces every $G_\lambda = 0$, contradicting $\sum_\lambda G_\lambda = I$. $\blacksquare$
+:::
+
+
+::: {#lem-compatibility-equiv .callout-important icon="false"}
+##  (Compatibility $\Rightarrow$ setting-independence of quantum output)
+If a set of quantum instruments $\{I_{a|x}\}_x$ is compatible, then the total quantum output channel $\Phi_x(\rho) \equiv \sum_a I_{a|x}(\rho)$ is independent of $x$. The converse is **false**: setting-independence (semicausality) does not imply compatibility.
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+
+$(\Rightarrow)$ Assume compatibility. Sum @eq-compatibility over $a$:
+$$
+\Phi_x(\rho) = \sum_a I_{a|x}(\rho) = \sum_a \sum_\lambda p(a|x,\lambda)\,\mathcal{M}_\lambda(\rho) = \sum_\lambda \underbrace{\left(\sum_a p(a|x,\lambda)\right)}_{=\,1}\mathcal{M}_\lambda(\rho) = \sum_\lambda \mathcal{M}_\lambda(\rho).
+$$
+The right-hand side is independent of $x$.
+
+$(\nLeftarrow)$ We will give a counterexample $\{I_{a|x}\}$ satisfies the condition that $\sum_{a}I_{a|x}$ is independent of $x$, but is not compatible.
+Setting $x=0 \leftrightarrow \text{Measure} Z$:
+$$
+\begin{align*}
+\left\{
+\begin{aligned}
+&I_{0|0}(\rho) = \text{tr}(|0\rangle\langle 0| \rho) \frac{I}{2},\\
+&I_{1|0}(\rho) = \text{tr}(|1\rangle\langle 1| \rho) \frac{I}{2},\\
+&\Phi_0(\rho) = I_{0|0}(\rho) + I_{1|0}(\rho) = \text{tr}(\rho)\frac{I}{2} = \frac{I}{2}
+\end{aligned}
+\right.
+\end{align*}
+$$
+Setting $x=1$ (Measure $X$):
+$$
+\begin{align*}
+\left\{
+\begin{aligned}
+    &I_{+|1}(\rho) = \text{tr}(|+\rangle\langle +| \rho) \frac{I}{2},\\
+    &I_{-|1}(\rho) = \text{tr}(|-\rangle\langle -| \rho) \frac{I}{2},\\
+    &\Phi_1(\rho) = I_{+|1}(\rho) + I_{-|1}(\rho) = \text{tr}(\rho)\frac{I}{2} = \frac{I}{2}
+\end{aligned}
+\right.
+\end{align*}
+$$
+Then we notice that $\Phi_0(\rho) = \Phi_1(\rho)$ is not dependent on $x$, so the setting-independence condition holds. However, these instruments are **incompatible**: the underlying POVMs are the sharp $Z$ and $X$ projectors, which do not commute. By @lem-instrument-povm, instrument compatibility would require joint measurability, and by @lem-sharp-incompatible, sharp non-commuting projectors cannot share a mother POVM. $\blacksquare$
+:::
+
+*Remark.* The counterexample above shows that **compatible $\Rightarrow$ semicausal** but **semicausal $\nRightarrow$ compatible**. Semicausality (setting-independence of quantum output) is a strictly weaker condition. Compatibility additionally requires that the *classical* statistics be jointly simulable by a mother instrument. The bridge between the QRT of incompatibility and the causal structure studied in @beckman2001causal and @piani2006properties is that compatibility is a special case of semicausality — the free objects in the QRT form a proper subset of all semicausal multi-instruments.
+
+::: {#def-semicausal .callout-note icon="false"}
+##  (Semicausality)
+A bipartite quantum operation $\Lambda$ acting on $\mathcal{H}_A \otimes \mathcal{H}_B$ is **$A \nrightarrow B$ semicausal** if no action by Alice before $\Lambda$ is detectable on Bob's side [@beckman2001causal]:
+$$
+\operatorname{Tr}_A\!\big(\Lambda[\rho_{AB}]\big) = \operatorname{Tr}_A\!\big(\Lambda[(\Gamma_A \otimes \mathcal{I})[\rho_{AB}]]\big)
+$$ {#eq-semicausal}
+for every CPTP map $\Gamma_A$ and every state $\rho_{AB}$.
+A map is **causal** (fully non-signaling) iff it is semicausal in both directions.
+:::
+
+# Quantum Steering and Unsteerability
+As shown in @uola2015one, the joint measurability can be used to characterize the steering of a quantum state.
+Thus we first introduce the definition of steering.
+
+In a bipartite scenario, Alice and Bob share a quantum state $\rho_{AB}$.
+Alice chooses a measurement setting $x$ and obtains outcome $a$; conditioned on this, Bob holds a (normalized) post-measurement state $\sigma_{a|x}$ with probability $p(a|x)$.
+The collection $\{p(a|x),\, \sigma_{a|x}\}_{a \in A,\, x \in X}$ is called an **assemblage** [@cavalcanti2017quantum].
+The no-signaling constraint requires $\sum_a p(a|x)\,\sigma_{a|x} = \rho_B$ for all $x$.
+
+Throughout this note, $\sigma_{a|x}$ denotes the **normalized** state ($\operatorname{Tr}\sigma_{a|x}=1$); the product $p(a|x)\,\sigma_{a|x}$ gives the unnormalized sub-ensemble element.
+
+::: {#def-unsteerable .callout-note icon="false"}
+##  (Unsteerable assemblage)
+An assemblage $\{p(a|x),\,\sigma_{a|x}\}$ is **unsteerable** if it admits a Local Hidden State (LHS) model:
+$$
+p(a|x)\,\sigma_{a|x} = \sum_\lambda p(a|x,\lambda)\, q_\lambda\, \rho_\lambda \qquad \forall\; a,\, x,
+$$ {#eq-lhs}
+where $q_\lambda$ is a fixed probability distribution over a classical hidden variable $\lambda$, $\rho_\lambda$ are predetermined quantum states on Bob's side, and $p(a|x,\lambda)$ is Alice's classical response function.
+:::
+
+The physical picture: a source distributes a shared random label $\lambda$ (with probability $q_\lambda$). Bob prepares $\rho_\lambda$ based solely on $\lambda$. Alice, given setting $x$ and label $\lambda$, classically samples her outcome $a$ from $p(a|x,\lambda)$. No entanglement is needed — the correlations are entirely classical.
+
+::: {#thm-unsteer-separable .callout-important icon="false"}
+## Theorem (Unsteerable $\Leftrightarrow$ producible from a separable state)
+An assemblage $\{p(a|x),\,\sigma_{a|x}\}$ is unsteerable if and only if it can be produced by performing local measurements on a separable state [@wiseman2007steering].
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+
+**($\Leftarrow$) Separable state $\Rightarrow$ unsteerable.**
+Let $\rho_{AB} = \sum_\lambda q_\lambda\,(\alpha_\lambda \otimes \rho_\lambda)$ be separable. Alice measures $M_{a|x}$ on her subsystem:
+$$
+p(a|x)\,\sigma_{a|x} = \operatorname{Tr}_A\!\big[(M_{a|x}\otimes\mathbb{I})\,\rho_{AB}\big] = \sum_\lambda q_\lambda\;\underbrace{\operatorname{Tr}[M_{a|x}\,\alpha_\lambda]}_{\equiv\; p(a|x,\lambda)}\;\rho_\lambda.
+$$
+The scalar $p(a|x,\lambda) = \operatorname{Tr}[M_{a|x}\,\alpha_\lambda]$ is a valid conditional probability (non-negative, sums to 1 over $a$). This is the LHS form.
+
+**($\Rightarrow$) Unsteerable $\Rightarrow$ separable model.**
+Given an LHS decomposition $p(a|x)\,\sigma_{a|x} = \sum_\lambda p(a|x,\lambda)\,q_\lambda\,\rho_\lambda$, construct the separable state
+$$
+\rho_{AB} = \sum_\lambda q_\lambda\;|\lambda\rangle\!\langle\lambda| \otimes \rho_\lambda,
+$$
+where $\{|\lambda\rangle\}$ is an orthonormal basis on Alice's system (a classical register). Alice first measures in the $\{|\lambda\rangle\}$ basis to learn $\lambda$, then classically samples $a$ from $p(a|x,\lambda)$. This reproduces the assemblage exactly. $\blacksquare$
+:::
+
+*Remark.* This theorem gives steering its operational teeth: an assemblage is steerable if and only if the underlying state is entangled. Assemblage statistics alone suffice to certify entanglement in a **one-sided device-independent** manner — Alice's measurement device can be completely untrusted [@cavalcanti2017quantum].
+
+# Compatibility Implies Unsteerability
+
+::: {#thm-compat-unsteer .callout-important icon="false"}
+## Theorem (Compatible measurements $\Rightarrow$ unsteerable assemblage)
+If Alice's measurements $\{M_{a|x}\}$ are compatible, i.e.\ $M_{a|x} = \sum_\lambda p(a|x,\lambda)\,G_\lambda$ for some mother POVM $\{G_\lambda\}$, then for **any** shared state $\rho_{AB}$ the resulting assemblage is unsteerable [@wiseman2007steering; @gallego2015resource].
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+
+**Step 1.** Bob's unnormalized conditional state is
+$$
+p(a|x)\,\sigma_{a|x} = \operatorname{Tr}_A\!\big[(M_{a|x} \otimes \mathbb{I}_B)\,\rho_{AB}\big].
+$$
+
+**Step 2.** Substitute the mother-measurement decomposition $M_{a|x} = \sum_\lambda p(a|x,\lambda)\,G_\lambda$:
+$$
+p(a|x)\,\sigma_{a|x} = \operatorname{Tr}_A\!\left[\left(\sum_\lambda p(a|x,\lambda)\,G_\lambda \otimes \mathbb{I}_B\right)\rho_{AB}\right].
+$$
+
+**Step 3.** By linearity of the trace, pull out the classical probability and the sum:
+$$
+p(a|x)\,\sigma_{a|x} = \sum_\lambda p(a|x,\lambda)\;\operatorname{Tr}_A\!\big[(G_\lambda \otimes \mathbb{I}_B)\,\rho_{AB}\big].
+$$
+
+**Step 4.** Define the unnormalized state $\sigma_\lambda \equiv \operatorname{Tr}_A[(G_\lambda \otimes \mathbb{I}_B)\,\rho_{AB}]$. Since $\sigma_\lambda \geq 0$ and $\sum_\lambda \operatorname{Tr}\sigma_\lambda = 1$, write $\sigma_\lambda = q_\lambda\,\rho_\lambda$ with $q_\lambda = \operatorname{Tr}\sigma_\lambda$ and $\rho_\lambda = \sigma_\lambda / q_\lambda$.
+
+**Step 5.** Substituting back:
+$$
+p(a|x)\,\sigma_{a|x} = \sum_\lambda p(a|x,\lambda)\;q_\lambda\;\rho_\lambda.
+$$
+This is exactly the LHS form (@eq-lhs). The hidden variable $\lambda$ is the outcome of the mother measurement. $\blacksquare$
+:::
+
+# Operational Meaning
+
+Steering is operationally the resource for **remote state preparation**: by choosing her measurement setting $x$, Alice prepares a known ensemble on Bob's side. If they share a maximally entangled state, Alice can prepare any state she wishes within the basis constraints — a coherent quantum resource strictly stronger than classical shared randomness.
+
+Because steering produces a quantum output (the assemblage), it is a *coherent* resource. Maximal steering allows distillation of a singlet, which in turn enables teleportation and dense coding. This coherence distinguishes steering from classical non-signaling correlations, which can mimic measurement statistics but cannot reproduce protocols requiring quantum output.
+
+The one-sided device-independent character makes steering the natural resource for QKD protocols where one party's device is untrusted [@wiseman2007steering; @cavalcanti2017quantum].
+
+# Connection to Sample Complexity
+
+The QRT of incompatibility connects directly to the sample complexity of jointly estimating a set of observables $\mathcal{O} = \{O_1, \ldots, O_m\}$.
+
+**Incompatibility metric.** Define $f\colon 2^{\mathrm{Obs}} \to \mathbb{R}_{\geq 0}$ with the desiderata [@yang2025measuring]:
+
+1. *Monotonicity*: $\mathcal{O} \subseteq \mathcal{O}' \Rightarrow f(\mathcal{O}) \leq f(\mathcal{O}')$.
+2. *Subadditivity*: $f(\mathcal{O}_1 \cup \mathcal{O}_2) \leq f(\mathcal{O}_1) + f(\mathcal{O}_2)$.
+3. *Vanishing for commuting sets*: $[O_i, O_j] = 0\;\forall\,i,j \;\Rightarrow\; f(\mathcal{O}) = 0$.
+4. *Operational tightness*: $\text{Sample Complexity}(\mathcal{O}) = \Theta(g(f(\mathcal{O})))$ for some monotonic $g$.
+
+Such an $f$ is an incompatibility monotone in the QRT sense: it cannot increase under free superchannels (compatible post-processing).
+
+::: {#lem-shadow-not-mother .callout-important icon="false"}
+##  (Classical shadows $\neq$ mother measurement)
+A classical shadow protocol (e.g.\ randomized local Clifford measurements) is **not** a mother measurement in the QRT sense. It is a randomized ensemble of instruments: each shot applies a single randomly chosen instrument, and the protocol recovers expectation values only through statistical averaging over many copies. Single-shot reconstruction of incompatible observables is impossible.
+:::
+
+::: {.callout-note collapse="true"}
+## Proof sketch (Click to expand)
+
+If the observables $\{O_i\}$ are incompatible, their eigenprojectors form incompatible instruments — no single POVM jointly simulates all of them. The shadow protocol selects a random unitary $U$ from an ensemble $\mathcal{U}$, applies it, and measures in the computational basis. The combined POVM (with outcome $(U, b)$) still cannot deterministically produce the marginal outcome of any observable not diagonal in the chosen basis $U$. The protocol compensates by constructing an unbiased estimator $\hat{o}_i$ with $\mathbb{E}[\hat{o}_i] = \operatorname{Tr}(O_i \rho)$, but the estimator has non-trivial variance. $\blacksquare$
+:::
+
+The variance of the shadow estimator is the **incompatibility penalty**: when $f(\mathcal{O}) = 0$ (commuting observables), a mother measurement exists and joint estimation has no overhead. When $f(\mathcal{O}) > 0$, the shadow protocol pays a variance cost that scales with the degree of incompatibility. Framing shadow strategies as a "commutants transverse channel" [@yang2025measuring] makes this penalty explicit — the incompatibility of $\mathcal{O}$ acts as the bottleneck resistance of the channel, attenuating the signal and inflating sample complexity.
