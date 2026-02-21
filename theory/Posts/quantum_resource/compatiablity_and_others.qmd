@@ -1,0 +1,176 @@
+---
+categories:
+- Readings
+date: '2026-02-18'
+lang: en
+title: "Compatibility and Others"
+bibliography: refs.bib
+---
+
+# Compatibility Implies Semicausality
+
+::: {#lem-compatibility-equiv .callout-important icon="false"}
+##  (Compatibility $\Rightarrow$ setting-independence of quantum output)
+If a set of quantum instruments $\{I_{a|x}\}_x$ is compatible, then the total quantum output channel $\Phi_x(\rho) \equiv \sum_a I_{a|x}(\rho)$ is independent of $x$. The converse is **false**: setting-independence (semicausality) does not imply compatibility.
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+
+$(\Rightarrow)$ Assume compatibility. Sum @eq-compatibility over $a$:
+$$
+\Phi_x(\rho) = \sum_a I_{a|x}(\rho) = \sum_a \sum_\lambda p(a|x,\lambda)\,\mathcal{M}_\lambda(\rho) = \sum_\lambda \underbrace{\left(\sum_a p(a|x,\lambda)\right)}_{=\,1}\mathcal{M}_\lambda(\rho) = \sum_\lambda \mathcal{M}_\lambda(\rho).
+$$
+The right-hand side is independent of $x$.
+
+$(\nLeftarrow)$ We will give a counterexample $\{I_{a|x}\}$ satisfies the condition that $\sum_{a}I_{a|x}$ is independent of $x$, but is not compatible.
+Setting $x=0 \leftrightarrow \text{Measure} Z$:
+$$
+\begin{align*}
+\left\{
+\begin{aligned}
+&I_{0|0}(\rho) = \text{tr}(|0\rangle\langle 0| \rho) \frac{I}{2},\\
+&I_{1|0}(\rho) = \text{tr}(|1\rangle\langle 1| \rho) \frac{I}{2},\\
+&\Phi_0(\rho) = I_{0|0}(\rho) + I_{1|0}(\rho) = \text{tr}(\rho)\frac{I}{2} = \frac{I}{2}
+\end{aligned}
+\right.
+\end{align*}
+$$
+Setting $x=1$ (Measure $X$):
+$$
+\begin{align*}
+\left\{
+\begin{aligned}
+    &I_{+|1}(\rho) = \text{tr}(|+\rangle\langle +| \rho) \frac{I}{2},\\
+    &I_{-|1}(\rho) = \text{tr}(|-\rangle\langle -| \rho) \frac{I}{2},\\
+    &\Phi_1(\rho) = I_{+|1}(\rho) + I_{-|1}(\rho) = \text{tr}(\rho)\frac{I}{2} = \frac{I}{2}
+\end{aligned}
+\right.
+\end{align*}
+$$
+Then we notice that $\Phi_0(\rho) = \Phi_1(\rho)$ is not dependent on $x$, so the setting-independence condition holds. However, these instruments are **incompatible**: the underlying POVMs are the sharp $Z$ and $X$ projectors, which do not commute. By @lem-instrument-povm, instrument compatibility would require joint measurability, and by @lem-sharp-incompatible, sharp non-commuting projectors cannot share a mother POVM. $\blacksquare$
+:::
+
+*Remark.* The counterexample above shows that **compatible $\Rightarrow$ semicausal** but **semicausal $\nRightarrow$ compatible**. Semicausality (setting-independence of quantum output) is a strictly weaker condition. Compatibility additionally requires that the *classical* statistics be jointly simulable by a mother instrument. The bridge between the QRT of incompatibility and the causal structure studied in @beckman2001causal and @piani2006properties is that compatibility is a special case of semicausality — the free objects in the QRT form a proper subset of all semicausal multi-instruments.
+
+::: {#def-semicausal .callout-note icon="false"}
+##  (Semicausality)
+A bipartite quantum operation $\Lambda$ acting on $\mathcal{H}_A \otimes \mathcal{H}_B$ is **$A \nrightarrow B$ semicausal** if no action by Alice before $\Lambda$ is detectable on Bob's side [@beckman2001causal]:
+$$
+\operatorname{Tr}_A\!\big(\Lambda[\rho_{AB}]\big) = \operatorname{Tr}_A\!\big(\Lambda[(\Gamma_A \otimes \mathcal{I})[\rho_{AB}]]\big)
+$$ {#eq-semicausal}
+for every CPTP map $\Gamma_A$ and every state $\rho_{AB}$.
+A map is **causal** (fully non-signaling) iff it is semicausal in both directions.
+:::
+
+# Compatibility Implies Unsteerability
+As shown in @uola2015one, the joint measurability can be used to characterize the steering of a quantum state.
+Thus we first introduce the definition of steering.
+
+In a bipartite scenario, Alice and Bob share a quantum state $\rho_{AB}$.
+Alice chooses $I_{a|x}$ with measurement setting $x$ and outcomes $a$.
+Conditioned on this, Bob holds a (normalized) post-measurement state 
+$$
+p(a|x) \sigma_{a|x} = \mathrm{tr}_A\left[(\mathcal{M}_{a|x} \otimes \mathbb{I})\rho_{AB}\right]
+$$
+with probability $p(a|x) = \mathrm{tr}\left[(\mathcal{M}_{a|x} \otimes \mathbb{I})\rho_{AB}\right]$.
+The collection $\{p(a|x),\, \sigma_{a|x}\}_{a \in A,\, x \in X}$ is called an **assemblage** [@cavalcanti2017quantum].
+The no-signaling constraint requires $\sum_a p(a|x)\,\sigma_{a|x} = \rho_B$ for all $x$.
+
+::: {#def-unsteerable .callout-note icon="false"}
+##  (Unsteerable assemblage)
+An assemblage $\{p(a|x),\,\sigma_{a|x}\}$ is **unsteerable** if it admits a Local Hidden State (LHS) model:
+$$
+p(a|x)\,\sigma_{a|x} = \sum_\lambda p(a|x,\lambda)\, q_\lambda\, \rho_\lambda \qquad \forall\; a,\, x,
+$$ {#eq-lhs}
+where $q_\lambda$ is a fixed probability distribution over a classical hidden variable $\lambda$, $\rho_\lambda$ are predetermined quantum states on Bob's side, and $p(a|x,\lambda)$ is Alice's classical response function.
+:::
+
+The physical interpretation is the following: 
+
+- If the assemblage has a LHS model, then Bob can interpret his conditional states $\sigma_{a|x}$ as coming from the pre-existing states $\sigma_\lambda$, where only the probabilities are changed due to the knowledge of Alice’s measurement and result. 
+- Contrary, if no LHS model is possible, then Bob must believe that Alice can remotely steer the states in his lab by making measurements on her side.
+
+It is trivial to see that a separable state $\rho_{AB}$ will always generate a unsteerable assemblage and any unsteerable assemblage can be produced by performing local measurements on certain separable state.
+
+::: {#thm-unsteer-separable .callout-important icon="false"}
+## Theorem (Unsteerable $\Leftrightarrow$ producible from a separable state)
+An assemblage $\{p(a|x),\,\sigma_{a|x}\}$ is unsteerable if and only if it can be produced by performing local measurements on a separable state [@wiseman2007steering].
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+
+**($\Leftarrow$) Separable state $\Rightarrow$ unsteerable.**
+Let $\rho_{AB} = \sum_\lambda q_\lambda\,(\alpha_\lambda \otimes \rho_\lambda)$ be separable. Alice measures $M_{a|x}$ on her subsystem:
+$$
+p(a|x)\,\sigma_{a|x} = \operatorname{Tr}_A\!\big[(M_{a|x}\otimes\mathbb{I})\,\rho_{AB}\big] = \sum_\lambda q_\lambda\;\underbrace{\operatorname{Tr}[M_{a|x}\,\alpha_\lambda]}_{\equiv\; p(a|x,\lambda)}\;\rho_\lambda.
+$$
+The scalar $p(a|x,\lambda) = \operatorname{Tr}[M_{a|x}\,\alpha_\lambda]$ is a valid conditional probability (non-negative, sums to 1 over $a$). This is the LHS form.
+
+**($\Rightarrow$) Unsteerable $\Rightarrow$ separable model.**
+Given an LHS decomposition $p(a|x)\,\sigma_{a|x} = \sum_\lambda p(a|x,\lambda)\,q_\lambda\,\rho_\lambda$, construct the separable state
+$$
+\rho_{AB} = \sum_\lambda q_\lambda\;|\lambda\rangle\!\langle\lambda| \otimes \rho_\lambda,
+$$
+where $\{|\lambda\rangle\}$ is an orthonormal basis on Alice's system (a classical register). Alice first measures in the $\{|\lambda\rangle\}$ basis to learn $\lambda$, then classically samples $a$ from $p(a|x,\lambda)$. This reproduces the assemblage exactly. $\blacksquare$
+:::
+
+*Remark.* Nevertheless, the core hardness of steerable problem is that give an **entangled** state $\rho_{AB}$ and Alice's measurement $I_{a|x}$, the generated assemblage might still be unsteerable.
+It is a non-trivial task to design a measurement strategy that can distinguish the steerable and unsteerable cases.
+In other word, assemblage statistics alone suffice to certify entanglement in a **one-sided device-independent** manner — Alice's measurement device can be completely untrusted [@cavalcanti2017quantum].
+
+@uola2015one proved a one-to-one mapping between steering and joint measurability. We present this equivalence: first the easy direction (JM $\Rightarrow$ unsteerability), then the full bijection via steering-equivalent observables.
+
+::: {#thm-compat-unsteer .callout-important icon="false"}
+## Theorem (Joint measurability $\Rightarrow$ unsteerable assemblage)
+If Alice's measurements $\{M_{a|x}\}$ are jointly measurable, i.e.\ $M_{a|x} = \sum_\lambda p(a|x,\lambda)\,G_\lambda$ for some mother POVM $\{G_\lambda\}$, then for **any** shared state $\rho_{AB}$ the resulting assemblage is unsteerable [@wiseman2007steering; @gallego2015resource].
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+
+Substitute the JM decomposition into the assemblage formula and use linearity:
+$$
+p(a|x)\,\sigma_{a|x} = \operatorname{Tr}_A\!\big[(M_{a|x} \otimes \mathbb{I})\,\rho_{AB}\big] = \sum_\lambda p(a|x,\lambda)\;\underbrace{\operatorname{Tr}_A\!\big[(G_\lambda \otimes \mathbb{I})\,\rho_{AB}\big]}_{\equiv\; q_\lambda\,\rho_\lambda},
+$$
+where $q_\lambda = \operatorname{Tr}\!\big[\operatorname{Tr}_A[(G_\lambda\otimes\mathbb{I})\rho_{AB}]\big]$ and $\rho_\lambda$ is the normalized conditional state. This is the LHS form (@eq-lhs); the hidden variable $\lambda$ is the mother-measurement outcome. $\blacksquare$
+:::
+
+The converse — does unsteerability imply that Alice's measurements are JM? — is false in general (the assemblage depends on both the measurements *and* the state). However, @uola2015one showed that one can bypass the state entirely by constructing observables directly from the assemblage.
+
+::: {#def-se-observable .callout-note icon="false"}
+##  (Steering-equivalent observables)
+Given an assemblage $\{p(a|x),\,\sigma_{a|x}\}$ with Bob's reduced state $\rho_B = \sum_a p(a|x)\,\sigma_{a|x}$, the **steering-equivalent (SE) observables** are
+$$
+B_{a|x} = \rho_B^{-1/2}\;\big[p(a|x)\,\sigma_{a|x}\big]\;\rho_B^{-1/2},
+$$ {#eq-se}
+where the inverse is taken on $\operatorname{range}(\rho_B)$. Since $p(a|x)\,\sigma_{a|x} \geq 0$ and $\sum_a p(a|x)\,\sigma_{a|x} = \rho_B$, we have $B_{a|x} \geq 0$ and $\sum_a B_{a|x} = \mathbb{I}$, so $\{B_{a|x}\}_a$ is a valid POVM for each $x$.
+:::
+
+::: {#thm-steering-jm .callout-important icon="false"}
+## (Unsteerability $\Leftrightarrow$ joint measurability of SE observables)
+An assemblage $\{p(a|x),\,\sigma_{a|x}\}$ is unsteerable if and only if its SE observables $\{B_{a|x}\}$ are jointly measurable [@uola2015one].
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+
+The key observation is that conjugation by $\rho_B^{\pm 1/2}$ is a bijection between LHS models and joint observables.
+
+**($\Rightarrow$)** Suppose the assemblage has an LHS model: $p(a|x)\,\sigma_{a|x} = \sum_\lambda p(a|x,\lambda)\,q_\lambda\,\rho_\lambda$. Conjugating both sides of @eq-se by $\rho_B^{-1/2}$:
+$$
+B_{a|x} = \sum_\lambda p(a|x,\lambda)\;\underbrace{\rho_B^{-1/2}\,(q_\lambda\,\rho_\lambda)\,\rho_B^{-1/2}}_{\equiv\;G_\lambda}.
+$$
+Since $\sum_{a} p(a|x,\lambda)$ , we have:
+$$
+\rho_B := \sum_a p(a|x)\,\sigma_{a|x} = \sum_\lambda \sum_a p(a|x,\lambda) q_\lambda \rho_\lambda = \sum_\lambda q_\lambda \rho_\lambda.
+$$
+Thus, each $G_\lambda \geq 0$ and $\sum_\lambda G_\lambda = \rho_B^{-1/2}\,\rho_B\,\rho_B^{-1/2} = \mathbb{I}$, so $\{G_\lambda\}$ is a valid mother POVM. Hence $\{B_{a|x}\}$ is JM.
+
+**($\Leftarrow$)** Suppose $\{B_{a|x}\}$ is JM: $B_{a|x} = \sum_\lambda p(a|x,\lambda)\,G_\lambda$. Conjugating by $\rho_B^{1/2}$:
+$$
+p(a|x)\,\sigma_{a|x} = \rho_B^{1/2}\,B_{a|x}\,\rho_B^{1/2} = \sum_\lambda p(a|x,\lambda)\;\underbrace{\rho_B^{1/2}\,G_\lambda\,\rho_B^{1/2}}_{\equiv\;q_\lambda\,\rho_\lambda}.
+$$
+Each $q_\lambda\,\rho_\lambda \geq 0$ and $\sum_\lambda q_\lambda\,\rho_\lambda = \rho_B$, so this is a valid LHS model. $\blacksquare$
+:::
