@@ -6,6 +6,7 @@ lang: en
 title: "Grokking as a Phase Transition in Neural Networks"
 subtitle: "A Survey through Statistical Physics and Mean Field Theory"
 bibliography: refs.bib
+draft: true
 ---
 
 **Abstract.** Grokking---the phenomenon whereby a neural network achieves perfect training accuracy long before exhibiting any generalization---poses a striking challenge to conventional statistical learning theory [@power2022grokking]. This survey examines grokking through the lens of statistical physics and mean field theory. We argue that grokking is not an optimization anomaly but a bona fide phase transition: the system transitions from a lazy regime, governed by the frozen Neural Tangent Kernel (NTK), to a rich regime characterized by active feature learning [@kumar2025grokking; @rubin2024grokking]. We review the effective theory of Liu et al. [@liu2022grokking], the first-order phase transition framework of Rubin et al. [@rubin2024grokking], physical order parameters that diagnose the transition (representation quality index, effective rank, kernel alignment), the dynamical mean field theory (DMFT) description, finite-width perturbative corrections via Feynman diagrams [@guillen2025finite], and the role of modern optimizers such as Muon in accelerating the transition [@jordan2024muon].
@@ -18,8 +19,7 @@ Understanding grokking requires first establishing the two fundamental learning 
 
 ### The Neural Tangent Kernel
 
-::::{#def-ntk .callout-note icon="false"}
-## Definition (Neural Tangent Kernel)
+
 For a neural network $f(x;\theta)$ with parameters $\theta \in \mathbb{R}^P$, the **Neural Tangent Kernel** (NTK) is the $n \times n$ kernel matrix defined on the training set $\{x_i\}_{i=1}^n$ by
 $$
 K_t(x, x') = \left\langle \nabla_\theta f(x;\theta_t),\; \nabla_\theta f(x';\theta_t) \right\rangle = \sum_{p=1}^{P} \frac{\partial f(x;\theta_t)}{\partial \theta_p} \frac{\partial f(x';\theta_t)}{\partial \theta_p}.
@@ -28,13 +28,9 @@ Under gradient flow $\dot\theta = -\nabla_\theta \mathcal{L}$, the network outpu
 $$
 \frac{d}{dt} f(x;\theta_t) = -\sum_{x'} K_t(x,x') \nabla_f \mathcal{L}(f(x';\theta_t), y').
 $$ {#eq-ntk-dynamics}
-In the infinite-width limit with appropriate parameterization, $K_t$ converges to a deterministic kernel $K_\infty$ that remains constant throughout training [@jacot2018neural].
-::::
+In the infinite-width limit with appropriate parameterization, $K_t$ converges to a deterministic kernel $K_\infty$ that remains constant throughout training [@jacot2018neural], as proved in [here](/theory/Posts/review_grok/NTK.qmd)
 
-### Lazy Regime
-
-::::{#def-lazy .callout-note icon="false"}
-## Definition (Lazy Regime)
+#### Lazy Regime
 A network operates in the **lazy regime** when the parameters remain within an infinitesimal neighborhood of their initialization throughout training:
 $$
 \|\theta_t - \theta_0\| = O(N^{-1/2}),
@@ -44,14 +40,14 @@ $$
 f(x;\theta_t) \approx f(x;\theta_0) + \nabla_\theta f(x;\theta_0)^\top (\theta_t - \theta_0).
 $$ {#eq-linearization}
 The NTK is frozen at its initial value $K_0$, and training reduces to kernel regression in the reproducing kernel Hilbert space (RKHS) of $K_0$ [@jacot2018neural]. No representation learning occurs; the network uses its random initialization features as a fixed basis.
-::::
+
 
 In the lazy regime, the over-parameterized network can memorize any training set by virtue of the kernel's positive-definiteness, but it cannot discover the structural regularities of the target function. This is the regime of "rote memorization."
 
 ### Rich (Feature Learning) Regime
 
 ::::{#def-rich .callout-note icon="false"}
-## Definition (Rich Regime)
+## (Rich Regime)
 A network operates in the **rich regime** (or feature learning regime) when its parameters undergo $O(1)$ displacement from initialization:
 $$
 \|\theta_t - \theta_0\| = O(1).
@@ -64,7 +60,7 @@ The rich regime is accessed through specific parameterizations. The most princip
 ### The Initialization Scale Parameter $\alpha$
 
 ::::{#def-alpha .callout-note icon="false"}
-## Definition (Initialization Scale $\alpha$)
+## (Initialization Scale $\alpha$)
 Consider a two-layer network with output
 $$
 f(x;\theta) = \frac{1}{N^\alpha} \sum_{j=1}^{N} a_j \, \sigma(w_j \cdot x),
@@ -80,7 +76,7 @@ Intermediate values of $\alpha$ interpolate continuously between these extremes 
 The parameter $\alpha$ serves as a control knob that tunes the system between the two universality classes. As we shall see, grokking occurs precisely at intermediate values of $\alpha$ where the network begins in a lazy-like state but is eventually driven into the rich regime by regularization.
 
 ::::{#lem-ntk-lazy .callout-note icon="false"}
-## Lemma (NTK--Lazy Equivalence)
+## (NTK--Lazy Equivalence)
 In the limit $N \to \infty$ with $\alpha = 1/2$, gradient flow on the squared loss is equivalent to kernel regression with the deterministic NTK at initialization:
 $$
 f_t(x) = f_0(x) - K_\infty(x, X)(K_\infty(X,X))^{-1}\bigl(e^{-K_\infty(X,X) \eta t} - I\bigr) \bigl(f_0(X) - Y\bigr),

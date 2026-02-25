@@ -7,16 +7,42 @@ title: OTOC and its simulation
 bibliography: refs.bib
 jupyter: python3
 code-fold: true
+draft: true
 ---
 
-Consider a randomized unitary circuit $U$ on $n$ qubits with $D = 2^n$. Let $B$ be a **butterfly operator** — a traceless Pauli operator ($\mathrm{tr}(B) = 0$, $B^2 = I$) — and let $M$ be a **measurement operator** — a Pauli-$Z$ type operator satisfying $M\ket{0^n} = \ket{0^n}$ and $\mathrm{tr}(M) = 0$ (e.g., $M = Z^{\otimes n}$ or any product of $Z$'s and $I$'s excluding the identity).
+# Summarize
 
-Define the **time-ordered correlator operator** $C = U^\dagger B U M$. Since $M\ket{0^n} = \ket{0^n}$, the correlator expectation value $\langle 0^n|C|0^n\rangle = \langle 0^n|U^\dagger B U|0^n\rangle$ reduces to a single Pauli expectation.
+
+
+# Basic concepts
+## Time-ordered correlation
+Consider a randomized unitary circuit $U$ on $n$ qubits with $D = 2^n$. Let $M$ being a Pauli operator satisfying $\mathrm{tr}(M) = 0$. Let $B$ be another traceless Pauli operator, which we called the betterfly operator, and its evolution under $U$ is $B(t) = U^\dagger B U$. In the real experiment, for simplicity, $B$ and $M$ both only support on constant number of qubit @abanin2025constructive. 
+
+:::{#def-time-ordered-correlator .callout-note icon="false"}
+## (Time-ordered correlator)
+Define the **time-ordered correlator operator** $C = U^\dagger B U M$. Then the inifinite temperature time-ordered correlation and zero-temperature time-ordered correlation (with respect to $\ket{0^n}$) are respectively:
+$$
+2^{-n}\mathrm{tr}(C) =  2^{-n}\sum_{\mathbf{s}}\langle \mathbf{s}|C|\mathbf{s}\rangle    \quad \text{and} \quad   \langle 0^n|C|0^n\rangle.
+$$
+:::
+
+To estimate time-ordered correlation, we shall set up initial state $\ket{\mathbf{s}}$ as the eigenbasis of $M$ and then implement the circuit $U$, end with a measurement of observable $M$.
+
+For example, if $M = Z^{\otimes n}$, then the initial state can be chosen as $\ket{0^n}$. 
+$\langle 0^n|C|0^n\rangle $ then can be estimated by preparing $\ket{0^n}$ and evolve under circuit $U^\dagger Z^{\otimes n} U$, finnally calculate the probability that gives $\mathbf{s}$.
+
+For infinite temperature case, since $M\ket{\mathbf{s}} = (-1)^{|\mathbf{s}|}\ket{\mathbf{s}}$, the correlation then can be calculated as:
+$$
+2^{-n}\sum_{\mathbf{s}}\langle \mathbf{s}|C|\mathbf{s}\rangle =2^{-n}\sum_{\mathbf{s}}(-1)^{|\mathbf{s}|} \langle \mathbf{s}|U^\dagger B U|\mathbf{s}\rangle.
+$$
+Thus on a quantum computer, time-ordered correlation can be realized by sampling $\mathbf{s}$ from $2^n$ choices and evolve under circuit $U^\dagger B U$, finnally calculate the probability that gives $\mathbf{s}$.
+ 
+Then what's the expected value of correlation given $U$?
 
 :::{#lem-correlator_avg .callout-important icon="false"}
 ## (Correlator Average)
 If $U$ is sampled from a 2-design, then
-given $B$ a traceless Pauli operator and $M$ a Pauli-$Z$ operator, the time-ordered correlator average $\langle 0^n|U^\dagger B U M|0^n\rangle$ is $0$, with variance $1/(2^n + 1)$.
+given $B$ a traceless Pauli operator and $M$ a Pauli-$Z$ operator, the time-ordered correlator average $\langle 0^n|U^\dagger B U M|0^n\rangle$ is $0$, with variance $1/(2^n + 1)$. 
 :::
 
 ::: {.callout-note collapse="true"}
@@ -25,7 +51,7 @@ The integral of a projector over the Haar measure yields the maximally mixed sta
 $$
 \mathbb{E}[x] = \mathrm{tr}\left(O \frac{I}{D}\right) = \frac{\mathrm{tr}(O)}{D}
 $$
-Because Pauli operators (like the single-qubit observable $A$, or the butterfly operator $B$ mentioned in the text) are traceless, $\Tr(O) = 0$. Therefore, the mean expectation value is strictly 0. To compute the variance, we need to compute the second moment of the correlator average.
+Because Pauli operators (like the single-qubit observable $A$, or the butterfly operator $B$ mentioned in the text) are traceless, $\mathrm{tr}(O) = 0$. Therefore, the mean expectation value is strictly 0. To compute the variance, we need to compute the second moment of the correlator average.
 $$
 \begin{align*}
 \mathbb{E}[x^2] &= \mathbb{E}_{U} \mathrm{tr} \left(B^{\otimes 2} U^{\otimes 2} |0^{2n}\rangle \! \langle 0^{2n}|U^{\dagger, \otimes 2}\right)\\
@@ -35,16 +61,30 @@ $$
 
 :::
 
-This means that "guessing zero" is a good classical strategy for the time-ordered correlator. To probe genuine scrambling, we need the **out-of-time-order correlator** (OTOC). Setting $\tilde{A} = U^\dagger B U$, define:
+This means that "guessing zero" is a good classical simulation strategy for the time-ordered correlator if $U$ forms a $2$-design.
+
+## OTOCs
+
+To probe genuine scrambling, we need the **out-of-time-order correlator** (OTOC). 
+
+:::{#def-otoc .callout-note icon="false"}
+## (Out-of-time-order correlator)
+Given definition $B(t) = U^\dagger B U, C = B(t)M$, the zero-temperator OTOCs with respect to $\ket{0^n}$ are respectively:
 $$
-\mathrm{OTOC} := \langle 0^n | C^2 | 0^n \rangle = \langle 0^n | \tilde{A} M \tilde{A} M | 0^n \rangle
+\begin{align*}
+&\mathrm{OTOC}^{1} := \langle 0^n | C^2 | 0^n \rangle = \langle 0^n | U^\dagger B U M U^\dagger B U M | 0^n \rangle\\
+&\mathrm{OTOC}^{2} := \langle 0^n | C^4 | 0^n \rangle = \langle 0^n | U^\dagger B U M U^\dagger B U M U^\dagger B U M U^\dagger B U M | 0^n \rangle\\
+&\mathrm{OTOC}^{k} :=\langle 0^n | C^{2k} | 0^n \rangle = \cdots
+\end{align*}
 $$
-This quantity probes the non-commutativity of $\tilde{A}$ and $M$: when they commute (shallow circuit), OTOC $= 1$; when $U$ is deeply scrambling, the OTOC decays toward $0$ [@maldacena2016bound; @roberts2017chaos]. Since $M\ket{0^n} = \ket{0^n}$, the trailing $M$ acts trivially and $\mathrm{OTOC} = \langle 0^n|\tilde{A} M \tilde{A}|0^n\rangle$.
+:::
+
+Usually, it is set that $M\ket{0^n} = \ket{0^n}$, the trailing $M$ acts trivially and $\mathrm{OTOC}^{1} = \langle 0^n|U^\dagger B U M U^\dagger B U M|0^n\rangle$ and can be estimated on qunautm computer through preparing initial state $\ket{0^n}$ and evolve under circuit $U^\dagger B U M U^\dagger B U M$, finnally calculate the probability that gives $0^n$.
 
 :::{#lem-otoc .callout-important icon="false"}
-## (OTOC Average)
+## (OTOC Average)[@maldacena2016bound; @roberts2017chaos]
 
-1. If $U$ is shallow such that $[\tilde{A}, M] = 0$, then $\langle 0^n|C^2|0^n\rangle = 1$.
+1. If $U$ is shallow such that $[B(t), M] = 0$, then $\langle 0^n|C^2|0^n\rangle = 1$.
 2. If $U$ is drawn from a **unitary 2-design**, then $\mathbb{E}[\langle 0^n|C^2|0^n\rangle] = -\dfrac{1}{D^2 - 1}$.
 3. Computing $\mathrm{Var}[\langle 0^n|C^2|0^n\rangle]$ requires a **4-design** (since $U$ appears at degree 4 in $\mathbb{E}[x^2]$).
 :::
@@ -95,18 +135,7 @@ where we used $\mathrm{tr}_{12}(\mathrm{SWAP}\cdot(A \otimes B)) = \mathrm{tr}(A
 
 :::
 
-:::{.callout-note icon="false"}
-## Design order comparison
-
-| Quantity | Correlator $\langle 0^n|U^\dagger BU|0^n\rangle$ | OTOC $\langle 0^n|\tilde{A}M\tilde{A}|0^n\rangle$ |
-|----------|-----------|------|
-| $\mathbb{E}[x]$ (mean) | 1-design | **2-design** |
-| $\mathbb{E}[x^2]$ (variance) | 2-design | **4-design** |
-
-The correlator uses $U$ at degree 1; the OTOC at degree 2. Computing $\mathbb{E}[x^2]$ doubles the degree, so the OTOC variance requires Weingarten calculus over $S_4$.
-:::
-
-### Numerical verification
+#### Numerical verification
 
 Sample Haar-random unitaries and compare the empirical OTOC mean to $-1/(D^2-1)$.
 
@@ -167,3 +196,17 @@ for idx, n_qubits in enumerate([1, 2]):
 plt.tight_layout()
 plt.show()
 ```
+
+# CBE algorithm for OTOC
+
+In the experiment, 
+
+We already see that the OTOC is defined recursivly. For example, $\mathrm{OTOC}^{2} = \langle 0^n | U^\dagger B U M U^\dagger B U M U^\dagger B U M U^\dagger B U | 0^n \rangle$ consider the conjugated operation of $U^{(2)}:= U^\dagger B U M U^\dagger B U$ on $M$. To get $U^{(2)}$, we have to calculate the conjugate operation of $U^{(1)}:= U^\dagger B U$ on $M$. At last, to get  $U^{(1)}$, this is reduced to conjugate operation of $U$ on $B$.
+
+In the current GSF framework, we manually find gate's dual circuit. For example, by replacing each gate in $U$ to its dual to get the whole dual circuit $\mathbf{U}$. 
+However, to take advantage of the recursive structure of OTOC, we note that the $U^{(k)}$ is encoded in quantum state.
+That is, a result of the dual circuit of conjugate operation $U^{(k-1)} M U^{(k-1),\dagger}$, which is a $2n$-qubit quantum state under the correspondence $\{I,X,Y,Z\} \to \{\ket{00},\ket{10},\ket{11},\ket{01}\}$. 
+
+Based on this analysis, a key question is, if $U$ is given as a encoded quantum state $\ket{U}$, how to generate the dual circuit of $U^{\dagger} M U$ without first measuring the encoded state $\ket{U}$? To be specific, we hope to transform the $OTOC^{2}$ into the following recursive ciruit, where $G$ is the gadget that accept input $\ket{U}, \ket{M}$ and output $\ket{U^\dagger M U}$ and $ \ket{0}$ through incomputation.
+
+![Use dual circuit to generate OTOC](dual_gadget.png)

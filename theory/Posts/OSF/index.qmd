@@ -504,7 +504,7 @@ Let $t$ denote the number of T gates in the original circuit (equivalently, the 
 
 **Step 1 (Recompile $\mathbf{CH}$)**: Decompose each $\mathbf{CH}_{ab}$ gate into incoherent operations $\mathrm{CCZ}$, at the cost of introducing 3 ancilla qubits per $\mathbf{CH}$ gate.
 
-![Diagram of the decomposition of $\mathbf{CH}_{ab}$ gate into incoherent operations](Diagd.png){#fig-Diagd width=40% fig-align="center",size=200%}
+![Diagram of the decomposition of $\mathbf{CH}_{ab}$ gate into incoherent operations](Diagd.png)
 
 **Step 2 (Commute $\mathbf{CNOT}$ gates)**: Move all $\mathbf{CNOT}$ gates to the beginning of the circuit. By the generalized Clifford hierarchy, diagonal phase gates ($\mathbf{CZ}$, $\mathbf{CCZ}$) can be commuted past $\mathbf{CNOT}$ gates with phase gate corrections.
 
