@@ -1,0 +1,161 @@
+---
+categories:
+- Readings
+date: '2026-02-25'
+lang: en
+title: "Combining Simulation Methods via Graph Theory"
+bibliography: refs.bib
+---
+
+**Abstract.** We reformulate the Clifford+T simulation problem as computing overlaps between product states and graph states. By representing the stabilizer subspace projector in **CDGS** form, the simulation cost reduces to the complexity of evaluating $\langle G | \text{product state}\rangle$. We then discuss three graph-theoretic approaches to exploit structure in $G$: (i) Tree Tensor Networks governed by rank-width, (ii) matchgate simulation governed by planarity, and (iii) noisy stabilizer formalism (NSF) via percolation. This post builds on [CH and Affine Simulators](CH_affine.qmd), [Graph Simulator](graph_sim.qmd), and [Clifford+T Decomposition](clifford_T.qmd).
+
+---
+
+## 1. Graph-State Formulation of Clifford+T Simulation
+
+All methods in [Clifford+T Decomposition](clifford_T.qmd) depend on decomposing $\ket{T}^{\otimes t}$ (or other non-stabilizer states) into exponentially many stabilizer states, reducing the problem to computing stabilizer inner products. In this section, we propose protocols that wisely choose to (i) stabilizer-decompose $\ket{T}^{\otimes t}$ and use a stabilizer-based simulator, or (ii) keep the inner product form and use TN methods and matchgate simulation.
+
+Using the gadget-based method for a Clifford+T circuit, the marginal distribution writes:
+$$
+\begin{aligned}
+\mathrm{Pr}(x_1, \ldots, x_l) &= 2^t \mathrm{tr}\left[\prod_{j=1}^l \frac{\mathbb{I}_j + (-1)^{x_j} Z_j}{2} \otimes \mathbb{I}^{\otimes(n-l)} \otimes \prod_{j=n+1}^{n+t} \frac{\mathbb{I}_j + X_j}{2}\, C\ket{0^n H^t}\!\bra{0^n H^t}C^\dagger\right] \\
+&= 2^t \mathrm{tr}\left[\Pi\, \ket{0^n H^t}\!\bra{0^n H^t}\right] = 2^t \mathrm{tr}\left[\ket{G}\!\bra{G} \cdot \ket{0^n H^t}\!\bra{0^n H^t} \otimes \mathbb{I}^{\otimes(n-l)}\right],
+\end{aligned}
+$$
+where $\Pi$ is a projector on the stabilizer subspace with incomplete tableaus $\{C^\dagger \cdot Z^{\mathbf{x}} \otimes \mathbb{I}^{\otimes(n-l)} \otimes X^{\otimes t} C\}_{\mathbf{x} \in \mathbb{F}_2^l}$. After representing this subspace projector in **CDGS** form $\ket{G}$ on a $(2n+t-l)$-qubit space, we reduce the problem to computing the inner product between a direct product state (depending on inputs) and a (reduced) graph state $\ket{G}$ (depending on the circuit).
+
+---
+
+## 2. Combining TN by Tree-Width {#sec-TN}
+
+The Tensor Network (TN) approach exploits the topological structure of the graph $G$. According to Van den Nest *et al.* [@van2007classical], the efficiency of simulating operations on a graph state $\ket{G}$ via Tree Tensor Networks (TTN) is governed by the **Schmidt-rank width** ($\chi_{\mathrm{wd}}$), which for graph states is equivalent to the **rank-width** ($\mathrm{rwd}$) of the underlying graph.
+
+::: {#def-tree-bipartition .callout-note icon="false"}
+## Definition (Tree Bipartition)
+For a tree graph $T = (V, E)$, deleting any single edge realizes a partition of the $n$ vertices. Given a tree graph $T$ specified on $n$ points $S$, let $(A_T^e, B_T^e)$ denote the two sets of vertices obtained by removing edge $e$ from the tree. The tree bipartition with respect to $T$ is the set $\{(A_T^e, B_T^e)\}_{e \in E}$.
+:::
+
+::: {#def-entanglement-width .callout-note icon="false"}
+## Definition (Entanglement Width)
+Given an $n$-qubit state $\ket{\psi}$, perform a tree bipartition on its vertices under a tree $T$. For each element in the tree bipartition, calculate the entanglement entropy under this bipartition, and take the maximum value. Then minimize over all tree graphs:
+$$
+E_{\mathrm{wd}}(|\psi\rangle) := \min_T \max_{e \in T} E_{A_T^e, B_T^e}(|\psi\rangle).
+$$
+By replacing entanglement entropy with Schmidt-rank, we obtain the **Schmidt-rank width**:
+$$
+\chi_{\mathrm{wd}}(|\psi\rangle) := \min_T \max_{e \in T} \log_2 \chi_{A_T^e, B_T^e}(|\psi\rangle).
+$$
+:::
+
+If the entanglement structure is a tree graph $T'$, selecting $T = T'$ implies that any tree bipartition results in two unentangled parts. For general quantum states, the tree bipartition may be restricted to subcubic tree structures:
+
+::: {#lem-subcubic .callout-important icon="false"}
+## Lemma (Subcubic TTN Equivalence)
+Any $n$-party pure quantum state that can be represented by a Tree Tensor Network (TTN) with $\mathrm{poly}(n)$ parameters can also be represented by a subcubic TTN with $\mathrm{poly}(n)$ parameters.
+:::
+
+::: {#thm-ttn-dim .callout-important icon="false"}
+## Theorem (TTN Dimension and Schmidt Rank)
+Let $\ket{\psi}$ be an $n$-party pure quantum state, and let $T$ be a subcubic tree with $n$ leaves identified with the $n$ parties. Then there exists a TTN description of $\ket{\psi}$ with underlying tree $T$, where the dimension $D$ satisfies:
+$$
+\log_2 D = \max_{e \in T} \log_2 \chi_{A_T^e, B_T^e}(\ket{\psi}),
+$$
+where $\chi_{A_T^e, B_T^e}(\ket{\psi})$ is the Schmidt rank of $\ket{\psi}$ with respect to the bipartition $(A_T^e, B_T^e)$.
+:::
+
+Specifically for graph states, the entanglement width is related to the rank-width of the graph:
+
+::: {#def-rank-width .callout-note icon="false"}
+## Definition (Rank Width of Graph $\mathrm{rwd}(G)$)
+Given the adjacency matrix $\Gamma(G)$ of an undirected graph $G$, where $\Gamma_{ij} = 1$ iff $(i,j)$ is an edge. For any bipartition $(A,B)$ of the vertices, let $\Gamma(A,B)$ be the submatrix with entries $\Gamma(A,B)_{ab} := \Gamma_{ab}$ for $a \in A, b \in B$. The rank width is:
+$$
+\mathrm{rwd}(G) := \min_T \max_{e \in T} \mathrm{rank}_{\mathbb{F}_2} \Gamma(A_T^e, B_T^e),
+$$
+where $(A_T^e, B_T^e)$ is the tree bipartition induced by removing edge $e$ from subcubic tree $T$.
+:::
+
+The key equivalence for graph states:
+$$
+\chi_{\mathrm{wd}}(\ket{G}) = E_{\mathrm{wd}}(\ket{G}) = \mathrm{rwd}(G).
+$$
+
+::: {#lem-rank-equivalence .callout-important icon="false"}
+## Lemma (Rank-Entanglement Equivalence for Graph States)
+For any graph state $\ket{G}$, the rank of the submatrix $\Gamma(A,B)$ over $\mathbb{F}_2$ equals both the Schmidt rank and entanglement entropy:
+$$
+\mathrm{rank}_{\mathbb{F}_2} \Gamma(A,B) = \log_2 \chi_{A,B}(\ket{G}) = E_{A,B}(\ket{G}).
+$$
+:::
+
+---
+
+## 3. Combining Matchgate by Planarity {#sec-matchgate}
+
+Matchgate circuits provide another "island of tractability" for classical simulation. A **matchgate** is a two-qubit unitary $G(A,B)$ that acts as independent $SU(2)$ rotations in the even-parity and odd-parity subspaces, subject to $\det(A) = \det(B)$ [@valiant2002quantum].
+
+The key results connecting matchgates to the graph-state framework are:
+
+- **Valiant's Theorem** [@valiant2002quantum]: Output amplitudes of nearest-neighbor matchgate circuits can be expressed as the **Pfaffian** of an antisymmetric matrix, computable in $\mathrm{poly}(n)$ time (via the FKT algorithm for planar perfect matchings).
+
+- **Free-fermionic equivalence** [@jozsa2008matchgates]: Under the Jordan-Wigner transformation, nearest-neighbor matchgates correspond to quadratic (free) fermionic Hamiltonians. The **planarity/nearest-neighbor constraint** is essential because the Jordan-Wigner string is local only for adjacent sites. Relaxing to even next-nearest-neighbor matchgates yields universality.
+
+- **Generalized inputs/measurements** [@brod2016efficient]: Matchgate simulability extends to arbitrary product-state inputs, measurements on arbitrarily many output qubits, and adaptive measurements, while maintaining efficient strong simulation.
+
+When the graph state $\ket{G}$ arising from the Clifford+T compilation has a planar structure (or can be embedded in a planar graph with bounded overhead), the overlap $\langle G | \text{product state} \rangle$ can be computed efficiently via matchgate/Pfaffian methods instead of stabilizer rank decomposition.
+
+:::{.callout-warning icon="false"}
+## TODO
+Detailed analysis of planarity conditions for the graph $G$ arising from specific circuit families. Connect to rank-width bounds: planar graphs have $\mathrm{rwd}(G) \leq 3$, so TTN methods also apply.
+:::
+
+---
+
+## 4. Application: Combining NSF by Percolation {#sec-NSF}
+
+Consider a depth-$d$ noisy quantum circuit of $n$ qubits. Here $\mathcal{N}_i$ is Pauli noise, and $\mathcal{C}_i, \mathcal{T}_i$ are Clifford layers and T-gate layers. The sampling amplitude is:
+$$
+p_C(+^{\otimes n}) = \mathrm{tr}\left(\ket{+}\!\bra{+}^{\otimes n} \cdot \mathcal{N}_0 \circ (\mathcal{C}_1 \circ \mathcal{T}_1 \circ \mathcal{N}_1) \circ \cdots \circ (\mathcal{C}_d \circ \mathcal{T}_d \circ \mathcal{N}_d)\left[\ket{0}\!\bra{0}^{\otimes n}\right]\right).
+$$
+
+<!-- TODO: Add NISQ_circuit.png diagram when available -->
+
+By T-gadget replacement, all T-gate layers can be replaced by magic state inputs $\ket{A} = e^{-i\pi/8} H\ket{T} = \cos(\pi/8)\ket{0} + \sin(\pi/8)\ket{1}$, leaving only Clifford gates and single-qubit noise channels:
+$$
+p_C(+^{\otimes n}) = 2^t \cdot \mathrm{tr}\left(\ket{+}\!\bra{+}^{\otimes(n+t)} \cdot \mathcal{N}_0 \circ (\mathcal{C}_1 \circ \mathcal{CZ}_1 \circ \mathcal{N}_1) \circ \cdots \circ (\mathcal{C}_d \circ \mathcal{CZ}_d \circ \mathcal{N}_d)\left[\ket{0}\!\bra{0}^{\otimes n} \otimes \ket{A}\!\bra{A}^{\otimes t}\right]\right),
+$$
+where $t$ is the total number of $T$ gates and $\mathcal{CZ}_i$ are CZ layers introduced by gadget replacement.
+
+### 4.1 Heisenberg Picture
+
+Under the Heisenberg picture, the measurement basis is moved forward through Clifford gates and incoherent noise, generating operator $\hat{O}$:
+$$
+\begin{aligned}
+p_C(+^{\otimes n}) &= 2^t \cdot \mathrm{tr}\left(\ket{0A}\!\bra{0A}^{\otimes(n+t)} \cdot (\mathcal{N}_1^\dagger \circ \mathcal{CZ}_1^\dagger \circ \mathcal{C}_1^\dagger) \circ \cdots \circ (\mathcal{N}_d^\dagger \circ \mathcal{CZ}_d^\dagger \circ \mathcal{C}_d^\dagger) \circ \mathcal{N}_0^\dagger\left[\ket{+}\!\bra{+}^{\otimes(n+t)}\right]\right) \\
+&:= 2^t \cdot \mathrm{tr}\left(\ket{0A}\!\bra{0A}^{\otimes(n+t)} \cdot \hat{O}\right).
+\end{aligned}
+$$
+
+We define $\hat{O}' = 2^n \mathrm{tr}_{\{1,\ldots,n\}}(\hat{O}\, \ket{0}\!\bra{0}^{\otimes n})$ and $p_C(+^{\otimes n}) = 2^{t-n} \mathrm{tr}(\hat{O}'\, \ket{A}\!\bra{A}^{\otimes t})$. The operator $\hat{O}'$ can be simulated through sampling different graph states; the properties of this graph ensemble reflect the hardness of the quantum circuit.
+
+### 4.2 Noiseless Case
+
+For noiseless Clifford+T circuits, $\mathcal{CZ}^\dagger, \mathcal{C}^\dagger$ are valid Clifford operations. Thus $\hat{O}'$ is a valid stabilizer state $\ket{S}\!\bra{S}$. By the Gottesman-Knill theorem, $\hat{O}'$ can be efficiently simulated by tracing $\ket{S}$ over $n+t$ qubits:
+$$
+p_C(+^{\otimes n}) = 2^t \left|\langle S | 0A\rangle^{\otimes(n+t)}\right|^2 = 2^{t-n} \left|\langle S' | A\rangle^{\otimes t}\right|^2 = 2^{t-n} \left|\langle G | L^\dagger | A\rangle^{\otimes t}\right|^2,
+$$
+where $\ket{S'}$ is a stabilizer state on $t$ qubits generated by measuring the first $n$ qubits of $\ket{S}$ in the $\ket{0}$ basis. To transform $\ket{S'}$ into graph state $\ket{G}$:
+
+::: {#lem-stab-to-graph .callout-important icon="false"}
+## Lemma (Stabilizer to Graph State)
+Given an $n$-qubit stabilizer state $\ket{S'}$, a local Clifford operation $L$ can be found in $\mathrm{poly}(n)$ time such that $\ket{S'} = L\ket{G}$, where $\ket{G}$ is a graph state with graph $G = (V, E)$ [@van2004graphical].
+:::
+
+Now we compile the amplitude $p_C(+^{\otimes n})$ into a $t$-vertex graph and corresponding single-qubit measurements on basis $L_i^\dagger \ket{A}$. For the same circuit, other amplitudes give the same graph $G$ but different single-qubit measurements $L_i^{'\dagger}\ket{A}$.
+
+For arbitrary graph states, it is believed hard to classically approximate the overlap with single-qubit magic states within $O(2^{-t})$ error. However, it is possible to estimate this value within constant error, because $\ket{S}$ and $\ket{0A}^{\otimes(n+t)}$ are both computationally tractable states [@nest2009simulating].
+
+For certain families of stabilizer states, efficient classical descriptions exist. Previous research on measurement-based quantum computation (MQC) shows that for graph states with $r = O(\log n)$ rank-width, one can efficiently find a tree tensor network representation with bounded tensor dimension $D = O(2^r) = \mathrm{poly}(n)$ and calculate the overlap accurately [@van2007classical]. Thus, it is valuable to test the rank-width of graph $G$ to assess the hardness of estimating the probability amplitude.
+
+---
+
+## References

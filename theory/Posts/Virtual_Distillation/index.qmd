@@ -257,22 +257,24 @@ It is thus necessary to proposed scientific esperiments that can be benifited fr
 I believe the most promising application includes:
 
 1. Estimates gradient on all kinds of QAOA algorithms @wang2024can.
-2. Increase the coherence time for simulation of Lattice gauge theory such that the thermalization of gauge theories can be studied.
+2. Increase the coherence time for simulation of Lattice gauge theory such that the thermalization of gauge theories can be studied @zhou2022thermalization @wang2023interrelated.
 3. Quantum many-body scars @chen2022error
+4. Strongly correlated quantum chemistry via Multi-Reference Error Mitigation (MREM) @zou2025multireference, which generalizes virtual distillation to multi-reference electronic states. Standard VD assumes a dominant principal eigenstate; MREM extends this to molecules where strong correlation demands a multi-determinant reference (e.g., N₂, H₂O, F₂) @lolur2023reference.
+5. Strongly correlated condensed matter via the Fermi-Hubbard model — purification-based error mitigation enables observation of ground-state phenomena (metal-insulator transition, Friedel oscillations, antiferromagnetic order) on near-term hardware @stanisic2022observing @o2023purification.
 
-The following table synthesizes the critical parameters of the examined experimental realizations of Virtual Distillation and its immediate variants across the industry.
 
+The following list the **examined experimental realizations** of Virtual Distillation.
 
 - @o2023purification prepared the ground state of Richardson-Gaudin (RG) model on hardware (measured on 4, 6, 8, 10 qubits) and successfully extracted the superconducting order parameter. They also successfully simulated the energy change during the ring opening reaction of cyclobutene (Cyclobutene ring opening) on 6 and 10 qubits.
+- @huo2022dual implemented Dual-State Purification (DSP), a closely related purification-based method using forward-backward circuit evolution (no additional qubits required), on IBM Falcon 27-qubit superconducting processors. They demonstrated 1–2 orders of magnitude error reduction for VQE circuits preparing the HCl molecule ground state.
 
 
 Since 2-replica operation is not cheap in other platform (1/2 discount of qubit number and topological restricitions), many strategy use local shadow to estimate $\mathrm{tr}(O \rho^2)$ instead of Bell measurement/ CSWAP operations.
 
+- @zhang2024experimental: Photonic Quantum Network (SPDC \+ Linear Optics) | Coherence and Bipartite Entanglement Distillation, High-Fidelity Teleportation | Reliance on probabilistic entangling operations; exponentially decaying post-selection yield for multi-photon events. 
+- @seif2023shadow: Trapped-Ion| 5-qubit GHZ state generation, verification of high-weight stabilizers | Exponential classical sample complexity for shadow reconstruction; prolonged measurement times.
+- @huo2022dual: IBM Superconducting (27-qubit Falcon) | VQE for HCl molecule ground state | Temporal forward-backward evolution acts as an implicit second copy, eliminating multi-qubit register overhead at the cost of doubled circuit depth. Requires no classical post-processing or CSWAP gates.
 
-| Research Group & Publication Year | Quantum Hardware Platform | Specific Physics Problem / Observable Targeted | Primary Experimental Bottleneck / Operational Overhead |
-| :---- | :---- | :---- | :---- |
-|  @zhang2024experimental | Photonic Quantum Network (SPDC \+ Linear Optics) | Coherence and Bipartite Entanglement Distillation, High-Fidelity Teleportation | Reliance on probabilistic entangling operations; exponentially decaying post-selection yield for multi-photon events. |
-|  @seif2023shadow | Trapped-Ion| 5-qubit GHZ state generation, verification of high-weight stabilizers | Exponential classical sample complexity for shadow reconstruction; prolonged measurement times. |
 ## References
 
 ::: {#refs}
