@@ -86,7 +86,7 @@ H_{\mathbb{Z}_2} = -h\sum_{\ell} \tau^x_\ell - K\sum_\square \prod_{\ell \in \sq
 $$ {#eq-z2}
 
 where $\tau_\ell$ are gauge spins on links, $\phi_i$ are matter fields, and Gauss's law $G_v = (-1)^{n_v}\prod_{\ell \ni v}\tau^x_\ell = 1$ holds at each vertex $v$.
-The ratio $h/K$ tunes between the confining ($h \ll K$) and Higgs/deconfining ($h \gg K$) regimes.
+The ratio $h/K$ tunes between the deconfined phase ($h \ll K$, plaquette-ordered, $\mathbb{Z}_2$ topological order) and the confined/Higgs phase ($h \gg K$, link-disordered).
 
 Both proposals remain at the theory stage; experimental realization requires Floquet engineering of bond-dependent interactions on existing tweezer platforms.
 
@@ -168,11 +168,13 @@ The critical length $L_c = 2M/\sigma$ is observable as a crossover from coherent
 
 
 :::{#thm-z2-confinement .callout-important icon="false"}
-### $\mathbb{Z}_2$ confinement–Higgs transition
+### $\mathbb{Z}_2$ deconfinement–Higgs transition
 
-In the $\mathbb{Z}_2$ gauge theory (@eq-z2), the ratio $h/K$ controls a confinement–Higgs transition.
-For $h \ll K$, matter excitations are confined: isolated charges cost infinite energy and appear only in bound pairs connected by $\mathbb{Z}_2$ electric strings.
-For $h \gg K$, strings proliferate and charges deconfine.
+In the $\mathbb{Z}_2$ gauge theory (@eq-z2), the ratio $h/K$ controls a deconfinement–Higgs transition.
+For $h \ll K$ (plaquette term dominates), the ground state has $\prod_{\ell \in \square}\tau^z_\ell = +1$ on every plaquette — $\tau^z$ is ordered and Wilson loops obey a **perimeter law**.
+Charges are **deconfined** and the phase carries $\mathbb{Z}_2$ topological order.
+For $h \gg K$ (link-flip term dominates), $\langle\tau^x_\ell\rangle \to 1$ and $\tau^z$ is disordered — Wilson loops obey an **area law**.
+Charges are **confined** by $\mathbb{Z}_2$ electric strings; by the Fradkin–Shenker theorem, this confined phase is smoothly connected to the Higgs regime when dynamical matter is present.
 On Rydberg ladders, the transition is continuously tunable via Floquet drive parameters [@homeier2023z2].
 :::
 
