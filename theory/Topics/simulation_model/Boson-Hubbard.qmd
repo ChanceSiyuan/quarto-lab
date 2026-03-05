@@ -1,0 +1,165 @@
+---
+categories:
+- Readings
+date: '2026-03-03'
+lang: en
+title: Bosonic Hubbard Model
+bibliography: refs.bib
+jupyter: python3
+keep-ipynb: false
+code-fold: true
+---
+
+[← Back to Index](index.qmd)
+
+# The model and its physical realizations
+:::{#lem-bose-hubbard-model .callout-note icon="false"}
+## (Two-component Bose-Hubbard model)
+A system of two species of bosons on a lattice, subject to on-site inter-species repulsion $U$ and intra-species hard-core constraint ($n_{i\sigma} \leq 1$ for each species $\sigma$), is described by the two-component Bose-Hubbard model:
+$$
+H = -t\sum_{\langle i,j\rangle,\sigma}\left(b_{i\sigma}^\dagger b_{j\sigma} + \text{h.c.}\right) + U\sum_i \hat{n}_{i\uparrow}\hat{n}_{i\downarrow} + V_1 \sum_{\langle i,j\rangle}\hat{n}_i\hat{n}_j,
+$$
+where $b_{i\sigma}$ are bosonic operators satisfying $[b_{i\sigma}, b_{j\sigma'}^\dagger] = \delta_{ij}\delta_{\sigma\sigma'}$ (with the hard-core constraint $n_{i\sigma} \leq 1$ for each component enforced separately), and $\hat{n}_i = \hat{n}_{i\uparrow} + \hat{n}_{i\downarrow}$.
+:::
+
+:::{.callout-note collapse="true"}
+## Physical realizations (Click to expand)
+
+The (single-component) Bose-Hubbard model describes a range of condensed-matter and mesoscopic systems where bosonic quasiparticles hop on a lattice with strong on-site repulsion:
+
+- **Josephson junction arrays.** Cooper pairs (charge-$2e$ bosons) tunnel between superconducting islands via Josephson coupling $E_J$ (playing the role of $t$), while the charging energy $E_C = (2e)^2/2C$ of each island (playing the role of $U$) suppresses double occupancy. The superfluid–Mott-insulator transition in this system was among the earliest predicted manifestations of Bose-Hubbard physics [@fazio2001quantum].
+
+- **Granular superconductors.** Disordered arrays of superconducting grains connected by thin tunneling bridges realize a disordered variant of the same physics, with the grain charging energy providing the on-site repulsion.
+
+- **Helium-4 in nanoporous media.** $^4\text{He}$ atoms adsorbed in nanoporous substrates (e.g., Vycor glass, aerogel) form a bosonic lattice gas where the confinement geometry defines effective lattice sites and the interatomic repulsion provides $U$.
+
+- **Exciton-polariton condensates.** In semiconductor microcavities, exciton-polaritons (composite bosons of excitons and cavity photons) can be trapped in lattice potentials created by patterned cavities, realizing driven-dissipative Bose-Hubbard physics with polariton-polariton interactions providing $U$.
+
+The **two-component** version relevant to the bosonic t-J model requires a pseudospin degree of freedom. This arises naturally in:
+
+- **Spinor polariton condensates** with two polarization states as pseudospin.
+- **Bilayer exciton systems** where the layer index serves as a pseudospin degree of freedom.
+- **Cold atomic gases in optical lattices** (e.g., two hyperfine states of $^{87}$Rb), which provide the most tunable realization but are outside the scope of solid-state materials.
+:::
+
+As in the fermionic case, the strong-coupling limit $U \gg t$ of the two-component Bose-Hubbard model yields an effective model on the no-double-occupancy subspace via the Schrieffer-Wolff transformation. The key difference is that **bosonic commutation** replaces fermionic anticommutation, which flips the sign of the exchange interaction.
+
+:::{#lem-bose-tJ-model .callout-note icon="false"}
+## (Bosonic t-J model)
+In the strong-coupling limit $U \gg t$ of the two-component Bose-Hubbard model, the effective Hamiltonian on the no-double-occupancy subspace is the **bosonic t-J-V model**:
+$$
+\begin{align*}
+\hat{H}_{tJ}^{(B)} &= \hat{H}_t + \hat{H}_J + \hat{H}_V \\
+\hat{H}_t &= -t\sum_{\langle i,j\rangle,\sigma}\left(\hat{a}_{i,\sigma}^\dagger \hat{a}_{j,h}^\dagger \hat{a}_{i,h}\hat{a}_{j,\sigma} + \text{h.c.}\right) \\
+\hat{H}_J &= J_z \sum_{\langle i,j\rangle} \hat{S}_i^z\hat{S}_j^z + \frac{J_\perp}{2}\sum_{\langle i,j\rangle}\left(\hat{S}_i^+\hat{S}_j^- + \text{h.c.}\right) \\
+\hat{H}_V &= V\sum_{\langle i,j\rangle}\hat{n}_i^h\hat{n}_j^h,
+\end{align*}
+$$
+where $\hat{a}_{i,\sigma}^\dagger$, $\hat{a}_{i,h}^\dagger$ are Schwinger **boson** operators with the hard-core constraint $\sum_\alpha \hat{a}_{i,\alpha}^\dagger\hat{a}_{i,\alpha} = 1$ ($\alpha \in \{\uparrow, \downarrow, h\}$).
+
+The exchange parameters depend on the intra-species interaction $U_{\text{same}}$:
+
+(a) **Hard-core per species** ($U_{\text{same}} = \infty$, $U_{\text{inter}} = U$): The exchange is **anisotropic** (XXZ):
+$$
+J_\perp = -\frac{4t^2}{U}, \qquad J_z = +\frac{4t^2}{U}.
+$$
+The XY exchange is ferromagnetic while the Ising exchange is antiferromagnetic.
+
+(b) **SU(2)-symmetric** ($U_{\text{same}} = U_{\text{inter}} = U$): The exchange is **isotropic and ferromagnetic**:
+$$
+J_\perp = J_z = -\frac{4t^2}{U}.
+$$
+The triplet is uniformly lower than the singlet, the opposite of the fermionic case.
+:::
+
+:::{.callout-note collapse="true"}
+## Proof (Click to expand)
+
+We apply the Schrieffer-Wolff transformation to the two-component Bose-Hubbard model. The structure is parallel to the fermionic case, with the key difference being the **commutation** (rather than anticommutation) algebra.
+
+**Steps 1–4** are identical to the fermionic case: decompose hopping into $T_\pm$, $T_0$; the first-order term gives the projected hopping $\hat{H}_t$; the second-order term is $H_{\text{eff}}^{(2)} = -\frac{1}{U}P_0 T_- T_+ P_0$.
+
+**Step 5: Evaluate $T_-T_+$ for bosons.**
+
+Consider two neighboring sites with $|\uparrow_1,\downarrow_2\rangle = b_{1\uparrow}^\dagger b_{2\downarrow}^\dagger|0\rangle$. The $T_+$ calculation is identical to the fermionic case (since all operators involved act on different sites or different species and commute):
+$$
+T_+|\uparrow_1,\downarrow_2\rangle = -t(|D_2\rangle + |D_1\rangle),
+$$
+where $|D_2\rangle = b_{2\uparrow}^\dagger b_{2\downarrow}^\dagger|0\rangle$ and $|D_1\rangle = b_{1\uparrow}^\dagger b_{1\downarrow}^\dagger|0\rangle$.
+
+The crucial difference appears in $T_-$. When destroying the doublon on site 2, one path involves:
+$$
+b_{1\downarrow}^\dagger b_{2\downarrow} \cdot b_{2\uparrow}^\dagger b_{2\downarrow}^\dagger|0\rangle.
+$$
+We need to commute $b_{2\downarrow}$ past $b_{2\uparrow}^\dagger$ on the **same site**. For bosons of **different species**:
+$$
+[b_{2\downarrow}, b_{2\uparrow}^\dagger] = 0 \implies b_{2\downarrow}\, b_{2\uparrow}^\dagger = +b_{2\uparrow}^\dagger b_{2\downarrow},
+$$
+giving $+b_{2\uparrow}^\dagger|0\rangle = +|\uparrow_2\rangle$. In contrast, for fermions the anticommutation $\{c_{2\downarrow}, c_{2\uparrow}^\dagger\} = 0$ gives $-c_{2\uparrow}^\dagger|0\rangle = -|\uparrow_2\rangle$. **This sign flip is the sole origin of the difference between bosonic and fermionic t-J models.**
+
+The result is:
+$$
+T_-|D_2\rangle = -t(|\uparrow_1,\downarrow_2\rangle \mathbf{+}\, |\downarrow_1,\uparrow_2\rangle) \quad \text{(bosons: $+$ sign)},
+$$
+compared to $-t(|\uparrow_1,\downarrow_2\rangle \mathbf{-}\, |\downarrow_1,\uparrow_2\rangle)$ for fermions. Similarly $T_-|D_1\rangle = -t(|\downarrow_1,\uparrow_2\rangle + |\uparrow_1,\downarrow_2\rangle)$.
+
+Combining:
+$$
+T_-T_+|\uparrow_1,\downarrow_2\rangle = 2t^2(|\uparrow_1,\downarrow_2\rangle + |\downarrow_1,\uparrow_2\rangle) \quad\text{(hard-core per species case)}.
+$$
+
+**Step 5b: Parallel spins (hard-core per species).**
+
+For $|\uparrow_1,\uparrow_2\rangle$: the hard-core constraint $n_{i\uparrow} \leq 1$ forbids creating $|2\!\uparrow_2\rangle$, so $T_+|\uparrow_1,\uparrow_2\rangle = 0$. This is identical to the fermionic case where Pauli exclusion forbids same-spin double occupancy.
+
+**Step 5c: Parallel spins (SU(2)-symmetric case).**
+
+If $U_{\text{same}} = U_{\text{inter}} = U$, the state $|2\!\uparrow\rangle$ on a single site is allowed with energy cost $U$. Bosonic enhancement gives $b_{2\uparrow}^\dagger|\uparrow_2\rangle = \sqrt{2}|2\!\uparrow_2\rangle$, leading to:
+$$
+T_-T_+|\uparrow_1,\uparrow_2\rangle = 4t^2\,|\uparrow_1,\uparrow_2\rangle \quad\text{(factor $\sqrt{2}\times\sqrt{2}=2$ per path, two paths)}.
+$$
+
+**Step 6: Identify the exchange Hamiltonian.**
+
+*Case (a): Hard-core per species.* The matrix of $H_{\text{eff}}^{(2)}$ in the $\{|\uparrow\downarrow\rangle, |\downarrow\uparrow\rangle\}$ basis is:
+$$
+H_{\text{eff}}^{(2)} = -\frac{2t^2}{U}\begin{pmatrix}1 & +1 \\ +1 & 1\end{pmatrix} \quad\text{(boson)}, \qquad -\frac{2t^2}{U}\begin{pmatrix}1 & -1 \\ -1 & 1\end{pmatrix} \quad\text{(fermion for comparison)}.
+$$
+Parallel spins contribute zero. The bosonic matrix lowers the triplet $|T_0\rangle = |\uparrow\downarrow\rangle + |\downarrow\uparrow\rangle$ by $-4t^2/U$ while leaving the singlet and $|T_{\pm 1}\rangle$ unchanged. This **breaks SU(2) symmetry**: the exchange is XXZ with $J_z = +4t^2/U$ (AFM Ising from diagonal part) and $J_\perp = -4t^2/U$ (FM XY from off-diagonal part). The anisotropy is a direct consequence of the hard-core constraint treating same-species and different-species pairs asymmetrically.
+
+*Case (b): SU(2)-symmetric $U$.* All three triplet states $|T_0\rangle$, $|T_{\pm 1}\rangle$ are lowered by $-4t^2/U$, while the singlet is unchanged. This is isotropic but **ferromagnetic**: $H_{\text{eff}}^{(2)} = -J(\mathbf{S}_i \cdot \mathbf{S}_j + \frac{3}{4}\hat{n}_i^s\hat{n}_j^s)$ with $J = 4t^2/U > 0$. The opposite sign to the fermionic case arises because bosonic same-site commutation produces $+$ instead of $-$ in the exchange channel. $\square$
+:::
+
+
+:::{#rem-bose-constraint .callout-important}
+## Remark: Constraint handling in the bosonic t-J model — Schwinger boson representation
+
+For the bosonic t-J model, the no-double-occupancy constraint is naturally handled by the **Schwinger boson** representation with three flavors:
+$$
+\hat{a}_{i,\uparrow}^\dagger,\quad \hat{a}_{i,\downarrow}^\dagger,\quad \hat{a}_{i,h}^\dagger, \qquad \text{with}\quad \hat{n}_{i,\uparrow} + \hat{n}_{i,\downarrow} + \hat{n}_{i,h} = 1.
+$$
+Each site admits exactly one boson in one of three flavors. The spin operators are $\hat{S}_i^+ = \hat{a}_{i,\uparrow}^\dagger \hat{a}_{i,\downarrow}$, $\hat{S}_i^z = \frac{1}{2}(\hat{n}_{i,\uparrow} - \hat{n}_{i,\downarrow})$, and the hole density is $\hat{n}_i^h = \hat{a}_{i,h}^\dagger \hat{a}_{i,h}$.
+
+The hopping term becomes the four-operator product:
+$$
+\hat{a}_{i,\sigma}^\dagger \hat{a}_{j,h}^\dagger \hat{a}_{i,h}\hat{a}_{j,\sigma}: \quad \text{site }j\text{ changes } \sigma \to h,\quad \text{site }i\text{ changes } h \to \sigma.
+$$
+The constraint is automatically satisfied at the operator level — no Gutzwiller projection, no gauge redundancy, no Lagrange multipliers needed. This is in marked contrast to the fermionic case, where the Hubbard X-operators have a complicated graded algebra and the slave-particle decompositions introduce gauge structure.
+:::
+
+
+:::{#rem-rydberg-not-hubbard .callout-warning}
+## Remark: The Rydberg t-J-V model is NOT derived from Bose-Hubbard
+
+The bosonic t-J-V model realized in the Rydberg tweezer experiment must be sharply distinguished from the Bose-Hubbard-derived model above. In the Rydberg implementation:
+
+1. **The three states are physical atomic levels**: $|\downarrow\rangle = |60S\rangle$, $|\uparrow\rangle = |61S\rangle$, $|h\rangle = |60P\rangle$. The hard-core constraint $\hat{n}^\uparrow + \hat{n}^\downarrow + \hat{n}^h = 1$ is an exact physical fact (one atom per site, one internal state per atom).
+
+2. **No Schrieffer-Wolff transformation is involved.** The t-J-V Hamiltonian is obtained by a direct algebraic identity from the bare Rydberg Hamiltonian $\hat{H}^{\text{Ryd}} = \hat{H}^{\text{Ex},C_3} + \hat{H}^{\text{Ex},C_6} + \hat{H}^{\text{Diag},C_6}$, using only the constraint to rewrite Rydberg number operators as spin and hole density operators. There is no perturbative expansion.
+
+3. **The parameters $t$, $J_\perp$, $J_z$, $V$ are all independent.** The hopping $t \propto C_3/r^3$ comes from resonant dipole-dipole exchange ($S \leftrightarrow P$); the spin exchange $J_\perp \propto C_6/r^6$ comes from van der Waals exchange ($S \leftrightarrow S'$); the Ising and density interactions $J_z, V$ come from diagonal van der Waals shifts. In particular, $J$ is **not** given by $4t^2/U$ — there is no "$U$" at all in this system.
+
+4. **The exchange can be antiferromagnetic.** Unlike the Bose-Hubbard-derived model where superexchange gives ferromagnetic (or mixed-sign) coupling, the Rydberg $J_\perp$ can be directly antiferromagnetic depending on the van der Waals $C_6^{SS'}$ coefficient, which is a property of the chosen atomic levels. This enables the study of doped antiferromagnets — the regime most relevant to cuprate physics — with bosonic statistics.
+
+This Rydberg bosonic t-J-V model has been experimentally realized in a $^{87}$Sr atom-tweezer array, demonstrating antiferromagnetic correlations and dopant dynamics in a programmable setting [@qiao2025].
+:::

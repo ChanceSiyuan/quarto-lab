@@ -15,7 +15,10 @@ draft: true
 
 
 # Basic concepts
-## Time-ordered correlation
+
+## Finite temperature OTOC
+
+#### Time-ordered correlation
 Consider a randomized unitary circuit $U$ on $n$ qubits with $D = 2^n$. Let $M$ being a Pauli operator satisfying $\mathrm{tr}(M) = 0$. Let $B$ be another traceless Pauli operator, which we called the betterfly operator, and its evolution under $U$ is $B(t) = U^\dagger B U$. In the real experiment, for simplicity, $B$ and $M$ both only support on constant number of qubit @abanin2025constructive. 
 
 :::{#def-time-ordered-correlator .callout-note icon="false"}
@@ -63,7 +66,7 @@ $$
 
 This means that "guessing zero" is a good classical simulation strategy for the time-ordered correlator if $U$ forms a $2$-design.
 
-## OTOCs
+#### OTOCs
 
 To probe genuine scrambling, we need the **out-of-time-order correlator** (OTOC). 
 
@@ -197,6 +200,199 @@ plt.tight_layout()
 plt.show()
 ```
 
+## Regularized OTOCs
+
+As shown above, the time-ordered correlation operator $\langle 0^n|C|0^n\rangle, C = U^\dagger B U M$ is defined as zero-temperature correlation and its higher order generalizations, known as out-of-time-order correlators (OTOCs), are important in quantum many-body physics.
+
+
+Given the Heisenberg-picture operator $O(t) = e^{iHt} O e^{-iHt}$, the partition function $Z = \mathrm{tr}(e^{-\beta H})$, and the unnormalized thermal operator $\rho_\beta \equiv e^{-\beta H}$, the Wightman inner product, a regularization of ordinary correlation function, is defined as:
+$$
+C_{\beta}(O_1,O_2) = \frac{1}{Z} \mathrm{tr}(e^{-(\beta/2) H}O_1 e^{-(\beta/2) H} O_2 ).
+$$
+Here regularization means that we transformed $tr(O_1O_2\rho)$ to $tr(O_1\rho^{\alpha_1}O_2\rho^{\alpha_2})$ with $\alpha_1 + \alpha_2 = 1$.
+We can show that different regularization schemes contains the same information in terms of they can be transformed to each other by fixed algorithm.
+
+:::{#lem-regularized-otoc .callout-note icon="false"}
+## (Regularized correlation functions are spectrally equivalent)
+Given $\alpha_1 + \alpha_2 = 1$, define the regularized two-point function
+$$
+C_{\alpha_1, \alpha_2}(t) = \frac{1}{Z} \mathrm{tr}\!\left(e^{-\alpha_1 \beta H}\, O_1(t)\, e^{-\alpha_2 \beta H}\, O_2(0)\right).
+$$
+Then in the frequency domain, any two regularizations $(\alpha_1, \alpha_2)$ and $(\alpha'_1, \alpha'_2)$ are related by
+$$
+C_{\alpha'_1, \alpha'_2}(\omega) = e^{(\alpha'_2 - \alpha_2)\beta\omega}\; C_{\alpha_1, \alpha_2}(\omega),
+$$ {#eq-reg-conversion}
+where $C_{\alpha_1, \alpha_2}(\omega) = \int_{-\infty}^{\infty} dt\, e^{i\omega t}\, C_{\alpha_1, \alpha_2}(t)$. In particular, all regularizations contain the same physical information and can be recovered from any single one via @eq-reg-conversion. This is a direct consequence of the KMS (Kubo-Martin-Schwinger) condition [@kubo1957statistical].
+:::
+
+:::{.callout-note collapse="true"}
+## Proof (Click to expand)
+
+**Step 1 (Lehmann representation).** Insert two complete sets of energy eigenstates $\{|n\rangle\}$ with $H|n\rangle = E_n |n\rangle$:
+$$
+C_{\alpha_1, \alpha_2}(t) = \frac{1}{Z} \sum_{n,m} e^{-\alpha_1 \beta E_n}\, e^{-\alpha_2 \beta E_m}\, e^{i(E_n - E_m)t}\, \langle n|O_1|m\rangle \langle m|O_2|n\rangle.
+$$
+
+**Step 2 (Fourier transform).** Taking the Fourier transform $C_{\alpha_1,\alpha_2}(\omega) = \int dt\, e^{i\omega t} C_{\alpha_1,\alpha_2}(t)$ and using $\int dt\, e^{i(\omega + E_n - E_m)t} = 2\pi\,\delta(\omega - (E_m - E_n))$:
+$$
+C_{\alpha_1,\alpha_2}(\omega) = \frac{2\pi}{Z} \sum_{n,m} e^{-\alpha_1 \beta E_n}\, e^{-\alpha_2 \beta E_m}\, |\langle n|O_1|m\rangle|^2\; \delta(\omega - (E_m - E_n)).
+$$
+
+**Step 3 (Factor out $\alpha$-dependence).** The $\delta$-function enforces $E_m = E_n + \omega$, so
+$$
+e^{-\alpha_1 \beta E_n}\, e^{-\alpha_2 \beta E_m} = e^{-(\alpha_1+\alpha_2)\beta E_n}\, e^{-\alpha_2 \beta \omega} = e^{-\beta E_n}\, e^{-\alpha_2 \beta \omega}.
+$$
+Define the $\alpha$-independent spectral function
+$$
+\mathcal{A}(\omega) \equiv \frac{2\pi}{Z} \sum_{n,m} e^{-\beta E_n}\, |\langle n|O_1|m\rangle|^2\; \delta(\omega - (E_m - E_n)).
+$$
+Then $C_{\alpha_1,\alpha_2}(\omega) = e^{-\alpha_2 \beta \omega}\, \mathcal{A}(\omega)$.
+
+**Step 4 (Conversion).** For any two regularizations $(\alpha_1, \alpha_2)$ and $(\alpha'_1, \alpha'_2)$:
+$$
+\frac{C_{\alpha'_1,\alpha'_2}(\omega)}{C_{\alpha_1,\alpha_2}(\omega)} = \frac{e^{-\alpha'_2 \beta\omega}}{e^{-\alpha_2 \beta\omega}} = e^{(\alpha_2 - \alpha'_2)\beta\omega}.
+$$
+Rearranging gives @eq-reg-conversion. $\square$
+:::
+
+*Discussions*: Although the regularized correlation function contains the same information as the original correlation function, This is an "ill-posed problem" when noise exists. If you measure $C_{\alpha_1, \alpha_2}(t)$ from a quantum computer or real experiment, the data must contain small noise. When you multiply the exponential factor $e^{\Delta \alpha \beta \omega}$ in the frequency domain, the measurement noise in the high frequency region will be amplified exponentially, causing the real-time curve to completely collapse when inverse Fourier transformed back.
+
+For example, we demonstrate this with a 4-site TFIM: measure $C_{1/2,1/2}(t)$ (the Wightman inner product), add small Gaussian noise, then attempt to convert to $C_{1,0}(t)$ via @eq-reg-conversion. The high-frequency noise is exponentially amplified by $e^{\beta\omega/2}$, destroying the signal.
+
+```{python}
+#| label: fig-noise-amplification
+#| fig-cap: "Ill-posedness of regularization conversion. Left: the noisy Wightman correlator $C_{1/2,1/2}(t)$ is visually indistinguishable from the exact one. Right: after frequency-domain conversion via $e^{\\beta\\omega/2}$, the result (orange) deviates wildly from the exact $C_{1,0}(t)$ (blue dashed)."
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.linalg import expm
+
+# --- 4-site TFIM Hamiltonian ---
+n = 4
+D = 2**n
+sx = np.array([[0,1],[1,0]], dtype=complex)
+sz = np.array([[1,0],[0,-1]], dtype=complex)
+Id = np.eye(2, dtype=complex)
+
+def kron_chain(ops):
+    out = ops[0]
+    for o in ops[1:]:
+        out = np.kron(out, o)
+    return out
+
+J, h = 1.0, 0.5
+H = np.zeros((D, D), dtype=complex)
+for i in range(n - 1):
+    ops = [Id]*n; ops[i] = sz; ops[i+1] = sz
+    H -= J * kron_chain(ops)
+for i in range(n):
+    ops = [Id]*n; ops[i] = sx
+    H -= h * kron_chain(ops)
+
+# Operators: O1 = sigma^z_0, O2 = sigma^z_1
+ops1 = [Id]*n; ops1[0] = sz; O1 = kron_chain(ops1)
+ops2 = [Id]*n; ops2[1] = sz; O2 = kron_chain(ops2)
+
+beta = 2.0
+rho = expm(-beta * H)
+Z = np.trace(rho)
+
+# --- Compute exact correlators ---
+ts = np.linspace(0, 10, 512)
+dt = ts[1] - ts[0]
+
+def correlator(alpha1, alpha2, ts):
+    rho1 = expm(-alpha1 * beta * H)
+    rho2 = expm(-alpha2 * beta * H)
+    vals = []
+    for t in ts:
+        U = expm(1j * H * t)
+        O1t = U @ O1 @ U.conj().T
+        vals.append(np.trace(rho1 @ O1t @ rho2 @ O2).real / Z)
+    return np.array(vals)
+
+C_half = correlator(0.5, 0.5, ts)   # Wightman
+C_10   = correlator(1.0, 0.0, ts)   # standard
+
+# --- Add noise to Wightman and convert ---
+np.random.seed(0)
+noise_level = 1e-3
+C_half_noisy = C_half + noise_level * np.random.randn(len(ts))
+
+# FFT -> multiply by exp(beta*omega/2) -> IFFT
+freqs = np.fft.fftfreq(len(ts), d=dt) * 2 * np.pi
+C_half_hat = np.fft.fft(C_half_noisy)
+# Convert from (1/2,1/2) to (1,0): multiply by exp((0 - 1/2)*beta*omega) = exp(-beta*omega/2)
+# i.e. C_{1,0}(w) = exp(-beta*w/2) * C_{1/2,1/2}(w)
+# Actually from the formula: alpha_2=1/2 -> alpha'_2=0, factor = exp((alpha_2 - alpha'_2)*beta*w) = exp(beta*w/2)
+# But we want C_{alpha'} = exp((alpha'_2 - alpha_2)*beta*w) * C_{alpha}
+# = exp((0 - 0.5)*beta*w) * C_{1/2,1/2} = exp(-beta*w/2) * C_{1/2,1/2}
+conversion = np.exp(-0.5 * beta * freqs)
+C_10_converted = np.fft.ifft(C_half_hat * conversion).real
+
+# exact conversion (no noise)
+C_half_hat_exact = np.fft.fft(C_half)
+C_10_exact_conv = np.fft.ifft(C_half_hat_exact * conversion).real
+
+fig, axes = plt.subplots(1, 2, figsize=(11, 4))
+
+axes[0].plot(ts, C_half, 'b-', lw=1.5, label='exact $C_{1/2,1/2}$')
+axes[0].plot(ts, C_half_noisy, 'orange', lw=0.8, alpha=0.7, label=f'noisy (σ={noise_level})')
+axes[0].set_xlabel('$t$'); axes[0].set_ylabel('$C_{1/2,1/2}(t)$')
+axes[0].set_title('Wightman correlator'); axes[0].legend(fontsize=8)
+
+axes[1].plot(ts, C_10, 'b--', lw=2, label='exact $C_{1,0}$')
+axes[1].plot(ts, C_10_exact_conv, 'g-', lw=1, alpha=0.6, label='converted (no noise)')
+axes[1].plot(ts, C_10_converted, 'orange', lw=1, label='converted (noisy)')
+axes[1].set_xlabel('$t$'); axes[1].set_ylabel('$C_{1,0}(t)$')
+axes[1].set_title('After conversion $e^{-\\beta\\omega/2}$'); axes[1].legend(fontsize=8)
+
+plt.tight_layout()
+plt.show()
+```
+
+This is why physicists still have to measure specific symmetric regularizations (like Wightman Inner Product, $\alpha_1=\alpha_2=1/2$) directly on hardware instead of measuring the standard ones and then converting them using classical computers.
+
+
+Similar to correlation function, the OTOCs can also be generalized to the thermally regulated OTOCs [@maldacena2016bound; @chiew2026quantum], by estimates the square average of correlation function and splits density matrix into four part. For example, the thermally regulated 2-OTOCs is defined as:
+
+:::{#def-thermal-otoc .callout-note icon="false"}
+## (thermally regulated OTOCs)
+$$
+\mathrm{OTOC}_\beta(O(t), A, B;\,\alpha_1,\alpha_2,\alpha_3,\alpha_4)
+  \equiv \frac{1}{Z}\,\mathrm{tr}\!\left(
+    \rho_\beta^{\alpha_1}\, O(t)\;
+    \rho_\beta^{\alpha_2}\, A\;
+    \rho_\beta^{\alpha_3}\, O(t)\;
+    \rho_\beta^{\alpha_4}\, B
+  \right),
+$$ {#eq-thermal-otoc}
+where $\alpha_i \in [0,1]$ with $\alpha_1 + \alpha_2 + \alpha_3 + \alpha_4 = 1$.
+:::
+
+*Special cases*:
+Setting $\alpha_1 = 1,\; \alpha_2 = \alpha_3 = \alpha_4 = 0$ (so that $\rho_\beta^0 = I$), @eq-thermal-otoc reduces to
+$$
+\mathrm{OTOC}_\beta(O(t), A, B;\,1,0,0,0)
+= \frac{1}{Z}\,\mathrm{tr}\!\left(\rho_\beta\, O(t)\, A\, O(t)\, B\right).
+$$
+
+**Zero temperature** ($\beta \to \infty$): the thermal operator projects onto the ground state $\rho_\beta \to \ket{0^n}\!\bra{0^n}$ and $Z \to 1$. With $O(t) \to B(t) = U^\dagger B U$ and $A = B = M$ as in last section, this gives
+$$
+\mathrm{OTOC}_{\beta\to\infty}(B(t), M, M;\,1,0,0,0)
+= \langle 0^n|\, B(t)\, M\, B(t)\, M\, |0^n\rangle
+= \langle 0^n|\, C^2\, |0^n\rangle,
+$$
+recovering the zero-temperature $\mathrm{OTOC}^1$.
+
+**Infinite temperature** ($\beta = 0$): $\rho_\beta = I$ and $Z = 2^n$, giving
+$$
+\mathrm{OTOC}_{\beta=0}(O(t), A, B;\,1,0,0,0)
+= 2^{-n}\,\mathrm{tr}\!\left(O(t)\, A\, O(t)\, B\right),
+$$
+the infinite-temperature OTOC of last section [@chiew2026quantum].
+
+
+
 # CBE algorithm for OTOC
 
 In the experiment, 
@@ -210,3 +406,4 @@ That is, a result of the dual circuit of conjugate operation $U^{(k-1)} M U^{(k-
 Based on this analysis, a key question is, if $U$ is given as a encoded quantum state $\ket{U}$, how to generate the dual circuit of $U^{\dagger} M U$ without first measuring the encoded state $\ket{U}$? To be specific, we hope to transform the $OTOC^{2}$ into the following recursive ciruit, where $G$ is the gadget that accept input $\ket{U}, \ket{M}$ and output $\ket{U^\dagger M U}$ and $ \ket{0}$ through incomputation.
 
 ![Use dual circuit to generate OTOC](dual_gadget.png)
+

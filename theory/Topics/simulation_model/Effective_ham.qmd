@@ -1,0 +1,131 @@
+---
+title: "Effective Hamiltonian"
+date: '2026-03-03'
+categories:
+  - Readings
+lang: en
+bibliography: refs.bib
+---
+
+[← Back to Index](index.qmd)
+
+# Summary and questions
+This post is to review the effective Hamiltonian framework and try to explain why certain Hamiltonians models are important in matterial physics.
+
+
+# Effective Hamiltonian
+
+Given a free Hamiltonian $H_0$ and an interacting Hamiltonian $H = H_0 + \varepsilon V$, where $\varepsilon \in \mathbb{R}$.
+
+:::{#def-gap .callout-note icon="false"}
+## Definition of spectral gap
+Consider the eigenspectrum of $H_0$ within a connected interval $\mathcal{I}_0 = [a,b] \subset \mathbb{R}$. Let the corresponding eigensubspace be denoted by $\mathcal{P}_0$, and its projection operator by $P_0$.
+We say that there is a spectral gap $\Delta \in \mathbb{R}$ above $\mathcal{I}_0$ if and only if for all $\lambda, \mu \in \text{spec}(H_0)$ such that $\lambda \in \mathcal{I}_0$ and $\mu \notin \mathcal{I}_0$, we have $|\lambda - \mu| \geq \Delta$.
+:::
+
+If the interaction of $V$ on $H_0$ is small enough, this section of eigenspectrum of $H_0$ will be close to that of $H$. 
+To be rigorous, consider the eigenspectrum of $H$ within the connected interval $\mathcal{I} := [a-\Delta/2, b+\Delta/2]$. 
+Let the corresponding eigensubspace be denoted by $\mathcal{P}$, and its projection operator by $P$.
+For small enough $\varepsilon$, the subspace $\mathcal{P}$ will contain all those perturbed eigenvectors that are derived from $\mathcal{P}_0$. This is validated by @lem-subspace-proximity and @lem-direct-rotation, whose proof can be found in @bravyi2011schrieffer.
+
+:::{#lem-subspace-proximity .callout-important icon="false"}
+## Proximity of perturbed and unperturbed subspaces
+$|\varepsilon| < \Delta/2\|V\| \Rightarrow \|P_0 - P\| <1$
+:::
+
+:::{.callout-note collapse="true"}
+## Proof sketch (Click to expand)
+*(Following @bravyi2011schrieffer, Lemma 3.1)*
+
+Define $T = P - P_0$ and $Q_0 = \mathbb{I} - P_0$, $Q = \mathbb{I} - P$. Since $T$ is Hermitian and $T^2$ is block-diagonal with respect to $P_0, Q_0$, one has
+$$
+P_0 T^2 P_0 = P_0 Q P_0, \quad Q_0 T^2 Q_0 = Q_0 P Q_0,
+$$
+so that $\|T\| = \max(\|P_0 Q\|, \|Q_0 P\|)$.
+
+Without loss of generality assume $\|T\| = \|P_0 Q\|$. Define $A = P_0 H_0 P_0$, $B = QHQ$, $X = P_0 Q$, and $Y = -\varepsilon P_0 V Q$. Then $X$ satisfies the **Sylvester equation**:
+$$
+AX - XB = Y.
+$$
+The spectra of $A$ and $B$ (viewed as operators on their respective subspaces) are separated by a gap of width $\Delta/2$ when $|\varepsilon| < \Delta/2\|V\|$. By a standard result on Sylvester equations [see @bhatia1997matrix, Theorem VII.2.11], this spectral separation yields:
+$$
+\|X\| \leq \frac{2}{\Delta}\|Y\| \leq \frac{2}{\Delta}\|\varepsilon V\| < 1. \qquad \square
+$$
+:::
+
+:::{#lem-direct-rotation .callout-important icon="false"}
+## Direct rotation and its generator
+Given two projectors $P, P_0$, if $\|{P} - {P}_0\| <1$, then:
+
+- (i).$\text{dim~}\mathcal{P}_0 =\text{dim~}\mathcal{P}$ and $\mathcal{P}_0 \not\subset \mathcal{P}^\perp,\mathcal{P}\not\subset\mathcal{P}_0^\perp$. 
+- (ii).There exists $U = \sqrt{(2P_0-\mathbb{I})(2P-\mathbb{I})}$ such that $UPU^\dagger = P_0$. 
+- (iii).The unitary matrix can be uniquely written as $e^{S}$ .
+Here $S$ is the generator of the direct rotation, which satisfies the conditions $S^\dagger = -S$,$PSP = P_0SP_0 = (I − P )S(I − P ) = (I − P_0)S(I − P_0) = 0$, and $\|S\| < \pi/2$.
+:::
+
+:::{.callout-note collapse="true"}
+## Proof sketch (Click to expand)
+*(Following @bravyi2011schrieffer, Lemma 2.2, Corollary 2.2, and Lemma 2.3)*
+
+**(i) Equal dimensions.** Any pair of projectors $P, P_0$ can be simultaneously block-diagonalized into $2 \times 2$ and $1 \times 1$ blocks, with each $2 \times 2$ block containing rank-one projectors [see @bhatia1997matrix, Chapter 7.1]. In each $1 \times 1$ block, $\|P - P_0\| < 1$ forces $P = P_0 \in \{0, 1\}$. In each $2 \times 2$ block, both $P$ and $P_0$ are rank-one projectors (so non-orthogonality is guaranteed), contributing equally to $\dim \mathcal{P}$ and $\dim \mathcal{P}_0$.
+
+**(ii) Existence of $U$.** Define reflection operators $R_P = 2P - \mathbb{I}$, $R_{P_0} = 2P_0 - \mathbb{I}$, and $U = \sqrt{R_{P_0} R_P}$ with the principal branch of the square root. The condition $\|P - P_0\| < 1$ ensures no eigenvalue of $R_{P_0} R_P$ lies on the negative real axis, so $U$ is uniquely defined. Within each $2 \times 2$ block, the rotation reduces to $U = e^{i\theta \sigma_y}$ (with $0 \le \theta < \pi/2$) which maps the rank-one projector $P$ to $P_0$, giving $U P U^\dagger = P_0$.
+
+**(iii) Uniqueness of $S$.** Write $U = e^S$ with $S$ block-off-diagonal w.r.t. $P_0$. In the $P_0 / P_0^\perp$ block decomposition, $U_{1,1} = \cos(\sqrt{S_{1,2} S_{1,2}^\dagger})$ and $U_{2,2} = \cos(\sqrt{S_{1,2}^\dagger S_{1,2}})$. Since $\|S\| < \pi/2$, both are positive-definite. If another $\tilde{U} = e^{\tilde{S}}$ also satisfies the conditions, then $L = \tilde{U}U^\dagger$ commutes with $P_0$ (hence block-diagonal). The relation $\tilde{U}_{1,1} = L_1 U_{1,1}$ with both sides positive-definite forces $L_1 = \mathbb{I}$ (a unitary times a positive-definite operator is positive only if the unitary is the identity). Similarly $L_2 = \mathbb{I}$, so $\tilde{U} = U$. Injectivity of $\exp$ on $\|S\| < \pi/2$ then gives $\tilde{S} = S$. $\square$
+:::
+
+Based on the discussion above, the effective Hamiltonian is defined as 
+$$
+\boxed{H_{\mathrm{eff}} := P_0U(H_0 + \varepsilon V)U^\dagger P_0}
+$$
+Intuitatively, the value of effective Hamiltonian ensures that given $\ket{\psi} \in \mathcal{P}$, solving its evolution in time according to $H$ 
+is precisely equivalnent to tracing $\ket{\phi} =U\ket{\psi} \in \mathcal{P}_0$ evolution according to  $H_{\mathrm{eff}}$.
+In the same reference [@bravyi2011schrieffer], it is also shown how to approximate $H_{\mathrm{eff}}$ in terms of Taylor series of $\varepsilon$, which is concluded in @lem-perturbation_expand.
+
+:::{#lem-perturbation_expand .callout-important icon="false"}
+## Perturbative expansion of $H_{\mathrm{eff}}$
+Given the Hamiltonian $H = H_0 + \varepsilon V$ and the low-energy subspace of interest with projector $P_0$. Let the superoperator $\mathcal{L}$ be defined as
+$$
+\begin{align}
+    \mathcal{L}(\cdot) = \sum_{i,j} \frac{\bra{i} \mathcal{O}(\cdot) \ket{j}}{E_i - E_j} \ket{i}\!\bra{j},
+\end{align}
+$$
+where $\ket{i}$ are the eigenvectors of the free Hamiltonian such that $H_0\ket{i} = E_i \ket{i}$. The map $\mathcal{O}(\cdot) = P_0 (\cdot)(\mathbb{I}-P_0) + (\mathbb{I}-P_0)(\cdot)P_0$ retains only the off-diagonal terms, and $\hat{A}(\cdot) = [A, \cdot]$ is the commutator linear transformation. Then the effective Hamiltonian is given by
+$$
+\begin{align}
+    H_{\mathrm{eff}} = H_0 P_0 + \epsilon P_0 V P_0 + \frac{\epsilon^2}{2} P_0 \hat{S}_1(V_{od}) P_0 + \frac{\epsilon^3}{2} P_0 \hat{V}_{od} \mathcal{L} \hat{V}_d(S_1) P_0 + O(\epsilon^4),
+\end{align}
+$$
+where $S_1 := \mathcal{L}(V_{\mathrm{od}}), V_{\mathrm{od}} = \mathcal{O}(V)$ and $V_{\mathrm{d}} = V - V_{\mathrm{od}}$. 
+:::
+
+:::{.callout-note collapse="true"}
+## Proof sketch (Click to expand)
+*(Following @bravyi2011schrieffer, Section 3.2)*
+
+**Step 1: Block-diagonality condition.** Write $U = e^S$ with $S$ block-off-diagonal w.r.t. $P_0$. The transformed Hamiltonian $e^{\hat{S}}(H_0 + \epsilon V)$ (where $\hat{S}(\cdot) = [S, \cdot]$) decomposes into block-diagonal (BD) and block-off-diagonal (BOD) parts:
+$$
+e^{\hat{S}}(H_0 + \epsilon V) = \underbrace{\cosh(\hat{S})(H_0 + \epsilon V_d) + \sinh(\hat{S})(\epsilon V_{od})}_{\text{BD}} + \underbrace{\sinh(\hat{S})(H_0 + \epsilon V_d) + \cosh(\hat{S})(\epsilon V_{od})}_{\text{BOD}}.
+$$
+Setting the BOD part to zero and dividing by $\cosh(\hat{S})$ yields:
+$$
+\tanh(\hat{S})(H_0 + \epsilon V_d) + \epsilon V_{od} = 0.
+$$
+
+**Step 2: Iterative solution for $S$.** The superoperator $\mathcal{L}$ satisfies $\mathcal{L}([H_0, X]) = \mathcal{O}(X)$, which inverts the commutator with $H_0$ on BOD operators. Expanding $S = \sum_{n \geq 1} S_n \epsilon^n$ and solving order by order:
+$$
+S_1 = \mathcal{L}(V_{od}), \quad S_2 = -\mathcal{L}\hat{V}_d(S_1), \quad S_n = -\mathcal{L}\hat{V}_d(S_{n-1}) + \text{(higher-order corrections from } x\coth(x) \text{)}.
+$$
+
+**Step 3: Simplify the BD part.** Using the identity $\sinh(x) - \frac{\cosh(x) - 1}{\tanh(x)} = \tanh(x/2)$, the BD transformed Hamiltonian simplifies to:
+$$
+e^{\hat{S}}(H_0 + \epsilon V) = H_0 + \epsilon V_d + \tanh(\hat{S}/2)(\epsilon V_{od}).
+$$
+
+**Step 4: Project onto $P_0$.** Since $H_0$ and $V_d$ are BD, $P_0 V_d P_0 = P_0 V P_0$. Expanding $\tanh(x/2) = \sum_{n \geq 1} b_{2n-1} x^{2n-1}$ with $b_1 = 1/2$, $b_3 = -1/24$, etc., the $n$-th order correction is $H_{\mathrm{eff},n} = \sum_{j \geq 1} b_{2j-1} P_0 \hat{S}^{2j-1}(V_{od})_{n-1} P_0$. The leading terms are:
+
+- $H_{\mathrm{eff},2} = \frac{1}{2} P_0 \hat{S}_1(V_{od}) P_0 = \frac{1}{2} P_0 [S_1, V_{od}] P_0$
+- $H_{\mathrm{eff},3} = \frac{1}{2} P_0 \hat{V}_{od} \mathcal{L}\hat{V}_d(S_1) P_0$
+
+Combining all orders gives the stated formula. $\square$
+:::

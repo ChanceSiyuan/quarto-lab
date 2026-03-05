@@ -10,7 +10,14 @@ jupyter: python3
 code-fold: true
 ---
 
+# Summary and question
+This post is mean to find application for localized non-linear estimators.
+
+
+
 # A hierachy of different Virtual Distillation strategies
+
+Then well known strategy is virtual distillation strategy, which is a generalization of the single-copy estimator.
 
 In theory, virtual distillation strategy accepts:
 
@@ -289,5 +296,24 @@ $$
 \{(IX)\mathrm{SWAP}, (IX)\mathrm{SWAP}, (IZ)\mathrm{SWAP}, \mathrm{SWAP}\}.
 $$
 
-Based on the discussion on [compattability](/theory/Posts/quantum_resource/compatiablity.qmd), we can see that they are not commute means that any POVMs in estimating these operators must have variance greater than 1, thus turns out to be inefficient if we scaled to 
+Based on the discussion on [compatiability](/theory/Posts/compatibility/compatiablity.html), we can see that they are not commute means that any POVMs in estimating these operators must have variance greater than 1, thus turns out to be inefficient if we scaled to 
 
+
+# regularized OTOCs
+
+As reviewed in [OTOC](/theory/Posts/OSF/OTOC.html), given the Heisenberg-picture operator $O(t) = e^{iHt} O e^{-iHt}$, the partition function $Z = \mathrm{tr}(e^{-\beta H})$, and the unnormalized thermal operator $\rho_\beta \equiv e^{-\beta H}$
+the regularization of ordinary correlation function and 2-OTOCs are defined as:
+$$
+\begin{align*}
+&C_{\beta}(O_1,O_2; \alpha_1,\alpha_2) = \frac{1}{Z} \mathrm{tr}(e^{-(\beta/2) H}O_1 \rho_\beta^{\alpha_1} O_2 \rho_\beta^{\alpha_2} ),\\
+&\mathrm{OTOC}_\beta(O(t), A, B;\,\alpha_1,\alpha_2,\alpha_3,\alpha_4)
+  \equiv \frac{1}{Z}\,\mathrm{tr}\!\left(
+    \rho_\beta^{\alpha_1}\, O(t)\;
+    \rho_\beta^{\alpha_2}\, A\;
+    \rho_\beta^{\alpha_3}\, O(t)\;
+    \rho_\beta^{\alpha_4}\, B
+  \right),
+\end{align*}
+$$
+
+Specifically for transveral field Ising model (TFIM),

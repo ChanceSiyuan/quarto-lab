@@ -25,98 +25,9 @@ What if we discuss the JM and find the unsharp version for 2-replica local case 
 
 ::: {.callout-tip icon="false" collapse="true"}
 ## Discussion
-
-- A partial yes. Since I notice that at least for $\{XX, YY, ZZ\}^{\otimes n}$ case would be exponentially hard in biased 1-replica case, the 2-replica local strategy can deal with it. But the problem is: If we focus on the estimation of $\mathrm{tr}(H\rho)$, for fairness, we should consider $\mathrm{tr}[(H \otimes \mathbb{I}) \rho^{\otimes 2}],\mathrm{tr}[(H \otimes H) \rho^{\otimes 2}]$ instead of $\mathrm{tr}(H\rho)$.
 - Use SDP to analysis the calculation complexity for some useful subset: $\{(XI)\cdot SWAP,(YI)\cdot SWAP,(ZI)\cdot SWAP,SWAP\}$.
 :::
 
-::: {.callout-important icon="false"}
-## Conjecture: Compatibility Robustness and Sampling Complexity
-If the compatibility robustness of a set of observables $\{O_i\}_{i=1}^L$ is $I$, then any non-adaptive strategy for estimating $\{\mathrm{tr}(O_i\rho)\}_i$ within constant additive error $\varepsilon$ and confidence $1 - \delta$ has sampling complexity $\mathcal{O}(I\varepsilon^{-2} \ln(1/\delta))$.
-:::
-
-::: {#thm-compatibility-complexity .callout-note icon="false"}
-## Theorem: Proof of the Conjecture (Upper and Lower Bounds)
-Let $\{O_i\}_{i=1}^L$ be observables with $\|O_i\|_\infty=1$ and compatibility robustness $I$, so that $\{E^{\eta^*}_{a|i}=\frac{1}{2}(\mathbb{I}+a\eta^*O_i)\}$ is jointly measurable at the threshold $\eta^*=I^{-1/2}$ (by @heinosaari2015noise). Then:
-
-1. **(Upper bound)** The joint POVM at $\eta^*$ achieves additive error $\leq\varepsilon$ for all $L$ observables simultaneously with confidence $\geq 1-\delta$ using $\mathcal{O}(I\,\varepsilon^{-2}\ln(L/\delta))$ samples.
-2. **(Lower bound)** Any joint POVM $\{G_k\}$ with unbiased estimators $\{f_i\}$ for all $\{O_i\}$ must have $\max_i\|f_i\|_\infty\geq\sqrt{I}$, which forces $\Omega(I\,\varepsilon^{-2})$ samples for accuracy $\varepsilon$.
-:::
-
-::: {.callout-note collapse="true"}
-## Proof: Upper Bound (click to expand)
-
-Let $\{G_k\}_{k\in\mathcal{K}}$ be the joint POVM realizing $\{E^{\eta^*}_{a|i}\}$, with bounded outcome functions $f_i:\mathcal{K}\to[-1,1]$ satisfying:
-$$\sum_{k\in\mathcal{K}} G_k\,f_i(k) = \eta^*\,O_i \quad \forall\,i.$$
-
-**Unbiased estimator.** Define the rescaled estimator $\hat{o}_i(k):=f_i(k)/\eta^*$. Then:
-$$\mathbb{E}_\rho[\hat{o}_i] = \frac{1}{\eta^*}\sum_k\mathrm{tr}(G_k\rho)\,f_i(k) = \frac{\mathrm{tr}(\eta^*O_i\rho)}{\eta^*} = \mathrm{tr}(O_i\rho).$$
-
-**Variance bound.** Since $|f_i(k)|\leq 1$ for all $k$:
-$$\mathbb{E}_\rho[\hat{o}_i^2] = \frac{1}{(\eta^*)^2}\sum_k\mathrm{tr}(G_k\rho)\,f_i(k)^2 \leq \frac{1}{(\eta^*)^2} = I.$$
-Hence $\mathrm{Var}_\rho[\hat{o}_i]\leq I$ uniformly in $\rho$.
-
-**Sample complexity.** Apply the joint POVM $N$ times i.i.d.\ to obtain outcomes $k_1,\ldots,k_N$. The sample mean $\bar{o}_i^{(N)}:=\frac{1}{N}\sum_{t=1}^N\hat{o}_i(k_t)$ is unbiased with variance $I/N$. By Chebyshev's inequality:
-$$\mathrm{Pr}\!\left[|\bar{o}_i^{(N)}-\mathrm{tr}(O_i\rho)|>\varepsilon\right]\leq\frac{I}{N\varepsilon^2}.$$
-Setting $N\geq IL/(\varepsilon^2\delta)$ and applying a union bound over $i=1,\ldots,L$ gives total failure probability $\leq\delta$. The standard median-of-means technique improves the $\delta$-dependence to $\ln(L/\delta)$, yielding $N=\mathcal{O}(I\,\varepsilon^{-2}\ln(L/\delta))$. $\blacksquare$
-:::
-
-::: {.callout-note collapse="true"}
-## Proof: Lower Bound (click to expand)
-
-**Step 1 — Sup-norm lower bound.**
-
-*Claim:* For any POVM $\{G_k\}$ with unbiased estimators $\{f_i\}$ satisfying $\sum_k G_k f_i(k)=O_i$ for all $i$, we have $\max_i\|f_i\|_\infty\geq\sqrt{I}$.
-
-*Proof.* Suppose $\|f_i\|_\infty\leq C$ for all $i$ with $C>0$. Construct binary POVM elements:
-$$\tilde{E}^{(\pm)}_{i,k} := G_k\cdot\frac{1\pm f_i(k)/C}{2}\geq 0,$$
-where non-negativity holds because $|f_i(k)|\leq C$ implies $1\pm f_i(k)/C\geq 0$. These define a valid joint POVM (parent $\{G_k\}$) with marginals:
-$$\sum_k\!\left(\tilde{E}^{(+)}_{i,k}-\tilde{E}^{(-)}_{i,k}\right) = \sum_k G_k\frac{f_i(k)}{C} = \frac{O_i}{C}.$$
-Thus $\{G_k\}$ simultaneously realizes the unsharp observables $\{O_i/C\}$ with sharpness parameter $1/C$. By the definition of $\eta^*$, joint measurability requires $1/C\leq\eta^*=I^{-1/2}$, giving $C\geq\sqrt{I}$. $\square$
-
-**Step 2 — Variance at the equatorial state.**
-
-Let $i^*$ achieve $\|f_{i^*}\|_\infty=\max_i\|f_{i^*}\|_\infty\geq\sqrt{I}$, and let $\rho^*$ be any state with $\mathrm{tr}(O_{i^*}\rho^*)=0$ (the "equatorial" state). At this state:
-$$\mathrm{Var}_{\rho^*}[f_{i^*}] = \mathbb{E}_{\rho^*}[f_{i^*}^2] =: \mathrm{tr}(S_{i^*}\,\rho^*),\quad S_{i^*}:=\sum_k G_k f_{i^*}(k)^2.$$
-
-By the scalar Jensen inequality applied to the probability distribution $p_k=\mathrm{tr}(G_k\rho)$:
-$$\mathrm{tr}(S_{i^*}\rho) = \mathbb{E}_\rho[f_{i^*}^2]\geq(\mathbb{E}_\rho[f_{i^*}])^2=(\mathrm{tr}(O_{i^*}\rho))^2\quad\forall\,\rho.$$
-In particular, at the eigenstates $\rho_\pm$ of $O_{i^*}$ (with $\mathrm{tr}(O_{i^*}\rho_\pm)=\pm 1$):
-$$\mathrm{tr}(S_{i^*}\rho_\pm)\geq 1,$$
-and summing over $\rho_+,\rho_-$ and using $\frac{\rho_++\rho_-}{2}=\frac{\mathbb{I}}{d}$ gives $\frac{1}{d}\mathrm{tr}(S_{i^*})\geq 1$, i.e., $S_{i^*}\geq\mathbb{I}$ on average.
-
-For the optimal joint POVM (all outcomes give $f_{i^*}(k)=\pm\sqrt{I}$): $S_{i^*}=I\,\mathbb{I}$ exactly, so $\mathrm{Var}_{\rho^*}[f_{i^*}]=I$.
-
-For a general joint POVM, the Lemma (Dual Discrimination) established in the next section shows that the incompatibility advantage $I$ imposes a state-discrimination hardness that bounds the minimum achievable variance from below: $\mathrm{Var}_{\rho^*}[f_{i^*}]\geq I-1$.
-
-**Step 3 — Sample complexity lower bound.**
-
-With $\mathrm{Var}[f_{i^*}]\geq I-1$, the $N$-sample mean $\bar{f}_{i^*}^{(N)}$ satisfies $\mathrm{Var}[\bar{f}_{i^*}^{(N)}]=(I-1)/N$. To achieve additive error $\leq\varepsilon$ with success probability $\geq 2/3$, Chebyshev requires:
-$$N\geq\frac{9(I-1)}{\varepsilon^2}=\Omega(I\,\varepsilon^{-2}).\quad\blacksquare$$
-:::
-
-::: {.callout-tip icon="false" collapse="true"}
-## Discussion
-This conjecture should at least satisfy the following known results. The compatibility robustness $I$ provides a natural bridge between the measurement-theoretic and complexity-theoretic perspectives.
-
-**Example: $\{X, Y, Z\}$ on a single qubit.** By @heinosaari2015noise (Theorem 1), the unsharp Pauli triple $\{E^\eta_{a|P} = \tfrac{1}{2}(\mathbb{I}+a\eta P)\}_{P\in\{X,Y,Z\}}$ is jointly measurable if and only if $\eta_X^2+\eta_Y^2+\eta_Z^2 \le 1$. In the symmetric case this gives $\eta^* = 1/\sqrt{3}$, hence compatibility robustness
-$$
-I = \frac{1}{(\eta^*)^2} = 3.
-$$
-The conjecture therefore predicts $\mathcal{O}(3\,\varepsilon^{-2}\ln(1/\delta))$ shots to estimate $\{\mathrm{tr}(X\rho),\mathrm{tr}(Y\rho),\mathrm{tr}(Z\rho)\}$, matching the $3^w$ overhead for weight-$w=1$ Paulis in classical shadows @huang2020predicting.
-
-This single-qubit example generalizes to verify all three known cases:
-
-- **Commuting observables ($I = 1$):** Commuting measurements are already jointly measurable without any noise ($\eta^* = 1$, $I = 1$). The conjecture gives $\mathcal{O}(\varepsilon^{-2}\ln(1/\delta))$ per observable; a union bound over $L$ observables yields $\mathcal{O}(\varepsilon^{-2}\ln L)$, consistent with the known $\mathcal{O}(\ln L)$ overhead.
-- **Weight-$w$ Pauli observables ($I = 3^w$):** On each qubit site the threshold is $\eta^* = 1/\sqrt{3}$; over $w$ independent sites the product structure gives $I = (1/(\eta^*)^2)^w = 3^w$. The conjecture then predicts $\mathcal{O}(3^w\varepsilon^{-2}\ln(1/\delta))$, matching the $3^w\mathcal{O}(L)$ scaling in random Pauli classical shadows @huang2020predicting.
-- **Rank-$r$ observables ($I = r$):** For a rank-$r$ observable the noise robustness threshold scales as $\eta^* \sim r^{-1/2}$, giving $I \sim r$. The conjecture then predicts $r\,\mathcal{O}(\varepsilon^{-2}\ln(1/\delta))$, consistent with the $r\mathcal{O}(L)$ scaling known for derandomized low-rank shadows.
-:::
-
-::: {.callout-important icon="false"}
-## Conjecture: Product Hardness
-Given a set of observables $O = \{O_i\}_{i=1}^L$ on $\mathcal{H}$ with compatibility robustness $I$, construct a new observable set $O^{\otimes N} = \{O_{i_1} \otimes \cdots \otimes O_{i_L}\}_{i_1, \cdots, i_L = 1}^L$ with $L^N$ observables and on space $\mathcal{H}^{\otimes N}$.
-Then any measurement strategy that is $N$-separable on space $\mathcal{H}^{\otimes N}$ has sampling complexity $\mathcal{O}(I^N\varepsilon^{-2} \ln(1/\delta))$.
-:::
 
 # Compatibility and Joint Measurability
 
@@ -301,7 +212,10 @@ We comparing this second moment with that of classical shadow in estimating $\{X
 
 Therefore, even if we implement the same strategy as described in Algorithm (Locally-biased classical shadow) with $p_x,p_y,p_z$, the joint measurement  method use worse post-processing strategy such that its variance counts $p_x^{-2}$ while the classical shadow counts $p_x^{-1}$.
 
-However, given a set of observables $\{O_i\}_{i=1}^L$ that can be efficiently estimated by certain classical shadow strategy, there must exists a joint measurement method that reach the same efficiency. This means that a better joint measurement strategy exists: $\mathcal{G}_{\text{CS}} = \{p_x \frac{\mathbb{I} \pm X}{2}, p_y \frac{\mathbb{I} \pm Y}{2}, p_z \frac{\mathbb{I} \pm Z}{2}\}$
+However, given a set of observables $\{O_i\}_{i=1}^L$ that can be efficiently estimated by certain classical shadow strategy, there must exists a joint measurement method that reach the same efficiency. This means that a better 6-outcomes joint measurement strategy exists:
+$$
+\mathcal{G}_{\text{CS}} = \{p_x \frac{\mathbb{I} \pm X}{2}, p_y \frac{\mathbb{I} \pm Y}{2}, p_z \frac{\mathbb{I} \pm Z}{2}\} \to \{(x,\pm),(y,\pm),(z,\pm)\}
+$$
 
 # Toy Example: $\{P,Q\}$
 

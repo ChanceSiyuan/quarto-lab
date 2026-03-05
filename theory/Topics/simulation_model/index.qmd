@@ -1,0 +1,261 @@
+---
+title: "Analog Rydberg Quantum Simulation: Model Catalog"
+date: "2026-03-05"
+categories:
+  - Index
+bibliography: refs.bib
+lang: en
+---
+
+# Overview
+
+Neutral-atom arrays with Rydberg interactions form a versatile analog quantum simulation platform.
+Two fundamental interaction regimes underpin nearly all models realized to date:
+
+1. **Van der Waals regime** — atoms excited to the *same* Rydberg state repel with $V(R) = C_6/R^6$ ($C_6 \propto n^{11}$). The blockade mechanism forbids simultaneous excitation of nearby atoms, naturally encoding **Ising-type** constraints.
+
+2. **Resonant dipole–dipole regime** — atoms prepared in *two different* Rydberg states undergo flip-flop exchange $|rs\rangle \leftrightarrow |sr\rangle$ with strength $V(R) = C_3/R^3$ ($C_3 \propto n^4$). This directly realizes **XY and XXZ-type** spin exchange.
+
+A third route, **Rydberg dressing**, uses off-resonant coupling to Rydberg states to imprint soft-core interactions on ground-state atoms in optical lattices, enabling extended Hubbard physics.
+
+The catalog below is organized by physics theme; a [summary table](#sec-mechanism-table) at the end classifies every model by interaction mechanism.
+
+
+---
+
+# Foundational Framework
+
+## Effective Hamiltonian (Schrieffer–Wolff)
+
+Perturbative block-diagonalization that derives low-energy effective Hamiltonians from the full Rydberg Hamiltonian. All models below ultimately rest on this framework. See the [detailed notes](Effective_ham.qmd).
+
+---
+
+# Spin Models {#sec-spin}
+
+## Transverse-Field Ising Model (TFIM) {#sec-tfim}
+$$
+H = \frac{\Omega}{2}\sum_i \sigma^x_i - \Delta \sum_i n_i + \sum_{i<j} \frac{C_6}{R_{ij}^6}\, n_i n_j
+$$ {#eq-tfim}
+where $n_i = |r_i\rangle\langle r_i|$, $\Omega$ is the Rabi frequency, and $\Delta$ the laser detuning.
+Ground $|g\rangle$ and Rydberg $|r\rangle$ states encode pseudo-spin-$\tfrac12$.
+Van der Waals repulsion provides the Ising $ZZ$ coupling; global laser driving provides the transverse field.
+Realized on 1D chains [@bernien2017probing], 2D square, triangular, honeycomb, and kagome lattices [@ebadi2021quantum; @scholl2021quantum].
+See the [detailed notes](TFIM.qmd).
+
+
+## PXP Model / Quantum Many-Body Scars {#sec-pxp}
+$$
+H_{\text{PXP}} = \frac{\Omega}{2}\sum_i P_{i-1}\,\sigma^x_i\, P_{i+1}
+$$ {#eq-pxp}
+where $P_i = |g_i\rangle\langle g_i|$ projects onto ground states, enforcing the Rydberg blockade constraint.
+This is the strong-blockade limit of the TFIM: the Hilbert space is restricted to configurations with no two adjacent Rydberg excitations.
+Starting from the Néel state $|Z_2\rangle = |rgrg\cdots\rangle$, anomalous revivals signal **quantum many-body scars** (QMBS) — non-thermal eigenstates in an otherwise ergodic spectrum [@bernien2017probing].
+Controlled scar dynamics and subharmonic response were demonstrated by periodic driving [@bluvstein2021controlling].
+
+
+## Dipolar XY Model {#sec-xy}
+$$
+H_{\text{XY}} = \sum_{i<j} \frac{C_3}{R_{ij}^3}\bigl(S_i^+ S_j^- + S_i^- S_j^+\bigr)
+$$ {#eq-xy}
+Two Rydberg states (e.g.\ $|nS\rangle$, $|nP\rangle$) connected by dipolar transitions encode spin-$\tfrac12$.
+The resonant dipole–dipole flip-flop directly realizes the XY exchange with long-range $1/r^3$ couplings.
+Scalable spin squeezing ($-3.5$ dB below the standard quantum limit) was achieved via quench dynamics in $\sim\!200$-atom arrays [@bornet2023scalable].
+Spectroscopy of spin-wave excitations confirmed the ferromagnetic dispersion relation [@chen2025spectroscopy].
+
+
+## XXZ Heisenberg Model {#sec-xxz}
+$$
+H_{\text{XXZ}} = \sum_{i<j} J_{ij}\!\left[\frac{1}{2}(S_i^+ S_j^- + S_i^- S_j^+) + \Delta_{\text{anis}}\, S_i^z S_j^z\right]
+$$ {#eq-xxz}
+Tunable anisotropy $\Delta_{\text{anis}}$ interpolates from the XY limit ($\Delta_{\text{anis}}=0$) through the isotropic Heisenberg point ($\Delta_{\text{anis}}=1$) to the Ising limit.
+Achieved by microwave engineering of resonant dipole–dipole interactions [@scholl2022microwave] or Rydberg dressing to add Ising coupling atop native XY exchange [@chen2024anisotropic].
+
+
+## Commensurate Density-Wave Phases / Devil's Staircase {#sec-density-wave}
+
+By tuning $\Delta/\Omega$ and the ratio of blockade radius to lattice spacing in the TFIM Hamiltonian (@eq-tfim), a cascade of commensurate ordered phases ($Z_2$, $Z_3$, $Z_4$, star, striped) appears, forming a devil's staircase.
+Observed on a 256-atom programmable simulator on square, triangular, and kagome lattices [@ebadi2021quantum].
+Quantum Kibble–Zurek dynamics across the $Z_2$ transition were probed in 1D chains [@keesling2019quantum].
+Between commensurate phases, a quantum **floating phase** with incommensurate quasi-long-range order was observed on ladder arrays [@chen2025floating].
+
+
+---
+
+# Topological Phases {#sec-topo}
+
+## Quantum Spin Liquid / Toric Code ($\mathbb{Z}_2$ Topological Order) {#sec-qsl}
+
+Atoms on the **ruby lattice** (links of a kagome) at the blockade radius encompassing six nearest neighbors.
+The blockade constraint maps onto a quantum dimer model on kagome; Rabi oscillations generate quantum fluctuations of dimers, stabilizing $\mathbb{Z}_2$ topological order described by the toric code Hamiltonian
+$$
+H_{\text{TC}} = -\sum_v A_v - \sum_p B_p.
+$$ {#eq-toric}
+Signatures of the spin-liquid phase — including topological string operators — were detected on a 219-atom simulator [@semeghini2021probing; @verresen2021prediction].
+
+
+## Symmetry-Protected Topological Phase / Bosonic SSH {#sec-spt}
+
+Atoms in tweezers with **alternating interatomic spacings** realize a bosonic SSH model with alternating strong/weak dipolar hoppings.
+The hard-core constraint arises from Rydberg blockade.
+Observation of robust ground-state degeneracy attributed to protected edge states confirmed an SPT phase of interacting bosons [@deleseleuc2019observation].
+
+
+## Haldane Phase (Spin-1 Chain) {#sec-haldane}
+
+Three Rydberg states near a Förster resonance encode effective spin-1.
+Dipole–dipole and van der Waals interactions combine to produce a tunable spin-1 Heisenberg chain
+$$
+H_{\text{Haldane}} = J\sum_i \mathbf{S}_i \cdot \mathbf{S}_{i+1} + D\sum_i (S_i^z)^2
+$$
+with a highly robust Haldane phase featuring fractionalized edge states.
+An efficient adiabatic preparation scheme was proposed for current platforms [@fromonteil2025haldane].
+
+
+---
+
+# Lattice Gauge Theories {#sec-lgt}
+
+## U(1) Lattice Gauge Theory / Schwinger Model {#sec-u1}
+
+In 1D, the PXP-type blockade constraint naturally enforces **Gauss's law**; domain-wall propagation maps onto charged-particle dynamics, and string-like excitations represent the electric flux tube [@surace2020lattice].
+On a 2D kagome geometry, local U(1) symmetry emerges from blockade.
+**String breaking** — the dynamical creation of particle–antiparticle pairs that screen a confining string — was observed on a $(2+1)$D Rydberg simulator [@observation2025string].
+
+
+## $\mathbb{Z}_2$ Lattice Gauge Theory {#sec-z2-lgt}
+
+On ladder geometries, the combination of Rydberg blockade and lattice structure gives rise to $\mathbb{Z}_2$ gauge theories with dynamical matter.
+Floquet-driven Rydberg arrays in tweezer ladders provide a scalable route to $(2+1)$D $\mathbb{Z}_2$ confinement [@homeier2023z2; @geier2023floquet].
+
+
+## Quantum Dimer Models {#sec-dimer}
+
+Rydberg atoms on lattice links with blockade enforcing the dimer constraint (one excitation per vertex).
+The Rokhsar–Kivelson Hamiltonian
+$$
+H_{\text{RK}} = -t\sum_\square \bigl(|{=}\rangle\langle{\|}\rangle + \text{h.c.}\bigr) + V\sum_\square \bigl(|{=}\rangle\langle{=}| + |{\|}\rangle\langle{\|}|\bigr)
+$$
+was realized on square and triangular geometries using Rydberg gadgets (auxiliary atoms that transform blockade into general constraints), with signatures of quantum spin-liquid states [@samajdar2020quantum; @dimer2025gadgets].
+
+
+---
+
+# Hubbard Models {#sec-hubbard}
+
+## Fermi-Hubbard Model {#sec-fhm}
+
+Strong-coupling regime mapped to the Rydberg platform via slave-spin decomposition and mean-field decoupling.
+See the [detailed notes](ferm_Hubbard.qmd).
+
+
+## Bose-Hubbard Model {#sec-bhm}
+
+Two-component hard-core bosons with $t$-$J$ derivation.
+Note that the Rydberg $t$-$J$-$V$ model is *not* derived from Bose-Hubbard — it arises independently from three-level Rydberg physics.
+See the [detailed notes](Boson-Hubbard.qmd).
+
+
+## Extended Bose-Hubbard Model {#sec-ebhm}
+
+$$
+H_{\text{eBH}} = -J\sum_{\langle i,j\rangle} a_i^\dagger a_j + \frac{U}{2}\sum_i n_i(n_i - 1) + V\sum_{\langle i,j\rangle} n_i n_j
+$$
+Atoms in an optical lattice with off-resonant Rydberg coupling (**Rydberg dressing**) provide the nearest-neighbor $V$ term on top of the standard Hubbard $J$ and $U$.
+Stroboscopic dressing was used to control losses and study equilibrium and nonequilibrium behavior [@guardado2024rydberg].
+
+
+## $t$-$J$-$V$ Model (Doped Quantum Antiferromagnet) {#sec-tjv}
+
+$$
+H_{tJV} = -t\sum_{\langle i,j\rangle}(\tilde{c}_i^\dagger \tilde{c}_j + \text{h.c.}) + J\sum_{\langle i,j\rangle}\Bigl(\mathbf{S}_i\!\cdot\!\mathbf{S}_j - \tfrac{1}{4}n_i n_j\Bigr) + V\sum_{\langle i,j\rangle} n_i^h n_j^h
+$$
+Three Rydberg levels encode spins and holes.
+Dynamical phase separation and repulsively bound pairs of hole dopants were observed in a Rydberg tweezer array [@qiao2025].
+
+
+## Honeycomb / Kitaev Model {#sec-honeycomb}
+
+Effective Hamiltonian under magnetic perturbation on the honeycomb lattice, yielding Majorana fermion equivalence, gauge fixing, and non-trivial Chern number.
+See the [detailed notes](honeycomb.qmd).
+
+
+---
+
+# Quantum Chemistry {#sec-chem}
+
+## pUCCD (Paired Unitary Coupled-Cluster Doubles) {#sec-puccd}
+
+Zero-seniority quantum chemistry ansatz implemented via Matsubara–Matsuda transformation, imaginary time evolution, and neutral-atom coherent transport.
+See the [detailed notes](puccd.qmd).
+
+
+---
+
+# Dynamical Phenomena {#sec-dynamics}
+
+## Discrete Time Crystals {#sec-dtc}
+
+Periodically driven (Floquet) Rydberg systems exhibiting subharmonic response: the system oscillates at a fraction of the drive frequency, breaking discrete time-translation symmetry.
+Stabilized by quantum many-body scars in driven 1D arrays [@bluvstein2021controlling].
+Higher-order and fractional discrete time crystals ($n$-DTCs with $n = 2, 3, \ldots, 14$) observed using cesium atoms with an EIT scheme and pulsed RF driving [@kongkhambut2024higher].
+
+
+## Quantum Coarsening / Higgs Mode {#sec-coarsening}
+
+After crossing the Ising quantum critical point, antiferromagnetically ordered domains coarsen driven by domain-boundary curvature, with dynamics accelerating near criticality.
+Long-lived oscillations of the order parameter were identified as an **amplitude (Higgs) mode** [@bluvstein2025quantum].
+
+
+---
+
+# Optimization and Other Models {#sec-other}
+
+## Maximum Independent Set (MIS) {#sec-mis}
+
+The blockade Hamiltonian is directly equivalent to the MIS problem on a unit-disk graph: find the maximum subset of vertices where no two are within the blockade radius.
+Superlinear quantum speedup was observed on the hardest graph instances with up to 289 qubits [@ebadi2022quantum].
+
+
+## 3D Random Hopping / Anderson Localization {#sec-anderson}
+
+A frozen Rydberg gas (random atom positions) realizes the XY model with disordered $1/r^3$ couplings.
+Spectroscopic signatures of a localization–delocalization transition were observed [@lippe2021experimental].
+
+
+## SSH via Rydberg Synthetic Dimensions {#sec-ssh-synthetic}
+
+The SSH model with alternating hoppings realized in a synthetic dimension formed by Rydberg energy levels coupled by millimeter waves.
+Topological edge states were demonstrated using ${}^{84}$Sr [@kanungo2022realizing].
+
+
+---
+
+# Interaction Mechanism Classification {#sec-mechanism-table}
+
+| Model | Van der Waals | Dipole–Dipole | Rydberg Dressing | Floquet |
+|:------|:---:|:---:|:---:|:---:|
+| **TFIM** | $\checkmark$ | | | |
+| **PXP / Scars** | $\checkmark$ | | | |
+| **Density waves / Devil's staircase** | $\checkmark$ | | | |
+| **Dipolar XY** | | $\checkmark$ | | |
+| **XXZ Heisenberg** | | $\checkmark$ | | $\checkmark$ |
+| **Quantum spin liquid / Toric code** | $\checkmark$ | | | |
+| **SPT / Bosonic SSH** | | $\checkmark$ | | |
+| **Haldane chain** | | $\checkmark$ | $\checkmark$ | |
+| **U(1) LGT / Schwinger** | $\checkmark$ | | | |
+| **$\mathbb{Z}_2$ LGT** | $\checkmark$ | | | $\checkmark$ |
+| **Quantum dimer models** | $\checkmark$ | | | |
+| **Fermi-Hubbard** | | $\checkmark$ | | |
+| **Bose-Hubbard** | | $\checkmark$ | | |
+| **Extended Bose-Hubbard** | | | $\checkmark$ | |
+| **$t$-$J$-$V$** | | $\checkmark$ | | |
+| **Honeycomb / Kitaev** | | $\checkmark$ | | |
+| **Discrete time crystals** | $\checkmark$ | | | $\checkmark$ |
+| **Coarsening / Higgs** | $\checkmark$ | | | |
+| **MIS optimization** | $\checkmark$ | | | |
+| **Random hopping / Anderson** | | $\checkmark$ | | |
+| **SSH (synthetic dim.)** | | $\checkmark$ | | |
+
+::: {#refs}
+:::

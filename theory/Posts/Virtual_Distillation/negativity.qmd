@@ -1,0 +1,277 @@
+---
+categories:
+- Readings
+date: 2026-03-03
+description: 'Notes on the estimation of negativity using virtual distillation.'
+lang: en
+title: 'Estimation of Negativity'
+bibliography: refs.bib
+draft: true
+---
+
+# Summary and question
+
+This note reviews the key mathematical properties underlying the estimation of entanglement negativity via moments of the partially transposed density matrix, following @zhou2020single. The central question is: which moments of $\rho_{AB}^{T_B}$ carry information about its negative eigenvalues, and why?
+
+
+:::{.callout-important icon="false"}
+## Question
+The value $\rho_{AB}^{T_B}$ is a non-linear entanglement measure. More exsit? On which way better that the linear entanglement measure?
+:::
+
+:::{.callout-note icon="false"}
+## Discussion
+The logarithmic negativity $\mathcal{E}_N$ is a **non-linear** entanglement measure: it is defined through the trace norm of $\rho_{AB}^{T_B}$, which involves the absolute values of eigenvalues and cannot be expressed as $\mathrm{tr}[O\rho]$ for any observable $O$. Other non-linear measures include the entanglement entropy $S(\rho_A)$, concurrence, and entanglement of formation.
+
+The advantage over **linear** entanglement witnesses is twofold:
+
+1. **Faithfulness:** A linear witness $W$ can certify entanglement ($\mathrm{tr}[W\rho]<0$) but cannot quantify it and may miss bound entangled states. The negativity, on the other hand, is an entanglement monotone that vanishes on all PPT (positive partial transpose) states and is non-zero for all NPT entangled states [@vidal2002computable].
+
+2. **Operational meaning:** $\mathcal{E}_N$ upper-bounds the distillable entanglement and provides a bound on teleportation capacity, giving it direct physical relevance beyond mere detection.
+:::
+
+:::{.callout-important icon="false"}
+## Question
+Is the zero-norm of $\rho_{AB}^{T_B}$ has a 3-replica lower bound?
+:::
+
+
+# Core result
+
+The **logarithmic negativity** of a bipartite quantum state is defined as [@vidal2002computable]:
+$$
+\mathcal{E}_N(\rho_{AB}) = \log \|\rho_{AB}^{T_B}\|_1 = \log \sum_k |\lambda_k|
+$$ {#eq-negativity}
+where $\rho_{AB}^{T_B}$ is the partial transpose of $\rho_{AB}$ with respect to subsystem $B$ [@peres1996separability], and $\{\lambda_k\}$ are its eigenvalues.
+
+The partial transpose is defined in the computational basis $\{|i\rangle_A \otimes |k\rangle_B\}$ by
+$$
+\langle i,k|\,\rho_{AB}^{T_B}\,|j,l\rangle = \langle i,l|\,\rho_{AB}\,|j,k\rangle = \rho_{il,jk}
+$$ {#eq-pt-def}
+i.e., the $B$-subsystem indices $k \leftrightarrow l$ are exchanged.
+
+To estimate the negativity, as promising method it to estimate the moments of the partially transposed density matrix, i.e., $\mathrm{tr}[(\rho_{AB}^{T_B})^n]$ for $n=1,2,3,\ldots$.
+
+Based on the Newton identity, the spectrum of $\rho_{AB}^{T_B}$ is related to the moment by the Theorem below:
+
+:::{#thm-newton-identity .callout-important icon="false"}
+## Theorem (Newton identity)
+Suppose $\{\lambda_k\}_{k=1}^D$ is the spectrum of $\rho_{AB}^{T_B}$ (where $D = d_A d_B$), and its characteristic polynomial is
+$$
+\chi(t) = \prod_{k=1}^D (t - \lambda_k) = t^D - e_1 t^{D-1} + e_2 t^{D-2} - \cdots
+$$
+where $e_j$ is the elementary symmetric polynomial. The Newton identity gives the recurrence relation between $p_n = \sum_k \lambda_k^n$ and $\{e_j\}$:
+$$
+p_n - e_1 p_{n-1} + e_2 p_{n-2} - \cdots + (-1)^{n-1} n\, e_n = 0.
+$$
+:::
+
+:::{.callout-note collapse="true"}
+## Proof (Click to expand)
+Take the logarithmic derivative of the characteristic polynomial:
+$$
+\frac{d}{dt}\ln \chi(t) = \sum_{k=1}^D \frac{1}{t - \lambda_k}.
+$$
+On the other hand, writing $\chi(t) = \sum_{j=0}^D (-1)^j e_j\, t^{D-j}$ (with $e_0 = 1$), we have
+$$
+\frac{\chi'(t)}{\chi(t)} = \frac{\sum_{j=0}^{D-1}(-1)^j e_j (D-j)\,t^{D-j-1}}{\chi(t)}.
+$$
+For large $|t|$, expand the right-hand side of $\sum_k(t-\lambda_k)^{-1} = \sum_k \sum_{n=0}^\infty \lambda_k^n / t^{n+1}$ as a power series in $1/t$:
+$$
+\sum_{k=1}^D \frac{1}{t-\lambda_k} = \sum_{n=0}^\infty \frac{p_{n+1}}{t^{n+2}}\cdot t = \sum_{n=1}^\infty \frac{p_n}{t^{n+1}} \cdot t = \frac{D}{t} + \frac{p_1}{t^2}\cdot t + \cdots
+$$
+More precisely, $\chi'(t)/\chi(t) = D/t + \sum_{n=1}^\infty p_n / t^{n+1}$ after formal expansion. Multiplying both sides by $\chi(t)$ and matching coefficients of $t^{D-n}$ yields the Newton identity:
+$$
+p_n - e_1 p_{n-1} + e_2 p_{n-2} - \cdots + (-1)^{n-1} n\, e_n = 0. \qquad\square
+$$
+:::
+
+Actually, as shown in @gray2018machine, $p_1,p_2,p_3$ already carry information about the negativity.
+
+:::{#thm-negativity-rank .callout-important icon="false"}
+## Theorem ($p_3$ reflects negativity)
+Let $\{\lambda_k\}$ be the eigenvalues of $\rho_{AB}^{T_B}$ and $p_n = \sum_k \lambda_k^n$. Then:
+
+1. $p_1 = 1$ (normalization) and $p_2 = \mathrm{tr}[\rho_{AB}^2]$ (purity) are completely insensitive to the signs of $\{\lambda_k\}$.
+2. The third moment $p_3$ is the **lowest-order** moment that distinguishes $\{\lambda_k\}$ from $\{|\lambda_k|\}$. Specifically, whenever $\rho_{AB}^{T_B}$ has negative eigenvalues,
+$$
+\sum_k |\lambda_k|^3 - p_3 = 2\sum_{\lambda_k < 0} |\lambda_k|^3 > 0.
+$$
+:::
+
+:::{.callout-note collapse="true"}
+## Proof (Click to expand)
+**Part 1: $p_1$ is sign-blind.** By @lem-negativity_rank, $p_1 = \mathrm{tr}[\rho_{AB}^{T_B}] = 1$. This constrains $\sum_k \lambda_k = 1$ but places no constraint on $\sum_k |\lambda_k|$. One can increase the negative eigenvalues while compensating with larger positive eigenvalues without changing $p_1$.
+
+**Part 2: $p_2$ is sign-blind.** By @lem-negativity_rank, $p_2 = \mathrm{tr}[(\rho_{AB}^{T_B})^2] = \mathrm{tr}[\rho_{AB}^2]$. Since $\lambda_k^2 = |\lambda_k|^2$ for all real $\lambda_k$, the second moment cannot distinguish $\lambda_k$ from $|\lambda_k|$. Moreover, $p_2$ equals the purity of $\rho_{AB}$ itself, a quantity independent of the partial transpose.
+
+**Part 3: $p_3$ is sign-sensitive.** Since $\lambda_k^3$ preserves the sign ($(-x)^3 = -x^3$), we can decompose:
+$$
+p_3 = \sum_{\lambda_k > 0} \lambda_k^3 - \sum_{\lambda_k < 0} |\lambda_k|^3, \qquad \sum_k |\lambda_k|^3 = \sum_{\lambda_k > 0} \lambda_k^3 + \sum_{\lambda_k < 0} |\lambda_k|^3.
+$$
+Subtracting: $\sum_k |\lambda_k|^3 - p_3 = 2\sum_{\lambda_k < 0} |\lambda_k|^3$, which is strictly positive when negative eigenvalues exist. For $n=1$: sign cancels in the sum. For $n=2$: squaring erases signs. Thus $n=3$ is the first moment sensitive to the negative part of the spectrum. $\square$
+:::
+
+Thus here below we will focus on the $m\leq 3$ moments.
+
+:::{#lem-negativity_rank .callout-important icon="false"}
+## Lemma (First two moments are uninformative)
+The first two moments of the partially transposed density matrix are:
+$$
+\begin{align*}
+\mathrm{tr}[\rho^{T_B}_{AB}] = \mathrm{tr}(\rho_{AB}) = 1, \qquad \mathrm{tr}[(\rho^{T_B}_{AB})^2] = \mathrm{tr}(\rho_{AB}^2)\\
+\mathrm{tr}[(\rho^{T_B}_{AB})^3] = \mathrm{tr}(W_{(123)}^{(A)}\otimes W_{(132)}^{(B)}\rho_{AB}^{\otimes 3}).
+\end{align*}
+$$
+:::
+
+:::{.callout-note collapse="true"}
+## Proof (Click to expand)
+Direct calculation:
+$$
+\begin{align*}
+\mathrm{tr}[(\rho_{AB}^{T_B})^m] &= \mathrm{tr}[W^{(A)}_{(1,\cdots,m)} \otimes W^{(B)}_{(1,\cdots,m)}(\rho_{AB}^{T_B})^{\otimes m}] \\
+&= \mathrm{tr}[W^{(A)}_{(1,\cdots,m)} \otimes W^{(B),-1}_{(1,\cdots,m)}(\rho_{AB})^{\otimes m}] \\
+&= \begin{cases}
+\mathrm{tr}[W^{(A)}_{(1,\cdots,m)} \otimes W^{(B)}_{(1,\cdots,m)}(\rho_{AB})^{\otimes m}] & \text{if~} m =1,2 \\
+\mathrm{tr}[W^{(A)}_{(123)} \otimes W^{(B)}_{(132)}(\rho_{AB})^{\otimes 3}] & \text{if~} m =3
+\end{cases}
+\end{align*}
+$$
+In the second step, we used the fact that $SWAP_{k}^T = SWAP^{-1}_{k}$ and $SWAP_{k} = SWAP^{-1}_{k}$ given $m =1,2$.
+:::
+
+Thus the rank-1 moment are trivial, the rank-2 moment can be estimated through standard purity estimation methods, and the rank-3 moment is the first non-trivial moment, which involves the estimation of operator $W^{(A)}_{(123)} \otimes W^{(B)}_{(132)}$ on 3-replica state $\rho_{AB}^{\otimes 3}$.
+
+
+#### Hermitian strategies 
+Since $W^{(A)}_{(123)} \otimes W^{(B)}_{(132)}$ is non-hermitian, we first symmetrize it into
+$$
+M_{\mathrm{reg}} = \frac{1}{2} \left(W^{(A)}_{(123)} \otimes W^{(B)}_{(132)} + W^{(A)}_{(132)} \otimes W^{(B)}_{(123)}\right)
+$$
+
+Given the ability to implement two-replica symmetric measurement, we can estimate $\mathrm{tr}[\rho^m]$ by concatenating the 2-replica symmetric measurements for $m-1$ times.
+In other words, we implement the following projection operators in order:
+$$
+\Pi_{\pm}^{1,2}:=\frac{\mathbb{I} \pm S^{(12)}}{2} \to  \cdots \to \Pi_{\pm}^{m-1,m}:=\frac{1 \pm S^{(23)}}{2},
+$$
+with result $\alpha_{12}, \alpha_{23}, \cdots, \alpha_{m-1,m} \in \{+,-\}$. 
+Here $S^{(j,j+1)} = SWAP^{\otimes n}_{12}$ are the swap operators between replicas.
+
+:::{#lem-3-replica-symmetric-measurement .callout-note icon="false"}
+## (Concatenation of 2-replica symmetric measurements)
+Given $m$-replica of state $\rho^{\otimes m}$, the concanated symmetric measurement gives the result $\alpha_{12}, \alpha_{23}, \cdots, \alpha_{m-1,m} \in \{+,-\}$, distributed according to the probability distribution
+$$
+P(\alpha_{12}, \alpha_{23}, \cdots, \alpha_{m-1,m}) = \mathrm{tr}\left[ \Pi_{\pm}^{m-1,m} \Pi_{\pm}^{m-2,m-1} \cdots \Pi_{\pm}^{1,2} \rho^{\otimes m} \Pi_{\pm}^{1,2}\cdots \Pi_{\pm}^{m-2,m-1} \Pi_{\pm}^{m-1,m} \right]
+$$
+This distribution satisfied $\langle \alpha_{12} \alpha_{23} \cdots \alpha_{m-1,m} \rangle = \mathrm{tr}[\rho^m]$.
+:::
+
+:::{.callout-note collapse="true"}
+## Proof (Click to expand)
+
+We first establish a key anti-commutator identity, then use it to prove the base case and the induction step.
+
+**Anti-commutator lemma.** For any operator $A$ and SWAP projectors $\Pi_\beta = \frac{1}{2}(\mathbb{I}+\beta S)$,
+$$
+\sum_{\beta=\pm 1} \beta\;\Pi_\beta\, A\, \Pi_\beta = \frac{1}{2}\{S, A\} = \frac{1}{2}(SA + AS).
+$$
+
+*Proof.* Expand: $\Pi_+ A\Pi_+ - \Pi_- A\Pi_- = \frac{1}{4}[(\mathbb{I}+S)A(\mathbb{I}+S) - (\mathbb{I}-S)A(\mathbb{I}-S)] = \frac{1}{2}(SA+AS)$. $\square$
+
+**Base case $m=3$.** The effective POVM element for sequential measurement of $S^{(12)}$ (result $\alpha_{12}$) then $S^{(23)}$ (result $\alpha_{23}$) is
+$$
+E_{(\alpha_{12},\alpha_{23})} = \Pi_{\alpha_{12}}^{(12)}\Pi_{\alpha_{23}}^{(23)}\Pi_{\alpha_{12}}^{(12)}.
+$$
+Computing $\sum_{\alpha_{12},\alpha_{23}} \alpha_{12}\alpha_{23}\, E_{(\alpha_{12},\alpha_{23})}$:
+
+First sum over $\alpha_{23}$ using $\sum_{\alpha_{23}}\alpha_{23}\Pi_{\alpha_{23}}^{(23)} = S^{(23)}$:
+$$
+\sum_{\alpha_{23}} \alpha_{23}\, E_{(\alpha_{12},\alpha_{23})} = \Pi_{\alpha_{12}}^{(12)}\, S^{(23)}\, \Pi_{\alpha_{12}}^{(12)}.
+$$
+Expanding $\Pi_{\alpha_{12}}^{(12)} = \frac{1}{2}(\mathbb{I} + \alpha_{12} S^{(12)})$:
+$$
+= \frac{1}{4}(\mathbb{I}+\alpha_{12} S^{(12)})\,S^{(23)}\,(\mathbb{I}+\alpha_{12} S^{(12)}) = \frac{1}{4}(S^{(23)} + \alpha_{12} W_{(123)} + \alpha_{12} W_{(132)} + S^{(13)})
+$$
+where we used $S^{(12)}S^{(23)} = W_{(123)}$, $S^{(23)}S^{(12)} = W_{(132)}$, and $S^{(12)}S^{(23)}S^{(12)} = S^{(13)}$.
+
+Now sum over $\alpha_{12}$. Terms with $\alpha_{12}$ (odd power) vanish, terms with $\alpha_{12}^2 = 1$ survive:
+$$
+\sum_{\alpha_{12}} \alpha_{12}\cdot \frac{1}{4}(S^{(23)} + \alpha_{12} W_{(123)} + \alpha_{12} W_{(132)} + S^{(13)}) = \frac{1}{2}(W_{(123)} + W_{(132)}).
+$$
+Therefore $\langle \alpha_{12}\alpha_{23}\rangle = \frac{1}{2}\mathrm{tr}[(W_{(123)}+W_{(132)})\rho^{\otimes 3}] = \mathrm{tr}[\rho^3]$, since both cyclic permutations give $\mathrm{tr}[\rho^3]$ when traced against $\rho^{\otimes 3}$.
+
+**Induction step.** For general $m$, define the nested anti-commutator recursively:
+$$
+\mathcal{B}_1 = S^{(1,2)}, \qquad \mathcal{B}_n = \frac{1}{2}\{S^{(n,n+1)}, \mathcal{B}_{n-1}\}.
+$$
+By the anti-commutator lemma, the $m-1$ cascaded measurements yield the effective observable $\mathcal{A}_{m-1} = \frac{1}{2^{m-2}}\mathcal{B}_{m-1}$.
+
+**Claim:** $\mathcal{B}_{n} = \frac{1}{2^{n-1}}\sum_{\kappa} W_\kappa$ summed over exactly $2^{n-1}$ distinct $(n+1)$-cycles.
+
+*Proof by induction on $n$:* For $n=1$, $\mathcal{B}_1 = S^{(1,2)} = W_{(12)}$ is a single 2-cycle. Suppose $\mathcal{B}_{n-1}$ is a sum of $2^{n-2}$ distinct $n$-cycles $\{\kappa_i\}$. Then
+$$
+\mathcal{B}_n = \frac{1}{2}\sum_i (S^{(n,n+1)}W_{\kappa_i} + W_{\kappa_i}S^{(n,n+1)}).
+$$
+Since each $\kappa_i$ is an $n$-cycle fixing $n+1$, and $(n,n+1)$ is an adjacent transposition, both $S^{(n,n+1)}W_{\kappa_i}$ and $W_{\kappa_i}S^{(n,n+1)}$ are $(n+1)$-cycles (they absorb the fixed point $n+1$ into the cycle). These $2\cdot 2^{n-2} = 2^{n-1}$ cycles are all distinct.
+
+**Trace identity:** For any $k$-cycle $\kappa$ and any state $\rho$, $\mathrm{tr}[W_\kappa\,\rho^{\otimes k}] = \mathrm{tr}[\rho^k]$ (by relabeling dummy summation indices). Therefore:
+$$
+\langle \alpha_{12}\cdots\alpha_{m-1,m}\rangle = \mathrm{tr}[\mathcal{A}_{m-1}\,\rho^{\otimes m}] = \frac{1}{2^{m-2}}\cdot 2^{m-2}\cdot\mathrm{tr}[\rho^m] = \mathrm{tr}[\rho^m]. \qquad\square
+$$
+:::
+
+The defecit of this strategy is that it requires the ability to implement **global symmetric measurement**, which is not always available.
+For example, in the case of n-qubit quantum state, we need to implement the projection $\frac{\mathbb{I}^{\otimes n} \pm \mathrm{SWAP}^{\otimes n}}{2}$.
+This is a highly non-local projection and shall be replaced by a pointwise SWAP projection $\frac{\left(\mathbb{I} \pm \mathrm{SWAP}\right)^{\otimes n}}{2}$.
+This will lead to a cross terms. For example, in the m=3 case, we are estimating
+$$
+\left(SWAP_{(123)} + SWAP_{(132)}\right)^{\otimes n} \neq \left(SWAP_{(123)}\right)^{\otimes n} + \left(SWAP_{(132)}\right)^{\otimes n}
+$$
+
+#### Non-Hermitian strategies
+
+The cross-term problem arises because the Hermitianized operator $\frac{1}{2}(W_{(123)}^{(j)} + W_{(132)}^{(j)})$ is a **sum** at each site, so the product over sites generates $2^n$ terms:
+$$
+\prod_{j=1}^n \frac{1}{2}(W_{(123)}^{(j)} + W_{(132)}^{(j)}) = \frac{1}{2^n}\sum_{S \subseteq [n]} \prod_{j\in S} W_{(123)}^{(j)} \prod_{j\notin S} W_{(132)}^{(j)},
+$$
+of which only $S=[n]$ and $S=\emptyset$ yield the desired $\mathrm{tr}[\rho^3]$, while the remaining $2^n-2$ cross-terms give partial-transpose moments $\mathrm{tr}[(\rho^{T_{\bar{S}}})^3]$ for various bipartitions.
+
+An alternative is to **directly diagonalize** $W_{(123)}^{(j)}$ at each site without Hermitianization. Since $W_{(123)}$ is unitary with $W_{(123)}^3 = \mathbb{I}$, its eigenvalues are the cube roots of unity $\{1, \omega, \omega^2\}$ where $\omega = e^{2\pi i/3}$. For a single qubit, the eigenbasis decomposes by Hamming weight:
+
+- **Weight 0, 3** (fixed points): $|000\rangle$, $|111\rangle$ with eigenvalue $1$.
+- **Weight 1** orbit $\{|001\rangle, |100\rangle, |010\rangle\}$: eigenstates $|e_k^{(1)}\rangle = \frac{1}{\sqrt{3}}(|001\rangle + \omega^{-k}|100\rangle + \omega^{-2k}|010\rangle)$ with eigenvalue $\omega^k$.
+- **Weight 2** orbit $\{|011\rangle, |101\rangle, |110\rangle\}$: eigenstates $|e_k^{(2)}\rangle = \frac{1}{\sqrt{3}}(|011\rangle + \omega^{-k}|101\rangle + \omega^{-2k}|110\rangle)$ with eigenvalue $\omega^k$.
+
+:::{#lem-nonhermitian .callout-note icon="false"}
+## (Non-Hermitian site-wise estimator)
+Measure each site $j$ in the eigenbasis of $W_{(123)}^{(j)}$, obtaining eigenvalue $\lambda_j \in \{1,\omega,\omega^2\}$. The single-shot estimator is
+$$
+\hat{o} = \prod_{j=1}^n \lambda_j, \qquad \mathbb{E}[\hat{o}] = \mathrm{tr}[W_{(123)}\,\rho^{\otimes 3}] = \mathrm{tr}[\rho^3].
+$$
+Since $\prod_j W_{(123)}^{(j)} = W_{(123)}$ exactly, **no cross terms arise**.
+:::
+
+:::{.callout-note collapse="true"}
+## Proof and variance (Click to expand)
+
+**Unbiasedness.** Each site's measurement is a projective measurement in the spectral decomposition of $W_{(123)}^{(j)}$, so the product of eigenvalues is the eigenvalue of the global operator: $\mathbb{E}[\hat{o}] = \mathrm{tr}[\prod_j W_{(123)}^{(j)}\,\rho^{\otimes 3}] = \mathrm{tr}[W_{(123)}\,\rho^{\otimes 3}] = \mathrm{tr}[\rho^3]$.
+
+**Real-valuedness.** The estimator $\hat{o}$ is complex ($|\hat{o}|=1$), but $\mathrm{tr}[\rho^3]$ is real since $\mathrm{tr}[W_{(132)}\rho^{\otimes 3}] = \overline{\mathrm{tr}[W_{(123)}\rho^{\otimes 3}]}$ and both equal $\mathrm{tr}[\rho^3]$. We use $\hat{o}_{\mathrm{re}} = \mathrm{Re}[\hat{o}]$.
+
+**Variance.** Since $|\hat{o}|^2 = 1$ and $\mathbb{E}[\hat{o}^2] = \mathrm{tr}[W_{(123)}^2\,\rho^{\otimes 3}] = \mathrm{tr}[W_{(132)}\,\rho^{\otimes 3}] = \mathrm{tr}[\rho^3]$, we have
+$$
+\mathbb{E}[\mathrm{Re}(\hat{o})^2] = \frac{1}{4}(\mathbb{E}[\hat{o}^2] + 2\mathbb{E}[|\hat{o}|^2] + \overline{\mathbb{E}[\hat{o}^2]}) = \frac{1+\mathrm{tr}[\rho^3]}{2}.
+$$
+Therefore:
+$$
+\mathrm{Var}(\hat{o}_{\mathrm{re}}) = \frac{1+\mathrm{tr}[\rho^3]}{2} - (\mathrm{tr}[\rho^3])^2 \leq 1 - (\mathrm{tr}[\rho^3])^2
+$$
+where the inequality follows from $\mathrm{tr}[\rho^3] \leq 1$. The non-Hermitian estimator has **strictly lower variance** than the Hermitian sequential SWAP measurement. $\square$
+:::
+
+**Negativity moment.** For the bipartite case, measure $A$-sites in the eigenbasis of $W_{(123)}^{(j)}$ (eigenvalues $\lambda_j^A$) and $B$-sites in the eigenbasis of $W_{(132)}^{(j)} = (W_{(123)}^{(j)})^\dagger$ (eigenvalues $\lambda_j^B$, obtained by applying the **inverse** $\mathbb{Z}_3$-QFT). The estimator
+$$
+\hat{o}_{\mathrm{neg}} = \prod_{j\in A}\lambda_j^A \cdot \prod_{j\in B}\lambda_j^B
+$$
+satisfies $\mathbb{E}[\hat{o}_{\mathrm{neg}}] = \mathrm{tr}[W_{(123)}^A\otimes W_{(132)}^B\,\rho_{AB}^{\otimes 3}] = \mathrm{tr}[(\rho_{AB}^{T_B})^3]$, giving the negativity moment directly without cross terms or global unitaries.

@@ -10,38 +10,6 @@ draft: false
 
 # Summary and question
 
-::: {#def-f-compatibility .callout-important icon="false"}
-## (f-compatibility on k-copy)
-Given $K$ observables $\{A_1,\ldots,A_K\}$ on outcome sets $\{\Omega_1,\ldots,\Omega_K\}$ with distribution vector family $(\vec{p}_1,\ldots,\vec{p}_n)$.
-Suppose $\mathcal{F}:=\{f_\alpha\}_{\alpha \in \mathcal{A}}$ is a class of functions of probability vector family $(\vec{p}_1,\ldots,\vec{p}_n)$.
- We say that $\{A_i\}$ is $k$-copy $\mathcal{F}$-compatible if there exists a POVM $\{\Pi_j\}_{j \in \mathcal{J}}$ on $\mathcal{H}^{\otimes k}$ and classical functions $\{h_\alpha: \mathcal{J} \to \mathbb{R}\}$ such that
-$$
-f_\alpha\big(\vec{p}_1(\rho),\ldots,\vec{p}_n(\rho)\big) = \sum_{j \in \mathcal{J}} h_\alpha(j)\;\mathrm{tr}[\Pi_j\;\rho^{\otimes k}], \quad \forall\,\rho,\;\forall\,\alpha
-$$
-We denote $k(\mathcal{F})$ as the smallest copy number such that $\{A_1,\ldots,A_K\}$ is $\mathcal{F}$-compatible.
-:::
-
-::: {.callout-tip icon="false" collapse="false"}
-## Discussion
-
-- When $f_\alpha$ is the projection to the $i$-th observable's $a_i$-th outcome probability, i.e., $f_{(i,a_i)}(\vec{p}_1,\ldots,\vec{p}_n) = p_i(a_i) = \mathrm{tr}[A_i^{a_i}\rho]$ for **all $i$ and all $a_i$**, it requires extracting the probability of each outcome of each observable from the statistics of $\{\Pi_j\}$. This is **equivalent to** the originaldefinition of $k$-compatible.
-- We see that $\mathcal{F} = \{f_{(i,a_i)}\}_{i=1}^K$ must contains largest copy number $k(\{f_{(i,a_i)}\}_{i=1}^K)$ compared to others $k(\mathcal{F}), \forall \mathcal{F} \neq \{f_{(i,a_i)}\}_{i=1}^K$.
-
-:::
-
-**Examples:** $\{X,Y,Z\}$.
-
-In the case $A_i$ has 2-outcome $+1,-1$ (like Pauli observable), we can set $p_i(\rho):= \mathrm{tr}[A_i(+1)\rho]$. Then the functional reduced to a function:
-$$
-f_\alpha\big(\vec{p}_1(\rho),\ldots,\vec{p}_n(\rho)\big) = f_\alpha\big(p_1,\ldots,p_n\big)
-$$
-
-If we take set take $X,Y,Z$ and:
-
-- Further setup $$ \begin{aligned}f_1(p_x,p_y,p_z) &= (2p_x-1)^2, \\f_2(p_x,p_y,p_z) &= (2p_y-1)^2, \\f_3(p_x,p_y,p_z) &= (2p_z-1)^2\end{aligned},$$ this reduced to the case of estimates $\{\mathrm{tr}(X\rho^2), \mathrm{tr}(Y\rho^2), \mathrm{tr}(Z\rho^2)\}$ with a unified measurement setting.
-- Further setup $$ \begin{aligned}f_1(p_x,p_y,p_z) &= p_x, \\f_2(p_x,p_y,p_z) &= p_y, \\f_3(p_x,p_y,p_z) &= p_z\end{aligned},$$ this reduced to the case (i). estimates $\{\mathrm{tr}(X\rho), \mathrm{tr}(Y\rho), \mathrm{tr}(Z\rho)\}$ with a unified measurement setting or (ii). implement three measurement settings $X,Y,Z$ simultaneously.
-
-
 
 ::: {.callout-important icon="false"}
 ## Question 

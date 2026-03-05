@@ -4,9 +4,67 @@ categories:
 - Readings
 bibliography: refs.bib
 date: 2026-01-20
+draft: true
 ---
 
-[← Back to Index](index.qmd)
+# Begin from SWAP's eigenbasis
+
+In many tasks of non-linear property estimation tasks, we need to realize the projection on the eigenbasis of the $k$-cycle SWAP operator. Note that $\mathrm{SWAP}_{(1\cdots k)}$ is a non-hermitian operator, with eigenvalues $\{e^{i2r\cdot \pi/k}\}_{r=0}^{k-1}$ and degenerate eigenspaces.
+
+:::{#lem-degenerate-eigenspace-swap .callout-important icon="false"}
+## (Degenerate eigenspace of SWAP)
+The SWAP operator $\mathrm{SWAP}_{(1\cdots k)}$ on $(\mathbb{C}^2)^{\otimes k}$
+satisfies $\mathrm{SWAP}_{(1\cdots k)}^k = \mathbb{I}$, so its eigenvalues
+are the $k$-th roots of unity
+$\{\lambda_r = e^{i2\pi r/k}\}_{r=0}^{k-1}$.
+The projector onto the $r$-th eigenspace is
+$$
+\Pi_r = \frac{1}{k}\sum_{m=0}^{k-1}
+        e^{-i2\pi rm/k}\,\mathrm{SWAP}_{(1\cdots k)^m},
+$$
+with dimension
+$$
+d_r = \mathrm{tr}(\Pi_r)
+    = \frac{1}{k}\sum_{m=0}^{k-1}
+      e^{-i2\pi rm/k}\,d^{\gcd(m,k)},
+$$
+where the identity $\mathrm{tr}(\mathrm{SWAP}_\pi) = d^{c(\pi)}$ is used,
+with $c(\pi)$ the number of cycles of $\pi \in S_k$, and
+$c\!\left((1\cdots k)^m\right) = \gcd(m,k)$.
+:::
+
+How to realize the projector $\Pi_r$?
+Consider the case $k = 2$. The subspace is split to $\{00,11,01+10\}$ for $+1$ and $01-10$ for $-1$.
+To adaptively implement this projector, we notice that the partity of the string is a conservative quantity and use $CNOT_{12}$ to check the parity of the first qubit and then adaptively apply $R_y(\pm \pi/2)$ to the second qubit. That is, we implement the following measurement:
+$$
+\begin{align*}
+\left\{\begin{aligned}
+&\{\ket{00},\ket{11},\ket{01}+\ket{10}\} \xrightarrow{\text{CNOT}_{12}} \{\ket{00},\ket{10},(\ket{0}+\ket{1})\ket{1}\} \\
+&\{\ket{01}-\ket{10}\} \xrightarrow{\text{CNOT}_{12}} \{(\ket{0}-\ket{1})\ket{1}\}
+\end{aligned}\right.
+\end{align*}
+$$
+Consider the case $k = 3$. The subspace is split to:
+
+- $\{000,111,001+010+100,011+101+110\}$ for $+1$
+- $\ket{001}+e^{i2\pi/3}\ket{010}+e^{i4\pi/3}\ket{100},(\ket{011}+e^{i2\pi/3}\ket{101}+e^{i4\pi/3}\ket{110})$ for $e^{i2\pi/3}$,
+- $\ket{001}+e^{i4\pi/3}\ket{010}+e^{i8\pi/3}\ket{100},(\ket{011}+e^{i4\pi/3}\ket{101}+e^{i8\pi/3}\ket{110})$ for $e^{i4\pi/3}$.
+
+To adaptively implement this projector, we first implement $\mathrm{CNOT}_{13}\mathrm{CNOT}_{23}$ check the last qubit:
+$$
+\begin{align*}
+&\{111\},\{\ket{001}+e^{i\omega}\ket{011}+e^{i2\omega}\ket{101}|\omega \in \{0,2\pi/3,4\pi/3\}\}\\
+&\{000\},\{\ket{010}+e^{i\omega}\ket{100}+e^{i2\omega}\ket{110}|\omega \in \{0,2\pi/3,4\pi/3\}\}
+\end{align*}
+$$
+This reduce the problem to the discrmination tasks of the following two sets:
+$$
+\begin{align*}
+&\{11\},\{\ket{00}+e^{i\omega}\ket{01}+e^{i2\omega}\ket{10}|\omega \in \{0,2\pi/3,4\pi/3\}\}\\
+&\{00\},\{\ket{01}+e^{i\omega}\ket{10}+e^{i2\omega}\ket{11}|\omega \in \{0,2\pi/3,4\pi/3\}\}
+\end{align*}
+$$
+For the first set, we can use the same strategy. That is, we first implement a $CPHASE_{12}(\theta)$ such that (t.b.c.)
 
 # Symmetric Strategies {#subsec:sym_strate}
 

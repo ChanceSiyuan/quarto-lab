@@ -17,7 +17,7 @@ If a set of quantum instruments $\{I_{a|x}\}_x$ is compatible, then the total qu
 ::: {.callout-note collapse="true"}
 ## Proof (Click to expand)
 
-$(\Rightarrow)$ Assume compatibility. Sum @eq-compatibility over $a$:
+$(\Rightarrow)$ Assume compatibility. Sum [Eq. compatibility](compatiablity.qmd#eq-compatibility) over $a$:
 $$
 \Phi_x(\rho) = \sum_a I_{a|x}(\rho) = \sum_a \sum_\lambda p(a|x,\lambda)\,\mathcal{M}_\lambda(\rho) = \sum_\lambda \underbrace{\left(\sum_a p(a|x,\lambda)\right)}_{=\,1}\mathcal{M}_\lambda(\rho) = \sum_\lambda \mathcal{M}_\lambda(\rho).
 $$
@@ -48,7 +48,7 @@ $$
 \right.
 \end{align*}
 $$
-Then we notice that $\Phi_0(\rho) = \Phi_1(\rho)$ is not dependent on $x$, so the setting-independence condition holds. However, these instruments are **incompatible**: the underlying POVMs are the sharp $Z$ and $X$ projectors, which do not commute. By @lem-instrument-povm, instrument compatibility would require joint measurability, and by @lem-sharp-incompatible, sharp non-commuting projectors cannot share a mother POVM. $\blacksquare$
+Then we notice that $\Phi_0(\rho) = \Phi_1(\rho)$ is not dependent on $x$, so the setting-independence condition holds. However, these instruments are **incompatible**: the underlying POVMs are the sharp $Z$ and $X$ projectors, which do not commute. By [Lemma instrument-povm](compatiablity.qmd#lem-instrument-povm), instrument compatibility would require joint measurability, and by [Lemma sharp-incompatible](compatiablity.qmd#lem-sharp-incompatible), sharp non-commuting projectors cannot share a mother POVM. $\blacksquare$
 :::
 
 *Remark.* The counterexample above shows that **compatible $\Rightarrow$ semicausal** but **semicausal $\nRightarrow$ compatible**. Semicausality (setting-independence of quantum output) is a strictly weaker condition. Compatibility additionally requires that the *classical* statistics be jointly simulable by a mother instrument. The bridge between the QRT of incompatibility and the causal structure studied in @beckman2001causal and @piani2006properties is that compatibility is a special case of semicausality — the free objects in the QRT form a proper subset of all semicausal multi-instruments.

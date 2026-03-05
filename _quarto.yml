@@ -91,6 +91,25 @@ website:
           contents:
             - theory/Topics/Shadow_tomography/lowerbound.qmd
 
+    - id: simulation_model
+      title: "Analog Rydberg Quantum Simulation"
+      contents:
+        - theory/Topics/simulation_model/index.qmd
+        - section: "Foundations"
+          contents:
+            - theory/Topics/simulation_model/Effective_ham.qmd
+        - section: "Spin Models"
+          contents:
+            - theory/Topics/simulation_model/TFIM.qmd
+        - section: "Hubbard & Lattice Models"
+          contents:
+            - theory/Topics/simulation_model/ferm_Hubbard.qmd
+            - theory/Topics/simulation_model/Boson-Hubbard.qmd
+            - theory/Topics/simulation_model/honeycomb.qmd
+        - section: "Quantum Chemistry"
+          contents:
+            - theory/Topics/simulation_model/puccd.qmd
+
 format:
   live-html:
     html-math-method: katex

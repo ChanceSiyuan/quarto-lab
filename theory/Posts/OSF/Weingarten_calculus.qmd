@@ -12,7 +12,7 @@ lang: zh
 title: The Weingarten calculus
 ---
 
-## Weingarten 演算简介
+## Weingarten calculus
 
 由于任意算符的 $k$-fold Haar 随机是 $k$ 点 SWAP 算符的线性组合，它可以分解在基底 $\{\mathbb{P}^{d}_{\pi}\}_{\pi \in S_k}$ 上。然而，这不是一组正交归一基，因此分解系数涉及基于系数 $\mathrm{tr}(\mathbb{P}_{\pi}^{d}\cdot A)$ 的更复杂的计算。
 
@@ -30,7 +30,7 @@ $$
 :::
 
 ::: {.callout-note collapse="true"}
-## Proof (点击展开)
+## Proof (Click to expand)
 
 根据定义，$\Phi_t(X)$ 是 $U^{\otimes t} X (U^\dagger)^{\otimes t}$ 在酉群上的 Haar 平均。
 通过变量代换 $U \to VU$，可以证明对于所有 $V \in U(d)$，我们要有 $V^{\otimes t} \Phi_t(X) (V^\dagger)^{\otimes t} = \Phi_t(X)$。
@@ -57,14 +57,14 @@ $$
 
 ---
 
-## Weingarten 系数的性质
+## Properties of Weingarten coefficients
 
 现在我们展示 **Weingarten 系数** $\mathrm{Wg}(\pi\tau^{-1}, d):= \mathrm{Wg}_{\pi,\tau}(d)$ 的一些关键性质。通过定义矩阵 $G_{\tau,\sigma} := \mathrm{tr}(\mathbb{P}^{d}_{\tau}\mathbb{P}^{d,\dagger}_{\sigma}) = d^{c(\tau \sigma^{-1})}$，我们得出结论：如果 $n!\times n!$ 矩阵 $G$ 是可逆的，那么 $\mathrm{Wg}$ 构成了 $G$ 的逆。
 
 然而，根据下文的 Lemma \ref{lemma:inver_cond_G}，例如在 $k>d$ 的情况下（比如 $k=2$ 的单量子比特态上的 3-fold Haar 随机酉变换），$G$ 是不可逆的。
 
 ::: {.callout-note icon="false"}
-## 引理 (G 的可逆条件) {#lemma:inver_cond_G}
+## Lemma (G is invertible) {#lemma:inver_cond_G}
 Gram 矩阵 $G_{\tau,\sigma}:= \text{tr}(\mathbb{P}^d_{\tau\sigma^{-1}})=d^{c(\tau \sigma^{-1})}$ 可逆当且仅当 $t \leq d$。这里 $c(\tau \sigma^{-1})$ 计数 $\tau\cdot \sigma^{-1}$ 中的循环数。
 :::
 
@@ -74,7 +74,7 @@ Gram 矩阵 $G_{\tau,\sigma}:= \text{tr}(\mathbb{P}^d_{\tau\sigma^{-1}})=d^{c(\t
 接下来我们给出 $\mathrm{Wg}_{\sigma,\pi}$ 的解析形式。
 
 ::: {.callout-note icon="false"}
-## 引理 (Weingarten 系数解析式)
+## Lemma (Analytic expression of Weingarten coefficients)
 
 给定 $\pi,\sigma \in S_t$，**Weingarten 系数**具有如下表达式：
 $$
@@ -83,7 +83,7 @@ $$
 :::
 
 ::: {.callout-note collapse="true"}
-## Proof (点击展开)
+## Proof (Click to expand)
 
 
 为了简便，我们将 $\text{dim}_{S_t}(\lambda)$ 记为 $\text{dim}\lambda$，并使用 $\text{dim}_{d}(\lambda):= \text{dim}_{S_t}(\lambda)\cdot \text{dim}_{U}(\lambda)$ 来表示嵌入在 $\pi \to \mathbb{P}_{\pi}^d$ 表示中的 $\lambda$ 型不可约表示 (irreps) 的维数。
@@ -122,7 +122,7 @@ $$
 :::
 
 
-### 例子 (Examples)
+### Examples
 
 在 $t = 2, d\geq 2$ 的情况下，我们得到两种类型的置换 $e, (12)$，其中 $\text{dim}_U([1^2]) ={d(d-1)}/{2}, \text{dim}_U([2]) = {d(d+1)}/{2}$ 且 $\text{dim}([1^2]) = 1 =\text{dim}([2])$。基于 $S_2$ 的特征标表，我们列出 Weingarten 系数如下：
 
@@ -194,7 +194,7 @@ $$
 在 $X = \ket{\psi}\!\bra{\psi}^{\otimes t}$ 的情况下，我们选择能够统一 $k>d$ 和 $k<d$ 两种情况的结果。
 
 ::: {.callout-note icon="false"}
-## 引理 (态 $\ket{\psi}$ 的酉轨道) {#lemma:state_trajectory}
+## Lemma (Unitary orbit of $\ket{\psi}$) {#lemma:state_trajectory}
 
 $$
 \mathbb{E}_{\psi \sim \mathrm{Haar}(d)} \ket{\psi}\!\bra{\psi}^{\otimes t} =  \frac{\sum_{\pi \in S_t} S_t(d)}{(t+d-1)(t+d-2)\cdots(d-1) d},
@@ -203,14 +203,14 @@ $$
 :::
 
 ::: {.callout-note collapse="true"}
-## Proof (点击展开)
+## Proof (Click to expand)
 
 
 根据 Lemma \ref{lemma:Haar_ave}，我们得出结论 $\forall \rho \in S_t$：
 $$
 \sum_{\pi \in S_t}\text{Tr}(\mathbb{P}_{\rho^{-1}}^d \mathbb{P}_\pi^d) \, c_\pi = \text{Tr}(\mathbb{P}^d_{\rho^{-1}} X) =1
 $$
-我们首先假设算符 $c_{\pi}$ 不依赖于 $\pi$，这给出了 $c_\pi$ 的解如下：
+We first    assume that the operator $c_{\pi}$ is independent of $\pi$，which gives the solution for $c_\pi$ as follows：
 $$
 \text{Tr}\left(\sum_{\pi \in S_t} \mathbb{P}^d_{\rho^{-1}\pi} \right)c =  \text{Tr}\left(\sum_{\pi \in S_t} \mathbb{P}^d_{\pi} \right)c=1.
 $$
