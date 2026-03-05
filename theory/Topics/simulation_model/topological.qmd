@@ -30,8 +30,9 @@ $$
 H = \frac{\Omega}{2}\sum_i \sigma^x_i - \Delta \sum_i n_i + \sum_{i<j} \frac{C_6}{R_{ij}^6}\, n_i n_j
 $$ {#eq-blockade}
 
-At $\Delta/\Omega \sim 1$–$2$ and filling of one Rydberg excitation per kagome edge, the blockade constraint enforces a **quantum dimer covering** of the kagome lattice: each vertex touches exactly one dimer (Rydberg excitation).
-Rabi oscillations $\Omega$ generate resonant dimer fluctuations (plaquette-flip processes).
+At $\Delta/\Omega \sim 1$–$2$, the detuning favors maximum Rydberg occupation subject to the blockade constraint.
+Each kagome vertex has four incident edges (ruby sites), of which at most one can be excited; the maximum-density ground states thus have exactly one excitation per kagome vertex — precisely a **dimer covering** of the kagome lattice.
+Rabi oscillations $\Omega$ generate resonant dimer fluctuations (plaquette-flip processes) that quantum-mechanically superpose dimer configurations.
 
 Verresen, Lukin, and Vishwanath showed via a Schrieffer–Wolff expansion that the low-energy effective Hamiltonian is a quantum dimer model that, on the kagome geometry, lies in the deconfined $\mathbb{Z}_2$ phase described by the toric code [@verresen2021prediction]:
 
@@ -113,9 +114,30 @@ Diagnostic signatures:
 ### Proof sketch (blockade → toric code)
 
 Start from the blockade Hamiltonian (@eq-blockade) on the ruby lattice at $\Delta \gg \Omega$.
-The ground-state manifold is the set of all maximum independent sets (one Rydberg excitation per kagome edge), in bijection with dimer coverings of the kagome lattice.
-A Schrieffer–Wolff expansion in $\Omega/\Delta$ generates plaquette-flip terms at sixth order ($\sim \Omega^6/\Delta^5$) that act as the $B_p$ operators, while the dimer constraint enforces $A_v = +1$ in the ground-state sector.
-The resulting effective Hamiltonian is the toric code in the zero-flux sector.
+
+**Step 1 — Ground-state manifold = dimer coverings.**
+At $\Omega = 0$, the energy is minimized by maximizing Rydberg occupation subject to the blockade constraint.
+Ruby lattice sites sit on the edges of a kagome lattice.
+At each kagome vertex, four edges meet; the corresponding four ruby sites are all within the blockade radius, so at most one can be excited.
+(Each ruby site has 6 nearest neighbors total — 3 from each of its two endpoint vertices.)
+The maximum independent sets at this blockade radius have exactly one excitation per kagome vertex: maximality requires that every vertex-clique contributes one excitation.
+This is the definition of a **dimer covering** (perfect matching) of the kagome lattice.
+The ground-state manifold at $\Omega = 0$ is the exponentially degenerate set of all such dimer coverings.
+
+**Step 2 — Dimer constraint enforces $A_v = +1$.**
+Encoding dimers as qubits on kagome edges ($Z_e = +1$ for dimer, $-1$ for empty), the one-dimer-per-vertex constraint means $\prod_{e \in v} Z_e$ has a fixed value for every vertex $v$ within the dimer manifold.
+This is precisely the vertex/star operator $A_v = +1$ of the toric code.
+
+**Step 3 — Sixth-order SW generates plaquette flips.**
+A Schrieffer–Wolff expansion in $\Omega/\Delta$ projects the Rabi term onto the dimer manifold.
+The lowest-order process that connects distinct dimer configurations is a **closed loop of 6 Rabi flips around a kagome hexagonal plaquette**: starting from 3 dimers on alternating edges of the hexagon, the process sequentially de-excites one atom and excites the adjacent one, cycling around all 6 edges.
+Each intermediate state has a vertex violation (costing energy $\sim \Delta$), producing 5 energy denominators.
+After 6 Rabi flips ($\propto \Omega^6$), the system returns to the dimer manifold in the complementary configuration (the other 3 edges of the hexagon now carry dimers).
+The resulting amplitude is $h \sim \Omega^6/\Delta^5$.
+Lower-order processes (2nd, 4th order) either return to the same configuration or produce open-path violations that project to zero within the dimer manifold.
+The plaquette-flip operator $B_p = \prod_{e \in \partial p} X_e$ is exactly this resonance.
+
+The resulting effective Hamiltonian is the toric code $H_{\text{eff}} = -K\sum_v A_v - h\sum_p B_p$ in the zero-flux sector, with $K$ set by the constraint and $h \sim \Omega^6/\Delta^5$.
 The $\mathbb{Z}_2$ topological order persists for a finite window of $\Delta/\Omega$ around $\delta \approx 1.5$, verified by exact diagonalization and DMRG [@verresen2021prediction].
 :::
 
