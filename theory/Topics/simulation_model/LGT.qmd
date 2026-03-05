@@ -88,7 +88,22 @@ $$ {#eq-z2}
 where $\tau_\ell$ are gauge spins on links, $\phi_i$ are matter fields, and Gauss's law $G_v = (-1)^{n_v}\prod_{\ell \ni v}\tau^x_\ell = 1$ holds at each vertex $v$.
 The ratio $h/K$ tunes between the deconfined phase ($h \ll K$, plaquette-ordered, $\mathbb{Z}_2$ topological order) and the confined/Higgs phase ($h \gg K$, link-disordered).
 
-Both proposals remain at the theory stage; experimental realization requires Floquet engineering of bond-dependent interactions on existing tweezer platforms.
+**Floquet mechanism.**
+The bare Rydberg Hamiltonian on the decorated lattice (matter atoms on vertices, gauge atoms on links) provides three ingredients: Rabi coupling $\Omega_i\sigma^x_i/2$, detuning $\Delta_i n_i$, and van der Waals interaction $V_{ij}n_in_j$ between neighboring atoms.
+Gauge spins are encoded as $\tau^z_\ell = 2n_\ell - 1$ ($|r\rangle \leftrightarrow \tau^z = +1$), and matter occupation as $\phi_i^\dagger\phi_i = n_i$.
+Since the bare interaction is two-body and Ising-type, the four-body plaquette term $K\prod_{\ell\in\square}\tau^z_\ell$ does not appear in the static Hamiltonian and must be dynamically generated.
+
+The Floquet protocol [@homeier2023z2] divides each drive period $T$ into segments with staggered detuning pulses, so that gauge–matter bonds along different lattice directions become resonant in successive time windows.
+The stroboscopic dynamics is captured by the Floquet–Magnus expansion of the time-evolution operator $U(T) = \mathcal{T}\exp(-i\int_0^T H(t')\,dt') \equiv e^{-iH_{\text{eff}}T}$:
+
+- **Link-flip term** ($h\tau^x_\ell$): arises at zeroth order from the time-averaged Rabi drive on gauge-link atoms, giving $h \propto \bar{\Omega}_{\text{gauge}}$.
+- **Gauge-invariant matter hopping** ($t\,\phi_i^\dagger\tau^z_{ij}\phi_j$): appears at second order in the Magnus expansion via virtual matter excitation/de-excitation mediated by the Ising coupling $V$ to the intervening gauge atom. The gauge-link state $\tau^z_{ij}$ determines the sign of the effective hopping, encoding the minimal coupling.
+- **Plaquette flux term** ($K\prod_{\ell\in\square}\tau^z_\ell$): generated at fourth order through ring-exchange — the sequential bond-selective activation within one Floquet period creates virtual matter hops around a plaquette, each picking up a factor of $\tau^z$ from the gauge link. The net four-body interaction has magnitude $K \sim \bar{\Omega}_{\text{matter}}^4/V_{\text{NN}}^3$.
+
+Gauss's law is not imposed by hand but emerges from the blockade geometry: each matter atom blockades its adjacent gauge atoms, so gauge-violating configurations (where $G_v \neq 1$) are pushed to energies $\sim V_{\text{NN}}$ and decouple from the low-energy sector.
+The Floquet period must satisfy $1/T \gg \Omega$ (high-frequency regime) for the Magnus expansion to converge; Floquet heating is exponentially suppressed in this regime, $\Gamma_{\text{heat}} \sim e^{-\text{const}\cdot/(T\Omega)}$, allowing a parametrically long prethermal window for gauge-theory dynamics [@geier2023floquet].
+
+Both proposals remain at the theory stage; experimental realization requires achieving sufficient Floquet-period control and minimizing heating on existing tweezer platforms.
 
 
 ### Quantum Dimer Models via Rydberg Gadgets {#sec-dimer}
