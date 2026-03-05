@@ -578,3 +578,29 @@ With $\Gamma_\phi \sim 1\,\text{Hz}$ and $\tau_{\rm tr} \sim 100\,\mu\text{s}$ (
 
 These values are subdominant compared to typical Rydberg two-qubit gate errors ($\sim 10^{-3}$–$10^{-2}$), confirming that coherent transport is not the dominant error source in current neutral-atom pUCCD experiments.
 
+## Experiment status
+
+As of early 2026, **no neutral-atom pUCCD experiment has been demonstrated**. The theoretical proposal [@o2023purification] remains unrealized on Rydberg hardware. Superconducting platforms have executed VQE-based quantum chemistry (e.g., H$_2$, LiH) and Fermi-Hubbard simulations [@alam2025google; @chowdhury2025ibm], and trapped-ion platforms have demonstrated fermionic dynamics [@srinivasan2024trapped; @granet2026pairing], but the specific combination of pUCCD ansatz + coherent transport + Rydberg CZ has not been attempted.
+
+The key experimental capabilities required for a neutral-atom pUCCD demonstration are:
+
+- **Coherent transport fidelity.** The column-sweep protocol demands $\mathcal{O}(N)$ sequential transport steps per qubit. Current tweezer arrays achieve dephasing errors $p_{\rm tr} \sim 5 \times 10^{-5}$ per lattice-site move [@bluvstein2022quantum], yielding $p_{\rm qubit} \lesssim 5 \times 10^{-4}$ for $N \leq 10$. This is already subdominant to gate error, so transport fidelity is not the bottleneck.
+
+- **CZ gate fidelity.** Each Givens rotation requires 2 CZ gates (@lem-givens-cz), and a full pUCCD circuit of depth $N$ applies $\sim N^2$ CZ gates total. For chemical accuracy ($\sim 1.6$ mHa), the per-gate error must satisfy $\epsilon_{\rm CZ} \lesssim 10^{-3}$. The best reported Rydberg CZ fidelity is $\mathcal{F} = 99.5\%$ [@evered2023high], marginally sufficient for $N \leq 6$ with error mitigation.
+
+- **Qubit count.** A minimal demonstration (H$_2$ in STO-3G, 2 spatial orbitals) requires only 2 qubits. Chemically interesting molecules (H$_2$O with 7 spatial orbitals, N$_2$ with 10) require $N = 7$–$10$ qubits in the seniority-zero encoding, well within the $\sim 200$-qubit scale of current arrays.
+
+- **Measurement scheme.** The Bell-like measurement strategy reduces the Hamiltonian to Pauli-$Z$ strings, requiring only computational-basis readout with $\mathcal{F}_{\rm read} \gtrsim 99\%$. If virtual distillation [@huggins2021virtual] is applied, $M$ copies of the state must be prepared and entangled via controlled-SWAP, doubling the qubit count per copy and requiring mid-circuit or ancilla-assisted measurement.
+
+## Open problems
+
+- **Scaling beyond small molecules.** The pUCCD GS network achieves $\mathcal{O}(N)$ circuit depth, but the total number of variational parameters is $\mathcal{O}(N^2)$ and the classical optimization landscape may develop barren plateaus for $N \gtrsim 20$. Whether the seniority-zero restriction provides sufficient inductive bias to avoid trainability issues at scale is unknown.
+
+- **Cross-platform benchmarking.** Superconducting [@alam2025google; @chowdhury2025ibm; @stanisic2022observing] and trapped-ion [@srinivasan2024trapped; @granet2026pairing] platforms have demonstrated quantum chemistry and Fermi-Hubbard simulations with VQE. A direct comparison of pUCCD on neutral atoms against hardware-efficient ansätze on these platforms — matching molecule, basis set, and error mitigation strategy — has not been performed.
+
+- **Error budget analysis.** The three dominant error sources (transport dephasing, CZ gate infidelity, readout error) contribute at different scales: $p_{\rm tr} \sim 10^{-4}$, $\epsilon_{\rm CZ} \sim 5 \times 10^{-3}$, $\epsilon_{\rm read} \sim 10^{-2}$. A quantitative breakdown of how each channel limits the achievable chemical accuracy, and which must improve first, is needed before experimental attempts.
+
+- **Extension beyond seniority-zero.** The pUCCD ansatz is restricted to the zero-seniority subspace, which excludes single excitations and pair-breaking correlations essential for open-shell molecules and strongly correlated systems (e.g., transition-metal complexes). Incorporating seniority-two excitations would break the hard-core boson mapping and require a more general circuit structure. Whether a similar $\mathcal{O}(N)$-depth transport-based compilation exists for generalized UCCD remains open.
+
+- **Integration with virtual distillation.** The measurement strategy ensures all observables reduce to Pauli-$Z$ strings, which is compatible with virtual distillation [@huggins2021virtual; @koczor2021exponential]. However, the overhead of preparing $M$ entangled copies on neutral-atom hardware (requiring $M \times N$ qubits and inter-copy controlled-SWAP gates) has not been experimentally validated. The interplay between symmetry-verified post-selection and virtual distillation — whether they compose multiplicatively or redundantly — requires further analysis [@o2023purification].
+
