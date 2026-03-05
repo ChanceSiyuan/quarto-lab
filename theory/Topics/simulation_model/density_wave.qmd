@@ -1,0 +1,205 @@
+---
+title: "Commensurate Density-Wave Phases & Floating Phase"
+date: "2026-03-05"
+categories:
+  - Readings
+bibliography: refs.bib
+lang: en
+---
+
+[← Back to Index](index.qmd)
+
+# Introduction
+
+Rydberg atom arrays provide direct access to a rich landscape of commensurate density-wave ordered phases.
+The Rydberg blockade Hamiltonian, by encoding an effective hard-core constraint, maps precisely onto classical hard-object models whose zero-temperature phase diagrams feature a devil's staircase of commensurate ground states [@fendley2004competing].
+Quantum fluctuations from the transverse drive $\Omega$ stabilize or destabilize these phases, producing quantum phase transitions whose universality classes range from $(1+1)$D Ising to chiral Potts and Berezinskii–Kosterlitz–Thouless (BKT).
+
+This page covers:
+
+- How tuning $\Delta/\Omega$ and $R_b/a$ selects commensurate fillings (devil's staircase)
+- The cascade of $Z_2 \to Z_3 \to Z_4 \to \text{star/striped}$ orders in 1D and 2D
+- The incommensurate floating phase with quasi-long-range order
+- Quantum Kibble–Zurek dynamics and critical exponent measurements
+
+
+# Hamiltonian and mechanism {#sec-ham}
+
+The parent Hamiltonian is the Rydberg blockade Hamiltonian (same as the TFIM on the [index page](index.qmd)):
+$$
+H = \frac{\Omega}{2}\sum_i \sigma^x_i - \Delta \sum_i n_i + \sum_{i<j} \frac{C_6}{R_{ij}^6}\, n_i n_j
+$$ {#eq-ryd}
+where $n_i = |r_i\rangle\langle r_i|$ is the Rydberg occupation.
+The two dimensionless control parameters are:
+
+1. **Detuning ratio** $\Delta/\Omega$ — controls the chemical potential for Rydberg excitations. At large positive $\Delta/\Omega$, excitations are energetically favored and the system seeks to maximize excitation density subject to the blockade constraint.
+2. **Blockade ratio** $R_b/a$ — where $R_b = (C_6/\Omega)^{1/6}$ and $a$ is the lattice spacing. This sets which neighbors are blockaded: $R_b/a \in (1, \sqrt{2})$ blockades nearest neighbors only ($Z_2$ regime), $R_b/a \in (\sqrt{2}, 2)$ extends blockade to next-nearest neighbors ($Z_3$ regime on chains), and so on.
+
+
+## Devil's staircase {#sec-staircase}
+
+In the classical limit $\Omega \to 0$, the ground-state problem reduces to packing the maximum number of Rydberg excitations subject to the blockade exclusion zone.
+For a 1D chain, this produces a complete devil's staircase: at every rational filling $p/q$ (excitation density), there exists a commensurate locked phase where excitations tile the chain with period $q$ [@fendley2004competing].
+
+:::{#thm-staircase .callout-important icon="false"}
+## (Devil's staircase — 1D chain)
+Consider atoms on a 1D chain with spacing $a$ and blockade radius $R_b$.
+Define $k = \lfloor R_b/a \rfloor$, the number of sites excluded on each side of an excitation.
+In the classical limit ($\Omega = 0$), the ground state at detuning $\Delta > 0$ has filling $\nu = 1/(k+1)$, corresponding to a $Z_{k+1}$ density-wave phase where every $(k+1)$-th site is excited.
+As $R_b/a$ is continuously varied, the filling traces a devil's staircase of plateaus at all rational values $p/q$ with $q \leq q_{\max}(R_b/a)$ [@fendley2004competing].
+:::
+
+:::{.callout-note collapse="true"}
+## Proof sketch
+At $\Omega = 0$, $H = -\Delta \sum_i n_i + \sum_{i<j} V_{ij} n_i n_j$.
+For $\Delta > 0$, the ground state maximizes excitation number subject to $V_{ij} \gg \Delta$ for $|i - j| \leq k$.
+This is exactly the maximum independent set on a path graph with exclusion range $k$, which yields filling $1/(k+1)$.
+The full staircase follows from including weaker interactions beyond $k$ sites that lift the degeneracy between fillings, selecting commensurate phases at each rational $p/q$ via an energy argument analogous to the Aubry–Mather theory for classical area-preserving maps.
+See [@fendley2004competing] for the complete analysis.
+$\square$
+:::
+
+At finite $\Omega$, quantum fluctuations melt the smallest commensurate plateaus first, leaving a hierarchy of robust ordered phases ($Z_2$, $Z_3$, $Z_4$, ...) separated by quantum phase transitions.
+
+
+# Key phenomena {#sec-phenomena}
+
+## $Z_2$ order (period-2 density wave) {#sec-z2}
+
+The simplest commensurate phase: every other site is excited ($|rgrg\cdots\rangle$ or $|grgr\cdots\rangle$).
+Occurs when $R_b/a \gtrsim 1$ (nearest-neighbor blockade) at sufficient detuning.
+
+- In 1D, the $Z_2 \leftrightarrow$ disordered transition is in the $(1+1)$D Ising universality class with $\nu = 1$, $z = 1$ [@bernien2017probing; @keesling2019quantum].
+- In 2D on the square lattice, it corresponds to checkerboard (Néel) antiferromagnetic order. The transition is in the $(2+1)$D Ising universality class ($\nu \approx 0.630$) [@ebadi2021quantum; @scholl2021quantum].
+
+The 51-atom experiment of [@bernien2017probing] first observed $Z_2$ ordering in a 1D Rydberg chain.
+The 256-atom experiment of [@ebadi2021quantum] extended this to 2D lattices.
+
+
+## $Z_3$ and $Z_4$ order (period-3, period-4 density waves) {#sec-z3z4}
+
+Increasing $R_b/a$ (or equivalently, tuning to a longer-range blockade by choosing a higher Rydberg state) accesses higher-period phases:
+
+- **$Z_3$**: every third site excited. On 1D chains, the melting transition is in the 3-state Potts universality class [@fendley2004competing]. On the triangular lattice, $Z_3$ stripe order was observed with 196 atoms [@scholl2021quantum].
+- **$Z_4$**: every fourth site excited. Requires $R_b/a > \sqrt{3}$ (blockade extends to third neighbors in 1D).
+
+On 2D lattices, the density-wave zoo is richer. The DMRG phase diagram of the square-lattice Rydberg model reveals "star" and "striped" orderings beyond simple period-$q$ patterns, stabilized by the competition between $1/r^6$ interaction tails and the lattice geometry [@samajdar2020complex].
+
+
+## 2D lattice phases: star, striped, and beyond {#sec-2d}
+
+On 2D arrays, the interplay of blockade range and lattice geometry generates ordered phases with no 1D analog:
+
+| Lattice | $R_b/a$ range | Phase | Order parameter |
+|:--------|:-------------|:------|:----------------|
+| Square | $\sim 1.15$ | Checkerboard ($Z_2$) | Staggered magnetization |
+| Square | $\sim 1.7$ | Star | $\sqrt{8} \times \sqrt{8}$ superlattice |
+| Square | $\sim 2.4$ | Stripes | Columnar density wave |
+| Triangular | $\sim 1.2$ | $Z_3$ stripe | $\sqrt{3} \times \sqrt{3}$ |
+| Kagome | $\sim 1.5$ | Nematic/VBS | Valence-bond solid |
+
+On the square lattice, [@samajdar2020complex] mapped the full phase diagram numerically, finding that some ordered phases (e.g., the star phase with $1/4$ filling) are stabilized by quantum fluctuations absent in the classical limit.
+On triangular and kagome lattices, frustration from the lattice geometry and $1/r^6$ interaction tails produces additional exotic orderings, including valence-bond-solid-like states [@samajdar2020quantum].
+
+The 256-atom Harvard experiment [@ebadi2021quantum] observed many of these phases by programming square, triangular, honeycomb, and kagome arrays and sweeping $\Delta/\Omega$.
+The 196-atom Palaiseau experiment [@scholl2021quantum] independently confirmed $Z_2$ order on the square lattice and $Z_3$ stripe order on the triangular lattice.
+
+
+## Quantum floating phase {#sec-floating}
+
+Between commensurate phases, an incommensurate **floating phase** can intervene — a gapless phase with quasi-long-range order characterized by a continuously varying wave vector $q$ that is not locked to the lattice.
+
+:::{#thm-floating .callout-important icon="false"}
+## (Floating phase in 1D Rydberg chains)
+In the 1D Rydberg-blockade chain with $R_b/a$ tuned between the $Z_2$ and $Z_3$ commensurate phases, there exists a parameter window where the ground state is a gapless Luttinger liquid with incommensurate density correlations
+$$
+\langle n_i n_j \rangle - \langle n_i \rangle \langle n_j \rangle \sim \frac{\cos(q |i - j|)}{|i - j|^{2K}}
+$$
+where the Luttinger parameter $K$ and wave vector $q$ vary continuously with $\Delta/\Omega$ [@rader2019floating].
+:::
+
+:::{.callout-note collapse="true"}
+## Proof sketch
+The effective field theory for the commensurate–incommensurate transition is a sine-Gordon model.
+The commensurate locking term $\sim \cos(p \phi)$ becomes irrelevant (in the RG sense) when the Luttinger parameter $K > 2/p^2$, at which point the field $\phi$ is "depinned" and the phase becomes incommensurate.
+The floating phase is the resulting Luttinger liquid with algebraically decaying density correlations.
+The transitions into and out of the floating phase are BKT transitions (commensurate side) and Pokrovsky–Talapov transitions (incommensurate side) [@fendley2004competing; @rader2019floating].
+$\square$
+:::
+
+**Experimental observation.** [@chen2025floating] probed the floating phase on Rydberg atom ladder arrays (Browaeys/Lukin collaboration).
+By measuring the Fourier transform of the density–density correlator, they observed a continuously varying peak position $q$ between the $Z_2$ and $Z_3$ commensurate values, with algebraic (power-law) decay of correlations — the hallmark of quasi-long-range order.
+The ladder geometry (quasi-1D) enhances the stability of the floating phase compared to a single chain.
+
+
+## Quantum Kibble–Zurek mechanism {#sec-kzm}
+
+Slow sweeps of $\Delta(t)$ through a quantum critical point probe the **quantum Kibble–Zurek mechanism** (QKZM): the system cannot adiabatically follow the ground state when the relaxation time $\tau \sim |\Delta - \Delta_c|^{-z\nu}$ exceeds the quench time scale, producing a density of defects that scales as a power law in the sweep rate.
+
+:::{#thm-kzm .callout-important icon="false"}
+## (Quantum Kibble–Zurek scaling)
+For a linear ramp $\Delta(t) = \Delta_c + v t$ through a quantum critical point with critical exponents $\nu$ (correlation length) and $z$ (dynamical), the density of defects $n_d$ and the correlation length $\xi$ at the freeze-out time satisfy
+$$
+n_d \sim v^{d\nu/(1+z\nu)}, \qquad \xi \sim v^{-\nu/(1+z\nu)}
+$$
+where $d$ is the spatial dimension.
+:::
+
+:::{.callout-note collapse="true"}
+## Proof sketch
+The adiabatic condition breaks down when the instantaneous gap $\Delta_{\text{gap}} \sim |\delta|^{z\nu}$ (where $\delta = \Delta - \Delta_c$) equals the rate of parameter change: $\dot{\delta}/\delta \sim v/\delta$.
+Equating gives the freeze-out distance $|\hat{\delta}| \sim v^{1/(1+z\nu)}$ and the corresponding correlation length $\xi \sim |\hat{\delta}|^{-\nu} \sim v^{-\nu/(1+z\nu)}$.
+Defect density scales as $n_d \sim \xi^{-d}$.
+See [@keesling2019quantum] and references therein.
+$\square$
+:::
+
+**Experimental realization.** [@keesling2019quantum] performed slow sweeps across the $Z_2$ QPT on a 51-atom 1D Rydberg chain.
+By varying the sweep rate $v$ over two orders of magnitude, they measured the growth of $Z_2$ spatial correlations and extracted the QKZM scaling exponent $\mu = \nu/(1 + z\nu) \approx 0.50(2)$, consistent with the $(1+1)$D Ising values $\nu = z = 1$ (predicted $\mu = 0.5$).
+Deviations from simple QKZM scaling at the slowest rates revealed corrections from the finite system size and long-range $1/r^6$ interaction tails.
+
+
+# Experiment overview {#sec-experiments}
+
+## Lukin group (Harvard)
+
+**1. Bernien et al. (2017)** [@bernien2017probing] — *51 atoms, 1D chain.* First observation of $Z_2$ density-wave order in a Rydberg array. The system was prepared by sweeping $\Delta$ from negative to positive at fixed $\Omega$, and $Z_2$ correlations were measured via site-resolved fluorescence.
+
+**2. Keesling et al. (2019)** [@keesling2019quantum] — *51 atoms, 1D chain.* Quantitative test of the quantum Kibble–Zurek mechanism across the $Z_2$ QPT. Varied sweep rate over two orders of magnitude and extracted $\mu \approx 0.50$, consistent with $(1+1)$D Ising universality.
+
+**3. Ebadi et al. (2021)** [@ebadi2021quantum] — *256 atoms, 2D arrays.* Landmark experiment: observed density-wave order on square, triangular, honeycomb, and kagome lattices by programming different geometries. Detected checkerboard ($Z_2$), star, and stripe phases by varying $R_b/a$ through choice of interatomic spacing. Performed quantum critical dynamics measurements consistent with $(2+1)$D Ising universality.
+
+
+## Browaeys / Lahaye group (IOGS, Palaiseau)
+
+**4. Scholl et al. (2021)** [@scholl2021quantum] — *196 atoms, 2D square and triangular arrays.* Independent observation of $Z_2$ antiferromagnetic order on the square lattice and $Z_3$ stripe order on the triangular lattice with 196 atoms. Finite-size scaling analysis of the order parameter across the QPT.
+
+**5. Chen et al. (2025)** [@chen2025floating] — *Ladder arrays (Browaeys/Lukin collaboration).* First experimental observation of the quantum floating phase in a Rydberg simulator. Used ladder geometries to stabilize the incommensurate phase between $Z_2$ and $Z_3$ orders. Measured continuously varying Fourier peak and power-law correlations.
+
+
+## Summary table
+
+| Year | Group | Ref | $N$ | Geom | Key result |
+|:-----|:------|:----|----:|:-----|:-----------|
+| 2017 | Lukin | [@bernien2017probing] | 51 | 1D chain | First $Z_2$ density wave |
+| 2019 | Lukin | [@keesling2019quantum] | 51 | 1D chain | QKZM scaling, $\mu \approx 0.50$ |
+| 2021 | Lukin | [@ebadi2021quantum] | 256 | sq/tri/hc/kag | $Z_2$, star, stripe on 2D lattices |
+| 2021 | Browaeys | [@scholl2021quantum] | 196 | sq/tri | $Z_2$ + $Z_3$ stripe on triangular |
+| 2025 | Browaeys/Lukin | [@chen2025floating] | -- | ladder | Floating phase, quasi-LRO |
+
+
+# Open problems {#sec-open}
+
+1. **Higher-order commensurate phases.** $Z_5$ and beyond have not been experimentally resolved. Accessing them requires either very large $R_b/a$ (impractical with current Rydberg states) or engineered long-range interactions.
+
+2. **Floating phase in 2D.** The floating phase has only been observed in quasi-1D (ladder) geometry. Whether an analogous incommensurate phase survives in 2D — and its critical properties — remains open.
+
+3. **QKZM beyond 1D Ising.** Kibble–Zurek measurements have only been performed across the $Z_2$ transition in 1D. Extracting critical exponents for the 3-state Potts ($Z_3$ melting) and $(2+1)$D transitions, and probing the full KZ scaling function (not just the exponent), are outstanding goals.
+
+4. **Devil's staircase completeness.** The theoretical prediction is a *complete* staircase (dense set of commensurate phases). Experimentally distinguishing closely spaced plateaus requires very slow ramps and high-fidelity state readout — pushing current hardware limits.
+
+5. **Incommensurate critical exponents.** Quantitative extraction of the Luttinger parameter $K$ and its variation across the floating phase, and confirming the BKT nature of the transitions bounding it, require precision correlation measurements on longer chains.
+
+
+::: {#refs}
+:::
