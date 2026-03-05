@@ -163,3 +163,55 @@ The bosonic t-J-V model realized in the Rydberg tweezer experiment must be sharp
 
 This Rydberg bosonic t-J-V model has been experimentally realized in a $^{87}$Sr atom-tweezer array, demonstrating antiferromagnetic correlations and dopant dynamics in a programmable setting [@qiao2025].
 :::
+
+
+## Experiment overview
+
+Two groups have realized the bosonic t-J-V model in Rydberg tweezer arrays, each using a different alkaline-earth or alkali species but exploiting the same encoding: three Rydberg levels $\{|S\rangle, |S'\rangle, |P\rangle\}$ mapped to $\{|\!\uparrow\rangle, |\!\downarrow\rangle, |h\rangle\}$, with dipole-dipole ($C_3/r^3$) interactions providing hole tunneling $t$ and van der Waals ($C_6/r^6$) interactions providing spin exchange $J$ and density-density coupling $V$.
+
+### Gross group (MPQ) — $^{87}$Sr
+
+The first realization of the bosonic antiferromagnet in a tweezer array was demonstrated by Qiao *et al.* using $^{87}$Sr Rydberg atoms at MPQ Garching [@qiao2025]. Three Rydberg levels of strontium ($|60S\rangle$, $|61S\rangle$, $|60P\rangle$) encode the spin and hole degrees of freedom. The key advantage of strontium is the availability of narrow intercombination lines for high-fidelity single-atom imaging and state preparation, combined with large Rydberg dipole matrix elements that yield sizable $t/J$ ratios at experimentally accessible interatomic spacings.
+
+The experiment demonstrated:
+
+- Initialization of Néel-ordered spin states via site-resolved Rydberg excitation.
+- Observation of antiferromagnetic spin-spin correlations consistent with the bosonic Heisenberg model at half filling (zero doping).
+- Tunable $t/J$ ratio by varying interatomic spacing, since $t \propto r^{-3}$ and $J \propto r^{-6}$ scale differently with distance.
+
+### Browaeys group (Institut d'Optique) — $^{87}$Rb
+
+Qiao *et al.* subsequently realized the *doped* bosonic quantum antiferromagnet using $^{87}$Rb Rydberg atoms at Institut d'Optique, Palaiseau [@qiao2025doped]. The three Rydberg levels are $|60S_{1/2}, m_J\!=\!1/2\rangle$ ($\downarrow$), $|61S_{1/2}, m_J\!=\!1/2\rangle$ ($\uparrow$), and $|60P_{3/2}, m_J\!=\!-1/2\rangle$ ($h$). Two geometries were studied:
+
+- **1D chains** of 12 atoms at spacing $a = 9.9\,\mu$m, with 1–4 holes (doping fractions $\sim 8$–$33\%$).
+- **2D square lattice** of $5 \times 5$ sites at spacing $a = 12\,\mu$m.
+
+Key results include:
+
+- **Dynamical phase separation.** At $|t/J| \ll 1$ (spin-exchange-dominated regime), holes and spins spontaneously separate into distinct spatial domains, a direct bosonic analog of the stripe/phase-separation instabilities predicted in doped $t$-$J$ models.
+- **Repulsively bound hole pairs.** In various spin backgrounds, pairs of holes form bound states mediated by the repulsive density-density interaction $V$, with binding energy tunable via the interatomic spacing.
+- **Next-nearest-neighbor tunneling effects.** The dipolar $1/r^3$ hopping extends beyond nearest neighbors; interference between NN and NNN tunneling gives rise to *light* and *heavy* hole pairs depending on the sign of $t$.
+
+### Comparison
+
+| | Gross group [@qiao2025] | Browaeys group [@qiao2025doped] |
+|---|---|---|
+| **Species** | $^{87}$Sr | $^{87}$Rb |
+| **Rydberg levels** | $60S$, $61S$, $60P$ | $60S_{1/2}$, $61S_{1/2}$, $60P_{3/2}$ |
+| **Geometry** | 1D/2D tweezer arrays | 1D chain (12 sites), 2D square ($5{\times}5$) |
+| **Regime** | Half filling (undoped AFM) | Doped ($\sim 8$–$33\%$ holes) |
+| **Key observable** | AFM spin correlations | Phase separation, bound hole pairs |
+| **Tunneling** | NN-dominated | NN + NNN (dipolar $1/r^3$) |
+
+
+## Open problems
+
+- **Fermionic vs. bosonic hole statistics.** The Rydberg tweezer experiments realize *bosonic* holes (hard-core bosons), whereas cuprate physics involves fermionic holes. At half filling the spin sectors are identical, but upon doping the hole exchange statistics differ: bosonic holes can bunch on neighboring sites (subject only to interaction $V$), while fermionic holes obey Pauli exclusion. The quantitative regime where this distinction qualitatively changes the phase diagram — particularly for stripe formation, $d$-wave pairing, and pseudogap phenomenology — remains an open question, though DMRG studies suggest the bosonic and fermionic models share key features such as stripe tendencies at moderate doping.
+
+- **Scaling to larger systems.** Current experiments reach $\sim 25$ sites (2D) and $\sim 12$ sites (1D). Accessing the thermodynamic-limit physics — long-range AFM order, true phase separation vs. finite-size crossover, and the critical doping for stripe melting — requires scaling to $\gtrsim 100$ sites, which is within reach of next-generation tweezer arrays but demands improved Rydberg state preparation fidelity and faster cycle times.
+
+- **Connection to cuprate superconductivity.** The bosonic $t$-$J$-$V$ model captures the competition between kinetic energy and magnetic order that is central to the cuprate phase diagram. However, the mapping is not exact: cuprate holes are fermionic, the Fermi surface topology matters for $d$-wave pairing, and three-site terms neglected in the $t$-$J$ truncation may be quantitatively important. Clarifying which features of the cuprate phenomenology (pseudogap, strange metal, superconducting dome) survive in the bosonic version would sharpen the relevance of these quantum simulators.
+
+- **Accessing the $d$-wave pairing regime.** DMRG calculations on the bosonic $t$-$J$ model predict a region with $d$-wave-like pair correlations at intermediate doping, but this regime requires $J/t \sim 0.3$–$0.5$ and large enough system sizes for the pairing correlation length to fit. Reaching this regime experimentally demands fine control over the $J/t$ ratio (e.g., via Förster resonance tuning or species selection) and low-entropy state preparation.
+
+- **Finite-temperature and decoherence effects.** Rydberg-state lifetimes ($\sim 100\,\mu$s for $n \approx 60$) set an intrinsic decoherence timescale that competes with the many-body dynamics at large $J/t$. Disentangling thermal fluctuations from quantum correlations, and extending coherent evolution times via higher-$n$ states or cryogenic environments, are necessary steps toward observing equilibrium phases rather than quench dynamics.
