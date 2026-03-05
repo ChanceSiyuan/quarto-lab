@@ -120,10 +120,18 @@ where the Luttinger parameter $K$ and wave vector $q$ vary continuously with $\D
 
 :::{.callout-note collapse="true"}
 ## Proof sketch
-The effective field theory for the commensurate–incommensurate transition is a sine-Gordon model.
-The commensurate locking term $\sim \cos(p \phi)$ becomes irrelevant (in the RG sense) when the Luttinger parameter $K > 2/p^2$, at which point the field $\phi$ is "depinned" and the phase becomes incommensurate.
-The floating phase is the resulting Luttinger liquid with algebraically decaying density correlations.
-The transitions into and out of the floating phase are BKT transitions (commensurate side) and Pokrovsky–Talapov transitions (incommensurate side) [@fendley2004competing; @rader2019floating].
+The effective low-energy theory for the 1D chain near a $Z_p$ commensurate phase (filling $1/p$, where $p$ is the integer commensurability order) is a Luttinger liquid perturbed by the leading commensurate locking (umklapp) term:
+$$
+\mathcal{H} = \frac{v}{2}\!\left[K(\partial_x\theta)^2 + \frac{1}{K}(\partial_x\phi)^2\right] + g_p \cos(p\,\phi),
+$$
+where $\phi$ is the bosonized density field, $\theta$ its conjugate, and $p = 2$ for $Z_2$, $p = 3$ for $Z_3$, etc.
+The scaling dimension of the $\cos(p\,\phi)$ operator is $p^2 K / 2$; this operator is **relevant** (RG sense) when $p^2 K / 2 < 2$, i.e., $K < 4/p^2$, locking $\phi$ into a commensurate value and producing $Z_p$ order.
+When $K > 4/p^2$ the locking term is irrelevant: $\phi$ depins and the phase becomes an incommensurate Luttinger liquid — the floating phase.
+
+Concretely, the floating phase between $Z_2$ and $Z_3$ arises as follows.
+As $R_b/a$ increases from the $Z_2$ regime, the Luttinger parameter $K$ grows.
+At the BKT transition, $K$ exceeds $4/2^2 = 1$, the $\cos(2\phi)$ locking becomes irrelevant, and the $Z_2$ order melts into the floating phase.
+The floating phase persists as $R_b/a$ continues to increase until the filling approaches $1/3$ and the $\cos(3\phi)$ locking (irrelevance threshold $K > 4/9$) drives a Pokrovsky–Talapov transition into the $Z_3$ commensurate phase [@fendley2004competing; @rader2019floating].
 $\square$
 :::
 
