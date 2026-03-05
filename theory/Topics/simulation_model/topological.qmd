@@ -47,7 +47,7 @@ The phase diagram also includes various density-wave-ordered phases (valence-bon
 
 ### Bosonic SSH / Symmetry-Protected Topological Phase {#sec-spt}
 
-Atoms in a 1D tweezer chain with **alternating spacings** $a_1 < a_2$ realize alternating dipolar hoppings.
+Atoms in a 1D tweezer chain with **alternating spacings** $a_1, a_2$ realize alternating dipolar hoppings.
 Two Rydberg states ($|nS\rangle$, $|(n\!-\!1)P\rangle$) undergo flip-flop exchange, giving the SSH Hamiltonian:
 
 $$
@@ -56,16 +56,16 @@ $$ {#eq-ssh}
 
 where $J_{1,2} = C_3/a_{1,2}^3$ and $c^\dagger$ creates a hard-core boson (Rydberg excitation).
 The blockade enforces the hard-core constraint.
-When $J_1 > J_2$ the chain is in the trivial (dimerized) phase; when $J_1 < J_2$ it is in the **topological phase** with protected zero-energy edge modes.
+When $J_1 > J_2$ (i.e., $a_1 < a_2$: tight intracell spacing) the chain is in the trivial (dimerized) phase; when $J_1 < J_2$ (i.e., $a_1 > a_2$: loose intracell spacing) it is in the **topological phase** with protected zero-energy edge modes.
 
 The protecting symmetry is a combination of inversion and particle-hole symmetry inherent to the half-filled hard-core boson sector.
 Unlike the free-fermion SSH model, these are *interacting* bosons — the topological phase is a genuine many-body SPT phase, not reducible to band topology [@deleseleuc2019observation].
 
-| Rydberg quantity | Model parameter | Typical value |
+| Rydberg quantity | Model parameter | Typical value (topological phase, $J_1 < J_2$) |
 |:---|:---|:---|
 | Dipolar coefficient $C_3$ | Hoppings $J_{1,2} = C_3/a_{1,2}^3$ | $2\pi \times 1$–$5$ MHz |
-| Intracell spacing $a_1$ | Strong hopping $J_1$ | $\sim 10\,\mu$m |
-| Intercell spacing $a_2$ | Weak hopping $J_2$ | $\sim 15$–$20\,\mu$m |
+| Intracell spacing $a_1$ | Weak hopping $J_1$ | $\sim 15$–$20\,\mu$m |
+| Intercell spacing $a_2$ | Strong hopping $J_2$ | $\sim 10\,\mu$m |
 | Rydberg lifetime | Coherence bound | $\sim 100\,\mu$s |
 
 
