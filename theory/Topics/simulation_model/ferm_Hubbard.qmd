@@ -41,9 +41,12 @@ where $V_1 = V_{ij,ij}$ is the adjacent Coulomb interaction between electrons at
 :::{.callout-note collapse="true"}
 ## Proof (Click to expand)
 Start from the continuous Hamiltonian, we first use Wannier basis to discretize the Hamiltonian.
-(todo: this is not complete, please add the details)
-In the Wannier basis, the lattice fermion operators $c_{\sigma,i}$ satisfy $\{c_{\sigma,i}, c_{\sigma',j}^\dagger\} = \delta_{ij}\delta_{\sigma\sigma'}$,
- and means that create a (t.b.c.). The many-body Hamiltonian takes the general form (restricting to a single band):
+The continuum second-quantized Hamiltonian for electrons in a periodic lattice potential $V_{\rm lat}(\mathbf{r})$ with Coulomb repulsion is
+$$
+H = \sum_\sigma \!\int\! d\mathbf{r}\, \psi_\sigma^\dagger(\mathbf{r}) \!\left[-\frac{\hbar^2}{2m}\nabla^2 + V_{\rm lat}(\mathbf{r})\right]\! \psi_\sigma(\mathbf{r}) + \frac{1}{2}\sum_{\sigma,\sigma'} \!\int\! d\mathbf{r}\,d\mathbf{r}'\; \psi_\sigma^\dagger(\mathbf{r})\psi_{\sigma'}^\dagger(\mathbf{r}') \frac{e^2}{|\mathbf{r}-\mathbf{r}'|} \psi_{\sigma'}(\mathbf{r}') \psi_\sigma(\mathbf{r}).
+$$
+Expand the field operator in the Wannier basis of the lowest Bloch band (single-band approximation): $\psi_\sigma(\mathbf{r}) = \sum_i c_{\sigma,i}\, w(\mathbf{r} - \mathbf{R}_i)$, where $w$ is the maximally localized Wannier function at site $\mathbf{R}_i$ [@auerbach1994interacting, Ch. 2].
+In this basis, the lattice operators $c_{\sigma,i}$ satisfy $\{c_{\sigma,i}, c_{\sigma',j}^\dagger\} = \delta_{ij}\delta_{\sigma\sigma'}$ (inherited from Wannier orthonormality), and $c_{\sigma,i}^\dagger$ creates an electron with spin $\sigma$ in the Wannier orbital at site $i$. Substituting the expansion and integrating over spatial coordinates yields hopping integrals $t_{ii'} = \int d\mathbf{r}\, w^*(\mathbf{r} - \mathbf{R}_i)\, \hat{h}_0\, w(\mathbf{r} - \mathbf{R}_{i'})$ (with $\hat{h}_0 = -\frac{\hbar^2}{2m}\nabla^2 + V_{\rm lat}$) and two-body Coulomb matrix elements $U_{ii'jj'}$ from overlaps of four Wannier functions weighted by $e^2/|\mathbf{r}-\mathbf{r}'|$. The many-body Hamiltonian takes the general form (restricting to a single band):
 $$
 H = \sum_{\sigma,\langle i,i' \rangle} t_{ii'} c_{\sigma,i}^\dagger c_{\sigma,i'} + \sum_{\sigma,\sigma'} \sum_{i,i',j,j'} U_{ii'jj'} c_{\sigma,i}^\dagger c_{\sigma',i'}^\dagger c_{\sigma',j'} c_{\sigma,j}.
 $$
