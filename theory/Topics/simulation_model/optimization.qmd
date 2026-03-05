@@ -1,0 +1,182 @@
+---
+title: "Optimization: Maximum Independent Set on Rydberg Arrays"
+date: "2026-03-05"
+categories:
+  - Readings
+bibliography: refs.bib
+lang: en
+---
+
+[← Back to Index](index.qmd)
+
+# Introduction
+
+The Rydberg blockade Hamiltonian encodes combinatorial optimization problems in its ground state without any mapping overhead: the blockade constraint directly implements the adjacency constraint of the **maximum independent set** (MIS) problem on unit-disk graphs (UDGs).
+This makes neutral-atom arrays a native platform for quantum optimization, with the graph topology programmed by atom placement and the cost function set by laser detuning [@pichler2018quantum].
+
+This page covers:
+
+- The exact equivalence between the Rydberg blockade Hamiltonian and MIS on unit-disk graphs
+- Hardness landscape: role of solution degeneracy and local-minima density
+- Observed superlinear quantum speedup on hardest instances (up to 289 qubits)
+- Variational quantum algorithms and quantum annealing for MIS
+- 3D Rydberg arrays enabling non-planar graph embeddings (Cayley trees, Platonic solids, quantum wires)
+
+
+# Hamiltonian and mapping {#sec-ham}
+
+The parent Hamiltonian is the standard Rydberg blockade Hamiltonian:
+$$
+H = \frac{\Omega}{2}\sum_i \sigma^x_i - \Delta \sum_i n_i + \sum_{i<j} \frac{C_6}{R_{ij}^6}\, n_i n_j
+$$ {#eq-ryd}
+where $n_i = |r_i\rangle\langle r_i|$.
+
+## MIS–blockade equivalence {#sec-equivalence}
+
+:::{#thm-mis .callout-important icon="false"}
+## (MIS–blockade equivalence)
+Consider $N$ atoms at positions $\{\mathbf{r}_i\}$ with blockade radius $R_b = (C_6/\Omega)^{1/6}$.
+Define the unit-disk graph $G = (V, E)$ where $V = \{1,\ldots,N\}$ and $(i,j) \in E$ iff $|\mathbf{r}_i - \mathbf{r}_j| \leq R_b$.
+In the limit $\Omega \to 0$ with $\Delta > 0$, the ground state of @eq-ryd is the computational-basis state $|S^*\rangle$ where $S^* = \arg\max_{S \in \mathcal{I}(G)} |S|$ is a maximum independent set of $G$, i.e., the largest subset of vertices with no two connected by an edge [@pichler2018quantum].
+:::
+
+:::{.callout-note collapse="true"}
+## Proof sketch
+At $\Omega = 0$, the Hamiltonian is diagonal: $H = -\Delta \sum_i n_i + \sum_{i<j} V_{ij} n_i n_j$.
+For $V_{ij} \gg \Delta$ when $R_{ij} \leq R_b$ and $V_{ij} \approx 0$ otherwise, the energy is minimized by exciting as many atoms as possible (each contributing $-\Delta$) subject to the constraint that no two excited atoms are within $R_b$.
+This is precisely the MIS problem on the UDG defined by the blockade disk.
+$\square$
+:::
+
+The key feature is that **no encoding overhead** is required: each physical qubit represents one graph vertex, and the blockade interaction directly enforces the independence constraint.
+The graph topology is programmed by repositioning atoms with optical tweezers, and $\Delta/\Omega$ controls the cost–constraint tradeoff.
+
+
+## Variational and annealing protocols {#sec-variational}
+
+Two quantum algorithmic strategies exploit this native encoding:
+
+1. **Quantum annealing (QA).** Sweep $\Delta(t)$ from negative to positive while ramping $\Omega(t)$ through a pulse shape that maintains adiabaticity through the minimum gap.
+   The adiabatic theorem guarantees convergence to the MIS ground state provided the sweep is slow compared to the inverse minimum spectral gap $\Delta_{\min}^{-1}$.
+   In practice, non-adiabatic excitations are unavoidable for hard instances, and the algorithm output is a distribution over near-optimal independent sets [@pichler2018quantum; @ebadi2022quantum].
+
+2. **Variational quantum optimization (VQO).** Parameterize the pulse shape $\{\Omega(t), \Delta(t)\}$ as a piecewise-constant or smooth ansatz with $p$ variational parameters, and optimize classically to maximize $\langle \psi(\boldsymbol{\theta}) | \sum_i n_i | \psi(\boldsymbol{\theta}) \rangle$ subject to the blockade penalty.
+   This is the analog counterpart of QAOA, with the key advantage that the Rydberg hardware natively implements the cost and mixer unitaries without gate decomposition [@pichler2018quantum].
+   Numerical simulations show that even $p \sim 4$–$8$ layers can approach the MIS solution on graphs with $\sim 100$ vertices.
+
+Both protocols were implemented experimentally on up to 289 atoms, with VQO showing improved performance over simple linear sweeps on hard instances [@ebadi2022quantum].
+
+
+# Key phenomena {#sec-phenomena}
+
+## Hardness landscape and instance difficulty {#sec-hardness}
+
+Not all UDG instances are equally hard.
+The computational difficulty for both classical and quantum algorithms is controlled by two features of the energy landscape:
+
+- **Solution degeneracy.** Instances with a unique or near-unique MIS are harder than those with exponentially many degenerate solutions, because the algorithm must find a needle in a haystack rather than a large target.
+- **Local-minima density.** Instances with many independent sets of size $|S^*| - 1$ separated from the MIS by large Hamming distance create metastable traps for both simulated annealing and quantum annealing.
+
+[@cain2023quantum] formalized this by studying the structure of the low-energy landscape: on instances where the energy landscape is "flat" (many near-degenerate local optima), classical Markov chain Monte Carlo (MCMC) algorithms slow down exponentially while the quantum adiabatic algorithm can maintain a polynomial (quadratic) speedup due to quantum tunneling through classically forbidden barriers.
+
+:::{#thm-speedup .callout-important icon="false"}
+## (Conditions for quantum speedup)
+For a family of MIS instances on unit-disk graphs where the low-energy sector consists of $\mathcal{O}(\text{poly}(N))$ near-degenerate independent sets separated by Hamming distance $\Omega(\sqrt{N})$, the quantum adiabatic algorithm achieves time-to-solution scaling $T_Q \sim \text{poly}(N)$, while classical MCMC requires $T_C \sim \exp(\Omega(\sqrt{N}))$, yielding a superpolynomial quantum speedup [@cain2023quantum].
+:::
+
+:::{.callout-note collapse="true"}
+## Proof sketch
+The quantum speedup arises because the adiabatic algorithm exploits coherent tunneling between near-degenerate configurations through energy barriers of height $\sim \Omega$.
+The tunnel splitting scales polynomially with system size for the specific graph families considered (related to the independent-set structure of King's graphs), whereas classical MCMC must thermally hop over the barriers, incurring an exponential cost in the Hamming distance.
+See [@cain2023quantum] for the detailed analysis and explicit graph families.
+$\square$
+:::
+
+
+## Superlinear quantum speedup on 289 qubits {#sec-speedup-exp}
+
+[@ebadi2022quantum] benchmarked quantum optimization against classical algorithms on UDG instances with up to 289 atoms arranged on a King's-graph-like lattice.
+The key findings:
+
+- **Protocol.** A hybrid approach: variational pulse optimization (VQO) with $p$ parameters, followed by classical postprocessing that locally improves the quantum output.
+- **Scaling comparison.** On the hardest instances (those with the smallest MIS degeneracy and densest local-minima landscape), the quantum-classical hybrid achieved a **superlinear speedup** — the time-to-solution scaled better than any tested classical algorithm, including simulated annealing, parallel tempering, and breakout local search.
+- **System size.** The speedup was observed to grow with system size up to $N = 289$, the largest available. Extrapolation of the scaling suggests a persistent advantage at larger $N$, though this remains unproven.
+- **Caveat.** The comparison is against specific classical heuristics, not against the best possible classical algorithm. Subsequent classical algorithm development has narrowed but not closed the gap on these specific instances.
+
+This experiment represents the largest combinatorial optimization demonstration on a programmable quantum device.
+
+
+# 3D graph embeddings {#sec-3d}
+
+A fundamental limitation of 2D tweezer arrays is that they can only natively encode planar or near-planar UDGs.
+Three-dimensional Rydberg arrays overcome this by accessing non-planar graph topologies.
+
+## Cayley trees {#sec-cayley}
+
+[@song2021quantum] realized Ising Hamiltonians on **Cayley-tree** (Bethe lattice) graphs using 3D arrangements of $^{87}$Rb atoms in optical tweezers.
+The tree structure — which cannot be embedded in 2D without edge crossings — was directly assembled in 3D.
+Adiabatic sweeps prepared ground states of the tree-Ising model and probed the phase transition between paramagnetic and antiferromagnetic phases, demonstrating the viability of 3D programmable geometry.
+
+## Platonic solids and quantum wires {#sec-platonic}
+
+[@kim2022finding] solved MIS on all five **Platonic graphs** (tetrahedron, cube, octahedron, dodecahedron, icosahedron) using 3D Rydberg atom arrays.
+These regular polyhedra are non-planar (except the tetrahedron), requiring genuine 3D embedding.
+The MIS solutions were verified by comparison with exact classical results.
+
+Going beyond vertex-transitive graphs, [@kim2022rydberg] introduced the **Rydberg quantum wire** scheme: auxiliary atoms placed along edges mediate effective long-range blockade interactions between distant qubits, enabling the encoding of arbitrary non-planar and high-degree graphs.
+Using this technique, they experimentally demonstrated MIS on **Kuratowski subgraphs** ($K_5$, $K_{3,3}$) — the fundamental non-planar building blocks — and a six-degree graph, all assembled in 3D tweezer arrays.
+
+## Arbitrary connectivity {#sec-arbitrary}
+
+[@nguyen2023quantum] developed a systematic theoretical framework for encoding MIS on graphs with **arbitrary connectivity** using Rydberg arrays.
+The construction uses chains of auxiliary atoms ("wires") to represent non-local edges, with the wire length and geometry chosen to ensure that the ground state of the augmented Rydberg system exactly encodes the MIS of the target graph.
+Key results:
+
+- Any bounded-degree graph can be embedded with at most polynomial overhead in atom number.
+- The encoding preserves the spectral gap structure relevant for adiabatic algorithms.
+- Numerical benchmarks on random regular graphs show competitive performance with classical solvers.
+
+This result establishes that Rydberg arrays are, in principle, universal for MIS on arbitrary graphs — not limited to UDGs.
+
+
+# Experiment overview {#sec-experiments}
+
+## Lukin group (Harvard)
+
+**1. Ebadi et al. (2022)** [@ebadi2022quantum] — *289 atoms, 2D King's-graph lattices.* First large-scale quantum optimization experiment. Implemented both quantum annealing and variational optimization protocols. Observed superlinear quantum speedup on hardest instances. Benchmarked against simulated annealing, parallel tempering, and breakout local search.
+
+## Ahn group (KAIST)
+
+**2. Song et al. (2021)** [@song2021quantum] — *$\sim$20 atoms, 3D Cayley trees.* First 3D Rydberg tweezer array. Realized tree-Ising Hamiltonians and probed the paramagnetic–antiferromagnetic QPT on a Bethe lattice.
+
+**3. Kim et al. (2022a)** [@kim2022finding] — *$\sim$20 atoms, 3D Platonic solids.* Solved MIS on all five Platonic graphs in 3D. Verified solutions against exact classical results.
+
+**4. Kim et al. (2022b)** [@kim2022rydberg] — *$\sim$20 atoms, 3D quantum wires.* Introduced the Rydberg quantum wire protocol with auxiliary atoms. Solved MIS on Kuratowski subgraphs ($K_5$, $K_{3,3}$) and a six-degree graph in 3D arrays.
+
+## Summary table
+
+| Year | Group | Ref | $N$ | Geom | Key result |
+|:-----|:------|:----|----:|:-----|:-----------|
+| 2021 | Ahn | [@song2021quantum] | ~20 | 3D Cayley tree | Tree-Ising QPT in 3D tweezers |
+| 2022 | Lukin | [@ebadi2022quantum] | 289 | 2D King's graph | Superlinear quantum speedup for MIS |
+| 2022 | Ahn | [@kim2022finding] | ~20 | 3D Platonic | MIS on all 5 Platonic graphs |
+| 2022 | Ahn | [@kim2022rydberg] | ~20 | 3D wires | Quantum wires for non-planar MIS |
+
+
+# Open problems {#sec-open}
+
+1. **Scaling the speedup.** The superlinear speedup of [@ebadi2022quantum] was observed up to $N = 289$. Whether it persists asymptotically — or whether improved classical algorithms close the gap — is the central open question. Scaling to $N \gtrsim 1000$ with current hardware would provide stronger evidence.
+
+2. **Beyond unit-disk graphs.** Native Rydberg encoding is limited to UDGs (2D) or their 3D generalizations. The quantum-wire construction of [@nguyen2023quantum] enables arbitrary graphs in principle, but the overhead in atom number and the impact on spectral gaps for hard instances have not been experimentally characterized.
+
+3. **Optimal pulse design.** Variational pulse optimization outperforms simple sweeps, but the classical outer loop becomes expensive for large $N$. Machine-learning-assisted and reinforcement-learning approaches to pulse design are active research directions.
+
+4. **Weighted and constrained variants.** Real-world optimization often involves weighted graphs or additional constraints (e.g., maximum weight independent set, graph coloring). Encoding weights requires site-resolved detuning via local light shifts, which has been demonstrated but not yet benchmarked at scale.
+
+5. **Rigorous complexity-theoretic bounds.** The observed speedup is empirical. A rigorous proof of quantum advantage for MIS on UDGs — or a proof that none exists — remains an important theoretical challenge. The framework of [@cain2023quantum] provides conditions for speedup on specific instance families, but a general classification of easy vs. hard instances is lacking.
+
+6. **3D array scalability.** Current 3D demonstrations use $\sim$20 atoms. Scaling 3D tweezer arrays to hundreds of atoms while maintaining single-site addressability and low crosstalk is an engineering challenge that would unlock non-planar optimization at meaningful scale.
+
+
+::: {#refs}
+:::
