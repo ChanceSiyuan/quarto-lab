@@ -92,7 +92,14 @@ Specifically, the scheme uses three $n \approx 70$ Rydberg states tuned near a F
 
 ### Trimer Spin Liquid on Honeycomb {#sec-trimer}
 
-Rydberg atoms on a **honeycomb lattice** with the blockade radius encompassing the three nearest neighbors enforce a constraint: each hexagonal plaquette hosts exactly one Rydberg excitation, forming trimer coverings of the dual triangular lattice.
+Rydberg atoms on a **honeycomb lattice** with the blockade radius tuned to encompass third-nearest neighbors ($R_b \geq 2a$, where $a$ is the bond length) enforce a trimer constraint.
+On the honeycomb lattice, pairs of sites sharing a hexagonal plaquette are separated by distances $a$ (nearest neighbor), $\sqrt{3}\,a$ (next-nearest), and $2a$ (diametrically opposite on the hexagon).
+When $R_b \geq 2a$, all six sites of every hexagonal plaquette lie within mutual blockade — each hexagon forms a 6-clique in the blockade graph — so at most one Rydberg excitation can occupy each hexagon.
+The honeycomb lattice with $N$ sites has $N/2$ hexagonal plaquettes (each site borders 3 hexagons, each hexagon has 6 sites: $N \times 3 / 6 = N/2$).
+An excitation at site $i$ satisfies the constraint for all 3 hexagons it borders; since there are $N/2$ hexagons and each excitation covers 3, the maximum independent set (MIS) has at most $N/6$ atoms.
+Classical trimer configurations saturate this bound, placing exactly one excitation per hexagon.
+Each excited atom at a honeycomb vertex defines a **trimer** on the dual triangular lattice: the three dual-lattice sites (hexagon centers) surrounding that vertex.
+
 Quantum fluctuations of trimers (driven by Rabi oscillations) can stabilize a **trimer quantum spin liquid** — a topological phase with $\mathbb{Z}_3$ gauge structure, distinct from the $\mathbb{Z}_2$ dimer liquid on the ruby lattice [@kornjaca2023trimer].
 
 The phase diagram of the blockade Hamiltonian on the honeycomb lattice also includes several density-wave-ordered phases (star, plaquette, staggered) separated by quantum phase transitions, with the spin-liquid regime predicted at intermediate $\Delta/\Omega$ [@zhang2022density].
@@ -177,6 +184,25 @@ The Rydberg realization maps onto this phase diagram for $J > 0$ and $|D/J| \les
 ### Trimer spin liquid on honeycomb
 
 At intermediate $\Delta/\Omega$ on the honeycomb lattice with $R_b$ encompassing third-nearest neighbors, DMRG and exact diagonalization predict a gapped trimer quantum spin liquid with $\mathbb{Z}_3$ topological order, characterized by a ninefold ground-state degeneracy on a torus and anyonic excitations with $\mathbb{Z}_3$ fusion rules [@kornjaca2023trimer].
+:::
+
+:::{.callout-note collapse="true"}
+### Proof sketch (blockade → trimer constraint → $\mathbb{Z}_3$ topological order)
+
+**Blockade geometry.**
+On the honeycomb lattice with bond length $a$, the three pairwise distance shells within a hexagonal plaquette are $a$, $\sqrt{3}\,a$, and $2a$.
+Setting $R_b \geq 2a$ places all six sites of each hexagon within mutual blockade, so each hexagon is a 6-clique in the blockade graph admitting at most one excitation.
+
+**Counting argument for $1/6$-filling.**
+The honeycomb lattice with $N$ sites has $N/2$ hexagonal plaquettes (each site borders 3 hexagons; $N \times 3/6 = N/2$).
+The clique constraint allows $\leq 1$ excitation per hexagon, and each excitation covers 3 hexagons, so the MIS size is $\leq N/6$.
+Classical trimer configurations saturate this bound: each excited atom at a honeycomb vertex defines a trimer on the three dual-triangular-lattice sites (hexagon centers) it borders.
+At $\Delta \gg \Omega > 0$, the ground-state manifold is precisely the set of such trimer coverings.
+
+**$\mathbb{Z}_3$ gauge structure.**
+The classical trimer coverings on the honeycomb partition into three topological sectors related by lattice translations, reflecting an emergent $\mathbb{Z}_3$ clock symmetry.
+Rabi-driven resonance processes (analogous to the sixth-order dimer plaquette flips in the ruby-lattice QSL) coherently mix trimer configurations within each sector.
+DMRG on the full blockade Hamiltonian finds that the resulting effective model hosts a gapped $\mathbb{Z}_3$ topological phase at intermediate $\Delta/\Omega$, with ninefold ground-state degeneracy on a torus and anyonic excitations obeying $\mathbb{Z}_3$ fusion rules [@kornjaca2023trimer].
 :::
 
 
