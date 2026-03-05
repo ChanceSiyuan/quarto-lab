@@ -10,6 +10,23 @@ bibliography: refs.bib
 
 [← Back to Index](index.qmd)
 
+The **Kitaev honeycomb model** is a bond-dependent spin-$\tfrac{1}{2}$ model whose gapped phase ($B_{\nu=\pm 1}$) hosts non-Abelian Ising anyons — the key ingredient for topological quantum computation.
+The native Rydberg interaction ($V_{ij}\,n_i n_j$, Ising-type) does **not** directly produce the required bond-dependent $\sigma^\alpha_j \sigma^\alpha_k$ couplings; realization requires either Floquet-engineered dipolar exchange [@geier2023floquet], laser-assisted dipole–dipole (LADDI) mechanisms [@surface2024kitaev], or digital simulation [@evered2025probing].
+This page derives the effective Hamiltonian under magnetic perturbation, establishes the Majorana fermion equivalence and Chern number, then surveys experimental progress.
+
+:::{.callout-warning icon="false"}
+## Notation: Kitaev model vs. Rydberg catalog conventions
+
+Two symbols on this page differ from the [catalog-wide notation](index.qmd):
+
+| Symbol | This page (Kitaev model) | Index / other sub-pages (Rydberg) |
+|:------:|:-------------------------|:----------------------------------|
+| $\sigma_j^\alpha$ | Spin-$\tfrac{1}{2}$ operator on honeycomb site $j$; the superscript $\alpha \in \{x,y,z\}$ labels the **bond type**, not the spatial direction | Pauli operator on the Rydberg qubit ($\lvert g\rangle \leftrightarrow \lvert r\rangle$) at site $j$ |
+| $\Delta$ | **Vortex gap**: energy separation between vortex-free and two-vortex sectors of the unperturbed Kitaev model | **Laser detuning** from the Rydberg transition |
+
+In the [Experiment Overview](#experiment-overview) section below, $\Delta$ reverts to the Rydberg detuning convention.
+:::
+
 # Derivation of Effective Hamiltonian
 
 We now apply the Schrieffer-Wolff effective Hamiltonian framework ([Lemma subspace-proximity](Effective_ham.qmd#lem-subspace-proximity), [Lemma direct-rotation](Effective_ham.qmd#lem-direct-rotation), [Lemma perturbation_expand](Effective_ham.qmd#lem-perturbation_expand)) to the Kitaev honeycomb model under a weak magnetic field perturbation [@kitaev2006anyons].
