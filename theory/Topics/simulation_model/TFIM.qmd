@@ -79,6 +79,17 @@ Classical algorithms — mean-field theory, exact diagonalization (ED), and dens
 
 As a system approaches the quantum critical point, the correlation length diverges and the ground-state entanglement entropy grows, violating the area law for long-range interacting systems [@schuch2008entropy]. For classical tensor-network methods (DMRG/MPS), representing this highly entangled state requires an exponentially growing bond dimension, limiting the simulable system size to $N \lesssim 20$–$30$ for ED. Furthermore, evaluating dynamical quantities (such as the unequal-time correlators needed for the DSF) near criticality is bottlenecked by the ballistic spread of entanglement, which causes time-evolution algorithms (t-DMRG) to fail at relatively short times.
 
+:::{.callout-warning icon="false"}
+## Clarification: ED vs. DMRG simulation limits
+
+The preceding paragraph conflates two distinct classical bottlenecks:
+
+- **Exact diagonalization (ED)** stores the full $2^N$-dimensional state vector, limiting it to $N \lesssim 20$–$30$. ED is *not* a tensor-network method.
+- **DMRG/MPS** exploits the entanglement structure and routinely handles 1D ground states with $N \sim 100$–$200$ sites when the system is gapped (area-law entanglement) [@sandvik2010computational]. Near criticality, the required bond dimension diverges as $\chi \sim \xi^{c/6}$ for central charge $c$, making simulations expensive but not capping $N$ at $20$–$30$. In 2D and for long-range interactions ($V \propto 1/r^6$), the entanglement entropy can exceed the 1D area law [@schuch2008entropy], and the bond-dimension cost grows exponentially in the relevant length scale.
+
+The quantum-simulator advantage over tensor-network methods is thus most decisive in two regimes: (i) 2D and long-range TFIM ground states, where MPS representations require exponential resources; and (ii) real-time dynamics near criticality, where ballistic entanglement growth causes time-evolution algorithms (t-DMRG/TEBD) to fail at short times regardless of system size.
+:::
+
 In contrast, analog quantum simulators — such as Rydberg atom arrays and trapped ions — process quantum information natively and are not bottlenecked by classical memory for storing highly entangled wavefunctions. State-of-the-art platforms have successfully maintained coherence and simulated quantum dynamics across critical points for systems of over 50 interacting spins [@bernien2017probing], effectively granting access to a much larger critical region and longer evolution times than are classically tractable.
 
 
