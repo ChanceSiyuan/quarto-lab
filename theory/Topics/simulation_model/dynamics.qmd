@@ -145,6 +145,33 @@ In chaotic systems, the OTOC decays monotonically with a ballistic light-cone fr
 
 The PXP model, with its coexistence of thermal and scar eigenstates, produces distinctive OTOC dynamics.
 
+:::{#thm-scar-otoc .callout-important icon="false"}
+## (Scar-modulated information scrambling)
+In the PXP model, the OTOC $F(i,j,t)$ (@eq-otoc) evaluated from an initial state $|\psi_0\rangle$ exhibits qualitatively distinct scrambling depending on the scar overlap $\mathcal{S} = \sum_{\text{scar}\,n} |\langle E_n^s | \psi_0 \rangle|^2$:
+
+1. **$\mathcal{S} \ll 1$ (generic states):** $1 - |F|$ grows monotonically behind a ballistic light cone with approximately constant butterfly velocity $v_B$, as in standard chaotic systems.
+2. **$\mathcal{S} \sim O(1)$ (scar-resonant states, e.g. $|Z_2\rangle$):** the OTOC exhibits collapse-and-revival modulation at the scar frequency $\omega_s = \Delta E \approx 1.33\,\Omega$. The effective information front oscillates with period $T_s = 2\pi/\omega_s$, producing a time-dependent butterfly velocity that is periodically modulated rather than constant.
+
+This places the PXP model in a distinct dynamical class from both integrable systems (no scrambling) and fully chaotic systems (monotonic ballistic scrambling) [@turner2018weak; @serbyn2021quantum].
+:::
+
+:::{.callout-note collapse="true"}
+## Proof sketch
+Decompose $|\psi_0\rangle = |\psi_s\rangle + |\psi_{\text{th}}\rangle$ into its projection onto the scar subspace (spanned by the $\sim N/2$ scar eigenstates $|E_n^s\rangle$ with approximately equally spaced energies $E_n^s \approx n\,\Delta E$) and its complement in the thermal bulk.
+The OTOC is a four-point correlator, so its spectral decomposition involves phase factors $e^{i(E_a - E_b + E_c - E_d)t}$ summed over energy eigenstates weighted by $\langle E_a|\psi_0\rangle$, $\langle E_b|\psi_0\rangle$, etc.
+
+For $|\psi_0\rangle = |Z_2\rangle$ (with $\mathcal{S} \sim O(1)$), the initial-state overlaps are concentrated on the scar tower.
+The dominant phase factors then involve energy differences that are integer multiples of $\Delta E$, yielding a Fourier series in $\omega_s = \Delta E$ and its harmonics — this produces the periodic modulation of $F(i,j,t)$.
+The thermal eigenstates contribute an incoherent, dephasing background that produces a monotonic scrambling envelope (standard ETH behavior) with butterfly velocity $v_B$.
+The net OTOC is thus the product of a monotonically decaying scrambling envelope and an oscillatory modulation at period $T_s$, giving the observed collapse-and-revival.
+Cross-terms between scar and thermal sectors dephase on a timescale set by the thermal bandwidth, leaving only the scar–scar coherent contribution at late times.
+
+For generic initial states ($\mathcal{S} \ll 1$), the initial-state overlaps are uniformly distributed across the thermal eigenstates; the scar contribution is suppressed and the OTOC reverts to standard monotonic decay.
+
+See [@turner2018weak; @serbyn2021quantum] for the scar spectral structure and [@chen2024collapse; @zhang2025anomalous] for experimental confirmation.
+$\square$
+:::
+
 ## Collapse-and-revival of OTOCs
 
 [@chen2024collapse] measured OTOCs in a Rydberg atom array (Lin Li group, HUST) by implementing a time-reversal protocol: evolve forward under $H_{\text{PXP}}$, apply a local perturbation, evolve backward, and measure the overlap.
