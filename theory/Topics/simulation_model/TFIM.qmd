@@ -185,3 +185,20 @@ The KAIST group exploits 3D optical tweezer arrays to realize non-planar graph g
 | 2025 | Lin Li | [@zhang2025anomalous] | ~20 | 1D | ${}^{87}$Rb | Anomalous scrambling | Scar-induced periodicity |
 | 2025 | Lukin | [@bluvstein2025quantum] | ~200 | 2D | ${}^{87}$Rb | Quantum coarsening | Higgs mode |
 | 2025 | QuEra | [@maskara2025emergent] | 256 | 1D | ${}^{87}$Rb | Emergent disorder | Position-noise effects |
+
+
+## Open problems
+
+- **Precise critical exponents in 2D.** Current experiments [@ebadi2021quantum; @scholl2021quantum] observe the $(2+1)$D Ising QPT but extract critical exponents ($\nu$, $\eta$, $z$) with limited precision due to finite system size and imperfect state preparation. Achieving percent-level agreement with the conformal-bootstrap values requires larger, lower-entropy arrays and systematic finite-size-scaling protocols beyond what has been demonstrated.
+
+- **Finite-temperature crossover vs. genuine QPT.** Rydberg simulators operate at finite effective temperature set by preparation infidelity and spontaneous emission. Disentangling the finite-$T$ classical crossover from the $T=0$ quantum phase transition — e.g., via the quantum-classical crossover in the correlation length $\xi(T)$ — remains an open experimental challenge, particularly in 2D where no exact solution exists.
+
+- **Scaling coherent simulation beyond 300 atoms.** The largest TFIM demonstrations reach $\sim$300 atoms [@ebadi2021quantum; @ebadi2022quantum], but maintaining coherence across the full array while executing slow sweeps through criticality (needed for adiabatic state preparation) has not been achieved at significantly larger scales. Scaling to $\gtrsim 1000$ atoms with sufficient coherence time to resolve critical dynamics is a near-term hardware target.
+
+- **Role of the long-range $1/r^6$ tail vs. ideal nearest-neighbor Ising.** The Rydberg blockade Hamiltonian includes algebraically decaying interactions $V(r) \propto 1/r^6$ beyond the nearest-neighbor shell. This tail shifts the critical point, modifies universality-class exponents, and can stabilize phases (e.g., devil's staircase orderings) absent in the pure NN model. Quantifying these corrections — and determining the blockade radius $R_b/a$ above which the NN TFIM is faithfully reproduced — requires systematic comparison of experimental data with both NN and long-range theory at large $N$.
+
+- **Entanglement witnesses and entanglement entropy measurement.** Direct measurement of the entanglement entropy $S_A$ across a bipartition — the key diagnostic of area-law violation near criticality [@schuch2008entropy] — has not been performed in Rydberg TFIM experiments. Practical protocols (randomized measurements, shadow tomography) scale unfavorably with subsystem size; developing efficient entanglement witnesses tailored to the Ising critical point is an open problem.
+
+- **Disorder effects from atomic position fluctuations.** Thermal motion and loading stochasticity introduce quenched disorder in the interaction graph. Maskara et al. showed this leads to emergent disorder that qualitatively alters quench dynamics (sub-ballistic correlation spread, logarithmic entanglement growth) [@maskara2025emergent]. Understanding how this disorder affects equilibrium critical properties — and whether it drives the system into a random-field or random-bond Ising universality class — is largely unexplored.
+
+- **Accessing the dynamical structure factor in the critical regime.** The dynamical structure factor $S(\mathbf{q}, \omega)$ encodes the full spectral content of excitations (magnons, the Higgs amplitude mode [@bluvstein2025quantum]) but has not been directly measured near the TFIM critical point. Extracting $S(\mathbf{q}, \omega)$ requires Fourier-transforming real-time, spatially resolved correlation functions $\langle \sigma^z_i(t) \sigma^z_j(0) \rangle$ over many evolution times — a protocol limited by decoherence and shot noise at the long times needed to resolve narrow spectral features near criticality.
