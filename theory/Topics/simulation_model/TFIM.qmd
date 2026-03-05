@@ -101,6 +101,20 @@ A competition between $h_x$(with ground state $\ket{+}^{\otimes N}$, no correlat
 - Observable:$M_s = \frac{1}{N} \sum_i (-1)^{x_i+y_i} \langle \sigma^z_i \rangle$
 - Parameter settings: $R_b/a = 1.15$, change $\Delta \to \Delta_c$
 
+:::{.callout-warning icon="false"}
+## Clarification: TFIM critical exponents and universality classes
+
+The quantum–classical mapping sends the $d$-dimensional quantum TFIM to the $(d{+}1)$-dimensional classical Ising model [@sachdev2011quantum, Ch. 8]. The correlation-length exponent $\nu$ is therefore set by the classical universality class in one higher dimension:
+
+| Quantum TFIM | Maps to classical | $\nu$ | Source |
+|:---:|:---:|:---:|:---|
+| 1D | 2D Ising | $1$ | Exact (Onsager) |
+| 2D | 3D Ising | $0.630$ | Monte Carlo / conformal bootstrap |
+| $\geq 3$D | $\geq 4$D Ising | $1/2$ | Mean-field (exact above $d_c^{\text{cl}} = 4$) |
+
+The value $\nu \approx 0.630$ quoted above applies specifically to the **2D quantum TFIM** — i.e., the 2D square-lattice Rydberg array near the checkerboard QPT [@ebadi2021quantum]. For the 1D quantum TFIM, the exact result is $\nu = 1$; this is a *quantum* critical exponent (from the 2D classical Ising universality class), not a classical thermal one — the 1D classical Ising model has no finite-temperature phase transition. The mean-field value $\nu = 1/2$ is exact at or above the upper critical dimension $d_c^{\text{quantum}} = 3$ (equivalently $d_c^{\text{classical}} = 4$); it is not specific to any particular spatial dimension below $d_c$.
+:::
+
 
 # Experiment overview
 
