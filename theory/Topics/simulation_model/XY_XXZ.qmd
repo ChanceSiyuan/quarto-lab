@@ -1,0 +1,171 @@
+---
+title: 'Dipolar XY and XXZ Models'
+date: '2026-03-05'
+categories: [Readings]
+bibliography: refs.bib
+lang: en
+---
+
+[← Back to Index](index.qmd)
+
+# Dipolar XY and XXZ Models
+
+Resonant dipole–dipole flip-flop between two Rydberg states ($|nS\rangle \leftrightarrow |nP\rangle$) realizes XY spin exchange with long-range $1/R^3$ coupling, where $C_3 \propto n^4$.
+Microwave dressing or off-resonant coupling to a third Rydberg level adds tunable Ising anisotropy, extending the model to XXZ.
+These models are central to quantum magnetism, metrological spin squeezing, magnon spectroscopy, and the study of incommensurate phases.
+
+
+## Hamiltonian & Rydberg mapping
+
+### Dipolar XY Hamiltonian
+
+$$
+H_{\text{XY}} = \sum_{i<j} \frac{C_3}{R_{ij}^3}\bigl(S_i^+ S_j^- + S_i^- S_j^+\bigr)
+$$ {#eq-xy}
+
+Two Rydberg states connected by an electric dipole transition encode pseudo-spin-$\tfrac{1}{2}$: $|\!\uparrow\rangle \equiv |nS_{1/2}\rangle$, $|\!\downarrow\rangle \equiv |(n\!-\!1)P_{3/2}\rangle$ (the pair is chosen to minimize the Förster defect).
+The resonant process $|nS,(n\!-\!1)P\rangle \leftrightarrow |(n\!-\!1)P,nS\rangle$ directly generates the XY flip-flop with coupling $J_{ij} = C_3/R_{ij}^3$.
+Crucially, the $1/R^3$ power law and the absence of a blockade constraint distinguish this from the van der Waals Ising regime.
+
+
+### XXZ Hamiltonian
+
+$$
+H_{\text{XXZ}} = \sum_{i<j} J_{ij}\!\left[\frac{1}{2}(S_i^+ S_j^- + S_i^- S_j^+) + \Delta_{\text{anis}}\, S_i^z S_j^z\right]
+$$ {#eq-xxz}
+
+where $\Delta_{\text{anis}} = 0$ is XY, $\Delta_{\text{anis}} = 1$ is the isotropic Heisenberg point, and $\Delta_{\text{anis}} \to \infty$ is the Ising limit.
+
+Two routes to Ising anisotropy:
+
+1. **Microwave coupling** [@scholl2022microwave]: A microwave field dresses the $|nS\rangle$ and $|nP\rangle$ states. In the dressed basis, both dipolar (XY) and van der Waals (Ising) interactions contribute, with the anisotropy controlled by the microwave detuning and Rabi frequency.
+
+2. **Rydberg-state engineering** [@chen2024anisotropic]: Off-resonant coupling of one spin state to a third Rydberg level introduces state-dependent energy shifts that act as an effective $S^z S^z$ interaction, continuously tunable from XY to deep Ising.
+
+
+### Parameter regime
+
+| Rydberg quantity | Model parameter | Typical value |
+|:---|:---|:---|
+| Principal quantum number $n$ | $C_3 \propto n^4$ | $n \sim 50$–$80$ |
+| Dipolar coefficient $C_3$ | Exchange $J_{ij} = C_3/R_{ij}^3$ | $2\pi \times 1$–$10$ MHz at $R = 10\,\mu$m |
+| Interatomic spacing $a$ | Lattice constant | $10$–$30\,\mu$m |
+| Microwave Rabi freq. $\Omega_\mu$ | Controls $\Delta_{\text{anis}}$ | $2\pi \times 1$–$50$ MHz |
+| Rydberg lifetime $\tau$ | Coherence bound | $\sim 100\,\mu$s (blackbody-limited) |
+
+
+## Key phenomena
+
+:::{#thm-squeezing .callout-important icon="false"}
+### Spin squeezing below the SQL
+
+A quench from the fully polarized state $|\!\rightarrow\rangle^{\otimes N}$ under $H_{\text{XY}}$ generates collective spin squeezing via an effective one-axis twisting (OAT) mechanism.
+The Wineland squeezing parameter $\xi_R^2 = N (\Delta S_\perp)^2_{\min} / |\langle \mathbf{S} \rangle|^2$ reaches an optimal scaling of $\xi_R^2 \propto N^{-2/3}$ for OAT, intermediate between the standard quantum limit ($\xi_R^2 = 1$) and the Heisenberg limit ($\xi_R^2 = 1/N$) [@kitagawa1993squeezed].
+:::
+
+:::{.callout-note collapse="true"}
+### Proof sketch (OAT squeezing scaling)
+
+The long-range XY interaction after mean-field decoupling reduces to $H_{\text{OAT}} \approx \chi S_z^2$ with $\chi \propto \sum_j J_{0j}$.
+The quasi-probability distribution on the Bloch sphere shears under this nonlinear rotation, producing a minimum-uncertainty squeezed state.
+Minimizing $\xi_R^2$ over evolution time gives $\xi_R^2 \sim N^{-2/3}$ at $t_{\text{opt}} \sim \chi^{-1} N^{-1/3}$ [@kitagawa1993squeezed].
+Deviations from pure OAT due to the finite-range $1/R^3$ structure and beyond-mean-field correlations are analysed experimentally in [@bornet2023scalable].
+:::
+
+
+:::{#thm-magnon .callout-important icon="false"}
+### Magnon dispersion relation
+
+Single spin-flip excitations (magnons) on the ferromagnetic ground state $|\!\uparrow\rangle^{\otimes N}$ have dispersion
+
+$$
+\omega(\mathbf{k}) = J_0 - J(\mathbf{k}), \qquad J(\mathbf{k}) = \sum_{j \neq 0} J_{0j}\, e^{i\mathbf{k}\cdot\mathbf{r}_j}
+$$
+
+where $J_0 = J(\mathbf{k}=0)$.
+For a 1D chain with $J_{ij} = C_3/(|i-j|\,a)^3$, the dispersion near $k=0$ is quadratic $\omega(k) \propto k^2$ (as for nearest-neighbor exchange), but the long-range $1/r^3$ tail introduces logarithmic corrections at the zone boundary [@chen2025spectroscopy].
+:::
+
+:::{.callout-note collapse="true"}
+### Proof sketch (magnon dispersion)
+
+Apply the Holstein–Primakoff transformation $S_i^+ \approx a_i^\dagger$, $S_i^z = \tfrac{1}{2} - a_i^\dagger a_i$ in the single-magnon sector.
+The XY Hamiltonian becomes diagonal in momentum: $H = \sum_{\mathbf{k}} \omega(\mathbf{k})\, a_\mathbf{k}^\dagger a_\mathbf{k}$ with $\omega(\mathbf{k})$ as above.
+Experimentally, $\omega(\mathbf{k})$ is extracted from the space-time Fourier transform of $\langle S_i^z(t)\rangle$ after a local quench that injects a single magnon [@chen2025spectroscopy].
+:::
+
+
+:::{#thm-anisotropy .callout-important icon="false"}
+### Tunable anisotropy crossover
+
+The anisotropy parameter $\Delta_{\text{anis}}$ is continuously tunable from $0$ (pure XY) through $1$ (isotropic Heisenberg) to $\gg 1$ (Ising) by adjusting microwave detuning or Rydberg-dressing laser parameters.
+The crossover is signalled by qualitative changes in spin correlations: power-law decay $\langle S_i^z S_j^z \rangle \sim |i-j|^{-\eta}$ in the XY/Luttinger-liquid regime gives way to exponential decay in the gapped Ising regime [@chen2024anisotropic].
+:::
+
+
+:::{#thm-floating .callout-important icon="false"}
+### Floating phase
+
+On quasi-1D ladder geometries, between commensurate density-wave phases, an incommensurate **floating phase** with algebraically decaying correlations emerges.
+The dominant wavevector of the density-density correlations varies continuously with the interaction parameters, characteristic of a Luttinger liquid with an incommensurate filling, distinguishing it from the lock-in commensurate phases on either side [@chen2025floating].
+:::
+
+
+## Experiment overview
+
+**Scholl et al. (2022)** [@scholl2022microwave] — *$^{87}$Rb Rydberg arrays, 1D and 2D.*
+Demonstrated microwave engineering of programmable XXZ Hamiltonians by dressing pairs of Rydberg states with a microwave field.
+First experimental realization of continuously tunable spin-exchange anisotropy in a Rydberg array.
+
+**Bornet et al. (2023)** [@bornet2023scalable] — *${\sim}200$ atoms, 2D square array.*
+Achieved scalable spin squeezing at $-3.5$ dB below the SQL via quench dynamics in the dipolar XY model.
+First demonstration of metrologically useful entanglement in a Rydberg tweezer array.
+
+**Geier et al. (2023)** [@geier2023floquet] — *10 atoms, honeycomb plaquettes.*
+Floquet-engineered generic spin exchange models in Rydberg arrays, demonstrating tunable $J_{xx}/J_{yy}/J_{zz}$ anisotropy via periodic driving.
+Extended the XXZ toolbox beyond static microwave dressing.
+
+**Chen et al. (2024)** [@chen2024anisotropic] — *$^{87}$Rb arrays, 1D chains.*
+Realized an extremely anisotropic Heisenberg magnet spanning the full range from XY to deep Ising limits.
+First observation of the correlation-function crossover across the XXZ phase diagram.
+
+**Chen et al. (2025a)** [@chen2025spectroscopy] — *$^{87}$Rb array, 1D chain.*
+Extracted the magnon dispersion relation from quench dynamics using space-time Fourier spectroscopy.
+First direct measurement of spin-wave excitations in a dipolar Rydberg simulator.
+
+**Chen et al. (2025b)** [@chen2025floating] — *$^{87}$Rb arrays, ladder geometry.*
+Observed the quantum floating phase with incommensurate quasi-long-range order between commensurate density-wave phases.
+First detection of a Luttinger-liquid-type floating phase in a Rydberg array.
+
+
+### Summary
+
+| Year | Group | Ref | $N$ | Dim | Key physics | What is new |
+|:-----|:------|:----|----:|:---:|:------------|:------------|
+| 2022 | Browaeys | [@scholl2022microwave] | -- | 1D/2D | Microwave-tunable XXZ | First programmable anisotropy |
+| 2023 | Browaeys | [@bornet2023scalable] | ~200 | 2D | Spin squeezing $-3.5$ dB | Scalable metrological gain |
+| 2023 | Geier/Browaeys | [@geier2023floquet] | 10 | 2D | Floquet XXZ | Periodic-drive anisotropy control |
+| 2024 | Browaeys | [@chen2024anisotropic] | -- | 1D | Full XY→Ising crossover | Extreme anisotropy range |
+| 2025 | Browaeys | [@chen2025spectroscopy] | -- | 1D | Magnon spectroscopy | Direct dispersion measurement |
+| 2025 | Browaeys/Lukin | [@chen2025floating] | -- | Ladder | Floating phase | Incommensurate order detected |
+
+
+## Open problems
+
+- **Heisenberg-limit squeezing**: Current dipolar squeezing ($-3.5$ dB) is far from the Heisenberg limit $\xi_R^2 = 1/N$. Reaching deeper squeezing requires beyond-OAT protocols (two-axis twisting or interaction-engineered entanglement) that have not been demonstrated in Rydberg arrays.
+
+- **Isotropic Heisenberg point at scale**: The point $\Delta_{\text{anis}} = 1$ maximizes quantum fluctuations and is the classically hardest regime. No experiment has stabilized and characterized the isotropic Heisenberg ground state on a large 2D frustrated lattice.
+
+- **2D XXZ phase diagram on frustrated geometries**: Spiral, valence-bond-solid, and spin-liquid phases are predicted for the XXZ model on triangular and kagome lattices. Mapping these phase boundaries experimentally remains open.
+
+- **Magnon-magnon interactions**: Multi-magnon spectroscopy to extract binding energies and interaction-induced band renormalization would probe beyond-linear spin-wave physics. Not yet performed in dipolar arrays.
+
+- **Quantum-enhanced sensing**: Deploying dipolar-XY squeezed states for practical Ramsey interferometry on programmable atom arrays has not been demonstrated.
+
+- **Entanglement scaling with long-range interactions**: How $1/R^3$ couplings modify area-law vs. volume-law entanglement scaling near quantum critical points of the XXZ model remains theoretically and experimentally open.
+
+
+## References
+
+::: {#refs}
+:::
