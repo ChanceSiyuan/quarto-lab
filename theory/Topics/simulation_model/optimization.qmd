@@ -81,13 +81,13 @@ The computational difficulty for both classical and quantum algorithms is contro
 
 :::{#thm-speedup .callout-important icon="false"}
 ## (Conditions for quantum speedup)
-For a family of MIS instances on unit-disk graphs where the low-energy sector consists of $\mathcal{O}(\text{poly}(N))$ near-degenerate independent sets separated by Hamming distance $\Omega(\sqrt{N})$, the quantum adiabatic algorithm achieves time-to-solution scaling $T_Q \sim \text{poly}(N)$, while classical MCMC requires $T_C \sim \exp(\Omega(\sqrt{N}))$, yielding a superpolynomial quantum speedup [@cain2023quantum].
+For a family of MIS instances on unit-disk graphs where the low-energy sector consists of $\mathcal{O}(\mathrm{poly}(N))$ near-degenerate independent sets separated by Hamming distance $d_H \geq c\sqrt{N}$ (for a constant $c > 0$), the quantum adiabatic algorithm achieves time-to-solution scaling $T_Q \sim \mathrm{poly}(N)$, while classical MCMC requires $T_C \geq \exp(c'\sqrt{N})$ for a constant $c' > 0$, yielding a superpolynomial quantum speedup [@cain2023quantum].
 :::
 
 :::{.callout-note collapse="true"}
 ## Proof sketch
-The quantum speedup arises because the adiabatic algorithm exploits coherent tunneling between near-degenerate configurations through energy barriers of height $\sim \Omega$.
-The tunnel splitting scales polynomially with system size for the specific graph families considered (related to the independent-set structure of King's graphs), whereas classical MCMC must thermally hop over the barriers, incurring an exponential cost in the Hamming distance.
+The quantum speedup arises because the adiabatic algorithm exploits coherent tunneling between near-degenerate configurations separated by energy barriers of height $\sim V_{ij} \gg \Omega$ (set by the blockade interaction, not the Rabi frequency).
+The Rabi coupling $\Omega$ mediates multi-step tunneling paths whose amplitude decays only polynomially with $N$ for the specific graph families considered (related to the independent-set structure of King's graphs), whereas classical MCMC must thermally hop over the barriers, incurring a cost exponential in the Hamming distance $d_H \sim \sqrt{N}$.
 See [@cain2023quantum] for the detailed analysis and explicit graph families.
 $\square$
 :::
