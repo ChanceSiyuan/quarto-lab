@@ -125,10 +125,17 @@ Wang et al. [@wang2023interrelated] used a similar setup to probe the interplay 
 
 | Feature | Rydberg tweezer arrays | Cold-atom optical lattices |
 |:--------|:----------------------|:--------------------------|
-| Gauge invariance | Exact (blockade $\equiv$ Gauss's law) | Approximate (energy penalty) |
+| Gauge invariance | Exact in the PXP limit ($V_{\text{NN}}/\Omega \to \infty$); violations $\sim (\Omega/V_{\text{NN}})^2$ at finite blockade | Approximate (energy penalty $\propto \Delta E$) |
 | Programmability | High (arbitrary 2D/3D geometry) | Limited (lattice structure fixed) |
 | Demonstrated dimensionality | 1D and (2+1)D | Primarily 1D |
 | Interaction range | $1/r^6$ (tunable $R_b$) | Nearest-neighbor tunneling |
+
+**Finite-blockade corrections.**
+The PXP Hamiltonian (@eq-pxp-lgt) is derived by projecting out all states with adjacent Rydberg excitations.
+In a physical array the nearest-neighbor interaction $V_{\text{NN}} = C_6/a^6$ is large but finite, so configurations violating the blockade constraint are energetically suppressed rather than projectively forbidden.
+Virtual excitations into gauge-violating (doubly occupied) states enter via the Rabi coupling $\Omega$, with a wavefunction admixture coefficient $\sim \Omega/V_{\text{NN}}$ from first-order perturbation theory (off-diagonal coupling divided by energy gap), giving a violation probability per site pair $\sim (\Omega/V_{\text{NN}})^2$.
+For typical $^{87}$Rb experiments ($\Omega/2\pi \sim 1$–$4$ MHz, $V_{\text{NN}}/2\pi \sim 30$–$300$ MHz at $a \sim 5$–$10\,\mu$m), violations are at the $\lesssim 1\%$ level.
+This is qualitatively better than the optical-lattice tilted-potential approach, where the energy penalty can be comparable to the tunneling scale, but the distinction is one of degree rather than kind.
 
 
 ## Key phenomena
