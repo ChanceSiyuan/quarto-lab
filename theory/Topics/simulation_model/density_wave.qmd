@@ -125,7 +125,8 @@ $$
 \mathcal{H} = \frac{v}{2}\!\left[K(\partial_x\theta)^2 + \frac{1}{K}(\partial_x\phi)^2\right] + g_p \cos(p\,\phi),
 $$
 where $\phi$ is the bosonized density field, $\theta$ its conjugate, and $p = 2$ for $Z_2$, $p = 3$ for $Z_3$, etc.
-The scaling dimension of the $\cos(p\,\phi)$ operator is $p^2 K / 2$; this operator is **relevant** (RG sense) when $p^2 K / 2 < 2$, i.e., $K < 4/p^2$, locking $\phi$ into a commensurate value and producing $Z_p$ order.
+In this convention (following [@rader2019floating]), the fields are normalized so that $\langle[\phi(x)-\phi(0)]^2\rangle \simeq 2K\ln(|x|/a)$ at long distances; the vertex-operator identity $\langle e^{ip\phi(x)}e^{-ip\phi(0)}\rangle = \exp\!\bigl(-\tfrac{p^2}{2}\langle[\phi(x)-\phi(0)]^2\rangle\bigr) \sim |x|^{-p^2 K}$ then gives the scaling dimension $\Delta_p = p^2 K / 2$.
+This operator is **relevant** (RG sense) when $\Delta_p < 2$ (the space-time dimension), i.e., $K < 4/p^2$, locking $\phi$ into a commensurate value and producing $Z_p$ order.
 When $K > 4/p^2$ the locking term is irrelevant: $\phi$ depins and the phase becomes an incommensurate Luttinger liquid — the floating phase.
 
 Concretely, the floating phase between $Z_2$ and $Z_3$ arises as follows.
