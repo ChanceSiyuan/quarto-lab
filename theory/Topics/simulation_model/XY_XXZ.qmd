@@ -56,6 +56,57 @@ Two routes to Ising anisotropy:
 
 ## Key phenomena
 
+:::{#def-squeezingstate .callout-note icon="false"}
+## (Spin squeezing state)
+Consider a system of $N$ spins-1/2, define the single-spin spin operators $S_i^\alpha = \frac{1}{2}\sigma_i^\alpha$ ($\alpha = x,y,z$) and the collective spin operators $J_\alpha = \sum_{i=1}^N S_i^\alpha$. The Kitagawa-Ueda squeezing parameter is defined as [@kitagawa1993squeezed]
+
+$$
+\xi_S^2 \equiv \frac{4 \min_{\vec{n}_\perp} (\Delta J_{\vec{n}_\perp})^2}{N}
+$$
+
+where $\vec{n}_\perp$ ranges over all directions perpendicular to the mean spin direction $\langle \vec{J} \rangle$, and $(\Delta J_{\vec{n}_\perp})^2 = \langle J_{\vec{n}_\perp}^2 \rangle - \langle J_{\vec{n}_\perp} \rangle^2$. For a coherent spin state (CSS) $|\vec{n}\rangle^{\otimes N}$, the variance in any perpendicular direction equals $N/4$, giving $\xi_S^2 = 1$ (the standard quantum limit). A state is called **spin-squeezed** if $\xi_S^2 < 1$.
+:::
+
+Here below we show that the XY model can reach spin squeezing state via unitary evolution.
+
+:::{#lem-XYevolution .callout-note icon="false"}
+## (XY evolution)
+Under unitary evolution $|\psi(t)\rangle = e^{-i H_{\text{XY}} t} |\psi(0)\rangle$ for short times $t > 0$ (satisfying $\chi t \ll 1$), the system must evolve into a strict spin-squeezed state. There exists a particular direction $\vec{n}_\perp$ orthogonal to the average spin direction, such that the spin variance along this direction is below the standard quantum limit (SQL):
+$$
+\xi_S^2(t) = \frac{4 \min_{\vec{n}_\perp} (\Delta J_{\vec{n}_\perp}^2)}{N} < 1
+$$
+:::
+
+:::{.callout-note collapse="true"}
+### Proof sketch (XY evolution)
+
+**Step 1 — XY to OAT reduction.**
+Consider the all-to-all XY Hamiltonian $H_{\text{XY}} = \frac{2\chi}{N}\sum_{i<j}(S_i^x S_j^x + S_i^y S_j^y)$. Using $J_\alpha^2 = \sum_i (S_i^\alpha)^2 + 2\sum_{i<j} S_i^\alpha S_j^\alpha$ and $(S_i^\alpha)^2 = 1/4$ for spin-$1/2$, rewrite:
+$$
+H_{\text{XY}} = \frac{\chi}{N}\bigl(\vec{J}^2 - J_z^2 - N/2\bigr).
+$$
+The initial CSS $|\!\rightarrow\rangle^{\otimes N}$ is an eigenstate of $\vec{J}^2$ with eigenvalue $J(J+1)$, $J = N/2$. Since $[\vec{J}^2, J_z^2] = 0$, the Casimir $\vec{J}^2$ and the constant $N/2$ contribute only a global phase. The effective Hamiltonian is $H_{\text{eff}} = -(\chi/N)\,J_z^2$ (one-axis twisting).
+
+**Step 2 — Variance matrix.**
+Under $U(t) = \exp(i\chi t\, J_z^2/N)$, the mean spin remains along $x$: $\langle J_y \rangle = \langle J_z \rangle = 0$. Define the dimensionless time $\tau = 2\chi t/N$. The second moments in the $y$-$z$ plane are [@kitagawa1993squeezed]:
+$$
+V_z = \frac{J}{2}, \qquad V_y = \frac{J}{2}\Bigl[1 + \bigl(J - \tfrac{1}{2}\bigr)\bigl(1 - \cos^{2J-2}2\tau\bigr)\Bigr], \qquad V_{yz} = J\bigl(J - \tfrac{1}{2}\bigr)\sin\tau\,\cos^{2J-2}\tau.
+$$
+The minimum variance in the $y$-$z$ plane is the smaller eigenvalue of the covariance matrix:
+$$
+V_- = \frac{1}{2}\Bigl(V_y + V_z - \sqrt{(V_y - V_z)^2 + 4V_{yz}^2}\Bigr).
+$$
+
+**Step 3 — Short-time squeezing.**
+In the short-time regime $\tau \ll 1$ with $J \gg 1$: $V_z = J/2$, $V_y \approx J/2 + J^2\tau^2$, $V_{yz} \approx J^2\tau$. Substituting into $V_-$:
+$$
+V_- \approx \frac{J}{2}(1 - 2J\tau) = \frac{J}{2}(1 - 2\chi t).
+$$
+Therefore $\xi_S^2 = V_-/(J/2) \approx 1 - 2\chi t < 1$ for any $t > 0$, proving the state is spin-squeezed. $\square$
+:::
+
+Actually, the XY model cannot reach Heisenberg limit, as shown in the following theorem. 
+
 :::{#thm-squeezing .callout-important icon="false"}
 ### Spin squeezing below the SQL
 

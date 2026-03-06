@@ -101,14 +101,51 @@ website:
         - section: "Spin Models"
           contents:
             - theory/Topics/simulation_model/TFIM.qmd
+            - theory/Topics/simulation_model/XY_XXZ.qmd
         - section: "Hubbard & Lattice Models"
           contents:
             - theory/Topics/simulation_model/ferm_Hubbard.qmd
             - theory/Topics/simulation_model/Boson-Hubbard.qmd
             - theory/Topics/simulation_model/honeycomb.qmd
+        - section: "Ordered Phases"
+          contents:
+            - theory/Topics/simulation_model/density_wave.qmd
+        - section: "Topological Phases"
+          contents:
+            - theory/Topics/simulation_model/topological.qmd
+        - section: "Many-Body Dynamics"
+          contents:
+            - theory/Topics/simulation_model/dynamics.qmd
+        - section: "Gauge Theories"
+          contents:
+            - theory/Topics/simulation_model/LGT.qmd
+        - section: "Optimization & Applications"
+          contents:
+            - theory/Topics/simulation_model/optimization.qmd
         - section: "Quantum Chemistry"
           contents:
             - theory/Topics/simulation_model/puccd.qmd
+
+    - id: rydberg_qc
+      title: "Rydberg Atoms for Fault-Tolerant QC"
+      contents:
+        - theory/Topics/rydberg_qc/index.qmd
+        - section: "Foundations"
+          contents:
+            - theory/Topics/rydberg_qc/light_atom.qmd
+            - theory/Topics/rydberg_qc/rydberg_properties.qmd
+        - section: "Platform Engineering"
+          contents:
+            - theory/Topics/rydberg_qc/laser_systems.qmd
+            - theory/Topics/rydberg_qc/trapping_cooling.qmd
+            - theory/Topics/rydberg_qc/tweezer_arrays.qmd
+        - section: "Qubit Control"
+          contents:
+            - theory/Topics/rydberg_qc/single_qubit.qmd
+            - theory/Topics/rydberg_qc/two_qubit_gates.qmd
+        - section: "Noise & Errors"
+          contents:
+            - theory/Topics/rydberg_qc/noise_errors.qmd
 
 format:
   live-html:
@@ -159,3 +196,5 @@ crossref:
 preview:
   port: 4200
   host: "0.0.0.0"
+execute:
+  freeze: auto

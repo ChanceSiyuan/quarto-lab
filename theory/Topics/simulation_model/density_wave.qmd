@@ -98,6 +98,275 @@ On 2D arrays, the interplay of blockade range and lattice geometry generates ord
 | Triangular | $\sim 1.2$ | $Z_3$ stripe | $\sqrt{3} \times \sqrt{3}$ |
 | Kagome | $\sim 1.5$ | Nematic/VBS | Valence-bond solid |
 
+```{ojs}
+//| echo: false
+//| label: fig-2d-phases
+//| fig-cap: "2D density-wave ordered phases in Rydberg atom arrays. Click each tab to view the lattice excitation pattern. Filled circles (colored) denote Rydberg-excited atoms; open circles denote ground-state atoms. For the Kagome VBS phase, thick bonds indicate dimer pairings."
+
+// ── phase definitions ─────────────────────────────────────────────────────────
+phases = [
+  {
+    id: "checkerboard",
+    name: "Checkerboard (Z₂)",
+    lattice: "Square",
+    rb: "~1.15",
+    filling: "ν = 1/2",
+    color: "#f97316",
+    symm: "Staggered magnetization",
+    desc: "Every other site is excited, analogous to antiferromagnetic Néel order. Breaking translational symmetry (double-period), the transition belongs to the (2+1)D Ising universality class (ν ≈ 0.630). Two degenerate ground states: ●○●○ and ○●○●.",
+    drawFn: drawCheckerboard
+  },
+  {
+    id: "star",
+    name: "Star Phase",
+    lattice: "Square",
+    rb: "~1.7",
+    filling: "ν = 1/4",
+    color: "#a78bfa",
+    symm: "√8 × √8 superlattice",
+    desc: "Atoms excited in a tilted 45° superlattice with period 2√2 a. The structure factor has 8 symmetric peaks arranged in a star pattern. In the classical limit, there are many degenerate configurations, and quantum fluctuations select this phase through the order-by-disorder mechanism. 4 degenerate ground states.",
+    drawFn: drawStar
+  },
+  {
+    id: "stripes",
+    name: "Stripes",
+    lattice: "Square",
+    rb: "~2.4",
+    filling: "ν = 1/3",
+    color: "#22d3ee",
+    symm: "Columnar density wave",
+    desc: "Atoms excited in parallel stripes, with one excited column in every 3 columns (columnar density wave). Spontaneous breaking of C₄ rotational symmetry gives rise to the nematic phase. 2 degenerate ground states: vertical stripes and horizontal stripes.",
+    drawFn: drawStripes
+  },
+  {
+    id: "tri_z3",
+    name: "Z₃ Stripe",
+    lattice: "Triangular",
+    rb: "~1.2",
+    filling: "ν = 1/3",
+    color: "#4ade80",
+    symm: "√3 × √3 order",
+    desc: "Every 3 sites on the triangular lattice is excited, forming a √3×√3 superstructure. Geometric frustration makes this order more natural than square lattices. The melting transition belongs to the 3-state Potts universality class. 3 degenerate ground states (3 equivalent sublattices).",
+    drawFn: drawTriZ3
+  },
+  {
+    id: "kagome",
+    name: "Nematic / VBS",
+    lattice: "Kagome",
+    rb: "~1.5",
+    filling: "ν = 1/3",
+    color: "#f472b6",
+    symm: "Valence-bond solid",
+    desc: "Frustration in the Kagome lattice causes excited atoms to prefer forming dimer (dimer) coverings, breaking lattice rotational symmetry. Thick bonds indicate strongly paired dimers. Multiple degeneracies (different dimer covering modes).",
+    drawFn: drawKagome
+  }
+]
+
+// ── reactive state ────────────────────────────────────────────────────────────
+viewof activeIdx = Inputs.radio(
+  phases.map((p, i) => i),
+  {
+    label: "",
+    format: i => phases[i].name,
+    value: 0
+  }
+)
+
+// ── draw functions ────────────────────────────────────────────────────────────
+function drawCheckerboard(svg, W, H, color) {
+  const pad = 28, cols = 8, rows = 8
+  const dx = (W - 2*pad)/(cols-1), dy = (H - 2*pad)/(rows-1)
+  const sites = d3.cross(d3.range(rows), d3.range(cols))
+    .map(([r,c]) => ({x: pad+c*dx, y: pad+r*dy, ex: (r+c)%2===0}))
+  // bonds
+  sites.forEach(({x,y}, i) => {
+    const c = i%cols, r = Math.floor(i/cols)
+    if (c < cols-1) svg.append("line").attr("x1",x).attr("y1",y)
+      .attr("x2",sites[i+1].x).attr("y2",sites[i+1].y).attr("stroke","#334155").attr("stroke-width",1)
+    if (r < rows-1) svg.append("line").attr("x1",x).attr("y1",y)
+      .attr("x2",sites[i+cols].x).attr("y2",sites[i+cols].y).attr("stroke","#334155").attr("stroke-width",1)
+  })
+  sites.forEach(s => svg.append("circle").attr("cx",s.x).attr("cy",s.y)
+    .attr("r", s.ex ? 7 : 5)
+    .attr("fill", s.ex ? color : "#1e293b")
+    .attr("stroke", s.ex ? "#fed7aa" : "#475569").attr("stroke-width",1.5))
+}
+
+function drawStar(svg, W, H, color) {
+  const pad = 26, cols = 9, rows = 9
+  const dx = (W - 2*pad)/(cols-1), dy = (H - 2*pad)/(rows-1)
+  const sites = d3.cross(d3.range(rows), d3.range(cols))
+    .map(([r,c]) => ({x: pad+c*dx, y: pad+r*dy, ex: (2*c+r)%4===0, c, r}))
+  sites.forEach(({x,y}, i) => {
+    const c = i%cols, r = Math.floor(i/cols)
+    if (c < cols-1) svg.append("line").attr("x1",x).attr("y1",y)
+      .attr("x2",sites[i+1].x).attr("y2",sites[i+1].y).attr("stroke","#334155").attr("stroke-width",1)
+    if (r < rows-1) svg.append("line").attr("x1",x).attr("y1",y)
+      .attr("x2",sites[i+cols].x).attr("y2",sites[i+cols].y).attr("stroke","#334155").attr("stroke-width",1)
+  })
+  // superlattice outline
+  const ox = pad, oy = pad + 2*dy
+  svg.append("polygon")
+    .attr("points", `${ox},${oy} ${ox+2*dx},${oy-2*dy} ${ox+4*dx},${oy} ${ox+2*dx},${oy+2*dy}`)
+    .attr("fill","none").attr("stroke",color).attr("stroke-width",1.5)
+    .attr("stroke-dasharray","5,3").attr("opacity",0.7)
+  svg.append("text").attr("x",ox+2*dx).attr("y",oy+2*dy+14)
+    .attr("text-anchor","middle").attr("fill",color).attr("font-size",10).attr("font-family","monospace")
+    .text("√8×√8 supercell")
+  sites.forEach(s => svg.append("circle").attr("cx",s.x).attr("cy",s.y)
+    .attr("r", s.ex ? 7 : 4.5)
+    .attr("fill", s.ex ? color : "#1e293b")
+    .attr("stroke", s.ex ? "#ddd6fe" : "#475569").attr("stroke-width",1.5))
+}
+
+function drawStripes(svg, W, H, color) {
+  const pad = 26, cols = 10, rows = 8
+  const dx = (W - 2*pad)/(cols-1), dy = (H - 2*pad)/(rows-1)
+  // stripe highlight
+  for (let c = 0; c < cols; c += 3) {
+    svg.append("rect")
+      .attr("x", pad + c*dx - dx*0.38).attr("y", pad - 12)
+      .attr("width", dx*0.76).attr("height", (rows-1)*dy + 24)
+      .attr("fill", color).attr("opacity", 0.08).attr("rx", 4)
+  }
+  const sites = d3.cross(d3.range(rows), d3.range(cols))
+    .map(([r,c]) => ({x: pad+c*dx, y: pad+r*dy, ex: c%3===0}))
+  sites.forEach(({x,y}, i) => {
+    const c = i%cols, r = Math.floor(i/cols)
+    if (c < cols-1) svg.append("line").attr("x1",x).attr("y1",y)
+      .attr("x2",sites[i+1].x).attr("y2",sites[i+1].y).attr("stroke","#334155").attr("stroke-width",1)
+    if (r < rows-1) svg.append("line").attr("x1",x).attr("y1",y)
+      .attr("x2",sites[i+cols].x).attr("y2",sites[i+cols].y).attr("stroke","#334155").attr("stroke-width",1)
+  })
+  sites.forEach(s => svg.append("circle").attr("cx",s.x).attr("cy",s.y)
+    .attr("r", s.ex ? 7 : 4.5)
+    .attr("fill", s.ex ? color : "#1e293b")
+    .attr("stroke", s.ex ? "#a5f3fc" : "#475569").attr("stroke-width",1.5))
+}
+
+function drawTriZ3(svg, W, H, color) {
+  const pad = 26, cols = 8, rows = 6
+  const dx = (W - 2*pad)/(cols-0.5), dy = (H - 2*pad)/(rows-1)*0.88
+  const sites = []
+  for (let r = 0; r < rows; r++)
+    for (let c = 0; c < cols; c++)
+      sites.push({x: pad+c*dx+(r%2)*dx*0.5, y: pad+r*dy, ex: (2*c+r)%3===0, r, c})
+  // bonds
+  for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
+    const i = r*cols+c, s = sites[i]
+    if (c < cols-1) svg.append("line").attr("x1",s.x).attr("y1",s.y)
+      .attr("x2",sites[i+1].x).attr("y2",sites[i+1].y).attr("stroke","#334155").attr("stroke-width",1)
+    if (r < rows-1) {
+      const sh = r%2
+      if (c+sh-1 >= 0) svg.append("line").attr("x1",s.x).attr("y1",s.y)
+        .attr("x2",sites[(r+1)*cols+c+sh-1].x).attr("y2",sites[(r+1)*cols+c+sh-1].y).attr("stroke","#334155").attr("stroke-width",1)
+      if (c+sh < cols) svg.append("line").attr("x1",s.x).attr("y1",s.y)
+        .attr("x2",sites[(r+1)*cols+c+sh].x).attr("y2",sites[(r+1)*cols+c+sh].y).attr("stroke","#334155").attr("stroke-width",1)
+    }
+  }
+  sites.forEach(s => svg.append("circle").attr("cx",s.x).attr("cy",s.y)
+    .attr("r", s.ex ? 7 : 4.5)
+    .attr("fill", s.ex ? color : "#1e293b")
+    .attr("stroke", s.ex ? "#bbf7d0" : "#475569").attr("stroke-width",1.5))
+}
+
+function drawKagome(svg, W, H, color) {
+  const pad = 24
+  const a = (W - 2*pad) / 4.5
+  const h = a * Math.sqrt(3) / 2
+  // build sites: 4 cols × 3 rows of kagome unit cells
+  const sites = []
+  for (let iy = 0; iy < 3; iy++) for (let ix = 0; ix < 4; ix++) {
+    const ox = pad + ix*2*a + (iy%2)*a
+    const oy = pad + iy*h*1.2
+    sites.push({x: ox,       y: oy,     id: sites.length})
+    sites.push({x: ox+a,     y: oy,     id: sites.length})
+    sites.push({x: ox+a*0.5, y: oy+h*0.6, id: sites.length})
+  }
+  // bonds: connect if distance < 1.1a
+  const thresh = a * 1.12
+  for (let i = 0; i < sites.length; i++) for (let j = i+1; j < sites.length; j++) {
+    const d = Math.hypot(sites[i].x-sites[j].x, sites[i].y-sites[j].y)
+    if (d < thresh) {
+      // dimer if both in same unit-cell triplet and indices are 0,1 within triplet
+      const triI = Math.floor(i/3), offsetI = i%3
+      const triJ = Math.floor(j/3), offsetJ = j%3
+      const isDimer = triI===triJ && offsetI===0 && offsetJ===1
+      svg.append("line")
+        .attr("x1",sites[i].x).attr("y1",sites[i].y)
+        .attr("x2",sites[j].x).attr("y2",sites[j].y)
+        .attr("stroke", isDimer ? color : "#334155")
+        .attr("stroke-width", isDimer ? 4 : 1)
+        .attr("stroke-linecap","round")
+        .attr("opacity", isDimer ? 0.9 : 1)
+    }
+  }
+  sites.forEach(s => svg.append("circle").attr("cx",s.x).attr("cy",s.y)
+    .attr("r", 5).attr("fill","#1e293b").attr("stroke","#475569").attr("stroke-width",1.5))
+}
+
+// ── render ────────────────────────────────────────────────────────────────────
+{
+  const ph = phases[activeIdx]
+  const W = 560, H = 280
+
+  const wrap = d3.create("div").style("font-family","monospace")
+    .style("background","#080f1a").style("border-radius","10px")
+    .style("padding","18px 22px").style("color","#cbd5e1")
+    .style("border", `1px solid ${ph.color}44`)
+
+  // top info bar
+  const infoBar = wrap.append("div").style("display","flex")
+    .style("gap","12px").style("margin-bottom","14px").style("flex-wrap","wrap")
+    .style("align-items","center")
+  infoBar.append("span")
+    .style("background",`${ph.color}22`).style("color",ph.color)
+    .style("border",`1px solid ${ph.color}55`).style("border-radius","99px")
+    .style("padding","2px 10px").style("font-size","12px").text(ph.lattice)
+  infoBar.append("span")
+    .style("background","#1e293b").style("color","#94a3b8")
+    .style("border","1px solid #334155").style("border-radius","99px")
+    .style("padding","2px 10px").style("font-size","12px").text(`R_b/a = ${ph.rb}`)
+  infoBar.append("span")
+    .style("background","#1e293b").style("color","#94a3b8")
+    .style("border","1px solid #334155").style("border-radius","99px")
+    .style("padding","2px 10px").style("font-size","12px").text(ph.filling)
+  infoBar.append("span")
+    .style("font-size","11px").style("color",ph.color)
+    .style("letter-spacing","1px").style("margin-left","4px")
+    .text("ORDER: " + ph.symm)
+
+  // two columns: SVG + description
+  const row = wrap.append("div").style("display","flex").style("gap","24px").style("flex-wrap","wrap")
+
+  // svg panel
+  const svgWrap = row.append("div")
+    .style("background","#0d1b2a").style("border-radius","8px")
+    .style("padding","10px").style("border",`1px solid ${ph.color}33`)
+    .style("flex","0 0 auto")
+  const svg = svgWrap.append("svg").attr("width",W).attr("height",H)
+  ph.drawFn(svg, W, H, ph.color)
+
+  // legend under svg
+  const leg = svgWrap.append("div").style("display","flex").style("gap","18px")
+    .style("margin-top","8px").style("font-size","11px").style("color","#64748b")
+  const mkDot = (col, stroke) => `<svg width='10' height='10' style='vertical-align:middle;margin-right:4px'><circle cx='5' cy='5' r='4.5' fill='${col}' stroke='${stroke}' stroke-width='1.5'/></svg>`
+  leg.html(mkDot(ph.color,"#fff4") + "激发态 (Rydberg)&nbsp;&nbsp;" +
+    mkDot("#1e293b","#475569") + "基态 (ground)" +
+    (ph.id==="kagome" ? `&nbsp;&nbsp;<svg width='20' height='10' style='vertical-align:middle;margin-right:4px'><line x1='0' y1='5' x2='20' y2='5' stroke='${ph.color}' stroke-width='4'/></svg>dimer 键` : ""))
+
+  // description panel
+  const desc = row.append("div").style("flex","1 1 220px").style("min-width","180px")
+    .style("font-family","'IBM Plex Sans',sans-serif").style("font-size","13px")
+    .style("line-height","1.75").style("color","#94a3b8").style("padding-top","4px")
+  desc.append("h3").style("margin","0 0 8px").style("font-size","17px")
+    .style("color","#f1f5f9").style("font-weight","700").text(ph.name)
+  desc.append("p").style("margin","0").text(ph.desc)
+
+  return wrap.node()
+}
+```
+
 On the square lattice, [@samajdar2020complex] mapped the full phase diagram numerically, finding that some ordered phases (e.g., the star phase with $1/4$ filling) are stabilized by quantum fluctuations absent in the classical limit.
 On triangular and kagome lattices, frustration from the lattice geometry and $1/r^6$ interaction tails produces additional exotic orderings, including valence-bond-solid-like states [@samajdar2020quantum].
 

@@ -40,6 +40,6 @@ Wait for my confirmation on this outline before generating the full files.
 
 ---
 **[Here is my draft]**
-theory/Posts/Virtual_Distillation/negativity.qmd
+theory/Topics/simulation_model/XY_XXZ.qmd
 **[Here is the chat history]**
-_resource/chat.md
+_resource/Resonant-Dipole–Dipole-Regime-Explained.md
