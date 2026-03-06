@@ -103,7 +103,8 @@ Each excited atom at a honeycomb vertex defines a **trimer** on the dual triangu
 Quantum fluctuations of trimers (driven by Rabi oscillations) can stabilize a **trimer quantum spin liquid** — a topological phase with $\mathbb{Z}_3$ gauge structure, distinct from the $\mathbb{Z}_2$ dimer liquid on the ruby lattice [@kornjaca2023trimer].
 
 The phase diagram of the blockade Hamiltonian on the honeycomb lattice also includes several density-wave-ordered phases (star, plaquette, staggered) separated by quantum phase transitions, with the spin-liquid regime predicted at intermediate $\Delta/\Omega$ [@zhang2022density].
-DMRG calculations on the honeycomb blockade model identify the trimer liquid as having an emergent $\mathrm{U}(1) \times \mathrm{U}(1)$ local symmetry originating from superpositions of classical trimer configurations [@kornjaca2023trimer].
+The classical trimer coverings admit a height-model description on the dual triangular lattice with an emergent $\mathrm{U}(1) \times \mathrm{U}(1)$ gauge symmetry — the continuous freedom in assigning integer heights consistent with the trimer constraint.
+Quantum fluctuations (Rabi-driven resonance processes) condense charge-3 vortex operators that Higgs $\mathrm{U}(1) \times \mathrm{U}(1) \to \mathbb{Z}_3$, gapping the height field and producing the $\mathbb{Z}_3$ topologically ordered phase with ninefold ground-state degeneracy on a torus [@kornjaca2023trimer].
 
 
 ## Key phenomena
@@ -199,10 +200,13 @@ The clique constraint allows $\leq 1$ excitation per hexagon, and each excitatio
 Classical trimer configurations saturate this bound: each excited atom at a honeycomb vertex defines a trimer on the three dual-triangular-lattice sites (hexagon centers) it borders.
 At $\Delta \gg \Omega > 0$, the ground-state manifold is precisely the set of such trimer coverings.
 
-**$\mathbb{Z}_3$ gauge structure.**
-The classical trimer coverings on the honeycomb partition into three topological sectors related by lattice translations, reflecting an emergent $\mathbb{Z}_3$ clock symmetry.
-Rabi-driven resonance processes (analogous to the sixth-order dimer plaquette flips in the ruby-lattice QSL) coherently mix trimer configurations within each sector.
-DMRG on the full blockade Hamiltonian finds that the resulting effective model hosts a gapped $\mathbb{Z}_3$ topological phase at intermediate $\Delta/\Omega$, with ninefold ground-state degeneracy on a torus and anyonic excitations obeying $\mathbb{Z}_3$ fusion rules [@kornjaca2023trimer].
+**Height model and $\mathrm{U}(1) \times \mathrm{U}(1) \to \mathbb{Z}_3$ Higgsing.**
+Classical trimer coverings are faithfully encoded by a height function $\mathbf{h} = (h_1, h_2) \in \mathbb{Z}^2$ on the dual triangular lattice, with trimer placements corresponding to height differences modulo 3 across dual edges.
+The constraint structure endows the height model with a $\mathrm{U}(1) \times \mathrm{U}(1)$ gauge symmetry — global shifts $\mathbf{h} \to \mathbf{h} + \mathbf{c}$ leave the trimer configuration invariant.
+Rabi-driven resonance processes (analogous to the sixth-order dimer plaquette flips in the ruby-lattice QSL) coherently mix trimer configurations.
+These processes condense charge-3 vortex operators in the height field, breaking $\mathrm{U}(1) \times \mathrm{U}(1)$ down to $\mathbb{Z}_3$.
+The condensation gaps the height field and produces $\mathbb{Z}_3$ topological order: the residual discrete gauge redundancy yields a ninefold ground-state degeneracy on a torus and anyonic excitations with $\mathbb{Z}_3$ fusion rules.
+DMRG on the full blockade Hamiltonian confirms this phase at intermediate $\Delta/\Omega$ [@kornjaca2023trimer].
 :::
 
 
