@@ -109,8 +109,7 @@ $$ {#eq-decay-rate}
 At temperature $T$, the thermal photon occupation at frequency $\omega_0$ is $\bar n_{k_0} = (e^{\hbar\omega_0/k_BT} - 1)^{-1}$. The full master equation reads [@Quantumoptics]:
 
 $$
-\dot\rho_a = -\frac{\Gamma}{2}(\bar n + 1)\bigl[\sigma_+\sigma_-\rho_a - \sigma_-\rho_a\sigma_+\bigr]
-            - \frac{\Gamma}{2}\bar n\bigl[\rho_a\sigma_-\sigma_+ - \sigma_+\rho_a\sigma_-\bigr] + \text{h.c.}
+\dot\rho_a = \Gamma(\bar n + 1)\!\left(\sigma_-\rho_a\sigma_+ - \tfrac{1}{2}\bigl\{\sigma_+\sigma_-,\,\rho_a\bigr\}\right) + \Gamma\bar n\!\left(\sigma_+\rho_a\sigma_- - \tfrac{1}{2}\bigl\{\sigma_-\sigma_+,\,\rho_a\bigr\}\right).
 $$ {#eq-master-decay}
 
 ## Coherent-State Equivalence
