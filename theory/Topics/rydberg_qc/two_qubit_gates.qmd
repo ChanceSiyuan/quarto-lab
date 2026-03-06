@@ -65,13 +65,13 @@ where the integral is over the Haar measure on the qubit Hilbert space.
 
 ## CPHASE Gate Formula
 
-For the two-qubit **CPHASE** gate, the average gate fidelity takes a compact form in terms of the final state overlaps [@Nielsen_2002]. Define $a_q = \langle q|\psi_q(T)\rangle$ where $|\psi_q(T)\rangle$ is the state evolved from initial state $|q\rangle$ ($q \in \{01, 10, 11\}$) under $H'_{\rm tot}$ for duration $T$. Then:
+For the two-qubit **CPHASE** gate, the average gate fidelity takes a compact form in terms of the final state overlaps [@Nielsen_2002]. Define $a_q = \langle q|U_{\rm target}^\dagger|\psi_q(T)\rangle$, the overlap of the evolved state with the target gate output, where $|\psi_q(T)\rangle$ is the state evolved from initial state $|q\rangle$ ($q \in \{01, 10, 11\}$) under $H'_{\rm tot}$ for duration $T$ and $U_{\rm target}$ is the target CPHASE gate. For a CZ target, this absorbs the $\pi$-phase on $|11\rangle$: explicitly, $a_{11} = -\langle 11|\psi_{11}(T)\rangle$ while $a_{01} = \langle 01|\psi_{01}(T)\rangle$. Then:
 
 $$
 \bar F = \frac{1}{20}\bigl(|1 + 2a_{01} + a_{11}|^2 + |a_{11}|^2 + 2|a_{01}|^2 + 1\bigr).
 $$ {#eq-Fbar}
 
-This formula, derived via the Choi-Jamiołkowski isomorphism and the $d=4$ Hilbert space integral, encapsulates the fact that for a CPHASE gate, only the accumulation of specific phases by $|01\rangle$ and $|11\rangle$ states matters; $|00\rangle$ is dark and $|10\rangle$ is symmetric with $|01\rangle$.
+This formula follows from the Haar integral identity $\bar{F} = (|\text{tr}(M)|^2 + \text{tr}(M^\dagger M))/d(d{+}1)$ [@Nielsen_2002] with $d=4$ and $M = U_{\rm target}^\dagger V$ restricted to the computational subspace. Since $|00\rangle$ is dark and $|10\rangle$ is symmetric with $|01\rangle$, $M$ is diagonal with entries $(1, a_{01}, a_{01}, a_{11})$, giving $\text{tr}(M) = 1 + 2a_{01} + a_{11}$ and $\text{tr}(M^\dagger M) = 1 + 2|a_{01}|^2 + |a_{11}|^2$. **Consistency check:** for a perfect gate $a_q = 1$ for all $q$, yielding $\bar{F} = (16 + 4)/20 = 1$.
 
 ---
 
