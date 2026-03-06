@@ -322,14 +322,14 @@ For any photon number $n = 0, 1, \ldots$, the four basis states $\{|n{+}2\rangle
 
 $$
 H = \begin{pmatrix}
-0 & \hbar g(n{+}2)e^{-i\delta t} & \hbar g(n{+}2)e^{-i\delta t} & 0 \\
-\hbar g(n{+}2)e^{i\delta t} & 0 & 0 & \hbar g(n{+}1)e^{-i\delta t} \\
-\hbar g(n{+}2)e^{i\delta t} & 0 & 0 & \hbar g(n{+}1)e^{-i\delta t} \\
-0 & \hbar g(n{+}1)e^{i\delta t} & \hbar g(n{+}1)e^{i\delta t} & V(R)
+0 & \hbar g\sqrt{n{+}2}\,e^{-i\delta t} & \hbar g\sqrt{n{+}2}\,e^{-i\delta t} & 0 \\
+\hbar g\sqrt{n{+}2}\,e^{i\delta t} & 0 & 0 & \hbar g\sqrt{n{+}1}\,e^{-i\delta t} \\
+\hbar g\sqrt{n{+}2}\,e^{i\delta t} & 0 & 0 & \hbar g\sqrt{n{+}1}\,e^{-i\delta t} \\
+0 & \hbar g\sqrt{n{+}1}\,e^{i\delta t} & \hbar g\sqrt{n{+}1}\,e^{i\delta t} & V(R)
 \end{pmatrix},
 $$ {#eq-4x4}
 
-where $V(R) = -C_6/R^6$. The antisymmetric state $\psi_- = |n{+}1\rangle\otimes(|gr\rangle - |rg\rangle)$ is an eigenstate with eigenvalue $\delta$, decoupled from the states $|n{+}2\rangle\otimes|gg\rangle$ and $|n\rangle\otimes|rr\rangle$.
+where $V(R) = -C_6/R^6$. The antisymmetric state $\psi_- = |n{+}1\rangle\otimes(|gr\rangle - |rg\rangle)$ is an eigenstate with eigenvalue $0$, decoupled from the states $|n{+}2\rangle\otimes|gg\rangle$ and $|n\rangle\otimes|rr\rangle$.
 :::
 
 :::{.callout-note collapse="true"}
@@ -337,12 +337,12 @@ where $V(R) = -C_6/R^6$. The antisymmetric state $\psi_- = |n{+}1\rangle\otimes(
 
 Apply the $4\times 4$ matrix to $\psi_- = (0, 1, -1, 0)^T$:
 
-- Row 1: $\hbar g(n{+}2)e^{-i\delta t}(1) + \hbar g(n{+}2)e^{-i\delta t}(-1) = 0$. ✓
-- Row 2: $0 + 0 + \hbar g(n{+}1)e^{-i\delta t}(0) = 0$, plus the $e^{i\delta t}$ rotating frame gives eigenvalue $\delta$. ✓
-- Row 3: Same as Row 2 with opposite sign, cancels with the $-1$ component. ✓
-- Row 4: $\hbar g(n{+}1)e^{i\delta t}(1) + \hbar g(n{+}1)e^{i\delta t}(-1) = 0$. ✓
+- Row 1: $\hbar g\sqrt{n{+}2}\,e^{-i\delta t}(1) + \hbar g\sqrt{n{+}2}\,e^{-i\delta t}(-1) = 0$. ✓
+- Row 2: $\hbar g\sqrt{n{+}2}\,e^{i\delta t}(0) + 0 + 0 + \hbar g\sqrt{n{+}1}\,e^{-i\delta t}(0) = 0$. ✓
+- Row 3: same structure as Row 2; all terms vanish identically. ✓
+- Row 4: $\hbar g\sqrt{n{+}1}\,e^{i\delta t}(1) + \hbar g\sqrt{n{+}1}\,e^{i\delta t}(-1) = 0$. ✓
 
-Hence $H\psi_- = \delta\,\psi_-$. Since $\psi_-$ has zero overlap with the $|gg\rangle$ and $|rr\rangle$ basis states, preparing in either the full ground state or the full Rydberg state avoids the generation of this antisymmetric dark state.
+Hence $H\psi_- = 0$: the antisymmetric state is a **dark state** of the interaction Hamiltonian. Since $\psi_-$ has zero overlap with the $|gg\rangle$ and $|rr\rangle$ basis states, preparing in either the full ground state or the full Rydberg state avoids the generation of this antisymmetric dark state.
 $\square$
 :::
 
@@ -369,26 +369,26 @@ This phenomenon is known as Rydberg blockade.
 
 $$
 H' = \begin{pmatrix}
-0 & \sqrt{2}\hbar g(n{+}2)e^{-i\delta t} & 0 \\
-\sqrt{2}\hbar g(n{+}2)e^{i\delta t} & 0 & \sqrt{2}\hbar g(n{+}1)e^{-i\delta t} \\
-0 & \sqrt{2}\hbar g(n{+}1)e^{i\delta t} & V(R)
+0 & \sqrt{2}\hbar g\sqrt{n{+}2}\,e^{-i\delta t} & 0 \\
+\sqrt{2}\hbar g\sqrt{n{+}2}\,e^{i\delta t} & 0 & \sqrt{2}\hbar g\sqrt{n{+}1}\,e^{-i\delta t} \\
+0 & \sqrt{2}\hbar g\sqrt{n{+}1}\,e^{i\delta t} & V(R)
 \end{pmatrix}.
 $$ {#eq-3state}
 
-**Step 2: Coupled Schrödinger equations.** The Schrödinger equation in the interaction picture, with $\tilde{c}_r = e^{-i\delta t}c_r$, $\tilde{c}_{rr} = e^{-2i\delta t}c_{rr}$, and $\Omega = \sqrt{2}\hbar g(n+2)$, gives
+**Step 2: Coupled Schrödinger equations.** The Schrödinger equation in the interaction picture, with $\tilde{c}_r = e^{-i\delta t}c_r$, $\tilde{c}_{rr} = e^{-2i\delta t}c_{rr}$, and $\Omega = \sqrt{2}\hbar g\sqrt{n+2}$, gives
 
 $$
 \begin{aligned}
 i\dot{c}_{gg} &= \Omega\,\tilde{c}_r, \\
-i\dot{\tilde{c}}_r &= \Omega\,c_{gg} + \frac{n+1}{n+2}\Omega\,\tilde{c}_{rr} + \delta\,\tilde{c}_r, \\
-i\dot{\tilde{c}}_{rr} &= \frac{n+1}{n+2}\Omega\,\tilde{c}_r + V\,\tilde{c}_{rr} + 2\delta\,\tilde{c}_{rr}.
+i\dot{\tilde{c}}_r &= \Omega\,c_{gg} + \sqrt{\tfrac{n+1}{n+2}}\,\Omega\,\tilde{c}_{rr} + \delta\,\tilde{c}_r, \\
+i\dot{\tilde{c}}_{rr} &= \sqrt{\tfrac{n+1}{n+2}}\,\Omega\,\tilde{c}_r + V\,\tilde{c}_{rr} + 2\delta\,\tilde{c}_{rr}.
 \end{aligned}
 $$ {#eq-coupled-eqs}
 
 **Step 3: Adiabatic elimination.** When $|V| \gg \Omega$, the doubly-excited amplitude $\tilde{c}_{rr}$ evolves slowly. Setting $\dot{\tilde{c}}_{rr} = 0$:
 
 $$
-\tilde{c}_{rr} = -\frac{n+1}{(n+2)(V - 2\delta)}\,\Omega\,\tilde{c}_r.
+\tilde{c}_{rr} = -\frac{\sqrt{(n+1)/(n+2)}}{V + 2\delta}\,\Omega\,\tilde{c}_r.
 $$ {#eq-adiabatic-elim}
 
 Consequently, the probability of both Rydberg atoms being excited is
