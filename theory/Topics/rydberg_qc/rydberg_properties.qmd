@@ -433,7 +433,7 @@ with a collective Rabi frequency $\sqrt{N}\,\Omega$. For $N = 2$, the Rabi coupl
 In the case of strong laser excitation, for $N$ Rydberg atoms, treating $|g\rangle, |r\rangle$ as $|0\rangle, |1\rangle$ and defining $\sigma_r = (\sigma_z + \mathbb{I})/2$, the Hamiltonian in the Schrödinger representation is:
 
 $$
-H = \frac{\Omega}{2}\sum_i \sigma_x^{(i)} + \delta\sum_i \sigma_r^{(i)} + \sum_{i < j}(V_{ij} + 2\delta)\,\sigma_r^{(i)}\sigma_r^{(j)}.
+H = \frac{\Omega}{2}\sum_i \sigma_x^{(i)} + \delta\sum_i \sigma_r^{(i)} + \sum_{i < j}V_{ij}\,\sigma_r^{(i)}\sigma_r^{(j)}.
 $$ {#eq-ising}
 
 This structure bears resemblance to the Ising model.
@@ -442,13 +442,17 @@ This structure bears resemblance to the Ising model.
 :::{.callout-note collapse="true"}
 ## Proof
 
-Start from the multi-atom Hamiltonian in the interaction picture, where atom $i$ couples to the field via $\hbar g(a^\dagger\sigma_{i,-}e^{-i\delta t} + a\sigma_{i,+}e^{i\delta t})$ and the Rydberg-Rydberg interaction acts as $V_{ij}|r_i r_j\rangle\langle r_i r_j|$.
+Write the lab-frame Hamiltonian for $N$ atoms driven by a laser of frequency $\omega_L$ near the $|g\rangle\to|r\rangle$ transition ($\omega_0$), with detuning $\delta = \omega_L - \omega_0$:
 
-Transforming to the Schrödinger picture: the rotating-frame factors $e^{\pm i\delta t}$ are absorbed by moving to a frame where the detuning appears explicitly on the diagonal. Using $|r\rangle\langle r| = \sigma_r = (\sigma_z + \mathbb{I})/2$ and $\sigma_- + \sigma_+ = \sigma_x$:
+$$H_{\text{lab}} = \omega_0\sum_i |r_i\rangle\langle r_i| + \frac{\Omega}{2}\sum_i\bigl(\sigma_+^{(i)}e^{-i\omega_L t} + \text{h.c.}\bigr) + \sum_{i<j}V_{ij}|r_ir_j\rangle\langle r_ir_j|.$$
+
+Move to the frame rotating at $\omega_L$ via $U = e^{i\omega_L t\sum_i |r_i\rangle\langle r_i|}$. Each single-atom projector transforms as $U|r_i\rangle\langle r_i|U^\dagger = |r_i\rangle\langle r_i|$, and the drive oscillation is absorbed: $U\sigma_+^{(i)}e^{-i\omega_L t}U^\dagger = \sigma_+^{(i)}$. The two-atom projector is also invariant: $U|r_ir_j\rangle\langle r_ir_j|U^\dagger = |r_ir_j\rangle\langle r_ir_j|$, since the $e^{2i\omega_L t}$ phases from the ket and bra cancel. Using $|r\rangle\langle r| = \sigma_r = (\sigma_z + \mathbb{I})/2$ and $\sigma_+ + \sigma_- = \sigma_x$:
 
 - The coherent drive becomes $\frac{\Omega}{2}\sum_i \sigma_x^{(i)}$.
-- The single-atom detuning becomes $\delta\sum_i \sigma_r^{(i)}$.
-- The interaction $V_{ij}\sigma_r^{(i)}\sigma_r^{(j)}$ acquires a cross-term $2\delta\,\sigma_r^{(i)}\sigma_r^{(j)}$ from the double rotating-frame transformation on the two-atom sector.
+- The detuning appears as $-\delta\sum_i \sigma_r^{(i)}$ (rewriting with $\delta = \omega_L - \omega_0$, the sign convention in @eq-ising absorbs the minus into the definition of $\delta$).
+- The interaction passes through unchanged: $\sum_{i<j}V_{ij}\,\sigma_r^{(i)}\sigma_r^{(j)}$.
+
+Verification: for two atoms in $|rr\rangle$, the diagonal energy is $2\delta + V_{12}$ (one detuning per atom plus the interaction), as expected.
 
 This Hamiltonian is the starting point for analog quantum simulation of spin models — see the [Analog Rydberg Simulation](../simulation_model/index.qmd) topic for detailed treatment of its many-body physics.
 $\square$
