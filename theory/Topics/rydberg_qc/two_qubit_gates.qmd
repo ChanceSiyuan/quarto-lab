@@ -168,7 +168,7 @@ $$
 H'_{\rm tot,0g}/\hbar = \begin{pmatrix}
 0 & \tilde\Omega_1(t)/2 & 0 \\
 \tilde\Omega_1^*(t)/2 & \Delta & \tilde\Omega_2(t)/2 \\
-0 & \tilde\Omega_2^*(t)/2 & 0
+0 & \tilde\Omega_2^*(t)/2 & \delta
 \end{pmatrix}.
 $$ {#eq-H-0g}
 
@@ -178,9 +178,9 @@ $$
 H'_{\rm tot,gg}/\hbar = \begin{pmatrix}
 0 & \sqrt{2}\tilde\Omega_1/2 & 0 & 0 & 0 \\
 \sqrt{2}\tilde\Omega_1^*/2 & \Delta & \sqrt{2}\tilde\Omega_1/2 & \tilde\Omega_2/2 & 0 \\
-0 & \sqrt{2}\tilde\Omega_1^*/2 & 2\Delta & \sqrt{2}\tilde\Omega_2/2 & 0 \\
-0 & \tilde\Omega_2^*/2 & \sqrt{2}\tilde\Omega_2^*/2 & \delta & \tilde\Omega_1/2 \\
-0 & 0 & 0 & \tilde\Omega_1^*/2 & \Delta + \delta
+0 & \sqrt{2}\tilde\Omega_1^*/2 & 2\Delta & 0 & \sqrt{2}\tilde\Omega_2/2 \\
+0 & \tilde\Omega_2^*/2 & 0 & \delta & \tilde\Omega_1/2 \\
+0 & 0 & \sqrt{2}\tilde\Omega_2^*/2 & \tilde\Omega_1^*/2 & \Delta + \delta
 \end{pmatrix}.
 $$ {#eq-H-gg}
 
@@ -189,16 +189,16 @@ $$ {#eq-H-gg}
 Moving to the frame $U(t) = \exp[i\omega_g t|g\rangle\langle g| + i(\omega_e - \Delta)t|e\rangle\langle e| + i(\omega_r - \delta)t|r\rangle\langle r|]$, the rotating-frame Hamiltonian has $|e\rangle$ at energy $\Delta \gg \Omega_1, \Omega_2$. Writing the Schrödinger equation for the intermediate states:
 
 $$
-i\hbar\partial_t\psi_i = (H_{i1}\psi_1 + H_{i5}\psi_5) + \Delta\psi_i, \qquad \forall\;i = 2,3,4.
+i\hbar\partial_t\psi_i = (H_{i1}\psi_1 + H_{i4}\psi_4) + \Delta_i\psi_i, \qquad \forall\;i = 2,3,5,
 $$
 
-Setting $\partial_t\psi_i = 0$ (adiabatic elimination) gives the effective two-level system between $|1\rangle$ and $|5\rangle$:
+Setting $\partial_t\psi_i = 0$ (adiabatic elimination, where $\Delta_i \in \{\Delta, 2\Delta, \Delta+\delta\}$ for $i = 2,3,5$ respectively) gives the effective two-level system between $|1\rangle$ and $|4\rangle$:
 
 $$
-i\hbar\partial_t\psi_5 = -\sum_{i=2,3,4}\frac{|H_{5i}|^2}{\Delta}\psi_5 - \left(\sum_{i=2,3,4}\frac{H_{i1}H_{5i}}{\Delta}\right)\psi_1,
+i\hbar\partial_t\psi_4 = -\sum_{i=2,3,5}\frac{|H_{4i}|^2}{\Delta_i}\psi_4 - \left(\sum_{i=2,3,5}\frac{H_{i1}H_{4i}^*}{\Delta_i}\right)\psi_1,
 $$
 $$
-i\hbar\partial_t\psi_1 = -\sum_{i=2,3,4}\frac{|H_{1i}|^2}{\Delta}\psi_1 - \left(\sum_{i=2,3,4}\frac{H_{i5}H_{1i}}{\Delta}\right)\psi_5.
+i\hbar\partial_t\psi_1 = -\sum_{i=2,3,5}\frac{|H_{1i}|^2}{\Delta_i}\psi_1 - \left(\sum_{i=2,3,5}\frac{H_{i4}H_{1i}^*}{\Delta_i}\right)\psi_4.
 $$
 
 The effective light shifts and Rabi frequency are:
