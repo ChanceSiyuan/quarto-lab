@@ -130,13 +130,13 @@ $$ {#eq-Heff}
 
 ## Two-Atom Approximation
 
-For spontaneous emission on individual atoms (no collective decay), the decay superoperator has tensor-product structure. To first order in the decay rates $\Gamma_j$:
+For spontaneous emission on individual atoms (no collective decay), the single-atom effective Hamiltonian is $H_{{\rm eff},1}(t) = H_s(t) - i\frac{\hbar}{2}\sum_j \Gamma_j\proj{j}$. Since the decay channels act independently on each atom, the two-atom effective Hamiltonian is additive:
 
 $$
-H_{\rm eff}(t) \approx \left(H_s(t) - i\frac{\hbar}{2}\sum_j \Gamma_j\proj{j}\right)^{\otimes 2},
+H_{\rm eff}^{(2)}(t) = H_{{\rm eff},1}(t) \otimes \mathbb{I} + \mathbb{I} \otimes H_{{\rm eff},1}(t),
 $$ {#eq-Heff-2atom}
 
-allowing the two-atom propagator $U_{\rm eff}(t) = U_{{\rm eff},1}(t) \otimes U_{{\rm eff},1}(t)$ to be computed from the single-atom propagator.
+so the two-atom propagator factorizes as $U_{\rm eff}(t) = U_{{\rm eff},1}(t) \otimes U_{{\rm eff},1}(t)$, reducing the computation to the single-atom level.
 
 ## Kraus Channel from Propagator Integration
 
