@@ -66,9 +66,28 @@ The Wineland squeezing parameter $\xi_R^2 = N (\Delta S_\perp)^2_{\min} / |\lang
 :::{.callout-note collapse="true"}
 ### Proof sketch (OAT squeezing scaling)
 
-The long-range XY interaction after mean-field decoupling reduces to $H_{\text{OAT}} \approx \chi S_z^2$ with $\chi \propto \sum_j J_{0j}$.
-The quasi-probability distribution on the Bloch sphere shears under this nonlinear rotation, producing a minimum-uncertainty squeezed state.
-Minimizing $\xi_R^2$ over evolution time gives $\xi_R^2 \sim N^{-2/3}$ at $t_{\text{opt}} \sim \chi^{-1} N^{-1/3}$ [@kitagawa1993squeezed].
+**Step 1 — Symmetric sector.**
+The initial state $|\!\rightarrow\rangle^{\otimes N}$ is a coherent spin state (CSS) in the maximal-spin symmetric (Dicke) manifold with total spin $S = N/2$ and $\langle S_x \rangle = N/2$.
+At early times the XY dynamics remains within this manifold, so it suffices to project the Hamiltonian onto collective-spin operators.
+
+**Step 2 — XY $\to$ OAT reduction.**
+Rewrite the XY interaction as $H_{\text{XY}} = \sum_{i \neq j} J_{ij}(S_i^x S_j^x + S_i^y S_j^y)$.
+In the uniform-coupling (all-to-all) approximation $J_{ij} \approx \bar{J}$ for all $i \neq j$, the double sum factorizes into collective operators:
+$$
+H \approx \bar{J}\bigl[(S_x^{\text{tot}})^2 + (S_y^{\text{tot}})^2 - N/2\bigr] = \bar{J}\bigl[\mathbf{S}^2 - S_z^2 - N/2\bigr],
+$$
+using $(S_x^{\text{tot}})^2 + (S_y^{\text{tot}})^2 = \mathbf{S}^2 - (S_z^{\text{tot}})^2$ and subtracting the single-site terms $\sum_i (S_i^x)^2 + (S_i^y)^2 = N/2$.
+Since the Casimir $\mathbf{S}^2 = S(S+1)$ is conserved within the symmetric sector, the dynamical part is $H_{\text{OAT}} = -\chi\, S_z^2$ with
+$$
+\chi = \bar{J} = \frac{J_0}{N}, \qquad J_0 \equiv \sum_{j \neq 0} J_{0j}.
+$$
+For a 2D array with $1/R^3$ couplings, $J_0 = \sum_j C_3/R_{0j}^3$ converges to a finite constant (independent of $N$) set by the lattice geometry and $C_3$.
+The uniform-coupling approximation holds at times shorter than the spin-wave instability time, when $\mathbf{k} \neq 0$ Fourier modes of the spin field remain unexcited; beyond this time the finite-range $1/R^3$ structure causes the squeezing to degrade.
+
+**Step 3 — Optimal squeezing.**
+The OAT Hamiltonian $-\chi S_z^2$ shears the CSS quasi-probability distribution on the Bloch sphere.
+From [@kitagawa1993squeezed]: the optimal Wineland parameter $\xi_R^2 \sim N^{-2/3}$ is reached at time $t_{\text{opt}} \sim \chi^{-1} N^{-1/3}$.
+With $\chi = J_0/N$, this gives $t_{\text{opt}} \sim N^{2/3}/J_0$, which for $N = 200$ and $J_0/(2\pi) \sim 10\,$MHz yields $t_{\text{opt}} \sim$ a few $\mu$s — consistent with the quench timescales in [@bornet2023scalable].
 Deviations from pure OAT due to the finite-range $1/R^3$ structure and beyond-mean-field correlations are analysed experimentally in [@bornet2023scalable].
 :::
 
