@@ -48,10 +48,10 @@ $$ {#eq-rotating-frame}
 Expanding $\cos\omega t\;e^{\pm i\omega t} = \frac{1}{2}(1 + e^{\pm 2i\omega t})$, we identify the rapidly oscillating $e^{\pm 2i\omega t}$ terms. Discarding them (the **rotating-wave approximation**) gives the time-independent Hamiltonian in the rotating frame:
 
 $$
-H_S/\hbar = \frac{\Omega}{2}(\sigma_- + \sigma_+) + \frac{\delta}{2}(\mathbb{I} - \sigma_z),
+H_S/\hbar = \frac{\Omega}{2}(\sigma_- + \sigma_+) + \frac{\delta}{2}(\mathbb{I} + \sigma_z),
 $$ {#eq-H-RWA}
 
-where $\delta = \omega - (E_e - E_g)/\hbar$ is the laser detuning. The neglected counter-rotating terms produce the **Bloch–Siegert shift** $\sim \Omega^2/(4\omega)$, negligible for optical transitions.
+where $\delta = (E_e - E_g)/\hbar - \omega$ is the laser detuning (atom minus laser; $\delta > 0$ for red-detuned light). The neglected counter-rotating terms produce the **Bloch–Siegert shift** $\sim \Omega^2/(4\omega)$, negligible for optical transitions.
 
 ## Rabi Oscillations
 
@@ -69,7 +69,7 @@ $$
 E_+ - E_- \approx |\delta| + \frac{\Omega^2}{2|\delta|},
 $$
 
-so the ground state is shifted by $+\Omega^2/(2\delta)$ (upward for red-detuned light), which is the light shift exploited in optical tweezers trapping.
+so the ground state is shifted by $-\Omega^2/(4\delta)$ (downward for red-detuned light, $\delta > 0$), which is the attractive light shift exploited in optical tweezers trapping.
 
 ---
 
@@ -89,8 +89,8 @@ Applying the rotating-frame substitution $\tilde\rho_{gg} = \rho_{gg}$, $\tilde\
 $$
 \begin{pmatrix} \dot{\tilde\rho}_{gg} & \dot{\tilde\rho}_{ge} \\ \dot{\tilde\rho}_{eg} & \dot{\tilde\rho}_{ee} \end{pmatrix}
 = -i\begin{pmatrix}
-(\tilde\rho_{eg} - \tilde\rho_{ge})\frac{\Omega}{2} & (\tilde\rho_{ee} - \tilde\rho_{gg})\frac{\Omega}{2} + \tilde\rho_{ge}\delta \\
-(\tilde\rho_{gg} - \tilde\rho_{ee})\frac{\Omega}{2} - \tilde\rho_{eg}\delta & (\tilde\rho_{ge} - \tilde\rho_{eg})\frac{\Omega}{2}
+(\tilde\rho_{eg} - \tilde\rho_{ge})\frac{\Omega}{2} & (\tilde\rho_{ee} - \tilde\rho_{gg})\frac{\Omega}{2} - \tilde\rho_{ge}\delta \\
+(\tilde\rho_{gg} - \tilde\rho_{ee})\frac{\Omega}{2} + \tilde\rho_{eg}\delta & (\tilde\rho_{ge} - \tilde\rho_{eg})\frac{\Omega}{2}
 \end{pmatrix}.
 $$ {#eq-bloch-nodamp}
 
@@ -157,8 +157,8 @@ $$
 \begin{aligned}
 \dot{\tilde\rho}_{gg} &= -i(\tilde\rho_{eg} - \tilde\rho_{ge})\frac{\Omega}{2} + 2\gamma\tilde\rho_{ee}, \\
 \dot{\tilde\rho}_{ee} &= -i(\tilde\rho_{ge} - \tilde\rho_{eg})\frac{\Omega}{2} - 2\gamma\tilde\rho_{ee}, \\
-\dot{\tilde\rho}_{ge} &= -i(\tilde\rho_{ee} - \tilde\rho_{gg})\frac{\Omega}{2} - i\tilde\rho_{ge}\delta - \gamma\tilde\rho_{ge}, \\
-\dot{\tilde\rho}_{eg} &= -i(\tilde\rho_{gg} - \tilde\rho_{ee})\frac{\Omega}{2} + i\tilde\rho_{eg}\delta - \gamma\tilde\rho_{eg}.
+\dot{\tilde\rho}_{ge} &= -i(\tilde\rho_{ee} - \tilde\rho_{gg})\frac{\Omega}{2} + i\tilde\rho_{ge}\delta - \gamma\tilde\rho_{ge}, \\
+\dot{\tilde\rho}_{eg} &= -i(\tilde\rho_{gg} - \tilde\rho_{ee})\frac{\Omega}{2} - i\tilde\rho_{eg}\delta - \gamma\tilde\rho_{eg}.
 \end{aligned}
 $$ {#eq-OBE-full}
 
