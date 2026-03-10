@@ -181,7 +181,7 @@ for all $\rho$ and all $\alpha \in \cA$.
 Any degree-$d$ polynomial $f_\alpha$ admits a unique \emph{linearization}: a Hermitian operator $F_\alpha$ on $\cH^{\ox k}$ ($k \geq d$) such that $f_\alpha(\vec{p}(\rho)) = \tr[F_\alpha \rho^{\ox k}]$ for all $\rho$. Condition~\eqref{eq:f-compat} becomes $\sum_j h_\alpha(j)\Pi_j = F_\alpha$.
 
 The \emph{f-compatibility robustness} $s^*(\cF)$ is the minimum super-normalization $s \geq 1$ satisfying $\sum_j \Pi_j = s\cdot\1^{\ox k}$ such that the above conditions are feasible. This optimal $s^*$ is computed by the following optimization (a bilinear program in $h_\alpha(j)$ and $\Pi_j$, which admits an SDP relaxation; see Appendix~\ref{app:f-compat}):
-\begin{align}\label{eq:f-compat-SDP}
+\begin{align}\label{eq:f-compat-prog}
 s^* = \min\; s \;\;\text{s.t.}\;\; &\sum_j h_\alpha(j)\Pi_j = F_\alpha,\; \sum_j \Pi_j = s\1, \notag\\
 &\Pi_j \geq 0,\; |h_\alpha(j)| \leq 1.
 \end{align}
@@ -200,7 +200,7 @@ If the linearizations have product form $F_\alpha = \bigotimes_{l=1}^n F_{\alpha
 \begin{align}\label{eq:tensor-factor}
 s^*_{\mathrm{loc}}(\cF) = \prod_{l=1}^n s^*_l,
 \end{align}
-where $s^*_l$ is the single-site robustness from~\eqref{eq:f-compat-SDP} restricted to site $l$.
+where $s^*_l$ is the single-site robustness from~\eqref{eq:f-compat-prog} restricted to site $l$.
 \end{theorem}
 
 This reduces the $n$-qubit problem to $n$ independent single-qubit optimizations of dimension $2^k$. The sample complexity~\eqref{eq:copy-complexity} with local measurements becomes $N = \mathcal{O}\!\left((\prod_l s^*_l)^2\varepsilon^{-2}\log(|\cA|/\delta)\right)$.
@@ -241,7 +241,7 @@ The commutativity follows from $[S_P, S_Q] = 0$ since each pair of terms either 
 
 For $k=2$, the eigenbasis states have the form
 $\ket{\Psi^s_{(\mathbf{a},\mathbf{b})}} = 2^{-1/2}[\ket{\Phi_\mathbf{a}}\ket{\Phi_\mathbf{b}} + s\ket{\Phi_\mathbf{b}}\ket{\Phi_\mathbf{a}}]$
-for $\mathbf{a} < \mathbf{b}$ with eigenvalues $\lambda = s\cdot 2^{-1}[(-1)^{[\mathbf{r},\mathbf{a}]} + (-1)^{[\mathbf{r},\mathbf{b}]}]$. We realize this measurement with a circuit of transversal CNOTs followed by adaptive computational/GHZ-basis measurements (Appendix~\ref{app:UB_nonlin_P_shad}, Fig.~\ref{fig:4rep_strategy}).
+for $\mathbf{a} < \mathbf{b}$ with eigenvalues $\lambda = (-1)^{\mathbf{r}_x\cdot\mathbf{r}_z}\cdot s\cdot 2^{-1}[(-1)^{[\mathbf{r},\mathbf{a}]} + (-1)^{[\mathbf{r},\mathbf{b}]}]$, where the phase $(-1)^{\mathbf{r}_x\cdot\mathbf{r}_z}$ depends only on the Pauli $P = \sigma_\mathbf{r}$ (cf.\ Eq.~\eqref{eq:bell_eigenvalue}). We realize this measurement with a circuit of transversal CNOTs followed by adaptive computational/GHZ-basis measurements (Appendix~\ref{app:UB_nonlin_P_shad}, Fig.~\ref{fig:4rep_strategy}).
 
 Recovering signed values $\tr(P\rho^k)$ from $|\tr(P\rho^k)|$ requires $\mathcal{O}(\varepsilon^{-4}\log|\cO|)$ additional copies with ancilla, via the signal estimation technique (Appendix, Lemma~\ref{lemma:signal_estim}).
 
@@ -628,12 +628,12 @@ Given a set of rank-$r$ funciton $\mathcal{F}$, it is $l$-replica compatiable if
     \color{black}
 \end{proof}
 
-\subsection{f-Compatibility SDP: primal and dual}
+\subsection{f-Compatibility program: primal and dual}
 
 \color{red}Since now $k$-replica f-compatibility on a set of rank-$r$ properties can be reduced to a single-replica f-compatibility problem (Lemma~\ref{lem:structure_fcomp_lemma}), in this section we formulate the single-replica f-compatibility robustness $s^*(\cF)$ as an optimization problem.
 The exact formulation is a \emph{bilinear program} (bilinear in the POVM elements $\{\Pi_j\}$ and the scalar estimators $\{h_\alpha(j)\}$), which is not an SDP but can be relaxed to one (see below).\color{black}
 The optimization variables are the POVM elements $\{\Pi_j\}_{j\in\cJ}$, the estimator scalars $\{h_\alpha(j)\}$, and the super-normalization factor $s$.
-\begin{equation}\label{eq:primal-SDP}
+\begin{equation}\label{eq:primal-bilinear}
 \boxed{
 \begin{aligned}
 \text{Minimize:} \quad & s \\
@@ -647,7 +647,7 @@ The optimization variables are the POVM elements $\{\Pi_j\}_{j\in\cJ}$, the esti
 
 \color{red}
 \paragraph{SDP relaxation and its gap.}
-The bilinear program~\eqref{eq:primal-SDP} is computationally hard due to the product constraint $h_\alpha(j)\Pi_j$ (bilinear in the scalar $h_\alpha(j)$ and the matrix $\Pi_j$). A standard relaxation replaces this product by a free matrix variable: introduce $\Gamma_{\alpha,j} := h_\alpha(j)\Pi_j$ subject to $\Pi_j \pm \Gamma_{\alpha,j} \geq 0$ and $\sum_j \Gamma_{\alpha,j} = F_\alpha$. The constraint $\Pi_j \pm \Gamma_{\alpha,j} \geq 0$ is equivalent to $|h_\alpha(j)| \leq 1$ when $\Gamma_{\alpha,j} = h\Pi_j$ for a scalar $h$, but for rank $>1$ the matrix $\Gamma_{\alpha,j}$ can satisfy $\Pi_j \pm \Gamma_{\alpha,j} \geq 0$ without being a scalar multiple of $\Pi_j$. Thus the relaxed SDP provides a \emph{lower bound}: $s^*_{\mathrm{SDP}} \leq s^*$.
+The bilinear program~\eqref{eq:primal-bilinear} is computationally hard due to the product constraint $h_\alpha(j)\Pi_j$ (bilinear in the scalar $h_\alpha(j)$ and the matrix $\Pi_j$). A standard relaxation replaces this product by a free matrix variable: introduce $\Gamma_{\alpha,j} := h_\alpha(j)\Pi_j$ subject to $\Pi_j \pm \Gamma_{\alpha,j} \geq 0$ and $\sum_j \Gamma_{\alpha,j} = F_\alpha$. The constraint $\Pi_j \pm \Gamma_{\alpha,j} \geq 0$ is equivalent to $|h_\alpha(j)| \leq 1$ when $\Gamma_{\alpha,j} = h\Pi_j$ for a scalar $h$, but for rank $>1$ the matrix $\Gamma_{\alpha,j}$ can satisfy $\Pi_j \pm \Gamma_{\alpha,j} \geq 0$ without being a scalar multiple of $\Pi_j$. Thus the relaxed SDP provides a \emph{lower bound}: $s^*_{\mathrm{SDP}} \leq s^*$.
 
 The relaxation is exact for rank-1 (projective) POVMs (since $\Pi_j = \proj{\psi_j}$ forces $\Gamma_{\alpha,j} = c_\alpha \proj{\psi_j}$ for some $|c_\alpha| \leq 1$), but can underestimate $s^*$ otherwise. For example, for $\cF = \{\tr(X\rho), \tr(Y\rho), \tr(Z\rho)\}$ on $\mathbb{C}^2$, the relaxed SDP gives $s^*_{\mathrm{SDP}} = 1$ while the true scalar-constrained answer is $s^* = \sqrt{3}$.
 
@@ -667,9 +667,9 @@ where $|\Lambda_\alpha| = \sqrt{\Lambda_\alpha^\dagger \Lambda_\alpha}$ denotes 
 We show that for the squared Pauli expectations $f_i(\rho) = |\tr(P_i\rho)|^2$ with $\{P_i\} = \{X,Y,Z\}$ on a single qubit, Bell measurement achieves $s^* = 1$.
 The two-copy linearizations are $F_i = P_i \ox P_i$. These operators mutually commute since $[P_i\ox P_i, P_j\ox P_j] = (P_iP_j)\ox(P_iP_j) - (P_jP_i)\ox(P_jP_i) = 0$. Their common eigenbasis is the Bell basis $\{\ket{\Phi_{ab}}\}_{a,b\in\{0,1\}}$ with eigenvalues:
 \begin{align}
-(P_i \ox P_i)\ket{\Phi_{ab}} = (-1)^{[P_i, (a,b)]}\ket{\Phi_{ab}},
+(P_i \ox P_i)\ket{\Phi_{ab}} = (-1)^{[P_i, (a,b)] + (P_i)_x(P_i)_z}\ket{\Phi_{ab}},\label{eq:bell_eigenvalue}
 \end{align}
-where $[\cdot,\cdot]$ denotes the symplectic inner product. Setting $\Pi_{ab} = \proj{\Phi_{ab}}$ and $h_i(a,b) = (-1)^{[P_i,(a,b)]}$, we have $\sum_{ab} h_i(a,b)\Pi_{ab} = P_i \ox P_i = F_i$ and $\sum_{ab}\Pi_{ab} = \1^{\ox 2}$, so $s = 1$. Since $|h_i(a,b)| = 1 \leq 1$, all constraints are satisfied with $s^* = 1$.
+where $[\cdot,\cdot]$ denotes the symplectic inner product and $(P_i)_x(P_i)_z$ is the product of the $x$- and $z$-components of $P_i$'s symplectic vector (this phase arises from $\sigma_\mathbf{q}\ox\sigma_\mathbf{q}\ket{\Phi_\mathbf{r}} = (-1)^{[\mathbf{r},\mathbf{q}]+\mathbf{q}_x\cdot\mathbf{q}_z}\ket{\Phi_\mathbf{r}}$; see Appendix~\ref{app:Bell_shadow}). Setting $\Pi_{ab} = \proj{\Phi_{ab}}$ and $h_i(a,b) = (-1)^{[P_i,(a,b)] + (P_i)_x(P_i)_z}$, we have $\sum_{ab} h_i(a,b)\Pi_{ab} = P_i \ox P_i = F_i$ and $\sum_{ab}\Pi_{ab} = \1^{\ox 2}$, so $s = 1$. Since $|h_i(a,b)| = 1 \leq 1$, all constraints are satisfied with $s^* = 1$.
 
 \paragraph{$\mathcal{F} = \{\tr(X\rho), \tr(Y\rho), \tr(Z\rho)\}$.}
 
@@ -910,8 +910,8 @@ The AJD problem~\eqref{eq:ajd} with $n=3$, $d=2$, $k=2$ has optimal solution $U 
 \emph{(c) Nonlocal Pauli shadow ($k=2$, all $\cP_n$).}
 The commuting family $\{A_P\}$ from Theorem~\ref{thm:nonlocal} is the AJD solution for the full Pauli group, with polynomial map $g_P(\vec{t}) = [\tr(P\rho^k)]^2$.
 
-\emph{(d) f-Compatibility SDP as dual.}
-The f-compatibility SDP~\eqref{eq:primal-SDP} is the dual perspective: POVM elements $\{\Pi_j\}$ correspond to common eigenprojectors of the optimal $\{R_\alpha\}$, and estimators $h_\alpha(j)$ correspond to eigenvalues $r_{\alpha,\lambda}$.
+\emph{(d) f-Compatibility program as dual.}
+The f-compatibility bilinear program~\eqref{eq:primal-bilinear} is the dual perspective: POVM elements $\{\Pi_j\}$ correspond to common eigenprojectors of the optimal $\{R_\alpha\}$, and estimators $h_\alpha(j)$ correspond to eigenvalues $r_{\alpha,\lambda}$.
 \end{proposition}
 
 \begin{theorem}[Tensor commutativity uniqueness, informal~\cite{king2024exponential}]\label{thm:king-nogo}
@@ -997,7 +997,7 @@ $N$ \textbf{copies} & \textbf{Achievable} & \textbf{Coverage} & \textbf{Info los
 This analysis demonstrates the power of the algebraic framework: by identifying the Lie algebra structure of $\{\tilde{O}_P\}$ (isomorphic to the original Paulis), one can invoke the Level~3 degree counting from Proposition~\ref{prop:three-levels} to determine the minimum copy number without exhaustive search over all possible commuting polynomials.
 
 \section{Multi-copy local estimation of fixed $\mathrm{tr}(P \rho^2)$}\label{app:local_est}
-\subsection{Bell measurement and its restriction}
+\subsection{Bell measurement and its restriction}\label{app:Bell_shadow}
 Contrast to conclusion in the last section, we noted that the purity estimation strategy using Bell measurements already reach the $\mathcal{O}(1)$ sampling complexity.
 Bell measurement is a two-copy local measurement strategy.
  The Bell measurement projector satisfied
@@ -1040,7 +1040,7 @@ This means that Bell shadow can effeciently estimates operators $O = \sum_{\math
 This include the SWAP operator and single Pauli operator $P \otimes P$, which estimates critical values for $\mathrm{tr}(\rho^2)$ and $|\mathrm{tr}(P \rho)|^2$. Their estimator writes 
 \begin{align}
     &\hat{o}_{\mathrm{swap}}(\mathbf{r}) = \mathrm{tr}\left[\mathrm{SWAP}^{\otimes n} \ket{\Phi_{\mathbf{r}}}\!\bra{{\Phi_{\mathbf{r}}}}\right] = 2^{-n}\sum_{\mathbf{p}_x,\mathbf{p}_z} (-1)^{\mathbf{r}_z\mathbf{p}_x + (\mathbf{r}_x + \mathbf{p}_x)\mathbf{p}_z} = (-1)^{\mathbf{r}_z \mathbf{r}_x},\\
-&\hat{o}_{\mathbf{q}}(\mathbf{r}) =\mathrm{tr}\left[\sigma_{\mathbf{q}} \otimes \sigma_{\mathbf{q}} \ket{\Phi_{\mathbf{r}}}\!\bra{{\Phi_{\mathbf{r}}}}\right] =(-1)^{[\mathbf{r}, \mathbf{q}] + \mathbf{q}_x\cdot \mathbf{q}_z},
+&\hat{o}_{\mathbf{q}}(\mathbf{r}) =\mathrm{tr}\left[\sigma_{\mathbf{q}} \otimes \sigma_{\mathbf{q}} \ket{\Phi_{\mathbf{r}}}\!\bra{{\Phi_{\mathbf{r}}}}\right] =(-1)^{[\mathbf{r}, \mathbf{q}] + \mathbf{q}_x\cdot \mathbf{q}_z},\label{eq:bell_shadow_eig}
 \end{align}
 respectively. Both of them are bounded within $[-1,1]$, thus induces two effecient estimation algorithm according to the Hoffding inequality.
 \begin{figure}[htbp!]
@@ -1502,7 +1502,7 @@ For the single-copy shadow, this gives a worst-case second moment of $7.5^n$ (th
 We have proved the inefficiency of single-copy strategy while an efficient two-copy Bell strategy exists. 
 In analogy, we try to break the lower bound in the last section by extending the single-copy shadow tomography method into the multi-copy case. 
 \begin{theorem}[A $2k$-copy shadow protocol for $|\mathrm{tr}(P\rho^k)|$]
-    Let $\mathcal{P}_n$ be the $n$-qubit Pauli group. Let $\mathbb{P}^{d}_{\pi}$ be the permutation operator on $2k$ replica of $n$-qubits ($d = 2^n$) and $\pi =(\mathrm{odds})(\mathrm{even})$ is 2-cycle permutation on odd labels $(1,3,5,\cdots,2k-1)$ and even labels $(2,4,\cdots,2k)$ respectively.
+    Let $\mathcal{P}_n$ be the $n$-qubit Pauli group. Let $\mathbb{P}^{d}_{\pi}$ be the permutation operator on $2k$ replica of $n$-qubits ($d = 2^n$) and $\pi =(\mathrm{odds})(\mathrm{even})$ is a product of two $k$-cycles acting on odd labels $(1,3,5,\cdots,2k-1)$ and even labels $(2,4,\cdots,2k)$ respectively.
     For any $P \in \mathcal{P}_n$, define the operator: $ A_P =\mathrm{sym}_{\pi}\left[P^{\otimes 2} \otimes (I^{\otimes 2})^{\otimes (k-1)} \right] \cdot \mathbb{P}^{d}_{\pi}$.
     The family of observables $\mathcal{A} = \{A_P\}_{P \in \mathcal{P}_n}$ is a commuting family, i.e., $[A_P, A_Q] = 0$ for all $P, Q \in \mathcal{P}_n$.
     Furthermore, its expectation value on $\rho^{\otimes 2k}$ is
@@ -1547,8 +1547,8 @@ In analogy, we try to break the lower bound in the last section by extending the
     \end{align}\color{black}
 \end{proof}
 \paragraph{Examples.}
- In the case $k = 2$, the commutants we choose writes $\{A_{\mathbf{r}} := {2}^{-1}{(\sigma_{\mathbf{r}}\sigma_{\mathbf{r}}\mathbb{I}_n\mathbb{I}_n + \mathbb{I}_n\mathbb{I}_n\sigma_{\mathbf{r}}\sigma_{\mathbf{r}})} \mathrm{S}_{13}\mathrm{S}_{24}\}_{\mathbf{r} \in \mathbb{F}_2^{2n}}$. Notice that $\sigma_{\mathbf{r}} \otimes \sigma_{\mathbf{r}} \ket{\Phi_{\mathbf{a}}} = (-1)^{[\mathbf{r},\mathbf{a}]}\ket{\Phi_{\mathbf{a}}}$,
-the shared eigenbasis of $\mathcal{A}$ have the form $\ket{\Psi^{s}_{(\mathbf{a}, \mathbf{b})}}$ below with eigenvalues $\lambda_{(s,\mathbf{a},\mathbf{b})} :=s \cdot 2^{-1}[(-1)^{[\mathbf{r}, \mathbf{a}]} + (-1)^{[\mathbf{r}, \mathbf{b}]}] $ and $s = \pm 1$.
+ In the case $k = 2$, the commutants we choose writes $\{A_{\mathbf{r}} := {2}^{-1}{(\sigma_{\mathbf{r}}\sigma_{\mathbf{r}}\mathbb{I}_n\mathbb{I}_n + \mathbb{I}_n\mathbb{I}_n\sigma_{\mathbf{r}}\sigma_{\mathbf{r}})} \mathrm{S}_{13}\mathrm{S}_{24}\}_{\mathbf{r} \in \mathbb{F}_2^{2n}}$. Notice that $\sigma_{\mathbf{r}} \otimes \sigma_{\mathbf{r}} \ket{\Phi_{\mathbf{a}}} = (-1)^{[\mathbf{r},\mathbf{a}] + \mathbf{r}_x\cdot\mathbf{r}_z}\ket{\Phi_{\mathbf{a}}}$ (cf.\ Eq.~\eqref{eq:bell_shadow_eig}),
+the shared eigenbasis of $\mathcal{A}$ have the form $\ket{\Psi^{s}_{(\mathbf{a}, \mathbf{b})}}$ below with eigenvalues $\lambda_{(s,\mathbf{a},\mathbf{b})} :=(-1)^{\mathbf{r}_x\cdot\mathbf{r}_z}\cdot s \cdot 2^{-1}[(-1)^{[\mathbf{r}, \mathbf{a}]} + (-1)^{[\mathbf{r}, \mathbf{b}]}] $ and $s = \pm 1$.
 \begin{align}
    \ket{\Psi^{s}_{(\mathbf{a}, \mathbf{b})}}&= 
    \begin{cases}   
