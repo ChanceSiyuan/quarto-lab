@@ -531,22 +531,21 @@ A great advantage of this definition is that the compatible learning of multiple
 Here below we provide a description of $\mathcal{F}$ where this simplification holds.
 
 \color{red}
-[todo: Does ordinary k-compatibility can upper bound f-compatibility?]
-\begin{lemma}[Upper bound of Multicopy f-compatibility]\label{lem:f-lowerbound}
-For any set of POVMs $\{A_i\}_{i=1}^K$ that is $k$-compatible and any polynomial functional set $\mathcal{F}$ of maximum degree at most $r$ and evaluates to bounded values in $[-1,1]$. then $k(\mathcal{F}) \leq r_{m}k$. Specifically, the inequality reaches the tight bound in $r = 1$ case when $f_{\alpha}(\vec{p}_1(\rho),\ldots,\vec{p}_K(\rho)) = p_i(a_i) = \mathrm{tr}[A_i^{(a_i)} \rho]$, $\alpha = (i,a_i) \in \{(i,a_i) : i \in \{1,\cdots,K\},\, a_i \in \Omega_i\}$.
+\begin{lemma}[Copy number upper bound for f-compatibility]\label{lem:f-upperbound}
+For any set of POVMs $\{A_i\}_{i=1}^K$ that is $k$-compatible, and any polynomial functional set $\mathcal{F}$ of degree at most $k$ in the outcome probabilities $\{\vec{p}_i\}$ that admits bounded classical estimators $C_\alpha(\vec{x}) \in [-1,1]$, then $\mathcal{F}$ is $k$-copy f-compatible: $k(\mathcal{F}) \leq k$. The bound is tight when $f_\alpha$ extracts individual outcome probabilities: $f_{(i,a_i)} = p_i(a_i) = \mathrm{tr}[A_i^{(a_i)} \rho]$, recovering standard $k$-compatibility.
 \end{lemma}
 \begin{proof}
+    Assume $\{A_i\}_{i=1}^K$ is $k$-compatible. By Lemma~\ref{lem:structure-lemma}, there exists a joint mother POVM $G(\vec{x}) = G(x_1, \ldots, x_K)$ acting on $\mathcal{H}^{\otimes k}$ such that measuring $G(\vec{x})$ on $\rho^{\otimes k}$ yields a joint classical probability distribution $P(\vec{x}|\rho) = \mathrm{tr}[G(\vec{x})\rho^{\otimes k}]$, from which marginal distributions are recovered: $\sum_{\vec{x} \setminus x_i} P(\vec{x}|\rho) = p_i(x_i|\rho)$ for $x_i \in \Omega_i$.
 
-    First we show that $k$-compatibility implies $\mathcal{F}$-compatibility ($k(\mathcal{F}) \leq k$).
-    Assume the set of POVMs $\{A_i\}_{i=1}^K$ is $k$-compatible. By Lemma~\ref{lem:structure-lemma}, there exists a joint mother POVM $G(\vec{x}) = G(x_1, \ldots, x_K)$ acting on $\mathcal{H}^{\otimes k}$ such that measuring $G(\vec{x})$ on $\rho^{\otimes k}$ yields a joint classical probability distribution $P(\vec{x}|\rho) = \mathrm{tr}[G(\vec{x})\rho^{\otimes k}]$, from which marginal distributions are recovered: $\sum_{\vec{x} \setminus x_i} P(\vec{x}|\rho) = p_i(x_i|\rho)$ for $x_i \in \Omega_i$.
-    
-    Now suppose $\mathcal{F} = \{f_\alpha\}_{\alpha}$ consists of degree-$\leq k$ polynomial functionals that admit bounded classical estimators from the joint outcome distribution. That is, there exist classical functions $C_\alpha(\vec{x}) \in [-1, 1]$ such that:
+    Since $\mathcal{F} = \{f_\alpha\}_{\alpha}$ consists of degree-$\leq k$ polynomial functionals that admit bounded classical estimators from the joint outcome distribution, there exist classical functions $C_\alpha(\vec{x}) \in [-1, 1]$ such that:
     $$
     f_\alpha(\vec{p}_1, \dots, \vec{p}_K) = \sum_{\vec{x}} C_\alpha(\vec{x})\, P(\vec{x}|\rho) = \sum_{\vec{x}} C_\alpha(\vec{x})\, \mathrm{tr}[G(\vec{x})\,\rho^{\otimes k}].
     $$
     Setting $\Pi_{\vec{x}} := G(\vec{x})$ and $h_\alpha(\vec{x}) := C_\alpha(\vec{x})$ satisfies all conditions of Definition~\ref{def:f-compatibility}, yielding $k(\mathcal{F}) \leq k$.
-    
 \end{proof}
+
+\emph{Remark (higher-degree functionals).}
+For degree-$r_m$ functionals with $r_m > k$, one might expect $k(\mathcal{F}) \leq r_m \cdot k$ by repeating the joint measurement $G$ on $r_m$ independent blocks of $k$ copies each. However, the classical polynomial estimator for a degree-$r_m$ functional need not satisfy $|h_\alpha(\vec{x})| \leq 1$, so f-compatibility (with $s = 1$) is not guaranteed. The bound holds with a supernormalization factor $s$ proportional to the $\ell_\infty$-norm of the classical estimator. \textcolor{red}{[TODO: Quantify the precise $s$ factor for the $r_m$-fold repetition strategy and determine whether it can be avoided by a direct $r_m k$-copy POVM construction.]}
 \color{black}
 
 Another critical question is, whether the f-compatiablity indeed replects the inherient hardness to simultanous estimation a set of properties $\{f_1(\rho),\cdots,f_\alpha(\rho)\}$.
@@ -559,7 +558,7 @@ An familiar example is the Pauli compatibility problem, given a set of Pauli obs
 We then noted that the f-compatibility problem of the set of properties $\mathcal{F}:= \{\mathrm{tr}[O_i\rho]\}_i$ is equivalent to the standard joint measurability problem of the POVMs $\{M_i^{(+)},M_i^{(-)}\}$.
  
 \begin{lemma}[Equivalence for bounded operators]\label{thm:linear_functional_compatibility}
-   Given a set of operators $\{O_i\}_i$ with $\|O_i\|_\infty \leq 1$, and set up $\mathcal{F}:= \{\mathrm{tr}[O_i\rho]\}_i$, then the set of linear functional $\mathcal{F}$ is $k$-copy compatible if and only if the POVMs $\{M_i^{\pm}:= \frac{\mathbb{I} \pm O_i}{2}\}_i$ is $k$-copy compatible.
+   Given a set of operators $\{O_i\}_i$ with $\|O_i\|_\infty \leq 1$, the linear functionals $\mathcal{F}:= \{\mathrm{tr}[O_i\rho]\}_i$ are $k$-copy f-compatible with robustness $s$ if and only if the POVMs $\{M_i^{\pm}:= \frac{\mathbb{I} \pm O_i}{2}\}_i$ are $k$-copy jointly measurable with robustness $s$. In particular, $s^*_{\cF}(k) = s^*_{\mathrm{JM}}(k)$ for all $k$.
 \end{lemma}
 
 \begin{proof}
@@ -586,13 +585,19 @@ $$
 Since $|h_i(j)|\leq 1$, both $p(+1|i,j) \geq 0$ and $p(-1|i,j) \geq 0$, and they sum to 1. Now verify the marginals:
 
 \begin{align}
-\sum_j p(\pm 1|i,j)\,\mathrm{sym}\left[\Pi_j\right] &= \frac{1}{2}\sum_j \mathrm{sym}\left[\Pi_j\right] \pm \frac{1}{2}\sum_j h_i(j)\,\mathrm{sym}\left[\Pi_j\right]  = \frac{\mathbb{I} \pm \mathbb{I}^{\otimes(k-1)}\odot O_i}{2}\\
+\sum_j p(\pm 1|i,j)\,\mathrm{sym}\left[\Pi_j\right] &= \frac{1}{2}\sum_j \mathrm{sym}\left[\Pi_j\right] \pm \frac{1}{2}\sum_j h_i(j)\,\mathrm{sym}\left[\Pi_j\right]  = \frac{\mathbb{I}^{\otimes k} \pm \mathbb{I}^{\otimes(k-1)}\odot O_i}{2}\\
 &=\mathbb{I}^{\otimes(k-1)}\odot \frac{\mathbb{I} + a\, O_i}{2}.
 \end{align}
 
 This is precisely a joint measurement realization of $\{\mathbb{I}^{\otimes(k-1)}\odot \frac{\mathbb{I} \pm \, O_i}{2}\}_{i=1}^K$ with parent POVM $\{\mathrm{sym}\left[\Pi_j\right]\}$, thus implies the $k$-replica compatiabilty of $\{\frac{\mathbb{I} \pm \, O_i}{2}\}_i$ based on Lemma~\ref{lem:structure-lemma}.
 \end{proof}
-This also implies that a set of linear property $\{\mathrm{tr}\left(\rho O_i\right)\}_{i = 1}^K$ is $k$-replica f-compatiable for $\rho$ if and only if its symmetric $\{\mathbb{I}^{\otimes (k-1)} \odot O_i\}$ is single copy f-compatiable on $\rho^{\otimes k}$.
+
+\color{red}
+\emph{Remark (general robustness $s$).}
+The proof above establishes the equivalence for proper POVMs ($s=1$, i.e., $\sum_j \Pi_j = \mathbb{I}^{\otimes k}$). The general case follows by rescaling: $\cF$ is f-compatible with robustness $s$ (i.e., $\sum_j h_i(j)\Pi_j = \mathbb{I}^{\otimes(k-1)}\odot O_i$ with $\sum_j \Pi_j = s\cdot\mathbb{I}^{\otimes k}$) if and only if $\cF' := \{\tr[(O_i/s)\rho]\}$ is f-compatible with $s=1$. By the above, this is equivalent to joint measurability of $\{(\mathbb{I} \pm O_i/s)/2\}$, which is precisely joint measurability of $\{(\mathbb{I} \pm O_i)/2\}$ with robustness $s$.
+\color{black}
+
+This also implies that a set of linear properties $\{\mathrm{tr}\left(\rho O_i\right)\}_{i = 1}^K$ is $k$-replica f-compatible for $\rho$ if and only if its symmetric embedding $\{\mathbb{I}^{\otimes (k-1)} \odot O_i\}$ is single-copy f-compatible on $\rho^{\otimes k}$.
 
 % \color{red}
 % (todo: A generalization to linear combinations of binary POVMs:
@@ -672,8 +677,14 @@ The two-copy linearizations are $F_i = P_i \ox P_i$. These operators mutually co
 where $[\cdot,\cdot]$ denotes the symplectic inner product and $(P_i)_x(P_i)_z$ is the product of the $x$- and $z$-components of $P_i$'s symplectic vector (this phase arises from $\sigma_\mathbf{q}\ox\sigma_\mathbf{q}\ket{\Phi_\mathbf{r}} = (-1)^{[\mathbf{r},\mathbf{q}]+\mathbf{q}_x\cdot\mathbf{q}_z}\ket{\Phi_\mathbf{r}}$; see Appendix~\ref{app:Bell_shadow}). Setting $\Pi_{ab} = \proj{\Phi_{ab}}$ and $h_i(a,b) = (-1)^{[P_i,(a,b)] + (P_i)_x(P_i)_z}$, we have $\sum_{ab} h_i(a,b)\Pi_{ab} = P_i \ox P_i = F_i$ and $\sum_{ab}\Pi_{ab} = \1^{\ox 2}$, so $s = 1$. Since $|h_i(a,b)| = 1 \leq 1$, all constraints are satisfied with $s^* = 1$.
 
 \paragraph{$\mathcal{F} = \{\tr(X\rho), \tr(Y\rho), \tr(Z\rho)\}$.}
+\color{red}
+For single-qubit linear Pauli functionals, the linearizations are $F_i = P_i \in \{X,Y,Z\}$ (degree~1, so $k=1$ suffices). By Lemma~\ref{thm:linear_functional_compatibility}, the f-compatibility robustness equals the joint measurability robustness of the unsharp Paulis $\{(\1 + \eta P_i)/2\}_{P_i \in \{X,Y,Z\}}$ with $\eta = 1/s$. By Busch's theorem~\cite{Busch1986}, the triple is jointly measurable if and only if $3\eta^2 \leq 1$, giving $\eta_{\max} = 1/\sqrt{3}$ and $s^* = \sqrt{3}$. The optimal joint measurement is $G(x,y,z) = \frac{1}{8}(\1 + \frac{x}{\sqrt{3}} X + \frac{y}{\sqrt{3}} Y + \frac{z}{\sqrt{3}} Z)$ with $x,y,z \in \{\pm 1\}$, which is precisely the single-qubit random Clifford shadow POVM. This per-site analysis recovers the classical shadow $3^w$ scaling via the tensor product factorization (Theorem~\ref{thm:tensor}).
+\color{black}
 
 \paragraph{$\mathcal{F} = \{ \tr(\rho^2),\tr(X\rho^2), \tr(Y\rho^2), \tr(Z\rho^2)\}$.}
+\color{red}
+The 2-linearizations are $F_0 = \mathrm{SWAP}$ and $F_P = \frac{1}{2}(P\ox\1 + \1\ox P)\cdot\mathrm{SWAP}$ for $P \in \{X,Y,Z\}$. On the symmetric subspace $\mathrm{Sym}^2(\mathbb{C}^2) \cong \mathbb{C}^3$, the operator $F_0 = \1_3$ (trivial), while $\{F_X, F_Y, F_Z\}$ have eigenvalues $\{+1, 0, -1\}$: they are spin-1 observables satisfying $[F_X, F_Y]|_{\mathrm{Sym}} = iF_Z|_{\mathrm{Sym}}$ (and cyclic permutations), where the restriction to $\mathrm{Sym}^2(\mathbb{C}^2)$ is needed since $\mathrm{SWAP} = \1$ there. Since they are non-binary, Lemma~\ref{thm:linear_functional_compatibility} does not apply, and the f-compatibility robustness may be strictly less than the joint measurability robustness of the corresponding 3-outcome POVMs. The non-commutativity $[F_P, F_Q] \neq 0$ means no single projective measurement suffices (unlike the quadratic case above), but the spin-1 structure may allow more efficient approximate estimation than the spin-$\frac{1}{2}$ Pauli case. \textcolor{red}{[TODO: Compute the SDP value of $s^*$ for this functional set and compare with the spin-$\frac{1}{2}$ bound $\sqrt{3}$.]}
+\color{black}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Tensor product Extension}\label{app:tensor}
