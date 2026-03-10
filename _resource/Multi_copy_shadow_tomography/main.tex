@@ -166,7 +166,7 @@ In this Letter, we develop the \emph{f-compatibility} framework, bridging quantu
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \prlsection{Framework.}\label{sec:framework}
-Consider $K$ observables $\{A_i\}_{i=1}^K$ on an $n$-qubit Hilbert space $\cH$, and a family of polynomial functionals $\cF = \{f_\alpha\}_{\alpha \in \cA}$ of degree $\leq d$ in the outcome probability vectors $\vec{p}_i(\rho) = (\tr[A_i^{(r)}\rho])_r$. By the classical estimation condition~\cite{wu2020polynomial}, unbiased estimation of degree-$d$ polynomials requires at least $d$ i.i.d.\ samples.
+Consider $K$ observables $\{A_i\}_{i=1}^K$ on an $n$-qubit Hilbert space $\cH$, and a family of polynomial functionals $\cF = \{f_\alpha\}_{\alpha \in \cA}$ of degree $\leq r$ in the outcome probability vectors $\vec{p}_i(\rho) = (\tr[A_i^{(a)}\rho])_a$. By the classical estimation condition~\cite{wu2020polynomial}, unbiased estimation of degree-$r$ polynomials requires at least $r$ i.i.d.\ samples.
 
 In the quantum setting, $k$ copies of $\rho$ enable a joint POVM $\{\Pi_j\}$ on $\cH^{\ox k}$, whose outcomes are post-processed by classical estimators $h_\alpha(j)$.
 
@@ -1205,7 +1205,7 @@ The basis with parameter $\theta$ decomposed into Pauli operators as
     &\ket{\Phi_{00}^{\theta}}\!\bra{\Phi_{00}^{\theta}} = \frac{II + ZZ + \sin(2\theta)(XX-YY) - \cos(2\theta)(IZ+ZI)}{4},\\
     &\ket{\Phi_{01}^{\theta}}\!\bra{\Phi_{01}^{\theta}} = \frac{II + ZZ - \sin(2\theta)(XX-YY) + \cos(2\theta)(IZ+ZI)}{4}.
 \end{align}
-Then given the localized two-copy measurement basis $\mathcal{B}(\theta_i, U_i)$ at site $i$,
+Then given the localized two-copy measurement basis $\mathcal{B}(\theta_i, U_i)$ at site $i$, the full $n$-site two-copy local measurement is the product basis $\bigotimes_{i=1}^n \mathcal{B}(\theta_i, U_i)$, and the resulting shadow channel $\mathcal{M}$ depends on the ensemble from which $(\theta_i, U_i)$ are drawn. Specific instances---including local Clifford 3-design ensembles---are analyzed in the next section.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{The  multi-copy local shadows}\label{app:local_shadow}
 \begin{figure}[htbp!]
@@ -1805,9 +1805,24 @@ This further reduced the problem to the discrimination between $\mathbb{I}(D)^{\
     This follows from a martingale analysis of the likelihood ratio process; see~\cite{chen2021exponential} for the detailed proof in the quantum setting.}
 \end{lemma}
 
-Based on Lemma~\ref{theo:mart_distinguish_lb}, we calculate its chi-square divergence first:
+Based on Lemma~\ref{theo:mart_distinguish_lb}, we calculate the chi-squared divergence for the reduced two-copy problem.
+\color{red}
+The reduced problem discriminates $\rho_0 = \mathbb{I}_D^{\otimes 2}/D^2$ from $\sigma = \sum_{\rho \in S_2}\lambda'_\rho \mathbb{P}_\rho^D$, where $\lambda'_e, \lambda'_{(12)}$ are determined by the leaves likelihood reduction. Since $\sigma = \lambda'_e \mathbb{I}_D^{\otimes 2} + \lambda'_{(12)}\mathrm{SWAP}_D$ and $\mathrm{tr}(\rho_0 F_s) = D^{-2}\mathrm{tr}(F_s)$, the chi-squared divergence under measurement class $\mathcal{M}$ evaluates to
+\begin{align}
+    \delta_{\mathcal{M}} &= D^2 \max_{\{F_s\} \in \mathcal{M}} \sum_s \frac{[(\lambda'_e - D^{-2})\mathrm{tr}(F_s) + \lambda'_{(12)}\mathrm{tr}(\mathrm{SWAP}_D\, F_s)]^2}{\mathrm{tr}(F_s)}.
+\end{align}
+For the RH-ensemble (purity-identity test), $\sigma = (\mathbb{I}_D^{\otimes 2} + \mathrm{SWAP}_D)/[D(D+1)]$, so $\lambda'_e = \lambda'_{(12)} = [D(D+1)]^{-1}$, and the above simplifies to (cf.~\cite{chen2021exponential})
+\begin{align}\label{eq:chi2_RH}
+    \delta_{\mathcal{M}} = \frac{1}{(D+1)^2}\left[\max_{\{F_s\} \in \mathcal{M}} \sum_s \frac{[\mathrm{tr}(\mathrm{SWAP}_D\, F_s)]^2}{\mathrm{tr}(F_s)} - 1\right].
+\end{align}
+For local 2-replica measurements $F_s = \bigotimes_{i=1}^n F_{s_i}$, the swap factorizes as $\mathrm{SWAP}_D = \bigotimes_{i=1}^n \mathrm{SWAP}_2^{(i)}$ across qubit sites, giving
+\begin{align}
+    \max_{\{F_s\} \in \mathcal{M}_{\mathrm{loc}}} \sum_s \frac{[\mathrm{tr}(\mathrm{SWAP}_D\, F_s)]^2}{\mathrm{tr}(F_s)} = \prod_{i=1}^n \gamma_i, \quad \gamma_i := \max_{\{F_{s_i}\}} \sum_{s_i} \frac{[\mathrm{tr}(\mathrm{SWAP}_2\, F_{s_i})]^2}{\mathrm{tr}(F_{s_i})} = 4,
+\end{align}
+where $\gamma_i = 4$ is attained by Bell measurements (the eigenstates of $\mathrm{SWAP}_2$). Thus $\delta_{\mathrm{loc}} = (D^2 - 1)/(D+1)^2 = (D-1)/(D+1) = \Theta(1)$, yielding only the trivial bound $T = \Omega(1)$ from Lemma~\ref{theo:mart_distinguish_lb}.
 
-
+The key insight is that $\mathrm{SWAP}_D$ factors over qubit sites, so local 2-replica measurements (with Bell at each site) are as powerful as entangled measurements for the purity-identity test. An exponential lower bound for local strategies therefore requires an ensemble where the signal is distributed across \emph{non-factoring} operators. This motivates the Clifford-dressed \textbf{MH}-ensemble below, where the Clifford gate spreads the distinguishing observable across high-weight Pauli operators that cannot be captured by any fixed local measurement basis.
+\color{black}
 
 \subsubsection{Subspace \textbf{MH}-ensemble test}
 \begin{problem}
