@@ -145,7 +145,7 @@ the f-compatibility robustness $s^*$ determines the sample complexity of any est
 For local (product) measurements on $n$-qubit systems, we prove a \emph{tensor product factorization theorem}: the robustness decomposes as $s^*_{\mathrm{loc}} = \prod_l s^*_l$ over qubit sites, recovering the $3^w$ scaling of classical shadows from a per-site incompatibility of $\sqrt{3}$.
 Crucially, nonlinear functionals can be strictly easier to estimate than their parent observables: for squared Pauli expectations $\{|\tr(P\rho)|^2\}$, the ``squaring trick'' $[P\ox P, Q\ox Q] = 0$ yields $s^* = 1$ via Bell measurements, achieving $\mathcal{O}(1)$ sample complexity.
 We construct an explicit nonlocal $2k$-copy strategy based on a commuting operator family $\{A_P\}$ that simultaneously estimates all $|\tr(P\rho^k)|$ via a single projective measurement.
-\color{red}Finally, we establish a local obstruction: the relevant lifted operators have non-product structure, and we prove that two-copy local 3-design strategies incur exponential cost $\sim (11/3)^n$ for product states (up to $5^n$ for entangled states) for estimating $\tr(P\rho^2)$.\color{black}
+\color{red}For the nonlinear task of estimating $\{\tr(P\rho^2)\}_P$, the relevant lifted operators have non-product structure, preventing the tensor factorization from yielding $s^*=1$. Explicit computation shows that two-copy local 3-design strategies incur exponential variance $\sim (11/3)^n$ for product states (up to $5^n$ for entangled states), in sharp contrast to the $\mathcal{O}(1)$ nonlocal cost.\color{black}
 \end{abstract}
 \date{\today}
 \maketitle
@@ -157,12 +157,12 @@ Classical shadow tomography~\cite{huang2020predicting} enables predicting many l
 
 A natural extension uses \emph{multi-copy} measurements on $\rho^{\ox k}$, exploiting quantum correlations across replicas. A striking example is Bell sampling on $\rho^{\ox 2}$: measuring in the Bell basis simultaneously estimates all squared Pauli expectations $|\tr(P\rho)|^2$ with $\mathcal{O}(1)$ samples~\cite{hangleiter2024bell,montanaro2017learning}, an exponential improvement over the single-copy $3^w$ scaling.
 
-What determines when multi-copy strategies help? For \emph{nonlinear} functionals such as $\tr(P\rho^2)$, the question is particularly rich: two-copy local strategies already incur exponential cost $\sim (11/3)^n$--$5^n$ depending on the state (Appendix~\ref{app:local_shadow}), yet an explicit nonlocal four-copy circuit achieves $\mathcal{O}(1)$~\cite{ekert2002direct}. This locality gap calls for a unified framework that simultaneously captures:
+What determines when multi-copy strategies help? For \emph{nonlinear} functionals such as $\tr(P\rho^2)$, the question is particularly rich: two-copy local 3-design strategies already incur exponential variance $\sim (11/3)^n$--$5^n$ depending on the state (Appendix~\ref{app:local_shadow}), yet an explicit nonlocal four-copy circuit achieves $\mathcal{O}(1)$~\cite{ekert2002direct}. This locality gap calls for a unified framework that simultaneously captures:
 (i)~the intrinsic hardness of multi-copy estimation,
 (ii)~the factorization of hardness across qubit sites under local measurements, and
 (iii)~the advantage of entangled (nonlocal) strategies.
 
-In this Letter, we develop the \emph{f-compatibility} framework, bridging quantum measurement compatibility theory~\cite{heinosaari2015noise,designolle2019incompatibility,Busch1986} with shadow estimation complexity. Our main results are: (1)~a general framework linking estimation robustness $s^*$ to sample complexity (Sec.~\ref{sec:framework}); (2)~a tensor product factorization theorem explaining the $3^w$ scaling from per-site $\sqrt{3}$ incompatibility (Sec.~\ref{sec:tensor}); (3)~the squaring trick showing that nonlinear functionals can be exponentially easier (Sec.~\ref{sec:nonlinear}); (4)~an explicit nonlocal $2k$-copy strategy (Sec.~\ref{sec:nonlocal}); and (5)~a local no-go establishing exponential cost for $\tr(P\rho^2)$ under product measurements (Sec.~\ref{sec:local_nogo}). Related concurrent work~\cite{chen2025simultaneous,ye2025replica,du2025optimal} studies nonlinear estimation from complementary perspectives.
+In this Letter, we develop the \emph{f-compatibility} framework, bridging quantum measurement compatibility theory~\cite{heinosaari2015noise,designolle2019incompatibility,Busch1986} with shadow estimation complexity. Our main results are: (1)~a general framework linking estimation robustness $s^*$ to sample complexity (Sec.~\ref{sec:framework}); (2)~a tensor product factorization theorem explaining the $3^w$ scaling from per-site $\sqrt{3}$ incompatibility (Sec.~\ref{sec:tensor}); (3)~the squaring trick showing that nonlinear functionals can be exponentially easier (Sec.~\ref{sec:nonlinear}); (4)~an explicit nonlocal $2k$-copy strategy (Sec.~\ref{sec:nonlocal}); and (5)~exponential variance of local 3-design strategies for estimating $\tr(P\rho^2)$ (Sec.~\ref{sec:local_nogo}). Related concurrent work~\cite{chen2025simultaneous,ye2025replica,du2025optimal} studies nonlinear estimation from complementary perspectives.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \prlsection{Framework.}\label{sec:framework}
@@ -255,7 +255,7 @@ This stands in sharp contrast to the nonlocal four-copy strategy of Theorem~\ref
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \prlsection{Discussion.}\label{sec:discussion}
-We have introduced the f-compatibility framework, which unifies quantum measurement compatibility~\cite{heinosaari2015noise,designolle2019incompatibility} with multi-copy shadow estimation. The tensor product factorization theorem (Theorem~\ref{thm:tensor}) explains the $3^w$ scaling of classical shadows as emergent from per-site $\sqrt{3}$ incompatibility, while the squaring trick reveals that nonlinear functionals can have dramatically lower estimation complexity ($s^*=1$ vs.\ $s^*=\sqrt{3}$). The contrast between the efficient nonlocal strategy (Theorem~\ref{thm:nonlocal}) and the local exponential lower bound highlights multi-copy entanglement as a genuine resource.
+We have introduced the f-compatibility framework, which unifies quantum measurement compatibility~\cite{heinosaari2015noise,designolle2019incompatibility} with multi-copy shadow estimation. The tensor product factorization theorem (Theorem~\ref{thm:tensor}) explains the $3^w$ scaling of classical shadows as emergent from per-site $\sqrt{3}$ incompatibility, while the squaring trick reveals that nonlinear functionals can have dramatically lower estimation complexity ($s^*=1$ vs.\ $s^*=\sqrt{3}$). The contrast between the efficient nonlocal strategy (Theorem~\ref{thm:nonlocal}) and the exponential variance of local 3-design strategies highlights multi-copy entanglement as a genuine resource.
 
 
 Several directions remain open. First, determining the optimal copy-complexity trade-off $\min_k k\cdot[s^*(k)]^2$ for general functional families is an algorithmic challenge. Second, proving a rigorous exponential lower bound for local $k$-copy strategies estimating $\{\tr(P\rho^2)\}_P$ at arbitrary $k$ would strengthen the local no-go. Third, the commuting structure of $\{A_P\}$ connects to graph-theoretic approaches~\cite{graph2024nonlinear} and fermionic joint measurements~\cite{mcnulty2024fermionic}, whose interplay with f-compatibility deserves further exploration.
@@ -705,7 +705,27 @@ Let $\{\Pi_{j_l}^{(l)}\}$ and $\{h_{\alpha_l}^{(l)}(j_l)\}$ be optimal solutions
 Since $|h_\alpha(\vec{j})| = \prod_l |h_{\alpha_l}^{(l)}(j_l)| \leq 1$, the product solution is feasible with $s = \prod_l s^*_l$.
 
 \emph{Lower bound ($s^*_{\mathrm{loc}} \geq \prod_l s^*_l$).}
-By definition (Sec.~\ref{sec:tensor}), a local strategy uses product POVMs $\Pi_{\vec{j}} = \bigotimes_l \Pi_{j_l}^{(l)}$ and factored estimators $h_\alpha(\vec{j}) = \prod_l h_{\alpha_l}^{(l)}(j_l)$. The product structure forces a per-site decomposition: the constraint $\sum_{\vec{j}} h_\alpha(\vec{j})\,\Pi_{\vec{j}} = F_\alpha = \bigotimes_l F_{\alpha_l}^{(l)}$ with product POVM and product estimators factorizes into independent per-site constraints $\sum_{j_l} h_{\alpha_l}^{(l)}(j_l)\,\Pi_{j_l}^{(l)} = F_{\alpha_l}^{(l)}$ for each site $l$. Similarly, $\sum_{\vec{j}} \Pi_{\vec{j}} = \bigotimes_l s_l\,\1$ gives $s = \prod_l s_l$. Since each site must independently achieve its f-compatibility constraint, $s_l \geq s^*_l$ for every $l$, and therefore $s^*_{\mathrm{loc}} = \prod_l s_l \geq \prod_l s^*_l$.
+By definition (Sec.~\ref{sec:tensor}), a local strategy uses product POVMs $\Pi_{\vec{j}} = \bigotimes_l \Pi_{j_l}^{(l)}$ and factored estimators $h_\alpha(\vec{j}) = \prod_l h_{\alpha_l}^{(l)}(j_l)$.
+The normalization constraint gives $\sum_{\vec{j}} \Pi_{\vec{j}} = \bigotimes_l (s_l\,\1)$, so $s = \prod_l s_l$.
+By the distributive law, the estimation constraint becomes
+$\bigotimes_l G_{\alpha_l}^{(l)} = \bigotimes_l F_{\alpha_l}^{(l)}$,
+where $G_{\alpha_l}^{(l)} := \sum_{j_l} h_{\alpha_l}^{(l)}(j_l)\,\Pi_{j_l}^{(l)}$.
+Since each $F_{\alpha_l}^{(l)} \neq 0$ and the multi-index $\alpha = (\alpha_1,\ldots,\alpha_n)$ ranges over a product set $\cA_1\times\cdots\times\cA_n$, uniqueness of tensor product factorization gives $G_{\alpha_l}^{(l)} = c_l\,F_{\alpha_l}^{(l)}$ for real constants $c_l \neq 0$ with $\prod_l c_l = 1$ (the constants are independent of $\alpha_l$ because varying a single site's index while fixing all others pins $c_l$).
+
+Define per-site estimator bounds $B_l := \max_{j_l,\alpha_l} |h_{\alpha_l}^{(l)}(j_l)|$.
+The global constraint $|h_\alpha(\vec{j})| = \prod_l |h_{\alpha_l}^{(l)}(j_l)| \leq 1$
+implies $\prod_l B_l \leq 1$ (by choosing the maximizing index at each site independently).
+Now construct a valid per-site f-compatibility solution:
+$\hat{h}_{\alpha_l}(j_l) := \sgn(c_l)\,h_{\alpha_l}^{(l)}(j_l)/B_l$ and
+$\hat{\Pi}_{j_l} := B_l\,|c_l|^{-1}\,\Pi_{j_l}^{(l)}$.
+One verifies $\sum_{j_l} \hat{h}_{\alpha_l}(j_l)\,\hat{\Pi}_{j_l} = \frac{\sgn(c_l)\,c_l}{|c_l|}\,F_{\alpha_l}^{(l)} = F_{\alpha_l}^{(l)}$,
+with $|\hat{h}_{\alpha_l}| \leq 1$, $\hat{\Pi}_{j_l} \geq 0$, and normalization $\hat{s}_l = B_l\,s_l/|c_l|$.
+Per-site optimality requires $\hat{s}_l \geq s^*_l$, i.e., $s_l \geq |c_l|\,s^*_l/B_l$.
+Multiplying over sites:
+\begin{align}
+s = \prod_l s_l \;\geq\; \frac{\prod_l |c_l| \cdot \prod_l s^*_l}{\prod_l B_l} = \frac{\prod_l s^*_l}{\prod_l B_l} \;\geq\; \prod_l s^*_l,
+\end{align}
+where we used $\prod_l |c_l| = |\prod_l c_l| = 1$ and $\prod_l B_l \leq 1$.
 
 \color{red}
 \emph{Remark (dual SDP verification).} An independent lower bound follows from the relaxed SDP dual~\eqref{eq:dual-SDP}. Constructing product dual variables $\Lambda_\alpha := \bigotimes_{l} \Lambda_{\alpha_l}^{*(l)}$, $W := \bigotimes_{l} W_l^*$ from per-site optimal duals gives $s^*_{\mathrm{global}} \geq \prod_l s^*_{l,\mathrm{SDP}}$, and $s^*_{\mathrm{loc}} \geq s^*_{\mathrm{global}}$ since restricting to local POVMs can only increase the primal optimum. This argument uses the relaxed SDP values $s^*_{l,\mathrm{SDP}} \leq s^*_l$, so it yields a weaker bound when the relaxation gap is nonzero. The direct argument above, which uses the product estimator constraint in the definition of local strategies, avoids this gap.
@@ -1252,14 +1272,15 @@ In this section we consider the case that $(\mathcal{U}_1,\cdots,\mathcal{U}_n)$
 This i.i.d. unitary 3-design setting includes the Clifford randomized measurement and the randomized Pauli basis measurement proposed in~\cite{huang2020predicting}.
 The result of $\mathcal{M}$ is firstly summarized in Lemma~\ref{lemma:onsite_2design}.
 %%%%%%%%%%%Lemma%%%%%%%%%%%Lemma%%%%%%%%%%%Lemma%%%%%%%%%%%Lemma
-\begin{lemma}[On site 2-design unitary ensemble]\label{lemma:onsite_2design}
-    A $k$-site 3-design unitary ensembles $\mathbf{D}_{3}(d^k)^{\otimes n}$ separates $n\cdot k$ numbers of qudits in to $n$ parts, and independently implements $k$-qudit 2-design unitary, as defined in Definition~\ref{def:t_design}, within each part. In other words, $\mathbf{D}_{3}(d^k)^{\otimes n}:=\{\bigotimes_{i  =1}^n U_i| U_i \sim \mathbf{D}_{2}(d^k)\}$.
+\begin{lemma}[On site 3-design unitary ensemble]\label{lemma:onsite_2design}
+    A $k$-site 3-design unitary ensemble $\mathbf{D}_{3}(d^k)^{\otimes n}$ separates $n\cdot k$ qudits into $n$ parts, and independently implements a $k$-qudit 3-design unitary, as defined in Definition~\ref{def:t_design}, within each part. In other words, $\mathbf{D}_{3}(d^k)^{\otimes n}:=\{\bigotimes_{i  =1}^n U_i| U_i \sim \mathbf{D}_{3}(d^k)\}$.
     This ensemble induces the channel
     \begin{align}
         \mathcal{M}(\rho) = (\mathcal{D}_{1/(2^k + 1)})^{\otimes n}(\rho), \text{with~} \mathcal{D}_{1/(2^k + 1)}(\cdot) = \frac{1}{2^k +1}(\cdot) + \frac{\text{tr}(\cdot)}{2^k + 1}{\mathbb{I}(d^k)}.
     \end{align}
-    Specifically, the single-copy global 2-design unitary ensemble takes the case $n = 1$, $U \sim \mathbf{D}_{3}(d^k)$,and the channel $     \mathcal{M}(\rho) ={(d^k + 1)^{-1}} \rho + {d^k{(d^k + 1)^{-1}}  \text{tr}\rho \cdot }({\mathbb{I}(d^k)}/{d^k})$.
-    The single-copy local 2-design unitary ensemble takes the case $k = 1$, $U \sim \mathbf{D}_{3}(d)^{\otimes n}$,and the channel $ \mathcal{M}(\rho) = {(d + 1)}^{-1} \rho + {d({d + 1})^{-1} \text{tr}\rho} \cdot ({\mathbb{I}(d)}/{d})$.
+    Specifically, the single-copy global 3-design unitary ensemble takes the case $n = 1$, $U \sim \mathbf{D}_{3}(d^k)$, and the channel $     \mathcal{M}(\rho) ={(d^k + 1)^{-1}} \rho + {d^k{(d^k + 1)^{-1}}  \text{tr}\rho \cdot }({\mathbb{I}(d^k)}/{d^k})$.
+    The single-copy local 3-design unitary ensemble takes the case $k = 1$, $U \sim \mathbf{D}_{3}(d)^{\otimes n}$, and the channel $ \mathcal{M}(\rho) = {(d + 1)}^{-1} \rho + {d({d + 1})^{-1} \text{tr}\rho} \cdot ({\mathbb{I}(d)}/{d})$.
+    (The channel formula uses only the 2-design property; the 3-design property is needed for the variance computation in Lemma~\ref{lemma:LC_shadow_kcopy}.)
 \end{lemma}
 \begin{proof}
     For tensor product inputs $\otimes_{i = 1}^n \rho_i, \rho_i \in \mathcal{D}(\mathcal{H}(d^k))$, the channel $\mathcal{M}$ in this case became
