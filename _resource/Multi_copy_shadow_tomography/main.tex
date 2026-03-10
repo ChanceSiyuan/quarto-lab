@@ -440,7 +440,12 @@ $\tilde{E}_{a|x} := \mathbb{I}^{\otimes(k-1)}\odot E_{a|x} $ is compatible.
 \end{lemma}
 
 \begin{proof}
+Let $\Sigma_k(B) = (k!)^{-1}\sum_{\pi \in S_k} P_\pi B P_\pi^\dagger$ denote the symmetrization map on $\mathcal{L}(\mathcal{H}^{\otimes k})$. Since $\rho^{\otimes k}$ is permutation-symmetric, $\tr[\rho^{\otimes k}\, B] = \tr[\rho^{\otimes k}\, \Sigma_k(B)]$ for all $\rho$.
 
+($\Leftarrow$) Suppose $\{\tilde{E}_{a|x}\}$ are compatible with parent POVM $\{G_\lambda\}$ on $\mathcal{H}^{\otimes k}$ and conditional distributions $p(a|x,\lambda)$ satisfying $\sum_\lambda p(a|x,\lambda)\, G_\lambda = \tilde{E}_{a|x}$. Then $\sum_\lambda p(a|x,\lambda)\, \tr[\rho^{\otimes k}\, G_\lambda] = \tr[\rho^{\otimes k}\, \tilde{E}_{a|x}] = \tr[\rho\, E_{a|x}]$ for all $\rho$, so $\{G_\lambda\}$ realizes $k$-replica compatibility.
+
+($\Rightarrow$) Suppose $\{E_{a|x}\}$ are $k$-replica compatible via a POVM $\{G_\lambda\}$ on $\mathcal{H}^{\otimes k}$, with marginals $M_{a|x} := \sum_{\lambda: x\text{-th outcome}=a} G_\lambda$ satisfying $\tr[\rho^{\otimes k}\, M_{a|x}] = \tr[\rho\, E_{a|x}]$ for all $\rho$.
+Symmetrize: $\tilde{G}_\lambda := \Sigma_k(G_\lambda)$. This preserves positivity and normalization, and $\tr[\rho^{\otimes k}\, \tilde{G}_\lambda] = \tr[\rho^{\otimes k}\, G_\lambda]$. The symmetrized marginals $\tilde{M}_{a|x} = \Sigma_k(M_{a|x})$ satisfy $\tr[\rho^{\otimes k}\, \tilde{M}_{a|x}] = \tr[\rho\, E_{a|x}] = \tr[\rho^{\otimes k}\, \tilde{E}_{a|x}]$ for all $\rho$. Since products $\rho^{\otimes k}$ span the symmetric subspace and $\tilde{M}_{a|x}$, $\tilde{E}_{a|x}$ are both permutation-symmetric, we conclude $\tilde{M}_{a|x} = \tilde{E}_{a|x}$ on the symmetric subspace. (The identification extends to all of $\mathcal{H}^{\otimes k}$ by a polynomial expansion argument: writing $\rho = \mathbb{I}/d + t\Delta$ and matching coefficients of $t^j$ for all traceless $\Delta$ shows that only the $j=0$ and $j=1$ components contribute, forcing $\tilde{M}_{a|x} = \mathbb{I}^{\otimes(k-1)}\odot E_{a|x}$.) Thus $\{\tilde{G}_\lambda\}$ is a parent POVM for $\{\tilde{E}_{a|x}\}$, establishing standard compatibility.
 \end{proof}
 
 \subsection{The definition of f-compatibility}
@@ -582,10 +587,10 @@ This also implies that a set of linear property $\{\mathrm{tr}\left(\rho O_i\rig
 The functional set $\mathcal{F}$ are in general not linear in $\rho$, but includes many non-linear polynomial functions such as $|\mathrm{tr}[P_i\rho]|^2$ and $ \mathrm{tr}[P_i\rho^2]$.
 For a set of rank-$r$ properties, we define the $r$-replica linearization of $\mathcal{F}$ as a set of operators $\{F_\alpha\}_{\alpha \in \mathcal{A}}$ such that the non-linear functions can be quantified in linear way.
 
-\begin{definition}[Linearization of rank-k polynomials]\label{def:linearization}
-    Given a set of degree-$r$ non-linear functions $\{f_\alpha(\rho)\}_{\alpha \in \mathcal{A}}$, its $l > k$-linearization is defined as a set of Hermitian operators $\{F_\alpha\}_{\alpha \in \mathcal{A}}$ such that $\mathrm{tr}(F_{\alpha} \rho^k) = f_{\alpha}(\rho)$.
+\begin{definition}[Linearization of degree-$r$ polynomials]\label{def:linearization}
+    Given a set of degree-$r$ non-linear functions $\{f_\alpha(\rho)\}_{\alpha \in \mathcal{A}}$, its $l$-linearization (for $l \geq r$) is defined as a set of Hermitian operators $\{F_\alpha\}_{\alpha \in \mathcal{A}}$ on $\cH^{\ox l}$ such that $\mathrm{tr}(F_{\alpha}\, \rho^{\otimes l}) = f_{\alpha}(\rho)$ for all states $\rho$.
 \end{definition}
-A $l>r$ linearization of an rank-$r$ function of $\rho$ can always be done since its components satisfied $\left[\mathrm{tr}(O \rho^{m})\right]^{p} = \mathrm{tr}([(O\otimes \mathbb{I}^{m-1})\cdot S_{m}]^{\otimes p} \cdot \rho^{\otimes m p})$.
+An $l \geq r$ linearization of a degree-$r$ function of $\rho$ can always be done since its components satisfy $\left[\mathrm{tr}(O \rho^{m})\right]^{p} = \mathrm{tr}([(O\otimes \mathbb{I}^{m-1})\cdot S_{m}]^{\otimes p} \cdot \rho^{\otimes m p})$.
  Thus we can always set $F = \mathbb{I}^{\otimes (l-mp)} \otimes [(O\otimes \mathbb{I}^{m-1}) \cdot S_{m}]^{\otimes p}$ or its symmetric over $l$ copies of state $\rho^{\otimes l}$.
 
 \begin{lemma}[Linearization lemma]\label{lem:structure_fcomp_lemma}
@@ -659,7 +664,14 @@ Let $\{\Pi_{j_l}^{(l)}\}$ and $\{h_{\alpha_l}^{(l)}(j_l)\}$ be optimal solutions
 Since $|h_\alpha(\vec{j})| = \prod_l |h_{\alpha_l}^{(l)}(j_l)| \leq 1$, the product solution is feasible with $s = \prod_l s^*_l$.
 
 \emph{Lower bound ($s^*_{\mathrm{loc}} \geq \prod_l s^*_l$).}
-Any local solution $\{\Pi_{\vec{j}} = \bigotimes_l \Pi_{j_l}^{(l)}\}$ with $\sum_{\vec{j}} \Pi_{\vec{j}} = s\,\1$ implies $\sum_{j_l} \Pi_{j_l}^{(l)} = s_l\,\1$ at each site with $s = \prod_l s_l$. The factored constraint $\sum_{\vec{j}} h_\alpha(\vec{j})\Pi_{\vec{j}} = F_\alpha$ requires $\sum_{j_l} h_{\alpha_l}^{(l)}(j_l)\Pi_{j_l}^{(l)} = F_{\alpha_l}^{(l)}$ at each site (by uniqueness of the product decomposition when $F_\alpha$ is non-degenerate). Therefore $s_l \geq s^*_l$ for each $l$, giving $s \geq \prod_l s^*_l$.
+We use the dual SDP~\eqref{eq:dual-SDP}. Let $\{\Lambda_{\alpha_l}^{*(l)}, W_l^*\}$ be optimal dual variables at site $l$, achieving $s^*_l = \sum_{\alpha_l} \tr[\Lambda_{\alpha_l}^{*(l)} F_{\alpha_l}^{(l)}]$ subject to $\sum_{\alpha_l} |\Lambda_{\alpha_l}^{*(l)}| \leq W_l^*$ and $\tr[W_l^*] = 1$.
+
+Construct product dual variables for the global (unrestricted) SDP: $\Lambda_\alpha := \bigotimes_{l=1}^n \Lambda_{\alpha_l}^{*(l)}$ and $W := \bigotimes_{l=1}^n W_l^*$. These are feasible: $\tr[W] = \prod_l \tr[W_l^*] = 1$, and the constraint holds since $|\bigotimes_l \Lambda_{\alpha_l}| = \bigotimes_l |\Lambda_{\alpha_l}|$ for Hermitian operators (the absolute value of a tensor product is the tensor product of absolute values), giving
+\begin{align}
+\textstyle\sum_\alpha |\Lambda_\alpha| = \sum_{\alpha_1,\ldots,\alpha_n} \bigotimes_l |\Lambda_{\alpha_l}^{*(l)}| = \bigotimes_l \bigl(\sum_{\alpha_l} |\Lambda_{\alpha_l}^{*(l)}|\bigr) \leq \bigotimes_l W_l^* = W.
+\end{align}
+The dual objective evaluates to $\sum_\alpha \tr[\Lambda_\alpha F_\alpha] = \prod_l \sum_{\alpha_l} \tr[\Lambda_{\alpha_l}^{*(l)} F_{\alpha_l}^{(l)}] = \prod_l s^*_l$.
+Therefore $s^*_{\mathrm{global}} \geq \prod_l s^*_l$. Since restricting to local (product) POVMs can only increase the primal optimum, $s^*_{\mathrm{loc}} \geq s^*_{\mathrm{global}} \geq \prod_l s^*_l$.
 
 \subsection{Per-site analysis for Pauli observables}
 
