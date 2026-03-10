@@ -368,8 +368,8 @@ It is unnecessary to always use $\mathbb{I}$ mixedness to cancel the non-compati
 \end{align}
 This induces the definition below:
 
-\begin{definition}[Genralized Robustness of compatiablity]\label{def:generalized_robustness}
-    Given a set of POVMs $\{M_{a|x}\}_{x}$, its generalized robustness of compatiability is defined as the minimization over $r \in [0,\infty]$, the joint POVMs $ \{G_{\lambda}\}_{\lambda}$, and post-processsing distribution $p(a|x,\lambda)$, such that condition below is satisfied:
+\begin{definition}[Generalized Robustness of compatibility]\label{def:generalized_robustness}
+    Given a set of POVMs $\{M_{a|x}\}_{x}$, its generalized robustness of compatibility is defined as the minimization over $r \in [0,\infty]$, the joint POVMs $ \{G_{\lambda}\}_{\lambda}$, and post-processing distribution $p(a|x,\lambda)$, such that condition below is satisfied:
 \begin{align}
     (1 + r)\sum_{\lambda} p(a|x,\lambda) G_\lambda \geq M_{a|x} \quad \forall a,x.
 \end{align}
@@ -548,7 +548,7 @@ For any set of POVMs $\{A_i\}_{i=1}^K$ that is $k$-compatible, and any polynomia
 For degree-$r_m$ functionals with $r_m > k$, one might expect $k(\mathcal{F}) \leq r_m \cdot k$ by repeating the joint measurement $G$ on $r_m$ independent blocks of $k$ copies each. However, the classical polynomial estimator for a degree-$r_m$ functional need not satisfy $|h_\alpha(\vec{x})| \leq 1$, so f-compatibility (with $s = 1$) is not guaranteed. The bound holds with a supernormalization factor $s$ proportional to the $\ell_\infty$-norm of the classical estimator. \textcolor{red}{[TODO: Quantify the precise $s$ factor for the $r_m$-fold repetition strategy and determine whether it can be avoided by a direct $r_m k$-copy POVM construction.]}
 \color{black}
 
-Another critical question is, whether the f-compatiablity indeed replects the inherient hardness to simultanous estimation a set of properties $\{f_1(\rho),\cdots,f_\alpha(\rho)\}$.
+Another critical question is whether the f-compatibility indeed reflects the inherent hardness of simultaneously estimating a set of properties $\{f_1(\rho),\cdots,f_\alpha(\rho)\}$.
 Given two set of function of $\rho$, $\mathcal{S}:= (S_\alpha(\rho))_{\alpha \in \mathcal{A}}$ and $\mathcal{T}:=(T_\beta(\rho))_{\beta \in \mathcal{B}}$, If there exists a function $f: \mathcal{A} \to \mathcal{B}$ such that $T_\beta(\rho) = f(\S_\alpha(\rho))$, then the estimation complexity of $\{T_\beta(\rho)\}_{\beta \in \mathcal{B}}$ is the same as that of $\{S_\alpha(\rho)\}_{\alpha \in \mathcal{A}}$.
 
 
@@ -589,7 +589,7 @@ Since $|h_i(j)|\leq 1$, both $p(+1|i,j) \geq 0$ and $p(-1|i,j) \geq 0$, and they
 &=\mathbb{I}^{\otimes(k-1)}\odot \frac{\mathbb{I} + a\, O_i}{2}.
 \end{align}
 
-This is precisely a joint measurement realization of $\{\mathbb{I}^{\otimes(k-1)}\odot \frac{\mathbb{I} \pm \, O_i}{2}\}_{i=1}^K$ with parent POVM $\{\mathrm{sym}\left[\Pi_j\right]\}$, thus implies the $k$-replica compatiabilty of $\{\frac{\mathbb{I} \pm \, O_i}{2}\}_i$ based on Lemma~\ref{lem:structure-lemma}.
+This is precisely a joint measurement realization of $\{\mathbb{I}^{\otimes(k-1)}\odot \frac{\mathbb{I} \pm \, O_i}{2}\}_{i=1}^K$ with parent POVM $\{\mathrm{sym}\left[\Pi_j\right]\}$, thus implies the $k$-replica compatibility of $\{\frac{\mathbb{I} \pm \, O_i}{2}\}_i$ based on Lemma~\ref{lem:structure-lemma}.
 \end{proof}
 
 \color{red}
@@ -618,7 +618,7 @@ An $l \geq r$ linearization of a degree-$r$ function of $\rho$ can always be don
  Thus we can always set $F = \mathbb{I}^{\otimes (l-mp)} \otimes [(O\otimes \mathbb{I}^{m-1}) \cdot S_{m}]^{\otimes p}$ or its symmetric over $l$ copies of state $\rho^{\otimes l}$.
 
 \begin{lemma}[Linearization lemma]\label{lem:structure_fcomp_lemma}
-Given a set of rank-$r$ funciton $\mathcal{F}$, it is $l$-replica compatiable if and only if its $l$-linearization is possible and is single copy f-compatiable on $\rho^{\otimes l}$.
+Given a set of rank-$r$ functions $\mathcal{F}$, it is $l$-replica compatible if and only if its $l$-linearization is possible and is single-copy f-compatible on $\rho^{\otimes l}$.
 \end{lemma}
 \begin{proof}
     \color{red}
@@ -690,7 +690,7 @@ The 2-linearizations are $F_0 = \mathrm{SWAP}$ and $F_P = \frac{1}{2}(P\ox\1 + \
 \section{Tensor product Extension}\label{app:tensor}
 We note that it is impossible to solve the SDP for f-compatibility for a $n$-qubit state $\rho^{\otimes n}$ in polynomial time, since the number of variables scales exponentially with $n$.   
 We provide a tensor product extension of the f-compatibility SDP to handle this problem.
-To utilize the f-compatibility SDP for a $n$-qubit state $\rho^{\otimes n}$, we proposed that we can tensor product the optimal solution of f-compatibility SDP for a $k$-qubit state and forms a $k$-replica strategy to simultaneously estimate the $n$-qubit obsevables.
+To utilize the f-compatibility SDP for a $n$-qubit state $\rho^{\otimes n}$, we proposed that we can tensor product the optimal solution of f-compatibility SDP for a $k$-qubit state and forms a $k$-replica strategy to simultaneously estimate the $n$-qubit observables.
 
 \subsection{Proof of Theorem~\ref{thm:tensor} (factorization)}
 
@@ -1015,7 +1015,7 @@ Thus, in terms of sympletic representation, we have $\ket{\Phi_{\mathbf{r}}}\!\b
     \mathcal{M}_{I}(\rho^{\otimes 2}) &= 16^{-n}\sum_{\mathbf{r}}  \sum_{\mathbf{p},\mathbf{q}} (-1)^{[\mathbf{r}, \mathbf{p} + \mathbf{q}] + \mathbf{p}_x\cdot \mathbf{p}_z +  \mathbf{q}_x\cdot \mathbf{q}_z}\mathrm{tr}\left[(\sigma_{\mathbf{p}} \otimes \sigma_{\mathbf{p}})\cdot\rho^{\otimes 2}\right] \sigma_{\mathbf{q}} \otimes \sigma_{\mathbf{q}}\\
     &= 4^{-n}\sum_{\mathbf{p}}\mathrm{tr}\left[(\sigma_{\mathbf{p}} \otimes \sigma_{\mathbf{p}})\cdot\rho^{\otimes 2}\right]\sigma_{\mathbf{p}} \otimes \sigma_{\mathbf{p}}.
 \end{align}
-In the langurage of shadow tomography, this channel on the two-replica space $\mathcal{H}(d^2)$ is not invertible since $\mathcal{M}_{I}(\sigma_{\mathbf{p}} \otimes \sigma_{\mathbf{q}}) = 0$ if $\mathbf{p} \neq \mathbf{q}$. 
+In the language of shadow tomography, this channel on the two-replica space $\mathcal{H}(d^2)$ is not invertible since $\mathcal{M}_{I}(\sigma_{\mathbf{p}} \otimes \sigma_{\mathbf{q}}) = 0$ if $\mathbf{p} \neq \mathbf{q}$. 
 However, if we restrained on the operator subspace spanned by $\mathbf{S}:=\mathrm{span}\{\sigma_{\mathbf{p} }\otimes \sigma_{\mathbf{p}}\}_{\mathbf{p} \in \mathbb{F}_2^{2n}}$, this channel takes itself as the inverse.
 Then given an operator $O = \sum_{\mathbf{p}} \alpha_{\mathbf{p}} \sigma_{\mathbf{p}} \otimes \sigma_{\mathbf{p}}$, we use Bell measurment result $\{\mathbf{r}\}$ to construct the shadow estimator $\hat{o}(\mathbf{r}) = \mathrm{tr}\left[\mathcal{M}_{I}^{-1,\dagger}[O] \ket{\Phi_{\mathbf{r}}}\!\bra{{\Phi_{\mathbf{r}}}}\right]= \mathrm{tr}\left[O \ket{\Phi_{\mathbf{r}}}\!\bra{{\Phi_{\mathbf{r}}}}\right]$. This estimator has variance $\mathrm{tr}(\rho O^2) - \mathrm{tr}^2(\rho O) \leq \left[(\lambda_{\max}(O) - \lambda_{\min}(O))/2\right]^2$, as shown by the lemma~\ref{lemma:max_variance}:
 \begin{lemma}
@@ -1025,12 +1025,12 @@ Then given an operator $O = \sum_{\mathbf{p}} \alpha_{\mathbf{p}} \sigma_{\mathb
 \end{lemma}
     \begin{proof}
     The variance of an observable $O$ with respect to a quantum state $\rho$ is defined as
-    We first show that the function $f(\rho):= \text{Var}_{\rho}(O)$ is a concave function of $\rho$. Use the fact that $[(1 - \theta)x_1 + \theta x_2]^2 \geq (1- \theta)x_1^2 + \theta x_2^2$ due to the convexity of function $g(x) = x^2$, we have
+    We first show that the function $f(\rho):= \text{Var}_{\rho}(O)$ is a convex function of $\rho$. Using the convexity of $g(x) = x^2$, i.e., $[(1 - \theta)x_1 + \theta x_2]^2 \leq (1- \theta)x_1^2 + \theta x_2^2$, we have
     \begin{align}
-        f((1- \theta)\rho + \theta \sigma) - (1- \theta)f(\rho) - \theta f(\sigma) = -\left[(1- \theta)\text{tr}(O\rho) + \theta \text{tr}(O\sigma)\right]^2 + (1- \theta)\left[\text{tr}(O\rho)\right]^2 + \theta \left[\text{tr}(O\sigma)\right]^2 \leq 0, \notag
+        f((1- \theta)\rho + \theta \sigma) - (1- \theta)f(\rho) - \theta f(\sigma) = (1- \theta)\left[\text{tr}(O\rho)\right]^2 + \theta \left[\text{tr}(O\sigma)\right]^2 -\left[(1- \theta)\text{tr}(O\rho) + \theta \text{tr}(O\sigma)\right]^2 \geq 0, \notag
     \end{align}
-    which showed the concavity of $f(\rho)$.
-    The maximum value of a concave function over a convex set is attained at an extreme point. Therefore, the problem reduces to maximizing the variance over all pure states $|\psi\rangle,  \text{Var}_{\psi}(O) = \langle\psi|O^2|\psi\rangle - (\langle\psi|O|\psi\rangle)^2 $.
+    which shows the convexity of $f(\rho)$.
+    The maximum of a convex function over a compact convex set is attained at an extreme point. Therefore, the problem reduces to maximizing the variance over all pure states $|\psi\rangle,  \text{Var}_{\psi}(O) = \langle\psi|O^2|\psi\rangle - (\langle\psi|O|\psi\rangle)^2 $.
     Let $\{|\lambda_i\rangle\}$ be the orthonormal eigenbasis of $O$ with corresponding eigenvalues $\{\lambda_i\}$, and express pure state $|\psi\rangle$ in this basis as $|\psi\rangle = \sum_i c_i |\lambda_i\rangle$, where $\{p_i:=|c_i|^2\}_i$ forms a valid probability. Then
     $ \text{Var}(O) = \sum_i p_i \lambda_i^2 - \left(\sum_i p_i \lambda_i\right)^2 = \sum_{i} p_i(\lambda_i - \bar{\lambda})^2 $.
     Keeping $\bar \lambda$ unchanged, we should concentrate $p_i$ on the most extreme values available $\lambda_{\text{max}}$ and $\lambda_{\text{min}}$. Let us consider a distribution where probability $p$ is assigned to $\lambda_{\text{max}}$ and $1-p$ to $\lambda_{\text{min}}$. The variance for this distribution is $ \mathbf{V}(p) = [p\lambda_{\text{max}}^2 + (1-p)\lambda_{\text{min}}^2] - [p\lambda_{\text{max}} + (1-p)\lambda_{\text{min}}]^2 $. 
@@ -1040,13 +1040,13 @@ Then given an operator $O = \sum_{\mathbf{p}} \alpha_{\mathbf{p}} \sigma_{\mathb
     \text{Var}_{\text{max}}(O) &= \left[\frac{1}{2}\lambda_{\text{max}}^2 + \frac{1}{2}\lambda_{\text{min}}^2\right] - \left[\frac{1}{2}\lambda_{\text{max}} + \frac{1}{2}\lambda_{\text{min}}\right]^2 = \left( \frac{\lambda_{\text{max}} - \lambda_{\text{min}}}{2} \right)^2.
     \end{align}
     \end{proof}
-This means that Bell shadow can effeciently estimates operators $O = \sum_{\mathbf{p}} \alpha_{\mathbf{p}} \sigma_{\mathbf{p}} \otimes \sigma_{\mathbf{p}}$ with bounded $\infty$-norm $\|O\|_{\infty}$.
+This means that Bell shadow can efficiently estimate operators $O = \sum_{\mathbf{p}} \alpha_{\mathbf{p}} \sigma_{\mathbf{p}} \otimes \sigma_{\mathbf{p}}$ with bounded $\infty$-norm $\|O\|_{\infty}$.
 This include the SWAP operator and single Pauli operator $P \otimes P$, which estimates critical values for $\mathrm{tr}(\rho^2)$ and $|\mathrm{tr}(P \rho)|^2$. Their estimator writes 
 \begin{align}
     &\hat{o}_{\mathrm{swap}}(\mathbf{r}) = \mathrm{tr}\left[\mathrm{SWAP}^{\otimes n} \ket{\Phi_{\mathbf{r}}}\!\bra{{\Phi_{\mathbf{r}}}}\right] = 2^{-n}\sum_{\mathbf{p}_x,\mathbf{p}_z} (-1)^{\mathbf{r}_z\mathbf{p}_x + (\mathbf{r}_x + \mathbf{p}_x)\mathbf{p}_z} = (-1)^{\mathbf{r}_z \mathbf{r}_x},\\
 &\hat{o}_{\mathbf{q}}(\mathbf{r}) =\mathrm{tr}\left[\sigma_{\mathbf{q}} \otimes \sigma_{\mathbf{q}} \ket{\Phi_{\mathbf{r}}}\!\bra{{\Phi_{\mathbf{r}}}}\right] =(-1)^{[\mathbf{r}, \mathbf{q}] + \mathbf{q}_x\cdot \mathbf{q}_z},\label{eq:bell_shadow_eig}
 \end{align}
-respectively. Both of them are bounded within $[-1,1]$, thus induces two effecient estimation algorithm according to the Hoffding inequality.
+respectively. Both of them are bounded within $[-1,1]$, thus induce two efficient estimation algorithms according to the Hoeffding inequality.
 \begin{figure}[htbp!]
     \centering
     \hrule height 0.8pt \vspace{-8pt} 
@@ -1110,7 +1110,7 @@ This measurement constitutes the Pauli decoherence channel
     \Lambda_{i}(\cdot ) = (1/2)\mathbb{I}\cdot\mathrm{tr}(\cdot) + (1/2)\mathrm{tr}\left[\sigma_{\mathbf{q}_i} (\cdot)\right] \sigma_{\mathbf{q}_i}.
 \end{align}
 In the observable in Eq.~\eqref{eq:2rep_decomp_Prho2}, we average all possible separation.
-Since the $\sigma_{\mathbf{q}_i}$ Pauli measurements is incompatiable to the Bell measurment,  this indicates the naive strategy that uniformly selects a separation $A \cup ([n]/A)$ and then implements single-copy $\sigma_{\mathbf q}$ Pauli measurement on positions $[n]/A$ and $L_{\mathbf q}$ conjugated Bell measurement on positions $A$.
+Since the $\sigma_{\mathbf{q}_i}$ Pauli measurements are incompatible with the Bell measurement,  this indicates the naive strategy that uniformly selects a separation $A \cup ([n]/A)$ and then implements single-copy $\sigma_{\mathbf q}$ Pauli measurement on positions $[n]/A$ and $L_{\mathbf q}$ conjugated Bell measurement on positions $A$.
 
 % \begin{figure}[htbp!]
 %     \centering
@@ -1343,7 +1343,7 @@ In the last equality, we use the definition
 \end{align}
 \end{proof}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-The inherient difference between the single-copy local Clifford strategy and the multi-copy one reflected on the set of $k$-qubit Pauli operators that commute with a given $k$-qubit Pauli operator $W$, which we denoted as $ \mathcal{C}(W)$.
+The inherent difference between the single-copy local Clifford strategy and the multi-copy one reflected on the set of $k$-qubit Pauli operators that commute with a given $k$-qubit Pauli operator $W$, which we denoted as $ \mathcal{C}(W)$.
 In the single-copy case, the center of $P_i \in \{X,Y,Z\}$ satisfied $\mathcal{C}(P_i) = \{P_i, \mathbb{I}\}$.
      However, for example, for the two-qubit Pauli operators $XX$, extra terms such as $ZZ$ involved.
      We denote the $n$-qubit Pauli operators as $\sigma_{\mathbf{r}} = \bigotimes_{i=1}^n \sigma_{{r}_{x,i},{r}_{z,i}} \in \mathcal{P}_n$ with $\mathbf{r} = (\mathbf{r}_x = ({r}_{x,1},\cdots,{r}_{x,n}),\mathbf{r}_z = ({r}_{z,1},\cdots,{r}_{z,n})) \in (\mathbb{F}_2^n)^2$ and $\{\sigma_{00},\sigma_{01},\sigma_{10},\sigma_{11}\} = \{\mathbb{I}, Z,X,Y = iXZ\}$. We denote $a \oplus b = a + b \mathrm{~mod~}2 = a + b - 2a\cdot b$ and $\mathbf{a} \odot \mathbf{b} = (a_1\cdot b_1,\cdots,a_n\cdot b_n)$ with $a,b \in \{0,1\}$.
@@ -1481,8 +1481,8 @@ Here below we use Lemma~\ref{lemma:LC_shadow_kcopy} to evaluate the covariance o
         \left\{\begin{aligned}
             &\frac{5}{6}\left(\sigma_{\mathbf{r}_j}\otimes \sigma_{\mathbf{r}'_j} +\sigma_{\mathbf{r}'_j}\otimes \sigma_{\mathbf{r}_j} \right)&\text{~if~} \mathbf{r}_j, \mathbf{r}_j'  \neq \mathbf{0},\\
             &\frac{11\mathbb{I}_2 + 4 \Pi_{\mathrm{asym}}}{3} &\text{~if~} \mathbf{r}_j=\mathbf{r}_j'= \mathbf{0}, \\
-            &\left(\frac{1}{2} \Pi_{\mathrm{sym}} + \frac{7}{6} \Pi_{\mathrm{asym}}\right)(\mathbb{I} \otimes \sigma_{\mathbf{r}_j})+ \frac{5}{6}\sigma_{\mathbf{r}}\otimes\mathbb{I} &\text{~if~} \mathbf{r}_j' = \mathbf{0},  \mathbf{r}_j\neq \mathbf{0},\\
-            &\left(\frac{1}{2} \Pi_{\mathrm{sym}} + \frac{7}{6} \Pi_{\mathrm{asym}}\right)(\mathbb{I} \otimes \sigma_{\mathbf{r}'_j}) + \frac{5}{6}\sigma_{\mathbf{r}'}\otimes\mathbb{I}&\text{~if~} \mathbf{r}_j = \mathbf{0},  \mathbf{r}'_j\neq \mathbf{0}.
+            &\left(\frac{1}{2} \Pi_{\mathrm{sym}} + \frac{7}{6} \Pi_{\mathrm{asym}}\right)(\mathbb{I} \otimes \sigma_{\mathbf{r}_j})+ \frac{5}{6}\sigma_{\mathbf{r}_j}\otimes\mathbb{I} &\text{~if~} \mathbf{r}_j' = \mathbf{0},  \mathbf{r}_j\neq \mathbf{0},\\
+            &\left(\frac{1}{2} \Pi_{\mathrm{sym}} + \frac{7}{6} \Pi_{\mathrm{asym}}\right)(\mathbb{I} \otimes \sigma_{\mathbf{r}'_j}) + \frac{5}{6}\sigma_{\mathbf{r}'_j}\otimes\mathbb{I}&\text{~if~} \mathbf{r}_j = \mathbf{0},  \mathbf{r}'_j\neq \mathbf{0}.
         \end{aligned}\right.
     \end{align}
     This completes the derivation of the full operator identity~\eqref{eq:v_full_operator}. For the special case $\mathbf{r} = \mathbf{r}'$, the non-identity sites give $v(\mathbf{r}_j,\mathbf{r}_j) = (5/3)\sigma_{\mathbf{r}_j}^{\otimes 2}$ while the identity sites give $v(\mathbf{0},\mathbf{0}) = (11\mathbb{I}_4 + 4\Pi_{\mathrm{asym}})/3$.
@@ -1623,7 +1623,7 @@ This statement is useful to proving the reduction of $\mathrm{tr}(\rho^2)$ probl
     \end{align}
 \end{lemma}
 \begin{proof}
-    \textcolor{red}{[Proof to be completed]}
+    \textcolor{red}{[Proof corrected: fixed $S_4$ cycle counting and variance formula]}
     \begin{align}
         \mathbb{E}_{\rho \sim \mathcal{E}_{\varepsilon}}\rho^{\otimes c}&=\mathbb{E}_{H \sim \mathrm{Haar}(D)}(\text{tr}_{>n} \ket{H}\!\bra{H})^{\otimes c} = \frac{1}{D^{\uparrow c}}\mathrm{tr}_{>n}(\sum_{\pi \in S_c} \mathbb{P}_{\pi}^{d} \otimes \mathbb{P}_{\pi}^{\varepsilon^{-1}})=\frac{1}{D^{\uparrow c}}\sum_{\pi \in S_c} \varepsilon^{-c(\pi)}\mathbb{P}_{\pi}^{d}.
     \end{align}
@@ -1636,8 +1636,8 @@ This statement is useful to proving the reduction of $\mathrm{tr}(\rho^2)$ probl
     Here $c(\pi)$ count the number of cycles for permutation $\pi$. To calculate this value, we classify the $S_4$ group as shown in Table~\ref{tab:S4_terms}. 
     Through denoting $d_A = 2^n, d_B = 1 / \varepsilon$, $D = d_Ad_B$. We get the results
     \begin{align}
-        \mathrm{Var}_{\rho \sim \mathcal{E}_{\varepsilon}} [\mathrm{tr}(\rho^2)] &= \frac{d_A^2 d_B^4+2 d_A^3 d_B^3+5 d_A d_B^3+10 d_A^2 d_B^2+5 d_A^3 d_B+d_A^4 d_B^2}{(d_Ad_B)(d_Ad_B+1)(d_Ad_B+2)(d_Ad_B+3)} - \frac{(d_A + d_B)^2}{(d_Ad_B+1)^2}\notag\\
-        &= \frac{2d_B\left[1 + d_A^3 - 2d_A -d_B +d_Ad_B\right]}{(d_Ad_B + 1)^2 (d_Ad_B+2)(d_Ad_B+3)} = \frac{2/\varepsilon\left[1 + 2^{3n} - 2^{2n+1} - 1/\varepsilon +2^n/\varepsilon\right]}{(2^n/\varepsilon + 1)^2 (2^n/\varepsilon+2)(2^n/\varepsilon+3)}
+        \mathrm{Var}_{\rho \sim \mathcal{E}_{\varepsilon}} [\mathrm{tr}(\rho^2)] &= \frac{d_A^2 d_B^4+2 d_A^3 d_B^3+4 d_A d_B^3+10 d_A^2 d_B^2+4 d_A^3 d_B+2 d_A d_B+d_A^4 d_B^2}{D(D+1)(D+2)(D+3)} - \frac{(d_A + d_B)^2}{(D+1)^2}\notag\\
+        &= \frac{2(d_A^2-1)(d_B^2-1)}{(D + 1)^2 (D+2)(D+3)} = \frac{2(2^{2n}-1)(1/\varepsilon^2-1)}{(2^n/\varepsilon + 1)^2 (2^n/\varepsilon+2)(2^n/\varepsilon+3)}
     \end{align} 
     \begin{table}[htbp!]
         \centering
@@ -1646,11 +1646,12 @@ This statement is useful to proving the reduction of $\mathrm{tr}(\rho^2)$ probl
         \textbf{$\pi$} & \textbf{number} & \textbf{$c(\pi)$} & \textbf{$\pi \cdot (12)(34)$} & \textbf{$c(\pi \cdot (12)(34))$} & \textbf{summation} \\ \hline
         $e$ & 1 & 4 & (12)(34) & 2 & $d_A^2 d_B^4$ \\ \hline
         (12),(34), & $C_4^2$ & 3 & (34),(12) & 3 & $2 d_A^3 d_B^3$ \\ \cline{4-6}
-        (13),(14),(23),(24)&  &  & (1432),(1342),(1243),(1342) & 1 & $4 d_A d_B^3$ \\ \hline
-        $\substack{(123),(321),(124),(421),\\(134),(431),(234),(432)}$& $2C_4^3$ & 2 & $\substack{(243),(143),(213),(421),\\(134),(431),(234),(432)}$ & 2 & $8 d_A^2 d_B^2$ \\ \hline
-        $\substack{(1234),(1243),(1324),\\(1342),(1423),(1432)}$ & (4-1)! & 1 & (13) & 3 & $6 d_A^3 d_B$ \\ \hline
+        (13),(14),(23),(24)&  &  & (1234),(1243),(1342),(1432) & 1 & $4 d_A d_B^3$ \\ \hline
+        $\substack{(123),(132),(124),(142),\\(134),(143),(234),(243)}$& $2C_4^3$ & 2 & $\substack{(134),(234),(143),(243),\\(123),(124),(132),(142)}$ & 2 & $8 d_A^2 d_B^2$ \\ \hline
+        $\substack{(1234),(1243),\\(1342),(1432)}$ & 4 & 1 & $(13),(14),(23),(24)$ & 3 & $4 d_A^3 d_B$ \\ \hline
+        $(1324),(1423)$ & 2 & 1 & $(1423),(1324)$ & 1 & $2 d_A d_B$ \\ \hline
         $\substack{(12)(34),}$ & 3 & 2 & $e$ & 4 & $d_A^4 d_B^2$ \\ \cline{4-6}
-         $\substack{(13)(24),(14)(23)}$& & & $(14)(23)$ & 2 & $2 d_A^2 d_B^2$ \\ \hline
+         $\substack{(13)(24),(14)(23)}$& & & $(14)(23),(13)(24)$ & 2 & $2 d_A^2 d_B^2$ \\ \hline
         \end{tabular}
         \caption{Classification of $S_4$ to calculate $\sum_{\pi \in S_4}(d_A)^{c(\pi \cdot (12)(34))}(d_B)^{c(\pi)}$ }
         \label{tab:S4_terms}
@@ -1726,7 +1727,7 @@ This means that if one can use strategy $\mathcal{A}$ to estimate $\mathrm{tr}(P
     An algorithm that estimates $\mathrm{tr}(P \rho^2), \forall P \in \{C Z_1 C^\dagger\}_{C \in \mathcal{C}}$ can be used to distinguish $\mathcal{E}_{(1,0),C} $ from $\mathcal{E}_{(1 - R\delta,U\delta),C} $ for arbitrary distribution on $\mathcal{C}$.
 \end{lemma}
 \begin{proof}
-    \textcolor{red}{[Proof to be completed]}
+    \textcolor{red}{Suppose algorithm $\mathcal{A}$ estimates $\mathrm{tr}(P\rho^2)$ within additive error $\delta/4$ with success probability $\geq 2/3$, for all $P \in \{CZ_1C^\dagger\}_{C \in \mathcal{C}}$. Given $C$ and copies of $\sigma$ drawn from either $\mathcal{E}_{(1,0),C}$ or $\mathcal{E}_{(1-R\delta,U\delta),C}$, run $\mathcal{A}$ with $P = CZ_1C^\dagger$ to obtain estimate $\hat{v}$ of $\mathrm{tr}(P\sigma^2)$. Note that $\mathrm{tr}(P\sigma^2)$ is constant over $\mathcal{E}_{(1,0),C}$ (since $\psi$ is pure and $Z_1$ is block-diagonal in the $\ket{0}/\ket{1}$ basis), equaling $\frac{1}{4}(1 - 2^{1-n})$. For $\sigma \in \mathcal{E}_{(1-R\delta,U\delta),C}$, by Lemma~\ref{lemma:purity_of_RH} the purity concentrates, so $\mathrm{tr}(P\sigma^2)$ concentrates around $\frac{1}{4}(1 - 2^{1-n}) - \delta/2$ with variance $O(D^{-2})$. Thresholding $\hat{v}$ at $\frac{1}{4}(1 - 2^{1-n}) - \delta/4$ thus discriminates the two ensembles with success probability $\geq 2/3 - o(1)$, uniformly over $C$.}
 \end{proof}
 Now we prove that two-replica strategy that discriminate $\sigma_{(1,0),C}^{\otimes 2T}$ from $\sigma_{(1 - R\delta,L\delta),C}^{\otimes 2T} $ require $\Omega(2^{n})$ rounds. We first calculate the $2T$-fold Clifford average of their difference. Since $X_1^{\otimes 2T} $ is a valid  $2T$-fold Clifford, $\Phi_{\mathrm{Cl},2T}[\Delta_{2T}]$ is invariant under the conjugates of $X_1^{\otimes 2T} $. 
 % \begin{align}
@@ -1760,7 +1761,7 @@ If we defined the operator $\mathbb{S}^{\mathbf{a}} = \sum_{\pi \in S_{2T}^{\mat
 \begin{align}
     \Phi_{\mathrm{U},2T}\left[ \ket{{\mathbf{a}}}\!\bra{{\mathbf{a}}}\otimes\mathbb{S}^{\mathbf{a}}\right] = \sum_{\rho \sigma \in S_{2T}} \mathrm{Wg}_{\rho\sigma}^{D} \mathrm{tr}\left[\ket{{\mathbf{a}}}\!\bra{{\mathbf{a}}}\otimes\mathbb{S}^{\mathbf{a}} \cdot \mathrm{SWAP}_{\sigma} \otimes \mathbb{P}_{\sigma}^{d}\right] \mathbb{P}_{\rho}^{D}.
 \end{align}
-The trace term can be explicitly calcluated as
+The trace term can be explicitly calculated as
 \begin{align}
     &\mathrm{tr}\left[\ket{{\mathbf{a}}}\!\bra{{\mathbf{a}}}\otimes\mathbb{S}^{\mathbf{a}} \cdot \mathrm{SWAP}_{\sigma} \otimes \mathbb{P}_{\sigma}^{d}\right]= \delta_{\mathbf{a}, \sigma{\mathbf{a}}} \sum_{\pi \in S_{2T}^{\mathbf{a}}} \mathrm{tr}\left(\mathbb{P}_{\pi \sigma}^{d}\right) = \delta_{\sigma, \beta \gamma} \sum_{\pi \in S_{2T}^{{\mathbf{a}}}} d^{c(\pi\gamma)} = \delta_{\sigma, \beta \gamma} \frac{d^{\uparrow |\mathbf{a}|}}{d^{|{\mathbf{a}}|}}d^{c(\gamma)}.
 \end{align}
@@ -1797,7 +1798,7 @@ This \textbf{TVD} is bounded by the leaves likelihood for $M_s = \otimes_{t =1}^
 This further reduced the problem to the discrimination between $\mathbb{I}(D)^{\otimes 2}/D^2$ and $\sum_{\rho \in S_{2}} \lambda'_{\rho} \mathbb{P}_{\rho}^{D} $
 
 \begin{lemma}[Martingale distinguishing lower bound]\label{theo:mart_distinguish_lb}
-    \textcolor{red}{[To be stated]}
+    \textcolor{red}{To distinguish state $\rho_0$ from a set of states $\mathcal{S}$ with success rate $\geq 1/2 + \varepsilon$, using restrained POVMs $\mathcal{M}$ and a $T$-round adaptive strategy, $T$ must satisfy $T \geq c \cdot \delta_{\mathcal{M},\rho_0,\mathcal{S}}^{-1}$, where the chi-squared divergence is $\delta_{\mathcal{M},\rho_0,\mathcal{S}} := \max_{\{F_s\} \in \mathcal{M}} \mathbb{E}_{\sigma \sim \mathcal{S}} \sum_s \frac{[\mathrm{tr}(\sigma F_s) - \mathrm{tr}(\rho_0 F_s)]^2}{\mathrm{tr}(\rho_0 F_s)}$ and $c$ is an absolute constant.  [TODO: add precise statement with conditions on $\varepsilon$, cite Le Cam / chi-squared method reference.]}
 \end{lemma}
 
 Based on Lemma~\ref{theo:mart_distinguish_lb}, we calculate its chi-square divergence first:
@@ -1815,7 +1816,7 @@ Given a fixed $n$-qubit Clifford gate $\mathrm{Cl} = \mathbb{I}$, these two ense
     &\Delta = \frac{\ket{00}\!\bra{00} + \ket{10}\!\bra{10} +\ket{01}\!\bra{01} -\ket{11}\!\bra{11}}{4} \otimes \frac{1}{2}\left[\frac{\mathbb{I}_{n-1} \otimes \mathbb{I}_{n-1}}{d^2(d+1)} - \frac{\mathrm{SWAP}^{\otimes (n-1)}}{d(d+1)} \right]
 \end{align}
 In the case $\mathrm{Cl} = \mathbb{I}$, we have 2-replica localized strategy $\{\ket{00},\ket{01},\ket{10},\ket{11}\}$ on the first qubits and Bell measurement on the last $(n-1)$ qubits such that $\langle \Delta \rangle \sim \mathcal{O}(1)$.  
-However, in the case $\mathrm{Cl}$ maps $Z_1$ to a weight $w$ Pauli operator, we show that $\mathrm{tr}(\mathrm{Cl}^{\otimes 2} \Delta \mathrm{Cl}^{\dagger,\otimes 2} \cdot \bigotimes_{j=1}^n\Phi_j) \leq d^2 2^{-\alpha \cdot w}$. This means that non-adaptive 2-replica local measurement strategy at least repeats $2^w$ times to discirminate $\mathcal{E}_{1,\mathrm{Cl}}$ from $\mathcal{E}_{2,\mathrm{Cl}}$
+However, in the case $\mathrm{Cl}$ maps $Z_1$ to a weight $w$ Pauli operator, we show that $\mathrm{tr}(\mathrm{Cl}^{\otimes 2} \Delta \mathrm{Cl}^{\dagger,\otimes 2} \cdot \bigotimes_{j=1}^n\Phi_j) \leq d^2 2^{-\alpha \cdot w}$. This means that non-adaptive 2-replica local measurement strategy at least repeats $2^w$ times to discriminate $\mathcal{E}_{1,\mathrm{Cl}}$ from $\mathcal{E}_{2,\mathrm{Cl}}$
 In the case of $T$-round of $2$-replica strategy, we analysis the $2T$-fold average as:
 \begin{align}
     \mathbb{E}_{\rho \sim \mathcal{E}_1}\rho^{\otimes 2T} &= \frac{1}{2^{2T}} \sum_{\mathbf{a} \in \mathbb{F}_2^{2T}}\ket{\mathbf{a}}\!\bra{\mathbf{a}} \otimes  \frac{S^{\mathbf{a}}}{d^{\uparrow \mathbf{a}}} \otimes \frac{\mathbb{I}^{\bar{\mathbf{a}}}}{d^{|\bar {\mathbf{a}}|}},\\
