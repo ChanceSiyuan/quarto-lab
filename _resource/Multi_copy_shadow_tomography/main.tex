@@ -506,6 +506,25 @@ By Hoeffding's inequality, by implementing the POVM $\{\Pi_j\}_{j \in \mathcal{J
 \mathrm{Pr}\left[\left|N^{-1}\sum_{i=1}^N h_\alpha(j_i) - f_{\alpha}(\rho)\right| \geq \varepsilon\right] \leq 2\exp\left(-\frac{\varepsilon^2 N}{2}\right).
 \end{align}
 Considering all $\alpha \in \mathcal{A}$, the probability that the random variable deviates from the true value by more than $\varepsilon$ is at most $2\exp\left(-\frac{\varepsilon^2 N}{2}\right)|\mathcal{A}|$. This means that $N \sim \frac{2}{\varepsilon^2} \log(2|\mathcal{A}|\delta^{-1})$ is the sufficient number of copies to estimate all the functionals in $\mathcal{F}$ with accuracy $\varepsilon$ and confidence $1-\delta$.
+
+\color{red}
+\paragraph{Super-normalized POVM and the $s^2$ factor.}
+When the POVM is super-normalized, $\sum_j \Pi_j = s\cdot\1^{\otimes k}$ with $s > 1$, we rescale to form a valid probability distribution: define $\Pi_j' := \Pi_j/s$, which satisfies $\sum_j \Pi_j' = \1^{\otimes k}$. Sampling outcome $j$ with probability $p_j = \mathrm{tr}[\Pi_j'\,\rho^{\otimes k}]$, the estimator for $f_\alpha(\rho)$ becomes $\hat{f}_\alpha(j) := s \cdot h_\alpha(j)$, since
+\begin{align}
+\mathbb{E}[\hat{f}_\alpha] = \sum_j s\, h_\alpha(j)\,\mathrm{tr}[\Pi_j'\,\rho^{\otimes k}] = \sum_j h_\alpha(j)\,\mathrm{tr}[\Pi_j\,\rho^{\otimes k}] = f_\alpha(\rho).
+\end{align}
+Since $|h_\alpha(j)| \leq 1$, we have $|\hat{f}_\alpha(j)| \leq s$, and Hoeffding's inequality gives
+\begin{align}\label{eq:hoeffding-super}
+\mathrm{Pr}\!\left[\left|\frac{1}{N}\sum_{i=1}^N \hat{f}_\alpha(j_i) - f_\alpha(\rho)\right| \geq \varepsilon\right] \leq 2\exp\!\left(-\frac{N\varepsilon^2}{2s^2}\right).
+\end{align}
+A union bound over $|\cA|$ functionals and setting the right-hand side to $\delta$ yields the number of measurements $N_{\mathrm{meas}} = \frac{2s^2}{\varepsilon^2}\log\!\left(\frac{2|\cA|}{\delta}\right)$.
+Since each measurement consumes $k$ copies of $\rho$, the total copy-complexity is
+\begin{align}\label{eq:copy-complexity-derived}
+N_{\mathrm{copies}} = k \cdot N_{\mathrm{meas}} = \mathcal{O}\!\left(k\cdot s^2\cdot\varepsilon^{-2}\cdot\log(|\cA|/\delta)\right),
+\end{align}
+which is Eq.~\eqref{eq:copy-complexity} in the main text with $s = s^*(k)$, the f-compatibility robustness.
+\color{black}
+
 It is also a generalization of the Definition~\ref{def:multicopy-compatibility} of $k$-compatible, which is a special case when $f_{(m,r)}(\rho) = \mathrm{tr}[A_m^{(r)}\rho], \alpha = (m,r) \in \{(m,r) : m \in \{1,\cdots,K\},\, r \in \Omega_m\}$.
 
 A great advantage of this definition is that the compatible learning of multiple fixed properties of quantum states might be easier than the compatible learning of the whole POVMs distributions. 
@@ -598,14 +617,22 @@ Given a set of rank-$r$ funciton $\mathcal{F}$, it is $l$-replica compatiable if
 \end{lemma}
 \begin{proof}
     \color{red}
-    (todo: complete the proof)
+    ($\Rightarrow$) Suppose $\cF$ is $l$-replica f-compatible. By Definition~\ref{def:f-compatibility}, there exists a POVM $\{\Pi_j\}$ on $\cH^{\ox l}$ and bounded estimators $h_\alpha(j) \in [-1,1]$ such that $f_\alpha(\rho) = \sum_j h_\alpha(j)\,\tr[\Pi_j\,\rho^{\ox l}]$ for all $\rho$ and all $\alpha$. Since the $l$-linearization $\{F_\alpha\}$ satisfies $\tr[F_\alpha\,\rho^{\ox l}] = f_\alpha(\rho)$, we have $\sum_j h_\alpha(j)\,\tr[\Pi_j\,\sigma] = \tr[F_\alpha\,\sigma]$ for all $\sigma = \rho^{\ox l}$.
+    Since products $\{\rho^{\ox l}\}_\rho$ span the symmetric subspace of $\cH^{\ox l}$ (by the polarization identity), and both sides are linear in $\sigma$, we may replace $\Pi_j$ by its symmetrization $\tilde{\Pi}_j = (l!)^{-1}\sum_{\pi \in S_l} P_\pi \Pi_j P_\pi^\dagger$ without changing expectation values on $\rho^{\ox l}$. Then $\sum_j h_\alpha(j)\,\tilde{\Pi}_j = F_\alpha$ holds as an operator identity (on the symmetric subspace, which suffices). This is precisely single-copy f-compatibility of $\{F_\alpha\}$ on the state space $\cH^{\ox l}$.
+
+    ($\Leftarrow$) Suppose the $l$-linearizations $\{F_\alpha\}$ are single-copy f-compatible on $\cH^{\ox l}$: there exist POVM $\{\Pi_j\}$ on $\cH^{\ox l}$ and bounded estimators $h_\alpha(j) \in [-1,1]$ with $\sum_j h_\alpha(j)\,\Pi_j = F_\alpha$. Then for all $\rho$:
+    \begin{align}
+    \sum_j h_\alpha(j)\,\tr[\Pi_j\,\rho^{\ox l}] = \tr\!\left[\sum_j h_\alpha(j)\,\Pi_j\;\rho^{\ox l}\right] = \tr[F_\alpha\,\rho^{\ox l}] = f_\alpha(\rho),
+    \end{align}
+    which is exactly $l$-replica f-compatibility of $\cF$.
     \color{black}
 \end{proof}
 
 \subsection{f-Compatibility SDP: primal and dual}
 
-Since now $k$-replica f-compatiablity on a set of rank-$r$ properties can be reduced to a single-replica f-compatiablity problem, in this section, we reduced the single-replica f-compatiablity problem as an SDP problem. 
-The f-compatibility robustness $s^*(\cF)$ is computed by the following SDP. The optimization variables are the POVM elements $\{\Pi_j\}_{j\in\cJ}$, the estimator scalars $\{h_\alpha(j)\}$, and the super-normalization factor $s$.
+\color{red}Since now $k$-replica f-compatibility on a set of rank-$r$ properties can be reduced to a single-replica f-compatibility problem (Lemma~\ref{lem:structure_fcomp_lemma}), in this section we formulate the single-replica f-compatibility robustness $s^*(\cF)$ as an optimization problem.
+The exact formulation is a \emph{bilinear program} (bilinear in the POVM elements $\{\Pi_j\}$ and the scalar estimators $\{h_\alpha(j)\}$), which is not an SDP but can be relaxed to one (see below).\color{black}
+The optimization variables are the POVM elements $\{\Pi_j\}_{j\in\cJ}$, the estimator scalars $\{h_\alpha(j)\}$, and the super-normalization factor $s$.
 \begin{equation}\label{eq:primal-SDP}
 \boxed{
 \begin{aligned}
@@ -618,19 +645,22 @@ The f-compatibility robustness $s^*(\cF)$ is computed by the following SDP. The 
 \end{equation}
 
 
-The constraint $|h_\alpha(j)| \leq 1$ can be rewritten as $\Pi_j \pm h_\alpha(j)\Pi_j \geq 0$, or equivalently by introducing matrix variables $\Gamma_{\alpha,j} := h_\alpha(j)\Pi_j$ subject to $\Pi_j \pm \Gamma_{\alpha,j} \geq 0$.
 \color{red}
-(todo: fix the relaxation gap. Refer to `_resource/JMvsQSD_main2.tex`''s proof of dual problem. Here my case should be a special case of their proof.)
-\color{black}
-\emph{Relaxation gap.} When $\Pi_j$ has rank $> 1$, replacing the scalar constraint $h_\alpha(j)\Pi_j$ by a free matrix $\Gamma_{\alpha,j}$ with $\Pi_j \pm \Gamma_{\alpha,j} \geq 0$ is a \emph{relaxation}: $\Gamma_{\alpha,j}$ need not equal a scalar times $\Pi_j$. The relaxed SDP is exact for rank-1 (projective) POVMs but can underestimate $s^*$ otherwise. For example, for $\{X,Y,Z\}$ on $\mathbb{C}^2$, the relaxed SDP gives $s^*_{\mathrm{relax}} = 1$ while the true scalar-constrained answer is $s^* = \sqrt{3}$.
+\paragraph{SDP relaxation and its gap.}
+The bilinear program~\eqref{eq:primal-SDP} is computationally hard due to the product constraint $h_\alpha(j)\Pi_j$ (bilinear in the scalar $h_\alpha(j)$ and the matrix $\Pi_j$). A standard relaxation replaces this product by a free matrix variable: introduce $\Gamma_{\alpha,j} := h_\alpha(j)\Pi_j$ subject to $\Pi_j \pm \Gamma_{\alpha,j} \geq 0$ and $\sum_j \Gamma_{\alpha,j} = F_\alpha$. The constraint $\Pi_j \pm \Gamma_{\alpha,j} \geq 0$ is equivalent to $|h_\alpha(j)| \leq 1$ when $\Gamma_{\alpha,j} = h\Pi_j$ for a scalar $h$, but for rank $>1$ the matrix $\Gamma_{\alpha,j}$ can satisfy $\Pi_j \pm \Gamma_{\alpha,j} \geq 0$ without being a scalar multiple of $\Pi_j$. Thus the relaxed SDP provides a \emph{lower bound}: $s^*_{\mathrm{SDP}} \leq s^*$.
 
-\paragraph{Dual problem.}
-The dual of the primal SDP~\eqref{eq:primal-SDP} reads:
+The relaxation is exact for rank-1 (projective) POVMs (since $\Pi_j = \proj{\psi_j}$ forces $\Gamma_{\alpha,j} = c_\alpha \proj{\psi_j}$ for some $|c_\alpha| \leq 1$), but can underestimate $s^*$ otherwise. For example, for $\cF = \{\tr(X\rho), \tr(Y\rho), \tr(Z\rho)\}$ on $\mathbb{C}^2$, the relaxed SDP gives $s^*_{\mathrm{SDP}} = 1$ while the true scalar-constrained answer is $s^* = \sqrt{3}$.
+
+\textcolor{red}{[TODO: Determine whether additional constraints (e.g., NPA-style moment conditions on $\Gamma_{\alpha,j}$) can close the relaxation gap, or whether one should restrict to rank-1 POVMs throughout.]}
+\color{black}
+
+\paragraph{Dual of the relaxed SDP.}
+The dual of the relaxed SDP reads:
 \begin{align}
-s^* = \max\; & \sum_\alpha \tr[\Lambda_\alpha F_\alpha] \notag\\
+s^*_{\mathrm{SDP}} = \max\; & \sum_\alpha \tr[\Lambda_\alpha F_\alpha] \notag\\
 \text{s.t.}\; & \sum_\alpha |\Lambda_\alpha| \leq W, \quad \tr[W] = 1, \quad W \geq 0, \label{eq:dual-SDP}
 \end{align}
-where $|\Lambda_\alpha| = \sqrt{\Lambda_\alpha^\dagger \Lambda_\alpha}$ denotes the operator absolute value. The dual variable $W$ acts as a ``worst-case'' state that maximizes the total estimation demand, normalized to unit trace.
+where $|\Lambda_\alpha| = \sqrt{\Lambda_\alpha^\dagger \Lambda_\alpha}$ denotes the operator absolute value. By weak duality applied to the exact bilinear program, $s^*_{\mathrm{SDP}} \leq s^*$, so the dual objective provides a \emph{lower bound} on the true f-compatibility robustness.
 
 \subsection{Examples}
 \paragraph{$\mathcal{F} = \{|\tr(X\rho)|^2, |\tr(Y\rho)|^2, |\tr(Z\rho)|^2\}$.}
@@ -672,6 +702,10 @@ Construct product dual variables for the global (unrestricted) SDP: $\Lambda_\al
 \end{align}
 The dual objective evaluates to $\sum_\alpha \tr[\Lambda_\alpha F_\alpha] = \prod_l \sum_{\alpha_l} \tr[\Lambda_{\alpha_l}^{*(l)} F_{\alpha_l}^{(l)}] = \prod_l s^*_l$.
 Therefore $s^*_{\mathrm{global}} \geq \prod_l s^*_l$. Since restricting to local (product) POVMs can only increase the primal optimum, $s^*_{\mathrm{loc}} \geq s^*_{\mathrm{global}} \geq \prod_l s^*_l$.
+
+\color{red}
+\emph{Remark.} The lower bound also follows directly from the product structure without the dual: any local strategy with product POVMs $\Pi_{\vec{j}} = \bigotimes_l \Pi_{j_l}^{(l)}$ and product estimators $h_\alpha(\vec{j}) = \prod_l h_{\alpha_l}^{(l)}(j_l)$ satisfies $\sum_{\vec{j}} \Pi_{\vec{j}} = \bigotimes_l s_l\1$ (so $s = \prod_l s_l$), and each site must independently solve $\sum_{j_l} h_{\alpha_l}^{(l)}(j_l)\Pi_{j_l}^{(l)} = F_{\alpha_l}^{(l)}$, giving $s_l \geq s^*_l$. The dual argument above uses the relaxed SDP dual~\eqref{eq:dual-SDP} and therefore proves $s^*_{\mathrm{loc}} \geq \prod_l s^*_{l,\mathrm{SDP}}$ (with relaxed per-site values), which is weaker when the relaxation gap is nonzero. The direct product argument avoids this gap.
+\color{black}
 
 \subsection{Per-site analysis for Pauli observables}
 
