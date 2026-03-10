@@ -145,7 +145,7 @@ the f-compatibility robustness $s^*$ determines the sample complexity of any est
 For local (product) measurements on $n$-qubit systems, we prove a \emph{tensor product factorization theorem}: the robustness decomposes as $s^*_{\mathrm{loc}} = \prod_l s^*_l$ over qubit sites, recovering the $3^w$ scaling of classical shadows from a per-site incompatibility of $\sqrt{3}$.
 Crucially, nonlinear functionals can be strictly easier to estimate than their parent observables: for squared Pauli expectations $\{|\tr(P\rho)|^2\}$, the ``squaring trick'' $[P\ox P, Q\ox Q] = 0$ yields $s^* = 1$ via Bell measurements, achieving $\mathcal{O}(1)$ sample complexity.
 We construct an explicit nonlocal $2k$-copy strategy based on a commuting operator family $\{A_P\}$ that simultaneously estimates all $|\tr(P\rho^k)|$ via a single projective measurement.
-\color{red}For the nonlinear task of estimating $\{\tr(P\rho^2)\}_P$, the relevant lifted operators have non-product structure, preventing the tensor factorization from yielding $s^*=1$. Explicit computation shows that two-copy local 3-design strategies incur exponential variance $\sim (11/3)^n$ for product states (up to $5^n$ for entangled states), in sharp contrast to the $\mathcal{O}(1)$ nonlocal cost.\color{black}
+\color{red}For the nonlinear task of estimating $\{\tr(P\rho^2)\}_P$, the relevant lifted operators have non-product structure, preventing the tensor factorization from yielding $s^*=1$. Explicit computation shows that two-copy local 3-design strategies incur exponential second moment $\langle\hat{o}^2\rangle \sim (11/3)^n$ for product states (up to $5^n$ for entangled states), in sharp contrast to the $\mathcal{O}(1)$ nonlocal cost.\color{black}
 \end{abstract}
 \date{\today}
 \maketitle
@@ -157,12 +157,12 @@ Classical shadow tomography~\cite{huang2020predicting} enables predicting many l
 
 A natural extension uses \emph{multi-copy} measurements on $\rho^{\ox k}$, exploiting quantum correlations across replicas. A striking example is Bell sampling on $\rho^{\ox 2}$: measuring in the Bell basis simultaneously estimates all squared Pauli expectations $|\tr(P\rho)|^2$ with $\mathcal{O}(1)$ samples~\cite{hangleiter2024bell,montanaro2017learning}, an exponential improvement over the single-copy $3^w$ scaling.
 
-What determines when multi-copy strategies help? For \emph{nonlinear} functionals such as $\tr(P\rho^2)$, the question is particularly rich: two-copy local 3-design strategies already incur exponential variance $\sim (11/3)^n$--$5^n$ depending on the state (Appendix~\ref{app:local_shadow}), yet an explicit nonlocal four-copy circuit achieves $\mathcal{O}(1)$~\cite{ekert2002direct}. This locality gap calls for a unified framework that simultaneously captures:
+What determines when multi-copy strategies help? For \emph{nonlinear} functionals such as $\tr(P\rho^2)$, the question is particularly rich: two-copy local 3-design strategies already incur exponential second moment $\sim (11/3)^n$--$5^n$ depending on the state (Appendix~\ref{app:local_shadow}), yet an explicit nonlocal four-copy circuit achieves $\mathcal{O}(1)$~\cite{ekert2002direct}. This locality gap calls for a unified framework that simultaneously captures:
 (i)~the intrinsic hardness of multi-copy estimation,
 (ii)~the factorization of hardness across qubit sites under local measurements, and
 (iii)~the advantage of entangled (nonlocal) strategies.
 
-In this Letter, we develop the \emph{f-compatibility} framework, bridging quantum measurement compatibility theory~\cite{heinosaari2015noise,designolle2019incompatibility,Busch1986} with shadow estimation complexity. Our main results are: (1)~a general framework linking estimation robustness $s^*$ to sample complexity (Sec.~\ref{sec:framework}); (2)~a tensor product factorization theorem explaining the $3^w$ scaling from per-site $\sqrt{3}$ incompatibility (Sec.~\ref{sec:tensor}); (3)~the squaring trick showing that nonlinear functionals can be exponentially easier (Sec.~\ref{sec:nonlinear}); (4)~an explicit nonlocal $2k$-copy strategy (Sec.~\ref{sec:nonlocal}); and (5)~exponential variance of local 3-design strategies for estimating $\tr(P\rho^2)$ (Sec.~\ref{sec:local_nogo}). Related concurrent work~\cite{chen2025simultaneous,ye2025replica,du2025optimal} studies nonlinear estimation from complementary perspectives.
+In this Letter, we develop the \emph{f-compatibility} framework, bridging quantum measurement compatibility theory~\cite{heinosaari2015noise,designolle2019incompatibility,Busch1986} with shadow estimation complexity. Our main results are: (1)~a general framework linking estimation robustness $s^*$ to sample complexity (Sec.~\ref{sec:framework}); (2)~a tensor product factorization theorem explaining the $3^w$ scaling from per-site $\sqrt{3}$ incompatibility (Sec.~\ref{sec:tensor}); (3)~the squaring trick showing that nonlinear functionals can be exponentially easier (Sec.~\ref{sec:nonlinear}); (4)~an explicit nonlocal $2k$-copy strategy (Sec.~\ref{sec:nonlocal}); and (5)~exponential second moment of local 3-design strategies for estimating $\tr(P\rho^2)$ (Sec.~\ref{sec:local_nogo}). Related concurrent work~\cite{chen2025simultaneous,ye2025replica,du2025optimal} studies nonlinear estimation from complementary perspectives.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \prlsection{Framework.}\label{sec:framework}
@@ -255,7 +255,7 @@ This stands in sharp contrast to the nonlocal four-copy strategy of Theorem~\ref
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \prlsection{Discussion.}\label{sec:discussion}
-We have introduced the f-compatibility framework, which unifies quantum measurement compatibility~\cite{heinosaari2015noise,designolle2019incompatibility} with multi-copy shadow estimation. The tensor product factorization theorem (Theorem~\ref{thm:tensor}) explains the $3^w$ scaling of classical shadows as emergent from per-site $\sqrt{3}$ incompatibility, while the squaring trick reveals that nonlinear functionals can have dramatically lower estimation complexity ($s^*=1$ vs.\ $s^*=\sqrt{3}$). The contrast between the efficient nonlocal strategy (Theorem~\ref{thm:nonlocal}) and the exponential variance of local 3-design strategies highlights multi-copy entanglement as a genuine resource.
+We have introduced the f-compatibility framework, which unifies quantum measurement compatibility~\cite{heinosaari2015noise,designolle2019incompatibility} with multi-copy shadow estimation. The tensor product factorization theorem (Theorem~\ref{thm:tensor}) explains the $3^w$ scaling of classical shadows as emergent from per-site $\sqrt{3}$ incompatibility, while the squaring trick reveals that nonlinear functionals can have dramatically lower estimation complexity ($s^*=1$ vs.\ $s^*=\sqrt{3}$). The contrast between the efficient nonlocal strategy (Theorem~\ref{thm:nonlocal}) and the exponential second moment of local 3-design strategies highlights multi-copy entanglement as a genuine resource.
 
 
 Several directions remain open. First, determining the optimal copy-complexity trade-off $\min_k k\cdot[s^*(k)]^2$ for general functional families is an algorithmic challenge. Second, proving a rigorous exponential lower bound for local $k$-copy strategies estimating $\{\tr(P\rho^2)\}_P$ at arbitrary $k$ would strengthen the local no-go. Third, the commuting structure of $\{A_P\}$ connects to graph-theoretic approaches~\cite{graph2024nonlinear} and fermionic joint measurements~\cite{mcnulty2024fermionic}, whose interplay with f-compatibility deserves further exploration.
@@ -548,8 +548,8 @@ For any set of POVMs $\{A_i\}_{i=1}^K$ that is $k$-compatible, and any polynomia
 For degree-$r_m$ functionals with $r_m > k$, one might expect $k(\mathcal{F}) \leq r_m \cdot k$ by repeating the joint measurement $G$ on $r_m$ independent blocks of $k$ copies each. However, the classical polynomial estimator for a degree-$r_m$ functional need not satisfy $|h_\alpha(\vec{x})| \leq 1$, so f-compatibility (with $s = 1$) is not guaranteed. The bound holds with a supernormalization factor $s$ proportional to the $\ell_\infty$-norm of the classical estimator. \textcolor{red}{[TODO: Quantify the precise $s$ factor for the $r_m$-fold repetition strategy and determine whether it can be avoided by a direct $r_m k$-copy POVM construction.]}
 \color{black}
 
-Another critical question is whether the f-compatibility indeed reflects the inherent hardness of simultaneously estimating a set of properties $\{f_1(\rho),\cdots,f_\alpha(\rho)\}$.
-Given two set of function of $\rho$, $\mathcal{S}:= (S_\alpha(\rho))_{\alpha \in \mathcal{A}}$ and $\mathcal{T}:=(T_\beta(\rho))_{\beta \in \mathcal{B}}$, If there exists a function $f: \mathcal{A} \to \mathcal{B}$ such that $T_\beta(\rho) = f(\S_\alpha(\rho))$, then the estimation complexity of $\{T_\beta(\rho)\}_{\beta \in \mathcal{B}}$ is the same as that of $\{S_\alpha(\rho)\}_{\alpha \in \mathcal{A}}$.
+Another critical question is whether f-compatibility indeed reflects the inherent hardness of simultaneously estimating a set of properties $\{f_1(\rho),\cdots,f_\alpha(\rho)\}$.
+Given two sets of functions of $\rho$, $\mathcal{S}:= (S_\alpha(\rho))_{\alpha \in \mathcal{A}}$ and $\mathcal{T}:=(T_\beta(\rho))_{\beta \in \mathcal{B}}$, if there exists a computable function $f$ such that $T_\beta(\rho) = f(S_\alpha(\rho))$ for all $\beta \in \mathcal{B}$ and all $\rho$, then $\{T_\beta(\rho)\}_{\beta \in \mathcal{B}}$ is \emph{at most as hard} to estimate as $\{S_\alpha(\rho)\}_{\alpha \in \mathcal{A}}$: any estimator for $\mathcal{S}$ yields one for $\mathcal{T}$ by post-processing. The converse (equal complexity) requires a reduction in both directions.
 
 
 \subsection{Application on linear functionals}
@@ -938,8 +938,8 @@ The commuting family $\{A_P\}$ from Theorem~\ref{thm:nonlocal} is the AJD soluti
 The f-compatibility bilinear program~\eqref{eq:primal-bilinear} is the dual perspective: POVM elements $\{\Pi_j\}$ correspond to common eigenprojectors of the optimal $\{R_\alpha\}$, and estimators $h_\alpha(j)$ correspond to eigenvalues $r_{\alpha,\lambda}$.
 \end{proposition}
 
-\begin{theorem}[Tensor commutativity uniqueness, informal~\cite{king2024exponential}]\label{thm:king-nogo}
-The technique of achieving commutativity via simple tensor products ($O \ox O$ commuting when the originals anticommute) is essentially unique to displacement operators arising from the Heisenberg-Weyl group. Pauli operators are a special case.
+\begin{theorem}[Tensor commutativity uniqueness, informal; {\cite[Theorem~4]{king2024exponential}}]\label{thm:king-nogo}
+If two unitaries $U,V$ of finite order $d$ do not commute, yet there exist unitaries $\tilde{U},\tilde{V}$ on an auxiliary space such that $[U\ox\tilde{U},\,V\ox\tilde{V}]=0$, then $U$ and $V$ decompose as a direct sum of displacement operators of the discrete Heisenberg group $H(\mathbb{Z}_d)$. In particular, the squaring trick ($O \ox O$ commuting when the originals anticommute) is essentially unique to the Heisenberg-Weyl group; Pauli operators are the $d=2$ case.
 \end{theorem}
 
 This means for general $\{O_i\}$ beyond the Heisenberg-Weyl group, achieving $|\cS| = n$ with degree-2 polynomials may not be possible. The SDP framework~\eqref{eq:sdp-relax} then quantifies how much information can be extracted as a function of $k$ and the algebraic structure of $\{O_i\}$.
@@ -1044,7 +1044,7 @@ Then given an operator $O = \sum_{\mathbf{p}} \alpha_{\mathbf{p}} \sigma_{\mathb
      This maximum is achieved at pure state such as $|\psi\rangle = \frac{1}{\sqrt{2}}(|\psi_{\text{max}}\rangle + |\psi_{\text{min}}\rangle)$.
 \end{lemma}
     \begin{proof}
-    The variance of an observable $O$ with respect to a quantum state $\rho$ is defined as
+    The variance of an observable $O$ with respect to a quantum state $\rho$ is $\text{Var}_\rho(O) = \langle O^2\rangle_\rho - \langle O\rangle_\rho^2$.
     We first show that the function $f(\rho):= \text{Var}_{\rho}(O)$ is a convex function of $\rho$. Using the convexity of $g(x) = x^2$, i.e., $[(1 - \theta)x_1 + \theta x_2]^2 \leq (1- \theta)x_1^2 + \theta x_2^2$, we have
     \begin{align}
         f((1- \theta)\rho + \theta \sigma) - (1- \theta)f(\rho) - \theta f(\sigma) = (1- \theta)\left[\text{tr}(O\rho)\right]^2 + \theta \left[\text{tr}(O\sigma)\right]^2 -\left[(1- \theta)\text{tr}(O\rho) + \theta \text{tr}(O\sigma)\right]^2 \geq 0, \notag
@@ -1420,7 +1420,7 @@ A critical application of this local multi-copy shadow is to use it to estimate 
 In the case of $k  =2$, $\text{tr}((O \otimes \mathbb{I}_n) \text{SWAP}^{\otimes n}\cdot (\rho \otimes \rho))$ is an unbiased estimator for $\text{tr}(O \rho^2)$. If we decomposed the operator $O$ on the Pauli basis, it turns out $(O \otimes \mathbb{I}_n)\text{SWAP}^{\otimes n} = \sum_{\mathbf{r} \in \mathbb{F}_2^{2n}} (\sigma_{\mathbf{r}} \otimes  \mathbb{I}_n)\text{SWAP}^{\otimes n}:= \sum_{\mathbf{r} \in \mathbb{F}_2^{2n}} O_{\mathbf{r}} $.
 Here below we use Lemma~\ref{lemma:LC_shadow_kcopy} to evaluate the covariance operator of $O_{\mathbf{r}}$ explicitly. 
 %%%%%%%%%%%Lemma%%%%%%%%%%%Lemma%%%%%%%%%%%Lemma%%%%%%%%%%%Lemma
-\begin{lemma}[Variance of two-copy Pauli]\label{lemma:covar_Pauli}
+\begin{lemma}[Second moment of two-copy Pauli]\label{lemma:covar_Pauli}
     If we take $O_{\mathbf{r}}= (\sigma_{\mathbf{r}} \otimes \mathbb{I}_n) \cdot \text{SWAP}^{\otimes n}$ for Pauli operator $\sigma_{\mathbf{r}}$ and denote $\text{wt}(\sigma_{\mathbf{r}})$ as the weight of this Pauli operator, then we have $\mathbf{V}(O_{\mathbf{r}}, O_{\mathbf{r}'}) = \bigotimes_{j = 1}^n v(\mathbf{r}_j, \mathbf{r}_j') $ with
     \begin{align}\label{eq:v_full_operator}
         v(\mathbf{r}_j, \mathbf{r}_j') =
