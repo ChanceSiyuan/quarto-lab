@@ -145,7 +145,7 @@ the f-compatibility robustness $s^*$ determines the sample complexity of any est
 For local (product) measurements on $n$-qubit systems, we prove a \emph{tensor product factorization theorem}: the robustness decomposes as $s^*_{\mathrm{loc}} = \prod_l s^*_l$ over qubit sites, recovering the $3^w$ scaling of classical shadows from a per-site incompatibility of $\sqrt{3}$.
 Crucially, nonlinear functionals can be strictly easier to estimate than their parent observables: for squared Pauli expectations $\{|\tr(P\rho)|^2\}$, the ``squaring trick'' $[P\ox P, Q\ox Q] = 0$ yields $s^* = 1$ via Bell measurements, achieving $\mathcal{O}(1)$ sample complexity.
 We construct an explicit nonlocal $2k$-copy strategy based on a commuting operator family $\{A_P\}$ that simultaneously estimates all $|\tr(P\rho^k)|$ via a single projective measurement.
-Finally, we establish a local no-go: the relevant lifted operators have non-product structure, so local strategies face exponential cost for $\tr(P\rho^2)$ at any copy number.
+\color{red}Finally, we establish a local obstruction: the relevant lifted operators have non-product structure, and we prove that two-copy local 3-design strategies incur exponential cost $\sim (11/3)^n$ for estimating $\tr(P\rho^2)$.\color{black}
 \end{abstract}
 \date{\today}
 \maketitle
@@ -249,7 +249,7 @@ Recovering signed values $\tr(P\rho^k)$ from $|\tr(P\rho^k)|$ requires $\mathcal
 \prlsubsection{Local no-go.}\label{sec:local_nogo}
 For estimating the full nonlinear shadow $\{\tr(P\rho^2)\}_{P\in\cP_n}$, the relevant two-copy operators are $\tilde{O}_P = \tfrac{1}{2}(P\ox\1 + \1\ox P)\cdot\mathrm{SWAP}$, which have eigenvalues $\{+1, 0, -1\}$ on the symmetric subspace---they are \emph{spin-1} (non-binary). By Theorem~\ref{thm:linear-equiv}, the no-advantage result does not apply; estimation may in principle be easier than compatibility. Nevertheless, local strategies remain exponentially costly.
 
-The obstruction is structural: the four-copy operator $A_P = \tfrac{1}{2}(P^{\ox 2}\ox\1^{\ox 2} + \1^{\ox 2}\ox P^{\ox 2})\cdot\pi$ is a \emph{sum} of two product operators, not itself a product. Theorem~\ref{thm:tensor} does not apply, so the per-site factorization $s^*_{\mathrm{loc}} = \prod_l s^*_l$ fails. Explicit computation (Appendix~\ref{app:local_shadow}, Lemma~\ref{lemma:covar_Pauli}) shows that two-copy local 3-design shadows incur variance $\sim (11/3)^n \cdot (5/11)^{\mathrm{wt}(P)}$ for estimating $\tr(P\rho^2)$---exponential in $n$ for any Pauli weight. Higher local copy numbers yield only marginal constant-factor improvements without changing the complexity class.
+The obstruction is structural: the four-copy operator $A_P = \tfrac{1}{2}(P^{\ox 2}\ox\1^{\ox 2} + \1^{\ox 2}\ox P^{\ox 2})\cdot\pi$ is a \emph{sum} of two product operators, not itself a product. Theorem~\ref{thm:tensor} does not apply, so the per-site factorization $s^*_{\mathrm{loc}} = \prod_l s^*_l$ fails. Explicit computation (Appendix~\ref{app:local_shadow}, Lemma~\ref{lemma:covar_Pauli}) shows that two-copy local 3-design shadows incur variance $\sim (11/3)^n \cdot (5/11)^{\mathrm{wt}(P)}$ for estimating $\tr(P\rho^2)$---exponential in $n$ for any Pauli weight. \color{red}The structural obstruction (non-product form of the lifted operators) suggests that higher local copy numbers cannot circumvent the exponential cost, though a rigorous proof for arbitrary $k$ remains open (see Discussion).\color{black}
 
 This stands in sharp contrast to the nonlocal four-copy strategy of Theorem~\ref{thm:nonlocal}, which achieves $\mathcal{O}(1)$ variance for all $|\tr(P\rho^2)|$. The gap quantifies nonlocality as a measurement resource for multi-copy shadow tomography.
 
@@ -928,10 +928,10 @@ The natural two-copy operator is $O_P = (P \ox \1) \cdot \mathrm{SWAP}$ with $\t
 \begin{align}\label{eq:tilde-commutator}
 [\tilde{O}_P,\, \tilde{O}_Q] = \tfrac{1}{2}[P,Q]^{(2)},
 \end{align}
-where $[P,Q]^{(2)}$ denotes the symmetrized lift of the commutator. This is an \emph{isomorphic copy} of the original Pauli Lie algebra (spin-$2^{n-1}$ representation on the symmetric subspace).
+\color{red}where $[P,Q]^{(2)} := \tfrac{1}{2}([P,Q]\ox\1 + \1\ox [P,Q])$ is the symmetrized lift of the commutator. Since $[\tilde{O}_P,\tilde{O}_Q] = \tfrac{1}{2}[P,Q]^{(2)} \neq 0$ whenever $[P,Q]\neq 0$, the operators $\{\tilde{O}_P\}$ inherit the non-commutativity structure of the original Paulis.\color{black}
 
 \emph{Why tensor squaring of $\tilde{O}_P$ fails.}
-The squaring trick~\eqref{eq:squaring} succeeds for Paulis because they satisfy strict anticommutation: $\{P,Q\} = 0 \Rightarrow (PQ)^{\ox 2} = (QP)^{\ox 2}$. However, $\tilde{O}_P$ has a nonzero anticommutator:
+The squaring trick~\eqref{eq:squaring} succeeds for Paulis because they satisfy strict anticommutation: $\{P,Q\} = 0 \Rightarrow (PQ)^{\ox 2} = (QP)^{\ox 2}$. However, \color{red}for non-commuting (and hence anticommuting) Paulis $P,Q$ with $\{P,Q\}=0$,\color{black} $\tilde{O}_P$ has a nonzero anticommutator:
 \begin{align}
 \{\tilde{O}_P, \tilde{O}_Q\} = \tfrac{1}{2}(P\ox Q + Q\ox P) \neq 0.
 \end{align}
@@ -1513,16 +1513,16 @@ In analogy, we try to break the lower bound in the last section by extending the
     If we can estimate $|\mathrm{tr}(P \rho^k)|, \forall P \in \mathcal{O} \subset \mathcal{P}_n$ within constant additive error $\varepsilon$, then using a $\mathcal{O}(\varepsilon^{-4}\log(|\mathcal{O}|))$ times $k$-replica strategy with $k \cdot n$ ancilla qubits, we can construct an estimator $E_P$ such that $|E_P - \mathrm{tr}(P \rho^{k})| \leq 3\varepsilon$. 
 \end{lemma}
 \begin{proof}[Algorithmic proof of Lemma~\ref{lemma:signal_estim}]
-    Denoting $f_P = |\mathrm{tr}(P \rho^k)|$. We then construct the quantum state $\sigma$ such that $\left||\mathrm{tr}(P \sigma^k)|- f_P\right| \leq \varepsilon$. Such a state $\sigma$ always exist and can be constructed if we knew an $\varepsilon$ additive error estimator for $\{f_P\}_{P \in \mathcal{O}}$, but might cannot be found computationally efficient.
-    Then we estimate $\mathrm{tr}(\rho^k P)\cdot \mathrm{tr}(\sigma^k P)$ by measuring the commuting family $\{A_P\}_{P\in \mathcal{O}}$ on state $\rho^{\otimes k} \otimes \sigma^{\otimes k}$ for $\mathcal{O}(\varepsilon^{-4}\log(|\mathcal{O}|))$ times. This will give us an estimator $g_P$ such that $|g_P - \mathrm{tr}(\rho^k P)\cdot \mathrm{tr}(\sigma^k P)|\leq \varepsilon^2$.
-    Now we set $E_P = 0$ if $f_P \leq \varepsilon$ and $E_P = g_P/\mathrm{tr}(P \sigma^k)$ if else.
-    We thus noted that:
+    \color{red}Let $\hat{f}_P$ denote the estimate of $|\mathrm{tr}(P \rho^k)|$ from the hypothesis, satisfying $|\hat{f}_P - |\mathrm{tr}(P \rho^k)|| \leq \varepsilon$, and write $f_P = |\mathrm{tr}(P \rho^k)|$ for the true value.\color{black} We then construct a quantum state $\sigma$ such that $\left||\mathrm{tr}(P \sigma^k)|- \hat{f}_P\right| \leq \varepsilon$, which implies $||\mathrm{tr}(P\sigma^k)| - f_P| \leq 2\varepsilon$ by the triangle inequality. Such a state $\sigma$ always exists and can be constructed given the estimates $\hat{f}_P$, but may not be found computationally efficiently.
+    Then we estimate $\mathrm{tr}(\rho^k P)\cdot \mathrm{tr}(\sigma^k P)$ by measuring the commuting family $\{A_P\}_{P\in \mathcal{O}}$ on state $\rho^{\otimes k} \otimes \sigma^{\otimes k}$ for $\mathcal{O}(\varepsilon^{-4}\log(|\mathcal{O}|))$ times. This gives an estimator $g_P$ such that $|g_P - \mathrm{tr}(\rho^k P)\cdot \mathrm{tr}(\sigma^k P)|\leq \varepsilon^2$.
+    \color{red}We set $E_P = 0$ if $\hat{f}_P \leq 2\varepsilon$, and $E_P = g_P/\mathrm{tr}(P \sigma^k)$ otherwise.
+    We verify the error bound in two cases:
     \begin{align}
-        \text{If~} f_P < 2\varepsilon, \quad  |E_P - \mathrm{tr}(P \rho^k)| &= |\mathrm{tr}(P \rho^k)| \leq ||\mathrm{tr}(P \rho^k)| - f_P| + |f_P| \leq 3\varepsilon \\
-        \text{If~} f_P \geq 2\varepsilon, \quad |E_P - \mathrm{tr}(P \rho^k)| &=   
-            |g_P/\mathrm{tr}(P \sigma^k) -\mathrm{tr}(P \rho^k)| = \frac{|g_P - \mathrm{tr}(P \sigma^k) \cdot \mathrm{tr}(P \rho^k)|}{|\mathrm{tr}(P \sigma^k)|}\\
-            &\leq  \frac{|g_P - \mathrm{tr}(P \sigma^k) \cdot \mathrm{tr}(P \rho^k)|}{f_P - \varepsilon}  \leq \frac{\varepsilon^2}{2\varepsilon - \varepsilon} \leq 3\varepsilon.
-    \end{align}
+        \text{If~} \hat{f}_P \leq 2\varepsilon:\quad  &f_P \leq \hat{f}_P + \varepsilon \leq 3\varepsilon,\text{~so~} |E_P - \mathrm{tr}(P \rho^k)| = |\mathrm{tr}(P \rho^k)| = f_P \leq 3\varepsilon. \\
+        \text{If~} \hat{f}_P > 2\varepsilon:\quad &|\mathrm{tr}(P \sigma^k)| \geq \hat{f}_P - \varepsilon > \varepsilon > 0,\text{~so~} |E_P - \mathrm{tr}(P \rho^k)| \notag\\
+            &= \frac{|g_P - \mathrm{tr}(P \sigma^k) \cdot \mathrm{tr}(P \rho^k)|}{|\mathrm{tr}(P \sigma^k)|}
+            \leq  \frac{\varepsilon^2}{\hat{f}_P - \varepsilon}  \leq \frac{\varepsilon^2}{\varepsilon} = \varepsilon \leq 3\varepsilon.
+    \end{align}\color{black}
 \end{proof}
 \paragraph{Examples.}
  In the case $k = 2$, the commutants we choose writes $\{A_{\mathbf{r}} := {2}^{-1}{(\sigma_{\mathbf{r}}\sigma_{\mathbf{r}}\mathbb{I}_n\mathbb{I}_n + \mathbb{I}_n\mathbb{I}_n\sigma_{\mathbf{r}}\sigma_{\mathbf{r}})} \mathrm{S}_{13}\mathrm{S}_{24}\}_{\mathbf{r} \in \mathbb{F}_2^{2n}}$. Notice that $\sigma_{\mathbf{r}} \otimes \sigma_{\mathbf{r}} \ket{\Phi_{\mathbf{a}}} = (-1)^{[\mathbf{r},\mathbf{a}]}\ket{\Phi_{\mathbf{a}}}$,
@@ -1634,7 +1634,7 @@ This statement is useful to proving the reduction of $\mathrm{tr}(\rho^2)$ probl
 
 \subsubsection{Subspace \textbf{RH}-ensemble test and its hardness}
 \begin{problem}\label{prob:RHtest}
-    Given \textbf{MH} ensemble $\mathcal{E}_{1 - R\delta}, \mathcal{E}_{L\delta}$, as defined in Problem~\ref{prob:RHtest}, with $R = (2^{n-1} + 1)/(2^{n-1} - 1 +\delta)$ and $L = (1 - 4^{-n+1} - 2^{-n+1} \delta)^{-1}$, try to design an algorithm that $\forall C \in \mathcal{C}$, discriminates two subspace-\textbf{RH} ensembles below:
+    Given \textbf{RH} ensembles $\mathcal{E}_{1 - R\delta}, \mathcal{E}_{L\delta}$ (as in Sec.~\ref{app:LB_nonlin_P_shad}), with $R = (2^{n-1} + 1)/(2^{n-1} - 1 +\delta)$ and $L = (1 - 4^{-n+1} - 2^{-n+1} \delta)^{-1}$, try to design an algorithm that $\forall C \in \mathcal{C}$, discriminates two subspace-\textbf{RH} ensembles below:
     \begin{align}
         &\mathcal{E}_{(1,0),C} := \left\{\sigma_{(1,0),C}:= C \left[\frac{1}{2} \ket{0}\!\bra{0} \otimes \psi + \frac{1}{2} \ket{1}\!\bra{1} \otimes (\mathbb{I}/2^{n-1}) \right] C^{\dagger}\right\}_{\psi \sim \mathrm{Haar}_{n-1}},\\
         &\mathcal{E}_{(1 - R\delta,U\delta),C} := \left\{ \sigma_{(1 - R\delta,L\delta),C} :=C \left[\frac{1}{2} \ket{0}\!\bra{0} \otimes \rho_{1 - R\delta} + \frac{1}{2} \ket{1}\!\bra{1} \otimes \rho_{L\delta} \right] C^{\dagger}\right\}_{\rho_{\varepsilon} \sim \mathcal{E}_{\varepsilon}}.
@@ -1675,7 +1675,7 @@ We now build uniform distribution on all $n$-qubit Clifford gates $\mathcal{D}$ 
     &=\Phi_{\mathrm{Cl},2}\left[4^{-1} {\ket{11}\!\bra{11}} 
      \otimes \left[\left(\frac{L\delta}{d^2(d + L \delta)} -\frac{R\delta}{d(d+1)(d+1 - R\delta)} \right)\mathbb{I}^{\otimes 2} +\right.\right.\notag\\
     & \hspace{13em}\left.\left. \left(-\frac{L\delta}{d[d + L\delta] } + \frac{R\delta d}{d(d+1)(d+1-R\delta)}\right)\mathbb{P}^{d}_{(12)}\right]\right]\\
-    =&=\Phi_{\mathrm{Cl},2}\left[4^{-1} {\ket{11}\!\bra{11}} 
+    &=\Phi_{\mathrm{Cl},2}\left[4^{-1} {\ket{11}\!\bra{11}}
      \otimes \left[\left(\frac{\delta}{d(d^2 -1)} -\frac{\delta}{d(d+1)(d - 1)} \right)\mathbb{I}^{\otimes 2} +\right.\right.\notag\\
     & \hspace{13em}\left.\left. \left(-\frac{\delta}{d^2 - 1} + \frac{d\delta}{d(d+1)(d-1)}\right)\mathbb{P}^{d}_{(12)}\right]\right] = 0. \label{eq:t=1_Delta}
 \end{align}
