@@ -145,7 +145,7 @@ the f-compatibility robustness $s^*$ determines the sample complexity of any est
 For local (product) measurements on $n$-qubit systems, we prove a \emph{tensor product factorization theorem}: the robustness decomposes as $s^*_{\mathrm{loc}} = \prod_l s^*_l$ over qubit sites, recovering the $3^w$ scaling of classical shadows from a per-site incompatibility of $\sqrt{3}$.
 Crucially, nonlinear functionals can be strictly easier to estimate than their parent observables: for squared Pauli expectations $\{|\tr(P\rho)|^2\}$, the ``squaring trick'' $[P\ox P, Q\ox Q] = 0$ yields $s^* = 1$ via Bell measurements, achieving $\mathcal{O}(1)$ sample complexity.
 We construct an explicit nonlocal $2k$-copy strategy based on a commuting operator family $\{A_P\}$ that simultaneously estimates all $|\tr(P\rho^k)|$ via a single projective measurement.
-\color{red}Finally, we establish a local obstruction: the relevant lifted operators have non-product structure, and we prove that two-copy local 3-design strategies incur exponential cost $\sim (11/3)^n$ for estimating $\tr(P\rho^2)$.\color{black}
+\color{red}Finally, we establish a local obstruction: the relevant lifted operators have non-product structure, and we prove that two-copy local 3-design strategies incur exponential cost $\sim (11/3)^n$ for product states (up to $5^n$ for entangled states) for estimating $\tr(P\rho^2)$.\color{black}
 \end{abstract}
 \date{\today}
 \maketitle
@@ -157,7 +157,7 @@ Classical shadow tomography~\cite{huang2020predicting} enables predicting many l
 
 A natural extension uses \emph{multi-copy} measurements on $\rho^{\ox k}$, exploiting quantum correlations across replicas. A striking example is Bell sampling on $\rho^{\ox 2}$: measuring in the Bell basis simultaneously estimates all squared Pauli expectations $|\tr(P\rho)|^2$ with $\mathcal{O}(1)$ samples~\cite{hangleiter2024bell,montanaro2017learning}, an exponential improvement over the single-copy $3^w$ scaling.
 
-What determines when multi-copy strategies help? For \emph{nonlinear} functionals such as $\tr(P\rho^2)$, the question is particularly rich: two-copy local strategies already incur $\sim (11/3)^n$ cost (Appendix~\ref{app:local_shadow}), yet an explicit nonlocal four-copy circuit achieves $\mathcal{O}(1)$~\cite{ekert2002direct}. This locality gap calls for a unified framework that simultaneously captures:
+What determines when multi-copy strategies help? For \emph{nonlinear} functionals such as $\tr(P\rho^2)$, the question is particularly rich: two-copy local strategies already incur exponential cost $\sim (11/3)^n$--$5^n$ depending on the state (Appendix~\ref{app:local_shadow}), yet an explicit nonlocal four-copy circuit achieves $\mathcal{O}(1)$~\cite{ekert2002direct}. This locality gap calls for a unified framework that simultaneously captures:
 (i)~the intrinsic hardness of multi-copy estimation,
 (ii)~the factorization of hardness across qubit sites under local measurements, and
 (iii)~the advantage of entangled (nonlocal) strategies.
@@ -180,7 +180,7 @@ for all $\rho$ and all $\alpha \in \cA$.
 
 Any degree-$d$ polynomial $f_\alpha$ admits a unique \emph{linearization}: a Hermitian operator $F_\alpha$ on $\cH^{\ox k}$ ($k \geq d$) such that $f_\alpha(\vec{p}(\rho)) = \tr[F_\alpha \rho^{\ox k}]$ for all $\rho$. Condition~\eqref{eq:f-compat} becomes $\sum_j h_\alpha(j)\Pi_j = F_\alpha$.
 
-The \emph{f-compatibility robustness} $s^*(\cF)$ is the minimum super-normalization $s \geq 1$ satisfying $\sum_j \Pi_j = s\cdot\1^{\ox k}$ such that the above conditions are feasible. This optimal $s^*$ is computed by the semidefinite program (SDP):
+The \emph{f-compatibility robustness} $s^*(\cF)$ is the minimum super-normalization $s \geq 1$ satisfying $\sum_j \Pi_j = s\cdot\1^{\ox k}$ such that the above conditions are feasible. This optimal $s^*$ is computed by the following optimization (a bilinear program in $h_\alpha(j)$ and $\Pi_j$, which admits an SDP relaxation; see Appendix~\ref{app:f-compat}):
 \begin{align}\label{eq:f-compat-SDP}
 s^* = \min\; s \;\;\text{s.t.}\;\; &\sum_j h_\alpha(j)\Pi_j = F_\alpha,\; \sum_j \Pi_j = s\1, \notag\\
 &\Pi_j \geq 0,\; |h_\alpha(j)| \leq 1.
@@ -200,12 +200,12 @@ If the linearizations have product form $F_\alpha = \bigotimes_{l=1}^n F_{\alpha
 \begin{align}\label{eq:tensor-factor}
 s^*_{\mathrm{loc}}(\cF) = \prod_{l=1}^n s^*_l,
 \end{align}
-where $s^*_l$ is the single-site robustness from the SDP~\eqref{eq:f-compat-SDP} restricted to site $l$.
+where $s^*_l$ is the single-site robustness from~\eqref{eq:f-compat-SDP} restricted to site $l$.
 \end{theorem}
 
-This reduces the $n$-qubit problem to $n$ independent single-qubit SDPs of dimension $2^k$. The sample complexity~\eqref{eq:copy-complexity} with local measurements becomes $N = \mathcal{O}\!\left((\prod_l s^*_l)^2\varepsilon^{-2}\log(|\cA|/\delta)\right)$.
+This reduces the $n$-qubit problem to $n$ independent single-qubit optimizations of dimension $2^k$. The sample complexity~\eqref{eq:copy-complexity} with local measurements becomes $N = \mathcal{O}\!\left((\prod_l s^*_l)^2\varepsilon^{-2}\log(|\cA|/\delta)\right)$.
 
-\emph{Recovering $3^w$.}---For single-copy ($k=1$) linear Pauli estimation $f_i(\rho) = \tr(P_i\rho)$ with $P_i = \bigotimes_l P_{i_l}$, the linearization is $F_i = P_i$ itself. At each non-identity site, the single-qubit SDP asks for joint measurability of unsharp Paulis $\{\frac{\1 + \eta P}{2}\}_{P\in\{X,Y,Z\}}$, which requires $\eta \leq 1/\sqrt{3}$~\cite{Busch1986,heinosaari2015noise}. This gives $s^*_l = \sqrt{3}$ per non-identity site, yielding $s^*_{\mathrm{loc}} = (\sqrt{3})^w$ and variance $\sim 3^w$ for weight-$w$ Paulis, matching the classical shadow result~\cite{huang2020predicting}.
+\emph{Recovering $3^w$.}---For single-copy ($k=1$) linear Pauli estimation $f_i(\rho) = \tr(P_i\rho)$ with $P_i = \bigotimes_l P_{i_l}$, the linearization is $F_i = P_i$ itself. At each non-identity site, the single-qubit optimization asks for joint measurability of unsharp Paulis $\{\frac{\1 + \eta P}{2}\}_{P\in\{X,Y,Z\}}$, which requires $\eta \leq 1/\sqrt{3}$~\cite{Busch1986,heinosaari2015noise}. This gives $s^*_l = \sqrt{3}$ per non-identity site, yielding $s^*_{\mathrm{loc}} = (\sqrt{3})^w$ and variance $\sim 3^w$ for weight-$w$ Paulis, matching the classical shadow result~\cite{huang2020predicting}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \prlsubsection{When nonlinearity helps.}\label{sec:nonlinear}
@@ -249,7 +249,7 @@ Recovering signed values $\tr(P\rho^k)$ from $|\tr(P\rho^k)|$ requires $\mathcal
 \prlsubsection{Local no-go.}\label{sec:local_nogo}
 For estimating the full nonlinear shadow $\{\tr(P\rho^2)\}_{P\in\cP_n}$, the relevant two-copy operators are $\tilde{O}_P = \tfrac{1}{2}(P\ox\1 + \1\ox P)\cdot\mathrm{SWAP}$, which have eigenvalues $\{+1, 0, -1\}$ on the symmetric subspace---they are \emph{spin-1} (non-binary). By Theorem~\ref{thm:linear-equiv}, the no-advantage result does not apply; estimation may in principle be easier than compatibility. Nevertheless, local strategies remain exponentially costly.
 
-The obstruction is structural: the four-copy operator $A_P = \tfrac{1}{2}(P^{\ox 2}\ox\1^{\ox 2} + \1^{\ox 2}\ox P^{\ox 2})\cdot\pi$ is a \emph{sum} of two product operators, not itself a product. Theorem~\ref{thm:tensor} does not apply, so the per-site factorization $s^*_{\mathrm{loc}} = \prod_l s^*_l$ fails. Explicit computation (Appendix~\ref{app:local_shadow}, Lemma~\ref{lemma:covar_Pauli}) shows that two-copy local 3-design shadows incur variance $\sim (11/3)^n \cdot (5/11)^{\mathrm{wt}(P)}$ for estimating $\tr(P\rho^2)$---exponential in $n$ for any Pauli weight. \color{red}The structural obstruction (non-product form of the lifted operators) suggests that higher local copy numbers cannot circumvent the exponential cost, though a rigorous proof for arbitrary $k$ remains open (see Discussion).\color{black}
+The obstruction is structural: the four-copy operator $A_P = \tfrac{1}{2}(P^{\ox 2}\ox\1^{\ox 2} + \1^{\ox 2}\ox P^{\ox 2})\cdot\pi$ is a \emph{sum} of two product operators, not itself a product. Theorem~\ref{thm:tensor} does not apply, so the per-site factorization $s^*_{\mathrm{loc}} = \prod_l s^*_l$ fails. Explicit computation (Appendix~\ref{app:local_shadow}, Lemma~\ref{lemma:covar_Pauli}) shows that two-copy local 3-design shadows incur second moment $\sim (11/3)^n \cdot (5/11)^{\mathrm{wt}(P)}$ for product states, with operator norm up to $5^n$ for entangled states---exponential in $n$ for any Pauli weight. \color{red}The structural obstruction (non-product form of the lifted operators) suggests that higher local copy numbers cannot circumvent the exponential cost, though a rigorous proof for arbitrary $k$ remains open (see Discussion).\color{black}
 
 This stands in sharp contrast to the nonlocal four-copy strategy of Theorem~\ref{thm:nonlocal}, which achieves $\mathcal{O}(1)$ variance for all $|\tr(P\rho^2)|$. The gap quantifies nonlocality as a measurement resource for multi-copy shadow tomography.
 
@@ -1363,16 +1363,16 @@ Here below we use Lemma~\ref{lemma:LC_shadow_kcopy} to evaluate the covariance o
 %%%%%%%%%%%Lemma%%%%%%%%%%%Lemma%%%%%%%%%%%Lemma%%%%%%%%%%%Lemma
 \begin{lemma}[Variance of two-copy Pauli]\label{lemma:covar_Pauli}
     If we take $O_{\mathbf{r}}= (\sigma_{\mathbf{r}} \otimes \mathbb{I}_n) \cdot \text{SWAP}^{\otimes n}$ for Pauli operator $\sigma_{\mathbf{r}}$ and denote $\text{wt}(\sigma_{\mathbf{r}})$ as the weight of this Pauli operator, then we have $\mathbf{V}(O_{\mathbf{r}}, O_{\mathbf{r}'}) = \bigotimes_{j = 1}^n v(\mathbf{r}_j, \mathbf{r}_j') $ with
-    \begin{align}
-        v(\mathbf{r}_j, \mathbf{r}_j') = 
+    \begin{align}\label{eq:v_full_operator}
+        v(\mathbf{r}_j, \mathbf{r}_j') =
         \left\{\begin{aligned}
-            &\frac{5}{6}\left(\sigma_{\mathbf{r}_j}\otimes \sigma_{\mathbf{r}'_j} +\sigma_{\mathbf{r}'_j}\otimes \sigma_{\mathbf{r}_j} \right)\text{~if~} \mathbf{r}_j, \mathbf{r}_j'  \neq \mathbf{0},
-            \hspace{6em} \frac{11\mathbb{I}_2}{3} \hspace{5em}\text{~if~} \mathbf{r}_j=\mathbf{r}_j'= \mathbf{0}, \\
-            &\left(\frac{1}{2}\mathbb{I} \otimes \sigma_{\mathbf{r}_j}+ \frac{5}{6}\sigma_{\mathbf{r}_j}\otimes\mathbb{I}\right) \text{~if~} \mathbf{r}'_j = \mathbf{0},  \mathbf{r}_j\neq \mathbf{0},
-            \qquad \left(\frac{1}{2}\mathbb{I} \otimes \sigma_{\mathbf{r}'_j} + \frac{5}{6}\sigma_{\mathbf{r}_j'}\otimes\mathbb{I}\right)\text{~if~} \mathbf{r}_j = \mathbf{0},  \mathbf{r}'_j\neq \mathbf{0}.
+            &\frac{5}{6}\left(\sigma_{\mathbf{r}_j}\otimes \sigma_{\mathbf{r}'_j} +\sigma_{\mathbf{r}'_j}\otimes \sigma_{\mathbf{r}_j} \right)&\text{~if~} \mathbf{r}_j, \mathbf{r}_j'  \neq \mathbf{0},\\
+            &\frac{11\mathbb{I}_4 + 4 \Pi_{\mathrm{asym}}}{3} &\text{~if~} \mathbf{r}_j=\mathbf{r}_j'= \mathbf{0}, \\
+            &\left(\frac{1}{2} \Pi_{\mathrm{sym}} + \frac{7}{6} \Pi_{\mathrm{asym}}\right)(\mathbb{I} \otimes \sigma_{\mathbf{r}_j})+ \frac{5}{6}\sigma_{\mathbf{r}_j}\otimes\mathbb{I} &\text{~if~} \mathbf{r}_j' = \mathbf{0},  \mathbf{r}_j\neq \mathbf{0},\\
+            &\left(\frac{1}{2} \Pi_{\mathrm{sym}} + \frac{7}{6} \Pi_{\mathrm{asym}}\right)(\mathbb{I} \otimes \sigma_{\mathbf{r}'_j}) + \frac{5}{6}\sigma_{\mathbf{r}'_j}\otimes\mathbb{I}&\text{~if~} \mathbf{r}_j = \mathbf{0},  \mathbf{r}'_j\neq \mathbf{0}.
         \end{aligned}\right.
     \end{align}
-    Specifically, $\mathbf{V}(O_{\mathbf{r}},O_{\mathbf{r}}) =  \left({11}/{3}\right)^{n}\cdot \left({5}/{11}\right)^{\text{wt}(\sigma_{\mathbf{r}})} \sigma_{\mathbf{r}} \otimes \sigma_{\mathbf{r}}.$
+    In particular, the diagonal element gives $v(\mathbf{r}_j,\mathbf{r}_j) = ({5}/{3})\sigma_{\mathbf{r}_j}^{\otimes 2}$ when $\mathbf{r}_j \neq \mathbf{0}$ and $v(\mathbf{0},\mathbf{0}) = ({11\mathbb{I}_4 + 4 \Pi_{\mathrm{asym}}})/{3}$ at identity sites. Note that the $\Pi_{\mathrm{asym}}$ terms do \emph{not} vanish on $\rho^{\otimes 2}$ for entangled $\rho$: while $\rho^{\otimes 2}$ is globally symmetric under copy exchange, it is not contained in $\bigotimes_j \mathrm{Sym}^2_j$ when $\rho$ has entanglement across qubit sites. For product states $\rho = \bigotimes_l \rho_l$, the per-site state $\rho_l^{\otimes 2} \in \mathrm{Sym}^2(\mathbb{C}^2)$ so $\Pi_{\mathrm{asym}}$ terms vanish and the second moment simplifies to $\mathrm{tr}[\mathbf{V}(O_{\mathbf{r}},O_{\mathbf{r}})\rho^{\otimes 2}] = ({11}/{3})^{n}({5}/{11})^{\mathrm{wt}(\sigma_{\mathbf{r}})}$. For entangled states the second moment can be larger: since $v(\mathbf{0},\mathbf{0})$ has eigenvalues $11/3$ on $\mathrm{Sym}^2$ and $5$ on the antisymmetric subspace, the operator norm is $\|\mathbf{V}(O_\mathbf{0},O_\mathbf{0})\| = 5^n$.
 \end{lemma}
 \begin{proof}
     We consider the observable $O_{\mathbf{r}}= (\sigma_{\mathbf{r}} \otimes \mathbb{I}_n) \cdot \text{SWAP}^{\otimes n}$ with $\mathbf{r} = (\mathbf{r}_1, \cdots, \mathbf{r}_n) \in (\mathbb{F}_2^2)^n$ and rewrite the observable according to the fact $\text{SWAP}^{\otimes n} = 2^{-n}\sum_{\mathbf{p} \in \mathbb{F}_2^{2n}} \sigma_{\mathbf{p}} \otimes \sigma_{\mathbf{p}}$ as:
@@ -1447,33 +1447,21 @@ Here below we use Lemma~\ref{lemma:LC_shadow_kcopy} to evaluate the covariance o
             &\left(\frac{1}{2} \Pi_{\mathrm{sym}} + \frac{7}{6} \Pi_{\mathrm{asym}}\right)(\mathbb{I} \otimes \sigma_{\mathbf{r}'_j}) + \frac{5}{6}\sigma_{\mathbf{r}'}\otimes\mathbb{I}&\text{~if~} \mathbf{r}_j = \mathbf{0},  \mathbf{r}'_j\neq \mathbf{0}.
         \end{aligned}\right.
     \end{align}
-    Because the input states are restrained in the symmetric space $\rho \otimes \rho$, we can safely symmetrize this operator and drop the terms that contained the antisymmetric operator and get the final result
-    \begin{align}
-        v(\mathbf{r}_j, \mathbf{r}_j') = 
-        \left\{\begin{aligned}
-            &\frac{5}{6}\left(\sigma_{\mathbf{r}_j}\otimes \sigma_{\mathbf{r}'_j} +\sigma_{\mathbf{r}'_j}\otimes \sigma_{\mathbf{r}_j} \right)\text{~if~} \mathbf{r}_j, \mathbf{r}_j'  \neq \mathbf{0},
-            \hspace{6em} \frac{11\mathbb{I}_2}{3} \hspace{5em}\text{~if~} \mathbf{r}_j=\mathbf{r}_j'= \mathbf{0}, \\
-            &\left(\frac{1}{2}\mathbb{I} \otimes \sigma_{\mathbf{r}_j}+ \frac{5}{6}\sigma_{\mathbf{r}_j}\otimes\mathbb{I}\right) \text{~if~} \mathbf{r}'_j = \mathbf{0},  \mathbf{r}_j\neq \mathbf{0},
-            \qquad \left(\frac{1}{2}\mathbb{I} \otimes \sigma_{\mathbf{r}'_j} + \frac{5}{6}\sigma_{\mathbf{r}_j'}\otimes\mathbb{I}\right)\text{~if~} \mathbf{r}_j = \mathbf{0},  \mathbf{r}'_j\neq \mathbf{0}.
-        \end{aligned}\right.
-    \end{align}
-    As for the special case with $\mathbf{r} = \mathbf{r}'$, we get the result
-    \begin{align}
-        \mathbf{V}(O_\mathbf{r},O_\mathbf{r}) = \bigotimes_{i=1}^n \left\{ \begin{aligned}\frac{5}{3}\sigma_{\mathbf{r}_i}^{\otimes 2} &\text{~if~}\sigma_{\mathbf{r}_i} \neq \mathbb{I}_2 \\ \frac{11}{3}\sigma_{\mathbf{r}_i}^{\otimes 2} &\text{~if~}\sigma_{\mathbf{r}_i} = \mathbb{I}_2  \end{aligned} \right. = \left(\frac{11}{3}\right)^{n}\left(\frac{5}{11}\right)^{\text{wt}(\sigma_{\mathbf{r}})}\sigma_{\mathbf{r}}^{\otimes 2}.
-    \end{align}  
+    This completes the derivation of the full operator identity~\eqref{eq:v_full_operator}. For the special case $\mathbf{r} = \mathbf{r}'$, the non-identity sites give $v(\mathbf{r}_j,\mathbf{r}_j) = (5/3)\sigma_{\mathbf{r}_j}^{\otimes 2}$ while the identity sites give $v(\mathbf{0},\mathbf{0}) = (11\mathbb{I}_4 + 4\Pi_{\mathrm{asym}})/3$.
+
+    \emph{State dependence of the second moment.} While $\rho^{\otimes 2}$ is globally symmetric under copy exchange, it is \emph{not} contained in $\bigotimes_j \mathrm{Sym}^2_j$ for entangled $\rho$. At each identity site, $v(\mathbf{0},\mathbf{0}) = (13\mathbb{I}_4 - 2\,\mathrm{SWAP})/3$ has eigenvalue $11/3$ on $\mathrm{Sym}^2$ and $5$ on the antisymmetric subspace. For product states $\rho = \bigotimes_l \rho_l$, the per-site state $\rho_l^{\otimes 2} \in \mathrm{Sym}^2(\mathbb{C}^2)$ and the $\Pi_{\mathrm{asym}}$ terms vanish, giving $\mathrm{tr}[\mathbf{V}(O_\mathbf{r},O_\mathbf{r})\rho^{\otimes 2}] = (11/3)^n(5/11)^{\mathrm{wt}(\sigma_\mathbf{r})}$. For entangled states the second moment can be larger; the operator norm bound gives $\|\mathbf{V}(O_\mathbf{0},O_\mathbf{0})\| = 5^n$.
 \end{proof}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-We consider the estimation of the simplest operator $O^{(2)} = \text{SWAP}^{\otimes n} = 2^{-n}(\mathbb{I}\mathbb{I}+XX+YY+ZZ)^{\otimes n}$. 
-Based on Lemma~\ref{lemma:covar_Pauli}, this gives the variance $\text{Var}=(11/3)^n $, which still requires exponentially large sampling numbers.
+We consider the estimation of the simplest operator $O^{(2)} = \text{SWAP}^{\otimes n} = 2^{-n}(\mathbb{I}\mathbb{I}+XX+YY+ZZ)^{\otimes n}$.
+By Lemma~\ref{lemma:covar_Pauli}, the second moment operator for purity estimation is $\mathbf{V}(O_\mathbf{0},O_\mathbf{0}) = \left({(11\mathbb{I}_4 + 4\Pi_{\mathrm{asym}})}/{3}\right)^{\otimes n}$. For product states the second moment is $(11/3)^n$; for entangled states it can be larger (operator norm $5^n$). In all cases the cost is exponential.
 For the single copy local Clifford shadow, the variance is calculated through:
 \begin{align}
     &\hspace{-1.5cm}\mathbf{V}:= \sum_{W,W' \in \mathcal{P}_2^{\otimes n}} \alpha_{W}\alpha_{W'} R(W,W') W W'= 4^{-n}\bigotimes_{i =1}^n \left(\sum_{W_i,W_i' \in \{\mathbb{I}\mathbb{I},XX,YY,ZZ\}} R(W_i,W'_i) W_i W_i'\right).\notag\\
    = 4^{-n} &\left( \mathbb{I}\mathbb{I}+XX+YY+ZZ+ XX+9\mathbb{I}\mathbb{I} + YY + 9\mathbb{I}\mathbb{I} +ZZ+ 9\mathbb{I}\mathbb{I}\right)^{\otimes n}\notag\\
   & \hspace{-1.15cm}= \left(7 \mathbb{I}\mathbb{I} + \frac{1}{2}(XX+YY+ZZ)\right)^{\otimes n}= \left(\frac{13\mathbb{I}\mathbb{I}+2\text{SWAP}}{2}\right)^{\otimes n} = \left(\frac{11\mathbb{I}\mathbb{I}+ 4\Pi_{\mathrm{sym}}}{2}\right)^{\otimes n}. \label{eq:prity_1rep_shadow_variance}
 \end{align}
-This gives the variance scaling of $7.5^n$, which being improved to $3.67^n$ in the 2-replica local shadow.
-We see that using higher replica numbers $k > 2$ under local measurement constraints only yields marginal improvements in the constant factor of the exponential scaling, but does not alter the complexity class. 
+For the single-copy shadow, this gives a worst-case second moment of $7.5^n$ (the operator norm, attained on product states since the symmetric eigenvalue $15/2$ exceeds the antisymmetric eigenvalue $11/2$). The 2-replica local shadow improves the product-state second moment to $(11/3)^n \approx 3.67^n$, but the antisymmetric eigenvalue $5 > 11/3$ means entangled states can have larger variance (operator norm $5^n$). In all cases, the cost remains exponential; using higher replica numbers $k > 2$ under local measurement constraints only yields marginal improvements in the constant factor, but does not alter the complexity class.
 
 
 \subsection{A 4-replica non-local strategy for the oblivious case}\label{app:UB_nonlin_P_shad}
