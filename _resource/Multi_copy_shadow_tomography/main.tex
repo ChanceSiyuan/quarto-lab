@@ -1664,13 +1664,13 @@ This statement is useful to proving the reduction of $\mathrm{tr}(\rho^2)$ probl
     Given \textbf{RH} ensembles $\mathcal{E}_{1 - R\delta}, \mathcal{E}_{L\delta}$ (as in Sec.~\ref{app:LB_nonlin_P_shad}), with $R = (2^{n-1} + 1)/(2^{n-1} - 1 +\delta)$ and $L = (1 - 4^{-n+1} - 2^{-n+1} \delta)^{-1}$, try to design an algorithm that $\forall C \in \mathcal{C}$, discriminates two subspace-\textbf{RH} ensembles below:
     \begin{align}
         &\mathcal{E}_{(1,0),C} := \left\{\sigma_{(1,0),C}:= C \left[\frac{1}{2} \ket{0}\!\bra{0} \otimes \psi + \frac{1}{2} \ket{1}\!\bra{1} \otimes (\mathbb{I}/2^{n-1}) \right] C^{\dagger}\right\}_{\psi \sim \mathrm{Haar}_{n-1}},\\
-        &\mathcal{E}_{(1 - R\delta,U\delta),C} := \left\{ \sigma_{(1 - R\delta,L\delta),C} :=C \left[\frac{1}{2} \ket{0}\!\bra{0} \otimes \rho_{1 - R\delta} + \frac{1}{2} \ket{1}\!\bra{1} \otimes \rho_{L\delta} \right] C^{\dagger}\right\}_{\rho_{\varepsilon} \sim \mathcal{E}_{\varepsilon}}.
+        &\mathcal{E}_{(1 - R\delta,L\delta),C} := \left\{ \sigma_{(1 - R\delta,L\delta),C} :=C \left[\frac{1}{2} \ket{0}\!\bra{0} \otimes \rho_{1 - R\delta} + \frac{1}{2} \ket{1}\!\bra{1} \otimes \rho_{L\delta} \right] C^{\dagger}\right\}_{\rho_{\varepsilon} \sim \mathcal{E}_{\varepsilon}}.
     \end{align}
 \end{problem}
 This construction ensures that the average purity of $\mathcal{E}_{(1,0)}$ and $\mathcal{E}_{(1 - R\delta,L\delta)} $ equals each others, as manifest below:
 \begin{align}
     &\mathbb{E}_{\rho \sim \mathcal{E}_{(1,0),C}} \mathrm{tr}\left(\rho^{2}\right) = 1/4 +  (1/4) \cdot (1/2^{n-1}) =  \frac{1}{4}\left(1+\frac{1}{2^{n-1}}\right), \\
-    &\mathbb{E}_{\rho \sim \mathcal{E}_{(1 - R\delta,U\delta),C}} \mathrm{tr}\left(\rho^{2}\right) = \frac{1}{4}\frac{2^{n-1}(1 - R\delta) + 1}{2^{n-1} + 1 - R\delta} + \frac{1}{4}\frac{2^{n-1} L\delta + 1}{2^{n-1} + L\delta} = \frac{1}{4}(1 - \delta) + \frac{1}{4}(\frac{1}{2^{n-1}} + \delta) = \frac{1}{4}\left(1+\frac{1}{2^{n-1}}\right).
+    &\mathbb{E}_{\rho \sim \mathcal{E}_{(1 - R\delta,L\delta),C}} \mathrm{tr}\left(\rho^{2}\right) = \frac{1}{4}\frac{2^{n-1}(1 - R\delta) + 1}{2^{n-1} + 1 - R\delta} + \frac{1}{4}\frac{2^{n-1} L\delta + 1}{2^{n-1} + L\delta} = \frac{1}{4}(1 - \delta) + \frac{1}{4}(\frac{1}{2^{n-1}} + \delta) = \frac{1}{4}\left(1+\frac{1}{2^{n-1}}\right).
 \end{align}
 
 Given a $T$-round $2$-replica measurement strategy $M_s = \bigotimes_{t = 1}^{T} F_{s_t}^{u_t}$, where $\{F_{s}^{u}\}_{s}$ is a POVM on space $\mathcal{H}(d^2)$.
@@ -1709,25 +1709,25 @@ We now build uniform distribution on all $n$-qubit Clifford gates $\mathcal{D}$ 
 Here in the last line we use the identity $(d-1)^{-1}\delta = (d + 1 - R\delta)^{-1} R\delta$ and  $d(d^2 - 1)^{-1}\delta = L\delta (d+L\delta)^{-1}$.
 Since Clifford gate forms a 2-design, we can directly write the average based on the value of average purity
 \begin{align}
-    &\rho_0 := \mathbb{E}_{\rho \sim \mathcal{E}_{(1,0),C\sim \mathcal{D}}} \rho^{\otimes 2}=\mathbb{E}_{\rho \sim \mathcal{E}_{(1 - R\delta,U\delta),C\sim \mathcal{D}}} \rho^{\otimes 2} = a\cdot \mathbb{I}_{2n}/2^{2n} + b\cdot \mathrm{SWAP}^{\otimes n}/2^{n}, \\
+    &\rho_0 := \mathbb{E}_{\rho \sim \mathcal{E}_{(1,0),C\sim \mathcal{D}}} \rho^{\otimes 2}=\mathbb{E}_{\rho \sim \mathcal{E}_{(1 - R\delta,L\delta),C\sim \mathcal{D}}} \rho^{\otimes 2} = a\cdot \mathbb{I}_{2n}/2^{2n} + b\cdot \mathrm{SWAP}^{\otimes n}/2^{n}, \\
     & a + b = 1, \quad 2^{-n} a + 2^{n} b = \text{Avg. Purity} = 4^{-1}(1 + 2^{-n+1}).
 \end{align}
 Solve the equation for $a$ and $b$, we get the result:
 \begin{align}
     \rho_0 = (1 - \mu)  \frac{\mathbb{I}_n^{\otimes 2}}{2^{2n}} + \mu \frac{\mathbb{I}_n^{\otimes 2} + \mathrm{SWAP}^{\otimes n}}{2^n(2^{n} + 1)}, \text{~where~} \mu = 4^{-1} \frac{2^n -2}{2^n - 1}.
 \end{align}
-This prevents the Lemma~\ref{lemma:hard_necess1} giving an efficient 2-replica strategy that discriminates $\mathcal{E}_{(1,0),C} $ and $\mathcal{E}_{(1 - R\delta,U\delta),C} $.
+This prevents the Lemma~\ref{lemma:hard_necess1} giving an efficient 2-replica strategy that discriminates $\mathcal{E}_{(1,0),C} $ and $\mathcal{E}_{(1 - R\delta,L\delta),C} $.
 However, given a fixed $C \in \mathcal{C}$, the average of $\mathrm{tr}(P \rho^2)$ for $P = C^\dagger Z_1 C$ has a constant gap $\delta/2$:
 \begin{align}
     &\mathbb{E}_{\rho \sim \mathcal{E}_{(1,0),C}} \mathrm{tr}\left(P\rho^{2}\right) = 1/4 -  (1/4) \cdot (1/2^{n-1}) = \frac{1}{4}\left(1- \frac{1}{2^{n-1}}\right) ,\\
-    &\mathbb{E}_{\rho \sim \mathcal{E}_{(1 - R\delta,U\delta),C}} \mathrm{tr}\left(P\rho^{2}\right)  = \frac{1}{4}(1 - \delta) - \frac{1}{4}(\frac{1}{2^{n-1}} + \delta) = \frac{1}{4}\left(1- \frac{1}{2^{n-1}}\right) - \frac{\delta}{2}.
+    &\mathbb{E}_{\rho \sim \mathcal{E}_{(1 - R\delta,L\delta),C}} \mathrm{tr}\left(P\rho^{2}\right)  = \frac{1}{4}(1 - \delta) - \frac{1}{4}(\frac{1}{2^{n-1}} + \delta) = \frac{1}{4}\left(1- \frac{1}{2^{n-1}}\right) - \frac{\delta}{2}.
 \end{align}
-This means that if one can use strategy $\mathcal{A}$ to estimate $\mathrm{tr}(P \rho^2), \forall P \in \{C^\dagger Z_1 C\}_{C \in \mathcal{C}}$ within additive error $\delta/4$, he can use $\mathcal{A}$ to discriminate $\mathcal{E}_{(1,0),C} $ and $\mathcal{E}_{(1 - R\delta,U\delta),C} $, as rigorously proved below:
+This means that if one can use strategy $\mathcal{A}$ to estimate $\mathrm{tr}(P \rho^2), \forall P \in \{C^\dagger Z_1 C\}_{C \in \mathcal{C}}$ within additive error $\delta/4$, he can use $\mathcal{A}$ to discriminate $\mathcal{E}_{(1,0),C} $ and $\mathcal{E}_{(1 - R\delta,L\delta),C} $, as rigorously proved below:
 \begin{lemma}\label{lemma:hard_necess1}
-    An algorithm that estimates $\mathrm{tr}(P \rho^2), \forall P \in \{C Z_1 C^\dagger\}_{C \in \mathcal{C}}$ can be used to distinguish $\mathcal{E}_{(1,0),C} $ from $\mathcal{E}_{(1 - R\delta,U\delta),C} $ for arbitrary distribution on $\mathcal{C}$.
+    An algorithm that estimates $\mathrm{tr}(P \rho^2), \forall P \in \{C Z_1 C^\dagger\}_{C \in \mathcal{C}}$ can be used to distinguish $\mathcal{E}_{(1,0),C} $ from $\mathcal{E}_{(1 - R\delta,L\delta),C} $ for arbitrary distribution on $\mathcal{C}$.
 \end{lemma}
 \begin{proof}
-    \textcolor{red}{Suppose algorithm $\mathcal{A}$ estimates $\mathrm{tr}(P\rho^2)$ within additive error $\delta/4$ with success probability $\geq 2/3$, for all $P \in \{CZ_1C^\dagger\}_{C \in \mathcal{C}}$. Given $C$ and copies of $\sigma$ drawn from either $\mathcal{E}_{(1,0),C}$ or $\mathcal{E}_{(1-R\delta,U\delta),C}$, run $\mathcal{A}$ with $P = CZ_1C^\dagger$ to obtain estimate $\hat{v}$ of $\mathrm{tr}(P\sigma^2)$. Note that $\mathrm{tr}(P\sigma^2)$ is constant over $\mathcal{E}_{(1,0),C}$ (since $\psi$ is pure and $Z_1$ is block-diagonal in the $\ket{0}/\ket{1}$ basis), equaling $\frac{1}{4}(1 - 2^{1-n})$. For $\sigma \in \mathcal{E}_{(1-R\delta,U\delta),C}$, by Lemma~\ref{lemma:purity_of_RH} the purity concentrates, so $\mathrm{tr}(P\sigma^2)$ concentrates around $\frac{1}{4}(1 - 2^{1-n}) - \delta/2$ with variance $O(D^{-2})$. Thresholding $\hat{v}$ at $\frac{1}{4}(1 - 2^{1-n}) - \delta/4$ thus discriminates the two ensembles with success probability $\geq 2/3 - o(1)$, uniformly over $C$.}
+    \textcolor{red}{Suppose algorithm $\mathcal{A}$ estimates $\mathrm{tr}(P\rho^2)$ within additive error $\delta/4$ with success probability $\geq 2/3$, for all $P \in \{CZ_1C^\dagger\}_{C \in \mathcal{C}}$. Given $C$ and copies of $\sigma$ drawn from either $\mathcal{E}_{(1,0),C}$ or $\mathcal{E}_{(1-R\delta,L\delta),C}$, run $\mathcal{A}$ with $P = CZ_1C^\dagger$ to obtain estimate $\hat{v}$ of $\mathrm{tr}(P\sigma^2)$. Note that $\mathrm{tr}(P\sigma^2)$ is constant over $\mathcal{E}_{(1,0),C}$ (since $\psi$ is pure and $Z_1$ is block-diagonal in the $\ket{0}/\ket{1}$ basis), equaling $\frac{1}{4}(1 - 2^{1-n})$. For $\sigma \in \mathcal{E}_{(1-R\delta,L\delta),C}$, by Lemma~\ref{lemma:purity_of_RH} the purity concentrates, so $\mathrm{tr}(P\sigma^2)$ concentrates around $\frac{1}{4}(1 - 2^{1-n}) - \delta/2$ with variance $O(D^{-2})$. Thresholding $\hat{v}$ at $\frac{1}{4}(1 - 2^{1-n}) - \delta/4$ thus discriminates the two ensembles with success probability $\geq 2/3 - o(1)$, uniformly over $C$.}
 \end{proof}
 Now we prove that two-replica strategy that discriminate $\sigma_{(1,0),C}^{\otimes 2T}$ from $\sigma_{(1 - R\delta,L\delta),C}^{\otimes 2T} $ require $\Omega(2^{n})$ rounds. We first calculate the $2T$-fold Clifford average of their difference. Since $X_1^{\otimes 2T} $ is a valid  $2T$-fold Clifford, $\Phi_{\mathrm{Cl},2T}[\Delta_{2T}]$ is invariant under the conjugates of $X_1^{\otimes 2T} $. 
 % \begin{align}
@@ -1798,7 +1798,11 @@ This \textbf{TVD} is bounded by the leaves likelihood for $M_s = \otimes_{t =1}^
 This further reduced the problem to the discrimination between $\mathbb{I}(D)^{\otimes 2}/D^2$ and $\sum_{\rho \in S_{2}} \lambda'_{\rho} \mathbb{P}_{\rho}^{D} $
 
 \begin{lemma}[Martingale distinguishing lower bound]\label{theo:mart_distinguish_lb}
-    \textcolor{red}{To distinguish state $\rho_0$ from a set of states $\mathcal{S}$ with success rate $\geq 1/2 + \varepsilon$, using restrained POVMs $\mathcal{M}$ and a $T$-round adaptive strategy, $T$ must satisfy $T \geq c \cdot \delta_{\mathcal{M},\rho_0,\mathcal{S}}^{-1}$, where the chi-squared divergence is $\delta_{\mathcal{M},\rho_0,\mathcal{S}} := \max_{\{F_s\} \in \mathcal{M}} \mathbb{E}_{\sigma \sim \mathcal{S}} \sum_s \frac{[\mathrm{tr}(\sigma F_s) - \mathrm{tr}(\rho_0 F_s)]^2}{\mathrm{tr}(\rho_0 F_s)}$ and $c$ is an absolute constant.  [TODO: add precise statement with conditions on $\varepsilon$, cite Le Cam / chi-squared method reference.]}
+    \textcolor{red}{Let $\varepsilon > 0$ be a constant. To distinguish state $\rho_0$ from a set of states $\mathcal{S}$ with success probability $\geq 1/2 + \varepsilon$, using any $T$-round adaptive strategy with POVMs drawn from a restricted class $\mathcal{M}$, the number of rounds must satisfy $T \geq c(\varepsilon) \cdot \delta_{\mathcal{M},\rho_0,\mathcal{S}}^{-1}$, where $c(\varepsilon) > 0$ depends only on $\varepsilon$, and the single-round chi-squared divergence is
+    \begin{align}
+        \delta_{\mathcal{M},\rho_0,\mathcal{S}} := \max_{\{F_s\} \in \mathcal{M}} \mathbb{E}_{\sigma \sim \mathcal{S}} \sum_s \frac{[\mathrm{tr}(\sigma F_s) - \mathrm{tr}(\rho_0 F_s)]^2}{\mathrm{tr}(\rho_0 F_s)}.
+    \end{align}
+    This follows from a martingale analysis of the likelihood ratio process; see~\cite{chen2021exponential} for the detailed proof in the quantum setting.}
 \end{lemma}
 
 Based on Lemma~\ref{theo:mart_distinguish_lb}, we calculate its chi-square divergence first:
@@ -1822,7 +1826,7 @@ In the case of $T$-round of $2$-replica strategy, we analysis the $2T$-fold aver
     \mathbb{E}_{\rho \sim \mathcal{E}_1}\rho^{\otimes 2T} &= \frac{1}{2^{2T}} \sum_{\mathbf{a} \in \mathbb{F}_2^{2T}}\ket{\mathbf{a}}\!\bra{\mathbf{a}} \otimes  \frac{S^{\mathbf{a}}}{d^{\uparrow \mathbf{a}}} \otimes \frac{\mathbb{I}^{\bar{\mathbf{a}}}}{d^{|\bar {\mathbf{a}}|}},\\
     \mathbb{E}_{\rho \sim \mathcal{E}_2}\rho^{\otimes 2T} &= \frac{1}{2^{2T}} \ket{\mathbf{a}}\!\bra{\mathbf{a}} \otimes \sum_{\mathbf{a}} \frac{S^{\mathbf{a}}}{d^{\uparrow \mathbf{a}}}
 \end{align}
-In the case Clifford gate selected from uniform distribution, we conclude that the average \textcolor{red}{[Section to be completed]}
+In the case Clifford gate selected from uniform distribution, we conclude that the average \textcolor{red}{[TODO: Compute the $2T$-fold Clifford average $\Phi_{\mathrm{Cl},2T}[\Delta_{2T}]$ for the MH-ensemble. Show that for $\mathrm{Cl}$ drawn uniformly from $\mathcal{C}$, the single-round chi-squared divergence $\delta_{\mathcal{M},\rho_0,\mathcal{S}} = O(2^{-n})$ under 2-replica local measurements, so Lemma~\ref{theo:mart_distinguish_lb} gives $T = \Omega(2^n)$.]}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
