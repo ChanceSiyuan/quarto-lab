@@ -180,7 +180,7 @@ for all $\rho$ and all $\alpha \in \cA$.
 
 Any degree-$d$ polynomial $f_\alpha$ admits a unique \emph{linearization}: a Hermitian operator $F_\alpha$ on $\cH^{\ox k}$ ($k \geq d$) such that $f_\alpha(\vec{p}(\rho)) = \tr[F_\alpha \rho^{\ox k}]$ for all $\rho$. Condition~\eqref{eq:f-compat} becomes $\sum_j h_\alpha(j)\Pi_j = F_\alpha$.
 
-The \emph{f-compatibility robustness} $s^*(\cF)$ is the minimum super-normalization $s \geq 1$ satisfying $\sum_j \Pi_j = s\cdot\1^{\ox k}$ such that the above conditions are feasible. This optimal $s^*$ is computed by the following optimization (a bilinear program in $h_\alpha(j)$ and $\Pi_j$, which admits an SDP relaxation; see Appendix~\ref{app:f-compat}):
+The \emph{f-compatibility robustness} $s^*(\cF)$ is the minimum super-normalization $s \geq 1$ satisfying $\sum_j \Pi_j = s\cdot\1^{\ox k}$ such that the above conditions are feasible. This optimal $s^*$ is computed by the following optimization (a bilinear program in $h_\alpha(j)$ and $\Pi_j$, which admits an SDP relaxation that provides a lower bound $s^*_{\mathrm{SDP}} \leq s^*$; the relaxation is exact for rank-1 POVMs but can have a nonzero gap otherwise; see Appendix~\ref{app:f-compat}):
 \begin{align}\label{eq:f-compat-prog}
 s^* = \min\; s \;\;\text{s.t.}\;\; &\sum_j h_\alpha(j)\Pi_j = F_\alpha,\; \sum_j \Pi_j = s\1, \notag\\
 &\Pi_j \geq 0,\; |h_\alpha(j)| \leq 1.
@@ -196,7 +196,7 @@ copies of $\rho$. The optimal copy number minimizes $k\cdot [s^*(k)]^2$ over $k$
 For $n$-qubit systems, a \emph{local} $k$-replica strategy uses product POVMs $\Pi_{\vec{j}} = \bigotimes_{l=1}^n \Pi_{j_l}^{(l)}$ on $(\mathbb{C}^2)^{\ox k}$ per site, with factored estimators $h_\alpha(\vec{j}) = \prod_l h_{\alpha_l}^{(l)}(j_l)$.
 
 \begin{theorem}[Tensor product factorization]\label{thm:tensor}
-If the linearizations have product form $F_\alpha = \bigotimes_{l=1}^n F_{\alpha_l}^{(l)}$, then the local f-compatibility robustness factorizes:
+Suppose the multi-index $\alpha = (\alpha_1,\ldots,\alpha_n)$ ranges over a product set $\cA_1\times\cdots\times\cA_n$, and the linearizations have product form $F_\alpha = \bigotimes_{l=1}^n F_{\alpha_l}^{(l)}$ with each $F_{\alpha_l}^{(l)} \neq 0$. Then the local f-compatibility robustness factorizes:
 \begin{align}\label{eq:tensor-factor}
 s^*_{\mathrm{loc}}(\cF) = \prod_{l=1}^n s^*_l,
 \end{align}
@@ -353,7 +353,7 @@ $$
 E^{\eta_{P}}_{a|x = P} = \eta_P \frac{\mathbb{I} \pm P}{2} + (1 - \eta_P) \frac{\mathbb{I}}{2} =  \frac{\mathbb{I} \pm P\eta_P}{2}, P \in \{X, Y, Z\}
 $$
 The mixing of $\mathbb{I}$ can be interpreted as $\eta_P$ fractional random guessing or a noise on Pauli measurement $P$.
-As shown in~\cite{busch1986unsharp}, the unsharp Pauli measurements are jointly measurable if and only if $(\eta_x)^2 + (\eta_y)^2 +(\eta_z)^2 \leq 1$.
+As shown in~\cite{Busch1986}, the unsharp Pauli measurements are jointly measurable if and only if $(\eta_x)^2 + (\eta_y)^2 +(\eta_z)^2 \leq 1$.
 
 \begin{theorem}[Unsharp Pauli Measurements Are Jointly Measurable]
 Define the noisy unsharp versions of Pauli measurements as $E^{\eta_x}_{a|x = X} = (1/2)\cdot (\mathbb{I} + a \eta_x X)$, $E^{\eta_y}_{a|x = Y} = (1/2)\cdot (\mathbb{I} + a \eta_y Y )$  and $E^{\eta_z}_{a|x = Z} = (1/2)\cdot (\mathbb{I}+a\eta_z Z)$, with outcomes $a\in \{+,-\}$  and $0 \leq \eta_x, \eta_y, \eta_z \leq 1$.
@@ -417,11 +417,11 @@ Given $\{P,Q\}$ specified and $\mathcal{E} = \mathcal{E}_P = \{\rho_0,\rho_1\} \
 
 In \cite{carmeli2016quantum}, the authors define the multicopy compatibility as follows:
 Given $K$ POVMs $\{E_{a|x}\}_{x = 1}^K, a \in \Omega_x$ on outcome sets $\{\Omega_1,\ldots,\Omega_K\}$, we ask the following: given $k$ copies of a quantum state $\rho^{\otimes k}$, can we design a single POVM $G_{\lambda}$ with outcomes $(x_1,\ldots,x_K) \in \Omega_1\times\cdots\times\Omega_K$ on $\rho^{\otimes k}$ such that, for each $i$, the marginal statistics of $G$ on $\Omega_i$ reproduce the measurement statistics of $A_i$ on $\rho$?
-In the case $k \geq K$, this is always achievable: implementing $A_1\otimes \cdots \otimes A_K \otimes \mathbb{I}^{\otimes (N-K)}$ on $\rho^{\otimes N}$ measures each $A_i$ on a separate copy, and the marginals correctly reproduce the individual statistics.
+In the case $k \geq K$, this is always achievable: implementing $A_1\otimes \cdots \otimes A_K \otimes \mathbb{I}^{\otimes (k-K)}$ on $\rho^{\otimes k}$ measures each $A_i$ on a separate copy, and the marginals correctly reproduce the individual statistics.
 In the case $k < K$, the problem becomes non-trivial.
 
 \begin{definition}[Multicopy Compatibility]\label{def:multicopy-compatibility}
-Given $k$ POVMs $\{E_{a|x}\}_{x = 1}^K$ on outcome sets $\{\Omega_i\}_{i=1}^K$, respectively.
+Given $K$ POVMs $\{E_{a|x}\}_{x = 1}^K$ on outcome sets $\{\Omega_i\}_{i=1}^K$, respectively.
 They are $k$-replica compatible if there exists an POVMs $G_{\lambda}$ with outcomes $\lambda = (x_1,\ldots,x_K) \in \Omega_1\times\cdots\times\Omega_K$ on the product state $\rho^{\otimes k}$, such that
 \begin{align}
 \sum_{\lambda/x_i} \operatorname{tr}\!\left[\rho^{\otimes k}\, G_\lambda \right] = \operatorname{tr}\!\left[\rho\, E_{a|x_i}\right],\forall a \in \Omega_i.
@@ -472,7 +472,7 @@ Here summation is over all possible frequency vectors $(N_{i,j})$.
 The right-hand side is manifestly a polynomial in $\{p_{i,j}\}$ of degree at most $n_i$ in the variables of distribution $i$. 
 Therefore, for $\mathbb{E}[\hat{F}] = F$ to hold for all valid probability vectors, $F$ must itself be such a polynomial.
 
-Conversely, for a monomial $m_{\mathbf{x}} = \prod_{i,j} p_{i,j}^{x_{i,j}}$ with $\sum_j x_{i,j} = n_i$, to build an unbiased estimator, we first build a product of i.d.d. ditributions of $n_i$ numbers of random variables distributed according to $\{p_{i,j}\}_{j \in \Omega_i}$.
+Conversely, for a monomial $m_{\mathbf{x}} = \prod_{i,j} p_{i,j}^{x_{i,j}}$ with $\sum_j x_{i,j} = n_i$, to build an unbiased estimator, we first build a product of i.i.d.\ distributions of $n_i$ random variables distributed according to $\{p_{i,j}\}_{j \in \Omega_i}$.
 This forms a distribution on space 
 $$
 \{s^{(r)}_{j}\}:= (s^{(1)}_{1}, \ldots, s^{(1)}_{n_{1}}) \times  \cdots \times (s^{(K)}_{1}, \ldots, s^{(K)}_{n_{K}}) \in \Omega_1^{\times n_1} \times \cdots \times \Omega_K^{\times n_K}.
@@ -570,14 +570,14 @@ Taking the difference $a=+1$ minus $a=-1$:
 \begin{align}
     \mathbb{I}^{\otimes(k-1)}\odot  O_i = \sum_\lambda \bigl[p(+1|i,\lambda) - p(-1|i,\lambda)\bigr]\, G_\lambda =: \sum_\lambda h_i(\lambda)\, G_\lambda.
 \end{align}
-Use the fact that $\mathrm{tr}\left[\left(\mathbb{I}^{\otimes(k-1)}\odot O_i\right) \rho^{\otimes k} \right]= \mathrm{tr}(O \rho)$ and $p(+1|i,\lambda) + p(-1|i,\lambda) = 1$ both are non-negative, $|h_i(\lambda)| \leq 1$.
+Use the fact that $\mathrm{tr}\left[\left(\mathbb{I}^{\otimes(k-1)}\odot O_i\right) \rho^{\otimes k} \right]= \mathrm{tr}(O_i \rho)$ and $p(+1|i,\lambda) + p(-1|i,\lambda) = 1$ both are non-negative, $|h_i(\lambda)| \leq 1$.
  Therefore $\mathrm{tr}[O_i\rho] = \sum_\lambda h_i(\lambda)\,\mathrm{tr}[G_\lambda\rho]$ for all $\rho$, which is exactly f-compatibility with bounded estimators.
 
 Inversely, suppose there exists a POVM $\{\Pi_j\}_j$ and estimators $\{h_i(j)\}$ with $|h_i(j)| \leq 1$ such that
 \begin{align}
      \mathrm{tr}\left[ \sum_j h_i(j)\,\Pi_j \rho^{\otimes k}\right] = \mathrm{tr}\left[ O_i \rho \right] = \mathrm{tr}\left[ \mathbb{I}^{\otimes(k-1)}\odot  O_i \rho^{\otimes k} \right] .
 \end{align}
-Since this is satisfied for general $\rho$, we conclude that the symmetric version of $\mathrm{sym}\left[\Pi_j\right] := (k!)^{-1}\sum_{\pi \in S_k} S_{k}\Pi_i S_{k}^\dagger$ such that $\sum_j h_i(j)\,\mathrm{sym}\left[\Pi_j\right] =\mathbb{I}^{\otimes(k-1)}\odot O_i$ for all $i$. 
+Since this is satisfied for general $\rho$, we conclude that the symmetric version $\mathrm{sym}\left[\Pi_j\right] := (k!)^{-1}\sum_{\pi \in S_k} P_{\pi}\Pi_j P_{\pi}^\dagger$ satisfies $\sum_j h_i(j)\,\mathrm{sym}\left[\Pi_j\right] =\mathbb{I}^{\otimes(k-1)}\odot O_i$ for all $i$.
 Define conditional probabilities:
 $$
 p(\pm 1|i,j) := \frac{1 \pm h_i(j)}{2}.
@@ -1203,7 +1203,7 @@ The rest $(n-1)$ qubits are measured on the localized eigenbasis of $\mathrm{SWA
 In this section, we proposed a non-randomized adaptive strategy that target to estimate $\mathrm{tr}(P \rho^2)$ given a known Pauli operator $P$.
 As indicated before, it is sufficient to consider the full weight $n$-qubit Pauli $\sigma_{\mathbf{r}_i}$ such that $\sigma_{\mathbf{r}_i} \neq \mathbb{I},\forall i= 1,\cdots, n$.
 Then we noted that full weight Pauli operators can be locally transformed into Pauli $Z$ strings $Z^{\otimes n}$ using local Clifford gate since $HXH = Z$ and $HS^{\dagger}YSH = Z$. 
-In this case, this observable $O_{\mathbf{r}}$ is a tensor product of local non-Hermitian operators $O_{\mathbf{r}} = [(Z \otimes \mathbb{I}) \cdot \mathrm{SWAP}]^{\otimes n}:= A^{\otimes n}$. The local operator $A$, although non-Hermitian, is a normal matrix that satisfied $[A,A^\dagger] = 0$, thus can still be diagonalized under unitary transformation. Actually, it satisfied the decomposition
+In this case, this observable $O_{\mathbf{r}}$ is a tensor product of local non-Hermitian operators $O_{\mathbf{r}} = [(Z \otimes \mathbb{I}) \cdot \mathrm{SWAP}]^{\otimes n}:= A^{\otimes n}$. The local operator $A$, although non-Hermitian, is a normal matrix that satisfies $[A,A^\dagger] = 0$, thus can still be diagonalized under unitary transformation. Actually, it satisfies the decomposition
 \begin{align}
     A &= \ket{00}\!\bra{00} - \ket{11}\!\bra{11} + i\ket{\Phi^+}\!\bra{\Phi^+} - i \ket{\Phi^-}\!\bra{\Phi^-}, \text{~with~} \ket{\Phi^+} = \frac{\ket{01} + i \ket{10}}{\sqrt{2}}, \ket{\Phi^-} = \frac{\ket{01} - i \ket{10}}{\sqrt{2}}. 
 \end{align}
@@ -1269,7 +1269,7 @@ The explicit form of channel $\mathcal{M}$ rely on the ensembles $\mathcal{U}_i$
     where $d^{\uparrow t} = d(d+1)\cdots(d+t-1)$ is the rising factorial and $\mathbb{P}_{\pi}^{(d)}$ denotes the permutation operator on $(\mathbb{C}^d)^{\otimes t}$.
 \end{lemma}
 In this section we consider the case that $(\mathcal{U}_1,\cdots,\mathcal{U}_n)$ being $n$ independent unitary 3-design.
-This i.i.d. unitary 3-design setting includes the Clifford randomized measurement and the randomized Pauli basis measurement proposed in~\cite{huang2020predicting}.
+This i.i.d. unitary 3-design setting includes the Clifford randomized measurement~\cite{zhu2016clifford} and the randomized Pauli basis measurement proposed in~\cite{huang2020predicting}.
 The result of $\mathcal{M}$ is firstly summarized in Lemma~\ref{lemma:onsite_2design}.
 %%%%%%%%%%%Lemma%%%%%%%%%%%Lemma%%%%%%%%%%%Lemma%%%%%%%%%%%Lemma
 \begin{lemma}[On site 3-design unitary ensemble]\label{lemma:onsite_2design}
@@ -1319,7 +1319,7 @@ Here below, we consider the qubit case $d = 2$ only.
 \end{lemma}
 \begin{proof}
 By Lemma~\ref{lemma:onsite_2design}, we conclude that its inverse is $\mathcal{D}_{1/(2^k + 1)}^{-1}(\cdot) = (2^k + 1)(\cdot) - \text{tr}(\cdot) \mathbb{I}_k $ constitute an unbiased estimator of $\rho^{\otimes k}$ through the transformation $\hat{\rho}^{\otimes k} =\mathcal{M}^{-1}(U^\dagger \ket{\mathbf r}\!\bra{\mathbf r} U)=\bigotimes_{i =1}^n\left((2^k + 1)U_i^{\dagger} \ket{\mathbf{r}_{i}}\bra{\mathbf{r}_{i}} U_i - \mathbb{I}_k\right).$
-The second moment is given by $  \langle (\hat{o}^{(2)})^2 \rangle_{\rho} =\mathbb{E}_{U \sim \mathbf{D}_3(2^k)^{\otimes n}}\sum_{\mathbf r}\bra{\mathbf r}U \rho^{\otimes k} U^\dagger \ket{\mathbf{r}} \bra{\mathbf r}U\mathcal{M}^{-1}(O^{(k)}) U^\dagger\ket{\mathbf r}^2$.
+The second moment is given by $  \langle (\hat{o}^{(k)})^2 \rangle_{\rho} =\mathbb{E}_{U \sim \mathbf{D}_3(2^k)^{\otimes n}}\sum_{\mathbf r}\bra{\mathbf r}U \rho^{\otimes k} U^\dagger \ket{\mathbf{r}} \bra{\mathbf r}U\mathcal{M}^{-1}(O^{(k)}) U^\dagger\ket{\mathbf r}^2$.
     Similar to the proof in Lemma~\ref{lemma:LC_shadow_kcopy}, we decomposed the operator $O^{(k)}$ on the Pauli product basis $W_i \in \{I,X,Y,Z\}^{\otimes k}$ that supports on those k qubits located at site $i$. By denoting $W = W_1\cdots W_n$, we have $O^{(k)} = \sum_{W} \alpha_{W} W$. According to Lemma~\ref{lemma:onsite_2design}, the inverse channel $\mathcal{M}^{-1}$ acts locally as $\mathcal{M}_i^{-1}(W_i) = g(W_i) W_i$, where the scaling factor $g(W_i)$ is determined by $g(W_i) = \begin{cases} (2^k+1) & \text{if~} W_i \neq \mathbb{I}_k \\ 1 &\text{if~} W_i = \mathbb{I}_k \end{cases}.$
     Use this decomposition and again supposed $\rho^{\otimes k} = \sum_{s} \beta_s \bigotimes_{i=1}^n \rho_i^{(s)}$, where $ \rho_i^{(s)} \in \mathcal{D}(\mathcal{H}_k)$, the result involves averaging over the k-qubit 3-design $U_i \sim \mathbf{D}_3(2^k)$ as:
     \begin{align}
@@ -1330,7 +1330,7 @@ The second moment is given by $  \langle (\hat{o}^{(2)})^2 \rangle_{\rho} =\math
     
     Here we use the fact that the term $\ket{E} :=U_i\ket{\mathbf{r}_i}$ is average over the 3-design states, yielding terms based on the formula $\mathbb{E} [E^{\otimes 3}] ={d^{-1}(d+1)^{-1}(d+2)^{-1}} \sum_{\pi \in S_3} \mathbb{P}_{\pi}^{(d)}$ according to Lemma~\ref{lemma:state_trajectory}. With $d=2^k$, the prefactor per site is $p = 1/(2^k \cdot (2^k+1) \cdot (2^k+2))$.  We evaluate the expression by considering terms for each site $i$, analogous to the single-copy proof of Lemma~\ref{lemma:LC_shadow_kcopy}. Depending on three cases, we calculate:
     \begin{align*}
-        \langle (\hat{o}^{(2)})^2 \rangle_{\rho} &= 
+        \langle (\hat{o}^{(k)})^2 \rangle_{\rho} &=
         \sum_{W,W'}\alpha_{W}\alpha_{W'}\sum_{s}\beta_s\prod_{i = 1}^n 2^k p \cdot \begin{cases}
          1\cdot 1\cdot [2^{2k}+3\cdot 2^k+2]\text{tr}{\rho}^{(s)}_i  &\text{if~} W_i=W_i' = \mathbb I_k,\\
          1 \cdot (2^k+1) \cdot[2^k + 2]\cdot \text{tr}({\rho}^{(s)}_i W'_i)&\text{if~} W_i = \mathbb I_k \neq W'_i,\\
@@ -1612,8 +1612,7 @@ We then implement the computational basis measurement $\ket{\mathbf{s}^{E}}$ on 
     &=\left(\prod_{i = i_1}^{i_{|I|-1}}\mathrm{CNOT}_{i,i+1}\right)^{\dagger} H_{i_1} \left(\prod_{i = i_1}^{i_{|I|-1}}\mathrm{CNOT}_{i,i+1}\right) \begin{cases}\ket{\bar{\mathbf{a}}^{I}} &\text{if~}s = -1,\\\ket{{\mathbf{a}}^{I}} &\text{if~}s = 1.\end{cases}
 \end{align}
 Here we use the fact that $\mathbf{a}< \mathbf{b}$, thus $a_{i_1} = 0$ is satisfied.
-Note that the last $\text{CNOT}$ gates on computational basis can be simulated by classical post-processing. This 
-This then gives the $\mathbf{a}$ vector through $\mathbf{a}^{E} = {\mathbf{s}^{E}}$ and $s = +1, \mathbf{a}^{I} = {s}^{I}$ if $a_{i_1} = 0$, $s = -1, \mathbf{a}^{I} = \bar{s}^{I}$ if $a_{i_1} = 1$.
+Note that the last $\text{CNOT}$ gates on computational basis can be simulated by classical post-processing. This then gives the $\mathbf{a}$ vector through $\mathbf{a}^{E} = {\mathbf{s}^{E}}$ and $s = +1, \mathbf{a}^{I} = {s}^{I}$ if $a_{i_1} = 0$, $s = -1, \mathbf{a}^{I} = \bar{s}^{I}$ if $a_{i_1} = 1$.
 \begin{figure}[htbp!]
     \centering
     \includegraphics[width=0.5\linewidth]{Figures/4rep_strategy.pdf}
