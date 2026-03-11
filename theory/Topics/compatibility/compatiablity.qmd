@@ -229,7 +229,7 @@ After proving that $E^{\eta_x}_{a|X}, E^{\eta_y}_{a|Y}, E^{\eta_z}_{a|Z}$ are jo
 $$
 E^{\eta_x}_{+|X} - E^{\eta_x}_{-|X} = \eta_x X,\quad E^{\eta_y}_{+|Y} - E^{\eta_y}_{-|Y} = \eta_y Y,\quad E^{\eta_z}_{+|Z} - E^{\eta_z}_{-|Z} = \eta_z Z.
 $$
-This means that $\mathrm{tr}(\rho X) = \eta_x^{-1}\sum_{i=1}^N (-1)^{x_i}$ with second moment $\eta_x^{-2}$ and so on so forth for $y,z$ tags.
+Since $\mathbb{E}[x_i] = \mathrm{tr}[\rho(E^{\eta_x}_{+|X} - E^{\eta_x}_{-|X})] = \eta_x\,\mathrm{tr}(\rho X)$ and each outcome $x_i \in \{+1,-1\}$, the unbiased estimator is the sample mean $\hat{t}_x = \frac{1}{N\eta_x}\sum_{i=1}^N x_i$. The per-sample second moment is $\mathbb{E}[(x_i/\eta_x)^2] = \eta_x^{-2}$ (since $x_i^2 = 1$ for $x_i\in\{+1,-1\}$), and similarly for $y,z$.
 
 We comparing this second moment with that of classical shadow in estimating $\{X,Y,Z\}$ on single qubit. The average channel is satisfied $\Lambda^{-1,\dagger}(X) = {p_x}^{-1} X$ and estimator $\mathrm{tr}(\Lambda^{-1,\dagger}(X) U^\dagger\ket{b}\!\bra{b}U) = {p_x}^{-1} \delta_{U,H}$. The second moment is $p_x \cdot p_x^{-2} = p_x^{-1}$.
 
