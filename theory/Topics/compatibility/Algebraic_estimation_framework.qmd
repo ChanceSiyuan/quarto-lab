@@ -95,7 +95,7 @@ The following three levels of commutative structure are ordered by inclusion:
 
 **Level 1 (Group center, $k=1$, degree 0):** The center $Z(G) = \{g \in G : [g,h]=0\;\forall h\in G\}$ gives observables measurable alongside all others. Map: $g_\alpha(\vec{t}) = c$ (constants only).
 
-**Level 2 (Maximal abelian subalgebra, $k=1$, degree 1):** A MASA of $\mathbb{C}[G]$ gives a maximal set of simultaneously measurable linear combinations. Map: $g_\alpha(\vec{t}) = \vec{c}_\alpha \cdot \vec{t}$ (linear, no information loss, but limited to $\leq d$ observables where $d = \dim\mathcal{H}$).
+**Level 2 (Maximal abelian subalgebra, $k=1$, degree 1):** A MASA of $\mathbb{C}[G]$ gives a maximal set of simultaneously measurable linear combinations. Map: $g_\alpha(\vec{t}) = \vec{c}_\alpha \cdot \vec{t}$ (linear, limited to $|\mathcal{S}| \leq d$ observables where $d = \dim\mathcal{H}$). Information loss: none when $n \leq d$, since the linear system $\{\vec{c}_\alpha \cdot \vec{t} = v_\alpha\}_\alpha$ uniquely determines $\vec{t}$ in $\mathcal{B}$ iff $\mathrm{rank}([\vec{c}_\alpha]) = n$, which requires $|\mathcal{S}| \geq n$; **inherent rank deficit when $n > d$**, since $\Phi: \mathbb{R}^n \to \mathbb{R}^{|\mathcal{S}|}$ has $\ker\Phi \neq 0$ (dimension $\geq n - d$) and $n - d$ parameter directions are completely unobservable — this is why a single-copy MASA cannot simultaneously estimate all $n = 4^n_{\rm qubits}$ Pauli expectation values.
 
 **Level 3 ($k$-copy tensor MASA, degree $\leq k$):** A MASA of $\mathrm{Alg}_k(G)$ gives polynomial functions of degree $\leq k$. Map: $g_\alpha(\vec{t}) = \sum c_{i_1\cdots i_k} t_{i_1}\cdots t_{i_k}$ (polynomial, potentially covers all observables but with information loss from fiber structure).
 :::
@@ -103,7 +103,7 @@ The following three levels of commutative structure are ordered by inclusion:
 | Level | Commutative in | $|\mathcal{S}|_{\max}$ | $\deg(g)$ | Info loss |
 |:---:|:---:|:---:|:---:|:---:|
 | 1 | $G$ | $|Z(G)|$ | 0 | N/A |
-| 2 | $\mathbb{C}[G]$ | $d$ | 1 | None |
+| 2 | $\mathbb{C}[G]$ | $d$ | 1 | None if $n \leq d$; rank deficit $n{-}d$ if $n > d$ |
 | 3 | $\mathrm{Alg}_k(G)$ | $d^k$ | $\leq k$ | Fiber size |
 
 **Key example ($\mathcal{P}_n$ Pauli group):**
