@@ -233,7 +233,7 @@ Given two Pauli observables $\mathcal{O} = \{P,Q\}$ and real symmetric 2 × 2 ma
 $$
 \begin{align*}
 &E_{P}(\mathbf{a}) =\frac{1 + 2 \mu (a_{11} + a_{10})}{1 + \mu \sum_{ij} a_{ij}} \frac{\mathbb{I}}{2} + \frac{1}{1 + \mu \sum_{ij} a_{ij}} \frac{P}{2}\\
-&E_{Q}(\mathbf{a}) =\frac{1 + 2 \mu (a_{11} + a_{10})}{1 + \mu \sum_{ij} a_{ij}} \frac{\mathbb{I}}{2} + \frac{1}{1 + \mu \sum_{ij} a_{ij}} \frac{Q}{2}
+&E_{Q}(\mathbf{a}) =\frac{1 + 2 \mu (a_{00} + a_{10})}{1 + \mu \sum_{ij} a_{ij}} \frac{\mathbb{I}}{2} + \frac{1}{1 + \mu \sum_{ij} a_{ij}} \frac{Q}{2}
 \end{align*}
 $$
 if and only if there exist a four matrix  $\{G_{00}, G_{01}, G_{10}, G_{11}\}$ such that
@@ -250,7 +250,7 @@ The $\Leftarrow$ direction:
 Construct matrix $R_{j,k} = \frac{G_{j,k} + \mu a_{j,k} \mathbb{I}}{1 + \mu \sum_{ij} a_{ij}}$, then we have
 $$
 \begin{align}
-&\sum_{j,k} R_{j,k} = \mathbb{I},\quad \sum_{k} R_{0,k} = E_{P}(\mathbf{a}), \quad \sum_{j} R_{j,0} = E_{Q}(\mathbf{a}), R_{j,k} \geq 0.
+&\sum_{j,k} R_{j,k} = \mathbb{I},\quad \sum_{k} R_{1,k} = E_{P}(\mathbf{a}), \quad \sum_{j} R_{j,0} = E_{Q}(\mathbf{a}), R_{j,k} \geq 0.
 \end{align}
 $$
 This is a valid POVM.
