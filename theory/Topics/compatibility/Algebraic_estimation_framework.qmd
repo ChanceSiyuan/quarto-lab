@@ -287,8 +287,8 @@ The f-compatibility SDP (@thm-f-compatibility-SDP in the f-compatibility note) i
 ## The No-Go Boundary [@king2024exponential]
 
 ::: {#thm-no-go .callout-important icon="false"}
-## Theorem (Tensor Commutativity Uniqueness, informal)
-The technique of achieving commutativity via simple tensor products ($O \otimes O$ commuting when the originals anticommute) is essentially unique to displacement operators arising from the Heisenberg-Weyl group [@king2024exponential]. Pauli operators are a special case.
+## Theorem (Tensor Commutativity Uniqueness; Theorem 4, [@king2024exponential])
+Let $U, V$ be non-commuting unitaries of finite order $d$ on $\mathcal{H}$. If there exist companion unitaries $\tilde{U}, \tilde{V}$ on a second system $\mathcal{H}'$ such that $U\otimes\tilde{U}$ and $V\otimes\tilde{V}$ commute, then $U$ and $V$ are unitarily equivalent (on each irreducible sector) to displacement operators $D_{q,p}$ from the discrete Heisenberg-Weyl group — a finite-dimensional analogue of the Stone–von Neumann uniqueness theorem [@king2024exponential]. Pauli operators are the order-$2$ special case: $P^{-1} = P^\dagger = P$, so the companion reduces to $\tilde{P} = P$, recovering the familiar identity $[P\otimes P,\, Q\otimes Q] = 0$ for anticommuting $P, Q$.
 :::
 
 This means for general $\{O_i\}$ beyond the Heisenberg-Weyl group, achieving $|\mathcal{S}| = n$ with degree-2 polynomials may not be possible. The SDP framework then quantifies **how much** information can be extracted as a function of $k$ and the algebraic structure of $\{O_i\}$.
