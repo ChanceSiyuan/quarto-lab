@@ -219,7 +219,7 @@ $$
 
 # Toy Example: $\{P,Q\}$
 
-Consider the simplest observable set $\mathcal{O} = \{P,Q\}$ where $P,Q$ are both Pauli observables. Estimation of those two observables correspond to two-outcome POVMs $\{M_1 := \mathbb{I} - M_0, M_0\}$ and $\{N_1 := \mathbb{I} - N_0, N_0\}$ given $M_0 = \frac{P + \mathbb{I}}{2}$ and $N_0 = \frac{Q + \mathbb{I}}{2}$.
+Consider the simplest observable set $\mathcal{O} = \{P,Q\}$ where $P,Q$ are both Pauli observables. Estimation of those two observables correspond to two-outcome POVMs $\{M_1 := \mathbb{I} - M_0, M_0\}$ and $\{N_1 := \mathbb{I} - N_0, N_0\}$ given $M_0 = \frac{\mathbb{I} - P}{2}$ and $N_0 = \frac{\mathbb{I} + Q}{2}$ (so outcome index $0$ for $P$ corresponds to the $-1$ eigenstate, while outcome index $0$ for $Q$ corresponds to the $+1$ eigenstate; this asymmetric labeling is chosen so that the first-index of $G_{j,k}$ is the $P$-direction and the dual discrimination states take the form $\rho^{(M)}_j \propto \mathbb{I}+(-1)^{j+1}P$, consistent with the SDP dual below).
 
 ## Homogeneous compatibility robustness and its SDP form
 
@@ -239,7 +239,7 @@ $$
 if and only if there exist a four matrix  $\{G_{00}, G_{01}, G_{10}, G_{11}\}$ such that
 $$
 \begin{align}
-& \sum_{j} G_{j,k} = M_k, \quad \sum_{k} G_{j,k} = N_j, \quad G_{j,k} + \mu a_{j,k} \mathbb{I} \geq 0.
+& \sum_{k} G_{j,k} = M_j, \quad \sum_{j} G_{j,k} = N_k, \quad G_{j,k} + \mu a_{j,k} \mathbb{I} \geq 0.
 \end{align}
 $${#eq-restriction}
 :::
@@ -250,7 +250,7 @@ The $\Leftarrow$ direction:
 Construct matrix $R_{j,k} = \frac{G_{j,k} + \mu a_{j,k} \mathbb{I}}{1 + \mu \sum_{ij} a_{ij}}$, then we have
 $$
 \begin{align}
-&\sum_{j,k} R_{j,k} = \mathbb{I},\quad \sum_{j} R_{j,0} = E_{P}(\mathbf{a}), \quad \sum_{k} R_{0,k} = E_{Q}(\mathbf{a}), R_{j,k} \geq 0.
+&\sum_{j,k} R_{j,k} = \mathbb{I},\quad \sum_{k} R_{0,k} = E_{P}(\mathbf{a}), \quad \sum_{j} R_{j,0} = E_{Q}(\mathbf{a}), R_{j,k} \geq 0.
 \end{align}
 $$
 This is a valid POVM.
