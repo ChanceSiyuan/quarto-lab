@@ -451,11 +451,11 @@ We notice that in previous research, the hardness to estimate a set of Pauli obs
 
 :::{#lem-opt_distasks .callout-important icon="false"}
 ## Lemma: Optimal Discrimination Tasks
-Given $n$-qubit anticommuting Pauli observables $P,Q$ ($\{P,Q\}=0$) with unsharp POVM elements $M_j = \frac{\mathbb{I}+(-1)^j 3\varepsilon P}{2^n}$ and $N_k = \frac{\mathbb{I}+(-1)^k 3\varepsilon Q}{2^n}$ for $\varepsilon\in[0,1/3]$, the generalized compatibility robustness is
+Given $n$-qubit anticommuting Pauli observables $P,Q$ ($\{P,Q\}=0$) with unsharp POVM elements $M_j = \frac{\mathbb{I}+(-1)^{j+1} 3\varepsilon P}{2^n}$ and $N_k = \frac{\mathbb{I}+(-1)^k 3\varepsilon Q}{2^n}$ for $\varepsilon\in[0,1/3]$ (so $M_0 = \frac{\mathbb{I}-3\varepsilon P}{2^n}$, matching the convention @eq-optimization), the generalized compatibility robustness is
 $$
 s^*(\varepsilon) = \max\!\bigl(1,\,(2-\sqrt{2})(1+3\varepsilon)\bigr).
 $$
-The threshold is at $3\varepsilon_c = 1/\sqrt{2}$ (the joint measurability boundary from @thm-unsharp-pauli-joint-measurability): for $3\varepsilon \leq 1/\sqrt{2}$ the measurements are already jointly measurable ($s^*=1$); for $3\varepsilon > 1/\sqrt{2}$, $s^*=(2-\sqrt{2})(1+3\varepsilon)$. The maximum at $\varepsilon=1/3$ gives $s^* = 4-2\sqrt{2}$. The optimal discrimination states are the eigenstate projectors $\frac{\mathbb{I}\pm P}{2^n}$, independent of $\varepsilon$.
+The threshold is at $3\varepsilon_c = 1/\sqrt{2}$ (the joint measurability boundary from @thm-unsharp-pauli-joint-measurability): for $3\varepsilon \leq 1/\sqrt{2}$ the measurements are already jointly measurable ($s^*=1$); for $3\varepsilon > 1/\sqrt{2}$, $s^*=(2-\sqrt{2})(1+3\varepsilon)$. The maximum at $\varepsilon=1/3$ gives $s^* = 4-2\sqrt{2}$. The optimal discrimination states are the eigenstate projectors $\rho_j^{(P)}=\frac{\mathbb{I}+(-1)^{j+1}P}{2^n}$ (so $\rho_0^{(P)}=\frac{\mathbb{I}-P}{2^n}$, the $-1$-eigenstate of $P$), independent of $\varepsilon$.
 :::
 ::: {.callout-note collapse="true"}
 ## Proof (Click to expand)
@@ -466,7 +466,7 @@ $$
 A_j = a_j \otimes \frac{\mathbb{I}_{2^{n-1}}}{2^{n-1}},\quad B_k = b_k \otimes \frac{\mathbb{I}_{2^{n-1}}}{2^{n-1}}, \quad W = w \otimes \frac{\mathbb{I}_{2^{n-1}}}{2^{n-1}},
 $$
 where $a_j, b_k, w$ are effective single-qubit operators with $\text{Tr}(w) = 1$.
-Since $M_j = \frac{\mathbb{I}_2 + (-1)^j\eta X}{2}\otimes \mathbb{I}_{\text{rest}}$ with $\eta = 3\varepsilon$, the traces factor: $\text{Tr}(A_j M_j) = \text{Tr}_1(a_j m_j)$ with $m_j = \frac{\mathbb{I}_2 + (-1)^j\eta X}{2}$, and similarly $n_k = \frac{\mathbb{I}_2 + (-1)^k\eta Z}{2}$ for $B_k, N_k$. The constraints $A_j + B_k \leq W$ also reduce to $a_j + b_k \leq w$. Thus the $n$-qubit dual SDP is equivalent to the single-qubit dual SDP with effective variables $(a_j, b_k, w)$.
+Since $M_j = \frac{\mathbb{I}_2 + (-1)^{j+1}\eta X}{2}\otimes \mathbb{I}_{\text{rest}}$ with $\eta = 3\varepsilon$ (so $m_0 = \frac{\mathbb{I}-\eta X}{2}$, the $-1$-eigenstate direction), the traces factor: $\text{Tr}(A_j M_j) = \text{Tr}_1(a_j m_j)$ with $m_j = \frac{\mathbb{I}_2 + (-1)^{j+1}\eta X}{2}$, and similarly $n_k = \frac{\mathbb{I}_2 + (-1)^k\eta Z}{2}$ for $B_k, N_k$. The constraints $A_j + B_k \leq W$ also reduce to $a_j + b_k \leq w$. Thus the $n$-qubit dual SDP is equivalent to the single-qubit dual SDP with effective variables $(a_j, b_k, w)$.
 
 **Step 2: Symmetry reduction.**
 Applying the single-qubit Pauli group symmetry: conjugation by $Z$ flips $X \to -X$, swapping $m_0 \leftrightarrow m_1$; combined with relabeling $a_0 \leftrightarrow a_1$ this forces $a_j \in \text{span}\{\mathbb{I}_2, X\}$. Similarly $b_k \in \text{span}\{\mathbb{I}_2, Z\}$ and $w = \mathbb{I}_2/2$. Write:
@@ -505,7 +505,7 @@ $$
 **Case $\eta \leq 1/\sqrt{2}$:** Coefficient $2\eta-\sqrt{2}\leq 0$, so minimize $\gamma$: set $\gamma=\delta=0$. Then $s^* = 2\alpha \leq 1$, achieved at $\alpha=1/2$.
 
 **Step 5: Complete formula.**
-For $\eta > 1/\sqrt{2}$, the optimal $\alpha = \gamma = \frac{1}{2+\sqrt{2}}$ is independent of $\eta$. The optimal discrimination states are $\rho_j^{(P)} = \frac{\mathbb{I}+(-1)^j P}{2^n}$ (eigenstate projectors of $P$, sharpness 1) for any $\varepsilon > \varepsilon_c$. With $\eta = 3\varepsilon$:
+For $\eta > 1/\sqrt{2}$, the optimal $\alpha = \gamma = \frac{1}{2+\sqrt{2}}$ is independent of $\eta$. The optimal discrimination states are $\rho_j^{(P)} = \frac{\mathbb{I}+(-1)^{j+1} P}{2^n}$ (eigenstate projectors of $P$, sharpness 1) for any $\varepsilon > \varepsilon_c$. Concretely, $\rho_0^{(P)} = \frac{\mathbb{I}-P}{2^n}$ (dual variable $a_0 \propto \mathbb{I}-X$ in the single-qubit frame), consistent with the lemma convention $M_0 = \frac{\mathbb{I}-3\varepsilon P}{2^n}$. With $\eta = 3\varepsilon$:
 $$
 s^*(\varepsilon) = \max\!\bigl(1,\,(2-\sqrt{2})(1+3\varepsilon)\bigr).
 $$
