@@ -141,7 +141,7 @@ superscriptaddress]{revtex4-2}%
 \noindent
 We study the problem of simultaneously estimating nonlinear polynomial functionals of a quantum state $\rho$ using multi-copy measurements on $\rho^{\ox k}$.
 We introduce the \emph{f-compatibility} framework, which generalizes quantum measurement compatibility to functional estimation and serves as a complexity calibrator:
-the f-compatibility robustness $s^*$ determines the sample complexity of any estimation strategy.
+the f-compatibility robustness $s^*$ determines the sample complexity within our bounded-estimator protocol.
 For local (product) measurements on $n$-qubit systems, we prove a \emph{tensor product factorization theorem}: the robustness decomposes as $s^*_{\mathrm{loc}} = \prod_l s^*_l$ over qubit sites, recovering the $3^w$ scaling of classical shadows from a per-site incompatibility of $\sqrt{3}$.
 Crucially, nonlinear functionals can be strictly easier to estimate than their parent observables: for squared Pauli expectations $\{|\tr(P\rho)|^2\}$, the ``squaring trick'' $[P\ox P, Q\ox Q] = 0$ yields $s^* = 1$ via Bell measurements, achieving $\mathcal{O}(1)$ sample complexity.
 We construct an explicit nonlocal $2k$-copy strategy based on a commuting operator family $\{A_P\}$ that simultaneously estimates all $|\tr(P\rho^k)|$ via a single projective measurement.
@@ -189,7 +189,7 @@ The \emph{copy-complexity trade-off} follows: estimating $|\cA|$ functionals wit
 \begin{align}\label{eq:copy-complexity}
 N = \mathcal{O}\!\left(k\cdot [s^*(k)]^2\cdot \varepsilon^{-2}\cdot \log(|\cA|/\delta)\right)
 \end{align}
-copies of $\rho$. The optimal copy number minimizes $k\cdot [s^*(k)]^2$ over $k$.
+copies of $\rho$. Within this protocol (i.i.d.\ super-normalized POVM with bounded post-processing), the optimal copy number minimizes $k\cdot [s^*(k)]^2$ over $k$.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \prlsection{Tensor product structure.}\label{sec:tensor}
@@ -342,7 +342,7 @@ In this section we provide the full SDP formulation for f-compatibility and key 
 In this section, we briefly review previous result about compatibility and its related results.
 Given a quantum state $\rho$, different measurement strategies $x \in \mathcal{X}$ may lead to different distributions $p(a|x)$ of the measurement outcomes. 
 The distribution of the measurement outcomes is given by $p(a|x) = \tr(E_{a|x}\rho)$.
-The ordinary definition of compatibility is meant to extract 
+The ordinary definition of compatibility captures the following notion of simultaneous measurability:
 \begin{definition}
     A set of POVMs $\{E_{a|x}\}$ is jointly measurable if there exists a parent POVM $\{G_\lambda\}$ such that $E_{a|x} = \sum_\lambda p(a|x,\lambda)\,G_\lambda$.
 \end{definition}
@@ -710,7 +710,9 @@ The normalization constraint gives $\sum_{\vec{j}} \Pi_{\vec{j}} = \bigotimes_l 
 By the distributive law, the estimation constraint becomes
 $\bigotimes_l G_{\alpha_l}^{(l)} = \bigotimes_l F_{\alpha_l}^{(l)}$,
 where $G_{\alpha_l}^{(l)} := \sum_{j_l} h_{\alpha_l}^{(l)}(j_l)\,\Pi_{j_l}^{(l)}$.
-Since each $F_{\alpha_l}^{(l)} \neq 0$ and the multi-index $\alpha = (\alpha_1,\ldots,\alpha_n)$ ranges over a product set $\cA_1\times\cdots\times\cA_n$, uniqueness of tensor product factorization gives $G_{\alpha_l}^{(l)} = c_l\,F_{\alpha_l}^{(l)}$ for real constants $c_l \neq 0$ with $\prod_l c_l = 1$ (the constants are independent of $\alpha_l$ because varying a single site's index while fixing all others pins $c_l$).
+We claim $G_{\alpha_l}^{(l)} = c_l\,F_{\alpha_l}^{(l)}$ for constants $c_l \neq 0$ independent of $\alpha_l$, with $\prod_l c_l = 1$. This follows from uniqueness of simple tensor decomposition and the product index structure:
+\emph{Step 1 (rank-1 tensor uniqueness).} If $A\ox B = C\ox D$ with $C,D \neq 0$, then $A = \lambda C$ and $B = \lambda^{-1}D$ for some scalar $\lambda$. (Proof: pick $\phi$ with $\tr(\phi^\dagger D) \neq 0$; applying $\tr_{2}[(\cdot)\cdot(\1\ox\phi^\dagger)]$ to both sides gives $A\tr(\phi^\dagger B) = C\tr(\phi^\dagger D)$, so $A = \lambda C$; substituting back gives $B = \lambda^{-1}D$.) By induction, grouping site $l$ against $\bigotimes_{m\neq l}$, we get $G_{\alpha_l}^{(l)} = c_l(\alpha)\,F_{\alpha_l}^{(l)}$ for some $c_l(\alpha)$ with $\prod_l c_l(\alpha) = 1$.
+\emph{Step 2 (independence of $c_l$).} Since $G_{\alpha_l}^{(l)}$ depends only on $\alpha_l$ (not on $\alpha_{m\neq l}$), the ratio $c_l(\alpha) = G_{\alpha_l}^{(l)} / F_{\alpha_l}^{(l)}$ (as operators, in the sense of proportionality) is independent of the other sites' indices $\alpha_{m\neq l}$. Thus $c_l(\alpha) = c_l(\alpha_l)$. Now fix $\alpha_l$ and vary $\alpha_m$ for $m \neq l$: by the same argument at site $m$, $c_m$ is independent of $\alpha_l$, so $c_l(\alpha_l) = \prod_{m\neq l} c_m^{-1}$ is constant. Hence $c_l$ is independent of all indices.
 
 Define per-site estimator bounds $B_l := \max_{j_l,\alpha_l} |h_{\alpha_l}^{(l)}(j_l)|$.
 The global constraint $|h_\alpha(\vec{j})| = \prod_l |h_{\alpha_l}^{(l)}(j_l)| \leq 1$
@@ -1643,7 +1645,7 @@ This statement is useful to proving the reduction of $\mathrm{tr}(\rho^2)$ probl
     \end{align}
 \end{lemma}
 \begin{proof}
-    \textcolor{red}{[Proof corrected: fixed $S_4$ cycle counting and variance formula]}
+    % [Note: Proof corrected in previous revision — fixed $S_4$ cycle counting and variance formula]
     \begin{align}
         \mathbb{E}_{\rho \sim \mathcal{E}_{\varepsilon}}\rho^{\otimes c}&=\mathbb{E}_{H \sim \mathrm{Haar}(D)}(\text{tr}_{>n} \ket{H}\!\bra{H})^{\otimes c} = \frac{1}{D^{\uparrow c}}\mathrm{tr}_{>n}(\sum_{\pi \in S_c} \mathbb{P}_{\pi}^{d} \otimes \mathbb{P}_{\pi}^{\varepsilon^{-1}})=\frac{1}{D^{\uparrow c}}\sum_{\pi \in S_c} \varepsilon^{-c(\pi)}\mathbb{P}_{\pi}^{d}.
     \end{align}
@@ -1859,7 +1861,7 @@ However, in the case $\mathrm{Cl}$ maps $Z_1$ to a weight $w$ Pauli operator, we
 In the case of $T$-round of $2$-replica strategy, we analysis the $2T$-fold average as:
 \begin{align}
     \mathbb{E}_{\rho \sim \mathcal{E}_1}\rho^{\otimes 2T} &= \frac{1}{2^{2T}} \sum_{\mathbf{a} \in \mathbb{F}_2^{2T}}\ket{\mathbf{a}}\!\bra{\mathbf{a}} \otimes  \frac{S^{\mathbf{a}}}{d^{\uparrow \mathbf{a}}} \otimes \frac{\mathbb{I}^{\bar{\mathbf{a}}}}{d^{|\bar {\mathbf{a}}|}},\\
-    \mathbb{E}_{\rho \sim \mathcal{E}_2}\rho^{\otimes 2T} &= \frac{1}{2^{2T}} \ket{\mathbf{a}}\!\bra{\mathbf{a}} \otimes \sum_{\mathbf{a}} \frac{S^{\mathbf{a}}}{d^{\uparrow \mathbf{a}}}
+    \mathbb{E}_{\rho \sim \mathcal{E}_2}\rho^{\otimes 2T} &= \frac{1}{2^{2T}} \sum_{\mathbf{a} \in \mathbb{F}_2^{2T}} \ket{\mathbf{a}}\!\bra{\mathbf{a}} \otimes \frac{S^{\mathbf{a}}}{d^{\uparrow \mathbf{a}}}
 \end{align}
 In the case Clifford gate selected from uniform distribution, we conclude that the average \textcolor{red}{[TODO: Compute the $2T$-fold Clifford average $\Phi_{\mathrm{Cl},2T}[\Delta_{2T}]$ for the MH-ensemble. Show that for $\mathrm{Cl}$ drawn uniformly from $\mathcal{C}$, the single-round chi-squared divergence $\delta_{\mathcal{M},\rho_0,\mathcal{S}} = O(2^{-n})$ under 2-replica local measurements, so Lemma~\ref{theo:mart_distinguish_lb} gives $T = \Omega(2^n)$.]}
 
