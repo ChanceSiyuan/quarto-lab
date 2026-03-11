@@ -281,12 +281,13 @@ Here $M_0 = \frac{\mathbb{I} - P}{2}, M_1 = \frac{\mathbb{I} + P}{2}$, $N_0 = \f
 The dual problem of @eq-optimization is:
 $$
 \begin{align}
-\text{Minimize:} \quad & \sum_{j=0}^1 \text{Tr}(A_j M_j) + \sum_{k=0}^1 \text{Tr}(B_k N_k) \\
+\mu = \text{Maximize:} \quad & -\sum_{j=0}^1 \text{Tr}(A_j M_j) - \sum_{k=0}^1 \text{Tr}(B_k N_k) \\
 \text{Subject to:} \quad & A_j + B_k \geq 0 \quad \forall j,k \in \{0,1\} \\
 & \sum_{j,k \in \{0,1\}} a_{j,k} \text{Tr}(A_j + B_k) = 1 \\
 & A_j, B_k \text{ are Hermitian matrices}
 \end{align}
 $${#eq-dual-optimization}
+By strong duality (Slater's condition holds since $G_{j,k} = \frac{1}{4}\mathbb{I}$, $\mu = \max_{j,k}(d^{-1}/a_{j,k})$ is strictly feasible), the dual optimal equals the primal optimal $\mu \geq 0$.
 :::
 
 ::: {.callout-note collapse="true"}
