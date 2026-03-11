@@ -484,7 +484,7 @@ The threshold is at $3\varepsilon_c = 1/\sqrt{2}$ (the joint measurability bound
 ## Proof (Click to expand)
 
 **Step 1: Reduction to effective single-qubit problem.**
-Since $\{P,Q\}=0$, there exists a Clifford unitary $U$ such that $UPU^\dagger = X_1 \otimes \mathbb{I}_{\text{rest}}$ and $UQU^\dagger = Z_1 \otimes \mathbb{I}_{\text{rest}}$. The dual SDP is unitarily invariant, so we work in this frame. Averaging the dual variables over the $(n-1)$-qubit Pauli group on qubits $2,\ldots,n$ (which preserves the objective by convexity) projects onto the factorized form
+Since $\{P,Q\}=0$, there exists a Clifford unitary $U$ such that $UPU^\dagger = X_1 \otimes \mathbb{I}_{\text{rest}}$ and $UQU^\dagger = Z_1 \otimes \mathbb{I}_{\text{rest}}$. The dual SDP is unitarily invariant, so we work in this frame. Averaging the dual variables over the $(n-1)$-qubit Pauli group on qubits $2,\ldots,n$ (which preserves the objective **exactly by linearity**: since $M_j = m_j \otimes \mathbb{I}_{\mathrm{rest}}$ commutes with every $\mathbb{I}_1\otimes g$, one has $\mathrm{Tr}\!\bigl[(\mathbb{I}_1\otimes g)A_j(\mathbb{I}_1\otimes g^\dagger)M_j\bigr] = \mathrm{Tr}[A_j M_j]$ for all $g$, so the objective is invariant, not merely bounded, under the averaging map; feasibility of $A_j + B_k \leq W$ is likewise preserved exactly since the same conjugation is applied to all three variables) projects onto the factorized form
 $$
 A_j = a_j \otimes \frac{\mathbb{I}_{2^{n-1}}}{2^{n-1}},\quad B_k = b_k \otimes \frac{\mathbb{I}_{2^{n-1}}}{2^{n-1}}, \quad W = w \otimes \frac{\mathbb{I}_{2^{n-1}}}{2^{n-1}},
 $$
