@@ -433,7 +433,7 @@ Surprisingly, we will find that the dual problem is equivalent to a quantum stat
 - Mixed set $\{\rho^{(M)}_j = \frac{A_j}{\text{Tr}(A_j)}\}_{j=0}^1$ and $\{\rho^{(N)}_k = \frac{B_k}{\text{Tr}(B_k)}\}_{k=0}^1$.
 - A classical distribution on each mixed state $p(M, j) = \frac{\text{Tr}(A_j)}{N^*}, \quad p(N, k) = \frac{\text{Tr}(B_k)}{N^*}$, with $N^* = \sum_{j=0}^1 \text{Tr}(A_j) + \sum_{k=0}^1 \text{Tr}(B_k)$.
 
-Question left is how to re-interpret the restriction $A_i + B_k \leq W$ and $\mathrm{tr}(W) < 1$ in terms of the properties of those two mixed state ensembles.
+Question left is how to re-interpret the restriction $A_i + B_k \leq W$ and $\mathrm{tr}(W) = 1$ in terms of the properties of those two mixed state ensembles.
 
 Consider the case Alice implement a unified POVMs $G_{j,k}$ with $j,k$ as the index indicates state for ensemble $\mathcal{M}$ and $\mathcal{N}$ respectively.
 Using the fact $A_j = N^* p(M,j) \rho^{(M)}_j$ and $B_k = N^* p(N,k) \rho^{(N)}_k$, the success rate is:
