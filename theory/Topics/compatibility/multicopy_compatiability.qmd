@@ -313,7 +313,7 @@ Analogously to @lem-multicopy-compatibility, the following structural lemma redu
 
 ::: {#lem-invmulticopy-compatibility .callout-important icon="false"}
 ## (Inversed Multicopy Compatibility Corollary)
-The $\mathcal{L}(\mathcal{H})$-valued observables $\{A_{i}\}_{i=1}^K$ are $F$-assisted $2$-compatible if and only if the $\mathcal{L}(\mathcal{H}^{\otimes 2})$-valued observables $\tilde{A}_{i}(x) = \mathbb{I}^{\otimes (k-1)} \odot A_i(x)$ are (1-copy) compatible, where $\odot$ is the $F$-twisted symmetrized tensor product: $\mathbb{I}\odot A = \frac{1}{2}(\mathbb{I}\otimes F(A) + A \otimes\mathbb{I})$.
+The $\mathcal{L}(\mathcal{H})$-valued observables $\{A_{i}\}_{i=1}^K$ are $F$-assisted $2$-compatible if and only if the $\mathcal{L}(\mathcal{H}^{\otimes 2})$-valued observables $\tilde{A}_{i}(x) = \mathbb{I} \odot_F A_i(x)$ are (1-copy) compatible, where $\odot_F$ denotes the **$F$-twisted symmetrized embedding** (distinct from the standard permutation-symmetric $\odot$ of @lem-multicopy-compatibility): $\mathbb{I}\odot_F A = \frac{1}{2}(A\otimes\mathbb{I} + \mathbb{I}\otimes F(A))$.
 :::
 
 ::: {.callout-note collapse="true"}
