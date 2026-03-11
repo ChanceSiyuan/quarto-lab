@@ -140,15 +140,19 @@ $$
 \sum_{j_{l_0}} \tilde{h}_{\alpha_{l_0}}^{(l_0)}(j_{l_0})\,\mathrm{tr}\!\left[\Pi_{j_{l_0}}^{(l_0)}\,\sigma_{l_0}^{\otimes k}\right] = \frac{1}{\prod_{l\neq l_0} s_l}\sum_{\vec{j}} h_\alpha(\vec{j})\,\mathrm{tr}\!\left[\Pi_{\vec{j}}\,\rho^{\otimes k}\right] = \frac{f_\alpha(\rho)}{\prod_{l\neq l_0} s_l}.
 $$
 
-Now consider the special case where $\alpha = (\alpha_1,\ldots,\alpha_n)$ and all sites $l \neq l_0$ are set to trivial functionals (e.g., $F_{\alpha_l}^{(l)} = \mathbb{I}_{2^k}$ for $l \neq l_0$). In this case, $f_\alpha(\rho) = f_{\alpha_{l_0}}(\sigma_{l_0}) \cdot \prod_{l \neq l_0} 1 = f_{\alpha_{l_0}}(\sigma_{l_0})$. Choosing $\sigma_l = \mathbb{I}/2$ for $l \neq l_0$ (so that $\mathrm{tr}[\Pi_{j_l}^{(l)} (\mathbb{I}/2)^{\otimes k}] = s_l/2^k$), the conditional estimator simplifies and we obtain:
+Now consider the special case where $\alpha = (\alpha_1,\ldots,\alpha_n)$ and all sites $l \neq l_0$ are set to trivial functionals (e.g., $F_{\alpha_l}^{(l)} = \mathbb{I}_{2^k}$ for $l \neq l_0$). In this case, $f_\alpha(\rho) = f_{\alpha_{l_0}}(\sigma_{l_0}) \cdot \prod_{l \neq l_0} 1 = f_{\alpha_{l_0}}(\sigma_{l_0})$. Choosing $\sigma_l = \mathbb{I}/2$ for $l \neq l_0$, define the per-site weights
+$$
+w_{j_l}^{(l)} := \frac{\mathrm{tr}[\Pi_{j_l}^{(l)}\,(\mathbb{I}/2)^{\otimes k}]}{s_l}.
+$$
+Since $\Pi_{j_l}^{(l)} \geq 0$, each $w_{j_l}^{(l)} \geq 0$; and $\sum_{j_l} w_{j_l}^{(l)} = \mathrm{tr}\!\left[\sum_{j_l}\Pi_{j_l}^{(l)}\cdot(\mathbb{I}/2)^{\otimes k}\right]/s_l = \mathrm{tr}[s_l\mathbb{I}_{2^k}\cdot(\mathbb{I}/2)^{\otimes k}]/s_l = \mathrm{tr}[(\mathbb{I}/2)^{\otimes k}] = 1$. The conditional estimator simplifies and we obtain:
 $$
 \sum_{j_{l_0}} \tilde{h}_{\alpha_{l_0}}^{(l_0)}(j_{l_0})\,\mathrm{tr}\!\left[\Pi_{j_{l_0}}^{(l_0)}\,\sigma_{l_0}^{\otimes k}\right] = \frac{f_{\alpha_{l_0}}(\sigma_{l_0})}{\prod_{l \neq l_0} s_l} \cdot \prod_{l \neq l_0} s_l = f_{\alpha_{l_0}}(\sigma_{l_0}),
 $$
 for all $\sigma_{l_0}$. Moreover, the conditional estimator $\tilde{h}_{\alpha_{l_0}}^{(l_0)}(j_{l_0})$ evaluated at $\sigma_l = \mathbb{I}/2$ is:
 $$
-\tilde{h}_{\alpha_{l_0}}^{(l_0)}(j_{l_0}) = \sum_{\vec{j}_{\neq l_0}} h_\alpha(\vec{j}) \prod_{l \neq l_0} \frac{1}{|\mathcal{J}_l|},
+\tilde{h}_{\alpha_{l_0}}^{(l_0)}(j_{l_0}) = \sum_{\vec{j}_{\neq l_0}} h_\alpha(\vec{j}) \prod_{l \neq l_0} w_{j_l}^{(l)},
 $$
-which is a convex combination of values in $[-1,1]$, hence $|\tilde{h}_{\alpha_{l_0}}^{(l_0)}(j_{l_0})| \leq 1$.
+which is a weighted average of values in $[-1,1]$ with non-negative weights $\prod_{l\neq l_0} w_{j_l}^{(l)}$ that sum to $1$ over $\vec{j}_{\neq l_0}$ (by independence across sites), hence $|\tilde{h}_{\alpha_{l_0}}^{(l_0)}(j_{l_0})| \leq 1$.
 
 Therefore, $\{\Pi_{j_{l_0}}^{(l_0)}, \tilde{h}_{\alpha_{l_0}}^{(l_0)}\}$ is a feasible solution to the per-site SDP at site $l_0$ with normalization $s_{l_0}$. This means $s^*_{l_0} \leq s_{l_0}$.
 
