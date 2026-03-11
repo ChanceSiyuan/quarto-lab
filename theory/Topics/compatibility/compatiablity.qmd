@@ -451,11 +451,11 @@ We notice that in previous research, the hardness to estimate a set of Pauli obs
 
 :::{#lem-opt_distasks .callout-important icon="false"}
 ## Lemma: Optimal Discrimination Tasks
-Given $n$-qubit anticommuting Pauli observables $P,Q$ ($\{P,Q\}=0$), the optimal discrimination tasks are $\mathcal{E}_{P} = \{\frac{\mathbb{I} \pm 3\varepsilon P}{2^n}\}$ and $\mathcal{E}_{Q} = \{\frac{\mathbb{I} \pm 3\varepsilon Q}{2^n}\}$ for $\varepsilon \in [0,1/3]$, with generalized compatibility robustness
+Given $n$-qubit anticommuting Pauli observables $P,Q$ ($\{P,Q\}=0$) with unsharp POVM elements $M_j = \frac{\mathbb{I}+(-1)^j 3\varepsilon P}{2^n}$ and $N_k = \frac{\mathbb{I}+(-1)^k 3\varepsilon Q}{2^n}$ for $\varepsilon\in[0,1/3]$, the generalized compatibility robustness is
 $$
-s^*(\varepsilon) = \frac{2(1+3\varepsilon)}{2 + 3\sqrt{2}\,\varepsilon}.
+s^*(\varepsilon) = \max\!\bigl(1,\,(2-\sqrt{2})(1+3\varepsilon)\bigr).
 $$
-The maximum is achieved at $\varepsilon = 1/3$ (eigenspace projectors), giving $s^* = 4 - 2\sqrt{2}$.
+The threshold is at $3\varepsilon_c = 1/\sqrt{2}$ (the joint measurability boundary from @thm-unsharp-pauli-joint-measurability): for $3\varepsilon \leq 1/\sqrt{2}$ the measurements are already jointly measurable ($s^*=1$); for $3\varepsilon > 1/\sqrt{2}$, $s^*=(2-\sqrt{2})(1+3\varepsilon)$. The maximum at $\varepsilon=1/3$ gives $s^* = 4-2\sqrt{2}$. The optimal discrimination states are the eigenstate projectors $\frac{\mathbb{I}\pm P}{2^n}$, independent of $\varepsilon$.
 :::
 ::: {.callout-note collapse="true"}
 ## Proof (Click to expand)
@@ -466,7 +466,7 @@ $$
 A_j = a_j \otimes \frac{\mathbb{I}_{2^{n-1}}}{2^{n-1}},\quad B_k = b_k \otimes \frac{\mathbb{I}_{2^{n-1}}}{2^{n-1}}, \quad W = w \otimes \frac{\mathbb{I}_{2^{n-1}}}{2^{n-1}},
 $$
 where $a_j, b_k, w$ are effective single-qubit operators with $\text{Tr}(w) = 1$.
-Since $M_j = \frac{\mathbb{I}_2 \pm X}{2}\otimes \mathbb{I}_{\text{rest}}$, the traces factor: $\text{Tr}(A_j M_j) = \text{Tr}_1(a_j m_j)$ with $m_j = \frac{\mathbb{I}_2 \pm X}{2}$, and similarly for $B_k, N_k$. The constraints $A_j + B_k \leq W$ also reduce to $a_j + b_k \leq w$. Thus the $n$-qubit dual SDP is equivalent to the single-qubit dual SDP with effective variables $(a_j, b_k, w)$.
+Since $M_j = \frac{\mathbb{I}_2 + (-1)^j\eta X}{2}\otimes \mathbb{I}_{\text{rest}}$ with $\eta = 3\varepsilon$, the traces factor: $\text{Tr}(A_j M_j) = \text{Tr}_1(a_j m_j)$ with $m_j = \frac{\mathbb{I}_2 + (-1)^j\eta X}{2}$, and similarly $n_k = \frac{\mathbb{I}_2 + (-1)^k\eta Z}{2}$ for $B_k, N_k$. The constraints $A_j + B_k \leq W$ also reduce to $a_j + b_k \leq w$. Thus the $n$-qubit dual SDP is equivalent to the single-qubit dual SDP with effective variables $(a_j, b_k, w)$.
 
 **Step 2: Symmetry reduction.**
 Applying the single-qubit Pauli group symmetry: conjugation by $Z$ flips $X \to -X$, swapping $m_0 \leftrightarrow m_1$; combined with relabeling $a_0 \leftrightarrow a_1$ this forces $a_j \in \text{span}\{\mathbb{I}_2, X\}$. Similarly $b_k \in \text{span}\{\mathbb{I}_2, Z\}$ and $w = \mathbb{I}_2/2$. Write:
@@ -478,9 +478,9 @@ with $\alpha \geq \gamma \geq 0$ and $\beta \geq \delta \geq 0$.
 **Step 3: Objective and constraints.**
 Using $\text{Tr}(X^2) = \text{Tr}(\mathbb{I}_2) = 2$ and $\text{Tr}(X) = 0$:
 $$
-\text{Tr}_1(a_0 m_0) = \frac{1}{4}\text{Tr}\big((\alpha\mathbb{I} - \gamma X)(\mathbb{I} - X)\big) = \frac{\alpha+\gamma}{2},
+\text{Tr}_1(a_0 m_0) = \frac{1}{4}\text{Tr}\big((\alpha\mathbb{I} - \gamma X)(\mathbb{I} - \eta X)\big) = \frac{\alpha+\gamma\eta}{2},
 $$
-and similarly for the other three terms. The dual objective is $s^* = (\alpha+\gamma) + (\beta+\delta)$.
+and similarly $\text{Tr}_1(a_1 m_1) = \frac{\alpha+\gamma\eta}{2}$, $\text{Tr}_1(b_k n_k) = \frac{\beta+\delta\eta}{2}$ each. The dual objective is $s^* = (\alpha+\gamma\eta) + (\beta+\delta\eta)$.
 
 For the constraint $a_j + b_k \leq \mathbb{I}_2/2$, the tightest case is:
 $$
@@ -492,24 +492,24 @@ $$
 $$
 
 **Step 4: Optimization.**
-Maximize $(\alpha+\gamma) + (\beta+\delta)$ subject to $\alpha+\beta+\sqrt{\gamma^2+\delta^2} \leq 1$ with $\alpha \geq \gamma \geq 0$, $\beta \geq \delta \geq 0$. Increasing $\gamma$ by $\varepsilon'$ costs only $\frac{\gamma}{\sqrt{\gamma^2+\delta^2}}\varepsilon' \leq \varepsilon'$ in the constraint (via reducing $\alpha$), while gaining $\varepsilon'$ in the objective. So it is optimal to set $\gamma = \alpha$ and $\delta = \beta$.
-
-At the boundary, we maximize $2(\gamma+\delta)$ subject to $\gamma + \delta + \sqrt{\gamma^2+\delta^2} \leq 1$. By Cauchy--Schwarz, $\sqrt{\gamma^2+\delta^2} \geq (\gamma+\delta)/\sqrt{2}$ with equality iff $\gamma = \delta$. Setting $\gamma = \delta$:
+Maximize $(\alpha+\gamma\eta) + (\beta+\delta\eta)$ subject to $\alpha+\beta+\sqrt{\gamma^2+\delta^2} \leq 1$ with $\alpha \geq \gamma \geq 0$, $\beta \geq \delta \geq 0$. By Cauchy--Schwarz, $\sqrt{\gamma^2+\delta^2}$ is minimized for fixed $\gamma+\delta$ when $\gamma=\delta$, so the symmetric point $\gamma=\delta$, $\alpha=\beta$ is optimal. Setting $\alpha = \frac{1-\gamma\sqrt{2}}{2}$ (constraint tight) gives:
 $$
-\gamma(2+\sqrt{2}) \leq 1 \implies \gamma = \frac{1}{2+\sqrt{2}}, \quad s^* = 4\gamma = \frac{4}{2+\sqrt{2}} = 4 - 2\sqrt{2}.
+s^* = 1 + \gamma(2\eta - \sqrt{2}).
 $$
 
-**Step 5: Identification with $3\varepsilon$ parametrization.**
-At the optimum, $\alpha = \gamma = \beta = \delta = \frac{1}{2+\sqrt{2}}$. The effective single-qubit discrimination states are $\frac{\mathbb{I}_2 \pm X}{2}$, so the $n$-qubit discrimination states from @lem-dual-discrimination are:
+**Case $\eta > 1/\sqrt{2}$:** Coefficient $2\eta-\sqrt{2}>0$, so maximize $\gamma$. The binding upper bound is $\alpha \geq \gamma$: $\frac{1-\gamma\sqrt{2}}{2} \geq \gamma$ gives $\gamma \leq \frac{1}{2+\sqrt{2}}$. At $\gamma = \frac{1}{2+\sqrt{2}}$:
 $$
-\rho^{(M)}_j = \frac{\mathbb{I}_2 + (-1)^{j+1} X}{2} \otimes \frac{\mathbb{I}_{2^{n-1}}}{2^{n-1}} = \frac{\mathbb{I}_{2^n} + (-1)^{j+1} P}{2^n},
+s^* = 1 + \frac{2\eta-\sqrt{2}}{2+\sqrt{2}} = \frac{2(1+\eta)}{2+\sqrt{2}} = (2-\sqrt{2})(1+\eta).
 $$
-and similarly $\rho^{(N)}_k = \frac{\mathbb{I}_{2^n} + (-1)^{k} Q}{2^n}$.
-More generally, for sharpness parameter $\eta = 3\varepsilon \in [0,1]$, the states are $\frac{\mathbb{I} \pm 3\varepsilon P}{2^n}$ and $\frac{\mathbb{I} \pm 3\varepsilon Q}{2^n}$, giving:
+
+**Case $\eta \leq 1/\sqrt{2}$:** Coefficient $2\eta-\sqrt{2}\leq 0$, so minimize $\gamma$: set $\gamma=\delta=0$. Then $s^* = 2\alpha \leq 1$, achieved at $\alpha=1/2$.
+
+**Step 5: Complete formula.**
+For $\eta > 1/\sqrt{2}$, the optimal $\alpha = \gamma = \frac{1}{2+\sqrt{2}}$ is independent of $\eta$. The optimal discrimination states are $\rho_j^{(P)} = \frac{\mathbb{I}+(-1)^j P}{2^n}$ (eigenstate projectors of $P$, sharpness 1) for any $\varepsilon > \varepsilon_c$. With $\eta = 3\varepsilon$:
 $$
-s^*(\varepsilon) = \frac{2(1+3\varepsilon)}{2+3\sqrt{2}\,\varepsilon}.
+s^*(\varepsilon) = \max\!\bigl(1,\,(2-\sqrt{2})(1+3\varepsilon)\bigr).
 $$
-Since $\frac{ds^*}{d\varepsilon} = \frac{6(2-\sqrt{2})}{(2+3\sqrt{2}\,\varepsilon)^2} > 0$, the robustness is strictly increasing in $\varepsilon$. The maximum at $\varepsilon = 1/3$ gives $s^* = 4 - 2\sqrt{2}$, confirming that the discrimination problem $\mathcal{E}_P = \{\frac{\mathbb{I} \pm 3\varepsilon P}{2^n}\}$ is indeed hardest at maximal sharpness. Note that $s^*$ is independent of $n$: the Hilbert space dimension cancels in the reduction to the effective single-qubit problem. $\blacksquare$
+The threshold $3\varepsilon_c = 1/\sqrt{2}$ is exactly the joint measurability boundary from @thm-unsharp-pauli-joint-measurability: two equal-sharpness anticommuting Pauli measurements satisfy $\eta^2+\eta^2\leq 1$ iff $\eta\leq 1/\sqrt{2}$. For $3\varepsilon\leq 1/\sqrt{2}$ the measurements are already compatible, hence $s^*=1$. At $\varepsilon=1/3$: $s^* = (2-\sqrt{2})\cdot 2 = 4-2\sqrt{2}$. The dimension $n$ cancels in the single-qubit reduction. $\blacksquare$
 :::
 
 
