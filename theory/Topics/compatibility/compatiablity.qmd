@@ -142,11 +142,34 @@ $$ \frac{1}{8} (4\mathbb{I} + 4x\eta_x X) = \frac{1}{2}(\mathbb{I} + x\eta_x X) 
 By symmetry, summing over the other pairs identically recovers $E^{\eta_y}_{a|x = Y}$ and $E^{\eta_z}_{a|x = Z}$. This completes the "if" direction.
 
 **Step 4: Necessity (The "Only If" direction)**
-Arbitrary POVM on single qubits can be coarse-grained to $M(x, y, z)$ as a 8-outcome measurement.
-Suppose there exists an arbitrary joint measurement $M(x,y,z) \geq 0$ yielding the correct unsharp Pauli marginals.
-We can construct a symmetrized POVM $\widetilde{M}(x,y,z)$ by applying the transformations of the Pauli group that independently flip the signs of $X, Y,$ and $Z$.
-Thus all non-Pauli cross-terms vanish and $M$ reduces to $G(x,y,z)$ with parameters $\eta_x, \eta_y, \eta_z$.
-As shown in Step 2, $G(x,y,z) \geq 0$ inevitably requires $\eta_x^2 + \eta_y^2 + \eta_z^2 \leq 1$. This proves the necessity. $\blacksquare$
+
+*Coarse-graining.* Since each marginal $E^{\eta_P}_{a|P}$ is a 2-outcome POVM ($a \in \{+1,-1\}$), any joint measurement naturally labels its outcomes by triples $(x,y,z) \in \{+1,-1\}^3$. A measurement with additional outcomes can be coarse-grained — summing POVM elements that share the same $(x,y,z)$ — without changing any marginal. Hence, we may assume $M(x,y,z) \geq 0$ with exactly 8 outcomes and $\sum_{x,y,z} M(x,y,z) = \mathbb{I}$.
+
+*Operator-norm argument.* Evaluate the scalar
+$$
+\mathcal{S} \;:=\; \sum_{x,y,z \in \{+1,-1\}} \mathrm{tr}\!\left[M(x,y,z)\!\left(x\eta_x X + y\eta_y Y + z\eta_z Z\right)\right]
+$$
+in two ways.
+
+**Lower bound (via marginals).** By linearity and the marginal condition $\sum_{y,z} M(x,y,z) = \tfrac{1}{2}(\mathbb{I}+x\eta_x X)$:
+$$
+\sum_{y,z}\mathrm{tr}[M(x,y,z)\,X] = \mathrm{tr}\!\left[\tfrac{1}{2}(\mathbb{I}+x\eta_x X)\,X\right] = x\eta_x,
+$$
+so the $X$-contribution to $\mathcal{S}$ is $\eta_x\sum_{x\in\{+1,-1\}} x\cdot(x\eta_x) = 2\eta_x^2$. Adding the $Y$ and $Z$ terms:
+$$
+\mathcal{S} = 2(\eta_x^2+\eta_y^2+\eta_z^2).
+$$
+
+**Upper bound (via operator norm).** For any PSD operator $M\geq 0$ and Hermitian $H$, the trace-norm/operator-norm duality gives $|\mathrm{tr}[MH]|\leq \mathrm{tr}[M]\,\|H\|$. Since the Pauli matrices anticommute and $x^2=y^2=z^2=1$,
+$$
+(x\eta_x X + y\eta_y Y + z\eta_z Z)^2 = (\eta_x^2+\eta_y^2+\eta_z^2)\,\mathbb{I},
+$$
+so $\|x\eta_x X + y\eta_y Y + z\eta_z Z\| = \sqrt{\eta_x^2+\eta_y^2+\eta_z^2}$ for every $(x,y,z)$. Therefore,
+$$
+\mathcal{S} \;\leq\; \sum_{x,y,z}|\mathrm{tr}[M(x,y,z)\,H_{xyz}]| \;\leq\; \sqrt{\eta_x^2+\eta_y^2+\eta_z^2}\underbrace{\sum_{x,y,z}\mathrm{tr}[M(x,y,z)]}_{=\,\mathrm{tr}[\mathbb{I}]\,=\,2} = 2\sqrt{\eta_x^2+\eta_y^2+\eta_z^2}.
+$$
+
+**Combining.** $2(\eta_x^2+\eta_y^2+\eta_z^2)\leq 2\sqrt{\eta_x^2+\eta_y^2+\eta_z^2}$ implies $\sqrt{\eta_x^2+\eta_y^2+\eta_z^2}\leq 1$, i.e., $\eta_x^2+\eta_y^2+\eta_z^2\leq 1$. $\blacksquare$
 :::
 
 ## Realization of joint measurement
