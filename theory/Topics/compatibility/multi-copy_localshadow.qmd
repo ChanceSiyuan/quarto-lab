@@ -37,8 +37,10 @@ For example, the function set include:
 
 ::: {.callout-important icon="false"}
 ## Conjecture: Compatibility Robustness and Sampling Complexity
-If the compatibility robustness of a set of observables $\{O_i\}_{i=1}^L$ is $I$, then any non-adaptive strategy for estimating $\{\mathrm{tr}(O_i\rho)\}_i$ within constant additive error $\varepsilon$ and confidence $1 - \delta$ has sampling complexity $\mathcal{O}(I\varepsilon^{-2} \ln(1/\delta))$.
+If the compatibility robustness of a set of observables $\{O_i\}_{i=1}^L$ is $I$, then any non-adaptive strategy for estimating $\{\mathrm{tr}(O_i\rho)\}_i$ within constant additive error $\varepsilon$ and confidence $1 - \delta$ requires sampling complexity $\Omega(I\varepsilon^{-2} \ln(1/\delta))$.
 :::
+
+**Relation to the upper bound.** @thm-local-variance establishes, for the optimal local $k$-replica POVM strategy, an *upper* bound of $\mathcal{O}(I^2\varepsilon^{-2}\log(|\mathcal{A}|/\delta))$ where $I = s^*_{\mathrm{loc}} = \prod_l s^*_l$. The conjecture posits a matching lower bound of $\Omega(I\varepsilon^{-2})$ for all non-adaptive strategies, leaving an $I$-vs-$I^2$ gap between the conjectured tight complexity and the best known local-strategy upper bound. Closing this gap — either by proving a better upper bound via adaptive measurements or by improving the lower bound argument — is the main open problem of this section.
 
 
 # Local f-Compatibility and Tensor Product Hardness
