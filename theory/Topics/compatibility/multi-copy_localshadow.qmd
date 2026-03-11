@@ -1,0 +1,279 @@
+---
+categories:
+- Readings
+date: '2026-02-18'
+lang: en
+title: "Biased Multi-copy Local Shadows"
+bibliography: refs.bib
+draft: true
+---
+
+# Summary and questions
+
+Given a set of observable that can be decomposed into local observables, i.e., $\mathcal{O} = \mathcal{O}_1 \otimes \mathcal{O}_2 \otimes \cdots \otimes \mathcal{O}_n$, where each $\mathcal{O}_i$ is a set of local observables with $N_i$ elements and in total $N_1\cdot N_2 \cdots N_n$ elements.
+We hope to use multi-copy local shadow to simultaneously estimate the expectation values of all the observables (or multiple functions of those expectation values) in $\mathcal{O}$. 
+
+- In the single-copy case, 3-design shadow count $3^{\#\{\mathcal{O}_i \neq \{\mathbb{I}\}\}}$ for its complexity. This is what we called the weight of the observable set $\mathcal{O}$ decide the complexity of the 3-design shadow.
+- In the single-copy case, biased strategy could reach better complexity $\prod_{i=1}^n I_i$ where $I_i$ is the compatibility robustness of the local set of observables $\mathcal{O}_i$.
+- In the multi-copy case, same structure exists. We again show that 3-design shadow count $~(5)^{\#\{\mathcal{O}_i \neq \{\mathbb{I}^{\otimes 2}\}\}}$ again and its power don't exceed the single-copy case.
+- Nevertheles, this is not the case for multi-copy biased strategy. 2-replica strategy biased on commuting set $\{\mathbb{I}\otimes \mathbb{I}, X\otimes X, Y\otimes Y, Z\otimes Z\}$ reach constant complexity.
+
+In general, we ask the following questions:
+
+::: {.callout-important icon="false"}
+## Question: Complexity of Multi-copy Local Shadow
+Given a set of local observables $\mathcal{O} = \mathcal{O}_1 \otimes \mathcal{O}_2 \otimes \cdots \otimes \mathcal{O}_n$, what is the complexity of the multi-copy local shadow to estimate the expectation values of a set of functions of the expectation values?
+:::
+
+For example, the function set include:
+
+- $\{|\mathrm{tr}(O_i\rho)|^{m}\}_i, \mathcal{O}_i = \{\mathbb{I}, X, Y, Z\}$, which reduced to $\{\mathrm{tr}^2(O_i\rho)\}_i$.
+- $\{|\mathrm{tr}(O_i\rho^2)|^{m}\}_i,\mathcal{O}_i = \{\mathbb{I}, X, Y, Z\}$, which reduced to $\{\mathrm{tr}^2(O_i\rho^2)\}_i$.
+- We need more useful function sets.
+
+
+
+# Core results
+
+::: {.callout-important icon="false"}
+## Conjecture: Compatibility Robustness and Sampling Complexity
+If the compatibility robustness of a set of observables $\{O_i\}_{i=1}^L$ is $I$, then any non-adaptive strategy for estimating $\{\mathrm{tr}(O_i\rho)\}_i$ within constant additive error $\varepsilon$ and confidence $1 - \delta$ has sampling complexity $\mathcal{O}(I\varepsilon^{-2} \ln(1/\delta))$.
+:::
+
+
+# Local f-Compatibility and Tensor Product Hardness
+
+The previous sections established f-compatibility as a framework for simultaneous estimation of nonlinear functionals via multi-copy measurements. However, the f-compatibility SDP (@thm-f-compatibility-SDP) does not impose any locality constraint on the POVM $\{\Pi_j\}$. In practice, the most natural measurement strategies on $n$-qubit systems are **local**: the $k$-replica POVM factorizes across qubit sites. In this section, we show that under this locality constraint, the f-compatibility robustness factorizes as a product over sites. This tensor product structure is the mechanism that transfers single-qubit incompatibility into exponential $n$-qubit hardness.
+
+
+## Local f-Compatibility SDP
+
+::: {#def-local-f-compatibility .callout-important icon="false"}
+## (Local k-Replica f-Compatibility)
+Let $\{A_i\}_{i=1}^K$ be $n$-qubit observables and $\mathcal{F} = \{f_\alpha\}_{\alpha \in \mathcal{A}}$ a polynomial functional family with $k$-copy linearizations $\{F_\alpha\} \subset \mathcal{L}(\mathcal{H}^{\otimes k})$, where $\mathcal{H} = (\mathbb{C}^2)^{\otimes n}$.
+
+We say that $\{A_i\}$ is **locally** $k$-copy $\mathcal{F}$-compatible if there exists a **product POVM** on the $k$-replica space,
+$$
+\Pi_{\vec{j}} = \Pi_{j_1}^{(1)} \otimes \Pi_{j_2}^{(2)} \otimes \cdots \otimes \Pi_{j_n}^{(n)}, \quad \Pi_{j_l}^{(l)} \in \mathcal{L}\!\left((\mathbb{C}^2)^{\otimes k}\right),
+$$
+and classical estimator functions $h_\alpha: \mathcal{J}_1 \times \cdots \times \mathcal{J}_n \to [-1,1]$ such that
+$$
+f_\alpha\big(\vec{p}_1(\rho),\ldots,\vec{p}_K(\rho)\big) = \sum_{\vec{j}} h_\alpha(\vec{j})\;\mathrm{tr}\!\left[\Pi_{\vec{j}}\;\rho^{\otimes k}\right], \quad \forall\,\rho,\;\forall\,\alpha.
+$$
+The **local f-compatibility robustness** $s^*_{\mathrm{loc}}(\mathcal{F})$ is the minimum $s$ such that the relaxed local SDP
+$$
+\boxed{
+\begin{align*}
+\text{Minimize:} \quad & s \\
+\text{Subject to:} \quad & \sum_{\vec{j}} h_\alpha(\vec{j})\,\Pi_{\vec{j}} = F_\alpha \quad \forall\,\alpha \in \mathcal{A} \\
+& \Pi_{\vec{j}} = \bigotimes_{l=1}^n \Pi_{j_l}^{(l)} \quad \text{(product structure)} \\
+& \sum_{j_l} \Pi_{j_l}^{(l)} = s_l\,\mathbb{I}_{2^k} \quad \forall\,l \in \{1,\ldots,n\} \\
+& \Pi_{j_l}^{(l)} \geq 0 \quad \forall\,l,j_l \\
+& |h_\alpha(\vec{j})| \leq 1 \quad \forall\,\alpha,\vec{j}
+\end{align*}
+}
+$$ {#eq-local-f-compat-SDP}
+is feasible, where $s = \prod_{l=1}^n s_l$.
+:::
+
+## Tensor Product Factorization Theorem
+
+The key structural result is that for product-form linearizations, the local SDP decomposes site-by-site.
+
+:::{#thm-tensor-product .callout-important icon="false"}
+## Theorem (Tensor Product Factorization of Local f-Compatibility)
+Let $\{A_{\mathbf{r}}\}_{\mathbf{r} \in \mathcal{S}}$ be $n$-qubit observables with local product structure $A_{\mathbf{r}} = \bigotimes_{l=1}^n A_{\mathbf{r}_l}^{(l)}$. Let $\mathcal{F} = \{f_\alpha\}_{\alpha \in \mathcal{A}}$ be a polynomial functional family whose $k$-copy linearizations have the product form
+$$
+F_\alpha = \bigotimes_{l=1}^n F_{\alpha_l}^{(l)}, \quad F_{\alpha_l}^{(l)} \in \mathcal{L}\!\left((\mathbb{C}^2)^{\otimes k}\right),
+$$ {#eq-product-linearization}
+where $\alpha = (\alpha_1,\ldots,\alpha_n)$ is a multi-index with $\alpha_l$ labeling the local functional at site $l$.
+Define the **per-site f-compatibility robustness** $s^*_l$ as the optimal value of the single-site f-compatibility SDP:
+$$
+\begin{align*}
+s^*_l = \min \; & s_l \quad \text{s.t.} \quad \sum_{j_l} h_{\alpha_l}^{(l)}(j_l)\,\Pi_{j_l}^{(l)} = F_{\alpha_l}^{(l)},\; \sum_{j_l}\Pi_{j_l}^{(l)} = s_l \mathbb{I}_{2^k},\; \Pi^{(l)}_{j_l} \geq 0,\; |h_{\alpha_l}^{(l)}| \leq 1.
+\end{align*}
+$$ {#eq-per-site-SDP}
+
+Then the local $k$-replica f-compatibility robustness factorizes:
+$$
+\boxed{s^*_{\mathrm{loc}}(\mathcal{F}) = \prod_{l=1}^n s^*_l.}
+$$ {#eq-tensor-factorization}
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+
+**Part 1: Upper bound ($s^*_{\mathrm{loc}} \leq \prod_l s^*_l$).**
+
+Suppose each per-site SDP (@eq-per-site-SDP) is feasible with optimal solutions $\{\Pi_{j_l}^{(l)}, h_{\alpha_l}^{(l)}(j_l)\}$ and optimal values $s^*_l$. Construct the $n$-qubit POVM and estimators as:
+$$
+\Pi_{\vec{j}} = \bigotimes_{l=1}^n \Pi_{j_l}^{(l)}, \qquad h_\alpha(\vec{j}) = \prod_{l=1}^n h_{\alpha_l}^{(l)}(j_l).
+$$
+We verify all constraints of @eq-local-f-compat-SDP:
+
+**(i) Estimator constraint.** Using the product structure of both the POVM and estimators:
+$$
+\sum_{\vec{j}} h_\alpha(\vec{j})\,\Pi_{\vec{j}} = \sum_{j_1,\ldots,j_n} \prod_{l=1}^n h_{\alpha_l}^{(l)}(j_l)\,\Pi_{j_l}^{(l)} = \bigotimes_{l=1}^n \left(\sum_{j_l} h_{\alpha_l}^{(l)}(j_l)\,\Pi_{j_l}^{(l)}\right) = \bigotimes_{l=1}^n F_{\alpha_l}^{(l)} = F_\alpha. \quad \checkmark
+$$
+
+**(ii) Normalization.**
+$$
+\sum_{\vec{j}} \Pi_{\vec{j}} = \bigotimes_{l=1}^n \left(\sum_{j_l} \Pi_{j_l}^{(l)}\right) = \bigotimes_{l=1}^n s^*_l\,\mathbb{I}_{2^k} = \left(\prod_{l=1}^n s^*_l\right) \mathbb{I}_{(2^k)^n}. \quad \checkmark
+$$
+
+**(iii) Positivity.** Each $\Pi_{j_l}^{(l)} \geq 0$, so $\Pi_{\vec{j}} = \bigotimes_l \Pi_{j_l}^{(l)} \geq 0$. $\checkmark$
+
+**(iv) Bounded estimators.** Since $|h_{\alpha_l}^{(l)}(j_l)| \leq 1$ for all $l$, we have $|h_\alpha(\vec{j})| = \prod_l |h_{\alpha_l}^{(l)}(j_l)| \leq 1$. $\checkmark$
+
+Therefore $s = \prod_l s^*_l$ is a feasible value, which gives $s^*_{\mathrm{loc}} \leq \prod_l s^*_l$.
+
+**Part 2: Lower bound ($s^*_{\mathrm{loc}} \geq \prod_l s^*_l$).**
+
+Suppose the $n$-qubit local SDP (@eq-local-f-compat-SDP) is feasible with product POVM $\Pi_{\vec{j}} = \bigotimes_l \Pi_{j_l}^{(l)}$, local normalizations $\sum_{j_l} \Pi_{j_l}^{(l)} = s_l \mathbb{I}_{2^k}$, and estimators $h_\alpha(\vec{j}) \in [-1,1]$.
+
+Fix an arbitrary site $l_0$ and fix all other sites' outcomes $\vec{j}_{\neq l_0} = (j_1,\ldots,j_{l_0-1},j_{l_0+1},\ldots,j_n)$. Define the **conditional estimator** at site $l_0$:
+$$
+\tilde{h}_{\alpha_{l_0}}^{(l_0)}(j_{l_0}) := \sum_{\vec{j}_{\neq l_0}} h_\alpha(\vec{j}) \prod_{l \neq l_0} \frac{\mathrm{tr}\!\left[\Pi_{j_l}^{(l)} \sigma_l^{\otimes k}\right]}{s_l},
+$$
+where $\sigma_l$ is a test state for site $l$. The key identity is that for any $n$-qubit state of the product form $\rho = \bigotimes_l \sigma_l$:
+$$
+\sum_{j_{l_0}} \tilde{h}_{\alpha_{l_0}}^{(l_0)}(j_{l_0})\,\mathrm{tr}\!\left[\Pi_{j_{l_0}}^{(l_0)}\,\sigma_{l_0}^{\otimes k}\right] = \frac{1}{\prod_{l\neq l_0} s_l}\sum_{\vec{j}} h_\alpha(\vec{j})\,\mathrm{tr}\!\left[\Pi_{\vec{j}}\,\rho^{\otimes k}\right] = \frac{f_\alpha(\rho)}{\prod_{l\neq l_0} s_l}.
+$$
+
+Now consider the special case where $\alpha = (\alpha_1,\ldots,\alpha_n)$ and all sites $l \neq l_0$ are set to trivial functionals (e.g., $F_{\alpha_l}^{(l)} = \mathbb{I}_{2^k}$ for $l \neq l_0$). In this case, $f_\alpha(\rho) = f_{\alpha_{l_0}}(\sigma_{l_0}) \cdot \prod_{l \neq l_0} 1 = f_{\alpha_{l_0}}(\sigma_{l_0})$. Choosing $\sigma_l = \mathbb{I}/2$ for $l \neq l_0$ (so that $\mathrm{tr}[\Pi_{j_l}^{(l)} (\mathbb{I}/2)^{\otimes k}] = s_l/2^k$), the conditional estimator simplifies and we obtain:
+$$
+\sum_{j_{l_0}} \tilde{h}_{\alpha_{l_0}}^{(l_0)}(j_{l_0})\,\mathrm{tr}\!\left[\Pi_{j_{l_0}}^{(l_0)}\,\sigma_{l_0}^{\otimes k}\right] = \frac{f_{\alpha_{l_0}}(\sigma_{l_0})}{\prod_{l \neq l_0} s_l} \cdot \prod_{l \neq l_0} s_l = f_{\alpha_{l_0}}(\sigma_{l_0}),
+$$
+for all $\sigma_{l_0}$. Moreover, the conditional estimator $\tilde{h}_{\alpha_{l_0}}^{(l_0)}(j_{l_0})$ evaluated at $\sigma_l = \mathbb{I}/2$ is:
+$$
+\tilde{h}_{\alpha_{l_0}}^{(l_0)}(j_{l_0}) = \sum_{\vec{j}_{\neq l_0}} h_\alpha(\vec{j}) \prod_{l \neq l_0} \frac{1}{|\mathcal{J}_l|},
+$$
+which is a convex combination of values in $[-1,1]$, hence $|\tilde{h}_{\alpha_{l_0}}^{(l_0)}(j_{l_0})| \leq 1$.
+
+Therefore, $\{\Pi_{j_{l_0}}^{(l_0)}, \tilde{h}_{\alpha_{l_0}}^{(l_0)}\}$ is a feasible solution to the per-site SDP at site $l_0$ with normalization $s_{l_0}$. This means $s^*_{l_0} \leq s_{l_0}$.
+
+Since this holds for each site $l_0$, we have $\prod_l s^*_l \leq \prod_l s_l = s^*_{\mathrm{loc}}$.
+
+**Combining Parts 1 and 2:** $s^*_{\mathrm{loc}} = \prod_l s^*_l$. $\blacksquare$
+:::
+
+## Variance and Sample Complexity
+
+The factorization has a direct consequence for estimation variance.
+
+:::{#thm-local-variance .callout-important icon="false"}
+## Theorem (Variance Bound under Local Measurements)
+Under the conditions of @thm-tensor-product, let $\{\Pi_{\vec{j}}/s, h_\alpha\}$ be the optimal local measurement protocol with $s = s^*_{\mathrm{loc}} = \prod_l s^*_l$. The rescaled unbiased estimator $\hat{f}_\alpha = s \cdot h_\alpha(j)$ (where $j$ is sampled from the normalized POVM $\tilde{\Pi}_{\vec{j}} = \Pi_{\vec{j}}/s$) satisfies:
+$$
+\mathrm{Var}_\rho[\hat{f}_\alpha] \leq s^2 - f_\alpha(\rho)^2 \leq s^2 = \left(\prod_{l=1}^n s^*_l\right)^2.
+$$ {#eq-variance-bound}
+Consequently, achieving additive error $\varepsilon$ for all $|\mathcal{A}|$ functionals simultaneously with confidence $1-\delta$ requires
+$$
+N = \mathcal{O}\!\left(\left(\prod_{l=1}^n s^*_l\right)^2 \varepsilon^{-2} \log(|\mathcal{A}|/\delta)\right)
+$$ {#eq-sample-complexity}
+copies of $\rho^{\otimes k}$, i.e., $N \cdot k$ total copies of $\rho$.
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+
+The normalized POVM $\tilde{\Pi}_{\vec{j}} = \Pi_{\vec{j}}/s$ defines probabilities $p_{\vec{j}} = \mathrm{tr}[\tilde{\Pi}_{\vec{j}}\,\rho^{\otimes k}]$. The expectation of $h_\alpha(\vec{j})$ under this distribution is:
+$$
+\mathbb{E}[h_\alpha] = \sum_{\vec{j}} h_\alpha(\vec{j})\,p_{\vec{j}} = \frac{1}{s}\sum_{\vec{j}} h_\alpha(\vec{j})\,\mathrm{tr}[\Pi_{\vec{j}}\,\rho^{\otimes k}] = \frac{f_\alpha(\rho)}{s}.
+$$
+Hence $\hat{f}_\alpha := s \cdot h_\alpha(\vec{j})$ is unbiased: $\mathbb{E}[\hat{f}_\alpha] = f_\alpha(\rho)$.
+
+The variance is:
+$$
+\mathrm{Var}[\hat{f}_\alpha] = s^2 \mathbb{E}[h_\alpha^2] - f_\alpha^2 = s^2 \sum_{\vec{j}} h_\alpha(\vec{j})^2\,p_{\vec{j}} - f_\alpha^2 \leq s^2 \sum_{\vec{j}} p_{\vec{j}} - f_\alpha^2 = s^2 - f_\alpha^2,
+$$
+where we used $|h_\alpha(\vec{j})| \leq 1$.
+
+The sample complexity follows from the median-of-means concentration: running the protocol $N$ times and taking the empirical mean, Chebyshev's inequality gives error $\varepsilon$ with failure probability $s^2/(N\varepsilon^2)$. A union bound over $|\mathcal{A}|$ functionals and the standard $\log(1/\delta)$ refinement via median-of-means yields @eq-sample-complexity. $\blacksquare$
+:::
+
+
+::: {.callout-tip icon="false" collapse="true"}
+## Remark (When the bound is pessimistic)
+The bound $\mathrm{Var} \leq s^2 - f_\alpha(\rho)^2$ is tight in the worst case (states where $f_\alpha(\rho) \approx 0$ and $\mathbb{E}[h_\alpha^2] \approx 1$), but can be very loose at the maximally mixed state. For the $n$-qubit product unsharp-Pauli estimator of a weight-$w$ Pauli $P$, at $\rho = \mathbb{I}/2^n$ the local outcome distribution assigns equal probability $1/6$ to each of the 6 outcomes per site, so $\mathbb{E}[h_{P_l}^2] = 2/6 = 1/3$ for each non-identity site (the two non-zero outcomes). Hence
+$$
+\mathrm{Var}_{\mathbb{I}/2^n}[\hat{f}_P] = s^2 \prod_{l:\,P_l\neq I}\!\mathbb{E}[h_{P_l}^2] = \left(\prod_l s^*_l\right)^2 \cdot \left(\frac{1}{s^*_l^2}\right)^w \cdot 1^{n-w} = 1,
+$$
+independent of $w$. The pessimism factor $s^2$ is exactly cancelled by the small probability of triggering the non-zero estimator outcomes. Thus the bound @eq-variance-bound is relevant for states away from the maximally mixed state; the sample complexity $N = \mathcal{O}(s^2 \varepsilon^{-2})$ applies uniformly but is not always saturated.
+:::
+
+## Application to $n$-Qubit Pauli Estimation
+
+The theorem immediately recovers the known exponential lower bounds and sharpens their interpretation.
+
+:::{.callout-important icon="false"}
+## Corollary (Pauli Weight Scaling)
+Let $P \in \mathcal{P}_n$ be an $n$-qubit Pauli operator with weight $\mathrm{wt}(P) = w$. 
+
+**(a) Linear estimation ($\mathcal{F} = \{\mathrm{tr}(P\rho)\}$, $k=1$).** The per-site f-compatibility problem at each non-identity site is the estimation of $\mathrm{tr}(\sigma_j \rho_j)$ for $\sigma_j \in \{X,Y,Z\}$ from a single POVM. By @thm-linearfunctional, this is equivalent to joint measurability of $\{\frac{\mathbb{I} \pm \sigma_j}{2}\}$. The per-site robustness is $s^*_j = \sqrt{3}$ (from the unsharp Pauli threshold $\eta^* = 1/\sqrt{3}$). At identity sites, $s^*_j = 1$. Therefore:
+$$
+s^*_{\mathrm{loc}} = (\sqrt{3})^w \cdot 1^{n-w} = 3^{w/2}, \qquad \mathrm{Var} \leq 3^w,
+$$
+recovering the classical shadow complexity $\mathcal{O}(3^w \varepsilon^{-2} \log |\mathcal{P}_n|)$.
+
+**(b) Squared estimation ($\mathcal{F} = \{|\mathrm{tr}(P\rho)|^2\}$, $k=2$).** The per-site linearization is $F_j = \sigma_j \otimes \sigma_j$. Since $\{\sigma_j \otimes \sigma_j\}_{j \in \{X,Y,Z\}}$ mutually commute and form part of the Bell basis, the per-site f-compatibility robustness is $s^*_j = 1$ for **all** sites (including non-identity sites). Therefore:
+$$
+s^*_{\mathrm{loc}} = 1^n = 1, \qquad \mathrm{Var} \leq 1,
+$$
+recovering the Bell-measurement result: **constant** sample complexity $\mathcal{O}(\varepsilon^{-2} \log |\mathcal{P}_n|)$, independent of $n$ and $w$.
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+
+**(a)** At each non-identity site $l$ with Pauli $\sigma_l \in \{X,Y,Z\}$, the target functional is $f_l = \mathrm{tr}(\sigma_l \rho_l)$, which is linear. By @thm-linearfunctional, the f-compatibility SDP with $k=1$ reduces to the standard joint measurability SDP for $\{\frac{\mathbb{I} \pm \sigma_l}{2}\}$. For a single site with the full set $\{X,Y,Z\}$, the optimal sharpness is $\eta^* = 1/\sqrt{3}$, achieved by the 8-element POVM $G(\pm x, \pm y, \pm z) = \frac{1}{8}(\mathbb{I} + \frac{x}{\sqrt{3}} X + \frac{y}{\sqrt{3}} Y + \frac{z}{\sqrt{3}} Z)$ (from @thm-unsharp-pauli-joint-measurability). The per-site SDP normalization is $s^*_l = 1/\eta^* = \sqrt{3}$.
+
+More precisely, the unbiased estimator for $\mathrm{tr}(\sigma_l \rho_l)$ using this POVM has the form $\hat{o}_l = h_l(j)/\eta^* = \sqrt{3}\,h_l(j)$, where $|h_l(j)| \leq 1$. The variance is bounded by $\mathrm{Var}[\hat{o}_l] \leq 1/(\eta^*)^2 = 3$.
+
+For the $n$-qubit product observable $P = \bigotimes_l \sigma_l$, the $n$-qubit estimator is $\hat{o} = \prod_l \hat{o}_l$. By @thm-tensor-product, the local f-compatibility robustness is $s^*_{\mathrm{loc}} = \prod_l s^*_l = (\sqrt{3})^w$, and the variance bound is $s^*_{\mathrm{loc}}{}^2 = 3^w$.
+
+**(b)** At each non-identity site $l$, the target functional is $|\mathrm{tr}(\sigma_l \rho_l)|^2 = \mathrm{tr}[(\sigma_l \otimes \sigma_l)\,\rho_l^{\otimes 2}]$. The linearization is $F_l = \sigma_l \otimes \sigma_l \in \mathcal{L}((\mathbb{C}^2)^{\otimes 2})$.
+
+The set $\{X \otimes X, Y \otimes Y, Z \otimes Z\}$ are mutually commuting with common eigenbasis being the Bell basis (as shown in @prop-bell-f-compat). The Bell measurement POVM $\Pi_j = |B_j\rangle\langle B_j|$ satisfies $\sum_j \Pi_j = \mathbb{I}_4$ (i.e., $s_l = 1$) and $\sum_j h_l(j) \Pi_j = \sigma_l \otimes \sigma_l$ where $h_l(j) = \pm 1$ are the Bell-state eigenvalues. All eigenvalues satisfy $|h_l(j)| = 1 \leq 1$.
+
+Therefore $s^*_l = 1$ at every site, and $s^*_{\mathrm{loc}} = 1^n = 1$. The variance is bounded by $1$, yielding sample complexity $\mathcal{O}(\varepsilon^{-2} \log |\mathcal{A}|)$. $\blacksquare$
+:::
+
+
+## General Framework: From Single-Site to $n$-Qubit Hardness
+
+@thm-tensor-product provides a systematic algorithm for determining the sample complexity of estimating product-structured nonlinear functionals under local measurements:
+
+:::{.callout-tip icon="false"}
+## Algorithm (Local Hardness Assessment)
+
+**Input:** $n$-qubit observables $\{A_{\mathbf{r}} = \bigotimes_l A_{\mathbf{r}_l}^{(l)}\}$, target functional family $\mathcal{F}$ with product-form linearizations $F_\alpha = \bigotimes_l F_{\alpha_l}^{(l)}$.
+
+**Step 1 (Per-site analysis).** For each site $l = 1,\ldots,n$:
+
+- Identify the local observable set $\{A_{\mathbf{r}_l}^{(l)}\}_{\mathbf{r}_l}$ and local functional family $\{f_{\alpha_l}\}_{\alpha_l}$.
+- Compute the linearized operators $\{F_{\alpha_l}^{(l)}\}$.
+- Check if $\{F_{\alpha_l}^{(l)}\}$ mutually commute. If yes, $s^*_l = 1$.
+- If not, solve the per-site f-compatibility SDP to obtain $s^*_l$.
+
+**Step 2 (Assembly).** The $n$-qubit local f-compatibility robustness is $s^*_{\mathrm{loc}} = \prod_l s^*_l$.
+
+**Step 3 (Complexity).** The sample complexity for $k$-replica local estimation is $\mathcal{O}((s^*_{\mathrm{loc}})^2\,\varepsilon^{-2}\,\log|\mathcal{A}|)$.
+
+**Output:** If $s^*_l > 1$ for $w$ sites, the complexity scales as $\Omega((\min_{l:s^*_l > 1} s^*_l)^{2w})$ — exponential in the number of "incompatible" sites.
+:::
+
+The power of this framework is that **all the difficulty is concentrated in the per-site SDP** (Step 1), which is a small problem on $(\mathbb{C}^2)^{\otimes k}$ (dimension $2^k$). The $n$-qubit complexity is then determined purely by counting how many sites are locally f-incompatible and how badly.
+
+::: {.callout-important icon="false"}
+## Key Insight
+The transition from exponential to constant complexity in going from $\mathcal{F} = \{\mathrm{tr}(P\rho)\}$ to $\mathcal{F} = \{|\mathrm{tr}(P\rho)|^2\}$ is **not** a global phenomenon — it happens site by site. At each qubit site, the linearized operators $\{\sigma_j\}$ are incompatible ($s^*_l = \sqrt{3}$), but $\{\sigma_j \otimes \sigma_j\}$ are compatible ($s^*_l = 1$). The tensor product theorem then amplifies this per-site improvement into an exponential-to-constant gap at the $n$-qubit level.
+
+This opens a systematic strategy: for any estimation problem that is exponentially hard under local measurements, seek a nonlinear functional family $\mathcal{F}$ such that the per-site linearizations commute, collapsing the per-site robustness from $s^*_l > 1$ to $s^*_l = 1$.
+:::
+
+::: {.callout-important icon="false"}
+## Conjecture: Product Hardness
+Given a set of observables $O = \{O_i\}_{i=1}^L$ on $\mathcal{H}$ with compatibility robustness $I$, construct a new observable set $O^{\otimes N} = \{O_{i_1} \otimes \cdots \otimes O_{i_L}\}_{i_1, \cdots, i_L = 1}^L$ with $L^N$ observables and on space $\mathcal{H}^{\otimes N}$.
+Then any measurement strategy that is $N$-separable on space $\mathcal{H}^{\otimes N}$ has sampling complexity $\mathcal{O}(I^N\varepsilon^{-2} \ln(1/\delta))$.
+:::
