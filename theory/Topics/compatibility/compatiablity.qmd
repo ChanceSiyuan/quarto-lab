@@ -287,7 +287,7 @@ $$
 & A_j, B_k \text{ are Hermitian matrices}
 \end{align}
 $${#eq-dual-optimization}
-By strong duality (Slater's condition holds since $G_{j,k} = \frac{1}{4}\mathbb{I}$, $\mu = \max_{j,k}(d^{-1}/a_{j,k})$ is strictly feasible), the dual optimal equals the primal optimal $\mu \geq 0$.
+By strong duality (Slater's condition holds: take $G_{j,k}^* = \frac{M_j + N_k}{2} - \frac{\mathbb{I}}{4}$; this satisfies both marginal equalities $\sum_k G_{j,k}^* = M_j + \frac{N_0+N_1}{2} - \frac{\mathbb{I}}{2} = M_j$ and $\sum_j G_{j,k}^* = N_k$ since $\sum_j M_j = \sum_k N_k = \mathbb{I}$; moreover, since $M_j, N_k \in [0,\mathbb{I}]$ we have $\lambda_{\min}(G_{j,k}^*) \geq -\frac{1}{4}$, so choosing any $\mu^* > \max_{j,k}\frac{1}{4 a_{j,k}}$ makes $G_{j,k}^* + \mu^* a_{j,k}\mathbb{I} \succ 0$ for all $j,k$), the dual optimal equals the primal optimal $\mu \geq 0$.
 :::
 
 ::: {.callout-note collapse="true"}
