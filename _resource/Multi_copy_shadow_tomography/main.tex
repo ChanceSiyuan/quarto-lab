@@ -347,21 +347,21 @@ The ordinary definition of compatibility captures the following notion of simult
     A set of POVMs $\{E_{a|x}\}$ is jointly measurable if there exists a parent POVM $\{G_\lambda\}$ such that $E_{a|x} = \sum_\lambda p(a|x,\lambda)\,G_\lambda$.
 \end{definition}
 
-For example, the Pauli measurements on a qubit can be represented as a set of POVMs $\{E_{a|x}\}$ with $E_{a|x = X} = (1/2)\cdot (\mathbb{I} \pm  X)$, $E_{a|x = Y} = (1/2)\cdot (\mathbb{I} \pm  Y )$  and $E_{a|x = Z} = (1/2)\cdot (\mathbb{I}\pm Z)$, where $a\in \{+,-\}$ and $x\in \{X, Y, Z\}$. 
+For example, the Pauli measurements on a qubit can be represented as a set of POVMs $\{E_{a|x}\}$ with $E_{a|x = X} = (1/2)\cdot (\1 \pm  X)$, $E_{a|x = Y} = (1/2)\cdot (\1 \pm  Y )$  and $E_{a|x = Z} = (1/2)\cdot (\1\pm Z)$, where $a\in \{+,-\}$ and $x\in \{X, Y, Z\}$. 
 It has been shown that they are the sharpest Pauli measurements and not jointly measurable. But the unsharp Pauli measurements are jointly measurable. 
 $$
-E^{\eta_{P}}_{a|x = P} = \eta_P \frac{\mathbb{I} \pm P}{2} + (1 - \eta_P) \frac{\mathbb{I}}{2} =  \frac{\mathbb{I} \pm P\eta_P}{2}, P \in \{X, Y, Z\}
+E^{\eta_{P}}_{a|x = P} = \eta_P \frac{\1 \pm P}{2} + (1 - \eta_P) \frac{\1}{2} =  \frac{\1 \pm P\eta_P}{2}, P \in \{X, Y, Z\}
 $$
-The mixing of $\mathbb{I}$ can be interpreted as $\eta_P$ fractional random guessing or a noise on Pauli measurement $P$.
+The mixing of $\1$ can be interpreted as $\eta_P$ fractional random guessing or a noise on Pauli measurement $P$.
 As shown in~\cite{Busch1986}, the unsharp Pauli measurements are jointly measurable if and only if $(\eta_x)^2 + (\eta_y)^2 +(\eta_z)^2 \leq 1$.
 
 \begin{theorem}[Unsharp Pauli Measurements Are Jointly Measurable]
-Define the noisy unsharp versions of Pauli measurements as $E^{\eta_x}_{a|x = X} = (1/2)\cdot (\mathbb{I} + a \eta_x X)$, $E^{\eta_y}_{a|x = Y} = (1/2)\cdot (\mathbb{I} + a \eta_y Y )$  and $E^{\eta_z}_{a|x = Z} = (1/2)\cdot (\mathbb{I}+a\eta_z Z)$, with outcomes $a\in \{+,-\}$  and $0 \leq \eta_x, \eta_y, \eta_z \leq 1$.
-The triple is jointly measurable if and only if $(\eta_x)^2 + (\eta_y)^2 +(\eta_z)^2 \leq 1$. The corresponding joint measurement, whose marginals are the unsharp Pauli observables, is  $G(x, y, z) = \frac{1}{8}(\mathbb{I} + x\eta_x X + y\eta_y Y + z\eta_z Z)$.
+Define the noisy unsharp versions of Pauli measurements as $E^{\eta_x}_{a|x = X} = (1/2)\cdot (\1 + a \eta_x X)$, $E^{\eta_y}_{a|x = Y} = (1/2)\cdot (\1 + a \eta_y Y )$  and $E^{\eta_z}_{a|x = Z} = (1/2)\cdot (\1+a\eta_z Z)$, with outcomes $a\in \{+,-\}$  and $0 \leq \eta_x, \eta_y, \eta_z \leq 1$.
+The triple is jointly measurable if and only if $(\eta_x)^2 + (\eta_y)^2 +(\eta_z)^2 \leq 1$. The corresponding joint measurement, whose marginals are the unsharp Pauli observables, is  $G(x, y, z) = \frac{1}{8}(\1 + x\eta_x X + y\eta_y Y + z\eta_z Z)$.
 \end{theorem}
 
 \subsubsection{Robustness of Incompatibility}
-It is unnecessary to always use $\mathbb{I}$ mixedness to cancel the non-compatibility. In \cite{skrzypczyk2019all}, the authors use arbitrary $N_{a|x}$ mixed with $M_{a|x}$ to cancel the non-compatibility, that is, 
+It is unnecessary to always use $\1$ mixedness to cancel the non-compatibility. In \cite{skrzypczyk2019all}, the authors use arbitrary $N_{a|x}$ mixed with $M_{a|x}$ to cancel the non-compatibility, that is, 
 \begin{align}
     r N_{a|x} + M_{a|x} &= (1 + r)\sum_{\lambda} p(a|x,\lambda) G_\lambda, \forall a,x.\\
      &\Rightarrow (1 + r)\sum_{\lambda} p(a|x,\lambda) G_\lambda \geq M_{a|x} \quad \forall a,x.
@@ -392,7 +392,7 @@ $$
 \text{Minimize:} \quad & s \\
 \text{Subject to:} \quad & \sum_{k = 0}^{1}\tilde{G}_{j,k} \geq M_{j} \quad \forall j \in \{0,1\} \\
 & \sum_{j = 0}^{1}\tilde{G}_{j,k} \geq N_{k} \quad \forall k \in \{0,1\} \\
-& \sum_{i,j \in \{0,1\}} \tilde{G}_{ij} = s\mathbb{I} \\
+& \sum_{i,j \in \{0,1\}} \tilde{G}_{ij} = s\1 \\
 & \tilde{G}_{ij} \geq 0 \quad \forall i,j \in \{0,1\}
 \end{aligned}
 }
@@ -417,7 +417,7 @@ Given $\{P,Q\}$ specified and $\mathcal{E} = \mathcal{E}_P = \{\rho_0,\rho_1\} \
 
 In \cite{carmeli2016quantum}, the authors define the multicopy compatibility as follows:
 Given $K$ POVMs $\{E_{a|x}\}_{x = 1}^K, a \in \Omega_x$ on outcome sets $\{\Omega_1,\ldots,\Omega_K\}$, we ask the following: given $k$ copies of a quantum state $\rho^{\otimes k}$, can we design a single POVM $G_{\lambda}$ with outcomes $(x_1,\ldots,x_K) \in \Omega_1\times\cdots\times\Omega_K$ on $\rho^{\otimes k}$ such that, for each $i$, the marginal statistics of $G$ on $\Omega_i$ reproduce the measurement statistics of $A_i$ on $\rho$?
-In the case $k \geq K$, this is always achievable: implementing $A_1\otimes \cdots \otimes A_K \otimes \mathbb{I}^{\otimes (k-K)}$ on $\rho^{\otimes k}$ measures each $A_i$ on a separate copy, and the marginals correctly reproduce the individual statistics.
+In the case $k \geq K$, this is always achievable: implementing $A_1\otimes \cdots \otimes A_K \otimes \1^{\otimes (k-K)}$ on $\rho^{\otimes k}$ measures each $A_i$ on a separate copy, and the marginals correctly reproduce the individual statistics.
 In the case $k < K$, the problem becomes non-trivial.
 
 \begin{definition}[Multicopy Compatibility]\label{def:multicopy-compatibility}
@@ -436,7 +436,7 @@ which satisfies $\tr[(\1^{\ox(k-1)}\odot O)\,\rho^{\ox k}] = \tr(O\rho)$ for all
 
 \begin{lemma}[Structure Lemma]\label{lem:structure-lemma}
 The POVMs $\{E_{a|x}\}_{x = 1}^K$ are $k$-replica compatible if and only if
-$\tilde{E}_{a|x} := \mathbb{I}^{\otimes(k-1)}\odot E_{a|x} $ is compatible.
+$\tilde{E}_{a|x} := \1^{\otimes(k-1)}\odot E_{a|x} $ is compatible.
 \end{lemma}
 
 \begin{proof}
@@ -553,31 +553,31 @@ Given two sets of functions of $\rho$, $\mathcal{S}:= (S_\alpha(\rho))_{\alpha \
 
 
 \subsection{Application on linear functionals}
-For Hermitian operators $O_i$ with bounded eigenvales, $\|O_i\|_{\infty} \leq 1$, it splits the Hilbert space into two eigenspaces with POVMs as $\{M_i^{(+)}:= \frac{\mathbb{I} + O_i}{2},M_i^{(-)}:= \frac{\mathbb{I} - O_i}{2}\}$.
-An familiar example is the Pauli compatibility problem, given a set of Pauli observables $\{P_i\}_i$, getting its average is as hard as compatible realization its 2-outcome POVMs $\frac{\mathbb{I} \pm P_i}{2}$.
+For Hermitian operators $O_i$ with bounded eigenvales, $\|O_i\|_{\infty} \leq 1$, it splits the Hilbert space into two eigenspaces with POVMs as $\{M_i^{(+)}:= \frac{\1 + O_i}{2},M_i^{(-)}:= \frac{\1 - O_i}{2}\}$.
+An familiar example is the Pauli compatibility problem, given a set of Pauli observables $\{P_i\}_i$, getting its average is as hard as compatible realization its 2-outcome POVMs $\frac{\1 \pm P_i}{2}$.
 We then noted that the f-compatibility problem of the set of properties $\mathcal{F}:= \{\mathrm{tr}[O_i\rho]\}_i$ is equivalent to the standard joint measurability problem of the POVMs $\{M_i^{(+)},M_i^{(-)}\}$.
  
 \begin{lemma}[Equivalence for bounded operators]\label{thm:linear_functional_compatibility}
-   Given a set of operators $\{O_i\}_i$ with $\|O_i\|_\infty \leq 1$, the linear functionals $\mathcal{F}:= \{\mathrm{tr}[O_i\rho]\}_i$ are $k$-copy f-compatible with robustness $s$ if and only if the POVMs $\{M_i^{\pm}:= \frac{\mathbb{I} \pm O_i}{2}\}_i$ are $k$-copy jointly measurable with robustness $s$. In particular, $s^*_{\cF}(k) = s^*_{\mathrm{JM}}(k)$ for all $k$.
+   Given a set of operators $\{O_i\}_i$ with $\|O_i\|_\infty \leq 1$, the linear functionals $\mathcal{F}:= \{\mathrm{tr}[O_i\rho]\}_i$ are $k$-copy f-compatible with robustness $s$ if and only if the POVMs $\{M_i^{\pm}:= \frac{\1 \pm O_i}{2}\}_i$ are $k$-copy jointly measurable with robustness $s$. In particular, $s^*_{\cF}(k) = s^*_{\mathrm{JM}}(k)$ for all $k$.
 \end{lemma}
 
 \begin{proof}
 Suppose $\{M_i^+, M_i^-\}_{i=1}^K$ are jointly measurable. By definition there exists a parent POVM $\{G_\lambda\}_\lambda$ that supports on $\mathcal{H}^{\otimes k}$ and a conditional distributions $p(a|i,\lambda)$ with $a \in \{+1,-1\}$ such that:
 \begin{align}
-\mathbb{I}^{\otimes(k-1)}\odot \frac{\mathbb{I} + a\, O_i}{2} = \sum_\lambda p(a|i,\lambda)\, G_\lambda, \quad \forall\, a, i.
+\1^{\otimes(k-1)}\odot \frac{\1 + a\, O_i}{2} = \sum_\lambda p(a|i,\lambda)\, G_\lambda, \quad \forall\, a, i.
 \end{align}
 Taking the difference $a=+1$ minus $a=-1$:
 \begin{align}
-    \mathbb{I}^{\otimes(k-1)}\odot  O_i = \sum_\lambda \bigl[p(+1|i,\lambda) - p(-1|i,\lambda)\bigr]\, G_\lambda =: \sum_\lambda h_i(\lambda)\, G_\lambda.
+    \1^{\otimes(k-1)}\odot  O_i = \sum_\lambda \bigl[p(+1|i,\lambda) - p(-1|i,\lambda)\bigr]\, G_\lambda =: \sum_\lambda h_i(\lambda)\, G_\lambda.
 \end{align}
-Use the fact that $\mathrm{tr}\left[\left(\mathbb{I}^{\otimes(k-1)}\odot O_i\right) \rho^{\otimes k} \right]= \mathrm{tr}(O_i \rho)$ and $p(+1|i,\lambda) + p(-1|i,\lambda) = 1$ both are non-negative, $|h_i(\lambda)| \leq 1$.
+Use the fact that $\mathrm{tr}\left[\left(\1^{\otimes(k-1)}\odot O_i\right) \rho^{\otimes k} \right]= \mathrm{tr}(O_i \rho)$ and $p(+1|i,\lambda) + p(-1|i,\lambda) = 1$ both are non-negative, $|h_i(\lambda)| \leq 1$.
  Therefore $\mathrm{tr}[O_i\rho] = \sum_\lambda h_i(\lambda)\,\mathrm{tr}[G_\lambda\rho]$ for all $\rho$, which is exactly f-compatibility with bounded estimators.
 
 Inversely, suppose there exists a POVM $\{\Pi_j\}_j$ and estimators $\{h_i(j)\}$ with $|h_i(j)| \leq 1$ such that
 \begin{align}
-     \mathrm{tr}\left[ \sum_j h_i(j)\,\Pi_j \rho^{\otimes k}\right] = \mathrm{tr}\left[ O_i \rho \right] = \mathrm{tr}\left[ \mathbb{I}^{\otimes(k-1)}\odot  O_i \rho^{\otimes k} \right] .
+     \mathrm{tr}\left[ \sum_j h_i(j)\,\Pi_j \rho^{\otimes k}\right] = \mathrm{tr}\left[ O_i \rho \right] = \mathrm{tr}\left[ \1^{\otimes(k-1)}\odot  O_i \rho^{\otimes k} \right] .
 \end{align}
-Since this is satisfied for general $\rho$, we conclude that the symmetric version $\mathrm{sym}\left[\Pi_j\right] := (k!)^{-1}\sum_{\pi \in S_k} P_{\pi}\Pi_j P_{\pi}^\dagger$ satisfies $\sum_j h_i(j)\,\mathrm{sym}\left[\Pi_j\right] =\mathbb{I}^{\otimes(k-1)}\odot O_i$ for all $i$.
+Since this is satisfied for general $\rho$, we conclude that the symmetric version $\mathrm{sym}\left[\Pi_j\right] := (k!)^{-1}\sum_{\pi \in S_k} P_{\pi}\Pi_j P_{\pi}^\dagger$ satisfies $\sum_j h_i(j)\,\mathrm{sym}\left[\Pi_j\right] =\1^{\otimes(k-1)}\odot O_i$ for all $i$.
 Define conditional probabilities:
 $$
 p(\pm 1|i,j) := \frac{1 \pm h_i(j)}{2}.
@@ -585,19 +585,19 @@ $$
 Since $|h_i(j)|\leq 1$, both $p(+1|i,j) \geq 0$ and $p(-1|i,j) \geq 0$, and they sum to 1. Now verify the marginals:
 
 \begin{align}
-\sum_j p(\pm 1|i,j)\,\mathrm{sym}\left[\Pi_j\right] &= \frac{1}{2}\sum_j \mathrm{sym}\left[\Pi_j\right] \pm \frac{1}{2}\sum_j h_i(j)\,\mathrm{sym}\left[\Pi_j\right]  = \frac{\mathbb{I}^{\otimes k} \pm \mathbb{I}^{\otimes(k-1)}\odot O_i}{2}\\
-&=\mathbb{I}^{\otimes(k-1)}\odot \frac{\mathbb{I} + a\, O_i}{2}.
+\sum_j p(\pm 1|i,j)\,\mathrm{sym}\left[\Pi_j\right] &= \frac{1}{2}\sum_j \mathrm{sym}\left[\Pi_j\right] \pm \frac{1}{2}\sum_j h_i(j)\,\mathrm{sym}\left[\Pi_j\right]  = \frac{\1^{\otimes k} \pm \1^{\otimes(k-1)}\odot O_i}{2}\\
+&=\1^{\otimes(k-1)}\odot \frac{\1 + a\, O_i}{2}.
 \end{align}
 
-This is precisely a joint measurement realization of $\{\mathbb{I}^{\otimes(k-1)}\odot \frac{\mathbb{I} \pm \, O_i}{2}\}_{i=1}^K$ with parent POVM $\{\mathrm{sym}\left[\Pi_j\right]\}$, thus implies the $k$-replica compatibility of $\{\frac{\mathbb{I} \pm \, O_i}{2}\}_i$ based on Lemma~\ref{lem:structure-lemma}.
+This is precisely a joint measurement realization of $\{\1^{\otimes(k-1)}\odot \frac{\1 \pm \, O_i}{2}\}_{i=1}^K$ with parent POVM $\{\mathrm{sym}\left[\Pi_j\right]\}$, thus implies the $k$-replica compatibility of $\{\frac{\1 \pm \, O_i}{2}\}_i$ based on Lemma~\ref{lem:structure-lemma}.
 \end{proof}
 
 \color{red}
 \emph{Remark (general robustness $s$).}
-The proof above establishes the equivalence for proper POVMs ($s=1$, i.e., $\sum_j \Pi_j = \mathbb{I}^{\otimes k}$). The general case follows by rescaling: $\cF$ is f-compatible with robustness $s$ (i.e., $\sum_j h_i(j)\Pi_j = \mathbb{I}^{\otimes(k-1)}\odot O_i$ with $\sum_j \Pi_j = s\cdot\mathbb{I}^{\otimes k}$) if and only if $\cF' := \{\tr[(O_i/s)\rho]\}$ is f-compatible with $s=1$. By the above, this is equivalent to joint measurability of $\{(\mathbb{I} \pm O_i/s)/2\}$, which is precisely joint measurability of $\{(\mathbb{I} \pm O_i)/2\}$ with robustness $s$.
+The proof above establishes the equivalence for proper POVMs ($s=1$, i.e., $\sum_j \Pi_j = \1^{\otimes k}$). The general case follows by rescaling: $\cF$ is f-compatible with robustness $s$ (i.e., $\sum_j h_i(j)\Pi_j = \1^{\otimes(k-1)}\odot O_i$ with $\sum_j \Pi_j = s\cdot\1^{\otimes k}$) if and only if $\cF' := \{\tr[(O_i/s)\rho]\}$ is f-compatible with $s=1$. By the above, this is equivalent to joint measurability of $\{(\1 \pm O_i/s)/2\}$, which is precisely joint measurability of $\{(\1 \pm O_i)/2\}$ with robustness $s$.
 \color{black}
 
-This also implies that a set of linear properties $\{\mathrm{tr}\left(\rho O_i\right)\}_{i = 1}^K$ is $k$-replica f-compatible for $\rho$ if and only if its symmetric embedding $\{\mathbb{I}^{\otimes (k-1)} \odot O_i\}$ is single-copy f-compatible on $\rho^{\otimes k}$.
+This also implies that a set of linear properties $\{\mathrm{tr}\left(\rho O_i\right)\}_{i = 1}^K$ is $k$-replica f-compatible for $\rho$ if and only if its symmetric embedding $\{\1^{\otimes (k-1)} \odot O_i\}$ is single-copy f-compatible on $\rho^{\otimes k}$.
 
 % \color{red}
 % (todo: A generalization to linear combinations of binary POVMs:
@@ -614,8 +614,8 @@ For a set of rank-$r$ properties, we define the $r$-replica linearization of $\m
 \begin{definition}[Linearization of degree-$r$ polynomials]\label{def:linearization}
     Given a set of degree-$r$ non-linear functions $\{f_\alpha(\rho)\}_{\alpha \in \mathcal{A}}$, its $l$-linearization (for $l \geq r$) is defined as a set of Hermitian operators $\{F_\alpha\}_{\alpha \in \mathcal{A}}$ on $\cH^{\ox l}$ such that $\mathrm{tr}(F_{\alpha}\, \rho^{\otimes l}) = f_{\alpha}(\rho)$ for all states $\rho$.
 \end{definition}
-An $l \geq r$ linearization of a degree-$r$ function of $\rho$ can always be done since its components satisfy $\left[\mathrm{tr}(O \rho^{m})\right]^{p} = \mathrm{tr}([(O\otimes \mathbb{I}^{m-1})\cdot S_{m}]^{\otimes p} \cdot \rho^{\otimes m p})$.
- Thus we can always set $F = \mathbb{I}^{\otimes (l-mp)} \otimes [(O\otimes \mathbb{I}^{m-1}) \cdot S_{m}]^{\otimes p}$ or its symmetric over $l$ copies of state $\rho^{\otimes l}$.
+An $l \geq r$ linearization of a degree-$r$ function of $\rho$ can always be done since its components satisfy $\left[\mathrm{tr}(O \rho^{m})\right]^{p} = \mathrm{tr}([(O\otimes \1^{m-1})\cdot S_{m}]^{\otimes p} \cdot \rho^{\otimes m p})$.
+ Thus we can always set $F = \1^{\otimes (l-mp)} \otimes [(O\otimes \1^{m-1}) \cdot S_{m}]^{\otimes p}$ or its symmetric over $l$ copies of state $\rho^{\otimes l}$.
 
 \begin{lemma}[Linearization lemma]\label{lem:structure_fcomp_lemma}
 Given a set of rank-$r$ functions $\mathcal{F}$, it is $l$-replica compatible if and only if its $l$-linearization is possible and is single-copy f-compatible on $\rho^{\otimes l}$.
@@ -1104,32 +1104,32 @@ respectively. Both of them are bounded within $[-1,1]$, thus induce two efficien
 \subsection{A non-adaptive randomized strategy}
 Unfortunately, for operators out of $\mathbf{S}$ such as
 \begin{align}
-    O_{\mathbf{q}}:=(\sigma_{\mathbf{q}} \otimes \mathbb{I}_n) \cdot \mathrm{SWAP}^{\otimes n}=2^{-n}\sum_{\mathbf{p}}\sigma_{\mathbf{q}}\sigma_{\mathbf{p}} \otimes \sigma_{\mathbf{p}},
+    O_{\mathbf{q}}:=(\sigma_{\mathbf{q}} \otimes \1_n) \cdot \mathrm{SWAP}^{\otimes n}=2^{-n}\sum_{\mathbf{p}}\sigma_{\mathbf{q}}\sigma_{\mathbf{p}} \otimes \sigma_{\mathbf{p}},
 \end{align}
 which is a critical observable that investigate the value of $\mathrm{tr}(\sigma_{\mathbf{r}}\rho^2)$, Bell sampling lost its capacity.
-We consider the case $\mathbf{q}_i \neq 0, \forall i = 1,\cdots,n$, otherwise we reorder the terms in $\sigma_{\mathbf{q}}$ such that $O = (\sigma_{\mathbf{q}'} \otimes \mathbb{I}_{n'}) \cdot \mathrm{SWAP}^{\otimes n'} \otimes \mathrm{SWAP}^{\otimes (n -n')} $, and run algorithms $\mathcal{A}$ on the first $n'$ qubits and Bell measurement strategy on the last $(n-n')$ qubits.
+We consider the case $\mathbf{q}_i \neq 0, \forall i = 1,\cdots,n$, otherwise we reorder the terms in $\sigma_{\mathbf{q}}$ such that $O = (\sigma_{\mathbf{q}'} \otimes \1_{n'}) \cdot \mathrm{SWAP}^{\otimes n'} \otimes \mathrm{SWAP}^{\otimes (n -n')} $, and run algorithms $\mathcal{A}$ on the first $n'$ qubits and Bell measurement strategy on the last $(n-n')$ qubits.
 Given $\mathbf{p}$, we defined the index set $ A_{\mathbf{p}}:=\{i\in \{1,\cdots,n\}|\mathbf{p}_i \notin \{\mathbf{q}_i,\mathbf{0}\}\}$. For $i\in A_{\mathbf{p}}$, the Pauli operator $\sigma_{\mathbf{p}_i}$ and $\sigma_{\mathbf{q}_i}$ are anti-commute. 
 We can then construct $L_\mathbf{q}:= \bigotimes_{i\in A_{\mathbf{p}}} e^{i\frac{\pi}{4} \sigma_{\mathbf{q}_i}} $ and conclude that $ i\sigma_{\mathbf{q}} \sigma_{\mathbf{p}} =L_\mathbf{q}\sigma_{\mathbf{p}}L_\mathbf{q}^\dagger$ on the index set $A_{\mathbf{p}}$.
 Unfortunately, for the rest indexes  $\bar{A}_{\mathbf{p}}:= \{i \in \{1,\cdots,n\}| \mathbf{p}_i=\mathbf{q}_i\text{~or~} \mathbf{0}\}$ ,  there exists no local Clifford that realizes $\sigma_{\mathbf{p}_i} \otimes \sigma_{\mathbf{p}_i} \to \sigma_{\mathbf{q}_i}\sigma_{\mathbf{p}_i} \otimes \sigma_{\mathbf{p}_i}$. 
 In this case, we can separate $\bar{A}_{\mathbf{p}}$ into two parts $R_{\mathbf{p}}:=\{i| \mathbf{p}_i = \mathbf{q}_i\}$ and $L_{\mathbf{p}}:=\{i| \mathbf{p}_i = \mathbf{0}\}$ and conclude that
 \begin{align}
 \label{eq:2rep_decomp_Prho2}
-    O = 2^{-n}\sum_{\mathbf{p}}\sigma_{\mathbf{q}}\sigma_{\mathbf{p}} \otimes \sigma_{\mathbf{p}}= 2^{-n}\sum_{\mathbf{p}} \bigotimes_{i \in A_{\mathbf{p}}} (-iL_{\mathbf{q}_i} \sigma_{\mathbf{p}_i}L_{\mathbf{q}_i}^{\dagger} \otimes \sigma_{\mathbf{p}_i}) \bigotimes_{i \in R_{\mathbf{p}}} (\mathbb{I} \otimes \sigma_{\mathbf{q}_i}) \bigotimes_{i \in L_{\mathbf{p}}} (\sigma_{\mathbf{q}_i} \otimes \mathbb{I})
+    O = 2^{-n}\sum_{\mathbf{p}}\sigma_{\mathbf{q}}\sigma_{\mathbf{p}} \otimes \sigma_{\mathbf{p}}= 2^{-n}\sum_{\mathbf{p}} \bigotimes_{i \in A_{\mathbf{p}}} (-iL_{\mathbf{q}_i} \sigma_{\mathbf{p}_i}L_{\mathbf{q}_i}^{\dagger} \otimes \sigma_{\mathbf{p}_i}) \bigotimes_{i \in R_{\mathbf{p}}} (\1 \otimes \sigma_{\mathbf{q}_i}) \bigotimes_{i \in L_{\mathbf{p}}} (\sigma_{\mathbf{q}_i} \otimes \1)
 \end{align}
 For the first part $A_{\mathbf{p}}$, we conjugate one side of Bell projector by local Clifford operation $L$ and defined the shifted Bell sampling projector
 \begin{align}
-    (L \otimes \mathbb{I}_n)\ket{\Phi_{\mathbf{r}}}\!\bra{\Phi_{\mathbf{r}}}(L^\dagger \otimes \mathbb{I}_n) = 4^{-n}\sum_{\mathbf{p}} (-1)^{[\mathbf{r}, \mathbf{p}] + \mathbf{p}_x\cdot \mathbf{p}_z}(L\sigma_{\mathbf{p}}L^{\dagger}) \otimes \sigma_{\mathbf{p}},
+    (L \otimes \1_n)\ket{\Phi_{\mathbf{r}}}\!\bra{\Phi_{\mathbf{r}}}(L^\dagger \otimes \1_n) = 4^{-n}\sum_{\mathbf{p}} (-1)^{[\mathbf{r}, \mathbf{p}] + \mathbf{p}_x\cdot \mathbf{p}_z}(L\sigma_{\mathbf{p}}L^{\dagger}) \otimes \sigma_{\mathbf{p}},
 \end{align}
  This then extends the Bell decoherence channel in Eq.\eqref{eq:Bell_deco} into the shifted one:
 \begin{align}
 \label{eq:Shif_Bell_deco}
     \mathcal{M}_{L}(\rho^{\otimes 2}) = 4^{-n}\sum_{\mathbf{p}}\mathrm{tr}\left[\left[(L\sigma_{\mathbf{p}}L^{\dagger}) \otimes \sigma_{\mathbf{p}}\right]\cdot\rho^{\otimes 2}\right](L\sigma_{\mathbf{p}}L^{\dagger}) \otimes \sigma_{\mathbf{p}}.
 \end{align}
-For the rest part $R_{\mathbf{p}},L_{\mathbf{p}}$, we have to extract the information of insymmetric Pauli operator $\mathbb{I} \otimes \sigma_{\mathbf{q}}, \sigma_{\mathbf{q}} \otimes \mathbb{I}$, which is prohibitive for local conjugated Bell measurement.
+For the rest part $R_{\mathbf{p}},L_{\mathbf{p}}$, we have to extract the information of insymmetric Pauli operator $\1 \otimes \sigma_{\mathbf{q}}, \sigma_{\mathbf{q}} \otimes \1$, which is prohibitive for local conjugated Bell measurement.
 To overcome this, we implement the $\sigma_{\mathbf{q}_i}$ Pauli measurements on the position $i$.
 This measurement constitutes the Pauli decoherence channel
 \begin{align}
-    \Lambda_{i}(\cdot ) = (1/2)\mathbb{I}\cdot\mathrm{tr}(\cdot) + (1/2)\mathrm{tr}\left[\sigma_{\mathbf{q}_i} (\cdot)\right] \sigma_{\mathbf{q}_i}.
+    \Lambda_{i}(\cdot ) = (1/2)\1\cdot\mathrm{tr}(\cdot) + (1/2)\mathrm{tr}\left[\sigma_{\mathbf{q}_i} (\cdot)\right] \sigma_{\mathbf{q}_i}.
 \end{align}
 In the observable in Eq.~\eqref{eq:2rep_decomp_Prho2}, we average all possible separation.
 Since the $\sigma_{\mathbf{q}_i}$ Pauli measurements are incompatible with the Bell measurement,  this indicates the naive strategy that uniformly selects a separation $A \cup ([n]/A)$ and then implements single-copy $\sigma_{\mathbf q}$ Pauli measurement on positions $[n]/A$ and $L_{\mathbf q}$ conjugated Bell measurement on positions $A$.
@@ -1154,7 +1154,7 @@ Since the $\sigma_{\mathbf{q}_i}$ Pauli measurements are incompatible with the B
 %     \end{algorithmic}
 %     \vspace{5pt} \hrule % 底部的横线
 % \end{figure}
-  Notice that the measurement of operator $\sigma_{\mathbf{q}_i}$ with result ${r}_i \in \{0,1\}$ forms the $n$-qubit decoherence channel $\Lambda_{\mathbf{q}}(\rho) = \bigotimes_{i= 1}^{n} \Lambda_{i}(\rho)$, where $\Lambda_{i}(\cdot ) = (1/2)\mathbb{I}\cdot\mathrm{tr}(\cdot) + (1/2)\mathrm{tr}\left[\sigma_{\mathbf{q}_i} (\cdot)\right] \sigma_{\mathbf{q}_i}$. 
+  Notice that the measurement of operator $\sigma_{\mathbf{q}_i}$ with result ${r}_i \in \{0,1\}$ forms the $n$-qubit decoherence channel $\Lambda_{\mathbf{q}}(\rho) = \bigotimes_{i= 1}^{n} \Lambda_{i}(\rho)$, where $\Lambda_{i}(\cdot ) = (1/2)\1\cdot\mathrm{tr}(\cdot) + (1/2)\mathrm{tr}\left[\sigma_{\mathbf{q}_i} (\cdot)\right] \sigma_{\mathbf{q}_i}$. 
   We also denote the channel $\mathcal{B}_i$ as the localized shifted Bell decoherence channel as 
   \begin{align}
     \mathcal{B}_{i}(\cdot) = 4^{-1}\sum_{\mathbf{p}_i \in \{00,01,10,11\}}\mathrm{tr}\left[\left[(L_{\mathbf{q}_i}\sigma_{\mathbf{p}_i}L_{\mathbf{q}_i}^{\dagger}) \otimes \sigma_{\mathbf{p}_i}\right](\cdot) \right](L_{\mathbf{q}_i}\sigma_{\mathbf{p}_i}L_{\mathbf{q}_i}^{\dagger}) \otimes \sigma_{\mathbf{p}_i}.
@@ -1164,7 +1164,7 @@ we noted that
   \begin{align}
       \left\{
       \begin{aligned}
-      &\mathcal{M}_i(\sigma_{\mathbf{q}_i} \otimes \mathbb{I}) = (1/2)\cdot \sigma_{\mathbf{q}_i} \otimes \mathbb{I},\quad \mathcal{M}_i( \mathbb{I}\otimes\sigma_{\mathbf{q}_i}) =(1/2)\cdot \mathbb{I}\otimes\sigma_{\mathbf{q}_i}, \\
+      &\mathcal{M}_i(\sigma_{\mathbf{q}_i} \otimes \1) = (1/2)\cdot \sigma_{\mathbf{q}_i} \otimes \1,\quad \mathcal{M}_i( \1\otimes\sigma_{\mathbf{q}_i}) =(1/2)\cdot \1\otimes\sigma_{\mathbf{q}_i}, \\
       &\mathcal{M}_i\left[(L_{\mathbf{q}_i}\sigma_{\mathbf{p}_i}L_{\mathbf{q}_i}^{\dagger}) \otimes \sigma_{\mathbf{p}_i}\right]=(1/2)\cdot(L_{\mathbf{q}_i}\sigma_{\mathbf{p}_i}L_{\mathbf{q}_i}^{\dagger}) \otimes \sigma_{\mathbf{p}_i},\forall \mathbf{p}_i \notin \{\mathbf{q}_i,\mathbf{0}\}.\\
       \end{aligned}
       \right.
@@ -1172,10 +1172,10 @@ we noted that
     Then we conclude that $\mathcal{M}^{-1}(O) = 2^n O$ .
     Noted that
     \begin{align}
-        &\mathrm{tr}\left[(L_{\mathbf{q}_i} \otimes \mathbb{I})\Phi_{\mathbf{r}_i}(L^\dagger_{\mathbf{q}_i} \otimes \mathbb{I}) \cdot (\sigma_{\mathbf{q}_i} \otimes \mathbb{I})\cdot \mathrm{SWAP}\right] \\
-        &= 4^{-1}\sum_{\mathbf{u}_i} (-1)^{[\mathbf{r}_i, \mathbf{u}_i] +{u}_x\cdot {u}_z}\mathrm{tr}\left[(L_{\mathbf{q}_i} \otimes \mathbb{I})\sigma_{\mathbf{u}_i} \otimes \sigma_{\mathbf{u}_i} (L^\dagger_{\mathbf{q}_i} \otimes \mathbb{I}) \cdot (\sigma_{\mathbf{q}_i} \otimes \mathbb{I})\cdot \mathrm{SWAP}\right]\\
+        &\mathrm{tr}\left[(L_{\mathbf{q}_i} \otimes \1)\Phi_{\mathbf{r}_i}(L^\dagger_{\mathbf{q}_i} \otimes \1) \cdot (\sigma_{\mathbf{q}_i} \otimes \1)\cdot \mathrm{SWAP}\right] \\
+        &= 4^{-1}\sum_{\mathbf{u}_i} (-1)^{[\mathbf{r}_i, \mathbf{u}_i] +{u}_x\cdot {u}_z}\mathrm{tr}\left[(L_{\mathbf{q}_i} \otimes \1)\sigma_{\mathbf{u}_i} \otimes \sigma_{\mathbf{u}_i} (L^\dagger_{\mathbf{q}_i} \otimes \1) \cdot (\sigma_{\mathbf{q}_i} \otimes \1)\cdot \mathrm{SWAP}\right]\\
         &=4^{-1}\sum_{\mathbf{u}_i} (-1)^{[\mathbf{r}_i, \mathbf{u}_i] +{u}_x\cdot {u}_z}\mathrm{tr}\left[L_{\mathbf{q}_i} \sigma_{\mathbf{u}_i} L_{\mathbf{q}_i}^\dagger \sigma_{\mathbf{q}_i}\sigma_{\mathbf{u}_i}\right]=-(i/2)\cdot \sum_{\mathbf{u}_i \notin \{\mathbf{0}, \mathbf{q}_i\}} (-1)^{[\mathbf{r}_i, \mathbf{u}_i] + u_xu_z}.\\
-        &\mathrm{tr}\left[\left(\frac{ \mathbb{I} + r_{i,x} \sigma_{\mathbf{q}_i}}{2}\right)\otimes  \left(\frac{ \mathbb{I} + r_{i,z} \sigma_{\mathbf{q}_i}}{2}\right)\cdot (\sigma_{\mathbf{q}_i} \otimes \mathbb{I})\cdot \mathrm{SWAP}\right]=|\mathbf{r}_i|/2.
+        &\mathrm{tr}\left[\left(\frac{ \1 + r_{i,x} \sigma_{\mathbf{q}_i}}{2}\right)\otimes  \left(\frac{ \1 + r_{i,z} \sigma_{\mathbf{q}_i}}{2}\right)\cdot (\sigma_{\mathbf{q}_i} \otimes \1)\cdot \mathrm{SWAP}\right]=|\mathbf{r}_i|/2.
     \end{align}
     We got the estimator
     \begin{align}
@@ -1188,7 +1188,7 @@ The variance of this estimator is exponentially large since both weight $|\mathb
 \subsection{A adaptive local strategy}
 However, in the case that the non-local operations is allowed, 
 there already exists efficient $2$-replica estimation strategy of $\mathrm{tr}(P\rho^2)$ for a known fixed Pauli operators $P$. 
-The simplest one is the SWAP-test that use single anccilla qubits and non-local operation between ancilla qubits and data qubits to estimate the observable $\mathrm{SWAP}^{\otimes n}\cdot( P\otimes\mathbb{I}_n )$, as illustrated in Figure~\ref{fig:nonlocal_strate} for $n=4$ and $P = XZYX$.
+The simplest one is the SWAP-test that use single anccilla qubits and non-local operation between ancilla qubits and data qubits to estimate the observable $\mathrm{SWAP}^{\otimes n}\cdot( P\otimes\1_n )$, as illustrated in Figure~\ref{fig:nonlocal_strate} for $n=4$ and $P = XZYX$.
 If no-ancilla qubit is allowed,  we can find a Clifford gate $C$ that map $P = XZYX$ to $P' = CPC^\dagger= ZIII$. Then $\mathrm{tr}(P\rho^2) = \mathrm{tr}\left((ZIII) \cdot  \sigma^2\right)$ for $\sigma = C^\dagger\rho C$.
 Since $ZIII$ contains non-identity Pauli operator only on the first qubits.
 We can thus measure the first qubit on the eigenbasis of $2^{-1}(ZI+IZ)\cdot\mathrm{SWAP} = \ket{00}\!\bra{00} - \ket{11}\!\bra{11} $.
@@ -1203,9 +1203,9 @@ The rest $(n-1)$ qubits are measured on the localized eigenbasis of $\mathrm{SWA
 \end{figure}
 
 In this section, we proposed a non-randomized adaptive strategy that target to estimate $\mathrm{tr}(P \rho^2)$ given a known Pauli operator $P$.
-As indicated before, it is sufficient to consider the full weight $n$-qubit Pauli $\sigma_{\mathbf{r}_i}$ such that $\sigma_{\mathbf{r}_i} \neq \mathbb{I},\forall i= 1,\cdots, n$.
+As indicated before, it is sufficient to consider the full weight $n$-qubit Pauli $\sigma_{\mathbf{r}_i}$ such that $\sigma_{\mathbf{r}_i} \neq \1,\forall i= 1,\cdots, n$.
 Then we noted that full weight Pauli operators can be locally transformed into Pauli $Z$ strings $Z^{\otimes n}$ using local Clifford gate since $HXH = Z$ and $HS^{\dagger}YSH = Z$. 
-In this case, this observable $O_{\mathbf{r}}$ is a tensor product of local non-Hermitian operators $O_{\mathbf{r}} = [(Z \otimes \mathbb{I}) \cdot \mathrm{SWAP}]^{\otimes n}:= A^{\otimes n}$. The local operator $A$, although non-Hermitian, is a normal matrix that satisfies $[A,A^\dagger] = 0$, thus can still be diagonalized under unitary transformation. Actually, it satisfies the decomposition
+In this case, this observable $O_{\mathbf{r}}$ is a tensor product of local non-Hermitian operators $O_{\mathbf{r}} = [(Z \otimes \1) \cdot \mathrm{SWAP}]^{\otimes n}:= A^{\otimes n}$. The local operator $A$, although non-Hermitian, is a normal matrix that satisfies $[A,A^\dagger] = 0$, thus can still be diagonalized under unitary transformation. Actually, it satisfies the decomposition
 \begin{align}
     A &= \ket{00}\!\bra{00} - \ket{11}\!\bra{11} + i\ket{\Phi^+}\!\bra{\Phi^+} - i \ket{\Phi^-}\!\bra{\Phi^-}, \text{~with~} \ket{\Phi^+} = \frac{\ket{01} + i \ket{10}}{\sqrt{2}}, \ket{\Phi^-} = \frac{\ket{01} - i \ket{10}}{\sqrt{2}}. 
 \end{align}
@@ -1278,10 +1278,10 @@ The result of $\mathcal{M}$ is firstly summarized in Lemma~\ref{lemma:onsite_2de
     A $k$-site 3-design unitary ensemble $\mathbf{D}_{3}(d^k)^{\otimes n}$ separates $n\cdot k$ qudits into $n$ parts, and independently implements a $k$-qudit 3-design unitary, as defined in Definition~\ref{def:t_design}, within each part. In other words, $\mathbf{D}_{3}(d^k)^{\otimes n}:=\{\bigotimes_{i  =1}^n U_i| U_i \sim \mathbf{D}_{3}(d^k)\}$.
     This ensemble induces the channel
     \begin{align}
-        \mathcal{M}(\rho) = (\mathcal{D}_{1/(2^k + 1)})^{\otimes n}(\rho), \text{with~} \mathcal{D}_{1/(2^k + 1)}(\cdot) = \frac{1}{2^k +1}(\cdot) + \frac{\text{tr}(\cdot)}{2^k + 1}{\mathbb{I}(d^k)}.
+        \mathcal{M}(\rho) = (\mathcal{D}_{1/(2^k + 1)})^{\otimes n}(\rho), \text{with~} \mathcal{D}_{1/(2^k + 1)}(\cdot) = \frac{1}{2^k +1}(\cdot) + \frac{\text{tr}(\cdot)}{2^k + 1}{\1(d^k)}.
     \end{align}
-    Specifically, the single-copy global 3-design unitary ensemble takes the case $n = 1$, $U \sim \mathbf{D}_{3}(d^k)$, and the channel $     \mathcal{M}(\rho) ={(d^k + 1)^{-1}} \rho + {d^k{(d^k + 1)^{-1}}  \text{tr}\rho \cdot }({\mathbb{I}(d^k)}/{d^k})$.
-    The single-copy local 3-design unitary ensemble takes the case $k = 1$, $U \sim \mathbf{D}_{3}(d)^{\otimes n}$, and the channel $ \mathcal{M}(\rho) = {(d + 1)}^{-1} \rho + {d({d + 1})^{-1} \text{tr}\rho} \cdot ({\mathbb{I}(d)}/{d})$.
+    Specifically, the single-copy global 3-design unitary ensemble takes the case $n = 1$, $U \sim \mathbf{D}_{3}(d^k)$, and the channel $     \mathcal{M}(\rho) ={(d^k + 1)^{-1}} \rho + {d^k{(d^k + 1)^{-1}}  \text{tr}\rho \cdot }({\1(d^k)}/{d^k})$.
+    The single-copy local 3-design unitary ensemble takes the case $k = 1$, $U \sim \mathbf{D}_{3}(d)^{\otimes n}$, and the channel $ \mathcal{M}(\rho) = {(d + 1)}^{-1} \rho + {d({d + 1})^{-1} \text{tr}\rho} \cdot ({\1(d)}/{d})$.
     (The channel formula uses only the 2-design property; the 3-design property is needed for the variance computation in Lemma~\ref{lemma:LC_shadow_kcopy}.)
 \end{lemma}
 \begin{proof}
@@ -1289,19 +1289,19 @@ The result of $\mathcal{M}$ is firstly summarized in Lemma~\ref{lemma:onsite_2de
 \begin{align}
     \mathcal{M}(\otimes_{i = 1}^n \rho_i) 
     &=\mathbb{E}_{\substack{U = \bigotimes_{i=1}^n\text{U}_i \\ \text{U}_i \sim \mathbf{D}_{3}(d^k)}} \sum_{\mathbf{r} \in \mathbb{F}_d^{kn}} \bra{{\mathbf r}} \text{U} (\otimes_{i = 1}^n \rho_i) \text{U}^{\dagger} \ket{{\mathbf r}} \cdot \text{U}^{\dagger} \ket{{\mathbf r}}\!\bra{{\mathbf r}} \text{U} \notag\\
-    &=\mathbb{E}_{\substack{U = \bigotimes_{i=1}^n\text{U}_i \\ \text{U}_i \sim \mathbf{D}_{3}(d^k)}} \sum_{\mathbf{r} \in \mathbb{F}_d^{kn}} \text{tr}_{\bar A} \left( \left(\otimes_{i = 1}^n \rho_i^{(\bar A)} \otimes \mathbb{I}^{(A)}(d^{kn})\right)\cdot  (\text{U}^{\dagger} \ket{{\mathbf r}}\! \bra{{\mathbf r}} \text{U})^{(\bar A)} \otimes (\text{U}^{\dagger} \ket{{\mathbf r}}\!\bra{{\mathbf r}} \text{U})^{(A)} \right)\notag\\
-    &= \text{tr}_{\bar A}\left( \left(\otimes_{i = 1}^n \rho_i^{(\bar A)}\otimes \mathbb{I}^{(A)}(d^{kn})\right) \cdot \bigotimes_{i = 1}^n \sum_{\mathbf{r}_i \in \mathbb{F}_d^k} \mathbb{E}_{\substack{\text{U}_i \sim \mathbf{D}_{3}(d^k)}}  (\text{U}_i^{\dagger} \ket{\mathbf{r}_{i}}\bra{\mathbf{r}_{i}} \text{U}_i)^{(\bar A)} \otimes (\text{U}_i^{\dagger} \ket{\mathbf{r}_{i}}\!\bra{\mathbf{r}_{i}} \text{U}_i)^{(A)} \right)\notag\\
-    &=  \text{tr}_{\bar A}\left( \left(\otimes_{i = 1}^n \rho_i^{(\bar A)}\otimes \mathbb{I}^{(A)}(d^{kn})\right) \cdot \bigotimes_{i = 1}^n \sum_{\mathbf{r}_{i}\in \mathbb{F}_d^{k}} \Phi_2(\ket{\mathbf{r}_{i}}\!\bra{\mathbf{r}_{i}}^{\otimes 2})^{(\bar A A)} \right)\notag \\
-    &= \text{tr}_{\bar A}\left( \left(\otimes_{i = 1}^n \rho_i^{(\bar A)}\otimes \mathbb{I}^{(A)}(d^{kn})\right) \cdot \bigotimes_{i = 1}^n d^{k} \frac{\mathbb{I}^{(\bar A)}(d^k)\otimes \mathbb{I}^{(A)}(d^k)+ \mathbb{P}_{(12)}^{d,(\bar A A)}}{(d^k+1) \cdot d^k}\right).\label{eq:k_copy_shadow_channel}
+    &=\mathbb{E}_{\substack{U = \bigotimes_{i=1}^n\text{U}_i \\ \text{U}_i \sim \mathbf{D}_{3}(d^k)}} \sum_{\mathbf{r} \in \mathbb{F}_d^{kn}} \text{tr}_{\bar A} \left( \left(\otimes_{i = 1}^n \rho_i^{(\bar A)} \otimes \1^{(A)}(d^{kn})\right)\cdot  (\text{U}^{\dagger} \ket{{\mathbf r}}\! \bra{{\mathbf r}} \text{U})^{(\bar A)} \otimes (\text{U}^{\dagger} \ket{{\mathbf r}}\!\bra{{\mathbf r}} \text{U})^{(A)} \right)\notag\\
+    &= \text{tr}_{\bar A}\left( \left(\otimes_{i = 1}^n \rho_i^{(\bar A)}\otimes \1^{(A)}(d^{kn})\right) \cdot \bigotimes_{i = 1}^n \sum_{\mathbf{r}_i \in \mathbb{F}_d^k} \mathbb{E}_{\substack{\text{U}_i \sim \mathbf{D}_{3}(d^k)}}  (\text{U}_i^{\dagger} \ket{\mathbf{r}_{i}}\bra{\mathbf{r}_{i}} \text{U}_i)^{(\bar A)} \otimes (\text{U}_i^{\dagger} \ket{\mathbf{r}_{i}}\!\bra{\mathbf{r}_{i}} \text{U}_i)^{(A)} \right)\notag\\
+    &=  \text{tr}_{\bar A}\left( \left(\otimes_{i = 1}^n \rho_i^{(\bar A)}\otimes \1^{(A)}(d^{kn})\right) \cdot \bigotimes_{i = 1}^n \sum_{\mathbf{r}_{i}\in \mathbb{F}_d^{k}} \Phi_2(\ket{\mathbf{r}_{i}}\!\bra{\mathbf{r}_{i}}^{\otimes 2})^{(\bar A A)} \right)\notag \\
+    &= \text{tr}_{\bar A}\left( \left(\otimes_{i = 1}^n \rho_i^{(\bar A)}\otimes \1^{(A)}(d^{kn})\right) \cdot \bigotimes_{i = 1}^n d^{k} \frac{\1^{(\bar A)}(d^k)\otimes \1^{(A)}(d^k)+ \mathbb{P}_{(12)}^{d,(\bar A A)}}{(d^k+1) \cdot d^k}\right).\label{eq:k_copy_shadow_channel}
 \end{align}
-Use the fact that  $\text{tr}_{\bar A}(\mathbb{P}_{(12)}^{d,(\bar A A)}\cdot \rho^{(\bar A)}\otimes \mathbb{I}^{(A)}) = \rho^{(A)}$, we get the channel output
+Use the fact that  $\text{tr}_{\bar A}(\mathbb{P}_{(12)}^{d,(\bar A A)}\cdot \rho^{(\bar A)}\otimes \1^{(A)}) = \rho^{(A)}$, we get the channel output
 \begin{align}
     \mathcal{M}(\otimes_{i = 1}^n \rho_i) 
-    &= \bigotimes_{i = 1}^n \text{tr}(\rho_i) \frac{\mathbb{I}(d^k)}{d^k + 1} + \frac{1}{d^k +1}\rho_i = \mathcal{D}^{\otimes n}_{{1}/{(d^k +1)}}(\otimes_{i = 1}^n \rho_i).
+    &= \bigotimes_{i = 1}^n \text{tr}(\rho_i) \frac{\1(d^k)}{d^k + 1} + \frac{1}{d^k +1}\rho_i = \mathcal{D}^{\otimes n}_{{1}/{(d^k +1)}}(\otimes_{i = 1}^n \rho_i).
 \end{align}
-By the linearity of $\mathcal{M}$, we  conclude that its inverse $\mathcal{D}_{{1}/{(d^k +1)}}^{-1}(\rho) = (d^k + 1)\rho - \text{tr}\rho \cdot \mathbb{I}(d^k) $ constitute an unbiased estimator of $\rho \in \mathcal{D}(\mathcal{H}(d^{nk}))$ through the transformation
+By the linearity of $\mathcal{M}$, we  conclude that its inverse $\mathcal{D}_{{1}/{(d^k +1)}}^{-1}(\rho) = (d^k + 1)\rho - \text{tr}\rho \cdot \1(d^k) $ constitute an unbiased estimator of $\rho \in \mathcal{D}(\mathcal{H}(d^{nk}))$ through the transformation
 \begin{align}
-     \hat \rho_{U,\mathbf b} =\mathcal{M}^{-1}(\text{U}^\dagger \ket{\mathbf b}\!\bra{\mathbf b} \text{U})=\bigotimes_{i =1}^n\left((d^k +1)\text{U}_i^{\dagger} \ket{\mathbf{b}_i}\!\bra{\mathbf{b}_i} \text{U}_i - \mathbb{I}(d^k)\right).
+     \hat \rho_{U,\mathbf b} =\mathcal{M}^{-1}(\text{U}^\dagger \ket{\mathbf b}\!\bra{\mathbf b} \text{U})=\bigotimes_{i =1}^n\left((d^k +1)\text{U}_i^{\dagger} \ket{\mathbf{b}_i}\!\bra{\mathbf{b}_i} \text{U}_i - \1(d^k)\right).
 \end{align}
 \end{proof}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1313,16 +1313,16 @@ Here below, we consider the qubit case $d = 2$ only.
     In the case of local k-copy randomized measurements on $\rho^{\otimes k}$, let the observable $O^{(k)}$ acting on $n\cdot k$ qubits have decomposition $O^{(k)} = \sum_{W} \alpha_{W} W$, where $W = \bigotimes_{i=1}^n W_i$ and $W_i \in \{I,X,Y,Z\}^{\otimes k}$. Denoting $\mathcal{C}(W)$ as the set of $k$-qubit Pauli operator that commute with $W$ and $\delta_{e,S} = 1$ iff $e\in S$, we define a function $R:\mathcal{P}_k^{\otimes n} \to \mathbb{R}$ as
     \begin{align}\label{eq:R_expression}
         R(W,W') = \prod_{i = 1}^n r(W_i,W'_i), r(W_i,W'_i) := \begin{cases}
-            1 &\text{if~}W_i = \mathbb{I}_k \text{~or~}W'_i = \mathbb{I}_k ,\\
-            (2^k+1) \cdot \frac{2^{k-1}\delta_{W_i,W'_i} +\delta_{W_i, \mathcal{C}(W'_i)\backslash \mathbb{I}_k } }{2^{k-1}+1} &\text{if~}W_i \neq \mathbb{I}_k \text{~and~} W'_i \neq \mathbb{I}_k .
+            1 &\text{if~}W_i = \1_k \text{~or~}W'_i = \1_k ,\\
+            (2^k+1) \cdot \frac{2^{k-1}\delta_{W_i,W'_i} +\delta_{W_i, \mathcal{C}(W'_i)\backslash \1_k } }{2^{k-1}+1} &\text{if~}W_i \neq \1_k \text{~and~} W'_i \neq \1_k .
         \end{cases}
     \end{align}
     we have $\langle (\hat{o}^{(k)})^2 \rangle_{\rho} =\text{tr} \left(\rho^{\otimes k} \cdot \mathbf{V}(O^{(k)}) \right)$, where $\mathbf{V}(O^{(k)}) := \sum_{W,W'}\alpha_W \alpha_{W'} R(W,W')W W'$. Specifically, if we take a local operator $O^{(k)} = \bigotimes_{i = 1}^n \left(\sum_{W_i \in \mathcal{P}_k}\alpha_{W_i} W_i\right)$, we have $\mathbf{V}(O^{(k)}) :=\bigotimes_{i = 1}^n  \sum_{W_i,W_i'}\alpha_{W_i} \alpha_{W_i'} r(W_i,W_i')W_i W_i'$.
 \end{lemma}
 \begin{proof}
-By Lemma~\ref{lemma:onsite_2design}, we conclude that its inverse is $\mathcal{D}_{1/(2^k + 1)}^{-1}(\cdot) = (2^k + 1)(\cdot) - \text{tr}(\cdot) \mathbb{I}_k $ constitute an unbiased estimator of $\rho^{\otimes k}$ through the transformation $\hat{\rho}^{\otimes k} =\mathcal{M}^{-1}(U^\dagger \ket{\mathbf r}\!\bra{\mathbf r} U)=\bigotimes_{i =1}^n\left((2^k + 1)U_i^{\dagger} \ket{\mathbf{r}_{i}}\bra{\mathbf{r}_{i}} U_i - \mathbb{I}_k\right).$
+By Lemma~\ref{lemma:onsite_2design}, we conclude that its inverse is $\mathcal{D}_{1/(2^k + 1)}^{-1}(\cdot) = (2^k + 1)(\cdot) - \text{tr}(\cdot) \1_k $ constitute an unbiased estimator of $\rho^{\otimes k}$ through the transformation $\hat{\rho}^{\otimes k} =\mathcal{M}^{-1}(U^\dagger \ket{\mathbf r}\!\bra{\mathbf r} U)=\bigotimes_{i =1}^n\left((2^k + 1)U_i^{\dagger} \ket{\mathbf{r}_{i}}\bra{\mathbf{r}_{i}} U_i - \1_k\right).$
 The second moment is given by $  \langle (\hat{o}^{(k)})^2 \rangle_{\rho} =\mathbb{E}_{U \sim \mathbf{D}_3(2^k)^{\otimes n}}\sum_{\mathbf r}\bra{\mathbf r}U \rho^{\otimes k} U^\dagger \ket{\mathbf{r}} \bra{\mathbf r}U\mathcal{M}^{-1}(O^{(k)}) U^\dagger\ket{\mathbf r}^2$.
-    Similar to the proof in Lemma~\ref{lemma:LC_shadow_kcopy}, we decomposed the operator $O^{(k)}$ on the Pauli product basis $W_i \in \{I,X,Y,Z\}^{\otimes k}$ that supports on those k qubits located at site $i$. By denoting $W = W_1\cdots W_n$, we have $O^{(k)} = \sum_{W} \alpha_{W} W$. According to Lemma~\ref{lemma:onsite_2design}, the inverse channel $\mathcal{M}^{-1}$ acts locally as $\mathcal{M}_i^{-1}(W_i) = g(W_i) W_i$, where the scaling factor $g(W_i)$ is determined by $g(W_i) = \begin{cases} (2^k+1) & \text{if~} W_i \neq \mathbb{I}_k \\ 1 &\text{if~} W_i = \mathbb{I}_k \end{cases}.$
+    Similar to the proof in Lemma~\ref{lemma:LC_shadow_kcopy}, we decomposed the operator $O^{(k)}$ on the Pauli product basis $W_i \in \{I,X,Y,Z\}^{\otimes k}$ that supports on those k qubits located at site $i$. By denoting $W = W_1\cdots W_n$, we have $O^{(k)} = \sum_{W} \alpha_{W} W$. According to Lemma~\ref{lemma:onsite_2design}, the inverse channel $\mathcal{M}^{-1}$ acts locally as $\mathcal{M}_i^{-1}(W_i) = g(W_i) W_i$, where the scaling factor $g(W_i)$ is determined by $g(W_i) = \begin{cases} (2^k+1) & \text{if~} W_i \neq \1_k \\ 1 &\text{if~} W_i = \1_k \end{cases}.$
     Use this decomposition and again supposed $\rho^{\otimes k} = \sum_{s} \beta_s \bigotimes_{i=1}^n \rho_i^{(s)}$, where $ \rho_i^{(s)} \in \mathcal{D}(\mathcal{H}_k)$, the result involves averaging over the k-qubit 3-design $U_i \sim \mathbf{D}_3(2^k)$ as:
     \begin{align}
         \langle (\hat{o}^{(k)})^2 \rangle_{\rho} &= \sum_{W,W'}\alpha_{W}\alpha_{W'}\sum_{s}\beta_s\prod_{i = 1}^n g(W_i)g(W'_i)\sum_{\mathbf{r}_i \in \{0,1\}^k} \left[({\rho}^{(s)}_i \otimes W_i \otimes W'_i) \cdot \mathbb{E}_{U_i} U_i^{\otimes 3}\ket{\mathbf{r}_i}\!\bra{\mathbf{r}_i}^{\otimes 3}U_i^{\otimes 3,\dagger}\right] \\
@@ -1334,42 +1334,42 @@ The second moment is given by $  \langle (\hat{o}^{(k)})^2 \rangle_{\rho} =\math
     \begin{align*}
         \langle (\hat{o}^{(k)})^2 \rangle_{\rho} &=
         \sum_{W,W'}\alpha_{W}\alpha_{W'}\sum_{s}\beta_s\prod_{i = 1}^n 2^k p \cdot \begin{cases}
-         1\cdot 1\cdot [2^{2k}+3\cdot 2^k+2]\text{tr}{\rho}^{(s)}_i  &\text{if~} W_i=W_i' = \mathbb I_k,\\
-         1 \cdot (2^k+1) \cdot[2^k + 2]\cdot \text{tr}({\rho}^{(s)}_i W'_i)&\text{if~} W_i = \mathbb I_k \neq W'_i,\\
-         (2^k+1) \cdot 1 \cdot[2^k + 2]\cdot \text{tr}({\rho}^{(s)}_i W_i)&\text{if~} W'_i = \mathbb I_k \neq W_i,\\
-         (2^k+1)^2 \cdot[2^k\delta_{W_i, W'_i}\text{tr}{\rho}^{(s)}_i  + \text{tr}({\rho}^{(s)}_i\{W_i,W_i'\})]&\text{if~} W_i, W'_i \neq \mathbb I_k.
+         1\cdot 1\cdot [2^{2k}+3\cdot 2^k+2]\text{tr}{\rho}^{(s)}_i  &\text{if~} W_i=W_i' = \1_k,\\
+         1 \cdot (2^k+1) \cdot[2^k + 2]\cdot \text{tr}({\rho}^{(s)}_i W'_i)&\text{if~} W_i = \1_k \neq W'_i,\\
+         (2^k+1) \cdot 1 \cdot[2^k + 2]\cdot \text{tr}({\rho}^{(s)}_i W_i)&\text{if~} W'_i = \1_k \neq W_i,\\
+         (2^k+1)^2 \cdot[2^k\delta_{W_i, W'_i}\text{tr}{\rho}^{(s)}_i  + \text{tr}({\rho}^{(s)}_i\{W_i,W_i'\})]&\text{if~} W_i, W'_i \neq \1_k.
      \end{cases}\\
     %  &=\sum_{W,W'}\alpha_{W}\alpha_{W'}\sum_{s}\beta_s\prod_{i = 1}^n \begin{cases}
-    %     \text{tr}{\rho}^{(s)}_i  &\text{if~} W_i=W_i' = \mathbb I_k,\\
-    %      \text{tr}({\rho}^{(s)}_i W'_i)&\text{if~} W_i = \mathbb I_k\neq W'_i,\\
-    %      \text{tr}({\rho}^{(s)}_i W_i)&\text{if~} W'_i = \mathbb I_k\neq W_i,\\
-    %     \frac{2^k+1}{2^k+2} \cdot\text{tr}\left[(2^k\delta_{W_i, W'_i}\mathbb{I}_k  +2\delta_{W_i, \mathcal{C}(W'_i)\backslash \mathbb{I}_k}  W_iW_i'){\rho}^{(s)}_i\right]&\text{if~} W_i, W'_i \neq \mathbb I_k.
+    %     \text{tr}{\rho}^{(s)}_i  &\text{if~} W_i=W_i' = \1_k,\\
+    %      \text{tr}({\rho}^{(s)}_i W'_i)&\text{if~} W_i = \1_k\neq W'_i,\\
+    %      \text{tr}({\rho}^{(s)}_i W_i)&\text{if~} W'_i = \1_k\neq W_i,\\
+    %     \frac{2^k+1}{2^k+2} \cdot\text{tr}\left[(2^k\delta_{W_i, W'_i}\1_k  +2\delta_{W_i, \mathcal{C}(W'_i)\backslash \1_k}  W_iW_i'){\rho}^{(s)}_i\right]&\text{if~} W_i, W'_i \neq \1_k.
     %  \end{cases}\\
      &= \sum_{W,W'}\alpha_{W}\alpha_{W'}\cdot \sum_{s}\beta_s\prod_{i = 1}^n \begin{cases}
-        \text{tr}({\rho}^{(s)}_i W_iW'_i)  &\text{if~} W_i=W_i' = \mathbb I_k,\\
-         \text{tr}({\rho}^{(s)}_i W_i W'_i)&\text{if~} W_i = \mathbb I_k\neq W'_i,\\
-         \text{tr}({\rho}^{(s)}_i W_i W'_i)&\text{if~} W'_i = \mathbb I_k\neq W_i,\\
-         \frac{2^k+1}{2^k+2} \cdot\text{tr}\left[{\rho}^{(s)}_i(2^k\delta_{W_i, W'_i}+2\delta_{W_i, \mathcal{C}(W'_i)\backslash \mathbb{I}_k})W_iW_i'\right]&\text{if~} W_i, W'_i \neq \mathbb I_k.
+        \text{tr}({\rho}^{(s)}_i W_iW'_i)  &\text{if~} W_i=W_i' = \1_k,\\
+         \text{tr}({\rho}^{(s)}_i W_i W'_i)&\text{if~} W_i = \1_k\neq W'_i,\\
+         \text{tr}({\rho}^{(s)}_i W_i W'_i)&\text{if~} W'_i = \1_k\neq W_i,\\
+         \frac{2^k+1}{2^k+2} \cdot\text{tr}\left[{\rho}^{(s)}_i(2^k\delta_{W_i, W'_i}+2\delta_{W_i, \mathcal{C}(W'_i)\backslash \1_k})W_iW_i'\right]&\text{if~} W_i, W'_i \neq \1_k.
      \end{cases}\\
      &=\text{tr}\left( \rho^{\otimes k}\cdot \sum_{W,W' \in \mathcal{P}_k^{\otimes n}} \alpha_{W}\alpha_{W'} R(W,W') W W'\right).
     \end{align*}
     To prove the second equality, we first defined $\mathcal{C}(W)$ as the set of k-qubit Pauli operator that commute with $W$ and $\delta_{e,S} = 1$ iff $e\in S$, otherwise $\delta(e,S) = 0$. Then we use the fact that
     \begin{align}
-        \forall W_i, W'_i \neq \mathbb I_k, \text{tr}({\rho}^{(s)}_i\{W_i,W_i'\}) = \begin{cases}0 \!\!\!&\text{if~} W'_i \notin \mathcal{C}(W_i)\backslash \mathbb{I}_k\\2\text{tr}(\tilde{\rho}^{(s)}_i W_iW'_i)  \!\!\!&\text{if~} W_i \in \mathcal{C}(W'_i)\backslash \mathbb{I}_k \end{cases} = 2\delta_{W_i, \mathcal{C}(W'_i)\backslash \mathbb{I}_k} \text{tr}(\tilde{\rho}^{(s)}_i W_iW'_i),
+        \forall W_i, W'_i \neq \1_k, \text{tr}({\rho}^{(s)}_i\{W_i,W_i'\}) = \begin{cases}0 \!\!\!&\text{if~} W'_i \notin \mathcal{C}(W_i)\backslash \1_k\\2\text{tr}(\tilde{\rho}^{(s)}_i W_iW'_i)  \!\!\!&\text{if~} W_i \in \mathcal{C}(W'_i)\backslash \1_k \end{cases} = 2\delta_{W_i, \mathcal{C}(W'_i)\backslash \1_k} \text{tr}(\tilde{\rho}^{(s)}_i W_iW'_i),
     \end{align}
 In the last equality, we use the definition
 \begin{align}
     R(W,W') = \prod_{i = 1}^n r(W_i,W'_i),  r(W_i,W'_i) := \begin{cases}
-        1 &\text{if~}W_i = \mathbb{I}_k \text{~or~}W'_i = \mathbb{I}_k ,\\
-        (2^k+1) \cdot \frac{2^{k-1}\delta_{W_i,W'_i} +\delta_{W_i, \mathcal{C}(W'_i)\backslash \mathbb{I}_k } }{2^{k-1}+1} &\text{if~}W_i \neq \mathbb{I}_k \text{~and~} W'_i \neq \mathbb{I}_k .
+        1 &\text{if~}W_i = \1_k \text{~or~}W'_i = \1_k ,\\
+        (2^k+1) \cdot \frac{2^{k-1}\delta_{W_i,W'_i} +\delta_{W_i, \mathcal{C}(W'_i)\backslash \1_k } }{2^{k-1}+1} &\text{if~}W_i \neq \1_k \text{~and~} W'_i \neq \1_k .
     \end{cases}
 \end{align}
 \end{proof}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 The inherent difference between the single-copy local Clifford strategy and the multi-copy one reflected on the set of $k$-qubit Pauli operators that commute with a given $k$-qubit Pauli operator $W$, which we denoted as $ \mathcal{C}(W)$.
-In the single-copy case, the center of $P_i \in \{X,Y,Z\}$ satisfied $\mathcal{C}(P_i) = \{P_i, \mathbb{I}\}$.
+In the single-copy case, the center of $P_i \in \{X,Y,Z\}$ satisfied $\mathcal{C}(P_i) = \{P_i, \1\}$.
      However, for example, for the two-qubit Pauli operators $XX$, extra terms such as $ZZ$ involved.
-     We denote the $n$-qubit Pauli operators as $\sigma_{\mathbf{r}} = \bigotimes_{i=1}^n \sigma_{{r}_{x,i},{r}_{z,i}} \in \mathcal{P}_n$ with $\mathbf{r} = (\mathbf{r}_x = ({r}_{x,1},\cdots,{r}_{x,n}),\mathbf{r}_z = ({r}_{z,1},\cdots,{r}_{z,n})) \in (\mathbb{F}_2^n)^2$ and $\{\sigma_{00},\sigma_{01},\sigma_{10},\sigma_{11}\} = \{\mathbb{I}, Z,X,Y = iXZ\}$. We denote $a \oplus b = a + b \mathrm{~mod~}2 = a + b - 2a\cdot b$ and $\mathbf{a} \odot \mathbf{b} = (a_1\cdot b_1,\cdots,a_n\cdot b_n)$ with $a,b \in \{0,1\}$.
+     We denote the $n$-qubit Pauli operators as $\sigma_{\mathbf{r}} = \bigotimes_{i=1}^n \sigma_{{r}_{x,i},{r}_{z,i}} \in \mathcal{P}_n$ with $\mathbf{r} = (\mathbf{r}_x = ({r}_{x,1},\cdots,{r}_{x,n}),\mathbf{r}_z = ({r}_{z,1},\cdots,{r}_{z,n})) \in (\mathbb{F}_2^n)^2$ and $\{\sigma_{00},\sigma_{01},\sigma_{10},\sigma_{11}\} = \{\1, Z,X,Y = iXZ\}$. We denote $a \oplus b = a + b \mathrm{~mod~}2 = a + b - 2a\cdot b$ and $\mathbf{a} \odot \mathbf{b} = (a_1\cdot b_1,\cdots,a_n\cdot b_n)$ with $a,b \in \{0,1\}$.
 In the following, we follow the Pauli multiplication rule as proved below 
      \begin{align}
          \sigma_{\mathbf{s}}\sigma_{\mathbf{s}'} &= \bigotimes_{j = 1}^n i^{s_{x,j} s_{z,j}} X^{s_{x,j}}Z^{s_{z,j}} \cdot i^{s'_{x,j} s'_{z,j}} X^{s'_{x,j}}Z^{s'_{z,j}} =  \bigotimes_{j = 1}^n X^{s_{x,j}+s_{x,j}'}Z^{s_{z,j}+s_{z,j}'} (-1)^{s_{z,j}\cdot s_{x,j}'} \cdot i^{s_{x,j}s_{z,j}+s_{x,j}'s_{z,j}'} \notag \\
@@ -1377,12 +1377,12 @@ In the following, we follow the Pauli multiplication rule as proved below
          &=i^{\mathbf{s}_x'\mathbf{s}_z - \mathbf{s}_z'\mathbf{s}_x} (-1)^{(\mathbf{s}_x + \mathbf{s}_x') \cdot (\mathbf{s}_z \odot \mathbf{s}_z') + (\mathbf{s}_z + \mathbf{s}_z') \cdot (\mathbf{s}_x \odot \mathbf{s}_x')}\sigma_{\mathbf{s}+ \mathbf{s}'} := i^{\mathbf{s}' J \mathbf{s}} (-1)^{d(\mathbf{s},\mathbf{s}')}\sigma_{\mathbf{s}+ \mathbf{s}'} .
      \end{align}
 
-Defined $[\mathbf{s}', \mathbf{s}]:= \mathbf{s}_x'\cdot \mathbf{s}_z - \mathbf{s}_z'\cdot \mathbf{s}_x \text{~mod~} 2$ as the binary symplectic product. Use this rule, we calculate  $ \sigma_{\mathbf{s}}\cdot \sigma_{\mathbf{s}'}=i^{2\mathbf{s}_x'\cdot \mathbf{s}_z - 2\mathbf{s}_z'\cdot \mathbf{s}_x }  (\sigma_{\mathbf{s}'} \cdot \sigma_{\mathbf{s}}) \Rightarrow [\mathbf{s}, \mathbf{s}'] = 0,$ and show that $\mathcal{C}(\sigma_{\mathbf{u}} )\backslash \mathbb{I}_k= \{\sigma_{\mathbf{v}}|\mathbf{v}\in \mathbb{F}_2^k,\mathbf{v}\neq \mathbf{0},[\mathbf{v},\mathbf{u}] = 0\}.$
-This means that $\delta_{\sigma_{\mathbf{s},\mathcal{C}(\sigma_{\mathbf{s}'} )\backslash \mathbb{I}_k}} = \delta_{\mathbf{s}, \{\mathbf{v}\in \mathbb{F}_2^k|\mathbf{v}\neq \mathbf{0},[\mathbf{v},\mathbf{s}'] = 0\}} = {\left(1 + (-1)^{[\mathbf{s},\mathbf{s}']}\right)}/{2}$ for $\mathbf{s},\mathbf{s}' \neq \mathbf{0}$ and 
+Defined $[\mathbf{s}', \mathbf{s}]:= \mathbf{s}_x'\cdot \mathbf{s}_z - \mathbf{s}_z'\cdot \mathbf{s}_x \text{~mod~} 2$ as the binary symplectic product. Use this rule, we calculate  $ \sigma_{\mathbf{s}}\cdot \sigma_{\mathbf{s}'}=i^{2\mathbf{s}_x'\cdot \mathbf{s}_z - 2\mathbf{s}_z'\cdot \mathbf{s}_x }  (\sigma_{\mathbf{s}'} \cdot \sigma_{\mathbf{s}}) \Rightarrow [\mathbf{s}, \mathbf{s}'] = 0,$ and show that $\mathcal{C}(\sigma_{\mathbf{u}} )\backslash \1_k= \{\sigma_{\mathbf{v}}|\mathbf{v}\in \mathbb{F}_2^k,\mathbf{v}\neq \mathbf{0},[\mathbf{v},\mathbf{u}] = 0\}.$
+This means that $\delta_{\sigma_{\mathbf{s},\mathcal{C}(\sigma_{\mathbf{s}'} )\backslash \1_k}} = \delta_{\mathbf{s}, \{\mathbf{v}\in \mathbb{F}_2^k|\mathbf{v}\neq \mathbf{0},[\mathbf{v},\mathbf{s}'] = 0\}} = {\left(1 + (-1)^{[\mathbf{s},\mathbf{s}']}\right)}/{2}$ for $\mathbf{s},\mathbf{s}' \neq \mathbf{0}$ and 
 \begin{align}\label{eq:lc_Pauli_rescale}
 r(\sigma_{\mathbf{s}},\sigma_{\mathbf{s}'})& := \begin{cases}
-            1 &\text{if~}\sigma_{\mathbf{s}} = \mathbb{I}_k \text{~or~}\sigma_{\mathbf{s}'} = \mathbb{I}_k ,\\
-            (2^k+1) \cdot \frac{2^{k-1}\delta_{\sigma_{\mathbf{s}},\sigma_{\mathbf{s}'}} +\delta_{\sigma_{\mathbf{s}}, \mathcal{C}(\sigma_{\mathbf{s}'})\backslash \mathbb{I}_k } }{2^{k-1}+1} &\text{if~}\sigma_{\mathbf{s}} \neq \mathbb{I}_k \text{~and~} \sigma_{\mathbf{s}'}\neq \mathbb{I}_k .
+            1 &\text{if~}\sigma_{\mathbf{s}} = \1_k \text{~or~}\sigma_{\mathbf{s}'} = \1_k ,\\
+            (2^k+1) \cdot \frac{2^{k-1}\delta_{\sigma_{\mathbf{s}},\sigma_{\mathbf{s}'}} +\delta_{\sigma_{\mathbf{s}}, \mathcal{C}(\sigma_{\mathbf{s}'})\backslash \1_k } }{2^{k-1}+1} &\text{if~}\sigma_{\mathbf{s}} \neq \1_k \text{~and~} \sigma_{\mathbf{s}'}\neq \1_k .
         \end{cases}\\
 &= \begin{cases}
             1 &\text{if~}\mathbf{s} = \mathbf{0}\text{~or~}\mathbf{s}' = \mathbf{0} ,\\
@@ -1393,7 +1393,7 @@ r(\sigma_{\mathbf{s}},\sigma_{\mathbf{s}'})& := \begin{cases}
 A generalization of the variance operator $\mathbf{V}(O^{(k)})$ is to applied it to two operators $O_\alpha,O_\beta$, as defined below:
 \begin{definition}[Covariance operator]
     \label{def:cov_oper}
-    Given two operators with decomposition $O_\alpha = \sum_{W} \alpha_{W} W, O_\beta = \sum_{W} \beta_{W} W$ with $W \in \{\mathbb{I},X,Y,Z\}^{\otimes k}$, the we defined the covariance operator as 
+    Given two operators with decomposition $O_\alpha = \sum_{W} \alpha_{W} W, O_\beta = \sum_{W} \beta_{W} W$ with $W \in \{\1,X,Y,Z\}^{\otimes k}$, the we defined the covariance operator as 
     \begin{align}
         \mathbf{V}(O_\alpha,O_\beta) = \sum_{W,W'} \alpha_{W} \beta_{W'} R(W,W') WW',
     \end{align}
@@ -1419,24 +1419,24 @@ The covariance operator is important due to the Lemma below
 
 \paragraph{Application to $\text{tr}(O \rho^2)$.}
 A critical application of this local multi-copy shadow is to use it to estimate the non-linear term $\text{tr}(O \rho^k)$ for arbitrary operator $O \in \text{Herm}(\mathcal{H}_n)$.
-In the case of $k  =2$, $\text{tr}((O \otimes \mathbb{I}_n) \text{SWAP}^{\otimes n}\cdot (\rho \otimes \rho))$ is an unbiased estimator for $\text{tr}(O \rho^2)$. If we decomposed the operator $O$ on the Pauli basis, it turns out $(O \otimes \mathbb{I}_n)\text{SWAP}^{\otimes n} = \sum_{\mathbf{r} \in \mathbb{F}_2^{2n}} (\sigma_{\mathbf{r}} \otimes  \mathbb{I}_n)\text{SWAP}^{\otimes n}:= \sum_{\mathbf{r} \in \mathbb{F}_2^{2n}} O_{\mathbf{r}} $.
+In the case of $k  =2$, $\text{tr}((O \otimes \1_n) \text{SWAP}^{\otimes n}\cdot (\rho \otimes \rho))$ is an unbiased estimator for $\text{tr}(O \rho^2)$. If we decomposed the operator $O$ on the Pauli basis, it turns out $(O \otimes \1_n)\text{SWAP}^{\otimes n} = \sum_{\mathbf{r} \in \mathbb{F}_2^{2n}} (\sigma_{\mathbf{r}} \otimes  \1_n)\text{SWAP}^{\otimes n}:= \sum_{\mathbf{r} \in \mathbb{F}_2^{2n}} O_{\mathbf{r}} $.
 Here below we use Lemma~\ref{lemma:LC_shadow_kcopy} to evaluate the covariance operator of $O_{\mathbf{r}}$ explicitly. 
 %%%%%%%%%%%Lemma%%%%%%%%%%%Lemma%%%%%%%%%%%Lemma%%%%%%%%%%%Lemma
 \begin{lemma}[Second moment of two-copy Pauli]\label{lemma:covar_Pauli}
-    If we take $O_{\mathbf{r}}= (\sigma_{\mathbf{r}} \otimes \mathbb{I}_n) \cdot \text{SWAP}^{\otimes n}$ for Pauli operator $\sigma_{\mathbf{r}}$ and denote $\text{wt}(\sigma_{\mathbf{r}})$ as the weight of this Pauli operator, then we have $\mathbf{V}(O_{\mathbf{r}}, O_{\mathbf{r}'}) = \bigotimes_{j = 1}^n v(\mathbf{r}_j, \mathbf{r}_j') $ with
+    If we take $O_{\mathbf{r}}= (\sigma_{\mathbf{r}} \otimes \1_n) \cdot \text{SWAP}^{\otimes n}$ for Pauli operator $\sigma_{\mathbf{r}}$ and denote $\text{wt}(\sigma_{\mathbf{r}})$ as the weight of this Pauli operator, then we have $\mathbf{V}(O_{\mathbf{r}}, O_{\mathbf{r}'}) = \bigotimes_{j = 1}^n v(\mathbf{r}_j, \mathbf{r}_j') $ with
     \begin{align}\label{eq:v_full_operator}
         v(\mathbf{r}_j, \mathbf{r}_j') =
         \left\{\begin{aligned}
             &\frac{5}{6}\left(\sigma_{\mathbf{r}_j}\otimes \sigma_{\mathbf{r}'_j} +\sigma_{\mathbf{r}'_j}\otimes \sigma_{\mathbf{r}_j} \right)&\text{~if~} \mathbf{r}_j, \mathbf{r}_j'  \neq \mathbf{0},\\
-            &\frac{11\mathbb{I}_4 + 4 \Pi_{\mathrm{asym}}}{3} &\text{~if~} \mathbf{r}_j=\mathbf{r}_j'= \mathbf{0}, \\
-            &\left(\frac{1}{2} \Pi_{\mathrm{sym}} + \frac{7}{6} \Pi_{\mathrm{asym}}\right)(\mathbb{I} \otimes \sigma_{\mathbf{r}_j})+ \frac{5}{6}\sigma_{\mathbf{r}_j}\otimes\mathbb{I} &\text{~if~} \mathbf{r}_j' = \mathbf{0},  \mathbf{r}_j\neq \mathbf{0},\\
-            &\left(\frac{1}{2} \Pi_{\mathrm{sym}} + \frac{7}{6} \Pi_{\mathrm{asym}}\right)(\mathbb{I} \otimes \sigma_{\mathbf{r}'_j}) + \frac{5}{6}\sigma_{\mathbf{r}'_j}\otimes\mathbb{I}&\text{~if~} \mathbf{r}_j = \mathbf{0},  \mathbf{r}'_j\neq \mathbf{0}.
+            &\frac{11\1_4 + 4 \Pi_{\mathrm{asym}}}{3} &\text{~if~} \mathbf{r}_j=\mathbf{r}_j'= \mathbf{0}, \\
+            &\left(\frac{1}{2} \Pi_{\mathrm{sym}} + \frac{7}{6} \Pi_{\mathrm{asym}}\right)(\1 \otimes \sigma_{\mathbf{r}_j})+ \frac{5}{6}\sigma_{\mathbf{r}_j}\otimes\1 &\text{~if~} \mathbf{r}_j' = \mathbf{0},  \mathbf{r}_j\neq \mathbf{0},\\
+            &\left(\frac{1}{2} \Pi_{\mathrm{sym}} + \frac{7}{6} \Pi_{\mathrm{asym}}\right)(\1 \otimes \sigma_{\mathbf{r}'_j}) + \frac{5}{6}\sigma_{\mathbf{r}'_j}\otimes\1&\text{~if~} \mathbf{r}_j = \mathbf{0},  \mathbf{r}'_j\neq \mathbf{0}.
         \end{aligned}\right.
     \end{align}
-    In particular, the diagonal element gives $v(\mathbf{r}_j,\mathbf{r}_j) = ({5}/{3})\sigma_{\mathbf{r}_j}^{\otimes 2}$ when $\mathbf{r}_j \neq \mathbf{0}$ and $v(\mathbf{0},\mathbf{0}) = ({11\mathbb{I}_4 + 4 \Pi_{\mathrm{asym}}})/{3}$ at identity sites. Note that the $\Pi_{\mathrm{asym}}$ terms do \emph{not} vanish on $\rho^{\otimes 2}$ for entangled $\rho$: while $\rho^{\otimes 2}$ is globally symmetric under copy exchange, it is not contained in $\bigotimes_j \mathrm{Sym}^2_j$ when $\rho$ has entanglement across qubit sites. For product states $\rho = \bigotimes_l \rho_l$, the per-site state $\rho_l^{\otimes 2} \in \mathrm{Sym}^2(\mathbb{C}^2)$ so $\Pi_{\mathrm{asym}}$ terms vanish and the second moment simplifies to $\mathrm{tr}[\mathbf{V}(O_{\mathbf{r}},O_{\mathbf{r}})\rho^{\otimes 2}] = ({11}/{3})^{n}({5}/{11})^{\mathrm{wt}(\sigma_{\mathbf{r}})}$. For entangled states the second moment can be larger: since $v(\mathbf{0},\mathbf{0})$ has eigenvalues $11/3$ on $\mathrm{Sym}^2$ and $5$ on the antisymmetric subspace, the operator norm is $\|\mathbf{V}(O_\mathbf{0},O_\mathbf{0})\| = 5^n$.
+    In particular, the diagonal element gives $v(\mathbf{r}_j,\mathbf{r}_j) = ({5}/{3})\sigma_{\mathbf{r}_j}^{\otimes 2}$ when $\mathbf{r}_j \neq \mathbf{0}$ and $v(\mathbf{0},\mathbf{0}) = ({11\1_4 + 4 \Pi_{\mathrm{asym}}})/{3}$ at identity sites. Note that the $\Pi_{\mathrm{asym}}$ terms do \emph{not} vanish on $\rho^{\otimes 2}$ for entangled $\rho$: while $\rho^{\otimes 2}$ is globally symmetric under copy exchange, it is not contained in $\bigotimes_j \mathrm{Sym}^2_j$ when $\rho$ has entanglement across qubit sites. For product states $\rho = \bigotimes_l \rho_l$, the per-site state $\rho_l^{\otimes 2} \in \mathrm{Sym}^2(\mathbb{C}^2)$ so $\Pi_{\mathrm{asym}}$ terms vanish and the second moment simplifies to $\mathrm{tr}[\mathbf{V}(O_{\mathbf{r}},O_{\mathbf{r}})\rho^{\otimes 2}] = ({11}/{3})^{n}({5}/{11})^{\mathrm{wt}(\sigma_{\mathbf{r}})}$. For entangled states the second moment can be larger: since $v(\mathbf{0},\mathbf{0})$ has eigenvalues $11/3$ on $\mathrm{Sym}^2$ and $5$ on the antisymmetric subspace, the operator norm is $\|\mathbf{V}(O_\mathbf{0},O_\mathbf{0})\| = 5^n$.
 \end{lemma}
 \begin{proof}
-    We consider the observable $O_{\mathbf{r}}= (\sigma_{\mathbf{r}} \otimes \mathbb{I}_n) \cdot \text{SWAP}^{\otimes n}$ with $\mathbf{r} = (\mathbf{r}_1, \cdots, \mathbf{r}_n) \in (\mathbb{F}_2^2)^n$ and rewrite the observable according to the fact $\text{SWAP}^{\otimes n} = 2^{-n}\sum_{\mathbf{p} \in \mathbb{F}_2^{2n}} \sigma_{\mathbf{p}} \otimes \sigma_{\mathbf{p}}$ as:
+    We consider the observable $O_{\mathbf{r}}= (\sigma_{\mathbf{r}} \otimes \1_n) \cdot \text{SWAP}^{\otimes n}$ with $\mathbf{r} = (\mathbf{r}_1, \cdots, \mathbf{r}_n) \in (\mathbb{F}_2^2)^n$ and rewrite the observable according to the fact $\text{SWAP}^{\otimes n} = 2^{-n}\sum_{\mathbf{p} \in \mathbb{F}_2^{2n}} \sigma_{\mathbf{p}} \otimes \sigma_{\mathbf{p}}$ as:
     \begin{align}
         O_{\mathbf{r}}=  2^{-n}\sum_{\mathbf{p} \in (\mathbb{F}_2^{2})^n} \sigma_{\mathbf{r}}\sigma_{\mathbf{p}}\otimes \sigma_{\mathbf{p}},\quad O_{\mathbf{r}'}=  2^{-n}\sum_{\mathbf{p}' \in (\mathbb{F}_2^{2})^n} \sigma_{\mathbf{r}'}\sigma_{\mathbf{p}'}\otimes \sigma_{\mathbf{p}'} 
     \end{align}
@@ -1460,7 +1460,7 @@ Here below we use Lemma~\ref{lemma:LC_shadow_kcopy} to evaluate the covariance o
 
     In the case of $\mathbf{r}_j,\mathbf{r}'_j \neq 0$, we simplified term by term as below
     \begin{align}
-        \text{the 1st term} &= \sum_{\mathbf{p}} (-1)^{[\mathbf{p},\mathbf{r}']}\cdot \frac{5}{6} \delta_{\mathbf{r},\mathbf{r}'}\sigma_{\mathbf{r}}\sigma_{\mathbf{r}'} \otimes \mathbb{I} =0, \\
+        \text{the 1st term} &= \sum_{\mathbf{p}} (-1)^{[\mathbf{p},\mathbf{r}']}\cdot \frac{5}{6} \delta_{\mathbf{r},\mathbf{r}'}\sigma_{\mathbf{r}}\sigma_{\mathbf{r}'} \otimes \1 =0, \\
         \text{the 2nd term} &= \sum_{\mathbf{p}, \mathbf{p}'}(-1)^{[\mathbf{p},\mathbf{r}']+[\mathbf{p},\mathbf{p}']} \frac{5}{24} \sigma_{\mathbf{r}} \sigma_{ \mathbf{r}'}\sigma_{\mathbf{p} + \mathbf{p}'} \otimes \sigma_{\mathbf{p}+\mathbf{p}'}= \sum_{\mathbf{p}, \mathbf{u}}(-1)^{[\mathbf{p}, \mathbf{r}']+[\mathbf{p},\mathbf{u}]} \frac{5}{24} \sigma_{\mathbf{r}} \sigma_{ \mathbf{r}'}\sigma_{\mathbf{u}} \otimes \sigma_{\mathbf{u}}\\ 
         &= \sum_{\mathbf{u}}\delta_{\mathbf{r}',\mathbf{u}} \frac{5}{6} \sigma_{\mathbf{r}} \sigma_{ \mathbf{r}'}\sigma_{\mathbf{u}} \otimes \sigma_{\mathbf{u}} = \frac{5}{6} \sigma_{\mathbf{r}} \otimes \sigma_{\mathbf{r}'},\\
         %%%%%%%%%%%%%%%%
@@ -1480,49 +1480,49 @@ Here below we use Lemma~\ref{lemma:LC_shadow_kcopy} to evaluate the covariance o
         &\hspace{0.8cm} + (-1)^{0} \cdot 1\cdot \sigma_{01}^{\otimes 2} + (-1)^{0} \cdot 5\cdot \sigma_{00}^{\otimes 2} + (-1)^{1} \cdot \frac{5}{3}\cdot\sigma_{11}^{\otimes 2} +  (-1)^{1} \cdot \frac{5}{3}\cdot \sigma_{10}^{\otimes 2} \notag\\
         &\hspace{0.8cm}+ (-1)^{0} \cdot 1\cdot \sigma_{10}^{\otimes 2} +  (-1)^{1} \cdot \frac{5}{3}\cdot \sigma_{11}^{\otimes 2} + (-1)^{0} \cdot 5\cdot \sigma_{00}^{\otimes 2} + (-1)^{1} \cdot \frac{5}{3}\cdot \sigma_{01}^{\otimes 2} \notag\\
         &\left.\hspace{0.8cm}+ (-1)^{0} \cdot 1\cdot \sigma_{11}^{\otimes 2} + (-1)^{1} \cdot \frac{5}{3}\cdot \sigma_{10}^{\otimes 2} + (-1)^{1} \cdot \frac{5}{3}\cdot \sigma_{01}^{\otimes 2} + (-1)^{0} \cdot 5\cdot \sigma_{00}^{\otimes 2} \right]\\
-        &= 4 \sigma_{00}^{\otimes 2} - \frac{1}{3}(\sigma_{01}^{\otimes 2}+\sigma_{10}^{\otimes 2}+\sigma_{11}^{\otimes 2}) = \frac{11\mathbb{I}_2 + 4 \Pi_{\mathrm{asym}}}{3}.
+        &= 4 \sigma_{00}^{\otimes 2} - \frac{1}{3}(\sigma_{01}^{\otimes 2}+\sigma_{10}^{\otimes 2}+\sigma_{11}^{\otimes 2}) = \frac{11\1_2 + 4 \Pi_{\mathrm{asym}}}{3}.
     \end{align}
-    Here in the last line we use the definition that $\Pi_{\mathrm{asym}} = (\mathbb{I}_2 - \text{SWAP})/2 = {(\mathbb{I}_2 -\sigma_{01}^{\otimes 2}-\sigma_{10}^{\otimes 2}-\sigma_{11}^{\otimes 2})}/{4}$.
+    Here in the last line we use the definition that $\Pi_{\mathrm{asym}} = (\1_2 - \text{SWAP})/2 = {(\1_2 -\sigma_{01}^{\otimes 2}-\sigma_{10}^{\otimes 2}-\sigma_{11}^{\otimes 2})}/{4}$.
 
-    In the case of $\mathbf{r}'= 0 \neq \mathbf{r}$, if we simply adapt the result in Eq.\eqref{eq:V_eq1}, we will get the result $v({\mathbf{r}_j}, {\mathbf{r}_j'}) =({5}/{6})\left(\sigma_{\mathbf{r}}\otimes \mathbb{I} +\mathbb{I}\otimes \sigma_{\mathbf{r}} \right)$. However, in the case of $\mathbf{p}' = 0$ during the summation, we mistakenly counted the constant $r((\mathbf{r}+ \mathbf{p})\mathbf{p}, \mathbf{0}\mathbf{0}) = 1$ into $r((\mathbf{r}+ \mathbf{p})\mathbf{p}, \mathbf{0}\mathbf{0}) = (5/6)[4\delta_{\mathbf{r},\mathbf{0}}\delta_{\mathbf{p},\mathbf{0}} +2]$. To correct this term, we sum in the case $\mathbf{p}' = 0$ and get the result
+    In the case of $\mathbf{r}'= 0 \neq \mathbf{r}$, if we simply adapt the result in Eq.\eqref{eq:V_eq1}, we will get the result $v({\mathbf{r}_j}, {\mathbf{r}_j'}) =({5}/{6})\left(\sigma_{\mathbf{r}}\otimes \1 +\1\otimes \sigma_{\mathbf{r}} \right)$. However, in the case of $\mathbf{p}' = 0$ during the summation, we mistakenly counted the constant $r((\mathbf{r}+ \mathbf{p})\mathbf{p}, \mathbf{0}\mathbf{0}) = 1$ into $r((\mathbf{r}+ \mathbf{p})\mathbf{p}, \mathbf{0}\mathbf{0}) = (5/6)[4\delta_{\mathbf{r},\mathbf{0}}\delta_{\mathbf{p},\mathbf{0}} +2]$. To correct this term, we sum in the case $\mathbf{p}' = 0$ and get the result
     \begin{align}
-        \Delta = -4^{-1}(5/6)\sum_{\mathbf{p}} [4\delta_{\mathbf{p},0}\delta_{\mathbf{r},0} + 2]\sigma_{\mathbf{r}}\sigma_{\mathbf{p}} \otimes \sigma_{\mathbf{p}} + 4^{-1} \sum_{\mathbf{p}} \sigma_{\mathbf{r}}\sigma_{\mathbf{p}} \otimes \sigma_{\mathbf{p}} = - \frac{1}{3}(\sigma_{\mathbf{r}} \otimes \mathbb{I})\text{SWAP}.
+        \Delta = -4^{-1}(5/6)\sum_{\mathbf{p}} [4\delta_{\mathbf{p},0}\delta_{\mathbf{r},0} + 2]\sigma_{\mathbf{r}}\sigma_{\mathbf{p}} \otimes \sigma_{\mathbf{p}} + 4^{-1} \sum_{\mathbf{p}} \sigma_{\mathbf{r}}\sigma_{\mathbf{p}} \otimes \sigma_{\mathbf{p}} = - \frac{1}{3}(\sigma_{\mathbf{r}} \otimes \1)\text{SWAP}.
     \end{align} 
     This correction then gives the correct result
     \begin{align}
-        v({\mathbf{r}}, {\mathbf{r}'}) &=\frac{5}{6}\left(\mathbb{I}\otimes \sigma_{\mathbf{r}} +  \sigma_{\mathbf{r}}\otimes\mathbb{I} \right) -  \frac{1}{3}(\sigma_{\mathbf{r}} \otimes \mathbb{I}) \cdot \text{SWAP} = \left(\frac{5}{6} \mathbb{I} - \frac{1}{3}\text{SWAP}\right)(\mathbb{I} \otimes \sigma_{\mathbf{r}}) + \frac{5}{6}\sigma_{\mathbf{r}}\otimes\mathbb{I} \notag\\
-        &= \left(\frac{1}{2} \Pi_{\mathrm{sym}} + \frac{7}{6} \Pi_{\mathrm{asym}}\right)(\mathbb{I} \otimes \sigma_{\mathbf{r}}) + \frac{5}{6}\sigma_{\mathbf{r}}\otimes\mathbb{I} \text{~if~} \mathbf{r}' = \mathbf{0},  \mathbf{r}\neq \mathbf{0}.
+        v({\mathbf{r}}, {\mathbf{r}'}) &=\frac{5}{6}\left(\1\otimes \sigma_{\mathbf{r}} +  \sigma_{\mathbf{r}}\otimes\1 \right) -  \frac{1}{3}(\sigma_{\mathbf{r}} \otimes \1) \cdot \text{SWAP} = \left(\frac{5}{6} \1 - \frac{1}{3}\text{SWAP}\right)(\1 \otimes \sigma_{\mathbf{r}}) + \frac{5}{6}\sigma_{\mathbf{r}}\otimes\1 \notag\\
+        &= \left(\frac{1}{2} \Pi_{\mathrm{sym}} + \frac{7}{6} \Pi_{\mathrm{asym}}\right)(\1 \otimes \sigma_{\mathbf{r}}) + \frac{5}{6}\sigma_{\mathbf{r}}\otimes\1 \text{~if~} \mathbf{r}' = \mathbf{0},  \mathbf{r}\neq \mathbf{0}.
     \end{align}
     Similarly, in the case $\mathbf{r}= 0 \neq \mathbf{r}'$, we calculate the correction in the case $\mathbf{p} = 0$ as
     \begin{align}
-        \Delta &= -4^{-1}(5/6)\sum_{\mathbf{p}'}[4\delta_{\mathbf{p}',0}\delta_{\mathbf{r}',0} + 2]\sigma_{\mathbf{r}'}\sigma_{\mathbf{p}'} \otimes \sigma_{\mathbf{p}'} + 4^{-1} \sum_{\mathbf{p}'} \sigma_{\mathbf{r}'}\sigma_{\mathbf{p}'} \otimes \sigma_{\mathbf{p}'} = - \frac{1}{3}(\sigma_{\mathbf{r}'} \otimes \mathbb{I})\text{SWAP},\\
-        v({\mathbf{r}}, {\mathbf{r}'}) &= \left(\frac{1}{2} \Pi_{\mathrm{sym}} + \frac{7}{6} \Pi_{\mathrm{asym}}\right)(\mathbb{I} \otimes \sigma_{\mathbf{r}'}) + \frac{5}{6}\sigma_{\mathbf{r}'}\otimes\mathbb{I} \text{~if~} \mathbf{r} = \mathbf{0},  \mathbf{r}'\neq \mathbf{0}.
+        \Delta &= -4^{-1}(5/6)\sum_{\mathbf{p}'}[4\delta_{\mathbf{p}',0}\delta_{\mathbf{r}',0} + 2]\sigma_{\mathbf{r}'}\sigma_{\mathbf{p}'} \otimes \sigma_{\mathbf{p}'} + 4^{-1} \sum_{\mathbf{p}'} \sigma_{\mathbf{r}'}\sigma_{\mathbf{p}'} \otimes \sigma_{\mathbf{p}'} = - \frac{1}{3}(\sigma_{\mathbf{r}'} \otimes \1)\text{SWAP},\\
+        v({\mathbf{r}}, {\mathbf{r}'}) &= \left(\frac{1}{2} \Pi_{\mathrm{sym}} + \frac{7}{6} \Pi_{\mathrm{asym}}\right)(\1 \otimes \sigma_{\mathbf{r}'}) + \frac{5}{6}\sigma_{\mathbf{r}'}\otimes\1 \text{~if~} \mathbf{r} = \mathbf{0},  \mathbf{r}'\neq \mathbf{0}.
     \end{align} 
     Now we conclude the results
     \begin{align}
         v(\mathbf{r}_j, \mathbf{r}_j') = 
         \left\{\begin{aligned}
             &\frac{5}{6}\left(\sigma_{\mathbf{r}_j}\otimes \sigma_{\mathbf{r}'_j} +\sigma_{\mathbf{r}'_j}\otimes \sigma_{\mathbf{r}_j} \right)&\text{~if~} \mathbf{r}_j, \mathbf{r}_j'  \neq \mathbf{0},\\
-            &\frac{11\mathbb{I}_2 + 4 \Pi_{\mathrm{asym}}}{3} &\text{~if~} \mathbf{r}_j=\mathbf{r}_j'= \mathbf{0}, \\
-            &\left(\frac{1}{2} \Pi_{\mathrm{sym}} + \frac{7}{6} \Pi_{\mathrm{asym}}\right)(\mathbb{I} \otimes \sigma_{\mathbf{r}_j})+ \frac{5}{6}\sigma_{\mathbf{r}_j}\otimes\mathbb{I} &\text{~if~} \mathbf{r}_j' = \mathbf{0},  \mathbf{r}_j\neq \mathbf{0},\\
-            &\left(\frac{1}{2} \Pi_{\mathrm{sym}} + \frac{7}{6} \Pi_{\mathrm{asym}}\right)(\mathbb{I} \otimes \sigma_{\mathbf{r}'_j}) + \frac{5}{6}\sigma_{\mathbf{r}'_j}\otimes\mathbb{I}&\text{~if~} \mathbf{r}_j = \mathbf{0},  \mathbf{r}'_j\neq \mathbf{0}.
+            &\frac{11\1_2 + 4 \Pi_{\mathrm{asym}}}{3} &\text{~if~} \mathbf{r}_j=\mathbf{r}_j'= \mathbf{0}, \\
+            &\left(\frac{1}{2} \Pi_{\mathrm{sym}} + \frac{7}{6} \Pi_{\mathrm{asym}}\right)(\1 \otimes \sigma_{\mathbf{r}_j})+ \frac{5}{6}\sigma_{\mathbf{r}_j}\otimes\1 &\text{~if~} \mathbf{r}_j' = \mathbf{0},  \mathbf{r}_j\neq \mathbf{0},\\
+            &\left(\frac{1}{2} \Pi_{\mathrm{sym}} + \frac{7}{6} \Pi_{\mathrm{asym}}\right)(\1 \otimes \sigma_{\mathbf{r}'_j}) + \frac{5}{6}\sigma_{\mathbf{r}'_j}\otimes\1&\text{~if~} \mathbf{r}_j = \mathbf{0},  \mathbf{r}'_j\neq \mathbf{0}.
         \end{aligned}\right.
     \end{align}
-    This completes the derivation of the full operator identity~\eqref{eq:v_full_operator}. For the special case $\mathbf{r} = \mathbf{r}'$, the non-identity sites give $v(\mathbf{r}_j,\mathbf{r}_j) = (5/3)\sigma_{\mathbf{r}_j}^{\otimes 2}$ while the identity sites give $v(\mathbf{0},\mathbf{0}) = (11\mathbb{I}_4 + 4\Pi_{\mathrm{asym}})/3$.
+    This completes the derivation of the full operator identity~\eqref{eq:v_full_operator}. For the special case $\mathbf{r} = \mathbf{r}'$, the non-identity sites give $v(\mathbf{r}_j,\mathbf{r}_j) = (5/3)\sigma_{\mathbf{r}_j}^{\otimes 2}$ while the identity sites give $v(\mathbf{0},\mathbf{0}) = (11\1_4 + 4\Pi_{\mathrm{asym}})/3$.
 
-    \emph{State dependence of the second moment.} While $\rho^{\otimes 2}$ is globally symmetric under copy exchange, it is \emph{not} contained in $\bigotimes_j \mathrm{Sym}^2_j$ for entangled $\rho$. At each identity site, $v(\mathbf{0},\mathbf{0}) = (13\mathbb{I}_4 - 2\,\mathrm{SWAP})/3$ has eigenvalue $11/3$ on $\mathrm{Sym}^2$ and $5$ on the antisymmetric subspace. For product states $\rho = \bigotimes_l \rho_l$, the per-site state $\rho_l^{\otimes 2} \in \mathrm{Sym}^2(\mathbb{C}^2)$ and the $\Pi_{\mathrm{asym}}$ terms vanish, giving $\mathrm{tr}[\mathbf{V}(O_\mathbf{r},O_\mathbf{r})\rho^{\otimes 2}] = (11/3)^n(5/11)^{\mathrm{wt}(\sigma_\mathbf{r})}$. For entangled states the second moment can be larger; the operator norm bound gives $\|\mathbf{V}(O_\mathbf{0},O_\mathbf{0})\| = 5^n$.
+    \emph{State dependence of the second moment.} While $\rho^{\otimes 2}$ is globally symmetric under copy exchange, it is \emph{not} contained in $\bigotimes_j \mathrm{Sym}^2_j$ for entangled $\rho$. At each identity site, $v(\mathbf{0},\mathbf{0}) = (13\1_4 - 2\,\mathrm{SWAP})/3$ has eigenvalue $11/3$ on $\mathrm{Sym}^2$ and $5$ on the antisymmetric subspace. For product states $\rho = \bigotimes_l \rho_l$, the per-site state $\rho_l^{\otimes 2} \in \mathrm{Sym}^2(\mathbb{C}^2)$ and the $\Pi_{\mathrm{asym}}$ terms vanish, giving $\mathrm{tr}[\mathbf{V}(O_\mathbf{r},O_\mathbf{r})\rho^{\otimes 2}] = (11/3)^n(5/11)^{\mathrm{wt}(\sigma_\mathbf{r})}$. For entangled states the second moment can be larger; the operator norm bound gives $\|\mathbf{V}(O_\mathbf{0},O_\mathbf{0})\| = 5^n$.
 \end{proof}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-We consider the estimation of the simplest operator $O^{(2)} = \text{SWAP}^{\otimes n} = 2^{-n}(\mathbb{I}\mathbb{I}+XX+YY+ZZ)^{\otimes n}$.
-By Lemma~\ref{lemma:covar_Pauli}, the second moment operator for purity estimation is $\mathbf{V}(O_\mathbf{0},O_\mathbf{0}) = \left({(11\mathbb{I}_4 + 4\Pi_{\mathrm{asym}})}/{3}\right)^{\otimes n}$. For product states the second moment is $(11/3)^n$; for entangled states it can be larger (operator norm $5^n$). In all cases the cost is exponential.
+We consider the estimation of the simplest operator $O^{(2)} = \text{SWAP}^{\otimes n} = 2^{-n}(\1\1+XX+YY+ZZ)^{\otimes n}$.
+By Lemma~\ref{lemma:covar_Pauli}, the second moment operator for purity estimation is $\mathbf{V}(O_\mathbf{0},O_\mathbf{0}) = \left({(11\1_4 + 4\Pi_{\mathrm{asym}})}/{3}\right)^{\otimes n}$. For product states the second moment is $(11/3)^n$; for entangled states it can be larger (operator norm $5^n$). In all cases the cost is exponential.
 For the single copy local Clifford shadow, the variance is calculated through:
 \begin{align}
-    &\hspace{-1.5cm}\mathbf{V}:= \sum_{W,W' \in \mathcal{P}_2^{\otimes n}} \alpha_{W}\alpha_{W'} R(W,W') W W'= 4^{-n}\bigotimes_{i =1}^n \left(\sum_{W_i,W_i' \in \{\mathbb{I}\mathbb{I},XX,YY,ZZ\}} R(W_i,W'_i) W_i W_i'\right).\notag\\
-   = 4^{-n} &\left( \mathbb{I}\mathbb{I}+XX+YY+ZZ+ XX+9\mathbb{I}\mathbb{I} + YY + 9\mathbb{I}\mathbb{I} +ZZ+ 9\mathbb{I}\mathbb{I}\right)^{\otimes n}\notag\\
-  & \hspace{-1.15cm}= \left(7 \mathbb{I}\mathbb{I} + \frac{1}{2}(XX+YY+ZZ)\right)^{\otimes n}= \left(\frac{13\mathbb{I}\mathbb{I}+2\text{SWAP}}{2}\right)^{\otimes n} = \left(\frac{11\mathbb{I}\mathbb{I}+ 4\Pi_{\mathrm{sym}}}{2}\right)^{\otimes n}. \label{eq:prity_1rep_shadow_variance}
+    &\hspace{-1.5cm}\mathbf{V}:= \sum_{W,W' \in \mathcal{P}_2^{\otimes n}} \alpha_{W}\alpha_{W'} R(W,W') W W'= 4^{-n}\bigotimes_{i =1}^n \left(\sum_{W_i,W_i' \in \{\1\1,XX,YY,ZZ\}} R(W_i,W'_i) W_i W_i'\right).\notag\\
+   = 4^{-n} &\left( \1\1+XX+YY+ZZ+ XX+9\1\1 + YY + 9\1\1 +ZZ+ 9\1\1\right)^{\otimes n}\notag\\
+  & \hspace{-1.15cm}= \left(7 \1\1 + \frac{1}{2}(XX+YY+ZZ)\right)^{\otimes n}= \left(\frac{13\1\1+2\text{SWAP}}{2}\right)^{\otimes n} = \left(\frac{11\1\1+ 4\Pi_{\mathrm{sym}}}{2}\right)^{\otimes n}. \label{eq:prity_1rep_shadow_variance}
 \end{align}
-For the single-copy shadow, this gives a worst-case second moment of $7.5^n$ (the operator norm, attained on product states since the symmetric eigenvalue $15/2$ exceeds the antisymmetric eigenvalue $11/2$). The 2-replica local shadow improves the product-state second moment to $(11/3)^n \approx 3.67^n$, but the antisymmetric eigenvalue $5 > 11/3$ means entangled states can have larger variance (operator norm $5^n$). In all cases, the cost remains exponential; using higher replica numbers $k > 2$ under local measurement constraints only yields marginal improvements in the constant factor, but does not alter the complexity class.
+For the single-copy shadow, this gives a worst-case second moment of $7.5^n$ (the operator norm, attained on product states since the symmetric eigenvalue $15/2$ exceeds the antisymmetric eigenvalue $11/2$). The 2-replica local shadow improves the product-state second moment to $(11/3)^n \approx 3.67^n$, but the antisymmetric eigenvalue $5 > 11/3$ means entangled states can have larger variance (operator norm $5^n$). In all cases, the cost remains exponential for $k \leq 2$. \color{red}We conjecture that using higher replica numbers $k > 2$ under local measurement constraints does not alter the complexity class, since the structural obstruction (non-product form of the lifted operators $A_P$) persists at every $k$; however, a rigorous proof for arbitrary $k$ remains open.\color{black}
 
 
 \subsection{A 4-replica non-local strategy for the oblivious case}\label{app:UB_nonlin_P_shad}
@@ -1551,7 +1551,7 @@ In analogy, we try to break the lower bound in the last section by extending the
     Thus, $[S_P, S_Q] = \mathbf{0}$, which implies $[A_P, A_Q] = \mathbf{0}$.
     We now calculate 
     \begin{align}
-        \mathrm{tr}(A_P \rho^{\otimes 2k}) &= \mathrm{tr}[\mathrm{sym}_{\pi}(P^{\otimes 2} \otimes \mathbb{I}^{\otimes 2k-2}) \pi \rho^{\otimes 2k}] = \mathrm{tr}[(P^{\otimes 2} \otimes \mathbb{I}^{\otimes 2k-2}) \pi \rho^{\otimes 2k}]\\
+        \mathrm{tr}(A_P \rho^{\otimes 2k}) &= \mathrm{tr}[\mathrm{sym}_{\pi}(P^{\otimes 2} \otimes \1^{\otimes 2k-2}) \pi \rho^{\otimes 2k}] = \mathrm{tr}[(P^{\otimes 2} \otimes \1^{\otimes 2k-2}) \pi \rho^{\otimes 2k}]\\
         &=\mathrm{tr}[(P\rho \otimes \rho^{\otimes k-1}) \mathbb{P}^{d}_{(\mathrm{odds})} \otimes (P\rho \otimes \rho^{\otimes k-1}) \mathbb{P}^{d}_{(\mathrm{even})}]\\
         &=[\mathrm{tr}(P\rho^k)]^2
     \end{align}
@@ -1574,7 +1574,7 @@ In analogy, we try to break the lower bound in the last section by extending the
     \end{align}\color{black}
 \end{proof}
 \paragraph{Examples.}
- In the case $k = 2$, the commutants we choose writes $\{A_{\mathbf{r}} := {2}^{-1}{(\sigma_{\mathbf{r}}\sigma_{\mathbf{r}}\mathbb{I}_n\mathbb{I}_n + \mathbb{I}_n\mathbb{I}_n\sigma_{\mathbf{r}}\sigma_{\mathbf{r}})} \mathrm{S}_{13}\mathrm{S}_{24}\}_{\mathbf{r} \in \mathbb{F}_2^{2n}}$. Notice that $\sigma_{\mathbf{r}} \otimes \sigma_{\mathbf{r}} \ket{\Phi_{\mathbf{a}}} = (-1)^{[\mathbf{r},\mathbf{a}] + \mathbf{r}_x\cdot\mathbf{r}_z}\ket{\Phi_{\mathbf{a}}}$ (cf.\ Eq.~\eqref{eq:bell_shadow_eig}),
+ In the case $k = 2$, the commutants we choose writes $\{A_{\mathbf{r}} := {2}^{-1}{(\sigma_{\mathbf{r}}\sigma_{\mathbf{r}}\1_n\1_n + \1_n\1_n\sigma_{\mathbf{r}}\sigma_{\mathbf{r}})} \mathrm{S}_{13}\mathrm{S}_{24}\}_{\mathbf{r} \in \mathbb{F}_2^{2n}}$. Notice that $\sigma_{\mathbf{r}} \otimes \sigma_{\mathbf{r}} \ket{\Phi_{\mathbf{a}}} = (-1)^{[\mathbf{r},\mathbf{a}] + \mathbf{r}_x\cdot\mathbf{r}_z}\ket{\Phi_{\mathbf{a}}}$ (cf.\ Eq.~\eqref{eq:bell_shadow_eig}),
 the shared eigenbasis of $\{A_\mathbf{r}\}_\mathbf{r}$ has the form $\ket{\Psi^{s}_{(\mathbf{a}, \mathbf{b})}}$ below with eigenvalues $\lambda_{(s,\mathbf{a},\mathbf{b})} :=(-1)^{\mathbf{r}_x\cdot\mathbf{r}_z}\cdot s \cdot 2^{-1}[(-1)^{[\mathbf{r}, \mathbf{a}]} + (-1)^{[\mathbf{r}, \mathbf{b}]}] $ and $s = \pm 1$.
 \begin{align}
    \ket{\Psi^{s}_{(\mathbf{a}, \mathbf{b})}}&= 
@@ -1652,7 +1652,7 @@ This statement is useful to proving the reduction of $\mathrm{tr}(\rho^2)$ probl
     Then the average of purity can be directly calculate as
     \begin{align}
     \mathbb{E}_{\rho \sim \mathcal{E}_{\varepsilon}} \mathrm{tr}(\rho^2)
-    &=\mathrm{tr}\left(\frac{\varepsilon^{-2} \mathbb{I}_{n}^{\otimes 2}+\varepsilon^{-1} \mathrm{SWAP}^{\otimes n}}{D(D+1)} \cdot \mathrm{SWAP}^{\otimes n}\right) = \frac{\varepsilon^{-2} 2^n + \varepsilon^{-1} 2^{2n}}{2^n\varepsilon^{-1}(2^n \varepsilon^{-1}+1)}= \frac{2^n\varepsilon + 1}{2^n + \varepsilon},\\
+    &=\mathrm{tr}\left(\frac{\varepsilon^{-2} \1_{n}^{\otimes 2}+\varepsilon^{-1} \mathrm{SWAP}^{\otimes n}}{D(D+1)} \cdot \mathrm{SWAP}^{\otimes n}\right) = \frac{\varepsilon^{-2} 2^n + \varepsilon^{-1} 2^{2n}}{2^n\varepsilon^{-1}(2^n \varepsilon^{-1}+1)}= \frac{2^n\varepsilon + 1}{2^n + \varepsilon},\\
     \mathbb{E}_{\rho \sim \mathcal{E}_{\varepsilon}} [\mathrm{tr}(\rho^2)]^2&=\mathrm{tr}\left(\frac{ \sum_{\pi \in S_4}{\varepsilon^{-c(\pi)}\mathbb{P}_{\pi}^{d}}}{D(D+1)(D+2)(D+3)}\mathbb{P}_{(12)(34)}^{d}\right)=\frac{\sum_{\pi \in S_4}d^{c(\pi \cdot (12)(34))}(1/\varepsilon)^{c(\pi)}}{D(D+1)(D+2)(D+3)}.
     \end{align}
     Here $c(\pi)$ count the number of cycles for permutation $\pi$. To calculate this value, we classify the $S_4$ group as shown in Table~\ref{tab:S4_terms}. 
@@ -1685,7 +1685,7 @@ This statement is useful to proving the reduction of $\mathrm{tr}(\rho^2)$ probl
 \begin{problem}\label{prob:RHtest}
     Given \textbf{RH} ensembles $\mathcal{E}_{1 - R\delta}, \mathcal{E}_{L\delta}$ (as in Sec.~\ref{app:LB_nonlin_P_shad}), with $R = (2^{n-1} + 1)/(2^{n-1} - 1 +\delta)$ and $L = (1 - 4^{-n+1} - 2^{-n+1} \delta)^{-1}$, try to design an algorithm that $\forall C \in \mathcal{C}$, discriminates two subspace-\textbf{RH} ensembles below:
     \begin{align}
-        &\mathcal{E}_{(1,0),C} := \left\{\sigma_{(1,0),C}:= C \left[\frac{1}{2} \ket{0}\!\bra{0} \otimes \psi + \frac{1}{2} \ket{1}\!\bra{1} \otimes (\mathbb{I}/2^{n-1}) \right] C^{\dagger}\right\}_{\psi \sim \mathrm{Haar}_{n-1}},\\
+        &\mathcal{E}_{(1,0),C} := \left\{\sigma_{(1,0),C}:= C \left[\frac{1}{2} \ket{0}\!\bra{0} \otimes \psi + \frac{1}{2} \ket{1}\!\bra{1} \otimes (\1/2^{n-1}) \right] C^{\dagger}\right\}_{\psi \sim \mathrm{Haar}_{n-1}},\\
         &\mathcal{E}_{(1 - R\delta,L\delta),C} := \left\{ \sigma_{(1 - R\delta,L\delta),C} :=C \left[\frac{1}{2} \ket{0}\!\bra{0} \otimes \rho_{1 - R\delta} + \frac{1}{2} \ket{1}\!\bra{1} \otimes \rho_{L\delta} \right] C^{\dagger}\right\}_{\rho_{\varepsilon} \sim \mathcal{E}_{\varepsilon}}.
     \end{align}
 \end{problem}
@@ -1702,7 +1702,7 @@ Now the \textbf{TVD} under this measurement takes the value:
 \end{align}
 where the Haar average takes the value:
 \begin{align}
-    \mathbb{E}_{\psi}\sigma_{(1,0),I}^{\otimes 2T} &= \left[\frac{1}{2}\ket{0}\!\bra{0} \otimes \psi  + \frac{1}{2}\ket{1}\!\bra{1} \otimes 2^{-n+1}\mathbb{I}_{n-1}\right]^{\otimes 2T} = \sum_{\mathbf{a} \in \mathbb{F}_2^{2T}} {2^{-2T}\ket{\bar{\mathbf{a}}}\!\bra{\bar{\mathbf{a}}} }\otimes\frac{\sum_{\pi \in S_{2T}^{\mathbf{a}}} \mathbb{P}_{\pi}^{d}}{d^{\uparrow |\mathbf{a}|} d^{2T - |\mathbf{a}|}},\\
+    \mathbb{E}_{\psi}\sigma_{(1,0),I}^{\otimes 2T} &= \left[\frac{1}{2}\ket{0}\!\bra{0} \otimes \psi  + \frac{1}{2}\ket{1}\!\bra{1} \otimes 2^{-n+1}\1_{n-1}\right]^{\otimes 2T} = \sum_{\mathbf{a} \in \mathbb{F}_2^{2T}} {2^{-2T}\ket{\bar{\mathbf{a}}}\!\bra{\bar{\mathbf{a}}} }\otimes\frac{\sum_{\pi \in S_{2T}^{\mathbf{a}}} \mathbb{P}_{\pi}^{d}}{d^{\uparrow |\mathbf{a}|} d^{2T - |\mathbf{a}|}},\\
     \mathbb{E}_{\psi}\sigma_{(1 - R\delta,L\delta),I}^{\otimes 2T} &= \left[\frac{1}{2}\ket{0}\!\bra{0} \otimes \rho_{1 - R\delta} + \frac{1}{2}\ket{1}\!\bra{1} \otimes 2^{-n+1}\rho_{L\delta}\right]^{\otimes 2T} \\
     &= \sum_{\mathbf{a} \in \mathbb{F}_2^{2T}} {2^{-2T}\ket{\bar{\mathbf{a}}}\!\bra{\bar{\mathbf{a}}}} \otimes \frac{\sum_{\pi \in S_{2T}^{\mathbf{a}}, \sigma \in S_{2T}^{\bar{\mathbf{a}}}} \mathbb{P}_{\pi \sigma}^{d} (1 - R \delta)^{-c(\pi)} (L\delta)^{-c(\sigma)}}{[d/(1 - R\delta)]^{\uparrow |\mathbf{a}|} [d/L\delta]^{\uparrow |\bar{\mathbf{a}}|}},
 \end{align}
@@ -1710,33 +1710,33 @@ where $d = 2^{n-1}$ and $S_{2T}^{\mathbf{a}}$ denoting the permutation contained
 Then define their difference $\Delta_{2T} :=\mathbb{E}_{\psi}\sigma_{(1,0),I}^{\otimes 2T}  -  \mathbb{E}_{\psi}\sigma_{(1 - R\delta,L\delta),I}^{\otimes 2T} $. Specifically, when $T = 1$, we conclude that:
 \begin{align}
   \Delta_{2} =  4^{-1}  &{\ket{11}\!\bra{11}} 
-     \otimes \left[\frac{\mathbb{I}^{\otimes 2}}{ d^{2}} - \frac{\mathbb{I}^{\otimes 2} (L\delta)^{-2} + \mathbb{P}^{d}_{(12)}(L\delta)^{-1}}{[d/L\delta][d/L\delta + 1] }\right] \\
+     \otimes \left[\frac{\1^{\otimes 2}}{ d^{2}} - \frac{\1^{\otimes 2} (L\delta)^{-2} + \mathbb{P}^{d}_{(12)}(L\delta)^{-1}}{[d/L\delta][d/L\delta + 1] }\right] \\
      &+ 4^{-1}  {\ket{00}\!\bra{00}} 
-     \otimes \left[\frac{\mathbb{I}^{\otimes 2}  + \mathbb{P}^{d}_{(12)}}{d[d + 1] } - \frac{\mathbb{I}^{\otimes 2} (1 -R\delta)^{-2} + \mathbb{P}^{d}_{(12)}(1 -R\delta)^{-1}}{[d/(1 -R\delta)][d/(1 -R\delta) + 1] }\right].
+     \otimes \left[\frac{\1^{\otimes 2}  + \mathbb{P}^{d}_{(12)}}{d[d + 1] } - \frac{\1^{\otimes 2} (1 -R\delta)^{-2} + \mathbb{P}^{d}_{(12)}(1 -R\delta)^{-1}}{[d/(1 -R\delta)][d/(1 -R\delta) + 1] }\right].
 \end{align}
 We now build uniform distribution on all $n$-qubit Clifford gates $\mathcal{D}$ and average $\Delta_{2}$ over $2$-fold Clifford. Since the average $\Phi_{\mathrm{Cl},2}[\Delta_2]$ is invariant under the two-fold Clifford $X_1 \otimes X_1$, we conclude that 
 \begin{align}
     \Phi_{\mathrm{Cl},2}[\Delta_2] &= \Phi_{\mathrm{Cl},2}\left[4^{-1} {\ket{11}\!\bra{11}} 
-     \otimes \left[-\frac{\mathbb{I}^{\otimes 2} + \mathbb{P}^{d}_{(12)}L\delta}{d[d + L\delta] } +  \frac{\mathbb{I}^{\otimes 2}}{ d^{2}} + \frac{\mathbb{I}^{\otimes 2}  + \mathbb{P}^{d}_{(12)}}{d[d + 1] } -\frac{\mathbb{I}^{\otimes 2} + \mathbb{P}^{d}_{(12)}(1 -R\delta)}{d[d+ 1 -R\delta] } \right]\right]\\
+     \otimes \left[-\frac{\1^{\otimes 2} + \mathbb{P}^{d}_{(12)}L\delta}{d[d + L\delta] } +  \frac{\1^{\otimes 2}}{ d^{2}} + \frac{\1^{\otimes 2}  + \mathbb{P}^{d}_{(12)}}{d[d + 1] } -\frac{\1^{\otimes 2} + \mathbb{P}^{d}_{(12)}(1 -R\delta)}{d[d+ 1 -R\delta] } \right]\right]\\
      &=\Phi_{\mathrm{Cl},2}\left[4^{-1} {\ket{11}\!\bra{11}} 
-     \otimes \left[\left(-\frac{1}{d[d + L\delta] } +  \frac{1}{ d^{2}} + \frac{1}{d[d + 1] } -\frac{1}{d[d+ 1 -R\delta] } \right)\mathbb{I}^{\otimes 2} +\right.\right.\notag\\
+     \otimes \left[\left(-\frac{1}{d[d + L\delta] } +  \frac{1}{ d^{2}} + \frac{1}{d[d + 1] } -\frac{1}{d[d+ 1 -R\delta] } \right)\1^{\otimes 2} +\right.\right.\notag\\
     & \hspace{13em}\left.\left. \left(-\frac{L\delta}{d[d + L\delta] } + \frac{1}{d[d + 1] } -\frac{ 1-R\delta}{d[d+ 1 -R\delta] } \right)\mathbb{P}^{d}_{(12)}\right]\right]\\
     &=\Phi_{\mathrm{Cl},2}\left[4^{-1} {\ket{11}\!\bra{11}} 
-     \otimes \left[\left(\frac{L\delta}{d^2(d + L \delta)} -\frac{R\delta}{d(d+1)(d+1 - R\delta)} \right)\mathbb{I}^{\otimes 2} +\right.\right.\notag\\
+     \otimes \left[\left(\frac{L\delta}{d^2(d + L \delta)} -\frac{R\delta}{d(d+1)(d+1 - R\delta)} \right)\1^{\otimes 2} +\right.\right.\notag\\
     & \hspace{13em}\left.\left. \left(-\frac{L\delta}{d[d + L\delta] } + \frac{R\delta d}{d(d+1)(d+1-R\delta)}\right)\mathbb{P}^{d}_{(12)}\right]\right]\\
     &=\Phi_{\mathrm{Cl},2}\left[4^{-1} {\ket{11}\!\bra{11}}
-     \otimes \left[\left(\frac{\delta}{d(d^2 -1)} -\frac{\delta}{d(d+1)(d - 1)} \right)\mathbb{I}^{\otimes 2} +\right.\right.\notag\\
+     \otimes \left[\left(\frac{\delta}{d(d^2 -1)} -\frac{\delta}{d(d+1)(d - 1)} \right)\1^{\otimes 2} +\right.\right.\notag\\
     & \hspace{13em}\left.\left. \left(-\frac{\delta}{d^2 - 1} + \frac{d\delta}{d(d+1)(d-1)}\right)\mathbb{P}^{d}_{(12)}\right]\right] = 0. \label{eq:t=1_Delta}
 \end{align}
 Here in the last line we use the identity $(d-1)^{-1}\delta = (d + 1 - R\delta)^{-1} R\delta$ and  $d(d^2 - 1)^{-1}\delta = L\delta (d+L\delta)^{-1}$.
 Since Clifford gate forms a 2-design, we can directly write the average based on the value of average purity
 \begin{align}
-    &\rho_0 := \mathbb{E}_{\rho \sim \mathcal{E}_{(1,0),C\sim \mathcal{D}}} \rho^{\otimes 2}=\mathbb{E}_{\rho \sim \mathcal{E}_{(1 - R\delta,L\delta),C\sim \mathcal{D}}} \rho^{\otimes 2} = a\cdot \mathbb{I}_{2n}/2^{2n} + b\cdot \mathrm{SWAP}^{\otimes n}/2^{n}, \\
+    &\rho_0 := \mathbb{E}_{\rho \sim \mathcal{E}_{(1,0),C\sim \mathcal{D}}} \rho^{\otimes 2}=\mathbb{E}_{\rho \sim \mathcal{E}_{(1 - R\delta,L\delta),C\sim \mathcal{D}}} \rho^{\otimes 2} = a\cdot \1_{2n}/2^{2n} + b\cdot \mathrm{SWAP}^{\otimes n}/2^{n}, \\
     & a + b = 1, \quad 2^{-n} a + 2^{n} b = \text{Avg. Purity} = 4^{-1}(1 + 2^{-n+1}).
 \end{align}
 Solve the equation for $a$ and $b$, we get the result:
 \begin{align}
-    \rho_0 = (1 - \mu)  \frac{\mathbb{I}_n^{\otimes 2}}{2^{2n}} + \mu \frac{\mathbb{I}_n^{\otimes 2} + \mathrm{SWAP}^{\otimes n}}{2^n(2^{n} + 1)}, \text{~where~} \mu = 4^{-1} \frac{2^n -2}{2^n - 1}.
+    \rho_0 = (1 - \mu)  \frac{\1_n^{\otimes 2}}{2^{2n}} + \mu \frac{\1_n^{\otimes 2} + \mathrm{SWAP}^{\otimes n}}{2^n(2^{n} + 1)}, \text{~where~} \mu = 4^{-1} \frac{2^n -2}{2^n - 1}.
 \end{align}
 This prevents the Lemma~\ref{lemma:hard_necess1} giving an efficient 2-replica strategy that discriminates $\mathcal{E}_{(1,0),C} $ and $\mathcal{E}_{(1 - R\delta,L\delta),C} $.
 However, given a fixed $C \in \mathcal{C}$, the average of $\mathrm{tr}(P \rho^2)$ for $P = C^\dagger Z_1 C$ has a constant gap $\delta/2$:
@@ -1753,16 +1753,16 @@ This means that if one can use strategy $\mathcal{A}$ to estimate $\mathrm{tr}(P
 \end{proof}
 Now we prove that two-replica strategy that discriminate $\sigma_{(1,0),C}^{\otimes 2T}$ from $\sigma_{(1 - R\delta,L\delta),C}^{\otimes 2T} $ require $\Omega(2^{n})$ rounds. We first calculate the $2T$-fold Clifford average of their difference. Since $X_1^{\otimes 2T} $ is a valid  $2T$-fold Clifford, $\Phi_{\mathrm{Cl},2T}[\Delta_{2T}]$ is invariant under the conjugates of $X_1^{\otimes 2T} $. 
 % \begin{align}
-%  &\leq \Phi_{\mathrm{Cl},2T}\left[\sum_{\mathbf{a} \in \mathbb{F}_2^{2T}} {2^{-2T}\ket{\bar{\mathbf{a}}}\!\bra{\bar{\mathbf{a}}}} \otimes \left( \frac{\sum_{\pi \in S_{2T}} \mathbb{P}_{\pi}^{d}}{d^{\uparrow 2T} } + \frac{\mathbb{I}(d)^{\otimes 2T}}{ d^{2T}} \right. \right.-\left.\left.\frac{\sum_{\pi \in S_{2T}} \mathbb{P}_{\pi}^{d} (1 - R \delta)^{-c(\pi)} }{[d/(1 - R\delta)]^{\uparrow 2T} }   - 
+%  &\leq \Phi_{\mathrm{Cl},2T}\left[\sum_{\mathbf{a} \in \mathbb{F}_2^{2T}} {2^{-2T}\ket{\bar{\mathbf{a}}}\!\bra{\bar{\mathbf{a}}}} \otimes \left( \frac{\sum_{\pi \in S_{2T}} \mathbb{P}_{\pi}^{d}}{d^{\uparrow 2T} } + \frac{\1(d)^{\otimes 2T}}{ d^{2T}} \right. \right.-\left.\left.\frac{\sum_{\pi \in S_{2T}} \mathbb{P}_{\pi}^{d} (1 - R \delta)^{-c(\pi)} }{[d/(1 - R\delta)]^{\uparrow 2T} }   - 
 %    \frac{\sum_{\pi \in S_{2T}} \mathbb{P}_{\pi }^{d}  (L\delta)^{-c(\pi)}}{[d/L\delta]^{\uparrow 2T}}\right)\right]
 %   \Delta_{2T} =   \sum_{\mathbf{a} \in \mathbb{F}_2^{2T}} {2^{-2T}\ket{\bar{\mathbf{a}}}\!\bra{\bar{\mathbf{a}}}} 
-%     \otimes \frac{ \sum_{\pi \in S_{|\mathbf{a}|}}\mathbb{P}_{\pi}^{d}}{d^{\uparrow |\mathbf{a}|}} \otimes \left[\frac{ d^{\uparrow |\mathbf{a}|}(1 - R \delta)^{-c(\pi)}}{[d/L\delta]^{\uparrow |\bar{\mathbf{a}}|}[d/(1 - R\delta)]^{\uparrow |\mathbf{a}|} }{\sum_{ \sigma \in S_{|\bar{\mathbf{a}}|}}\mathbb{P}_{\sigma}^{d}   (L\delta)^{-c(\sigma)}} -  \frac{\mathbb{I}_{n-1}^{\otimes |\bar{\mathbf{a}}|}}{ d^{|\bar{\mathbf{a}}|}}\right].
+%     \otimes \frac{ \sum_{\pi \in S_{|\mathbf{a}|}}\mathbb{P}_{\pi}^{d}}{d^{\uparrow |\mathbf{a}|}} \otimes \left[\frac{ d^{\uparrow |\mathbf{a}|}(1 - R \delta)^{-c(\pi)}}{[d/L\delta]^{\uparrow |\bar{\mathbf{a}}|}[d/(1 - R\delta)]^{\uparrow |\mathbf{a}|} }{\sum_{ \sigma \in S_{|\bar{\mathbf{a}}|}}\mathbb{P}_{\sigma}^{d}   (L\delta)^{-c(\sigma)}} -  \frac{\1_{n-1}^{\otimes |\bar{\mathbf{a}}|}}{ d^{|\bar{\mathbf{a}}|}}\right].
 % \end{align}
 \begin{align}
     &\Phi_{\mathrm{Cl},2T}[\Delta_{2T}] = \Phi_{\mathrm{Cl},2T}\left[\sum_{\mathbf{a} \in \mathbb{F}_2^{2T}} {2^{-2T}\ket{\bar{\mathbf{a}}}\!\bra{\bar{\mathbf{a}}}} \otimes \left( \frac{\sum_{\pi \in S_{2T}^{\mathbf{a}}} \mathbb{P}_{\pi}^{d}}{d^{\uparrow |\mathbf{a}|} d^{2T - |\mathbf{a}|}} + \frac{\sum_{\pi \in S_{2T}^{\bar{\mathbf{a}}}} \mathbb{P}_{\pi}^{d}}{d^{\uparrow |\bar{\mathbf{a}}|} d^{2T - |\bar{\mathbf{a}}|}} \right. \right.\\
    &-\left.\left.\frac{\sum_{\pi \in S_{|\mathbf{a}|}} \mathbb{P}_{\pi }^{d} (1 - R \delta)^{-c(\pi)}}{[d/(1 - R\delta)]^{\uparrow |\mathbf{a}|} } \otimes \frac{ \sum_{\sigma \in S_{|\bar{\mathbf{a}}|}} \mathbb{P}_{ \sigma}^{d}(L\delta)^{-c(\sigma)}}{[d/L\delta]^{\uparrow |\bar{\mathbf{a}}|}} -\frac{\sum_{\pi \in S_{|\mathbf{a}|}} \mathbb{P}_{\pi }^{d} (L \delta)^{-c(\pi)}}{[d/(L\delta)]^{\uparrow |\mathbf{a}|} } \otimes \frac{ \sum_{\sigma \in S_{|\bar{\mathbf{a}}|}} \mathbb{P}_{ \sigma}^{d}(1 - R\delta)^{-c(\sigma)}}{[d/(1 - R\delta)]^{\uparrow |\bar{\mathbf{a}}|}} 
    \right)\right].\\
-    &\leq \Phi_{\mathrm{Cl},2T}\left[\sum_{\mathbf{a} \in \mathbb{F}_2^{2T}} {2^{-2T}\ket{\bar{\mathbf{a}}}\!\bra{\bar{\mathbf{a}}}} \otimes \left( \frac{\sum_{\pi \in S_{2T}} \mathbb{P}_{\pi}^{d}}{d^{\uparrow 2T} } + \frac{\mathbb{I}(d)^{\otimes 2T}}{ d^{2T}} \right. \right.-\left.\left.\frac{\sum_{\pi \in S_{2T}} \mathbb{P}_{\pi}^{d} (1 - R \delta)^{-c(\pi)} }{[d/(1 - R\delta)]^{\uparrow 2T} }   - 
+    &\leq \Phi_{\mathrm{Cl},2T}\left[\sum_{\mathbf{a} \in \mathbb{F}_2^{2T}} {2^{-2T}\ket{\bar{\mathbf{a}}}\!\bra{\bar{\mathbf{a}}}} \otimes \left( \frac{\sum_{\pi \in S_{2T}} \mathbb{P}_{\pi}^{d}}{d^{\uparrow 2T} } + \frac{\1(d)^{\otimes 2T}}{ d^{2T}} \right. \right.-\left.\left.\frac{\sum_{\pi \in S_{2T}} \mathbb{P}_{\pi}^{d} (1 - R \delta)^{-c(\pi)} }{[d/(1 - R\delta)]^{\uparrow 2T} }   - 
    \frac{\sum_{\pi \in S_{2T}} \mathbb{P}_{\pi }^{d}  (L\delta)^{-c(\pi)}}{[d/L\delta]^{\uparrow 2T}}\right)\right]
 \end{align}
 Besides, since $Z_1^{\otimes 2T} $is a valid  $2T$-fold Clifford either, we also consider the vector $\mathbf{a}$ with $|\mathbf{a}| \mathrm{~mod~} 2 = 0$.
@@ -1770,14 +1770,14 @@ Besides, since $Z_1^{\otimes 2T} $is a valid  $2T$-fold Clifford either, we also
 
 Then use Leaves likelihood, we conclude that $ \sum_{s}|\mathrm{tr}(M_s \Phi_{\mathrm{Cl,2T}}[\Delta_{2T}])|  \leq 1 -  L(s)$, where
 \begin{align}
-    &L(s) = \min_{M'_s}  \frac{\mathrm{tr}\left[M'_s \cdot\left(\frac{\sum_{\pi \in S_{2T}} \mathbb{P}_{\pi}^{d} (1 - R \delta)^{-c(\pi)} }{[d/(1 - R\delta)]^{\uparrow 2T} }   +\frac{\sum_{\pi \in S_{2T}} \mathbb{P}_{\pi }^{d}  (L\delta)^{-c(\pi)}}{[d/L\delta]^{\uparrow 2T}}\right)\right]}{\mathrm{tr}\left[M'_s\cdot\left(\frac{\sum_{\pi \in S_{2T}} \mathbb{P}_{\pi}^{d}}{d^{\uparrow 2T} }  + \frac{\mathbb{I}(d)^{\otimes 2T}}{ d^{2T}} \right)\right]} \\
-    &\geq \frac{\mathrm{tr}\left[M'_s \cdot\left(\frac{[\sum_{\pi \in S_{2}} \mathbb{P}_{\pi}^{d} (1 - R \delta)^{-c(\pi)}]^{\otimes T} }{[d/(1 - R\delta)]^{\uparrow 2T} }   +\frac{[\sum_{\pi \in S_{2}} \mathbb{P}_{\pi }^{d}  (L\delta)^{-c(\pi)}]^{\otimes T}}{[d/L\delta]^{\uparrow 2T}}\right)\right]}{\mathrm{tr}\left[M'_s\cdot\left(\frac{\sum_{\pi \in S_{2T}} \mathbb{P}_{\pi}^{d}}{d^{\uparrow 2T} }  + \frac{\mathbb{I}(d)^{\otimes 2T}}{ d^{2T}} \right)\right]} 
+    &L(s) = \min_{M'_s}  \frac{\mathrm{tr}\left[M'_s \cdot\left(\frac{\sum_{\pi \in S_{2T}} \mathbb{P}_{\pi}^{d} (1 - R \delta)^{-c(\pi)} }{[d/(1 - R\delta)]^{\uparrow 2T} }   +\frac{\sum_{\pi \in S_{2T}} \mathbb{P}_{\pi }^{d}  (L\delta)^{-c(\pi)}}{[d/L\delta]^{\uparrow 2T}}\right)\right]}{\mathrm{tr}\left[M'_s\cdot\left(\frac{\sum_{\pi \in S_{2T}} \mathbb{P}_{\pi}^{d}}{d^{\uparrow 2T} }  + \frac{\1(d)^{\otimes 2T}}{ d^{2T}} \right)\right]} \\
+    &\geq \frac{\mathrm{tr}\left[M'_s \cdot\left(\frac{[\sum_{\pi \in S_{2}} \mathbb{P}_{\pi}^{d} (1 - R \delta)^{-c(\pi)}]^{\otimes T} }{[d/(1 - R\delta)]^{\uparrow 2T} }   +\frac{[\sum_{\pi \in S_{2}} \mathbb{P}_{\pi }^{d}  (L\delta)^{-c(\pi)}]^{\otimes T}}{[d/L\delta]^{\uparrow 2T}}\right)\right]}{\mathrm{tr}\left[M'_s\cdot\left(\frac{\sum_{\pi \in S_{2T}} \mathbb{P}_{\pi}^{d}}{d^{\uparrow 2T} }  + \frac{\1(d)^{\otimes 2T}}{ d^{2T}} \right)\right]} 
     % &\leq 1 - d^{2T}\min_{M'_s}  \frac{\mathrm{tr}\left[M'_s\left(-\frac{\sum_{\pi \in S_{2}^{\otimes T}} \mathbb{P}_{\pi}^{d}}{d^{\uparrow 2T} } +\frac{\sum_{\pi \in S_{2}^{\otimes T}} \mathbb{P}_{\pi}^{d} (1 - R \delta)^{-c(\pi)} }{[d/(1 - R\delta)]^{\uparrow 2T} }   +\frac{\sum_{\pi \in S_{2}^{\otimes T}} \mathbb{P}_{\pi }^{d}  (L\delta)^{-c(\pi)}}{[d/L\delta]^{\uparrow 2T}}\right)\right]}{\mathrm{tr}\left[M'_s\right]}
 \end{align}
 Here we use the identity below as proved in Eq.\eqref{eq:t=1_Delta}:
 \begin{align}
-    &\frac{\left[\sum_{\pi \in S_2} \mathbb{P}_{\pi}^d (1 - R\delta)^{-c(\pi)}\right]^{\otimes T}}{[d/(1 - R\delta)]^{\uparrow 2T} }= \frac{d^T(d+1-R\delta)^T}{[d/(1 - R\delta)]^{\uparrow 2T} }\left[\frac{\mathbb{I}^{\otimes 2} + \mathbb{P}^{d}_{(12)}(1 -R\delta)}{d[d+ 1 -R\delta] }\right]^{\otimes T} \\
-    &=d^T(d+1-R\delta)^T\left[-\frac{\mathbb{I}^{\otimes 2} + \mathbb{P}^{d}_{(12)}L\delta}{d[d + L\delta] } +  \frac{\mathbb{I}^{\otimes 2}}{ d^{2}} + \frac{\mathbb{I}^{\otimes 2}  + \mathbb{P}^{d}_{(12)}}{d[d + 1] } \right]^{\otimes T}
+    &\frac{\left[\sum_{\pi \in S_2} \mathbb{P}_{\pi}^d (1 - R\delta)^{-c(\pi)}\right]^{\otimes T}}{[d/(1 - R\delta)]^{\uparrow 2T} }= \frac{d^T(d+1-R\delta)^T}{[d/(1 - R\delta)]^{\uparrow 2T} }\left[\frac{\1^{\otimes 2} + \mathbb{P}^{d}_{(12)}(1 -R\delta)}{d[d+ 1 -R\delta] }\right]^{\otimes T} \\
+    &=d^T(d+1-R\delta)^T\left[-\frac{\1^{\otimes 2} + \mathbb{P}^{d}_{(12)}L\delta}{d[d + L\delta] } +  \frac{\1^{\otimes 2}}{ d^{2}} + \frac{\1^{\otimes 2}  + \mathbb{P}^{d}_{(12)}}{d[d + 1] } \right]^{\otimes T}
 \end{align}
 If we defined the operator $\mathbb{S}^{\mathbf{a}} = \sum_{\pi \in S_{2T}^{\mathbf{a}}} \mathbb{P}_{\pi}^{d}$ and $D = 2d = 2^n$, we conclude that
 \begin{align}
@@ -1808,16 +1808,16 @@ When $\delta = 0$, this expression reduced to $\delta_{\sigma,\beta\gamma}d^{-2T
 \begin{align}
     &\Phi_{\mathrm{U},2T}\left[ \mathbb{E}_{\psi}\sigma_{(1-R\delta,L\delta),I}^{\otimes 2T} \right]  = \sum_{\mathbf{a} \in \mathbb{F}_2^{2T}}\sum_{\rho \in S_{2T}}\sum_{\beta \in S_{2T}^{{\mathbf{a}}},\gamma\in S_{2T}^{\bar{\mathbf{a}}}}\mathrm{Wg}_{\rho(\beta\gamma)}^{D}\cdot \frac{ d^{c(\pi \nu)} (1 - R \delta)^{-c(\pi \beta^{-1})} (L\delta)^{-c(\nu\gamma^{-1})}}{2^{2T}[d/(1 - R\delta)]^{\uparrow |\mathbf{a}|} [d/L\delta]^{\uparrow |\bar{\mathbf{a}}|}} \mathbb{P}_{\rho}^{D} 
 \end{align}
-The difference of two average can then be reform into the discrimination between $\mathbb{I}_{n}^{\otimes 2T}/d^{2T}$ from the mixed state
+The difference of two average can then be reform into the discrimination between $\1_{n}^{\otimes 2T}/d^{2T}$ from the mixed state
 \begin{align}
-    \Phi_{\mathrm{U},2T}\left[ \mathbb{E}_{\psi}\sigma_{(1,0),I}^{\otimes 2T} \right] -\Phi_{\mathrm{U},2T}\left[ \mathbb{E}_{\psi}\sigma_{(1-R\delta,L\delta),I}^{\otimes 2T} \right] =  \mathbb{I}_{n}^{\otimes 2T}/D^{2T} + \left[\sum_{\rho \in S_{2T}} \lambda_{\rho} \mathbb{P}_{\rho}^{D} \right]
+    \Phi_{\mathrm{U},2T}\left[ \mathbb{E}_{\psi}\sigma_{(1,0),I}^{\otimes 2T} \right] -\Phi_{\mathrm{U},2T}\left[ \mathbb{E}_{\psi}\sigma_{(1-R\delta,L\delta),I}^{\otimes 2T} \right] =  \1_{n}^{\otimes 2T}/D^{2T} + \left[\sum_{\rho \in S_{2T}} \lambda_{\rho} \mathbb{P}_{\rho}^{D} \right]
 \end{align}
 This \textbf{TVD} is bounded by the leaves likelihood for $M_s = \otimes_{t =1}^{T} F_{s_t}^{u_t}$ as
 \begin{align}
     L(s) = \frac{D^{2T}\mathrm{tr}\left(M_s\left[\sum_{\rho \in S_{2T}} \lambda_{\rho} \mathbb{P}_{\rho}^{D} \right]\right)}{\mathrm{tr}\left(M_s\right)} 
     \geq  D^{2T} \prod_{t = 1}^{2T} \frac{\mathrm{tr}\left(F_{s_t}^{u_t}\left[\sum_{\rho \in S_{2}} \lambda'_{\rho} \mathbb{P}_{\rho}^{D} \right]\right)}{\mathrm{tr}\left(F_{s_t}^{u_t}\right)}
 \end{align}
-This further reduced the problem to the discrimination between $\mathbb{I}(D)^{\otimes 2}/D^2$ and $\sum_{\rho \in S_{2}} \lambda'_{\rho} \mathbb{P}_{\rho}^{D} $
+This further reduced the problem to the discrimination between $\1(D)^{\otimes 2}/D^2$ and $\sum_{\rho \in S_{2}} \lambda'_{\rho} \mathbb{P}_{\rho}^{D} $
 
 \begin{lemma}[Martingale distinguishing lower bound]\label{theo:mart_distinguish_lb}
     \textcolor{red}{Let $\varepsilon > 0$ be a constant. To distinguish state $\rho_0$ from a set of states $\mathcal{S}$ with success probability $\geq 1/2 + \varepsilon$, using any $T$-round adaptive strategy with POVMs drawn from a restricted class $\mathcal{M}$, the number of rounds must satisfy $T \geq c(\varepsilon) \cdot \delta_{\mathcal{M},\rho_0,\mathcal{S}}^{-1}$, where $c(\varepsilon) > 0$ depends only on $\varepsilon$, and the single-round chi-squared divergence is
@@ -1829,11 +1829,11 @@ This further reduced the problem to the discrimination between $\mathbb{I}(D)^{\
 
 Based on Lemma~\ref{theo:mart_distinguish_lb}, we calculate the chi-squared divergence for the reduced two-copy problem.
 \color{red}
-The reduced problem discriminates $\rho_0 = \mathbb{I}_D^{\otimes 2}/D^2$ from $\sigma = \sum_{\rho \in S_2}\lambda'_\rho \mathbb{P}_\rho^D$, where $\lambda'_e, \lambda'_{(12)}$ are determined by the leaves likelihood reduction. Since $\sigma = \lambda'_e \mathbb{I}_D^{\otimes 2} + \lambda'_{(12)}\mathrm{SWAP}_D$ and $\mathrm{tr}(\rho_0 F_s) = D^{-2}\mathrm{tr}(F_s)$, the chi-squared divergence under measurement class $\mathcal{M}$ evaluates to
+The reduced problem discriminates $\rho_0 = \1_D^{\otimes 2}/D^2$ from $\sigma = \sum_{\rho \in S_2}\lambda'_\rho \mathbb{P}_\rho^D$, where $\lambda'_e, \lambda'_{(12)}$ are determined by the leaves likelihood reduction. Since $\sigma = \lambda'_e \1_D^{\otimes 2} + \lambda'_{(12)}\mathrm{SWAP}_D$ and $\mathrm{tr}(\rho_0 F_s) = D^{-2}\mathrm{tr}(F_s)$, the chi-squared divergence under measurement class $\mathcal{M}$ evaluates to
 \begin{align}
     \delta_{\mathcal{M}} &= D^2 \max_{\{F_s\} \in \mathcal{M}} \sum_s \frac{[(\lambda'_e - D^{-2})\mathrm{tr}(F_s) + \lambda'_{(12)}\mathrm{tr}(\mathrm{SWAP}_D\, F_s)]^2}{\mathrm{tr}(F_s)}.
 \end{align}
-For the RH-ensemble (purity-identity test), $\sigma = (\mathbb{I}_D^{\otimes 2} + \mathrm{SWAP}_D)/[D(D+1)]$, so $\lambda'_e = \lambda'_{(12)} = [D(D+1)]^{-1}$, and the above simplifies to (cf.~\cite{chen2021exponential})
+For the RH-ensemble (purity-identity test), $\sigma = (\1_D^{\otimes 2} + \mathrm{SWAP}_D)/[D(D+1)]$, so $\lambda'_e = \lambda'_{(12)} = [D(D+1)]^{-1}$, and the above simplifies to (cf.~\cite{chen2021exponential})
 \begin{align}\label{eq:chi2_RH}
     \delta_{\mathcal{M}} = \frac{1}{(D+1)^2}\left[\max_{\{F_s\} \in \mathcal{M}} \sum_s \frac{[\mathrm{tr}(\mathrm{SWAP}_D\, F_s)]^2}{\mathrm{tr}(F_s)} - 1\right].
 \end{align}
@@ -1848,22 +1848,42 @@ The key insight is that $\mathrm{SWAP}_D$ factors over qubit sites, so local 2-r
 
 \subsubsection{Subspace \textbf{MH}-ensemble test}
 \begin{problem}
-    Given the state ensemble $\mathcal{E}_{1,\mathrm{Cl}}:= \{\frac{1}{2} \mathrm{Cl}\left[\ket{0}\!\bra{0} \otimes \psi + \ket{1}\!\bra{1} \otimes \mathbb{I}/{2^{n-1}}\right]\mathrm{Cl}^\dagger\}_{\psi \sim \mathrm{Haar}_{n-1}}$ and the mixed state ensemble $\mathcal{E}_{2,\mathrm{Cl}}:=\left\{\mathrm{Cl}\left[{\mathbb{I}}/{2} \otimes \left(\frac{1}{2}\psi_1 + \frac{1}{2}\psi_2\right)\right]\mathrm{Cl}^\dagger\right\}_{\psi_1,\psi_2 \sim \mathrm{Haar}_{n-1}}$, try to design an algorithm using restrained measurements to distinguish these two ensembles with success rate $1/2 + \delta$.
+    Given the state ensemble $\mathcal{E}_{1,\mathrm{Cl}}:= \{\frac{1}{2} \mathrm{Cl}\left[\ket{0}\!\bra{0} \otimes \psi + \ket{1}\!\bra{1} \otimes \1/{2^{n-1}}\right]\mathrm{Cl}^\dagger\}_{\psi \sim \mathrm{Haar}_{n-1}}$ and the mixed state ensemble $\mathcal{E}_{2,\mathrm{Cl}}:=\left\{\mathrm{Cl}\left[{\1}/{2} \otimes \left(\frac{1}{2}\psi_1 + \frac{1}{2}\psi_2\right)\right]\mathrm{Cl}^\dagger\right\}_{\psi_1,\psi_2 \sim \mathrm{Haar}_{n-1}}$, try to design an algorithm using restrained measurements to distinguish these two ensembles with success rate $1/2 + \delta$.
 \end{problem}
-Given a fixed $n$-qubit Clifford gate $\mathrm{Cl} = \mathbb{I}$, these two ensembles have two-replica average as
+Given a fixed $n$-qubit Clifford gate $\mathrm{Cl} = \1$, these two ensembles have two-replica average as
 \begin{align}
-    &\mathbb{E}_{\rho \sim \mathcal{E}_1}\rho^{\otimes 2} = \frac{1}{4}\left[\ket{01}\!\bra{01} + \ket{10}\!\bra{10} + \ket{00}\!\bra{00}\right] \otimes \left(\frac{\mathbb{I}_{n-1}}{d}\right)^{\otimes 2} + \frac{1}{4}\ket{11}\!\bra{11} \otimes \left[\frac{\mathbb{I}_{n-1} \otimes \mathbb{I}_{n-1} + \mathrm{SWAP}^{\otimes (n-1)}}{d(d+1)}\right]\\
-    &\mathbb{E}_{\rho \sim \mathcal{E}_2} \rho^{\otimes 2} = \left(\frac{\mathbb{I}}{2}\right)^{\otimes 2} \otimes \frac{1}{2} \left[\frac{\mathbb{I}_{n-1} \otimes \mathbb{I}_{n-1} + \mathrm{SWAP}^{\otimes (n-1)}}{d(d+1)} + \frac{\mathbb{I}_{n-1}}{d} \otimes \frac{\mathbb{I}_{n-1}}{d}\right]\\
-    &\Delta = \frac{\ket{00}\!\bra{00} + \ket{10}\!\bra{10} +\ket{01}\!\bra{01} -\ket{11}\!\bra{11}}{4} \otimes \frac{1}{2}\left[\frac{\mathbb{I}_{n-1} \otimes \mathbb{I}_{n-1}}{d^2(d+1)} - \frac{\mathrm{SWAP}^{\otimes (n-1)}}{d(d+1)} \right]
+    &\mathbb{E}_{\rho \sim \mathcal{E}_1}\rho^{\otimes 2} = \frac{1}{4}\left[\ket{01}\!\bra{01} + \ket{10}\!\bra{10} + \ket{00}\!\bra{00}\right] \otimes \left(\frac{\1_{n-1}}{d}\right)^{\otimes 2} + \frac{1}{4}\ket{11}\!\bra{11} \otimes \left[\frac{\1_{n-1} \otimes \1_{n-1} + \mathrm{SWAP}^{\otimes (n-1)}}{d(d+1)}\right]\\
+    &\mathbb{E}_{\rho \sim \mathcal{E}_2} \rho^{\otimes 2} = \left(\frac{\1}{2}\right)^{\otimes 2} \otimes \frac{1}{2} \left[\frac{\1_{n-1} \otimes \1_{n-1} + \mathrm{SWAP}^{\otimes (n-1)}}{d(d+1)} + \frac{\1_{n-1}}{d} \otimes \frac{\1_{n-1}}{d}\right]\\
+    &\Delta = \frac{\ket{00}\!\bra{00} + \ket{10}\!\bra{10} +\ket{01}\!\bra{01} -\ket{11}\!\bra{11}}{4} \otimes \frac{1}{2}\left[\frac{\1_{n-1} \otimes \1_{n-1}}{d^2(d+1)} - \frac{\mathrm{SWAP}^{\otimes (n-1)}}{d(d+1)} \right]
 \end{align}
-In the case $\mathrm{Cl} = \mathbb{I}$, we have 2-replica localized strategy $\{\ket{00},\ket{01},\ket{10},\ket{11}\}$ on the first qubits and Bell measurement on the last $(n-1)$ qubits such that $\langle \Delta \rangle \sim \mathcal{O}(1)$.  
+In the case $\mathrm{Cl} = \1$, we have 2-replica localized strategy $\{\ket{00},\ket{01},\ket{10},\ket{11}\}$ on the first qubits and Bell measurement on the last $(n-1)$ qubits such that $\langle \Delta \rangle \sim \mathcal{O}(1)$.  
 However, in the case $\mathrm{Cl}$ maps $Z_1$ to a weight $w$ Pauli operator, we show that $\mathrm{tr}(\mathrm{Cl}^{\otimes 2} \Delta \mathrm{Cl}^{\dagger,\otimes 2} \cdot \bigotimes_{j=1}^n\Phi_j) \leq d^2 2^{-\alpha \cdot w}$. This means that non-adaptive 2-replica local measurement strategy at least repeats $2^w$ times to discriminate $\mathcal{E}_{1,\mathrm{Cl}}$ from $\mathcal{E}_{2,\mathrm{Cl}}$
 In the case of $T$-round of $2$-replica strategy, we analysis the $2T$-fold average as:
 \begin{align}
-    \mathbb{E}_{\rho \sim \mathcal{E}_1}\rho^{\otimes 2T} &= \frac{1}{2^{2T}} \sum_{\mathbf{a} \in \mathbb{F}_2^{2T}}\ket{\mathbf{a}}\!\bra{\mathbf{a}} \otimes  \frac{S^{\mathbf{a}}}{d^{\uparrow \mathbf{a}}} \otimes \frac{\mathbb{I}^{\bar{\mathbf{a}}}}{d^{|\bar {\mathbf{a}}|}},\\
+    \mathbb{E}_{\rho \sim \mathcal{E}_1}\rho^{\otimes 2T} &= \frac{1}{2^{2T}} \sum_{\mathbf{a} \in \mathbb{F}_2^{2T}}\ket{\mathbf{a}}\!\bra{\mathbf{a}} \otimes  \frac{S^{\mathbf{a}}}{d^{\uparrow \mathbf{a}}} \otimes \frac{\1^{\bar{\mathbf{a}}}}{d^{|\bar {\mathbf{a}}|}},\\
     \mathbb{E}_{\rho \sim \mathcal{E}_2}\rho^{\otimes 2T} &= \frac{1}{2^{2T}} \sum_{\mathbf{a} \in \mathbb{F}_2^{2T}} \ket{\mathbf{a}}\!\bra{\mathbf{a}} \otimes \frac{S^{\mathbf{a}}}{d^{\uparrow \mathbf{a}}}
 \end{align}
-In the case Clifford gate selected from uniform distribution, we conclude that the average \textcolor{red}{[TODO: Compute the $2T$-fold Clifford average $\Phi_{\mathrm{Cl},2T}[\Delta_{2T}]$ for the MH-ensemble. Show that for $\mathrm{Cl}$ drawn uniformly from $\mathcal{C}$, the single-round chi-squared divergence $\delta_{\mathcal{M},\rho_0,\mathcal{S}} = O(2^{-n})$ under 2-replica local measurements, so Lemma~\ref{theo:mart_distinguish_lb} gives $T = \Omega(2^n)$.]}
+\color{red}
+\emph{Argument strategy for the exponential lower bound.}
+When $\mathrm{Cl}$ is drawn uniformly from $\mathcal{C}$, the Clifford 2-design property gives
+$\rho_0 := \mathbb{E}_{C,\psi}\sigma_{C}^{\otimes 2} = (1-\mu)\frac{\1^{\otimes 2}}{D^2} + \mu \frac{\1^{\otimes 2}+\mathrm{SWAP}}{D(D+1)}$
+for both ensembles (cf.\ Eq.~\eqref{eq:chi2_RH} and the discussion above), so 2-replica averages are indistinguishable.
+For a $T$-round adaptive 2-replica strategy with measurement class $\mathcal{M}$, the chi-squared divergence (Lemma~\ref{theo:mart_distinguish_lb}) satisfies
+\begin{align}
+    \delta_{\mathcal{M}} &= \max_{\{F_s\} \in \mathcal{M}} \sum_s \frac{\mathbb{E}_{C,\psi}[\mathrm{tr}((\sigma_C^{\otimes 2} - \rho_0)F_s)]^2}{\mathrm{tr}(\rho_0 F_s)} \notag\\
+    &\leq (1-\mu)^{-1} D^2 \max_{\{F_s\}} \sum_s \frac{\mathrm{tr}[\Phi_{\mathrm{Cl},4}(\mathbb{E}_\psi (\sigma_I^{\otimes 2} - \rho_0)^{\otimes 2}) \cdot F_s^{\otimes 2}]}{\mathrm{tr}(F_s)},
+\end{align}
+where the second line uses $C^{\otimes 2}\rho_0(C^\dagger)^{\otimes 2} = \rho_0$ and rewrites the Clifford average as a 4-fold channel $\Phi_{\mathrm{Cl},4}$.
+Since the Clifford group is a 3-design, $\Phi_{\mathrm{Cl},4}(\mathbb{E}_\psi \sigma_I^{\otimes 4}) - \Phi_{\mathrm{U},4}(\mathbb{E}_\psi \sigma_I^{\otimes 4})$ reduces to the projection onto the 4th-order Clifford commutant modulo the Haar component. Specifically:
+\begin{align}
+    \Phi_{\mathrm{Cl},4}(\mathbb{E}_\psi(\sigma_I^{\otimes 2}-\rho_0)^{\otimes 2}) = \Phi_{\mathrm{Cl},4}(\mathbb{E}_\psi \sigma_I^{\otimes 4}) - \rho_0^{\otimes 2}.
+\end{align}
+
+[TODO: Complete the evaluation of $\Phi_{\mathrm{Cl},4}(\mathbb{E}_\psi \sigma_I^{\otimes 4})$. The 4-fold Clifford commutant is generated by $S_4$ permutations and the operator $\Omega_4 = \sum_{P \in \mathcal{P}_n} P^{\otimes 4}$ (cf.~\cite{gross2021schur,zhu2016clifford}). The key steps are:
+(1)~Decompose $\mathbb{E}_\psi \sigma_I^{\otimes 4}$ in the Clifford commutant basis $\{\mathbb{P}_\pi, \Omega_4\}_{\pi \in S_4}$ on $D = 2d$ qubits.
+(2)~For local 2-replica measurements $F_s = \bigotimes_{i=1}^n F_{s_i}$, the factored structure $F_s^{\otimes 2} = \bigotimes_i F_{s_i}^{\otimes 2}$ interacts with $\Omega_4 = \sum_P P^{\otimes 4} = \bigotimes_i (\sum_{P_i} P_i^{\otimes 4})$, which does NOT factor as a single permutation operator. Bound $\mathrm{tr}(\Omega_4 \cdot F_s^{\otimes 2}) \leq (5/3)^n \mathrm{tr}(F_s)$ using the single-qubit 4th moment structure.
+(3)~Show $\delta_{\mathcal{M}} = O(2^{-n})$, yielding $T = \Omega(2^n)$ via Lemma~\ref{theo:mart_distinguish_lb}.]
+\color{black}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
