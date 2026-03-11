@@ -433,6 +433,38 @@ $$
 $$
 and analogously for $Y$ and $Z$ marginals — exactly satisfying the $F$-twisted lifting condition of @lem-invmulticopy-compatibility at $a=1$.
 
+::: {.callout-note collapse="true"}
+## Positivity sketch for $\Pi^{\uparrow\downarrow}_{[a,b,c]}$ (Click to expand)
+
+Write $\vec{n}=(a,b,c)$, so $|\vec{n}|^2=3$ and $\vec{n}\cdot\vec{\sigma}$ has eigenvalues $\pm\sqrt{3}$.
+Use the identity $X{\otimes}X+Y{\otimes}Y+Z{\otimes}Z = 2\,\mathrm{Swap}-\mathbb{I}^{\otimes 2}$ (which follows from $\mathrm{Swap}=\frac{1}{2}(\mathbb{I}^{\otimes 2}+\sum_P P{\otimes}P)$) to obtain the factoring
+$$
+16\,\Pi^{\uparrow\downarrow}_{[a,b,c]}
+= \bigl(\mathbb{I}+\vec{n}{\cdot}\vec{\sigma}\bigr)\otimes\bigl(\mathbb{I}-\vec{n}{\cdot}\vec{\sigma}\bigr)
+  + 2\,\mathrm{Swap}.
+$$
+Let $|\pm\rangle$ denote the $\pm\sqrt{3}$ eigenstates of $\vec{n}\cdot\vec{\sigma}$.
+In the ordered basis $\{|{+}{+}\rangle,\,|{-}{-}\rangle,\,|{+}{-}\rangle,\,|{-}{+}\rangle\}$
+the matrix is block-diagonal.
+The first block consists of the two product states $|{+}{+}\rangle$ and $|{-}{-}\rangle$,
+which are Swap eigenstates with eigenvalue $+1$.
+The first tensor factor contributes $(1+\sqrt{3})(1-\sqrt{3})=1-3=-2$ and $(1-\sqrt{3})(1+\sqrt{3})=-2$;
+adding $2\!\cdot\!(+1)$ from Swap gives eigenvalue $0$ for both.
+
+The second block, spanned by $\{|{+}{-}\rangle,\,|{-}{+}\rangle\}$, receives diagonal contributions
+$(1+\sqrt{3})^2=4+2\sqrt{3}$ and $(1-\sqrt{3})^2=4-2\sqrt{3}$ from the first factor,
+while $2\,\mathrm{Swap}$ contributes the off-diagonal $2$ (swapping $|{+}{-}\rangle\leftrightarrow|{-}{+}\rangle$):
+$$
+16\,\Pi\big|_{2\times 2}
+= \begin{pmatrix}4+2\sqrt{3}&2\\2&4-2\sqrt{3}\end{pmatrix}.
+$$
+This matrix has $\det=(4+2\sqrt{3})(4-2\sqrt{3})-4=16-12-4=0$ and trace $8$,
+so its eigenvalues are $\{0,8\}$.
+
+Hence the full spectrum of $16\,\Pi^{\uparrow\downarrow}_{[a,b,c]}$ is $\{0,0,0,8\}$,
+confirming $\Pi^{\uparrow\downarrow}_{[a,b,c]}\geq 0$ for all $a,b,c\in\{+1,-1\}$. $\square$
+:::
+
 #### A GPT perspective from $F^\dagger$
 
 The availability of the antiparallel state $\rho_{\mathbf{m}}\otimes F(\rho_{\mathbf{m}})$ can be viewed as the implementation of the non-CPTP map $\mathcal{I}\otimes F^\dagger(\cdot)$ applied to any measurement strategy on the parallel state $\rho^{\otimes 2}$.
