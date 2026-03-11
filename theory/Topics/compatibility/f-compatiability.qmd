@@ -65,7 +65,19 @@ $$
 $$
 
 *($k(\mathcal{F}_{\mathrm{margin}}) \Rightarrow k_{\mathrm{compat}} \leq k(\mathcal{F}_{\mathrm{margin}})$):*
-Conversely, suppose $\{A_i\}$ is $k$-copy $\mathcal{F}_{\mathrm{margin}}$-compatible via some POVM $\{\Pi_j\}$ and estimators $h_{i,a_i}(j) \in [-1,1]$. Define effective operators $M_i^{(a_i)} := \sum_j h_{i,a_i}(j)\,\Pi_j$. By assumption, $\mathrm{tr}[M_i^{(a_i)}\,\rho^{\otimes k}] = \mathrm{tr}[A_i^{(a_i)}\,\rho]$ for all $\rho$. Since $p_i(a_i) \geq 0$ for all $\rho$ and $\sum_{a_i} p_i(a_i) = 1$, the operators $\{M_i^{(a_i)}\}_{a_i}$ are valid quantum effects whose statistics match those of $A_i$ on $\rho$. Hence $\{\Pi_j\}$ serves as a mother POVM implementing the standard $k$-compatibility condition, so $k_{\mathrm{compat}} \leq k(\mathcal{F}_{\mathrm{margin}})$.
+Conversely, suppose $\{A_i\}$ is $k$-copy $\mathcal{F}_{\mathrm{margin}}$-compatible via some POVM $\{\Pi_j\}$ on $\mathcal{H}^{\otimes k}$ and estimators $h_{i,a_i}(j) \in [-1,1]$. Define $M_i^{(a_i)} := \sum_j h_{i,a_i}(j)\,\Pi_j$.
+
+**Positivity of $M_i^{(a_i)}$.** The trace identity $\mathrm{tr}[M_i^{(a_i)}\rho^{\otimes k}] = \mathrm{tr}[A_i^{(a_i)}\rho]$ holds for all $\rho$. Since the set of product states $\{\rho^{\otimes k}\}$ spans the symmetric subspace of $\mathcal{H}^{\otimes k}$, and the linearization $F_{(i,a_i)} = \mathbb{I}^{\otimes(k-1)}\odot A_i^{(a_i)}$ lies in the symmetric subspace, the $(\Rightarrow)$ direction of @thm-f-compatibility-SDP yields the operator identity on $\mathcal{H}^{\otimes k}$:
+$$
+M_i^{(a_i)} = \mathbb{I}^{\otimes(k-1)}\odot A_i^{(a_i)}.
+$$
+(Note: $\mathbb{I}^{\otimes(k-1)}\odot A_i^{(a_i)} = \frac{1}{k}\sum_{l=1}^k \mathbb{I}^{\otimes(l-1)}\otimes A_i^{(a_i)}\otimes\mathbb{I}^{\otimes(k-l)}$ is the symmetrized linearization, which differs from the asymmetric $A_i^{(a_i)}\otimes\mathbb{I}^{\otimes(k-1)}$ in @eq-linearization but gives the same expectation on product states; it is the form guaranteed by the spanning argument.) Since $A_i^{(a_i)} \geq 0$, the symmetrized tensor product satisfies $\mathbb{I}^{\otimes(k-1)}\odot A_i^{(a_i)} \geq 0$, hence $M_i^{(a_i)} \geq 0$. Normalization gives $\sum_{a_i} M_i^{(a_i)} = \mathbb{I}^{\otimes(k-1)}\odot\mathbb{I} = \mathbb{I}^{\otimes k}$, so each $\{M_i^{(a_i)}\}_{a_i}$ is a valid POVM on $\mathcal{H}^{\otimes k}$.
+
+**Construction of the joint POVM.** It remains to exhibit a joint POVM $G(\vec{x})$ on $\mathcal{H}^{\otimes k}$ with marginals $G_i(a_i) = M_i^{(a_i)} = \mathbb{I}^{\otimes(k-1)}\odot A_i^{(a_i)}$. From the operator identity, $h_{i,a_i}(j)$ satisfies $\sum_{a_i} h_{i,a_i}(j) = 1$ for each fixed $j$. For 2-outcome POVMs, $h_{i,a_i}(j) \in [-1,1]$ combined with normalization forces $h_{i,a_i}(j) \in [0,1]$ (since the two terms sum to 1; see @thm-linearfunctional). Define the product-coupling joint POVM:
+$$
+G(\vec{x}) := \sum_j \Bigl(\prod_{i=1}^K h_{i,x_i}(j)\Bigr)\,\Pi_j.
+$$
+Positivity: each coefficient $\prod_i h_{i,x_i}(j) \geq 0$ (product of non-negative numbers) and $\Pi_j \geq 0$, so $G(\vec{x}) \geq 0$. Normalization: $\sum_{\vec{x}} G(\vec{x}) = \sum_j \bigl(\prod_i \sum_{x_i} h_{i,x_i}(j)\bigr)\Pi_j = \sum_j \Pi_j = \mathbb{I}^{\otimes k}$. Marginals: $G_i(a_i) = \sum_{\vec{x}:x_i=a_i} G(\vec{x}) = \sum_j h_{i,a_i}(j)\bigl(\prod_{i'\neq i}\sum_{x_{i'}} h_{i',x_{i'}}(j)\bigr)\Pi_j = \sum_j h_{i,a_i}(j)\Pi_j = M_i^{(a_i)}$. By @lem-multicopy-compatibility, $\{A_i\}$ are therefore $k$-compatible, giving $k_{\mathrm{compat}} \leq k(\mathcal{F}_{\mathrm{margin}})$.
 
 Combining both directions: $k(\mathcal{F}_{\mathrm{margin}}) = k_{\mathrm{compat}}$, proving that $f$-compatibility is a faithful generalization of standard multicopy compatibility. $\blacksquare$
 :::
@@ -129,7 +141,7 @@ Therefore,
 Given a set of POVMs $\{A_i\}_{i=1}^K$ and a set of degree-$k$ polynomial functions $\{f_\alpha\}_{\alpha \in \mathcal{A}}$ with $f_\alpha(p_1,\ldots,p_K) = \sum_{\mathbf{x}} c_{\mathbf{x}} p_{1}^{x_1}\cdots p_{n}^{x_n}$, its $l > k$-linearization is defined as a set of Hermitian operators $\{F_\alpha\}_{\alpha \in \mathcal{A}}$ such that
 $$
 F_{\alpha} = \sum_{\mathbf{x}} c_{\mathbf{x}} \left[A^{(+),\otimes x_1}_{1}\otimes \cdots \otimes A^{(+),\otimes x_n}_{n} \otimes \mathbb{I}^{\otimes r}\right].
-$$ 
+$$ {#eq-linearization}
 where $r = l - \sum_{i=1}^n x_i$
 :::
 
