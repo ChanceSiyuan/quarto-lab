@@ -52,7 +52,7 @@ f_\alpha(\vec{p}_1, \dots, \vec{p}_K) = \sum_{\vec{x}} C_\alpha(\vec{x})\, P(\ve
 $$
 Setting $\Pi_{\vec{x}} := G(\vec{x})$ and $h_\alpha(\vec{x}) := C_\alpha(\vec{x})$ satisfies all conditions of @def-f-compatibility, yielding $k(\mathcal{F}) \leq k$.
 
-*Remark.* The existence of bounded estimators $C_\alpha(\vec{x}) \in [-1,1]$ is not automatically guaranteed for every degree-$\leq k$ polynomial by @thm-estimation-condition alone — that theorem guarantees unbiased estimators exist, but their range depends on the polynomial coefficients. The boundedness condition $|h_\alpha(j)| \leq 1$ is an additional structural requirement of @def-f-compatibility that controls variance. For the marginal probability functionals treated below, this condition is trivially satisfied by indicator functions.
+*Remark.* The existence of bounded estimators $C_\alpha(\vec{x}) \in [-1,1]$ is not automatically guaranteed for every degree-$\leq k$ polynomial by [the estimation condition theorem](nonparametric.qmd#thm-estimation-condition) alone — that theorem guarantees unbiased estimators exist, but their range depends on the polynomial coefficients. The boundedness condition $|h_\alpha(j)| \leq 1$ is an additional structural requirement of @def-f-compatibility that controls variance. For the marginal probability functionals treated below, this condition is trivially satisfied by indicator functions.
 
 **Part 2: Tightness for marginal probabilities ($k(\mathcal{F}_{\mathrm{margin}}) = k_{\mathrm{compat}}$).**
 
@@ -77,7 +77,7 @@ $$
 $$
 G(\vec{x}) := \sum_j \Bigl(\prod_{i=1}^K h_{i,x_i}(j)\Bigr)\,\Pi_j.
 $$
-Positivity: each coefficient $\prod_i h_{i,x_i}(j) \geq 0$ (product of non-negative numbers) and $\Pi_j \geq 0$, so $G(\vec{x}) \geq 0$. Normalization: $\sum_{\vec{x}} G(\vec{x}) = \sum_j \bigl(\prod_i \sum_{x_i} h_{i,x_i}(j)\bigr)\Pi_j = \sum_j \Pi_j = \mathbb{I}^{\otimes k}$. Marginals: $G_i(a_i) = \sum_{\vec{x}:x_i=a_i} G(\vec{x}) = \sum_j h_{i,a_i}(j)\bigl(\prod_{i'\neq i}\sum_{x_{i'}} h_{i',x_{i'}}(j)\bigr)\Pi_j = \sum_j h_{i,a_i}(j)\Pi_j = M_i^{(a_i)}$. By @lem-multicopy-compatibility, $\{A_i\}$ are therefore $k$-compatible, giving $k_{\mathrm{compat}} \leq k(\mathcal{F}_{\mathrm{margin}})$.
+Positivity: each coefficient $\prod_i h_{i,x_i}(j) \geq 0$ (product of non-negative numbers) and $\Pi_j \geq 0$, so $G(\vec{x}) \geq 0$. Normalization: $\sum_{\vec{x}} G(\vec{x}) = \sum_j \bigl(\prod_i \sum_{x_i} h_{i,x_i}(j)\bigr)\Pi_j = \sum_j \Pi_j = \mathbb{I}^{\otimes k}$. Marginals: $G_i(a_i) = \sum_{\vec{x}:x_i=a_i} G(\vec{x}) = \sum_j h_{i,a_i}(j)\bigl(\prod_{i'\neq i}\sum_{x_{i'}} h_{i',x_{i'}}(j)\bigr)\Pi_j = \sum_j h_{i,a_i}(j)\Pi_j = M_i^{(a_i)}$. By [Lemma (multicopy compatibility)](multicopy_compatiability.qmd#lem-multicopy-compatibility), $\{A_i\}$ are therefore $k$-compatible, giving $k_{\mathrm{compat}} \leq k(\mathcal{F}_{\mathrm{margin}})$.
 
 Combining both directions: $k(\mathcal{F}_{\mathrm{margin}}) = k_{\mathrm{compat}}$, proving that $f$-compatibility is a faithful generalization of standard multicopy compatibility. $\blacksquare$
 :::

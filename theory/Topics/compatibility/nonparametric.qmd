@@ -1,0 +1,75 @@
+---
+title: "Nonparametric Functional Estimation"
+date: '2026-03-10'
+lang: en
+draft: true
+bibliography: refs.bib
+---
+
+# Summary and questions
+
+Given samples drawn from an unknown distribution $P$, the goal to estimate: Shannon entropy, Rényi entropy, and the support size falls under the category of functional estimation.
+It means that we are not interested in directly estimating the high-dimensional parameter, but estimating a distributional functional. 
+
+This post is meant to summarized
+
+
+the ordinary plug-in estimation implements as follows:
+
+1. Find the estimator $\hat{P}$ of the parameter $P$ (usually the empirical frequency).
+2. Substitute the estimator $\hat{P}$ into the functional $T(P)$ to get the estimated result $T(\hat{P})$.
+
+Even if the estimator $\hat{P}$ is unbiased (i.e., $\mathbb{E}[\hat{P}] = P$), as long as the functional $T(\cdot)$ is a non-linear function (e.g., $x \log x$ in Shannon entropy, or the support size, etc.), according to the mathematical property (e.g., Jensen's Inequality), the expectation of the non-linear function is usually not equal to the non-linear function of the expectation:
+$$
+\mathbb{E}[T(\hat{P})] \neq T(\mathbb{E}[\hat{P}]) = T(P)
+$$
+Therefore, unless you want to estimate the functional that is exactly a linear function, the plug-in estimator is almost always biased.
+
+Given a discrete distribution with $d$ possible values and probability distribution vector $\boldsymbol{p} = (p_1, p_2, \dots, p_d)$ satisfying $p_i \ge 0$ and $\sum_{i=1}^d p_i = 1$.
+The $k$ independent and identically distributed samples from this distribution can be summarized as a count vector $\boldsymbol{N} = (N_1, N_2, \dots, N_d)$ where $N_i$ is the number of times the $i$-th category appears in the $k$ samples, with $\sum_{i=1}^d N_i = k$. 
+
+We then show that given $k$ fixed, only functionals that can be expressed as a multivariate polynomial of degree at most $k$ in $p_1, p_2, \dots, p_d$ have unbiased estimators based on the observation $\boldsymbol{N}$.
+
+:::{#thm-unbiased-estimator .callout-important icon="false"}
+ For any given functional $f(\boldsymbol{p})$, there exists an unbiased estimator $\hat{f}(\boldsymbol{N})$ based on the observation $\boldsymbol{N}$ if and only if $f(\boldsymbol{p})$ can be expressed as a multivariate polynomial of degree at most $k$ in $p_1, p_2, \dots, p_d$.
+:::
+
+:::{.callout-note collapse="true"}
+## Proof (Click to expand)
+(t.b.c.)
+:::
+
+Given $K$ unknown discrete probability distributions $(\vec{p}_1, \vec{p}_2, \dots, \vec{p}_K)$ on finite alphabets of sizes $|\Omega_1|, |\Omega_2|, \dots, |\Omega_K|$. Suppose we draw $(n_1, n_2, \dots, n_K)$ i.i.d. samples independently from each distribution, yielding frequency vectors $(N_{i,1}, \ldots, N_{i,|\Omega_i|})$ for each $i$, where $\sum_j N_{i,j} = n_i$.
+A **monomial** in these probability variables takes the form $m_{\mathbf{x}} = \prod_{i=1}^K \prod_{j \in \Omega_i} p_{i,j}^{x_{i,j}}$, where $\mathbf{x} = (x_{i,j})$ is a multi-index of non-negative integers. The **degree with respect to distribution $i$** is $k_i(\mathbf{x}) = \sum_{j \in \Omega_i} x_{i,j}$, and the **total degree** is $|\mathbf{x}| = \sum_i k_i(\mathbf{x})$.
+
+
+:::{#thm-estimation-condition .callout-important icon="false"}
+## Theorem (Classical Estimation Condition)
+A functional $F(\vec{p}_1, \ldots, \vec{p}_K) = \sum_{\mathbf{x} \in \mathcal{X}} c_{\mathbf{x}}\, m_{\mathbf{x}}$ admits an unbiased estimator from $(n_1, \ldots, n_K)$ i.i.d. samples **if and only if** $F$ is a polynomial with $k_i(\mathbf{x}) \leq n_i$ for each distribution $i$ and all $\mathbf{x} \in \mathcal{X}$.
+
+When this condition holds, the explicit unbiased estimator for monomial $m_{\mathbf{x}}$ is:
+$$
+\hat{m}_{\mathbf{x}} = \prod_{i=1}^K \frac{\prod_{j \in \Omega_i} (N_{i,j})_{x_{i,j}}}{(n_i)_{k_i}}
+$$ {#eq-unbiased-estimator}
+where $(a)_r = a(a-1)\cdots(a-r+1)$ is the falling factorial and $k_i = k_i(\mathbf{x})$. For the general polynomial, the unbiased estimator is $\hat{F} = \sum_{\mathbf{x}} c_{\mathbf{x}}\, \hat{m}_{\mathbf{x}}$. Since each monomial estimator satisfies $\hat{m}_{\mathbf{x}} \in [0,1]$, each term has bounded variance; see @wu2020polynomial for detailed variance bounds.
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+See @wu2020polynomial for the complete treatment. We sketch the key argument.
+
+**Necessity (only if).** Any estimator $\hat{F}$ is a function of the frequency vectors $(N_{i,j})$. Each frequency vector follows a multinomial distribution, so:
+$$
+\mathbb{E}_P[\hat{F}] = \sum_{\{N_i\}} \hat{F}(N_1, \ldots, N_K) \prod_{i=1}^K \frac{n_i!}{\prod_j N_{i,j}!} \prod_j p_{i,j}^{N_{i,j}}.
+$$
+The right-hand side is manifestly a polynomial in $\{p_{i,j}\}$ of degree at most $n_i$ in the variables of distribution $i$. Therefore, for $\mathbb{E}[\hat{F}] = F$ to hold for all valid probability vectors, $F$ must itself be such a polynomial.
+
+**Sufficiency (if).** For a monomial $m_{\mathbf{x}} = \prod_{i,j} p_{i,j}^{x_{i,j}}$ with $k_i = \sum_j x_{i,j} \leq n_i$, the falling factorial estimator (@eq-unbiased-estimator) is unbiased. This follows from the multinomial moment identity:
+$$
+\mathbb{E}\!\left[\prod_{j \in \Omega_i} (N_{i,j})_{x_{i,j}}\right] = (n_i)_{k_i} \prod_{j \in \Omega_i} p_{i,j}^{x_{i,j}},
+$$
+which holds because $(N_{i,j})_{x_{i,j}}$ counts ordered selections of $x_{i,j}$ items from the $N_{i,j}$ observations of outcome $j$, and $(n_i)_{k_i}$ counts the total ordered selections of $k_i$ distinct items from all $n_i$ samples. Since the $K$ distributions are sampled independently, the product factorizes across distributions.
+
+**Sampling complexity.** For each distribution $i$, we need $n_i \geq k_i^{\max}$ where $k_i^{\max} = \max_{\mathbf{x} \in \mathcal{X}} k_i(\mathbf{x})$ is the maximum degree that appears for distribution $i$. The overall minimum sample budget is $\max_i k_i^{\max}$.
+:::
+

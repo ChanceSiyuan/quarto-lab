@@ -56,7 +56,17 @@
       "WebFetch(domain:grokipedia.com)",
       "Bash(quarto preview:*)",
       "Bash(mv:*)",
-      "Bash(wc:*)"
+      "Bash(wc:*)",
+      "Bash(pdflatex:*)",
+      "Bash(bibtex main:*)",
+      "Bash(for f:*)",
+      "Bash(do echo:*)",
+      "Read(//home/chance/quarto-lab/**)",
+      "Bash(done)",
+      "Bash(mkdir -p Experiments/Topics && git mv theory/Topics/rydberg_qc Experiments/Topics/rydberg_qc && git mv theory/Topics/simulation_model Experiments/Topics/simulation_model)",
+      "Bash(find /home/chance/quarto-lab/Experiments/posts/simulation_CZ -type f \\\\\\( -name \"*.png\" -o -name \"*.jpg\" -o -name \"*.pdf\" \\\\\\) 2>/dev/null | head -20)",
+      "Bash(find /home/chance/quarto-lab/Experiments/Topics/rydberg_qc -type f \\\\\\( -name \"*.png\" -o -name \"*.jpg\" -o -name \"*.pdf\" \\\\\\) 2>/dev/null | head -20)",
+      "Bash(git rm:*)"
     ]
   }
 }

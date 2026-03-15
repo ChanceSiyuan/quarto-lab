@@ -24,21 +24,20 @@ For a quantum system governed by a time-periodic Hamiltonian $H(t) = H(t+T)$, th
 
 :::{.callout-note icon="false" collapse="true"}
 ## Proof
-t.b.d.
+Since $U(T,0)$ is unitary, it admits a spectral decomposition and we can define a Hermitian operator $H_F$ via $U(T,0) = e^{-i H_F T / \hbar}$ (the choice of $H_F$ is unique up to a branch cut in the matrix logarithm) [@shirley1965]. Now define $P(t) \equiv U(t,0)\,e^{i H_F t/\hbar}$.
+
+**Periodicity.** Using the composition property of the time-evolution operator and the periodicity of $H(t)$, we have $U(t+T,0) = U(t+T,T)\,U(T,0) = U(t,0)\,U(T,0)$, where the second equality holds because $H(t+T)=H(t)$ implies $U(t+T,T) = U(t,0)$. Therefore
+$$
+P(t+T) = U(t+T,0)\,e^{i H_F(t+T)/\hbar} = U(t,0)\,\underbrace{U(T,0)\,e^{i H_F T/\hbar}}_{\mathbb{I}}\,e^{i H_F t/\hbar} = P(t).
+$$
+
+**Boundary conditions.** $P(0) = U(0,0)\,\mathbb{I} = \mathbb{I}$, and $P(T) = U(T,0)\,e^{i H_F T/\hbar} = \mathbb{I}$.
+
+Hence $U(t,0) = P(t)\,e^{-i H_F t/\hbar}$ with $P(t)$ periodic and $H_F$ time-independent. $\square$
 :::
 
 The Floquet Hamiltonian $H_F$ determines the long-time (stroboscopic) dynamics of the system.
 In the high-frequency limit, the stroboscopic dynamics are governed by the effective Hamiltonian $H_{\text{eff}} \approx H_F$, as shown in the following theorem.
-
-::: {#thm-EffectiveHamiltonian .callout-important icon="false"}
-## Effective Hamiltonian
-In the **high-frequency limit** where the driving frequency $\omega = 2\pi/T$ is much larger than the characteristic energy scales of the system, the stroboscopic dynamics at times $t = nT$ (integer multiples of the period) are governed by an effective Hamiltonian $H_{\text{eff}} \approx H_F$. This approximation becomes exact in the limit $\omega \to \infty$.
-:::
-
-:::{.callout-note icon="false" collapse="true"}
-## Proof
-t.b.d.
-:::
 
 The Magnus expansion provides a systematic method to compute the Floquet Hamiltonian as a series expansion [@Magnus1954; @Blanes2009].
 
@@ -50,12 +49,135 @@ $$
 $$
 where each term $\bar{H}^{(n)}$ scales as $(\omega)^{-n}$. The series converges when the driving frequency is sufficiently high relative to the system's energy scales [@Blanes2009].
 :::
-Based on the Magnus expansion, we can conclude that in the high-frequency limit ($\omega \gg J/\hbar$ where $J$ is the characteristic interaction strength), the effective Hamiltonian is well-approximated by the zeroth-order term:
-$$
-H_{\text{eff}} \approx \bar{H}^{(0)} = \frac{1}{T} \int_0^T H(t) \, dt.
-$$
-This is the foundation of **Average Hamiltonian Theory** (AHT), widely used in NMR spectroscopy [@Waugh1968; @Levitt2008].
 
+Based on the Magnus expansion, the Hamiltonian $H(t)$ is well-approximated by the zeroth-order term:
+$$
+H_{0} \approx \bar{H}^{(0)} = \frac{1}{T} \int_0^T H(t) \, dt.
+$$
+This is the foundation of **Average Hamiltonian Theory** (AHT), widely used in NMR spectroscopy [@Waugh1968; @Levitt2008]. However, the approximation is not optimal, as it ignores the higher-order terms in the Magnus expansion, which can be significant for small driving frequencies or long-time evolution.
+
+For *many-body* systems the situation is more subtle. The full Floquet Hamiltonian $H_F$ is generically a highly nonlocal operator — its energy eigenstates look like random vectors in the computational basis — so it cannot serve as a physically meaningful total energy operator (e.g., one cannot define a sensible temperature with respect to $H_F$) [@HoMoriAbaninDallaTorre2023]. The goal is therefore to construct a *local* effective Hamiltonian $H_{\mathrm{eff}}$ by optimally truncating the Floquet–Magnus (FM) expansion. The rigorous theory proceeds as follows [@kuwahara16floquet; @mori2016rigorous].
+
+### Locality and the local norm
+
+We restrict to a physically broad class of Hamiltonians whose interactions are *$k$-local*: the Hamiltonian acts on a $d$-dimensional lattice of $N$ sites and decomposes as
+$$
+H(t) = \sum_{X:\,|X|\le k} h_X(t),
+$$ {#eq-k-local}
+where $h_X(t)$ acts nontrivially only on the subset $X$ of at most $k$ sites.
+
+::: {#def-local-norm .callout-important icon="false"}
+## Local norm
+The **local norm** of a time-periodic, $k$-local Hamiltonian is defined as $\Lambda = \max_{t\in[0,T]}\Lambda(t)$, where
+$$
+\Lambda(t) = \max_{i\in\{1,\dots,N\}} \sum_{X:\,|X|\le k,\; i\in X} \|h_X(t)\|.
+$$
+Intuitively, $\Lambda$ measures the largest amplitude of a transition that can affect any single site. It is an **intensive** quantity — independent of system size $N$ — and in spin systems is set by Zeeman fields or local Ising/Heisenberg couplings [@HoMoriAbaninDallaTorre2023].
+:::
+
+The local norm resolves the problem that the standard operator norm $\|H\|$ scales extensively with $N$ and therefore gives divergent (hence useless) bounds in the many-body setting.
+
+### Floquet–Magnus expansion and the commutator bound
+
+The FM expansion attempts to construct $H_F$ as a power series in the driving period $T$ (equivalently, inverse frequency $1/\Omega$):
+$$
+H_F = \sum_{l=0}^{\infty} H_l\, T^l,
+$$ {#eq-FM}
+where $H_0 = (1/T)\int_0^T H(t)\,dt$ and each higher-order term $H_l$ involves $(l+1)$-fold nested commutators of the form $[H(t_1),[H(t_2),\ldots,[H(t_l),H(t_{l+1})]\ldots]]$.
+
+::: {#lem-comm-bound .callout-note icon="false"}
+## Commutator Bound for $k$-Local Hamiltonians
+For a $k$-local Hamiltonian with local norm $\Lambda$ on $N$ sites, the nested commutator satisfies [@kuwahara16floquet; @mori2016rigorous]
+$$
+\bigl\|[H(t_1),[H(t_2),\ldots,[H(t_l),H(t_{l+1})]\ldots]]\bigr\| \le N\,\Lambda\; l!\,(2\Lambda k)^l.
+$$ {#eq-comm-bound}
+:::
+
+:::{.callout-note icon="false" collapse="true"}
+## Proof sketch
+The key insight is that the commutator $[h_X, h_Y]$ vanishes unless the supports $X$ and $Y$ overlap. For a $k$-local Hamiltonian, each site $i$ participates in at most a bounded number of terms, each with operator norm at most $\Lambda$. By induction on $l$: the base case $l=0$ gives $\|H(t)\| \le N\Lambda$ (summing $\Lambda$ over $N$ sites). At step $l \to l+1$, the commutator $[H(t_{l+1}), \cdot]$ introduces at most $2k$ new sites for each existing interaction term, contributing a factor $2\Lambda k$, and the time-ordering integral over $l+1$ nested times produces the $l!$ combinatorial factor (from the time-ordered simplex having volume $T^{l+1}/(l+1)!$, combined with the $(l+1)$ permutations of commutator orderings). The factor $N$ appears only once (from summing over the initial site), ensuring **extensivity at every order**. See [@kuwahara16floquet; @mori2016rigorous] for the complete proof. $\square$
+:::
+
+### Optimal truncation
+
+Using @eq-comm-bound, one can bound each term of the FM expansion as [@kuwahara16floquet; @mori2016rigorous]:
+
+::: {#thm-OptimalTruncation .callout-important icon="false"}
+## Optimal Truncation of the FM Expansion
+Each term of the FM expansion (@eq-FM) satisfies
+$$
+\|H_l\|\,T^l \le 2N\Lambda\,\frac{l!\,(2\Lambda k T)^l}{(l+2)^2}.
+$$ {#eq-upper-FM}
+This upper bound is **non-monotonic** in $l$: it decreases for small $l$ but begins to diverge when $l$ exceeds the optimal truncation order
+$$
+n^* \propto \frac{\Omega}{\Lambda k} = \frac{1}{2\pi\Lambda k T}.
+$$
+At the optimal order $l = n^*$, the truncation error per site is exponentially small:
+$$
+\frac{\|H_{n^*}\|\,T^{n^*}}{N\Lambda} \le e^{-\mathcal{O}(\Omega/\Lambda)}.
+$$
+:::
+
+:::{.callout-note icon="false" collapse="true"}
+## Proof sketch
+The non-monotonic behavior follows from a competition between the factorial $l!$ (which grows) and the geometric factor $(2\Lambda k T)^l$ (which shrinks for $T$ small, i.e., high frequency). By Stirling's approximation, $l! \approx (l/e)^l$, so the bound scales as
+$$
+\sim \left(\frac{2\Lambda k T \cdot l}{e}\right)^l.
+$$
+This is minimized when $l \approx e/(2\Lambda k T) = e\,\Omega/(4\pi\Lambda k) \propto \Omega/\Lambda$, giving $n^*$. At $l = n^*$, the value of the bound is $(1/e)^{n^*} = e^{-n^*} = e^{-\mathcal{O}(\Omega/\Lambda)}$, which is exponentially small in the ratio $\Omega/\Lambda$. $\square$
+:::
+
+We therefore define the **effective Hamiltonian** as the optimally truncated FM series:
+$$
+H_{\mathrm{eff}} \equiv \sum_{l=0}^{n^*} H_l\, T^l.
+$$ {#eq-Heff-def}
+
+### Physical interpretation: resonance suppression
+
+The mathematical result above has a transparent physical origin. Since the original Hamiltonian has at most $k$-body interactions, the $l$-th order FM term $H_l$ contains at most $k(l+1)$-body interaction terms. Applying such a term changes the system's energy by at most $\Delta E_l = \Lambda\,k(l+1)$. For the system to absorb one energy quantum $\Omega$ from the drive, we need $\Delta E_l \ge \Omega$, which requires $l \gtrsim \Omega/(\Lambda k) \sim n^*$. All FM terms with $l \lesssim n^*$ therefore **cannot mediate resonant energy absorption**. The truncation at $n^*$ precisely discards the terms that would cause heating, while keeping all the terms that faithfully describe the local dynamics [@HoMoriAbaninDallaTorre2023].
+
+The effective Hamiltonian $H_{\mathrm{eff}}$ defined in @eq-Heff-def is an approximate conserved quantity of the driven system, with rigorous error bounds:
+
+::: {#thm-ConservedQuantity .callout-important icon="false"}
+## Quasi-Conservation of $H_{\mathrm{eff}}$ (Floquet Prethermalization)
+Suppose a $k$-local Hamiltonian $H(t)=H(t+T)$ is time-periodic with period $T=2\pi/\Omega$ and has local norm $\Lambda$ (@def-local-norm). Let $H_0 = (1/T)\int_0^T H(t)\,dt$ be the static (time-averaged) part, and let $H_{\mathrm{eff}} = \sum_{l=0}^{n^*} H_l\,T^l$ be the optimally truncated FM Hamiltonian (@eq-Heff-def). Denote by $\ket{\psi(t)}$ a solution of the Schrödinger equation $i\partial_t\ket{\psi(t)} = H(t)\ket{\psi(t)}$. Then [@kuwahara16floquet; @mori2016rigorous]:
+
+1. **Closeness to the static Hamiltonian:**
+$$
+\frac{1}{N}\|H_\mathrm{eff}-H_0\|=\mathcal{O}\left(\frac{\Lambda}{\Omega}\right).
+$$ {#eq-quasi1}
+
+2. **Exponentially slow energy absorption:**
+$$
+\frac{1}{N}\bigl|\langle\psi(t)|H_\mathrm{eff}|\psi(t)\rangle-\langle\psi(0)|H_\mathrm{eff}|\psi(0)\rangle\bigr|\leq e^{-\mathcal{O}(\Omega/\Lambda)}\,\Lambda^2\, t,
+$$ {#eq-quasi2}
+
+for an arbitrary initial state $\ket{\psi(0)}$ at stroboscopic times $t=nT$ ($n$ a positive integer). Here $\|\cdot\|$ denotes the operator norm.
+:::
+
+Combining @eq-quasi1 and @eq-quasi2, we see that $H_{\mathrm{eff}}$ is almost conserved for times shorter than the exponentially long **heating time** $\tau \sim \Lambda^{-1}\,e^{\mathcal{O}(\Omega/\Lambda)}$. During this prethermal window, if the system thermalizes under $H_{\mathrm{eff}}$, the local state is well-described by a Gibbs ensemble $\rho_{\mathrm{pre}} \propto e^{-\beta_{\mathrm{eff}} H_{\mathrm{eff}}}$ at an effective inverse temperature $\beta_{\mathrm{eff}}$ set by the initial energy [@HoMoriAbaninDallaTorre2023; @Abanin2017].
+
+::: {.callout-note icon="false" collapse="true"}
+## Proof sketch
+
+**Part 1** (@eq-quasi1). Since $H_{\mathrm{eff}} = H_0 + \sum_{l=1}^{n^*} H_l\,T^l$, we use @eq-upper-FM to bound each correction term. The dominant contribution is the $l=1$ term:
+$$
+\|H_1\|\,T \le 2N\Lambda\,\frac{(2\Lambda k T)}{9} = \mathcal{O}\!\left(\frac{N\Lambda^2}{\Omega}\right),
+$$
+and higher-order terms are successively smaller (as long as $l \le n^*$). Dividing by $N$ gives $\|H_{\mathrm{eff}} - H_0\|/N = \mathcal{O}(\Lambda/\Omega)$.
+
+**Part 2** (@eq-quasi2). At stroboscopic times, $U(0,nT) = e^{-inH_F T}$. Write $H_F = H_{\mathrm{eff}} + R$, where $R = \sum_{l > n^*} H_l\,T^l$ is the residual from truncation. By @thm-OptimalTruncation, the local norm of the residual satisfies $\|R\|/N \le e^{-\mathcal{O}(\Omega/\Lambda)}\,\Lambda$.
+
+The change in $\langle H_{\mathrm{eff}}\rangle$ arises because $H_{\mathrm{eff}}$ does not exactly commute with $H_F$; the non-commutativity is controlled by $R$. At stroboscopic time $t = nT$:
+$$
+\langle\psi(t)|H_{\mathrm{eff}}|\psi(t)\rangle = \langle\psi(0)|e^{iH_F t}\,H_{\mathrm{eff}}\,e^{-iH_F t}|\psi(0)\rangle.
+$$
+Since $e^{iH_F t}\,H_{\mathrm{eff}}\,e^{-iH_F t} = H_{\mathrm{eff}} + it[H_F, H_{\mathrm{eff}}] + \cdots = H_{\mathrm{eff}} + it[R, H_{\mathrm{eff}}] + \cdots$, we bound
+$$
+\bigl|\langle\psi(t)|H_{\mathrm{eff}}|\psi(t)\rangle - \langle\psi(0)|H_{\mathrm{eff}}|\psi(0)\rangle\bigr| \le \|[R, H_{\mathrm{eff}}]\|\,t + \cdots
+$$
+Using $\|[R, H_{\mathrm{eff}}]\| \le 2\|R\|\,\|H_{\mathrm{eff}}\| \le \mathcal{O}(N\,e^{-\mathcal{O}(\Omega/\Lambda)}\,\Lambda \cdot N\Lambda)$, dividing by $N$, and noting that the higher-order terms in the BCH expansion are further suppressed by powers of $\|R\|t$, yields @eq-quasi2. The rigorous proof (which carefully handles the many-body structure using locality) appears in [@kuwahara16floquet; @mori2016rigorous]. $\square$
+:::
 
 ## Example: Engineering the Heisenberg Hamiltonian
 

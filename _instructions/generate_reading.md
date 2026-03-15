@@ -38,4 +38,7 @@ Wait for my confirmation on this outline before generating the full files.
 
 ---
 **[Here is my incomplete LaTeX file]**
-files Within _resource/
+_resource/unpaired.tex
+
+**[You may also refer to the chat history below]**
+_resource/chat.md

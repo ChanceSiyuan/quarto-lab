@@ -20,33 +20,12 @@ Can we replace the evolution operator $e^{iS\Delta}$ by a ancilla qubit assisted
 
 ::: {.callout-tip icon="false" collapse="false"}
 ## Discussion
-
-The answer depends on whether one needs the **coherent output state** or merely **expectation values**.
-
-**Coherent simulation -- No.** The Hadamard test with a controlled-SWAP and ancilla measurement produces a *stochastic* quantum channel. Conditioned on the ancilla outcome $b \in \{0,1\}$, the system state is projected as
-$$
-\sigma_b \propto \mathrm{Tr}_2\!\left[\frac{\mathbb{I} + (-1)^b S}{2}\,(\sigma\otimes\rho)\,\frac{\mathbb{I} + (-1)^b S}{2}\right].
-$$
-This is a projective (destructive) operation: it collapses the off-diagonal coherence between the symmetric and antisymmetric subspaces. The LMR protocol, by contrast, requires the *deterministic* partial swap $e^{-iS\Delta}$, which continuously rotates $\sigma$ without collapsing it. Repeated application of a stochastic channel cannot coherently accumulate into $e^{-i\rho t}$.
-
-**Expectation values only -- Yes.** If the goal is to estimate $\mathrm{tr}(O\, e^{-i\rho t}\sigma\, e^{i\rho t})$ rather than prepare the coherent output state, several measurement-based frameworks bypass the coherence requirement:
-
-- **Shadow Distillation** @seif2023shadow: uses classical shadows from single-copy randomized measurements to extract nonlinear functions $\mathrm{tr}(O\rho^M)$ without multi-register hardware.
-- **Hybrid Shadow Framework** @zhou2024hybrid: merges partial SWAP tests on $k$ copies with classical shadow post-processing on remaining qubits, reducing the quantum coherence requirement.
-
-**Compromise: DME2 protocol** @kjaergaard2022demonstration. An experimental protocol demonstrated on superconducting qubits, where each partial swap step is followed by measurement of the auxiliary register and qubit reset. Classical feedback adjusts subsequent operations based on measurement outcomes, trading coherence for increased stochasticity per step. This avoids storing all $\rho$ copies simultaneously at the cost of additional measurement noise.
+ [@kjaergaard2022demonstration] An experimental protocol demonstrated on superconducting qubits, where each partial swap step is followed by measurement of the auxiliary register and qubit reset. Classical feedback adjusts subsequent operations based on measurement outcomes, trading coherence for increased stochasticity per step. This avoids storing all $\rho$ copies simultaneously at the cost of additional measurement noise.
 :::
 
 
-:::{.callout-important collapse="false"}
-## Question
-We see that $O(t^2/\delta)$ copies of $\rho$.are required to implement unitary $e^{-i\rho t}$ up to error $\delta$ in diamond norm. Does this related to the famous [no-programming theorem](https://arxiv.org/pdf/1805.00756)?
-:::
 
-::: {.callout-tip icon="false" collapse="false"}
-## Discussion
-
-Yes, there is a deep connection. The no-programming theorem constrains any attempt to use an unknown quantum state as a "program" for a quantum gate array.
+We see that $O(t^2/\delta)$ copies of $\rho$ are required to implement unitary $e^{-i\rho t}$ up to error $\delta$ in diamond norm. This related to the famous [no-programming theorem](https://arxiv.org/pdf/1805.00756)
 
 ::: {#thm-no-programming .callout-important icon="false"}
 ## Theorem (No-Programming Theorem, @nielsen1997programmable)
@@ -56,10 +35,20 @@ G\,(\ket{\psi}_S \otimes \ket{P_x}_P) = (U_x\ket{\psi}_S) \otimes \ket{P'_x}_P
 $$
 for any input state $\ket{\psi}$. Deterministic universal programmability requires $\dim(\mathcal{H}_P) = \infty$.
 :::
+Kimmel et al. @kimmel2017hamiltonian prove that $O(t^2/\delta)$ is *optimal* in both $t$ and $\delta$ simultaneously -- no quantum algorithm can implement $e^{-i\rho t}$ with fewer copies of an unknown $\rho$. The $O(1/\delta)$ scaling in the error can be understood as the fundamental price of approximate programming with finite-dimensional quantum software. 
 
-**Connection to LMR.** If we view $\rho$ as a "quantum program" encoding the unitary $e^{-i\rho t}$, and the partial swap as the "universal hardware", then the no-programming theorem tells us that a single copy of $\rho$ cannot perfectly implement $e^{-i\rho t}$ for all $\rho$. The LMR protocol circumvents this impossibility by using $n = O(t^2/\delta)$ copies of $\rho$ as *consumable, single-use* program states: each copy is partially swapped and then discarded (traced out). The effective program register is $\rho^{\otimes n}$, whose dimension grows with $n$, consistent with the no-programming theorem's requirement.
+:::{.callout-important collapse="false"}
+## Question
+:::
+What if on the vectorization space?
+$$
+G\,(\ket{\psi}_S \otimes \ket{P_x}_P) = (U_x\otimes U_x^{*}\ket{\psi}_S) \otimes \ket{P'_x}_P
+$$
+What if we allowed non-unitary $G$, for example, a measurement?
 
-**Optimality.** Kimmel et al. @kimmel2017hamiltonian prove that $O(t^2/\delta)$ is *optimal* in both $t$ and $\delta$ simultaneously -- no quantum algorithm can implement $e^{-i\rho t}$ with fewer copies of an unknown $\rho$. The $O(1/\delta)$ scaling in the error can be understood as the fundamental price of approximate programming with finite-dimensional quantum software.
+::: {.callout-tip icon="false" collapse="false"}
+## Discussion
+(to be filled)
 :::
 
 
@@ -70,17 +59,7 @@ LMR considers a unique quantum simulation method given the ability to access mul
 $$
 \sigma \otimes \underbrace{\rho \otimes \cdots \otimes \rho}_{n} \rightarrow e^{-i\rho t} \sigma e^{i\rho t}
 $$
-
-:::{#thm-lmr14 .callout-important icon="false"}
-## (LMR algorithm in @lloyd2014quantum)
-Let $\rho \in D(\mathcal{H}_A)$ and $\sigma \in D(\mathcal{H}_A \otimes \mathcal{H}_B)$ be two unknown quantum states and $t \in \mathbb{R}$ (can be either positive or negative). Then there exists a quantum algorithm that transforms $\sigma_{AB} \otimes \rho_{A_1} \otimes \cdots \otimes \rho_{A_n}$ into $\tilde{\sigma}_{AB}$ such that
-$$
-\frac{1}{2} \left\| (e^{-i\rho A t} \otimes 1_B) \sigma_{AB} (e^{i\rho A t} \otimes 1_B) - \tilde{\sigma}_{AB} \right\|_1 \leq \delta,
-$$
-as long as the number of copies of $\rho$ is $n = O(t^2/\delta)$. In other words, this quantum algorithm implements the unitary $e^{-i\rho t}$ up to error $\delta$ in diamond norm, using $O(t^2/\delta)$ copies of $\rho$.
-:::
-
-The proof relies on the following key identity about partial swaps.
+The construction of the algorithm relies on the following key identity about partial swaps.
 
 ::: {#lem-partial-swap .callout-note icon="false"}
 ## Lemma (Partial Swap Identity)
@@ -114,6 +93,28 @@ $$
 $$
 The second identity follows by taking $\mathrm{Tr}_2[(A\otimes B)S] = \mathrm{Tr}_2[S(B \otimes A)]^T|_{\text{relabel}}$, or by direct computation.
 :::
+Then we shall calculate:
+$$
+\begin{align*}
+\mathrm{Tr}_2[e^{-iS\Delta}(\sigma \otimes \rho)e^{iS\Delta}] &= \cos^2\!\Delta\,\sigma + \sin^2\!\Delta\,\rho - i\sin\Delta\cos\Delta\,(\rho\sigma - \sigma\rho) \\
+&= \sigma - \sin^2\!\Delta\,(\sigma - \rho) - i\sin\Delta\cos\Delta\,[\rho,\sigma] \\
+&= \sigma - i[\rho,\sigma]\Delta + O(\Delta^2),\\
+& = e^{-i\rho\Delta}\sigma e^{i\rho\Delta} + O(\Delta^2).
+\end{align*}
+$$
+
+This in general leads to the following theorem:
+
+:::{#thm-lmr14 .callout-important icon="false"}
+## (LMR algorithm in @lloyd2014quantum)
+Let $\rho \in D(\mathcal{H}_A)$ and $\sigma \in D(\mathcal{H}_A \otimes \mathcal{H}_B)$ be two unknown quantum states and $t \in \mathbb{R}$ (can be either positive or negative). Then there exists a quantum algorithm that transforms $\sigma_{AB} \otimes \rho_{A_1} \otimes \cdots \otimes \rho_{A_n}$ into $\tilde{\sigma}_{AB}$ such that
+$$
+\frac{1}{2} \left\| (e^{-i\rho A t} \otimes 1_B) \sigma_{AB} (e^{i\rho A t} \otimes 1_B) - \tilde{\sigma}_{AB} \right\|_1 \leq \delta,
+$$
+as long as the number of copies of $\rho$ is $n = O(t^2/\delta)$. In other words, this quantum algorithm implements the unitary $e^{-i\rho t}$ up to error $\delta$ in diamond norm, using $O(t^2/\delta)$ copies of $\rho$.
+:::
+
+
 
 :::{.callout-note collapse="true"}
 ## Proof of @thm-lmr14 (Click to expand)
@@ -152,7 +153,7 @@ $$
 Thus the LMR protocol uses $O(t^2/\delta)$ copies of $\rho$ to implement the unitary $e^{-i\rho t}$ up to error $\delta$ in trace norm. To obtain the result for diamond norm, we can simply replace $\rho$ by $\rho_A \otimes 1_B$ and $\sigma$ by $\sigma_{AB}$. See Appendix B of @lloyd2014quantum for a more detailed proof.
 :::
 
-Many other implementations of LMR have been proposed.
+Many optimizations of LMR have been proposed.
 
 1. **Ancilla-assisted (LCU) implementation** @kimmel2017hamiltonian. Since the partial swap decomposes as a linear combination of two unitaries $e^{-iS\Delta} = (\cos\Delta)\,\mathbb{I} - i(\sin\Delta)\,S$ (@eq-partial-swap), it can be implemented via the LCU (Linear Combination of Unitaries) technique:
 
@@ -170,24 +171,57 @@ so each partial swap can be Trotterized:
 $$
 e^{-iS\Delta} \approx e^{-i\Delta/2}\prod_{\alpha \in \{X,Y,Z\}} e^{-i(\alpha\otimes\alpha)\Delta/2}.
 $$
-This means that the given system $\sigma$ and system $\rho$ that local pairwisely interacts via Heisenberg $XX$ exchange is enough to implement the LMR.
-
-*Noise issue*: The Trotter approximation of $e^{-iS\Delta}$ itself incurs $O(\Delta^2)$ error, requiring inner Trotter refinement. The total gate count becomes $O(\log D \cdot t^2/\delta \cdot \log(t^2/\delta))$. 
-
-   | Implementation | Gate count | Notes |
-   |---|---|---|
-   | LCU  @kimmel2017hamiltonian | $O(\log D \cdot t^2/\delta)$ | Optimal sample complexity |
-   | Trotter @marvian2016universal | $O(\log D \cdot t^2/\delta \cdot \log(t^2/\delta))$ | Native 2-qubit gates only |
+This means that the given system $\sigma$ and system $\rho$ that local pairwisely interacts via Heisenberg $XX$ exchange is enough to implement the LMR. The Trotter approximation of $e^{-iS\Delta}$ itself incurs $O(\Delta^2)$ error, requiring inner Trotter refinement. The total gate count becomes $O(\log D \cdot t^2/\delta \cdot \log(t^2/\delta))$. 
 
 
 # A analog friendly LMR strategy
 The hardness of LMR comes from:
 
 1. Requirement of multi-copy $\rho$
-2. Repeat and frequent implementation of $e^{i\Delta t}$ gate, 
+2. Repeat and frequent implementation of $e^{i\Delta S t}$ gate, 
 3. Coherent storage of evolved state $\sigma$.
-Here we introduce a new idea to solve these issues: Bell measurement assisted analog simulation.
 
+#### Proposal 1: Multi-copy assisted analog simulation
+
+The first optimization of LMR is to utilize the analog evolution power to cover most of the time evolution within $e^{i \rho t}$. 
+
+To be specific, supposed that system are allowed to impose an original Hamiltonian $H_0$ on the system, while we hope to implement $H = H_0 + \sum_{i} U_i H_0 U_i^\dagger$ Hamiltonian where $U_i$ are local unitary transformations.
+
+We shall prepare $\rho(t) = e^{-i H_0 t} \rho_0 e^{i H_0 t}$ and $\sigma(t) = U_i^\dagger e^{-i H_0 t}U_i \sigma_0 U_i^\dagger e^{i H_0 t}U_i$ state. Then we implement $e^{i \Delta S}$ gate, which is locally and transversally applied to local qubit pairs. After tracing out the second replica, we get the reduced state
+$$
+\begin{align*}
+\sigma_{\mathrm{eff}}(t) &= e^{-i U_i^\dagger H_0 U_i t} \sigma_0  e^{i U_i^\dagger H_0 U_i t} + e^{-i e^{i H_0 t} \rho_0 e^{-i H_0 t} \Delta}e^{-i U_i^\dagger H_0 U_i t} \sigma_0  e^{i U_i^\dagger H_0 U_i t}  e^{i e^{i H_0 t} \rho_0 e^{-i H_0 t} \Delta} + O(\Delta^2)\\
+&= e^{-i U_i^\dagger H_0 U_i t} \sigma_0  e^{i U_i^\dagger H_0 U_i t} +e^{i H_0 t} e^{-i  \rho_0 \Delta} e^{-i H_0 t}e^{-i U_i^\dagger H_0 U_i t} \sigma_0  e^{i U_i^\dagger H_0 U_i t} e^{i H_0 t} e^{i  \rho_0  \Delta} e^{-i H_0 t}+ O(\Delta^2)
+\end{align*}
+$$
+
+If we count the effect if finite $\Delta$, we have:
+$$
+\begin{align*}
+\sigma_{\mathrm{eff}}(t) &:= \cos^2\!\Delta\,\sigma(t) + \sin^2\!\Delta \rho(t) - i\sin\Delta\cos\Delta\,[\rho(t),\sigma(t)] \\
+&=\cos^2\!\Delta U_i^\dagger e^{-i H_0 t}U_i \sigma_0 U_i^\dagger e^{i H_0 t}U_i + \sin^2\!\Delta e^{i H_0 t} \rho_0 e^{-i H_0 t} \\
+\quad &- i\sin\Delta\cos\Delta\,[e^{i H_0 t} \rho_0 e^{-i H_0 t},U_i^\dagger e^{-i H_0 t}U_i \sigma_0 U_i^\dagger e^{i H_0 t}U_i] \\
+&=\cos^2\!\Delta  e^{-i U_i^\dagger H_0 U_i t} \sigma_0  e^{i U_i^\dagger H_0 U_i t} + \sin^2\!\Delta e^{i H_0 t} \rho_0 e^{-i H_0 t} \\
+&\quad\quad - i\sin\Delta\cos\Delta\,[e^{i H_0 t} \rho_0 e^{-i H_0 t}, e^{-i U_i^\dagger H_0 U_i t} \sigma_0  e^{i U_i^\dagger H_0 U_i t}] 
+\end{align*}
+$$
+This means that:
+$$
+\begin{align*}
+e^{- i H_0 t}\sigma_{\mathrm{eff}}(t) e^{i H_0 t}&=\cos^2\!\Delta  e^{- i H_0 t} e^{-i U_i^\dagger H_0 U_i t} \sigma_0  e^{i U_i^\dagger H_0 U_i t}e^{i H_0 t} + \sin^2\!\Delta  \rho_0  \\
+& \quad\quad - i\sin\Delta\cos\Delta\,[\rho_0, e^{- i H_0 t}e^{-i U_i^\dagger H_0 U_i t} \sigma_0  e^{i U_i^\dagger H_0 U_i t}e^{i H_0 t}] 
+\end{align*}
+$$
+This means that the effective Hamiltonian is 
+
+:::{.callout-important icon="false"}
+## Question: 
+Any difference with the floquet engineering?
+:::
+
+For example, if we hope to simulate Heisenberg Hamiltonian $H = \sum_{(i,j) \in E} X_i X_j+Z_i Z_j+Y_i Y_j$ by using the Rydberg interactions $H_0 = \sum_{(i,j) \in E} \frac{1}{4} Z_i Z_j$, 
+
+#### Proposal 2: Oscillating Rydberg patch
 Consider the case we can keeps 2-replica of $\rho$ and $\sigma$ as two $L \times L$ square lattices of neutral atoms arrays in the xy-surfaces at $z = 0$ and $z = z_0$.
 Supposed they can be coherently reconfigured such that we can keep the analog simulation Hamiltonian $H_1,H_2$ inside each replica.
 We can thus build a time-dependent Rydberg coupling between the two replicas pairwisely by changing the z-distance $z_0$ between the two surfaces.
@@ -205,7 +239,7 @@ $$
 As in the case of LMR strategy, where we discretely implement $e^{i X^{(1)}X^{(2)} \Delta},e^{i Y^{(1)}Y^{(2)} \Delta},e^{i Z^{(1)}Z^{(2)}\Delta}$ and constantly trace out the second replica, here after the evolution of this time-dependent Hamiltonian, we trace out the second replica to get the effective Hamiltonian of the first replica.
 
 
-# Bell measurement assisted analog simulation
+#### Proposal 3: Bell measurement assisted analog simulation
 
 Given an analog simulation of $H$ is realizable on $n = n_A + n_B$-qubits set that separted into two sections $A \cup B$.
 We prepare two copies of state with different inputs $(\rho,\sigma)$ and different evolution times $(t,\tau)$.

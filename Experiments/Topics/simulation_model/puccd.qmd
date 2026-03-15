@@ -1,0 +1,606 @@
+---
+categories:
+- Readings
+date: '2026-01-19'
+lang: en
+title: Apply VD on pUCCD
+bibliography: refs.bib
+jupyter: python3
+code-fold: true
+---
+
+[← Back to Index](index.qmd)
+
+# Conclusion and Question
+
+:::{.callout-important icon="false"}
+## Question
+In the case of Neutual atoms plat form, the $G_{j,k}$ gate can be replace by a layer of paralleled atoms coherent transportation and a layer of localized Rydberg blockade interaction.
+Can we replace all the QAOA layers through analog implementation?
+:::
+
+# Review on pUCCD
+
+In quantum chemistry, we care about the Hamiltonian:
+$$
+\hat{H} = C +  \sum_{p,q} h_{p,q} \hat{a}^\dagger_p \hat{a}_q + \frac{1}{2} \sum_{p,q,r,s} h_{p,q,r,s} \hat{a}^\dagger_p \hat{a}^\dagger_q \hat{a}_r \hat{a}_s,
+$$
+where $C$ is the constant term, $h_{p,q}$ are the one-body terms, and $h_{p,q,r,s}$ are the two-body terms. By projecting into the zero-seniority subspace, we define $\hat{b}_p^\dagger = \hat{a}_{p\uparrow}^\dagger \hat{a}_{p\downarrow}^\dagger$ and $\hat{b}_p = \hat{a}_{p\downarrow} \hat{a}_{p\uparrow}$.
+
+:::{#lem-zero-seniority-subspace .callout-note icon="false"}
+## (Zero-seniority subspace)
+$\hat{b}_p$ satisfies the hard-core boson (HCB) commutation relations [@matsubara1956]: $[\hat{b}_p, \hat{b}_q^\dagger] = [\hat{b}_p^\dagger, \hat{b}_q^\dagger] = [\hat{b}_p, \hat{b}_q] = 0 \quad (p \neq q)$, $\{\hat{b}_p^\dagger, \hat{b}_p^\dagger\} = \{\hat{b}_p, \hat{b}_p\} = 0$, and $\{\hat{b}_p, \hat{b}_p^\dagger\} = 1$. The effective Hamiltonian on this zero-seniority subspace is [@elfving2021]:
+$$
+\hat{H}_{S_0} = C +  \sum_{p,q} h^{(r1)}_{p,q} \hat{b}_p^\dagger \hat{b}_q + \sum_{p \neq q} h^{(r2)}_{p,q} \hat{b}_p^\dagger \hat{b}_p \hat{b}_q^\dagger \hat{b}_q,
+$$
+where $h^{(r1)}_{p,p} = 2h_{pp} + V_{pppp}$, $h^{(r1)}_{p,q} = V_{ppqq}$ for $p \neq q$, and $h^{(r2)}_{p,q} = 2V_{pqpq} - V_{pqqp}$.
+:::
+
+:::{.callout-note collapse="true"}
+## Proof (Click to expand)
+The commutation relations can be verified using the standard fermionic anti-commutation relations: $\{\hat{a}_{p\sigma}, \hat{a}_{q\sigma'}^\dagger\} = \delta_{pq}\delta_{\sigma\sigma'}$, $\{\hat{a}_{p\sigma}, \hat{a}_{q\sigma'}\} = 0$, and $\{\hat{a}_{p\sigma}^\dagger, \hat{a}_{q\sigma'}^\dagger\} = 0$.
+
+**Part A: Inter-orbital commutation** ($p \neq q$).
+Consider $[\hat{b}_p, \hat{b}_q^\dagger]$. Expanding:
+$$
+\hat{b}_p \hat{b}_q^\dagger = (\hat{a}_{p\downarrow} \hat{a}_{p\uparrow})(\hat{a}_{q\uparrow}^\dagger \hat{a}_{q\downarrow}^\dagger).
+$$
+Since $p \neq q$, all four operators act on distinct orbital modes. To reorder into $\hat{b}_q^\dagger \hat{b}_p$, each of the two $q$-mode operators must pass two $p$-mode operators, requiring $2 \times 2 = 4$ fermionic swaps total:
+$$
+\hat{b}_p \hat{b}_q^\dagger = (-1)^4 \hat{b}_q^\dagger \hat{b}_p = \hat{b}_q^\dagger \hat{b}_p.
+$$
+Therefore $[\hat{b}_p, \hat{b}_q^\dagger] = 0$. The same argument gives $[\hat{b}_p^\dagger, \hat{b}_q^\dagger] = [\hat{b}_p, \hat{b}_q] = 0$.
+
+**Part B: Same-orbital nilpotency.**
+$$
+(\hat{b}_p^\dagger)^2 = (\hat{a}_{p\uparrow}^\dagger \hat{a}_{p\downarrow}^\dagger)(\hat{a}_{p\uparrow}^\dagger \hat{a}_{p\downarrow}^\dagger) = -(\hat{a}_{p\uparrow}^\dagger)^2 (\hat{a}_{p\downarrow}^\dagger)^2 = 0,
+$$
+since $(\hat{a}_{p\sigma}^\dagger)^2 = 0$ by Pauli exclusion. Therefore $\{\hat{b}_p^\dagger, \hat{b}_p^\dagger\} = 2(\hat{b}_p^\dagger)^2 = 0$. Similarly $\{\hat{b}_p, \hat{b}_p\} = 0$.
+
+**Part C: Same-orbital anticommutator** $\{\hat{b}_p, \hat{b}_p^\dagger\} = 1$.
+
+*Step 1.* Compute $\hat{b}_p^\dagger \hat{b}_p$:
+$$
+\begin{align*}
+\hat{b}_p^\dagger \hat{b}_p &= (\hat{a}_{p\uparrow}^\dagger \hat{a}_{p\downarrow}^\dagger)(\hat{a}_{p\downarrow} \hat{a}_{p\uparrow}) = \hat{a}_{p\uparrow}^\dagger (\hat{a}_{p\downarrow}^\dagger \hat{a}_{p\downarrow}) \hat{a}_{p\uparrow} = \hat{a}_{p\uparrow}^\dagger \hat{n}_{p\downarrow} \hat{a}_{p\uparrow}.
+\end{align*}
+$$
+Since $\hat{n}_{p\downarrow}$ contains an even number of $\downarrow$-spin operators, it commutes with $\hat{a}_{p\uparrow}$:
+$$
+\hat{b}_p^\dagger \hat{b}_p = \hat{n}_{p\uparrow} \hat{n}_{p\downarrow}.
+$$
+
+*Step 2.* Compute $\hat{b}_p \hat{b}_p^\dagger$:
+$$
+\begin{align*}
+\hat{b}_p \hat{b}_p^\dagger &= (\hat{a}_{p\downarrow} \hat{a}_{p\uparrow})(\hat{a}_{p\uparrow}^\dagger \hat{a}_{p\downarrow}^\dagger) = \hat{a}_{p\downarrow}(1 - \hat{n}_{p\uparrow})\hat{a}_{p\downarrow}^\dagger \\
+&= (1 - \hat{n}_{p\downarrow}) - \hat{n}_{p\uparrow}(1 - \hat{n}_{p\downarrow}) \\
+&= 1 - \hat{n}_{p\downarrow} - \hat{n}_{p\uparrow} + \hat{n}_{p\uparrow}\hat{n}_{p\downarrow}.
+\end{align*}
+$$
+
+*Step 3.* Sum:
+$$
+\{\hat{b}_p, \hat{b}_p^\dagger\} = 1 - \hat{n}_{p\uparrow} - \hat{n}_{p\downarrow} + 2\hat{n}_{p\uparrow}\hat{n}_{p\downarrow}.
+$$
+
+*Step 4.* In the zero-seniority subspace, all electrons are perfectly paired, so $\hat{n}_{p\uparrow} = \hat{n}_{p\downarrow} \equiv \hat{N}_p$ where $\hat{N}_p^2 = \hat{N}_p$ (eigenvalues 0 or 1). Substituting:
+$$
+\{\hat{b}_p, \hat{b}_p^\dagger\} = 1 - 2\hat{N}_p + 2\hat{N}_p = 1. \quad \square
+$$
+
+---
+
+**Hamiltonian projection.** We now show that $\hat{P}_{S_0} \hat{H} \hat{P}_{S_0} = \hat{H}_{S_0}$ where $\hat{P}_{S_0}$ projects onto the zero-seniority subspace. The key principle is: any operator that creates unpaired electrons (breaks a pair) vanishes under projection, i.e., $\hat{P}_{S_0} \hat{O} \hat{P}_{S_0} = 0$ if $\hat{O}$ changes seniority. Within $S_0$, we have $\hat{n}_{p\uparrow} = \hat{n}_{p\downarrow} = \hat{b}_p^\dagger \hat{b}_p$.
+
+**Single-body terms.** The original single-body term is $\sum_{p,q,\sigma} h_{pq} \hat{a}_{p\sigma}^\dagger \hat{a}_{q\sigma}$. For $p \neq q$, the operator $\hat{a}_{p\sigma}^\dagger \hat{a}_{q\sigma}$ moves a single electron from orbital $q$ to orbital $p$, breaking the pair at $q$ and creating an unpaired electron at $p$. These terms vanish under $\hat{P}_{S_0}$. The diagonal terms ($p = q$) survive:
+$$
+\hat{P}_{S_0}\left(\sum_{p,\sigma} h_{pp} \hat{n}_{p\sigma}\right)\hat{P}_{S_0} = \sum_p h_{pp}(\hat{n}_{p\uparrow} + \hat{n}_{p\downarrow}) = \sum_p 2h_{pp} \hat{b}_p^\dagger \hat{b}_p.
+$$
+
+**Two-body terms.** The original two-body term is $\frac{1}{2}\sum_{pqrs,\sigma\tau} V_{pqrs}\, \hat{a}_{p\sigma}^\dagger \hat{a}_{q\tau}^\dagger \hat{a}_{s\tau} \hat{a}_{r\sigma}$. Only two classes of index contractions preserve pairing:
+
+*Pair hopping* ($p = q$, $r = s$, $\sigma \neq \tau$): An electron pair is annihilated at orbital $r$ and created at orbital $p$:
+$$
+\frac{1}{2}\sum_{p,r} V_{pprr}(\hat{a}_{p\uparrow}^\dagger \hat{a}_{p\downarrow}^\dagger \hat{a}_{r\downarrow}\hat{a}_{r\uparrow} + \hat{a}_{p\downarrow}^\dagger \hat{a}_{p\uparrow}^\dagger \hat{a}_{r\uparrow}\hat{a}_{r\downarrow}) = \sum_{p,r} V_{pprr}\, \hat{b}_p^\dagger \hat{b}_r.
+$$
+
+*Density-density interaction* ($p = r, q = s$ direct; $p = s, q = r$ exchange):
+
+- Direct Coulomb: $\sum_{p \neq q} 2V_{pqpq}\, \hat{b}_p^\dagger \hat{b}_p \hat{b}_q^\dagger \hat{b}_q$
+- Exchange Coulomb: $-\sum_{p \neq q} V_{pqqp}\, \hat{b}_p^\dagger \hat{b}_p \hat{b}_q^\dagger \hat{b}_q$
+
+**Assembly.** Collecting all surviving terms (separating the $p = r$ piece from pair hopping into the diagonal):
+$$
+\begin{align*}
+\hat{H}_{S_0} &= C + \sum_p (2h_{pp} + V_{pppp})\hat{b}_p^\dagger \hat{b}_p + \sum_{p \neq q} V_{ppqq}\, \hat{b}_p^\dagger \hat{b}_q + \sum_{p \neq q}(2V_{pqpq} - V_{pqqp})\hat{b}_p^\dagger \hat{b}_p \hat{b}_q^\dagger \hat{b}_q \\
+&= C + \sum_{p,q} h^{(r1)}_{p,q}\hat{b}_p^\dagger \hat{b}_q + \sum_{p \neq q} h^{(r2)}_{p,q}\hat{b}_p^\dagger \hat{b}_p \hat{b}_q^\dagger \hat{b}_q. \quad \square
+\end{align*}
+$$
+
+:::
+
+Under the Matsubara-Matsuda transformation [@matsubara1956; @anderson1958], the Hamiltonian can be reformulated as a qubit Hamiltonian:
+
+::: {#thm-matsubara-matsuda-transformation .callout-important icon="false"}
+## (Matsubara-Matsuda transformation)
+The Hamiltonian $\hat{H}_{S_0}$ can be reformulated as a qubit Hamiltonian via $\hat{b}_p = \frac{1}{2}(\hat{X}_p + i\hat{Y}_p)$ and $\hat{b}_p^\dagger = \frac{1}{2}(\hat{X}_p - i\hat{Y}_p)$:
+$$
+\begin{align*}
+\hat{H}_{qb} &= C +  \sum_{p} \frac{h^{(r1)}_{p}}{2} (\hat{I}_p - \hat{Z}_p)  +  \sum_{p \neq q} \frac{h^{(r1)}_{p,q}}{4} (\hat{X}_p \hat{X}_q + \hat{Y}_p \hat{Y}_q) \\
+& +  \sum_{p \neq q} \frac{h^{(r2)}_{p,q}}{4} (\hat{I}_p - \hat{Z}_p - \hat{Z}_q + \hat{Z}_p \hat{Z}_q),
+\end{align*}
+$$
+where $h^{(r1)}_p \equiv h^{(r1)}_{p,p}$ for brevity.
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+Set $\hat{b}_p = \frac{1}{2}(\hat{X}_p + i\hat{Y}_p)$ and $\hat{b}_p^\dagger = \frac{1}{2}(\hat{X}_p - i\hat{Y}_p)$. We first verify all HCB commutation relations are preserved.
+
+**Inter-orbital** ($p \neq q$): Since Pauli operators on different qubits commute (e.g., $\hat{X}_p \hat{X}_q = \hat{X}_q \hat{X}_p$), we have $\hat{b}_p \hat{b}_q^\dagger = \frac{1}{4}(\hat{X}_p + i\hat{Y}_p)(\hat{X}_q - i\hat{Y}_q) = \hat{b}_q^\dagger \hat{b}_p$, so $[\hat{b}_p, \hat{b}_q^\dagger] = 0$. Similarly for all other inter-orbital relations.
+
+**Nilpotency:**
+$$
+(\hat{b}_p^\dagger)^2 = \frac{1}{4}(\hat{X}_p - i\hat{Y}_p)^2 = \frac{1}{4}(\hat{X}_p^2 - i\hat{X}_p\hat{Y}_p - i\hat{Y}_p\hat{X}_p + i^2\hat{Y}_p^2) = \frac{1}{4}(\hat{I} - i(i\hat{Z}_p) - i(-i\hat{Z}_p) - \hat{I}) = 0.
+$$
+
+**Anticommutator:**
+$$
+\begin{align*}
+\hat{b}_p^\dagger \hat{b}_p &= \frac{1}{4}(\hat{X}_p - i\hat{Y}_p)(\hat{X}_p + i\hat{Y}_p) = \frac{1}{4}(2\hat{I} - 2\hat{Z}_p) = \frac{1}{2}(\hat{I}_p - \hat{Z}_p), \\
+\hat{b}_p \hat{b}_p^\dagger &= \frac{1}{4}(\hat{X}_p + i\hat{Y}_p)(\hat{X}_p - i\hat{Y}_p) = \frac{1}{4}(2\hat{I} + 2\hat{Z}_p) = \frac{1}{2}(\hat{I}_p + \hat{Z}_p).
+\end{align*}
+$$
+Summing: $\{\hat{b}_p, \hat{b}_p^\dagger\} = \hat{I}_p$. $\checkmark$
+
+---
+
+Now we plug the mapping into $\hat{H}_{S_0}$ term by term.
+
+**Step 1: Diagonal single-body terms.**
+$$
+\sum_p h^{(r1)}_{p,p}\, \hat{b}_p^\dagger \hat{b}_p = \sum_p \frac{h^{(r1)}_p}{2}(\hat{I}_p - \hat{Z}_p).
+$$
+
+**Step 2: Off-diagonal single-body terms** ($p \neq q$).
+$$
+\hat{b}_p^\dagger \hat{b}_q = \frac{1}{4}(\hat{X}_p - i\hat{Y}_p)(\hat{X}_q + i\hat{Y}_q) = \frac{1}{4}(\hat{X}_p\hat{X}_q + \hat{Y}_p\hat{Y}_q) + \frac{i}{4}(\hat{X}_p\hat{Y}_q - \hat{Y}_p\hat{X}_q).
+$$
+When summed over $p \neq q$, the imaginary cross-term vanishes by Hermiticity of $\hat{H}_{S_0}$: since $h^{(r1)}_{p,q} = h^{(r1)}_{q,p}$ (real symmetric), define $S = \sum_{p \neq q} i\frac{h^{(r1)}_{p,q}}{4}(\hat{X}_p\hat{Y}_q - \hat{Y}_p\hat{X}_q)$. Relabeling $p \leftrightarrow q$ gives $S = -S$, hence $S = 0$. The surviving terms are:
+$$
+\sum_{p \neq q} h^{(r1)}_{p,q}\, \hat{b}_p^\dagger \hat{b}_q = \sum_{p \neq q} \frac{h^{(r1)}_{p,q}}{4}(\hat{X}_p\hat{X}_q + \hat{Y}_p\hat{Y}_q).
+$$
+
+**Step 3: Two-body terms.**
+$$
+\hat{b}_p^\dagger \hat{b}_p \hat{b}_q^\dagger \hat{b}_q = \frac{1}{2}(\hat{I}_p - \hat{Z}_p) \cdot \frac{1}{2}(\hat{I}_q - \hat{Z}_q) = \frac{1}{4}(\hat{I}_p - \hat{Z}_p - \hat{Z}_q + \hat{Z}_p\hat{Z}_q).
+$$
+
+**Assembly.** Summing constant $C$ plus all three contributions reproduces $\hat{H}_{qb}$. $\square$
+
+:::
+
+#### Initial state: Hartree-Fock state
+Suppose the orbitals are ordered by their energy as $p = 1,\cdots,N$, we now map these ordered $N$ orbitals of fermionic operators to $N$ qubits.
+In the ordinary fermionic variational method, we set up the initial state as the electrons occupying the lowest energy $n_e$ orbitals, which is the Hartree-Fock state:
+$$
+|\Phi_{HF}\rangle = \prod_{p=1}^{N_e} \hat{a}_{p\uparrow}^\dagger \hat{a}_{p\downarrow}^\dagger |\text{vac}\rangle = \prod_{p=1}^{n_e} \hat{b}_p^\dagger |\text{vac}\rangle
+$$
+Under the transformation $|\text{vac}\rangle  \to \bigotimes_{p=1}^N |0\rangle_p$ and $\hat{b}_p^\dagger = \frac{1}{2}(X_p - iY_p)$, we note that
+$$
+\begin{align*}
+|\Phi_{HF}\rangle = \left( \prod_{p=1}^{n_e} \hat{b}_p^\dagger \right) |00\dots 0\rangle = \left( \prod_{p=1}^{n_e} X_p \right) |00\dots 0\rangle
+\end{align*}
+$$
+
+#### Ansatz: Imaginary time evolution
+
+To find the ground state of the Hamiltonian, we can use the quantum imaginary time evolution (QITE) framework [@motta2020].
+
+::: {#thm-imaginary-evolution-theorem .callout-important icon="false"}
+## (McLachlan theorem)
+Suppose the Hamiltonian is $\hat{H} = \sum_k c_k \hat{P}_k$ (where $\hat{P}_k$ is a Pauli operator). For any current quantum state $|\psi\rangle$, the normalized imaginary time evolution of a small step is defined as:
+$$|\psi(\tau + \Delta\tau)\rangle = \frac{(1 - \Delta\tau \hat{H})|\psi(\tau)\rangle}{\sqrt{\langle \psi(\tau)| (1 - 2\Delta\tau \hat{H}) |\psi(\tau)\rangle}}$$
+By McLachlan's variational principle [@mclachlan1964], the optimal unitary approximation $e^{-i\Delta\tau \hat{A}}$ (with $\hat{A} = \sum_j a_j \hat{\sigma}_j$) satisfies:
+$$\sum_j M_{ij} a_j = C_i$$
+where: $M_{ij} = \text{Re}(\langle \psi | \hat{\sigma}_i^\dagger \hat{\sigma}_j | \psi \rangle)$ is the quantum geometric tensor (metric matrix) and $C_i = - \text{Im}(\langle \psi | \hat{\sigma}_i^\dagger \hat{H} | \psi \rangle) = \frac{i}{2} \langle \psi | [\hat{H}, \hat{\sigma}_i] | \psi \rangle$ is the energy gradient vector.
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+
+The exact (unnormalized) imaginary time Schrodinger equation is $\partial_\tau |\psi\rangle = -(\hat{H} - E_\tau)|\psi\rangle$ where $E_\tau = \langle\psi|\hat{H}|\psi\rangle$. Since $e^{-\tau\hat{H}}$ is non-unitary, we approximate the evolution within a parameterized unitary manifold.
+
+**Step 1: McLachlan's variational principle.** We seek to minimize the residual norm:
+$$
+\delta \left\| \left(\frac{\partial}{\partial\tau} + \hat{H} - E_\tau\right)|\psi\rangle \right\|^2 = 0.
+$$
+
+**Step 2: Parameterize via unitary ansatz.** Let $|\psi(\tau)\rangle = e^{-i\sum_j \theta_j(\tau) \hat{\sigma}_j}|\psi_0\rangle$. The time derivative is:
+$$
+\frac{\partial}{\partial\tau}|\psi\rangle = -i\sum_j \dot{\theta}_j \hat{\sigma}_j |\psi\rangle \equiv -i\sum_j a_j \hat{\sigma}_j |\psi\rangle,
+$$
+where $a_j = \dot{\theta}_j$.
+
+**Step 3: Minimize the residual.** Substituting into the residual norm and expanding:
+$$
+\left\| -i\sum_j a_j \hat{\sigma}_j|\psi\rangle + (\hat{H} - E_\tau)|\psi\rangle \right\|^2.
+$$
+Differentiating with respect to $a_k^*$ and setting the result to zero yields:
+$$
+\sum_j \text{Re}\!\left(\langle\psi|\hat{\sigma}_k^\dagger \hat{\sigma}_j|\psi\rangle\right) a_j = -\text{Im}\!\left(\langle\psi|\hat{\sigma}_k^\dagger \hat{H}|\psi\rangle\right).
+$$
+
+**Step 4: Alternative form of $C_k$.** For Hermitian generators $\hat{\sigma}_k$:
+$$
+\begin{align*}
+C_k &= -\text{Im}(\langle\psi|\hat{\sigma}_k \hat{H}|\psi\rangle) = -\frac{1}{2i}(\langle\psi|\hat{\sigma}_k \hat{H}|\psi\rangle - \langle\psi|\hat{H}\hat{\sigma}_k|\psi\rangle) \\
+&= \frac{i}{2}\langle\psi|[\hat{H}, \hat{\sigma}_k]|\psi\rangle. \quad \square
+\end{align*}
+$$
+
+:::
+
+In our case, we only care about the Heisenberg-like Hamiltonian $\hat{H}_{qb}$. To use the theorem above, we first implement the Trotter decomposition. By the first-order Trotter formula:
+$$
+e^{-\Delta\tau \hat{H}_{qb}} \approx \prod_{(p,q)} e^{-\Delta\tau \hat{H}_{\text{pair}}(p,q)} \cdot e^{-\Delta\tau \hat{H}_{\text{diag}}},
+$$
+where $\hat{H}_{\text{diag}}$ collects all diagonal ($\hat{Z}$, $\hat{Z}\hat{Z}$) terms and $\hat{H}_{\text{pair}}(p,q) = \frac{h^{(r1)}_{p,q}}{4}(\hat{X}_p\hat{X}_q + \hat{Y}_p\hat{Y}_q)$ is the hopping term for each orbital pair. The product over pairs is further organized into even layers (pairs $(0,1), (2,3), \dots$) and odd layers (pairs $(1,2), (3,4), \dots$), so that within each layer all pair terms commute and can be applied in parallel.
+
+After the decomposition, the evolution Hamiltonian within each Trotter step only involves the hopping term $\hat{H}_{hop} = \frac{1}{2}(\hat{X}_p \hat{X}_q + \hat{Y}_p \hat{Y}_q)$.
+
+:::{#lem-particle-conservation .callout-note icon="false"}
+## (Particle number conservation)
+The total magnetization $\hat{Z}_p + \hat{Z}_q$ commutes with the hopping Hamiltonian: $[\hat{X}_p\hat{X}_q + \hat{Y}_p\hat{Y}_q,\; \hat{Z}_p + \hat{Z}_q] = 0$.
+:::
+
+:::{.callout-note collapse="true"}
+## Proof (Click to expand)
+Using the single-qubit Pauli commutation relations $[\hat{X}, \hat{Z}] = -2i\hat{Y}$ and $[\hat{Y}, \hat{Z}] = 2i\hat{X}$:
+$$
+\begin{align*}
+[\hat{X}_p\hat{X}_q, \hat{Z}_p + \hat{Z}_q] &= [\hat{X}_p, \hat{Z}_p]\hat{X}_q + \hat{X}_p[\hat{X}_q, \hat{Z}_q] = -2i\hat{Y}_p\hat{X}_q - 2i\hat{X}_p\hat{Y}_q, \\
+[\hat{Y}_p\hat{Y}_q, \hat{Z}_p + \hat{Z}_q] &= [\hat{Y}_p, \hat{Z}_p]\hat{Y}_q + \hat{Y}_p[\hat{Y}_q, \hat{Z}_q] = 2i\hat{X}_p\hat{Y}_q + 2i\hat{Y}_p\hat{X}_q.
+\end{align*}
+$$
+Summing: $[\hat{X}_p\hat{X}_q + \hat{Y}_p\hat{Y}_q, \hat{Z}_p + \hat{Z}_q] = 0$. $\square$
+:::
+
+This means the evolution preserves particle number, and the dynamics takes place within the subspace where $\hat{J}_z = \frac{1}{2}(\hat{Z}_p - \hat{Z}_q)$ labels the states (the $\{|01\rangle, |10\rangle\}$ sector for each pair). This creates the lemma below:
+
+:::{#lem-su2-pair-algebra .callout-note icon="false"}
+## (Closed Lie algebra of pair operators)
+Define the three operators:
+$$
+\hat{J}_x = \frac{1}{2}(\hat{X}_p\hat{X}_q + \hat{Y}_p\hat{Y}_q), \quad \hat{J}_y = \frac{1}{2}(\hat{X}_p\hat{Y}_q - \hat{Y}_p\hat{X}_q), \quad \hat{J}_z = \frac{1}{2}(\hat{Z}_p - \hat{Z}_q).
+$$
+These form a closed Lie algebra: any commutator of two generators is proportional to the third. In the two-dimensional subspace $\{|01\rangle, |10\rangle\}$, they act as Pauli matrices (up to signs), guaranteeing exact solvability of the QITE equation.
+:::
+
+:::{.callout-note collapse="true"}
+## Proof (Click to expand)
+We compute $[\hat{J}_z, \hat{J}_x]$ using the Pauli commutation relations $[\hat{Z}, \hat{X}] = 2i\hat{Y}$ and $[\hat{Z}, \hat{Y}] = -2i\hat{X}$:
+$$
+\begin{align*}
+4[\hat{J}_z, \hat{J}_x] &= [\hat{Z}_p - \hat{Z}_q,\; \hat{X}_p\hat{X}_q + \hat{Y}_p\hat{Y}_q] \\
+&= \underbrace{[\hat{Z}_p, \hat{X}_p]}_{2i\hat{Y}_p}\hat{X}_q + \underbrace{[\hat{Z}_p, \hat{Y}_p]}_{-2i\hat{X}_p}\hat{Y}_q - \hat{X}_p\underbrace{[\hat{Z}_q, \hat{X}_q]}_{2i\hat{Y}_q} - \hat{Y}_p\underbrace{[\hat{Z}_q, \hat{Y}_q]}_{-2i\hat{X}_q} \\
+&= 2i\hat{Y}_p\hat{X}_q - 2i\hat{X}_p\hat{Y}_q - 2i\hat{X}_p\hat{Y}_q + 2i\hat{Y}_p\hat{X}_q \\
+&= 4i(\hat{Y}_p\hat{X}_q - \hat{X}_p\hat{Y}_q) = -4i \cdot 2\hat{J}_y.
+\end{align*}
+$$
+Therefore $[\hat{J}_z, \hat{J}_x] = -2i\hat{J}_y$. By analogous computations, $[\hat{J}_x, \hat{J}_y] = -2i\hat{J}_z$ and $[\hat{J}_y, \hat{J}_z] = -2i\hat{J}_x$. These are exactly the Pauli algebra relations $[\hat{J}_\alpha, \hat{J}_\beta] = -2i\epsilon_{\alpha\beta\gamma}\hat{J}_\gamma$, confirming that $\{\hat{J}_x, \hat{J}_y, \hat{J}_z\}$ span a closed three-dimensional Lie algebra isomorphic to $su(2)$. $\square$
+:::
+
+:::{#lem-su2-lie-algebra .callout-important icon="false"}
+## (QITE global solution)
+If the Hamiltonian $\hat{H}$, generator $\hat{A}$, and the conserved quantity $\hat{Z}$ in the initial state subspace form a closed $su(2)$ Lie algebra (i.e., satisfy the commutation relations $[\hat{Z}, \hat{H}] \propto i\hat{A}$), then the QITE equation has a global analytical solution. The cooling trajectory of imaginary time evolution is perfectly mapped to the unitary rotation generated by $\hat{A}$.
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+
+**Step 1: Identify the $su(2)$ structure.** For our hopping Hamiltonian, we identify $\hat{H} = \hat{J}_x$, and seek the QITE generator $\hat{A}$ from the operator pool. By @lem-su2-pair-algebra, the three operators $\{\hat{J}_x, \hat{J}_y, \hat{J}_z\}$ close under commutation. The initial Hartree-Fock state $|01\rangle$ is an eigenstate of $\hat{J}_z$.
+
+**Step 2: Solve the QITE metric equation.** Using the single-generator ansatz $\hat{A} = a_y \hat{J}_y$, the metric equation from @thm-imaginary-evolution-theorem becomes scalar:
+$$
+M_{yy}\, a_y = C_y,
+$$
+where $M_{yy} = \langle\psi|\hat{J}_y^2|\psi\rangle$ and:
+$$
+C_y = \frac{i}{2}\langle\psi|[\hat{J}_x, \hat{J}_y]|\psi\rangle = \frac{i}{2}\langle\psi|(-2i\hat{J}_z)|\psi\rangle = \langle\hat{J}_z\rangle.
+$$
+
+Since the initial state $|01\rangle$ has $\langle\hat{J}_z\rangle = 1 \neq 0$, the gradient $C_y \neq 0$, confirming that $\hat{J}_y$ is the correct (and unique) generator for the cooling evolution.
+
+**Step 3: Global solution.** Because the algebra closes, the QITE update at every step produces a rotation by $\hat{J}_y$. The cumulative evolution is:
+$$
+|\psi(\tau)\rangle = e^{i\theta(\tau)\hat{J}_y}|\psi(0)\rangle,
+$$
+where $\theta(\tau)$ satisfies $\dot{\theta} = -\langle\hat{J}_z\rangle(\tau) / (2\langle\hat{J}_y^2\rangle(\tau))$. This ODE has a global solution because the Casimir operator $\hat{J}^2 = \hat{J}_x^2 + \hat{J}_y^2 + \hat{J}_z^2$ is conserved, bounding all expectation values.
+
+**Step 4: Connection to pUCCD.** The Givens rotation gate of the pUCCD ansatz is precisely:
+$$
+\hat{U}_{p,q}(\theta) = e^{i\theta \hat{J}_y} = \exp\!\left(\frac{\theta}{2}(\hat{X}_p\hat{Y}_q - \hat{Y}_p\hat{X}_q)\right),
+$$
+and the variational parameter $\theta$ is a parameterization of the cumulative imaginary time. $\square$
+
+:::
+
+Applying this to our case, we conclude that
+$$
+\hat{U}(\theta) = \exp\left( i \theta \hat{J}_y \right) = \exp\left( \frac{\theta}{2} (\hat{X}_p \hat{Y}_q - \hat{Y}_p \hat{X}_q) \right)
+$$
+is a natural ansatz for finding the ground state of our Hamiltonian.
+
+#### Digital realization
+Design the gate sequence as
+$$
+GS_{i,i+1}(\theta) = SWAP_{i,i+1} \cdot \exp\left( \frac{\theta}{2} (X_i Y_{i+1} - Y_i X_{i+1}) \right)
+$$
+![](pUCCD.png)
+
+:::{#lem-advantage-pUCCD .callout-important icon="false"}
+## (Advantage of pUCCD)
+Simulating this $\Delta\tau$ step using the standard unrestricted Unitary Coupled-Cluster Singles and Doubles (UCCSD) ansatz requires a quantum circuit depth of at least $\mathcal{O}(N^4)$. In contrast, simulating the same $\Delta\tau$ step within the seniority-zero subspace using the paired-electron UCCD (pUCCD) ansatz, implemented via a Givens-SWAP (GS) network, requires a circuit depth of strictly $\mathcal{O}(N)$.
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+The proof proceeds by analyzing the number of fundamental excitation operators in both ansätze and how they map to the physical constraints of nearest-neighbor quantum hardware.
+
+**Part 1: UCCSD requires $\mathcal{O}(N^4)$ depth.** The standard UCCSD ansatz operates on $2N$ spin-orbitals. Its double excitation operator $\hat{T}_2$ generates Trotterized terms of the form $e^{\theta_k(\hat{a}_a^\dagger \hat{a}_b^\dagger \hat{a}_i \hat{a}_j - \text{h.c.})}$, where $i,j$ run over occupied and $a,b$ over virtual spin-orbitals. The number of such independent parameters scales as $\binom{N}{2}^2 \sim \mathcal{O}(N^4)$. Under the Jordan-Wigner transformation, each fermionic double excitation maps to a highly non-local Pauli string (e.g., $\hat{X}_a \hat{Z}_{a+1} \cdots \hat{Z}_{b-1} \hat{Y}_b \hat{X}_i \hat{Z}_{i+1} \cdots \hat{Z}_{j-1} \hat{X}_j$). On hardware with nearest-neighbor connectivity, executing each such non-local term requires SWAP routing with overhead proportional to the qubit separation. Since the $\mathcal{O}(N^4)$ terms are mutually non-commuting and cannot be fully parallelized across only $2N$ qubits, the circuit depth for one Trotter step scales as $\mathcal{O}(N^4)$.
+
+**Part 2: pUCCD via GS network achieves $\mathcal{O}(N)$ depth.** Restricting to the seniority-zero subspace eliminates all single excitations and pair-breaking double excitations. The surviving pair-hopping terms $\hat{b}_a^\dagger \hat{b}_i - \text{h.c.}$ involve only $N/2$ occupied and $N/2$ virtual spatial orbitals, yielding $(N/2)^2 = \mathcal{O}(N^2)$ variational parameters — a reduction from $\mathcal{O}(N^4)$.
+
+The Givens-SWAP gate $GS_{i,i+1}(\theta) = SWAP_{i,i+1} \cdot \exp(\frac{\theta}{2}(X_i Y_{i+1} - Y_i X_{i+1}))$ simultaneously performs the pair-hopping rotation and physically exchanges the two qubit states. Starting from an alternating initial configuration $|010101\cdots\rangle$ (occupied/virtual interleaved), the GS gates are applied in a "brick-wall" pattern:
+
+- **Even layers**: parallel GS gates on pairs $(0,1), (2,3), (4,5), \ldots$
+- **Odd layers**: parallel GS gates on pairs $(1,2), (3,4), (5,6), \ldots$
+
+Because each GS gate swaps its two operands after the rotation, the "occupied" logical states drift steadily in one direction along the qubit array, while the "virtual" states drift in the opposite direction. Each layer executes $N/2$ gates in parallel, and after $N$ layers every occupied orbital has been physically adjacent to — and interacted with — every virtual orbital exactly once:
+$$
+\underbrace{N \text{ layers}}_{\text{depth}} \times \underbrace{N/2 \text{ gates/layer}}_{\text{parallel}} = N^2/4 \text{ total gates} = \mathcal{O}(N^2) \text{ parameters}.
+$$
+Therefore, one complete Trotter step of pUCCD is executed in circuit depth $\mathcal{O}(N)$. $\square$
+:::
+
+#### Measurement strategy
+
+Besides this compilation advantage, the pUCCD ansatz also has a better measurement advantage.
+The most trivial measurement strategy is to separate the Pauli strings in the commuting set and measure them separately.
+As we can see, there are just 3 unique tensor product bases (I, Z and ZZ terms, XX terms, and YY terms):
+$$
+\begin{align*}
+\hat{H}_{Z} &= \sum_{p} \frac{h^{(r1)}_{p}}{2} (\hat{I}_p - \hat{Z}_p)  +  \sum_{p \neq q} \frac{h^{(r2)}_{p,q}}{4} (\hat{I}_p - \hat{Z}_p - \hat{Z}_q + \hat{Z}_p \hat{Z}_q), \\
+\hat{H}_{XX} &= \sum_{p \neq q} \frac{h^{(r1)}_{p,q}}{4} \hat{X}_p \hat{X}_q, \quad
+\hat{H}_{YY} = \sum_{p \neq q} \frac{h^{(r1)}_{p,q}}{4} \hat{Y}_p \hat{Y}_q.
+\end{align*}
+$$
+This involves 3 local measurement on $X,Y,Z$ basis only.
+
+A better measurement strategy is to use the Bell-like measurement to extract the $XX+YY$ terms information simultaneously. As we proved before, $\hat{J}_x, \hat{J}_y ,\hat{J}_z$ forms a closed $su(2)$ Lie algebra, thus satisfied
+$$
+e^{-i \frac{\pi}{4} \hat{J}_y} \hat{J}_x \, e^{i \frac{\pi}{4} \hat{J}_y} = \hat{J}_z \Rightarrow U_{p,q}(\tfrac{\pi}{4})^\dagger (\hat{X}_p \hat{X}_q + \hat{Y}_p \hat{Y}_q) \, U_{p,q}(\tfrac{\pi}{4}) = \hat{Z}_p - \hat{Z}_q
+$$
+The advantage of this strategy is that now all quantum gates involved in this quantum circuit are commute with $\sum_{p} Z_p$. Thus we can verify the correctness of the circuit result by post-selecting the result of $\langle \sum_{p} Z_p \rangle$ after the circuit.
+
+The problem left is that how should we split $\sum_{p \neq q} (\hat{X}_p \hat{X}_q + \hat{Y}_p \hat{Y}_q)$, which involves $\mathcal{O}(N^2)$ terms including non-commuting pairs (e.g., $\hat{X}_1\hat{X}_2$ and $\hat{X}_2\hat{X}_3$ share qubit 2)? Here we review the method proposed in @o2023purification through an $N = 6$ example.
+
+In the end, we found that all the measurement strategies we discussed above only involves Pauli $Z$ strings.
+This ensures that we can use the Both Virtual Distillation and post-selecting the electron number to estimate the expectation value of $\hat{H}_{qb}$.
+
+# Implementation proposal on Neutral atom system
+
+#### Decompostion of $U$
+The first thing to consider is how to implement the Givens rotation gate $\hat{U}_{pq}(\theta) = e^{i\theta\hat{J}_y} = \exp\!\left(\frac{i\theta}{2}(\hat{X}_p\hat{Y}_q - \hat{Y}_p\hat{X}_q)\right)$ using Rydberg-induced CPhase gate and single-qubit gates.
+See [Two-Qubit Rydberg Gates](/Experiments/Topics/rydberg_qc/two_qubit_gates.qmd) for details on how the CZ gate is implemented in neutral atom systems.
+
+As established in @lem-su2-pair-algebra, the gate acts as a 2D rotation in the $\{|01\rangle,|10\rangle\}$ subspace and is the identity on $|00\rangle, |11\rangle$:
+$$
+\hat{U}_{pq}(\theta) = \begin{pmatrix} 1 & 0 & 0 & 0 \\ 0 & \cos\theta & -\sin\theta & 0 \\ 0 & \sin\theta & \cos\theta & 0 \\ 0 & 0 & 0 & 1 \end{pmatrix}.
+$$
+
+:::{#lem-givens-cz .callout-important icon="false"}
+## (CZ decomposition of Givens rotation)
+The gate $\hat{U}_{pq}(\theta)$ decomposes into two CZ gates and single-qubit gates:
+$$
+\hat{U}_{pq}(\theta) = (H_p \otimes H_q)\cdot CZ_{pq}\cdot \bigl(R_{y,p}(-\theta)\otimes R_{y,q}(\theta)\bigr)\cdot CZ_{pq}\cdot (H_p \otimes H_q),
+$$
+where $H = \frac{1}{\sqrt{2}}\bigl(\begin{smallmatrix}1&1\\1&-1\end{smallmatrix}\bigr)$ is the Hadamard gate, $R_y(\alpha) = e^{-i\alpha Y/2}$, and $CZ = \mathrm{diag}(1,1,1,-1)$.
+:::
+
+```{python}
+#| label: fig-givens-cz-circuit
+#| fig-cap: "CZ-based circuit for the Givens rotation $\\hat{U}_{pq}(\\theta)$. Wire `q` is qubit 0 (LSB) and wire `p` is qubit 1 (MSB) in Qiskit's convention, so the state-vector ordering $|q_1 q_0\\rangle = |p,q\\rangle$ matches the paper's $|pq\\rangle$ basis."
+import numpy as np
+from qiskit import QuantumCircuit, QuantumRegister
+from qiskit.quantum_info import Operator
+
+theta = np.pi / 5   # numerical verification angle
+
+# q_reg = qubit 0 (LSB), p_reg = qubit 1 (MSB)
+# => Operator basis ordering |q₁q₀⟩ = |p,q⟩ matches |pq⟩ in the paper
+q_reg = QuantumRegister(1, 'q')
+p_reg = QuantumRegister(1, 'p')
+qc = QuantumCircuit(q_reg, p_reg)
+
+qc.h(q_reg[0])
+qc.h(p_reg[0])
+qc.cz(q_reg[0], p_reg[0])
+qc.ry( theta, q_reg[0])   # Ry(+θ) on q
+qc.ry(-theta, p_reg[0])   # Ry(-θ) on p
+qc.cz(q_reg[0], p_reg[0])
+qc.h(p_reg[0])
+qc.h(q_reg[0])
+
+qc.draw('mpl')
+```
+
+```{python}
+# Verify the circuit unitary equals the Givens rotation matrix
+U = Operator(qc).data
+
+U_exact = np.array([
+    [1,             0,              0, 0],
+    [0,  np.cos(theta), -np.sin(theta), 0],
+    [0,  np.sin(theta),  np.cos(theta), 0],
+    [0,             0,              0, 1]
+])
+
+np.set_printoptions(precision=4, suppress=True)
+print(f"θ = π/5 ≈ {theta:.4f}\n")
+print("Circuit unitary U (real part):")
+print(U.real)
+print(f"\nTarget  Û_{{pq}}(θ):")
+print(U_exact)
+print(f"\nMax imaginary residual : {np.max(np.abs(U.imag)):.2e}")
+print(f"Verified (allclose, atol=1e-10): {np.allclose(U, U_exact, atol=1e-10)}")
+```
+
+#### Coherent transportation error estimation
+
+In neutral atoms, we can replace all the SWAP gates by coherent transportation.
+An ordering of atom transport must be designed in analogy with the SWAP gate ordering in the original pUCCD paper [@o2023purification].
+We arrange the $N^2$ atoms in an $N \times N$ lattice, labelling each site by coordinates $(r, c)$ with $r, c \in \{0, 1, \ldots, N-1\}$.
+Occupied qubits occupy even-indexed columns ($c = 0, 2, 4, \ldots$) and virtual qubits occupy odd-indexed columns ($c = 1, 3, 5, \ldots$), directly mirroring the alternating $|010101\cdots\rangle$ initial state of the 1D GS network.
+
+The key physical advantage of neutral atom tweezer arrays is that an entire column (or row) of atoms can be rigidly shifted by one lattice site in a single $O(1)$ transport operation, regardless of $N$.
+
+**Column-sweep transport protocol.** The transport proceeds in alternating phases, each consisting of one rigid column shift followed by a layer of parallel Rydberg interactions:
+
+- **Phase A (even step $2k$):** Shift every even-indexed column rightward by one site. This brings each occupied qubit $(r, 2j)$ adjacent to virtual qubit $(r, 2j+1)$. Apply the Givens rotation $\exp\!\left(\frac{\theta}{2}(X Y - Y X)\right)$ to all such pairs in parallel via Rydberg blockade.
+- **Phase B (odd step $2k+1$):** Shift every odd-indexed column rightward by one site. This brings each virtual qubit $(r, 2j+1)$ adjacent to the next occupied qubit $(r, 2j+2)$. Apply the Givens rotation in parallel.
+
+The atom's physical displacement realizes the SWAP component of the $GS$ gate, so no additional 2-qubit SWAP operation is needed. The diagram below illustrates the first three steps for $N = 4$ ($\mathsf{O}$ = occupied, $\mathsf{V}$ = virtual, `—` = active pair):
+
+```
+Initial:  O  V  O  V      (columns 0,1,2,3; all rows identical)
+
+Phase A:  O—V  O—V        even cols shift right; pairs (0,1) and (2,3) interact
+Phase B:  O  V—O  V—      odd cols shift right;  pairs (1,2) and (3,.) interact
+Phase A:  O—V  O—V        occupied qubits have now swept past both virtual cols
+Phase B:  ...
+```
+
+After $N$ total phases ($N/2$ of each type), every occupied qubit has been nearest-neighbour to all $N/2$ virtual qubits exactly once per row. Because all $N$ rows execute in parallel at every step, the complete occupied–virtual interaction graph required by the pUCCD GS network is realised in $N$ sequential transport operations.
+
+:::{#lem-transport-scaling .callout-important icon="false"}
+## (O(N) transport step count)
+The column-sweep protocol realises all occupied–virtual nearest-neighbour pairings required by the pUCCD GS brick-wall network in exactly $N$ transport phases, achieving $\mathcal{O}(N)$ depth scaling. Each atom travels a total distance of $N$ lattice spacings.
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+
+**Step 1: Required interactions.** For $N/2$ occupied and $N/2$ virtual columns in each of $N$ rows, the GS brick-wall (@lem-advantage-pUCCD) requires each occupied qubit to interact with each virtual qubit exactly once. This is $(N/2)^2 = N^2/4$ interactions per row; across $N$ rows there are $N^3/4$ two-qubit operations, all executed in parallel across rows at every step, so only the sequential depth matters.
+
+**Step 2: Each phase advances one pairing.** In Phase A of step $2k$, even column $2j$ is adjacent to odd column $2j+1$: occupied $(r,2j)$ interacts with virtual $(r,2j+1)$. In Phase B of step $2k+1$, odd column $2j+1$ is adjacent to even column $2j+2$: virtual $(r,2j+1)$ interacts with the next occupied $(r,2j+2)$. Together, one Phase A + one Phase B advances each occupied qubit one position to the right relative to the virtual qubit array — the exact 2D analogue of a single bubble in the 1D brick-wall.
+
+**Step 3: After $N$ phases, all pairs have met.** Starting at even column $2j_0$, after $k$ Phase A steps an occupied qubit has been adjacent to virtual columns $2j_0+1, 2j_0+3, \ldots$ (mod $N$). After $N/2$ Phase A steps (i.e., $N$ total phases including Phase B), it has been adjacent to all $N/2$ virtual columns, completing the full interaction graph required by pUCCD.
+
+**Step 4: $\mathcal{O}(N)$ conclusion.** There are $N$ rigid column shifts in total, and each shift takes $O(1)$ time in a neutral-atom tweezer array (a single AOD frequency ramp displaces all relevant columns simultaneously). Total transport depth: $\mathcal{O}(N)$. Each atom participates in $N$ shifts, travelling a cumulative distance of $N$ lattice spacings. $\square$
+:::
+
+#### Error model for coherent transportation
+
+The dominant physical error during coherent atom transport in optical tweezer arrays is **dephasing** (Z-type errors), arising from inhomogeneous light-shift fluctuations along the transport path [@bluvstein2022quantum; @evered2023high]. Bit-flip errors are strongly suppressed in the far-off-resonance regime. Atom loss is typically below $0.1\%$ per transport event and is neglected here.
+
+**Single transport step error channel.** Transporting a qubit by one lattice spacing $a$ over duration $\tau_{\rm tr}$ exposes it to a stochastic differential light shift $\delta\omega(t)$, producing a random $Z$-rotation. The resulting single-qubit dephasing channel per lattice-site displacement is
+$$
+\mathcal{E}_{\rm tr}(\rho) = (1-p_{\rm tr})\,\rho + p_{\rm tr}\,\hat{Z}\rho\hat{Z},
+$$
+with dephasing probability
+$$
+p_{\rm tr} = \frac{1 - e^{-\Gamma_\phi\,\tau_{\rm tr}}}{2} \approx \frac{\Gamma_\phi\,\tau_{\rm tr}}{2},
+$$
+where $\Gamma_\phi$ is the dephasing rate and the approximation holds for $\Gamma_\phi\tau_{\rm tr} \ll 1$.
+
+**Accumulated error over $d$ steps.** After $d$ independent single-site transport steps the composed channel gives an effective error probability
+$$
+p_{\rm tot}(d) = \frac{1 - (1-2p_{\rm tr})^d}{2} \approx d\,p_{\rm tr}.
+$$
+
+**Total transport error per qubit.** Each qubit travels $d_{\rm total} = N$ lattice spacings over the column-sweep protocol.
+
+:::{#thm-transport-error .callout-important icon="false"}
+## (Total transport dephasing error per qubit)
+For the $N \times N$ neutral-atom pUCCD GS network with the column-sweep protocol, the accumulated dephasing error per qubit is
+$$
+p_{\rm qubit} = \frac{1 - e^{-N\,\Gamma_\phi\,\tau_{\rm tr}}}{2} \approx \frac{N\,\Gamma_\phi\,\tau_{\rm tr}}{2},
+$$
+scaling as $\mathcal{O}(N)$ in the problem size.
+:::
+
+::: {.callout-note collapse="true"}
+## Derivation (Click to expand)
+
+Each qubit undergoes exactly $N$ independent single-site transport steps. Since $(1-2p_{\rm tr}) = e^{-\Gamma_\phi\tau_{\rm tr}}$, the $N$-fold composition of $\mathcal{E}_{\rm tr}$ yields
+$$
+\mathcal{E}_{\rm tr}^{\circ N}(\rho) = \frac{1+(1-2p_{\rm tr})^N}{2}\,\rho + \frac{1-(1-2p_{\rm tr})^N}{2}\,\hat{Z}\rho\hat{Z},
+$$
+so the effective error probability is $p_{\rm qubit} = \tfrac{1}{2}(1-e^{-N\Gamma_\phi\tau_{\rm tr}})$.
+
+**Motional heating correction.** Motional heating at rate $\dot{\bar{n}}_{\rm heat}$ phonons per unit time contributes an additional dephasing of $p_{\rm mot} \approx \eta^2\,\dot{\bar{n}}_{\rm heat}\,\tau_{\rm tr}$ per step (Lamb-Dicke regime), where $\eta$ is the Lamb-Dicke parameter. All formulas above remain valid with the replacement
+$$
+p_{\rm tr} \to p_{\rm tr} + \eta^2\,\dot{\bar{n}}_{\rm heat}\,\tau_{\rm tr}. \quad\square
+$$
+:::
+
+#### Simulation of transport noise
+
+To simulate transport dephasing in a quantum circuit, we insert a single-qubit $Z$-dephasing channel after each atom-movement operation. Each column-shift transport step is represented as an identity gate labelled `'transport'`; the noise model attaches the dephasing channel automatically:
+
+```python
+import numpy as np
+from qiskit_aer.noise import pauli_error, NoiseModel
+
+# Physical parameters
+Gamma_phi = 1.0        # dephasing rate (Hz)
+tau_tr    = 100e-6     # transport time per lattice site (s)
+
+p_tr = 0.5 * (1 - np.exp(-Gamma_phi * tau_tr))
+
+transport_error = pauli_error([('Z', p_tr), ('I', 1 - p_tr)])
+
+noise_model = NoiseModel()
+noise_model.add_all_qubit_quantum_error(transport_error, ['transport'])
+```
+
+With $\Gamma_\phi \sim 1\,\text{Hz}$ and $\tau_{\rm tr} \sim 100\,\mu\text{s}$ (representative of current neutral-atom hardware), $p_{\rm tr} \approx 5 \times 10^{-5}$ per step. The total transport error budget per qubit for several system sizes is:
+
+| $N$ | Transport steps per qubit | $p_{\rm qubit}$ |
+|:---:|:-------------------------:|:---------------:|
+| 4   | 4                         | $2.0\times10^{-4}$ |
+| 6   | 6                         | $3.0\times10^{-4}$ |
+| 8   | 8                         | $4.0\times10^{-4}$ |
+| 10  | 10                        | $5.0\times10^{-4}$ |
+
+These values are subdominant compared to typical Rydberg two-qubit gate errors ($\sim 10^{-3}$–$10^{-2}$), confirming that coherent transport is not the dominant error source in current neutral-atom pUCCD experiments.
+
+## Experiment status
+
+As of early 2026, **no neutral-atom pUCCD experiment has been demonstrated**. The theoretical proposal [@o2023purification] remains unrealized on Rydberg hardware. Superconducting platforms have executed VQE-based quantum chemistry (e.g., H$_2$, LiH) and Fermi-Hubbard simulations [@alam2025google; @chowdhury2025ibm], and trapped-ion platforms have demonstrated fermionic dynamics [@srinivasan2024trapped; @granet2026pairing], but the specific combination of pUCCD ansatz + coherent transport + Rydberg CZ has not been attempted.
+
+The key experimental capabilities required for a neutral-atom pUCCD demonstration are:
+
+- **Coherent transport fidelity.** The column-sweep protocol demands $\mathcal{O}(N)$ sequential transport steps per qubit. Current tweezer arrays achieve dephasing errors $p_{\rm tr} \sim 5 \times 10^{-5}$ per lattice-site move [@bluvstein2022quantum], yielding $p_{\rm qubit} \lesssim 5 \times 10^{-4}$ for $N \leq 10$. This is already subdominant to gate error, so transport fidelity is not the bottleneck.
+
+- **CZ gate fidelity.** Each Givens rotation requires 2 CZ gates (@lem-givens-cz), and a full pUCCD circuit of depth $N$ applies $\sim N^2$ CZ gates total. For chemical accuracy ($\sim 1.6$ mHa), the per-gate error must satisfy $\epsilon_{\rm CZ} \lesssim 10^{-3}$. The best reported Rydberg CZ fidelity is $\mathcal{F} = 99.5\%$ [@evered2023high], marginally sufficient for $N \leq 6$ with error mitigation.
+
+- **Qubit count.** A minimal demonstration (H$_2$ in STO-3G, 2 spatial orbitals) requires only 2 qubits. Chemically interesting molecules (H$_2$O with 7 spatial orbitals, N$_2$ with 10) require $N = 7$–$10$ qubits in the seniority-zero encoding, well within the $\sim 200$-qubit scale of current arrays.
+
+- **Measurement scheme.** The Bell-like measurement strategy reduces the Hamiltonian to Pauli-$Z$ strings, requiring only computational-basis readout with $\mathcal{F}_{\rm read} \gtrsim 99\%$. If virtual distillation [@huggins2021virtual] is applied, $M$ copies of the state must be prepared and entangled via controlled-SWAP, doubling the qubit count per copy and requiring mid-circuit or ancilla-assisted measurement.
+
+## Open problems
+
+- **Scaling beyond small molecules.** The pUCCD GS network achieves $\mathcal{O}(N)$ circuit depth, but the total number of variational parameters is $\mathcal{O}(N^2)$ and the classical optimization landscape may develop barren plateaus for $N \gtrsim 20$. Whether the seniority-zero restriction provides sufficient inductive bias to avoid trainability issues at scale is unknown.
+
+- **Cross-platform benchmarking.** Superconducting [@alam2025google; @chowdhury2025ibm; @stanisic2022observing] and trapped-ion [@srinivasan2024trapped; @granet2026pairing] platforms have demonstrated quantum chemistry and Fermi-Hubbard simulations with VQE. A direct comparison of pUCCD on neutral atoms against hardware-efficient ansätze on these platforms — matching molecule, basis set, and error mitigation strategy — has not been performed.
+
+- **Error budget analysis.** The three dominant error sources (transport dephasing, CZ gate infidelity, readout error) contribute at different scales: $p_{\rm tr} \sim 10^{-4}$, $\epsilon_{\rm CZ} \sim 5 \times 10^{-3}$, $\epsilon_{\rm read} \sim 10^{-2}$. A quantitative breakdown of how each channel limits the achievable chemical accuracy, and which must improve first, is needed before experimental attempts.
+
+- **Extension beyond seniority-zero.** The pUCCD ansatz is restricted to the zero-seniority subspace, which excludes single excitations and pair-breaking correlations essential for open-shell molecules and strongly correlated systems (e.g., transition-metal complexes). Incorporating seniority-two excitations would break the hard-core boson mapping and require a more general circuit structure. Whether a similar $\mathcal{O}(N)$-depth transport-based compilation exists for generalized UCCD remains open.
+
+- **Integration with virtual distillation.** The measurement strategy ensures all observables reduce to Pauli-$Z$ strings, which is compatible with virtual distillation [@huggins2021virtual; @koczor2021exponential]. However, the overhead of preparing $M$ entangled copies on neutral-atom hardware (requiring $M \times N$ qubits and inter-copy controlled-SWAP gates) has not been experimentally validated. The interplay between symmetry-verified post-selection and virtual distillation — whether they compose multiplicatively or redundantly — requires further analysis [@o2023purification].
+

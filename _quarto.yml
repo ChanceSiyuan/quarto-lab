@@ -94,58 +94,76 @@ website:
     - id: simulation_model
       title: "Analog Rydberg Quantum Simulation"
       contents:
-        - theory/Topics/simulation_model/index.qmd
+        - Experiments/Topics/simulation_model/index.qmd
         - section: "Foundations"
           contents:
-            - theory/Topics/simulation_model/Effective_ham.qmd
+            - Experiments/Topics/simulation_model/Effective_ham.qmd
         - section: "Spin Models"
           contents:
-            - theory/Topics/simulation_model/TFIM.qmd
-            - theory/Topics/simulation_model/XY_XXZ.qmd
+            - Experiments/Topics/simulation_model/TFIM.qmd
+            - Experiments/Topics/simulation_model/XY_XXZ.qmd
         - section: "Hubbard & Lattice Models"
           contents:
-            - theory/Topics/simulation_model/ferm_Hubbard.qmd
-            - theory/Topics/simulation_model/Boson-Hubbard.qmd
-            - theory/Topics/simulation_model/honeycomb.qmd
+            - Experiments/Topics/simulation_model/ferm_Hubbard.qmd
+            - Experiments/Topics/simulation_model/Boson-Hubbard.qmd
+            - Experiments/Topics/simulation_model/honeycomb.qmd
         - section: "Ordered Phases"
           contents:
-            - theory/Topics/simulation_model/density_wave.qmd
+            - Experiments/Topics/simulation_model/density_wave.qmd
         - section: "Topological Phases"
           contents:
-            - theory/Topics/simulation_model/topological.qmd
+            - Experiments/Topics/simulation_model/topological.qmd
         - section: "Many-Body Dynamics"
           contents:
-            - theory/Topics/simulation_model/dynamics.qmd
+            - Experiments/Topics/simulation_model/dynamics.qmd
         - section: "Gauge Theories"
           contents:
-            - theory/Topics/simulation_model/LGT.qmd
+            - Experiments/Topics/simulation_model/LGT.qmd
         - section: "Optimization & Applications"
           contents:
-            - theory/Topics/simulation_model/optimization.qmd
+            - Experiments/Topics/simulation_model/optimization.qmd
         - section: "Quantum Chemistry"
           contents:
-            - theory/Topics/simulation_model/puccd.qmd
+            - Experiments/Topics/simulation_model/puccd.qmd
 
     - id: rydberg_qc
       title: "Rydberg Atoms for Fault-Tolerant QC"
       contents:
-        - theory/Topics/rydberg_qc/index.qmd
+        - Experiments/Topics/rydberg_qc/index.qmd
         - section: "Foundations"
           contents:
-            - theory/Topics/rydberg_qc/light_atom.qmd
-            - theory/Topics/rydberg_qc/rydberg_properties.qmd
+            - Experiments/Topics/rydberg_qc/light_atom.qmd
+            - Experiments/Topics/rydberg_qc/rydberg_properties.qmd
         - section: "Platform Engineering"
           contents:
-            - theory/Topics/rydberg_qc/laser_systems.qmd
-            - theory/Topics/rydberg_qc/trapping_cooling.qmd
-            - theory/Topics/rydberg_qc/tweezer_arrays.qmd
+            - Experiments/Topics/rydberg_qc/laser_systems.qmd
+            - Experiments/Topics/rydberg_qc/trapping_cooling.qmd
+            - Experiments/Topics/rydberg_qc/tweezer_arrays.qmd
         - section: "Qubit Control"
           contents:
-            - theory/Topics/rydberg_qc/single_qubit.qmd
-            - theory/Topics/rydberg_qc/two_qubit_gates.qmd
+            - Experiments/Topics/rydberg_qc/single_qubit.qmd
+            - Experiments/Topics/rydberg_qc/two_qubit_gates.qmd
         - section: "Noise & Errors"
           contents:
-            - theory/Topics/rydberg_qc/noise_errors.qmd
+            - Experiments/Topics/rydberg_qc/noise_errors.qmd
+
+    - id: compatibility
+      title: "Quantum Compatibility"
+      contents:
+        - theory/Topics/compatibility/index.qmd
+        - section: "Foundations"
+          contents:
+            - theory/Topics/compatibility/compatiablity.qmd
+            - theory/Topics/compatibility/compatiablity_and_others.qmd
+            - theory/Topics/compatibility/nonparametric.qmd
+        - section: "Multi-Copy Compatibility"
+          contents:
+            - theory/Topics/compatibility/multicopy_compatiability.qmd
+            - theory/Topics/compatibility/f-compatiability.qmd
+        - section: "Estimation & Applications"
+          contents:
+            - theory/Topics/compatibility/Algebraic_estimation_framework.qmd
+            - theory/Topics/compatibility/multi-copy_localshadow.qmd
 
 format:
   live-html:

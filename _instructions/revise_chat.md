@@ -40,6 +40,7 @@ Wait for my confirmation on this outline before generating the full files.
 
 ---
 **[Here is my draft]**
-theory/Topics/simulation_model/XY_XXZ.qmd
+theory/Posts/Floquet/Floquet.qmd
 **[Here is the chat history]**
-_resource/Resonant-Dipole–Dipole-Regime-Explained.md
+_resource/FloquetPrethermalization_v1.tex
+_resource/chat.md

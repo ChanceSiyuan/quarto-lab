@@ -24,9 +24,10 @@ REPO_ROOT="$(pwd)"
 
 # ──────────────────────────── Config ────────────────────────────
 MAX_RETRIES=20
-RETRY_WAIT=300          # 5 min between retries on rate limit
+RETRY_WAIT=600          # 10 min between retries on rate limit
 PAUSE_BETWEEN=10        # seconds between review→improve and between iterations
-MODEL="opus"
+MODEL="sonnet"
+MAX_ITERATIONS=30       # total review→improve rounds
 DRY_RUN=false
 
 # ──────────────────────────── Args ──────────────────────────────
@@ -161,9 +162,13 @@ run_claude() {
 
 ITERATION=0
 
-while true; do
+while [ $ITERATION -lt $MAX_ITERATIONS ]; do
   for WORKDIR in "${TARGETS[@]}"; do
     ITERATION=$((ITERATION + 1))
+    if [ $ITERATION -gt $MAX_ITERATIONS ]; then
+      echo "  Reached $MAX_ITERATIONS iterations — stopping."
+      break 2
+    fi
     PREAMBLE=$(build_preamble "$WORKDIR")
     BIB=$(detect_bib "$WORKDIR")
     BIB_INSTRUCTION=""
@@ -289,7 +294,12 @@ Focus on ONE fix per iteration. Be thorough on that one fix rather than superfic
   done
 
   echo ""
-  echo "  Full round complete. Starting next round..."
+  echo "  Full round complete. Starting next round... ($ITERATION/$MAX_ITERATIONS)"
   echo "  (Press Ctrl+C to stop)"
   sleep "$PAUSE_BETWEEN"
 done
+
+echo ""
+echo "============================================"
+echo "  ALL $MAX_ITERATIONS ITERATIONS COMPLETE — $(date)"
+echo "============================================"

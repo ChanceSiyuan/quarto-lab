@@ -1,15 +1,26 @@
 ---
 lang: en
 listing:
-  categories: true
-  contents: posts
-  filter-ui: true
-  sort: date desc
-  sort-ui: true
-  type: default
+  - contents:
+    - posts
+    - Topics
+    filter-ui: true
+    id: experiments-listing
+    sort: date desc
+    sort-ui: true
+    type: default
 page-layout: full
 title: Experiments
 title-block-banner: true
 ---
 
 This section records the notes of experimental setups.
+
+## Topics
+
+**Current Topics:**
+
+- **[Rydberg Atoms for Fault-Tolerant QC](/Experiments/Topics/rydberg_qc/)** - Platform engineering, qubit control, two-qubit gate protocols, and noise analysis for neutral-atom quantum computing with Rb87
+- **[Analog Rydberg Quantum Simulation](/Experiments/Topics/simulation_model/)** - Model catalog for Rydberg atom arrays: spin models, topological phases, lattice gauge theories, Hubbard models, and quantum chemistry
+
+---
