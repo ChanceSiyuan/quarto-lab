@@ -1,0 +1,88 @@
+---
+categories:
+- Readings
+date: 2026-03-18
+description: 'Reading notes on Moss et al. 2024 — quantum-enhanced variational Monte Carlo using Rydberg simulator data to train neural quantum states'
+lang: en
+title: 'Moss 2024: Quantum-Enhanced Variational Monte Carlo'
+bibliography: refs.bib
+draft: true
+---
+
+# Summary and Questions
+
+**Paper:** Moss et al., "Enhancing variational Monte Carlo simulations using a programmable quantum simulator," *Phys. Rev. A* **109**, 032410 (2024) [@moss2024enhancing]
+
+**Architecture:** 1-zone analog (Harvard lab) — uses *existing data* from Ebadi 2021
+
+## What was done
+
+A hybrid quantum-classical feedback loop using experimental Rydberg simulator data to enhance classical neural quantum state (NQS) training:
+
+1. **Classical RNN ansatz:** A recurrent neural network (RNN) parameterizes a trial wave function $|\psi_\theta\rangle$ for the target many-body ground state.
+2. **Standard VMC training:** The RNN is trained via variational Monte Carlo — sampling configurations from $|\psi_\theta|^2$ and optimizing parameters to minimize the energy expectation value.
+3. **Quantum data injection:** Experimental measurement samples from the Rydberg simulator (Ebadi 2021 apparatus, $16 \times 16$ square lattice) are injected into the RNN training loop as additional training data.
+4. **Autocorrelation breaking:** The quantum samples break the classical Markov chain's autocorrelation bottleneck — the chain gets "unstuck" from metastable configurations by incorporating uncorrelated quantum measurements.
+
+## Key observations
+
+- **Universal convergence improvement:** Pretraining with experimental data improved VMC convergence times across all tested RNN architectures and all detuning values spanning the phase transition on the 16×16 lattice. For 2D RNN wavefunctions, 1000 experimental shots reduced the number of variational training iterations needed by up to $O(10^3)$. Concretely, at $t_\text{trans}=80$ the convergence times were $t_\text{conv}/t_\text{VMC} = 87/541,\; 186/1498,\; 267/1667,\; 179/883$ for the four $\delta/\Omega$ values (roughly 5–8× speedup across the phase diagram).
+- **Phase discovery:** Simple RNN ansätze pretrained with quantum data accurately captured quantum phases that were *not learned* with purely classical VMC training, demonstrating that quantum data provides qualitatively new information.
+- **Robustness to noise:** Unprocessed, imperfect experimental data still improved classical training — no error mitigation was needed. The Ebadi 2021 apparatus achieves 99% readout fidelity for *both* $|g\rangle$ and $|r\rangle$ states (~1% error), not ~5% as sometimes quoted; the dominant imperfection is non-adiabatic state preparation (domain walls, energy fluctuations) rather than readout.
+- **No new quantum hardware runs:** The quantum data came from previously published Ebadi 2021 measurements. No dedicated quantum experiments were performed.
+
+## Scientific significance
+
+| Aspect | Assessment |
+|--------|-----------|
+| **Novelty** | First demonstration of quantum-enhanced classical algorithms for many-body ground states. The hybrid approach is distinct from VQE (which optimizes quantum parameters) — here the quantum data enhances a classical optimizer. |
+| **Practical value** | High: provides a concrete, near-term use case for NISQ data that does not require quantum error correction. Noisy quantum samples are useful "as-is" for breaking classical sampling bottlenecks. |
+| **Verification value** | Demonstrates that current-generation quantum simulators produce classically useful data, even with significant noise — a lower bar than quantum advantage but practically meaningful. |
+
+
+## Architecture comparison: relative to 1-zone/3-zone/4-zone review benchmarks
+
+This experiment is unique in that it uses *no new quantum hardware* — only previously collected data from the Ebadi 2021 apparatus. The relevant comparison is between the quality of the injected quantum data and what a better apparatus would provide:
+
+| Parameter | Ebadi 2021 data used | SOTA 1-zone (Manovitz 2025) | Impact on VMC |
+|-----------|---------------------|---------------------------|---------------|
+| Readout fidelity | $|g\rangle$ 99%, $|r\rangle$ 99% [@moss2024enhancing] | $|g\rangle$/$|r\rangle$ ~99% | Already near SOTA; dominant noise is non-adiabatic preparation |
+| System size | $16 \times 16$ (256 atoms) | ~300 atoms | Larger systems → more relevant quantum data for larger classical targets |
+| Measurement basis | $Z$ only | $Z$ only | $X$-basis data would provide amplitude/phase info |
+
+
+## Critical technique analysis
+
+**Current binding constraint: Classical Markov chain autocorrelation in the ordered phase.**
+
+The paper's central diagnosis is that purely variational VMC fails in the checkerboard ordered phase because the Markov chain becomes trapped in metastable configurations (domain-wall defects), leading to extremely long autocorrelation times. This is the *sign problem analog* for stoquastic Hamiltonians: even though the ground state amplitudes are real and positive, the rugged energy landscape causes the sampler to stall. Quantum measurement data bypasses this by providing uncorrelated, near-ground-state configurations directly sampled from the device — no Markov dynamics required. The empirical evidence: 1000 unprocessed experimental shots reduced variational convergence by $O(10^3)$ iterations for 2D RNNs, and improved 1D RNN energy accuracy by **over an order of magnitude** in the ordered regime.
+
+**Why Z-basis is sufficient here (but limits generalization):**
+
+The Rydberg Hamiltonian is stoquastic in the occupation basis, so the ground state is real and positive. $Z$-basis measurements provide complete amplitude information with no sign ambiguity. However, for frustrated spin models (e.g., $J_1$-$J_2$ Heisenberg, kagome antiferromagnets) where the ground state has a non-trivial sign structure, $Z$-basis data would be *insufficient* — the sign problem would re-emerge and quantum data alone could not resolve it.
+
+**Paths to improvement:**
+
+1. **More shots per detuning value:** Currently 1000 shots at $s = 15$ MHz/μs. Extending data collection to slower sweep rates or additional lattice geometries would increase the relevant training set.
+2. **$X$-basis measurements:** Global $\pi/2$ rotations before readout would provide off-diagonal correlation information, enabling VMC training for non-stoquastic Hamiltonians.
+3. **Larger system data:** Scaling beyond $16 \times 16$ would let quantum data directly seed classical VMC for thermodynamically larger targets.
+4. **3-zone readout ($99.8\%$):** The current apparatus already achieves 99% fidelity for both states, so readout is not the bottleneck — the dominant noise source is non-adiabatic state preparation during the detuning sweep.
+
+## Completeness check
+
+**Quantitative results (from paper body):**
+
+| Metric | Value | Condition |
+|--------|-------|-----------|
+| Training shots used | 1000 per $\delta$ value | Slowest sweep $s = 15$ MHz/μs |
+| Readout fidelity | 99% ($|g\rangle$ and $|r\rangle$) | Ebadi 2021 apparatus |
+| Convergence speedup (relative) | $t_\text{conv}/t_\text{VMC} \approx 87/541$ to $179/883$ | 2D RNN, $t_\text{trans}=80$, four $\delta/\Omega$ values |
+| Absolute iteration reduction | Up to $O(10^3)$ steps | 2D RNN, 1000 experimental shots |
+| Energy error improvement | Over $10\times$ in checkerboard phase | 1D RNN, data-enhanced vs. purely variational |
+| Qualitative failure mode fixed | 1D RNN captures 2D ordering | Only with quantum data pretraining; fails without |
+
+**Clarification on system sizes:** Both the quantum hardware data and the classical VMC targets are the *same* 16×16 lattice. There are no 6×6 or 10×10 targets in this paper. The 1D and 2D labels refer to RNN *architecture* dimensionality (1D sequential vs. 2D spatial), not the physical system size.
+
+**Autocorrelation:** The paper does not report a dimensioned autocorrelation time or correlation length. The $O(10^3)$ iteration reduction serves as the empirical proxy for autocorrelation breaking — the quantum samples prevent the Markov chain from stalling in defect-laden configurations in the ordered phase.
+
+<!-- TODO: Compare with other quantum-enhanced classical methods (quantum-inspired tensor networks, etc.) -->
