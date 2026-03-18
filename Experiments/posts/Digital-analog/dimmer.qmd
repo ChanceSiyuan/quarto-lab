@@ -1,0 +1,109 @@
+---
+categories:
+- Readings
+date: '2026-03-17'
+lang: en
+title: Quantum dimmer model
+bibliography: refs.bib
+draft: true
+---
+
+# Summary and questions
+
+**Paper:** Geim et al. (2026), "Engineering quantum criticality and dynamics on an analog-digital simulator," arXiv:2602.18555 [@geim2026engineering].
+
+## E0 — What was done and why it matters
+
+Geim et al. realize the first experiment on the 4-zone apparatus running in **analog mode** — repurposing the fault-tolerant hardware stack (built for digital QEC in Bluvstein 2025) for continuous-time Hamiltonian simulation. The central achievement is coherent state transfer between the Rydberg manifold (strong $1/R^6$ interactions, short coherence) and the hyperfine ground-state manifold (weak interactions, long coherence), enabling a **Floquet-engineered effective Hamiltonian** with six-body ring-exchange terms that are inaccessible to native two-body interactions.
+
+The key results:
+
+1. **Quantum dimer model on kagome:** A 271-site kagome lattice is prepared in a $U(1)$ quantum spin liquid (QSL) at the Rokhsar-Kivelson (RK) critical point. The RK state is a superposition of all dimer coverings with equal amplitude — a non-equilibrium analog of a classical critical point in the quantum setting.
+2. **Signatures of the RK QSL:** Dimer-dimer correlations decay as $\sim 1/r^2$ (consistent with field-theory predictions for a $U(1)$ gauge theory), and many-body coherences are observed over up to 18 sites. Local order (nematic symmetry breaking) is suppressed by boundary compensation on 74 boundary atoms.
+3. **Floquet engineering validation:** On a 31-site 1D chain, the effective Hamiltonian obtained from Floquet perturbation theory [@koyluoglu2024floquet] matches measured spectral functions, confirming that the six-body ring exchange $g_6^{(\text{eff})} \sim g_3^2/\mu$ is synthesized correctly at second order in the Floquet expansion.
+
+**Scientific significance:** This is the first demonstration of a $U(1)$ deconfined spin liquid engineered by Floquet methods, rather than accessed via ground-state preparation. The paper also establishes that fault-tolerant hardware stacks can be repurposed for analog simulation — a qualitatively new operating regime for the 4-zone architecture.
+
+## E1 — Architecture comparison
+
+The table below places Geim 2026 in the context of the 1-zone, 3-zone, and 4-zone benchmarks from [@geim2026engineering; @bluvstein2025faulttolerant].
+
+| Parameter | 1-zone analog (Ebadi 2021) | 3-zone digital (Bluvstein 2024) | 4-zone digital (Bluvstein 2025) | Geim 2026 (4-zone analog) |
+|---|---|---|---|---|
+| Atom count (simulation) | 256 | 280 | 448 | 271 (kagome) |
+| Rydberg state | $n = 70$ | $n = 70$ | $n = 70$ | $n = 53$ (1D) / $n = 70$ (2D) |
+| Atom spacing | 4 μm | 4–6 μm | 9 μm (SLM) | 3.6 μm (1D) / 6.0 μm (2D) |
+| Interaction strength $V_0$ | ~18 MHz | ~18 MHz | ~18 MHz | 14.2 MHz (1D) / 18.1 MHz (2D) |
+| Readout fidelity | ~96% (in-situ) | 99.8% (spin-to-position) | 99.54% (non-destructive) | same non-destructive readout |
+| Mid-circuit measurement | No | Yes | Yes | Yes (used for state preparation) |
+| Atom reservoir | No | No | Yes (196 atoms) | Yes (20–200 cycles/load) |
+| Coherence time | $\lesssim 1~\mu\text{s}$ (Rydberg) | — | — | $T_2^* \approx 1$–$2~\mu\text{s}$ ($n = 70$) |
+| Novel capability | 2D Ising QPT | Logical circuits | Fault-tolerant QEC | $U(1)$ QSL via Floquet |
+
+: Architecture benchmarks {#tbl-arch}
+
+**Key upgrade:** The 4-zone reservoir enables **20–200 Floquet cycles per load** — a $>10\times$ increase in explorable circuit depth compared to non-replenished operation, where each atom is used exactly once. This is the direct enabling factor for observing multi-body coherences at 18 sites.
+
+## E2 — Critical technique and bottleneck
+
+The single most important limiting technique is **coherent Rydberg ↔ hyperfine state mapping**.
+
+**Why this is the bottleneck:** Every Floquet cycle requires two mapping events — one to transfer atoms into the Rydberg manifold for analog evolution, and one to transfer them back to the hyperfine manifold for storage. Each mapping event has:
+
+- Rabi oscillation contrast: **97.8(1)%** (1D; reduced further in 2D due to vdW tails during the pulse)
+- Atom loss per mapping event: **~1.8%**
+
+Over $N$ Floquet cycles, errors accumulate multiplicatively. After 10 cycles, the surviving population is $(1 - 0.018)^{10} \approx 83\%$, and the coherent fraction is $(0.978)^{10} \approx 80\%$. This is why the reported many-body coherence is limited to ~18 sites and why 2D results show reduced contrast relative to 1D.
+
+**Why it cannot be trivially improved:** The mapping pulse uses Rabi frequencies of 9.7 MHz (1D) or 12.6 MHz (2D). Faster pulses reduce sensitivity to stray fields but increase sensitivity to intensity inhomogeneity (the existing $\sim 2\%$ spatial variation produces pulse-area errors at fast $\pi$-pulses). Slower pulses allow vdW interactions from neighboring Rydberg atoms to perturb the mapping transition during the pulse. This is a fundamental competition between interaction-induced dephasing and pulse-area control.
+
+**How improvement would help:** Improving mapping contrast from 97.8% to 99% would extend the coherent Floquet depth by roughly $\ln(0.99)/\ln(0.978) \approx 2\times$, directly enabling observation of longer-range correlations and probing deeper into the RK fixed point.
+
+:::{.callout-important collapse="false"}
+## Experiment protocol: Floquet ring-exchange on kagome
+
+1. **Load:** Fill 271-site kagome lattice from SLM array; rearrange with AOD to 100% filling
+2. **Initialize (digital):** Prepare product state in hyperfine manifold; apply local addressing for boundary compensation on 74 edge atoms
+3. **Map to Rydberg:** $\pi$-pulse at $\Omega_\text{map} = 12.6$ MHz ($n = 70$) transfers atoms to Rydberg state
+4. **Analog evolution:** Global detuning $\Delta(t)$ driven at period $\tau = 0.36~\mu\text{s}$; interaction $V_0 = 18.1$ MHz; analog Rabi $\Omega = 2.3$ MHz
+5. **Map back (digital):** $\pi$-pulse returns atoms to hyperfine; state stored coherently
+6. **Repeat:** Steps 3–5 iterated for up to 200 Floquet cycles; reservoir replenishes lost atoms
+7. **Readout:** Non-destructive spin-to-position mapping; fluorescence imaging resolves occupation per site
+:::
+
+## E3 — Numerical parameters
+
+| Parameter | Value |
+|---|---|
+| Kagome lattice sites | 271 |
+| 1D chain sites (calibration) | 31 |
+| Rydberg state (1D) | $n = 53$ |
+| Rydberg state (2D) | $n = 70$ |
+| Atom spacing (1D) | 3.6 μm |
+| Atom spacing (2D) | 6.0 μm |
+| $V_0$ (1D) | 14.2 MHz |
+| $V_0$ (2D) | 18.1 MHz |
+| Blockade radius ratio $R_b/a$ | 1.3–1.4 |
+| Analog Rabi frequency $\Omega$ | 2.3 MHz |
+| Mapping Rabi frequency (1D) | 9.7 MHz |
+| Mapping Rabi frequency (2D) | 12.6 MHz |
+| Floquet period $\tau$ | 0.36 μs |
+| Mapping contrast (1D) | 97.8(1)% |
+| Atom loss per mapping event | ~1.8% |
+| Hyperfine $T_2^*$ at $n = 70$ | 1–2 μs |
+| Many-body coherence range | up to 18 sites |
+| Dimer-dimer correlation decay | $\sim 1/r^2$ |
+| Floquet cycles per load | 20–200 |
+| Boundary compensation atoms | 74 |
+
+: Key experimental parameters from [@geim2026engineering] {#tbl-params}
+
+# Definitions
+
+**Quantum dimer model (QDM):** Effective model on a lattice where the Hilbert space is spanned by *dimer coverings* — configurations in which every site belongs to exactly one dimer (nearest-neighbor pair). The Hamiltonian contains a kinetic term (ring exchange, flipping dimers around a plaquette) and a potential term (counting flippable plaquettes). At the Rokhsar-Kivelson point, the ground state is the equal-amplitude superposition of all dimer coverings [@feldmeier2024].
+
+**Rokhsar-Kivelson (RK) point:** The exactly solvable point of the QDM where the kinetic coefficient equals the potential coefficient. The ground state is a *resonating valence bond* state, and equal-time correlators exhibit power-law decay characteristic of a $U(1)$ gauge theory in 2+1 dimensions.
+
+**Floquet Hamiltonian engineering:** Under a time-periodic drive $H(t + \tau) = H(t)$, the stroboscopic evolution $U(\tau) = \mathcal{T} e^{-i \int_0^\tau H(t) dt}$ is generated by an effective Hamiltonian $H_F$ that can differ qualitatively from the instantaneous $H(t)$. At second order in the Magnus expansion, three-body terms combine to produce six-body ring-exchange interactions [@koyluoglu2024floquet].
+
+**$U(1)$ quantum spin liquid:** A topological phase of matter with emergent $U(1)$ gauge symmetry, deconfined spinon excitations, and no local order parameter. On the kagome lattice, the quantum dimer model at the RK point realizes this phase with algebraically decaying correlations ($\sim 1/r^2$ for dimer-dimer) rather than exponentially decaying ones.
