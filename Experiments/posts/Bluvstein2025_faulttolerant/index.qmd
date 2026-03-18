@@ -13,6 +13,8 @@ draft: true
 
 **Paper:** Bluvstein et al., "A fault-tolerant neutral-atom architecture for universal quantum computation," *Nature* **649** (2025) [@bluvstein2025faulttolerant]
 
+> **Note on companion preprint:** arXiv:2506.20661 is titled *"Architectural mechanisms of a universal fault-tolerant quantum computer"* and is a companion methods paper to the Nature Letter. Both describe the same 4-zone apparatus. Citations here refer to the Nature Letter; methods details (decoder architecture, error budget breakdown) draw on the companion preprint [@bluvstein2025mechanisms].
+
 **Architecture:** 4-zone (Harvard lab) — **defines** this architecture
 
 ## What was done
@@ -26,7 +28,7 @@ draft: true
 2. **Non-destructive readout:** 795 nm $\sigma^-$ optical lattice pins one spin state while AOD displaces the other by ~2 μm; the atom survives (unlike destructive 3-zone readout). Bit-flip error: 0.46(4)%, atom loss per readout: 0.24(2)%.
 3. **Entangling gates:** 270 ns duration via two-photon Rydberg excitation (420 nm + 1013 nm beams) between clock-state qubits; ~4 ms total QEC cycle time.
 4. **Repeated QEC cycles:** Up to 41 consecutive syndrome extraction rounds with continuous ancilla replacement from the reservoir.
-5. **Below-threshold scaling:** Distance-5 surface code with $2.14(13)\times$ lower error per round than distance-3, at 0.62(3)% per round ($\approx 1.33\%$/round for $d=3$).
+5. **Below-threshold scaling:** Distance-5 surface code with $2.14(13)\times$ lower error per round than distance-3 in a **four-round characterization circuit**, at 0.62(3)% per round ($\approx 1.33\%$/round for $d=3$). The 41-round endurance demonstration is a separate result (not used for the threshold scaling comparison).
 6. **Universal fault-tolerant gate set:** Transversal CNOT, lattice surgery, and non-Clifford T gates via transversal teleportation with $[[15,1,3]]$ Reed-Muller codes.
 7. **Deep logical circuits:** 27-layer circuits at constant logical entropy via logical teleportation.
 8. **CHSH Bell test on logical qubits:** $S = 1.99(3) \times \sqrt{2}$, saturating the quantum bound.
@@ -36,7 +38,7 @@ draft: true
 ## Key observations
 
 - **Below-threshold QEC:** The most important result. Distance-5 outperforms distance-3 by $2.14\times$ per round — clear evidence of below-threshold operation. The per-round logical error rate of 0.62(3)% is competitive with superconducting state-of-the-art.
-- **Loss-aware ML decoder:** $1.73(13)\times$ improvement over loss-unaware decoding. Critical because ~50% of all physical errors are atom loss events (at 0.24% per readout per atom × 448 atoms ≈ 1 atom lost per round).
+- **Loss-aware ML decoder:** $1.73(13)\times$ improvement over loss-unaware decoding. The paper states directly that "roughly half of our errors being loss" [@bluvstein2025mechanisms], consistent with 0.24% loss/readout × 448 atoms ≈ 1.1 atoms lost per round dominating the error budget.
 - **Superchecks:** When a data qubit is lost, product of stabilizer generators sharing the lost qubit cancels the lost-qubit operator, yielding a measurable "supercheck" on remaining neighbors. This enables continued QEC with degraded but nonzero code distance.
 - **Universal logic via teleportation:** The $[[15,1,3]]$ Reed-Muller code enables transversal T gates; combined with transversal CNOT (surface code) and lattice surgery, this completes a universal fault-tolerant gate set.
 - **High-rate codes:** Up to 96 distance-4 logical qubits using $[[16,6,4]]$ codes — demonstrating that high encoding rates are achievable.
@@ -93,6 +95,14 @@ Secondary: the 1529 nm shielding beam and 1D cooling must coexist without degrad
 | $d=4$ | $[[16,6,4]]$ high-rate | — | Up to 96 logical qubits |
 
 The $d=5$ error rate on loss-free shots ($\approx 0.1\%$/round) is consistent with $p^3$ scaling (third-order correction to leading-order threshold behavior), confirming genuine below-threshold operation.
+
+> **Clarification on round counts:** The $2.14(13)\times$ threshold scaling figure is measured with a *four-round* characterization circuit. The 41-round maximum is the endurance demonstration (separate experiment showing the reservoir-replenishment mechanism sustains coherent operation).
+
+### Physical gate fidelities
+
+The Nature Letter and companion preprint do not isolate a single CZ gate fidelity number in the accessible text; the entangling gate error contributes to the overall error budget shown in Fig. 2f alongside readout loss and other channels. Based on the Evered 2023 apparatus (same optical setup), two-qubit gates are expected at ~99.5% fidelity, but this 4-zone paper does not explicitly re-quote a CZ fidelity. Single-qubit gates use SCROFULOUS composite pulses (~5 μs). Readout: 0.46(4)% bit-flip error + 0.24(2)% atom loss per round (quoted directly in main text).
+
+<!-- TODO: Verify CZ gate fidelity from Fig. 2f error budget or Extended Data Table once full PDF is accessible -->
 
 ### ML decoder
 
