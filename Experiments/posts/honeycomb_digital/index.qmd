@@ -196,10 +196,10 @@ The single most important limiting factor in this experiment is not gate fidelit
 - The fermion exchange statistics protocol requires sequential loss-radius postselection across multiple ancilla rounds; with ~96–97% per-shot readout fidelity over 32 ancilla qubits, the acceptance fraction drops to **1–7%** per shot.
 - This is not improvable by increasing circuit depth — the degradation worsens over time, making longer experiments less accurate, not more.
 
-**Gate fidelity accumulation is secondary.** The deepest circuit in the experiment is depth-12 (fermion quench dynamics), operating on 72 data qubits arranged so each Floquet step involves $O(72)$ parallel 2-qubit gates, not all qubits simultaneously. With the benchmarked CZ fidelity of ~99.4% (global RB) and maximum depth-12:
+**Gate fidelity accumulation is secondary.** The deepest circuit in the experiment is depth-12 (fermion quench dynamics), operating on 72 data qubits arranged so each Floquet step involves $O(72)$ parallel 2-qubit gates, not all qubits simultaneously. Evered 2025 reports no new CZ benchmark — it states performance is "comparable to prior work." The CZ fidelity of ~99.5% is carried from Bluvstein 2024 [@bluvstein2024logical]. With this value and maximum depth-12:
 
 $$
-(0.994)^{12} \approx 93\%
+(0.995)^{12} \approx 94\%
 $$
 
 per qubit per Floquet layer — substantially better than the readout budget. Gate fidelity is not the limiting factor at current depths.
@@ -218,7 +218,13 @@ per qubit per Floquet layer — substantially better than the readout budget. Ga
 | Fermion quench dynamics | Depth-12 |
 | Fermi-Hubbard dynamics | Depth-12 |
 
-**Chern number result:** The paper reports $C = 1$ in the non-Abelian phase B and $C = 0$ in the Abelian phase A. The result confirms an **odd** Chern number in phase B, ruling out the trivial ($C=0$) phase and providing direct evidence for the non-Abelian topological order [@evered2025probing].
+**Chern number result:** The paper reports $C = 1$ in the non-Abelian phase B and $C = 0$ in the Abelian phase A. Critically, this is **not a direct topological invariant measurement** — the Chern number is inferred indirectly via a three-step procedure [@evered2025probing, Methods]:
+
+1. Measure real-space two-point Majorana correlators $\langle c_i c_j \rangle$ (equivalently, the correlation matrix $\Gamma_{ij}$) on the quantum processor.
+2. From $\Gamma$, reconstruct a momentum-space parent Hamiltonian $H_k$ using the reconstruction lemma (see @lem-reconstruct-matrix above): the eigenvalues of $\Gamma$ encode the BdG band structure of the equivalent free-fermion model.
+3. Numerically evaluate the Chern number from the reconstructed $H_k$ on a discretized Brillouin zone.
+
+The result $C = 1$ thus reflects the topology of the *reconstructed* Hamiltonian, validated against classically simulable system sizes. It rules out the trivial ($C=0$) phase and is consistent with non-Abelian topological order in the B phase.
 
 **Key quantitative benchmarks** from [@evered2025probing]:
 
@@ -244,4 +250,12 @@ per qubit per Floquet layer — substantially better than the readout budget. Ga
 **Fermi-Hubbard $M_\text{stagg}$:** The simulation encodes spin-up and spin-down on a **4×4 square lattice (16 sites**, split into two 8-site halves). The circuit uses depth-12 Floquet rounds with the dimensionless interaction ratio $J_Z/J$ varied up to 8 (with explicit benchmarks at $J_Z/J = 1$ and $J_Z/J = 8$). The staggered magnetization $M_\text{stagg}$ shows **non-monotonic behavior**: it decays rapidly at $J_Z/J \to 0$ (free fermions spread out), is suppressed at intermediate coupling, and is partially recovered at large $J_Z/J \gg 1$ where double-occupancy is energetically suppressed. This non-monotonic dependence on the interaction strength is the key signature of Hubbard physics.
 
 <!-- TODO: Add the proof for the reconstruction lemma (currently marked as todo in the lemma block above) -->
-<!-- TODO: Compare circuit depth and gate count with equivalent trapped-ion or superconducting implementations -->
+**Platform comparison — circuit depth for equivalent experiments:**
+
+| Platform | Gate fidelity (2Q) | Connectivity | Equivalent circuit depth | Limiting factor |
+|----------|--------------------|--------------|--------------------------|-----------------|
+| **Neutral atom (this work)** | ~99.5% (Bluvstein 2024) | Reconfigurable, all-to-all within zone | Depth-12 Floquet | Readout degradation (~96–97% in-run) |
+| **Trapped ion** | ~99.5–99.9% (Quantinuum H-series) | All-to-all (small register) | ~comparable depth; slower gate clock (~1 ms/gate) | Gate speed; scaling to 72+ qubits is active work |
+| **Superconducting** | ~99–99.7% (heavy-hex or grid) | Fixed nearest-neighbor | Depth increases $\sim 3\times$ due to SWAP overhead for non-local gates | Connectivity-limited routing; $T_1/T_2 \lesssim 500\,\mu$s limits long circuits |
+
+Neutral atoms have a structural advantage for the honeycomb geometry: mid-circuit atom rearrangement provides native non-local connectivity, eliminating the SWAP overhead that would add $O(N)$ depth on a fixed grid. The relevant trapped-ion disadvantage is gate clock speed, not fidelity; the relevant superconducting disadvantage is connectivity, not coherence time.
