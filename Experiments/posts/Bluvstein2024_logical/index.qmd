@@ -69,7 +69,7 @@ This experiment does not have a reservoir zone, so atom loss events are *unrecov
 1. **CZ gate infidelity** — coherent and incoherent errors during the Rydberg blockade gate
 2. **Atom loss during transport/gates** — the atom vanishes from the trap, leaving a "hole" in the qubit register
 
-The 4-zone follow-up (Bluvstein et al. 2025) later identified atom loss as contributing ~50% of all physical errors in that system's operation [@bluvstein2024logical]. In the 3-zone system studied here, loss is an unrecoverable erasure (no reservoir), so its contribution is folded into the effective gate error without distinction. This is precisely the motivation for the 4-zone upgrade: the reservoir zone enables mid-circuit reloading of lost atoms, converting an unrecoverable erasure into a detected, correctable event.
+The 4-zone follow-up (Bluvstein et al. 2025) later identified atom loss as contributing roughly half of all physical errors in that system's operation ("roughly half of our errors being loss") [@bluvstein2025faulttolerant]. In the 3-zone system studied here, loss is an unrecoverable erasure (no reservoir), so its contribution is folded into the effective gate error without distinction. This is precisely the motivation for the 4-zone upgrade: the reservoir zone enables mid-circuit reloading of lost atoms, converting an unrecoverable erasure into a detected, correctable event.
 
 **What this means for optimization:** improving CZ fidelity to 99.9% would enable deeper logical circuits and more compact codes. But without also addressing atom loss, the effective error rate cannot reach the sub-0.1% regime needed for practical fault tolerance. Improving to 99.9% would enable:
 
@@ -88,19 +88,33 @@ The 4-zone architecture (Bluvstein 2025) addresses the *downstream* consequences
 
 ## Primary quantitative results
 
+**Physical layer:**
+
+| Benchmark | Value |
+|-----------|-------|
+| Physical qubit initialization fidelity ($|0\rangle$) | **99.32(4)%** |
+| Single-qubit gate fidelity ($Z(\pi/2)$, local) | **99.912(7)%** |
+| Single-qubit gate fidelity (global) | **~99.99%** |
+| Two-qubit CZ gate fidelity | **99.3–99.5%** |
+| Spin-to-position readout fidelity | **99.8%** |
+
+**Logical layer:**
+
 | Benchmark | Raw | With error detection |
 |-----------|-----|----------------------|
 | Fault-tolerant $|0_L\rangle$ preparation fidelity | — | **99.91$^{+0.04}_{-0.09}$%** |
 | 4-logical-qubit GHZ state fidelity | **72(2)%** | **$99.85^{+0.10}_{-1.00}$%** |
 | 48-logical-qubit XEB score | **~0.1** | — |
 | 12-logical-qubit XEB score | **0.156(2)** | **0.616(7)** |
+| Entanglement teleportation Bell fidelity | **77(2)%** | **92(2)%** |
 
 Notes:
 - The $|0_L\rangle$ result uses fault-tolerant preparation with mid-circuit ancilla measurement and FPGA feedforward; no raw baseline is reported separately.
-- The GHZ and XEB benchmarks use error *detection* (postselection on no-error syndromes), not correction — accepted fraction is not stated in the main text.
+- The GHZ and XEB benchmarks use error *detection* (postselection on no-error syndromes), not correction. GHZ accepted fraction varies continuously — discarding ~50% of shots yields ~90% fidelity; full stabilizer postselection reaches $99.85^{+0.10}_{-1.00}$%.
 - The GHZ post-detection error bars are asymmetric: the lower bound of 98.85% is scientifically meaningful — it represents the worst-case fidelity consistent with the data.
 - The 48-LQ raw XEB score (~0.1) is the unpostselected circuit fidelity at maximum scale; post-detection XEB at 12 qubits is 0.616(7).
-- Surface code logical Bell pair error at $d=7$: ~5% infidelity (~0.95 population in $X_L X_L$ and $Z_L Z_L$ bases). Per-cycle logical error rates at $d=3,5,7$ are in Extended Data Figs. 4–5; below-threshold scaling is demonstrated by the monotonic decrease with $d$.
+- Surface code logical Bell pair error at $d=7$: ~5% infidelity (~0.95 population in $X_L X_L$ and $Z_L Z_L$ bases). Per-cycle logical error rates at $d=3,5,7$ are in Extended Data Figs. 4–5 (not reproduced here); below-threshold scaling is demonstrated by the monotonic decrease with $d$. The 4-zone follow-up reports 0.62(3)% per round at $d=5$ with a 2.14(13)× suppression factor vs. $d=3$ [@bluvstein2025faulttolerant].
+- Entanglement teleportation: Bell fidelity 77(2)% with feedforward; rises to 92(2)% with error-detection postselection.
 - Mid-circuit readout + feedforward total cycle: **<1 ms** (500 μs spin-to-position imaging + <500 μs FPGA processing and Raman correction).
 
 ## Architecture comparison
@@ -118,5 +132,5 @@ The jump from 1-zone to 3-zone is primarily about *measurement quality* (fluores
 
 ## Completeness check
 
-<!-- TODO: Detail the FPGA feedforward latency breakdown (imaging 500 μs confirmed; FPGA processing component not isolated in main text) -->
-<!-- TODO: Per-cycle logical error rates at d=3,5,7 with error bars are in Extended Data Figs. 4–5 (paywalled) -->
+<!-- TODO: FPGA feedforward latency breakdown — imaging 500 μs confirmed; FPGA processing component not isolated in main text (only total <1 ms reported) -->
+<!-- TODO: Per-cycle logical error rates at d=3,5,7 with error bars are in Extended Data Figs. 4–5 (paywalled). The 4-zone follow-up [@bluvstein2025faulttolerant] reports 0.62(3)% per round at d=5 with Λ=2.14(13)× suppression; the 3-zone rates at d=3,5,7 remain unavailable without journal access. -->
