@@ -1,0 +1,211 @@
+---
+categories:
+- Posts
+date: '2026-03-19'
+lang: en
+title: "Learning Modular Exponentiation"
+subtitle: "Theoretical Barriers from Cryptography, Fourier Analysis, and Statistical Queries"
+bibliography: refs.bib
+draft: true
+---
+
+**Abstract.** We examine the theoretical barriers to learning the modular exponentiation function $f(x) = a^x \bmod N$ from the perspectives of computational learning theory, Fourier analysis, and statistical queries. We establish that under standard cryptographic assumptions, classical PAC learning is provably intractable, while quantum learners achieve exponential speedup. In the average case, statistical query lower bounds and Fourier spectral analysis reveal that gradient-based methods face exponential sample complexity.
+
+---
+
+## Part I: PAC Learning and Cryptographic Hardness {#sec-pac}
+
+### PAC Learning Framework
+
+The natural starting point for assessing learnability is Valiant's *Probably Approximately Correct* (PAC) framework, which requires a polynomial-time learner to output a low-error hypothesis with high probability given only polynomially many labeled examples.
+
+::::{#def-pac .callout-note icon="false"}
+## Definition (PAC Learning --- Valiant 1984)
+A concept class $\mathcal{C}$ over domain $\mathcal{X}$ is **PAC learnable** if there exists a polynomial-time algorithm $\mathcal{A}$ that, given access to an oracle providing labeled examples $(x, c(x))$ drawn i.i.d. from distribution $\mathcal{D}$, for any $\varepsilon, \delta > 0$ outputs a hypothesis $h$ satisfying
+$$
+\Pr\bigl[\operatorname{err}_{\mathcal{D}}(h) > \varepsilon\bigr] < \delta,
+$$ {#eq-pac}
+using at most $\operatorname{poly}(1/\varepsilon,\, 1/\delta,\, n)$ samples, where $n$ is the representation length of concepts in $\mathcal{C}$.
+::::
+
+::::{#def-concept-class .callout-note icon="false"}
+## Definition (Modular Exponentiation Concept Class)
+The concept class of modular exponentiation is defined as
+$$
+\mathcal{L}_{\mathrm{modexp}} = \bigl\{f_{d,N} : x \mapsto x^d \bmod N \;\big|\; \gcd(d, \varphi(N)) = 1\bigr\},
+$$ {#eq-concept-class}
+where $N = pq$ is a product of two large primes $p, q$.
+::::
+
+### PAC Impossibility Under Cryptographic Assumptions
+
+The core argument proceeds by reduction: if $\mathcal{L}_{\mathrm{modexp}}$ were efficiently PAC learnable, then the learner could be used to break pseudorandom functions constructed from modular exponentiation, contradicting standard cryptographic hardness assumptions.
+
+::::{#thm-pac-hardness .callout-important icon="false"}
+## Theorem (Representation-Independent PAC Hardness --- Kearns & Valiant 1994)
+Under the Discrete Logarithm assumption (DLP) and the assumption that integer factoring is hard, the concept class $\mathcal{L}_{\mathrm{modexp}}$ cannot be efficiently PAC learned by any polynomial-time classical algorithm, regardless of the hypothesis representation used.
+::::
+
+::: {.proof}
+*Proof sketch.* Suppose a polynomial-time PAC learner $\mathcal{A}$ exists for $\mathcal{L}_{\mathrm{modexp}}$. The output of $f_{d,N}(x) = x^d \bmod N$ is a pseudorandom function (PRF) under the DLP and factoring assumptions: no polynomial-time distinguisher can separate $\{(x_i, x_i^d \bmod N)\}$ from $\{(x_i, r_i)\}$ where $r_i$ are uniformly random. But $\mathcal{A}$ would produce a hypothesis $h$ with $\operatorname{err}(h) < \varepsilon$ on the true function, while $h$ would necessarily have error $\approx 1/2$ on random labels. This yields a polynomial-time distinguisher for the PRF, contradicting the cryptographic assumptions. $\square$
+:::
+
+Several properties of modular exponentiation reinforce this hardness:
+
+- **Pseudorandomness under input restriction.** Even when the input is restricted to half its bits, the output remains pseudorandom. This means both the high-order and low-order output bits are simultaneously hard to predict for any polynomial-time classical algorithm.
+- **Representation independence.** The hardness is an intrinsic property of the function class, not of any particular learner architecture. Whether the hypothesis class consists of MLPs, Transformers, or any other model, the impossibility holds uniformly.
+- **No significant advantage over random guessing.** Given $O(\operatorname{poly}(n))$ labeled samples $(x, a^x \bmod N)$, any classical learner's prediction accuracy on unseen data cannot significantly exceed that of random guessing without incurring exponential time complexity.
+
+### Classical vs. Quantum Learning Separation {#sec-cc-qc}
+
+The situation changes dramatically when the learner has access to quantum computation. Modular exponentiation provides one of the cleanest examples of exponential separation between classical and quantum learning.
+
+::::{#thm-cc-qc-separation .callout-important icon="false"}
+## Theorem (Exponential CC/QC Separation)
+The concept class $\mathcal{L}_{\mathrm{modexp}}$ exhibits an exponential separation between classical and quantum PAC learners:
+
+- **Classical PAC:** Requires exponential time under the DLP assumption.
+- **Quantum PAC:** Requires only $O(\operatorname{poly}(n))$ queries via quantum phase estimation and Shor's period-finding subroutine.
+::::
+
+::: {.proof}
+*Proof sketch.* The learning task is to identify $d$ given polynomially many labeled samples $(x, x^d \bmod N)$. The function $x \mapsto x^d \bmod N$ with $\gcd(d,\varphi(N))=1$ is the RSA permutation — a bijection on $(\mathbb{Z}/N\mathbb{Z})^*$ — so there is **no periodicity in $x$** for the QFT to amplify directly. The quantum speedup instead proceeds in two stages [@shor1997polynomial]:
+
+1. **Factoring $N$.** Run Shor's order-finding algorithm: pick a random $a$ coprime to $N$, prepare $\frac{1}{\sqrt{r}}\sum_{j=0}^{r-1}|j\rangle|a^j \bmod N\rangle$, and apply QFT$^{-1}$ to the first register. This exploits the period $r = \operatorname{ord}(a, N)$ of the map $j \mapsto a^j \bmod N$, yielding the prime factors $p, q$ and hence $\varphi(N) = (p-1)(q-1)$ in $O(\operatorname{poly}(n))$ time.
+
+2. **Recovering $d$.** Given $\varphi(N)$ and a single labeled sample $(x_0,\, y_0 = x_0^d \bmod N)$ with $\operatorname{ord}(x_0)= \varphi(N)$, compute $d$ by solving the discrete logarithm $d = \log_{x_0} y_0 \pmod{\varphi(N)}$ using Shor's discrete-log subroutine, again in $O(\operatorname{poly}(n))$ time.
+
+Thus the full identification of $d$ — and hence the target function $f_{d,N}$ — requires $O(\operatorname{poly}(n))$ quantum operations and $O(1)$ classical samples. $\square$
+:::
+
+The quantum learner succeeds because it exploits the *global algebraic structure* of $(\mathbb{Z}/N\mathbb{Z})^*$ through coherent superposition: specifically, the periodicity of $j \mapsto a^j \bmod N$ (used in Shor's order-finding to factor $N$) and the resulting group arithmetic (used in Shor's discrete-log to recover $d$). In the classical setting, both factoring $N$ and the discrete logarithm are believed to require super-polynomial time, hiding $d$ behind the cryptographic hardness assumptions. As Gyurik and Dunjko [@gyurik2023exponential] emphasize, the separation arises fundamentally from the difficulty of *identification* (determining which function generated the data), not merely evaluation.
+
+Nguyen et al. [@nguyen2026quantum] further show that under group orbit symmetry, the quantum statistical query (QSQ) model achieves exponential separation from classical SQ on permutation-invariant function classes, reinforcing that the quantum advantage is structural rather than incidental.
+
+### Summary: Learning Complexity Landscape
+
+| Learning Model | Oracle Queries | Time Complexity | Lower Bound Basis | Feasibility |
+|:---|:---|:---|:---|:---|
+| Classical PAC | $O(\operatorname{poly}(n))$ | Exponential | DLP / PRF assumption | Intractable |
+| Classical SQ | $\tau^2 \exp(n^{\Omega(1)})$ | Exponential | Fourier / Boas--Bellman | Intractable |
+| Quantum PAC | $O(1)$ to $O(\operatorname{poly}(n))$ | Polynomial | QFT / Shor's algorithm | Efficient |
+
+: Learning complexity of $\mathcal{L}_{\mathrm{modexp}}$ across classical and quantum models. {#tbl-complexity}
+
+---
+
+## Part II: Statistical Query Bounds and Fourier Analysis {#sec-sq}
+
+PAC hardness addresses the worst case. Modern neural networks, however, are trained with mini-batch stochastic gradient descent (SGD). To rigorously bound the limitations of gradient-based learning for modular exponentiation, we turn to the Statistical Query (SQ) framework, which captures any algorithm that accesses data only through noisy statistical expectations --- including all gradient-based optimizers.
+
+### Fourier Analysis of Modular Arithmetic
+
+::::{#lem-fourier-decay .callout-note icon="false"}
+## Lemma (Low-Frequency Fourier Decay)
+For the mapping $x \mapsto ax \bmod p$ where $p$ is a large prime, the Boolean function formed by the output bits has exponentially small Fourier coefficients in the low-frequency regime. The spectral energy concentrates almost entirely on high-frequency Fourier basis functions.
+::::
+
+On the Boolean hypercube $\{0,1\}^n$ or finite ring $\mathbb{Z}_p$, any Boolean function $f$ admits a Fourier expansion $f = \sum_{S} \hat{f}(S)\, \chi_S$, where $\chi_S$ are the Fourier basis functions and $\hat{f}(S)$ are the Fourier coefficients. For modular arithmetic functions, the coefficients at low frequencies (small $|S|$) are exponentially suppressed, while the energy is dispersed across exponentially many high-frequency modes. This spectral flatness is precisely what makes the function appear pseudorandom to any algorithm that can only probe low-order statistical moments.
+
+::::{#lem-correlation-bound .callout-note icon="false"}
+## Lemma (Pairwise Correlation Bound)
+For distinct generators $a \neq b$ coprime to $p$, the normalized correlation satisfies
+$$
+\operatorname{Corr}_X\bigl[aX \bmod p,\; bX \bmod p\bigr] \in \tilde{O}(1/\sqrt{p}).
+$$ {#eq-corr-bound}
+For modular exponentiation, this orthogonality is even more pronounced: different generators or exponents produce pseudorandom permutations that are nearly pairwise orthogonal in $L_2$.
+::::
+
+This near-orthogonality has a direct consequence: the concept class $\mathcal{L}_{\mathrm{modexp}}$ contains exponentially many functions that are pairwise nearly uncorrelated. Any algorithm that identifies the target by measuring correlations must therefore make exponentially many queries.
+
+### Statistical Query Framework
+
+::::{#def-sq .callout-note icon="false"}
+## Definition (Statistical Query Learning)
+In the **SQ model**, the algorithm does not access individual samples. Instead, it queries a statistical oracle $\mathrm{STAT}(\mathcal{D}, f)$ that, given a query function $\varphi : \mathcal{X} \times \mathcal{Y} \to [-1, 1]$ and tolerance $\tau > 0$, returns a value $v$ satisfying
+$$
+\bigl|v - \mathbb{E}_{(x,y) \sim \mathcal{D}}[\varphi(x, y)]\bigr| \leq \tau.
+$$ {#eq-sq-oracle}
+::::
+
+The critical observation connecting SQ to modern deep learning is that any gradient-based parameter update can be rewritten as a statistical expectation query on the loss gradient:
+$$
+\nabla_\theta \mathcal{L}(\theta) = \mathbb{E}_{(x,y) \sim \mathcal{D}}\bigl[\nabla_\theta \ell(f_\theta(x), y)\bigr].
+$$ {#eq-gradient-as-sq}
+A mini-batch SGD step with batch size $B$ approximates this expectation with tolerance $\tau \sim 1/\sqrt{B}$. Therefore, SQ lower bounds translate directly into lower bounds on the number of gradient steps (and hence total samples) required by SGD.
+
+::::{#def-sq-dimension .callout-note icon="false"}
+## Definition (SQ Dimension)
+The **SQ dimension** of a concept class $\mathcal{C}$ over distribution $\mathcal{D}$ is the largest $d$ such that there exist $d+1$ concepts $f_0, f_1, \ldots, f_d \in \mathcal{C}$ with pairwise correlations
+$$
+\bigl|\operatorname{Corr}_{\mathcal{D}}(f_i, f_j)\bigr| \leq \frac{1}{d} \quad \text{for all } i \neq j.
+$$ {#eq-sq-dim}
+A concept class with SQ dimension $d$ requires $\Omega(d)$ queries at tolerance $\tau = 1/d$ to identify the target.
+::::
+
+### SQ Lower Bound for Modular Exponentiation
+
+::::{#thm-sq-lower-bound .callout-important icon="false"}
+## Theorem (Exponential SQ Lower Bound)
+Any SQ algorithm learning the output bits of modular multiplication (or modular exponentiation) under the uniform distribution requires runtime at least
+$$
+\Omega\bigl(p^{(n-1)/2}\bigr)
+$$ {#eq-sq-lower}
+to achieve advantage significantly better than random guessing.
+::::
+
+::: {.proof}
+*Proof sketch.* The proof proceeds in three steps:
+
+1. **Fourier concentration on high frequencies.** By @lem-fourier-decay, the target function's spectral mass is concentrated on frequencies of order $\Omega(p)$.
+
+2. **Near-orthogonality via Boas--Bellman.** The Boas--Bellman inequality connects the pairwise correlation structure of the concept class to the gradient variance. For the modular exponentiation class, @lem-correlation-bound gives pairwise correlations of order $\tilde{O}(1/\sqrt{p})$, yielding an SQ dimension of $\Omega(\sqrt{p})$ and, by iterated application across $n-1$ input bits, a total dimension of $\Omega(p^{(n-1)/2})$.
+
+3. **Barren plateau at initialization.** At random weight initialization, the gradient variance decays as $\tilde{O}(1/p)$. This creates a *barren plateau* that traps all gradient-based methods: the gradient signal is exponentially weak relative to the noise floor of any polynomial-sized mini-batch. $\square$
+:::
+
+This result is architecture-agnostic: it applies not just to gradient descent but to *any* algorithm operating within the SQ framework, including all variants of SGD, Adam, and other first-order methods.
+
+### Gradient Descent Failure for High-Frequency Functions
+
+Edelman et al. [@edelman2024gradient] provide a complementary perspective from the optimization side, showing that gradient descent on standard neural networks fails specifically because of the high-frequency structure of modular arithmetic.
+
+::::{#thm-gd-failure .callout-important icon="false"}
+## Theorem (Gradient Descent Fails on High-Frequency Functions --- Edelman et al. 2024)
+For learning modular arithmetic functions using standard neural networks trained with gradient descent, the convergence rate degrades exponentially with the frequency of the target function. Specifically, learning $f(x) = \cos(\omega x)$ with $\omega \sim p$ requires $\Omega(p)$ gradient steps, and for modular arithmetic on $\mathbb{Z}_p$, the spectral structure forces gradient descent into an exponentially slow regime.
+::::
+
+The mechanism is intuitive: a randomly initialized neural network's output varies on a length scale of $O(1)$ in input space, while the target function oscillates on a scale of $O(1/p)$. Gradient descent must progressively learn higher and higher frequencies, and each frequency doubling requires $O(1)$ additional training time, leading to $O(p)$ total steps --- a spectral staircase that becomes an insurmountable barrier for cryptographic-scale $p$.
+
+### Quantum Statistical Query Separation
+
+The limitations of classical SQ are not shared by their quantum counterparts. When the concept class possesses group orbit symmetry, quantum statistical queries can exploit coherent interference to bypass the classical correlation bottleneck.
+
+::::{#thm-qsq-separation .callout-important icon="false"}
+## Theorem (QSQ Advantage Under Symmetries --- Nguyen et al. 2026)
+In the quantum statistical query (QSQ) model, there exist permutation-invariant concept classes exhibiting exponential separation from classical SQ. When the group $G$ acts on the input space and the induced orbit distribution $p_{O_\rho}$ is highly skewed, quantum learners succeed with $O(\log |S|)$ queries at noise tolerances where classical SQ algorithms require exponentially many queries.
+
+Specifically, for tolerance range
+$$
+2\zeta < \tau < \sqrt{2\zeta - \zeta^2},
+$$ {#eq-qsq-window}
+where $\zeta$ is the measure of disjoint supports, the QSQ model succeeds while classical SQ fails. The classical lower bound is $\Omega(\tau^2 / \|p_{O_\rho}\|_2^2)$, which diverges when the orbit distribution is nearly uniform.
+::::
+
+In the classical SQ setting, the learning complexity is governed by the $\ell_2$-norm of the orbit distribution: when $\|p_{O_\rho}\|_2^2 \ll 1$ (orbits are spread uniformly), the pairwise correlations between distinct target functions are vanishingly small, and the query lower bound explodes. The QSQ model circumvents this by querying expectations of quantum observables, whose interference structure can amplify the signal from algebraic symmetries that classical statistics cannot detect.
+
+---
+
+## Synthesis: The Learning Landscape of Modular Exponentiation {#sec-synthesis}
+
+The results surveyed above establish a comprehensive picture of why learning $f(x) = a^x \bmod N$ is provably hard for classical algorithms across multiple theoretical frameworks:
+
+1. **Worst-case (PAC):** Under DLP and factoring assumptions, no polynomial-time classical algorithm can PAC learn $\mathcal{L}_{\mathrm{modexp}}$, regardless of architecture (@thm-pac-hardness).
+
+2. **Average-case (SQ):** The Fourier spectrum of modular exponentiation concentrates on high frequencies (@lem-fourier-decay), producing exponentially large SQ dimension and an $\Omega(p^{(n-1)/2})$ query lower bound for any gradient-based method (@thm-sq-lower-bound).
+
+3. **Optimization dynamics:** Even ignoring information-theoretic constraints, gradient descent faces a spectral barrier: convergence time scales linearly with the target frequency, which is exponential in the input length for cryptographic parameters (@thm-gd-failure).
+
+4. **Quantum escape:** Quantum learners bypass all three barriers by exploiting coherent superposition and the QFT to directly access the algebraic period structure (@thm-cc-qc-separation, @thm-qsq-separation).
+
+These worst-case and average-case barriers set the stage for understanding why neural networks *nonetheless* exhibit grokking on modular arithmetic tasks --- a phenomenon in which the network, after prolonged memorization, suddenly generalizes by discovering the underlying algebraic structure. The resolution of this apparent paradox is explored in the companion survey [Grokking as a Phase Transition](/theory/Posts/review_grok/index.qmd), where we show that grokking corresponds to a first-order phase transition from the lazy (NTK) regime to the rich (feature learning) regime, enabled by specific conditions on overparameterization, weight decay, and training duration that allow the network to escape the barren plateau identified by @thm-sq-lower-bound.
