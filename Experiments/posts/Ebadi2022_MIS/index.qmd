@@ -43,7 +43,7 @@ draft: true
 ## Key observations
 
 - **High-quality MIS solutions:** For graphs with up to 289 vertices, the quantum optimizer found exact MIS solutions with probability exceeding classical random sampling.
-- **Superlinear quantum speedup:** On the hardest graph instances, time-to-solution scales as $\text{TTS} \propto \text{HP}^{0.63(13)}$ for the quantum optimizer vs. $\text{HP}^{1.03(4)}$ for classical simulated annealing — a polynomial quantum advantage that grows with problem hardness.
+- **Superlinear quantum speedup:** Over all graphs, TTS scales as $\text{HP}^{0.95(15)}$ (quantum) vs. $\text{HP}^{1.03(4)}$ (classical SA). For the subset where the minimum spectral gap is resolved ($\delta_\text{min} > 1/T$), the quantum exponent improves to $\text{HP}^{0.63(13)}$, giving a larger margin; the 0.95 exponent is the full-dataset value.
 - **Hardness correlates with landscape complexity:** Problem difficulty for the quantum optimizer correlated with the number of quasi-degenerate local minima in the classical energy landscape, not simply with graph size.
 - **Variational advantage:** Optimized pulse schedules (beyond simple linear ramps) significantly improved success probability, particularly for hard instances.
 
@@ -65,8 +65,8 @@ This experiment is a **1-zone analog** platform (same Harvard apparatus as Ebadi
 | Atom count | 256 (2D) | **289 (2D)** | ~300 (2D) | — |
 | Hardware loading fidelity | ~98% | ~98% | 98.4(7)% | Bottleneck 5: atom loss / defects |
 | Graph filling fraction | — | ~80% by design | N/A (free geometry) | *Intentional sparsity*, not hardware limit |
-| $|g\rangle$ detection fidelity | ~99% | ~99% | ~99% | Bottleneck 3: in-situ readout ceiling |
-| $|r\rangle$ detection fidelity | ~92–96% | ~92–96% | ~92–96% | Bottleneck 3: no dedicated readout zone |
+| $|g\rangle$ detection fidelity | ~99% | ~99% (apparatus, not re-measured) | ~99% | Bottleneck 3: in-situ readout ceiling |
+| $|r\rangle$ detection fidelity | ~92–96% | ~92–96% (apparatus, not re-measured) | ~92–96% | Bottleneck 3: no dedicated readout zone |
 | Analog coherence $T_e$ | ~20 µs | ~20 µs (std. beam) / ~70 µs (small beam) | ~20 µs | Bottleneck 1: motional dephasing |
 | Mid-circuit measurement | No | No | No | Structural 1-zone limit |
 | Digital gate fidelity | N/A | N/A | N/A | N/A (analog-only) |
@@ -93,9 +93,12 @@ Improving $T_e$ — through better laser coherence, reduced motional heating, or
 
 **Graph families and hardness classification.** All graphs are *random unit-disk graphs* generated on an ~80%-filled square lattice with $R_b/a = 1.7$. There is no named graph family; hardness is characterized by the hardness parameter $\text{HP} = D_{|\text{MIS}|-1}/(|\text{MIS}| \times D_{|\text{MIS|}})$. Graphs with many near-optimal decoy states (high HP) are hardest for both quantum and classical algorithms; the quantum advantage is largest in this regime.
 
-**Scaling exponent comparison.** The paper fits time-to-solution vs. HP over $N = 289$ graphs:
-$$\text{TTS}_\text{quantum} \propto \text{HP}^{0.63(13)}, \quad \text{TTS}_\text{SA} \propto \text{HP}^{1.03(4)}.$$
-The ratio diverges as HP increases, constituting a superlinear (polynomial) quantum advantage within the accessible HP range. The exponents are from finite-size data and may not persist at larger $N$; the paper acknowledges that an asymptotic separation requires further theoretical analysis.
+**Scaling exponent comparison.** The paper reports two quantum TTS fits [@ebadi2022quantum]:
+
+- **All graphs (full dataset):** $\text{TTS}_\text{quantum} \propto \text{HP}^{0.95(15)}$ vs. $\text{TTS}_\text{SA} \propto \text{HP}^{1.03(4)}$. The quantum advantage is present but modest (exponent gap 0.08).
+- **Resolved-gap subset** ($\delta_\text{min} > 1/T$, i.e. only instances where the adiabatic gap is experimentally resolvable): $\text{TTS}_\text{quantum} \propto \text{HP}^{0.63(13)}$. Here the advantage is more pronounced (exponent gap 0.40).
+
+The 0.63(13) figure is the conditioned value; reporting it as the primary result overstates the quantum advantage. The 0.95(15) exponent is the conservative, unconditioned bound. The ratio diverges as HP increases in both cases, but the margin is narrower over the full dataset. The exponents are from finite-size data and may not persist at larger $N$; the paper acknowledges that an asymptotic separation requires further theoretical analysis.
 
 **Debate about thermodynamic-limit speedup.** The scaling advantage was measured at a fixed system size ($N = 289$). Whether the exponent gap ($0.63$ vs. $1.03$) persists as $N \to \infty$ is an open question — the classical optimizer (simulated annealing) is also not the best possible classical algorithm for unit-disk MIS. Subsequent theory work has questioned whether the quantum advantage survives against more sophisticated classical heuristics (e.g., tensor-network–based optimizers) or in the limit of large random graphs. The paper's claim is explicitly bounded to the regime accessible to the hardware.
 
@@ -113,9 +116,10 @@ The ratio diverges as HP increases, constituting a superlinear (polynomial) quan
 | Coherence $T_e$ (standard beam) | ~20 µs |
 | Coherence $T_e$ (smaller beam) | ~70 µs |
 | Sweep time range (practice) | $T \approx 0.5$–$4\,\mu\text{s}$ |
-| $|g\rangle$ detection fidelity | ~99% |
-| $|r\rangle$ detection fidelity | ~92–96% |
-| TTS quantum exponent | 0.63(13) |
+| $|g\rangle$ detection fidelity | ~99% (apparatus-level, from [@ebadi2021quantum]) |
+| $|r\rangle$ detection fidelity | ~92–96% (apparatus-level, from [@ebadi2021quantum]) |
+| TTS quantum exponent (all graphs) | 0.95(15) |
+| TTS quantum exponent (resolved-gap subset) | 0.63(13) |
 | TTS classical SA exponent | 1.03(4) |
 | LZ fit exponent $\eta$ | 1.2(2) |
 | Variational shots per step | ~50 |
