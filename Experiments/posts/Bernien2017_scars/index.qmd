@@ -47,7 +47,7 @@ The first large-scale Rydberg tweezer array experiment: 51 $^{87}$Rb atoms in a 
 | Loading probability | ~60% (no AOD rearrangement) | 98.4(7)% after rearrangement | Post-selected on filled configurations; no real-time rearrangement |
 | Rydberg state | $\|70S_{1/2}\rangle$ | $\|70S_{1/2}\rangle$ | Same Rydberg level |
 | Lattice spacing (Z₂) | $a = 5.74\ \mu\text{m}$, $R_b/a \approx 1.57$ | Sub-μm tuneable | Blockade radius $R_b \approx 9\ \mu\text{m}$ |
-| Quench Rabi freq. | $\Omega/2\pi = 2$ MHz | up to $2\pi \times 6.0$ MHz | 3× lower |
+| Quench Rabi freq. | $\Omega/2\pi = 2$ MHz | up to $2\pi \times 6.0$ MHz (one specific lattice-spacing config.; slew-rate-limited range 0–2.5 MHz) | 3× lower at quench point |
 | NN interaction | $V_{i,i+1}/2\pi = 24$ MHz | — | $V_{i,i+2}/2\pi = 0.38$ MHz (NNN) |
 | Coherence (spin echo) | $> 5\ \mu\text{s}$ (no visible decay) | Improved PDH; ms-scale | 420 nm laser PDH-locked to finesse ≥4000 cavity |
 | Readout fidelity | $\|g\rangle$ 98–99%, $\|r\rangle$ ~93% | $\|g\rangle$ ~99%, $\|r\rangle$ ~92–96% | No significant degradation in later systems |
@@ -74,8 +74,8 @@ The domain-wall density oscillations in Fig. 3 of the paper decay with a fitted 
 1. **Load:** 51 $^{87}$Rb atoms into a 1D optical tweezer chain (spacing $a = 5.74\ \mu\text{m}$ for Z₂ experiments); post-select on filled configurations (~60% per-site loading probability, no real-time rearrangement).
 2. **Prepare:** Adiabatically sweep detuning from $\Delta \ll 0$ (paramagnetic) to $\Delta > 0$ (Z₂/Z₃ ordered phase) over $\sim 1\ \mu\text{s}$ while ramping $\Omega$.
 3. **Quench (for scar experiments):** Suddenly set $\Delta = 0$, $\Omega = 2\pi \times 2$ MHz (deep in $\mathbb{Z}_2$ phase) at $t = 0$.
-4. **Evolve:** Hold for variable time $t \in [0,\ 3\ \mu\text{s}]$.
-5. **Measure:** Turn off all fields; image atoms via single-photon fluorescence. Repeat $\sim 10^3$ times per time point to accumulate statistics.
+4. **Evolve:** Hold for variable post-quench time $t \in [0,\ 1.2\text{–}1.5\ \mu\text{s}]$ (the total experimental window including the adiabatic ramp is ~3 μs; the quench evolution window shown in Fig. 3 is ~1.2–1.5 μs).
+5. **Measure:** Turn off all fields; image atoms via single-photon fluorescence. Repeat per time point; the Z₂ probability distribution figure (Fig. 5c) used **18,439 realizations**.
 :::
 
 
@@ -90,13 +90,15 @@ with $n_i = \frac{1}{2}(1 + \sigma_i^z)$. Relevant parameters from the paper:
 | Quantity | Value |
 |---------|-------|
 | Quench point | $\Delta = 0$, $\Omega = 2\pi \times 2$ MHz |
-| 480 nm single-photon Rabi freq. | $\Omega_R = 2\pi \times 36$ MHz |
+| 1013 nm single-photon Rabi freq. | $\Omega_R = 2\pi \times 36$ MHz |
 | 420 nm single-photon Rabi freq. | $\Omega_B = 2\pi \times 60$ MHz |
+| Intermediate-state detuning | $\delta = 2\pi \times 560$ MHz (from $6P_{3/2}$) |
 | Lattice spacing (Z₂) | $a = 5.74\ \mu\text{m}$ |
 | Lattice spacing (Z₃) | $a = 3.57\ \mu\text{m}$ |
 | Blockade radius | $R_b \approx 9\ \mu\text{m}$ ($R_b/a \approx 1.57$ for Z₂) |
 | NN interaction $V_{i,i+1}$ | $2\pi \times 24$ MHz |
 | NNN interaction $V_{i,i+2}$ | $2\pi \times 0.38$ MHz |
+| Domain-wall oscillation period | ~0.69 μs ($\approx \Omega^{-1} \times 1.38$, i.e., $\sim 1.38$ half-periods at $\Omega/2\pi = 2$ MHz) |
 | Domain-wall oscillation decay | 0.88 μs (fit to Fig. 3 data) |
 | Rydberg lifetime (70S, 300 K) | ~150 μs |
 | Atom temperature | ~12 μK |
