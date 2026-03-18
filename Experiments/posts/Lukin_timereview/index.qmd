@@ -1,0 +1,541 @@
+---
+categories:
+- Readings
+date: 2026-03-17
+description: 'An architecture-based review of Lukin group contributions to quantum simulation with neutral atom arrays (2017–2026)'
+lang: en
+title: 'Neutral Atom Quantum Simulation: Lukin Group Architecture Review (2017–2026)'
+bibliography: refs.bib
+draft: true
+---
+
+# Summary and Questions
+
+The Lukin group's neutral atom platform has evolved through three architectural generations, each generation unlocks a qualitatively new class of experiments.
+
+- **Single-zone analog** arrays (2017–present) use a single trapping region with global laser control and one final measurement — no mid-circuit readout. 
+- The **three-zone** architecture (2024) spatially separates entangling, storage, and readout functions, enabling mid-circuit measurement and classical feedforward for digital quantum circuits. 
+- The **four-zone** extension (2025) adds an atom reservoir for continuous replenishment of lost qubits, enabling fault-tolerant operation with repeated error correction cycles. 
+
+
+The architectural split is driven by a fundamental constraint of $^{87}$Rb: 
+
+Qubit encoding in the ground-state hyperfine manifold ($5S_{1/2}$, $F{=}1$ vs. $F{=}2$, split by 6.8 GHz) means any fluorescence probe couples to both qubit states through Raman scattering, destroying coherence on all nearby qubits. 
+
+Unlike alkaline-earth atoms ($^{88}$Sr, $^{171}$Yb), which can convert errors into detectable *erasures* via a spectrally isolated cycling transition, rubidium's single-valence-electron structure forces the Lukin group to adopt *architectural* rather than *spectroscopic* solutions.
+
+:::{.callout-note collapse="true"}
+## Architecture map: which experiments run where
+
+| Experiment | Platform | Architecture | Mid-circuit meas. |
+|-----------|----------|-------------|-------------------|
+| Bernien 2017 (many-body scars) | Harvard lab | 1-zone analog | No |
+| Keesling 2019 (Kibble-Zurek) | Harvard lab | 1-zone analog | No |
+| Ebadi 2021 (256-atom Ising QPT) | Harvard lab | 1-zone analog | No |
+| Semeghini 2021 (spin liquid) | Harvard lab | 1-zone analog | No |
+| Ebadi 2022 (MIS optimization) | Harvard lab | 1-zone analog | No |
+| Kornjaca 2024 (reservoir computing) | QuEra Aquila | 1-zone analog | No |
+| Moss 2024 (quantum-enhanced VMC) | Harvard (Ebadi 2021 data) | 1-zone analog | No |
+| Manovitz 2025 (quantum coarsening) | Harvard lab | 1-zone analog | No |
+| González-Cuadra 2025 (string breaking) | QuEra Aquila | 1-zone analog | No |
+| Darbha 2025 (prethermal dynamics) | QuEra Aquila | 1-zone analog | No |
+| Bluvstein 2024 (logical processor) | Harvard lab | 3-zone | Yes |
+| Evered 2025 (Kitaev honeycomb) | Harvard lab | 3-zone (upgraded) | Yes |
+| Bluvstein 2025 (fault-tolerant processor) | Harvard lab | 4-zone | Yes |
+| Geim 2026 (analog-digital kagome) | Harvard lab | 4-zone | Yes |
+| Chiu 2025 (continuous operation) | Harvard lab (separate apparatus) | Conveyor-belt | EIT imaging only |
+| Grinkemeyer 2025 (cavity entanglement) | Harvard lab (cavity QED) | Fiber cavity | N/A |
+:::
+
+
+# 1-Zone: Single-Zone Analog Simulation
+
+The single-zone paradigm uses one trapping region with global laser control and a single final measurement. Two sub-platforms carry this architecture: 
+- **Harvard lab apparatus**: In analog mode (the same hardware that later becomes the 3-zone system, operated without spatial separation; up to ~300 atoms) 
+- **QuEra Aquila**: A commercially accessible 256-atom processor derived from the Harvard lineage, available via cloud [@wurtz2023aquila].
+
+Here below, I'll review the SOTA experment setup for a single-zone apparatus[@manovitz2025coarsening], you can review the detailed setup [here](Experiments/posts/Lukin_timereview/singlezone_plan.qmd)
+
+**Trapping and geometry** (SLM+AOD):
+
+- SLM generates static trap array. Based on a "camera-algorithm closed-loop feedback system" to adjust the phase of individual pixels of SLM based on the actual shooting results, until:
+  - site-site itensity variance 1%-2%, max-min<5% ;
+  - Single site > 0.90 Strehl Ratio;  
+  - SLM total efficiency: 40%-50%;
+  - Ghost Suppression Ratio: 1%-~0.1%;
+  - 100% Zero-Order Isolation by (i). Adding a blazed grating phase mask to shift the zero-order (ii). Add beam block;
+  - The $6.45 \mu m$ distance adjacent Crosstalk $10^{-4}$;
+- AOD atom rearrangement with 100% filling-rate( No-loss AOD moving + path calculation).
+  - (t.b.c.)
+
+- Minimum atom spacing: 4 μm; position resolution: 0.1 μm (static)
+- Field of view: $76~\mu\text{m} \times 75~\mu\text{m}$ (Aquila) [@wurtz2023aquila]
+- Up to 256 sites (Aquila), ~300 (Harvard lab)
+- Filling fraction after rearrangement: 98.4(7)%
+
+**Initialization**: Pure initialization&preparation.
+
+- Laser-cooled and optically pumped to the $|5S_{1/2}, F = 2, m_F = -2\rangle$ state (for pure Rydberg excitation)
+  - 3D Helmholtz coils for $\sigma^{-}$ polarization: Transverse stray field < 1 mG; Bias field stability < 0.1 mG; Magnetic Field Gradient < 1 mG/cm.
+  - $10^{-11}$ Torr vacuum for keeping atoms
+
+**Rydberg excitation:** To  $|70S_{1/2}\rangle$ with Rabi frequency:0 to $2\pi \times 2.5~\text{MHz}$, slew rate $250~\text{rad}/\mu\text{s}^2$
+
+- PDH-locked to 100Hz-500Hz; Canceling servo bump: PSD must be suppressed $> 15dB$ at a frequency deviation of $1$ MHz from the center frequency.
+- 420nm laser: 1W-2W, realized through Ti:Sapphire SHG; 1013nm laser: 10W-20W, realized through Fiber Amplifier.
+- Beam Shaping to Top-hat, with $< 2\%$ inhomogeneity ranging on $100μm \times 100μm$ space.
+
+**Rescaling and sweeping control:** Changing $\Delta$ with constant rate and maintaining 
+$$
+(\Omega/2\pi, a) = (3.8\mathrm{MHz}, 6.8{\mu m}),(6.0\mathrm{MHz},6.45{\mu m}),(3.1\mathrm{MHz},7.15{\mu m})
+$$
+
+- Preparision three SLM phase-diagram for each spacing $a$, each reach the average requirements above.
+- Previse controling $\Omega_{1013}, \Omega_{420}$ with AOM
+  - LUT for $\eta \propto \sin^2\left(\frac{\pi}{2} \sqrt{\frac{P_{RF}}{P_{sat}}}\right)$
+  - RF Amplifier with low AM-PM transition rate; Feed-forward lock of phase.
+- Precise controling of $\Delta(t)$ with AWG/DDS.
+  - Global detuning: $-2\pi \times 20~\text{MHz}$ to $+2\pi \times 20~\text{MHz}$
+  - <1nm time sync
+  - >1GS/s sampling rate
+
+
+
+### Bottleneck 1: The $1/R^6$ curse — thermal motion → interaction energy spread
+
+Thermal position fluctuation: $\sigma_{x,y} \approx 0.2~\mu\text{m}$ per shot, on top of static positioning error ~0.1 μm. Because the van der Waals interaction $V \propto 1/R^6$, even small displacements produce large energy variations: at $R \approx 4~\mu\text{m}$,
+$$
+\frac{\delta V}{V} \approx 6\frac{\sigma}{R} \approx 30\%
+$$
+spread in nearest-neighbor interaction energy. This is an **irreducible physics noise** — it cannot be compensated by control pulse optimization, only by cooling or increasing $R$ (which weakens the interaction). It directly broadens resonance peaks in many-body dynamics, e.g., the string breaking resonances in [@gonzalezcuadra2025string] and prethermal resonances in [@darbha2025prethermal].
+
+### Bottleneck 2: Local detuning → AC Stark shift decoherence
+
+Local detuning beams encode input data (QRC, [@kornjaca2024reservoir]) or induce local quenches (LGT, [@gonzalezcuadra2025string]). These beams have spatial intensity gradients from their Gaussian profile, so thermal atom motion through the gradient produces random detuning fluctuations. The resulting decoherence scales as [@gonzalezcuadra2025string]:
+$$
+\frac{1}{T_2} = \frac{1}{T_{2,0}} + \frac{\delta_0}{\theta}
+$$
+where $\delta_0$ is the applied local detuning and $\theta$ parameterizes beam quality. Stronger local control → faster decoherence: a **fundamental trade-off** that limits the complexity of programmable analog protocols.
+
+### Bottleneck 3: In-situ readout fidelity ceiling
+
+No dedicated readout zone — fluorescence imaging occurs in the dense trapping array itself.
+
+- Ground state $|g\rangle$ detection: ~99% fidelity
+- Rydberg state $|r\rangle$ detection: ~92–96% fidelity
+- Compare: 3-zone spin-to-position readout achieves 99.8% [@bluvstein2024logical]
+
+Rydberg atoms are anti-trapped by imaging light, causing atom loss during readout. Dense spacing introduces fluorescence crosstalk between neighbors. The ~5% Rydberg measurement error is a major burden for statistics-dependent algorithms: QRC [@kornjaca2024reservoir] needs thousands of shots per input, and each shot carries this noise floor.
+
+### Bottleneck 4: Laser systematic drift over long runs
+
+Experiments require $10^3$–$10^4$ shots collected over hours.
+
+- Rabi frequency spatial inhomogeneity: $\Delta\Omega_\text{RMS}/\Omega \approx 2\%$
+- Global detuning slow drift: ~150 kHz over run duration
+
+This changes the Hamiltonian parameters between first and last shots, requiring high-frequency interleaved calibration protocols. Particularly critical for ML applications (QRC) where drift between training and inference data corrupts learned features [@kornjaca2024reservoir].
+
+### Bottleneck 5: Defect-free preparation yield
+
+Single-shot defect-free probability drops exponentially with array size. At 108 qubits [@kornjaca2024reservoir]: ~60% of shots have $\geq 1$ missing atom. No mid-circuit reservoir exists to replenish (unlike the 4-zone architecture). The trade-off: discard defective shots (losing ~60% of data) or use defective data (introducing systematic bias from missing interaction vertices). Post-selection is viable for small arrays but becomes prohibitive at scale.
+
+The architectural contrast is sharp: 3-zone's bottleneck is building a digital computer (RF control complexity, transport timing, gate compilation); 1-zone's bottleneck is building a pristine wind tunnel at microscale (cooling, beam shaping, vibration isolation, drift stabilization). Without logical error correction, all noise must be fought at the physical layer.
+
+:::{.callout-important collapse="true"}
+## Bernien 2017 — 51-Atom 1D Simulator
+**Bernien et al.**, "Probing many-body dynamics on a 51-atom quantum simulator," *Nature* **551**, 579–584 (2017) [@bernien2017probing]
+
+The foundational experiment: 51 $^{87}$Rb atoms in a 1D chain with van der Waals interactions in the Rydberg blockade regime. A sudden quench into the ordered phase revealed persistent many-body oscillations — later identified as **quantum many-body scars**, a novel mechanism for weak ergodicity breaking. This established the Rydberg tweezer array as a viable many-body quantum simulator.
+:::
+
+:::{.callout-important collapse="true"}
+## Keesling 2019 — Quantum Kibble-Zurek Mechanism
+**Keesling et al.**, "Quantum Kibble-Zurek mechanism and critical dynamics on a programmable Rydberg simulator," *Nature* **568**, 207–211 (2019) [@keesling2019kibble]
+
+Using the same 51-atom 1D chain, slow sweeps of the detuning across the Ising quantum phase transition verified the **Kibble-Zurek scaling** of topological defect density — the quantum analog of defect formation during symmetry-breaking transitions. The measured critical exponents matched theoretical predictions for the (1+1)D Ising universality class.
+
+**Hardware upgrade over Bernien 2017:** Improved atom loading efficiency and coherence times; adiabatic ramp control with variable sweep rates spanning two decades.
+:::
+
+:::{.callout-important collapse="true"}
+## Ebadi 2021 — 256-Atom 2D Programmable Simulator
+**Ebadi et al.**, "Quantum phases of matter on a 256-atom programmable quantum simulator," *Nature* **595**, 227–232 (2021) [@ebadi2021quantum]
+
+The leap from 1D to 2D. 256 atoms arranged in arbitrary 2D geometries (square, triangular, honeycomb, kagome) mapped out Ising quantum phase transitions across different lattice structures.
+
+**Critical hardware upgrade:** Introduction of the **SLM+AOD architecture** — a spatial light modulator generates a static array of traps, while acousto-optic deflectors provide fast reconfigurable control. This architecture enables arbitrary 2D geometries with single-site control and becomes the foundation for all subsequent Harvard apparatus generations, including the 3-zone and 4-zone systems.
+:::
+
+:::{.callout-important collapse="true"}
+## Semeghini 2021 — Quantum Spin Liquid on Kagome
+**Semeghini et al.**, "Probing topological spin liquids on a programmable quantum simulator," *Science* **374**, 1242–1247 (2021) [@semeghini2021probing]
+
+219 atoms on a kagome lattice probed signatures of a **topological quantum spin liquid** — a phase with long-range entanglement but no local order parameter. The experiment measured non-trivial string correlators and topological entanglement entropy consistent with a $\mathbb{Z}_2$ spin liquid. This was the first experimental evidence for a topological spin liquid in a programmable quantum simulator, and uses the Ebadi 2021 SLM+AOD apparatus.
+:::
+
+
+:::{.callout-important collapse="true"}
+## Ebadi 2022 — Quantum Optimization (MIS)
+**Ebadi et al.**, "Quantum optimization of maximum independent set using Rydberg atom arrays," *Science* **376**, 1209–1215 (2022) [@ebadi2022quantum]
+
+289 atoms configured as unit-disk graphs to solve the **maximum independent set (MIS)** combinatorial optimization problem via quantum annealing. The Rydberg blockade naturally encodes the MIS independence constraint: no two adjacent atoms can both be in the Rydberg state. The study demonstrated a **superlinear quantum speedup** over simulated annealing on certain graph families, using the same SLM+AOD hardware.
+:::
+
+:::{.callout-important collapse="true"}
+## Kornjaca 2024 — Quantum Reservoir Computing
+**Kornjaca et al.**, "Large-scale quantum reservoir learning with an analog quantum computer," arXiv:2407.02553 (2024) [@kornjaca2024reservoir]
+
+Running on QuEra's Aquila — a single-zone analog Rydberg processor with up to 256 atoms — Quantum Extreme Reservoir Computing (QERC) repurposes the array as a **nonlinear feature extractor**: classical input data is encoded into initial conditions, the analog Hamiltonian evolves the system through its native many-body dynamics, and a simple classical linear readout performs classification on the measurement outcomes.
+
+The critical insight is that **no variational optimization of the quantum part is needed** — the physics-native dynamics in physically motivated parameter regimes already generates classically intractable correlations. This sidesteps the barren plateau problem entirely. The study showed that sparse intra-module connectivity suffices to match fully connected network performance, and demonstrated a clear quantum kernel advantage on synthetic benchmarks.
+:::
+
+
+:::{.callout-important collapse="true"}
+## Moss 2024 — Quantum-Enhanced Variational Monte Carlo
+**Moss et al.**, "Enhancing variational Monte Carlo simulations using a programmable quantum simulator," *Phys. Rev. A* **109**, 032410 (2024) [@moss2024enhancing]
+Neural quantum states (NQS) trained via variational Monte Carlo (VMC) are powerful classical tools for ground-state search, but suffer from long autocorrelation times on frustrated lattices — the classical Markov chain gets trapped in metastable configurations.
+
+**Technique: Quantum-enhanced VMC feedback loop**
+
+1. Classical RNN generates trial wave function $|\psi_\theta\rangle$
+2. Rydberg simulator prepares and measures the state in a **second measurement basis**
+3. Experimental samples are injected into the RNN training loop
+4. **Result:** Quantum hardware breaks autocorrelation bottleneck; classical network refines amplitudes and phases
+
+Tested on $6 \times 6$ and $10 \times 10$ transverse-field Ising and dipolar XY models, the hybrid approach significantly reduced autocorrelation times and improved NQS accuracy — the first demonstration of a quantum-enhanced classical algorithm for many-body ground states. (The quantum data comes from the Ebadi et al. 2021 single-zone analog simulator; no new hardware runs were performed.)
+:::
+
+
+
+:::{.callout-important collapse="true"}
+## González-Cuadra 2025 — String Breaking in (2+1)D Lattice Gauge Theory
+**González-Cuadra et al.**, "Observation of string breaking on a (2+1)D Rydberg quantum simulator," *Nature* **642**, 321–326 (2025) [@gonzalezcuadra2025string]
+
+In particle physics, **quark confinement** binds quarks into hadrons via a flux tube ("string") whose energy grows linearly with separation. When the string's energy exceeds the pair-creation threshold, it *breaks* — spawning a new particle-antiparticle pair. Classical Monte Carlo methods suffer from a severe sign problem for real-time dynamics, making quantum simulation the natural tool.
+
+**Technique: Gauge theory mapping**
+
+1. **Lattice:** Triangular Rydberg array mapped to a (2+1)D $U(1)$ lattice gauge theory, with inter-site interactions appearing as first-order processes
+2. **Initialization:** Static charge pair connected by a flux string
+3. **Quench dynamics:** System evolved in real time; string roughening and breaking observed
+4. **Key results:**
+   - Unequal string-path probabilities observed due to long-range $1/R^6$ Rydberg geometry (2D-specific substructure; Lüscher corrections were not measured)
+   - Quench to the roughening regime triggers particle-antiparticle pair creation $\rightarrow$ **string breaking**
+
+This experiment runs on QuEra Aquila (single-zone analog, up to 256 atoms on a kagome lattice). It demonstrated that neutral atom arrays can serve as effective complements to high-energy colliders for studying strong-coupling, non-perturbative dynamics.
+:::
+
+
+:::{.callout-important collapse="true"}
+## Manovitz 2025 — Quantum Coarsening and Collective Dynamics
+**Manovitz et al.**, "Quantum coarsening and collective dynamics on a programmable simulator," *Nature* **638**, 86–92 (2025) [@manovitz2025coarsening]
+
+A 2D Rydberg array (Harvard lab, single-zone analog mode — no zoned architecture features engaged) is driven across the (2+1)D Ising quantum phase transition to study collective dynamics of the ordered phase. Following a sudden quench into the antiferromagnetic regime, domains form and evolve via **curvature-driven coarsening** — domain walls shrink under their own curvature, a quantum analog of the classical Allen-Cahn process. At the same time, long-lived oscillations of the order parameter are observed and identified as the **Higgs (amplitude) mode** — a collective excitation analogous to the Higgs boson in particle physics, here appearing as oscillations of the symmetry-breaking order parameter around its equilibrium value.
+
+:::
+
+:::{.callout-important collapse="true"}
+## Darbha 2025 — Prethermal Dynamics and Dynamical Phase Transitions
+**Darbha et al.**, "Probing emergent prethermal dynamics and resonant melting on a programmable quantum simulator," arXiv:2510.11706 (2025) [@darbha2025prethermal]
+
+Running on QuEra Aquila (single-zone analog) with up to **180 qubits** in 1D chains and 2D square arrays, this experiment systematically maps out quench dynamics across a wide $\Delta/\Omega$ parameter space, starting from the product state $|000\ldots 0\rangle$.
+
+The central discoveries are:
+
+1. **Floquet-like prethermalization:** At intermediate detunings ($\Delta/\Omega \approx 0$), the Rydberg blockade constraint confines dynamics to a restricted Hilbert subspace, producing long-lived non-thermal steady states that persist for exponentially long times — violating naive eigenstate thermalization.
+
+2. **Resonant melting:** Sharp resonance peaks appear in $k$-island observables (counting clusters of $k$ adjacent excitations). The dominant resonance at $2\Delta = V_1$ (nearest-neighbor interaction) drives proliferation of isolated "0110" excitation islands, with higher-order resonances at $3\Delta \approx V_1$ and $3\Delta \approx 2V_1$.
+
+3. **Dynamical phase transition (2D):** In the 2D square array, the boundary of the prethermal region hosts a sharp dynamical transition — marked by Néel-order defect proliferation — that **has no equilibrium counterpart**. This purely dynamical quantum phase transition can be viewed as a quantum analog of the classical Stoner-Wohlfarth transition, significantly modified by quantum fluctuations.
+:::
+
+# 3-Zone: Mid-Circuit Measurement Architecture
+
+## Hardware Context and Architecture Specification
+
+The jump from single-zone to three-zone solves a specific problem: enabling **mid-circuit measurement** in $^{87}$Rb without destroying coherence on nearby data qubits. Because rubidium's hyperfine encoding means any fluorescence probe Raman-scatters into both qubit states, the only solution is to physically separate the readout region from the computation region. The three-zone layout, introduced in [@bluvstein2024logical], achieves this with ~40-100 μm gaps between zones.
+
+See the Methods section in [@bluvstein2024logical] for the full three-zone layout specification:
+
+- **Entangling zone**:
+  - 35×250μm (AOD as bottleneck),
+  - tophat beams (tail suppressed by 0.1),
+  - atoms at 2μm spacing(450MHz Ryd-coupling),
+  - 200μs duration between gates.
+- **Free space transport**:
+  -  Photodiode Calibration: The AOD is calibrated to ensure that the light intensity is uniform throughout the working area, with fluctuations of less than 1% in the laser power.
+  - Echo Sequences: Before the atom returns to its original position, a $\pi$ pulse is applied.
+  - Cubic profile acceleration: Low Jerk.
+  - Fast 1013 pulsing off: Atom passes through or approaches the strong 1013 nm laser will cause atom loss.
+- **Atom Transfer**: <0.1% error rate.
+  - A well designed transfer protocol with $I_{SLM}(t) = I_0, T_{ramp} = 100-200\mu s, D_{move} = 1-2\mu m$ and
+$$
+\begin{align}
+  &I_{AOD}(t) = \begin{cases}2I_0 \cdot \left( \frac{t}{T_{ramp}} \right)^2, & 0 \le t \le T_{ramp},T_{move} = 50-100\mu s \\ 2I_0, & t > T_{ramp}\end{cases}, \\
+  &d(t) = \begin{cases}0, & 0 \le t \le T_{ramp} \\ D_{move} \cdot \left( 3\left(\frac{t - T_{ramp}}{T_{move}}\right)^2 - 2\left(\frac{t - T_{ramp}}{T_{move}}\right)^3 \right), & T_{ramp} < t \le T_{ramp} + T_{move} \\ D_{move}, & t > T_{ramp} + T_{move} \end{cases}
+\end{align}
+$$
+  - A compiler that pairing transfer, then interleave echo $\pi$ sequences. Those non-paired transfers are with $XY4/XY8$ sequences.
+  - Fine-tuning SLM rather than AOD to prevent frequency shift.
+- **Local addressing**:
+  - High-NA lens to focus to 1.9 μm.
+  - High average polarization when manipulating $X(\theta)$on different positions. Otherwise use vector/tensor light-shift to implement $Z(\theta)$, which is polarization non-sensitive.
+- **Dynamical compiling of digital gates**:
+  - Interleave two CZs with odds $\pi$-pulses.
+  - BB1（Broadband 1）and SCROFULOUS（Short Composite Rotation For Undoing Length Over and Under Shoot）for global single qubit gates.
+- **Storage zone**: ~50 μm from entangling
+- **Readout zone** : ~100 μm away
+
+- The *spin-to-position readout* protocol pins one hyperfine state in a 1D optical lattice while displacing the other by ~2 μm, letting a camera resolve qubit state from spatial separation at ~99.8% fidelity.
+
+
+## Bluvstein 2024 — Logical Quantum Processor (280 Atoms)
+
+:::{.callout-important icon="false"}
+## Key paper
+**Bluvstein et al.**, "Logical quantum processor based on reconfigurable atom arrays," *Nature* **626**, 58–65 (2024) [@bluvstein2024logical]
+:::
+
+This experiment **defines** the three-zone architecture. 280 $^{87}$Rb atoms are organized into up to 48 logical qubits encoded in surface codes (distance 3–7) and color codes. Key results:
+
+- **Transversal logical gates** between code blocks, leveraging the atom array's geometric reconfigurability to physically rearrange qubits for transversal CNOT
+- **Code teleportation** between surface codes and color codes
+- **Fault-tolerant logical GHZ states** with 40 color-code qubits
+- **228 logical two-qubit gates + 48 logical CCZ gates** in a single circuit
+- Surface code distance scaling showed logical error decreasing with code distance, approaching the break-even regime
+
+**Hardware:** Fixed CZ gates at 99.5% fidelity, AOD atom transport with echo sequences for coherence preservation, mid-circuit fluorescence imaging in the readout zone with FPGA-based classical feedforward.
+
+
+## Evered 2025 — Kitaev Honeycomb Model (104 Atoms)
+
+:::{.callout-important icon="false"}
+## Key paper
+**Evered et al.**, "Probing topological matter and fermion dynamics on a neutral-atom quantum computer," *Nature* **645**, 547–553 (2025) [@evered2025probing]
+:::
+
+The Kitaev honeycomb model is an exactly solvable model hosting a **non-Abelian chiral spin liquid** — a topological phase whose excitations obey non-trivial braiding statistics. Simulating it requires encoding complex fermion correlations on a bipartite lattice, making it a formidable experimental target.
+
+:::{.callout-tip collapse="false"}
+## Technique: Digital-analog hybrid protocol
+1. **Lattice geometry:** 104 $^{87}$Rb atoms on a honeycomb lattice with periodic boundary conditions (cylinder topology)
+2. **Fermion-to-qubit mapping:** Kitaev model's free-fermion structure encoded into toric-code-type long-range entangled states
+3. **Digital state preparation:** Constant-depth (depth-3) measurement-feedforward circuit prepares topological ground state
+4. **Analog evolution:** Floquet engineering + dynamic array reconfiguration drives fermion time evolution
+5. **Key observable:** Odd Chern number measured, confirming non-Abelian spin liquid phase; fermion exchange statistics directly probed
+:::
+
+**Hardware upgrades over Bluvstein 2024:**
+
+- **Tunable-angle CPHASE gates:** Variable-angle $ZZ(\theta)$ gates via shaped Rydberg laser pulses with cosine phase profile, numerically optimized per angle. This replaced the fixed CZ of Bluvstein 2024 and is essential for Trotterized Floquet evolution across the Kitaev phase diagram.
+- **Spin-to-position readout:** State-dependent 1D optical lattice pins one spin state; AOD tweezer displaces the other by ~2 μm. Three-outcome detection ($|0\rangle$, $|1\rangle$, loss) enables error detection by postselection.
+- **FPGA real-time feedforward:** 32 ancilla qubits are physically shuttled to the readout zone (~150 μm away) for mid-circuit measurement, with an FPGA applying real-time Z corrections on 32 data qubits to deterministically prepare all plaquettes to +1 eigenvalue.
+- **Closer intermediate-state detuning** (3.3 GHz) enabling larger gate region.
+
+The same architecture was applied to the strongly interacting Fermi-Hubbard model on a $4 \times 4$ square lattice. For detailed notes on the digital experiment, see the [Honeycomb Digital Experiment](/Experiments/posts/honeycomb_digital/index.qmd) page.
+
+
+# 4-Zone: Fault-Tolerant Architecture with Atom Reservoir
+
+## Hardware Context and Architecture Specification
+
+The 4-zone architecture inherits the full 3-zone digital stack — entangling zone, AOD transport with echo sequences, SLM$\leftrightarrow$AOD atom transfer, local addressing, dynamical gate compiling (see §3-Zone above). Its defining addition is a **closed-loop loss-management system**: detect which atoms were lost, replace them from a reservoir, and decode around the gaps. Three-zone treats atom loss as a rare annoyance tolerated by post-selection; four-zone treats it as a *managed resource* [@bluvstein2025faulttolerant].
+
+The engineering challenge shifts from "build a digital computer" (3-zone) to "build a **self-healing** digital computer." The subsections below cover only what is new relative to the 3-zone baseline.
+
+### Zone layout and reservoir
+
+- Full array: $90 \times 36$ SLM sites (3,240 total tweezers), 9 μm spacing
+- Entangling zone: $60~\mu\text{m} \times 175~\mu\text{m}$, up to 256 gate sites ($8 \times 16$ columns)
+- Storage zone: ~50 μm from entangling (inherited from 3-zone)
+- Readout zone: 12 rows tall (~55 μm), two trap rows per atom for lattice readout
+- **Reservoir zone (new):** 196 atoms in 6 rows, positioned directly below readout zone
+- Total addressable qubits: 448 physical (vs. 280 in 3-zone)
+
+### Non-destructive readout (upgraded from 3-zone)
+
+The 3-zone readout is destructive: spin-to-position mapping at 99.8% fidelity, but the imaging light anti-traps and ejects the atom. The 4-zone readout must be *non-destructive* to enable repeated syndrome extraction:
+
+- 1D optical lattice at 795 nm, $\sigma^-$ polarized
+- Bit-flip error: 0.46(4)%
+- Atom loss per readout: 0.24(2)%
+- Dark-state error: 0.87(7)%; bright-state error: 0.05(5)%
+- State-selective lattice pins one spin state; AOD displaces the other by ~2 μm over ~500 μs
+- Camera resolves spin state from spatial separation (same principle as 3-zone, but the atom survives)
+
+### 1,529 nm shielding beam
+
+During readout, 780 nm fluorescence light would Raman-scatter into storage qubits — the same problem that motivates zone separation in the first place. The shielding beam provides additional *spectroscopic* protection on top of the geometric separation:
+
+- Couples $5P_{3/2} \to 4D_{5/2}$ transition
+- Creates ~6 GHz light-shift on the $5P_{3/2}$ state
+- Detunes storage qubits far off-resonance from any scattered readout photons
+- Enables tighter zone spacing than pure geometric separation would allow
+
+### 1D cooling at 8.6 G bias field
+
+Atoms heat during transport and gate operations. With repeated QEC cycles (vs. single-shot 3-zone), cooling between rounds is essential:
+
+- 780 nm beams with opposite circular polarization
+- Detuned by $2\times$ the Zeeman splitting at 8.6 G bias field
+- EIT cooling channel for sub-Doppler temperatures
+- Maintains trap lifetime through dozens of QEC rounds
+
+### Loss detection and replacement protocol
+
+The central innovation — a closed-loop loss-management cycle:
+
+1. **Detection:** Non-destructive readout simultaneously extracts syndrome bits AND identifies which sites lost atoms (empty trap $\to$ no fluorescence)
+2. **Replacement:** AOD transports a fresh atom from the reservoir zone into the vacant site; the atom is initialized into the correct qubit state
+3. **Cycle time:** ~4 ms per syndrome extraction round ($10^2\times$ improvement over earlier ~400 ms cycles)
+4. **Demonstrated endurance:** Up to 41 consecutive syndrome extraction rounds with continuous ancilla replacement
+5. **Reservoir budget:** At 0.24% loss per readout per atom, a 448-atom system loses ~1 atom per round; the 196-atom reservoir sustains ~100+ rounds before external reload (or conveyor-belt resupply à la [@chiu2025continuous])
+
+### Superchecks: QEC around missing qubits
+
+When a data qubit is lost (not just an ancilla), the stabilizer generators touching that site become unmeasurable. Superchecks recover partial syndrome information:
+
+- Product of stabilizer generators sharing the lost qubit $\to$ cancels the lost-qubit operator, yielding a measurable "supercheck" on the remaining neighbors
+- Enables continued error correction with degraded but nonzero code distance
+- Combined with delayed erasure conversion (swapping data/ancilla roles each round), this allows the code to "route around" lost qubits rather than failing
+
+### Loss-aware ML decoder
+
+Standard minimum-weight perfect-matching decoders assume a fixed qubit layout. With ongoing loss, the decoding graph changes every round:
+
+- RNN-based decoder takes loss location + timing as input alongside syndrome data
+- $1.73(13)\times$ improvement over loss-unaware decoding
+- Critical because ~50% of all physical errors in 4-zone operation are atom loss events
+
+The 4-zone architecture's bottleneck is not any single component but the *integration challenge* — non-destructive readout, shielding, cooling, reservoir transport, and ML decoding must all work simultaneously within the ~4 ms cycle budget. Each subsystem is modest in isolation; the engineering difficulty is making them coexist without degrading each other's performance.
+
+
+## Bluvstein 2025 — Fault-Tolerant Processor (448 Atoms)
+
+:::{.callout-important icon="false"}
+## Key paper
+**Bluvstein et al.**, "A fault-tolerant neutral-atom architecture for universal quantum computation," *Nature* (2025) [@bluvstein2025faulttolerant]
+:::
+
+This experiment **defines** the four-zone architecture. 448 physical qubits are organized into up to 48 logical qubits using color codes and surface codes, with real-time QEC via repeated syndrome extraction. Key results:
+
+- **Below-threshold QEC:** Distance-5 surface code has 2.14(13)× lower error per round than distance-3, at 0.62(3)% per round
+- **Universal fault-tolerant gate set:** Transversal CNOT, lattice surgery, and non-Clifford T gates via transversal teleportation with $[[15,1,3]]$ Reed-Muller codes
+- **27-layer deep circuits** at constant logical entropy via logical teleportation
+- **CHSH Bell inequality** saturating the quantum bound: $1.99(3) \times \sqrt{2}$ on logical qubits
+- Up to **96 distance-4 logical qubits** using $[[16,6,4]]$ high-rate codes
+
+The loss-aware ML decoder is critical: roughly half of all physical errors are atom loss at 0.24% per readout cycle. Superchecks recover syndrome information around lost data qubits, enabling continued fault-tolerant operation despite ongoing atom loss.
+
+
+## Geim 2026 — Analog-Digital Kagome (271 Sites)
+
+:::{.callout-important icon="false"}
+## Key paper
+**Geim et al.**, "Engineering quantum criticality and dynamics on an analog-digital simulator," arXiv:2602.18555 (2026) [@geim2026engineering]
+:::
+
+The Rydberg manifold provides strong dipolar interactions ideal for *analog* continuous-time evolution, while the hyperfine ground states offer long coherence times suited for *digital* storage and high-fidelity gates. This work achieves the **coherent mapping** between these two manifolds, unifying both paradigms in a single device.
+
+:::{.callout-tip collapse="false"}
+## Technique: Floquet Hamiltonian engineering on analog-digital simulator
+1. **Coherent mapping:** High-fidelity state transfer between Rydberg (analog) and hyperfine (digital) manifolds
+2. **Floquet drive:** Time-periodic global detuning synthesizes effective Hamiltonians with terms inaccessible to native two-body interactions [@koyluoglu2025floquet]
+3. **Six-body ring exchange:** On hexagonal plaquettes, first-order three-body Floquet terms combine at second order in perturbation theory to yield six-body ring exchange $g_6^{(\text{eff})} \sim g_3^2/\mu$ — the key ingredient for quantum dimer models
+4. **271-site kagome lattice:** Preparing and probing a $U(1)$ quantum spin liquid (Rokhsar-Kivelson state) with multi-body coherence observed up to 18 sites
+:::
+
+**Hardware upgrades / novel use of 4-zone:**
+
+- **First experiment to repurpose the 4-zone architecture for analog simulation** (all prior 4-zone work was digital QEC)
+- **Reservoir-based atom replenishment** sustains 20–200 Floquet cycles per run before MOT reload, with >10× cycle rate increase over non-replenished operation
+- **Two Rydberg states:** $n=53$ for 1D chains, $n=70$ for 2D kagome (different interaction strengths)
+- **Automated intensity homogenization** and closed-loop Bayesian optimization
+- **Local boundary compensation** on 74 boundary atoms
+
+By alternating between digital state preparation/measurement and analog Hamiltonian evolution, the system directly measures single-excitation spectral functions and realizes the quantum dimer model on the honeycomb lattice — a long-sought host of deconfined $U(1)$ spin liquid phases. For detailed derivations of the Floquet Hamiltonian engineering, see the [Digital-Analog Conversion](/Experiments/posts/Digital-analog/digital-analog.qmd) notes.
+
+
+# Complementary Platforms and Approaches
+
+## Chiu 2025 — Continuous Operation at Scale
+
+:::{.callout-important icon="false"}
+## Key result
+**Chiu et al.**, "Continuous operation of a coherent 3,000-qubit system," *Nature* **646**, 1075–1080 (2025) [@chiu2025continuous]
+:::
+
+This experiment runs on a **separate apparatus** from the 3/4-zone Harvard lab system. It addresses the same atom-loss problem from a different angle: rather than a reservoir zone within the zoned architecture, it uses a conveyor-belt continuous-supply approach.
+
+:::{.callout-tip collapse="false"}
+## Technique: Continuous-operation architecture
+1. **EIT non-destructive imaging:** Electromagnetically induced transparency probes atom presence without scattering photons that would destroy coherence
+2. **Atom reservoir:** A secondary trapping region holds replacement atoms at the ready
+3. **Conveyor-belt transport:** Dual optical-lattice "conveyor belts" shuttle fresh atoms into vacated sites at rates of $\sim 3 \times 10^5$ atoms/s
+:::
+
+This decouples the simulator's operational lifetime from single-atom vacuum decay, enabling hour-long experiments and arbitrarily deep circuits — an order-of-magnitude advance in system scale. The conveyor-belt approach is complementary to the 4-zone reservoir: it solves atom *supply* at massive scale (3000+ qubits), while the 4-zone reservoir handles mid-circuit *loss* during fault-tolerant computation. Future plans envision combining both for ~10,000-qubit fault-tolerant processors.
+
+
+## Grinkemeyer 2025 — Cavity-Mediated Entanglement
+
+:::{.callout-important icon="false"}
+## Key paper
+**Grinkemeyer et al.**, "Error-detected quantum operations with neutral atoms mediated by an optical cavity," *Science* **387**, 1301 (2025) [@grinkemeyer2025cavity]
+:::
+
+A parallel development uses a different physical platform: individual Rb atoms in tweezers coupled to a fiber Fabry-Pérot cavity, rather than the Rydberg tweezer array. Cavity-enhanced fluorescence detection achieves 99.96% readout fidelity, and cavity-mediated entanglement produces Bell states at 91% fidelity with built-in error detection. This points toward **modular quantum networking** — connecting separate tweezer-array processors via optical links.
+
+
+## Kokail 2026 — Inverse Quantum Simulation
+
+:::{.callout-important icon="false"}
+## Key paper
+**Kokail et al.**, "Inverse Quantum Simulation for Quantum Material Design," arXiv:2601.12239 (2026) [@kokail2026inverse]
+:::
+
+Traditional ("forward") quantum simulation starts from a known Hamiltonian and measures the resulting physics. **Inverse quantum simulation** flips this entirely: start from *desired material properties* and discover the microscopic Hamiltonian that produces them.
+
+:::{.callout-tip collapse="false"}
+## Technique: Inverse quantum simulation framework
+1. **Target encoding:** Desired material properties (e.g., $d$-wave pair correlations, specific entanglement entropy patterns, topological invariants) $\rightarrow$ classical cost function
+2. **Variational state preparation:** Optimize $|\psi(\boldsymbol{\theta})\rangle$ on the neutral-atom hardware to minimize the cost function
+3. **Hamiltonian learning:** Once the target state is stabilized, extract the low-energy Hamiltonian $\hat{H}_{\text{opt}}$ via spectral or continuous-phase Hamiltonian learning (SHL / CPHL)
+4. **Output:** A physically interpretable microscopic model whose ground state approximates $|\psi(\boldsymbol{\theta})\rangle$ — directly guiding experimental materials synthesis
+:::
+
+The framework's most striking application target is **high-temperature superconductivity**: by setting the cost function to enhance $d$-wave pair correlations across a range of doping and temperature, the inverse simulator identifies the hopping and repulsion parameters needed to sustain high-$T_c$ superconductivity in a Fermi-Hubbard model. This framework has been validated numerically (DMRG on Hubbard ladders, exact diagonalization on small systems) but awaits experimental demonstration on quantum hardware. If realized, it would elevate the quantum simulator from a passive analysis tool to an active **materials discovery engine**.
+
+
+# Theory: Fault Tolerance and Simulation Proposals
+
+The experimental advances above are backed by a parallel theoretical program designing fault-tolerant protocols and simulation blueprints specifically for the neutral atom platform's strengths: geometric reconfigurability, native atom-loss detection, and efficient transversal operations. The resource estimates in Zhou 2025 [@zhou2025resource] assume the 4-zone architecture described above.
+
+:::{.callout-note collapse="false"}
+## 2025 theory papers: reading guide
+
+| Paper | Key result | What to read |
+|-------|-----------|-------------|
+| Zhou 2025 [@zhou2025transversal] | Constant-round logical operations with exponential error suppression ("transversal algorithmic FT") | §III: proof of constant-round universality |
+| Hangleiter 2025 [@hangleiter2025iqp] | Fault-tolerant path to quantum advantage via IQP sampling on hypercube codes | §IV: Bell sampling hardness proof |
+| Baranes 2025 [@baranes2025loss] | Atom-loss detection $\rightarrow$ concrete algorithmic advantage in FT circuits | §3: loss-aware decoding framework |
+| Zhou 2025 [@zhou2025resource] | Resource estimates: 19M qubits for 2048-bit RSA factoring (50$\times$ speedup over prior estimates) | Table 2: resource comparison |
+| Feldmeier 2025 [@feldmeier2025gauge] | Blueprint for $U(1)$ gauge theories via Floquet-driven Rydberg arrays on kagome | §III: six-body plaquette engineering |
+| Bombieri 2025 [@bombieri2025dqcp] | First DQCP in a Rydberg-realizable geometry; emergent $U(1)$ from discrete $\mathbb{Z}_3$ | Fig. 3: emergent $U(1)$ symmetry |
+:::
+
+
+# Summary: Architecture Evolution
+
+| Architecture | Defining paper | Key capability | Experiments |
+|---|---|---|---|
+| 1-zone analog | Bernien 2017 → Ebadi 2021 → Aquila | Global quench, single measurement | Bernien, Keesling, Ebadi ×2, Semeghini, Kornjaca, Moss, González-Cuadra, Manovitz, Darbha |
+| 3-zone | Bluvstein 2024 | Mid-circuit meas., feedforward | Bluvstein 2024, Evered 2025 |
+| 4-zone | Bluvstein 2025 | Reservoir + fault tolerance | Bluvstein 2025, Geim 2026 |
+| Complementary | various | Networking, scale, inverse design | Chiu, Grinkemeyer, Kokail |
+
+: Architecture-to-experiment mapping {.striped .hover}
+
+The progression is not merely one of scale — it reflects a deepening integration of analog and digital paradigms. Each architectural generation unlocks qualitatively new experiments: the single-zone era established the Rydberg array as a many-body simulator; the three-zone era brought digital quantum error correction and measurement-based state preparation; the four-zone era achieved fault tolerance and, unexpectedly, enabled the most sophisticated analog simulation yet (Geim 2026). The neutral atom array has matured from a special-purpose Ising simulator into a general-purpose quantum matter laboratory.
