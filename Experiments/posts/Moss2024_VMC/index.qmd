@@ -17,6 +17,15 @@ draft: true
 
 ## What was done
 
+:::{.callout-important collapse="false"}
+## Experiment Protocol: Quantum-Enhanced VMC
+
+1. **Classical RNN ansatz:** A recurrent neural network (RNN) parameterizes a trial wave function $|\psi_\theta\rangle$ for the target many-body ground state (16×16 Rydberg square lattice).
+2. **Standard VMC training:** The RNN is trained via variational Monte Carlo — sampling configurations from $|\psi_\theta|^2$ and minimizing $\langle H \rangle$ using stochastic gradient descent.
+3. **Quantum data injection:** Experimental measurement samples from the Ebadi 2021 apparatus [@ebadi2021quantum] ($16 \times 16$ square lattice, $s = 15$ MHz/μs sweep, 1000 shots per $\delta/\Omega$ value) are injected as additional training data via a cross-entropy pretraining step.
+4. **Autocorrelation breaking:** Quantum samples break the classical Markov chain's autocorrelation bottleneck — the chain gets "unstuck" from metastable defect-laden configurations in the ordered phase by incorporating uncorrelated quantum measurements.
+:::
+
 A hybrid quantum-classical feedback loop using experimental Rydberg simulator data to enhance classical neural quantum state (NQS) training:
 
 1. **Classical RNN ansatz:** A recurrent neural network (RNN) parameterizes a trial wave function $|\psi_\theta\rangle$ for the target many-body ground state.
@@ -46,9 +55,12 @@ This experiment is unique in that it uses *no new quantum hardware* — only pre
 
 | Parameter | Ebadi 2021 data used | SOTA 1-zone (Manovitz 2025) | Impact on VMC |
 |-----------|---------------------|---------------------------|---------------|
-| Readout fidelity | $|g\rangle$ 99%, $|r\rangle$ 99% [@moss2024enhancing] | $|g\rangle$/$|r\rangle$ ~99% | Already near SOTA; dominant noise is non-adiabatic preparation |
-| System size | $16 \times 16$ (256 atoms) | ~300 atoms | Larger systems → more relevant quantum data for larger classical targets |
+| Readout fidelity | $|g\rangle$ 99%, $|r\rangle$ 99% [@moss2024enhancing]^[†] | $|g\rangle$ ~99%, $|r\rangle$ ~92–96% (general 1-zone benchmark) | Already near SOTA; dominant noise is non-adiabatic preparation |
+| System size | $16 \times 16$ (256 atoms) [@ebadi2021quantum] | ~300 atoms [@manovitz2025coarsening] | Larger systems → more relevant quantum data for larger classical targets |
 | Measurement basis | $Z$ only | $Z$ only | $X$-basis data would provide amplitude/phase info |
+| 3-zone readout | N/A (analog data, incompatible) | 99.8% spin-to-position [@bluvstein2024logical] | 3-zone is digital; not usable for analog VMC seeding |
+
+^[†] Moss 2024 explicitly reports 99% for *both* $|g\rangle$ and $|r\rangle$ in the Ebadi 2021 apparatus. The general 1-zone bottleneck benchmarked elsewhere (~92–96% for $|r\rangle$) reflects the worst-case analog readout regime; the Ebadi 2021 data collection used here was likely under optimal conditions or the paper defines fidelity post-processing. Either way, Moss 2024's stated fidelity is 99%/99%.
 
 
 ## Critical technique analysis
@@ -66,7 +78,7 @@ The Rydberg Hamiltonian is stoquastic in the occupation basis, so the ground sta
 1. **More shots per detuning value:** Currently 1000 shots at $s = 15$ MHz/μs. Extending data collection to slower sweep rates or additional lattice geometries would increase the relevant training set.
 2. **$X$-basis measurements:** Global $\pi/2$ rotations before readout would provide off-diagonal correlation information, enabling VMC training for non-stoquastic Hamiltonians.
 3. **Larger system data:** Scaling beyond $16 \times 16$ would let quantum data directly seed classical VMC for thermodynamically larger targets.
-4. **3-zone readout ($99.8\%$):** The current apparatus already achieves 99% fidelity for both states, so readout is not the bottleneck — the dominant noise source is non-adiabatic state preparation during the detuning sweep.
+4. **3-zone readout ($99.8\%$) [@bluvstein2024logical]:** The current apparatus already achieves 99% fidelity for both states, so readout is not the bottleneck — the dominant noise source is non-adiabatic state preparation during the detuning sweep.
 
 ## Completeness check
 
@@ -85,4 +97,16 @@ The Rydberg Hamiltonian is stoquastic in the occupation basis, so the ground sta
 
 **Autocorrelation:** The paper does not report a dimensioned autocorrelation time or correlation length. The $O(10^3)$ iteration reduction serves as the empirical proxy for autocorrelation breaking — the quantum samples prevent the Markov chain from stalling in defect-laden configurations in the ordered phase.
 
-<!-- TODO: Compare with other quantum-enhanced classical methods (quantum-inspired tensor networks, etc.) -->
+## Comparison with other quantum-enhanced classical methods
+
+The VMC + quantum data injection approach is distinct from several related paradigms:
+
+| Method | Quantum role | Classical role | Key distinction |
+|--------|-------------|----------------|-----------------|
+| **This work (Moss 2024)** | Provides uncorrelated near-ground-state samples | RNN VMC is trained and evaluated classically | Quantum hardware is used *offline*; only measurement outcomes cross the quantum–classical boundary |
+| **VQE** | Parameterized ansatz + gradient estimation | Optimizer updates quantum parameters | Quantum computation is in the *forward pass*; requires coherent circuit runs per training step |
+| **Quantum reservoir computing** [@kornjaca2024reservoir] | Fixed nonlinear feature map (no optimization) | Linear readout layer trained classically | No quantum gradient needed; quantum dynamics are the kernel, not the state |
+| **Quantum-inspired tensor networks** | N/A — purely classical | DMRG/TEBD with bond dimension $\chi$ | No quantum hardware; limited by entanglement area law for 2D |
+| **NQS (classical)** | N/A | Neural network trained via pure VMC | Sign-problem analog: Markov chain stalls in ordered phases — exactly the failure mode Moss 2024 corrects |
+
+The critical advantage over VQE is that this approach imposes **zero coherence requirements** on the quantum side — any near-ground-state measurement data suffices, regardless of how it was prepared. The critical advantage over quantum-inspired methods is that quantum data provides *exponentially hard-to-fake* correlations for 2D strongly correlated systems, while DMRG remains computationally tractable only for quasi-1D geometries.
