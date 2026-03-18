@@ -19,7 +19,7 @@ draft: true
 
 A 2D Rydberg array is driven across the (2+1)D Ising quantum phase transition to study collective dynamics of the ordered phase:
 
-1. **State preparation:** Adiabatic sweep from the disordered phase ($\Delta \ll 0$) to the antiferromagnetically ordered regime ($\Delta \gg 0$) on a **16×16 square lattice of 256 atoms** with blockade radius $R_b/a \approx 1.1$ (nearest-neighbor blockade only). Local light shifts $|\delta_i| \sim 4\Omega$ pin boundary sites. Ground-state preparation fidelity on pinned sites: **93–95%**. After rearrangement and avalanche post-selection, **86% of shots** are retained.
+1. **State preparation:** Adiabatic sweep from the disordered phase ($\Delta \ll 0$) to the antiferromagnetically ordered regime ($\Delta \gg 0$) on a **16×16 square lattice of 256 atoms** with blockade radius $R_b/a \approx 1.1$ (nearest-neighbor blockade only). Local light shifts $|\delta_i| \sim 4\Omega$ (**absolute magnitude 12.2(3) MHz**) pin boundary sites to the correct sublattice. Ground-state preparation fidelity on pinned sites: **93–95%**. After rearrangement and avalanche post-selection, **86% of shots** are retained at short hold times; at the longest hold time ($t = 1.16\ \mu$s, $\Delta/\Omega = 4$) **shot retention drops to 63%** due to Rydberg-state decay.
 2. **Quench dynamics:** Sudden quench deep into the ordered phase, then monitoring time evolution of the spatially resolved order parameter.
 3. **Domain tracking:** Individual antiferromagnetic domains identified and tracked in real time from single-shot fluorescence images.
 4. **Multi-spacing protocol:** Three different lattice spacings $a = 6.45, 6.8, 7.15$ μm were used with corresponding Rabi frequencies $\Omega/2\pi = 6.0, 3.8, 3.1$ MHz to access different points in the phase diagram.
@@ -40,20 +40,24 @@ A 2D Rydberg array is driven across the (2+1)D Ising quantum phase transition to
 | **Verification value** | Provides the first quantitative experimental test of quantum coarsening theory (quantum Allen-Cahn dynamics) in (2+1)D, validating theoretical predictions that had only been tested numerically for small systems. |
 
 
-## Architecture comparison: this is the SOTA 1-zone benchmark
+## Architecture comparison: 1-zone platform context
 
-This experiment *defines* the SOTA single-zone apparatus parameters used throughout the review. Key specifications:
+This experiment runs on the Harvard 1-zone Rydberg apparatus. The parameters below are **reported by this paper** or directly computable from it; platform-level parameters (filling fraction, PDH linewidth) that are not quoted in [@manovitz2025coarsening] are not included here — see the review for the 1-zone platform summary.
 
-| Parameter | Value | Significance |
-|-----------|-------|-------------|
-| SLM uniformity | 1–2% variance, Strehl > 0.90 | Camera-algorithm closed-loop feedback |
-| Ghost suppression | 0.1% | Iterative SLM phase optimization |
-| Filling fraction | 98.4(7)% | Near-deterministic loading |
-| Rydberg state | $\|70S_{1/2}\rangle$ | Standard for this platform |
-| Rabi frequency | Up to $2\pi \times 6.0$ MHz | Highest reported in this apparatus |
-| PDH linewidth | 100–500 Hz | Enabling μs-scale coherent evolution |
-| Detuning range | $\pm 2\pi \times 20$ MHz | Full phase diagram access |
-| Position fluctuation | $\sigma_{x,y} \approx 0.2$ μm (thermal) | Dominant noise source via $1/R^6$ |
+| Parameter | Value (this paper) | Source |
+|-----------|-------------------|--------|
+| Array size | 256 atoms (16×16) | Main text |
+| Rydberg state | $\|70S_{1/2}\rangle$ | Methods |
+| Rabi frequency range | $2\pi \times 3.1$–$6.0$ MHz | Methods |
+| Lattice spacing range | $a = 6.45$–$7.15$ μm | Methods |
+| Blockade ratio $R_b/a$ | 1.12, 1.15, 1.13 (three configs) | Computed from $\Omega$, $a$ |
+| Boundary light-shift | 12.2(3) MHz | Methods |
+| Position fluctuation | $\sigma_{x,y} \approx 0.2$ μm (thermal) | Platform (review Bottleneck 1) |
+| SLM uniformity | 1–2% site-to-site variance | Platform (review) |
+| Shot retention (short $t$) | 86% | Methods |
+| Shot retention ($t=1.16\ \mu$s) | 63% | Methods |
+
+**Comparison with review bottleneck estimates:** The review (Bottleneck 1) quotes $\delta V/V \approx 30\%$ at $R = 4\ \mu$m nearest-neighbor spacing. This experiment uses $a = 6.45$–$7.15\ \mu$m, where the larger spacing reduces the fractional interaction spread to $\sim 17$–$19\%$ (since $\delta V/V \propto \sigma_x/a \cdot 6$). The two figures are therefore consistent — the review's 30% is the worst-case compact-lattice regime; Manovitz 2025 operates in a more favorable regime by design to minimize disorder effects on coarsening dynamics. Neither experiment uses sub-Doppler cooling, so $\sigma_{x,y} \approx 0.2\ \mu$m is the shared baseline.
 
 
 ## Critical technique analysis
@@ -69,9 +73,9 @@ For the three lattice spacings used (thermal disorder reference):
 
 | Spacing $a$ | $\delta V / V$ (thermal) | Hold time measured |
 |-------------|--------------------------|-------------------|
-| 6.45 μm | $\sim 19\%$ | up to $\sim 0.5$ μs |
-| 6.80 μm | $\sim 18\%$ | up to $\sim 0.5$ μs |
-| 7.15 μm | $\sim 17\%$ | up to $\sim 0.5$ μs |
+| 6.45 μm | $\sim 19\%$ | linear $\xi^2$ regime: ${\sim}0.4$–$0.5\ \mu$s; max explored: $1.16\ \mu$s |
+| 6.80 μm | $\sim 18\%$ | linear $\xi^2$ regime: ${\sim}0.4$–$0.5\ \mu$s; max explored: $1.16\ \mu$s |
+| 7.15 μm | $\sim 17\%$ | linear $\xi^2$ regime: ${\sim}0.4$–$0.5\ \mu$s; max explored: $1.16\ \mu$s |
 
 **Paths to improvement specific to this experiment:**
 
@@ -101,4 +105,4 @@ The Kibble-Zurek mechanism [@keesling2019kibble] predicts that defect density af
 
 ### SLM phase configurations
 
-Three separate SLM phase patterns were prepared, one for each lattice spacing $a \in \{6.45, 6.80, 7.15\}$ μm, each satisfying the standard uniformity requirements (site-to-site intensity variance 1–2%, Strehl > 0.90, ghost suppression to 0.1%). The corresponding Rabi frequencies $(\Omega/2\pi, a) = (6.0~\text{MHz}, 6.45~\mu\text{m}),\ (3.8~\text{MHz}, 6.8~\mu\text{m}),\ (3.1~\text{MHz}, 7.15~\mu\text{m})$ maintain approximately constant blockade radius $R_b/a \approx 1.1$ across configurations.
+Three separate SLM phase patterns were prepared, one for each lattice spacing $a \in \{6.45, 6.80, 7.15\}$ μm, each satisfying the standard uniformity requirements (site-to-site intensity variance 1–2%, Strehl > 0.90, ghost suppression to 0.1%). The corresponding Rabi frequencies $(\Omega/2\pi, a) = (6.0~\text{MHz}, 6.45~\mu\text{m}),\ (3.8~\text{MHz}, 6.8~\mu\text{m}),\ (3.1~\text{MHz}, 7.15~\mu\text{m})$ maintain approximately constant blockade radius across configurations: $R_b/a = 1.12,\ 1.15,\ 1.13$ respectively (nearest-neighbor blockade only).
