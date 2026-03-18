@@ -24,7 +24,7 @@ draft: true
 
 1. **Graph encoding:** Each atom represents a vertex; atoms within the blockade radius $R_b$ are connected by an edge. The Rydberg constraint (no two adjacent atoms both excited) maps exactly to the independent set constraint. The MIS solution is the ground state of $H = -\frac{\Omega}{2}\sum_i \sigma_i^x - \sum_i \Delta_i n_i + \sum_{i<j} V_{ij} n_i n_j$ at large positive $\Delta$.
 
-2. **Quantum annealing (QA):** Linear sweep $\Delta(t): -4\,\text{MHz} \to +4\,\text{MHz}$ over $T \lesssim T_e$. Sets the baseline.
+2. **Quantum annealing (QA):** Linear sweep $\Delta(t): -4\,\text{MHz} \to +4\,\text{MHz}$ over $T \lesssim T_e$. Sweep times used in practice: $T \approx 0.5$–$4\,\mu\text{s}$ (well within the $T_e \approx 20\,\mu\text{s}$ coherence window). Sets the baseline.
 
 3. **QAOA:** $p$-layer alternating unitaries $U_P(\gamma)U_M(\beta)$ applied to the ground state of the mixing Hamiltonian. Depths $p = 1$–$5$ tested; performance saturates near $p = 4$. Parameters $\{\gamma_k, \beta_k\}$ optimized via closed-loop classical optimizer (~50 circuit repetitions per evaluation step).
 
@@ -58,14 +58,22 @@ draft: true
 
 ## Architecture comparison: relative to 1-zone/3-zone/4-zone review benchmarks
 
-| Parameter | Ebadi 2022 | SOTA 1-zone (Manovitz 2025) | Notes |
-|-----------|-----------|---------------------------|-------|
-| Atom count | 289 (2D) | ~300 (2D) | Near-maximal for 1-zone |
-| Geometries | Unit-disk graphs | Arbitrary 2D | Same SLM+AOD flexibility |
-| Circuit depth | Single adiabatic sweep | Similar | Analog mode, no digital gates |
-| Shot count | ~50 per variational step; ~$10^5$ total over ~15 h | Similar | Bulk of runtime is closed-loop optimization |
+This experiment is a **1-zone analog** platform (same Harvard apparatus as Ebadi 2021). The table below maps it against the 1-zone bottleneck taxonomy from the time-series review.
 
-No hardware innovation — same apparatus as Ebadi 2021. The contribution is algorithmic (variational pulse optimization) and scientific (scaling analysis).
+| Parameter | Ebadi 2021 | Ebadi 2022 | SOTA 1-zone (Manovitz 2025) | Review bottleneck |
+|-----------|-----------|-----------|---------------------------|-------------------|
+| Atom count | 256 (2D) | **289 (2D)** | ~300 (2D) | — |
+| Hardware loading fidelity | ~98% | ~98% | 98.4(7)% | Bottleneck 5: atom loss / defects |
+| Graph filling fraction | — | ~80% by design | N/A (free geometry) | *Intentional sparsity*, not hardware limit |
+| $|g\rangle$ detection fidelity | ~99% | ~99% | ~99% | Bottleneck 3: in-situ readout ceiling |
+| $|r\rangle$ detection fidelity | ~92–96% | ~92–96% | ~92–96% | Bottleneck 3: no dedicated readout zone |
+| Analog coherence $T_e$ | ~20 µs | ~20 µs (std. beam) / ~70 µs (small beam) | ~20 µs | Bottleneck 1: motional dephasing |
+| Mid-circuit measurement | No | No | No | Structural 1-zone limit |
+| Digital gate fidelity | N/A | N/A | N/A | N/A (analog-only) |
+
+**Key observation:** Ebadi 2022 adds 33 atoms over Ebadi 2021 but introduces *no new hardware*. The contribution is algorithmic (closed-loop variational optimization) and scientific (hardness-scaling analysis). The binding hardware constraint is **Bottleneck 3** (readout) and **Bottleneck 1** (coherence), exactly as in all other 1-zone experiments.
+
+Note on filling fraction: the ~80% figure is a deliberate graph construction choice (atoms placed on a randomly 80%-filled square lattice to generate diverse unit-disk graphs). The hardware atom-loading fidelity (~98%) is a separate, higher number. This distinction matters for comparing with classical difficulty — the graphs are sparse by design, not because the hardware fails to load atoms.
 
 
 ## Critical technique analysis
@@ -104,6 +112,9 @@ The ratio diverges as HP increases, constituting a superlinear (polynomial) quan
 | $V_\text{NNN}/h$ | 13 MHz |
 | Coherence $T_e$ (standard beam) | ~20 µs |
 | Coherence $T_e$ (smaller beam) | ~70 µs |
+| Sweep time range (practice) | $T \approx 0.5$–$4\,\mu\text{s}$ |
+| $|g\rangle$ detection fidelity | ~99% |
+| $|r\rangle$ detection fidelity | ~92–96% |
 | TTS quantum exponent | 0.63(13) |
 | TTS classical SA exponent | 1.03(4) |
 | LZ fit exponent $\eta$ | 1.2(2) |
