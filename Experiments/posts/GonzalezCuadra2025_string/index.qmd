@@ -22,7 +22,7 @@ draft: true
 2. **Static-charge preparation:** A local detuning beam pins a pair of test charges; adiabatic sweep ($\sim 2.5\,\mu$s) prepares the flux-string ground state.
 3. **Phase-diagram scan:** Global detuning swept over $R_b/a \in [1.2, 1.8]$ ($a$ tuned 4.7–7 µm) on a **59-atom** kagome patch to map the confinement–deconfinement phase diagram.
 4. **Resonance scan ($d = 3$):** **39-atom** array; local detuning $\delta_0$ scanned to find the string-breaking resonance at $2\delta_0 = V_1$.
-5. **Quench dynamics ($d = 2$):** **31-atom** array; sudden quench from string state to deconfined regime; real-time evolution up to $\sim 0.8\,\mu$s observed.
+5. **Quench dynamics ($d = 2$):** **31-atom** array; sudden quench from string state to deconfined regime; up to **1.6 µs** allocated for quench observation (main figures show snapshots at $t = 0.4\,\mu$s); the adiabatic sweep is reduced from 2.5 µs to 1.5 µs to free this window.
 6. **Readout:** per-atom fluorescence imaging; fidelity 0.95 (Rydberg), 0.99 (ground state).
 :::
 
@@ -35,7 +35,7 @@ Simulation of a (2+1)D $U(1)$ lattice gauge theory using native Rydberg interact
 - **String confinement:** In the confined phase, charges are connected by a flux string whose energy grows linearly with separation — direct analog of the QCD flux tube.
 - **String substructure:** Among the six topologically distinct unbroken string configurations of equal Manhattan length, their occurrence probabilities are *not* equal. Corner-hugging paths (configurations 1 and 6) are significantly more probable than straight-line paths due to geometry-dependent long-range Rydberg interactions — a direct probe of the microscopic gauge-theory Hamiltonian that has no analog in 1D systems.
 - **String breaking via pair creation:** When the string energy exceeds the pair-creation threshold, a quench triggers particle-antiparticle pair creation from the vacuum, breaking the original string into shorter segments — direct analog of quark pair production in QCD.
-- **Many-body resonance:** String breaking exhibits a resonance phenomenon at $2\Delta = V_1$ (nearest-neighbor interaction), where the detuning cost of creating a pair matches the interaction energy gained.
+- **Many-body resonance:** String breaking exhibits a resonance when the energy balance $2m \approx (\sigma(R_b) + \delta_0) \cdot d$ is satisfied (where $m$ is the particle mass set by $\Omega$, $\sigma(R_b)$ is the interaction energy density, and $d$ is the string length); informally, the detuning cost of creating a particle-antiparticle pair matches the string energy released.
 
 ## Scientific significance
 
@@ -43,20 +43,20 @@ Simulation of a (2+1)D $U(1)$ lattice gauge theory using native Rydberg interact
 |--------|-----------|
 | **Novelty** | First observation of string breaking in any (2+1)D quantum system. Previous LGT quantum simulations were limited to (1+1)D. The (2+1)D case is qualitatively different because transverse string fluctuations (roughening) are absent in 1D. |
 | **Practical value** | No direct technological application, but provides a new experimental tool for studying strong-coupling, non-perturbative dynamics inaccessible to lattice Monte Carlo (which suffers from a sign problem for real-time dynamics). |
-| **Verification value** | Validates theoretical predictions for string breaking in (2+1)D LGT: the resonance condition $2\delta_0 = V_1$ (experiment peak $\delta_0/\Omega = 1.4(1)$ vs. theory 1.0 for $d=2$; experiment $1.0(1)$ vs. theory 0.7 for $d=3$), and the unequal string-path probabilities due to long-range interactions. These predictions had only been studied via small-scale exact diagonalization. |
+| **Verification value** | Validates theoretical predictions for string breaking in (2+1)D LGT: the resonance condition $2m \approx (\sigma(R_b)+\delta_0)\cdot d$ (experiment peak $\delta_0/\Omega = 1.4(1)$ vs. theory 1.0 for $d=2$; experiment $1.0(1)$ vs. theory 0.7 for $d=3$), and the unequal string-path probabilities due to long-range interactions. These predictions had only been studied via small-scale exact diagonalization. |
 
 
 ## Architecture comparison: relative to 1-zone/3-zone/4-zone review benchmarks
 
-| Parameter | González-Cuadra 2025 (Aquila) | SOTA 1-zone (Manovitz 2025) | Notes |
-|-----------|-------------------------------|---------------------------|-------|
-| Atom count | 31–59 (kagome, 3 configurations) | ~200–300 (square) | Much smaller; limited by local-detuning complexity |
-| Blockade radius | $R_b = 8.4\,\mu$m ($70S_{1/2}$) | Similar ($C_6$ tunable) | Same Rb platform |
-| Lattice constant | $a \approx 4.7$–$7\,\mu$m ($R_b/a \in [1.2, 1.8]$) | ~5 µm | Tuned to scan phase diagram |
-| Readout fidelity | 0.95 (Rydberg) / 0.99 (ground) | ~0.99 | Rydberg-state readout lower |
-| Evolution time | $\lesssim 0.8\,\mu$s (quench); $2.5\,\mu$s (adiabatic) | Comparable | Decoherence from local detuning beams |
-| Local addressing | Yes — local detuning beams for charge creation | Global only | Required for this experiment; triggers AC Stark decoherence |
-| Platform | QuEra Aquila (cloud) | Harvard lab | Cloud-accessible |
+| Parameter | González-Cuadra 2025 (Aquila) | SOTA 1-zone Aquila (Darbha 2025) | SOTA 1-zone Harvard lab (Manovitz 2025) | Notes |
+|-----------|-------------------------------|----------------------------------|----------------------------------------|-------|
+| Atom count | 31–59 (kagome, 3 configurations) | up to 180 | ~200–300 (square) | Aquila has 256-site ceiling; Harvard lab is unbounded |
+| Blockade radius | $R_b = 8.4\,\mu$m ($70S_{1/2}$) | Similar | Similar | Same Rb platform |
+| Lattice constant | $a \approx 4.7$–$7\,\mu$m ($R_b/a \in [1.2, 1.8]$) | ~5 µm | ~5 µm | Tuned to scan phase diagram |
+| Readout fidelity | 0.95 (Rydberg) / 0.99 (ground) | ~0.99 | ~0.99 | Rydberg-state readout lower |
+| Evolution time | up to $1.6\,\mu$s (quench); $3\,\mu$s total adiabatic | Comparable | Comparable | Quench window freed by shortening adiabatic sweep |
+| Local addressing | Yes — local detuning beams | No (global) | Yes | Required for charge creation; AC Stark decoherence |
+| Platform | QuEra Aquila (cloud) | QuEra Aquila (cloud) | Harvard lab | Cloud vs. lab apparatus |
 
 **Key architectural feature:** This experiment requires *local* detuning control (to create the initial charge pair), which triggers Bottleneck 2 (AC Stark shift decoherence from local beam gradients).
 
@@ -67,9 +67,9 @@ Simulation of a (2+1)D $U(1)$ lattice gauge theory using native Rydberg interact
 
 Two coupled bottlenecks dominate:
 
-1. **Bottleneck 1 ($1/R^6$ curse):** The string-breaking resonance condition $2\delta_0 = V_1$ requires precise knowledge of the nearest-neighbor interaction energy $V_1 \propto C_6/a^6$. Thermal position fluctuations ($\sigma_x \sim 300$ nm for Rb in a 1 µK trap) give $\delta V_1 / V_1 \approx 6\sigma_x/a \approx 20$–$30\%$, directly broadening the resonance. This is visible quantitatively: the measured resonance width is $\Delta\delta_0/\Omega = 0.88(5)$ (aggressive filter) or $0.53(2)$ (conservative filter), significantly wider than the few-percent theoretical linewidth. The peak itself is shifted: experiment finds $\delta_0/\Omega = 1.4(1)$ ($d=2$) and $1.0(1)$ ($d=3$) vs. theory predictions of 1.0 and 0.7 respectively — a systematic offset likely due to next-nearest-neighbor interaction corrections.
+1. **Bottleneck 1 ($1/R^6$ curse):** The string-breaking resonance requires precise knowledge of the nearest-neighbor interaction energy $V_1 \propto C_6/a^6$ (entering the energy-balance condition $2m \approx (\sigma(R_b)+\delta_0)\cdot d$). Thermal position fluctuations ($\sigma_x \sim 300$ nm for Rb in a 1 µK trap) give $\delta V_1 / V_1 \approx 6\sigma_x/a \approx 20$–$30\%$, directly broadening the resonance. This is visible quantitatively: the measured resonance width is $\Delta\delta_0/\Omega = 0.88(5)$ (aggressive filter) or $0.53(2)$ (conservative filter), significantly wider than the few-percent theoretical linewidth. The peak itself is shifted: experiment finds $\delta_0/\Omega = 1.4(1)$ ($d=2$) and $1.0(1)$ ($d=3$) vs. theory predictions of 1.0 and 0.7 respectively — a systematic offset likely due to next-nearest-neighbor interaction corrections.
 
-2. **Bottleneck 2 (local detuning decoherence):** The local detuning beams needed to create the initial charge pair have Gaussian spatial profiles, so intensity gradients at neighboring atom sites produce differential AC Stark shifts that dephase the register. Stronger local detuning (needed for sharper charge localization) means a larger gradient, faster dephasing, and shorter effective $T_2$. This limits quench evolution to $\lesssim 0.8\,\mu$s — well before the string-breaking resonance reaches its theoretical peak amplitude.
+2. **Bottleneck 2 (local detuning decoherence):** The local detuning beams needed to create the initial charge pair have Gaussian spatial profiles, so intensity gradients at neighboring atom sites produce differential AC Stark shifts that dephase the register. Stronger local detuning (needed for sharper charge localization) means a larger gradient, faster dephasing, and shorter effective $T_2$. The single-atom $T_2^\text{Ramsey} = 4.67 \pm 0.13\,\mu$s sets the natural coherence ceiling; the actual quench window of up to **1.6 µs** is less than half of $T_2^\text{Ramsey}$, yet is already limited by the adiabatic sweep budget, not coherence. Both effects compound.
 
 **Why Bottleneck 1 is primary:** The resonance broadening ($\Delta\delta_0/\Omega \approx 0.9$) smears out the contrast between string and broken-string phases. Even if $T_2$ were infinite, the experiment would still fail to resolve the sharp resonance feature predicted by theory.
 
@@ -92,8 +92,10 @@ Two coupled bottlenecks dominate:
 | Blockade radius $R_b$ | 8.4 µm ($^{87}$Rb $70S_{1/2}$) |
 | $C_6/2\pi$ | $862{,}690\,\text{MHz}\cdot\mu\text{m}^6$ |
 | Readout fidelity (Rydberg / ground) | 0.95 / 0.99 |
-| Adiabatic prep time | 2.5 µs |
-| Quench evolution (observed) | up to ~0.8 µs |
+| $\Omega_\text{max}/2\pi$ | 2.5 MHz |
+| $T_2^\text{Ramsey}$ (single-atom avg.) | $4.67 \pm 0.13\,\mu$s |
+| Adiabatic prep time | 3 µs total (2.5 µs linear sweep + 0.5 µs ramp); reduced to 1.5 µs sweep for quench protocol |
+| Quench evolution window | up to 1.6 µs allocated; main figures show snapshots at $t = 0.4\,\mu$s |
 | Resonance width $\Delta\delta_0/\Omega$ | 0.88(5) (aggressive) / 0.53(2) (conservative) |
 | Resonance peak $\delta_0/\Omega$ ($d=2$) | 1.4(1) exp. vs. 1.0 theory |
 | Resonance peak $\delta_0/\Omega$ ($d=3$) | 1.0(1) exp. vs. 0.7 theory |
