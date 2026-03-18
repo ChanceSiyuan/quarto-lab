@@ -67,8 +67,8 @@ f(x;\theta) = \frac{1}{N^\alpha} \sum_{j=1}^{N} a_j \, \sigma(w_j \cdot x),
 $$ {#eq-alpha-param}
 where $\alpha \in [0, 1/2]$ is the **initialization scale parameter**, $a_j$ are readout weights, $w_j$ are feature weights, and $\sigma$ is a nonlinear activation. The extreme values correspond to:
 
-- $\alpha = 1/2$: **NTK parameterization** (lazy regime). The large output scale suppresses the need for weight movement; the kernel freezes.
-- $\alpha = 0$: **Mean-field parameterization** (rich regime). The small output scale forces large weight excursions, enabling feature learning.
+- $\alpha = 1/2$: **NTK parameterization** (lazy regime). With $a_j = O(1)$, the CLT gives $\sum_j a_j\sigma(w_j\cdot x) = O(\sqrt{N})$, so $f = O(N^{1/2-\alpha})|_{\alpha=1/2} = O(1)$. More importantly, the gradient to feature weights carries the same $N^{-1/2}$ prefactor: $\partial\mathcal{L}/\partial w_j \propto N^{-1/2}$, so $w_j$ barely moves and the kernel freezes.
+- $\alpha = 0$: **Mean-field parameterization** (rich regime). The prefactor is $N^0 = 1$, so $f = O(\sqrt{N})$ — the **largest** output scale. The gradient suppression is absent ($\partial\mathcal{L}/\partial w_j = O(1)$), forcing large weight excursions and enabling feature learning.
 
 Intermediate values of $\alpha$ interpolate continuously between these extremes [@kumar2025grokking].
 ::::
