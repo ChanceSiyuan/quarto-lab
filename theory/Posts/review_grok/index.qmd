@@ -171,14 +171,16 @@ The signal strength $S(t)$ and noise strength $N(t)$ obey effective dynamics of 
 $$
 \dot{S} = \eta_S \, g_S(S, N) - \lambda S, \qquad \dot{N} = \eta_N \, g_N(S, N) - \lambda N,
 $$ {#eq-signal-noise}
-where $\eta_S \ll \eta_N$ reflects the slower signal learning rate. Here $g_S$ and $g_N$ are the projections of the (normalized) loss gradient onto the signal and noise subspaces, respectively [@liu2022grokking]. In the linearized regime they take the explicit forms
+where $\eta_S \ll \eta_N$ reflects the slower signal learning rate. Here $g_S$ and $g_N$ are the projections of the (normalized) loss gradient onto the signal and noise subspaces, respectively [@liu2022grokking]. The full (nonlinear) forms are
 $$
-g_N(S,N) = N_\infty - N, \qquad g_S(S,N) = S,
+g_N(S,N) = N_\infty - N, \qquad g_S(S,N) = S \cdot \frac{N_\infty}{N},
 $$ {#eq-g-explicit}
-where $N_\infty$ is the memorization capacity (the noise level at which training loss reaches zero). With these forms, the two-phase dynamics become transparent:
+where $N_\infty$ is the memorization capacity (the noise level at which training loss reaches zero). The $N_\infty/N$ factor in $g_S$ reflects the gradient competition between subspaces: when the network is heavily memorized ($N \approx N_\infty$), the loss gradient is nearly exhausted by the noise component, leaving little gradient for signal learning; as $N$ decreases, the signal subspace receives an increasing share of the gradient. Linearizing around $N \approx N_\infty$ (Phase 1 only) gives $g_S \approx S$, recovering the familiar form, but this approximation breaks down in Phase 2 when $N$ has decayed appreciably below $N_\infty$.
 
-1. **Memorization phase** ($t \lesssim \tau_{\mathrm{mem}}$): $\dot{N} \approx \eta_N(N_\infty - N) - \lambda N > 0$, so noise grows on timescale $(\eta_N + \lambda)^{-1}$ and saturates near $N_\infty \eta_N/(\eta_N + \lambda) \approx N_\infty$. Meanwhile $\dot{S} \approx (\eta_S - \lambda)S < 0$ (since $\eta_S < \lambda$ in the Goldilocks zone), so signal decays.
-2. **Weight-decay phase** ($t \gtrsim \tau_{\mathrm{mem}}$): Once $N \approx N_\infty$, the gradient $g_N \to 0$ and the $-\lambda N$ term dominates: $N$ decays exponentially with rate $\lambda$. As $N$ falls, the training loss rises and the effective signal learning rate increases. When $N$ drops below the threshold $N^* = (\eta_S/\lambda)N_\infty$, the signal equation crosses zero — $\dot{S} > 0$ — and signal growth begins, triggering generalization.
+With these forms, the two-phase dynamics are:
+
+1. **Memorization phase** ($t \lesssim \tau_{\mathrm{mem}}$, $N \approx N_\infty$): $\dot{N} \approx \eta_N(N_\infty - N) - \lambda N > 0$, so noise grows on timescale $(\eta_N + \lambda)^{-1}$ and saturates near $N_\infty \eta_N/(\eta_N + \lambda) \approx N_\infty$. Meanwhile $g_S \approx S$ (since $N \approx N_\infty$), giving $\dot{S} \approx (\eta_S - \lambda)S < 0$, so signal decays.
+2. **Weight-decay phase** ($t \gtrsim \tau_{\mathrm{mem}}$): Once $N \approx N_\infty$, the gradient $g_N \to 0$ and the $-\lambda N$ term dominates: $N$ decays exponentially with rate $\lambda$. Using the full nonlinear form, $\dot{S} = S(\eta_S N_\infty/N - \lambda)$, which changes sign precisely when $N = N^* \equiv (\eta_S/\lambda)N_\infty$. Since $\eta_S < \lambda$, one has $N^* < N_\infty$, so this threshold is reached as $N$ decays. For $N < N^*$, $\dot{S} > 0$ and signal growth begins, triggering generalization.
 
 After the noise component saturates and begins to decay under weight decay, the signal eventually crosses a threshold where it dominates the output, triggering generalization [@liu2022grokking].
 
