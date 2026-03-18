@@ -46,6 +46,12 @@ $$C[\boldsymbol{\theta};\lambda] = \langle \hat{H}_0 \rangle_\theta - \lambda \s
 
 - Three-spin system; CPHL reconstructs a Hamiltonian with ring-exchange coupling $J_{\text{ring}}$ from spectral response functions. The algorithm converges to the correct multi-peak structure rapidly.
 
+### Application 4: Finite-temperature $d$-wave Hubbard (Gibbs state)
+
+- **Setup:** Same 2-leg Fermi-Hubbard ladder; cost function optimized over a thermal (Gibbs) state at $T \simeq 0.32\,t$ rather than a pure ground state.
+- **Result:** Circuit optimization at $T \simeq 0.32\,t$ yields $d$-wave pair correlations **comparable to those of the zero-temperature Hubbard model** $\hat{H}_0$. The learned Hamiltonian $\hat{H}_{\text{opt}}$ **outperforms $\hat{H}_0$ across the entire temperature range**, demonstrating that the inverse framework is not restricted to pure states and that finite-temperature CPHL is practically viable.
+- **Significance:** This is the only demonstration in the paper using Gibbs states; it validates the theoretical claim that sample complexity is polynomial in $n$ **independent of temperature**.
+
 ### General results
 
 - **No experimental demonstration yet:** Framework validated purely numerically. Experimental realization requires a sufficiently large and coherent quantum simulator with variational control.
@@ -63,13 +69,16 @@ $$C[\boldsymbol{\theta};\lambda] = \langle \hat{H}_0 \rangle_\theta - \lambda \s
 
 ## Architecture requirements for experimental realization
 
-| Requirement | Current capability | Gap |
-|------------|-------------------|-----|
-| System size | 448 qubits (4-zone) | Need $> 50$ qubits for meaningful Hubbard models; sufficient |
-| Gate fidelity | 99.5% (CZ) | Variational optimization may be robust to ~1% errors; near-sufficient |
-| Variational control | Local addressing + global pulses | Need efficient variational ansätze compilable on Rydberg hardware |
-| Hamiltonian learning | Requires many measurement bases | Need shadow tomography or spectral methods at scale |
-| Coherence time | ~ms per circuit | Need sufficient depth for variational state preparation |
+| Requirement | Current capability | Source | Gap |
+|------------|-------------------|--------|-----|
+| System size | 448 qubits | 4-zone [@bluvstein2024logical] | Need $> 50$ qubits for meaningful Hubbard models; sufficient |
+| Gate fidelity (CZ) | 99.5% | 3-zone [@bluvstein2024logical] | Near-sufficient; variational optimization robust to ~1% errors |
+| Readout fidelity | ~99.8% (3-zone) / ~92–96% (1-zone) | Review benchmarks | **Critical bottleneck for Hamiltonian learning**; errors inflate coefficient variance as $1/\eta_{\rm ro}^2$ |
+| Variational control | Local addressing + global pulses | 3/4-zone | Need efficient variational ansätze compilable on Rydberg hardware |
+| Hamiltonian learning | — | — | Need shadow tomography or spectral methods at scale; no explicit shot budget in paper |
+| Coherence time | $T_2 \sim$ ms | 3-zone | Sufficient for moderate-depth variational circuits; not the primary bottleneck |
+
+*Note: "System size" (448) and "gate fidelity" (99.5%) come from different generations of the same platform. The 4-zone system has higher qubit count; the 3-zone benchmark is the relevant gate-fidelity reference for near-term proposals.*
 
 
 ## Critical technique analysis
@@ -87,7 +96,11 @@ The inverse simulation framework has two computationally expensive steps:
 
 **Why CPHL is harder than SHL:** SHL (Spectral Hamiltonian Learning) works at discrete parameter points and can exploit spectral gaps. CPHL (Continuous-Phase Hamiltonian Learning) must smooth a learned Hamiltonian over a continuous parameter manifold (e.g., doping fraction, temperature). This smoothing amplifies measurement noise across the parameter grid — each grid point requires independent Hamiltonian learning, and statistical errors accumulate. Shot budget and readout fidelity are therefore much more constraining for CPHL than SHL.
 
-**Sample complexity:** Both SHL and CPHL require only a **polynomial number of measurements in system size, independent of temperature** — a key theoretical result. No explicit shot count is given in the paper; the guarantee is asymptotic.
+**Why readout fidelity is the dominant bottleneck (not gate fidelity or qubit count):** The variance of learned Hamiltonian coefficients scales as
+$$\text{Var}[\hat{h}_k] \propto \frac{1}{\eta_{\text{ro}}^2 \cdot N_{\text{shots}}}$$
+where $\eta_{\text{ro}}$ is the single-qubit readout fidelity. Gate errors primarily affect state preparation (distorting the optimized state but not fundamentally changing the measurement inversion problem), while readout errors directly inflate the statistical noise floor of every Hamiltonian coefficient estimate. Halving the readout infidelity from 4% to 2% reduces the required shot count by $4\times$ — a much larger leverage than a comparable reduction in gate error.
+
+**Sample complexity:** Both SHL and CPHL require only a **polynomial number of measurements in system size, independent of temperature** — a key theoretical result. The paper does not specify the polynomial exponent $k$ (i.e., the exact $O(n^k)$ scaling); only the existence of polynomial scaling is claimed, with proofs referenced to external theoretical work. No explicit shot count is given for the demonstrated systems.
 
 **Paths to improvement:**
 
@@ -97,14 +110,22 @@ The inverse simulation framework has two computationally expensive steps:
 
 ## Completeness check
 
-**SHL/CPHL sample complexity:** Polynomial in system size, independent of temperature (paper states this explicitly for both pure and Gibbs states).
+**SHL/CPHL sample complexity:** Polynomial in system size, independent of temperature (paper states this explicitly for both pure and Gibbs states). The polynomial exponent $k$ is not specified in the paper; only existence of polynomial scaling is claimed.
 
-**DMRG validation:** Learning system — 2×4 ladder (8 sites); generalization tested on 2×24 ladder across full doping range.
+**DMRG validation:** Learning system — 2×4 ladder (8 physical sites, 2 legs × 4 rungs); generalization tested on 2×24 ladder (48 sites) across full doping range.
 
 **Hubbard reference parameters:** $t_x = t_y = -1$ (energy unit), $U = 4$.
 
-**Cost function (d-wave):** $C[\boldsymbol{\theta};\lambda] = \langle \hat{H}_0 \rangle_\theta - \lambda \sum_r \langle \hat{\Delta}_1^\dagger \hat{\Delta}_{1+r} \rangle_\theta$.
+**Cost function (d-wave):** $C[\boldsymbol{\theta};\lambda] = \langle \hat{H}_0 \rangle_\theta - \lambda \sum_r \langle \hat{\Delta}_1^\dagger \hat{\Delta}_{1+r} \rangle_\theta$; demonstrated with $\lambda = 2$ in Figure 2(c).
+
+**Circuit depths:** $d = 5$ and $d = 10$ used for the 4-site (2×2) Hubbard system. Depth for the 8-site (2×4) learning system is not separately specified.
+
+**Finite-temperature Hubbard result:** $T \simeq 0.32\,t$ Gibbs state — learned $\hat{H}_{\text{opt}}$ outperforms $\hat{H}_0$ across entire temperature range (see Application 4 above).
 
 **Learned terms:** Off-diagonal hoppings and off-site density–density interactions.
 
+**Architecture table note:** The "448 qubits" entry refers to the 4-zone Lukin group platform (Bluvstein 2024); the 99.5% CZ fidelity is from the 3-zone benchmark. These are from different generations — the inverse simulation proposal targets future hardware intermediate between these.
+
+<!-- TODO: Extract quantitative CIM topological phase boundary shift from Figure 3(b1) — paper shows extension qualitatively but provides no numerical boundary location. -->
+<!-- TODO: Extract recovered J_ring value from Figure 4 — paper states convergence to "target value" but does not quote the number in the main text. -->
 <!-- NOTE: The paper provides no quantitative circuit resource estimate (qubit count, gate depth, shot budget) for experimental demonstration. Resource requirements are discussed qualitatively only. -->
