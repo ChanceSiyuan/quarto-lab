@@ -1,0 +1,110 @@
+---
+categories:
+- Readings
+date: 2026-03-18
+description: 'Reading notes on Kokail et al. 2026 — inverse quantum simulation framework for materials discovery, targeting high-Tc superconductivity'
+lang: en
+title: 'Kokail 2026: Inverse Quantum Simulation'
+bibliography: refs.bib
+draft: true
+---
+
+# Summary and Questions
+
+**Paper:** Kokail et al., "Inverse Quantum Simulation for Quantum Material Design," arXiv:2601.12239 (2026) [@kokail2026inverse]
+
+**Architecture:** Theory/proposal — validated numerically (DMRG, exact diagonalization), awaits experimental demonstration
+
+## What was done
+
+A theoretical framework that inverts the traditional quantum simulation paradigm — instead of "given Hamiltonian $H$, find ground state properties," the inverse simulator solves "given desired material properties, find the Hamiltonian $H$ that produces them":
+
+1. **Target encoding:** Desired material properties (e.g., $d$-wave pair correlations, specific entanglement entropy, topological invariants) are encoded into a classical cost function $C[\rho]$.
+2. **Variational state preparation:** A parameterized quantum state $|\psi(\boldsymbol{\theta})\rangle$ is prepared on the neutral-atom hardware and optimized to minimize $C$.
+3. **Hamiltonian learning:** Once the target state is stabilized, spectral or continuous-phase Hamiltonian learning (SHL/CPHL) extracts the effective low-energy Hamiltonian $\hat{H}_{\text{opt}}$ whose ground state approximates $|\psi(\boldsymbol{\theta})\rangle$.
+4. **Materials design output:** The learned $\hat{H}_{\text{opt}}$ provides physically interpretable microscopic parameters (hopping, interaction, exchange) that guide experimental materials synthesis.
+
+## Key observations
+
+The paper demonstrates the inverse simulation framework on **three distinct target systems**:
+
+### Application 1: $d$-wave superconductivity in the Fermi-Hubbard model
+
+- **Reference Hamiltonian:** 2-leg Fermi-Hubbard ladder with $t_x = t_y = -1$ (energy units), $U = 4$.
+- **Cost function:**
+$$C[\boldsymbol{\theta};\lambda] = \langle \hat{H}_0 \rangle_\theta - \lambda \sum_r \langle \hat{\Delta}_1^\dagger \hat{\Delta}_{1+r} \rangle_\theta$$
+  where $\hat{\Delta}_1^\dagger$ creates a singlet pair at site 1 and $\lambda$ weights the pairing enhancement against energy minimization.
+- **DMRG validation:** Inverse simulator run on a small ladder (2×4, 8 sites); the learned Hamiltonian parameters generalize successfully to a 2×24-site ladder across the full doping range.
+- **Learned terms:** dominant off-diagonal hoppings and off-site density–density interactions — physically interpretable microscopic parameters that enhance $d$-wave pair correlations.
+- Circuit depths $d = 5$ and $d = 10$ were used, with deeper circuits yielding more localized learned Hamiltonians.
+
+### Application 2: Topological phase extension in the Cluster Ising Model (CIM)
+
+- The cost function targets topological order (string-order parameter); the inverse simulator discovers antiferromagnetic next-nearest-neighbor coupling and a quartic interaction term that suppresses competing ferromagnetism and **extends the topological phase boundary** beyond the bare CIM.
+
+### Application 3: Ring-exchange Hamiltonian learning from dynamical structure factors
+
+- Three-spin system; CPHL reconstructs a Hamiltonian with ring-exchange coupling $J_{\text{ring}}$ from spectral response functions. The algorithm converges to the correct multi-peak structure rapidly.
+
+### General results
+
+- **No experimental demonstration yet:** Framework validated purely numerically. Experimental realization requires a sufficiently large and coherent quantum simulator with variational control.
+- **Platform-agnostic:** While proposed for neutral atoms, applies to any programmable quantum simulator (trapped ions, superconducting qubits).
+
+## Scientific significance
+
+| Aspect | Assessment |
+|--------|-----------|
+| **Novelty** | Conceptually transformative: elevates the quantum simulator from a passive analysis tool to an active **materials discovery engine**. No prior framework systematically inverts quantum simulation for materials design. |
+| **Practical value** | If realized, could directly guide synthesis of new superconducting, topological, or magnetic materials. The potential impact on materials science and condensed matter physics is enormous — but contingent on experimental demonstration. |
+| **Verification value** | The numerical validation (DMRG, exact diagonalization) confirms the framework is mathematically sound on three qualitatively different targets. The experimental test will validate whether current hardware fidelity and scale are sufficient for meaningful Hamiltonian learning. |
+| **Scope** | Three targets demonstrated: (1) $d$-wave superconductivity in the Fermi-Hubbard model (DMRG on 2×4→2×24 ladders), (2) topological phase extension in the CIM (exact diag.), (3) ring-exchange Hamiltonian recovery from spectral data. |
+
+
+## Architecture requirements for experimental realization
+
+| Requirement | Current capability | Gap |
+|------------|-------------------|-----|
+| System size | 448 qubits (4-zone) | Need $> 50$ qubits for meaningful Hubbard models; sufficient |
+| Gate fidelity | 99.5% (CZ) | Variational optimization may be robust to ~1% errors; near-sufficient |
+| Variational control | Local addressing + global pulses | Need efficient variational ansätze compilable on Rydberg hardware |
+| Hamiltonian learning | Requires many measurement bases | Need shadow tomography or spectral methods at scale |
+| Coherence time | ~ms per circuit | Need sufficient depth for variational state preparation |
+
+
+## Critical technique analysis
+
+**Most important technique needing optimization: Hamiltonian learning from quantum simulator data.**
+
+The inverse simulation framework has two computationally expensive steps:
+
+1. **Variational state preparation:** This is a standard VQE-type optimization — relatively well-understood, though barren plateaus remain a concern at scale. The Rydberg platform's native interactions provide a warm start.
+
+2. **Hamiltonian learning (SHL/CPHL):** Given a prepared state $|\psi\rangle$, extracting the effective Hamiltonian requires:
+   - Measuring many observables (energy, correlators, spectral functions) in multiple bases
+   - Solving an inverse problem: find $\hat{H}$ such that $|\psi\rangle \approx |\text{GS}(\hat{H})\rangle$
+   - This step is where readout fidelity, measurement basis diversity, and shot budget become critical
+
+**Why CPHL is harder than SHL:** SHL (Spectral Hamiltonian Learning) works at discrete parameter points and can exploit spectral gaps. CPHL (Continuous-Phase Hamiltonian Learning) must smooth a learned Hamiltonian over a continuous parameter manifold (e.g., doping fraction, temperature). This smoothing amplifies measurement noise across the parameter grid — each grid point requires independent Hamiltonian learning, and statistical errors accumulate. Shot budget and readout fidelity are therefore much more constraining for CPHL than SHL.
+
+**Sample complexity:** Both SHL and CPHL require only a **polynomial number of measurements in system size, independent of temperature** — a key theoretical result. No explicit shot count is given in the paper; the guarantee is asymptotic.
+
+**Paths to improvement:**
+
+- Shadow tomography on the 3/4-zone architecture (multi-basis measurements with mid-circuit readout)
+- Efficient Hamiltonian learning algorithms that exploit the Rydberg platform's locality structure
+- Classical-quantum hybrid learning: use quantum data to constrain classical optimization of Hamiltonian parameters
+
+## Completeness check
+
+**SHL/CPHL sample complexity:** Polynomial in system size, independent of temperature (paper states this explicitly for both pure and Gibbs states).
+
+**DMRG validation:** Learning system — 2×4 ladder (8 sites); generalization tested on 2×24 ladder across full doping range.
+
+**Hubbard reference parameters:** $t_x = t_y = -1$ (energy unit), $U = 4$.
+
+**Cost function (d-wave):** $C[\boldsymbol{\theta};\lambda] = \langle \hat{H}_0 \rangle_\theta - \lambda \sum_r \langle \hat{\Delta}_1^\dagger \hat{\Delta}_{1+r} \rangle_\theta$.
+
+**Learned terms:** Off-diagonal hoppings and off-site density–density interactions.
+
+<!-- NOTE: The paper provides no quantitative circuit resource estimate (qubit count, gate depth, shot budget) for experimental demonstration. Resource requirements are discussed qualitatively only. -->
