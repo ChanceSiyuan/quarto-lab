@@ -39,7 +39,7 @@ $$
 \frac{\partial \mathbf F(x,t)}{\partial t} = \eta \sum_{i} \mathbf \Theta^{(L)}(\theta(t)) (x,x_i) 2[ \mathbf y_i - \mathbf F(x_i,t)],
 \end{aligned}
 $$
-where $\mathbf \Theta^{(L)}(\theta)(x, x') = \sum_{p=1}^P \partial_{\theta_p} \mathbf F^{(L)}(x; \theta) \left[\partial_{\theta_p} \mathbf F^{(L)}(x'; \theta)\right]^T$ is the Neural Tangent Kernel (NTK), which depends only on the structure of the neural network and not on the input data.
+where $\mathbf \Theta^{(L)}(\theta)(x, x') = \sum_{p=1}^P \partial_{\theta_p} \mathbf F^{(L)}(x; \theta) \left[\partial_{\theta_p} \mathbf F^{(L)}(x'; \theta)\right]^T$ is the Neural Tangent Kernel (NTK). At finite width the NTK depends on both the inputs $x,x'$ and the current parameters $\theta(t)$; its key property, proven by Jacot et al. [@jacot2018neural], is that in the infinite-width limit ($n_l \to \infty$ for all $l$) it converges almost surely to a *deterministic* limit $\mathbf{\Theta}^\infty(x,x')$ that is independent of the random initialization and fixed throughout training.
 :::
 
 ::: {.callout-note collapse="true"}
