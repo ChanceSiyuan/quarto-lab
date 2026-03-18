@@ -651,7 +651,7 @@ Tian [@tian2025provable] provides a complementary dynamical framework that track
 ::::{#def-li2 .callout-note icon="false"}
 ## Definition (Li2 Stages of Feature Learning [@tian2025provable])
 
-**Stage I---Lazy Learning.** The output layer $V$ converges to the ridge regression solution $V^* = Y X^\top(XX^\top + \eta I)^{-1}$ using the random features provided by the frozen hidden layer $W$. The network memorizes the training data. The backward gradient $G_F$ is noise-dominated and provides no structural signal to the hidden layer.
+**Stage I---Lazy Learning.** The output layer $V$ converges to the ridge regression solution $V^* = Y X^\top(XX^\top + \lambda I)^{-1}$ (here $\lambda > 0$ is the ridge regularization coefficient, distinct from the learning rate $\eta$) using the random features provided by the frozen hidden layer $W$. The network memorizes the training data. The backward gradient $G_F$ is noise-dominated and provides no structural signal to the hidden layer.
 
 **Stage II---Independent Feature Learning.** As weight decay suppresses the noise component, the backward gradient $G_F$ begins to carry structured information about the target. Each hidden neuron $w_j$ independently evolves via gradient ascent on an **energy function**:
 $$
@@ -659,7 +659,7 @@ E(w_j) = \frac{1}{2}\|\tilde{Y}^\top \sigma(X w_j)\|^2,
 $$ {#eq-energy-cca}
 which represents a nonlinear Canonical Correlation Analysis (CCA) between inputs and targets. The local maxima of $E$ correspond to Fourier features of the target function. Neurons independently discover these features by climbing the energy landscape.
 
-**Stage III---Interactive Feature Learning.** When multiple neurons have activated, their dynamics become coupled through the off-diagonal terms of the interaction matrix $B = (F^\top F + \eta I)^{-1}$, where $F$ is the matrix of active neuron outputs. Cross-node repulsion forces activated neurons to diversify: neurons that have already captured a Fourier mode repel others away from that mode, driving them toward the remaining "missing" features. This interactive phase assembles the complete Fourier Multiplication Algorithm.
+**Stage III---Interactive Feature Learning.** When multiple neurons have activated, their dynamics become coupled through the off-diagonal terms of the interaction matrix $B = (F^\top F + \lambda I)^{-1}$ (same ridge coefficient $\lambda$ as Stage I), where $F$ is the matrix of active neuron outputs. Cross-node repulsion forces activated neurons to diversify: neurons that have already captured a Fourier mode repel others away from that mode, driving them toward the remaining "missing" features. This interactive phase assembles the complete Fourier Multiplication Algorithm.
 ::::
 
 ::::{#thm-li2-reconstruction .callout-note icon="false"}
