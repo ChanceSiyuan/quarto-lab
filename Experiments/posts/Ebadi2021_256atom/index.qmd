@@ -21,7 +21,7 @@ The leap from 1D to 2D: 256 $^{87}$Rb atoms arranged in arbitrary 2D geometries 
 
 :::{.callout-tip title="Experiment protocol"}
 1. **SLM trap array generation:** A spatial light modulator (Hamamatsu X13138-02) creates a static 2D array of optical tweezers in arbitrary geometries (square, triangular, honeycomb, kagome). Aberration correction of 70 milliwaves yields an 18% intensity gain.
-2. **AOD atom rearrangement:** Acousto-optic deflectors (AA Opto DTSX-400, transport speed 75 μm/ms, ramp time 15 μs) pick up atoms from a reservoir and rearrange them into SLM traps. First AOD pass achieves 98.5% filling; a second pass over >200-site arrays achieves **~99.2% filling**. Total rearrangement time: **50–100 ms**.
+2. **AOD atom rearrangement:** Acousto-optic deflectors (AA Opto DTSX-400, transport speed 75 μm/ms, ramp time 15 μs) pick up atoms from a reservoir and rearrange them into SLM traps. First AOD pass achieves 98.5% filling; a second pass over >200-site arrays achieves **~99.2% filling**. Each single AOD pass takes **50–100 ms**; for >200-site arrays the two-pass protocol totals **~400 ms**. Single-atom loading efficiency from the MOT into reservoir tweezers: **50–60%**.
 3. **Rydberg excitation and phase mapping:** Coherent two-photon excitation to $|70S_{1/2}\rangle$ (420 nm + 1013 nm, $\Omega_{420}/2\pi = 160$ MHz, $\Omega_{1013}/2\pi = 50$ MHz, effective $\Omega/2\pi = 4$ MHz) implements the Rydberg blockade Hamiltonian. Slow detuning sweeps map out phase boundaries.
 4. **Multiple geometry benchmarking:** Systematic study of quantum phases on square ($a = 6.7$ μm), triangular, honeycomb, and kagome lattices with 64–256 atoms; blockade radius $R_b/a = 1.15$ for square lattice.
 :::
@@ -58,6 +58,7 @@ The leap from 1D to 2D: 256 $^{87}$Rb atoms arranged in arbitrary 2D geometries 
 | Trap depth | $\sim 2\pi \times 17$ MHz; waist ~900 nm | — | — |
 | SLM uniformity | ~few % variation | 1–2% variance, $>0.90$ Strehl ratio | Major refinement in later work |
 | Position accuracy | ~0.1 μm (SLM) | 0.1 μm (static) + 0.2 μm thermal | Same-order static accuracy |
+| Readout fidelity | **99.1(4)%** Rydberg (microwave-enhanced); ~85% bare (15% decay during imaging); 99% ground-state | 99.8% (3-zone, fluorescence imaging) | Microwave enhancement closes most of the gap vs. 3-zone |
 
 **Critical hardware upgrade:** The SLM+AOD architecture is the defining innovation. Everything before (Bernien 2017, Keesling 2019) used 1D standing-wave traps. Everything after inherits this 2D platform.
 
@@ -70,7 +71,7 @@ The Rydberg evolution that constitutes the actual quantum simulation takes **~μ
 
 - **Why so slow:** The AA Opto DTSX-400 AOD operates at 75 μm/ms transport speed with a 15 μs ramp time per move. Rearranging O(256) atoms into a defect-free array requires O(N) sequential moves (path optimization reduces this, but not by orders of magnitude). Total rearrangement time 50–100 ms dominates the duty cycle.
 - **Success-rate scaling:** Each rearrangement move has a small failure probability. For 256-site arrays, even 0.5% per-move failure accumulates significantly over ~100 moves, motivating the second AOD pass. Scaling further (to 1000+ atoms) would require either faster AODs or parallel-move schemes.
-- **Experimental repetition rate:** A ~100 ms rearrangement + ~100 μs evolution + readout gives ~10 Hz shot rate. Accumulating the statistics needed for phase diagrams (many detuning values × many shots) takes hours — limited entirely by AOD speed.
+- **Experimental repetition rate:** A single AOD pass takes 50–100 ms, but the full two-pass protocol for >200-site arrays takes **~400 ms** plus ~100 μs evolution and readout — giving **~2.5 Hz** effective shot rate for the 256-atom protocol. Accumulating the statistics needed for phase diagrams (many detuning values × many shots) takes hours — limited entirely by AOD speed.
 
 The SLM uniformity issue (ghost traps, intensity variation) is a secondary bottleneck: it degrades quantum state quality per shot, but the AOD overhead limits how many shots can be taken. The review SOTA (Manovitz 2025) addresses both: closed-loop SLM feedback (site-site variance 1–2%, Strehl >0.90) and improved AOD protocols.
 
@@ -87,13 +88,21 @@ The SLM uniformity issue (ghost traps, intensity variation) is a secondary bottl
 | Two-photon Rabi freq. | $\Omega/2\pi = 4$ MHz ($\Omega_{420} = 2\pi \times 160$ MHz, $\Omega_{1013} = 2\pi \times 50$ MHz) | Methods |
 | Square lattice spacing | $a = 6.7$ μm ($R_b/a = 1.15$) | Methods |
 | Minimum tweezer spacing | 3 μm | Methods |
+| Single-atom loading efficiency | 50–60% (MOT → reservoir tweezers) | Methods |
 | Filling fraction | 98.5% (1st pass); ~99.2% (2nd pass, >200 sites) | Methods |
 | AOD model / speed | AA Opto DTSX-400; 75 μm/ms; 15 μs ramp | Methods |
-| Total rearrangement time | 50–100 ms | Methods |
+| Rearrangement time (single pass) | 50–100 ms | Methods |
+| Rearrangement time (two-pass, >200 sites) | ~400 ms total | Methods |
 | SLM model | Hamamatsu X13138-02; 70 mλ correction → 18% gain | Methods |
 | Trap depth / waist | ~$2\pi \times 17$ MHz / ~900 nm | Methods |
 | Radial trap frequency | ~$2\pi \times 80$ kHz | Methods |
 | Rydberg lifetime | ~80 μs | Methods |
+| Off-resonant scattering ($\|g\rangle$) | $1/(20\ \mu\text{s})$ | Methods |
+| Off-resonant scattering ($\|r\rangle$) | $1/(150\ \mu\text{s})$ | Methods |
+| Rydberg detection fidelity (microwave-enhanced) | 99.1(4)% | Methods |
+| Rydberg detection fidelity (bare) | ~85% (15% decay during imaging) | Methods |
+| Ground-state detection fidelity | 99% | Methods |
+| Perfect ground-state prob. (225 atoms) | $0.99^{225} \approx 10\%$ (per-atom × 225) | Methods |
 | Critical exponent $\nu$ | 0.62(4) measured vs. 0.629 theory [(2+1)D Ising] | Main |
 | Correlation lengths | $\xi_H = 11.1(1)$, $\xi_V = 11.3(1)$ lattice sites (12×12 ordered phase) | Main |
 
