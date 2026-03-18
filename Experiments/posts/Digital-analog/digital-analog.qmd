@@ -1,0 +1,331 @@
+---
+categories:
+- Readings
+date: 2026-03-16
+description: 'Notes on the digital-analog conversion'
+lang: en
+title: 'Digital-Analog Conversion'
+bibliography: refs.bib
+draft: true
+---
+
+# Summary and questions
+
+In summary, the paper [@geim2026engineering] realized the Floquet engineering on three types of lattices of Rydberg atoms:
+
+1. **1D spin chain** — single-particle quantum walks demonstrating blockade-consistent hopping dynamics with tunable chemical potential $\mu$, hopping energy $J$, and next-nearest-neighbor interaction $U$.
+2. **Hexagonal plaquettes** — engineering three-body interactions via Floquet driving, from which six-body ring-exchange dynamics emerge at second order in perturbation theory.
+3. **271-site kagome lattice** — preparing and probing a non-equilibrium $U(1)$ quantum spin liquid (Rokhsar-Kivelson state), with multi-body coherence observed up to 18 sites.
+
+
+# Floquet on PXP model
+
+:::{#lem-flip-op .callout-important icon="false"}
+A laser operate on $\ket{1} \leftrightarrow \ket{r}$ transition with constant intensity $\Omega(t) \equiv \Omega$ and time dependent detuning 
+$$
+\Delta_e(t\big|t_e,w_e) = -\pi\sum_{n\in \mathbb{N}_0} f\left(t\big|t_e+n\frac{\tau}{2},w_e\right)
+$$
+where $\tau$ is the Floquet period, $t_e$ is the time of the first pulse in the period ( $t_e \le \tau/2$ ), and $f(t|\bar{t},w)$ is a normalized Gaussian function centered at $\bar{t}$ with pulse width $w$ : $f(t|\bar{t},w) = \frac{1}{w\sqrt{\pi}}e^{-(t-\bar{t})^2/w^2}$. At the limit of $w_e \to 0$, its operation during $[t_e + n\frac{\tau}{2} - \varepsilon, t_e + n\frac{\tau}{2} + \varepsilon]$ is equivalent to $\ket{\psi} \to e^{i\pi N}\ket{\psi}$
+:::
+
+:::{.callout-note collapse="true"}
+## Proof (Click to expand)
+
+**Step 1 (Gaussian converges to Dirac delta).** The normalized Gaussian $f(t|\bar{t},w) = \frac{1}{w\sqrt{\pi}}e^{-(t-\bar{t})^2/w^2}$ satisfies $\int_{-\infty}^{\infty} f(t|\bar{t},w)\,dt = 1$ for all $w > 0$. In the limit $w_e \to 0$, this converges (in the distributional sense) to the Dirac delta function:
+$$
+\lim_{w_e \to 0} f(t|\bar{t},w_e) = \delta(t - \bar{t}).
+$$
+Therefore the detuning becomes a train of ideal $\pi$-pulses:
+$$
+\Delta_e^{\text{ideal}}(t) = -\pi \sum_{n \in \mathbb{N}_0} \delta\!\left(t - t_e - n\frac{\tau}{2}\right),
+$$
+whose integral over any interval containing the pulse center gives $\int_{t_e - \varepsilon}^{t_e + \varepsilon} \Delta_e^{\text{ideal}}(t')\,dt' = -\pi$.
+
+**Step 2 (Schrödinger evolution during the pulse).** Consider the evolution operator during the pulse interval $[t_e - \varepsilon, t_e + \varepsilon]$:
+$$
+U_{\text{pulse}} = \exp\!\left(-i \int_{t_e-\varepsilon}^{t_e+\varepsilon} \bigl(H_{\text{PXP}} - \Delta_e(t) N\bigr)\,dt\right).
+$$
+As $w_e \to 0$ (i.e. $\varepsilon \to 0$), the $H_{\text{PXP}}$ contribution vanishes because $\Omega$ is finite and the integration window shrinks to zero: $\int H_{\text{PXP}}\,dt = O(\varepsilon) \to 0$. The detuning integral, however, survives as a delta function:
+$$
+\int_{t_e-\varepsilon}^{t_e+\varepsilon} \Delta_e(t)\,N\,dt = -\pi N.
+$$
+Therefore $U_{\text{pulse}} = e^{i\pi N}$, which acts on each site as $e^{i\pi n_j}\ket{1_j} = \ket{1_j}$ and $e^{i\pi n_j}\ket{r_j} = -\ket{r_j}$, imprinting a $\pi$ phase on every Rydberg-excited atom. $\square$
+:::
+
+:::{#lem-anti-commutation .callout-important icon="false"}
+## (Anti-commutation of the PXP Hamiltonian)
+The detuning $\pi$-pulse anti-commutes with $H_{\text{PXP}}$:
+$$
+e^{i\pi N} H_{\text{PXP}} e^{i\pi N} = -H_{\text{PXP}}.
+$$ {#eq-anti-comm}
+This identity is the algebraic foundation for the many-body echo: applying $e^{i\pi N}$ effectively reverses the sign of the PXP evolution [@turner2018; @maskara2021].
+:::
+
+:::{.callout-note collapse="true"}
+## Proof (Click to expand)
+
+**Step 1 (Factorization).** Since $[n_i, n_j] = 0$ for all sites $i \neq j$, we have $e^{i\pi N} = e^{i\pi \sum_i n_i} = \prod_i e^{i\pi n_i}$.
+
+**Step 2 (Commutativity with projectors).** The blockade constraint projector $\mathcal{P} = \prod_{\langle i,j\rangle}(1 - n_i n_j)$ is built entirely from number operators $n_i$. Since $e^{i\pi N}$ is also a function of the $\{n_i\}$, we have $[e^{i\pi N}, \mathcal{P}] = 0$.
+
+**Step 3 (Local Pauli algebra).** The operator $e^{i\pi n_j}$ acts on the local Hilbert space as:
+$$
+e^{i\pi n_j}\ket{1_j} = e^{0}\ket{1_j} = \ket{1_j}, \qquad e^{i\pi n_j}\ket{r_j} = e^{i\pi}\ket{r_j} = -\ket{r_j}.
+$$
+This is precisely the action of $\sigma_j^z$ (in the convention $\sigma^z = \ket{1}\!\bra{1} - \ket{r}\!\bra{r}$). By standard Pauli algebra, $\sigma^z \sigma^x \sigma^z = -\sigma^x$, so:
+$$
+e^{i\pi n_j}\,\sigma_j^x\, e^{i\pi n_j} = -\sigma_j^x.
+$$
+
+**Step 4 (Assembly).** Using Steps 2 and 3, we sandwich $H_{\text{PXP}}$:
+$$
+e^{i\pi N} H_{\text{PXP}} e^{i\pi N} = \frac{\Omega}{2}\sum_j \mathcal{P}\bigl(e^{i\pi n_j}\sigma_j^x e^{i\pi n_j}\bigr)\mathcal{P} = \frac{\Omega}{2}\sum_j \mathcal{P}\bigl(-\sigma_j^x\bigr)\mathcal{P} = -H_{\text{PXP}}.
+$$
+Note that $e^{i\pi N}$ is its own inverse since $N$ has integer eigenvalues: $e^{-i\pi N} = e^{i\pi N}$. $\square$
+:::
+
+The realized Hamiltonian writes:
+$$
+\frac{H_0(t)}{\hbar} = H_{\text{PXP}} - \Delta_e(t) N, \quad \frac{V(t)}{\hbar} = - \Delta_p(t) N
+$$
+By @lem-anti-commutation, each $\pi$-pulse from $\Delta_e(t)$ reverses the sign of $H_{\text{PXP}}$. The base evolution operator $U_0(t) = e^{-i H_{\text{PXP}} t_{\text{eff}}(t)}$ thus follows a "forward-reverse-forward" pattern within each Floquet period, where the effective evolution time is:
+$$
+\begin{align*}
+t_{\text{eff}}(t) = \left\{ 
+\begin{aligned}
+t & \text{ if } 0 \le t < t_e \\
+-t + 2 t_e & \text{ if } t_e \le t < t_e + \tau/2 \\
+t - \tau & \text{ if } t_e + \tau/2 \le t < \tau.
+\end{aligned} \right.
+\end{align*}
+$$
+At the end of the period ($t=\tau$), the net effective time returns to zero ($t_{\text{eff}}(\tau) = 0$), so no net evolution occurs at stroboscopic times (i.e., $U_0(\tau) = \mathbf{1}$). In this way we effectively generate the interaction-picture unitary $U_{\text{int}} = \mathcal{T}\exp{\left\{i \int_{0}^{\tau} dt\, \Delta_p(t)\, N(t_{\text{eff}}(t))\right\}}$ at stroboscopic times.
+
+:::{.callout-tip collapse="false"}
+## Stroboscopic observation principle
+At stroboscopic times $t = n\tau$, the base evolution operator is the identity: $U_0(n\tau) = e^{-i H_{\text{PXP}} \cdot 0} = \mathbf{1}$. The Schrödinger-picture state therefore coincides with the interaction-picture state:
+$$
+\ket{\psi_S(n\tau)} = U_0(n\tau)\ket{\psi_I(n\tau)} = \ket{\psi_I(n\tau)}.
+$$
+Any observable measured at $t = n\tau$ is faithfully described by $H_{\text{eff}}$. Although the effective Hamiltonian is a mathematical construct of the interaction picture, its predictions are physically real at the discrete stroboscopic sampling points — this is the foundation of Floquet quantum simulation.
+:::
+
+:::{#lem-PXP_with_floquet .callout-important icon="false"}
+A PXP model $H_{\text{PXP}} = \frac{\Omega}{2}\sum_i P_{i-1}\sigma_i^x P_{i+1}$ integrated with Floquet detuning $\Delta(t) = \Delta_e(t) + \Delta_p(t)$, where $\Delta_e(t)$ is defined in @lem-flip-op, and $\Delta_p(t)$ is an arbitrary detuning. The Hamiltonian under interaction picture writes:
+$$
+\frac{H_{\text{eff}}^{(0)}}{\hbar} = -\int_0^\tau dt \Delta_p(t) \left[ N + \frac{\Omega t_{\text{eff}}(t)}{2} H_{\text{PYP}} + \frac{(\Omega t_{\text{eff}}(t))^2}{4} \left(- H_{\text{PXYP}} + \frac{1}{4} H_{\text{ZIZ}} - 3 N\right) \right]
+$$
+:::
+
+:::{.callout-note collapse="true"}
+## Proof (Click to expand)
+
+The proof proceeds in three steps: (1) derive the interaction-picture Hamiltonian, (2) expand the time-evolved number operator via short-time Taylor series, and (3) substitute to obtain the stated result.
+
+### Step 1: Interaction picture
+
+Split the total Hamiltonian as $H(t)/\hbar = H_0(t)/\hbar + V(t)/\hbar$ where $H_0(t)/\hbar = H_{\text{PXP}} - \Delta_e(t) N$ generates the many-body echo and $V(t)/\hbar = -\Delta_p(t) N$ is the perturbation. The base evolution under the echo drive is $U_0(t) = e^{-i H_{\text{PXP}} t_{\text{eff}}(t)}$ (by @lem-flip-op and @lem-anti-commutation).
+
+Define the interaction-picture state $\ket{\psi_I(t)} = U_0^\dagger(t)\ket{\psi(t)}$. Substituting into the Schrödinger equation $i\hbar\partial_t\ket{\psi} = (H_0 + V)\ket{\psi}$ yields $i\hbar\partial_t\ket{\psi_I} = V_I(t)\ket{\psi_I}$, where the rotated perturbation is:
+$$
+\frac{V_I(t)}{\hbar} = U_0^\dagger(t)\left(-\Delta_p(t) N\right)U_0(t) = -\Delta_p(t)\,N(t_{\text{eff}}(t)),
+$$
+with $N(t_{\text{eff}}) \equiv e^{i t_{\text{eff}} H_{\text{PXP}}} N\, e^{-i t_{\text{eff}} H_{\text{PXP}}}$ the Heisenberg-evolved number operator. The formal solution is the Dyson series (time-ordered exponential):
+$$
+U_{\text{int}}(\tau) = \mathcal{T}\exp\!\left\{-i\int_0^\tau \frac{V_I(t)}{\hbar}\,dt\right\} = \mathcal{T}\exp\!\left\{i\int_0^\tau dt\,\Delta_p(t)\,N(t_{\text{eff}}(t))\right\}.
+$$
+The leading-order Floquet-Magnus expansion [@maskara2021; @else2017] then gives the effective Hamiltonian as the time-average over one period:
+$$
+\frac{H_{\text{eff}}^{(0)}}{\hbar} = -\int_0^\tau dt\,\Delta_p(t)\,N(t_{\text{eff}}(t)).
+$$ {#eq-Heff0}
+
+### Step 2: Short-time Taylor expansion of $N(t_{\text{eff}})$
+
+Since $\Omega t_{\text{eff}} \lesssim \Omega\tau / 8\pi \ll 1$ in the experiment, we expand $N(t_{\text{eff}})$ around $t_{\text{eff}} = 0$ using the Baker-Campbell-Hausdorff identity:
+$$
+N(t_{\text{eff}}) = N + i t_{\text{eff}} [H_{\text{PXP}}, N] - \frac{t_{\text{eff}}^2}{2}[H_{\text{PXP}}, [H_{\text{PXP}}, N]] + \mathcal{O}(t_{\text{eff}}^3).
+$$
+
+**First-order commutator.** We need $[H_{\text{PXP}}, N]$ with $H_{\text{PXP}} = \frac{\Omega}{2}\sum_j \mathcal{P}\sigma_j^x \mathcal{P}$ and $N = \sum_k n_k$. Since operators on distinct sites commute, only the local commutator $[\sigma_j^x, n_j]$ contributes:
+$$
+[\sigma^x, n] = (\ket{1}\!\bra{r} + \ket{r}\!\bra{1})\ket{r}\!\bra{r} - \ket{r}\!\bra{r}(\ket{1}\!\bra{r} + \ket{r}\!\bra{1}) = \ket{1}\!\bra{r} - \ket{r}\!\bra{1} = -i\sigma^y.
+$$
+The projectors $\mathcal{P}$ commute with $N$ (both are functions of $\{n_i\}$), so:
+$$
+[H_{\text{PXP}}, N] = \frac{\Omega}{2}\sum_j \mathcal{P}[\sigma_j^x, n_j]\mathcal{P} = -i\frac{\Omega}{2} H_{\text{PYP}},
+$$
+where $H_{\text{PYP}} \equiv \sum_j P_{j-1}\sigma_j^y P_{j+1}$. The first-order term becomes:
+$$
+i t_{\text{eff}}[H_{\text{PXP}}, N] = i t_{\text{eff}} \cdot \left(-i\frac{\Omega}{2}H_{\text{PYP}}\right) = \frac{\Omega t_{\text{eff}}}{2}H_{\text{PYP}}.
+$$
+
+**Second-order commutator.** We compute $[H_{\text{PXP}}, [H_{\text{PXP}}, N]] = -i\frac{\Omega}{2}[H_{\text{PXP}}, H_{\text{PYP}}]$. Writing $O_j^\alpha = P_{j-1}\sigma_j^\alpha P_{j+1}$ for brevity, this reduces to $\frac{\Omega}{2}\sum_{j,k}[O_j^x, O_k^y]$, which has non-zero contributions only when $|j-k| \le 1$.
+
+*Case $j = k$ (same site):* Using Pauli algebra $[\sigma^x, \sigma^y] = 2i\sigma^z$:
+$$
+[O_j^x, O_j^y] = 2i P_{j-1}\sigma_j^z P_{j+1} = 2i(1-n_{j-1})(2n_j - 1)(1-n_{j+1}).
+$$
+Under the blockade constraint $n_j n_{j\pm 1} = 0$, summing over all sites and using $H_{\text{ZIZ}} = \sum_j \sigma_j^z \sigma_{j+2}^z = 4\sum_j n_j n_{j+2} - 4N + L$ yields (dropping the constant $L$):
+$$
+\sum_j [O_j^x, O_j^y] = -2i\!\left(\frac{1}{4}H_{\text{ZIZ}} - 3N\right).
+$$
+
+*Case $|j-k|=1$ (nearest neighbors):* Expanding the cross terms $[O_j^x, O_{j+1}^y]$ using $\sigma^x P = \ket{r}\!\bra{1}$ and $P\sigma^y = i\ket{1}\!\bra{r}$:
+$$
+O_j^x O_{j+1}^y = i\,P_{j-1}\ket{r_j\, 1_{j+1}}\!\bra{1_j\, r_{j+1}}P_{j+2}.
+$$
+Computing all four terms $[O_j^x, O_{j+1}^y] + [O_{j+1}^x, O_j^y]$ and summing produces the blockaded spin-exchange operator:
+$$
+\sum_{\text{n.n.}} = 2i\, H_{\text{PXYP}}, \quad H_{\text{PXYP}} \equiv \frac{1}{2}\sum_j P_{j-1}\bigl(\sigma_j^x\sigma_{j+1}^x + \sigma_j^y\sigma_{j+1}^y\bigr)P_{j+2}.
+$$
+
+Combining both cases:
+$$
+[H_{\text{PXP}}, H_{\text{PYP}}] = i\Omega\!\left(H_{\text{PXYP}} - \frac{1}{4}H_{\text{ZIZ}} + 3N\right).
+$$
+The second-order Taylor coefficient evaluates to:
+$$
+-\frac{t_{\text{eff}}^2}{2}[H_{\text{PXP}}, [H_{\text{PXP}}, N]] = -\frac{t_{\text{eff}}^2}{2}\!\left(-i\frac{\Omega}{2}\right)\cdot i\Omega\!\left(H_{\text{PXYP}} - \frac{1}{4}H_{\text{ZIZ}} + 3N\right) = \frac{(\Omega t_{\text{eff}})^2}{4}\!\left(-H_{\text{PXYP}} + \frac{1}{4}H_{\text{ZIZ}} - 3N\right).
+$$
+
+Assembling the expansion:
+$$
+N(t_{\text{eff}}) = N + \frac{\Omega t_{\text{eff}}}{2}H_{\text{PYP}} + \frac{(\Omega t_{\text{eff}})^2}{4}\!\left(-H_{\text{PXYP}} + \frac{1}{4}H_{\text{ZIZ}} - 3N\right) + \mathcal{O}((\Omega\tau)^3).
+$$ {#eq-N-expansion}
+
+### Step 3: Substitution
+
+Inserting @eq-N-expansion into @eq-Heff0, and noting that the operators $N$, $H_{\text{PYP}}$, $H_{\text{PXYP}}$, $H_{\text{ZIZ}}$ are time-independent (only the scalar functions $\Delta_p(t)$, $t_{\text{eff}}(t)$, $t_{\text{eff}}(t)^2$ remain inside the integral), we obtain:
+$$
+\frac{H_{\text{eff}}^{(0)}}{\hbar} = -\int_0^\tau dt\,\Delta_p(t)\!\left[N + \frac{\Omega t_{\text{eff}}(t)}{2}H_{\text{PYP}} + \frac{(\Omega t_{\text{eff}}(t))^2}{4}\!\left(-H_{\text{PXYP}} + \frac{1}{4}H_{\text{ZIZ}} - 3N\right)\right].
+$$
+This is exactly the stated result. By choosing the detuning profile $\Delta_p(t)$ and drive period $\tau$, the scalar integrals $\int \Delta_p\,dt$, $\int \Delta_p\, t_{\text{eff}}\,dt$, $\int \Delta_p\, t_{\text{eff}}^2\,dt$ can be independently tuned to control the coefficients of each operator — realizing a family of effective Hamiltonians with tunable chemical potential, hopping, and interaction strengths [@koyluoglu2024floquet]. $\square$
+:::
+
+# Ring Exchange on Hexagonal Plaquettes
+
+The Floquet framework extends naturally to two-dimensional geometries. On hexagonal plaquettes, the goal is to engineer **six-body ring exchange** — a collective process that simultaneously flips all six spins around a hexagon. Rather than generating this directly (which would require impractically high-order terms), the strategy is indirect [@koyluoglu2024floquet]:
+
+1. **First order (Floquet):** Engineer strong three-body interactions $g_3 \sum_i \mathcal{P}\,\sigma_i^y\sigma_{i+1}^y\sigma_{i+2}^y\,\mathcal{P}$ together with a large effective chemical potential $\mu$ using an asymmetric Floquet drive.
+2. **Second order (perturbation theory):** Under large $\mu$, a single three-body flip creates a high-energy virtual state. A second adjacent three-body flip returns the system to the low-energy sector. This virtual process ($3 + 3 = 6$ spins) yields an effective six-body ring-exchange operator at energy scale $g_6^{(\text{eff})} \sim g_3^2/\mu$.
+
+The asymmetric drive profile for hexagonal plaquettes takes the form:
+$$
+\frac{\Delta(t)}{2\pi} = (\varepsilon_0 - 0.5)\sum_n f(t|n\tau, w_e) + (\varepsilon_1 - 0.5)\sum_n f\!\left(t\Big|\frac{\tau}{2}+n\tau, w_e\right) + A\cos\!\left(\frac{2\pi}{\tau}t\right) + \frac{\Delta_0}{2\pi},
+$$
+where $\varepsilon_0 \neq \varepsilon_1$ (asymmetric pulse areas), $A$ is a cosine modulation amplitude controlling the dynamics speed, and $\Delta_0$ is a static offset.
+
+A key experimental result is that the ring-exchange dynamics and two-body hopping occur on the **same timescale** — breaking the conventional perturbative hierarchy where higher-order processes are exponentially slower. To isolate the two types of dynamics:
+
+- A **single-spin excitation** initial state can only hop between sites (no ring exchange possible), revealing the two-body dynamics.
+- A **Néel state** $\ket{101010}$ on the hexagon satisfies the ring-exchange condition, and two-body hopping is blockade-suppressed, isolating the six-body dynamics.
+
+This approach generalizes further to two-dimensional lattice gauge theories [@feldmeier2024].
+
+# Scientific Significance and Architecture Assessment
+
+## What was observed and its value
+
+| Aspect | Assessment |
+|--------|-----------|
+| **Novelty** | First experiment to repurpose the 4-zone architecture for analog simulation (all prior 4-zone work was digital QEC). First coherent mapping between Rydberg (analog) and hyperfine (digital) manifolds. First experimental realization of six-body ring exchange on a quantum simulator. |
+| **Practical value** | Demonstrates that the same 4-zone hardware can serve both digital QEC and analog Hamiltonian engineering — unifying both paradigms. The ring-exchange operator is the key ingredient for quantum dimer models and $U(1)$ spin liquids, opening access to exotic phases of matter. |
+| **Verification value** | Validates the Floquet engineering protocol (Köylüoğlu 2025) experimentally; demonstrates multi-body coherence up to 18 sites on the 271-site kagome lattice; confirms the Rokhsar-Kivelson state preparation. |
+
+## Architecture comparison: 4-zone used for analog simulation
+
+| Parameter | Geim 2026 (4-zone analog) | Previous analog experiments (1-zone) | Impact |
+|-----------|---------------------------|--------------------------------------|--------|
+| **Atom reservoir** | 352-site reservoir (11 rows × 32 columns, ~75% loading) for replenishment | None | Sustains 20–200 Floquet cycles per run; loss ≈1.8% per run compensated |
+| **Two Rydberg states** | $n=53$ (1D) and $n=70$ (2D kagome) | Typically $n=70$ only | Different interaction strengths for different geometries |
+| **Intensity homogenization** | Automated + closed-loop Bayesian optimization | Manual or open-loop | Essential for 271-site kagome uniformity |
+| **Local boundary compensation** | 74 boundary atoms with individual detuning | No boundary compensation | Reduces finite-size effects in spectral measurements |
+| **Mid-circuit capability** | Available (used for digital state prep steps) | N/A | Enables analog-digital hybrid protocols |
+
+The key innovation is using the reservoir zone for analog experiments: atom loss during Floquet driving is replenished between cycles, sustaining coherent dynamics for much longer than a single-zone system could achieve.
+
+## Critical technique needing optimization
+
+**Most important: intensity inhomogeneity and Rydberg interaction tails in the 2D kagome geometry.**
+
+The dominant decoherence mechanism observed in the 2D kagome experiments is not spontaneous emission but rather **beam intensity inhomogeneity** (2–3% peak-to-peak variation across the 271-site array) combined with **long-range Rydberg interaction tails**. Concretely:
+
+1. **Intensity inhomogeneity:** A 2–3% peak-to-peak variation in the Rydberg drive intensity across the array means each site experiences a slightly different effective Rabi frequency $\Omega_i = \Omega(1 + \delta_i)$. The Floquet-Magnus expansion coefficients — and hence the engineered $J$, $\mu$, $U$ — pick up site-dependent errors $\delta J_i \propto \delta_i$. This limits Ramsey fringe contrast in the 2D geometry and is the primary reason for the post-selection requirement (retention fractions 81–96% in the QSL experiments). The Bayesian optimizer partially mitigates this but cannot fully compensate spatially correlated beam structure.
+
+2. **Rydberg interaction tails:** The van der Waals interaction falls as $V(r) = V_0/r^6$. For $n=70$ on the kagome lattice (atom spacing 6.0 μm), next-nearest-neighbor interactions are non-negligible and contribute unwanted $ZZ$-type terms not included in the target Hamiltonian. These tails cause Ramsey contrast reduction that worsens with system size.
+
+3. **Finite pulse width $w_e = 16$ ns:** The echo pulses have finite duration compared to $\tau = 0.36$ μs. During each pulse, $H_\text{PXP}$ is not fully suppressed, causing $O(w_e^2/\tau^2)$ corrections (estimated $< 0.2\%$ per cycle, but accumulate over 20–200 cycles).
+
+4. **Higher-order Floquet corrections:** The effective Hamiltonian $H_\text{eff}^{(0)}$ is the leading Magnus term. Higher-order corrections scale as $(\Omega\tau)^2 \sim (2\pi \times 2.3 \text{ MHz} \times 0.36 \text{ μs})^2 \approx (5.2 \text{ rad})^2$, which is not negligible — the Bayesian learning protocol is needed precisely to find the drive parameters that suppress these corrections empirically.
+
+::: {.callout-warning}
+**Note on Rydberg decay:** The $n=70$ state has a radiative decay rate $\Gamma \sim 1$ kHz, corresponding to a lifetime of $\sim 1$ ms — far longer than the experiment duration. The relevant dephasing rate is instead set by T₂* ≈ 1–2 μs (measured in the 2D geometry), which is dominated by the interaction-tail and intensity-inhomogeneity mechanisms above, **not** by spontaneous emission. The two rates differ by $\sim 10^3\times$.
+:::
+
+**Paths to improvement:**
+
+- Better beam-shaping optics to reduce the 2–3% intensity inhomogeneity to $< 0.5\%$
+- Using $n=53$ instead of $n=70$ in 2D would reduce interaction tails (weaker $V_0 = 14.2$ MHz vs 18.1 MHz) at the cost of shorter range interactions
+- Composite pulse sequences for the echo to reduce finite-width $w_e$ errors
+- Reservoir replenishment already compensates the ≈1.8%/run loss from Rydberg decay
+
+## Key experimental parameters
+
+| Parameter | Value | Context |
+|-----------|-------|---------|
+| Floquet period $\tau$ | 0.36 μs | 1D and 2D experiments |
+| Rabi frequency $\Omega$ (1D) | $2\pi \times 2.3$ MHz | PXP drive |
+| Echo pulse width $w_e$ | 16 ns | Rydberg detuning pulse |
+| Probe pulse width $w_p$ | 8 ns | Hyperfine Raman pulse |
+| $\pi$-pulse duration | 70 ns | Both Rydberg and Raman |
+| Rydberg interaction (n=53) | $V_0 = 14.2$ MHz | 1D chain, $a = 3.6$ μm |
+| Rydberg interaction (n=70) | $V_0 = 18.1$ MHz | 2D kagome, $a = 6.0$ μm |
+| Atom spacing (1D) | 3.6 μm | 1D chain geometry |
+| Atom spacing (2D kagome) | 6.0 μm | 271-site kagome lattice |
+| Rabi oscillation contrast | 97.8(1)% | Hardware benchmark |
+| Rydberg $\pi$-pulse infidelity | ≤1.3% (2D) | Upper bound from calibration |
+| Loss per analog run | ≈1.8% | Compensated by reservoir |
+| T₂* (n=70, 2D) | 1–2 μs | Dephasing-limited (not decay) |
+| Reservoir geometry | 11 rows × 32 columns | ≈264 loaded atoms at 75% filling |
+| Floquet cycles per load | 20–200 | Depending on evolution time |
+| Post-selection retention (1D) | 55% | 19-site analysis region |
+| Post-selection retention (hex) | 77% | Hexagonal plaquettes |
+| Post-selection retention (QSL) | 81–96% | Kagome QSL experiments |
+
+## Spectral function measurement (1D chain)
+
+The most direct benchmark of the Floquet engineering protocol is the **single-particle spectral function** $\omega(k)$ measurement on the 1D chain. Starting from a superposition initial state, a Ramsey-like protocol measures the oscillation frequency at each quasi-momentum $k$, directly probing the dispersion relation of the engineered hopping Hamiltonian.
+
+The measured dispersion relation is:
+$$
+\frac{\omega(k)}{2\pi} = \frac{\mu + 4U}{2\pi} - \frac{2J}{2\pi}\cos(ka) = 0.407(2) - 0.281(2)\cos(ka) \quad [\text{MHz}]
+$$ {#eq-dispersion}
+
+from which the individual Hamiltonian parameters are extracted:
+
+| Parameter | Spectroscopy fit | Bayesian learning | Floquet-Magnus prediction |
+|-----------|-----------------|-------------------|--------------------------|
+| $J/2\pi$ | $-0.140(1)$ MHz | $-0.143$ MHz | — |
+| $(\mu + 4U)/2\pi$ | $0.407(2)$ MHz | — | — |
+| $U/2\pi$ | $0.023$ MHz | — | — |
+
+The agreement between the spectroscopy-fitted $J$ and the Bayesian-learned value ($-0.140$ vs $-0.143$ MHz, a 2% discrepancy) confirms that both the frequency-domain and time-domain approaches to characterizing the effective Hamiltonian are consistent. This constitutes the paper's primary quantitative verification of the Floquet engineering protocol.
+
+**Scientific significance:** The dispersion relation @eq-dispersion matches the free-fermion form expected for the Bose-Hubbard chain in the hard-core limit, validating that the Floquet drive successfully suppresses the native PXP dynamics and engineers a target hopping Hamiltonian with independently controlled $J$, $\mu$, and $U$ [@geim2026engineering].
+
+## Multi-body coherence and QSL diagnostics
+
+On the 271-site kagome lattice, the paper diagnoses the Rokhsar-Kivelson (RK) quantum spin liquid state through several complementary measurements:
+
+- **Coherence length:** Coherent superpositions are observed up to **18 sites**, limited by the combination of intensity inhomogeneity and Rydberg interaction tails described above.
+- **RK energy equality:** A direct projector measurement confirms $\langle T\rangle_\text{proj} = \langle V\rangle_\text{proj} = +1$, the hallmark of the RK point where kinetic and potential energy operators have equal expectation values.
+- **Perimeter law:** The $X$-loop operator (measuring resonance around closed loops) decays as a perimeter law — not an area law — confirming topological order rather than trivial paramagnetic behavior. This decay is observed for loops up to **33 total sites**.
+- **Dimer correlations:** The dimer-dimer correlation function shows the $1/r^{1/2}$ algebraic decay expected for the $U(1)$ QSL critical point, consistent with the RK state.
+
+## Bayesian optimization protocol
+
+The 271-site kagome experiment requires uniform drive intensity across the array. The paper uses a **closed-loop Bayesian optimizer** with **8 free parameters** controlling the spatial profile of the Rydberg drive to minimize intensity inhomogeneity. The optimizer iteratively adjusts beam shaping parameters based on measured contrast in calibration sequences, achieving the intensity homogenization essential for sustaining coherent dynamics across the full 271-site array.
+
+## Ring-exchange rate vs. perturbative prediction
+
+The theoretical prediction for the effective six-body ring-exchange rate is $g_6^{(\text{eff})} \sim g_3^2/\mu$, arising from virtual excitation of three-body intermediate states. The key experimental demonstration is that ring-exchange dynamics and two-body hopping occur on the **same timescale** — a non-perturbative regime where the Floquet engineering has moved the system far from the naive hierarchy where higher-order processes are exponentially slower. The state-selective initial state preparation (Néel state for ring exchange, single-spin excitation for hopping) allows independent calibration of each process, verifying that both $g_6$ and $J$ are comparable in magnitude after Floquet optimization [@koyluoglu2024floquet].
