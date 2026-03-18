@@ -25,7 +25,7 @@ A concept class $\mathcal{C}$ over domain $\mathcal{X}$ is **PAC learnable** if 
 $$
 \Pr\bigl[\operatorname{err}_{\mathcal{D}}(h) > \varepsilon\bigr] < \delta,
 $$ {#eq-pac}
-using at most $\operatorname{poly}(1/\varepsilon,\, 1/\delta,\, n)$ samples, where $n$ is the representation length of concepts in $\mathcal{C}$.
+using at most $\operatorname{poly}(1/\varepsilon,\, 1/\delta,\, \ell)$ samples, where $\ell$ is the representation length of concepts in $\mathcal{C}$. (Throughout Part II, $n$ denotes the bit-length of the prime modulus $p \approx 2^n$; these are distinct parameters.)
 ::::
 
 ::::{#def-concept-class .callout-note icon="false"}
@@ -104,7 +104,7 @@ Nguyen et al. [@nguyen2026quantum] further show that under group orbit symmetry,
 | Learning Model | Oracle Queries | Time Complexity | Lower Bound Basis | Feasibility |
 |:---|:---|:---|:---|:---|
 | Classical PAC | $O(\operatorname{poly}(n))$ | Exponential | DLP / PRF assumption | Intractable |
-| Classical SQ | $\tau^2 \exp(n^{\Omega(1)})$ | Exponential | Fourier / Boas--Bellman | Intractable |
+| Classical SQ | $\tau^{-2} \exp(n^{\Omega(1)})$ | Exponential | Fourier / Boas--Bellman | Intractable |
 | Quantum PAC | $O(1)$ to $O(\operatorname{poly}(n))$ | Polynomial | QFT / Shor's algorithm | Efficient |
 
 : Learning complexity of $\mathcal{L}_{\mathrm{modexp}}$ across classical and quantum models. {#tbl-complexity}
