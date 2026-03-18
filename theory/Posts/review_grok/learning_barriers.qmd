@@ -117,10 +117,34 @@ PAC hardness addresses the worst case. Modern neural networks, however, are trai
 
 ::::{#lem-fourier-decay .callout-note icon="false"}
 ## Lemma (Low-Frequency Fourier Decay)
-For the mapping $x \mapsto ax \bmod p$ where $p$ is a large prime, the Boolean function formed by the output bits has exponentially small Fourier coefficients in the low-frequency regime. The spectral energy concentrates almost entirely on high-frequency Fourier basis functions.
+Let $p \approx 2^n$ be a large prime, $a \in \mathbb{Z}_p^*$, and let $f_k : \mathbb{Z}_p \to \{0,1\}$ denote the indicator $f_k(x) = b_k(ax \bmod p)$ that the $k$-th bit of the output $ax \bmod p$ equals 1.  Write Fourier characters as $\chi_\xi(x) = e^{2\pi i\xi x/p}$ with coefficient $\hat{f}_k(\xi) = \frac{1}{p}\sum_x f_k(x)\,\chi_\xi(x)$.
+
+Then for all input frequencies $|\xi| \ll p / 2^k$:
+$$
+|\hat{f}_k(\xi)| = O\!\left(\frac{2^k}{p}\right) = O\!\left(2^{k-n}\right),
+$$ {#eq-fourier-decay}
+which is exponentially small in $n - k$ (the number of output bits above bit $k$).  The spectral mass of $f_k$ concentrates near the input frequency
+$$
+\xi^* \;=\; a\,\Bigl\lfloor p/2^{k+1}\Bigr\rfloor \bmod p \;\sim\; p,
+$$ {#eq-spectral-peak}
+and its odd harmonics $m\xi^*$ ($m$ odd), all of order $\Theta(p)$.
 ::::
 
-On the Boolean hypercube $\{0,1\}^n$ or finite ring $\mathbb{Z}_p$, any Boolean function $f$ admits a Fourier expansion $f = \sum_{S} \hat{f}(S)\, \chi_S$, where $\chi_S$ are the Fourier basis functions and $\hat{f}(S)$ are the Fourier coefficients. For modular arithmetic functions, the coefficients at low frequencies (small $|S|$) are exponentially suppressed, while the energy is dispersed across exponentially many high-frequency modes. This spectral flatness is precisely what makes the function appear pseudorandom to any algorithm that can only probe low-order statistical moments.
+::: {.proof}
+*Proof sketch.*  Substitute $y = ax \bmod p$ (a bijection on $\mathbb{Z}_p$) to obtain the key change-of-variables identity
+$$
+\hat{f}_k(\xi) = \hat{b}_k\!\bigl(\xi\, a^{-1} \bmod p\bigr),
+$$ {#eq-cov-identity}
+where $b_k(y) = b_k(ax \bmod p)$ is the $k$-th bit indicator on the output, a square wave of period $T = 2^{k+1}$ over $y \in \mathbb{Z}_p$.  In the continuous limit, this square wave has non-zero Fourier components only at harmonics $\xi' = m p/T = m p/2^{k+1}$ (odd $m$), each of magnitude $2/(m\pi p) \cdot p/2 = 1/(m\pi)$; at all other frequencies $|\hat{b}_k(\xi')| = O(2^k / p)$ from a geometric-series estimate of the partial sums.
+
+For small input frequency $|\xi| = O(1)$, the mapped frequency is $\xi' = \xi a^{-1} \bmod p$.  Since $a$ is coprime to $p$, $a^{-1} \in \{1, \ldots, p-1\}$, so generically $|\xi'| = O(p)$ — far from any resonance of $b_k$ — giving the bound $|\hat{f}_k(\xi)| = |\hat{b}_k(\xi')| = O(2^k/p)$.  The spectral peak @eq-spectral-peak follows by tracing the resonance condition $\xi' \approx p/2^{k+1}$ back through the change of variables $\xi = a\xi' \bmod p$. See [@odonnell2014analysis, Ch. 1–3] for the Boolean Fourier framework and [@edelman2024gradient, §2] for the connection to gradient-descent hardness.
+:::
+
+On the Boolean hypercube $\{0,1\}^n$ or finite ring $\mathbb{Z}_p$, any Boolean function $f$ admits a Fourier expansion $f = \sum_{\xi} \hat{f}(\xi)\, \chi_\xi$.  The bound @eq-fourier-decay shows that modular multiplication maps low input-frequency queries $\xi = O(1)$ to non-resonant output frequencies via the scrambling factor $a^{-1}$, so the spectral energy below any threshold $L \ll p/2^k$ satisfies
+$$
+\sum_{|\xi| \leq L} |\hat{f}_k(\xi)|^2 \;\leq\; 2L \cdot \left(\frac{2^k}{p}\right)^2 = O\!\left(\frac{L\, 4^k}{p^2}\right),
+$$ {#eq-low-freq-energy}
+while the total Parseval energy is $\mathbb{E}[f_k^2] \approx 1/4$.  For $L = \operatorname{poly}(n)$ and $k = 0$: the fraction of energy at low frequencies is $O(\operatorname{poly}(n)/p^2) = 2^{-\Omega(n)}$ — exponentially small.  This spectral flatness is precisely what makes the function appear pseudorandom to any algorithm that can only probe low-order statistical moments.
 
 ::::{#lem-correlation-bound .callout-note icon="false"}
 ## Lemma (Pairwise Correlation Bound)
