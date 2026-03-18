@@ -34,10 +34,10 @@ Quantum Extreme Reservoir Computing (QERC) on QuEra's Aquila — a cloud-accessi
 - **No variational optimization needed:** The physics-native Rydberg dynamics in the blockade regime already generate classically intractable correlations without any parameter optimization of the quantum circuit. This completely sidesteps the barren plateau problem.
 - **Sparse connectivity suffices:** Intra-module sparse connectivity (not all-to-all) matches the performance of fully connected reservoir architectures, important for hardware scalability.
 - **Quantum kernel advantage on synthetic data:** On synthetic benchmarks designed to separate quantum from classical feature spaces, the quantum reservoir outperformed classical kernel methods by **(7.1 ± 3.1)%** accuracy, demonstrating a statistically significant quantum kernel advantage.
-- **Competitive ML performance on three benchmarks:**
-  - *MNIST binary (digits 3 vs. 8):* test accuracy **0.935** at ~220 shots per input.
-  - *Santa Fe chaotic timeseries prediction:* competitive NMSE compared to classical echo-state networks.
-  - *Plant Village disease classification (multi-class):* accuracy scales with system size up to 108 qubits, with the larger reservoir consistently outperforming smaller sub-arrays.
+- **Competitive ML performance on three benchmarks** (note: only the Tomato task scales to 108 qubits; the headline ML benchmarks are small systems):
+  - *MNIST binary (digits 3 vs. 8):* **9 qubits** (9-atom 1D chain, 8 PCA features); test accuracy **0.935** at ~220 shots per input.
+  - *Santa Fe chaotic timeseries prediction:* **12 qubits** (12-atom chains); best simulated NMSE **0.004** (local-pulse encoding) / **0.0038** (position encoding) from Table I — no single experimental NMSE is quoted in the paper.
+  - *Plant Village disease classification (multi-class):* **9–108 qubits** (2D arrays; largest 9×12 = 108); accuracy scales with system size, with the 108-qubit point surpassing the 4-layer NN baseline (exact % only in Fig. 3(e)).
 
 ## Scientific significance
 
@@ -58,7 +58,7 @@ Quantum Extreme Reservoir Computing (QERC) on QuEra's Aquila — a cloud-accessi
 | Shots per input | 40–1,000 (task-dependent) | $\sim 10^2$–$10^3$ | See task breakdown above |
 | Atom spacing (NN) | 10 μm | 4–6.8 μm | Larger spacing → weaker blockade interactions on Aquila |
 | Gate fidelity | N/A (analog) | N/A (analog) | Neither platform has discrete gates |
-| Readout fidelity | ~95% (analog single-shot) | ~95% | 3-zone readout (99.8%) not available on Aquila |
+| Readout fidelity | ~95% (analog single-shot) [@wurtz2023aquila] | ~95% | Value from Aquila hardware spec [@wurtz2023aquila], not quoted in this paper; 3-zone readout (99.8%) not available on Aquila |
 | Defect-free yield (108 q) | **~60%** of shots affected by point defects but **NOT discarded** | N/A | All shots retained for 2D arrays; only 1D chain experiments discard <10% via postselection |
 | Field of view | $76 \times 75$ μm | Similar | Aquila spec |
 
@@ -92,10 +92,12 @@ where $\delta_0$ is the applied local detuning and $\theta$ is the beam waist an
 
 **Concrete numbers (extractable without consulting the original paper):**
 
-| Benchmark | Metric | Value | Shots |
-|-----------|--------|-------|-------|
-| MNIST binary (3 vs. 8) | Test accuracy | **0.935** | ~220 |
-| Synthetic quantum kernel | Accuracy advantage over classical reservoir | **(7.1 ± 3.1)%** | ~40 |
+| Benchmark | Qubits | Metric | Value | Shots |
+|-----------|--------|--------|-------|-------|
+| MNIST binary (3 vs. 8) | **9** (9-atom 1D chain, 8 PCA features → 8 NN interactions) | Test accuracy | **0.935** | ~220 |
+| Santa Fe chaotic timeseries | **12** (12-atom chains) | Best NMSE (sim., position enc.) | **0.0038** | — |
+| Tomato disease classification | **9–108** (2D arrays, largest 9×12) | Scales with size; 108-q surpasses 4-layer NN baseline | *no explicit % in paper* | — |
+| Synthetic quantum kernel | **~9** | Accuracy advantage over classical reservoir | **(7.1 ± 3.1)%** | ~40 |
 | Shot saturation point | Beyond this, accuracy flat | ~1,000 | — |
 | Defect handling (108 q) | 2D arrays: ~60% shots affected but ALL retained (no postselection); 1D chains: <10% discarded | — | — |
 | Atom spacing (Aquila NN) | Nearest-neighbor | **10 μm** | — |
@@ -109,7 +111,10 @@ where $\delta_0$ is the applied local detuning and $\theta$ is the beam waist an
 | Rabi frequency $\Omega$ — Tomato | | **$5\pi$ MHz** | — |
 | Ramp time (up/down) | | **0.05 μs** each | — |
 | Local detuning amplitude (Santa Fe) | $\Delta_l^\text{max}$ | **−8 MHz** | — |
-| Santa Fe NMSE | <!-- TODO: extract from Fig. 2(c) --> | *competitive with classical ESN* | — |
+| Santa Fe NMSE (simulated, local-pulse encoding) | Best NMSE from Table I | **0.004** | — |
+| Santa Fe NMSE (simulated, position encoding) | Best NMSE from Table I | **0.0038** | — |
+| Santa Fe NMSE (simulated, global-pulse irregular) | Worst encoding, Table I | **0.025** | — |
+| Santa Fe NMSE (experimental) | Not quoted in paper text | *no single number given* | — |
 
 <!-- TODO: Quantify the relationship between reservoir expressivity (effective Hilbert space dimension explored) and the Rydberg blockade constraint strength — the paper hints at this but does not give a closed-form result. -->
 <!-- TODO: Compare with other QRC experiments (superconducting: Suzuki 2022, photonic: Nokkala 2021) — refs not yet in refs.bib. -->
