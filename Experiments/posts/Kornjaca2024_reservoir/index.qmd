@@ -1,0 +1,100 @@
+---
+categories:
+- Readings
+date: 2026-03-18
+description: 'Reading notes on Kornjaca et al. 2024 — large-scale quantum reservoir computing on QuEra Aquila with up to 108 qubits'
+lang: en
+title: 'Kornjaca 2024: Quantum Reservoir Computing'
+bibliography: refs.bib
+draft: true
+---
+
+# Summary and Questions
+
+**Paper:** Kornjaca et al., "Large-scale quantum reservoir learning with an analog quantum computer," arXiv:2407.02553 (2024) [@kornjaca2024reservoir]
+
+**Architecture:** 1-zone analog (QuEra Aquila) [@wurtz2023aquila]
+
+## What was done
+
+Quantum Extreme Reservoir Computing (QERC) on QuEra's Aquila — a cloud-accessible single-zone analog Rydberg processor — repurposing the array as a nonlinear feature extractor for machine learning:
+
+1. **Data encoding:** Classical input data is encoded into local detuning patterns applied to individual atoms, defining the initial conditions for the analog evolution.
+2. **Analog evolution:** The Rydberg blockade Hamiltonian evolves the system for a fixed time $T$, generating complex many-body correlations from the encoded input.
+3. **Measurement and readout:** Single-shot projective measurements in the $Z$ basis; expectation values of local observables $\langle n_i \rangle$ and correlators $\langle n_i n_j \rangle$ are estimated from a task-dependent number of shots: ~40 shots (synthetic kernel advantage benchmark), ~220 shots (MNIST binary best result), up to ~1,000 shots (saturation point beyond which accuracy no longer improves).
+4. **Classical post-processing:** A simple linear classifier (ridge regression) trained on the measurement features performs the final classification/regression task.
+5. **Scaling study:** Tested with up to 108 qubits — the largest quantum machine learning experiment at the time of publication.
+
+## Key observations
+
+- **No variational optimization needed:** The physics-native Rydberg dynamics in the blockade regime already generate classically intractable correlations without any parameter optimization of the quantum circuit. This completely sidesteps the barren plateau problem.
+- **Sparse connectivity suffices:** Intra-module sparse connectivity (not all-to-all) matches the performance of fully connected reservoir architectures, important for hardware scalability.
+- **Quantum kernel advantage on synthetic data:** On synthetic benchmarks designed to separate quantum from classical feature spaces, the quantum reservoir outperformed classical kernel methods by **(7.1 ± 3.1)%** accuracy, demonstrating a statistically significant quantum kernel advantage.
+- **Competitive ML performance on three benchmarks:**
+  - *MNIST binary (digits 3 vs. 8):* test accuracy **0.935** at ~220 shots per input.
+  - *Santa Fe chaotic timeseries prediction:* competitive NMSE compared to classical echo-state networks.
+  - *Plant Village disease classification (multi-class):* accuracy scales with system size up to 108 qubits, with the larger reservoir consistently outperforming smaller sub-arrays.
+
+## Scientific significance
+
+| Aspect | Assessment |
+|--------|-----------|
+| **Novelty** | First large-scale ($>100$ qubit) quantum ML experiment on a commercial quantum processor. Novel gradient-free approach that avoids variational optimization entirely. |
+| **Practical value** | Demonstrates a near-term use case for NISQ analog quantum computers: feature extraction for ML. The gradient-free nature makes it robust to noise. However, classical surrogates may match performance on most practical tasks. |
+| **Verification value** | Empirically demonstrates that Rydberg blockade dynamics produce features that are classically hard to reproduce (quantum kernel advantage), though only on synthetic benchmarks where the advantage is constructed by design. |
+
+
+## Architecture comparison: relative to 1-zone/3-zone/4-zone review benchmarks
+
+| Parameter | Kornjaca 2024 (Aquila) | SOTA 1-zone (Manovitz 2025) | Notes |
+|-----------|----------------------|---------------------------|-------|
+| Atom count | 108 (of 256 available) | ~300 | Aquila limited to 256 max |
+| Platform | QuEra Aquila (cloud) | Harvard lab | Cloud-accessible |
+| Local addressing | Local detuning beams | Global control | Aquila supports programmable local detuning |
+| Shots per input | 40–1,000 (task-dependent) | $\sim 10^2$–$10^3$ | See task breakdown above |
+| Atom spacing (NN) | 10 μm | 4–6.8 μm | Larger spacing → weaker blockade interactions on Aquila |
+| Gate fidelity | N/A (analog) | N/A (analog) | Neither platform has discrete gates |
+| Readout fidelity | ~95% (analog single-shot) | ~95% | 3-zone readout (99.8%) not available on Aquila |
+| Defect-free yield (108 q) | **~40%** usable shots | N/A | ~60% of shots discarded due to sorting defects |
+| Field of view | $76 \times 75$ μm | Similar | Aquila spec |
+
+**Key difference from other 1-zone experiments:** This is the only experiment using *local* detuning for data encoding, which triggers Bottleneck 2 (local detuning → AC Stark shift decoherence) from the review. The decoherence from local beam gradients limits the effective evolution time and thus the expressivity of the quantum feature map.
+
+
+## Critical technique analysis
+
+**Most important technique needing optimization: Local detuning beam quality (Bottleneck 2 from review).**
+
+This is the *primary* bottleneck specific to this experiment. The other Rydberg analog platforms in the review use global control and avoid it entirely; QERC on Aquila depends on local detuning beams for data encoding, so beam quality directly sets the expressivity ceiling.
+
+1. **Gaussian beam intensity gradients (primary bottleneck):** Each local beam has a Gaussian spatial profile. Atoms near the beam edge experience intensity fluctuations from thermal motion through the gradient, causing random detuning noise:
+$$
+\frac{1}{T_2} = \frac{1}{T_{2,0}} + \frac{\delta_0}{\theta}
+$$
+where $\delta_0$ is the applied local detuning and $\theta$ is the beam waist angle (sets the gradient steepness — smaller waist → steeper gradient → stronger coupling to thermal jitter). Stronger local detuning $\delta_0$ → faster decoherence. This creates a fundamental trade-off between encoding fidelity (needs large $\delta_0$ for contrast) and coherence.
+
+2. **Shot-to-shot reproducibility:** ML training assumes identical quantum evolution across shots. But thermal position fluctuations ($\sigma_{x,y} \approx 0.2$ μm) change the interaction landscape (Bottleneck 1: $\delta V/V \approx 30\%$ at $R \approx 4$ μm), making each shot effectively a different quantum computation. At 108 qubits, ~60% of shots are discarded due to atom-sorting defects, leaving only ~40% usable — this directly inflates the shot overhead and wall-clock time.
+
+3. **Laser drift (Bottleneck 4):** Training and inference data are collected over hours. Rabi frequency drift (~150 kHz) and detuning drift between training and inference corrupts learned features.
+
+**Paths to improvement:**
+
+- Atom cooling to reduce thermal position fluctuations
+- Top-hat local beams (instead of Gaussian) to reduce intensity gradient sensitivity
+- Interleaved calibration protocols to track laser drift
+- 3-zone readout (99.8% vs ~95%) would reduce the shots needed per input by ~4×
+
+## Completeness check
+
+**Concrete numbers (extractable without consulting the original paper):**
+
+| Benchmark | Metric | Value | Shots |
+|-----------|--------|-------|-------|
+| MNIST binary (3 vs. 8) | Test accuracy | **0.935** | ~220 |
+| Synthetic quantum kernel | Accuracy advantage over classical reservoir | **(7.1 ± 3.1)%** | ~40 |
+| Shot saturation point | Beyond this, accuracy flat | ~1,000 | — |
+| Defect-free yield (108 q) | Usable shots fraction | **~40%** | — |
+| Atom spacing (Aquila NN) | Nearest-neighbor | **10 μm** | — |
+
+<!-- TODO: Quantify the relationship between reservoir expressivity (effective Hilbert space dimension explored) and the Rydberg blockade constraint strength — the paper hints at this but does not give a closed-form result. -->
+<!-- TODO: Compare with other QRC experiments (superconducting: Suzuki 2022, photonic: Nokkala 2021) — refs not yet in refs.bib. -->
