@@ -294,6 +294,8 @@ At the grokking transition:
 5. SNR crosses unity: $\mathrm{SNR}(t_{\mathrm{grok}}^-) < 1 < \mathrm{SNR}(t_{\mathrm{grok}}^+)$.
 
 These discontinuities are the hallmarks of a first-order phase transition.
+
+**Remark on item 2.** Consider a weight matrix $W \in \mathbb{R}^{d_{\mathrm{out}} \times d_{\mathrm{in}}}$ with $P \approx d_{\mathrm{out}} \cdot d_{\mathrm{in}}$ parameters; for a roughly square layer $d_{\mathrm{out}} \sim d_{\mathrm{in}} \sim \sqrt{P}$, the true rank satisfies $r \leq \sqrt{P}$. At random initialization (memorizing phase), the singular values are approximately i.i.d. samples from the Marchenko–Pastur distribution, which gives a nearly uniform distribution $\mathbf{p} \approx (1/r, \ldots, 1/r)$, so $\mathrm{erank}(W) = \exp(H(\mathbf{p})) \approx r = O(\sqrt{P})$. This saturates the maximum possible value of $\exp(H(\mathbf{p}))$ given by @def-erank. After grokking, weight decay drives the solution toward a low-rank structure: a single (or few) dominant singular values collapse the distribution $\mathbf{p}$ toward a point mass, giving $\mathrm{erank} \to O(1)$.
 ::::
 
 | Order Parameter | Memorizing Phase | Generalizing Phase | Physical Analogy |
