@@ -1,0 +1,118 @@
+---
+categories:
+- Readings
+date: 2026-03-18
+description: 'Reading notes on Chiu et al. 2025 — continuous-operation architecture with conveyor-belt atom transport sustaining 3000+ coherent qubits for hours'
+lang: en
+title: 'Chiu 2025: Continuous Operation at Scale (3000 Qubits)'
+bibliography: refs.bib
+draft: true
+---
+
+# Summary and Questions
+
+**Paper:** Chiu et al., "Continuous operation of a coherent 3,000-qubit system," *Nature* **646**, 1075–1080 (2025) [@chiu2025continuous]
+
+**Architecture:** Conveyor-belt (Harvard lab, separate apparatus from 3/4-zone)
+
+## What was done
+
+A completely different approach to the atom loss problem: rather than a reservoir zone within a zoned architecture, a conveyor-belt system provides continuous atom supply:
+
+1. **Dual optical-lattice conveyor belts:** Two counter-propagating optical lattices (~800 nm, Ti:Sapphire, ~300 GHz red-detuned from D1) transport atoms over 0.5 meters from a MOT region to the science region at 8–10 m/s (acceleration ~4,000 m/s², trap depth >500 μK), delivering fresh atoms at $\sim 3 \times 10^5$ atoms/s.
+2. **EIT sub-Doppler cooling during rearrangement:** Electromagnetically induced transparency (F=2 → F'=2, 70 MHz blue-detuned, coupling:probe intensity ratio 13:1, 4.2 G bias field) cools atoms to sub-Doppler temperatures during the 20–40 ms rearrangement window. EIT is a *cooling* technique here — not an imaging or readout technique.
+3. **PGC fluorescence readout:** State-selective readout uses a pushout pulse (selective on F=2) followed by polarization-gradient cooling (PGC) fluorescence imaging, achieving **99.99% discriminant fidelity** and **99.5% atom survival** per 10 ms image at single-site resolution.
+4. **Continuous tweezer reloading:** Atoms are extracted from the lattice reservoir into optical tweezers (1,440 AOD tweezers at 828 nm, 4.5 μm spacing, 450 μK depth; 3,240 SLM sites at 852 nm, 9 μm spacing, 270 μK mean depth) without disrupting nearby stored qubits.
+5. **Scale demonstration:** 3,000+ atoms maintained continuously for >2 hours — an order-of-magnitude advance in both qubit count and operational lifetime.
+
+## Key observations
+
+- **Massive scale:** 3,000+ coherent qubits sustained continuously — 7× more than the 4-zone system (448 atoms). This is the largest coherent neutral atom array demonstrated.
+- **Hour-long operation:** Continuous reloading decouples the experiment's operational lifetime from single-atom vacuum decay ($\sim 10$ s in UHV). The system ran for >2 hours without degradation.
+- **High throughput:** >30,000 initialized qubits per second (abstract); ~15,000/s post-rearrangement; 300,000 atoms per second lattice reload rate.
+- **Coherence benchmarks (XY16 dynamical decoupling):** $T_2 = 1.34(4)$ s (reference, no disturbance); $T_2 = 1.09(3)$ s with concurrent imaging. $T_1 = 12.6(1)$ s (reference); $T_1 = 3.43(3)$ s with imaging shielding.
+- **Single-qubit gate fidelity:** 0.99995 per $\pi$-pulse (Raman drive, 1 MHz Rabi frequency, 400 GHz blue-detuned from D2).
+- **No mid-circuit measurement:** The system performs PGC fluorescence readout for final-state detection but does not have a dedicated non-destructive mid-circuit QEC readout zone — full mid-circuit measurement for quantum error correction still requires the zoned architecture.
+
+## Scientific significance
+
+| Aspect | Assessment |
+|--------|-----------|
+| **Novelty** | First demonstration of continuous atom supply for a quantum processor. Solves the atom loss problem from the *supply* side (rather than the *management* side of 4-zone). Largest coherent neutral atom array by 7×. |
+| **Practical value** | Enables arbitrarily deep quantum circuits (hour-long experiments). Removes the atom reload bottleneck that limits all pulsed systems. Essential for large-scale fault-tolerant quantum computing at 10,000+ qubits. |
+| **Verification value** | Demonstrates that the conveyor-belt concept works at scale — validates the engineering approach for future >10,000-qubit systems. |
+
+
+## Architecture comparison: complementary to 4-zone
+
+| Parameter | Chiu 2025 (conveyor-belt) | Bluvstein 2025 (4-zone) | Complementarity |
+|-----------|--------------------------|------------------------|-----------------|
+| Qubit count | 3,000+ | 448 | 7× more qubits |
+| Operational lifetime | >2 hours | Limited by 196-atom reservoir | Hours vs. ~100 rounds |
+| Atom supply rate | 300,000/s | 196-atom reservoir (finite) | Continuous vs. finite |
+| Readout | PGC fluorescence, 99.99% fidelity | Non-destructive mid-circuit readout | Conveyor-belt has no mid-circuit QEC readout |
+| Coherence $T_2$ (XY16) | 1.34(4) s (ref); 1.09(3) s w/ imaging | ~1 s (cavity-shielded) | Comparable coherence |
+| Coherence $T_1$ | 12.6(1) s (ref); 3.43(3) s w/ shielding | ~10 s range | Comparable $T_1$ |
+| Single-qubit gate fidelity | 0.99995 per π-pulse | 0.9997 (SQG) | Conveyor-belt slightly better |
+| Entangling gates | Not demonstrated | CZ at 99.5% | Conveyor-belt is supply only |
+| QEC | Not demonstrated | Below-threshold scaling | 4-zone handles QEC |
+
+**Key insight:** The conveyor-belt and 4-zone approaches are *complementary*, not competing. Future systems will combine both: conveyor-belt for atom supply at 10,000+ qubit scale, 4-zone for mid-circuit QEC computation. This is explicitly stated in the Lukin group's roadmap.
+
+
+## Critical technique analysis
+
+**Most important bottleneck in this demonstrated system: transport heating.**
+
+Conveyor-belt atoms arrive at the science region at **~120 μK** — approximately 6× hotter than the reservoir temperature (~20 μK). With only ~60% transport efficiency per delivery cycle, a significant fraction of delivered atoms are either lost or too hot to use directly as qubits.
+
+**Why this is the binding bottleneck:**
+
+The heating is fundamental to the transport mechanism: atoms accelerate to 8–10 m/s and decelerate at ~4,000 m/s², and even at trap depth >500 μK the adiabaticity is imperfect. Hot atoms must undergo sub-Doppler cooling (via EIT, 20–40 ms) before being loaded into the tweezer array. This cooling time dominates the duty cycle:
+
+- Transport time (0.5 m at 8–10 m/s): ~50–60 ms
+- EIT cooling during rearrangement: 20–40 ms
+- Net: cooling occupies ~30–50% of the reload cycle
+
+**Consequence:** The 30,000 qubits/s initialization rate and the $T_2 = 1.09$ s coherence-during-imaging figure both depend on this cooling working reliably. Improving transport adiabaticity (shaped velocity ramps, deeper lattice) or shortening EIT cooling time would directly increase the initialization rate and reduce the thermal occupation of loaded atoms.
+
+**Secondary bottleneck for future integration:** Combining conveyor-belt supply with a zoned computation region requires solving stray-light isolation — the ~800 nm transport lattice must not scatter photons into the entangling zone, which operates at different wavelengths (852/828 nm tweezers). This is an engineering challenge, not a demonstrated result.
+
+## Experiment protocol
+
+:::{.callout-tip title="Experimental cycle (Chiu 2025)"}
+1. **MOT loading:** Rb atoms loaded into MOT, then transferred to dual conveyor-belt lattices (~800 nm, Ti:Sapphire).
+2. **Transport:** Atoms accelerated to 8–10 m/s, transported 0.5 m to science region at ~4,000 m/s² acceleration, trap depth >500 μK.
+3. **Tweezer extraction:** Atoms extracted into AOD tweezers (1,440 sites, 828 nm, 4.5 μm spacing, 450 μK) or SLM array (3,240 sites, 852 nm, 9 μm spacing, 270 μK mean depth).
+4. **EIT cooling during rearrangement:** Sub-Doppler cooling via EIT (F=2 → F'=2, 70 MHz blue-detuned, coupling:probe = 13:1, 4.2 G field) for 20–40 ms; atoms arrive at ~120 μK, cooled for qubit use.
+5. **Qubit manipulation:** Raman $\pi$-pulses at 1 MHz Rabi frequency (400 GHz blue-detuned from D2), fidelity 0.99995 per gate; dynamical decoupling (XY16) extends $T_2$ to 1.34(4) s.
+6. **Readout:** Pushout pulse (F=2 selective) + PGC fluorescence imaging: 99.99% discriminant fidelity, 99.5% atom survival, 10 ms per image.
+7. **Continuous reload:** Steps 2–4 repeat asynchronously; >30,000 qubits/s initialization rate sustains 3,000+ qubits for >2 hours.
+:::
+
+## Completeness check
+
+| Parameter | Value | Source |
+|-----------|-------|---------|
+| $T_2$ (XY16, reference) | 1.34(4) s | Fig. 3a |
+| $T_2$ (XY16, with concurrent imaging) | 1.09(3) s | Fig. 3b |
+| $T_1$ (reference) | 12.6(1) s | Fig. 3a |
+| $T_1$ (with shielding) | 3.43(3) s | Fig. 3a |
+| Single-qubit gate fidelity | 0.99995 per π-pulse | Methods |
+| Readout discriminant fidelity | 99.99% | Methods |
+| Atom survival per image | 99.5% | Methods |
+| Readout duration | 10 ms | Methods |
+| Conveyor wavelength | ~800 nm (Ti:Sapphire, ~300 GHz red of D1) | Methods |
+| Transport velocity | 8–10 m/s | Methods |
+| Transport acceleration | ~4,000 m/s² | Methods |
+| Conveyor trap depth | >500 μK | Methods |
+| Atoms arrive at | ~120 μK (~6× reservoir temp) | Methods |
+| Transport efficiency | ~60% per cycle | Methods |
+| EIT cooling duration | 20–40 ms (rearrangement window) | Methods |
+| EIT parameters | F=2→F'=2, 70 MHz blue-detuned, ratio 13:1, 4.2 G | Methods |
+| AOD tweezers | 1,440 sites, 828 nm, 4.5 μm spacing, 450 μK | Methods |
+| SLM array | 3,240 sites, 852 nm, 9 μm spacing, 270 μK mean | Methods |
+| Initialization rate | >30,000 qubits/s (abstract); ~15,000/s post-rearrangement | Fig. 1c |
+| Lattice reload rate | ~300,000 atoms/s | Main text |
+
+**Integration with zoned architecture:** Not yet demonstrated. The engineering challenges (stray-light isolation from ~800 nm lattice, magnetic field compatibility, timing synchronization with QEC cycles) represent future work explicitly called out in the paper's outlook.
