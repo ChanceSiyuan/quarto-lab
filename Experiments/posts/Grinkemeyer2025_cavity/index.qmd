@@ -83,18 +83,18 @@ The cooperativity $C = 4g^2/(\kappa\Gamma) = 101$ sets the fundamental tradeoff:
 
 ## Architecture comparison: orthogonal to the Rydberg tweezer array approach
 
-| Parameter | Grinkemeyer 2025 (cavity) | 1-zone Rydberg | 3-zone Rydberg | Notes |
-|-----------|--------------------------|----------------|----------------|-------|
-| Entanglement mechanism | Photon exchange via cavity | Van der Waals $1/R^6$ | Van der Waals $1/R^6$ | Fundamentally different |
-| Gate fidelity (deterministic) | 52.5(18)% (CZ, no postsel.) | 99.5% (CZ) | 99.5% (CZ) | Rydberg gates far higher |
-| Gate fidelity (postselected) | 76(2)% (69% success) | — | — | Error detection helps |
-| Bell fidelity (carving) | 91(4)% (32% success) | — | — | Heralded protocol only |
-| Readout fidelity | 99.96% | ~95% | 99.8% | Cavity readout ~125×/~5× better |
-| Scalability | 2 atoms (max ~20) | 256 atoms | 448 atoms | Rydberg scales far better |
-| Error detection | Built-in (photon loss) | None | None | Native erasure conversion |
-| Networking | Photonic interface ready | No photon interface | No photon interface | Cavity enables quantum links |
+| Parameter | Grinkemeyer 2025 (cavity) | 1-zone Rydberg | 3-zone Rydberg | 4-zone Rydberg | Notes |
+|-----------|--------------------------|----------------|----------------|----------------|-------|
+| Entanglement mechanism | Photon exchange via cavity | Van der Waals $1/R^6$ (global) | Van der Waals $1/R^6$ | Van der Waals $1/R^6$ | Cavity: fundamentally different |
+| Gate fidelity (deterministic) | 52.5(18)% (CZ, no postsel.) | N/A (analog only) | 99.5% (CZ) | 99.5% (CZ, physical) | 1-zone uses global Rabi pulses — no individual CZ gates |
+| Gate fidelity (postselected) | 76(2)% (69% success) | — | — | — | Error detection helps |
+| Bell fidelity (carving) | 91(4)% (32% success) | — | — | — | Heralded protocol only |
+| Readout fidelity | 99.96% | ~95% | 99.8% | 0.46% bit-flip error (non-destructive) | Cavity single-shot; 4-zone non-destructive for QEC |
+| Scalability | 2 atoms (max ~20) | 256 atoms | 280 atoms | 448 atoms (196 reservoir) | Rydberg scales far better |
+| QEC / error detection | Built-in erasure detection | None | Post-hoc (error correcting codes) | Real-time QEC, 41 rounds demonstrated | Cavity: native erasure; 4-zone: fault-tolerant cycles |
+| Networking | Photonic interface ready | No photon interface | No photon interface | No photon interface | Cavity enables quantum network nodes |
 
-The cavity approach sacrifices gate fidelity and scalability for ultra-high readout fidelity, built-in error detection, and photonic networking capability. It is not a replacement for Rydberg arrays but a complementary module for quantum network nodes.
+The cavity approach sacrifices gate fidelity and scalability for ultra-high readout fidelity, built-in error detection, and photonic networking capability. It is not a replacement for Rydberg arrays but a complementary module for quantum network nodes. The 4-zone system [@bluvstein2025faulttolerant via review] represents the current state-of-the-art for fault-tolerant computation; the cavity platform is best viewed as a future network node rather than a standalone processor.
 
 
 ## Critical technique analysis
@@ -127,10 +127,12 @@ Cavity hardware parameters are now in the protocol section above ($\mathcal{F} =
 
 **Comparison with other cavity QED platforms:**
 
-| Platform | Cooperativity $C$ | Gate fidelity | Scale |
-|---------|-------------------|---------------|-------|
-| Neutral atoms in fiber cavity (this work) | 101 | 52.5% det. / 76% postsel. | 2 atoms |
-| Trapped ions in Fabry-Pérot | ~1–10 | — | 1–2 ions |
-| Neutral atoms in bulk cavity | ~10–100 | ~90% (older works) | 1–few |
+<!-- TODO: Add citations for ion cavity QED (e.g., Keller 2004, Mundt 2002) and neutral-atom bulk cavity work (e.g., Wilk 2010, Lim 2024) before publishing. Values below are rough order-of-magnitude estimates from general knowledge and are NOT from the Grinkemeyer paper. -->
+
+| Platform | Cooperativity $C$ | Gate fidelity | Scale | Citation status |
+|---------|-------------------|---------------|-------|----------------|
+| Neutral atoms in fiber cavity (this work) | 101(2) [@grinkemeyer2025cavity] | 52.5% det. / 76% postsel. | 2 atoms | Cited |
+| Trapped ions in Fabry-Pérot | ~1–10 (estimate) | — | 1–2 ions | **Uncited** |
+| Neutral atoms in bulk cavity | ~10–100 (estimate) | ~90% (older works, estimate) | 1–few | **Uncited** |
 
 Fiber Fabry-Pérot cavities achieve high $C$ at small cavity length; the main open challenge is combining high $C$ with tweezer-array scalability.
