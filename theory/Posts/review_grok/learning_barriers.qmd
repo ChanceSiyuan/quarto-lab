@@ -37,6 +37,21 @@ $$ {#eq-concept-class}
 where $N = pq$ is a product of two large primes $p, q$.
 ::::
 
+::::{.callout-note icon="false"}
+## Remark (Three Function Families in This File)
+This file analyzes three related but distinct modular arithmetic functions, each appearing in a different theoretical context:
+
+| Notation | Function | Context |
+|:---|:---|:---|
+| $f_{d,N}(x) = x^d \bmod N$ | RSA permutation: fixed secret exponent $d$, varying base $x$, modulus $N = pq$ | PAC hardness (@thm-pac-hardness, @thm-cc-qc-separation) |
+| $g_{a,N}(x) = a^x \bmod N$ | Modular exponentiation: fixed base $a$, varying exponent $x$ | Abstract; synthesis (@sec-synthesis) |
+| $h_{a,p}(x) = ax \bmod p$ | Linear modular multiplication: prime modulus $p$ (overloaded — see notation warning below) | Fourier/SQ analysis (@lem-fourier-decay, @lem-correlation-bound, @thm-sq-lower-bound) |
+
+All three share the key property that their Fourier spectra are concentrated on high frequencies (scale $\Omega(p)$ or $\Omega(\sqrt{N})$), which is the structural feature underlying both the SQ lower bounds and the gradient-descent hardness. The Fourier/SQ analysis in Part II is most cleanly stated for the linear class $h_{a,p}$, where @lem-correlation-bound holds with explicit constants via the Boas--Bellman inequality; the bound transfers to the discrete-log class $g_{a,N}$ through the same Fourier correlation argument on the cyclic group $(\mathbb{Z}/N\mathbb{Z})^*$. The PAC hardness results (Part I) are stated for the RSA class $f_{d,N}$; Shor's quantum speedup applies to $g_{a,N}$ via order-finding and to $f_{d,N}$ via discrete-log recovery after factoring $N$.
+
+**Notation warning.** The symbol $p$ is overloaded: in Part I (RSA setting) it is one of the prime factors of $N = pq$; in Part II (SQ/Fourier setting) it is the prime modulus of the linear class $ax \bmod p$. These are different primes. In Part II, $p$ should be read as the linear-class prime (typically $p \sim 2^n$), not as the RSA factor.
+::::
+
 ### PAC Impossibility Under Cryptographic Assumptions
 
 The core argument proceeds by reduction: if $\mathcal{L}_{\mathrm{modexp}}$ were efficiently PAC learnable, then the learner could be used to break pseudorandom functions constructed from modular exponentiation, contradicting standard cryptographic hardness assumptions.
