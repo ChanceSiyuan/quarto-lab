@@ -21,9 +21,9 @@ draft: true
 ## Experiment Protocol
 
 1. **Initialize** all atoms in the ground state $|000\ldots0\rangle$ (product state, zero Rydberg excitations).
-2. **Global quench** at fixed $\Omega/2\pi = 2.5\,\text{MHz}$, sweeping detuning $\Delta/\Omega \in [-1, 6]$. No local addressing — single global drive throughout.
+2. **Global quench** at fixed $\Omega/2\pi = 2.5\,\text{MHz}$, sweeping detuning $\Delta/\Omega \in [-4.0, 6.0]$: negative detunings sampled at steps of 0.4 ($\Delta/\Omega \in [-4.0, -0.4]$), positive at steps of 0.2 ($\Delta/\Omega \in [0.0, 6.0]$). No local addressing — single global drive throughout.
 3. **Evolve** for $t \in [0, 4.0\,\mu\text{s}]$ (hardware coherence ceiling of Aquila).
-4. **Measure** $k$-island densities (number of clusters of $k$ consecutive Rydberg excitations) at each time step, repeated 100–120 shots per data point.
+4. **Measure** $k$-island densities (number of clusters of $k$ consecutive Rydberg excitations) at each time step. Shot counts vary by system: 52-atom 1D = 120 physical shots; 180-atom 2D = 100 physical shots; 16-atom 1D = 50 physical shots $\times$ 2 parallel copies in the field of view (100 effective); 16-atom 2D = 20 physical shots $\times$ 6 parallel copies (120 effective).
 5. **Time-average** observables over the steady-state window $t \in [0.8, 4.0\,\mu\text{s}]$ to extract the prethermal plateau value.
 
 **System sizes:** 1D chains of 16 and 52 atoms; 2D square arrays of 9, 16, 64, and 180 atoms. Atom spacing $a$ tuned to scan $R_b/a \in [1.2, 1.6]$ in steps of 0.04 (where $R_b = (C_6/\Omega)^{1/6}$, with $C_6/2\pi = 862{,}690\,\text{MHz}\cdot\mu\text{m}^6$). Numerical benchmarks via exact diagonalization (Bloqade.jl on NERSC Perlmutter) for $N \leq 20$.
@@ -32,7 +32,7 @@ draft: true
 Systematic mapping of quench dynamics across a wide $\Delta/\Omega$ parameter space on 1D chains and 2D square arrays, starting from the product state $|000\ldots 0\rangle$ with $\Omega/2\pi = 2.5\,\text{MHz}$:
 
 1. **Parameter space exploration:** Varying $\Delta/\Omega$ from the disordered regime through the blockade-dominated regime, scanning $R_b/a \in [1.2, 1.6]$ at each detuning point. System sizes: 1D chains of 16 and 52 atoms; 2D arrays of 9, 16, 64, 180 atoms.
-2. **$k$-island observable measurement:** Counting clusters of $k$ adjacent Rydberg excitations as a function of evolution time and $\Delta/\Omega$, time-averaged over the steady-state window $t \in [0.8, 4.0\,\mu\text{s}]$ (100–120 shots per data point).
+2. **$k$-island observable measurement:** Counting clusters of $k$ adjacent Rydberg excitations as a function of evolution time and $\Delta/\Omega$, time-averaged over the steady-state window $t \in [0.8, 4.0\,\mu\text{s}]$. Observables converge to the prethermal plateau around $t \approx 0.5\,\mu\text{s}$; the 0.8 µs window start adds conservative margin. Shot counts: 120 (52-atom 1D), 100 (180-atom 2D), $50 \times 2$ parallel copies (16-atom 1D), $20 \times 6$ parallel copies (16-atom 2D).
 3. **1D chain dynamics:** Identifying prethermal plateaus and resonance structure, with resonances located at $\Delta/\Omega \approx 3.7$ ($2\Delta = V_1$, dominant), $\approx 2.5$ ($3\Delta = V_1$), and $\approx 4.9$ ($3\Delta = 2V_1$) for $R_b/a \approx 1.4$.
 4. **2D square array dynamics:** Searching for dynamical phase transitions; finite-size scaling via the system-size ladder (9 → 16 → 64 → 180 atoms). ED benchmarks for $N \leq 20$ show qualitative agreement.
 
@@ -65,7 +65,7 @@ Systematic mapping of quench dynamics across a wide $\Delta/\Omega$ parameter sp
 | Blockade radius scan $R_b/a$ | 1.2–1.6 (step 0.04) | Fixed geometry (no scan) | This work scans lattice spacing |
 | Max evolution time | 4.0 µs | ~2–4 µs (analog coherence) | Coherence ceiling of Aquila |
 | Readout fidelity | ~92–96% (Rydberg detection) | ~92–96% (1-zone benchmark) | No improvement |
-| Shots per data point | 100–120 | Varies by experiment | Standard for Aquila |
+| Shots per data point | 20–120 physical; 100–120 effective (parallel copies) | Varies by experiment | See shot breakdown above |
 | Local addressing | No | No | Global quench only |
 | Geometries | 1D chain (16, 52) + 2D square (9, 16, 64, 180) | Various | System-size ladder for FSS |
 | Numerical benchmark | ED (Bloqade.jl, NERSC Perlmutter, $N \leq 20$) | — | Qualitative agreement only |
@@ -103,8 +103,9 @@ The experiment's central claim — an exponentially long prethermal plateau — 
 
 **Prethermal window:**
 
-- Experimental: $t \in [0.8, 4.0]\,\mu\text{s}$ (time-averaged steady-state window; 0 to 0.8 µs is the initial transient).
-- Numerics: plateau predicted to persist to $>100\,\mu\text{s}$ (Bloqade.jl ED, $N \leq 20$), consistent with exponential suppression $\sim e^{V_1/\lambda}$.
+- **Plateau onset:** $t \approx 0.5\,\mu\text{s}$ (paper's stated convergence of time-averaged observables).
+- **Averaging window:** $t \in [0.8, 4.0]\,\mu\text{s}$ (conservative margin above the 0.5 µs onset).
+- **Numerics:** plateau predicted to persist to $>100\,\mu\text{s}$ (Bloqade.jl ED, $N \leq 20$), consistent with exponential suppression $\sim e^{V_1/\lambda}$.
 - **Gap:** $>25\times$ between experimental access and theoretical prethermal timescale — not a physics issue, but Aquila's coherence ceiling.
 
 **System-size ladder for finite-size scaling:**
