@@ -1,0 +1,104 @@
+---
+categories:
+- Readings
+date: 2026-03-18
+description: 'Reading notes on Bernien et al. 2017 — the foundational 51-atom Rydberg quantum simulator demonstrating many-body scars'
+lang: en
+title: 'Bernien 2017: 51-Atom Quantum Simulator and Many-Body Scars'
+bibliography: refs.bib
+draft: true
+---
+
+# Summary and Questions
+
+**Paper:** Bernien et al., "Probing many-body dynamics on a 51-atom quantum simulator," *Nature* **551**, 579–584 (2017) [@bernien2017probing]
+
+**Architecture:** 1-zone analog (Harvard lab)
+
+## What was done
+
+The first large-scale Rydberg tweezer array experiment: 51 $^{87}$Rb atoms in a 1D chain with van der Waals interactions in the Rydberg blockade regime. The experiment performed:
+
+1. **Adiabatic state preparation:** Slow detuning sweeps from $\Delta < 0$ (paramagnetic) to $\Delta > 0$ (ordered), preparing crystalline $\mathbb{Z}_2$ and $\mathbb{Z}_3$ ordered states with high fidelity.
+2. **Quench dynamics:** Sudden quench from the disordered phase deep into the ordered regime, monitoring the subsequent real-time evolution of the many-body state.
+3. **Single-shot fluorescence imaging:** Measuring the Rydberg excitation pattern of all 51 atoms after each experimental shot.
+
+## Key observations
+
+- **Phase transitions into ordered states:** Observed $\mathbb{Z}_2$ (every other atom excited) and $\mathbb{Z}_3$ (every third atom) crystalline orders as a function of blockade radius $R_b/a$, where $a$ is the lattice spacing.
+- **Persistent many-body oscillations:** After a sudden quench from the disordered phase into the $\mathbb{Z}_2$ ordered regime, the domain-wall density exhibited long-lived oscillations — persisting for $>4$ Rabi cycles — rather than thermalizing as expected from the eigenstate thermalization hypothesis (ETH).
+- **Quantum many-body scars:** The oscillations were later identified [@turner2018quantum] as arising from a tower of special eigenstates (quantum many-body scars) embedded in an otherwise thermal spectrum, representing a novel mechanism of weak ergodicity breaking.
+
+## Scientific significance
+
+| Aspect | Assessment |
+|--------|-----------|
+| **Novelty** | First demonstration of a programmable Rydberg tweezer array as a many-body quantum simulator; discovery of quantum many-body scars as a new dynamical phenomenon. |
+| **Practical value** | Established the experimental platform that all subsequent Lukin group work builds upon. No direct application, but the scar phenomenon has implications for quantum state preparation and information storage in non-equilibrium systems. |
+| **Verification value** | First experimental observation of weak ergodicity breaking in a clean, isolated quantum system — previously only theorized in the context of single-particle quantum chaos. |
+
+
+## Architecture comparison: relative to 1-zone/3-zone/4-zone review benchmarks
+
+| Parameter | Bernien 2017 | SOTA 1-zone (Manovitz 2025) | Notes |
+|-----------|-------------|---------------------------|-------|
+| Atom count | 51 (1D) | ~300 (2D) | 6× fewer atoms, 1D only |
+| Trap technology | 1D standing-wave (no SLM) | SLM + AOD | SLM introduced in Ebadi 2021 for 2D geometry |
+| Loading probability | ~60% (no AOD rearrangement) | 98.4(7)% after rearrangement | Post-selected on filled configurations; no real-time rearrangement |
+| Rydberg state | $\|70S_{1/2}\rangle$ | $\|70S_{1/2}\rangle$ | Same Rydberg level |
+| Lattice spacing (Z₂) | $a = 5.74\ \mu\text{m}$, $R_b/a \approx 1.57$ | Sub-μm tuneable | Blockade radius $R_b \approx 9\ \mu\text{m}$ |
+| Quench Rabi freq. | $\Omega/2\pi = 2$ MHz | up to $2\pi \times 6.0$ MHz | 3× lower |
+| NN interaction | $V_{i,i+1}/2\pi = 24$ MHz | — | $V_{i,i+2}/2\pi = 0.38$ MHz (NNN) |
+| Coherence (spin echo) | $> 5\ \mu\text{s}$ (no visible decay) | Improved PDH; ms-scale | 420 nm laser PDH-locked to finesse ≥4000 cavity |
+| Readout fidelity | $\|g\rangle$ 98–99%, $\|r\rangle$ ~93% | $\|g\rangle$ ~99%, $\|r\rangle$ ~92–96% | No significant degradation in later systems |
+| Atom temperature | ~12 μK in ~1 mK trap | — | Rydberg lifetime $\approx 150\ \mu\text{s}$ (70S, 300 K) |
+
+This experiment predates the SLM+AOD architecture (introduced in Ebadi 2021). The jump from 1D standing-wave traps to 2D SLM-generated arrays is the most significant hardware difference.
+
+
+## Critical technique analysis
+
+**Most important bottleneck for this specific experiment: Decoherence truncates the scar oscillations.**
+
+The domain-wall density oscillations in Fig. 3 of the paper decay with a fitted timescale of **0.88 μs** — roughly 1–2 Rabi periods at $\Omega/2\pi = 2$ MHz. The oscillations are visible for only ~4 cycles before being washed out. The spin-echo coherence is $> 5\ \mu\text{s}$ (no visible decay), so simple dephasing is not the dominant mechanism. The competing decoherence channels are:
+
+- **Rydberg state decay:** Lifetime $\tau \approx 150\ \mu\text{s}$ for $\|70S_{1/2}\rangle$ at 300 K, contributing a decay rate of $\sim 2\pi \times 1$ kHz per atom. For 51 atoms this gives a collective $1/e$ time $\sim 3\ \mu\text{s}$ — consistent with the observed 0.88 μs oscillation decay timescale.
+- **Thermal motion dephasing:** Atom temperature ~12 μK in a ~1 mK trap gives a root-mean-square position spread that modulates the van der Waals coupling $V \propto r^{-6}$, smearing the blockade edge.
+- **Laser phase noise:** The 420 nm excitation laser is PDH-locked (finesse ≥4000), but residual phase noise at MHz frequencies directly dephases the driven Rabi oscillations.
+
+**Why improving coherence would help:** Longer coherence would allow the experiment to observe more oscillation cycles, unambiguously distinguishing true many-body scars (non-decaying oscillations in the thermodynamic limit) from finite-size effects or prethermal plateaus. The 4-cycle observation window in Bernien 2017 was sufficient to motivate the scar interpretation [@turner2018quantum] but not to rule out alternatives. The subsequent theoretical and experimental literature largely focused on this ambiguity.
+
+:::{.callout-note icon="false"}
+## Experiment Protocol
+
+1. **Load:** 51 $^{87}$Rb atoms into a 1D optical tweezer chain (spacing $a = 5.74\ \mu\text{m}$ for Z₂ experiments); post-select on filled configurations (~60% per-site loading probability, no real-time rearrangement).
+2. **Prepare:** Adiabatically sweep detuning from $\Delta \ll 0$ (paramagnetic) to $\Delta > 0$ (Z₂/Z₃ ordered phase) over $\sim 1\ \mu\text{s}$ while ramping $\Omega$.
+3. **Quench (for scar experiments):** Suddenly set $\Delta = 0$, $\Omega = 2\pi \times 2$ MHz (deep in $\mathbb{Z}_2$ phase) at $t = 0$.
+4. **Evolve:** Hold for variable time $t \in [0,\ 3\ \mu\text{s}]$.
+5. **Measure:** Turn off all fields; image atoms via single-photon fluorescence. Repeat $\sim 10^3$ times per time point to accumulate statistics.
+:::
+
+
+## Key Hamiltonian parameters
+
+The experiment realizes the PXP-like Hamiltonian in the blockade approximation:
+
+$$H = \sum_i \frac{\Omega}{2} \sigma_i^x - \Delta n_i + \sum_{i<j} V_{ij} n_i n_j$$
+
+with $n_i = \frac{1}{2}(1 + \sigma_i^z)$. Relevant parameters from the paper:
+
+| Quantity | Value |
+|---------|-------|
+| Quench point | $\Delta = 0$, $\Omega = 2\pi \times 2$ MHz |
+| 480 nm single-photon Rabi freq. | $\Omega_R = 2\pi \times 36$ MHz |
+| 420 nm single-photon Rabi freq. | $\Omega_B = 2\pi \times 60$ MHz |
+| Lattice spacing (Z₂) | $a = 5.74\ \mu\text{m}$ |
+| Lattice spacing (Z₃) | $a = 3.57\ \mu\text{m}$ |
+| Blockade radius | $R_b \approx 9\ \mu\text{m}$ ($R_b/a \approx 1.57$ for Z₂) |
+| NN interaction $V_{i,i+1}$ | $2\pi \times 24$ MHz |
+| NNN interaction $V_{i,i+2}$ | $2\pi \times 0.38$ MHz |
+| Domain-wall oscillation decay | 0.88 μs (fit to Fig. 3 data) |
+| Rydberg lifetime (70S, 300 K) | ~150 μs |
+| Atom temperature | ~12 μK |
+| Trap depth | ~1 mK |
+| Coherence (spin echo) | $> 5\ \mu\text{s}$ (no visible decay) |
