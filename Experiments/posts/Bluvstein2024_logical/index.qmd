@@ -62,9 +62,16 @@ draft: true
 
 ## Critical technique analysis
 
-**Most important technique needing optimization: Two-qubit (CZ) gate fidelity.**
+**Co-equal bottlenecks: CZ gate infidelity and atom loss — not independently separated in this experiment.**
 
-At 99.3–99.5%, the CZ gate fidelity is the primary limiting factor in logical circuit depth. The circuit-level depolarizing threshold is ~0.5–1%, so 99.5% provides at most a $2\times$ margin (and 99.3% is within a factor of ~1.5). Note that atom loss — which the 4-zone follow-up (Bluvstein et al. 2025) identifies as contributing ~50% of physical errors — is not independently characterized here; CZ infidelity and loss are partially conflated in the reported figure. Improving to 99.9% would enable:
+This experiment does not have a reservoir zone, so atom loss events are *unrecoverable erasures* — a lost atom cannot be reloaded mid-circuit. Crucially, the reported CZ fidelity figure (99.3–99.5%) conflates two physically distinct error sources:
+
+1. **CZ gate infidelity** — coherent and incoherent errors during the Rydberg blockade gate
+2. **Atom loss during transport/gates** — the atom vanishes from the trap, leaving a "hole" in the qubit register
+
+The 4-zone follow-up (Bluvstein et al. 2025) later identified atom loss as contributing ~50% of all physical errors in that system's operation [@bluvstein2024logical]. In the 3-zone system studied here, loss is an unrecoverable erasure (no reservoir), so its contribution is folded into the effective gate error without distinction. This is precisely the motivation for the 4-zone upgrade: the reservoir zone enables mid-circuit reloading of lost atoms, converting an unrecoverable erasure into a detected, correctable event.
+
+**What this means for optimization:** improving CZ fidelity to 99.9% would enable deeper logical circuits and more compact codes. But without also addressing atom loss, the effective error rate cannot reach the sub-0.1% regime needed for practical fault tolerance. Improving to 99.9% would enable:
 
 - Higher-rate codes with fewer physical qubits per logical qubit
 - Deeper logical circuits before error accumulation
@@ -84,12 +91,15 @@ The 4-zone architecture (Bluvstein 2025) addresses the *downstream* consequences
 | Benchmark | Raw | With error detection |
 |-----------|-----|----------------------|
 | Fault-tolerant $|0_L\rangle$ preparation fidelity | — | **99.91$^{+0.04}_{-0.09}$%** |
-| 4-logical-qubit GHZ state fidelity | **72(2)%** | **99.85%** |
+| 4-logical-qubit GHZ state fidelity | **72(2)%** | **$99.85^{+0.10}_{-1.00}$%** |
+| 48-logical-qubit XEB score | **~0.1** | — |
 | 12-logical-qubit XEB score | **0.156(2)** | **0.616(7)** |
 
 Notes:
 - The $|0_L\rangle$ result uses fault-tolerant preparation with mid-circuit ancilla measurement and FPGA feedforward; no raw baseline is reported separately.
 - The GHZ and XEB benchmarks use error *detection* (postselection on no-error syndromes), not correction — accepted fraction is not stated in the main text.
+- The GHZ post-detection error bars are asymmetric: the lower bound of 98.85% is scientifically meaningful — it represents the worst-case fidelity consistent with the data.
+- The 48-LQ raw XEB score (~0.1) is the unpostselected circuit fidelity at maximum scale; post-detection XEB at 12 qubits is 0.616(7).
 - Surface code logical Bell pair error at $d=7$: ~5% infidelity (~0.95 population in $X_L X_L$ and $Z_L Z_L$ bases). Per-cycle logical error rates at $d=3,5,7$ are in Extended Data Figs. 4–5; below-threshold scaling is demonstrated by the monotonic decrease with $d$.
 - Mid-circuit readout + feedforward total cycle: **<1 ms** (500 μs spin-to-position imaging + <500 μs FPGA processing and Raman correction).
 
@@ -100,7 +110,7 @@ Notes:
 | Atom count | ~300 | **280** | 448 |
 | Readout fidelity | 92–96% | **99.8%** | >99.9% (non-destructive) |
 | Mid-circuit measurement | ✗ | **✓** (3-zone separation) | ✓ + reservoir reload |
-| CZ gate fidelity | ~99.0–99.3% | **99.3–99.5%** | up to 99.7% |
+| CZ gate fidelity | ~99.0–99.3% | **99.3–99.5%** | not independently reported |
 | QEC code distance demonstrated | — | **$d = 3, 5, 7$** | $d=7$ full cycle |
 | Atom reservoir | ✗ | ✗ | ✓ |
 
