@@ -279,7 +279,7 @@ $$ {#eq-signal-noise-energy}
 where $\Pi_S$ and $\Pi_N$ are the projectors onto $\mathcal{V}_S$ and $\mathcal{V}_N$, respectively.
 
 - **Phase I**: $E_N$ grows rapidly (memorization of random patterns); $E_S$ decays slowly (weight decay dominates: $\eta_S < \lambda$, so $\dot{S} \approx (\eta_S - \lambda)S < 0$).
-- **Phase II**: $E_N$ decays under weight decay; $E_S$ continues growing from a small base.
+- **Phase II**: $E_N$ decays under weight decay; $E_S$ *continues decaying* initially (since $N > N^* \equiv (\eta_S/\lambda)N_\infty$ at Phase II onset, so $\dot{S} = S(\eta_S N_\infty/N - \lambda) < 0$). Only once $N$ falls below the threshold $N^*$ does $\dot{S}$ change sign and $E_S$ begin to grow.
 - **Phase III--IV**: $E_S$ overtakes $E_N$. The signal-to-noise ratio $\mathrm{SNR}(t) = E_S(t)/E_N(t)$ crosses a critical threshold, and the softmax nonlinearity amplifies the signal, producing sudden generalization [@nanda2023progress; @liu2022grokking].
 ::::
 
