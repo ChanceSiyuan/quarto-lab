@@ -89,7 +89,7 @@ $$
 :::
 
 ##### The Lazy Zone (Lazy Training Region)
-Consider the case where $n_L = 1$ (i.e., scalar output). Define the model output vector on the training set $\mathbf{u}(t) \in \mathbb{R}^P$, where $[\mathbf u(t)]_{i} := F(x_i,t)$. Similarly, define the kernel vector at test point $x$ with respect to the training data $\mathbf{k}(x,t) \in \mathbb{R}^P$, whose elements are given by $[\mathbf{k}(x,t)]_{i} = \Theta^{(L)}(t)(x,x_i)$; and the kernel matrix (Gram Matrix) on the training set $\mathbf{H}^{(L)}(t) \in \mathbb{R}^{P \times P}$, whose elements are given by $\mathbf{H}^{(L)}_{jk}(t):= \Theta^{(L)}(t)(x_j,x_k)$. According to the above lemma, the function evolution caused by parameter updates satisfies the following system of differential equations:
+Consider the case where $n_L = 1$ (i.e., scalar output). Let $n$ denote the number of training points. Define the model output vector on the training set $\mathbf{u}(t) \in \mathbb{R}^n$, where $[\mathbf u(t)]_{i} := F(x_i,t)$. Similarly, define the kernel vector at test point $x$ with respect to the training data $\mathbf{k}(x,t) \in \mathbb{R}^n$, whose elements are given by $[\mathbf{k}(x,t)]_{i} = \Theta^{(L)}(t)(x,x_i)$; and the kernel matrix (Gram Matrix) on the training set $\mathbf{H}^{(L)}(t) \in \mathbb{R}^{n \times n}$, whose elements are given by $\mathbf{H}^{(L)}_{jk}(t):= \Theta^{(L)}(t)(x_j,x_k)$. According to the above lemma, the function evolution caused by parameter updates satisfies the following system of differential equations:
 $$
 \left\{\begin{aligned}
 \frac{d\mathbf{u}(t) }{dt} &= 2\eta \mathbf{H}^{(L)}(t)[\mathbf{y}- \mathbf{u}(t)]\\
