@@ -406,8 +406,8 @@ The initialization scale $\alpha$ is the primary control parameter governing whe
 
 For a network with output $f(x) = N^{-\alpha} \sum_j a_j \sigma(w_j \cdot x)$:
 
-- **Large $\alpha$ (lazy)**: To produce $O(1)$ outputs, the readout weights $a_j$ must be large, but the feature weights $w_j$ need only make small adjustments. The system stays near initialization.
-- **Small $\alpha$ (rich)**: The output scaling is small, forcing $w_j$ to undergo large displacements. The neurons are pushed into the nonlinear regime of the activation function, enabling feature adaptation.
+- **Large $\alpha$ (lazy)**: With $a_j = O(1)$ at initialization, the CLT gives $\sum_j a_j \sigma(w_j \cdot x) = O(\sqrt{N})$, so $f = O(N^{1/2-\alpha})$. At $\alpha = 1/2$ this is $O(1)$ — no inflation of $a_j$ is required. Crucially, the gradient of the loss with respect to the feature weights receives the same $N^{-\alpha}$ suppression: $\partial \mathcal{L}/\partial w_j \propto N^{-\alpha} a_j \sigma'(w_j \cdot x)$. For large $\alpha$ this is $O(N^{-1/2})$-small, so $w_j$ barely moves and the kernel freezes (NTK regime).
+- **Small $\alpha$ (rich)**: The prefactor $N^{-\alpha} \to 1$, so the gradient suppression is removed. Feature weights $w_j$ receive $O(1)$ gradient signals and undergo large displacements. The kernel $K_t$ evolves throughout training, enabling feature adaptation. At $\alpha = 0$ (mean-field), the network achieves maximal feature learning.
 
 The grokking phenomenon arises when $\alpha$ is large enough that the network can initially memorize via the lazy mechanism, but not so large that the rich mechanism is entirely suppressed.
 
