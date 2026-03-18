@@ -1,0 +1,136 @@
+---
+categories:
+- Readings
+date: 2026-03-18
+description: 'Reading notes on Grinkemeyer et al. 2025 — cavity-mediated entanglement of neutral atoms with 99.96% readout fidelity and error detection'
+lang: en
+title: 'Grinkemeyer 2025: Cavity-Mediated Entanglement'
+bibliography: refs.bib
+draft: true
+---
+
+# Summary and Questions
+
+**Paper:** Grinkemeyer et al., "Error-detected quantum operations with neutral atoms mediated by an optical cavity," *Science* **387**, 1301 (2025) [@grinkemeyer2025cavity]
+
+**Architecture:** Fiber Fabry-Pérot cavity (Harvard lab, separate apparatus — not the tweezer array system)
+
+## What was done
+
+A fundamentally different entanglement mechanism: instead of Rydberg blockade (direct atom-atom interaction), this uses cavity QED (atom-photon-atom interaction via a shared optical mode):
+
+1. **Fiber Fabry-Pérot cavity:** Individual $^{87}$Rb atoms in optical tweezers are coupled to a small-mode-volume fiber cavity. The cavity enhances the atom-photon interaction by the cavity finesse.
+2. **Cavity-enhanced fluorescence detection:** The cavity collects a large fraction of spontaneously emitted photons, boosting readout fidelity to 99.96% — far beyond free-space fluorescence (~99% for $|g\rangle$).
+3. **Cavity-mediated entanglement:** Two atoms coupled to the same cavity mode become entangled via photon exchange: atom A emits a photon into the cavity → cavity photon is absorbed by atom B → entangled Bell state.
+4. **Error detection:** The cavity photon detection provides a built-in heralding signal. If the photon is lost (detected as no click), the entangling attempt is flagged as failed and discarded — converting gate errors into detectable erasures.
+
+:::{.callout-tip title="Experiment protocols"}
+**Protocol 1 — Cavity-carving (photon-carving):** *Heralded Bell-state preparation.*
+
+1. Prepare equal superposition of all two-qubit states $|00\rangle, |01\rangle, |10\rangle, |11\rangle$.
+2. Apply a drive pulse that selectively removes the $|10\rangle$ component via cavity dark-state decoupling (Carr-Purcell sequence: $\pi/2 – \tau/2 – \pi – \tau – \pi – \tau/2 – \pi/2$).
+3. Apply a global $\pi$-pulse and a second carving pulse to remove the remaining $|10\rangle$ component.
+4. Postselect on atoms not entering the error state → leaves $|\Phi^-\rangle$.
+
+**Result:** $F = 91(4)\%$ Bell fidelity, $p_\text{success} = 32(1)\%$ per attempt.
+
+---
+
+**Protocol 2 — Error-detected CZ gate:** *Deterministic entangling gate with error detection.*
+
+1. Initialize two atoms in a computational-basis superposition.
+2. Drive a full $2\pi$ rotation: the $|10\rangle$ component acquires a relative $\pi$ phase (CZ gate mechanism).
+3. Apply a local $Z_\pi$ on atom B and a global $X_{\pi/4}$ microwave pulse to generate $|\Phi^+\rangle$.
+4. Perform cavity readout; most scattering errors leave atoms in detectable state $|err\rangle$.
+5. Postselect on absence of detected errors.
+
+**Result:** deterministic $F = 52.5(18)\%$; postselected $F = 76(2)\%$ at $p_\text{success} = 69(1)\%$.
+:::
+
+### Cavity hardware parameters
+
+| Parameter | Value |
+|-----------|-------|
+| Cavity finesse $\mathcal{F}$ | 25,904 |
+| Single-atom cooperativity $C$ | 101(2) |
+| Atom-photon coupling $g$ | 100.0(8) MHz |
+| Cavity linewidth $\kappa$ (FWHM) | 65(1) MHz |
+| Natural linewidth $\Gamma$ ($^{87}$Rb) | 6 MHz |
+| Cavity length | 100 μm |
+| Qubit readout fidelity | 99.960% |
+| Atom presence fidelity | 99.988% |
+| Readout time | 10 μs |
+| Readout-induced atom loss | 0.034% |
+| Atoms demonstrated (max possible) | 2 (~20) |
+
+The cooperativity $C = 4g^2/(\kappa\Gamma) = 101$ sets the fundamental tradeoff: higher $C$ increases both success probability and fidelity. The current finesse of 25,904 degraded from $>40{,}000$ after bakeout-induced misalignment.
+
+## Key observations
+
+- **99.96% readout fidelity:** Cavity-enhanced fluorescence detection achieves the highest neutral atom readout fidelity reported, ~125× better than the 1-zone in-situ readout (~95%; error rate 5% vs 0.04%) and ~5× better than the 3-zone spin-to-position readout (99.8%; error rate 0.2% vs 0.04%). Readout takes only 10 μs with 0.034% atom loss per measurement.
+- **91% Bell state fidelity (cavity-carving protocol):** Photon-carving selectively removes the $|10\rangle$ component from a superposition, producing $|\Phi^-\rangle$ with 91(4)% fidelity at 32(1)% success probability per attempt.
+- **76% Bell state fidelity with 69% success (error-detected CZ gate):** A full 2π cavity interaction gives a controlled-phase gate. Postselecting on no detected scattering events boosts fidelity from 52.5(18)% deterministic to 76(2)%, with 69(1)% success probability.
+- **Built-in error detection:** Most photon scattering events leave atoms in a detectable error state $|err\rangle$. Postselecting on $|err\rangle$ absence converts the dominant error mechanism (photon loss) into a detectable erasure — far easier to correct than an undetected Pauli error.
+
+## Scientific significance
+
+| Aspect | Assessment |
+|--------|-----------|
+| **Novelty** | First demonstration of error-detected entanglement between neutral atoms via an optical cavity. Highest neutral atom readout fidelity (99.96%). |
+| **Practical value** | Points toward **modular quantum networking** — connecting separate tweezer-array processors via optical links. The cavity interface could serve as a quantum network node, enabling distributed quantum computing. |
+| **Verification value** | Demonstrates that cavity QED with neutral atoms in tweezers is viable for quantum information processing, complementing the Rydberg blockade approach with a photon-mediated alternative. |
+
+
+## Architecture comparison: orthogonal to the Rydberg tweezer array approach
+
+| Parameter | Grinkemeyer 2025 (cavity) | 1-zone Rydberg | 3-zone Rydberg | Notes |
+|-----------|--------------------------|----------------|----------------|-------|
+| Entanglement mechanism | Photon exchange via cavity | Van der Waals $1/R^6$ | Van der Waals $1/R^6$ | Fundamentally different |
+| Gate fidelity (deterministic) | 52.5(18)% (CZ, no postsel.) | 99.5% (CZ) | 99.5% (CZ) | Rydberg gates far higher |
+| Gate fidelity (postselected) | 76(2)% (69% success) | — | — | Error detection helps |
+| Bell fidelity (carving) | 91(4)% (32% success) | — | — | Heralded protocol only |
+| Readout fidelity | 99.96% | ~95% | 99.8% | Cavity readout ~125×/~5× better |
+| Scalability | 2 atoms (max ~20) | 256 atoms | 448 atoms | Rydberg scales far better |
+| Error detection | Built-in (photon loss) | None | None | Native erasure conversion |
+| Networking | Photonic interface ready | No photon interface | No photon interface | Cavity enables quantum links |
+
+The cavity approach sacrifices gate fidelity and scalability for ultra-high readout fidelity, built-in error detection, and photonic networking capability. It is not a replacement for Rydberg arrays but a complementary module for quantum network nodes.
+
+
+## Critical technique analysis
+
+**Most important technique needing optimization: cooperativity $C$.**
+
+The cooperativity $C = 4g^2/(\kappa\Gamma) = 101$ sets both the success probability and the fidelity ceiling for both protocols. Concretely:
+
+- **Cavity-carving:** 32(1)% success probability means 68% of attempts fail due to photon loss — directly traceable to finite $C$.
+- **Error-detected gate:** 52.5% deterministic fidelity improves to 76% only by discarding 31% of shots. The 24-percentage-point gap between postselected and deterministic fidelity is dominated by the same photon-loss channel.
+- **The fidelity drop from 91% (carving) to 52.5% (CZ gate) reflects a tradeoff:** the CZ gate uses a full $2\pi$ cavity interaction (higher phase accumulation, higher sensitivity to $C$ fluctuations and mode mismatch), while carving uses a conditional $\pi$ rotation on only the $|10\rangle$ component.
+
+**Why $C = 101$ is the key number:**
+
+In the strong-coupling regime, success probability scales as $C/(C+1) \approx 1 - 1/C$. Doubling cooperativity from 100 to 200 would roughly halve the failure probability per attempt — boosting carving success from 32% to ~66% and deterministic gate fidelity toward the postselected regime. The current finesse of 25,904 degraded from $>40{,}000$ after bakeout misalignment; restoring this alone would increase $C$ by ~50%.
+
+**Paths to improvement:**
+
+- Restore/increase finesse (engineering: mirror smoothness, alignment after bakeout)
+- Increase $g$ via smaller mode volume (shorter cavity, tighter fiber tips)
+- Multi-atom cavity QED: up to ~20 atoms can be addressed in the current cavity via beat-note spatial modes, enabling collective $\sqrt{N}$-enhanced coupling
+
+## Completeness check
+
+Cavity hardware parameters are now in the protocol section above ($\mathcal{F} = 25{,}904$, $C = 101$, $g = 100$ MHz, $\kappa = 65$ MHz).
+
+**Entanglement rates:** The paper reports success probabilities per attempt (32% carving, 69% postselected gate) but not explicit attempts-per-second. The readout time is 10 μs; assuming a similar gate cycle time, a rough upper bound is $\sim 10^5$ attempts/s, giving effective Bell-state generation rates of $\sim 3 \times 10^4$/s for carving and $\sim 7 \times 10^4$/s for the gate protocol.
+
+**Multi-atom path:** The current cavity can hold ~20 atoms simultaneously using the beat-note spatial structure of the cavity mode. Scaling beyond two atoms would enable GHZ state preparation and multi-qubit cavity-mediated gates — a natural next step for the platform.
+
+**Comparison with other cavity QED platforms:**
+
+| Platform | Cooperativity $C$ | Gate fidelity | Scale |
+|---------|-------------------|---------------|-------|
+| Neutral atoms in fiber cavity (this work) | 101 | 52.5% det. / 76% postsel. | 2 atoms |
+| Trapped ions in Fabry-Pérot | ~1–10 | — | 1–2 ions |
+| Neutral atoms in bulk cavity | ~10–100 | ~90% (older works) | 1–few |
+
+Fiber Fabry-Pérot cavities achieve high $C$ at small cavity length; the main open challenge is combining high $C$ with tweezer-array scalability.
