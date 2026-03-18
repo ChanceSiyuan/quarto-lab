@@ -691,6 +691,12 @@ In Stage III, the interaction matrix $B$ induces a **top-down modulation** of th
 
 The dynamical frameworks of @sec-feature-dynamics describe *how* the network's parameters move from a memorizing to a generalizing configuration. But they leave open a deeper statistical question: *why* does the optimizer ultimately prefer the generalizing basin over the (often equally loss-minimizing) memorization basin? Singular Learning Theory (SLT), which recasts model selection as a thermodynamic free energy competition, provides a principled answer.
 
+:::{.callout-warning icon="false"}
+## Notation: $\lambda$ in this section vs. elsewhere
+
+**Throughout this section, $\lambda$ exclusively denotes the local learning coefficient (LLC)**, a geometric invariant of the loss landscape defined below. This is a distinct quantity from the weight-decay regularization strength, which is also written $\lambda$ in @sec-phase-transition and @sec-feature-dynamics. To avoid confusion: wherever $\lambda$ appears with a basin label ($\lambda_a$, $\lambda_b$) or as $\lambda(w^*)$, it is the LLC. Wherever it appears in a loss expression of the form $\mathcal{L} + \lambda\|\theta\|^2$ or in the Goldilocks-zone description, it is weight decay. The two quantities are conceptually unrelated; the overloaded symbol is an unfortunate convention inherited from the SLT and grokking literatures respectively.
+:::
+
 ### The Local Learning Coefficient
 
 Neural networks are **singular models**: their parameter-to-function maps have degenerate (rank-deficient) Fisher information matrices at critical points. SLT, developed by Watanabe, handles precisely this setting by replacing the naive parameter count with a geometric invariant---the **local learning coefficient** (LLC).
