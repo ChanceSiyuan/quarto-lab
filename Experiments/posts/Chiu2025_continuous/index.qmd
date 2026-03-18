@@ -2,7 +2,7 @@
 categories:
 - Readings
 date: 2026-03-18
-description: 'Reading notes on Chiu et al. 2025 — continuous-operation architecture with conveyor-belt atom transport sustaining 3000+ coherent qubits for hours'
+description: 'Reading notes on Chiu et al. 2025 — continuous-operation architecture with conveyor-belt atom transport sustaining ~3,200 coherent qubits for hours'
 lang: en
 title: 'Chiu 2025: Continuous Operation at Scale (3000 Qubits)'
 bibliography: refs.bib
@@ -23,11 +23,11 @@ A completely different approach to the atom loss problem: rather than a reservoi
 2. **EIT sub-Doppler cooling during rearrangement:** Electromagnetically induced transparency (F=2 → F'=2, 70 MHz blue-detuned, coupling:probe intensity ratio 13:1, 4.2 G bias field) cools atoms to sub-Doppler temperatures during the 20–40 ms rearrangement window. EIT is a *cooling* technique here — not an imaging or readout technique.
 3. **PGC fluorescence readout:** State-selective readout uses a pushout pulse (selective on F=2) followed by polarization-gradient cooling (PGC) fluorescence imaging, achieving **99.99% discriminant fidelity** and **99.5% atom survival** per 10 ms image at single-site resolution.
 4. **Continuous tweezer reloading:** Atoms are extracted from the lattice reservoir into optical tweezers (1,440 AOD tweezers at 828 nm, 4.5 μm spacing, 450 μK depth; 3,240 SLM sites at 852 nm, 9 μm spacing, 270 μK mean depth) without disrupting nearby stored qubits.
-5. **Scale demonstration:** 3,000+ atoms maintained continuously for >2 hours — an order-of-magnitude advance in both qubit count and operational lifetime.
+5. **Scale demonstration:** 3,217 atoms in a representative single shot (99.3% filling of 3,240 SLM sites; 3,193 atoms on average across 300 trials, 98.5% filling) maintained continuously for >2 hours — an order-of-magnitude advance in both qubit count and operational lifetime.
 
 ## Key observations
 
-- **Massive scale:** 3,000+ coherent qubits sustained continuously — 7× more than the 4-zone system (448 atoms). This is the largest coherent neutral atom array demonstrated.
+- **Massive scale:** 3,217 atoms (single shot, 99.3% filling) / 3,193 atoms (average, 98.5% filling, 300 trials) coherent qubits sustained continuously — 7× more than the 4-zone system (448 atoms). This is the largest coherent neutral atom array demonstrated.
 - **Hour-long operation:** Continuous reloading decouples the experiment's operational lifetime from single-atom vacuum decay ($\sim 10$ s in UHV). The system ran for >2 hours without degradation.
 - **High throughput:** >30,000 initialized qubits per second (abstract); ~15,000/s post-rearrangement; 300,000 atoms per second lattice reload rate.
 - **Coherence benchmarks (XY16 dynamical decoupling):** $T_2 = 1.34(4)$ s (reference, no disturbance); $T_2 = 1.09(3)$ s with concurrent imaging. $T_1 = 12.6(1)$ s (reference); $T_1 = 3.43(3)$ s with imaging shielding.
@@ -47,7 +47,7 @@ A completely different approach to the atom loss problem: rather than a reservoi
 
 | Parameter | 1-zone analog (e.g. Ebadi 2021) | 3-zone (Bluvstein 2024) | 4-zone (Bluvstein 2025) | Chiu 2025 (conveyor-belt) |
 |-----------|---------------------------------|------------------------|------------------------|--------------------------|
-| Qubit count | up to ~300 | 280 | 448 | 3,000+ |
+| Qubit count | up to ~300 | 280 | 448 | 3,217 (single shot); 3,193 avg |
 | Operational lifetime | Single shot (no reload) | Single shot (no reload) | Limited by 196-atom reservoir (~100 QEC rounds) | >2 hours (continuous) |
 | Atom supply | None (fixed array) | None (fixed array) | 196-atom reservoir (finite) | 300,000 atoms/s (conveyor belt) |
 | Readout | Fluorescence in-situ: ~99% ($|g\rangle$), ~92–96% ($|r\rangle$) | Spin-to-position: 99.8% fidelity (destructive) | Non-destructive lattice: 99.54% (0.46% bit-flip) | PGC fluorescence: 99.99% discriminant (final state only) |
@@ -86,7 +86,7 @@ Within the supply system itself, transport heating is the binding efficiency con
 - EIT cooling during rearrangement: 20–40 ms
 - Net: cooling occupies ~30–50% of the reload cycle
 
-Improving transport adiabaticity (shaped velocity ramps, deeper lattice) or shortening EIT time would increase the 30,000 qubits/s initialization rate. The post-EIT temperature achieved by this system is not confirmed in publicly available sources <!-- TODO: verify post-EIT temperature from paper Methods -->.
+Improving transport adiabaticity (shaped velocity ramps, deeper lattice) or shortening EIT time would increase the 30,000 qubits/s initialization rate. The post-EIT temperature achieved by this system is **12 μK radial** (measured via drop-recapture, reported in the Methods under "Finite-Field Laser Cooling & Imaging"), a ~10× reduction from the ~120 μK arrival temperature.
 
 **Tertiary bottleneck for future integration:** Combining conveyor-belt supply with a zoned computation region requires solving stray-light isolation — the ~800 nm transport lattice must not scatter photons into the entangling zone (852/828 nm tweezers). Engineering challenge, not a demonstrated result.
 
@@ -120,8 +120,10 @@ Improving transport adiabaticity (shaped velocity ramps, deeper lattice) or shor
 | Conveyor trap depth | >500 μK | Methods |
 | Atoms arrive at | ~120 μK (~6× reservoir temp) | Methods |
 | Transport efficiency | ~60% per cycle | Methods |
+| Post-EIT temperature | 12 μK radial (drop-recapture) | Methods §"Finite-Field Laser Cooling & Imaging" |
 | EIT cooling duration | 20–40 ms (rearrangement window) | Methods |
 | EIT parameters | F=2→F'=2, 70 MHz blue-detuned, ratio 13:1, 4.2 G | Methods |
+| SPAM fidelity | 98.1(3)% (within 20 μs per qubit) | Main text |
 | AOD tweezers | 1,440 sites, 828 nm, 4.5 μm spacing, 450 μK | Methods |
 | SLM array | 3,240 sites, 852 nm, 9 μm spacing, 270 μK mean | Methods |
 | Initialization rate | >30,000 qubits/s (abstract); ~15,000/s post-rearrangement | Fig. 1c |
