@@ -43,40 +43,52 @@ A completely different approach to the atom loss problem: rather than a reservoi
 | **Verification value** | Demonstrates that the conveyor-belt concept works at scale — validates the engineering approach for future >10,000-qubit systems. |
 
 
-## Architecture comparison: complementary to 4-zone
+## Architecture comparison: full generational context
 
-| Parameter | Chiu 2025 (conveyor-belt) | Bluvstein 2025 (4-zone) | Complementarity |
-|-----------|--------------------------|------------------------|-----------------|
-| Qubit count | 3,000+ | 448 | 7× more qubits |
-| Operational lifetime | >2 hours | Limited by 196-atom reservoir | Hours vs. ~100 rounds |
-| Atom supply rate | 300,000/s | 196-atom reservoir (finite) | Continuous vs. finite |
-| Readout | PGC fluorescence, 99.99% fidelity | Non-destructive mid-circuit readout | Conveyor-belt has no mid-circuit QEC readout |
-| Coherence $T_2$ (XY16) | 1.34(4) s (ref); 1.09(3) s w/ imaging | ~1 s (cavity-shielded) | Comparable coherence |
-| Coherence $T_1$ | 12.6(1) s (ref); 3.43(3) s w/ shielding | ~10 s range | Comparable $T_1$ |
-| Single-qubit gate fidelity | 0.99995 per π-pulse | 0.9997 (SQG) | Conveyor-belt slightly better |
-| Entangling gates | Not demonstrated | CZ at 99.5% | Conveyor-belt is supply only |
-| QEC | Not demonstrated | Below-threshold scaling | 4-zone handles QEC |
+| Parameter | 1-zone analog (e.g. Ebadi 2021) | 3-zone (Bluvstein 2024) | 4-zone (Bluvstein 2025) | Chiu 2025 (conveyor-belt) |
+|-----------|---------------------------------|------------------------|------------------------|--------------------------|
+| Qubit count | up to ~300 | 280 | 448 | 3,000+ |
+| Operational lifetime | Single shot (no reload) | Single shot (no reload) | Limited by 196-atom reservoir (~100 QEC rounds) | >2 hours (continuous) |
+| Atom supply | None (fixed array) | None (fixed array) | 196-atom reservoir (finite) | 300,000 atoms/s (conveyor belt) |
+| Readout | Fluorescence in-situ: ~99% ($|g\rangle$), ~92–96% ($|r\rangle$) | Spin-to-position: 99.8% fidelity (destructive) | Non-destructive lattice: 99.54% (0.46% bit-flip) | PGC fluorescence: 99.99% discriminant (final state only) |
+| Mid-circuit readout | No | Yes (destructive) | Yes (non-destructive, QEC) | No |
+| Coherence $T_2$ (XY16) | Not specified (no DD) | Not specified | Not directly stated in review | 1.34(4) s (ref); 1.09(3) s w/ imaging |
+| Single-qubit gates | Global Rydberg drive (no individual SQG) | Raman SQG, ~99.7% | Raman SQG, ~99.97% | 0.99995 per π-pulse |
+| Entangling gates | Rydberg blockade (analog only) | CZ, 99.5% | CZ, 99.5% | **Not demonstrated** |
+| QEC | No | [[4,2,2]] detection codes | Below-threshold logical scaling | **Not demonstrated** |
 
-**Key insight:** The conveyor-belt and 4-zone approaches are *complementary*, not competing. Future systems will combine both: conveyor-belt for atom supply at 10,000+ qubit scale, 4-zone for mid-circuit QEC computation. This is explicitly stated in the Lukin group's roadmap.
+**Simultaneous related work:** [@li2025fast] (Thompson group, Princeton, arXiv:2506.15633) appeared at the same time and addresses the same atom-replacement problem using $^{171}$Yb qubits — a different platform (alkaline-earth vs. alkali) and group, not a companion paper by the Lukin group. Their system achieves up to 500 atom replacements/s and 30 new qubit arrays/s, focusing on integration with an existing gate zone. The two papers together demonstrate broad community convergence on continuous-reloading as the path to deep circuits.
+
+**Key insight:** The conveyor-belt apparatus sits *outside* the 1→3→4-zone lineage. It is a qubit-supply and coherence demonstration — not a quantum processor. The 1-zone readout ceiling (~96% for Rydberg states) is the baseline that motivates the 99.8%→99.99% readout improvements across generations; the conveyor-belt achieves 99.99% but only for final-state detection, not mid-circuit QEC readout. Future systems will integrate conveyor-belt supply with a 4-zone computation region.
 
 
 ## Critical technique analysis
 
-**Most important bottleneck in this demonstrated system: transport heating.**
+**Most important bottleneck: no entangling gates demonstrated.**
 
-Conveyor-belt atoms arrive at the science region at **~120 μK** — approximately 6× hotter than the reservoir temperature (~20 μK). With only ~60% transport efficiency per delivery cycle, a significant fraction of delivered atoms are either lost or too hot to use directly as qubits.
+This is the single most significant feature of Chiu 2025 that the transport-heating framing obscures: the conveyor-belt apparatus is a *qubit-storage and coherence testbed*, not a quantum processor. It has no two-qubit gate capability whatsoever on this apparatus. The "~99.5% entangling gate fidelity" mentioned in outlook discussions is a projected engineering target for a future combined system — it is not a demonstrated result on this hardware.
 
-**Why this is the binding bottleneck:**
+**Why this is the binding capability gap:**
 
-The heating is fundamental to the transport mechanism: atoms accelerate to 8–10 m/s and decelerate at ~4,000 m/s², and even at trap depth >500 μK the adiabaticity is imperfect. Hot atoms must undergo sub-Doppler cooling (via EIT, 20–40 ms) before being loaded into the tweezer array. This cooling time dominates the duty cycle:
+The 4-zone system achieves CZ gates at 99.5% fidelity and has demonstrated below-threshold fault-tolerant QEC. The conveyor-belt apparatus, despite maintaining 3,000+ atoms at comparable coherence ($T_2 = 1.34$ s vs. $T_2^{\text{4-zone}}$ not directly specified), cannot run any entangling circuit. The two systems are therefore complementary by design, not competing: Chiu 2025 solves the *supply problem* while the 4-zone solves the *computation problem*. Future systems must integrate both.
+
+The absence of entangling gates also means:
+
+- No Rydberg blockade zone has been commissioned on this apparatus
+- No benchmark XEB, RB, or parity-check circuits exist for this hardware
+- The system cannot perform QEC, even in principle, without adding a separate computation zone
+
+**Secondary (supply-side) bottleneck: transport heating.**
+
+Within the supply system itself, transport heating is the binding efficiency constraint. Atoms arrive at **~120 μK** (approximately 6× hotter than the ~20 μK reservoir temperature) after 8–10 m/s transport, and must be EIT-cooled (20–40 ms) before tweezer loading. This limits the duty cycle:
 
 - Transport time (0.5 m at 8–10 m/s): ~50–60 ms
 - EIT cooling during rearrangement: 20–40 ms
 - Net: cooling occupies ~30–50% of the reload cycle
 
-**Consequence:** The 30,000 qubits/s initialization rate and the $T_2 = 1.09$ s coherence-during-imaging figure both depend on this cooling working reliably. Improving transport adiabaticity (shaped velocity ramps, deeper lattice) or shortening EIT cooling time would directly increase the initialization rate and reduce the thermal occupation of loaded atoms.
+Improving transport adiabaticity (shaped velocity ramps, deeper lattice) or shortening EIT time would increase the 30,000 qubits/s initialization rate. The post-EIT temperature achieved by this system is not confirmed in publicly available sources <!-- TODO: verify post-EIT temperature from paper Methods -->.
 
-**Secondary bottleneck for future integration:** Combining conveyor-belt supply with a zoned computation region requires solving stray-light isolation — the ~800 nm transport lattice must not scatter photons into the entangling zone, which operates at different wavelengths (852/828 nm tweezers). This is an engineering challenge, not a demonstrated result.
+**Tertiary bottleneck for future integration:** Combining conveyor-belt supply with a zoned computation region requires solving stray-light isolation — the ~800 nm transport lattice must not scatter photons into the entangling zone (852/828 nm tweezers). Engineering challenge, not a demonstrated result.
 
 ## Experiment protocol
 
