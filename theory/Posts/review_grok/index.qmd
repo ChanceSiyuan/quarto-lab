@@ -79,9 +79,9 @@ The parameter $\alpha$ serves as a control knob that tunes the system between th
 ## (NTK--Lazy Equivalence)
 In the limit $N \to \infty$ with $\alpha = 1/2$, gradient flow on the squared loss is equivalent to kernel regression with the deterministic NTK at initialization:
 $$
-f_t(x) = f_0(x) - K_\infty(x, X)(K_\infty(X,X))^{-1}\bigl(e^{-K_\infty(X,X) \eta t} - I\bigr) \bigl(Y - f_0(X)\bigr),
+f_t(x) = f_0(x) - K_\infty(x, X)(K_\infty(X,X))^{-1}\bigl(e^{-2K_\infty(X,X) \eta t} - I\bigr) \bigl(Y - f_0(X)\bigr),
 $$
-where $X$ denotes the training inputs and $Y$ the targets. In particular, the kernel $K_t = K_\infty$ for all $t \geq 0$, and training converges to the minimum-RKHS-norm interpolant [@jacot2018neural].
+where $X$ denotes the training inputs and $Y$ the targets. The factor of 2 in the exponent comes from differentiating the un-halved MSE loss $\mathcal{L} = \sum_i (y_i - f(x_i))^2$; if instead the half-MSE $\frac{1}{2}\sum_i(y_i-f(x_i))^2$ is used the factor becomes 1 (see the explicit derivation in [NTK.qmd](NTK.qmd), lines 93–119). In particular, the kernel $K_t = K_\infty$ for all $t \geq 0$, and training converges to the minimum-RKHS-norm interpolant [@jacot2018neural].
 ::::
 
 ---
