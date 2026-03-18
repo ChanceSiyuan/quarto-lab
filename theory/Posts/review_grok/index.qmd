@@ -167,7 +167,7 @@ The **Goldilocks zone** is the region of hyperparameter space $(\lambda, \alpha,
 Within this zone, the network first memorizes (fast noise dynamics), then gradually transitions to generalization as weight decay destabilizes the memorization solution [@liu2022grokking].
 ::::
 
-The signal strength $S(t)$ and noise strength $N(t)$ obey effective dynamics of the form:
+The signal strength $S(t)$ and noise strength $N(t)$ are defined as $S(t) := \|\Pi_S W_t\|_F^2$ and $N(t) := \|\Pi_N W_t\|_F^2$ (the squared Frobenius norms of the weight matrix projected onto the signal and noise subspaces; see @def-snr for the precise decomposition). They obey effective dynamics of the form:
 $$
 \dot{S} = \eta_S \, g_S(S, N) - \lambda S, \qquad \dot{N} = \eta_N \, g_N(S, N) - \lambda N,
 $$ {#eq-signal-noise}
