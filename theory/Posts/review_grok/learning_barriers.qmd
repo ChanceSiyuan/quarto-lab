@@ -226,12 +226,20 @@ The limitations of classical SQ are not shared by their quantum counterparts. Wh
 ## Theorem (QSQ Advantage Under Symmetries --- Nguyen et al. 2026)
 In the quantum statistical query (QSQ) model, there exist permutation-invariant concept classes exhibiting exponential separation from classical SQ. When the group $G$ acts on the input space and the induced orbit distribution $p_{O_\rho}$ is highly skewed, quantum learners succeed with $O(\log |S|)$ queries at noise tolerances where classical SQ algorithms require exponentially many queries.
 
-Specifically, for tolerance range
+Specifically, let $S \subseteq C_\rho$ be a subclass in which every $f \in S$ is supported on a fraction $\zeta = |S_f|/|X|$ of the input domain, with supports $\{S_f\}_{f \in S}$ pairwise disjoint. For tolerance range
 $$
 2\zeta < \tau < \sqrt{2\zeta - \zeta^2},
 $$ {#eq-qsq-window}
-where $\zeta$ is the measure of disjoint supports, the QSQ model succeeds while classical SQ fails. The classical lower bound is $\Omega(\tau^2 / \|p_{O_\rho}\|_2^2)$, which diverges when the orbit distribution is nearly uniform.
+the QSQ model succeeds with $O(\log|S|)$ queries while classical SQ fails. The window is non-empty iff $\zeta < 2/5$. The classical lower bound is $\Omega(\tau^2 / \|p_{O_\rho}\|_2^2)$, which diverges when the orbit distribution is nearly uniform.
 ::::
+
+:::{.callout-note collapse="true"}
+## Proof sketch
+
+**Classical failure ($\tau > 2\zeta$):** Each $f \in S$ differs from the zero function only on fraction $\zeta$ of inputs, so every classical expectation value deviates from the zero-function value by at most $2\zeta$. When $\tau > 2\zeta$ the SQ oracle can respond with the zero-function answer consistently, making all $f \in S$ classically indistinguishable.
+
+**Quantum success ($\tau < \sqrt{2\zeta - \zeta^2}$):** The quantum example states encoding $f$ and $\mathbf{0}$ have inner product $\langle \psi_{\mathbf{0}} | \psi_f \rangle = 1 - \zeta$ (only the fraction $\zeta$ of states on $S_f$ disagree), giving trace distance $d_{\mathrm{tr}} = \sqrt{1 - (1-\zeta)^2} = \sqrt{2\zeta - \zeta^2}$. By the Helstrom bound there exists a quantum observable whose expectations on the two states differ by exactly $\sqrt{2\zeta - \zeta^2}$, so a QSQ oracle with $\tau < \sqrt{2\zeta - \zeta^2}$ must return distinguishable intervals. The $O(\log|S|)$ query count follows from binary search over the $|S|$ disjoint-support functions [@nguyen2026quantum].
+:::
 
 In the classical SQ setting, the learning complexity is governed by the $\ell_2$-norm of the orbit distribution: when $\|p_{O_\rho}\|_2^2 \ll 1$ (orbits are spread uniformly), the pairwise correlations between distinct target functions are vanishingly small, and the query lower bound explodes. The QSQ model circumvents this by querying expectations of quantum observables, whose interference structure can amplify the signal from algebraic symmetries that classical statistics cannot detect.
 
