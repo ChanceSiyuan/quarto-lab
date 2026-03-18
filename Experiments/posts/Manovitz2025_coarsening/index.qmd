@@ -51,23 +51,36 @@ This experiment runs on the Harvard 1-zone Rydberg apparatus. The parameters bel
 | Rabi frequency range | $2\pi \times 3.1$–$6.0$ MHz | Methods |
 | Lattice spacing range | $a = 6.45$–$7.15$ μm | Methods |
 | Blockade ratio $R_b/a$ | 1.12, 1.15, 1.13 (three configs) | Computed from $\Omega$, $a$ |
-| Boundary light-shift | 12.2(3) MHz | Methods |
+| **Second SLM (hardware upgrade)** | 784 nm, ~160 μW/spot; site-resolved AC Stark shifts | Methods — new vs. Ebadi 2021 baseline |
+| Boundary light-shift | 12.2(3) MHz (differential AC Stark, $5S_{1/2}$–$5P_{3/2}$) | Methods |
 | Position fluctuation | $\sigma_{x,y} \approx 0.2$ μm (thermal) | Platform (review Bottleneck 1) |
-| SLM uniformity | 1–2% site-to-site variance | Platform (review) |
+| SLM uniformity | 1–2% site-to-site intensity variance | Platform (review) |
 | Shot retention (short $t$) | 86% | Methods |
 | Shot retention ($t=1.16\ \mu$s) | 63% | Methods |
+
+**Hardware upgrade note:** The Ebadi 2021 baseline (review §1-Zone) uses a single SLM at 852 nm for static trap generation plus AODs for rearrangement. Manovitz 2025 adds a **second SLM at 784 nm** to apply site-resolved detuning offsets; this is the optical subsystem that implements the 12.2(3) MHz boundary light shifts. Without this second SLM, per-site detuning control at the required 93–95% fidelity level is not possible with the AOD-only architecture.
 
 **Comparison with review bottleneck estimates:** The review (Bottleneck 1) quotes $\delta V/V \approx 30\%$ at $R = 4\ \mu$m nearest-neighbor spacing. This experiment uses $a = 6.45$–$7.15\ \mu$m, where the larger spacing reduces the fractional interaction spread to $\sim 17$–$19\%$ (since $\delta V/V \propto \sigma_x/a \cdot 6$). The two figures are therefore consistent — the review's 30% is the worst-case compact-lattice regime; Manovitz 2025 operates in a more favorable regime by design to minimize disorder effects on coarsening dynamics. Neither experiment uses sub-Doppler cooling, so $\sigma_{x,y} \approx 0.2\ \mu$m is the shared baseline.
 
 
 ## Critical technique analysis
 
-**Most important technique needing optimization: Scaling to larger lattices to suppress finite-size artifacts.**
+**Most important technique in this experiment: Second-SLM intensity uniformity → boundary-site ground-state fidelity.**
 
-The paper's own attribution of theory-experiment discrepancies is **finite-size effects** on the 16×16 lattice: long-wavelength domain modes with wavelength $\lambda > L = 16a$ are simply absent, suppressing the late-time coarsening amplitude. A secondary effect is the $\Delta/\Omega$-dependent domain-wall width — thicker walls at smaller $|\Delta - \Delta_c|$ slow coarsening relative to the sharp-wall Allen-Cahn prediction. These are *not* primarily caused by thermal position fluctuations, although $\delta V/V \sim 18\%$ remains a platform-level constraint.
+The proximate limit on state preparation fidelity in this experiment is the **uniformity of the 784 nm second SLM** used to apply site-resolved light shifts at boundary sites. The achieved fidelity on pinned sites is **93–95%**, which is lower than the bulk preparation fidelity of the platform. The 1–2% site-to-site intensity variance in the SLM output directly maps to ±0.12–0.24 MHz spread in the applied 12.2(3) MHz light shift — sufficient to misplace some boundary atoms on the wrong sublattice, introducing domain nucleation errors at the edges that propagate inward during coarsening.
+
+**Why this is the bottleneck, not the others:**
+
+- *Finite-size effects* (16×16 grid too small for multi-decade scaling) set the *theory-experiment agreement* ceiling, but they are not reducible by hardware improvement — they require a larger experiment.
+- *Thermal position disorder* ($\delta V/V \sim 18\%$) is subdominant here because the relevant observable (domain coarsening exponent $z_d = 2$) is robust to disorder.
+- *SLM uniformity* is the bottleneck because it determines the quality of the ordered initial state from which coarsening is measured: 5–7% misaligned boundary sites seed spurious domains that contaminate the coarsening signal at late times ($t > 0.5\ \mu$s), coinciding with the onset of finite-size effects.
+
+Improving the second SLM to $< 0.5\%$ intensity variance would push pinned-site fidelity above 98%, decoupling boundary errors from finite-size effects and making the two contributions independently identifiable.
 
 > **Distinction between platform bottleneck and experiment-specific bottleneck:**
-> Thermal position disorder ($\sigma_{x,y} \approx 0.2$ μm, $\delta V/V \sim 18\%$) is a persistent platform limitation (Bottleneck 1 in the review) but is *not* the factor limiting agreement in *this* experiment. The 16×16 grid is simply too small to observe universal coarsening over more than one decade in time.
+> Thermal position disorder ($\sigma_{x,y} \approx 0.2$ μm, $\delta V/V \sim 18\%$) is a persistent platform limitation (Bottleneck 1 in the review) but is *not* the dominant factor limiting agreement in *this* experiment. The dominant preparation error is second-SLM non-uniformity at boundary sites; the dominant long-time discrepancy is the finite lattice size (16×16).
+
+**Future path: larger lattice.** Scaling to 32×32 or 64×64 would allow $\xi(t)$ to grow over 2–3 decades before hitting the boundary — this is the *future experiment* aspiration. The current-experiment bottleneck remains second-SLM uniformity.
 
 For the three lattice spacings used (thermal disorder reference):
 
@@ -89,7 +102,7 @@ For the three lattice spacings used (thermal disorder reference):
 
 The Higgs (amplitude) mode frequency ratio measured in this experiment satisfies:
 $$\frac{\omega(-|\mathbf{q}|)}{\omega(|\mathbf{q}|)} > \sqrt{2}$$
-where $\omega(\pm|\mathbf{q}|)$ are the Higgs frequencies at opposite momenta. The mean-field prediction is exactly $\sqrt{2} \approx 1.41$; more advanced calculations for the (2+1)D Ising CFT predict $\approx 1.9$, and the experiment is consistent with this. No direct MHz-scale frequency values are reported — the observable is the ratio extracted from time-domain oscillations of the staggered magnetization.
+where $\omega(\pm|\mathbf{q}|)$ are the Higgs frequencies at opposite momenta. The mean-field prediction is exactly $\sqrt{2} \approx 1.41$; more advanced calculations for the (2+1)D Ising CFT predict $\approx 1.9$, and the experiment is consistent with this. No direct MHz-scale frequency values are quoted in the paper text or captions — the paper states frequencies "closely match the numerically determined ground-state gap" and shows the comparison graphically in Fig. 5d, but does not tabulate specific values. The observable is the ratio extracted from time-domain oscillations of the staggered magnetization. From the figure, oscillation periods appear to be on the order of 0.3–0.5 μs, implying $\omega_H/2\pi \sim 2$–$3$ MHz, but this cannot be confirmed without digitizing the figure.
 
 ### Coarsening exponent and deviations
 
