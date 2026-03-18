@@ -57,10 +57,11 @@ A fundamentally different entanglement mechanism: instead of Rydberg blockade (d
 | Cavity linewidth $\kappa$ (FWHM) | 65(1) MHz |
 | Natural linewidth $\Gamma$ ($^{87}$Rb) | 6 MHz |
 | Cavity length | 100 μm |
-| Qubit readout fidelity | 99.960% |
-| Atom presence fidelity | 99.988% |
-| Readout time | 10 μs |
+| Qubit readout fidelity | 99.960% (10 μs) / 99.988% (2.5 μs, atom-presence only) |
 | Readout-induced atom loss | 0.034% |
+| State preparation fidelity | >99% (optical pumping to $|F=1, m_F=0\rangle$) |
+| State preparation time | 18 μs (15 μs D1+D2 pump + 3 μs D1 cleanup) |
+| Cavity resonance tuning time | ~7 ms (mechanical lever-arm limit; per readout-basis switch) |
 | Atoms demonstrated (max possible) | 2 (~20) |
 
 The cooperativity $C = 4g^2/(\kappa\Gamma) = 101$ sets the fundamental tradeoff: higher $C$ increases both success probability and fidelity. The current finesse of 25,904 degraded from $>40{,}000$ after bakeout-induced misalignment.
@@ -94,7 +95,7 @@ The cooperativity $C = 4g^2/(\kappa\Gamma) = 101$ sets the fundamental tradeoff:
 | QEC / error detection | Built-in erasure detection | None | Post-hoc (error correcting codes) | Real-time QEC, 41 rounds demonstrated | Cavity: native erasure; 4-zone: fault-tolerant cycles |
 | Networking | Photonic interface ready | No photon interface | No photon interface | No photon interface | Cavity enables quantum network nodes |
 
-The cavity approach sacrifices gate fidelity and scalability for ultra-high readout fidelity, built-in error detection, and photonic networking capability. It is not a replacement for Rydberg arrays but a complementary module for quantum network nodes. The 4-zone system [@bluvstein2025faulttolerant via review] represents the current state-of-the-art for fault-tolerant computation; the cavity platform is best viewed as a future network node rather than a standalone processor.
+The cavity approach sacrifices gate fidelity and scalability for ultra-high readout fidelity, built-in error detection, and photonic networking capability. It is not a replacement for Rydberg arrays but a complementary module for quantum network nodes. The 4-zone system (Bluvstein et al., reviewed above) represents the current state-of-the-art for fault-tolerant computation; the cavity platform is best viewed as a future network node rather than a standalone processor.
 
 
 ## Critical technique analysis
@@ -121,7 +122,7 @@ In the strong-coupling regime, success probability scales as $C/(C+1) \approx 1 
 
 Cavity hardware parameters are now in the protocol section above ($\mathcal{F} = 25{,}904$, $C = 101$, $g = 100$ MHz, $\kappa = 65$ MHz).
 
-**Entanglement rates:** The paper reports success probabilities per attempt (32% carving, 69% postselected gate) but not explicit attempts-per-second. The readout time is 10 μs; assuming a similar gate cycle time, a rough upper bound is $\sim 10^5$ attempts/s, giving effective Bell-state generation rates of $\sim 3 \times 10^4$/s for carving and $\sim 7 \times 10^4$/s for the gate protocol.
+**Entanglement rates:** The paper reports success probabilities per attempt (32% carving, 69% postselected gate) but not explicit attempts-per-second. The true cycle-time bottleneck is **cavity resonance tuning: ~7 ms per shot**, limited by the lever-arm mechanical modes of the dangling fibers (Section 2.4). This dominates over the 10 μs readout and 18 μs state-preparation time by three orders of magnitude, giving a ceiling of $\sim 143$ attempts/s — not $\sim 10^5$/s. Effective Bell-state generation rates are therefore $\sim 46$/s for the carving protocol and $\sim 99$/s for the postselected CZ gate. Eliminating the mechanical tuning bottleneck (e.g., via electro-optic or acousto-optic cavity-length control) is a prerequisite for competitive networking rates.
 
 **Multi-atom path:** The current cavity can hold ~20 atoms simultaneously using the beat-note spatial structure of the cavity mode. Scaling beyond two atoms would enable GHZ state preparation and multi-qubit cavity-mediated gates — a natural next step for the platform.
 
