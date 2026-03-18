@@ -17,12 +17,16 @@ draft: true
 
 ## What was done
 
-A theoretical framework that inverts the traditional quantum simulation paradigm — instead of "given Hamiltonian $H$, find ground state properties," the inverse simulator solves "given desired material properties, find the Hamiltonian $H$ that produces them":
+A theoretical framework that inverts the traditional quantum simulation paradigm — instead of "given Hamiltonian $H$, find ground state properties," the inverse simulator solves "given desired material properties, find the Hamiltonian $H$ that produces them."
+
+:::{.callout-tip icon="false"}
+## Inverse Simulation Protocol (4-step loop)
 
 1. **Target encoding:** Desired material properties (e.g., $d$-wave pair correlations, specific entanglement entropy, topological invariants) are encoded into a classical cost function $C[\rho]$.
 2. **Variational state preparation:** A parameterized quantum state $|\psi(\boldsymbol{\theta})\rangle$ is prepared on the neutral-atom hardware and optimized to minimize $C$.
 3. **Hamiltonian learning:** Once the target state is stabilized, spectral or continuous-phase Hamiltonian learning (SHL/CPHL) extracts the effective low-energy Hamiltonian $\hat{H}_{\text{opt}}$ whose ground state approximates $|\psi(\boldsymbol{\theta})\rangle$.
 4. **Materials design output:** The learned $\hat{H}_{\text{opt}}$ provides physically interpretable microscopic parameters (hopping, interaction, exchange) that guide experimental materials synthesis.
+:::
 
 ## Key observations
 
@@ -36,7 +40,7 @@ $$C[\boldsymbol{\theta};\lambda] = \langle \hat{H}_0 \rangle_\theta - \lambda \s
   where $\hat{\Delta}_1^\dagger$ creates a singlet pair at site 1 and $\lambda$ weights the pairing enhancement against energy minimization.
 - **DMRG validation:** Inverse simulator run on a small ladder (2×4, 8 sites); the learned Hamiltonian parameters generalize successfully to a 2×24-site ladder across the full doping range.
 - **Learned terms:** dominant off-diagonal hoppings and off-site density–density interactions — physically interpretable microscopic parameters that enhance $d$-wave pair correlations.
-- Circuit depths $d = 5$ and $d = 10$ were used, with deeper circuits yielding more localized learned Hamiltonians.
+- Circuit depths $d = 5$ and $d = 10$ were used on the 2×4 learning ladder (Figure 2c), with deeper circuits yielding more localized learned Hamiltonians.
 
 ### Application 2: Topological phase extension in the Cluster Ising Model (CIM)
 
@@ -118,7 +122,7 @@ where $\eta_{\text{ro}}$ is the single-qubit readout fidelity. Gate errors prima
 
 **Cost function (d-wave):** $C[\boldsymbol{\theta};\lambda] = \langle \hat{H}_0 \rangle_\theta - \lambda \sum_r \langle \hat{\Delta}_1^\dagger \hat{\Delta}_{1+r} \rangle_\theta$; demonstrated with $\lambda = 2$ in Figure 2(c).
 
-**Circuit depths:** $d = 5$ and $d = 10$ used for the 4-site (2×2) Hubbard system. Depth for the 8-site (2×4) learning system is not separately specified.
+**Circuit depths:** $d = 5$ and $d = 10$ used for the 2×4 (8-site) Hubbard learning ladder (Figure 2c); deeper circuits yield more localized learned Hamiltonians. Depths for other systems are not separately specified.
 
 **Finite-temperature Hubbard result:** $T \simeq 0.32\,t$ Gibbs state — learned $\hat{H}_{\text{opt}}$ outperforms $\hat{H}_0$ across entire temperature range (see Application 4 above).
 
