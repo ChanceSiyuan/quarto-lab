@@ -1,0 +1,104 @@
+---
+categories:
+- Readings
+date: 2026-03-18
+description: 'Reading notes on Manovitz et al. 2025 — quantum coarsening dynamics and Higgs mode observation on a 2D Rydberg array'
+lang: en
+title: 'Manovitz 2025: Quantum Coarsening and Higgs Mode'
+bibliography: refs.bib
+draft: true
+---
+
+# Summary and Questions
+
+**Paper:** Manovitz et al., "Quantum coarsening and collective dynamics on a programmable simulator," *Nature* **638**, 86–92 (2025) [@manovitz2025coarsening]
+
+**Architecture:** 1-zone analog (Harvard lab) — the SOTA single-zone apparatus whose specifications are detailed in the review
+
+## What was done
+
+A 2D Rydberg array is driven across the (2+1)D Ising quantum phase transition to study collective dynamics of the ordered phase:
+
+1. **State preparation:** Adiabatic sweep from the disordered phase ($\Delta \ll 0$) to the antiferromagnetically ordered regime ($\Delta \gg 0$) on a **16×16 square lattice of 256 atoms** with blockade radius $R_b/a \approx 1.1$ (nearest-neighbor blockade only). Local light shifts $|\delta_i| \sim 4\Omega$ pin boundary sites. Ground-state preparation fidelity on pinned sites: **93–95%**. After rearrangement and avalanche post-selection, **86% of shots** are retained.
+2. **Quench dynamics:** Sudden quench deep into the ordered phase, then monitoring time evolution of the spatially resolved order parameter.
+3. **Domain tracking:** Individual antiferromagnetic domains identified and tracked in real time from single-shot fluorescence images.
+4. **Multi-spacing protocol:** Three different lattice spacings $a = 6.45, 6.8, 7.15$ μm were used with corresponding Rabi frequencies $\Omega/2\pi = 6.0, 3.8, 3.1$ MHz to access different points in the phase diagram.
+
+## Key observations
+
+- **Curvature-driven coarsening:** After the quench, antiferromagnetically ordered domains form and evolve via curvature-driven coarsening — domain walls shrink under their own curvature, a quantum analog of the classical Allen-Cahn process. The characteristic domain size grows as $L(t) \propto t^{1/2}$.
+- **Higgs (amplitude) mode:** Long-lived oscillations of the staggered magnetization (order parameter) are observed, identified as the Higgs mode — a collective excitation where the order parameter amplitude oscillates around its equilibrium value. The Higgs frequency scales with the gap $\Delta_H \propto |\Delta - \Delta_c|^{z\nu}$.
+- **Critical acceleration:** Coarsening dynamics accelerate as the system approaches the quantum critical point, consistent with critical slowing down operating in reverse (faster dynamics near criticality due to smaller energy gaps and enhanced quantum fluctuations).
+- **Quantitative agreement with theory:** Domain size $\xi^2(t)$ grows linearly in time (consistent with $z_d = 2$, Allen-Cahn universality), measured over hold times up to ${\sim}0.4$–$0.5$ μs. The Higgs frequency ratio satisfies $\omega(-|\mathbf{q}|)/\omega(|\mathbf{q}|) > \sqrt{2}$, consistent with predictions for the (2+1)D Ising CFT; more precise calculations give $\approx 1.9$, exceeding the mean-field $\sqrt{2}$. Residual theory-experiment deviations are attributed primarily to **finite-size effects** (the 16×16 lattice truncates long-wavelength domain growth) and $\Delta/\Omega$-dependent domain-wall width, not to thermal position disorder.
+
+## Scientific significance
+
+| Aspect | Assessment |
+|--------|-----------|
+| **Novelty** | First direct observation of quantum coarsening dynamics in a controlled quantum system. First observation of the Higgs (amplitude) mode in a Rydberg array. Previously, Higgs modes had been observed in superconductors and cold atomic gases, but not in a programmable quantum spin system. |
+| **Practical value** | Limited direct practical application, but provides a quantum simulation testbed for non-equilibrium phase ordering dynamics relevant to cosmology (domain wall formation after symmetry breaking) and materials science (grain growth). |
+| **Verification value** | Provides the first quantitative experimental test of quantum coarsening theory (quantum Allen-Cahn dynamics) in (2+1)D, validating theoretical predictions that had only been tested numerically for small systems. |
+
+
+## Architecture comparison: this is the SOTA 1-zone benchmark
+
+This experiment *defines* the SOTA single-zone apparatus parameters used throughout the review. Key specifications:
+
+| Parameter | Value | Significance |
+|-----------|-------|-------------|
+| SLM uniformity | 1–2% variance, Strehl > 0.90 | Camera-algorithm closed-loop feedback |
+| Ghost suppression | 0.1% | Iterative SLM phase optimization |
+| Filling fraction | 98.4(7)% | Near-deterministic loading |
+| Rydberg state | $\|70S_{1/2}\rangle$ | Standard for this platform |
+| Rabi frequency | Up to $2\pi \times 6.0$ MHz | Highest reported in this apparatus |
+| PDH linewidth | 100–500 Hz | Enabling μs-scale coherent evolution |
+| Detuning range | $\pm 2\pi \times 20$ MHz | Full phase diagram access |
+| Position fluctuation | $\sigma_{x,y} \approx 0.2$ μm (thermal) | Dominant noise source via $1/R^6$ |
+
+
+## Critical technique analysis
+
+**Most important technique needing optimization: Scaling to larger lattices to suppress finite-size artifacts.**
+
+The paper's own attribution of theory-experiment discrepancies is **finite-size effects** on the 16×16 lattice: long-wavelength domain modes with wavelength $\lambda > L = 16a$ are simply absent, suppressing the late-time coarsening amplitude. A secondary effect is the $\Delta/\Omega$-dependent domain-wall width — thicker walls at smaller $|\Delta - \Delta_c|$ slow coarsening relative to the sharp-wall Allen-Cahn prediction. These are *not* primarily caused by thermal position fluctuations, although $\delta V/V \sim 18\%$ remains a platform-level constraint.
+
+> **Distinction between platform bottleneck and experiment-specific bottleneck:**
+> Thermal position disorder ($\sigma_{x,y} \approx 0.2$ μm, $\delta V/V \sim 18\%$) is a persistent platform limitation (Bottleneck 1 in the review) but is *not* the factor limiting agreement in *this* experiment. The 16×16 grid is simply too small to observe universal coarsening over more than one decade in time.
+
+For the three lattice spacings used (thermal disorder reference):
+
+| Spacing $a$ | $\delta V / V$ (thermal) | Hold time measured |
+|-------------|--------------------------|-------------------|
+| 6.45 μm | $\sim 19\%$ | up to $\sim 0.5$ μs |
+| 6.80 μm | $\sim 18\%$ | up to $\sim 0.5$ μs |
+| 7.15 μm | $\sim 17\%$ | up to $\sim 0.5$ μs |
+
+**Paths to improvement specific to this experiment:**
+
+1. **Larger lattice:** Scaling to 32×32 or 64×64 atoms would allow $\xi(t)$ to grow over 2–3 decades before hitting the boundary, decisively separating universal coarsening from finite-size artifacts.
+2. **Narrower quench protocol:** Reducing $\Delta/\Omega$-dependent domain-wall width by quenching deeper into the ordered phase ($\Delta \gg \Omega$) sharpens the coarsening front and improves agreement with Allen-Cahn theory.
+3. **Sub-Doppler cooling (platform):** Reducing $\sigma_x$ to $\sim 0.05$ μm would cut $\delta V/V$ to $\sim 4\%$, making disorder truly subdominant and allowing cleaner tests of Higgs mode frequency ratios.
+
+## Completeness check
+
+### Higgs mode frequency
+
+The Higgs (amplitude) mode frequency ratio measured in this experiment satisfies:
+$$\frac{\omega(-|\mathbf{q}|)}{\omega(|\mathbf{q}|)} > \sqrt{2}$$
+where $\omega(\pm|\mathbf{q}|)$ are the Higgs frequencies at opposite momenta. The mean-field prediction is exactly $\sqrt{2} \approx 1.41$; more advanced calculations for the (2+1)D Ising CFT predict $\approx 1.9$, and the experiment is consistent with this. No direct MHz-scale frequency values are reported — the observable is the ratio extracted from time-domain oscillations of the staggered magnetization.
+
+### Coarsening exponent and deviations
+
+The characteristic domain size $\xi(t)$ grows as $\xi^2 \propto t$, directly confirming $z_d = 2$ (Allen-Cahn, nonconserved order parameter). Deviations from the universal scaling amplitude $b(\xi)$ in the structure factor are attributed by the paper to:
+1. **Finite-size truncation** (dominant): the 16×16 lattice ($L = 16a$) cuts off modes with $\lambda > L$.
+2. **$\Delta/\Omega$-dependent domain-wall width**: thicker domain walls at smaller detuning slow down curvature-driven dynamics relative to sharp-wall Allen-Cahn theory.
+
+No explicit percentage deviation is quoted in the paper.
+
+### Kibble-Zurek connection
+
+The Kibble-Zurek mechanism [@keesling2019kibble] predicts that defect density after a ramp through a quantum phase transition scales as $n_{\rm def} \sim \tau_Q^{-\nu/(1+z\nu)}$ for ramp time $\tau_Q$. Coarsening is the *post-quench* dynamics that follows Kibble-Zurek defect formation: the initial domain configuration set by Kibble-Zurek then evolves under the Allen-Cahn $L \propto t^{1/2}$ law. The experiments use an adiabatic ramp (not a fast quench), so Kibble-Zurek defect formation is minimized during preparation; the quench is then applied to a high-fidelity ordered state to study clean coarsening dynamics.
+
+### SLM phase configurations
+
+Three separate SLM phase patterns were prepared, one for each lattice spacing $a \in \{6.45, 6.80, 7.15\}$ μm, each satisfying the standard uniformity requirements (site-to-site intensity variance 1–2%, Strehl > 0.90, ghost suppression to 0.1%). The corresponding Rabi frequencies $(\Omega/2\pi, a) = (6.0~\text{MHz}, 6.45~\mu\text{m}),\ (3.8~\text{MHz}, 6.8~\mu\text{m}),\ (3.1~\text{MHz}, 7.15~\mu\text{m})$ maintain approximately constant blockade radius $R_b/a \approx 1.1$ across configurations.
