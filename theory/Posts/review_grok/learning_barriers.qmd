@@ -54,15 +54,15 @@ All three share the key property that their Fourier spectra are concentrated on 
 
 ### PAC Impossibility Under Cryptographic Assumptions
 
-The core argument proceeds by reduction: if $\mathcal{L}_{\mathrm{modexp}}$ were efficiently PAC learnable, then the learner could be used to break pseudorandom functions constructed from modular exponentiation, contradicting standard cryptographic hardness assumptions.
+The core argument proceeds by reduction: if $\mathcal{L}_{\mathrm{modexp}}$ were efficiently PAC learnable, then the learner could be used to invert the RSA one-way permutation, contradicting the RSA hardness assumption (which follows from the hardness of integer factoring).
 
 ::::{#thm-pac-hardness .callout-important icon="false"}
 ## Theorem (Representation-Independent PAC Hardness --- Kearns & Valiant 1994)
-Under the Discrete Logarithm assumption (DLP) and the assumption that integer factoring is hard, the concept class $\mathcal{L}_{\mathrm{modexp}}$ cannot be efficiently PAC learned by any polynomial-time classical algorithm, regardless of the hypothesis representation used.
+Under the Discrete Logarithm assumption (DLP) and the assumption that integer factoring is hard, the concept class $\mathcal{L}_{\mathrm{modexp}}$ cannot be efficiently PAC learned by any polynomial-time classical algorithm, regardless of the hypothesis representation used [@kearns1994cryptographic].
 ::::
 
 ::: {.proof}
-*Proof sketch.* Suppose a polynomial-time PAC learner $\mathcal{A}$ exists for $\mathcal{L}_{\mathrm{modexp}}$. The output of $f_{d,N}(x) = x^d \bmod N$ is a pseudorandom function (PRF) under the DLP and factoring assumptions: no polynomial-time distinguisher can separate $\{(x_i, x_i^d \bmod N)\}$ from $\{(x_i, r_i)\}$ where $r_i$ are uniformly random. But $\mathcal{A}$ would produce a hypothesis $h$ with $\operatorname{err}(h) < \varepsilon$ on the true function, while $h$ would necessarily have error $\approx 1/2$ on random labels. This yields a polynomial-time distinguisher for the PRF, contradicting the cryptographic assumptions. $\square$
+*Proof sketch.* Suppose a polynomial-time PAC learner $\mathcal{A}$ exists for $\mathcal{L}_{\mathrm{modexp}}$. The map $f_{d,N}(x) = x^d \bmod N$ (with $\gcd(d, \varphi(N)) = 1$) is the RSA **one-way permutation** (OWP) on $(\mathbb{Z}/N\mathbb{Z})^*$: it is a bijection that is easy to evaluate but whose inversion — recovering $d$ or equivalently computing $x^{d^{-1}} \bmod N$ — is computationally hard under the RSA assumption (factoring hardness) [@kearns1994cryptographic]. A PRF is a strictly stronger object (indistinguishable from a random function); RSA is only assumed to be one-way, not pseudorandom. The reduction uses the OWP hardness: $\mathcal{A}$, given $\operatorname{poly}(n)$ labeled samples $(x_i, x_i^d \bmod N)$, produces a hypothesis $h$ with $\operatorname{err}(h) < \varepsilon$. By the correctness of the PAC learner, $h$ predicts $x^d \bmod N$ accurately on fresh $x$, which constitutes an efficient inversion of the RSA permutation. This contradicts the RSA one-wayness assumption. $\square$
 :::
 
 Several properties of modular exponentiation reinforce this hardness:
