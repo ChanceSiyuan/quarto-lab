@@ -541,9 +541,9 @@ The Average Gradient Outer Product (AGOP) and Recursive Feature Machines (RFM) f
 ## Definition (Average Gradient Outer Product [@mallinar2025emergence])
 For a model $f(x; w)$ trained on data $\{(x_i, y_i)\}_{i=1}^n$, the **AGOP** is the $d \times d$ positive semidefinite matrix
 $$
-M = \frac{1}{n} \sum_{i=1}^{n} \nabla_w f(x_i)^\top \nabla_w f(x_i).
+M = \frac{1}{n} \sum_{i=1}^{n} \nabla_x f(x_i)\, \nabla_x f(x_i)^\top,
 $$ {#eq-agop}
-The AGOP captures the average covariance of the model's gradient with respect to the parameters, projected into input space. It identifies which input directions the model is most sensitive to---i.e., the task-relevant features.
+where $\nabla_x f(x_i) \in \mathbb{R}^d$ is the gradient of the model output with respect to the **input** $x_i$. The outer product $\nabla_x f \nabla_x f^\top \in \mathbb{R}^{d\times d}$ captures the directions in input space along which $f$ varies most; averaging over the training set gives the task-relevant input geometry. It identifies which input directions the model is most sensitive to---i.e., the task-relevant features.
 ::::
 
 ::::{#def-rfm .callout-note icon="false"}
