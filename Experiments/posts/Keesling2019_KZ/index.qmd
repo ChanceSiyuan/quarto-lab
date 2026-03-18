@@ -29,7 +29,7 @@ Using the same 51-atom 1D Rydberg chain as Bernien 2017, slow detuning sweeps ac
   - $\mathbb{Z}_2$ Ising transition: **$\mu = 0.50 \pm 0.03$** — consistent with the theoretical Ising prediction $\mu_\text{Ising} = \nu/(1+z\nu) = 1/(1+1\cdot1) = 0.50$.
   - $\mathbb{Z}_3$ chiral clock transition: **$\mu \approx 0.38$** — within the theoretical bounds $0.25$–$0.45$ for the chiral clock universality class (theory: $z \approx 1.33$, $\nu \approx 0.71 \Rightarrow \mu_\text{theory} \approx 0.35$).
   - $\mathbb{Z}_4$ ordered phase: **$\mu \approx 0.25$** (Extended Data).
-- **Beyond-KZ corrections:** At the slowest sweep rates, deviations from KZ scaling were observed. The paper attributes these explicitly to **finite-size effects and non-universal corrections to scaling** (confirmed by MPS simulations showing the system thermalizes within the ordered phase before reaching the adiabatic limit), not to laser or thermal decoherence.
+- **Beyond-KZ corrections:** At the slowest sweep rates, deviations from KZ scaling were observed. The paper's Methods section attributes these explicitly to **decoherence**: slow sweeps spend more time near the critical point, where growing quantum correlations make the system increasingly sensitive to laser noise and environmental decoherence, and the longer total pulse time accumulates more dephasing. MPS simulations (which include no decoherence) match the data at fast sweeps but deviate at slow sweeps — confirming that the slow-sweep floor is decoherence-limited, not finite-size-limited. Finite-size effects are separately discussed and mitigated by discarding edge sites.
 - **Chiral clock model exponents:** For the $\mathbb{Z}_3$ ordered phase (accessed at $R_b/a = 2.16$), $\mu \approx 0.38$ provides experimental constraints on the chiral clock universality class — a set of exotic QPTs not previously accessible experimentally.
 
 ## Scientific significance
@@ -55,7 +55,7 @@ Using the same 51-atom 1D Rydberg chain as Bernien 2017, slow detuning sweeps ac
 
 **Hardware upgrade over Bernien 2017:** Same 51-atom 1D apparatus; key addition is programmable variable-rate detuning sweeps and MPS simulation comparison. No architectural change — the upgrade is in the measurement protocol.
 
-**Coherence gap to SOTA:** The ~1 ms $T_2$ achieved in [@manovitz2025coarsening] (vs. ~10–50 μs estimated for this apparatus) would push the slow-sweep floor down by ×20–100, enabling access to the adiabatic limit and cleaner extraction of $\mu$. The slow-sweep deviations in this paper are dominated by finite-size effects (35 bulk sites), but longer coherence would allow larger 2D systems where finite-size effects are suppressed.
+**Coherence gap to SOTA:** The ~1 ms $T_2$ achieved in [@manovitz2025coarsening] (vs. ~10–50 μs estimated for this apparatus) would push the slow-sweep floor down by ×20–100, enabling access to the adiabatic limit and cleaner extraction of $\mu$. Per the paper's Methods, the slow-sweep deviations are decoherence-limited (longer pulse duration + critical-point sensitivity to laser noise), so improved laser coherence is the direct handle on extending the accessible sweep-rate range.
 
 
 ## Experiment protocol
@@ -71,18 +71,21 @@ Using the same 51-atom 1D Rydberg chain as Bernien 2017, slow detuning sweeps ac
 
 ## Critical technique analysis
 
-**Most important technique needing optimization: system size (finite-size effects, not decoherence).**
+**Most important technique needing optimization: laser coherence time (decoherence is the slow-sweep bottleneck).**
 
-The paper's own analysis, confirmed by MPS simulations, shows that the slow-sweep deviations from KZ scaling are caused by **finite-size effects and non-universal corrections**, not by decoherence. In a 35-site bulk window, the correlation length $\xi \sim v^{-\mu}$ saturates at the system size before the adiabatic limit is reached — so the measured $\mu$ at slow sweeps is pulled away from the universal value.
+The paper's Methods section explicitly attributes the slow-sweep deviations from KZ scaling to **decoherence**, not finite-size effects. Two mechanisms compound at slow sweeps:
 
-The practical bottleneck is therefore **not** laser coherence or thermal decoherence (which limit the fast-sweep floor), but rather **the number of sites available for bulk correlation analysis**.
+1. **Longer total pulse time** — slower sweeps accumulate more dephasing from laser frequency noise and spontaneous emission during the extended ramp.
+2. **Critical-point sensitivity** — near the QPT, the ground state has growing quantum correlations that are increasingly fragile. The system spends more time in this high-entanglement region at slow sweep rates, amplifying the effect of any noise.
 
-Why this matters:
-- **Fast sweeps ($v \gtrsim 1$ MHz/μs):** $\xi \ll L$, KZ scaling is clean — well captured even in 51 atoms.
-- **Slow sweeps ($v \lesssim 0.05$ MHz/μs):** $\xi$ approaches $L = 35$; finite-size cuts off scaling, not decoherence.
-- **Decoherence** (laser noise, thermal motion) sets the *maximum* sweep duration, but the paper does not reach that limit — the slow-sweep floor is finite-size dominated.
+MPS simulations (no noise) reproduce the fast-sweep data but deviate systematically below the data at slow sweeps — confirming the floor is decoherence-limited, not finite-size-limited. The finite-size analysis (discarding 8 edge sites per end, leaving 35 bulk sites) separately addresses edge effects, and MPS comparisons at the same system size track the finite-size contribution. These do **not** account for the observed slow-sweep excess.
 
-**How improving it helps:** Moving to a 2D array (as in Ebadi 2021 and later) gives 256 atoms and 2D geometry, where $\xi$ can grow in two directions before hitting the boundary. This directly extends the accessible slow-sweep range and sharpens the exponent fit.
+Why this matters for the exponent extraction:
+- **Fast sweeps ($v \gtrsim 4$ MHz/μs):** Noise is small; KZ scaling $n_d \propto v^\mu$ is cleanly observed.
+- **Slow sweeps ($v \lesssim 4$ MHz/μs):** Decoherence adds excess domain walls, flattening the $\log n_d$ vs. $\log v$ slope and pulling the fitted $\mu$ upward from its true value.
+- The accessible slow-sweep range is set by the coherence time of the apparatus, not the atom count.
+
+**How improving it helps:** Longer laser coherence (PDH-stabilized cavities, as in [@manovitz2025coarsening]) extends the accessible slow-sweep window, filling in the decades of sweep rate needed for a precision exponent fit — especially for the $\mathbb{Z}_3$ and $\mathbb{Z}_4$ transitions where no error bars on $\mu$ could be reported. System size improvements (larger 2D arrays) help with finite-size effects but do not address the primary bottleneck.
 
 ## Completeness check
 
@@ -91,8 +94,8 @@ Why this matters:
 | Phase | $R_b/a$ | Measured $\mu$ | Theoretical $\mu$ | Universality class |
 |-------|---------|---------------|-------------------|-------------------|
 | $\mathbb{Z}_2$ | 1.69, 1.81 | $0.50 \pm 0.03$ | $0.50$ (Ising: $\nu=1, z=1$) | (1+1)D Ising |
-| $\mathbb{Z}_3$ | 2.16 | $\approx 0.38$ | $0.25$–$0.45$ (chiral clock: $z\approx1.33, \nu\approx0.71$) | Chiral clock |
-| $\mathbb{Z}_4$ | 2.43 | $\approx 0.25$ | — | Chiral clock (4-state) |
+| $\mathbb{Z}_3$ | 2.16 | $\approx 0.38$ (no error bar quoted) | $0.25$–$0.45$ (chiral clock: $z\approx1.33, \nu\approx0.71$) | Chiral clock |
+| $\mathbb{Z}_4$ | 2.43 | $\approx 0.25$ (no error bar quoted) | — | Chiral clock (4-state) |
 
 **Sweep rate range (from Extended Data Table 1):**
 
@@ -103,8 +106,10 @@ Why this matters:
 | $\mathbb{Z}_3$ | 2.16 | −2.5 | 5.5 | 4.6 | 19.7 |
 | $\mathbb{Z}_4$ | 2.43 | −2.6 | 5.4 | 4.6 | 19.7 |
 
-$\Omega$ ramp: linear turn-on over 1 μs at fixed $\Delta_0$. Note: $\Omega/2\pi$ is not quoted per sweep; the blockade radius $R_b$ is set by adjusting the interatomic spacing $a$ at fixed $\Omega$ (Methods).
+$\Omega$ ramp: linear turn-on over 1 μs at fixed $\Delta_0$. Note: $\Omega/2\pi$ is not quoted in this paper; the blockade radius $R_b$ is set by adjusting interatomic spacing $a$ at fixed $\Omega$ (Methods). For the Rabi frequency of this apparatus, see [@bernien2017probing] ($\Omega/2\pi \approx 1.3$ MHz in Bernien 2017's single-frequency standing-wave trap).
 
-**Finite-size floor:** At the slowest sweep rates, $\xi \sim v^{-0.50}$ saturates at $L = 35$ sites (bulk window). This is not a decoherence floor — it is confirmed finite-size saturation by MPS comparison.
+**Slow-sweep floor (decoherence-limited):** At the slowest sweep rates, deviations from KZ scaling are observed. Per the paper's Methods, this is a **decoherence floor** — slow sweeps accumulate more dephasing and spend more time near the critical point where correlations are noise-sensitive. MPS simulations (no noise, same 51-site geometry) reproduce fast-sweep data but deviate below the slow-sweep data, confirming the floor is decoherence-dominated, not finite-size-dominated.
+
+**Error bar asymmetry:** The $\mathbb{Z}_2$ exponent $\mu = 0.50 \pm 0.03$ is explicitly quoted with uncertainty (stated in main text, Fig. 2c). The $\mathbb{Z}_3$ ($\mu \approx 0.38$) and $\mathbb{Z}_4$ ($\mu \approx 0.25$) values have **no quoted error bars** in the paper — fit uncertainties are visible in Fig. 4c but described as dominated by systematic effects. These should be read as order-of-magnitude estimates, not precision measurements.
 
 <!-- TODO: Cross-platform KZ comparison (ion traps, superconducting qubits). As of 2019 there were no direct ion-trap or SC-qubit measurements of the quantum KZ exponent in a many-body chain at comparable size. Add a note if a specific comparison paper is found. -->
