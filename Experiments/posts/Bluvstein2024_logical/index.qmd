@@ -1,0 +1,112 @@
+---
+categories:
+- Readings
+date: 2026-03-18
+description: 'Reading notes on Bluvstein et al. 2024 — the defining 3-zone architecture experiment with 280 atoms, surface/color codes, and logical quantum processor'
+lang: en
+title: 'Bluvstein 2024: Logical Quantum Processor (3-Zone)'
+bibliography: refs.bib
+draft: true
+---
+
+# Summary and Questions
+
+**Paper:** Bluvstein et al., "Logical quantum processor based on reconfigurable atom arrays," *Nature* **626**, 58–65 (2024) [@bluvstein2024logical]
+
+**Architecture:** 3-zone (Harvard lab) — **defines** this architecture
+
+## What was done
+
+:::{.callout-important icon="false"}
+## Experiment protocol
+
+280 $^{87}$Rb atoms organized into up to 48 logical qubits, demonstrating the first programmable logical quantum processor on a neutral atom platform:
+
+1. **3-zone spatial separation:** Entangling zone ($35 \times 250$ μm), storage zone (~50 μm away), and readout zone (~100 μm away) — solving the $^{87}$Rb mid-circuit measurement problem by physically separating fluorescence imaging from data qubits.
+2. **Surface code encoding:** Logical qubits encoded in surface codes with distances $d = 3, 5, 7$, demonstrating logical error suppression with increasing code distance.
+3. **Color code encoding:** 40 color-code logical qubits prepared with break-even fidelities.
+4. **Transversal logical gates:** Physical array reconfiguration (AOD transport) enables transversal CNOT between code blocks — exploiting the unique geometric flexibility of atom arrays.
+5. **Code teleportation:** Demonstrated teleportation of logical information between surface codes and color codes.
+6. **Complex logical circuits:** 228 logical two-qubit gates + 48 logical CCZ gates in a single circuit using $[[8,3,2]]$ code blocks.
+:::
+
+## Key observations
+
+- **Below-threshold QEC scaling:** Logical error rates decrease with increasing surface code distance ($d = 3 \to 5 \to 7$), demonstrating operation below the error correction threshold.
+- **Transversal CNOT via array reconfiguration:** The atom array's geometric programmability enables transversal logical gates that would require complex ancilla circuits on fixed-connectivity hardware (superconducting qubits, ion traps).
+- **Mid-circuit measurement + feedforward:** FPGA-based classical processing applies real-time corrections based on ancilla measurement outcomes, enabling deterministic state preparation.
+- **CZ gate fidelity:** 99.3–99.5% two-qubit gate fidelity (range across calibration conditions) — the key physical-layer metric determining the QEC threshold.
+- **Spin-to-position readout:** 99.8% readout fidelity via state-dependent lattice displacement — a 4–8% improvement over in-situ Rydberg detection.
+
+## Scientific significance
+
+| Aspect | Assessment |
+|--------|-----------|
+| **Novelty** | First demonstration of a programmable logical quantum processor on neutral atoms. First realization of transversal logical gates via physical qubit rearrangement. Defines the 3-zone architecture. |
+| **Practical value** | Establishes the neutral atom array as a competitive platform for fault-tolerant quantum computation, alongside superconducting qubits and trapped ions. The transversal gate approach may offer a scaling advantage. |
+| **Verification value** | Demonstrates below-threshold QEC scaling on a new physical platform, validating that Rydberg atom arrays can achieve the gate fidelities and connectivity required for fault tolerance. |
+
+
+## Architecture: 3-zone specification (from this paper)
+
+| Component | Specification |
+|-----------|--------------|
+| **Entangling zone** | $35 \times 250$ μm (AOD bottleneck), top-hat beams, 2 μm spacing, 450 MHz Rydberg coupling, 200 μs between gates |
+| **Transport** | AOD with photodiode calibration (<1% intensity fluctuation), echo $\pi$-pulses, cubic acceleration profile, fast 1013 nm pulsing off |
+| **Atom transfer** | <0.1% error rate, SLM↔AOD handoff with ramped intensity protocol |
+| **Local addressing** | High-NA lens to 1.9 μm focus, $X(\theta)$ or polarization-insensitive $Z(\theta)$ |
+| **Gate compiling** | Interleaved CZ with echo $\pi$-pulses, BB1/SCROFULOUS composite pulses |
+| **Storage zone** | ~50 μm from entangling |
+| **Readout zone** | ~100 μm away, spin-to-position at 99.8% fidelity |
+
+
+## Critical technique analysis
+
+**Most important technique needing optimization: Two-qubit (CZ) gate fidelity.**
+
+At 99.3–99.5%, the CZ gate fidelity is the primary limiting factor in logical circuit depth. The circuit-level depolarizing threshold is ~0.5–1%, so 99.5% provides at most a $2\times$ margin (and 99.3% is within a factor of ~1.5). Note that atom loss — which the 4-zone follow-up (Bluvstein et al. 2025) identifies as contributing ~50% of physical errors — is not independently characterized here; CZ infidelity and loss are partially conflated in the reported figure. Improving to 99.9% would enable:
+
+- Higher-rate codes with fewer physical qubits per logical qubit
+- Deeper logical circuits before error accumulation
+- Practical quantum advantage at smaller system sizes
+
+Gate fidelity is limited by:
+
+1. **Rydberg state decay:** Finite lifetime of the $|70S_{1/2}\rangle$ state (~100 μs) limits the gate time budget
+2. **Laser phase noise:** PDH-locked laser linewidth (100–500 Hz) introduces dephasing during the gate
+3. **Doppler shifts from thermal motion:** Atom velocity → frequency shift → gate phase error
+4. **Rydberg-Rydberg interaction variation:** Position fluctuations → $1/R^6$ interaction noise → CZ angle error
+
+The 4-zone architecture (Bluvstein 2025) addresses the *downstream* consequences of gate errors through QEC, but improving the physical gate fidelity remains the single highest-leverage improvement for the entire platform.
+
+## Primary quantitative results
+
+| Benchmark | Raw | With error detection |
+|-----------|-----|----------------------|
+| Fault-tolerant $|0_L\rangle$ preparation fidelity | — | **99.91$^{+0.04}_{-0.09}$%** |
+| 4-logical-qubit GHZ state fidelity | **72(2)%** | **99.85%** |
+| 12-logical-qubit XEB score | **0.156(2)** | **0.616(7)** |
+
+Notes:
+- The $|0_L\rangle$ result uses fault-tolerant preparation with mid-circuit ancilla measurement and FPGA feedforward; no raw baseline is reported separately.
+- The GHZ and XEB benchmarks use error *detection* (postselection on no-error syndromes), not correction — accepted fraction is not stated in the main text.
+- Surface code logical Bell pair error at $d=7$: ~5% infidelity (~0.95 population in $X_L X_L$ and $Z_L Z_L$ bases). Per-cycle logical error rates at $d=3,5,7$ are in Extended Data Figs. 4–5; below-threshold scaling is demonstrated by the monotonic decrease with $d$.
+- Mid-circuit readout + feedforward total cycle: **<1 ms** (500 μs spin-to-position imaging + <500 μs FPGA processing and Raman correction).
+
+## Architecture comparison
+
+| Metric | 1-zone (≤2021) | **3-zone (this work, 2024)** | 4-zone (2025) |
+|--------|----------------|-------------------------------|---------------|
+| Atom count | ~300 | **280** | 448 |
+| Readout fidelity | 92–96% | **99.8%** | >99.9% (non-destructive) |
+| Mid-circuit measurement | ✗ | **✓** (3-zone separation) | ✓ + reservoir reload |
+| CZ gate fidelity | ~99.0–99.3% | **99.3–99.5%** | up to 99.7% |
+| QEC code distance demonstrated | — | **$d = 3, 5, 7$** | $d=7$ full cycle |
+| Atom reservoir | ✗ | ✗ | ✓ |
+
+The jump from 1-zone to 3-zone is primarily about *measurement quality* (fluorescence cross-talk eliminated) and *mid-circuit capability* rather than atom count or gate fidelity. The 4-zone upgrade adds reservoir reloading and non-destructive readout, addressing the atom loss bottleneck identified here.
+
+## Completeness check
+
+<!-- TODO: Detail the FPGA feedforward latency breakdown (imaging 500 μs confirmed; FPGA processing component not isolated in main text) -->
+<!-- TODO: Per-cycle logical error rates at d=3,5,7 with error bars are in Extended Data Figs. 4–5 (paywalled) -->
