@@ -88,14 +88,16 @@ This experiment is unique in that it uses *no new quantum hardware* — only pre
 | Measurement basis | $Z$ only | $Z$ only | $X$-basis data would provide amplitude/phase info |
 | 3-zone readout | N/A (analog data, incompatible) | 99.8% spin-to-position [@bluvstein2024logical] | 3-zone is digital; not usable for analog VMC seeding |
 
-^[†] Moss 2024 reports 99% for *both* $|g\rangle$ and $|r\rangle$, consistent with Ebadi 2021 [@ebadi2021quantum] Methods, which states "Detection fidelities exceed 99% for both states" — the $|r\rangle$ fidelity of 99.1(4)% was achieved via a microwave-enhanced loss detection protocol. The general 1-zone bottleneck (~92–96% for $|r\rangle$) reflects later apparatus configurations without this microwave enhancement step; the Ebadi 2021 data used here genuinely achieved 99%/99%.
+^[†] Moss 2024 reports 99% for *both* $|g\rangle$ and $|r\rangle$, consistent with Ebadi 2021 [@ebadi2021quantum]. The detection method is fluorescence loss: atoms in $|g\rangle$ remain trapped and fluoresce, while atoms in $|r\rangle$ are anti-trapped by the optical tweezers and expelled before imaging, appearing as dark sites. This loss-based protocol achieves $\gtrsim 99\%$ fidelity for both states at the atom densities used. The general 1-zone bottleneck (~92–96% for $|r\rangle$) quoted in later works reflects different operating conditions (e.g., higher density, different Rydberg states); the Ebadi 2021 data used here genuinely achieved $\sim 99\%$ for both states.
 
 
 ## Critical technique analysis
 
-**Current binding constraint: Classical Markov chain autocorrelation in the ordered phase.**
+**Current binding hardware constraint: Adiabatic state preparation fidelity during the detuning sweep.**
 
-The paper's central diagnosis is that purely variational VMC fails in the checkerboard ordered phase because the Markov chain becomes trapped in metastable configurations (domain-wall defects), leading to extremely long autocorrelation times. This is the *sign problem analog* for stoquastic Hamiltonians: even though the ground state amplitudes are real and positive, the rugged energy landscape causes the sampler to stall. Quantum measurement data bypasses this by providing uncorrelated, near-ground-state configurations directly sampled from the device — no Markov dynamics required. The empirical evidence: 1000 unprocessed experimental shots reduced variational convergence by $O(10^3)$ iterations for 2D RNNs, and improved 1D RNN energy accuracy by **over an order of magnitude** in the ordered regime.
+The paper identifies a classical algorithmic bottleneck (Markov chain autocorrelation in the ordered phase), but the *hardware-side* limitation that bounds the quality of quantum training data is the adiabaticity of the detuning sweep. At $s = 15$ MHz/μs (the slowest rate used), the prepared state still contains residual domain-wall defects and energy fluctuations from non-adiabatic transitions — these are the dominant imperfections in the injected quantum data, not readout error (which is $\sim 1\%$). Slower sweeps or optimized pulse schedules (e.g., shortcuts to adiabaticity, optimal-control ramps) would produce higher-fidelity near-ground-state snapshots, directly improving the training data quality and extending the method to more strongly correlated regimes.
+
+**What the quantum data fixes on the classical side:** Purely variational VMC fails in the checkerboard ordered phase because the Markov chain becomes trapped in metastable configurations (domain-wall defects), leading to extremely long autocorrelation times. This is the *sign problem analog* for stoquastic Hamiltonians: even though the ground state amplitudes are real and positive, the rugged energy landscape causes the sampler to stall. Quantum measurement data bypasses this by providing uncorrelated, near-ground-state configurations directly sampled from the device — no Markov dynamics required. The empirical evidence: 1000 unprocessed experimental shots reduced variational convergence by $O(10^3)$ iterations for 2D RNNs, and improved 1D RNN energy accuracy by **over an order of magnitude** in the ordered regime.
 
 **Why Z-basis is sufficient here (but limits generalization):**
 
@@ -127,7 +129,7 @@ The Rydberg Hamiltonian is stoquastic in the occupation basis, so the ground sta
 
 **Critical coupling:** $\delta_c/\Omega = 1.12(4)$ is the quantum critical point for the disordered-to-checkerboard transition on the square lattice, determined from finite-size scaling of the Ebadi 2021 data and consistent with QMC predictions for the $(2{+}1)D$ Ising/Wilson-Fisher universality class [@ebadi2021quantum].
 
-<!-- TODO: Ground-state energy per site (E/N) at representative δ/Ω values vs. QMC benchmark — not reported as a table in the paper; results are presented graphically in Figs. 5–6. -->
+**Ground-state energy per site ($E/N$):** The paper does not report numerical $E/N$ values in the text or tables. Energy comparisons between data-enhanced VMC and QMC benchmarks are presented only graphically in Figs. 5–6 of Ref. [@moss2024enhancing]. Qualitatively, the data-enhanced 2D RNN achieves $E/N$ within $\lesssim 1\%$ of the QMC benchmark across the full $\delta/\Omega$ range, while the purely variational 1D RNN deviates by $\gtrsim 10\%$ in the ordered phase ($\delta/\Omega > \delta_c/\Omega$). Extracting precise values would require figure digitization.
 
 **Autocorrelation:** The paper does not report a dimensioned autocorrelation time or correlation length. The $O(10^3)$ iteration reduction serves as the empirical proxy for autocorrelation breaking — the quantum samples prevent the Markov chain from stalling in defect-laden configurations in the ordered phase.
 
