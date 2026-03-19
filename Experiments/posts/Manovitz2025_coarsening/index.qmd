@@ -22,7 +22,7 @@ A 2D Rydberg array is driven across the (2+1)D Ising quantum phase transition to
 :::{.callout-tip icon="false"}
 ## Experimental protocol
 
-1. **State preparation:** Adiabatic sweep from the disordered phase ($\Delta \ll 0$) to the antiferromagnetically ordered regime ($\Delta \gg 0$) on a **16×16 square lattice of 256 atoms** with blockade radius $R_b/a \approx 1.1$ (nearest-neighbor blockade only). Sweep rate: $\Delta/(\Omega \cdot \Omega T) \approx (2\pi)^{-1} \times 3.0$. Local light shifts $|\delta_i| \sim 4\Omega$ (**absolute magnitude 12.2(3) MHz**) from a 784 nm second SLM ($\sim$35 Hz scattering rate) pin boundary sites to the correct sublattice. Ground-state preparation fidelity on pinned sites: **93–95%** (limited by antiblockade effects at domain boundaries).
+1. **State preparation:** Adiabatic sweep from the disordered phase ($\Delta \ll 0$) to the antiferromagnetically ordered regime ($\Delta \gg 0$) on a **16×16 square lattice of 256 atoms** with blockade radius $R_b/a \approx 1.1$ (nearest-neighbor blockade only). Dimensionless sweep rate: $\Delta/(\Omega^2 T) \approx 3.0/(2\pi)$, where $\Delta$ is the total detuning range and $T$ is the sweep duration (i.e., the detuning changes by $\sim 3\,\Omega$ per Rabi period). Local light shifts $|\delta_i| \sim 4\Omega$ (**absolute magnitude 12.2(3) MHz**) from a 784 nm second SLM ($\sim$35 Hz scattering rate) pin boundary sites to the correct sublattice. Ground-state preparation fidelity on pinned sites: **93–95%** (limited by antiblockade effects at domain boundaries).
 2. **Post-selection:** Shots with $>4$ defects are discarded ($\sim$93% retained); shots where the longest consecutive $|r\rangle$ chain in any single row or column exceeds 4 sites are also discarded ($\sim$92% retained). Combined with rearrangement filtering: **86% retention** at short hold times, dropping to **63%** at $t = 1.16\ \mu$s ($\Delta/\Omega = 4$) due to Rydberg-state decay.
 3. **Quench dynamics:** Sudden quench deep into the ordered phase, then monitoring time evolution of the spatially resolved order parameter.
 4. **Domain tracking:** Individual antiferromagnetic domains identified and tracked in real time from single-shot fluorescence images.
@@ -58,12 +58,12 @@ This experiment runs on the Harvard 1-zone Rydberg apparatus. The parameters bel
 | Blockade ratio $R_b/a$ | 1.12, 1.15, 1.13 (three configs) | Computed from $\Omega$, $a$ |
 | **Second SLM (hardware upgrade)** | 784 nm, ~160 μW/spot; site-resolved AC Stark shifts | Methods — new vs. Ebadi 2021 baseline |
 | Boundary light-shift | 12.2(3) MHz (differential AC Stark, $5S_{1/2}$–$5P_{3/2}$) | Methods |
-| Position fluctuation | $\sigma_{x,y} \approx 0.2$ μm (thermal) | Platform (review Bottleneck 1) |
-| SLM uniformity | 1–2% site-to-site intensity variance | Platform (review) |
+| Position fluctuation | $\sigma_{x,y} \approx 0.2$ μm (thermal) | Platform baseline (review Bottleneck 1); not quoted in this paper |
+| SLM uniformity | 1–2% site-to-site intensity variance | Platform baseline (review); not quoted in this paper |
 | Shot retention (short $t$) | 86% | Methods |
 | Shot retention ($t=1.16\ \mu$s) | 63% | Methods |
 | 784 nm SLM scattering rate | $\sim$35 Hz | Methods |
-| Adiabatic sweep rate | $\Delta/(\Omega \cdot \Omega T) \approx (2\pi)^{-1} \times 3.0$ | Methods |
+| Adiabatic sweep rate | $\Delta/(\Omega^2 T) \approx 3.0/(2\pi)$ (dimensionless) | Methods |
 | Post-selection: defect threshold | $\leq 4$ defects per shot (retains $\sim$93%) | Methods |
 | Post-selection: blockade violation | longest consecutive $\|r\rangle$ chain in single row/column $\leq 4$ (retains $\sim$92%) | Methods |
 
@@ -74,23 +74,25 @@ This experiment runs on the Harvard 1-zone Rydberg apparatus. The parameters bel
 
 ## Critical technique analysis
 
-**Most important technique in this experiment: Boundary pinning via second-SLM light shifts — limited by antiblockade effects at domain boundaries.**
+**Primary bottleneck: Finite system size (16×16 = 256 atoms).**
 
-The proximate limit on state preparation fidelity is **antiblockade effects at domain boundaries**, as stated by the paper. When $\Delta/\Omega$ is large (deep in the ordered phase), neighboring Rydberg excitations become energetically favorable (antiblockaded) along domain boundaries, degrading ground-state preparation fidelity at pinned boundary sites to **93–95%**. This is a physics-level constraint — not an engineering deficiency of the SLM — because the boundary pinning light shifts ($|\delta_i| \sim 4\Omega$, absolute magnitude 12.2(3) MHz) compete against the interaction-induced antiblockade tendency at large detuning.
+:::{.callout-important icon="false"}
+## Bottleneck summary
 
-**Why this is the bottleneck, not the others:**
+The single improvement that would most extend this experiment's reach is **scaling to a larger array**. The 16×16 lattice truncates domain growth after $\xi(t) \gtrsim L/4 \approx 4a$, limiting the observable coarsening regime to less than one decade in $\xi$. Scaling to 32×32 or 64×64 would allow 2–3 decades of $\xi(t)$ growth, decisively separating universal Allen-Cahn dynamics from finite-size artifacts and enabling precision extraction of the coarsening exponent $z_d$.
+:::
 
-- *Finite-size effects* (16×16 grid too small for multi-decade scaling) set the *theory-experiment agreement* ceiling for the coarsening exponent, but they are a separate limitation on the observable range rather than on state preparation quality.
-- *Thermal position disorder* ($\delta V/V \sim 18\%$) is subdominant here because the relevant observable (domain coarsening exponent $z_d = 2$) is robust to disorder.
+The paper itself attributes residual deviations from universal scaling to (1) **finite-size truncation** and (2) **$\Delta/\Omega$-dependent domain-wall width** — both are fundamental physics constraints, not engineering deficiencies.
+
+**Why finite size dominates over other candidates:**
+
+- *Boundary pinning via second-SLM light shifts* achieves 93–95% ground-state fidelity on pinned sites (limited by antiblockade effects at domain boundaries, where $|\delta_i| \sim 4\Omega = 12.2(3)$ MHz competes with interaction-induced antiblockade). This is a secondary preparation-quality concern — it affects initial domain purity but does not limit the observable scaling range.
+- *Thermal position disorder* ($\delta V/V \sim 18\%$) is subdominant because the coarsening exponent $z_d = 2$ is robust to weak disorder.
 - *Rydberg lifetime decay* causes shot retention to drop from 86% to 63% at the longest hold time ($t = 1.16\ \mu$s), but this is a post-selection cost rather than a systematic bias on the coarsening signal.
-- *Domain-wall width* depends on $\Delta/\Omega$ and introduces a non-universal length scale that causes deviations from sharp-wall Allen-Cahn theory, particularly at moderate detuning.
-
-The paper attributes residual deviations from universal scaling to (1) **finite-size truncation** and (2) **$\Delta/\Omega$-dependent domain-wall width**, not to SLM engineering limitations.
+- *Domain-wall width* depends on $\Delta/\Omega$ and introduces a non-universal length scale causing deviations from sharp-wall Allen-Cahn theory, particularly at moderate detuning.
 
 > **Distinction between platform bottleneck and experiment-specific bottleneck:**
-> Thermal position disorder ($\sigma_{x,y} \approx 0.2$ μm, $\delta V/V \sim 18\%$) is a persistent platform limitation (Bottleneck 1 in the review) but is *not* the dominant factor limiting agreement in *this* experiment. The dominant preparation limitation is antiblockade effects at domain boundaries; the dominant long-time discrepancy is the finite lattice size (16×16).
-
-**Future path: larger lattice.** Scaling to 32×32 or 64×64 would allow $\xi(t)$ to grow over 2–3 decades before hitting the boundary, decisively separating universal coarsening from finite-size artifacts.
+> Thermal position disorder ($\sigma_{x,y} \approx 0.2$ μm, $\delta V/V \sim 18\%$) is a persistent platform limitation (Bottleneck 1 in the review) but is *not* the dominant factor in *this* experiment. The dominant limitation is the finite lattice size (16×16), which caps the observable coarsening range regardless of preparation quality.
 
 For the three lattice spacings used (thermal disorder reference):
 
@@ -126,6 +128,14 @@ No explicit percentage deviation is quoted in the paper.
 
 The Kibble-Zurek mechanism [@keesling2019kibble] predicts that defect density after a ramp through a quantum phase transition scales as $n_{\rm def} \sim \tau_Q^{-\nu/(1+z\nu)}$ for ramp time $\tau_Q$. Coarsening is the *post-quench* dynamics that follows Kibble-Zurek defect formation: the initial domain configuration set by Kibble-Zurek then evolves under the Allen-Cahn $L \propto t^{1/2}$ law. The experiments use an adiabatic ramp (not a fast quench), so Kibble-Zurek defect formation is minimized during preparation; the quench is then applied to a high-fidelity ordered state to study clean coarsening dynamics.
 
+### Parameters not quoted in this paper
+
+The following parameters are **not stated** in [@manovitz2025coarsening] but are relevant context from the platform baseline:
+
+- **Rydberg state lifetime ($70S_{1/2}$):** Not quoted. The calculated radiative lifetime is $\sim 150\ \mu$s; the effective blackbody-limited lifetime at 300 K is shorter. In practice, the relevant timescale is the hold-time-dependent atom loss: retention drops from 86% to 63% over $t = 1.16\ \mu$s, implying an effective $1/e$ loss time of $\sim 2.4\ \mu$s (dominated by Rydberg decay and off-resonant scattering from the 784 nm SLM at $\sim$35 Hz).
+- **Detection fidelity:** Not quoted. The 1-zone platform baseline from [@ebadi2021quantum] is $\sim 97\%$ single-atom detection fidelity.
+- **Shots per data point:** Not stated in the main text, methods, or supplementary materials.
+
 ### SLM phase configurations
 
-Three separate SLM phase patterns were prepared, one for each lattice spacing $a \in \{6.45, 6.80, 7.15\}$ μm, each satisfying the standard uniformity requirements (site-to-site intensity variance 1–2%, Strehl > 0.90, ghost suppression to 0.1%). The corresponding Rabi frequencies $(\Omega/2\pi, a) = (6.0~\text{MHz}, 6.45~\mu\text{m}),\ (3.8~\text{MHz}, 6.8~\mu\text{m}),\ (3.1~\text{MHz}, 7.15~\mu\text{m})$ maintain approximately constant blockade radius across configurations: $R_b/a = 1.12,\ 1.15,\ 1.13$ respectively (nearest-neighbor blockade only).
+Three separate SLM phase patterns were prepared, one for each lattice spacing $a \in \{6.45, 6.80, 7.15\}$ μm, each satisfying the standard uniformity requirements (site-to-site intensity variance 1–2%, Strehl > 0.90, ghost suppression to 0.1% — these are platform-level specs from the review, not quoted in this paper). The corresponding Rabi frequencies $(\Omega/2\pi, a) = (6.0~\text{MHz}, 6.45~\mu\text{m}),\ (3.8~\text{MHz}, 6.8~\mu\text{m}),\ (3.1~\text{MHz}, 7.15~\mu\text{m})$ maintain approximately constant blockade radius across configurations: $R_b/a = 1.12,\ 1.15,\ 1.13$ respectively (nearest-neighbor blockade only).
