@@ -22,7 +22,7 @@ draft: true
 
 1. **Initialize** all atoms in the ground state $|000\ldots0\rangle$ (product state, zero Rydberg excitations).
 2. **Global quench** at fixed $\Omega/2\pi = 2.5\,\text{MHz}$, sweeping detuning $\Delta/\Omega \in [-4.0, 6.0]$: negative detunings sampled at steps of 0.4 ($\Delta/\Omega \in [-4.0, -0.4]$), positive at steps of 0.2 ($\Delta/\Omega \in [0.0, 6.0]$). No local addressing — single global drive throughout.
-3. **Evolve** for $t \in [0, 4.0\,\mu\text{s}]$ (hardware coherence ceiling of Aquila).
+3. **Evolve** for $t \in [0, 4.0\,\mu\text{s}]$ (hardware coherence ceiling of Aquila), sampled at discrete time points in steps of 0.4 µs (ED integration uses 0.01 µs time step).
 4. **Measure** $k$-island densities (number of clusters of $k$ consecutive Rydberg excitations) at each time step. Shot counts vary by system: 52-atom 1D = 120 physical shots; 180-atom 2D = 100 physical shots; 16-atom 1D = 50 physical shots $\times$ 2 parallel copies in the field of view (100 effective); 16-atom 2D = 20 physical shots $\times$ 6 parallel copies (120 effective).
 5. **Time-average** observables over the steady-state window $t \in [0.8, 4.0\,\mu\text{s}]$ to extract the prethermal plateau value.
 
@@ -38,13 +38,16 @@ Systematic mapping of quench dynamics across a wide $\Delta/\Omega$ parameter sp
 
 ## Key observations
 
-- **Floquet-like prethermalization:** At intermediate detunings, the Rydberg blockade constraint confines dynamics to a restricted Hilbert subspace ($PXP$ model), producing long-lived non-thermal steady states — a *prethermal plateau* persisting for exponentially long times $\sim e^{V_1/\lambda}$ before ETH eventually sets in. This is prethermalization, not permanent ETH breakdown; the plateau is finite but parametrically long. Experimentally the plateau is observed over $t \in [0.8, 4.0\,\mu\text{s}]$; numerics (ED, $N \leq 20$) confirm it persists for *at least* 100 µs (the simulation ceiling), with theoretical lifetime $\sim e^{V_1/\lambda}$ exponentially longer.
+- **Floquet-like prethermalization:** At intermediate detunings, the Rydberg blockade constraint confines dynamics to a restricted Hilbert subspace ($PXP$ model), producing long-lived non-thermal steady states — a *prethermal plateau* persisting for exponentially long times $\sim e^{V_1/\lambda}$ before ETH eventually sets in. The effective Hamiltonian is the **leading-order truncated Floquet Hamiltonian**, equivalent to projecting the full Rydberg Hamiltonian onto the blockade subspace. This is prethermalization, not permanent ETH breakdown; the plateau is finite but parametrically long. Experimentally the plateau is observed over $t \in [0.8, 4.0\,\mu\text{s}]$; ED simulations ($N \leq 20$) use **10 µs standard runs** and **100 µs extended runs** (1D, $N=16$, $R_b/a=1.4$), with no significant difference in time-averaged observables between the two — confirming the plateau persists well beyond the 4 µs experimental window. Theoretical lifetime $\sim e^{V_1/\lambda}$ is exponentially longer still.
 - **Resonant melting:** Sharp resonance peaks in $k$-island observables at (for $R_b/a \approx 1.4$, i.e., $V_1/\Omega \approx 7.4$):
   - **Dominant resonance** $\Delta/\Omega \approx 3.7$: condition $2\Delta = V_1$ — nearest-neighbor pair processes become resonant, proliferating "0110" 2-islands.
   - **Secondary resonance** $\Delta/\Omega \approx 2.5$: condition $3\Delta = V_1$ — higher-order three-photon process.
   - **Tertiary resonance** $\Delta/\Omega \approx 4.9$: condition $3\Delta = 2V_1$ — resonant proliferation of 3-islands (clusters of three consecutive Rydberg excitations, e.g., "011101110").
   - These resonances are predicted by a Floquet-Magnus (FME) perturbation expansion and serve as a quantitative check of the effective Hamiltonian.
-- **Dynamical phase transition (2D):** In the 2D square array, the boundary of the prethermal region hosts a sharp dynamical transition marked by Néel-order defect proliferation. This transition has **no equilibrium counterpart** — it is a purely dynamical quantum phase transition, analogous to a quantum Stoner-Wohlfarth transition modified by quantum fluctuations.
+- **Dynamical phase transition (2D):** In the 2D square array, the boundary of the prethermal region hosts a sharp dynamical transition marked by Néel-order defect proliferation. This transition has **no equilibrium counterpart** — it is a purely dynamical quantum phase transition. The classical (mean-field) transition location follows the **Stoner-Wohlfarth formula**:
+$$\frac{\Delta_c}{\Omega} \approx \frac{3}{2}\!\left(\frac{\sum_i z_i V_i}{\Omega}\right)^{\!1/3} \propto \left(\frac{R_b}{a}\right)^2$$
+while the quantum transition (Néel-order breakdown) scales as $\Delta_\text{Néel}/\Omega \propto (R_b/a)^6$ — a much steeper dependence reflecting the $1/r^6$ van der Waals interaction. The crossover from classical to quantum scaling is a key signature of quantum fluctuations modifying the dynamical transition.
+- **Hamming weight at $\Delta = 0$:** The excitation distribution exhibits mean $\sim N/4$ and variance $\sim N/8$ across all experimentally probed system sizes, consistent with equal excitation probability across the blockade subspace (binomial $B(N/2, 1/2)$).
 
 ## Scientific significance
 
@@ -77,7 +80,7 @@ No hardware innovation — same Aquila platform as Kornjaca 2024 and González-C
 
 **Most important technique needing optimization: extending the coherent evolution window beyond 4 µs.**
 
-The experiment's central claim — an exponentially long prethermal plateau — is observed only over $t \in [0.8, 4.0]\,\mu\text{s}$ experimentally, while numerics confirm the plateau persists for *at least* 100 µs (the ED simulation ceiling for $N \leq 20$), with theoretical lifetime $\sim e^{V_1/\lambda}$ exponentially longer. This gap of $\gtrsim 25\times$ is not a physics limitation; it is the coherence ceiling of Aquila (laser phase noise, atom loss, and thermal position drift over time). The bottleneck matters because:
+The experiment's central claim — an exponentially long prethermal plateau — is observed only over $t \in [0.8, 4.0]\,\mu\text{s}$ experimentally. ED simulations use 10 µs standard runs (all parameters) and 100 µs extended runs (1D, $N=16$), with no difference in time-averaged observables. The effective Hamiltonian is the leading-order truncated Floquet Hamiltonian (blockade subspace projection); theoretical lifetime $\sim e^{V_1/\lambda}$ is exponentially longer. The $\sim 2.5\times$ gap to the 10 µs ED benchmark is not a physics limitation; it is the coherence ceiling of Aquila (laser phase noise, atom loss, and thermal position drift). The bottleneck matters because:
 
 1. **The exponential scaling $\sim e^{V_1/\lambda}$ cannot be verified experimentally.** The theory predicts thermalization is exponentially suppressed for times $t \ll e^{V_1/\lambda}$, but Aquila can only access the first ~4 µs of a plateau that lasts orders of magnitude longer. This means the experiment can confirm the *existence* of a plateau but not its predicted scaling with $V_1/\Omega$.
 
@@ -105,8 +108,8 @@ The experiment's central claim — an exponentially long prethermal plateau — 
 
 - **Plateau onset:** $t \approx 0.5\,\mu\text{s}$ (paper's stated convergence of time-averaged observables).
 - **Averaging window:** $t \in [0.8, 4.0]\,\mu\text{s}$ (conservative margin above the 0.5 µs onset).
-- **Numerics:** ED simulations (Bloqade.jl, $N \leq 20$) confirm the plateau persists for *at least* 100 µs — the simulation ceiling, not a predicted thermalization time. The theoretical prethermal lifetime $\sim e^{V_1/\lambda}$ is exponentially longer.
-- **Gap:** $\gtrsim 25\times$ between experimental access (4 µs) and the numerically confirmed lower bound (100 µs), with the true prethermal lifetime far longer still — limited by Aquila's coherence ceiling, not physics.
+- **Numerics:** ED simulations (Bloqade.jl, $N \leq 20$) use **10 µs standard runs** for all parameter points and **100 µs extended runs** for selected 1D configurations ($N=16$, $R_b/a = 1.4$). Time-averaged observables show no significant difference between the two horizons, confirming the plateau persists well beyond experimental reach. The theoretical prethermal lifetime $\sim e^{V_1/\lambda}$ is exponentially longer.
+- **Gap:** $\sim 2.5\times$ between experimental access (4 µs) and the standard ED benchmark (10 µs); $\sim 25\times$ to the extended ED runs (100 µs). The 10 µs target is the more experimentally actionable milestone. Limited by Aquila's coherence ceiling, not physics.
 
 **System-size ladder for finite-size scaling:**
 
