@@ -23,7 +23,7 @@ A 2D Rydberg array is driven across the (2+1)D Ising quantum phase transition to
 ## Experimental protocol
 
 1. **State preparation:** Adiabatic sweep from the disordered phase ($\Delta \ll 0$) to the antiferromagnetically ordered regime ($\Delta \gg 0$) on a **16×16 square lattice of 256 atoms** with blockade radius $R_b/a \approx 1.12$–$1.15$ (nearest-neighbor blockade only). Dimensionless sweep rate: $\Delta/(\Omega^2 T) \approx 3.0/(2\pi)$, where $\Delta$ is the total detuning range and $T$ is the sweep duration (i.e., the detuning changes by $\sim 3\,\Omega$ per Rabi period). Local light shifts $|\delta_i| \sim 4\Omega$ (**absolute magnitude 12(2) MHz**) from a 784 nm second SLM ($\sim$35 Hz scattering rate) pin boundary sites to the correct sublattice. Ground-state preparation fidelity on pinned sites: **93–95%** (limited by antiblockade effects at domain boundaries).
-2. **Post-selection:** Shots with $>3$ defects are discarded ($\sim$93% retained); shots where the longest consecutive $|r\rangle$ chain in any single row or column exceeds 4 sites are also discarded ($\sim$92% retained). Combined with rearrangement filtering: **86% retention** at short hold times, dropping to **63%** at $t = 1.16\ \mu$s ($\Delta/\Omega = 4$) due to Rydberg-state decay.
+2. **Post-selection:** Shots with $>4$ defects are discarded ($\sim$93% retained); shots where the longest consecutive $|r\rangle$ chain in any single row or column exceeds 4 sites are also discarded ($\sim$92% retained). Combined with rearrangement filtering: **86% retention** at short hold times, dropping to **63%** at $t = 1.16\ \mu$s ($\Delta/\Omega = 4$) due to Rydberg-state decay.
 3. **Quench dynamics:** Sudden quench deep into the ordered phase, then monitoring time evolution of the spatially resolved order parameter.
 4. **Domain tracking:** Individual antiferromagnetic domains identified and tracked in real time from single-shot fluorescence images.
 5. **Multi-spacing protocol:** Three different lattice spacings $a = 6.45, 6.8, 7.15$ μm with corresponding Rabi frequencies $\Omega/2\pi = 6.0, 3.8, 3.1$ MHz to access different points in the phase diagram.
@@ -64,7 +64,7 @@ This experiment runs on the Harvard 1-zone Rydberg apparatus. The parameters bel
 | Shot retention ($t=1.16\ \mu$s) | 63% | Methods |
 | 784 nm SLM scattering rate | $\sim$35 Hz | Methods |
 | Adiabatic sweep rate | $\Delta/(\Omega^2 T) \approx 3.0/(2\pi)$ (dimensionless) | Methods |
-| Post-selection: defect threshold | $\leq 3$ defects per shot (retains $\sim$93%) | Methods |
+| Post-selection: defect threshold | $\leq 4$ defects per shot (retains $\sim$93%) | Methods |
 | Post-selection: blockade violation | longest consecutive $\|r\rangle$ chain in single row/column $\leq 4$ (retains $\sim$92%) | Methods |
 
 **Hardware upgrade note:** The Ebadi 2021 baseline (review §1-Zone) uses a single SLM at 852 nm for static trap generation plus AODs for rearrangement. Manovitz 2025 adds a **second SLM at 784 nm** to apply site-resolved detuning offsets; this is the optical subsystem that implements the 12(2) MHz boundary light shifts. Without this second SLM, per-site detuning control at the required 93–95% fidelity level is not possible with the AOD-only architecture.
@@ -79,7 +79,14 @@ This experiment runs on the Harvard 1-zone Rydberg apparatus. The parameters bel
 :::{.callout-important icon="false"}
 ## Bottleneck summary
 
-The physics limitation is clear: the 16×16 lattice truncates domain growth after $\xi(t) \gtrsim L/4 \approx 4a$, limiting coarsening to less than one decade in $\xi$. The **engineering technique** that must be optimized to overcome this is **SLM-based trap generation at larger atom counts** (32×32 = 1024 or 64×64 = 4096 sites). Scaling to these sizes requires: (1) larger SLM field-of-view while maintaining the 1–2% site-to-site intensity uniformity needed for clean phase boundaries, (2) a correspondingly scaled second SLM (784 nm) for boundary pinning — currently each pinning spot delivers ~160 μW; scaling to 4× or 16× more boundary sites demands proportionally more optical power or a redesigned delivery scheme, and (3) rearrangement cycle time that scales sublinearly with atom number (currently AOD-based, $\sim$50 ms for 256 atoms). Without these engineering advances, the finite-size truncation that dominates this paper's error budget cannot be addressed.
+The physics limitation is clear: the 16×16 lattice truncates domain growth after $\xi(t) \gtrsim L/4 \approx 4a$, limiting coarsening to less than one decade in $\xi$. The **engineering technique** that must be optimized to overcome this is **SLM-based trap generation at larger atom counts** (32×32 = 1024 or 64×64 = 4096 sites).
+
+**Specific SLM engineering constraints:**
+
+- **Pixel budget:** Current-generation SLMs (e.g., Hamamatsu X13138-02, 1920×1152 pixels) allocate $\sim$45 pixels per trap site for a 256-site array. Scaling to 1024 sites reduces this to $\sim$11 pixels/site, and 4096 sites to $\sim$3 pixels/site. Below $\sim$10 pixels/site, the phase-freedom per trap drops and diffraction efficiency degrades (typically from $>$80% to $<$50%), reducing available trap depth and uniformity.
+- **Phase computation:** The iterative Gerchberg-Saxton algorithm used to compute SLM phase patterns scales as $O(N_{\rm pix} \log N_{\rm pix})$ per iteration. At 1920×1152 pixels and $\sim$50 iterations for 1–2% uniformity, this takes $\sim$1 s on a GPU for 256 sites. For 4096 sites the convergence typically requires 2–3× more iterations to maintain the same uniformity, but remains computationally tractable ($\sim$few seconds).
+- **Second SLM (784 nm) power scaling:** Boundary pinning currently delivers $\sim$160 μW/spot to $\sim$64 boundary sites (perimeter of 16×16). A 64×64 array has $\sim$252 boundary sites (4× more), requiring either 4× the total 784 nm laser power or acceptance of weaker pinning shifts (reducing the 93–95% ground-state fidelity on boundary sites).
+- **Rearrangement time:** AOD-based rearrangement scales roughly linearly with atom count ($\sim$50 ms for 256 atoms). For 1024+ atoms, parallelized rearrangement strategies (multiple AOD passes or SLM-based rearrangement) are needed to keep cycle times below the $\sim$1 s vacuum-limited trap lifetime.
 :::
 
 The paper itself attributes residual deviations from universal scaling to (1) **finite-size truncation** and (2) **$\Delta/\Omega$-dependent domain-wall width** — both are fundamental physics constraints, not engineering deficiencies.
