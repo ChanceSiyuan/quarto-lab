@@ -20,20 +20,20 @@ draft: true
 :::{.callout-note icon="false"}
 ## Experiment Protocol
 
-**System:** 289 atoms arranged as random unit-disk graphs (vertices placed on an ~80%-filled square lattice, $R_b/a = 1.7$, $\Omega/2\pi = 4.0$ MHz, $V_\text{NN}/h = 107$ MHz, $V_\text{NNN}/h = 13$ MHz)
+**System:** Up to 289 atoms arranged as random unit-disk graphs (vertices placed on an ~80%-filled square lattice, $R_b/a = 1.7$, $\Omega/2\pi = 4.0$ MHz, $V_\text{NN}/h = 107$ MHz, $V_\text{NNN}/h = 13$ MHz). Graphs span $N = 80$–$289$ vertices; 115 randomly generated instances used for the scaling analysis, with 36 selected from the top two percentile of the hardness parameter for deep study.
 
 1. **Graph encoding:** Each atom represents a vertex; atoms within the blockade radius $R_b$ are connected by an edge. The Rydberg constraint (no two adjacent atoms both excited) maps exactly to the independent set constraint. The MIS solution is the ground state of $H = -\frac{\Omega}{2}\sum_i \sigma_i^x - \sum_i \Delta_i n_i + \sum_{i<j} V_{ij} n_i n_j$ at large positive $\Delta$.
 
 2. **Quantum annealing (QA):** Linear sweep $\Delta(t): -4\,\text{MHz} \to +4\,\text{MHz}$ over $T \lesssim T_e$. Sweep times used in practice: $T \approx 0.5$–$4\,\mu\text{s}$ (well within the $T_e \approx 20\,\mu\text{s}$ coherence window). Sets the baseline.
 
-3. **QAOA:** $p$-layer alternating unitaries $U_P(\gamma)U_M(\beta)$ applied to the ground state of the mixing Hamiltonian. Depths $p = 1$–$5$ tested; performance saturates near $p = 4$. Parameters $\{\gamma_k, \beta_k\}$ optimized via closed-loop classical optimizer (~50 circuit repetitions per evaluation step).
+3. **QAOA:** $p$-layer alternating unitaries $U_P(\gamma)U_M(\beta)$ applied to the ground state of the mixing Hamiltonian. Depths $p = 1$–$5$ tested; performance saturates near $p = 4$. Parameters $\{\gamma_k, \beta_k\}$ ($2p$ variational parameters) optimized via closed-loop classical optimizer (~50 repetitions per evaluation step).
 
-4. **VQAA (Variational Quantum Adiabatic Algorithm):** Piecewise-linear $\Delta(t)$ with 3 independently optimized segments; similarly closed-loop optimized. Outperforms QAOA on hardest instances.
+4. **VQAA (Variational Quantum Adiabatic Algorithm):** Piecewise-linear $\Delta(t)$ with 3 independently optimized segments; 9 total variational parameters (3 segment durations $\tau_k$, 3 end detunings $\Delta_k$, plus initial detuning $\Delta_0$, filter timescale $\tau_\Delta$, and ramp time $\tau_\Omega$). Closed-loop optimized. Outperforms QAOA on hardest instances.
 
 5. **Hardness sweep:** For each graph, hardness is quantified by the hardness parameter $\text{HP} = D_{|\text{MIS}|-1} / (|\text{MIS}| \times D_{|\text{MIS}|})$, where $D_k$ is the number of independent sets of size $k$. High HP = many near-optimal decoy states = harder landscape. ~$10^5$ total measurements accumulated over ~15 hours of continuous operation.
 :::
 
-289 atoms configured as unit-disk graphs to solve the maximum independent set (MIS) combinatorial optimization problem via quantum annealing:
+Up to 289 atoms configured as unit-disk graphs to solve the maximum independent set (MIS) combinatorial optimization problem via quantum annealing and variational algorithms. The scaling analysis uses 115 randomly generated graph instances spanning $N = 80$–$289$ vertices:
 
 1. **Graph encoding:** The MIS problem on a unit-disk graph is naturally encoded in the Rydberg blockade: each atom represents a vertex, and the blockade radius defines the edge set (two atoms within $R_b$ cannot both be in $|r\rangle$). This makes the MIS solution the ground state of the Rydberg Hamiltonian at large positive detuning.
 2. **Quantum annealing protocol:** Adiabatic sweep from $\Delta \ll 0$ (all atoms in $|g\rangle$) to $\Delta \gg 0$ (MIS state), with optimized sweep profiles.
@@ -42,7 +42,7 @@ draft: true
 
 ## Key observations
 
-- **High-quality MIS solutions:** For graphs with up to 289 vertices, the quantum optimizer found exact MIS solutions with probability exceeding classical random sampling.
+- **High-quality MIS solutions:** Across 115 graph instances ($N = 80$–$289$ vertices), the quantum optimizer found exact MIS solutions with probability exceeding classical random sampling. Success probability varies by nearly three orders of magnitude across instances at fixed depth, tracking the hardness parameter HP.
 - **Superlinear quantum speedup:** Over all graphs, TTS scales as $\text{HP}^{0.95(15)}$ (quantum) vs. $\text{HP}^{1.03(4)}$ (classical SA). For the subset where the minimum spectral gap is resolved ($\delta_\text{min} > 1/T$), the quantum exponent improves to $\text{HP}^{0.63(13)}$, giving a larger margin; the 0.95 exponent is the full-dataset value.
 - **Hardness correlates with landscape complexity:** Problem difficulty for the quantum optimizer correlated with the number of quasi-degenerate local minima in the classical energy landscape, not simply with graph size.
 - **Variational advantage:** Optimized pulse schedules (beyond simple linear ramps) significantly improved success probability, particularly for hard instances.
@@ -83,7 +83,7 @@ Note on filling fraction: the ~80% figure is a deliberate graph construction cho
 The paper directly identifies $T_e$ as the binding constraint on quantum speedup [@ebadi2022quantum]:
 
 - **Standard beam configuration:** $T_e \approx 20\,\mu\text{s}$ — limits sweep time to $T \lesssim 20\,\mu\text{s}$, restricting the quantum optimizer to shallow adiabatic ramps and low-$p$ QAOA.
-- **Smaller beam configuration:** $T_e \approx 70\,\mu\text{s}$ — extends the accessible sweep time, and the paper shows that the quantum speedup ($\text{HP}^{0.63}$ vs. $\text{HP}^{1.03}$) is strongest in the high-$T_e$ regime where the adiabatic gap is resolvable.
+- **Smaller beam configuration:** $T_e \approx 70\,\mu\text{s}$ (using $\Omega_{420}/2\pi = 305$ MHz, $\Delta_e/2\pi = 4.0$ GHz; Table 1 of [@ebadi2022quantum], used for smaller hard graphs in Figs. 4–5) — extends the accessible sweep time, and the paper shows that the quantum speedup ($\text{HP}^{0.63}$ vs. $\text{HP}^{1.03}$) is strongest in the high-$T_e$ regime where the adiabatic gap is resolvable.
 - **Why this is the bottleneck:** Near the hardest instances, the minimum spectral gap $\delta_\text{min}$ is exponentially small (Landau-Zener regime: $P_\text{MIS} = 1 - \exp(-A \cdot \delta_\text{min}^\eta)$, $\eta = 1.2(2)$). Closing the gap requires longer sweeps, directly competing with $T_e$. At $T \gg T_e$, decoherence destroys the quantum state before it can reach the MIS.
 - **Consequence:** The speedup is bounded to intermediate HP regimes. Very hard instances (tiny gap, need $T \gg T_e$) are inaccessible, which limits the asymptotic scaling claim.
 
@@ -93,14 +93,16 @@ Improving $T_e$ — through better laser coherence, reduced motional heating, or
 
 **Graph families and hardness classification.** All graphs are *random unit-disk graphs* generated on an ~80%-filled square lattice with $R_b/a = 1.7$. There is no named graph family; hardness is characterized by the hardness parameter $\text{HP} = D_{|\text{MIS}|-1}/(|\text{MIS}| \times D_{|\text{MIS|}})$. Graphs with many near-optimal decoy states (high HP) are hardest for both quantum and classical algorithms; the quantum advantage is largest in this regime.
 
-**Scaling exponent comparison.** The paper reports two quantum TTS fits [@ebadi2022quantum]:
+**Absolute success probabilities.** The paper does not report a single headline $P_\text{MIS}$ number; success probability varies by nearly three orders of magnitude across the 115 graph instances at fixed depth, reflecting the strong dependence on the hardness parameter HP. Absolute $P_\text{MIS}$ values are presented graphically (Figs. 3–5) rather than tabulated. <!-- TODO: extract representative P_MIS values for easy/hard instances from Figs. 3–5 if high-resolution figures become available -->
+
+**Scaling exponent comparison.** The scaling analysis uses 115 graph instances spanning $N = 80$–$289$ vertices (not a single fixed size). The paper reports two quantum TTS fits [@ebadi2022quantum]:
 
 - **All graphs (full dataset):** $\text{TTS}_\text{quantum} \propto \text{HP}^{0.95(15)}$ vs. $\text{TTS}_\text{SA} \propto \text{HP}^{1.03(4)}$. The quantum advantage is present but modest (exponent gap 0.08).
 - **Resolved-gap subset** ($\delta_\text{min} > 1/T$, i.e. only instances where the adiabatic gap is experimentally resolvable): $\text{TTS}_\text{quantum} \propto \text{HP}^{0.63(13)}$. Here the advantage is more pronounced (exponent gap 0.40).
 
 The 0.63(13) figure is the conditioned value; reporting it as the primary result overstates the quantum advantage. The 0.95(15) exponent is the conservative, unconditioned bound. The ratio diverges as HP increases in both cases, but the margin is narrower over the full dataset. The exponents are from finite-size data and may not persist at larger $N$; the paper acknowledges that an asymptotic separation requires further theoretical analysis.
 
-**Debate about thermodynamic-limit speedup.** The scaling advantage was measured at a fixed system size ($N = 289$). Whether the exponent gap ($0.63$ vs. $1.03$) persists as $N \to \infty$ is an open question — the classical optimizer (simulated annealing) is also not the best possible classical algorithm for unit-disk MIS. Subsequent theory work has questioned whether the quantum advantage survives against more sophisticated classical heuristics (e.g., tensor-network–based optimizers) or in the limit of large random graphs. The paper's claim is explicitly bounded to the regime accessible to the hardware.
+**Debate about thermodynamic-limit speedup.** The scaling advantage was measured across $N = 80$–$289$ (not at a single fixed size), but this remains a finite-size regime. Whether the exponent gap ($0.63$ vs. $1.03$) persists as $N \to \infty$ is an open question — the classical optimizer (simulated annealing) is also not the best possible classical algorithm for unit-disk MIS. Subsequent theory work has questioned whether the quantum advantage survives against more sophisticated classical heuristics (e.g., tensor-network–based optimizers) or in the limit of large random graphs. The paper's claim is explicitly bounded to the regime accessible to the hardware.
 
 **Cross-platform comparison.** D-Wave annealers also target Ising-type optimization but require a problem-specific embedding into the Pegasus hardware graph, introducing compilation overhead absent in the native Rydberg encoding. Gate-based platforms (e.g., superconducting QAOA) can in principle implement higher-$p$ QAOA but are limited to $N \lesssim 100$ at the time of publication and incur decoherence from two-qubit gates rather than the analog coherence time $T_e$. The native hardware graph advantage of Rydberg arrays for unit-disk MIS is the most direct differentiator.
 
@@ -108,7 +110,7 @@ The 0.63(13) figure is the conditioned value; reporting it as the primary result
 
 | Parameter | Value |
 |-----------|-------|
-| Atom count | 289 |
+| Atom count | 80–289 (115 instances; max 289) |
 | Rabi frequency $\Omega/2\pi$ | 4.0 MHz |
 | Blockade radius $R_b/a$ | 1.7 |
 | $V_\text{NN}/h$ | 107 MHz |
@@ -122,5 +124,8 @@ The 0.63(13) figure is the conditioned value; reporting it as the primary result
 | TTS quantum exponent (resolved-gap subset) | 0.63(13) |
 | TTS classical SA exponent | 1.03(4) |
 | LZ fit exponent $\eta$ | 1.2(2) |
+| Graph instances (scaling study) | 115 (36 hardest subset) |
+| QAOA variational parameters | $2p$ (up to 10 at $p=5$) |
+| VQAA variational parameters | 9 |
 | Variational shots per step | ~50 |
 | Total experimental shots | ~$10^5$ over ~15 h |
