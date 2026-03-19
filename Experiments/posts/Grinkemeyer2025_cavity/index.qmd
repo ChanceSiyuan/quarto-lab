@@ -102,10 +102,10 @@ The cooperativity $C = 4g^2/(\kappa\Gamma) = 101$ sets the fundamental tradeoff:
 | Parameter | Grinkemeyer 2025 (cavity) | 1-zone Rydberg | 3-zone Rydberg | 4-zone Rydberg | Notes |
 |-----------|--------------------------|----------------|----------------|----------------|-------|
 | Entanglement mechanism | Photon exchange via cavity | Van der Waals $1/R^6$ (global) | Van der Waals $1/R^6$ | Van der Waals $1/R^6$ | Cavity: fundamentally different |
-| Gate fidelity (deterministic) | 52.5(18)% (CZ, no postsel.) | N/A (analog only) | 99.5% (CZ) | 99.5% (CZ, physical) | 1-zone uses global Rabi pulses — no individual CZ gates |
+| Gate fidelity (deterministic) | 52.5(18)% (CZ, no postsel.) | N/A (global Rydberg pulses) | 99.5% (CZ) | 99.5% (CZ, physical) | 1-zone entangles via blockade during global analog evolution, not individually addressed gates |
 | Gate fidelity (postselected) | 76(2)% (69% success) | — | — | — | Error detection helps |
 | Bell fidelity (carving) | 91(4)% (32% success) | — | — | — | Heralded protocol only |
-| Readout fidelity | 99.96% | ~95% | 99.8% | 0.46% bit-flip error (non-destructive) | Cavity single-shot; 4-zone non-destructive for QEC |
+| Readout fidelity | 99.96% | ~95% (fluorescence) | 99.8% | 99.54% (non-destructive, 0.46% bit-flip error) | Cavity single-shot; 4-zone non-destructive for QEC |
 | Scalability | 2 atoms (max ~20) | 256 atoms | 280 atoms | 448 atoms (196 reservoir) | Rydberg scales far better |
 | QEC / error detection | Built-in erasure detection | None | Post-hoc (error correcting codes) | Real-time QEC, 41 rounds demonstrated | Cavity: native erasure; 4-zone: fault-tolerant cycles |
 | Networking | Photonic interface ready | No photon interface | No photon interface | No photon interface | Cavity enables quantum network nodes |
@@ -125,7 +125,7 @@ The cooperativity $C = 4g^2/(\kappa\Gamma) = 101$ sets both the success probabil
 
 **Why $C = 101$ is the key number:**
 
-In the strong-coupling regime, success probability scales as $C/(C+1) \approx 1 - 1/C$. Doubling cooperativity from 100 to 200 would roughly halve the failure probability per attempt — boosting carving success from 32% to ~66% and deterministic gate fidelity toward the postselected regime. The current finesse of 25,904 degraded from $>40{,}000$ after bakeout misalignment; restoring this alone would increase $C$ by ~50%.
+In standard cavity QED theory, the single-pass photon absorption probability scales as $C/(C+1) \approx 1 - 1/C$ (see e.g. [@tanji-suzuki2011]). However, the carving protocol's 32% success rate depends on multiple factors beyond $C$ alone — pulse sequence design, mode matching, state preparation — so the relationship between $C$ and overall success probability is not a simple $C/(C+1)$ rescaling. *Qualitatively*, increasing $C$ reduces photon loss per cavity interaction and should improve both success rate and fidelity, but the quantitative gain requires detailed modeling of the full protocol. The current finesse of 25,904 degraded from $>40{,}000$ after bakeout misalignment; restoring this alone would increase $C$ by ~50%.
 
 **However, cooperativity is not the sole fidelity limiter.** The paper identifies a $C$-independent fidelity ceiling: only 91.5% of dark-state scattering events produce detectable errors (atoms leaving the qubit manifold). The remaining 8.5% scatter back into $F=1$ Zeeman sublevels that are indistinguishable from the qubit states, producing *undetectable* errors. This caps the carving protocol's theoretical maximum fidelity at **~96.3%** even at infinite $C$. Additional fidelity-limiting mechanisms include off-resonant scattering from the 850 nm trap, $F=3$ state light shifts, imperfect polarization, and level-mixing of excited states. Thus, increasing $C$ improves the *success rate* but does not address the *fidelity ceiling* — resolving the Zeeman-sublevel detection gap (e.g., via sublevel-selective readout or shelving) is required to push carving fidelity beyond ~96%.
 
