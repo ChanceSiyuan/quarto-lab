@@ -30,27 +30,28 @@ A theoretical framework that inverts the traditional quantum simulation paradigm
 
 ## Key observations
 
-The paper demonstrates the inverse simulation framework on **three distinct target systems**:
+The paper demonstrates the inverse simulation framework on **three distinct target systems**, with a finite-temperature extension of the first:
 
 ### Application 1: $d$-wave superconductivity in the Fermi-Hubbard model
 
 - **Reference Hamiltonian:** 2-leg Fermi-Hubbard ladder with $t_x = t_y = -1$ (energy units), $U = 4$.
 - **Cost function:**
 $$C[\boldsymbol{\theta};\lambda] = \langle \hat{H}_0 \rangle_\theta - \lambda \sum_r \langle \hat{\Delta}_1^\dagger \hat{\Delta}_{1+r} \rangle_\theta$$
-  where $\hat{\Delta}_1^\dagger$ creates a singlet pair at site 1 and $\lambda$ weights the pairing enhancement against energy minimization.
-- **DMRG validation:** Inverse simulator run on a small ladder (2×4, 8 sites); the learned Hamiltonian parameters generalize successfully to a 2×24-site ladder across the full doping range.
+  where $\hat{\Delta}_1^\dagger$ creates a singlet pair at site 1 and $\lambda$ weights the pairing enhancement against energy minimization. The paper uses $\lambda = 2$ with interactions restricted to be repulsive (Figure 2c).
+- **DMRG validation:** Inverse simulator run on a small four-site ladder (2×4, 8 sites) at **quarter filling**; the learned Hamiltonian parameters generalize successfully to a 2×24-site ladder across the full doping range.
 - **Learned terms:** dominant off-diagonal hoppings and off-site density–density interactions — physically interpretable microscopic parameters that enhance $d$-wave pair correlations.
 - Circuit depths $d = 5$ and $d = 10$ were used on the 2×4 learning ladder (Figure 2c), with deeper circuits yielding more localized learned Hamiltonians.
 
 ### Application 2: Topological phase extension in the Cluster Ising Model (CIM)
 
+- **Parameter range:** CPHL sweeps the CIM coupling parameter $g \in [-1, 1]$, where $g = -1$ is deep in the topological (cluster) phase and $g = 1$ is the ferromagnetic phase.
 - The cost function targets topological order (string-order parameter); the inverse simulator discovers antiferromagnetic next-nearest-neighbor coupling and a quartic interaction term that suppresses competing ferromagnetism and **extends the topological phase boundary** beyond the bare CIM.
 
 ### Application 3: Ring-exchange Hamiltonian learning from dynamical structure factors
 
 - Three-spin system; CPHL reconstructs a Hamiltonian with ring-exchange coupling $J_{\text{ring}}$ from spectral response functions. The algorithm converges to the correct multi-peak structure rapidly.
 
-### Application 4: Finite-temperature $d$-wave Hubbard (Gibbs state)
+### Application 1b: Finite-temperature $d$-wave Hubbard (Gibbs state)
 
 - **Setup:** Same 2-leg Fermi-Hubbard ladder; cost function optimized over a thermal (Gibbs) state at $T \simeq 0.32\,t$ rather than a pure ground state.
 - **Result:** Circuit optimization at $T \simeq 0.32\,t$ yields $d$-wave pair correlations **comparable to those of the zero-temperature Hubbard model** $\hat{H}_0$. The learned Hamiltonian $\hat{H}_{\text{opt}}$ **outperforms $\hat{H}_0$ across the entire temperature range**, demonstrating that the inverse framework is not restricted to pure states and that finite-temperature CPHL is practically viable.
@@ -68,7 +69,7 @@ $$C[\boldsymbol{\theta};\lambda] = \langle \hat{H}_0 \rangle_\theta - \lambda \s
 | **Novelty** | Conceptually transformative: elevates the quantum simulator from a passive analysis tool to an active **materials discovery engine**. No prior framework systematically inverts quantum simulation for materials design. |
 | **Practical value** | If realized, could directly guide synthesis of new superconducting, topological, or magnetic materials. The potential impact on materials science and condensed matter physics is enormous — but contingent on experimental demonstration. |
 | **Verification value** | The numerical validation (DMRG, exact diagonalization) confirms the framework is mathematically sound on three qualitatively different targets. The experimental test will validate whether current hardware fidelity and scale are sufficient for meaningful Hamiltonian learning. |
-| **Scope** | Three targets demonstrated: (1) $d$-wave superconductivity in the Fermi-Hubbard model (DMRG on 2×4→2×24 ladders), (2) topological phase extension in the CIM (exact diag.), (3) ring-exchange Hamiltonian recovery from spectral data. |
+| **Scope** | Three targets demonstrated: (1) $d$-wave superconductivity in the Fermi-Hubbard model (DMRG on 2×4→2×24 ladders), including a finite-temperature Gibbs-state extension at $T \simeq 0.32\,t$; (2) topological phase extension in the CIM via CPHL across $g \in [-1, 1]$ (exact diag.); (3) ring-exchange Hamiltonian recovery from spectral data (SHL). |
 
 
 ## Architecture requirements for experimental realization
@@ -100,9 +101,9 @@ The inverse simulation framework has two computationally expensive steps:
 
 **Why CPHL is harder than SHL:** SHL (Spectral Hamiltonian Learning) works at discrete parameter points and can exploit spectral gaps. CPHL (Continuous-Phase Hamiltonian Learning) must smooth a learned Hamiltonian over a continuous parameter manifold (e.g., doping fraction, temperature). This smoothing amplifies measurement noise across the parameter grid — each grid point requires independent Hamiltonian learning, and statistical errors accumulate. Shot budget and readout fidelity are therefore much more constraining for CPHL than SHL.
 
-**Why readout fidelity is the dominant bottleneck (not gate fidelity or qubit count):** The variance of learned Hamiltonian coefficients scales as
+**Why readout fidelity is the dominant bottleneck (not gate fidelity or qubit count):** For any observable estimated from projective measurements, readout errors reduce the effective number of informative samples. The variance of learned Hamiltonian coefficients scales as
 $$\text{Var}[\hat{h}_k] \propto \frac{1}{\eta_{\text{ro}}^2 \cdot N_{\text{shots}}}$$
-where $\eta_{\text{ro}}$ is the single-qubit readout fidelity. Gate errors primarily affect state preparation (distorting the optimized state but not fundamentally changing the measurement inversion problem), while readout errors directly inflate the statistical noise floor of every Hamiltonian coefficient estimate. Halving the readout infidelity from 4% to 2% reduces the required shot count by $4\times$ — a much larger leverage than a comparable reduction in gate error.
+where $\eta_{\text{ro}}$ is the single-qubit readout fidelity. (This is a standard result from measurement statistics, not a formula stated in the paper — the paper does not provide an explicit shot-budget analysis.) Gate errors primarily affect state preparation (distorting the optimized state but not fundamentally changing the measurement inversion problem), while readout errors directly inflate the statistical noise floor of every Hamiltonian coefficient estimate. Halving the readout infidelity from 4% to 2% reduces the required shot count by $4\times$ — a much larger leverage than a comparable reduction in gate error.
 
 **Sample complexity:** Both SHL and CPHL require only a **polynomial number of measurements in system size, independent of temperature** — a key theoretical result. The paper does not specify the polynomial exponent $k$ (i.e., the exact $O(n^k)$ scaling); only the existence of polynomial scaling is claimed, with proofs referenced to external theoretical work. No explicit shot count is given for the demonstrated systems.
 
