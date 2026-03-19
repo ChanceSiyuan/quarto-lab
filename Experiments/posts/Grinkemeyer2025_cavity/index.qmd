@@ -44,7 +44,7 @@ A fundamentally different entanglement mechanism: instead of Rydberg blockade (d
 4. Perform cavity readout; most scattering errors leave atoms in detectable state $|err\rangle$.
 5. Postselect on absence of detected errors.
 
-**Result:** deterministic $F = 52.5(18)\%$; postselected $F = 76(2)\%$ at $p_\text{success} = 69(1)\%$.
+**Result:** deterministic $F = 52.5(18)\%$; postselected $F = 76(2)\%$ at $p_\text{success} = 69(1)\%$. The theoretical maximum corrected fidelity for the error-detected CZ gate at this cooperativity is **~78%**, consistent with the measured postselected value.
 :::
 
 ### Cavity hardware parameters
@@ -57,7 +57,9 @@ A fundamentally different entanglement mechanism: instead of Rydberg blockade (d
 | Cavity linewidth $\kappa$ (FWHM) | 65(1) MHz |
 | Natural linewidth $\Gamma$ ($^{87}$Rb) | 6 MHz |
 | Cavity length | 100 μm |
-| Qubit readout fidelity | 99.960% (10 μs) / 99.988% (2.5 μs, atom-presence only) |
+| Qubit readout fidelity | 99.960% (10 μs, state-resolved) |
+| Atom-presence readout fidelity | 99.988% (10 μs) / 99.950% (2.5 μs) |
+| Mirror reflectivity | >99.993% (centered ~780 nm) |
 | Readout-induced atom loss | 0.034% |
 | State preparation fidelity | >99% (optical pumping to $|F=1, m_F=0\rangle$) |
 | State preparation time | 18 μs (15 μs D1+D2 pump + 3 μs D1 cleanup) |
@@ -127,7 +129,7 @@ The cooperativity $C = 4g^2/(\kappa\Gamma) = 101$ sets both the success probabil
 
 In standard cavity QED theory, the single-pass photon absorption probability scales as $C/(C+1) \approx 1 - 1/C$ (see e.g. [@tanji-suzuki2011]). However, the carving protocol's 32% success rate depends on multiple factors beyond $C$ alone — pulse sequence design, mode matching, state preparation — so the relationship between $C$ and overall success probability is not a simple $C/(C+1)$ rescaling. *Qualitatively*, increasing $C$ reduces photon loss per cavity interaction and should improve both success rate and fidelity, but the quantitative gain requires detailed modeling of the full protocol. The current finesse of 25,904 degraded from $>40{,}000$ after bakeout misalignment; restoring this alone would increase $C$ by ~50%.
 
-**However, cooperativity is not the sole fidelity limiter.** The paper identifies a $C$-independent fidelity ceiling: only 91.5% of dark-state scattering events produce detectable errors (atoms leaving the qubit manifold). The remaining 8.5% scatter back into $F=1$ Zeeman sublevels that are indistinguishable from the qubit states, producing *undetectable* errors. This caps the carving protocol's theoretical maximum fidelity at **~96.3%** even at infinite $C$. Additional fidelity-limiting mechanisms include off-resonant scattering from the 850 nm trap, $F=3$ state light shifts, imperfect polarization, and level-mixing of excited states. Thus, increasing $C$ improves the *success rate* but does not address the *fidelity ceiling* — resolving the Zeeman-sublevel detection gap (e.g., via sublevel-selective readout or shelving) is required to push carving fidelity beyond ~96%.
+**However, cooperativity is not the sole fidelity limiter.** The paper identifies a $C$-independent fidelity ceiling: only 91.5% of dark-state scattering events produce detectable errors (atoms leaving the qubit manifold). The remaining 8.5% scatter back into $F=1$ Zeeman sublevels that are indistinguishable from the qubit states, producing *undetectable* errors. (The per-atom undetectable branching fraction is 17%, set by Clebsch-Gordan coefficients on the $F=1 \to F'=2$ transition. The 8.5% figure for the two-atom Bell state reflects the probability that a scattering event on either atom returns it to the $F=1$ qubit manifold undetected.) This caps the carving protocol's theoretical maximum fidelity at **~96.3%** even at infinite $C$. Additional fidelity-limiting mechanisms include off-resonant scattering from the 850 nm trap, $F=3$ state light shifts, imperfect polarization, and level-mixing of excited states. Thus, increasing $C$ improves the *success rate* but does not address the *fidelity ceiling* — resolving the Zeeman-sublevel detection gap (e.g., via sublevel-selective readout or shelving) is required to push carving fidelity beyond ~96%.
 
 **Paths to improvement:**
 
