@@ -45,8 +45,11 @@ $$C[\boldsymbol{\theta};\lambda] = \langle \hat{H}_0 \rangle_\theta - \lambda \s
 ### Application 2: Topological phase extension in the Cluster Ising Model (CIM)
 
 - **Parameter range:** CPHL sweeps the CIM coupling parameter $g \in [-1, 1]$, where $g = -1$ is deep in the topological (cluster) phase and $g = 1$ is the ferromagnetic phase.
+- **String-order parameter (cost function target):** The topological phase is detected via the non-local string operator
+$$\hat{\mathcal{O}} = (-1)^N \hat{Z}_1 \hat{Y}_2 \left[\prod_{i=3}^{N-2} \hat{X}_i\right] \hat{Y}_{N-1} \hat{Z}_N$$
+  which takes a finite expectation value in the topological (cluster) phase and vanishes in the ferromagnetic phase. This operator serves as the cost function target for the inverse simulation.
 - **Staircase circuit ansatz:** Depth-$N$ staircase circuits are used for the CIM application. These circuits are classically simulable and can be trained efficiently without barren plateaus — a key advantage over generic variational ansätze. Implementation proceeds through a holographic protocol involving sequential measurements and qubit reset.
-- The cost function targets topological order (string-order parameter); the inverse simulator discovers antiferromagnetic next-nearest-neighbor coupling and a quartic interaction term that suppresses competing ferromagnetism and **extends the topological phase boundary** beyond the bare CIM.
+- The inverse simulator discovers antiferromagnetic next-nearest-neighbor coupling and a quartic interaction term that suppresses competing ferromagnetism and **extends the topological phase boundary** beyond the bare CIM. The phase boundary shift is demonstrated qualitatively in Figure 3(b1); the paper does not quote a numerical boundary location.
 
 ### Application 3: Ring-exchange Hamiltonian learning from dynamical structure factors
 
@@ -60,6 +63,15 @@ $$\omega_{\text{lb}}(k) = -2\pi J |\sin k|, \qquad \omega_{\text{ub}}(k) = -4\pi
 - **Setup:** Same 2-leg Fermi-Hubbard ladder; cost function optimized over a thermal (Gibbs) state at $T \simeq 0.32\,t$ rather than a pure ground state.
 - **Result:** Circuit optimization at $T \simeq 0.32\,t$ yields $d$-wave pair correlations **comparable to those of the zero-temperature Hubbard model** $\hat{H}_0$. The learned Hamiltonian $\hat{H}_{\text{opt}}$ **outperforms $\hat{H}_0$ across the entire temperature range**, demonstrating that the inverse framework is not restricted to pure states and that finite-temperature CPHL is practically viable.
 - **Significance:** This is the only demonstration in the paper using Gibbs states; it validates the theoretical claim that sample complexity is polynomial in $n$ **independent of temperature**.
+
+### Application summary
+
+| Application | System size | Method | Cost function target | Validation | Key result |
+|-------------|------------|--------|---------------------|------------|------------|
+| $d$-wave Hubbard | 2×4 ladder (8 sites), generalized to 2×24 | DMRG + variational | $\langle H_0\rangle - \lambda\sum_r\langle\Delta_1^\dagger\Delta_{1+r}\rangle$ | DMRG across full doping range | Learned off-diagonal hoppings and density–density interactions enhance $d$-wave pairing |
+| CIM topological | $N$ sites (system-size independent) | Exact diag. + CPHL | String-order parameter $\hat{\mathcal{O}}$ | Phase diagram comparison | NNN antiferromagnetic + quartic terms extend topological phase boundary |
+| Ring exchange | 3 spins | SHL from spectral data | Dynamical structure factor | Convergence to target $J_\text{ring}$ | Correct multi-peak spectral structure recovered |
+| Finite-$T$ Hubbard | 2×4 ladder | Gibbs-state optimization | Same as Application 1 | Temperature sweep | $\hat{H}_\text{opt}$ outperforms $\hat{H}_0$ across all $T$ |
 
 ### General results
 
@@ -112,7 +124,11 @@ SHL (Spectral Hamiltonian Learning) works at discrete parameter points and can e
 
 For eventual experimental realization, readout fidelity becomes the dominant hardware constraint. Readout errors reduce the effective number of informative samples; the variance of learned Hamiltonian coefficients scales as
 $$\text{Var}[\hat{h}_k] \propto \frac{1}{\eta_{\text{ro}}^2 \cdot N_{\text{shots}}}$$
-(standard measurement statistics — not stated in the paper). Halving the readout infidelity from 4% to 2% reduces the required shot count by $4\times$. Gate errors primarily affect state preparation quality but do not fundamentally change the measurement inversion problem.
+
+:::{.callout-warning icon="false"}
+## Editorial note
+The variance scaling above is a standard result from measurement statistics — **it is not stated in the paper**. The paper discusses readout fidelity requirements only qualitatively.
+::: Halving the readout infidelity from 4% to 2% reduces the required shot count by $4\times$. Gate errors primarily affect state preparation quality but do not fundamentally change the measurement inversion problem.
 
 **Paths to improvement:**
 
@@ -139,6 +155,6 @@ $$\text{Var}[\hat{h}_k] \propto \frac{1}{\eta_{\text{ro}}^2 \cdot N_{\text{shots
 
 **Architecture table note:** The "448 qubits" entry refers to the 4-zone platform [@bluvstein2025faulttolerant]; the 99.5% CZ fidelity is from the 3-zone benchmark [@bluvstein2024logical]. These are from different generations — the inverse simulation proposal targets future hardware combining both.
 
-<!-- TODO: Extract quantitative CIM topological phase boundary shift from Figure 3(b1) — paper shows extension qualitatively but provides no numerical boundary location. -->
-<!-- TODO: Extract recovered J_ring value from Figure 4 — paper states convergence to "target value" but does not quote the number in the main text. -->
+<!-- RESOLVED: CIM phase boundary shift — paper shows extension qualitatively in Fig 3(b1) but provides no numerical boundary location. No number to extract. -->
+<!-- RESOLVED: J_ring value — paper shows graphical convergence in Fig 4 but does not quote the number in main text. No number to extract. -->
 <!-- NOTE: The paper provides no quantitative circuit resource estimate (qubit count, gate depth, shot budget) for experimental demonstration. Resource requirements are discussed qualitatively only. -->
