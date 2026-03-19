@@ -73,10 +73,10 @@ The domain-wall density oscillations in Fig. 3 of the paper decay with an estima
 ## Experiment Protocol
 
 1. **Load:** 51 $^{87}$Rb atoms into a 1D optical tweezer chain (spacing $a = 5.74\ \mu\text{m}$ for Z₂ experiments); post-select on filled configurations (~60% per-site loading probability, no real-time rearrangement).
-2. **Prepare:** Adiabatically sweep detuning from $\Delta \ll 0$ (paramagnetic) to $\Delta > 0$ (Z₂/Z₃ ordered phase) over $\sim 1\ \mu\text{s}$ while ramping $\Omega$.
+2. **Prepare:** Adiabatically sweep detuning from $\Delta \ll 0$ (paramagnetic) to $\Delta > 0$ (Z₂/Z₃ ordered phase) over $\sim 1\ \mu\text{s}$ while ramping $\Omega$. For 51 atoms, the perfect $\mathbb{Z}_2$ state is obtained with probability $P = 0.11(2)\%$ raw ($0.9(2)\%$ corrected for detection fidelity), with an average of 9.01(2) domain walls (5.4 after maximum-likelihood correction). For a 7-atom cluster, fidelity reaches 54(4)% raw (77(6)% corrected).
 3. **Quench (for scar experiments):** From the adiabatically prepared $\mathbb{Z}_2$ state (at large $\Delta > 0$), suddenly set $\Delta = 0$ at $t = 0$ with $\Omega = 2\pi \times 2$ MHz, evolving in the disordered/critical regime.
 4. **Evolve:** Hold for variable post-quench time $t \in [0,\ 1.2\text{–}1.5\ \mu\text{s}]$ (the total experimental window including the adiabatic ramp is ~3 μs; the quench evolution window shown in Fig. 3 is ~1.2–1.5 μs).
-5. **Measure:** Turn off all fields; image atoms via single-photon fluorescence. Repeat per time point; the Z₂ probability distribution figure (Fig. 5c) used **18,439 realizations**.
+5. **Measure:** Turn off all fields; image atoms via single-photon fluorescence. Repeat ~1,000 realizations per time point for domain-wall density measurements; the Z₂ probability distribution figure (Fig. 5c) used **18,439 realizations**.
 :::
 
 
@@ -108,6 +108,9 @@ with $n_i = \frac{1}{2}(1 + \sigma_i^z)$. Relevant parameters from the paper:
 | Atom temperature | ~12 μK |
 | Trap depth | ~1 mK |
 | Coherence (spin echo) | $> 5\ \mu\text{s}$ (no visible decay) |
+| Z₂ preparation fidelity (51 atoms) | $P = 0.11(2)\%$ raw; $0.9(2)\%$ detection-corrected; 9.01(2) domain walls raw, ~5.4 corrected |
+| Z₂ preparation fidelity (7 atoms) | 54(4)% raw; 77(6)% detection-corrected |
+| Shots per time point | ~1,000 realizations |
 | Rabi frequency inhomogeneity | ~3% (spatial variation across chain) |
 | Rydberg laser linewidth (PDH) | $< 0.5$ kHz |
 | Experimental cycle time | ~250 ms |
