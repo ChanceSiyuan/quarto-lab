@@ -15,6 +15,8 @@ draft: true
 
 **Architecture:** 1-zone analog (Harvard lab), same apparatus as [@bernien2017probing]
 
+**Platform:** $^{87}$Rb atoms; ground state $|5S_{1/2}, F=2, m_F=-2\rangle$, Rydberg state $|70S_{1/2}, m_J=-1/2\rangle$ via two-photon excitation through $|6P_{3/2}, F=3, m_F=-3\rangle$ (420 nm + 1013 nm lasers)
+
 ## What was done
 
 Using the same 51-atom 1D Rydberg chain as Bernien 2017, slow detuning sweeps across quantum phase transitions to measure defect formation governed by the Kibble-Zurek mechanism:
@@ -51,6 +53,7 @@ Using the same 51-atom 1D Rydberg chain as Bernien 2017, slow detuning sweeps ac
 | Readout fidelity | ~95% (not quoted in paper; inherited from [@bernien2017probing]) | ~99% | Not a Keesling 2019 measurement |
 | Initial detuning $\Delta_0$ | −2.5 MHz | — | Ω ramp: linear turn-on over 1 μs |
 | Blockade radii probed | $R_b/a \in \{1.69, 1.81, 2.16, 2.43\}$ | — | Selects $\mathbb{Z}_2$, $\mathbb{Z}_3$, $\mathbb{Z}_4$ phases |
+| Rydberg state | $|70S_{1/2}, m_J=-1/2\rangle$ | $|70S_{1/2}\rangle$ | Two-photon: 420 nm + 1013 nm via $|6P_{3/2}\rangle$ |
 | Sites analyzed | 35 (central; 8 edge sites discarded per end) | — | Bulk analysis only |
 
 **Hardware upgrade over Bernien 2017:** Same 51-atom 1D apparatus; key addition is programmable variable-rate detuning sweeps and MPS simulation comparison. No architectural change — the upgrade is in the measurement protocol.
@@ -85,7 +88,7 @@ Why this matters for the exponent extraction:
 - **Slow sweeps ($v \lesssim 4$ MHz/μs):** Decoherence adds excess domain walls, flattening the $\log n_d$ vs. $\log v$ slope and pulling the fitted $\mu$ upward from its true value.
 - The accessible slow-sweep range is set by the coherence time of the apparatus, not the atom count.
 
-**How improving it helps:** Longer laser coherence (PDH-stabilized cavities, as in [@manovitz2025coarsening]) extends the accessible slow-sweep window, filling in the decades of sweep rate needed for a precision exponent fit — especially for the $\mathbb{Z}_3$ and $\mathbb{Z}_4$ transitions where no error bars on $\mu$ could be reported. System size improvements (larger 2D arrays) help with finite-size effects but do not address the primary bottleneck.
+**How improving it helps:** Longer laser coherence (PDH-stabilized cavities, as in [@manovitz2025coarsening]) extends the accessible slow-sweep window. Quantitatively: the current slow-sweep floor sits at $s \approx 3.5$–$4.6$ MHz/μs, corresponding to total sweep durations of $\sim 2$–$3$ μs (comparable to the estimated $T_2 \sim 10$ μs coherence). A ×20–100× improvement in $T_2$ (to $\sim 0.2$–$1$ ms, as demonstrated in [@manovitz2025coarsening]) would push the decoherence floor down to sweep rates of $\sim 0.05$–$0.2$ MHz/μs — adding roughly **1–2 decades** of accessible slow-sweep range. This would enable precision extraction of $\mu$ for the $\mathbb{Z}_3$ and $\mathbb{Z}_4$ transitions (where no error bars could be reported) and allow direct observation of the adiabatic limit. System size improvements (larger 2D arrays) help with finite-size effects but do not address the primary bottleneck.
 
 ## Completeness check
 
@@ -106,7 +109,7 @@ Why this matters for the exponent extraction:
 | $\mathbb{Z}_3$ | 2.16 | −2.5 | 5.5 | 4.6 | 19.7 |
 | $\mathbb{Z}_4$ | 2.43 | −2.6 | 5.4 | 4.6 | 19.7 |
 
-$\Omega$ ramp: linear turn-on over 1 μs at fixed $\Delta_0$. Note: $\Omega/2\pi$ is not quoted in this paper; the blockade radius $R_b$ is set by adjusting interatomic spacing $a$ at fixed $\Omega$ (Methods). For the Rabi frequency of this apparatus, see [@bernien2017probing] ($\Omega/2\pi \approx 1.3$ MHz in Bernien 2017's single-frequency standing-wave trap).
+$\Omega$ ramp: linear turn-on over 1 μs at fixed $\Delta_0$. Note: $\Omega/2\pi$ is **not quoted** in this paper; the blockade radius $R_b$ is set by adjusting interatomic spacing $a$ at fixed $\Omega$ (Methods). The value $\Omega/2\pi \approx 1.3$ MHz is **inferred** from [@bernien2017probing] (same apparatus, same standing-wave trap), not directly measured in this experiment.
 
 **Slow-sweep floor (decoherence-limited):** At the slowest sweep rates, deviations from KZ scaling are observed. Per the paper's Methods, this is a **decoherence floor** — slow sweeps accumulate more dephasing and spend more time near the critical point where correlations are noise-sensitive. MPS simulations (no noise, same 51-site geometry) reproduce fast-sweep data but deviate below the slow-sweep data, confirming the floor is decoherence-dominated, not finite-size-dominated.
 
