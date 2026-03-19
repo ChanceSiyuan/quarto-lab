@@ -49,12 +49,14 @@ At the target point $\Delta/\Omega \approx 4$, approximately 80% of vertices are
 
 | Parameter | Semeghini 2021 | SOTA 1-zone (Manovitz 2025) | 3-zone (Bluvstein 2024) | Notes |
 |-----------|---------------|---------------------------|------------------------|-------|
-| Atom count | 219 (2D kagome) | ~300 (2D) | 280 | Comparable scale |
+| Atom count | 219 (2D kagome) | 256 (16×16, Manovitz 2025) | 280 | Comparable scale |
 | Lattice | Kagome (links) | Various | Reconfigurable | Geometry flexibility via SLM |
 | Readout fidelity | 99% | ~99% | 99.8% (spin-to-position) | Bottleneck 3 in review; 3-zone readout would dramatically improve string operator signals |
 | Rydberg lifetime | $\sim 80\,\mu$s | — | — | Sweep duration ($\sim 2\,\mu$s) $\ll$ lifetime; not the bottleneck |
 | Coherence limit | Ground-state scattering $\sim 150\,\mu$s (420 nm) | — | — | Also not limiting given $\sim 2\,\mu$s sweep |
 | Measurement bases | $Z$ and $X$ (global rotation) | $Z$ only (typical) | Mid-circuit readout | Required global $\pi/2$ pulse for $X$-basis |
+
+**Bottleneck 1 relevance:** The review identifies thermal position fluctuation ($\sigma_{x,y} \approx 0.2\,\mu$m) as producing ~30% nearest-neighbor interaction energy spread at $R \approx 4\,\mu$m. This experiment operates at $a = 3.9\,\mu$m — *below* the review's nominal minimum, so $\delta V/V \approx 6 \times 0.2/3.9 \approx 31\%$. This interaction spread contributes to the finite density of monomer/double-dimer defects (~20% of vertices) and limits the fidelity of the quasi-adiabatic sweep. Improved atom cooling or larger lattice spacing would reduce defect density but also weaken the blockade constraint.
 
 No new hardware was introduced — this experiment runs on exactly the Ebadi 2021 apparatus. The innovation is entirely in the *protocol* (what to measure and how to interpret it).
 
@@ -124,7 +126,21 @@ The two families of string operators probed are:
 
 The joint observation — both $\langle \hat{W}_Z \rangle \neq 0$ and $\langle \hat{W}_X \rangle \neq 0$ simultaneously — is the experimental signature of $\mathbb{Z}_2$ topological order. Neither alone is sufficient (a $Z_2$ paramagnet has trivial $\langle \hat{W}_X \rangle$; a VBS has trivial $\langle \hat{W}_Z \rangle$).
 
-The post-selection fraction for $X$-basis shots is not reported explicitly in the paper.
+### Measured string operator values (from Figs. 2–4)
+
+| Observable | Loop size | Value at $\Delta/\Omega \approx 3.5$–$4$ | Source |
+|-----------|-----------|--------------------------------------|--------|
+| $\langle \hat{W}_Z \rangle$ (closed) | 6 enclosed vertices (12 atoms) | $\approx 0.12$ | Fig. 2C |
+| $\langle \hat{W}_Z \rangle$ (closed) | 15 enclosed vertices (20 atoms) | $\approx 0.02$ | Fig. 2C |
+| $\langle \hat{W}_Z \rangle$ (closed) | 19 enclosed vertices (22 atoms) | $\lesssim 0.01$ | Fig. 2E |
+| $\langle \hat{W}_X \rangle$ (closed) | smallest hexagonal loop (12 atoms) | $\approx 0.15$ | Fig. 3F |
+| $\langle \hat{W}_X \rangle$ (closed) | largest loop (28 atoms) | $\approx 0.05$ | Fig. 3F inset |
+| $\langle Z \rangle_\text{FM}$ (open, FM-normalized) | longest strings | $\approx 0$ (consistent with zero) | Fig. 4F |
+| $\langle X \rangle_\text{FM}$ (open, FM-normalized) | longest strings | $\to 0$ for $\Delta/\Omega \gtrsim 3.3$ | Fig. 4G |
+| $\langle Z \rangle^{1/\text{perim}}$ | 12–22 atom loops, $\Delta/\Omega = 3.6$ | $\approx 0.75$–$0.80$ | Fig. 4H |
+| $\langle X \rangle^{1/\text{perim}}$ | 12–28 atom loops, $\Delta/\Omega = 3.5$ | $\approx 0.80$–$0.90$ | Fig. 4I |
+
+The post-selection fraction for $X$-basis shots and the number of experimental shots per data point are not reported in the paper (the text states only "averaging over many experimental repetitions").
 
 ## Towards a topological qubit (Fig. 5)
 
@@ -135,7 +151,7 @@ Two logical operators are defined:
 - **$Z_L$**: a $Z$-type string operator connecting the hole to the boundary. It takes opposite signs in the two topological sectors ($+1$ in sector 0, $-1$ in sector 1), so $\langle Z_L \rangle = 0$ indicates an equal superposition of sectors.
 - **$X_L$**: an $X$-type string operator around the hole. $\langle X_L \rangle > 0$ indicates coherence *between* the two sectors — the state has overlap with $|+\rangle_L = (|0\rangle_L + |1\rangle_L)/\sqrt{2}$.
 
-**Measured results** (Fig. 5B): In the QSL window ($\Delta/\Omega \approx 4$), $\langle Z_L \rangle \approx 0$ and $\langle X_L \rangle > 0$, consistent with the system being initialized near the $|+\rangle_L$ logical state. This is expected because the adiabatic sweep preserves the $\mathbb{Z}_2$ symmetry that exchanges sectors.
+**Measured results** (Fig. 5B): In the QSL window ($\Delta/\Omega \approx 3.5$–$4.5$), $\langle Z_L \rangle \approx 0$ and $\langle X_L \rangle \approx 0.04$–$0.05$, consistent with the system being initialized near the $|+\rangle_L$ logical state. The $\langle X_L \rangle$ signal is small but finite and clearly distinguishable from zero in the QSL window. Inter-string correlations $\langle Z_1 Z_2 \rangle$ between hole-to-boundary strings reach $\approx 0.10$ for nearest pairs, decreasing with string separation (Fig. 5C). This is expected because the adiabatic sweep preserves the $\mathbb{Z}_2$ symmetry that exchanges sectors.
 
 **Inter-string correlations** (Fig. 5C): Correlations $\langle Z_1 Z_2 \rangle$ between two $Z$-strings connecting the hole to the boundary are finite and identical in both sectors, confirming the topological (non-local) nature of the encoding.
 
@@ -149,5 +165,3 @@ The key open question is whether the observed signals are consistent with a **tr
 - A VBS with correlation length $\xi \gg$ system size would show similar string operator behavior: perimeter-law $Z$ and $X$ parities that look topological but are actually short-range entangled.
 - The paper argues that (a) the signals persist over a wide $\Delta/\Omega$ window, (b) the topology-dependence check (trivial vs. non-trivial boundary conditions) is consistent with topological origin, and (c) DMRG numerics confirm the QSL ground state in this parameter regime.
 - The debate is not fully resolved experimentally — finite-size scaling with larger systems and improved adiabaticity would be needed to conclusively distinguish QSL from VBS.
-
-The number of experimental shots per data point is not reported in the paper.
