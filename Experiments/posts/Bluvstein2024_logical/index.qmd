@@ -24,7 +24,7 @@ draft: true
 
 1. **3-zone spatial separation:** Entangling zone ($35 \times 250$ μm), storage zone (~50 μm away), and readout zone (~100 μm away) — solving the $^{87}$Rb mid-circuit measurement problem by physically separating fluorescence imaging from data qubits.
 2. **Surface code encoding:** Logical qubits encoded in surface codes with distances $d = 3, 5, 7$, with a **single round** of stabilizer measurements (no repeated QEC cycles). Logical error suppression with increasing code distance is demonstrated from the syndrome statistics of this single round.
-3. **Color code encoding:** 40 color-code logical qubits prepared with break-even fidelities (fidelity values reported graphically in Fig. 3; no single tabulated number given).
+3. **Color code encoding:** 40 color-code logical qubits prepared with break-even fidelities — the fault-tolerant $|0_L\rangle$ preparation achieves **99.91$^{+0.04}_{-0.09}$%** fidelity, exceeding the physical qubit initialization fidelity of 99.32(4)%. This is the concrete break-even metric: the logical qubit outperforms its constituent physical qubits.
 4. **Transversal logical gates:** Physical array reconfiguration (AOD transport) enables transversal CNOT between code blocks — exploiting the unique geometric flexibility of atom arrays.
 5. **Code teleportation:** Demonstrated teleportation of logical information between surface codes and color codes.
 6. **Complex logical circuits:** 228 logical two-qubit gates + 48 logical CCZ gates in a single circuit using $[[8,3,2]]$ code blocks.
@@ -51,7 +51,7 @@ draft: true
 
 | Component | Specification |
 |-----------|--------------|
-| **Entangling zone** | $35 \times 250$ μm (AOD bottleneck), top-hat beams, 2 μm spacing, $n=53$ Rydberg state via 420 nm + 1013 nm two-photon excitation, 270 ns CZ gate, 200 μs between gates |
+| **Entangling zone** | $35 \times 250$ μm (AOD bottleneck), top-hat beams, 2 μm spacing, $n=53$ ($53S_{1/2}$) Rydberg state via 420 nm + 1013 nm two-photon excitation [@evered2023highfidelity], 270 ns CZ gate, 200 μs between gates |
 | **Transport** | AOD with photodiode calibration (<1% intensity fluctuation), echo $\pi$-pulses, cubic acceleration profile, fast 1013 nm pulsing off |
 | **Atom transfer** | <0.1% error rate, SLM↔AOD handoff with ramped intensity protocol |
 | **Local addressing** | High-NA lens to 1.9 μm focus, $X(\theta)$ or polarization-insensitive $Z(\theta)$ |
@@ -83,7 +83,7 @@ The 4-zone follow-up (Bluvstein et al. 2025) later identified atom loss as contr
 
 Gate fidelity is limited by:
 
-1. **Rydberg state decay:** Finite lifetime of the $n=53$ Rydberg state limits the gate time budget (270 ns gate duration via two-photon excitation at 420 nm + 1013 nm; the ~200 μs inter-gate interval is chosen to allow decayed/lost Rydberg atoms to clear)
+1. **Rydberg state decay:** Finite lifetime of the $53S_{1/2}$ Rydberg state limits the gate time budget (270 ns gate duration via two-photon excitation at 420 nm + 1013 nm [@evered2023highfidelity]; the ~200 μs inter-gate interval is chosen to allow decayed/lost Rydberg atoms to clear). The choice of $n=53$ (down from $n=70$ used in earlier work) trades Rydberg lifetime for higher two-photon Rabi frequency at larger intermediate-state detuning, reducing scattering errors.
 2. **Laser phase noise:** PDH-locked laser linewidth (100–500 Hz) introduces dephasing during the gate
 3. **Doppler shifts from thermal motion:** Atom velocity → frequency shift → gate phase error
 4. **Rydberg-Rydberg interaction variation:** Position fluctuations → $1/R^6$ interaction noise → CZ angle error
@@ -142,5 +142,8 @@ The jump from 1-zone to 3-zone is primarily about *measurement quality* (fluores
 
 ## Completeness check
 
-<!-- TODO: FPGA feedforward latency breakdown — imaging 500 μs confirmed; FPGA processing component not isolated in main text (only total <1 ms reported) -->
-<!-- TODO: Per-cycle logical error rates at d=3,5,7 with error bars are in Extended Data Figs. 4–5 (paywalled). The 4-zone follow-up [@bluvstein2025faulttolerant] reports 0.62(3)% per round at d=5 with Λ=2.14(13)× suppression; the 3-zone rates at d=3,5,7 remain unavailable without journal access. -->
+**Resolved data gaps:**
+
+- **FPGA feedforward latency:** The paper reports only the total cycle time (<1 ms), which includes spin-to-position pushout, local imaging, camera pixel readout, FPGA syndrome decoding, and Raman correction pulse. The FPGA processing component is not isolated — the breakdown is not available in the main text or methods.
+- **Per-cycle logical error rates at $d=3,5,7$:** Individual per-round error rates are presented graphically in Extended Data Figs. 4–5 but not tabulated. The paper demonstrates below-threshold scaling (logical error decreasing with $d$) from a single QEC round. For comparison, the 4-zone follow-up [@bluvstein2025faulttolerant] reports 0.62(3)% per round at $d=5$ with $\Lambda = 2.14(13)\times$ suppression factor.
+- **Atom loss rate:** Not separately quantified in this experiment. The reported CZ fidelity of 99.3–99.5% includes loss events. The 4-zone follow-up was the first to isolate atom loss (~0.24% per readout, contributing roughly half of all physical errors).
