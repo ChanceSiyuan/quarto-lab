@@ -23,7 +23,7 @@ Quantum Extreme Reservoir Computing (QERC) on QuEra's Aquila — a cloud-accessi
 ## Experiment Protocol
 
 1. **Data encoding:** Classical input data is encoded into local detuning patterns applied to individual atoms ($\Delta_l^\text{max} = -8$ MHz for Santa Fe; 8 PCA features for MNIST), with a position encoding scale $\lambda$ controlling the geometry: $\lambda = 3$ (MNIST), $1.5$ (Santa Fe position), $4.0$ (Tomato). The $C_6$ interaction coefficient is $C_6 = 862690 \times 2\pi$ MHz·μm$^6$.
-2. **Analog evolution:** The Rydberg blockade Hamiltonian evolves the system for a fixed time $T$ (task-dependent: 1.5–3.5 μs), generating complex many-body correlations from the encoded input. Rabi frequencies: $\Omega = 2\pi$ MHz (MNIST), $3\pi$ MHz (Santa Fe), $5\pi$ MHz (Tomato). Global detuning: $\Delta_g = 2\pi$ MHz (MNIST), $4$ MHz (Santa Fe), $5\pi$ MHz (Tomato).
+2. **Analog evolution:** The Rydberg blockade Hamiltonian evolves the system for a fixed time $T$ (task-dependent: 1.5–3.5 μs), generating complex many-body correlations from the encoded input. Rabi frequencies: $\Omega = 2\pi$ MHz (MNIST; also Santa Fe position encoding), $3\pi$ MHz (Santa Fe local-pulse encoding), $5\pi$ MHz (Tomato). Global detuning: $\Delta_g = 2\pi$ MHz (MNIST), $4$ MHz (Santa Fe), $5\pi$ MHz (Tomato).
 3. **Measurement and readout:** Single-shot projective measurements in the $Z$ basis; expectation values of local observables $\langle n_i \rangle$ and correlators $\langle n_i n_j \rangle$ are estimated from a task-dependent number of shots: ~40 shots (synthetic kernel advantage benchmark), ~220 shots (MNIST binary best result), up to ~1,000 shots (saturation point beyond which accuracy no longer improves).
 4. **Classical post-processing:** A simple linear classifier (ridge regression) trained on the measurement features performs the final classification/regression task.
 5. **Scaling study:** Tested with up to 108 qubits — the largest quantum machine learning experiment at the time of publication.
@@ -110,7 +110,8 @@ where $\delta_0$ is the applied local detuning and $\theta$ is a beam-quality pa
 | Evolution time — Santa Fe | 10 timesteps × 0.35 μs | **3.5 μs** | — |
 | Evolution time — Tomato | 5 timesteps × 0.3 μs | **1.5 μs** | — |
 | Rabi frequency $\Omega$ — MNIST | | **$2\pi$ MHz** | — |
-| Rabi frequency $\Omega$ — Santa Fe | | **$3\pi$ MHz** | — |
+| Rabi frequency $\Omega$ — Santa Fe (position enc.) | | **$2\pi$ MHz** | — |
+| Rabi frequency $\Omega$ — Santa Fe (local-pulse enc.) | | **$3\pi$ MHz** | — |
 | Rabi frequency $\Omega$ — Tomato | | **$5\pi$ MHz** | — |
 | Ramp time (up/down) | | **0.05 μs** each | — |
 | Local detuning amplitude (Santa Fe) | $\Delta_l^\text{max}$ | **−8 MHz** | — |
@@ -132,4 +133,4 @@ where $\delta_0$ is the applied local detuning and $\theta$ is a beam-quality pa
 | 2D correlator restriction | Large-scale 2D: nearest-neighbor $\langle n_i n_j \rangle$ only | — | — |
 
 <!-- TODO: The paper does not provide a closed-form relationship between reservoir expressivity and blockade constraint strength. This would require independent theoretical work beyond the scope of these notes. -->
-<!-- TODO: Compare with other QRC experiments (superconducting: Suzuki 2022, photonic: Nokkala 2021) — refs not yet in refs.bib. -->
+<!-- NOTE: Other QRC experiments exist (superconducting: Suzuki 2022, photonic: Nokkala 2021) but use fundamentally different encodings and tasks, making direct numerical comparison of limited value. The key distinction of this work is scale (108 qubits) and gradient-free operation. -->
