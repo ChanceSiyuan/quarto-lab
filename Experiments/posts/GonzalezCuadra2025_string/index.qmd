@@ -23,7 +23,7 @@ draft: true
 3. **Phase-diagram scan:** Global detuning swept over $R_b/a \in [1.2, 1.8]$ ($a$ tuned 4.7–7 µm) on a **59-atom** kagome patch to map the confinement–deconfinement phase diagram.
 4. **Resonance scan ($d = 3$):** **39-atom** array; local detuning $\delta_0$ scanned to find the string-breaking resonance at $2\delta_0 = V_1$.
 5. **Quench dynamics ($d = 2$):** **31-atom** array; sudden quench from string state to deconfined regime; up to **1.6 µs** allocated for quench observation (main figures show snapshots at $t = 0.4\,\mu$s); the adiabatic sweep is reduced from 2.5 µs to 1.5 µs to free this window.
-6. **Readout:** per-atom fluorescence imaging; fidelity 0.95 (Rydberg), 0.99 (ground state).
+6. **Readout:** per-atom fluorescence imaging; fidelity $\sim 0.95$ (Rydberg), $\sim 0.99$ (ground state) — values from the Aquila platform spec [@wurtz2023aquila], not reported in this paper.
 :::
 
 
@@ -53,7 +53,7 @@ Simulation of a (2+1)D $U(1)$ lattice gauge theory using native Rydberg interact
 | Atom count | 31–59 (kagome, 3 configurations) | up to 180 | ~200–300 (square) | Aquila has 256-site ceiling; Harvard lab is unbounded |
 | Blockade radius | $R_b = 8.4\,\mu$m ($70S_{1/2}$) | Similar | Similar | Same Rb platform |
 | Lattice constant | $a \approx 4.7$–$7\,\mu$m ($R_b/a \in [1.2, 1.8]$) | ~5 µm | ~5 µm | Tuned to scan phase diagram |
-| Readout fidelity | 0.95 (Rydberg) / 0.99 (ground) | ~0.99 | ~0.99 | Rydberg-state readout lower |
+| Readout fidelity | $\sim 0.95$ / $\sim 0.99$ (from [@wurtz2023aquila]) | ~0.99 | ~0.99 | Values from Aquila white paper, not this paper |
 | Evolution time | up to $1.6\,\mu$s (quench); $3\,\mu$s total adiabatic | Comparable | Comparable | Quench window freed by shortening adiabatic sweep |
 | Local addressing | Yes — local detuning beams | No (global) | Yes | Required for charge creation; AC Stark decoherence |
 | Platform | QuEra Aquila (cloud) | QuEra Aquila (cloud) | Harvard lab | Cloud vs. lab apparatus |
@@ -88,13 +88,13 @@ Two coupled bottlenecks dominate:
 | Kagome patch (phase diagram) | 59 atoms ($L_0 = L_1 = 5$ unit cells) |
 | Kagome patch ($d=3$ resonance) | 39 atoms ($L_0 = 6$, $L_1 = 3$ unit cells) |
 | Kagome patch ($d=2$ dynamics) | 31 atoms ($L_0 = 5$, $L_1 = 3$ unit cells) |
-| Lattice constant $a$ | 4.7–7 µm (tuned via AOD) |
+| Lattice constant $a$ | 4.7–7 µm (computed from $R_b/a \in [1.2, 1.8]$ with $R_b = 8.4\,\mu$m; paper reports $R_b/a$ range, not $a$ directly) |
 | Blockade radius $R_b$ | 8.4 µm ($^{87}$Rb $70S_{1/2}$) |
 | $C_6/2\pi$ | $862{,}690\,\text{MHz}\cdot\mu\text{m}^6$ |
-| Readout fidelity (Rydberg / ground) | 0.95 / 0.99 |
+| Readout fidelity (Rydberg / ground) | $\sim 0.95$ / $\sim 0.99$ (from Aquila white paper [@wurtz2023aquila]; not reported in this paper) |
 | $\Omega_\text{max}/2\pi$ | 2.5 MHz |
 | $T_2^*$ (Aquila platform) | $\approx 5.5\,\mu$s (from Aquila white paper [@wurtz2023aquila]; not reported in this paper) |
-| Adiabatic prep time | 3 µs total (2.5 µs linear sweep + 0.5 µs ramp); reduced to 1.5 µs sweep for quench protocol |
+| Adiabatic prep time | 3 µs total (2.5 µs linear sweep + 0.5 µs ramp); reduced to 1.5 µs sweep for quench protocol (from Extended Data Fig. 1, not main text) |
 | Quench evolution window | up to 1.6 µs allocated; main figures show snapshots at $t = 0.4\,\mu$s |
 | Resonance width $\Delta\delta_0/\Omega$ | Not quantitatively reported in main text |
 | Resonance peak $\delta_0/\Omega$ ($d=2$) | 1.4(1) exp. vs. 1.0 theory |
