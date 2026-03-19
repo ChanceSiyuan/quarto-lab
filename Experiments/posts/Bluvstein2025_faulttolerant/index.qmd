@@ -41,7 +41,7 @@ draft: true
 - **Loss-aware ML decoder:** $1.73(13)\times$ improvement over loss-unaware decoding. The paper states directly that "roughly half of our errors being loss" [@bluvstein2025mechanisms], consistent with 0.24% loss/readout × 448 atoms ≈ 1.1 atoms lost per round dominating the error budget.
 - **Superchecks:** When a data qubit is lost, product of stabilizer generators sharing the lost qubit cancels the lost-qubit operator, yielding a measurable "supercheck" on remaining neighbors. This enables continued QEC with degraded but nonzero code distance.
 - **Universal logic via teleportation:** The $[[15,1,3]]$ Reed-Muller code enables transversal T gates; combined with transversal CNOT (surface code) and lattice surgery, this completes a universal fault-tolerant gate set. No standalone T-gate logical error rate is reported; the T gate is only characterized as part of composite circuits.
-- **Lattice surgery vs. transversal CNOT:** Transversal CNOT achieves lower logical error than lattice surgery. Lattice surgery is "significantly more sensitive to injected measurement errors" [@bluvstein2025mechanisms] because it relies on additional ancilla measurements that compound with the dominant loss channel.
+- **Lattice surgery vs. transversal CNOT:** A transversal CNOT applies physical CNOT gates qubit-by-qubit between two code blocks — no extra ancillas needed. Lattice surgery instead merges and splits code patches via ancilla measurements along a shared boundary, then uses classical corrections. Because lattice surgery introduces additional measurement rounds (each subject to the 0.24% atom-loss channel), it is "significantly more sensitive to injected measurement errors" [@bluvstein2025mechanisms] and achieves higher logical error than transversal CNOT in this experiment.
 - **High-rate codes:** Up to 96 distance-4 logical qubits using $[[16,6,4]]$ codes — demonstrating that high encoding rates are achievable. Per-round error rate is not isolated but is reported as comparable to $[[7,1,3]]$ Steane codes.
 
 ## Scientific significance
@@ -62,7 +62,7 @@ draft: true
 | **Shielding** | Geometric separation only | 1529 nm shielding beam (6 GHz shift) | Tighter zone spacing |
 | **Cooling** | None between circuits | 1D cooling at 8.6 G bias | Maintains trap lifetime through QEC rounds |
 | **Array size** | 280 physical qubits | 448 physical qubits | 60% more qubits |
-| **Decoder** | Correlated MWPM (with post-selection) | Loss-aware RNN | 1.73× improvement over loss-unaware decoding |
+| **Decoder** | Correlated decoding (with post-selection on atom loss) | Loss-aware RNN | 1.73× improvement over loss-unaware decoding |
 | **QEC rounds** | Single round | Up to 41 consecutive syndrome rounds; 27-layer deep circuits | Endurance for deep circuits |
 
 
@@ -75,6 +75,8 @@ The 0.24(2)% atom loss per readout is the dominant error source:
 - 448 atoms × 0.24% loss/round ≈ 1.1 atoms lost per QEC round
 - 196-atom reservoir sustains ~100+ rounds before depletion *(the naive 196/1.1 ≈ 178 overcounts because gate errors and transport losses also contribute to attrition; the paper demonstrates up to 41 consecutive syndrome extraction rounds and 27-layer deep circuits before the reservoir runs low)*
 - ~50% of all decoder failures are loss-related
+
+Beyond atom loss, the readout exhibits a strong **state-dependent asymmetry**: dark-state (spin-down) error is 0.87(7)% vs bright-state (spin-up) error of 0.05(5)% — a $17\times$ asymmetry. This arises from differential AC Stark shifts in the 795 nm pinning lattice, which preferentially scatter the dark state. The combined readout bit-flip rate of 0.46(4)% is dominated by the dark-state channel, so reducing the dark-state error (e.g., via a magic-wavelength lattice or improved state preparation) would yield outsized gains.
 
 Reducing loss per readout from 0.24% to 0.05% would:
 
@@ -104,7 +106,7 @@ The $d=5$ error rate on loss-free shots ($\approx 0.1\%$/round) is consistent wi
 | Gate / operation | Fidelity / error | Source |
 |------------------|-----------------|--------|
 | Single-qubit (SCROFULOUS) | $5 \times 10^{-5}$ scattering error/pulse; ~5 μs duration | [@bluvstein2025mechanisms] |
-| Two-qubit CZ | ~99.5% (not re-benchmarked; deferred to Evered 2023 apparatus) | Evered 2023 [Ref. 36 therein] |
+| Two-qubit CZ | ~99.5% (not re-benchmarked in this work) | [@evered2023highfidelity] |
 | Readout bit-flip | 0.46(4)% | [@bluvstein2025faulttolerant] |
 | Atom loss per readout | 0.24(2)% | [@bluvstein2025faulttolerant] |
 | Atom loading efficiency | 75% (gray molasses D1 cooling) | [@bluvstein2025mechanisms] |
