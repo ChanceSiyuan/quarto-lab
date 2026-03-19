@@ -61,7 +61,7 @@ draft: true
 | **Shielding** | Geometric separation only | 1529 nm shielding beam (6 GHz shift) | Tighter zone spacing |
 | **Cooling** | None between circuits | 1D cooling at 8.6 G bias | Maintains trap lifetime through QEC rounds |
 | **Array size** | 280 physical qubits | 448 physical qubits | 60% more qubits |
-| **Decoder** | Standard MWPM | Loss-aware RNN | 1.73× improvement |
+| **Decoder** | Correlated MWPM (with post-selection) | Loss-aware RNN | 1.73× improvement over loss-unaware decoding |
 | **QEC rounds** | Single round | Up to 41 rounds | Endurance for deep circuits |
 
 
@@ -72,7 +72,7 @@ draft: true
 The 0.24(2)% atom loss per readout is the dominant error source:
 
 - 448 atoms × 0.24% loss/round ≈ 1.1 atoms lost per QEC round
-- 196-atom reservoir sustains ~100+ rounds before depletion
+- 196-atom reservoir sustains ~100+ rounds before depletion *(estimated: 196 atoms / 1.1 lost per round ≈ 178; not a paper-reported number — the paper demonstrates 41 rounds)*
 - ~50% of all decoder failures are loss-related
 
 Reducing loss per readout from 0.24% to 0.05% would:
@@ -126,5 +126,5 @@ Total QEC cycle time: $\approx 4$ ms. The paper does not provide a per-step brea
 
 ### Scaling path
 
-The paper demonstrates coherent continuous operation on over 3,000 atomic qubits via continuous atom reloading as an intermediate scaling step. Reaching fault-tolerant utility (RSA-class algorithms) requires a 3–5× reduction in physical error rates and ML decoder scalability to larger arrays.
+The companion work by Chiu et al. [@chiu2025continuous] demonstrates coherent continuous operation on over 3,000 atomic qubits via optical-lattice conveyor-belt reloading — an intermediate scaling step beyond this paper's 448-atom system. Reaching fault-tolerant utility (RSA-class algorithms) requires a 3–5× reduction in physical error rates and ML decoder scalability to larger arrays.
 
