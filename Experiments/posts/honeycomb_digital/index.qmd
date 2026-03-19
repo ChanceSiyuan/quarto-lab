@@ -98,7 +98,7 @@ In the experiment in @evered2025probing, they:
 ## Experiment protocol: Fermion hopping
 1. Set up $J_{X,Y} = J, J_Z = 8J$, which indicates no fermion pair generation
 2. Set up the initial state at $(n_J, n_{J+1}) = (1,1)$ case and $(n_J, n_{J+2}) = (1,1)$ case. 
-3. Evolve the initial state for steps $d = 11$ using floquet engineering 
+3. Evolve the initial state for steps $d = 12$ using floquet engineering
 4. Measure the density-density correlations $G_{ij} = \langle n_i n_j \rangle - \langle n_i \rangle \langle n_j \rangle$ for $j = J$ and $i = J \pm 1, J \pm 2,\cdots$.
 :::
 
@@ -132,7 +132,7 @@ $$
 
 #### Simulating interacting fermions
 
-To simulate the Fermi-Hubbard model, @evered2025probing use two copies of a **4×4 square lattice** (**16 qubits** total, one lattice per spin species) to encode $a_{\sigma = \uparrow,i}, a_{\sigma = \downarrow,i}$ separately.  The Hamiltonian is:
+To simulate the Fermi-Hubbard model, @evered2025probing split the array into two halves representing spin-up and spin-down, encoding a **16-site square lattice** using **32 physical qubits** (each fermion site maps to 2 qubits via ZZ-pairing, 16 sites × 2 qubits/site = 32) to encode $a_{\sigma = \uparrow,i}, a_{\sigma = \downarrow,i}$ separately.  The Hamiltonian is:
 $$
 H_{FH} =  \sum_{\sigma \in \uparrow, \downarrow} \sum_{\langle i,j \rangle} (a_{\sigma,i}^\dagger a_{\sigma,j} + a_{\sigma,j}^\dagger a_{\sigma,i}) + U \sum_{i} n_{\uparrow,i} n_{\downarrow,i},
 $$
@@ -187,15 +187,15 @@ The appropriate baseline is **Bluvstein 2024** [@bluvstein2024logical], which in
 | Parameter | Evered 2025 | Bluvstein 2024 (3-zone baseline) | Impact on this experiment |
 |-----------|-------------|----------------------------------|--------------------------|
 | **Total atoms** | 104 (72 data + 32 ancilla) | 280 physical / 48 logical | 72 data qubits tile a cylindrical honeycomb; 32 ancilla enable mid-circuit measurement |
-| **1Q gate fidelity** | ~99.5% ("roughly similar to our other works" [@evered2025probing]) | ~99.5% | No dedicated benchmark reported; inherited from prior generations |
-| **CZ fidelity** | 99.4% (global randomized benchmarking [@evered2025probing]) | 99.5% | Slight regression attributed to closer intermediate-state detuning (3.3 GHz); each Floquet layer compounds this |
+| **1Q gate fidelity** | Not independently benchmarked; "roughly similar to our other works" [@evered2025probing] | ~99.5% | No dedicated benchmark reported; inherited from prior generations |
+| **CZ fidelity** | Not independently benchmarked; "roughly similar to our other works" [@evered2025probing] | 99.5% | Expected slight regression from closer intermediate-state detuning (3.3 GHz); each Floquet layer compounds this |
 | **Tunable-angle CPHASE** | Numerically optimized per angle; **no standalone fidelity number reported** — only stated as "comparable to prior work" | N/A (fixed CZ only) | Fidelity likely similar to CZ but uncharacterized independently |
 | **Rydberg state** | $n = 53$ (two-photon: 420 nm + 1013 nm) | $n = 70$ ($\lvert 70S_{1/2}\rangle$) | Lower $n$ enables closer atom spacing via smaller blockade radius |
 | **Intermediate-state detuning** | 3.3 GHz | ~12 GHz [@bluvstein2024logical] | Closer detuning enables higher Rabi frequency at tighter atom spacing |
 | **Reference readout fidelity** | 99.8% | 99.5% | Improved reference; in-run value degraded to ~96–97% (see below) |
 | **Tunable-angle gates** | $ZZ(\theta)$ via shaped Rydberg pulses | Fixed CZ | **New in Evered 2025** — required for Trotterized Floquet evolution across the Kitaev phase diagram |
 | **Mid-circuit measurement** | Yes (32 ancilla, FPGA feedforward) | Yes | Enables deterministic plaquette preparation; carries over from Bluvstein 2024 |
-| **Circuit depth achieved** | Depth-12 (fermion dynamics) | Depth ~50–66 (logical) | Physical circuit depth here limited by readout degradation, not gate count |
+| **Circuit depth achieved** | Depth-12 (fermion quench dynamics) | Depth ~50–66 (logical) | Physical circuit depth here limited by readout degradation, not gate count |
 | **Hyperfine $T_2$** | >1 s (clock states) | ~1 s | Coherence is not the limiting factor; readout degradation dominates |
 
 The key **new** hardware capability in Evered 2025 over Bluvstein 2024 is the **tunable-angle CPHASE gate** — this is what makes continuous Hamiltonian parameter sweeps across the Kitaev phase diagram possible.
@@ -209,15 +209,15 @@ The single most important limiting factor in this experiment is not gate fidelit
 - The fermion exchange statistics protocol requires sequential loss-radius postselection across multiple ancilla rounds; with ~96–97% per-shot readout fidelity over 32 ancilla qubits, the acceptance fraction drops to **1–7%** per shot.
 - This is not improvable by increasing circuit depth — the degradation worsens over time, making longer experiments less accurate, not more.
 
-**Gate fidelity accumulation is secondary.** The deepest circuit in the experiment is depth-12 (fermion quench dynamics), operating on 72 data qubits arranged so each Floquet step involves $O(72)$ parallel 2-qubit gates, not all qubits simultaneously. Evered 2025 reports a CZ fidelity of **99.4%** via global randomized benchmarking [@evered2025probing], a slight regression from the 99.5% of Bluvstein 2024 attributed to the closer intermediate-state detuning (3.3 GHz) used to enable tighter atom spacing. With this value and maximum depth-12:
+**Gate fidelity accumulation is secondary.** The deepest circuit in the experiment is depth-12 (fermion quench dynamics), operating on 72 data qubits arranged so each Floquet step involves $O(72)$ parallel 2-qubit gates, not all qubits simultaneously. Evered 2025 does not report a standalone CZ fidelity, stating only that gate fidelities are "roughly similar to our other works" [@evered2025probing]. Assuming ~99.5% (the Bluvstein 2024 value) with maximum depth-12:
 
 $$
-(0.994)^{12} \approx 93\%
+(0.995)^{12} \approx 94\%
 $$
 
 per qubit per Floquet layer — still substantially better than the readout budget. Gate fidelity is not the limiting factor at current depths.
 
-**Path to improvement:** Stabilizing the trap laser power over the experimental run would recover ~3–4% per-shot readout fidelity and could increase exchange measurement acceptance fractions by $\sim 5\times$. Gate fidelity improvements (99.4% → 99.9%) would become the limiting factor only once readout is fixed.
+**Path to improvement:** Stabilizing the trap laser power over the experimental run would recover ~3–4% per-shot readout fidelity and substantially increase exchange measurement acceptance fractions. Gate fidelity improvements would become the limiting factor only once readout degradation is addressed.
 
 ## Completeness check
 
@@ -228,8 +228,8 @@ per qubit per Floquet layer — still substantially better than the readout budg
 | Initialization (weight-4 stabilizers) | Depth-3 |
 | Initialization (full, including CY) | Depth-4 |
 | Floquet phase diagram | Depth-6 |
-| Fermion quench dynamics | Depth-11 |
-| Fermi-Hubbard dynamics | Depth-12 |
+| Fermion quench dynamics | Depth-12 |
+| Fermi-Hubbard dynamics | Depth-11 |
 
 **Chern number result:** The paper reports $C = 1$ in the non-Abelian phase B and $C = 0$ in the Abelian phase A. Critically, this is **not a direct topological invariant measurement** — the Chern number is inferred indirectly via a three-step procedure [@evered2025probing, Methods]:
 
@@ -260,6 +260,6 @@ The result $C = 1$ thus reflects the topology of the *reconstructed* Hamiltonian
 
 **Fermion exchange statistics:** The exchange protocol uses $\sqrt{XZY}$ sandwiching with loss-radius postselection. The acceptance fraction ranges from **1–7%** per shot depending on the number of ancilla rounds. The contrast between "exchanged" and "not exchanged" trajectories provides the signature of fermionic ($\pi$-phase) exchange statistics.
 
-**Fermi-Hubbard $M_\text{stagg}$:** The simulation encodes spin-up and spin-down on **two copies of a 4×4 square lattice** (16 qubits total, one lattice per spin species). The circuit uses depth-12 Floquet rounds with the dimensionless interaction ratio $U/J$ varied up to 8 (with explicit benchmarks at $U/J = 1$ and $U/J = 8$). The staggered magnetization $M_\text{stagg}$ shows **non-monotonic behavior**: it decays rapidly at $U/J \to 0$ (free fermions spread out), is suppressed at intermediate coupling, and is partially recovered at large $U/J \gg 1$ where double-occupancy is energetically suppressed. This non-monotonic dependence on the interaction strength is the key signature of Hubbard physics.
+**Fermi-Hubbard $M_\text{stagg}$:** The simulation encodes spin-up and spin-down on **two halves of the array**, representing a **16-site square lattice** (32 physical qubits via ZZ-pairing). The circuit uses depth-11 Floquet rounds with the dimensionless interaction ratio $U/J$ varied up to 8 (with explicit benchmarks at $U/J = 1$ and $U/J = 8$). The staggered magnetization $M_\text{stagg}$ shows **non-monotonic behavior**: it decays rapidly at $U/J \to 0$ (free fermions spread out), is suppressed at intermediate coupling, and is partially recovered at large $U/J \gg 1$ where double-occupancy is energetically suppressed. This non-monotonic dependence on the interaction strength is the key signature of Hubbard physics.
 
 Neutral atoms have a structural advantage for the honeycomb geometry: mid-circuit atom rearrangement provides native non-local connectivity, eliminating the SWAP overhead that would add $O(N)$ depth on a fixed grid. On trapped-ion platforms the limiting factor is gate clock speed (not fidelity), while on superconducting platforms the bottleneck is connectivity-limited routing (not coherence time).
