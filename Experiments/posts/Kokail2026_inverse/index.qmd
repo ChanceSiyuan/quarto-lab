@@ -97,16 +97,17 @@ $$\omega_{\text{lb}}(k) = -2\pi J |\sin k|, \qquad \omega_{\text{ub}}(k) = -4\pi
 | Readout fidelity | ~99.8% (3-zone) / ~92–96% (1-zone) | Review benchmarks | **Critical bottleneck for Hamiltonian learning**; errors inflate coefficient variance as $1/\eta_{\rm ro}^2$ |
 | Variational control | Local addressing + global pulses | 3/4-zone | Need efficient variational ansätze compilable on Rydberg hardware |
 | Hamiltonian learning | — | — | Need shadow tomography or spectral methods at scale; no explicit shot budget in paper |
-| Coherence time | $T_2 \sim$ ms | 3-zone | Sufficient for moderate-depth variational circuits; not the primary bottleneck |
+| Gate fidelity (4-zone) | Tunable-angle CPHASE | 4-zone [@bluvstein2025faulttolerant] | Variable-angle $ZZ(\theta)$ gates replace fixed CZ; raw physical error rate benchmarked per QEC round rather than as isolated two-qubit fidelity |
+| Coherence time | $T_2^* \approx 1.5$ ms (hyperfine qubit) | 3-zone [@bluvstein2024logical] | Sufficient for moderate-depth variational circuits ($\lesssim 100$ layers); not the primary bottleneck |
 
 *Note: "System size" (448) is from the 4-zone architecture [@bluvstein2025faulttolerant]; "gate fidelity" (99.5%) and "readout fidelity" (99.8%) are from the 3-zone system [@bluvstein2024logical]. These are different generations — the inverse simulation proposal targets future hardware combining the scale of the 4-zone system with the fidelities of the 3-zone benchmarks.*
 
 
 ## Critical technique analysis
 
-**Most important technique needing optimization: variational state preparation and CPHL convergence at scale.**
+**Most important technique needing optimization: variational state preparation (barren plateau mitigation).**
 
-As a theory proposal, the paper's bottlenecks are algorithmic rather than hardware-specific. The two co-equal challenges the paper identifies are:
+As a theory proposal, the paper's bottlenecks are algorithmic rather than hardware-specific. Two challenges arise at scale, but **barren plateaus in variational state preparation are the dominant scaling wall**: they make gradient-based optimization exponentially costly in qubit number, and no general-purpose solution exists. CPHL convergence (discussed second below) is a secondary concern — it involves polynomial overhead that can be reduced by better classical post-processing, whereas barren plateaus represent an exponential barrier that must be circumvented structurally.
 
 ### 1. Variational state preparation — barren plateaus
 
@@ -128,7 +129,9 @@ $$\text{Var}[\hat{h}_k] \propto \frac{1}{\eta_{\text{ro}}^2 \cdot N_{\text{shots
 :::{.callout-warning icon="false"}
 ## Editorial note
 The variance scaling above is a standard result from measurement statistics — **it is not stated in the paper**. The paper discusses readout fidelity requirements only qualitatively.
-::: Halving the readout infidelity from 4% to 2% reduces the required shot count by $4\times$. Gate errors primarily affect state preparation quality but do not fundamentally change the measurement inversion problem.
+:::
+
+Halving the readout infidelity from 4% to 2% reduces the required shot count by $4\times$. Gate errors primarily affect state preparation quality but do not fundamentally change the measurement inversion problem.
 
 **Paths to improvement:**
 
