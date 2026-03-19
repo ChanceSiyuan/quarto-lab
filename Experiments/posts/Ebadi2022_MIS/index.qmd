@@ -24,7 +24,7 @@ draft: true
 
 1. **Graph encoding:** Each atom represents a vertex; atoms within the blockade radius $R_b$ are connected by an edge. The Rydberg constraint (no two adjacent atoms both excited) maps exactly to the independent set constraint. The MIS solution is the ground state of $H = -\frac{\Omega}{2}\sum_i \sigma_i^x - \sum_i \Delta_i n_i + \sum_{i<j} V_{ij} n_i n_j$ at large positive $\Delta$.
 
-2. **Quantum annealing (QA):** Linear sweep $\Delta(t): -4\,\text{MHz} \to +4\,\text{MHz}$ over $T \lesssim T_e$. Sweep times used in practice: $T \approx 0.5$–$4\,\mu\text{s}$ (well within the $T_e \approx 20\,\mu\text{s}$ coherence window). Sets the baseline.
+2. **Quantum annealing (QA):** Linear sweep $\Delta(t): -4\,\text{MHz} \to +4\,\text{MHz}$ over $T \lesssim T_e$. The paper reports sweep times in units of effective depth $\tilde{p} = T/\tau_\pi$ where $\tau_\pi = \pi/\Omega \approx 125\,\text{ns}$. Standard-beam experiments scan $\tilde{p}$ up to ~32 ($T \approx 0.5$–$4\,\mu\text{s}$, well within $T_e \approx 20\,\mu\text{s}$). Small-beam experiments (Figs. 4–5) use the extended coherence window $T_e \approx 70\,\mu\text{s}$, allowing deeper sweeps on the hardest graph instances. Sets the baseline.
 
 3. **QAOA:** $p$-layer alternating unitaries $U_P(\gamma)U_M(\beta)$ applied to the ground state of the mixing Hamiltonian. Depths $p = 1$–$5$ tested; performance saturates near $p = 4$. Parameters $\{\gamma_k, \beta_k\}$ ($2p$ variational parameters) optimized via closed-loop classical optimizer (~50 repetitions per evaluation step).
 
@@ -66,7 +66,7 @@ This experiment is a **1-zone analog** platform (same Harvard apparatus as Ebadi
 | Hardware loading fidelity | ~98% | ~98% | 98.4(7)% | Bottleneck 5: atom loss / defects |
 | Graph filling fraction | — | ~80% by design | N/A (free geometry) | *Intentional sparsity*, not hardware limit |
 | $|g\rangle$ detection fidelity | ~99% | ~99% (apparatus, not re-measured) | ~99% | Bottleneck 3: in-situ readout ceiling |
-| $|r\rangle$ detection fidelity | ~92–96% | ~92–96% (apparatus, not re-measured) | ~92–96% | Bottleneck 3: no dedicated readout zone |
+| $|r\rangle$ detection fidelity | ~92–96% | ~92–96% (apparatus, not re-measured) | ~92–96% (inherited from Ebadi 2021; Manovitz 2025 does not report updated readout numbers) | Bottleneck 3: no dedicated readout zone |
 | Analog coherence $T_e$ | ~20 µs | ~20 µs (std. beam) / ~70 µs (small beam) | ~20 µs | Bottleneck 1: motional dephasing |
 | Mid-circuit measurement | No | No | No | Structural 1-zone limit |
 | Digital gate fidelity | N/A | N/A | N/A | N/A (analog-only) |
@@ -117,7 +117,9 @@ The 0.63(13) figure is the conditioned value; reporting it as the primary result
 | $V_\text{NNN}/h$ | 13 MHz |
 | Coherence $T_e$ (standard beam) | ~20 µs |
 | Coherence $T_e$ (smaller beam) | ~70 µs |
-| Sweep time range (practice) | $T \approx 0.5$–$4\,\mu\text{s}$ |
+| Effective depth $\tilde{p}$ (max) | 32 (standard beam, $T \approx 4\,\mu\text{s}$) |
+| $\tau_\pi = \pi/\Omega$ | ~125 ns |
+| Sweep time range (standard beam) | $T \approx 0.5$–$4\,\mu\text{s}$ |
 | $|g\rangle$ detection fidelity | ~99% (apparatus-level, from [@ebadi2021quantum]) |
 | $|r\rangle$ detection fidelity | ~92–96% (apparatus-level, from [@ebadi2021quantum]) |
 | TTS quantum exponent (all graphs) | 0.95(15) |
