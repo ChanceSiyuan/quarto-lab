@@ -47,12 +47,14 @@ At the target point $\Delta/\Omega \approx 4$, approximately 80% of vertices are
 
 ## Architecture comparison: relative to 1-zone/3-zone/4-zone review benchmarks
 
-| Parameter | Semeghini 2021 | SOTA 1-zone (Manovitz 2025) | Notes |
-|-----------|---------------|---------------------------|-------|
-| Atom count | 219 (2D kagome) | ~300 (2D) | Comparable scale |
-| Lattice | Kagome (links) | Various | Geometry flexibility via SLM |
-| Measurement bases | $Z$ and $X$ (global rotation) | $Z$ only (typical) | Required global $\pi/2$ pulse for $X$-basis |
-| String operator measurement | Post-selected product of single-site outcomes | — | Limited to classical string products, no quantum string operators |
+| Parameter | Semeghini 2021 | SOTA 1-zone (Manovitz 2025) | 3-zone (Bluvstein 2024) | Notes |
+|-----------|---------------|---------------------------|------------------------|-------|
+| Atom count | 219 (2D kagome) | ~300 (2D) | 280 | Comparable scale |
+| Lattice | Kagome (links) | Various | Reconfigurable | Geometry flexibility via SLM |
+| Readout fidelity | 99% | ~99% | 99.8% (spin-to-position) | Bottleneck 3 in review; 3-zone readout would dramatically improve string operator signals |
+| Rydberg lifetime | $\sim 80\,\mu$s | — | — | Sweep duration ($\sim 2\,\mu$s) $\ll$ lifetime; not the bottleneck |
+| Coherence limit | Ground-state scattering $\sim 150\,\mu$s (420 nm) | — | — | Also not limiting given $\sim 2\,\mu$s sweep |
+| Measurement bases | $Z$ and $X$ (global rotation) | $Z$ only (typical) | Mid-circuit readout | Required global $\pi/2$ pulse for $X$-basis |
 
 No new hardware was introduced — this experiment runs on exactly the Ebadi 2021 apparatus. The innovation is entirely in the *protocol* (what to measure and how to interpret it).
 
@@ -83,7 +85,7 @@ $$
 
 **Paths to improvement:**
 
-1. **3-zone spin-to-position readout** (99.8% fidelity, Bluvstein 2024): Would give $(0.998)^{15} \approx 0.97$ — essentially no signal loss.
+1. **3-zone spin-to-position readout** (99.8% fidelity [@bluvstein2024logical]): Would give $(0.998)^{15} \approx 0.97$ — essentially no signal loss.
 2. **Error mitigation:** Symmetry-based post-selection (discarding shots with wrong total atom number) partially compensates but costs statistics.
 3. **Entanglement witnesses:** Alternative observables that are less sensitive to single-site errors but still detect topological order.
 
@@ -104,6 +106,14 @@ $$
 | Dimer-sector population | ~80% at $\Delta/\Omega \approx 4$ |
 | Max $X$-parity loop size | 28 atoms |
 | State detection fidelity | 99% (both $|g\rangle$ and $|r\rangle$) |
+| Sweep duration | $\sim 2\,\mu$s (cubic frequency sweep) |
+| Rydberg state ($70S_{1/2}$) lifetime | $\sim 80\,\mu$s |
+| Ground-state scattering lifetime (420 nm) | $\sim 150\,\mu$s |
+| $X$-basis quench time $\tau$ | $\sim 30$ ns |
+| Intermediate state detuning $\delta$ | $2\pi \times (-450)$ MHz from $6P_{3/2}$ |
+| Single-photon $\Omega_{1013}$ | $2\pi \times 50$ MHz |
+| Single-photon $\Omega_{420}$ (low power) | $2\pi \times 25$ MHz |
+| 420 nm laser power (state prep / $X$-quench) | $\sim 0.5$ mW / $\sim 100$ mW |
 
 ## String operator definitions
 
@@ -116,6 +126,21 @@ The joint observation — both $\langle \hat{W}_Z \rangle \neq 0$ and $\langle \
 
 The post-selection fraction for $X$-basis shots is not reported explicitly in the paper.
 
+## Towards a topological qubit (Fig. 5)
+
+The paper's most forward-looking result creates a lattice with **nontrivial topology** by removing three atoms on a central triangle, opening a hole that acts as an inner boundary. Dimer coverings on this punctured lattice split into two topological sectors (labeled 0 and 1), distinguished by the parity of dimers crossing a cut from the hole to the outer boundary.
+
+Two logical operators are defined:
+
+- **$Z_L$**: a $Z$-type string operator connecting the hole to the boundary. It takes opposite signs in the two topological sectors ($+1$ in sector 0, $-1$ in sector 1), so $\langle Z_L \rangle = 0$ indicates an equal superposition of sectors.
+- **$X_L$**: an $X$-type string operator around the hole. $\langle X_L \rangle > 0$ indicates coherence *between* the two sectors — the state has overlap with $|+\rangle_L = (|0\rangle_L + |1\rangle_L)/\sqrt{2}$.
+
+**Measured results** (Fig. 5B): In the QSL window ($\Delta/\Omega \approx 4$), $\langle Z_L \rangle \approx 0$ and $\langle X_L \rangle > 0$, consistent with the system being initialized near the $|+\rangle_L$ logical state. This is expected because the adiabatic sweep preserves the $\mathbb{Z}_2$ symmetry that exchanges sectors.
+
+**Inter-string correlations** (Fig. 5C): Correlations $\langle Z_1 Z_2 \rangle$ between two $Z$-strings connecting the hole to the boundary are finite and identical in both sectors, confirming the topological (non-local) nature of the encoding.
+
+This constitutes the **first experimental demonstration of logical-qubit-like degrees of freedom** in a topologically ordered state — a first step towards topological quantum memory using intrinsic $\mathbb{Z}_2$ topological protection, though without active error correction or gate operations.
+
 ## Theoretical debate
 
 The key open question is whether the observed signals are consistent with a **true $\mathbb{Z}_2$ spin liquid** vs. a **valence bond solid (VBS) with long correlation length**. The argument:
@@ -125,4 +150,4 @@ The key open question is whether the observed signals are consistent with a **tr
 - The paper argues that (a) the signals persist over a wide $\Delta/\Omega$ window, (b) the topology-dependence check (trivial vs. non-trivial boundary conditions) is consistent with topological origin, and (c) DMRG numerics confirm the QSL ground state in this parameter regime.
 - The debate is not fully resolved experimentally — finite-size scaling with larger systems and improved adiabaticity would be needed to conclusively distinguish QSL from VBS.
 
-<!-- TODO: Compare with subsequent spin liquid experiments on other platforms (Rydberg, trapped ions) — would require additional refs not currently in refs.bib -->
+The number of experimental shots per data point is not reported in the paper.
