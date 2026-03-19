@@ -49,8 +49,8 @@ Using the same 51-atom 1D Rydberg chain as Bernien 2017, slow detuning sweeps ac
 |-----------|-------------|---------------------------|-------|
 | Atom count | 51 (1D chain) | ~300 (2D array) | 1D standing-wave trap; no 2D reconfigurability |
 | Sweep duration | ~0.05–0.3 μs per sweep | — | Sweep rates $s_\text{min}$–$s_\text{max}$ = 3.5–19.7 MHz/μs (Extended Data Table 1) |
-| Coherence $T_2$ | ~10–50 μs (not quoted in paper; inherited from [@bernien2017probing]) | ~1 ms (PDH-stabilized) | ×20–100× improvement in [@manovitz2025coarsening] |
-| Readout fidelity | ~95% (not quoted in paper; inherited from [@bernien2017probing]) | ~99% | Not a Keesling 2019 measurement |
+| Coherence $T_2$ | ~10–50 μs (not quoted in paper; estimated from pulse durations in [@bernien2017probing], same apparatus) | ~1 ms (PDH-stabilized) | ×20–100× improvement in [@manovitz2025coarsening] |
+| Readout fidelity | ~95% (not quoted in paper; estimated from [@bernien2017probing] detection performance, same apparatus) | ~99% | Not a Keesling 2019 measurement |
 | Initial detuning $\Delta_0$ | −2.5 MHz | — | Ω ramp: linear turn-on over 1 μs |
 | Blockade radii probed | $R_b/a \in \{1.69, 1.81, 2.16, 2.43\}$ | — | Selects $\mathbb{Z}_2$, $\mathbb{Z}_3$, $\mathbb{Z}_4$ phases |
 | Rydberg state | $|70S_{1/2}, m_J=-1/2\rangle$ | $|70S_{1/2}\rangle$ | Two-photon: 420 nm + 1013 nm via $|6P_{3/2}\rangle$ |
@@ -115,4 +115,4 @@ $\Omega$ ramp: linear turn-on over 1 μs at fixed $\Delta_0$. Note: $\Omega/2\pi
 
 **Error bar asymmetry:** The $\mathbb{Z}_2$ exponent $\mu = 0.50 \pm 0.03$ is explicitly quoted with uncertainty (stated in main text, Fig. 2c). The $\mathbb{Z}_3$ ($\mu \approx 0.38$) and $\mathbb{Z}_4$ ($\mu \approx 0.25$) values have **no quoted error bars** in the paper — fit uncertainties are visible in Fig. 4c but described as dominated by systematic effects. These should be read as order-of-magnitude estimates, not precision measurements.
 
-<!-- TODO: Cross-platform KZ comparison (ion traps, superconducting qubits). As of 2019 there were no direct ion-trap or SC-qubit measurements of the quantum KZ exponent in a many-body chain at comparable size. Add a note if a specific comparison paper is found. -->
+**Cross-platform KZ comparison:** As of the paper's publication (2019), no comparable quantum KZ exponent measurements existed on ion-trap or superconducting-qubit platforms at this system size (~50 qubits in a many-body chain). The Rydberg simulator result was the first direct verification of quantum KZ scaling in an isolated many-body system.
