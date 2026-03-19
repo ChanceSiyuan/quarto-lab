@@ -147,6 +147,11 @@ Cavity hardware parameters are now in the protocol section above ($\mathcal{F} =
 
 **Comparison with other cavity QED platforms:**
 
-<!-- TODO: Add citations for ion cavity QED (e.g., Keller 2004, Mundt 2002) and neutral-atom bulk cavity work (e.g., Wilk 2010, Lim 2024) to enable a proper cross-platform comparison table. -->
+| Platform | Cooperativity $C$ | Entanglement fidelity | Scalability | Ref |
+|----------|-------------------|----------------------|-------------|-----|
+| This work (fiber FPC, $^{87}$Rb tweezers) | 101 | 91(4)% (carving), 76(2)% (CZ postsel.) | 2 atoms (~20 max) | [@grinkemeyer2025cavity] |
+| Bulk Fabry-Pérot (Rempe group, $^{87}$Rb) | ~1–10 | Atom-photon entanglement demonstrated | 1–2 atoms | [@wilk2007single] |
+| Trapped ion FPC ($^{40}$Ca$^+$, Innsbruck) | ~1 | Ion-photon entanglement | 1 ion | [@mundt2002coupling] |
+| Trapped ion FPC ($^{40}$Ca$^+$, single-photon source) | ~1 | Controlled single-photon emission | 1 ion | [@keller2004continuous] |
 
-Fiber Fabry-Pérot cavities achieve high $C$ at small cavity length; the main open challenge is combining high $C$ with tweezer-array scalability.
+Fiber Fabry-Pérot cavities achieve high $C$ at small cavity length due to the small mode volume ($L \sim 100$ μm). The mode waist $w_0$ is not explicitly reported but can be estimated from the mirror radii of curvature (165 μm / 145 μm) and cavity length via $w_0 = \sqrt{\lambda L / \pi} \cdot (g_1 g_2)^{1/4}$ where $g_i = 1 - L/R_i$; this gives $w_0 \approx 4$ μm. The main open challenge is combining high $C$ with tweezer-array scalability — the current fiber cavity geometry limits atom count to ~20.
