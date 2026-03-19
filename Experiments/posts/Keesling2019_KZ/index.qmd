@@ -29,7 +29,7 @@ Using the same 51-atom 1D Rydberg chain as Bernien 2017, slow detuning sweeps ac
 
 - **Quantum Kibble-Zurek scaling verified:** The density of topological defects (domain walls) scales as $n_d \propto v^{\mu}$ where $\mu \equiv \nu/(1+z\nu)$ is the combined KZ exponent. The paper directly measures $\mu$ (not $\nu$ and $z$ independently):
   - $\mathbb{Z}_2$ Ising transition: **$\mu = 0.50 \pm 0.03$** — consistent with the theoretical Ising prediction $\mu_\text{Ising} = \nu/(1+z\nu) = 1/(1+1\cdot1) = 0.50$.
-  - $\mathbb{Z}_3$ chiral clock transition: **$\mu \approx 0.38$** — within the theoretical bounds $0.25$–$0.45$ for the chiral clock universality class (theory: $z \approx 1.33$, $\nu \approx 0.71 \Rightarrow \mu_\text{theory} \approx 0.35$).
+  - $\mathbb{Z}_3$ chiral clock transition: **$\mu \approx 0.38$** — within the theoretical bounds $0.25$–$0.45$ for the chiral clock universality class [@ostlund1981incommensurate; @huse1982domain; @whitsitt2018quantum; @samajdar2018numerical] (theory: $z \approx 1.33$, $\nu \approx 0.71 \Rightarrow \mu_\text{theory} \approx 0.35$).
   - $\mathbb{Z}_4$ ordered phase: **$\mu \approx 0.25$** (Extended Data).
 - **Beyond-KZ corrections:** At the slowest sweep rates, deviations from KZ scaling were observed. The paper's Methods section attributes these explicitly to **decoherence**: slow sweeps spend more time near the critical point, where growing quantum correlations make the system increasingly sensitive to laser noise and environmental decoherence, and the longer total pulse time accumulates more dephasing. MPS simulations (which include no decoherence) match the data at fast sweeps but deviate at slow sweeps — confirming that the slow-sweep floor is decoherence-limited, not finite-size-limited. Finite-size effects are separately discussed and mitigated by discarding edge sites.
 - **Chiral clock model exponents:** For the $\mathbb{Z}_3$ ordered phase (accessed at $R_b/a = 2.16$), $\mu \approx 0.38$ provides experimental constraints on the chiral clock universality class — a set of exotic QPTs not previously accessible experimentally.
@@ -97,7 +97,7 @@ Why this matters for the exponent extraction:
 | Phase | $R_b/a$ | Measured $\mu$ | Theoretical $\mu$ | Universality class |
 |-------|---------|---------------|-------------------|-------------------|
 | $\mathbb{Z}_2$ | 1.69, 1.81 | $0.50 \pm 0.03$ | $0.50$ (Ising: $\nu=1, z=1$) | (1+1)D Ising |
-| $\mathbb{Z}_3$ | 2.16 | $\approx 0.38$ (no error bar quoted) | $0.25$–$0.45$ (chiral clock: $z\approx1.33, \nu\approx0.71$) | Chiral clock |
+| $\mathbb{Z}_3$ | 2.16 | $\approx 0.38$ (no error bar quoted) | $0.25$–$0.45$ (chiral clock: $z\approx1.33, \nu\approx0.71$) [@ostlund1981incommensurate; @huse1982domain; @whitsitt2018quantum; @samajdar2018numerical] | Chiral clock |
 | $\mathbb{Z}_4$ | 2.43 | $\approx 0.25$ (no error bar quoted) | — | Chiral clock (4-state) |
 
 **Sweep rate range (from Extended Data Table 1):**
