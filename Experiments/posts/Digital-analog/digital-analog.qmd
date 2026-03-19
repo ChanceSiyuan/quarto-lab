@@ -220,7 +220,7 @@ A key experimental result is that the ring-exchange dynamics and two-body hoppin
 - A **single-spin excitation** initial state can only hop between sites (no ring exchange possible), revealing the two-body dynamics.
 - A **Néel state** $\ket{101010}$ on the hexagon satisfies the ring-exchange condition, and two-body hopping is blockade-suppressed, isolating the six-body dynamics.
 
-This approach generalizes further to two-dimensional lattice gauge theories [@feldmeier2024].
+In the experiment, **15 hexagonal plaquettes are measured in parallel**, providing substantial statistical power for extracting the ring-exchange signal. This approach generalizes further to two-dimensional lattice gauge theories [@feldmeier2024].
 
 :::{.callout-note}
 **Companion note:** [Quantum dimer model](dimmer.qmd) contains the structured reading note (E0–E3 checklist, architecture table, experiment protocol, full parameter table) and analyzes the Rydberg↔hyperfine mapping as the per-cycle bottleneck. This note covers the Floquet theory derivations and identifies intensity inhomogeneity as the dominant 2D decoherence source. Both mechanisms limit performance at different scales.
@@ -286,7 +286,7 @@ The dominant decoherence mechanism observed in the 2D kagome experiments is not 
 | $\pi$-pulse duration | 70 ns | Both Rydberg and Raman |
 | Rydberg interaction (n=53) | $V_0 = 14.2$ MHz | 1D chain, $a = 3.6$ μm |
 | Rydberg interaction (n=70) | $V_0 = 18.1$ MHz | 2D kagome, $a = 6.0$ μm |
-| Atom spacing (1D) | 3.6 μm | 1D chain geometry |
+| Atom spacing (1D) | 3.6 μm (dynamics) / 6.0 μm (state prep) | 1D chain geometry; dual spacing for different protocol stages |
 | Atom spacing (2D kagome) | 6.0 μm | 271-site kagome lattice |
 | Rabi oscillation contrast | 97.8(1)% | Hardware benchmark |
 | Rydberg $\pi$-pulse infidelity | ≤1.3% (2D) | Upper bound from calibration |
@@ -343,7 +343,11 @@ On the 271-site kagome lattice, the paper diagnoses the Rokhsar-Kivelson (RK) qu
 
 ## Bayesian optimization protocol
 
-The 271-site kagome experiment requires uniform drive intensity across the array. The paper uses a **closed-loop Bayesian optimizer** with **8 free parameters** controlling the spatial profile of the Rydberg drive to minimize intensity inhomogeneity. The optimizer iteratively adjusts beam shaping parameters based on measured contrast in calibration sequences, achieving the intensity homogenization essential for sustaining coherent dynamics across the full 271-site array.
+The 271-site kagome experiment requires uniform drive intensity across the array. The paper uses a **closed-loop Bayesian optimizer** with **8 free parameters** controlling the spatial profile of the Rydberg drive to minimize intensity inhomogeneity. The optimizer ran over **three overnight optimization sessions**, with multi-objective targets: maximizing $\langle T \rangle$, $\langle V \rangle$, and mean Rydberg density while minimizing atom loss. The optimizer iteratively adjusts beam shaping parameters based on measured contrast in calibration sequences, achieving the intensity homogenization essential for sustaining coherent dynamics across the full 271-site array.
+
+The Bayesian learning protocol also provides an independent measurement of the effective chemical potential: $\mu/2\pi = 0.411$ MHz, in close agreement with the spectroscopy fit of $(\mu + 4U)/2\pi = 0.407(2)$ MHz (the difference is consistent with the small $U/2\pi = 0.023$ MHz).
+
+During Rydberg evolution, the **SLM tweezers are turned off for up to 4 μs** to avoid light shifts that would perturb the analog dynamics.
 
 ## Ring-exchange rate vs. perturbative prediction
 
