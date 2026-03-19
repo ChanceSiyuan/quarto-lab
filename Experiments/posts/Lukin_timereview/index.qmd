@@ -97,8 +97,13 @@ $$
 - Precise controling of $\Delta(t)$ with AWG/DDS.
   - Global detuning: $-2\pi \times 20~\text{MHz}$ to $+2\pi \times 20~\text{MHz}$
   - <1nm time sync
-  - Greater than1GS/s sampling rate
+  - Greater than 1GS/s sampling rate
 
+**Local Control:** $160\mu W$, $1 \mu m$ waist, $784 nm$ for $~ -2\pi \times 12 \mathrm{MHz}$ local detuning with 20% filling fraction.
+- Chromatic Aberration: SLM compensation + chromatic compensation lens group.
+- Keep the $784 nm$ laser in linear polarization, even after going through High-NA objective.
+- Crosstalk suppression.
+- SLM's slow refresh rate: Solving this by introducing AOM to "cutoff" the $784nm$ laser.
 
 
 ### Bottleneck 1: The $1/R^6$ curse — thermal motion → interaction energy spread
@@ -411,7 +416,7 @@ The central innovation — a closed-loop loss-management cycle:
 
 1. **Detection:** Non-destructive readout simultaneously extracts syndrome bits AND identifies which sites lost atoms (empty trap $\to$ no fluorescence)
 2. **Replacement:** AOD transports a fresh atom from the reservoir zone into the vacant site; the atom is initialized into the correct qubit state
-3. **Cycle time:** ~4 ms per syndrome extraction round ($10^2\times$ improvement over earlier ~400 ms cycles)
+3. **Cycle time:** ~28 ms per syndrome extraction round (dominated by 10 ms imaging + 13.3 ms cooling/re-sorting; see [@bluvstein2025faulttolerant] for detailed breakdown). The companion preprint's "4 ms" figure refers to Rabi calibration cycles, not full QEC rounds.
 4. **Demonstrated endurance:** Up to 41 consecutive syndrome extraction rounds with continuous ancilla replacement
 5. **Reservoir budget:** At 0.24% loss per readout per atom, a 448-atom system loses ~1 atom per round; the 196-atom reservoir sustains ~100+ rounds before external reload (or conveyor-belt resupply à la [@chiu2025continuous])
 

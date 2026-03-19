@@ -26,7 +26,7 @@ draft: true
 
 1. **4-zone layout:** Entangling zone ($60 \times 175$ μm, up to 256 gate sites), storage zone, readout zone, and **reservoir zone** (196 atoms in 6 rows) — the reservoir is the defining addition over 3-zone.
 2. **Non-destructive readout:** 795 nm $\sigma^-$ optical lattice pins one spin state while AOD displaces the other by ~2 μm; the atom survives (unlike destructive 3-zone readout). Bit-flip error: 0.46(4)%, atom loss per readout: 0.24(2)%.
-3. **Entangling gates:** 270 ns duration via two-photon Rydberg excitation (420 nm + 1013 nm beams) between clock-state qubits; ~28 ms total QEC cycle time (see breakdown below).
+3. **Entangling gates:** 270 ns duration via two-photon Rydberg excitation (420 nm + 1013 nm beams) to $n=53$ Rydberg states between clock-state qubits; ~28 ms total QEC cycle time (see breakdown below).
 4. **Repeated QEC cycles:** Up to 41 consecutive syndrome extraction rounds with continuous ancilla replacement from the reservoir; 4-round subset used for threshold characterization.
 5. **Below-threshold scaling:** Distance-5 surface code with $2.14(13)\times$ lower error per round than distance-3 in the **four-round characterization circuit**, at 0.62(3)% per round ($\approx 1.33\%$/round for $d=3$).
 6. **Universal fault-tolerant gate set:** Transversal CNOT, lattice surgery, and non-Clifford T gates via transversal teleportation with $[[15,1,3]]$ Reed-Muller codes.
@@ -41,7 +41,7 @@ draft: true
 - **Loss-aware ML decoder:** $1.73(13)\times$ improvement over loss-unaware decoding. The paper states directly that "roughly half of our errors being loss" [@bluvstein2025mechanisms], consistent with 0.24% loss/readout × 448 atoms ≈ 1.1 atoms lost per round dominating the error budget.
 - **Superchecks:** When a data qubit is lost, product of stabilizer generators sharing the lost qubit cancels the lost-qubit operator, yielding a measurable "supercheck" on remaining neighbors. This enables continued QEC with degraded but nonzero code distance.
 - **Universal logic via teleportation:** The $[[15,1,3]]$ Reed-Muller code enables transversal T gates; combined with transversal CNOT (surface code) and lattice surgery, this completes a universal fault-tolerant gate set. No standalone T-gate logical error rate is reported; the T gate is only characterized as part of composite circuits.
-- **Lattice surgery vs. transversal CNOT:** A transversal CNOT applies physical CNOT gates qubit-by-qubit between two code blocks — no extra ancillas needed. Lattice surgery instead merges and splits code patches via ancilla measurements along a shared boundary, then uses classical corrections. Because lattice surgery introduces additional measurement rounds (each subject to the 0.24% atom-loss channel), it is "significantly more sensitive to injected measurement errors" [@bluvstein2025mechanisms] and achieves higher logical error than transversal CNOT in this experiment.
+- **Lattice surgery vs. transversal CNOT:** A transversal CNOT applies physical CNOT gates qubit-by-qubit between two code blocks — no extra ancillas needed. Lattice surgery instead merges and splits code patches via ancilla measurements along a shared boundary, then uses classical corrections. Because lattice surgery introduces additional measurement rounds (each subject to the 0.24% atom-loss channel), it is "significantly more sensitive to injected measurement errors" [@bluvstein2025mechanisms] and achieves higher logical error than transversal CNOT in this experiment. No standalone numerical logical error rates are reported for either method; the comparison is shown qualitatively in Fig. 3d, with an optimum of ~3 transversal CNOTs per QEC round before accumulated gate errors overtake the lattice surgery overhead.
 - **High-rate codes:** Up to 96 distance-4 logical qubits using $[[16,6,4]]$ codes — demonstrating that high encoding rates are achievable. Per-round error rate is not isolated but is reported as comparable to $[[7,1,3]]$ Steane codes.
 
 ## Scientific significance
@@ -106,7 +106,7 @@ The $d=5$ error rate on loss-free shots ($\approx 0.1\%$/round) is consistent wi
 | Gate / operation | Fidelity / error | Source |
 |------------------|-----------------|--------|
 | Single-qubit (SCROFULOUS) | $5 \times 10^{-5}$ scattering error/pulse; ~5 μs duration | [@bluvstein2025mechanisms] |
-| Two-qubit CZ | ~99.5% (not re-benchmarked in this work) | [@evered2023highfidelity] |
+| Two-qubit CZ (Rydberg $n=53$) | ~99.5% (not re-benchmarked in this work) | [@evered2023highfidelity] |
 | Readout bit-flip | 0.46(4)% | [@bluvstein2025faulttolerant] |
 | Atom loss per readout | 0.24(2)% | [@bluvstein2025faulttolerant] |
 | Atom loading efficiency | 75% (gray molasses D1 cooling) | [@bluvstein2025mechanisms] |
