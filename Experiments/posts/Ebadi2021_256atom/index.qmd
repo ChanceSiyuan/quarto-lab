@@ -22,7 +22,7 @@ The leap from 1D to 2D: 256 $^{87}$Rb atoms arranged in arbitrary 2D geometries 
 :::{.callout-tip title="Experiment protocol"}
 1. **SLM trap array generation:** A spatial light modulator (Hamamatsu X13138-02) creates a static 2D array of optical tweezers in arbitrary geometries (square, triangular, honeycomb, kagome). Aberration correction of 70 milliwaves yields an 18% intensity gain.
 2. **AOD atom rearrangement:** Acousto-optic deflectors (AA Opto DTSX-400, transport speed 75 μm/ms, ramp time 15 μs) pick up atoms from a reservoir and rearrange them into SLM traps. First AOD pass achieves 98.5% filling; a second pass over >200-site arrays achieves **~99.2% filling** (Methods: "~99.2% over more than 200 sites"). Each single AOD pass takes **50–100 ms**; for >200-site arrays the two-pass protocol totals **~400 ms** (Methods: "total experimental cycle time of 400 ms"). Single-atom loading efficiency from the MOT into reservoir tweezers: **50–60%**.
-3. **Rydberg excitation and phase mapping:** Coherent two-photon excitation to $|70S_{1/2}\rangle$ (420 nm + 1013 nm, intermediate-state detuning $\delta = 2\pi \times 1$ GHz, $\Omega_{420}/2\pi = 160$ MHz, $\Omega_{1013}/2\pi = 50$ MHz, effective $\Omega/2\pi = 4$ MHz, inhomogeneity ~2% RMS / ~6% peak-to-peak) implements the Rydberg blockade Hamiltonian. Slow detuning sweeps map out phase boundaries.
+3. **Rydberg excitation and phase mapping:** Coherent two-photon excitation to $|70S_{1/2}\rangle$ (420 nm + 1013 nm, intermediate-state detuning $\delta = 2\pi \times 1$ GHz blue-detuned from $6P_{3/2}$, $\Omega_{420}/2\pi = 160$ MHz, $\Omega_{1013}/2\pi = 50$ MHz, effective $\Omega/2\pi = 4$ MHz, inhomogeneity ~2% RMS / ~6% peak-to-peak) implements the Rydberg blockade Hamiltonian. Slow detuning sweeps map out phase boundaries.
 4. **Multiple geometry benchmarking:** Systematic study of quantum phases on square ($a = 6.7$ μm), triangular, honeycomb, and kagome lattices with 64–256 atoms; blockade radius $R_b/a = 1.15$ for square lattice.
 :::
 
@@ -97,13 +97,13 @@ The SLM uniformity issue (ghost traps, intensity variation) is a secondary bottl
 | Trap depth / waist | ~$2\pi \times 17$ MHz / ~900 nm | Methods |
 | Radial trap frequency | ~$2\pi \times 80$ kHz | Methods |
 | Rydberg lifetime | ~80 μs | Methods |
-| Off-resonant scattering ($\|g\rangle$) | $1/(20\ \mu\text{s})$ | Methods |
-| Off-resonant scattering ($\|r\rangle$) | $1/(150\ \mu\text{s})$ | Methods |
+| Off-resonant scattering ($\|g\rangle$) | $1/(20\ \mu\text{s})$ | Methods <!-- TODO: verify against SI — behind paywall --> |
+| Off-resonant scattering ($\|r\rangle$) | $1/(150\ \mu\text{s})$ | Methods <!-- TODO: verify against SI — behind paywall --> |
 | Rydberg detection fidelity (microwave-enhanced) | 99.1(4)% | Methods |
 | Rydberg detection fidelity (bare) | ~85% (SI: ~15% of $|r\rangle$ atoms decay back to $|g\rangle$ during imaging) | Methods |
 | Ground-state detection fidelity | 99% | Methods |
 | Perfect ground-state prob. (225 atoms) | $0.99^{225} \approx 10\%$ (per-atom × 225) | Methods |
-| Intermediate-state detuning | $\delta = 2\pi \times 1$ GHz | Methods |
+| Intermediate-state detuning | $\delta = 2\pi \times 1$ GHz (blue-detuned from $6P_{3/2}$) | Methods |
 | Rabi freq. inhomogeneity | ~2% RMS, ~6% peak-to-peak across array | Methods |
 | Critical detuning (QPT) | $\Delta_c/\Omega = 1.12(4)$ | Main (Fig. 2) |
 | Corrected wavefront error | $\lambda/100$ (after 70 mλ aberration correction) | Methods |
