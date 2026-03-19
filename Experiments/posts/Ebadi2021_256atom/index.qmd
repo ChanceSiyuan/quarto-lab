@@ -22,7 +22,7 @@ The leap from 1D to 2D: 256 $^{87}$Rb atoms arranged in arbitrary 2D geometries 
 :::{.callout-tip title="Experiment protocol"}
 1. **SLM trap array generation:** A spatial light modulator (Hamamatsu X13138-02) creates a static 2D array of optical tweezers in arbitrary geometries (square, triangular, honeycomb, kagome). Aberration correction of 70 milliwaves yields an 18% intensity gain.
 2. **AOD atom rearrangement:** Acousto-optic deflectors (AA Opto DTSX-400, transport speed 75 μm/ms, ramp time 15 μs) pick up atoms from a reservoir and rearrange them into SLM traps. First AOD pass achieves 98.5% filling; a second pass over >200-site arrays achieves **~99.2% filling**. Each single AOD pass takes **50–100 ms**; for >200-site arrays the two-pass protocol totals **~400 ms**. Single-atom loading efficiency from the MOT into reservoir tweezers: **50–60%**.
-3. **Rydberg excitation and phase mapping:** Coherent two-photon excitation to $|70S_{1/2}\rangle$ (420 nm + 1013 nm, $\Omega_{420}/2\pi = 160$ MHz, $\Omega_{1013}/2\pi = 50$ MHz, effective $\Omega/2\pi = 4$ MHz) implements the Rydberg blockade Hamiltonian. Slow detuning sweeps map out phase boundaries.
+3. **Rydberg excitation and phase mapping:** Coherent two-photon excitation to $|70S_{1/2}\rangle$ (420 nm + 1013 nm, intermediate-state detuning $\delta = 2\pi \times 1$ GHz, $\Omega_{420}/2\pi = 160$ MHz, $\Omega_{1013}/2\pi = 50$ MHz, effective $\Omega/2\pi = 4$ MHz, inhomogeneity ~2% RMS / ~6% peak-to-peak) implements the Rydberg blockade Hamiltonian. Slow detuning sweeps map out phase boundaries.
 4. **Multiple geometry benchmarking:** Systematic study of quantum phases on square ($a = 6.7$ μm), triangular, honeycomb, and kagome lattices with 64–256 atoms; blockade radius $R_b/a = 1.15$ for square lattice.
 :::
 
@@ -30,7 +30,7 @@ The leap from 1D to 2D: 256 $^{87}$Rb atoms arranged in arbitrary 2D geometries 
 ## Key observations
 
 - **Antiferromagnetically ordered states:** Correlation lengths $\xi_H = 11.1(1)$ and $\xi_V = 11.3(1)$ lattice sites in the 12×12 ordered phase, close to the system half-size — indicating long-range order.
-- **Ising QPT in (2+1)D:** Measured critical exponent $\nu = 0.62(4)$ agrees well with the theoretical (2+1)D Ising value $\nu_\text{theory} = 0.629$, confirming the correct universality class via order parameter growth and correlation length divergence.
+- **Ising QPT in (2+1)D:** Critical detuning $\Delta_c/\Omega = 1.12(4)$ for the checkerboard phase transition on the square lattice. Measured critical exponent $\nu = 0.62(4)$ agrees well with the theoretical (2+1)D Ising value $\nu_\text{theory} = 0.629$, confirming the correct universality class via order parameter growth and correlation length divergence.
 - **New quantum phases from geometry:** Different lattice geometries host distinct ordered phases — including $\mathbb{Z}_2$ order on square/honeycomb, $\mathbb{Z}_3$ order on triangular, and more complex patterns on kagome, arising from the interplay of blockade radius $R_b$ and lattice spacing $a$.
 - **Role of quantum fluctuations:** Experimental observation of quantum fluctuation effects (e.g., order-by-disorder selection) in frustrated geometries.
 - **Rydberg lifetime:** ~80 μs (sets the upper bound on coherent evolution time).
@@ -58,7 +58,7 @@ The leap from 1D to 2D: 256 $^{87}$Rb atoms arranged in arbitrary 2D geometries 
 | Trap depth | $\sim 2\pi \times 17$ MHz; waist ~900 nm | — | — |
 | SLM uniformity | ~few % variation | 1–2% variance, $>0.90$ Strehl ratio | Major refinement in later work |
 | Position accuracy | ~0.1 μm (SLM) | 0.1 μm (static) + 0.2 μm thermal | Same-order static accuracy |
-| Readout fidelity | **99.1(4)%** Rydberg (microwave-enhanced); ~85% bare (inferred from ~80 μs lifetime vs. imaging duration — not explicitly reported); 99% ground-state | 99.8% (3-zone, fluorescence imaging) | Microwave enhancement closes most of the gap vs. 3-zone |
+| Readout fidelity | **99.1(4)%** Rydberg (microwave-enhanced); ~85% bare (SI: ~15% of $|r\rangle$ atoms decay back to $|g\rangle$ during imaging); 99% ground-state | 99.8% (3-zone, fluorescence imaging) | Microwave enhancement closes most of the gap vs. 3-zone |
 
 **Critical hardware upgrade:** The SLM+AOD architecture is the defining innovation. Everything before (Bernien 2017, Keesling 2019) used 1D standing-wave traps. Everything after inherits this 2D platform.
 
@@ -100,9 +100,14 @@ The SLM uniformity issue (ghost traps, intensity variation) is a secondary bottl
 | Off-resonant scattering ($\|g\rangle$) | $1/(20\ \mu\text{s})$ | Methods |
 | Off-resonant scattering ($\|r\rangle$) | $1/(150\ \mu\text{s})$ | Methods |
 | Rydberg detection fidelity (microwave-enhanced) | 99.1(4)% | Methods |
-| Rydberg detection fidelity (bare) | ~85% (inferred: ~80 μs Rydberg lifetime vs. imaging duration; not explicitly reported in paper) | Methods |
+| Rydberg detection fidelity (bare) | ~85% (SI: ~15% of $|r\rangle$ atoms decay back to $|g\rangle$ during imaging) | Methods |
 | Ground-state detection fidelity | 99% | Methods |
 | Perfect ground-state prob. (225 atoms) | $0.99^{225} \approx 10\%$ (per-atom × 225) | Methods |
+| Intermediate-state detuning | $\delta = 2\pi \times 1$ GHz | Methods |
+| Rabi freq. inhomogeneity | ~2% RMS, ~6% peak-to-peak across array | Methods |
+| Critical detuning (QPT) | $\Delta_c/\Omega = 1.12(4)$ | Main (Fig. 2) |
+| Corrected wavefront error | $\lambda/100$ (after 70 mλ aberration correction) | Methods |
+| Rydberg decay-back during imaging | ~15% (without MW enhancement) | SI |
 | Critical exponent $\nu$ | 0.62(4) measured vs. 0.629 theory [(2+1)D Ising] | Main |
 | Correlation lengths | $\xi_H = 11.1(1)$, $\xi_V = 11.3(1)$ lattice sites (12×12 ordered phase) | Main |
 
