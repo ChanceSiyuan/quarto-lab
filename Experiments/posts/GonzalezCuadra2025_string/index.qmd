@@ -20,7 +20,7 @@ draft: true
 :::{.callout-tip title="Experiment Protocol"}
 1. **Gauge theory mapping:** Atoms on a kagome array encode a (2+1)D $U(1)$ lattice gauge theory. Rydberg blockade enforces Gauss's law; van der Waals interactions $V(r) = C_6/r^6$ (with $C_6/2\pi = 862{,}690\,\text{MHz}\cdot\mu\text{m}^6$, $^{87}$Rb $70S_{1/2}$) generate the linear confining potential.
 2. **Static-charge preparation:** A local detuning beam pins a pair of test charges; adiabatic sweep ($\sim 2.5\,\mu$s) prepares the flux-string ground state.
-3. **Phase-diagram scan:** Global detuning swept over $R_b/a \in [1.2, 1.8]$ ($a$ tuned 4.7–7 µm) on a **59-atom** kagome patch to map the confinement–deconfinement phase diagram.
+3. **Phase-diagram scan:** Global detuning swept over $R_b/a \in [1.2, 1.8]$ ($a$ tuned 4.7–7 µm) and $\delta/\Omega$ up to $3.67$ on a **59-atom** kagome patch to map the confinement–deconfinement phase diagram. (Fig. 2e–f use a cut at fixed $\delta/\Omega = 3.67$.)
 4. **Resonance scan ($d = 3$):** **39-atom** array; local detuning $\delta_0$ scanned to find the string-breaking resonance at $2\delta_0 = V_1$.
 5. **Quench dynamics ($d = 2$):** **31-atom** array; sudden quench from string state to deconfined regime; up to **1.6 µs** allocated for quench observation (main figures show snapshots at $t = 0.4\,\mu$s); the adiabatic sweep is reduced from 2.5 µs to 1.5 µs to free this window.
 6. **Readout:** per-atom fluorescence imaging; fidelity $\sim 0.95$ (Rydberg), $\sim 0.99$ (ground state) — values from the Aquila platform spec [@wurtz2023aquila], not reported in this paper.
@@ -48,7 +48,7 @@ Simulation of a (2+1)D $U(1)$ lattice gauge theory using native Rydberg interact
 
 ## Architecture comparison: relative to 1-zone/3-zone/4-zone review benchmarks
 
-| Parameter | González-Cuadra 2025 (Aquila) | SOTA 1-zone Aquila (Darbha 2025) | SOTA 1-zone Harvard lab (Manovitz 2025) | Notes |
+| Parameter | González-Cuadra 2025 (Aquila) | SOTA 1-zone Aquila [@darbha2025prethermal] | SOTA 1-zone Harvard lab [@manovitz2025honeycomb] | Notes |
 |-----------|-------------------------------|----------------------------------|----------------------------------------|-------|
 | Atom count | 31–59 (kagome, 3 configurations) | up to 180 | ~200–300 (square) | Aquila has 256-site ceiling; Harvard lab is unbounded |
 | Blockade radius | $R_b = 8.4\,\mu$m ($70S_{1/2}$) | Similar | Similar | Same Rb platform |
@@ -89,6 +89,7 @@ Two coupled bottlenecks dominate:
 | Kagome patch ($d=3$ resonance) | 39 atoms ($L_0 = 6$, $L_1 = 3$ unit cells) |
 | Kagome patch ($d=2$ dynamics) | 31 atoms ($L_0 = 5$, $L_1 = 3$ unit cells) |
 | Lattice constant $a$ | 4.7–7 µm (computed from $R_b/a \in [1.2, 1.8]$ with $R_b = 8.4\,\mu$m; paper reports $R_b/a$ range, not $a$ directly) |
+| Phase-diagram detuning range | $\delta/\Omega$ up to $3.67$ (Fig. 2e–f cut at $\delta/\Omega = 3.67$) |
 | Blockade radius $R_b$ | 8.4 µm ($^{87}$Rb $70S_{1/2}$) |
 | $C_6/2\pi$ | $862{,}690\,\text{MHz}\cdot\mu\text{m}^6$ |
 | Readout fidelity (Rydberg / ground) | $\sim 0.95$ / $\sim 0.99$ (from Aquila white paper [@wurtz2023aquila]; not reported in this paper) |
