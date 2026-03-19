@@ -2,7 +2,7 @@
 categories:
 - Readings
 date: 2026-03-18
-description: 'Reading notes on Kokail et al. 2026 — inverse quantum simulation framework for materials discovery, targeting high-Tc superconductivity'
+description: 'Reading notes on Kokail et al. 2026 — inverse quantum simulation framework for materials discovery (d-wave superconductivity, topological phases, spectral design for photochemistry)'
 lang: en
 title: 'Kokail 2026: Inverse Quantum Simulation'
 bibliography: refs.bib
@@ -56,7 +56,9 @@ $$\hat{\mathcal{O}} = (-1)^N \hat{Z}_1 \hat{Y}_2 \left[\prod_{i=3}^{N-2} \hat{X}
 - Three-spin system; CPHL reconstructs a Hamiltonian with ring-exchange coupling $J_{\text{ring}}$ from spectral response functions. The algorithm converges to the correct multi-peak structure rapidly.
 - **SHL spectral benchmarks:** For the antiferromagnetic Heisenberg chain, SHL recovers the momentum-resolved two-spinon continuum with bounds:
 $$\omega_{\text{lb}}(k) = -2\pi J |\sin k|, \qquad \omega_{\text{ub}}(k) = -4\pi J |\sin(k/2)|$$
+  These expressions use the paper's convention (negative frequencies, $J$ absorbing factors of $\pi/2$ relative to the standard des Cloizeaux–Pearson result $\omega_\text{lb} = \frac{\pi J}{2}|\sin k|$, $\omega_\text{ub} = \pi J|\sin(k/2)|$). Verified against arXiv:2601.12239 Fig. 4.
   For the ferromagnetic chain, SHL recovers the magnon dispersion $\omega_m(k)$, benchmarked against exact Bethe ansatz results.
+- **Photochemistry application:** The SHL/spectral framework underpins a proposed photochemistry application — optimizing frequency-resolved linear-response functions to enhance chosen spectral components relevant for photochemical processes. No separate photochemistry-specific numerical demonstration is provided; the spectral benchmarks above serve as the numerical foundation for this direction.
 
 ### Application 1b: Finite-temperature $d$-wave Hubbard (Gibbs state)
 
