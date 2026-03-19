@@ -22,12 +22,12 @@ draft: true
 
 280 $^{87}$Rb atoms organized into up to 48 logical qubits, demonstrating the first programmable logical quantum processor on a neutral atom platform:
 
-1. **3-zone spatial separation:** Entangling zone ($35 \times 250$ μm), storage zone (~50 μm away), and readout zone (~100 μm away) — solving the $^{87}$Rb mid-circuit measurement problem by physically separating fluorescence imaging from data qubits.
+1. **3-zone spatial separation:** Entangling zone ($35 \times 250$ μm), storage zone (adjacent; exact separation not stated), and readout zone (~100 μm away) — solving the $^{87}$Rb mid-circuit measurement problem by physically separating fluorescence imaging from data qubits.
 2. **Surface code encoding:** Logical qubits encoded in surface codes with distances $d = 3, 5, 7$, with a **single round** of stabilizer measurements (no repeated QEC cycles). Logical error suppression with increasing code distance is demonstrated from the syndrome statistics of this single round.
 3. **Color code encoding:** 40 color-code logical qubits prepared with break-even fidelities — the fault-tolerant $|0_L\rangle$ preparation achieves **99.91$^{+0.04}_{-0.09}$%** fidelity, exceeding the physical qubit initialization fidelity of 99.32(4)%. This is the concrete break-even metric: the logical qubit outperforms its constituent physical qubits.
 4. **Transversal logical gates:** Physical array reconfiguration (AOD transport) enables transversal CNOT between code blocks — exploiting the unique geometric flexibility of atom arrays.
 5. **Code teleportation:** Demonstrated teleportation of logical information between surface codes and color codes.
-6. **Complex logical circuits:** 228 logical two-qubit gates + 48 logical CCZ gates in a single circuit using $[[8,3,2]]$ code blocks.
+6. **Complex logical circuits:** 228 logical two-qubit gates + 48 logical CCZ gates in a single circuit using $[[8,3,2]]$ code blocks. The $[[8,3,2]]$ code has asymmetric distance: $d=2$ in the $Z$ basis (error detection) and $d=4$ in the $X$ basis (error correction), enabling transversal implementation of all Clifford gates on 3 logical qubits per block.
 :::
 
 ## Key observations
@@ -56,7 +56,13 @@ draft: true
 | **Atom transfer** | <0.1% error rate, SLM↔AOD handoff with ramped intensity protocol |
 | **Local addressing** | High-NA lens to 1.9 μm focus, $X(\theta)$ or polarization-insensitive $Z(\theta)$ |
 | **Gate compiling** | Interleaved CZ with echo $\pi$-pulses, BB1/SCROFULOUS composite pulses |
-| **Storage zone** | ~50 μm from entangling |
+| **Two-photon Rabi frequency** | 4.6 MHz (entangling gates) |
+| **Global rotation Rabi frequency** | ~1 MHz → ~1 μs rotations (composite pulses) |
+| **Local addressing time** | 5–8 μs per row (Raman AOD); several 10s of μs for arbitrary pattern |
+| **Gate-site separation** | ≥10 μm (negligible long-range interactions) |
+| **Rydberg interaction strength** | ≳450 MHz between pairs at ≲2 μm |
+| **Max simultaneous gate qubits** | 160 (4 × 20 gate sites; 5 vertical for surface code) |
+| **Storage zone** | Adjacent to entangling zone (exact separation not reported in text) |
 | **Readout zone** | ~100 μm away, spin-to-position at 99.8% fidelity |
 
 
@@ -133,7 +139,7 @@ Notes:
 | Atom count | ~300 | **280** | 448 |
 | Readout fidelity | 92–96% | **99.8%** | >99.9% (non-destructive) |
 | Mid-circuit measurement | ✗ | **✓** (3-zone separation) | ✓ + reservoir reload |
-| CZ gate fidelity | ~99.0–99.3% | **99.3–99.5%** | ~99.5% (bundled with loss in logical error budget) |
+| CZ gate fidelity | ≲97.5% (pre-[@evered2023highfidelity]) | **99.3–99.5%** | ~99.5% (bundled with loss in logical error budget) |
 | QEC rounds demonstrated | — | **1 (single round)** | **24 repeated rounds** |
 | QEC code distance demonstrated | — | **$d = 3, 5, 7$** | $d=7$ full cycle |
 | Atom reservoir | ✗ | ✗ | ✓ |
