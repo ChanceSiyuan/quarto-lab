@@ -11,7 +11,7 @@ draft: true
 
 # Summary and Questions
 
-**Paper:** Bluvstein et al., "A fault-tolerant neutral-atom architecture for universal quantum computation," *Nature* **649** (2025) [@bluvstein2025faulttolerant]
+**Paper:** Bluvstein et al., "A fault-tolerant neutral-atom architecture for universal quantum computation," *Nature* **649**, 39–46 (2026) [@bluvstein2025faulttolerant]
 
 > **Note on companion preprint:** arXiv:2506.20661 is titled *"Architectural mechanisms of a universal fault-tolerant quantum computer"* and is a companion methods paper to the Nature Letter. Both describe the same 4-zone apparatus. Citations here refer to the Nature Letter; methods details (decoder architecture, error budget breakdown) draw on the companion preprint [@bluvstein2025mechanisms].
 
@@ -27,7 +27,7 @@ draft: true
 1. **4-zone layout:** Entangling zone ($60 \times 175$ μm, up to 256 gate sites), storage zone, readout zone, and **reservoir zone** (196 atoms in 6 rows) — the reservoir is the defining addition over 3-zone.
 2. **Non-destructive readout:** 795 nm $\sigma^-$ optical lattice pins one spin state while AOD displaces the other by ~2 μm; the atom survives (unlike destructive 3-zone readout). Bit-flip error: 0.46(4)%, atom loss per readout: 0.24(2)%.
 3. **Entangling gates:** 270 ns duration via two-photon Rydberg excitation (420 nm + 1013 nm beams) between clock-state qubits; ~4 ms total QEC cycle time.
-4. **Repeated QEC cycles:** 4-round syndrome extraction characterization circuit with continuous ancilla replacement from the reservoir.
+4. **Repeated QEC cycles:** Up to 41 consecutive syndrome extraction rounds with continuous ancilla replacement from the reservoir; 4-round subset used for threshold characterization.
 5. **Below-threshold scaling:** Distance-5 surface code with $2.14(13)\times$ lower error per round than distance-3 in the **four-round characterization circuit**, at 0.62(3)% per round ($\approx 1.33\%$/round for $d=3$).
 6. **Universal fault-tolerant gate set:** Transversal CNOT, lattice surgery, and non-Clifford T gates via transversal teleportation with $[[15,1,3]]$ Reed-Muller codes.
 7. **Deep logical circuits:** 27-layer circuits at constant logical entropy via logical teleportation.
@@ -63,7 +63,7 @@ draft: true
 | **Cooling** | None between circuits | 1D cooling at 8.6 G bias | Maintains trap lifetime through QEC rounds |
 | **Array size** | 280 physical qubits | 448 physical qubits | 60% more qubits |
 | **Decoder** | Correlated MWPM (with post-selection) | Loss-aware RNN | 1.73× improvement over loss-unaware decoding |
-| **QEC rounds** | Single round | 4 rounds (characterization); 27-layer deep circuits | Endurance for deep circuits |
+| **QEC rounds** | Single round | Up to 41 consecutive syndrome rounds; 27-layer deep circuits | Endurance for deep circuits |
 
 
 ## Critical technique analysis
@@ -73,7 +73,7 @@ draft: true
 The 0.24(2)% atom loss per readout is the dominant error source:
 
 - 448 atoms × 0.24% loss/round ≈ 1.1 atoms lost per QEC round
-- 196-atom reservoir sustains ~178 rounds before depletion *(estimated: 196 atoms / 1.1 lost per round; not a paper-reported number — the paper demonstrates up to 27-layer deep circuits before "the reservoir begins to run out of atoms")*
+- 196-atom reservoir sustains ~100+ rounds before depletion *(the naive 196/1.1 ≈ 178 overcounts because gate errors and transport losses also contribute to attrition; the paper demonstrates up to 41 consecutive syndrome extraction rounds and 27-layer deep circuits before the reservoir runs low)*
 - ~50% of all decoder failures are loss-related
 
 Reducing loss per readout from 0.24% to 0.05% would:
@@ -92,12 +92,12 @@ Secondary: the 1529 nm shielding beam and 1D cooling must coexist without degrad
 |---------------|-----------|---------------------|-----------|
 | $d=3$ | Surface code | $\approx 1.33\%$/round | All shots (derived: $0.62\% \times 2.14$) |
 | $d=5$ | Surface code | $0.62(3)\%$/round | All shots |
-| $d=5$ | Surface code | $\approx 0.1\%$/round | No-qubit-loss shots only |
+| $d=5$ | Surface code | $\approx 0.1\%$/round | No-qubit-loss shots only (Fig. 2f [@bluvstein2025faulttolerant]) |
 | $d=4$ | $[[16,6,4]]$ high-rate | Not isolated (comparable to $[[7,1,3]]$ Steane) | Up to 96 logical qubits |
 
 The $d=5$ error rate on loss-free shots ($\approx 0.1\%$/round) is consistent with $p^3$ scaling (third-order correction to leading-order threshold behavior), confirming genuine below-threshold operation.
 
-> **Clarification on round counts:** The $2.14(13)\times$ threshold scaling figure is measured with a *four-round* characterization circuit. The deepest demonstrated circuits use 27 layers (logical teleportation), at which point the reservoir begins to run out of atoms.
+> **Clarification on round counts:** The $2.14(13)\times$ threshold scaling figure is measured with a *four-round* characterization circuit. The system demonstrates up to **41 consecutive syndrome extraction rounds** with continuous ancilla replacement [@bluvstein2025mechanisms]. The deepest demonstrated circuits use 27 layers (logical teleportation), at which point the reservoir begins to run low.
 
 ### Physical gate fidelities
 
@@ -110,8 +110,6 @@ The $d=5$ error rate on loss-free shots ($\approx 0.1\%$/round) is consistent wi
 | Atom loading efficiency | 75% (gray molasses D1 cooling) | [@bluvstein2025mechanisms] |
 
 The Nature Letter does not re-quote a standalone CZ fidelity; the entangling gate error is folded into the error budget in Fig. 2f. The $5\times10^{-5}$ per-pulse scattering error for SCROFULOUS (quoted in the methods preprint) is small compared to atom loss, consistent with the conclusion that loss dominates the error budget.
-
-*Note:* Neither the Nature letter nor the companion preprint re-benchmarks a standalone CZ fidelity; the entangling gate error is folded into the per-round error budget (Fig. 2f). The ~99.5% figure is inherited from Evered et al. 2023 on the same apparatus.
 
 ### ML decoder
 
