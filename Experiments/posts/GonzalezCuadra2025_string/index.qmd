@@ -85,9 +85,9 @@ Two coupled bottlenecks dominate:
 
 | Quantity | Value |
 |----------|-------|
-| Kagome patch (phase diagram) | 59 atoms |
-| Kagome patch ($d=3$ resonance) | 39 atoms |
-| Kagome patch ($d=2$ dynamics) | 31 atoms |
+| Kagome patch (phase diagram) | 59 atoms ($L_0 = L_1 = 5$ unit cells) |
+| Kagome patch ($d=3$ resonance) | 39 atoms ($L_0 = 6$, $L_1 = 3$ unit cells) |
+| Kagome patch ($d=2$ dynamics) | 31 atoms ($L_0 = 5$, $L_1 = 3$ unit cells) |
 | Lattice constant $a$ | 4.7–7 µm (tuned via AOD) |
 | Blockade radius $R_b$ | 8.4 µm ($^{87}$Rb $70S_{1/2}$) |
 | $C_6/2\pi$ | $862{,}690\,\text{MHz}\cdot\mu\text{m}^6$ |
@@ -99,5 +99,11 @@ Two coupled bottlenecks dominate:
 | Resonance width $\Delta\delta_0/\Omega$ | 0.88(5) (aggressive) / 0.53(2) (conservative) |
 | Resonance peak $\delta_0/\Omega$ ($d=2$) | 1.4(1) exp. vs. 1.0 theory |
 | Resonance peak $\delta_0/\Omega$ ($d=3$) | 1.0(1) exp. vs. 0.7 theory |
+
+**Theoretical comparison method:** Theory curves are computed via tensor-network (DMRG) simulations using the TeNPy library. These provide the ground-state string configurations and resonance predictions against which the experimental data are compared.
+
+**Post-selection:** The paper reports two resonance widths — $\Delta\delta_0/\Omega = 0.88(5)$ ("aggressive" filter) and $0.53(2)$ ("conservative" filter) — but the main text does not define the filter criteria or the fraction of shots surviving each. Shot counts per configuration are also not reported in the main text. These details are presumably in the Supplementary Information.
+
+<!-- TODO: Extract post-selection filter definitions and shot survival fractions from SI when available -->
 
 **Note on Lüscher corrections:** The paper does *not* report a Lüscher roughening coefficient or a logarithmic fit to string width. The key 2D-specific observation is **string substructure**: among the six topologically distinct unbroken paths of equal length, occurrence probabilities are unequal due to geometry-dependent long-range $1/R^6$ interactions. This has no 1D analog and is a direct probe of the microscopic Hamiltonian.
