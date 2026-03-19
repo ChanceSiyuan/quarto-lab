@@ -17,7 +17,7 @@ draft: true
 
 ## What was done
 
-219 atoms on a kagome lattice to probe signatures of a $\mathbb{Z}_2$ topological quantum spin liquid — a phase of matter with long-range entanglement but no local order parameter. Platform: Rydberg state $70S_{1/2}$, two-photon excitation via 420 nm + 1013 nm, atom spacing $a = 3.9\,\mu$m, Rabi frequency $\Omega = 2\pi \times 1.4$ MHz.
+219 atoms on the links of a kagome lattice to probe signatures of a $\mathbb{Z}_2$ topological quantum spin liquid — a phase of matter with long-range entanglement but no local order parameter. Platform: Rydberg state $70S_{1/2}$, two-photon excitation via 420 nm + 1013 nm, atom spacing $a = 3.9\,\mu$m, Rabi frequency $\Omega = 2\pi \times 1.4$ MHz.
 
 :::{.callout-tip title="Experimental Protocol"}
 1. **Kagome lattice preparation:** Atoms placed on the links of a kagome lattice using the SLM+AOD platform ($a = 3.9\,\mu$m); blockade ratio $R_b/a = 2.4$ ensures nearest-neighbor pairs on kagome links are within blockade radius, enforcing the dimer constraint.
@@ -57,6 +57,8 @@ At the target point $\Delta/\Omega \approx 4$, approximately 80% of vertices are
 | Measurement bases | $Z$ and $X$ (global rotation) | $Z$ only (typical) | Mid-circuit readout | Required global $\pi/2$ pulse for $X$-basis |
 
 **Bottleneck 1 relevance:** The review identifies thermal position fluctuation ($\sigma_{x,y} \approx 0.2\,\mu$m) as producing ~30% nearest-neighbor interaction energy spread at $R \approx 4\,\mu$m. This experiment operates at $a = 3.9\,\mu$m — *below* the review's nominal minimum, so $\delta V/V \approx 6 \times 0.2/3.9 \approx 31\%$. This interaction spread contributes to the finite density of monomer/double-dimer defects (~20% of vertices) and limits the fidelity of the quasi-adiabatic sweep. Improved atom cooling or larger lattice spacing would reduce defect density but also weaken the blockade constraint.
+
+**Bottleneck 5 relevance (defect-free yield):** At 219 atoms with ~98.4% single-atom filling after rearrangement ([@ebadi2021quantum]), the probability of a fully defect-free array is $(0.984)^{219} \approx 3\%$. The vast majority of experimental shots therefore contain at least one missing atom, which directly contributes to the ~20% of vertices violating the dimer constraint at $\Delta/\Omega \approx 4$. Missing atoms break the blockade constraint locally and create monomer defects indistinguishable from dynamical excitations. This preparation-defect floor cannot be reduced by improved adiabaticity — it requires higher single-atom loading or rearrangement fidelity (e.g., the 3-zone architecture achieves 99.5% filling).
 
 No new hardware was introduced — this experiment runs on exactly the Ebadi 2021 apparatus. The innovation is entirely in the *protocol* (what to measure and how to interpret it).
 
@@ -148,7 +150,7 @@ The post-selection fraction for $X$-basis shots and the number of experimental s
 
 ## Towards a topological qubit (Fig. 5)
 
-The paper's most forward-looking result creates a lattice with **nontrivial topology** by removing three atoms on a central triangle, opening a hole that acts as an inner boundary. Dimer coverings on this punctured lattice split into two topological sectors (labeled 0 and 1), distinguished by the parity of dimers crossing a cut from the hole to the outer boundary.
+The paper's most forward-looking result creates a lattice with **nontrivial topology** by removing three atoms on a central triangle, opening a hole that acts as an inner boundary. <!-- TODO: confirm total atom count for the Fig. 5 punctured lattice — likely a subset of 219, but the paper/supplement does not clearly state it --> Dimer coverings on this punctured lattice split into two topological sectors (labeled 0 and 1), distinguished by the parity of dimers crossing a cut from the hole to the outer boundary.
 
 Two logical operators are defined:
 
