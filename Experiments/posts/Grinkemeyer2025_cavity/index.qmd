@@ -19,7 +19,7 @@ draft: true
 
 A fundamentally different entanglement mechanism: instead of Rydberg blockade (direct atom-atom interaction), this uses cavity QED (atom-photon-atom interaction via a shared optical mode):
 
-1. **Fiber Fabry-Pérot cavity:** Individual $^{87}$Rb atoms in optical tweezers are coupled to a small-mode-volume fiber cavity. The cavity enhances the atom-photon interaction by the cavity finesse.
+1. **Fiber Fabry-Pérot cavity:** Individual $^{87}$Rb atoms in optical tweezers are coupled to a small-mode-volume fiber cavity. The cavity enhances the atom-photon interaction by the cooperativity $C = 4g^2/(\kappa\Gamma)$.
 2. **Cavity-enhanced fluorescence detection:** The cavity collects a large fraction of spontaneously emitted photons, boosting readout fidelity to 99.96% — far beyond free-space fluorescence (~99% for $|g\rangle$).
 3. **Cavity-mediated entanglement:** Two atoms coupled to the same cavity mode become entangled via photon exchange: atom A emits a photon into the cavity → cavity photon is absorbed by atom B → entangled Bell state.
 4. **Error detection:** The cavity photon detection provides a built-in heralding signal. If the photon is lost (detected as no click), the entangling attempt is flagged as failed and discarded — converting gate errors into detectable erasures.
@@ -63,6 +63,21 @@ A fundamentally different entanglement mechanism: instead of Rydberg blockade (d
 | State preparation time | 18 μs (15 μs D1+D2 pump + 3 μs D1 cleanup) |
 | Cavity resonance tuning time | ~7 ms (mechanical lever-arm limit; per readout-basis switch) |
 | Atoms demonstrated (max possible) | 2 (~20) |
+| Trap wavelength | 850 nm (intracavity dipole trap) |
+| Cavity lock wavelength | 810 nm |
+| SM fiber mirror ROC | 165 μm |
+| MM fiber mirror ROC | 145 μm |
+| Collection objective | 0.5 NA Mitutoyo G Plan Apo 50X |
+| Readout threshold | 3 photons |
+| Bright-state photon count $\mu_H$ | 16.6(1) per 10 μs |
+| Dark-state photon count $\mu_L$ | 0.09(2) per 10 μs |
+| Readout probe rate $C_P$ | ~1.75 Mcps |
+| Detectors | 2× SPCM-AQRH-14-FC SPADs on 50:50 fiber BS |
+| Detector dead time | 17(1) ns |
+| Detector dark count rate | 3.14(6) mcps |
+| Intracavity circulating power (850 nm) | ~20 mW |
+| 850 nm light shift on $2 \leftrightarrow 3'$ | ~24 MHz |
+| Beat-note period (multi-atom) | 4.7 μm |
 
 The cooperativity $C = 4g^2/(\kappa\Gamma) = 101$ sets the fundamental tradeoff: higher $C$ increases both success probability and fidelity. The current finesse of 25,904 degraded from $>40{,}000$ after bakeout-induced misalignment.
 
@@ -112,6 +127,8 @@ The cooperativity $C = 4g^2/(\kappa\Gamma) = 101$ sets both the success probabil
 
 In the strong-coupling regime, success probability scales as $C/(C+1) \approx 1 - 1/C$. Doubling cooperativity from 100 to 200 would roughly halve the failure probability per attempt — boosting carving success from 32% to ~66% and deterministic gate fidelity toward the postselected regime. The current finesse of 25,904 degraded from $>40{,}000$ after bakeout misalignment; restoring this alone would increase $C$ by ~50%.
 
+**However, cooperativity is not the sole fidelity limiter.** The paper identifies a $C$-independent fidelity ceiling: only 91.5% of dark-state scattering events produce detectable errors (atoms leaving the qubit manifold). The remaining 8.5% scatter back into $F=1$ Zeeman sublevels that are indistinguishable from the qubit states, producing *undetectable* errors. This caps the carving protocol's theoretical maximum fidelity at **~96.3%** even at infinite $C$. Additional fidelity-limiting mechanisms include off-resonant scattering from the 850 nm trap, $F=3$ state light shifts, imperfect polarization, and level-mixing of excited states. Thus, increasing $C$ improves the *success rate* but does not address the *fidelity ceiling* — resolving the Zeeman-sublevel detection gap (e.g., via sublevel-selective readout or shelving) is required to push carving fidelity beyond ~96%.
+
 **Paths to improvement:**
 
 - Restore/increase finesse (engineering: mirror smoothness, alignment after bakeout)
@@ -128,12 +145,6 @@ Cavity hardware parameters are now in the protocol section above ($\mathcal{F} =
 
 **Comparison with other cavity QED platforms:**
 
-<!-- TODO: Add citations for ion cavity QED (e.g., Keller 2004, Mundt 2002) and neutral-atom bulk cavity work (e.g., Wilk 2010, Lim 2024) before publishing. Values below are rough order-of-magnitude estimates from general knowledge and are NOT from the Grinkemeyer paper. -->
-
-| Platform | Cooperativity $C$ | Gate fidelity | Scale | Citation status |
-|---------|-------------------|---------------|-------|----------------|
-| Neutral atoms in fiber cavity (this work) | 101(2) [@grinkemeyer2025cavity] | 52.5% det. / 76% postsel. | 2 atoms | Cited |
-| Trapped ions in Fabry-Pérot | ~1–10 (estimate) | — | 1–2 ions | **Uncited** |
-| Neutral atoms in bulk cavity | ~10–100 (estimate) | ~90% (older works, estimate) | 1–few | **Uncited** |
+<!-- TODO: Add citations for ion cavity QED (e.g., Keller 2004, Mundt 2002) and neutral-atom bulk cavity work (e.g., Wilk 2010, Lim 2024) to enable a proper cross-platform comparison table. -->
 
 Fiber Fabry-Pérot cavities achieve high $C$ at small cavity length; the main open challenge is combining high $C$ with tweezer-array scalability.
