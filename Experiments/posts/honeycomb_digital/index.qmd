@@ -22,7 +22,7 @@ To ensure that the prepared state is the ground state of the Kitaev honeycomb mo
 
 ![Initialization circuit](initialize.png)
 
-In [@evered2025probing], Lukin \textit{et.al.} proposed a method to prepare this state by projecting to the XZZX code space, as shown in the following figure and include the steps below:
+In [@evered2025probing], Lukin *et al.* proposed a method to prepare this state by projecting to the XZZX code space, as shown in the following figure and include the steps below:
 
 :::{.callout-tip collapse="false"}
 ## Experiment protocol: Initialization circuit
@@ -132,7 +132,7 @@ $$
 
 #### Simulating interacting fermions
 
-To simulate the Fermi-Hubbard model, @evered2025probing use two lattice to encode $a_{\sigma = \uparrow,i}, a_{\sigma = \downarrow,i}$ separately.  The Hamiltonian is:
+To simulate the Fermi-Hubbard model, @evered2025probing use two copies of an 8-site honeycomb lattice (**16 qubits** total) to encode $a_{\sigma = \uparrow,i}, a_{\sigma = \downarrow,i}$ separately.  The Hamiltonian is:
 $$
 H_{FH} =  \sum_{\sigma \in \uparrow, \downarrow} \sum_{\langle i,j \rangle} (a_{\sigma,i}^\dagger a_{\sigma,j} + a_{\sigma,j}^\dagger a_{\sigma,i}) + U \sum_{i} n_{\uparrow,i} n_{\downarrow,i},
 $$
@@ -188,7 +188,7 @@ The appropriate baseline is **Bluvstein 2024** [@bluvstein2024logical], which in
 |-----------|-------------|----------------------------------|--------------------------|
 | **Total atoms** | 104 (72 data + 32 ancilla) | 280 physical / 48 logical | 72 data qubits tile a cylindrical honeycomb; 32 ancilla enable mid-circuit measurement |
 | **1Q gate fidelity** | ~99.5% ("roughly similar to our other works" [@evered2025probing]) | ~99.5% | No dedicated benchmark reported; inherited from prior generations |
-| **CZ fidelity** | ~99.5% (carried from Bluvstein 2024; Evered 2025 states performance is "comparable to prior work") | 99.5% | No significant regression; each Floquet layer still compounds this |
+| **CZ fidelity** | 99.4% (global randomized benchmarking [@evered2025probing]) | 99.5% | Slight regression attributed to closer intermediate-state detuning (3.3 GHz); each Floquet layer compounds this |
 | **Tunable-angle CPHASE** | Numerically optimized per angle; **no standalone fidelity number reported** — only stated as "comparable to prior work" | N/A (fixed CZ only) | Fidelity likely similar to CZ but uncharacterized independently |
 | **Rydberg state** | $n = 53$ (two-photon: 420 nm + 1013 nm) | $n = 70$ ($\lvert 70S_{1/2}\rangle$) | Lower $n$ enables closer atom spacing via smaller blockade radius |
 | **Intermediate-state detuning** | 3.3 GHz (closer than prior work) | Standard | Enables higher Rabi frequency at closer spacing |
@@ -209,13 +209,13 @@ The single most important limiting factor in this experiment is not gate fidelit
 - The fermion exchange statistics protocol requires sequential loss-radius postselection across multiple ancilla rounds; with ~96–97% per-shot readout fidelity over 32 ancilla qubits, the acceptance fraction drops to **1–7%** per shot.
 - This is not improvable by increasing circuit depth — the degradation worsens over time, making longer experiments less accurate, not more.
 
-**Gate fidelity accumulation is secondary.** The deepest circuit in the experiment is depth-12 (fermion quench dynamics), operating on 72 data qubits arranged so each Floquet step involves $O(72)$ parallel 2-qubit gates, not all qubits simultaneously. Evered 2025 reports no new CZ benchmark — it states performance is "comparable to prior work." The CZ fidelity of ~99.5% is carried from Bluvstein 2024 [@bluvstein2024logical]. With this value and maximum depth-12:
+**Gate fidelity accumulation is secondary.** The deepest circuit in the experiment is depth-12 (fermion quench dynamics), operating on 72 data qubits arranged so each Floquet step involves $O(72)$ parallel 2-qubit gates, not all qubits simultaneously. Evered 2025 reports a CZ fidelity of **99.4%** via global randomized benchmarking [@evered2025probing], a slight regression from the 99.5% of Bluvstein 2024 attributed to the closer intermediate-state detuning (3.3 GHz) used to enable tighter atom spacing. With this value and maximum depth-12:
 
 $$
-(0.995)^{12} \approx 94\%
+(0.994)^{12} \approx 93\%
 $$
 
-per qubit per Floquet layer — substantially better than the readout budget. Gate fidelity is not the limiting factor at current depths.
+per qubit per Floquet layer — still substantially better than the readout budget. Gate fidelity is not the limiting factor at current depths.
 
 **Path to improvement:** Stabilizing the trap laser power over the experimental run would recover ~3–4% per-shot readout fidelity and could increase exchange measurement acceptance fractions by $\sim 5\times$. Gate fidelity improvements (99.4% → 99.9%) would become the limiting factor only once readout is fixed.
 
