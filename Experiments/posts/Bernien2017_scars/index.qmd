@@ -60,7 +60,7 @@ This experiment predates the SLM+AOD architecture (introduced in Ebadi 2021). Th
 
 **Most important bottleneck for this specific experiment: Decoherence truncates the scar oscillations.**
 
-The domain-wall density oscillations in Fig. 3 of the paper decay with a fitted timescale of **0.88 μs** — roughly 1–2 Rabi periods at $\Omega/2\pi = 2$ MHz. The oscillations are visible for only ~4 cycles before being washed out. The spin-echo coherence is $> 5\ \mu\text{s}$ (no visible decay), so simple dephasing is not the dominant mechanism. The competing decoherence channels are:
+The domain-wall density oscillations in Fig. 3 of the paper decay with an estimated $1/e$ timescale of **~0.88 μs** (estimated from digitized Fig. 3 data; the paper does not report a decay constant explicitly) — roughly 1–2 Rabi periods at $\Omega/2\pi = 2$ MHz. The oscillations are visible for only ~4 cycles before being washed out. The spin-echo coherence is $> 5\ \mu\text{s}$ (no visible decay), so simple dephasing is not the dominant mechanism. The competing decoherence channels are:
 
 - **Rydberg state decay:** Lifetime $\tau \approx 150\ \mu\text{s}$ for $\|70S_{1/2}\rangle$ at 300 K, contributing a decay rate of $\sim 2\pi \times 1$ kHz per atom. For 51 atoms this gives a collective $1/e$ time $\sim 3\ \mu\text{s}$ — consistent with the observed 0.88 μs oscillation decay timescale.
 - **Thermal motion dephasing:** Atom temperature ~12 μK in a ~1 mK trap gives a root-mean-square position spread that modulates the van der Waals coupling $V \propto r^{-6}$, smearing the blockade edge.
@@ -90,16 +90,16 @@ with $n_i = \frac{1}{2}(1 + \sigma_i^z)$. Relevant parameters from the paper:
 | Quantity | Value |
 |---------|-------|
 | Quench point | $\Delta = 0$, $\Omega = 2\pi \times 2$ MHz |
-| 1013 nm single-photon Rabi freq. | $\Omega_R = 2\pi \times 36$ MHz |
-| 420 nm single-photon Rabi freq. | $\Omega_B = 2\pi \times 60$ MHz |
-| Intermediate-state detuning | $\delta = 2\pi \times 560$ MHz (from $6P_{3/2}$) |
+| 1013 nm single-photon Rabi freq. | $\Omega_R = 2\pi \times 36$ MHz (Methods) |
+| 420 nm single-photon Rabi freq. | $\Omega_B = 2\pi \times 60$ MHz (Methods) |
+| Intermediate-state detuning | $\delta = 2\pi \times 560$ MHz from $6P_{3/2}$ (Methods) |
 | Lattice spacing (Z₂) | $a = 5.74\ \mu\text{m}$ |
 | Lattice spacing (Z₃) | $a = 3.57\ \mu\text{m}$ |
 | Blockade radius | $R_b \approx 9\ \mu\text{m}$ ($R_b/a \approx 1.57$ for Z₂) |
 | NN interaction $V_{i,i+1}$ | $2\pi \times 24$ MHz |
 | NNN interaction $V_{i,i+2}$ | $2\pi \times 0.38$ MHz |
 | Domain-wall oscillation period | ~0.69 μs ($\approx \Omega^{-1} \times 1.38$, i.e., $\sim 1.38$ half-periods at $\Omega/2\pi = 2$ MHz) |
-| Domain-wall oscillation decay | 0.88 μs (fit to Fig. 3 data) |
+| Domain-wall oscillation decay | ~0.88 μs (estimated from digitized Fig. 3; not explicitly reported in paper) |
 | Rydberg lifetime (70S, 300 K) | ~150 μs |
 | Atom temperature | ~12 μK |
 | Trap depth | ~1 mK |
