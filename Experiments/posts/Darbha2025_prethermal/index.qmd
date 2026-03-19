@@ -38,7 +38,7 @@ Systematic mapping of quench dynamics across a wide $\Delta/\Omega$ parameter sp
 
 ## Key observations
 
-- **Floquet-like prethermalization:** At intermediate detunings, the Rydberg blockade constraint confines dynamics to a restricted Hilbert subspace ($PXP$ model), producing long-lived non-thermal steady states — a *prethermal plateau* persisting for exponentially long times $\sim e^{V_1/\lambda}$ before ETH eventually sets in. This is prethermalization, not permanent ETH breakdown; the plateau is finite but parametrically long. Experimentally the plateau is observed over $t \in [0.8, 4.0\,\mu\text{s}]$; numerics (ED, $N \leq 20$) show it persists to $\sim\!100\,\mu\text{s}$.
+- **Floquet-like prethermalization:** At intermediate detunings, the Rydberg blockade constraint confines dynamics to a restricted Hilbert subspace ($PXP$ model), producing long-lived non-thermal steady states — a *prethermal plateau* persisting for exponentially long times $\sim e^{V_1/\lambda}$ before ETH eventually sets in. This is prethermalization, not permanent ETH breakdown; the plateau is finite but parametrically long. Experimentally the plateau is observed over $t \in [0.8, 4.0\,\mu\text{s}]$; numerics (ED, $N \leq 20$) confirm it persists for *at least* 100 µs (the simulation ceiling), with theoretical lifetime $\sim e^{V_1/\lambda}$ exponentially longer.
 - **Resonant melting:** Sharp resonance peaks in $k$-island observables at (for $R_b/a \approx 1.4$, i.e., $V_1/\Omega \approx 7.4$):
   - **Dominant resonance** $\Delta/\Omega \approx 3.7$: condition $2\Delta = V_1$ — nearest-neighbor pair processes become resonant, proliferating "0110" 2-islands.
   - **Secondary resonance** $\Delta/\Omega \approx 2.5$: condition $3\Delta = V_1$ — higher-order three-photon process.
@@ -77,18 +77,18 @@ No hardware innovation — same Aquila platform as Kornjaca 2024 and González-C
 
 **Most important technique needing optimization: extending the coherent evolution window beyond 4 µs.**
 
-The experiment's central claim — an exponentially long prethermal plateau — is observed only over $t \in [0.8, 4.0]\,\mu\text{s}$ experimentally, while numerics show the plateau persists to $>100\,\mu\text{s}$. This gap of $25\times$ is not a physics limitation; it is the coherence ceiling of Aquila (laser phase noise, atom loss, and thermal position drift over time). The bottleneck matters because:
+The experiment's central claim — an exponentially long prethermal plateau — is observed only over $t \in [0.8, 4.0]\,\mu\text{s}$ experimentally, while numerics confirm the plateau persists for *at least* 100 µs (the ED simulation ceiling for $N \leq 20$), with theoretical lifetime $\sim e^{V_1/\lambda}$ exponentially longer. This gap of $\gtrsim 25\times$ is not a physics limitation; it is the coherence ceiling of Aquila (laser phase noise, atom loss, and thermal position drift over time). The bottleneck matters because:
 
 1. **The exponential scaling $\sim e^{V_1/\lambda}$ cannot be verified experimentally.** The theory predicts thermalization is exponentially suppressed for times $t \ll e^{V_1/\lambda}$, but Aquila can only access the first ~4 µs of a plateau that lasts orders of magnitude longer. This means the experiment can confirm the *existence* of a plateau but not its predicted scaling with $V_1/\Omega$.
 
 2. **Secondary resonance structure is washed out by the short window.** Finer-scale resonances (e.g., $\Delta/\Omega \approx 2.5$ and $4.9$) require long-time averaging to emerge above statistical noise. At 100–120 shots and 4 µs, the signal-to-noise marginal for the secondary peaks.
 
-3. **$1/R^6$ thermal broadening is a secondary concern.** With $\sigma_x \approx 0.2\,\mu\text{m}$, $\delta V_1/V_1 \approx 30\%$, which broadens the dominant resonance at $\Delta/\Omega \approx 3.7$. But even with perfect atoms, the 4 µs ceiling prevents accessing the long-time behavior where the prethermal physics is most striking.
+3. **$1/R^6$ thermal broadening is a secondary concern.** The paper attributes resonance broadening and peak coalescence to atom position disorder but does not report a numerical value for $\sigma_x$. For typical Aquila operating conditions, $\sigma_x \sim 0.1$–$0.2\,\mu\text{m}$ (platform-level estimate, not from this paper), which at $a \sim 5\,\mu\text{m}$ gives $\delta V_1/V_1 \sim 6\sigma_x/a \sim 10$–$25\%$, broadening the resonances. But even with perfect positioning, the 4 µs coherence ceiling prevents accessing the long-time behavior where the prethermal physics is most striking.
 
 **Paths to improvement:**
 
 - **Laser coherence / clock laser stabilization:** Extending the coherence time to $\gtrsim 100\,\mu\text{s}$ (as in optical tweezer clock experiments) would let Aquila probe the actual prethermal timescale predicted by theory and verify the exponential suppression.
-- **Atom cooling:** Reducing $\sigma_x$ from 0.2 µm to 0.05 µm would sharpen resonance peaks by $\sim 4\times$, making the secondary resonances ($\Delta/\Omega \approx 2.5$, $4.9$) clearly resolvable.
+- **Atom cooling:** Reducing position disorder $\sigma_x$ (e.g., from typical Aquila values of $\sim 0.1$–$0.2\,\mu\text{m}$ down to $\sim 0.05\,\mu\text{m}$) would sharpen resonance peaks, making the secondary resonances ($\Delta/\Omega \approx 2.5$, $4.9$) clearly resolvable.
 - **Larger 2D arrays:** The dynamical phase transition in 2D becomes sharper with system size. Scaling to 300+ atoms (Harvard apparatus) would give cleaner finite-size scaling for the Néel-order transition near $\Delta_\text{Néel}/\Omega \sim 2V_2/\Omega$ (where $V_2 = V_1/8$ for square lattice next-nearest neighbors).
 
 ## Completeness check
@@ -105,8 +105,8 @@ The experiment's central claim — an exponentially long prethermal plateau — 
 
 - **Plateau onset:** $t \approx 0.5\,\mu\text{s}$ (paper's stated convergence of time-averaged observables).
 - **Averaging window:** $t \in [0.8, 4.0]\,\mu\text{s}$ (conservative margin above the 0.5 µs onset).
-- **Numerics:** plateau predicted to persist to $\sim\!100\,\mu\text{s}$ (Bloqade.jl ED, $N \leq 20$), consistent with exponential suppression $\sim e^{V_1/\lambda}$.
-- **Gap:** $>25\times$ between experimental access and theoretical prethermal timescale — not a physics issue, but Aquila's coherence ceiling.
+- **Numerics:** ED simulations (Bloqade.jl, $N \leq 20$) confirm the plateau persists for *at least* 100 µs — the simulation ceiling, not a predicted thermalization time. The theoretical prethermal lifetime $\sim e^{V_1/\lambda}$ is exponentially longer.
+- **Gap:** $\gtrsim 25\times$ between experimental access (4 µs) and the numerically confirmed lower bound (100 µs), with the true prethermal lifetime far longer still — limited by Aquila's coherence ceiling, not physics.
 
 **System-size ladder for finite-size scaling:**
 
