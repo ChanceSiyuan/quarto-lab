@@ -26,15 +26,15 @@ draft: true
 4. **Measure** $k$-island densities (number of clusters of $k$ consecutive Rydberg excitations) at each time step. Shot counts vary by system: 52-atom 1D = 120 physical shots; 180-atom 2D = 100 physical shots; 16-atom 1D = 50 physical shots $\times$ 2 parallel copies in the field of view (100 effective); 16-atom 2D = 20 physical shots $\times$ 6 parallel copies (120 effective).
 5. **Time-average** observables over the steady-state window $t \in [0.8, 4.0\,\mu\text{s}]$ to extract the prethermal plateau value.
 
-**System sizes:** 1D chains of 16 and 52 atoms; 2D square arrays of 9, 16, 64, and 180 atoms. Atom spacing $a$ tuned to scan $R_b/a \in [1.2, 1.6]$ in steps of 0.04 (where $R_b = (C_6/\Omega)^{1/6}$, with $C_6/2\pi = 862{,}690\,\text{MHz}\cdot\mu\text{m}^6$). Numerical benchmarks via exact diagonalization (Bloqade.jl on NERSC Perlmutter) for $N \leq 20$.
+**System sizes:** 1D chains of 16 and 52 atoms; 2D square arrays of 9, 16, 64, 99, and 180 atoms. Atom spacing $a$ tuned to scan $R_b/a \in [1.2, 1.6]$ in steps of 0.04 (where $R_b = (C_6/\Omega)^{1/6}$, with $C_6/2\pi = 862{,}690\,\text{MHz}\cdot\mu\text{m}^6$). Numerical benchmarks via exact diagonalization (Bloqade.jl on NERSC Perlmutter) for $N \leq 20$.
 :::
 
 Systematic mapping of quench dynamics across a wide $\Delta/\Omega$ parameter space on 1D chains and 2D square arrays, starting from the product state $|000\ldots 0\rangle$ with $\Omega/2\pi = 2.5\,\text{MHz}$:
 
-1. **Parameter space exploration:** Varying $\Delta/\Omega$ from the disordered regime through the blockade-dominated regime, scanning $R_b/a \in [1.2, 1.6]$ at each detuning point. System sizes: 1D chains of 16 and 52 atoms; 2D arrays of 9, 16, 64, 180 atoms.
+1. **Parameter space exploration:** Varying $\Delta/\Omega$ from the disordered regime through the blockade-dominated regime, scanning $R_b/a \in [1.2, 1.6]$ at each detuning point. System sizes: 1D chains of 16 and 52 atoms; 2D arrays of 9, 16, 64, 99, 180 atoms.
 2. **$k$-island observable measurement:** Counting clusters of $k$ adjacent Rydberg excitations as a function of evolution time and $\Delta/\Omega$, time-averaged over the steady-state window $t \in [0.8, 4.0\,\mu\text{s}]$. Observables converge to the prethermal plateau around $t \approx 0.5\,\mu\text{s}$; the 0.8 µs window start adds conservative margin. Shot counts: 120 (52-atom 1D), 100 (180-atom 2D), $50 \times 2$ parallel copies (16-atom 1D), $20 \times 6$ parallel copies (16-atom 2D).
 3. **1D chain dynamics:** Identifying prethermal plateaus and resonance structure, with resonances located at $\Delta/\Omega \approx 3.7$ ($2\Delta = V_1$, dominant), $\approx 2.5$ ($3\Delta = V_1$), and $\approx 4.9$ ($3\Delta = 2V_1$) for $R_b/a \approx 1.4$.
-4. **2D square array dynamics:** Searching for dynamical phase transitions; finite-size scaling via the system-size ladder (9 → 16 → 64 → 180 atoms). ED benchmarks for $N \leq 20$ show qualitative agreement.
+4. **2D square array dynamics:** Searching for dynamical phase transitions; finite-size scaling via the system-size ladder (9 → 16 → 64 → 99 → 180 atoms). ED benchmarks for $N \leq 20$ show qualitative agreement.
 
 ## Key observations
 
@@ -42,7 +42,7 @@ Systematic mapping of quench dynamics across a wide $\Delta/\Omega$ parameter sp
 - **Resonant melting:** Sharp resonance peaks in $k$-island observables at (for $R_b/a \approx 1.4$, i.e., $V_1/\Omega \approx 7.4$):
   - **Dominant resonance** $\Delta/\Omega \approx 3.7$: condition $2\Delta = V_1$ — nearest-neighbor pair processes become resonant, proliferating "0110" 2-islands.
   - **Secondary resonance** $\Delta/\Omega \approx 2.5$: condition $3\Delta = V_1$ — higher-order three-photon process.
-  - **Tertiary resonance** $\Delta/\Omega \approx 4.9$: condition $3\Delta = 2V_1$ — three-photon process involving two nearest-neighbor interactions.
+  - **Tertiary resonance** $\Delta/\Omega \approx 4.9$: condition $3\Delta = 2V_1$ — resonant proliferation of 3-islands (clusters of three consecutive Rydberg excitations, e.g., "011101110").
   - These resonances are predicted by a Floquet-Magnus (FME) perturbation expansion and serve as a quantitative check of the effective Hamiltonian.
 - **Dynamical phase transition (2D):** In the 2D square array, the boundary of the prethermal region hosts a sharp dynamical transition marked by Néel-order defect proliferation. This transition has **no equilibrium counterpart** — it is a purely dynamical quantum phase transition, analogous to a quantum Stoner-Wohlfarth transition modified by quantum fluctuations.
 
@@ -67,7 +67,7 @@ Systematic mapping of quench dynamics across a wide $\Delta/\Omega$ parameter sp
 | Readout fidelity | *Not reported in paper* | ~92–96% (1-zone benchmark) | Darbha 2025 reports no SPAM or detection fidelity — "~92–96%" is a platform-level Aquila spec, not a Darbha 2025 result |
 | Shots per data point | 20–120 physical; 100–120 effective (parallel copies) | Varies by experiment | See shot breakdown above |
 | Local addressing | No | No | Global quench only |
-| Geometries | 1D chain (16, 52) + 2D square (9, 16, 64, 180) | Various | System-size ladder for FSS |
+| Geometries | 1D chain (16, 52) + 2D square (9, 16, 64, 99, 180) | Various | System-size ladder for FSS |
 | Numerical benchmark | ED (Bloqade.jl, NERSC Perlmutter, $N \leq 20$) | — | Qualitative agreement only |
 
 No hardware innovation — same Aquila platform as Kornjaca 2024 and González-Cuadra 2025. The $\Omega/2\pi = 2.5\,\text{MHz}$ and $C_6$ values confirm this is an unmodified Aquila run.
@@ -99,7 +99,7 @@ The experiment's central claim — an exponentially long prethermal plateau — 
 |-----------|-----------|-----------------|---------|
 | Dominant | $2\Delta = V_1$ | $\approx 3.7$ | NN pair creation becomes resonant |
 | Secondary | $3\Delta = V_1$ | $\approx 2.5$ | Three-photon process |
-| Tertiary | $3\Delta = 2V_1$ | $\approx 4.9$ | Three-photon, two NN interactions |
+| Tertiary | $3\Delta = 2V_1$ | $\approx 4.9$ | Resonant 3-island proliferation ("011101110") |
 
 **Prethermal window:**
 
@@ -113,7 +113,7 @@ The experiment's central claim — an exponentially long prethermal plateau — 
 | Geometry | Sizes |
 |----------|-------|
 | 1D chain | 16, 52 atoms |
-| 2D square array | 9, 16, 64, 180 atoms |
+| 2D square array | 9, 16, 64, 99, 180 atoms |
 
 **ED comparison:** Bloqade.jl on NERSC Perlmutter for $N \leq 20$; qualitative agreement with time-averaged observables reported. No chi-squared or quantitative fit metric given in the paper.
 
@@ -123,4 +123,4 @@ $$\frac{\Delta_\text{Néel}}{V_2} \approx 2 - 2\!\left(\frac{1}{N_x} + \frac{1}{
 
 where $V_2 = V_1/8$ is the next-nearest-neighbor interaction on a square lattice ($r = \sqrt{2}\,a$), and $N_x, N_y$ are the linear dimensions. In the thermodynamic limit this gives $\Delta_\text{Néel}/V_2 \to 2$, i.e., $\Delta_\text{Néel}/\Omega \to 2V_2/\Omega = V_1/(4\Omega)$. At $R_b/a \approx 1.4$ ($V_1/\Omega \approx 7.4$, $V_2/\Omega \approx 0.93$), the thermodynamic extrapolation gives $\Delta_\text{Néel}/\Omega \approx 1.85$. Finite-size corrections for the $4\times 4$ (16-atom) array shift this to $\approx 2 - 2(1/4 + 1/4) = 1$ in units of $V_2$, i.e., $\Delta_\text{Néel}/\Omega \approx 0.93$. Becomes sharper with system size — the 64→180 atom data shows improved sharpness but is not yet in the thermodynamic limit.
 
-<!-- TODO: shot counts for 9-atom and 64-atom 2D arrays not stated in arXiv:2510.11706 — authors report only 16-atom (20×6) and 180-atom (100) 2D shot counts explicitly -->
+<!-- TODO: shot counts for 9-atom, 64-atom, and 99-atom 2D arrays not stated in arXiv:2510.11706 — authors report only 16-atom (20×6) and 180-atom (100) 2D shot counts explicitly -->
