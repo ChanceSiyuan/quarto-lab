@@ -50,7 +50,7 @@ The first large-scale Rydberg tweezer array experiment: 51 $^{87}$Rb atoms in a 
 | Quench Rabi freq. | $\Omega/2\pi = 2$ MHz | $\Omega/2\pi = 3.1\text{–}6.0$ MHz (varies by lattice spacing) | 1.5–3× lower depending on configuration |
 | NN interaction | $V_{i,i+1}/2\pi = 24$ MHz | $V_{i,i+1}/2\pi \approx 12$ MHz (at $a = 6.45\ \mu\text{m}$, from $C_6/a^6$) | $V_{i,i+2}/2\pi = 0.38$ MHz (NNN) |
 | Coherence (spin echo) | $> 5\ \mu\text{s}$ (no visible decay) | Improved PDH; ms-scale | 420 nm laser PDH-locked to finesse ≥4000 cavity |
-| Readout fidelity | $\|g\rangle$ 98–99%, $\|r\rangle$ ~93% | $\|g\rangle$ ~99%, $\|r\rangle$ ~92–96% | No significant degradation in later systems |
+| Readout fidelity | $\|g\rangle$ 98% (7-atom) / 99% (51-atom), $\|r\rangle$ 93% | $\|g\rangle$ ~99%, $\|r\rangle$ ~92–96% | No significant degradation in later systems |
 | Atom temperature | ~12 μK in ~1 mK trap | — | Rydberg lifetime $\approx 150\ \mu\text{s}$ (70S, 300 K) |
 
 This experiment predates the SLM+AOD architecture (introduced in Ebadi 2021). The jump from 1D standing-wave traps to 2D SLM-generated arrays is the most significant hardware difference.
@@ -73,7 +73,7 @@ The domain-wall density oscillations in Fig. 3 of the paper decay with an estima
 ## Experiment Protocol
 
 1. **Load:** 51 $^{87}$Rb atoms into a 1D optical tweezer chain (spacing $a = 5.74\ \mu\text{m}$ for Z₂ experiments); post-select on filled configurations (~60% per-site loading probability, no real-time rearrangement).
-2. **Prepare:** Adiabatically sweep detuning from $\Delta \ll 0$ (paramagnetic) to $\Delta > 0$ (Z₂/Z₃ ordered phase) over $\sim 1\ \mu\text{s}$ while ramping $\Omega$. For 51 atoms, the perfect $\mathbb{Z}_2$ state is obtained with probability $P = 0.11(2)\%$ raw ($0.9(2)\%$ corrected for detection fidelity), with an average of 9.01(2) domain walls (5.4 after maximum-likelihood correction). For a 7-atom cluster, fidelity reaches 54(4)% raw (77(6)% corrected).
+2. **Prepare:** Adiabatically sweep detuning from $\Delta_{\min} < 0$ (paramagnetic) through resonance to $\Delta_{\max} > 0$ (Z₂/Z₃ ordered phase) while simultaneously ramping $\Omega$. The detuning ramp uses optimized functional forms: a **tangent** sweep $V(t) = a\tan[b(t - t_0)] + c$ for the 51-atom datasets (better performance), or a **cubic** sweep $V(t) = a(t - t_0)^3 + b(t - t_0) + c$ for smaller system sizes and the crystal dynamics data. All sweep parameters ($a, b, c, t_0$, sweep bounds $\Delta_{\min}$, $\Delta_{\max}$) are iteratively optimized to minimize the domain-wall number. For 51 atoms, the perfect $\mathbb{Z}_2$ state is obtained with probability $P = 0.11(2)\%$ raw ($0.9(2)\%$ corrected for detection fidelity), with an average of 9.01(2) domain walls (5.4 after maximum-likelihood correction). For a 7-atom cluster, fidelity reaches 54(4)% raw (77(6)% corrected).
 3. **Quench (for scar experiments):** From the adiabatically prepared $\mathbb{Z}_2$ state (at large $\Delta > 0$), suddenly set $\Delta = 0$ at $t = 0$ with $\Omega = 2\pi \times 2$ MHz, evolving in the disordered/critical regime.
 4. **Evolve:** Hold for variable post-quench time $t \in [0,\ 1.2\text{–}1.5\ \mu\text{s}]$ (the total experimental window including the adiabatic ramp is ~3 μs; the quench evolution window shown in Fig. 3 is ~1.2–1.5 μs).
 5. **Measure:** Turn off all fields; image atoms via single-photon fluorescence. Repeat ~1,000 realizations per time point for domain-wall density measurements; the Z₂ probability distribution figure (Fig. 5c) used **18,439 realizations**.
@@ -111,7 +111,7 @@ with $n_i = \frac{1}{2}(1 + \sigma_i^z)$. Relevant parameters from the paper:
 | Z₂ preparation fidelity (51 atoms) | $P = 0.11(2)\%$ raw; $0.9(2)\%$ detection-corrected; 9.01(2) domain walls raw, ~5.4 corrected |
 | Z₂ preparation fidelity (7 atoms) | 54(4)% raw; 77(6)% detection-corrected |
 | Shots per time point | ~1,000 realizations |
-| Rabi frequency inhomogeneity | ~3% (spatial variation across chain) |
+| Rabi frequency inhomogeneity | $< 3\%$ peak-to-peak (controlled tolerance across chain) |
 | Rydberg laser linewidth (PDH) | $< 0.5$ kHz |
 | Experimental cycle time | ~250 ms |
 | Trap-off duration (for Rydberg) | $\leq 7\ \mu\text{s}$ (capped at 3% atom loss) |
