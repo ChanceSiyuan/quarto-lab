@@ -27,7 +27,7 @@ draft: true
 3. **Color code encoding:** 40 color-code logical qubits prepared with break-even fidelities — the fault-tolerant $|0_L\rangle$ preparation achieves **99.91$^{+0.04}_{-0.09}$%** fidelity, exceeding the physical qubit initialization fidelity of 99.32(4)%. This is the concrete break-even metric: the logical qubit outperforms its constituent physical qubits.
 4. **Transversal logical gates:** Physical array reconfiguration (AOD transport) enables transversal CNOT between code blocks — exploiting the unique geometric flexibility of atom arrays.
 5. **Code teleportation:** Demonstrated teleportation of logical information between surface codes and color codes.
-6. **Complex logical circuits:** 228 logical two-qubit gates + 48 logical CCZ gates in a single circuit using $[[8,3,2]]$ code blocks. The $[[8,3,2]]$ code encodes 3 logical qubits into 8 physical qubits at distance $d=2$ — it *detects* single errors but cannot correct them. Its value is that all Clifford gates (including CNOT and CCZ) can be implemented transversally on the 3 logical qubits per block.
+6. **Complex logical circuits:** 228 logical two-qubit gates + 48 logical CCZ gates in a single circuit using $[[8,3,2]]$ code blocks. The $[[8,3,2]]$ code encodes 3 logical qubits into 8 physical qubits with asymmetric distances ($d=2$ in the $Z$ basis, $d=4$ in the $X$ basis) — it *detects* single errors but cannot correct them. Its value is that all Clifford gates (including CNOT and CCZ) can be implemented transversally on the 3 logical qubits per block.
 :::
 
 ## Key observations
@@ -119,7 +119,7 @@ The 4-zone architecture (Bluvstein 2025) addresses the *downstream* consequences
 |-----------|-----|----------------------|
 | Fault-tolerant $|0_L\rangle$ preparation fidelity | — | **99.91$^{+0.04}_{-0.09}$%** |
 | 4-logical-qubit GHZ state fidelity | **72(2)%** | **$99.85^{+0.10}_{-1.00}$%** |
-| 48-logical-qubit XEB score | **~0.1** | — |
+| 48-logical-qubit XEB score | — | **~0.1** |
 | 12-logical-qubit XEB score | **0.156(2)** | **0.616(7)** |
 | Entanglement teleportation Bell fidelity | **77(2)%** | **92(2)%** |
 
@@ -127,7 +127,7 @@ Notes:
 - The $|0_L\rangle$ result uses fault-tolerant preparation with mid-circuit ancilla measurement and FPGA feedforward; no raw baseline is reported separately.
 - The GHZ and XEB benchmarks use error *detection* (postselection on no-error syndromes), not correction. GHZ accepted fraction varies continuously — discarding ~50% of shots yields ~90% fidelity; full stabilizer postselection reaches $99.85^{+0.10}_{-1.00}$%.
 - The GHZ post-detection error bars are asymmetric: the lower bound of 98.85% is scientifically meaningful — it represents the worst-case fidelity consistent with the data.
-- The 48-LQ raw XEB score (~0.1) is the unpostselected circuit fidelity at maximum scale; post-detection XEB at 12 qubits is 0.616(7).
+- The 48-LQ XEB score (~0.1) is the post-detection (error-detected) circuit fidelity at maximum scale; the raw/unpostselected fidelity at 48 logical qubits is not separately reported. Post-detection XEB at 12 qubits is 0.616(7).
 - Surface code logical Bell pair error at $d=7$: ~5% infidelity (figure-read estimate from Fig. 2c; ~0.95 population in $X_L X_L$ and $Z_L Z_L$ bases). The paper does not tabulate this value — it is only available graphically.
 - Per-round logical error rates at $d=3,5,7$: not tabulated in the paper; presented only graphically in Extended Data Figs. 4–5. Below-threshold scaling is demonstrated by the monotonic decrease of logical error with $d$, but individual rates are not extractable from the text. For comparison, the 4-zone follow-up reports 0.62(3)% per round at $d=5$ with $\Lambda = 2.14(13)\times$ suppression factor vs. $d=3$ [@bluvstein2025faulttolerant].
 - Entanglement teleportation: Bell fidelity 77(2)% with feedforward; rises to 92(2)% with error-detection postselection.
