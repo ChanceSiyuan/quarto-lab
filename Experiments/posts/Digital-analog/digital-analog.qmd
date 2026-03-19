@@ -254,9 +254,9 @@ The key innovation is using the reservoir zone for analog experiments: atom loss
 
 The dominant decoherence mechanism observed in the 2D kagome experiments is not spontaneous emission but rather **beam intensity inhomogeneity** (2–3% peak-to-peak variation across the 271-site array) combined with **long-range Rydberg interaction tails**. Concretely:
 
-1. **Intensity inhomogeneity:** A 2–3% peak-to-peak variation in the Rydberg drive intensity across the array means each site experiences a slightly different effective Rabi frequency $\Omega_i = \Omega(1 + \delta_i)$. The Floquet-Magnus expansion coefficients — and hence the engineered $J$, $\mu$, $U$ — pick up site-dependent errors $\delta J_i \propto \delta_i$. This limits Ramsey fringe contrast in the 2D geometry and is the primary reason for the post-selection requirement (retention fractions 81–96% in the QSL experiments). The Bayesian optimizer partially mitigates this but cannot fully compensate spatially correlated beam structure.
+1. **Intensity inhomogeneity:** A 2–3% peak-to-peak variation in the Rydberg drive intensity across the array means each site experiences a slightly different effective Rabi frequency $\Omega_i = \Omega(1 + \delta_i)$. The Floquet-Magnus expansion coefficients — and hence the engineered $J$, $\mu$, $U$ — pick up site-dependent errors $\delta J_i \propto \delta_i$. This accumulates a random phase of $\sim 2\pi \times 0.02$ radians per Floquet cycle in the 2D geometry, limiting Ramsey fringe contrast and driving the post-selection requirement (retention fractions 81–96% in the QSL experiments). The Bayesian optimizer partially mitigates this but cannot fully compensate spatially correlated beam structure.
 
-2. **Rydberg interaction tails:** The van der Waals interaction falls as $V(r) = V_0/r^6$. For $n=70$ on the kagome lattice (atom spacing 6.0 μm), next-nearest-neighbor interactions are non-negligible and contribute unwanted $ZZ$-type terms not included in the target Hamiltonian. These tails cause Ramsey contrast reduction that worsens with system size.
+2. **Rydberg interaction tails:** The van der Waals interaction falls as $V(r) = V_0/r^6$. For $n=70$ on the kagome lattice (atom spacing 6.0 μm), next-nearest-neighbor interactions are non-negligible and contribute unwanted $ZZ$-type terms not included in the target Hamiltonian. The dominant contribution comes from next-nearest-neighbor sites, with tail energies of **220 kHz** (1D chain) and **670 kHz** (2D kagome). These tails detune the Rydberg $\pi$-pulse away from resonance, reducing mapping fidelity — a principal limitation for coherent superposition transfer in 2D. The tails cause Ramsey contrast reduction that worsens with system size.
 
 3. **Finite pulse width $w_e = 16$ ns:** The echo pulses have finite duration compared to $\tau = 0.36$ μs. During each pulse, $H_\text{PXP}$ is not fully suppressed, causing $O(w_e^2/\tau^2)$ corrections (estimated $< 0.2\%$ per cycle, but accumulate over 20–200 cycles).
 
@@ -288,7 +288,7 @@ The dominant decoherence mechanism observed in the 2D kagome experiments is not 
 | Rydberg interaction (n=70) | $V_0 = 18.1$ MHz | 2D kagome, $a = 6.0$ μm |
 | Atom spacing (1D) | 3.6 μm (dynamics) / 6.0 μm (state prep) | 1D chain geometry; dual spacing for different protocol stages |
 | Atom spacing (2D kagome) | 6.0 μm | 271-site kagome lattice |
-| Rabi oscillation contrast | 97.8(1)% | Hardware benchmark |
+| Rabi oscillation contrast | 97.8(1)% | 1D; reduced in 2D due to vdW tails |
 | Rydberg $\pi$-pulse infidelity | ≤1.3% (2D) | Upper bound from calibration |
 | Loss per analog run | ≈1.8% | Compensated by reservoir |
 | T₂* (n=70, 2D) | 1–2 μs | Dephasing-limited (not decay) |
