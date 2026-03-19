@@ -20,7 +20,7 @@ draft: true
 :::{.callout-note icon="false"}
 ## Experiment Protocol
 
-**System:** Up to 289 atoms arranged as random unit-disk graphs (vertices placed on an ~80%-filled square lattice, $R_b/a = 1.7$, $\Omega/2\pi = 4.0$ MHz, $V_\text{NN}/h = 107$ MHz, $V_\text{NNN}/h = 13$ MHz). Graphs span $N = 80$–$289$ vertices; 115 randomly generated instances used for the scaling analysis, with 36 selected from the top two percentile of the hardness parameter for deep study.
+**System:** Up to 289 atoms arranged as random unit-disk graphs (vertices placed on an ~80%-filled square lattice, $R_b/a = 1.7$, $\Omega/2\pi = 4.0$ MHz, $V_\text{NN}/h = 107$ MHz, $V_\text{NNN}/h = 13$ MHz). Graphs span $N = 39$–$289$ vertices; 115 randomly generated instances used for the scaling analysis, with 36 selected from the top two percentile of the hardness parameter for deep study.
 
 1. **Graph encoding:** Each atom represents a vertex; atoms within the blockade radius $R_b$ are connected by an edge. The Rydberg constraint (no two adjacent atoms both excited) maps exactly to the independent set constraint. The MIS solution is the ground state of $H = -\frac{\Omega}{2}\sum_i \sigma_i^x - \sum_i \Delta_i n_i + \sum_{i<j} V_{ij} n_i n_j$ at large positive $\Delta$.
 
@@ -33,7 +33,7 @@ draft: true
 5. **Hardness sweep:** For each graph, hardness is quantified by the hardness parameter $\text{HP} = D_{|\text{MIS}|-1} / (|\text{MIS}| \times D_{|\text{MIS}|})$, where $D_k$ is the number of independent sets of size $k$. High HP = many near-optimal decoy states = harder landscape. ~$10^5$ total measurements accumulated over ~15 hours of continuous operation.
 :::
 
-Up to 289 atoms configured as unit-disk graphs to solve the maximum independent set (MIS) combinatorial optimization problem via quantum annealing and variational algorithms. The scaling analysis uses 115 randomly generated graph instances spanning $N = 80$–$289$ vertices:
+Up to 289 atoms configured as unit-disk graphs to solve the maximum independent set (MIS) combinatorial optimization problem via quantum annealing and variational algorithms. The scaling analysis uses 115 randomly generated graph instances spanning $N = 39$–$289$ vertices:
 
 1. **Graph encoding:** The MIS problem on a unit-disk graph is naturally encoded in the Rydberg blockade: each atom represents a vertex, and the blockade radius defines the edge set (two atoms within $R_b$ cannot both be in $|r\rangle$). This makes the MIS solution the ground state of the Rydberg Hamiltonian at large positive detuning.
 2. **Quantum annealing protocol:** Adiabatic sweep from $\Delta \ll 0$ (all atoms in $|g\rangle$) to $\Delta \gg 0$ (MIS state), with optimized sweep profiles.
@@ -42,7 +42,7 @@ Up to 289 atoms configured as unit-disk graphs to solve the maximum independent 
 
 ## Key observations
 
-- **High-quality MIS solutions:** Across 115 graph instances ($N = 80$–$289$ vertices), the quantum optimizer found exact MIS solutions with probability exceeding classical random sampling. Success probability varies by nearly three orders of magnitude across instances at fixed depth, tracking the hardness parameter HP.
+- **High-quality MIS solutions:** Across 115 graph instances ($N = 39$–$289$ vertices), the quantum optimizer found exact MIS solutions with probability exceeding classical random sampling. Success probability varies by nearly three orders of magnitude across instances at fixed depth, tracking the hardness parameter HP.
 - **Superlinear quantum speedup:** Over all graphs, TTS scales as $\text{HP}^{0.95(15)}$ (quantum) vs. $\text{HP}^{1.03(4)}$ (classical SA). For the subset where the minimum spectral gap is resolved ($\delta_\text{min} > 1/T$), the quantum exponent improves to $\text{HP}^{0.63(13)}$, giving a larger margin; the 0.95 exponent is the full-dataset value.
 - **Hardness correlates with landscape complexity:** Problem difficulty for the quantum optimizer correlated with the number of quasi-degenerate local minima in the classical energy landscape, not simply with graph size.
 - **Variational advantage:** Optimized pulse schedules (beyond simple linear ramps) significantly improved success probability, particularly for hard instances.
@@ -83,19 +83,19 @@ Note on filling fraction: the ~80% figure is a deliberate graph construction cho
 The paper directly identifies $T_e$ as the binding constraint on quantum speedup [@ebadi2022quantum]:
 
 - **Standard beam configuration:** $T_e \approx 20\,\mu\text{s}$ — limits sweep time to $T \lesssim 20\,\mu\text{s}$, restricting the quantum optimizer to shallow adiabatic ramps and low-$p$ QAOA.
-- **Smaller beam configuration:** $T_e \approx 70\,\mu\text{s}$ (using $\Omega_{420}/2\pi = 305$ MHz, $\Delta_e/2\pi = 4.0$ GHz; Table 1 of [@ebadi2022quantum], used for smaller hard graphs in Figs. 4–5) — extends the accessible sweep time, and the paper shows that the quantum speedup ($\text{HP}^{0.63}$ vs. $\text{HP}^{1.03}$) is strongest in the high-$T_e$ regime where the adiabatic gap is resolvable.
+- **Smaller beam configuration:** $T_e \approx 70\,\mu\text{s}$ (using $\Omega_{420}/2\pi = 305$ MHz, $\Delta_e/2\pi = 4.0$ GHz vs. 1.0 GHz for the standard beam; Table 1 of [@ebadi2022quantum], used for smaller hard graphs in Figs. 4–5) — extends the accessible sweep time, and the paper shows that the quantum speedup ($\text{HP}^{0.63}$ vs. $\text{HP}^{1.03}$) is strongest in the high-$T_e$ regime where the adiabatic gap is resolvable.
 - **Why this is the bottleneck:** Near the hardest instances, the minimum spectral gap $\delta_\text{min}$ is exponentially small (Landau-Zener regime: $P_\text{MIS} = 1 - \exp(-A \cdot \delta_\text{min}^\eta)$, $\eta = 1.2(2)$). Closing the gap requires longer sweeps, directly competing with $T_e$. At $T \gg T_e$, decoherence destroys the quantum state before it can reach the MIS.
 - **Consequence:** The speedup is bounded to intermediate HP regimes. Very hard instances (tiny gap, need $T \gg T_e$) are inaccessible, which limits the asymptotic scaling claim.
 
-Improving $T_e$ — through better laser coherence, reduced motional heating, or shorter Rydberg lifetime management — is the single most impactful hardware upgrade. The 3-zone / 4-zone architectures' gate-fidelity improvements are less directly relevant here; what matters is the analog coherence limit, not the digital gate error rate.
+The Rydberg state lifetime itself is $\tau_r = 150\,\mu\text{s}$ (theoretical) but only $80\,\mu\text{s}$ (experimental), reduced by Purcell-enhanced blackbody radiation decay in the glass cell. Improving $T_e$ — through better laser coherence, reduced motional heating, or Rydberg lifetime management (e.g., cryogenic environments to suppress BBR) — is the single most impactful hardware upgrade. The 3-zone / 4-zone architectures' gate-fidelity improvements are less directly relevant here; what matters is the analog coherence limit, not the digital gate error rate.
 
 ## Completeness check
 
 **Graph families and hardness classification.** All graphs are *random unit-disk graphs* generated on an ~80%-filled square lattice with $R_b/a = 1.7$. There is no named graph family; hardness is characterized by the hardness parameter $\text{HP} = D_{|\text{MIS}|-1}/(|\text{MIS}| \times D_{|\text{MIS|}})$. Graphs with many near-optimal decoy states (high HP) are hardest for both quantum and classical algorithms; the quantum advantage is largest in this regime.
 
-**Absolute success probabilities.** The paper does not report a single headline $P_\text{MIS}$ number; success probability varies by nearly three orders of magnitude across the 115 graph instances at fixed sweep time, reflecting the strong dependence on the hardness parameter HP. From visual inspection of Figs. 3–5 [@ebadi2022quantum]: easy instances (low HP) achieve $P_\text{MIS} \sim 10^{-1}$ (i.e. the exact MIS is found in ~10% of shots), while the hardest instances (high HP, top 2 percentile) drop to $P_\text{MIS} \sim 10^{-4}$. Approximation ratios (fraction of MIS size achieved on average) exceed 0.9 across all instances, meaning the quantum optimizer reliably finds *near*-optimal solutions even when the *exact* MIS probability is low. These values are read from figures; the paper does not tabulate them.
+**Absolute success probabilities.** The paper does not report a single headline $P_\text{MIS}$ number; success probability varies by nearly three orders of magnitude across the 115 graph instances at fixed sweep time, reflecting the strong dependence on the hardness parameter HP. From visual inspection of Figs. 3–5 [@ebadi2022quantum]: easy instances (low HP) achieve $P_\text{MIS} \sim 10^{-1}$ (i.e. the exact MIS is found in ~10% of shots), while the hardest instances (high HP, top 2 percentile) drop to $P_\text{MIS} \sim 10^{-4}$. Approximation ratios $R$ (fraction of MIS size achieved on average) reach $R \approx 0.95$+ for easy instances but drop to $R \approx 0.85$–$0.90$ for the hardest instances at $\tilde{p} = 20$, meaning the quantum optimizer reliably finds *near*-optimal solutions even when the *exact* MIS probability is low. These values are read from figures; the paper does not tabulate them.
 
-**Scaling exponent comparison.** The scaling analysis uses 115 graph instances spanning $N = 80$–$289$ vertices (not a single fixed size). The paper reports two quantum TTS fits [@ebadi2022quantum]:
+**Scaling exponent comparison.** The scaling analysis uses 115 graph instances spanning $N = 39$–$289$ vertices (not a single fixed size). The paper reports two quantum TTS fits [@ebadi2022quantum]:
 
 - **All graphs (full dataset):** $\text{TTS}_\text{quantum} \propto \text{HP}^{0.95(15)}$ vs. $\text{TTS}_\text{SA} \propto \text{HP}^{1.03(4)}$. The quantum advantage is present but modest (exponent gap 0.08).
 - **Resolved-gap subset** ($\delta_\text{min} > 1/T$, i.e. only instances where the adiabatic gap is experimentally resolvable): $\text{TTS}_\text{quantum} \propto \text{HP}^{0.63(13)}$. Here the advantage is more pronounced (exponent gap 0.40).
@@ -110,9 +110,11 @@ The 0.63(13) figure is the conditioned value; reporting it as the primary result
 
 | Parameter | Value |
 |-----------|-------|
-| Atom count | 80–289 (115 instances; max 289) |
+| Atom count | 39–289 (115 instances; max 289) |
+| Lattice spacing $a$ | 4.5 µm |
 | Rabi frequency $\Omega/2\pi$ | 4.0 MHz |
 | Blockade radius $R_b/a$ | 1.7 |
+| $C_6/h$ coefficient | 862,690 MHz·µm⁶ (70S$_{1/2}$ state) |
 | $V_\text{NN}/h$ | 107 MHz |
 | $V_\text{NNN}/h$ | 13 MHz |
 | Coherence $T_e$ (standard beam) | ~20 µs |
@@ -120,6 +122,10 @@ The 0.63(13) figure is the conditioned value; reporting it as the primary result
 | Effective depth $\tilde{p}$ (max) | 32 (standard beam, $T \approx 4\,\mu\text{s}$) |
 | $\tau_\pi = \pi/\Omega$ | ~125 ns |
 | Sweep time range (standard beam) | $T \approx 0.5$–$4\,\mu\text{s}$ |
+| Intermediate detuning $\Delta_e/2\pi$ (std. beam) | 1.0 GHz |
+| Intermediate detuning $\Delta_e/2\pi$ (small beam) | 4.0 GHz |
+| Rydberg lifetime (theoretical) | 150 µs |
+| Rydberg lifetime (experimental) | 80 µs (reduced by Purcell-enhanced BBR decay in glass cell) |
 | $|g\rangle$ detection fidelity | ~99% (apparatus-level, from [@ebadi2021quantum]) |
 | $|r\rangle$ detection fidelity | ~92–96% (apparatus-level, from [@ebadi2021quantum]) |
 | TTS quantum exponent (all graphs) | 0.95(15) |
