@@ -61,7 +61,8 @@ A fundamentally different entanglement mechanism: instead of Rydberg blockade (d
 | Atom-presence readout fidelity | 99.988% (10 μs) / 99.950% (2.5 μs) |
 | Mirror reflectivity | >99.993% (centered ~780 nm) |
 | Readout-induced atom loss | 0.034% |
-| State preparation fidelity | >99% (optical pumping to $|F=1, m_F=0\rangle$) |
+| Qubit encoding | $|0\rangle \equiv |F{=}1, m_F{=}0\rangle$, $|1\rangle \equiv |F{=}2, m_F{=}0\rangle$ (clock states) |
+| State preparation fidelity | >99% (optical pumping to $|0\rangle = |F{=}1, m_F{=}0\rangle$) |
 | State preparation time | 18 μs (15 μs D1+D2 pump + 3 μs D1 cleanup) |
 | Cavity resonance tuning time | ~7 ms (mechanical lever-arm limit; per readout-basis switch) |
 | Atoms demonstrated (max possible) | 2 (~20) |
@@ -85,7 +86,7 @@ The cooperativity $C = 4g^2/(\kappa\Gamma) = 101$ sets the fundamental tradeoff:
 
 ## Key observations
 
-- **99.96% readout fidelity:** Cavity-enhanced fluorescence detection achieves the highest neutral atom readout fidelity reported, ~125× better than the 1-zone in-situ readout (~95%; error rate 5% vs 0.04%) and ~5× better than the 3-zone spin-to-position readout (99.8%; error rate 0.2% vs 0.04%). Readout takes only 10 μs with 0.034% atom loss per measurement.
+- **99.96% readout fidelity:** Cavity-enhanced fluorescence detection achieves the highest neutral atom readout fidelity reported. The cavity reads hyperfine clock states ($|F{=}1\rangle$ vs $|F{=}2\rangle$), so the fairest comparison is against ground-state fluorescence: ~25× error reduction vs 1-zone fluorescence (~99%, error 1% vs 0.04%) and ~5× vs 3-zone spin-to-position readout (99.8%, error 0.2% vs 0.04%). (A ~125× factor applies only if comparing against Rydberg-state readout at ~95%, which measures a different observable.) Readout takes only 10 μs with 0.034% atom loss per measurement.
 - **91% Bell state fidelity (cavity-carving protocol):** Photon-carving selectively removes the $|10\rangle$ component from a superposition, producing $|\Phi^-\rangle$ with 91(4)% fidelity at 32(1)% success probability per attempt.
 - **76% Bell state fidelity with 69% success (error-detected CZ gate):** A full 2π cavity interaction gives a controlled-phase gate. Postselecting on no detected scattering events boosts fidelity from 52.5(18)% deterministic to 76(2)%, with 69(1)% success probability.
 - **Built-in error detection:** Most photon scattering events leave atoms in a detectable error state $|err\rangle$. Postselecting on $|err\rangle$ absence converts the dominant error mechanism (photon loss) into a detectable erasure — far easier to correct than an undetected Pauli error.
