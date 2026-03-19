@@ -37,7 +37,7 @@ Quantum Extreme Reservoir Computing (QERC) on QuEra's Aquila — a cloud-accessi
 - **Competitive ML performance on three benchmarks** (note: only the Tomato task scales to 108 qubits; the headline ML benchmarks are small systems):
   - *MNIST binary (digits 3 vs. 8):* **9 qubits** (9-atom 1D chain, 8 PCA features, 1000 train / 200 test); test accuracy **0.935** at ~220 shots per input.
   - *MNIST 10-class:* **9 qubits** (same geometry, 1500 train / 500 test); shot plateau at $N_s \sim 1000$. Claimed as **"best-known performance in 10-class MNIST task on hardware"** at time of publication. (Accuracy available only from Fig. 2(d); not quoted numerically in the paper text.)
-  - *Santa Fe chaotic timeseries prediction:* **12 qubits** (12-atom chains; window widths: 10 global-pulse / 11 position / 12 local-pulse); best simulated NMSE **0.004** (local-pulse encoding) / **0.0038** (position encoding) from Table I — no single experimental NMSE is quoted in the paper.
+  - *Santa Fe chaotic timeseries prediction:* **12 qubits** (12-atom chains with *irregular* geometry: nearest-neighbor distances $(8.9 - g_i)$ μm where $g_i \sim \text{Uniform}(0,1)$; window widths: 10 global-pulse / 11 position / 12 local-pulse); best simulated NMSE **0.004** (local-pulse encoding) / **0.0038** (position encoding), read from Fig. 2(c) — no single experimental NMSE is quoted numerically in the paper.
   - *Plant Village disease classification (multi-class):* **9–108 qubits** (2D arrays, largest 9×12 = 108; 498 images, 400 train); accuracy scales with system size, with the 108-qubit point surpassing the 4-layer NN baseline. (Both the 108-qubit accuracy and 4-layer NN baseline accuracy are available only from Fig. 3(e); neither is quoted numerically in the paper text.)
   - **2D correlator restriction:** Large-scale 2D experiments use only nearest-neighbor $\langle n_i n_j \rangle$ (not all pairs), keeping the feature vector size linear in atom count.
 
@@ -58,7 +58,7 @@ Quantum Extreme Reservoir Computing (QERC) on QuEra's Aquila — a cloud-accessi
 | Platform | QuEra Aquila (cloud) | Harvard lab | Cloud-accessible |
 | Local addressing | Local detuning beams | Global control | Aquila supports programmable local detuning |
 | Shots per input | 40–1,000 (task-dependent) | $\sim 10^2$–$10^3$ | See task breakdown above |
-| Atom spacing (NN) | 10 μm (intra-chain); **15 μm** (inter-chain, 2D arrays) | 4–6.8 μm | Larger spacing → weaker blockade; inter-chain at 15 μm has negligible blockade ($R_b/a \approx 0.65$) |
+| Atom spacing (NN) | 10 μm baseline (intra-chain); irregular $(8.9 - g_i)$ μm for Santa Fe position encoding; **15 μm** (inter-chain, 2D arrays) | 4–6.8 μm | Larger spacing → weaker blockade; inter-chain at 15 μm has negligible blockade ($R_b/a \approx 0.65$) |
 | Gate fidelity | N/A (analog) | N/A (analog) | Neither platform has discrete gates |
 | Readout fidelity | ~95% (analog single-shot) [@wurtz2023aquila] | ~95% | Value from Aquila hardware spec [@wurtz2023aquila], not quoted in this paper; 3-zone readout (99.8%) not available on Aquila |
 | Defect-free yield (108 q) | **~60%** of shots affected by point defects but **NOT discarded** | N/A | All shots retained for 2D arrays; only 1D chain experiments discard <10% via postselection |
@@ -103,7 +103,7 @@ where $\delta_0$ is the applied local detuning and $\theta$ is a beam-quality pa
 | Synthetic quantum kernel | **~9** | Accuracy advantage over classical reservoir | **(7.1 ± 3.1)%** | ~40 |
 | Shot saturation point | Beyond this, accuracy flat | ~1,000 | — |
 | Defect handling (108 q) | 2D arrays: ~60% shots affected but ALL retained (no postselection); 1D chains: <10% discarded | — | — |
-| Atom spacing (Aquila NN) | Intra-chain / inter-chain (2D) | **10 μm / 15 μm** | — |
+| Atom spacing (Aquila NN) | Intra-chain baseline / inter-chain (2D) | **10 μm / 15 μm** (Santa Fe position encoding uses irregular $(8.9 - g_i)$ μm) | — |
 | Blockade radius ratio | $R_b^{(0)}/a$ | **≈ 0.98** | — |
 | PCA features encoded (MNIST) | Input dimensionality per shot | **8** | — |
 | Evolution time — MNIST | 5 timesteps × 0.5 μs | **2.5 μs** | — |
@@ -114,13 +114,13 @@ where $\delta_0$ is the applied local detuning and $\theta$ is a beam-quality pa
 | Rabi frequency $\Omega$ — Tomato | | **$5\pi$ MHz** | — |
 | Ramp time (up/down) | | **0.05 μs** each | — |
 | Local detuning amplitude (Santa Fe) | $\Delta_l^\text{max}$ | **−8 MHz** | — |
-| Santa Fe NMSE (simulated, local-pulse encoding) | Best NMSE from Table I | **0.004** | — |
-| Santa Fe NMSE (simulated, position encoding) | Best NMSE from Table I | **0.0038** | — |
-| Santa Fe NMSE (simulated, global-pulse irregular) | Worst encoding, Table I | **0.025** | — |
+| Santa Fe NMSE (simulated, local-pulse encoding) | Best NMSE, read from Fig. 2(c) | **0.004** | — |
+| Santa Fe NMSE (simulated, position encoding) | Best NMSE, read from Fig. 2(c) | **0.0038** | — |
+| Santa Fe NMSE (simulated, global-pulse irregular) | Worst encoding, read from Fig. 2(c) | **0.025** | — |
 | Santa Fe NMSE (experimental) | Not quoted in paper text | *no single number given* | — |
 | $C_6$ coefficient | Rydberg interaction strength | **$862690 \times 2\pi$ MHz·μm$^6$** | — |
 | Global detuning $\Delta_g$ — MNIST | | **$2\pi$ MHz** | — |
-| Global detuning $\Delta_g$ — Santa Fe | | **$4$ MHz** | — |
+| Global detuning $\Delta_g$ — Santa Fe | | **$4$ MHz** (bare, no $2\pi$ prefix — unit convention differs from MNIST/Tomato) | — |
 | Global detuning $\Delta_g$ — Tomato | | **$5\pi$ MHz** | — |
 | Position encoding scale $\lambda$ — MNIST | | **3** | — |
 | Position encoding scale $\lambda$ — Santa Fe | | **1.5** | — |
