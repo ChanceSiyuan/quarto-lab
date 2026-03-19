@@ -66,7 +66,7 @@ This experiment is a **1-zone analog** platform (same Harvard apparatus as Ebadi
 | Hardware loading fidelity | ~98% | ~98% | 98.4(7)% | Bottleneck 5: atom loss / defects |
 | Graph filling fraction | — | ~80% by design | N/A (free geometry) | *Intentional sparsity*, not hardware limit |
 | $|g\rangle$ detection fidelity | ~99% | ~99% (apparatus, not re-measured) | ~99% | Bottleneck 3: in-situ readout ceiling |
-| $|r\rangle$ detection fidelity | ~92–96% | ~92–96% (apparatus, not re-measured) | ~92–96% (inherited from Ebadi 2021; Manovitz 2025 does not report updated readout numbers) | Bottleneck 3: no dedicated readout zone |
+| $|r\rangle$ detection fidelity | ~92–96% | ~92–96% (apparatus, not re-measured) | ~92–96% (same apparatus as Ebadi 2021; Manovitz 2025 does not report updated readout numbers) | Bottleneck 3: no dedicated readout zone |
 | Analog coherence $T_e$ | ~20 µs | ~20 µs (std. beam) / ~70 µs (small beam) | ~20 µs | Bottleneck 1: motional dephasing |
 | Mid-circuit measurement | No | No | No | Structural 1-zone limit |
 | Digital gate fidelity | N/A | N/A | N/A | N/A (analog-only) |
@@ -83,11 +83,11 @@ Note on filling fraction: the ~80% figure is a deliberate graph construction cho
 The paper directly identifies $T_e$ as the binding constraint on quantum speedup [@ebadi2022quantum]:
 
 - **Standard beam configuration:** $T_e \approx 20\,\mu\text{s}$ — limits sweep time to $T \lesssim 20\,\mu\text{s}$, restricting the quantum optimizer to shallow adiabatic ramps and low-$p$ QAOA.
-- **Smaller beam configuration:** $T_e \approx 70\,\mu\text{s}$ (using $\Omega_{420}/2\pi = 305$ MHz, $\Delta_e/2\pi = 4.0$ GHz vs. 1.0 GHz for the standard beam; Table 1 of [@ebadi2022quantum], used for smaller hard graphs in Figs. 4–5) — extends the accessible sweep time, and the paper shows that the quantum speedup ($\text{HP}^{0.63}$ vs. $\text{HP}^{1.03}$) is strongest in the high-$T_e$ regime where the adiabatic gap is resolvable.
+- **Smaller beam configuration:** $T_e \approx 70\,\mu\text{s}$, achieved by increasing the intermediate-state detuning to $\Delta_e/2\pi = 4.0$ GHz (vs. 1.0 GHz for standard) while compensating with higher single-photon Rabi frequencies ($\Omega_{420}/2\pi = 305$ MHz, $\Omega_{1013}/2\pi = 105$ MHz vs. 135, 60 MHz) to maintain the same two-photon $\Omega/2\pi = 4.0$ MHz (Table 1 of [@ebadi2022quantum]). The larger $\Delta_e$ suppresses off-resonant scattering from the intermediate $6P_{3/2}$ state, extending $T_e$ by $\sim 3.5\times$. Used for the smaller hard graphs in Figs. 4–5. The quantum speedup ($\text{HP}^{0.63}$ vs. $\text{HP}^{1.03}$) is strongest in this high-$T_e$ regime where the adiabatic gap is resolvable.
 - **Why this is the bottleneck:** Near the hardest instances, the minimum spectral gap $\delta_\text{min}$ is exponentially small (Landau-Zener regime: $P_\text{MIS} = 1 - \exp(-A \cdot \delta_\text{min}^\eta)$, $\eta = 1.2(2)$). Closing the gap requires longer sweeps, directly competing with $T_e$. At $T \gg T_e$, decoherence destroys the quantum state before it can reach the MIS.
 - **Consequence:** The speedup is bounded to intermediate HP regimes. Very hard instances (tiny gap, need $T \gg T_e$) are inaccessible, which limits the asymptotic scaling claim.
 
-The Rydberg state lifetime itself is $\tau_r = 150\,\mu\text{s}$ (theoretical) but only $80\,\mu\text{s}$ (experimental), reduced by blackbody-radiation (BBR) induced transitions to nearby Rydberg states at room temperature. Improving $T_e$ — through better laser coherence, reduced motional heating, or Rydberg lifetime management (e.g., cryogenic environments to suppress BBR) — is the single most impactful hardware upgrade. The 3-zone / 4-zone architectures' gate-fidelity improvements are less directly relevant here; what matters is the analog coherence limit, not the digital gate error rate.
+The Rydberg state lifetime itself is $\tau_r = 150\,\mu\text{s}$ (theoretical) but only $80\,\mu\text{s}$ (experimental), reduced by Purcell-enhanced blackbody-induced decay in the glass cell. Improving $T_e$ — through better laser coherence, reduced motional heating, or Rydberg lifetime management (e.g., cryogenic environments to suppress BBR) — is the single most impactful hardware upgrade. The 3-zone / 4-zone architectures' gate-fidelity improvements are less directly relevant here; what matters is the analog coherence limit, not the digital gate error rate.
 
 ## Completeness check
 
@@ -122,10 +122,14 @@ The 0.63(13) figure is the conditioned value; reporting it as the primary result
 | Effective depth $\tilde{p}$ (max) | 32 (standard beam, $T \approx 4\,\mu\text{s}$) |
 | $\tau_\pi = \pi/\Omega$ | ~125 ns |
 | Sweep time range (standard beam) | $T \approx 0.5$–$4\,\mu\text{s}$ |
-| Intermediate detuning $\Delta_e/2\pi$ (std. beam) | 1.0 GHz | <!-- TODO: verify against Table 1 of paper (paywalled) -->
-| Intermediate detuning $\Delta_e/2\pi$ (small beam) | 4.0 GHz | <!-- TODO: verify against Table 1 of paper (paywalled) -->
+| $\Omega_{420}/2\pi$ (std. beam) | 135 MHz |
+| $\Omega_{420}/2\pi$ (small beam) | 305 MHz |
+| $\Omega_{1013}/2\pi$ (std. beam) | 60 MHz |
+| $\Omega_{1013}/2\pi$ (small beam) | 105 MHz |
+| Intermediate detuning $\Delta_e/2\pi$ (std. beam) | 1.0 GHz |
+| Intermediate detuning $\Delta_e/2\pi$ (small beam) | 4.0 GHz |
 | Rydberg lifetime (theoretical) | 150 µs |
-| Rydberg lifetime (experimental) | 80 µs (reduced by blackbody-radiation-induced transitions to nearby Rydberg states at room temperature) |
+| Rydberg lifetime (experimental) | 80 µs (reduced by Purcell-enhanced blackbody-induced decay in the glass cell) |
 | $|g\rangle$ detection fidelity | ~99% (apparatus-level, from [@ebadi2021quantum]) |
 | $|r\rangle$ detection fidelity | ~92–96% (apparatus-level, from [@ebadi2021quantum]) |
 | TTS quantum exponent (all graphs) | 0.95(15) |
