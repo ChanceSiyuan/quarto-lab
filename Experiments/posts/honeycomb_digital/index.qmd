@@ -14,11 +14,11 @@ For those who are interested in the theoretical background of the honeycomb mode
 
 # Digital Experiment Overview
 
-#### Initialization and moving accrossing the phase
+#### Initialization and moving across the phase
 To ensure that the prepared state is the ground state of the Kitaev honeycomb model, we need to first prepare the state in the vortex free phase at $J_x = J_y = 0$ and $J_z = J$. That is, a state:
 
 1. One of the ground state of the Hamiltonian $H =-\sum_{j,k} J\sigma^z_j\sigma_k^z$, whose ground state is degenerate and satisfies $\sigma_j^z\sigma_k^z = +1$.
-2. Further pined down the ground state by requiring theconserved quantity $W_p := \sigma_1^x \sigma_2^y \sigma_3^z \sigma_4^x\sigma_5^y \sigma_6^z$ being $+1$, as the free section.
+2. Further pinned down the ground state by requiring the conserved quantity $W_p := \sigma_1^x \sigma_2^y \sigma_3^z \sigma_4^x\sigma_5^y \sigma_6^z$ being $+1$, as the free section.
 
 ![Initialization circuit](initialize.png)
 
@@ -28,7 +28,7 @@ In [@evered2025probing], Lukin \textit{et.al.} proposed a method to prepare this
 ## Experiment protocol: Initialization circuit
 1. Ancilla qubits are used to measure weight-4 operators on one sublattice of the data qubits, initially all prepared in $|0\rangle$. Note that the first $CZ$ gate can be omitted because all qubits are prepared in $|0\rangle$.
 2. According to ancilla measurement outcomes, apply conditional local single-qubit Z gates.
-3. Parallel controlled-Y gates between sublattices to spread the weight-4 operators to the weight-6 plaquette operators and $Z$ oeprators to $ZZ$ operators.
+3. Parallel controlled-Y gates between sublattices to spread the weight-4 operators to the weight-6 plaquette operators and $Z$ operators to $ZZ$ operators.
 :::
 ![The result of the initialization circuit in experiment @evered2025probing](init_res.png)
 
@@ -39,11 +39,11 @@ To further achieve the state of $J_x = J_y = J_z$, one can adiabatically evolve 
 
 #### Probing the Chern number
 
-The observable is the correlation function of majorana operators $\langle c_i c_j \rangle$ in each phase, which can be evaluated by estmating Pauli products based on the $c_ic_j \to \prod_k \sigma_k^{\alpha_k}$ rules that we proved before. 
+The observable is the correlation function of majorana operators $\langle c_i c_j \rangle$ in each phase, which can be evaluated by estimating Pauli products based on the $c_ic_j \to \prod_k \sigma_k^{\alpha_k}$ rules that we proved before. 
 
 ![The experimental result of the correlation function of majorana operators $\langle c_i c_j \rangle$ in each phase](correlation_res.png)
 
-Then we reconstruct the matrix $\Gamma_{ij} = \frac{i}{2}\braket{[c_i,c_j]}$, which can be used to reproduced the free-fermion model $H = \frac{i}{4} \sum c_i A_{ij} c_j$ accroding to the lemma below:
+Then we reconstruct the matrix $\Gamma_{ij} = \frac{i}{2}\braket{[c_i,c_j]}$, which can be used to reproduced the free-fermion model $H = \frac{i}{4} \sum c_i A_{ij} c_j$ according to the lemma below:
 
 :::{#lem-reconstruct-matrix .callout-important icon="false"}
 ## (Reconstruction of the correlation matrix)
@@ -59,7 +59,17 @@ $$
 
 :::{.callout-note collapse="true"}
 ## Proof (Click to expand)
-(todo: add proof)
+The free-fermion Hamiltonian $H = \frac{i}{4}\sum_{ij} A_{ij} c_i c_j$ with real antisymmetric $A$ can be brought to canonical form via an orthogonal transformation $O$:
+$$
+A = O \begin{pmatrix} \ddots \\ & \begin{matrix} 0 & \epsilon_m \\ -\epsilon_m & 0 \end{matrix} \\ & & \ddots \end{pmatrix} O^T,
+$$
+so that $H = \sum_m \frac{\epsilon_m}{2}(2 b_m^\dagger b_m - 1)$ where $b_m = (d_{2m} + i d_{2m+1})/2$ are the normal-mode fermions in the rotated Majorana basis $d = O^T c$.
+
+At zero temperature the ground state fills all negative-energy modes: $\langle b_m^\dagger b_m \rangle = \theta(-\epsilon_m)$. In the normal-mode basis the correlation matrix is diagonal:
+$$
+\tilde{\Gamma}_{2m,2m+1} = \frac{i}{2}\langle [d_{2m}, d_{2m+1}] \rangle = i\langle d_{2m} d_{2m+1}\rangle = -\text{sgn}(\epsilon_m).
+$$
+For the ground state of a gapped system all $\text{sgn}(\epsilon_m) = +1$ (choosing the convention $\epsilon_m > 0$), giving $\tilde{\Gamma}_{2m,2m+1} = -1$ and $\tilde{\Gamma}_{2m+1,2m} = +1$. Rotating back to the original basis $\Gamma = O \tilde{\Gamma} O^T$ yields the claimed block-diagonal form with entries $\pm 1$ instead of $\pm \epsilon_m$. Geometrically, $\Gamma$ is the "flattened" version of $A$: it retains the eigenvectors (band topology) but replaces each eigenvalue by its sign. This is exactly why the Chern number computed from $\Gamma$ equals that of $A$.
 :::
 
 This means that the correlation matrix it self can be used to reproduce the chern number of the equivalent free-fermion model.
@@ -96,7 +106,7 @@ It is observed that near fermion are excluded.
 
 ![The experimental result of the fermion exchange statistics](fermion_exchange.png)
 
-Notice that  $XZY \propto i c_I c_J = a_I^\dagger a_J + a_J^\dagger a_I + a_I a_J + a_I^\dagger a_J^\dagger$. Thus by implementing $XZY$ on the vacum state, we can generate a two-fermion state ( the effect of $a_I^\dagger a_J,  a_J^\dagger a_I, a_I a_J$ are canceled).
+Notice that  $XZY \propto i c_I c_J = a_I^\dagger a_J + a_J^\dagger a_I + a_I a_J + a_I^\dagger a_J^\dagger$. Thus by implementing $XZY$ on the vacuum state, we can generate a two-fermion state ( the effect of $a_I^\dagger a_J,  a_J^\dagger a_I, a_I a_J$ are canceled).
 To exchange the two fermions, we notice that:
 
 :::{.callout-tip collapse="false"}
@@ -137,7 +147,7 @@ H_{\text{interaction}} &= \frac{1 - Z_{i\uparrow}Z_{i'\uparrow}}{2} \cdot \frac{
 &= \frac{1}{4} \Big( 1 - Z_{i\uparrow}Z_{i'\uparrow} - Z_{i\downarrow}Z_{i'\downarrow} + Z_{i\uparrow}Z_{i'\uparrow}Z_{i\downarrow}Z_{i'\downarrow} \Big)
 \end{align*}
 $$
-Thus depending on the realizaiton of 4-body interaction $Z_{i\uparrow}Z_{i'\uparrow}Z_{i\downarrow}Z_{i'\downarrow}$. This is again compiled into $ZZ(\theta)$ gate as
+Thus depending on the realization of 4-body interaction $Z_{i\uparrow}Z_{i'\uparrow}Z_{i\downarrow}Z_{i'\downarrow}$. This is again compiled into $ZZ(\theta)$ gate as
 $$
 CNOT^{\otimes 2} \cdot \exp(-i \theta Z_{i\downarrow}Z_{i'\downarrow}) \cdot CNOT^{\otimes 2} \equiv \exp(-i \theta Z_{i\uparrow}Z_{i'\uparrow}Z_{i\downarrow}Z_{i'\downarrow})
 $$
@@ -179,6 +189,7 @@ The appropriate baseline is **Bluvstein 2024** [@bluvstein2024logical], which in
 | **Total atoms** | 104 (72 data + 32 ancilla) | 280 physical / 48 logical | 72 data qubits tile a cylindrical honeycomb; 32 ancilla enable mid-circuit measurement |
 | **1Q gate fidelity** | ~99.5% ("roughly similar to our other works" [@evered2025probing]) | ~99.5% | No dedicated benchmark reported; inherited from prior generations |
 | **CZ fidelity** | ~99.5% (carried from Bluvstein 2024; Evered 2025 states performance is "comparable to prior work") | 99.5% | No significant regression; each Floquet layer still compounds this |
+| **Tunable-angle CPHASE** | Numerically optimized per angle; **no standalone fidelity number reported** — only stated as "comparable to prior work" | N/A (fixed CZ only) | Fidelity likely similar to CZ but uncharacterized independently |
 | **Rydberg state** | $n = 53$ (two-photon: 420 nm + 1013 nm) | $n = 70$ ($\lvert 70S_{1/2}\rangle$) | Lower $n$ enables closer atom spacing via smaller blockade radius |
 | **Intermediate-state detuning** | 3.3 GHz (closer than prior work) | Standard | Enables higher Rabi frequency at closer spacing |
 | **Reference readout fidelity** | 99.8% | 99.5% | Improved reference; in-run value degraded to ~96–97% (see below) |
@@ -249,8 +260,6 @@ The result $C = 1$ thus reflects the topology of the *reconstructed* Hamiltonian
 
 **Fermion exchange statistics:** The exchange protocol uses $\sqrt{XZY}$ sandwiching with loss-radius postselection. The acceptance fraction ranges from **1–7%** per shot depending on the number of ancilla rounds. The contrast between "exchanged" and "not exchanged" trajectories provides the signature of fermionic ($\pi$-phase) exchange statistics.
 
-**Fermi-Hubbard $M_\text{stagg}$:** The simulation encodes spin-up and spin-down on a **4×4 square lattice (16 sites**, split into two 8-site halves). The circuit uses depth-12 Floquet rounds with the dimensionless interaction ratio $J_Z/J$ varied up to 8 (with explicit benchmarks at $J_Z/J = 1$ and $J_Z/J = 8$). The staggered magnetization $M_\text{stagg}$ shows **non-monotonic behavior**: it decays rapidly at $J_Z/J \to 0$ (free fermions spread out), is suppressed at intermediate coupling, and is partially recovered at large $J_Z/J \gg 1$ where double-occupancy is energetically suppressed. This non-monotonic dependence on the interaction strength is the key signature of Hubbard physics.
-
-<!-- TODO: Add the proof for the reconstruction lemma (currently marked as todo in the lemma block above) -->
+**Fermi-Hubbard $M_\text{stagg}$:** The simulation encodes spin-up and spin-down on **two copies of an 8-site honeycomb lattice** (16 qubits total, one lattice per spin species). The circuit uses depth-12 Floquet rounds with the dimensionless interaction ratio $J_Z/J$ varied up to 8 (with explicit benchmarks at $J_Z/J = 1$ and $J_Z/J = 8$). The staggered magnetization $M_\text{stagg}$ shows **non-monotonic behavior**: it decays rapidly at $J_Z/J \to 0$ (free fermions spread out), is suppressed at intermediate coupling, and is partially recovered at large $J_Z/J \gg 1$ where double-occupancy is energetically suppressed. This non-monotonic dependence on the interaction strength is the key signature of Hubbard physics.
 
 Neutral atoms have a structural advantage for the honeycomb geometry: mid-circuit atom rearrangement provides native non-local connectivity, eliminating the SWAP overhead that would add $O(N)$ depth on a fixed grid. On trapped-ion platforms the limiting factor is gate clock speed (not fidelity), while on superconducting platforms the bottleneck is connectivity-limited routing (not coherence time).
