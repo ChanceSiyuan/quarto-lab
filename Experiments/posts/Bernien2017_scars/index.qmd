@@ -25,7 +25,7 @@ The first large-scale Rydberg tweezer array experiment: 51 $^{87}$Rb atoms in a 
 
 ## Key observations
 
-- **Phase transitions into ordered states:** Observed $\mathbb{Z}_2$ (every other atom excited) and $\mathbb{Z}_3$ (every third atom) crystalline orders as a function of blockade radius $R_b/a$, where $a$ is the lattice spacing.
+- **Phase transitions into ordered states:** Observed $\mathbb{Z}_2$ (every other atom excited), $\mathbb{Z}_3$ (every third atom), and $\mathbb{Z}_4$ (every fourth atom) crystalline orders as a function of blockade radius $R_b/a$, where $a$ is the lattice spacing. The Z₄ phase used a lattice spacing $a = 2.87\ \mu\text{m}$ with NN interaction $V_{i,i+1}/2\pi = 1536$ MHz — demonstrating the platform's programmability across multiple commensurate orders.
 - **Persistent many-body oscillations:** After preparing the $\mathbb{Z}_2$ ordered state (via adiabatic sweep to large $\Delta > 0$) and then suddenly quenching to $\Delta = 0$ (the disordered/critical regime), the domain-wall density exhibited long-lived oscillations — persisting for $>4$ Rabi cycles — rather than thermalizing as expected from the eigenstate thermalization hypothesis (ETH).
 - **Quantum many-body scars:** The oscillations were later identified [@turner2018quantum] as arising from a tower of special eigenstates (quantum many-body scars) embedded in an otherwise thermal spectrum, representing a novel mechanism of weak ergodicity breaking.
 
@@ -96,6 +96,8 @@ with $n_i = \frac{1}{2}(1 + \sigma_i^z)$. Relevant parameters from the paper:
 | Intermediate-state detuning | $\delta = 2\pi \times 560$ MHz from $6P_{3/2}$ (Methods) |
 | Lattice spacing (Z₂) | $a = 5.74\ \mu\text{m}$ |
 | Lattice spacing (Z₃) | $a = 3.57\ \mu\text{m}$ |
+| Lattice spacing (Z₄) | $a = 2.87\ \mu\text{m}$ |
+| NN interaction (Z₄) | $V_{i,i+1}/2\pi = 1536$ MHz |
 | Blockade radius | $R_b \approx 9\ \mu\text{m}$ ($R_b/a \approx 1.57$ for Z₂) |
 | NN interaction $V_{i,i+1}$ | $2\pi \times 24$ MHz |
 | NNN interaction $V_{i,i+2}$ | $2\pi \times 0.38$ MHz |
@@ -106,3 +108,7 @@ with $n_i = \frac{1}{2}(1 + \sigma_i^z)$. Relevant parameters from the paper:
 | Atom temperature | ~12 μK |
 | Trap depth | ~1 mK |
 | Coherence (spin echo) | $> 5\ \mu\text{s}$ (no visible decay) |
+| Rabi frequency inhomogeneity | ~3% (spatial variation across chain) |
+| Rydberg laser linewidth (PDH) | $< 0.5$ kHz |
+| Experimental cycle time | ~250 ms |
+| Trap-off duration (for Rydberg) | $\leq 7\ \mu\text{s}$ (capped at 3% atom loss) |
