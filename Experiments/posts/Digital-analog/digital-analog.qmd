@@ -262,10 +262,12 @@ The dominant decoherence mechanism observed in the 2D kagome experiments is not 
 **Note on Rydberg decay:** The $n=70$ state has a radiative decay rate $\Gamma \sim 1$ kHz, corresponding to a lifetime of $\sim 1$ ms — far longer than the experiment duration. The relevant dephasing rate is instead set by T₂* ≈ 1–2 μs (measured in the 2D geometry), which is dominated by the interaction-tail and intensity-inhomogeneity mechanisms above, **not** by spontaneous emission. The two rates differ by $\sim 10^3\times$.
 :::
 
+5. **Avalanche dephasing:** Blackbody-induced decay of Rydberg $S$ states to opposite-parity $P$ states triggers correlated multi-atom loss ("avalanche events"). The dipolar $S$–$P$ interaction causes two-point loss correlations that decay as $1/r^3$, distinct from uncorrelated single-atom decay. This mechanism produces non-Poissonian large-loss events (Extended Data Fig. 2b of [@geim2026engineering]) and contributes an additional decoherence channel beyond the single-particle mechanisms listed above. In blockade-violating states, the loss probability reaches $\sim 40\%$ per qubit.
+
 **Paths to improvement:**
 
 - Better beam-shaping optics to reduce the 2–3% intensity inhomogeneity to $< 0.5\%$
-- Using $n=53$ instead of $n=70$ in 2D would reduce interaction tails (weaker $V_0 = 14.2$ MHz vs 18.1 MHz) at the cost of shorter range interactions
+- *[Note author speculation, not from paper:]* Using $n=53$ instead of $n=70$ in 2D could reduce interaction tails (weaker $V_0$), but the paper uses $n=53$ only for 1D at 3.6 μm spacing — the $V_0$ values are not directly comparable across different spacings
 - Composite pulse sequences for the echo to reduce finite-width $w_e$ errors
 - Reservoir replenishment already compensates the ≈1.8%/run loss from Rydberg decay
 
@@ -291,6 +293,19 @@ The dominant decoherence mechanism observed in the 2D kagome experiments is not 
 | Post-selection retention (1D) | 55% | 19-site analysis region |
 | Post-selection retention (hex) | 77% | Hexagonal plaquettes |
 | Post-selection retention (QSL) | 81–96% | Kagome QSL experiments |
+| Intermediate-state detuning (1D) | $-6.3$ GHz | Two-photon Rydberg excitation |
+| Intermediate-state detuning (2D) | $+1$ GHz | Two-photon Rydberg excitation |
+| Magnetic field | 11.3 G | Quantization axis |
+| Zeeman splitting | 32 MHz | Ground-state hyperfine |
+| Raman two-photon Rabi freq | $\sim 8$ MHz | Hyperfine manipulation |
+| Simulation zone (kagome) | 62 μm × 185 μm | Height × width |
+| 1D Rydberg beam waist | $\sim 35$ μm (Gaussian) | Global Rydberg drive |
+| Local Raman tweezer waist | 2.5 μm | Individual addressing |
+| Blockade-violating loss | $\sim 40\%$ per qubit | Avalanche-related |
+| Avalanche loss correlation | $1/r^3$ decay | Dipolar S–P interaction |
+| Raman $\pi$-pulse gap time | 100 ns | Between pulse pairs |
+| Camera | Hamamatsu ORCA-Quest C15550-20UP | Fluorescence imaging |
+| Objective NA | 0.65 | Imaging system |
 
 ## Spectral function measurement (1D chain)
 
@@ -320,7 +335,7 @@ On the 271-site kagome lattice, the paper diagnoses the Rokhsar-Kivelson (RK) qu
 - **Coherence length:** Coherent superpositions are observed up to **18 sites**, limited by the combination of intensity inhomogeneity and Rydberg interaction tails described above.
 - **RK energy equality:** A direct projector measurement confirms $\langle T\rangle_\text{proj} = \langle V\rangle_\text{proj} \approx 0.29$, the hallmark of the RK point where kinetic and potential energy operators have equal expectation values (T = V is the RK condition; the measured magnitude is 0.29, not unity).
 - **Perimeter law:** The $X$-loop operator (measuring resonance around closed loops) decays as a perimeter law — not an area law — confirming topological order rather than trivial paramagnetic behavior. This decay is observed for loops up to **33 total sites**.
-- **Dimer correlations:** The dimer-dimer correlation function shows the $1/r^{2}$ algebraic decay expected for the $U(1)$ QSL critical point, consistent with the RK state. (The $1/r^{1/2}$ exponent applies to string-type correlators, not dimer-dimer.)
+- **Dimer correlations:** On the finite 271-site lattice, the dimer-dimer correlator shows **exponential decay transitioning to a plateau** — indicative of weak long-range order. Field theory predicts algebraic $1/r^2$ decay in the thermodynamic limit; the exponential behavior is attributed to finite-size effects and monomer defects. The **dimer-string** correlator decays as $1/r^{1/2}$, consistent with the $U(1)$ field-theory prediction. The ratio of logarithms of the two rectified correlators matches the universal ratio of 4 predicted by theory [@geim2026engineering].
 
 ## Bayesian optimization protocol
 
