@@ -38,18 +38,22 @@ The paper demonstrates the inverse simulation framework on **three distinct targ
 - **Cost function:**
 $$C[\boldsymbol{\theta};\lambda] = \langle \hat{H}_0 \rangle_\theta - \lambda \sum_r \langle \hat{\Delta}_1^\dagger \hat{\Delta}_{1+r} \rangle_\theta$$
   where $\hat{\Delta}_1^\dagger$ creates a singlet pair at site 1 and $\lambda$ weights the pairing enhancement against energy minimization. The paper uses $\lambda = 2$ with interactions restricted to be repulsive (Figure 2c).
-- **DMRG validation:** Inverse simulator run on a 2-leg, 4-rung ladder (2×4 = 8 sites) at **quarter filling**; the learned Hamiltonian parameters generalize successfully to a 2×24-site ladder across the full doping range.
+- **DMRG validation:** Initial optimization performed on a **4-site ladder**; Hamiltonian learning then carried out on a **2-leg, 4-rung ladder (2×4 = 8 sites)** at **quarter filling**. The learned Hamiltonian parameters generalize successfully to a 2×24-site ladder across the full doping range.
 - **Learned terms:** dominant off-diagonal hoppings and off-site density–density interactions — physically interpretable microscopic parameters that enhance $d$-wave pair correlations.
 - Circuit depths $d = 5$ and $d = 10$ were used on the 2×4 learning ladder (Figure 2c), with deeper circuits yielding more localized learned Hamiltonians.
 
 ### Application 2: Topological phase extension in the Cluster Ising Model (CIM)
 
 - **Parameter range:** CPHL sweeps the CIM coupling parameter $g \in [-1, 1]$, where $g = -1$ is deep in the topological (cluster) phase and $g = 1$ is the ferromagnetic phase.
+- **Staircase circuit ansatz:** Depth-$N$ staircase circuits are used for the CIM application. These circuits are classically simulable and can be trained efficiently without barren plateaus — a key advantage over generic variational ansätze. Implementation proceeds through a holographic protocol involving sequential measurements and qubit reset.
 - The cost function targets topological order (string-order parameter); the inverse simulator discovers antiferromagnetic next-nearest-neighbor coupling and a quartic interaction term that suppresses competing ferromagnetism and **extends the topological phase boundary** beyond the bare CIM.
 
 ### Application 3: Ring-exchange Hamiltonian learning from dynamical structure factors
 
 - Three-spin system; CPHL reconstructs a Hamiltonian with ring-exchange coupling $J_{\text{ring}}$ from spectral response functions. The algorithm converges to the correct multi-peak structure rapidly.
+- **SHL spectral benchmarks:** For the antiferromagnetic Heisenberg chain, SHL recovers the momentum-resolved two-spinon continuum with bounds:
+$$\omega_{\text{lb}}(k) = -2\pi J |\sin k|, \qquad \omega_{\text{ub}}(k) = -4\pi J |\sin(k/2)|$$
+  For the ferromagnetic chain, SHL recovers the magnon dispersion $\omega_m(k)$, benchmarked against exact Bethe ansatz results.
 
 ### Application 1b: Finite-temperature $d$-wave Hubbard (Gibbs state)
 
@@ -88,36 +92,40 @@ $$C[\boldsymbol{\theta};\lambda] = \langle \hat{H}_0 \rangle_\theta - \lambda \s
 
 ## Critical technique analysis
 
-**Most important technique needing optimization: Hamiltonian learning from quantum simulator data.**
+**Most important technique needing optimization: variational state preparation and CPHL convergence at scale.**
 
-The inverse simulation framework has two computationally expensive steps:
+As a theory proposal, the paper's bottlenecks are algorithmic rather than hardware-specific. The two co-equal challenges the paper identifies are:
 
-1. **Variational state preparation:** The paper treats this as a **co-equal challenge** alongside Hamiltonian learning. At scale, barren plateaus make gradient-based optimization exponentially costly in qubit number — the cost function landscape flattens and gradients vanish. The paper's numerical demonstrations use small systems (8 sites) where this is manageable, but scaling to $>50$ qubits requires either hardware-efficient ansätze that exploit Rydberg locality to avoid barren plateaus, or problem-informed initialization strategies. The Rydberg platform's native interactions provide a warm start, but compiling general variational circuits from blockade-constrained pulses adds overhead not quantified in the paper.
+### 1. Variational state preparation — barren plateaus
 
-2. **Hamiltonian learning (SHL/CPHL):** Given a prepared state $|\psi\rangle$, extracting the effective Hamiltonian requires:
-   - Measuring many observables (energy, correlators, spectral functions) in multiple bases
-   - Solving an inverse problem: find $\hat{H}$ such that $|\psi\rangle \approx |\text{GS}(\hat{H})\rangle$
-   - This step is where readout fidelity, measurement basis diversity, and shot budget become critical
+At scale, barren plateaus make gradient-based optimization exponentially costly in qubit number — the cost function landscape flattens and gradients vanish. The paper's numerical demonstrations use small systems (4–8 sites) where this is manageable, but scaling to $>50$ qubits is qualitatively harder.
 
-**Why CPHL is harder than SHL:** SHL (Spectral Hamiltonian Learning) works at discrete parameter points and can exploit spectral gaps. CPHL (Continuous-Phase Hamiltonian Learning) must smooth a learned Hamiltonian over a continuous parameter manifold (e.g., doping fraction, temperature). This smoothing amplifies measurement noise across the parameter grid — each grid point requires independent Hamiltonian learning, and statistical errors accumulate. Shot budget and readout fidelity are therefore much more constraining for CPHL than SHL.
+**The paper's mitigation:** For the CIM application, depth-$N$ staircase circuits are used specifically because they are classically simulable and trainable without barren plateaus. For the Hubbard application, the paper observes that learning degrades at large $\lambda$ or circuit depth $d$ when the Hamiltonian ansatz lacks sufficient non-locality — the correlation enhancement vs.\ Hamiltonian locality tradeoff is the concrete scaling obstacle. Extending the ansatz term set systematically restores performance but adds classical overhead.
 
-**Why readout fidelity is the dominant bottleneck (not gate fidelity or qubit count):** For any observable estimated from projective measurements, readout errors reduce the effective number of informative samples. The variance of learned Hamiltonian coefficients scales as
-$$\text{Var}[\hat{h}_k] \propto \frac{1}{\eta_{\text{ro}}^2 \cdot N_{\text{shots}}}$$
-where $\eta_{\text{ro}}$ is the single-qubit readout fidelity. (This is a standard result from measurement statistics, not a formula stated in the paper — the paper does not provide an explicit shot-budget analysis.) Gate errors primarily affect state preparation (distorting the optimized state but not fundamentally changing the measurement inversion problem), while readout errors directly inflate the statistical noise floor of every Hamiltonian coefficient estimate. Halving the readout infidelity from 4% to 2% reduces the required shot count by $4\times$ — a much larger leverage than a comparable reduction in gate error.
+### 2. CPHL smoothing across parameter manifolds
+
+SHL (Spectral Hamiltonian Learning) works at discrete parameter points and can exploit spectral gaps. CPHL (Continuous-Phase Hamiltonian Learning) must smooth a learned Hamiltonian over a continuous parameter manifold (e.g., $g \in [-1,1]$ for the CIM). Each grid point requires independent Hamiltonian learning, and statistical errors accumulate across the manifold. This makes CPHL significantly more demanding than pointwise SHL.
 
 **Sample complexity:** Both SHL and CPHL require only a **polynomial number of measurements in system size, independent of temperature** — a key theoretical result. The paper does not specify the polynomial exponent $k$ (i.e., the exact $O(n^k)$ scaling); only the existence of polynomial scaling is claimed, with proofs referenced to external theoretical work. No explicit shot count is given for the demonstrated systems.
 
+### Hardware context (secondary)
+
+For eventual experimental realization, readout fidelity becomes the dominant hardware constraint. Readout errors reduce the effective number of informative samples; the variance of learned Hamiltonian coefficients scales as
+$$\text{Var}[\hat{h}_k] \propto \frac{1}{\eta_{\text{ro}}^2 \cdot N_{\text{shots}}}$$
+(standard measurement statistics — not stated in the paper). Halving the readout infidelity from 4% to 2% reduces the required shot count by $4\times$. Gate errors primarily affect state preparation quality but do not fundamentally change the measurement inversion problem.
+
 **Paths to improvement:**
 
-- Shadow tomography on the 3/4-zone architecture (multi-basis measurements with mid-circuit readout)
-- Efficient Hamiltonian learning algorithms that exploit the Rydberg platform's locality structure
+- Staircase circuits or other classically-simulable ansätze to avoid barren plateaus
+- Ansatz term-set extension to handle the locality–correlation tradeoff at depth
+- Shadow tomography on the 3/4-zone architecture for efficient multi-basis measurement
 - Classical-quantum hybrid learning: use quantum data to constrain classical optimization of Hamiltonian parameters
 
 ## Completeness check
 
 **SHL/CPHL sample complexity:** Polynomial in system size, independent of temperature (paper states this explicitly for both pure and Gibbs states). The polynomial exponent $k$ is not specified in the paper; only existence of polynomial scaling is claimed.
 
-**DMRG validation:** Learning system — 2×4 ladder (8 physical sites, 2 legs × 4 rungs); generalization tested on 2×24 ladder (48 sites) across full doping range.
+**DMRG validation:** Initial optimization on 4-site ladder; Hamiltonian learning on 2×4 ladder (8 physical sites, 2 legs × 4 rungs); generalization tested on 2×24 ladder (48 sites) across full doping range.
 
 **Hubbard reference parameters:** $t_x = t_y = -1$ (energy unit), $U = 4$.
 
