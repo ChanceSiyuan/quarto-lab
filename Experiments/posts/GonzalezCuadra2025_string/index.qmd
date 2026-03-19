@@ -13,16 +13,16 @@ draft: true
 
 **Paper:** González-Cuadra et al., "Observation of string breaking on a (2+1)D Rydberg quantum simulator," *Nature* **642**, 321–326 (2025) [@gonzalezcuadra2025string]
 
-**Architecture:** 1-zone analog (QuEra Aquila; kagome lattice, $a \approx 4.7$–$7\,\mu$m, $R_b = 8.4\,\mu$m; 31–59 atoms depending on measurement)
+**Architecture:** 1-zone analog (QuEra Aquila; kagome lattice, $a \approx 4.7$–$7\,\mu$m, $R_b = 8.4\,\mu$m; 31–59 atoms depending on measurement; array FOV $75\,\mu\text{m} \times 128\,\mu\text{m}$)
 
 ## What was done
 
 :::{.callout-tip title="Experiment Protocol"}
 1. **Gauge theory mapping:** Atoms on a kagome array encode a (2+1)D $U(1)$ lattice gauge theory. Rydberg blockade enforces Gauss's law; van der Waals interactions $V(r) = C_6/r^6$ (with $C_6/2\pi = 862{,}690\,\text{MHz}\cdot\mu\text{m}^6$, $^{87}$Rb $70S_{1/2}$) generate the linear confining potential.
 2. **Static-charge preparation:** A local detuning beam pins a pair of test charges; adiabatic sweep ($\sim 2.5\,\mu$s) prepares the flux-string ground state.
-3. **Phase-diagram scan:** Global detuning swept over $R_b/a \in [1.2, 1.8]$ ($a$ tuned 4.7–7 µm) and $\delta/\Omega$ up to $3.67$ on a **59-atom** kagome patch to map the confinement–deconfinement phase diagram. (Fig. 2e–f use a cut at fixed $\delta/\Omega = 3.67$.)
+3. **Phase-diagram scan:** Global detuning swept over $R_b/a \in [1.2, 1.8]$ ($a$ tuned 4.7–7 µm) and $\delta/\Omega \in [2.3,\, 3.67]$ on a **59-atom** kagome patch to map the confinement–deconfinement phase diagram. (Fig. 2e–f use a cut at fixed $\delta/\Omega = 3.67$.)
 4. **Resonance scan ($d = 3$):** **39-atom** array; local detuning $\delta_0$ scanned to find the string-breaking resonance at $2\delta_0 = V_1$.
-5. **Quench dynamics ($d = 2$):** **31-atom** array; sudden quench from string state to deconfined regime; up to **1.6 µs** allocated for quench observation (main figures show snapshots at $t = 0.4\,\mu$s); the adiabatic sweep is reduced from 2.5 µs to 1.5 µs to free this window.
+5. **Quench dynamics ($d = 2$):** **31-atom** array; sudden quench from string state to deconfined regime; main-text snapshots at $t = 0.4\,\mu$s (Fig. 3f). <!-- TODO: verify maximum quench observation time from Extended Data Fig. 1; main text only shows t = 0.4 µs explicitly -->
 6. **Readout:** per-atom fluorescence imaging; fidelity $\sim 0.95$ (Rydberg), $\sim 0.99$ (ground state) — values from the Aquila platform spec [@wurtz2023aquila], not reported in this paper.
 :::
 
@@ -54,7 +54,7 @@ Simulation of a (2+1)D $U(1)$ lattice gauge theory using native Rydberg interact
 | Blockade radius | $R_b = 8.4\,\mu$m ($70S_{1/2}$) | Similar | Similar | Same Rb platform |
 | Lattice constant | $a \approx 4.7$–$7\,\mu$m ($R_b/a \in [1.2, 1.8]$) | ~5 µm | ~5 µm | Tuned to scan phase diagram |
 | Readout fidelity | $\sim 0.95$ / $\sim 0.99$ (from [@wurtz2023aquila]) | ~0.99 | ~0.99 | Values from Aquila white paper, not this paper |
-| Evolution time | up to $1.6\,\mu$s (quench); $3\,\mu$s total adiabatic | Comparable | Comparable | Quench window freed by shortening adiabatic sweep |
+| Evolution time | $0.4\,\mu$s quench snapshots (main text); $3\,\mu$s total adiabatic | Comparable | Comparable | Main-text quench snapshots at $t = 0.4\,\mu$s |
 | Local addressing | Yes — local detuning beams | No (global) | Yes | Required for charge creation; AC Stark decoherence |
 | Platform | QuEra Aquila (cloud) | QuEra Aquila (cloud) | Harvard lab | Cloud vs. lab apparatus |
 
@@ -69,7 +69,7 @@ Two coupled bottlenecks dominate:
 
 1. **Bottleneck 1 ($1/R^6$ curse):** The string-breaking resonance requires precise knowledge of the nearest-neighbor interaction energy $V_1 \propto C_6/a^6$ (entering the energy-balance condition $2m \approx (\sigma(R_b)+\delta_0)\cdot d$). Thermal position fluctuations ($\sigma_x \sim 300$ nm for Rb in a 1 µK trap) give $\delta V_1 / V_1 \approx 6\sigma_x/a \approx 20$–$30\%$, directly broadening the resonance. This is visible quantitatively: the measured resonance peaks are significantly shifted from theory predictions: experiment finds $\delta_0/\Omega = 1.4(1)$ ($d=2$) and $1.0(1)$ ($d=3$) vs. theory predictions of 1.0 and 0.7 respectively — a systematic offset likely due to next-nearest-neighbor interaction corrections.
 
-2. **Bottleneck 2 (local detuning decoherence):** The local detuning beams needed to create the initial charge pair have Gaussian spatial profiles, so intensity gradients at neighboring atom sites produce differential AC Stark shifts that dephase the register. Stronger local detuning (needed for sharper charge localization) means a larger gradient, faster dephasing, and shorter effective $T_2$. The Aquila platform's ensemble $T_2^*$ is on the order of a few µs (the paper does not report a $T_2$ value; the Aquila white paper [@wurtz2023aquila] gives $T_2^* \approx 5.5\,\mu$s); the actual quench window of up to **1.6 µs** is well within this limit but is already constrained by the adiabatic sweep budget. Both effects compound.
+2. **Bottleneck 2 (local detuning decoherence):** The local detuning beams needed to create the initial charge pair have Gaussian spatial profiles, so intensity gradients at neighboring atom sites produce differential AC Stark shifts that dephase the register. Stronger local detuning (needed for sharper charge localization) means a larger gradient, faster dephasing, and shorter effective $T_2$. The Aquila platform's ensemble $T_2^*$ is on the order of a few µs (the paper does not report a $T_2$ value; the Aquila white paper [@wurtz2023aquila] gives $T_2^* \approx 5.5\,\mu$s); the actual quench window ($t = 0.4\,\mu$s in main-text figures) is well within this limit but is already constrained by the adiabatic sweep budget. Both effects compound.
 
 **Why Bottleneck 1 is primary:** The resonance broadening ($\Delta\delta_0/\Omega \approx 0.9$) smears out the contrast between string and broken-string phases. Even if $T_2$ were infinite, the experiment would still fail to resolve the sharp resonance feature predicted by theory.
 
@@ -89,14 +89,14 @@ Two coupled bottlenecks dominate:
 | Kagome patch ($d=3$ resonance) | 39 atoms ($L_0 = 6$, $L_1 = 3$ unit cells) |
 | Kagome patch ($d=2$ dynamics) | 31 atoms ($L_0 = 5$, $L_1 = 3$ unit cells) |
 | Lattice constant $a$ | 4.7–7 µm (computed from $R_b/a \in [1.2, 1.8]$ with $R_b = 8.4\,\mu$m; paper reports $R_b/a$ range, not $a$ directly) |
-| Phase-diagram detuning range | $\delta/\Omega$ up to $3.67$ (Fig. 2e–f cut at $\delta/\Omega = 3.67$) |
+| Phase-diagram detuning range | $\delta/\Omega \in [2.3,\, 3.67]$ (Fig. 2e–f cut at $\delta/\Omega = 3.67$) |
 | Blockade radius $R_b$ | 8.4 µm ($^{87}$Rb $70S_{1/2}$) |
 | $C_6/2\pi$ | $862{,}690\,\text{MHz}\cdot\mu\text{m}^6$ |
 | Readout fidelity (Rydberg / ground) | $\sim 0.95$ / $\sim 0.99$ (from Aquila white paper [@wurtz2023aquila]; not reported in this paper) |
 | $\Omega_\text{max}/2\pi$ | 2.5 MHz |
 | $T_2^*$ (Aquila platform) | $\approx 5.5\,\mu$s (from Aquila white paper [@wurtz2023aquila]; not reported in this paper) |
-| Adiabatic prep time | 3 µs total (2.5 µs linear sweep + 0.5 µs ramp); reduced to 1.5 µs sweep for quench protocol (from Extended Data Fig. 1, not main text) |
-| Quench evolution window | up to 1.6 µs allocated; main figures show snapshots at $t = 0.4\,\mu$s |
+| Adiabatic prep time | <!-- TODO: verify 2.5 µs linear sweep + 0.5 µs ramp from Extended Data Fig. 1; not in main text --> |
+| Quench evolution window | Main-text snapshots at $t = 0.4\,\mu$s (Fig. 3f) <!-- TODO: verify maximum quench time from Extended Data --> |
 | Resonance width $\Delta\delta_0/\Omega$ | Not quantitatively reported in main text |
 | Resonance peak $\delta_0/\Omega$ ($d=2$) | 1.4(1) exp. vs. 1.0 theory |
 | Resonance peak $\delta_0/\Omega$ ($d=3$) | 1.0(1) exp. vs. 0.7 theory |
