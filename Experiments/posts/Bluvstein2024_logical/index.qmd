@@ -23,8 +23,8 @@ draft: true
 280 $^{87}$Rb atoms organized into up to 48 logical qubits, demonstrating the first programmable logical quantum processor on a neutral atom platform:
 
 1. **3-zone spatial separation:** Entangling zone ($35 \times 250$ μm), storage zone (~50 μm away), and readout zone (~100 μm away) — solving the $^{87}$Rb mid-circuit measurement problem by physically separating fluorescence imaging from data qubits.
-2. **Surface code encoding:** Logical qubits encoded in surface codes with distances $d = 3, 5, 7$, demonstrating logical error suppression with increasing code distance.
-3. **Color code encoding:** 40 color-code logical qubits prepared with break-even fidelities.
+2. **Surface code encoding:** Logical qubits encoded in surface codes with distances $d = 3, 5, 7$, with a **single round** of stabilizer measurements (no repeated QEC cycles). Logical error suppression with increasing code distance is demonstrated from the syndrome statistics of this single round.
+3. **Color code encoding:** 40 color-code logical qubits prepared with break-even fidelities (fidelity values reported graphically in Fig. 3; no single tabulated number given).
 4. **Transversal logical gates:** Physical array reconfiguration (AOD transport) enables transversal CNOT between code blocks — exploiting the unique geometric flexibility of atom arrays.
 5. **Code teleportation:** Demonstrated teleportation of logical information between surface codes and color codes.
 6. **Complex logical circuits:** 228 logical two-qubit gates + 48 logical CCZ gates in a single circuit using $[[8,3,2]]$ code blocks.
@@ -51,7 +51,7 @@ draft: true
 
 | Component | Specification |
 |-----------|--------------|
-| **Entangling zone** | $35 \times 250$ μm (AOD bottleneck), top-hat beams, 2 μm spacing, 450 MHz Rydberg coupling, 200 μs between gates |
+| **Entangling zone** | $35 \times 250$ μm (AOD bottleneck), top-hat beams, 2 μm spacing, $n=53$ Rydberg state via 420 nm + 1013 nm two-photon excitation, 270 ns CZ gate, 200 μs between gates |
 | **Transport** | AOD with photodiode calibration (<1% intensity fluctuation), echo $\pi$-pulses, cubic acceleration profile, fast 1013 nm pulsing off |
 | **Atom transfer** | <0.1% error rate, SLM↔AOD handoff with ramped intensity protocol |
 | **Local addressing** | High-NA lens to 1.9 μm focus, $X(\theta)$ or polarization-insensitive $Z(\theta)$ |
@@ -71,6 +71,8 @@ This experiment does not have a reservoir zone, so atom loss events are *unrecov
 
 The 4-zone follow-up (Bluvstein et al. 2025) later identified atom loss as contributing roughly half of all physical errors in that system's operation ("roughly half of our errors being loss") [@bluvstein2025faulttolerant]. In the 3-zone system studied here, loss is an unrecoverable erasure (no reservoir), so its contribution is folded into the effective gate error without distinction. This is precisely the motivation for the 4-zone upgrade: the reservoir zone enables mid-circuit reloading of lost atoms, converting an unrecoverable erasure into a detected, correctable event.
 
+**Important scope limitation:** This experiment performed only a **single round** of stabilizer measurements — repeated QEC cycles were not attempted. This means circuit *depth* was never stress-tested; the below-threshold scaling is inferred from syndrome statistics of one measurement round, not from the exponential suppression of logical errors over many rounds. The 4-zone follow-up [@bluvstein2025faulttolerant] later demonstrated 24 repeated QEC rounds, which is where gate fidelity and atom loss become the true depth-limiting factors.
+
 **Quantitative bottleneck argument:** The clock-state coherence time is $T_2 > 1$ s, while a full gate cycle (transport + entangling + return) takes ~200 μs. This means idling coherence contributes negligibly to the error budget — the errors are dominated by *active* gate operations. Independently, the paper reports **~1% logical decoherence per additional encoding step** (i.e., per storage-and-entangling cycle when preparing 40 color codes), setting a concrete ceiling on circuit depth that tracks gate infidelity rather than idle decoherence. Together, these numbers confirm that CZ gate fidelity (not $T_2$, not readout) is the rate-limiting parameter.
 
 **What this means for optimization:** improving CZ fidelity to 99.9% would enable deeper logical circuits and more compact codes. But without also addressing atom loss, the effective error rate cannot reach the sub-0.1% regime needed for practical fault tolerance. Improving to 99.9% would enable:
@@ -81,7 +83,7 @@ The 4-zone follow-up (Bluvstein et al. 2025) later identified atom loss as contr
 
 Gate fidelity is limited by:
 
-1. **Rydberg state decay:** Finite lifetime of the $|70S_{1/2}\rangle$ state limits the gate time budget (lifetime not explicitly reported; the ~200 μs inter-gate interval is chosen to allow decayed/lost Rydberg atoms to clear)
+1. **Rydberg state decay:** Finite lifetime of the $n=53$ Rydberg state limits the gate time budget (270 ns gate duration via two-photon excitation at 420 nm + 1013 nm; the ~200 μs inter-gate interval is chosen to allow decayed/lost Rydberg atoms to clear)
 2. **Laser phase noise:** PDH-locked laser linewidth (100–500 Hz) introduces dephasing during the gate
 3. **Doppler shifts from thermal motion:** Atom velocity → frequency shift → gate phase error
 4. **Rydberg-Rydberg interaction variation:** Position fluctuations → $1/R^6$ interaction noise → CZ angle error
@@ -102,7 +104,7 @@ The 4-zone architecture (Bluvstein 2025) addresses the *downstream* consequences
 | Clock-state coherence $T_2$ | **>1 s** |
 | Mid-circuit readout decoherence (data qubits) | **≲0.1% per 500 μs** |
 | Photons collected per imaged atom | **~50** |
-| Rydberg coupling strength (≲2 μm) | **≳450 MHz** |
+| Rydberg state | **$n=53$** (two-photon: 420 nm + 1013 nm, 270 ns gate) |
 | Logical decoherence per encoding step | **~1%** |
 
 **Logical layer:**
@@ -131,7 +133,8 @@ Notes:
 | Atom count | ~300 | **280** | 448 |
 | Readout fidelity | 92–96% | **99.8%** | >99.9% (non-destructive) |
 | Mid-circuit measurement | ✗ | **✓** (3-zone separation) | ✓ + reservoir reload |
-| CZ gate fidelity | ~99.0–99.3% | **99.3–99.5%** | not independently reported |
+| CZ gate fidelity | ~99.0–99.3% | **99.3–99.5%** | ~99.5% (bundled with loss in logical error budget) |
+| QEC rounds demonstrated | — | **1 (single round)** | **24 repeated rounds** |
 | QEC code distance demonstrated | — | **$d = 3, 5, 7$** | $d=7$ full cycle |
 | Atom reservoir | ✗ | ✗ | ✓ |
 
