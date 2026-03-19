@@ -23,7 +23,7 @@ Quantum Extreme Reservoir Computing (QERC) on QuEra's Aquila — a cloud-accessi
 ## Experiment Protocol
 
 1. **Data encoding:** Classical input data is encoded into local detuning patterns applied to individual atoms ($\Delta_l^\text{max} = -8$ MHz for Santa Fe; 8 PCA features for MNIST), with a position encoding scale $\lambda$ controlling the geometry: $\lambda = 3$ (MNIST), $1.5$ (Santa Fe position), $4.0$ (Tomato). The $C_6$ interaction coefficient is $C_6 = 862690 \times 2\pi$ MHz·μm$^6$.
-2. **Analog evolution:** The Rydberg blockade Hamiltonian evolves the system for a fixed time $T$ (task-dependent: 1.5–3.5 μs), generating complex many-body correlations from the encoded input. Rabi frequencies: $\Omega = 2\pi$ MHz (MNIST; also Santa Fe position encoding), $3\pi$ MHz (Santa Fe local-pulse encoding), $5\pi$ MHz (Tomato). Global detuning: $\Delta_g = 2\pi$ MHz (MNIST), $4$ MHz (Santa Fe), $5\pi$ MHz (Tomato).
+2. **Analog evolution:** The Rydberg blockade Hamiltonian evolves the system for a fixed time $T$ (task-dependent: 1.5–3.5 μs), generating complex many-body correlations from the encoded input. Rabi frequencies (all values angular, i.e. $\Omega/(2\pi)$ in parentheses): $\Omega = 2\pi$ MHz ($\Omega/(2\pi) = 1$ MHz; MNIST and Santa Fe position encoding), $\Omega = 3\pi$ MHz ($1.5$ MHz; Santa Fe local-pulse encoding), $\Omega = 5\pi$ MHz ($2.5$ MHz; Tomato). Global detuning: $\Delta_g = 2\pi$ MHz (MNIST), $\Delta_g = 4$ MHz (Santa Fe — note: the paper omits the $\pi$ factor here, unlike other parameters; likely $\Delta_g/(2\pi) = 4$ MHz or a typo for $4\pi$ MHz), $\Delta_g = 5\pi$ MHz (Tomato).
 3. **Measurement and readout:** Single-shot projective measurements in the $Z$ basis; expectation values of local observables $\langle n_i \rangle$ and correlators $\langle n_i n_j \rangle$ are estimated from a task-dependent number of shots: ~40 shots (synthetic kernel advantage benchmark), ~220 shots (MNIST binary best result), up to ~1,000 shots (saturation point beyond which accuracy no longer improves).
 4. **Classical post-processing:** A simple linear classifier (ridge regression) trained on the measurement features performs the final classification/regression task.
 5. **Scaling study:** Tested with up to 108 qubits — the largest quantum machine learning experiment at the time of publication.
@@ -38,7 +38,7 @@ Quantum Extreme Reservoir Computing (QERC) on QuEra's Aquila — a cloud-accessi
   - *MNIST binary (digits 3 vs. 8):* **9 qubits** (9-atom 1D chain, 8 PCA features, 1000 train / 200 test); test accuracy **0.935** at ~220 shots per input.
   - *MNIST 10-class:* **9 qubits** (same geometry, 1500 train / 500 test); shot plateau at $N_s \sim 1000$. Claimed as **"best-known performance in 10-class MNIST task on hardware"** at time of publication. (Accuracy available only from Fig. 2(d); not quoted numerically in the paper text.)
   - *Santa Fe chaotic timeseries prediction:* **12 qubits** (12-atom chains with *irregular* geometry: nearest-neighbor distances $(8.9 - g_i)$ μm where $g_i \sim \text{Uniform}(0,1)$; window widths: 10 global-pulse / 11 position / 12 local-pulse); best simulated NMSE **0.004** (local-pulse encoding) / **0.0038** (position encoding), read from Fig. 2(c) — no single experimental NMSE is quoted numerically in the paper.
-  - *Plant Village disease classification (multi-class):* **9–108 qubits** (2D arrays, largest 9×12 = 108; 498 images, 400 train); accuracy scales with system size, with the 108-qubit point surpassing the 4-layer NN baseline. (Both the 108-qubit accuracy and 4-layer NN baseline accuracy are available only from Fig. 3(e); neither is quoted numerically in the paper text.)
+  - *Plant Village disease classification (multi-class):* **9–108 qubits** (2D arrays, largest 9×12 = 108; images downscaled to $8 \times 12 = 96$ pixel features via position encoding with $(R_x - 1) \times R_y$ features; 498 images, 400 train); accuracy scales with system size, with the 108-qubit point surpassing the 4-layer NN baseline. <!-- TODO: 108-qubit accuracy and 4-layer NN baseline are fig-only (Fig. 3(e)); no numerical values quoted in paper text -->
   - **2D correlator restriction:** Large-scale 2D experiments use only nearest-neighbor $\langle n_i n_j \rangle$ (not all pairs), keeping the feature vector size linear in atom count.
 
 ## Scientific significance
@@ -106,13 +106,14 @@ where $\delta_0$ is the applied local detuning and $\theta$ is a beam-quality pa
 | Atom spacing (Aquila NN) | Intra-chain baseline / inter-chain (2D) | **10 μm / 15 μm** (Santa Fe position encoding uses irregular $(8.9 - g_i)$ μm) | — |
 | Blockade radius ratio | $R_b^{(0)}/a$ | **≈ 0.98** | — |
 | PCA features encoded (MNIST) | Input dimensionality per shot | **8** | — |
+| Tomato image resolution (108-q) | Downscaled to $(R_x{-}1) \times R_y$ features | **$8 \times 12 = 96$ pixels** | — |
 | Evolution time — MNIST | 5 timesteps × 0.5 μs | **2.5 μs** | — |
 | Evolution time — Santa Fe | 10 timesteps × 0.35 μs | **3.5 μs** | — |
 | Evolution time — Tomato | 5 timesteps × 0.3 μs | **1.5 μs** | — |
-| Rabi frequency $\Omega$ — MNIST | | **$2\pi$ MHz** | — |
-| Rabi frequency $\Omega$ — Santa Fe (position enc.) | | **$2\pi$ MHz** | — |
-| Rabi frequency $\Omega$ — Santa Fe (local-pulse enc.) | | **$3\pi$ MHz** | — |
-| Rabi frequency $\Omega$ — Tomato | | **$5\pi$ MHz** | — |
+| Rabi frequency $\Omega$ — MNIST | $\Omega/(2\pi)$ | **$2\pi$ MHz** ($1$ MHz) | — |
+| Rabi frequency $\Omega$ — Santa Fe (position enc.) | $\Omega/(2\pi)$ | **$2\pi$ MHz** ($1$ MHz) | — |
+| Rabi frequency $\Omega$ — Santa Fe (local-pulse enc.) | $\Omega/(2\pi)$ | **$3\pi$ MHz** ($1.5$ MHz) | — |
+| Rabi frequency $\Omega$ — Tomato | $\Omega/(2\pi)$ | **$5\pi$ MHz** ($2.5$ MHz) | — |
 | Ramp time (up/down) | | **0.05 μs** each | — |
 | Local detuning amplitude (Santa Fe) | $\Delta_l^\text{max}$ | **−8 MHz** | — |
 | Santa Fe NMSE (simulated, local-pulse encoding) | Best NMSE, read from Fig. 2(c) | **0.004** | — |
@@ -121,7 +122,7 @@ where $\delta_0$ is the applied local detuning and $\theta$ is a beam-quality pa
 | Santa Fe NMSE (experimental) | Not quoted in paper text | *no single number given* | — |
 | $C_6$ coefficient | Rydberg interaction strength | **$862690 \times 2\pi$ MHz·μm$^6$** | — |
 | Global detuning $\Delta_g$ — MNIST | | **$2\pi$ MHz** | — |
-| Global detuning $\Delta_g$ — Santa Fe | | **$4$ MHz** (bare, no $2\pi$ prefix — unit convention differs from MNIST/Tomato) | — |
+| Global detuning $\Delta_g$ — Santa Fe | | **$4$ MHz** (paper omits $\pi$ factor unlike MNIST/Tomato; likely $\Delta_g/(2\pi) = 4$ MHz or typo for $4\pi$ MHz) | — |
 | Global detuning $\Delta_g$ — Tomato | | **$5\pi$ MHz** | — |
 | Position encoding scale $\lambda$ — MNIST | | **3** | — |
 | Position encoding scale $\lambda$ — Santa Fe | | **1.5** | — |
