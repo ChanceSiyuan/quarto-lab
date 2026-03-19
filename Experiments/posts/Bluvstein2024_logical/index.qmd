@@ -27,7 +27,7 @@ draft: true
 3. **Color code encoding:** 40 color-code logical qubits prepared with break-even fidelities — the fault-tolerant $|0_L\rangle$ preparation achieves **99.91$^{+0.04}_{-0.09}$%** fidelity, exceeding the physical qubit initialization fidelity of 99.32(4)%. This is the concrete break-even metric: the logical qubit outperforms its constituent physical qubits.
 4. **Transversal logical gates:** Physical array reconfiguration (AOD transport) enables transversal CNOT between code blocks — exploiting the unique geometric flexibility of atom arrays.
 5. **Code teleportation:** Demonstrated teleportation of logical information between surface codes and color codes.
-6. **Complex logical circuits:** 228 logical two-qubit gates + 48 logical CCZ gates in a single circuit using $[[8,3,2]]$ code blocks. The $[[8,3,2]]$ code has asymmetric distance: $d=2$ in the $Z$ basis (error detection) and $d=4$ in the $X$ basis (error correction), enabling transversal implementation of all Clifford gates on 3 logical qubits per block.
+6. **Complex logical circuits:** 228 logical two-qubit gates + 48 logical CCZ gates in a single circuit using $[[8,3,2]]$ code blocks. The $[[8,3,2]]$ code encodes 3 logical qubits into 8 physical qubits at distance $d=2$ — it *detects* single errors but cannot correct them. Its value is that all Clifford gates (including CNOT and CCZ) can be implemented transversally on the 3 logical qubits per block.
 :::
 
 ## Key observations
@@ -35,7 +35,7 @@ draft: true
 - **Below-threshold QEC scaling:** Logical error rates decrease with increasing surface code distance ($d = 3 \to 5 \to 7$), demonstrating operation below the error correction threshold.
 - **Transversal CNOT via array reconfiguration:** The atom array's geometric programmability enables transversal logical gates that would require complex ancilla circuits on fixed-connectivity hardware (superconducting qubits, ion traps).
 - **Mid-circuit measurement + feedforward:** FPGA-based classical processing applies real-time corrections based on ancilla measurement outcomes, enabling deterministic state preparation.
-- **CZ gate fidelity:** 99.3–99.5% two-qubit gate fidelity (measured range under various conditions with proper calibration; Methods section) — the key physical-layer metric determining the QEC threshold.
+- **CZ gate fidelity:** 99.3–99.5% two-qubit gate fidelity via **randomized benchmarking** (measured range under various conditions with proper calibration; Methods section) — the key physical-layer metric determining the QEC threshold.
 - **Spin-to-position readout:** 99.8% readout fidelity via state-dependent lattice displacement — a 4–8% improvement over in-situ Rydberg detection.
 
 ## Scientific significance
@@ -128,8 +128,8 @@ Notes:
 - The GHZ and XEB benchmarks use error *detection* (postselection on no-error syndromes), not correction. GHZ accepted fraction varies continuously — discarding ~50% of shots yields ~90% fidelity; full stabilizer postselection reaches $99.85^{+0.10}_{-1.00}$%.
 - The GHZ post-detection error bars are asymmetric: the lower bound of 98.85% is scientifically meaningful — it represents the worst-case fidelity consistent with the data.
 - The 48-LQ raw XEB score (~0.1) is the unpostselected circuit fidelity at maximum scale; post-detection XEB at 12 qubits is 0.616(7).
-- Surface code logical Bell pair error at $d=7$: ~5% infidelity (figure-read estimate from Fig. 2c; ~0.95 population in $X_L X_L$ and $Z_L Z_L$ bases — exact value not stated in text). <!-- TODO: extract precise d=7 Bell pair infidelity from Extended Data if available -->
-- Per-round logical error rates at $d=3,5,7$: not tabulated in the paper; presented only graphically in Extended Data Figs. 4–5. Below-threshold scaling is demonstrated by the monotonic decrease of logical error with $d$. <!-- TODO: extract approximate per-round logical error rates from Extended Data Figs. 4–5 (figure reads) --> For comparison, the 4-zone follow-up reports 0.62(3)% per round at $d=5$ with $\Lambda = 2.14(13)\times$ suppression factor vs. $d=3$ [@bluvstein2025faulttolerant].
+- Surface code logical Bell pair error at $d=7$: ~5% infidelity (figure-read estimate from Fig. 2c; ~0.95 population in $X_L X_L$ and $Z_L Z_L$ bases). The paper does not tabulate this value — it is only available graphically.
+- Per-round logical error rates at $d=3,5,7$: not tabulated in the paper; presented only graphically in Extended Data Figs. 4–5. Below-threshold scaling is demonstrated by the monotonic decrease of logical error with $d$, but individual rates are not extractable from the text. For comparison, the 4-zone follow-up reports 0.62(3)% per round at $d=5$ with $\Lambda = 2.14(13)\times$ suppression factor vs. $d=3$ [@bluvstein2025faulttolerant].
 - Entanglement teleportation: Bell fidelity 77(2)% with feedforward; rises to 92(2)% with error-detection postselection.
 - Mid-circuit readout + feedforward total cycle: **<1 ms** (500 μs spin-to-position imaging + <500 μs FPGA processing and Raman correction).
 
@@ -154,5 +154,5 @@ The jump from 1-zone to 3-zone is primarily about *measurement quality* (fluores
 **Resolved data gaps:**
 
 - **FPGA feedforward latency:** The paper reports only the total cycle time (<1 ms), which includes spin-to-position pushout, local imaging, camera pixel readout, FPGA syndrome decoding, and Raman correction pulse. The FPGA processing component is not isolated — the breakdown is not available in the main text or methods.
-- **Per-cycle logical error rates at $d=3,5,7$:** Individual per-round error rates are presented graphically in Extended Data Figs. 4–5 but not tabulated in the text. The paper demonstrates below-threshold scaling (logical error decreasing with $d$) from a single QEC round. <!-- TODO: figure-read these values from Extended Data Figs. 4–5 --> For comparison, the 4-zone follow-up [@bluvstein2025faulttolerant] reports 0.62(3)% per round at $d=5$ with $\Lambda = 2.14(13)\times$ suppression factor.
+- **Per-cycle logical error rates at $d=3,5,7$:** Individual per-round error rates are presented graphically in Extended Data Figs. 4–5 but not tabulated in the text. The paper demonstrates below-threshold scaling (logical error decreasing with $d$) from a single QEC round; specific values are not extractable without figure digitization. For comparison, the 4-zone follow-up [@bluvstein2025faulttolerant] reports 0.62(3)% per round at $d=5$ with $\Lambda = 2.14(13)\times$ suppression factor.
 - **Atom loss rate:** Not separately quantified in this experiment. The reported CZ fidelity of 99.3–99.5% includes loss events. The 4-zone follow-up was the first to isolate atom loss (~0.24% per readout, contributing roughly half of all physical errors).
