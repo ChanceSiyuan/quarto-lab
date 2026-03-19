@@ -58,7 +58,7 @@ The leap from 1D to 2D: 256 $^{87}$Rb atoms arranged in arbitrary 2D geometries 
 | Trap depth | $\sim 2\pi \times 17$ MHz; waist ~900 nm | — | — |
 | SLM uniformity | ~few % variation | 1–2% variance, $>0.90$ Strehl ratio | Major refinement in later work |
 | Position accuracy | ~0.1 μm (SLM) | 0.1 μm (static) + 0.2 μm thermal | Same-order static accuracy |
-| Readout fidelity | **99.1(4)%** Rydberg (microwave-enhanced); ~85% bare (15% decay during imaging); 99% ground-state | 99.8% (3-zone, fluorescence imaging) | Microwave enhancement closes most of the gap vs. 3-zone |
+| Readout fidelity | **99.1(4)%** Rydberg (microwave-enhanced); ~85% bare (inferred from ~80 μs lifetime vs. imaging duration — not explicitly reported); 99% ground-state | 99.8% (3-zone, fluorescence imaging) | Microwave enhancement closes most of the gap vs. 3-zone |
 
 **Critical hardware upgrade:** The SLM+AOD architecture is the defining innovation. Everything before (Bernien 2017, Keesling 2019) used 1D standing-wave traps. Everything after inherits this 2D platform.
 
@@ -100,7 +100,7 @@ The SLM uniformity issue (ghost traps, intensity variation) is a secondary bottl
 | Off-resonant scattering ($\|g\rangle$) | $1/(20\ \mu\text{s})$ | Methods |
 | Off-resonant scattering ($\|r\rangle$) | $1/(150\ \mu\text{s})$ | Methods |
 | Rydberg detection fidelity (microwave-enhanced) | 99.1(4)% | Methods |
-| Rydberg detection fidelity (bare) | ~85% (15% decay during imaging) | Methods |
+| Rydberg detection fidelity (bare) | ~85% (inferred: ~80 μs Rydberg lifetime vs. imaging duration; not explicitly reported in paper) | Methods |
 | Ground-state detection fidelity | 99% | Methods |
 | Perfect ground-state prob. (225 atoms) | $0.99^{225} \approx 10\%$ (per-atom × 225) | Methods |
 | Critical exponent $\nu$ | 0.62(4) measured vs. 0.629 theory [(2+1)D Ising] | Main |
