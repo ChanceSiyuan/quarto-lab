@@ -213,11 +213,11 @@ Neural quantum states (NQS) trained via variational Monte Carlo (VMC) are powerf
 **Technique: Quantum-enhanced VMC feedback loop**
 
 1. Classical RNN generates trial wave function $|\psi_\theta\rangle$
-2. Rydberg simulator prepares and measures the state in a **second measurement basis**
-3. Experimental samples are injected into the RNN training loop
-4. **Result:** Quantum hardware breaks autocorrelation bottleneck; classical network refines amplitudes and phases
+2. Rydberg simulator prepares near-ground-state configurations via quasi-adiabatic sweep; measured in the **$Z$ basis** (occupation basis)
+3. Experimental samples are injected into the RNN training loop via cross-entropy pretraining
+4. **Result:** Quantum hardware breaks autocorrelation bottleneck; classical network refines amplitudes
 
-Tested on $6 \times 6$ and $10 \times 10$ transverse-field Ising and dipolar XY models, the hybrid approach significantly reduced autocorrelation times and improved NQS accuracy — the first demonstration of a quantum-enhanced classical algorithm for many-body ground states. (The quantum data comes from the Ebadi et al. 2021 single-zone analog simulator; no new hardware runs were performed.)
+Tested on a $16 \times 16$ square-lattice Rydberg Hamiltonian spanning the disordered-to-checkerboard transition, the hybrid approach reduced VMC convergence times by up to $O(10^3)$ iterations — the first demonstration of a quantum-enhanced classical algorithm for many-body ground states. (The quantum data comes from the Ebadi et al. 2021 single-zone analog simulator; no new hardware runs were performed.)
 
 → [Detailed reading notes](/Experiments/posts/Moss2024_VMC/index.html)
 :::

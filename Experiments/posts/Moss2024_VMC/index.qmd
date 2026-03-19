@@ -114,7 +114,7 @@ The Rydberg Hamiltonian is stoquastic in the occupation basis, so the ground sta
 
 | Metric | Value | Condition |
 |--------|-------|-----------|
-| Training shots used | 1000 per $\delta$ value | Slowest sweep $s = 15$ MHz/μs |
+| Training shots used | 1000 per $\delta$ value | Slowest sweep $s = 15$ MHz/μs (see below) |
 | Readout fidelity | 99% ($|g\rangle$ and $|r\rangle$) | Ebadi 2021 apparatus |
 | Convergence speedup (relative) | $t_\text{conv}/t_\text{VMC} \approx 87/541$ to $179/883$ | 2D RNN, $t_\text{trans}=80$, four $\delta/\Omega$ values |
 | Absolute iteration reduction | Up to $O(10^3)$ steps | 2D RNN, 1000 experimental shots |
@@ -122,6 +122,12 @@ The Rydberg Hamiltonian is stoquastic in the occupation basis, so the ground sta
 | Qualitative failure mode fixed | 1D RNN captures 2D ordering | Only with quantum data pretraining; fails without |
 
 **Clarification on system sizes:** Both the quantum hardware data and the classical VMC targets are the *same* 16×16 lattice. There are no 6×6 or 10×10 targets in this paper. The 1D and 2D labels refer to RNN *architecture* dimensionality (1D sequential vs. 2D spatial), not the physical system size.
+
+**Sweep rate definition:** The parameter $s = 15$ MHz/μs is the linear detuning ramp rate $|d\Delta/dt|$ from Ebadi 2021 [@ebadi2021quantum], which swept $\Delta$ from $-16$ MHz to $14$ MHz at constant $\Omega \approx 4.3$ MHz. Seven rates were used ($s = 15, 21, 30, 42, 60, 85, 120$ MHz/μs); $s = 15$ MHz/μs is the slowest (most adiabatic) sweep and produces the highest-quality near-ground-state data. Moss 2024 uses only the $s = 15$ MHz/μs dataset.
+
+**Critical coupling:** $\delta_c/\Omega = 1.12(4)$ is the quantum critical point for the disordered-to-checkerboard transition on the square lattice, determined from finite-size scaling of the Ebadi 2021 data and consistent with QMC predictions for the $(2{+}1)D$ Ising/Wilson-Fisher universality class [@ebadi2021quantum].
+
+<!-- TODO: Ground-state energy per site (E/N) at representative δ/Ω values vs. QMC benchmark — not reported as a table in the paper; results are presented graphically in Figs. 5–6. -->
 
 **Autocorrelation:** The paper does not report a dimensioned autocorrelation time or correlation length. The $O(10^3)$ iteration reduction serves as the empirical proxy for autocorrelation breaking — the quantum samples prevent the Markov chain from stalling in defect-laden configurations in the ordered phase.
 
