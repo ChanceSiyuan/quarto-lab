@@ -3,10 +3,14 @@ categories:
 - Readings
 date: '2026-03-17'
 lang: en
-title: Quantum dimmer model
+title: Quantum dimer model
 bibliography: refs.bib
 draft: true
 ---
+
+:::{.callout-note}
+**Companion note:** [Digital-Analog Conversion](digital-analog.qmd) covers the Floquet theory (PXP echo, Magnus expansion derivations) and analyzes intensity inhomogeneity as the dominant 2D decoherence source. This note focuses on the structured reading (architecture, protocol, parameters) and identifies the Rydberg↔hyperfine mapping as the per-cycle bottleneck. Both mechanisms limit performance — mapping fidelity caps per-cycle coherence while intensity inhomogeneity degrades multi-site uniformity.
+:::
 
 # Summary and questions
 
@@ -37,7 +41,8 @@ The table below places Geim 2026 in the context of the 1-zone, 3-zone, and 4-zon
 | Readout fidelity | ~96% (in-situ) | 99.8% (spin-to-position) | 99.54% (non-destructive) | same non-destructive readout |
 | Mid-circuit measurement | No | Yes | Yes | Yes (used for state preparation) |
 | Atom reservoir | No | No | Yes (196 atoms) | Yes (20–200 cycles/load) |
-| Coherence time | $\lesssim 1~\mu\text{s}$ (Rydberg) | — | — | $T_2^* \approx 1$–$2~\mu\text{s}$ ($n = 70$) |
+| Rydberg lifetime | $\sim 1~\text{ms}$ ($n = 70$) | — | — | $\sim 1~\text{ms}$ ($n = 70$) |
+| Dephasing $T_2^*$ (2D) | — | — | — | $1$–$2~\mu\text{s}$ (intensity + vdW tails) |
 | Novel capability | 2D Ising QPT | Logical circuits | Fault-tolerant QEC | $U(1)$ QSL via Floquet |
 
 : Architecture benchmarks {#tbl-arch}
@@ -51,7 +56,7 @@ The single most important limiting technique is **coherent Rydberg ↔ hyperfine
 **Why this is the bottleneck:** Every Floquet cycle requires two mapping events — one to transfer atoms into the Rydberg manifold for analog evolution, and one to transfer them back to the hyperfine manifold for storage. Each mapping event has:
 
 - Rabi oscillation contrast: **97.8(1)%** (1D; reduced further in 2D due to vdW tails during the pulse)
-- Atom loss per mapping event: **~1.8%**
+- Atom loss per analog run (two mappings + Floquet evolution): **~1.8%**
 
 Over $N$ Floquet cycles, errors accumulate multiplicatively. After 10 cycles, the surviving population is $(1 - 0.018)^{10} \approx 83\%$, and the coherent fraction is $(0.978)^{10} \approx 80\%$. This is why the reported many-body coherence is limited to ~18 sites and why 2D results show reduced contrast relative to 1D.
 
@@ -89,7 +94,7 @@ Over $N$ Floquet cycles, errors accumulate multiplicatively. After 10 cycles, th
 | Mapping Rabi frequency (2D) | 12.6 MHz |
 | Floquet period $\tau$ | 0.36 μs |
 | Mapping contrast (1D) | 97.8(1)% |
-| Atom loss per mapping event | ~1.8% |
+| Atom loss per analog run | ~1.8% |
 | Hyperfine $T_2^*$ at $n = 70$ | 1–2 μs |
 | Many-body coherence range | up to 18 sites |
 | Dimer-dimer correlation decay | Exponential → plateau (finite-size); $1/r^2$ predicted in thermodynamic limit |
