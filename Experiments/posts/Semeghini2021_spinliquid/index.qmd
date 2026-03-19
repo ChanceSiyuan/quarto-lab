@@ -21,9 +21,9 @@ draft: true
 
 :::{.callout-tip title="Experimental Protocol"}
 1. **Kagome lattice preparation:** Atoms placed on the links of a kagome lattice using the SLM+AOD platform ($a = 3.9\,\mu$m); blockade ratio $R_b/a = 2.4$ ensures nearest-neighbor pairs on kagome links are within blockade radius, enforcing the dimer constraint.
-2. **Adiabatic state preparation:** Detuning sweep from disordered phase ($\Delta < 0$) into the dimer-liquid regime; sweep parameter $\Omega_0 T \approx 18$ experimentally (near-perfect adiabaticity would require $\Omega_0 T = 120$ in numerics). QSL signatures are robust across $3.3 \lesssim \Delta/\Omega \lesssim 4.5$.
+2. **Adiabatic state preparation:** Detuning sweep from disordered phase ($\Delta < 0$) into the dimer-liquid regime; sweep parameter $\Omega_0 T \approx 18$ experimentally (near-perfect adiabaticity would require $\Omega_0 T = 120$ per numerical simulations in supplementary §4.2). A 200 ns ramp-down of $\Omega$ is appended at the end of the sweep to optimize QSL preparation (without this, string signals are worse). QSL signatures are robust across $3.3 \lesssim \Delta/\Omega \lesssim 4.5$.
 3. **$Z$-basis string measurement:** Measure $Z$-type parity operators — products of $Z_i$ around closed loops. Area-law decay outside the QSL phase crosses over to perimeter-law scaling inside it, diagnosing the condensation of $\mathbb{Z}_2$ charges.
-4. **$X$-basis string measurement:** Apply a global $\pi/2$ pulse (blockade ratio switched to $R_b/a = 1.53$, $\Omega = 2\pi \times 20$ MHz quench) then measure $X$-type loop parities on loops up to 28 atoms. Non-trivial $X$-parity with perimeter-law scaling inside the same $\Delta/\Omega$ window simultaneously with non-trivial $Z$-parity is the two-basis signature of $\mathbb{Z}_2$ topological order.
+4. **$X$-basis string measurement:** Apply a global $\pi/2$ pulse (blockade ratio switched to $R_b/a = 1.53$, $\Omega = 2\pi \times 20$ MHz quench, $\tau \approx 30$ ns). The optimal quench time is $\tau = 4\pi/(3\Omega\sqrt{3}) = 19$ ns, but the AOM rise time of $\sim 10$ ns limits the experimentally achievable pulse to $\sim 30$ ns. The high-power 420 nm beam ($\Omega_{420} = 2\pi \times 360$ MHz single-photon) produces a $2\pi \times 36$ MHz light shift on the Rydberg transition, requiring separate calibration of resonance conditions at high vs. low power. Measure $X$-type loop parities on loops up to 28 atoms. Non-trivial $X$-parity with perimeter-law scaling inside the same $\Delta/\Omega$ window simultaneously with non-trivial $Z$-parity is the two-basis signature of $\mathbb{Z}_2$ topological order.
 :::
 
 At the target point $\Delta/\Omega \approx 4$, approximately 80% of vertices are consistent with a valid dimer covering (the low-energy constraint of the QSL).
@@ -51,7 +51,7 @@ At the target point $\Delta/\Omega \approx 4$, approximately 80% of vertices are
 |-----------|---------------|---------------------------|------------------------|-------|
 | Atom count | 219 (2D kagome) | 256 (16×16, Manovitz 2025) | 280 | Comparable scale |
 | Lattice | Kagome (links) | Various | Reconfigurable | Geometry flexibility via SLM |
-| Readout fidelity | 99% | ~99% | 99.8% (spin-to-position) | Bottleneck 3 in review; 3-zone readout would dramatically improve string operator signals |
+| Readout fidelity | 99% claimed; $|r\rangle$ likely 92–96% | $|g\rangle$ ~99%, $|r\rangle$ ~92–96% | 99.8% (spin-to-position) | Bottleneck 3 in review; 3-zone readout would dramatically improve string operator signals |
 | Rydberg lifetime | $\sim 80\,\mu$s | — | — | Sweep duration ($\sim 2\,\mu$s) $\ll$ lifetime; not the bottleneck |
 | Coherence limit | Ground-state scattering $\sim 150\,\mu$s (420 nm) | — | — | Also not limiting given $\sim 2\,\mu$s sweep |
 | Measurement bases | $Z$ and $X$ (global rotation) | $Z$ only (typical) | Mid-circuit readout | Required global $\pi/2$ pulse for $X$-basis |
@@ -71,19 +71,18 @@ $$
 \langle W \rangle_{\text{measured}} = \langle W \rangle_{\text{true}} \times (1 - \epsilon)^L
 $$
 
-where $\epsilon$ is the per-site measurement error. This experiment uses the Ebadi 2021 apparatus which achieves **99% state detection fidelity** for both $|g\rangle$ and $|r\rangle$ [@ebadi2021quantum], so $\epsilon \approx 1\%$. For a string of length $L = 15$:
+where $\epsilon$ is the per-site measurement error. The paper claims **99% state detection fidelity** for both $|g\rangle$ and $|r\rangle$ (supplementary §1, citing [@ebadi2021quantum]). However, the Lukin group architecture review identifies a significant discrepancy: ground-state detection is ~99%, but **Rydberg-state detection is only ~92–96%** due to anti-trapping by imaging light and fluorescence crosstalk in dense arrays. Since $Z$-basis string operators measure Rydberg occupation, the effective per-site error for $Z$-strings may be $\epsilon \approx 4\text{–}8\%$ rather than 1%.
 
-$$
-(0.99)^{15} \approx 0.86
-$$
+The signal suppression ranges are:
 
-So ~14% signal loss from readout errors alone. For the 28-atom $X$-basis loops:
+| String length $L$ | $(1 - 0.01)^L$ (paper's 99%) | $(1 - 0.05)^L$ (review's ~95%) |
+|---|---|---|
+| 15 | 0.86 (14% loss) | 0.46 (54% loss) |
+| 28 | 0.75 (25% loss) | 0.24 (76% loss) |
 
-$$
-(0.99)^{28} \approx 0.75
-$$
+If the review's lower Rydberg fidelity is correct, the signal decay is **nearly 2× worse** for 15-atom strings and **3× worse** for 28-atom loops. This may explain why measured $Z$-parity values are as small as $\approx 0.02$ for 15-vertex loops (Fig. 2C) — the "true" signal could be substantially larger but is suppressed by Rydberg readout error. The $X$-basis measurements, which involve a quench rotation before fluorescence, may have a different (potentially better) error profile since the quench maps the observable onto ground-state populations.
 
-~25% signal loss on the longest strings. This is the fundamental bottleneck: even at 99% per-site fidelity, non-local string operators accumulate multiplicative error that suppresses long-loop signals and makes it difficult to distinguish genuine topological signals from noise.
+This is the fundamental bottleneck: non-local string operators accumulate multiplicative readout error that suppresses long-loop signals and makes it difficult to distinguish genuine topological signals from noise.
 
 **Paths to improvement:**
 
@@ -107,7 +106,7 @@ $$
 | Sweep parameter | $\Omega_0 T \approx 18$ (adiabaticity limit: 120) |
 | Dimer-sector population | ~80% at $\Delta/\Omega \approx 4$ |
 | Max $X$-parity loop size | 28 atoms |
-| State detection fidelity | 99% (both $|g\rangle$ and $|r\rangle$) |
+| State detection fidelity | 99% claimed (both states); review estimates $|r\rangle$ at 92–96% |
 | Sweep duration | $\sim 2\,\mu$s (cubic frequency sweep) |
 | Rydberg state ($70S_{1/2}$) lifetime | $\sim 80\,\mu$s |
 | Ground-state scattering lifetime (420 nm) | $\sim 150\,\mu$s |
@@ -115,7 +114,12 @@ $$
 | Intermediate state detuning $\delta$ | $2\pi \times (-450)$ MHz from $6P_{3/2}$ |
 | Single-photon $\Omega_{1013}$ | $2\pi \times 50$ MHz |
 | Single-photon $\Omega_{420}$ (low power) | $2\pi \times 25$ MHz |
+| Single-photon $\Omega_{420}$ (high power, $X$-quench) | $2\pi \times 360$ MHz |
 | 420 nm laser power (state prep / $X$-quench) | $\sim 0.5$ mW / $\sim 100$ mW |
+| AOM rise time (420 nm, high power) | $\sim 10$ ns |
+| Optimal quench time (theory) | $\tau = 4\pi/(3\Omega\sqrt{3}) = 19$ ns |
+| Light shift on Rydberg transition (high power) | $2\pi \times 36$ MHz |
+| $\Omega$ ramp-down at sweep end | 200 ns |
 
 ## String operator definitions
 
