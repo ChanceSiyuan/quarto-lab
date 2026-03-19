@@ -32,9 +32,9 @@ A 2D Rydberg array is driven across the (2+1)D Ising quantum phase transition to
 ## Key observations
 
 - **Curvature-driven coarsening:** After the quench, antiferromagnetically ordered domains form and evolve via curvature-driven coarsening — domain walls shrink under their own curvature, a quantum analog of the classical Allen-Cahn process. The characteristic domain size grows as $L(t) \propto t^{1/2}$.
-- **Higgs (amplitude) mode:** Long-lived oscillations of the staggered magnetization (order parameter) are observed, identified as the Higgs mode — a collective excitation where the order parameter amplitude oscillates around its equilibrium value. The Higgs frequency scales with the gap $\Delta_H \propto |\Delta - \Delta_c|^{z\nu}$.
+- **Higgs (amplitude) mode:** Long-lived oscillations of the staggered magnetization (order parameter) are observed, identified as the Higgs mode. In a spontaneously broken symmetry phase, collective excitations come in two flavors: Goldstone modes (phase/angular fluctuations of the order parameter, massless) and the Higgs mode (amplitude fluctuations of the order parameter magnitude about its equilibrium value, massive). The name comes from the direct analogy to the Higgs mechanism in particle physics — the Higgs boson is the amplitude mode of the electroweak symmetry-breaking field. In this experiment, the "amplitude" is the staggered magnetization strength, which oscillates coherently after the quench. The Higgs frequency scales with the gap $\Delta_H \propto |\Delta - \Delta_c|^{z\nu}$, where the (2+1)D Ising critical exponents are $\nu \approx 0.629$ and $z = 1$ (used throughout the paper's scaling analysis).
 - **Critical acceleration:** Coarsening dynamics accelerate as the system approaches the quantum critical point, consistent with critical slowing down operating in reverse (faster dynamics near criticality due to smaller energy gaps and enhanced quantum fluctuations).
-- **Quantitative agreement with theory:** Domain size $\xi^2(t)$ grows linearly in time (consistent with $z_d = 2$, Allen-Cahn universality), measured over hold times up to ${\sim}0.4$–$0.5$ μs. The Higgs frequency ratio satisfies $\omega(-|\mathbf{q}|)/\omega(|\mathbf{q}|) > \sqrt{2}$, consistent with predictions for the (2+1)D Ising CFT; more precise calculations give $\approx 1.9$, exceeding the mean-field $\sqrt{2}$. Residual theory-experiment deviations are attributed primarily to **finite-size effects** (the 16×16 lattice truncates long-wavelength domain growth) and $\Delta/\Omega$-dependent domain-wall width, not to thermal position disorder.
+- **Quantitative agreement with theory:** Domain size $\xi^2(t)$ grows linearly in time (consistent with $z_d = 2$, Allen-Cahn universality), measured over hold times up to ${\sim}0.4$–$0.5$ μs. The Higgs frequency ratio satisfies $\omega(-|\mathbf{q}|)/\omega(|\mathbf{q}|) > \sqrt{2}$, consistent with predictions for the (2+1)D Ising CFT; more precise calculations for the (2+1)D Ising CFT give $\approx 1.9$, exceeding the mean-field $\sqrt{2}$. The paper confirms consistency with $> \sqrt{2}$ but does not tabulate a specific measured ratio — the comparison is graphical (Fig. 5). Residual theory-experiment deviations are attributed primarily to **finite-size effects** (the 16×16 lattice truncates long-wavelength domain growth) and $\Delta/\Omega$-dependent domain-wall width, not to thermal position disorder.
 
 ## Scientific significance
 
@@ -74,12 +74,12 @@ This experiment runs on the Harvard 1-zone Rydberg apparatus. The parameters bel
 
 ## Critical technique analysis
 
-**Primary bottleneck: Finite system size (16×16 = 256 atoms).**
+**Primary bottleneck: SLM field-of-view and trap uniformity at >256 sites.**
 
 :::{.callout-important icon="false"}
 ## Bottleneck summary
 
-The single improvement that would most extend this experiment's reach is **scaling to a larger array**. The 16×16 lattice truncates domain growth after $\xi(t) \gtrsim L/4 \approx 4a$, limiting the observable coarsening regime to less than one decade in $\xi$. Scaling to 32×32 or 64×64 would allow 2–3 decades of $\xi(t)$ growth, decisively separating universal Allen-Cahn dynamics from finite-size artifacts and enabling precision extraction of the coarsening exponent $z_d$.
+The physics limitation is clear: the 16×16 lattice truncates domain growth after $\xi(t) \gtrsim L/4 \approx 4a$, limiting coarsening to less than one decade in $\xi$. The **engineering technique** that must be optimized to overcome this is **SLM-based trap generation at larger atom counts** (32×32 = 1024 or 64×64 = 4096 sites). Scaling to these sizes requires: (1) larger SLM field-of-view while maintaining the 1–2% site-to-site intensity uniformity needed for clean phase boundaries, (2) a correspondingly scaled second SLM (784 nm) for boundary pinning — currently each pinning spot delivers ~160 μW; scaling to 4× or 16× more boundary sites demands proportionally more optical power or a redesigned delivery scheme, and (3) rearrangement cycle time that scales sublinearly with atom number (currently AOD-based, $\sim$50 ms for 256 atoms). Without these engineering advances, the finite-size truncation that dominates this paper's error budget cannot be addressed.
 :::
 
 The paper itself attributes residual deviations from universal scaling to (1) **finite-size truncation** and (2) **$\Delta/\Omega$-dependent domain-wall width** — both are fundamental physics constraints, not engineering deficiencies.
@@ -112,6 +112,8 @@ For the three lattice spacings used (thermal disorder reference):
 
 ### Higgs mode frequency
 
+The (2+1)D Ising universality class critical exponents used throughout the paper's scaling analysis are $\nu \approx 0.629$ and $z = 1$ (dynamical exponent). These are standard literature values, not measured in this experiment.
+
 The Higgs (amplitude) mode frequency ratio measured in this experiment satisfies:
 $$\frac{\omega(-|\mathbf{q}|)}{\omega(|\mathbf{q}|)} > \sqrt{2}$$
 where $\omega(\pm|\mathbf{q}|)$ are the Higgs frequencies at opposite momenta. The mean-field prediction is exactly $\sqrt{2} \approx 1.41$; more advanced calculations for the (2+1)D Ising CFT predict $\approx 1.9$, and the experiment is consistent with this. No direct MHz-scale frequency values are quoted in the paper text or captions — the paper states frequencies "closely match the numerically determined ground-state gap" and shows the comparison graphically in Fig. 5d, but does not tabulate specific values. The observable is the ratio extracted from time-domain oscillations of the staggered magnetization. From the figure, oscillation periods appear to be on the order of 0.3–0.5 μs, implying $\omega_H/2\pi \sim 2$–$3$ MHz, but this cannot be confirmed without digitizing the figure.
@@ -132,7 +134,7 @@ The Kibble-Zurek mechanism [@keesling2019kibble] predicts that defect density af
 
 The following parameters are **not stated** in [@manovitz2025coarsening] but are relevant context from the platform baseline:
 
-- **Rydberg state lifetime ($70S_{1/2}$):** Not quoted. The calculated radiative lifetime is $\sim 150\ \mu$s; the effective blackbody-limited lifetime at 300 K is shorter. In practice, the relevant timescale is the hold-time-dependent atom loss: retention drops from 86% to 63% over $t = 1.16\ \mu$s, implying an effective $1/e$ loss time of $\sim 2.4\ \mu$s (dominated by Rydberg decay and off-resonant scattering from the 784 nm SLM at $\sim$35 Hz).
+- **Rydberg state lifetime ($70S_{1/2}$):** Not quoted. The calculated radiative lifetime is $\sim 150\ \mu$s; the effective blackbody-limited lifetime at 300 K is shorter. In practice, the relevant timescale is the hold-time-dependent atom loss: retention drops from 86% to 63% over $t = 1.16\ \mu$s. **Note:** the $1/e$ loss time of $\sim 2.4\ \mu$s is *estimated here* from these two retention values assuming exponential decay ($0.86 \cdot e^{-1.16/\tau} \approx 0.63 \Rightarrow \tau \approx 3.8\ \mu$s for per-atom loss, or $\sim 2.4\ \mu$s effective ensemble $1/e$ time); this value is **not stated in the paper** and the exponential assumption may not hold. Loss is dominated by Rydberg decay and off-resonant scattering from the 784 nm SLM at $\sim$35 Hz.
 - **Detection fidelity:** Not quoted. The 1-zone platform baseline from [@ebadi2021quantum] is $\sim 97\%$ single-atom detection fidelity.
 - **Shots per data point:** Not stated in the main text, methods, or supplementary materials.
 
