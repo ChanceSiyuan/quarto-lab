@@ -38,7 +38,7 @@ The paper demonstrates the inverse simulation framework on **three distinct targ
 - **Cost function:**
 $$C[\boldsymbol{\theta};\lambda] = \langle \hat{H}_0 \rangle_\theta - \lambda \sum_r \langle \hat{\Delta}_1^\dagger \hat{\Delta}_{1+r} \rangle_\theta$$
   where $\hat{\Delta}_1^\dagger$ creates a singlet pair at site 1 and $\lambda$ weights the pairing enhancement against energy minimization. The paper uses $\lambda = 2$ with interactions restricted to be repulsive (Figure 2c).
-- **DMRG validation:** Inverse simulator run on a small four-site ladder (2×4, 8 sites) at **quarter filling**; the learned Hamiltonian parameters generalize successfully to a 2×24-site ladder across the full doping range.
+- **DMRG validation:** Inverse simulator run on a 2-leg, 4-rung ladder (2×4 = 8 sites) at **quarter filling**; the learned Hamiltonian parameters generalize successfully to a 2×24-site ladder across the full doping range.
 - **Learned terms:** dominant off-diagonal hoppings and off-site density–density interactions — physically interpretable microscopic parameters that enhance $d$-wave pair correlations.
 - Circuit depths $d = 5$ and $d = 10$ were used on the 2×4 learning ladder (Figure 2c), with deeper circuits yielding more localized learned Hamiltonians.
 
@@ -76,14 +76,14 @@ $$C[\boldsymbol{\theta};\lambda] = \langle \hat{H}_0 \rangle_\theta - \lambda \s
 
 | Requirement | Current capability | Source | Gap |
 |------------|-------------------|--------|-----|
-| System size | 448 qubits | 4-zone [@bluvstein2024logical] | Need $> 50$ qubits for meaningful Hubbard models; sufficient |
+| System size | 448 qubits | 4-zone [@bluvstein2025faulttolerant] | Need $> 50$ qubits for meaningful Hubbard models; sufficient |
 | Gate fidelity (CZ) | 99.5% | 3-zone [@bluvstein2024logical] | Near-sufficient; variational optimization robust to ~1% errors |
 | Readout fidelity | ~99.8% (3-zone) / ~92–96% (1-zone) | Review benchmarks | **Critical bottleneck for Hamiltonian learning**; errors inflate coefficient variance as $1/\eta_{\rm ro}^2$ |
 | Variational control | Local addressing + global pulses | 3/4-zone | Need efficient variational ansätze compilable on Rydberg hardware |
 | Hamiltonian learning | — | — | Need shadow tomography or spectral methods at scale; no explicit shot budget in paper |
 | Coherence time | $T_2 \sim$ ms | 3-zone | Sufficient for moderate-depth variational circuits; not the primary bottleneck |
 
-*Note: "System size" (448) and "gate fidelity" (99.5%) come from different generations of the same platform. The 4-zone system has higher qubit count; the 3-zone benchmark is the relevant gate-fidelity reference for near-term proposals.*
+*Note: "System size" (448) is from the 4-zone architecture [@bluvstein2025faulttolerant]; "gate fidelity" (99.5%) and "readout fidelity" (99.8%) are from the 3-zone system [@bluvstein2024logical]. These are different generations — the inverse simulation proposal targets future hardware combining the scale of the 4-zone system with the fidelities of the 3-zone benchmarks.*
 
 
 ## Critical technique analysis
@@ -92,7 +92,7 @@ $$C[\boldsymbol{\theta};\lambda] = \langle \hat{H}_0 \rangle_\theta - \lambda \s
 
 The inverse simulation framework has two computationally expensive steps:
 
-1. **Variational state preparation:** This is a standard VQE-type optimization — relatively well-understood, though barren plateaus remain a concern at scale. The Rydberg platform's native interactions provide a warm start.
+1. **Variational state preparation:** The paper treats this as a **co-equal challenge** alongside Hamiltonian learning. At scale, barren plateaus make gradient-based optimization exponentially costly in qubit number — the cost function landscape flattens and gradients vanish. The paper's numerical demonstrations use small systems (8 sites) where this is manageable, but scaling to $>50$ qubits requires either hardware-efficient ansätze that exploit Rydberg locality to avoid barren plateaus, or problem-informed initialization strategies. The Rydberg platform's native interactions provide a warm start, but compiling general variational circuits from blockade-constrained pulses adds overhead not quantified in the paper.
 
 2. **Hamiltonian learning (SHL/CPHL):** Given a prepared state $|\psi\rangle$, extracting the effective Hamiltonian requires:
    - Measuring many observables (energy, correlators, spectral functions) in multiple bases
@@ -129,7 +129,7 @@ where $\eta_{\text{ro}}$ is the single-qubit readout fidelity. (This is a standa
 
 **Learned terms:** Off-diagonal hoppings and off-site density–density interactions.
 
-**Architecture table note:** The "448 qubits" entry refers to the 4-zone Lukin group platform (Bluvstein 2024); the 99.5% CZ fidelity is from the 3-zone benchmark. These are from different generations — the inverse simulation proposal targets future hardware intermediate between these.
+**Architecture table note:** The "448 qubits" entry refers to the 4-zone platform [@bluvstein2025faulttolerant]; the 99.5% CZ fidelity is from the 3-zone benchmark [@bluvstein2024logical]. These are from different generations — the inverse simulation proposal targets future hardware combining both.
 
 <!-- TODO: Extract quantitative CIM topological phase boundary shift from Figure 3(b1) — paper shows extension qualitatively but provides no numerical boundary location. -->
 <!-- TODO: Extract recovered J_ring value from Figure 4 — paper states convergence to "target value" but does not quote the number in the main text. -->
