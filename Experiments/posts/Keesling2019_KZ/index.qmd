@@ -65,7 +65,7 @@ Using the same 51-atom 1D Rydberg chain as Bernien 2017, slow detuning sweeps ac
 
 :::{.callout-note icon="false" title="Sweep protocol"}
 1. **State preparation:** Load 51 atoms into a 1D standing-wave array; use imaging to post-select on filled sites.
-2. **Blockade radius selection:** Set $R_b/a \in \{1.69, 1.81, 2.16, 2.43\}$ by adjusting inter-site spacing $a$ and Rabi coupling, to access $\mathbb{Z}_2$ (1.69, 1.81), $\mathbb{Z}_3$ (2.16), and $\mathbb{Z}_4$ (2.43) ordered phases.
+2. **Blockade radius selection:** Set $R_b/a$ by adjusting inter-site spacing $a$ and Rabi coupling. The primary values used for KZ exponent extraction are $R_b/a \in \{1.69, 1.81, 2.16, 2.43\}$, accessing $\mathbb{Z}_2$ (1.69, 1.81), $\mathbb{Z}_3$ (2.16), and $\mathbb{Z}_4$ (2.43) ordered phases. Additional ratios (e.g., 1.59, 1.86, 2.18, 2.25, and values up to ~3.5) are used in Extended Data for phase diagram mapping.
 3. **Ω ramp-on:** Turn on $\Omega(t)$ linearly over 1 μs from zero to its target value, starting with $\Delta_0 = -2.5$ MHz (deep in the disordered phase).
 4. **Detuning sweep:** Ramp $\Delta(t)$ from $\Delta_0$ to $\Delta_f$ (positive, into the ordered phase) at a variable rate $s$ spanning ~4× per phase; $s_\text{min}$ = 3.5–4.6 MHz/μs and $s_\text{max}$ = 15.2–19.7 MHz/μs (Extended Data Table 1).
 5. **Readout:** Fluorescence imaging of ground-state populations; sites at each end (8 per end) are discarded to suppress edge effects, leaving 35 central sites for bulk correlation analysis.
@@ -109,7 +109,7 @@ Why this matters for the exponent extraction:
 | $\mathbb{Z}_3$ | 2.16 | −2.5 | 5.5 | 4.6 | 19.7 |
 | $\mathbb{Z}_4$ | 2.43 | −2.6 | 5.4 | 4.6 | 19.7 |
 
-$\Omega$ ramp: linear turn-on over 1 μs at fixed $\Delta_0$. Note: $\Omega/2\pi$ is **not quoted** in this paper; the blockade radius $R_b$ is set by adjusting interatomic spacing $a$ at fixed $\Omega$ (Methods). The value $\Omega/2\pi \approx 1.3$ MHz is **inferred** from [@bernien2017probing] (same apparatus, same standing-wave trap), not directly measured in this experiment.
+$\Omega$ ramp: linear turn-on over 1 μs at fixed $\Delta_0$. Note: $\Omega/2\pi$ is **not quoted** in this paper; the Rabi frequency is a tunable parameter that is linearly ramped on during the protocol. The blockade radius $R_b$ is set by adjusting interatomic spacing $a$ at a given $\Omega$ (Methods). The same apparatus ([@bernien2017probing]) reports $\Omega/2\pi$ up to **~6.3 MHz**, but the specific operating values in each Keesling 2019 sweep are not individually quoted.
 
 **Slow-sweep floor (decoherence-limited):** At the slowest sweep rates, deviations from KZ scaling are observed. Per the paper's Methods, this is a **decoherence floor** — slow sweeps accumulate more dephasing and spend more time near the critical point where correlations are noise-sensitive. MPS simulations (no noise, same 51-site geometry) reproduce fast-sweep data but deviate below the slow-sweep data, confirming the floor is decoherence-dominated, not finite-size-dominated.
 
