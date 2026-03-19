@@ -45,7 +45,7 @@ where $n_i = |r_i\rangle\langle r_i|$ is the Rydberg occupation, $\Omega$ is the
 | **Cell type** | GRU (gated recurrent unit) | TensorizedGRU |
 | **Scan order** | Raster (row-by-row) | 2D spatially-coupled |
 | **Hidden dim $N_h$** | $2L = 32$ | $L = 16$ |
-| **Trainable params** | Not reported (stated "roughly equal" between 1D and 2D) | — |
+| **Trainable params** | 3,522 | 4,674 |
 | **Optimizer** | Adam | Adam |
 | **Learning rate (data-driven)** | $10^{-3}$ | $10^{-3}$ |
 | **Learning rate (Hamiltonian-driven)** | $5\times 10^{-5}$ | $10^{-3}$ |
