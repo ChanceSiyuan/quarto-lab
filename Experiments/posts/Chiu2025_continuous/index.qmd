@@ -73,7 +73,7 @@ Within the demonstrated supply system, transport heating is the binding efficien
 - EIT cooling during rearrangement: 20–40 ms
 - Net: cooling occupies ~30–50% of the reload cycle
 
-**Why this is the bottleneck:** The transport efficiency is only ~60% per cycle (Methods, Extended Data), meaning ~40% of atoms are lost during the lattice-to-tweezer transfer. Reducing post-transport temperature would directly improve loading efficiency and reduce the EIT cooling overhead. Improving transport adiabaticity (shaped velocity ramps, deeper lattice) or shortening EIT time would increase the 30,000 qubits/s initialization rate. The post-EIT temperature achieved by this system is **12 μK radial** (measured via drop-recapture, Methods §"Finite-Field Laser Cooling & Imaging"), a ~10× reduction from the ~120 μK arrival temperature — demonstrating that EIT cooling works but at a significant time cost.
+**Why this is the bottleneck:** The *dual-lattice transport efficiency* — the fraction of atoms surviving the full two-lattice relay (L1 + handover + L2, ~56 cm total) — is only ~60% per cycle (Methods, Extended Data Fig. 3). This loss is distinct from, and upstream of, the lattice-to-tweezer extraction step. Reducing post-transport temperature would directly improve both relay survival and downstream tweezer loading, and reduce the EIT cooling overhead. Improving transport adiabaticity (shaped velocity ramps, deeper lattice) or shortening EIT time would increase the 30,000 qubits/s initialization rate. The post-EIT temperature achieved by this system is **12 μK radial** (measured via drop-recapture, Methods §"Finite-Field Laser Cooling & Imaging"), a ~10× reduction from the ~120 μK arrival temperature — demonstrating that EIT cooling works but at a significant time cost.
 
 **Scope limitation: no entangling gates demonstrated.** The conveyor-belt apparatus is a *qubit-supply and coherence testbed*, not a quantum processor. It has no two-qubit gate capability — no Rydberg blockade zone, no benchmark circuits (XEB, RB, parity-check), and no QEC capability. The 4-zone system achieves CZ gates at 99.5% fidelity and below-threshold QEC; the conveyor-belt system demonstrates comparable coherence ($T_2 = 1.34$ s vs. $T_2^{\text{4-zone}} > 1$ s) but solves the *supply problem* while the 4-zone solves the *computation problem*. Future systems must integrate both.
 
@@ -99,7 +99,7 @@ Within the demonstrated supply system, transport heating is the binding efficien
 | $T_2$ (XY16, MOT on, no imaging) | 1.15(3) s | Fig. 3a (green trace) |
 | $T_2$ (XY16, with concurrent imaging) | 1.09(3) s | Fig. 3a (blue trace) |
 | $T_1$ (reference) | 12.6(1) s | Fig. 3b |
-| $T_1$ (imaging + 1529 nm shielding) | 3.43(3) s | Fig. 3b |
+| $T_1$ (imaging + 1529 nm shielding)^‡^ | 3.43(3) s | Fig. 3b |
 | Single-qubit gate fidelity | ≤0.99995 per π-pulse (scattering-limited upper bound)^†^ | Methods |
 | Readout discriminant fidelity | 99.99% | Methods |
 | Atom survival per image | 99.5% | Methods |
@@ -109,7 +109,7 @@ Within the demonstrated supply system, transport heating is the binding efficien
 | Transport acceleration | ~4,000 m/s² | Methods |
 | Conveyor trap depth | >500 μK | Methods |
 | Atoms arrive at | ~120 μK (~6× reservoir temp) | Methods |
-| Transport efficiency | ~60% per cycle | Methods |
+| Transport efficiency | ~60% per cycle (dual-lattice relay survival) | Methods, ED Fig. 3 |
 | Post-EIT temperature | 12 μK radial (drop-recapture) | Methods §"Finite-Field Laser Cooling & Imaging" |
 | EIT cooling duration | 20–40 ms (rearrangement window) | Methods |
 | EIT parameters | F=2→F'=2, 70 MHz blue-detuned, ratio 13:1, 4.2 G | Methods |
@@ -129,6 +129,8 @@ Within the demonstrated supply system, transport heating is the binding efficien
 | Lattice-1 distance | ~39 cm (MOT → handover) | ED Fig. 3a |
 | Lattice-2 distance | ~17 cm (handover → microscope FOV) | Methods |
 | Λ-gray molasses temperature | ~20 μK | Methods |
+
+^‡^The 1529 nm shielding beam drives the $5P_{3/2} \to 4D_{5/2}$ transition in $^{87}$Rb, shelving population away from the imaging cycle to reduce $T_1$ loss during concurrent readout.
 
 ^†^The 0.99995 gate fidelity is inferred from a measured $T_1$-like scattering lifetime of 10 ms, consistent with ab initio Raman scattering calculations — it is **not** from randomized benchmarking or process tomography. The Raman beam inhomogeneity (1.04% RMS across the array, ED Fig. 7a) bounds the actual gate fidelity below this scattering limit.
 
