@@ -13,7 +13,7 @@ draft: true
 
 **Paper:** Grinkemeyer et al., "Error-detected quantum operations with neutral atoms mediated by an optical cavity," *Science* **387**, 1301 (2025) [@grinkemeyer2025cavity]
 
-**Architecture:** Fiber Fabry-Pérot cavity (Harvard lab, separate apparatus — not the tweezer array system)
+**Architecture:** Fiber Fabry-Pérot cavity (Harvard–MIT collaboration, Vuletić lab at MIT — separate apparatus from the tweezer array system)
 
 ## What was done
 
@@ -107,7 +107,7 @@ The cooperativity $C = 4g^2/(\kappa\Gamma) = 101$ sets the fundamental tradeoff:
 | Gate fidelity (deterministic) | 52.5(18)% (CZ, no postsel.) | N/A (global Rydberg pulses) | 99.5% (CZ) | 99.5% (CZ, physical) | 1-zone entangles via blockade during global analog evolution, not individually addressed gates |
 | Gate fidelity (postselected) | 76(2)% (69% success) | — | — | — | Error detection helps |
 | Bell fidelity (carving) | 91(4)% (32% success) | — | — | — | Heralded protocol only |
-| Readout fidelity | 99.96% | ~95% (fluorescence) | 99.8% | 99.54% (non-destructive, 0.46% bit-flip error) | Cavity single-shot; 4-zone non-destructive for QEC |
+| Readout fidelity | 99.96% (destructive) | ~95% (fluorescence, destructive) | 99.8% (destructive) | 99.54% (non-destructive mid-circuit, 0.46% bit-flip); destructive final readout higher | Cavity: destructive single-shot; 4-zone 99.54% is mid-circuit non-destructive (QEC), not directly comparable |
 | Scalability | 2 atoms (max ~20) | 256 atoms | 280 atoms | 448 atoms (196 reservoir) | Rydberg scales far better |
 | QEC / error detection | Built-in erasure detection | None | Post-hoc (error correcting codes) | Real-time QEC, 41 rounds demonstrated | Cavity: native erasure; 4-zone: fault-tolerant cycles |
 | Networking | Photonic interface ready | No photon interface | No photon interface | No photon interface | Cavity enables quantum network nodes |
