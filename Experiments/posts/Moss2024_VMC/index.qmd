@@ -40,20 +40,30 @@ where $n_i = |r_i\rangle\langle r_i|$ is the Rydberg occupation, $\Omega$ is the
 
 ### RNN architecture
 
-<!-- TODO: Confirm d_h values and parameter counts from Moss 2024 Table I or Methods — PDF extraction yielded d_h=256 (1D) / 512 (2D), ~1.8M total params, but these need verification against the published paper. -->
-
 | | 1D RNN | 2D RNN |
 |--|--------|--------|
-| **Cell type** | GRU (gated recurrent unit) | GRU |
+| **Cell type** | GRU (gated recurrent unit) | TensorizedGRU |
 | **Scan order** | Raster (row-by-row) | 2D spatially-coupled |
-| **Hidden dim $d_h$** | <!-- TODO: confirm --> 256 | <!-- TODO: confirm --> 512 |
-| **Trainable params** | <!-- TODO --> | <!-- TODO --> |
+| **Hidden dim $N_h$** | $2L = 32$ | $L = 16$ |
+| **Trainable params** | Not reported (stated "roughly equal" between 1D and 2D) | — |
+| **Optimizer** | Adam | Adam |
+| **Learning rate (data-driven)** | $10^{-3}$ | $10^{-3}$ |
+| **Learning rate (Hamiltonian-driven)** | $5\times 10^{-5}$ | $10^{-3}$ |
+| **$t_\text{trans}$ (data → VMC switch)** | 1000 steps | 100 steps |
 
-The cross-entropy pretraining loss minimizes $\mathcal{L}_\text{CE} = -\sum_{\mathbf{s}\in\mathcal{D}} \log|\langle \mathbf{s}|\psi_\theta\rangle|^2$ over the experimental dataset $\mathcal{D}$, using a learning rate of $10^{-3}$ for $\sim 10^4$ pretraining steps before switching to standard VMC energy minimization.
+The 2D RNN uses a TensorizedGRU cell that couples hidden states across both spatial dimensions, distinct from the standard GRU used for 1D. Note: $N_h$ scales linearly with the system linear size $L$, so these are compact models ($N_h = 32$ and $16$), not the large hidden dimensions sometimes used in NQS work.
+
+The data-driven pretraining loss is the KL divergence between the experimental distribution $p_\mathcal{D}$ and the RNN distribution $p_\text{RNN}$:
+
+$$
+\mathcal{L}_\text{KL}(\mathcal{W}) = \sum_{\boldsymbol{\sigma}} p_\mathcal{D}(\boldsymbol{\sigma}) \log\!\left[\frac{p_\mathcal{D}(\boldsymbol{\sigma})}{p_\text{RNN}(\boldsymbol{\sigma};\mathcal{W})}\right]
+$$ {#eq-kl-loss}
+
+After $t_\text{trans}$ data-driven steps, training switches to standard VMC energy minimization (Hamiltonian-driven).
 
 ## Key observations
 
-- **Universal convergence improvement:** Pretraining with experimental data improved VMC convergence times across all tested RNN architectures and all detuning values spanning the phase transition on the 16×16 lattice. For 2D RNN wavefunctions, 1000 experimental shots reduced the number of variational training iterations needed by up to $O(10^3)$. Concretely, at $t_\text{trans}=80$ the convergence times were $t_\text{conv}/t_\text{VMC} = 87/541,\; 186/1498,\; 267/1667,\; 179/883$ for four $\delta/\Omega$ values spanning the disordered-to-checkerboard transition (roughly 5–8× speedup across the phase diagram). <!-- TODO: Confirm the four specific δ/Ω values from Moss 2024 Fig. 3 or Table — one is δ/Ω ≈ 3.173 deep in the checkerboard phase. -->
+- **Universal convergence improvement:** Pretraining with experimental data improved VMC convergence times across all tested RNN architectures and all 31 detuning values ($\delta/\Omega \in [-0.4, 3.2]$) spanning the phase transition on the 16×16 lattice. The critical coupling is $\delta_c/\Omega = 1.12(4)$. For 2D RNN wavefunctions, 1000 experimental shots reduced the number of variational training iterations needed by up to $O(10^3)$. Concretely, at $t_\text{trans}=80$ the convergence times were $t_\text{conv}/t_\text{VMC} = 87/541,\; 186/1498,\; 267/1667,\; 179/883$ for four $\delta/\Omega$ values spanning the disordered-to-checkerboard transition (roughly 5–8× speedup across the phase diagram). The four highlighted values are approximately $\delta/\Omega \approx -0.364,\; 1.051,\; 1.169,\; 3.173$ (read from Fig. 4b).
 - **Phase discovery:** Simple RNN ansätze pretrained with quantum data accurately captured quantum phases that were *not learned* with purely classical VMC training, demonstrating that quantum data provides qualitatively new information.
 - **Robustness to noise:** Unprocessed, imperfect experimental data still improved classical training — no error mitigation was needed. The Ebadi 2021 apparatus achieves 99% readout fidelity for *both* $|g\rangle$ and $|r\rangle$ states (~1% error), not ~5% as sometimes quoted; the dominant imperfection is non-adiabatic state preparation (domain walls, energy fluctuations) rather than readout.
 - **No new quantum hardware runs:** The quantum data came from previously published Ebadi 2021 measurements. No dedicated quantum experiments were performed.
