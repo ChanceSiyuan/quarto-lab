@@ -12,6 +12,12 @@ bibliography: refs.bib
 
 For those who are interested in the theoretical background of the honeycomb model, you may refer to the [Honeycomb Model](/theory/Posts/topo_matter/honeycomb.qmd) page for more details.
 
+The Kitaev honeycomb model is defined on a hexagonal lattice with spin-1/2 degrees of freedom and bond-dependent Ising interactions:
+$$
+H = -J_x \sum_{\text{x-links}} \sigma_i^x \sigma_j^x - J_y \sum_{\text{y-links}} \sigma_i^y \sigma_j^y - J_z \sum_{\text{z-links}} \sigma_i^z \sigma_j^z,
+$$
+where each bond type ($x$, $y$, $z$) appears on one of the three orientations of the honeycomb. The model has an extensive set of conserved plaquette operators $W_p = \sigma_1^x \sigma_2^y \sigma_3^z \sigma_4^x \sigma_5^y \sigma_6^z$ (one per hexagon), which reduces the problem to free Majorana fermions in each flux sector. The phase diagram has two regimes: gapped Abelian phases (A) when one coupling dominates, and a gapless non-Abelian phase (B) in the interior of the triangle $|J_\alpha| \leq |J_\beta| + |J_\gamma|$ for all permutations — the latter hosts Chern number $C = \pm 1$ when a time-reversal-breaking perturbation opens a gap.
+
 # Digital Experiment Overview
 
 #### Initialization and moving across the phase
@@ -82,7 +88,7 @@ This generates a fermion operator $a_J^\dagger, a_J$ on the honeycomb lattice. N
 $$
 \begin{align}
 &\sigma_{j}^z \sigma_{j'}^z \propto c_j c_{j'} = a_J a_J^\dagger - a_J^\dagger a_J = 2 n_J -1 \\
-&\sigma_{j}^{x/y} \sigma_{k'}^{x/y} \propto c_j c_{k'}  = a_J a_{K} - a_J^\dagger a_{K}^dagger + a_J^\dagger a_{K'} - a_J a_{K}^dagger.
+&\sigma_{j}^{x/y} \sigma_{k'}^{x/y} \propto c_j c_{k'}  = a_J a_{K} - a_J^\dagger a_{K}^\dagger + a_J^\dagger a_{K'} - a_J a_{K}^\dagger.
 \end{align}
 $$
 Thus we can rewrite the honeycomb Hamiltonian in terms of such ZZ-paired fermions, we got the equivalent fermion Hamiltonian:
@@ -167,7 +173,7 @@ The observable they chose is
 $$
 M_{\text{stagg}} = \frac{1}{N} \sum_i \epsilon_i (n_{i\uparrow} - n_{i\downarrow}),
 $$
-which can be measured by measuring the $\langle Z_i Z_{i'}\rangle$ and $\langle Z_i Z_{i'}\rangle$ for $i' = i \pm 1, i \pm 2, \cdots$.
+which can be measured by measuring the $\langle Z_{i\uparrow} Z_{i'\uparrow}\rangle$ and $\langle Z_{i\downarrow} Z_{i'\downarrow}\rangle$ for each site $i$, since $n_{i\sigma} = (1 - Z_{i\sigma}Z_{i'\sigma})/2$.
 It has shown that in the free fermion case, $M_{\text{stagg}}$ will decrease to zero, while in the interacting case $U \gg J$, the $M_{\text{stagg}}$ will be kept large.
 
 # Scientific Significance and Architecture Assessment
