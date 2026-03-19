@@ -132,7 +132,7 @@ $$
 
 #### Simulating interacting fermions
 
-To simulate the Fermi-Hubbard model, @evered2025probing use two copies of an 8-site honeycomb lattice (**16 qubits** total) to encode $a_{\sigma = \uparrow,i}, a_{\sigma = \downarrow,i}$ separately.  The Hamiltonian is:
+To simulate the Fermi-Hubbard model, @evered2025probing use two copies of a **4×4 square lattice** (**16 qubits** total, one lattice per spin species) to encode $a_{\sigma = \uparrow,i}, a_{\sigma = \downarrow,i}$ separately.  The Hamiltonian is:
 $$
 H_{FH} =  \sum_{\sigma \in \uparrow, \downarrow} \sum_{\langle i,j \rangle} (a_{\sigma,i}^\dagger a_{\sigma,j} + a_{\sigma,j}^\dagger a_{\sigma,i}) + U \sum_{i} n_{\uparrow,i} n_{\downarrow,i},
 $$
@@ -191,7 +191,7 @@ The appropriate baseline is **Bluvstein 2024** [@bluvstein2024logical], which in
 | **CZ fidelity** | 99.4% (global randomized benchmarking [@evered2025probing]) | 99.5% | Slight regression attributed to closer intermediate-state detuning (3.3 GHz); each Floquet layer compounds this |
 | **Tunable-angle CPHASE** | Numerically optimized per angle; **no standalone fidelity number reported** — only stated as "comparable to prior work" | N/A (fixed CZ only) | Fidelity likely similar to CZ but uncharacterized independently |
 | **Rydberg state** | $n = 53$ (two-photon: 420 nm + 1013 nm) | $n = 70$ ($\lvert 70S_{1/2}\rangle$) | Lower $n$ enables closer atom spacing via smaller blockade radius |
-| **Intermediate-state detuning** | 3.3 GHz (closer than prior work) | Standard | Enables higher Rabi frequency at closer spacing |
+| **Intermediate-state detuning** | 3.3 GHz | ~12 GHz [@bluvstein2024logical] | Closer detuning enables higher Rabi frequency at tighter atom spacing |
 | **Reference readout fidelity** | 99.8% | 99.5% | Improved reference; in-run value degraded to ~96–97% (see below) |
 | **Tunable-angle gates** | $ZZ(\theta)$ via shaped Rydberg pulses | Fixed CZ | **New in Evered 2025** — required for Trotterized Floquet evolution across the Kitaev phase diagram |
 | **Mid-circuit measurement** | Yes (32 ancilla, FPGA feedforward) | Yes | Enables deterministic plaquette preparation; carries over from Bluvstein 2024 |
@@ -228,7 +228,7 @@ per qubit per Floquet layer — still substantially better than the readout budg
 | Initialization (weight-4 stabilizers) | Depth-3 |
 | Initialization (full, including CY) | Depth-4 |
 | Floquet phase diagram | Depth-6 |
-| Fermion quench dynamics | Depth-12 |
+| Fermion quench dynamics | Depth-11 |
 | Fermi-Hubbard dynamics | Depth-12 |
 
 **Chern number result:** The paper reports $C = 1$ in the non-Abelian phase B and $C = 0$ in the Abelian phase A. Critically, this is **not a direct topological invariant measurement** — the Chern number is inferred indirectly via a three-step procedure [@evered2025probing, Methods]:
@@ -260,6 +260,6 @@ The result $C = 1$ thus reflects the topology of the *reconstructed* Hamiltonian
 
 **Fermion exchange statistics:** The exchange protocol uses $\sqrt{XZY}$ sandwiching with loss-radius postselection. The acceptance fraction ranges from **1–7%** per shot depending on the number of ancilla rounds. The contrast between "exchanged" and "not exchanged" trajectories provides the signature of fermionic ($\pi$-phase) exchange statistics.
 
-**Fermi-Hubbard $M_\text{stagg}$:** The simulation encodes spin-up and spin-down on **two copies of an 8-site honeycomb lattice** (16 qubits total, one lattice per spin species). The circuit uses depth-12 Floquet rounds with the dimensionless interaction ratio $J_Z/J$ varied up to 8 (with explicit benchmarks at $J_Z/J = 1$ and $J_Z/J = 8$). The staggered magnetization $M_\text{stagg}$ shows **non-monotonic behavior**: it decays rapidly at $J_Z/J \to 0$ (free fermions spread out), is suppressed at intermediate coupling, and is partially recovered at large $J_Z/J \gg 1$ where double-occupancy is energetically suppressed. This non-monotonic dependence on the interaction strength is the key signature of Hubbard physics.
+**Fermi-Hubbard $M_\text{stagg}$:** The simulation encodes spin-up and spin-down on **two copies of a 4×4 square lattice** (16 qubits total, one lattice per spin species). The circuit uses depth-12 Floquet rounds with the dimensionless interaction ratio $U/J$ varied up to 8 (with explicit benchmarks at $U/J = 1$ and $U/J = 8$). The staggered magnetization $M_\text{stagg}$ shows **non-monotonic behavior**: it decays rapidly at $U/J \to 0$ (free fermions spread out), is suppressed at intermediate coupling, and is partially recovered at large $U/J \gg 1$ where double-occupancy is energetically suppressed. This non-monotonic dependence on the interaction strength is the key signature of Hubbard physics.
 
 Neutral atoms have a structural advantage for the honeycomb geometry: mid-circuit atom rearrangement provides native non-local connectivity, eliminating the SWAP overhead that would add $O(N)$ depth on a fixed grid. On trapped-ion platforms the limiting factor is gate clock speed (not fidelity), while on superconducting platforms the bottleneck is connectivity-limited routing (not coherence time).
