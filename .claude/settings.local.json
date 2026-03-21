@@ -66,7 +66,27 @@
       "Bash(mkdir -p Experiments/Topics && git mv theory/Topics/rydberg_qc Experiments/Topics/rydberg_qc && git mv theory/Topics/simulation_model Experiments/Topics/simulation_model)",
       "Bash(find /home/chance/quarto-lab/Experiments/posts/simulation_CZ -type f \\\\\\( -name \"*.png\" -o -name \"*.jpg\" -o -name \"*.pdf\" \\\\\\) 2>/dev/null | head -20)",
       "Bash(find /home/chance/quarto-lab/Experiments/Topics/rydberg_qc -type f \\\\\\( -name \"*.png\" -o -name \"*.jpg\" -o -name \"*.pdf\" \\\\\\) 2>/dev/null | head -20)",
-      "Bash(git rm:*)"
+      "Bash(git rm:*)",
+      "WebFetch(domain:docs.mosek.com)",
+      "WebFetch(domain:www.cse.iitk.ac.in)",
+      "Bash(/home/chance/quarto-lab/.venv/bin/python3 /home/chance/quarto-lab/_resource/Project__Compatiablity_of_properties/solve_dual_sdp.py 2>&1 | grep -E \"^=|s\\\\*|Summary|k=|>>>\")",
+      "WebFetch(domain:link.aps.org)",
+      "WebFetch(domain:mappingignorance.org)",
+      "WebFetch(domain:www.quemix.com)",
+      "WebFetch(domain:scholar.google.com)",
+      "WebFetch(domain:cdn.imsi.institute)",
+      "WebFetch(domain:lukin.physics.harvard.edu)",
+      "WebFetch(domain:bloqade.quera.com)",
+      "WebFetch(domain:amazon-braket-schemas-python.readthedocs.io)",
+      "Bash(uv run:*)",
+      "Bash(pip install:*)",
+      "Bash(sed 's/v[0-9]*$//')",
+      "WebFetch(domain:dl.acm.org)",
+      "WebFetch(domain:proceedings.mlr.press)",
+      "Bash(find /home/chance/quarto-lab/Experiments/posts/Bernien2017_scars -type f -name *.md -o -name *.tex)",
+      "WebFetch(domain:ui.adsabs.harvard.edu)",
+      "WebFetch(domain:research-explorer.ista.ac.at)",
+      "Bash(find /home/chance/quarto-lab/Experiments/posts/1zone* -name _resource.tex -o -name *resource*)"
     ]
   }
 }

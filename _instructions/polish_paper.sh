@@ -1,13 +1,11 @@
 #!/bin/bash
 # polish_paper.sh — Iterative review-and-improve loop for main.tex
 #
-# Runs a REVIEW → IMPROVE cycle on the Multi_copy_shadow_tomography paper.
+# Runs a REVIEW -> IMPROVE cycle on the Multi_copy_shadow_tomography paper.
 # Designed to run continuously until Ctrl+C or weekly opus budget exhausted.
 #
 # Usage:
 #   nohup ./_instructions/polish_paper.sh > polish_paper.log 2>&1 &
-#
-#   # Dry-run:
 #   ./_instructions/polish_paper.sh --dry-run
 #
 # Safety: create a git safety net BEFORE launching:
@@ -18,60 +16,28 @@ set -euo pipefail
 cd "$(git rev-parse --show-toplevel)"
 REPO_ROOT="$(pwd)"
 
-# ──────────────────────────── Config ────────────────────────────
+# ──────────────────────────── Config & args ───────────────────────
 TEX_FILE="_resource/Multi_copy_shadow_tomography/main.tex"
 BIB_FILE="_resource/Multi_copy_shadow_tomography/references.bib"
-MAX_RETRIES=30
-RETRY_WAIT=600            # 10 min between retries on rate limit
-PAUSE_BETWEEN=15          # seconds between review→improve
-MODEL="opus"
-DRY_RUN=false
 
-# Opus weekly budget control: stop when weekly calls reach this % of cap
-OPUS_WEEKLY_CAP=50        # max opus calls per week (adjust to your plan)
-OPUS_BUDGET_PERCENT=100    # stop at 70% of weekly cap
+MAX_RETRIES=30
+PAUSE_BETWEEN=15
+
+# Budget tracking
+OPUS_WEEKLY_CAP=50
+OPUS_BUDGET_PERCENT=100
 STATE_DIR="$REPO_ROOT/.polish_state"
 CALL_LOG="$STATE_DIR/opus_calls.log"
 
-# ──────────────────────────── Args ──────────────────────────────
-for arg in "$@"; do
-  case "$arg" in
-    --dry-run) DRY_RUN=true ;;
-    --cap=*)   OPUS_WEEKLY_CAP="${arg#--cap=}" ;;
-  esac
-done
+source "$REPO_ROOT/_instructions/lib/claude_runner.sh"
+
+TARGETS=()
+parse_common_args TARGETS "$@"
 
 mkdir -p "$STATE_DIR"
 touch "$CALL_LOG"
 
-# ──────────────────────────── Budget tracking ───────────────────
-get_week_id() { date +%G-W%V; }
-
-count_weekly_calls() {
-  local week_id count
-  week_id=$(get_week_id)
-  count=$(grep -c "^${week_id}" "$CALL_LOG" 2>/dev/null) || true
-  echo "${count:-0}"
-}
-
-record_call() {
-  echo "$(get_week_id) $(date +%s) $(date)" >> "$CALL_LOG"
-}
-
-check_budget() {
-  local used max_allowed
-  used=$(count_weekly_calls)
-  max_allowed=$(( OPUS_WEEKLY_CAP * OPUS_BUDGET_PERCENT / 100 ))
-  if [ "$used" -ge "$max_allowed" ]; then
-    echo "  BUDGET EXHAUSTED: $used / $max_allowed calls (${OPUS_BUDGET_PERCENT}% of ${OPUS_WEEKLY_CAP}) this week."
-    echo "  Stopping to preserve remaining opus quota."
-    return 1
-  fi
-  echo "  Budget: $used / $max_allowed calls used this week."
-  return 0
-}
-
-# ──────────────────────────── Preamble ──────────────────────────
+# ──────────────────────────── Preamble ────────────────────────────
 
 PREAMBLE="You are a senior quantum information researcher polishing a LaTeX paper.
 
@@ -122,7 +88,7 @@ GROUND RULES (never violate):
 8. If stuck on anything for >5 minutes, add \\textcolor{red}{[TODO: ...]} and move on.
 9. When unsure about a mathematical step, ALWAYS consult the reference materials or web-search before guessing."
 
-# ──────────────────────────── Quality criteria ──────────────────
+# ──────────────────────────── Quality criteria ────────────────────
 
 QUALITY_CRITERIA='Quality criteria (read the file LINE BY LINE):
 
@@ -157,64 +123,7 @@ QUALITY_CRITERIA='Quality criteria (read the file LINE BY LINE):
 (X2) Key results are properly attributed. No missing citations for well-known results.
 (X3) Related work is adequately discussed.'
 
-# ──────────────────────────── Helpers ───────────────────────────
-
-run_claude() {
-  local desc="$1"
-  local prompt="$2"
-  local attempt=1
-
-  if $DRY_RUN; then
-    echo "[DRY-RUN] Would run: $desc"
-    echo "[DRY-RUN] Prompt length: ${#prompt} chars"
-    return 0
-  fi
-
-  while [ $attempt -le $MAX_RETRIES ]; do
-    if ! check_budget; then
-      return 2
-    fi
-
-    echo ""
-    echo "--------------------------------------------"
-    echo "  STARTING: $desc (attempt $attempt/$MAX_RETRIES)"
-    echo "  $(date)"
-    echo "--------------------------------------------"
-
-    local output
-    output=$(claude -p \
-      --dangerously-skip-permissions \
-      --model "$MODEL" \
-      --append-system-prompt "$PREAMBLE" \
-      "$prompt" 2>&1) && {
-      record_call
-      echo "$output"
-      echo ""
-      echo "  FINISHED: $desc at $(date)"
-      echo "--------------------------------------------"
-      sleep 5
-      return 0
-    }
-
-    if echo "$output" | grep -qi "limit\|rate\|quota\|resets\|throttl\|overloaded"; then
-      echo "$output"
-      echo "  RATE LIMITED — waiting ${RETRY_WAIT}s (attempt $attempt/$MAX_RETRIES)"
-      sleep $RETRY_WAIT
-      attempt=$((attempt + 1))
-    else
-      echo "$output"
-      echo "  ERROR (non-rate-limit): $desc — skipping."
-      echo "--------------------------------------------"
-      sleep 10
-      return 1
-    fi
-  done
-
-  echo "  GAVE UP after $MAX_RETRIES retries: $desc"
-  return 1
-}
-
-# ──────────────────────────── Main loop ─────────────────────────
+# ──────────────────────────── Main loop ───────────────────────────
 
 echo "============================================"
 echo "  POLISH PAPER — $(date)"
@@ -297,30 +206,18 @@ Rules:
 - Do NOT suggest fixes in detail — only diagnose problems with precision.
 - If everything genuinely passes all criteria, write ALL PASS."
 
-  if $DRY_RUN; then
-    run_claude "Review #$ITERATION" "$REVIEW_PROMPT"
-    sleep 1
-    continue
-  fi
+  REVIEW_OUTPUT=""
+  run_claude "Review #$ITERATION" "$REVIEW_PROMPT" "$PREAMBLE" REVIEW_OUTPUT
+  rc=$?
 
-  REVIEW_OUTPUT=$(claude -p \
-    --dangerously-skip-permissions \
-    --model "$MODEL" \
-    --append-system-prompt "$PREAMBLE" \
-    "$REVIEW_PROMPT" 2>&1) && {
-    record_call
-    echo "$REVIEW_OUTPUT"
-  } || {
-    if echo "$REVIEW_OUTPUT" | grep -qi "limit\|rate\|quota\|resets\|throttl\|overloaded"; then
-      echo "  RATE LIMITED during review — waiting ${RETRY_WAIT}s"
-      sleep $RETRY_WAIT
-      continue
-    fi
-    echo "$REVIEW_OUTPUT"
-    echo "  Review failed — waiting 60s and retrying..."
+  if [ "$rc" -eq 2 ]; then
+    echo "  Budget exhausted. Sleeping 1 hour..."
+    sleep 3600
+    continue
+  elif [ "$rc" -ne 0 ]; then
     sleep 60
     continue
-  }
+  fi
 
   if echo "$REVIEW_OUTPUT" | grep -q "ALL PASS"; then
     echo ""
@@ -373,7 +270,7 @@ EXECUTION RULES:
 7. Commit after fixing: git add $TEX_FILE $BIB_FILE && git commit -m 'polish: <concise summary>'
 8. After committing, briefly summarize what was fixed and what remains."
 
-  run_claude "Improve #$ITERATION" "$IMPROVE_PROMPT"
+  run_claude "Improve #$ITERATION" "$IMPROVE_PROMPT" "$PREAMBLE"
   rc=$?
 
   if [ "$rc" -eq 2 ]; then

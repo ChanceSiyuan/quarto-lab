@@ -1,0 +1,29 @@
+---
+categories:
+- Readings
+date: '2026-03-19'
+lang: en
+title: Projective Simulations of Quantum Measurements
+bibliography: refs.bib
+---
+# Summary and questions
+This this section we review that at which time a POVM can be simulated by a projective measurement.
+
+
+# Projective Simulations of Quantum Measurements
+Projective measurement $\mathbb{P}(d,n)$ are n-outcome POVMs on d-dimensional Hilbert space whose effects are orthogonal projectors.
+We denote $\mathbb{SP}(d,n)$ as n-outcome POVMs on d-dimensional Hilbert space that can be simulated by classical post-processing projective measurements.
+In other words, $\mathbb{SP}(d,n)$ is the convex hull of the POVMs sets $\mathbb{P}(d,n)$:
+$$
+\begin{align}
+\mathbb{P}(d,n):\{\{M_1,\cdots,M_n\}| M_j \succeq 0, \sum_{j} M_j = \mathbb{I}(d), M_jM_k = M_j \delta_{jk}\} .
+\mathbb{SP}(d,n): \mathrm{Conv}[\mathbb{P}(d,n)]
+\end{align}
+$$
+
+A way to quanttify the closeness of a POVM $\mathbf{M}$ is to check whether its mixing with idnetity could became a PVM:
+$$
+t(\mathbf{M}) = \max\{ t | \Phi_t(\mathbf{M}):= tM_i + (1-t)\frac{\mathrm{tr}(M_i)\mathbb{I}}{d} \in \mathbb{SP}(d, n)\}
+$$
+
+## Main Result

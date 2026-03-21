@@ -1,17 +1,11 @@
 #!/bin/bash
 # polish_topics.sh — Overnight iterative quality-improvement loop for Topic folders
 #
-# Runs a REVIEW → IMPROVE cycle indefinitely on one or more Topic folders
-# until you Ctrl+C.  Designed to be fire-and-forget before going to sleep.
+# Runs a REVIEW -> IMPROVE cycle on one or more Topic folders.
 #
 # Usage:
-#   # Polish a single Topic folder:
 #   nohup ./_instructions/polish_topics.sh theory/Topics/Shadow_tomography > polish.log 2>&1 &
-#
-#   # Polish ALL Topic folders in round-robin:
-#   nohup ./_instructions/polish_topics.sh > polish.log 2>&1 &
-#
-#   # Dry-run — print what would be done without calling Claude:
+#   nohup ./_instructions/polish_topics.sh > polish.log 2>&1 &     # all Topics
 #   ./_instructions/polish_topics.sh --dry-run theory/Topics/IQP
 #
 # Safety: create a git safety net BEFORE launching:
@@ -22,24 +16,15 @@ set -euo pipefail
 cd "$(git rev-parse --show-toplevel)"
 REPO_ROOT="$(pwd)"
 
-# ──────────────────────────── Config ────────────────────────────
-MAX_RETRIES=20
-RETRY_WAIT=600          # 10 min between retries on rate limit
-PAUSE_BETWEEN=10        # seconds between review→improve and between iterations
-MODEL="sonnet"
-MAX_ITERATIONS=30       # total review→improve rounds
-DRY_RUN=false
+# ──────────────────────────── Config & args ───────────────────────
+MAX_ITERATIONS=30
 
-# ──────────────────────────── Args ──────────────────────────────
+source "$REPO_ROOT/_instructions/lib/claude_runner.sh"
+
 TARGETS=()
-for arg in "$@"; do
-  case "$arg" in
-    --dry-run) DRY_RUN=true ;;
-    *)         TARGETS+=("${arg%/}") ;;   # strip trailing slash
-  esac
-done
+parse_common_args TARGETS "$@"
 
-# If no targets given, discover all Topic folders that contain ≥2 .qmd files
+# If no targets, discover all Topic folders with >=2 .qmd files
 if [ ${#TARGETS[@]} -eq 0 ]; then
   while IFS= read -r dir; do
     count=$(find "$dir" -maxdepth 1 -name '*.qmd' | wc -l)
@@ -53,18 +38,7 @@ echo "  Targets: ${TARGETS[*]}"
 echo "  Model: $MODEL | Dry-run: $DRY_RUN"
 echo "============================================"
 
-# ──────────────────────────── Helpers ───────────────────────────
-
-detect_bib() {
-  local dir="$1"
-  if [ -f "$dir/refs.bib" ]; then
-    echo "$dir/refs.bib"
-  elif [ -f "$REPO_ROOT/references.bib" ]; then
-    echo "$REPO_ROOT/references.bib"
-  else
-    echo ""
-  fi
-}
+# ──────────────────────────── Preamble builder ────────────────────
 
 build_preamble() {
   local dir="$1"
@@ -107,58 +81,7 @@ QUALITY_CRITERIA='Quality criteria for each sub-page:
 (Q11) Physical/mathematical reasoning is self-consistent. Symmetries match claimed phases; perturbative regimes are valid; approximation conditions are stated. Flag any contradiction.
 (Q12) Theoretical completeness: key derivations have all essential steps present; approximations are stated with validity conditions; a reader could reconstruct the argument using ONLY what is written. Flag where adding 2-5 sentences would significantly improve understanding.'
 
-run_claude() {
-  local desc="$1"
-  local prompt="$2"
-  local preamble="$3"
-  local attempt=1
-
-  if $DRY_RUN; then
-    echo "[DRY-RUN] Would run: $desc"
-    echo "[DRY-RUN] Prompt length: ${#prompt} chars"
-    return 0
-  fi
-
-  while [ $attempt -le $MAX_RETRIES ]; do
-    echo ""
-    echo "--------------------------------------------"
-    echo "  STARTING: $desc (attempt $attempt/$MAX_RETRIES)"
-    echo "  $(date)"
-    echo "--------------------------------------------"
-
-    local output
-    output=$(claude -p \
-      --dangerously-skip-permissions \
-      --model "$MODEL" \
-      --append-system-prompt "$preamble" \
-      "$prompt" 2>&1) && {
-      echo "$output"
-      echo ""
-      echo "  FINISHED: $desc at $(date)"
-      echo "--------------------------------------------"
-      sleep 5
-      return 0
-    }
-
-    if echo "$output" | grep -qi "limit\|rate\|quota\|resets\|throttl\|overloaded"; then
-      echo "$output"
-      echo "  RATE LIMITED — waiting ${RETRY_WAIT}s (attempt $attempt/$MAX_RETRIES)"
-      sleep $RETRY_WAIT
-      attempt=$((attempt + 1))
-    else
-      echo "$output"
-      echo "  ERROR (non-rate-limit): $desc — skipping."
-      echo "--------------------------------------------"
-      sleep 5
-      return 1
-    fi
-  done
-
-  echo "  GAVE UP after $MAX_RETRIES retries: $desc"
-  return 1
-}
-
-# ──────────────────────────── Main loop ─────────────────────────
+# ──────────────────────────── Main loop ───────────────────────────
 
 ITERATION=0
 
@@ -214,29 +137,8 @@ Rules:
 - If everything genuinely passes all 12 criteria, write ALL PASS.
 - Do NOT suggest fixes — only diagnose problems with precision."
 
-    if $DRY_RUN; then
-      run_claude "Review $WORKDIR (#$ITERATION)" "$REVIEW_PROMPT" "$PREAMBLE"
-      sleep 1
-      continue
-    fi
-
-    REVIEW_OUTPUT=$(claude -p \
-      --dangerously-skip-permissions \
-      --model "$MODEL" \
-      --append-system-prompt "$PREAMBLE" \
-      "$REVIEW_PROMPT" 2>&1) && {
-      echo "$REVIEW_OUTPUT"
-    } || {
-      if echo "$REVIEW_OUTPUT" | grep -qi "limit\|rate\|quota\|resets\|throttl\|overloaded"; then
-        echo "  RATE LIMITED during review — waiting ${RETRY_WAIT}s"
-        sleep $RETRY_WAIT
-        continue
-      fi
-      echo "$REVIEW_OUTPUT"
-      echo "  Review failed — waiting 60s and retrying..."
-      sleep 60
-      continue
-    }
+    REVIEW_OUTPUT=""
+    run_claude "Review $WORKDIR (#$ITERATION)" "$REVIEW_PROMPT" "$PREAMBLE" REVIEW_OUTPUT || continue
 
     # Check if all files pass
     if echo "$REVIEW_OUTPUT" | grep -q "ALL PASS" && ! echo "$REVIEW_OUTPUT" | grep -q "^FAIL:"; then

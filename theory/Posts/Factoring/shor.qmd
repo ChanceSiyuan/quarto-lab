@@ -1,0 +1,185 @@
+---
+categories:
+- Posts
+date: '2026-03-19'
+lang: en
+title: "Shor's Algorithm"
+subtitle: "Direct and Approximate Implementations"
+bibliography: refs.bib
+draft: true
+---
+
+## The Factoring Problem {#sec-factoring}
+
+::::{#def-factoring .callout-note icon="false"}
+## Definition (Integer Factoring Problem)
+Given an $n$-bit composite integer $N$, find nontrivial factors $P, Q > 1$ such that $N = P \times Q$.
+
+The best known classical algorithms run in sub-exponential time $\exp(O(n^{1/3} (\log n)^{2/3}))$, while Shor's quantum algorithm solves the problem in polynomial time $O(n^2 \log n \log \log n)$ [@shor1997polynomial].
+::::
+
+The key insight of Shor's algorithm is that factoring reduces to **period finding**, a problem with efficient quantum solutions.
+
+::::{#def-period-finding .callout-note icon="false"}
+## Definition (Period Finding)
+Given a function $f: \mathbb{Z} \to S$ with the promise that there exists a period $r > 0$ such that $f(x) = f(x')$ if and only if $x \equiv x' \pmod{r}$, find $r$.
+
+For factoring, the relevant function is $f(x) = a^x \text{ mod } N$, where $a$ is chosen uniformly at random from $\{2, \ldots, N-1\}$ with $\gcd(a, N) = 1$. The period $r$ is the **order** of $a$ modulo $N$.
+::::
+
+::::{#lem-factor-from-period .callout-note icon="false"}
+## Lemma (Reduction from Factoring to Period Finding)
+Suppose $r$ is the order of a random $a$ coprime to $N$. If $r$ is even, then with probability at least $1/2$, the quantity $\gcd(a^{r/2} \pm 1, N)$ yields a nontrivial factor of $N$.
+
+:::{.callout-note collapse="true"}
+## Proof
+Since $a^r \equiv 1 \pmod{N}$, we have $a^r - 1 \equiv 0 \pmod{N}$, which factors as
+$$
+(a^{r/2} - 1)(a^{r/2} + 1) \equiv 0 \pmod{N}.
+$$
+Thus $N$ divides the product $(a^{r/2} - 1)(a^{r/2} + 1)$. If neither factor is divisible by $N$, then $\gcd(a^{r/2} - 1, N)$ and $\gcd(a^{r/2} + 1, N)$ are nontrivial factors. It can be shown that for a randomly chosen $a$, the probability that $r$ is even and $a^{r/2} \not\equiv -1 \pmod{N}$ is at least $1 - 1/2^{k-1}$, where $k$ is the number of distinct prime factors of $N$. For $k \geq 2$ this gives probability at least $1/2$.
+:::
+::::
+
+---
+
+## Direct Implementation of Shor's Algorithm {#sec-direct}
+
+The algorithm's key step is to efficiently find the period $r$ of $f(x) = a^x \text{ mod } N$. This requires implementing the unitary transformation
+$$
+U \ket{x}\ket{0} \to \ket{x}\ket{a^x \text{ mod } N}.
+$$
+
+::::{#def-mod-exp .callout-note icon="false"}
+## Definition (Modular Exponentiation Unitary)
+The **modular exponentiation unitary** $U_f$ acts on an $m$-qubit input register and an $n$-qubit output register ($n = \lceil \log_2 N \rceil$) as
+$$
+U_f \ket{x}\ket{y} = \ket{x}\ket{y \oplus (a^x \text{ mod } N)},
+$$
+where $\oplus$ denotes bitwise XOR. When the output register is initialized to $\ket{0}$, this produces $\ket{x}\ket{a^x \text{ mod } N}$.
+::::
+
+The implementation of $U_f$ relies on the fact that modular multiplication by $a$ is a bijection.
+
+::::{#lem-bijectivity .callout-note icon="false"}
+## Lemma (Bijectivity of Modular Multiplication)
+For $\gcd(a, N) = 1$, the mapping $y \mapsto ay \text{ mod } N$ is a bijection on $\{0, 1, \ldots, N-1\}$.
+
+:::{.callout-note collapse="true"}
+## Proof
+**Injective:** If $ay \equiv ay' \pmod{N}$, then $a(y - y') \equiv 0 \pmod{N}$. Since $\gcd(a, N) = 1$, we have $y - y' \equiv 0 \pmod{N}$, i.e. $y \equiv y' \pmod{N}$. Therefore the mapping is injective.
+
+**Surjective:** For any $b \in \mathbb{Z}_N$, we need $y$ such that $ay \equiv b \pmod{N}$. Since $\gcd(a, N) = 1$, the element $a$ has a multiplicative inverse $a^{-1}$ modulo $N$ (computable via the extended Euclidean algorithm). Setting $y \equiv a^{-1}b \pmod{N}$ gives a solution in $\mathbb{Z}_N$.
+:::
+::::
+
+::::{#thm-fermat .callout-important icon="false"}
+## Theorem (Fermat's Little Theorem)
+If $p$ is a prime and $\gcd(a, p) = 1$, then
+$$
+a^{p-1} \equiv 1 \pmod{p}.
+$$
+
+:::{.callout-note collapse="true"}
+## Proof
+Consider the set $S = \{1, 2, \ldots, p-1\}$. Since $\gcd(a, p) = 1$, the mapping $x \mapsto ax \text{ mod } p$ is a bijection on $S$ (by @lem-bijectivity applied to the prime $N = p$). Therefore the products of all elements are equal:
+$$
+\prod_{x=1}^{p-1} (ax \text{ mod } p) = \prod_{x=1}^{p-1} x.
+$$
+The left-hand side is $a^{p-1} \prod_{x=1}^{p-1} x \text{ mod } p$. Since $(p-1)!$ is coprime to $p$, we can cancel it from both sides, yielding $a^{p-1} \equiv 1 \pmod{p}$.
+:::
+::::
+
+### Worked Example: $N = 15$, $a = 7$ {#sec-example}
+
+Consider the factoring of $N = 15$ using $a = 7$. We implement the circuit for $f(x) = 7^x \text{ mod } 15$.
+
+The input is encoded in binary as $x = x_{m-1} 2^{m-1} + \cdots + x_0$, and the output is encoded on $n = 4$ qubits $\ket{y} := \ket{y_3 y_2 y_1 y_0}$ representing $y = 8y_3 + 4y_2 + 2y_1 + y_0$.
+
+The unitary $U_f$ acts on the four output qubits as $\ket{y} \to \ket{ay \text{ mod } N}$.
+
+Using the binary decomposition, the modular exponentiation factors as
+$$
+f(x) = 7^x \text{ mod } 15 = (7^{2^{m-1}})^{x_{m-1}} \cdots (7^{2^0})^{x_0} \text{ mod } 15.
+$$
+
+::::{#lem-controlled-multiplier .callout-note icon="false"}
+## Lemma (Decomposition into Controlled Modular Multipliers)
+The modular exponentiation $U_f$ decomposes into a sequence of controlled modular multipliers $C_j O_j$ for $j = 0, \ldots, m-1$:
+
+1. Initialize the output register to $\ket{0\cdots01}$ (representing $y = 1$).
+2. For $j = 0, \ldots, m-1$, apply the controlled operation $C_j O_j$, which performs the block $O_j$ on $\ket{y}$ conditioned on $x_j = 1$.
+3. Each $O_j$ implements a **modular multiplier**: $\ket{y} \mapsto \ket{(y \times 7^{2^j}) \text{ mod } 15}$.
+4. The design of each $O_j$ requires a fast modular exponentiation sub-circuit for computing $(\cdot) \times 7^{2^j} \text{ mod } 15$.
+
+The total gate count is polynomial in $m$ and $n$ [@beauregard2003circuit].
+::::
+
+We can efficiently implement each quantum gate $CU_j$ by lifting the classical reversible circuit $C_j O_j$ to a unitary.
+
+---
+
+## Approximate Shor via Discrete Logarithm {#sec-approx}
+
+The direct implementation above requires at least $n$ logical qubits for factoring an $n$-bit number, and the total count including ancillas is larger still. Recently, an algorithm that completes the factorization with only $n/2$ logical qubits has been proposed, by reducing factoring to a discrete logarithm problem.
+
+::::{#def-dlp .callout-note icon="false"}
+## Definition (Discrete Logarithm Problem)
+Given a finite cyclic group $C = \langle g \rangle$ generated by $g$ and an element $x \in C$, the **discrete logarithm** of $x$ with respect to $g$ is the smallest $l \in \mathbb{Z}^+$ such that $g^l = x$.
+::::
+
+To solve the discrete logarithm problem with Shor's algorithm, we implement the unitary
+$$
+\ket{\alpha}\ket{\beta}\ket{0} \to \ket{\alpha}\ket{\beta}\ket{x^{\alpha} g^{\beta}}.
+$$
+
+::::{#def-carmichael .callout-note icon="false"}
+## Definition (Carmichael Function)
+For a positive integer $N$ with prime factorization $N = P \times Q$ (where $P, Q$ are distinct odd primes), the **Carmichael function** $\lambda(N)$ is defined as
+$$
+\lambda(N) = \text{lcm}(P - 1, Q - 1) = \frac{2\tilde{P}\tilde{Q}}{\gcd(\tilde{P}, \tilde{Q})},
+$$
+where $\tilde{P} = (P-1)/2$ and $\tilde{Q} = (Q-1)/2$. The Carmichael function gives the smallest positive integer $m$ such that $a^m \equiv 1 \pmod{N}$ for every $a$ coprime to $N$.
+::::
+
+### Reduction Procedure
+
+The approximate factoring algorithm proceeds as follows:
+
+1. Select a number $G$ coprime to $N$ and compute its order $R$, i.e., the smallest positive integer satisfying $G^R \equiv 1 \pmod{N}$. The order $R$ can be efficiently computed via quantum period finding.
+2. Compute $f(N) = (N-1)/2 - 2^{n/2-1} \text{ mod } R$ and $A = G^{f(N)} \text{ mod } N$. One can show there exists $D = \tilde{P} + \tilde{Q} - 2^{n/2-1} \text{ mod } R$ such that $A = G^D \text{ mod } N$.
+3. Since $N, A, G$ are all known, invoke the discrete logarithm algorithm to find $D$.
+
+::::{#lem-order-divides .callout-note icon="false"}
+## Lemma (Order Divides Carmichael Function)
+For $N = P \times Q$ (with $P, Q$ distinct odd primes), the order $R$ of any integer $G$ coprime to $N$ satisfying $G^R \equiv 1 \pmod{N}$ must divide $\lambda(N) = \text{lcm}(P-1, Q-1) = \frac{2\tilde{P}\tilde{Q}}{\gcd(\tilde{P}, \tilde{Q})}$, where $\tilde{P} = (P-1)/2$, $\tilde{Q} = (Q-1)/2$.
+
+:::{.callout-note collapse="true"}
+## Proof
+Consider the integers in $\{0, 1, \ldots, N-1\}$ under multiplication modulo $N$. The elements with multiplicative inverses form a group $\mathbb{Z}_N^*$; we count its elements.
+
+Since $N = PQ$ is a product of two primes, any element $x$ in $\{0, \ldots, N-1\}$ divisible by $P$ does not have an inverse, because $x \cdot Q \equiv 0 \pmod{N}$. Similarly, elements divisible by $Q$ do not have inverses. All other elements $a$ are necessarily coprime to $N$, so the mapping $f_a(y) = ay \text{ mod } N$ necessarily has an inverse $f_{a^{-1}}$ on $\{0, \ldots, N-1\}$.
+
+Counting the elements not divisible by $P$ or $Q$ gives $|\mathbb{Z}_N^*| = (P-1)(Q-1)$. Since the order of any group element divides the group order, we have $R \mid (P-1)(Q-1)$.
+
+In fact, we consider the exponent of the group, defined as $\min\{m \mid x^m = 1, \, \forall x \in \mathbb{Z}_N^*\}$. By the Chinese Remainder Theorem, $\mathbb{Z}_N^* \cong \mathbb{Z}_P^* \times \mathbb{Z}_Q^*$, so this exponent equals $\text{lcm}(P-1, Q-1)$. Since $R$ is the order of a particular element, $R$ must also divide this exponent.
+
+Finally, $\text{lcm}(P-1, Q-1) = \frac{(P-1)(Q-1)}{\gcd(P-1, Q-1)} = \frac{4 \cdot \frac{P-1}{2} \cdot \frac{Q-1}{2}}{2 \cdot \gcd\!\left(\frac{P-1}{2}, \frac{Q-1}{2}\right)} = \frac{2\tilde{P}\tilde{Q}}{\gcd(\tilde{P}, \tilde{Q})}$.
+:::
+::::
+
+---
+
+::::{#thm-approx-shor .callout-important icon="false"}
+## Theorem (Approximate Factoring with $n/2$ Qubits)
+There exists a quantum algorithm that factors an $n$-bit semiprime $N = PQ$ using only $n/2 + O(\log n)$ logical qubits. The algorithm reduces the factoring problem to a single instance of the discrete logarithm problem in $\mathbb{Z}_N^*$, which can be solved by a variant of Shor's algorithm.
+
+:::{.callout-note collapse="true"}
+## Proof sketch
+Since $P$ and $Q$ are $n/2$-bit primes, the half-differences $\tilde{P} = (P-1)/2$ and $\tilde{Q} = (Q-1)/2$ are $(n/2 - 1)$-bit integers. Knowing $D = \tilde{P} + \tilde{Q} - 2^{n/2-1} \text{ mod } R$ (obtained from the discrete logarithm of $A = G^D \text{ mod } N$) together with the public value $N = PQ$ and the identity $P + Q = 2(\tilde{P} + \tilde{Q}) + 2$, one recovers $P + Q$ and hence both factors via the quadratic formula:
+$$
+P, Q = \frac{(P+Q) \pm \sqrt{(P+Q)^2 - 4N}}{2}.
+$$
+The discrete logarithm instance lives in a group of order $R \mid \lambda(N)$, which is at most $n/2$ bits. Therefore the quantum register for the phase estimation step requires only $n/2 + O(\log n)$ qubits.
+:::
+::::

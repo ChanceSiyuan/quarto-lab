@@ -1,0 +1,306 @@
+---
+categories:
+- Readings
+date: 2026-03-18
+description: 'Reading notes on Bernien et al. 2017 — the foundational 51-atom Rydberg quantum simulator demonstrating many-body scars'
+lang: en
+title: 'Bernien 2017: 51-Atom Quantum Simulator and Many-Body Scars'
+bibliography: refs.bib
+draft: true
+---
+
+# Summary and Questions
+
+
+# Overview
+
+## Key Hamiltonian parameters
+
+The experiment realizes the Rydberg Hamiltonian
+
+$$H = \sum_i \frac{\Omega}{2} \sigma_i^x - \Delta n_i + \sum_{i<j} V_{ij} n_i n_j$$
+
+with $n_i = |r_i\rangle\langle r_i|$. The three terms — coherent drive $\Omega$, detuning $\Delta$, and van der Waals interaction $V_{ij} = C_6/|R_i - R_j|^6$ — are each controlled by distinct experimental knobs.
+
+### Experiments and Hamiltonian regimes
+
+The paper reports three classes of experiments, each accessing a different region of the $(\Delta/\Omega,\; R_b/a)$ phase diagram:
+
+1. **Adiabatic Z₂ crystal preparation** (Fig. 2b, bottom): 51 atoms at spacing $a = 5.74\;\mu\text{m}$, giving nearest-neighbor interaction $V_{i,i+1}/2\pi = 24$ MHz and next-nearest-neighbor $V_{i,i+2}/2\pi = 0.38$ MHz. The detuning is swept slowly from $\Delta < 0$ (paramagnetic, all atoms in $|g\rangle$) to $\Delta > 0$ (ordered), while $\Omega/2\pi = 2$ MHz is held constant. The blockade radius $R_b \approx 9\;\mu\text{m}$ ($R_b/a \approx 1.57$) ensures each excitation blocks its immediate neighbors but not next-nearest neighbors, selecting the Z₂ phase. The 51-atom Z₂ state is prepared with $P = 0.11(2)\%$ raw fidelity ($0.9(2)\%$ detection-corrected; 9.01(2) domain walls raw, ~5.4 corrected). A 7-atom subset reaches $54(4)\%$ raw ($77(6)\%$ corrected).
+
+2. **Adiabatic Z₃ and Z₄ crystal preparation** (Fig. 2b, middle and top): The interaction range $R_b/a$ is increased by reducing the lattice spacing to $a = 3.57\;\mu\text{m}$ (Z₃, $V_{i,i+1}/2\pi = 414.3$ MHz) and $a = 2.87\;\mu\text{m}$ (Z₄, $V_{i,i+1}/2\pi = 1536$ MHz). At these tighter spacings the blockade extends over 2 or 3 neighbors, selecting higher-order crystalline symmetries. All other laser parameters remain unchanged — the phase diagram is traversed purely by geometric reconfiguration of the trap array.
+
+3. **Quench dynamics / scar oscillations** (Fig. 3): Starting from the adiabatically prepared Z₂ state (large $\Delta > 0$), the detuning is suddenly set to $\Delta = 0$ at $t = 0$ while $\Omega/2\pi = 2$ MHz is held constant. This quenches the system from the ordered phase into the disordered/critical regime. The domain-wall density then oscillates at frequency $\omega_{\text{exp}} \approx \Omega/1.38$ (period ~0.69 μs), decaying with a $1/e$ timescale of ~0.88 μs over ~4 Rabi cycles. These persistent oscillations — later identified as quantum many-body scars [@turner2018quantum] — violate the eigenstate thermalization hypothesis.
+
+### From Hamiltonian parameters to experimental control
+
+**Coherent drive $\Omega$:** The effective two-photon Rabi frequency is $\Omega = \Omega_R \Omega_B / 2\delta$, where the 1013 nm laser drives the lower transition at $\Omega_R/2\pi = 36$ MHz, the 420 nm laser drives the upper transition at $\Omega_B/2\pi = 60$ MHz, and the intermediate $|6P_{3/2}\rangle$ state is detuned by $\delta/2\pi = 560$ MHz. This yields $\Omega/2\pi \approx 2$ MHz. Rabi frequency homogeneity is controlled to $< 3\%$ peak-to-peak across the array via beam shaping. The Rydberg laser linewidth is held below 0.5 kHz using PDH locking.
+
+**Detuning $\Delta$:** The two-photon detuning is swept in time using optimized nonlinear waveforms — a tangent sweep for the 51-atom data, or a cubic sweep for smaller system sizes (see @def-detuning-sweep). The sweep parameters are iteratively optimized to minimize domain-wall density in the final state.
+
+**Interaction $V_{ij}$:** The van der Waals coefficient $C_6$ is fixed by the Rydberg state $|70S_{1/2}\rangle$. The interaction strength is tuned entirely through the trap geometry — changing the lattice spacing $a$ changes $V_{i,i+1} \propto a^{-6}$, which shifts $R_b/a$ and selects different crystalline orders. No other parameter needs adjustment.
+
+### Decoherence and experimental constraints
+
+The dominant decoherence channel is off-resonant scattering from the intermediate $|6P_{3/2}\rangle$ state at a rate of $0.022\;\mu\text{s}^{-1}$ per atom ($\approx 2\pi \times 3.5$ kHz). For 51 atoms this gives a collective $1/e$ time of ~0.89 μs — matching the observed scar oscillation decay. Secondary contributions include Rydberg state decay ($\tau \approx 150\;\mu\text{s}$ for $|70S_{1/2}\rangle$ at 300 K), thermal position fluctuations (atom temperature ~12 μK in a ~1 mK trap, causing interaction energy spread via the $1/R^6$ sensitivity), and residual laser phase noise. Spin-echo coherence exceeds 5 μs with no visible decay, confirming that the oscillation damping is driven by the intermediate-state scattering rather than simple dephasing. The traps are switched off during Rydberg evolution for $\leq 7\;\mu\text{s}$ (capped at 3% atom loss), and each data point averages ~1,000 experimental shots at a cycle time of ~250 ms.
+
+
+:::{.callout-note icon="false"}
+## Experiment Protocol
+
+1. **Load:** 51 $^{87}$Rb atoms into a 1D optical tweezer chain (spacing $a = 5.74\ \mu\text{m}$ for Z₂ experiments); post-select on filled configurations (~60% per-site loading probability, 1D real-time rearrangement).
+2. **Prepare:** Adiabatically sweep detuning from $\Delta_{\min} < 0$ (paramagnetic) through resonance to $\Delta_{\max} > 0$ (Z₂/Z₃ ordered phase) while simultaneously ramping $\Omega$. The detuning ramp uses optimized functional forms: a **tangent** sweep $V(t) = a\tan[b(t - t_0)] + c$ for the 51-atom datasets (better performance), or a **cubic** sweep $V(t) = a(t - t_0)^3 + b(t - t_0) + c$ for smaller system sizes and the crystal dynamics data. All sweep parameters ($a, b, c, t_0$, sweep bounds $\Delta_{\min}$, $\Delta_{\max}$) are iteratively optimized to minimize the domain-wall number. For 51 atoms, the perfect $\mathbb{Z}_2$ state is obtained with probability $P = 0.11(2)\%$ raw ($0.9(2)\%$ corrected for detection fidelity), with an average of 9.01(2) domain walls (5.4 after maximum-likelihood correction). For a 7-atom cluster, fidelity reaches 54(4)% raw (77(6)% corrected).
+3. **Quench (for scar experiments):** From the adiabatically prepared $\mathbb{Z}_2$ state (at large $\Delta > 0$), suddenly set $\Delta = 0$ at $t = 0$ with $\Omega = 2\pi \times 2$ MHz, evolving in the disordered/critical regime.
+4. **Evolve:** Hold for variable post-quench time $t \in [0,\ 1.2\text{–}1.5\ \mu\text{s}]$ (the total experimental window including the adiabatic ramp is ~3 μs; the quench evolution window shown in Fig. 3 is ~1.2–1.5 μs).
+5. **Measure:** Turn off all fields; image atoms via single-photon fluorescence. Repeat ~1,000 realizations per time point for domain-wall density measurements; the Z₂ probability distribution figure (Fig. 5c) used **18,439 realizations**.
+:::
+
+
+1. **Adiabatic state preparation:** Slow detuning sweeps from $\Delta < 0$ (paramagnetic) to $\Delta > 0$ (ordered), preparing crystalline $\mathbb{Z}_2$ and $\mathbb{Z}_3$ ordered states with high fidelity.
+2. **Quench dynamics:** Sudden quench from the disordered phase deep into the ordered regime, monitoring the subsequent real-time evolution of the many-body state.
+3. **Single-shot fluorescence imaging:** Measuring the Rydberg excitation pattern of all 51 atoms after each experimental shot.
+
+## Key observations
+
+- **Phase transitions into ordered states:** Observed $\mathbb{Z}_2$ (every other atom excited), $\mathbb{Z}_3$ (every third atom), and $\mathbb{Z}_4$ (every fourth atom) crystalline orders as a function of blockade radius $R_b/a$, where $a$ is the lattice spacing. The Z₄ phase used a lattice spacing $a = 2.87\ \mu\text{m}$ with NN interaction $V_{i,i+1}/2\pi = 1536$ MHz — demonstrating the platform's programmability across multiple commensurate orders.
+- **Persistent many-body oscillations:** After preparing the $\mathbb{Z}_2$ ordered state (via adiabatic sweep to large $\Delta > 0$) and then suddenly quenching to $\Delta = 0$ (the disordered/critical regime), the domain-wall density exhibited long-lived oscillations — persisting for $>4$ Rabi cycles — rather than thermalizing as expected from the eigenstate thermalization hypothesis (ETH).
+- **Quantum many-body scars:** The oscillations were later identified [@turner2018quantum] as arising from a tower of special eigenstates (quantum many-body scars) embedded in an otherwise thermal spectrum, representing a novel mechanism of weak ergodicity breaking.
+
+## Scientific significance
+
+| Aspect | Assessment |
+|--------|-----------|
+| **Novelty** | First demonstration of a programmable Rydberg tweezer array as a many-body quantum simulator; discovery of quantum many-body scars as a new dynamical phenomenon. |
+| **Practical value** | Established the experimental platform that all subsequent Lukin group work builds upon. No direct application, but the scar phenomenon has implications for quantum state preparation and information storage in non-equilibrium systems. |
+| **Verification value** | First experimental observation of weak ergodicity breaking in a clean, isolated quantum system — previously only theorized in the context of single-particle quantum chaos. |
+
+
+## Critical technique analysis
+
+**Most important bottleneck for this specific experiment: Decoherence truncates the scar oscillations.**
+
+The domain-wall density oscillations in Fig. 3 of the paper decay with an estimated $1/e$ timescale of **~0.88 μs** (estimated from digitized Fig. 3 data; the paper does not report a decay constant explicitly) — roughly 1–2 Rabi periods at $\Omega/2\pi = 2$ MHz. The oscillations are visible for only ~4 cycles before being washed out. The spin-echo coherence is $> 5\ \mu\text{s}$ (no visible decay), so simple dephasing is not the dominant mechanism. The competing decoherence channels are:
+
+- **Intermediate-state scattering (dominant channel):** The two-photon Rydberg excitation via $6P_{3/2}$ has an off-resonant scattering rate of $0.022\ \mu\text{s}^{-1}$ per atom ($\approx 2\pi \times 3.5$ kHz; Methods of [@bernien2017probing]). For 51 atoms this gives a collective scattering rate of $51 \times 0.022\ \mu\text{s}^{-1} \approx 1.12\ \mu\text{s}^{-1}$, corresponding to a $1/e$ time of $\sim 0.89\ \mu\text{s}$ — consistent with the observed 0.88 μs oscillation decay timescale. This is the dominant decoherence channel during driven evolution.
+- **Rydberg state decay:** Lifetime $\tau \approx 150\ \mu\text{s}$ for $|70S_{1/2}\rangle$ at 300 K, contributing a decay rate of $\sim 2\pi \times 1$ kHz per atom. For 51 atoms this gives a collective $1/e$ time $\sim 3\ \mu\text{s}$ — a secondary contribution, $\sim 3\times$ slower than intermediate-state scattering.
+- **Thermal motion dephasing:** Atom temperature ~12 μK in a ~1 mK trap gives a root-mean-square position spread that modulates the van der Waals coupling $V \propto r^{-6}$, smearing the blockade edge.
+- **Laser phase noise:** The 420 nm excitation laser is PDH-locked (finesse ≥4000), but residual phase noise at MHz frequencies directly dephases the driven Rabi oscillations.
+
+**Why improving coherence would help:** Longer coherence would allow the experiment to observe more oscillation cycles, unambiguously distinguishing true many-body scars (non-decaying oscillations in the thermodynamic limit) from finite-size effects or prethermal plateaus. The 4-cycle observation window in Bernien 2017 was sufficient to motivate the scar interpretation [@turner2018quantum] but not to rule out alternatives. The subsequent theoretical and experimental literature largely focused on this ambiguity.
+
+
+
+
+## Dynamics of adiabatic state preparation
+
+:::{#def-rydberg-hamiltonian .callout-note icon="false"}
+### Definition: Time-dependent Rydberg Hamiltonian
+
+The system evolves under the time-dependent Hamiltonian
+$$
+H(t) = \frac{\Omega(t)}{2}\sum_i \sigma_i^x - \Delta(t)\sum_i n_i + \sum_{i<j} V_{ij}\, n_i n_j
+$$ {#eq-rydberg-hamiltonian}
+where $n_i = |r_i\rangle\langle r_i| = \frac{1}{2}(1 + \sigma_i^z)$ is the Rydberg projector, $\Omega(t)$ is the two-photon Rabi frequency, $\Delta(t)$ is the two-photon detuning, and the van der Waals interaction is
+$$
+V_{ij} = \frac{C_6}{|R_i - R_j|^6}
+$$
+with $C_6$ the dispersion coefficient for $|70S_{1/2}\rangle$. For nearest neighbors at spacing $a = 5.74\,\mu\text{m}$: $V_{i,i+1}/2\pi = 24$ MHz; for next-nearest neighbors: $V_{i,i+2}/2\pi = 0.38$ MHz.
+:::
+
+:::{#def-detuning-sweep .callout-note icon="false"}
+### Definition: Detuning sweep protocol
+
+The detuning $\Delta(t)$ is swept from $\Delta_{\min} < 0$ (paramagnetic phase) through resonance to $\Delta_{\max} > 0$ (ordered phase) using one of two optimized functional forms:
+
+1. **Cubic sweep** (used for smaller system sizes and crystal dynamics):
+$$
+\Delta(t) = a(t - t_0)^3 + b(t - t_0) + c \Big|_{\Delta_{\min} \leq \Delta \leq \Delta_{\max}}
+$$ {#eq-cubic-sweep}
+
+2. **Tangent sweep** (used for the 51-atom datasets; better performance):
+$$
+\Delta(t) = a\tan[b(t - t_0)] + c \Big|_{\Delta_{\min} \leq \Delta \leq \Delta_{\max}}
+$$ {#eq-tangent-sweep}
+
+Both forms are clipped to $[\Delta_{\min}, \Delta_{\max}]$. The parameters $(a, b, c, t_0, \Delta_{\min}, \Delta_{\max})$ are iteratively optimized to minimize the domain-wall number, in the order: offset $c$, then $b$, then $\Delta_{\min/\max}$, finally $a$.
+:::
+
+:::{#def-rabi-pulse .callout-note icon="false"}
+### Definition: Rabi frequency pulse shape
+
+The Rabi frequency $\Omega(t)$ follows a smooth trapezoidal envelope:
+
+1. **Ramp up:** Smooth ramp $0 \to \Omega_{\max}$ while $\Delta$ is deep in the paramagnetic phase ($\Delta \ll 0$).
+2. **Constant hold:** $\Omega(t) = \Omega_{\max} = 2\pi \times 2$ MHz throughout the detuning sweep. The AOM power is maintained at $\geq 75\%$ of resonant power.
+3. **Ramp down:** Smooth ramp $\Omega_{\max} \to 0$ after the sweep completes.
+
+The effective two-photon Rabi frequency arises from a Raman process via the intermediate $|6P_{3/2}\rangle$ state:
+$$
+\Omega = \frac{\Omega_R \Omega_B}{2\delta}
+$$ {#eq-two-photon-rabi}
+where $\Omega_R/2\pi = 36$ MHz (1013 nm), $\Omega_B/2\pi = 60$ MHz (420 nm), and $\delta/2\pi = 560$ MHz is the single-photon detuning.
+:::
+
+:::{#lem-blockade-constraint .callout-note icon="false"}
+### Lemma: Blockade constraint and constrained Hilbert space
+
+When $V_{i,i+1} \gg \Omega$ (blockade regime), the probability of simultaneously exciting adjacent atoms is suppressed as
+$$
+P_{rr} \sim \frac{\Omega^2}{V_{i,i+1}^2} \approx \frac{(2\pi \times 2)^2}{(2\pi \times 24)^2} \approx 0.7\%
+$$
+In this regime, the Hilbert space is effectively constrained to states with no adjacent Rydberg excitations. The dimension of this constrained space on $N$ sites is the Fibonacci number $F_{N+2}$, growing as $\dim \mathcal{H}_{\text{constrained}} \sim \varphi^N$ where $\varphi = (1+\sqrt{5})/2$ is the golden ratio.
+:::
+
+::: {.callout-tip icon="false" collapse="true"}
+### Proof
+
+Consider the transfer matrix for the constraint. Each site $i$ can be in state $|g\rangle$ or $|r\rangle$, subject to the rule that $|r_i r_{i+1}\rangle$ is forbidden. Let $a_N$ be the number of allowed binary strings of length $N$ (with no two consecutive 1s). Any allowed string of length $N$ either:
+
+- ends in $g$: the preceding $N-1$ sites form an allowed string, contributing $a_{N-1}$ configurations, or
+- ends in $r$: site $N-1$ must be $g$, so the first $N-2$ sites form an allowed string, contributing $a_{N-2}$ configurations.
+
+This gives the Fibonacci recurrence $a_N = a_{N-1} + a_{N-2}$ with $a_1 = 2$, $a_2 = 3$. The solution is $a_N = F_{N+2}$, and $F_n \sim \varphi^n/\sqrt{5}$ as $n \to \infty$. $\square$
+:::
+
+:::{#thm-energy-gap .callout-note icon="false"}
+### Theorem: Energy gap and adiabatic condition
+
+**(i) Two-level system.** Consider a single atom with Hamiltonian $H_{\text{2-level}} = \frac{\Omega}{2}\sigma^x - \frac{\Delta}{2}\sigma^z$. The eigenenergies are $E_\pm = \pm\frac{1}{2}\sqrt{\Omega^2 + \Delta^2}$, so the gap is
+$$
+E_{\text{gap}} = \sqrt{\Omega^2 + \Delta^2}
+$$ {#eq-two-level-gap}
+
+At the critical point $\Delta = 0$: the gap equals $|\Omega|$ if $\Omega \neq 0$, and closes to zero if $\Omega = 0$. A closed gap makes any finite-rate sweep fully diabatic by the Landau–Zener formula (@lem-landau-zener).
+
+**(ii) Many-body system.** For the interacting chain near the $\mathbb{Z}_2$ quantum phase transition, the gap closes as $E_{\text{gap}} \sim N^{-z}$ with dynamical exponent $z = 1$ (Ising universality class), even at nonzero $\Omega$. However, $\Omega \neq 0$ maintains a gap at finite $N$, enabling adiabatic preparation for finite chains.
+:::
+
+::: {.callout-tip icon="false" collapse="true"}
+### Proof
+
+**(i)** The Hamiltonian $H = \frac{\Omega}{2}\sigma^x - \frac{\Delta}{2}\sigma^z$ has matrix representation $\begin{pmatrix} -\Delta/2 & \Omega/2 \\ \Omega/2 & \Delta/2 \end{pmatrix}$. The eigenvalues satisfy $\det(H - EI) = 0$:
+$$
+E^2 - \frac{\Delta^2 + \Omega^2}{4} = 0 \implies E_\pm = \pm\frac{1}{2}\sqrt{\Omega^2 + \Delta^2}
+$$
+At $\Delta = 0$: if $\Omega = 0$, the levels are degenerate ($E_+ = E_- = 0$) and a linear sweep through the crossing gives $P_{\text{diabatic}} = 1$ by Landau–Zener. If $\Omega \neq 0$, the gap $|\Omega|$ produces an avoided crossing.
+
+**(ii)** The many-body gap scaling $\sim N^{-z}$ follows from the Ising universality of the blockade-constrained transition; see [@serbyn2021quantum] for review. $\square$
+:::
+
+:::{#thm-smooth-ramp .callout-note icon="false"}
+### Theorem: Necessity of smooth $\Omega(t)$ ramp
+
+A step-function turn-on $\Omega(t) = \Omega_0\,\Theta(t)$ violates the adiabatic condition. For the system to remain in the instantaneous ground state, $\Omega(t)$ must be smoothly varying with bounded $|d\Omega/dt|$.
+:::
+
+::: {.callout-tip icon="false" collapse="true"}
+### Proof
+
+The quantum adiabatic condition requires [@jansen2007bounds]
+$$
+\frac{|\langle E_1(t)|\dot{H}(t)|E_0(t)\rangle|}{[E_1(t) - E_0(t)]^2} \ll 1
+$$ {#eq-adiabatic-condition}
+throughout the evolution, where $|E_0(t)\rangle$, $|E_1(t)\rangle$ are the instantaneous ground and first excited states.
+
+Since $H(t)$ depends on $\Omega(t)$, the numerator contains $\dot{\Omega}(t)$. For a step function $\Omega(t) = \Omega_0\,\Theta(t)$, we have $\dot{\Omega} = \Omega_0\,\delta(t)$, and the adiabatic ratio diverges at $t = 0$. Physically, the instantaneous switch injects energy across all frequencies, coupling the ground state to excited states and destroying adiabatic following.
+
+A rigorous bound on the adiabatic error is [@jansen2007bounds]:
+$$
+\|U(t)|E_0(0)\rangle - e^{i\phi(t)}|E_0(t)\rangle\| \leq C\,\frac{\max_s \|\dot{H}(s)\|}{\min_s [E_1(s) - E_0(s)]^2}
+$$
+which requires $\dot{H}$ (and hence $\dot{\Omega}$) to be bounded. $\square$
+:::
+
+:::{#lem-landau-zener .callout-note icon="false"}
+### Lemma: Landau–Zener transition probability
+
+For a linear detuning sweep $\Delta(t) = vt$ through an avoided crossing with gap $|\Omega|$, the probability of remaining in the adiabatic (ground) state is
+$$
+P_{\text{adiabatic}} = 1 - \exp\!\left(-\frac{\pi\Omega^2}{2|v|}\right)
+$$ {#eq-landau-zener}
+where $\Omega$ and $v$ are in angular frequency units. Adiabaticity requires $|v| \ll \pi\Omega^2/2$, i.e., the sweep must be slow compared to the squared gap. For the two-level system at the Bernien parameters ($\Omega/2\pi = 2$ MHz), this is readily satisfied. For the many-body system, the gap closes as $N^{-z}$ near the critical point, making the condition exponentially harder to satisfy and motivating the optimized nonlinear sweeps of @def-detuning-sweep.
+:::
+
+::: {.callout-tip icon="false" collapse="true"}
+### Proof
+
+See [@landau1932theorie; @zener1932non] for the original derivations. The result follows from exact solution of the time-dependent Schrödinger equation for the two-level Hamiltonian $H = \frac{\Omega}{2}\sigma^x - \frac{vt}{2}\sigma^z$ via parabolic cylinder functions. $\square$
+:::
+
+
+## Dynamics of quench and scar oscillations
+
+:::{#def-quench-protocol .callout-note icon="false"}
+### Definition: Quench protocol
+
+Starting from the adiabatically prepared $|\mathbb{Z}_2\rangle$ state (at large $\Delta > 0$), the quench protocol consists of:
+
+1. Suddenly set $\Delta = 0$ at $t = 0$.
+2. Hold $\Omega = 2\pi \times 2$ MHz constant.
+3. Evolve for time $t \in [0,\, 1.5\,\mu\text{s}]$.
+4. Measure the domain-wall density via fluorescence imaging (~1,000 shots per time point).
+
+This is a quantum quench from the ordered phase into the disordered/critical regime of @eq-rydberg-hamiltonian.
+:::
+
+:::{#lem-z2-ground-state .callout-note icon="false"}
+### Lemma: $|\mathbb{Z}_2\rangle$ as ground state in the ordered phase
+
+The Néel state $|\mathbb{Z}_2\rangle = |rgrg\cdots\rangle$ is the ground state of @eq-rydberg-hamiltonian when $\Delta/\Omega \gg 1$ in the blockade regime. More precisely, it minimizes the classical energy $E = -\Delta \sum_i n_i + \sum_{i<j}V_{ij}n_i n_j$ subject to the constraint that no adjacent atoms are excited.
+:::
+
+::: {.callout-tip icon="false" collapse="true"}
+### Proof
+
+Under blockade ($V_{i,i+1} \gg \Omega, \Delta$), adjacent excitations are forbidden. For the remaining constrained states, the energy is dominated by $-\Delta \sum_i n_i$ when $\Delta > 0$ is large, favoring maximal Rydberg occupation. The densest packing with no adjacent excitations on a 1D chain is $|rgrg\cdots\rangle$ (every other site excited), achieving Rydberg fraction $1/2$. This is the unique densest packing (up to the translation $|grgr\cdots\rangle$), hence the ground state for $\Delta \gg V_{i,i+2}$. The condition $\Delta \gg V_{i,i+2}$ ensures that the NNN repulsion does not destabilize the $\mathbb{Z}_2$ order. $\square$
+:::
+
+
+:::{#thm-collective-oscillation .callout-note icon="false"}
+### Theorem: Domain-wall oscillation frequency
+
+After quenching $|\mathbb{Z}_2\rangle$ under the constrained (PXP) Hamiltonian $H_{\text{PXP}} = \frac{\Omega}{2}\sum_i P_{i-1}\sigma^x_i P_{i+1}$, the domain-wall density oscillates at frequency
+$$
+\omega_{\text{dimer}} = \frac{\Omega}{\sqrt{2}}
+$$ {#eq-dimer-frequency}
+in the dimer (product-state variational) approximation. The experimentally measured frequency is $\omega_{\text{exp}} \approx \Omega/1.38$, a $\sim 2.5\%$ discrepancy from the dimer prediction ($1/\sqrt{2} \approx 1/1.414$). The remaining deviation is attributed to:
+
+- NNN interactions ($V_{i,i+2}/2\pi = 0.38$ MHz), which renormalize the effective PXP couplings;
+- Finite-size effects for $N = 51$;
+- Entanglement growth beyond the product-state ansatz.
+:::
+
+::: {.callout-tip icon="false" collapse="true"}
+### Proof (sketch)
+
+**Dimer approximation.** The dimer model uses a product-state variational ansatz over pairs of adjacent sites, each oscillating between $|rg\rangle$ and $|gr\rangle$. The constrained PXP dynamics within each dimer gives an effective oscillation frequency of $\Omega/\sqrt{2}$, which is exact for non-interacting dimers; inter-dimer correlations are neglected.
+
+**Beyond the dimer model.** The time-dependent variational principle (TDVP) on the MPS manifold with bond dimension 2 predicts frequency $\sim\Omega/1.51$ [@bernien2017probing]. Exact diagonalization (up to 25 sites) gives the observed $\Omega/1.38$, consistent with the forward-scattering approximation (FSA) analysis of the scar tower [@turner2018weak]. $\square$
+:::
+
+
+:::{#thm-constrained-thermalization .callout-note icon="false"}
+### Theorem: Weak ergodicity breaking from quantum many-body scars
+
+The PXP Hamiltonian is non-integrable — its level statistics follow GOE (Gaussian Orthogonal Ensemble) random matrix theory — yet the Néel state $|\mathbb{Z}_2\rangle$ exhibits anomalously slow thermalization. This is explained by a **scar tower**: a set of $O(N)$ special eigenstates $\{|\mathcal{S}_n\rangle\}$ with the following properties:
+
+1. **Quasi-equal spacing:** $E_n - E_{n-1} \approx \omega_s$ with $\omega_s \approx 1.33\,J$, where $J = \Omega/2$ is the PXP coupling strength (the coefficient of $\sigma^x$ in @eq-rydberg-hamiltonian).
+2. **Anomalous entanglement:** $S_{\text{vN}} \sim \log N$ (sub-volume-law), in contrast to typical eigenstates at the same energy density which satisfy $S \sim N$ (volume-law).
+3. **High overlap with $|\mathbb{Z}_2\rangle$:** The Néel state has $O(1)$ overlap with each scar eigenstate.
+
+The combination produces coherent fidelity revivals with period
+$$
+T = \frac{2\pi}{\omega_s} \approx \frac{4.72}{J} = \frac{9.44}{\Omega}
+$$ {#eq-revival-period}
+For $\Omega/2\pi = 2$ MHz, this gives $T_{\text{PXP}} \approx 0.75\,\mu\text{s}$, compared to the experimentally observed $T_{\text{exp}} \approx 0.69\,\mu\text{s}$. The $\sim 8\%$ discrepancy arises from NNN interactions and finite-size corrections.
+:::
+
+::: {.callout-tip icon="false" collapse="true"}
+### Proof (sketch)
+
+**Forward-scattering approximation (FSA).** Construct the Krylov subspace $\mathcal{K} = \text{span}\{|\mathbb{Z}_2\rangle, H|\mathbb{Z}_2\rangle, H^2|\mathbb{Z}_2\rangle, \ldots\}$ by retaining only forward-scattering terms (domain-wall creation) and discarding backscattering. This produces an $\sim N/2$-dimensional subspace in which $H_{\text{PXP}}$ acts as a tridiagonal matrix with approximately uniform hopping. The eigenstates of this tridiagonal matrix are the scar states, with quasi-equal spacing $\omega_s$ emerging from the near-uniformity of the hopping amplitudes.
+
+**ETH violation.** Generic eigenstates of PXP satisfy the eigenstate thermalization hypothesis (ETH): their reduced density matrices approximate thermal states. The scar states violate all three aspects of ETH: (i) their expectation values of local observables differ from the microcanonical average; (ii) their off-diagonal matrix elements are anomalously large; (iii) their equal spacing produces persistent oscillations rather than dephasing. See [@turner2018weak; @serbyn2021quantum] for detailed analysis.
+
+**Experimental signature.** After the quench, the state evolves as $|\psi(t)\rangle = \sum_\alpha c_\alpha e^{-iE_\alpha t}|E_\alpha\rangle$. The large overlap of $|\mathbb{Z}_2\rangle$ with the equally-spaced scar tower means the fidelity $|\langle\mathbb{Z}_2|\psi(t)\rangle|^2$ exhibits periodic revivals, while observables like domain-wall density show oscillations at the same frequency. Generic initial states thermalize normally because they have negligible overlap with the scar manifold. $\square$
+:::
