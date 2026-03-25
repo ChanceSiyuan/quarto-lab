@@ -1,0 +1,278 @@
+---
+categories:
+- reading
+date: '2026-03-25'
+lang: en
+title: "Non-Unital Noise and Simulation Barriers"
+bibliography: refs.bib
+description: "Scaling-shifting decomposition for non-unital noise in Pauli path methods, amplitude damping toy model, and no-go theorem for Z-projection decomposition of non-unital channels."
+---
+
+# Summary and Key Questions
+
+Non-unital noise channels, such as amplitude damping, present fundamental challenges for Pauli path and percolation simulation frameworks alike. Unlike depolarizing or dephasing noise --- which simply suppress Pauli coefficients during Heisenberg-picture back-propagation --- amplitude damping introduces an asymmetric *scaling-and-shifting* structure: the $Z$-component branches into a mixture of $Z$ and $\mathbb{I}$, while $X, Y$ are merely rescaled. This branching generates exponentially many Pauli paths, yet the 1-norm normalization of the branching coefficients (as opposed to the 2-norm normalization of $T$-gate branching) permits efficient *sampling* even when *truncation* provably fails.
+
+On the percolation side, a no-go theorem shows that amplitude damping cannot be decomposed into Pauli noise plus a $Z$-projection channel, blocking the graph-state reduction strategy entirely. These results connect to the *quantum refrigerator* phenomenon [@ben2013quantum]: non-unital noise can sustain computation for exponentially many time steps by effectively "cooling" the system, a stark contrast to the monotonic degradation under unital noise. Recent work has extended Pauli backpropagation to non-unital noise for average-case random circuits [@angrisani2025arbitrary; @martinez2025efficient], and geometrically local circuits under non-unital noise have been shown to support fault-tolerant computation with polylogarithmic overhead [@shtanko2025complexity].
+
+- How does non-unital noise modify Pauli path back-propagation compared to unital noise?
+- What is the scaling-shifting decomposition, and when does it yield efficient simulation?
+- Why does the no-go theorem for amplitude damping block the percolation approach?
+- What is the connection between non-unital noise and the quantum refrigerator result?
+- When does the gate sampling algorithm succeed despite exponential branching?
+
+# Coherent vs Incoherent Noise Decomposition
+
+Any single-qubit noise channel admits a decomposition into coherent and incoherent parts [@king2001minimal; @ruskai2002analysis]:
+$$
+\mathcal{N}(\rho) = U \Lambda(V\rho V^\dagger) U^\dagger,
+$$
+where $U, V$ are unitary and the incoherent part $\Lambda$ acts on the Bloch sphere as
+$$
+\Lambda\left(\frac{1}{2}[\mathbb{I} + \mathbf{w} \cdot \vec{\sigma}]\right) = \frac{1}{2}[\mathbb{I} + (\mathbf{t} + \Gamma \mathbf{w}) \cdot \vec{\sigma}],
+$$ {#eq-incoherent}
+with $\Gamma = \text{diag}(\Gamma_1, \Gamma_2, \Gamma_3)$ and translation vector $\mathbf{t} = (t_1, t_2, t_3)$.
+
+Coherent errors ($U, V$ non-Clifford) can generate high-magic resource states for universal quantum computing [@niroula2024phase; @turkeshi2024coherent]. To isolate the role of incoherent noise, we restrict $U, V$ to Clifford gates, whose effect can be absorbed into the Clifford layers of the circuit. The relevant physics is then entirely captured by $\Lambda$.
+
+::: {#def-unital-nonunital .callout-note icon="false"}
+## Definition: Unital vs Non-Unital Channels
+A channel $\Lambda$ of the form @eq-incoherent is:
+
+- **Unital** ($\mathbf{t} = 0$): reduces to Pauli noise. Back-propagation simply scales each non-identity Pauli operator by $|\Gamma_i| \leq 1$.
+- **Non-unital** ($\mathbf{t} \neq 0$): the translation vector introduces asymmetric shifts. NISQ circuits with such noise can compute for an exponential number of time steps [@ben2013quantum].
+:::
+
+# Scaling-Shifting Decomposition
+
+The central result for extending Pauli path methods to non-unital noise is a decomposition of the adjoint channel $\Lambda^\dagger$ into a scaling part $\mathbb{S}$ and a shifting part $\mathbb{T}$.
+
+::: {#thm-non-unital-backprop .callout-important icon="false"}
+## Theorem: Non-Unital Back-Propagation Decomposition
+The adjoint channel $\Lambda^\dagger(\cdot)$ acts on Pauli operators $\{\sigma_1, \sigma_2, \sigma_3\}$ as a scaling part $\mathbb{S}$ followed by a shifting part $\mathbb{T}$:
+$$
+\sigma_i \xrightarrow{\mathbb{S}} s_i \sigma_i \xrightarrow{\mathbb{T}} s_i \cdot \left[(1-p_i)(\text{sign}\,\Gamma_i \cdot \sigma_i) + p_i(\text{sign}\,t_i \cdot \mathbb{I})\right] = \Lambda^\dagger(\sigma_i),
+$$
+where $s_i = |\Gamma_i| + |t_i| \leq 1$ and $p_i = |t_i|/(|\Gamma_i| + |t_i|) \in [0,1]$.
+
+*Source: Submission.tex, Theorem 1.*
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+The adjoint is defined by $\text{tr}[\Lambda(\rho)\hat{O}] = \text{tr}[\rho \Lambda^\dagger(\hat{O})]$. Decompose $\rho = \frac{1}{2}(\mathbb{I} + \sum_i \omega_i \sigma_i)$ and $\hat{O} = a_0 \mathbb{I} + \sum_i a_i \sigma_i$, $\Lambda^\dagger(\hat{O}) = b_0 \mathbb{I} + \sum_i b_i \sigma_i$. Using the incoherent form of $\Lambda$:
+$$
+\frac{1}{2}a_0 + \sum_{i=1}^3 a_i \frac{\Gamma_i \omega_i + t_i}{2} = \frac{1}{2}b_0 + \sum_{i=1}^3 b_i \frac{\omega_i}{2}.
+$$
+Since this holds for all $\omega_i$, matching coefficients gives $b_0 = a_0 + \sum_i a_i t_i$ and $b_i = \Gamma_i a_i$. Setting $a_0 = 0$, $\mathbf{a} = \mathbf{e}_i$:
+$$
+\Lambda^\dagger(\sigma_i) = t_i \mathbb{I} + \Gamma_i \sigma_i = (|\Gamma_i| + |t_i|) \left[\frac{|\Gamma_i|}{|\Gamma_i| + |t_i|}\text{sign}(\Gamma_i)\sigma_i + \frac{|t_i|}{|\Gamma_i| + |t_i|}\text{sign}(t_i)\mathbb{I}\right].
+$$
+
+**Bound $s_i \leq 1$:** Suppose $|\Gamma_i| + |t_i| > 1$. Then either $|\Gamma_i + t_i| > 1$ or $|\Gamma_i - t_i| > 1$. In each case, the input state $\rho = \frac{1}{2}(\mathbb{I} \pm \sigma_i)$ produces an output with Bloch vector component exceeding 1, contradicting complete positivity of $\Lambda$. $\square$
+
+*Source: Submission.tex, Appendix A.*
+:::
+
+The decomposition reveals the key structural difference from unital noise: the **shifting part** $\mathbb{T}$ probabilistically replaces a Pauli operator $\sigma_i$ with the identity $\mathbb{I}$. When $\mathbf{t} = 0$ (unital case), $p_i = 0$ and the channel reduces to pure scaling. When $\mathbf{t} \neq 0$, each back-propagation step introduces a branching event analogous to a non-Clifford gate.
+
+## OSE Under Non-Unital Noise
+
+The operator stabilizer entropy (OSE) provides a resource-theoretic measure of simulation complexity in the Heisenberg picture (see [Operator Entanglement and Resource Theory](operator_resource.qmd) for details). A crucial observation is that non-unital noise channels behave differently with respect to the 0-OSE and 1/2-OSE.
+
+::: {#lem-ose-nonunital .callout-important icon="false"}
+## Lemma: OSE Behavior Under Non-Unital Noise
+Consider a single-qubit channel $\mathcal{N}(\rho) = U\Lambda(V\rho V^\dagger)U^\dagger$ with $U, V$ Clifford and incoherent part $\Lambda$ as in @eq-incoherent.
+
+1. If $\mathbf{t} = 0$ (unital): $\mathcal{N}$ does not increase 0-OSE or 1/2-OSE for any input operator.
+2. If $\mathbf{t} \neq 0$ (non-unital): $\mathcal{N}$ does not increase 1/2-OSE, but *can increase 0-OSE*.
+
+*Source: Submission.tex, Appendix A.*
+:::
+
+::: {.callout-note collapse="true"}
+## Proof sketch (Click to expand)
+Clifford operations preserve both 0-OSE and 1/2-OSE [@dowling2024magic]. For unital noise ($\mathbf{t} = 0$), the channel is Pauli noise $\Lambda(\rho) = \sum_j p_j \sigma_j \rho \sigma_j$, whose adjoint acts as pure suppression $\Lambda^\dagger(\sigma_i) = (1 - 2p_j - 2p_k)\sigma_i$. This does not increase the number of nonzero Pauli coefficients (0-OSE) nor their 1-norm (1/2-OSE).
+
+For non-unital noise, 1/2-OSE non-increase follows from:
+$$
+\exp\!\left[\tfrac{1}{2}\mathcal{M}^{(1/2)}(\Lambda^\dagger[O])\right] = \frac{|a_0 + \sum_i a_i t_i| + \sum_i |a_i \Gamma_i|}{|a_0| + \sum_i |a_i|} \leq \frac{|a_0| + \sum_i |a_i|(|\Gamma_i| + |t_i|)}{|a_0| + \sum_i |a_i|} \leq 1,
+$$
+using $|\Gamma_i| + |t_i| \leq 1$ from the theorem above. However, the shifting $Z \to \mathbb{I}$ creates new nonzero Pauli terms, increasing the 0-OSE (the count of nonzero coefficients). $\square$
+:::
+
+The 0-OSE increase explains why truncation fails: non-unital noise creates exponentially many Pauli paths (exponential 0-OSE growth), even though the total 1-norm (1/2-OSE) is controlled. The gate sampling algorithm exploits precisely this 1-norm control.
+
+# Amplitude Damping: Worked Example
+
+The amplitude damping channel with Kraus operators $K_0 = \text{diag}(1, \sqrt{1-p})$, $K_1 = \begin{pmatrix}0 & \sqrt{p} \\ 0 & 0\end{pmatrix}$ has incoherent parameters $\mathbf{t} = (0, 0, p)$ and $\Gamma = \text{diag}(\sqrt{1-p}, \sqrt{1-p}, 1-p)$. Applying the scaling-shifting decomposition:
+
+$$
+\Lambda^\dagger[X] = \sqrt{1-p}\, X, \quad \Lambda^\dagger[Y] = \sqrt{1-p}\, Y, \quad \Lambda^\dagger[Z] = (1-p)Z + p\,\mathbb{I}.
+$$ {#eq-apd-backprop}
+
+The $X, Y$ components are simply rescaled (like Pauli noise with parameter $\sqrt{1-p}$), but the $Z$ component undergoes a **random branching**: with probability $p$, it shifts to $\mathbb{I}$, and with probability $1-p$, it remains $Z$.
+
+::: {.callout-note icon="false"}
+## Key Observation: 1-Norm vs 2-Norm Normalization
+The branching coefficients for amplitude damping satisfy $|1-p| + |p| = 1$ (normalized under the **1-norm**), in contrast to $T$-gate branching where coefficients satisfy $\sum_i |c_i|^2 = 1$ (2-norm normalization).
+
+This distinction is critical: 1-norm normalization means the branching can be interpreted as a classical random process without variance explosion, enabling efficient Monte Carlo sampling. The $T$-gate's 2-norm normalization requires importance weighting $c \to c/\sqrt{q}$ that inflates variance.
+:::
+
+# Toy Model: Clifford + Amplitude Damping {#sec-toy-model}
+
+Clifford circuits are classically tractable by the Gottesman--Knill theorem. Under Pauli noise, the back-propagation of Pauli operators through Clifford gates preserves the number of Pauli strings, so exact computation of Pauli averages remains efficient. However, under amplitude damping noise, the $Z$-component branching from @eq-apd-backprop generates exponentially many Pauli strings, making exact back-propagation intractable.
+
+This setting provides a sharp separation between truncation and sampling methods.
+
+## Sampling Algorithm
+
+The gate sampling algorithm for Clifford circuits with amplitude damping proceeds as follows:
+
+1. Initialize $P \gets P^{(0)}$ (the target Pauli observable).
+2. Back-propagate through the circuit: at each Clifford gate, update $P \gets \Lambda_i^\dagger(P)$ deterministically.
+3. At each amplitude damping channel with parameter $p_i$, for each qubit $t$:
+   - If $P_t \in \{X, Y\}$: rescale the coefficient by $\sqrt{1-p_i}$.
+   - If $P_t = Z$: with probability $p_i$, replace $P_t \gets I$.
+4. Output $A = \text{tr}(P\,|0\rangle\langle 0|^{\otimes n})$.
+
+The expectation $\mathbb{E}[A]$ equals the Pauli average, and the variance is bounded by 1.
+
+## Truncation Lower Bound
+
+::: {#thm-toy-model .callout-important icon="false"}
+## Theorem: Truncation Lower Bound for Clifford + Amplitude Damping
+Consider a fixed Clifford NISQ circuit with $|0\rangle^{\otimes n}$ inputs, Clifford gate layers, and amplitude damping noise with parameter $p < 1/2$. To estimate the Pauli average within additive error $\varepsilon$ for all circuits of this kind, the complexity of Pauli path truncation must exhibit sub-exponential growth:
+$$
+\Omega\!\left(n^{-1} e^{H(p) \cdot n}\right),
+$$
+where $H(p) = -p\ln p - (1-p)\ln(1-p)$ is the binary entropy.
+
+However, the gate sampling algorithm estimates the Pauli average within constant error in polynomial time (variance $\leq 1$).
+
+*Source: Submission.tex, Theorem 2 and Appendix D.*
+:::
+
+::: {.callout-note collapse="true"}
+## Proof sketch (Click to expand)
+**Truncation lower bound.** Back-propagating $Z^{\otimes n}$ through $n$ independent amplitude damping channels yields
+$$
+O = \sum_{\mathbf{s} \in \{0,1\}^n} p^{n - |\mathbf{s}|}(1-p)^{|\mathbf{s}|} Z^{\otimes \mathbf{s}},
+$$
+where $Z^{\otimes \mathbf{s}} = \bigotimes_i Z^{s_i}$. The suppression coefficient depends only on the Hamming weight $|\mathbf{s}|$, which follows a binomial distribution $\text{Bin}(n, 1-p)$.
+
+Any truncation rule that removes a fixed set of Pauli strings must keep all strings with $|\mathbf{s}| \leq l$ for $l \leq (1-p)n$ to control the error (since the binomial concentrates around $(1-p)n$). The number of retained strings is at least
+$$
+\text{num} \geq \binom{n}{(1-p)n} = \binom{n}{pn} \geq \frac{1}{2\pi n \sqrt{p(1-p)}} e^{H(p) \cdot n},
+$$
+by Stirling's approximation.
+
+**Sampling upper bound.** Each back-propagation step maintains $\sum_i p_i = 1$ and $|\alpha_i| \leq 1$, where $\alpha_i$ is the accumulated rescaling coefficient and $p_i$ the path probability. At termination, $\text{Var} \leq \sum_i p_i |\alpha_i|^2 \leq 1$. $\square$
+:::
+
+This theorem demonstrates that non-unital noise enhances the computational power of Clifford circuits (making truncation exponentially hard), but the complexity is ultimately *classical* in nature: it stems from the exponential branching of $Z$-operators, not from quantum entanglement or magic. The gate sampling algorithm resolves this by treating the branching probabilistically.
+
+## Non-Unital Noise on Clifford+T Circuits
+
+The separation extends to circuits with both non-Clifford gates and non-unital noise:
+
+::: {#thm-sparse-ct-apd .callout-important icon="false"}
+## Theorem: Amplitude Damping on Sparse Clifford+T Circuits
+Given a 2-dimensional, $(Q, k)$-sparse, localized Clifford+T circuit $C$ with depolarizing noise layers $\Lambda(\rho) = (1-p)\rho + (p/2)\mathbb{I}$, if $2^Q(1-p) < 1$, then the variance of the gate sampling algorithm satisfies $\text{Var} \leq \text{poly}(n)$. Furthermore, **adding amplitude damping noise to this circuit never increases the simulation complexity**.
+
+*Source: Submission.tex, Theorem 3.*
+:::
+
+This is because the scaling factors $s_i$ for amplitude damping satisfy $s_i \leq 1$, so the additional non-unital noise only *reduces* the total 1-norm of the back-propagated operator. The branching increases the 0-OSE but not the 1/2-OSE that governs the gate sampling variance.
+
+# No-Go Theorem for Z-Projection Decomposition {#sec-no-go}
+
+The [percolation method](percolation.qmd) for simulating noisy circuits relies on decomposing single-qubit noise into a convex combination involving the $Z$-projection channel $\Lambda_z(\rho) = \frac{1}{2}\rho + \frac{1}{2}Z\rho Z$. For Pauli noise, this decomposition always exists (see [Percolation Methods](percolation.qmd)):
+
+$$
+\mathcal{N}(\rho) = (1-2p)\mathcal{N}^{(1)}(\rho) + 2p\,\mathcal{N}^{(2)} \circ \Lambda_z(\rho),
+$$
+
+where $p = p_Z + \min(p_X, p_Y)$ and $\mathcal{N}^{(1)}, \mathcal{N}^{(2)}$ are residual Pauli channels [@rajakumar2025polynomial]. The $Z$-projection decoheres $|+\rangle$ into a classical mixture $\{|0\rangle\langle 0|, |1\rangle\langle 1|\}$ that does not entangle with other qubits under subsequent CZ gates, enabling the percolation analysis.
+
+For non-unital channels, this decomposition is provably impossible:
+
+::: {#lem-no-go .callout-important icon="false"}
+## Lemma: No-Go for Amplitude Damping Decomposition
+It is impossible to decompose the amplitude damping channel as
+$$
+\mathcal{N}(\rho) = (1-p)\mathcal{N}^{(1)}(\rho) + p \, \mathcal{N}^{(3)} \circ \mathcal{N}^{(2)} \circ \Lambda_z(\rho),
+$$
+where $\mathcal{N}^{(1)}, \mathcal{N}^{(2)}$ are Pauli noise channels and $\mathcal{N}^{(3)}$ is non-unital noise with $Z$-shift only.
+
+*Source: Folder2, name.tex, Lemma 2.*
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+Write the Pauli transfer matrix of amplitude damping with $r = 1-p$:
+$$
+\begin{pmatrix} 1 & 0 & 0 & 0 \\ 0 & \sqrt{r} & 0 & 0 \\ 0 & 0 & \sqrt{r} & 0 \\ 1-r & 0 & 0 & r \end{pmatrix} = p \begin{pmatrix} 1 & 0 & 0 & 0 \\ 0 & \sqrt{r}/p & 0 & 0 \\ 0 & 0 & \sqrt{r}/p & 0 \\ 0 & 0 & 0 & \lambda \end{pmatrix} + (1-p) \begin{pmatrix} 1 & 0 & 0 & 0 \\ 0 & 0 & 0 & 0 \\ 0 & 0 & 0 & 0 \\ q & 0 & 0 & m \end{pmatrix}.
+$$
+The second matrix has vanishing entries in columns 2 and 3 because $\Lambda_z$ projects out $X, Y$ components, and subsequent Pauli noise and $Z$-shift preserve this structure.
+
+Matching entries: $1-r = (1-p)q$ and $r = p\lambda + (1-p)m$. For the first matrix to represent a valid Pauli channel, we need $p > \sqrt{r}$ (so that $\sqrt{r}/p < 1$). But $q = (1-r)/(1-p) \leq 1$ implies $p \leq r$. For $0 < r < 1$, the conditions $p > \sqrt{r}$ and $p \leq r$ are incompatible since $\sqrt{r} > r$ for $r \in (0,1)$. $\square$
+:::
+
+**Implication.** The no-go theorem means the percolation method --- which reduces the simulation to non-adaptive measurements on graph states via $Z$-projection decomposition --- **cannot be extended to amplitude damping** or other non-unital noise channels. This is a fundamental barrier, not merely a technical limitation.
+
+## Negative Quasi-Probabilities in Graph-State Sampling
+
+Although the $Z$-projection decomposition fails, a partial workaround exists within the graph-state framework. For amplitude damping on a stabilizer state $|S\rangle$, the adjoint $\Lambda^\dagger(|S\rangle\langle S|)$ can be expressed as a *signed* mixture of stabilizer states:
+$$
+\Lambda^\dagger(|S\rangle\langle S|) = \sqrt{1-p}\, S + \frac{\sqrt{1-p} - (1-p)}{2}\left(-\frac{\mathbb{I}+\sigma_3}{2}\right)\otimes R_3^+ + \cdots
+$$
+where $R_3^\pm$ are post-measurement stabilizer states on the remaining qubits, and the "removed" qubit carries a **negative quasi-probability** state $-(\mathbb{I} \pm \sigma_3)/2$. These negative-state qubits remain disentangled under subsequent CZ operations, so they can be tracked classically, but the sign structure introduces a sampling overhead analogous to quasiprobability methods [@seddon2021quantifying].
+
+*Source: Folder2, draft.tex, Theorem 2.*
+
+# Quantum Refrigerator Connection {#sec-refrigerator}
+
+The enhanced computational power of non-unital noise connects to the **quantum refrigerator** result of Ben-Or, Gottesman, and Hassidim [@ben2013quantum]. Their classification of noise channels identifies three regimes:
+
+| Noise class | Example | Computation time |
+|------------|---------|-----------------|
+| Class 1 | Depolarizing | $O(\log n)$ steps |
+| Class 2 | Dephasing | $\text{poly}(n)$ steps |
+| Class 3 | Amplitude damping | $\exp(n)$ steps |
+
+The key mechanism is that non-unital channels can act as a "refrigerator," using the noise itself to cool down qubits and produce fresh ancillas. The asymmetry of amplitude damping --- which preferentially maps $|1\rangle \to |0\rangle$ --- drives the system toward a pure state, maintaining coherence rather than destroying it.
+
+From the simulation perspective:
+
+- **Unital noise** (depolarizing, dephasing): always suppresses magic and coherence, enabling efficient simulation above a noise threshold. The 1-norm of the back-propagated operator decays exponentially with circuit depth.
+- **Non-unital noise** (amplitude damping): can preserve or enhance computational power through the translation component $\mathbf{t}$. The 1-norm is still controlled ($s_i \leq 1$), but the exponential branching of paths creates classical hardness that persists at high noise rates.
+
+The scaling-shifting decomposition clarifies where the difficulty concentrates: the $X, Y$ components are suppressed (by $\sqrt{1-p}$ for amplitude damping), but the $Z \to \mathbb{I}$ branching creates exponentially many paths. The gate sampling algorithm resolves this by treating the branching probabilistically, while the truncation approach fails because the flat spectrum of branched paths prevents efficient cutoff.
+
+Recent work by Shtanko and Sharma [@shtanko2025complexity] strengthens the quantum refrigerator picture: geometrically local circuits under non-unital noise can correct errors *without* mid-circuit measurements, extending fault-tolerant computation to arbitrary depth with only polylogarithmic overhead.
+
+# Recent Developments
+
+Two recent results significantly advance the understanding of non-unital noise in simulation:
+
+**Pauli backpropagation for non-unital noise.** Martinez et al. [@martinez2025efficient] extended the Pauli backpropagation framework to non-unital noise for *parametrized* quantum circuits, proving polynomial-time simulation under conditions matching the unital case. Angrisani et al. [@angrisani2025arbitrary] independently showed that Pauli propagation with tailored truncation achieves inversely polynomial error for *arbitrary* local noise (including non-unital) on average-case random circuits.
+
+These results partially close the gap identified in our toy model: while worst-case Clifford + amplitude damping circuits require exponential truncation complexity (@thm-toy-model), average-case random circuits with non-unital noise are efficiently simulable. The distinction between worst-case and average-case complexity under non-unital noise remains an active area.
+
+**Complexity of non-unital circuits.** Shtanko and Sharma [@shtanko2025complexity] proved that geometrically local circuits with non-unital noise can support fault-tolerant computation to *any* depth with polylogarithmic overhead, without requiring fresh ancillas or mid-circuit measurements. This rigorously establishes that non-unital noise does not destroy quantum computational advantage in the same way as depolarizing noise, with implications for the noise threshold question in [Open Problems](open_problems.qmd).
+
+# Summary of Simulation Landscape by Noise Type
+
+| Method | Unital noise | Non-unital noise |
+|--------|-------------|-----------------|
+| Pauli truncation | Efficient above threshold | Exponential lower bound (worst case) |
+| Gate sampling | Efficient (bounded 1/2-OSE) | Efficient (1/2-OSE still controlled) |
+| Percolation / $Z$-projection | Applicable | **Blocked** (no-go theorem) |
+| Average-case Pauli propagation | Efficient | Efficient [@martinez2025efficient; @angrisani2025arbitrary] |
+
+The gate sampling algorithm is the only method from our framework that handles non-unital noise uniformly. Its efficiency relies on the 1/2-OSE non-increase property (@lem-ose-nonunital), which holds for *all* incoherent noise regardless of unitality. The fundamental open question is whether there exists a polynomial-time algorithm for *worst-case* non-unital circuits beyond the Clifford+noise setting; see [Open Problems](open_problems.qmd) for further discussion.
+
+---
+
+[← Percolation Methods](percolation.qmd) | [Back to Index](index.qmd) | [Next: Operator Entanglement →](operator_resource.qmd)
