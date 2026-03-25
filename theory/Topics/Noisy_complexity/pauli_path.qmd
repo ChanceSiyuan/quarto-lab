@@ -1,0 +1,395 @@
+---
+categories:
+- reading
+date: '2026-03-25'
+lang: en
+title: "Pauli Spectrum and Path Simulation Methods"
+bibliography: refs.bib
+description: "Heisenberg-picture Pauli path framework, spectral analysis of Pauli coefficients, and three simulation algorithms with complexity governed by operator stabilizer entropy."
+---
+
+# Summary and Key Questions
+
+The Pauli path method simulates noisy quantum circuits by expanding Heisenberg-evolved observables in the Pauli basis and exploiting noise-induced decay of expansion coefficients. The Liouville (vectorization) representation converts gate and noise operations into matrix multiplications on Pauli-indexed vectors, enabling systematic analysis of the Pauli spectrum. This spectrum --- the sorted sequence of squared Pauli coefficients --- determines whether truncation or sampling algorithms can achieve polynomial-time simulation. A phase transition diagnostic $C(\alpha)$ sharply distinguishes efficient and hard regimes, providing a numerical tool for assessing the classical simulability of specific circuits.
+
+The central insight is that unital noise channels preserve the number of Pauli operators (0-norm) while exponentially suppressing their magnitudes, making them "free operations" for Pauli path methods. Non-Clifford gates, conversely, increase the 0-norm and generate magic, creating exponentially many Pauli paths. The competition between noise suppression and magic generation governs the complexity of all three algorithms discussed here. Recent work extends these ideas beyond average-case settings [@gonzalez2024pauli] and to non-unital noise models [@martinez2025efficient; @angrisani2025arbitrary].
+
+- When does the Pauli spectrum decay fast enough for polynomial-time simulation? What is the necessary spectral condition for an FPTAS?
+- How do gate sampling, truncated sampling, and direct truncation algorithms compare in complexity? When does each approach dominate?
+- What role does operator stabilizer entropy play as a unified complexity measure across these algorithms?
+- Can the spectral analysis be reformulated in terms of entropy or Fourier-analytic quantities, unifying truncation and sampling perspectives?
+
+# Heisenberg-Picture Framework
+
+## Liouville Matrix Representation
+
+Consider the simulation of the average of a Pauli operator $O$ with input state $\rho_0$ through a noisy quantum circuit $\mathcal{C}$. Under the Heisenberg picture, the observable evolves as $\mathcal{C}^\dagger(O)$, and the expectation value is
+$$
+\langle O \rangle = \text{tr}(\mathcal{C}[\rho_0] \, O) = \text{tr}(\rho_0 \, \mathcal{C}^\dagger[O]).
+$$
+
+::: {#def-vectorization .callout-note icon="false"}
+## Definition: Vectorization
+Given an $n$-qubit operator $O = \sum_{ij} o_{ij} |i\rangle\langle j|$, the vectorization mapping $\mathcal{V}$ acts as $\mathcal{V}[O] = |O\rangle\!\rangle = \sum_{ij} o_{ij} |i\rangle |j\rangle$. This satisfies the inner product relation $\langle\!\langle A | B \rangle\!\rangle = 2^{-n} \text{tr}(A^\dagger B)$ and $\|A\|_F^2 = \langle\!\langle A | A \rangle\!\rangle$.
+:::
+
+The Pauli operators map to Bell states under vectorization, giving the **Pauli-Bell correspondence**:
+
+| Pauli | Vectorized form |
+|-------|----------------|
+| $I$ | $\|I\rangle\!\rangle = \frac{1}{\sqrt{2}}(\|00\rangle + \|11\rangle) = \sqrt{2}\|\Phi^+\rangle$ |
+| $Z$ | $\|Z\rangle\!\rangle = \frac{1}{\sqrt{2}}(\|00\rangle - \|11\rangle) = \sqrt{2}\|\Phi^-\rangle$ |
+| $X$ | $\|X\rangle\!\rangle = \frac{1}{\sqrt{2}}(\|01\rangle + \|10\rangle) = \sqrt{2}\|\Psi^+\rangle$ |
+| $Y$ | $\|Y\rangle\!\rangle = \frac{i}{\sqrt{2}}(\|10\rangle - \|01\rangle) = -i\sqrt{2}\|\Psi^-\rangle$ |
+
+A quantum channel $\mathcal{D}(\cdot) = \sum_i M_i \cdot M_i^\dagger$ acts as the Liouville matrix $\mathbb{D} = \sum_i M_i \otimes M_i^*$ on the vectorized space. For **depolarizing noise** with parameter $p$:
+$$
+\mathbb{D} = (1-p) I \otimes I + \frac{p}{3}(X \otimes X - Y \otimes Y + Z \otimes Z),
+$$
+where $\{II, XX, -YY, ZZ\}$ form a commuting stabilizer set with the Pauli-Bell states as eigenvectors. The eigenvalues are:
+$$
+\mathbb{D}|P\rangle\!\rangle = \left(1 - \frac{4p}{3} + \frac{4p}{3}\delta_{P,I}\right)|P\rangle\!\rangle.
+$$
+Similarly, under **dephasing noise** $\mathcal{D}(\cdot) = (1-p)(\cdot) + p Z(\cdot)Z$:
+$$
+\mathbb{D}|P\rangle\!\rangle = (1 - 2p + 2p\delta_{P,I} + 2p\delta_{P,Z})|P\rangle\!\rangle.
+$$
+
+The key observation is that **unital noise channels preserve the number of Pauli operators** (the 0-norm of the Pauli decomposition) while suppressing their magnitudes, just as Clifford gates preserve both the 0-norm and 2-norm. This property is central to the tractability of Pauli path methods: for $|O\rangle\!\rangle = \sum_{i=1}^{s} \sqrt{p_i} |P_i\rangle\!\rangle$, unitary operations preserve only the 2-norm $\sum_i p_i$, while Clifford gates additionally preserve the 0-norm $s$.
+
+## Pauli Path Decomposition
+
+Denoting the transition amplitude $\langle\!\langle P_j | \mathbb{U}_j | P_{j-1} \rangle\!\rangle := 2^{-n} \text{tr}(P_j U_j P_{j-1} U_j^\dagger)$, the expectation value decomposes into a sum over Pauli paths:
+
+::: {#def-pauli-path .callout-note icon="false"}
+## Definition: Pauli Path Integral
+For a depth-$d$ noisy circuit with gates $\{U_i\}$ and noise rate $\gamma$, the Pauli average is
+$$
+\text{Avg}(\mathcal{C}, O, \gamma) = \text{tr}[\mathcal{C}^\dagger(O)\rho_0] = \sum_{\vec{P} = (P_0, \ldots, P_d)} (1-\gamma)^{\text{wt}(\vec{P})} f(\mathcal{C}, \vec{P}, O),
+$$
+where $f(\mathcal{C}, \vec{P}, O) = \langle\!\langle O | P_d \rangle\!\rangle \prod_{i=1}^{d} \langle\!\langle P_i | \mathbb{U}_i | P_{i-1} \rangle\!\rangle \cdot \text{tr}(P_0 \rho_0)$.
+:::
+
+The sampling probability can be decomposed similarly: the probability of output string $\vec{x} \in \mathbb{F}_2^n$ is obtained by substituting $|O\rangle\!\rangle$ with $|x\rangle\!\rangle$.
+
+The noise-induced exponential suppression factor $(1-\gamma)^{\text{wt}(\vec{P})}$ ensures that high-weight Pauli paths contribute negligibly, motivating approximation by cutoff. Truncating paths with $\text{wt}(\vec{P}) > l$ gives an approximation $\tilde{O}(\mathcal{C})$ computable in $n^{l/d} \cdot 2^{O(l)}$ time [@aharonov2023polynomial].
+
+The precision of this approximation is bounded by:
+$$
+\Delta(O, \mathcal{C}) = \left[\langle \mathcal{C}^\dagger(O) \rangle_{|0\rangle} - \langle \tilde{O}(\mathcal{C}) \rangle_{|0\rangle}\right]^2.
+$$
+
+Under the **low-average input** assumption ($\|\mathcal{E}^{-1} \sum_s |s\rangle\langle s| \|_\infty \leq 2^{-n}$), it was shown in [@schuster2024polynomial] that for any operators $O, \tilde{O}$:
+$$
+|\mathcal{E}|^{-1} \sum_s |\langle O \rangle_{|s\rangle} - \langle \tilde{O} \rangle_{|s\rangle}|^2 \leq \|O - \tilde{O}\|_F^2,
+$$
+reducing the average-case error to the Frobenius norm of the truncation residual. This reduction holds for at least $1-\delta$ fraction of instances in the circuit ensemble, yielding additive error $\varepsilon/\delta$ with $n^{l/d} \cdot 2^{O(l)}$ time complexity.
+
+As a concrete example, Schuster et al. [@schuster2024polynomial] proved that the optimal truncation error satisfies $\varepsilon^2 \leq e^{-\gamma(l+1)} \cdot \|O\|_F^2$ with time complexity $T = O(n^{l/d})$. Increasing the precision by $l \to l + l_0$ yields $\varepsilon^2 \to e^{-\gamma l_0} \varepsilon^2$ and $T \to T \cdot n^{l_0/d}$, illustrating the exponential-in-$l$ error decay characteristic of noisy circuits.
+
+**Limitations of ensemble averaging.** The additive error is bounded only in average case over circuit distributions. It fails for worst-case NISQ circuits designed for near-term fault tolerance. Moreover, Angrisani et al. showed that even for noiseless scrambling ensembles, Pauli path methods can run in polynomial time [@angrisani2024classically], suggesting that ensemble averaging may overwhelm the effect of noise. This motivates the study of fixed-circuit simulation criteria (see [Open Problems](open_problems.qmd)).
+
+# Pauli Spectrum Analysis
+
+## Heisenberg Pauli Truncation
+
+We define the back-propagated operator $O_H = \mathcal{C}^\dagger[O] = \sum_{i=1}^{M} c_i P_i$ with $|c_i| \geq |c_j|$ for $i \leq j$. A truncation approximation retains only the $K-1$ largest Pauli terms:
+$$
+\widetilde{O_H} = \sum_{j=1}^{K-1} b_j P_j, \quad K = \text{poly}(n).
+$$
+
+Under the vectorization picture, $\langle O \rangle = (\langle \psi | \otimes \langle \psi^* |) |O_H\rangle\!\rangle$. For an input state ensemble $\mu$ with $\|\mathbb{E}_{\psi \in \mu} |\psi\rangle\langle\psi|\|_\infty = 2^{-n} g$, the average approximation error satisfies:
+
+::: {#lem-truncation-error .callout-important icon="false"}
+## Lemma: Truncation Error Bound
+$$
+\mathbb{E}_{\psi \in \mu} \text{tr}(|\psi\rangle\langle\psi| \, \Delta O_H)^2 \leq g \cdot \|\Delta O_H\|_{n2}^2,
+$$
+where $\|\cdot\|_{n2} = 2^{-n/2}\|\cdot\|_2$ is the normalized 2-norm, and $\Delta O_H = O_H - \widetilde{O_H}$. When $\mu$ is a state 1-design, $g = 1$.
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+Using the vectorization and the Cauchy-Schwarz inequality:
+$$\begin{align}
+\mathbb{E}_{\psi \in \mu} \text{tr}(|\psi\rangle\langle\psi| \, \Delta O_H)^2 &= \mathbb{E}_{\psi \in \mu} (\langle\psi| \otimes \langle\psi^*|) |\Delta O_H\rangle\!\rangle \langle\!\langle \Delta O_H| (|\psi\rangle \otimes |\psi^*\rangle) \\
+&\leq \mathbb{E}_{\psi \in \mu} \text{tr}((|\psi\rangle\langle\psi| \otimes I_n) |\Delta O_H\rangle\!\rangle \langle\!\langle \Delta O_H|) \\
+&\leq \|\mathbb{E}_{\psi \in \mu} |\psi\rangle\langle\psi|\|_\infty \cdot \langle\!\langle \Delta O_H | \Delta O_H \rangle\!\rangle = g \cdot \|\Delta O_H\|_{n2}^2. \quad \square
+\end{align}$$
+:::
+
+The optimal truncation strategy keeps the $K$ largest coefficients, giving residual:
+$$
+f(K) := \|\Delta O_H\|_{n2}^2 = \sum_{i=K}^{M} c_i^2.
+$$
+
+Note that achieving this optimal precision may be computationally difficult, since it requires identifying the $K$ largest Pauli coefficients from an exponentially large set.
+
+## Necessary Condition for Efficient Simulation
+
+::: {#lem-FPTAS .callout-important icon="false"}
+## Lemma: FPTAS Necessary Condition
+If there exists a truncation algorithm within the **FPTAS** complexity class, then the function $f$ must satisfy $f(\text{poly}(B) \cdot K) = \varepsilon^2 \cdot O(1/B^2)$ for $f(K) = \varepsilon^2$ and arbitrary $B > 0$.
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+Given the existence of an FPTAS algorithm, there exists an algorithm with time complexity $\text{poly}(n) \cdot \text{poly}(1/C)$ for any input precision parameter $C > 0$. This algorithm evaluates at most $K - 1 \sim \text{poly}(n) \cdot \text{poly}(1/C)$ nonzero coefficients $b_j$. Since $\{b_j, P_j\}$ satisfy
+$$
+|(1 \pm C)\langle O\rangle - \langle O\rangle|^2 = \sum_{i=1}^{M}(c_i - b_j)^2 \geq \sum_{i=K}^{M} c_i^2 = f(\text{poly}(n) \cdot \text{poly}(1/C)),
+$$
+taking $C = 1/B$ and $\langle O\rangle^2 \leq 1$, we conclude $f(\text{poly}(n) \cdot \text{poly}(B)) = O(1/B^2)$. $\square$
+:::
+
+Supposing the leading order in $\text{poly}(B)$ is $\eta$, this requires $f(x) = O(x^{-2/\eta})$, which by differentiation gives:
+
+::: {#thm-necessary-condition .callout-important icon="false"}
+## Theorem: Necessary Spectral Condition
+For efficient classical simulation via Pauli truncation, the Pauli spectrum $\{c_i^2\}$ must satisfy
+$$
+c_k^2 = o(k^{-1}).
+$$
+Specifically, if the algorithm complexity scales as $K = y\varepsilon^{-r} + o(\varepsilon^{-r})$, then the spectrum must decay at least as $c_k^2 = \frac{2y^{2/r}}{rx} k^{-(1+2/r)} + o(k^{-(1+2/r)})$.
+:::
+
+This establishes a **lower bound on spectral decay**: coefficients that decay slower than $k^{-1}$ preclude any polynomial-time truncation algorithm. The only assumption in the derivation is the randomness that enables reduction from estimation error to the Frobenius norm of $\Delta O_H$.
+
+## Phase Transition Diagnostic
+
+The spectral condition can be diagnosed numerically via the function $C(\alpha)$.
+
+::: {#thm-phase-transition .callout-important icon="false"}
+## Theorem: Phase Transition Diagnostic
+If there exists a truncation algorithm within the FPTAS class, then the function
+$$
+C(\alpha) := \log \max_{i=1}^{M} \{c_i^2 \cdot i^\alpha\}
+$$
+exhibits a first-order phase transition at a critical point $\alpha_0 > 1 + 2/\eta$:
+$$
+\frac{\partial \log C(\alpha)}{\partial \alpha} = \begin{cases} 0 & \alpha \leq \alpha_0, \\ \log(M) & \alpha > \alpha_0. \end{cases}
+$$
+The transition separates a **polynomial complexity regime** ($C(\alpha) = O(1)$) from an **exponential growth regime** ($C(\alpha) \sim M^\alpha$). The slope and intercept of $\log C(\alpha)$ encode the constants $A$ and $M$ of the spectral decay.
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+From the FPTAS necessary condition, $c_x^2 = O(x^{-(1+2/\eta)})$. Therefore:
+$$
+C(\alpha) = \max_i \{c_i^2 \cdot i^\alpha\} = \max_i O(i^{\alpha - (1 + 2/\eta)}).
+$$
+For $\alpha \leq 1 + 2/\eta$, the maximum is achieved at $i = 1$ and is $O(1)$. For $\alpha > \alpha_0 > 1 + 2/\eta$, the maximum is achieved at $i = M$ and grows as $M^{\alpha - (1+2/\eta)}$, yielding the first-order transition in $\partial \log C / \partial \alpha$. $\square$
+:::
+
+**Practical significance.** Numerically computing $C(\alpha)$ for a given noisy circuit directly reveals whether polynomial-time truncation is feasible. The critical exponent $\alpha_0$ determines the FPTAS polynomial degree $\eta = 2/(\alpha_0 - 1)$. Note also that $M = O(\text{poly}(n))$ always enables efficient simulation regardless of the spectral shape, since the maximum is polynomial in all regimes.
+
+**Alternative derivation.** The function $C(\alpha)$ can also be understood through the bounding function $h(\alpha, x) = C(\alpha) x^{-(1+\alpha)} \geq c_x^2$. In the ideal case $c_x^2 = \frac{2}{\eta} A^{2/\eta} x^{-(1+2/\eta)}$, this yields
+$$
+C(\alpha) = \max_x \frac{2}{\eta} A^{2/\eta} x^{\alpha - 2/\eta},
+$$
+recovering the phase transition at $\alpha = 2/\eta$ with $\log C(\alpha) = \log(2A^{2/\eta}/\eta)$ for $\alpha \leq 2/\eta$ and linear growth with slope $\log M$ for $\alpha > 2/\eta$.
+
+::: {#def-optimal-matched-power .callout-note icon="false"}
+## Definition: Optimal Matched Power
+When the spectrum $\{c_i^2\}$ is not an ideal power function, define for each $\eta > 0$:
+$$
+A_u(\eta) = \arg\min_A \left\{\frac{2}{\eta} A^{2/\eta} x^{-(1+2/\eta)} \geq c_x^2, \; \forall x\right\}, \quad A_l(\eta) = \arg\max_A \left\{\frac{2}{\eta} A^{2/\eta} x^{-(1+2/\eta)} \leq c_x^2, \; \forall x\right\}.
+$$
+The **optimal matched power** is $\eta_o = \arg\min_\eta A_u(\eta)/A_l(\eta)$, which minimizes the uncertainty in the phase transition point: $\delta = 2\log(A_u/A_l)/(\eta_o \log M)$.
+:::
+
+For non-ideal spectra, the phase transition point has an uncertainty band $2/\eta_o \pm \delta$, where
+$$
+\log C(\alpha) \in \begin{cases}
+[\log(\frac{2}{\eta_o} A_l^{2/\eta_o}), \; \log(\frac{2}{\eta_o} A_u^{2/\eta_o})] & \alpha \leq 2/\eta_o, \\
+[\log(\frac{2}{\eta_o} A_l^{2/\eta_o}) + (\alpha - 2/\eta_o)\log M, \; \log(\frac{2}{\eta_o} A_u^{2/\eta_o}) + (\alpha - 2/\eta_o)\log M] & \alpha > 2/\eta_o.
+\end{cases}
+$$
+The optimal matched power $\eta_o$ achieves the smallest uncertainty, making it the most informative choice for the phase transition analysis.
+
+
+# Operator Stabilizer Entropy
+
+The complexity of the sampling algorithms is governed by the operator stabilizer entropy (OSE), a Heisenberg-picture magic measure introduced in [@dowling2024magic].
+
+::: {#def-OSE .callout-note icon="false"}
+## Definition: Operator Stabilizer Entropy (OSE)
+For an operator $O$ and quantum channel $\Lambda$ on $n$ qubits, the $\alpha$-OSE generated by $\Lambda$ is
+$$
+\mathcal{M}^{(\alpha)}(\Lambda^\dagger[O]) := \frac{1}{1-\alpha}\left[\ln P^{(\alpha)}(\Lambda^\dagger[O]) - \ln P^{(\alpha)}(O)\right],
+$$
+where $P^{(\alpha)}(O) := \sum_{P \in \{I,X,Y,Z\}^{\otimes n}} (2^{-n} \text{tr}(OP))^{2\alpha}$.
+:::
+
+Two special cases are particularly important:
+
+- **$\alpha = 0$**: $\exp[\mathcal{M}^{(0)}(\Lambda^\dagger[P])] = N$, where $N$ counts the nonzero coefficients in the Pauli decomposition of $\Lambda^\dagger[P]$. This is the **support size** of the Pauli decomposition.
+- **$\alpha = 1/2$**: $\exp[\frac{1}{2}\mathcal{M}^{(1/2)}(\Lambda^\dagger[P])] = \sum_i |a_i|$, which is the **1-norm** of the Pauli coefficients.
+
+Clifford operations preserve both $\mathcal{M}^{(0)}$ and $\mathcal{M}^{(1/2)}$, while non-Clifford gates (e.g., $T$) increase them. Incoherent noise channels satisfy $\mathcal{M}^{(1/2)} \leq 0$, meaning they always reduce the 1/2-OSE.
+
+**The 1-norm as a battle indicator.** For noiseless Clifford+$T$ circuits, after back-propagation through $u$ unitary layers the operator $O = \sum_{i=0}^{n_u} c_i P_i$ satisfies $\sum_i c_i^2 = 1$. By Cauchy-Schwarz, $\sum_i |c_i| \leq \sqrt{n_u}$, so when the number of Pauli terms is polynomial, the 1-norm is at most $O(\text{poly}(n))$. However, the converse fails: even when the 1-norm is bounded, the space complexity (number of stored Pauli operators) may be exponentially large. For the $T$-gate with $1/\sqrt{2}$ branching, the 1-norm per branch is $\sqrt{2}$ but the support doubles, illustrating that the space complexity of the random branching algorithm is bounded by the 0-OSE rather than the 1-norm. For further resource-theoretic analysis, see [Operator Entanglement and Resource Theory](operator_resource.qmd).
+
+# Simulation Algorithms
+
+## Gate Sampling Algorithm
+
+The gate sampling algorithm propagates a Pauli operator $P^{(0)}$ backwards through all operations $\{\Lambda_1, \ldots, \Lambda_d\}$. When $\Lambda_i$ is a single-qubit unitary gate $U$ with back-propagation $U^\dagger \sigma_i U = \sum_{r \in R_i} \sqrt{q_{i,r}} \, \text{sign}_{i,r} \, \sigma_r$ (where $\sum_r q_{i,r} = 1$), the algorithm **randomly shifts** $(c, \sigma_i)$ into $(c \cdot \text{sign}_{i,r} / \sqrt{q_{i,r}}, \sigma_r)$ with probability $q_{i,r}$.
+
+For incoherent noise with parameters $(\Gamma_1, \Gamma_2, \Gamma_3)$ and $(t_1, t_2, t_3)$, the scaling-shifting decomposition (see [Non-Unital Noise Barriers](non_unital.qmd)) is applied:
+
+- With probability $p_\mu = |t_\mu|/(|\Gamma_\mu| + |t_\mu|)$: set $P_k \to I$, $c \to c \cdot \alpha_\mu \cdot \text{sign}(t_\mu)$.
+- With probability $1 - p_\mu$: set $P_k \to \sigma_\mu$, $c \to c \cdot \alpha_\mu \cdot \text{sign}(\Gamma_\mu)$.
+
+where $\alpha_\mu = |\Gamma_\mu| + |t_\mu|$.
+
+::: {#thm-gate-sampling .callout-important icon="false"}
+## Theorem: Gate Sampling Method
+The gate sampling algorithm produces an unbiased estimator:
+$$
+\mathbb{E}[A] = \text{tr}(P^{(0)} \mathcal{C}[|0\rangle\langle 0|^{\otimes n}]),
+$$
+with variance bounded by:
+$$
+\text{Var} \leq \exp\left[\frac{1}{2}\mathcal{M}^{(1/2)}[\mathcal{C}_N^\dagger(O)] + \mathcal{M}^{(0)}[\mathcal{C}_U^\dagger(O)]\right],
+$$
+where $\mathcal{C}_U$ and $\mathcal{C}_N$ denote the unitary and noise parts of the circuit, respectively.
+:::
+
+The variance decomposes into a **noise suppression term** ($\mathcal{M}^{(1/2)}$ from noise, always $\leq 0$) and a **magic generation term** ($\mathcal{M}^{(0)}$ from unitary gates, $\geq 0$ with equality iff Clifford). When noise suppression dominates magic generation, the variance is polynomially bounded and the algorithm is efficient.
+
+## Truncated Sampling Algorithm
+
+The truncated sampling algorithm addresses the potential exponential variance of gate sampling by combining enumeration with probabilistic halting. Instead of sampling through non-Clifford gates, the classical computer **traces all branches** of the unitary back-propagation by enumeration. At each noise channel $\Lambda_{k+1}$, each Pauli tuple $(c, P_i)$ halts with probability $1 - s_i$ (where $s_i$ is the scaling factor), removing it from further propagation.
+
+::: {#thm-truncated-sampling .callout-important icon="false"}
+## Theorem: Truncated Sampling
+Given a circuit $\mathcal{C} = \Lambda_1 \circ \cdots \circ \Lambda_d$, the truncated sampling algorithm produces tuples $S_d = \{(c_i^{(d)}, P_i^{(d)})\}_{i=1}^{N_d}$ with probability $q^{(d)}(S_d)$ satisfying:
+$$
+\mathbb{E} = \sum_{S_d} q^{(d)}(S_d) \sum_{(c_i, P_i) \in S_d} \text{tr}(c_i P_i |0\rangle\langle 0|^{\otimes n}) = \text{tr}(P^{(0)} \mathcal{C}[|0\rangle\langle 0|^{\otimes n}]),
+$$
+$$
+\text{Var} + \mathbb{E}^2 \leq 1.
+$$
+:::
+
+While the variance is always bounded, the **space complexity** (number of Pauli operators traced simultaneously) may grow exponentially:
+
+::: {#thm-space-complexity .callout-important icon="false"}
+## Theorem: Space Complexity
+The space complexity of the truncated sampling algorithm is governed by the noise channel reduction of $\frac{1}{2}$-OSE and the unitary enhancement of $0$-OSE. If the $\frac{1}{2}$-OSE of $\mathcal{C}^\dagger P^{(0)}$ is exponentially large on average, Pauli path truncation methods become infeasible.
+:::
+
+**Advantages over direct truncation.** The truncated sampling algorithm has several notable properties:
+
+1. It handles all single-qubit incoherent noise (including non-unital channels) by decomposing each channel into stabilizer-preserving noise plus a magic-free shifting part, and sampling the shifting part classically.
+2. Its time complexity is independent of qubit number $n$; the space consumption is suppressed by noise.
+3. Compared to direct gate-based truncation, it provides a finer-grained T-noise balance criterion: even when the Pauli spectrum has no efficient truncation, individual paths may still be tractable.
+
+## Comparison: Truncation vs Sampling
+
+| Property | Gate Sampling | Truncated Sampling | Direct Truncation |
+|----------|--------------|-------------------|-------------------|
+| **Key resource** | $\mathcal{M}^{(1/2)}$ (noise) + $\mathcal{M}^{(0)}$ (gates) | Bounded variance, space from OSE | Spectrum decay $c_i^2$ |
+| **Time complexity** | $\text{poly}(n) \cdot 2^{Q_{1/2}}$ per sample | Polynomial per sample | $\text{poly}(n, 1/\varepsilon)$ |
+| **Bottleneck** | Variance explosion from magic | Space explosion from branching | Slow spectral decay |
+| **Non-unital noise** | Handles via scaling-shifting | Handles via scaling-shifting | Fails (see [non-unital barriers](non_unital.qmd)) |
+
+**The 1-norm and spectral decay relationship.** There is a subtle relationship between truncation and sampling efficiency. From the research diary analysis:
+
+- If $|c_i|^2$ decays faster than $i^{-2}$ (i.e., $c_i^2 < C i^{-2}$ for some constant $C$), then $\sum_i |c_i| < \sum_i i^{-1} \sim \ln(2^n) = O(n)$, so the 1-norm is polynomial and sampling-based methods are efficient.
+- However, the converse fails: if $\sum_i |c_i|$ is polynomially bounded, this does **not** imply $|c_i|^2$ decays faster than $i^{-1}$. Taking $c_i = (1/2)^n$ for $i = 1, \ldots, O(2^n)$ gives $\sum |c_i| \sim O(2^n) \cdot 2^{-n} = O(1)$ but $c_i^2 = 4^{-n}$ which does not satisfy the inverse polynomial decay. This is the flat spectrum case discussed below.
+
+## Flat Spectrum Separation
+
+A revealing separation arises for **flat spectra**: consider a noisy circuit where $O_H$ has $2^n$ Pauli operators all with $c_i = 2^{-n}$. Truncation requires exponential $K$ since the spectrum cannot be bounded by $i^{-1}$. However, sampling-based methods succeed because each sampled Pauli has expectation value equal to the exact result, yielding zero variance. This demonstrates that truncation and sampling exploit fundamentally different properties of the Pauli decomposition (see [Open Problems: Truncation vs Sampling Separation](open_problems.qmd)).
+
+More precisely, the implication "$\sum |c_i|$ is poly $\implies$ $|c_i|^2$ decays faster than inverse polynomial" was shown to be **incorrect** in the research diary (Round 11, 2.16). Taking $c_i = i^{-1/2-\delta}$ gives $\sum |c_i| \sim [O(2^n)]^{1/2-\delta}$, which remains exponentially large. Conversely, "$|c_i|^2$ decays faster than $i^{-2}$ $\implies$ $\sum |c_i|$ is poly" **is** correct. This asymmetry means that some instances efficiently solvable by sampling are hard for truncation, but the reverse relationship remains an open question.
+
+
+# Toy Model: Clifford + Amplitude Damping
+
+This toy model demonstrates the advantage of sampling over truncation in a concrete setting without non-Clifford gates. Consider a Clifford circuit with $|0\rangle^{\otimes n}$ input and single-qubit amplitude damping noise with parameter $p < 1/2$.
+
+::: {#thm-toy-model .callout-important icon="false"}
+## Theorem: Clifford + Amplitude Damping Complexity
+Consider a fixed Clifford NISQ circuit composed of $|0\rangle^{\otimes n}$ inputs, Clifford gate layers, and amplitude-damping channels with parameter $p < 1/2$. To estimate the Pauli average within additive error $\varepsilon$ for all circuits of this kind:
+
+1. The complexity of any Pauli path truncation algorithm must exhibit **sub-exponential growth**, bounded below by $O(n^{-1} e^{H(p) \cdot n})$, where $H(p) = -p\ln p - (1-p)\ln(1-p)$ is the binary entropy.
+2. The gate sampling algorithm estimates the Pauli average with **bounded variance** ($\text{Var} \leq 1$).
+:::
+
+::: {.callout-note collapse="true"}
+## Proof Sketch (Click to expand)
+The lower bound for truncation follows from examining $Z^{\otimes n}$ back-propagated through a single layer of amplitude damping. The output Pauli strings have the form $O = \sum_{s \in \{0,1\}^n} p(s) Z^{\otimes s}$ where $Z^{\otimes s} := \bigotimes_{i=1}^n Z^{s_i}$ and the suppression coefficient is $p^{n-|s|}(1-p)^{|s|}$. This is a binomial distribution $K \sim \text{Bin}(n, 1-p)$ concentrated near $i = n(1-p)$.
+
+The optimal truncation retains $Z$ strings with weight in $[n(1-p) - \varepsilon, n(1-p) + \varepsilon]$, requiring at least $\binom{n}{np} \geq \frac{1}{2\pi n \sqrt{p(1-p)}} e^{H(p) \cdot n}$ Pauli operators. Thus truncation complexity is sub-exponential.
+
+For the sampling algorithm: amplitude damping on $X, Y$ Pauli components simply rescales by $\sqrt{1-p}$ (no branching), while $Z$ components branch to $I$ with probability $p$ without increasing the variance, since the branching coefficient sums to 1 (unlike $T$-gates where the sum is under the 2-norm). The resulting estimator has $\text{Var} \leq 1$. $\square$
+:::
+
+This result highlights that non-unital noise enhances computational power of Clifford circuits (through the quantum refrigerator mechanism [@ben2013quantum]), but the added complexity is fundamentally classical in nature and can be handled by Monte Carlo sampling. See [Non-Unital Noise Barriers](non_unital.qmd) for further analysis.
+
+
+# Case Study: Sparse Clifford+T Circuits
+
+As a concrete application, consider a Clifford+T circuit $\mathcal{C} = \Lambda_1 \circ \cdots \circ \Lambda_d$ with depolarizing noise. The $T$-gate back-propagation acts as:
+$$
+T^\dagger \sigma_3 T = \sigma_3, \quad T^\dagger \sigma_1 T = \frac{1}{\sqrt{2}}(\sigma_1 - \sigma_2), \quad T^\dagger \sigma_2 T = \frac{1}{\sqrt{2}}(\sigma_1 + \sigma_2).
+$$
+
+In the gate sampling algorithm, whenever $\sigma_1$ or $\sigma_2$ encounters a $T$-gate, it randomly shifts into $\sigma_1$ or $\sigma_2$ with equal probability $1/2$. All possible changes generate a binary tree rooted at $(1, P^{(0)})$ with $d$ levels. The probability of reaching leaf $i$ is $q_i^{(d)} = 2^{-Q(i)}$, where $Q(i)$ counts the number of $T$-gate encounters with $\sigma_1$ or $\sigma_2$ along path $h_i$.
+
+The coefficient and variance satisfy:
+$$
+c_i^{(d)} = \text{sign}(i) \cdot (\sqrt{2})^{Q(i)} \cdot f(i), \quad \text{Var} \leq \sum_{i \in N_d} |f(i)|^2,
+$$
+where $f(i)$ accumulates the noise suppression along the path.
+
+::: {#thm-sparse-CT .callout-important icon="false"}
+## Theorem: Sparse Clifford+T Simulation
+Given a 2-dimensional, $(Q, k)$-sparse, localized Clifford+T circuit $\mathcal{C}$ with depolarizing noise layers $\Lambda(\rho) = (1-p)\rho + (p/2)I$, if
+$$
+2^Q (1-p) < 1,
+$$
+then the variance of the gate sampling algorithm satisfies $\text{Var} \leq \text{poly}(n)$. Furthermore, adding amplitude damping noise to this circuit never increases the simulation complexity.
+:::
+
+The condition $2^Q(1-p) < 1$ captures the competition between magic generation ($2^Q$ from $T$-gates) and noise suppression ($(1-p)$ per noise layer). When noise wins, efficient simulation is possible. The robustness to additional amplitude damping noise follows from the fact that amplitude damping only introduces $I$-shifts (with 1-norm-preserving branching) that do not increase the variance.
+
+This result connects to the gadget-based perspective developed in [Gadget-Based Simulation](gadget_simulation.qmd), where the same threshold condition arises from operator stabilizer entropy bounds on the gadget circuit. The earlier result of González-García et al. [@gonzalez2024pauli] established this condition via direct Pauli path counting for sparse $T$-gate distributions; the gate sampling algorithm provides an alternative derivation through the OSE framework.
+
+
+# Fourier-Analytic Perspective
+
+The Pauli path framework admits a natural interpretation through Fourier analysis on $\mathbb{F}_2^n$, as explored in [@cirstoiu2024fourier] and noted in the research diary (Round 12). The key correspondences are:
+
+| Boolean function analysis | Pauli path simulation |
+|--------------------------|----------------------|
+| Boolean function $f(x)$ | Operator $O$ in computational basis |
+| Fourier decomposition of $f$ | Pauli decomposition of $O$ |
+| $\varepsilon$-concentrated Fourier spectrum | $\varepsilon$-concentrated Pauli spectrum |
+| Efficient computation of $\sum_x f(x)g(x)$ | Efficient computation of $\text{tr}(O \, |0\rangle\langle 0|^{\otimes n})$ |
+| $f$ computable by poly-depth classical circuit | $O$ preparable via $UZU^\dagger$ with poly-depth $U$ |
+
+This analogy suggests that results on learnability and approximation of Boolean functions with concentrated Fourier spectra may transfer to the quantum setting. Specifically, the question "given $f$ with $\varepsilon$-concentrated Fourier spectrum, is there an efficient approximation algorithm for $\sum_x f(x)$?" is $\#$P-hard in general, but admits FPTAS-type approximations under structural assumptions that parallel the inverse-polynomial spectral decay condition for Pauli path truncation.
+
+<!-- TODO: formalize the Fourier-analytic connection more precisely; relate to classical circuit complexity lower bounds -->
+
+
+# Relation to Recent Literature
+
+The Pauli path framework has seen rapid development since 2023. We briefly situate the results above within this landscape:
+
+- **Average-case simulation.** Aharonov et al. [@aharonov2023polynomial] and Schuster et al. [@schuster2024polynomial] established polynomial-time algorithms for random noisy circuits via Pauli path truncation. These results rely on ensemble averaging and the hiding property.
+
+- **Beyond average case.** González-García et al. [@gonzalez2024pauli] extended Pauli path methods to fixed circuits with sparse $T$-gates under sufficient noise, showing that the $2^Q(1-p) < 1$ condition suffices for truncation. Their work bridges the gap between ensemble-averaged and worst-case simulation.
+
+- **Non-unital noise.** Martinez et al. [@martinez2025efficient] showed that Pauli backpropagation can handle non-unital noise for parametrized circuits. Angrisani et al. [@angrisani2025arbitrary] further generalized to arbitrary local noise models, and Shtanko and Sharma [@shtanko2025complexity] analyzed the complexity landscape under non-unital noise in PRX Quantum.
+
+- **Unified frameworks.** Cirstoiu [@cirstoiu2024fourier] developed a Fourier analysis framework unifying several Pauli path approaches. The operator stabilizer entropy framework of Dowling et al. [@dowling2024magic] provides the resource-theoretic backbone connecting all three algorithms discussed here.
+
+- **Noiseless scrambling.** Angrisani et al. [@angrisani2024classically] showed that noiseless random circuits with scrambling properties can also be simulated via Pauli path methods, demonstrating that ensemble averaging alone (without noise) can enable efficient classical simulation.
+
+---
+
+[Back to Index](index.qmd) | [Next: Gadget-Based Simulation →](gadget_simulation.qmd)
