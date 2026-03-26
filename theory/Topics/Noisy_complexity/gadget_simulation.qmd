@@ -38,7 +38,7 @@ The T-gadget for a single $T$ gate on qubit $q$ consists of:
 $$
 T_q \equiv \text{(prepare } |H\rangle_a\text{)} \to \text{CZ}_{qa} \to \text{(measure } a \text{ in } X \text{ basis)} \to S_q^{m_a},
 $$
-where $m_a \in \{0,1\}$ is the measurement outcome and $S_q^{m_a}$ applies $S$ when $m_a = 1$. The equivalence $\langle +|_a \,\text{CZ}_{qa}(|\psi\rangle_q \otimes |H\rangle_a) \propto T_q|\psi\rangle$ holds, where $\langle +|_a$ denotes projection onto the $|+\rangle$ outcome of the $X$-basis measurement on the ancilla.
+where $m_a \in \{0,1\}$ is the measurement outcome and $S_q^{m_a}$ applies $S$ when $m_a = 1$. Note that $\langle +|_a \,\text{CZ}_{qa}(|\psi\rangle_q \otimes |H\rangle_a) = \sin(3\pi/8)\,\alpha|0\rangle + \sin(\pi/8)\,\beta|1\rangle$ for $|\psi\rangle = \alpha|0\rangle + \beta|1\rangle$, which is *not* proportional to $T|\psi\rangle$ per-gate. The gadget does not implement $T$ gate-by-gate; rather, when the full circuit's $T$-gates are simultaneously replaced by gadgets and all ancillae are post-selected onto $|+\rangle$, the overall output probability reproduces that of the original circuit (see @eq-gadget-prob).
 :::
 
 By replacing the measurement with a projector onto $|+\rangle$, the adaptive $S$-gate corrections are eliminated and the sampling probability becomes:

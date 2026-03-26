@@ -295,7 +295,7 @@ The [non-unital noise page](non_unital.qmd) discusses the quantum refrigerator r
 ::: {.callout-note icon="false"}
 ## Open Problem 14: Non-Unital Noise and Computation Length
 
-Under what conditions does non-unital noise enable exponentially long computation (via the refrigerator mechanism) while remaining classically simulable? The diary (Motivations, p.17) frames this as: NISQ circuits under depolarizing noise have computational power equivalent to log-depth circuits (QNC1), but non-unital noise may break this equivalence.
+Under what conditions does non-unital noise enable exponentially long computation (via the refrigerator mechanism) while remaining classically simulable? The diary (Motivations, p.17) frames this as: NISQ circuits under depolarizing noise have computational power equivalent to log-depth circuits (QNC1) [@aharonov1996limitations], but non-unital noise may break this equivalence.
 :::
 
 The diary argues that the distinction is whether the noise can be used to produce fresh $|0\rangle$ qubits (refrigeration). If so, the circuit effectively gains access to intermediate measurement and reset, dramatically increasing computational power. The simulability question then becomes: can the Pauli path method still efficiently handle circuits that exploit refrigeration?
