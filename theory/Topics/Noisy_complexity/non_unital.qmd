@@ -221,15 +221,49 @@ Matching entries: $1-r = (1-p)q$ and $r = p\lambda + (1-p)m$. For the first matr
 
 **Implication.** The no-go theorem means the percolation method --- which reduces the simulation to non-adaptive measurements on graph states via $Z$-projection decomposition --- **cannot be extended to amplitude damping** or other non-unital noise channels. This is a fundamental barrier, not merely a technical limitation.
 
-## Negative Quasi-Probabilities in Graph-State Sampling
+## Signed Stabilizer-State Sampling for Non-Unital Noise {#sec-signed-sampling}
 
-Although the $Z$-projection decomposition fails, a partial workaround exists within the graph-state framework. For amplitude damping on a stabilizer state $|S\rangle$, the adjoint $\Lambda^\dagger(|S\rangle\langle S|)$ can be expressed as a *signed* mixture of stabilizer states:
+Although the $Z$-projection decomposition fails for non-unital noise (@sec-no-go), the adjoint $\Lambda^\dagger(|S\rangle\langle S|)$ can still be decomposed into a *signed* mixture of stabilizer states, enabling a modified graph-state sampling algorithm.
+
+::: {#thm-nonunital-sampling .callout-important icon="false"}
+## Theorem: Stabilizer-State Sampling Under Non-Unital Noise
+Given a stabilizer state $S := |S\rangle\langle S|$ and a single-qubit incoherent noise channel $\mathcal{N}$ with parameters $(\mathbf{t}, \Gamma)$ as in @eq-incoherent, the operator $\mathcal{N}^\dagger(S)$ can be decomposed as a signed mixture of stabilizer states:
 $$
-\Lambda^\dagger(|S\rangle\langle S|) = \sqrt{1-p}\, S + \frac{\sqrt{1-p} - (1-p)}{2}\left(-\frac{\mathbb{I}+\sigma_3}{2}\right)\otimes R_3^+ + \cdots
+\mathcal{N}^\dagger(S) = \sum_j w_j \, |\phi_j\rangle\langle\phi_j|, \quad w_j \in \mathbb{R}, \quad |\phi_j\rangle \in \text{STAB},
 $$
-where $R_3^\pm$ are post-measurement stabilizer states on the remaining qubits, and the "removed" qubit carries a **negative quasi-probability** state $-(\mathbb{I} \pm \sigma_3)/2$. These negative-state qubits remain disentangled under subsequent CZ operations, so they can be tracked classically, but the sign structure introduces a sampling overhead analogous to quasiprobability methods [@seddon2021quantifying].
+with the sampling set $\{\pm S,\; \pm \sigma_i S \sigma_i^\dagger,\; \pm |0\rangle\langle 0| \otimes R_i^\pm,\; \pm |1\rangle\langle 1| \otimes R_i^\pm\}$, where $R_i^\pm$ is the stabilizer state on qubits $\{2,\ldots,n\}$ obtained by measuring qubit 1 of $|S\rangle$ in the $(\mathbb{I} \pm \sigma_i)/2$ basis.
 
 *Source: Folder2, draft.tex, Theorem 2.*
+:::
+
+::: {.callout-note collapse="true"}
+## Proof sketch (Click to expand)
+Suppose $\mathcal{N}$ acts on qubit 1 and decompose the stabilizer state as $S = \mathbb{I} \otimes Q_0 + \sum_i \sigma_i \otimes Q_i$, where $Q_i$ are Pauli-string operators on qubits $\{2,\ldots,n\}$. The post-measurement states satisfy
+$$
+M_i^\pm = \frac{\mathbb{I} \pm \sigma_i}{2} \otimes \frac{1}{2} R_i^\pm, \quad R_i^+ = 2Q_0 + 2Q_i, \quad R_i^- = 2Q_0 - 2Q_i,
+$$
+where $R_i^\pm$ are normalized stabilizer states with lower entanglement width than $|S\rangle$.
+
+**Unital case** ($\mathbf{t}=0$, WLOG $\Gamma_1 \geq \Gamma_2$): The adjoint decomposes as
+$$
+\Lambda^\dagger(S) = \tfrac{\Gamma_1+\Gamma_2}{2} S + \tfrac{\Gamma_1-\Gamma_2}{2}\,\sigma_1 S \sigma_1 + \sum_{\pm} \tfrac{1-\Gamma_1 \mp (\Gamma_2 - \Gamma_3)}{4}\,\tfrac{\mathbb{I}\pm\sigma_3}{2} \otimes R_3^\pm.
+$$
+The probability that the entanglement structure is unchanged is $\Gamma_1$, recovering the result of [@rajakumar2025polynomial].
+
+**Non-unital case** ($\mathbf{t}\neq 0$): An additional term $\mathbb{I}\otimes\sum_i t_i Q_i$ appears, which decomposes using $\sum_i t_i Q_i = -(\sum_i t_i)Q_0 + \frac{1}{2}\sum_i t_i R_i^+$. The full decomposition becomes
+$$
+\Lambda^\dagger(S) = \tfrac{\Gamma_1+\Gamma_2}{2}\,S + \tfrac{\Gamma_1-\Gamma_2}{2}\,\sigma_1 S\sigma_1 + \text{(graph-deletion terms)} + \sum_i \tfrac{t_i}{2}\left(\tfrac{\mathbb{I}\pm\sigma_3}{2}\right)\otimes R_i^+.
+$$
+The graph-deletion terms have the same structure as the unital case but with $\Gamma_j$ replaced by $\Gamma_j - \sum_i t_i$. Some coefficients can become **negative**, requiring $(\mathbb{I}\pm\sigma_3)/2$ to carry a negative sign.
+
+**Amplitude damping** ($\Gamma_1=\Gamma_2=\sqrt{1-p}$, $\Gamma_3=1-p$, $t_3=-p$): Specializing gives
+$$
+\Lambda^\dagger(S) = \sqrt{1{-}p}\,S + \tfrac{\sqrt{1{-}p}-(1{-}p)}{2}\!\left(-\tfrac{\mathbb{I}+\sigma_3}{2}\right)\!\otimes R_3^+ + \tfrac{\sqrt{1{-}p}-(1{-}p)}{2}\!\left(-\tfrac{\mathbb{I}-\sigma_3}{2}\right)\!\otimes R_3^- + \tfrac{p}{2}\,\tfrac{\mathbb{I}-\sigma_3}{2}\otimes R_3^+ + \tfrac{p}{2}\,\tfrac{\mathbb{I}+\sigma_3}{2}\otimes R_3^+.
+$$
+The "removed" qubit carries a negative quasi-probability state $-(\mathbb{I}\pm\sigma_3)/2$, which is not a valid quantum state. However, these single-qubit negative states remain **disentangled** from the rest under subsequent CZ operations, so they can be tracked classically. $\square$
+:::
+
+**Implication.** The signed decomposition enables sampling-based simulation with overhead governed by the total variation of the weights $\sum_j |w_j|$, analogous to quasiprobability methods [@seddon2021quantifying]. The key advantage over direct Pauli path simulation is that each sample in the decomposition is a stabilizer state with *reduced* entanglement width (the measured qubit is removed), which connects naturally to the percolation framework: repeated application at each noise layer progressively fragments the graph, enabling efficient simulation when the remaining graph components are $O(\log n)$-sized.
 
 # Quantum Refrigerator Connection {#sec-refrigerator}
 

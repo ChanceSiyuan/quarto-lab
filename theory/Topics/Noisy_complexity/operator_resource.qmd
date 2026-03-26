@@ -202,11 +202,11 @@ In the vectorization picture, this can be understood as follows. Under the $AB :
 
 ::: {#conj-choi .callout-note icon="false"}
 ## Conjecture: Choi Representation Decides H/T Response
-Let $O_{A,B}$ be an operator on subsystems $A, B$, mapped to the quantum state
+Let $O_{A,B}$ be an operator on subsystems $A, B$, mapped to the Choi state via the channel-state duality:
 $$
-|O_{A,B}\rangle = \sum_i (O_{A,B} \otimes \mathbb{I}_{A'B'}) |i\rangle_A |i\rangle_B \otimes |i\rangle_{A'} |i\rangle_{B'},
+|O_{A,B}\rangle\!\rangle = (O_{A,B} \otimes \mathbb{I}_{A'B'}) |\Omega\rangle_{AA'} \otimes |\Omega\rangle_{BB'}, \quad |\Omega\rangle = \frac{1}{\sqrt{d}}\sum_i |i\rangle|i\rangle,
 $$
-and define the projection operator $\Omega := |O_{A,B}\rangle\langle O_{A,B}|$. Let $S$ denote the bipartite entanglement entropy of $\Omega$ under the $AB : A'B'$ partition. Consider two types of randomized CNOT circuits:
+where $A', B'$ are auxiliary copies of $A, B$ respectively and $d = \dim(A) = \dim(B)$. Define the projection operator $\Omega := |O_{A,B}\rangle\!\rangle\langle\!\langle O_{A,B}|$. Let $S$ denote the bipartite entanglement entropy of $\Omega$ under the $AB : A'B'$ partition. Consider two types of randomized CNOT circuits:
 
 - $C_H$: CNOT circuit with randomly interleaved $H$ gates.
 - $C_T$: CNOT circuit with randomly interleaved $T$ gates.
