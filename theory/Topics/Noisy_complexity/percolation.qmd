@@ -227,15 +227,17 @@ The Monte Carlo estimation combines samples from the random graph ensemble, with
 
 The percolation threshold separates two qualitatively different regimes:
 
-**Subcritical regime** ($2p > p_c$, strong noise). The graph fragments into small connected components of size $O(\log n)$. Each component involves a bounded number of magic state overlaps, computable in $\text{poly}(n)$ time. This is the classically simulable regime.
+**Subcritical regime** ($1 - 2p < q_c$, strong noise). The graph fragments into small connected components of size $O(\log n)$. Each component involves a bounded number of magic state overlaps, computable in $\text{poly}(n)$ time. This is the classically simulable regime.
 
-**Supercritical regime** ($2p < p_c$, weak noise). A **giant connected component** of size $\Theta(n)$ emerges, requiring exponential resources to compute the corresponding overlap. The circuit retains quantum computational advantage.
+**Supercritical regime** ($1 - 2p > q_c$, weak noise). A **giant connected component** of size $\Theta(n)$ emerges, requiring exponential resources to compute the corresponding overlap. The circuit retains quantum computational advantage.
 
-The critical percolation probability $p_c$ depends on the graph structure:
+Here $q_c$ is the critical **site occupation** probability: in the Z-projection decomposition each vertex is retained with probability $1 - 2p$ and deleted with probability $2p$, so the relevant percolation model is **site percolation** on the interaction graph.
 
-- For random regular graphs of degree $\Delta$: $p_c \approx 1/(\Delta - 1)$.
-- For 2D lattice graphs (relevant to geometrically local circuits): $p_c \approx 0.593$ for site percolation on the square lattice (the bond percolation threshold is exactly $1/2$).
-- For the specific interaction graphs arising from circuit diagonalization, $p_c$ depends on the circuit architecture and must generally be determined numerically.
+The critical occupation probability $q_c$ depends on the graph structure:
+
+- For random regular graphs of degree $\Delta$: $q_c \approx 1/(\Delta - 1)$ (on locally tree-like graphs, site and bond percolation thresholds coincide to leading order).
+- For 2D lattice graphs (relevant to geometrically local circuits): $q_c \approx 0.593$ for site percolation on the square lattice (the bond percolation threshold is exactly $1/2$).
+- For the specific interaction graphs arising from circuit diagonalization, $q_c$ depends on the circuit architecture and must generally be determined numerically.
 
 ## Application to Noisy IQP Circuits
 
