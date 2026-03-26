@@ -43,11 +43,11 @@ where $m_a \in \{0,1\}$ is the measurement outcome and $S_q^{m_a}$ applies $S$ w
 
 By replacing the measurement with a projector onto $|+\rangle$, the adaptive $S$-gate corrections are eliminated and the sampling probability becomes:
 $$
-p(x) = 2^t \left|\langle +^{\otimes n} \otimes A^{\otimes t} | V^\dagger | x_+^{\otimes n} \otimes +^{\otimes t}\rangle\right|^2,
+p(x) = 2^t \left|\langle +^{\otimes n} \otimes A^{\otimes t} | V^\dagger | x_+ \otimes +^{\otimes t}\rangle\right|^2,
 $$ {#eq-gadget-prob}
-where $V$ is the Clifford part of the gadget circuit (all CZ gates plus original Clifford gates) acting on $n + t$ qubits, $|A\rangle = |H\rangle$ is the magic state, and $|x_+\rangle := H^{\otimes n}|x\rangle$ encodes the output bitstring $x \in \{0,1\}^n$ in the $X$-eigenbasis (so $|x_+^{\otimes n}\rangle$ is the $n$-qubit state with each qubit in $|+\rangle$ or $|-\rangle$ according to the bits of $x$). The factor $2^t$ compensates for the projection probability.
+where $V$ is the Clifford part of the gadget circuit (all CZ gates plus original Clifford gates) acting on $n + t$ qubits, $|A\rangle = |H\rangle$ is the magic state, and $|x_+\rangle := H^{\otimes n}|x\rangle$ is the $n$-qubit state encoding the output bitstring $x \in \{0,1\}^n$ in the $X$-eigenbasis (each qubit in $|+\rangle$ or $|-\rangle$ according to the bits of $x$). The factor $2^t$ compensates for the projection probability.
 
-Starting from the stabilizer of $V^\dagger|x_+^{\otimes n} \otimes +^{\otimes t}\rangle$, one can compute the $w$-qubit marginal distribution (where $w \leq n$ is the number of output qubits of interest) in $O((w+t)(c+t))$ time, where $c$ is the number of Clifford gates. The corresponding stabilizer subspace $\mathcal{V}_0$ simplifies @eq-gadget-prob to
+Starting from the stabilizer of $V^\dagger|x_+ \otimes +^{\otimes t}\rangle$, one can compute the $w$-qubit marginal distribution (where $w \leq n$ is the number of output qubits of interest) in $O((w+t)(c+t))$ time, where $c$ is the number of Clifford gates. The corresponding stabilizer subspace $\mathcal{V}_0$ simplifies @eq-gadget-prob to
 $$
 p(x) = 2^t \langle +^{\otimes n} \otimes A^{\otimes t} | \frac{\sum_{g \in \mathcal{V}_0} g}{2^{w+t}} | +^{\otimes n} \otimes A^{\otimes t}\rangle.
 $$
