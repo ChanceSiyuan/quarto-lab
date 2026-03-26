@@ -44,8 +44,17 @@ where $m_a \in \{0,1\}$ is the measurement outcome and $S_q^{m_a}$ applies $S$ w
 By replacing the measurement with a projector onto $|+\rangle$, the adaptive $S$-gate corrections are eliminated and the sampling probability becomes:
 $$
 p(x) = 2^t \left|\langle +^{\otimes n} \otimes A^{\otimes t} | V^\dagger | x_+^{\otimes n} \otimes +^{\otimes t}\rangle\right|^2,
+$$ {#eq-gadget-prob}
+where $V$ is the Clifford part of the gadget circuit (all CZ gates plus original Clifford gates) acting on $n + t$ qubits, $|A\rangle = |H\rangle$ is the magic state, and $|x_+\rangle := H^{\otimes n}|x\rangle$ encodes the output bitstring $x \in \{0,1\}^n$ in the $X$-eigenbasis (so $|x_+^{\otimes n}\rangle$ is the $n$-qubit state with each qubit in $|+\rangle$ or $|-\rangle$ according to the bits of $x$). The factor $2^t$ compensates for the projection probability.
+
+Starting from the stabilizer of $V^\dagger|x_+^{\otimes n} \otimes +^{\otimes t}\rangle$, one can compute the $w$-qubit marginal distribution (where $w \leq n$ is the number of output qubits of interest) in $O((w+t)(c+t))$ time, where $c$ is the number of Clifford gates. The corresponding stabilizer subspace $\mathcal{V}_0$ simplifies @eq-gadget-prob to
 $$
-where $V$ is the Clifford part of the gadget circuit (all CZ gates plus original Clifford gates) acting on $n + t$ qubits, and $|A\rangle = |H\rangle$ is the magic state. The factor $2^t$ compensates for the projection probability.
+p(x) = 2^t \langle +^{\otimes n} \otimes A^{\otimes t} | \frac{\sum_{g \in \mathcal{V}_0} g}{2^{w+t}} | +^{\otimes n} \otimes A^{\otimes t}\rangle.
+$$
+Since any $Z$ or $Y$ operator on the first $n$ qubits gives zero overlap with $\langle +^{\otimes n}|$, we extract from $\mathcal{V}_0$ only elements acting as $I$ or $X$ on the first $n$ qubits to form a commuting subspace $\mathcal{V}_1$ (via Gaussian elimination). This reduces the probability to an inner product on the $t$-qubit ancilla register alone:
+$$
+p(x) = 2^t \langle A^{\otimes t} | \frac{\sum_{g \in \mathcal{V}_1} g}{2^{w+t}} | A^{\otimes t}\rangle.
+$$ {#eq-gadget-stabilizer}
 
 ## Stabilizer Rank Decomposition
 
@@ -62,11 +71,11 @@ The key computational step is decomposing the magic state tensor product:
 $$
 |A^{\otimes t}\rangle = \sum_{a=1}^{\chi(t)} c_a |\psi_a\rangle, \quad |\psi_a\rangle \in \text{STAB}_t.
 $$
-Given such a decomposition, the output probability requires computing $\chi(t)^2$ stabilizer inner products:
+Given such a decomposition, the output probability (@eq-gadget-stabilizer) requires computing $\chi(t)^2$ stabilizer inner products:
 $$
 p(x) = 2^t \sum_{a,b} c_a c_b^* \langle \psi_a | \frac{\sum_{g \in \mathcal{V}_1} g}{2^{w+t}} | \psi_b \rangle,
 $$
-where $\mathcal{V}_1$ is a commuting subspace extracted from the stabilizer group of $|x_+^{\otimes n} \otimes +^{\otimes t}\rangle$ by Gaussian elimination, retaining only elements acting as $I$ or $X$ on the first $n$ qubits. Each stabilizer inner product is computable in $\text{poly}(n + t)$ time, yielding total runtime $O(\text{poly}(n) \cdot \chi(t)^2)$.
+where $w$ is the number of marginal output qubits and $\mathcal{V}_1$ is the commuting subspace defined above. Each stabilizer inner product is computable in $\text{poly}(n + t)$ time, yielding total runtime $O(\text{poly}(n) \cdot \chi(t)^2)$.
 
 ### Bounds on Stabilizer Rank
 

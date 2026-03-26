@@ -105,7 +105,19 @@ The truncated sampling algorithm (see [Pauli Path Methods](pauli_path.qmd)) alwa
 
 ::: {#thm-space-complexity-ose .callout-important icon="false"}
 ## Theorem: Space Complexity of Truncated Sampling
-The space complexity of the truncated sampling algorithm is related to the noise channel reduction of $1/2$-OSE and unitary enhancement of $0$-OSE of the noisy quantum circuit. Specifically, the number of active Pauli tuples at any layer is bounded by the accumulated 0-OSE from non-Clifford gates, modulated by the noise-induced halting probability from 1/2-OSE.
+Consider the truncated sampling algorithm applied to a depth-$d$ noisy circuit. Let $f(i) = \prod_{k=1}^{d} s_i^{(k)}$ be the cumulative suppression coefficient of the $i$-th Pauli path, where $s_i^{(k)} \leq 1$ is the suppression at layer $k$ (equal to $|\Gamma_j|$ for noise and $1$ for Clifford/T gates). The expected number of active Pauli tuples stored at the final layer satisfies
+$$
+\langle M_d \rangle = \sum_{i=1}^{N_d} f(i),
+$$
+where $N_d$ is the total number of paths in the branching tree.
+
+For a $(Q,k)$-sparse Clifford+T circuit with depolarizing noise parameter $p$ satisfying $2^Q(1-p) < 1$ and $k = \alpha \ln n$, setting the truncation threshold $l = \lceil \ln(nd/\varepsilon) / \ln(1/(2^Q(1-p))) \rceil$ yields
+$$
+\langle M_d \rangle \leq \varepsilon + O(n^\alpha) + \left(\frac{nd}{\varepsilon}\right)^{1/(Q^{-1}\log_2(1/(1-p))\,-\,1)},
+$$
+which is $\text{poly}(n,d,\varepsilon^{-1})$ whenever $Q^{-1}\log_2(1/(1-p)) > 2$.
+
+*Proof.* The bound follows from modeling the number of active paths as a branching process with recurrence $\langle M_{k+1}\rangle = \sum_i f^{(k)}(i)\, s_i^{(k+1)}$, where noise layers suppress ($s_i < 1$) and T-gates branch ($N \to N+1$). For sparse circuits, the path-counting lemma $\sum_{w=k}^l F(w) \leq 2^{Ql}$ combined with the tail bound $\sum_{w>l} 2^{Qw}(1-p)^w \leq nd\,[2^Q(1-p)]^l < \varepsilon$ gives the result. *Source: Folder1, Submission.tex, Lemma (Space complexity of Clifford+T circuit).*
 :::
 
 For sparse Clifford+T circuits, both algorithms yield efficient simulation:
