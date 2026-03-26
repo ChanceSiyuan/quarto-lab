@@ -55,6 +55,8 @@ $$
 \mathbb{D}|P\rangle\!\rangle = (1 - 2p + 2p\delta_{P,I} + 2p\delta_{P,Z})|P\rangle\!\rangle.
 $$
 
+**Convention note.** The parameter $p$ above is the *total error probability* of the Pauli channel $\mathcal{D}(\rho) = (1-p)\rho + (p/3)\sum_j P_j\rho P_j$, giving per-Pauli suppression $1 - 4p/3$. Later sections (including @thm-sparse-CT and the Pauli path integral @def-pauli-path) use the *mixing convention* $\Lambda(\rho) = (1-\gamma)\rho + (\gamma/2)\mathbb{I}$ where $\gamma$ directly equals the per-Pauli suppression deficit (suppression factor $1-\gamma$). These are related by $\gamma = 4p/3$; see [notation conventions](index.qmd#notation-and-conventions) for the full dictionary.
+
 The key observation is that **unital noise channels preserve the number of Pauli operators** (the 0-norm of the Pauli decomposition) while suppressing their magnitudes, just as Clifford gates preserve both the 0-norm and 2-norm. This property is central to the tractability of Pauli path methods: for $|O\rangle\!\rangle = \sum_{i=1}^{s} \sqrt{p_i} |P_i\rangle\!\rangle$, unitary operations preserve only the 2-norm $\sum_i p_i$, while Clifford gates additionally preserve the 0-norm $s$.
 
 ## Pauli Path Decomposition
@@ -362,7 +364,7 @@ In a $(Q,k)$-sparse circuit, every Pauli path has continuous support, so a path 
 
 ::: {#thm-sparse-CT .callout-important icon="false"}
 ## Theorem: Sparse Clifford+T Simulation
-Given a 2-dimensional, $(Q, k)$-sparse, localized Clifford+T circuit $\mathcal{C}$ with depolarizing noise layers $\Lambda(\rho) = (1-p)\rho + (p/2)I$, if
+Given a 2-dimensional, $(Q, k)$-sparse, localized Clifford+T circuit $\mathcal{C}$ with depolarizing noise layers $\Lambda(\rho) = (1-p)\rho + (p/2)I$ (mixing convention; the per-Pauli suppression factor is $1-p$, corresponding to total error probability $3p/4$ in the Pauli channel convention of [§Liouville](#def-vectorization) — see [notation](index.qmd#notation-and-conventions)), if
 $$
 2^Q (1-p) < 1,
 $$
