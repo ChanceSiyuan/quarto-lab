@@ -137,7 +137,7 @@ The decomposition follows from expressing the Pauli channel in terms of its acti
 $$
 p_x X\rho X + p_y Y\rho Y = \min(p_x, p_y)(X\rho X + Y\rho Y) + |p_x - p_y| \cdot \sigma_{\max}\rho \sigma_{\max},
 $$
-where $\sigma_{\max}$ is $X$ if $p_x > p_y$ and $Y$ otherwise. Note that $X\rho X + Y\rho Y + Z\rho Z + \rho = 2(\Lambda_z(\rho) + \Lambda_x(\rho))$ allows extraction of $\Lambda_z$. The residual channel $\mathcal{N}^{(1)}$ only has one non-trivial Pauli component ($X$ or $Y$) and $Z$, giving the CZ-commuting form. See [@rajakumar2024polynomial] for the full derivation. $\square$
+where $\sigma_{\max}$ is $X$ if $p_x > p_y$ and $Y$ otherwise. Note that $X\rho X + Y\rho Y + Z\rho Z + \rho = 2(\Lambda_z(\rho) + \Lambda_x(\rho))$ allows extraction of $\Lambda_z$. The residual channel $\mathcal{N}^{(1)}$ has only one non-trivial Pauli component ($X$ or $Y$, with $p_z = 0$). While this is not CZ-commuting in the sense of @lem-commute-channel, single-Pauli errors propagate through CZ gates as correlated Pauli errors (e.g., $\text{CZ}(X \otimes I) = (Z \otimes X)\text{CZ}$), producing only local Clifford corrections that preserve the graph structure. See [@rajakumar2024polynomial] for the full derivation. $\square$
 :::
 
 ## Graph Interpretation {#sec-graph-interpretation}
