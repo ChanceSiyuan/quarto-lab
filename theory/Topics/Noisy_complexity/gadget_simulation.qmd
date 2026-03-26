@@ -38,7 +38,7 @@ The T-gadget for a single $T$ gate on qubit $q$ consists of:
 $$
 T_q \equiv \text{(prepare } |H\rangle_a\text{)} \to \text{CZ}_{qa} \to \text{(measure } a \text{ in } X \text{ basis)} \to S_q^{m_a},
 $$
-where $m_a \in \{0,1\}$ is the measurement outcome and $S_q^{m_a}$ applies $S$ when $m_a = 1$. The equivalence $T_q |\psi\rangle = \text{CZ}_{qa}(|\psi\rangle_q \otimes |H\rangle_a)$ holds after post-selection on $m_a = 0$.
+where $m_a \in \{0,1\}$ is the measurement outcome and $S_q^{m_a}$ applies $S$ when $m_a = 1$. The equivalence $\langle +|_a \,\text{CZ}_{qa}(|\psi\rangle_q \otimes |H\rangle_a) \propto T_q|\psi\rangle$ holds, where $\langle +|_a$ denotes projection onto the $|+\rangle$ outcome of the $X$-basis measurement on the ancilla.
 :::
 
 By replacing the measurement with a projector onto $|+\rangle$, the adaptive $S$-gate corrections are eliminated and the sampling probability becomes:
