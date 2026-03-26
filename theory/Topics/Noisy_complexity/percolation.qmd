@@ -301,7 +301,7 @@ The rank-width bound closes the loop: the percolation criterion (@thm-percolatio
 
 For certain graph families, **planarity** provides an alternative route to efficient simulation. Planar graph states have rank-width at most $O(\sqrt{n})$, and for planar graphs with bounded tree-width, the MBQC simulation can be done in polynomial time. This is relevant for 2D circuit architectures where the interaction graph is planar or near-planar.
 
-<!-- TODO: Expand the planarity criterion with quantitative bounds from the graph minor theory literature. -->
+Quantitatively, planar graphs satisfy $\text{rwd}(G) \leq \lfloor (3\,\text{bwd}(G) - 1)/2 \rfloor$ where $\text{bwd}$ is the branch-width, and planar graphs on $n$ vertices have branch-width $O(\sqrt{n})$ [@van2007classical]. For 2D local circuits, the interaction graph is planar with bounded degree, giving $\text{rwd}(G) = O(\sqrt{n})$ and hence bond dimension $D = 2^{O(\sqrt{n})}$ — sub-exponential but not polynomial. Polynomial-time MBQC simulation via planarity therefore requires additional structure (e.g., bounded tree-width or sufficient noise-induced fragmentation reducing the effective graph size).
 
 # Connection to Simulation Complexity
 

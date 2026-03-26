@@ -67,7 +67,7 @@ For a depth-$d$ noisy circuit with gates $\{U_i\}$ and noise rate $\gamma$, the 
 $$
 \text{Avg}(\mathcal{C}, O, \gamma) = \text{tr}[\mathcal{C}^\dagger(O)\rho_0] = \sum_{\vec{P} = (P_0, \ldots, P_d)} (1-\gamma)^{\text{wt}(\vec{P})} f(\mathcal{C}, \vec{P}, O),
 $$
-where $f(\mathcal{C}, \vec{P}, O) = \langle\!\langle O | P_d \rangle\!\rangle \prod_{i=1}^{d} \langle\!\langle P_i | \mathbb{U}_i | P_{i-1} \rangle\!\rangle \cdot \text{tr}(P_0 \rho_0)$.
+where $\text{wt}(\vec{P}) := \sum_{j=0}^{d} \text{wt}(P_j)$ is the total Pauli weight of the path, with $\text{wt}(P_j) = |\{i : P_j^{(i)} \neq I\}|$ counting the number of non-identity single-qubit factors in $P_j \in \{I,X,Y,Z\}^{\otimes n}$, and $f(\mathcal{C}, \vec{P}, O) = \langle\!\langle O | P_d \rangle\!\rangle \prod_{i=1}^{d} \langle\!\langle P_i | \mathbb{U}_i | P_{i-1} \rangle\!\rangle \cdot \text{tr}(P_0 \rho_0)$. The suppression factor $(1-\gamma)^{\text{wt}(\vec{P})}$ arises because depolarizing noise at each layer suppresses each non-identity Pauli site by $(1-\gamma)$.
 :::
 
 The sampling probability can be decomposed similarly: the probability of output string $\vec{x} \in \mathbb{F}_2^n$ is obtained by substituting $|O\rangle\!\rangle$ with $|x\rangle\!\rangle$.
@@ -373,7 +373,7 @@ The Pauli path framework admits a natural interpretation through Fourier analysi
 
 This analogy suggests that results on learnability and approximation of Boolean functions with concentrated Fourier spectra may transfer to the quantum setting. Specifically, the question "given $f$ with $\varepsilon$-concentrated Fourier spectrum, is there an efficient approximation algorithm for $\sum_x f(x)$?" is $\#$P-hard in general, but admits FPTAS-type approximations under structural assumptions that parallel the inverse-polynomial spectral decay condition for Pauli path truncation.
 
-<!-- TODO: formalize the Fourier-analytic connection more precisely; relate to classical circuit complexity lower bounds -->
+The formal transfer of Fourier concentration results to the Pauli setting remains an open direction. The principal barrier is that the quantum analogue of "computing $\sum_x f(x)$" (i.e., estimating $\text{tr}(O\rho)$) involves signed Pauli coefficients, whereas classical Fourier concentration arguments typically exploit positivity. Cirstoiu [@cirstoiu2024fourier] provides the most developed treatment of this dictionary; see also [Open Problems](open_problems.qmd) for the connection to classical circuit complexity lower bounds.
 
 
 # Relation to Recent Literature

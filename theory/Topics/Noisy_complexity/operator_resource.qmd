@@ -225,9 +225,9 @@ where $A', B'$ are auxiliary copies of $A, B$ respectively and $d = \dim(A) = \d
 
 Then the MPO-bond dimension growth satisfies:
 $$
-\frac{M(C_T O_{A,B} C_T^\dagger)}{M(C_H O_{A,B} C_H^\dagger)} < c \cdot S,
+\frac{M(C_T O_{A,B} C_T^\dagger)}{M(C_H O_{A,B} C_H^\dagger)} < c \cdot (S + 1),
 $$
-where $M$ denotes the MPO-bond dimension under the $A,B$ partition.
+where $M$ denotes the MPO-bond dimension under the $A,B$ partition. The offset $+1$ ensures a finite bound when $S = 0$ (e.g., for computational-basis projectors, which vectorize to product states with zero Choi entropy).
 :::
 
 The conjecture asserts that the Choi entropy $S$ — a single scalar depending only on the input operator — predicts which resource (magic from T gates, or coherence from H gates) is the bottleneck for entanglement growth. High $S$ (Pauli-like operators) implies T gates dominate; low $S$ (computational-basis-like operators) implies H gates dominate.
