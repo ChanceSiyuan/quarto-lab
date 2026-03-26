@@ -96,6 +96,8 @@ $$
 where $\mathcal{C}_U$ denotes the unitary part and $\mathcal{C}_N$ denotes the incoherent noise part of the circuit $\mathcal{C}$.
 :::
 
+**Status remark.** The bound above is an *upper bound* on the variance whose tightness has not been rigorously established. In particular, the natural approach — decomposing the overall bound as a telescoping product of per-layer OSE ratios $\Sigma^{(k+1)}/\Sigma^{(k)}$ — was attempted but did not yield the expected equality (see the red-marked appendix in the source manuscript). The bound remains valid as stated; only the claim that it is tight (i.e., achievable by some circuit family) is open.
+
 Efficient simulation requires the noise suppression (negative $\mathcal{M}^{(1/2)}$ from incoherent noise) to dominate the magic generation (positive $\mathcal{M}^{(0)}$ from non-Clifford gates). The two OSE parameters play distinct roles:
 
 - **$\mathcal{M}^{(1/2)}$** (1/2-OSE): Controlled entirely by noise. Always $\leq 0$ for incoherent channels (both unital and non-unital). Captures the suppression of Pauli coefficient magnitudes.
