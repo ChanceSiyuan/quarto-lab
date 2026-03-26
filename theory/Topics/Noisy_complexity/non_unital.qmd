@@ -199,24 +199,24 @@ For non-unital channels, this decomposition is provably impossible:
 
 ::: {#lem-no-go .callout-important icon="false"}
 ## Lemma: No-Go for Amplitude Damping Decomposition
-It is impossible to decompose the amplitude damping channel as
+It is impossible to decompose the amplitude damping channel (with damping parameter $p$) as
 $$
-\mathcal{N}(\rho) = (1-p)\mathcal{N}^{(1)}(\rho) + p \, \mathcal{N}^{(3)} \circ \mathcal{N}^{(2)} \circ \Lambda_z(\rho),
+\mathcal{N}(\rho) = (1-\lambda)\mathcal{N}^{(1)}(\rho) + \lambda \, \mathcal{N}^{(3)} \circ \mathcal{N}^{(2)} \circ \Lambda_z(\rho),
 $$
-where $\mathcal{N}^{(1)}, \mathcal{N}^{(2)}$ are Pauli noise channels and $\mathcal{N}^{(3)}$ is non-unital noise with $Z$-shift only.
+for any convex weight $\lambda \in (0,1)$, where $\mathcal{N}^{(1)}, \mathcal{N}^{(2)}$ are Pauli noise channels and $\mathcal{N}^{(3)}$ is non-unital noise with $Z$-shift only.
 
 *Source: Folder2, name.tex, Lemma 2.*
 :::
 
 ::: {.callout-note collapse="true"}
 ## Proof (Click to expand)
-Write the Pauli transfer matrix of amplitude damping with $r = 1-p$:
+Write the Pauli transfer matrix of amplitude damping with parameter $p$ (so $r := 1-p$). We seek a convex decomposition with weight $\lambda$:
 $$
-\begin{pmatrix} 1 & 0 & 0 & 0 \\ 0 & \sqrt{r} & 0 & 0 \\ 0 & 0 & \sqrt{r} & 0 \\ 1-r & 0 & 0 & r \end{pmatrix} = p \begin{pmatrix} 1 & 0 & 0 & 0 \\ 0 & \sqrt{r}/p & 0 & 0 \\ 0 & 0 & \sqrt{r}/p & 0 \\ 0 & 0 & 0 & \lambda \end{pmatrix} + (1-p) \begin{pmatrix} 1 & 0 & 0 & 0 \\ 0 & 0 & 0 & 0 \\ 0 & 0 & 0 & 0 \\ q & 0 & 0 & m \end{pmatrix}.
+\begin{pmatrix} 1 & 0 & 0 & 0 \\ 0 & \sqrt{r} & 0 & 0 \\ 0 & 0 & \sqrt{r} & 0 \\ 1-r & 0 & 0 & r \end{pmatrix} = \lambda \begin{pmatrix} 1 & 0 & 0 & 0 \\ 0 & \sqrt{r}/\lambda & 0 & 0 \\ 0 & 0 & \sqrt{r}/\lambda & 0 \\ 0 & 0 & 0 & \mu \end{pmatrix} + (1-\lambda) \begin{pmatrix} 1 & 0 & 0 & 0 \\ 0 & 0 & 0 & 0 \\ 0 & 0 & 0 & 0 \\ q & 0 & 0 & m \end{pmatrix}.
 $$
 The second matrix has vanishing entries in columns 2 and 3 because $\Lambda_z$ projects out $X, Y$ components, and subsequent Pauli noise and $Z$-shift preserve this structure.
 
-Matching entries: $1-r = (1-p)q$ and $r = p\lambda + (1-p)m$. For the first matrix to represent a valid Pauli channel, we need $p > \sqrt{r}$ (so that $\sqrt{r}/p < 1$). But $q = (1-r)/(1-p) \leq 1$ implies $p \leq r$. For $0 < r < 1$, the conditions $p > \sqrt{r}$ and $p \leq r$ are incompatible since $\sqrt{r} > r$ for $r \in (0,1)$. $\square$
+Matching entries: $1-r = (1-\lambda)q$ and $r = \lambda\mu + (1-\lambda)m$. For the first matrix to represent a valid Pauli channel, we need $\lambda > \sqrt{r}$ (so that $\sqrt{r}/\lambda < 1$). But $q = (1-r)/(1-\lambda) \leq 1$ implies $\lambda \leq r$. For $0 < r < 1$, the conditions $\lambda > \sqrt{r}$ and $\lambda \leq r$ are incompatible since $\sqrt{r} > r$ for $r \in (0,1)$. $\square$
 :::
 
 **Implication.** The no-go theorem means the percolation method --- which reduces the simulation to non-adaptive measurements on graph states via $Z$-projection decomposition --- **cannot be extended to amplitude damping** or other non-unital noise channels. This is a fundamental barrier, not merely a technical limitation.

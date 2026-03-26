@@ -243,7 +243,7 @@ Here $q_c$ is the critical **site occupation** probability: in the Z-projection 
 
 The critical occupation probability $q_c$ depends on the graph structure:
 
-- For random regular graphs of degree $\Delta$: $q_c \approx 1/(\Delta - 1)$ (on locally tree-like graphs, site and bond percolation thresholds coincide to leading order) [@bollobas2001random].
+- For random $\Delta$-regular graphs: $q_c \approx 1/(\Delta - 1)$, since these graphs are locally tree-like with high probability and on trees the critical threshold is exactly $1/(\Delta - 1)$ [@bollobas2001random]. (Note: site and bond percolation thresholds coincide on trees but can differ on general locally tree-like graphs with non-uniform degree distributions.)
 - For 2D lattice graphs (relevant to geometrically local circuits): $q_c \approx 0.593$ for site percolation on the square lattice; the bond percolation threshold is exactly $1/2$ [@grimmett1999percolation].
 - For the specific interaction graphs arising from circuit diagonalization, $q_c$ depends on the circuit architecture and must generally be determined numerically.
 
