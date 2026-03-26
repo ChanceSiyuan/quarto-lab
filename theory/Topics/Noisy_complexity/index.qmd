@@ -91,7 +91,7 @@ Throughout these notes, we use the following notation:
 | $C(\alpha)$ | Phase transition diagnostic: $\log \max_i \{c_i^2 \, i^\alpha\}$ |
 | $Q_\alpha(O)$ | Operator stabilizer $\alpha$-entropy |
 | $\chi(t)$ | Stabilizer rank of $\lvert A^{\otimes t}\rangle$ |
-| $\lvert H \rangle$ | Magic state: $\cos(\pi/8)\lvert 0\rangle + \sin(\pi/8)\lvert 1\rangle$ |
+| $\lvert H \rangle \equiv \lvert A \rangle$ | Magic state: $\cos(\pi/8)\lvert 0\rangle + \sin(\pi/8)\lvert 1\rangle$. Both notations are used interchangeably; $\lvert A \rangle$ follows the convention of [@bravyi2016improved; @bravyi2019simulation] |
 | $\Lambda_z$ | Z-projection channel: $\rho \mapsto \lvert 0\rangle\langle 0\rvert \rho \lvert 0\rangle\langle 0\rvert + \lvert 1\rangle\langle 1\rvert \rho \lvert 1\rangle\langle 1\rvert$ |
 
 For quantum channels, we use $\mathcal{E}, \mathcal{N}, \Lambda$ for general channels, noise channels, and projection channels respectively. The trace norm is $\|A\|_1 = \text{tr}\sqrt{A^\dagger A}$ and the Frobenius norm is $\|A\|_F = \sqrt{\text{tr}(A^\dagger A)}$. **Notation warning:** The Pauli coefficient $\ell_1$-norm $\|O\|_{\ell_1} := \sum_P |c_P|$ (where $O = \sum_P c_P P$) is a distinct quantity from the trace norm $\|O\|_1$; see [Open Problems](open_problems.qmd) for its role as a complexity indicator.

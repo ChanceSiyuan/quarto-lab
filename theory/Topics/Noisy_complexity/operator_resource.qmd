@@ -290,7 +290,7 @@ In the Pauli path framework, Clifford gates are the natural "free" operations: t
 | **Coherence** | H gates (in computational basis) | Coherence monotones | Basis mismatch in truncation |
 | **Entanglement** | Two-qubit gates (CNOT, CZ) | Bond dimension, Schmidt rank | Tensor network contraction cost |
 
-The tensor network simulation cost is governed by the bond dimension, which depends on *both* magic and coherence through the operator entanglement. The observation that CCX (Toffoli) and CX (CNOT) can produce large bond dimension even though they are "classically related" operations suggests that **true entanglement** (as opposed to classical correlation) requires non-stabilizer structure.
+The tensor network simulation cost is governed by the bond dimension, which depends on *both* magic and coherence through the operator entanglement. Notably, CCX (Toffoli) and CX (CNOT) — both classical-reversible gates — can produce operators with large MPO bond dimension even when those operators remain separable. This occurs because back-propagation through classical-reversible gates can spread Pauli weight across exponentially many terms without generating quantum entanglement, so the large bond dimension reflects **classical correlation complexity** (a diffuse decomposition in the chosen tensor basis) rather than genuine entanglement. Any resource theory of simulation complexity must therefore account for the *positivity* structure of operators, not just their Pauli decomposition statistics.
 
 ## Entanglement vs Classical Correlation
 
@@ -312,7 +312,7 @@ The observation from the research diary that $|+\rangle^{\otimes n}$ can acquire
 
 Several questions remain unresolved (see also [Open Problems](open_problems.qmd)):
 
-1. **Quantitative bound**: Can the relationship $\mathcal{M}_e \leq \mathcal{M}_{\text{magic}} \times \mathcal{M}_{\text{coherence}}$ be made rigorous, with $\mathcal{M}_e$ being an entanglement measure and the right-hand side involving vectorization-based quantities?
+1. **Quantitative bound**: Can the relationship $\mathcal{M}_e(O) \leq \mathcal{M}_{\text{magic}}(O) \times \mathcal{M}_{\text{coherence}}(O)$ be made rigorous? Here $\mathcal{M}_e(O)$ denotes the MPO bond dimension (or Schmidt rank) of the operator $O$ under a fixed bipartition, $\mathcal{M}_{\text{magic}}(O) = 2^{Q_0(O)}$ is the support size of the Pauli decomposition (0-OSE), and $\mathcal{M}_{\text{coherence}}(O)$ is a coherence monotone measuring the off-diagonal complexity in the computational basis (e.g., the number of distinct Pauli types appearing in the decomposition). The conjecture asserts that operator entanglement is bounded by the product of magic and coherence resources.
 
 2. **Free resource choice**: The choice of free operations (Clifford) still has degrees of freedom. For two-qubit gates $G$ with eigenvalues only $\pm 1$ (permutation matrices in some basis), such as SWAP, CZ, CY, iSWAP — what resources do they lack for generating entanglement? The numerical evidence shows that CZ behaves differently from CX/CY for Pauli inputs (zero bond entropy without H gates), suggesting the answer depends on the commutation structure between the gate and the input basis.
 
