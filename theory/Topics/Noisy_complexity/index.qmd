@@ -87,7 +87,7 @@ Throughout these notes, we use the following notation:
 | $\mathcal{N}_\gamma$ | Noise channel with rate $\gamma$ (e.g., depolarizing) |
 | $\lvert P \rangle\!\rangle$ | Liouville (vectorized) representation of operator $P$ |
 | $\hat{L}_g$ | Liouville matrix of gate $g$ |
-| $c_P$ | Pauli coefficient: $c_P = \text{tr}(P \cdot \mathcal{C}(\rho)) / D$ |
+| $c_P$ | Pauli coefficient of the Heisenberg-evolved observable: $O_H = \mathcal{C}^\dagger(O) = \sum_P c_P P$, i.e., $c_P = 2^{-n}\text{tr}(P \cdot \mathcal{C}^\dagger(O))$ |
 | $\{c_i^2\}$ | Pauli spectrum (sorted squared coefficients) |
 | $C(\alpha)$ | Phase transition diagnostic: $\log \max_i \{c_i^2 \, i^\alpha\}$ |
 | $Q_\alpha(O)$ | Operator stabilizer $\alpha$-entropy |

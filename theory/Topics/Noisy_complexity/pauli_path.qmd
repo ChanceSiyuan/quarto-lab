@@ -83,7 +83,7 @@ Under the **low-average input** assumption ($\|\mathcal{E}^{-1} \sum_s |s\rangle
 $$
 |\mathcal{E}|^{-1} \sum_s |\langle O \rangle_{|s\rangle} - \langle \tilde{O} \rangle_{|s\rangle}|^2 \leq \|O - \tilde{O}\|_F^2,
 $$
-reducing the average-case error to the Frobenius norm of the truncation residual. This reduction holds for at least $1-\delta$ fraction of instances in the circuit ensemble, yielding additive error $\varepsilon/\delta$ with $n^{l/d} \cdot 2^{O(l)}$ time complexity.
+reducing the average-case error to the Frobenius norm of the truncation residual. Since $\Delta$ is the *squared* estimation error and $\mathbb{E}_{\mathcal{C}}[\Delta] \leq \varepsilon := \|\Delta O_H\|_F^2$, Markov's inequality gives $\Pr(\Delta \geq \varepsilon/\delta) \leq \delta$, so the additive error is $\sqrt{\varepsilon/\delta}$ for at least $1-\delta$ fraction of instances. The time complexity is $n^{l/d} \cdot 2^{O(l)}$.
 
 As a concrete example, Schuster et al. [@schuster2024polynomial] proved that the optimal truncation error satisfies $\varepsilon^2 \leq e^{-\gamma(l+1)} \cdot \|O\|_F^2$ with time complexity $T = O(n^{l/d})$. Increasing the precision by $l \to l + l_0$ yields $\varepsilon^2 \to e^{-\gamma l_0} \varepsilon^2$ and $T \to T \cdot n^{l_0/d}$, illustrating the exponential-in-$l$ error decay characteristic of noisy circuits.
 
@@ -149,7 +149,7 @@ For efficient classical simulation via Pauli truncation, the Pauli spectrum $\{c
 $$
 c_k^2 = o(k^{-1}).
 $$
-Specifically, if the algorithm complexity scales as $K = y\varepsilon^{-r} + o(\varepsilon^{-r})$, then the spectrum must decay at least as $c_k^2 = \frac{2y^{2/r}}{rx} k^{-(1+2/r)} + o(k^{-(1+2/r)})$.
+Specifically, if the algorithm complexity scales as $K = y\varepsilon^{-r} + o(\varepsilon^{-r})$, then the spectrum must decay at least as $c_k^2 = \frac{2y^{2/r}}{r} k^{-(1+2/r)} + o(k^{-(1+2/r)})$.
 :::
 
 This establishes a **lower bound on spectral decay**: coefficients that decay slower than $k^{-1}$ preclude any polynomial-time truncation algorithm. The only assumption in the derivation is the randomness that enables reduction from estimation error to the Frobenius norm of $\Delta O_H$.
@@ -301,7 +301,7 @@ The space complexity of the truncated sampling algorithm is governed by the nois
 
 ## Flat Spectrum Separation
 
-A revealing separation arises for **flat spectra**: consider a noisy circuit where $O_H$ has $2^n$ Pauli operators all with $c_i = 2^{-n}$. Although the flat spectrum satisfies $c_k^2 \leq C k^{-(1+\delta)}$ for any $\delta \leq 1$ (since $4^{-n} \cdot k^{1+\delta} \leq 2^{n(\delta - 1)} \to 0$), efficient truncation to $K = \text{poly}(n)$ terms requires decay with $\delta > 1$, which the flat spectrum does not satisfy (see the [detailed analysis](open_problems.qmd#sec-operator-1-norm)). However, sampling-based methods succeed because each sampled Pauli has expectation value equal to the exact result, yielding zero variance. This demonstrates that truncation and sampling exploit fundamentally different properties of the Pauli decomposition.
+A revealing separation arises for **flat spectra**: consider a noisy circuit where $O_H$ has $2^n$ Pauli operators all with $c_i = 2^{-n}$. The flat spectrum satisfies $c_k^2 \leq C k^{-(1+\delta)}$ for any $\delta < 1$ (since $4^{-n} \cdot k^{1+\delta}\big|_{k=2^n} = 2^{n(\delta - 1)} \to 0$), hence meets the necessary condition $c_k^2 = o(k^{-1})$ from @thm-necessary-condition. Indeed, the total squared mass $\sum_k c_k^2 = 2^{-n}$ is exponentially small, so Frobenius-norm truncation to any $K \geq 1$ achieves negligible error. The flat spectrum therefore poses no barrier to Frobenius-norm FPTAS. However, **direct $\ell_1$-truncation** (keeping the top $K = \text{poly}(n)$ terms) leaves $\ell_1$-residual $\sum_{k > K} |c_k| \approx 1$, which fails. This stronger convergence requires $\delta > 1$ in the spectral envelope (see the [detailed analysis](open_problems.qmd#sec-operator-1-norm)), a strictly stronger condition than the FPTAS necessary condition $\delta > 0$. Meanwhile, sampling-based methods succeed because each sampled Pauli has expectation value equal to the exact result, yielding zero variance. This demonstrates that truncation and sampling exploit fundamentally different properties of the Pauli decomposition, and that the $\ell_1$-truncation and Frobenius-norm truncation thresholds are distinct.
 
 More precisely, the implication "$\sum |c_i|$ is poly $\implies$ $|c_i|^2$ decays faster than inverse polynomial" was shown to be **incorrect** in the research diary (Round 11, 2.16). Taking $c_i = i^{-1/2-\delta}$ gives $\sum |c_i| \sim [O(2^n)]^{1/2-\delta}$, which remains exponentially large. Conversely, "$|c_i|^2$ decays faster than $i^{-2}$ $\implies$ $\sum |c_i|$ is poly" **is** correct. This asymmetry means that some instances efficiently solvable by sampling are hard for truncation, but the reverse relationship remains an open question.
 
