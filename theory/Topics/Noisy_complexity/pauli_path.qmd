@@ -314,7 +314,7 @@ This toy model demonstrates the advantage of sampling over truncation in a concr
 ## Theorem: Clifford + Amplitude Damping Complexity
 Consider a fixed Clifford NISQ circuit composed of $|0\rangle^{\otimes n}$ inputs, Clifford gate layers, and amplitude-damping channels with parameter $p < 1/2$. To estimate the Pauli average within additive error $\varepsilon$ for all circuits of this kind:
 
-1. The complexity of any Pauli path truncation algorithm must exhibit **sub-exponential growth**, bounded below by $O(n^{-1} e^{H(p) \cdot n})$, where $H(p) = -p\ln p - (1-p)\ln(1-p)$ is the binary entropy.
+1. The complexity of any Pauli path truncation algorithm is bounded below by $\Omega(n^{-1} e^{H(p) \cdot n})$, where $H(p) = -p\ln p - (1-p)\ln(1-p)$ is the binary entropy. (This is exponential in $n$, though with base $e^{H(p)} < 2$ for $p \neq 1/2$.)
 2. The gate sampling algorithm estimates the Pauli average with **bounded variance** ($\text{Var} \leq 1$).
 :::
 
@@ -322,7 +322,7 @@ Consider a fixed Clifford NISQ circuit composed of $|0\rangle^{\otimes n}$ input
 ## Proof Sketch (Click to expand)
 The lower bound for truncation follows from examining $Z^{\otimes n}$ back-propagated through a single layer of amplitude damping. The output Pauli strings have the form $O = \sum_{s \in \{0,1\}^n} p(s) Z^{\otimes s}$ where $Z^{\otimes s} := \bigotimes_{i=1}^n Z^{s_i}$ and the suppression coefficient is $p^{n-|s|}(1-p)^{|s|}$. This is a binomial distribution $K \sim \text{Bin}(n, 1-p)$ concentrated near $i = n(1-p)$.
 
-The optimal truncation retains $Z$ strings with weight in $[n(1-p) - \varepsilon, n(1-p) + \varepsilon]$, requiring at least $\binom{n}{np} \geq \frac{1}{2\pi n \sqrt{p(1-p)}} e^{H(p) \cdot n}$ Pauli operators. Thus truncation complexity is sub-exponential.
+The optimal truncation retains $Z$ strings with weight in $[n(1-p) - \varepsilon, n(1-p) + \varepsilon]$, requiring at least $\binom{n}{np} \geq \frac{1}{2\pi n \sqrt{p(1-p)}} e^{H(p) \cdot n}$ Pauli operators. Thus truncation complexity is exponential in $n$ (with base $e^{H(p)} < 2$).
 
 For the sampling algorithm: amplitude damping on $X, Y$ Pauli components simply rescales by $\sqrt{1-p}$ (no branching), while $Z$ components branch to $I$ with probability $p$ without increasing the variance, since the branching coefficient sums to 1 (unlike $T$-gates where the sum is under the 2-norm). The resulting estimator has $\text{Var} \leq 1$. $\square$
 :::

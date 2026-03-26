@@ -35,7 +35,7 @@ $$
 $$
 where $G = (V, E)$ is the interaction graph. Vertices correspond to qubits (both original and gadget ancillas) and edges encode CZ entangling operations accumulated across all circuit layers. The structure of $G$ is fully determined by the original circuit's Clifford gates and T-gate placement.
 
-::: {#thm-noisy-reduction .callout-important icon="false"}
+::: {#thm-noisy-reduction-perc .callout-important icon="false"}
 ## Theorem: Noisy Reduction to Graph States
 Let $\text{Cl}$ be a Clifford gate and $\mathcal{N}$ a Pauli noise channel. In the noiseless case, $\text{Cl}$ acting on a stabilizer state $|S\rangle$ can be decomposed as $\text{Cl}\,|S\rangle = L \cdot G\,|S\rangle$, where $G$ is a product of CZ gates and $L$ consists of local Clifford gates. This decomposition remains valid under noise:
 $$
@@ -234,7 +234,7 @@ The percolation threshold separates two qualitatively different regimes:
 The critical percolation probability $p_c$ depends on the graph structure:
 
 - For random regular graphs of degree $\Delta$: $p_c \approx 1/(\Delta - 1)$.
-- For 2D lattice graphs (relevant to geometrically local circuits): $p_c \approx 0.593$ for bond percolation on the square lattice.
+- For 2D lattice graphs (relevant to geometrically local circuits): $p_c \approx 0.593$ for site percolation on the square lattice (the bond percolation threshold is exactly $1/2$).
 - For the specific interaction graphs arising from circuit diagonalization, $p_c$ depends on the circuit architecture and must generally be determined numerically.
 
 ## Application to Noisy IQP Circuits

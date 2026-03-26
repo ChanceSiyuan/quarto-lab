@@ -140,9 +140,9 @@ The expectation $\mathbb{E}[A]$ equals the Pauli average, and the variance is bo
 
 ## Truncation Lower Bound
 
-::: {#thm-toy-model .callout-important icon="false"}
+::: {#thm-toy-model-nonunital .callout-important icon="false"}
 ## Theorem: Truncation Lower Bound for Clifford + Amplitude Damping
-Consider a fixed Clifford NISQ circuit with $|0\rangle^{\otimes n}$ inputs, Clifford gate layers, and amplitude damping noise with parameter $p < 1/2$. To estimate the Pauli average within additive error $\varepsilon$ for all circuits of this kind, the complexity of Pauli path truncation must exhibit sub-exponential growth:
+Consider a fixed Clifford NISQ circuit with $|0\rangle^{\otimes n}$ inputs, Clifford gate layers, and amplitude damping noise with parameter $p < 1/2$. To estimate the Pauli average within additive error $\varepsilon$ for all circuits of this kind, the complexity of Pauli path truncation is bounded below by:
 $$
 \Omega\!\left(n^{-1} e^{H(p) \cdot n}\right),
 $$
