@@ -159,8 +159,16 @@ where $\mathcal{G}$ consists of phase (CZ) gates producing the graph state, $\ma
 $$
 \prod_{i=1}^d \widetilde{\mathcal{N}}_i = \sum_{\vec{s} \in \mathbb{F}_2^n} p(\vec{s}) \, Z^{\vec{s}} \rho \, Z^{\vec{s}} = \sum_{\vec{s} \in \mathbb{F}_2^n} q(\vec{s}) \, \Lambda_z^{\otimes \vec{s}}(\rho),
 $$
-with $p(\vec{s}) = \sum_{\vec{u}: \vec{u} \cdot \vec{s} = |\vec{s}|} q(\vec{u})/2^{|\vec{u}|}$ and $q(\vec{s}) = \sum_{\vec{u}: \vec{u} \cdot \vec{s} = |\vec{s}|} p(\vec{u})(-1)^{|\vec{s}| + |\vec{u}|} 2^{|\vec{s}|}$.
+with $p(\vec{s}) = \sum_{\vec{u}: \vec{s} \subseteq \vec{u}} q(\vec{u})/2^{|\vec{u}|}$ and $q(\vec{s}) = \sum_{\vec{u}: \vec{s} \subseteq \vec{u}} p(\vec{u})(-1)^{|\vec{s}| + |\vec{u}|} 2^{|\vec{s}|}$.
+
+Here $\vec{s} \subseteq \vec{u}$ means $\text{supp}(\vec{s}) \subseteq \text{supp}(\vec{u})$, i.e., $u_i = 1$ whenever $s_i = 1$ (equivalently, $\vec{u} \cdot \vec{s} = |\vec{s}|$ where $|\vec{s}| = \sum_i s_i$).
 :::
+
+**Derivation of the $p \leftrightarrow q$ conversion.** The two representations correspond to expanding the composite noise channel in either the **Z-flip basis** ($Z^{\vec{s}} \rho \, Z^{\vec{s}}$) or the **Z-projection basis** ($\Lambda_z^{\otimes \vec{s}}(\rho)$). The conversion follows from the single-qubit identity $\Lambda_z(\rho) = \frac{1}{2}(\rho + Z\rho Z)$, which gives
+$$
+\Lambda_z^{\otimes \vec{s}}(\rho) = \frac{1}{2^{|\vec{s}|}} \sum_{\vec{v}: \vec{v} \subseteq \vec{s}} Z^{\vec{v}} \rho \, Z^{\vec{v}}.
+$$
+Substituting into $\sum_{\vec{s}} q(\vec{s}) \Lambda_z^{\otimes \vec{s}}(\rho) = \sum_{\vec{s}} p(\vec{s}) Z^{\vec{s}} \rho \, Z^{\vec{s}}$ and matching coefficients of $Z^{\vec{s}} \rho \, Z^{\vec{s}}$ yields $p(\vec{s}) = \sum_{\vec{u} \supseteq \vec{s}} q(\vec{u}) / 2^{|\vec{u}|}$. The inverse formula for $q(\vec{s})$ is the **Möbius inversion** on the Boolean lattice $(\mathbb{F}_2^n, \subseteq)$, with Möbius function $\mu(\vec{s}, \vec{u}) = (-1)^{|\vec{u}| - |\vec{s}|}$, giving the stated expression.
 
 The percolation behavior is governed by the distribution $q(\vec{s})$: as long as $p(\vec{0}) > 1/2$ and $p(\vec{s}_1) > p(\vec{s}_2)$ whenever $|\vec{s}_1| < |\vec{s}_2|$, the distribution $q(\vec{s})$ is always non-negative and can be classically sampled. In this regime, given a Z-projection pattern $\vec{s}$, the resulting stabilizer state entangles at most $n - |\vec{s}|$ qubits.
 
@@ -235,8 +243,8 @@ Here $q_c$ is the critical **site occupation** probability: in the Z-projection 
 
 The critical occupation probability $q_c$ depends on the graph structure:
 
-- For random regular graphs of degree $\Delta$: $q_c \approx 1/(\Delta - 1)$ (on locally tree-like graphs, site and bond percolation thresholds coincide to leading order).
-- For 2D lattice graphs (relevant to geometrically local circuits): $q_c \approx 0.593$ for site percolation on the square lattice (the bond percolation threshold is exactly $1/2$).
+- For random regular graphs of degree $\Delta$: $q_c \approx 1/(\Delta - 1)$ (on locally tree-like graphs, site and bond percolation thresholds coincide to leading order) [@bollobas2001random].
+- For 2D lattice graphs (relevant to geometrically local circuits): $q_c \approx 0.593$ for site percolation on the square lattice; the bond percolation threshold is exactly $1/2$ [@grimmett1999percolation].
 - For the specific interaction graphs arising from circuit diagonalization, $q_c$ depends on the circuit architecture and must generally be determined numerically.
 
 ## Application to Noisy IQP Circuits
