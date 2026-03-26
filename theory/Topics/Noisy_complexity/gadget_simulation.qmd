@@ -94,9 +94,9 @@ Using approximate decompositions and randomized sampling, Bravyi and Gosset [@br
 
 The connection between gadget-based and Pauli path methods emerges through the **Heisenberg picture** of the gadget circuit. After T-gadget replacement, the original $n$-qubit circuit becomes an $(n+t)$-qubit Clifford circuit (with noise channels), and the sampling probability takes the form:
 $$
-p_C(+^{\otimes n}) = 2^t \cdot \text{tr}\left(|0A\rangle\langle 0A|^{\otimes(n+t)} \cdot \hat{O}\right),
+p_C(+^{\otimes n}) = 2^t \cdot \text{tr}\left[\left(|0\rangle\langle 0|^{\otimes n} \otimes |A\rangle\langle A|^{\otimes t}\right) \cdot \hat{O}\right],
 $$
-where $|0A\rangle = |0\rangle^{\otimes n} \otimes |A\rangle^{\otimes t}$ is the input state and $\hat{O}$ is the Heisenberg-evolved measurement operator:
+where the input state is $|0\rangle^{\otimes n} \otimes |A\rangle^{\otimes t}$ and $\hat{O}$ is the Heisenberg-evolved measurement operator:
 $$
 \hat{O} = (\mathcal{N}_1^\dagger \circ \mathcal{CZ}_1^\dagger \circ \mathcal{C}_1^\dagger) \circ \cdots \circ (\mathcal{N}_d^\dagger \circ \mathcal{CZ}_d^\dagger \circ \mathcal{C}_d^\dagger) \circ \mathcal{N}_0^\dagger[|+\rangle\langle+|^{\otimes(n+t)}].
 $$

@@ -144,7 +144,7 @@ where $\sigma_{\max}$ is $X$ if $p_x > p_y$ and $Y$ otherwise. Note that $X\rho 
 
 The Z-projection decomposition translates the noisy circuit into a **site percolation** problem on the interaction graph:
 
-- **With probability $1 - 2p$:** The noise channel $\mathcal{N}^{(1)}$ acts, which commutes with CZ gates and preserves graph connectivity. The vertex remains in the graph.
+- **With probability $1 - 2p$:** The noise channel $\mathcal{N}^{(1)}$ acts. Although $\mathcal{N}^{(1)}$ is *not* CZ-commuting (@lem-commute-channel), it consists of a single-Pauli channel ($X$- or $Y$-only) whose errors propagate through CZ gates as correlated Pauli corrections (e.g., $\text{CZ}(X \otimes I) = (Z \otimes X)\text{CZ}$). These corrections are local Cliffords that preserve graph connectivity and are absorbed into the local frame $\mathcal{L}$ of @thm-noisy-clifford-graph. The vertex remains in the graph.
 - **With probability $2p$:** The Z-projection $\Lambda_z$ acts, which decoheres the qubit into the computational basis. The vertex is effectively **deleted** from the graph, along with all incident edges.
 
 For a circuit with $d$ layers of noise acting on $n + t$ qubits, the decomposition produces a random subgraph: each vertex $v$ is independently deleted with probability $2p_v$ (where $p_v$ depends on the local noise parameters after Clifford conjugation). The resulting graph state, restricted to surviving vertices, determines the simulation difficulty.
