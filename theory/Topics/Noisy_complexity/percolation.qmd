@@ -179,14 +179,14 @@ The percolation-based simulation proceeds through a randomized algorithm that ge
     c. **Noise channels:** For each local Pauli noise on qubit $i$, sample: with probability $2p_i$, **delete** vertex $i$ and all incident edges (Z-projection); otherwise, apply the CZ-commuting residual.
 3. For the measurement on $\langle 0|^{\otimes n}$: randomly **remove** or **retain** each original vertex (corresponding to the computational basis measurement, which is a $Z$-measurement that deletes edges).
 4. Obtain a graph $G'$ on the remaining $\leq t$ ancilla vertices.
-5. Compute $\langle G' | L \, (H|T\rangle)^{\otimes t'} \rangle$ --- the inner product between the percolated graph state and the product magic state --- using MBQC simulation methods.
+5. Compute $\langle G' | L \, |A\rangle^{\otimes t'} \rangle$ --- the inner product between the percolated graph state and the product magic state --- using MBQC simulation methods.
 :::
 
 ::: {#thm-variance-bound .callout-important icon="false"}
 ## Theorem: Variance Bound for Percolation Sampling
 The algorithm samples from graph states with local Clifford corrections $\{|G_i\rangle, L_i\}_i$, where each sample satisfies
 $$
-|\langle G_i | L_i (H|T\rangle)^{\otimes t}|^2 \leq 2^{-t'_i},
+|\langle G_i | L_i \, |A\rangle^{\otimes t}|^2 \leq 2^{-t'_i},
 $$
 where $t'_i$ is the number of surviving ancilla vertices in the $i$-th sample. The variance of the estimator is bounded by $\text{Var} \leq 1$.
 :::

@@ -276,7 +276,15 @@ While the variance is always bounded, the **space complexity** (number of Pauli 
 
 ::: {#thm-space-complexity .callout-important icon="false"}
 ## Theorem: Space Complexity
-The space complexity of the truncated sampling algorithm is governed by the noise channel reduction of $\frac{1}{2}$-OSE and the unitary enhancement of $0$-OSE. If the $\frac{1}{2}$-OSE of $\mathcal{C}^\dagger P^{(0)}$ is exponentially large on average, Pauli path truncation methods become infeasible.
+The expected number of active Pauli tuples stored at layer $d$ is $\langle M_d \rangle = \sum_{i=1}^{N_d} f(i)$, where $f(i) = \prod_{k=1}^{d} s_i^{(k)}$ is the cumulative suppression coefficient of the $i$-th path (with $s_i^{(k)} = |\Gamma_j| \leq 1$ at noise layers and $s_i^{(k)} = 1$ at Clifford/T layers). The recurrence governing the branching process is $\langle M_{k+1}\rangle = \sum_i f^{(k)}(i)\, s_i^{(k+1)}$, where noise layers suppress ($s_i < 1$) and T-gates branch ($N \to N+1$).
+
+For a $(Q,k)$-sparse Clifford+T circuit with depolarizing noise parameter $p$ satisfying $2^Q(1-p) < 1$ and $k = \alpha \ln n$, truncating at Pauli weight $l = \lceil \ln(nd/\varepsilon) / \ln(1/(2^Q(1-p))) \rceil$ yields
+$$
+\langle M_d \rangle \leq \varepsilon + O(n^\alpha) + \left(\frac{nd}{\varepsilon}\right)^{1/(Q^{-1}\log_2(1/(1-p))\,-\,1)},
+$$
+which is $\text{poly}(n,d,\varepsilon^{-1})$ whenever $Q^{-1}\log_2(1/(1-p)) > 2$. In particular, if $\frac{1}{2}$-OSE of $\mathcal{C}^\dagger P^{(0)}$ is exponentially large on average, Pauli path truncation becomes infeasible. See [Operator Resource Theory](operator_resource.qmd#thm-space-complexity-ose) for the full derivation.
+
+*Source: Folder1, Submission.tex, Lemma (Space complexity of Clifford+T circuit).*
 :::
 
 **Advantages over direct truncation.** The truncated sampling algorithm has several notable properties:
