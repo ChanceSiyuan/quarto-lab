@@ -30,17 +30,17 @@ $$
 
 ::: {#def-vectorization .callout-note icon="false"}
 ## Definition: Vectorization
-Given an $n$-qubit operator $O = \sum_{ij} o_{ij} |i\rangle\langle j|$, the vectorization mapping $\mathcal{V}$ acts as $\mathcal{V}[O] = |O\rangle\!\rangle = \sum_{ij} o_{ij} |i\rangle |j\rangle$. This satisfies the inner product relation $\langle\!\langle A | B \rangle\!\rangle = 2^{-n} \text{tr}(A^\dagger B)$ and $\|A\|_F^2 = \langle\!\langle A | A \rangle\!\rangle$.
+Given an $n$-qubit operator $O = \sum_{ij} o_{ij} |i\rangle\langle j|$, the vectorization mapping $\mathcal{V}$ acts as $\mathcal{V}[O] = |O\rangle\!\rangle = \sum_{ij} o_{ij} |i\rangle |j\rangle$. With the normalized inner product $\langle\!\langle A | B \rangle\!\rangle := 2^{-n} \text{tr}(A^\dagger B)$, the Pauli operators form an orthonormal basis: $\langle\!\langle P | Q \rangle\!\rangle = \delta_{PQ}$. The squared norm is $\langle\!\langle A | A \rangle\!\rangle = 2^{-n}\|A\|_F^2 =: \|A\|_{n2}^2$, where $\|\cdot\|_{n2} = 2^{-n/2}\|\cdot\|_F$ is the normalized 2-norm.
 :::
 
 The Pauli operators map to Bell states under vectorization, giving the **Pauli-Bell correspondence**:
 
 | Pauli | Vectorized form |
 |-------|----------------|
-| $I$ | $\|I\rangle\!\rangle = \frac{1}{\sqrt{2}}(\|00\rangle + \|11\rangle) = \sqrt{2}\|\Phi^+\rangle$ |
-| $Z$ | $\|Z\rangle\!\rangle = \frac{1}{\sqrt{2}}(\|00\rangle - \|11\rangle) = \sqrt{2}\|\Phi^-\rangle$ |
-| $X$ | $\|X\rangle\!\rangle = \frac{1}{\sqrt{2}}(\|01\rangle + \|10\rangle) = \sqrt{2}\|\Psi^+\rangle$ |
-| $Y$ | $\|Y\rangle\!\rangle = \frac{i}{\sqrt{2}}(\|10\rangle - \|01\rangle) = -i\sqrt{2}\|\Psi^-\rangle$ |
+| $I$ | $|I\rangle\!\rangle = |00\rangle + |11\rangle = \sqrt{2}|\Phi^+\rangle$ |
+| $Z$ | $|Z\rangle\!\rangle = |00\rangle - |11\rangle = \sqrt{2}|\Phi^-\rangle$ |
+| $X$ | $|X\rangle\!\rangle = |01\rangle + |10\rangle = \sqrt{2}|\Psi^+\rangle$ |
+| $Y$ | $|Y\rangle\!\rangle = i(|10\rangle - |01\rangle) = -i\sqrt{2}|\Psi^-\rangle$ |
 
 A quantum channel $\mathcal{D}(\cdot) = \sum_i M_i \cdot M_i^\dagger$ acts as the Liouville matrix $\mathbb{D} = \sum_i M_i \otimes M_i^*$ on the vectorized space. For **depolarizing noise** with parameter $p$:
 $$
@@ -162,7 +162,7 @@ The spectral condition can be diagnosed numerically via the function $C(\alpha)$
 ## Theorem: Phase Transition Diagnostic
 If there exists a truncation algorithm within the FPTAS class, then the function
 $$
-C(\alpha) := \log \max_{i=1}^{M} \{c_i^2 \cdot i^\alpha\}
+C(\alpha) := \max_{i=1}^{M} \{c_i^2 \cdot i^\alpha\}
 $$
 exhibits a first-order phase transition at a critical point $\alpha_0 > 1 + 2/\eta$:
 $$
@@ -182,11 +182,11 @@ For $\alpha \leq 1 + 2/\eta$, the maximum is achieved at $i = 1$ and is $O(1)$. 
 
 **Practical significance.** Numerically computing $C(\alpha)$ for a given noisy circuit directly reveals whether polynomial-time truncation is feasible. The critical exponent $\alpha_0$ determines the FPTAS polynomial degree $\eta = 2/(\alpha_0 - 1)$. Note also that $M = O(\text{poly}(n))$ always enables efficient simulation regardless of the spectral shape, since the maximum is polynomial in all regimes.
 
-**Alternative derivation.** The function $C(\alpha)$ can also be understood through the bounding function $h(\alpha, x) = C(\alpha) x^{-(1+\alpha)} \geq c_x^2$. In the ideal case $c_x^2 = \frac{2}{\eta} A^{2/\eta} x^{-(1+2/\eta)}$, this yields
+**Alternative derivation.** The function $C(\alpha)$ can also be understood through the bounding function $h(\alpha, x) = C(\alpha) x^{-\alpha} \geq c_x^2$, which rearranges to $C(\alpha) = \max_x \{c_x^2 \cdot x^\alpha\}$, consistent with the definition above. In the ideal case $c_x^2 = \frac{2}{\eta} A^{2/\eta} x^{-(1+2/\eta)}$, this yields
 $$
-C(\alpha) = \max_x \frac{2}{\eta} A^{2/\eta} x^{\alpha - 2/\eta},
+C(\alpha) = \max_x \frac{2}{\eta} A^{2/\eta} x^{\alpha - 1 - 2/\eta},
 $$
-recovering the phase transition at $\alpha = 2/\eta$ with $\log C(\alpha) = \log(2A^{2/\eta}/\eta)$ for $\alpha \leq 2/\eta$ and linear growth with slope $\log M$ for $\alpha > 2/\eta$.
+recovering the phase transition at $\alpha = 1 + 2/\eta$: for $\alpha \leq 1 + 2/\eta$ the exponent is non-positive and the maximum is at $x = 1$, giving $\log C(\alpha) = \log(2A^{2/\eta}/\eta)$; for $\alpha > 1 + 2/\eta$ the maximum is at $x = M$, giving linear growth with slope $\log M$.
 
 ::: {#def-optimal-matched-power .callout-note icon="false"}
 ## Definition: Optimal Matched Power

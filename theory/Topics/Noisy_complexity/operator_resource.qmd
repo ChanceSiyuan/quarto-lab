@@ -32,7 +32,7 @@ I \xrightarrow{\mathcal{V}} \sqrt{2}|\Phi^+\rangle, \quad Z \xrightarrow{\mathca
 $$
 :::
 
-Under vectorization, the inner product becomes $\langle\!\langle A | B \rangle\!\rangle = 2^{-n}\text{tr}(A^\dagger B)$, and norms transfer: $\|A\|_F^2 = \langle\!\langle A | A \rangle\!\rangle$. For a vectorized operator $|O\rangle\!\rangle = \sum_{i=1}^s \sqrt{p_i} |P_i\rangle\!\rangle$:
+Under vectorization, the normalized inner product $\langle\!\langle A | B \rangle\!\rangle := 2^{-n}\text{tr}(A^\dagger B)$ makes Pauli operators orthonormal ($\langle\!\langle P | Q \rangle\!\rangle = \delta_{PQ}$). Norms satisfy $\langle\!\langle A | A \rangle\!\rangle = 2^{-n}\|A\|_F^2 =: \|A\|_{n2}^2$, where $\|\cdot\|_{n2} = 2^{-n/2}\|\cdot\|_F$. For a vectorized operator $|O\rangle\!\rangle = \sum_{i=1}^s \sqrt{p_i} |P_i\rangle\!\rangle$:
 
 - **Unitary operations** preserve the 2-norm $\sum_i p_i$ in general.
 - **Clifford gates** additionally preserve the 0-norm $s$ (number of Pauli terms).
