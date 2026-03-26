@@ -345,6 +345,13 @@ c_i^{(d)} = \text{sign}(i) \cdot (\sqrt{2})^{Q(i)} \cdot f(i), \quad \text{Var} 
 $$
 where $f(i)$ accumulates the noise suppression along the path.
 
+::: {#def-Qk-sparse .callout-note icon="false"}
+## Definition: $(Q,k)$-Sparse Circuit
+Represent each gate in a 2-dimensional Clifford+T circuit by its spacetime coordinate $(x,y,t) \in \mathbb{Z}_+^3$ (qubit position $(x,y)$, layer $t$). A subset $A$ of gate locations is **continuous** if every element of $A$ has at least one neighbor in $A$ (under adjacency in the spacetime lattice). Denote by $T(A)$ the number of $T$-gates in $A$. The circuit is **$(Q,k)$-sparse** if for every continuous subset $A$ with $|A| \geq k$, the $T$-gate density satisfies $T(A) < Q |A|$.
+
+In a $(Q,k)$-sparse circuit, every Pauli path has continuous support, so a path of support weight $w \geq k$ encounters at most $Qw$ $T$-gates. Summing over all paths of weight $w$ gives the path-counting bound $\sum_{w=k}^{\ell} F(w) \leq 2^{Q\ell}$ [@gonzalez2024pauli].
+:::
+
 ::: {#thm-sparse-CT .callout-important icon="false"}
 ## Theorem: Sparse Clifford+T Simulation
 Given a 2-dimensional, $(Q, k)$-sparse, localized Clifford+T circuit $\mathcal{C}$ with depolarizing noise layers $\Lambda(\rho) = (1-p)\rho + (p/2)I$, if

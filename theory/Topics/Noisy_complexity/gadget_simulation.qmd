@@ -28,7 +28,7 @@ The key contribution of this framework is bridging the traditional stabilizer-ra
 
 Consider a quantum circuit consisting of $t$ $T$-gates ($T = \text{diag}(1, e^{i\pi/4})$) and Clifford gates. In the gadget-based approach, each $T$ gate is replaced with a **T-gate gadget** consisting of:
 
-1. An ancillary qubit prepared in the magic state $|H\rangle = e^{-i\pi/8} H|T\rangle = \cos(\pi/8)|0\rangle + \sin(\pi/8)|1\rangle$.
+1. An ancillary qubit prepared in the magic state $|H\rangle = \cos(\pi/8)|0\rangle + \sin(\pi/8)|1\rangle$, where $|H\rangle \equiv HT|+\rangle$ up to global phase (here $|+\rangle = (|0\rangle + |1\rangle)/\sqrt{2}$).
 2. A CZ gate coupling the ancilla to the target qubit, injecting magic into the circuit.
 3. Measurement of the ancillary qubit in the $\{|+\rangle, |-\rangle\}$ basis, with an $S$-gate correction conditioned on the $|-\rangle$ outcome.
 
@@ -159,7 +159,7 @@ A graph of rank-width $r$ admits a decomposition into a binary tree of width $r$
 
 ## Diagonalization Under Noise {#sec-diagonalization}
 
-Under Pauli noise, the noiseless graph-state reduction generalizes via a key structural theorem: Clifford gates acting on stabilizer states can be decomposed into local Clifford plus CZ gates, and this decomposition **commutes with incoherent noise**.
+Under Pauli noise, the noiseless graph-state reduction generalizes via a key structural theorem: Clifford gates acting on stabilizer states can be decomposed into local Clifford plus CZ gates, and this decomposition **persists under interleaved incoherent noise** (i.e., noise channels can be pushed through the decomposition with at most a local Clifford rotation).
 
 ::: {#thm-noisy-reduction .callout-important icon="false"}
 ## Theorem: Noisy Reduction to Graph States

@@ -79,14 +79,15 @@ Throughout these notes, we use the following notation:
 | Symbol | Meaning |
 |--------|---------|
 | $n$ | Number of qubits |
-| $d = 2^n$ | Hilbert space dimension |
+| $D = 2^n$ | Hilbert space dimension |
+| $d$ | Circuit depth (number of layers) |
 | $\mathcal{P}_n$ | $n$-qubit Pauli group $\{I, X, Y, Z\}^{\otimes n}$ |
 | $\mathcal{C}_n$ | $n$-qubit Clifford group |
 | $\gamma$ | Noise rate (per gate or per layer) |
 | $\mathcal{N}_\gamma$ | Noise channel with rate $\gamma$ (e.g., depolarizing) |
 | $\lvert P \rangle\!\rangle$ | Liouville (vectorized) representation of operator $P$ |
 | $\hat{L}_g$ | Liouville matrix of gate $g$ |
-| $c_P$ | Pauli coefficient: $c_P = \text{tr}(P \cdot \mathcal{C}(\rho)) / d$ |
+| $c_P$ | Pauli coefficient: $c_P = \text{tr}(P \cdot \mathcal{C}(\rho)) / D$ |
 | $\{c_i^2\}$ | Pauli spectrum (sorted squared coefficients) |
 | $C(\alpha)$ | Phase transition diagnostic: $\log \max_i \{c_i^2 \, i^\alpha\}$ |
 | $Q_\alpha(O)$ | Operator stabilizer $\alpha$-entropy |
