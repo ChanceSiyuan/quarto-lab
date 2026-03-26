@@ -13,7 +13,7 @@ description: "Collected open questions on entropy reformulations, operator 1-nor
 This section collects open problems and conjectures that emerged from the research on classical simulation of noisy quantum circuits. The problems span several levels of abstraction: concrete mathematical questions (entropy reformulation of spectral conditions, provable truncation-sampling separation), algorithmic challenges (fixed-circuit simulation without ensemble averaging, extending Pauli path methods to general noise), and conceptual questions linking simulation complexity to resource theory and random matrix theory. Many of these problems originate from the research diary discussions and remain unresolved even after the formal results in the companion pages. Where possible, we indicate partial progress and connections to recent literature.
 
 - Can Pauli spectral conditions for simulability be reformulated as entropy bounds, providing a single scalar diagnostic?
-- What is the fundamental role of the operator 1-norm $\sum_i |c_i|$ as a complexity indicator mediating the competition between magic and noise?
+- What is the fundamental role of the Pauli $\ell_1$-norm $\sum_i |c_i|$ as a complexity indicator mediating the competition between magic and noise?
 - How can simulation results be extended from random/averaged circuits to fixed circuits without ensemble averaging?
 - Is there a provable separation between truncation-based and sampling-based Pauli path methods?
 - What spectral statistics (GUE vs Poisson) govern the Pauli coefficient distribution, and do they undergo a noise-driven phase transition?
@@ -37,25 +37,27 @@ The appeal of an entropy formulation is twofold. First, it replaces a full spect
 
 **Partial progress from the diary (Round 11).** The research diary notes (2025/02/10) consider whether there exists an "entropy-like" quantity describing spectral decay faster than $i^{-1}$ for fixed circuits, but concludes that the specific form of such a quantity is unclear, particularly for non-random circuits where the spectral structure may differ qualitatively from the ensemble-averaged case.
 
-## Operator 1-Norm as Complexity Indicator
+## Pauli $\ell_1$-Norm as Complexity Indicator
 
 ::: {.callout-note icon="false"}
-## Open Problem 2: Role of the 1-Norm
+## Open Problem 2: Role of the Pauli $\ell_1$-Norm {#sec-operator-1-norm}
 
-Does the operator 1-norm $\|O_H\|_1 := \sum_i |c_i|$ (where $O_H = \mathcal{C}^\dagger[O] = \sum_i c_i P_i$ is the Heisenberg-evolved observable) serve as a fundamental complexity indicator for Pauli path simulation? More precisely, does $\|O_H\|_1 = O(\text{poly}(n))$ imply efficient simulability via sampling, and does $\|O_H\|_1 = 2^{\Omega(n)}$ imply hardness?
+Does the Pauli $\ell_1$-norm $\|O_H\|_{\ell_1} := \sum_i |c_i|$ (where $O_H = \mathcal{C}^\dagger[O] = \sum_i c_i P_i$ is the Heisenberg-evolved observable) serve as a fundamental complexity indicator for Pauli path simulation? More precisely, does $\|O_H\|_{\ell_1} = O(\text{poly}(n))$ imply efficient simulability via sampling, and does $\|O_H\|_{\ell_1} = 2^{\Omega(n)}$ imply hardness?
+
+**Notation:** $\|\cdot\|_{\ell_1}$ denotes the $\ell_1$-norm of the Pauli coefficients, *not* the trace norm $\|A\|_1 = \text{tr}\sqrt{A^\dagger A}$. These coincide only for diagonal operators in the Pauli basis.
 :::
 
-Key observations supporting the 1-norm as the central quantity:
+Key observations supporting the $\ell_1$-norm as the central quantity:
 
-- **Clifford gates** permute and re-sign Pauli operators, leaving $\|O_H\|_1$ invariant.
-- **T gates** can increase the 1-norm: each non-$Z$ Pauli encounter multiplies by $\sqrt{2}$ in the 2-norm normalization, and the number of Pauli terms doubles. After $u$ layers of T gates, $\|O_H\|_1 \leq \sqrt{n_u}$ by Cauchy--Schwarz applied to $\sum_i |c_i| \leq \sqrt{(\vec{c} \cdot \vec{c})(\vec{1} \cdot \vec{1})} = \sqrt{n_u}$, where $n_u$ is the number of Pauli terms.
-- **Depolarizing noise** reduces the 1-norm exponentially: each Pauli is multiplied by $(1 - 4p/3)$, so $\|O_H\|_1 \to (1-4p/3)^d \|O_H\|_1$ after $d$ noise layers.
+- **Clifford gates** permute and re-sign Pauli operators, leaving $\|O_H\|_{\ell_1}$ invariant.
+- **T gates** can increase the $\ell_1$-norm: each non-$Z$ Pauli encounter multiplies by $\sqrt{2}$ in the 2-norm normalization, and the number of Pauli terms doubles. After $u$ layers of T gates, $\|O_H\|_{\ell_1} \leq \sqrt{n_u}$ by Cauchy--Schwarz applied to $\sum_i |c_i| \leq \sqrt{(\vec{c} \cdot \vec{c})(\vec{1} \cdot \vec{1})} = \sqrt{n_u}$, where $n_u$ is the number of Pauli terms.
+- **Depolarizing noise** reduces the $\ell_1$-norm exponentially: each Pauli is multiplied by $(1 - 4p/3)$, so $\|O_H\|_{\ell_1} \to (1-4p/3)^d \|O_H\|_{\ell_1}$ after $d$ noise layers.
 
-Therefore, the 1-norm captures the **competition between magic and noise**: $\|O_H\|_1 \lessgtr 1$ indicates whether noise or magic dominates. This connects to the $\frac{1}{2}$-OSE, since $\exp[Q_{1/2}] = \sum_i |c_i|$ (the 1-norm of the coefficients after channel action).
+Therefore, the $\ell_1$-norm captures the **competition between magic and noise**: $\|O_H\|_{\ell_1} \lessgtr 1$ indicates whether noise or magic dominates. This connects to the $\frac{1}{2}$-OSE, since $\exp[Q_{1/2}] = \sum_i |c_i|$ (the $\ell_1$-norm of the coefficients after channel action).
 
-**Relation to spectral decay.** The inverse polynomial spectral condition $c_k^2 = O(k^{-(1+2/r)})$ implies $\|O_H\|_1 = \sum_k |c_k| = O(\text{poly}(n))$ when $2/r > 1$ (i.e., $r < 2$). But the converse need not hold: bounded 1-norm does not require fast spectral decay. As noted in the diary (2025/02/16), taking $c_i = (1/2)^n$ for all $2^n$ terms gives $\sum |c_i| = 1$ (bounded 1-norm) but $|c_i|^2 = 4^{-n}$ is flat. For $0 < \delta \leq 1$, the flat spectrum *does* satisfy $c_k^2 \leq C k^{-(1+\delta)}$ with $C = O(1)$ (since $c_k^2 \cdot k^{1+\delta}\big|_{k=2^n} = 2^{n(\delta-1)} \to 0$). However, for $\delta > 1$ the product $2^{n(\delta-1)} \to \infty$, so no fixed $C$ can certify the bound. Since efficient truncation requires $c_k^2 = O(k^{-(1+2/r)})$ with $r < 2$, i.e., $\delta = 2/r > 1$, the flat spectrum lies outside the efficiently truncatable regime despite having bounded 1-norm.
+**Relation to spectral decay.** The inverse polynomial spectral condition $c_k^2 = O(k^{-(1+2/r)})$ implies $\|O_H\|_{\ell_1} = \sum_k |c_k| = O(\text{poly}(n))$ when $2/r > 1$ (i.e., $r < 2$). But the converse need not hold: bounded $\ell_1$-norm does not require fast spectral decay. As noted in the diary (2025/02/16), taking $c_i = (1/2)^n$ for all $2^n$ terms gives $\sum |c_i| = 1$ (bounded 1-norm) but $|c_i|^2 = 4^{-n}$ is flat. For $0 < \delta \leq 1$, the flat spectrum *does* satisfy $c_k^2 \leq C k^{-(1+\delta)}$ with $C = O(1)$ (since $c_k^2 \cdot k^{1+\delta}\big|_{k=2^n} = 2^{n(\delta-1)} \to 0$). However, for $\delta > 1$ the product $2^{n(\delta-1)} \to \infty$, so no fixed $C$ can certify the bound. Since efficient truncation requires $c_k^2 = O(k^{-(1+2/r)})$ with $r < 2$, i.e., $\delta = 2/r > 1$, the flat spectrum lies outside the efficiently truncatable regime despite having bounded 1-norm.
 
-**Space complexity gap.** Even when the 1-norm is bounded, the sampling algorithm may require storing exponentially many Pauli operators in memory. The diary observation (2025/01/01, Round 9) notes that all suppression coefficients from unitary gates are lost in the count of stored Paulis: for example, a T gate has $1/\sqrt{2}$ 1-norm contribution but doubles the number of terms from 1 to 2. Thus, the space complexity of the random branching algorithm is bounded not by the 1-norm but by the *number* of surviving Pauli terms.
+**Space complexity gap.** Even when the $\ell_1$-norm is bounded, the sampling algorithm may require storing exponentially many Pauli operators in memory. The diary observation (2025/01/01, Round 9) notes that all suppression coefficients from unitary gates are lost in the count of stored Paulis: for example, a T gate has $1/\sqrt{2}$ $\ell_1$-norm contribution but doubles the number of terms from 1 to 2. Thus, the space complexity of the random branching algorithm is bounded not by the $\ell_1$-norm but by the *number* of surviving Pauli terms.
 
 ## Phase Transition Diagnostic Refinement
 
@@ -125,15 +127,15 @@ Additional complications for fixed circuits:
 Exhibit a family of noisy circuits where truncation-based methods require super-polynomial time but sampling-based methods succeed in polynomial time, or vice versa.
 :::
 
-**Sampling beats truncation.** The amplitude damping toy model (see [Non-Unital Noise Barriers](non_unital.qmd)) provides a strong example. Consider Clifford circuits with $|0\rangle^{\otimes n}$ inputs and amplitude damping noise at rate $p < 1/2$. Back-propagating $Z^{\otimes n}$ through a single layer of amplitude damping produces a binomial distribution $C_n^i p^{n-i}(1-p)^i$ over $Z$-strings of weight $i$, concentrated at $i = n(1-p)$. The optimal truncation requires retaining $\Omega(n^{-1} e^{H(p) \cdot n})$ Pauli operators, which is exponential with base $e^{H(p)} < 2$ (i.e., $2^{\Theta(n)}$ but with a smaller base than the full $4^n$ Pauli group). However, the randomized sampling algorithm estimates the Pauli average with constant variance because the branching coefficients are normalized under the 1-norm (not the 2-norm).
+**Sampling beats truncation.** The amplitude damping toy model (see [Non-Unital Noise Barriers](non_unital.qmd)) provides a strong example. Consider Clifford circuits with $|0\rangle^{\otimes n}$ inputs and amplitude damping noise at rate $p < 1/2$. Back-propagating $Z^{\otimes n}$ through a single layer of amplitude damping produces a binomial distribution $C_n^i p^{n-i}(1-p)^i$ over $Z$-strings of weight $i$, concentrated at $i = n(1-p)$. The optimal truncation requires retaining $\Omega(n^{-1} e^{H(p) \cdot n})$ Pauli operators, which is exponential with base $e^{H(p)} < 2$ (i.e., $2^{\Theta(n)}$ but with a smaller base than the full $4^n$ Pauli group). However, the randomized sampling algorithm estimates the Pauli average with constant variance because the branching coefficients are normalized under the $\ell_1$-norm (not the 2-norm).
 
-**Flat spectrum example.** A noisy circuit where all Pauli coefficients are equal ($c_i = 2^{-n}$ for $2^n$ operators containing only $I$ and $Z$) has a flat spectrum that cannot be bounded by $i^{-1}$, so truncation requires exponential $K$. However, sampling succeeds with zero variance because each sampled Pauli has expectation value equal to the exact result.
+**Flat spectrum example.** A noisy circuit where all Pauli coefficients are equal ($c_i = 2^{-n}$ for $2^n$ operators containing only $I$ and $Z$) has a flat spectrum satisfying $c_k^2 \leq C k^{-(1+\delta)}$ only for $\delta \leq 1$, which is insufficient for efficient truncation (requires $\delta > 1$), so truncation requires exponential $K$. However, sampling succeeds with zero variance because each sampled Pauli has expectation value equal to the exact result.
 
-**Converse direction: truncation beats sampling.** As shown in the diary (Round 11, 2025/02/16), if $|c_i|^2$ decays faster than $i^{-2}$, then $\sum |c_i| = O(n)$, which implies polynomial sampling cost. However, if $|c_i|^2 \sim i^{-(1+\delta)}$ for $0 < \delta < 1$ (fast enough for truncation but slow for 1-norm convergence), the 1-norm can still be exponentially large. The specific counterexample: take $c_i = i^{-1/2-\delta}$ for $i = 1, \ldots, O(2^n)$, then $\sum |c_i| \sim \int_0^{O(2^n)} x^{-1/2-\delta} dx = [O(2^n)]^{1/2-\delta}$, which is still exponential for $\delta < 1/2$. Thus truncation can succeed where sampling has exponential variance.
+**Converse direction: truncation beats sampling.** As shown in the diary (Round 11, 2025/02/16), if $|c_i|^2$ decays faster than $i^{-2}$, then $\sum |c_i| = O(n)$, which implies polynomial sampling cost. However, if $|c_i|^2 \sim i^{-(1+\delta)}$ for $0 < \delta < 1$ (fast enough for truncation but slow for $\ell_1$-norm convergence), the $\ell_1$-norm can still be exponentially large. The specific counterexample: take $c_i = i^{-1/2-\delta}$ for $i = 1, \ldots, O(2^n)$, then $\sum |c_i| \sim \int_0^{O(2^n)} x^{-1/2-\delta} dx = [O(2^n)]^{1/2-\delta}$, which is still exponential for $\delta < 1/2$. Thus truncation can succeed where sampling has exponential variance.
 
 **Unifying measure.** Is there a single complexity measure that captures both truncation hardness and sampling hardness? Candidates include:
 
-- The 1-norm $\sum_i |c_i|$ (governs sampling variance but not truncation directly).
+- The $\ell_1$-norm $\sum_i |c_i|$ (governs sampling variance but not truncation directly).
 - The spectral decay rate (governs truncation but not sampling directly).
 - Some entropy-like quantity that interpolates between the two, potentially related to the Rényi-$\alpha$ OSE family for different values of $\alpha$.
 
@@ -234,7 +236,7 @@ For T-sparse Clifford+T circuits with depolarizing noise:
 3. Is the tree-width of the percolated graph related to the space complexity of Pauli path simulation?
 :::
 
-The diary (Round 8, 12.16) asks directly: "Can Pauli truncation be understood as gadget-measurement percolation?" A positive answer would unify the two main simulation frameworks, providing a single criterion (subcritical percolation $\Leftrightarrow$ fast spectral decay $\Leftrightarrow$ bounded 1-norm) for classical simulability.
+The diary (Round 8, 12.16) asks directly: "Can Pauli truncation be understood as gadget-measurement percolation?" A positive answer would unify the two main simulation frameworks, providing a single criterion (subcritical percolation $\Leftrightarrow$ fast spectral decay $\Leftrightarrow$ bounded $\ell_1$-norm) for classical simulability.
 
 ## Non-Unital Noise: Stabilizer-Preserving Decomposition
 

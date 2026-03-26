@@ -1,0 +1,114 @@
+---
+categories:
+- Index
+date: '2026-03-25'
+description: A systematic study of classical simulation methods for noisy quantum circuits, covering Pauli path methods, gadget-based simulation, percolation approaches, non-unital noise barriers, and resource-theoretic perspectives
+subtitle: "Pauli Paths, Gadgets, Percolation, and Beyond"
+abstract: |
+  These notes present a systematic study of classical simulation of noisy quantum circuits, focusing on the interplay between noise, magic, and computational complexity. We develop three complementary simulation frameworks: (1) Pauli path methods in the Heisenberg picture, where noise-induced spectral decay enables polynomial-time truncation or sampling algorithms; (2) gadget-based simulation, replacing non-Clifford gates with magic state injection and exploiting stabilizer rank decompositions; and (3) percolation methods, reducing noisy circuits to non-adaptive measurements on graph states with efficiency governed by component size distributions. We identify fundamental barriers for non-unital noise channels, proving that amplitude damping cannot be decomposed into Pauli noise plus Z-projection. Throughout, we connect simulation complexity to resource-theoretic quantities including operator stabilizer entropy, magic monotones, and operator entanglement. Several open problems are collected, including entropy reformulations of spectral conditions, the truncation-sampling separation, and fixed-circuit simulation without ensemble averaging.
+lang: en
+title: Classical Simulation of Noisy Quantum Circuits
+bibliography: refs.bib
+---
+
+# Introduction
+
+The classical simulability of quantum circuits is a central question in quantum computational complexity. While noiseless quantum circuits are believed to be classically hard to simulate in general, the presence of noise can dramatically alter the computational landscape. A growing body of work demonstrates that sufficiently noisy quantum circuits admit efficient classical simulation, raising the fundamental question: *when does noise destroy the quantum computational advantage?*
+
+The key insight underlying most simulation methods is that noise suppresses quantum resources --- magic, entanglement, or coherence --- that are responsible for classical hardness. Different simulation frameworks capture this suppression through different lenses: Pauli path methods track the decay of Pauli coefficients in the Heisenberg picture, gadget-based methods exploit the reduced stabilizer rank of noisy magic states, and percolation methods map the simulation problem onto a graph connectivity problem where noise deletes edges.
+
+These notes consolidate partial results from an ongoing research project, organizing them into a coherent framework with precise mathematical statements, proofs, and connections to the broader literature.
+
+## Overview and Motivation
+
+This collection is organized into the following sections:
+
+### [1. Pauli Spectrum and Path Simulation](pauli_path.qmd)
+The Heisenberg-picture framework for Pauli path simulation, including Liouville matrix representation, spectral analysis of Pauli coefficients, and three simulation algorithms: gate sampling, truncated sampling, and direct truncation. Establishes the necessary condition for FPTAS efficiency via inverse polynomial spectral decay.
+
+**Key concepts:** Pauli spectrum $\{c_i^2\}$, phase transition diagnostic $C(\alpha)$, FPTAS necessary condition, operator stabilizer entropy, gate sampling vs truncated sampling
+
+### [2. Gadget-Based Simulation](gadget_simulation.qmd)
+T-gadget formalism replacing non-Clifford gates with magic state injection via ancilla qubits and CZ gates. Connects stabilizer rank decomposition to simulation complexity, and establishes when noise on gadget circuits enables efficient classical computation.
+
+**Key concepts:** T-gadget, magic state $|H\rangle$, stabilizer rank $\chi(t)$, gadget-to-Pauli-path reduction, noise threshold for magic suppression
+
+### [3. Percolation Methods for Noisy Circuits](percolation.qmd)
+Graph state reduction under incoherent noise, CZ-commuting noise characterization, and Z-projection decomposition of Pauli channels. Maps simulation complexity to percolation thresholds on the circuit's interaction graph.
+
+**Key concepts:** CZ-commuting channels, Z-projection decomposition, graph state reduction, component size distribution, percolation threshold
+
+### [4. Non-Unital Noise and Simulation Barriers](non_unital.qmd)
+Scaling-shifting decomposition for non-unital noise in the Pauli path framework, the amplitude damping toy model, and the no-go theorem proving that amplitude damping cannot be reduced to Pauli noise plus Z-projection.
+
+**Key concepts:** Scaling-shifting decomposition, amplitude damping back-propagation, no-go theorem, quantum refrigerator
+
+### [5. Operator Entanglement and Resource Theory](operator_resource.qmd)
+Vectorization framework via Pauli-Bell correspondence, operator stabilizer entropy as a complexity measure, and conjectures relating Choi representation entanglement to gate-type sensitivity under noise.
+
+**Key concepts:** Liouville representation, Pauli-Bell eigenvectors, operator stabilizer entropy (OSE), Choi representation conjecture, magic vs coherence resources
+
+### [6. Open Problems and Future Directions](open_problems.qmd)
+Collected open questions including entropy reformulations of spectral conditions, the role of the operator 1-norm, various randomness assumptions and their reductions, truncation-sampling separation, and phase transition numerics.
+
+**Key concepts:** Entropy reformulation, 1-norm indicator, fixed-circuit simulation, GUE-to-Poisson transition
+
+## Central Problems
+
+The simulation of noisy quantum circuits addresses several interrelated computational problems:
+
+::: {.callout-note icon="false"}
+## Problem 1: Pauli Average Estimation
+Given an $n$-qubit noisy circuit $\mathcal{C}$ with noise rate $\gamma$ and a Pauli observable $O \in \mathcal{P}_n$, estimate $\text{tr}(O \, \mathcal{C}(\rho))$ within additive error $\varepsilon$ in time $\text{poly}(n, 1/\varepsilon)$.
+:::
+
+::: {.callout-note icon="false"}
+## Problem 2: Amplitude Sampling Under Noise
+Given a noisy circuit $\mathcal{C}$, classically sample from a distribution $\varepsilon$-close in total variation distance to the output distribution of $\mathcal{C}$.
+:::
+
+::: {.callout-note icon="false"}
+## Problem 3: Noise Threshold for Fixed Circuits
+Determine the critical noise rate $\gamma_c$ above which a *specific* (non-random) quantum circuit admits efficient classical simulation, without relying on ensemble averaging.
+:::
+
+## Notation and Conventions
+
+Throughout these notes, we use the following notation:
+
+| Symbol | Meaning |
+|--------|---------|
+| $n$ | Number of qubits |
+| $d = 2^n$ | Hilbert space dimension |
+| $\mathcal{P}_n$ | $n$-qubit Pauli group $\{I, X, Y, Z\}^{\otimes n}$ |
+| $\mathcal{C}_n$ | $n$-qubit Clifford group |
+| $\gamma$ | Noise rate (per gate or per layer) |
+| $\mathcal{N}_\gamma$ | Noise channel with rate $\gamma$ (e.g., depolarizing) |
+| $\lvert P \rangle\!\rangle$ | Liouville (vectorized) representation of operator $P$ |
+| $\hat{L}_g$ | Liouville matrix of gate $g$ |
+| $c_P$ | Pauli coefficient: $c_P = \text{tr}(P \cdot \mathcal{C}(\rho)) / d$ |
+| $\{c_i^2\}$ | Pauli spectrum (sorted squared coefficients) |
+| $C(\alpha)$ | Phase transition diagnostic: $\log \max_i \{c_i^2 \, i^\alpha\}$ |
+| $Q_\alpha(O)$ | Operator stabilizer $\alpha$-entropy |
+| $\chi(t)$ | Stabilizer rank of $\lvert A^{\otimes t}\rangle$ |
+| $\lvert H \rangle$ | Magic state: $\cos(\pi/8)\lvert 0\rangle + \sin(\pi/8)\lvert 1\rangle$ |
+| $\Lambda_z$ | Z-projection channel: $\rho \mapsto \lvert 0\rangle\langle 0\rvert \rho \lvert 0\rangle\langle 0\rvert + \lvert 1\rangle\langle 1\rvert \rho \lvert 1\rangle\langle 1\rvert$ |
+
+For quantum channels, we use $\mathcal{E}, \mathcal{N}, \Lambda$ for general channels, noise channels, and projection channels respectively. The trace norm is $\|A\|_1 = \text{tr}\sqrt{A^\dagger A}$ and the Frobenius norm is $\|A\|_F = \sqrt{\text{tr}(A^\dagger A)}$. **Notation warning:** The Pauli coefficient $\ell_1$-norm $\|O\|_{\ell_1} := \sum_P |c_P|$ (where $O = \sum_P c_P P$) is a distinct quantity from the trace norm $\|O\|_1$; see [Open Problems](open_problems.qmd) for its role as a complexity indicator.
+
+## Key Results Summary
+
+| Method | Problem | Key Condition | Complexity |
+|--------|---------|--------------|------------|
+| Pauli truncation | Pauli averages | $c_i^2 \lesssim i^{-(1+\delta)}$ | $\text{poly}(n, 1/\varepsilon)$ |
+| Gate sampling | Pauli averages | Bounded OSE $Q_{1/2}$ | $\text{poly}(n) \cdot 2^{Q_{1/2}}$ |
+| Truncated sampling | Pauli averages | Bounded OSE $Q_0$ | $\text{poly}(n) \cdot 2^{Q_0}$ |
+| Gadget + stabilizer rank | Amplitude sampling | $t$ non-Clifford gates | $\text{poly}(n) \cdot \chi(t)$ |
+| Percolation | Amplitude sampling | Subcritical component sizes | $\text{poly}(n)$ |
+| Non-unital back-propagation | Pauli averages | Scaling-shifting structure | $\text{poly}(n)$ (restricted) |
+
+## Getting Started
+
+Begin with [Pauli Spectrum and Path Simulation](pauli_path.qmd) for the foundational Heisenberg-picture framework and spectral analysis. For readers interested in non-Clifford gate simulation, continue to [Gadget-Based Simulation](gadget_simulation.qmd) which connects stabilizer rank methods to the Pauli path framework. The [Percolation Methods](percolation.qmd) section offers an independent graph-theoretic perspective on simulation complexity.
+
+For noise model considerations, [Non-Unital Noise Barriers](non_unital.qmd) identifies fundamental limitations of the Pauli-based approaches. The [Operator Entanglement](operator_resource.qmd) section provides resource-theoretic context, and [Open Problems](open_problems.qmd) collects unresolved questions for future work.

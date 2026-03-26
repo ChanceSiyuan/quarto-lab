@@ -105,7 +105,7 @@ Under the vectorization picture, $\langle O \rangle = (\langle \psi | \otimes \l
 $$
 \mathbb{E}_{\psi \in \mu} \text{tr}(|\psi\rangle\langle\psi| \, \Delta O_H)^2 \leq g \cdot \|\Delta O_H\|_{n2}^2,
 $$
-where $\|\cdot\|_{n2} = 2^{-n/2}\|\cdot\|_2$ is the normalized 2-norm, and $\Delta O_H = O_H - \widetilde{O_H}$. When $\mu$ is a state 1-design, $g = 1$.
+where $\|\cdot\|_{n2} = 2^{-n/2}\|\cdot\|_F$ is the normalized 2-norm (Frobenius), and $\Delta O_H = O_H - \widetilde{O_H}$. When $\mu$ is a state 1-design, $g = 1$.
 :::
 
 ::: {.callout-note collapse="true"}
@@ -301,7 +301,7 @@ The space complexity of the truncated sampling algorithm is governed by the nois
 
 ## Flat Spectrum Separation
 
-A revealing separation arises for **flat spectra**: consider a noisy circuit where $O_H$ has $2^n$ Pauli operators all with $c_i = 2^{-n}$. Truncation requires exponential $K$ since the spectrum cannot be bounded by $i^{-1}$. However, sampling-based methods succeed because each sampled Pauli has expectation value equal to the exact result, yielding zero variance. This demonstrates that truncation and sampling exploit fundamentally different properties of the Pauli decomposition (see [Open Problems: Truncation vs Sampling Separation](open_problems.qmd)).
+A revealing separation arises for **flat spectra**: consider a noisy circuit where $O_H$ has $2^n$ Pauli operators all with $c_i = 2^{-n}$. Although the flat spectrum satisfies $c_k^2 \leq C k^{-(1+\delta)}$ for any $\delta \leq 1$ (since $4^{-n} \cdot k^{1+\delta} \leq 2^{n(\delta - 1)} \to 0$), efficient truncation to $K = \text{poly}(n)$ terms requires decay with $\delta > 1$, which the flat spectrum does not satisfy (see the [detailed analysis](open_problems.qmd#sec-operator-1-norm)). However, sampling-based methods succeed because each sampled Pauli has expectation value equal to the exact result, yielding zero variance. This demonstrates that truncation and sampling exploit fundamentally different properties of the Pauli decomposition.
 
 More precisely, the implication "$\sum |c_i|$ is poly $\implies$ $|c_i|^2$ decays faster than inverse polynomial" was shown to be **incorrect** in the research diary (Round 11, 2.16). Taking $c_i = i^{-1/2-\delta}$ gives $\sum |c_i| \sim [O(2^n)]^{1/2-\delta}$, which remains exponentially large. Conversely, "$|c_i|^2$ decays faster than $i^{-2}$ $\implies$ $\sum |c_i|$ is poly" **is** correct. This asymmetry means that some instances efficiently solvable by sampling are hard for truncation, but the reverse relationship remains an open question.
 

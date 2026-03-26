@@ -114,7 +114,7 @@ which fully decoheres in the computational basis and is equivalent to **removing
 
 # Z-Projection Decomposition {#sec-z-projection}
 
-The central technical ingredient connecting noise channels to percolation is the decomposition of arbitrary Pauli noise into a CZ-commuting part (preserving the graph) plus a Z-projection part (deleting the vertex).
+The central technical ingredient connecting noise channels to percolation is the decomposition of arbitrary Pauli noise into a **graph-preserving** part plus a Z-projection part (deleting the vertex). The graph-preserving component $\mathcal{N}^{(1)}$ is *not* CZ-commuting in the strict sense of @lem-commute-channel, but its single-Pauli errors propagate through CZ gates as local Clifford corrections that preserve graph connectivity (see details in @lem-z-projection below).
 
 ::: {#lem-z-projection .callout-important icon="false"}
 ## Lemma: Z-Projection Decomposition of Pauli Channels

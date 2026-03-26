@@ -66,7 +66,7 @@ When $O = P$ is a Pauli operator with back-propagation $\Lambda^\dagger[P] = \su
 | Parameter | Expression | Interpretation |
 |-----------|-----------|----------------|
 | $\alpha = 0$ | $\exp[\mathcal{M}^{(0)}] = N$ | Support size of Pauli decomposition |
-| $\alpha = 1/2$ | $\exp[\frac{1}{2}\mathcal{M}^{(1/2)}] = \sum_i \|a_i\|$ | 1-norm of Pauli coefficients |
+| $\alpha = 1/2$ | $\exp[\frac{1}{2}\mathcal{M}^{(1/2)}] = \sum_i |a_i|$ | $\ell_1$-norm of Pauli coefficients |
 
 ::: {#lem-OSE-properties .callout-important icon="false"}
 ## Lemma: OSE Under Different Operations
