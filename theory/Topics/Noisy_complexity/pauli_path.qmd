@@ -257,6 +257,19 @@ $$
 where $\mathcal{C}_U$ and $\mathcal{C}_N$ denote the unitary and noise parts of the circuit, respectively.
 :::
 
+::: {.callout-note collapse="true"}
+## Proof sketch (Click to expand)
+**Correctness.** By induction on the circuit layers. At step $k$, the algorithm maintains a random tuple $(c_i^{(k)}, P_i^{(k)})$ sampled with probability $q_i^{(k)}$ such that $\sum_i q_i^{(k)} c_i^{(k)} P_i^{(k)} = \Lambda_k^\dagger \circ \cdots \circ \Lambda_1^\dagger(P^{(0)})$. Clifford gates act deterministically on the Pauli label; unitary gates sample a branch $r$ with probability $q_{i,r}$ and rescale $c \to c \cdot \text{sign}_{i,r}/\sqrt{q_{i,r}}$; incoherent noise applies the scaling-shifting decomposition. In each case, the weighted sum is preserved.
+
+**Variance.** Define $\Sigma^{(k)} := \sum_i q_i^{(k)} |c_i^{(k)}|^2$. Since $\text{Var} + \mathbb{E}^2 = \sum_i q_i^{(d)} |\text{tr}(c_i^{(d)} P_i^{(d)} |0\rangle\langle 0|^{\otimes n})|^2 \leq \Sigma^{(d)}$, it suffices to bound the telescoping product $\Sigma^{(d)} = \Sigma^{(0)} \prod_k (\Sigma^{(k+1)}/\Sigma^{(k)})$.
+
+- **Clifford gates:** $\Sigma^{(k+1)} = \Sigma^{(k)}$ (Pauli relabeling preserves squared coefficients).
+- **Incoherent noise** $\Lambda_{k+1}$ on qubit $u$ with parameters $(\Gamma_\mu, t_\mu)$: the scaling factor $s_\mu = |\Gamma_\mu| + |t_\mu|$ satisfies $s_\mu \leq 1$, giving $\Sigma^{(k+1)} = \sum_i q_i^{(k)} |c_i^{(k)}|^2 s_{\mu(i)}^2$. Since $s_\mu^2 \leq s_\mu$, the ratio $\Sigma^{(k+1)}/\Sigma^{(k)} \leq \sum_i q_i^{(k)} |c_i^{(k)}| s_{\mu(i)} / \sum_i q_i^{(k)} |c_i^{(k)}|$, which by the definition of $\alpha$-OSE equals $\exp[\frac{1}{2}\mathcal{M}^{(1/2)}[\Lambda_{k+1}^\dagger(O_k)]]$ where $O_k = \Lambda_k^\dagger \circ \cdots \circ \Lambda_1^\dagger(P^{(0)})$.
+- **Unitary gate** $U$ on qubit $u$: each Pauli $\sigma_\mu$ branches into $|R_\mu|$ terms, giving $\Sigma^{(k+1)} = \sum_i q_i^{(k)} |c_i^{(k)}|^2 |R_{\mu(i)}|$. The ratio $\Sigma^{(k+1)}/\Sigma^{(k)}$ is bounded by $\exp[\mathcal{M}^{(0)}[\Lambda_{k+1}^\dagger(O_k)]]$ via the 0-OSE definition.
+
+Telescoping yields $\text{Var} \leq \Sigma^{(d)} \leq \exp[\frac{1}{2}\mathcal{M}^{(1/2)}[\mathcal{C}_N^\dagger(O)] + \mathcal{M}^{(0)}[\mathcal{C}_U^\dagger(O)]]$. The connection between per-layer $\Sigma$ ratios and OSE changes follows the framework of [@dowling2024magic]. $\square$
+:::
+
 The variance decomposes into a **noise suppression term** ($\mathcal{M}^{(1/2)}$ from noise, always $\leq 0$) and a **magic generation term** ($\mathcal{M}^{(0)}$ from unitary gates, $\geq 0$ with equality iff Clifford). When noise suppression dominates magic generation, the variance is polynomially bounded and the algorithm is efficient.
 
 ## Truncated Sampling Algorithm

@@ -121,10 +121,21 @@ V^\dagger Z_{\text{out}} V = \tfrac{1}{2}(Z_1 + Z_2 + Z_3) - \tfrac{1}{2}Z_1 Z_2
 $$
 producing 4 Pauli terms with $\ell_1$-norm $2$.
 
-Consider a circuit of $n/3$ parallel copies of $V$ with amplitude damping noise at rate $p$, input $|0\rangle^{\otimes n}$, and observable $O = g(n)^{-1} \sum_{k=1}^{g(n)} \prod_{i=1}^{4k} Z_{3i-2}$, where $g(n) = \Theta((\log n)^2)$ and $Z_{3i-2}$ acts on the majority output of the $i$-th block. Under amplitude damping in the Heisenberg picture, each $Z_j$ maps to $(1-p)Z_j + pI$. The per-block operator after back-propagation through $V$ and amplitude damping has 8 terms (on weight 0 through 3) with total $\ell_1$-norm $1 + 3(1-p)^2 - 2(1-p)^3 > 1$ for all $p < 1$. The truncation and sampling thresholds arise from analyzing the *product structure* of $O$ across $4k$ blocks:
+Consider a circuit of $n/3$ parallel copies of $V$ with amplitude damping noise at rate $p$, input $|0\rangle^{\otimes n}$, and observable $O = g(n)^{-1} \sum_{k=1}^{g(n)} \prod_{i=1}^{4k} Z_{3i-2}$, where $g(n) = \Theta((\log n)^2)$ and $Z_{3i-2}$ acts on the majority output of the $i$-th block. Under amplitude damping in the Heisenberg picture, each $Z_j$ maps to $(1-p)Z_j + pI$ (while $X_j, Y_j$ are suppressed by $\sqrt{1-p}$). Since $V^\dagger Z_{\text{out}} V$ contains only $Z$-type Paulis, substituting $(1-p)Z_j + pI$ for each $Z_j$ and expanding gives the per-block operator with 8 Pauli-$Z$ string coefficients:
 
-- **Truncation threshold** ($p < 1 - \sqrt{2/3} \approx 0.184$): The per-block $\ell_2$-norm-squared of weight-$\geq 1$ contributions is $\sum_{w \geq 1} \|c_w\|_2^2 = 2/3$ at $p = 0$ and decreases with $p$. For the product of $4k$ blocks, the fraction of $\ell_2$-mass at total weight $> l$ is at least $(2/3)^{2k}$ (from the weight-1 terms alone). When $(2/3)^{1/2} > 1 - p$, i.e., $p < 1 - \sqrt{2/3}$, the weight distribution spreads faster than the damping suppresses, so truncation to weight $l = O(\log n)$ incurs error $\Omega(1/g(n))$ bounded away from zero.
-- **Sampling threshold** ($1 - p > ((\sqrt{13}-3)/2)^{0.25} \approx 0.742$): The sampling algorithm exploits cancellations in the $\ell_1$-norm of the *product* observable (which can be much smaller than the product of per-block $\ell_1$-norms) via the random branching procedure. The threshold arises from bounding the fourth moment of the branching coefficients.
+| Weight $w$ | Terms | Coefficient $c_w(p)$ |
+|:---:|:---:|:---:|
+| 0 | $I_3$ | $\frac{p}{2}(3 - p^2)$ |
+| 1 | $Z_j$ ($\times 3$) | $\frac{1}{2}(1-p)^2(1+p)$ |
+| 2 | $Z_jZ_k$ ($\times 3$) | $-\frac{p}{2}(1-p)^2$ |
+| 3 | $Z_1Z_2Z_3$ | $-\frac{1}{2}(1-p)^3$ |
+
+: Per-block Pauli coefficients after majority gate + amplitude damping. {#tbl-majority-coefficients}
+
+The weight-2 and weight-3 coefficients arise from expanding $-\frac{1}{2}\prod_{j=1}^3[(1-p)Z_j + pI]$. The total $\ell_1$-norm is $|c_0| + 3|c_1| + 3|c_2| + |c_3| = 1 + (1-p)^2(1+2p) = 1 + 3(1-p)^2 - 2(1-p)^3 > 1$ for all $p < 1$ (since $(1-p)^2(1+2p) = (p-1)^2(2p+1) > 0$). The truncation and sampling thresholds arise from analyzing the *product structure* of $O$ across $4k$ blocks:
+
+- **Truncation threshold** ($p < 1 - \sqrt{2/3} \approx 0.184$): By Parseval's theorem, the total $\ell_2^2$ of the 4-term majority expansion at $p=0$ is $\sum_S \hat{f}(S)^2 = 1$, with the weight-1 Fourier mass $W^{=1}[\text{MAJ}] = 3 \times (1/2)^2 = 3/4$. After amplitude damping, each weight-$w$ coefficient is suppressed by $(1-p)^w$ in each $Z$ factor, so the weight-1 $\ell_2^2$ contribution per block becomes $3(1-p)^2/4$. For the product of $m = 4k$ blocks on disjoint qubits, the total weight is a sum of per-block weights; truncation to total weight $\leq l$ fails when the weight-1 contribution per block dominates the identity contribution. This occurs when $3(1-p)^2/4 > 1/2$, i.e., $(1-p)^2 > 2/3$, giving the threshold $p < 1 - \sqrt{2/3}$. Below this threshold, truncation to weight $l = O(\log n)$ incurs error $\Omega(1/g(n))$ bounded away from zero.
+- **Sampling threshold** ($1 - p > ((\sqrt{13}-3)/2)^{0.25} \approx 0.742$): The per-block $\ell_1$-norm satisfies $\ell_1 = 1 + (1-p)^2(1+2p) > 1$ for all $p < 1$, so the product of per-block $\ell_1$-norms diverges exponentially. However, the sampling algorithm exploits cancellations in the $\ell_1$-norm of the *product* observable via the random branching procedure. The threshold arises from bounding the fourth moment of the per-block branching coefficients: writing $u = (1-p)^4$, the variance remains polynomial when $u^2 + 3u - 1 < 0$, i.e., $u < (\sqrt{13}-3)/2$, giving $(1-p)^4 < (\sqrt{13}-3)/2 \approx 0.303$.
 
 This demonstrates a concrete regime ($0.184 \lesssim p \lesssim 0.258$) where sampling outperforms truncation.
 

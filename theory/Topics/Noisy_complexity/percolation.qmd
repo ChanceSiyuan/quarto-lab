@@ -124,8 +124,8 @@ $$
 $$
 where $p = p_z + \min(p_x, p_y)$ and:
 
-- $\mathcal{N}^{(1)}$ is a Pauli channel with parameters $\left(\frac{|p_x - p_y|}{1-2p}, 0, 0\right)$ if $p_x \geq p_y$ (or $(0, \frac{|p_x - p_y|}{1-2p}, 0)$ otherwise). Note: $\mathcal{N}^{(1)}$ is *not* CZ-commuting in the sense of @lem-commute-channel (a pure-$X$ channel has $\Gamma = \text{diag}(1, 1{-}2q, 1{-}2q)$, violating $\Gamma_{33} = 1$). However, $X$-errors propagate through CZ gates as correlated Pauli errors — $\text{CZ}_{12}(X_2 \otimes I_1) = (Z_1 \otimes X_2)\text{CZ}_{12}$ — producing only local Clifford corrections ($Z$ on neighbors) that preserve graph connectivity. The residual $\mathcal{N}^{(1)}$ therefore does not disconnect vertices and can be absorbed into the local Clifford frame $\mathcal{L}$ of @thm-noisy-clifford-graph.
-- $\mathcal{N}^{(2)}$ is a Pauli channel with parameter $(0, \min(p_x, p_y)/p, 0)$.
+- $\mathcal{N}^{(1)}$ is a Pauli channel with error probabilities $(p_x', p_y', p_z') = \left(\frac{|p_x - p_y|}{1-2p}, 0, 0\right)$ if $p_x \geq p_y$ (or $(p_x', p_y', p_z') = (0, \frac{|p_x - p_y|}{1-2p}, 0)$ otherwise), where the triple denotes $\mathcal{N}^{(1)}(\rho) = (1-p_x'-p_y'-p_z')\rho + p_x' X\rho X + p_y' Y\rho Y + p_z' Z\rho Z$. Note: $\mathcal{N}^{(1)}$ is *not* CZ-commuting in the sense of @lem-commute-channel (a pure-$X$ channel has $\Gamma = \text{diag}(1, 1{-}2q, 1{-}2q)$, violating $\Gamma_{33} = 1$). However, $X$-errors propagate through CZ gates as correlated Pauli errors — $\text{CZ}_{12}(X_2 \otimes I_1) = (Z_1 \otimes X_2)\text{CZ}_{12}$ — producing only local Clifford corrections ($Z$ on neighbors) that preserve graph connectivity. The residual $\mathcal{N}^{(1)}$ therefore does not disconnect vertices and can be absorbed into the local Clifford frame $\mathcal{L}$ of @thm-noisy-clifford-graph.
+- $\mathcal{N}^{(2)}$ is a Pauli channel with error probabilities $(p_x', p_y', p_z') = (0, \min(p_x, p_y)/p, 0)$ (same convention as $\mathcal{N}^{(1)}$).
 - $\Lambda_z(\rho) = \frac{1}{2}\rho + \frac{1}{2}Z\rho Z$ is the Z-projection channel.
 
 The parameter $p$ determines the vertex deletion probability in the graph picture.
