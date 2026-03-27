@@ -1,0 +1,1035 @@
+%!TEX program = pdflatex
+\documentclass[aps,%
+twocolumn,%
+floatfix,%
+pra,%
+amsfonts,%
+longbibliography,%
+groupedaddress,%
+superscriptaddress]{revtex4-2}%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Packages
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{bm,bbm} % to use the command \mathbbm{1}, \bm{x}
+\usepackage{graphicx}
+\usepackage{indentfirst}
+\usepackage{enumitem}
+% \usepackage{algorithmicx}
+% \usepackage{algpseudocode}
+\usepackage{algorithm}
+% \usepackage{algorithmic}
+% \usepackage{algcompatible}
+\usepackage{algpseudocode}
+\usepackage{tikz}
+\usepackage{quantikz}
+\usetikzlibrary{graphs} 
+\usepackage[titletoc,toc,page,title]{appendix}
+\definecolor{beamer@blendedblue}{rgb}{0.2,0.2,0.7}      % color used in beamer
+\usepackage[bookmarks=false]{hyperref}
+\hypersetup{colorlinks=true,%
+citecolor=beamer@blendedblue,%
+linkcolor=beamer@blendedblue,%
+urlcolor=beamer@blendedblue,%
+pdfstartview=FitH,%
+bookmarksopen=true}
+
+\def\UrlBreaks{\do\/\do-} % url break
+\usepackage[T1]{fontenc}
+\usepackage{times}
+\usepackage{booktabs} % to use the \toprule \midrule command
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% General Commands
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newtheorem{theorem}{Theorem}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}{Lemma}
+\newtheorem{corollary}{Corollary}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{pifont}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Quantum Commands
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\DeclareMathOperator{\Tr}{Tr}
+\DeclareMathOperator{\tr}{Tr}
+\DeclareMathOperator{\NOT}{NOT}
+\DeclareMathOperator{\diag}{diag}
+\DeclareMathOperator{\rank}{rank}
+\DeclareMathOperator{\conv}{conv}
+\DeclareMathOperator{\sgn}{sgn}
+\DeclareMathOperator{\Sp}{Span}
+\DeclareMathOperator{\id}{id}
+% \newcommand{\bra}[1]{\langle #1\rvert}
+% \newcommand{\ket}[1]{\lvert #1\rangle}
+% \newcommand{\proj}[1]{\lvert #1\rangle\!\langle #1\rvert}
+\newcommand{\ox}{\otimes}
+\newcommand{\1}{\mathbbm{1}}
+\newcommand{\mean}[1]{\langle #1\rangle}
+\newcommand{\gen}[1]{\langle #1\rangle}
+\newcommand{\ketbra}[2]{\lvert #1\rangle\!\langle #2\rvert}
+% \newcommand{\braket}[2]{\langle #1\vert #2\rangle}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Mathematical symbols
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand*{\cF}{\mathcal{F}}
+\newcommand*{\cH}{\mathcal{H}}
+\newcommand*{\cO}{\mathcal{O}}
+\newcommand*{\cP}{\mathcal{P}}
+\newcommand*{\cS}{\mathcal{S}}
+\newcommand*{\bF}{\mathbb{F}}
+\newcommand*{\bP}{\mathbb{P}}
+
+% Colors
+\definecolor{alizarin}{rgb}{0.82, 0.1, 0.26}
+\definecolor{googleblue}{HTML}{4285F4}
+\definecolor{googlered}{HTML}{DB4437}
+\definecolor{googleyellow}{HTML}{F4B400}
+\definecolor{googlegreen}{HTML}{0F9D58}
+\definecolor{klevinblue}{HTML}{002FA7}
+\definecolor{tiffanyblue}{HTML}{0ABAB5}
+
+\newcommand{\KW}[1]{{\color{googlered}(KW: #1)}}
+\newcommand{\SYC}[1]{\textcolor{blue}{(SYC: #1)}}
+
+\begin{document}
+
+\title{Noise induced complexity transition in Near Clifford circuits}
+%%%
+\author{Siyuan Chen}
+\affiliation{Hefei National Research Center for Physical Sciences at the Microscale and School of Physical Sciences, 
+University of Science and Technology of China, Hefei 230026, China}%
+%%%
+
+
+\begin{abstract}
+\noindent 
+We propose a method to establish criteria for determining whether the effects of noise "obscure" the magic of fixed circuit, thereby enabling a classical simulation algorithm.
+% Result 1
+For sampling amplitudes, the criterion involves determining whether percolation occurs on graphs. 
+For Pauli expectation value estimation, the criterion evaluates whether a branching process can generate exponentially many descendants.
+% Result 2
+Both of the criteria can be simulated in polynomial time and related to operator stabilizer entropy of gadget operators.
+% Conclusion
+Our findings connect traditional simulation methods for Clifford + T circuits to Pauli path truncation method for noisy circuit and gives a general criterion in testing the supremacy in fault-tolerant quantum computation and NISQ quantum algorithm.
+\end{abstract}
+\date{\today}
+\maketitle
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Introduction}
+Fault-tolerant quantum computing aims to speed up tasks like quantum system simulation, large number factoring, optimization, and solving linear systems. 
+Although fault-tolerant quantum computers are not yet realized, advances in quantum devices have enabled them to surpass classical supercomputers in certain tasks, particularly in the NISQ (noisy intermediate-scale quantum) era. 
+In previous research, NISQ is defined as problems that can be solved by a polynomial-time probabilistic calssical algorithm with noisy quantum circuit that consist of (i). Preparation of $\text{poly}(n)$ noisy $\ket{0}$ qubits, (ii). Application of $\text{poly}(n)$ layers' noisy two-qubit gates, and (iii).Noisy computational basis measurements~\cite{chen2023complexity}. 
+A concrete example is the depth-$d$ circuit with local noise after each layer. This circuit output quantum state
+\begin{align}
+    C(\rho_0) = \mathcal{N}_0\{U_1\cdots \mathcal{N}_{d-1}\{ U_d\mathcal{N}_d\{\rho_0\}U_d^\dagger\}\cdots U_1^\dagger \},
+\end{align}
+where $\mathcal{D}$ is the composition of local channel. Then measurement on the computational basis is performed, useful information such as $\langle Z^{s} \rangle$ or $\bra{x}C(\rho_0)\ket{x}$ is extracted.
+ \begin{figure}[htbp!]
+     \centering
+     \includegraphics[width=1\linewidth]{pic/NISQ_circuit.png}
+     \caption{Demonstration of NISQ circuit. }
+     \label{fig:NISQ-circuit}
+ \end{figure}
+
+A line of research has focused on the computational power of NISQ circuits. This understanding could help identify the key factors necessary for achieving quantum advantage. Thus many simulation algorithm were proposed for NISQ circuits. An upper bound have been proved by Aharonov \emph{et.al.} ~\cite{aharonov1996limitations}, which states that NISQ circuit has the same computational power of logarithmic depth quantum circuit. This bound suggests us to focus on algorithms for NISQ circuits with fixed structure. 
+
+The first fraction of structured NISQ circuit is ensembles of NISQ circuit with certain property such as ensemble with hiding property and anticoncentration~\cite{aharonov2023polynomial} , low-average ensembles~\cite{schuster2024polynomial} and variational quantum circuit with uniform random parameters~\cite{shao2023simulating}. These properties of ensemble are naturally satisfied by many random circuit sampling experiments. For those circuits, Pauli-path concatenation method can be applied to implement the \textit{mean value estimation task} and \textit{sampling task}, both within constant additive error and polynomial time. 
+However, the introduction of circuit ensemble might overwhelmed the effect of noise because it is recently show that for noiseless scrambling circuit ensemble, Pauli-path concatenation method can also run in polynomial time and estimates mean values within additive error on average\cite{angrisani2024classically}. A more subtle problem of this method is the ineffectiveness in the case of non-unital channel. Non-unital noise such as amplitude damping channel takes the main part of the noise in neutral atoms and ion-trap quantum computers~\cite{cong2022hardware,sahay2023high} . This calls for new simulation methods in order to benchmark Random Circuit Sampling (RCS) tasks and Variational Quantum Algorithms (VQAs).
+
+Another fraction of NISQ circuit are fixed quantum circuit with bounded quantum resource. 
+Resource theories characterize the classically tractable operations in a certain framework. In this work, we particularly focus on entanglement and magic.
+There are many well-known algorithms for near-stabilizer quantum circuits ~\cite{bravyi2016improved,bravyi2019simulation,seddon2021quantifying} and 
+low entanglement quantum circuits~\cite{markov2008simulating,van2007classical}. 
+The relation between magic and entanglement also arose many attention and recently~\cite{gu2024magic,masot2024stabilizer}.
+It turns out that integrate these two approaches will present efficient simulation method. However, it is still unclear how the existence of noise will break the power of quantum resource in fixed quantum circuits. 
+It is expect to show a trade off between the noise and quantum resource. Guillermo \emph{et.al.} move the fist step and show that  if noise is introduced faster than T gates, the Pauli-path concatenation method still works ~\cite{gonzalez2024pauli}. 
+Recently, efficient algorithms beyond Pauli-path concatenation method are also proposed when noise exist on fixed Clifford-fixed circuits~\cite{nelson2024polynomial} and fixed IQP circuits~\cite{rajakumar2024polynomialtimeclassicalsimulationnoisy}. They both based on percolation of certain graphs and it is still unclear how this effect related to the magic or entanglement resource in the circuit.
+
+In this work, we proposed a unified simulation method for fixed NISQ circuit with bounded quantum resource, with respect to the task of estimating Pauli average.
+The algorithms for Pauli average connect T-gadget simulation method~\cite{bravyi2019simulation} to the Pauli path truncation algorithm. The efficiency of algorithms are bounded by operator stabilizer entropy, as a valid measure for Heisenberg magic~\cite{dowling2024magic} .  
+Noted that our algorithms work for all non-unital noise, as long as magic is not introduced by its part~\cite{turkeshi2024coherent}, which could be used as a standard criterion for all quantum circuit on NISQ-era. 
+
+
+\section{Background}
+\subsection{Pauli-path concatenation method}
+Consider the simulation of the average of Pauli operator $O$ with input state $\rho_0$. 
+Under Heisenberg picture, the Pauli operator evolve according to $C^{\dagger}(O)$. 
+For simplicity, we use Liouville matrix representation $ \|A\rangle\!\rangle= \sqrt{d^{-1}}\sum_{ij} A_{ij} \ket{i} \otimes \ket{j}$ .  For Pauli operators,
+\begin{align}
+    &\|I\rangle\!\rangle =\frac{(\ket{00} + \ket{11})}{\sqrt{2}}, \|Z\rangle\!\rangle=\frac{(\ket{00} - \ket{11})}{\sqrt{2}},\\
+    & \|X\rangle\!\rangle =\frac{(\ket{01}+\ket{10})}{\sqrt{2}} ,\|Y\rangle\!\rangle = \frac{i(\ket{10} - \ket{01})}{\sqrt{2}}.
+\end{align}
+This notation is more convenient because $\langle \!\langle A|B\rangle\!\rangle = 2^{-n}\tr(A^\dagger B) $and $\|A\|_F^2 = \langle \!\langle A|A\rangle\!\rangle$. 
+The Liouville matrix representation is useful because it is now clear that for $\|O\rangle\!\rangle = \sum_{i=1}^{s} \sqrt{p_i} |P_i\rangle\!\rangle$, unitary operations only keeps 2-norms $\sum_{i=1}^s p_i$ in general while Clifford gates in the meantime keep its 0-norm $s$ unchanged.  It thus worthy to take advantage of this special property of Clifford gates to design a more efficient Pauli-path simulation methods. 
+When noisy channels exist, due to the restriction that $|\mathcal{D}(\rho)\rangle\!\rangle = \mathbb{D} |\rho\rangle\!\rangle$, we have $\mathbb{D} = \sum_i M_i \otimes M_i^*$ for $\mathcal{D}(\cdot) = \sum_i M_i \cdot M_i^{\dagger}$. 
+For example, the Pauli noisy channel became superposition of Pauli operators
+\begin{align}
+    \mathcal{D} \to \mathbb{D} &= (1 - p) I \otimes I + \frac{1}{3} p X \otimes X \notag \\
+    &\quad \quad  - \frac{1}{3} p Y \otimes Y + \frac{1}{3}p Z \otimes Z. 
+\end{align}
+Notice that $\{II,XX,-YY,ZZ\}$ are mutually commute and constitute a stabilizer set and $\{|I\rangle\!\rangle,|Z\rangle\!\rangle,|X\rangle\!\rangle,|Y\rangle\!\rangle\}$ are eigenvectors of this stabilizer set, with eigenvalues
+\begin{align}
+    &\lambda_{I} = \{+1,+1,+1,+1\}, \lambda_{Z} = \{+1,+1,-1,-1\},\\
+    &\lambda_{X} = \{+1,-1,-1,+1\},\lambda_{Y} = \{+1,-1,+1,-1\}.
+\end{align}
+Then $\mathbb{D}\|P\rangle\!\rangle = (1 - \frac{4}{3}p + \frac{4}{3}p \delta_{P,I})\|P\rangle\!\rangle$. Similarly, under dephasing noise channel,  $\mathcal{D} \to \mathbb{D} = (1 - p) I \otimes I +  p Z \otimes Z$ , where $\mathbb{D}\|P\rangle\!\rangle = (1 - 2p + 2p \delta_{P,I}+2p \delta_{P,Z})|P\rangle\!\rangle$.
+The damping of Pauli operator now can be understand as different damping behaviors under different basis. Noted that in both cases, unital noise channel keeps the number of Pauli operators as Clifford gates did.
+
+Assume the input state is $\rho_0$, through denoting $\langle\!\langle P_j| \mathbb{U}_j|P_{j - 1}\rangle\!\rangle := 2^{-n}\text{tr}(P_j U_j P_{j - 1}U_j^\dagger)$ , the average of operator $O$  is now decided by
+\begin{align}
+    \text{Avg}(C,O,\gamma)&=\tr[C^\dagger(O)\rho_0] \\
+    &=\sum_{\vec P = (P_0,\cdots,P_d)}\!\!\! (1 - \gamma)^{\text{wt}(\vec P)} f(C,\vec P,O) ,
+\end{align}
+where $f(C,\vec P,O) =\langle\!\langle O|P_{d}\rangle\!\rangle \prod_{i = 1}^d \langle\!\langle P_i| \mathbb{U}_d|P_{i - 1}\rangle\!\rangle  \text{tr}(P_0 \rho_0)$. 
+
+The sampling probability can be decomposed in the same manner.  The probability to output the string $\vec x \in \mathbb{F}_2^n$ can be calculated by simply substituting $|O\rangle\!\rangle$ with $|x\rangle\!\rangle$. Considering the damping effects on high-weight Pauli operators, a class of approximation algorithm~\cite{aharonov2023polynomial,schuster2024polynomial} can be proposed by cutoff path with $\text{wt}(\vec P) > l$. 
+The precision of this approximation should be evaluated by norm of difference, for example,
+\begin{align}
+    \Delta(O,C) &=\left|\sum_{\vec P, \text{wt}(\vec P)>l} (1 - \gamma)^{\text{wt}(\vec P)} g(C,\vec P,O) \right|^2\\
+    &=\left[\langle C^\dagger (O) \rangle_{\ket{0}} -  \langle \tilde O(C)\rangle_{\ket{0}}\right]^2,
+\end{align}
+where $\tilde O(C)$ is approximated operators due to cutoff of path with $\text{wt}(\vec P) > l$. 
+Note that $\langle \tilde O(C)\rangle_{\ket{0}}$ can be calculated in $n^{l/d} \cdot 2^{O(l)}$ time as proved in~\cite{aharonov2023polynomial}.
+To show that these difference indeed negligible with large qubits numbers $n$, restriction on circuit is applied. 
+
+One reasonable restriction is random circuit with hiding property that implements random unitaries from distribution $\mathcal{C}$ with input $\ket{0}$. Considering the average of Pauli operator $O$ for these circuits. Because hiding property is supposed to be satisfied, it can then be concluded that
+\begin{align}
+    \mathbb{E}_{C \in \mathcal{C}}&\left[\langle C^\dagger (O) \rangle_{\ket{0}} -  \langle \tilde O(C)\rangle_{\ket{0}}\right]^2 \notag \\
+    &= \mathbb{E}_{C \in \mathcal{C}}|\mathcal{E}|^{-1}\sum_s \left[\langle C^\dagger (O)  \rangle_{\ket{s}} -  \langle \tilde O(C)\rangle_{\ket{s}}\right]^2 .
+\end{align}
+The input states are randomly chosen from an ensemble of states $\mathcal{E} = \{\ket{s},s \in \mathbb{F}_2^n\}$ with probability $2^{-n}$. Such an ensemble called low-average inputs and satisfied $\||\mathcal{E}|^{-1} \sum_{s} \ket{s}\!\bra{s}\|_\infty \leq 2^{-n}$ . It is proved in~\cite{schuster2024polynomial} that for any operator $O$ and $\tilde O$ , we have
+\begin{align}
+    |\mathcal{E}|^{-1}\sum_{s}|\langle O\rangle_{\ket{s}} - \langle \tilde O\rangle_{\ket{s}}|^2\leq \|O - \tilde O\|_F^2,
+\end{align}
+and $\Delta(O,C)\leq \mathbb{E}_{C \in \mathcal{C}} \|C^\dagger (O) - \tilde O(C)\|_F^2 \leq \varepsilon$ for sufficiently large truncation threshold $l$ . With this ensured, we can approximate $\langle C^\dagger O C \rangle_{\ket{0}}$ within additive error $\varepsilon \delta^{-1}$ for at least $1 - \delta$ fraction of instance in $\mathcal{C}$ using a $n^{l/d} \cdot 2^{O(l)}$ time classical machine. 
+
+Several comment on this method are followed. First, the additive error of this algorithm is bound in average-case over certain distributions of quantum circuits and failed for worst case NISQ circuits which are cleverly designed with the goal of near-term fault-tolerance. 
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Summary of main results}
+The effectiveness of Pauli path truncation algorithm highly rely on the property of Pauli unital noise, which exponentially suppress high-weight Pauli paths while not spreading them. 
+This prevent the application of truncation algorithm on more general noise model such as amplitude damping noise.
+Many non-unital qubit channels, though exponentially spread Pauli operators, will not introduce magic resource at all. 
+Therefore, a natural question arises:
+\textit{Can we generalized the Pauli path method such that it can be applied to 'sparse' magic circuit with all arbitrary CSP channel?}
+
+Motivated by these questions, we propose randomized algorithms for the simulation of noisy circuits under Pauli averages approximation task. Given a fixed noisy Clifford+T circuit, our method provides a criterion to test the 'sparseness' of T gates in the circuit, such that the impact of noise obscures the simulation complexity.  
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{ Single qubit incoherent noise}
+Any single-qubit noise channel can be expressed as~\cite{king2001minimal}
+\[
+\mathcal{N}(\rho) = U \Lambda(V \rho V^\dagger) U^\dagger,
+\]
+where \( U \) and \( V \) are unitary operators representing the coherent components of the noise channel, and
+\[
+\Lambda\left(\frac{1}{2}[\mathbb{I} + \mathbf{w} \cdot \vec \sigma]\right) = \frac{1}{2}[\mathbb{I} + (\mathbf{t} + \Gamma \mathbf{w}) \cdot \vec\sigma]
+\]
+represents the incoherent part, with \( \Gamma \) being a diagonal matrix with diagonal entries less than 1. The two components have distinct impacts on the circuit's complexity. Recent studies have shown that coherent errors can generate high-magic resource states for universal quantum computing~\cite{niroula2024phase,turkeshi2024coherent}. To prevent the coherent components from introducing magic into the circuit, we restrict our discussion to the case where \( U \) and \( V \) are both Clifford gates. In this case, the effect of Clifford coherent noise can be incorporated into the Clifford layers, so it is sufficient to consider noise channels in the form of \( \Lambda \).
+
+When \( \mathbf{t} = 0 \), this channel reduces to Pauli noise. Back-propagating Pauli errors before this channel is determined by its conjugate channel, \( \Lambda^\dagger \). It is evident that \( \Lambda^\dagger \) simply scales the non-identity Pauli operators by a constant factor less than 1.
+
+When \( \mathbf{t} \neq 0 \), the quantum channel becomes non-unital. This noise is more complex than Pauli noise, and it has been shown that a NISQ circuit with a non-unital channel can compute for an exponential number of time steps~\cite{ben2013quantum}. However, we demonstrate that its conjugate linear map can still be decomposed into a scaling part, \( \mathbb{S} \), and a translation part, \( \mathbb{T} \), as proven by the following theorem.
+
+\begin{theorem}\label{theo:non-unital_back-propagation}
+Conjugated channel \( \Lambda^\dagger(\cdot) \) operates on the Pauli operators \( \{ \sigma_1, \sigma_2, \sigma_3 \} \) as a scaling part \( \mathbb{S} \) followed by a shifting part \( \mathbb{T} \), such that
+   \begin{align}
+       \sigma_i &\xrightarrow{\mathbb{S}(\cdot)} s_i \sigma_i\\
+       &\xrightarrow{\mathbb{T}(\cdot)} s_i\cdot \left[(1 - p_i)(\text{sign}~\Gamma_i \cdot \sigma_i) + p_i(\text{sign}~t_i\cdot\mathbb{I})\right]\\
+       &= \Lambda^\dagger(\sigma_i) = \Gamma_i \sigma_i + t_i \mathbb{I},
+   \end{align}
+   where $s_i = |\Gamma_i| + |t_i| \leq 1, p = {|t_i|}{(|\Gamma_i| + |t_i|)}^{-1} \in [0,1]$. 
+\end{theorem}
+The proof of theorem~\ref{theo:non-unital_back-propagation} is shown in Appendix~\ref{app:proof_nosie_channel}.  An illustrative example is the amplitude damping channel that given by $\Lambda(\rho) = K_0 \rho K_0^\dagger + K_1 \rho K_1^\dagger$, where $K_0 = \text{diag}(1, \sqrt{1 - p})$ and $K_1 = \begin{bmatrix} 0 & \sqrt{p} \\ 0 & 0 \end{bmatrix}$. 
+Applying the decomposition theorem~\ref{theo:non-unital_back-propagation} gives
+\begin{align}
+   &\Lambda^\dagger[X] = \sqrt{1 - p} X, \quad \Lambda^\dagger[Y] = \sqrt{1 - p} Y, \\
+   &\Lambda^\dagger[\mathbb{I}] = \mathbb{I}, \quad \Lambda^\dagger[Z] = (1 - p) Z + p \mathbb{I}. 
+\end{align}
+The amplitude damping channel rescales the $X$ and $Y$ Pauli operators similarly to Pauli noise, while it introduces a random branching in the $Z$ Pauli operators, akin to the action of $T$-gates. However, the branching in the amplitude damping channel differs from that of $T$-gates in that its branching coefficient sums to $1$, whereas the $T$-gates' branching coefficients are normalized under the 2-norm, $\sum_i |c_i|^2$. This enables a random shift of the $Z$ operator into $\mathbb{I}$ with probability $p$, without significantly increasing the variance. 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Toy model: Clifford circuit with amplitude damping noise}
+Clifford circuits are known to be classically tractable due to the well-known Gottesman-Knill theorem. However, less research has been conducted on simulating noisy Clifford circuits. Even for stabilizer states under Pauli noise, it is no longer possible to generate the mixed state using only $n$ Pauli generators. This complicates the direct calculation of the sampling amplitude under Pauli noise and necessitates further discussion~\cite{mor2023noisy}. 
+
+In the case of non-unital noise, calculating the Pauli average becomes similarly challenging. For Clifford gates with Pauli noise, the exact average of Pauli operators can be computed using the back-propagation method. Both Clifford gates and Pauli noise preserve the number of Pauli operators. However, in the case of non-unital noise, such as amplitude damping noise, the number of Pauli-$Z$ strings branches exponentially. Consequently, the exact average of Pauli operators cannot be computed in the same manner. 
+
+This difficulty serves as a prime example that highlights the advantage of the sampling algorithm over conventional truncation methods. We first demonstrate that no definite Pauli path truncation rule exists that can approximate the result within additive error in polynomial time.
+
+\begin{algorithm}
+\caption{Sampling algorithm for simulation of Clifford circuit with amplitude damping noise}
+\label{alg:Apd_sampling}
+\begin{algorithmic}[1]
+\State \textbf{Input:} qubit number $n$; an ordered sequence of operations $C = \Lambda_1 \circ \cdots \circ \Lambda_{d}$ with $\Lambda_i$ being Clifford gates or amplitude-damping channels; $n$-qubit Pauli operator $P_0$; Precision $\varepsilon$.
+\State \textbf{Output:} Random variable $A$ such that $|\mathbb{E}(A)- \langle P_0 \rangle| < \varepsilon$.
+\State $i \gets 1,~ P \gets P_0$
+\While{$i \leq d$}
+    \If{$\Lambda_i$ is Clifford gate}
+        \State $P \gets \Lambda_i^\dagger(P)$
+    \ElsIf{$\Lambda_i$ is amplitude damping noise with parameter $p_i$}
+        \For{$t = 1$ to $n$}
+            \If{$P_t \propto X$ or $P_t \propto Y$}
+                \State $P_t \gets \sqrt{1 - p_i} P_t$
+            \ElsIf{$P_t \propto Z$}
+                \State $P_t \gets I$ with probability $p_i$
+            \EndIf
+        \EndFor
+    \EndIf
+    \State $i \gets i + 1$
+\EndWhile
+\State $A \gets \text{tr}(P \ket{0}\!\bra{0}^{\otimes n})$
+\State \textbf{return} $A$
+\end{algorithmic}
+\end{algorithm}
+
+\begin{theorem}
+\label{theo:toy_model_power}
+   Consider a fixed Clifford NISQ circuit composed of $\ket{0}^{\otimes n}$ inputs, Clifford gate layers, and an amplitude-damping channel with parameter $p < 1/2$. To estimate the Pauli average within an additive constant error $\varepsilon$ for all circuits of this kind, the complexity of the Pauli path truncation algorithm must exhibit sub-exponential growth, with a bound of $O(n^{-1} e^{H(p) \cdot n})$. Here $H(p) = -p\ln p - (1-p)\ln (1-p)$. However, the randomized algorithm~\ref{alg:Apd_sampling} estimates its Pauli average within the constant Pauli error.
+\end{theorem}
+The proof of Theorem~\ref{theo:toy_model_power} is shown in Appendix~\ref{app:comparison}.  It demonstrates that, although non-unital noise enhances the computational power of Clifford circuits, its complexity is ultimately rooted in classical hardness and can be simulated using randomized computational methods, such as Monte Carlo methods.
+%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Gate sampling algorithm}
+Now we turn to circuit $C = \Lambda_1 \circ \cdots \circ \Lambda_{d}$ that contains not only incoherent noise and Clifford gates, but also single qubit non-Clifford gate $U$.
+Because $U$ is unitary, it is explicit that the back-propagation of $\sigma_i$ will support on $\sigma_r, r \in R_i \subset\{1,2,3\}$ such that
+ \begin{align}
+     U^\dagger \sigma_i U= \sum_{r\in R_i} \sqrt{q_{i,r}} \text{sign}_{i,r} \sigma_r,\quad  \sum_i q_i = 1.
+ \end{align}
+Gate sampling algorithm moves $P^{(0)}$ backwards and pass all operations $\{\Lambda_1, \cdots,\Lambda_d\}$. where $\Lambda_i$ is Clifford gate, single qubit non-Clifford gate or single qubit incoherent channels. 
+In the gate sampling algorithm, When $\Lambda_i$ is unitary gate $U$, 
+at each time  $(c,\sigma_i)$  encounter with $U$ gates, we randomly shifting $(c,\sigma_i)$ into $(c \cdot \text{sign}_{i,r},\sigma_r)$ with probability $q_{i,r}$ , as illustrated by Algorithm~\ref{alg:gate_sampling} below.
+\begin{widetext}
+
+\begin{algorithm}[htbp!]
+\caption{Gate Sampling algorithm}
+\label{alg:gate_sampling}
+\begin{algorithmic}[1]
+\State \textbf{Input:} qubit number $n$; an ordered sequence of operations $C = \Lambda_1 \circ \cdots \circ \Lambda_{d}$ with $\Lambda_i$ being Clifford gates, T gate or single qubit incoherent channels layer; $n$-qubit Pauli operator $P^{(0)}$; Precision $\varepsilon$.
+\State \textbf{Output:} Random variable $A$ such that $\left|\mathbb{E}(A) - \text{tr}( P^{(0)} C\left[\ket{0}\!\bra{0}^{\otimes n}\right] )\right| < \varepsilon$.
+\State $i \gets 1,~ (c,P) \gets (1,P^{(0)})$
+\While{$i \leq d$}
+    \If{$\Lambda_i$ is Clifford gate}
+        \State $(c,P) \gets (c\cdot\text{sign}(\Lambda_i^\dagger(P)),|\Lambda_i^\dagger(P)|)$
+    \ElsIf{$\Lambda_i$ is single qubit unitary gate on $k$-th qubit}
+        \State  $\mu \gets l \in \{0,1,2,3\}$ such that $P_k = \sigma_l$
+        \State Find the parameter $(q_1, q_2,q_3)$ and $(\text{sign}_1,\text{sign}_2,\text{sign}_3)$ for $\Lambda_i$ with input $\sigma_\mu$
+        \State With probability $q_r$, set $P_k\gets  \sigma_r,c\gets \text{sign}_r \cdot c/\sqrt{q_r}$ 
+    \ElsIf{$\Lambda_i$ is incoherent noise on $k$-th qubit with parameter $(\Gamma_1,\Gamma_2,\Gamma_3), (t_1,t_2,t_3)$}
+             \State  $\mu \gets l \in \{0,1,2,3\}$ such that $P_k = \sigma_l$
+                \State $\alpha_\mu = |\Gamma_\mu| + |t_\mu|, \quad  p_\mu = |t_\mu|/\alpha_\mu,\mu = 1,2,3$
+                \State $P_k \gets \mathbb{I}, c \gets c \cdot \alpha_\mu \text{sign}(t_\mu) $ with probability $p_i$, $P_k \gets  \sigma_\mu, c \gets c \cdot \alpha_\mu \text{sign}(\Gamma_\mu)$ with probability $1-p_i$
+    \EndIf
+    \State $i \gets i + 1$
+\EndWhile
+\State $A \gets \text{tr}(cP \ket{0}\!\bra{0}^{\otimes n})$
+\State \textbf{return} $A$
+\end{algorithmic}
+\end{algorithm}
+\end{widetext}
+Consider an operator $O$ and quantum channel $\Lambda$ on $n$ qubits, the operator stabilizer entropy(OSE) generated by $\Lambda$ with input $O$ is defined as
+\begin{align}
+\label{eq:OSE_definition}
+    \mathcal{M}^{(\alpha)}({\Lambda}^\dagger[O]) := \frac{1}{1 - \alpha} \left[\ln P^{(\alpha)}(\Lambda^{\dagger}[O]) - \ln P^{(\alpha)}(O)\right].
+\end{align}
+where $P^{(\alpha)}(O):=\sum_{P \in \{\mathbb{I},X,Y,Z\}^{\otimes n}}\left({2^{-n}}\text{tr}(OP)\right)^{2 \alpha}$
+The correctness and variance of this randomize algorithm is shown in the theorem~\ref{theo:gate-sampling-method} below, with proof in Appendix~\ref{app:analysis_alg}. It turns out that the varicance, which decide the efficiency of gate sampling algorithm, is decided by the change of operator stabilizer entropy in the circuit. 
+\begin{theorem}[Gate sampling method] \label{theo:gate-sampling-method}
+The gate sampling algorithm~\ref{alg:gate_sampling}  have the expectation value and upper bound for variance:
+\begin{align}
+    \mathbb{E}  = \text{tr}( P^{(0)} C[\ket{0}\!\bra{0}^{\otimes n}] ).
+\end{align}
+\color{red}
+\begin{align}
+    \text{Var}&\leq \exp\left[ \frac{1}{2} M^{(1/2)}[C_N^\dagger(O)]  + M^{(0)}[C_U^\dagger(O)] \right].
+\end{align}
+\color{black}
+where $\mathcal{M}^{(\alpha)}({\Lambda}^\dagger[O])$ represents the $\alpha$-operator stabilizer entropy, as defined in Eq.~\eqref{eq:OSE_definition}. $C_U$ denotes the unitary part of the circuit $C$, and $C_N$ denotes the incoherent-noise part of the circuit.
+\end{theorem}
+It has been shown in the appendix~\ref{app:proof_nosie_channel} that $M^{(1/2)}[C_N^\dagger(O)]  \leq 0$ must be satisfied for incoherent noise and $ M^{(0)}[C_U^\dagger(O)] \geq0$ must be satisfied and take the quality if and only if $C_U$ is Clifford gate. 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Truncated sampling algorithm}
+In previous section, we explore how to sample according to non-Clifford gates. The algorithm is clear and simple, however, the variance of this sampling algorithm might scales exponentially, which is because we use classical sampling to deal with the coherent  $T$ gates. In this section, we try to fixed this problem by proposing truncated sampling method and combined the truncation into our sampling method.
+
+In this method, classical computer trace the unitary back-propagation of Pauli operators by enumeration rather than sampling. On the other hand, each time the Pauli operator $(c,P_i)$ pass the noise channel $\Lambda_{k+1}$, we no longer trace the suppression induced by the incoherent noise as tuple $(s_i c,P_i)$, as we did in gate sampling algorithm. Instead, the tuple $(c,P_i)$ will has propability  $p =s_i$ to halt and do not participate in the following propagation. When the propagation halt or end at the $d$-th depth, we sum the tail of the propagation graph to estimate the average of the Pauli operator, as shown in Algorithm~\ref{alg:truncated_sampling} above. 
+
+
+    \begin{algorithm}[htbp!]
+\caption{Truncated Sampling algorithm}
+\label{alg:truncated_sampling}
+\begin{algorithmic}[1]
+\Require qubit number $n$; an ordered sequence of operations $C = \Lambda_1 \circ \cdots \circ \Lambda_{d}$ with $\Lambda_i$ being unitary gates or single qubit incoherent channels layer; $n$-qubit Pauli operator $P^{(0)}$; Precision $\varepsilon$.
+\Ensure  Random variable $A$ such that $\left|\mathbb{E}(A) - \text{tr}( P^{(0)} C\left[\ket{0}\!\bra{0}^{\otimes n}\right] )\right| < \varepsilon$.
+\State $i \gets 1$, create an list $L=\{(1,P^{(0)})\}$  
+\While{$i \leq d$}
+\State $M=\{\}$  
+\For{$(c,P) \in L$ with $P = P_1\cdots P_n$}
+    \If{$\Lambda_i$ is incoherent noise on $k$-th qubit}
+    \State Set noise parameters $(\Gamma_1,\Gamma_2,\Gamma_3), (t_1,t_2,t_3)$
+            \State  $\mu \gets l \in \{0,1,2,3\}$ such that $P_k = \sigma_\mu$
+                \State \textbf{with probability} $|t_\mu|$ \textbf{do:}
+            \State \quad $P_k \gets \mathbb{I} $ 
+             \State \quad $M = M \cup \{( c \cdot  \text{sign}(t_\mu) ,P)\}$
+                \State \textbf{with probability} $|\Gamma_\mu|$ \textbf{do:}
+            \State \quad $P_k \gets  \sigma_\mu$ 
+                \State \quad $M = M \cup \{(c \cdot \text{sign}(\Gamma_\mu),P)\}$
+    \ElsIf{$\Lambda_i$ is unitary gate}
+        \State Calculate $\Lambda_i^\dagger(P) = \sum_{\mathbf{s} \in S } |\alpha_{\mathbf{s}}|\cdot\text{sign~} \alpha_{\mathbf{s}}\cdot  \sigma_{\mathbf{s}}$
+        \For{$\mathbf{s} \in S \subset \{0,1\}^{n}$ }
+        \State \textbf{with probability} $|\alpha_{\mathbf{s}}|$ \textbf{do:}
+        \State \quad $M = M \cup \{( c \cdot \text{sign~}\alpha_{\mathbf{s}} ,  \sigma_{\mathbf{s}})\}$ . 
+        \EndFor
+    \EndIf
+    \EndFor
+    \State $L \gets M$
+    \State $i \gets i + 1$
+\EndWhile
+\For{$(c,P) \in L$}
+    \State $A \gets A+\text{tr}(cP \ket{0}\!\bra{0}^{\otimes n})$
+\EndFor
+\State \textbf{return} $A$
+\end{algorithmic}
+\end{algorithm}
+
+The correctness and variance of this randomize algorithm is again shown in the theorem below, with proof in Appendix~\ref{app:analysis_alg}. 
+\begin{theorem}[truncated sampling] \label{theo:truncated_sampling}
+     Given a circuit $C = \Lambda_1 \circ \cdots \circ \Lambda_{d}$, the truncated sampling algorithm can be implemented in polynomial time. At the end of the sampling, the output consists of the set of tuple $S_d= \{(c_i^{(d)}, P_i^{(d)})\}_{i=1}^{N_d}$ with probability $q^{(d)}(S_d)$. Then, we have the expectation value:
+\begin{align}
+    &\mathbb{E} = \sum_{S_d}q^{(d)}(S_d) \sum_{(c_i, P_i)\in S_d} \text{tr}(c_i P_i \ket{0}\!\bra{0}^{\otimes n}) = \text{tr}( P^{(0)} C[\ket{0}\!\bra{0}^{\otimes n}] ),\\
+        &\text{Var} + \mathbb{E}^2 \leq 1.
+\end{align}
+\end{theorem}
+Through truncated sampling method always has bounded variance, the Pauli operators that required to be traced during the sampling process might be exponentially large, as illustrated in theorem~\ref{theo:space_complexity} below.
+\color{red}
+\begin{theorem}
+\label{theo:space_complexity}
+    The space complexity of truncated sampling algorithm in Algorithm~\ref{alg:truncated_sampling} in the main text is related to the noise channel reduction of $1/2$-OSE and unitary enhancement of $0$-OSE of the noisy quantum circuit. 
+\end{theorem}
+\color{black}
+
+If the $1/2$-OSE of operator $C^\dagger P^{(0)}C$ is exponentially large on average, it is impossible to use Pauli path truncation method
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Case studies}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Examples: Sparse Clifford + T Circuits}
+We now apply Algorithm~\ref{alg:gate_sampling} and Algorithm~\ref{alg:truncated_sampling} to Clifford+T circuit $C = \Lambda_1 \circ \cdots \circ \Lambda_d$ subject to incoherent noise. As a special case, the Pauli operator conjugated with the $T$ gate propagates as $T^\dagger \sigma_3 T = \sigma_3$,$T^\dagger \sigma_1 T = ({1}/{\sqrt{2}}) (\sigma_1-\sigma_2 )$, and $T^\dagger \sigma_2 T =  ({1}/{\sqrt{2}}) (\sigma_1 + \sigma_2)$.
+In the gate sampling algorithm, whenever Pauli operators \( \sigma_1 \) or \( \sigma_2 \) encounter \( T \)-gates, the operator \( \sigma_1 \) shifts randomly into \( \sigma_1 \) or \( \sigma_2 \) with probability \( \frac{1}{2} \), while \( \sigma_2 \) shifts into \( -\sigma_1 \) or \( \sigma_2 \) with the same probability, as illustrated in Algorithm~\ref{alg:gate_sampling}.
+We then propagate \( P^{(0)} \) backwards through all gates \( \Lambda_l \in \{ T_l, \text{Cl}_l, \mathcal{N}_l \}, l = 1, \dots, d \). 
+Initially, we assume that the incoherent noise \( \mathcal{N}_l \) only has a suppressive effect, corresponding to Pauli noise. 
+When \( \sigma_1 \) or \( \sigma_2 \) encounters a \( T \)-gate during the back-propagation, a random change in the Pauli operator occurs.
+
+All possible changes in the Pauli operators generate a binary tree rooted at the pair \( (1, P^{(0)}) \) with \( d \) levels, referred to as the Pauli path. 
+The notation \( \{ (c_i^{(l)}, P_i^{(l)}) \}_{i=1}^{N_l} \) represents the \( i \)-th vertex at the \( l \)-th level of this binary tree. 
+After completing the back-propagation, we generate the elements \( \{ (c_i^{(d)}, P_i^{(d)}) \}_{i=1}^{N_d} \} \) at the final level of the tree with probability \( q_i^{(d)} \). 
+Because of the binary tree structure, there exists a unique path connecting each vertex \( (c_i^{(d)}, P_i^{(d)}) \) to the root \( (1, P^{(0)}) \). 
+We denote this unique path as the ordered set \( h_i = \{ (1, P^{(0)}), \dots, (c_i^{(d)}, P_i^{(d)}) \} \) for \( i = 1, \dots, N_d \), with \( h_i^{(l)} \) representing the elements at the \( l \)-th level.
+Since the random change of Pauli operators only occurs when \( \sigma_1 \) or \( \sigma_2 \) encounters a \( T \)-gate with probability \( \frac{1}{2} \), the probability \( q_i^{(d)} \) is given by $q_i^{(d)} = 2^{-Q(i)}$, where \( Q(i) \) is the number of elements in the set
+\begin{align}
+    \{ h_i^{(l)} \in h_i \mid \Lambda_l = T_l, h_i^{(l)} = (\cdot, \sigma_1) \text{ or } h_i^{(l)} = (\cdot, \sigma_2) \}.
+\end{align}
+In other words, \( Q(i) \) counts the number of elements along the path \( h_i \) that have the form \( (\cdot, \sigma_1) \) or \( (\cdot, \sigma_2) \) and encounter a \( T \)-gate.
+According to Theorem~\ref{theo:gate-sampling-method}, the coefficient \( c_i^{(d)} \) is determined by
+\begin{align}
+    c_i^{(d)} = \text{sign}(i) (\sqrt{2})^{Q(i)} f(i),
+\end{align}
+where \( f(i) \) is computed by multiplying the incoherent noise suppression at each noisy level \( h_i^{(l)} \) where \( \Lambda_l = \mathcal{N}_l \).
+The term \( \text{sign}(i) \) reflects the re-signal effect at the \( T \)-gate level \( h_i^{(l)} \), which accounts for the number of changes from \( (c, \sigma_2) \) to \( (-\sqrt{2}c, \sigma_1) \).
+The average of this algorithm is given by
+\begin{align}
+    C^\dagger(P^{(0)}) = \sum_{i=1}^{N_d} f(i) \cdot \text{sign}(i) \left( \frac{1}{\sqrt{2}} \right)^{Q(i)} P_i^{(d)}.
+\end{align}
+The variance of the algorithm is
+\begin{align}
+    \text{Var} \leq \sum_{i \in N_d} q_i^{(d)} |c_i^{(d)}|^2 = \sum_{i \in N_d} |f(i)|^2.
+\end{align}
+As demonstrated in previous work~\cite{gonzalez2024pauli}, the Pauli path truncation method can be applied to sparse Clifford+T circuits, assuming the number of \( T \)-gates is sufficiently small. We show that such sparse \( T \)-circuits can be simulated by our gate sampling method, as detailed in Theorem~\ref{theo:sparse_CT}, with its proof provided in Appendix~\ref{app:comparison}.
+\begin{theorem}\label{theo:sparse_CT}
+    Given a 2-dimensional, \( (Q, k) \)-sparse, localized Clifford+T circuit \( C \) with depolarizing noise layers \( \Lambda(\rho) = (1 - p)\rho +({p}/{2}) \mathbb{I} \), if $2^Q(1 - p)  < 1$, then the variance of the gate sampling algorithm satisfies \( \text{Var} \leq \text{poly}(n) \). Further more, adds amplitude damping noise into this circuit will never increase the simulation complexity. 
+\end{theorem}
+% In the case of truncated sampling algorithm, it turns out that an upper bound of the space complexity of Algorithm~\ref{alg:truncated_sampling} can be estimated by a random branching process over this binary tree.
+% Begin from the root of the tree,  each T-level $T_l$ that encountered with $\sigma_1, \sigma_2$ branch vertex into two off-springs while noise level $\mathcal{N}_l$ induced a probability $s_l$ of death.
+%    This process ignore the fact that the Pauli tuple $(c_1, \sigma_i)$ and  $(c_2, \sigma_i)$ might be united into $(c_1+c_2, \sigma_i)$, Thus the number of off-springs decides the space complexity of Algorithm~\ref{alg:truncated_sampling} , as illustated by Lemma~\ref{lemma:space_complexity} with proof in Appendix~\ref{app:analysis_alg}.
+
+% \begin{lemma}[Space complexity of multiple path sampling]
+% \label{lemma:space_complexity}
+     
+%      On average, the space complexity of Algorithm~\ref{alg:truncated_sampling} is upper bounded by $ N_{tot} \leq \sum_i f(i)$, where $f(i)$ is the suppression coefficient of the $i$-th path as defined above. 
+%  \end{lemma}
+
+We now generalize the incoherent noise \( \mathcal{N}_l \) to non-unital noise. For non-unital noise, the perturbation effect is introduced as a random fluctuation in the binary graph, where only the scaling components of the noise channels are considered.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Examples: Random circuit sampling}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Conclusions}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Ack
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section*{Acknowledgements} 
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% References
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\bibliographystyle{apsrev4-2}
+\bibliography{references.bib}
+%apsrev4-2.bst 2019-01-14 (MD) hand-edited version of apsrev4-1.bst
+%Control: key (0)
+%Control: author (8) initials jnrlst
+%Control: editor formatted (1) identically to author
+%Control: production of article title (0) allowed
+%Control: page (0) single
+%Control: year (1) truncated
+%Control: production of eprint (0) enabled
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Appendices
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \appendix
+% \onecolumngrid
+% https://tex.stackexchange.com/questions/488302/referencing-an-appendix-while-using-prl-style
+\makeatletter
+\newcommand{\appendixtitle}[1]{\gdef\@title{#1}}
+\newcommand{\appendixauthor}[1]{\gdef\@author{#1}}
+\newcommand{\appendixaffiliation}[1]{\gdef\@affiliation{#1}}
+\newcommand{\appendixdate}[1]{\gdef\@date{#1}}
+\makeatother
+
+% Define the custom title block
+\makeatletter%
+\newcommand{\appendixmaketitle}{%
+\begin{center}%
+\vspace{0.4in}%
+{\Large \@title \par}%
+% {\normalsize
+%   \lineskip .5em%
+%   \begin{tabular}[t]{c}%
+%     \@author
+%   \end{tabular}\par}%
+% \vspace{5pt}
+% {\itshape \@affiliation \par}%
+\end{center}%
+\par%
+}%
+\makeatother%
+
+\setcounter{secnumdepth}{2}
+\appendix
+\widetext
+\newpage
+
+\appendixtitle{\bf 
+Supplemental Material for "''}
+% \appendixauthor{Siyuan Chen, Wei Xie, and Kun Wang} 
+% \appendixaffiliation{
+% Institute for Quantum Computing, Baidu Research, Beijing 100193, China \\
+% Physics Department, Jilin University \\
+% School of Computer Science and Technology, University of Science and Technology of China}
+\appendixmaketitle
+\vspace{0.2in}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+The contents of the supplementary material are structured as follows: 
+In Appendix..
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Proof of Noise channels properties}
+\label{app:proof_nosie_channel}
+In this appendix, we show some critial properties of single qubit quantum channels. It will been shown that the incoherent parts of single qubit noise channels has a great inpact on circuit complexity.
+\subsection{Proof of Back-propagation property}
+\begin{lemma}[~\cite{ruskai2002analysis}]
+    Any single-qubit noise channel can be decomposed into coherent and incoherent parts
+\[
+\mathcal{N}(\rho) = U \Lambda(V \rho V^\dagger)U^\dagger,
+\]
+where $U,V$ are unitary gates and  \(\Lambda\left(\frac{1}{2}[\mathbb{I} + \mathbf{w} \cdot \vec \sigma]\right) = \frac{1}{2}[\mathbb{I} + (\mathbf{t} + \Gamma\mathbf{w}) \cdot  \vec\sigma]\). Here, \(\Gamma\) is a diagonal matrix with real diagonal entries $(\Gamma_1,\Gamma_2,\Gamma_3)$ and $\mathbf{t} = (t_1,t_2,t_3)$ is a real vector. 
+\end{lemma}
+To prevent the coherent parts of the channel introduce magic to the circuit, we only discuss those channel with $U = V = \mathbb{I}$, which we called single qubit \textit{incoherent noise}.
+
+The adjoint map of $\Lambda$ is defined as the linear map $\Lambda^\dagger(\cdot)$  such that $\text{tr}[\Lambda(\rho)\hat O] = \text{tr}[\rho\Lambda^\dagger(\hat O)]$ for arbitrary choice of $\rho, \hat O$.  The back-propagating result of Pauli operators for this channel is decided by its  adjoint map $\Lambda^\dagger$. Because $\Lambda(\cdot)$ is a CPTP map, its conjugate must satisfied $\Lambda^\dagger(\mathbb{I}) =\mathbb{I} $. 
+In the case of $\mathbf{t} = 0$, this channel reduced to the Pauli noise.  It is apparent that $\Lambda^\dagger$ will simply scale the non-identity Pauli operators with a constant less than $1$.
+When \(\mathbf{t} \neq 0\), the quantum channel is non-unital. This noise is complex than Pauli noise. It is proved that NISQ circuit with non-unital channel is possible to compute for an exponential number of time steps~\cite{ben2013quantum}. 
+However, we will show that its conjugate linear map still can be decomposed into a scaling part $\mathbb{S}$ and translation part $\mathbb{T}$ , as proved by the theorem below.
+\begin{theorem}[Refined version of Theorem~\ref{theo:non-unital_back-propagation} in the main text]
+\label{theo:non-unital_back-propagation_proof}
+   Consider single-qubit channel with form \(\Lambda\left(\frac{1}{2}[\mathbb{I} + \mathbf{w} \cdot  \vec\sigma]\right) = \frac{1}{2}[\mathbb{I} + (\mathbf{t} + \Gamma\mathbf{w}) \cdot  \vec\sigma]\) . On the Heisenberg picture, its conjugated channel $\Lambda^\dagger(\cdot)$ operates on Pauli operators as a scaling part $\mathbb{S}$ followed by a shifting part $\mathbb{T}$ , such that for $\{\sigma_1,\sigma_2,\sigma_3\}$,
+   \begin{align}
+       \sigma_i &\xrightarrow{\mathbb{S}(\cdot)} s_i \sigma_i\\
+       &\xrightarrow{\mathbb{T}(\cdot)} s_i\cdot \left[(1 - p_i)(\text{sign}~\Gamma_i \cdot \sigma_i) + p_i(\text{sign}~t_i\cdot\mathbb{I})\right]\\
+       &= \Lambda^\dagger(\sigma_i),
+   \end{align}
+   where $s_i = |\Gamma_i| + |t_i| \leq 1, p = {|t_i|}{(|\Gamma_i| + |t_i|)}^{-1} \in [0,1]$. 
+\end{theorem}
+ \begin{proof}
+     The conjugation of quantum channel is formally defined under trace operation as $\text{tr}[\Lambda(\rho)\hat O] = \text{tr}[\rho\Lambda^\dagger(\hat O)]$. Because Pauli operator is orthogonal basis in terms of the trace norm, the operator $\rho$ and $\hat O$ are first decomposed under this basis, each with coefficient below
+     \begin{align}
+         \rho &= (\frac{1}{2}, \frac{\omega_1}{2}, \frac{\omega_2}{2}, \frac{\omega_3}{2}):=\frac{\mathbb{I}+\sum_{i =1}^3\omega_i \sigma_i }{2}, \\
+         \hat{O} &= a_0 \mathbb{I} + \sum_{i =1}^3 a_i \sigma_i ,\\
+         \Lambda^\dagger(\hat O)&= b_0 \mathbb{I} + \sum_{i =1}^3 b_i \sigma_i.
+     \end{align}
+     Using the equation \(\Lambda\left(\frac{1}{2}[\mathbb{I} + \mathbf{w} \cdot  \vec\sigma]\right) = \frac{1}{2}[\mathbb{I} + (\mathbf{t} + \Gamma\mathbf{w}) \cdot  \vec\sigma]\), direct calculation shows that
+     \begin{align}
+         \frac{1}{2} a_0 + \sum_{i = 1}^3 a_i \frac{\Gamma_i \omega_i + t_i}{2} = \frac{1}{2} b_0 + \sum_{i = 1}^3 b_i \frac{ \omega_i }{2}.
+     \end{align}
+ Because the requirement of conjugate relation satisfied for arbitrary $\rho$, the identity above should be satisfied for any choice of $\omega_i$. This fixed the choice of $b_0,b_i$ as below
+ \begin{align}
+     b_0 &= a_0 + \sum_{i = 1}^3 a_i t_i,\quad b_i = \Gamma_i a_i.
+ \end{align}
+ Now it is then apparent to see that 
+  \begin{align}
+\Lambda^\dagger[a_0 \mathbb{I} + \mathbf{a} \cdot  \vec{\sigma}] = (a_0 + \mathbf{t} \cdot \mathbf{a})\mathbb{I} + (\Gamma\mathbf{a}) \cdot \vec \sigma.
+   \end{align}
+ Plug in $a_0 = 0, \mathbf{a} = \mathbf{e}_i$ we conclude
+ \begin{align}
+     \Lambda^\dagger(\sigma_i) &= t_i \mathbb{I} + \Gamma_i \sigma_i\\
+     &= (|\Gamma_i| + |t_i|) \cdot \left[\frac{|\Gamma_i|}{|\Gamma_i| + |t_i|}\text{sign}(\Gamma_i)\sigma_i + \frac{|t_i|}{|\Gamma_i| + |t_i|}\text{sign}(t_i)\mathbb{I}\right]\\
+     &=  s_i\cdot \left[(1 - p_i)(\text{sign}~\Gamma_i \cdot \sigma_i) + p_i(\text{sign}~t_i\cdot\mathbb{I})\right],
+ \end{align}
+where $s_i = |\Gamma_i| + |t_i|, p_i = {|t_i|}{(|\Gamma_i| + |t_i|)}^{-1} \in [0,1]$.
+This proves  $\Lambda^\dagger(\hat O) = \mathbb{S}\circ\mathbb{T}(\hat O)$ .
+
+To show $s_i<1$, noted that a necessary condition for $\Lambda$ to be positivity-preserving is that $|\Gamma_i| + |t_i| \leq 1$ for $k = 1, 2, 3$. To show this, we first supposed $|\Gamma_i| + |t_i| > 1$ , then either $|\Gamma_i + t_i|>1$ or $|\Gamma_i - t_i| > 1$ should be satisfied. In each case, an input state $\rho_i = 2^{-1}{(\mathbb{I} + \sigma_i)}$ or $\rho_i = 2^{-1}{(\mathbb{I} - \sigma_i)}$ can be constructed such that the output of channel $\Lambda$ are  $\Lambda(\rho_i) = 2^{-1}{\left[\mathbb{I} + (\Gamma_i \mathbf{e}_i + \mathbf{t}) \cdot \vec \sigma\right]}$ and $\rho_i = 2^{-1}{\left[\mathbb{I} + (\Gamma_i \mathbf{e}_i - \mathbf{t}) \cdot \vec \sigma\right]}$ separately. Then it concluded that either $|\Gamma \mathbf{e}_i + \mathbf{t}| > |\Gamma_i + t_i|>1$ or $|\Gamma \mathbf{e}_i - \mathbf{t}| > |\Gamma_i - t_i|>1$ . This is contract with the condition that $\Lambda$ is positivity-preserving, thus $1 > |\Gamma_i| + |t_i|$ must be satisfied. 
+\end{proof}
+The back-propagation behavior of quantum channel might change operator stabilizer entropy(OSE), which characterize the magic resource in the Heisenberg picture~\cite{dowling2024magic}. Consider an operator $O$ and quantum channel $\Lambda$ on $n$ qubits, the OSE generated by $\Lambda$ with input $O$ is defined as
+\begin{align}
+\label{eq:OSE_definition}
+    \mathcal{M}^{(\alpha)}({\Lambda}^\dagger[O]) := \frac{1}{1 - \alpha} \left[\ln P^{(\alpha)}(\Lambda^{\dagger}[O]) - \ln P^{(\alpha)}(O)\right].
+\end{align}
+where $P^{(\alpha)}(O):=\sum_{P \in \{\mathbb{I},X,Y,Z\}^{\otimes n}}\left({2^{-n}}\text{tr}(OP)\right)^{2 \alpha}$
+In the case that $O = P$ is Pauli operators and the outputs has decomposition $\Lambda^\dagger[P] = \sum_{i}a_{i} P_i$ , we have $\mathcal{M}(\Lambda^\dagger[P]) = {(1 - \alpha)}^{-1} \ln (\sum_{ i } a_i^{2 \alpha})$. 
+When $\alpha = 0$, $\text{exp}\left[\mathcal{M}^{(0)}(\Lambda^\dagger [P])\right] =  N$, where $N$ counts the nonzero coefficients in Pauli decomposition of $\Lambda^\dagger[P]$.  
+When $\alpha = 1/2$, $\text{exp}\left[2^{-1}\mathcal{M}^{(1/2)}(\Lambda^\dagger [P])\right] = \sum_i |a_i|$.
+\begin{lemma}[Single qubits OSE reduction channel]
+    Consider single-qubit channel decomposed into coherent and incoherent parts
+\begin{align}
+    \mathcal{N}(\rho) &= U \Lambda(V \rho V^\dagger)U^\dagger,
+\end{align}
+with \(\Lambda\left(\frac{1}{2}[\mathbb{I} + \mathbf{w} \cdot  \vec\sigma]\right) = \frac{1}{2}[\mathbb{I} + (\mathbf{t} + \Gamma\mathbf{w}) \cdot  \vec\sigma]\) and  $U,V$ are Clifford gates.
+If and $\mathbf{t} = 0$, the operation of $\mathcal{N}$  do not generates 0-OSE and 1/2-OSE for arbitrary input. 
+If $\mathbf{t} \neq 0$, the operation of $\mathcal{N}$ do not generates 1/2-OSE for arbitrary input.
+\end{lemma}
+\begin{proof}
+it is first noted that Clifford operations keeps the  1/2-OSE and 0-OSE unchanged~\cite{dowling2024magic} . 
+If  $\mathbf{t} = 0$, then $\Lambda$ is Pauli noise with the form
+\begin{align}
+    \Lambda(\rho) = (1- p_1 - p_2- p_3) \rho + p_1 \sigma_1 \rho \sigma_1 + p_2 \sigma_2 \rho \sigma_2+ p_3 \sigma_3 \rho \sigma_3.
+\end{align}
+The conjugation of this channel operates on Pauli operators as a pure suppression effects, such as $\Lambda^\dagger(\sigma_1) = (1 -2p_2-2p_3 )\sigma_1$. As Clifford gates, the operation of $U,V$ do not change the number of nonzero coefficients in Pauli decomposition either. This prove the first statement.
+
+To show that 1/2-OSE do not increase in the case of $\mathbf{t} \neq 0$, notice that for $O = \sum_{i = 0}^4 a_i\sigma_i$,
+\begin{align}
+    \text{exp}\left[2^{-1}\mathcal{M}^{(1/2)}(\Lambda^\dagger [O])\right] &= \left(|a_0 +\sum_{i =1}^3 a_i t_i|  + \sum_{i = 1}^3 |a_i \Gamma_i| \right)/\left(|a_0| +\sum_{i=1}^3 |a_i|\right)\\
+    &\leq \left(|a_0| + \sum_{i=1}^3 |a_i||\Gamma_i| + \sum_{i =1}^3 |a_i||t_i|\right)/ \left(|a_0| + \sum_{i=1}^3 |a_i|\right)\\
+    &\leq 1 
+\end{align} 
+In the last inequality, we use $|\Gamma_i| + |t_i| < 1$ as proved in~\ref{theo:non-unital_back-propagation}. This means that 1/2-OSE do not increase under operation of $\Lambda$. 
+\end{proof}
+
+
+\section{Analysis of Algorithm}
+\label{app:analysis_alg}
+
+
+\subsection{Gate sampling method}
+Such a T-gadget operator sampling algorithm can also be interpreted under the original circuit model. 
+If we restrict the non-Clifford gates $U$ as single qubit gate, because $U$ is unitary, 
+ \begin{align}
+     U^\dagger \sigma_i U= \sum_{r\in R_i} \sqrt{q_{i,r}} \text{sign}_{i,r} \sigma_r,\quad  \sum_i q_i = 1.
+ \end{align}
+ Here we includes parameter $\text{sign}_{i,r}$ to ensure $\sqrt{q_{i,r}} > 0$. The set $R_i \subset \{1,2,3\}$ denotes the Pauli operators that $ U^\dagger \sigma_i U$ will support on.
+To analysis the efficiency and correctness of  algorithm~\ref{alg:gate_sampling} in the main text, we noted the theorem below.
+\begin{theorem}[Revised version of theorem~\ref{theo:gate-sampling-method} in the main text] \label{theo:revised_gate-sampling-method}
+ Given a circuit $C = \Lambda_1 \circ \cdots \circ \Lambda_{d}$, the gate sampling algorithm can be implemented in polynomial time. At the end of the sampling, the output consists of the tuple $(c_i^{(d)}, P_i^{(d)})$ with probability $q_i^{(d)}$. Then, we have the expectation value:
+\begin{align}
+    \mathbb{E} = \sum_{i} q_i^{(d)} \, \text{tr}(c_i^{(d)} P_i^{(d)} \ket{0}\!\bra{0}^{\otimes n}) = \text{tr}( P^{(0)} C[\ket{0}\!\bra{0}^{\otimes n}] ).
+\end{align}
+\color{red}
+\begin{align}
+    \text{Var} + \mathbb{E}^2 &= \sum_{i} q_i^{(d)} |\text{tr}(c_i^{(d)} P_i \ket{0}\!\bra{0}^{\otimes n})|^2 \\
+    &\leq \exp\left[ -\frac{1}{2} M^{1/2}[C_N^\dagger(O)] + M^{0}[C_U^\dagger(O)] \right].
+\end{align}
+\color{black}
+where $\mathcal{M}^{(\alpha)}({\Lambda}^\dagger[O])$ represents the $\alpha$-operator stabilizer entropy, as defined in Eq.~\eqref{eq:OSE_definition}. $C_U$ denotes the unitary part of the circuit $C$, and $C_N$ denotes the incoherent-noise part of the circuit.
+\end{theorem}
+\begin{proof}
+    Supposed after back-propagating before $\Lambda_1, \cdots,\Lambda_k$ with $k < d$ ,  the algorithm samples pair $\{(c_i^{(k)}, P_i^{(k)})\}_{i \in S_k}$ with probability $q^{(k)}_i$. Now supposed that $\sum_{i \in S_k} q_i^{(k)} c_i^{(k)}P_i^{(k)} = \Lambda_k^\dagger \circ \cdots\circ\Lambda_1^\dagger(P^{(0)})$. 
+    If $\Lambda_{k+1}$ is a Clifford gate, 
+    \begin{align}
+        \Lambda_{k+1}^\dagger \circ \cdots\circ\Lambda_1^\dagger(P_0) &= \sum_i q_i^{(k)} c_i^{(k)} \Lambda_{k+1}^\dagger[P_i^{(k)}]\\
+        &=\sum_i q_i^{(k)} \left[c_i^{(k)} \text{sign}[\Lambda_{k+1}^\dagger(P_i^{(k)})] \right] \cdot|\Lambda_{k+1}^\dagger(P_i^{(k)})|\\
+        &=\sum_i q_i^{(k+1)}c_i^{(k+1)}  \cdot P_i^{(k+1)}
+    \end{align}
+    If $\Lambda_{k+1}$ is a single qubit unitary gate on $u$-th qubit, at which the Pauli string $P_i$ has Pauli operator $\sigma_i$. Noticing that the Pauli operator conjugated with this gate will propagate as
+\begin{align}
+    U^\dagger \sigma_i U = \sum_{r\in R_i}\sqrt{q_{i,r }} \text{sign}_{i,r} \cdot \sigma_{r}
+\end{align}
+    According to the algorithm, we have
+    $q_{i,r}^{(k+1)} = q_{i}^{(k)}q_{i,r}, c_{i,r}^{(k+1)} = \text{sign}_{i,r} c_{i}^{(k)}/\sqrt{q_{i,r}}$. Then we conclude that
+      \begin{align}
+        \Lambda_{k+1}^\dagger \circ \cdots\circ\Lambda_1^\dagger(P_0) &= \sum_i q_i^{(k)} c_i^{(k)} U^\dagger P_i^{(k)}U\\
+        &=\sum_{i,r\in R_i} q_{i,r}^{(k+1)}c_{i,r}^{(k+1)}  \cdot P_{i,r}^{(k+1)}.
+    \end{align}
+    If $\Lambda_{k+1}$ is incoherent noise on $u$-th qubit, depending on the $u$-th Pauli operator on Pauli string $P_i$, 
+     \begin{align}
+        \Lambda_{k+1}^\dagger \circ \cdots\circ\Lambda_1^\dagger(P_0) &= \sum_i q_i^{(k)} c_i^{(k)} \Lambda_{k+1}^\dagger[P_i^{(k)}]\\
+        &=\sum_{i} q_{i}^{(k)}c_{i}^{(k)} s_{i} \cdot \left[(1-p_{i})\text{sign}(\Gamma_{i})P_{i,\omega=0}^{(k+1)} + p_i\text{sign}(t_i) P_{i,\omega=1}^{(k+1)}\right]\\
+        &=\sum_{i} q_{i}^{(k)}(1-p_i) \cdot c_{i}^{(k)} s_i \text{sign}(\Gamma_i) \cdot P_{i,\omega=0}^{(k+1)} + q_{i}^{(k)}p_i \cdot c_{i}^{(k)} s_i\text{sign}(t_i) \cdot P_{i,\omega=1}^{(k+1)}\\
+        &=\sum_{i,\omega=\{0,1\}} q_{i,\omega}^{(k+1)} \cdot c_{i,\omega}^{(k+1)}  \cdot P_{i,\omega}^{(k+1)},
+    \end{align}
+    This shows  that the identity  $\sum_{i \in S_{k+1}} q_i^{(k+1)} c_i^{(k+1)}P_i^{(k+1)} = \Lambda_{k+1}^\dagger \circ \cdots\circ\Lambda_1^\dagger(P^{(0)})$ should be satisfied either. 
+    By induction, we conclude that $\sum_{i \in S_{d}} q_i^{(d)} c_i^{(d)}P_i^{(d)} = \Lambda_d^\dagger \circ \cdots\circ\Lambda_1^\dagger(P^{(0)})$. 
+    Then the average denotes
+    \begin{align}
+        \mathbb{E} = \sum_{i} q_i^{(d)}\text{tr}(c_i^{(d)}P_i^{(d)} \ket{0}\!\bra{0}^{\otimes n}) &=  \text{tr}\left(\Lambda_d^\dagger \circ \cdots\circ\Lambda_1^\dagger[P^{(0)}] \cdot\ket{0}\!\bra{0}^{\otimes n}\right)\\
+        &=\text{tr}( P^{(0)} C\left[\ket{0}\!\bra{0}^{\otimes n}\right] ).
+    \end{align}
+    
+This gives the correctness of our sampling algorithm. 
+To analysis the variance of this algorithm. Noted that 
+    \begin{align}
+        \text{Var} + \mathbb{E}^2 &= \sum_{i} q_i^{(d)}|\text{tr}(c_i^{(d)}P \ket{0}\!\bra{0}^{\otimes n})|^2\\
+        &\leq  \sum_{i} q_i^{(d)}|c_i^{(d)}|^2 := \Sigma^{(d)}
+    \end{align}
+    We again discuss this value by induction. It is explicit that if $\Lambda_{k+1}$ is Clifford operation, then $\Sigma^{(k + 1)} = \Sigma^{(k)}$.
+    
+  If $\Lambda_{k+1}$ is incoherent noise on $u$-th qubit, we conclude that:   
+   \begin{align}
+        \Sigma^{(k+1)} &:= \sum_{i,\omega\in \{0,1\}} q_{i,\omega}^{(k+1)}|c_{i,\omega}^{(k+1)}|^2 \\
+        &=\sum_{i} q_{i}^{(k)}(1-p_i)\left[ c_{i}^{(k)} s_i \text{sign}(\Gamma_i)\right]^2 + q_{i}^{(k)}p_i\left[ c_{i}^{(k)} s_i \text{sign}(t_i)\right]^2\\
+        &=  \sum_{i} q_i^{(k)}|c_i^{(k)}|^2 s_i^2 \leq \sum_{i} q_i^{(k)}|c_i^{(k)}| |s_i|
+    \end{align}
+      If the $u$-th Pauli operator in Pauli string $P_k$ is $O_k \in \{\mathbb{I}, \sigma_1,\sigma_2,\sigma_3\}$, $s_i$ will depends on the $1/2$-OSE that eliminated by $\Lambda_{k+1}$ with input $O_k$.  In fact, we have inequality
+      \begin{align}
+          \Sigma^{(k+1)}/ \Sigma^{(k)} = \frac{\sum_{i} q_i^{(k)}|c_i^{(k)}| |s_i|}{\sum_{i} q_i^{(k)}|c_i^{(k)}| }
+      \end{align}
+      Noted that by the definition of operator stabilizer entropy, for operator with decomposition $O = \sum_{i } a_i P_i$, 
+      \begin{align}
+          e^{2^{-1}\left[ M^{1/2}[\Lambda^\dagger(O)] \right]} &\leq \frac{\sum_{i \in A_0}|a_i| + \sum_{u=1}^3 |t_u| \sum_{i \in A_u}|a_i| +\sum_{u =1}^3 |\Gamma_u|\sum_{i \in A_u}| a_i|}{\sum_{i } |a_i|}\\
+          &= \frac{\sum_{i \in A_0}|a_i| + \sum_{u =1}^3\left( \sum_{i \in A_u}|a_i|\right)(| \Gamma_u| + |t_u|)}{\sum_{i}|a_i|},
+      \end{align}
+    If $\Lambda_{k+1}$ is unitary gate on $u$-th qubit, we conclude that:
+    \begin{align}
+        \Sigma^{(k+1)} &:= \sum_{i,r\in R_i} q_{i,r}^{(k+1)}|c_{i,r}^{(k+1)}|^2 =\sum_{i,r\in R_i} q_{i}^{(k)}q_{i,r} \left[ \text{sign}_{i,r} c_{i}^{(k)}/\sqrt{q_{i,r}}\right]^2\\
+        &=  \sum_{i} q_i^{(k)}|c_i^{(k)}|^2 |R_i| \leq  \sum_{i} |q_i^{(k)}c_i^{(k)}| |R_i|.
+    \end{align}
+  This indicates that the operation of single qubit unitary gates scale the variance by $|R_i|$. 
+  If $\Lambda_i$ is a unitary on $u$-th qubit and the $u$-th Pauli operator in Pauli string $P_i$ is $O_i \in \{\mathbb{I}, \sigma_1,\sigma_2,\sigma_3\}$, $|R_i|$ will depends on the $0$-OSE that generated by $\Lambda_i$ with input $O_i$. Similarly, 
+    \begin{align}
+          \Sigma^{(k+1)}/ \Sigma^{(k)} = \frac{\sum_{i} q_i^{(k)}|c_i^{(k)}| |R_i|}{\sum_{i} q_i^{(k)}|c_i^{(k)}| }
+      \end{align}
+      Noted that by the definition of operator stabilizer entropy, for operator with decomposition $O = \sum_{i } a_i P_i$, 
+      \begin{align}
+          e^{\left[ M^{0}[\Lambda^\dagger(O)]\right]} &\leq \frac{\sum_{i \in A_0}1 + \sum_{u=1}^3 |R_u| \sum_{i \in A_u}1 }{\sum_{i } 1}.
+      \end{align}
+         \color{red} 
+      We expect that for $\Lambda_{k+1}$ an incoherent noise,
+      \begin{align}
+           e^{2^{-1}\left[ M^{1/2}[\Lambda^\dagger_{k+1}(O)] \right]} =   \Sigma^{(k+1)}/ \Sigma^{(k)} , \text{where~} O = \Lambda_k^\dagger \circ \cdots\circ\Lambda_1^\dagger(P^{(0)}),
+      \end{align}
+      for $\Lambda_{k+1}$ an unitary gates
+      \begin{align}
+           e^{\left[ M^{0}[\Lambda^\dagger_{k+1}(O)] \right]} =   \Sigma^{(k+1)}/ \Sigma^{(k)} , \text{where~} O = \Lambda_k^\dagger \circ \cdots\circ\Lambda_1^\dagger(P^{(0)}),
+      \end{align}
+      
+      Such a conclusion attribute the suppression of variance to the reduction of $1/2$-OSE $ M^{1/2}[\Lambda^\dagger_{k+1}(O)] - M^{1/2}[O]$ that induced by incoherent noise $\Lambda_{k+1}$ and the scale of variance to the increase of $0$-OSE $ M^{0}[\Lambda^\dagger_{k+1}(O)] - M^{0}[O]$ that induced by unitary gate $\Lambda_{k+1}$. 
+      But we failed.
+\color{black}
+\end{proof}
+
+\subsection{Truncated sampling algorithm}
+
+\begin{theorem}[truncated sampling] \label{theo:Multiple-path-sampling-method}
+     Given a circuit $C = \Lambda_1 \circ \cdots \circ \Lambda_{d}$, the truncated sampling algorithm can be implemented in polynomial time. At the end of the sampling, the output consists of the set of tuple $S_d = \{(c_i^{(d)}, P_i^{(d)})\}_{i=1}^{N_d}$ with probability $q^{(d)}(S_d)$. Then, we have the expectation value:
+\begin{align}
+    &\mathbb{E} = \sum_{i} q_i^{(d)} \, \text{tr}(c_i^{(d)} P_i^{(d)} \ket{0}\!\bra{0}^{\otimes n}) = \text{tr}( P^{(0)} C[\ket{0}\!\bra{0}^{\otimes n}] ),\\
+        &\text{Var} + \mathbb{E}^2 \leq 1.
+\end{align}
+\end{theorem}
+\begin{proof}
+      Supposed after back-propagating before $\Lambda_1, \cdots,\Lambda_k$ with $k < d$ ,  the algorithm store the pair set $ S_k=\{(c_i^{(k)}, P_i^{(k)})\}_{i = 1}^{N_k}$ with probability $q^{(k)}(S_k)$. 
+      The variable $(S_k, q^{(k)})$ is a random distribution on set of Pauli pairs $S_k$.
+      Now supposed that $\sum_{S_k}q^{(k)}(S_k)\sum_{i =1}^{N_k}  c_i^{(k)}P_i^{(k)} = \Lambda_k^\dagger \circ \cdots\circ\Lambda_1^\dagger(P^{(0)})$. 
+  If $\Lambda_{k+1}$ is a Clifford gate or single qubit unitary gate on $u$-th qubit, at which the Pauli string $P_i$ has Pauli operator $\sigma_i$. Noticing that the the algorithm directly calculate $\Lambda_{k+1}^\dagger(\sum_{i =1}^{N_k}c_i^{(k)}P_i^{(k)}) =\sum_{i =1}^{N_{k+1}}c_i^{(k+1)} P_i^{(k+1)}$ and update, then 
+      \begin{align}
+        \Lambda_{k+1}^\dagger \circ \cdots\circ\Lambda_1^\dagger(P_0) 
+        &=\sum_{S_{k+1}}q^{(k+1)}(S_{k+1})\sum_{i =1}^{N_{k+1}}  c_i^{(k+1)}P_i^{(k+1)}
+    \end{align}
+    will be trivially satisfied. Because unitary operation keeps the 2-norm
+    \begin{align}
+        \sum_{i =1}^{N_k}|c_i^{(k)}|^2 = \sum_{i =1}^{N_{k+1}}|c_i^{(k+1)}|^2.
+    \end{align}
+Then we conclude that
+\begin{align}
+   \sum_{S_{k+1}}q^{(k+1)}(S_{k+1}) \sum_{i= 1}^{N_{k+1}} |c_i^{(k+1)} |^2 
+    =  \sum_{S_{k}}q^{(k)}(S_{k}) \sum_{i= 1}^{N_{k}} |c_i^{(k)} |^2.
+\end{align}
+    If $\Lambda_{k+1}$ is incoherent noise on $u$-th qubit, depending on the $u$-th Pauli operator on Pauli string $P_i$, 
+     \begin{align}
+        \Lambda_{k+1}^\dagger \circ \cdots\circ\Lambda_1^\dagger(P^{(0)}) &=\sum_{S_k}q^{(k)} (S_k) \sum_{i =1}^{N_k} c_i^{(k)} \Lambda_{k+1}^\dagger[P_i^{(k)}]\\
+        &=\sum_{S_k}q^{(k)} (S_k) \sum_{i =1}^{N_k} c_{i}^{(k)} s_{i} \cdot \left[(1-p_{i})\text{sign}(\Gamma_{i})P_{i,\omega=0}^{(k+1)} + p_i\text{sign}(t_i) P_{i,\omega=1}^{(k+1)}\right]\\
+        &=\sum_{S_k}\sum_{i =1}^{N_k}q^{(k)} (S_k)(1-p_i) s_i \cdot c_{i}^{(k)} \text{sign}(\Gamma_i) \cdot P_{i,\omega=0}^{(k+1)} \\
+        &\quad \quad \quad+ \sum_{S_k}\sum_{i =1}^{N_k}q^{(k)}(S_k)p_i s_i\cdot c_{i}^{(k)} \text{sign}(t_i) \cdot P_{i,\omega=1}^{(k+1)} + (1 - s_i)\cdot 0\\
+        &=\sum_{S_{k+1}}q^{(k+1)}(S_{k+1}) \cdot\sum_{i =1}^{N_{k+1}}  c_{i}^{(k+1)}  \cdot P_{i}^{(k+1)}.
+    \end{align}
+   As described in algorithm~\ref{alg:truncated_sampling} in the main text, the random distribution $(S_{k+1},q^{(k+1)}) $ is generated from distribution $(S_k, q^{(k)})$ by go over $i \in S_k$ and for each $i $, inserting $\left(\text{sign}(\Gamma_i)c_i^{(k)},P_{i,\omega=0}^{(k+1)}\right)$ with probability $(1- p_i)s_i$,   
+ inserting $\left(\text{sign}(t_i)c_{i}^{(k)}  ,P_{i,\omega=1}^{(k+1)}\right)$ with probability $p_i s_i$, and inserting nothing with probability $(1 - s_i)$. 
+Besides, the inequality below should be satisfied
+\begin{align}
+   \sum_{S_{k+1}}q^{(k+1)}(S_{k+1}) \sum_{i= 1}^{N_{k+1}} |c_i^{(k+1)} |^2 
+    &=\sum_{S_k}q^{(k)}(S_k)\left[\sum_{i =1}^{N_k}(1- p_i)s_i|\text{sign}(\Gamma_i)c_i^{(k)}|^2 \right.\\
+    &\quad \quad\left. + \sum_{i =1}^{N_k}p_i s_i\cdot |c_{i}^{(k)} \text{sign}(t_i)|^2  + (1 - s_i)\cdot 0\right ] ,\\
+    &\leq  \sum_{S_{k}}q^{(k)}(S_{k}) \sum_{i= 1}^{N_{k}} s_i|c_i^{(k)} |^2.\\
+    &\leq  \sum_{S_{k}}q^{(k)}(S_{k}) \sum_{i= 1}^{N_{k}} |c_i^{(k)} |^2.
+\end{align}
+ By induction, this prove the correctness of algorithm~\ref{alg:truncated_sampling}. 
+    To analysis the variance, we noted that
+        \begin{align}
+        \text{Var} + \mathbb{E}^2 &= \sum_{S_d} q^{(d)}(S_d)\left|\sum_{i =1}^{N_d}\text{tr}(c_i^{(d)}P_i^{(d)} \ket{0}\!\bra{0}^{\otimes n})\right|^2\\
+        &\leq  \sum_{S_{d}}q^{(d)}(S_{d}) \sum_{i= 1}^{N_{d}} |c_i^{(d)} |^2 \\
+        &\leq \sum_{S_{d-1}}q^{(d-1)}(S_{d-1}) \sum_{i= 1}^{N_{d-1}} |c_i^{(d-1)} |^2\\
+         &\leq \cdots \leq 1.
+    \end{align}
+ This bounds the variance of our algorithm.
+\end{proof}
+
+\begin{figure}[htbp!]
+    \centering
+    \includegraphics[width=\linewidth]{pic/path_tablet_sampling.png}
+    \caption{An example of multiple-path sampling. }
+    \label{fig:path_tablet_sampling}
+\end{figure}
+During the sampling process, multiple Pauli operators has to be stored in order to finish the propagation. Thus it is still left to estimate the storage cost during the computation. 
+
+\color{red}
+\begin{theorem}
+    The space complexity of truncated sampling algorithm in Algorithm~\ref{alg:truncated_sampling} in the main text is related to the noise channel reduction of $1/2$-OSE and unitary enhancement of $0$-OSE of the noisy quantum circuit 
+\end{theorem}
+\begin{proof}
+    To be continued...
+\end{proof}
+\color{black}
+
+In the case of  Clifford + T circuit with unital noise, it turns out that an upper bound of the space complexity of Algorithm~\ref{alg:truncated_sampling} can be estimated by a random branching process over a binary tree. 
+This process ignore the fact that the Pauli tuple $(c_1, \sigma_i)$ and  $(c_2, \sigma_i)$ might be united into $(c_1+c_2, \sigma_i)$.  
+
+Given total number of Pauli operators after $\Lambda_l$ is a random variable $N_l$, after back-propagating before the noise channel $\Lambda_{l+1} = \mathcal{N}_{l+1}$ with suppression coefficient $s_{l+1}$, the number of Pauli operators at the next level follows the random branching process
+\begin{align}
+    N_{l+1} = \sum_{i = 1}^{N_l} \xi_i, 
+\end{align}
+where $\xi_i$ is a random variable that evaluates as $1$ with probability $s_{l+1}$  and $0$ with probability $1-s_{l+1}$. Consider the number of Pauli operators in the end, i.e., $N^{(d)}$.  Its average can be analysis using generative function. 
+
+\begin{lemma}[Space complexity of Clifford + T circuit]
+     On average, the number of off-springs will be upper bounded by $ N_{tot} \leq \sum_i f(i)$, where $f(i)$ is the suppression coefficient of the $i$-th path. 
+ \end{lemma}
+ \begin{proof}
+
+Suppose after the application of $\Lambda_1, \cdots, \Lambda_k$ in the truncated sampling algorithm as discribed in Algorithm~\ref{alg:truncated_sampling}, we stored on average $\langle M_k\rangle $ numbers of Pauli tuples $(c_i^{(k)}, P_i^{(k)})$, each one appears with probability $f^{(k)}(i), i =1,\cdots,N_k$. 
+Then $\langle M_k \rangle = \sum_{i = 1}^{N_k}f^{(k)}(i)$ is satisfied, where $N_k$ is the total number of vertex at $k$-th level of the binary tree, as defined before.
+
+Now we back-propagates these Pauli tuples before the next noisy channel $\mathcal{N}_{k+1}$. For each $i = 1, \cdots, \langle N_k\rangle $, the sampling strategy states that it has probability $1 - s_i^{(k)}$ to keep $P_i^{(k)}$ only and has $s_i^{(k)}$ probability to alive and evolved into the tree path attached to  $P_{i_0 = 0}^{(0)}$ . Then we have the recurrence relation 
+\begin{align}
+    \langle M_{k+1}\rangle &= \sum_{i=1}^{ N_k} f^{(k)}(i) s_i^{(k+1)}\\
+    &=\sum_{i=1}^{ N_{k+1}} f^{(k+1)}(i).
+\end{align}
+Here we use the fact that the unital noise do not branch the Pauli operators and by definition of $f^{(k)}(i)$, $f^{(k+1)}(i) = f^{(k)}(i) s_i^{(k+1)}$.
+
+In the case  $\mathcal{N}_{k+1}$ is single qubit $T$ gate, supposed $P_{i_0}^{(k)}$ is branched into $P_{N_k +1}^{(k+1)}$. Because $P_{i_0}^{(k)}$  appears with probability $f^{(k)}(i_0)$,  the average numbers of Pauli tuples writes
+\begin{align}
+     \langle M_{k+1}\rangle &=  f^{(k)}(i_0) + \sum_{i=1}^{ N_k} f^{(k)}(i) \\
+    &=\sum_{i=1}^{ N_{k+1}} f^{(k+1)}(i),
+\end{align}
+where we use the definition $f^{(k)}(i)$ again. By induction, we conclude that $\langle M_d \rangle = \sum_{i = 1}^{N_d}f^{(d)}(i) =\sum_i f(i) $
+ \end{proof}
+In the case of unital noise, the truncated-path sampling mainly follows the same procedures of gate based Pauli path truncation method~\cite{schuster2024polynomial}.
+We can even trace and multiplied the suppression coefficient as
+\begin{align}
+    \alpha^{(k)} = \prod_{w = 1}^{k}s_i^{(w)},
+\end{align}
+where $s_i^{(w)} = 1$ for $\Lambda_w$ a Clifford gate or $T$ gate. 
+Then we set a threshold $R$ for the result of multiplication.
+In process of truncated sampling method, if $\alpha < R$ , then the Pauli tuple $(c,P)$ will be eliminated and not propagate.
+The space complexity of Algorithm~\ref{alg:truncated_sampling} is now bounded. The algorithm uses space 
+\begin{align}
+    \langle M_d \rangle = \sum_{\{i|\alpha^{(k)}<R, \forall r\}} f(i), 
+\end{align} 
+on average. The elements in set $\{i|s(P_i^{(r)})<l, \forall r\}$ is $\sum_{k =0}^l C_n^k \cdot 3^k$. Use the fact that $C_n^k <n^k/(k!)\leq (en/k)^k$, the space is upper bounded by $N_{tot} = \mathcal{O}(n^l)$.    This upper bound can be further improved if we consider that $f(i)$ might be exponentially small.
+
+The correctness of this sampling method now should be further investigated. Truncation of high-collision Pauli components introduce error between average of the sampling algorithm and the exact value of Pauli average. Fortunately, this error can be bounded with the same analysis that used in truncation method for circuits with gate-based noise (lemma 2)~\cite{schuster2024polynomial}.   
+
+Though truncated-path sampling is similar to the gate-based Pauli-path truncation method~\cite{schuster2024polynomial}, we noted that our method is designed for fixed circuit rather than random circuit. 
+Notably, the multi-path sampling simulation method remains applicable in the case of non-unital Clifford noise, which is believed possess stronger computational power compared to Pauli-noise channel.
+\section{Comparison to previous simulation method}
+\label{app:comparison}
+In this appendix, we compare our sampling method to previous truncation based method. It will be shown that, the Pauli sampling algorithm not only performs better for circuit with unital noise, both in average case and beyond average case, but also for circuit with non-unital noise. 
+We show that the Pauli paths method fails to approximate circuit with non-unital noise while Pauli sampling algorithm can.
+\subsection{Under depolarization channel and beyond average case}
+We now suppose all noise channel is depolarization channel and the NISQ circuit is composed of $T$ gates and Clifford gates. Then,
+\begin{align}
+    \sum_i f(i) &= \sum_{w}\sum_{i,|i| = w}(1 - p)^w = \sum_w F(w) (1 - p)^w\\
+    & = \sum_{w \leq l} F(w)(1 - p)^w + \sum_{w > l} F(w) (1 - p)^w
+\end{align}
+
+    Here $F(w) = \sum_{s,|s| = w} 1$ counts all Pauli path with input $P_a$ with weight $w$.
+As illustrated in previous research~\cite{gonzalez2024pauli}, we suppose the number of $T$ gates is sparse enough in terms of conjecture below:
+
+Use $(x,y,t) \in \mathbb{Z}_+^3$ to represent gates implemented on qubit $(x,y)$ at layer $t$.  
+\begin{itemize}
+    \item A subset $A \subset \mathbb{Z}_+^3$ is continuous iff  $\forall x \in A, \exists x \neq y \in A, s.t. y \in \text{Adj}(x) $.
+    \item $T(A)$ denotes the number of T gate in set $A$. A 2D Clifford+T circuit $C$ is $(Q,k)$-sparse if  $\forall A \in \{ A\subset C| |A| \geq k, A \text{~is continous}\}$, $T(A) < Q|A|$. 
+\end{itemize}
+
+In a $(Q,k)$-sparse circuit, each Pauli paths, because is continuous, have an upper bound $Qw$ for the number of $T$ gates on support of weight $w$ paths.  
+\begin{lemma}[Path counting for Continuous Sparse T+Clifford circuit]
+   Given a 2-dimensional, $(Q,k)$-sparse, localized Clifford+T circuit $C$.  Consider all Pauli paths generated by input $P_a$.
+    \begin{itemize}
+        \item   Each path's support is continuous.
+        \item   $\sum_{w = k}^l F(w) \leq 2^{Ql}$.
+    \end{itemize}
+\end{lemma}
+With this lemma, we concludes:
+\begin{align}
+    \sum_{w \leq l} F(w)(1 - p)^w &\leq \sum_{w \leq l} F(w) \leq 2^k + 2^{Ql}, \\
+    \sum_{w > l} F(w) (1 - p)^w &\leq \sum_{w > l} 2^{Qw}(1 - p)^w \leq nd [2^{Q}(1 - p)]^l.
+\end{align}
+Suppose the depolarization is large enough, specifically, $2^Q(1 - p) = \beta < 1$, by choosing $l = [\ln (\varepsilon / nd)]/[\ln \beta]  $, we concludes:
+\begin{align}
+    \sum_{w > l} F(w) (1 - p)^w &< \varepsilon,\\
+    \sum_{w \leq l} F(w)(1 - p)^w  &\leq 2^k + (\frac{nd}{\varepsilon})^{\frac{1}{Q^{-1} \text{log}_2(\frac{1}{1 - p}) - 1 }}
+\end{align}
+In conclusion, If $k = \alpha \ln n$ , then $\forall \varepsilon \in \mathbb{R}$ we have:
+\begin{align}
+    \sum_s f(s)  < \varepsilon + \mathcal{O}(n^{\alpha}) + (\frac{nd}{\varepsilon})^{\frac{1}{Q^{-1} \text{log}_2(\frac{1}{1 - p}) - 1 }}
+\end{align}
+Now we can bound the variance of different sampling method. If we build an uniform distribution on all paths,
+\begin{align}
+    \sigma_{\langle P_a \rangle}^{cir} &< \sum_s f(s)^2 <   \varepsilon + \mathcal{O}(n^{\alpha}) + (\frac{nd}{\varepsilon})^{\frac{1}{Q^{-1} \text{log}_2(\frac{1}{1 - p}) - 1 }}.
+\end{align}
+
+The amplitude of the circuit can be calculated in the same manner. 
+\subsection{Under unital channel and in average case}
+
+\subsection{Under amplitude damping channel}
+
+To describe our algorithm, we first apply Theorem~\ref{theo:non-unital_back-propagation} to list the Pauli back-propagation rule for amplitude damping channel
+ $\Lambda(\rho) = K_0 \rho K_0^\dagger + K_1 \rho K_1^\dagger$, where $K_0 = \text{diag}(1, \sqrt{1 - p}), K_1 = [0,\sqrt{q}; 0,0]$ . Simple calculation shows that
+  \begin{align}
+    \Lambda\left(\frac{1}{2}[\mathbb{I} + \mathbf{w} \cdot \vec \sigma]\right) = \frac{1}{2}[\mathbb{I} + (\mathbf{t} + \Gamma\mathbf{w}) \cdot  \vec\sigma] ,
+ \end{align}
+ with $\mathbf{t}= [0,0,p]^T$ and $\Gamma = \text{diag}(\sqrt{1- p},\sqrt{1- p},1 - p)$. 
+ Applying Theorem~\ref{theo:non-unital_back-propagation} gives
+\begin{align}
+   &\Lambda^\dagger[X] = \sqrt{1 - p} X,\quad  \Lambda^\dagger[Y] = \sqrt{1 - p} Y, \label{eq:Apd_supp} \\
+   &\Lambda^\dagger[\mathbb{I}] = \mathbb{I},\quad  \Lambda^\dagger[Z] = (1 - p) Z + p\mathbb{I}.\label{eq:Apd_shift} 
+\end{align}
+The amplitude damping channel rescale the $X,Y$ Pauli operators as the Pauli-noise does while randomly branching the Pauli-$Z$ operators, as the $T$-gates does. 
+
+It is believed that non-unital noise has stronger computational power than the unital noise~\cite{ben2013quantum}. This conclusion is more explicit in the case of noisy Clifford gates. For Clifford gates with Pauli noise, we can compute the exact average of Pauli operators by back-propagation method. Both Clifford gates and Pauli noise will conserve the number of Pauli operators.  However, in the case of non-unital noise, for example the amplitude damping noise, the number of Pauli-Z strings will branch exponentially. The exact average of Pauli operators cannot be calculated in the same way. 
+
+Fortunately, approximation algorithm still exists. We first show that there is no definite Pauli path truncation rule that approximates the result within additive error in polynomial time.
+\begin{lemma}
+\label{lemma:nogo-truncation}
+    Consider fixed Clifford NISQ circuit composed of $\ket{0}^{\otimes n}$ inputs, Clifford gate layers and amplitude-damping channel with parameter $p<1/2$.  In order to estimate Pauli average within additive constant error $\varepsilon$ for all circuit of this kind, the complexity of Pauli paths truncation algorithm must has sub-exponential growth as $O(n^{-1}e^{H(p) \cdot n})$ . 
+\end{lemma}
+\begin{proof}
+    We demonstrate that a circuit with $\ket{0}^{\otimes n}$ inputs and single-qubit amplitude damping channel serves as an example whose output Pauli-Z average cannot be efficiently simulated using truncation methods. Noted that this Pauli-Z average can be classically simulated without using the truncation method because $\ket{0}$ is a fixed point of amplitude damping channel.
+    
+    After propagating the $Z^{\otimes n}$ operator backward through a single-qubit amplitude damping channel, the output Pauli strings have the form $O = \sum_{\mathbf{s} \in \{0,1\}^n}p(\mathbf{s})Z^{\otimes \mathbf{s}}$, where$Z^{\otimes \mathbf{s}} := \bigotimes_{i =1}^{n} Z^{s_i}$ and the suppression coefficient is given by the weight of $s$ as  tha$p^{n-|s|} (1-p)^{|s|}$. The optimal truncation method involves removing fixed number of Pauli strings in the set $\{Z^{\otimes {\mathbf s}}|\mathbf{s} \in \{0,1\}^n\}$ such that the sum of removed suppression coefficients are minimized. 
+    Supposed we remove string in the set $\{Z^{\otimes \mathbf s}| |\mathbf{s}|< l\}$. This brings an error
+\begin{align}
+        \text{err} &= \sum_{k = 0}^{l} C_{n}^k p^{ n -k}(1-p)^k\\
+        &=\text{Pr}( K<l|n,p ),
+    \end{align}
+where $K$ is a binomial distributed random variable $K\sim \text{bin}(n,1-p)$.
+If $l > (1-p)n$, $\forall \varepsilon_0>0$ there always exist $N$ such that $\forall n >N$,  $\text{err}=\text{Pr}( K<l|n,p )>1 - \varepsilon_0 $. This means that $l\leq (1-p)n$ must be satisfied in order to bound the error for arbitrary large qubit number.
+
+Those string that not be removed has to be enumerate one by one. The number of Pauli operators required for computation after truncation is
+\begin{align}
+    \text{num} =\sum_{i = l }^n C_n^i \geq C_{n}^{l} \geq C_{n}^{(1-p)n} = C_{n}^{np}.
+\end{align}
+The second inequality use the fact the $1 - p >1/2$. Now using the inequality $\left(\frac{x}{e}\right)^x < \Gamma(x+1) \leq \sqrt{2\pi x}\left(\frac{x}{e}\right)^x$ and substituting $C_n^{np} = {\Gamma(n+1)}/({\Gamma(n-np+1) \Gamma(np+1)})$, we derive
+\begin{align}
+\text{num} &\geq C_n^{np} \\
+&\geq \frac{(\frac{n}{e})^n}{\Gamma(n - np +1) \Gamma(np+1)} \geq \frac{(\frac{n}{e})^n}{ \sqrt{2\pi (1-p)n}(\frac{(1-p)n}{e})^{(1-p)n}  \times\sqrt{2\pi np}(\frac{np}{e})^{np}} \\
+&= \frac{1}{2 \pi n \sqrt{p(1- p)}} \left[\frac{1}{1-p}\right]^{(1-p)n} \left[\frac{1}{p}\right]^{pn}\\
+&=\frac{1}{2 \pi n \sqrt{p(1- p)}} e^{\left[-(1-p) \ln (1-p) - p \ln p\right]n} = \frac{1}{2 \pi n \sqrt{p(1- p)}} e^{H(p)\cdot n}.
+\end{align}
+Here $H(p)$ denotes the binary entropy function. Thus, the number of Pauli operators required under the truncation method has sub-polynomial growth.
+\end{proof}
+The ineffectiveness of truncation method above can be solved by introducing randomness. We prove this following a more general discussion. Randomized algorithm~\ref{alg:Apd_sampling} in the main text can be implemented to estimate arbitrary Clifford circuit with amplitude damping noise. Its complexity analysis is shown by lemma~\ref{lemma:noisy_Clifford} below.
+
+\begin{lemma}
+\label{lemma:noisy_Clifford}
+    Consider fixed Clifford NISQ circuit composed of $\ket{0}^{\otimes n}$ inputs, Clifford gate layers and amplitude-damping channel with parameter $p<1/2$.   The randomized algorithm~\ref{alg:Apd_sampling} in the main text estimates its Pauli average within the constant Pauli error.
+\end{lemma}
+\begin{proof}
+    According to Eq.~\eqref{eq:Apd_shift}, the branching effect introduced by the amplitude damping channel is slightly different from that of the $T$-gates. The coefficient $p, 1-p$ is normalized under the 2-norm while $T$ gates' coefficient $1/\sqrt{2}$ is normalized under the 2-norm $\sum_{i} |c_i|^2$. Normalization under the 1 norm means that we can randomly shift $Z$ to $\mathbb{I}$ with probability $p$ without introducing a larger variance.
+
+
+    Supposed after back-propagation of $m < d$ numbers of operations $\{\Lambda_i\}_{i =1}^m$, We get the operator $\alpha_i P_i$ with probability $p_i$ and 
+    \begin{align}
+        P^{(m)} := \Lambda_m^\dagger\circ \cdots \circ\Lambda_1^\dagger(P^{(0)}) = \sum_{i = 1}^{N_m} p_i (\alpha_i \cdot P_i),
+    \end{align}
+    such that $\sum_i^{N_m} p_i = 1$ and $|\alpha_i|\leq 1 $. Then $     P^{(m+1)}= \sum_{i = 1}^{N_m} p_i (\alpha_i \Lambda_{m+1}^\dagger(P_i))$. 
+    If $\Lambda_{m+1}^\dagger$ is a Clifford operation, $\Lambda_{m+1}^\dagger(P_i) = P_i'$, condition $\sum_i^{N_m} p_i' = 1$ and $|\alpha_i'|\leq 1 $ are still satisfied.
+    If $\Lambda_{m+1}^\dagger$ is amplitude damping channel with parameter $p$, then
+    \begin{align}
+        \Lambda_{m+1}^\dagger(P_i) &= \sum_{\mathbf{s} \in H} (1-p)^{s_z - |\mathbf{s}|} p^{|\mathbf{s}|} \times (1 - p)^{(s_x+ s_y)/2}P_i Z^{\mathbf{s}},\\
+         P^{(m+1)} &= \sum_{\mathbf{s} \in H, i = 1, \cdots N_m} \left[p_i(1-p)^{s_z - |\mathbf{s}|} p^{|\mathbf{s}|}\right] \times \left[\alpha_i(1 - p)^{(s_x+ s_y)/2}\right]P_i Z^{\mathbf{s}}\\
+         &:= \sum_{\mathbf{s} \in H, i = 1, \cdots N_m} p'_{i,\mathbf{s}} (\alpha'_{i, \mathbf{s}}\cdot P_i Z^{\mathbf{s}})
+    \end{align}
+    where $s_x,s_y$ and $s_z$ are the number of $X,Y$ and $Z$ Pauli operators in $n$-qubits Pauli string $P_i$. 
+    $H$ is the subspace that supports on the position of $Z$ operators in $P_i$.  
+    It is explicit that the sampling algorithm~\ref{alg:Apd_sampling} will update Pauli operators such that we get the operator $ \alpha'_{i, \mathbf{s}}\cdot P_i Z^{\mathbf{s}} =\alpha_i (1 - p)^{(s_x+ s_y)/2}P_i Z^{\mathbf{s}}$ with probability $p_{i, \mathbf{s}}' = p_i (1-p)^{s_z - |\mathbf{s}|} p^{|\mathbf{s}|}$.
+    Notice that $|\alpha_i'|< 1 $ and 
+    \begin{align}
+        \sum_i\sum_{\mathbf{s} \in H} p'_{i, \mathbf{s}} &=\sum_i p_i \sum_{\mathbf{s} \in H}(1-p)^{s_z - |\mathbf{s}|} p^{|\mathbf{s}|}\\
+        &=\sum_i p_i \sum_{k=1}^{s_z}C_{s_z}^{k}(1-p)^{s_z - k} p^{k} = 1.
+    \end{align}
+    The condition  $\sum_i^{N_m} p_i' = 1$ and $|\alpha_i'|\leq 1 $ are still satisfied.
+    Then in the end of back-propagation, algorithm~\ref{alg:Apd_sampling} will give operator $\alpha_i P_i$ with probability $p_i$ such that $\sum_{i = 1}^{N_d} p_i (\alpha_iP_i) =P^{(d)} =  \Lambda_d^\dagger\circ \cdots \circ\Lambda_1^\dagger(P^{(0)})$. Then we have
+    \begin{align}
+        \mathbb{E} = &\sum_{i = 1}^{N_d} p_i \text{tr}\left[(\alpha_iP_i) \ket{0}\!\bra{0}^{\otimes n}\right] =\text{tr}\left[P^{(d)} \ket{0}\!\bra{0}^{\otimes n}\right] = \text{tr}\left[P^{(0)}\Lambda_1 \circ \cdots \circ \Lambda_{d}(\ket{0}\!\bra{0}^{\otimes n})\right],\\
+        \text{Var} &= \sum_{i = 1}^{N_d} p_i \left|\text{tr}\left[(\alpha_iP_i) \ket{0}\!\bra{0}^{\otimes n}\right]\right|^2 \leq \sum_{i = 1}^{N_d} p_i = 1.
+    \end{align}
+\end{proof}
+
+Combined lemma~\ref{lemma:noisy_Clifford} with lemma~\ref{lemma:nogo-truncation} proof the theorem~\ref{theo:toy_model_power} in the main text. 
+
+
+
+
+\end{document}

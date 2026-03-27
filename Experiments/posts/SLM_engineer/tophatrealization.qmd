@@ -1,0 +1,92 @@
+---
+title: "Tophat Realization"
+description: "How to realize the tophat potential on the SLM"
+date: 2026-03-25
+categories:
+- Readings
+lang: en
+bibliography: refs.bib
+draft: false
+---
+
+
+# Method
+
+As reviewed in [Experiments/posts/SLM_engineer/optimization.qmd](../SLM_engineer/optimization.qmd), the optimization problem is to find the optimal weights $w_i$ for the top hat potential that minimizes the energy of the system.
+
+A typical loss function is $C = 10^d \cdot (1 - \text{Re}(O))^2$, where $O := v^* \cdot u$ such that $\|v - u\|^2 = 2 - 2 \text{Re}(O)$ for two normalized complex vectors $v = A/\|A\|$ and $u = B/\|B\|$. Here only $B$, which is the output laser, is a function of SLM phases. 
+
+
+### Gradient of cost function
+A gradient of $C$ with respect to SLM phases can be computed using the chain rule:
+$$
+\begin{align}
+&\frac{\partial C}{\partial \phi} = -2 \cdot 10^d \cdot (1 - \text{Re}(O)) \cdot \frac{\partial \text{Re}(O)}{\partial \phi}\\
+&\frac{\partial \text{Re}(O)}{\partial \phi} = \frac{\frac{\partial \text{Re}(A^* B)}{\partial \phi}}{||A|| \cdot ||B||} - \text{Re}(O) \cdot \frac{\frac{\partial ||B||}{\partial \phi}}{||B||}\\
+&= \frac{1}{||A|| \cdot ||B||} \cdot  \text{Re}(A^* \frac{\partial B}{\partial \phi})  -\frac{ \text{Re}(O) \cdot }{||B||} \cdot\frac{1}{||B||} \text{Re} \left( B^*\frac{\partial B}{\partial \phi} \right)
+\end{align}
+$$
+where in the last line, we use the fact that $\|B\| = \sqrt{\langle B, B \rangle }$ and $\frac{\partial{\|B\|}}{\partial \phi} = \frac{1}{2\|B\|} \frac{\partial \|B\|^2}{\partial \phi}  = \frac{1}{2\|B\|}  \langle B, \frac{\partial B}{\partial \phi} \rangle = \frac{1}{\|B\|}  \text{Re} \left( \langle B, \frac{\partial B}{\partial \phi} \rangle \right)$.
+Thus, all rest to compute is the inner product between $A,B$ and $\frac{\partial B}{\partial \phi}$. Use the fact that $B = \mathcal{F}(E_{\mathrm{in}})$ and the Parseval theorem:
+$$
+\left\langle X, \mathcal{F} \{ Y \} \right\rangle = \left\langle \mathcal{F}^{-1} \{ X \}, Y \right\rangle
+$$
+we conclude that  
+$$
+\text{Re} \left(  A^* \frac{\partial B}{\partial \phi_k} \right) = \text{Re} \left( i \cdot E_{in, k} \cdot \tilde{A}_k^* \right),
+\text{Re} \left(  B^* \frac{\partial B}{\partial \phi_k} \right) = \text{Re} \left( i \cdot E_{in, k} \cdot \tilde{B}_k^* \right),
+$$
+where $\tilde{A}_k$ and $\tilde{B}_k$ are the inverseFourier coefficients of $A$ and $B$ respectively.
+Thus the conputation of cost gradient is realized through code below
+
+```python
+def _cost_gradient(
+    E_in: np.ndarray,
+    E_out: np.ndarray,
+    target_field: np.ndarray,
+    measure_region: np.ndarray,
+    steepness: int,
+) -> np.ndarray:
+    """Compute dC/d(phi_{p,q}) analytically.
+
+    Accepts pre-computed E_in and E_out to avoid redundant FFT.
+    """
+    A = target_field * measure_region
+    B = E_out * measure_region
+
+    norm_A = np.sqrt(np.sum(np.abs(A) ** 2))
+    norm_B = np.sqrt(np.sum(np.abs(B) ** 2))
+
+    if norm_A == 0 or norm_B == 0:
+        return np.zeros_like(E_in, dtype=np.float64)
+
+    # Unnormalized inner product and real overlap
+    r = np.sum(np.conj(A) * B)
+    overlap_real = np.real(r) / (norm_A * norm_B)
+
+    # Back-propagate masked fields to SLM plane
+    back_A = ifft_propagate(A)
+    back_B = ifft_propagate(B)
+
+    # d Re{r} / dphi (gradient of unnormalized inner product)
+    d_Re_r = np.real(1j * E_in * np.conj(back_A))
+
+    # d ||B|| / dphi (gradient of output norm)
+    d_norm_B = np.real(1j * E_in * np.conj(back_B)) / norm_B
+
+    # d overlap_real / dphi (quotient rule)
+    d_overlap = d_Re_r / (norm_A * norm_B) - overlap_real * d_norm_B / norm_B
+
+    # d C / dphi
+    grad = -2.0 * 10**steepness * (1.0 - overlap_real) * d_overlap
+
+    return grad
+
+```
+
+
+#### Metric of result
+
+
+
+## Results

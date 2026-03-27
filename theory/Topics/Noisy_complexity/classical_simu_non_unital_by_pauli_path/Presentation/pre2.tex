@@ -1,0 +1,270 @@
+\documentclass{beamer}
+\usetheme{Madrid}
+\usecolortheme{default}
+\usepackage[style=alphabetic]{biblatex}
+\addbibresource{main/references.bib}
+\title[Noisy circuit simulation]
+{Noisy circuit simulation beyond average case}
+\subtitle{Based on Monte-Carlo method}
+\author[Siyuan Chen,Zhongxia Shang]  
+{Siyuan Chen\inst{1},Zhongxia Shang\inst{2}}% (optional, for multiple authors)
+\institute[] % (optional)
+{
+  \inst{1}%
+  USTC Shanghai Institute for Advanced Study, Shanghai, China\\
+  \inst{2}
+  HK Institute of Quantum Science \& Technology, The University of Hong Kong, Hong Kong, China
+}
+\date[Representation] % (optional)
+{\today}
+
+% \logo{\includegraphics[height=0.8cm]{logo_uoft}}
+
+\definecolor{uoftblue}{RGB}{6,41,88}
+\setbeamercolor{titlelike}{bg=uoftblue}
+\setbeamerfont{title}{series=\bfseries}
+\usepackage{physics}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+\include{preamble.tex}
+\frame{\titlepage}
+
+\begin{frame}
+\frametitle{Table of Contents}
+\tableofcontents
+\end{frame}
+
+
+\section{Intoduction: NISQ circuit simulation}
+
+\begin{frame}{NISQ circuit and its complexity}
+    \textbf{Definition:} 
+        \begin{figure}
+        \centering
+        \includegraphics[width=\linewidth]{pic/NISQ_circuit.png}
+        \caption{NISQ quantum circuit}
+    \end{figure}    
+\textbf{Complexity:~\cite{ben2013quantum}}
+\begin{itemize}
+    \item Unital noise: compute for ${O}{(\text{log}(n))}$ steps.  
+    \item Dephasing noise: compute on $O(n^a)$ qubits for ${O}(n^{1-a})$ steps.
+    \item   Amplitude damping noise: compute for an exponential number of time steps
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}{Pauli path simulation}
+\begin{figure}
+    \centering
+    \includegraphics[width=0.4\linewidth]{Presentation/pre2_Pauli_path_review.png}
+\end{figure}
+\begin{enumerate}
+    \item Pauli-path truncation method can simulate typical NISQ circuit, which includes:\\
+Ensemble with hiding property and anticoncentration~\cite{aharonov2023polynomial}, Low-average ensembles~\cite{schuster2024polynomial}, Variational quantum circuit with random parameters~\cite{shao2023simulating}...
+    \item \textbf{Randomness overwhelms noise}: Noiseless random circuit can be simulated with Pauli path truncation~\cite{angrisani2024classically}. Can we do truncation for \textbf{fixed circuit}?~\cite{gonzalez2024pauli}?
+\end{enumerate}
+\end{frame}
+
+
+\begin{frame}{Gadget-based simulation}
+    \begin{figure}
+        \centering
+        \includegraphics[width=0.8\linewidth]{Presentation/pre2_Gadget_based.png}
+    \end{figure}
+  Gadget-based method can simulate fixed Clifford+T circuit with low magic.\cite{bravyi2019simulation}
+  \begin{enumerate}
+\item Inserting \textbf{complete-stabilizer preserving noisy channel}, the algorithm is still valid~\cite{seddon2021quantifying}.
+\item But these \textbf{noise does not make gadget-based algorithm easier!}
+  \end{enumerate}
+\end{frame}
+
+
+\begin{frame}[allowframebreaks]{Motivation and Main results}
+\textbf{Question:}\\
+\begin{itemize}
+    \item \textit{Can we generalized the Pauli path truncation method such that it can be applied arbitrary "CSP channel"?} 
+    \item \textit{Can we generalized the Gadget based algorithm such that "CSP channel" decrease the hardness of circuit complexity?} 
+\end{itemize}
+\textbf{ Observation: }\\
+    \begin{figure}
+        \centering
+        \includegraphics[width=1\linewidth]{Presentation/pre2_comp.png}
+    \end{figure}
+   
+    \newpage
+\textbf{   Main research target:}\\
+   \begin{itemize}
+       \item Given $O = \sum_i c_i P_i$, lower bounds the truncation complexity in approximating $\text{tr}(O \rho)$?
+       \item What's the "CSP-channel" $\Lambda$ such that $\Lambda^\dagger(O)$ can be sampled without increasing the complexity of Pauli path truncation method?
+       \item Given $O = \sum_i c_i P_i$, upper bounds the truncation complexity in approximating $\text{tr}(O \rho)$?
+   \end{itemize}
+\end{frame}
+
+\section{Single qubit incoherent noise}
+
+\begin{frame}{Incoherent noise }
+    \begin{lemma}[~\cite{ruskai2002analysis}]
+    Any single-qubit noise channel can be decomposed into coherent and incoherent parts
+\[
+\mathcal{N}(\rho) = U \Lambda(V \rho V^\dagger)U^\dagger,
+\]
+where $U,V$ are unitary gates and  \(\Lambda\left(\frac{1}{2}[\mathbb{I} + \mathbf{w} \cdot \vec \sigma]\right) = \frac{1}{2}[\mathbb{I} + (\mathbf{t} + \Gamma\mathbf{w}) \cdot  \vec\sigma]\). Here, \(\Gamma\) is a diagonal matrix with real diagonal entries $(\Gamma_1,\Gamma_2,\Gamma_3)$ and $\mathbf{t} = (t_1,t_2,t_3)$ is a real vector. 
+\end{lemma}
+%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{itemize}
+    \item It is recently aware that coherent errors can generate high-magic resource states for universal quantum computing. ~\cite{niroula2024phase,turkeshi2024coherent}
+    \item In the case of $\mathbf{t} = 0$, this channel reduced to the Pauli noise. When \(\mathbf{t} \neq 0\), the quantum channel is non-unital.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Back-propagation property of incoherent channel}
+    \begin{theorem}\label{theo:non-unital_back-propagation}
+Conjugated channel $\Lambda^\dagger(\cdot)$ operates on Pauli operators  $\{\sigma_1,\sigma_2,\sigma_3\}$ as a scaling part $\mathbb{S}$ followed by a shifting part $\mathbb{T}$ such that
+   \begin{align}
+       \sigma_i &\xrightarrow{\mathbb{S}(\cdot)} s_i \sigma_i\\
+       &\xrightarrow{\mathbb{T}(\cdot)} s_i\cdot \left[(1 - p_i)(\text{sign}~\Gamma_i \cdot \sigma_i) + p_i(\text{sign}~t_i\cdot\mathbb{I})\right]\\
+       &= \Lambda^\dagger(\sigma_i),
+   \end{align}
+   where $s_i = |\Gamma_i| + |t_i| \leq 1, p = {|t_i|}{(|\Gamma_i| + |t_i|)}^{-1} \in [0,1]$. 
+\end{theorem}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% \begin{frame}{Operator stabilizer entropy}
+% \begin{align}
+%     \mathcal{M}^{(\alpha)}({\Lambda}^\dagger[O]) := \frac{1}{1 - \alpha} \left[\ln P^{(\alpha)}(\Lambda^{\dagger}[O]) - \ln P^{(\alpha)}(O)\right].
+% \end{align}
+% where $P^{(\alpha)}(O):=\sum_{P \in \{\mathbb{I},X,Y,Z\}^{\otimes n}}\left({2^{-n}}\text{tr}(OP)\right)^{2 \alpha}$
+% For  $\Lambda^\dagger[P] = \sum_{i}a_{i} P_i$ :\\
+% \begin{itemize}
+%     \item When $\alpha = 0$, $\text{exp}\left[\mathcal{M}^{(0)}(\Lambda^\dagger [P])\right] =  N$.
+%     \item When $\alpha = 1/2$, $\text{exp}\left[2^{-1}\mathcal{M}^{(1/2)}(\Lambda^\dagger [P])\right] = \sum_i |a_i|$.
+% \end{itemize}
+% \begin{lemma}[Single qubits OSE reduction channel]
+%     For \(\Lambda\left(\frac{1}{2}[\mathbb{I} + \mathbf{w} \cdot  \vec\sigma]\right) = \frac{1}{2}[\mathbb{I} + (\mathbf{t} + \Gamma\mathbf{w}) \cdot  \vec\sigma]\),
+% if and $\mathbf{t} = 0$, the operation of $\mathcal{N}$ do not generates 0-OSE and 1/2-OSE for arbitrary input. 
+% If $\mathbf{t} \neq 0$, the operation of $\mathcal{N}$ do not generates 1/2-OSE for arbitrary input.
+% \end{lemma}
+% \end{frame}
+
+\section{Simulation of Pauli average}
+\begin{frame}[allowframebreaks]{Free on no-magic circuit}
+   \begin{figure}
+       \centering
+       \includegraphics[width=0.5\linewidth]{Presentation/pre2_CliffordAD.png}
+   \end{figure}
+\newpage
+
+
+\begin{theorem}
+   Consider a fixed Clifford NISQ circuit composed of $\ket{0}^{\otimes n}$ inputs, Clifford gate layers, and an amplitude-damping channel with parameter $p < 1/2$. To estimate the Pauli average within an additive constant error $\varepsilon$ for all circuits of this kind, 
+   \begin{itemize}
+       \item the complexity of the Pauli path truncation algorithm must exhibit sub-exponential growth, with a bound of $O(n^{-1} e^{H(p) \cdot n})$,where $H(p) = -p\ln p - (1-p)\ln (1-p)$. 
+       \item the randomized algorithm estimates its Pauli average within constant error and $\text{Var}\leq 1$.
+   \end{itemize}
+\end{theorem}
+
+\end{frame}
+
+\begin{frame}[allowframebreaks]{Add T gates: Gate sampling algorithm}
+
+     \begin{align}
+     U^\dagger \sigma_i U= \sum_{r\in R_i} \sqrt{q_{i,r}} \text{sign}_{i,r} \sigma_r,\quad  \sum_i q_i = 1.
+ \end{align}
+\begin{figure}
+    \centering
+    \includegraphics[width=1\linewidth]{Presentation/gate-samp.png}
+\end{figure}
+\newpage
+
+
+\begin{theorem}[Gate sampling method] \label{theo:gate-sampling-method}
+The gate sampling algorithm have the expectation value and upper bound for variance:
+\begin{align}
+    \mathbb{E}  = \text{tr}( P^{(0)} C[\ket{0}\!\bra{0}^{\otimes n}] ).
+\end{align}
+\color{red}
+\begin{align}
+    \text{Var}&\leq \exp\left[ \frac{1}{2} M^{(1/2)}[C_N^\dagger(O)]  + M^{(0)}[C_U^\dagger(O)] \right].
+\end{align}
+\color{black}
+where $\mathcal{M}^{(\alpha)}({\Lambda}^\dagger[O])$ represents the $\alpha$-operator stabilizer entropy. $C_U$ denotes the unitary part of the circuit $C$, and $C_N$ denotes the incoherent-noise part of the circuit.
+\end{theorem}
+
+\end{frame}
+\begin{frame}{Free on Sparse T gates circuit}
+ $T^\dagger \sigma_3 T = \sigma_3$,$T^\dagger \sigma_1 T = ({1}/{\sqrt{2}}) (\sigma_1-\sigma_2 )$, and $T^\dagger \sigma_2 T =  ({1}/{\sqrt{2}}) (\sigma_1 + \sigma_2)$.
+ \begin{figure}[htbp!]
+    \centering
+    \includegraphics[width=0.4\linewidth]{Presentation/Gate_samp_example.png}
+\end{figure}
+\begin{theorem}\label{theo:sparse_CT}
+    Clifford+T circuit \( C \) with depolarizing noise layers \( \Lambda(\rho) = (1 - p)\rho +({p}/{2}) \mathbb{I} \), the variance of the algorithm is $\text{Var} \leq \sum_{i \in N_d} |f(i)|^2.$\\
+For a 2-dimensional, \( (Q, k) \)-sparse, localized circuit, if $2^Q(1 - p)  < 1$, the variance of the gate sampling algorithm satisfies \( \text{Var} \leq \text{poly}(n) \). Further more, adds amplitude damping noise into this circuit will
+never increase the variance.
+\end{theorem}
+\end{frame}
+
+\begin{frame}{Obstacles}
+    \begin{enumerate}
+        \item Bound the variance with "resource measure"(such as OSE).
+        \item Cannot deal with high magic random circuits! 
+        \item Can we argue that random cicuits in the previous research on average have low \textbf{"resource measure"}
+    \end{enumerate}
+    \begin{figure}
+        \centering
+        \includegraphics[width=0.7\linewidth]{Presentation/pre2_obstacle1.png}
+    \end{figure}
+\end{frame}
+% \begin{frame}[allowframebreaks]{Truncated sampling}
+% \textbf{ Observation: }Gate-sampling algorithm sample $T$ gates classically, which is the origin of exponentially large variance.
+%     \begin{figure}
+%         \centering
+%         \includegraphics[width=0.9\linewidth]{pic/path_tablet_sampling.png}
+%     \end{figure}     
+%     \newpage
+%     \begin{figure}
+%         \centering
+%         \includegraphics[width=1\linewidth]{Presentation/truncated sampling.png}
+%     \end{figure}
+    
+% \begin{theorem}[truncated sampling] \label{theo:truncated_sampling}
+%      Given a circuit $C = \Lambda_1 \circ \cdots \circ \Lambda_{d}$, the truncated sampling algorithm can be implemented in polynomial time. At the end of the sampling, the output consists of the set of tuple $S_d= \{(c_i^{(d)}, P_i^{(d)})\}_{i=1}^{N_d}$ with probability $q^{(d)}(S_d)$. Then, we have the expectation value:
+% \begin{align}
+%     &\mathbb{E} = \sum_{S_d}q^{(d)}(S_d) \sum_{(c_i, P_i)\in S_d} \text{tr}(c_i P_i \ket{0}\!\bra{0}^{\otimes n}) = \text{tr}( P^{(0)} C[\ket{0}\!\bra{0}^{\otimes n}] ),\\
+%         &\text{Var} + \mathbb{E}^2 \leq 1.
+% \end{align}
+% \end{theorem}
+
+%     \begin{theorem}[Space complexity of multiple path sampling]
+%      In the case of Clifford+T circuit \( C \) with depolarizing noise, the space complexity of multiple path sampling is decided by a random branching process.   On average, $ N_{tot} \leq \sum_i f(i)$. 
+%  \end{theorem}
+
+% \end{frame}
+
+
+% \begin{frame}{Comparison to gate-based truncation method}
+    
+% \end{frame}
+
+% \section{Case study}
+% \begin{frame}{T-dopped circuits}
+    
+% \end{frame}
+
+% \begin{frame}{Random circuits}
+    
+% \end{frame}
+
+\begin{frame}[allowframebreaks]{Reference}
+\printbibliography
+\end{frame}
+\end{document}

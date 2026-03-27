@@ -13,6 +13,7 @@ Decision tree: which file do I need?
 | Polish LaTeX paper (overnight) | `polish_paper.sh` | `nohup` |
 | Review experiment notes (overnight) | `review_experiments.sh` | `nohup` |
 | Deep cyclic paper review | `review_logical_gaps.sh` | `nohup` |
+| Generate Noisy_complexity Topics | `theory/Posts/Nosiy_complexity/generate_and_polish.sh` | `nohup` |
 
 ## Shell scripts — common options
 

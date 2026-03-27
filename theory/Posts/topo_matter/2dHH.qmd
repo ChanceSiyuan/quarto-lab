@@ -1,0 +1,23 @@
+---
+categories:
+- Readings
+date: 2026-03-25
+lang: en
+title: 2D Hofstadter-Hubbard Model
+bibliography: refs.bib
+draft: false
+---
+
+# 2D Hofstadter-Hubbard Model
+The 2D Hofstadter-Hubbard Model is a model of interacting fermions on a square lattice with a magnetic field. It is described by the Hamiltonian:
+$$
+\hat{H} = -t \sum_{\langle i,j \rangle, \sigma} \left( e^{i A_{ij}} \hat{c}_{i\sigma}^\dagger \hat{c}_{j\sigma} + \text{H.c.} \right) + U \sum_i \hat{n}_{i\uparrow} \hat{n}_{i\downarrow}
+$$
+where $t$ is the hopping amplitude, $U$ is the interaction strength, $A_{ij}$ is the magnetic flux through the link $(i,j)$, and $\hat{c}_{i\sigma}^\dagger$ and $\hat{c}_{i\sigma}$ are the creation and annihilation operators for a fermion with spin $\sigma$ at site $i$.
+
+A great difference between the ordinary Fermion-Hubbard model is the time assyme
+$$
+\mathcal{T} \left( e^{iA_{ij}} \hat{c}_i^\dagger \hat{c}_j \right) \mathcal{T}^{-1} = e^{-iA_{ij}} \hat{c}_j^\dagger \hat{c}_i
+$$
+
+## Introduction

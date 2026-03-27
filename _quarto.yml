@@ -16,7 +16,9 @@ website:
       #   href: theory/Topics/index.qmd
       - text: "Experiment Notes"
         href: Experiments/index.qmd
-      - text: "Workspace"       # <--- 新增这一行
+      - text: "Life"
+        href: life/index.qmd
+      - text: "Workspace"
         href: workspace/workspace.qmd
     right:
       - icon: github
@@ -25,21 +27,6 @@ website:
         href: https://twitter.com/yourusername
 
   sidebar:
-    - id: notes
-      title: "Contents"
-      contents:
-        - section: "Quantum Complexity"
-          contents:
-            - notes/quantum_complexity/counting_complexity.qmd
-            - notes/quantum_complexity/interactive_proof.qmd
-        - section: "Quantum Learning Theory"
-          contents:
-            - notes/quantum_learning_theory/intro.qmd
-        - section: "Shadow Tomography"
-          contents:
-            - notes/shadow_tomography/intro.qmd
-            - notes/shadow_tomography/multicopy.qmd
-
     - id: lowerbounds
       title: "Lower Bounds Toolbox"
       contents:
@@ -164,6 +151,23 @@ website:
           contents:
             - theory/Topics/compatibility/Algebraic_estimation_framework.qmd
             - theory/Topics/compatibility/multi-copy_localshadow.qmd
+
+    - id: noisy_complexity
+      title: "Classical Simulation of Noisy Circuits"
+      contents:
+        - theory/Topics/Noisy_complexity/index.qmd
+        - section: "Simulation Methods"
+          contents:
+            - theory/Topics/Noisy_complexity/pauli_path.qmd
+            - theory/Topics/Noisy_complexity/gadget_simulation.qmd
+            - theory/Topics/Noisy_complexity/percolation.qmd
+        - section: "Noise Models & Resources"
+          contents:
+            - theory/Topics/Noisy_complexity/non_unital.qmd
+            - theory/Topics/Noisy_complexity/operator_resource.qmd
+        - section: "Outlook"
+          contents:
+            - theory/Topics/Noisy_complexity/open_problems.qmd
 
 format:
   live-html:

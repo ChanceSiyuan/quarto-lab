@@ -1,0 +1,154 @@
+%!TEX program = pdflatex
+\documentclass[aps,%
+twocolumn,%
+floatfix,%
+pra,%
+amsfonts,%
+longbibliography,%
+groupedaddress,%
+superscriptaddress]{revtex4-2}%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Packages
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{bm,bbm} % to use the command \mathbbm{1}, \bm{x}
+\usepackage{graphicx}
+\usepackage{indentfirst}
+\usepackage{enumitem}
+% \usepackage{algorithmicx}
+% \usepackage{algpseudocode}
+\usepackage{algorithm}
+% \usepackage{algorithmic}
+% \usepackage{algcompatible}
+\usepackage{algpseudocode}
+\usepackage{tikz}
+\usepackage{quantikz}
+\usetikzlibrary{graphs} 
+\usepackage[titletoc,toc,page,title]{appendix}
+\definecolor{beamer@blendedblue}{rgb}{0.2,0.2,0.7}      % color used in beamer
+\usepackage[bookmarks=false]{hyperref}
+\hypersetup{colorlinks=true,%
+citecolor=beamer@blendedblue,%
+linkcolor=beamer@blendedblue,%
+urlcolor=beamer@blendedblue,%
+pdfstartview=FitH,%
+bookmarksopen=true}
+
+\def\UrlBreaks{\do\/\do-} % url break
+\usepackage[T1]{fontenc}
+\usepackage{times}
+\usepackage{booktabs} % to use the \toprule \midrule command
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% General Commands
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newtheorem{theorem}{Theorem}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}{Lemma}
+\newtheorem{corollary}{Corollary}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{pifont}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Quantum Commands
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\DeclareMathOperator{\Tr}{Tr}
+\DeclareMathOperator{\tr}{Tr}
+\DeclareMathOperator{\NOT}{NOT}
+\DeclareMathOperator{\diag}{diag}
+\DeclareMathOperator{\rank}{rank}
+\DeclareMathOperator{\conv}{conv}
+\DeclareMathOperator{\sgn}{sgn}
+\DeclareMathOperator{\Sp}{Span}
+\DeclareMathOperator{\id}{id}
+% \newcommand{\bra}[1]{\langle #1\rvert}
+% \newcommand{\ket}[1]{\lvert #1\rangle}
+% \newcommand{\proj}[1]{\lvert #1\rangle\!\langle #1\rvert}
+\newcommand{\ox}{\otimes}
+\newcommand{\1}{\mathbbm{1}}
+\newcommand{\mean}[1]{\langle #1\rangle}
+\newcommand{\gen}[1]{\langle #1\rangle}
+\newcommand{\ketbra}[2]{\lvert #1\rangle\!\langle #2\rvert}
+% \newcommand{\braket}[2]{\langle #1\vert #2\rangle}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Mathematical symbols
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand*{\cF}{\mathcal{F}}
+\newcommand*{\cH}{\mathcal{H}}
+\newcommand*{\cO}{\mathcal{O}}
+\newcommand*{\cP}{\mathcal{P}}
+\newcommand*{\cS}{\mathcal{S}}
+\newcommand*{\bF}{\mathbb{F}}
+\newcommand*{\bP}{\mathbb{P}}
+
+% Colors
+\definecolor{alizarin}{rgb}{0.82, 0.1, 0.26}
+\definecolor{googleblue}{HTML}{4285F4}
+\definecolor{googlered}{HTML}{DB4437}
+\definecolor{googleyellow}{HTML}{F4B400}
+\definecolor{googlegreen}{HTML}{0F9D58}
+\definecolor{klevinblue}{HTML}{002FA7}
+\definecolor{tiffanyblue}{HTML}{0ABAB5}
+
+\newcommand{\KW}[1]{{\color{googlered}(KW: #1)}}
+\newcommand{\SYC}[1]{\textcolor{blue}{(SYC: #1)}}
+
+\begin{document}
+
+\title{Meeting 01: Technical Details}
+%%%
+\author{Siyuan Chen}
+\author{Zhongxia Shang}
+
+%%%
+
+
+\begin{abstract}
+\noindent 
+We propose a method to establish criteria for determining whether the effects of noise "obscure" fixed or random circuit based on spectrum of Pauli decomposition, thereby enabling a unified framework for truncation based simulation.
+\end{abstract}
+\date{\today}
+\maketitle
+
+\section{Necessary condition of approximation algorithm}
+Given an operator in the form of Pauli decomposition $O = \sum_{i=1}^{N} c_i P_i$ with $N=O(2^n)$ , truncation algorithm with $T =O(\tilde N)$ time complexity calculates an approximation $\tilde O = \sum_{i = 1}^{\tilde N} \tilde c_i \tilde P_i $ with $\tilde N = \text{poly}(n)$ and  try to approximate operator average $\text{tr}(\rho O)$ within precision 
+\begin{align}
+     \Delta &= \|\text{tr}(\rho O) - \text{tr}(\rho \tilde O)\|^2 \\
+    &\leq \|O - \tilde O\|_F^2 := \varepsilon^2,
+\end{align}
+where we use the random circuit condition in ~\cite{schuster2024polynomial}. For fixed $\tilde N$, the optimal truncation strategy is keeping the largest $\tilde N$ Pauli operators and truncates the others. Supposed that $\{c_i\}_{i = 1}^{N}$ is in the decreasing order with respect to $i$,  this gives the optimal error given fixed $\tilde N$ as $  \varepsilon^2 = \sum_{i = \tilde N}^N c_i^2 $. Noted that such an optimal precision might hard to reach due to the difficulty in selecting $\tilde N$ Pauli operators with the largest $c_i$. Thus we define a function that maps the algorithm complexity to optimal algorithm precision
+\begin{align}
+    f(\tilde N) = \sum_{i = \tilde N}^N c_i^2.
+\end{align}
+\begin{figure}[htbp!]
+    \centering
+    \includegraphics[width=1\linewidth]{pic/necessary_condition.png}
+    \caption{Noiseless circuit decay slowly compare to noisy circuit. Effective truncation method exist only if the decay of $c_i^2$ is faster than $i^{-1}$}
+    \label{fig:necessary_condition}
+\end{figure}
+If the optimal precision transformed as $\varepsilon \to \varepsilon/A$, the complexity of the algorithm should at least scales as $p(A)$, which is a polynomial of $A$ with rank $r$. In other words,
+\begin{align}
+    f[\tilde N p(A)] &= \frac{1}{A^2} f(\tilde N)
+\end{align}
+Take the derivative of $A$ gives the identity
+\begin{align}
+    c^2_{\tilde N p(A)} = \frac{2 f(\tilde N)}{A^3  \tilde N p'(A)}.
+\end{align}
+When $A$ is large enough, we conclude that $p(A)= \Theta(A^r), p'(A)= \Theta(A^{r-1})$, This indicates that the constant $c_i$ must decrease faster than $i^{-1}$
+\begin{align}
+    c_{i}^2 = \Theta(i^{-1 -2/r}) \leq \Theta(i^{-1}).
+\end{align}
+
+As a concrete example, we noted that in reference~\cite{schuster2024polynomial}, it is proved that the optimal error satisfied $\varepsilon^2 \leq e^{-\gamma(l+1)} \cdot \|O\|_F^2$. In the main time, the time complexity satisfied $T = O(n^{l/d})$. Thus if we increase the precision by $l \to l+ l_0$, we have
+\begin{align}
+    \varepsilon^2 \to e^{-\gamma l_0}\varepsilon, \quad T \to T\cdot n^{l_0/d}
+\end{align}
+\section{Open question and Research directions}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\end{document}

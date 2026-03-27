@@ -24,25 +24,47 @@ $$
 \mathbb{E}[T(\hat{P})] \neq T(\mathbb{E}[\hat{P}]) = T(P)
 $$
 Therefore, unless you want to estimate the functional that is exactly a linear function, the plug-in estimator is almost always biased.
+In general, for any given functional $f(\boldsymbol{p})$, there exists an unbiased estimator $\hat{h}(\boldsymbol{N})$ based on the observation $\boldsymbol{N}$ if and only if $h(\boldsymbol{p})$ can be expressed as a multivariate polynomial of degree at most $k$ in $p_1, p_2, \dots, p_d$.
 
-Given a discrete distribution with $d$ possible values and probability distribution vector $\boldsymbol{p} = (p_1, p_2, \dots, p_d)$ satisfying $p_i \ge 0$ and $\sum_{i=1}^d p_i = 1$.
-The $k$ independent and identically distributed samples from this distribution can be summarized as a count vector $\boldsymbol{N} = (N_1, N_2, \dots, N_d)$ where $N_i$ is the number of times the $i$-th category appears in the $k$ samples, with $\sum_{i=1}^d N_i = k$. 
+# bounded condition for classical unbiased estimator
+Let $p \in \Delta_{d-1}$ be a probability distribution on the $d$-category discrete state space $[d] = \{1, 2, \dots, d\}$. Let $f: \Delta_{d-1} \to \mathbb{R}$ be a $k$-homogeneous polynomial functional. 
+Given $k$ i.i.d. samples $X_1, X_2, \dots, X_k \sim p$, a symmetric unbiased estimator based on these $k$ samples is a fully symmetric function $h: [d]^k \to \mathbb{R}$ such that for any $p \in \Delta_{d-1}$, $\mathbb{E}_{X \sim p}[h(X_1, \dots, X_k)] = f(p)$.
+Although the unbiased estimator for a polynomial functional might be a lot, we can show that the symmetric one is the best in terms of symmetric average of the estimator 
+$$
+\mathrm{sym}[h](X_1, \cdots, X_k):= (k!)^{-1}\sum_{\sigma \in S_k} h(X_{\sigma(1)}, \cdots, X_{\sigma(k)})
+$$
+ will decrease the value of $\max_{X_1, \cdots, X_k} |h(X_1, \cdots, X_k)|$.
 
-We then show that given $k$ fixed, only functionals that can be expressed as a multivariate polynomial of degree at most $k$ in $p_1, p_2, \dots, p_d$ have unbiased estimators based on the observation $\boldsymbol{N}$.
 
-:::{#thm-unbiased-estimator .callout-important icon="false"}
- For any given functional $f(\boldsymbol{p})$, there exists an unbiased estimator $\hat{f}(\boldsymbol{N})$ based on the observation $\boldsymbol{N}$ if and only if $f(\boldsymbol{p})$ can be expressed as a multivariate polynomial of degree at most $k$ in $p_1, p_2, \dots, p_d$.
+Specifically, consider the function rank-$k$ homogeneous polynomial $f$ of $(p_1, \cdots, p_d)$, we have the follwing lemma:
+
+:::{#lem-unbiased-estimator .callout-important icon="false"}
+Given a $k$-homogeneous polynomial functional $f(p)$ defined on the probability simplex $\Delta_{d-1}$, there exists a bounded constant $M > 0$ such that its unique symmetric unbiased estimator satisfies $\max_{x \in [d]^k} |\mathrm{sym}[h](x_1, \cdots, x_k)|\le M$ if and only if the absolute values of the coefficients of the $k$-order Bernstein polynomial basis (Bernstein Polynomial Basis) expansion of $f(p)$ are strictly bounded by $M$.
 :::
 
 :::{.callout-note collapse="true"}
 ## Proof (Click to expand)
-(t.b.c.)
+ It can be uniquely expanded into monomial basis:
+$$
+f(p) = C(p, p, \dots, p) = \sum_{x_1=1}^d \dots \sum_{x_k=1}^d C_{x_1, \dots, x_k} p_{x_1} \dots p_{x_k},
+$$
+with $C_{x_1, \dots, x_k}$ being the real-valued tensor that can be chosen to be fully symmetric over the indices $x_1, \dots, x_k$ since their product are commutative. 
+We noted that $\mathrm{sym}[h](x_1, \cdots, x_k) = C_{x_1, \dots, x_k}$ just being the unique best unbiased estimator for $f(p)$ if we choose $C_{x_1, \dots, x_k}$ to be fully symmetric.
+We can further utilize this symmetry. For example, we can merge terms like $C_{12}p_1p_2$ and $C_{21}p_2p_1$ together to $2C_{12}p_1p_2$.
+This means that the index $(x_1,\cdots, x_k)$ can be replaced by a counting vector $\alpha = (\alpha_1, \cdots, \alpha_k)$ such that $\alpha_1 + \cdots + \alpha_k = k$ and $\alpha_i \geq 0$. 
+The sequences with the same counting vector $\alpha$ have $\binom{k}{\alpha}$ elements. Since $C$ is fully symmetric, all sequences corresponding to the same counting vector $\alpha$ have the same tensor element value. We denote this common value as $C_\alpha$. Therefore, we can rewrite the functional $f(p)$ as:
+$$
+f(p) = \sum_{|\alpha|=k} \binom{k}{\alpha} C_\alpha p^\alpha = \sum_{|\alpha|=k} C_\alpha B_{\alpha, k}(p)
+$$
+Comparing with the Bernstein expansion $f(p) = \sum_{|\alpha|=k} b_\alpha B_{\alpha, k}(p)$, since the Bernstein polynomials form a basis, the coefficients must be unique, therefore $C_\alpha = b_\alpha$.
+According to step 1, the peak (infinity norm) of the estimator is the maximum absolute value of the tensor element: $$\|h\|_\infty = \max_{x \in [d]^k} |h(x_1, \dots, x_k)| = \max_{\alpha} |C_\alpha|$$ According to step 2, $C_\alpha$ equals to the Bernstein coefficient $b_\alpha$. Therefore: 
+$$
+\max_{x \in [d]^k} |\mathrm{sym}[h](x)| \le M \iff \max_{|\alpha|=k} |b_\alpha| \le M
+$$
+This strictly proves that the estimator is bounded if and only if the Bernstein coefficients (high-order discrete difference) are strictly bounded.
 :::
 
-Given $K$ unknown discrete probability distributions $(\vec{p}_1, \vec{p}_2, \dots, \vec{p}_K)$ on finite alphabets of sizes $|\Omega_1|, |\Omega_2|, \dots, |\Omega_K|$. Suppose we draw $(n_1, n_2, \dots, n_K)$ i.i.d. samples independently from each distribution, yielding frequency vectors $(N_{i,1}, \ldots, N_{i,|\Omega_i|})$ for each $i$, where $\sum_j N_{i,j} = n_i$.
-A **monomial** in these probability variables takes the form $m_{\mathbf{x}} = \prod_{i=1}^K \prod_{j \in \Omega_i} p_{i,j}^{x_{i,j}}$, where $\mathbf{x} = (x_{i,j})$ is a multi-index of non-negative integers. The **degree with respect to distribution $i$** is $k_i(\mathbf{x}) = \sum_{j \in \Omega_i} x_{i,j}$, and the **total degree** is $|\mathbf{x}| = \sum_i k_i(\mathbf{x})$.
-
-
+For non-homogeneous polynomial functional, we have the following theorem:
 :::{#thm-estimation-condition .callout-important icon="false"}
 ## Theorem (Classical Estimation Condition)
 A functional $F(\vec{p}_1, \ldots, \vec{p}_K) = \sum_{\mathbf{x} \in \mathcal{X}} c_{\mathbf{x}}\, m_{\mathbf{x}}$ admits an unbiased estimator from $(n_1, \ldots, n_K)$ i.i.d. samples **if and only if** $F$ is a polynomial with $k_i(\mathbf{x}) \leq n_i$ for each distribution $i$ and all $\mathbf{x} \in \mathcal{X}$.
@@ -73,3 +95,4 @@ which holds because $(N_{i,j})_{x_{i,j}}$ counts ordered selections of $x_{i,j}$
 **Sampling complexity.** For each distribution $i$, we need $n_i \geq k_i^{\max}$ where $k_i^{\max} = \max_{\mathbf{x} \in \mathcal{X}} k_i(\mathbf{x})$ is the maximum degree that appears for distribution $i$. The overall minimum sample budget is $\max_i k_i^{\max}$.
 :::
 
+# bounded condition for quantum unbiased estimator
