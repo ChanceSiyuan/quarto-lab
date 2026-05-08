@@ -1,0 +1,96 @@
+---
+title: "Tophat Realization"
+description: "cgm for light sheet generation"
+date: 2026-03-25
+categories:
+- Readings
+lang: en
+bibliography: refs.bib
+draft: false
+---
+
+If we restrict our target laser shape to the light sheet shape, many optimization can be implemented to make the slm phase faster and more precise.
+To be specific, we can use the following target function:
+$$
+\begin{align}
+u &= x\cos\theta + y\sin\theta \quad \text{along the sheet direction}\\
+v &= -x\sin\theta + y\cos\theta \quad \text{normal to the sheet direction}\\
+A(x,y) &= \exp(-\frac{v^2}{2\sigma_{\perp}^2}) \cdot \exp(-\frac{\left[\max\{0,|u|-a\}\right]^2}{2\sigma_{\parallel}^2})
+\end{align}
+$$
+
+# Initialization
+In the original Bowman's implementation, the initialization is:
+$$
+\begin{align}
+\phi(p,q) = R·(p²+q²) + D·(p·\cos\theta + q·\sin\theta),
+\end{align}
+$$
+where the $R$ indicates a shift of focal plane, and the $D$ indicates a shift of the sheet center.
+It contains no information about the light-sheet shape itself.
+To optimize the light-sheet shape, we can first setup a slm phase such that at least gives the right intensity distribution.
+the stationary-phase initialization.
+
+In general the slm phase is related to the output intensity by the following equation:
+$$
+E_{out}(u) \propto \int |E_{in}(x)| e^{i \left( \phi(x) - \frac{2\pi}{\lambda f} x u \right)} dx
+$$
+Under the stationary phase approximation (SPA), we have:
+$$
+\begin{align}
+\frac{\partial \Phi(x)}{\partial x} &= 0 \implies u =u(x):=\frac{\lambda f}{2\pi}\frac{\partial \phi(x)}{\partial x} \\
+|E_{in}(x)|^2  &= |E_{out}(u(x))|^2 \frac{du(x)}{dx}
+\end{align}
+$$
+Plug in the fact $I_{out}(u) = \begin{cases} I_0, & |u| \le \frac{b}{2} \\0, & |u| > \frac{b}{2}\end{cases}$ and $I_{in}(x)=|E_{0}|^{2}e^{-\frac{2x^{2}}{w_{0}^{2}}}$, we have:
+$$
+u(x) = \frac{b}{2} \text{erf}\left(\frac{\sqrt{2}x}{w_0}\right).
+$$
+Plug in the SPA condition, we have:
+$$
+\begin{align}
+\frac{\partial \phi(x)}{\partial x} &= \frac{\pi b}{\lambda f} \text{erf}\left(\frac{\sqrt{2}x}{w_0}\right) \\
+\phi(x) &= \int_{0}^{x} \frac{\pi b}{\lambda f} \text{erf}\left(\frac{\sqrt{2}y}{w_0}\right) dy\\
+&= \frac{\pi b}{\lambda f} \left[ y \text{erf}\left(\frac{\sqrt{2}y}{w_0}\right) - \int \frac{2\sqrt{2}}{w_0\sqrt{\pi}} y e^{-\frac{2y^2}{w_0^2}} dy \right]_{0}^{x}\\
+&= \frac{\pi b}{\lambda f} \left[ x \text{erf}\left(\frac{\sqrt{2}x}{w_0}\right) + \frac{w_0}{\sqrt{2\pi}} \left( e^{-\frac{2x^2}{w_0^2}} - 1 \right) \right].
+\end{align}
+$$
+To estend this 1-d phase into 2d phase with shift and rotation, we note that
+$$
+\mathcal{F}\{ E_{in}(u,v) e^{i\phi(u,v)} \} = \mathcal{F}_u\{ E_{in}(u) e^{i\phi(u)} \} \cdot \mathcal{F}_v\{ E_{in}(v) e^{i\phi(v)} \},
+$$
+thus we can independently control the $u$ and $v$ axis channels:
+ - $u$ axis channel: run SPA, load complex aspheric phase $\phi(u)$, flatten the Gaussian into a line with width $2a$. 
+ - $v$ axis channel:
+   - If the narrowest line is needed, let $\phi(v) = 0$;
+   - If the target width $\sigma_{\perp}$ is larger than the natural diffraction limit, then the required is not SPA, but a simple defocus operation.  This is equivalent to add a one-dimensional quadratic phase (cylindrical lens) $\phi(v) = -\frac{\pi v^2}{\lambda f_{cyl}}$.
+
+ This finally gives the following 2d phase:
+$$
+\begin{align}
+\phi(x, y) = &{\phi(u(x,y))} + {\frac{2\pi}{\lambda f} (x_c x + y_c y)} - \frac{\pi v^2}{\lambda f_{cyl}}
+\end{align}
+$$
+
+
+:::{.callout-note icon="false"}
+## Discussion
+1. Directly solve the inverse problem $E_{in}(x) = \mathcal{F}^{-1} \{E_{out}(u) \} \propto b \cdot \text{sinc}\left(\frac{b x}{\lambda f}\right)$ is not feasible for Gaussian input.
+2. Stationary Phase approximately gives the correct light-sheet intensity while the following cgm algorithm can further optimize the phase to get the exact light-sheet shape.
+3. The cylindrical lens is not used in the implementation. Since we not just require intensity but also the uniform phase. This means that the $\Delta v$ of the sheet will be unchanged, thus induces a small focus $f_{cyl}$ that shifts out of the best focal plane.
+:::
+
+
+# Dimension decomposition
+
+Notify that if the input laser on the slm plane is already in the Gaussian shape with $\sigma_x,\sigma_y$, we can leave the y-axis shape unchanged and directly get a light sheet shape with $\sigma = \sigma_y$
+This corresponds to a constant phase along the y-axis on the slm plane:
+$$
+\begin{align}
+\phi(x, y) = C\phi(x) , \quad \mathcal{F}(e^{-i\phi(x)} \cdot e^{-x^2/2\sigma_x}) = H(x)
+\end{align}
+$$
+
+This means that we can directly run the cgm algorithms on the x-axis to get the $\phi(x)$ and generate $\phi(x,y) = \phi(x)$.
+If we want to shift the region away from the zero-order region, the only difference is to transform $H_d(x)$ to $H_{x_0,d}(x):= H_d(x-x_0)$.
+

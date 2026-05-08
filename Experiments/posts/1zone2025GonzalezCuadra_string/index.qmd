@@ -2,20 +2,22 @@
 categories:
 - Readings
 date: 2026-03-18
-description: 'Reading notes on González-Cuadra et al. 2025 — first observation of string breaking in a (2+1)D lattice gauge theory on a Rydberg quantum simulator'
+description: 'string breaking on a Rydberg quantum simulator'
 lang: en
-title: 'González-Cuadra 2025: String Breaking in (2+1)D LGT'
+title: 'String Breaking on a Rydberg Quantum Simulator'
 bibliography: refs.bib
 draft: true
 ---
 
 # Summary and Questions
 
-**Paper:** González-Cuadra et al., "Observation of string breaking on a (2+1)D Rydberg quantum simulator," *Nature* **642**, 321–326 (2025) [@gonzalezcuadra2025string]
+# What was done
 
-**Architecture:** 1-zone analog (QuEra Aquila; kagome lattice, $a \approx 4.7$–$7\,\mu$m, $R_b = 8.4\,\mu$m; 31–59 atoms depending on measurement; array FOV $75\,\mu\text{m} \times 128\,\mu\text{m}$)
+They first prepare a Rydberg array on a Kagome lattice, which is a 2D lattice with a hexagonal structure.
+![Kagome Lattice](kagome.png){#fig-kagome-lattice width=70%}
 
-## What was done
+
+
 
 :::{.callout-tip title="Experiment Protocol"}
 1. **Gauge theory mapping:** Atoms on a kagome array encode a (2+1)D $U(1)$ lattice gauge theory. Rydberg blockade enforces Gauss's law; van der Waals interactions $V(r) = C_6/r^6$ (with $C_6/2\pi = 862{,}690\,\text{MHz}\cdot\mu\text{m}^6$, $^{87}$Rb $70S_{1/2}$) generate the linear confining potential.

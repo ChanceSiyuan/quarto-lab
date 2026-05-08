@@ -1,0 +1,56 @@
+---
+categories:
+- Readings
+date: '2026-04-25'
+lang: en
+title: Majority Vote for Pauli signal estimation
+bibliography: refs.bib
+draft: true
+---
+
+# Summary and question
+
+This post reviews the Pauli signal estimation. 
+That is, estimation of the functional set 
+$$
+\{\mathrm{sign}(\tr(P \rho))\}_{P \in \{I,X,Y,Z\}^{\otimes n}}.
+$$
+and its $\mathrm{QB}_{2}$-norm $s^*_2(\mathcal{F}_{\mathrm{sign}})$.
+
+Since the functional set $\mathcal{F}_{\mathrm{sq}} := \{[\tr(P \rho)]^2\}_{P \in \{I,X,Y,Z\}^{\otimes n}}$ already admit $s_2^*(\mathcal{F}_{\mathrm{sq}} ) = 1$, which induce a biased estimator for $|\tr(P \rho)|$.
+Thus combining this biased estimator with $s^*_2(\mathcal{F}_{\mathrm{sign}})$, we can construct a better estimator for $\mathcal{F} = \{\tr(P \rho)\}_{P \in \{I,X,Y,Z\}^{\otimes n}}$.
+
+Given a functional set $\mathcal{F}$, If there exists $\mathcal{F}_1,\cdots,\mathcal{F}_n$ such that $\mathcal{F} = F[\mathcal{F}_1, \cdots, \mathcal{F}_n]$ and each $\mathcal{F}_i$ admits a finite $s_k^*$
+
+What's the different of this construction with the direct construction of biased estimator for $\mathcal{F}$?
+
+
+
+Given $N_1$ copies of state $\rho$, we implement the Bell measurement and get $|f_P - |\tr(P \rho)|| < \varepsilon$.
+Then we construct $\sigma$ such that $|\tr(P \sigma) - f_P| < \varepsilon$., and implement the POVM:
+$$
+M_{P,x} = \tr_{1}(\ket{\Phi_x}\!\bra{\Phi_x} \sigma \otimes \mathbb{I}),
+$$
+where  $\ket{\Phi_x}\!\bra{\Phi_x}$ is Bell measurement, on $N_2$ copies of state $\rho$.
+All these steps can be regarded as a unified $N_1+ N_2$ replica strategy $\Pi_j$ on $\rho^{\otimes (N_1+ N_2)}$ and can be further symmetrized under the swap of $N_1 + N_2$ replicas.
+
+# Shadow Tomography
+
+:::{#thm-classicalshadow .callout-important icon="false"}
+Given $E_1,\cdots,E_N$ such that each of them satisfied $0 \leq E_i \leq 1$, there exists an algorithm that cosumes $\varepsilon^{-5} \log(1/\delta) \log^4(M)\log D$ copies of $\rho$ and outputs an estimator $\{b_i\}_{i=1}^N$ such that $|b_i - \tr(E_i \rho)| < \varepsilon$ with success probability $1-\delta$.
+:::
+
+
+The specific algorithm is as follows:
+
+- Initialize $\sigma_0=I/D$.
+- Check if there exists $i$ such that $|b_i - \tr(E_i \rho)| > \varepsilon$. This can be realized by using a gentle search on a few copies of $\rho$ to find such $i$.
+- If not found, stop and output $\{b_i\}_{i=1}^N$ with $b_i = \tr(E_i \rho)$.
+- If found, use this $E_i$ to do postselected update on $\sigma_t$ to get $\sigma_{t+1}$.
+- Go back to step 2, repeat, at most $O(\log D/\mathrm{poly}(\varepsilon))$ rounds.
+
+:::{#lem-QuantumOR .callout-important icon="false"}
+## (Quantum OR Bound)
+Given $E_1,\cdots,E_N, 0 \leq E_i \leq 1$ and ensure that either $\exist i, \mathrm{s.t.} \tr(E_i\rho) \geq c$ or $\forall i, \tr(E_i \rho) \leq c - \varepsilon$, then there exists an algorithm distinguishes the two cases with success probability at least $1-\delta$ with cost $\O(\varepsilon^{-2} \cdot \log M )$ copies of $\rho$.
+:::
+

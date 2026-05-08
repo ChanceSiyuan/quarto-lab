@@ -1,0 +1,147 @@
+---
+categories:
+- Readings
+date: '2026-04-23'
+lang: en
+title: MCMC simulation framework for gauge theory
+bibliography: refs.bib
+---
+
+:::{#lem-euclidean-lattice-qcd .callout-note icon="false"}
+## Euclidean Lattice QCD Path Integral
+
+Starting from the Minkowski QCD Lagrangian with gauge group $G=SU(3)$,
+one may perform a Wick rotation $t=-i\tau$ and obtain the Euclidean
+path integral
+$$
+\begin{align}
+Z
+=
+\int \mathcal D A\,\mathcal D\bar\psi\,\mathcal D\psi\,
+\exp\left[-S_E[A,\bar\psi,\psi]\right].
+\end{align}
+$$
+
+On a Euclidean hypercubic lattice with spacing $a$, the continuum gauge
+field is replaced by link variables
+$$
+\begin{align}
+U_{x,\mu}
+=
+\mathcal P\exp\left(
+i g\int_x^{x+a\hat\mu} A_\mu(s)\,ds
+\right)
+\in SU(3),
+\end{align}
+$$
+which transform under a local gauge transformation $\Omega_x\in SU(3)$ as
+$$
+\begin{align}
+U_{x,\mu}
+\mapsto
+\Omega_x U_{x,\mu}\Omega_{x+\hat\mu}^{\dagger}.
+\end{align}
+$$
+
+The elementary plaquette is
+$$
+\begin{align}
+U_{x,\mu\nu}
+=
+U_{x,\mu}
+U_{x+\hat\mu,\nu}
+U_{x+\hat\nu,\mu}^{\dagger}
+U_{x,\nu}^{\dagger}.
+\end{align}
+$$
+
+The Wilson gauge action is
+$$
+\begin{align}
+S_g[U]
+=
+\frac{\beta}{N_c}
+\sum_{x}\sum_{\mu<\nu}
+\operatorname{Re}\operatorname{Tr}
+\left(
+\mathbf 1-U_{x,\mu\nu}
+\right),
+\qquad
+\beta=\frac{2N_c}{g^2}.
+\end{align}
+$$
+
+For small lattice spacing,
+$$
+\begin{align}
+U_{x,\mu\nu}
+=
+\exp\left(
+i g a^2 F_{\mu\nu}(x)+O(a^3)
+\right),
+\end{align}
+$$
+and hence
+$$
+\begin{align}
+S_g[U]
+=
+\frac{1}{2}
+\int d^4x\,
+\operatorname{Tr}\left[
+F_{\mu\nu}(x)F_{\mu\nu}(x)
+\right]
++
+O(a^2),
+\end{align}
+$$
+up to normalization conventions for the generators.
+
+Adding lattice fermions gives a fermion action
+$$
+\begin{align}
+S_f[U,\bar\psi,\psi]
+=
+\sum_{x,y}\bar\psi_x M_{x,y}[U;m,\mu]\psi_y,
+\end{align}
+$$
+where $M[U;m,\mu]$ is a lattice Dirac operator, for example Wilson,
+staggered, domain-wall, or overlap Dirac operator. Integrating out the
+Grassmann fields gives
+$$
+\begin{align}
+Z
+=
+\int \mathcal D U\,
+e^{-S_g[U]}\det M[U;m,\mu].
+\end{align}
+$$
+
+At zero baryon chemical potential, the fermion determinant can be made
+real and nonnegative in standard flavor settings. Then
+$$
+\begin{align}
+\pi[U]
+=
+\frac{1}{Z}
+e^{-S_g[U]}\det M[U;m,0]
+\end{align}
+$$
+defines a probability measure over gauge-field configurations, enabling
+importance-sampling Monte Carlo methods such as Hybrid Monte Carlo.
+
+At nonzero real baryon chemical potential, however,
+$$
+\begin{align}
+\det M[U;m,\mu]\in\mathbb C,
+\end{align}
+$$
+in general. Therefore the weight
+$$
+\begin{align}
+e^{-S_g[U]}\det M[U;m,\mu]
+\end{align}
+$$
+is not a positive probability distribution. This is the finite-density
+sign problem of lattice QCD.
+:::

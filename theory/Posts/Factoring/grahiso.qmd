@@ -1,0 +1,168 @@
+---
+categories:
+- Posts
+date: 2026-04-05
+lang: en
+title: The graph isomorphism problem and its reduction
+bibliography: refs.bib
+draft: true
+---
+
+# Basic concepts
+
+:::{#def-graph-isomorphism .callout-note icon="false"}
+## (Graph Isomorphism)
+Two graphs $G$ and $H$ are called **isomorphic** if there exists a bijection $\phi: V(G) \to V(H)$ such that $(u,v) \in E(G)$ if and only if $(\phi(u),\phi(v)) \in E(H)$.
+:::
+
+:::{#def-rigid-graph .callout-note icon="false"}
+## (Rigid Graph)
+A graph $G$ is called **rigid** if its automorphism group is trivial, i.e., $\text{Aut}(G) = \{e\}$.
+:::
+
+![The minimum example of rigid graph](rigid_graph.png)
+
+:::{#lem-reduction_to_rigid .callout-important icon="false"}
+## (GI $\equiv_p$ GA)
+The Graph Isomorphism problem (GI) is polynomial-time equivalent to the Graph Automorphism problem (GA): given $G$, compute generators of $\text{Aut}(G)$.
+:::
+
+:::{.callout-note collapse="true"}
+## Proof
+
+**Direction 1 (GI $\leq_p$ GA).**
+Given two graphs $G$ and $H$ on $n$ vertices, form the disjoint union $\Gamma = G \sqcup H$ on $2n$ vertices. Any automorphism of $\Gamma$ either preserves both copies or swaps them. Then $G \cong H$ if and only if $\text{Aut}(\Gamma)$ contains an element that maps $V(G)$ onto $V(H)$. A GA oracle computing generators of $\text{Aut}(\Gamma)$ immediately decides this.
+
+**Direction 2 (GA $\leq_p$ GI).**
+Given a graph $G$ on vertex set $\{v_1, \ldots, v_n\}$, we can build up generators of $\text{Aut}(G)$ using a GI oracle. For each $i = 1, \ldots, n$, test whether the graph obtained by **individualizing** $v_i$ (attaching a unique pendant) is isomorphic to the graph obtained by individualizing $v_j$ for each $j > i$. Each positive answer yields a generator of $\text{Aut}(G)$. The total number of oracle calls is $O(n^2)$.
+
+In particular, $G$ is rigid if and only if $|\text{Aut}(G)| = 1$, so the Rigid Graph decision problem reduces to GA.
+:::
+
+#### Reduction to HSP
+
+We first show that the graph isomorphism problem (GI) can be reduced to the decision problem of rigid graph isomorphism (Rigid GI) in polynomial time.
+:::{#lem-reduction_to_rigidGI .callout-important icon="false"}
+## (GI $\equiv_p$ Rigid-GI)
+For any general graph isomorphism problem (GI), it can be reduced to the decision problem of rigid graph isomorphism (Rigid GI) in polynomial time.
+:::
+
+:::{.callout-note collapse="true"}
+## Proof
+[todo: complete the proof, again use Color Refinement.]
+:::
+
+For the GI promblem on two rigid graph $G_1$ and $G_2$, we construct $\Gamma = G_1 \sqcup G_2$ with $2n$ vertices。
+Setup $f(\pi) = \pi(\Gamma)$ as the group function, whose HSP is $e$ and isomorphic $m$ for $G_1 \cong G_2$ if and only if $G_1$ and $G_2$ are isomorphic.
+Notice that $m =g^{-} (1,n+1)(2,n+2)\cdots(n,2n) g$ must be satisfied. 
+This means $H$ must be a conjugate class of $\{(1,n+1)(2,n+2)\cdots(n,2n),e\}$.
+
+
+# Individualization-Refinement algorithm
+
+The Individualization-Refinement (IR) paradigm is the backbone of all practical GI solvers, including NAUTY [@mckay2014practical] and Traces. For most graphs it runs in $O(n^2)$ time; only pathological cases (e.g., strongly regular graphs) cause exponential blowup.
+
+#### Color Refinement
+
+:::{.callout-important icon="false"}
+## Algorithm: Color Refinement (1-WL) [@weisfeiler1968reduction]
+**Input:** A graph $G = (V, E)$.
+**Output:** A stable coloring $\chi: V \to \mathbb{N}$.
+
+1. Initialize: assign the same color to all vertices, $\chi^{(0)}(v) = 1$ for all $v \in V$.
+2. **Repeat** until $\chi$ stabilizes:
+   - For each vertex $v$, compute the multiset of neighbor colors $\mathcal{M}(v) = \{\!\{ \chi^{(t)}(u) : (v,u) \in E \}\!\}$.
+   - Update: $\chi^{(t+1)}(v) = \text{hash}\!\left(\chi^{(t)}(v),\; \mathcal{M}(v)\right)$.
+   - If two vertices with the same color acquire different multisets, split them into distinct color classes.
+3. **Terminate** when no further splits occur (the partition is **equitable**).
+
+**Decision:** If every vertex receives a unique color, the graph is **rigid** and we are done in polynomial time.
+:::
+
+:::{.callout-note collapse="true"}
+## Proof of complexity
+[todo: rigorously prove the complexity of Color Refinement is $O(n^2)$]
+:::
+
+
+#### Individualization
+
+:::{.callout-important icon="false"}
+## Algorithm: Individualization
+**Input:** A stable coloring $\chi$ with at least one non-singleton color class.
+**Output:** A refined coloring after symmetry breaking.
+
+1. Select a non-singleton color class $C$ (typically the largest).
+2. Pick a vertex $v \in C$ and assign it a new unique color, breaking the tie.
+3. Re-run Color Refinement from this new coloring.
+
+This forced asymmetry propagates like a domino chain: even a single individualization often causes the entire coloring to become discrete.
+:::
+
+#### Search Tree Pruning
+
+:::{.callout-important icon="false"}
+## Algorithm: Search Tree Pruning
+Each individualization choice (which vertex $v$ to single out) creates a branching point, generating a **search tree** of depth at most $n$.
+
+1. At each leaf of the search tree, the coloring is discrete, yielding a labeled adjacency matrix (a **canonical form candidate**).
+2. If two different branches produce the **same** canonical adjacency matrix, the permutation relating the two labelings is a non-trivial automorphism — record it as a generator of $\text{Aut}(G)$.
+3. Use the discovered automorphism generators and the **Schreier-Sims algorithm** to compute the full group structure, then **prune** all branches related by known automorphisms.
+
+This group-theoretic pruning compresses the $O(n!)$ search space dramatically.
+:::
+
+
+Combining these three steps, we get the following algorithm:
+
+:::{.callout-important icon="false"}
+## Algorithm: Individualization-Refinement
+**Input:** Two graphs $G$ and $H$ on $n$ vertices.
+**Output:** Whether $G \cong H$ (and an explicit isomorphism if yes).
+
+1. Run Color Refinement on $G$ and $H$ in parallel. If the resulting color histograms differ, output **not isomorphic**.
+2. If both colorings are discrete (every vertex has a unique color), read off the isomorphism directly from the color correspondence.
+3. Otherwise, pick a non-singleton color class and **individualize** one vertex in $G$; for each candidate partner vertex (same color) in $H$, individualize it and re-refine.
+4. **Recurse**, building a search tree. At each leaf, compare canonical forms.
+5. **Prune** the search tree using discovered automorphisms (Schreier-Sims).
+6. If any branch yields a matching canonical form, output **isomorphic** with the corresponding map; otherwise output **not isomorphic**.
+:::
+
+
+# Babai's algorithm
+
+In 2015, Babai proved the landmark result that GI can be solved in **quasipolynomial time** $2^{O(\log^c n)}$ [@babai2016graph], shattering the decades-old $2^{O(\sqrt{n \log n})}$ barrier. His approach, called **local-to-global symmetry breaking**, operates entirely at the level of group theory rather than combinatorial search.
+
+The algorithm critically relies on the Classification of Finite Simple Groups (CFSG) through the following structural dichotomy for permutation groups:
+
+:::{#def-Primitive-group .callout-note icon="false"}
+## Definition (Primitive Permutation Group)
+A transitive permutation group $G$ acting on a set $\Omega$ is called **primitive** if $G$ preserves no non-trivial **block system** on $\Omega$. A block system is a partition $\mathcal{B} = \{B_1, \ldots, B_m\}$ of $\Omega$ into blocks of equal size such that for every $g \in G$ and every block $B_i$, the image $g(B_i)$ is again a block in $\mathcal{B}$. The trivial block systems are $\{\Omega\}$ and $\{\{x\} : x \in \Omega\}$.
+:::
+
+:::{#thm-Cameronthm .callout-important icon="false"}
+## Theorem (Cameron--Liebeck Dichotomy) [@cameron1981finite; @liebeck1984primitive]
+Let $G$ be a primitive permutation group of degree $n$. Then one of the following holds:
+
+1. **Small case:** $|G| \leq \exp\!\left(O\!\left(\sqrt{n}\,(\log n)^2\right)\right)$, or
+2. **Large case:** $G$ has a section isomorphic to $A_m$ (the alternating group) for some $m$ with $\binom{m}{k} \leq n$, and the action of $G$ is related to the natural action of $S_m$ on $k$-element subsets — i.e., $G$ has **Johnson-type** structure.
+:::
+
+:::{.callout-note collapse="true"}
+## Proof sketch
+This is a deep consequence of the O'Nan-Scott theorem and the Classification of Finite Simple Groups (CFSG). The O'Nan-Scott theorem classifies primitive groups into several families (affine, almost simple, diagonal, wreath product types, etc.). Applying CFSG to bound the orders of almost simple groups yields the dichotomy: either the group order is subexponential, or a large alternating composition factor forces Johnson-type structure. See [@cameron1981finite] for the original result and [@liebeck1984primitive] for the refined order bounds.
+:::
+
+:::{#def-JohnsonGraphs .callout-note icon="false"}
+## Definition (Johnson Graphs)
+The **Johnson graph** $J(n,k)$ is the graph whose vertices are the $k$-element subsets of an $n$-element set $[n] = \{1, \ldots, n\}$. Two vertices $A, B$ are adjacent if and only if $|A \triangle B| = 2$, i.e., they differ in exactly one element ($|A \cap B| = k - 1$). The Johnson graph has $\binom{n}{k}$ vertices and is vertex-transitive under the natural action of $S_n$.
+:::
+
+:::{#def-Local-Certificates .callout-note icon="false"}
+## Definition (Local Certificates) [@babai2016graph]
+In Babai's algorithm, a **local certificate** is a polynomial-size combinatorial witness associated to a point $x \in \Omega$ that certifies the "canonical position" of $x$ within a Johnson-type structure.
+
+Concretely, when the automorphism group acts as $S_m$ on $k$-subsets (Johnson action), a local certificate for a point $x$ (representing a $k$-subset $S \subseteq [m]$) is a collection of local isomorphism tests that determines which elements of $[m]$ belong to $S$. This allows the algorithm to **reconstruct the hidden Johnson structure** and break the symmetry of $A_m$ without enumerating all $m!$ permutations.
+
+The key property is that local certificates can be computed and verified in quasipolynomial time, enabling the recursion at the heart of Babai's algorithm: at each level, either the group is small (handle directly) or it has Johnson structure (break via local certificates and recurse on a smaller instance).
+:::

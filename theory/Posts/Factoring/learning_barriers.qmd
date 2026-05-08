@@ -20,7 +20,7 @@ draft: true
 The natural starting point for assessing learnability is Valiant's *Probably Approximately Correct* (PAC) framework, which requires a polynomial-time learner to output a low-error hypothesis with high probability given only polynomially many labeled examples.
 
 ::::{#def-pac .callout-note icon="false"}
-## Definition (PAC Learning --- Valiant 1984)
+## (PAC Learning --- Valiant 1984)
 A concept class $\mathcal{C}$ over domain $\mathcal{X}$ is **PAC learnable** if there exists a polynomial-time algorithm $\mathcal{A}$ that, given access to an oracle providing labeled examples $(x, c(x))$ drawn i.i.d. from distribution $\mathcal{D}$, for any $\varepsilon, \delta > 0$ outputs a hypothesis $h$ satisfying
 $$
 \Pr\bigl[\operatorname{err}_{\mathcal{D}}(h) > \varepsilon\bigr] < \delta,
@@ -29,7 +29,7 @@ using at most $\operatorname{poly}(1/\varepsilon,\, 1/\delta,\, \ell)$ samples, 
 ::::
 
 ::::{#def-concept-class .callout-note icon="false"}
-## Definition (Modular Exponentiation Concept Class)
+## (Modular Exponentiation Concept Class)
 The concept class of modular exponentiation is defined as
 $$
 \mathcal{L}_{\mathrm{modexp}} = \bigl\{f_{d,N} : x \mapsto x^d \bmod N \;\big|\; \gcd(d, \varphi(N)) = 1\bigr\},

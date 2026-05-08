@@ -1,0 +1,335 @@
+---
+title: "Clifford-Weingarten formula"
+description: "The Clifford-Weingarten formula is a tool for calculating the average of a function over the unitary group."
+date: 2026-03-23
+categories:
+- Readings
+lang: en
+bibliography: refs.bib
+draft: false
+---
+
+# The Binary representation of Pauli operators
+
+The commutants of Clifford tensor power highly rely on the representation of Pauli operators. Here we give a comprehensive review of string representation of Pauli operators.
+
+:::{#def-pauli_bit_rep .callout-note icon="false"}
+## (Binary representation of Pauli)
+The bit representation $\mathbf{b}(P)$ of n-qubit Pauli operator $P = \phi(P) \left(X_1^{\otimes b_{x,1}}Z_1^{\otimes b_{z,1}}\right) \otimes \cdots \otimes \left(X_n^{\otimes b_{x,n}}Z_n^{\otimes b_{z,n}}\right)$ is $\mathbf{b}(P) =(\mathbf{b}_x,\mathbf{b}_z)^T =(b_{x,1},\cdots,b_{x,n},b_{z,1},\cdots,b_{z,n})^T \in \mathbb{F}_2^{2n}$.
+Here $\phi(P) = i^{\# Y(P)}$ counts Pauli-$Y$ gates within $P$ and can be calculated from binary representations as 
+$$
+\begin{align*}
+        \# Y(P) :=  \mathbf{b}_x \cdot \mathbf{b}_z = \begin{pmatrix}\mathbf{b}_x & \mathbf{b}_z\end{pmatrix}\begin{pmatrix}\mathbf{0}&\mathbf{0}\\\mathbb{I}_n&\mathbf{0}\end{pmatrix}\begin{pmatrix}\mathbf{b}_x \\ \mathbf{b}_z\end{pmatrix}. 
+\end{align*}
+$$
+:::
+
+We denote $P = \sigma_{\mathbf{r}}$ iff $\mathbf{b}(P) = \mathbf{r}$, and $\phi(\mathbf{r}):= \phi(\sigma_{\mathbf{r}}) = i^{\mathbf{r}_x \cdot \mathbf{r}_z}$.
+ The defintion of phase can be extend to operators that equal to Pauli operators up to a phase, according to the rule $\phi(\alpha P) = \alpha \cdot \phi(P)$.
+Now the multiplication rule of Pauli operators can be represented through $\mathbf{b}(P)$, as described by @lem-multi_rule_bitrep below:
+
+:::{#lem-multi_rule_bitrep .callout-note icon="false"}
+## (Multiplication rule under binary representation)
+Given a tumple of $n$-qubit Pauli operators $\mathbf{P} = (P_1,\cdots,P_m)$ with length $m$ and $P_j \in \mathcal{P}_n$, we can calculate $P_1 \cdots P_m = \phi(\mathbf{P})Q$ with bit representation as
+$$
+    \mathbf{b}(Q) = \bigoplus_{k = 1}^{m}\mathbf{b}(P_k), \quad \phi(\mathbf{P}) = \phi(Q)^{-1}\left(\prod_{k = 1}^m \phi(P_k) \right) \cdot (-1)^{\sum_{j<k}\mathbf{b}_z(P_j)\cdot \mathbf{b}_x(P_k) }.
+$$
+Specifically, we have $\sigma_{\mathbf{r}} \cdot \sigma_{\mathbf{k}} = i^{-(\mathbf r_x\oplus \mathbf k_x) \cdot(\mathbf r_z \oplus \mathbf k_z) + \mathbf{r}_x \cdot \mathbf{r}_z + \mathbf{k}_x \cdot \mathbf{k}_z}(-1)^{\mathbf r_z \cdot \mathbf k_x}\sigma_{\mathbf{r} + \mathbf{k}}$.
+:::
+
+:::{.callout-note collapse="true"}
+## Proof
+Notice that 
+$$
+\begin{align*}
+    P_k\cdot P_{k+1} = \phi(P_k)\phi(P_{k+1})(-1)^{\mathbf{b}_z(P_k) \cdot \mathbf{b}_x(P_{k+1})} X^{\mathbf{b}_x(P_k)}X^{\mathbf{b}_x(P_{k+1})} Z^{\mathbf{b}_x(P_k)}X^{\mathbf{b}_x(P_{k+1})},
+\end{align*}
+$$
+we conclude that $\mathbf{b}(P_kP_{k+1}) = \mathbf{b}(P_k) \oplus \mathbf{b}(P_{k+1})$ and $\phi(P_kP_{k+1}) = \phi(P_k)\phi(P_{k+1})(-1)^{\mathbf{b}_z(P_k) \cdot \mathbf{b}_x(P_{k+1})}$. Use this multiple times give the result $\mathbf{b}(Q) = \bigoplus_{k = 1}^{m}\mathbf{b}(P_k)$ and
+$$
+\begin{align*}
+\phi(\mathbf{P}) \cdot \phi(Q) &= \phi(P_1 \cdots P_m) = \phi(P_1)\phi(P_2 \cdots P_m)(-1)^{\mathbf{b}_z(P_1) \cdot \left(\sum_{u = 2}^{k} \mathbf{b}_x(P_u)\right)}\notag\\
+&= \left(\prod_{k = 1}^m \phi(P_k) \right) \cdot (-1)^{\sum_{j<k}\mathbf{b}_z(P_j)\cdot \mathbf{b}_x(P_k) }
+\end{align*}
+$$
+:::
+
+To discuss its properties on $c$-replica strategy, we define the replica Pauli operator $P^{\otimes \mathbf{v}} := P^{v_1} \otimes \cdots \otimes P^{v_c}$ on $c$-replica of $n$-qubit space, given a binary vector $\mathbf{v} = (v_1,\cdots,v_c) \in \mathbb{F}_2^k$ which we called the *replica vector*. We then proposed an algorithm that turn $Q \in \mathcal{P}(c\cdot n)$ into multiplication of $P^{\otimes \mathbf{v}}$.
+
+As a $n\cdot c$-qubit Pauli operator, it has binary representation in a tensor product form $\mathbb{b}(P^{\otimes \mathbf{v}}) = \mathbf{v} \otimes \mathbf{b}(P)  \in \mathbb{F}_{2}^{c \times n}$ according to @def-pauli_bit_rep. Based on this and the fact that
+$$
+\begin{align*}
+    \mathbf{b}(P \cdot Q) = \mathbf{b}(P) + \mathbf{b}(Q) \mod 2,
+\end{align*}
+$$
+we conclude that an algorithm that decomposed $\mathbf{b}(P) \in \mathbb{F}_2^{c \times n}$ into a linear combination of tensor product binary vectors solved the problem.
+
+:::{#lem-c_replica_decomposition .callout-note icon="false"}
+## (The $c$-replica decomposition of $\mathcal{P}(c\cdot n)$)
+
+$\forall P \in \mathcal{P}(c\cdot n)$, we can construct a tuple of $c$-replica Pauli operator $\mathbf{P}:= (P_1^{\otimes \mathbf{v}_1},\cdots,P_m^{\otimes \mathbf{v}_m})$, where $P_j \in \mathcal{P}(n)$ has binary representation $\mathbf{b}(P_j) = \mathbf{b}_j \in \mathbb{F}_2^{2n}$ and $\mathbf{v}_1,\cdots,\mathbf{v}_m \in \mathbb{F}_2^{c}$, such that
+$$
+\phi(P) P = \phi(\mathbf{P}) P_1^{\otimes \mathbf{v}_1} \times \cdots \times P_m^{\otimes \mathbf{v}_m}
+$$
+Here $m$ is defined as the $c$-replica rank of $P$. We also denote:
+$$
+\begin{align*}
+\phi(P, \mathbf{P}) &= \phi(P)/\phi(\mathbf{P}), \quad V = \begin{pmatrix}\mathbf{v}_1 & \cdots & \mathbf{v}_m\end{pmatrix}, \quad B = \begin{pmatrix}\mathbf{b}_1^T \\ \vdots \\ \mathbf{b}_m^T\end{pmatrix},
+\end{align*}
+$$
+be a $c \times m$ matrix and an $m \times 2n$ matrix, respectively.
+:::
+
+:::{.callout-note collapse="true"}
+## Proof
+It is sufficient to prove that $\mathbf{b}(P) = \sum_{j =1}^m \mathbf{v}_j \otimes \mathbf{b}_j$ for $\mathbf{v}_j \in \mathbb{F}_2^{c}$ and $\mathbf{b}_j= \mathbf{b}(P_j) \in \mathbb{F}_2^{2n}$. This can be done by first defining $R_{v,b}:= \left[\mathbf{b}(P)\right]_{v\cdot 2n + b}$ with $b = 0,\cdots,2n-1$ and $v = 0,\cdots,c-1$. Then the factorization of this $c \times 2n$ matrix gives the result: 
+$$
+\begin{align*}
+R &= \sum_{j =1}^m \mathbf{v}_j \cdot \mathbf{b}^T_j 
+    =\begin{pmatrix}\mathbf{v}_1 & \cdots & \mathbf{v}_m\end{pmatrix}
+     \begin{pmatrix}\mathbf{b}^T_1 \\ \vdots \\ \mathbf{b}^T_m\end{pmatrix} \\
+    &= \left[ \begin{pmatrix}\mathbf{v}_1 & \cdots & \mathbf{v}_m\end{pmatrix} A^{-1} \right] \cdot 
+       \left[ A \begin{pmatrix}\mathbf{b}^T_1 \\ \vdots \\ \mathbf{b}^T_m\end{pmatrix} \right]
+\end{align*}
+$$
+This decomposition is unique up to an arbitrary invertible matrix $A \in GL(m, \mathbb{F}_2)$.
+:::
+
+Since $R = V B$, the decomposition admits a gauge freedom represented by the invertible matrix $A \in GL(m, \mathbb{F}_2)$, such that $R = (V A^{-1})(A B)$. Under this gauge transformation, the local Pauli basis transforms via row combinations as $B' = A B$ (i.e., $\mathbf{b}'_k = \sum_{j = 1}^{m}A_{kj}\mathbf{b}_j$), and the replica indicator matrix transforms as $V' = V A^{-1}$.
+To ensure the uniqueness of the decomposition, we fix the gauge by requiring that the $m \times 2n$ local Pauli basis matrix $B$ is strictly in Reduced Row Echelon Form (RREF). 
+
+:::{#lem-gauge_freedom .callout-note icon="false"}
+## (Gauge freedom of the decomposition)
+Given a $c \times 2n$ binary matrix $R$, there exists a unique RREF matrix $B$ such that $R = V B$.
+:::
+
+:::{.callout-note collapse="true"}
+## Proof
+Let $\mathcal{V}(R) \subseteq \mathbb{F}_2^{2n}$ denote the row space of the matrix $B$, and let $m = \mathrm{rank}(R)$ be its dimension. 
+By the fundamental theorem of linear algebra, any finite-dimensional vector subspace over a field has a \textit{unique} basis whose vectors form a matrix in strictly Reduced Row Echelon Form (RREF) without zero rows. 
+Let $B$ be this unique $m \times 2n$ RREF matrix associated with the subspace $\mathcal{V}(R) $.
+
+Since the rows of $B$ are, by definition, elements of its own row space $\mathcal{V}(R) $, each row of $B$ can be expressed as a linear combination of the basis vectors (i.e., the rows of $B$). 
+This linearly implies that there exists a $c \times m$ coefficient matrix $V$ over $\mathbb{F}_2$ such that 
+$$R = V B.$$
+
+To complete the proof, we must show that $V$ is also strictly unique. 
+Suppose there exists another coefficient matrix $V'$ such that $R = V' B$. 
+Subtracting the two equations yields:
+$$(V - V') B = \mathbf{0}.$$
+Because the rows of $B$ form a basis, they are linearly independent (i.e., $B$ has full row rank $m$). 
+The only way a linear combination of linearly independent rows can result in the zero vector is if all the coefficients are exactly zero. 
+Therefore, $V - V' = \mathbf{0}$, which forces $V = V'$. 
+Thus, both the RREF matrix $B$ and the replica indicator matrix $V$ are completely and uniquely determined by $B$.
+:::
+
+ Here below, without specification, the gauge choice is fixed to be the RREF matrix $B$.
+
+# Graph based Pauli monomial
+
+After specified the $cn$-qubit Pauli through $V,B$, we noted under $c$-fold Clifford gate action, the Paulis transformed as
+
+$$
+P_1^{\otimes \mathbf{v}_1} \cdot P_m^{\otimes \mathbf{v}_m} \to  P_1^{',\otimes \mathbf{v}_1} \cdot P_m^{',\otimes \mathbf{v}_m} .
+$$
+
+This means that the structure of $V$ is invariant while $\{P'_j\}_{j =1}^m$ keeps the same commutant structure as $\{P_j\}_{j =1}^m$.
+
+
+# $\mathcal{P}(c\cdot n)\rtimes S_c$ group structure
+Consider the group formed by $Q \mathbb{P}_{\pi}$ with $Q \in \mathcal{P}(c\cdot n)$ and $\pi \in S_c$.
+It satisfies the semi-direct product group property:
+$$
+(Q_1 \mathbb{P}_{\pi_1}) \cdot (Q_2 \mathbb{P}_{\pi_2}) = \Big( Q_1 \cdot \pi_1(Q_2) \Big) \mathbb{P}_{\pi_1 \pi_2}
+$$
+
+The power of Pauli-replica decomposition lies in its ability to write the group elements $Q \mathbb{P}_{\pi}$ as a tuple $(V, B, \pi)$, with an elegant updated multiplication rule. Noted that
+$$
+\pi(P) = \phi(P, \mathbf{P}) P_1^{\otimes \pi(\mathbf{v}_1)} \times \cdots \times P_m^{\otimes \pi(\mathbf{v}_m)} = (\pi(V),B).
+$$
+Thus by setting $Q_1 \leftrightarrow B_1 = V_1 M_1$ and $Q_2 \leftrightarrow B_2 = V_2 M_2$, 
+the multiplication of the two Pauli operators $Q_1 \cdot \pi_1(Q_2)$ corresponds to the modulo-2 addition of their binary matrices (absorbing the scalar phase into a phase tracker $\phi$):
+$$
+B_{\mathrm{new}} = V_1 M_1 + \pi_1(V_2) M_2 = \begin{pmatrix} V_1 & \pi_1(V_2) \end{pmatrix} \begin{pmatrix} M_1 \\ M_2 \end{pmatrix}
+$$
+
+Therefore, before any gauge reduction, the unreduced multiplication rule is simply given by block matrix concatenation:
+$$
+(V_1, M_1, \pi_1) \cdot (V_2, M_2, \pi_2) = \left( \begin{pmatrix} V_1 & \pi_1(V_2) \end{pmatrix}, \begin{pmatrix} M_1 \\ M_2 \end{pmatrix}, \pi_1 \pi_2 \right) \times \phi\big(Q_1, \pi_1(Q_2)\big)
+$$
+
+To strictly close the algebra within our predefined RREF gauge, the concatenated local basis matrix $\begin{pmatrix} M_1 \\ M_2 \end{pmatrix}$ must be re-reduced. Let $m_{\mathrm{new}} \leq m_1 + m_2$ be the rank of this combined row space. There exists a gauge transformation $A \in GL(m_1+m_2, \mathbb{F}_2)$ that performs Gaussian elimination such that:
+$$
+A \begin{pmatrix} M_1 \\ M_2 \end{pmatrix} = \begin{pmatrix} M_{\mathrm{new}} \\ \mathbf{0} \end{pmatrix}
+$$
+where $M_{\mathrm{new}}$ is the unique RREF basis. Applying the inverse gauge transformation to the indicator vectors yields the final standardized form:
+$$
+\begin{pmatrix} V_{\mathrm{new}} & V_{\mathrm{null}} \end{pmatrix} = \begin{pmatrix} V_1 & \pi_1(V_2) \end{pmatrix} A^{-1}
+$$
+yielding the uniquely defined group element $(V_{\mathrm{new}}, M_{\mathrm{new}}, \pi_1 \pi_2)$.
+
+
+# Implicity on Clifford commutant
+
+Since $Q \mathbb{P}_{\pi} = (V, B, \pi)$ constitues a over-complete basis of matrix in $\mathcal{H}(c\cdot n)$, we can first find the Clifford commutant within these basis elements and then extend it to the whole group.
+
+Consider the $c$-replica Clifford unitary $U^{\otimes c}, U \in \mathrm{Cl}(n)$ applied on $Q \mathbb{P}_{\pi}$ gives 
+$$
+\begin{align*}
+    U^{\otimes c} (Q \mathbb{P}_{\pi})U^{\dagger,\otimes c} = \left( U^{\otimes c} Q U^{\dagger,\otimes c} \right) \mathbb{P}_{\pi},\\
+    U^{\otimes c} (V, B, \pi) U^{\dagger,\otimes c} = (V, B^U, \pi),
+\end{align*}
+$$
+where we use the fact that
+ $U^{\otimes c}$ commutes with any replica permutation $\mathbb{P}_{\pi}$ and Clifford unitary $U$ maps each basis element $P_j \mapsto P'_j = U P_j U^\dagger$ while leaving the replica indicator matrix $V$ invariant.
+By taking an arbitrary seed element $(V, B, \pi)$ and averaging over the Clifford group, we can construct the basis elements of the commutant:
+$$
+\mathcal{I}_{[V, \pi]} = \frac{1}{|\mathrm{Cl}(n)|} \sum_{U \in \mathrm{Cl}(n)} (V, B^U, \pi) = \left( \frac{1}{|\mathrm{Cl}(n)|} \sum_{B' \sim B} Q_{(V, B')} \right) \mathbb{P}_\pi.
+$$
+
+Many orbit sums will annihilate to zero. To see this, we can first average over the local Pauli subgroup $\mathcal{P}_n \subset \mathrm{Cl}(n)$. Conjugating the seed element by a transversal Pauli $W^{\otimes c}$ yields:
+$$
+W^{\otimes c} (V, B, \pi) W^{\dagger,\otimes c} = (-1)^{\sum_{j=1}^m |\mathbf{v}_j| \cdot \langle \mathbf{b}(W), \mathbf{b}_j \rangle_{\text{sp}}} (V, B, \pi),
+$$
+
+where $|\mathbf{v}_j| = \sum_{i=1}^c V_{ij}$ is the total Hamming weight of the indicator vector $\mathbf{v}_j$ across all replicas, and $\langle \cdot, \cdot \rangle_{\text{sp}}$ is the symplectic inner product over $\mathbb{F}_2^{2n}$.
+For this term to be non-zero, since we sum over all possible Pauli operators $W$, the identity
+$$
+\sum_{j=1}^m |\mathbf{v}_j| \cdot \mathbf{b}_j = 0
+$$
+must be satisfied. Since the local Pauli basis vectors $\mathbf{b}_j$ are linearly independent by our RREF gauge choice, this imposes a strict parity constraint on the indicator vectors:
+$$
+|\mathbf{v}_j| \equiv 0 \pmod 2, \quad \forall j \in \{1, \dots, m\}.
+$$
+
+Thus, the Clifford commutant is spanned exclusively by the orbit sums $\mathcal{I}_{[V, \pi]}$ where every column of $V$ has an even total Hamming weight. Based on this, we can define the primitive Pauli monomial, which is the orbit that generated by $cn$-qubit Pauli with replica rank $m = 1$. This means that $V = \mathbf{v}$ and $B = \mathbf{b}^T$ such that $B^U$ goes through all possible $n$-qubit Pauli.
+
+:::{#def-primitive_pauli_monomial .callout-note icon="false"}
+## (Primitive Pauli monomial)
+Let $\mathbf v \in \mathbb{F}_2^c$ be a $c$-replica vector with an even Hamming weight, i.e., $|\mathbf v|\in 2\mathbb{N}$. The primitive Pauli monomial(**PPM**) is an operator on space $\mathcal{H}^{\otimes c}$, where $\mathcal{H} \simeq (\mathbb{C}^2)^{\otimes n}$ is $n$-qubit Hilbert space with $d=2^n$, defined as:
+$$
+\begin{equation}
+    \Omega(\mathbf v) := \frac{1}{d}\sum_{P \in \mathbb{P}_{n}}P^{\otimes \mathbf v} = \frac{1}{d}\sum_{P \in \{I,X,Y,Z\}^{\otimes n}}P^{v_1}\otimes\cdots \otimes P^{v_c}
+\end{equation}
+$$
+where $\mathbb{P}_n$ is the Pauli basis on $n$ qubits.
+:::
+
+The PPM contains some famous operators, such as the SWAP gate and the Bell difference sampling projector.
+
+:::{#def-bell_difference_sampling .callout-note icon="false"}
+## (Bell difference sampling)
+The Bell difference sampling projector $\Pi_{(a_x,a_z)}$ is the projector onto the space of 4-copies of qubits where the results of two transversal Bell measurements differ by $(a_x, a_z) \in \mathbb{F}_2^{2}$. In other words, 
+$$
+\begin{align*}
+    \Pi_{(a_x,a_z)} :=\frac{(I^{\otimes 4}+(-1)^{a_z}X^{\otimes 4})(I^{\otimes 4}+(-1)^{a_x}Z^{\otimes 4})}{2} = \frac{1}{2} \sum_{\mathbf r \in \mathbb{F}_2^{2}} (-1)^{[\mathbf a,\mathbf r]}\sigma_{\mathbf{r}}^{\otimes 4} .
+\end{align*}  
+$$
+:::
+
+:::{#lem-examples_of_ppm .callout-note icon="false"}
+## (Examples of PPM)
+Consider k-copies of n-qubits system $\{(1)_{j}\cdots (n)_{j}\}_{j \in [k]}$ with $k$-replica vector $\mathbf  v = [1^k]$.
+The primitive Pauli monomial is in the tensor product form under separation $\{(1)_{j}\}_{j \in [k]} \cup \cdots \cup \{(n)_{j}\}_{j \in [k]}$ and can then be visualized through $\mathrm{SWAP}$ gate and projectors of Bell difference sampling, as defined in @def-bell_difference_sampling.
+$$
+\begin{align*}
+    &\Omega([1^k]) = U_{(1)_1,\cdots,(1)_k} \otimes \cdots \otimes U_{(n)_1,\cdots,(n)_k},\text{where~}  U_{(1)_1,\cdots,(1)_k} = 2^{-1}\sum_{P \in \{I,X,Y,Z\}} P^{\otimes k},\\
+    &U_{2} = \mathrm{SWAP}_{2}, \quad U_{4}  =2\Pi_{(0,0)},\\
+    &U_{6} =(\Pi_{(0,0)} \otimes I^{\otimes 2} + \Pi_{(1,0)}\otimes X^{\otimes 2} +\Pi_{(1,1)}\otimes Y^{\otimes 2} + \Pi_{(0,1)}\otimes Z^{\otimes 2})\cdot (I^{\otimes 4} \otimes\mathrm{SWAP}_{2}).
+\end{align*}
+$$
+:::
+
+
+:::{.callout-note collapse="true"}
+## Proof
+$U_2,U_4$ is trivial.
+For $U_6$, we use binary representation $\{I,X,Z,Y\} = \{\sigma_{00},\sigma_{10},\sigma_{01},\sigma_{11}\}$ and calculates:
+$$
+\begin{align*}
+        \text{RHS} = & \frac{1}{2} \sum_{\mathbf a, \mathbf r,\mathbf{b} \in \{0,1\}^{2}} (-1)^{[\mathbf a,\mathbf r]}\sigma_{r_xr_z}^{\otimes 4} \otimes (\sigma_{a_xa_z}^{\otimes 2}\cdot \sigma_{b_xb_z}^{\otimes 2}  ) \\
+        &= \frac{1}{2} \sum_{\mathbf a, \mathbf r,\mathbf{b} \in \{0,1\}^{2}} (-1)^{[\mathbf a,\mathbf r + \mathbf b]}\sigma_{r_xr_z}^{\otimes 4} \otimes (\sigma_{a_x+b_x,a_z+b_z}^{\otimes 2})\\
+        &= \frac{1}{2} \sum_{\mathbf a, \mathbf r,\mathbf{c} \in \{0,1\}^{2}} (-1)^{[\mathbf a,\mathbf r + \mathbf c + \mathbf a]}\sigma_{r_xr_z}^{\otimes 4} \otimes (\sigma_{c_x,c_z}^{\otimes 2})
+        =\frac{1}{2} \sum_{\mathbf r\in \{0,1\}^{2}}\sigma_{r_xr_z}^{\otimes 6} = U_{6}.
+\end{align*}
+$$
+Here in the second equality, we use the fact 
+$$
+\sigma_{\mathbf{r}} \cdot \sigma_{\mathbf{k}} = i^{-(\mathbf r_x\oplus \mathbf k_x) \cdot(\mathbf r_z \oplus \mathbf k_z) + \mathbf{r}_x \cdot \mathbf{r}_z + \mathbf{k}_x \cdot \mathbf{k}_z}(-1)^{\mathbf r_z \cdot \mathbf k_x}\sigma_{\mathbf{r} + \mathbf{k}}
+$$
+as proved in @lem-multi_rule_bitrep, and thus being simplified to $\sigma_{\mathbf{r}}^{\otimes 2} \cdot \sigma_{\mathbf{k}}^{\otimes 2} = (-1)^{[\mathbf{r}, \mathbf{k}]}\sigma_{\mathbf{r} + \mathbf{k}}^{\otimes 2}$.
+:::
+
+From the three examples above, we see that rely on the vector $\mathbf v$, **PPM** could be unitary gate or projectors, as rigorously stated in @lem-property_PPM below:
+
+:::{#lem-property_PPM .callout-note icon="false"}
+## (Property of PPM)
+If $\|\mathbf v\|/2$ is even, then $d^{-1}\Omega(\mathbf v)$ is a projector with rank $k-2$. If $\|\mathbf v\|/2$ is odd, then $\Omega(\mathbf v)$ is a Hermitian unitary operator.
+:::
+
+:::{.callout-note collapse="true"}
+## Proof
+[t.b.c.]
+:::
+
+:::{#thm-algebraic_generation .callout-note icon="false"}
+## (Algebraic Generation of the Clifford Commutant)
+The semi-direct product commutant algebra $\mathrm{com}(\mathrm{Cl}(n)^{\otimes c})$ is exactly the algebra generated by the set of all primitive monomials and replica permutations:
+$$
+\mathcal{A} = \Big\langle \{ \Omega_{\mathbf{v}} \mid |\mathbf{v}| \text{ is even} \} \cup \{ \mathbb{P}_\pi \mid \pi \in S_c \} \Big\rangle.
+$$
+:::
+
+:::{.callout-note collapse="true"}
+## Proof
+Since every generator of $\mathcal{A}$ commutes with $U^{\otimes c}$ for any $U \in \mathrm{Cl}(n)$, the forward inclusion $\mathcal{A} \subseteq \mathrm{com}(\mathrm{Cl}(n)^{\otimes c})$ is trivially satisfied due to the multiplicative closure of the algebra.
+
+To prove the reverse inclusion $\mathrm{com}(\mathrm{Cl}(n)^{\otimes c}) \subseteq \mathcal{A}$, we must show that any arbitrary commutant basis element $\mathcal{I}_{[V, \pi]}$ can be synthesized within $\mathcal{A}$. 
+Recall that the Clifford commutant is generated by the orbit sum of $Q \mathbb{P}_{\pi}$ basis element as:
+$$
+\begin{align*}
+    \mathcal{I}_{[V, \pi]} = \left( \sum_{\substack{P_1, \dots, P_m \in \mathcal{P}_n \setminus \{I\} \\ \text{linearly independent}}} P_1^{\otimes \mathbf{v}_1} \cdots P_m^{\otimes \mathbf{v}_m} \right) \mathbb{P}_\pi.
+\end{align*}
+$$
+
+We proceed by mathematical induction on the rank $m$ of the matrix $V$.
+For the $m=1$ case, where $V$ consists of a single column $\mathbf{v}$, the orbit sum is precisely $\mathcal{I}_{[\mathbf{v}, \pi]} = \Omega_{\mathbf{v}} \mathbb{P}_\pi$, which intrinsically belongs to $\mathcal{A}$.
+
+Assume that all orbit sums $\mathcal{I}_{[V', \pi]}$ with rank $m' < m$ belong to $\mathcal{A}$. 
+Consider a rank-$m$ target element $\mathcal{I}_{[V, \pi]}$ with $V = [\mathbf{v}_1, \dots, \mathbf{v}_m]$. Let us construct the following element in $\mathcal{A}$ via direct algebraic multiplication:
+$$
+\begin{align*}
+    \mathcal{E}_{V, \pi} := \Omega_{\mathbf{v}_1} \Omega_{\mathbf{v}_2} \cdots \Omega_{\mathbf{v}_m} \mathbb{P}_\pi \in \mathcal{A}.
+\end{align*}
+$$
+By expanding the product of the primitive monomials, we obtain an unconstrained sum over all possible $m$-tuples of Pauli operators:
+$$
+\begin{align*}
+    \mathcal{E}_{V, \pi} &= \left( \sum_{P_1 \neq I} P_1^{\otimes \mathbf{v}_1} \right) \cdots \left( \sum_{P_m \neq I} P_m^{\otimes \mathbf{v}_m} \right) \mathbb{P}_\pi \nonumber \\
+    &= \left( \sum_{P_1, \dots, P_m} P_1^{\otimes \mathbf{v}_1} \cdots P_m^{\otimes \mathbf{v}_m} \right) \mathbb{P}_\pi.
+\end{align*}
+$$
+Crucially, the transversal Clifford group acts on this unconstrained sum by simultaneously transforming the tuple $(P_1, \dots, P_m)$. We can therefore partition the summation into disjoint Clifford orbits based on the linear dependency of the tuple:
+
+1. **Full-rank orbit (Linearly Independent):** The terms where $P_1, \dots, P_m$ are linearly independent exactly constitute a positive integer multiple of our target orbit sum $\mathcal{I}_{[V, \pi]}$. Let this multiplicity factor be $c_m > 0$.
+2. **Lower-rank orbits (Linearly Dependent):** If the tuple is linearly dependent, the product $P_1^{\otimes \mathbf{v}_1} \cdots P_m^{\otimes \mathbf{v}_m}$ inevitably degenerates. By modulo-2 reduction, it simplifies to a new tensor product form governed by a reduced indicator matrix $V'$ with rank $m' < m$. The sum over these dependent tuples groups into a linear combination of lower-rank orbit sums $\sum_{m'<m} c_{m'} \mathcal{I}_{[V', \pi]}$.
+
+Consequently, the algebraic product decomposes as:
+$$
+\mathcal{E}_{V, \pi} = c_m \mathcal{I}_{[V, \pi]} + \sum_{m' < m} c_{m'} \mathcal{I}_{[V', \pi]}.
+$$
+Since $\mathcal{E}_{V, \pi} \in \mathcal{A}$ by construction, and all lower-rank orbit sums $\mathcal{I}_{[V', \pi]} \in \mathcal{A}$ by the inductive hypothesis, we can simply invert this relation:
+$$
+\begin{align*}
+    \mathcal{I}_{[V, \pi]} = \frac{1}{c_m} \left( \mathcal{E}_{V, \pi} - \sum_{m' < m} c_{m'} \mathcal{I}_{[V', \pi]} \right).
+\end{align*}
+$$
+Therefore, $\mathcal{I}_{[V, \pi]} \in \mathcal{A}$. By the principle of mathematical induction, the algebra $\mathcal{A}$ spans all possible basis elements of the Clifford commutant. This concludes the proof.
+:::
+
+# Weingarten calculus
+Similar to the cummutants of the $k$-fold unitary, we can introduce the Weingarten calculus to compute the explicite expression of the $k$-fold Clifford average.
+#### $c=4$ replica average.
+The most simple case set $t = 4$. Based on theorem above, the commutants constitues  
+$\{\mathbb{P}_{\pi}^{d} \cdot \mathbb{Q}, \mathbb{P}_{\pi}^{d} \cdot (\mathbb{I} - \mathbb{Q})\}_{\pi \in S_4}$. We thus defined the function $\mathrm{Wg}$
+

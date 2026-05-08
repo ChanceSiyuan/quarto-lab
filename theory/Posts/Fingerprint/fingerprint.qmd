@@ -1,0 +1,116 @@
+---
+categories:
+- Readings
+date: 2026-04-17
+lang: en
+title: Fingerprint
+bibliography: refs.bib
+---
+
+# Summary and Questions
+
+
+# classical fingerprint
+
+:::{#def-SMPC .callout-important icon="false"}
+## (simultaneous message passing model)
+Set $x,y \in \{0,1\}^n$ on Alice and Bob's side respectively, and a referee that computes a function $f(x, y)$.
+The simultaneous message passing complexity of $f(x, y)$ ($\mathrm{SMP}(f)$) is the minimum number of bits that Alice and Bob need to send to the referee to estimate $f(x, y)$ with error probability at most $\varepsilon$.
+:::
+
+$\mathrm{SMP}(f)$ is a measure of the communication complexity of the function $f$ and change sharply with the randomness that Alice and Bob can choose.
+In such a two-party private-coin SMP, the complexity has been completely characterized:
+
+- Deterministic SMP complexity is $\mathrm{SMP}^{\mathrm{det}}(f)$;
+- Public-key SMP complexity is $\mathrm{SMP}^{\mathrm{pub}}(f)$;
+- Private-key SMP complexity is $\mathrm{SMP}^{\mathrm{priv}}(f)$.
+
+Specifically, for $f(x, y) = \delta_{x=y}$, we have: $\mathrm{SMP}^{\mathrm{det}}(f) = \Theta(n)$, $\mathrm{SMP}^{\mathrm{pub}}(f) = O(1)$, $\mathrm{SMP}^{\mathrm{priv}}(f) = \Theta(\sqrt{n})$.
+
+:::{#thm-pub-vs-priv .callout-important icon="false"}
+## (public-key vs private-key SMP) [todo:Add reference]
+For any function $f(x, y)$, we have:
+$$
+ [\mathrm{SMP}^{\mathrm{priv}}(f)]^2 \geq \mathrm{SMP}^{\mathrm{det}}(f).
+$$
+:::
+
+
+#### public-key SMP of Equality Test
+
+Suppose there is a family of hash functions $H = \{h_s: \{0,1\}^n \to \{0,1\}^k\}_{s \in S}$ such that for any $x \neq y$, there exists $s \in S$ such that $h_s(x) \neq h_s(y)$.
+If Alice and Bob share the same random seed $s$, they can:
+
+- each send $h_s(x)$ and $h_s(y)$ to the referee. The referee compares them to decide if $x = y$.
+- If $x = y$, the referee always accepts. If $x \neq y$, the error probability is at most $\varepsilon$.
+
+This is the most standard hash-based equality test, and is the basic idea of universal hashing/fingerprinting.
+Usually, the construction of $H$ is based on a good classical error-correcting code and random projection on one binary of the codewords.
+
+:::{.callout-note icon="false"}
+## Public-key SMP protocol for Equality Test
+
+- Fix an error-correcting code $E:{0,1}^n\to{0,1}^m$ such that code distance is $d := \min_{x \neq y} \text{Hamming}(E(x), E(y)) = (1 - \delta) m$.
+- Shared key is a random position $i \in {1, \cdots, m}$.
+- Alice sends $E_i(x)$, Bob sends $E_i(y)$. 
+- The referee compares these two bits. If they are the same, output $1$. Otherwise, output $0$.
+:::
+
+Based on the above protocol, we can construct a fingerprint protocol for the equality test.
+
+:::{#def-communication_complexity .callout-note icon="false"}
+## (communication complexity of equality test)
+Set $x,y \in \{0,1\}^n$ on Alice and Bob's side respectively. Given access to length $O(\log(1/\varepsilon))$ shared key $s$, $O(\log(1/\varepsilon))$ bits are sufficient to estimate the equality test funciton $f(x,y) = \delta_{x=y}$ with error probability at most $\varepsilon$.
+:::
+
+However, there is an adversarial flaw for the above protocols, if the shared hash seeds $s$ is known to the adversary.
+
+:::{#lem-adverserial-flaw .callout-important icon="false"}
+## Adverserial flaw
+Give encoding $E:{0,1}^n\to{0,1}^m$ and a set of positions $(i_1, \cdots, i_t) \subset {1, \cdots, m}$ with $t < n$, there exists $x \neq y$ such that $E_{i_j}(x) = E_{i_j}(y)$ for all $j \in {1, \cdots, t}$.
+:::
+
+:::{.callout-note collapse="true"}
+## Proof
+[t.b.c.]
+:::
+
+
+#### private-key SMP of Equality Test
+
+Based on the flaw in @lem-adverserial-flaw, we can construct a SMP protocol based on private-key for the equality test is necessary.
+
+:::{.callout-note icon="false"}
+## Private-key SMP protocol for Equality Test
+
+- Fix an error-correcting code $E:{0,1}^n\to{0,1}^{c_A \times c_B}$ such that code distance is $d := \min_{x \neq y} \text{Hamming}(E(x), E(y)) = (1 - \delta) c_A \times c_B$.
+- Alice randomly selects a row $r \in {1, \cdots, c_A}$ and sends $r, E_{r,j}(x)$ for all $j \in {1, \cdots, c_B}$.
+- Bob randomly selects a column $c \in {1, \cdots, c_B}$ and sends $c, E_{i,c}(y)$ for all $i \in {1, \cdots, c_A}$. 
+- The referee compares $E_{r,c}(x)$ and $E_{r,c}(y)$. If they are the same, output $1$. Otherwise, output $0$.
+:::
+
+Based on this protocol, we can answer the following questions:
+- In this protocol, the minimum communication complexity is $ \Theta(\sqrt{n}) + \Theta(\log{n})$.
+- If not just two parties, but $k$ parties, is the complexity reduced to $k \cdot (\sqrt{n/k} + 1)$.[todo:Add reference]
+- If not all-equality test, but $f(x_1, \cdots, x_k) = \sum_{i \neq j}\delta_{x_i = x_j}$, is the complexity reduced to $k \cdot \sqrt{n}$.[todo:Add reference]
+
+
+
+
+
+# Quantum fingerprint
+
+Quantum fingerprint consider the SMP problem in the case: 
+
+- (i). While without the shared key, Alice and Bob can send quantum states to the referee: $\mathrm{SMP}^{\mathrm{q-priv}}(f)$
+- (ii). Alice and Bob shared a quantum state: $\mathrm{SMP}^{\mathrm{q-pub}}(f)$
+
+For equality test, the quantum complexity is $\mathrm{SMP}^{\mathrm{q-priv}}(f) = \Theta(\log{n})$, which is exponential improvement over the classical complexity $\mathrm{SMP}^{\mathrm{det}}(f) = \Theta(n)$.
+An critical question is, whether the quantum private-key SMP complexity is always better than the classical public-key SMP complexity. However, the following theorem shows that this is not the case.
+
+:::{#thm-pub-vs-q-priv .callout-important icon="false"}
+## (quantum public-key vs quantum private-key SMP) [todo:Add reference]
+There exists a function $f(x, y)$ such that:
+$[\mathrm{SMP}^{\mathrm{q-priv}}(f)]^2$ is exponentially larger while $\mathrm{SMP}^{\mathrm{pub}}(f)$ is constant.
+:::
+

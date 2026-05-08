@@ -1,0 +1,52 @@
+---
+categories:
+- Readings
+date: '2026-04-10'
+lang: en
+title: "Approximate Data Loading"
+description: "Reading notes on approximate data loading problem."
+bibliography: refs.bib
+---
+
+# Abstract
+
+
+# Approximate Data Loading
+
+An unknown Boolean function $f: [N] \to \{0, 1\}$ is given by the form of classical data streaming $(x_t, f(x_t))$, and we hope to find some property of $f$ by observing the data streaming (for example, the period of $f$).
+
+The query complexity counts the number of samples we need to observe to learn the property of $f$.
+This has been proved to have separation when $f$ is given classically as $(x_t, f(x_t))$ or quantumly as $\ket{f(x_t)\otimes \ket{f(x_t)}}$.
+
+
+Given a machine with finite memory size $S_C$ and use it to solve a problem with query complexity $Q_C(f)$, then the machine require $M$ samples to solve the problem such that 
+$$
+S_C \cdot M \ge \tilde{\Omega}(N \cdot Q_C(f))
+$$
+
+:::{#thm-space-to-query .callout-note icon="false"}
+## Theorem (Space-to-Query Reduction)
+If a classical streaming machine $\mathcal{A}$ with memory size $S_C$ can successfully compute the property $f(X)$ of a Boolean function $f: [N] \to \{0, 1\}$ with query complexity $Q_C(f)$ using $M$ uniformly distributed random samples, with probability at least $2/3$, then the memory size $S_C$ and the number of samples $M$ must satisfy:
+$$
+S_C \cdot M \ge \tilde{\Omega}(N \cdot Q_C(f))
+$$
+:::
+
+:::{.callout-note icon="false"}
+## Proof
+[todo: add the proof]
+:::
+
+
+:::{#lem-qos .callout-note icon="false"}
+## (Quantum Space-Sample Achievability via QOS)
+If a quantum streaming machine $\mathcal{A}_Q$ utilizes the Quantum Oracle Sketching (QOS) framework to compute the property $f(X)$ of a Boolean function $f: [N] \to \{0, 1\}$ with quantum query complexity $Q(f)$, then there exists an algorithm that succeeds with probability at least $2/3$ such that its required memory size $S_Q$ and number of samples $M$ satisfy:
+$$
+S_Q = \text{polylog}(N) \quad \text{and} \quad M = \tilde{O}(N \cdot Q(f)^2)
+$$
+Consequently, the product of its space and sample complexity is bounded by:
+$$
+S_Q \cdot M \le \tilde{O}(N \cdot Q(f)^2)
+$$
+:::
+

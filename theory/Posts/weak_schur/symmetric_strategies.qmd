@@ -356,20 +356,29 @@ shape $\lambda \vdash n$,
 ::: {.callout-note collapse="true"}
 ## Proof (Click to expand)
 
-*Proof.* $$\begin{align}
-\label{eq:Schur_prob}
+$$
+\begin{align}
         \text{tr}(P_\lambda \rho^{\otimes k}) = (\text{dim}\lambda)({k!})^{-1}\sum_{\pi \in S_k} \chi_{\lambda}(\pi) \text{tr}( \text{SWAP}_\pi \rho^{\otimes k}).
-\end{align}$$ If $\pi$ has $l$ cycles with cycle length
+\end{align}
+$$
+If $\pi$ has $l$ cycles with cycle length
 $\kappa_1\cdots\kappa_l$ and $\rho$ has eigenvalues
-$\eta_1,\cdots,\eta_{d}$, we noted that $$\begin{align}
+$\eta_1,\cdots,\eta_{d}$, we noted that 
+$$
+\begin{align}
         \text{tr}( \text{SWAP}_\pi \rho^{\otimes k}) = \text{tr}(\rho^{\kappa_1})\times \cdots\times\text{tr}(\rho^{\kappa_l}) = M_{\kappa}(\eta).
-\end{align}$$ Plug into
-Eq.~(eq:Schur_prob) gives $$\begin{align}
+\end{align}
+$$
+Plug into the equation above gives 
+$$
+\begin{align}
         \text{tr}(P_\lambda \rho^{\otimes k}) &= (\text{dim}\lambda)({k!})^{-1}\sum_{\pi \in S_k} \chi_{\lambda}(\pi) M_{\kappa}(\eta)\\
         &=(\text{dim}\lambda)({k!})^{-1}\sum_{\pi \in S_k} \chi_{\lambda}(\pi) \sum_{\omega \vdash k}\chi_{\omega}(\pi)s_{\omega}(\eta)\\
         &=(\text{dim}\lambda) \cdot s_{\lambda}(\eta).
-\end{align}$$ Here in the second equality, we use
-Lemma. In the third equality, we use the
+\end{align}
+$$
+Here in the second equality, we use
+Lemma @lemma:SW_dual. In the third equality, we use the
 orthorgonal equation of group characters
 $|G|^{-1} \sum_{g \in G} \chi_{p}^*(g)\chi_{q}(g) = \delta_{pq}$. ◻
 :::

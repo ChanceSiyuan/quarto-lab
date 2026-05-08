@@ -304,45 +304,17 @@ However, in the 2-replica case, the squared expectation value $|\mathrm{tr}(P_i\
 Note that the problem to get $\{|\mathrm{tr}(P_i\rho)|^2\}_i$ rather than implement measurement $\frac{\mathbb{I} \pm P_i}{2}$ means that we count the f-compatibility problem rather than the compatibility problem.
 Using the SDP formulation of f-compatibility in the previous section, we can explain this analytically.
 
-:::{#prop-bell-f-compat .callout-important icon="false"}
-## Proposition (Bell Measurement Solves Squared-Expectation f-Compatibility)
-For Pauli observables $\{X,Y,Z\}$ with functionals $f_i(\vec{p}) = |\mathrm{tr}(P_i\rho)|^2$ ($i=1,2,3$), the Bell measurement on $\mathcal{H}^{\otimes 2}$ achieves exact $\mathcal{F}$-compatibility with $k=2$ and robustness $s^*=1$ (i.e., $r^*=0$).
-:::
+# Generalized f-Compatibility
 
-::: {.callout-note collapse="true"}
-## Proof
-
-**Step 1: k-copy linearization.** Since $\mathrm{tr}[P_i\rho] = 2p_i - 1$, the squared expectation value satisfies:
 $$
-|\mathrm{tr}(P_i\rho)|^2 = \mathrm{tr}[P_i\rho]^2 = \mathrm{tr}\bigl[(P_i \otimes P_i)\,\rho^{\otimes 2}\bigr],
+\begin{equation}\label{eq:primal-bilinear}
+\boxed{
+\begin{aligned}
+\text{Minimize:} \quad & s \\
+\text{Subject to:} \quad & \sum_{j} h_\alpha(j)\,\Pi_j = F_\alpha, \quad \forall\,\alpha \in \cA \\
+& \sum_j \Pi_j = \,\1^{\ox k},\quad \Pi_j \in \mathcal{C} \\
+& |h_\alpha(j)| \leq s 
+\end{aligned}
+}
+\end{equation}
 $$
-so $F_i = P_i \otimes P_i \in \mathcal{L}(\mathcal{H}^{\otimes 2})$ and $k=2$.
-
-**Step 2: Mutual commutativity.** For distinct Paulis $P_i, P_j$ (which anticommute: $P_iP_j = -P_jP_i$):
-$$
-[P_i \otimes P_i,\; P_j \otimes P_j] = (P_iP_j)\otimes(P_iP_j) - (P_jP_i)\otimes(P_jP_i) = (-P_jP_i)\otimes(-P_jP_i) - (P_jP_i)\otimes(P_jP_i) = 0.
-$$
-Hence $\{X\otimes X,\; Y\otimes Y,\; Z\otimes Z\}$ are mutually commuting Hermitian operators with eigenvalues $\pm 1$ and can be simultaneously diagonalized.
-
-**Step 3: Joint eigenbasis is the Bell basis.** Direct computation gives the eigenvalues $(XX, YY, ZZ)$ for each Bell state:
-
-| Bell state | $X\otimes X$ | $Y\otimes Y$ | $Z\otimes Z$ |
-|:---:|:---:|:---:|:---:|
-| $|\Phi^+\rangle = \frac{|00\rangle+|11\rangle}{\sqrt{2}}$ | $+1$ | $-1$ | $+1$ |
-| $|\Phi^-\rangle = \frac{|00\rangle-|11\rangle}{\sqrt{2}}$ | $-1$ | $+1$ | $+1$ |
-| $|\Psi^+\rangle = \frac{|01\rangle+|10\rangle}{\sqrt{2}}$ | $+1$ | $+1$ | $-1$ |
-| $|\Psi^-\rangle = \frac{|01\rangle-|10\rangle}{\sqrt{2}}$ | $-1$ | $-1$ | $-1$ |
-
-**Step 4: SDP feasibility.** Set the Bell measurement POVM $\Pi_j = |B_j\rangle\langle B_j|$ ($j=1,\ldots,4$) and define estimators $h_i(j)$ as the eigenvalue of $P_i \otimes P_i$ at Bell state $|B_j\rangle$. Verify all constraints of @thm-f-compatibility-SDP:
-
-- **Estimator condition:** $\sum_j h_i(j)\,\Pi_j = P_i\otimes P_i = F_i$ by spectral decomposition. $\checkmark$
-- **Normalization:** $\sum_j \Pi_j = \mathbb{I}^{\otimes 2}$ (Bell states form a complete basis), with $s=1$. $\checkmark$
-- **Positivity:** $\Pi_j = |B_j\rangle\langle B_j| \geq 0$. $\checkmark$
-- **Bounded estimators:** $|h_i(j)| = 1 \leq 1$ (eigenvalues of Pauli tensor products are $\pm 1$). $\checkmark$
-
-All constraints are satisfied with $s=1$. The f-compatibility robustness is $r^* = s^* - 1 = 0$: **no noise penalty is needed**.
-
-**Contrast with standard compatibility.** Standard 2-copy compatibility of $\{X,Y,Z\}$ requires recovering the full marginal distributions $\frac{\mathbb{I}\pm a P_i}{2}$. This demands the lifted operators $\mathbb{I}\otimes P_i + P_i \otimes \mathbb{I}$ to be jointly accessible, but these do **not** commute for different $i$. From the [multicopy compatibility analysis](/theory/Posts/compatibility/multicopy_compatiability.html), the maximum sharpness parameter is $a_{\max} = \frac{\sqrt{3}}{2} < 1$, so $\{X,Y,Z\}$ are **not** 2-compatible in the standard sense.
-
-The essential difference: standard compatibility requires linear functionals of $\rho$ (involving $\mathbb{I}\otimes P_i + P_i\otimes\mathbb{I}$), while f-compatibility with squared expectations only needs quadratic functionals that become linear on $\rho^{\otimes 2}$ (involving $P_i\otimes P_i$), and these happen to commute.
-:::

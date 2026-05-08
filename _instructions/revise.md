@@ -51,7 +51,6 @@ Wait for my confirmation on this outline before generating the full files.
 
 ---
 **[Here is my draft]**
-[Paste path here]
+
 
 **[Here is the source material]**
-[Paste path or content here]
