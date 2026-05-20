@@ -10,7 +10,7 @@ The tex file is attached as project file: _resource/main.tex
 
 The following Quarto (.qmd) research notes contain the results to integrate. All are attached as project files in folder:
 
-theory/Topics/Shadow_tomography
+theory/Posts/Shadow_tomography
 theory/Posts/compatibility
 
 

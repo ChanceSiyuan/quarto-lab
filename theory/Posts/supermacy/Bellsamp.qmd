@@ -1,0 +1,74 @@
+---
+categories:
+- Readings
+date: 2026-02-02
+lang: en
+title: "Bell Sampling primitive for supremacy"
+bibliography: refs.bib
+---
+
+# Summary and Questions
+
+A more general version of Bell sampling, namely, the Bell difference sampling exists.
+Whether introduction of this primitive is helpful for supremacy verification?
+
+# Framework of Bell-Samp
+
+![Bell sampling outcomes](Bell_table.svg){width=100%}
+
+:::{#def-Bell-Samp .callout-note icon="false"}
+Given two $n$-qubits mixed state $\rho,\sigma$, implement the Bell measurement pairwisely, with $\rho$ on the control side, and get the measurement results $\mathbf{r}_i = (r_{z,i}, r_{x,i}) \in \mathbb{F}_2^2$ at position $i$ and vector $\mathbf{r}_z = (r_{z,1}, \cdots, r_{z,n})$ and $\mathbf{r}_x = (r_{x,1}, \cdots, r_{x,n})$.
+Then the outcome $\mathbf{r} = (\mathbf{r}_z, \mathbf{r}_x)$ has outcome probability $\frac{1}{2^N} \text{tr}(\sigma_{\mathbf{r}} \rho \sigma_{\mathbf{r}} \sigma^*)$.
+:::
+
+:::{.callout-note icon="false" collapse="true"}
+## Proof (Click to expand)
+Spectrally decompose the two states as
+$$
+\rho = \sum_{i} p_i \ket{\phi_i}\!\bra{\phi_i}, \qquad \sigma = \sum_{j} q_j \ket{\chi_j}\!\bra{\chi_j}.
+$$
+We first establish the identity that for computational-basis states $\ket{\mathbf{s}}_A, \ket{\mathbf{t}}_B \in \{0,1\}^n$,
+$$
+\begin{align}
+&\prod_{i=1}^n \mathrm{CNOT}_{a_ib_i}(H_{a_i} \otimes \mathbb{I}_{b_i})\ket{\mathbf{s}}_A\ket{\mathbf{t}}_B\\
+&= \prod_{i=1}^n \mathrm{CNOT}_{a_ib_i}(H_{a_i} \otimes \mathbb{I}_{b_i})\, X^{s_i}_{a_i} X^{t_i}_{b_i}\ket{\mathbf{0}}_A\ket{\mathbf{0}}_B \\
+&= \prod_{i=1}^n Z^{s_i}_{a_i} X^{t_i}_{b_i}\,\mathrm{CNOT}_{a_ib_i}(H_{a_i} \otimes \mathbb{I}_{b_i})\ket{\mathbf{0}}_A\ket{\mathbf{0}}_B \\
+&= \sigma_{\mathbf{r}}\otimes \mathbb{I}\,\frac{1}{\sqrt{2^n}}\sum_{\mathbf{k} \in \{0,1\}^n}\ket{\mathbf{k}\mathbf{k}},
+\end{align}
+$$
+where $\sigma_{\mathbf{r}} = \bigotimes_{i=1}^n Z^{s_i}X^{t_i}$ is the $n$-qubit Pauli labeled by $\mathbf{r}=(\mathbf{s},\mathbf{t})$, and the last equality uses that $H\otimes\mathbb{I}$ followed by $\mathrm{CNOT}$ maps $\ket{\mathbf{0}}_A\ket{\mathbf{0}}_B$ to the maximally entangled state $2^{-n/2}\sum_{\mathbf{k}}\ket{\mathbf{k}\mathbf{k}}$.
+Combining with the Bell sampling definition:
+$$
+\begin{align}
+P(\mathbf{r}) &= \sum_{ij} p_i q_j \sum_{\mathbf{k},\mathbf{k}' \in \{0,1\}^n} \frac{1}{2^n}\bra{\mathbf{k}'\mathbf{k}'}\,\sigma_{\mathbf{r}}\otimes \mathbb{I}\,\ket{\phi_i}\ket{\chi_j}\bra{\phi_i}\bra{\chi_j}\,\sigma_{\mathbf{r}}\otimes \mathbb{I}\,\ket{\mathbf{k}\mathbf{k}} \\
+&= \frac{1}{2^n}\sum_{ij} p_i q_j \sum_{\mathbf{k},\mathbf{k}'}\bra{\mathbf{k}'}\sigma_{\mathbf{r}}\ket{\phi_i}\bra{\phi_i}\sigma_{\mathbf{r}}\ket{\mathbf{k}}\cdot\langle\mathbf{k}'|\chi_j\rangle\langle\chi_j|\mathbf{k}\rangle \\
+&= \frac{1}{2^n}\sum_{ij} p_i q_j \sum_{\mathbf{k},\mathbf{k}'}\bra{\mathbf{k}'}\sigma_{\mathbf{r}}\ket{\phi_i}\bra{\phi_i}\sigma_{\mathbf{r}}\ket{\mathbf{k}}\cdot\langle\mathbf{k}|\chi_j^*\rangle\langle\chi_j^*|\mathbf{k}'\rangle = \frac{1}{2^n}\operatorname{tr}\!\left(\sigma_{\mathbf{r}}\,\rho\,\sigma_{\mathbf{r}}\,\sigma^*\right). \quad\square
+\end{align}
+$$
+:::
+
+:::{#lem-exact-hardness .callout-note icon="false"}
+## Lemma (Exact Hardness of Bell Difference Sampling [@Hangleiter_2024])
+Given a quantum circuit $C$, it is GapP-hard to compute $2^{-n}|\langle C|\sigma_{\mathbf{r}}|\bar{C}\rangle|^2$ up to relative error $\varepsilon < 1/2$, where $\ket{C}:= C \ket{0^n}$ and $\ket{\bar{C}}:= C^* \ket{0^n}$.
+:::
+:::{.callout-note icon="false" collapse="true"}
+## Proof (Click to expand)
+[t.b.c.]
+:::
+
+To show the average-case additive-error hardness of Bell difference sampling, we need to show the anti-concentration, hiding, and find an induced problem that is somehow believed to be hard in this average-case.
+
+All these properties are been proved in @Hangleiter_2024.
+[Todo: Detailly review the proof and summarize the key ideas.]
+
+
+
+# Applications of Bell-Samp
+
+A key problem is why Bell sampling is useful for supremacy verification?
+
+#### Verify through purity
+
+#### Verify through magic resource
+
+#### Verify through entanglements

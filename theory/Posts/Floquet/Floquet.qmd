@@ -7,14 +7,15 @@ categories:
 - Readings
 ---
 
-## Introduction
+# Summary and Questions
 
-Floquet engineering is a powerful technique for controlling quantum systems using time-periodic driving fields. By carefully designing the driving protocol, one can engineer effective Hamiltonians with desired properties that may not be achievable with static fields alone. This document provides a rigorous treatment of Floquet theory and demonstrates its application to engineering the isotropic Heisenberg Hamiltonian from a native Ising interaction.
+Floquet engineering is a powerful technique for controlling quantum systems using time-periodic driving fields. 
+By carefully designing the driving protocol, one can engineer effective Hamiltonians with desired properties that may not be achievable with static fields alone.
+This document provides a rigorous treatment of Floquet theory and demonstrates its application to engineering the isotropic Heisenberg Hamiltonian from a native Ising interaction.
 
-## Floquet Theory Foundations
+# Floquet Theory Foundations
 
 A Hamiltonian $H(t)$ is said to be *periodic* with period $T$ if $H(t) = H(t + T)$ for all times $t$. The driving frequency is defined as $\omega = 2\pi/T$.
-
 The periodicity of the Hamiltonian is the temporal analog of spatial periodicity in crystalline solids, which leads to Bloch's theorem. Similarly, temporal periodicity leads to Floquet's theorem.
 
 ::: {#thm-Floquet .callout-important icon="false"}
@@ -37,9 +38,17 @@ Hence $U(t,0) = P(t)\,e^{-i H_F t/\hbar}$ with $P(t)$ periodic and $H_F$ time-in
 :::
 
 The Floquet Hamiltonian $H_F$ determines the long-time (stroboscopic) dynamics of the system.
-In the high-frequency limit, the stroboscopic dynamics are governed by the effective Hamiltonian $H_{\text{eff}} \approx H_F$, as shown in the following theorem.
+In the high-frequency limit, the stroboscopic dynamics are governed by the effective Hamiltonian $H_{\text{eff}} \approx H_F$.
 
-The Magnus expansion provides a systematic method to compute the Floquet Hamiltonian as a series expansion [@Magnus1954; @Blanes2009].
+#### Magnus Expansion
+
+The Magnus expansion [@Magnus1954; @Blanes2009] directly defined the "log" of the time-evolution operator at $T$:
+$$
+\begin{align*}
+U(T,0) = \mathcal{T}\exp\left(-i \int_0^T H(t) dt\right) =  e^{-i H_F T/\hbar},
+\end{align*}
+$$
+and then expand  $H_F$ as a series expansion.
 
 ::: {#thm-MagnusExpansion .callout-important icon="false"}
 ## Magnus Expansion
@@ -50,15 +59,53 @@ $$
 where each term $\bar{H}^{(n)}$ scales as $(\omega)^{-n}$. The series converges when the driving frequency is sufficiently high relative to the system's energy scales [@Blanes2009].
 :::
 
-Based on the Magnus expansion, the Hamiltonian $H(t)$ is well-approximated by the zeroth-order term:
-$$
-H_{0} \approx \bar{H}^{(0)} = \frac{1}{T} \int_0^T H(t) \, dt.
-$$
-This is the foundation of **Average Hamiltonian Theory** (AHT), widely used in NMR spectroscopy [@Waugh1968; @Levitt2008]. However, the approximation is not optimal, as it ignores the higher-order terms in the Magnus expansion, which can be significant for small driving frequencies or long-time evolution.
 
+#### van Vleck expansion
+Based on the Magnus expansion, the Hamiltonian $H(t) = H_0 + \sum_{m} V_m e^{im\omega t}$ is well-approximated by the zeroth-order term:
+$$
+\begin{align*}
+\bar{H}^{(0)} &= \frac{1}{T} \int_0^T H(t) \, dt = H_0,\\
+\bar{H}^{(1)} &= \frac{1}{2i\hbar T} \int_0^T dt_1 \int_0^{t_1} dt_2 \, [H(t_1), H(t_2)]\\
+& = \sum_{m >0} \frac{[V_m,V_{-m}]}{m\hbar \omega} + \sum_{m > 0} \frac{[H_0,V_m] - [H_0,V_{-m}]}{m\hbar \omega}
+\end{align*}
+$$
+Here $\bar{H}^{(0)} $ is the time-averaged Hamiltonian, which is the well known RWA approximation.
+For the $\bar{H}^{(1)}$ term, we note that the second term can be cancelled out by transformation $\ket{\psi} \to e^{-i K(t)}\ket{\psi}$ and $H(t) \to \tilde{H}(t) =  e^{-i K(t)} H(t) e^{i K(t)} + i\hbar (-i \dot{K}(t))$ through:
+$$
+\begin{align*}
+K(t) &:=\sum_{m > 0} \frac{iV_m}{m\hbar \omega} e^{im\omega t} - \frac{iV^\dagger_m}{m\hbar \omega} e^{-im\omega t}
+\end{align*}
+$$
+
+:::{#lem-exp_ham .callout-important icon="false"}
+## (van Vleck expansion)
+Given a time-periodic Hamiltonian $H(t) = H_0 + \sum_{m} V_m e^{im\omega t}$, the expanded Hamiltonian is given by:
+$$
+\begin{align*}
+H_{\mathrm{eff}} = H_0 + \sum_{m > 0} \frac{[V_m,V_{-m}]}{m\hbar \omega} + O(\omega^{-2}).
+\end{align*}
+$$
+:::
+
+:::{.callout-note collapse="true"}
+## Proof
+The only thing left is to show that $K(t)$ indeed gives $\tilde{H}(t)$ such that its magnus expansion gives the stated expanded Hamiltonian.
+[todo: add proof]
+:::
+
+
+van Vleck expansion is a more detailed description of the Floquet Hamiltonian, which is given by:
+$$
+U(t,0)=e^{-iK(t)}e^{-iH_{\mathrm{eff}}t}e^{iK(0)}, \, K(t + T) = K(t),  \int_0^T K(t) dt = 0.
+$$
+[todo: add expansion of $K(t),H_{\mathrm{eff}}(t)$. Add relation and differen with Magnus expansion.]
+
+
+# Locality and the local norm
+
+The approximation above is not optimal, as it ignores the higher-order terms in the Magnus expansion, which can be significant for small driving frequencies or long-time evolution.
 For *many-body* systems the situation is more subtle. The full Floquet Hamiltonian $H_F$ is generically a highly nonlocal operator — its energy eigenstates look like random vectors in the computational basis — so it cannot serve as a physically meaningful total energy operator (e.g., one cannot define a sensible temperature with respect to $H_F$) [@HoMoriAbaninDallaTorre2023]. The goal is therefore to construct a *local* effective Hamiltonian $H_{\mathrm{eff}}$ by optimally truncating the Floquet–Magnus (FM) expansion. The rigorous theory proceeds as follows [@kuwahara16floquet; @mori2016rigorous].
 
-### Locality and the local norm
 
 We restrict to a physically broad class of Hamiltonians whose interactions are *$k$-local*: the Hamiltonian acts on a $d$-dimensional lattice of $N$ sites and decomposes as
 $$

@@ -23,32 +23,62 @@ We say that there is a spectral gap $\Delta \in \mathbb{R}$ above $\mathcal{I}_0
 
 If the interaction of $V$ on $H_0$ is small enough, this section of eigenspectrum of $H_0$ will be close to that of $H$. 
 To be rigorous, consider the eigenspectrum of $H$ within the connected interval $\mathcal{I} := [a-\Delta/2, b+\Delta/2]$. 
-Let the corresponding eigensubspace be denoted by $\mathcal{P}$, and its projection operator by $P$.
-For small enough $\varepsilon$, the subspace $\mathcal{P}$ will contain all those perturbed eigenvectors that are derived from $\mathcal{P}_0$. This is validated by @lem-subspace-proximity and @lem-direct-rotation, whose proof can be found in @bravyi2011schrieffer.
+Let eigensubspace of $H$ that supports on $\mathcal{I}$ be denoted by $\mathcal{P}$, and its projection operator by $P$.
+Denote the operator norm $\|A\| := \sup_{\|\psi\|=1} \|A\ket{\psi}\|$ (maximum singular value of $A$).
+For small enough $\varepsilon$, the subspace $\mathcal{P}$ will contain all those perturbed eigenvectors that are derived from $\mathcal{P}_0$. 
+This is validated by @lem-subspace-proximity and @lem-direct-rotation, whose proof can be found in @bravyi2011schrieffer.
 
 :::{#lem-subspace-proximity .callout-important icon="false"}
-## Proximity of perturbed and unperturbed subspaces
-$|\varepsilon| < \Delta/2\|V\| \Rightarrow \|P_0 - P\| <1$
+## Proximity of perturbed and unperturbed subspaces (@bravyi2011schrieffer, Lemma 3.1)
+$|\varepsilon|\cdot \|V\| < \Delta/2 \Rightarrow \|P_0 - P\| <1$
 :::
 
 :::{.callout-note collapse="true"}
 ## Proof sketch (Click to expand)
-*(Following @bravyi2011schrieffer, Lemma 3.1)*
 
 Define $T = P - P_0$ and $Q_0 = \mathbb{I} - P_0$, $Q = \mathbb{I} - P$. Since $T$ is Hermitian and $T^2$ is block-diagonal with respect to $P_0, Q_0$, one has
 $$
-P_0 T^2 P_0 = P_0 Q P_0, \quad Q_0 T^2 Q_0 = Q_0 P Q_0,
+\begin{align}
+P_0 T^2 P_0 &= P_0 (P + P_0 - 2 P P_0) P_0 = P_0 - P_0 P P_0 = P_0 Q P_0,\\
+Q_0 T^2 Q_0 &= Q_0 (P + P_0 - 2 P P_0) Q_0 = Q_0 P Q_0,
+\end{align}
 $$
-so that $\|T\| = \max(\|P_0 Q\|, \|Q_0 P\|)$.
+so that $\|T\| = \sqrt{\|T^2\|} = \max(\|P_0 Q\|, \|Q_0 P\|)$, here we use the fact that $\|T^2\| = \|T\|^2$ and all vector with eigenvalue $0$ for $P_0$($Q_0$) shall be eigenvector with eigenvalue $0$ for $P_0QP_0$($Q_0PQ_0$).
 
-Without loss of generality assume $\|T\| = \|P_0 Q\|$. Define $A = P_0 H_0 P_0$, $B = QHQ$, $X = P_0 Q$, and $Y = -\varepsilon P_0 V Q$. Then $X$ satisfies the **Sylvester equation**:
+Without loss of generality assume $\|T\| = \|P_0 Q\|$. Define $A = P_0 H_0 P_0$, $B = QHQ$, $X = P_0 Q$, and $Y = -\varepsilon P_0 V Q$. Use the fact that $[Q,H] = 0$ and $[P_0, H_0] = 0$, then $X$ satisfies the **Sylvester equation**:
 $$
-AX - XB = Y.
+\begin{align*}
+AX \!-\! XB = (P_0 H_0 P_0) (P_0 Q) \!-\! (P_0 Q) (Q H Q) = P_0 H_0 Q \!-\! P_0 H Q = \!-\varepsilon P_0 V Q := Y,
+\end{align*}
 $$
-The spectra of $A$ and $B$ (viewed as operators on their respective subspaces) are separated by a gap of width $\Delta/2$ when $|\varepsilon| < \Delta/2\|V\|$. By a standard result on Sylvester equations [see @bhatia1997matrix, Theorem VII.2.11], this spectral separation yields:
+![](specplot.svg){#fig-specplot width=70%}
+The spectra of $A$ and $B$ (viewed as operators on their respective subspaces) are separated by a gap of width $\Delta/2$ when $|\varepsilon| < \Delta/2\|V\|$. By a standard result on Sylvester equations, this spectral separation yields:
 $$
-\|X\| \leq \frac{2}{\Delta}\|Y\| \leq \frac{2}{\Delta}\|\varepsilon V\| < 1. \qquad \square
+\|T\| = \|X\| \leq \frac{2}{\Delta}\|Y\| \leq \frac{2}{\Delta}\|\varepsilon V\| < 1. \qquad \square
 $$
+:::
+
+In the proof, we use the famous result on Sylvester equation.
+
+:::{#thm-sylvester .callout-important icon="false"}
+## (Sylvester equation)
+Given two matrices $A, B$ and a matrix $X$, the Sylvester equation $AX - XB = Y$ has unique solution $X$ if and only if the eigenvalues of $A$ and $B$ are disjoint. Furthermore,
+$X$ can be caluclated through: 
+$$
+X = \frac{1}{2\pi i} \oint_\Gamma (zI-A)^{-1} Y (zI-B)^{-1} \,dz = -\sum_{n=0}^{\infty}A^nYB^{-n-1},
+$$
+where $\Gamma$ is a closed contour in the complex plane that encloses the eigenvalues of $A$ and $B$.
+:::
+
+:::{.callout-note collapse="true"}
+## Proof (Click to expand)
+use evctorizaiton $\mathrm{vec}(A) = A_{ji} \ket{i}\bra{j}$ and identity $\mathrm{vec}(AXB) = (B^T \otimes A)\mathrm{vec}(X)$, then the Sylvester equation can be written as:
+$$
+\begin{align*}
+(\mathbb{I}_n \otimes A - B^T \otimes \mathbb{I}_m)\mathrm{vec}(X) = \mathrm{vec}(Y),
+\end{align*}
+$$
+Thsi linear equation has unique solution $\mathrm{vec}(X)$ if and only if $M = \mathbb{I}_n \otimes A - B^T \otimes \mathbb{I}_m$ is invertible. By diagonalization of $A$ and $B$ on the left space and right space respectively, we conclude this is satisfied iff $\text{spec}(A) \cap \text{spec}(B) = \emptyset$.
 :::
 
 :::{#lem-direct-rotation .callout-important icon="false"}

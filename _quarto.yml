@@ -12,8 +12,6 @@ website:
         href: index.qmd
       - text: "Theory"
         href: theory/index.qmd
-      # - text: "Topics"
-      #   href: theory/Topics/index.qmd
       - text: "Experiment Notes"
         href: Experiments/index.qmd
       - text: "Life"
@@ -30,144 +28,144 @@ website:
     - id: lowerbounds
       title: "Lower Bounds Toolbox"
       contents:
-        - theory/Topics/Lowerbounds/index.qmd
+        - theory/Posts/Lowerbounds/index.qmd
         - section: "Core Concepts"
           contents:
-            - theory/Topics/Lowerbounds/lecam_method.qmd
-            - theory/Topics/Lowerbounds/povm_restrictions.qmd
-            - theory/Topics/Lowerbounds/adaptive_strategies.qmd
+            - theory/Posts/Lowerbounds/lecam_method.qmd
+            - theory/Posts/Lowerbounds/povm_restrictions.qmd
+            - theory/Posts/Lowerbounds/adaptive_strategies.qmd
         - section: "Hard Instance Constructions"
           contents:
-            - theory/Topics/Lowerbounds/operator_mixed.qmd
-            - theory/Topics/Lowerbounds/haar_ensembles.qmd
+            - theory/Posts/Lowerbounds/operator_mixed.qmd
+            - theory/Posts/Lowerbounds/haar_ensembles.qmd
 
     - id: iqp
       title: "IQP Circuit Supremacy"
       contents:
-        - theory/Topics/IQP/index.qmd
+        - theory/Posts/IQP/index.qmd
         - section: "Classical Simulation Theory"
           contents:
-            - theory/Topics/IQP/classical_simulation.qmd
-            - theory/Topics/IQP/hardness_proofs.qmd
+            - theory/Posts/IQP/classical_simulation.qmd
+            - theory/Posts/IQP/hardness_proofs.qmd
         - section: "IQP Supremacy"
           contents:
-            - theory/Topics/IQP/iqp_supremacy.qmd
+            - theory/Posts/IQP/iqp_supremacy.qmd
         - section: "Experimental Realizations"
           contents:
-            - theory/Topics/IQP/mbqc_iqp.qmd
-            - theory/Topics/IQP/ft_iqp.qmd
+            - theory/Posts/IQP/mbqc_iqp.qmd
+            - theory/Posts/IQP/ft_iqp.qmd
         - section: "Noise & Simulation"
           contents:
-            - theory/Topics/IQP/noise_simulation.qmd
+            - theory/Posts/IQP/noise_simulation.qmd
 
     - id: shadow_tomography
       title: "Classical Shadow Tomography"
       contents:
-        - theory/Topics/Shadow_tomography/index.qmd
+        - theory/Posts/Shadow_tomography/index.qmd
         - section: "Foundations"
           contents:
-            - theory/Topics/Shadow_tomography/intro.qmd
+            - theory/Posts/Shadow_tomography/intro.qmd
         - section: "Multi-Copy Strategies"
           contents:
-            - theory/Topics/Shadow_tomography/3desgin_multi_local_shadow.qmd
-            - theory/Topics/Shadow_tomography/3d2c_appli1.qmd
-            - theory/Topics/Shadow_tomography/3d2c_appli2.qmd
-            - theory/Topics/Shadow_tomography/multicopy.qmd
-            - theory/Topics/Shadow_tomography/nonlocal_multicopy.qmd
+            - theory/Posts/Shadow_tomography/3desgin_multi_local_shadow.qmd
+            - theory/Posts/Shadow_tomography/3d2c_appli1.qmd
+            - theory/Posts/Shadow_tomography/3d2c_appli2.qmd
+            - theory/Posts/Shadow_tomography/multicopy.qmd
+            - theory/Posts/Shadow_tomography/nonlocal_multicopy.qmd
         - section: "Lower Bounds"
           contents:
-            - theory/Topics/Shadow_tomography/lowerbound.qmd
+            - theory/Posts/Shadow_tomography/lowerbound.qmd
 
     - id: simulation_model
       title: "Analog Rydberg Quantum Simulation"
       contents:
-        - Experiments/Topics/simulation_model/index.qmd
+        - Experiments/posts/simulation_model/index.qmd
         - section: "Foundations"
           contents:
-            - Experiments/Topics/simulation_model/Effective_ham.qmd
+            - Experiments/posts/simulation_model/Effective_ham.qmd
         - section: "Spin Models"
           contents:
-            - Experiments/Topics/simulation_model/TFIM.qmd
-            - Experiments/Topics/simulation_model/XY_XXZ.qmd
+            - Experiments/posts/simulation_model/TFIM.qmd
+            - Experiments/posts/simulation_model/XY_XXZ.qmd
         - section: "Hubbard & Lattice Models"
           contents:
-            - Experiments/Topics/simulation_model/ferm_Hubbard.qmd
-            - Experiments/Topics/simulation_model/Boson-Hubbard.qmd
-            - Experiments/Topics/simulation_model/honeycomb.qmd
+            - Experiments/posts/simulation_model/ferm_Hubbard.qmd
+            - Experiments/posts/simulation_model/Boson-Hubbard.qmd
+            - Experiments/posts/simulation_model/honeycomb.qmd
         - section: "Ordered Phases"
           contents:
-            - Experiments/Topics/simulation_model/density_wave.qmd
+            - Experiments/posts/simulation_model/density_wave.qmd
         - section: "Topological Phases"
           contents:
-            - Experiments/Topics/simulation_model/topological.qmd
+            - Experiments/posts/simulation_model/topological.qmd
         - section: "Many-Body Dynamics"
           contents:
-            - Experiments/Topics/simulation_model/dynamics.qmd
+            - Experiments/posts/simulation_model/dynamics.qmd
         - section: "Gauge Theories"
           contents:
-            - Experiments/Topics/simulation_model/LGT.qmd
+            - Experiments/posts/simulation_model/LGT.qmd
         - section: "Optimization & Applications"
           contents:
-            - Experiments/Topics/simulation_model/optimization.qmd
+            - Experiments/posts/simulation_model/optimization.qmd
         - section: "Quantum Chemistry"
           contents:
-            - Experiments/Topics/simulation_model/puccd.qmd
+            - Experiments/posts/simulation_model/puccd.qmd
 
     - id: rydberg_qc
       title: "Rydberg Atoms for Fault-Tolerant QC"
       contents:
-        - Experiments/Topics/rydberg_qc/index.qmd
+        - Experiments/posts/rydberg_qc/index.qmd
         - section: "Foundations"
           contents:
-            - Experiments/Topics/rydberg_qc/light_atom.qmd
-            - Experiments/Topics/rydberg_qc/rydberg_properties.qmd
+            - Experiments/posts/rydberg_qc/light_atom.qmd
+            - Experiments/posts/rydberg_qc/rydberg_properties.qmd
         - section: "Platform Engineering"
           contents:
-            - Experiments/Topics/rydberg_qc/laser_systems.qmd
-            - Experiments/Topics/rydberg_qc/trapping_cooling.qmd
-            - Experiments/Topics/rydberg_qc/tweezer_arrays.qmd
+            - Experiments/posts/rydberg_qc/laser_systems.qmd
+            - Experiments/posts/rydberg_qc/trapping_cooling.qmd
+            - Experiments/posts/rydberg_qc/tweezer_arrays.qmd
         - section: "Qubit Control"
           contents:
-            - Experiments/Topics/rydberg_qc/single_qubit.qmd
-            - Experiments/Topics/rydberg_qc/two_qubit_gates.qmd
+            - Experiments/posts/rydberg_qc/single_qubit.qmd
+            - Experiments/posts/rydberg_qc/two_qubit_gates.qmd
         - section: "Noise & Errors"
           contents:
-            - Experiments/Topics/rydberg_qc/noise_errors.qmd
+            - Experiments/posts/rydberg_qc/noise_errors.qmd
 
     - id: compatibility
       title: "Quantum Compatibility"
       contents:
-        - theory/Topics/compatibility/index.qmd
+        - theory/Posts/compatibility/index.qmd
         - section: "Foundations"
           contents:
-            - theory/Topics/compatibility/compatiablity.qmd
-            - theory/Topics/compatibility/compatiablity_and_others.qmd
-            - theory/Topics/compatibility/nonparametric.qmd
+            - theory/Posts/compatibility/compatiablity.qmd
+            - theory/Posts/compatibility/compatiablity_and_others.qmd
+            - theory/Posts/compatibility/nonparametric.qmd
         - section: "Multi-Copy Compatibility"
           contents:
-            - theory/Topics/compatibility/multicopy_compatiability.qmd
-            - theory/Topics/compatibility/f-compatiability.qmd
+            - theory/Posts/compatibility/multicopy_compatiability.qmd
+            - theory/Posts/compatibility/f-compatiability.qmd
         - section: "Estimation & Applications"
           contents:
-            - theory/Topics/compatibility/Algebraic_estimation_framework.qmd
-            - theory/Topics/compatibility/multi-copy_localshadow.qmd
+            - theory/Posts/compatibility/Algebraic_estimation_framework.qmd
+            - theory/Posts/compatibility/multi-copy_localshadow.qmd
 
     - id: noisy_complexity
       title: "Classical Simulation of Noisy Circuits"
       contents:
-        - theory/Topics/Noisy_complexity/index.qmd
+        - theory/Posts/Noisy_complexity/index.qmd
         - section: "Simulation Methods"
           contents:
-            - theory/Topics/Noisy_complexity/pauli_path.qmd
-            - theory/Topics/Noisy_complexity/gadget_simulation.qmd
-            - theory/Topics/Noisy_complexity/percolation.qmd
+            - theory/Posts/Noisy_complexity/pauli_path.qmd
+            - theory/Posts/Noisy_complexity/gadget_simulation.qmd
+            - theory/Posts/Noisy_complexity/percolation.qmd
         - section: "Noise Models & Resources"
           contents:
-            - theory/Topics/Noisy_complexity/non_unital.qmd
-            - theory/Topics/Noisy_complexity/operator_resource.qmd
+            - theory/Posts/Noisy_complexity/non_unital.qmd
+            - theory/Posts/Noisy_complexity/operator_resource.qmd
         - section: "Outlook"
           contents:
-            - theory/Topics/Noisy_complexity/open_problems.qmd
+            - theory/Posts/Noisy_complexity/open_problems.qmd
 
 format:
   live-html:

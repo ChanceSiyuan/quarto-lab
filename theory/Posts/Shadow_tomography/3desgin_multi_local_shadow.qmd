@@ -1,0 +1,215 @@
+---
+categories:
+- Readings
+date: '2026-01-19'
+lang: en
+title: 3-design Multi-copy Local Shadow
+bibliography: refs.bib
+---
+
+# Local k-copy 3-design shadow.
+
+Now we consider the case that we can put $\rho^{\otimes k}$ in quantum
+memory and then implement randomized k-qubits Clifford gate
+$U = {U_i}^{\otimes n}$ with $U_i \in \mathbf{D}_{3}(2^k)$ the
+$k$-qubits gate and forms $3$-design. After this, we measured each qubit
+in the computational basis.
+
+::: {#lem-LC-shadow-kcopy .callout-important icon="false"}
+## (Local k-Copy Shadow Variance)
+In the case of local k-copy randomized measurements on $\rho^{\otimes k}$, let the
+observable $O^{(k)}$ acting on $n\cdot k$ qubits have decomposition
+$O^{(k)} = \sum_{W} \alpha_{W} W$, where $W = \bigotimes_{i=1}^n W_i$
+and $W_i \in \{I,X,Y,Z\}^{\otimes k}$. Denoting $\mathcal{C}(W)$ as the
+set of $k$-qubit Pauli operator that commute with $W$ and
+$\delta_{e,S} = 1$ iff $e\in S$, we define a function
+$R:\mathcal{P}_k^{\otimes n} \to \mathbb{R}$ as 
+$$
+\begin{align*}
+        R(W,W') &= \prod_{i = 1}^n r(W_i,W'_i), \\
+        r(W_i,W'_i) &:= \begin{cases}
+            1 &\text{if~}W_i = \mathbb{I}_k \text{~or~}W'_i = \mathbb{I}_k ,\\
+            (2^k+1) \cdot \frac{2^{k-1}\delta_{W_i,W'_i} +\delta_{W_i, \mathcal{C}(W'_i)\backslash \mathbb{I}_k } }{2^{k-1}+1} &\text{if~}W_i \neq \mathbb{I}_k \text{~and~} W'_i \neq \mathbb{I}_k .
+        \end{cases}
+\end{align*}
+$$
+ we have
+$\langle (\hat{o}^{(k)})^2 \rangle_{\rho} =\text{tr} \left(\rho^{\otimes k} \cdot \mathbf{V}(O^{(k)}) \right)$,
+where
+$\mathbf{V}(O^{(k)}) := \sum_{W,W'}\alpha_W \alpha_{W'} R(W,W')W W'$.
+Specifically, if we take a local operator
+$O^{(k)} = \bigotimes_{i = 1}^n \left(\sum_{W_i \in \mathcal{P}_k}\alpha_{W_i} W_i\right)$,
+we have
+$\mathbf{V}(O^{(k)}) :=\bigotimes_{i = 1}^n  \sum_{W_i,W_i'}\alpha_{W_i} \alpha_{W_i'} r(W_i,W_i')W_i W_i'$.
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+ By
+[Lemma (Onsite 2design)](/theory/Posts/Shadow_tomography/intro.qmd#lem-onsite_2design)
+$\mathcal{D}_{1/(2^k + 1)}^{-1}(\cdot) = (2^k + 1)(\cdot) - \text{tr}(\cdot) \mathbb{I}_k$
+constitute an unbiased estimator of $\rho^{\otimes k}$ through the
+transformation
+$\hat{\rho}^{\otimes k} =\mathcal{M}^{-1}(U^\dagger \ket{\mathbf r}\!\bra{\mathbf r} U)=\bigotimes_{i =1}^n\left((2^k + 1)U_i^{\dagger} \ket{\mathbf{r}_{i}}\bra{\mathbf{r}_{i}} U_i - \mathbb{I}_k\right).$
+The second moment is given by
+$\langle (\hat{o}^{(2)})^2 \rangle_{\rho} =\mathbb{E}_{U \sim \mathbf{D}_3(2^k)^{\otimes n}}\sum_{\mathbf r}\bra{\mathbf r}U \rho^{\otimes k} U^\dagger \ket{\mathbf{r}} \bra{\mathbf r}U\mathcal{M}^{-1}(O^{(k)}) U^\dagger\ket{\mathbf r}^2$.
+Similar to the proof in
+Lemma (LC_shadow)
+the Pauli product basis $W_i \in \{I,X,Y,Z\}^{\otimes k}$ that supports
+on those k qubits located at site $i$. By denoting $W = W_1\cdots W_n$,
+we have $O^{(k)} = \sum_{W} \alpha_{W} W$. According to
+Lemma (onsite_2design)
+$\mathcal{M}^{-1}$ acts locally as
+$\mathcal{M}_i^{-1}(W_i) = g(W_i) W_i$, where the scaling factor
+$g(W_i)$ is determined by
+$g(W_i) = \begin{cases} (2^k+1) & \text{if~} W_i \neq \mathbb{I}_k \\ 1 &\text{if~} W_i = \mathbb{I}_k \end{cases}.$
+Use this decomposition and again supposed
+$\rho^{\otimes k} = \sum_{s} \beta_s \bigotimes_{i=1}^n \rho_i^{(s)}$,
+where $\rho_i^{(s)} \in \mathcal{D}(\mathcal{H}_k)$, the result involves
+averaging over the k-qubit 3-design $U_i \sim \mathbf{D}_3(2^k)$ as:
+$$
+\begin{align*}
+        \langle (\hat{o}^{(k)})^2 \rangle_{\rho} &= \sum_{W,W'}\alpha_{W}\alpha_{W'}\sum_{s}\beta_s\prod_{i = 1}^n g(W_i)g(W'_i)\sum_{\mathbf{r}_i \in \{0,1\}^k} \left[({\rho}^{(s)}_i \otimes W_i \otimes W'_i) \cdot \mathbb{E}_{U_i} U_i^{\otimes 3}\ket{\mathbf{r}_i}\!\bra{\mathbf{r}_i}^{\otimes 3}U_i^{\otimes 3,\dagger}\right] \\
+        &= \sum_{W,W'}\alpha_{W}\alpha_{W'}\sum_s \beta_s\prod_{i = 1}^n 2^k p \cdot g(W_i)g({W'}_i) \Bigl[ \text{tr}(W_i)\text{tr}(W'_i)\text{tr}({\rho}^{(s)}_i) + \text{tr}({\rho}^{(s)}_i W_i)\text{tr}(W'_i) \notag\\
+        & \qquad\qquad\qquad + \text{tr}(W_i)\text{tr}({\rho}^{(s)}_i W'_i)+\text{tr}({\rho}^{(s)}_i)\text{tr}(W_iW'_i) + \text{tr}(W_i {\rho}^{(s)}_i W'_i) + \text{tr}(W'_i {\rho}^{(s)}_i W_i) \Bigr].
+\end{align*}
+$$
+
+Here we use the fact that the term $\ket{E} :=U_i\ket{\mathbf{r}_i}$ is
+average over the 3-design states, yielding terms based on the formula
+$\mathbb{E} [E^{\otimes 3}] ={d^{-1}(d+1)^{-1}(d+2)^{-1}} \sum_{\pi \in S_3} \mathbb{P}_{\pi}^{(d)}$
+according to
+Lemma (state_trajectory)
+site is $p = 1/(2^k \cdot (2^k+1) \cdot (2^k+2))$. We evaluate the
+expression by considering terms for each site $i$, analogous to the
+single-copy proof of
+Lemma (LC_shadow)
+$$\begin{align*}
+        \langle (\hat{o}^{(2)})^2 \rangle_{\rho} &= 
+        \sum_{W,W'}\alpha_{W}\alpha_{W'}\sum_{s}\beta_s\prod_{i = 1}^n 2^k p \cdot \begin{cases}
+         1\cdot 1\cdot [2^{2k}+3\cdot 2^k+2]\text{tr}{\rho}^{(s)}_i  &\text{if~} W_i=W_i' = \mathbb I_k,\\
+         1 \cdot (2^k+1) \cdot[2^k + 2]\cdot \text{tr}({\rho}^{(s)}_i W'_i)&\text{if~} W_i = \mathbb I_k \neq W'_i,\\
+         (2^k+1) \cdot 1 \cdot[2^k + 2]\cdot \text{tr}({\rho}^{(s)}_i W_i)&\text{if~} W'_i = \mathbb I_k \neq W_i,\\
+         (2^k+1)^2 \cdot[2^k\delta_{W_i, W'_i}\text{tr}{\rho}^{(s)}_i  + \text{tr}({\rho}^{(s)}_i\{W_i,W_i'\})]&\text{if~} W_i, W'_i \neq \mathbb I_k.
+     \end{cases}\\
+    %  &=\sum_{W,W'}\alpha_{W}\alpha_{W'}\sum_{s}\beta_s\prod_{i = 1}^n \begin{cases}
+    %     \text{tr}{\rho}^{(s)}_i  &\text{if~} W_i=W_i' = \mathbb I_k,\\
+    %      \text{tr}({\rho}^{(s)}_i W'_i)&\text{if~} W_i = \mathbb I_k\neq W'_i,\\
+    %      \text{tr}({\rho}^{(s)}_i W_i)&\text{if~} W'_i = \mathbb I_k\neq W_i,\\
+    %     \frac{2^k+1}{2^k+2} \cdot\text{tr}\left[(2^k\delta_{W_i, W'_i}\mathbb{I}_k  +2\delta_{W_i, \mathcal{C}(W'_i)\backslash \mathbb{I}_k}  W_iW_i'){\rho}^{(s)}_i\right]&\text{if~} W_i, W'_i \neq \mathbb I_k.
+    %  \end{cases}\\
+     &= \sum_{W,W'}\alpha_{W}\alpha_{W'}\cdot \sum_{s}\beta_s\prod_{i = 1}^n \begin{cases}
+        \text{tr}({\rho}^{(s)}_i W_iW'_i)  &\text{if~} W_i=W_i' = \mathbb I_k,\\
+         \text{tr}({\rho}^{(s)}_i W_i W'_i)&\text{if~} W_i = \mathbb I_k\neq W'_i,\\
+         \text{tr}({\rho}^{(s)}_i W_i W'_i)&\text{if~} W'_i = \mathbb I_k\neq W_i,\\
+         \frac{2^k+1}{2^k+2} \cdot\text{tr}\left[{\rho}^{(s)}_i(2^k\delta_{W_i, W'_i}+2\delta_{W_i, \mathcal{C}(W'_i)\backslash \mathbb{I}_k})W_iW_i'\right]&\text{if~} W_i, W'_i \neq \mathbb I_k.
+     \end{cases}\\
+     &=\text{tr}\left( \rho^{\otimes k}\cdot \sum_{W,W' \in \mathcal{P}_k^{\otimes n}} \alpha_{W}\alpha_{W'} R(W,W') W W'\right).
+\end{align*}$$ To prove the second equality, we first defined
+$\mathcal{C}(W)$ as the set of k-qubit Pauli operator that commute with
+$W$ and $\delta_{e,S} = 1$ iff $e\in S$, otherwise $\delta(e,S) = 0$.
+Then we use the fact that 
+$$\begin{align*}
+        \forall W_i, W'_i \neq \mathbb I_k, \text{tr}({\rho}^{(s)}_i\{W_i,W_i'\}) = \begin{cases}0 \!\!\!&\text{if~} W'_i \notin \mathcal{C}(W_i)\backslash \mathbb{I}_k\\2\text{tr}(\tilde{\rho}^{(s)}_i W_iW'_i)  \!\!\!&\text{if~} W_i \in \mathcal{C}(W'_i)\backslash \mathbb{I}_k \end{cases} = 2\delta_{W_i, \mathcal{C}(W'_i)\backslash \mathbb{I}_k} \text{tr}(\tilde{\rho}^{(s)}_i W_iW'_i),
+\end{align*}
+$$
+ In the last equality, we use the definition
+$$\begin{align*}
+    R(W,W') &= \prod_{i = 1}^n r(W_i,W'_i),  r(W_i,W'_i) 
+    &:= \begin{cases}
+        1 &\text{if~}W_i = \mathbb{I}_k \text{~or~}W'_i = \mathbb{I}_k ,\\
+        (2^k+1) \cdot \frac{2^{k-1}\delta_{W_i,W'_i} +\delta_{W_i, \mathcal{C}(W'_i)\backslash \mathbb{I}_k } }{2^{k-1}+1} &\text{if~}W_i \neq \mathbb{I}_k \text{~and~} W'_i \neq \mathbb{I}_k .
+    \end{cases}
+\end{align*}
+$$ ◻
+:::
+
+The inherient difference between the single-copy local Clifford strategy
+contained in the term $\delta_{W_i, \mathcal{C}(W'_i)}$. In the
+single-copy case, the center of $P_i \in \{X,Y,Z\}$ satisfied
+$\mathcal{C}(P_i) = \{P_i, \mathbb{I}\}$. However, for example, for the
+two-qubit Pauli operators, more terms involved. We denote the $n$-qubit
+Pauli operators as
+$\sigma_{\mathbf{r}} = \bigotimes_{i=1}^n \sigma_{{r}_{x,i},{r}_{z,i}} \in \mathcal{P}_n$
+with
+$\mathbf{r} = (\mathbf{r}_x = ({r}_{x,1},\cdots,{r}_{x,n}),\mathbf{r}_z = ({r}_{z,1},\cdots,{r}_{z,n})) \in (\mathbb{F}_2^n)^2$
+and
+$\{\sigma_{00},\sigma_{01},\sigma_{10},\sigma_{11}\} = \{\mathbb{I}, Z,X,Y = iXZ\}$.
+We denote $a \oplus b = a + b \mathrm{~mod~}2 = a + b - 2a\cdot b$ and
+$\mathbf{a} \odot \mathbf{b} = (a_1\cdot b_1,\cdots,a_n\cdot b_n)$ with
+$a,b \in \{0,1\}$. In the following, we follow the Pauli multiplication
+rule as proved below 
+
+$$
+\begin{align*}
+         \sigma_{\mathbf{s}}\sigma_{\mathbf{s}'} &= \bigotimes_{j = 1}^n i^{s_{x,j} s_{z,j}} X^{s_{x,j}}Z^{s_{z,j}} \cdot i^{s'_{x,j} s'_{z,j}} X^{s'_{x,j}}Z^{s'_{z,j}} \\
+         &=  \bigotimes_{j = 1}^n X^{s_{x,j}+s_{x,j}'}Z^{s_{z,j}+s_{z,j}'} (-1)^{s_{z,j}\cdot s_{x,j}'} \cdot i^{s_{x,j}s_{z,j}+s_{x,j}'s_{z,j}'} \notag \\
+         &= \sigma_{\mathbf{s}\oplus \mathbf{s}'} (-i)^{(\mathbf{s}_x+ \mathbf{s}_x'-2\mathbf{s}_x\odot\mathbf{s}_x')(\mathbf{s}_z+\mathbf{s}_z' - 2\mathbf{s}_z\odot\mathbf{s}_z')} i^{\mathbf{s}_x\mathbf{s}_z + \mathbf{s}_x'\mathbf{s}_z'}(i)^{2\mathbf{s}_z\mathbf{s}_x'} \\
+         &=i^{\mathbf{s}_x'\mathbf{s}_z - \mathbf{s}_z'\mathbf{s}_x} (-1)^{(\mathbf{s}_x + \mathbf{s}_x') \cdot (\mathbf{s}_z \odot \mathbf{s}_z') + (\mathbf{s}_z + \mathbf{s}_z') \cdot (\mathbf{s}_x \odot \mathbf{s}_x')}\sigma_{\mathbf{s}+ \mathbf{s}'} := i^{\mathbf{s}' J \mathbf{s}} (-1)^{d(\mathbf{s},\mathbf{s}')}\sigma_{\mathbf{s}+ \mathbf{s}'} .
+\end{align*}
+$$
+Defined
+$[\mathbf{s}', \mathbf{s}]:= \mathbf{s}_x'\cdot \mathbf{s}_z - \mathbf{s}_z'\cdot \mathbf{s}_x \text{~mod~} 2$
+as the binary symplectic product. Use this rule, we calculate
+$\sigma_{\mathbf{s}}\cdot \sigma_{\mathbf{s}'}=i^{2\mathbf{s}_x'\cdot \mathbf{s}_z - 2\mathbf{s}_z'\cdot \mathbf{s}_x }  (\sigma_{\mathbf{s}'} \cdot \sigma_{\mathbf{s}}) \Rightarrow [\mathbf{s}, \mathbf{s}'] = 0,$
+and show that
+$\mathcal{C}(\sigma_{\mathbf{u}} )\backslash \mathbb{I}_k= \{\sigma_{\mathbf{v}}|\mathbf{v}\in \mathbb{F}_2^k,\mathbf{v}\neq \mathbf{0},[\mathbf{v},\mathbf{u}] = 0\}.$
+This means that
+$\delta_{\sigma_{\mathbf{s},\mathcal{C}(\sigma_{\mathbf{s}'} )\backslash \mathbb{I}_k}} = \delta_{\mathbf{s}, \{\mathbf{v}\in \mathbb{F}_2^k|\mathbf{v}\neq \mathbf{0},[\mathbf{v},\mathbf{s}'] = 0\}} = {\left(1 + (-1)^{[\mathbf{s},\mathbf{s}']}\right)}/{2}$
+and 
+$$
+\begin{align*}
+&r({\mathbf{s}},{\mathbf{s}'}):=r(\sigma_{\mathbf{s}},\sigma_{\mathbf{s}'}) := 
+\begin{cases}
+            1 &\text{if~}\mathbf{s} = \mathbf{0}\text{~or~}\mathbf{s}' = \mathbf{0} ,\\
+            \frac{2^k+1}{2^{k}+2} \cdot \left[2^{k}\delta_{\mathbf{s},\mathbf{s}'} +1+ (-1)^{[\mathbf{s}',\mathbf{s}]}\right]  &\text{if~}\mathbf{s} \neq \mathbf{0}\text{~and~}\mathbf{s}' \neq \mathbf{0} .
+\end{cases}
+\end{align*}
+$$
+
+A generalization of the variance operator $\mathbf{V}(O^{(k)})$ is to
+applied it to two operators $O_\alpha,O_\beta$, as defined below:
+
+::: {#def-cov-oper .callout-note icon="false"}
+## Definition (Covariance Operator)
+Given two operators with decomposition
+$O_\alpha = \sum_{W} \alpha_{W} W, O_\beta = \sum_{W} \beta_{W} W$ with
+$W \in \{\mathbb{I},X,Y,Z\}^{\otimes k}$, the we defined the covariance
+operator as $$\begin{align*}
+        \mathbf{V}(O_\alpha,O_\beta) = \sum_{W,W'} \alpha_{W} \beta_{W'} R(W,W') WW',
+\end{align*}$$ where $R(W,W')$ is defined in
+@lem-LC-shadow-kcopy
+:::
+
+The covariance operator is important due to the Lemma below
+
+::: {#lem-covariance-decomp .callout-important icon="false"}
+## (Covariance Decomposition)
+Given a k-copy operator
+$O = \lambda_{\alpha} O_{\alpha} + \lambda_{\beta} O_{\beta}$, we have
+$$\begin{align*}
+        \mathbf{V}(O,O) = \lambda_{\alpha}^2 \mathbf{V}(O_{\alpha},O_{\alpha}) + 2 \lambda_{\alpha} \lambda_{\beta} \mathbf{V}(O_{\alpha},O_{\beta}) + \lambda_{\beta}^2 \mathbf{V}(O_{\beta},O_{\beta}).
+\end{align*}$$
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+
+Supposed the decomposition
+$O_\alpha = \sum_{W} \alpha_{W} W, O_\beta = \sum_{W} \beta_{W} W$, we
+noted that 
+$$
+\begin{align*}
+        \mathbf{V}(O,O) &=  \sum_{W,W'} (\lambda_{\alpha}\alpha_{W} + \lambda_{\beta} \beta_{W})(\lambda_{\alpha}\alpha_{W'} + \lambda_{\beta} \beta_{W'}) R(W,W') WW',\\
+        &=  \sum_{W,W'} \lambda^2_{\alpha}\alpha_{W}\alpha_{W'}R(W,W') WW' +\sum_{W,W'}  \lambda_{\alpha}\lambda_{\beta} \alpha_{W}\beta_{W'}R(W,W') WW' \notag\\
+        & +\sum_{W,W'}  \lambda_{\beta} \lambda_{\alpha}\beta_{W}\alpha_{W'}R(W,W') WW' + \sum_{W,W'} \lambda^2_{\beta}\beta_{W}\beta_{W'}R(W,W') WW'\\
+        &=\lambda_{\alpha}^2 \mathbf{V}(O_{\alpha},O_{\alpha}) + 2 \lambda_{\alpha} \lambda_{\beta} \mathbf{V}(O_{\alpha},O_{\beta}) + \lambda_{\beta}^2 \mathbf{V}(O_{\beta},O_{\beta}).
+\end{align*}
+$$
+ Here at the last line, we use @def-cov-oper and the fact that $R(W,W') = R(W',W)$. ◻
+:::
+
+
+---
+
+[← Previous: Basics of Shadow Tomography](intro.qmd) | [Back to Index](index.qmd) | [Next: Local k-copy Pauli Shadow Tomography with Entanglement-fixed channel →](multicopy.qmd)

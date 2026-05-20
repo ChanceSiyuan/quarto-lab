@@ -1,0 +1,260 @@
+---
+categories:
+- Readings
+date: 2026-02-02
+lang: en
+title: "Hardness of Classical Simulation"
+bibliography: refs.bib
+---
+
+# Summary and Questions
+This note is meant to summarize the hardness proofs for classical simulation of quantum circuits.
+Typically, it contains steps below:
+
+1. The precise amplitude computation of this circuit family's amplitude is somehow hard in the worst-case.
+2. The multiplicative-error approximate calculation of this circuit family's amplitude is somehow hard in the worst-case.
+3. To show the additive-error average-case hardness, a distribution on the circuit family shall first be built and then satisfies:
+    - The distribution satisfies anti-concentration and hiding conditions.
+    - Some induced problem is somehow hard in this average-case.
+
+Combining Stockmeyer's algorithm,
+steps 1 and 2 already implies the multiplicative error weak simulation is forbidden in the worst-case by the polynomial hierarchy collapse.
+While for the average-case additive-error hardness, how to induce a problem that is a well-known and believed hard problem is still an open question.
+
+Previous works typically use:
+1. Ising partition function hardness conjecture
+2. degree-3 GapP problem hardness conjecture
+3. Haar random extrapolation multiple average-case hardness to the worst-case hardness @krovi2022average
+
+# Framework of Hardness Proofs
+
+#### Quantum circuit is gap-P
+How hard is it to classically simulate quantum circuits? 
+We begin with the classical case.
+A classical randomized algortihm can always be regarded as a deterministic boolean circuit $A: (x,r) \to y$ with polynomial-size,
+along with a length-$m$ random string $r \in \{0,1\}^m$,
+such that the probability of output $y$ given inputs $x$ writes:
+$$
+\begin{align}
+p^{\rm cl}(y|x) = \Pr_r[A(x,r)=y] = 2^{-m} \cdot \#\{r\in\{0,1\}^m:A(x,r)=y\}.
+\end{align}
+$$
+This encodes any normalized $\#\mathrm P$ function,
+Thus, the exactly computing the probability amplitudes of a classical randomized circuit is at least $\#\mathrm P$-complete.
+
+Generalizing to quantum circuits, exact amplitude compuation actually corresponds to the $\#\mathrm{GapP}$ problem,
+which is slightly different from $\#\mathrm P$ problem:
+
+:::{#def-GapP .callout-note icon = "false"}
+A function $f:\{0,1\}^*\to\mathbb Z$ is in GapP if there exists a polynomial $p$ and a polynomial-time computable Boolean predicate
+$G(x,y):\{0,1\}^*\times\{0,1\}^{p(|x|)}\to\{0,1\}$ such that
+$$
+f(x) = \mathrm{gap}(G_x) := |\{y \mid G(x,y) = 1\}| - |\{y \mid G(x,y) = 0\}|.
+$$
+Equivalently, for each fixed input $x$, $f(x)$ is the gap $\mathrm{gap}(G_x)$ of the Boolean function $G_x(\cdot):=G(x,\cdot)$.
+:::
+
+:::{#thm-universal .callout-note icon = "false"}
+The gate set $H + CCZ$ is universal for quantum computation [@aharonov2003]
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+[Todo: Add proof]
+:::
+
+::: {#thm-gapp-complete .callout-important icon="false"}
+## (Hardness of Strong Simulation[@hangleiter2023computational])
+Let $C$ be a quantum circuit on $n$ qubits consisting of Hadamard and Toffoli gates,
+then computing the amplitude $\bra{0^n} C \ket{0^n}$ is Gap-P complete.
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+We first show that each amplitude of certain $C$ encodes a GapP problem.
+Consider circuits $\{C_1, \ldots, C_d\}$ composed of these gates. The amplitude for input $|\vec{x}\rangle$ projecting onto $|0\rangle^{\otimes n}$ is:
+
+$$
+\langle 0^{\otimes n}| C_d \cdots C_1 |\vec{x}\rangle = \sum_{\vec{\lambda}_1, \ldots, \vec{\lambda}_{d-1}} \langle 0^{\otimes n}| C_d |\vec{\lambda}_{d-1}\rangle \times \cdots \times \langle\vec{\lambda}_1| C_1 |\vec{x}\rangle.
+$$
+
+If $C_i$ is a $CCZ$ gate, then $\vec{\lambda}_i = \vec{\lambda}_{i-1}$, multiplied only by a sign function $s_i: \lambda_i \to \{+1, -1\}$. If $C_i$ is an $H$ gate, then $\lambda_i$ may or may not flip one bit relative to $\lambda_{i-1}$. With $h$ Hadamard gates, there are $2^h$ paths from $\vec{x}$, each with a different sign $\prod_i s_i$:
+
+$$
+\langle 0^{\otimes n}| C_d \cdots C_1 |\vec{x}\rangle = \frac{1}{\sqrt{2^h}} \sum_{y \in \{0,1\}^h} g_x(y).
+$$
+
+Then $P(C, \vec{x}, \vec{0}) = \frac{1}{2^h} \sum_{\vec{t} \in \{0,1\}^{2h}} f_x(\vec{t})$, where $f_x(\vec{t}) := g_x(\vec{t}_1) g_x(\vec{t}_2) \in \{-1, +1\}$ is polynomial-time computable. Defining $G_x(\vec{t}) = \frac{1}{2} + \frac{f_x(\vec{t})}{2}$, which is also efficiently computable:
+
+$$
+P(C, \vec{x}, \vec{0}) = |\{\vec{t} \mid G_x(\vec{t}) = 1\}| - |\{\vec{t} \mid G_x(\vec{t}) = 0\}|.
+$$
+
+For completeness, one must also show that any GapP problem can be reduced to estimating the output probability of some polynomial-size quantum circuit. We refer to @Montanaro_2017 for the full proof.
+
+For the completeness direction, we show that any $\#\mathrm{P}$-hard problem can be encoded as a quantum circuit amplitude.
+By Bennett's reversible computation theorem [@bennett1973], $X$ and Toffoli gates together with ancilla qubits are universal for reversible classical computation.
+Concretely, given any Boolean function $g:\{0,1\}^n\to\{0,1\}$ computable by a $\mathrm{poly}(n)$-size classical circuit, there exists a $\mathrm{poly}(n)$-size quantum circuit $C'$ built from $X$ and Toffoli gates, acting on an $n$-qubit input register $I$, a single-qubit output register $O$, and an $a$-qubit ancilla register $A$, such that for all $x\in\{0,1\}^n$ and $b\in\{0,1\}$,
+$$
+C'|x\rangle_I|b\rangle_O|0\rangle_A = |x\rangle_I|b\oplus g(x)\rangle_O|0\rangle_A.
+$$
+In particular, $C'$ computes $g$ coherently without disturbing the input or ancilla register.
+
+Now define the $(n+1+a)$-qubit circuit $C''$ by the following sequence:
+
+1. Apply $X$ to register $O$.
+2. Apply $H^{\otimes n}\otimes H$ to registers $I$ and $O$.
+3. Apply $C'$.
+4. Apply $H^{\otimes n}\otimes H$ to registers $I$ and $O$.
+5. Apply $X$ to register $O$.
+
+We track the state through each step, starting from $|0^n\rangle_I|0\rangle_O|0^a\rangle_A$. After step 1,
+$$
+|0^n\rangle_I|1\rangle_O|0^a\rangle_A.
+$$
+After step 2,
+$$
+|{+}\rangle_I^{\otimes n}|{-}\rangle_O|0^a\rangle_A
+= \frac{1}{\sqrt{2^n}}\sum_{x\in\{0,1\}^n}|x\rangle_I\otimes\frac{|0\rangle-|1\rangle}{\sqrt{2}}\bigg|_O\otimes|0^a\rangle_A.
+$$
+After step 3, applying $C'$ linearly and using the phase-kickback identity $C'|x\rangle_I|{-}\rangle_O|0^a\rangle_A = (-1)^{g(x)}|x\rangle_I|{-}\rangle_O|0^a\rangle_A$,
+$$
+\frac{1}{\sqrt{2^n}}\sum_{x\in\{0,1\}^n}(-1)^{g(x)}|x\rangle_I|{-}\rangle_O|0^a\rangle_A.
+$$
+After step 4, applying $H^{\otimes n}$ to $I$ and $H$ to $O$ (recalling $H|{-}\rangle=|1\rangle$),
+$$
+\frac{1}{2^n}\sum_{x\in\{0,1\}^n}\sum_{z\in\{0,1\}^n}(-1)^{g(x)+x\cdot z}|z\rangle_I|1\rangle_O|0^a\rangle_A.
+$$
+After step 5 ($X$ on $O$),
+$$
+\frac{1}{2^n}\sum_{x\in\{0,1\}^n}\sum_{z\in\{0,1\}^n}(-1)^{g(x)+x\cdot z}|z\rangle_I|0\rangle_O|0^a\rangle_A.
+$$
+Projecting onto $\langle 0^{n+1+a}|$ selects $z=0^n$, so
+$$
+\langle 0^{n+1+a}|C''|0^{n+1+a}\rangle
+= \frac{1}{2^n}\sum_{x\in\{0,1\}^n}(-1)^{g(x)}
+= \frac{\mathrm{gap}(g)}{2^n},
+$$
+where $\mathrm{gap}(g) := |\{x : g(x)=0\}|-|\{x:g(x)=1\}|$. Thus the amplitude determines $\mathrm{gap}(g)$, and hence the number of zeros of $g$, for any $\mathrm{poly}(n)$-size computable function $g$. Counting the zeros of polynomial-size Boolean circuits is $\#\mathrm{P}$-complete by definition, so estimating $\langle 0|C''|0\rangle$ is GapP-hard.
+
+$\square$
+:::
+
+#### Multiplicative error approximation
+In multiplicative error approximation with constant $1 < c$, we design algorithm to approximates $\tilde{p}(y|x)$ such that:
+
+$$
+c^{-1} \tilde{p}(y|x)\leq p(y|x) \leq c\, \tilde{p} (y|x) \Leftrightarrow |\tilde{p}(y|x) - p(y|x)| \leq \varepsilon\, p(y|x).
+$$
+
+The complexity of multiplicative approximation differs sharply between #P and GapP, See [this page](../quantum_complexity/counting_complexity.qmd#gap-p-and-multiplicative-approximation) for the full discussion.
+
+- For #P functions, nonnegativity enables Stockmeyer's hashing technique to yield a multiplicative approximation at the $\Delta_3 \subset \mathsf{PH} \subset \mathsf{P}^{\# \mathsf{P}}$ (3-rd level of Polynomial Hierarchy). 
+- For GapP functions, even multiplicative approximation is GapP-complete — no easier than exact computation. 
+
+This GapP-completeness directly yields the hardness for quantum circuit compared to classical randomized circuit.
+
+::: {#thm-mult-error .callout-important icon="false"}
+## Hardness of Approximate Strong Simulation
+Estimating $|\langle 0^n|C|0^n\rangle|^2$ for any quantum circuit $C$ with polynomial-size to multiplicative error $c < 2$ and additive error $\varepsilon < 1/2^{2n}$ is GapP-complete [@hangleiter2023computational].
+:::
+
+
+#### From Strong to Weak Simulation Hardness
+
+The above results establish that strong simulation is hard, but this does not rule out the possibility of weak simulation.
+To show that weak simulation is also hard, we again use Stockmeyer's algorithm as an intermediary. 
+
+:::{#thm-nogo_multiplicative .callout-important icon="false"}
+## Hardness of Weak Simulation
+For any polynomial-depth quantum circuit,
+if there exists a polynomial-depth classical randomized circuit
+whose outputs approximate the probability of the quantum circuit to multiplicative error $c < 2$ and additive error $\varepsilon < 1/2^{2n}$, then the polynomial hierarchy collapses.
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+Assume an efficient multiplicative-error weak simulator exists.
+by the definition of weak simulation,
+this is equivalent to approximating one GapP function to multiplicative error.
+Applying Stockmeyer's algorithm to this function,
+this means a $\mathsf{P}^{\mathsf{NP}^{\mathsf{NP}}}$ machine could multiplicatively approximate this GapP problem.
+Use the fact that multiplicative GapP is GapP-complete, $\mathsf{P}^{\mathsf{NP}^{\mathsf{NP}}} \subseteq \mathsf{PH}$, and Toda's theorem $\mathsf{PH} = \mathsf{P}^{\mathsf{\#P}} = \mathsf{P}^{\mathsf{GapP}}$,
+this would cause the polynomial hierarchy to collapse to the third level.
+:::
+
+#### Additive Error Hardness
+
+Besides multiplicative error, one can also define additive error as follows:
+
+$$
+\frac{1}{2} \sum_y |p(y|x) - \tilde{p}(y|x)| \leq \varepsilon.
+$$
+
+Since experimental noise is typically independent and random, generating an additive-error probability distribution is more relevant to experimental requirements. How hard is this type of approximation?
+
+::: {#thm-additive-error .callout-important icon="false"}
+## Additive Error Approximation Hardness
+
+If a circuit ensemble satisfies the **hiding property** and **anti-concentration**, i.e.,
+$$
+\Pr_{C \sim \mathcal{C}} \left[p_C(x) \geq \frac{\alpha}{2^n}\right] \geq \gamma(\alpha),
+$$
+then under the assumption of average-case multiplicative-approximate hardness for a certain GapP problem and the non-collapse of the polynomial hierarchy, no efficient classical additive-error weak simulation exists [@hangleiter2023computational, Theorem 17].
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+
+*Proof.* Suppose a classical randomized algorithm outputs $x$ with probability $p_x$ that approximates $p_C(x)$ to additive error $\varepsilon$. Then we can apply [Stockmeyer's algorithm](../quantum_complexity/counting_complexity.qmd#stockmeyers-algorithm) to estimate $p_x$ to multiplicative error $c$, obtaining $q_x$. Ultimately we achieve approximate strong simulation using a $\mathsf{P}^{\mathsf{NP}^{\mathsf{NP}}}$ machine, with approximation error:
+
+$$
+\forall x,\quad |q_x - p_C(x)| \leq |q_x - p_x| + |p_x - p_C(x)|.
+$$
+
+To prove hardness, we want this to be a multiplicative error estimate for a GapP problem. The first term satisfies $|q_x - p_x| < c\, p_x < c\, p_C(x) + c\, |p_C(x) - p_x|$, so the key task is to upper bound $|p_x - p_C(x)|$ pointwise. Since $p_x$ only approximates $p_C(x)$ in additive error, this is not a pointwise bound, requiring us to relax the conditions.
+
+We consider randomly sampled circuits $C \sim \mathcal{C}$, which induces a distribution on the corresponding GapP problem. Our classical algorithm operates on the sampled circuit to produce $p_x(C)$. Assume the random circuits satisfy invariance under left-action of Pauli operators (hiding property).
+
+Then by Markov's inequality:
+
+$$
+\begin{align*}
+\Pr_C\!\left\{\left|p_x(C) - p_C(x)\right| \geq \delta^{-1} \mathbb{E}_C[|p_x(C) - p_C(x)|]\right\}\\
+ = \Pr_C\!\left[|p_C(x) - p_x(C)| \geq \delta^{-1}\frac{2\varepsilon}{2^n}\right] < \delta,
+\end{align*}
+$$
+
+where we used:
+
+$$
+\mathbb{E}_C[|p_x(C) - p_C(x)|] = 2^{-n} \mathbb{E}_{x,C}\!\left[\sum_x |p_x(C) - p_C(x)|\right] = 2\varepsilon \cdot 2^{-n}.
+$$
+
+This means that additive error $\varepsilon$, under the hiding property with random sampling, guarantees with probability $1 - \delta$ that $\forall x,\, |p_x(C) - p_C(x)| \leq \delta^{-1} \frac{2\varepsilon}{2^n}$. This implies a pointwise estimate with probability $1 - \delta$:
+
+$$
+|q_x - p_C(x)| \leq c\, p_C(x) + (c+1)|p_x - p_C(x)| < c\, p_C(x) + (c+1)\delta^{-1}\frac{2\varepsilon}{2^n}.
+$$
+
+This is still not a multiplicative error estimate. To fully convert to multiplicative error, we additionally require that for randomly sampled circuits $C \sim \mathcal{C}$, the probability of any outcome $x$ is not too small with high probability (anti-concentration):
+
+$$
+\Pr_{C \sim \mathcal{C}}\!\left[p_C(x) \geq \frac{\alpha}{2^n}\right] \geq \gamma(\alpha).
+$$
+
+This means with probability $\gamma(\alpha)$, we can pointwise assert $\frac{1}{\alpha} p_C(x) \geq \frac{1}{2^n}$, giving:
+
+$$
+|q_x - p_C(x)| < c\, p_C(x) + (c+1)\delta^{-1}\frac{2\varepsilon}{2^n} < c\, p_C(x) + (c+1)\frac{2\varepsilon}{\alpha\delta}\, p_C(x).
+$$
+
+Therefore, if classical additive-error weak simulation exists, examining random circuits satisfying anti-concentration and hiding, and the corresponding distribution on GapP problems, a $\mathsf{P}^{\mathsf{NP}^{\mathsf{NP}}}$ machine can perform multiplicative-error simulation ($c < 2$) for a $\gamma(\alpha)(1-\delta)$ fraction of instances. This problem is generally "believed" to be hard, corresponding to an approximate average-case hardness conjecture. $\square$
+:::
+
+
+- A quantum device ideally runs circuit families that theoretially hard (for example, the whole quantum cirucits, IQP circuits, etc.), while in the real experiment, the outputs always admits an additive error.
+- If this circuit family, along with the distribution built on it, further satisfies anti-concentration and hiding conditions,
+then we can safely claim no classical algorithm can achieve this experiment outputs.
+This is because, if a classical algorithm can achieve this experiment outputs, then it forms an additive-error weak simulator for this circuit family and be prevented by @thm-additive-error.
+- Things left is whether the conjecture of average-case hardness in @thm-additive-error is true.

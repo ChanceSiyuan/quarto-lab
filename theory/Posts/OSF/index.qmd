@@ -272,7 +272,7 @@ In [@zhang2025classical], it is further shown that:
  Any degree-3 IQP circuit (IQP circuit with gate set $\{Z,CZ,CCZ\}$) can be compiled into T-depth one circuit, after appending $\mathcal{O}(nd)$ pure ancillas initialized to $\ket{0}$. 
 :::
 
- This means that **Amplitude estimation** (i.e., estimating $\bra{0^n} U^\dagger \ket{0^n}\!\bra{0^n} U \ket{0^n}$) and **weak simulation** of T-depth one circuit is hardest than that of the degree-3 IQP circuits, which is Gap-P complete and believed to cause $\Delta_3 P = PH$ under plausible conjusture You may refer to [this](/theory/Topics/IQP/iqp_supremacy.qmd)  for a walkthrough understanding of IQP's hardness.
+ This means that **Amplitude estimation** (i.e., estimating $\bra{0^n} U^\dagger \ket{0^n}\!\bra{0^n} U \ket{0^n}$) and **weak simulation** of T-depth one circuit is hardest than that of the degree-3 IQP circuits, which is Gap-P complete and believed to cause $\Delta_3 P = PH$ under plausible conjusture You may refer to [this](/theory/Posts/IQP/iqp_supremacy.qmd)  for a walkthrough understanding of IQP's hardness.
 
 :::{.callout-important icon="false"}
 ## Question: 
@@ -336,7 +336,7 @@ U^\dagger Q U  &= \left\{ \begin{aligned}
 \end{aligned} \right.
 \end{align*}
 $$
-Then use the fact that $PQ$ has vectorization $v_Q+ v_P \mod 2$ up to a global non-linear phase $i^{[v_Q,v_P]} (-1)^{d(v_Q, v_P)}$ (The exact proof of this identity may refer to here [#eq-pauli-multiplication](/theory/Topics/Shadow_tomography/3desgin_multi_local_shadow.qmd#eq-pauli-multiplication)).
+Then use the fact that $PQ$ has vectorization $v_Q+ v_P \mod 2$ up to a global non-linear phase $i^{[v_Q,v_P]} (-1)^{d(v_Q, v_P)}$ (The exact proof of this identity may refer to here [#eq-pauli-multiplication](/theory/Posts/Shadow_tomography/3desgin_multi_local_shadow.qmd#eq-pauli-multiplication)).
 Thus in the GSF framework, we have:
 $$
 \begin{align*}

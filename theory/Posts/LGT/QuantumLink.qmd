@@ -32,7 +32,7 @@ bibliography: refs.bib
 :::
 
 
-# Lattice of (2+1)D QED
+# Lattice ofQED
 
 :::{#lem-staggered-fermion .callout-note icon="false"}
 Under the staggered fermion formulation, the 1d-QED model writes:
@@ -127,12 +127,22 @@ $$
 with $x = 1/(a^{2}g^{2})$, $\mu = 2m/(ag^{2}) = 2\sqrt{x}\,m/g$, matching @lem-staggered-fermion. $\square$
 :::
 
+Since $L_n, \theta_n$ are bosonic operators thus being unbounded, real simulation always truncate this U(1) LGT Hamiltonian to a finite-size system:
+$$
+\begin{align*}
+H_{U(1)} &= − w  \sum_{j=1}^{L-1} (\Phi^\dagger_j U_{j,j+1}\Phi_{j+1} + h.c.) + m\sum_{j=1}^{L} (−1)^j\Phi^\dagger_j \Phi_j  +J \sum_{j=1}^{L-1} E^2_{j,j+1},\\
+G_x &= E_{j,j+1} - E_{j-1,j} - \Phi^\dagger_j \Phi_{j+1} -  \frac{1 - (-1)^j}{2},
+\end{align*}
+$$
+where $\Phi_j$ is fermionic operator support on site $j$ and $E_{j,j+1} = \sigma^z_{j,j+1}$ and $U_{j,j+1} = \sigma^{+}_{j,j+1}$ is the electric field and gauge field support on edge $(j,j+1)$.
+
+
 :::{#lem-JWtrans .callout-note icon="false"}
 ## Jordan-Wigner Transformation
 The Jordan-Wigner transformation of the staggered fermion Hamiltonian is:
 $$
 \begin{align*}
-H_{s} &= w \sum_{n} (\sigma^+_{n} \sigma^-_{n+1} + \sigma^-_{n} \sigma^+_{n+1}) + 2m \sum_{n} (-1)^n \sigma^+_{n} \sigma^-_{n+1} \\
+H_{s} &= w \sum_{n} (\sigma^+_{n} \sigma^-_{n+1} + \sigma^-_{n} \sigma^+_{n+1}) + 2m \sum_{n} (-1)^n \sigma^+_{n} \sigma^-_{n} \\
 &+ J \sum_{n} [\ell_0 + \frac{1}{2} \sum_{k=0}^{n} ((-1)^k + \sigma_k^z)]^2.
 \end{align*}
 $$
@@ -140,7 +150,61 @@ $$
 
 :::{.callout-note collapse="true"}
 ## Proof (Click to expand)
-[todo: Add proof here]
+**Step 1 — Jordan–Wigner map.** Define [@jordan1928uber]
+$$
+\phi_n \;=\; K_n\,\sigma_n^{-},\qquad \phi_n^\dagger \;=\; K_n\,\sigma_n^{+},\qquad K_n \;=\; \prod_{k<n}\sigma_k^{z},
+$$
+with the qubit identification $\sigma_n^z=2\,\phi_n^\dagger\phi_n-1$. Anti-commutation $\{\phi_n,\phi_m^\dagger\}=\delta_{nm}$ follows from $(\sigma^z)^2=\mathbf 1$ and the on-site identity $\sigma_n^+\sigma_n^z=-\sigma_n^+$.
+
+**Step 2 — Number operator and staggered mass.** Direct substitution gives
+$$
+\phi_n^\dagger\phi_n \;=\; \sigma_n^{+}\sigma_n^{-} \;=\; \tfrac{1}{2}(1+\sigma_n^z),
+$$
+so the staggered Dirac mass becomes
+$$
+\mu\sum_{n}(-1)^{n}\phi_n^\dagger\phi_n \;=\; \mu\sum_{n}(-1)^{n}\sigma_n^{+}\sigma_n^{-} \;\equiv\; 2m\sum_{n}(-1)^{n}\sigma_n^{+}\sigma_n^{-},
+$$
+upon the relabelling $2m\equiv\mu$.
+
+**Step 3 — Hopping term.** Using $K_n^2=\mathbf 1$, the Jordan–Wigner strings telescope on neighbouring sites:
+$$
+\phi_n^\dagger e^{i\theta_n}\phi_{n+1}
+\;=\; K_n\sigma_n^{+}\,e^{i\theta_n}\,K_{n+1}\sigma_{n+1}^{-}
+\;=\; \sigma_n^{+}\sigma_n^{z}\,e^{i\theta_n}\,\sigma_{n+1}^{-}
+\;=\; -\,\sigma_n^{+}e^{i\theta_n}\sigma_{n+1}^{-},
+$$
+where $K_{n+1}=K_n\sigma_n^{z}$ and $\sigma_n^{+}\sigma_n^{z}=-\sigma_n^{+}$; the link variable $e^{i\theta_n}$ commutes with all spin operators. Therefore
+$$
+-ix\sum_{n}\!\bigl(\phi_n^\dagger e^{i\theta_n}\phi_{n+1} - \mathrm{H.c.}\bigr) \;=\; ix\sum_{n}\!\bigl(\sigma_n^{+}e^{i\theta_n}\sigma_{n+1}^{-} - \sigma_{n+1}^{+}e^{-i\theta_n}\sigma_n^{-}\bigr).
+$$
+
+**Step 4 — Eliminate the link phase (1+1-D residual gauge symmetry).** After the temporal gauge $A_0=0$ used in @lem-staggered-fermion, a residual time-independent $U(1)$ symmetry acts as
+$$
+e^{i\theta_n}\;\mapsto\;e^{i\Omega_{n+1}}e^{i\theta_n}e^{-i\Omega_n},\qquad \phi_n\;\mapsto\;e^{i\Omega_n}\phi_n,
+$$
+for any $\{\Omega_n\}$. In one spatial dimension this fixes $e^{i\theta_n}\to 1$ link by link with the cumulative choice $\Omega_n=-\sum_{k<n}\theta_k$ [@kogut1975hamiltonian; @hamer1997series]. A subsequent uniform $\pi/2$ re-phasing $\sigma_n^{\pm}\mapsto i^{\pm n}\sigma_n^{\pm}$ rotates the anti-Hermitian hopping into its Heisenberg-XX form:
+$$
+ix\bigl(\sigma_n^{+}\sigma_{n+1}^{-}-\sigma_n^{-}\sigma_{n+1}^{+}\bigr) \;\longmapsto\; w\bigl(\sigma_n^{+}\sigma_{n+1}^{-}+\sigma_n^{-}\sigma_{n+1}^{+}\bigr),\qquad w \;=\; x,
+$$
+matching the lemma [@banuls2013mass].
+
+**Step 5 — Eliminate $L_n$ via Gauss law.** The staggered charge from @lem-staggered-fermion rewrites as
+$$
+Q_k \;\equiv\; \phi_k^\dagger\phi_k - \tfrac{1}{2}\bigl[1-(-1)^k\bigr] \;=\; \tfrac{1}{2}\bigl[(-1)^k + \sigma_k^{z}\bigr],
+$$
+upon substituting $\sigma_k^{z}=2\phi_k^\dagger\phi_k-1$. Imposing the lattice Gauss law $L_n-L_{n-1}=Q_n$ recursively from a boundary value $L_{-1}+\alpha\equiv\ell_0$,
+$$
+L_n + \alpha \;=\; \ell_0 \;+\; \tfrac{1}{2}\sum_{k=0}^{n}\!\bigl[(-1)^k + \sigma_k^{z}\bigr].
+$$
+Substituting into the electric energy $\sum_n(L_n+\alpha)^2$ produces the nonlocal cumulative-sum-squared term of the lemma, with $J=1$ matching the prefactor of the rescaled Hamiltonian $2H/(ag^{2})$.
+
+**Step 6 — Assemble.** Combining Steps 2, 4, 5 yields
+$$
+H_{s} \;=\; w\sum_{n}\!\bigl(\sigma_n^{+}\sigma_{n+1}^{-}+\sigma_n^{-}\sigma_{n+1}^{+}\bigr)
+\;+\; 2m\sum_{n}(-1)^{n}\sigma_n^{+}\sigma_n^{-}
+\;+\; J\sum_{n}\!\Bigl[\ell_0 + \tfrac{1}{2}\!\sum_{k=0}^{n}\!\bigl((-1)^{k}+\sigma_k^{z}\bigr)\Bigr]^{2},
+$$
+with $w=x=1/(a^{2}g^{2})$, $2m=\mu=2m_{\text{phys}}/(ag^{2})$, and $J=1$. $\square$
 :::
 
 # Lattice of Non-Abelian Gauge Field
@@ -148,50 +212,50 @@ $$
 For the non-Abelian gauge field, most experiments focus on the lattice version of the Pure Yang-Mills Theory.
 
 :::{#lem-lattice_pureYM .callout-note icon="false"}
-## Lattice of Pure Yang-Mills Theory
-Given an $d$-dimensional pure Yang-Mills theory with gauge group $G$ with unitary irreducible representations $\widehat G$.
-The Kogut–Susskind Hamiltonian live on the edges of the $d$-dimensional hypercubic lattice with spacing $a$ as
+## Lattice of Pure Yang–Mills Theory
+
+Let $G$ be a compact Lie gauge group (e.g. $U(1)$, $SU(N)$, $SO(N)$, $Sp(N)$) with unitary irreducible representations $\widehat G$, and consider Yang–Mills theory in $d$ spatial dimensions. The Kogut–Susskind Hamiltonian on the $d$-dimensional hypercubic lattice with spacing $a$ is
 $$
 \begin{align}
-H_{\mathrm{KS}} &\;=\; \frac{g^{2}}{2 a^{d-2}}\sum_{\ell}\hat E_{\ell}^{2} \;-\; \frac{\kappa}{g^{2}a^{4-d}}\sum_{p}\hat B_{p},\\
-\hat E_{\ell}^{2} &\;=\; \sum_{J\in\widehat G}\alpha_{J}\,\hat P_{\ell}^{J} ,\\
-\hat B_{p} &\;=\; \operatorname{Tr}\!\left(\hat U_{p_{1}}\hat U_{p_{2}}\hat U_{p_{3}}^{\dagger}\hat U_{p_{4}}^{\dagger} + \mathrm{H.c.}\right),
+H_{\mathrm{KS}} &\;=\; \frac{g^{2}}{2 a^{d-2}}\sum_{\ell}\hat E_{\ell}^{2} \;-\; \frac{1}{g^{2}a^{4-d}}\sum_{p}\hat B_{p},\\
+\hat E_{\ell}^{2} &\;=\; \sum_{J\in\widehat G}C_{2}(J)\,\hat P_{\ell}^{J},\\
+\hat B_{p} &\;=\; \operatorname{Tr}\!\Bigl(\hat U^{(r)}_{p_{1}}\hat U^{(r)}_{p_{2}}\hat U^{(r)\dagger}_{p_{3}}\hat U^{(r)\dagger}_{p_{4}} \;+\; \mathrm{H.c.}\Bigr),
 \end{align}
 $$
-where:
+with the conventions below; the discrete/finite-group analogue requires a separate construction and is treated in the $\mathbb Z_2$ section.
 
-- $\ell$ ranges over oriented links, and $p$ ranges over plaquettes with edges 
-  $p_1,p_2,p_3,p_4$ traversed counter-clockwise. Each oriented link $\ell$ carries a Hilbert space $\mathcal H_\ell = L^2(G)$ with formal group-element basis $\{\ket{g_\ell}:g_\ell\in G\}$.
-- $\hat P_\ell^J$ is the projector onto the $J$-isotypic sector of the Peter-Weyl decomposition of the link Hilbert space, i.e.,
-$$
-\hat P_\ell^J=\sum_{m,n=1}^{\dim J}\ket{J,m,n}_\ell\bra{J,m,n}_\ell, \quad \ket{J,m,n} =\sum_g \sqrt{\dim J/|G|}\,D^{(J)}_{mn}(g)\ket{g}.
-$$
-The electric-field operator $\hat E_\ell^2$ is the group Laplacian/Casimir on
-$L^2(G)$, and therefore acts as $C_2(J)$ on the $J$-sector.
+- $\ell$ ranges over oriented links and $p$ over plaquettes with edges $p_{1},p_{2},p_{3},p_{4}$ traversed counter-clockwise. Each oriented link carries the Peter–Weyl Hilbert space $\mathcal H_\ell = L^{2}(G,\mathrm d\mu_{\mathrm{Haar}})$ with Haar measure normalised to $\int_G\mathrm d\mu_{\mathrm{Haar}}=1$, and formal (delta-function) group-element basis $\{\ket{g}_\ell:g\in G\}$.
 
-- $\hat U_\ell$ is the link parallel-transporter operator with $\hat U_{\ell^{-1}}=\hat U_\ell^\dagger$, and operators as a fixed unitary
-representation $r$ of $G$:
+- $\hat P_\ell^J$ is the projector onto the $J$-isotypic block of the Peter–Weyl decomposition,
 $$
-\hat U_\ell \ket{g}_\ell=\sum_{g}\,D^{(r)}_{mn}(g)\ket{g}_\ell .
+\hat P_\ell^J \;=\; \sum_{m,n=1}^{\dim J}\ket{J,m,n}_\ell\!\bra{J,m,n}_\ell,\qquad
+\ket{J,m,n}_\ell \;=\; \sqrt{\dim J}\!\int_G\!\mathrm d\mu(g)\,D^{(J)}_{mn}(g)\,\ket{g}_\ell.
 $$
+The electric-field operator $\hat E_\ell^2$ is the group Laplacian on $L^2(G)$, equal to the quadratic Casimir $\sum_a(\hat L_\ell^a)^2=\sum_a(\hat R_\ell^a)^2$, and acts as $C_2(J)\,\mathbf 1_{V_J\otimes V_J^*}$ on the $J$-isotypic block. For $G=SU(2)$, $C_2(J)=J(J+1)$.
 
--  The trace $\operatorname{Tr}$ is taken only over the representation indices of $r$, that is:
+- $\hat U^{(r)}_\ell$ is the link parallel transporter in a fixed unitary representation $r$ of $G$, with $\hat U^{(r)}_{\ell^{-1}}=\bigl(\hat U^{(r)}_\ell\bigr)^\dagger$. It is a diagonal multiplication operator on the group-element basis,
 $$
-\hat B_p = \sum_{g_1,g_2,g_3,g_4\in G} 2\operatorname{Re}\chi_r(g_1g_2g_3^{-1}g_4^{-1})\ket{g_1,g_2,g_3,g_4} \bra{g_1,g_2,g_3,g_4}.
+\hat U^{(r)}_{\ell,mn}\,\ket{g}_\ell \;=\; D^{(r)}_{mn}(g)\,\ket{g}_\ell,
 $$
+labelled by the matrix-element indices $m,n=1,\dots,\dim r$.
 
-The physical Hilbert space satisfied:
+- $\operatorname{Tr}$ contracts the representation indices of $r$ at the plaquette corners. Equivalently, $\hat B_p$ is the diagonal multiplication operator
 $$
-\hat A_x(h)\ket{\mathrm{phys}}=\ket{\mathrm{phys}},\qquad \forall x,\ h\in G.
+\hat B_p\,\ket{\{g_\ell\}} \;=\; 2\operatorname{Re}\chi_r\!\bigl(g_{p_1}g_{p_2}g_{p_3}^{-1}g_{p_4}^{-1}\bigr)\,\ket{\{g_\ell\}},
 $$
- where the local gauge transformation
-  $\hat A_x(h)$ by
+where $\chi_r=\operatorname{Tr}D^{(r)}$ is the character of $r$.
+
+The physical Hilbert space is the simultaneous fixed point of all local gauge transformations,
 $$
-\hat A_x(h)\ket{\{g_\ell\}} =\ket{\{g_\ell'\}},\quad g_\ell'=
+\hat A_x(h)\ket{\mathrm{phys}}=\ket{\mathrm{phys}},\qquad \forall\,x,\ h\in G,
+$$
+where the local gauge transformation $\hat A_x(h)$ acts on the group-element basis by
+$$
+\hat A_x(h)\,\ket{\{g_\ell\}} \;=\; \ket{\{g_\ell'\}},\qquad g_\ell' \;=\;
 \begin{cases}
-h g_\ell, & s(\ell)=x,\\
-g_\ell h^{-1}, & t(\ell)=x,\\
-g_\ell, & \text{otherwise}.
+h\,g_\ell, & s(\ell)=x,\\
+g_\ell\,h^{-1}, & t(\ell)=x,\\
+g_\ell, & \text{otherwise.}
 \end{cases}
 $$
 :::
@@ -199,82 +263,200 @@ $$
 :::{.callout-note collapse="true"}
 ## Proof (Click to expand)
 
-**Step 1 — Continuum Hamiltonian in temporal gauge.** From the pure Yang–Mills Lagrangian $\mathcal L = -\tfrac{1}{2g_{\mathrm{cont}}^{2}}\operatorname{tr}(F_{\mu\nu}F^{\mu\nu})$ with $F_{\mu\nu}^{a}=\partial_{\mu}A_{\nu}^{a}-\partial_{\nu}A_{\mu}^{a}+f^{abc}A_{\mu}^{b}A_{\nu}^{c}$, the kinetic Hessian on $A_{0}^{a}$ vanishes (no $\partial_{0}A_{0}^{a}$ enters $\mathcal L$). By @lem-Ham-Lag-equiv, $\Pi_{0}^{a}\approx 0$ are primary constraints whose Dirac consistency yields the secondary constraints $G^{a}(x)\equiv (D_{i}E^{i})^{a}(x)\approx 0$ — the non-Abelian Gauss law. Setting $A_{0}^{a}=0$ and conjugate momentum $E_{i}^{a}:=\partial\mathcal L/\partial(\partial_{0}A_{i}^{a})=F_{0i}^{a}/g_{\mathrm{cont}}^{2}$, the continuum Hamiltonian reads
+**Step 1 — Continuum Hamiltonian in temporal gauge.** The pure Yang–Mills Lagrangian $\mathcal L = -\tfrac{1}{2g^{2}}\operatorname{tr}(F_{\mu\nu}F^{\mu\nu})$, with $F_{\mu\nu}^{a}=\partial_{\mu}A_{\nu}^{a}-\partial_{\nu}A_{\mu}^{a}+f^{abc}A_{\mu}^{b}A_{\nu}^{c}$, contains no $\partial_{0}A_{0}^{a}$, so $\Pi_{0}^{a}\approx 0$ is a primary Dirac constraint. Its time consistency yields the secondary non-Abelian Gauss law $(D_{i}E^{i})^{a}\approx 0$ [@henneaux1992quantization; @lem-Ham-Lag-equiv]. In temporal gauge $A_{0}^{a}=0$ with conjugate momentum $E_{i}^{a}:=F_{0i}^{a}/g^{2}$,
 $$
-H \;=\; \frac{g_{\mathrm{cont}}^{2}}{2}\!\int\! d^{d}x\sum_{i,a}\!E_{i}^{a}E_{i}^{a} \;+\; \frac{1}{2g_{\mathrm{cont}}^{2}}\!\int\! d^{d}x\!\sum_{i<j,a}\!F_{ij}^{a}F_{ij}^{a},
+H \;=\; \!\int\! d^{d}x\,\Bigl[\,\tfrac{g^{2}}{2}\!\sum_{i,a}E_{i}^{a}E_{i}^{a} \;+\; \tfrac{1}{2g^{2}}\!\sum_{i<j,a}F_{ij}^{a}F_{ij}^{a}\Bigr],\qquad (D_{i}E^{i})^{a}\ket{\mathrm{phys}}=0.
 $$
-with the non-Abelian Gauss-law constraint $(D_{i}E^{i})^{a}\ket{\text{phys}}=0$, $D_{i}=\partial_{i}+g_{\mathrm{cont}}A_{i}$.
 
-**Step 2 — Spatial discretization: gauge field on links.** Introduce a hypercubic lattice with site spacing $a$. For each oriented link $\ell=(x,x+a\hat i)$, replace the continuum potential by the Wilson line
+**Step 2 — Wilson-line discretisation.** Introduce a $d$-dimensional hypercubic spatial lattice of spacing $a$. For each oriented link $\ell=(x\to x+a\hat\imath)$, replace the continuum potential by the parallel transporter
 $$
-g_{\ell} \;=\; \mathcal P\exp\!\Bigl(\int_{x}^{x+a\hat i}\!A_{i}^{a}(s)T^{a}\,ds\Bigr) \;\in\; G,
+g_{\ell} \;=\; \mathcal P\exp\!\Bigl(i\!\int_{x}^{x+a\hat\imath}\!A_{i}^{a}(s)\,T^{a}\,ds\Bigr) \;\in\; G,
 $$
-and let $\hat U_{\ell}^{mn}=D^{(r)}_{mn}(g_{\ell})$ in a chosen faithful representation $r$ (e.g. fundamental for $SU(N)$). For small $a$,
+which lies in $G$ because $G$ is a compact Lie group [@wilson1974confinement; @creutz1983quarks]. Fixing a faithful unitary representation $r$, the link operator has matrix elements $\hat U^{(r)}_{\ell,mn}=D^{(r)}_{mn}(g_{\ell})$. Under a local gauge transformation $\Omega_{x}\in G$,
 $$
-\hat U_{\ell} \;=\; \exp\!\bigl(a A_{i}^{a}(x)T^{a}\bigr)+O(a^{2}).
+\hat U^{(r)}_\ell \;\longmapsto\; D^{(r)}(\Omega_{x})\,\hat U^{(r)}_\ell\,D^{(r)}(\Omega_{x+a\hat\imath})^{-1},
 $$
-Under a local gauge transformation $\Omega_{x}\in G$, $\hat U_{\ell}\to\Omega_{x}\hat U_{\ell}\Omega_{x+a\hat i}^{-1}$, the defining covariance of a parallel transporter [@wilson1974confinement; @kogut1975hamiltonian].
+the defining covariance of a discrete parallel transporter [@kogut1975hamiltonian].
 
-**Step 3 — Link Hilbert space and electric generators.** Place $\mathcal H_{\ell}=L^{2}(G)$ with the Haar measure. The link operator $\hat U_{\ell}$ acts by multiplication, $(\hat U_{\ell}^{mn}\psi)(g)=D^{(r)}_{mn}(g)\psi(g)$. The conjugates of $A_{i}^{a}$ become the left/right translation generators
+**Step 3 — Link Hilbert space and electric generators.** Set $\mathcal H_{\ell}=L^{2}(G,d\mu_{\mathrm{Haar}})$ with $\int_{G}d\mu=1$. The link operator acts by multiplication, $(\hat U^{(r)}_{\ell,mn}\psi)(g)=D^{(r)}_{mn}(g)\,\psi(g)$. The canonical conjugates of $A_{i}^{a}$ are the left/right translation generators
 $$
-\hat L_{\ell}^{a}\psi(g)=-i\partial_{t}\psi(e^{tT^{a}}g)|_{t=0},\qquad \hat R_{\ell}^{a}\psi(g)=-i\partial_{t}\psi(g e^{tT^{a}})|_{t=0},
+\hat L_{\ell}^{a}\,\psi(g) \;=\; -i\,\partial_{t}\,\psi(e^{tT^{a}}g)\big|_{t=0},\qquad
+\hat R_{\ell}^{a}\,\psi(g) \;=\; -i\,\partial_{t}\,\psi(g\,e^{tT^{a}})\big|_{t=0},
 $$
-satisfying
+self-adjoint operators on $L^{2}(G)$ because $G$ is a Lie group, so the Lie algebra $\mathfrak g$ exponentiates into $G$ via $\exp$. They satisfy
 $$
-[\hat L^{a},\hat L^{b}]=if^{abc}\hat L^{c},\quad [\hat R^{a},\hat R^{b}]=-if^{abc}\hat R^{c},\quad [\hat L^{a},\hat R^{b}]=0,
+[\hat L^{a},\hat L^{b}]=if^{abc}\hat L^{c},\qquad [\hat R^{a},\hat R^{b}]=-if^{abc}\hat R^{c},\qquad [\hat L^{a},\hat R^{b}]=0,
 $$
 $$
-[\hat L^{a},\hat U]=T^{a}\hat U,\qquad [\hat R^{a},\hat U]=-\hat U T^{a}.
+[\hat L^{a},\hat U^{(r)}]=D^{(r)}(T^{a})\,\hat U^{(r)},\qquad [\hat R^{a},\hat U^{(r)}]=-\hat U^{(r)}\,D^{(r)}(T^{a}).
 $$
-These reduce in the abelian limit $G=U(1)$ to the standard $[\hat L,\hat U]=\hat U$ used in Steps 5–7 of @lem-staggered-fermion.
+In the abelian limit $G=U(1)$, these collapse to $[\hat L,\hat U]=\hat U$, the form used in @lem-staggered-fermion.
 
-**Step 4 — Electric energy = group Casimir.** By bi-invariance of the Haar measure, $\sum_{a}(\hat L^{a})^{2}=\sum_{a}(\hat R^{a})^{2}$ — both equal the Casimir-Laplace operator on $L^{2}(G)$. The lattice electric energy is identified with this Casimir:
+**Step 4 — Electric energy via Peter–Weyl.** Bi-invariance of the Haar measure gives $\sum_{a}(\hat L^{a})^{2}=\sum_{a}(\hat R^{a})^{2}$, both equal to the quadratic Casimir / group Laplacian on $L^{2}(G)$. The Peter–Weyl theorem [@kogut1979introduction]
 $$
-\hat E_{\ell}^{2} \;\equiv\; \sum_{a}(\hat L_{\ell}^{a})^{2}.
+L^{2}(G) \;\cong\; \bigoplus_{J\in\widehat G}\,V_{J}\otimes V_{J}^{*},\qquad \text{ONB: }\sqrt{\dim V_{J}}\,D^{(J)}_{mn}(g),
 $$
-This matches the continuum $\sum_{a}E_{i}^{a}E_{i}^{a}$ in the small-$a$ limit because the left-translation generator is the canonical conjugate of the link group coordinate.
+diagonalises the Casimir: $\sum_{a}D^{(J)}(T^{a})^{2}=C_{2}(J)\,\mathbf 1_{V_{J}}$ on every isotypic block. With $\hat P_{\ell}^{J}$ the projector onto the $J$-block,
+$$
+\hat E_{\ell}^{2} \;\equiv\; \sum_{a}(\hat L_{\ell}^{a})^{2} \;=\; \sum_{J\in\widehat G}C_{2}(J)\,\hat P_{\ell}^{J},
+$$
+matching the lemma's $\hat E_\ell^{2}$. For $G=SU(2)$, $C_{2}(J)=J(J+1)$.
 
-**Step 5 — Peter–Weyl diagonalization.** The Peter–Weyl theorem states
+**Step 5 — Plaquette discretisation of the magnetic term.** For a plaquette $p$ in directions $(i,j)$ at site $x$ with cyclically ordered edges $p_{1},\dots,p_{4}$, define the Wilson loop $\hat U_{p}=\hat U^{(r)}_{p_{1}}\hat U^{(r)}_{p_{2}}\hat U^{(r)\dagger}_{p_{3}}\hat U^{(r)\dagger}_{p_{4}}$. Telescoping $\Omega$-conjugations around $p$ gives $\hat U_{p}\mapsto D^{(r)}(\Omega_{x})\,\hat U_{p}\,D^{(r)}(\Omega_{x})^{-1}$, so $\operatorname{Tr}\hat U_{p}$ is gauge invariant. Baker–Campbell–Hausdorff in $a$ yields
 $$
-L^{2}(G) \;\cong\; \bigoplus_{J\in\widehat G} V_{J}\otimes V_{J}^{*},
+\hat U_{p} \;=\; \exp\!\bigl(i\,a^{2}F_{ij}^{a}(x)\,D^{(r)}(T^{a})+O(a^{3})\bigr),
 $$
-with matrix-element basis $\sqrt{\dim V_{J}}\,D^{(J)}_{mn}(g)$. The Casimir is constant on each isotypic block: $\sum_{a}(T_{J}^{a})^{2}=C_{2}(J)\mathbf 1_{V_{J}}$. Letting $\hat P_{\ell}^{J}$ be the projector onto the $J$-block,
+and, using $\operatorname{Tr}(T^{a}T^{b})=\tfrac{1}{2}\delta^{ab}$ in the fundamental representation,
 $$
-\hat E_{\ell}^{2} \;=\; \sum_{J\in\widehat G}C_{2}(J)\,\hat P_{\ell}^{J},
+\operatorname{Re}\operatorname{Tr}\hat U_{p} \;=\; \dim V_{r} \;-\; \tfrac{a^{4}}{4}\sum_{a}F_{ij}^{a}(x)\,F_{ij}^{a}(x)\;+\;O(a^{6}).
 $$
-identifying $\alpha_{J}=C_{2}(J)$. For $G=SU(2)$ (irreps labelled by $J=0,\tfrac12,1,\dots$) this reproduces the textbook value $\alpha_{J}=J(J+1)$.
+With $\hat B_{p}=\operatorname{Tr}(\hat U_{p}+\hat U_{p}^{\dagger})=2\operatorname{Re}\operatorname{Tr}\hat U_{p}$ and the plaquette sum $\sum_{p}=\sum_{x}\sum_{i<j}$, $\sum_{x}=a^{-d}\!\int\! d^{d}x$,
+$$
+\sum_{p}\hat B_{p} \;=\; (\text{const}) \;-\; \tfrac{a^{4-d}}{2}\!\int\! d^{d}x\!\sum_{i<j,a}F_{ij}^{a}F_{ij}^{a} \;+\; O(a^{6-d}).
+$$
+Matching the continuum magnetic energy of Step 1 (modulo the field-independent constant) fixes the lattice coefficient at the canonical Wilson–Kogut–Susskind value:
+$$
+\frac{1}{2g^{2}}\!\int\! d^{d}x\sum_{i<j,a}F_{ij}^{a}F_{ij}^{a} \;=\; -\,\frac{1}{g^{2}a^{4-d}}\sum_{p}\hat B_{p} \;+\; (\text{const}),
+$$
+the minus sign ensuring the magnetic energy is minimised at trivial holonomy $\hat U_{p}\to\mathbf 1$ [@kogut1975hamiltonian; @creutz1983quarks].
 
-**Step 6 — Plaquette discretization of the magnetic term.** For a plaquette $p$ with cyclically ordered edges $p_{1},p_{2},p_{3},p_{4}$, define the Wilson loop
+**Step 6 — Lattice Gauss law and assembly.** The continuum constraint $(D_{i}E^{i})^{a}\approx 0$ discretises from Step 3's link-end commutators: outgoing links at $x$ contribute $\hat L^{a}$, incoming links contribute $\hat R^{a}$,
 $$
-\hat U_{p} \;=\; \hat U_{p_{1}}\hat U_{p_{2}}\hat U_{p_{3}}^{\dagger}\hat U_{p_{4}}^{\dagger}.
+\hat G_{x}^{a} \;=\; \sum_{\ell\in\mathrm{out}(x)}\hat L_{\ell}^{a} \;+\; \sum_{\ell\in\mathrm{in}(x)}\hat R_{\ell}^{a} \;\approx\; 0.
 $$
-Telescoping the $\Omega$-dependence around the plaquette gives $\hat U_{p}\to\Omega_{x}\hat U_{p}\Omega_{x}^{-1}$, hence $\operatorname{Tr}(\hat U_{p})$ is gauge invariant. The Baker–Campbell–Hausdorff expansion in $a$ produces
+Exponentiation gives $\hat A_{x}(h)\ket{\mathrm{phys}}=\ket{\mathrm{phys}}$ for every $h\in G$. Both $\hat E_{\ell}^{2}$ (a Casimir, central in the link algebra) and $\hat B_{p}$ (a gauge-invariant Wilson-loop trace) commute with every $\hat G_{x}^{a}$, so $H_{\mathrm{KS}}$ is gauge invariant. The electric prefactor $g^{2}/(2a^{d-2})$ follows from the canonical pairing $E_{i}^{a}(x)\,a^{(d-1)/2}\leftrightarrow\hat E_{\ell}^{a}$ converting the continuum integral $\int\!d^{d}x\,\tfrac{g^{2}}{2}(E^{a})^{2}$ to the dimensionless lattice sum [@kogut1979introduction]. Combining Steps 4 and 5,
 $$
-\hat U_{p} \;=\; \exp\!\bigl(a^{2}F_{ij}^{a}(x)T^{a}+O(a^{3})\bigr),
-$$
-so in the fundamental representation (with $\operatorname{Tr}(T^{a}T^{b})=\tfrac12\delta^{ab}$)
-$$
-\operatorname{Re Tr}(\hat U_{p}) \;=\; \dim V_{r} \;-\; \tfrac{1}{4}a^{4}\sum_{a}F_{ij}^{a}F_{ij}^{a} \;+\; O(a^{6}).
-$$
-Hence the continuum magnetic energy density $\tfrac12\sum_{i<j,a}F_{ij}^{a}F_{ij}^{a}$ is reproduced (modulo a field-independent constant) by
-$$
--\frac{2}{g^{2}}\sum_{p}\hat B_{p},\qquad \hat B_{p}\equiv\operatorname{Tr}(\hat U_{p}+\hat U_{p}^{\dagger}),
-$$
-where the prefactor $2/g^{2}$ is fixed by matching coefficients with the Wilson plaquette action $S_{W}=(2N/g^{2})\sum_{p}[1-\tfrac{1}{N}\operatorname{Re Tr}(\hat U_{p})]$ in the Hamiltonian limit [@wilson1974confinement; @kogut1975hamiltonian; @banuls2020review]. Note the *sign*: $\hat B_{p}>0$ for trivial holonomy $\hat U_{p}\to\mathbf 1$, so the minus sign is needed for the magnetic energy to be minimized at zero curvature.
-
-**Step 7 — Lattice Gauss law.** The continuum $G^{a}(x)=(D_{i}E^{i})^{a}\approx 0$ discretizes via the link-end commutators of Step 3: at site $x$, links pointing outward contribute $\hat L^{a}$ and links pointing inward contribute $\hat R^{a}$, giving
-$$
-\hat G_{x}^{a} \;=\; \sum_{\ell\in\mathrm{out}(x)}\hat L_{\ell}^{a} \;+\; \sum_{\ell\in\mathrm{in}(x)}\hat R_{\ell}^{a} \;\approx\; 0
-$$
-on physical states. Equivalently, $\hat A_{x}(h)\ket{\text{phys}}=\ket{\text{phys}}$ for all $h\in G$, where $\hat A_{x}(h)$ left-multiplies outgoing links by $h$ and right-multiplies incoming links by $h^{-1}$. Both $\hat E_{\ell}^{2}$ (a Casimir) and $\hat B_{p}$ (a Wilson-loop trace) commute with every $\hat G_{x}^{a}$, so $H_{\mathrm{KS}}$ is gauge invariant. Combining Steps 4–6 yields
-$$
-H_{\mathrm{KS}} \;=\; \frac{g^{2}}{2}\sum_{\ell}\hat E_{\ell}^{2} \;-\; \frac{2}{g^{2}}\sum_{p}\hat B_{p},\qquad \hat G_{x}^{a}\ket{\text{phys}}=0,
+H_{\mathrm{KS}} \;=\; \frac{g^{2}}{2a^{d-2}}\sum_{\ell}\hat E_{\ell}^{2} \;-\; \frac{1}{g^{2}a^{4-d}}\sum_{p}\hat B_{p},\qquad \hat G_{x}^{a}\ket{\mathrm{phys}}=0,
 $$
 matching the lemma. $\square$
-
-**Remark (sign correction).** The original draft displayed $+\tfrac{2}{g^{2}}\sum_{p}\hat B_{p}$. With $\hat B_{p}=\operatorname{Tr}(\hat U_{p}+\hat U_{p}^{\dagger})\geq 0$ (and equal to $2\dim V_{r}$ at trivial holonomy), the correct sign for a positive-definite magnetic energy minimised at zero curvature is *negative*; the lemma above has been corrected accordingly. Different normalization conventions in the literature replace $\tfrac{2}{g^{2}}$ by $\tfrac{1}{g^{2}}$, $\tfrac{1}{2g^{2}}$, etc., depending on whether $\hat B_{p}$ is taken as $\operatorname{Re Tr}\hat U_{p}$, $\tfrac{1}{N}\operatorname{Re Tr}\hat U_{p}$, or $\operatorname{Tr}(\hat U_{p}+\hat U_{p}^{\dagger})$ [@banuls2020review].
-
-**Remark (matter coupling).** Adding fermionic matter promotes the Gauss law to $\hat G_{x}^{a}=\sum_{\mathrm{out}}\hat L^{a}+\sum_{\mathrm{in}}\hat R^{a}-\hat\rho_{x}^{a}$ and adds a gauge-covariant hopping term $-(i/2a)\sum_{\ell}\bigl(\hat\psi_{x}^{\dagger}\hat U_{\ell}\hat\psi_{x+a\hat i}-\mathrm{H.c.}\bigr)$ plus mass; restricting to $G=U(1)$, $d=1$, no plaquettes (one-dimensional space has no plaquettes), and staggered fermions reproduces @lem-staggered-fermion.
 :::
 
-# 
+@lem-lattice_pureYM should be read as the *canonical* Kogut–Susskind Hamiltonian for pure Yang–Mills lattice gauge theory; it is not the most general Hamiltonian compatible with a local $G$ gauge symmetry. A concrete lattice gauge theory with gauge group $G$ is specified by the data
+$$
+\bigl(\Lambda,\; G,\; \{\mathcal H^{\mathrm g}_\ell\}_{\ell\in E},\; \{\mathcal H^{\mathrm m}_x,V_x\}_{x\in V},\; \{\hat A_x(h)\},\; \hat H\bigr),
+$$
+where:
+
+- The $\Lambda=(V,E,P)$ is an oriented cell complex of vertices, links, and plaquettes;
+- Each link $\ell$ carries a gauge-field Hilbert space $\mathbb C[G]$ for $G$;
+- Each site $x$ carry a matter Hilbert space $\mathcal H^{\mathrm m}_x$ that holds certain representation of $G$ as $V_x:G\to U(\mathcal H^{\mathrm m}_x)$. This representation can be  taken as the direct sum of the irreps of $G$: $V_x(h) = \bigoplus_{m} D^{(m)}(h)$, each $m$ specifying a particles annihilator with gauge covariant rules ${\psi^{(m)}} \to D^{(m)}(h){\psi^{(m)}}$. Usually, along with matrix $D^{(m)}(h){\psi^{(m)}}$, an operator $U^{(m)}_{\ell} $ on link $\ell$ shall be specified:
+$$
+U^{(m)}_{\ell,ab} =  \sum_{g \in G} D^{(m)}_{ab}(g) \ket{g}_{\ell} \bra{g}_{\ell}
+$$
+- The $A_x(h)$ is the local gauge transformation decided by both $G$ and $V_x$.
+$$
+\hat A_x(h) \;=\; V_x(h)\!\!\prod_{\ell=(x\to y)}\!\!L_\ell(h)\!\!\prod_{\ell=(y\to x)}\!\!R_\ell(h),\qquad h\in G,
+$$
+
+- A Hermitian operator $\hat H$ need to be commute with every $\hat A_x(h)$ is an admissible Hamiltonian. 
+
+:::{#lem-building_blocks .callout-note icon="false"}
+## Building blocks
+Standard gauge-invariant building blocks are:
+
+- The electric energy: $\sum_{\ell}\sum_{J\in\widehat G}\alpha_J\,\hat P_\ell^J$
+- The magnetic energy: $\sum_{p} f_B(\hat U_p)$, where $f_B$ is a conjugate function and $U_p = \prod_{\ell\in p}\hat U_{\ell}$ is the magnetic Wilson loop.
+- The matter mass: $m\sum_{x}\psi_x^\dagger\psi_x$
+- The covariant hopping: $\sum_{\langle x,y\rangle}\!\Bigl(\psi_x^\dagger\hat U^{(r_m)}_{xy}\psi_y+\mathrm{H.c.}\Bigr)$
+
+Each of them is individually gauge-invariant. 
+:::
+
+In the compact-Lie case, it reduces to the infinitesimal Gauss-law generators $\hat G_x^a=\hat Q_x^a+\sum_{\mathrm{out}}\hat L_\ell^a+\sum_{\mathrm{in}}\hat R_\ell^a$ already used in Step 7 of the proof. 
+The Kogut–Susskind choice in @lem-lattice_pureYM selects the lowest-order combination — $\alpha_J=C_2(J)$ on compact Lie $G$, the bare character trace of $\hat U_p$ for $f_B$, and $V_x(h)=\mathbf 1$ for the pure-gauge sector — designed to recover the continuum Yang–Mills action in the small-$a$ limit. Different choices of $\{\alpha_J\}$, of the magnetic potential $f_B$, of higher-order plaquette or Wilson-loop terms, and of the matter representation $r_m$ define physically distinct $G$-LGTs: fundamental matter, adjoint matter, and pure gauge are *not* different descriptions of the same theory but different theories sharing only the gauge group.
+
+
+# LGT with guage symmetry $\mathbb{Z}_2$
+
+The simplest non-trivial specialization of the data tuple above is $G=\mathbb Z_2=\{+1,-1\}$. The Peter–Weyl link space $\mathbb C[\mathbb Z_2]$ collapses to a single qubit $\mathcal H_\ell=\mathrm{span}\{\ket{+},\ket{-}\}$, and because $\mathbb Z_2$ is abelian the left and right regular actions coincide:
+$$
+L_\ell(-1) \;=\; R_\ell(-1) \;=\; \tau^{x}_\ell.
+$$
+The nontrivial irreducible character $\chi:\mathbb Z_2\to\{\pm 1\}$ supplies the link parallel transporter
+$$
+\hat U^{(\chi)}_\ell \;=\; \ket{+}\!\bra{+} \;-\; \ket{-}\!\bra{-} \;=\; \tau^{z}_\ell,
+$$
+a diagonal multiplication operator with eigenvalues $\pm 1$ — the lattice analogue of the Wilson line in the only nontrivial $\mathbb Z_2$ representation. Choosing matter $\psi_x$ in the nontrivial representation, $V_x(-1)=Q_x=(-1)^{n_x}$, the local gauge transformation reads $\hat A_x(-1)=Q_x\prod_{\ell\ni x}\tau^{x}_\ell$, so that the Gauss operator is
+$$
+G_x \;=\; Q_x\prod_{\ell\ni x}\tau^{x}_\ell.
+$$
+The minimal covariant hopping reduces to $a_x^\dagger\,\tau^{z}_{xy}\,a_y+\mathrm{H.c.}$, and the magnetic Wilson loop on a plaquette $p$ collapses to the $\mathbb Z_2$ flux
+$$
+\hat U_p \;=\; \prod_{\ell\in p}\tau^{z}_\ell.
+$$
+This is the algebra targeted by recent Floquet-engineered cold-atom realizations of $\mathbb Z_2$ lattice gauge theory [@schweizer2019floquet]; the Rydberg/Floquet design problem flagged in the opening summary is the natural non-abelian generalization of this minimal $\mathbb Z_2$ construction.
+
+
+Thus, a $\mathbb{Z}_2$ gauge field typically use Hamiltonian and Gauss's law; 
+$$
+\begin{align*}
+H_{\mathbb{Z}_2} &= -h \sum_{j} (\tau^z_{\ell} a^\dagger_j a_{j+1}  + \text{h.c.}) - K \sum_{\ell} \tau^x_{\ell} -\mu (-1)^{j}{a_j^\dagger a_j}, \\
+G_x^{\mathbb{Z}_2} &= (-1)^{a_j^\dagger a_j} \prod_{\ell \ni x} \tau^x_{\ell} 
+\end{align*}
+$$
+where $a_j$ is the matter field and $\tau^z_{\ell}$ is the gauge field.
+Other setting of the Hamiltonian setting exists, while the advantage of this setting is that it equivalent to the 1d-QED model up to a Jordan-Wigner transformation and staggered fermion discretization.
+
+:::{#lem-z2-gauge-field .callout-note icon="false"}
+## Z2 Gauge Field
+The Z2 gauge field given by $H_{\mathbb{Z}_2}$ and $G_x^{\mathbb{Z}_2}$ is equivalent to the staggered fermion discretized 1d-QED model up to a Jordan-Wigner transformation:
+$$
+\begin{align*}
+a_n = \left[\prod_{m < n} (-1)^{c_m^\dagger c_m}\right] c_n.
+\end{align*}
+$$
+:::
+
+:::{.callout-note collapse="true"}
+## Proof (Click to expand)
+
+**Step 1 — Jordan–Wigner map.** Replace the hardcore-boson operators $a_n$ by spinless fermionic operators $c_n$ via [@jordan1928uber]
+$$
+a_n \;=\; K_n\,c_n,\qquad a_n^\dagger \;=\; c_n^\dagger\,K_n,\qquad K_n \;=\; \prod_{m<n}(-1)^{c_m^\dagger c_m},
+$$
+with $\{c_n,c_m^\dagger\}=\delta_{nm}$. The string $K_n$ supplies the relative sign that converts commuting hardcore bosons on different sites into anticommuting fermions [@borla2020confined].
+
+**Step 2 — Site-diagonal terms.** Because $K_n^2=\mathbf 1$ and $[K_n,c_n^\dagger c_n]=0$,
+$$
+a_n^\dagger a_n \;=\; c_n^\dagger\,K_n^2\,c_n \;=\; c_n^\dagger c_n.
+$$
+The link operators $\tau^{x}_\ell,\tau^{z}_\ell$ commute with all matter operators, so the staggered-mass term $-\mu(-1)^{j}a_j^\dagger a_j$ and the electric term $-K\tau^{x}_\ell$ are unchanged.
+
+**Step 3 — Telescoping of the JW string on nearest-neighbour hopping.** Using $K_{j+1}=K_j(-1)^{c_j^\dagger c_j}$, the fermion identity $c_j^\dagger(-1)^{c_j^\dagger c_j}=c_j^\dagger$ (from $(c_j^\dagger)^2=0$), and $[\tau^{z}_\ell,c_n]=0$,
+$$
+a_j^\dagger\,\tau^{z}_\ell\,a_{j+1}
+\;=\; c_j^\dagger\,K_j\,\tau^{z}_\ell\,K_{j+1}\,c_{j+1}
+\;=\; c_j^\dagger\,(-1)^{c_j^\dagger c_j}\,\tau^{z}_\ell\,c_{j+1}
+\;=\; c_j^\dagger\,\tau^{z}_\ell\,c_{j+1}.
+$$
+The non-local string telescopes; this cancellation is special to nearest-neighbour hopping in one dimension. Combining Steps 2–3 brings $H_{\mathbb Z_2}$ into the symmetric Heisenberg-XX form of a $\mathbb Z_2$-LGT-coupled fermion chain [@borla2020confined; @schweizer2019floquet],
+$$
+H_{\mathbb Z_2}\;=\;-h\!\sum_{j}\!\bigl(c_j^\dagger\,\tau^{z}_\ell\,c_{j+1}+\mathrm{h.c.}\bigr)\;-\;\mu\!\sum_{j}(-1)^{j}c_j^\dagger c_j\;-\;K\!\sum_{\ell}\!\tau^{x}_\ell.
+$$
+
+**Step 4 — Staggered phase rotation to Kogut–Susskind form.** The conventional staggered-fermion form of @lem-staggered-fermion writes the hopping anti-Hermitically. Set $c_j=e^{-i\pi j/2}\psi_j$. Then $c_j^\dagger c_j=\psi_j^\dagger\psi_j$ and
+$$
+c_j^\dagger\,\tau^{z}_\ell\,c_{j+1}
+\;=\; e^{i\pi j/2}\,e^{-i\pi(j+1)/2}\,\psi_j^\dagger\,\tau^{z}_\ell\,\psi_{j+1}
+\;=\; -i\,\psi_j^\dagger\,\tau^{z}_\ell\,\psi_{j+1},
+$$
+so $-h(c_j^\dagger\tau^{z}_\ell c_{j+1}+\mathrm{h.c.}) = ih(\psi_j^\dagger\tau^{z}_\ell\psi_{j+1}-\mathrm{h.c.})$. The Hamiltonian becomes
+$$
+H_{\mathbb Z_2}\;=\;\!\sum_{j}\!\Bigl[\,ih\bigl(\psi_j^\dagger\,\tau^{z}_\ell\,\psi_{j+1}-\mathrm{h.c.}\bigr)\;-\;\mu(-1)^{j}\psi_j^\dagger\psi_j\;-\;K\tau^{x}_\ell\Bigr].
+$$
+
+**Step 5 — Match to @lem-staggered-fermion and Gauss-law check.** Identify the $U(1)\to\mathbb Z_2$ reduction
+$$
+e^{i\theta_n}\;\longrightarrow\;\tau^{z}_{n+\frac12},\qquad
+(L_n+\alpha)^{2}\;\longrightarrow\;\tau^{x}_{n+\frac12},\qquad
+x\;\longrightarrow\;h.
+$$
+With this dictionary, the image of $H_{\mathbb Z_2}$ from Step 4 is the $\mathbb Z_2$ specialisation of the dimensionless staggered 1+1-D QED Hamiltonian of @lem-staggered-fermion, up to overall signs of the couplings (an inessential parameter convention). The Gauss operator transforms covariantly,
+$$
+G_x^{\mathbb Z_2}\;=\;(-1)^{a_j^\dagger a_j}\!\prod_{\ell\ni x}\!\tau^{x}_\ell
+\;=\;(-1)^{\psi_j^\dagger\psi_j}\!\prod_{\ell\ni x}\!\tau^{x}_\ell.
+$$
+Conjugation by $G_x^{\mathbb Z_2}$ flips the signs of $\psi_x$ (from $(-1)^{n_x}$) and of $\tau^{z}_{x\pm 1/2}$ (from $\tau^{x}\tau^{z}\tau^{x}=-\tau^{z}$), so the hopping term incident at $x$ is invariant; the mass and electric terms commute outright. Hence $[H_{\mathbb Z_2},G_x^{\mathbb Z_2}]=0$, confirming the $\mathbb Z_2$ gauge invariance is preserved by the JW + staggered re-phasing. $\square$
+
+:::
+
