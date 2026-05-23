@@ -1,0 +1,174 @@
+---
+categories:
+- Readings
+date: 2026-02-02
+lang: en
+title: "Bell Sampling on mbqc-iqp circuits"
+bibliography: refs.bib
+jupyter: python3
+keep-ipynb: false
+code-fold: true
+---
+
+# Summary and question
+
+This page is target on the complexity analysis and practical experiment implementation of the Bell sampling on a iqp/adaptive-iqp circuits.
+
+# Derivation
+
+::: {#lem-ising-Bell .callout-important icon="false"}
+## (Bell sampling distribution on Ising partition function)
+Consider the Hamiltonian evolution
+$$
+U_{\rm Ry}(t) = \exp\left[i\sum_{j<k} K_{jk}t\, Z_jZ_k + i\sum_j h_j t\, Z_j\right].
+$$
+and quantum state $\ket{C} = U_{\rm Ry}(t = 1) \ket{+^n}$.
+The Bell sampling distribution is given by:
+$$
+\begin{align*}
+\Pr(\mathbf z,\mathbf x) &= 2^{-3n}\left|\sum_{s\in\{\pm1\}^n}\chi_{\mathbf z}(s)F_{\mathbf x}(s)\right|^2,\; \chi_{\mathbf z}(s):=\prod_i s_i^{z_i}\\
+F_{\mathbf x}(s)&:=\exp\left[i\left(\sum_{i<j:\,x_i=x_j}2K_{ij}s_is_j
++\sum_{i:x_i=0}2h_i s_i\right)\right].
+\end{align*}
+$$
+:::
+
+:::{.callout-note collapse="true"}
+## Proof (Click to expand)
+Take $t = 1$ and state $\ket{C} = U_{\rm Ry}(t) \ket{+^n}$ with 
+write $U_{K,h} = e^{i\,\Phi(Z)}$ with Ising energy
+$$
+\Phi(s) := \sum_{i<j} K_{ij}\, s_i s_j + \sum_i h_i\, s_i,
+\qquad s_i  \in \{\pm 1\},
+$$
+so that $|\psi_{K,h}\rangle = U_{K,h}|+\rangle^{\otimes n}$. Bell sampling on two copies of $|\psi_{K,h}\rangle$ in the standard $X^{\mathbf r_x} Z^{\mathbf r_z}$-labelled Bell basis gives [@hangleiter2024bell]
+$$
+\begin{align*}
+\mathrm{Pr}(\mathbf r) \;&=\; 2^{-n}\,\bigl|\langle \overline{\psi_{K,h}}\,|\,Z^{\mathbf r_z} X^{\mathbf r_x}\,|\psi_{K,h}\rangle\bigr|^{2}\\
+&=2^{-n}\,\Bigl|\langle+|^{\otimes n}\, U_{K,h}\,Z^{\mathbf r_z} X^{\mathbf r_x}\, U_{K,h}\,|+\rangle^{\otimes n}\Bigr|^{2}
+\end{align*}
+$$
+Here we have used the fact that $\overline{U_{K,h}} = U_{K,h}^{\dagger}$.
+Expand $|+\rangle^{\otimes n} = 2^{-n/2}\sum_y |y\rangle$ and use $U_{K,h}|y\rangle = e^{i\Phi(s(y))}|y\rangle$, together with $Z^{\mathbf r_z} X^{\mathbf r_x}|y\rangle = (-1)^{\mathbf r_z\cdot(y\oplus \mathbf r_x)}\,|y\oplus \mathbf r_x\rangle$. The two $|+\rangle$ envelopes collapse the doubled $y$-sum into a single sum. Defining $s_i(y) = (-1)^{y_i}$, we get the result:
+$$
+\begin{align*}
+&\langle+|\, U_{K,h}\, Z^{\mathbf r_z} X^{\mathbf r_x}\, U_{K,h}\, |+\rangle
+\;=\; 2^{-n}\!\sum_{y\in\{0,1\}^n} (-1)^{\mathbf r_z\cdot y}\,
+e^{i\bigl[\Phi(s(y))+\Phi(s(y\oplus \mathbf r_x))\bigr]},\\
+&= 2^{-n}\!\sum_{y\in\{0,1\}^n} (-1)^{\mathbf r_z\cdot y}\,
+e^{i\bigl[\sum_{i<j} K_{ij}\bigl[1+(-1)^{(\mathbf r_x)_i+(\mathbf r_x)_j}\bigr]\, s_i s_j
+\;+\; \sum_i h_i\bigl[1+(-1)^{(\mathbf r_x)_i}\bigr]\, s_i\bigr]},\\
+&= 2^{-n}\!\sum_{y\in\{0,1\}^n} (-1)^{\mathbf r_z\cdot y}\,
+e^{i\bigl[ 2\sum_{i<j:\,(\mathbf r_x)_i = (\mathbf r_x)_j}K_{ij} s_i s_j
++ 2\sum_{i:\,(\mathbf r_x)_i = 0} h_i\, s_i\bigr]},
+\end{align*}
+$$
+where the global phase $(-1)^{\mathbf r_z\cdot \mathbf r_x}$ has been absorbed into the modulus.
+Thus the probability of the Bell outcome $\mathbf{r} = (\mathbf{z}, \mathbf{x})$ is:
+$$
+\begin{align*}
+\Pr(\mathbf z,\mathbf x) &= 2^{-3n}\left|\sum_{s\in\{\pm1\}^n}\chi_{\mathbf z}(s)F_{\mathbf x}(s)\right|^2,\; \chi_{\mathbf z}(s):=\prod_i s_i^{z_i}\\
+F_{\mathbf x}(s)&:=\exp\left[i\left(\sum_{i<j:\,x_i=x_j}2K_{ij}s_is_j
++\sum_{i:x_i=0}2h_i s_i\right)\right].
+\end{align*}
+$$
+:::
+
+From @lem-ising-Bell, each Bell outcome's probability is still related tothe squared modulus of a **complex Ising partition function**, however, with a reframe effect by both $\mathbf{z}$ and $\mathbf{x}$:
+
+- The $\mathbf x$ separate vertex into two sectors: $\mathcal{S}_0 = \{i: x_i = 0\}$ and $\mathcal{S}_1 = \{i: x_i = 1\}$.
+- Only interactions between vertices in the same sector survive, i.e., $K_{ij}$ for $i,j \in \mathcal{S}_0$ or $i,j \in \mathcal{S}_1$.
+- The $\mathbf z$ string acts as a parity tag $\prod_i s_i^{z_i}$ inside the partition sum. 
+
+
+A direct consequence this reframe effect is that the marginal distribution of $\mathbf{x}$ is uniform, i.e., $\mathrm{Pr}(\mathbf x) = {2^{-n}}.$
+
+::: {#lem-ising-gapp .callout-important icon="false"}
+## (Maginal of $\mathbf x$ is uniform)
+The marginal over $\mathbf x$ is approximately uniform, i.e., $\mathrm{Pr}(\mathbf x) := \sum_{\mathbf z} \mathrm{Pr}(\mathbf z,\mathbf x) = {2^{-n}}.$
+:::
+:::{.callout-note collapse="true"}
+## Proof (Click to expand)
+Note that
+$$
+\begin{align*}
+\Pr(\mathbf x)
+&=
+\sum_{\mathbf z\in\{0,1\}^n}\Pr(\mathbf z,\mathbf x)\\
+&=
+2^{-3n}
+\sum_{\mathbf z}
+\left|
+\sum_s \chi_{\mathbf z}(s)F_{\mathbf x}(s)
+\right|^2\\
+&=
+2^{-3n}
+\sum_{\mathbf z}
+\sum_{s,t}
+\chi_{\mathbf z}(s)\chi_{\mathbf z}(t)
+F_{\mathbf x}(s)\overline{F_{\mathbf x}(t)} .
+\end{align*}
+$$
+Since $\chi_{\mathbf z}(s)$ is the Fourier character on the $\{\pm\}$ field, we conclude:
+$$
+\sum_{\mathbf z\in\{0,1\}^n}
+\chi_{\mathbf z}(s)\chi_{\mathbf z}(t)
+=\sum_{\mathbf z}
+\prod_i (s_i t_i)^{z_i}=\prod_i(1+s_it_i)=2^n\delta_{s,t}.
+$$
+Plugging back, we get:
+$$
+\begin{align*}
+\Pr(\mathbf x)&=
+2^{-3n}\sum_{s,t}2^n\delta_{s,t}
+F_{\mathbf x}(s)\overline{F_{\mathbf x}(t)}\\
+&=2^{-2n}
+\sum_s |F_{\mathbf x}(s)|^2=
+2^{-2n}\cdot 2^n=
+2^{-n}.
+\end{align*}
+$$
+Here we use the fact that $|F_{\mathbf x}(s)|=1$ is satisfied for all $s\in\{\pm1\}^n$.
+:::
+
+@lem-ising-gapp directly implies that $\mathbf{x}$ can be uniformly sampled first,
+and the classical hardness must comes from the conditional distribution $\mathrm{Pr}(\mathbf{z} \mid \mathbf{x})$.
+
+Given a fixed $\mathbf{x}$, it randomly adds color to the $n$ vertex and remove edge that connect vertices with different colors.
+This will cause **percolation effect** on the Ising partition function,
+if the $K_{ij}$ is somehow sparse and local.
+This might make the calculation/weak simulation of $\mathrm{Pr}(\mathbf{z},\mathbf{x})$ tractable.
+
+
+
+# Hardness proof
+
+# Verification
+
+::: {#thm-ising-Bell-verification .callout-important icon="false"}
+Given a quantum state $\ket{C} =\exp \left[i\left(\sum_{j<k}K_{jk}tZ_jZ_k+\sum_j h_jtZ_j\right)\right] \ket{+^n}$,
+There must exist a set of Pauli operators
+$$
+\begin{align*}
+\widetilde X_i =
+X_i\,
+\exp\!\left[
+-2it\,Z_i
+\left(
+h_i+\sum_{j\in N(i)}K_{ij}Z_j
+\right)
+\right],
+\end{align*}
+$$
+such that $1-F(\rho,\ket{C}) \le \sum_i \frac{1-\langle \widetilde X_i\rangle_\rho}{2}$ must be hold 
+:::
+
+:::{.callout-note collapse="true"}
+## Proof (Click to expand)
+[t.b.c.]
+:::
+
+
+
+- This indicates a **Efficient** verification method that **cannot be spoofed** by any adversary.
+- Bell measurement only gives $|\mathrm{tr}(P \rho)|$, so to get the $\widetilde{X}_j$, we have to try at most $2^h$ signal, where $h$ is the number of adacent edges of the vertex $j$.

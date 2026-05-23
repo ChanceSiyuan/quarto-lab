@@ -9,13 +9,28 @@ bibliography: refs.bib
 
 [← Back to Index](../index.qmd)
 
-# Background
+# Summary and Questions
 
 This section covers measurement-based quantum computing (MBQC) implementations of IQP circuits. 
 
 - The MBQC-IQP experimental scheme is proposed in @bermejovega2018architectures, which gives detailed proofs of computational hardness and selects verification methods. 
 - A corresponding trapped-ion experiment is reported in @ringbauer2023verifiable. 
 - An alternative verification approach exploiting the fact that IQP states are phase states (yielding more efficient fidelity estimation, but assuming error-free single-qubit measurements) is given in @takeuchi2019verifying.
+
+However, Current proposal is not practical. 
+It requires too high CZ fidelity. Even use the $n \times n$ frid for $n = 50$, the contained $2n(n-1) = 4900$ CZ gates.
+ To reach the goal $|p_{\mathrm{g}} - p_{\mathrm{e}}| < 1/22$, and use the inequality:
+$$
+(1/2)|p_{\mathrm{g}} - p_{\mathrm{e}}| \leq \mathrm{tr} \left[\sqrt{(\rho- \sigma)^\dagger (\rho- \sigma)}\right] \leq \sqrt{1 - F(\rho, \sigma)}
+$$
+We conclude an impossible goal: $(1 - F_{\mathrm{CZ}})^{4900} \geq 1 - \frac{1}{4 \times 22^2} \Rightarrow F_{\mathrm{CZ}} \geq 99.999989\%$.
+
+**What's next?**
+
+1. Check whether how much the mid-circuit measurements can mitigate this.
+2. Check whether adding virtual distillation can mitigate this. (might not feasible)
+3. If CZ is not a perfect gate, will supermacy still hold?
+4. [todo: Add more feasible solutions]
 
 ## Experimental Setups
 
@@ -32,11 +47,12 @@ Three measurement schemes on grid cluster states:
 
 ## Supremacy Proof Sketch
 
-### 1. Multiplicative-Error Hardness
+#### Multiplicative-Error Hardness
 
 Post-selecting measurement outcomes can be made equivalent to any post-BQP circuit.
 
 ::: {#thm-mbqc-postselection .callout-important icon="false"}
+
 ## Post-Selection Universality of MBQC-IQP
 
 Let $V$ be any $n$-qubit Clifford+T circuit of depth $D$ with one-dimensional locality. For an $\mathcal{O}(n) \times \mathcal{O}(Dn)$ grid with measurement schemes (I)--(III), one can post-select measurement outcomes to place the final column of atoms in the state $|\psi\rangle = (V|0\rangle^{\otimes n}) \otimes |0\rangle^{\otimes r}$ [@bermejovega2018architectures, Lemma 3].
@@ -76,21 +92,24 @@ $$
 For an $n \times \mathcal{O}(n^2)$ grid, with the above choices of $a, b$, approximating $|Z[a,b]|^2$ to multiplicative error $1/4$ is \#P-hard.
 :::
 
-### 2. Anti-Concentration and Hiding
+#### Anti-Concentration and Hiding
 
-**Conjecture** [@bermejovega2018architectures, Appendix C]: The $\mathcal{O}(n) \times \mathcal{O}(Dn^2)$ grid with measurements (I)--(III) is equivalent to measuring the output of the following circuit projected onto $\{|0\rangle, |1\rangle\}$ on the final qubits:
-
+::: {#thm-mbqc-iqp-anti-concentration .callout-important icon="false"}
+## (MBQC-IQP Anti-Concentration [@bermejovega2018architectures, Appendix C])
+ The $\mathcal{O}(n) \times \mathcal{O}(Dn^2)$ grid with measurements (I)--(III) is equivalent to measuring the output of the following circuit projected onto $\{|0\rangle, |1\rangle\}$ on the final qubits:
 $$
 p_\theta(x) = \langle x| \prod_{t=1}^{Dn^2} \bigotimes_{i=1}^{n-1} CZ_{i,i+1} \bigotimes_{i=1}^n e^{i\theta_{i,t,b} Z_i} \bigotimes_{i=1}^n H_i |0\rangle^{\otimes n},
 $$
+where $\theta$ depends on the random measurement choices and the measurement outcomes of previous layers. 
+:::
 
-where $\theta$ depends on the random measurement choices and the measurement outcomes of previous layers. Furthermore, if this circuit satisfies anti-concentration $\Pr_{\theta \sim \mathcal{C}}[p_\theta(x) \geq \alpha/2^n] \geq \gamma(\alpha)$, then the distribution of measurement results $q_\theta(x,y)$ for $x \in \{0,1\}^n$, $y \in \{0,1\}^{N-n}$ satisfies the anti-concentration condition $\Pr_{\theta \sim \mathcal{C}}[q_\theta(x,y) \geq \alpha/2^n] \geq \gamma(\alpha)$ and the hiding condition $\mathbb{E}_{\theta \sim \mathcal{C}} q_\theta(x,y) = \mathbb{E}_{\theta \sim \mathcal{C}} q_\theta(0,0)$.
+Furthermore, if this circuit satisfies anti-concentration $\Pr_{\theta \sim \mathcal{C}}[p_\theta(x) \geq \alpha/2^n] \geq \gamma(\alpha)$, then the distribution of measurement results $q_\theta(x,y)$ for $x \in \{0,1\}^n$, $y \in \{0,1\}^{N-n}$ satisfies the anti-concentration condition $\Pr_{\theta \sim \mathcal{C}}[q_\theta(x,y) \geq \alpha/2^n] \geq \gamma(\alpha)$ and the hiding condition $\mathbb{E}_{\theta \sim \mathcal{C}} q_\theta(x,y) = \mathbb{E}_{\theta \sim \mathcal{C}} q_\theta(0,0)$.
 
 <!-- TODO: Figure showing numerical evidence (original figure from external source) -->
 
 No proof—this is supported by numerical evidence only.
 
-### 3. Average-Case Hardness
+#### Average-Case Hardness
 
 **Conjecture** [@bermejovega2018architectures]:
 
@@ -125,7 +144,7 @@ $$
 By estimating the energy under the parent Hamiltonian, one obtains a lower bound on the fidelity.
 :::
 
-### Graph State Verification
+#### Graph State Verification
 
 An alternative approach based on graph coloring [@takeuchi2019verifying]:
 
@@ -136,11 +155,3 @@ An alternative approach based on graph coloring [@takeuchi2019verifying]:
 1. **Graph coloring:** Color the vertices of the graph such that no two adjacent vertices share the same color. Let $m$ be the chromatic number of $G$.
 2. **Measurement:** Given the coloring, randomly select one of the $m$ colors. Measure vertices of that color in $X$; measure all others in $Z$.
 3. **Repetition:** Repeat $N$ times. Count the frequency $f$ of obtaining the $+1$ outcome. Set $\varepsilon > (1-f)m$. Claim $F > 1 - \varepsilon$ with confidence $\delta = e^{-D(f \| 1 - \varepsilon/m) N}$.
-
-## Open Questions
-
-MBQC-based IQP circuits require no coherent transfer and have reduced local addressing requirements. Some possible questions:
-
-1. Does gate noise produce an efficient classical simulation algorithm for MBQC-IQP?
-2. Is there practical difficulty in local addressing of single-qubit measurements?
-3. If next-nearest-neighbor effects and lattice inhomogeneity are taken into account, what are the complexity guarantees for the above sampling?

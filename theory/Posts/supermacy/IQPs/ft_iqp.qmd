@@ -23,6 +23,9 @@ bibliography: refs.bib
 ## h-IQP Circuit Definition
 
 <!-- TODO: Figures showing h-IQP circuit structure, encoding, and block connectivity (original figures from external source) -->
+![h-IQP circuit structure, encoding, and block connectivity](ftiqp1.png)
+![h-IQP circuit structure, encoding, and block connectivity](ftiqp2.png)
+![h-IQP circuit structure, encoding, and block connectivity](ftiqp3.png){width=20%}
 
 ::: {#def-hiqp .callout-important icon="false"}
 ## h-IQP Circuit with Hyperdepth $L$
@@ -31,8 +34,8 @@ An h-IQP circuit uses blocks of 8 physical qubits encoding 3 logical qubits, wit
 
 1. Prepare logical $|+\rangle$ states.
 2. Execute $L$ layers, each consisting of:
-    - (i) Uniformly random degree-$D$ logical phase gates and uniformly random logical CNOT gates within each block.
-    - (ii) Transversal CNOT gates with random directions between different error-correcting code blocks, following the connectivity of $G$.
+    - Uniformly random degree-$D$ logical phase gates and uniformly random logical CNOT gates within each block.
+    - Transversal CNOT gates with random directions between different error-correcting code blocks, following the connectivity of $G$.
 3. Within each block, execute a final layer of uniformly random degree-$D$ logical phase gates.
 4. Measure all physical qubits in the $X$ basis.
 :::

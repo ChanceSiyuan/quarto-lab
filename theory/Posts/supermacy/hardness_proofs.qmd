@@ -194,62 +194,47 @@ $$
 Since experimental noise is typically independent and random, generating an additive-error probability distribution is more relevant to experimental requirements. How hard is this type of approximation?
 
 ::: {#thm-additive-error .callout-important icon="false"}
-## Additive Error Approximation Hardness
+## (Additive-Error Hardness [@hangleiter2023computational, Theorem 17])
 
-If a circuit ensemble satisfies the **hiding property** and **anti-concentration**, i.e.,
+Let $\mathcal{C}$ be an $n$-qubit circuit family whose worst-case multiplicative approximation is GapP-hard, and suppose the induced ensemble satisfies:
+
+- **Hiding.** The law of $C \sim \mathcal{C}$ is invariant under left-multiplication by Pauli operators, so the marginal distribution of $p_C(x)$ over $C$ is the same for every $x$.
+- **Anti-concentration.** There exists $\gamma(\alpha) > 0$ with
 $$
-\Pr_{C \sim \mathcal{C}} \left[p_C(x) \geq \frac{\alpha}{2^n}\right] \geq \gamma(\alpha),
+\Pr_{C \sim \mathcal{C}}\!\left[\, p_C(x) \geq \alpha/2^n \,\right] \geq \gamma(\alpha).
 $$
-then under the assumption of average-case multiplicative-approximate hardness for a certain GapP problem and the non-collapse of the polynomial hierarchy, no efficient classical additive-error weak simulation exists [@hangleiter2023computational, Theorem 17].
+
+If a classical randomized algorithm samples $p_C$ to additive error $\varepsilon$ in total variation, then a $\mathsf{P}^{\mathsf{NP}^{\mathsf{NP}}}$ machine multiplicatively approximates $p_C(x)$ with constant $c < 2$ on a $\gamma(\alpha)(1-\delta)$ fraction of $(C,x)$ instances.
 :::
 
 ::: {.callout-note collapse="true"}
 ## Proof (Click to expand)
 
-*Proof.* Suppose a classical randomized algorithm outputs $x$ with probability $p_x$ that approximates $p_C(x)$ to additive error $\varepsilon$. Then we can apply [Stockmeyer's algorithm](../quantum_complexity/counting_complexity.qmd#stockmeyers-algorithm) to estimate $p_x$ to multiplicative error $c$, obtaining $q_x$. Ultimately we achieve approximate strong simulation using a $\mathsf{P}^{\mathsf{NP}^{\mathsf{NP}}}$ machine, with approximation error:
-
+Let $\tilde p_x(C)$ be the probability that the classical sampler outputs $x$ on circuit $C$, so $\tfrac{1}{2}\sum_x|\tilde p_x(C)-p_C(x)| \leq \varepsilon$. Apply [Stockmeyer's algorithm](../quantum_complexity/counting_complexity.qmd#stockmeyers-algorithm) to $\tilde p_x$ to obtain, in $\mathsf{P}^{\mathsf{NP}^{\mathsf{NP}}}$, an estimate $q_x$ with $|q_x - \tilde p_x(C)| \leq c\,\tilde p_x(C)$. The triangle inequality gives the pointwise decomposition
 $$
-\forall x,\quad |q_x - p_C(x)| \leq |q_x - p_x| + |p_x - p_C(x)|.
+|q_x - p_C(x)| \;\leq\; c\, p_C(x) \;+\; (c+1)\,|\tilde p_x(C) - p_C(x)|,
 $$
+so it suffices to control the additive remainder $|\tilde p_x(C) - p_C(x)|$.
 
-To prove hardness, we want this to be a multiplicative error estimate for a GapP problem. The first term satisfies $|q_x - p_x| < c\, p_x < c\, p_C(x) + c\, |p_C(x) - p_x|$, so the key task is to upper bound $|p_x - p_C(x)|$ pointwise. Since $p_x$ only approximates $p_C(x)$ in additive error, this is not a pointwise bound, requiring us to relax the conditions.
-
-We consider randomly sampled circuits $C \sim \mathcal{C}$, which induces a distribution on the corresponding GapP problem. Our classical algorithm operates on the sampled circuit to produce $p_x(C)$. Assume the random circuits satisfy invariance under left-action of Pauli operators (hiding property).
-
-Then by Markov's inequality:
-
+**Step 1 — Hiding + Markov.** By hiding, the distribution of $|\tilde p_x(C) - p_C(x)|$ over random $C$ does not depend on $x$. Averaging over $x$ uniformly and using the total-variation bound,
 $$
-\begin{align*}
-\Pr_C\!\left\{\left|p_x(C) - p_C(x)\right| \geq \delta^{-1} \mathbb{E}_C[|p_x(C) - p_C(x)|]\right\}\\
- = \Pr_C\!\left[|p_C(x) - p_x(C)| \geq \delta^{-1}\frac{2\varepsilon}{2^n}\right] < \delta,
-\end{align*}
+\mathbb{E}_C\bigl[|\tilde p_x(C) - p_C(x)|\bigr]
+\;=\; \frac{1}{2^n}\,\mathbb{E}_C\!\sum_{x'}|\tilde p_{x'}(C) - p_C(x')|
+\;\leq\; \frac{2\varepsilon}{2^n}.
+$$
+Markov's inequality then yields, for each fixed $x$,
+$$
+\Pr_C\!\left[\,|\tilde p_x(C) - p_C(x)| \;\geq\; \frac{2\varepsilon}{\delta\,2^n}\,\right] \;\leq\; \delta. \tag{$\ast$}
 $$
 
-where we used:
-
+**Step 2 — Anti-concentration.** With probability $\geq \gamma(\alpha)$ over $C$, $p_C(x) \geq \alpha/2^n$, i.e. $2^{-n} \leq p_C(x)/\alpha$. Combining with $(\ast)$, on a $\gamma(\alpha)(1-\delta)$ fraction of $(C,x)$ instances,
 $$
-\mathbb{E}_C[|p_x(C) - p_C(x)|] = 2^{-n} \mathbb{E}_{x,C}\!\left[\sum_x |p_x(C) - p_C(x)|\right] = 2\varepsilon \cdot 2^{-n}.
-$$
-
-This means that additive error $\varepsilon$, under the hiding property with random sampling, guarantees with probability $1 - \delta$ that $\forall x,\, |p_x(C) - p_C(x)| \leq \delta^{-1} \frac{2\varepsilon}{2^n}$. This implies a pointwise estimate with probability $1 - \delta$:
-
-$$
-|q_x - p_C(x)| \leq c\, p_C(x) + (c+1)|p_x - p_C(x)| < c\, p_C(x) + (c+1)\delta^{-1}\frac{2\varepsilon}{2^n}.
+|q_x - p_C(x)|
+\;\leq\; c\, p_C(x) + (c+1)\frac{2\varepsilon}{\delta\,2^n}
+\;\leq\; \left( c + \frac{2(c+1)\,\varepsilon}{\alpha\,\delta} \right) p_C(x).
 $$
 
-This is still not a multiplicative error estimate. To fully convert to multiplicative error, we additionally require that for randomly sampled circuits $C \sim \mathcal{C}$, the probability of any outcome $x$ is not too small with high probability (anti-concentration):
-
-$$
-\Pr_{C \sim \mathcal{C}}\!\left[p_C(x) \geq \frac{\alpha}{2^n}\right] \geq \gamma(\alpha).
-$$
-
-This means with probability $\gamma(\alpha)$, we can pointwise assert $\frac{1}{\alpha} p_C(x) \geq \frac{1}{2^n}$, giving:
-
-$$
-|q_x - p_C(x)| < c\, p_C(x) + (c+1)\delta^{-1}\frac{2\varepsilon}{2^n} < c\, p_C(x) + (c+1)\frac{2\varepsilon}{\alpha\delta}\, p_C(x).
-$$
-
-Therefore, if classical additive-error weak simulation exists, examining random circuits satisfying anti-concentration and hiding, and the corresponding distribution on GapP problems, a $\mathsf{P}^{\mathsf{NP}^{\mathsf{NP}}}$ machine can perform multiplicative-error simulation ($c < 2$) for a $\gamma(\alpha)(1-\delta)$ fraction of instances. This problem is generally "believed" to be hard, corresponding to an approximate average-case hardness conjecture. $\square$
+For $\varepsilon$ small enough that the bracketed constant stays below $2$, this is a multiplicative-error GapP estimate. Such an estimate would place an average-case GapP problem into $\mathsf{P}^{\mathsf{NP}^{\mathsf{NP}}} \subseteq \mathsf{PH}$, which is the operative average-case hardness conjecture. $\square$
 :::
 
 
@@ -257,4 +242,4 @@ Therefore, if classical additive-error weak simulation exists, examining random 
 - If this circuit family, along with the distribution built on it, further satisfies anti-concentration and hiding conditions,
 then we can safely claim no classical algorithm can achieve this experiment outputs.
 This is because, if a classical algorithm can achieve this experiment outputs, then it forms an additive-error weak simulator for this circuit family and be prevented by @thm-additive-error.
-- Things left is whether the conjecture of average-case hardness in @thm-additive-error is true.
+- Things left is whether the conjecture of average-case hardness is true.

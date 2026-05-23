@@ -5,20 +5,56 @@ date: 2026-02-02
 lang: en
 title: "Bell Sampling primitive for supremacy"
 bibliography: refs.bib
+draft: true
 ---
 
 # Summary and Questions
 
+
+为了结合Bell sampling from quantum circuits设计一个容易verify的quantum supermacy的实验，我觉得有如下事情要做：
+
+1. 具体线路C的随机是什么样的？
+    - 如果限制只用随机IQP线路，那么只要要是什么样的随机性，才能满足anti-concentration+hiding的条件？它的average case hardness是一个什么样的问题？是被普遍相信难的吗？
+    - 如果不是严格的IQP，而是允许中间出现若干层H（通过adaptive IQP实现），那么上述问题的答案是什么？会比IQP给出更高的hardness吗？
+2. 在噪声模型下，至少要达到多大规模，才能避免被现有的算法所破解？算法包含：
+    - 张量网络 based，
+    - Clifford+T based
+    - 含噪模拟算法（如Pauli path truncation）
+    - 专门针对IQP的模拟算法
+    - [Todo:find more algorithms]
+
+3. 现有的线路噪声设定太过简单。需要严格建模中性原子实现中的噪声模式：
+    - Bell 测量本身有噪声该怎么办？能否等价于两份上的关联错误
+    - 关联错误（等效来的/实验来的）如何影响purity-Fidelity correspondence?
+    - 去除独立同分布，稳定的噪声假设，转而使用严格的噪声模型（关于时间的随机函数），这会如何影响到purity-Fidelity correspondence? 已经magic/entanglement等估计量？
+
+现在的问题可以变成下面 8 个正式问题：
+
+1. Ensemble problem：什么 degree-4 IQP/hIQP Bell ensemble 同时硬件友好、sector-hiding、anti-concentrating？
+2. Hardness problem：它的 Bell probabilities 是否可归约到公认难的 degree-3 IQP average-case problem？
+3. Compilation problem：中性原子实现是否保持 ensemble symmetry，而不是引入可模拟结构？
+4. Noise problem：真实 Rydberg/noisy Bell measurement 是否可被有效 Pauli/erasure/logical channel 描述？
+5. Fidelity problem：Bell purity 在非 iid、correlated、non-Markovian 噪声下还能给出什么 fidelity guarantee？
+6. Verification problem：哪些 Bell diagnostics 能排除 low-depth、low-magic、uniform-with-support、sector-matched spoofers？
+7. Classical attack problem：目标规模下所有已知模拟算法的真实 wall-clock/memory scaling 是什么？
+8. Scalability problem：如果物理 fidelity 不够，error detection/mitigation 或小距离 code 是否能把 noisy-IQP simulability 推回 hard regime？
+
+:::{.callout-important icon="false"}
+## Question
 A more general version of Bell sampling, namely, the Bell difference sampling exists.
 Whether introduction of this primitive is helpful for supremacy verification?
+:::
 
-# Framework of Bell-Samp
+# Properties of Bell-Samp
 
 ![Bell sampling outcomes](Bell_table.svg){width=100%}
 
 :::{#def-Bell-Samp .callout-note icon="false"}
 Given two $n$-qubits mixed state $\rho,\sigma$, implement the Bell measurement pairwisely, with $\rho$ on the control side, and get the measurement results $\mathbf{r}_i = (r_{z,i}, r_{x,i}) \in \mathbb{F}_2^2$ at position $i$ and vector $\mathbf{r}_z = (r_{z,1}, \cdots, r_{z,n})$ and $\mathbf{r}_x = (r_{x,1}, \cdots, r_{x,n})$.
-Then the outcome $\mathbf{r} = (\mathbf{r}_z, \mathbf{r}_x)$ has outcome probability $\frac{1}{2^N} \text{tr}(\sigma_{\mathbf{r}} \rho \sigma_{\mathbf{r}} \sigma^*)$.
+Then the outcome $\mathbf{r} = (\mathbf{r}_z, \mathbf{r}_x)$ has outcome probability:
+$$
+\langle \Phi_{\mathbf{r}} |\rho \otimes \sigma |\Phi_{\mathbf{r}}\rangle = \frac{1}{2^n} \text{tr}(\sigma_{\mathbf{r}} \rho \sigma_{\mathbf{r}} \sigma^*).
+$$
 :::
 
 :::{.callout-note icon="false" collapse="true"}
@@ -30,10 +66,9 @@ $$
 We first establish the identity that for computational-basis states $\ket{\mathbf{s}}_A, \ket{\mathbf{t}}_B \in \{0,1\}^n$,
 $$
 \begin{align}
-&\prod_{i=1}^n \mathrm{CNOT}_{a_ib_i}(H_{a_i} \otimes \mathbb{I}_{b_i})\ket{\mathbf{s}}_A\ket{\mathbf{t}}_B\\
+\ket{\Phi_{(\mathbf{s},\mathbf{t})}}& = \prod_{i=1}^n \mathrm{CNOT}_{a_ib_i}(H_{a_i} \otimes \mathbb{I}_{b_i})\ket{\mathbf{s}}_A\ket{\mathbf{t}}_B\\
 &= \prod_{i=1}^n \mathrm{CNOT}_{a_ib_i}(H_{a_i} \otimes \mathbb{I}_{b_i})\, X^{s_i}_{a_i} X^{t_i}_{b_i}\ket{\mathbf{0}}_A\ket{\mathbf{0}}_B \\
-&= \prod_{i=1}^n Z^{s_i}_{a_i} X^{t_i}_{b_i}\,\mathrm{CNOT}_{a_ib_i}(H_{a_i} \otimes \mathbb{I}_{b_i})\ket{\mathbf{0}}_A\ket{\mathbf{0}}_B \\
-&= \sigma_{\mathbf{r}}\otimes \mathbb{I}\,\frac{1}{\sqrt{2^n}}\sum_{\mathbf{k} \in \{0,1\}^n}\ket{\mathbf{k}\mathbf{k}},
+&= \prod_{i=1}^n Z^{s_i}_{a_i} X^{t_i}_{b_i}\,\mathrm{CNOT}_{a_ib_i}(H_{a_i} \otimes \mathbb{I}_{b_i})\ket{\mathbf{0}}_A\ket{\mathbf{0}}_B = \sigma_{\mathbf{r}}\otimes \mathbb{I}\,\frac{1}{\sqrt{2^n}}\sum_{\mathbf{k} \in \{0,1\}^n}\ket{\mathbf{k}\mathbf{k}},
 \end{align}
 $$
 where $\sigma_{\mathbf{r}} = \bigotimes_{i=1}^n Z^{s_i}X^{t_i}$ is the $n$-qubit Pauli labeled by $\mathbf{r}=(\mathbf{s},\mathbf{t})$, and the last equality uses that $H\otimes\mathbb{I}$ followed by $\mathrm{CNOT}$ maps $\ket{\mathbf{0}}_A\ket{\mathbf{0}}_B$ to the maximally entangled state $2^{-n/2}\sum_{\mathbf{k}}\ket{\mathbf{k}\mathbf{k}}$.
@@ -47,8 +82,13 @@ P(\mathbf{r}) &= \sum_{ij} p_i q_j \sum_{\mathbf{k},\mathbf{k}' \in \{0,1\}^n} \
 $$
 :::
 
+
+# Supermacy proof
+
+In this section, we will show the exact hardness of Bell sampling and the average-case additive-error hardness of Bell difference sampling.
+
 :::{#lem-exact-hardness .callout-note icon="false"}
-## Lemma (Exact Hardness of Bell Difference Sampling [@Hangleiter_2024])
+## Lemma (Exact Hardness of Bell Sampling [@Hangleiter_2024])
 Given a quantum circuit $C$, it is GapP-hard to compute $2^{-n}|\langle C|\sigma_{\mathbf{r}}|\bar{C}\rangle|^2$ up to relative error $\varepsilon < 1/2$, where $\ket{C}:= C \ket{0^n}$ and $\ket{\bar{C}}:= C^* \ket{0^n}$.
 :::
 :::{.callout-note icon="false" collapse="true"}
@@ -56,19 +96,74 @@ Given a quantum circuit $C$, it is GapP-hard to compute $2^{-n}|\langle C|\sigma
 [t.b.c.]
 :::
 
-To show the average-case additive-error hardness of Bell difference sampling, we need to show the anti-concentration, hiding, and find an induced problem that is somehow believed to be hard in this average-case.
+To show the average-case additive-error hardness of Bell difference sampling, we need to show the (i). anti-concentration, (ii). hiding, and (iii). find an induced problem that is somehow believed to be hard in this average-case.
 
-All these properties are been proved in @Hangleiter_2024.
+Given that $C \sim \mathcal C_n$ where $\mathcal C_n$ is generated by sampling $\Omega(n^2)$ brickwork architecture circuits,
+a proof of these properties have been proved in @Hangleiter_2024.
+
 [Todo: Detailly review the proof and summarize the key ideas.]
 
+However, here we are interested in a restricted circuit ensemble $D$-degree IQP circuits.
+
+[Todo: Show the anti-concentration, hiding, and find an induced problem that is somehow believed to be hard in this average-case for $D$-degree IQP circuits.]
 
 
-# Applications of Bell-Samp
+# Supermacy verification through Bell sampling
 
 A key problem is why Bell sampling is useful for supremacy verification?
 
 #### Verify through purity
 
+:::{#thm-purity-estimation .callout-important icon="false"}
+## (Purity estimation [@Hangleiter_2024])
+For $\rho_A = \rho_B = \rho$, the number of Bell sampling results $(r_A,r_B) = (11)$ can estimate the purity $\text{tr}(\rho^2)$
+$$
+\begin{align*}
+&{M}(\rho) = \sum_{i = 1}^N\frac{s_i}{N},\quad 
+\begin{cases}
+s_i &= 1 ~\text{if 11 result number is even},\\
+s_i &= -1 ~\text{if 11 result number is odd}.
+\end{cases}
+\end{align*}
+$$
+For $N$ times estimation, $\text{Var}(M) = 1$.
+:::
+
+::: {.callout-note icon="false" collapse="true"}
+## Proof (Click to expand)
+Swap gate can be decompoed as:
+$$
+\mathbb{S} = \ket{\sigma_{00}}\!\!\bra{\sigma_{00}} + \ket{\sigma_{01}}\!\!\bra{\sigma_{01}} + \ket{\sigma_{10}}\!\!\bra{\sigma_{10}} - \ket{\sigma_{11}}\!\!\bra{\sigma_{11}},
+$$
+which means the purity of n-qubits state $\text{tr}(\rho^2) = \text{tr}((\rho \otimes \rho) \mathbb{S}^{\otimes n})$ can be estimated through transversal Bell measurement and counting the numbers of $\ket{\sigma_{11}}\!\bra{\sigma_{11}}$ results.
+:::
+
 #### Verify through magic resource
+
+Bell sampling data can also be used to estimate the Pauli spectrum of a density matrix.
+This is done by the following basic algorithm that can estimates all Pauli expectation values to additive error $\varepsilon$ and confidence $1 - \delta$ using only $O(n \cdot \varepsilon^{-2}\log(1/\delta))$ Bell measurements.
+
+::: {.callout-important icon="false"}
+## Algorithm (Estimate Pauli spectrum [@Hangleiter_2024])
+Given a density matrix $\rho$ and a Pauli operator $\sigma_{\mathbf y}$ on $n$ qubits, the following algorithm estimates the value $|\text{tr}(\rho \sigma_{\mathbf y})|^2$:
+1. Take the XZ decomposition of $\mathbf y$ as $(\mathbf{y}_a, \mathbf{y}_b)$.
+2. Perform $N \sim 4 \ln(2/\delta)/\varepsilon^2$ Bell measurements to get $\mathbf{r}_1, \cdots, \mathbf{r}_N$.
+3. Compute the mean $\frac{1}{N}\sum_{i = 1}^N(-1)^{[\mathbf r_i, \mathbf y]+\mathbf y'_{a} \cdot \mathbf y'_b}$, which is the desired value.
+:::
+
+::: {.callout-note icon="false" collapse="true"}
+## Proof (Click to expand)
+Take the special case of $\rho_A = \rho_B = \rho$,
+and set $\rho =\sum_{\mathbf{r}'} c(\mathbf{r}') \sigma_{\mathbf{r}'}/ \sqrt{2^n}$, 
+then we have
+$$
+\begin{align}P(\mathbf r) &= \frac{1}{4^n} \sum_{\mathbf r', \mathbf r''}\text{tr}\left[c(\mathbf r') \sigma_{\mathbf r'}\sigma_{\mathbf r}c^*(\mathbf r'') \sigma^*_{\mathbf r''}\sigma_{\mathbf r}\right]\\&=\frac{1}{2^n}\sum_{\mathbf r', \mathbf r''}(-1)^{[\mathbf r, \mathbf r']}c(\mathbf r')c^*(\mathbf r'')(-1)^{\mathbf{r}''_{a} \cdot \mathbf{r}''_b }\delta_{\mathbf r'', \mathbf r'}\\&=\frac{1}{2^n}\sum_{\mathbf r'}(-1)^{[\mathbf r, \mathbf r']+\mathbf{r}'_{a} \cdot \mathbf{r}'_b}|c(\mathbf r')|^2\end{align}
+$$
+Take the inverse transform to get:
+$$
+\begin{align}\sum_{\mathbf r}(-1)^{[\mathbf r, \mathbf y]} P(\mathbf{r})&=\frac{1}{2^n}\sum_{\mathbf r}(-1)^{[\mathbf r, \mathbf y + \mathbf r']}\sum_{\mathbf r'}(-1)^{\mathbf{r}'_{a} \cdot \mathbf{r}'_b}|c(\mathbf r')|^2 \\ &={2^n}(-1)^{\mathbf y'_{a} \cdot \mathbf y'_b}|c(\mathbf y)|^2 \end{align}
+$$
+In other words, we have $|\text{tr}(\rho \sigma_{\mathbf y})|^2 = {2^{n}}|c(\mathbf y)|^2 = \sum_{\mathbf r}(-1)^{[\mathbf r, \mathbf y]+\mathbf y'_{a} \cdot \mathbf y'_b} P(\mathbf{r})$, which is in the range of $[-1,1]$, so the algorithm is valid and the variance is constant.
+:::
 
 #### Verify through entanglements
