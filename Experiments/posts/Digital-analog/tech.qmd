@@ -1,0 +1,53 @@
+---
+categories:
+- Readings
+date: '2026-03-17'
+lang: en
+title: The technical details of the digital-analog conversion
+bibliography: refs.bib
+draft: true
+---
+
+[← Back to Index](../index.qmd)
+
+# Summary and questions
+
+This note is a summary of the technical details of the digital-analog conversion.
+
+**Possible fix:**
+
+- 拉大 spacing，降低 n，或缩短 preparation/readout pulse，使mapping-up和mapping-down期间 V 可忽略. 
+- 不要真的把一半 population 放到 $\ket{r}$, 在 hyperfine qubit 中制备 $\ket{+}^{\otimes n}$, 然后 off-resonantly dress $\ket{1}$ 到 Rydberg，产生有效 ZZ 相互作用. 
+- 做 constrained-IQP, 制备 $\ket{+}^{\otimes \mathcal{I}}$,即只在 $\mathcal{I}$ 这样没有blockade的位形上制备 $\ket{1} + \ket{r}$, 其余 qubit 上 $\ket{1}$.
+
+# The protocol
+In the digital-analog maping protocols, we consider $\ket{0} = \ket{5S_{1/2}, F=1, m_F=0}$ and $\ket{1} = \ket{5S_{1/2}, F=2, m_F=0}$.
+We use Rydberg state $\ket{r} = \ket{nS_{1/2}, m_J= - 1/2}$.
+The whole Hamiltonian is:
+$$
+\begin{align*}
+&H(t)/\hbar =
+\frac{\Omega_R(t)}{2}\sum_i
+\left(|r_i\rangle\langle 1_i|+\mathrm{h.c.}\right)
+-\Delta_R(t)\sum_i n_i^r\\
+&+
+\frac{\Omega_{\rm hf}(t)}{2}\sum_i
+\left(|1_i\rangle\langle0_i|+\mathrm{h.c.}\right)
+-\Delta_{\rm hf}(t)\sum_i n_i^1
++
+\sum_{i<j}V_{ij}n_i^r n_j^r ,
+\end{align*}
+$$
+where $\Omega_R(t) = \Omega_{420}(t) \cdot \Omega_{1013}/2\Delta$ is the Rabi frequency that drive $\ket{1}$ to $\ket{r}$.
+$\Delta_R(t)$ is the frequency change of $420$-nm laser.
+The $\Omega_{\rm hf}(t)$ drives a transition from $\ket{1}$ to $\ket{0}$.
+
+#### $\ket{+}$ state preparision
+
+
+There are typically two ways of 
+
+1. Prepare $\ket{0}+\ket{1}$，then map up to $\ket{1}+\ket{r}$;
+2. From $\ket{1}$, use Rydberg transition to $\ket{1} + \ket{r}$.
+
+

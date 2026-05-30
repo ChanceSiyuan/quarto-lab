@@ -100,7 +100,7 @@ def F_min(n, eta, c, gamma):
     return 1/4 + (3/4) * R**(1 / (gamma * n))
 
 plt.figure(figsize=(7, 5))
-gamma = 10
+gamma = 6
 for eta in etas:
     F_vals = F_min(n_values, eta, c, gamma)
     plt.plot(n_values, 100 * F_vals, marker='o', label=fr'$\eta={eta}$')
