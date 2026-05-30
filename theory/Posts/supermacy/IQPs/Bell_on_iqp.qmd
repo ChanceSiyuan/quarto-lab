@@ -168,7 +168,64 @@ such that $1-F(\rho,\ket{C}) \le \sum_i \frac{1-\langle \widetilde X_i\rangle_\r
 [t.b.c.]
 :::
 
+The check has expansion $\tilde{X}_j = \sum_{k \in \mathcal{A}_j} c_{j,k}\,\sigma (\mathbf{z}_k, \mathbf{x}_k)$, 
+with $\sigma (\mathbf{z}, \mathbf{x}) = i^{\mathbf{z} \cdot \mathbf{x}} X^{\mathbf x}Z^{\mathbf{z}}$ being the sympletic representation of $n$-qubit Pauli operators. 
+Given Bell measurement samples $\mathbf{r}_i := (\mathbf{r}_{i,z}, \mathbf{r}_{i,x})$,
+Alice can checks
+$$
+[\mathrm{tr}(\sigma (\mathbf{z}_k, \mathbf{x}_k) \cdot \rho)]^2 \;=\;
+\mathbb{E}_{(\mathbf{r}_{z},\mathbf{r}_{x})} (-1)^{\mathbf{r}_{z} \cdot \mathbf{x}_k + \mathbf{r}_{x} \cdot \mathbf{z}_k + \mathbf{z}_k \cdot \mathbf{x}_k}
+$$
+In the local IQP-case, the $\mathbf{x}_k$ being non-zero on a single position $j$ (the central vertex of $\tilde{X}_j$) and $\mathbf{z}_k$ supported on $\mathcal{A}_j$ (site adjacent to $j$) that contains at most $2^h$ indexes.
+This gives an **efficient honest-prover** verification method:
 
+:::{.callout-tip icon="false"}
+## Algorithms (Bell sampling check)
 
-- This indicates a **Efficient** verification method that **cannot be spoofed** by any adversary.
-- Bell measurement only gives $|\mathrm{tr}(P \rho)|$, so to get the $\widetilde{X}_j$, we have to try at most $2^h$ signal, where $h$ is the number of adacent edges of the vertex $j$.
+1. Alice randomly sampling local IQP circuits form certain circuit ensemble $C \in \mathcal{C}$.
+2. Given that $C$ is sended to Bob, he is asked to prepare $C \ket{+}^{\otimes n} \otimes C \ket{+}^{\otimes n}$ and implement the Bell measurements on this $2n$-qubits state with meausrement result $(\mathbf{z},\mathbf{x})$. This measurement result then sended to Alice.
+3. Based on $C$, calculate the expansion of $\widetilde X_i$ on the Pauli basis.
+4. Utilized the samples $(\mathbf{z},\mathbf{x})$, we estimates $|\mathrm{tr}(P \rho)|$. To estimate the $\widetilde{X}_j$, we try at most $2^h$ signal, where $h$ is the number of adacent edges of the vertex $j$.
+5. Pass if all those average match as expected, i.e., $\langle \widetilde{X}_j \rangle_\rho = +1, \forall j$.
+:::
+
+However, the public-Pauli + squared-moment check is **not** adversarially sound on its own.
+A spoof strategy eixsts:
+
+:::{.callout-tip icon="false"}
+## Algorithms (Spoof the Bell Pauli-average check)
+
+- Based on $C$, Bob calculates the expansion coefficients $c_{j,k}$ of checks. Since $\tilde{X}_j$ is unitary with $\tilde{X}_j^2 = I$,
+the squared coefficients form a probability distribution: $\sum_{k \in \mathcal{A}_j} c_{j,k}^2 = 1$.
+- Bob first uniformly samples $\mathbf{x} \in \mathbb{F}_2^{n}$, then independently and pointwise samples each bit $z_j \in \{0,1\}$ via
+$$
+P(z_j = 0\mid\mathbf{x}) = \frac{1 + \sum_{k \in \mathcal{A}_j} c_{j,k}^2(-1)^{\chi(j,k)}}{2},\qquad
+\chi(j,k) := \mathbf{x} \cdot \mathbf{z}_k + \mathbf{z}_k \cdot \mathbf{x}_k\pmod 2.
+$$
+The bracketed sum lies in $[-1,1]$ since $\sum_k c_{j,k}^2 = 1$, so the rule is a valid Bernoulli. Equivalently, $\mathbb{E}[(-1)^{z_j}\mid\mathbf{x}] = \sum_{k\in\mathcal{A}_j} c_{j,k}^2(-1)^{\chi(j,k)}$. Bob outputs the Bell transcript $\mathbf{r}_i = (\mathbf{z},\mathbf{x})$.
+
+:::
+
+After getting samples $\mathbf{r}_i := (\mathbf{r}_{i,z}, \mathbf{r}_{i,x})$, Alice estimates $[\mathrm{tr}(\sigma (\mathbf{z}_k, \mathbf{x}_k) \cdot \rho)]^2$ by averaging the Bell character. Using $\mathbf{r}_z\cdot\mathbf{x}_k = r_{z,j}$ (since $\mathbf{x}_k$ is supported only at the central vertex $j$ of $\tilde{X}_j$), tower expectation over $r_{z,j}\mid\mathbf{r}_x$, and Bob's spoof rule:
+$$
+\begin{align*}
+[\mathrm{tr}(\sigma (\mathbf{z}_k, \mathbf{x}_k)\,\rho)]^2
+&= \mathbb{E}_{(\mathbf{r}_{z},\mathbf{r}_{x})}(-1)^{\mathbf{r}_{z}\cdot\mathbf{x}_k + \mathbf{r}_{x}\cdot\mathbf{z}_k + \mathbf{z}_k\cdot\mathbf{x}_k}\\
+&= (-1)^{\mathbf{z}_k\cdot\mathbf{x}_k}\,\mathbb{E}_{\mathbf{r}_x}\!\left[(-1)^{\mathbf{r}_x\cdot\mathbf{z}_k}\,\mathbb{E}[(-1)^{r_{z,j}}\mid\mathbf{r}_x]\right]\\
+&= (-1)^{\mathbf{z}_k\cdot\mathbf{x}_k}\sum_{m\in\mathcal{A}_j} c_{j,m}^2(-1)^{\mathbf{z}_m\cdot\mathbf{x}_m}\,\mathbb{E}_{\mathbf{r}_x}(-1)^{\mathbf{r}_x\cdot(\mathbf{z}_k + \mathbf{z}_m)}\\
+&= (-1)^{\mathbf{z}_k\cdot\mathbf{x}_k}\sum_{m\in\mathcal{A}_j} c_{j,m}^2(-1)^{\mathbf{z}_m\cdot\mathbf{x}_m}\,\delta_{\mathbf{z}_k,\mathbf{z}_m}\\
+&= c_{j,k}^2.
+\end{align*}
+$$
+The third line substitutes $\chi(j,m) = \mathbf{x}\cdot\mathbf{z}_m + \mathbf{z}_m\cdot\mathbf{x}_m$ from Bob's rule; the fourth uses Fourier orthogonality of characters on $\mathbb{F}_2^n$.
+
+Hence, Alice's squared-moment estimator returns exactly $c_{j,k}^2$, the value she would have obtained from the honest state $\ket{C}$. The $2^h$ sign search then lifts $\sqrt{c_{j,k}^2}$ back to the signed coefficient $c_{j,k}$, so for every $i$ she reconstructs
+$$
+\langle \tilde{X}_i\rangle_\rho \;=\; \sum_{k\in\mathcal{A}_i} c_{i,k}\cdot\mathrm{sgn}(c_{i,k})\,|c_{i,k}| \;=\; \sum_{k\in\mathcal{A}_i} c_{i,k}^2 \;=\; 1.
+$$
+The witness in @thm-ising-Bell-verification collapses to $\sum_i (1 - \langle\tilde{X}_i\rangle_\rho)/2 \approx 0$, and Alice accepts with a near-unit fidelity certificate. Yet Bob's transcript is a purely classical bit-string drawn in $O(n\cdot 2^h)$ time per sample — no quantum state was prepared. The loophole is structural: every checked Pauli is publicly derivable from $C$, only its squared moment is constrained, and the sign-search step is symmetric in $\pm c_{j,k}$, so Bob can reverse-engineer a classical distribution that hits every public Fourier target.
+
+:::{.callout-important icon="false"}
+## Question
+What if Alice randomly check the non-linear average of $\{\mathrm{tr}(\rho^2), [\mathrm{tr}(P \rho)]^2, \mathrm{tr}(P\rho P \rho)\}$, with symmetric linearizaiton $\mathrm{SWAP}^{\otimes n}, P \otimes P,\mathrm{SWAP}^{\otimes n} \cdot (P \otimes P)$.
+:::

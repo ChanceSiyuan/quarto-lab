@@ -111,7 +111,7 @@ is precisely equivalnent to tracing $\ket{\phi} =U\ket{\psi} \in \mathcal{P}_0$ 
 In the same reference [@bravyi2011schrieffer], it is also shown how to approximate $H_{\mathrm{eff}}$ in terms of Taylor series of $\varepsilon$, which is concluded in @lem-perturbation_expand.
 
 :::{#lem-perturbation_expand .callout-important icon="false"}
-## Perturbative expansion of $H_{\mathrm{eff}}$
+## Perturbative expansion of $H_{\mathrm{eff}}$ (@bravyi2011schrieffer, Section 3.2)
 Given the Hamiltonian $H = H_0 + \varepsilon V$ and the low-energy subspace of interest with projector $P_0$. Let the superoperator $\mathcal{L}$ be defined as
 $$
 \begin{align}
@@ -129,9 +129,7 @@ where $S_1 := \mathcal{L}(V_{\mathrm{od}}), V_{\mathrm{od}} = \mathcal{O}(V)$ an
 
 :::{.callout-note collapse="true"}
 ## Proof sketch (Click to expand)
-*(Following @bravyi2011schrieffer, Section 3.2)*
-
-**Step 1: Block-diagonality condition.** Write $U = e^S$ with $S$ block-off-diagonal w.r.t. $P_0$. The transformed Hamiltonian $e^{\hat{S}}(H_0 + \epsilon V)$ (where $\hat{S}(\cdot) = [S, \cdot]$) decomposes into block-diagonal (BD) and block-off-diagonal (BOD) parts:
+ Write $U = e^S$ with $S$ block-off-diagonal w.r.t. $P_0$. The transformed Hamiltonian $e^{\hat{S}}(H_0 + \epsilon V)$ (where $\hat{S}(\cdot) = [S, \cdot]$) decomposes into block-diagonal (BD) and block-off-diagonal (BOD) parts:
 $$
 e^{\hat{S}}(H_0 + \epsilon V) = \underbrace{\cosh(\hat{S})(H_0 + \epsilon V_d) + \sinh(\hat{S})(\epsilon V_{od})}_{\text{BD}} + \underbrace{\sinh(\hat{S})(H_0 + \epsilon V_d) + \cosh(\hat{S})(\epsilon V_{od})}_{\text{BOD}}.
 $$
@@ -140,20 +138,32 @@ $$
 \tanh(\hat{S})(H_0 + \epsilon V_d) + \epsilon V_{od} = 0.
 $$
 
-**Step 2: Iterative solution for $S$.** The superoperator $\mathcal{L}$ satisfies $\mathcal{L}([H_0, X]) = \mathcal{O}(X)$, which inverts the commutator with $H_0$ on BOD operators. Expanding $S = \sum_{n \geq 1} S_n \epsilon^n$ and solving order by order:
+The superoperator $\mathcal{L}$ satisfies $\mathcal{L}([H_0, X]) = \mathcal{O}(X)$, which means
+$$
+\mathcal L\hat H_0(X)=X \quad \text{for BOD }X,
+$$
+Expanding $S = \sum_{n \geq 1} S_n \epsilon^n$ and solving order by order:
 $$
 S_1 = \mathcal{L}(V_{od}), \quad S_2 = -\mathcal{L}\hat{V}_d(S_1), \quad S_n = -\mathcal{L}\hat{V}_d(S_{n-1}) + \text{(higher-order corrections from } x\coth(x) \text{)}.
 $$
 
-**Step 3: Simplify the BD part.** Using the identity $\sinh(x) - \frac{\cosh(x) - 1}{\tanh(x)} = \tanh(x/2)$, the BD transformed Hamiltonian simplifies to:
+Using the identity $\sinh(x) - \frac{\cosh(x) - 1}{\tanh(x)} = \tanh(x/2)$, the BD transformed Hamiltonian simplifies to:
 $$
 e^{\hat{S}}(H_0 + \epsilon V) = H_0 + \epsilon V_d + \tanh(\hat{S}/2)(\epsilon V_{od}).
 $$
-
-**Step 4: Project onto $P_0$.** Since $H_0$ and $V_d$ are BD, $P_0 V_d P_0 = P_0 V P_0$. Expanding $\tanh(x/2) = \sum_{n \geq 1} b_{2n-1} x^{2n-1}$ with $b_1 = 1/2$, $b_3 = -1/24$, etc., the $n$-th order correction is $H_{\mathrm{eff},n} = \sum_{j \geq 1} b_{2j-1} P_0 \hat{S}^{2j-1}(V_{od})_{n-1} P_0$. The leading terms are:
+Since $H_0$ and $V_d$ are BD, $P_0 V_d P_0 = P_0 V P_0$. Expanding $\tanh(x/2) = \sum_{n \geq 1} b_{2n-1} x^{2n-1}$ with $b_1 = 1/2$, $b_3 = -1/24$, etc., the $n$-th order correction is $H_{\mathrm{eff},n} = \sum_{j \geq 1} b_{2j-1} P_0 \hat{S}^{2j-1}(V_{od})_{n-1} P_0$. The leading terms are:
 
 - $H_{\mathrm{eff},2} = \frac{1}{2} P_0 \hat{S}_1(V_{od}) P_0 = \frac{1}{2} P_0 [S_1, V_{od}] P_0$
 - $H_{\mathrm{eff},3} = \frac{1}{2} P_0 \hat{V}_{od} \mathcal{L}\hat{V}_d(S_1) P_0$
 
 Combining all orders gives the stated formula. $\square$
+:::
+
+# Relations with Van Vleck
+
+Another widely used approximation is the Van Vleck expansion, we write it explicitely:
+
+:::{.callout-note collapse="true"}
+## Algorithm (Van Vleck expansion)
+
 :::
