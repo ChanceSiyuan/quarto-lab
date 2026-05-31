@@ -60,7 +60,11 @@ How noise enables classical simulation. Pauli path simulation framework, efficie
 **Motivations:**
 The (i). peak circuit supermacy, (ii). Bell sampling verification, and (iii). IQP secrete-based verfication are all contained in a more general framework, where:
 
-1. [Todo: Add breif description here]
+1. Each protocol selects a polynomial-sized family of state functionals $\{F_\lambda(\rho_C)\}_{\lambda\in\Lambda}$ on the ideal output $\rho_C = C|0^n\rangle\langle 0^n|C^\dagger$ that is (a) **quantum-easy**: estimable to inverse-polynomial additive error from $\mathrm{poly}(n)$ copies via a fixed measurement scheme; (b) **verifier-computable**: the verifier knows the targets $F_\lambda(\rho_C)$ in $\mathrm{poly}(n)$ time, possibly through a planted secret $\mathrm{sk}$; and (c) **classically hard to spoof**: no classical polynomial-time sampler can match $\{F_\lambda(\rho_C)\}$ to inverse-polynomial precision under an average-case complexity assumption. The acceptance test is a Lipschitz aggregator $T(\rho)=\Phi(F_{\lambda_1}(\rho),\ldots,F_{\lambda_K}(\rho))\in A$, where $A\subset\mathbb{R}^K$ is the verifier's decision region. The three known approaches are special cases:
+
+    - **(i) Peaked circuits:** probe $F_x(\rho)=\langle x|\rho|x\rangle$ (computational-basis projectors), aggregator $\Phi=\max_x$ ($\ell_\infty$); secret $=$ planted peak string $x^\star$.
+    - **(ii) Bell sampling:** probe $F_r(\rho)=|\mathrm{Tr}(\sigma_r\rho)|^2$ on two copies (Pauli-spectrum point masses); aggregators yield purity, stabilizer fidelity, magic, and circuit depth; no per-instance secret.
+    - **(iii) IQP secret-based:** probe $F_s(\rho)=\mathrm{Tr}(Z^s\rho)$ (hidden Pauli correlations indexed by a linear code), $\Phi$ averages the bias along secret codewords; secret $=$ hidden $\mathbb{F}_2$-code $\mathcal{S}\subset\mathbb{F}_2^n$.
 
 
 To complete the above reaseach direction into a complete works, we need to complete the following three steps:
@@ -71,7 +75,26 @@ To complete the above reaseach direction into a complete works, we need to compl
 
 Here the second steps already contains a doable worklists, i.e., we need to review the papers below:
 
-1. [Todo: Add breif description (within 20 words) of a work and reference it using bibtex. all those works should be well organized based on the (i)-(iii)'s categories.]
+**(i) Peaked-circuit supremacy.**
+
+1. Introduces $\delta$-peaked circuit sampling with planted heavy output; proves $\delta$-peakedness requires $\tilde{\Omega}(\log(1/\delta))$ peaking layers [@aaronson2024peaked].
+2. Explicit overlap-postselection peaked ensemble; proves $\tilde{\Omega}(nk)$ circuit-complexity lower bound and average-case $\#\mathrm{P}$-hardness of peak-weight estimation [@zhang2025peakedhardness].
+3. HQAP demonstration on Quantinuum H2; reports tensor-network/Pauli-path runtime gap; hidden-peak distinguishing is QCMA-complete [@gharibyan2025hqap].
+
+**(ii) Bell-sampling verification.**
+
+4. Bell samples as classical circuit shadows; efficient estimators for fidelity, stabilizer nullity, magic, and circuit depth [@Hangleiter_2024].
+5. Bell-difference sampling for testing stabilizer fidelity and stabilizer-state approximation of arbitrary states [@grewal2024bdsamp].
+6. Logical IQP on hypercube codes verified by Bell-sampling purity; XEB-fidelity correspondence under restricted noise [@bluvstein2024ft].
+
+**(iii) IQP secret-based verification.**
+
+7. Original IQP cryptographic challenge: planted secret $s$ in obfuscated quadratic form, verifier checks $\langle Z^s\rangle$ bias [@shepherd2009temporally].
+8. Average-case hardness backbone of sparse-IQP sampling via Ising-partition-function approximation under anti-concentration [@bremner2017simulate].
+9. Classical secret-extraction algorithm breaking the original Shepherd-Bremner challenge for $n\sim 300$ qubits [@kahanamoku2023forging].
+10. Anti-forging cryptographic verification proposal countering classical secret-extraction attacks on the original IQP challenge [@yung2020antiforging].
+11. Stabilizer scheme: IQP verification via hidden stabilizer code, soundness reduced to coding-theoretic average-case hardness [@bremner2025stabilizer].
+12. Generalized secret-extraction attacks against obfuscated IQP, identifying parameter regimes where the stabilizer scheme remains vulnerable [@gross2025secret].
 
 :::
 
