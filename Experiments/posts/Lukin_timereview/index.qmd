@@ -154,7 +154,7 @@ The architectural contrast is sharp: 3-zone's bottleneck is building a digital c
 
 The foundational experiment: 51 $^{87}$Rb atoms in a 1D chain with van der Waals interactions in the Rydberg blockade regime. A sudden quench into the ordered phase revealed persistent many-body oscillations — later identified as **quantum many-body scars**, a novel mechanism for weak ergodicity breaking. This established the Rydberg tweezer array as a viable many-body quantum simulator.
 
-→ [Detailed reading notes](/Experiments/posts/1zone2017Bernien/index.html)
+→ [Detailed reading notes](/Experiments/posts/1zone_archi/bernien2017_manybody_scars.html)
 :::
 
 :::{.callout-important collapse="true"}
@@ -165,7 +165,7 @@ Using the same 51-atom 1D chain, slow sweeps of the detuning across the Ising qu
 
 **Hardware upgrade over Bernien 2017:** Same 51-atom 1D apparatus — no architectural change. The advance is in the measurement protocol: programmable variable-rate detuning sweeps spanning two decades, enabling extraction of quantum critical exponents via Kibble-Zurek scaling.
 
-→ [Detailed reading notes](/Experiments/posts/1zone2019Keesling_KZ/index.html)
+→ [Detailed reading notes](/Experiments/posts/1zone_archi/keesling2019_kibble_zurek.html)
 :::
 
 :::{.callout-important collapse="true"}
@@ -176,7 +176,7 @@ The leap from 1D to 2D. 256 atoms arranged in arbitrary 2D geometries (square, t
 
 **Critical hardware upgrade:** Introduction of the **SLM+AOD architecture** — a spatial light modulator generates a static array of traps, while acousto-optic deflectors provide fast reconfigurable control. This architecture enables arbitrary 2D geometries with single-site control and becomes the foundation for all subsequent Harvard apparatus generations, including the 3-zone and 4-zone systems.
 
-→ [Detailed reading notes](/Experiments/posts/1zone2021Ebadi_256atom/index.html)
+→ [Detailed reading notes](/Experiments/posts/1zone_archi/ebadi2021_256atom_simulator.html)
 :::
 
 :::{.callout-important collapse="true"}
@@ -185,7 +185,7 @@ The leap from 1D to 2D. 256 atoms arranged in arbitrary 2D geometries (square, t
 
 219 atoms on a kagome lattice probed signatures of a **topological quantum spin liquid** — a phase with long-range entanglement but no local order parameter. The experiment measured non-trivial string correlators and topological entanglement entropy consistent with a $\mathbb{Z}_2$ spin liquid. This was the first experimental evidence for a topological spin liquid in a programmable quantum simulator, and uses the Ebadi 2021 SLM+AOD apparatus.
 
-→ [Detailed reading notes](/Experiments/posts/1zone2021Semeghini_spinliquid/index.html)
+→ [Detailed reading notes](/Experiments/posts/1zone_archi/semeghini2021_topological_spin_liquid.html)
 :::
 
 
@@ -195,7 +195,7 @@ The leap from 1D to 2D. 256 atoms arranged in arbitrary 2D geometries (square, t
 
 289 atoms configured as unit-disk graphs to solve the **maximum independent set (MIS)** combinatorial optimization problem via quantum annealing. The Rydberg blockade naturally encodes the MIS independence constraint: no two adjacent atoms can both be in the Rydberg state. The study demonstrated a **superlinear quantum speedup** over simulated annealing on certain graph families, using the same SLM+AOD hardware.
 
-→ [Detailed reading notes](/Experiments/posts/1zone2022Ebadi_MIS/index.html)
+→ [Detailed reading notes](/Experiments/posts/1zone_archi/ebadi2022_MIS_optimization.html)
 :::
 
 :::{.callout-important collapse="true"}
@@ -206,7 +206,7 @@ Running on QuEra's Aquila — a single-zone analog Rydberg processor with up to 
 
 The critical insight is that **no variational optimization of the quantum part is needed** — the physics-native dynamics in physically motivated parameter regimes already generates classically intractable correlations. This sidesteps the barren plateau problem entirely. The study showed that sparse intra-module connectivity suffices to match fully connected network performance, and demonstrated a clear quantum kernel advantage on synthetic benchmarks.
 
-→ [Detailed reading notes](/Experiments/posts/1zone2024Kornjaca_reservoir/index.html)
+→ [Detailed reading notes](/Experiments/posts/1zone_archi/kornjaca2024_quantum_reservoir.html)
 :::
 
 
@@ -224,7 +224,7 @@ Neural quantum states (NQS) trained via variational Monte Carlo (VMC) are powerf
 
 Tested on a $16 \times 16$ square-lattice Rydberg Hamiltonian spanning the disordered-to-checkerboard transition, the hybrid approach reduced VMC convergence times by up to $O(10^3)$ iterations — the first demonstration of a quantum-enhanced classical algorithm for many-body ground states. (The quantum data comes from the Ebadi et al. 2021 single-zone analog simulator; no new hardware runs were performed.)
 
-→ [Detailed reading notes](/Experiments/posts/1zone2024Moss_VMC/index.html)
+→ [Detailed reading notes](/Experiments/posts/1zone_archi/moss2024_quantum_enhanced_VMC.html)
 :::
 
 
@@ -246,7 +246,7 @@ In particle physics, **quark confinement** binds quarks into hadrons via a flux 
 
 This experiment runs on QuEra Aquila (single-zone analog, up to 256 atoms on a kagome lattice). It demonstrated that neutral atom arrays can serve as effective complements to high-energy colliders for studying strong-coupling, non-perturbative dynamics.
 
-→ [Detailed reading notes](/Experiments/posts/1zone2025GonzalezCuadra_string/index.html)
+→ [Detailed reading notes](/Experiments/posts/1zone_archi/gonzalezcuadra2025_string_breaking.html)
 :::
 
 
@@ -256,7 +256,7 @@ This experiment runs on QuEra Aquila (single-zone analog, up to 256 atoms on a k
 
 A 2D Rydberg array (Harvard lab, single-zone analog mode — no zoned architecture features engaged) is driven across the (2+1)D Ising quantum phase transition to study collective dynamics of the ordered phase. Following a sudden quench into the antiferromagnetic regime, domains form and evolve via **curvature-driven coarsening** — domain walls shrink under their own curvature, a quantum analog of the classical Allen-Cahn process. At the same time, long-lived oscillations of the order parameter are observed and identified as the **Higgs (amplitude) mode** — a collective excitation analogous to the Higgs boson in particle physics, here appearing as oscillations of the symmetry-breaking order parameter around its equilibrium value.
 
-→ [Detailed reading notes](/Experiments/posts/1zone2025Manovitz_coarsening/index.html)
+→ [Detailed reading notes](/Experiments/posts/1zone_archi/manovitz2025_coarsening_higgs.html)
 :::
 
 :::{.callout-important collapse="true"}
@@ -273,7 +273,7 @@ The central discoveries are:
 
 3. **Dynamical phase transition (2D):** In the 2D square array, the boundary of the prethermal region hosts a sharp dynamical transition — marked by Néel-order defect proliferation — that **has no equilibrium counterpart**. This purely dynamical quantum phase transition can be viewed as a quantum analog of the classical Stoner-Wohlfarth transition, significantly modified by quantum fluctuations.
 
-→ [Detailed reading notes](/Experiments/posts/1zone2025Darbha_prethermal/index.html)
+→ [Detailed reading notes](/Experiments/posts/1zone_archi/darbha2025_prethermal_dynamics.html)
 :::
 
 # 3-Zone: Mid-Circuit Measurement Architecture

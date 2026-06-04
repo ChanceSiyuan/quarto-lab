@@ -96,5 +96,36 @@ Here the second steps already contains a doable worklists, i.e., we need to revi
 11. Stabilizer scheme: IQP verification via hidden stabilizer code, soundness reduced to coding-theoretic average-case hardness [@bremner2025stabilizer].
 12. Generalized secret-extraction attacks against obfuscated IQP, identifying parameter regimes where the stabilizer scheme remains vulnerable [@gross2025secret].
 
+Besides, there are also some works that are related to the above three approaches:
+
+- **quantum pseudorandomness / obfuscation**
+
+   如果你愿意引入密码学假设，可以把问题做得更干净：构造一个 keyed peaked circuit ensemble，使得知道 secret 的 verifier 知道 peak string，但公开 gate list 对经典算法像随机线路。
+
+   相关基础包括 pseudorandom quantum states、pseudorandom unitaries、Hamiltonian phase states 等:
+
+   - **pseudorandom quantum states:** Ji-Liu-Song 引入 pseudorandom quantum states；
+   - **pseudorandom unitaries:** Kretschmer 研究 quantum pseudorandomness 和 classical complexity 的关系；
+   - **Hamiltonian phase states:** Bostanci-Haferkamp-Hangleiter-Poremba 2024/2025 提出 Hamiltonian Phase State 假设，用 IQP-like phase states 构造量子伪随机原语；
+   - **quantum-secure one-way functions:** Ma-Huang 2024 证明在 quantum-secure one-way functions 假设下存在 pseudorandom unitaries。
+
+   但要小心：标准 PRS/PRU 多数是 black-box quantum access 意义下的伪随机；你的问题是 white-box gate list 公开后，经典机能否看出 peak。这个 gap 很大，可能需要 quantum circuit obfuscation
+
+   - **quantum circuit obfuscation:** Bartusek-Kitagawa-Nishimaki-Yamakawa 2023 给出 pseudo-deterministic quantum circuits 的 obfuscation 结果，假设 QLWE 和 classical-oracle / iO 类型工具。
+
+- **planted large Fourier coefficients:**
+$$
+\langle x|C|0^n\rangle
+=
+2^{-n}\sum_{z\in\{0,1\}^n}
+\exp(i f(z))(-1)^{x\cdot z},
+$$
+
+这里可用的数学工具包括：
+- 有限域 Fourier analysis、Gowers norms、hypercontractivity、random CSP planted-solution 技术、coding theory、Goldreich-Levin 类思想。
+- 不过 Goldreich-Levin 通常需要 oracle access 到函数值；你这里只有 compact circuit description，所以它不一定直接给攻击，反而可以作为“哪些 access model 会变容易”的边界分析。
+
+
+  
 :::
 

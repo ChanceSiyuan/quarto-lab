@@ -33,7 +33,7 @@ The parameter $\Omega(t)$ and $\Delta(t)$ change according to diagram below:
 
 #### Measureing local phase order 
 
-There are typically two ways to measure the local phase order. one is reviewed [here](/Experiments/posts/1zone2021Ebadi_256atom/index.html). The other is to use the coarsening matrix.
+There are typically two ways to measure the local phase order. one is reviewed [here](/Experiments/posts/1zone_archi/ebadi2021_256atom_simulator.html). The other is to use the coarsening matrix.
 
 
 Given the observation result $n_{x,y} = 1,0$ at $(x, y)$ for $\ket{r}$ and $\ket{g}$ respectively, the order parameter is $m_s = \sum_{x,y} (-1)^{x+y} n_{x,y}$.
@@ -98,7 +98,7 @@ So the experiment choose to measured $G(\textbf{r}_1,\textbf{r}_2) = \braket{\ti
 
 ## Scientific significance
 
-**Hardware upgrade** The [Ebadi 2021 baseline](/Experiments/posts/1zone2021Ebadi_256atom/index.html) uses a single SLM at 852 nm for static trap generation plus AODs for rearrangement. Manovitz 2025 adds a **second SLM at 784 nm** to apply site-resolved detuning offsets; this is the optical subsystem that implements the $12(2)\mathrm{MHz}$ boundary light shifts. Without this second SLM, per-site detuning control at the required 93–95% fidelity level is not possible with the AOD-only architecture.
+**Hardware upgrade** The [Ebadi 2021 baseline](/Experiments/posts/1zone_archi/ebadi2021_256atom_simulator.html) uses a single SLM at 852 nm for static trap generation plus AODs for rearrangement. Manovitz 2025 adds a **second SLM at 784 nm** to apply site-resolved detuning offsets; this is the optical subsystem that implements the $12(2)\mathrm{MHz}$ boundary light shifts. Without this second SLM, per-site detuning control at the required 93–95% fidelity level is not possible with the AOD-only architecture.
 
 **Comparison with review bottleneck estimates:** The review (Bottleneck 1) quotes $\delta V/V \approx 30\%$ at $R = 4\ \mu$m nearest-neighbor spacing. This experiment uses $a = 6.45$–$7.15\ \mu$m, where the larger spacing reduces the fractional interaction spread to $\sim 17$–$19\%$ (since $\delta V/V \propto \sigma_x/a \cdot 6$). The two figures are therefore consistent — the review's 30% is the worst-case compact-lattice regime; Manovitz 2025 operates in a more favorable regime by design to minimize disorder effects on coarsening dynamics. Neither experiment uses sub-Doppler cooling, so $\sigma_{x,y} \approx 0.2\ \mu$m is the shared baseline.
 

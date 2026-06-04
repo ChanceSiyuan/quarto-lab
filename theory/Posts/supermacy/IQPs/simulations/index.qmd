@@ -1,0 +1,65 @@
+---
+categories:
+- Readings
+date: 2026-02-02
+lang: en
+title: "Simulation algorithms for IQP"
+bibliography: refs.bib
+---
+
+Although the classical generation of arbitrary IQP randomness is believed to be hard,
+many other properties of IQP circuits can still be efficiently simulated.
+Among them, a particularly simple one is the estimation of Pauli-$X$ averages.
+
+::: {#lem-iqp-x-pauli-average .callout-important icon="false"}
+## X-Pauli Average Estimation
+
+For any efficiently specified IQP circuit with diagonal part $D$, there is a $\mathsf{BPP}$ algorithm that estimates the Pauli-$X$ expectation value
+$$
+\mu_s = \bra{0}_X D^\dagger X^s D \ket{0}_X
+$$
+to additive error $\varepsilon$ with success probability at least $1-\delta$, using
+$$
+N = \frac{2}{\varepsilon^2}\ln\frac{2}{\delta}
+$$
+samples. In particular, Pauli-$X$ averages of IQP circuits admit a classical randomized constant-error estimator.
+:::
+
+For a given IQP circuit, write its diagonal unitary as $D$. By diagonality,
+$$
+\bra{x}D\ket{y} = f(x)\delta_{x,y},
+$$
+where, for each fixed input $x$, the phase
+$$
+f(x) = \bra{x}D\ket{x}
+$$
+is efficiently computable from the circuit description. Let $\ket{x}_X$ denote the simultaneous eigenvector of the Pauli-$X$ operators, with eigenvalue $(-1)^{x_i}$ under $X_i$. Then
+$$
+\begin{align}
+\bra{0}_X D^\dagger X^s D\ket{0}_X
+&= \sum_u \bra{0}_X D^\dagger \ket{u}_X
+   \bra{u}_X D \ket{0}_X (-1)^{u\cdot s} \\
+&= 2^{-2n}\sum_{l,m,u}
+   \bra{l}D^\dagger\ket{l}(-1)^{u\cdot l}
+   (-1)^{u\cdot m}\bra{m}D\ket{m}(-1)^{u\cdot s} \\
+&= 2^{-2n}\sum_{l,m,u}
+   f^*(l)f(m)(-1)^{u\cdot(s+l+m)} \\
+&= 2^{-n}\sum_l f^*(l)f(l+s),
+\end{align}
+$$
+where all additions in the bit strings are over $\mathbb{F}_2^n$.
+
+Therefore the sum over $l$ can be estimated by sampling $l$ uniformly from $\{0,1\}^n$ and averaging the efficiently computable quantity
+$$
+Y_l = f^*(l)f(l+s).
+$$
+The mean of this random variable is exactly $\mu_s$. Since the Pauli expectation value is real, we may output the real part of the empirical average; the sampled real values are bounded in $[-1,1]$. By Hoeffding's inequality,
+$$
+\Pr\!\left[|\hat{\mu}_s-\mu_s|>\varepsilon\right]
+\leq 2\exp\!\left(-\frac{2N\varepsilon^2}{2^2}\right).
+$$
+Taking
+$$
+N = \frac{2}{\varepsilon^2}\ln\frac{2}{\delta}
+$$
+makes this failure probability at most $\delta$. Thus the Pauli-$X$ average can be estimated to additive error $\varepsilon$ with confidence $1-\delta$ by a randomized classical algorithm running in polynomial time.

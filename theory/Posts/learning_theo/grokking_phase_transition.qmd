@@ -1,0 +1,922 @@
+---
+categories:
+- Surveys
+date: '2026-02-11'
+lang: en
+title: "Grokking as a Phase Transition in Neural Networks"
+subtitle: "A Survey through Statistical Physics and Mean Field Theory"
+bibliography: refs.bib
+draft: true
+---
+
+**Abstract.** Grokking---the phenomenon whereby a neural network achieves perfect training accuracy long before exhibiting any generalization---poses a striking challenge to conventional statistical learning theory [@power2022grokking]. This survey examines grokking through the lens of statistical physics and mean field theory. We argue that grokking is not an optimization anomaly but a bona fide phase transition: the system transitions from a lazy regime, governed by the frozen Neural Tangent Kernel (NTK), to a rich regime characterized by active feature learning [@kumar2025grokking; @rubin2024grokking]. We review the effective theory of Liu et al. [@liu2022grokking], the first-order phase transition framework of Rubin et al. [@rubin2024grokking], physical order parameters that diagnose the transition (representation quality index, effective rank, kernel alignment), the dynamical mean field theory (DMFT) description, finite-width perturbative corrections via Feynman diagrams [@guillen2025finite], and the role of modern optimizers such as Muon in accelerating the transition [@jordan2024muon].
+
+---
+
+## Neural Dynamics Foundations {#sec-foundations}
+
+Understanding grokking requires first establishing the two fundamental learning regimes of neural networks: the *lazy* regime and the *rich* (feature learning) regime. These are not merely descriptive labels but mathematically distinct universality classes of gradient descent dynamics, distinguished by how parameters scale with network width and how they evolve during training.
+
+### The Neural Tangent Kernel
+
+
+For a neural network $f(x;\theta)$ with parameters $\theta \in \mathbb{R}^P$, the **Neural Tangent Kernel** (NTK) is the $n \times n$ kernel matrix defined on the training set $\{x_i\}_{i=1}^n$ by
+$$
+K_t(x, x') = \left\langle \nabla_\theta f(x;\theta_t),\; \nabla_\theta f(x';\theta_t) \right\rangle = \sum_{p=1}^{P} \frac{\partial f(x;\theta_t)}{\partial \theta_p} \frac{\partial f(x';\theta_t)}{\partial \theta_p}.
+$$ {#eq-ntk}
+Under gradient flow $\dot\theta = -\nabla_\theta \mathcal{L}$, the network output evolves as
+$$
+\frac{d}{dt} f(x;\theta_t) = -\sum_{x'} K_t(x,x') \nabla_f \mathcal{L}(f(x';\theta_t), y').
+$$ {#eq-ntk-dynamics}
+In the infinite-width limit with appropriate parameterization, $K_t$ converges to a deterministic kernel $K_\infty$ that remains constant throughout training [@jacot2018neural], as proved in [here](NTK.qmd)
+
+#### Lazy Regime
+A network operates in the **lazy regime** when the parameters remain within an infinitesimal neighborhood of their initialization throughout training:
+$$
+\|\theta_t - \theta_0\| = O(N^{-1/2}),
+$$ {#eq-lazy-movement}
+where $N$ is the network width. In this regime, the network function is well-approximated by its first-order Taylor expansion around $\theta_0$:
+$$
+f(x;\theta_t) \approx f(x;\theta_0) + \nabla_\theta f(x;\theta_0)^\top (\theta_t - \theta_0).
+$$ {#eq-linearization}
+The NTK is frozen at its initial value $K_0$, and training reduces to kernel regression in the reproducing kernel Hilbert space (RKHS) of $K_0$ [@jacot2018neural]. No representation learning occurs; the network uses its random initialization features as a fixed basis.
+
+
+In the lazy regime, the over-parameterized network can memorize any training set by virtue of the kernel's positive-definiteness, but it cannot discover the structural regularities of the target function. This is the regime of "rote memorization."
+
+### Rich (Feature Learning) Regime
+
+::::{#def-rich .callout-note icon="false"}
+## (Rich Regime)
+A network operates in the **rich regime** (or feature learning regime) when its parameters undergo $O(1)$ displacement from initialization:
+$$
+\|\theta_t - \theta_0\| = O(1).
+$$ {#eq-rich-movement}
+In this regime, the NTK $K_t$ evolves during training and adapts to the data, aligning its principal eigenvectors with the structure of the target function. The network learns task-specific internal representations rather than relying on random features [@yang2021tensor].
+::::
+
+The rich regime is accessed through specific parameterizations. The most principled is the maximal update parameterization ($\mu$P) of Yang and Hu [@yang2021tensor], which ensures that hidden-layer updates remain $O(1)$ regardless of width. In the rich regime, the kernel is not a fixed object but a dynamical variable co-evolving with the data representation.
+
+### The Initialization Scale Parameter $\alpha$
+
+::::{#def-alpha .callout-note icon="false"}
+## (Initialization Scale $\alpha$)
+Consider a two-layer network with output
+$$
+f(x;\theta) = \frac{1}{N^\alpha} \sum_{j=1}^{N} a_j \, \sigma(w_j \cdot x),
+$$ {#eq-alpha-param}
+where $\alpha \in [0, 1/2]$ is the **initialization scale parameter**, $a_j$ are readout weights, $w_j$ are feature weights, and $\sigma$ is a nonlinear activation. The extreme values correspond to:
+
+- $\alpha = 1/2$: **NTK parameterization** (lazy regime). With $a_j = O(1)$, the CLT gives $\sum_j a_j\sigma(w_j\cdot x) = O(\sqrt{N})$, so $f = O(N^{1/2-\alpha})|_{\alpha=1/2} = O(1)$. More importantly, the gradient to feature weights carries the same $N^{-1/2}$ prefactor: $\partial\mathcal{L}/\partial w_j \propto N^{-1/2}$, so $w_j$ barely moves and the kernel freezes.
+- $\alpha = 0$: **Mean-field parameterization** (rich regime). The prefactor is $N^0 = 1$, so $f = O(\sqrt{N})$ — the **largest** output scale. The gradient suppression is absent ($\partial\mathcal{L}/\partial w_j = O(1)$), forcing large weight excursions and enabling feature learning.
+
+Intermediate values of $\alpha$ interpolate continuously between these extremes [@kumar2025grokking].
+::::
+
+The parameter $\alpha$ serves as a control knob that tunes the system between the two universality classes. As we shall see, grokking occurs precisely at intermediate values of $\alpha$ where the network begins in a lazy-like state but is eventually driven into the rich regime by regularization.
+
+::::{#lem-ntk-lazy .callout-note icon="false"}
+## (NTK--Lazy Equivalence)
+In the limit $N \to \infty$ with $\alpha = 1/2$, gradient flow on the squared loss is equivalent to kernel regression with the deterministic NTK at initialization:
+$$
+f_t(x) = f_0(x) - K_\infty(x, X)(K_\infty(X,X))^{-1}\bigl(e^{-2K_\infty(X,X) \eta t} - I\bigr) \bigl(Y - f_0(X)\bigr),
+$$
+where $X$ denotes the training inputs and $Y$ the targets. The factor of 2 in the exponent comes from differentiating the un-halved MSE loss $\mathcal{L} = \sum_i (y_i - f(x_i))^2$; if instead the half-MSE $\frac{1}{2}\sum_i(y_i-f(x_i))^2$ is used the factor becomes 1 (see the explicit derivation in [NTK.qmd](NTK.qmd), lines 93–119). In particular, the kernel $K_t = K_\infty$ for all $t \geq 0$, and training converges to the minimum-RKHS-norm interpolant [@jacot2018neural].
+::::
+
+---
+
+## Grokking Phenomenology {#sec-phenomenology}
+
+::::{#def-grokking .callout-note icon="false"}
+## Definition (Grokking)
+**Grokking** is a training phenomenon in which:
+
+1. The training loss reaches near-zero (memorization) at an early time $t_{\mathrm{mem}}$.
+2. The test loss remains at chance level for an extended period $t_{\mathrm{mem}} \ll t \ll t_{\mathrm{grok}}$.
+3. The test loss drops sharply at time $t_{\mathrm{grok}}$, achieving near-perfect generalization.
+
+The delay ratio $t_{\mathrm{grok}} / t_{\mathrm{mem}}$ can span several orders of magnitude [@power2022grokking].
+::::
+
+The term "grokking" was introduced by Power et al. [@power2022grokking], who observed this phenomenon when training small transformers on modular arithmetic tasks such as $a + b \pmod{p}$ and $a \times b \pmod{p}$. The training curve exhibits a characteristic four-phase structure:
+
+::::{#def-phases .callout-note icon="false"}
+## Definition (Training Phases of Grokking)
+
+- **Phase I---Memorization.** Training accuracy rises to 100\%. The network fits the training data using its high-dimensional random feature capacity (NTK behavior). Test accuracy remains at the random baseline (e.g., $1/p$ for modular arithmetic mod $p$).
+- **Phase II---Plateau.** Training loss is near zero; test loss is stationary. Externally, learning appears stalled. Internally, weight decay and the implicit bias of the optimizer apply a slow, persistent pressure on the weight configuration, driving it along the zero-training-loss manifold toward lower-norm solutions [@liu2022grokking].
+- **Phase III---Circuit formation.** Internal representations begin to restructure. Nanda et al. [@nanda2023progress] demonstrated that, for modular addition, the network learns discrete Fourier transform representations and implements the identity $\cos(\omega a)\cos(\omega b) - \sin(\omega a)\sin(\omega b) = \cos(\omega(a+b))$ using dedicated neuron circuits.
+- **Phase IV---Generalization.** Test accuracy jumps to near 100\%. The network has transitioned from a memorization solution (lookup table) to a generalizing solution (algorithmic circuit).
+::::
+
+### Algorithmic Tasks and Data Sparsity
+
+Grokking is most readily observed on tasks with a strict low-dimensional algebraic structure that is entirely opaque when viewed as a generic input--output mapping. Canonical examples include:
+
+- **Modular arithmetic**: $a \circ b \pmod{p}$ for $\circ \in \{+, -, \times\}$, where the underlying structure involves Fourier modes on $\mathbb{Z}_p$ [@power2022grokking; @nanda2023progress].
+- **Permutation groups**: composition of permutations in $S_n$ [@power2022grokking].
+- **Sparse parities**: parity functions on a hidden subset of input bits [@merrill2023tale].
+
+Data sparsity amplifies the grokking delay. When the training fraction $|S_{\mathrm{train}}| / |S_{\mathrm{total}}|$ is small, the memorization solution is easily accessible (a lookup table requires complexity proportional to $|S_{\mathrm{train}}|$), while the generalizing solution---which must be valid everywhere---requires discovering the underlying rule. As the training fraction increases, grokking disappears because the generalizing solution becomes the easier path from the outset [@power2022grokking; @liu2022grokking].
+
+::: {.callout-important icon="false"}
+## Open Question: Universality of Grokking
+Is grokking specific to discrete algebraic tasks, or does it arise generically in continuous regression and classification problems? The effective theory of Liu et al. [@liu2022grokking] suggests that grokking is universal whenever the loss landscape contains both a high-norm memorizing basin and a low-norm generalizing basin separated by an energy barrier. Empirical evidence from polynomial regression and image classification under heavy regularization supports this broader view.
+:::
+
+---
+
+## Grokking as a Phase Transition {#sec-phase-transition}
+
+The sharp, sudden transition from memorization to generalization is mathematically analogous to a phase transition in statistical mechanics. In this section, we formalize this correspondence.
+
+### Energy Landscape and Entropy
+
+In statistical physics, a system evolves to minimize its free energy $F = E - TS$, where $E$ is the internal energy, $T$ the temperature, and $S$ the entropy. In the neural network setting:
+
+- **Energy** $\leftrightarrow$ Loss function plus regularization: $\mathcal{L}(\theta) + \lambda \|\theta\|^2$.
+- **Entropy** $\leftrightarrow$ Volume of weight space corresponding to a given solution type.
+
+::::{#def-free-energy .callout-note icon="false"}
+## Definition (Effective Free Energy)
+The **effective free energy** for a neural network trained with weight decay $\lambda$ is
+$$
+F(\theta) = \mathcal{L}_{\mathrm{train}}(\theta) + \lambda \|\theta\|^2,
+$$ {#eq-free-energy}
+where $\mathcal{L}_{\mathrm{train}}$ is the training loss. Gradient flow with weight decay is equivalent to gradient descent on $F$. The regularization term $\lambda\|\theta\|^2$ penalizes high-norm solutions, biasing the dynamics toward simpler (lower-complexity) configurations [@liu2022grokking].
+::::
+
+The memorizing and generalizing solutions correspond to qualitatively different basins in this landscape:
+
+- **Memorization basin** (disordered / "glassy" state): Training loss is zero, but the weight norm is large. These configurations are numerous---there are exponentially many ways to memorize $n$ data points with a sufficiently over-parameterized network. High entropy, high energy (due to the $\lambda\|\theta\|^2$ term).
+- **Generalization basin** (ordered / "crystalline" state): Training *and* test loss are zero. The weights are aligned with the target function's structure (e.g., Fourier modes). These configurations are rare and highly organized. Low entropy, low energy.
+
+### The Effective Theory of Liu et al.
+
+Liu et al. [@liu2022grokking] decomposed the learning dynamics into competing timescales for "signal" (structured representation) and "noise" (memorization). They identified a **Goldilocks zone** in hyperparameter space:
+
+::::{#def-goldilocks .callout-note icon="false"}
+## Definition (Goldilocks Zone)
+The **Goldilocks zone** is the region of hyperparameter space $(\lambda, \alpha, |S_{\mathrm{train}}|)$ in which:
+
+1. Regularization is strong enough that the memorization solution is metastable (not the global minimum of $F$).
+2. Regularization is not so strong that the network cannot fit the training data at all.
+3. The signal learning rate is positive but slower than the noise learning rate.
+
+Within this zone, the network first memorizes (fast noise dynamics), then gradually transitions to generalization as weight decay destabilizes the memorization solution [@liu2022grokking].
+::::
+
+The signal strength $S(t)$ and noise strength $N(t)$ are defined as $S(t) := \|\Pi_S W_t\|_F^2$ and $N(t) := \|\Pi_N W_t\|_F^2$ (the squared Frobenius norms of the weight matrix projected onto the signal and noise subspaces; see @def-snr for the precise decomposition). They obey effective dynamics of the form:
+$$
+\dot{S} = \eta_S \, g_S(S, N) - \lambda S, \qquad \dot{N} = \eta_N \, g_N(S, N) - \lambda N,
+$$ {#eq-signal-noise}
+where $\eta_S \ll \eta_N$ reflects the slower signal learning rate. Here $g_S$ and $g_N$ are the projections of the (normalized) loss gradient onto the signal and noise subspaces, respectively [@liu2022grokking]. The full (nonlinear) forms are
+$$
+g_N(S,N) = N_\infty - N, \qquad g_S(S,N) = S \cdot \frac{N_\infty}{N},
+$$ {#eq-g-explicit}
+where $N_\infty$ is the memorization capacity (the noise level at which training loss reaches zero). The $N_\infty/N$ factor in $g_S$ reflects the gradient competition between subspaces: when the network is heavily memorized ($N \approx N_\infty$), the loss gradient is nearly exhausted by the noise component, leaving little gradient for signal learning; as $N$ decreases, the signal subspace receives an increasing share of the gradient. Linearizing around $N \approx N_\infty$ (Phase 1 only) gives $g_S \approx S$, recovering the familiar form, but this approximation breaks down in Phase 2 when $N$ has decayed appreciably below $N_\infty$.
+
+With these forms, the two-phase dynamics are:
+
+1. **Memorization phase** ($t \lesssim \tau_{\mathrm{mem}}$, $N \approx N_\infty$): $\dot{N} \approx \eta_N(N_\infty - N) - \lambda N > 0$, so noise grows on timescale $(\eta_N + \lambda)^{-1}$ and saturates near $N_\infty \eta_N/(\eta_N + \lambda) \approx N_\infty$. Meanwhile $g_S \approx S$ (since $N \approx N_\infty$), giving $\dot{S} \approx (\eta_S - \lambda)S < 0$, so signal decays.
+2. **Weight-decay phase** ($t \gtrsim \tau_{\mathrm{mem}}$): Once $N \approx N_\infty$, the gradient $g_N \to 0$ and the $-\lambda N$ term dominates: $N$ decays exponentially with rate $\lambda$. Using the full nonlinear form, $\dot{S} = S(\eta_S N_\infty/N - \lambda)$, which changes sign precisely when $N = N^* \equiv (\eta_S/\lambda)N_\infty$. Since $\eta_S < \lambda$, one has $N^* < N_\infty$, so this threshold is reached as $N$ decays. For $N < N^*$, $\dot{S} > 0$ and signal growth begins, triggering generalization.
+
+After the noise component saturates and begins to decay under weight decay, the signal eventually crosses a threshold where it dominates the output, triggering generalization [@liu2022grokking].
+
+### First-Order Phase Transition
+
+::::{#thm-first-order .callout-note icon="false"}
+## Theorem (Grokking as First-Order Phase Transition [@rubin2024grokking])
+Consider a two-layer neural network trained on a structured task (e.g., modular arithmetic) with weight decay $\lambda > 0$. Define the order parameter $m = \langle w, w^* \rangle / \|w\|\|w^*\|$ as the overlap between the learned features and the target features. Then:
+
+1. **Two metastable phases exist.** The effective free energy $F(m)$ has two local minima: a memorizing phase $\mathcal{M}$ at $m \approx 0$ (no feature alignment) and a generalizing phase $\mathcal{G}$ at $m \approx 1$ (full alignment).
+2. **The transition is first-order.** As the effective control parameter (training time, sample size, or $\lambda$) crosses a critical value, the global minimum of $F$ switches discontinuously from $\mathcal{M}$ to $\mathcal{G}$. The order parameter $m$ jumps.
+3. **Metastability produces delay.** The grokking delay $\tau_{\mathrm{grok}}$ is governed by the free energy barrier $\Delta F$ between the phases:
+$$
+\tau_{\mathrm{grok}} \sim \exp\!\left(\frac{\Delta F}{T_{\mathrm{eff}}}\right),
+$$ {#eq-kramers}
+where $T_{\mathrm{eff}}$ is an effective temperature set by the learning rate and stochastic gradient noise. This is a Kramers-type escape rate formula [@kramers1940brownian].
+::::
+
+::::{#lem-landscape .callout-note icon="false"}
+## Lemma (Structure of the Loss Landscape [@rubin2024grokking; @nanda2023progress])
+For networks trained on modular addition mod $p$:
+
+1. The memorizing basin contains $O(p^2)$ distinct solutions related by permutation symmetry of the input tokens.
+2. The generalizing basin contains $O(p)$ solutions corresponding to different choices of Fourier frequency $\omega$.
+3. The free energy barrier between basins is extensive in the number of parameters $P$, explaining why the grokking delay grows with model size at fixed learning rate.
+::::
+
+::: {.callout-tip icon="false"}
+## Physical Analogy: Nucleation
+Grokking is analogous to nucleation in a supercooled liquid. The memorizing phase is the metastable "liquid"; the generalizing phase is the thermodynamically stable "crystal." Weight decay acts as supercooling---it lowers the free energy of the crystal relative to the liquid. The system remains trapped in the liquid state until a thermal fluctuation (stochastic gradient noise) nucleates a "droplet" of the crystalline phase that then grows to fill the system. The grokking delay is the nucleation time.
+:::
+
+---
+
+## Physical Order Parameters {#sec-order-parameters}
+
+In statistical mechanics, a phase transition is diagnosed by an **order parameter**: a macroscopic observable that is zero in one phase and nonzero in the other. Several such quantities have been identified for the grokking transition.
+
+### Representation Quality Index
+
+::::{#def-rqi .callout-note icon="false"}
+## Definition (Representation Quality Index [@liu2022grokking])
+For a task with known algebraic structure (e.g., modular arithmetic mod $p$), the **Representation Quality Index** (RQI) measures the geometric regularity of the learned embedding. Let $\{e_i\}_{i=0}^{p-1}$ denote the learned embeddings of the input tokens. Define:
+$$
+\mathrm{RQI} = \frac{|\{(a,b,c,d) : e_a + e_b \approx e_c + e_d,\; a+b \equiv c+d \pmod{p}\}|}{|\{(a,b,c,d) : a+b \equiv c+d \pmod{p}\}|}.
+$$ {#eq-rqi}
+RQI $\approx 0$ in the memorizing phase (random embeddings) and RQI $\approx 1$ in the generalizing phase (structured lattice on the circle/torus). This is analogous to the crystalline order parameter in condensed matter.
+::::
+
+### Effective Rank
+
+::::{#def-erank .callout-note icon="false"}
+## Definition (Effective Rank [@roy2007effective])
+Given a matrix $W$ with singular values $\sigma_1 \geq \sigma_2 \geq \cdots \geq \sigma_r > 0$, define the normalized singular value distribution $p_i = \sigma_i^2 / \sum_j \sigma_j^2$. The **effective rank** is
+$$
+\mathrm{erank}(W) = \exp\!\left(-\sum_{i=1}^{r} p_i \log p_i\right) = \exp(H(\mathbf{p})),
+$$ {#eq-erank}
+where $H(\mathbf{p})$ is the Shannon entropy of the distribution $\mathbf{p}$.
+
+- If all singular values are equal: $\mathrm{erank} = r$ (maximal, fully delocalized).
+- If one singular value dominates: $\mathrm{erank} \to 1$ (minimal, fully localized).
+
+During the memorizing phase, the effective rank of the weight matrices (or activation covariance) is high. At the grokking transition, it collapses sharply, indicating the network has found a low-rank generalizing solution.
+::::
+
+### Participation Ratio
+
+::::{#def-pr .callout-note icon="false"}
+## Definition (Participation Ratio)
+For a covariance matrix $C$ with eigenvalues $\{\lambda_i\}$, the **participation ratio** is
+$$
+\mathrm{PR} = \frac{\left(\sum_i \lambda_i\right)^2}{\sum_i \lambda_i^2} = \frac{\mathrm{tr}(C)^2}{\mathrm{tr}(C^2)}.
+$$ {#eq-pr}
+The participation ratio counts the effective number of "active" modes. In the memorizing phase, variance is spread across many modes ($\mathrm{PR} = O(N)$). In the generalizing phase, it concentrates on the few task-relevant modes ($\mathrm{PR} = O(1)$). The sharp drop in PR at the transition is a robust diagnostic of grokking [@kumar2025grokking].
+::::
+
+### Kernel Alignment
+
+::::{#def-alignment .callout-note icon="false"}
+## Definition (Kernel Alignment)
+The **kernel alignment** between the empirical NTK $K_t$ at training time $t$ and an ideal target kernel $K^*$ (encoding the task structure) is
+$$
+A(K_t, K^*) = \frac{\langle K_t, K^* \rangle_F}{\|K_t\|_F \, \|K^*\|_F},
+$$ {#eq-alignment}
+where $\langle \cdot, \cdot \rangle_F$ is the Frobenius inner product. In the lazy regime, $A \approx A_0$ is small and constant (random features are not aligned with the task). In the rich regime, $A$ increases as the kernel adapts its eigenvectors to the target function. The grokking transition is marked by a sigmoidal rise in kernel alignment [@kumar2025grokking].
+::::
+
+### Signal and Noise Subspace Projections
+
+::::{#def-snr .callout-note icon="false"}
+## Definition (Signal--Noise Decomposition)
+Let $\mathcal{V}_S$ be the subspace spanned by the ground-truth features of the target function (e.g., the relevant Fourier modes for modular arithmetic). Let $\mathcal{V}_N = \mathcal{V}_S^\perp$ be the orthogonal complement. For a weight matrix $W$, define
+$$
+E_S(t) = \|\Pi_S W_t\|_F^2, \qquad E_N(t) = \|\Pi_N W_t\|_F^2,
+$$ {#eq-signal-noise-energy}
+where $\Pi_S$ and $\Pi_N$ are the projectors onto $\mathcal{V}_S$ and $\mathcal{V}_N$, respectively.
+
+- **Phase I**: $E_N$ grows rapidly (memorization of random patterns); $E_S$ decays slowly (weight decay dominates: $\eta_S < \lambda$, so $\dot{S} \approx (\eta_S - \lambda)S < 0$).
+- **Phase II**: $E_N$ decays under weight decay; $E_S$ *continues decaying* initially (since $N > N^* \equiv (\eta_S/\lambda)N_\infty$ at Phase II onset, so $\dot{S} = S(\eta_S N_\infty/N - \lambda) < 0$). Only once $N$ falls below the threshold $N^*$ does $\dot{S}$ change sign and $E_S$ begin to grow.
+- **Phase III--IV**: $E_S$ overtakes $E_N$. The signal-to-noise ratio $\mathrm{SNR}(t) = E_S(t)/E_N(t)$ crosses a critical threshold, and the softmax nonlinearity amplifies the signal, producing sudden generalization [@nanda2023progress; @liu2022grokking].
+::::
+
+::::{#lem-jump .callout-note icon="false"}
+## Lemma (Order Parameter Discontinuity at Transition [@rubin2024grokking; @kumar2025grokking])
+At the grokking transition:
+
+1. RQI jumps from $O(\varepsilon)$ to $1 - O(\varepsilon)$.
+2. Effective rank drops from $O(\sqrt{P})$ to $O(1)$.
+3. Participation ratio drops from $O(N)$ to $O(1)$.
+4. Kernel alignment jumps from $O(1/P)$ to $O(1)$.
+5. SNR crosses unity: $\mathrm{SNR}(t_{\mathrm{grok}}^-) < 1 < \mathrm{SNR}(t_{\mathrm{grok}}^+)$.
+
+These discontinuities are the hallmarks of a first-order phase transition.
+
+**Remark on item 2.** Consider a weight matrix $W \in \mathbb{R}^{d_{\mathrm{out}} \times d_{\mathrm{in}}}$ with $P \approx d_{\mathrm{out}} \cdot d_{\mathrm{in}}$ parameters; for a roughly square layer $d_{\mathrm{out}} \sim d_{\mathrm{in}} \sim \sqrt{P}$, the true rank satisfies $r \leq \sqrt{P}$. At random initialization (memorizing phase), the singular values are approximately i.i.d. samples from the Marchenko–Pastur distribution, which gives a nearly uniform distribution $\mathbf{p} \approx (1/r, \ldots, 1/r)$, so $\mathrm{erank}(W) = \exp(H(\mathbf{p})) \approx r = O(\sqrt{P})$. This saturates the maximum possible value of $\exp(H(\mathbf{p}))$ given by @def-erank. After grokking, weight decay drives the solution toward a low-rank structure: a single (or few) dominant singular values collapse the distribution $\mathbf{p}$ toward a point mass, giving $\mathrm{erank} \to O(1)$.
+::::
+
+| Order Parameter | Memorizing Phase | Generalizing Phase | Physical Analogy |
+|:---|:---|:---|:---|
+| RQI | $\approx 0$ | $\approx 1$ | Magnetization |
+| Effective rank | $O(\sqrt{P})$ | $O(1)$ | Entropy |
+| Participation ratio | $O(N)$ | $O(1)$ | Localization length |
+| Kernel alignment | $O(1/P)$ | $O(1)$ | Field alignment |
+| SNR | $< 1$ | $> 1$ | Signal-to-noise ratio |
+
+: Summary of order parameters and their behavior across the grokking transition. {#tbl-order-params}
+
+---
+
+## Mean Field Theory and DMFT {#sec-dmft}
+
+Dynamical mean field theory (DMFT) provides a rigorous framework for analyzing the grokking transition in the infinite-width limit. Unlike the NTK theory (which also operates at infinite width but fixes features), DMFT allows features to evolve and thus captures the lazy-to-rich transition.
+
+### DMFT for Neural Networks
+
+::::{#def-dmft .callout-note icon="false"}
+## Definition (Dynamical Mean Field Theory for Neural Networks)
+In the infinite-width limit of a two-layer network, the joint dynamics of any finite collection of neurons become independent, with each neuron $i$ governed by a stochastic process
+$$
+\dot{h}_i(t) = -\frac{\partial \mathcal{L}}{\partial h_i} + \xi_i(t),
+$$
+where the interaction with all other neurons is replaced by a self-consistent Gaussian "bath" characterized by the kernel
+$$
+C(t, t') = \frac{1}{N}\sum_{i=1}^{N} \mathbb{E}\bigl[h_i(t) h_i(t')\bigr]
+$$ {#eq-dmft-kernel}
+and the response function
+$$
+R(t, t') = \frac{1}{N}\sum_{i=1}^{N} \frac{\delta \mathbb{E}[h_i(t)]}{\delta \xi_i(t')}.
+$$ {#eq-dmft-response}
+Self-consistency requires that the statistics of $h_i$ generated by the single-site dynamics match the kernel $C$ and response $R$ that define the bath [@kumar2025grokking; @mei2018mean].
+::::
+
+### The Action Landscape
+
+The DMFT self-consistency conditions can be reformulated as the stationarity conditions of an **action** (or effective potential) $\mathcal{S}[C, R]$, a functional of the kernel and response functions. Training trajectories correspond to saddle points of this action.
+
+The grokking transition is encoded in the structure of $\mathcal{S}$:
+
+1. **Featureless minimum** ($m = 0$): The kernel remains close to its initialization value. No feature learning occurs. This corresponds to the lazy/memorizing phase.
+2. **Feature-learning minimum** ($m \neq 0$): The kernel has evolved to align with the target. This corresponds to the rich/generalizing phase.
+
+As the sample size $n$ or training time increases, the global minimum of $\mathcal{S}$ shifts from the featureless to the feature-learning saddle point. The grokking transition is the dynamical relaxation from the metastable featureless minimum to the stable feature-learning minimum [@kumar2025grokking].
+
+### Mixed Phase and Gaussian Mixture Feature Learning
+
+::::{#def-gmfl .callout-note icon="false"}
+## Definition (Gaussian Mixture Feature Learning Phase)
+The **Gaussian Mixture Feature Learning** (GMFL) phase is an intermediate state in which the neural population splits into two subpopulations:
+
+- A majority of neurons remain in the "lazy" Gaussian cloud (pre-activations are approximately Gaussian with the initial covariance).
+- A minority of neurons have "specialized" and locked onto the target features, appearing as outliers in the spectral distribution of the weight matrix.
+
+The pre-activation distribution in this phase is a Gaussian mixture rather than a pure Gaussian [@rubin2024grokking; @kumar2025grokking].
+::::
+
+This mixed phase is closely related to the spiked random matrix model from random matrix theory.
+
+### Spiked Random Matrix Model
+
+::::{#def-spiked .callout-note icon="false"}
+## Definition (Spiked Random Matrix Model)
+Model the weight matrix as
+$$
+W = \sum_{k=1}^{r} \beta_k \, u_k v_k^\top + \frac{\sigma}{\sqrt{N}} Z,
+$$ {#eq-spiked}
+where $\beta_k$ are the spike strengths, $u_k, v_k$ are unit vectors encoding the signal directions, and $Z$ has i.i.d. entries. The $\beta_k$ terms represent the learned signal; the noise term $\sigma Z/\sqrt{N}$ represents the unlearned random component [@baik2005phase].
+::::
+
+::::{#lem-bbp .callout-note icon="false"}
+## Lemma (Baik--Ben Arous--Péché Transition [@baik2005phase])
+In the spiked random matrix model (@eq-spiked) with a single spike $\beta$ and noise level $\sigma$:
+
+- If $\beta \leq \sigma$: the top singular value of $W$ remains within the bulk of the Marchenko--Pastur distribution. The spike is **undetectable**.
+- If $\beta > \sigma$: the top singular value separates from the bulk: $\sigma_1(W) \to \beta + \sigma^2/\beta$. The spike **emerges**.
+
+In the grokking context, training dynamics must push the signal strength $\beta$ past the BBP threshold $\sigma$ for the learned features to emerge from the noise floor. The grokking instant corresponds to the BBP transition.
+::::
+
+::::{#thm-dmft .callout-note icon="false"}
+## Theorem (DMFT Description of Grokking [@kumar2025grokking])
+In the infinite-width limit of a two-layer network trained with gradient flow and weight decay $\lambda$ on a structured task:
+
+1. The DMFT equations admit two fixed-point solutions: a **memorizing fixed point** $C_{\mathcal{M}}$ with feature overlap $m \approx 0$ and a **generalizing fixed point** $C_{\mathcal{G}}$ with $m \approx 1$.
+2. For $\alpha < \alpha_c$ (rich regime), the system dynamically transitions from $C_{\mathcal{M}}$ to $C_{\mathcal{G}}$ after a delay time $\tau \sim \exp(\Delta \mathcal{S} / T_{\mathrm{eff}})$, where $\Delta \mathcal{S}$ is the action barrier.
+3. For $\alpha \geq \alpha_c$ (lazy regime), the system remains at $C_{\mathcal{M}}$ for all time.
+
+The critical value $\alpha_c$ depends on the task structure, sample size, and regularization strength.
+::::
+
+::::{#lem-alpha-transition .callout-note icon="false"}
+## Lemma (Lazy-to-Rich Transition [@kumar2025grokking; @yang2021tensor])
+The transition between the lazy ($\alpha = 1/2$) and rich ($\alpha = 0$) regimes is itself a phase transition in the learning dynamics:
+
+- For $\alpha > \alpha_c$: the NTK is approximately constant; no feature learning occurs.
+- For $\alpha < \alpha_c$: the NTK evolves; features adapt to the task.
+
+The critical $\alpha_c$ satisfies $\alpha_c = \alpha_c(n, \lambda, \mathrm{SNR}_0)$, where $n$ is the sample size, $\lambda$ the regularization, and $\mathrm{SNR}_0$ the initial signal-to-noise ratio of the task in the random feature basis.
+::::
+
+---
+
+## Initialization and the Scaling Parameter $\alpha$ {#sec-initialization}
+
+The initialization scale $\alpha$ is the primary control parameter governing whether grokking occurs. This section examines its role in more detail.
+
+For a network with output $f(x) = N^{-\alpha} \sum_j a_j \sigma(w_j \cdot x)$:
+
+- **Large $\alpha$ (lazy)**: With $a_j = O(1)$ at initialization, the CLT gives $\sum_j a_j \sigma(w_j \cdot x) = O(\sqrt{N})$, so $f = O(N^{1/2-\alpha})$. At $\alpha = 1/2$ this is $O(1)$ — no inflation of $a_j$ is required. Crucially, the gradient of the loss with respect to the feature weights receives the same $N^{-\alpha}$ suppression: $\partial \mathcal{L}/\partial w_j \propto N^{-\alpha} a_j \sigma'(w_j \cdot x)$. For large $\alpha$ this is $O(N^{-1/2})$-small, so $w_j$ barely moves and the kernel freezes (NTK regime).
+- **Small $\alpha$ (rich)**: The prefactor $N^{-\alpha} \to 1$, so the gradient suppression is removed. Feature weights $w_j$ receive $O(1)$ gradient signals and undergo large displacements. The kernel $K_t$ evolves throughout training, enabling feature adaptation. At $\alpha = 0$ (mean-field), the network achieves maximal feature learning.
+
+The grokking phenomenon arises when $\alpha$ is large enough that the network can initially memorize via the lazy mechanism, but not so large that the rich mechanism is entirely suppressed.
+
+### Maximal Update Parameterization
+
+::::{#def-mup .callout-note icon="false"}
+## Definition (Maximal Update Parameterization, $\mu$P [@yang2021tensor])
+The **maximal update parameterization** is an initialization and learning rate scheme defined by:
+
+- Hidden weights: $W^{(l)} \sim \mathcal{N}(0, 1/N_l)$ with learning rate $\eta^{(l)} \propto 1/N_l$.
+- Output weights: $a \sim \mathcal{N}(0, 1/N)$ with learning rate $\eta_a \propto 1$.
+
+Under $\mu$P, the hidden-layer weight updates are $O(1)$ regardless of width, ensuring maximal feature learning. Hyperparameters optimized at one width transfer to other widths without retuning.
+::::
+
+### Phase Diagram
+
+::::{#lem-phase-diagram .callout-note icon="false"}
+## Lemma (Phase Diagram in $(\alpha, \lambda)$ Space [@kumar2025grokking; @liu2022grokking])
+For a fixed task and architecture, the $(\alpha, \lambda)$ parameter space partitions into three regions:
+
+1. **No learning** ($\lambda > \lambda_{\max}(\alpha)$): Regularization is too strong; neither memorization nor generalization occurs.
+2. **Memorization only** ($\lambda < \lambda_{\min}(\alpha)$ or $\alpha > \alpha_c$): The network memorizes but never generalizes. Either regularization is too weak to destabilize the memorization solution, or the dynamics are too lazy to permit feature learning.
+3. **Grokking** ($\lambda_{\min}(\alpha) < \lambda < \lambda_{\max}(\alpha)$ and $\alpha < \alpha_c$): The network first memorizes, then transitions to generalization after a delay.
+
+The grokking delay diverges as $\alpha \to \alpha_c^-$ and as $\lambda \to \lambda_{\min}^+$, consistent with the approach to a phase boundary.
+::::
+
+**Timescale separation.** The fundamental mechanism is a separation of timescales between the readout (linear, fast) and feature (nonlinear, slow) dynamics:
+$$
+\tau_{\mathrm{readout}} \sim \frac{1}{\eta \|K_0\|}, \qquad \tau_{\mathrm{features}} \sim \frac{N^{2\alpha}}{\eta \|\nabla_w K\|}.
+$$ {#eq-timescales}
+The network memorizes on the fast timescale $\tau_{\mathrm{readout}}$. Feature learning occurs on the slow timescale $\tau_{\mathrm{features}}$. Grokking happens when $\tau_{\mathrm{features}} \gg \tau_{\mathrm{readout}}$, i.e., $\alpha > 0$.
+
+---
+
+## Finite-Width Corrections and Feynman Diagrams {#sec-finite-width}
+
+The DMFT framework is exact in the infinite-width limit, but real grokking occurs in finite-width networks. Perturbative techniques from quantum field theory---specifically Feynman diagram expansions---provide a systematic way to compute corrections in powers of $1/N$ [@guillen2025finite; @roberts2022principles].
+
+### Perturbative Expansion of the NTK
+
+::::{#def-ntk-expansion .callout-note icon="false"}
+## Definition (Finite-Width NTK Expansion)
+At finite width $N$, the NTK admits an expansion
+$$
+K_N(x, x') = K_\infty(x, x') + \frac{1}{N} K^{(1)}(x, x') + \frac{1}{N^2} K^{(2)}(x, x') + \cdots,
+$$ {#eq-ntk-expansion}
+where each correction $K^{(k)}$ is computed as a sum over Feynman diagrams with $k$ loops. At infinite width, all loop diagrams vanish and the kernel reduces to the deterministic $K_\infty$. At finite width, the loop corrections introduce kernel fluctuations and, crucially, **kernel drift**---the mechanism by which features evolve [@guillen2025finite].
+::::
+
+### Feynman Rules
+
+::::{#def-feynman .callout-note icon="false"}
+## Definition (Feynman Rules for Neural Network Perturbation Theory)
+The perturbative expansion of network correlators is organized by Feynman diagrams with the following building blocks [@guillen2025finite; @roberts2022principles]:
+
+- **Propagator** (solid line): Represents the infinite-width covariance $C_\infty(x, x') = \mathbb{E}[h_i(x) h_i(x')]$.
+- **Vertex** ($k$-point): Arises from the $k$-th Hermite coefficient of the activation function $\sigma$. The vertex factor is $V_k = \mathbb{E}_{z \sim \mathcal{N}(0,1)}[\mathrm{He}_k(z) \, \sigma(z)]$.
+- **Loop**: Each closed loop contributes a factor of $1/N$. Diagrams are organized by loop number.
+
+The one-loop correction to the NTK (the leading $1/N$ term) involves the "four-point vertex," which quantifies the interaction strength between different neurons. If this vertex vanishes (as in a Gaussian process), no feature learning occurs at any finite order.
+::::
+
+::::{#lem-finite-width .callout-note icon="false"}
+## Lemma (Finite-Width Correction to Grokking [@guillen2025finite])
+The grokking delay time at finite width $N$ receives a perturbative correction:
+$$
+\tau_N = \tau_\infty \left(1 + \frac{c}{N} + O(1/N^2)\right),
+$$ {#eq-finite-correction}
+where $c > 0$ depends on the task and architecture. Finite width generally increases the grokking delay because:
+
+1. The free energy barrier $\Delta F$ receives $O(1/N)$ corrections from loop diagrams.
+2. Fluctuations broaden the transition, effectively increasing the barrier the system must cross.
+
+This explains why grokking is difficult to observe in very wide networks under standard parameterization ($\alpha = 1/2$): the $1/N$ feature-learning correction is suppressed, and the system remains locked in the lazy phase [@guillen2025finite].
+::::
+
+The Feynman diagram perspective also clarifies why $\mu$P is special: it resums a specific class of diagrams (the "cactus" diagrams) to all orders in $1/N$, effectively promoting the one-loop feature-learning effect to a leading-order contribution.
+
+---
+
+## Muon Optimizer and Spectral Dynamics {#sec-muon}
+
+Understanding the grokking transition through the spectral dynamics of weight matrices suggests that optimizers operating in the spectral domain can accelerate or eliminate the grokking delay.
+
+### The Muon Optimizer
+
+::::{#def-muon .callout-note icon="false"}
+## Definition (Muon Optimizer [@jordan2024muon])
+The **Muon** (Momentum + Orthogonalization) optimizer performs gradient updates via the polar decomposition of the gradient matrix. For a weight matrix $W$ with gradient $G = \nabla_W \mathcal{L}$:
+
+1. Compute the momentum-corrected gradient $\tilde{G}$.
+2. Compute the polar decomposition $\tilde{G} = U \Sigma V^\top$.
+3. Update: $W \leftarrow W - \eta \, U V^\top$.
+
+The update $UV^\top$ is the nearest orthogonal matrix to $\tilde{G}$ in Frobenius norm. This "flattens" the gradient in the spectral domain: all singular values of the update are exactly 1, preventing any single spectral mode from dominating the update [@jordan2024muon; @bernstein2024old].
+::::
+
+::::{#def-spectral .callout-note icon="false"}
+## Definition (Spectral Dynamics)
+The **spectral dynamics** of a weight matrix $W_t$ during training is the evolution of its singular value decomposition:
+$$
+W_t = \sum_i \sigma_i(t) \, u_i(t) \, v_i(t)^\top.
+$$
+Under standard SGD/Adam, the gradient is applied element-wise, and the largest singular values (typically associated with noise in the grokking context) receive disproportionately large updates. Under Muon, the orthogonalized update treats all singular directions equally, allowing signal modes to grow at the same rate as noise modes.
+::::
+
+::::{#lem-muon .callout-note icon="false"}
+## Lemma (Muon Accelerates Grokking [@jordan2024muon; @bernstein2024old])
+The Muon optimizer reduces the grokking delay compared to Adam or SGD because:
+
+1. **Implicit norm control.** The orthogonal update $UV^\top$ has unit operator norm, preventing the weight norm from growing during the memorization phase. This effectively provides stronger implicit regularization than weight decay alone.
+2. **Spectral democracy.** By equalizing the learning rate across all singular value directions, Muon prevents the noise modes (which typically have larger singular values) from suppressing signal modes. The BBP threshold (@lem-bbp) is crossed earlier.
+3. **Barrier reduction.** The implicit regularization shifts the effective free energy landscape, reducing the barrier $\Delta F$ between the memorizing and generalizing phases.
+
+Empirically, Muon eliminates or dramatically shortens the plateau phase (Phase II) of grokking, often achieving generalization within the same order of magnitude of training steps as memorization.
+::::
+
+The connection between Muon and the phase transition framework is that Muon modifies the effective free energy landscape by constraining the weight matrices to lie near the Stiefel manifold. This constraint removes the high-norm memorization basin (which relies on large, unstructured weights), forcing the optimizer into the low-norm generalizing basin from the start. From the spectral perspective, Muon acts as a "spectral thermostat" that prevents the system from getting trapped in the high-entropy, disordered memorization state.
+
+---
+
+## Feature Learning Mechanisms {#sec-feature-learning}
+
+The preceding sections established the *thermodynamic* picture of grokking: the system crosses a free energy barrier from a memorizing to a generalizing basin. But what *features* does the network actually learn, and how are they identified? This section examines the algebraic content of the generalizing solution and the diagnostic tools that reveal its emergence.
+
+### AGOP and Recursive Feature Machines
+
+The Average Gradient Outer Product (AGOP) and Recursive Feature Machines (RFM) framework of Mallinar et al. [@mallinar2025emergence] demonstrates that grokking is not specific to neural networks or gradient descent---it arises in any learning system that iteratively adapts its feature metric to the data.
+
+::::{#def-agop .callout-note icon="false"}
+## Definition (Average Gradient Outer Product [@mallinar2025emergence])
+For a model $f(x; w)$ trained on data $\{(x_i, y_i)\}_{i=1}^n$, the **AGOP** is the $d \times d$ positive semidefinite matrix
+$$
+M = \frac{1}{n} \sum_{i=1}^{n} \nabla_x f(x_i)\, \nabla_x f(x_i)^\top,
+$$ {#eq-agop}
+where $\nabla_x f(x_i) \in \mathbb{R}^d$ is the gradient of the model output with respect to the **input** $x_i$. The outer product $\nabla_x f \nabla_x f^\top \in \mathbb{R}^{d\times d}$ captures the directions in input space along which $f$ varies most; averaging over the training set gives the task-relevant input geometry. It identifies which input directions the model is most sensitive to---i.e., the task-relevant features.
+::::
+
+::::{#def-rfm .callout-note icon="false"}
+## Definition (Recursive Feature Machine [@mallinar2025emergence])
+The **Recursive Feature Machine** (RFM) is an iterative kernel method that alternates between:
+
+1. **Fit**: Solve kernel regression with the Mahalanobis kernel $K_M(x, x') = \exp\!\bigl(-\|M^{1/2}(x - x')\|^2\bigr)$.
+2. **Update**: Recompute the AGOP $M$ from the fitted model.
+
+Starting from $M_0 = I$ (isotropic kernel), the iteration $M_0 \to M_1 \to M_2 \to \cdots$ converges to a fixed-point metric that encodes the task structure.
+::::
+
+::::{#thm-agop-circulant .callout-note icon="false"}
+## Theorem (Block-Circulant Convergence [@mallinar2025emergence])
+For modular arithmetic tasks $a \circ b \pmod{p}$ with $\circ \in \{+, \times\}$, the AGOP matrix $M$ converges to a **block-circulant** matrix. Since circulant matrices are diagonalized by the Discrete Fourier Transform (DFT), the converged metric implements a **Fourier Multiplication Algorithm** (FMA): modular arithmetic is internally recast as rotation on the unit circle in Fourier space.
+
+In particular, grokking is **not** neural-network specific: the RFM algorithm, which contains no hidden layers and no backpropagation, also exhibits a sharp memorization-to-generalization transition on modular arithmetic tasks. The essential ingredient is iterative feature adaptation, not the neural network architecture per se.
+::::
+
+::: {.callout-note collapse="true"}
+## Mechanism: Fourier Multiplication Algorithm (FMA)
+The FMA proceeds as follows. Represent each input $a \in \mathbb{Z}_p$ by its Fourier embedding $a \mapsto (\cos(2\pi k a/p), \sin(2\pi k a/p))_{k=1}^{(p-1)/2}$. In this basis, modular addition $a + b \pmod{p}$ becomes component-wise rotation:
+$$
+\cos\!\bigl(\tfrac{2\pi k(a+b)}{p}\bigr) = \cos\!\bigl(\tfrac{2\pi k a}{p}\bigr)\cos\!\bigl(\tfrac{2\pi k b}{p}\bigr) - \sin\!\bigl(\tfrac{2\pi k a}{p}\bigr)\sin\!\bigl(\tfrac{2\pi k b}{p}\bigr).
+$$
+The block-circulant AGOP effectively learns to project onto this Fourier basis, transforming a discrete non-linear operation into continuous rotations that a kernel or neural network can represent efficiently [@mallinar2025emergence; @nanda2023progress].
+:::
+
+### eNTK Spectral Diagnostics
+
+While the AGOP provides the *content* of the learned features, the empirical NTK (eNTK) provides a *diagnostic* for when feature learning occurs.
+
+::::{#lem-entk-kink .callout-note icon="false"}
+## Lemma (eNTK Spectral Kink at Grokking [@lin2025feature])
+The spectral structure of the eNTK $K_t$ exhibits a sharp transition ("kink") at the grokking time $t_{\mathrm{grok}}$:
+
+1. **Before grokking** ($t < t_{\mathrm{grok}}$): The eNTK eigenvalue spectrum is smooth and approximately matches the initial random kernel $K_0$. The top eigenvectors are unstructured.
+2. **At the transition** ($t \approx t_{\mathrm{grok}}$): A sharp "cliff" appears in the eigenvalue spectrum---a small number of eigenvalues separate from the bulk (cf. the BBP transition, @lem-bbp).
+3. **After grokking** ($t > t_{\mathrm{grok}}$): The top eNTK eigenvectors align with the Fourier features of the target function. The eigenvalue gap between the signal and noise subspaces stabilizes at a large value.
+
+This spectral kink provides a kernel-space diagnostic that is complementary to the weight-space order parameters of @sec-order-parameters. The alignment between eNTK eigenvectors and Fourier modes is a direct, observable signature of the lazy-to-rich transition [@lin2025feature; @chou2025feature].
+::::
+
+::: {.callout-tip icon="false"}
+## Physical Analogy: Spectral Condensation
+The eNTK spectral kink is analogous to Bose--Einstein condensation in a boson gas. Before the transition, eigenvalues are distributed quasi-continuously (the "thermal" phase). At the critical point, a macroscopic fraction of spectral weight condenses into the lowest-lying Fourier modes (the "condensate"). The condensation fraction---the ratio of top-eigenvalue weight to total spectral weight---serves as an order parameter for the transition.
+:::
+
+---
+
+## Dynamics of Feature Emergence {#sec-feature-dynamics}
+
+The feature learning mechanisms described in @sec-feature-learning identify *what* the network learns. This section addresses the *dynamics*: in what order do features emerge, on what timescales, and through what microscopic mechanism? Two complementary frameworks---Alternating Gradient Flows (AGF) and the Lazy-Independent-Interactive (Li2) theory---provide rigorous answers.
+
+### Alternating Gradient Flows (AGF)
+
+Kunin et al. [@kunin2025alternating] analyze two-layer networks in the small-initialization limit, where the dynamics decompose into two alternating phases that repeat in a "staircase" pattern: long plateaus (alignment) punctuated by sharp drops (activation).
+
+::::{#def-agf .callout-note icon="false"}
+## Definition (Alternating Gradient Flow Phases [@kunin2025alternating])
+Consider a two-layer network $f(x;\theta) = \sum_{i=1}^N a_i \sigma(w_i \cdot x)$ with small initialization $\|\theta_i(0)\| \ll 1$. The gradient flow dynamics decompose into two alternating phases for each neuron $i$:
+
+**Phase 1---Utility Maximization (Alignment).** While neuron $i$ is dormant ($\|w_i\| \ll 1$), it evolves on the unit sphere $\mathbb{S}^{d-1}$ via projected gradient ascent on its **utility function**:
+$$
+U_i(\theta; r) = \mathbb{E}_x\!\left[\langle f_i(x;\theta),\, r(x) \rangle\right],
+$$ {#eq-utility}
+where $r(x)$ is the current residual. The neuron aligns with the direction of maximum utility---the most "useful" feature that is not yet captured by the active neurons.
+
+**Phase 2---Cost Minimization (Activation).** Once neuron $i$ has aligned with a high-utility direction, its norm grows rapidly as it is activated. All active neurons then jointly minimize the global loss via standard gradient descent. This produces the sharp drops in the loss curve.
+::::
+
+The alternating structure produces a natural ordering of feature acquisition:
+
+::::{#thm-fourier-ordering .callout-note icon="false"}
+## Theorem (Fourier Feature Ordering [@kunin2025alternating])
+For a target function $g(x) = \sum_k c_k \phi_k(x)$ with Fourier coefficients $\{c_k\}$ and Fourier basis $\{\phi_k\}$, the AGF dynamics learn features in **decreasing order of Fourier coefficient magnitude**:
+$$
+|c_{k_1}| \geq |c_{k_2}| \geq \cdots \quad \Longrightarrow \quad \tau_{k_1} \leq \tau_{k_2} \leq \cdots,
+$$
+where $\tau_{k_i}$ is the activation time of the neuron that learns feature $\phi_{k_i}$. The dominant Fourier modes of the target are learned first; subdominant modes emerge in subsequent staircase steps.
+::::
+
+::::{#lem-jump-time .callout-note icon="false"}
+## Lemma (Jump Time Formula [@kunin2025alternating])
+The activation time of neuron $i$ is determined by its initial norm:
+$$
+S_i(\tau_i) = \frac{c_i}{\eta}, \qquad c_i = -\log(\|\theta_i(0)\|),
+$$ {#eq-jump-time}
+where $S_i$ is the accumulated utility and $\eta$ is the learning rate. Neurons with smaller initial norms take longer to activate, producing the extended plateaus characteristic of grokking. The staircase dynamics---plateau (alignment on the sphere) followed by drop (norm growth)---arise naturally from this separation of angular and radial timescales.
+::::
+
+::: {.callout-note collapse="true"}
+## Connection to Grokking Delay
+The grokking delay is governed by the activation time of the *first* neuron that aligns with a task-relevant Fourier mode. Since the initial norms $\|\theta_i(0)\|$ are drawn from a distribution with support near zero, the activation times $\tau_i$ are large and random. The expected delay before any neuron activates scales as $\mathbb{E}[\tau] \sim (1/\eta)\log(1/\|\theta(0)\|)$, which can be enormous when initialization is small. Weight decay accelerates this process by providing additional gradient signal toward the utility-maximizing direction during the dormant phase [@kunin2025alternating; @marchetti2026sequential].
+:::
+
+### The Li2 Framework: Lazy, Independent, Interactive
+
+Tian [@tian2025provable] provides a complementary dynamical framework that tracks the *interactions* between neurons as they learn features. The Li2 (Lazy-Independent-Interactive) theory identifies three distinct dynamical stages:
+
+::::{#def-li2 .callout-note icon="false"}
+## Definition (Li2 Stages of Feature Learning [@tian2025provable])
+
+**Stage I---Lazy Learning.** The output layer $V$ converges to the ridge regression solution $V^* = Y X^\top(XX^\top + \lambda I)^{-1}$ (here $\lambda > 0$ is the ridge regularization coefficient, distinct from the learning rate $\eta$) using the random features provided by the frozen hidden layer $W$. The network memorizes the training data. The backward gradient $G_F$ is noise-dominated and provides no structural signal to the hidden layer.
+
+**Stage II---Independent Feature Learning.** As weight decay suppresses the noise component, the backward gradient $G_F$ begins to carry structured information about the target. Each hidden neuron $w_j$ independently evolves via gradient ascent on an **energy function**:
+$$
+E(w_j) = \frac{1}{2}\|\tilde{Y}^\top \sigma(X w_j)\|^2,
+$$ {#eq-energy-cca}
+which represents a nonlinear Canonical Correlation Analysis (CCA) between inputs and targets. The local maxima of $E$ correspond to Fourier features of the target function. Neurons independently discover these features by climbing the energy landscape.
+
+**Stage III---Interactive Feature Learning.** When multiple neurons have activated, their dynamics become coupled through the off-diagonal terms of the interaction matrix $B = (F^\top F + \lambda I)^{-1}$ (same ridge coefficient $\lambda$ as Stage I), where $F$ is the matrix of active neuron outputs. Cross-node repulsion forces activated neurons to diversify: neurons that have already captured a Fourier mode repel others away from that mode, driving them toward the remaining "missing" features. This interactive phase assembles the complete Fourier Multiplication Algorithm.
+::::
+
+::::{#thm-li2-reconstruction .callout-note icon="false"}
+## Theorem (Reconstruction Threshold [@tian2025provable])
+For learning a function on an Abelian group $\mathbb{Z}_p$ with $M$ relevant Fourier modes, the network requires at least $K \geq 2M - 2$ hidden neurons to reconstruct the target. When this condition is met, the Li2 dynamics converge to a solution that implements the complete FMA.
+::::
+
+::::{#lem-li2-sample .callout-note icon="false"}
+## Lemma (Sample Complexity [@tian2025provable])
+Successful feature learning in Stage II requires a sample size
+$$
+n \geq d_k^2 \, M \log(M / \delta),
+$$ {#eq-sample-complexity}
+where $d_k$ is the dimension of the $k$-th irreducible representation, $M$ is the number of relevant Fourier modes, and $\delta$ is the failure probability. This bound quantifies the minimum data needed for the backward gradient $G_F$ to carry sufficient structural signal to identify the Fourier features.
+::::
+
+::::{#lem-topdown .callout-note icon="false"}
+## Lemma (Top-Down Modulation [@tian2025provable])
+In Stage III, the interaction matrix $B$ induces a **top-down modulation** of the energy landscape: after the first $k$ Fourier features have been learned, the energy function $E$ is modified such that only the "missing" irreducible representations appear as new local maxima. Features that have already been captured are suppressed by the cross-node repulsion, ensuring that each subsequent neuron learns a *new* feature. This greedy, top-down mechanism is the dynamical origin of the sequential feature acquisition observed in the AGF staircase.
+::::
+
+| Stage | Backward Gradient $G_F$ | Hidden Layer Dynamics | AGF Correspondence | Observable |
+|:---|:---|:---|:---|:---|
+| I. Lazy | Noise-dominated | Frozen at initialization | All neurons dormant | Train acc $\to$ 100%, test acc $\approx$ random |
+| II. Independent | Structured (CCA) | Independent energy ascent | Utility maximization | Loss plateau (grokking delay) |
+| III. Interactive | Missing-feature seeking | Coupled, repulsive | Cost minimization | Test acc jumps to $\approx$ 100% |
+
+: The three stages of the Li2 framework and their correspondence with AGF dynamics and macroscopic observables. {#tbl-li2}
+
+---
+
+## Singular Learning Theory and Grokking {#sec-slt}
+
+The dynamical frameworks of @sec-feature-dynamics describe *how* the network's parameters move from a memorizing to a generalizing configuration. But they leave open a deeper statistical question: *why* does the optimizer ultimately prefer the generalizing basin over the (often equally loss-minimizing) memorization basin? Singular Learning Theory (SLT), which recasts model selection as a thermodynamic free energy competition, provides a principled answer.
+
+:::{.callout-warning icon="false"}
+## Notation: $\lambda$ in this section vs. elsewhere
+
+**Throughout this section, $\lambda$ exclusively denotes the local learning coefficient (LLC)**, a geometric invariant of the loss landscape defined below. This is a distinct quantity from the weight-decay regularization strength, which is also written $\lambda$ in @sec-phase-transition and @sec-feature-dynamics. To avoid confusion: wherever $\lambda$ appears with a basin label ($\lambda_a$, $\lambda_b$) or as $\lambda(w^*)$, it is the LLC. Wherever it appears in a loss expression of the form $\mathcal{L} + \lambda\|\theta\|^2$ or in the Goldilocks-zone description, it is weight decay. The two quantities are conceptually unrelated; the overloaded symbol is an unfortunate convention inherited from the SLT and grokking literatures respectively.
+:::
+
+### The Local Learning Coefficient
+
+Neural networks are **singular models**: their parameter-to-function maps have degenerate (rank-deficient) Fisher information matrices at critical points. SLT, developed by Watanabe, handles precisely this setting by replacing the naive parameter count with a geometric invariant---the **local learning coefficient** (LLC).
+
+::::{#def-llc .callout-note icon="false"}
+## Definition (Local Learning Coefficient [@cullen2026grokking])
+For a critical point $w^*$ of the loss function $L(w)$, the **local learning coefficient** $\lambda(w^*)$ is defined via the asymptotic volume of the sublevel set:
+$$
+V(\varepsilon) = \int_{L(w) - L(w^*) < \varepsilon} dw = c \cdot \varepsilon^{\lambda} \cdot (-\log \varepsilon)^{m-1} + \cdots,
+$$ {#eq-llc-volume}
+where $\lambda = \lambda(w^*)$ is the LLC and $m = m(w^*)$ is the multiplicity. For regular (non-singular) models, $\lambda = d/2$ where $d$ is the parameter dimension. For singular models, $\lambda < d/2$: the loss landscape near $w^*$ is flatter than a quadratic bowl, reflecting the redundancy (symmetry) of the parameterization.
+
+A smaller $\lambda$ means a wider, flatter basin---lower effective complexity and stronger Bayesian preference.
+::::
+
+### Free Energy and Bayesian Phase Transitions
+
+SLT connects the LLC to Bayesian model selection through the **local free energy**:
+
+::::{#thm-slt-free-energy .callout-note icon="false"}
+## Theorem (SLT Free Energy Expansion [@cullen2026grokking])
+The local free energy of a basin $U$ around a critical point $w^*$, computed from the marginal likelihood over $n$ training samples, has the asymptotic expansion:
+$$
+F_n(U) = n L_n(w^*) + \lambda(w^*) \log n - (m-1)\log(\log n) + O(1),
+$$ {#eq-slt-free-energy}
+where $L_n(w^*)$ is the empirical training loss at $w^*$, $\lambda(w^*)$ is the LLC, and $m$ is the multiplicity.
+
+When two competing basins $U_a$ (memorization) and $U_b$ (generalization) both achieve near-zero training loss ($L_n(w_a^*) \approx L_n(w_b^*) \approx 0$), their free energy difference is
+$$
+\Delta F = F_n(U_a) - F_n(U_b) \approx (\lambda_a - \lambda_b) \log n.
+$$ {#eq-delta-f}
+Since the Bayesian posterior concentrates on the basin with lower free energy ($P(w \in U \mid D) \propto \exp(-F_n(U))$), the basin with smaller LLC is exponentially preferred as $n$ grows.
+::::
+
+### LLC Bounds for Modular Arithmetic Networks
+
+Cullen et al. [@cullen2026grokking] derive explicit LLC values for networks learning modular arithmetic, establishing that the generalizing basin has strictly smaller LLC than the memorizing basin:
+
+::::{#thm-llc-overparameterized .callout-note icon="false"}
+## Theorem (LLC: Over-parameterized Regime [@cullen2026grokking])
+For a two-layer quadratic network $f(x; W) = \|Wx\|^2$ with $W \in \mathbb{R}^{K \times d}$ fitting a rank-$p$ target (e.g., $p$ Fourier modes for mod-$p$ arithmetic), in the over-parameterized regime ($K \geq p$):
+$$
+\lambda = \frac{p \cdot d(d+1)}{4}.
+$$ {#eq-llc-over}
+This corresponds to the memorization basin, where $K$ neurons redundantly span the $p$-dimensional signal subspace. The high LLC reflects the large effective dimensionality of the basin.
+::::
+
+::::{#thm-llc-underparameterized .callout-note icon="false"}
+## Theorem (LLC: Under-parameterized Regime [@cullen2026grokking])
+In the under-parameterized regime ($K < p$), the network can only capture $K$ of the $p$ Fourier modes:
+$$
+\lambda = \frac{K(d + p - 1)}{2}.
+$$ {#eq-llc-under}
+::::
+
+::::{#thm-llc-ntk .callout-note icon="false"}
+## Theorem (LLC: NTK Regime [@cullen2026grokking])
+In the NTK (lazy) regime, where the network operates as a linear model with $r$ effective features:
+$$
+\lambda = \frac{r}{2}.
+$$ {#eq-llc-ntk}
+::::
+
+::::{#thm-llc-feature .callout-note icon="false"}
+## Theorem (LLC: Feature Learning Regime [@cullen2026grokking])
+In the feature learning regime, the network has $K_{\mathrm{eff}}$ effectively active neurons (those that have aligned with distinct Fourier modes). The LLC is:
+$$
+\lambda = \frac{1}{2} K_{\mathrm{eff}}(d + p - 1).
+$$ {#eq-llc-feature}
+For modular arithmetic with input dimension $d = 2p$:
+$$
+\lambda = \frac{1}{2} K_{\mathrm{eff}}(3p - 1).
+$$ {#eq-llc-feature-mod}
+Since the generalizing solution requires only $K_{\mathrm{eff}} \ll K$ active neurons (a small number of Fourier modes suffice), the feature-learning basin has dramatically lower LLC than the memorization basin. This LLC gap drives the first-order Bayesian phase transition.
+::::
+
+::::{#thm-bayesian-phase .callout-note icon="false"}
+## Theorem (First-Order Bayesian Phase Transition [@cullen2026grokking])
+As the sample size $n$ increases past a critical threshold $n_c$, the Bayesian posterior undergoes a first-order phase transition: the posterior mass transfers abruptly from the memorization basin $U_a$ (high $\lambda_a$) to the generalization basin $U_b$ (low $\lambda_b$).
+
+**Derivation of $n_c$.** The SLT free energy of basin $k$ is $F_k(n) = n L_k + \lambda_k \log n + O(1)$, where $L_k = L_n(w_k^*)$ is the training loss at the local minimum. The transition occurs when $F_a(n_c) = F_b(n_c)$:
+$$
+n_c(L_b - L_a) = (\lambda_a - \lambda_b)\log n_c.
+$$
+Setting $\Delta L = L_b - L_a \geq 0$ (the loss advantage of the memorization basin, which fits training data exactly), the critical threshold satisfies the implicit equation
+$$
+n_c \,\Delta L = (\lambda_a - \lambda_b)\log n_c.
+$$ {#eq-nc-implicit}
+This is a transcendental equation in $n_c$; for small $\Delta L$ the solution is large and scales roughly as $n_c \sim (\lambda_a - \lambda_b)\log n_c / \Delta L$. When both basins achieve zero training loss ($\Delta L = 0$), the left-hand side vanishes for all finite $n_c$ while the right-hand side is strictly positive for $n > 1$: there is no finite crossing point, meaning $U_b$ dominates the posterior for all $n > 1$ and the transition is driven purely by the complexity penalty $(\lambda_a - \lambda_b)\log n$.
+
+**Remark (equilibrium vs. dynamics).** The $\Delta L = 0$ case describes the *asymptotic equilibrium* of the Bayesian posterior once both basins have converged to zero training loss: at that point $U_b$ is already the preferred basin for any $n > 1$, so from the equilibrium perspective the transition is instantaneous. The *grokking delay* is a separate, dynamical statement: gradient descent first discovers and gets trapped in $U_a$ (memorization is found rapidly because it requires no structured Fourier representation), and the delay $\tau_{\mathrm{grok}} \sim \exp(\Delta F / T_{\mathrm{eff}})$ from @eq-kramers measures the escape time from $U_a$ over the free energy barrier $\Delta F$. This barrier is set by the LLC gap $(\lambda_a - \lambda_b)\log n$ *evaluated during* the optimization trajectory, when SGD is still in $U_a$. There is no contradiction: the equilibrium analysis establishes which basin wins; the Kramers formula estimates when the system dynamically reaches that equilibrium.
+
+Experimentally, tracking the LLC via stochastic gradient Langevin dynamics (SGLD) reveals a sharp collapse of $\lambda$ at precisely the training epoch where test accuracy jumps---confirming that grokking is a first-order Bayesian phase transition mediated by the LLC [@cullen2026grokking; @hennick2025almost].
+::::
+
+::: {.callout-tip icon="false"}
+## Physical Analogy: Entropic Dominance
+The SLT phase transition is analogous to the freezing of a supercooled liquid driven by the *entropy* difference between phases, rather than the energy difference. Both the memorizing "liquid" and the generalizing "crystal" have nearly zero energy (training loss), but the crystal has lower entropy (LLC). As the system size (sample count $n$) grows, the free energy penalty $\lambda \log n$ for the high-entropy liquid phase grows without bound, eventually forcing the transition. The LLC plays the role of the entropy per particle in a thermodynamic system.
+:::
+
+### Geometric Inductive Bias
+
+The SLT analysis identifies *which* basin wins in the long run, but the timescale of the transition depends on the free energy barrier. Architectural modifications can reshape this barrier:
+
+::::{#thm-geometric-bias .callout-note icon="false"}
+## Theorem (Spherical Projection Speedup [@yildirim2026geometric])
+Consider a **Fully Bounded** architecture that applies a spherical projection $\Pi_S(x) = x / \max(\|x\|_2, \varepsilon)$ to all pre-activations and residual stream vectors. On modular addition:
+
+1. The Fully Bounded architecture achieves a **25.8x speedup** in grokking time compared to the standard architecture.
+2. The spherical projection constrains weight norms, effectively lowering the free energy barrier $\Delta F$ between the memorization and generalization basins.
+3. However, the speedup is **task-specific**: on $S_5$ permutation composition, the Fully Bounded architecture *fails* to grok, indicating that the geometric inductive bias must match the task symmetry.
+
+This demonstrates that architectural topology can substitute for training time in crossing the phase transition barrier, but there is no universal geometric shortcut---the bias must be compatible with the algebraic structure of the target [@yildirim2026geometric; @billa2026anatomy].
+::::
+
+### Grokking Beyond Deep Learning
+
+The SLT perspective suggests that grokking should occur in *any* learning system whose loss landscape admits competing basins with different LLC values. This prediction is confirmed in the simplest possible setting:
+
+::::{#thm-ridge-grokking .callout-note icon="false"}
+## Theorem (Grokking in Ridge Regression [@xu2026grokking])
+Consider ridge regression $\hat{w}_\lambda = \arg\min_w \|Xw - y\|^2 + \lambda\|w\|^2$ with a data distribution that has both "easy" (low-frequency) and "hard" (high-frequency) components. As the regularization $\lambda$ varies:
+
+1. There exist three canonical phases: **underfitting** (high $\lambda$, neither component learned), **memorization** (intermediate $\lambda$, easy component learned but hard component overfitted), and **generalization** (low $\lambda$ or large $n$, both components learned).
+2. The transition between memorization and generalization is sharp and exhibits all the phenomenological signatures of grokking: a long plateau in test loss followed by a sudden drop.
+3. The grokking delay is governed by the spectral gap between the easy and hard components of the data covariance.
+
+This proves that grokking is **not** specific to deep learning: it arises from the competition between signal components at different difficulty scales, mediated by regularization [@xu2026grokking; @jiang2026preconditioned].
+::::
+
+---
+
+## Conclusion and Open Questions {#sec-conclusion}
+
+This survey has presented a unified view of grokking as a phase transition in the space of neural network training dynamics. The key insights are:
+
+1. **Grokking is a phase transition.** The network transitions from a high-entropy memorizing state (lazy/NTK regime) to a low-entropy generalizing state (rich/feature learning regime). The order parameters---RQI, effective rank, participation ratio, kernel alignment, and SNR---all exhibit discontinuous jumps characteristic of a first-order transition.
+
+2. **The transition is controlled by $\alpha$ and $\lambda$.** The initialization scale $\alpha$ determines whether feature learning is dynamically accessible, while weight decay $\lambda$ controls the relative stability of the memorizing and generalizing phases. Grokking occurs in a "Goldilocks zone" of these parameters.
+
+3. **DMFT provides a quantitative description.** In the infinite-width limit, dynamical mean field theory yields self-consistent equations whose fixed points correspond to the memorizing and generalizing phases. The action barrier between these fixed points determines the grokking delay.
+
+4. **Finite-width effects are perturbatively computable.** Feynman diagram techniques extend the DMFT predictions to finite width, showing that the feature-learning correction to the NTK is a $1/N$ effect in standard parameterization.
+
+5. **Modern optimizers reshape the landscape.** The Muon optimizer, by operating in the spectral domain, provides implicit regularization that reduces the barrier between phases, accelerating or eliminating grokking.
+
+6. **Feature learning has algebraic content.** The generalizing solution implements a Fourier Multiplication Algorithm, with the AGOP converging to a block-circulant matrix diagonalizable by DFT. This is not neural-network specific: kernel methods (RFM) and even ridge regression exhibit the same transition (@sec-feature-learning).
+
+7. **Feature emergence follows a dynamical hierarchy.** The AGF and Li2 frameworks show that Fourier features are acquired in decreasing order of coefficient magnitude, through an alternating alignment-activation mechanism. Cross-neuron repulsion in the interactive phase ensures diversity of learned features (@sec-feature-dynamics).
+
+8. **SLT provides a Bayesian explanation for basin selection.** The local learning coefficient $\lambda$ quantifies the geometric complexity of each basin. The generalizing basin has lower $\lambda$ (wider, flatter geometry), and the free energy gap $(\lambda_a - \lambda_b)\log n$ drives a first-order Bayesian phase transition as $n$ grows (@sec-slt).
+
+::: {.callout-important icon="false"}
+## Open Question: Universality Class
+What is the universality class of the grokking transition? Do different architectures (transformers, MLPs, CNNs) and tasks (modular arithmetic, sparse parities, polynomial regression) share the same critical exponents? If so, the transition belongs to a universal class that depends only on symmetry and dimensionality, not microscopic details.
+:::
+
+::: {.callout-important icon="false"}
+## Open Question: Order of the Transition
+Can grokking exhibit a second-order (continuous) phase transition for certain task families? Preliminary evidence suggests that when the signal subspace is higher-dimensional, the transition may become continuous, with the order parameter growing smoothly rather than jumping.
+:::
+
+::: {.callout-important icon="false"}
+## Open Question: Depth
+Most theoretical results apply to two-layer (shallow) networks. How does depth change the phase diagram? Does depth introduce additional "thermodynamic" parameters, and can deeper networks exhibit qualitatively new phases (e.g., hierarchical grokking at different layers)?
+:::
+
+::: {.callout-important icon="false"}
+## Open Question: Finite-Size Scaling
+Can a systematic finite-size scaling analysis---treating width $N$ as the system size---extract critical exponents from numerical experiments? Such an analysis would place grokking on the same rigorous footing as phase transitions in statistical mechanics.
+:::
+
+::: {.callout-important icon="false"}
+## Open Question: LLC Computation for Transformers
+The explicit LLC formulas of @thm-llc-overparameterized--@thm-llc-feature apply to two-layer quadratic networks. Can analogous closed-form LLC bounds be derived for transformer architectures, where the attention mechanism introduces additional symmetries and singularities? The multiplicity $m$ in @eq-llc-volume may carry nontrivial information about the attention head structure [@cullen2026grokking; @liam2025slt].
+:::
+
+::: {.callout-important icon="false"}
+## Open Question: Architectural Topology and Task Symmetry
+The Fully Bounded architecture of @thm-geometric-bias achieves dramatic speedups on modular addition but fails on $S_5$ permutation composition. Is there a principled theory---perhaps based on the representation theory of the target group---that predicts *which* geometric inductive biases accelerate grokking for *which* algebraic tasks? The connection between architectural topology (spherical projection, weight normalization, spectral constraints) and task group structure remains largely unexplored [@yildirim2026geometric; @billa2026anatomy].
+:::
+
+::: {.callout-important icon="false"}
+## Open Question: Cryptographic Hardness and the LLC Barrier
+The SLT framework shows that grokking occurs when the LLC gap $\lambda_a - \lambda_b$ is positive and $n$ is sufficiently large. For cryptographically hard functions (e.g., $a^x \bmod N$ with $N$ a product of large primes), does the LLC gap vanish or does the free energy barrier grow super-polynomially with input size? A rigorous connection between the SQ dimension lower bounds (@sec-phenomenology) and the SLT free energy barrier would bridge computational complexity and statistical physics perspectives on grokking [@he2024learning; @edelman2024gradient].
+:::
+
+---
+
+## Appendix: Summary Tables {#sec-appendix}
+
+| Feature | Lazy Regime (NTK) | Rich Regime (Mean Field) |
+|:---|:---|:---|
+| Scaling limit | Infinite width, $\alpha = 1/2$ | Infinite width, $\alpha = 0$ ($\mu$P) |
+| Weight displacement | $\|\Delta W\| = O(N^{-1/2})$ | $\|\Delta W\| = O(1)$ |
+| Kernel behavior | Static (frozen at initialization) | Dynamic (evolves with data) |
+| Feature learning | None (fixed random basis) | Active (basis adapts to task) |
+| Effective rank | High (random, delocalized) | Low (collapses to task-relevant modes) |
+| Grokking | Not observed | Intrinsic property |
+
+: Comparison of Lazy and Rich training regimes. {#tbl-regimes}
+
+| Framework | Regime | Key Result | Limitation |
+|:---|:---|:---|:---|
+| NTK [@jacot2018neural] | $\alpha = 1/2$ | Kernel regression equivalence | No feature learning |
+| $\mu$P [@yang2021tensor] | $\alpha = 0$ | Maximal feature learning, HP transfer | Infinite width only |
+| DMFT [@kumar2025grokking] | Infinite width | Quantitative grokking dynamics | No finite-width effects |
+| Feynman diagrams [@guillen2025finite] | Large $N$ | Perturbative $1/N$ corrections | Breaks down at strong coupling |
+| Effective theory [@liu2022grokking] | General | Phase diagram, Goldilocks zone | Phenomenological |
+| First-order transition [@rubin2024grokking] | Two-layer | Kramers-type delay formula | Specific to structured tasks |
+| AGOP/RFM [@mallinar2025emergence] | General | Block-circulant features, FMA; grokking in kernel methods | Requires iterative convergence |
+| eNTK spectral [@lin2025feature] | General | Spectral kink diagnostic for feature emergence | Observational, not predictive |
+| AGF [@kunin2025alternating] | Two-layer, small init | Fourier ordering theorem, staircase dynamics | Requires small initialization |
+| Li2 [@tian2025provable] | Two-layer | Three-stage lifecycle, reconstruction threshold $K \geq 2M-2$ | Abelian groups only |
+| SLT / LLC [@cullen2026grokking] | General | Bayesian phase transition via $(\lambda_a - \lambda_b)\log n$ | Closed-form LLC for simple architectures only |
+| Geometric bias [@yildirim2026geometric] | Bounded arch. | 25.8x speedup via spherical projection | Task-specific; fails on $S_5$ |
+| Ridge regression [@xu2026grokking] | Linear | Proves grokking in simplest model | No nonlinear features |
+
+: Theoretical frameworks and their contributions to the grokking story. {#tbl-frameworks}

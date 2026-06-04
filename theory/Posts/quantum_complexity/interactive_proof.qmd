@@ -7,8 +7,20 @@ lang: en
 title: Interactive Proofs
 ---
 
-## 1. Interaction Model
+# Formal definitions
 
+A system of axioms is consist of statement $x \in \{0,1\}^*$ and a set of inference rules $V(x,\phi)$ such that
+$$
+x\in L \Leftrightarrow \exists \phi, \quad V(x,\phi)=1
+$$
+Usually, we restrict $V(x,\phi)$ to be computable in polynomial time. 
+the langurage  
+$$
+\{(x,1^n):\exists \varphi,\ |\varphi|\le n,\ V_A(x,\varphi)=1\}
+$$
+then is in $\mathrm{NP}$ by definition.
+
+Rather than a single $V$, a interaction process can be used for verification.
 The interaction process can be viewed as a dialogue between the Verifier ($V$) and the Prover ($P$).
 
 - **One-round interaction**:
@@ -16,85 +28,30 @@ The interaction process can be viewed as a dialogue between the Verifier ($V$) a
 - **Two-round interaction**:
     $$a_1 = V(x), \quad a_2 = P(x,a_1), \quad a_3=V(x,a_1,a_2), \quad \text{Output} = V(x,a_1,a_2,a_3)$$
 
-More generally, the definition of $k$-round interaction is as follows:
-
-::: {.columns}
-::: {.column width="48%"}
-**Even-round interaction ($2i$ rounds)**:
-$$
-\begin{aligned} 
-&a_1 = V(x), a_2=P(x,a_1);\\ 
-&a_3 = V(x,a_1,a_2),a_4 = P(x,a_1,a_2,a_3);\\ 
-&\cdots\\ 
-&a_{2i+1} =V(x,a_1,\cdots,a_{2i}), \\ 
-&\text{Output}= V(x,a_1,\cdots,a_{2i+1}) 
-\end{aligned}
-$$
-:::
-
-::: {.column width="48%"}
-**Odd-round interaction ($2i+1$ rounds)**:
-$$
-\begin{aligned}
-&a_1 = V(x), a_2=P(x,a_1);\\ 
-&a_3 = V(x,a_1,a_2),a_4 = P(x,a_1,a_2,a_3);\\ 
-&\cdots\\ 
-&a_{2i+1} =V(x,a_1,\cdots,a_{2i}), \\
-&a_{2i+2} = P(x,a_1,\cdots,a_{2i+2});\\ 
-&\text{Output}= V(x,a_1,\cdots,a_{2i+2})
-\end{aligned}
-$$
-:::
-:::
-
----
-
-## 2. Deterministic Interactive Proof ($\mathsf{dIP}$)
+More generally, the definition of $k$-round interaction proof system can be defined in the same manner.
 
 ::: {.callout-note icon="false"}
-## Definition: $\mathsf{dIP}$
-$L \subset \{0,1\}^*$ belongs to $\mathsf{dIP}$ if and only if there exists a **deterministic** Turing machine $V:\{0,1\}^* \to \{0,1\}^*$ such that for input $x$:
+## Definition: $\mathsf{IP}[k]/\mathsf{dIP}[k]$
+$L \subset \{0,1\}^*$ belongs to $\mathsf{IP}[k]$ ($\mathsf{dIP}[k]$) if and only if there exists a probabilistic (deterministic) Turing machine $V:\{0,1\}^* \to \{0,1\}^*$ such that for input $x$:
 
-1.  **Completeness**: If $x \in L$, then there exists a multi-round proof function $P$ (mapping $\{0,1\}^* \to \{0,1\}^*$ with no computational restrictions), such that after $k \sim \text{poly}(|x|)$ rounds of interaction the output is 1.
-2.  **Soundness**: If $x \notin L$, then for any multi-round proof function $P$, after $k \sim \text{poly}(|x|)$ rounds of interaction, the output is 0.
-
-*Note: The running time of each step in the interactive process must be polynomial $\text{poly}(|x|)$.*
+1.  **Completeness**: If $x \in L$, then there exists a proof function $P$ such that the probability of outputting 1 after $k \sim \text{poly}(|x|)$ rounds of interaction is greater than $2/3$ ($1$).
+2.  **Soundness**: If $x \notin L$, then for any proof function $P$, the probability of outputting 0 after $k \sim \text{poly}(|x|)$ rounds of interaction is greater than $2/3$ ($1$).
 :::
 
-::: {.callout-important icon="false"}
-## Theorem
-$$\mathsf{dIP} = \mathsf{NP}$$
-:::
 
-::: {.callout-note collapse="true"}
-## Proof (click to expand)
-**Idea**: $\mathsf{dIP}$ can be designed as an $\mathsf{NP}$ problem.
+1. $$\mathsf{dIP} = \mathsf{NP}$$ can be proved.
+2. $\mathsf{IP} = \mathsf{PSPACE}$ likely exceeds $\mathsf{NP}$ otherwise collapse the polynomial hierarchy.
+3. Intuitively, many problems in $\mathsf{coNP}$ are unknown to be in $\mathsf{NP}$ because the $\forall$ in the definition of $\mathsf{coNP}$ requires traversing an exponential number of Certifications. However, $\mathsf{IP}$ can establish a distribution over these exponentially many Certifications, thereby verifying some problems in $\mathsf{coNP}$.
 
-For inputs in $L$, consider either a $2i$ or $2i+1$ round interaction. A Turing machine simulating the calls of $V$ for $i+2$ times and viewing $a_1, \dots, a_{2i+1}$ (or $a_{2i+2}$) as Certificates can be used.
+We note that the formal proof of conclusion 1-3 is not important, but the examples and constructions behind those proofs are important.
+Here below we summarize those constuctions to understand what structure in the problem will leads the problem into IP.
 
-This polynomial-time Turing machine with proof does the following simulation:
-$$V(x), V(x,a_1,a_2), \dots, V(x, a_1, \dots, a_{2i+1})$$
-When it outputs $a_1, a_3, \dots$ and finally $\text{Output} = 1$, the output is 1.
-Thus, examples in $L$ must output 1. Additionally, for those that output 1, since no restrictions are placed on Prover's capabilities (function $P$), they must be in $\mathsf{dIP}$.
-:::
 
----
 
-## 3. Probabilistic Interactive Proof ($\mathsf{IP}$)
 
-::: {.callout-note icon="false"}
-## Definition: $\mathsf{IP}[k]$
-$L \subset \{0,1\}^*$ belongs to $\mathsf{IP}[k]$ if and only if there exists a **probabilistic** Turing machine $V:\{0,1\}^* \to \{0,1\}^*$ such that for input $x$:
-
-1.  **Completeness**: If $x \in L$, then there exists a proof function $P$ such that the probability of outputting 1 after $k \sim \text{poly}(|x|)$ rounds of interaction is greater than $2/3$.
-2.  **Soundness**: If $x \notin L$, then for any proof function $P$, the probability of outputting 0 after $k \sim \text{poly}(|x|)$ rounds of interaction is greater than $2/3$.
-:::
-
-[Image of complexity classes diagram showing P, NP, PH, IP, PSPACE]
-
-**Intuition and Discussion:**
-$\mathsf{IP}$ likely exceeds $\mathsf{NP}$ (just as we do not know the relationship between $\mathsf{BPP}$ and $\mathsf{P}$).
-Intuitively, many problems in $\mathsf{coNP}$ are unknown to be in $\mathsf{NP}$ because the $\forall$ in the definition of $\mathsf{coNP}$ requires traversing an exponential number of Certifications. However, $\mathsf{IP}$ can establish a distribution over these exponentially many Certifications, thereby verifying some problems in $\mathsf{coNP}$.
+# Chernoff bound
+These examples simply use Chernoff bound to show the probability of the output is close to 1.
+Actually, any co-NP problem can be verified by IP in this way
 
 ### Example: QNR (Quadratic Non-Residue)
 
@@ -113,6 +70,25 @@ This is a problem that is unknown to be in $\mathsf{NP}$ but confirmed to be in 
 2.  **Prover**:
     -   Responds with a value that depends on whether $a$ is a QNR or QR.
 
+
+### Graph Isomorphism (GI)
+
+Definition ($\mathsf{GI}$): Given graphs $G_1=(V_1,E_1), G_2=(V_2,E_2)$, determine if there exists a vertex permutation $\pi$ such that $G_1 \cong G_2$.
+
+
+# Algebraic approach
+
+
+# Polynomial interpolation approach
+
+# Self-reducible problems
+
+
+
+# The Merlin-Arthur protocol
+A restriction of IP is to require the Prover do not have private coins.
+
+
 ::: {.callout-note icon="false"}
 ## Definition: Randomized NP ($\mathsf{MA}$)
 $L \subset \{0,1\}^*$ belongs to $\mathsf{MA}$ if and only if there exists a probabilistic Turing machine $V$ such that for input $x$:
@@ -125,7 +101,3 @@ $L \subset \{0,1\}^*$ belongs to $\mathsf{MA}$ if and only if there exists a pro
 ## Theorem
 $$\mathsf{AM}[k] = \mathsf{AM}[2] = \mathsf{BP} \cdot \mathsf{NP}$$
 :::
-
-### Graph Isomorphism (GI)
-
-Definition ($\mathsf{GI}$): Given graphs $G_1=(V_1,E_1), G_2=(V_2,E_2)$, determine if there exists a vertex permutation $\pi$ such that $G_1 \cong G_2$.
