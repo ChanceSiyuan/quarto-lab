@@ -1,0 +1,319 @@
+---
+categories:
+- Readings
+date: '2026-02-27'
+lang: en
+title: A hierachy of different Virtual Distillation strategies
+bibliography: refs.bib
+draft: false
+jupyter: python3
+code-fold: true
+---
+
+# Summary and question
+This post is mean to find application for localized non-linear estimators.
+
+
+
+# A hierachy of different Virtual Distillation strategies
+
+Then well known strategy is virtual distillation strategy, which is a generalization of the single-copy estimator.
+
+In theory, virtual distillation strategy accepts:
+
+1. M-copies of quantum state $\rho_1,\cdots,\rho_M$
+2. Single Pauli operator $P$ that we want to estimates
+
+## (M=2, S1) Bell measurement
+
+Use Bell measurement:
+$$
+\{\ket{00}+\ket{11}, \ket{00}-\ket{11}, \ket{01}+\ket{10}, \ket{01}-\ket{10}\}.
+$$
+
+- *Compatiablity*: This circuit is designed to compatible to estimate $\{\text{SWAP}\}$;
+- *Circuit*: $CX_{12} \cdot H_1 \otimes \mathbb{I}_2$.
+- *Extension*: Extend this to 2-replica of n-qubit state by taking the tensor product of this circuit, it is compatible to estimate operators $\text{SWAP}^{\otimes n}$, which is related to the value $\mathrm{tr}(\rho^2)$.
+
+
+## (M=2, S2) local virtual distillation
+Implement two-qubits gate $B^{(2)}$ that implements the virtual distillation with
+$$
+\{\ket{00}, \frac{1}{\sqrt{2}}(\ket{01} + \ket{10}), \frac{1}{\sqrt{2}}(\ket{01} - \ket{10}), \ket{11}\}
+$$
+
+- *Compatiablity*: This circuit is designed to compatible to estimate;
+$$
+\{\mathrm{SWAP}, (ZI+IZ)\mathrm{SWAP}\}.
+$$ 
+
+#### Circuit compilation
+This circuit can be compiled by either magic two-qubit gate or adaptive Clifford gates.
+
+Adaptive strategy measured the first qubit on $Z$ basis and then adaptively measure $X$($Z$) basis if the result is $1$($0$) on the second qubit, as manifested by the following identity:
+$$
+\begin{align}
+\left\{
+\begin{aligned}
+&\ket{00}, \\
+&\frac{1}{\sqrt{2}}(\ket{01} + \ket{10}), \\
+&\frac{1}{\sqrt{2}}(\ket{01} - \ket{10}), \\
+&\ket{11}
+\end{aligned}
+\right.
+\xrightarrow{CX}
+\left\{
+\begin{aligned}
+&\ket{00}, \\
+&\frac{1}{\sqrt{2}}(\ket{0} + \ket{1})\ket{1}, \\
+&\frac{1}{\sqrt{2}}(\ket{0} - \ket{1})\ket{1}, \\
+&\ket{11}
+\end{aligned}
+\right.
+\end{align}
+$$
+
+Non-adaptive strategy shall decomposed into CZ and single qubit gates as:
+
+```{python}
+#| label: fig-givens-cz-circuit
+#| fig-cap: "CZ-based circuit for the Givens rotation $\\hat{U}_{pq}(\\theta)$. Wire `q` is qubit 0 (LSB) and wire `p` is qubit 1 (MSB) in Qiskit's convention, so the state-vector ordering $|q_1 q_0\\rangle = |p,q\\rangle$ matches the paper's $|pq\\rangle$ basis."
+import numpy as np
+from qiskit import QuantumCircuit, QuantumRegister
+from qiskit.quantum_info import Operator
+
+theta = -np.pi / 4   # numerical verification angle
+
+# q_reg = qubit 0 (LSB), p_reg = qubit 1 (MSB)
+# => Operator basis ordering |q₁q₀⟩ = |p,q⟩ matches |pq⟩ in the paper
+q_reg = QuantumRegister(1, 'q')
+p_reg = QuantumRegister(1, 'p')
+qc = QuantumCircuit(q_reg, p_reg)
+
+qc.h(q_reg[0])
+qc.h(p_reg[0])
+qc.cz(q_reg[0], p_reg[0])
+qc.ry( theta, q_reg[0])   # Ry(+θ) on q
+qc.ry(-theta, p_reg[0])   # Ry(-θ) on p
+qc.cz(q_reg[0], p_reg[0])
+qc.h(p_reg[0])
+qc.h(q_reg[0])
+
+qc.draw('mpl')
+```
+
+```{python}
+# Verify the circuit unitary equals the Givens rotation matrix
+U = Operator(qc).data
+
+U_exact = np.array([
+    [1,             0,              0, 0],
+    [0,  np.cos(theta), -np.sin(theta), 0],
+    [0,  np.sin(theta),  np.cos(theta), 0],
+    [0,             0,              0, 1]
+])
+
+np.set_printoptions(precision=4, suppress=True)
+print(f"θ ≈ {theta/np.pi:.4f}π \n")
+print("Circuit unitary U (real part):")
+print(U.real)
+print(f"\nTarget  Û_{{pq}}(θ):")
+print(U_exact)
+print(f"\nMax imaginary residual : {np.max(np.abs(U.imag)):.2e}")
+print(f"Verified (allclose, atol=1e-10): {np.allclose(U, U_exact, atol=1e-10)}")
+```
+
+#### Extension
+Extend this to 2-replica of n-qubit state, again, by taking the tensor product of this circuit, it is compatible to estimate operators in $\{\mathrm{SWAP}, (ZI+IZ)\mathrm{SWAP}\}^{\otimes n}$. Take the special case that only single postition (site $i$) of n-qubit state are choosen to be $(ZI+IZ)\mathrm{SWAP}$ and the rest are $\mathrm{SWAP}$, the average of this operator on state $\rho^{\otimes 2}$ takes the form:
+$$
+\mathrm{tr}\left[(Z_iI_i+I_iZ_i) \cdot \mathrm{SWAP}^{\otimes n} \cdot (\rho \otimes \rho)\right] = \mathrm{tr}(Z_i\rho^2)
+$$
+
+:::{.callout-important icon="false"}
+## Question
+Note that this circuit is also compatiable to estimate other operators $\{\mathrm{SWAP}, (ZI+IZ)\mathrm{SWAP}\}^{\otimes n}$, such as:
+$$
+\mathrm{tr}((ZI+IZ)^{\otimes n} \cdot \mathrm{SWAP}^{\otimes n}(\rho \otimes \rho))
+$$
+This actually related to another non-linear property of $\rho$:
+$$
+\frac{1}{2^n}\sum_{A \subset [n]}\mathrm{tr}(Z^{A} \rho Z^{\bar{A}} \rho)
+$$
+However, it is still unknown whether this operator has operational meaning like the virtual distillation did.
+:::
+
+::: {.callout-tip icon="false" collapse="true"}
+## Discussion
+
+The quantity $\sum_x p_x^2(-1)^{|x|}$, where $p_x = \langle x|\rho|x\rangle$, depends only on the computational basis populations and decomposes as
+
+$$
+\sum_{x:\,|x|\text{ even}} p_x^2 - \sum_{x:\,|x|\text{ odd}} p_x^2,
+$$
+
+measuring excess diagonal purity in the even parity sector. Two natural connections:
+
+**Symmetry-resolved entanglement.** The charged moments $Z_2(\alpha) = \mathrm{tr}(\rho^2 e^{i\alpha Q})$ of @goldstein2018symmetry decompose entanglement entropy by charge sector; at $\alpha = \pi$ and $Q =$ particle-number parity, this becomes $\mathrm{tr}(\rho^2 (-1)^N)$. Our quantity is the diagonal analogue $\mathrm{tr}(\rho_\mathrm{diag}^2 (-1)^N)$, probing the same parity structure but restricted to the classical probability distribution rather than quantum coherences.
+
+**Symmetry verification.** For fermionic Hamiltonians encoded via Jordan-Wigner, $(-1)^N$ is an exact symmetry. Parity-violating errors reduce the magnitude of $\sum_x p_x^2(-1)^{|x|}$ toward zero, making it a natural single-shot parity diagnostic. Unlike post-selection-based symmetry verification @bonet2018low — which discards parity-incorrect shots — this quantity integrates all shots into a single scalar, potentially offering better sample efficiency on near-term devices.
+:::
+
+
+## (M=2, S3) Non-hermitian virtual distillation
+Implement two-qubits gate $B^{(2)}$ that implements the virtual distillation with
+$$
+\left\{|00\rangle,\; |11\rangle,\; \frac{1}{\sqrt{2}}(\ket{01} + i\ket{10}),\; \frac{1}{\sqrt{2}}(\ket{01} - i\ket{10})\right\}
+$$
+
+- *Compatiablity*: This circuit is designed to compatible to estimate;
+$$
+\{(ZI)\mathrm{SWAP}, \mathrm{SWAP}\}.
+$$ 
+
+#### Circuit compilation
+This circuit, simlilar to the **(M=2, S2)** case, can be compiled by either magic two-qubit gate or adaptive Clifford gates.
+
+Adaptive strategy measured the first qubit on $Z$ basis and then adaptively measure $X$($Z$) basis if the result is $1$($0$) on the second qubit, as manifested by the following identity:
+$$
+\begin{align}
+\left\{
+\begin{aligned}
+&\ket{00}, \\
+&\ket{11}, \\
+&\frac{1}{\sqrt{2}}(\ket{01} + i\ket{10}), \\
+&\frac{1}{\sqrt{2}}(\ket{01} - i\ket{10})
+\end{aligned}
+\right.
+\xrightarrow{CX}
+\left\{
+\begin{aligned}
+&\ket{00}, \\
+&\ket{10}, \\
+&(SH\ket{0})\ket{1}, \\
+&(SH\ket{1})\ket{1}
+\end{aligned}
+\right.
+\end{align}
+$$
+
+Non-adaptive strategy shall decomposed into CZ and single qubit gates as:
+
+```{python}
+#| label: fig-s3-measurement-circuit
+#| fig-cap: "Circuit for the S3 measurement unitary $U_{S3}$. Wire `q` is qubit 0 (LSB) and wire `p` is qubit 1 (MSB) in Qiskit's convention. The circuit implements $U_{S3} = \\mathrm{C}\\text{-}(HS^\\dagger)_{q\\to p}\\cdot\\mathrm{CX}_{p\\to q}$ using the standard controlled-$U$ decomposition with $\\alpha=\\pi/4$, $A=R_y(\\pi/4)$, $B=R_y(-\\pi/4)R_z(-\\pi/4)$, $C=R_z(\\pi/4)$."
+import numpy as np
+from qiskit import QuantumCircuit, QuantumRegister
+from qiskit.quantum_info import Operator
+
+# q_reg = qubit 0 (LSB), p_reg = qubit 1 (MSB)
+# => Operator basis ordering |q₁q₀⟩ = |p,q⟩ matches |pq⟩ in the paper
+q_reg = QuantumRegister(1, 'q')
+p_reg = QuantumRegister(1, 'p')
+qc = QuantumCircuit(q_reg, p_reg)
+
+# Step 1: CNOT with p_reg as control, q_reg as target
+qc.cx(p_reg[0], q_reg[0])
+
+# Step 2: Controlled-(HS†) — q_reg controls, p_reg target
+# V' = HS† = e^{iπ/4} · Ry(π/2)·Rz(π/2)
+# Standard C-U decomposition: U = e^{iα}·A·X·B·X·C,  ABC = I
+# α = π/4,  A = Ry(π/4),  B = Ry(-π/4)·Rz(-π/4),  C = Rz(π/4)
+qc.rz( np.pi/4, p_reg[0])       # C gate on p
+qc.cx(q_reg[0], p_reg[0])       # CNOT: q controls p
+qc.ry(-np.pi/4, p_reg[0])       # B gate (part 1)
+qc.rz(-np.pi/4, p_reg[0])       # B gate (part 2)
+qc.cx(q_reg[0], p_reg[0])       # CNOT: q controls p
+qc.ry( np.pi/4, p_reg[0])       # A gate on p
+qc.p(  np.pi/4, q_reg[0])       # Phase(α) on control qubit
+
+qc.draw('mpl')
+```
+
+```{python}
+# Verify the circuit unitary equals the S3 measurement matrix
+U = Operator(qc).data
+
+U_exact = np.array([
+    [1,              0,                0, 0],
+    [0, 1/np.sqrt(2), -1j/np.sqrt(2),  0],
+    [0,              0,                0, 1],
+    [0, 1/np.sqrt(2),  1j/np.sqrt(2),  0]
+], dtype=complex)
+
+np.set_printoptions(precision=4, suppress=True)
+print("S3 measurement unitary U (real part):")
+print(U.real)
+print("\nS3 measurement unitary U (imag part):")
+print(U.imag)
+print(f"\nTarget U_S3:")
+print(U_exact)
+print(f"\nVerified (allclose, atol=1e-10): {np.allclose(U, U_exact, atol=1e-10)}")
+```
+
+#### Extension
+Extend this to 2-replica of n-qubit state, again, by taking the tensor product of this circuit, it is compatible to estimate operators in $\{(ZI)\mathrm{SWAP}, \mathrm{SWAP}\}^{\otimes n}$. We note that now we don't need to take a special case as the **(M=2, S2)** case did, since $(ZI)^{\otimes n}$ contains no exchange terms.
+Taking the full tensor product $(ZI)^{\otimes n}$ over all $n$ sites gives:
+$$
+\mathrm{tr}\!\left[(ZI)^{\otimes n}\,\mathrm{SWAP}^{\otimes n}(\rho\otimes\rho)\right]
+= \mathrm{tr}(Z^{\otimes n}\rho^2),
+$$
+the **full Pauli-$Z$ purity**. Unlike the S2 case, no site-selection or symmetrization is needed: every site carries the same $ZI$ factor, so the estimator directly yields $\mathrm{tr}(Z^{\otimes n}\rho^2)$ in one shot.
+
+:::{.callout-important icon="false"}
+## Question
+Note that $\{(ZI)\mathrm{SWAP}\}^{\otimes n}$ is not Hermitian. This might cause the problem below:
+The individual eigenvalues of $A = (ZI)\mathrm{SWAP}$ are $\{+1,-1,+i,-i\}$, so the single-shot estimator $\hat{o} = \prod_k i^{2s_2^{(k)}+s_1^{(k)}}$ is generically **complex-valued**. Does $\mathrm{tr}((ZI)^{\otimes n}\mathrm{SWAP}^{\otimes n}\rho^{\otimes 2})$ become complex, and if so, how should the estimator be interpreted?
+:::
+
+::: {.callout-tip icon="false" collapse="true"}
+## Discussion
+
+Despite the non-Hermitian nature of $A = (ZI)\mathrm{SWAP}$, the expectation value is always **real**:
+$$
+\mathrm{tr}\!\left[(ZI)^{\otimes n}\,\mathrm{SWAP}^{\otimes n}\,\rho^{\otimes 2}\right]
+= \mathrm{tr}(Z^{\otimes n}\rho^2) \in \mathbb{R}.
+$$
+This follows because $Z^{\otimes n}$ is Hermitian and $\rho^2$ is positive semidefinite Hermitian, so $\mathrm{tr}(Z^{\otimes n}\rho^2) = \overline{\mathrm{tr}(Z^{\otimes n}\rho^2)}$. Consequently, $\mathbb{E}[\mathrm{Im}(\hat{o})] = 0$: the imaginary parts of the complex estimator cancel in expectation.
+
+In practice one uses the real-part estimator
+$$
+\hat{o}_{\mathrm{re}} = \mathrm{Re}\!\left[\prod_k i^{2s_2^{(k)}+s_1^{(k)}}\right],
+$$
+which is **unbiased** for $\mathrm{tr}(Z^{\otimes n}\rho^2)$. The non-zero $\mathrm{Im}(\hat{o})$ samples are pure statistical noise that average to zero, and can serve as a built-in self-consistency check on the measurement.
+:::
+
+
+
+## (M=2, S4) Shadow-like virtual distillation
+
+The strategy is to use the loop measurement to estimate the operator:
+$$
+(unknown)
+$$
+
+- *Compatiablity*: This circuit is designed to compatible to estimate;
+$$
+\{(IX)\mathrm{SWAP}, (IX)\mathrm{SWAP}, (IZ)\mathrm{SWAP}, \mathrm{SWAP}\}.
+$$
+
+Based on the discussion on [compatiability](/theory/compatibility/compatiablity.html), we can see that they are not commute means that any POVMs in estimating these operators must have variance greater than 1, thus turns out to be inefficient if we scaled to 
+
+
+# regularized OTOCs
+
+As reviewed in [OTOC](/theory/OSF/OTOC.html), given the Heisenberg-picture operator $O(t) = e^{iHt} O e^{-iHt}$, the partition function $Z = \mathrm{tr}(e^{-\beta H})$, and the unnormalized thermal operator $\rho_\beta \equiv e^{-\beta H}$
+the regularization of ordinary correlation function and 2-OTOCs are defined as:
+$$
+\begin{align*}
+&C_{\beta}(O_1,O_2; \alpha_1,\alpha_2) = \frac{1}{Z} \mathrm{tr}(e^{-(\beta/2) H}O_1 \rho_\beta^{\alpha_1} O_2 \rho_\beta^{\alpha_2} ),\\
+&\mathrm{OTOC}_\beta(O(t), A, B;\,\alpha_1,\alpha_2,\alpha_3,\alpha_4)
+  \equiv \frac{1}{Z}\,\mathrm{tr}\!\left(
+    \rho_\beta^{\alpha_1}\, O(t)\;
+    \rho_\beta^{\alpha_2}\, A\;
+    \rho_\beta^{\alpha_3}\, O(t)\;
+    \rho_\beta^{\alpha_4}\, B
+  \right),
+\end{align*}
+$$
+
+Specifically for transveral field Ising model (TFIM),

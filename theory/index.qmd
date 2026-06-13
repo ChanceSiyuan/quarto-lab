@@ -1,52 +1,37 @@
 ---
 lang: en
-listing:
-- contents: 
-  - Posts
-  - Topics
-  filter-ui: true
-  id: daily-posts
-  page-size: 5
-  sort: date desc
-  sort-ui: true
-  type: default
 page-layout: full
 title: Theory
 title-block-banner: true
 comments: false
 ---
 
-This website is built with asisted by Claude Code (claude.ai/code), where I mainly use for task involves:
+# Theory
 
-- Inspire me by new mathematical tools when I was stuck by certain proof details during creating new proofs.
-- Generate a quick demo code for quick check of ideas, better illustration of concepts, and a go-through explaination of algorithms.
-- Do servey with **REAL** references attached.
+This page indexes the theory notes by topic directory. Each topic page has its own sidebar that links the pages inside that folder.
 
-Based on this, I separate my theoretical posts into two categories:
+## Topic Directories
 
-- **Readings**: The notes when I read a paper or certain proof details.
-- **Surveys**: A general survey post about a specific topic in quantum computing. during the survey, some specific details will be picked out with a hyperlink to a **Reading** post.
-- **Topics**: I will gradually collect **Readings** with similar topics into a **Topic** post, with a navigate bar on the left sidebar on that page.
-
-## Topics Posts
-
-This section sorts the posts by topics.
-
-**Current Topics:**
-
-- **[Shadow Tomography](/theory/Posts/Shadow_tomography/)** - Classical shadow protocols from single-copy to multi-copy strategies, variance analysis, and sample complexity bounds
-- **[Learning Theory and Quantum Learning](/theory/Posts/learning_theo/)** - Neural learning dynamics, quantum estimation, lower-bound methods, and symmetry tools
-- **[Lower Bounds](/theory/Posts/learning_theo/Lowerbounds/)** - Toolkit for proving information-theoretic lower bounds using Le Cam's method, POVM restrictions, and ensemble constructions
-- **[IQP Circuit Supremacy](/theory/Posts/supermacy/)** - Classical simulation hardness, IQP supremacy, Bell sampling, noise effects, and verification
-
----
-
-## Timeline Posts
-
-This section documents my poster in a timeline manner.
-
-Recent research notes and paper summaries organized chronologically. Posts are categorized as:
-
-- **Readings** - Paper summaries highlighting key results and techniques
-- **Surveys** - Comprehensive reviews with tutorial-style explanations
-
+- [Boolean Analysis](Boolean_ana/index.qmd) - 1 page
+- [Classical Shadow Tomography](Shadow_tomography/index.qmd) - 8 pages
+- [Classical Simulation of Noisy Circuits](Noisy_complexity/index.qmd) - 6 pages
+- [Drug Design](drugs_design/index.qmd) - 0 pages
+- [Factoring and Hidden Subgroup Problems](Factoring/index.qmd) - 7 pages
+- [Fermi-Hubbard Model](Fermi-Hubbard/index.qmd) - 1 page
+- [Hamiltonian Learning](Ham_learning/index.qmd) - 0 pages
+- [IQP Circuit Supremacy](supermacy/index.qmd) - 15 pages
+- [Lattice Gauge Theory](LGT/index.qmd) - 6 pages
+- [Learning Theory and Quantum Learning](learning_theo/index.qmd) - 16 pages
+- [Magic and Stabilizer Resources](Magic/index.qmd) - 3 pages
+- [Nonlocal Games Survey](Nonlocal_Games_Survey/index.qmd) - 3 pages
+- [Operator Spreading and Magic](OSF/index.qmd) - 4 pages
+- [Perturbation and Floquet Theory](Perturbation/index.qmd) - 7 pages
+- [Quantum Compatibility](compatibility/index.qmd) - 9 pages
+- [Quantum Complexity](quantum_complexity/index.qmd) - 3 pages
+- [Quantum Error Correction](QEC/index.qmd) - 6 pages
+- [Quantum Fingerprinting](Fingerprint/index.qmd) - 3 pages
+- [Spin Liquids](Spin_liquid/index.qmd) - 2 pages
+- [Stabilizer Simulation](stab_simulation/index.qmd) - 4 pages
+- [Tensor Network Simulation](TN_sim/index.qmd) - 5 pages
+- [Topological Matter](topo_matter/index.qmd) - 3 pages
+- [Virtual Distillation](Virtual_Distillation/index.qmd) - 5 pages

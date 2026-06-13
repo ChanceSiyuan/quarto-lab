@@ -1,0 +1,276 @@
+---
+categories:
+- Readings
+date: 2026-01-07
+description: 'Notes on the computational complexity of #P (Counting Complexity) and its applications in quantum computing simulation.'
+lang: en
+title: 'Computational Complexity of #P (Counting Complexity)'
+bibliography: ../../references.bib
+---
+
+## 1. Basic Definitions
+
+::: {.callout-note icon="false"}
+## Definition: Complexity Classes
+
+-   $\mathsf{\#P}$: A function $f: \{0,1\}^* \to \{0,1\}^*$ belongs to $\mathsf{\#P}$ if and only if $f(x)$ counts the number of certificates of length some polynomial $p(|x|)$ for an $\mathsf{NP}$ problem on input $x$.
+-   $\mathsf{FP}$: A function $f:\{0,1\}^* \to \{0,1\}^*$ belongs to $\mathsf{FP}$ if and only if there exists a Turing machine that computes $f(x)$ in polynomial time.
+-   $\mathsf{PP}$: $x \in L$ if and only if $x$ can be solved by some $\mathsf{NP}$ machine, and the number of certificates of length some polynomial $p(|x|)$ for $x$ exceeds $0.5\times 2^{p(|x|)}$.
+:::
+
+::: {.callout-tip}
+## Notes
+
+1. **$\mathsf{PP}$ vs $\mathsf{BPP}$**: The class $\mathsf{PP}$ does not require anything about inputs $x \notin L$, it can have examples with $(0.5 - e^{-|x|})\times 2^{p(|x|)}$ that make them accepted. In contrast, $\mathsf{BPP}$ must have $(0.5 - \varepsilon)\times 2^{p(|x|)}$ examples to be accepted ($\varepsilon$ is a constant). The latter has stricter requirements. This also means $\mathsf{PP}$ cannot be directly applied because it requires exponential sampling repetitions to distinguish.
+2. If an $\mathsf{FP}$ function satisfies $f(x) = O(2^{|x|})$, can it call polynomial times of $\mathsf{P}$?
+3. If the output of a $\mathsf{\#P}$ problem is encoded in binary, it has at most $p(|x|)$ bits. The class $\mathsf{PP}$ actually decides whether the highest bit of some $\mathsf{\#P}$'s output under this encoding is 0 or 1.
+:::
+
+**Relation between counting and decision problems:**
+In fact, if there is a fast algorithm to solve $\mathsf{PP}$ problems, then it can be called multiple times to quickly solve $\mathsf{\#P}$ problems, i.e., $\mathsf{P}^{\mathsf{PP}} = \mathsf{P}^{\mathsf{\#P}}$. This connects counting and decision capabilities.
+
+---
+
+## 2. Toda's Lemma
+
+::: {.callout-important icon="false"}
+## Lemma (Toda's lemma)
+If there is a fast algorithm to solve $\mathsf{PP}$ problems, then it can be called multiple times to quickly solve $\mathsf{\#P}$ problems.
+This means that $\mathsf{PP} = \mathsf{P} \Leftrightarrow \mathsf{\#P} = \mathsf{FP}$.
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+
+**Key Idea**: Prove $\mathsf{P}^{\mathsf{PP}} = \mathsf{FP}^{\mathsf{\#P}}$.
+
+Given a computable function $f$, if we can distinguish which of the outputs $N_0(f), N_1(f)$ is larger, then construct:
+$$
+g(0,x) = f, \quad g(1,x) = \begin{cases} 0 & \text{if } x < R \\ 1 & \text{if } x > R \end{cases}
+$$
+Then $N_0(g) = N_0(f) + R, \quad N_1(g) = N_1(f) + 2^n - R$. Compare which is larger.
+
+**Specific Construction:**
+For a $\mathsf{\#P}$ function $f$, there must exist a polynomial $p(|x|)$ and a polynomial Turing machine $M$ such that $f(x) = \#_{M,p}(x)$, i.e., the number of certificates of length $p(|x|)$ for input $x$ on Turing machine $M$.
+
+For any $N \in [0, 2^{p(|x|)}]$, construct a polynomial-time halting Turing machine $M_N(x,u), u\in \{0,1\}^{p(|x|)}$ such that it takes value $1$ if and only if $u < N$. This is equivalent to comparing the size of $u$ and $N$ which is independent of $x$, thus there must exist a polynomial-time halting Turing machine.
+
+Consider the Turing machine $M+M_N(x,v)$, where $v = \{(0,u)| u \in \{0,1\}^{p(|x|)}\} \cup \{(1,u)| u \in \{0,1\}^{p(|x|)}\}$.
+For the first set, output $M(x,u)$, for the second set output $M_N(x,u)$. 
+Therefore, $M+M_N(x,v)$ can also halt in polynomial time and has a number of certificates equal to $N + \#_{M,p}(x)$ with input length ${p(|x|) + 1}$.
+
+Consider the following Language $L$:
+$$
+\begin{aligned}
+L &=\{x \mid \left|\{u \in \{0,1\}^{p(|x|)+1}: [M+M_N](x,u) = 1\}\right|  \geq \frac{2^{p(|x|)+1}}{2} \} \\
+  &=\{x \mid N + \#_{M,p}(x) \geq {2^{p(|x|)}} \}
+\end{aligned}
+$$
+By definition, $L \in \mathsf{PP}$. If $\mathsf{PP} = \mathsf{P}$ then $L \in \mathsf{P}$, there exists a Turing machine that decides whether $N + \#_{M,p}(x) \geq 2^{p(|x|)}$ in polynomial time. 
+Thus, we can use binary search to find the value of $\#_{M,p}(x)$.
+:::
+
+---
+
+## 4. Advanced Theorems
+
+### Toda's Theorem
+With an algorithm for counting satisfying assignments of 3CNF formulas, any problem in the polynomial hierarchy can be solved. That is, $\mathsf{PH} \subseteq \mathsf{P}^{\mathsf{\#P}}$.
+
+### $\oplus\mathsf{SAT}$ (Parity SAT)
+For a Boolean function $\varphi(x), x \in \{0,1\}^n$, define $\oplus \varphi(x) = \sum_{x \in \{0,1\}^n}\varphi(x) \text{~mod~} 2$.
+$\oplus\mathsf{SAT}$ is defined as $\{\varphi(x) \in \text{CNF} \mid \oplus \varphi(x) = 1\}$.
+
+### Valiant-Vazirani Theorem (Relation to RP)
+If SAT problems with the restriction that CNFs are either unsatisfiable or have a unique solution can be solved, then $\mathsf{NP} = \mathsf{RP}$.
+
+> **Hash Function**: A family of mappings from $\{0,1\}^n$ to $\{0,1\}^k$, such that under some random choice of functions, the output is uniformly distributed over $\{0,1\}^k$ for any fixed input.
+
+---
+
+## 5. GapP and Approximation Complexity
+
+### 5.1 GapP
+
+::: {.callout-note icon="false"}
+## Definition: GapP [@hangleiter2023computational]
+
+A function $f: \{0,1\}^* \to \mathbb{Z}$ belongs to $\mathsf{GapP}$ if and only if there exist functions $g, h \in \mathsf{\#P}$ such that $f(x) = g(x) - h(x)$ for all inputs $x$.
+:::
+
+For a Boolean function $f: \{0,1\}^n \to \{0,1\}$, the **gap** is defined as
+$$
+\operatorname{gap}(f) := |\{y : f(y) = 1\}| - |\{y : f(y) = 0\}|,
+$$
+and the **normalized gap** as $\operatorname{ngap}(f) := \frac{1}{2^n} \operatorname{gap}(f)$.
+
+Every $\mathsf{\#P}$ function is trivially in $\mathsf{GapP}$ (take $h = 0$), and under Turing reductions the two classes have the same computational power: $\mathsf{P}^{\mathsf{GapP}} = \mathsf{P}^{\mathsf{\#P}}$. However, they differ drastically in the complexity of *approximation*.
+
+### 5.2 Approximation Notions
+
+::: {.callout-note icon="false"}
+## Definition: Approximation Types
+
+Let $S$ be a quantity and $\tilde{S}$ an estimate. We say $\tilde{S}$ is:
+
+1. **$c$-multiplicatively approximate** (for $c \in (0,1]$) if $c\,S \leq \tilde{S} \leq S/c$.
+2. **$r$-relatively approximate** (for $r > 0$) if $(1 - r)\,S \leq \tilde{S} \leq (1 + r)\,S$.
+3. **$\varepsilon$-additively approximate** (for $\varepsilon > 0$) if $|S - \tilde{S}| \leq \varepsilon$.
+:::
+
+Multiplicative $c$-approximation and relative $r$-approximation are equivalent with $c = 1/(1+r)$. In particular, a multiplicative approximation of a nonzero quantity always preserves its sign.
+
+### 5.3 GapP-Hardness of Multiplicative Approximation
+
+A $\mathsf{\#P}$ sum over $n$-bit strings takes values in $[0, 2^n]$ and is typically of order $2^n$, so a constant relative error is also of that order. Conversely, a $\mathsf{GapP}$ function is the difference of two such exponentially large numbers; this difference can be much smaller than either term, so the allowed error for relative approximation is correspondingly tiny. Crucially, a relative-error approximation is guaranteed to get the *sign* correct — and for $\mathsf{GapP}$ functions, correct sign information already suffices to decide $\mathsf{PP}$-complete problems. This intuition is made precise by the following lemma.
+
+::: {.callout-important icon="false"}
+## Lemma: Approximating GapP is GapP-hard [@hangleiter2023computational, Lemma 2.2]
+
+Let $f$ be a $\mathsf{\#P}$ function. Then approximating $\operatorname{gap}(f)$ up to any constant multiplicative error is $\mathsf{GapP}$-hard.
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+
+*Proof.* Let $f: \{0,1\}^n \to \{0,1\}$ be computable by a polynomial-size circuit. Assume we have an oracle that $c$-multiplicatively approximates $\operatorname{gap}(f)$ for some constant $c \in (0,1)$.
+
+**Step 1 — Sign determination.** Let $s$ denote the sign of the estimate returned by the oracle. Since any $c$-multiplicative approximation of a nonzero value preserves the sign, $s = \operatorname{sign}(\operatorname{gap}(f))$ whenever $\operatorname{gap}(f) \neq 0$. If $\operatorname{gap}(f) = 0$, the approximation must return $0$.
+
+**Step 2 — Bit-by-bit binary search.** Write $\operatorname{gap}(f) = b_0 b_1 \cdots b_{n-1}$ in binary. We recover each bit $b_i$ by constructing auxiliary functions whose gap is shifted by known powers of $2$.
+
+Define $f_s: \{0,1\}^{n+1} \to \{0,1\}$ by
+$$
+f_s(x, y) := \begin{cases} f(x) & \text{if } y = 0, \\ \tfrac{1}{2}(1 - s) & \text{if } y = 1. \end{cases}
+$$
+Since the second branch contributes $\pm 2^n$ to the gap depending on $s$, we have $\operatorname{gap}(f_s) = \operatorname{gap}(f) - s \cdot 2^n$. Comparing $\operatorname{sign}(\operatorname{gap}(f_s))$ with $\operatorname{sign}(\operatorname{gap}(f))$ reveals whether $b_0 = 1$: if the sign flips, then $s \cdot 2^n > \operatorname{gap}(f)$, so $b_0 = 0$; if not, $b_0 = 1$ (and $\operatorname{gap}(f_s) = 0$ forces the oracle to return $0$ exactly).
+
+In the $i$-th step, we construct $f_s^{(i)}: \{0,1\}^{n+1} \to \{0,1\}$ such that
+$$
+\operatorname{gap}(f_s^{(i)}) = \operatorname{gap}(f) - \sum_{k=0}^{i-1} b_k \, 2^{n-k} - s \cdot 2^{n-i}.
+$$
+This is achieved by setting the $y = 1$ branch to output $\tfrac{1}{2}(1 - s)$ on exactly the right fraction of inputs (determined by the previously learned bits $b_0, \ldots, b_{i-1}$). Each $f_s^{(i)}$ is still computable by a polynomial-size circuit since there are at most $O(n)$ conditions.
+
+Comparing the sign of the oracle's output on $f_s^{(i)}$ with the sign of $\operatorname{gap}(f)$ reveals $b_i$. After $n$ steps we have all bits, recovering $\operatorname{gap}(f)$ exactly. $\square$
+:::
+
+### 5.4 Structural Comparison: #P vs. GapP
+
+The fundamental distinction is **nonnegativity**. $\mathsf{\#P}$ sums are nonnegative, which enables Stockmeyer's hashing technique ([Section 7](#stockmeyers-algorithm)) to yield a multiplicative approximation at the third level of the polynomial hierarchy. $\mathsf{GapP}$ sums involve cancellations — the computational signature of quantum interference — making even sign determination $\mathsf{\#P}$-hard and collapsing multiplicative approximation to exact computation. This is why quantum amplitudes, which encode $\mathsf{GapP}$ functions via interference, are fundamentally harder to approximate than classical counting problems.
+
+---
+
+## 6. The Polynomial Hierarchy
+
+To state Stockmeyer's algorithm precisely, we need the polynomial hierarchy, which stratifies computational problems by alternating quantifiers.
+
+::: {.callout-note icon="false"}
+## Definition: coNP
+
+A language $L \subseteq \{0,1\}^*$ is in $\mathsf{coNP}$ if its complement $\overline{L} := \{0,1\}^* \setminus L$ is in $\mathsf{NP}$. Equivalently, $x \in L$ iff for all certificates $u$ of polynomial length, a polynomial-time verifier accepts $(x, u)$.
+:::
+
+::: {.callout-note icon="false"}
+## Definition: Polynomial Hierarchy
+
+The polynomial hierarchy consists of classes $\Sigma_i^p$, $\Pi_i^p$, and $\Delta_i^p$ for $i \geq 0$, defined inductively:
+
+- **Base case** ($i = 0$): $\Sigma_0^p = \Pi_0^p = \Delta_0^p = \mathsf{P}$.
+- **Inductive step** ($i \geq 0$):
+  - $\Sigma_{i+1}^p = \mathsf{NP}^{\Sigma_i^p}$
+  - $\Pi_{i+1}^p = \mathsf{coNP}^{\Sigma_i^p}$
+  - $\Delta_{i+1}^p = \mathsf{P}^{\Sigma_i^p}$
+
+The polynomial hierarchy is $\mathsf{PH} := \bigcup_{i=0}^{\infty} \Sigma_i^p$.
+:::
+
+At the lowest levels: $\Sigma_1^p = \mathsf{NP}$, $\Pi_1^p = \mathsf{coNP}$, $\Delta_2^p = \mathsf{P}^{\mathsf{NP}}$, and $\Sigma_2^p = \mathsf{NP}^{\mathsf{NP}}$ captures problems with one alternation of $\exists\forall$ quantifiers. The class $\Delta_3^p = \mathsf{P}^{\mathsf{NP}^{\mathsf{NP}}}$ — a deterministic polynomial-time machine with access to a $\Sigma_2^p$ oracle — is where Stockmeyer's algorithm resides. By Toda's Theorem (Section 4), $\mathsf{PH} \subseteq \mathsf{P}^{\mathsf{\#P}}$, so the entire hierarchy is strictly weaker than $\mathsf{\#P}$ (assuming it does not collapse).
+
+---
+
+## 7. Stockmeyer's Algorithm {#stockmeyers-algorithm}
+
+### 7.1 Hash Predicates and Sipser's Coding Lemma
+
+The proof of Stockmeyer's theorem relies on using hash functions to estimate the size of a set by checking for collisions. The key tool is the following predicate.
+
+::: {.callout-note icon="false"}
+## Definition: Hash Predicate [@hangleiter2023computational, Def. 2.8]
+
+Let $C$ be a polynomial-time computation and $\mathrm{Acc}_C(x) \subseteq \{0,1\}^t$ the set of its accepting paths on input $x$. Define:
+
+$\mathrm{Hash}(x, m)$: There exist hash functions $h_1, \ldots, h_m: \{0,1\}^t \to \{0,1\}^m$, each computable by a circuit of size $\leq mt$, such that for every $z \in \mathrm{Acc}_C(x)$ there exists $i$ with $h_i(z) \neq h_i(z')$ for all $z' \in \mathrm{Acc}_C(x) \setminus \{z\}$.
+
+In other words, the hash family *separates* $\mathrm{Acc}_C(x)$ within itself: every element is distinguished from all others by at least one hash function.
+:::
+
+The central combinatorial ingredient is Sipser's coding lemma, which guarantees that random linear hash functions separate small sets with constant probability.
+
+::: {.callout-important icon="false"}
+## Lemma: Sipser's Coding Lemma [@hangleiter2023computational, Lemma 2.5]
+
+Let $A \subseteq \{0,1\}^n$, $k = |A|$, $m = 1 + \lceil \log_2 k \rceil$. If $H$ is a collection of $m$ randomly chosen linear maps $h: \{0,1\}^n \to \{0,1\}^m$, then
+$$
+\Pr_H\!\bigl[H \text{ separates } A \text{ within } A\bigr] \geq \tfrac{1}{2}.
+$$
+:::
+
+Since the probability exceeds $1/2$, a separating family *exists* (by the probabilistic method). This yields the following bounds on the accepting set size.
+
+::: {.callout-important icon="false"}
+## Lemma: Hash Bounds [@hangleiter2023computational, Lemma 2.6]
+
+There exists a constant $c > 0$ such that:
+
+1. $|\mathrm{Acc}_C(x)| \leq 2^{m-c} \;\Longrightarrow\; \mathrm{Hash}(x, m)$.
+2. $\mathrm{Hash}(x, m) \;\Longrightarrow\; |\mathrm{Acc}_C(x)| \leq m \cdot 2^m$.
+3. $\mathrm{Hash}(x, m) \in \Sigma_2^p$.
+:::
+
+::: {.callout-note collapse="true"}
+## Proof sketch (Click to expand)
+
+(1) follows directly from the coding lemma: if $|A| \leq 2^{m-c}$ then $m \geq 1 + \lceil \log_2 |A| \rceil$, so a separating family exists.
+
+(2) If $H = \{h_1, \ldots, h_m\}$ separates $A$, then each element $z \in A$ is uniquely identified by some pair $(i, h_i(z))$. There are $m \cdot 2^m$ such pairs, so $|A| \leq m \cdot 2^m$.
+
+(3) $\mathrm{Hash}(x, m)$ has the form $\exists (h_1, \ldots, h_m)\; \forall z \in \mathrm{Acc}_C(x)\; \exists i\; \forall z' \neq z$: $h_i(z) \neq h_i(z')$. The outer $\exists\forall$ quantifier structure places it in $\Sigma_2^p$. $\square$
+:::
+
+### 7.2 Stockmeyer's Theorem
+
+::: {#thm-stockmeyer .callout-important icon="false"}
+## Stockmeyer's Algorithm
+
+Given a Boolean function $f: \{0,1\}^n \to \{0,1\}$, let $p = \frac{1}{2^n} \sum_{x \in \{0,1\}^n} f(x)$. Then for all $c \geq 1 + 1/\mathrm{poly}(n)$, there exists a $\Delta_3^p = \mathsf{P}^{\mathsf{NP}^{\mathsf{NP}}}$ machine that approximates $p$ to multiplicative error $c$ [@dalzell2020sampling, Theorem 2.4].
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+
+*Proof.* Let $A = \{x \in \{0,1\}^n : f(x) = 1\}$, so $|A| = 2^n p$.
+
+**Algorithm: binary search on hash range.** Starting from $m_{\max} = n + 2$ (since $|A| \leq 2^n < 2^{m_{\max}}$), decrease $m$ step by step and at each step query whether $\mathrm{Hash}(x, m)$ holds. Since $\mathrm{Hash}(x, m) \in \Sigma_2^p$ (Lemma above), each query is answered by a $\Sigma_2^p$ oracle. After $O(n)$ queries, find the minimal $m_0$ such that $\mathrm{Hash}(x, m_0)$ holds but $\mathrm{Hash}(x, m_0 - 1)$ does not.
+
+**Bounding $|A|$.** By the Hash Bounds lemma:
+
+- $\mathrm{Hash}(x, m_0)$ holds, so $|A| \leq m_0 \cdot 2^{m_0}$.
+- $\mathrm{Hash}(x, m_0 - 1)$ fails, so $|A| > 2^{m_0 - 1 - c}$, i.e., $|A| \geq 2^{m_0 - 1 - c} > 2^{m_0 - 3}$ (for $c = 1$).
+
+This gives the range $2^{m_0 - 3} < |A| \leq m_0 \cdot 2^{m_0}$, and dividing by $2^n$:
+$$
+2^{m_0 - 3 - n} < p \leq m_0 \cdot 2^{m_0 - n}.
+$$
+
+**Approximation quality.** Using $2^{m_0 - n}$ as our estimate, the multiplicative error is at most:
+$$
+\sqrt{\frac{1}{8(2+n)}}\, p < 2^{m_0 - n} < \sqrt{8(2+n)}\, p,
+$$
+i.e., multiplicative error $O(\sqrt{n})$. Refining the binary search with a more careful choice of hash family parameters yields error $c \geq 1 + 1/\mathrm{poly}(n)$.
+
+**Complexity.** The algorithm makes $O(n)$ adaptive queries to a $\Sigma_2^p$ oracle, so it runs in $\mathsf{P}^{\Sigma_2^p} = \Delta_3^p = \mathsf{P}^{\mathsf{NP}^{\mathsf{NP}}}$. $\square$
+:::
+
+### 7.3 Discussion
+
+Stockmeyer's algorithm exploits the **nonnegativity** of $\mathsf{\#P}$ functions in an essential way: the hash-based counting argument relies on the fact that $|A| = |\{x : f(x) = 1\}|$ is a nonnegative integer whose size can be bracketed by collision properties. For $\mathsf{GapP}$ functions, the relevant quantity $\operatorname{gap}(f)$ can be negative, and no analogous hashing scheme can determine even the sign — which, as shown in Section 5.3, is already $\mathsf{\#P}$-hard. This is the precise sense in which quantum output probabilities (which encode $|\operatorname{ngap}(f)|^2$ for $\mathsf{GapP}$ functions) resist efficient classical approximation.

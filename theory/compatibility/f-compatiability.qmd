@@ -1,0 +1,320 @@
+---
+date: '2026-03-02'
+lang: en
+title: f-compatibility
+bibliography: refs.bib
+draft: true
+---
+
+# Summary and questions
+
+
+
+# Definition of f-compatibility
+
+
+In the quantum setting, the $K$ distribution vectors are generated with the quantum state $\rho$ via the POVMs $\{A_1,\ldots,A_K\}$ with outcome sets $\{\Omega_1,\ldots,\Omega_K\}$, i.e., $\vec{p}_i(\rho) = (\mathrm{tr}[A_i^{(r)}\rho])_{r \in \Omega_i}$.
+
+Suppose $\mathcal{F}:=\{f_\alpha\}_{\alpha \in \mathcal{A}}$ is a class of functions of those probability vectors $(\vec{p}_1,\ldots,\vec{p}_K)$ such that it is a polynomial in the variables $(\vec{p}_1,\ldots,\vec{p}_K)$ with degree at most $k$.
+We define the $k$-copy f-compatibility as follows:
+
+::: {#def-f-compatibility .callout-important icon="false"}
+## (f-compatibility on k-copy)
+ We say that $\{A_i\}_{i = 1}^K$ is $k$-copy $\mathcal{F}$-compatible if there exists a POVM $\{\Pi_j\}_{j \in \mathcal{J}}$ on $\mathcal{H}^{\otimes k}$ and classical functions $\{h_\alpha: \mathcal{J} \to [-1,1]\}$ such that
+$$
+f_\alpha\big(\vec{p}_1(\rho),\ldots,\vec{p}_n(\rho)\big) = \sum_{j \in \mathcal{J}} h_\alpha(j)\;\mathrm{tr}[\Pi_j\;\rho^{\otimes k}], \quad \forall\,\rho,\;\forall\,\alpha
+$$
+We denote $k(\mathcal{F})$ as the smallest copy number such that $\{A_1,\ldots,A_K\}$ is $\mathcal{F}$-compatible.
+:::
+
+The importance of this definition is that, it is a generalization of the original definition of $k$-compatible, which is a special case when $f_{\alpha}(\vec{p}_1(\rho),\ldots,\vec{p}_K(\rho)) = p_{\alpha}(\rho), \alpha \in \{1,\cdots,K\}$, as rigorously shown in the following lemma.
+
+:::{#lem-f-lowerbound .callout-important icon="false"}
+## (f-compatibility lowerbound)
+
+For any set of POVMs $\{A_i\}_{i=1}^K$ that is $k$-compatible, then $k(\mathcal{F}) \leq k$ given any polynomial functional set $\mathcal{F}$ of degree at most $k$ that admits bounded classical estimators. The inequality reaches the tight bound when $f_{\alpha}(\vec{p}_1(\rho),\ldots,\vec{p}_K(\rho)) = p_i(a_i) = \mathrm{tr}[A_i^{(a_i)} \rho]$, $\alpha = (i,a_i) \in \{(i,a_i) : i \in \{1,\cdots,K\},\, a_i \in \Omega_i\}$.
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+
+**Part 1: $k$-compatibility implies $\mathcal{F}$-compatibility ($k(\mathcal{F}) \leq k$).**
+
+Assume the set of POVMs $\{A_i\}_{i=1}^K$ is $k$-compatible. By definition, there exists a joint mother POVM $G(\vec{x}) = G(x_1, \ldots, x_K)$ acting on $\mathcal{H}^{\otimes k}$ such that its marginals perfectly reproduce the single-observable statistics:
+$$
+\sum_{\vec{x} \setminus x_i} G(\vec{x}) = \mathbb{I}^{\otimes (k-1)} \odot A_i^{(x_i)}.
+$$ {#eq-f-lowerbound-1}
+Measuring $G(\vec{x})$ on $\rho^{\otimes k}$ yields a joint classical probability distribution $P(\vec{x}|\rho) = \mathrm{tr}[G(\vec{x})\rho^{\otimes k}]$, from which marginal distributions are recovered: $\sum_{\vec{x} \setminus x_i} P(\vec{x}|\rho) = p_i(x_i|\rho)$.
+
+Now suppose $\mathcal{F} = \{f_\alpha\}_{\alpha}$ consists of degree-$\leq k$ polynomial functionals that admit bounded classical estimators from the joint outcome distribution. That is, there exist classical functions $C_\alpha(\vec{x}) \in [-1, 1]$ such that:
+$$
+f_\alpha(\vec{p}_1, \dots, \vec{p}_K) = \sum_{\vec{x}} C_\alpha(\vec{x})\, P(\vec{x}|\rho) = \sum_{\vec{x}} C_\alpha(\vec{x})\, \mathrm{tr}[G(\vec{x})\,\rho^{\otimes k}].
+$$
+Setting $\Pi_{\vec{x}} := G(\vec{x})$ and $h_\alpha(\vec{x}) := C_\alpha(\vec{x})$ satisfies all conditions of @def-f-compatibility, yielding $k(\mathcal{F}) \leq k$.
+
+*Remark.* The existence of bounded estimators $C_\alpha(\vec{x}) \in [-1,1]$ is not automatically guaranteed for every degree-$\leq k$ polynomial by [the estimation condition theorem](nonparametric.qmd#thm-estimation-condition) alone — that theorem guarantees unbiased estimators exist, but their range depends on the polynomial coefficients. The boundedness condition $|h_\alpha(j)| \leq 1$ is an additional structural requirement of @def-f-compatibility that controls variance. For the marginal probability functionals treated below, this condition is trivially satisfied by indicator functions.
+
+**Part 2: Tightness for marginal probabilities ($k(\mathcal{F}_{\mathrm{margin}}) = k_{\mathrm{compat}}$).**
+
+Let $\mathcal{F}_{\mathrm{margin}} = \{f_{(i,a_i)}\}$ where $f_{(i,a_i)}(\vec{p}_1, \ldots, \vec{p}_K) = p_i(a_i) = \mathrm{tr}[A_i^{(a_i)} \rho]$.
+
+*($k_{\mathrm{compat}} \Rightarrow k(\mathcal{F}_{\mathrm{margin}}) \leq k_{\mathrm{compat}}$):*
+From Part 1 with $\Pi_{\vec{x}} = G(\vec{x})$ and the indicator estimator $h_{i,a_i}(\vec{x}) = \delta_{x_i, a_i} \in \{0,1\} \subset [-1,1]$, we obtain:
+$$
+\sum_{\vec{x}} \delta_{x_i, a_i}\, \mathrm{tr}[G(\vec{x})\,\rho^{\otimes k}] = \mathrm{tr}\!\left[\sum_{\vec{x} \setminus x_i} G(x_1,\ldots,x_i\!=\!a_i,\ldots,x_K)\;\rho^{\otimes k}\right] = p_i(a_i).
+$$
+
+*($k(\mathcal{F}_{\mathrm{margin}}) \Rightarrow k_{\mathrm{compat}} \leq k(\mathcal{F}_{\mathrm{margin}})$):*
+Conversely, suppose $\{A_i\}$ is $k$-copy $\mathcal{F}_{\mathrm{margin}}$-compatible via some POVM $\{\Pi_j\}$ on $\mathcal{H}^{\otimes k}$ and estimators $h_{i,a_i}(j) \in [-1,1]$. Define $M_i^{(a_i)} := \sum_j h_{i,a_i}(j)\,\Pi_j$.
+
+**Positivity of $M_i^{(a_i)}$.** The trace identity $\mathrm{tr}[M_i^{(a_i)}\rho^{\otimes k}] = \mathrm{tr}[A_i^{(a_i)}\rho]$ holds for all $\rho$. Since the set of product states $\{\rho^{\otimes k}\}$ spans the symmetric subspace of $\mathcal{H}^{\otimes k}$, and the linearization $F_{(i,a_i)} = \mathbb{I}^{\otimes(k-1)}\odot A_i^{(a_i)}$ lies in the symmetric subspace, the $(\Rightarrow)$ direction of @thm-f-compatibility-SDP yields the operator identity on $\mathcal{H}^{\otimes k}$:
+$$
+M_i^{(a_i)} = \mathbb{I}^{\otimes(k-1)}\odot A_i^{(a_i)}.
+$$
+(Note: $\mathbb{I}^{\otimes(k-1)}\odot A_i^{(a_i)} = \frac{1}{k}\sum_{l=1}^k \mathbb{I}^{\otimes(l-1)}\otimes A_i^{(a_i)}\otimes\mathbb{I}^{\otimes(k-l)}$ is the symmetrized linearization, which differs from the asymmetric $A_i^{(a_i)}\otimes\mathbb{I}^{\otimes(k-1)}$ in @eq-linearization but gives the same expectation on product states; it is the form guaranteed by the spanning argument.) Since $A_i^{(a_i)} \geq 0$, the symmetrized tensor product satisfies $\mathbb{I}^{\otimes(k-1)}\odot A_i^{(a_i)} \geq 0$, hence $M_i^{(a_i)} \geq 0$. Normalization gives $\sum_{a_i} M_i^{(a_i)} = \mathbb{I}^{\otimes(k-1)}\odot\mathbb{I} = \mathbb{I}^{\otimes k}$, so each $\{M_i^{(a_i)}\}_{a_i}$ is a valid POVM on $\mathcal{H}^{\otimes k}$.
+
+**Construction of the joint POVM.** It remains to exhibit a joint POVM $G(\vec{x})$ on $\mathcal{H}^{\otimes k}$ with marginals $G_i(a_i) = M_i^{(a_i)} = \mathbb{I}^{\otimes(k-1)}\odot A_i^{(a_i)}$. From the operator identity, $h_{i,a_i}(j)$ satisfies $\sum_{a_i} h_{i,a_i}(j) = 1$ for each fixed $j$. For 2-outcome POVMs, $h_{i,a_i}(j) \in [-1,1]$ combined with normalization forces $h_{i,a_i}(j) \in [0,1]$ (since the two terms sum to 1; see @thm-linearfunctional). Define the product-coupling joint POVM:
+$$
+G(\vec{x}) := \sum_j \Bigl(\prod_{i=1}^K h_{i,x_i}(j)\Bigr)\,\Pi_j.
+$$
+Positivity: each coefficient $\prod_i h_{i,x_i}(j) \geq 0$ (product of non-negative numbers) and $\Pi_j \geq 0$, so $G(\vec{x}) \geq 0$. Normalization: $\sum_{\vec{x}} G(\vec{x}) = \sum_j \bigl(\prod_i \sum_{x_i} h_{i,x_i}(j)\bigr)\Pi_j = \sum_j \Pi_j = \mathbb{I}^{\otimes k}$. Marginals: $G_i(a_i) = \sum_{\vec{x}:x_i=a_i} G(\vec{x}) = \sum_j h_{i,a_i}(j)\bigl(\prod_{i'\neq i}\sum_{x_{i'}} h_{i',x_{i'}}(j)\bigr)\Pi_j = \sum_j h_{i,a_i}(j)\Pi_j = M_i^{(a_i)}$. By [Lemma (multicopy compatibility)](multicopy_compatiability.qmd#lem-multicopy-compatibility), $\{A_i\}$ are therefore $k$-compatible, giving $k_{\mathrm{compat}} \leq k(\mathcal{F}_{\mathrm{margin}})$.
+
+Combining both directions: $k(\mathcal{F}_{\mathrm{margin}}) = k_{\mathrm{compat}}$, proving that $f$-compatibility is a faithful generalization of standard multicopy compatibility. $\blacksquare$
+:::
+
+# Advantage of f-compatibility
+
+A great advantage of this definition is that the f-compatibility might are restrictly smaller than the standard multicopy compatibility, indicating that compatiablity learning multiple fixed properties of incompatible POVMs results might be easier than compatibility learning the whole POVMs distributions. Here below we provide a description of $\mathcal{F}$ where this advantage holds.
+
+#### Linear functional of 2-outcome POVMs has no advantage
+
+In the case each POVMs $A_i$ has 2-outcome POVMs $\{A_i^{(+)},A_i^{(-)}\}$, we can set $p_i(\rho):= \mathrm{tr}[A_i^{(+)}\rho]$. Then the functional set $\mathcal{F}$ reduced to a function set:
+$$
+f_\alpha\big(\vec{p}_1(\rho),\ldots,\vec{p}_K(\rho)\big) = f_\alpha\big(p_1,\ldots,p_K\big)
+$$
+We then noted that if all $f_{\alpha}$ are $K$ linearly independent functionals, i.e., $f_{\alpha}(\vec{p}) = \sum_i h_{\alpha,i} p_i$, then the f-compatibility problem is equivalent to the standard joint measurability problem of the POVMs $\{A_i^{(+)},A_i^{(-)}\}$, as stated in the theorem @thm-linearfunctional below.
+ An familiar example is the Pauli compatibility problem, given a set of Pauli observables $\{P_i\}_i$, getting its average is as hard as compatible realization its 2-outcome POVMs $\frac{\mathbb{I} \pm P_i}{2}$
+
+:::{#thm-linearfunctional .callout-important icon="false"}
+## (The linear functional compatibility problem)
+Given $K$ 2-outcome POVMs $\{A_i^{(+)},A_i^{(-)}\}$ and a set of $K$ functionals $f_1, \ldots, f_K$ that linearly independent in K-variables $(p_1, \ldots, p_K)$, then $k(\mathcal{F}) = k$. That is, the f-compatibility problem is as hard as the standard joint measurability problem of the POVMs $\{A_i^{(+)},A_i^{(-)}\}$.
+:::
+
+:::{.callout-note collapse="true"}
+## Proof
+(todo: Adapt current proof of the Pauli compatibility problem to the general case in @thm-linearfunctional)
+We show that for two-outcome Pauli observables, f-compatibility with **bounded estimators** ($|h_i(j)|\leq 1$) for the linear functionals $f_i(\vec{p}) = \mathrm{tr}[P_i\rho]$ is **equivalent** to standard joint measurability of $\{M_i^{\pm} = \frac{\mathbb{I}\pm P_i}{2}\}$.
+
+**($\Leftarrow$: Compatibility $\Rightarrow$ estimation.)** Suppose $\{M_i^+, M_i^-\}_{i=1}^K$ are jointly measurable. By definition there exists a parent POVM $\{G_\lambda\}_\lambda$ and conditional distributions $p(a|i,\lambda)$ with $a \in \{+1,-1\}$ such that:
+$$
+\frac{\mathbb{I} + a\, P_i}{2} = \sum_\lambda p(a|i,\lambda)\, G_\lambda, \quad \forall\, a, i.
+$$
+Taking the difference $a=+1$ minus $a=-1$:
+$$
+P_i = \sum_\lambda \bigl[p(+1|i,\lambda) - p(-1|i,\lambda)\bigr]\, G_\lambda =: \sum_\lambda h_i(\lambda)\, G_\lambda.
+$$
+Since $p(+1|i,\lambda) + p(-1|i,\lambda) = 1$ and both are non-negative, $|h_i(\lambda)| \leq 1$. Therefore $\mathrm{tr}[P_i\rho] = \sum_\lambda h_i(\lambda)\,\mathrm{tr}[G_\lambda\rho]$ for all $\rho$, which is exactly f-compatibility with bounded estimators.
+
+**($\Rightarrow$: Estimation $\Rightarrow$ compatibility.)** Suppose there exists a POVM $\{\Pi_j\}_j$ and estimators $\{h_i(j)\}$ with $|h_i(j)| \leq 1$ such that $\sum_j h_i(j)\,\Pi_j = P_i$ for all $i$. Define conditional probabilities:
+$$
+p(\pm 1|i,j) := \frac{1 \pm h_i(j)}{2}.
+$$
+Since $|h_i(j)|\leq 1$, both $p(+1|i,j) \geq 0$ and $p(-1|i,j) \geq 0$, and they sum to 1. Now verify the marginals:
+$$
+\sum_j p(\pm 1|i,j)\,\Pi_j = \frac{1}{2}\sum_j \Pi_j \pm \frac{1}{2}\sum_j h_i(j)\,\Pi_j = \frac{\mathbb{I} \pm P_i}{2} = M_i^{\pm}.
+$$
+This is precisely a joint measurement realization of $\{M_i^+, M_i^-\}_{i=1}^K$ with parent POVM $\{\Pi_j\}$.
+:::
+
+### Non-linear functional of 2-outcome POVMs has advantage
+
+Based on @thm-linearfunctional, we should find advantages on either (i), a set of non-binary POVMs, or (ii), a set of non-linearly independent functionals. Here we consider the case of non-linearly independent functionals. 
+
+The key observation is that, because $\{f_{\alpha}\}_{\alpha \in \mathcal{A}}$ is a set of rank-k polynomials, then they become **linear** when lifted to $k$-copy states. Since in the 2-outcome case, $p_i(\rho) = \mathrm{tr}[A_i^{(+)}\rho]$, any monomial of degree $k$ satisfies:
+$$
+p_{1}^{x_1}\cdots p_{n}^{x_n} = \mathrm{tr}\bigl[(A^{(+),\otimes x_1}_{1}\otimes \cdots \otimes A^{(+),\otimes x_n}_{n})\;\rho^{\otimes k}\bigr].
+$$
+Therefore, 
+
+:::{#def-linearization .callout-important icon="false"}
+## (Linearization of rank-k polynomials)
+Given a set of POVMs $\{A_i\}_{i=1}^K$ and a set of degree-$k$ polynomial functions $\{f_\alpha\}_{\alpha \in \mathcal{A}}$ with $f_\alpha(p_1,\ldots,p_K) = \sum_{\mathbf{x}} c_{\mathbf{x}} p_{1}^{x_1}\cdots p_{n}^{x_n}$, its $l > k$-linearization is defined as a set of Hermitian operators $\{F_\alpha\}_{\alpha \in \mathcal{A}}$ such that
+$$
+F_{\alpha} = \sum_{\mathbf{x}} c_{\mathbf{x}} \left[A^{(+),\otimes x_1}_{1}\otimes \cdots \otimes A^{(+),\otimes x_n}_{n} \otimes \mathbb{I}^{\otimes r}\right].
+$$ {#eq-linearization}
+where $r = l - \sum_{i=1}^n x_i$
+:::
+
+(todo: We need to add an Lemma that states that if the $\{F_\alpha\}$ are commute, then the $k(\mathcal{F}) \leq k$)
+
+**Examples:** If we take set $\{X,Y,Z\}$, denote $p_x = \mathrm{tr}[\frac{\mathbb{I} + X}{2}\rho], p_y = \mathrm{tr}[\frac{\mathbb{I} + Y}{2}\rho], p_z = \mathrm{tr}[\frac{\mathbb{I} + Z}{2}\rho]$. Then:
+$$
+\begin{align*}
+\rho &= \frac{1}{2} \left[\mathbb{I} + (2p_x - 1) X + (2p_y - 1) Y + (2p_z - 1) Z \right],\\
+\rho^2 &= \frac{1}{4} \left[\mathbb{I} + (2p_x - 1) X + (2p_y - 1) Y + (2p_z - 1) Z \right]^2 \\
+&= \frac{1}{2} \left[\frac{1 + (2p_x - 1)^2+(2p_y - 1)^2+(2p_z - 1)^2}{2}\mathbb{I} + (2p_x - 1) X + (2p_y - 1) Y + (2p_z - 1) Z \right]
+\end{align*}
+$$
+
+- If we setup $\{|\mathrm{tr}(X\rho)|^2, |\mathrm{tr}(Y\rho)|^2, |\mathrm{tr}(Z\rho)|^2\}$ as our target quantities, 
+the function set $\{f_1,f_2,f_3\}$ is:
+$$
+ \begin{aligned}f_1(p_x,p_y,p_z) &= (2p_x-1)^2, \\f_2(p_x,p_y,p_z) &= (2p_y-1)^2, \\f_3(p_x,p_y,p_z) &= (2p_z-1)^2\end{aligned},
+$$
+- If we setup (i). estimates $\{\mathrm{tr}(X\rho), \mathrm{tr}(Y\rho), \mathrm{tr}(Z\rho)\}$ with a unified measurement setting or (ii). implement three measurement settings $X,Y,Z$ simultaneously, i.e., $\{\mathrm{tr}(\frac{\mathbb{I} + X}{2}\rho), \mathrm{tr}(\frac{\mathbb{I} + Y}{2}\rho), \mathrm{tr}(\frac{\mathbb{I} + Z}{2}\rho)\}$, as our target quantities, 
+the function set $\{f_1,f_2,f_3\}$ is, respectively:
+$$
+ \begin{aligned}f_1(p_x,p_y,p_z) &= p_x, \\f_2(p_x,p_y,p_z) &= p_y, \\f_3(p_x,p_y,p_z) &= p_z\end{aligned} 
+ \Leftrightarrow
+ \begin{aligned}f_1(p_x,p_y,p_z) &= 2p_x-1, \\f_2(p_x,p_y,p_z) &= 2p_y-1, \\f_3(p_x,p_y,p_z) &= 2p_z-1\end{aligned} 
+$$
+
+They are informationally equivalent since these knowing one of the function value can derivate the other one.
+- If we setup $\{\mathrm{tr}(X\rho^2), \mathrm{tr}(Y\rho^2), \mathrm{tr}(Z\rho^2),\mathrm{tr}(\rho^2)\}$ as our target quantities, the function set $\{f_1,f_2,f_3,f_4\}$ are:
+$$
+ \begin{aligned}
+ f_1(p_x,p_y,p_z) &= 2p_x-1, \\f_2(p_x,p_y,p_z) &= 2p_y-1, \\f_3(p_x,p_y,p_z) &= 2p_z-1, \\
+ f_4(p_x,p_y,p_z) &= \frac{1+(2p_x-1)^2+(2p_y-1)^2+(2p_z-1)^2}{2}.
+ \end{aligned}
+ $$
+These follow directly from the $\rho^2$ expansion above: the coefficient of $X$ in $\rho^2$ is $(2p_x-1)/2$, so $\mathrm{tr}(X\rho^2) = \frac{1}{2}(2p_x-1)\cdot\mathrm{tr}(X^2) = 2p_x-1$; and $\mathrm{tr}(\rho^2) = \frac{1}{2}\cdot\frac{1+r^2}{2}\cdot 2 = \frac{1+r^2}{2}$ where $r^2 = (2p_x-1)^2+(2p_y-1)^2+(2p_z-1)^2$. Note that $f_1,f_2,f_3$ are the same linear functionals as in the previous example ($f_i = 2p_i-1 = \mathrm{tr}(P_i\rho)$), while $f_4$ is genuinely quadratic in the $p_i$, reflecting the nonlinear nature of purity.
+
+A critical observation is, in the single qubit case, measuring the operator set $\{\frac{(\mathbb{I}\otimes X) \mathrm{SWAP}}{2}, \frac{(\mathbb{I}\otimes Y) \mathrm{SWAP}}{2}, \frac{(\mathbb{I}\otimes Z) \mathrm{SWAP}}{2}\}$ simultaneously on $\rho^{\otimes 2}$ is as hard as simultaneously measuring $\{X,Y,Z\}$ on $\rho$.
+
+Extend to $n$-qubit case, this means any 2-replica non-adaptive local strategy to estimate $\{\mathrm{tr}(X\rho^2), \mathrm{tr}(Y\rho^2), \mathrm{tr}(Z\rho^2),\mathrm{tr}(\rho^2)\}$ is as hard as any 2-replica non-adaptive local strategy to estimate $\{\mathrm{tr}(X\rho), \mathrm{tr}(Y\rho), \mathrm{tr}(Z\rho)\}$, which is still exponentially hard.
+
+
+
+
+# f-Compatibility SDP
+
+:::{#thm-f-compatibility-SDP .callout-important icon="false"}
+## Theorem (f-Compatibility SDP)
+Let $\{A_i\}_{i=1}^K$ be observables on $\mathcal{H}$ and $\mathcal{F} = \{f_\alpha\}_{\alpha \in \mathcal{A}}$ be a class of polynomial functionals of degree at most $k$ in the outcome probabilities. Define the $k$-copy linearization $F_\alpha \in \mathcal{L}(\mathcal{H}^{\otimes k})$ via @eq-linearization. Then $\{A_i\}$ is $k$-copy $\mathcal{F}$-compatible if and only if the following SDP is feasible:
+$$
+\boxed{
+\begin{align*}
+\text{Find:} \quad & \{\Pi_j\}_{j \in \mathcal{J}},\; \{h_\alpha(j)\}_{\alpha,j} \\
+\text{Subject to:} \quad & \sum_{j} h_\alpha(j)\,\Pi_j = F_\alpha \quad \forall\,\alpha \in \mathcal{A} \\
+& \sum_{j} \Pi_j = \mathbb{I}^{\otimes k} \\
+& \Pi_j \geq 0 \quad \forall\,j \\
+& |h_\alpha(j)| \leq 1 \quad \forall\,\alpha,j
+\end{align*}
+}
+$$
+The **robustness of f-incompatibility** is $r^* = s^* - 1$, where $s^*$ is the optimum of:
+$$
+\boxed{
+\begin{align*}
+\text{Minimize:} \quad & s \\
+\text{Subject to:} \quad & \sum_{j} h_\alpha(j)\,\Pi_j = F_\alpha \quad \forall\,\alpha \in \mathcal{A} \\
+& \sum_{j} \Pi_j = s\,\mathbb{I}^{\otimes k} \\
+& \Pi_j \geq 0 \quad \forall\,j \\
+& |h_\alpha(j)| \leq 1 \quad \forall\,\alpha,j
+\end{align*}
+}
+$$ {#eq-f-compat-primal}
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (f-Compatibility SDP)
+
+**($\Leftarrow$: Feasibility implies f-compatibility.)** Given a feasible solution $\{\Pi_j, h_\alpha(j)\}$ with $s=1$, for any state $\rho$:
+$$
+\sum_j h_\alpha(j)\,\mathrm{tr}[\Pi_j\,\rho^{\otimes k}] = \mathrm{tr}\!\left[\sum_j h_\alpha(j)\Pi_j\;\rho^{\otimes k}\right] = \mathrm{tr}[F_\alpha\,\rho^{\otimes k}] = f_\alpha(\vec{p}(\rho)),
+$$
+which is precisely the f-compatibility condition of @def-f-compatibility.
+
+**($\Rightarrow$: f-compatibility implies feasibility.)** Suppose $\{A_i\}$ is $k$-copy $\mathcal{F}$-compatible via POVM $\{\Pi_j\}$ and estimators $\{h_\alpha(j)\}$. Then for all $\rho$:
+$$
+\mathrm{tr}\!\left[\left(\sum_j h_\alpha(j)\Pi_j - F_\alpha\right)\rho^{\otimes k}\right] = 0.
+$$
+Since this holds for all $\rho$ (and hence for all $\rho^{\otimes k}$ which span the symmetric subspace, and $F_\alpha$ is symmetric), we obtain the operator identity $\sum_j h_\alpha(j)\Pi_j = F_\alpha$. The POVM conditions $\Pi_j \geq 0$ and $\sum_j \Pi_j = \mathbb{I}^{\otimes k}$ hold by definition.
+
+**Connection to standard compatibility:** When $f_\alpha = p_i$ (linear functionals extracting individual outcome probabilities), we have $F_\alpha = A_i^{(+)}$ and $k=1$. The estimator condition $\sum_j h_i(j)\Pi_j = A_i^{(+)}$ with $|h_i(j)|\leq 1$ is equivalent to the marginal condition of standard joint measurability (see the Pauli Compatibility Problem below).
+
+**Connection to inhomogeneous SDP [@skrzypczyk2019all]:** The robustness version with super-normalization $s > 1$ parallels the inhomogeneous compatibility robustness SDP. The inequality $\geq$ in the standard SDP (requiring marginals to dominate each measurement) is replaced by the exact estimator condition with bounded coefficients $|h_\alpha(j)| \leq 1$.
+:::
+
+### Dual Problem
+
+:::{#lem-f-compatibility-dual .callout-note icon="false"}
+## Lemma (f-Compatibility Dual)
+The dual of the f-compatibility robustness SDP (@eq-f-compat-primal) is:
+$$
+\boxed{
+\begin{align*}
+\text{Maximize:} \quad & \sum_{\alpha \in \mathcal{A}} \mathrm{tr}[\Lambda_\alpha\, F_\alpha] \\
+\text{Subject to:} \quad & \sum_{\alpha \in \mathcal{A}} |\Lambda_\alpha| \leq W \\
+& \mathrm{tr}[W] = 1 \\
+& W \geq 0, \quad \Lambda_\alpha \text{ Hermitian}
+\end{align*}
+}
+$$ {#eq-f-compat-dual}
+where $|\Lambda_\alpha| = \sqrt{\Lambda_\alpha^\dagger \Lambda_\alpha}$ denotes the operator absolute value.
+
+Equivalently, eliminating $W$, the dual reduces to:
+$$
+\text{Maximize:}\; \sum_{\alpha} \mathrm{tr}[\Lambda_\alpha F_\alpha], \quad \text{s.t.}\; \sum_{\alpha} \mathrm{tr}[|\Lambda_\alpha|] \leq 1.
+$$
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Dual Derivation)
+
+We reformulate the primal by introducing $\Gamma_{\alpha,j} := h_\alpha(j)\,\Pi_j$. The bounded estimator condition $|h_\alpha(j)| \leq 1$ becomes $-\Pi_j \leq \Gamma_{\alpha,j} \leq \Pi_j$, i.e., $\Pi_j \pm \Gamma_{\alpha,j} \geq 0$. The primal becomes:
+$$
+\begin{align*}
+\text{Minimize:} \quad & s \\
+\text{s.t.} \quad & \sum_j \Gamma_{\alpha,j} = F_\alpha, \quad \forall\,\alpha \\
+& \sum_j \Pi_j = s\,\mathbb{I}^{\otimes k} \\
+& \Pi_j + \Gamma_{\alpha,j} \geq 0, \quad \Pi_j - \Gamma_{\alpha,j} \geq 0, \quad \forall\,\alpha,j
+\end{align*}
+$$
+
+Introduce Lagrange multipliers: Hermitian $\Lambda_\alpha$ for the estimator constraints, Hermitian $W$ for normalization, and PSD matrices $U^+_{\alpha,j}, U^-_{\alpha,j} \geq 0$ for the bounded-estimator constraints. The Lagrangian is:
+$$
+\begin{align*}
+L &= s + \sum_\alpha \mathrm{tr}\!\left[\Lambda_\alpha\!\left(F_\alpha - \sum_j \Gamma_{\alpha,j}\right)\right] + \mathrm{tr}\!\left[W\!\left(\sum_j \Pi_j - s\,\mathbb{I}\right)\right] \\
+& \quad - \sum_{\alpha,j}\mathrm{tr}[U^+_{\alpha,j}(\Pi_j + \Gamma_{\alpha,j})] - \sum_{\alpha,j}\mathrm{tr}[U^-_{\alpha,j}(\Pi_j - \Gamma_{\alpha,j})]
+\end{align*}
+$$
+
+Collecting terms by primal variables:
+
+- **Coefficient of $s$:** $1 - \mathrm{tr}[W] = 0 \implies \mathrm{tr}[W] = 1$.
+- **Coefficient of $\Pi_j$:** $W - \sum_\alpha(U^+_{\alpha,j} + U^-_{\alpha,j}) = 0$, so $W = \sum_\alpha(U^+_{\alpha,j} + U^-_{\alpha,j})$ for each $j$.
+- **Coefficient of $\Gamma_{\alpha,j}$:** $-\Lambda_\alpha - U^+_{\alpha,j} + U^-_{\alpha,j} = 0$, so $\Lambda_\alpha = U^-_{\alpha,j} - U^+_{\alpha,j}$.
+
+From the last condition: $U^+_{\alpha,j} + U^-_{\alpha,j} \geq |U^-_{\alpha,j} - U^+_{\alpha,j}| = |\Lambda_\alpha|$ (since $U^\pm \geq 0$ implies $U^+ + U^- \geq |U^+ - U^-|$). Summing over $\alpha$:
+$$
+W = \sum_\alpha (U^+_{\alpha,j} + U^-_{\alpha,j}) \geq \sum_\alpha |\Lambda_\alpha|.
+$$
+The tightest bound is achieved when $U^+_{\alpha,j} = (|\Lambda_\alpha| - \Lambda_\alpha)/2$ and $U^-_{\alpha,j} = (|\Lambda_\alpha| + \Lambda_\alpha)/2$ (independent of $j$), giving $W = \sum_\alpha |\Lambda_\alpha|$.
+
+The dual objective is $\sum_\alpha \mathrm{tr}[\Lambda_\alpha F_\alpha]$ with constraints $\sum_\alpha |\Lambda_\alpha| \leq W$, $\mathrm{tr}[W]=1$, $W \geq 0$.
+
+Since we maximize over $W$ subject to $W \geq \sum_\alpha |\Lambda_\alpha|$ and $\mathrm{tr}[W]=1$, the optimal $W^* = \sum_\alpha |\Lambda_\alpha|$ (when $\mathrm{tr}[\sum_\alpha |\Lambda_\alpha|] \leq 1$), yielding the simplified form $\sum_\alpha \mathrm{tr}[|\Lambda_\alpha|] \leq 1$.
+:::
+
+This SDP can be solved analytically for some cases. Here we take an well known example.
+
+We all know that $\{X,Y,Z\}$ measurement is not compatible, even on the 2-replica case, as shown in [this post](/theory/compatibility/multicopy_compatiability.html).
+However, in the 2-replica case, the squared expectation value $|\mathrm{tr}(P_i\rho)|^2$ is f-compatible, as $P_i \otimes P_i$ commute with each other.
+Note that the problem to get $\{|\mathrm{tr}(P_i\rho)|^2\}_i$ rather than implement measurement $\frac{\mathbb{I} \pm P_i}{2}$ means that we count the f-compatibility problem rather than the compatibility problem.
+Using the SDP formulation of f-compatibility in the previous section, we can explain this analytically.
+
+# Generalized f-Compatibility
+
+$$
+\begin{equation}\label{eq:primal-bilinear}
+\boxed{
+\begin{aligned}
+\text{Minimize:} \quad & s \\
+\text{Subject to:} \quad & \sum_{j} h_\alpha(j)\,\Pi_j = F_\alpha, \quad \forall\,\alpha \in \cA \\
+& \sum_j \Pi_j = \,\1^{\ox k},\quad \Pi_j \in \mathcal{C} \\
+& |h_\alpha(j)| \leq s 
+\end{aligned}
+}
+\end{equation}
+$$

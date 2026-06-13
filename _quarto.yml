@@ -25,98 +25,274 @@ website:
         href: https://twitter.com/yourusername
 
   sidebar:
-    - id: lowerbounds
-      title: "Lower Bounds Toolbox"
+    - id: boolean_ana
+      title: "Boolean Analysis"
       contents:
-        - theory/Posts/learning_theo/Lowerbounds/index.qmd
-        - section: "Core Concepts"
+        - theory/Boolean_ana/index.qmd
+        - section: "Pages"
           contents:
-            - theory/Posts/learning_theo/Lowerbounds/lecam_method.qmd
-            - theory/Posts/learning_theo/Lowerbounds/povm_restrictions.qmd
-            - theory/Posts/learning_theo/Lowerbounds/adaptive_strategies.qmd
-        - section: "Hard Instance Constructions"
-          contents:
-            - theory/Posts/learning_theo/Lowerbounds/operator_mixed.qmd
-            - theory/Posts/learning_theo/Lowerbounds/haar_ensembles.qmd
-
-    - id: learning_theory
-      title: "Learning Theory and Quantum Learning"
-      contents:
-        - theory/Posts/learning_theo/index.qmd
-        - section: "Neural Learning Dynamics"
-          contents:
-            - theory/Posts/learning_theo/grokking_phase_transition.qmd
-            - theory/Posts/learning_theo/NTK.qmd
-            - theory/Posts/learning_theo/gd_learn.qmd
-        - section: "Quantum Learning & Estimation"
-          contents:
-            - theory/Posts/learning_theo/Estimation_rev.qmd
-            - theory/Posts/learning_theo/approx_dataload.qmd
-        - section: "Lower Bounds Toolbox"
-          contents:
-            - theory/Posts/learning_theo/Lowerbounds/index.qmd
-            - theory/Posts/learning_theo/Lowerbounds/lecam_method.qmd
-            - theory/Posts/learning_theo/Lowerbounds/povm_restrictions.qmd
-            - theory/Posts/learning_theo/Lowerbounds/adaptive_strategies.qmd
-            - theory/Posts/learning_theo/Lowerbounds/operator_mixed.qmd
-            - theory/Posts/learning_theo/Lowerbounds/haar_ensembles.qmd
-        - section: "Symmetry & Weingarten Tools"
-          contents:
-            - theory/Posts/learning_theo/weak_schur/Weingarten_calculus.qmd
-            - theory/Posts/learning_theo/weak_schur/Clifford-Weingarten.qmd
-            - theory/Posts/learning_theo/weak_schur/symmetric_strategies.qmd
-            - theory/Posts/learning_theo/weak_schur/approx_design.qmd
-        - section: "Research Framework"
-          contents:
-            - theory/Posts/learning_theo/framework.qmd
-
-    - id: iqp
-      title: "IQP Circuit Supremacy"
-      contents:
-        - theory/Posts/supermacy/index.qmd
-        - section: "Classical Simulation Theory"
-          contents:
-            - theory/Posts/supermacy/classical_simulation.qmd
-            - theory/Posts/supermacy/hardness_proofs.qmd
-        - section: "IQP Supremacy"
-          contents:
-            - theory/Posts/supermacy/IQPs/iqp_supremacy.qmd
-            - theory/Posts/supermacy/IQPs/sparse_iqp.qmd
-            - theory/Posts/supermacy/IQPs/reduct_deg3gap.qmd
-        - section: "Experimental Realizations"
-          contents:
-            - theory/Posts/supermacy/IQPs/mbqc_iqp.qmd
-            - theory/Posts/supermacy/IQPs/ft_iqp.qmd
-        - section: "Bell Sampling"
-          contents:
-            - theory/Posts/supermacy/Bellsamp.qmd
-            - theory/Posts/supermacy/IQPs/Bell_on_iqp.qmd
-        - section: "Noise & Simulation"
-          contents:
-            - theory/Posts/supermacy/noise_simulation.qmd
-            - theory/Posts/supermacy/IQPs/Real_noise_ana.qmd
-        - section: "Verification"
-          contents:
-            - theory/Posts/supermacy/verification.qmd
-
+            - theory/Boolean_ana/Influence.qmd
     - id: shadow_tomography
       title: "Classical Shadow Tomography"
       contents:
-        - theory/Posts/Shadow_tomography/index.qmd
-        - section: "Foundations"
+        - theory/Shadow_tomography/index.qmd
+        - section: "Pages"
           contents:
-            - theory/Posts/Shadow_tomography/intro.qmd
-        - section: "Multi-Copy Strategies"
+            - theory/Shadow_tomography/3desgin_multi_local_shadow.qmd
+            - theory/Shadow_tomography/3d2c_appli1.qmd
+            - theory/Shadow_tomography/3d2c_appli2.qmd
+            - theory/Shadow_tomography/intro.qmd
+            - theory/Shadow_tomography/Bell_shadows.qmd
+            - theory/Shadow_tomography/multicopy.qmd
+            - theory/Shadow_tomography/lowerbound.qmd
+            - theory/Shadow_tomography/nonlocal_multicopy.qmd
+    - id: noisy_complexity
+      title: "Classical Simulation of Noisy Circuits"
+      contents:
+        - theory/Noisy_complexity/index.qmd
+        - section: "Pages"
           contents:
-            - theory/Posts/Shadow_tomography/3desgin_multi_local_shadow.qmd
-            - theory/Posts/Shadow_tomography/3d2c_appli1.qmd
-            - theory/Posts/Shadow_tomography/3d2c_appli2.qmd
-            - theory/Posts/Shadow_tomography/multicopy.qmd
-            - theory/Posts/Shadow_tomography/nonlocal_multicopy.qmd
-        - section: "Lower Bounds"
+            - theory/Noisy_complexity/gadget_simulation.qmd
+            - theory/Noisy_complexity/non_unital.qmd
+            - theory/Noisy_complexity/open_problems.qmd
+            - theory/Noisy_complexity/operator_resource.qmd
+            - theory/Noisy_complexity/pauli_path.qmd
+            - theory/Noisy_complexity/percolation.qmd
+    - id: drugs_design
+      title: "Drug Design"
+      contents:
+        - theory/drugs_design/index.qmd
+    - id: factoring
+      title: "Factoring and Hidden Subgroup Problems"
+      contents:
+        - theory/Factoring/index.qmd
+        - section: "Pages"
           contents:
-            - theory/Posts/Shadow_tomography/lowerbound.qmd
-
+            - theory/Factoring/ApproxShor.qmd
+            - theory/Factoring/Factorthm.qmd
+            - theory/Factoring/learning_barriers.qmd
+            - theory/Factoring/non-abelian.qmd
+            - theory/Factoring/Preliminary.qmd
+            - theory/Factoring/shor.qmd
+            - theory/Factoring/grahiso.qmd
+    - id: fermi_hubbard
+      title: "Fermi-Hubbard Model"
+      contents:
+        - theory/Fermi-Hubbard/index.qmd
+        - section: "Pages"
+          contents:
+            - theory/Fermi-Hubbard/intro.qmd
+    - id: ham_learning
+      title: "Hamiltonian Learning"
+      contents:
+        - theory/Ham_learning/index.qmd
+    - id: iqp
+      title: "IQP Circuit Supremacy"
+      contents:
+        - theory/supermacy/index.qmd
+        - section: "Pages"
+          contents:
+            - theory/supermacy/Bellsamp.qmd
+            - theory/supermacy/classical_simulation.qmd
+            - theory/supermacy/hardness_proofs.qmd
+            - theory/supermacy/Peak.qmd
+            - theory/supermacy/TFIM_super.qmd
+            - theory/supermacy/verification.qmd
+        - section: "Iqps"
+          contents:
+            - theory/supermacy/IQPs/Bell_on_iqp.qmd
+            - theory/supermacy/IQPs/ft_iqp.qmd
+            - theory/supermacy/IQPs/iqp_supremacy.qmd
+            - theory/supermacy/IQPs/mbqc_iqp.qmd
+            - theory/supermacy/IQPs/Real_noise_ana.qmd
+            - theory/supermacy/IQPs/reduct_deg3gap.qmd
+            - theory/supermacy/IQPs/sparse_iqp.qmd
+            - theory/supermacy/IQPs/simulations/index.qmd
+            - theory/supermacy/IQPs/simulations/noisy_iqp.qmd
+    - id: lgt
+      title: "Lattice Gauge Theory"
+      contents:
+        - theory/LGT/index.qmd
+        - section: "Pages"
+          contents:
+            - theory/LGT/QuantumLink.qmd
+            - theory/LGT/Intro.qmd
+            - theory/LGT/MCMC.qmd
+            - theory/LGT/digital_based.qmd
+            - theory/LGT/U1_sim.qmd
+            - theory/LGT/Z2_floquet.qmd
+    - id: learning_theory
+      title: "Learning Theory and Quantum Learning"
+      contents:
+        - theory/learning_theo/index.qmd
+        - section: "Pages"
+          contents:
+            - theory/learning_theo/approx_dataload.qmd
+            - theory/learning_theo/framework.qmd
+            - theory/learning_theo/gd_learn.qmd
+            - theory/learning_theo/grokking_phase_transition.qmd
+            - theory/learning_theo/Estimation_rev.qmd
+            - theory/learning_theo/NTK.qmd
+        - section: "Lowerbounds"
+          contents:
+            - theory/learning_theo/Lowerbounds/index.qmd
+            - theory/learning_theo/Lowerbounds/haar_ensembles.qmd
+            - theory/learning_theo/Lowerbounds/lecam_method.qmd
+            - theory/learning_theo/Lowerbounds/operator_mixed.qmd
+            - theory/learning_theo/Lowerbounds/povm_restrictions.qmd
+            - theory/learning_theo/Lowerbounds/adaptive_strategies.qmd
+        - section: "Weak Schur"
+          contents:
+            - theory/learning_theo/weak_schur/approx_design.qmd
+            - theory/learning_theo/weak_schur/Clifford-Weingarten.qmd
+            - theory/learning_theo/weak_schur/symmetric_strategies.qmd
+            - theory/learning_theo/weak_schur/Weingarten_calculus.qmd
+    - id: magic
+      title: "Magic and Stabilizer Resources"
+      contents:
+        - theory/Magic/index.qmd
+        - section: "Pages"
+          contents:
+            - theory/Magic/Bell_magic.qmd
+            - theory/Magic/exp_analy.qmd
+            - theory/Magic/measures.qmd
+    - id: nonlocal_games_survey
+      title: "Nonlocal Games Survey"
+      contents:
+        - theory/Nonlocal_Games_Survey/index.qmd
+        - section: "Pages"
+          contents:
+            - theory/Nonlocal_Games_Survey/Basics.qmd
+            - theory/Nonlocal_Games_Survey/phase_and_nonlocal_game.qmd
+            - theory/Nonlocal_Games_Survey/Stabilizer-non-local_game.qmd
+    - id: osf
+      title: "Operator Spreading and Magic"
+      contents:
+        - theory/OSF/index.qmd
+        - section: "Pages"
+          contents:
+            - theory/OSF/Feynman_based.qmd
+            - theory/OSF/operator_magic.qmd
+            - theory/OSF/nonPauli_stab.qmd
+            - theory/OSF/OTOC.qmd
+    - id: perturbation
+      title: "Perturbation and Floquet Theory"
+      contents:
+        - theory/Perturbation/index.qmd
+        - section: "Pages"
+          contents:
+            - theory/Perturbation/Effective_ham.qmd
+            - theory/Perturbation/ETH.qmd
+            - theory/Perturbation/examples.qmd
+            - theory/Perturbation/Floquet.qmd
+            - theory/Perturbation/geo_floquet.qmd
+            - theory/Perturbation/KZM.qmd
+            - theory/Perturbation/Adiabatic_comp.qmd
+    - id: compatibility
+      title: "Quantum Compatibility"
+      contents:
+        - theory/compatibility/index.qmd
+        - section: "Pages"
+          contents:
+            - theory/compatibility/Algebraic_estimation_framework.qmd
+            - theory/compatibility/multi-copy_localshadow.qmd
+            - theory/compatibility/compatiablity_and_others.qmd
+            - theory/compatibility/multicopy_compatiability.qmd
+            - theory/compatibility/f-compatiability.qmd
+            - theory/compatibility/local-optimal_shadow.qmd
+            - theory/compatibility/nonparametric.qmd
+            - theory/compatibility/projective_sim.qmd
+            - theory/compatibility/compatiablity.qmd
+    - id: quantum_complexity
+      title: "Quantum Complexity"
+      contents:
+        - theory/quantum_complexity/index.qmd
+        - section: "Pages"
+          contents:
+            - theory/quantum_complexity/counting_complexity.qmd
+            - theory/quantum_complexity/Ham_complexity.qmd
+            - theory/quantum_complexity/interactive_proof.qmd
+    - id: qec
+      title: "Quantum Error Correction"
+      contents:
+        - theory/QEC/index.qmd
+        - section: "Pages"
+          contents:
+            - theory/QEC/TNdecoder.qmd
+            - theory/QEC/BP_OSD_results.qmd
+            - theory/QEC/classical.qmd
+            - theory/QEC/PMdecoder.qmd
+            - theory/QEC/OSD_decoder.qmd
+            - theory/QEC/tropical_TN.qmd
+    - id: fingerprint
+      title: "Quantum Fingerprinting"
+      contents:
+        - theory/Fingerprint/index.qmd
+        - section: "Pages"
+          contents:
+            - theory/Fingerprint/DNA.qmd
+            - theory/Fingerprint/fingerprint.qmd
+            - theory/Fingerprint/Pattern.qmd
+    - id: spin_liquid
+      title: "Spin Liquids"
+      contents:
+        - theory/Spin_liquid/index.qmd
+        - section: "Pages"
+          contents:
+            - theory/Spin_liquid/kagome-lattice.qmd
+            - theory/Spin_liquid/Square-lattice.qmd
+    - id: stab_simulation
+      title: "Stabilizer Simulation"
+      contents:
+        - theory/stab_simulation/index.qmd
+        - section: "Pages"
+          contents:
+            - theory/stab_simulation/graph_combine.qmd
+            - theory/stab_simulation/clifford_T.qmd
+            - theory/stab_simulation/CH_affine.qmd
+            - theory/stab_simulation/graph_sim.qmd
+    - id: tn_sim
+      title: "Tensor Network Simulation"
+      contents:
+        - theory/TN_sim/index.qmd
+        - section: "Pages"
+          contents:
+            - theory/TN_sim/MPS_AKLT.qmd
+            - theory/TN_sim/MPS_DMRG.qmd
+            - theory/TN_sim/MPS.qmd
+            - theory/TN_sim/MPS_compression.qmd
+            - theory/TN_sim/TDVP.qmd
+    - id: topo_matter
+      title: "Topological Matter"
+      contents:
+        - theory/topo_matter/index.qmd
+        - section: "Pages"
+          contents:
+            - theory/topo_matter/2dHH.qmd
+            - theory/topo_matter/chern.qmd
+            - theory/topo_matter/honeycomb.qmd
+    - id: virtual_distillation
+      title: "Virtual Distillation"
+      contents:
+        - theory/Virtual_Distillation/index.qmd
+        - section: "Pages"
+          contents:
+            - theory/Virtual_Distillation/design.qmd
+            - theory/Virtual_Distillation/app_PCA.qmd
+            - theory/Virtual_Distillation/derandom_shadow.qmd
+            - theory/Virtual_Distillation/negativity.qmd
+            - theory/Virtual_Distillation/majorityvote.qmd
+    - id: lowerbounds
+      title: "Lower Bounds Toolbox"
+      contents:
+        - theory/learning_theo/Lowerbounds/index.qmd
+        - section: "Pages"
+          contents:
+            - theory/learning_theo/Lowerbounds/haar_ensembles.qmd
+            - theory/learning_theo/Lowerbounds/lecam_method.qmd
+            - theory/learning_theo/Lowerbounds/operator_mixed.qmd
+            - theory/learning_theo/Lowerbounds/povm_restrictions.qmd
+            - theory/learning_theo/Lowerbounds/adaptive_strategies.qmd
     - id: simulation_model
       title: "Analog Rydberg Quantum Simulation"
       contents:
@@ -151,7 +327,6 @@ website:
         - section: "Quantum Chemistry"
           contents:
             - Experiments/posts/simulation_model/puccd.qmd
-
     - id: rydberg_qc
       title: "Rydberg Atoms for Fault-Tolerant QC"
       contents:
@@ -172,42 +347,6 @@ website:
         - section: "Noise & Errors"
           contents:
             - Experiments/posts/rydberg_qc/noise_errors.qmd
-
-    - id: compatibility
-      title: "Quantum Compatibility"
-      contents:
-        - theory/Posts/compatibility/index.qmd
-        - section: "Foundations"
-          contents:
-            - theory/Posts/compatibility/compatiablity.qmd
-            - theory/Posts/compatibility/compatiablity_and_others.qmd
-            - theory/Posts/compatibility/nonparametric.qmd
-        - section: "Multi-Copy Compatibility"
-          contents:
-            - theory/Posts/compatibility/multicopy_compatiability.qmd
-            - theory/Posts/compatibility/f-compatiability.qmd
-        - section: "Estimation & Applications"
-          contents:
-            - theory/Posts/compatibility/Algebraic_estimation_framework.qmd
-            - theory/Posts/compatibility/multi-copy_localshadow.qmd
-
-    - id: noisy_complexity
-      title: "Classical Simulation of Noisy Circuits"
-      contents:
-        - theory/Posts/Noisy_complexity/index.qmd
-        - section: "Simulation Methods"
-          contents:
-            - theory/Posts/Noisy_complexity/pauli_path.qmd
-            - theory/Posts/Noisy_complexity/gadget_simulation.qmd
-            - theory/Posts/Noisy_complexity/percolation.qmd
-        - section: "Noise Models & Resources"
-          contents:
-            - theory/Posts/Noisy_complexity/non_unital.qmd
-            - theory/Posts/Noisy_complexity/operator_resource.qmd
-        - section: "Outlook"
-          contents:
-            - theory/Posts/Noisy_complexity/open_problems.qmd
-
 format:
   live-html:
     html-math-method: katex

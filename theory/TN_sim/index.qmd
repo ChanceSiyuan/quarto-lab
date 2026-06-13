@@ -1,0 +1,88 @@
+---
+categories:
+- Readings
+date: '2026-06-07'
+description: 'Reading roadmap for tensor-network simulation, organized by the three simulation backends used in the repo: MPS (TeNPy/TDVP), finite PEPS (YASTN), and GPU tensor networks (cuTensorNet).'
+lang: en
+title: Tensor Network Simulation
+bibliography: refs.bib
+---
+
+[<- Back to Theory](../index.qmd)
+
+# Summary and Questions
+
+这篇笔记整理张量网络模拟的阅读路线，并把每篇文献对应到仓库实际使用的三个后端：
+
+- `backend="mps"`：TeNPy 的 MPS + TDVP 时间演化
+- `backend="peps"`：YASTN 的有限 PEPS（finite PEPS）
+- `backend="gputn"`：GPU 上的张量网络 gate / contraction 路径（cuTensorNet）
+
+## 总览（先读）
+
+:::{.callout-note icon="false"}
+## 入门综述
+**Orús**, *A Practical Introduction to Tensor Networks* [@orus2014practical]
+
+最适合作为第一篇。同时讲 MPS、PEPS 以及数值算法直觉，明确覆盖 MPS/PEPS 和 1D/2D lattice 的数值方法。
+:::
+
+## `backend="mps"`：TeNPy MPS-TDVP
+
+:::{.callout-important collapse="true"}
+## MPS 基础与时间演化
+**Schollwöck**, *The density-matrix renormalization group in the age of matrix product states* [@schollwock2011dmrg]
+
+读 MPS 必读。重点看 MPS canonical form、Schmidt/SVD、bond dimension，以及 DMRG 与 MPS 的关系。
+
+**Haegeman et al.**, *Time-dependent variational principle for quantum lattices* [@haegeman2011tdvp]
+
+TDVP 原始核心文献。重点理解：把薛定谔演化投影到 MPS manifold 的 tangent space。它不依赖 Trotter 分解，因此没有 Trotter error，但有 variational/projection error。
+
+**Paeckel et al.**, *Time-evolution methods for matrix-product states* [@paeckel2019timeevolution]
+
+MPS 时间演化综述，对比 TEBD、Krylov、TDVP 等方法。读完会理解为什么 TDVP 适合作为 mps reference。
+:::
+
+仓库的 mps 后端实际调用 **TeNPy** [@tenpy_docs]，官方文档提供 DMRG、TEBD 等 toy examples 与 user guides，值得配合阅读。
+
+### MPS basic notes from the old report
+
+- [MPS Basics](MPS.qmd)：Schmidt decomposition, canonical MPS forms, MPOs, contraction order, transfer maps, and the PEPS motivation.
+- [MPS Compression Algorithms](MPS_compression.qmd)：SVD cutoff, Schmidt truncation, MPS bond-dimension compression, iterative one-site compression, and truncation error.
+- [DMRG and Variational MPS Algorithms](MPS_DMRG.qmd)：Bose-Hubbard, Heisenberg, and XY MPO construction, iDMRG flow, DMRG truncation, and the original simulation figures.
+- [AKLT Model as an Explicit MPS](MPS_AKLT.qmd)：AKLT projector Hamiltonian, valence-bond-solid construction, and explicit bond-dimension-2 MPS tensors.
+
+## `backend="peps"`：YASTN finite PEPS
+
+:::{.callout-important collapse="true"}
+## PEPS 与二维 truncation 环境
+**Verstraete & Cirac**, *Renormalization algorithms for quantum-many body systems in two and higher dimensions* [@verstraete2004renormalization]
+
+PEPS 开山文献。重点理解：PEPS 是 MPS 到 2D/高维的自然推广，直接匹配二维 lattice 几何。
+
+**Dziarmaga**, *Time evolution of an infinite PEPS: neighborhood tensor update* [@dziarmaga2021ntu]
+
+重点读 NTU。它与 YASTN `EnvNTU` 以及当前 peps 默认 update environment 的思想最相关：介于 simple update 和 full update 之间，用小邻域环境近似 truncation error。
+
+**Orús & Vidal**, *Simulation of two-dimensional quantum systems on an infinite lattice revisited: corner transfer matrix* [@orus2009ctmrg]
+
+重点读 CTMRG environment。之后做 PEPS convergence 时，理解 `measurement_environment="ctm"` 为什么比 BP 更贵、更全局，主要看这个方向。
+:::
+
+最贴近当前代码实现的是 **YASTN fPEPS** 文档 [@yastn_fpeps_docs]：PEPS tensor 含 physical leg 和 virtual bonds，时间演化通过 Trotterized gates 实现，并用不同 environment 控制 truncation metric。当前代码默认主路径基本就是这个框架。
+
+## `backend="gputn"`：GPU 张量网络 gate/contraction 路径
+
+:::{.callout-important collapse="true"}
+## GPU 张量网络与 contraction 优化
+**Vidal**, *Efficient simulation of one-dimensional quantum many-body systems* [@vidal2004efficient]
+
+TEBD/MPS gate evolution 的核心源头。gputn 的物理层不是全新的变分 ansatz，而是把局域 gate、SVD/truncation、tensor contraction 放到 GPU / cuTensorNet 路径上。
+
+**Gray & Kourtis**, *Hyper-optimized tensor network contraction* [@gray2021hyperoptimized]
+
+理解为什么 contraction order / treewidth / path optimization 决定 GPU TN 的速度和内存。它不是 Rydberg 专用，但对 gputn 的性能瓶颈最关键。
+:::
+
+最贴近 gputn 工程原理的是 **cuTensorNet** 文档 [@cutensornet_docs]：提供 tensor network creation、contraction path search、slicing、plan generation、SVD/QR decomposition、gate application、MPS compression 等 API。

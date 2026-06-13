@@ -1,0 +1,145 @@
+---
+categories:
+- Readings
+date: '2026-06-06'
+lang: en
+title: Geometric phase
+bibliography: refs.bib
+---
+
+# Summary and Questions
+
+This post covers the geometric phase.
+
+# Basic concepts
+
+Since only analysis the eigenspace projector operator $P(s)$, the theorem above ignore the accumulated phase during the adiabatic evolution.
+Acturally, the accumulated phase is typically separated into two parts: the dynamic phase and the geometric phase.
+
+:::{#thm-geometric-phase .callout-important icon="false"}
+## (Geometric phase)
+Take the Hamiltonian $H(s)$ with $s = s(t)$ is time-dependent and instantaneous eigenbasis $(E_n(s),\ket{\psi_n(s)})$.
+Then begin from $t = 0$ with the initial state $\ket{\psi(0)} = \ket{\psi_n(s(0))}$, the evolution approximately follows $\ket{\psi(t)} = e^{i\gamma_n(t)} e^{i\phi_n(t)} \ket{\psi_n(s(t))}$ with:
+$$
+\begin{align*}
+\phi_n(t) &= -\int_0^t E_n(s(t'))\,dt',\\
+ \gamma_n(t) &= - i\int_{s(0)}^{s(t)}ds \bra{\psi_n(s)} \left(\frac{d}{ds}\right) \ket{\psi_n(s)} 
+\end{align*}
+$$
+:::
+
+The dynamic phase $\phi_n(t)$ can be calculated by solving the instantaneous energy $E_n(s(t))$ and integrating the energy over time.
+A critical property of $\gamma_n(t)$ is that it is independent time and fully geometric. 
+
+In general, consider a parameter space $X$ with $s=(s_1,\dots,s_n)\in X$,
+and normalized eigenbasis $\ket{\psi_n(s)}$ at each point $s$.
+We define Berry connection in the space as:
+$$
+\hat{A}_n(s) :=
+\sum_\mu {A}_{n,\mu}(s)  \,ds^\mu, \quad {A}_{n,\mu}(s) = \langle \psi_n(s)|(-i\partial_\mu) |\psi_n(s)\rangle
+$$
+Here $\hat{A}_n(s)$ is a map $T_{s} X \to \mathbb{R}$, i.e., a 1-form on $X$.
+If we further suppose $s(0) = s(T)$, which gives a closed path $C = \{s(t)\}_{t\in [0,T]}$ with tengent $\dot{s}(t)$ in $X$,
+ then the geometric phase is given by the integral of the Berry connection along the path:
+$$
+\begin{align*}
+\gamma_n(t)  &= \int_0^T \sum_\mu \frac{ds_\mu}{dt} {A}_{n,\mu}(s(t)) \,dt = \int_0^T \hat{A}_n \left[\sum_\mu \frac{ds_\mu}{dt} \frac{\partial}{\partial s^\mu}\right]\,dt  \\
+&= \oint_C \hat{A}_n =\int_M d\hat{A}_n = \int_M \frac{1}{2} \left(\frac{\partial {A}_{n,\mu}}{\partial s^\nu} - \frac{\partial {A}_{n,\nu}}{\partial s^\mu}\right) ds^{\mu} \wedge ds^{\nu}。
+\end{align*}
+$$
+Here $F_{\mu,\nu}:= {\partial_{\mu} {A}_{n,\nu}} - {\partial_{\nu} {A}_{n,\mu}}$ is the curvature tensor on the ground state fiber bundle.
+
+#  TFIM with geometric phase
+
+This protocol is useful in constucting noise robust CPHASE gate [@Saffman_2020].
+We consider the geometric phase of the adiabatic evolution of
+
+$$
+\begin{align*}
+H(\phi,\Omega) = &- \sum_{\langle j,k\rangle}J_{jk}\ket{r}\bra{r}_j \ket{r}\bra{r}_k - \Omega\sum_j\bigl(e^{-i\phi} \ket{1}\bra{r}_j+e^{i\phi} \ket{r}\bra{1}_j\bigr) \\
+&\qquad +\omega_\text{r}\sum_i \ket{r}\bra{r}_i + \sum_j \omega_j\ket{1}\bra{1}_j.
+\end{align*}
+$$
+If we define $Z_j = \ket{1}\bra{1}_j - \ket{r}\bra{r}_j$, $X_j = \ket{1}\bra{r}_j + \ket{r}\bra{1}_j$, detailed calculation shows that
+$$
+\begin{align*}
+H(\phi,\Omega) &=- \sum_{\langle j,k\rangle}J_{jk} \frac{\mathbb{I}_j - Z_j}{2} \frac{\mathbb{I}_k - Z_k}{2} - \Omega\sum_j\bigl(e^{-i\phi} \ket{1}\bra{r}_j+e^{i\phi} \ket{r}\bra{1}_j\bigr)\\
+&\qquad +\omega_\text{r}\sum_i \frac{\mathbb{I} - Z_i}{2} + \sum_j \omega_j \frac{\mathbb{I} + Z_j}{2}\\
+&= - \sum_{\langle j,k\rangle}\frac{J_{jk}}{4} Z_j Z_k - \Omega\sum_j\bigl(e^{-i\phi} \ket{1}\bra{r}_j+e^{i\phi} \ket{r}\bra{1}_j\bigr)  \\
+&\qquad + \left(n\omega_\text{r}+\sum_j \omega_j - \sum_{e} \frac{J_e}{2}\right) \frac{\mathbb{I}}{2} + \sum_j \left(\omega_j-\omega_r + \sum_{e \ni j} \frac{J_e}{2}\right) \frac{ Z_j}{2}.\\
+&:=-J\sum_{\langle j,k\rangle}Z_jZ_k +\sum_j h_jZ_j-\Omega\sum_j\left(e^{-i\phi} \ket{1}\bra{r}_j+e^{i\phi} \ket{r}\bra{1}_j\right) - C\mathbb{I}
+\end{align*}
+$$
+<!-- Take $U(t)=\bigotimes_j \exp\left[i\alpha_j(t) \frac{\mathbb{I} + Z_j}{2}\right], \alpha_j(t)=-2\int_0^t h_j(t')\,dt'$,
+and use the identity:
+$$
+\begin{align*}
+&-iU^\dagger\dot U=\sum_j \frac{\dot\alpha_j}{2}(\mathbb{I}+Z_j)
+=-\sum_j h_j(1+Z_j),\\
+& U^\dagger \ket{1}\!\bra{r}_j U = e^{-i\alpha_j}\ket{1}\!\bra{r}_j, \quad U^\dagger \ket{r}\!\bra{1}_j U = e^{i\alpha_j}\ket{r}\!\bra{1}_j.
+\end{align*}
+$$ -->
+
+<!-- Under transformation, we get $\Phi_j = \alpha_j + \phi$ and $V(\Phi)=e^{i\sum_j \Phi_j \ket{r}\!\bra{r}_j}$ such that
+
+$$
+\begin{align*}
+H_{\rm rot}(\Omega,\Phi) &= U^\dagger H U-iU^\dagger\dot U.\\
+&=-J\sum_{\langle i,j\rangle}Z_iZ_j-\Omega\sum_j\left(e^{-i\Phi_j}|1\rangle\langle r|_j+e^{i\Phi_j}|r\rangle\langle1|_j\right)+C(t) \\
+&= V(\Phi)\left[-J\sum_{\langle i,j\rangle}Z_iZ_j-\Omega\sum_j
+\left(|1\rangle\langle r|_j+|r\rangle\langle1|_j\right)\right] V^\dagger(\Phi) + C(t),
+\end{align*}
+$$ -->
+We set up the unitary $V(\Phi)=e^{i\sum_j \phi \ket{r}\!\bra{r}_j}$ such that
+
+$$
+\begin{align*}
+H(\phi,\Omega) &= V(\phi)H(0,\Omega)V^\dagger(\phi)-C\mathbb I.
+\end{align*}
+$$
+
+This indicates that the geometric phase is fully determined by the ground state $\ket{g(\phi,\Omega)} = V(\phi)\ket{g(\Omega)}$, where $\ket{g(\Omega)}$ is the ground state of
+$$
+H(\Omega):= H(0,\Omega) = -J\sum_{\langle j,k\rangle}Z_jZ_k + h_j Z_j -\Omega\sum_jX_j.
+$$
+The Berry connection of $\ket{g(\phi,\Omega)}$ is given by:
+$$
+\begin{align*}
+A_{\phi}&=\langle g(\Omega)|V^\dagger(\phi)(-i\partial_{\phi})V(\phi)|g(\Omega)\rangle  \\
+&=  \langle g(\Omega)|\sum_j\ket{r}\!\bra{r}_j|g(\Omega)\rangle:=\langle N_r\rangle_{\Omega},\\
+A_\Omega&=\langle g(\Omega)|(-i\partial_\Omega)| g(\Omega)\rangle=0,
+\end{align*}
+$$
+Here in the second line, we use the fact that $H(0,\Omega)$ is a real Hamiltonian with non-degenerate ground state can be written into state vector with only real coefficients, which indicates that $\langle g(\Omega)|(-i\partial_\Omega)| g(\Omega)\rangle$ must be zero to keep it real.
+
+Thus we conclude: $F_{\Omega,\phi} = {\partial \langle N_r\rangle_{\Omega}}/{\partial {\Omega}}$.
+For the demanding path $C:\ t\mapsto(\Omega(t),\phi(t))$, the berry phase is given by:
+$$
+\begin{align*}
+\gamma[C]&=\oint_C A_\phi(\Omega)\,d\phi=
+\oint_C \langle N_r\rangle_\Omega\,d\phi=\iint_{\Sigma(C)}\partial_\Omega\langle N_r\rangle_\Omega\,
+d\Omega\,d\phi.
+\end{align*}
+$$
+
+#### Example: single-qubit geometric phase
+For the single qubit case, the Hamiltonian writes $H = -hZ - \Omega X$,
+we noted that:
+$$
+\ket{g(\Omega)} = \cos(\theta/2)\ket{1} + \sin(\theta/2)\ket{r}, \quad \tan\theta = \Omega/h.
+$$
+Then $\langle N_r \rangle_{\Omega} = \sin^2(\theta/2) = (1 - \cos \theta)/2$, ${\partial_{\Omega}\langle N_r \rangle_{\Omega}} =  {\cos^2 \theta \sin \theta}/{2h}$.
+Then the geometric phase is given by:
+$$
+\gamma[C] = \iint_{\Sigma(C)} \frac{\sin \theta}{2} \frac{\cos^2 \theta}{h}  d\Omega d\phi = \iint_{\Sigma(C)} \frac{\sin \theta}{2}  d\theta d\phi $$
+
+a loop starting from $(h,\Omega) = (0,0)$ is given by a circle on $\theta = 0$
+
+#### Example: two-qubit geometric phase
+
+#### n-qubit case
+
+Use the fact that $H(\Omega)$ satisfied $\partial_{h_j} H(\Omega) = Z_j = (1/2)(\mathbb{I} - Z_j)$, we conclude that $\partial_{h_j} E_g(\Omega)=\langle Z_j\rangle_\Omega$, which then gives:
+$$
+{F_{\Omega\phi}=-\frac12\partial_\Omega\sum_j\partial_{h_j}E_g(\Omega).}
+$$

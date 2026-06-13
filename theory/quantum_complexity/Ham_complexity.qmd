@@ -1,0 +1,27 @@
+---
+category: Readings
+date: 2026-06-02
+description: About the complexity of the Hamiltonian problem.
+lang: en
+title: Hamiltonian Complexity
+---
+
+# Question and summary
+
+This poster discuss the complexity of finding the ground state of a $k$-local Hamiltonian.
+
+Given $L \in \mathbf{QMA}$,
+we conclude that there exists a quantum circuit $U_1,\cdots,U_T$ and a random variable $V(\ket{x},\ket{\xi}) \in\{0,1\}$ such that
+$$
+\begin{align*}
+&x\in L
+\Longleftrightarrow
+\exists |\xi\rangle \text{ such that } \Pr[V(|x\rangle,|\xi\rangle)=1]\ge 1-\varepsilon,\\
+&\Pr[V(\ket{x},\ket{\xi})=1]=\left\|
+\bigl(|1\rangle\langle 1|_1\otimes I\bigr)U_T\cdots U_1\bigl(|x\rangle \otimes |\xi\rangle )
+\right\|^2,
+\end{align*}
+$$
+where $|x| = n$ and $|\xi| = \mathrm{poly}(n)$ is the qubit number of the certificate.
+
+Use these existed $U_1,\cdots,U_T$, we now find $H(x)$ such that $x\in L \Rightarrow \lambda_{\min}(H(x))\le a$ and $x\notin L \Rightarrow \lambda_{\min}(H(x))\ge b$ for some $a,b \in \mathbb{R}$.

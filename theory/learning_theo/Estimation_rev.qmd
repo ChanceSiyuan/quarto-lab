@@ -1,0 +1,252 @@
+---
+categories:
+- Surveys
+date: '2026-01-20'
+lang: en
+title: Local Multi-copy Estimation of Quantum Observables
+subtitle: A Review of Measurement Strategies and Sample Complexity
+bibliography: refs.bib
+abstract: |
+  Estimating expectation values of quantum observables is a fundamental task in quantum computing and quantum many-body physics. This review examines local measurement strategies for estimating both linear properties $\mathrm{tr}(O\rho)$ and non-linear properties $\mathrm{tr}(O\rho^2)$ of quantum states. The analysis is organized by operator structure: product observables, low-rank operators, and sums of Pauli operators. For each class, the discussion covers single-copy and multi-copy measurement protocols, derandomization techniques, and known complexity lower bounds. The review highlights the fundamental trade-offs between circuit depth and sample complexity, providing a unified perspective on classical shadow methods and their variants.
+---
+
+# Introduction
+
+## Problem Statement
+
+Consider a quantum system described by an $n$-qubit density matrix $\rho$. Two fundamental estimation problems arise in quantum information processing:
+
+- **Linear Estimation Problem.** Given an arbitrary operator $O$, determine the optimal sample complexity for estimating $\mathrm{tr}(O\rho)$ under local measurement constraints.
+- **Non-linear Estimation Problem.** Given an arbitrary operator $O$, determine the optimal sample complexity for estimating $\mathrm{tr}(O\rho^2)$ under local measurement constraints.
+
+A central question is whether multi-copy measurement strategies can provide advantages over single-copy protocols when restricted to local operations.
+
+## Motivation and Applications
+
+These estimation problems are motivated by several important applications:
+
+1. **Variational Quantum Algorithms.** Variational quantum eigensolvers (VQE) and related algorithms require efficient estimation of Hamiltonian expectation values @huang2020predicting.
+
+2. **Quantum Error Mitigation.** Virtual distillation and related error mitigation schemes rely on estimating non-linear properties such as $\mathrm{tr}(O\rho^2)$ @huggins2021virtual.
+
+3. **Quantum Fisher Information.** Estimation of the quantum Fisher information, which characterizes the sensitivity of quantum states to parameter changes, can be decomposed into Pauli operator estimations @rath2021quantum.
+
+During this survey, two measurement paradigms are distinguished:
+
+- **Local measurements.** The constraint of *local* measurements restricts operations to act on individual qubits (or small subsystems) without long-range entanglement within a single copy.
+- **Multi-copy ($k$-replica) measurements.** Measurements are performed jointly on $k$ copies of $\rho$, potentially with entangling operations between copies. This framework includes Bell measurements ($k=2$) and more general collective protocols.
+
+
+## Classical Shadows Framework
+
+The classical shadow formalism @huang2020predicting provides a unified approach to observable estimation. Given an ensemble of random unitaries $\{U_i\}$ and measurement outcomes $\{b_i\}$, a classical shadow is constructed as:
+$$
+\hat{\rho} = \mathbb{E}_{U,b}[\mathcal{M}^{-1}(U^\dagger |b\rangle\langle b| U)]
+$$
+where $\mathcal{M}$ is the measurement channel. For local Clifford measurements, this approach achieves sample complexity $O(3^k)$ for weight-$k$ Pauli observables @elben2023randomized.
+
+Robust variants of classical shadows @chen2021robust address the challenge of noise in practical implementations.
+
+# Linear Observable Estimation
+
+## Product Observables
+
+**Definition.** A product observable takes the form $O = A_1 \otimes \cdots \otimes A_n$ where each $A_i$ acts on a single qubit.
+
+### Diagonalizable Case
+
+When each local operator satisfies $[A_i, A_i^\dagger] = 0$ (i.e., $A_i$ is normal), the estimation problem is straightforward. One measures in the eigenbasis of each $A_i$ at every position. For instance, if $A_i \in \{I, X, Y, Z\}$, this corresponds to direct Pauli measurement of $\mathrm{tr}(P\rho)$.
+
+**Sample Complexity.** The single-copy local strategy is optimal, requiring $O(1/\epsilon^2)$ samples for $\epsilon$-precision estimation.
+
+### Non-diagonalizable Case
+
+When $[A_i, A_i^\dagger] \neq 0$ for some positions, the operators cannot be simultaneously diagonalized. Applications include:
+
+- Estimation of creation/annihilation operators $a^\dagger, a$ in bosonic sampling
+- Non-Hermitian Hamiltonian dynamics $H + i\delta$
+
+**Approaches:**
+
+1. *Cartesian decomposition:* Decompose $A = (A + A^\dagger)/2 + i(A - A^\dagger)/(2i)$ into Hermitian parts. However, non-commutativity leads to exponential growth in measurement bases.
+
+2. *Classical shadow estimation:* Applicable for local and low-rank cases with polynomial overhead @huang2020predicting.
+
+3. *Two-replica strategy:* Bell measurements can estimate $\{|\mathrm{tr}(P\rho)|\}_{P}$ with constant additive error using $O(n)$ copies @chen2024optimal.
+
+## Low-rank Observables
+
+**Definition.** An observable $O$ is low-rank if $\mathrm{rank}(O) = r$ for some $r \ll 2^n$. The special case $O = |\psi\rangle\langle\psi|$ corresponds to fidelity estimation.
+
+**Efficient Strategies:**
+
+1. *Stabilizer states:* When $|\psi\rangle$ is a stabilizer state with stabilizer group $\mathcal{S}$, the decomposition $|\psi\rangle\langle\psi| = 2^{-n}\sum_{P \in \mathcal{S}} P$ enables efficient Pauli measurement.
+
+2. *Entanglement witness construction:* For a general observable $O$, one can examine $O' = O + \alpha I$ such that $O'$ is separable, analogous to entanglement witness construction.
+
+3. *Bell difference sampling:* This technique efficiently estimates the average over all stabilizer states @chen2024optimal.
+
+## Sum of Pauli Operators {#sec-pauli-sum}
+
+**Definition.** A Pauli decomposition takes the form $O = \sum_{P \in \mathcal{P}_n} \alpha_P P$.
+
+### Randomized Methods (Classical Shadows)
+
+For single-copy local Clifford random measurements, the sample complexity scales as @huang2020predicting:
+
+- $O(3^k/\epsilon^2)$ for weight-$k$ Pauli observables
+- $O(4^n/\epsilon^2)$ for arbitrary $n$-local operators
+
+**Two-copy variants:**
+
+- *Entanglement-fixed 2-copy shadow* @ippoliti2024classical: Information-complete if entanglement is not maximal. Achieves efficiency $O(3^{k/2})$ for compatible weight-$k$ Pauli observables.
+
+- *Bell sampling:* Informationally efficient for all Pauli operators @chen2024optimal, though the signal problem may require additional samples @huang2021information.
+
+A fundamental lower bound establishes that single-replica estimation of all Pauli operators requires exponential sample complexity @chen2024optimal.
+
+### Derandomized Methods {sec-derandomized-methods}
+
+**(1) Biased Sampling Methods**
+
+Instead of uniform random Clifford sampling, these methods adjust the measurement distribution based on target Hamiltonian structure:
+
+- **Locally-biased shadows** @hadfield2020locally: For each qubit position, the local Clifford sampling distribution is biased according to Pauli weights in the Hamiltonian. This reduces variance for observables with structured Pauli decompositions.
+
+- **Adaptive Pauli shadows** @hadfield2021adaptive: Combines classical computation with iterative distribution refinement, improving efficiency for molecular Hamiltonians.
+
+**(2) Greedy Derandomization**
+
+- **Iterative greedy selection** @huang2021efficient: Systematically replaces random measurements with deterministic ones. For estimating $L$ Pauli observables, achieves $O(\log L)$ sample complexity by greedily selecting measurement bases that maximize information gain. (See [Derandomized local shadows](/theory/Pauli_derandomization/index.qmd) for details.)
+
+**(3) Commuting Pauli Grouping**
+
+These methods partition Pauli operators into simultaneously measurable groups:
+
+- **Minimum Clique Cover** @verteletskyi2020measurement: Maps the qubit-wise commuting (QWC) problem to graph coloring. Pauli operators form vertices with edges connecting non-commuting pairs.
+
+- **SORTED INSERTION** @crawford2021efficient: A heuristic exploiting Pauli weight information for efficient groupings with lower computational overhead.
+
+- **Unitary Partitioning** @izmaylov2019unitary: General framework for commuting grouping with provable guarantees.
+
+**(4) Theoretical Perspectives**
+
+- **Channel co-diagonalization** @yang2025measuring: Seeks a quantum channel $\Lambda$ such that multiple observables are simultaneously diagonalized.
+
+- **Lower bounds** @wu2024optimization: Establishes fundamental [efficiency limits](/theory/shallow_estim/index.qmd) for local estimation with shallow circuits.
+
+# Non-linear Property Estimation
+
+## Purity and State Moments
+
+The purity $\mathrm{tr}(\rho^2)$ quantifies the mixedness of a quantum state. More generally, state moments $\mathrm{tr}(\rho^k)$ characterize the eigenvalue distribution of $\rho$ and appear in:
+
+- Rényi entropy estimation: $S_\alpha(\rho) = \frac{1}{1-\alpha}\log\mathrm{tr}(\rho^\alpha)$
+- Virtual distillation protocols @huggins2021virtual
+- Entanglement quantification
+
+## Pauli-weighted Purity {#sec-pauli-purity}
+
+**Definition.** For $P \in \mathcal{P}_n$, the Pauli-weighted purity is $\mathrm{tr}(P\rho^2)$.
+
+When $A_i \in \mathrm{SWAP} \cdot \{I, X, Y, Z\}$, the operator $\mathrm{SWAP} \cdot P$ is non-Hermitian but normal (satisfying $[SP, (SP)^\dagger] = 0$), hence diagonalizable.
+
+::: {.callout-note icon="false"}
+## Two-copy Local Estimation of $\mathrm{tr}(P\rho^2)$
+
+The value $\mathrm{tr}(P\rho^2)$ can be estimated by a 2-copy local circuit:
+
+1. Apply $\mathrm{CNOT}_{12}$ between corresponding qubits
+2. Measure $Z$ on the second qubit with result $s_1$
+3. Adaptively apply $S \cdot H$ gate if $s_1 = 1$, then measure $Z$ on the first qubit with result $s_2$
+4. Construct estimator $\hat{o} = \mathrm{Re}\left[\prod_k i^{2s_2^{(k)} + s_1^{(k)}}\right]$
+:::
+
+::: {.callout-note collapse="true"}
+## Proof
+
+Full-weight Pauli operators can be locally transformed to $Z^{\otimes n}$ using local Clifford gates ($HXH = Z$, $HS^\dagger YSH = Z$).
+
+The observable becomes $O = [(Z \otimes I) \cdot \mathrm{SWAP}]^{\otimes n} = A^{\otimes n}$. The local operator $A$, though non-Hermitian, is normal and admits the spectral decomposition:
+
+\begin{align}
+    A &= |00\rangle\langle00| - |11\rangle\langle11| + i|\Phi^+\rangle\langle\Phi^+| - i|\Phi^-\rangle\langle\Phi^-|
+\end{align}
+
+where $|\Phi^\pm\rangle = (|01\rangle \pm i|10\rangle)/\sqrt{2}$.
+
+Measurement in the basis $\{|00\rangle, |11\rangle, |\Phi^+\rangle, |\Phi^-\rangle\}$ yields outcomes $\hat{o}_i \in \{+1, -1, +i, -i\}$. Both $\mathrm{Im}(\prod_i \hat{o}_i)$ and $\mathrm{Re}(\prod_i \hat{o}_i)$ are bounded, so Hoeffding's inequality ensures efficient estimation.
+
+The circuit implementation uses:
+$$
+\mathrm{CNOT}|00\rangle = |00\rangle, \quad \mathrm{CNOT}|11\rangle = |10\rangle, \quad \mathrm{CNOT}|\Phi^\pm\rangle = (SH|0/1\rangle)|1\rangle
+$$
+:::
+
+**Limitation.** Purity cannot be simultaneously estimated from outcomes $\mathbf{s}_1, \mathbf{s}_2$ because $\mathrm{SWAP}|\Phi^+\rangle = i|\Phi^-\rangle$.
+
+As noted in @huggins2021virtual:
+
+> "The inability to parallelize the measurement of commuting multi-qubit observables would make it challenging to profitably combine this approach with sophisticated NISQ measurement strategies. In particular, individual multi-qubit operators must be measured separately using this approach, even if they commute."
+
+## Multi-copy Strategies
+
+### Classical Shadow-based Approaches
+
+**Single-replica bounds:**
+
+- Unitary 6-design measurements achieve the lower bound $\Omega(2^{n/2} \cdot \ln|\mathcal{O}|)$ for estimating $\{\mathrm{tr}(P\rho^2)\}_{P \in \mathcal{O}}$ @du2025optimal.
+
+**Multi-replica constructions:**
+
+- A $k$-replica strategy constructing classical shadows for $\rho^t$ exists, with explicit construction for $t=2$ using non-local circuits @liu2024auxiliary.
+
+- *Local 2-copy 3-design shadow* ([details](/theory/Shadow_tomography/3desgin_multi_local_shadow.qmd)): Information-complete with sampling advantages over Bell sampling in specific regimes for weighted purity and non-linear Pauli properties.
+
+- *Entanglement-fixed 2-copy shadow* ([details](/theory/Shadow_tomography/multicopy.qmd)): Information-complete only when entanglement is non-maximal.
+
+### Hybrid and Learning-based Methods
+
+The hybrid framework @zhou2022hybrid combines classical and quantum resources for simulating many-body dynamics with improved efficiency.
+
+Machine learning approaches @huang2022provably demonstrate provably efficient estimation for certain classes of quantum many-body properties using classical shadow data.
+
+## Complexity Lower Bounds {#sec-lower-bounds}
+
+**Two-replica hardness.** Even with non-local operations allowed and fixed operator $O$, the sample complexity is $\Omega(2^{k/2})$ where $k$ is the support size @du2025optimal @ye2025exponential.
+
+:::{.callout-important icon="false"}
+## Conjectures
+Based on the observation that all known local 2-replica shadow protocols exhibit exponential sampling complexity, estimation of $\{\mathrm{tr}(P\rho^2)\}$ for all $P \in \mathcal{P}_n$ is [conjectured to be hard](../../Topics/Lowerbounds/index.qmd) for 2-replica strategies.
+:::
+
+
+A [4-replica non-local upper bound](/theory/Shadow_tomography/multicopy.qmd) exists for estimating $\{\mathrm{tr}(P\rho^2)\}$ for all $P \in \mathcal{P}_n$, suggesting that 4-replica local estimation may also be fundamentally limited.
+
+# Open Questions and Outlook
+
+Several important questions remain open:
+
+::: {.callout-important icon="false"}
+## Open Question 1
+If two-replica local measurement is allowed, can the exponential sampling complexity barrier for all Pauli observables be overcome?
+:::
+
+::: {.callout-important icon="false"}
+## Open Question 2
+For non-linear estimation $\mathrm{tr}(O\rho^2)$, does there exist an optimal derandomization scheme under two-replica local constraints?
+:::
+
+**Partial results.** Bell measurements can efficiently estimate observables of the form:
+$$
+O = \alpha_{00} I \otimes I + \alpha_{11} X \otimes X + \alpha_{22} Y \otimes Y + \alpha_{33} Z \otimes Z
+$$
+with $\|O\|_\infty \leq O(1)$.
+
+**Future directions:**
+
+1. Tight characterization of the sample complexity gap between single-copy and multi-copy protocols
+2. Development of adaptive measurement strategies that interpolate between randomized and deterministic approaches
+3. Extension of lower bound techniques to broader classes of non-linear properties
+4. Connections to quantum computational complexity and the role of entanglement in local estimation
+

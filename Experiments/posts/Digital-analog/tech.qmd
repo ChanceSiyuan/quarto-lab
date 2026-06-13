@@ -5,7 +5,6 @@ date: '2026-03-17'
 lang: en
 title: The technical details of the digital-analog conversion
 bibliography: refs.bib
-draft: true
 ---
 
 [← Back to Index](../index.qmd)
@@ -20,6 +19,8 @@ The traget is to realize a analog iqp circuit on the lattice.
 - 拉大 spacing，降低 n，或缩短 preparation/readout pulse，使mapping-up和mapping-down期间 V 可忽略. 
 - 不要真的把一半 population 放到 $\ket{r}$, 在 hyperfine qubit 中制备 $\ket{+}^{\otimes n}$, 然后 off-resonantly dress $\ket{1}$ 到 Rydberg，产生有效 ZZ 相互作用. 
 - 做 constrained-IQP, 制备 $\ket{+}^{\otimes \mathcal{I}}$,即只在 $\mathcal{I}$ 这样没有blockade的位形上制备 $\ket{1} + \ket{r}$, 其余 qubit 上 $\ket{1}$.
+
+
 
 # The Hamiltonian
 In the digital-analog maping protocols, we consider $\ket{0} = \ket{5S_{1/2}, F=1, m_F=0}$ and $\ket{1} = \ket{5S_{1/2}, F=2, m_F=0}$.
@@ -42,12 +43,39 @@ $$
 where $\Omega_{R}(t) = \Omega_{420}(t) \cdot \Omega_{1013}/2\Delta_{R}$ is the Rabi frequency that drive $\ket{1}$ to $\ket{r}$.
 $\Delta_{R}(t)$ is the detuning of $420$-nm laser.
 We noted that these Rydberg-controled value is transversal due to the restriction of the experimental setup.
-
 The $\Omega_{\rm hf,i}(t),\Delta_{\rm hf,i}(t)$ drives a transition from $\ket{1}$ to $\ket{0}$ and add a light shift to $\ket{1}$.
 They can be pointwisely controled.
 
-# Optimal Analog-digital mapping
+# Adiabatic computation
 
+ A critical step in the Time-optimal (TO) Rydberg CPHASE gate protocol is to design a $\Delta_R(t)$ that allows $\{\ket{00},\ket{01},\ket{10},\ket{11}\}$ to be excited to Rydberg state and then return to $\{\ket{00},\ket{01},\ket{10},\ket{11}\}$ with different accumulated phases. 
+
+In analogy, we hope to design a time-dependent pulse $\Omega_R(t),\Omega_{\rm hf,i}(t), \Delta_R(t), \Delta_{\rm hf,i}(t)$ that allows $\{\ket{\mathbf{s}}\}_{\mathbf{s} \in \{\ket{0},\ket{1}\}^n}$ to be excited to Rydberg state and then precisely return to the original state $\{e^{i \phi(\mathbf{s})}\ket{\mathbf{s}}\}_{\mathbf{s} \in \{\ket{0},\ket{1}\}^n}$ with different accumulated phases.
+
+For multi-qubits system, adiabatic computation would be more applicable rather than finding TO pulse.
+For different configurations $\ket{s}$, 
+we note that only those atoms in $\ket{1}$ state will be kept and all $\ket{0}$ atoms will be removed since the Rydberg excitation is far detuned from the $\ket{0} \leftrightarrow \ket{r}$ transition.
+This leave a subsystem of $\ket{1},\ket{r}$ atoms with subtracted interaction $V^{(s)}_{ij}$ terms ($2^n$ configurations in total since each atoms can be $\ket{0}$ or $\ket{1}$).
+Specifically, we fixed certain configurations $\ket{s}, J_{ij} := V^{(s)}_{ij}$ and restricted to the $\ket{1},\ket{r}$ subspace.
+ 
+For analysis simplicity, we consider the Pauli basis, i.e.,
+consider $X_i = \ket{1}\bra{r}+\ket{r}\bra{1}$, and $Z_i = \ket{1}\bra{1} - \ket{r}\bra{r}$ as the Pauli operators, and a time-dependent Hamiltonian with:
+$$
+\begin{align*}
+H(t)
+&= \frac{1}{2} \sum_{i} \Omega(t)X_i  + \sum_{i<j} J_{ij} \frac{\mathbb{I}_i - Z_i}{2} \frac{\mathbb{I}_j - Z_j}{2} + \sum_{i} (\Delta_{R}(t) + \Delta_{\rm hf,i}(t)) Z_i\\
+&=\frac{1}{2} \sum_{i} \Omega(t)X_i  + \frac{1}{4}\sum_{i<j} J_{ij}  Z_i Z_j + \sum_{i} h_i(t) Z_i := H_X(t) + H_Z(t),
+\end{align*}
+$$
+where we define $h_i(t) = \Delta_{R}(t) + \Delta_{\rm hf,i}(t) - (1/4)\sum_{j\neq i} J_{ij}$.
+
+We consider the case $H(0)=H(T)=H_Z(0)$,  with $ \Omega(0) = \Omega(T) = 0$, such that the computational begining state $\ket{s}$ will faithfully return to the original state $\ket{s}$ with a geometric phase $\phi(s)$.
+This accumulated phase contain the dynamic and geometric phase, see detailed analysis [here](../../../theory/Posts/Perturbation/Adiabatic_comp.qmd).
+
+Then we analyze how dynamic and geometric phase related to the configuration $\ket{s}$ (which will change $J_{ij}$ and $h_i$) and whether a global phase can be extracted and only the geometric phase is observable for different configurations.
+
+
+# Digital-analog mapping
 A critical step to integrate analog with digital operation in the Rydberg system is the digital-analog mapping.
 Typically, this indicates a map:
 $$
@@ -76,16 +104,59 @@ V\sum_{a\in N(b)}n_a-\Delta_R(t)+\Delta_{{\rm hf},b}(t)\right)n_b
 \end{aligned}
 }
 $$
-Here we define $\delta_{a/b}(t)=-\Delta_R(t)+\Delta_{{\rm hf},a/b}(t)$ and dente $H_{\rm NN}(t) = \sum_{b\in B}h_b(t) + \sum_{a\in A}g_a(t)$ as:
+Here we define $\delta_{a/b}(t)=-\Delta_R(t)+\Delta_{{\rm hf},a/b}(t)$ and dente $K(t) = K_0(t) + V_{\rm off}(t)$ as:
 $$
 \begin{align*}
-h_b(t)&=
+K_0(t)&=
+\sum_{b\in B}
+\left[
 \frac{\Omega_R(t)}{2}X_b+
-\left(\delta_b(t)+V\sum_{a\in N(b)}n_a\right)n_b ,\\
-g_a(t)&=
-\frac{\Omega_R(t)}{2}X_a+\delta_a(t)n_a .
+\left(\delta_b(t)+V\sum_{a\in N(b)}n_a\right)n_b
+\right]
++
+\sum_{a\in A}\delta_a(t)n_a,\\
+V_{\rm off}(t)&=
+\frac{\Omega_R(t)}{2}\sum_{a\in A}X_a.
 \end{align*}
 $$
+
+Note that $P_{\mathbf m} = \prod_{a\in A} \left[m_a n_a+(1-m_a)(1-n_a)\right]$ is a projector onto certain configuration $\ket{\mathbf m}$ of sublattice $A$.
+The term $K_0(t)$ is diagonal on these subspaces while $V_{\rm off}(t)$ is off-diagonal.
+The effective Hamiltonian is given by finding $S(t)$ such that:
+$$
+K_{\rm SW}(t)= e^{S(t)}K(t)e^{-S(t)} + i (\partial_t {e^{S(t)}})e^{-S(t)}
+$$
+is block-diagonal on the subspaces $P_{\mathbf m}$.
+
+The $S(t) = S^{(1)}(t) + S^{(2)}(t) + \cdots$ is solved perturbatively as:
+$$
+\begin{aligned}
+K_{\rm SW}
+=&K_0+V_{\rm off}
++[S^{(1)},K_0]+i\dot S^{(1)}
+\\
+&+[S^{(2)},K_0]+i\dot S^{(2)}
++[S^{(1)},V_{\rm off}]\\
+&+\frac12[S^{(1)},[S^{(1)},K_0]]
++\frac{i}{2}[S^{(1)},\dot S^{(1)}]
++O(V_{\rm off}^3).
+\end{aligned}
+$$
+Suppose $S^{(j)}(t)$ only contains off-diagonal terms,
+Up to 2nd order, we have:
+$$
+\boxed{
+\begin{aligned}
+&K_{\mathbf m}S^{(1)}_{\mathbf m\mathbf n}-S^{(1)}_{\mathbf m\mathbf n}K_{\mathbf n}-i\dot S^{(1)}_{\mathbf m\mathbf n}=V_{\mathbf m\mathbf n},\\
+&K_{\rm eff}^{(\mathbf m)}(t)=K_{\mathbf m}(t)
++\frac12 \sum_{\mathbf n\neq \mathbf m}
+\left[S^{(1)}_{\mathbf m\mathbf n}V_{\mathbf n\mathbf m}
+-V_{\mathbf m\mathbf n}S^{(1)}_{\mathbf n\mathbf m}\right]
++O(V_{\rm off}^3).
+\end{aligned}
+}
+$$
+
 
 ::: {.callout-note collapse="true"}
 ## Proof (Click to expand)
