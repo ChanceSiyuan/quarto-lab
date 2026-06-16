@@ -124,6 +124,7 @@ we note that $\mathrm{OR}_n(x)=x_1\vee\cdots\vee x_n$ is not in $\mathrm{NC}^0$ 
 :::{#def-influence .callout-important icon="false"}
 ## Definition: Influence
 Given a Boolean function $f: \{-1,1\}^n \to \mathbb{R}$, and $x \sim \{-1,1\}^n$ as uniformly random, we define:
+
 1. The derivative at position $i$ is defined as $D_i[f](x) = [f(x^{i \to 1}) - f(x^{i \to -1})]/2$, where $x^{i \to 1}$ is the string that $x$ with the $i$-th bit flipped to $1$, and $x^{i \to 0}$ is the string that $x$ with the $i$-th bit flipped to $0$.
 2. The influence of a variable $x_i$ is defined as $\mathrm{Inf}_i[f] = \mathbb{E}_{x} [D_i[f](x)]^2$,The total influence is defined as $I[f]=\sum_{i=1}^n \mathrm{Inf}_i[f]$.
 3. If restricted to $\mathbb{R} \to \{-1,1\}$, derivative reduced to sensitivity $\mathrm{sens}_f(x)=\#\{i:f(x)\ne f(x^{\oplus i})\}$, with influence $\mathrm{Inf}_i[f] = \mathrm{Pr}_x [f(x) \neq f(x \oplus e_i)]$.
@@ -160,6 +161,17 @@ Given approximation error $\varepsilon > 0$, any Boolean function $f: \{0,1\}^n 
 Given $f(x)=T_1(x)\vee T_2(x)\vee\cdots\vee T_s(x)$, simply cancel out those $T_i(x)$ with width greater than $w$, we get a function $g(x)$ with
 $$
 g(x)=\bigvee_{j:\,\mathrm{width}(T_j)\le w}T_j(x),\quad \mathrm{DNFwidth}(g)\le w,\, \mathrm{DNFsize}(g)\le s.
+$$
+We note that if $f(x) \neq g(x)$, then $T_j(x) = 0, \forall j:\,\mathrm{width}(T_j)\leq w$ and there must exists a term $T_i(x)$ with $\mathrm{width}(T_j)> w$ such that $T_j(x) = 1$. Note that $\Pr[T_j(x)=1]=2^{-\mathrm{width}(T_j)} \leq 2^{-w}$ for $x$ uniformly random. Therefore, 
+$$
+\Pr[f(x)\ne g(x)]
+\le
+\sum_{j:\,\mathrm{width}(T_j)>w}
+\Pr[T_j(x)=1]
+\le
+s\cdot \frac{\varepsilon}{s}
+=
+\varepsilon.
 $$
 :::
 

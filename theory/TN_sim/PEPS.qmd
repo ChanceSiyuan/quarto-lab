@@ -1,0 +1,38 @@
+---
+categories:
+- Readings
+date: '2026-06-13'
+description: 'PEPS'
+lang: en
+title: PEPS
+bibliography: refs.bib
+---
+
+# Summary and questions
+
+# TEBD for PEPS
+
+For MPS state in the canonical form, truncating the local tensors gives the optimal approximation of the original state in terms of the Frobenius norm.
+Unlike the MPS case,
+truncation in PEPS can not be simply done on local tensors, as the others forms a non-trivial environment tensor.
+
+Since lack of canonical form and optimality proof, there are many ways of truncating PEPS.
+
+## NTU
+the ordinary truncation (SVD) can be regards as the minimization of:
+$$
+\min~ \varepsilon := \mathrm{tr}\left[(R_A R_B^\dagger- M_A M_B^\dagger)(R_A R_B^\dagger- M_A M_B^\dagger)^\dagger\right],
+\quad \text{s.t.} \quad \operatorname{rank}(M_A) \le D, \quad \operatorname{rank}(M_B) \le D.
+$$
+The NTU keep the environment tensor fixed, and only truncate the center tensor.
+$$
+\epsilon = M_A^\dagger g_A M_A - M_A^\dagger J_A - J_A^\dagger M_A + \epsilon_A .
+$$
+the extreme point writes ${\partial \epsilon}/{\partial M_A^\dagger} =g_A M_A - J_A$, and gives $M_A=g_A^+J_A$.
+Similarly, $M_B=g_B^+J_B$.
+
+## CTM
+
+Instead of using the near neighborhood environment directly, CTM uses approximate the full environment tensor $E$.
+
+

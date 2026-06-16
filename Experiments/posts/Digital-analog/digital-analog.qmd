@@ -351,4 +351,160 @@ During Rydberg evolution, the **SLM tweezers are turned off for up to 4 μs** to
 
 ## Ring-exchange rate vs. perturbative prediction
 
+
 The theoretical prediction for the effective six-body ring-exchange rate is $g_6^{(\text{eff})} \sim g_3^2/\mu$, arising from virtual excitation of three-body intermediate states. The key experimental demonstration is that ring-exchange dynamics and two-body hopping occur on the **same timescale** — a non-perturbative regime where the Floquet engineering has moved the system far from the naive hierarchy where higher-order processes are exponentially slower. The state-selective initial state preparation (Néel state for ring exchange, single-spin excitation for hopping) allows independent calibration of each process, verifying that both $g_6$ and $J$ are comparable in magnitude after Floquet optimization [@koyluoglu2024floquet].
+
+
+
+# Digital-analog mapping
+A critical step to integrate analog with digital operation in the Rydberg system is the digital-analog mapping.
+Typically, this indicates a map:
+$$
+\ket{0 \cdots 0,r \cdots r} \leftrightarrow e^{i\theta}\ket{0 \cdots 0,1 \cdots 1} 
+$$
+for arbitrary strings formed by $\{0,r\}^n$ to strings formed by $\{0,1\}^n$.
+The problem is, during the process, the interaction $V_{ij}$ is not negligible and different configurations of $\{0,r\}^n$ string may lead to different light shifts induced by this interaction.
+
+Fortunately, when the configuration of atoms admits a local structure and the rotation angle $\theta$ is flexible, 
+it is still possible to find a optimal mapping.
+Specifically, give a bipartite lattice, i.e., qubits on lattice can be separated into two parts $A \cup B$, such that $V_{ij} \neq 0$ iff $i \in A, j \in B$ or $i \in B, j \in A$.
+
+When $\Omega_{\rm hf,i}(t) \equiv 0$, restricted to the space $\{\ket{1},\ket{r}\}^{\otimes n}$, the Hamiltonian is:
+$$
+\boxed{
+\begin{aligned}
+\frac{H_{\rm NN}(t)}{\hbar}=&
+\sum_{b\in B}\left[\frac{\Omega_R(t)}{2}X_b+
+\left(
+V\sum_{a\in N(b)}n_a-\Delta_R(t)+\Delta_{{\rm hf},b}(t)\right)n_b
+\right]
+\\
+&+\sum_{a\in A}\left[
+\frac{\Omega_R(t)}{2}X_a+\left(-\Delta_R(t)+\Delta_{{\rm hf},a}(t)\right)n_a
+\right].
+\end{aligned}
+}
+$$
+Here we define $\delta_{a/b}(t)=-\Delta_R(t)+\Delta_{{\rm hf},a/b}(t)$ and dente $K(t) = K_0(t) + V_{\rm off}(t)$ as:
+$$
+\begin{align*}
+K_0(t)&=
+\sum_{b\in B}
+\left[
+\frac{\Omega_R(t)}{2}X_b+
+\left(\delta_b(t)+V\sum_{a\in N(b)}n_a\right)n_b
+\right]
++
+\sum_{a\in A}\delta_a(t)n_a,\\
+V_{\rm off}(t)&=
+\frac{\Omega_R(t)}{2}\sum_{a\in A}X_a.
+\end{align*}
+$$
+
+Note that $P_{\mathbf m} = \prod_{a\in A} \left[m_a n_a+(1-m_a)(1-n_a)\right]$ is a projector onto certain configuration $\ket{\mathbf m}$ of sublattice $A$.
+The term $K_0(t)$ is diagonal on these subspaces while $V_{\rm off}(t)$ is off-diagonal.
+The effective Hamiltonian is given by finding $S(t)$ such that:
+$$
+K_{\rm SW}(t)= e^{S(t)}K(t)e^{-S(t)} + i (\partial_t {e^{S(t)}})e^{-S(t)}
+$$
+is block-diagonal on the subspaces $P_{\mathbf m}$.
+
+The $S(t) = S^{(1)}(t) + S^{(2)}(t) + \cdots$ is solved perturbatively as:
+$$
+\begin{aligned}
+K_{\rm SW}
+=&K_0+V_{\rm off}
++[S^{(1)},K_0]+i\dot S^{(1)}
+\\
+&+[S^{(2)},K_0]+i\dot S^{(2)}
++[S^{(1)},V_{\rm off}]\\
+&+\frac12[S^{(1)},[S^{(1)},K_0]]
++\frac{i}{2}[S^{(1)},\dot S^{(1)}]
++O(V_{\rm off}^3).
+\end{aligned}
+$$
+Suppose $S^{(j)}(t)$ only contains off-diagonal terms,
+Up to 2nd order, we have:
+$$
+\boxed{
+\begin{aligned}
+&K_{\mathbf m}S^{(1)}_{\mathbf m\mathbf n}-S^{(1)}_{\mathbf m\mathbf n}K_{\mathbf n}-i\dot S^{(1)}_{\mathbf m\mathbf n}=V_{\mathbf m\mathbf n},\\
+&K_{\rm eff}^{(\mathbf m)}(t)=K_{\mathbf m}(t)
++\frac12 \sum_{\mathbf n\neq \mathbf m}
+\left[S^{(1)}_{\mathbf m\mathbf n}V_{\mathbf n\mathbf m}
+-V_{\mathbf m\mathbf n}S^{(1)}_{\mathbf n\mathbf m}\right]
++O(V_{\rm off}^3).
+\end{aligned}
+}
+$$
+
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+Implement a pointwise time-dependent transformation $\ket{\psi} \to U_a \ket{psi}$ with $U_a = e^{i \left[\int_{t} dt \Omega(t)\right] n_a}$ on sublattice A only, and the transformation rule $H' = (dU_a/dt) U^{\dagger}_a + U_a H U_a^\dagger$:
+
+:::
+
+
+#### Direct preparation
+To preapare $\ket{+}^{\otimes n}$,
+We first prepare the atom all in $\ket{1}$ state, then use a $(\pi/2),(1-r)$-pulse to drive the atom to $\ket{+}$. That is, we set $\Omega_{R,i}(t) = \Omega_R , t \in [0, \tau := \pi/(2\Omega_R)]$.
+
+ Then the Hamiltonian writes:
+$$
+\begin{align*}
+H/\hbar =
+\sum_i \frac{\Omega_{R,i}}{2} X_i
++\sum_{i \in A, j \in B}\frac{V_{ij}}{4}(\mathbb{I}_i - Z_i) (\mathbb{I}_j - Z_j) ,
+\end{align*}
+$$
+
+
+#### sublattice-X delta echo
+
+Consider the evolution:
+$$
+\begin{align*}
+&\left(\bigotimes_{j \in A}X_j\right) e^{iH\tau/2\hbar} \left(\bigotimes_{j \in A}X_j\right) e^{iH\tau/2\hbar} \\
+&\approx \exp \left(\sum_i \frac{\Omega_{R,i}}{2} X_i \tau
++\sum_{i \in A, j \in B}\frac{\tau}{2}\frac{V_{ij}}{4}[(\mathbb{I}_i - Z_i) + (\mathbb{I}_i + Z_i) ] (\mathbb{I}_j - Z_j)\right)\\
+& = \exp \left(\sum_i \frac{\Omega_{R,i}}{2} X_i \tau
++\sum_{j \in B}\frac{V_{ij}{\tau}}{4}(\mathbb{I}_j - Z_j)\right)
+\end{align*}
+$$
+
+
+In general, we have:
+$$
+\begin{align*}
+\Omega_{R,i}(t) = 
+\Omega_R + \pi \delta_{i \in A}\sum_{m = 1}^{M}\delta(t - m \pi/(2\Omega_R M)) , t \in [0, \pi/(2\Omega_R)]
+\end{align*}
+$$
+For sufficiently large $M$, the effective Hamiltonian will fully cancel the interaction $V_{ij}$.
+In the real experiemnt, it is not simple to implement the delta function and ponitwise different control of Rydberg excitation $\Omega_{R,i}(t)$.
+
+One can replaced them into pulses with:
+
+$$
+\begin{align*}
+\Omega_{R}(t) = 
+\Omega_R + \pi \sum_{m = 1}^{M}B(t - m \pi/(2\Omega_R M)) , t \in [0, \pi/(2\Omega_R)],
+\end{align*}
+$$
+where:
+
+1. Multiple blackman increased pulses with finite duration $\Delta t$ and $\Omega_A$ such that $\Omega_A \Delta t = \pi$.
+2. A $\ket{1}$ light-shift $\Delta_{hf}$ that appears only at each $\Delta t$ period.
+
+We plot the waveshape below:
+
+
+#### sublattice-X ordered echo
+
+
+A more practical way is to use a sequence of pulses to approximate the delta function.
+We set the pulse sequence as:
+
+1. Only implement to the sublattice $A$, we use a $(\pi/2),(1-r)$-pulse sequence to transform those atoms in $A$ to $\ket{+}$ while the atoms in $B$ are not affected.
+2. Only implement to the sublattice $B$, we use a laser mixed with 5 frequecy to drive the atoms in $B$. Those five frequecy are respecively resonated with $0,V_{ij},2V_{ij},3V_{ij},4V_{ij}$ Rydberg shifts, which corresponds to the adjacent interaction strengths in lattice A for $\ket{0000}-\ket{1111}$ states components.

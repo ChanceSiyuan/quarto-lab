@@ -8,30 +8,34 @@ comments: false
 
 # Theory
 
-This page indexes the theory notes by topic directory. Each topic page has its own sidebar that links the pages inside that folder.
+This page indexes the theory notes by topic directory. The table below is generated from each top-level topic folder, so new topic directories appear here automatically after render.
 
-## Topic Directories
+<!-- BEGIN AUTO THEORY TOPICS -->
 
-- [Boolean Analysis](Boolean_ana/index.qmd) - 1 page
-- [Classical Shadow Tomography](Shadow_tomography/index.qmd) - 8 pages
-- [Classical Simulation of Noisy Circuits](Noisy_complexity/index.qmd) - 6 pages
-- [Drug Design](drugs_design/index.qmd) - 0 pages
-- [Factoring and Hidden Subgroup Problems](Factoring/index.qmd) - 7 pages
-- [Fermi-Hubbard Model](Fermi-Hubbard/index.qmd) - 1 page
-- [Hamiltonian Learning](Ham_learning/index.qmd) - 0 pages
-- [IQP Circuit Supremacy](supermacy/index.qmd) - 15 pages
-- [Lattice Gauge Theory](LGT/index.qmd) - 6 pages
-- [Learning Theory and Quantum Learning](learning_theo/index.qmd) - 16 pages
-- [Magic and Stabilizer Resources](Magic/index.qmd) - 3 pages
-- [Nonlocal Games Survey](Nonlocal_Games_Survey/index.qmd) - 3 pages
-- [Operator Spreading and Magic](OSF/index.qmd) - 4 pages
-- [Perturbation and Floquet Theory](Perturbation/index.qmd) - 7 pages
-- [Quantum Compatibility](compatibility/index.qmd) - 9 pages
-- [Quantum Complexity](quantum_complexity/index.qmd) - 3 pages
-- [Quantum Error Correction](QEC/index.qmd) - 6 pages
-- [Quantum Fingerprinting](Fingerprint/index.qmd) - 3 pages
-- [Spin Liquids](Spin_liquid/index.qmd) - 2 pages
-- [Stabilizer Simulation](stab_simulation/index.qmd) - 4 pages
-- [Tensor Network Simulation](TN_sim/index.qmd) - 5 pages
-- [Topological Matter](topo_matter/index.qmd) - 3 pages
-- [Virtual Distillation](Virtual_Distillation/index.qmd) - 5 pages
+| Topic | Description |
+|---|---|
+| [Boolean Analysis](Boolean_ana/index.qmd) | Boolean-function analysis notes centered on influence, decision trees, Fourier expansion, and circuit-complexity tools for reasoning about functions such as AC0 and CNF formulas. |
+| [Classical Shadow Tomography](Shadow_tomography/index.qmd) | A comprehensive collection of notes on classical shadow tomography, covering single-copy and multi-copy protocols, variance analysis, and sample complexity lower bounds. |
+| [Classical Simulation of Noisy Quantum Circuits](Noisy_complexity/index.qmd) | A systematic study of classical simulation methods for noisy quantum circuits, covering Pauli path methods, gadget-based simulation, percolation approaches, non-unital noise barriers, and resource-theoretic perspectives. |
+| [Factoring and Hidden Subgroup Problems](Factoring/index.qmd) | Quantum factoring and hidden-subgroup notes covering Shor's algorithm, order finding, abelian and non-abelian HSPs, graph-isomorphism reductions, approximate variants, and learning barriers for modular exponentiation. |
+| [Fermi-Hubbard Model](Fermi-Hubbard/index.qmd) | Introductory notes on the Fermi-Hubbard model as a lattice model for interacting fermions, emphasizing Hamiltonian structure and simulation-relevant conventions. |
+| [Generalized Stabilizer Formalism](OSF/index.qmd) | Generalized stabilizer-formalism notes covering vectorized Clifford actions, Pauli-to-computational-basis mappings, non-Pauli stabilizers, operator spreading, OTOCs, and operator magic. |
+| [Hamiltonian Learning](Ham_learning/index.qmd) | Hamiltonian-learning notes on ansatz-free structure and coefficient recovery for Pauli Hamiltonians, including Bell-basis sampling, ancilla-free alternatives, Ramsey-style estimation, and Rydberg-chain simulation examples. |
+| [IQP Circuit Supremacy](supermacy/index.qmd) | Classical simulation hardness, IQP supremacy, MBQC realizations, fault-tolerant IQP, and noise effects. |
+| [Lattice Gauge Theory](LGT/index.qmd) | Lattice gauge theory notes covering continuous gauge-theory preliminaries, quantum link models, MCMC methods, U(1) and Z2 examples, and Floquet or digital simulation workflows. |
+| [Learning Theory and Quantum Learning](learning_theo/index.qmd) | Neural network learning dynamics, quantum observable estimation, sample-complexity lower bounds, and symmetry tools. |
+| [Leveraging Analog Quantum Computing with Neutral Atoms for Solvent Configuration Prediction in Drug Discovery](drugs_design/index.qmd) | Survey notes on neutral-atom analog quantum algorithms for solvent-configuration prediction in drug discovery, connecting 3D-RISM solvent densities, Rydberg blockade constraints, adiabatic evolution, and hybrid variational workflows. |
+| [Magic and Stabilizer Resources](Magic/index.qmd) | Notes on magic and non-stabilizer resources, including magic measures, Bell-state magic, and experimental analysis of stabilizer-resource advantages. |
+| [Perturbation and Floquet Theory](Perturbation/index.qmd) | Perturbation-theory notes covering effective Hamiltonians, Floquet engineering, geometric phases, Kibble-Zurek mechanisms, ETH, and adiabatic computation. |
+| [Quantum Complexity](quantum_complexity/index.qmd) | Quantum-complexity notes covering Hamiltonian complexity, counting complexity, and interactive proofs, with emphasis on reductions and complexity-class structure. |
+| [Quantum Error Correction](QEC/index.qmd) | Quantum error-correction notes covering classical-code preliminaries, BP and BP-OSD decoders, ordered-statistics decoding, maximum-likelihood and tensor-network decoding, and tropical tensor-network methods. |
+| [Quantum Fingerprinting](Fingerprint/index.qmd) | Quantum fingerprinting and pattern-matching notes covering compact encodings, communication-complexity motivation, DNA-style matching examples, and algorithmic comparisons. |
+| [Quantum Resource](compatibility/index.qmd) | Quantum-resource and measurement-compatibility notes covering generalized robustness, joint measurability, multi-copy compatibility, local shadow estimation, projective simulation, and algebraic estimation frameworks. |
+| [Scalable Quantum Non-Locality: Architectures, Noise Resilience, and Experimental Frontiers](Nonlocal_Games_Survey/index.qmd) | Survey notes on scalable quantum nonlocality beyond CHSH and GHZ, covering stabilizer-testing games, phase-based constructions, quantum graph coloring, noise robustness, and experimental architectures. |
+| [Spin Liquids](Spin_liquid/index.qmd) | Spin-liquid notes on kagome and square-lattice settings, emphasizing lattice geometry, frustrated magnetism, and simulation-relevant diagnostics. |
+| [Stabilizer Simulation](stab_simulation/index.qmd) | Stabilizer-simulation notes covering Clifford and Clifford+T methods, CH-form and affine simulators, graph-state simulation, stabilizer codes, and graph-combination techniques. |
+| [Tensor Network Simulation](TN_sim/index.qmd) | Reading roadmap for tensor-network simulation, organized by the three simulation backends used in the repo: MPS (TeNPy/TDVP), finite PEPS (YASTN), and GPU tensor networks (cuTensorNet). |
+| [Topological Matter](topo_matter/index.qmd) | Topological-matter notes covering Hofstadter-Hubbard and Kitaev-honeycomb models, Chern-number diagnostics, Majorana-fermion band topology, and topological phase plots. |
+| [Virtual Distillation for Quantum Error Mitigation](Virtual_Distillation/index.qmd) | Quantum error-mitigation notes on virtual distillation, cyclic-shift estimators, derandomized shadows, negativity, majority voting, PCA-style analysis, and circuit-design variants for noisy-state purification. |
+
+<!-- END AUTO THEORY TOPICS -->

@@ -2,6 +2,9 @@ project:
   type: website
   output-dir: _site
 
+  pre-render:
+    - python3 scripts/update_theory_nav.py
+
 website:
   draft-mode: unlinked
   title: "Chance's Quantum Lab"
@@ -25,6 +28,7 @@ website:
         href: https://twitter.com/yourusername
 
   sidebar:
+    # BEGIN AUTO THEORY SIDEBARS
     - id: boolean_ana
       title: "Boolean Analysis"
       contents:
@@ -47,7 +51,7 @@ website:
             - theory/Shadow_tomography/lowerbound.qmd
             - theory/Shadow_tomography/nonlocal_multicopy.qmd
     - id: noisy_complexity
-      title: "Classical Simulation of Noisy Circuits"
+      title: "Classical Simulation of Noisy Quantum Circuits"
       contents:
         - theory/Noisy_complexity/index.qmd
         - section: "Pages"
@@ -58,10 +62,6 @@ website:
             - theory/Noisy_complexity/operator_resource.qmd
             - theory/Noisy_complexity/pauli_path.qmd
             - theory/Noisy_complexity/percolation.qmd
-    - id: drugs_design
-      title: "Drug Design"
-      contents:
-        - theory/drugs_design/index.qmd
     - id: factoring
       title: "Factoring and Hidden Subgroup Problems"
       contents:
@@ -82,10 +82,23 @@ website:
         - section: "Pages"
           contents:
             - theory/Fermi-Hubbard/intro.qmd
+    - id: osf
+      title: "Generalized Stabilizer Formalism"
+      contents:
+        - theory/OSF/index.qmd
+        - section: "Pages"
+          contents:
+            - theory/OSF/Feynman_based.qmd
+            - theory/OSF/operator_magic.qmd
+            - theory/OSF/nonPauli_stab.qmd
+            - theory/OSF/OTOC.qmd
     - id: ham_learning
       title: "Hamiltonian Learning"
       contents:
         - theory/Ham_learning/index.qmd
+        - section: "Pages"
+          contents:
+            - theory/Ham_learning/phasegate_learn.qmd
     - id: iqp
       title: "IQP Circuit Supremacy"
       contents:
@@ -147,6 +160,10 @@ website:
             - theory/learning_theo/weak_schur/Clifford-Weingarten.qmd
             - theory/learning_theo/weak_schur/symmetric_strategies.qmd
             - theory/learning_theo/weak_schur/Weingarten_calculus.qmd
+    - id: drugs_design
+      title: "Leveraging Analog Quantum Computing with Neutral Atoms for Solvent Configuration Prediction in Drug Discovery"
+      contents:
+        - theory/drugs_design/index.qmd
     - id: magic
       title: "Magic and Stabilizer Resources"
       contents:
@@ -156,25 +173,6 @@ website:
             - theory/Magic/Bell_magic.qmd
             - theory/Magic/exp_analy.qmd
             - theory/Magic/measures.qmd
-    - id: nonlocal_games_survey
-      title: "Nonlocal Games Survey"
-      contents:
-        - theory/Nonlocal_Games_Survey/index.qmd
-        - section: "Pages"
-          contents:
-            - theory/Nonlocal_Games_Survey/Basics.qmd
-            - theory/Nonlocal_Games_Survey/phase_and_nonlocal_game.qmd
-            - theory/Nonlocal_Games_Survey/Stabilizer-non-local_game.qmd
-    - id: osf
-      title: "Operator Spreading and Magic"
-      contents:
-        - theory/OSF/index.qmd
-        - section: "Pages"
-          contents:
-            - theory/OSF/Feynman_based.qmd
-            - theory/OSF/operator_magic.qmd
-            - theory/OSF/nonPauli_stab.qmd
-            - theory/OSF/OTOC.qmd
     - id: perturbation
       title: "Perturbation and Floquet Theory"
       contents:
@@ -185,24 +183,9 @@ website:
             - theory/Perturbation/ETH.qmd
             - theory/Perturbation/examples.qmd
             - theory/Perturbation/Floquet.qmd
-            - theory/Perturbation/geo_floquet.qmd
+            - theory/Perturbation/geometric_phase.qmd
             - theory/Perturbation/KZM.qmd
             - theory/Perturbation/Adiabatic_comp.qmd
-    - id: compatibility
-      title: "Quantum Compatibility"
-      contents:
-        - theory/compatibility/index.qmd
-        - section: "Pages"
-          contents:
-            - theory/compatibility/Algebraic_estimation_framework.qmd
-            - theory/compatibility/multi-copy_localshadow.qmd
-            - theory/compatibility/compatiablity_and_others.qmd
-            - theory/compatibility/multicopy_compatiability.qmd
-            - theory/compatibility/f-compatiability.qmd
-            - theory/compatibility/local-optimal_shadow.qmd
-            - theory/compatibility/nonparametric.qmd
-            - theory/compatibility/projective_sim.qmd
-            - theory/compatibility/compatiablity.qmd
     - id: quantum_complexity
       title: "Quantum Complexity"
       contents:
@@ -233,6 +216,30 @@ website:
             - theory/Fingerprint/DNA.qmd
             - theory/Fingerprint/fingerprint.qmd
             - theory/Fingerprint/Pattern.qmd
+    - id: compatibility
+      title: "Quantum Resource"
+      contents:
+        - theory/compatibility/index.qmd
+        - section: "Pages"
+          contents:
+            - theory/compatibility/Algebraic_estimation_framework.qmd
+            - theory/compatibility/multi-copy_localshadow.qmd
+            - theory/compatibility/compatiablity_and_others.qmd
+            - theory/compatibility/multicopy_compatiability.qmd
+            - theory/compatibility/f-compatiability.qmd
+            - theory/compatibility/local-optimal_shadow.qmd
+            - theory/compatibility/nonparametric.qmd
+            - theory/compatibility/projective_sim.qmd
+            - theory/compatibility/compatiablity.qmd
+    - id: nonlocal_games_survey
+      title: "Scalable Quantum Non-Locality: Architectures, Noise Resilience, and Experimental Frontiers"
+      contents:
+        - theory/Nonlocal_Games_Survey/index.qmd
+        - section: "Pages"
+          contents:
+            - theory/Nonlocal_Games_Survey/Basics.qmd
+            - theory/Nonlocal_Games_Survey/phase_and_nonlocal_game.qmd
+            - theory/Nonlocal_Games_Survey/Stabilizer-non-local_game.qmd
     - id: spin_liquid
       title: "Spin Liquids"
       contents:
@@ -260,7 +267,7 @@ website:
             - theory/TN_sim/MPS_AKLT.qmd
             - theory/TN_sim/MPS_DMRG.qmd
             - theory/TN_sim/MPS.qmd
-            - theory/TN_sim/MPS_compression.qmd
+            - theory/TN_sim/PEPS.qmd
             - theory/TN_sim/TDVP.qmd
     - id: topo_matter
       title: "Topological Matter"
@@ -272,7 +279,7 @@ website:
             - theory/topo_matter/chern.qmd
             - theory/topo_matter/honeycomb.qmd
     - id: virtual_distillation
-      title: "Virtual Distillation"
+      title: "Virtual Distillation for Quantum Error Mitigation"
       contents:
         - theory/Virtual_Distillation/index.qmd
         - section: "Pages"
@@ -293,6 +300,7 @@ website:
             - theory/learning_theo/Lowerbounds/operator_mixed.qmd
             - theory/learning_theo/Lowerbounds/povm_restrictions.qmd
             - theory/learning_theo/Lowerbounds/adaptive_strategies.qmd
+    # END AUTO THEORY SIDEBARS
     - id: simulation_model
       title: "Analog Rydberg Quantum Simulation"
       contents:
@@ -347,6 +355,7 @@ website:
         - section: "Noise & Errors"
           contents:
             - Experiments/posts/rydberg_qc/noise_errors.qmd
+
 format:
   live-html:
     html-math-method: katex
