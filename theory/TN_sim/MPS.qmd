@@ -74,7 +74,7 @@ the rank-$D$ truncated approximation is $C_D= U\Sigma'_D V^\dagger$, where $\Sig
 If $D\ll \min(m,n)$ and the singular values decay quickly, $C_D$ stores the important part of $C$ with much lower memory cost. This is the same idea behind image compression.
 
 :::{#lem-truncated-svd .callout-important icon="false"}
-## Optimality of the rank-$D$ SVD cutoff
+## (Eckart–Young–Mirsky theorem)
 Among all rank-$D$ matrices, i.e., matrix with at most $D$ non-zero singular values, 
 $C_D$ is the optimal approximation in the Frobenius norm sense: $\|C-C_D\|_F^2=\sum_{\alpha>D}s_\alpha^2$.
 :::

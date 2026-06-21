@@ -10,15 +10,25 @@ bibliography: refs.bib
 
 # Summary and questions
 
+1. Trotter decomposition for evoluation/imaginary time evolution, then truncation back to bond-dimension-limited PEPS.
+2. Solve minimum eigenvalue problem locally with consideration oftruncated environment tensor.
+3. TDVP like: Find the best tangent space on the PEPS manifold.
+
 # TEBD for PEPS
 
 For MPS state in the canonical form, truncating the local tensors gives the optimal approximation of the original state in terms of the Frobenius norm.
-Unlike the MPS case,
-truncation in PEPS can not be simply done on local tensors, as the others forms a non-trivial environment tensor.
+Unlike the MPS case, truncation in PEPS can not be simply done on local tensors, as the others form a non-trivial environment tensor.
+Many approaches have thus been proposed to approximate the environment tensor, including:
 
-Since lack of canonical form and optimality proof, there are many ways of truncating PEPS.
+- NTU: Near neighborhood truncation
+- CTM: Corner transfer matrix
+- BP: Block-pulse
+
+
+
 
 ## NTU
+
 the ordinary truncation (SVD) can be regards as the minimization of:
 $$
 \min~ \varepsilon := \mathrm{tr}\left[(R_A R_B^\dagger- M_A M_B^\dagger)(R_A R_B^\dagger- M_A M_B^\dagger)^\dagger\right],

@@ -14,13 +14,6 @@ bibliography: refs.bib
 This note is a summary of the technical details of the digital-analog conversion.
 The target is to realize an analog IQP circuit on the lattice.
 
-**Possible fix:**
-
-- 拉大 spacing，降低 n，或缩短 preparation/readout pulse，使mapping-up和mapping-down期间 V 可忽略. 
-- 不要真的把一半 population 放到 $\ket{r}$, 在 hyperfine qubit 中制备 $\ket{+}^{\otimes n}$, 然后 off-resonantly dress $\ket{1}$ 到 Rydberg，产生有效 ZZ 相互作用. 
-- 做 constrained-IQP, 制备 $\ket{+}^{\otimes \mathcal{I}}$,即只在 $\mathcal{I}$ 这样没有blockade的位形上制备 $\ket{1} + \ket{r}$, 其余 qubit 上 $\ket{1}$.
-
-
 
 # The Hamiltonian
 In the digital-analog mapping protocols, we consider $\ket{0} = \ket{5S_{1/2}, F=1, m_F=0}$ and $\ket{1} = \ket{5S_{1/2}, F=2, m_F=0}$.
@@ -54,11 +47,11 @@ The microwave or Raman controls $\Omega_{\rm hf,i}(t),\Delta_{\rm hf,i}(t)$ driv
 
 In analogy, we hope to design a time-dependent pulse $\Omega_R(t),\Omega_{\rm hf,i}(t), \Delta_R(t), \Delta_{\rm hf,i}(t)$ that allows $\{\ket{\mathbf{s}}\}_{\mathbf{s} \in \{\ket{0},\ket{1}\}^n}$ to be excited to Rydberg state and then precisely return to the original state $\{e^{i \phi(\mathbf{s})}\ket{\mathbf{s}}\}_{\mathbf{s} \in \{\ket{0},\ket{1}\}^n}$ with different accumulated phases.
 
-For a multi-qubit system, adiabatic computation is more applicable than finding a time-optimal pulse.
-For different configurations $\ket{s}$, 
-we note that only atoms in the $\ket{1}$ state participate in the Rydberg excitation; atoms in $\ket{0}$ are far detuned from the $\ket{0} \leftrightarrow \ket{r}$ transition and can be dropped from the restricted Rydberg dynamics.
-This leaves a subsystem of $\ket{1},\ket{r}$ atoms with configuration-dependent interaction terms $V^{(s)}_{ij}$ ($2^n$ configurations in total since each atom can be in $\ket{0}$ or $\ket{1}$).
-Specifically, we fix a configuration $\ket{s}$, set $J_{ij} := V^{(s)}_{ij}$, and restrict to the $\ket{1},\ket{r}$ subspace.
+- For a multi-qubit system, adiabatic computation is more applicable than finding a time-optimal pulse.
+- For different configurations $\ket{s}$, only atoms in the $\ket{1}$ state participate in the Rydberg excitation; 
+- atoms in $\ket{0}$ are far detuned from the $\ket{0} \leftrightarrow \ket{r}$ transition and can be dropped from the restricted Rydberg dynamics.
+- This leaves a subsystem of $\ket{1},\ket{r}$ atoms with configuration-dependent interaction terms $V^{(s)}_{ij}$ ($2^n$ configurations in total since each atom can be in $\ket{0}$ or $\ket{1}$).
+- Specifically, we fix a configuration $\ket{s}$, set $J_{ij} := V^{(s)}_{ij}$, and restrict to the $\ket{1},\ket{r}$ subspace.
  
 For simplicity, we consider the Pauli basis, i.e.,
 consider $X_i = \ket{1}\bra{r}+\ket{r}\bra{1}$, and $Z_i = \ket{1}\bra{1} - \ket{r}\bra{r}$ as the Pauli operators, and a time-dependent Hamiltonian with:
@@ -75,8 +68,10 @@ $$
 h_i(t)=\frac{\Delta_R(t)-\Delta_{\rm hf,i}(t)}{2}-\frac{1}{4}\sum_{j\neq i}J_{ij}.
 $$
 
-We consider the case $H(0)=H(T)=H_Z(0)$,  with $\Omega(0) = \Omega(T) = 0$, such that the computational beginning state $\ket{s}$ faithfully returns to the original state $\ket{s}$ with a geometric phase $\phi(s)$.
-This accumulated phase contains both dynamical and geometric contributions; see the detailed analysis [here](../../../theory/Perturbation/geometric_phase.html).
+- We consider the case $H(0)=H(T)=H_Z(0)$,  with $\Omega(0) = \Omega(T) = 0$.
+- This indicates that the computational beginning state $\ket{s}$ faithfully returns to the original state $\ket{s}$ with a geometric phase $\phi(s)$.
+- The accumulated phase contains both **dynamical** and **geometric** contributions; see the detailed analysis [here](../../../theory/Perturbation/geometric_phase.qmd).
+
 Then we analyze how the dynamical and geometric phases are related to the configuration $\ket{s}$, which changes $J_{ij}$ and $h_i$, and whether a global phase can be extracted so that only the relative geometric phase is observable across different configurations.
 
 However, more task involves since the $\ket{1}-\ket{r}$ model here is only an effective Hamiltonian of the full $\{\ket{0},\ket{1},\ket{e_\mu},\ket{r}\}$ system,
@@ -90,12 +85,36 @@ Here below we show that how these two terms can be approximately recovered throu
 
 # Stark-shift analysis
 
-The simplified $\ket{1}-\ket{r}$ model is sufficient for population dynamics only after the light shifts from the eliminated levels have either been calibrated into the detunings or explicitly added back.
-This is important for phase estimation: a term proportional to the identity inside a reduced two-level block does not change the transfer probability, but it still contributes a dynamical phase.
-Throughout this section, all light shifts are written in angular-frequency units, i.e. as entries of $H/\hbar$.
+The simplified $\ket{0}-\ket{1}-\ket{r}$ model is an effective Hamitonian of the full model:
+$$
+\begin{align*}
+&\ket 0=\ket{5S_{1/2},F=1,m_F=0},\qquad\ket1=\ket{5S_{1/2},F=2,m_F=0},\\
+&\ket 2,\ket 3,\ket 4 =\ket{6P_{3/2},F'=1,2,3,m_F=-1},\\
+&\ket 5=\ket{r}=\ket{70S_{1/2},m_j=-1/2},
+\end{align*}
+$$
+Denote the effective space projector $P=\ket0\bra0+\ket1\bra1+\ket r\bra r,$ and $Q=\sum_{\mu=2,3,4}\ket{e_\mu}\bra{e_\mu}$.
+The full Hamiltonian si composed of three parts $H_{\mathrm{full}}(t)=H_P(t)+H_Q+V(t)$ with
+$$
+\begin{align*}
+&H_P^{\rm bare}(t) = -\Delta_{\rm hf}^{\rm bare}(t)\ket1\bra1 -\Delta_R^{\rm bare}(t)\ket r\bra r + \frac{\Omega_{\rm hf}(t)}{2} \left(\ket1\bra0+\ket0\bra1\right),\\
+&H_Q = \sum_{\mu=2,3,4}\Delta_{\mu}\ket{e_\mu}\bra{e_\mu},\\
+& V(t) =
+\sum_{\mu}
+\left[
+\frac{\Omega^{(0)}_{420,\mu}(t)e^{i\phi_1(t)}}{2} \ket{e_\mu}\bra0+
+\frac{\Omega^{(1)}_{420,\mu}(t)e^{i\phi_1(t)}}{2}\ket{e_\mu}\bra1
++
+\frac{\Omega^{(r)}_{1013,\mu}e^{i\phi_2(t)}}{2}\ket{e_\mu}\bra r + \mathrm{h.c.}\right].
+\end{align*}
+$$
 
-The relevant principle is the same one used in the two-photon Rydberg gate calibration: off-resonant optical coupling produces an AC Stark shift proportional to $-\Omega^2/(4\Delta)$ in the rotating-wave, large-detuning limit [@grimm2000optical; @brion2007adiabatic].
-For a full $\{\ket{0},\ket{1},\ket{e_\mu},\ket{r}\}$ model, the eliminated intermediate manifold contributes the self-energy
+Then use SW trnasformation $H_{\rm SW}(t) \to e^{S}H_7e^{-S}+i\dot e^{S}e^{-S}$ and $\ket{\psi_{\rm SW}(t)} \to e^{S(t)}\ket{\psi_{\rm full}(t)}$, with the first order approximation:
+$$
+S^{(1)}(t) = \sum_{\mu,a\in\{0,1,r\}}\left[\lambda_{\mu a}(t)\ket{e_\mu}\bra a-\lambda_{\mu a}^*(t)\ket a\bra{e_\mu}\right],
+$$
+
+the eliminated intermediate manifold contributes the self-energy
 $$
 H_{\rm Stark}(t)
 =
@@ -123,12 +142,46 @@ $$
 Here $\Delta_{a\mu}$ is the single-photon detuning of the laser from the transition $\ket{a}\leftrightarrow\ket{e_\mu}$ in the same rotating frame.
 If $\Delta_e$ is defined with respect to the $\ket{1}\leftrightarrow\ket{e}$ transition, then the $\ket{0}\leftrightarrow\ket{e}$ detuning is shifted by the ground-state hyperfine splitting,
 $$
-\Delta_{0\mu}\simeq \Delta_{1\mu}+\omega_{01},
-\qquad
+\Delta_{1\mu} = \Delta_{r\mu} \simeq \Delta_{e},
+\quad
+\Delta_{0\mu}\simeq \Delta_{e}+\omega_{01},
+\quad
 \omega_{01}/2\pi\simeq 6.835\,{\rm GHz}
 $$
 for $^{87}$Rb.
-Thus $\ket{0}$ is not dynamically excited by the Rydberg pulse, but it still accumulates an off-resonant light-shift phase.
+
+Given the mid state $\ket{2},\ket{3},\ket{4}=\{6P_{3/2},F'=1,2,3,m_F=-1\}$, and the notation 
+$$
+\begin{aligned}
+\Omega_{420} &\;:=\; \frac{\langle\{6P_{3/2},\, m_j = -\tfrac{3}{2},\, m_I = \tfrac{1}{2}\}\rvert\, e\mathbf{r}\cdot\mathbf{E}^{(1)}_-\, \lvert\{5S_{1/2},\, m_j = -\tfrac{1}{2},\, m_I = \tfrac{1}{2}\}\rangle}{\sqrt{2}\,\hbar}, \\
+\gamma\,\Omega_{420} &\;=\; \frac{\langle\{6P_{3/2},\, m_j = -\tfrac{1}{2},\, m_I = -\tfrac{1}{2}\}\rvert\, e\mathbf{r}\cdot\mathbf{E}^{(1)}_-\, \lvert\{5S_{1/2},\, m_j = \tfrac{1}{2},\, m_I = -\tfrac{1}{2}\}\rangle}{\sqrt{2}\,\hbar},
+\end{aligned}
+$$
+
+we have:
+$$
+\begin{aligned}
+\Omega_{420,e_0}^{(1)}(t)
+&=
+\left(
+\sqrt{\frac{3}{10}}
+-
+\sqrt{\frac{2}{5}}\gamma
+\right)\frac{\Omega_{420}}{2},
+\\
+\Omega_{420,e_2}^{(1)}(t)
+&=
+-\sqrt{\frac{1}{2}}\frac{\Omega_{420}}{2},
+\\
+\Omega_{420,e_3}^{(1)}(t)
+&=
+\left(
+\sqrt{\frac{1}{5}}
++
+\sqrt{\frac{3}{5}}\gamma
+\right)\frac{\Omega_{420}}{2}.
+\end{aligned}
+$$
 
 For the clock-state Rydberg excitation used above, neglecting the small hyperfine spread inside $6P_{3/2}$ gives the useful estimates
 $$

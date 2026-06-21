@@ -7,6 +7,7 @@ Decision tree: which file do I need?
 | Screen a paper for relevance | `identify.md` | Paste into Claude |
 | Complete (t.b.c.) gaps in a draft | `revise.md` | Paste into Claude |
 | Expand notes into Quarto article | `generate.md` | Paste into Claude |
+| Survey conference oral talks by topic | `conference_topic_survey.md` | Paste into Claude |
 | Integrate .qmd results into LaTeX paper | `integrate_paper.md` | Paste into Claude |
 | Generate research issues from a .qmd | `generate_issues.md` | Paste into Claude |
 | Polish Quarto Topics (overnight) | `polish_topics.sh` | `nohup` |
@@ -65,6 +66,7 @@ _instructions/
 ├── review_logical_gaps.sh ← cyclic section-by-section paper review
 ├── revise.md              ← complete (t.b.c.) gaps from chat or paper
 ├── generate.md            ← expand notes into Quarto articles
+├── conference_topic_survey.md ← survey conference oral talks by topic
 ├── integrate_paper.md     ← integrate Quarto results into LaTeX
 ├── identify.md            ← screen papers for relevance
 ├── generate_issues.md     ← generate research issues
