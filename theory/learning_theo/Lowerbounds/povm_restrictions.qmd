@@ -104,21 +104,7 @@ $$
 $$ {#eq-tensor-network-MPS}
 
 ::: {#fig-mps-povm}
-```{.tikz}
-%%| filename: mps-povm-tensor
-%%| additionalPackages: \usepackage{quantikz}
-
-\begin{tikzpicture}
-\node {
-\begin{quantikz}[row sep=0.1cm, column sep=0.1cm]
-    \setwiretype{n}&&&\gate[2]{M_{s_1, s_2}}&\gate[1]{M_{s_1}\vphantom{M_{s_1}^\dagger}}\setwiretype{c}&\gate[1]{\rho}\setwiretype{q}&\gate[1]{M_{s_1}^\dagger}\gategroup[4,steps=6,style={dashed,rounded corners,inner sep=-1pt},label style={label position=below, yshift=0.65cm, xshift=-0.7cm}]{$\ket{L_{s,a_c}}$}&\gate[2]{M_{s_1, s_2}^\dagger}\setwiretype{c}\\
-    \setwiretype{n}&&\gate[2]{\cdots}\setwiretype{n}&\setwiretype{c}&\setwiretype{q}&\gate[1]{\rho}&&&\gate[2]{\cdots}\setwiretype{c}\\
-    \setwiretype{n}&\gate[2]{M_{s_1,\cdots,s_c}}&\setwiretype{c}&\setwiretype{q}&&\gate[1]{\cdot\!\!\cdot\!\!\cdot}&&&&\gate[2]{M_{s_1,\cdots,s_c}^\dagger}\setwiretype{c}\\
-    \lstick{$a_c$|\!|\!\!\!}\setwiretype{c}&&\setwiretype{q}&&&\gate[1]{\rho}&&&&&\setwiretype{c}&\rstick{\!\!\!|\!|$a_c$}
-\end{quantikz}
-};
-\end{tikzpicture}
-```
+![](povm_restrictions_files/mediabag/mps-povm-tensor.svg)
 
 The MPS tensor network structure for $|L_{s,a_c}\rangle$.
 :::

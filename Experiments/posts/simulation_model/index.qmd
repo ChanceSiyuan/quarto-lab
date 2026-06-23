@@ -27,7 +27,7 @@ The catalog below is organized by physics theme; a [summary table](#sec-mechanis
 
 #### Effective Hamiltonian (Schrieffer–Wolff)
 
-Perturbative block-diagonalization that derives low-energy effective Hamiltonians from the full Rydberg Hamiltonian. All models below ultimately rest on this framework. See the [detailed notes](Effective_ham.qmd).
+Perturbative block-diagonalization that derives low-energy effective Hamiltonians from the full Rydberg Hamiltonian. All models below ultimately rest on this framework. See the [detailed notes](../../../theory/Perturbation/Effective_ham.qmd).
 
 #### Rydberg Atom Platform
 
@@ -61,7 +61,7 @@ H_{\text{PXP}} = \frac{\Omega}{2}\sum_i P_{i-1}\,\sigma^x_i\, P_{i+1}
 $$ {#eq-pxp}
 where $P_i = |g_i\rangle\langle g_i|$ projects onto ground states, enforcing $\sigma^x_i$ can effact if and only if site $i-1$ and $i+1$ are both in the ground state, which is the strong-blockade limit of the TFIM. See the [detailed notes](dynamics.qmd) for more details.
 
-- Starting from the Néel state $|Z_2\rangle = |rgrg\cdots\rangle$, anomalous revivals signal **quantum many-body scars** (QMBS) — non-thermal eigenstates in an otherwise ergodic spectrum [@bernien2017probing]. refer to the [detailed notes](/theory/Posts/ETH/index.html) for more details.
+- Starting from the Néel state $|Z_2\rangle = |rgrg\cdots\rangle$, anomalous revivals signal **quantum many-body scars** (QMBS) — non-thermal eigenstates in an otherwise ergodic spectrum [@bernien2017probing]. refer to the [detailed notes](/theory/Perturbation/ETH.qmd) for more details.
 - Controlled scar dynamics and subharmonic response were demonstrated by periodic driving [@bluvstein2021controlling].
 - The largest QMBS observation used 256 atoms on the QuEra Aquila processor, where position-noise-induced emergent disorder was found to compete with scar revivals [@maskara2025emergent].
 - A key open problem is understanding the stability and structure of scar towers in 2D geometries beyond the PXP chain.

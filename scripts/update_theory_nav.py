@@ -20,7 +20,7 @@ ROOT = Path(__file__).resolve().parents[1]
 THEORY_DIR = ROOT / "theory"
 QUARTO_YML = ROOT / "_quarto.yml"
 THEORY_INDEX = THEORY_DIR / "index.qmd"
-SCRIPT_REF = "python3 scripts/update_theory_nav.py"
+SCRIPT_REF = ".venv/bin/python scripts/update_theory_nav.py"
 
 AUTO_BEGIN = "    # BEGIN AUTO THEORY SIDEBARS"
 AUTO_END = "    # END AUTO THEORY SIDEBARS"
@@ -305,6 +305,23 @@ def ensure_project_pre_render(text: str) -> str:
     except StopIteration:
         return text
 
+    # Drop any existing pre-render block inside the project section.
+    cleaned: list[str] = []
+    index = project_start + 1
+    while index < website_start:
+        line = lines[index]
+        if line.strip() == "pre-render:":
+            index += 1
+            while index < website_start and lines[index].startswith("    - "):
+                index += 1
+            if index < website_start and lines[index].strip() == "":
+                index += 1
+            continue
+        cleaned.append(line)
+        index += 1
+
+    lines = lines[: project_start + 1] + cleaned + lines[website_start:]
+    website_start = next(index for index, line in enumerate(lines) if line == "website:")
     insert_at = website_start
     lines[insert_at:insert_at] = [
         "  pre-render:",

@@ -19,7 +19,7 @@ Rydberg gate fidelity is limited by a hierarchy of noise sources: laser phase an
 
 ## Transformation to Stochastic Detuning
 
-Laser phase noise $\phi_n(t)$ enters the two-photon Hamiltonian (see [Two-Qubit Gates](two_qubit_gates.qmd) @eq-two-photon-H) via modified noise-laden laser phases $\phi_1(t) \to \phi_1(t) + \phi_{1n}(t)$, $\phi_2(t) \to \phi_2(t) + \phi_{2n}(t)$.
+Laser phase noise $\phi_n(t)$ enters the two-photon Hamiltonian (see [Two-Qubit Gates](two_qubit_gates.qmd#eq-two-photon-H)) via modified noise-laden laser phases $\phi_1(t) \to \phi_1(t) + \phi_{1n}(t)$, $\phi_2(t) \to \phi_2(t) + \phi_{2n}(t)$.
 
 Applying the noise-modified frame transformation
 
@@ -37,7 +37,7 @@ This is the central result: **phase noise is equivalent to a time-dependent detu
 
 ## Power Spectral Density
 
-The phase noise is characterized by its PSD $S_{\delta\nu}(f) = f^2 S_\phi(f)$. A realistic model for a PDH-locked laser has the form (from [Laser Systems](laser_systems.qmd) @eq-PSD):
+The phase noise is characterized by its PSD $S_{\delta\nu}(f) = f^2 S_\phi(f)$. A realistic model for a PDH-locked laser has the form (from [Laser Systems](laser_systems.qmd#eq-PSD)):
 
 $$
 S_{\delta\nu}(f) = h_0 + \sum_g \frac{s_g f_g^2}{\sqrt{8\pi}\,\sigma_g}\,e^{-(f-f_g)^2/2\sigma_g^2} + \text{(negative $f$ term)},

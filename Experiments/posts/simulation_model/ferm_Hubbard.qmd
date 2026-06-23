@@ -20,7 +20,7 @@ Can we extend this by non-linear estimation of evolution result?
 
 ::: {.callout-tip icon="false" collapse="false"}
 ## Discussion
-See discussion in [here](../../../theory/Posts/Virtual_Distillation/app_PCA.qmd).
+See discussion in [here](../../../theory/Virtual_Distillation/app_PCA.qmd).
 :::
 
 
@@ -80,7 +80,7 @@ where:
 
 :::{.callout-note collapse="false"}
 ## Proof (Click to expand)
-We apply the Schrieffer-Wolff framework (see [this](Effective_ham.qmd) pages) to the extended Fermi-Hubbard model in the strong-coupling regime $U \gg t, V_1$. See also @auerbach1994interacting for background.
+We apply the Schrieffer-Wolff framework (see [this](../../../theory/Perturbation/Effective_ham.qmd) pages) to the extended Fermi-Hubbard model in the strong-coupling regime $U \gg t, V_1$. See also @auerbach1994interacting for background.
 
 Set $H_0 = U \sum_i n_{i\uparrow} n_{i\downarrow}$, with eigenvalues $0$ (no doubly-occupied sites) and $U, 2U, \ldots$ (one or more doublons). The low-energy subspace $\mathcal{H}_0$ is the space of states with no double occupancy, with projector $P_0 = \prod_i (1 - n_{i\uparrow} n_{i\downarrow})$. The spectral gap is $\Delta = U$. The perturbation is given by:
 $$
@@ -109,7 +109,7 @@ $$
 \end{cases}
 $$
 These satisfy $P_0 T_+ P_0 = 0$ and $P_0 T_- P_0 = 0$, so $T_\pm$ form the off-diagonal part $V_{od}$.
-Use this fact, and combining the effctive Hamiltonian framework in [this](Effective_ham.qmd) pages, we get the first-order effective Hamiltonian:
+Use this fact, and combining the effctive Hamiltonian framework in [this](../../../theory/Perturbation/Effective_ham.qmd) pages, we get the first-order effective Hamiltonian:
 $$
 \begin{align*}
 H_{\mathrm{eff}}^{(1)} = P_0 V P_0 = P_0 T_0 P_0 + P_0 V_1 P_0.

@@ -65,11 +65,11 @@ Although not directly on the honeycomb lattice, the landmark experiment by [@sem
 - **Platform:** 219-atom ${}^{87}\mathrm{Rb}$ Rydberg simulator in a programmable tweezer array.
 - **Mechanism:** Rydberg blockade at nearest-neighbor distance enforces a dimer constraint, mapping the system onto a quantum dimer model on the kagome lattice.
 - **Observables:** Topological string operators (detecting $\mathbb{Z}_2$ topological order) and quantum correlations.
-- **Significance:** This was the first experimental evidence of a topological spin liquid phase in a programmable quantum system, demonstrating that the interplay of geometry and blockade constraints can stabilize exotic quantum phases closely connected to the honeycomb model's vortex sectors ([Lemma (vortex-reflect)](/theory/Posts/topo_matter/honeycomb.qmd#lem-vortex-reflect)).
+- **Significance:** This was the first experimental evidence of a topological spin liquid phase in a programmable quantum system, demonstrating that the interplay of geometry and blockade constraints can stabilize exotic quantum phases closely connected to the honeycomb model's vortex sectors ([Lemma (vortex-reflect)](/theory/topo_matter/honeycomb.qmd#lem-vortex-reflect)).
 
 ## Outlook: Digital Simulation and Proposals
 
-Beyond analog approaches, digital quantum simulation has recently probed the Kitaev honeycomb model directly. [@evered2025probing] implemented 104 qubits (72 data + 32 ancilla) in a honeycomb lattice with periodic boundary conditions on a neutral-atom quantum computer. Using Floquet engineering with measurement-and-feedforward for fermion-to-qubit encoding, they prepared topological states across the Kitaev phase diagram, verified the non-Abelian spin-liquid phase via odd Chern number evaluation (cf. [Lemma (chern-honeycomb)](/theory/Posts/topo_matter/honeycomb.qmd#lem-chern-honeycomb)), and directly probed fermion exchange statistics.
+Beyond analog approaches, digital quantum simulation has recently probed the Kitaev honeycomb model directly. [@evered2025probing] implemented 104 qubits (72 data + 32 ancilla) in a honeycomb lattice with periodic boundary conditions on a neutral-atom quantum computer. Using Floquet engineering with measurement-and-feedforward for fermion-to-qubit encoding, they prepared topological states across the Kitaev phase diagram, verified the non-Abelian spin-liquid phase via odd Chern number evaluation (cf. [Lemma (chern-honeycomb)](/theory/topo_matter/honeycomb.qmd#lem-chern-honeycomb)), and directly probed fermion exchange statistics.
 
 Several theoretical proposals aim to realize the pure Kitaev model in analog settings:
 
@@ -138,7 +138,7 @@ The couplings $J_x : J_y : J_z$ are freely tunable by adjusting the duty cycles,
 
 **Validity and parasitic terms.**
 The Magnus expansion is controlled when the drive frequency exceeds the interaction scale: $\hbar\omega \gg |J_\perp|, |J_{zz}|$ with $\omega = 2\pi/T$.
-First-order corrections generate Dzyaloshinskii–Moriya (DM) terms $\propto \mathbf{D}_{jk} \cdot (\mathbf{S}_j \times \mathbf{S}_k)$ with $|\mathbf{D}| \sim J^2/\omega$; these break time-reversal symmetry similarly to the physical three-body perturbation $K = h_x h_y h_z / \Delta^2$ in [Theorem (perturbed-honeycomb)](/theory/Posts/topo_matter/honeycomb.qmd#thm-perturbed-honeycomb), but are parasitic and uncontrolled.
+First-order corrections generate Dzyaloshinskii–Moriya (DM) terms $\propto \mathbf{D}_{jk} \cdot (\mathbf{S}_j \times \mathbf{S}_k)$ with $|\mathbf{D}| \sim J^2/\omega$; these break time-reversal symmetry similarly to the physical three-body perturbation $K = h_x h_y h_z / \Delta^2$ in [Theorem (perturbed-honeycomb)](/theory/topo_matter/honeycomb.qmd#thm-perturbed-honeycomb), but are parasitic and uncontrolled.
 At second order, three-body ring-exchange terms $\sim J^3/\omega^2$ appear.
 For the experimental parameters in [@geier2023floquet] (10 atoms, two honeycomb plaquettes): $\omega/2\pi \sim 10$ MHz, $J^{\text{eff}}/2\pi \sim 0.1$–$1$ MHz, giving $\omega/J \gtrsim 10$ and $|\mathbf{D}|/J \lesssim 0.1$.
 

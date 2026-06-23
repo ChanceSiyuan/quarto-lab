@@ -30,7 +30,7 @@ The SLM operates in the Fourier plane, capable of converting the Rydberg excitat
 
 A phase-only SLM provides one real degree of freedom per pixel — the phase $\phi(\mathbf{r})$ — while the output field $E(\mathbf{r}') = |E|\,e^{i\varphi}$ has two independent quantities (amplitude and phase) at every point. By a simple counting argument, a single phase-only element cannot simultaneously and perfectly control both amplitude and phase across the entire output plane. Yet beam shaping for Rydberg experiments demands precisely this: uniform amplitude ($<3\%$ RMS variation) **and** flat wavefront ($<\lambda/100$ phase error) within the top-hat region. The system achieves this through three mechanisms that collectively circumvent the fundamental limitation:
 
-1. **Complex-field cost function (@sec-cgm):** The optimization targets a complex field $\sqrt{I_{\rm target}}\,e^{i\phi_0}$, not just $I_{\rm target}$, while restricting the cost function to only the flat-top region $\Omega$。
+1. **Complex-field cost function ([CGM cost](#sec-cgm)):** The optimization targets a complex field $\sqrt{I_{\rm target}}\,e^{i\phi_0}$, not just $I_{\rm target}$, while restricting the cost function to only the flat-top region $\Omega$。
 
 2. **Continuous geometric ray-mapping (@sec-ray-mapping):** The optimized SLM phase is smooth and slowly varying — physically equivalent to a computed aspheric lens that redirects rays from the Gaussian center toward the edges. This smooth deflection naturally preserves wavefront continuity, unlike diffractive approaches that generate speckle.
 
@@ -57,7 +57,7 @@ The gap between theory and experiment is attributed to:
 
 ---
 
-# Conjugate Gradient Minimization algorithm sketch
+# Conjugate Gradient Minimization algorithm sketch {#sec-cgm}
 
 **Conjugate Gradient Minimization (CGM)** was first applied to holographic trap generation by Harte et al. [@harte2014slmcg] for amplitude-only control, then extended to simultaneous phase and amplitude control by Bowman et al. [@Bowman_2017]. The key idea is to reformulate hologram computation as minimization of a cost function that directly encodes the **complex-field** fidelity — not just the intensity.
 The price is reduced **light-usage efficiency** $\eta$ (fraction of total output power falling within $\Omega$). For a flat-top beam, Bowman et al. report $\eta \approx 11\%$; for Rydberg experiments, Ebadi et al. achieve 30--38% [@ebadi2021quantum] by optimizing the beam size and measure region geometry.
@@ -225,7 +225,7 @@ and the aberration is exactly canceled. The correction procedure:
 2. **Zernike decomposition:** Expand the measured wavefront error $\phi_{\rm error}(\rho, \theta) = \sum_j c_j Z_j(\rho, \theta)$ in Zernike modes to separate low-order (tilt, defocus, astigmatism) from high-order (coma, spherical, trefoil) contributions.
 3. **Conjugate phase overlay:** Subtract $\phi_{\rm error}$ from the SLM hologram per @eq-wavefront-cancel.
 
-This is conceptually identical to the Zernike correction used for hologram alignment (@sec-zernike), but extended to high-order aberrations. Bowman et al. [@bowman2010shack] demonstrated SLM-based Shack-Hartmann sensing that corrects system aberrations from $0.8\lambda$ down to $\lambda/16$; the Ebadi et al. system pushes further to $\lambda/100$ by combining this with iterative camera feedback (@sec-camera-feedback). The residual floor is set by aberrations that vary faster than the SLM pixel pitch can resolve — primarily vacuum window defects.
+This is conceptually identical to the [Zernike correction](wgs_based.qmd#sec-zernike) used for hologram alignment, but extended to high-order aberrations. Bowman et al. [@bowman2010shack] demonstrated SLM-based Shack-Hartmann sensing that corrects system aberrations from $0.8\lambda$ down to $\lambda/16$; the Ebadi et al. system pushes further to $\lambda/100$ by combining this with iterative camera feedback ([wavefront correction](#sec-wavefront-correction)). The residual floor is set by aberrations that vary faster than the SLM pixel pitch can resolve — primarily vacuum window defects.
 
 Even after CGM optimization and wavefront correction, residual intensity non-uniformity remains due to higher-order optical effects (scattered light, pixel crosstalk, SLM phase response nonlinearity). Camera-based feedback closes this gap [@berto2023crosstalk]:
 
@@ -249,7 +249,7 @@ A comprehensive review of IFTA variants for beam shaping is provided by Ripoll e
 - **Soft-quantization IFTA:** Gradual phase constraint enforcement, better efficiency.
 - **Bidirectional IFTA:** Enforces constraints in both planes simultaneously, best uniformity for multilevel phase elements.
 
-The CGM approach used in Rydberg experiments (@sec-cgm) can be viewed as a gradient-descent variant of IFTA that replaces the heuristic projection steps with principled optimization of a differentiable cost function.
+The [CGM approach](#sec-cgm) used in Rydberg experiments can be viewed as a gradient-descent variant of IFTA that replaces the heuristic projection steps with principled optimization of a differentiable cost function.
 
 Compared to IFTA methods for similar continuous patterns, CGM achieves 6--20$\times$ lower non-uniformity $\epsilon_{nu}$ and 1--2 orders of magnitude lower phase error $\epsilon_\Phi$, at the cost of lower light efficiency (the fundamental trade-off of regional constraint) [@Bowman_2017].
 

@@ -117,7 +117,7 @@ Instead of uniform random Clifford sampling, these methods adjust the measuremen
 
 **(2) Greedy Derandomization**
 
-- **Iterative greedy selection** @huang2021efficient: Systematically replaces random measurements with deterministic ones. For estimating $L$ Pauli observables, achieves $O(\log L)$ sample complexity by greedily selecting measurement bases that maximize information gain. (See [Derandomized local shadows](/theory/Pauli_derandomization/index.qmd) for details.)
+- **Iterative greedy selection** @huang2021efficient: Systematically replaces random measurements with deterministic ones. For estimating $L$ Pauli observables, achieves $O(\log L)$ sample complexity by greedily selecting measurement bases that maximize information gain. (See [Derandomized local shadows](../Virtual_Distillation/derandom_shadow.qmd) for details.)
 
 **(3) Commuting Pauli Grouping**
 
@@ -133,7 +133,7 @@ These methods partition Pauli operators into simultaneously measurable groups:
 
 - **Channel co-diagonalization** @yang2025measuring: Seeks a quantum channel $\Lambda$ such that multiple observables are simultaneously diagonalized.
 
-- **Lower bounds** @wu2024optimization: Establishes fundamental [efficiency limits](/theory/shallow_estim/index.qmd) for local estimation with shallow circuits.
+- **Lower bounds** @wu2024optimization: Establishes fundamental [efficiency limits](Lowerbounds/index.qmd) for local estimation with shallow circuits.
 
 # Non-linear Property Estimation
 
@@ -217,7 +217,7 @@ Machine learning approaches @huang2022provably demonstrate provably efficient es
 
 :::{.callout-important icon="false"}
 ## Conjectures
-Based on the observation that all known local 2-replica shadow protocols exhibit exponential sampling complexity, estimation of $\{\mathrm{tr}(P\rho^2)\}$ for all $P \in \mathcal{P}_n$ is [conjectured to be hard](../../Topics/Lowerbounds/index.qmd) for 2-replica strategies.
+Based on the observation that all known local 2-replica shadow protocols exhibit exponential sampling complexity, estimation of $\{\mathrm{tr}(P\rho^2)\}$ for all $P \in \mathcal{P}_n$ is [conjectured to be hard](Lowerbounds/index.qmd) for 2-replica strategies.
 :::
 
 

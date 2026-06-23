@@ -3,7 +3,7 @@ project:
   output-dir: _site
 
   pre-render:
-    - python3 scripts/update_theory_nav.py
+    - .venv/bin/python scripts/update_theory_nav.py
 
 website:
   draft-mode: unlinked
@@ -305,7 +305,7 @@ website:
         - Experiments/posts/simulation_model/index.qmd
         - section: "Foundations"
           contents:
-            - Experiments/posts/simulation_model/Effective_ham.qmd
+            - theory/Perturbation/Effective_ham.qmd
         - section: "Spin Models"
           contents:
             - Experiments/posts/simulation_model/TFIM.qmd
@@ -405,3 +405,7 @@ preview:
   host: "0.0.0.0"
 execute:
   freeze: auto
+  cache: true
+
+tikz:
+  cache: true

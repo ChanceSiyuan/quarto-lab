@@ -260,7 +260,7 @@ The depth condition $d > O(p^{-1}\log(kp^{-1}))$ ensures that enough noise has a
 
 ::: {#thm-sparse-t-percolation .callout-important icon="false"}
 ## Theorem: Noise Threshold for Sparse-T Circuits
-*(Restated from [Pauli Path Methods, @thm-sparse-CT](pauli_path.qmd#thm-sparse-CT) for the percolation perspective.)*
+*(Restated from [Pauli Path Methods](pauli_path.qmd#thm-sparse-CT) for the percolation perspective.)*
 
 Given a 2-dimensional, $(Q, k)$-sparse, localized Clifford+T circuit $C$ with depolarizing noise layers $\Lambda(\rho) = (1-p)\rho + (p/2)\mathbb{I}$ (mixing convention; per-Pauli suppression $1-p$), if $2^Q(1-p) < 1$, then the variance of the gate sampling algorithm satisfies $\text{Var} \leq \text{poly}(n)$. Furthermore, adding amplitude damping noise to this circuit will never increase the simulation complexity.
 :::

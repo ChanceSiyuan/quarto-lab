@@ -89,7 +89,7 @@ The first high-fidelity Rydberg CZ gate [@PhysRevLett.123.170503] uses two pulse
 
 The Bloch sphere trajectories are shown in @fig-phaseshift.
 
-::: {layout-ncol=3}
+::: {#fig-phaseshift layout-ncol=3}
 ![Waveform](Figures/phaseshift_ws.png){#fig-phaseshift-ws}
 
 ![Trajectory on $\{|01\rangle,|0r\rangle\}$](Figures/phaseshift_10.png){#fig-phaseshift-10}
@@ -136,7 +136,7 @@ $$ {#eq-ansatz}
 
 with parameters $\{\delta_0, A, \omega_0, \varphi_0, \theta\}$. This ansatz is nearly time-optimal, requires only 5 parameters instead of 100, and produces smooth laser waveforms that are easier to implement experimentally. The Bloch sphere trajectories are shown in @fig-ansatz-traces.
 
-::: {layout-ncol=3}
+::: {#fig-ansatz-traces layout-ncol=3}
 ![Waveform](Figures/phaseconti_ws.png){#fig-ansatz-ws}
 
 ![Trajectory on $\{|01\rangle,|0r\rangle\}$](Figures/phaseconti_10.png){#fig-ansatz-10}

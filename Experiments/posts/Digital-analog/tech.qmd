@@ -7,7 +7,7 @@ title: The technical details of the digital-analog conversion
 bibliography: refs.bib
 ---
 
-[← Back to Index](../index.qmd)
+[← Back to Index](digital-analog.qmd)
 
 # Summary and questions
 
@@ -16,76 +16,11 @@ The target is to realize an analog IQP circuit on the lattice.
 
 
 # The Hamiltonian
-In the digital-analog mapping protocols, we consider $\ket{0} = \ket{5S_{1/2}, F=1, m_F=0}$ and $\ket{1} = \ket{5S_{1/2}, F=2, m_F=0}$.
-We use the Rydberg state $\ket{r} = \ket{nS_{1/2}, m_J= - 1/2}$.
-The effective Hamiltonian is:
-$$
-\begin{align*}
-&H(t)/\hbar =
-\frac{\Omega_{R}(t)}{2} \sum_i 
-\left(|r_i\rangle\langle 1_i|+\mathrm{h.c.}\right)
-- \Delta_{R}(t) \sum_i  n_i^r\\
-&+
-\sum_i \frac{\Omega_{\rm hf,i}(t)}{2}
-\left(|1_i\rangle\langle0_i|+\mathrm{h.c.}\right)
--\sum_i \Delta_{\rm hf,i}(t) n_i^1
-+
-\sum_{i<j}V_{ij}n_i^r n_j^r ,
-\end{align*}
-$$
-Here $\Delta_e$ denotes the single-photon detuning from the virtual $6P_{3/2}$ intermediate manifold, whereas $\Delta_R(t)$ denotes the effective two-photon detuning of the $\ket{1}\leftrightarrow\ket{r}$ transition.
-In the large-detuning regime, the intermediate manifold can be adiabatically eliminated, giving the effective two-photon Rabi frequency
-$$
-\Omega_R(t)=\frac{\Omega_{420}(t)\Omega_{1013}}{2\Delta_e}.
-$$
-The Rydberg controls $\Omega_R(t)$ and $\Delta_R(t)$ are global because of the experimental optical setup.
-The microwave or Raman controls $\Omega_{\rm hf,i}(t),\Delta_{\rm hf,i}(t)$ drive the $\ket{0}\leftrightarrow\ket{1}$ transition and add a site-resolved light shift to $\ket{1}$.
-
-# Adiabatic computation
-
- A critical step in the Time-optimal (TO) Rydberg CPHASE gate protocol is to design a $\Delta_R(t)$ that allows $\{\ket{00},\ket{01},\ket{10},\ket{11}\}$ to be excited to Rydberg state and then return to $\{\ket{00},\ket{01},\ket{10},\ket{11}\}$ with different accumulated phases. 
-
-In analogy, we hope to design a time-dependent pulse $\Omega_R(t),\Omega_{\rm hf,i}(t), \Delta_R(t), \Delta_{\rm hf,i}(t)$ that allows $\{\ket{\mathbf{s}}\}_{\mathbf{s} \in \{\ket{0},\ket{1}\}^n}$ to be excited to Rydberg state and then precisely return to the original state $\{e^{i \phi(\mathbf{s})}\ket{\mathbf{s}}\}_{\mathbf{s} \in \{\ket{0},\ket{1}\}^n}$ with different accumulated phases.
-
-- For a multi-qubit system, adiabatic computation is more applicable than finding a time-optimal pulse.
-- For different configurations $\ket{s}$, only atoms in the $\ket{1}$ state participate in the Rydberg excitation; 
-- atoms in $\ket{0}$ are far detuned from the $\ket{0} \leftrightarrow \ket{r}$ transition and can be dropped from the restricted Rydberg dynamics.
-- This leaves a subsystem of $\ket{1},\ket{r}$ atoms with configuration-dependent interaction terms $V^{(s)}_{ij}$ ($2^n$ configurations in total since each atom can be in $\ket{0}$ or $\ket{1}$).
-- Specifically, we fix a configuration $\ket{s}$, set $J_{ij} := V^{(s)}_{ij}$, and restrict to the $\ket{1},\ket{r}$ subspace.
- 
-For simplicity, we consider the Pauli basis, i.e.,
-consider $X_i = \ket{1}\bra{r}+\ket{r}\bra{1}$, and $Z_i = \ket{1}\bra{1} - \ket{r}\bra{r}$ as the Pauli operators, and a time-dependent Hamiltonian with:
-$$
-\begin{align*}
-H(t)
-&\doteq \frac{1}{2} \sum_{i} \Omega(t)X_i  + \sum_{i<j} J_{ij} \frac{\mathbb{I}_i - Z_i}{2} \frac{\mathbb{I}_j - Z_j}{2}
-+ \sum_{i} \frac{\Delta_R(t)-\Delta_{\rm hf,i}(t)}{2} Z_i\\
-&\doteq \frac{1}{2} \sum_{i} \Omega(t)X_i  + \frac{1}{4}\sum_{i<j} J_{ij}  Z_i Z_j + \sum_{i} h_i(t) Z_i := H_X(t) + H_Z(t),
-\end{align*}
-$$
-where $\doteq$ means equality up to a scalar energy shift and
-$$
-h_i(t)=\frac{\Delta_R(t)-\Delta_{\rm hf,i}(t)}{2}-\frac{1}{4}\sum_{j\neq i}J_{ij}.
-$$
-
-- We consider the case $H(0)=H(T)=H_Z(0)$,  with $\Omega(0) = \Omega(T) = 0$.
-- This indicates that the computational beginning state $\ket{s}$ faithfully returns to the original state $\ket{s}$ with a geometric phase $\phi(s)$.
-- The accumulated phase contains both **dynamical** and **geometric** contributions; see the detailed analysis [here](../../../theory/Perturbation/geometric_phase.qmd).
-
-Then we analyze how the dynamical and geometric phases are related to the configuration $\ket{s}$, which changes $J_{ij}$ and $h_i$, and whether a global phase can be extracted so that only the relative geometric phase is observable across different configurations.
-
-However, more task involves since the $\ket{1}-\ket{r}$ model here is only an effective Hamiltonian of the full $\{\ket{0},\ket{1},\ket{e_\mu},\ket{r}\}$ system,
+The $\ket{1}-\ket{r}$ model is only an effective Hamiltonian of the full $\{\ket{0},\ket{1},\ket{e_\mu},\ket{r}\}$ system,
 and the actual physical energy level brings up:
 
 1. A stark-shift term due to the detuning of $\ket{e},\ket{0}$.
 2. An atom loss due to the decay of $\ket{e},\ket{r}$.
-
-Here below we show that how these two terms can be approximately recovered through the analysis of $\ket{1}-\ket{r}$ model.
-
-
-# Stark-shift analysis
-
-The simplified $\ket{0}-\ket{1}-\ket{r}$ model is an effective Hamiltonian obtained by eliminating the virtual $6P_{3/2}$ manifold. In this section all Hamiltonians are written in angular-frequency units, i.e. $H/\hbar$.
 
 For one atom, take
 $$
@@ -121,7 +56,7 @@ $$
 The quantities $\Omega_{\ell,F'}^{(a)}$ are Rabi amplitudes. The actual Hamiltonian matrix element is $\Omega_{\ell,F'}^{(a)}/2$.
 
 ::: {#thm-stark-elimination .callout-important icon="false"}
-### Theorem: Intermediate-Manifold Stark Self-Energy
+## (Intermediate-Manifold Stark Self-Energy)
 Let $H_0$ be the diagonal part of the rotating-frame Hamiltonian and write the optical coupling as
 $$
 V(t)=\sum_{F',a}
@@ -166,6 +101,84 @@ H_{\rm SW}=e^S H_{\rm full}e^{-S}+i\dot e^S e^{-S},
 $$
 with anti-Hermitian generator
 $$
+S(t)=S^{(1)}(t)+S^{(2)}(t)+\cdots .
+$$
+Following the direct-rotation convention used in the effective-Hamiltonian
+expansion, each $S^{(n)}$ is block-off-diagonal with respect to
+$P\oplus Q$:
+$$
+P S^{(n)}P=Q S^{(n)}Q=0.
+$$
+For any operator $A$, write
+$$
+A_{\rm d}=PAP+QAQ,\qquad A_{\rm od}=PAQ+QAP.
+$$
+Here $H_0=H_{0,\rm d}$ and the optical coupling is purely off-block,
+$V=V_{\rm od}$.
+
+The BCH expansion gives
+$$
+\begin{align*}
+e^S H_{\rm full}e^{-S}
+&=H_{\rm full}+[S,H_{\rm full}]
++\frac{1}{2}[S,[S,H_{\rm full}]]+\cdots,\\
+i\dot e^S e^{-S}
+&=i\dot S+\frac{i}{2}[S,\dot S]+\cdots .
+\end{align*}
+$$
+Keeping static terms through second order in $V$ and keeping the leading
+time-derivative terms gives
+$$
+\begin{align*}
+H_{\rm SW}
+&=H_0+V+[S^{(1)},H_0]+[S^{(2)},H_0]
++[S^{(1)},V]
++\frac{1}{2}[S^{(1)},[S^{(1)},H_0]]\\
+&\quad+i\dot S^{(1)}+i\dot S^{(2)}
++\frac{i}{2}[S^{(1)},\dot S^{(1)}]+\cdots .
+\end{align*}
+$$
+The first-order off-block part is
+$$
+V+[S^{(1)},H_0]+i\dot S^{(1)}.
+$$
+The adiabatic elimination used for the Stark shifts solves the static part,
+$$
+V+[S^{(1)},H_0]=0,
+$$
+and treats $i\dot S^{(1)}$ as a nonadiabatic leakage correction. With this
+static cancellation,
+$$
+[S^{(1)},[S^{(1)},H_0]]=-[S^{(1)},V].
+$$
+Now project the expanded Hamiltonian onto the slow block. Since
+$V,S^{(1)},S^{(2)},\dot S^{(1)},\dot S^{(2)}$ are block-off-diagonal while
+$H_0$ is block-diagonal,
+$$
+\begin{gathered}
+PVP=P[S^{(1)},H_0]P=P[S^{(2)},H_0]P=0,\\
+P\dot S^{(1)}P=P\dot S^{(2)}P=0.
+\end{gathered}
+$$
+Therefore
+$$
+\begin{align*}
+P H_{\rm SW}P
+&=P H_0P
++P\left([S^{(1)},V]
++\frac{1}{2}[S^{(1)},[S^{(1)},H_0]]\right)P\\
+&\quad+\frac{i}{2}P[S^{(1)},\dot S^{(1)}]P+\cdots\\
+&=P H_0P+\frac{1}{2}P[S^{(1)},V]P
++\frac{i}{2}P[S^{(1)},\dot S^{(1)}]P+\cdots .
+\end{align*}
+$$
+The Stark-shift formula below is the adiabatic part of this expression,
+dropping the derivative correction
+$\frac{i}{2}P[S^{(1)},\dot S^{(1)}]P$ and higher static terms
+$O(\Omega^3/\Delta_e^2)$.
+
+Explicitly,
+$$
 S^{(1)}(t)=
 \sum_{F',a}
 \left[
@@ -173,22 +186,22 @@ S^{(1)}(t)=
 -\lambda_{F'a}^*(t)\ket a\bra{e_{F'}}
 \right].
 $$
-Expanding $H_{\rm SW}$ to second order gives
-$$
-H_{\rm SW}=H_0+V+[S^{(1)},H_0]
-+\frac{1}{2}[S^{(1)},V]+i\dot S^{(1)}+\cdots .
-$$
-The leading adiabatic generator is fixed by the off-block cancellation condition
-$$
-V+[S^{(1)},H_0]=0,
-$$
-with the derivative term $i\dot S^{(1)}$ treated as a smaller nonadiabatic correction. Explicitly,
+
 $$
 \dot\lambda_{F'a}(t)
 =\frac{\dot g_{F'a}(t)}{\Delta_{aF'}(t)}
 -\frac{g_{F'a}(t)\,\dot\Delta_{aF'}(t)}{\Delta_{aF'}^2(t)},
 $$
-so dropping $i\dot S^{(1)}$ requires the laser amplitudes, phases, and detunings to vary slowly compared with the intermediate-state detuning, $|\dot g_{F'a}/g_{F'a}|,\,|\dot\Delta_{aF'}/\Delta_{aF'}|\ll|\Delta_{aF'}|$. The neglected terms are then of order $O(\Omega^3/\Delta_e^2,\ \Omega\dot\Omega/\Delta_e^2,\ \Omega^2\dot\Delta_e/\Delta_e^3)$. Since
+so the nonadiabatic residual $i\dot S^{(1)}$ is small only when the laser
+amplitudes, phases, and detunings vary slowly compared with the
+intermediate-state detuning,
+$|\dot g_{F'a}/g_{F'a}|,\,|\dot\Delta_{aF'}/\Delta_{aF'}|\ll|\Delta_{aF'}|$.
+After projection, this residual first enters the slow-block Hamiltonian
+through $\frac{i}{2}P[S^{(1)},\dot S^{(1)}]P$, whose size is
+$O(\Omega\dot\Omega/\Delta_e^2,\Omega^2\dot\Delta_e/\Delta_e^3)$. Together
+with the next static SW terms, the neglected corrections are
+$O(\Omega^3/\Delta_e^2,\ \Omega\dot\Omega/\Delta_e^2,\ \Omega^2\dot\Delta_e/\Delta_e^3)$.
+Since
 $$
 [\ket{e_{F'}}\bra a,H_0]=-\Delta_{aF'}\ket{e_{F'}}\bra a,
 $$
@@ -196,7 +209,7 @@ the solution is
 $$
 \lambda_{F'a}(t)=\frac{g_{F'a}(t)}{\Delta_{aF'}(t)}.
 $$
-Projecting the remaining second-order term onto $P$ gives
+Using the adiabatic projected formula derived above,
 $$
 P H_{\rm SW}P
 =P H_0P+\frac{1}{2}P[S^{(1)},V]P+\cdots ,
@@ -280,7 +293,7 @@ $$
 For $^{87}$Rb, $\omega_{01}/2\pi\simeq 6.835\,{\rm GHz}$.
 
 ::: {.callout-note collapse="true"}
-### Derivation: Clebsch-Gordan Factors
+## Proof (Click to expand)
 The 420-nm coupling is evaluated in the uncoupled $\ket{m_J,m_I}$ basis, where the electric dipole operator preserves $m_I$ and changes $m_J$ by $q=-1$. With $I=3/2$ and Condon-Shortley phases,
 $$
 \begin{aligned}
@@ -449,6 +462,7 @@ $$
 $$
 For a numerical estimate at GHz precision, use the explicit sums over $F'$ rather than these collapsed prefactors, especially for $\delta_0$ because the extra $\omega_{01}$ denominator is comparable to common intermediate detunings.
 
+
 These shifts tell us how to recover the missing phase from the simplified $\ket{1}-\ket{r}$ simulation. The full three-state diagonal Hamiltonian after elimination is
 $$
 H_{\rm diag}/\hbar
@@ -528,6 +542,67 @@ For configuration-dependent phase gates, this term must be included before extra
 If the experimental detunings $\Delta_R(t)$ and $\Delta_{\rm hf,i}(t)$ are calibrated spectroscopically, part of the above shift may already be included.
 In that case one should add only the residual shift not absorbed into the calibrated detuning; otherwise the Stark phase is double-counted.
 This is consistent with the Rydberg-gate practice of extracting single-photon Rabi frequencies from measured light shifts and optimizing beam parameters using differential light shifts [@evered2023highfidelity].
+
+In the digital-analog mapping protocols, we consider $\ket{0} = \ket{5S_{1/2}, F=1, m_F=0}$ and $\ket{1} = \ket{5S_{1/2}, F=2, m_F=0}$.
+We use the Rydberg state $\ket{r} = \ket{nS_{1/2}, m_J= - 1/2}$.
+The effective Hamiltonian is:
+$$
+\begin{align*}
+&H(t)/\hbar =
+\frac{\Omega_{R}(t)}{2} \sum_i 
+\left(|r_i\rangle\langle 1_i|+\mathrm{h.c.}\right)
+- \Delta_{R}(t) \sum_i  n_i^r\\
+&+
+\sum_i \frac{\Omega_{\rm hf,i}(t)}{2}
+\left(|1_i\rangle\langle0_i|+\mathrm{h.c.}\right)
+-\sum_i \Delta_{\rm hf,i}(t) n_i^1
++
+\sum_{i<j}V_{ij}n_i^r n_j^r ,
+\end{align*}
+$$
+Here $\Delta_e$ denotes the single-photon detuning from the virtual $6P_{3/2}$ intermediate manifold, whereas $\Delta_R(t)$ denotes the effective two-photon detuning of the $\ket{1}\leftrightarrow\ket{r}$ transition.
+In the large-detuning regime, the intermediate manifold can be adiabatically eliminated, giving the effective two-photon Rabi frequency
+$$
+\Omega_R(t)=\frac{\Omega_{420}(t)\Omega_{1013}}{2\Delta_e}.
+$$
+The Rydberg controls $\Omega_R(t)$ and $\Delta_R(t)$ are global because of the experimental optical setup.
+The microwave or Raman controls $\Omega_{\rm hf,i}(t),\Delta_{\rm hf,i}(t)$ drive the $\ket{0}\leftrightarrow\ket{1}$ transition and add a site-resolved light shift to $\ket{1}$.
+
+
+
+# Adiabatic computation
+
+ A critical step in the Time-optimal (TO) Rydberg CPHASE gate protocol is to design a $\Delta_R(t)$ that allows $\{\ket{00},\ket{01},\ket{10},\ket{11}\}$ to be excited to Rydberg state and then return to $\{\ket{00},\ket{01},\ket{10},\ket{11}\}$ with different accumulated phases. 
+
+In analogy, we hope to design a time-dependent pulse $\Omega_R(t),\Omega_{\rm hf,i}(t), \Delta_R(t), \Delta_{\rm hf,i}(t)$ that allows $\{\ket{\mathbf{s}}\}_{\mathbf{s} \in \{\ket{0},\ket{1}\}^n}$ to be excited to Rydberg state and then precisely return to the original state $\{e^{i \phi(\mathbf{s})}\ket{\mathbf{s}}\}_{\mathbf{s} \in \{\ket{0},\ket{1}\}^n}$ with different accumulated phases.
+
+- For a multi-qubit system, adiabatic computation is more applicable than finding a time-optimal pulse.
+- For different configurations $\ket{s}$, only atoms in the $\ket{1}$ state participate in the Rydberg excitation; 
+- atoms in $\ket{0}$ are far detuned from the $\ket{0} \leftrightarrow \ket{r}$ transition and can be dropped from the restricted Rydberg dynamics.
+- This leaves a subsystem of $\ket{1},\ket{r}$ atoms with configuration-dependent interaction terms $V^{(s)}_{ij}$ ($2^n$ configurations in total since each atom can be in $\ket{0}$ or $\ket{1}$).
+- Specifically, we fix a configuration $\ket{s}$, set $J_{ij} := V^{(s)}_{ij}$, and restrict to the $\ket{1},\ket{r}$ subspace.
+ 
+For simplicity, we consider the Pauli basis, i.e.,
+consider $X_i = \ket{1}\bra{r}+\ket{r}\bra{1}$, and $Z_i = \ket{1}\bra{1} - \ket{r}\bra{r}$ as the Pauli operators, and a time-dependent Hamiltonian with:
+$$
+\begin{align*}
+H(t)
+&\doteq \frac{1}{2} \sum_{i} \Omega(t)X_i  + \sum_{i<j} J_{ij} \frac{\mathbb{I}_i - Z_i}{2} \frac{\mathbb{I}_j - Z_j}{2}
++ \sum_{i} \frac{\Delta_R(t)-\Delta_{\rm hf,i}(t)}{2} Z_i\\
+&\doteq \frac{1}{2} \sum_{i} \Omega(t)X_i  + \frac{1}{4}\sum_{i<j} J_{ij}  Z_i Z_j + \sum_{i} h_i(t) Z_i := H_X(t) + H_Z(t),
+\end{align*}
+$$
+where $\doteq$ means equality up to a scalar energy shift and
+$$
+h_i(t)=\frac{\Delta_R(t)-\Delta_{\rm hf,i}(t)}{2}-\frac{1}{4}\sum_{j\neq i}J_{ij}.
+$$
+
+- We consider the case $H(0)=H(T)=H_Z(0)$,  with $\Omega(0) = \Omega(T) = 0$.
+- This indicates that the computational beginning state $\ket{s}$ faithfully returns to the original state $\ket{s}$ with a geometric phase $\phi(s)$.
+- The accumulated phase contains both **dynamical** and **geometric** contributions; see the detailed analysis [here](../../../theory/Perturbation/geometric_phase.qmd).
+
+Then we analyze how the dynamical and geometric phases are related to the configuration $\ket{s}$, which changes $J_{ij}$ and $h_i$, and whether a global phase can be extracted so that only the relative geometric phase is observable across different configurations.
+
 
 # Atom loss analysis
 
