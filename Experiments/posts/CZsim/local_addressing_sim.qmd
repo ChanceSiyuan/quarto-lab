@@ -6,8 +6,20 @@ description: "Simulating the local addressing on Rb87"
 lang: en
 title: "Local Addressing Simulation"
 bibliography: refs.bib
-draft: false
-format: live-html
+status: draft
+format:
+  live-html:
+    html-math-method: katex
+    theme:
+      light: flatly
+      dark: darkly
+    css: ../../../styles.css
+    toc: true
+    code-copy: true
+    citations-hover: true
+    include-after-body: ../../../_includes/comment-github-link.html
+    filters:
+      - ../../../scripts/note-status.lua
 pyodide:
   packages:
     - numpy
@@ -265,4 +277,3 @@ They are all consistent with the theoretical predictions.
 ![The decay comparison of the local addressing](fig4_decay_comparison.png)
 
 ![The Landau-Zener effect of the local addressing](fig5_landau_zener.png)
-

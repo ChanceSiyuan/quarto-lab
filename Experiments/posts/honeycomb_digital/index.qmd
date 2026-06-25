@@ -269,3 +269,10 @@ The result $C = 1$ thus reflects the topology of the *reconstructed* Hamiltonian
 **Fermi-Hubbard $M_\text{stagg}$:** The simulation encodes spin-up and spin-down on **two halves of the array**, representing a **16-site square lattice** (32 physical qubits via ZZ-pairing). The circuit uses depth-11 Floquet rounds with the dimensionless interaction ratio $U/J$ varied up to 8 (with explicit benchmarks at $U/J = 1$ and $U/J = 8$). The staggered magnetization $M_\text{stagg}$ shows **non-monotonic behavior**: it decays rapidly at $U/J \to 0$ (free fermions spread out), is suppressed at intermediate coupling, and is partially recovered at large $U/J \gg 1$ where double-occupancy is energetically suppressed. This non-monotonic dependence on the interaction strength is the key signature of Hubbard physics.
 
 Neutral atoms have a structural advantage for the honeycomb geometry: mid-circuit atom rearrangement provides native non-local connectivity, eliminating the SWAP overhead that would add $O(N)$ depth on a fixed grid. On trapped-ion platforms the limiting factor is gate clock speed (not fidelity), while on superconducting platforms the bottleneck is connectivity-limited routing (not coherence time).
+
+<!-- BEGIN AUTO NOTES TABLE -->
+
+| Note | Status | Updated | Description |
+|---|---|---|---|
+
+<!-- END AUTO NOTES TABLE -->

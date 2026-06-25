@@ -2,9 +2,6 @@ project:
   type: website
   output-dir: _site
 
-  pre-render:
-    - .venv/bin/python scripts/update_theory_nav.py
-
 website:
   draft-mode: unlinked
   title: "Chance's Quantum Lab"
@@ -26,19 +23,52 @@ website:
         href: https://twitter.com/yourusername
 
   sidebar:
-    # BEGIN AUTO THEORY SIDEBARS
+    # BEGIN AUTO NOTE SIDEBARS
+    - id: experiments_posts_1zone_archi
+      title: "1Zone Archi"
+      contents:
+        - Experiments/posts/1zone_archi/index.qmd
+        - section: "Notes"
+          contents:
+            - Experiments/posts/1zone_archi/bernien2017_manybody_scars.qmd
+            - Experiments/posts/1zone_archi/darbha2025_prethermal_dynamics.qmd
+            - Experiments/posts/1zone_archi/ebadi2021_256atom_simulator.qmd
+            - Experiments/posts/1zone_archi/ebadi2022_MIS_optimization.qmd
+            - Experiments/posts/1zone_archi/keesling2019_kibble_zurek.qmd
+            - Experiments/posts/1zone_archi/kornjaca2024_quantum_reservoir.qmd
+            - Experiments/posts/1zone_archi/moss2024_quantum_enhanced_VMC.qmd
+            - Experiments/posts/1zone_archi/manovitz2025_coarsening_higgs.qmd
+            - Experiments/posts/1zone_archi/semeghini2021_topological_spin_liquid.qmd
+            - Experiments/posts/1zone_archi/gonzalezcuadra2025_string_breaking.qmd
+    - id: simulation_model
+      title: "Analog Rydberg Quantum Simulation"
+      contents:
+        - Experiments/posts/simulation_model/index.qmd
+        - section: "Notes"
+          contents:
+            - Experiments/posts/simulation_model/puccd.qmd
+            - Experiments/posts/simulation_model/Boson-Hubbard.qmd
+            - Experiments/posts/simulation_model/density_wave.qmd
+            - Experiments/posts/simulation_model/XY_XXZ.qmd
+            - Experiments/posts/simulation_model/dynamics.qmd
+            - Experiments/posts/simulation_model/ferm_Hubbard.qmd
+            - Experiments/posts/simulation_model/honeycomb.qmd
+            - Experiments/posts/simulation_model/LGT.qmd
+            - Experiments/posts/simulation_model/optimization.qmd
+            - Experiments/posts/simulation_model/topological.qmd
+            - Experiments/posts/simulation_model/TFIM.qmd
     - id: boolean_ana
       title: "Boolean Analysis"
       contents:
         - theory/Boolean_ana/index.qmd
-        - section: "Pages"
+        - section: "Notes"
           contents:
             - theory/Boolean_ana/Influence.qmd
     - id: shadow_tomography
       title: "Classical Shadow Tomography"
       contents:
         - theory/Shadow_tomography/index.qmd
-        - section: "Pages"
+        - section: "Notes"
           contents:
             - theory/Shadow_tomography/3desgin_multi_local_shadow.qmd
             - theory/Shadow_tomography/3d2c_appli1.qmd
@@ -52,7 +82,7 @@ website:
       title: "Classical Simulation of Noisy Quantum Circuits"
       contents:
         - theory/Noisy_complexity/index.qmd
-        - section: "Pages"
+        - section: "Notes"
           contents:
             - theory/Noisy_complexity/gadget_simulation.qmd
             - theory/Noisy_complexity/non_unital.qmd
@@ -60,11 +90,51 @@ website:
             - theory/Noisy_complexity/operator_resource.qmd
             - theory/Noisy_complexity/pauli_path.qmd
             - theory/Noisy_complexity/percolation.qmd
+    - id: experiments_posts_damop2026
+      title: "Damop2026"
+      contents:
+        - Experiments/posts/damop2026/index.qmd
+        - section: "Notes"
+          contents:
+            - Experiments/posts/damop2026/abstract-quantum-simulation.qmd
+            - Experiments/posts/damop2026/abstract.qmd
+    - id: experiments_posts_digital_analog
+      title: "Digital Analog"
+      contents:
+        - Experiments/posts/Digital-analog/index.qmd
+        - section: "Notes"
+          contents:
+            - Experiments/posts/Digital-analog/digital-analog.qmd
+            - Experiments/posts/Digital-analog/dimmer.qmd
+            - Experiments/posts/Digital-analog/tech.qmd
+    - id: experiments_posts_honeycomb_digital
+      title: "Digital Experiment on Honeycomb Model"
+      contents:
+        - Experiments/posts/honeycomb_digital/index.qmd
+    - id: experiments_engineering
+      title: "Engineering"
+      contents:
+        - Experiments/Engineering/index.qmd
+        - section: "Notes"
+          contents:
+            - Experiments/Engineering/buying_260528.qmd
+        - section: "Rb87 Laser Summary"
+          contents:
+            - Experiments/Engineering/Rb87overview/index.qmd
+            - Experiments/Engineering/Rb87overview/laserlock.qmd
+        - section: "SLM Engineer"
+          contents:
+            - Experiments/Engineering/SLM_engineer/index.qmd
+            - Experiments/Engineering/SLM_engineer/Basic.qmd
+            - Experiments/Engineering/SLM_engineer/cgm.qmd
+            - Experiments/Engineering/SLM_engineer/realizaiton.qmd
+            - Experiments/Engineering/SLM_engineer/lightsheet.qmd
+            - Experiments/Engineering/SLM_engineer/wgs_based.qmd
     - id: factoring
       title: "Factoring and Hidden Subgroup Problems"
       contents:
         - theory/Factoring/index.qmd
-        - section: "Pages"
+        - section: "Notes"
           contents:
             - theory/Factoring/ApproxShor.qmd
             - theory/Factoring/Factorthm.qmd
@@ -77,14 +147,14 @@ website:
       title: "Fermi-Hubbard Model"
       contents:
         - theory/Fermi-Hubbard/index.qmd
-        - section: "Pages"
+        - section: "Notes"
           contents:
             - theory/Fermi-Hubbard/intro.qmd
     - id: osf
       title: "Generalized Stabilizer Formalism"
       contents:
         - theory/OSF/index.qmd
-        - section: "Pages"
+        - section: "Notes"
           contents:
             - theory/OSF/Feynman_based.qmd
             - theory/OSF/operator_magic.qmd
@@ -94,14 +164,14 @@ website:
       title: "Hamiltonian Learning"
       contents:
         - theory/Ham_learning/index.qmd
-        - section: "Pages"
+        - section: "Notes"
           contents:
             - theory/Ham_learning/phasegate_learn.qmd
     - id: iqp
       title: "IQP Circuit Supremacy"
       contents:
         - theory/supermacy/index.qmd
-        - section: "Pages"
+        - section: "Notes"
           contents:
             - theory/supermacy/Bellsamp.qmd
             - theory/supermacy/classical_simulation.qmd
@@ -109,8 +179,9 @@ website:
             - theory/supermacy/Peak.qmd
             - theory/supermacy/TFIM_super.qmd
             - theory/supermacy/verification.qmd
-        - section: "Iqps"
+        - section: "IQP Circuits"
           contents:
+            - theory/supermacy/IQPs/index.qmd
             - theory/supermacy/IQPs/Bell_on_iqp.qmd
             - theory/supermacy/IQPs/ft_iqp.qmd
             - theory/supermacy/IQPs/iqp_supremacy.qmd
@@ -120,11 +191,35 @@ website:
             - theory/supermacy/IQPs/sparse_iqp.qmd
             - theory/supermacy/IQPs/simulations/index.qmd
             - theory/supermacy/IQPs/simulations/noisy_iqp.qmd
+    - id: theory_supermacy_iqps
+      title: "IQP Circuits"
+      contents:
+        - theory/supermacy/IQPs/index.qmd
+        - section: "Notes"
+          contents:
+            - theory/supermacy/IQPs/Bell_on_iqp.qmd
+            - theory/supermacy/IQPs/ft_iqp.qmd
+            - theory/supermacy/IQPs/iqp_supremacy.qmd
+            - theory/supermacy/IQPs/mbqc_iqp.qmd
+            - theory/supermacy/IQPs/Real_noise_ana.qmd
+            - theory/supermacy/IQPs/reduct_deg3gap.qmd
+            - theory/supermacy/IQPs/sparse_iqp.qmd
+        - section: "IQP Simulation Algorithms"
+          contents:
+            - theory/supermacy/IQPs/simulations/index.qmd
+            - theory/supermacy/IQPs/simulations/noisy_iqp.qmd
+    - id: theory_supermacy_iqps_simulations
+      title: "IQP Simulation Algorithms"
+      contents:
+        - theory/supermacy/IQPs/simulations/index.qmd
+        - section: "Notes"
+          contents:
+            - theory/supermacy/IQPs/simulations/noisy_iqp.qmd
     - id: lgt
       title: "Lattice Gauge Theory"
       contents:
         - theory/LGT/index.qmd
-        - section: "Pages"
+        - section: "Notes"
           contents:
             - theory/LGT/QuantumLink.qmd
             - theory/LGT/Intro.qmd
@@ -136,7 +231,7 @@ website:
       title: "Learning Theory and Quantum Learning"
       contents:
         - theory/learning_theo/index.qmd
-        - section: "Pages"
+        - section: "Notes"
           contents:
             - theory/learning_theo/approx_dataload.qmd
             - theory/learning_theo/framework.qmd
@@ -144,7 +239,7 @@ website:
             - theory/learning_theo/grokking_phase_transition.qmd
             - theory/learning_theo/Estimation_rev.qmd
             - theory/learning_theo/NTK.qmd
-        - section: "Lowerbounds"
+        - section: "Lower Bounds Toolbox"
           contents:
             - theory/learning_theo/Lowerbounds/index.qmd
             - theory/learning_theo/Lowerbounds/haar_ensembles.qmd
@@ -152,8 +247,9 @@ website:
             - theory/learning_theo/Lowerbounds/operator_mixed.qmd
             - theory/learning_theo/Lowerbounds/povm_restrictions.qmd
             - theory/learning_theo/Lowerbounds/adaptive_strategies.qmd
-        - section: "Weak Schur"
+        - section: "Weak Schur Tools"
           contents:
+            - theory/learning_theo/weak_schur/index.qmd
             - theory/learning_theo/weak_schur/approx_design.qmd
             - theory/learning_theo/weak_schur/Clifford-Weingarten.qmd
             - theory/learning_theo/weak_schur/symmetric_strategies.qmd
@@ -162,20 +258,38 @@ website:
       title: "Leveraging Analog Quantum Computing with Neutral Atoms for Solvent Configuration Prediction in Drug Discovery"
       contents:
         - theory/drugs_design/index.qmd
+    - id: lowerbounds
+      title: "Lower Bounds Toolbox"
+      contents:
+        - theory/learning_theo/Lowerbounds/index.qmd
+        - section: "Notes"
+          contents:
+            - theory/learning_theo/Lowerbounds/haar_ensembles.qmd
+            - theory/learning_theo/Lowerbounds/lecam_method.qmd
+            - theory/learning_theo/Lowerbounds/operator_mixed.qmd
+            - theory/learning_theo/Lowerbounds/povm_restrictions.qmd
+            - theory/learning_theo/Lowerbounds/adaptive_strategies.qmd
     - id: magic
       title: "Magic and Stabilizer Resources"
       contents:
         - theory/Magic/index.qmd
-        - section: "Pages"
+        - section: "Notes"
           contents:
             - theory/Magic/Bell_magic.qmd
             - theory/Magic/exp_analy.qmd
             - theory/Magic/measures.qmd
+    - id: experiments_posts_lukin_timereview
+      title: "Neutral Atom Quantum Simulation: Lukin Group Architecture Review (2017–2026)"
+      contents:
+        - Experiments/posts/Lukin_timereview/index.qmd
+        - section: "Notes"
+          contents:
+            - Experiments/posts/Lukin_timereview/singlezone_plan.qmd
     - id: perturbation
       title: "Perturbation and Floquet Theory"
       contents:
         - theory/Perturbation/index.qmd
-        - section: "Pages"
+        - section: "Notes"
           contents:
             - theory/Perturbation/Effective_ham.qmd
             - theory/Perturbation/ETH.qmd
@@ -188,7 +302,7 @@ website:
       title: "Quantum Complexity"
       contents:
         - theory/quantum_complexity/index.qmd
-        - section: "Pages"
+        - section: "Notes"
           contents:
             - theory/quantum_complexity/counting_complexity.qmd
             - theory/quantum_complexity/Ham_complexity.qmd
@@ -197,7 +311,7 @@ website:
       title: "Quantum Error Correction"
       contents:
         - theory/QEC/index.qmd
-        - section: "Pages"
+        - section: "Notes"
           contents:
             - theory/QEC/TNdecoder.qmd
             - theory/QEC/BP_OSD_results.qmd
@@ -209,7 +323,7 @@ website:
       title: "Quantum Fingerprinting"
       contents:
         - theory/Fingerprint/index.qmd
-        - section: "Pages"
+        - section: "Notes"
           contents:
             - theory/Fingerprint/DNA.qmd
             - theory/Fingerprint/fingerprint.qmd
@@ -218,7 +332,7 @@ website:
       title: "Quantum Resource"
       contents:
         - theory/compatibility/index.qmd
-        - section: "Pages"
+        - section: "Notes"
           contents:
             - theory/compatibility/Algebraic_estimation_framework.qmd
             - theory/compatibility/multi-copy_localshadow.qmd
@@ -229,20 +343,60 @@ website:
             - theory/compatibility/nonparametric.qmd
             - theory/compatibility/projective_sim.qmd
             - theory/compatibility/compatiablity.qmd
+    - id: experiments_engineering_rb87overview
+      title: "Rb87 Laser Summary"
+      contents:
+        - Experiments/Engineering/Rb87overview/index.qmd
+        - section: "Notes"
+          contents:
+            - Experiments/Engineering/Rb87overview/laserlock.qmd
+    - id: rydberg_qc
+      title: "Rydberg Atoms for Fault-Tolerant QC"
+      contents:
+        - Experiments/posts/rydberg_qc/index.qmd
+        - section: "Notes"
+          contents:
+            - Experiments/posts/rydberg_qc/laser_systems.qmd
+            - Experiments/posts/rydberg_qc/light_atom.qmd
+            - Experiments/posts/rydberg_qc/noise_errors.qmd
+            - Experiments/posts/rydberg_qc/tweezer_arrays.qmd
+            - Experiments/posts/rydberg_qc/single_qubit.qmd
+            - Experiments/posts/rydberg_qc/rydberg_properties.qmd
+            - Experiments/posts/rydberg_qc/trapping_cooling.qmd
+            - Experiments/posts/rydberg_qc/two_qubit_gates.qmd
     - id: nonlocal_games_survey
       title: "Scalable Quantum Non-Locality: Architectures, Noise Resilience, and Experimental Frontiers"
       contents:
         - theory/Nonlocal_Games_Survey/index.qmd
-        - section: "Pages"
+        - section: "Notes"
           contents:
             - theory/Nonlocal_Games_Survey/Basics.qmd
             - theory/Nonlocal_Games_Survey/phase_and_nonlocal_game.qmd
             - theory/Nonlocal_Games_Survey/Stabilizer-non-local_game.qmd
+    - id: experiments_posts_czsim
+      title: "Simulation of Rydberg CZ Gate Protocol"
+      contents:
+        - Experiments/posts/CZsim/index.qmd
+        - section: "Notes"
+          contents:
+            - Experiments/posts/CZsim/Adabatic_sim.qmd
+            - Experiments/posts/CZsim/local_addressing_sim.qmd
+    - id: experiments_engineering_slm_engineer
+      title: "SLM Engineer"
+      contents:
+        - Experiments/Engineering/SLM_engineer/index.qmd
+        - section: "Notes"
+          contents:
+            - Experiments/Engineering/SLM_engineer/Basic.qmd
+            - Experiments/Engineering/SLM_engineer/cgm.qmd
+            - Experiments/Engineering/SLM_engineer/realizaiton.qmd
+            - Experiments/Engineering/SLM_engineer/lightsheet.qmd
+            - Experiments/Engineering/SLM_engineer/wgs_based.qmd
     - id: spin_liquid
       title: "Spin Liquids"
       contents:
         - theory/Spin_liquid/index.qmd
-        - section: "Pages"
+        - section: "Notes"
           contents:
             - theory/Spin_liquid/kagome-lattice.qmd
             - theory/Spin_liquid/Square-lattice.qmd
@@ -250,7 +404,7 @@ website:
       title: "Stabilizer Simulation"
       contents:
         - theory/stab_simulation/index.qmd
-        - section: "Pages"
+        - section: "Notes"
           contents:
             - theory/stab_simulation/graph_combine.qmd
             - theory/stab_simulation/clifford_T.qmd
@@ -260,7 +414,7 @@ website:
       title: "Tensor Network Simulation"
       contents:
         - theory/TN_sim/index.qmd
-        - section: "Pages"
+        - section: "Notes"
           contents:
             - theory/TN_sim/MPS_AKLT.qmd
             - theory/TN_sim/MPS_DMRG.qmd
@@ -271,7 +425,7 @@ website:
       title: "Topological Matter"
       contents:
         - theory/topo_matter/index.qmd
-        - section: "Pages"
+        - section: "Notes"
           contents:
             - theory/topo_matter/2dHH.qmd
             - theory/topo_matter/chern.qmd
@@ -280,82 +434,27 @@ website:
       title: "Virtual Distillation for Quantum Error Mitigation"
       contents:
         - theory/Virtual_Distillation/index.qmd
-        - section: "Pages"
+        - section: "Notes"
           contents:
             - theory/Virtual_Distillation/design.qmd
             - theory/Virtual_Distillation/app_PCA.qmd
             - theory/Virtual_Distillation/derandom_shadow.qmd
             - theory/Virtual_Distillation/negativity.qmd
             - theory/Virtual_Distillation/majorityvote.qmd
-    - id: lowerbounds
-      title: "Lower Bounds Toolbox"
+    - id: theory_learning_theo_weak_schur
+      title: "Weak Schur Tools"
       contents:
-        - theory/learning_theo/Lowerbounds/index.qmd
-        - section: "Pages"
+        - theory/learning_theo/weak_schur/index.qmd
+        - section: "Notes"
           contents:
-            - theory/learning_theo/Lowerbounds/haar_ensembles.qmd
-            - theory/learning_theo/Lowerbounds/lecam_method.qmd
-            - theory/learning_theo/Lowerbounds/operator_mixed.qmd
-            - theory/learning_theo/Lowerbounds/povm_restrictions.qmd
-            - theory/learning_theo/Lowerbounds/adaptive_strategies.qmd
-    # END AUTO THEORY SIDEBARS
-    - id: simulation_model
-      title: "Analog Rydberg Quantum Simulation"
-      contents:
-        - Experiments/posts/simulation_model/index.qmd
-        - section: "Foundations"
-          contents:
-            - theory/Perturbation/Effective_ham.qmd
-        - section: "Spin Models"
-          contents:
-            - Experiments/posts/simulation_model/TFIM.qmd
-            - Experiments/posts/simulation_model/XY_XXZ.qmd
-        - section: "Hubbard & Lattice Models"
-          contents:
-            - Experiments/posts/simulation_model/ferm_Hubbard.qmd
-            - Experiments/posts/simulation_model/Boson-Hubbard.qmd
-            - Experiments/posts/simulation_model/honeycomb.qmd
-        - section: "Ordered Phases"
-          contents:
-            - Experiments/posts/simulation_model/density_wave.qmd
-        - section: "Topological Phases"
-          contents:
-            - Experiments/posts/simulation_model/topological.qmd
-        - section: "Many-Body Dynamics"
-          contents:
-            - Experiments/posts/simulation_model/dynamics.qmd
-        - section: "Gauge Theories"
-          contents:
-            - Experiments/posts/simulation_model/LGT.qmd
-        - section: "Optimization & Applications"
-          contents:
-            - Experiments/posts/simulation_model/optimization.qmd
-        - section: "Quantum Chemistry"
-          contents:
-            - Experiments/posts/simulation_model/puccd.qmd
-    - id: rydberg_qc
-      title: "Rydberg Atoms for Fault-Tolerant QC"
-      contents:
-        - Experiments/posts/rydberg_qc/index.qmd
-        - section: "Foundations"
-          contents:
-            - Experiments/posts/rydberg_qc/light_atom.qmd
-            - Experiments/posts/rydberg_qc/rydberg_properties.qmd
-        - section: "Platform Engineering"
-          contents:
-            - Experiments/posts/rydberg_qc/laser_systems.qmd
-            - Experiments/posts/rydberg_qc/trapping_cooling.qmd
-            - Experiments/posts/rydberg_qc/tweezer_arrays.qmd
-        - section: "Qubit Control"
-          contents:
-            - Experiments/posts/rydberg_qc/single_qubit.qmd
-            - Experiments/posts/rydberg_qc/two_qubit_gates.qmd
-        - section: "Noise & Errors"
-          contents:
-            - Experiments/posts/rydberg_qc/noise_errors.qmd
+            - theory/learning_theo/weak_schur/approx_design.qmd
+            - theory/learning_theo/weak_schur/Clifford-Weingarten.qmd
+            - theory/learning_theo/weak_schur/symmetric_strategies.qmd
+            - theory/learning_theo/weak_schur/Weingarten_calculus.qmd
+    # END AUTO NOTE SIDEBARS
 
 format:
-  live-html:
+  html:
     html-math-method: katex
     theme: 
       light: flatly
@@ -366,8 +465,7 @@ format:
     citations-hover: true
     include-after-body: _includes/comment-github-link.html
     filters:
-      - tikz
-      - code-runner
+      - scripts/note-status.lua
 
 comments:
   giscus:
@@ -405,7 +503,4 @@ preview:
   host: "0.0.0.0"
 execute:
   freeze: auto
-  cache: true
-
-tikz:
   cache: true

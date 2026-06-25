@@ -1,23 +1,29 @@
 ---
 lang: en
-listing:
-  - contents:
-    - posts
-    - Topics
-    filter-ui: true
-    id: experiments-listing
-    sort: date desc
-    sort-ui: true
-    type: default
 page-layout: full
 title: Experiments
 title-block-banner: true
+comments: false
 ---
-## Topics
 
-**Current Topics:**
+# Experiments
 
-- **[Rydberg Atoms for Fault-Tolerant QC](/Experiments/posts/rydberg_qc/)** - Platform engineering, qubit control, two-qubit gate protocols, and noise analysis for neutral-atom quantum computing with Rb87
-- **[Analog Rydberg Quantum Simulation](/Experiments/posts/simulation_model/)** - Model catalog for Rydberg atom arrays: spin models, topological phases, lattice gauge theories, Hubbard models, and quantum chemistry
+This page indexes the experiment notes by topic folder. The table below is generated from the note directories, so new experiment topics appear here automatically after render.
 
----
+<!-- BEGIN AUTO EXPERIMENT TOPICS -->
+
+| Topic | Description |
+|---|---|
+| [1Zone Archi](posts/1zone_archi/index.qmd) | Notes in the 1Zone Archi topic directory. |
+| [Analog Rydberg Quantum Simulation: Model Catalog](posts/simulation_model/index.qmd) | Notes in the Analog Rydberg Quantum Simulation: Model Catalog topic directory. |
+| [Damop2026](posts/damop2026/index.qmd) | Notes in the Damop2026 topic directory. |
+| [Digital Analog](posts/Digital-analog/index.qmd) | Notes in the Digital Analog topic directory. |
+| [Digital Experiment on Honeycomb Model](posts/honeycomb_digital/index.qmd) | Notes on the honeycomb model and its equivalence to a free Majorana fermion Hamiltonian. |
+| [Engineering](Engineering/index.qmd) | Notes in the Engineering topic directory. |
+| [Neutral Atom Quantum Simulation: Lukin Group Architecture Review (2017–2026)](posts/Lukin_timereview/index.qmd) | An architecture-based review of Lukin group contributions to quantum simulation with neutral atom arrays (2017–2026) |
+| [Rb87 Laser Summary](Engineering/Rb87overview/index.qmd) | Notes in the Rb87 Laser Summary topic directory. |
+| [Rydberg Atoms for Fault-Tolerant Quantum Computation](posts/rydberg_qc/index.qmd) | Platform-level overview of Rydberg-atom quantum computers: from atomic physics and experimental apparatus to high-fidelity entangling gates and erasure error conversion. |
+| [Simulation of Rydberg CZ Gate Protocol](posts/CZsim/index.qmd) | Simulation of the Rydberg-blockade CZ gate for 87Rb: two-photon Hamiltonian, adiabatic elimination, robust phase modulation, and spontaneous emission. |
+| [SLM Engineer](Engineering/SLM_engineer/index.qmd) | Notes in the SLM Engineer topic directory. |
+
+<!-- END AUTO EXPERIMENT TOPICS -->

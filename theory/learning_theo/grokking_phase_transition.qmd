@@ -6,7 +6,7 @@ lang: en
 title: "Grokking as a Phase Transition in Neural Networks"
 subtitle: "A Survey through Statistical Physics and Mean Field Theory"
 bibliography: refs.bib
-draft: true
+status: draft
 ---
 
 **Abstract.** Grokking---the phenomenon whereby a neural network achieves perfect training accuracy long before exhibiting any generalization---poses a striking challenge to conventional statistical learning theory [@power2022grokking]. This survey examines grokking through the lens of statistical physics and mean field theory. We argue that grokking is not an optimization anomaly but a bona fide phase transition: the system transitions from a lazy regime, governed by the frozen Neural Tangent Kernel (NTK), to a rich regime characterized by active feature learning [@kumar2025grokking; @rubin2024grokking]. We review the effective theory of Liu et al. [@liu2022grokking], the first-order phase transition framework of Rubin et al. [@rubin2024grokking], physical order parameters that diagnose the transition (representation quality index, effective rank, kernel alignment), the dynamical mean field theory (DMFT) description, finite-width perturbative corrections via Feynman diagrams [@guillen2025finite], and the role of modern optimizers such as Muon in accelerating the transition [@jordan2024muon].

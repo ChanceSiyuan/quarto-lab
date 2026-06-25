@@ -6,7 +6,7 @@ description: 'Simulation of the Rydberg-blockade CZ gate for 87Rb: two-photon Ha
 lang: en
 title: 'Simulation of Rydberg CZ Gate Protocol'
 bibliography: refs.bib
-draft: true
+status: draft
 ---
 
 ## Introduction
@@ -398,3 +398,12 @@ $$
 \Delta E_{\mathrm{AC}} = -\frac{|\Omega|^2}{4\Delta},
 $$
 where $\Omega$ is the single-photon Rabi frequency and $\Delta$ is the detuning from the nearest transition. By measuring $\Delta E_{\mathrm{AC}}$ spectroscopically (e.g., via Ramsey interferometry on the qubit transition) and knowing $\Delta$, one extracts $|\Omega|$. The individual Rabi frequencies $\Omega_{420}$ and $\Omega_{1013}$ so obtained then determine $\Omega_{\mathrm{eff}}$ through @eq-omega-eff.
+
+<!-- BEGIN AUTO NOTES TABLE -->
+
+| Note | Status | Updated | Description |
+|---|---|---|---|
+| [Adiabatic simulation of CZ gate](Adabatic_sim.qmd) | draft | 2026-06-09 | TODO: add description |
+| [Local Addressing Simulation](local_addressing_sim.qmd) | draft | 2026-03-30 | Simulating the local addressing on Rb87 |
+
+<!-- END AUTO NOTES TABLE -->
