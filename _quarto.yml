@@ -1,6 +1,7 @@
 project:
   type: website
   output-dir: _site
+  pre-render: .venv/bin/python scripts/update_theory_nav.py
 
 website:
   draft-mode: unlinked
@@ -96,6 +97,7 @@ website:
         - Experiments/posts/damop2026/index.qmd
         - section: "Notes"
           contents:
+            - Experiments/posts/damop2026/Adia_echo.qmd
             - Experiments/posts/damop2026/abstract-quantum-simulation.qmd
             - Experiments/posts/damop2026/abstract.qmd
     - id: experiments_posts_digital_analog
@@ -189,8 +191,10 @@ website:
             - theory/supermacy/IQPs/Real_noise_ana.qmd
             - theory/supermacy/IQPs/reduct_deg3gap.qmd
             - theory/supermacy/IQPs/sparse_iqp.qmd
-            - theory/supermacy/IQPs/simulations/index.qmd
-            - theory/supermacy/IQPs/simulations/noisy_iqp.qmd
+            - section: "IQP Simulation Algorithms"
+              contents:
+                - theory/supermacy/IQPs/simulations/index.qmd
+                - theory/supermacy/IQPs/simulations/noisy_iqp.qmd
     - id: theory_supermacy_iqps
       title: "IQP Circuits"
       contents:
@@ -254,10 +258,6 @@ website:
             - theory/learning_theo/weak_schur/Clifford-Weingarten.qmd
             - theory/learning_theo/weak_schur/symmetric_strategies.qmd
             - theory/learning_theo/weak_schur/Weingarten_calculus.qmd
-    - id: drugs_design
-      title: "Leveraging Analog Quantum Computing with Neutral Atoms for Solvent Configuration Prediction in Drug Discovery"
-      contents:
-        - theory/drugs_design/index.qmd
     - id: lowerbounds
       title: "Lower Bounds Toolbox"
       contents:
@@ -285,6 +285,14 @@ website:
         - section: "Notes"
           contents:
             - Experiments/posts/Lukin_timereview/singlezone_plan.qmd
+    - id: drugs_design
+      title: "Optimization"
+      contents:
+        - theory/optimization/index.qmd
+        - section: "Notes"
+          contents:
+            - theory/optimization/drug_design.qmd
+            - theory/optimization/MIS.qmd
     - id: perturbation
       title: "Perturbation and Floquet Theory"
       contents:
@@ -343,6 +351,10 @@ website:
             - theory/compatibility/nonparametric.qmd
             - theory/compatibility/projective_sim.qmd
             - theory/compatibility/compatiablity.qmd
+    - id: experiments_posts_rb87_297nm_rydberg
+      title: "Rb-87 297 nm 单光子 Rydberg 激发：历史脉络与文献导读"
+      contents:
+        - Experiments/posts/rb87_297nm_rydberg/index.qmd
     - id: experiments_engineering_rb87overview
       title: "Rb87 Laser Summary"
       contents:
@@ -464,8 +476,6 @@ format:
     code-copy: true
     citations-hover: true
     include-after-body: _includes/comment-github-link.html
-    filters:
-      - scripts/note-status.lua
 
 comments:
   giscus:

@@ -26,7 +26,6 @@ except ImportError:  # pragma: no cover - Quarto uses .venv where PyYAML exists.
 
 ROOT = Path(__file__).resolve().parents[1]
 QUARTO_YML = ROOT / "_quarto.yml"
-STATUS_FILTER_REF = "scripts/note-status.lua"
 SKIP_NAV_ENV = "QUARTO_SKIP_NAV"
 
 AUTO_SIDEBARS_BEGIN = "    # BEGIN AUTO NOTE SIDEBARS"
@@ -437,31 +436,53 @@ def section_title(directory: Path) -> str:
     return topic_title(directory) if (directory / "index.qmd").exists() else nice_title(directory.name)
 
 
-def build_sidebar_block(topic_dir: Path, section: Section, sid: str, title: str) -> str:
-    lines = [f"id: {sid}", f"title: {yaml_string(title)}", "contents:"]
-    index = topic_dir / "index.qmd"
-    if index.exists():
-        lines.append(f"  - {rel(index)}")
-
-    direct_notes = note_pages(topic_dir)
-    if direct_notes:
-        lines.append('  - section: "Notes"')
-        lines.append("    contents:")
-        for path in direct_notes:
-            lines.append(f"      - {rel(path)}")
-
+def sidebar_subdirs(directory: Path, section: Section) -> list[Path]:
     subdirs = [
         path
-        for path in topic_dir.iterdir()
-        if path.is_dir() and not has_ignored_part(path, section.root) and all_qmds(path, section.root)
+        for path in directory.iterdir()
+        if path.is_dir()
+        and not has_ignored_part(path, section.root)
+        and all_qmds(path, section.root)
     ]
-    for subdir in sorted(subdirs, key=lambda path: section_title(path).lower()):
-        lines.append(f"  - section: {yaml_string(section_title(subdir))}")
-        lines.append("    contents:")
-        for path in all_qmds(subdir, section.root):
-            lines.append(f"      - {rel(path)}")
+    return sorted(subdirs, key=lambda path: section_title(path).lower())
 
+
+def append_sidebar_contents(
+    lines: list[str], directory: Path, section: Section, indent: str, group_direct_notes: bool
+) -> None:
+    index = directory / "index.qmd"
+    if index.exists():
+        lines.append(f"{indent}- {rel(index)}")
+
+    direct_notes = note_pages(directory)
+    if direct_notes and group_direct_notes:
+        lines.append(f'{indent}- section: "Notes"')
+        lines.append(f"{indent}  contents:")
+        for path in direct_notes:
+            lines.append(f"{indent}    - {rel(path)}")
+    else:
+        for path in direct_notes:
+            lines.append(f"{indent}- {rel(path)}")
+
+    for subdir in sidebar_subdirs(directory, section):
+        lines.append(f"{indent}- section: {yaml_string(section_title(subdir))}")
+        lines.append(f"{indent}  contents:")
+        append_sidebar_contents(lines, subdir, section, indent + "    ", False)
+
+
+def build_sidebar_block(topic_dir: Path, section: Section, sid: str, title: str) -> str:
+    lines = [f"id: {sid}", f"title: {yaml_string(title)}", "contents:"]
+    append_sidebar_contents(lines, topic_dir, section, "  ", True)
     return "\n".join(lines) + "\n"
+
+
+def should_write_sidebar_file(topic_dir: Path, section: Section) -> bool:
+    for parent in topic_dir.relative_to(section.root).parents:
+        if parent == Path("."):
+            continue
+        if qmd_files(section.root / parent):
+            return False
+    return True
 
 
 def build_overview_table(section: Section, topics: Iterable[Path]) -> str:
@@ -488,23 +509,6 @@ def rewrite_overview(section: Section, topics: Iterable[Path]) -> None:
     block = build_overview_table(section, topics)
     updated = replace_or_append_block(text, section.overview_begin, section.overview_end, block)
     write_if_changed(section.overview, updated)
-
-
-def ensure_status_filter(text: str) -> str:
-    if STATUS_FILTER_REF in text:
-        return text
-    lines = text.splitlines()
-    for index, line in enumerate(lines):
-        if line.strip() != "filters:":
-            continue
-        indent = len(line) - len(line.lstrip())
-        item_indent = " " * (indent + 2)
-        insert_at = index + 1
-        while insert_at < len(lines) and lines[insert_at].startswith(item_indent + "- "):
-            insert_at += 1
-        lines.insert(insert_at, f"{item_indent}- {STATUS_FILTER_REF}")
-        return "\n".join(lines).rstrip() + "\n"
-    return text
 
 
 def remove_marked_sidebar_blocks(sidebar_body: str) -> str:
@@ -548,7 +552,6 @@ def indent_sidebar_block(block: str) -> str:
 
 def rewrite_quarto_sidebar(blocks: list[str], generated_ids: set[str]) -> None:
     text = QUARTO_YML.read_text(encoding="utf-8", errors="ignore")
-    text = ensure_status_filter(text)
 
     start = text.find("\n  sidebar:\n")
     end = text.find("\nformat:", start)
@@ -597,9 +600,10 @@ def main() -> None:
         for topic_dir in topics:
             title = topic_title(topic_dir)
             sid = sidebar_id(topic_dir)
-            set_sidebar_metadata(topic_dir / "_metadata.yml", sid)
             block = build_sidebar_block(topic_dir, section, sid, title)
-            write_if_changed(topic_dir / "_sidebar.yml", block)
+            if should_write_sidebar_file(topic_dir, section):
+                set_sidebar_metadata(topic_dir / "_metadata.yml", sid)
+                write_if_changed(topic_dir / "_sidebar.yml", block)
             blocks.append(block)
             generated_ids.add(sid)
 

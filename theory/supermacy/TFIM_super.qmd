@@ -6,39 +6,17 @@ status: draft
 ---
 
 # Summary and Questions
+In the post we discuss whether the TFIM has supermacy or have universal quantum compuating power.
 
 
 ## TFIM supermacy
 
-This section covers the TFIM supermacy. Specifically, it replace the IQP circuit, $P(s) = |\bra{s} U_{\rm IQP} \ket{0^n}|$, with:
+The TFIM circuit $P(s) = |\bra{s} U_{\rm TFIM} \ket{0^n}| ,\, U_{\rm tot}=U_R U_{\rm TFIM}(T) U_L$, where $U_{\rm TFIM}(t)$ follows the time-dependent Hamiltonian:
 $$
 \begin{align*}
-U_{\rm IQP}=W^{\otimes n}e^{-iH_Z}W^{\otimes n}, \quad
-H_Z &= \sum_{i \in \mathcal{V}_{\mathcal{G}}} v_i Z_i +\sum_{(i,j)\in \mathcal{E}_{\mathcal{G}}} J_{ij} Z_iZ_j,
+H(t)&=\Gamma(t)H_X+H_Z+h_z(t)\sum_i Z_i , \\
+H_X &= \sum_{i \in {V}} X_i, \quad H_I = \sum_{i \in \mathcal{V}_{\mathcal{H}}} v_i Z_i +\sum_{(i,j)\in {E}} J_{ij} Z_iZ_j,
 \end{align*}
 $$
-to a more general TFIM circuit $P(s) = |\bra{s} U_{\rm TFIM} \ket{0^n}| ,\, U_{\rm tot}=U_R U_{\rm TFIM}(T) U_L$, where $U_{\rm TFIM}(t)$ follows the time-dependent Hamiltonian:
-$$
-\begin{align*}
-H_{\rm TFIM} &= A(t)H_X+B(t)H_I, \\
-H_X &= \sum_{i \in \mathcal{V}_{\mathcal{H}}} X_i, \quad H_I = \sum_{i \in \mathcal{V}_{\mathcal{H}}} v_i Z_i +\sum_{(i,j)\in \mathcal{E}_{\mathcal{H}}} J_{ij} Z_iZ_j.
-\end{align*}
-$$
-
-To get specific relation between $U_{\rm TFIM}(T)$ and $H_{\rm TFIM}$, we take $H_I$ as interaction and use the interactive picture, i.e., the transformation 
-$$
-\begin{align*}
-\ket{\tilde{\psi}(t)} &\to G_X(\alpha(t)) \ket{\psi(t)} :=  e^{ - i \left[\int_0^t A(t') dt'\right] H_X}\ket{\psi(t)}.
-\end{align*}
-$$
-
-Then we concludes $U_{\rm TFIM}(T) = G(\alpha(T))\widetilde U(T)$ with $\widetilde U(T)$ follows:
-$$
-\begin{align*}
-\widetilde U(t)&=\mathcal T\exp\left[-i\int_0^t B(t')\widetilde H_I(t')dt'\right],\\
-\widetilde H_I(t)&=G_X[-\alpha(t)]H_I G_X[\alpha(t)].
-\end{align*}
-$$
-
-The total evolution $U_{\rm tot} = U_R  G(\alpha(T))\widetilde U(T) U_L$ is definitely different from $U_{\rm IQP}$. 
-Fortunately, 
+where the graph $(v,E)$ is fixed with fixed parameters $v_i, J_{ij}$.
+The time-dependent parameters $\Gamma(t), h_z(t)$ are controllable.

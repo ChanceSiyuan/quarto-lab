@@ -1,5 +1,3 @@
-# Fast local-render profile.
-#
-# The default project config no longer runs the navigation generator as a
-# pre-render hook, so this profile mainly remains as a stable local shortcut.
+# Fast local-render profile. The navigation generator sees QUARTO_PROFILE=fast
+# and skips itself from the default pre-render hook.
 project: {}
