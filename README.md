@@ -148,9 +148,10 @@ issue 又成为下一轮"读什么"的输入。
 - **两份拷贝**:笔记本侧 `/home/chance/dgx/quarto-lab`(SSH 挂载,
   文件操作慢)与 DGX `~/quarto-lab`(工具链完整)。渲染在 DGX;
   技能安装在笔记本(DGX 无 `ion`/`node`)。
-- **技能布局**:`skills/` 是本地技能源码;`.claude/skills/` 是
-  `scripts/install_skills.sh` 生成的**真实副本**(无符号链接,整目录
-  gitignore)。改完本地技能后重跑该脚本。
+- **技能布局**:`skills/` 是本地技能源码;`scripts/install_skills.sh`
+  生成两份**真实副本**(无符号链接,均 gitignore):`.claude/skills/`
+  给 Claude Code,`.agents/skills/` 给 Codex(原生 Agent Skills 发现,
+  已实测)。改完本地技能后重跑该脚本。两个 CLI 共享同一套工作流。
 - **文献库**:`.knowledge/literature/<topic>/`,`ref.bib` 为库的
   source of truth;站点引用走各节 `refs.bib`(无者用根
   `references.bib`),cite key 双方一致(`lastname_year_firstword`)。

@@ -50,9 +50,11 @@ All content is written in Quarto Markdown (`.qmd` files). Key features used:
 
 Agent workflows live as skills in `skills/` (sources, committed; registered
 in `Ion.toml`). `./scripts/install_skills.sh` installs them — plus the
-third-party skills pinned in `Ion.lock` — into `.claude/skills/` as real
-copies (no symlinks; the whole dir is gitignored and regenerable). After
-editing a local skill, re-run the script. Local skills:
+third-party skills pinned in `Ion.lock` — as real copies (no symlinks) into
+BOTH consumer dirs: `.claude/skills/` (read by Claude Code) and
+`.agents/skills/` (read natively by Codex CLI). Both dirs are gitignored
+and regenerable. After editing a local skill, re-run the script. Local
+skills:
 
 - `render-site` - build/preview the site correctly (incl. remote-DGX rendering)
 - `download-ref` - add papers to the literature KB (`.knowledge/literature/`)
