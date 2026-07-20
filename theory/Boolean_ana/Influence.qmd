@@ -73,17 +73,20 @@ A deterministic decision tree (DT) is a family of rooted binary trees $\{T_n\}$ 
 - Each internal node is labeled with a variable $x_i$, where $i \in [n]$.
 - Each internal node has two outgoing edges, each labeled with the evaluation of $x_i$ as 0 and 1 respectively. 
 - Each leaf node is labeled with a output value 0 or 1. 
-- The complexity of a decision tree computational model is decided by two complexity parameters:
-    - $\mathrm{DTdepth}(f) = \min_{T} \{ \text{depth}(T) \}$, the worst-case number of input bits needed to be queried.
-    - $\mathrm{DTsize}(f) = \min_{T} \{ \text{number of leaves of T} \}$, the number of leaves of the tree, at most $2^n$ (trivially check inputs one by one).
 :::
 
-A family of Boolean functions $f_n: \{0,1\}^n \to \{0,1\}$ is $\mathrm{DT}_{w}$ if it can be computed by a rooted decision tree $T_n$ with $ \mathrm{DTsize}(f_n) =w$, such that:
+A family of Boolean functions $f_n: \{0,1\}^n \to \{0,1\}$ can be computed by a rooted decision tree $T_n$ through the process:
 
-- Each internal nodes correspond to one of the input labels $x = (x_1, \ldots, x_n)$.
-- Starting from the root, if the current node is labeled with $x_i$, query $x_i$. 
-- If the current node is labeled with 0, go to the left child; if the current node is labeled with 1, go to the right child. 
-- Until the leaf node is reached, output the label of the leaf node and get $f_n(x)$.
+1. Each internal nodes correspond to one of the input labels $x = (x_1, \ldots, x_n)$.
+2. Starting from the root, if the current node is labeled with $x_i$, query $x_i$. 
+3. If the current node is labeled with 0, go to the left child; if the current node is labeled with 1, go to the right child. 
+4. Until the leaf node is reached, output the label of the leaf node and get $f_n(x)$.
+
+The complexity of the optimal decision tree computational model of $f_n$ decides two complexity parameters:
+
+- $\mathrm{DTdepth}(f) = \min_{T} \{ \text{depth}(T) \}$, the worst-case number of input bits needed to be queried.
+- $\mathrm{DTsize}(f) = \min_{T} \{ \text{number of leaves of T} \}$, the number of leaves of the tree, at most $2^n$ (trivially check inputs one by one).
+
 
 :::{#lem-decision-tree .callout-important icon="false"}
 ## Lemma: Decision Tree Complexity

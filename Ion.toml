@@ -1,0 +1,24 @@
+[skills]
+ion-cli = { type = "local" }
+arxiv-search = { source = "yorkeccak/scientific-skills/arxiv-search" }
+survey = { source = "QuantumBFS/sci-brain/skills/survey" }
+ideas = { source = "QuantumBFS/sci-brain/skills/ideas" }
+idea-writer = { source = "QuantumBFS/sci-brain/skills/idea-writer" }
+researchstyle = { source = "QuantumBFS/sci-brain/skills/researchstyle" }
+review-writer = { source = "QuantumBFS/sci-brain/skills/review-writer" }
+paper-writer = { source = "QuantumBFS/sci-brain/skills/paper-writer" }
+scientific-visualization = { source = "HughYau/AcademicForge/scientific-visualization" }
+context7-cli = { source = "upstash/context7/skills/context7-cli" }
+download-ref = { type = "local", path = "skills/download-ref" }
+screen-paper = { type = "local", path = "skills/screen-paper" }
+expand-notes = { type = "local", path = "skills/expand-notes" }
+complete-gaps = { type = "local", path = "skills/complete-gaps" }
+integrate-paper = { type = "local", path = "skills/integrate-paper" }
+generate-issues = { type = "local", path = "skills/generate-issues" }
+conference-survey = { type = "local", path = "skills/conference-survey" }
+render-site = { type = "local", path = "skills/render-site" }
+
+[options]
+
+[options.targets]
+claude = ".claude/skills"

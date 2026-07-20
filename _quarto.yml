@@ -2,6 +2,10 @@ project:
   type: website
   output-dir: _site
   pre-render: .venv/bin/python scripts/update_theory_nav.py
+  render:
+    - "**/*"
+    - "!skills/**"
+    - "!README.md"
 
 website:
   draft-mode: unlinked
@@ -162,19 +166,13 @@ website:
             - theory/OSF/operator_magic.qmd
             - theory/OSF/nonPauli_stab.qmd
             - theory/OSF/OTOC.qmd
-    - id: ham_learning
-      title: "Hamiltonian Learning"
-      contents:
-        - theory/Ham_learning/index.qmd
-        - section: "Notes"
-          contents:
-            - theory/Ham_learning/phasegate_learn.qmd
     - id: iqp
       title: "IQP Circuit Supremacy"
       contents:
         - theory/supermacy/index.qmd
         - section: "Notes"
           contents:
+            - theory/supermacy/QNC0.qmd
             - theory/supermacy/Bellsamp.qmd
             - theory/supermacy/classical_simulation.qmd
             - theory/supermacy/hardness_proofs.qmd
@@ -241,7 +239,9 @@ website:
             - theory/learning_theo/framework.qmd
             - theory/learning_theo/gd_learn.qmd
             - theory/learning_theo/grokking_phase_transition.qmd
+            - theory/learning_theo/ham_learning.qmd
             - theory/learning_theo/Estimation_rev.qmd
+            - theory/learning_theo/phasegate_learn.qmd
             - theory/learning_theo/NTK.qmd
         - section: "Lower Bounds Toolbox"
           contents:
@@ -278,6 +278,15 @@ website:
             - theory/Magic/Bell_magic.qmd
             - theory/Magic/exp_analy.qmd
             - theory/Magic/measures.qmd
+    - id: theory_optimization_mis
+      title: "Mis"
+      contents:
+        - theory/optimization/MIS/index.qmd
+        - section: "Notes"
+          contents:
+            - theory/optimization/MIS/Heristic.qmd
+            - theory/optimization/MIS/MIS.qmd
+            - theory/optimization/MIS/approx.qmd
     - id: experiments_posts_lukin_timereview
       title: "Neutral Atom Quantum Simulation: Lukin Group Architecture Review (2017–2026)"
       contents:
@@ -292,20 +301,25 @@ website:
         - section: "Notes"
           contents:
             - theory/optimization/drug_design.qmd
-            - theory/optimization/MIS.qmd
+        - section: "Mis"
+          contents:
+            - theory/optimization/MIS/index.qmd
+            - theory/optimization/MIS/Heristic.qmd
+            - theory/optimization/MIS/MIS.qmd
+            - theory/optimization/MIS/approx.qmd
     - id: perturbation
       title: "Perturbation and Floquet Theory"
       contents:
-        - theory/Perturbation/index.qmd
+        - theory/Dynamics/index.qmd
         - section: "Notes"
           contents:
-            - theory/Perturbation/Effective_ham.qmd
-            - theory/Perturbation/ETH.qmd
-            - theory/Perturbation/examples.qmd
-            - theory/Perturbation/Floquet.qmd
-            - theory/Perturbation/geometric_phase.qmd
-            - theory/Perturbation/KZM.qmd
-            - theory/Perturbation/Adiabatic_comp.qmd
+            - theory/Dynamics/Effective_ham.qmd
+            - theory/Dynamics/ETH.qmd
+            - theory/Dynamics/examples.qmd
+            - theory/Dynamics/Floquet.qmd
+            - theory/Dynamics/geometric_phase.qmd
+            - theory/Dynamics/KZM.qmd
+            - theory/Dynamics/Adiabatic_comp.qmd
     - id: quantum_complexity
       title: "Quantum Complexity"
       contents:
