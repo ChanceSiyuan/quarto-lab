@@ -667,6 +667,53 @@ test("diagnostics are sorted by file, line, column, then code", async (t) => {
   ]);
 });
 
+test("an unclosed fence fails the tree instead of hiding the page below it", async (t) => {
+  // Reproduced against Quarto 1.9.38 before this diagnostic existed: the page
+  // below validated clean — `make knowledge-check` printed "the trusted tree is
+  // valid" — and the rendered `proof.html` carried
+  // `href="../../../../../../../../etc/hostname"`. remark runs an unclosed
+  // fence to end of file and calls all of it code, so the escaping link and the
+  // unknown citekey were never in the graph to be checked; Pandoc closes the
+  // fence at end of file, ignores the leftover, and renders the tail. An
+  // unclosed fence is a typo, not an attack, which is exactly why it may not
+  // silently take half a page out of validation.
+  const repo = await makeRepo(t);
+  await writePage(repo, "ising/proof.qmd", [
+    /*  1 */ "---",
+    /*  2 */ "title: Proof of the critical temperature",
+    /*  3 */ "description: The duality argument that fixes the critical temperature.",
+    /*  4 */ "categories: [theory]",
+    /*  5 */ "---",
+    /*  6 */ "",
+    /*  7 */ "```python",
+    /*  8 */ 'print("unclosed fence")',
+    /*  9 */ "",
+    /* 10 */ "[escape](../../../../../../../../etc/hostname)",
+    /* 11 */ "![img](../../../../../../../../etc/hostname)",
+    /* 12 */ "@definitely_not_in_the_bibliography",
+  ]);
+
+  const report = await validateKnowledge({ repoRoot: repo });
+
+  assert.equal(report.ok, false);
+  assert.deepEqual(at(report.diagnostics), [
+    "FENCE_UNCLOSED knowledge/ising/proof.qmd:7:1",
+  ]);
+  // One diagnostic, not four: the link, image, and citation below the opener
+  // are still invisible to every other check. That is the whole reason this one
+  // has to fail the page — it reports the *cause*, and the author closes the
+  // fence and gets the other three.
+  assert.match(report.diagnostics[0]?.message ?? "", /never closed/);
+
+  // Closing the fence turns the silence into the three real diagnostics.
+  await patch(repo, "ising/proof.qmd", 'print("unclosed fence")\n', 'print("ok")\n```\n');
+  assert.deepEqual(at((await validateKnowledge({ repoRoot: repo })).diagnostics), [
+    "LINK_OUTSIDE_KNOWLEDGE knowledge/ising/proof.qmd:11:1",
+    "LINK_OUTSIDE_KNOWLEDGE knowledge/ising/proof.qmd:12:1",
+    "CITATION_MISSING knowledge/ising/proof.qmd:13:1",
+  ]);
+});
+
 test("every diagnostic message names the page and the problem", async (t) => {
   const repo = await makeRepo(t);
   await patch(

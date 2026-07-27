@@ -420,14 +420,97 @@ test("an unclosed fence hides nothing, because Pandoc does not treat it as code"
     [{ kind: "script", line: 10 }],
   );
 
-  // A metadata block after an unclosed fence is not hidden either.
+  // A metadata block after an unclosed fence is not hidden either. The fence
+  // itself is reported at its opener, ahead of what it was hiding.
   const metadata = parse(
     "ising/index.qmd",
     indexPage("```python\nx = 1\n\n---\nexecute:\n  enabled: true\n---\n"),
   );
   assert.deepEqual(diagnostics(metadata), [
+    { code: "FENCE_UNCLOSED", line: 6, column: 1 },
     { code: "FRONTMATTER_INVALID", line: 9, column: 1 },
   ]);
+});
+
+test("an unclosed fence is reported, because the graph cannot see past it", () => {
+  // The scans above look through an unclosed fence; `localLinks`, `citations`,
+  // and the two curated sections cannot, because they are read from the mdast
+  // tree and remark has swallowed the whole tail of the page into one code
+  // node. Reproduced against Quarto 1.9.38: the page below validates clean and
+  // publishes `href="../../../../../../../../etc/hostname"`. So the fence is a
+  // diagnostic of its own.
+  const escaping = parse(
+    "ising/index.qmd",
+    indexPage(
+      [
+        /*  6 */ "```python",
+        /*  7 */ 'print("unclosed fence")',
+        /*  8 */ "",
+        /*  9 */ "[escape](../../../../../../../../etc/hostname)",
+        /* 10 */ "@definitely_not_in_the_bibliography",
+      ].join("\n"),
+    ),
+  );
+  assert.deepEqual(diagnostics(escaping), [
+    { code: "FENCE_UNCLOSED", line: 6, column: 1 },
+  ]);
+  // Everything below the opener really is invisible — which is exactly why the
+  // page may not be allowed to pass.
+  assert.deepEqual(targets(escaping.localLinks), []);
+  assert.deepEqual(escaping.citations, []);
+
+  // Every fence shape, at the opener, wherever it sits in the file.
+  const shapes: readonly { body: string; line: number; column: number }[] = [
+    { body: "Intro.\n\n```python\nx = 1\n", line: 8, column: 1 },
+    { body: "Intro.\n\n~~~\nx = 1\n", line: 8, column: 1 },
+    { body: "Intro.\n\n   ```js\nx = 1\n", line: 8, column: 4 },
+    // Closed one backtick short: the closer is shorter than the opener.
+    { body: "````python\nx = 1\n```\n", line: 6, column: 1 },
+    // A closing fence indented past the three columns CommonMark allows.
+    { body: "```python\nx = 1\n        ```\n", line: 6, column: 1 },
+    // Inside a block quote, where the fence closes at the end of the quote and
+    // the tail below is Markdown to remark and to Pandoc alike — still a fence
+    // the author never closed.
+    { body: "> ```python\n> x = 1\n\nTail.\n", line: 6, column: 3 },
+  ];
+  for (const shape of shapes) {
+    assert.deepEqual(
+      diagnostics(parse("ising/index.qmd", indexPage(shape.body))),
+      [{ code: "FENCE_UNCLOSED", line: shape.line, column: shape.column }],
+      shape.body,
+    );
+  }
+});
+
+test("a closed fence inside a container is not reported as unclosed", () => {
+  // remark reports a fenced block from its backticks onwards, so every line of
+  // its source *after* the first still carries the container prefix (`> `,
+  // `>   `, five spaces) that line one lost. Reading those prefixes as content
+  // would make every quoted or deeply nested code block look unclosed — and,
+  // now that an unclosed fence fails the tree, would fail pages that are fine.
+  const closed: readonly string[] = [
+    "> ```python\n> x = 1\n> ```\n\nTail.\n",
+    "> ```python\n> x = 1\n>```\n\nTail.\n",
+    "> > ```python\n> > x = 1\n> > ```\n\nTail.\n",
+    "> - ```python\n>   x = 1\n>   ```\n\nTail.\n",
+    "- item\n\n  ```python\n  x = 1\n  ```\n\nTail.\n",
+    "1. a\n   - b\n\n     ```js\n     y\n     ```\n\nTail.\n",
+    "   ```js\ny = 1\n```\n\nTail.\n",
+    "~~~\nx = 1\n~~~\n\nTail.\n",
+    "```python\nx = 1\n```\n\nTail.\n",
+  ];
+  for (const body of closed) {
+    assert.deepEqual(codes(parse("ising/index.qmd", indexPage(body))), [], body);
+  }
+
+  // And a link written below a quoted fence is still collected, which is the
+  // property the diagnostic exists to protect.
+  const quoted = parse(
+    "ising/index.qmd",
+    indexPage("> ```python\n> x = 1\n> ```\n\n[Neighbour](other.qmd)\n"),
+  );
+  assert.deepEqual(codes(quoted), []);
+  assert.deepEqual(targets(quoted.localLinks), ["other.qmd"]);
 });
 
 test("keeps clean content clean around stray angle brackets", () => {

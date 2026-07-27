@@ -28,6 +28,14 @@
  * ALIAS_PATH_FORBIDDEN       an alias Quarto would write as a redirect path
  * ```
  *
+ * The parser's own codes are forwarded unchanged. One of them is a gate rather
+ * than a complaint about form: `FENCE_UNCLOSED` fires when a fenced code block
+ * never closes, because remark then reads the rest of the page as code while
+ * Pandoc reads it as Markdown — so every link, citation, and curated entry
+ * below the opener is invisible to *these* checks and visible to the renderer.
+ * A page that cannot be read the same way twice is not a page this module can
+ * decide about, so it fails.
+ *
  * Every check reports the *cause* once. A missing `index.qmd` does not also
  * orphan the pages it would have owned, an index without a reading map does not
  * orphan its children, and a link that resolves to nothing is reported by the

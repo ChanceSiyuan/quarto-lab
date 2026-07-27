@@ -21,7 +21,10 @@
  * Where the renderer is more permissive than CommonMark — lenient HTML tags,
  * Pandoc raw blocks, mid-document metadata — this parser follows the renderer,
  * not remark. Anything Quarto would put on the page is something the graph
- * must be able to see.
+ * must be able to see. Where the two cannot be reconciled at all — a fence that
+ * never closes is code to remark and ordinary Markdown to Pandoc, so the two
+ * disagree about what the page *says* — the page is failed closed with
+ * `FENCE_UNCLOSED` rather than validated against a body Quarto will not render.
  */
 
 import path from "node:path";
@@ -524,15 +527,27 @@ interface CodeRange {
  * code; Pandoc requires the closing fence and falls back to reading the rest as
  * ordinary Markdown. Believing remark here blinds every scan below to the whole
  * tail of the page — `quarto pandoc` emits a `<script>` written after an
- * unclosed fence as raw HTML.
+ * unclosed fence as raw HTML, and every link, citation, and curated entry below
+ * it disappears from the graph. `FENCE_UNCLOSED` reports it, so the answer has
+ * to be right in both directions.
+ *
+ * `indent` is the column the opener sits at, minus one. remark reports a fence
+ * inside a block quote or a list item from its backticks onwards, so every
+ * *later* line of the slice still carries the container prefix that line one
+ * lost (`> `, `>   `, five spaces …). At most that many leading spaces, tabs,
+ * and `>` are therefore stripped from the closing candidate before CommonMark's
+ * own rule — at most three spaces, then at least as many markers as the opener
+ * — is applied to what is left. Without it every quoted or deeply nested fence
+ * reads as unclosed.
  */
-function isUnclosedFence(raw: string): boolean {
+function isUnclosedFence(raw: string, indent: number): boolean {
   const opening = /^ {0,3}(`{3,}|~{3,})/.exec(raw);
   if (opening === null) {
     return false;
   }
   const fence = opening[1] ?? "";
   const marker = fence[0] ?? "`";
+  const container = new RegExp(`^[ \t>]{0,${indent}}`);
   const closing = new RegExp(`^ {0,3}[${marker}]{${fence.length},}\\s*$`);
   const lines = raw.split("\n");
   for (let index = lines.length - 1; index >= 1; index -= 1) {
@@ -540,7 +555,7 @@ function isUnclosedFence(raw: string): boolean {
     if (line.trim() === "") {
       continue;
     }
-    return !closing.test(line);
+    return !closing.test(line.replace(container, ""));
   }
   return true;
 }
@@ -575,7 +590,10 @@ function collectCodeRanges(body: string, tree: Root): CodeRange[] {
         start,
         end,
         raw: RAW_ATTRIBUTE.test((node.lang ?? "").trim()),
-        unclosed: isUnclosedFence(body.slice(start, end)),
+        unclosed: isUnclosedFence(
+          body.slice(start, end),
+          (node.position?.start.column ?? 1) - 1,
+        ),
       });
       return;
     }
@@ -1158,7 +1176,24 @@ function readBody(
     }
   }
 
+  // An unclosed fence is where this parser and Pandoc stop agreeing about what
+  // the page even says, so it is reported rather than compensated for. The
+  // scans below already look through it; the graph cannot, because
+  // `localLinks`, `citations`, and the two curated sections are read from the
+  // mdast tree, and remark has swallowed everything after the opener into one
+  // code node. Reporting it at the opener fails the page closed instead of
+  // publishing a tail that nothing validated.
   const codeRanges = collectCodeRanges(body, tree);
+  for (const range of codeRanges) {
+    if (range.unclosed) {
+      diagnostics.push({
+        code: "FENCE_UNCLOSED",
+        message:
+          "this fenced code block is never closed; Pandoc reads the rest of the page as Markdown while this parser reads it as code, so every link, citation, and curated section below it would go unvalidated",
+        location: atOffset(range.start),
+      });
+    }
+  }
   result.unsafeHtml.push(...scanUnsafeHtml(body, codeRanges, atOffset));
   scanMetadataBlocks(body, starts, codeRanges, setextUnderlines, atOffset, diagnostics);
 
