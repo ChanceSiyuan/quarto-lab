@@ -17,6 +17,7 @@
 import { execFile, spawn } from "node:child_process";
 import { createHash } from "node:crypto";
 import {
+  lstat,
   mkdir,
   readFile,
   readdir,
@@ -129,6 +130,77 @@ async function isDirectory(target: string): Promise<boolean> {
     return (await stat(target)).isDirectory();
   } catch {
     return false;
+  }
+}
+
+async function pathExists(target: string): Promise<boolean> {
+  try {
+    await lstat(target);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Signals that a failed install could not be undone, so the staging tree holds
+ * the only copy of the displaced originals and must be kept.
+ */
+class IncompleteRollbackError extends Error {}
+
+interface PendingInstall {
+  /** Staged artifact holding the new content. */
+  staged: string;
+  /** Final repository path the artifact is installed at. */
+  target: string;
+  /** Staging path an already-present target is displaced to. */
+  displaced: string;
+}
+
+/**
+ * Moves staged artifacts into place as one unit.
+ *
+ * Each target that already exists is displaced into the staging tree before it
+ * is replaced, and every completed step is undone in reverse order if a later
+ * step fails, so callers either get the whole new import or the exact state
+ * they started from. Displaced originals stay in the staging tree, which the
+ * caller only discards once every step has succeeded.
+ */
+async function installAtomically(
+  installs: readonly PendingInstall[],
+): Promise<void> {
+  const undo: (() => Promise<void>)[] = [];
+
+  try {
+    for (const install of installs) {
+      await mkdir(path.dirname(install.target), { recursive: true });
+      if (await pathExists(install.target)) {
+        await rename(install.target, install.displaced);
+        undo.push(async () => {
+          await rename(install.displaced, install.target);
+        });
+      }
+      await rename(install.staged, install.target);
+      undo.push(async () => {
+        await rename(install.target, install.staged);
+      });
+    }
+  } catch (error) {
+    const failures: unknown[] = [];
+    for (const step of undo.reverse()) {
+      try {
+        await step();
+      } catch (rollbackError) {
+        failures.push(rollbackError);
+      }
+    }
+    if (failures.length > 0) {
+      throw new IncompleteRollbackError(
+        `${describe(error)} (the import could not be fully undone: ${failures.map(describe).join("; ")})`,
+        { cause: error },
+      );
+    }
+    throw error;
   }
 }
 
@@ -343,8 +415,15 @@ function parseBatchOutput(
   return blobs;
 }
 
-/** Lists Markdown files under `root`, as sorted POSIX paths relative to it. */
-async function listMarkdownFiles(root: string): Promise<string[]> {
+/**
+ * Lists every file under `root` as sorted POSIX paths relative to it.
+ *
+ * The listing is deliberately unfiltered: the destination holds a byte-exact
+ * imported corpus, so anything the manifest does not describe — a sidecar, a
+ * stray note, an editor backup — must fail verification rather than be
+ * tolerated and then silently discarded by the next import.
+ */
+async function listDestinationFiles(root: string): Promise<string[]> {
   const found: string[] = [];
 
   const walk = async (directory: string): Promise<void> => {
@@ -353,7 +432,7 @@ async function listMarkdownFiles(root: string): Promise<string[]> {
       const absolute = path.join(directory, entry.name);
       if (entry.isDirectory()) {
         await walk(absolute);
-      } else if (entry.name.endsWith(".md")) {
+      } else {
         found.push(path.relative(root, absolute).split(path.sep).join("/"));
       }
     }
@@ -542,6 +621,7 @@ export async function importHarnessKnowledge(
   await rm(stagingRoot, { recursive: true, force: true });
   await mkdir(stagingRoot, { recursive: true });
 
+  let keepStaging = false;
   try {
     const stagedCards = path.join(stagingRoot, "cards");
     for (const [index, { destination }] of selected.cards.entries()) {
@@ -559,29 +639,41 @@ export async function importHarnessKnowledge(
     const stagedManifest = path.join(stagingRoot, "manifest.json");
     await writeFile(stagedManifest, `${JSON.stringify(manifest, null, 2)}\n`);
 
-    // Install in dependency order: cards first, so an early failure cannot
-    // leave a bibliography or manifest that describes an absent destination.
-    await mkdir(path.dirname(destinationRoot), { recursive: true });
-    const displaced = path.join(stagingRoot, "replaced");
-    if (destinationPresent) {
-      await rename(destinationRoot, displaced);
+    // Install in dependency order: cards, then bibliography, then the manifest
+    // that describes them. A failure at any step restores every target, so the
+    // repository is never left with a half-installed import.
+    const displacedRoot = path.join(stagingRoot, "replaced");
+    await mkdir(displacedRoot, { recursive: true });
+    await installAtomically([
+      {
+        staged: stagedCards,
+        target: destinationRoot,
+        displaced: path.join(displacedRoot, "cards"),
+      },
+      {
+        staged: stagedBibliography,
+        target: bibliographyTarget,
+        displaced: path.join(displacedRoot, "ref.bib"),
+      },
+      {
+        staged: stagedManifest,
+        target: manifestTarget,
+        displaced: path.join(displacedRoot, "manifest.json"),
+      },
+    ]);
+  } catch (error) {
+    if (error instanceof IncompleteRollbackError) {
+      keepStaging = true;
+      throw new Error(
+        `${describe(error)}; "${STAGING_PATH}" was kept because it holds the only copy of the replaced files`,
+        { cause: error },
+      );
     }
-    try {
-      await rename(stagedCards, destinationRoot);
-    } catch (error) {
-      if (destinationPresent) {
-        await rename(displaced, destinationRoot).catch(() => {});
-      }
-      throw error;
-    }
-
-    await mkdir(path.dirname(bibliographyTarget), { recursive: true });
-    await rename(stagedBibliography, bibliographyTarget);
-
-    await mkdir(path.dirname(manifestTarget), { recursive: true });
-    await rename(stagedManifest, manifestTarget);
+    throw error;
   } finally {
-    await rm(stagingRoot, { recursive: true, force: true });
+    if (!keepStaging) {
+      await rm(stagingRoot, { recursive: true, force: true });
+    }
   }
 
   return manifest;
@@ -599,7 +691,7 @@ export async function verifyHarnessImport(
   const destinationRoot = toSystemPath(root, DESTINATION_PATH);
 
   const expected = manifest.files.map((entry) => entry.path);
-  const present = await listMarkdownFiles(destinationRoot);
+  const present = await listDestinationFiles(destinationRoot);
   const presentSet = new Set(present);
   const expectedSet = new Set(expected);
 

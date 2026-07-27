@@ -8,6 +8,7 @@ import {
   readFile,
   readdir,
   rm,
+  stat,
   writeFile,
 } from "node:fs/promises";
 import { tmpdir } from "node:os";
@@ -144,6 +145,43 @@ async function exists(target: string): Promise<boolean> {
     return true;
   } catch {
     return false;
+  }
+}
+
+async function directoryExists(target: string): Promise<boolean> {
+  try {
+    return (await stat(target)).isDirectory();
+  } catch {
+    return false;
+  }
+}
+
+/** Commits one more card, so a later import is observably different. */
+async function commitAdditionalCard(source: SourceRepository): Promise<string> {
+  await writeFile(
+    path.join(source.knowledgeRoot, "models", "added.md"),
+    "# Added later\n",
+  );
+  await run("git", ["-C", source.root, "add", "--all"]);
+  await run("git", ["-C", source.root, "commit", "--quiet", "-m", "one more"]);
+  const { stdout } = await run("git", ["-C", source.root, "rev-parse", "HEAD"]);
+  return stdout.trim();
+}
+
+/**
+ * Runs `action` while `directory` rejects writes, which is how an install step
+ * is made to fail at a chosen target.
+ */
+async function withUnwritableDirectory(
+  directory: string,
+  action: () => Promise<void>,
+): Promise<void> {
+  await mkdir(directory, { recursive: true });
+  await chmod(directory, 0o500);
+  try {
+    await action();
+  } finally {
+    await chmod(directory, 0o700);
   }
 }
 
@@ -341,6 +379,86 @@ test("stages before install and leaves no partial destination on failure", async
   assert.deepEqual(await readdir(path.join(repoRoot, "work")).catch(() => []), []);
 });
 
+for (const step of [
+  { name: "bibliography", directory: "literature" },
+  { name: "manifest", directory: path.join("docs", "migrations") },
+]) {
+  test(`installs nothing when the ${step.name} step fails`, async (t) => {
+    const source = await makeSourceRepository(t);
+    const repoRoot = await temporaryDirectory(t, "harness-target-");
+
+    await withUnwritableDirectory(path.join(repoRoot, step.directory), async () => {
+      await assert.rejects(
+        importHarnessKnowledge({
+          sourceKnowledgeRoot: source.knowledgeRoot,
+          repoRoot,
+          sourceRevision: source.revision,
+        }),
+      );
+    });
+
+    assert.equal(await directoryExists(path.join(repoRoot, DESTINATION)), false);
+    assert.deepEqual(
+      await readdir(path.join(repoRoot, "drafts")).catch(() => []),
+      [],
+    );
+    assert.equal(
+      await exists(path.join(repoRoot, "literature", "ref.bib")),
+      false,
+    );
+    assert.equal(await exists(path.join(repoRoot, MANIFEST_PATH)), false);
+    assert.deepEqual(
+      await readdir(path.join(repoRoot, "work")).catch(() => []),
+      [],
+    );
+  });
+
+  test(`keeps the previous import when the ${step.name} step fails`, async (t) => {
+    const source = await makeSourceRepository(t);
+    const repoRoot = await temporaryDirectory(t, "harness-target-");
+
+    const installed = await importHarnessKnowledge({
+      sourceKnowledgeRoot: source.knowledgeRoot,
+      repoRoot,
+      sourceRevision: source.revision,
+    });
+    const installedManifest = await readFile(
+      path.join(repoRoot, MANIFEST_PATH),
+      "utf8",
+    );
+    const nextRevision = await commitAdditionalCard(source);
+
+    await withUnwritableDirectory(path.join(repoRoot, step.directory), async () => {
+      await assert.rejects(
+        importHarnessKnowledge({
+          sourceKnowledgeRoot: source.knowledgeRoot,
+          repoRoot,
+          sourceRevision: nextRevision,
+        }),
+      );
+    });
+
+    // Every already-swapped target is restored, so the newer card never lands
+    // and the manifest still describes exactly what is on disk.
+    assert.deepEqual(
+      await listRelativeFiles(path.join(repoRoot, DESTINATION)),
+      EXPECTED_PATHS,
+    );
+    assert.equal(
+      await readFile(path.join(repoRoot, MANIFEST_PATH), "utf8"),
+      installedManifest,
+    );
+    assert.deepEqual(await verifyHarnessImport(repoRoot), {
+      files: installed.files.length,
+      bytes: EXPECTED_BYTES,
+    });
+    assert.deepEqual(
+      await readdir(path.join(repoRoot, "work")).catch(() => []),
+      [],
+    );
+  });
+}
+
 test("refuses a conflicting destination instead of overwriting it", async (t) => {
   const source = await makeSourceRepository(t);
   const repoRoot = await temporaryDirectory(t, "harness-target-");
@@ -417,6 +535,30 @@ test("verification rejects tampered, missing, and extra cards", async (t) => {
 
   await rm(path.join(destination, "README.md"));
   await assert.rejects(verifyHarnessImport(repoRoot), /README\.md/);
+});
+
+test("verification rejects unknown non-Markdown files, which import keeps", async (t) => {
+  const { source, repoRoot } = await importFixture(t);
+  const destination = path.join(repoRoot, DESTINATION);
+  const sidecar = path.join(destination, "_metadata.yml");
+
+  await writeFile(sidecar, "title: sidecar\n");
+
+  await assert.rejects(verifyHarnessImport(repoRoot), /_metadata\.yml/);
+  await assert.rejects(
+    importHarnessKnowledge({
+      sourceKnowledgeRoot: source.knowledgeRoot,
+      repoRoot,
+      sourceRevision: source.revision,
+    }),
+    /refus/i,
+  );
+
+  assert.equal(await readFile(sidecar, "utf8"), "title: sidecar\n");
+  assert.deepEqual(
+    await listRelativeFiles(destination),
+    [...EXPECTED_PATHS, "_metadata.yml"].sort(comparePosix),
+  );
 });
 
 test("verification rejects a tampered bibliography", async (t) => {
