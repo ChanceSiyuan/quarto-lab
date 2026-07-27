@@ -1,4 +1,4 @@
-# vinext-starter
+# Research Loop
 
 A clean full-stack starter running on
 [vinext](https://github.com/cloudflare/vinext), with optional Cloudflare D1 and
@@ -11,10 +11,11 @@ Drizzle support.
 ## Quick Start
 
 ```bash
-npm install
-npm run dev
-npm run build
+make dev
 ```
+
+The command installs the locked dependencies when needed, then starts the local
+site.
 
 This starter does not use `wrangler.jsonc`.
 
@@ -87,7 +88,7 @@ actions tied to the current ChatGPT user. Leave public content anonymous.
 
 ## Useful Commands
 
-- `npm run dev`: start local development
+- `make dev`: install dependencies when needed and start local development
 - `npm run build`: verify the vinext build output
 - `npm test`: build the starter and verify its rendered loading skeleton
 - `npm run db:generate`: generate Drizzle migrations after schema changes
