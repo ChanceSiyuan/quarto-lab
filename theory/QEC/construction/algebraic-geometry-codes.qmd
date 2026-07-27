@@ -1,0 +1,298 @@
+---
+categories:
+- Readings
+date: '2026-07-06'
+description: 'Function fields, places, divisors, Riemann--Roch spaces, evaluation codes, and their use in classical and quantum code constructions.'
+lang: en
+title: 'Algebraic-Geometry Codes'
+bibliography: ../refs.bib
+---
+
+# From curves to function fields
+
+Algebraic-geometry (AG) codes replace the polynomial evaluation space of Reed--Solomon codes by a Riemann--Roch space on a curve. The central benefit is that a curve over a finite field can have many rational points relative to its genus, providing long evaluation codes with controlled rate and distance [@goppa1983algebraico; @stichtenoth2009algebraic].
+
+::: {#def-ag-function-field .callout-note icon="false"}
+## Definition: algebraic function field
+
+An algebraic function field $F/\mathbb F_q$ in one variable is a finite extension of $\mathbb F_q(x)$ for some element $x$ transcendental over $\mathbb F_q$. We assume that $\mathbb F_q$ is the full constant field of $F$: every element of $F$ algebraic over $\mathbb F_q$ already lies in $\mathbb F_q$.
+:::
+
+For a smooth projective geometrically irreducible curve $X/\mathbb F_q$, its rational-function field $\mathbb F_q(X)$ is such a function field. Conversely, one-variable function fields correspond to smooth projective curves up to the appropriate notion of isomorphism. Passing to the smooth projective model removes artifacts of a particular affine equation and includes points at infinity.
+
+## Elliptic-curve example
+
+Assume $\operatorname{char}\mathbb F_q\ne2,3$ and
+
+$$
+E:y^2=x^3+ax+b,
+\qquad 4a^3+27b^2\ne0.
+$$
+
+Then
+
+$$
+\mathbb F_q(E)=\mathbb F_q(x,y),
+\qquad y^2=x^3+ax+b,
+$$
+
+is a degree-two extension of $\mathbb F_q(x)$. Every element can be written
+
+$$
+f(x)+y,g(x),
+\qquad f,g\in\mathbb F_q(x),
+$$
+
+because every power $y^j$ reduces to degree at most one in $y$.
+
+# Places and valuations
+
+The phrase “evaluate a rational function at a point” is made intrinsic through places.
+
+::: {#def-ag-place .callout-note icon="false"}
+## Definition: place and valuation ring
+
+A place $P$ of $F/\mathbb F_q$ is represented by a discrete valuation ring
+
+$$
+\mathbb F_q\subseteq\mathcal O_P\subsetneq F
+$$
+
+with maximal ideal $\mathfrak m_P$. Its residue field and degree are
+
+$$
+F_P=\mathcal O_P/\mathfrak m_P,
+\qquad
+\deg P=[F_P:\mathbb F_q].
+$$
+
+There is a normalized discrete valuation
+
+$$
+v_P:F^\times\longrightarrow\mathbb Z
+$$
+
+such that $\mathcal O_P=\{f:v_P(f)\ge0\}$ and $\mathfrak m_P=\{f:v_P(f)>0\}$.
+:::
+
+For $f,g\in F^\times$,
+
+$$
+v_P(fg)=v_P(f)+v_P(g),
+\qquad
+v_P(f+g)\ge\min\{v_P(f),v_P(g)\}.
+$$
+
+If the two valuations in the minimum are unequal, equality holds. Positive valuation means a zero, negative valuation a pole, and valuation zero a local unit.
+
+## Rational-function-field example
+
+For $F=\mathbb F_q(x)$, every monic irreducible polynomial $p(x)$ defines a finite place $P_p$ with
+
+$$
+v_{P_p}\!\left(\frac{a(x)}{b(x)}\right)
+=\operatorname{ord}_p a-\operatorname{ord}_p b,
+\qquad
+\deg P_p=\deg p.
+$$
+
+There is also a place at infinity,
+
+$$
+v_{P_\infty}\!\left(\frac{a(x)}{b(x)}\right)
+=\deg b-\deg a.
+$$
+
+Degree-one places correspond to $x=\alpha$ for $\alpha\in\mathbb F_q$, together with $P_\infty$.
+
+# Divisors
+
+::: {#def-ag-divisor .callout-note icon="false"}
+## Definition: divisor
+
+A divisor is a finite formal sum
+
+$$
+D=\sum_P n_PP,
+\qquad n_P\in\mathbb Z.
+$$
+
+Its support and degree are
+
+$$
+\operatorname{supp}D=\{P:n_P\ne0\},
+\qquad
+\deg D=\sum_Pn_P\deg P.
+$$
+:::
+
+For $f\in F^\times$, the principal divisor is
+
+$$
+(f)=\sum_Pv_P(f)P=(f)_0-(f)_\infty,
+$$
+
+where
+
+$$
+(f)_0=\sum_{v_P(f)>0}v_P(f)P,
+\qquad
+(f)_\infty=\sum_{v_P(f)<0}-v_P(f)P.
+$$
+
+Every principal divisor has degree zero. Divisors modulo principal divisors form the divisor class group.
+
+::: {#def-ag-riemann-roch-space .callout-note icon="false"}
+## Definition: Riemann--Roch space
+
+For a divisor $G$, define
+
+$$
+\mathcal L(G)=\{0\}\cup
+\{f\in F^\times:(f)+G\ge0\},
+\qquad
+\ell(G)=\dim_{\mathbb F_q}\mathcal L(G).
+$$
+
+Thus $G$ bounds the allowed poles of $f$.
+:::
+
+For $F=\mathbb F_q(x)$,
+
+$$
+\mathcal L(mP_\infty)
+=\operatorname{span}_{\mathbb F_q}\{1,x,\ldots,x^m\}
+$$
+
+when $m\ge0$.
+
+# Riemann--Roch theorem
+
+::: {#thm-ag-riemann-roch .callout-important icon="false"}
+## Theorem: Riemann--Roch
+
+Let $F/\mathbb F_q$ have genus $g$, and let $K$ be a canonical divisor. For every divisor $G$,
+
+$$
+\ell(G)-\ell(K-G)=\deg G+1-g.
+$$
+:::
+
+Two immediate consequences are
+
+$$
+\deg G<0\Longrightarrow\ell(G)=0
+$$
+
+and
+
+$$
+\deg G>2g-2\Longrightarrow\ell(G)=\deg G+1-g.
+$$
+
+The first implication is not an equivalence: a divisor of nonnegative degree can still have $\ell(G)=0$.
+
+# Evaluation codes
+
+Choose distinct rational places $P_1,\ldots,P_n$ and let
+
+$$
+D=P_1+\cdots+P_n.
+$$
+
+Choose a divisor $G$ with $\operatorname{supp}G\cap\operatorname{supp}D=\varnothing$.
+
+::: {#def-ag-evaluation-code .callout-note icon="false"}
+## Definition: functional AG code
+
+The functional AG code is
+
+$$
+C_L(D,G)=
+\{(f(P_1),\ldots,f(P_n)):f\in\mathcal L(G)\}
+\subseteq\mathbb F_q^n.
+$$
+:::
+
+::: {#thm-ag-code-parameters .callout-important icon="false"}
+## Theorem: designed parameters
+
+If $\deg G<n$, then evaluation is injective and $C_L(D,G)$ has parameters
+
+$$
+k=\ell(G),
+\qquad
+d\ge n-\deg G.
+$$
+
+If additionally $2g-2<\deg G<n$, then
+
+$$
+k=\deg G+1-g.
+$$
+:::
+
+::: {.callout-note collapse="true"}
+## Proof
+
+If a nonzero $f\in\mathcal L(G)$ vanishes at all $P_i$, then
+
+$$
+(f)+G-D\ge0.
+$$
+
+Taking degrees gives $0+\deg G-n\ge0$, contradicting $\deg G<n$. Hence evaluation is injective and $k=\ell(G)$.
+
+If a nonzero codeword has zeros at $t$ evaluation places, then $(f)+G$ contains those $t$ places, so $t\le\deg G$. Therefore its weight is at least $n-\deg G$. The dimension formula in the nonspecial range follows from Riemann--Roch.
+:::
+
+# Reed--Solomon codes as genus-zero AG codes
+
+Take $F=\mathbb F_q(x)$, $G=mP_\infty$, and $D=P_{\alpha_1}+\cdots+P_{\alpha_n}$ for distinct $\alpha_i\in\mathbb F_q$. Then
+
+$$
+C_L(D,mP_\infty)
+=\{(f(\alpha_1),\ldots,f(\alpha_n)):\deg f\le m\}.
+$$
+
+It has
+
+$$
+[n,k,d]=[n,m+1,n-m],
+$$
+
+which meets the Singleton bound. AG codes generalize this construction by allowing positive genus and, crucially, curves with more rational evaluation points than the projective line.
+
+# Hermitian-curve example
+
+Over $\mathbb F_{q^2}$, the Hermitian curve
+
+$$
+y^q+y=x^{q+1}
+$$
+
+has genus $g=q(q-1)/2$ and $q^3+1$ rational places. For every $\alpha\in\mathbb F_{q^2}$, the trace equation
+
+$$
+y^q+y=\alpha^{q+1}\in\mathbb F_q
+$$
+
+has $q$ solutions in $\mathbb F_{q^2}$, producing $q^3$ affine rational points; the projective closure contributes one point at infinity. One-point divisors $G=mP_\infty$ therefore yield long, structured evaluation codes.
+
+# From classical AG codes to quantum codes
+
+Nested classical codes can be converted into CSS codes. If
+
+$$
+C_Z^\perp\subseteq C_X\subseteq\mathbb F_q^n,
+$$
+
+then the associated CSS code has dimension
+
+$$
+k_Q=\dim C_X+\dim C_Z-n
+$$
+
+and distances controlled by vectors outside the relevant dual subcodes. Suitable nested AG evaluation and differential codes provide asymptotically good quantum codes [@ashikhmin2001asymptotically]. The nontrivial work is not merely choosing two divisors: one must verify the duality relation, field assumptions, and the resulting quantum distances.
+
+The homological construction in [Homological and Hyperbolic Surface Codes](homological-and-hyperbolic-codes.qmd) uses chain complexes rather than function fields, but both approaches organize CSS orthogonality through paired algebraic spaces.

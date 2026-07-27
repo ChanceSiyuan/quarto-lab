@@ -1,0 +1,155 @@
+---
+categories:
+- Readings
+date: '2026-07-06'
+description: 'Chain complexes, surface-code homology, regular hyperbolic tilings, code parameters, decoding, and geometric tradeoffs.'
+lang: en
+title: 'Homological and Hyperbolic Surface Codes'
+bibliography: ../refs.bib
+---
+
+# Cellulations and homology
+
+Let a closed surface $\Sigma$ be decomposed into vertices, edges, and faces. Its cellular chain complex is
+
+$$
+C_2\xrightarrow{\partial_2}C_1\xrightarrow{\partial_1}C_0,
+\qquad
+\partial_1\partial_2=0.
+$$
+
+The first homology group is
+
+$$
+H_1(\Sigma;\mathbb F_2)
+=\ker\partial_1/\operatorname{im}\partial_2.
+$$
+
+Cycles in $\operatorname{im}\partial_2$ bound collections of faces and are homologically trivial. Nontrivial homology classes are cycles that cannot be contracted through the cellulation.
+
+::: {#def-hyperbolic-homological-css .callout-note icon="false"}
+## Definition: homological CSS code
+
+Place one physical qubit on every edge and define
+
+$$
+H_X=\partial_1,
+\qquad
+H_Z=\partial_2^{\mathsf T}.
+$$
+
+Rows of $H_X$ are vertex-star $X$ checks; rows of $H_Z$ are face-boundary $Z$ checks. Since
+
+$$
+H_XH_Z^{\mathsf T}=\partial_1\partial_2=0,
+$$
+
+all stabilizers commute.
+:::
+
+With this convention, $Z$-type logical operators are nontrivial primal homology classes and $X$-type logical operators are nontrivial dual homology classes. Exchanging $X$ and $Z$ gives an equivalent convention.
+
+::: {#thm-hyperbolic-surface-parameters .callout-important icon="false"}
+## (closed orientable surface code)
+
+For a connected cellulation of a closed orientable surface of genus $g$, the homological CSS code has
+
+$$
+n=|E|,
+\qquad
+k=\dim H_1(\Sigma;\mathbb F_2)=2g.
+$$
+
+Its $Z$ distance is the length of the shortest nontrivial primal cycle, and its $X$ distance is the length of the shortest nontrivial dual cycle.
+:::
+
+::: {.callout-note collapse="true"}
+## Proof of the dimension formula
+
+For a connected closed cellulation, $\operatorname{rank}\partial_1=|V|-1$. Because the sum of all face boundaries vanishes and this is the only dependency for a connected closed orientable surface, $\operatorname{rank}\partial_2=|F|-1$. Hence
+
+$$
+\begin{aligned}
+k
+&=|E|-\operatorname{rank}\partial_1-\operatorname{rank}\partial_2\\
+&=|E|-|V|-|F|+2\\
+&=2-(|V|-|E|+|F|)\\
+&=2-\chi(\Sigma)=2g.
+\end{aligned}
+$$
+:::
+
+Surfaces with boundary require relative homology: different boundary types determine which chains may terminate and therefore which logical strings exist [@bombin2007homological].
+
+# Regular tilings
+
+A regular tiling of type $\{r,s\}$ has $r$ edges around every face and $s$ faces meeting at every vertex. If $n=|E|$, double counting gives
+
+$$
+|F|=\frac{2n}{r},
+\qquad
+|V|=\frac{2n}{s}.
+$$
+
+For a closed orientable quotient,
+
+$$
+\chi=|V|-|E|+|F|
+=n\left(\frac2s-1+\frac2r\right).
+$$
+
+Therefore
+
+$$
+k=2-\chi
+=2+n\left(1-\frac2r-\frac2s\right).
+$$
+
+::: {#def-hyperbolic-tiling-regime .callout-note icon="false"}
+## Definition: geometric regime
+
+A regular $\{r,s\}$ tiling is
+
+$$
+\begin{cases}
+\text{spherical},&\frac1r+\frac1s>\frac12,\\
+\text{Euclidean},&\frac1r+\frac1s=\frac12,\\
+\text{hyperbolic},&\frac1r+\frac1s<\frac12.
+\end{cases}
+$$
+:::
+
+In the hyperbolic case, $1-2/r-2/s>0$, so suitable compact quotients have asymptotically nonzero rate. For standard families of two-dimensional hyperbolic surface codes, the systole—and hence distance—typically grows as $O(\log n)$ rather than $O(\sqrt n)$ [@breuckmann2016constructions].
+
+# LDPC properties and tradeoffs
+
+For a $\{r,s\}$ cellulation:
+
+- each face $Z$ check has weight $r$;
+- each vertex $X$ check has weight $s$; and
+- every edge qubit participates in two checks of each type on a closed manifold.
+
+Fixed $r$ and $s$ therefore give a quantum LDPC family. Increasing $r$ or $s$ can improve the asymptotic rate formula but also increases stabilizer weight. The hyperbolic metric supplies local adjacency intrinsically, yet embedding the quotient into a planar hardware layout generally requires nonlocal couplers or routing overhead.
+
+The central comparison is
+
+| Family | Asymptotic rate | Typical distance scaling | Native planar locality |
+|---|---:|---:|---|
+| Euclidean toric/surface code | vanishing | $\Theta(\sqrt n)$ | yes |
+| 2D hyperbolic surface code | constant | $O(\log n)$ | no in a flat embedding |
+
+: Geometric tradeoff for common homological-code families.
+
+Constant rate does not by itself imply superior logical performance at practical sizes. Check weights, finite systoles, syndrome-extraction circuits, and decoder behavior all matter.
+
+# Decoding
+
+Under independent $X$ or $Z$ noise with perfect syndrome measurement, each error chain has a boundary consisting of violated checks. A matching decoder pairs these defects along short paths, exactly as described in [Maximum-Likelihood Decoding and MWPM](../decoding/maximum-likelihood-and-mwpm.qmd). The correction fails when the union of actual and inferred chains contains a nontrivial homology class.
+
+Matching algorithms developed for Euclidean surface codes can be applied to the finite decoding graph of a hyperbolic code, but their thresholds and finite-size behavior differ. Breuckmann and Terhal provide explicit compact constructions and numerical threshold estimates [@breuckmann2016constructions]. Other approaches exploit local cellular automata, union-find ideas, or message passing; no decoder should be described as geometry-independent without specifying its graph construction and noise assumptions.
+
+# Logical operations
+
+Nontrivial cycles support logical Pauli strings. More general fault-tolerant logical operations can be implemented through code deformation, lattice surgery, mapping-class-group actions, or code switching, depending on the available geometry. A high encoding rate complicates routing and selective access to individual logical qubits: algebraic existence of many homology classes does not automatically provide a low-depth local gate set.
+
+The transversal-gate constraints discussed in [Triorthogonal Codes and Transversal $T$ Gates](triorthogonal-codes.qmd) are complementary. Homological geometry supplies locality and logical topology, whereas triorthogonality supplies a divisibility condition for a non-Clifford transversal operation.

@@ -40,9 +40,12 @@ User: "Expand these bullet notes into a full article." → use `expand-notes` (e
    external domain knowledge — never leave a gap silently unfilled.
 2. **Missing theorems.** If a derivation silently relies on a theorem or
    identity not stated in the draft, add a new formal block
-   (`::: {#thm-new-name .callout-important icon="false"}`): prove it in a
-   `collapse="true"` callout if brief, otherwise state it and cite precisely
-   (adding the entry to `refs.bib`).
+   (`::: {#thm-new-name .callout-important icon="false"}`). Begin the block
+   with `## (<descriptive name>)`; the anchor carries the statement type, so
+   never prefix the visible heading with `Definition`, `Lemma`, or `Theorem`.
+   Prove it in a `collapse="true"` callout if brief, otherwise state it and
+   cite precisely (adding the entry to `refs.bib`). Apply the same heading
+   convention to every inserted `#def-*`, `#lem-*`, and `#thm-*` block.
 3. **Structure preservation.** Do not heavily alter the draft's structure,
    headings, or core narrative. Modifications are surgical: fill proofs, add
    supporting theorems, insert bridging sentences for coherence — small

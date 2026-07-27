@@ -1,0 +1,112 @@
+---
+categories:
+- Readings
+date: '2026-01-28'
+description: 'A precise BP+OSD workflow for quantum LDPC codes, with complexity, evidence, and reproducible benchmarking requirements.'
+lang: en
+title: 'BP+OSD for Quantum LDPC Codes'
+bibliography: ../refs.bib
+---
+
+# Division of labor
+
+BP+OSD combines two complementary operations:
+
+- [belief propagation](belief-propagation.qmd) cheaply estimates coordinate reliabilities from a sparse factor graph;
+- [ordered-statistics decoding](ordered-statistics-decoding.qmd) uses those reliabilities to construct syndrome-compatible candidates by binary elimination.
+
+The combination was introduced for degenerate quantum LDPC codes by Panteleev and Kalachev [@panteleev2021degenerate] and systematically benchmarked across hypergraph-product code families by Roffe et al. [@roffe2020decoding].
+
+# Decoder specification
+
+Let $H$ be the binary syndrome matrix for one CSS component, $p$ the channel model, and $s$ the measured syndrome.
+
+::: {#def-bposd-workflow .callout-note icon="false"}
+## Algorithm: BP+OSD
+
+1. Initialize BP from the channel priors and measured syndrome.
+2. Run a specified BP variant, schedule, damping rule, and iteration limit.
+3. Form the BP hard decision $\widehat e^{\mathrm{BP}}$ and posterior LLRs $L_i^{\mathrm{post}}$.
+4. If $H\widehat e^{\mathrm{BP}}=s$, retain it as a candidate; optionally stop in a fast-path implementation.
+5. Otherwise—or whenever list comparison is desired—run rank-aware OSD using the BP reliabilities.
+6. Score all candidates with a declared metric and return the best syndrome-compatible representative.
+7. In simulation, test whether the residual error is a stabilizer or a logical operator.
+:::
+
+OSD is not correcting “degeneracy” by identifying stabilizer cosets. It is repairing a failed or poor bitwise BP decision by imposing the parity constraints and exploring a reliability-guided list. Its empirical effectiveness on degenerate codes does not turn its representative-level objective into degenerate maximum likelihood.
+
+# Candidate scoring
+
+For independent priors, use
+
+$$
+W(e)=\sum_i e_i\log\frac{1-p_i}{p_i}.
+$$
+
+If posterior BP LLRs are used instead, state that the resulting score is a pseudo-likelihood heuristic. For depolarizing noise, separate binary $X$ and $Z$ scores discard the correlation carried by $Y$ errors; a joint Pauli decoder requires a four-symbol model or another explicit approximation.
+
+# Published evidence
+
+Roffe et al. studied BP with OSD post-processing on topological, semi-topological, and random hypergraph-product codes under code-capacity noise. For the toric-code family, their reported crossing is approximately $9.9\%$ [@roffe2020decoding]. That number should not be transferred to phenomenological or circuit-level noise: thresholds depend on the fault model, syndrome-extraction schedule, BP variant, OSD order, and finite-size fitting procedure.
+
+Panteleev and Kalachev found that OSD-like post-processing can improve BP performance by orders of magnitude for several finite-length degenerate quantum LDPC families [@panteleev2021degenerate]. These are numerical results, not a general proof that BP+OSD has a threshold on every quantum LDPC family.
+
+# Cost profile
+
+Let $|E|$ be the number of Tanner-graph edges, $I$ the BP iteration limit, $r=\operatorname{rank}H$, and $N_{\mathrm{cand}}$ the OSD list size.
+
+| Stage | Representative cost | Main dependence |
+|---|---:|---|
+| BP | $O(I|E|)$ | graph edges and iterations |
+| Rank-revealing elimination | $O(r^2n)$ dense | fill-in and pivot order |
+| Candidate generation | $O(N_{\mathrm{cand}})$ | OSD search rule |
+| Candidate evaluation | implementation dependent | batch size and bit packing |
+
+: Cost components of BP+OSD.
+
+For an order-two sweep over $\lambda$ coordinates,
+
+$$
+N_{\mathrm{cand}}=1+\lambda+\binom{\lambda}{2}.
+$$
+
+The elimination cost is paid even for OSD-0. GPU batching can accelerate candidate evaluation, but data transfer and elimination may dominate for small blocks.
+
+# Reproducible evaluation
+
+A BP+OSD result should report at least:
+
+- the code family and all block parameters;
+- the independent and redundant check matrices used;
+- the noise model and syndrome-extraction assumptions;
+- the BP alphabet, update rule, schedule, damping, and iteration limit;
+- the OSD pivot convention, order, search width, and score;
+- the number of Monte Carlo samples or logical failures;
+- confidence intervals for logical failure rates;
+- wall-clock latency, throughput, hardware, and precision; and
+- the criterion for logical success.
+
+::: {#def-bposd-logical-failure .callout-note icon="false"}
+## Definition: logical failure rate
+
+For sampled physical error $E$ and decoder correction $C(s(E))$, the logical failure indicator is
+
+$$
+\mathbf 1\!\left[C(s(E))E\notin\mathcal S\right].
+$$
+
+The logical failure rate is its expectation under the declared noise model.
+:::
+
+Syndrome satisfaction, $s(C)=s(E)$, is necessary but not sufficient. Likewise, a single small-code accuracy value is not a threshold estimate.
+
+# Research directions
+
+The main open design questions are structural rather than cosmetic:
+
+1. Which reliability and pivot rules control elimination fill-in without degrading logical performance?
+2. Can stabilizer-coset information be incorporated into candidate scoring at tractable cost?
+3. How should BP and OSD be adapted to correlated circuit-level detector-error models?
+4. Which quantum LDPC constructions admit rigorous BP+OSD guarantees rather than empirical crossings?
+
+For an exact representative-level max-product formulation, see [Tropical Tensor-Network Decoding](tropical-tensor-network-decoding.qmd). For coset-aware surface-code decoding, ordinary sum-product tensor contractions are the relevant comparison [@bravyi2014efficient].

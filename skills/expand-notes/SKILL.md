@@ -55,6 +55,21 @@ bibliography: refs.bib
    - Theorems: `::: {#thm-* .callout-important icon="false"}`
    - Proofs: `::: {.callout-note collapse="true"}` — if lengthy but standard,
      cite precisely instead of proving.
+   - Begin every definition, lemma, and theorem Div with a parenthesized
+     descriptive heading: `## (<descriptive name>)`. The anchor prefix already
+     carries the statement type; never repeat `Definition`, `Lemma`, or
+     `Theorem` in the visible heading.
+
+   Required example:
+
+   ```markdown
+   ::: {#lem-graph-css-cycle-state .callout-important icon="false"}
+   ## (CSS states as superpositions of cycles)
+
+   Every CSS state can be represented as an equal superposition of cycles in
+   some graph.
+   :::
+   ```
 3. **Reference management.** One unified section `refs.bib` covering all
    output documents; extract existing references and add every newly cited
    paper (Google Scholar–standard BibTeX). Cite inline with `@key`.
@@ -68,5 +83,6 @@ bibliography: refs.bib
    gaps and expansion plan, preliminary list of papers to search and cite.
 3. **Wait for confirmation on the outline before writing the full files.**
 4. Write the `.qmd` file(s) and `refs.bib`.
-5. Verify: render the new file(s) (`render-site`), confirm citations resolve
-   and formal-block anchors (`#def-*`, `#thm-*`) are unique.
+5. Verify: render the new file(s) (`render-site`), confirm citations resolve,
+   formal-block anchors (`#def-*`, `#lem-*`, `#thm-*`) are unique, and formal
+   headings use `## (<descriptive name>)` without a type prefix.

@@ -95,6 +95,16 @@ website:
             - theory/Noisy_complexity/operator_resource.qmd
             - theory/Noisy_complexity/pauli_path.qmd
             - theory/Noisy_complexity/percolation.qmd
+    - id: theory_qec_construction
+      title: "Construction"
+      contents:
+        - theory/QEC/construction/index.qmd
+        - section: "Notes"
+          contents:
+            - theory/QEC/construction/algebraic-geometry-codes.qmd
+            - theory/QEC/construction/graph_cc.qmd
+            - theory/QEC/construction/homological-and-hyperbolic-codes.qmd
+            - theory/QEC/construction/triorthogonal-codes.qmd
     - id: experiments_posts_damop2026
       title: "Damop2026"
       contents:
@@ -104,6 +114,17 @@ website:
             - Experiments/posts/damop2026/Adia_echo.qmd
             - Experiments/posts/damop2026/abstract-quantum-simulation.qmd
             - Experiments/posts/damop2026/abstract.qmd
+    - id: theory_qec_decoding
+      title: "Decoding"
+      contents:
+        - theory/QEC/decoding/index.qmd
+        - section: "Notes"
+          contents:
+            - theory/QEC/decoding/belief-propagation.qmd
+            - theory/QEC/decoding/bp-osd-decoding.qmd
+            - theory/QEC/decoding/maximum-likelihood-and-mwpm.qmd
+            - theory/QEC/decoding/ordered-statistics-decoding.qmd
+            - theory/QEC/decoding/tropical-tensor-network-decoding.qmd
     - id: experiments_posts_digital_analog
       title: "Digital Analog"
       contents:
@@ -136,6 +157,13 @@ website:
             - Experiments/Engineering/SLM_engineer/realizaiton.qmd
             - Experiments/Engineering/SLM_engineer/lightsheet.qmd
             - Experiments/Engineering/SLM_engineer/wgs_based.qmd
+    - id: theory_entanglement
+      title: "Entanglement"
+      contents:
+        - theory/Entanglement/index.qmd
+        - section: "Notes"
+          contents:
+            - theory/Entanglement/measures.qmd
     - id: factoring
       title: "Factoring and Hidden Subgroup Problems"
       contents:
@@ -156,6 +184,14 @@ website:
         - section: "Notes"
           contents:
             - theory/Fermi-Hubbard/intro.qmd
+    - id: theory_qec_foundations
+      title: "Foundations"
+      contents:
+        - theory/QEC/foundations/index.qmd
+        - section: "Notes"
+          contents:
+            - theory/QEC/foundations/classical-coding.qmd
+            - theory/QEC/foundations/quantum-error-correction-preliminaries.qmd
     - id: osf
       title: "Generalized Stabilizer Formalism"
       contents:
@@ -177,7 +213,6 @@ website:
             - theory/supermacy/classical_simulation.qmd
             - theory/supermacy/hardness_proofs.qmd
             - theory/supermacy/Peak.qmd
-            - theory/supermacy/TFIM_super.qmd
             - theory/supermacy/verification.qmd
         - section: "IQP Circuits"
           contents:
@@ -223,6 +258,7 @@ website:
         - theory/LGT/index.qmd
         - section: "Notes"
           contents:
+            - theory/LGT/exp_CFT.qmd
             - theory/LGT/QuantumLink.qmd
             - theory/LGT/Intro.qmd
             - theory/LGT/MCMC.qmd
@@ -284,6 +320,7 @@ website:
         - theory/optimization/MIS/index.qmd
         - section: "Notes"
           contents:
+            - theory/optimization/MIS/encoding.qmd
             - theory/optimization/MIS/Heristic.qmd
             - theory/optimization/MIS/MIS.qmd
             - theory/optimization/MIS/approx.qmd
@@ -304,6 +341,7 @@ website:
         - section: "Mis"
           contents:
             - theory/optimization/MIS/index.qmd
+            - theory/optimization/MIS/encoding.qmd
             - theory/optimization/MIS/Heristic.qmd
             - theory/optimization/MIS/MIS.qmd
             - theory/optimization/MIS/approx.qmd
@@ -319,6 +357,7 @@ website:
             - theory/Dynamics/Floquet.qmd
             - theory/Dynamics/geometric_phase.qmd
             - theory/Dynamics/KZM.qmd
+            - theory/Dynamics/Stoq.qmd
             - theory/Dynamics/Adiabatic_comp.qmd
     - id: quantum_complexity
       title: "Quantum Complexity"
@@ -333,14 +372,26 @@ website:
       title: "Quantum Error Correction"
       contents:
         - theory/QEC/index.qmd
-        - section: "Notes"
+        - section: "Construction"
           contents:
-            - theory/QEC/TNdecoder.qmd
-            - theory/QEC/BP_OSD_results.qmd
-            - theory/QEC/classical.qmd
-            - theory/QEC/PMdecoder.qmd
-            - theory/QEC/OSD_decoder.qmd
-            - theory/QEC/tropical_TN.qmd
+            - theory/QEC/construction/index.qmd
+            - theory/QEC/construction/algebraic-geometry-codes.qmd
+            - theory/QEC/construction/graph_cc.qmd
+            - theory/QEC/construction/homological-and-hyperbolic-codes.qmd
+            - theory/QEC/construction/triorthogonal-codes.qmd
+        - section: "Decoding"
+          contents:
+            - theory/QEC/decoding/index.qmd
+            - theory/QEC/decoding/belief-propagation.qmd
+            - theory/QEC/decoding/bp-osd-decoding.qmd
+            - theory/QEC/decoding/maximum-likelihood-and-mwpm.qmd
+            - theory/QEC/decoding/ordered-statistics-decoding.qmd
+            - theory/QEC/decoding/tropical-tensor-network-decoding.qmd
+        - section: "Foundations"
+          contents:
+            - theory/QEC/foundations/index.qmd
+            - theory/QEC/foundations/classical-coding.qmd
+            - theory/QEC/foundations/quantum-error-correction-preliminaries.qmd
     - id: fingerprint
       title: "Quantum Fingerprinting"
       contents:
@@ -421,11 +472,12 @@ website:
     - id: spin_liquid
       title: "Spin Liquids"
       contents:
-        - theory/Spin_liquid/index.qmd
+        - theory/TFIM/index.qmd
         - section: "Notes"
           contents:
-            - theory/Spin_liquid/kagome-lattice.qmd
-            - theory/Spin_liquid/Square-lattice.qmd
+            - theory/TFIM/kagome-lattice.qmd
+            - theory/TFIM/Square-lattice.qmd
+            - theory/TFIM/TFIM_super.qmd
     - id: stab_simulation
       title: "Stabilizer Simulation"
       contents:

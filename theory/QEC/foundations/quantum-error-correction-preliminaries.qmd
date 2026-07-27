@@ -1,0 +1,183 @@
+---
+categories:
+- Readings
+date: '2026-07-25'
+description: 'Stabilizer and CSS codes, syndrome extraction, degeneracy, logical cosets, and the distinction between physical-error and logical decoding.'
+lang: en
+title: 'Quantum Error-Correction Preliminaries'
+bibliography: ../refs.bib
+---
+
+# Pauli errors and exact correction
+
+Ignoring global phase, an $n$-qubit Pauli operator can be represented by a binary symplectic vector
+
+$$
+P(x,z)=X^xZ^z,
+\qquad (x,z)\in\mathbb{F}_2^{2n}.
+$$
+
+Two Paulis commute exactly when their symplectic inner product vanishes:
+
+$$
+\langle(x,z),(x',z')\rangle_s=x\cdot z'+z\cdot x'=0.
+$$
+
+::: {#thm-qec-knill-laflamme .callout-important icon="false"}
+## Theorem: Knill--Laflamme condition
+
+Let $P_C$ project onto a code space $C$, and let $\{E_a\}$ be a set of errors. The errors are simultaneously correctable if and only if there are scalars $\alpha_{ab}$ such that
+
+$$
+P_CE_a^\dagger E_bP_C=\alpha_{ab}P_C
+$$
+
+for every $a,b$ [@knill1997theory].
+:::
+
+This condition says that the environment may learn which error occurred, but it must not learn anything about the encoded state.
+
+# Stabilizer codes
+
+::: {#def-qec-stabilizer-code .callout-note icon="false"}
+## Definition: stabilizer code
+
+An $[[n,k,d]]$ stabilizer code is the joint $+1$ eigenspace of an abelian subgroup $\mathcal S$ of the $n$-qubit Pauli group, with $-I\notin\mathcal S$. If $\mathcal S$ has $n-k$ independent generators, then the code space has dimension $2^k$.
+:::
+
+The normalizer $\mathcal N(\mathcal S)$ contains Paulis that preserve the code space. Logical Pauli operators are equivalence classes in $\mathcal N(\mathcal S)/\mathcal S$. The distance is
+
+$$
+d=\min\{\operatorname{wt}(P):P\in\mathcal N(\mathcal S)\setminus\mathcal S\}.
+$$
+
+This algebraic description turns error correction into a sequence of commuting parity measurements [@gottesman1997stabilizer].
+
+## Syndrome map
+
+Choose stabilizer generators $S_1,\ldots,S_m$. The syndrome of a Pauli $E$ is $s(E)\in\mathbb{F}_2^m$, where
+
+$$
+s_i(E)=
+\begin{cases}
+0,& ES_i=S_iE,\\
+1,& ES_i=-S_iE.
+\end{cases}
+$$
+
+If two errors have the same syndrome, then $E^\dagger F\in\mathcal N(\mathcal S)$. They are logically equivalent only when $E^\dagger F\in\mathcal S$.
+
+::: {#def-qec-degeneracy .callout-note icon="false"}
+## Definition: degeneracy
+
+Two physical errors $E$ and $F$ are **degenerate with respect to the code** when they have the same action on the code space, equivalently $E^\dagger F\in\mathcal S$ up to phase.
+:::
+
+Degeneracy is therefore finer than syndrome equivalence: equal syndromes may differ either by a stabilizer or by a nontrivial logical operator.
+
+# CSS codes
+
+Calderbank--Shor--Steane (CSS) codes separate $X$- and $Z$-type checks [@calderbank1996good; @steane1996error]. Let
+
+$$
+H_X\in\mathbb{F}_2^{m_X\times n},
+\qquad
+H_Z\in\mathbb{F}_2^{m_Z\times n}.
+$$
+
+Rows of $H_X$ specify $X$ stabilizers and rows of $H_Z$ specify $Z$ stabilizers. Commutativity is equivalent to
+
+$$
+H_XH_Z^{\mathsf T}=0.
+$$
+
+The number of logical qubits is
+
+$$
+k=n-\operatorname{rank}H_X-\operatorname{rank}H_Z.
+$$
+
+For independent $X$ and $Z$ noise, the two components can be decoded separately through binary syndrome equations. Under depolarizing or correlated noise, separate decoding discards $X$--$Z$ correlations and is generally suboptimal.
+
+![A distance-three rotated surface-code patch and representative syndrome-extraction circuits.](../figures/rotated-surface-code-distance-3.jpg){#fig-qec-rotated-surface-code fig-alt="A distance-three rotated surface code with X and Z checks and two ancilla measurement circuits."}
+
+# Chain complexes and CSS codes
+
+Many CSS constructions arise from a length-two chain complex
+
+$$
+C_2\xrightarrow{\partial_2}C_1\xrightarrow{\partial_1}C_0,
+\qquad \partial_1\partial_2=0.
+$$
+
+After choosing bases, take
+
+$$
+H_X=\partial_1,
+\qquad
+H_Z=\partial_2^{\mathsf T}.
+$$
+
+Then $H_XH_Z^{\mathsf T}=\partial_1\partial_2=0$. Logical $Z$ operators are homology classes
+
+$$
+H_1=\ker\partial_1/\operatorname{im}\partial_2,
+$$
+
+and logical $X$ operators are the corresponding cohomology classes. This language underlies [homological and hyperbolic surface codes](../construction/homological-and-hyperbolic-codes.qmd).
+
+# What should a quantum decoder optimize?
+
+Fix a measured syndrome $s$ and one compatible Pauli $E_s$. Every compatible error belongs to one of the logical cosets
+
+$$
+E_sL\mathcal S,
+\qquad L\in\mathcal N(\mathcal S)/\mathcal S.
+$$
+
+::: {#def-qec-decoders .callout-note icon="false"}
+## Definition: physical MAP and logical ML
+
+A **physical-error MAP decoder** selects
+
+$$
+\widehat E_{\mathrm{MAP}}
+\in\arg\max_{E:s(E)=s}\Pr(E).
+$$
+
+A **degenerate maximum-likelihood decoder** selects the logical coset
+
+$$
+\widehat L_{\mathrm{ML}}
+\in\arg\max_L
+\sum_{S\in\mathcal S}\Pr(E_sLS).
+$$
+:::
+
+The second objective is operationally correct: recovery succeeds whenever the actual error and chosen correction differ by a stabilizer. A minimum-weight or max-product decoder instead chooses one representative. It can be suboptimal when a slightly less probable representative belongs to a much more probable coset because that coset contains many likely errors.
+
+# Noise models and success criteria
+
+Decoder claims are meaningful only together with a noise model and a success criterion.
+
+- **Code-capacity noise:** data errors occur, and syndrome measurements are perfect.
+- **Phenomenological noise:** data and syndrome-bit errors occur over repeated rounds.
+- **Circuit-level noise:** faults occur at preparations, gates, idling locations, and measurements.
+
+For a proposed correction $C(s)$ and actual error $E$, syndrome consistency checks whether $s(C)=s(E)$. Logical success is stronger:
+
+$$
+C(s)E\in\mathcal S.
+$$
+
+The threshold is a property of a code family, decoder, noise model, and syndrome-extraction schedule—not of the code alone [@dennis2002topological].
+
+# Reading path
+
+With these distinctions fixed, the decoder notes can be read in the following order:
+
+1. [Maximum-Likelihood Decoding and MWPM](../decoding/maximum-likelihood-and-mwpm.qmd)
+2. [Belief-Propagation Decoding](../decoding/belief-propagation.qmd)
+3. [Ordered-Statistics Decoding](../decoding/ordered-statistics-decoding.qmd)
+4. [BP+OSD for Quantum LDPC Codes](../decoding/bp-osd-decoding.qmd)
+5. [Tropical Tensor-Network Decoding](../decoding/tropical-tensor-network-decoding.qmd)

@@ -2,11 +2,23 @@ id: qec
 title: "Quantum Error Correction"
 contents:
   - theory/QEC/index.qmd
-  - section: "Notes"
+  - section: "Construction"
     contents:
-      - theory/QEC/TNdecoder.qmd
-      - theory/QEC/BP_OSD_results.qmd
-      - theory/QEC/classical.qmd
-      - theory/QEC/PMdecoder.qmd
-      - theory/QEC/OSD_decoder.qmd
-      - theory/QEC/tropical_TN.qmd
+      - theory/QEC/construction/index.qmd
+      - theory/QEC/construction/algebraic-geometry-codes.qmd
+      - theory/QEC/construction/graph_cc.qmd
+      - theory/QEC/construction/homological-and-hyperbolic-codes.qmd
+      - theory/QEC/construction/triorthogonal-codes.qmd
+  - section: "Decoding"
+    contents:
+      - theory/QEC/decoding/index.qmd
+      - theory/QEC/decoding/belief-propagation.qmd
+      - theory/QEC/decoding/bp-osd-decoding.qmd
+      - theory/QEC/decoding/maximum-likelihood-and-mwpm.qmd
+      - theory/QEC/decoding/ordered-statistics-decoding.qmd
+      - theory/QEC/decoding/tropical-tensor-network-decoding.qmd
+  - section: "Foundations"
+    contents:
+      - theory/QEC/foundations/index.qmd
+      - theory/QEC/foundations/classical-coding.qmd
+      - theory/QEC/foundations/quantum-error-correction-preliminaries.qmd

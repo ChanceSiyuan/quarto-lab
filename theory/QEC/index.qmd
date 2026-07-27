@@ -3,33 +3,37 @@ categories:
 - Index
 lang: en
 title: Quantum Error Correction
-description: "Quantum error-correction notes covering classical-code preliminaries, BP and BP-OSD decoders, ordered-statistics decoding, maximum-likelihood and tensor-network decoding, and tropical tensor-network methods."
+description: "Quantum error-correction notes on coding foundations, decoder design, and algebraic, homological, and transversal-gate constructions."
 ---
 
 [<- Back to Theory](../index.qmd)
 
 # Quantum Error Correction
 
-This page collects the notes in this topic directory.
+These notes develop quantum error correction from three complementary viewpoints: algebraic foundations, decoding algorithms, and code constructions.
 
-## Pages
+## Foundations
 
-- [Belief Propagation Decoder](TNdecoder.qmd)
-- [BP+OSD: Overview and Results](BP_OSD_results.qmd)
-- [Classical Error Correction](classical.qmd)
-- [Maximal Likelihood Decoding](PMdecoder.qmd)
-- [Ordered Statistics Decoding (OSD)](OSD_decoder.qmd)
-- [Tropical Tensor Network Decoding](tropical_TN.qmd)
+- [Classical Coding Preliminaries](foundations/classical-coding.qmd)
+- [Quantum Error-Correction Preliminaries](foundations/quantum-error-correction-preliminaries.qmd)
+
+## Decoding
+
+- [Maximum-Likelihood Decoding and MWPM](decoding/maximum-likelihood-and-mwpm.qmd)
+- [Belief-Propagation Decoding](decoding/belief-propagation.qmd)
+- [Ordered-Statistics Decoding](decoding/ordered-statistics-decoding.qmd)
+- [BP+OSD for Quantum LDPC Codes](decoding/bp-osd-decoding.qmd)
+- [Tropical Tensor-Network Decoding](decoding/tropical-tensor-network-decoding.qmd)
+
+## Construction
+
+- [Algebraic-Geometry Codes](construction/algebraic-geometry-codes.qmd)
+- [Homological and Hyperbolic Surface Codes](construction/homological-and-hyperbolic-codes.qmd)
+- [Triorthogonal Codes and Transversal $T$ Gates](construction/triorthogonal-codes.qmd)
 
 <!-- BEGIN AUTO NOTES TABLE -->
 
 | Note | Status | Updated | Description |
 |---|---|---|---|
-| [Belief Propagation Decoder](TNdecoder.qmd) | draft | 2026-01-28 | Belief Propagation algorithm for error correction: message passing, LLR representation, convergence, and failure modes in quantum codes. |
-| [BP+OSD: Overview and Results](BP_OSD_results.qmd) | draft | 2026-01-28 | BP+OSD decoder overview, performance thresholds, complexity analysis, and key takeaways for quantum LDPC code decoding. |
-| [Classical Error Correction](classical.qmd) | draft | 2026-01-28 | Classical error correction fundamentals: linear codes, Hamming distance, syndrome decoding, probabilistic graphical models, and LDPC codes. |
-| [Maximal Likelihood Decoding](PMdecoder.qmd) | draft | 2026-01-07 | Notes on Maximal Likelihood Decoding and its application in quantum error correction. |
-| [Ordered Statistics Decoding (OSD)](OSD_decoder.qmd) | draft | 2026-01-28 | Ordered Statistics Decoding: OSD-0, higher-order OSD, and combination sweep strategies for post-processing BP soft decisions. |
-| [Tropical Tensor Network Decoding](tropical_TN.qmd) | draft | 2026-01-28 | Tropical tensor networks for exact MAP decoding: tropical semiring, tensor contractions, and backpointer tracking for error recovery. |
 
 <!-- END AUTO NOTES TABLE -->
