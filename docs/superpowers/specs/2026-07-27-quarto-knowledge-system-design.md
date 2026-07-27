@@ -23,7 +23,7 @@ the migration source only.
 ## Goals
 
 - Make `knowledge/` a visible, human-readable, Quarto-native knowledge base.
-- Keep `.qmd` as the only content source of truth.
+- Keep `knowledge/**/*.qmd` as the only source of truth for trusted knowledge.
 - Organize trusted knowledge by research object for coherent human reading.
 - Give agents deterministic, auditable access to the same topic graph.
 - Keep unfinished work physically outside the trusted knowledge tree.
@@ -92,6 +92,8 @@ research-loop/
 ├── scripts/
 ├── skills/
 ├── AGENTS.md
+├── CLAUDE.md                         # points Claude Code to AGENTS.md
+├── .claude/skills -> ../skills       # local-skill discovery
 └── public/knowledge/                 # generated, gitignored
 ```
 
@@ -245,14 +247,27 @@ rebuildable from QMD, and never a second content authority.
 The repository gains an `AGENTS.md` and three focused local skills:
 
 - `read-knowledge`: resolve a research question and read the complete returned
-  topic chain before answering.
+  bundle—ancestor indexes, target index, and selected content pages—before
+  answering.
 - `review-draft`: review one note and recommend placement.
 - `download-ref`: maintain the external literature corpus.
+
+`AGENTS.md` makes `read-knowledge` a mandatory first step before an agent states a
+research fact or interpretation that may be covered by the learned knowledge base.
+If the resolver has no match, the agent says so; it may enter an explicitly named
+external-research workflow, but it cannot silently treat `literature/` as learned
+knowledge. Static tests verify that every research-answer entry skill routes through
+the resolver command and that the skill requires reading every file in the bundle.
 
 Prompt instructions cannot mathematically force every arbitrary language model to
 comply. Reliability comes from an automatically discoverable skill, a single CLI,
 an observable resolver call, and tests that ensure entry skills route through the
 same interface.
+
+`skills/` is the canonical committed source for these local skills.
+`.claude/skills -> ../skills` exposes them to Claude Code, `CLAUDE.md` points to
+the canonical `AGENTS.md`, and Codex reads `AGENTS.md` directly. Agent correctness
+does not depend on an unconfigured skill directory being discovered implicitly.
 
 ## Draft workflow
 
@@ -269,8 +284,12 @@ Promotion is deliberately lightweight:
    topic directory with `index.qmd`. It also recommends the page's single category.
 4. The user decides whether to correct the note, where it belongs, and whether to
    promote it.
-5. Only after confirmation does the agent move/convert the note, add minimal
-   frontmatter, update the curated index, and run mechanical validation.
+5. Only after confirmation does the agent create or use a non-`main` branch,
+   move/convert the note, add minimal frontmatter, update the curated index, and
+   run mechanical validation.
+6. The change is presented as a Git diff or PR; only the user's merge makes the
+   note trusted knowledge. The agent never promotes a note by writing directly to
+   `main`.
 
 One draft remains one knowledge note by default. The agent does not automatically
 split, comprehensively restructure, or rewrite it.
@@ -315,13 +334,23 @@ Sites deployment
 Build flow:
 
 1. load and validate KnowledgeGraph;
-2. render Quarto to a temporary generated directory with execution disabled;
-3. atomically replace gitignored `public/knowledge/`;
-4. run the existing vinext/Sites build.
+2. materialize a temporary Quarto project containing generated sidebar data and
+   three category-view pages derived from the graph;
+3. render that project to a temporary output directory with execution disabled;
+4. atomically replace gitignored `public/knowledge/`;
+5. run the existing vinext/Sites build.
 
 Quarto supplies mathematics, citations, cross-references, search, and the three
-category views. Sidebar data is generated from the curated index graph. Drafts and
-literature are excluded from the render project and Sites bundle.
+category views. The generated `theory`, `experiment`, and `codes` pages contain
+only graph-derived links and descriptions and live in the temporary project, never
+the trusted source tree. Sidebar data is generated from the curated index graph.
+Drafts and literature are excluded from the render project and Sites bundle.
+
+The generated Quarto configuration sets `website.site-path: /knowledge/`, so
+search, canonical links, navigation, and static resources stay under the dashboard
+subpath. `npm run build` is the authoritative clean-checkout build and performs the
+knowledge build before `vinext build`; `make build` delegates to it rather than
+creating a second build path.
 
 If integration testing shows that vinext/Cloudflare assets do not resolve nested
 `index.html` paths, the Worker receives only a thin `/knowledge/*` static-asset
@@ -344,6 +373,9 @@ The current harness contains approximately 280 non-literature Markdown cards
 - Preserve their relative paths and `.md` names. At least 72 files contain `.md`
   internal links, so bulk renaming would not be lossless.
 - Record and verify checksums before and after copying.
+- Commit a source-independent migration manifest under `docs/migrations/` with
+  every imported relative path, byte size, and SHA-256 digest, so clean-checkout CI
+  can verify the imported corpus without access to the harness repository.
 - Convert an individual card to `.qmd` only when the user promotes it.
 
 ### Literature
@@ -403,14 +435,23 @@ the Make targets.
 - `public/knowledge/` is replaced only after a successful render;
 - drafts and literature do not appear in the production output;
 - `/knowledge/` and nested topic routes are served by the bundled Worker/assets;
+- a browser-level HTTP test exercises the real preview/static-assets pipeline
+  rather than a fake `ASSETS.fetch` implementation that always returns 404;
 - imported harness cards match source checksums;
 - a fixture arXiv archive preserves TeX and extracts figures without producing
   rendered Markdown.
+- `read-knowledge` returns and requires reading ancestor indexes, the target index,
+  and selected content pages;
+- `review-draft` reports language, factual, and formatting findings plus exactly
+  one existing-topic or new-topic placement recommendation, without moving or
+  splitting the note.
 
 ### Regression tests
 
 - the existing `/` dashboard still renders its Research Loop content;
 - stage advancement, reset, and localStorage behavior remain unchanged;
+- a headless-browser regression test advances a stage, reloads to verify
+  localStorage persistence, and resets the demo;
 - the existing vinext/Sites package shape remains valid;
 - obsolete starter-skeleton assertions are replaced with assertions for the real
   current dashboard rather than deleted without coverage.
@@ -423,7 +464,14 @@ the Make targets.
 - website, category views, sidebar, and agent resolver derive from one graph.
 - invalid categories, orphan pages, dead links, unresolved citations, and unsafe
   markup fail validation with actionable file/line diagnostics.
-- resolver results contain the complete root-to-topic reading chain.
+- resolver results contain the complete bundle: ancestor indexes, target index,
+  and selected content pages.
+- research-answer Agent instructions require resolver use and expose a testable
+  invocation; a no-match result cannot silently fall through to literature.
+- draft review reports only language, factual, and format findings plus placement;
+  it does not edit, move, split, or promote before user confirmation.
+- promotion changes are made on a non-`main` branch and become trusted only after
+  user review and merge.
 - all old non-literature cards are preserved as untrusted draft candidates with
   matching checksums.
 - literature fetch stores versioned TeX and figures and never commits lossy full
