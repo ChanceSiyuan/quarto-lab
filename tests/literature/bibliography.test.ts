@@ -75,7 +75,10 @@ async function listFiles(root: string): Promise<string[]> {
 
 test("the public literature interface exposes only the implemented commands", () => {
   assert.deepEqual(Object.keys(literature).sort(), [
+    "LiteratureFetchError",
+    "fetchLiteratureEntry",
     "loadBibliography",
+    "syncLiterature",
     "writeMethodIndexes",
   ]);
 });
