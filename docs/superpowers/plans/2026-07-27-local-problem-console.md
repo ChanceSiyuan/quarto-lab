@@ -23,7 +23,7 @@
 - `rejected` manifests must include `rejection.kind` as `automatic` or `human` and a non-empty `rejection.reason`.
 - Unknown top-level manifest fields are invalid, except `rejection` on rejected manifests.
 - The homepage defaults to hiding `rejected` and `archived`.
-- The homepage shows Tier counts: accepted `x / 5`, solved `x / 5`, published `x / 5`, and rejected count.
+- The homepage shows raw Tier counts for accepted, solved, published, and rejected problems without a fixed target denominator.
 - The add button uses `codex://threads/new` with URL-encoded `prompt` and absolute `path`; the link only pre-fills the Codex composer.
 - Always show a "Cannot open Codex?" fallback with the same prompt and repository path.
 - The problem detail route `/problems/<id>` is stable in this pass and only shows the problem identity plus the approved "details will be designed separately" message.
@@ -203,15 +203,15 @@ export const PROBLEM_STATUSES = [
 ];
 
 export const VISIBLE_STATUS_LABELS = {
-  draft: "草稿",
-  qualifying: "资格验证中",
-  accepted: "已接受",
-  solving: "求解中",
-  solved: "已解决",
-  publishing: "投稿中",
-  published: "已发表",
-  rejected: "已拒绝",
-  archived: "已归档",
+  draft: "Draft",
+  qualifying: "Qualifying",
+  accepted: "Accepted",
+  solving: "Solving",
+  solved: "Solved",
+  publishing: "Publishing",
+  published: "Published",
+  rejected: "Rejected",
+  archived: "Archived",
 };
 
 export const GATE_READINESS = ["missing", "specified", "executable", "passed"];
@@ -301,8 +301,7 @@ git commit -m "feat: add problem manifest schema"
     solved: 0,
     published: 0,
     rejected: 0,
-    archived: 0,
-    target: 5
+    archived: 0
   },
   diagnostics: []
 }
@@ -385,7 +384,6 @@ test("builds a deterministic index and summary from problem directories", async 
     published: 1,
     rejected: 1,
     archived: 0,
-    target: 5,
   });
   assert.equal(index.nextProblemId, "QMB-004");
   assert.deepEqual(index.diagnostics, []);
@@ -569,7 +567,7 @@ const index = {
   generatedAt: "2026-07-27T10:00:00.000Z",
   workspacePath: "/repo/research-loop",
   nextProblemId: "QMB-004",
-  summary: { total: 3, accepted: 1, solved: 0, published: 0, rejected: 1, archived: 1, target: 5 },
+  summary: { total: 3, accepted: 1, solved: 0, published: 0, rejected: 1, archived: 1 },
   diagnostics: [{ relativePath: "problems/QMB-099/problem.json", field: "status", message: "Invalid status." }],
   problems: [
     { id: "QMB-001", title: "Fresh Hamiltonian gate", summary: "Interval arithmetic gate.", status: "accepted", gate: { type: "interval-arithmetic", readiness: "executable" }, provenance: { sourceCount: 3 }, lastActivity: { summary: "Accepted", at: "2026-07-27T10:00:00Z" }, updatedAt: "2026-07-27T10:00:00Z", createdAt: "2026-07-27T09:00:00Z" },
@@ -801,8 +799,8 @@ test("server-renders the problem console shell", async () => {
 
   const html = await response.text();
   assert.match(html, /Research Loop/);
-  assert.match(html, /问题/);
-  assert.match(html, /增加问题/);
+  assert.match(html, /Problem Console/);
+  assert.match(html, />\+ Add problem<\/a>/);
   assert.match(html, /Cannot open Codex\?/);
   assert.match(html, /codex:\/\/threads\/new/);
   assert.match(html, /Accepted/);
@@ -865,22 +863,22 @@ Use `apply_patch` to add `app/problem-console.tsx`. It must:
 - Default-hide `rejected` and `archived`.
 - Render a top bar, metric strip, toolbar, diagnostics region, empty state, no-results state, semantic desktop table, and narrow-screen list using the same DOM order.
 - Make each row link to `/problems/${problem.id}`.
-- Render the primary add control as `<a className="primary-action" href={launch.href}>+ 增加问题</a>`.
+- Render the primary add control as `<a className="primary-action" href={launch.href}>+ Add problem</a>`.
 - Render an always-visible `<details className="codex-fallback">` with summary text `Cannot open Codex?` and a read-only `<textarea>` containing `launch.fallbackText`.
 
 Use this status label helper inside the component:
 
 ```tsx
 const statusLabels: Record<string, string> = {
-  draft: "草稿",
-  qualifying: "资格验证中",
-  accepted: "已接受",
-  solving: "求解中",
-  solved: "已解决",
-  publishing: "投稿中",
-  published: "已发表",
-  rejected: "已拒绝",
-  archived: "已归档",
+  draft: "Draft",
+  qualifying: "Qualifying",
+  accepted: "Accepted",
+  solving: "Solving",
+  solved: "Solved",
+  publishing: "Publishing",
+  published: "Published",
+  rejected: "Rejected",
+  archived: "Archived",
 };
 ```
 
@@ -1018,7 +1016,7 @@ export default async function ProblemDetailPage({
       <p className="detail-summary">{problem.summary}</p>
       <section className="detail-panel" aria-labelledby="detail-status-heading">
         <h2 id="detail-status-heading">Problem detail</h2>
-        <p>详情界面将在后续设计；本页先固定路由、身份和返回路径。</p>
+        <p>The detailed problem workspace will be designed next; this page currently locks the route, identity, and return path.</p>
       </section>
     </main>
   );
@@ -1051,7 +1049,7 @@ npm run lint
 npm test
 ```
 
-To create a problem, click `+ 增加问题` on the homepage. Codex opens a new task with the issue #133 context prefilled; send it, answer one question at a time, and only allow file writes after reviewing the proposed manifest, Markdown, generation record, and rubric decision.
+To create a problem, click `+ Add problem` on the homepage. Codex opens a new task with the issue #133 context prefilled; send it, answer one question at a time, and only allow file writes after reviewing the proposed manifest, Markdown, generation record, and rubric decision.
 ````
 
 - [ ] **Step 6: Run Task 5 verification**
@@ -1119,7 +1117,7 @@ In a browser, open the local URL printed by `npm run dev` and verify:
 
 - [ ] **Step 4: Manually check the Codex launch**
 
-Click `+ 增加问题` and verify:
+Click `+ Add problem` and verify:
 
 - Codex opens a new task.
 - The task uses `/Users/nzy/mcode/research-loop` as the repository path.

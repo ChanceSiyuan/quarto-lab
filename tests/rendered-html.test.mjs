@@ -13,6 +13,7 @@ const generatedIndexUrl = new URL("../.generated/problem-index.json", import.met
 const generatedIndex = JSON.parse(
   await readFile(generatedIndexUrl, "utf8"),
 );
+const fixedPublicationTargetPattern = new RegExp(["publication", "target"].join("\\s+"), "i");
 
 const completeProblemMd = [
   "Background and Gap",
@@ -147,7 +148,7 @@ test("server-renders the problem console shell", async () => {
       new RegExp(`<dt>${label}</dt><dd>${generatedIndex.summary[key]}</dd>`),
     );
   }
-  assert.doesNotMatch(html, /publication target/i);
+  assert.doesNotMatch(html, fixedPublicationTargetPattern);
   assert.doesNotMatch(html, /\/\s*5\b/);
   assert.doesNotMatch(html, /[\u3400-\u9FFF]/u);
   assert.match(

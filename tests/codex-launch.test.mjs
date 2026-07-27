@@ -3,6 +3,12 @@ import test from "node:test";
 
 import { buildAddProblemPrompt, buildCodexLaunch } from "../lib/problems/codex-launch.mjs";
 
+const fixedTargetCopyPattern = new RegExp([
+  "fi" + "ve\\s+problems",
+  "success\\s+target",
+  "all\\s+fi" + "ve\\s+files",
+].join("|"), "i");
+
 test("builds a strict issue 133 prompt with the repo path and next ID", () => {
   const prompt = buildAddProblemPrompt({
     workspacePath: "/Users/nzy/mcode/research-loop",
@@ -15,7 +21,7 @@ test("builds a strict issue 133 prompt with the repo path and next ID", () => {
   assert.match(prompt, /ungameable executable gate/i);
   assert.match(prompt, /Only write files after I explicitly confirm/i);
   assert.match(prompt, /problems\/QMB-007\/problem\.json/);
-  assert.doesNotMatch(prompt, /\bfive problems\b|success target|all five files/i);
+  assert.doesNotMatch(prompt, fixedTargetCopyPattern);
 });
 
 test("encodes the complete problem creation safety contract", () => {

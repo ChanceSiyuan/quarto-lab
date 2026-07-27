@@ -17,14 +17,14 @@ Complete. All Critical and Important review findings are addressed, and the Mino
 
 The generated prompt now explicitly requires:
 
-- the overall success target of five problems;
+- the issue #133 creation context for the next problem;
 - the exact top-level manifest fields, lifecycle/readiness enums, conditional rejection fields, dates, and accepted-or-later Markdown contract;
 - scanning both existing `QMB-NNN` directories and parseable manifest IDs before work;
 - refusing any reserved candidate without writing or overwriting;
 - rechecking the ID and destination immediately before writes;
 - exclusive destination-directory creation that fails on collision;
-- staging and validating all five files outside the final problem directory;
-- copying the four non-manifest files first and atomically publishing `problem.json` last;
+- staging and validating all required problem files outside the final problem directory;
+- copying non-manifest files first and atomically publishing `problem.json` last;
 - final manifest validation and index build after publication.
 
 ### 3. Homepage behavior and navigation (Important)
