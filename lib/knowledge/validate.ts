@@ -13,14 +13,15 @@
  * ```text
  * TOPIC_INDEX_MISSING        a directory holds pages but has no index.qmd
  * INDEX_READING_MAP_REQUIRED an index declares no `## Reading map` section
+ * RESERVED_SECTION_FORBIDDEN a content page declares a curated section
  * ORPHAN_CHILD               no reading map lists a page its parent owns
  * NON_DIRECT_CHILD           a reading map claims something it cannot own
  * DUPLICATE_PARENT           two reading maps list the same page
  * CONTAINMENT_CYCLE          reading maps contain each other
  * RELATED_TARGET_NOT_INDEX   `## Related topics` links to a non-index
  * LINK_MISSING               a local link or image resolves to nothing
- * LINK_OUTSIDE_KNOWLEDGE     a link leaves the knowledge tree
- * SYMLINK_FORBIDDEN          a link is, or passes through, a symbolic link
+ * LINK_OUTSIDE_KNOWLEDGE     a link leaves the knowledge tree, or is excluded
+ * SYMLINK_FORBIDDEN          a symbolic link in the tree, or a link through one
  * CITATION_MISSING           a citekey is absent from the bibliography
  * SCRIPT_FORBIDDEN           a page carries a raw `<script` tag
  * INLINE_HANDLER_FORBIDDEN   a page carries a raw event-handler attribute
@@ -45,12 +46,13 @@ import { loadBibliography } from "../literature/bibliography.js";
 
 import {
   comparePosix,
+  declaresSection,
   diagnosticFile,
-  hasSection,
   indexIdOf,
   loadKnowledge,
   parentIdOf,
   resolvePageTargets,
+  walkKnowledgeTree,
   type KnowledgeGraph,
   type LoadKnowledgeOptions,
   type TargetResolution,
@@ -72,6 +74,10 @@ const LINK_CODE: Readonly<Record<UnresolvableReason, string>> = {
   missing: "LINK_MISSING",
   "not-a-file": "LINK_MISSING",
   "not-a-page": "LINK_MISSING",
+  // The file may well exist; what it is not is part of the knowledge tree,
+  // which is what `LINK_OUTSIDE_KNOWLEDGE` says. Reporting it as "missing"
+  // would send an author looking for a typo instead of moving the file.
+  excluded: "LINK_OUTSIDE_KNOWLEDGE",
   outside: "LINK_OUTSIDE_KNOWLEDGE",
   symlink: "SYMLINK_FORBIDDEN",
 };
@@ -149,7 +155,26 @@ export async function validateGraph(
     }
   }
 
-  // 2. Every directory holding pages is a topic, and a topic has an index.
+  // 2. Symbolic links in the tree. The walk refuses to follow them, so they are
+  // invisible to every check below; Quarto, which renders `knowledge/` as a
+  // project, follows them happily. Reporting them here is what keeps "not in
+  // the graph" and "not on the site" the same statement.
+  for (const id of (await walkKnowledgeTree(graph.knowledgeRoot)).symlinkIds) {
+    report(
+      "SYMLINK_FORBIDDEN",
+      "a symbolic link inside the knowledge tree is never validated and never published; replace it with the file itself",
+      {
+        file: diagnosticFile(
+          graph.repoRoot,
+          path.join(graph.knowledgeRoot, ...id.split("/")),
+        ),
+        line: 1,
+        column: 1,
+      },
+    );
+  }
+
+  // 3. Every directory holding pages is a topic, and a topic has an index.
   const directories = new Set<string>([""]);
   for (const page of pages) {
     let directory = path.posix.dirname(page.id);
@@ -174,7 +199,7 @@ export async function validateGraph(
     );
   }
 
-  // 3. Where every local link and image actually points.
+  // 4. Where every local link and image actually points.
   const resolutions = new Map<string, ReadonlyMap<string, TargetResolution>>();
   for (const page of pages) {
     resolutions.set(page.id, await resolvePageTargets(graph, page));
@@ -198,14 +223,28 @@ export async function validateGraph(
     }
   }
 
-  // 4. Curated containment: who claims whom, and may they.
+  // 5. Curated containment: who claims whom, and may they.
+  //
+  // The curated sections are the contract of an *index*. On a content page they
+  // are silently inert — nothing there owns anything — so an author who writes
+  // one has either misunderstood the model or misplaced the page, and the links
+  // they curated would never appear in any sidebar. Say so rather than render a
+  // page whose reading map means nothing. The links inside such a section are
+  // still ordinary local links and are checked by the pass above.
   const claims: Claim[] = [];
   const curates = new Set<string>();
   for (const page of pages) {
     if (page.kind !== "index") {
+      for (const section of page.reservedSections) {
+        report(
+          "RESERVED_SECTION_FORBIDDEN",
+          `\`## ${section.heading}\` is the curated contract of an \`${INDEX_FILENAME}\`; a content page cannot own or relate topics, so this section would be ignored`,
+          section.location,
+        );
+      }
       continue;
     }
-    if (!hasSection(page.body, READING_MAP_HEADING)) {
+    if (!declaresSection(page, READING_MAP_HEADING)) {
       report(
         "INDEX_READING_MAP_REQUIRED",
         `every \`${INDEX_FILENAME}\` needs a \`## ${READING_MAP_HEADING}\` section, even an empty one; it is the curated order of the topic`,
@@ -280,7 +319,7 @@ export async function validateGraph(
 
   reportContainmentCycles(pages, claims, report);
 
-  // 5. Related topics: cross-references that change no ownership, but that must
+  // 6. Related topics: cross-references that change no ownership, but that must
   // still land on a topic index.
   for (const page of pages) {
     if (page.kind !== "index") {
@@ -303,7 +342,7 @@ export async function validateGraph(
     }
   }
 
-  // 6. Citations, against the one bibliography the repository keeps.
+  // 7. Citations, against the one bibliography the repository keeps.
   const citekeys = new Set(
     (await loadBibliography(options.bibliographyPath)).map((entry) => entry.citekey),
   );

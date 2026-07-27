@@ -350,7 +350,10 @@ const CASES: readonly Case[] = [
       await symlink("diagram.svg", knowledgeFile(repo, "ising/figure.svg"));
       await append(repo, "ising/proof.qmd", "\n![A copy](figure.svg)\n");
     },
-    expected: ["SYMLINK_FORBIDDEN knowledge/ising/proof.qmd"],
+    expected: [
+      "SYMLINK_FORBIDDEN knowledge/ising/figure.svg",
+      "SYMLINK_FORBIDDEN knowledge/ising/proof.qmd",
+    ],
   },
   {
     name: "a symlink that escapes the tree is rejected as a symlink",
@@ -360,7 +363,10 @@ const CASES: readonly Case[] = [
       await symlink("../../outside/secret.md", knowledgeFile(repo, "ising/secret.md"));
       await append(repo, "ising/proof.qmd", "\nSee [the secret](secret.md).\n");
     },
-    expected: ["SYMLINK_FORBIDDEN knowledge/ising/proof.qmd"],
+    expected: [
+      "SYMLINK_FORBIDDEN knowledge/ising/proof.qmd",
+      "SYMLINK_FORBIDDEN knowledge/ising/secret.md",
+    ],
   },
   {
     name: "a page reached through a symlinked directory is rejected",
@@ -368,7 +374,118 @@ const CASES: readonly Case[] = [
       await symlink(".", knowledgeFile(repo, "ising/mirror"));
       await append(repo, "ising/proof.qmd", "\nSee [a mirror](mirror/proof.qmd).\n");
     },
-    expected: ["SYMLINK_FORBIDDEN knowledge/ising/proof.qmd"],
+    expected: [
+      "SYMLINK_FORBIDDEN knowledge/ising/mirror",
+      "SYMLINK_FORBIDDEN knowledge/ising/proof.qmd",
+    ],
+  },
+  {
+    // Quarto renders `knowledge/` as a project and follows symbolic links, so a
+    // symlinked page nobody references is published without ever having been
+    // validated. The walk must report it, not silently skip it.
+    name: "an unreferenced symlinked page is reported by discovery",
+    mutate: async (repo) => {
+      await mkdir(path.join(repo, "outside"), { recursive: true });
+      await writeFile(
+        path.join(repo, "outside", "smuggled.qmd"),
+        "---\ntitle: Smuggled\n---\n\n<script>alert(1)</script>\n",
+      );
+      await symlink(
+        "../../outside/smuggled.qmd",
+        knowledgeFile(repo, "ising/smuggled.qmd"),
+      );
+    },
+    expected: ["SYMLINK_FORBIDDEN knowledge/ising/smuggled.qmd"],
+  },
+  {
+    name: "an unreferenced symlinked directory is reported without being walked",
+    mutate: async (repo) => {
+      await mkdir(path.join(repo, "outside", "topic"), { recursive: true });
+      await writeFile(
+        path.join(repo, "outside", "topic", "index.qmd"),
+        "---\ntitle: Outside\n---\n",
+      );
+      await symlink("../../outside/topic", knowledgeFile(repo, "ising/linked"));
+    },
+    expected: ["SYMLINK_FORBIDDEN knowledge/ising/linked"],
+  },
+  {
+    // A dot directory is not an input to Quarto and not a page here, so a file
+    // inside one may not become an asset either: the projection copies exactly
+    // what `assets` names.
+    name: "an asset under a dot directory is not part of the tree",
+    mutate: async (repo) => {
+      await mkdir(knowledgeFile(repo, ".hidden"), { recursive: true });
+      await writeFile(knowledgeFile(repo, ".hidden/img.svg"), "<svg/>\n");
+      await append(repo, "ising/proof.qmd", "\n![Hidden](../.hidden/img.svg)\n");
+    },
+    expected: ["LINK_OUTSIDE_KNOWLEDGE knowledge/ising/proof.qmd"],
+  },
+  {
+    name: "an asset under an underscore directory is not part of the tree",
+    mutate: async (repo) => {
+      await mkdir(knowledgeFile(repo, "ising/_private"), { recursive: true });
+      await writeFile(knowledgeFile(repo, "ising/_private/img.svg"), "<svg/>\n");
+      await append(repo, "ising/proof.qmd", "\n![Private](_private/img.svg)\n");
+    },
+    expected: ["LINK_OUTSIDE_KNOWLEDGE knowledge/ising/proof.qmd"],
+  },
+  {
+    name: "an underscore-prefixed page is not part of the tree",
+    mutate: async (repo) => {
+      await writePage(repo, "ising/_partial.qmd", [
+        "---",
+        "title: A fragment",
+        "description: An include fragment Quarto never renders on its own.",
+        "categories: [theory]",
+        "---",
+        "",
+        "Included prose.",
+      ]);
+      await append(repo, "ising/proof.qmd", "\nSee [the fragment](_partial.qmd).\n");
+    },
+    expected: ["LINK_OUTSIDE_KNOWLEDGE knowledge/ising/proof.qmd"],
+  },
+  {
+    // The curated sections mean nothing on a content page: no sidebar, no
+    // containment, no related edges. Their links are still checked.
+    name: "a content page may not declare the curated sections",
+    mutate: (repo) =>
+      append(
+        repo,
+        "ising/proposal.qmd",
+        [
+          "",
+          "## Reading map",
+          "",
+          "- [Nowhere](nowhere.qmd)",
+          "",
+          "## Related topics",
+          "",
+          "- [The topic](index.qmd)",
+          "",
+        ].join("\n"),
+      ),
+    expected: [
+      "RESERVED_SECTION_FORBIDDEN knowledge/ising/proposal.qmd",
+      "LINK_MISSING knowledge/ising/proposal.qmd",
+      "RESERVED_SECTION_FORBIDDEN knowledge/ising/proposal.qmd",
+    ],
+  },
+  {
+    // The declaration comes from the parser's own heading rule, so a fenced
+    // sample that merely shows `## Reading map` never counts as one. A cheaper
+    // scan of the body text would call this index curated and publish a topic
+    // whose children are unreachable.
+    name: "a reading map heading inside a code fence is not a declaration",
+    mutate: (repo) =>
+      patch(
+        repo,
+        "ising/index.qmd",
+        "## Reading map\n",
+        "```markdown\n## Reading map\n```\n",
+      ),
+    expected: ["INDEX_READING_MAP_REQUIRED knowledge/ising/index.qmd"],
   },
   {
     name: "a citation must exist in the configured bibliography",
@@ -412,9 +529,40 @@ for (const validationCase of CASES) {
 
     const report = await validateKnowledge({ repoRoot: repo });
     assert.deepEqual(where(report.diagnostics), [...validationCase.expected]);
-    assert.equal(report.ok, false);
+    assert.equal(report.ok, validationCase.expected.length === 0);
   });
 }
+
+test("excluded and symlinked files never enter the graph", async (t) => {
+  const repo = await makeRepo(t);
+  await mkdir(knowledgeFile(repo, ".hidden"), { recursive: true });
+  await writeFile(knowledgeFile(repo, ".hidden/img.svg"), "<svg/>\n");
+  await mkdir(knowledgeFile(repo, "ising/_private"), { recursive: true });
+  await writeFile(knowledgeFile(repo, "ising/_private/img.svg"), "<svg/>\n");
+  await symlink("diagram.svg", knowledgeFile(repo, "ising/figure.svg"));
+  await append(
+    repo,
+    "ising/proof.qmd",
+    [
+      "",
+      "![Hidden](../.hidden/img.svg)",
+      "",
+      "![Private](_private/img.svg)",
+      "",
+      "![Linked](figure.svg)",
+      "",
+    ].join("\n"),
+  );
+
+  const graph = await loadKnowledge({ repoRoot: repo });
+
+  assert.deepEqual(
+    [...graph.assets.keys()],
+    ["ising/diagram.svg"],
+    "the projection copies what `assets` names, so nothing unvalidated may enter it",
+  );
+  assert.equal(graph.pages.has(".hidden/img.svg"), false);
+});
 
 test("diagnostics are sorted by file, line, column, then code", async (t) => {
   const repo = await makeRepo(t);

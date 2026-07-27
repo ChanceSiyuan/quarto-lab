@@ -16,9 +16,11 @@
  *   allowed to leak into the result: ids are sorted before use;
  * - **nothing outside the tree is reachable.** Every local link and image is
  *   resolved against the real path of the knowledge root, so a `../` escape, an
- *   absolute path, a foreign URL scheme, and a symbolic link are all
- *   unresolvable — a symlink even when it points back inside the tree, because
- *   the published site is built by copying the files this graph names;
+ *   absolute path, a foreign URL scheme, a `.`- or `_`-prefixed path, and a
+ *   symbolic link are all unresolvable — a symlink even when it points back
+ *   inside the tree, because the published site is built by copying the files
+ *   this graph names. Discovery and resolution share one exclusion rule, so a
+ *   file the walk refuses to take as a page can never arrive as an asset;
  * - **loading never judges.** `loadKnowledge` builds the best graph it can from
  *   whatever is on disk and reports nothing; `validate.ts` turns the same data
  *   into diagnostics. That split is what lets one run report every problem in a
@@ -35,12 +37,6 @@ import { lstat, readFile, readdir, realpath, stat } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { toString as mdastToString } from "mdast-util-to-string";
-import remarkParse from "remark-parse";
-import { unified } from "unified";
-
-import type { Root } from "mdast";
-
 import { INDEX_FILENAME, parseKnowledgePage } from "./parser.js";
 import type { MarkdownLink, ParsedKnowledgePage } from "./types.js";
 
@@ -49,6 +45,25 @@ export const KNOWLEDGE_DIRECTORY = "knowledge";
 
 /** The extension of a knowledge page. Nothing else in the tree is parsed. */
 export const PAGE_EXTENSION = ".qmd";
+
+/**
+ * A path segment Quarto never treats as an input, and neither does this graph.
+ *
+ * Quarto skips files and directories whose name begins with `.` or `_` — the
+ * second is its convention for includes, `_metadata.yml`, and `_quarto.yml`
+ * itself. The rule has to be *one* rule, applied to discovery and to link
+ * resolution alike: excluding a name from the walk but then resolving a link to
+ * it would let `![x](../.hidden/img.svg)` put an unvalidated file into `assets`,
+ * and the projection copies exactly what `assets` names.
+ */
+function isExcludedName(name: string): boolean {
+  return name.startsWith(".") || name.startsWith("_");
+}
+
+/** True when any segment of a POSIX tree-relative path is excluded. */
+function isExcludedPath(relativePosixPath: string): boolean {
+  return relativePosixPath.split("/").some(isExcludedName);
+}
 
 /** `lib/knowledge/graph.ts` → the repository root. */
 const DEFAULT_REPO_ROOT = path.resolve(fileURLToPath(import.meta.url), "..", "..", "..");
@@ -106,8 +121,10 @@ export type UnresolvableReason =
   | "missing"
   /** Something exists, but it is a directory rather than a file. */
   | "not-a-file"
-  /** A `.qmd` file the tree does not own, for example inside a dot directory. */
+  /** A `.qmd` file inside the tree that discovery did not take as a page. */
   | "not-a-page"
+  /** A path under a `.`- or `_`-prefixed segment, which is not an input. */
+  | "excluded"
   /** An absolute path, a foreign scheme, or a path that leaves the tree. */
   | "outside"
   /** The path is, or passes through, a symbolic link. */
@@ -170,24 +187,9 @@ export function indexIdOf(directory: string): string {
     : `${directory}/${INDEX_FILENAME}`;
 }
 
-/**
- * True when the body carries a level-two heading with this text.
- *
- * The reserved sections are a contract, so an index must declare
- * `## Reading map` even when it is still empty — the production scaffold is
- * exactly that page. The parser reports only the *entries* of a section, so the
- * heading itself is read here, with remark and the parser's own rule (a
- * level-two heading whose text is the reserved name) rather than a second,
- * looser regular expression that a fenced code sample could satisfy.
- */
-export function hasSection(body: string, heading: string): boolean {
-  const tree = unified().use(remarkParse).parse(body) as Root;
-  return tree.children.some(
-    (child) =>
-      child.type === "heading" &&
-      child.depth === 2 &&
-      mdastToString(child).trim() === heading,
-  );
+/** True when the page declares this reserved level-two section. */
+export function declaresSection(page: ParsedKnowledgePage, heading: string): boolean {
+  return page.reservedSections.some((section) => section.heading === heading);
 }
 
 /** Percent-decoding, which a malformed escape must not turn into a throw. */
@@ -246,6 +248,14 @@ export async function resolveTarget(
   const relative = path.relative(scope.knowledgeRoot, lexical);
   if (relative === ".." || relative.startsWith(`..${path.sep}`) || path.isAbsolute(relative)) {
     return unresolvable("outside", "points outside the knowledge tree");
+  }
+  if (isExcludedPath(toPosix(relative))) {
+    // Checked before the filesystem, like the escape above: whether the file
+    // happens to exist changes nothing about whether the tree may publish it.
+    return unresolvable(
+      "excluded",
+      "is under a `.`- or `_`-prefixed path, which is never part of the knowledge tree",
+    );
   }
 
   let entry;
@@ -321,36 +331,58 @@ function curatedPageIds(
   return ids;
 }
 
+/** What one walk of the knowledge tree finds, each list sorted by POSIX id. */
+export interface KnowledgeTreeWalk {
+  /** Every `.qmd` file that is a page. */
+  pageIds: readonly string[];
+  /** Every symbolic link, file or directory, that the walk refused to follow. */
+  symlinkIds: readonly string[];
+}
+
 /**
- * Every page under the root, as sorted POSIX ids.
+ * Walks the knowledge tree once.
  *
- * Dot directories are skipped, and symbolic links are never followed: a
- * symlinked directory could otherwise walk the whole filesystem into the graph,
- * or loop forever. A reference *to* one is still reported, by `resolveTarget`,
- * so nothing disappears silently from a page that needs it. `_quarto.yml`,
- * `drafts/`, `literature/`, and generated output are excluded by construction —
- * the first is not a `.qmd`, the rest are not under the knowledge root.
+ * Symbolic links are never followed — a symlinked directory could otherwise
+ * pull the whole filesystem into the graph, or loop forever — but they are
+ * *recorded* rather than ignored. Quarto renders `knowledge/` as a project and
+ * follows what it finds there, so a symlinked page or directory that this graph
+ * silently skipped would be published without ever having been validated. That
+ * is the one thing this module exists to prevent, so validation reports every
+ * one of them.
+ *
+ * `.`- and `_`-prefixed names are skipped by the same rule link resolution
+ * uses, and `_quarto.yml`, `drafts/`, `literature/`, and generated output are
+ * excluded by construction — the first two by that rule, the rest by not being
+ * under the knowledge root.
  */
-async function discoverPages(knowledgeRoot: string): Promise<string[]> {
-  const found: string[] = [];
+export async function walkKnowledgeTree(
+  knowledgeRoot: string,
+): Promise<KnowledgeTreeWalk> {
+  const pageIds: string[] = [];
+  const symlinkIds: string[] = [];
 
   const walk = async (directory: string, prefix: string): Promise<void> => {
     const entries = await readdir(directory, { withFileTypes: true });
     for (const entry of entries) {
-      if (entry.name.startsWith(".") || entry.isSymbolicLink()) {
+      if (isExcludedName(entry.name)) {
         continue;
       }
       const id = prefix === "" ? entry.name : `${prefix}/${entry.name}`;
-      if (entry.isDirectory()) {
+      if (entry.isSymbolicLink()) {
+        symlinkIds.push(id);
+      } else if (entry.isDirectory()) {
         await walk(path.join(directory, entry.name), id);
       } else if (entry.isFile() && entry.name.endsWith(PAGE_EXTENSION)) {
-        found.push(id);
+        pageIds.push(id);
       }
     }
   };
 
   await walk(knowledgeRoot, "");
-  return found.sort(comparePosix);
+  return {
+    pageIds: pageIds.sort(comparePosix),
+    symlinkIds: symlinkIds.sort(comparePosix),
+  };
 }
 
 /** Resolves a configured root to its real path, failing loudly if it cannot. */
@@ -388,7 +420,7 @@ export async function loadKnowledge(
   );
 
   const pages = new Map<string, ParsedKnowledgePage>();
-  for (const id of await discoverPages(knowledgeRoot)) {
+  for (const id of (await walkKnowledgeTree(knowledgeRoot)).pageIds) {
     const absolutePath = path.join(knowledgeRoot, ...id.split("/"));
     pages.set(
       id,
