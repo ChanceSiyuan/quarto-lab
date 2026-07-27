@@ -36,6 +36,13 @@ test("server-renders the problem console shell", async () => {
   assert.match(html, /Accepted/);
   assert.match(html, /Solved/);
   assert.match(html, /Published/);
+  assert.match(html, /<dt>Accepted<\/dt><dd>0 \/ 5<\/dd>/);
+  assert.match(html, /<dt>Solved<\/dt><dd>0 \/ 5<\/dd>/);
+  assert.match(html, /<dt>Published<\/dt><dd>0 \/ 5<\/dd>/);
+  assert.match(
+    html,
+    /<th scope="col">Problem<\/th><th scope="col">Status<\/th><th scope="col">Executable gate<\/th><th scope="col">Provenance<\/th><th scope="col">Recent activity<\/th><th scope="col">Updated<\/th><th scope="col">Open<\/th>/,
+  );
   assert.doesNotMatch(html, /Turn open literature into/);
   assert.doesNotMatch(html, /Reset demo/);
   assert.doesNotMatch(html, /localStorage/);

@@ -40,6 +40,7 @@ type Problem = {
     summary: string;
     at: string;
   };
+  updatedAt: string;
 };
 
 type Summary = {
@@ -127,11 +128,11 @@ export function ProblemConsole({
     );
   }
 
-  const metrics = [
+  const metrics: Array<[string, number | string]> = [
     ["Total", summary.total],
-    ["Accepted", summary.accepted],
-    ["Solved", summary.solved],
-    ["Published", summary.published],
+    ["Accepted", `${summary.accepted} / ${summary.target}`],
+    ["Solved", `${summary.solved} / ${summary.target}`],
+    ["Published", `${summary.published} / ${summary.target}`],
     ["Rejected", summary.rejected],
   ];
 
@@ -249,76 +250,109 @@ export function ProblemConsole({
           )}
         </section>
 
-        {initialProblems.length === 0 ? (
-          <section className="empty-state">
-            <span aria-hidden="true">QMB—</span>
-            <div>
-              <h2>No problems indexed yet</h2>
-              <p>Create a candidate in Codex, confirm its files, then rebuild the local index.</p>
-            </div>
-          </section>
-        ) : visibleProblems.length === 0 ? (
-          <section className="no-results">
-            <h2>No matching problems</h2>
-            <p>Adjust the search text or lifecycle filters.</p>
-          </section>
-        ) : (
-          <div className="problem-results">
-            <table className="problem-table">
-              <caption>{visibleProblems.length} visible problems</caption>
-              <thead>
-                <tr>
-                  <th scope="col">Problem</th>
-                  <th scope="col">Status</th>
-                  <th scope="col">Executable gate</th>
-                  <th scope="col">Sources</th>
-                  <th scope="col">Last activity</th>
+        <div className="problem-results">
+          <table className="problem-table">
+            <caption>{visibleProblems.length} visible problems</caption>
+            <thead>
+              <tr>
+                <th scope="col">Problem</th>
+                <th scope="col">Status</th>
+                <th scope="col">Executable gate</th>
+                <th scope="col">Provenance</th>
+                <th scope="col">Recent activity</th>
+                <th scope="col">Updated</th>
+                <th scope="col">Open</th>
+              </tr>
+            </thead>
+            <tbody>
+              {initialProblems.length === 0 ? (
+                <tr className="result-state-row">
+                  <td colSpan={7}>
+                    <section className="empty-state">
+                      <span aria-hidden="true">QMB—</span>
+                      <div>
+                        <h2>No problems indexed yet</h2>
+                        <p>Create a candidate in Codex, confirm its files, then rebuild the local index.</p>
+                      </div>
+                    </section>
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {visibleProblems.map((problem) => (
-                  <tr key={problem.id}>
-                    <th scope="row">
-                      <a href={`/problems/${problem.id}`}>
-                        <span>{problem.id}</span>
-                        <strong>{problem.title}</strong>
-                        <small>{problem.summary}</small>
-                      </a>
-                    </th>
-                    <td><ProblemStatus status={problem.status} /></td>
-                    <td>
-                      <strong>{problem.gate.type}</strong>
-                      <small>{problem.gate.readiness}</small>
-                    </td>
-                    <td>{problem.provenance.sourceCount}</td>
-                    <td>
-                      <strong>{problem.lastActivity.summary}</strong>
-                      <small>{formatTimestamp(problem.lastActivity.at)}</small>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+              ) : visibleProblems.length === 0 ? (
+                <tr className="result-state-row">
+                  <td colSpan={7}>
+                    <section className="no-results">
+                      <h2>No matching problems</h2>
+                      <p>Adjust the search text or lifecycle filters.</p>
+                    </section>
+                  </td>
+                </tr>
+              ) : visibleProblems.map((problem) => (
+                <tr key={problem.id}>
+                  <th scope="row">
+                    <a href={`/problems/${problem.id}`}>
+                      <span>{problem.id}</span>
+                      <strong>{problem.title}</strong>
+                      <small>{problem.summary}</small>
+                    </a>
+                  </th>
+                  <td><ProblemStatus status={problem.status} /></td>
+                  <td className="cell-stack">
+                    <strong>{problem.gate.type}</strong>
+                    <small>{problem.gate.readiness}</small>
+                  </td>
+                  <td>{problem.provenance.sourceCount} sources</td>
+                  <td className="cell-stack">
+                    <strong>{problem.lastActivity.summary}</strong>
+                    <small>{formatTimestamp(problem.lastActivity.at)}</small>
+                  </td>
+                  <td>{formatTimestamp(problem.updatedAt)}</td>
+                  <td>
+                    <a className="open-affordance" href={`/problems/${problem.id}`}>
+                      Open <span aria-hidden="true">→</span>
+                    </a>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
 
-            <div className="problem-list" aria-label="Problems">
-              {visibleProblems.map((problem) => (
-                <a className="problem-list-item" href={`/problems/${problem.id}`} key={problem.id}>
-                  <div className="problem-list-heading">
-                    <span>{problem.id}</span>
-                    <ProblemStatus status={problem.status} />
-                  </div>
+          <div className="problem-list" aria-label="Problems">
+            {initialProblems.length === 0 ? (
+              <section className="empty-state">
+                <span aria-hidden="true">QMB—</span>
+                <div>
+                  <h2>No problems indexed yet</h2>
+                  <p>Create a candidate in Codex, confirm its files, then rebuild the local index.</p>
+                </div>
+              </section>
+            ) : visibleProblems.length === 0 ? (
+              <section className="no-results">
+                <h2>No matching problems</h2>
+                <p>Adjust the search text or lifecycle filters.</p>
+              </section>
+            ) : visibleProblems.map((problem) => (
+              <article className="problem-list-item" key={problem.id}>
+                <div className="mobile-problem-field">
+                  <span className="mobile-field-label">Problem</span>
+                  <span className="problem-id">{problem.id}</span>
                   <h2>{problem.title}</h2>
                   <p>{problem.summary}</p>
-                  <dl>
-                    <div><dt>Gate</dt><dd>{problem.gate.type} · {problem.gate.readiness}</dd></div>
-                    <div><dt>Sources</dt><dd>{problem.provenance.sourceCount}</dd></div>
-                    <div><dt>Activity</dt><dd>{problem.lastActivity.summary}</dd></div>
-                  </dl>
-                </a>
-              ))}
-            </div>
+                </div>
+                <dl>
+                  <div><dt>Status</dt><dd><ProblemStatus status={problem.status} /></dd></div>
+                  <div><dt>Executable gate</dt><dd>{problem.gate.type} · {problem.gate.readiness}</dd></div>
+                  <div><dt>Provenance</dt><dd>{problem.provenance.sourceCount} sources</dd></div>
+                  <div><dt>Recent activity</dt><dd>{problem.lastActivity.summary} · {formatTimestamp(problem.lastActivity.at)}</dd></div>
+                  <div><dt>Updated</dt><dd>{formatTimestamp(problem.updatedAt)}</dd></div>
+                  <div>
+                    <dt>Open</dt>
+                    <dd><a className="open-affordance" href={`/problems/${problem.id}`}>Open problem <span aria-hidden="true">→</span></a></dd>
+                  </div>
+                </dl>
+              </article>
+            ))}
           </div>
-        )}
+        </div>
 
         <details className="codex-fallback">
           <summary>Cannot open Codex?</summary>
