@@ -94,3 +94,16 @@ test("requires complete problem markdown for accepted and later statuses", () =>
   assert.equal(result.ok, false);
   assert.match(result.errors.map((error) => error.field).join(","), /problem\.md/);
 });
+
+test("does not count headings inside fenced code blocks as problem markdown sections", () => {
+  const result = validateProblemManifest(
+    manifest({
+      status: "accepted",
+      gate: { type: "interval-arithmetic", readiness: "executable" },
+    }),
+    { problemMdText: `\`\`\`markdown\n${completeProblemMd}\n\`\`\`` },
+  );
+
+  assert.equal(result.ok, false);
+  assert.match(result.errors.map((error) => error.field).join(","), /problem\.md/);
+});
