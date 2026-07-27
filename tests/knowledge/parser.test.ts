@@ -303,6 +303,133 @@ test("finds handlers behind a quoted angle bracket in an earlier attribute", () 
   }
 });
 
+test("follows a tag across a blank line when the element is a real one", () => {
+  // `quarto pandoc` renders a live handler for the `div` shapes; `a` and `img`
+  // it drops, but a real element name is reported either way.
+  const cases: readonly { markup: string; line: number; column: number }[] = [
+    { markup: '<div\n\nonclick="alert(1)">y</div>', line: 8, column: 1 },
+    { markup: '<div\n\n  onclick="alert(1)"\n\n>y</div>', line: 8, column: 3 },
+    { markup: '<a href="x"\n\nonmouseover="alert(1)">y</a>', line: 8, column: 1 },
+    { markup: "<img\n\nsrc=x\n\nonerror=alert(1)>", line: 10, column: 1 },
+    { markup: '<div class="a"\n\n\nonclick=alert(1)>y</div>', line: 9, column: 1 },
+  ];
+
+  for (const { markup, line, column } of cases) {
+    const page = parse("ising/index.qmd", indexPage(`${markup}\n`));
+
+    assert.deepEqual(
+      page.unsafeHtml.map((entry) => ({
+        kind: entry.kind,
+        line: entry.location.line,
+        column: entry.location.column,
+      })),
+      [{ kind: "inline-handler", line, column }],
+      markup,
+    );
+  }
+
+  // An invented element name does not span a blank line, and Pandoc agrees:
+  // `<my-widget⏎⏎onclick=…>` renders no handler at all.
+  const invented = parse(
+    "ising/index.qmd",
+    indexPage('<my-widget\n\nonclick="alert(1)">y</my-widget>\n'),
+  );
+  assert.deepEqual(invented.unsafeHtml, []);
+});
+
+test("keeps reading a tag through an unbalanced quote", () => {
+  // A quote only opens a value after `=`; anywhere else it is a character.
+  const reported: readonly { markup: string; column: number }[] = [
+    { markup: "<div id=a' onclick=alert(1)>x</div>", column: 12 },
+    { markup: '<div id=a" onclick=alert(1)>x</div>', column: 12 },
+    { markup: "<div title=it's onclick=alert(1)>x</div>", column: 17 },
+    { markup: '<div data-x=a"b onclick=alert(1)>x</div>', column: 17 },
+    { markup: "<div id=a'b' onclick=alert(1)>x</div>", column: 14 },
+  ];
+
+  for (const { markup, column } of reported) {
+    const page = parse("ising/index.qmd", indexPage(`${markup}\n`));
+
+    assert.deepEqual(
+      page.unsafeHtml.map((entry) => ({
+        kind: entry.kind,
+        line: entry.location.line,
+        column: entry.location.column,
+      })),
+      [{ kind: "inline-handler", line: 6, column }],
+      markup,
+    );
+  }
+
+  // A quoted value that never closes swallows the rest of the file, so the tag
+  // never closes and no renderer makes one. `quarto pandoc` emits no handler
+  // for either of these.
+  for (const markup of [
+    "<div id='a onclick=alert(1)>x</div>",
+    '<div id="a onclick=alert(1)>x</div>',
+  ]) {
+    const page = parse("ising/index.qmd", indexPage(`${markup}\n`));
+    assert.deepEqual(page.unsafeHtml, [], markup);
+  }
+});
+
+test("an unclosed fence hides nothing, because Pandoc does not treat it as code", () => {
+  const cases: readonly {
+    body: string;
+    expected: { kind: string; line: number; column: number }[];
+  }[] = [
+    {
+      body: "```python\nx = 1\n\n<script>alert(1)</script>\n",
+      expected: [{ kind: "script", line: 9, column: 1 }],
+    },
+    {
+      body: "```python\nx = 1\n\n<div onclick=alert(1)>y</div>\n",
+      expected: [{ kind: "inline-handler", line: 9, column: 6 }],
+    },
+    {
+      body: "```\n<script>alert(1)</script>\n",
+      expected: [{ kind: "script", line: 7, column: 1 }],
+    },
+    {
+      body: "~~~python\nx = 1\n\n<div onclick=alert(1)>y</div>\n",
+      expected: [{ kind: "inline-handler", line: 9, column: 6 }],
+    },
+  ];
+
+  for (const testCase of cases) {
+    const page = parse("ising/index.qmd", indexPage(testCase.body));
+
+    assert.deepEqual(
+      page.unsafeHtml.map((entry) => ({
+        kind: entry.kind,
+        line: entry.location.line,
+        column: entry.location.column,
+      })),
+      testCase.expected,
+      testCase.body,
+    );
+  }
+
+  // A closed fence is still ordinary escaped code.
+  const closed = parse(
+    "ising/index.qmd",
+    indexPage('```python\nx = 1\n```\n\n<script>alert(1)</script>\n```html\n<div onclick=x>\n```\n'),
+  );
+  assert.deepEqual(
+    closed.unsafeHtml.map((entry) => ({ kind: entry.kind, line: entry.location.line })),
+    [{ kind: "script", line: 10 }],
+  );
+
+  // A metadata block after an unclosed fence is not hidden either.
+  const metadata = parse(
+    "ising/index.qmd",
+    indexPage("```python\nx = 1\n\n---\nexecute:\n  enabled: true\n---\n"),
+  );
+  assert.deepEqual(diagnostics(metadata), [
+    { code: "FRONTMATTER_INVALID", line: 9, column: 1 },
+  ]);
+});
+
 test("keeps clean content clean around stray angle brackets", () => {
   const shapes: readonly string[] = [
     // Inline math followed by handler-shaped prose.
@@ -531,6 +658,31 @@ test("follows Pandoc's frontmatter delimiters, including the `...` closer", () =
       closer,
     );
   }
+});
+
+test("treats a setext underline as a heading, not as a metadata opener", () => {
+  // `quarto pandoc` leaves <head> clean for all of these: a `---` that closes an
+  // open paragraph underlines a heading, it does not open metadata.
+  const bodies: readonly string[] = [
+    "Results\n---\nTemperature: 4.2\n\nNotes\n---\n",
+    "Introduction\n---\nSome prose.\n\nMethods\n---\nMore prose.\n",
+    "Results\n---\n\nMore text.\n",
+    "Some text\n---\nheader-includes: |\n  script-like prose\n---\n",
+    "Results are\nspread over lines\n---\nTemperature: 4.2\n",
+  ];
+
+  for (const body of bodies) {
+    const page = parse("ising/index.qmd", indexPage(body));
+    assert.deepEqual(diagnostics(page), [], body);
+  }
+
+  // The heading itself is ordinary content, so its links still count.
+  const page = parse(
+    "ising/index.qmd",
+    indexPage("Reading map\n---\n\n- [Proof](proof.qmd)\n"),
+  );
+  assert.deepEqual(diagnostics(page), []);
+  assert.deepEqual(targets(page.readingMap), ["proof.qmd"]);
 });
 
 test("leaves horizontal rules and fenced YAML samples alone", () => {

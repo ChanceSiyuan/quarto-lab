@@ -99,6 +99,43 @@ const HTML_TAG_NAME_START = /[a-zA-Z]/;
 const HTML_TAG_NAME_PART = /[a-zA-Z0-9-]/;
 
 /**
+ * Element names Pandoc's HTML reader recognises, which is what decides whether
+ * a tag may contain a blank line.
+ *
+ * Measured, not assumed: `<div⏎⏎onclick=…>`, and the same with `span`, `svg`,
+ * `table`, `section`, and `p`, all render a live handler, while `<my-widget⏎⏎…>`
+ * and prose openers such as `<x …` do not. Keeping the list is what lets the
+ * scan span blank lines for real elements without dragging two paragraphs of
+ * physics prose into an imaginary tag.
+ */
+const HTML_ELEMENT_NAMES = new Set([
+  // HTML
+  "a", "abbr", "address", "area", "article", "aside", "audio", "b", "base",
+  "bdi", "bdo", "blockquote", "body", "br", "button", "canvas", "caption",
+  "cite", "code", "col", "colgroup", "data", "datalist", "dd", "del",
+  "details", "dfn", "dialog", "div", "dl", "dt", "em", "embed", "fieldset",
+  "figcaption", "figure", "footer", "form", "h1", "h2", "h3", "h4", "h5",
+  "h6", "head", "header", "hgroup", "hr", "html", "i", "iframe", "img",
+  "input", "ins", "kbd", "label", "legend", "li", "link", "main", "map",
+  "mark", "menu", "meta", "meter", "nav", "noscript", "object", "ol",
+  "optgroup", "option", "output", "p", "param", "picture", "pre", "progress",
+  "q", "rp", "rt", "ruby", "s", "samp", "script", "search", "section",
+  "select", "slot", "small", "source", "span", "strong", "style", "sub",
+  "summary", "sup", "table", "tbody", "td", "template", "textarea", "tfoot",
+  "th", "thead", "time", "title", "tr", "track", "u", "ul", "var", "video",
+  "wbr",
+  // Obsolete, still parsed by lenient readers
+  "applet", "basefont", "big", "center", "dir", "font", "frame", "frameset",
+  "isindex", "keygen", "listing", "marquee", "nobr", "noframes", "plaintext",
+  "strike", "tt", "xmp",
+  // SVG and MathML: the classic handler carriers
+  "animate", "animatetransform", "circle", "defs", "ellipse", "filter",
+  "foreignobject", "g", "image", "line", "marker", "mask", "math", "mi",
+  "mn", "mo", "ms", "mtext", "path", "pattern", "polygon", "polyline",
+  "rect", "set", "svg", "symbol", "text", "tspan", "use",
+]);
+
+/**
  * A Pandoc raw attribute: ```` ```{=html} ```` on a fence, or `` `…`{=html} ``
  * after a code span. Pandoc copies the contents of such a block verbatim into
  * the output, so it is raw HTML wearing a code node's clothes.
@@ -474,18 +511,53 @@ interface CodeRange {
   end: number;
   /** True for a Pandoc raw block, whose contents reach the output verbatim. */
   raw: boolean;
+  /** True for a fence that is never closed, which Pandoc does not treat as code. */
+  unclosed: boolean;
+}
+
+/**
+ * True when a fenced code block never closes.
+ *
+ * remark runs an unclosed fence to the end of the file and calls all of it
+ * code; Pandoc requires the closing fence and falls back to reading the rest as
+ * ordinary Markdown. Believing remark here blinds every scan below to the whole
+ * tail of the page — `quarto pandoc` emits a `<script>` written after an
+ * unclosed fence as raw HTML.
+ */
+function isUnclosedFence(raw: string): boolean {
+  const opening = /^ {0,3}(`{3,}|~{3,})/.exec(raw);
+  if (opening === null) {
+    return false;
+  }
+  const fence = opening[1] ?? "";
+  const marker = fence[0] ?? "`";
+  const closing = new RegExp(`^ {0,3}[${marker}]{${fence.length},}\\s*$`);
+  const lines = raw.split("\n");
+  for (let index = lines.length - 1; index >= 1; index -= 1) {
+    const line = lines[index] ?? "";
+    if (line.trim() === "") {
+      continue;
+    }
+    return !closing.test(line);
+  }
+  return true;
 }
 
 /**
  * The ranges of every code block and code span in the body.
  *
  * Ordinary code is escaped by the renderer and is the one place a knowledge
- * page may legitimately show `<script>` or `onclick=`. A Pandoc raw block
- * (```` ```{=html} ````, `` `…`{=html} ``) is the opposite: a `code` node in
- * mdast, but copied straight into the output, so it is marked `raw` and stays
- * in scope for the unsafe-HTML scan.
+ * page may legitimately show `<script>` or `onclick=`. Two kinds of node only
+ * look like code:
+ *
+ * - a Pandoc raw block (```` ```{=html} ````, `` `…`{=html} ``) is copied
+ *   straight into the output, so it is marked `raw`;
+ * - an unclosed fence is not code to Pandoc at all, so it is marked `unclosed`.
+ *
+ * Both stay in scope for the unsafe-HTML scan, and an unclosed fence also stops
+ * hiding metadata blocks.
  */
-function collectCodeRanges(tree: Root): CodeRange[] {
+function collectCodeRanges(body: string, tree: Root): CodeRange[] {
   const ranges: CodeRange[] = [];
   visit(tree, (node, index, parent) => {
     if (node.type !== "code" && node.type !== "inlineCode") {
@@ -497,7 +569,12 @@ function collectCodeRanges(tree: Root): CodeRange[] {
       return;
     }
     if (node.type === "code") {
-      ranges.push({ start, end, raw: RAW_ATTRIBUTE.test((node.lang ?? "").trim()) });
+      ranges.push({
+        start,
+        end,
+        raw: RAW_ATTRIBUTE.test((node.lang ?? "").trim()),
+        unclosed: isUnclosedFence(body.slice(start, end)),
+      });
       return;
     }
     // An inline raw block is a code span followed by its `{=format}` attribute.
@@ -506,7 +583,7 @@ function collectCodeRanges(tree: Root): CodeRange[] {
         ? undefined
         : parent.children[index + 1];
     const attribute = next?.type === "text" ? next.value : "";
-    ranges.push({ start, end, raw: RAW_ATTRIBUTE.test(attribute) });
+    ranges.push({ start, end, raw: RAW_ATTRIBUTE.test(attribute), unclosed: false });
   });
   return ranges;
 }
@@ -517,8 +594,16 @@ interface Range {
   end: number;
 }
 
+/** A tag opener: where its name ends, and whether it is a known element. */
+interface TagOpener {
+  /** The offset just past `<name`. */
+  end: number;
+  /** Known elements may contain a blank line; invented names may not. */
+  known: boolean;
+}
+
 /**
- * The offset just past `<name` when a tag opens at `open`, or undefined.
+ * Reads the opener of a tag at `open`, or undefined when this is not one.
  *
  * A tag name is a letter followed by letters, digits, and hyphens, and it must
  * end where HTML allows one to end: whitespace, `/`, or `>`. That single rule
@@ -526,7 +611,7 @@ interface Range {
  * `$x<y$` (name ends at `$`), the autolink `<https://…>` and `<a@b.com>` (name
  * ends at `:` or `@`) are all rejected without special-casing them.
  */
-function startTagEnd(text: string, open: number): number | undefined {
+function readTagOpener(text: string, open: number): TagOpener | undefined {
   let index = open + 1;
   if (text[index] === "/") {
     index += 1;
@@ -534,15 +619,19 @@ function startTagEnd(text: string, open: number): number | undefined {
   if (!HTML_TAG_NAME_START.test(text[index] ?? "")) {
     return undefined;
   }
+  const nameStart = index;
   index += 1;
   while (HTML_TAG_NAME_PART.test(text[index] ?? "")) {
     index += 1;
   }
   const next = text[index];
-  if (next === undefined) {
-    return index;
+  if (next !== undefined && !/[\s/>]/.test(next)) {
+    return undefined;
   }
-  return /[\s/>]/.test(next) ? index : undefined;
+  return {
+    end: index,
+    known: HTML_ELEMENT_NAMES.has(text.slice(nameStart, index).toLowerCase()),
+  };
 }
 
 /** The offset after a blank line starting at `position`, or undefined. */
@@ -570,20 +659,31 @@ function blankLineEnd(text: string, position: number): number | undefined {
  *
  * - a quoted attribute value consumes `<` and `>`, so neither an evasion nor a
  *   legitimate `title="a>b"` confuses the boundary;
+ * - a quote only opens a value when it follows `=`, as HTML requires. A stray
+ *   quote inside an unquoted value (`<div id=a' onclick=…>`, `title=it's`) is
+ *   an ordinary character; treating every quote as a delimiter swallows the `>`
+ *   and drops a tag Pandoc renders live;
  * - escaped code is jumped over without changing the tag state, so a `` `<div` ``
  *   in a code span cannot open a tag while a code span *inside* a tag cannot
  *   close one;
- * - a candidate that never reaches `>` before a blank line or the end of the
- *   file is discarded, because no renderer makes it a tag. `quarto pandoc`
- *   confirms both halves: `If x<y and y>z then online=true` produces the raw
- *   tag `<y and y>` (and `online=` sits safely after it), while
- *   `If x<y then the online=true branch runs` stays plain text throughout.
+ * - a blank line ends a candidate only when the name is not a real element.
+ *   Pandoc spans blank lines for `div`, `span`, `svg`, `table`, `section` and
+ *   `p` — each renders a live handler that way — but not for an invented name
+ *   (`<my-widget⏎⏎onclick=…>`) or for prose (`<x is less than y`), which is
+ *   what stops two paragraphs from fusing into an imaginary tag;
+ * - a candidate that never reaches `>` is discarded, because no renderer makes
+ *   it a tag: `If x<y and y>z then online=true` produces the raw tag
+ *   `<y and y>` with `online=` safely after it, while `If x<y then the
+ *   online=true branch runs` stays plain text throughout.
  */
 function collectTagRanges(body: string, escaped: readonly CodeRange[]): Range[] {
   const ranges: Range[] = [];
   let index = 0;
   let open: number | undefined;
+  let spansBlankLines = false;
   let quote: string | undefined;
+  /** The last non-whitespace character, used to spot the `=` before a value. */
+  let significant = "";
 
   while (index < body.length) {
     const skip = escaped.find((range) => index >= range.start && index < range.end);
@@ -592,15 +692,17 @@ function collectTagRanges(body: string, escaped: readonly CodeRange[]): Range[] 
       continue;
     }
 
-    const character = body[index];
+    const character = body[index] ?? "";
     if (open === undefined) {
-      const tagEnd = character === "<" ? startTagEnd(body, index) : undefined;
-      if (tagEnd === undefined) {
+      const opener = character === "<" ? readTagOpener(body, index) : undefined;
+      if (opener === undefined) {
         index += 1;
         continue;
       }
       open = index;
-      index = tagEnd;
+      spansBlankLines = opener.known;
+      significant = "";
+      index = opener.end;
       continue;
     }
 
@@ -611,7 +713,7 @@ function collectTagRanges(body: string, escaped: readonly CodeRange[]): Range[] 
       index += 1;
       continue;
     }
-    if (character === '"' || character === "'") {
+    if ((character === '"' || character === "'") && significant === "=") {
       quote = character;
       index += 1;
       continue;
@@ -622,7 +724,7 @@ function collectTagRanges(body: string, escaped: readonly CodeRange[]): Range[] 
       index += 1;
       continue;
     }
-    if (character === "\n") {
+    if (character === "\n" && !spansBlankLines) {
       const afterBlank = blankLineEnd(body, index + 1);
       if (afterBlank !== undefined) {
         // Never closed, so it was never a tag.
@@ -631,6 +733,9 @@ function collectTagRanges(body: string, escaped: readonly CodeRange[]): Range[] 
         index = afterBlank;
         continue;
       }
+    }
+    if (!/\s/.test(character)) {
+      significant = character;
     }
     index += 1;
   }
@@ -653,7 +758,7 @@ function scanUnsafeHtml(
   codeRanges: readonly CodeRange[],
   at: (offset: number) => SourceLocation,
 ): UnsafeHtml[] {
-  const escaped = codeRanges.filter((range) => !range.raw);
+  const escaped = codeRanges.filter((range) => !range.raw && !range.unclosed);
   const isEscaped = (offset: number): boolean =>
     escaped.some((range) => offset >= range.start && offset < range.end);
   const tags = collectTagRanges(body, escaped);
@@ -733,6 +838,8 @@ function scanMetadataBlocks(
   body: string,
   starts: readonly number[],
   codeRanges: readonly CodeRange[],
+  /** One-based body lines that underline a setext heading. */
+  setextUnderlines: ReadonlySet<number>,
   at: (offset: number) => SourceLocation,
   diagnostics: Diagnostic[],
 ): void {
@@ -744,7 +851,9 @@ function scanMetadataBlocks(
       .trimEnd();
   const isCode = (index: number): boolean => {
     const offset = starts[index] ?? body.length;
-    return codeRanges.some((range) => offset >= range.start && offset < range.end);
+    return codeRanges.some(
+      (range) => !range.unclosed && offset >= range.start && offset < range.end,
+    );
   };
 
   let index = 0;
@@ -752,6 +861,9 @@ function scanMetadataBlocks(
     const opensBlock =
       lineAt(index) === FRONTMATTER_DELIMITER &&
       !isCode(index) &&
+      // A `---` that closes an open paragraph is a setext underline, not an
+      // opener. `Results⏎---⏎Temperature: 4.2` is a heading and a sentence.
+      !setextUnderlines.has(index + 1) &&
       index + 1 < starts.length &&
       lineAt(index + 1).trim() !== "";
     if (!opensBlock) {
@@ -1023,9 +1135,22 @@ function readBody(
       left.location.column - right.location.column,
   );
 
-  const codeRanges = collectCodeRanges(tree);
+  // A setext heading spans its text and the `---`/`===` line under it, so its
+  // last line is the underline.
+  const setextUnderlines = new Set<number>();
+  for (const child of tree.children) {
+    if (
+      child.type === "heading" &&
+      child.position !== undefined &&
+      child.position.start.line < child.position.end.line
+    ) {
+      setextUnderlines.add(child.position.end.line);
+    }
+  }
+
+  const codeRanges = collectCodeRanges(body, tree);
   result.unsafeHtml.push(...scanUnsafeHtml(body, codeRanges, atOffset));
-  scanMetadataBlocks(body, starts, codeRanges, atOffset, diagnostics);
+  scanMetadataBlocks(body, starts, codeRanges, setextUnderlines, atOffset, diagnostics);
 
   return result;
 }
