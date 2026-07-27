@@ -24,8 +24,20 @@ function routeToOutputPath(route) {
   return join(outDir, routePath);
 }
 
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function canonicalizeStaticRouteLinks(html) {
+  const escapedBasePath = escapeRegExp(basePath);
+  return html.replace(
+    new RegExp(`href="(${escapedBasePath}/problems/[^"#?]+)"`, "g"),
+    (match, href) => href.endsWith("/") ? match : `href="${href}/"`,
+  );
+}
+
 function rewriteHtml(html) {
-  return html
+  return canonicalizeStaticRouteLinks(html
     .replace(/<script\b[\s\S]*?<\/script>/gi, "")
     .replace(/<link\b[^>]*rel="modulepreload"[^>]*>/gi, "")
     .replace(/<section class="console-toolbar"[\s\S]*?<\/section>/, "")
@@ -38,7 +50,7 @@ function rewriteHtml(html) {
     .replace(/="\/assets\//g, `="${basePath}/assets/`)
     .replace(/url\(\/assets\//g, `url(${basePath}/assets/`)
     .replace(/\s+href="\/problems\/([^"]*)"/g, ` href="${basePath}/problems/$1"`)
-    .replace(/\s+href="\/"/g, ` href="${basePath}/"`);
+    .replace(/\s+href="\/"/g, ` href="${basePath}/"`));
 }
 
 async function listClientFiles(dir) {

@@ -48,8 +48,10 @@ test("pages showcase writes static route files", async () => {
 test("pages showcase rewrites links for the repository base path", async () => {
   const html = await readFile(join(out, "problems/QMB-001/index.html"), "utf8");
   assert.match(html, /Example data - synthetic results for interface demonstration only\./);
-  assert.match(html, /href="\/research-loop\/problems\/QMB-001\/attempts\/ATT-005"/);
+  assert.match(html, /href="\/research-loop\/problems\/QMB-001\/attempts\/ATT-001\/"/);
+  assert.match(html, /href="\/research-loop\/problems\/QMB-001\/attempts\/ATT-005\/"/);
   assert.match(html, /href="\/research-loop\/assets\//);
+  assert.doesNotMatch(html, /href="\/research-loop\/problems\/QMB-001\/attempts\/ATT-\d{3}"/);
   assert.doesNotMatch(html, /href="\/problems\/QMB-001\/attempts\//);
   assert.doesNotMatch(html, /<script\b/i);
 });
