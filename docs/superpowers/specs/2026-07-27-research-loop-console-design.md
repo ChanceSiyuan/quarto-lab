@@ -98,7 +98,7 @@ problems/QMB-001/
 
 ### `problem.json`
 
-manifest 只保存程序需要的稳定字段，不复制长篇研究正文。第一版 schema 至少包含：
+manifest 只保存程序需要的稳定字段，不复制长篇研究正文。第一版 schema 的完整公共字段为：
 
 ```json
 {
@@ -114,12 +114,16 @@ manifest 只保存程序需要的稳定字段，不复制长篇研究正文。�
   "provenance": {
     "sourceCount": 3
   },
+  "lastActivity": {
+    "summary": "问题草稿由 Codex 创建",
+    "at": "2026-07-27T10:00:00Z"
+  },
   "createdAt": "2026-07-27T10:00:00Z",
   "updatedAt": "2026-07-27T10:00:00Z"
 }
 ```
 
-`gate.readiness` 的第一版允许值为 `missing`、`specified`、`executable` 和 `passed`。状态为 `accepted` 或更晚阶段的问题，gate 至少必须达到 `specified`；是否达到 `executable` 由后续 gate 工作流推进。
+除仅供 `rejected` 使用的 `rejection` 外，不接受未声明的顶层字段，以便尽早发现拼写错误和 schema 漂移。`gate.readiness` 的第一版允许值为 `missing`、`specified`、`executable` 和 `passed`。状态为 `accepted` 或更晚阶段的问题，gate 至少必须达到 `executable`；只有带有 runnable gate 的问题才能计入 issue #133 的 Tier 1。
 
 当 `status` 为 `rejected` 时，manifest 还必须包含：
 
@@ -184,7 +188,7 @@ manifest 只保存程序需要的稳定字段，不复制长篇研究正文。�
 - 遵守本规格的问题目录与 schema；
 - 写入后运行 manifest 校验并报告结果。
 
-如果运行环境不支持 `codex://`，网页显示同一份可复制提示词、仓库路径以及手动打开 Codex 的简短说明。按钮不得无反馈地失败。
+“增加问题”旁始终提供“无法打开 Codex？”入口，其中包含同一份可复制提示词、仓库路径以及手动打开 Codex 的简短说明。网页不依赖浏览器准确检测自定义协议是否启动成功，按钮不得成为唯一入口。
 
 ## 主页信息架构
 
@@ -228,7 +232,7 @@ manifest 只保存程序需要的稳定字段，不复制长篇研究正文。�
 6. 更新时间；
 7. 进入箭头。
 
-本轮详情路由可以是明确的占位页，但必须有稳定 URL。主页不包含运行、验证、删除或状态推进操作。
+本轮提供稳定的 `/problems/<id>` 路由，只展示问题 ID、标题以及“详情功能将在后续设计”的说明。主页不包含运行、验证、删除或状态推进操作。
 
 ### 页面状态
 
@@ -261,7 +265,7 @@ manifest 只保存程序需要的稳定字段，不复制长篇研究正文。�
 - 每个 manifest 独立校验，单个错误不能阻断整个主页。
 - 诊断必须包含相对文件路径、字段位置和可操作的错误消息。
 - 重复 ID、目录名与 manifest ID 不一致、未知 schema version、非法状态和缺失条件字段均视为索引错误。
-- `accepted` 及以后状态必须具备 gate 描述、provenance 和完整 `problem.md`。
+- `accepted` 及以后状态必须具备 readiness 为 `executable` 或 `passed` 的 gate、provenance 和完整 `problem.md`。
 - `rejected` 必须具备拒绝类型与非空原因。
 - Codex 创建时先生成完整内容并校验，再让最终 manifest 对索引器可见，以避免半成品进入主页。
 - 网页不吞掉 deep-link 失败；fallback 必须让用户能继续工作。
