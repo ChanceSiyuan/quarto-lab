@@ -277,6 +277,54 @@ test("finds event handlers whatever delimiter precedes them", () => {
   }
 });
 
+test("finds handlers behind a quoted angle bracket in an earlier attribute", () => {
+  // Pandoc renders a live handler for every one of these.
+  const cases: readonly { markup: string; column: number }[] = [
+    { markup: '<div title="a < b" onclick="alert(1)">x</div>', column: 20 },
+    { markup: '<div title="a<3" onclick="alert(1)">x</div>', column: 18 },
+    { markup: '<div title="<" onclick="alert(1)">x</div>', column: 16 },
+    { markup: '<div title="a<=b" onclick="alert(1)">x</div>', column: 19 },
+    { markup: '<div title="a>b" onclick="alert(1)">x</div>', column: 18 },
+    { markup: "<div title='a < b' onclick='alert(1)'>x</div>", column: 20 },
+  ];
+
+  for (const { markup, column } of cases) {
+    const page = parse("ising/index.qmd", indexPage(`${markup}\n`));
+
+    assert.deepEqual(
+      page.unsafeHtml.map((entry) => ({
+        kind: entry.kind,
+        line: entry.location.line,
+        column: entry.location.column,
+      })),
+      [{ kind: "inline-handler", line: 6, column }],
+      markup,
+    );
+  }
+});
+
+test("keeps clean content clean around stray angle brackets", () => {
+  const shapes: readonly string[] = [
+    // Inline math followed by handler-shaped prose.
+    "The transition $x<y$ holds.\n\nThe onset=3 value and online=true flag.\n",
+    "For $T<T_c$ the onset=3 value is fixed.\n",
+    "Bounds $a<b$ and $c<d$ give online=true in the log.\n",
+    // An autolink carrying a handler-shaped query parameter.
+    "See <https://example.com/runs?onload=1&online=true> for the log.\n",
+    "See [the log](https://example.com/runs?onload=1) and onset=2 here.\n",
+    // Inline code holding an unfinished tag, then handler-shaped prose.
+    "Write `<div` to open a tag.\n\nThe online=true flag is separate.\n",
+    "A `<div` span and then onset=4 in the same paragraph.\n",
+    // Comparison operators in prose.
+    "If x<y then the online=true branch runs.\n",
+  ];
+
+  for (const shape of shapes) {
+    const page = parse("ising/index.qmd", indexPage(shape));
+    assert.deepEqual(page.unsafeHtml, [], shape);
+  }
+});
+
 test("does not mistake prose or a URL query parameter for a handler", () => {
   const page = parse(
     "ising/index.qmd",
@@ -367,6 +415,124 @@ test("reports a Pandoc metadata block written after the frontmatter", () => {
   assert.equal(dots.title, "A topic");
 });
 
+test("reports every metadata block Pandoc actually merges", () => {
+  // Each shape was confirmed with `quarto pandoc`: `header-includes` reaches
+  // <head>, so the block is live metadata however it is delimited or placed.
+  const payload = ["header-includes: |", "  <script>alert(1)</script>"];
+  const cases: readonly { name: string; body: readonly string[]; line: number }[] = [
+    {
+      name: "trailing spaces on the opener",
+      body: ["Prose.", "", "---   ", ...payload, "---", "", "After."],
+      line: 8,
+    },
+    {
+      name: "a tab after the opener",
+      body: ["Prose.", "", "---\t", ...payload, "---", "", "After."],
+      line: 8,
+    },
+    {
+      name: "trailing spaces on the closer",
+      body: ["Prose.", "", "---", ...payload, "---  ", "", "After."],
+      line: 8,
+    },
+    {
+      name: "a `...` closer",
+      body: ["Prose.", "", "---", ...payload, "...", "", "After."],
+      line: 8,
+    },
+    {
+      name: "directly after a fenced code block",
+      body: ["```python", "x = 1", "```", "---", ...payload, "---", "", "After."],
+      line: 9,
+    },
+    {
+      name: "directly after a setext heading",
+      body: ["Heading text", "===", "---", ...payload, "---", "", "After."],
+      line: 8,
+    },
+    {
+      name: "directly after the frontmatter",
+      body: ["---", ...payload, "---", "", "After."],
+      line: 6,
+    },
+  ];
+
+  for (const testCase of cases) {
+    const page = parse("ising/index.qmd", indexPage(`${testCase.body.join("\n")}\n`));
+
+    assert.deepEqual(
+      diagnostics(page),
+      [{ code: "FRONTMATTER_INVALID", line: testCase.line, column: 1 }],
+      testCase.name,
+    );
+    // The page's own frontmatter is still read.
+    assert.equal(page.title, "A topic", testCase.name);
+  }
+});
+
+test("follows Pandoc's frontmatter delimiters, including the `...` closer", () => {
+  const dotsClosed = parse(
+    "ising/index.qmd",
+    ["---", "title: A topic", "description: A description.", "...", "", "Body.", ""].join(
+      "\n",
+    ),
+  );
+  assert.deepEqual(diagnostics(dotsClosed), []);
+  assert.equal(dotsClosed.title, "A topic");
+  assert.equal(dotsClosed.body, "\nBody.\n");
+
+  // Ending the block at `...` is what makes a later block visible at all: with
+  // `---` as the only closer, everything up to the next `---` was swallowed
+  // into the frontmatter and this payload escaped the allowlist entirely.
+  const blockAfterDots = parse(
+    "ising/index.qmd",
+    [
+      /*  1 */ "---",
+      /*  2 */ "title: A topic",
+      /*  3 */ "description: A description.",
+      /*  4 */ "...",
+      /*  5 */ "",
+      /*  6 */ "---",
+      /*  7 */ "header-includes: |",
+      /*  8 */ "  <script>alert(1)</script>",
+      /*  9 */ "---",
+      /* 10 */ "",
+      /* 11 */ "Body.",
+      /* 12 */ "",
+    ].join("\n"),
+  );
+  assert.deepEqual(diagnostics(blockAfterDots), [
+    { code: "FRONTMATTER_INVALID", line: 6, column: 1 },
+  ]);
+  assert.equal(blockAfterDots.title, "A topic");
+
+  // Whitespace after either delimiter is ignored, as Pandoc ignores it.
+  const padded = parse(
+    "ising/index.qmd",
+    ["---  ", "title: A topic", "description: A description.", "--- \t", "", "Body.", ""].join(
+      "\n",
+    ),
+  );
+  assert.deepEqual(diagnostics(padded), []);
+  assert.equal(padded.title, "A topic");
+
+  // A four-dash or indented closer closes nothing — Pandoc reads no metadata
+  // from these files either.
+  for (const closer of ["----", "  ---", "- --"]) {
+    const unterminated = parse(
+      "ising/index.qmd",
+      ["---", "title: A topic", "description: A description.", closer, "", "Body.", ""].join(
+        "\n",
+      ),
+    );
+    assert.deepEqual(
+      diagnostics(unterminated),
+      [{ code: "FRONTMATTER_INVALID", line: 1, column: 1 }],
+      closer,
+    );
+  }
+});
+
 test("leaves horizontal rules and fenced YAML samples alone", () => {
   const page = parse(
     "ising/index.qmd",
@@ -388,6 +554,14 @@ test("leaves horizontal rules and fenced YAML samples alone", () => {
         "---",
         "Not a mapping, just prose between rules.",
         "---",
+        "",
+        "----",
+        "execute: true",
+        "----",
+        "",
+        "  ---",
+        "execute: true",
+        "  ---",
         "",
       ].join("\n"),
     ),

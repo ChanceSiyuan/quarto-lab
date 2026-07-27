@@ -55,8 +55,11 @@ export const READING_MAP_HEADING = "Reading map";
 /** The level-two heading that defines cross-topic references. */
 export const RELATED_TOPICS_HEADING = "Related topics";
 
-/** The only line that opens or closes a frontmatter block. */
+/** The line that opens a frontmatter block, and one of the two that close it. */
 const FRONTMATTER_DELIMITER = "---";
+
+/** The other closing delimiter Pandoc accepts. */
+const FRONTMATTER_TERMINATOR = "...";
 
 /** Link targets the knowledge tree does not own and never resolves on disk. */
 const EXTERNAL_TARGET = /^(?:https?|mailto):/i;
@@ -89,8 +92,11 @@ const HTML_SCRIPT_TAG = /<script\b/gi;
  */
 const HTML_EVENT_HANDLER = /(?<![A-Za-z0-9_.:-])on[a-z][a-z0-9_.:-]*\s*=/gi;
 
-/** Characters that may continue an HTML tag name. */
+/** The first character of an HTML tag name. */
 const HTML_TAG_NAME_START = /[a-zA-Z]/;
+
+/** A later character of an HTML tag name. */
+const HTML_TAG_NAME_PART = /[a-zA-Z0-9-]/;
 
 /**
  * A Pandoc raw attribute: ```` ```{=html} ```` on a fence, or `` `…`{=html} ``
@@ -160,18 +166,31 @@ interface SourceSplit {
 }
 
 /**
- * Splits a page on its exact `---` delimiters.
+ * Splits a page on its frontmatter delimiters, exactly where Pandoc does.
  *
- * The opening delimiter must be the whole of line one and the closing
- * delimiter the whole of a later line; nothing else counts, so a horizontal
- * rule or a `---` inside prose can never be read as metadata.
+ * The opening delimiter is the whole of line one and the closing delimiter the
+ * whole of a later line, so a horizontal rule or a `---` inside prose can never
+ * be read as metadata. Two details come from Pandoc's behaviour rather than
+ * from taste, and both were verified with `quarto pandoc`:
+ *
+ * - trailing whitespace on either delimiter is ignored;
+ * - `...` closes a block just as `---` does. Missing that ends the block at the
+ *   *next* `---` instead, which would hide every key in between from the
+ *   allowlist while Pandoc reads a later block as metadata.
+ *
+ * An indented delimiter, or one with four dashes, is not a delimiter — Pandoc
+ * agrees, and reads no metadata at all in those files.
  */
 function splitFrontmatter(source: string): SourceSplit {
   const starts = lineStarts(source);
   const lineText = (index: number): string => {
     const from = starts[index] ?? source.length;
     const to = starts[index + 1] ?? source.length;
-    return source.slice(from, to).replace(/\r?\n$/, "");
+    return source.slice(from, to).replace(/\r?\n$/, "").trimEnd();
+  };
+  const closes = (index: number): boolean => {
+    const text = lineText(index);
+    return text === FRONTMATTER_DELIMITER || text === FRONTMATTER_TERMINATOR;
   };
 
   if (source.length === 0 || lineText(0) !== FRONTMATTER_DELIMITER) {
@@ -179,7 +198,7 @@ function splitFrontmatter(source: string): SourceSplit {
   }
 
   for (let index = 1; index < starts.length; index += 1) {
-    if (lineText(index) !== FRONTMATTER_DELIMITER) {
+    if (!closes(index)) {
       continue;
     }
     return {
@@ -492,39 +511,131 @@ function collectCodeRanges(tree: Root): CodeRange[] {
   return ranges;
 }
 
+/** A half-open range of the body source. */
+interface Range {
+  start: number;
+  end: number;
+}
+
 /**
- * True when an offset sits inside an HTML start tag: after a `<name` with no
- * unquoted `>` between them.
+ * The offset just past `<name` when a tag opens at `open`, or undefined.
  *
- * This is what keeps whole-document handler scanning honest in both
- * directions. A quoted `>` (`<div title="a>b" onclick="…">`) does not end the
- * tag, so the evasion is still caught; and an `onload=` that is merely prose or
- * a URL query parameter (`…?online=true`) is not inside a tag, so it is not
- * reported.
+ * A tag name is a letter followed by letters, digits, and hyphens, and it must
+ * end where HTML allows one to end: whitespace, `/`, or `>`. That single rule
+ * is what separates a real tag from the shapes clean content is full of —
+ * `$x<y$` (name ends at `$`), the autolink `<https://…>` and `<a@b.com>` (name
+ * ends at `:` or `@`) are all rejected without special-casing them.
  */
-function isInsideTag(text: string, offset: number): boolean {
-  const open = text.lastIndexOf("<", offset);
-  if (open < 0 || !HTML_TAG_NAME_START.test(text[open + 1] ?? "")) {
-    return false;
+function startTagEnd(text: string, open: number): number | undefined {
+  let index = open + 1;
+  if (text[index] === "/") {
+    index += 1;
   }
+  if (!HTML_TAG_NAME_START.test(text[index] ?? "")) {
+    return undefined;
+  }
+  index += 1;
+  while (HTML_TAG_NAME_PART.test(text[index] ?? "")) {
+    index += 1;
+  }
+  const next = text[index];
+  if (next === undefined) {
+    return index;
+  }
+  return /[\s/>]/.test(next) ? index : undefined;
+}
+
+/** The offset after a blank line starting at `position`, or undefined. */
+function blankLineEnd(text: string, position: number): number | undefined {
+  let index = position;
+  while (index < text.length && /[ \t\r]/.test(text[index] ?? "")) {
+    index += 1;
+  }
+  if (index >= text.length) {
+    return index;
+  }
+  return text[index] === "\n" ? index + 1 : undefined;
+}
+
+/**
+ * The ranges of the body that sit inside an HTML start tag.
+ *
+ * A forward, quote-aware pass is the only way to get this right in both
+ * directions. Scanning backwards from a candidate attribute (an earlier
+ * version of this file) is fooled by a `<` inside a quoted attribute value —
+ * `<div title="a < b" onclick="…">` — which is a live handler Pandoc renders,
+ * and it also drags unrelated prose into a tag that a stray `<` opened.
+ *
+ * Rules that matter:
+ *
+ * - a quoted attribute value consumes `<` and `>`, so neither an evasion nor a
+ *   legitimate `title="a>b"` confuses the boundary;
+ * - escaped code is jumped over without changing the tag state, so a `` `<div` ``
+ *   in a code span cannot open a tag while a code span *inside* a tag cannot
+ *   close one;
+ * - a candidate that never reaches `>` before a blank line or the end of the
+ *   file is discarded, because no renderer makes it a tag. `quarto pandoc`
+ *   confirms both halves: `If x<y and y>z then online=true` produces the raw
+ *   tag `<y and y>` (and `online=` sits safely after it), while
+ *   `If x<y then the online=true branch runs` stays plain text throughout.
+ */
+function collectTagRanges(body: string, escaped: readonly CodeRange[]): Range[] {
+  const ranges: Range[] = [];
+  let index = 0;
+  let open: number | undefined;
   let quote: string | undefined;
-  for (let index = open + 1; index < offset; index += 1) {
-    const character = text[index];
+
+  while (index < body.length) {
+    const skip = escaped.find((range) => index >= range.start && index < range.end);
+    if (skip !== undefined) {
+      index = skip.end;
+      continue;
+    }
+
+    const character = body[index];
+    if (open === undefined) {
+      const tagEnd = character === "<" ? startTagEnd(body, index) : undefined;
+      if (tagEnd === undefined) {
+        index += 1;
+        continue;
+      }
+      open = index;
+      index = tagEnd;
+      continue;
+    }
+
     if (quote !== undefined) {
       if (character === quote) {
         quote = undefined;
       }
+      index += 1;
       continue;
     }
     if (character === '"' || character === "'") {
       quote = character;
+      index += 1;
       continue;
     }
     if (character === ">") {
-      return false;
+      ranges.push({ start: open, end: index + 1 });
+      open = undefined;
+      index += 1;
+      continue;
     }
+    if (character === "\n") {
+      const afterBlank = blankLineEnd(body, index + 1);
+      if (afterBlank !== undefined) {
+        // Never closed, so it was never a tag.
+        open = undefined;
+        quote = undefined;
+        index = afterBlank;
+        continue;
+      }
+    }
+    index += 1;
   }
-  return true;
+
+  return ranges;
 }
 
 /**
@@ -545,6 +656,9 @@ function scanUnsafeHtml(
   const escaped = codeRanges.filter((range) => !range.raw);
   const isEscaped = (offset: number): boolean =>
     escaped.some((range) => offset >= range.start && offset < range.end);
+  const tags = collectTagRanges(body, escaped);
+  const isInTag = (offset: number): boolean =>
+    tags.some((range) => offset >= range.start && offset < range.end);
 
   const found: UnsafeHtml[] = [];
   for (const match of body.matchAll(HTML_SCRIPT_TAG)) {
@@ -555,7 +669,7 @@ function scanUnsafeHtml(
   }
   for (const match of body.matchAll(HTML_EVENT_HANDLER)) {
     const offset = match.index ?? 0;
-    if (!isEscaped(offset) && isInsideTag(body, offset)) {
+    if (!isEscaped(offset) && isInTag(offset)) {
       found.push({ kind: "inline-handler", location: at(offset) });
     }
   }
@@ -566,11 +680,21 @@ function scanUnsafeHtml(
   );
 }
 
-/** True when a text block is a YAML mapping, which is what Pandoc requires. */
+/**
+ * True when a text block is a YAML mapping, which is what Pandoc requires of a
+ * metadata block.
+ *
+ * Parse errors are ignored on purpose. `yaml` rejects duplicate keys that
+ * Pandoc accepts, and a partially parsed mapping is still a mapping; treating
+ * "not clean YAML" as "not metadata" would hand back the bypass.
+ */
 function isYamlMapping(text: string): boolean {
   try {
-    const document = parseDocument(text, { prettyErrors: false });
-    return document.errors.length === 0 && isMap(document.contents);
+    const contents = parseDocument(text, {
+      prettyErrors: false,
+      uniqueKeys: false,
+    }).contents;
+    return isMap(contents) && contents.items.length > 0;
   } catch {
     return false;
   }
@@ -584,26 +708,40 @@ function isYamlMapping(text: string): boolean {
  * into `<head>`, `execute` turns rendering into execution. The frontmatter
  * allowlist would be worthless if it only guarded the first block.
  *
- * Detection follows Pandoc's own rule rather than the mdast shape (which is a
- * thematic break, a paragraph, and possibly a setext heading): a `---` line
- * that starts the body or follows a blank line, is not followed by a blank
- * line, is closed by a later `---` or `...` line, and whose contents parse as a
- * YAML mapping. Requiring a mapping is what keeps an ordinary `---` horizontal
- * rule from being reported.
+ * Detection works on the source, not on the mdast shape (which degenerates into
+ * a thematic break, a paragraph, and sometimes a setext heading depending on
+ * the contents). A block is reported when a line of exactly `---` — ignoring
+ * trailing whitespace, which Pandoc ignores too — is followed by a non-blank
+ * line, closed by a later `---` or `...` line, sits outside every code block,
+ * and holds a YAML mapping.
+ *
+ * The rules come from running the variants through `quarto pandoc` rather than
+ * from the documentation, which says a mid-document block must follow a blank
+ * line. It need not: Pandoc merged the block in every one of these, none of
+ * which has a blank line before it — directly after the frontmatter's closing
+ * `---`, directly after a fenced code block, directly after a setext heading,
+ * and with trailing spaces or a tab on either delimiter.
+ *
+ * Where the two disagree the parser reports more than Pandoc accepts (for
+ * instance a block right after a paragraph line, which Pandoc reads as a setext
+ * heading). Guessing a parser's precedence rules is not a safe basis for a
+ * security check, and the shape is a mistake worth reporting either way.
+ * Ordinary `---` horizontal rules, indented or longer rules, and `---` inside a
+ * fence stay valid, which is what keeps prose readable.
  */
 function scanMetadataBlocks(
   body: string,
   starts: readonly number[],
   codeRanges: readonly CodeRange[],
-  /** True when the body is the whole file, so its first line starts it. */
-  atDocumentStart: boolean,
   at: (offset: number) => SourceLocation,
   diagnostics: Diagnostic[],
 ): void {
+  // Pandoc ignores trailing whitespace on a delimiter line; so must this.
   const lineAt = (index: number): string =>
     body
       .slice(starts[index] ?? body.length, starts[index + 1] ?? body.length)
-      .replace(/\r?\n$/, "");
+      .replace(/\r?\n$/, "")
+      .trimEnd();
   const isCode = (index: number): boolean => {
     const offset = starts[index] ?? body.length;
     return codeRanges.some((range) => offset >= range.start && offset < range.end);
@@ -614,7 +752,6 @@ function scanMetadataBlocks(
     const opensBlock =
       lineAt(index) === FRONTMATTER_DELIMITER &&
       !isCode(index) &&
-      (index === 0 ? atDocumentStart : lineAt(index - 1).trim() === "") &&
       index + 1 < starts.length &&
       lineAt(index + 1).trim() !== "";
     if (!opensBlock) {
@@ -625,7 +762,10 @@ function scanMetadataBlocks(
     let close: number | undefined;
     for (let candidate = index + 1; candidate < starts.length; candidate += 1) {
       const text = lineAt(candidate);
-      if ((text === FRONTMATTER_DELIMITER || text === "...") && !isCode(candidate)) {
+      if (
+        (text === FRONTMATTER_DELIMITER || text === FRONTMATTER_TERMINATOR) &&
+        !isCode(candidate)
+      ) {
         close = candidate;
         break;
       }
@@ -885,7 +1025,7 @@ function readBody(
 
   const codeRanges = collectCodeRanges(tree);
   result.unsafeHtml.push(...scanUnsafeHtml(body, codeRanges, atOffset));
-  scanMetadataBlocks(body, starts, codeRanges, bodyLine === 1, atOffset, diagnostics);
+  scanMetadataBlocks(body, starts, codeRanges, atOffset, diagnostics);
 
   return result;
 }
