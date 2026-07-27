@@ -32,13 +32,14 @@
 import path from "node:path";
 
 import {
+  UNCURATED,
   comparePosix,
+  curatedOrder,
   diagnosticFile,
   loadKnowledge,
   type KnowledgeGraph,
   type LoadKnowledgeOptions,
 } from "./graph.js";
-import { INDEX_FILENAME } from "./parser.js";
 import type { ParsedKnowledgePage } from "./types.js";
 import {
   KnowledgeValidationError,
@@ -124,9 +125,6 @@ const TIER_OF: Readonly<Record<MatchKind, number>> = {
   "description-term": 4,
   "body-term": 5,
 };
-
-/** The rank of a page no reading map reaches: after everything curated. */
-const UNCURATED = Number.MAX_SAFE_INTEGER;
 
 /**
  * Splits any text into comparable terms.
@@ -217,35 +215,6 @@ function rankPage(
     }
   }
   return undefined;
-}
-
-/**
- * The curated reading order of the whole tree, as a rank per page.
- *
- * A depth-first walk of the reading maps from the root index is the order a
- * human reads the site in, so it is also the order the resolver presents pages
- * in. Pages no reading map reaches have no curated position — an invalid tree,
- * which `resolveKnowledge` refuses — and are ranked after everything curated,
- * where the POSIX path tie-break keeps the result a total order rather than
- * whatever order the pages were enumerated in.
- */
-function curatedOrder(graph: KnowledgeGraph): ReadonlyMap<string, number> {
-  const rank = new Map<string, number>();
-  const visit = (id: string): void => {
-    if (rank.has(id)) {
-      // Also the cycle guard: containment cycles are rejected by validation,
-      // but the pure layer may be handed one and must still terminate.
-      return;
-    }
-    rank.set(id, rank.size);
-    for (const child of graph.childrenByIndex.get(id) ?? []) {
-      visit(child);
-    }
-  };
-  if (graph.pages.has(INDEX_FILENAME)) {
-    visit(INDEX_FILENAME);
-  }
-  return rank;
 }
 
 /** The repository-relative POSIX path of a page id, for example `knowledge/x.qmd`. */

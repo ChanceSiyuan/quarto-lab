@@ -385,6 +385,43 @@ export async function walkKnowledgeTree(
   };
 }
 
+/** The rank of a page no reading map reaches: after everything curated. */
+export const UNCURATED = Number.MAX_SAFE_INTEGER;
+
+/**
+ * The curated reading order of the whole tree, as a rank per page.
+ *
+ * A depth-first walk of the reading maps from the root index is the order a
+ * human reads the site in, so it is also the order the resolver ranks pages in
+ * and the order the generated category views list them in. Pages no reading map
+ * reaches have no curated position — an invalid tree, which every public entry
+ * point refuses — and callers rank them at `UNCURATED`, where a POSIX path
+ * tie-break keeps the result a total order rather than whatever order the pages
+ * were enumerated in.
+ *
+ * There is one implementation because "the order the author curated" must mean
+ * the same thing in the sidebar, in a category page, and in an agent's reading
+ * bundle.
+ */
+export function curatedOrder(graph: KnowledgeGraph): ReadonlyMap<string, number> {
+  const rank = new Map<string, number>();
+  const visit = (id: string): void => {
+    if (rank.has(id)) {
+      // Also the cycle guard: containment cycles are rejected by validation,
+      // but the pure layer may be handed one and must still terminate.
+      return;
+    }
+    rank.set(id, rank.size);
+    for (const child of graph.childrenByIndex.get(id) ?? []) {
+      visit(child);
+    }
+  };
+  if (graph.pages.has(INDEX_FILENAME)) {
+    visit(INDEX_FILENAME);
+  }
+  return rank;
+}
+
 /** Resolves a configured root to its real path, failing loudly if it cannot. */
 async function resolveRoot(target: string, label: string): Promise<string> {
   const absolute = path.resolve(target);
