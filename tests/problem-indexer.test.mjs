@@ -70,7 +70,6 @@ test("builds a deterministic index and summary from problem directories", async 
     published: 1,
     rejected: 1,
     archived: 0,
-    target: 5,
   });
   assert.equal(index.nextProblemId, "QMB-004");
   assert.deepEqual(index.diagnostics, []);

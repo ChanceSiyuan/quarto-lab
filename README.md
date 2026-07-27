@@ -36,7 +36,7 @@ npm run lint
 npm test
 ```
 
-To create a problem, click `+ 增加问题` on the homepage. Codex opens a new task with the issue #133 context prefilled; send it, answer one question at a time, and only allow file writes after reviewing the proposed manifest, Markdown, generation record, and rubric decision.
+To create a problem, click `+ Add problem` on the homepage. Codex opens a new task with the issue #133 context prefilled; send it, answer one question at a time, and only allow file writes after reviewing the proposed manifest, Markdown, generation record, and rubric decision.
 
 ## Included Shape
 

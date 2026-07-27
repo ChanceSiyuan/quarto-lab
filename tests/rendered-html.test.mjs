@@ -129,8 +129,8 @@ test("server-renders the problem console shell", async () => {
 
   const html = await response.text();
   assert.match(html, /Research Loop/);
-  assert.match(html, /问题/);
-  assert.match(html, /增加问题/);
+  assert.match(html, /Problem Console/);
+  assert.match(html, />\+ Add problem<\/a>/);
   assert.match(html, />\+ Add first problem<\/a>/);
   assert.match(html, /Cannot open Codex\?/);
   assert.match(html, /codex:\/\/threads\/new/);
@@ -144,9 +144,12 @@ test("server-renders the problem console shell", async () => {
   ]) {
     assert.match(
       html,
-      new RegExp(`<dt>${label}</dt><dd>${generatedIndex.summary[key]} / ${generatedIndex.summary.target}</dd>`),
+      new RegExp(`<dt>${label}</dt><dd>${generatedIndex.summary[key]}</dd>`),
     );
   }
+  assert.doesNotMatch(html, /publication target/i);
+  assert.doesNotMatch(html, /\/\s*5\b/);
+  assert.doesNotMatch(html, /[\u3400-\u9FFF]/u);
   assert.match(
     html,
     /<th scope="col">Problem<\/th><th scope="col">Status<\/th><th scope="col">Executable gate<\/th><th scope="col">Provenance<\/th><th scope="col">Recent activity<\/th><th scope="col">Updated<\/th><th scope="col">Open<\/th>/,
@@ -212,6 +215,7 @@ test("server-renders the populated problem detail shell", async () => {
   assert.match(html, /<p class="eyebrow">QMB-017<\/p>/);
   assert.match(html, /<h1>Fresh Hamiltonian gate<\/h1>/);
   assert.match(html, /<p class="detail-summary">Interval arithmetic on held-out instances\.<\/p>/);
-  assert.match(html, /详情界面将在后续设计；本页先固定路由、身份和返回路径。/);
+  assert.match(html, /The detailed problem workspace will be designed next; this page currently locks the route, identity, and return path\./);
+  assert.doesNotMatch(html, /[\u3400-\u9FFF]/u);
   assert.match(html, /<a href="\/" class="back-link">← Back to problems<\/a>/);
 });

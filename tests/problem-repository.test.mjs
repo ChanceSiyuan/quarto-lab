@@ -8,7 +8,7 @@ const index = {
   generatedAt: "2026-07-27T10:00:00.000Z",
   workspacePath: "/repo/research-loop",
   nextProblemId: "QMB-004",
-  summary: { total: 3, accepted: 1, solved: 0, published: 0, rejected: 1, archived: 1, target: 5 },
+  summary: { total: 3, accepted: 1, solved: 0, published: 0, rejected: 1, archived: 1 },
   diagnostics: [{ relativePath: "problems/QMB-099/problem.json", field: "status", message: "Invalid status." }],
   problems: [
     { id: "QMB-001", title: "Fresh Hamiltonian gate", summary: "Interval arithmetic gate.", status: "accepted", gate: { type: "interval-arithmetic", readiness: "executable" }, provenance: { sourceCount: 3 }, lastActivity: { summary: "Accepted", at: "2026-07-27T10:00:00Z" }, updatedAt: "2026-07-27T10:00:00Z", createdAt: "2026-07-27T09:00:00Z" },

@@ -5,7 +5,7 @@ import {
   buildTierMetrics,
 } from "../lib/problems/presentation.mjs";
 
-test("formats tier progress from the current target", () => {
+test("formats tier metrics as raw counts without a target cap", () => {
   assert.deepEqual(
     buildTierMetrics({
       total: 9,
@@ -13,13 +13,12 @@ test("formats tier progress from the current target", () => {
       solved: 3,
       published: 2,
       rejected: 1,
-      target: 7,
     }),
     [
       ["Total", 9],
-      ["Accepted", "4 / 7"],
-      ["Solved", "3 / 7"],
-      ["Published", "2 / 7"],
+      ["Accepted", 4],
+      ["Solved", 3],
+      ["Published", 2],
       ["Rejected", 1],
     ],
   );

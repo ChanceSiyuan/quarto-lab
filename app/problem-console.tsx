@@ -14,15 +14,15 @@ import {
 } from "@/lib/problems/view-state.mjs";
 
 const statusLabels: Record<string, string> = {
-  draft: "草稿",
-  qualifying: "资格验证中",
-  accepted: "已接受",
-  solving: "求解中",
-  solved: "已解决",
-  publishing: "投稿中",
-  published: "已发表",
-  rejected: "已拒绝",
-  archived: "已归档",
+  draft: "Draft",
+  qualifying: "Qualifying",
+  accepted: "Accepted",
+  solving: "Solving",
+  solved: "Solved",
+  publishing: "Publishing",
+  published: "Published",
+  rejected: "Rejected",
+  archived: "Archived",
 };
 
 type Problem = {
@@ -51,7 +51,6 @@ type Summary = {
   published: number;
   rejected: number;
   archived: number;
-  target: number;
 };
 
 type Diagnostic = {
@@ -133,7 +132,7 @@ export function ProblemConsole({
           <span className="brand-mark" aria-hidden="true">RL</span>
           <div>
             <strong>Research Loop</strong>
-            <span>问题控制台</span>
+            <span>Problem Console</span>
           </div>
         </div>
         <div className="mode-indicator">
@@ -153,10 +152,10 @@ export function ProblemConsole({
         <div className="console-heading">
           <div>
             <p className="eyebrow">LOCAL REPOSITORY INDEX</p>
-            <h1 id="problem-heading">问题</h1>
+            <h1 id="problem-heading">Problems</h1>
           </div>
           <p>
-            Read-only lifecycle view · publication target {summary.target}
+            Read-only lifecycle view · local repository index
           </p>
         </div>
 
@@ -212,7 +211,7 @@ export function ProblemConsole({
             </div>
           </fieldset>
 
-          <a className="primary-action" href={launch.href}>+ 增加问题</a>
+          <a className="primary-action" href={launch.href}>+ Add problem</a>
         </section>
 
         <section

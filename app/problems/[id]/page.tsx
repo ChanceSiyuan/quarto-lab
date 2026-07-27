@@ -24,7 +24,7 @@ export default async function ProblemDetailPage({
       <p className="detail-summary">{problem.summary}</p>
       <section className="detail-panel" aria-labelledby="detail-status-heading">
         <h2 id="detail-status-heading">Problem detail</h2>
-        <p>详情界面将在后续设计；本页先固定路由、身份和返回路径。</p>
+        <p>The detailed problem workspace will be designed next; this page currently locks the route, identity, and return path.</p>
       </section>
     </main>
   );
