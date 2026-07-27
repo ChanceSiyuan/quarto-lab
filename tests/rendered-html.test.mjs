@@ -132,7 +132,9 @@ test("server-renders the problem console shell", async () => {
   assert.match(html, /Research Loop/);
   assert.match(html, /Problem Console/);
   assert.match(html, />\+ Add problem<\/a>/);
-  assert.match(html, />\+ Add first problem<\/a>/);
+  assert.match(html, /CSS code-distance algorithm search/);
+  assert.match(html, /href="\/problems\/QMB-001"/);
+  assert.doesNotMatch(html, />\+ Add first problem<\/a>/);
   assert.match(html, /Cannot open Codex\?/);
   assert.match(html, /codex:\/\/threads\/new/);
   assert.match(html, /Accepted/);
@@ -205,7 +207,30 @@ test("returns a stable detail route response for unknown problem IDs", async () 
   assert.equal(response.status, 404);
 });
 
-test("server-renders the populated problem detail shell", async () => {
+test("server-renders the static research ledger for QMB-001", async () => {
+  const response = await render("/problems/QMB-001");
+  assert.equal(response.status, 200);
+
+  const html = await response.text();
+  assert.match(html, /<a href="\/" class="back-link">← Back to problems<\/a>/);
+  assert.match(html, /<p class="eyebrow">QMB-001<\/p>/);
+  assert.match(html, /<h1>CSS code-distance algorithm search<\/h1>/);
+  assert.match(html, /Example data - synthetic results for interface demonstration only\./);
+  assert.match(html, /Blind evaluation/);
+  assert.match(html, /300 s \/ run/);
+  assert.match(html, /<dt>Attempts<\/dt><dd>5<\/dd>/);
+  assert.match(html, /<dt>Best speedup<\/dt><dd>118\.2x<\/dd>/);
+  assert.match(html, /<th scope="col">Attempt<\/th><th scope="col">Method<\/th><th scope="col">Stage<\/th><th scope="col">Decision<\/th><th scope="col">Gate<\/th><th scope="col">Verified<\/th><th scope="col">Hits<\/th><th scope="col">Quality<\/th><th scope="col">Runtime<\/th><th scope="col">P95<\/th><th scope="col">Speedup<\/th><th scope="col">Open<\/th>/);
+  for (const attemptId of ["ATT-001", "ATT-002", "ATT-003", "ATT-004", "ATT-005"]) {
+    assert.match(html, new RegExp(`href="\\/problems\\/QMB-001\\/attempts\\/${attemptId}"`));
+  }
+  assert.match(html, /Adaptive verified portfolio/);
+  assert.match(html, /118\.2x/);
+  assert.doesNotMatch(html, /The detailed problem workspace will be designed next/);
+  assert.doesNotMatch(html, /[\u3400-\u9FFF]/u);
+});
+
+test("server-renders the generic problem detail shell for non-example problems", async () => {
   const response = await renderFilesystemFixture(
     { manifests: [acceptedFixture] },
     "/problems/QMB-017?fixture=filesystem",
