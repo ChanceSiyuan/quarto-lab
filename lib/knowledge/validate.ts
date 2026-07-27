@@ -69,6 +69,49 @@ export interface ValidationReport {
   diagnostics: readonly Diagnostic[];
 }
 
+/**
+ * Thrown when a consumer that may only act on a valid tree is handed an invalid
+ * one — the resolver, and later the site build.
+ *
+ * It carries the complete report rather than the first problem, and its message
+ * lists every diagnostic, so a caller that does nothing but print `message`
+ * still shows the author everything they have to fix. Validation reports the
+ * whole tree in one pass precisely so that this error can too.
+ */
+export class KnowledgeValidationError extends Error {
+  readonly report: ValidationReport;
+  readonly diagnostics: readonly Diagnostic[];
+
+  constructor(report: ValidationReport) {
+    const { diagnostics } = report;
+    super(
+      [
+        `the knowledge tree has ${diagnostics.length} problem${diagnostics.length === 1 ? "" : "s"}:`,
+        ...diagnostics.map(formatDiagnostic),
+      ].join("\n"),
+    );
+    this.name = "KnowledgeValidationError";
+    this.report = report;
+    this.diagnostics = diagnostics;
+  }
+}
+
+/** One diagnostic as a line: `file:line:column CODE message`. */
+function formatDiagnostic(diagnostic: Diagnostic): string {
+  return `${formatLocation(diagnostic.location)} ${diagnostic.code} ${diagnostic.message}`;
+}
+
+/**
+ * The bibliography a tree is checked against: the one the caller configured, or
+ * the one the repository keeps. Every entry point resolves it here, so "which
+ * bibliography validated this tree?" has exactly one answer.
+ */
+export function bibliographyPathFor(repoRoot: string, configured?: string): string {
+  return configured === undefined
+    ? path.join(repoRoot, ...BIBLIOGRAPHY_PATH.split("/"))
+    : path.resolve(configured);
+}
+
 /** Which code an unusable link target is reported under. */
 const LINK_CODE: Readonly<Record<UnresolvableReason, string>> = {
   missing: "LINK_MISSING",
@@ -459,9 +502,6 @@ export async function validateKnowledge(
 ): Promise<ValidationReport> {
   const graph = await loadKnowledge(options);
   return validateGraph(graph, {
-    bibliographyPath:
-      options.bibliographyPath === undefined
-        ? path.join(graph.repoRoot, ...BIBLIOGRAPHY_PATH.split("/"))
-        : path.resolve(options.bibliographyPath),
+    bibliographyPath: bibliographyPathFor(graph.repoRoot, options.bibliographyPath),
   });
 }
