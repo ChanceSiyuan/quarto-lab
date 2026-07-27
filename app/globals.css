@@ -453,6 +453,48 @@ a { color: inherit; text-decoration: none; }
   font: 11px/1.55 var(--font-geist-mono);
 }
 
+.detail-shell {
+  width: min(720px, calc(100% - 48px));
+  min-height: 100vh;
+  margin: 0 auto;
+  padding: 48px 0 72px;
+}
+
+.back-link {
+  display: inline-flex;
+  margin-bottom: 44px;
+  color: var(--green);
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.back-link:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+.detail-shell h1 {
+  margin: 0;
+  font-size: clamp(32px, 6vw, 52px);
+  font-weight: 600;
+  letter-spacing: -.055em;
+  line-height: 1.05;
+}
+
+.detail-summary {
+  max-width: 60ch;
+  margin: 14px 0 32px;
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.detail-panel {
+  border: 1px solid var(--line);
+  padding: 20px;
+  background: var(--surface);
+}
+
+.detail-panel h2 { margin: 0; font-size: 14px; }
+.detail-panel p { margin: 8px 0 0; color: var(--muted); font-size: 13px; line-height: 1.5; }
+
 @media (max-width: 940px) {
   .console-topbar { grid-template-columns: 1fr 1fr; }
   .mode-indicator { display: none; }
@@ -503,6 +545,8 @@ a { color: inherit; text-decoration: none; }
   .problem-list-item dd { margin: 0; }
   .problem-list-item .status-badge { margin-top: -3px; }
   .empty-state { align-items: flex-start; flex-direction: column; gap: 12px; }
+  .detail-shell { width: min(100% - 28px, 720px); padding-top: 28px; }
+  .back-link { margin-bottom: 32px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

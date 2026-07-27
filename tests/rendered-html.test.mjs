@@ -33,7 +33,7 @@ async function render(pathname = "/") {
   );
 }
 
-async function renderPopulatedFixture() {
+async function renderPopulatedFixture(pathname = "/?fixture=populated") {
   const originalIndexText = await readFile(generatedIndexUrl, "utf8");
   const fixtureIndex = {
     ...generatedIndex,
@@ -83,7 +83,7 @@ async function renderPopulatedFixture() {
   await writeFile(generatedIndexUrl, `${JSON.stringify(fixtureIndex, null, 2)}\n`);
   try {
     await buildCurrentIndex();
-    const response = await render("/?fixture=populated");
+    const response = await render(pathname);
     const html = await response.text();
     return new Response(html, { status: response.status, headers: response.headers });
   } finally {
@@ -138,4 +138,21 @@ test("server-renders populated desktop and narrow problem rows", async () => {
     html,
     /<article class="problem-list-item"><div class="mobile-problem-field"><span class="mobile-field-label">Problem<\/span><span class="problem-id">QMB-017<\/span><h2>Fresh Hamiltonian gate<\/h2><p>Interval arithmetic on held-out instances\.<\/p><\/div><dl><div><dt>Status<\/dt><dd><span class="status-badge status-accepted">已接受<\/span><\/dd><\/div><div><dt>Executable gate<\/dt><dd>interval-arithmetic<!-- --> · <!-- -->executable<\/dd><\/div><div><dt>Provenance<\/dt><dd>12 sources<\/dd><\/div><div><dt>Recent activity<\/dt><dd>Accepted after novelty review<!-- --> · <!-- -->2026-07-27 10:30:00 UTC<\/dd><\/div><div><dt>Updated<\/dt><dd>2026-07-27 11:45:00 UTC<\/dd><\/div><div><dt>Open<\/dt><dd><a class="open-affordance" href="\/problems\/QMB-017">Open problem<!-- --> <span aria-hidden="true">→<\/span><\/a><\/dd><\/div><\/dl><\/article>/,
   );
+});
+
+test("returns a stable detail route response for unknown problem IDs", async () => {
+  const response = await render("/problems/QMB-999");
+  assert.equal(response.status, 404);
+});
+
+test("server-renders the populated problem detail shell", async () => {
+  const response = await renderPopulatedFixture("/problems/QMB-017?fixture=populated");
+  assert.equal(response.status, 200);
+
+  const html = await response.text();
+  assert.match(html, /<p class="eyebrow">QMB-017<\/p>/);
+  assert.match(html, /<h1>Fresh Hamiltonian gate<\/h1>/);
+  assert.match(html, /<p class="detail-summary">Interval arithmetic on held-out instances\.<\/p>/);
+  assert.match(html, /详情界面将在后续设计；本页先固定路由、身份和返回路径。/);
+  assert.match(html, /<a href="\/" class="back-link">← Back to problems<\/a>/);
 });

@@ -19,6 +19,25 @@ site.
 
 This starter does not use `wrangler.jsonc`.
 
+## Local Problem Console
+
+Problems live in `problems/<id>/` and are indexed into `.generated/problem-index.json` before dev, lint, build, and test commands. The generated index is ignored by Git; `problem.json`, `problem.md`, and `generation/` records are the durable audit trail.
+
+Run locally:
+
+```bash
+npm run dev
+```
+
+Validate and build:
+
+```bash
+npm run lint
+npm test
+```
+
+To create a problem, click `+ 增加问题` on the homepage. Codex opens a new task with the issue #133 context prefilled; send it, answer one question at a time, and only allow file writes after reviewing the proposed manifest, Markdown, generation record, and rubric decision.
+
 ## Included Shape
 
 - edit site code under `app/`
