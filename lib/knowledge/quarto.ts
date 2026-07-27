@@ -42,6 +42,7 @@ import { UNCURATED, comparePosix, curatedOrder, type KnowledgeGraph } from "./gr
 import { INDEX_FILENAME } from "./parser.js";
 import {
   KNOWLEDGE_CATEGORIES,
+  isPathLikeAlias,
   type KnowledgeCategory,
   type ParsedKnowledgePage,
 } from "./types.js";
@@ -103,21 +104,6 @@ const CATEGORY_TITLE: Readonly<Record<KnowledgeCategory, string>> = {
  * leave the project directory.
  */
 const FILE_SHORTCODE = /\{\{<\s*(include|embed)\b/iu;
-
-/**
- * An alias Quarto would turn into a path rather than into a name.
- *
- * The knowledge system means `aliases` as *other names for this page* — "2d
- * ising", "quspin hamiltonian" — and the resolver treats them as text. Quarto
- * means something else by the same key: each alias becomes a redirect page
- * written at that path, relative to the rendered page. Verified against Quarto
- * 1.9.38, `aliases: ["../../../../../../tmp/x"]` makes the renderer call
- * `mkdir` *outside* the output directory, outside the project, and outside the
- * workspace — it failed here only because that particular path was not
- * writable. A separator, a `.`, or a `..` is therefore refused: no legitimate
- * synonym needs one, and every escape does.
- */
-const PATH_LIKE_ALIAS = /[/\\]|^\.{1,2}$|^~/u;
 
 /** One materialized project: where it is, where it renders to, and its views. */
 export interface QuartoProject {
@@ -260,12 +246,16 @@ function assertNoFileShortcode(id: string, source: string): void {
  * The frontmatter allowlist admits `aliases` because the resolver needs
  * synonyms; it cannot know that the renderer also builds a directory out of
  * each one. This is the same class of problem as the shortcode above — a
- * validated value that becomes a filesystem path at render time — and it is
- * caught in the same place, before the renderer ever sees the page.
+ * validated value that becomes a filesystem path at render time.
+ *
+ * Validation reports the same values as `ALIAS_PATH_FORBIDDEN`, so an author
+ * hears about them at review time; both stages ask `isPathLikeAlias`, and this
+ * one stays because the projection may never assume it was reached through a
+ * validated path.
  */
 function assertSafeAliases(page: ParsedKnowledgePage): void {
   for (const alias of page.aliases) {
-    if (PATH_LIKE_ALIAS.test(alias)) {
+    if (isPathLikeAlias(alias)) {
       throw new QuartoProjectionError(
         `\`${page.id}\`: the alias ${JSON.stringify(alias)} looks like a path; Quarto publishes every alias as a redirect directory of that name, so an alias may only be another name for the page — no \`/\`, \`\\\`, \`.\`, \`..\`, or \`~\``,
       );

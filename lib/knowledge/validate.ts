@@ -25,6 +25,7 @@
  * CITATION_MISSING           a citekey is absent from the bibliography
  * SCRIPT_FORBIDDEN           a page carries a raw `<script` tag
  * INLINE_HANDLER_FORBIDDEN   a page carries a raw event-handler attribute
+ * ALIAS_PATH_FORBIDDEN       an alias Quarto would write as a redirect path
  * ```
  *
  * Every check reports the *cause* once. A missing `index.qmd` does not also
@@ -59,7 +60,12 @@ import {
   type UnresolvableReason,
 } from "./graph.js";
 import { INDEX_FILENAME, READING_MAP_HEADING, RELATED_TOPICS_HEADING } from "./parser.js";
-import type { Diagnostic, ParsedKnowledgePage, SourceLocation } from "./types.js";
+import {
+  isPathLikeAlias,
+  type Diagnostic,
+  type ParsedKnowledgePage,
+  type SourceLocation,
+} from "./types.js";
 
 /** The bibliography a knowledge tree is validated against by default. */
 export const BIBLIOGRAPHY_PATH = "literature/ref.bib";
@@ -187,6 +193,23 @@ export async function validateGraph(
   // allowlist. A page that does not parse cleanly cannot be published.
   for (const page of pages) {
     diagnostics.push(...page.parseDiagnostics);
+
+    // The allowlist admits `aliases` for the resolver, which reads them as
+    // synonyms; Quarto reads the same key as redirect *paths* and builds a
+    // directory out of each one, so a separator or a `..` there is a render
+    // that writes outside the output directory. The projection refuses these
+    // too — this is the same `isPathLikeAlias`, reported at review time so the
+    // author hears about it before a build fails.
+    for (const alias of page.aliases) {
+      if (isPathLikeAlias(alias)) {
+        report(
+          "ALIAS_PATH_FORBIDDEN",
+          `the alias ${JSON.stringify(alias)} looks like a path; Quarto publishes every alias as a redirect directory of that name, so an alias may only be another name for the page — no \`/\`, \`\\\`, \`.\`, \`..\`, or \`~\``,
+          pageStart(page),
+        );
+      }
+    }
+
     for (const unsafe of page.unsafeHtml) {
       report(
         unsafe.kind === "script" ? "SCRIPT_FORBIDDEN" : "INLINE_HANDLER_FORBIDDEN",

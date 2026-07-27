@@ -2,11 +2,13 @@
  * The vocabulary of the knowledge system: what a knowledge page is, what may
  * appear in its frontmatter, and how a problem with one is reported.
  *
- * Everything here is data. The parser (`parser.ts`) turns one `.qmd` file into
- * a `ParsedKnowledgePage`; the graph (`graph.ts`) resolves the relationships
- * between pages. Neither stage throws on bad user content: every problem is a
- * `Diagnostic` with a true one-based file location, so a whole tree can be
- * reported at once instead of one failure per run.
+ * Everything here is data, plus the one predicate that says which frontmatter
+ * *values* are safe — the rule two stages have to agree on exactly. The parser
+ * (`parser.ts`) turns one `.qmd` file into a `ParsedKnowledgePage`; the graph
+ * (`graph.ts`) resolves the relationships between pages. Neither stage throws
+ * on bad user content: every problem is a `Diagnostic` with a true one-based
+ * file location, so a whole tree can be reported at once instead of one failure
+ * per run.
  */
 
 /** The single category a content page must declare. */
@@ -31,6 +33,34 @@ export const ALLOWED_FRONTMATTER_KEYS = [
 ] as const;
 
 export type AllowedFrontmatterKey = (typeof ALLOWED_FRONTMATTER_KEYS)[number];
+
+/**
+ * An alias Quarto would turn into a path rather than into a name.
+ *
+ * The knowledge system means `aliases` as *other names for this page* — "2d
+ * ising", "quspin hamiltonian" — and the resolver treats them as text. Quarto
+ * means something else by the same key: each alias becomes a redirect page
+ * written at that path, relative to the rendered page. Verified against Quarto
+ * 1.9.38, `aliases: ["../../../../../../tmp/x"]` makes the renderer call
+ * `mkdir` *outside* the output directory, outside the project, and outside the
+ * workspace — it failed there only because that particular path was not
+ * writable. A separator, a `.`, or a `..` is therefore refused: no legitimate
+ * synonym needs one, and every escape does.
+ */
+const PATH_LIKE_ALIAS = /[/\\]|^\.{1,2}$|^~/u;
+
+/**
+ * Whether an alias would become a filesystem path at render time.
+ *
+ * This lives here, in the module both the validator and the projection already
+ * import, because it is one security rule enforced in two places: validation
+ * reports it as `ALIAS_PATH_FORBIDDEN` at review time, and the projection
+ * refuses it again at build time for a tree that reached a renderer some other
+ * way. Two copies of the predicate would be two rules, and they would drift.
+ */
+export function isPathLikeAlias(alias: string): boolean {
+  return PATH_LIKE_ALIAS.test(alias);
+}
 
 /** `index.qmd` is topic navigation; every other page carries content. */
 export type PageKind = "index" | "content";

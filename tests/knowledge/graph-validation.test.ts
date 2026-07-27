@@ -493,6 +493,21 @@ const CASES: readonly Case[] = [
     expected: ["CITATION_MISSING knowledge/ising/proof.qmd"],
   },
   {
+    // `aliases` is on the frontmatter allowlist because the resolver reads it
+    // as synonyms; Quarto reads it as redirect paths. The projection already
+    // refuses these, but only once a build is under way — validation is where
+    // an author is told, before anything renders.
+    name: "an alias Quarto would read as a path is rejected",
+    mutate: (repo) =>
+      patch(
+        repo,
+        "ising/index.qmd",
+        "aliases: [ising, 2d ising]",
+        'aliases: [ising, "../../../../../../tmp/quarto-alias-escape"]',
+      ),
+    expected: ["ALIAS_PATH_FORBIDDEN knowledge/ising/index.qmd"],
+  },
+  {
     name: "a raw script tag is rejected",
     mutate: (repo) =>
       append(repo, "ising/proposal.qmd", "\n<script>alert(1)</script>\n"),
@@ -532,6 +547,64 @@ for (const validationCase of CASES) {
     assert.equal(report.ok, validationCase.expected.length === 0);
   });
 }
+
+/**
+ * Every alias form Quarto would turn into a path. This is the same list
+ * `quarto-project.test.ts` holds the projection to: one rule, one predicate,
+ * enforced at review time here and again at build time there.
+ */
+const PATH_LIKE_ALIASES: readonly string[] = [
+  "../../../../../../tmp/quarto-alias-escape",
+  "/etc/passwd",
+  "a/b",
+  "..",
+  ".",
+  "~",
+  "windows\\path",
+];
+
+test("every alias Quarto would read as a path fails validation", async (t) => {
+  for (const alias of PATH_LIKE_ALIASES) {
+    const repo = await makeRepo(t);
+    await patch(
+      repo,
+      "ising/index.qmd",
+      "aliases: [ising, 2d ising]",
+      `aliases: [${JSON.stringify(alias)}]`,
+    );
+
+    const report = await validateKnowledge({ repoRoot: repo });
+
+    assert.deepEqual(
+      where(report.diagnostics),
+      ["ALIAS_PATH_FORBIDDEN knowledge/ising/index.qmd"],
+      `the alias ${JSON.stringify(alias)} must be reported, and nothing else`,
+    );
+    assert.ok(
+      report.diagnostics[0].message.includes(JSON.stringify(alias)),
+      `the refusal must quote the alias: ${report.diagnostics[0].message}`,
+    );
+    assert.match(report.diagnostics[0].message, /redirect/);
+  }
+});
+
+test("an alias that is only another name for the page stays valid", async (t) => {
+  const repo = await makeRepo(t);
+  await patch(
+    repo,
+    "ising/index.qmd",
+    "aliases: [ising, 2d ising]",
+    'aliases: [ising, "2d ising", "ising v1.2", "quspin hamiltonian"]',
+  );
+
+  const report = await validateKnowledge({ repoRoot: repo });
+
+  assert.deepEqual(
+    where(report.diagnostics),
+    [],
+    "a period inside a synonym is not a path; only a bare `.` or `..` is",
+  );
+});
 
 test("excluded and symlinked files never enter the graph", async (t) => {
   const repo = await makeRepo(t);
