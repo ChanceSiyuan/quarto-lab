@@ -1,0 +1,54 @@
+% Test fixture for lib/literature. Not the production corpus.
+%
+% It deliberately exercises the shapes the real bibliography mixes: both BibTeX
+% name orderings, a braced corporate author, an accented name, entries without
+% an author or a year, duplicate and unsorted keywords, old- and new-style arXiv
+% identifiers, prefixed and URL-wrapped identifiers, and a field (`abstract`)
+% that carries full text and must never reach a generated index. Entries are
+% intentionally out of citekey order.
+
+@article{schollwock_2011_density,
+  author = {U. Schollw\"{o}ck},
+  title = {The density-matrix renormalization group in the age of matrix product states},
+  journal = {Annals of Physics},
+  year = {2011},
+  doi = {https://doi.org/10.1016/j.aop.2010.09.012},
+  eprint = {arXiv:1008.3477v2},
+  archivePrefix = {arXiv},
+  keywords = {mps-based-algorithm, ed, mps-based-algorithm}
+}
+
+@article{white_1992_real,
+  author = {White, Steven R. and Noack, Reinhard M.},
+  title = {Real-space quantum renormalization groups},
+  journal = {Physical Review Letters},
+  year = {1992},
+  abstract = {SECRETFULLTEXTMARKER: the copied body of an external paper.},
+  keywords = {ed}
+}
+
+@article{sorella_1998_green,
+  author = {Sorella, S.},
+  title = {Green Function Monte Carlo with Stochastic Reconfiguration},
+  journal = {Physical Review Letters},
+  year = {1998},
+  doi = {10.1103/PhysRevLett.80.4558},
+  eprint = {cond-mat/9803107},
+  archivePrefix = {arXiv},
+  keywords = {variational-monte-carlo, quantum-monte-carlo}
+}
+
+@misc{fixture_2011_toolkit,
+  author = {{The Fixture Collaboration}},
+  title = {A toolkit for many-body fixtures},
+  eprint = {https://arxiv.org/abs/1101.2646},
+  archivePrefix = {arXiv},
+  keywords = {quantum-monte-carlo}
+}
+
+@software{fixture-solver,
+  title = {fixture/solver},
+  repository = {fixture/solver},
+  url = {https://github.com/fixture/solver},
+  keywords = {ed}
+}
