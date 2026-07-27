@@ -107,3 +107,16 @@ test("does not count headings inside fenced code blocks as problem markdown sect
   assert.equal(result.ok, false);
   assert.match(result.errors.map((error) => error.field).join(","), /problem\.md/);
 });
+
+test("does not close fenced code blocks on a fence with trailing text", () => {
+  const result = validateProblemManifest(
+    manifest({
+      status: "accepted",
+      gate: { type: "interval-arithmetic", readiness: "executable" },
+    }),
+    { problemMdText: `\`\`\`markdown\n\`\`\`not-a-closing-fence\n${completeProblemMd}\n\`\`\`` },
+  );
+
+  assert.equal(result.ok, false);
+  assert.match(result.errors.map((error) => error.field).join(","), /problem\.md/);
+});
