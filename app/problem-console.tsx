@@ -298,9 +298,9 @@ export function ProblemConsole({
                   </td>
                   <td>{row.updated.value}</td>
                   <td>
-                    <span className="open-affordance">
+                    <a className="open-affordance" href={row.open.href}>
                       Open <span aria-hidden="true">→</span>
-                    </span>
+                    </a>
                   </td>
                 </tr>
               ))}

@@ -162,6 +162,13 @@ test("server-renders the problem console shell", async () => {
   assert.doesNotMatch(html, /localStorage/);
 });
 
+test("homepage table links do not rely on absolute row overlays", async () => {
+  const css = await readFile(new URL("../app/globals.css", import.meta.url), "utf8");
+
+  assert.doesNotMatch(css, /\.problem-row-link::after\s*\{/);
+  assert.doesNotMatch(css, /\.problem-table-row\s*\{[^}]*position:\s*relative[^}]*\}/s);
+});
+
 test("server-renders populated desktop and narrow problem rows", async () => {
   const response = await renderFilesystemFixture({
     manifests: [acceptedFixture],
@@ -171,6 +178,7 @@ test("server-renders populated desktop and narrow problem rows", async () => {
 
   const html = await response.text();
   assert.match(html, /<tr class="problem-table-row"><th scope="row"><a class="problem-row-link" href="\/problems\/QMB-017">/);
+  assert.match(html, /<td><a class="open-affordance" href="\/problems\/QMB-017">Open <span aria-hidden="true">→<\/span><\/a><\/td>/);
   assert.match(html, /<a class="problem-list-item" href="\/problems\/QMB-017" aria-label="Open QMB-017: Fresh Hamiltonian gate">/);
   assert.match(html, /Fresh Hamiltonian gate/);
   assert.match(html, /Interval arithmetic on held-out instances\./);
