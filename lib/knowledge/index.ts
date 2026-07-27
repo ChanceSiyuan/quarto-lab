@@ -7,17 +7,24 @@
  * does the knowledge tree say?" is exactly the drift this module exists to
  * prevent.
  *
- * The two error classes are exported with the functions that throw them: a
+ * The three error classes are exported with the functions that throw them: a
  * caller cannot honour "never act on an invalid tree" without being able to
- * catch the refusal. The site build lands in a later task.
+ * catch the refusal.
  */
 
 export { loadKnowledge } from "./graph.js";
 export { KnowledgeValidationError, validateKnowledge } from "./validate.js";
 export { KnowledgeQueryError, resolveKnowledge } from "./resolve.js";
+export { KnowledgeSiteError, buildKnowledgeSite, previewKnowledgeSite } from "./site.js";
 
 export type { KnowledgeGraph, LoadKnowledgeOptions } from "./graph.js";
 export type { ValidationReport } from "./validate.js";
+export type {
+  AtomicDirectoryOps,
+  BuildKnowledgeSiteOptions,
+  BuildKnowledgeSiteResult,
+  ProcessRunner,
+} from "./site.js";
 export type {
   MatchKind,
   ReadingBundle,

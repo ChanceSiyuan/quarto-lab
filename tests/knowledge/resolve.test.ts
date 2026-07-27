@@ -627,12 +627,14 @@ test("the public interface exports exactly the entry points of this phase", asyn
 
   assert.deepEqual(
     Object.keys(publicInterface).sort(),
-    // The two error classes are runtime values a caller must be able to catch;
-    // `buildKnowledgeSite` and `previewKnowledgeSite` belong to a later task.
+    // The three error classes are runtime values a caller must be able to catch.
     [
       "KnowledgeQueryError",
+      "KnowledgeSiteError",
       "KnowledgeValidationError",
+      "buildKnowledgeSite",
       "loadKnowledge",
+      "previewKnowledgeSite",
       "resolveKnowledge",
       "validateKnowledge",
     ],
@@ -672,11 +674,16 @@ test("`knowledge.ts resolve` prints formatted JSON and exits 0 on no-match", asy
 test("the CLI exits 1 on an invocation it cannot honour", async () => {
   for (const args of [
     [],
-    ["build"],
+    ["render"],
     ["check", "--query", "x"],
     ["resolve"],
     ["resolve", "--query", "   "],
     ["resolve", "--query", "x", "--repo-root", "/tmp"],
+    // The production CLI has no path or output overrides at all: `build` may
+    // read only this repository's tree and replace only its `public/knowledge`.
+    ["build", "--knowledge-dir", "tests/fixtures/knowledge/valid"],
+    ["build", "--output-dir", "/tmp/anywhere"],
+    ["preview", "--knowledge-dir", "tests/fixtures/knowledge/valid"],
   ]) {
     const result = await knowledgeCli(...args);
     assert.equal(result.code, 1, `expected exit 1 for ${JSON.stringify(args)}`);
