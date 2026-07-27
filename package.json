@@ -9,7 +9,7 @@
     "dev": "node scripts/dev-problem-index.mjs",
     "build": "node scripts/build-problem-index.mjs && WRANGLER_LOG_PATH=.wrangler/wrangler.log vinext build",
     "start": "WRANGLER_LOG_PATH=.wrangler/wrangler.log vinext start",
-    "test": "node --test tests/static-example-content.test.mjs tests/problem-schema.test.mjs tests/problem-indexer.test.mjs tests/dev-problem-index.test.mjs tests/problem-repository.test.mjs tests/codex-launch.test.mjs tests/problem-presentation.test.mjs tests/problem-view-state.test.mjs && npm run build && node --test tests/rendered-html.test.mjs",
+    "test": "node --test tests/static-example-content.test.mjs tests/example-research.test.mjs tests/problem-schema.test.mjs tests/problem-indexer.test.mjs tests/dev-problem-index.test.mjs tests/problem-repository.test.mjs tests/codex-launch.test.mjs tests/problem-presentation.test.mjs tests/problem-view-state.test.mjs && npm run build && node --test tests/rendered-html.test.mjs",
     "lint": "node scripts/build-problem-index.mjs && eslint . --ignore-pattern dist --ignore-pattern .next --ignore-pattern .generated",
     "db:generate": "drizzle-kit generate"
   },

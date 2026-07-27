@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "problemId": "QMB-001",
+  "id": "ATT-003",
+  "sequence": 3,
+  "title": "Verified quotient-coset descent",
+  "summary": "Constrain the search in quotient-coset space so fast proposals remain verifiable.",
+  "stage": "development",
+  "decision": "accepted",
+  "promoted": false,
+  "gate": { "publicSmoke": "passed", "containment": "passed", "development": "passed" },
+  "method": {
+    "hypothesis": "Descending over quotient-coset representatives can preserve the speed of sampling while eliminating most invalid witness proposals.",
+    "changes": [
+      "Represent candidates as quotient-coset states before local descent.",
+      "Reject vectors that collapse to stabilizers before expensive scoring.",
+      "Reuse ATT-002 restart scheduling with a verified acceptance filter."
+    ],
+    "learnedFrom": "ATT-002"
+  },
+  "metrics": { "runs": 24, "verifiedWitnesses": 24, "targetHits": 19, "timeouts": 0, "crashes": 0, "invalidClaims": 0, "normalizedQuality": 0.9, "runtimeSeconds": 183.2, "medianSeconds": 5.9, "p95Seconds": 21.8, "speedup": 9.9 },
+  "interpretation": "Correctness recovers across the synthetic suite, with enough speedup to keep the approach alive but not enough to satisfy the desired 100x story.",
+  "learnings": [
+    "The quotient representation is the first accepted core.",
+    "Initialization quality now dominates runtime variance.",
+    "A stronger seed policy should target the remaining missed instances."
+  ],
+  "provenance": { "branch": "example/css-distance/att-003", "commit": "e100003", "worktreeState": "example", "model": "example-agent" },
+  "artifacts": ["attempt.json", "LOG.md"],
+  "createdAt": "2026-07-27T01:42:00.000Z"
+}
