@@ -684,16 +684,40 @@ test("titles and descriptions carrying YAML and Markdown syntax are escaped", as
 // Shortcodes: the one way a validated page could still reach outside.
 // ---------------------------------------------------------------------------
 
-test("a page carrying an include or embed shortcode stops the projection", async (t) => {
+test("a page carrying any Quarto shortcode stops the projection", async (t) => {
   // Verified against Quarto 1.9.38: `{{< include ../../secret.qmd >}}` on a page
   // inside a rendered project reads and publishes a file *outside* the project
-  // directory. The parser does not model shortcodes, so validation cannot see
-  // this; the projection refuses rather than hand Quarto a page that can read
-  // the filesystem.
+  // directory, and `{{< env RESEARCH_LOOP_SECRET >}}` renders the build host's
+  // environment variable into the published HTML — both under `--no-execute`,
+  // because shortcodes expand before execution is even considered. The parser
+  // does not model shortcodes, so validation cannot see any of it.
+  //
+  // The gate is therefore an allowlist of shortcodes known to read nothing, and
+  // it is empty: `env` was missed precisely because the rule used to be a list
+  // of the dangerous names known at the time. Every name below is refused,
+  // whether it reads a file (`include`, `embed`), the environment (`env`),
+  // project metadata (`meta`, `var`), or nothing at all (`pagebreak`, `kbd`).
   for (const shortcode of [
     "{{< include ../../../etc/passwd >}}",
     "{{< embed ../../notebook.ipynb#fig >}}",
     "{{<include x.qmd>}}",
+    "{{< env RESEARCH_LOOP_SECRET >}}",
+    "{{<env HOME>}}",
+    "{{< ENV RESEARCH_LOOP_SECRET >}}",
+    "{{< meta title >}}",
+    "{{< var site.url >}}",
+    "{{< pagebreak >}}",
+    "{{< kbd Ctrl-C >}}",
+    "{{< video https://example.com/clip.mp4 >}}",
+    "{{< contents note >}}",
+    "{{< /contents >}}",
+    "{{< bi github >}}",
+    // The escaped form, which Quarto renders as literal shortcode text: refused
+    // too, because deciding it is inert means parsing Quarto's escaping rules.
+    "{{{< env RESEARCH_LOOP_SECRET >}}}",
+    // A name nobody has shipped yet, which is the case a denylist cannot cover.
+    "{{< notyetinvented arg >}}",
+    "{{< >}}",
   ]) {
     const repo = await makeTree(t, {
       "index.qmd": qmd(
@@ -820,17 +844,107 @@ test("an alias that is only another name is projected untouched", async (t) => {
   );
 });
 
-test("a shortcode that cannot read a file is left alone", async (t) => {
+test("the refusal names the shortcode and the line it sits on", async (t) => {
+  // `env` is the case that motivated widening the rule, so it is asserted by
+  // name: under Quarto 1.9.38 and `--no-execute`, `{{< env RESEARCH_LOOP_SECRET
+  // >}}` renders as the build host's value of that variable and publishes it.
+  // Frontmatter is scanned as well as the body, because Quarto expands
+  // shortcodes in metadata too.
+  const cases: readonly { lines: readonly string[]; message: RegExp }[] = [
+    {
+      lines: ["Nothing here.", "", "Secret is: {{< env RESEARCH_LOOP_SECRET >}}"],
+      message: /`page\.qmd` line 9: .*`env` Quarto shortcode/u,
+    },
+    {
+      lines: ["```", "{{< include ../../../etc/passwd >}}", "```"],
+      message: /`page\.qmd` line 8: .*`include` Quarto shortcode/u,
+    },
+    {
+      lines: ["Nothing here.", "", "{{< >}}"],
+      message: /`page\.qmd` line 9: .*a Quarto shortcode/u,
+    },
+  ];
+
+  for (const { lines, message } of cases) {
+    const repo = await makeTree(t, {
+      "index.qmd": qmd(
+        { title: "Root", description: "The root." },
+        indexBody(["page.qmd"]),
+      ),
+      "page.qmd": qmd(
+        { title: "Page", description: "A page.", categories: "[theory]" },
+        lines,
+      ),
+    });
+    const graph = await loadKnowledge({ repoRoot: repo });
+    const workspace = await makeTempDir(t, "knowledge-workspace-");
+
+    await assert.rejects(
+      () =>
+        materializeQuartoProject({
+          graph,
+          workspace,
+          bibliographyPath: bibliographyOf(repo),
+        }),
+      (error: unknown) => {
+        assert.ok(error instanceof Error);
+        assert.match(error.message, message);
+        return true;
+      },
+      lines.join("\n"),
+    );
+  }
+
+  // The scan is stateless: the same page refused twice is refused twice, so a
+  // module-level regular expression cannot carry `lastIndex` from one page to
+  // the next and let the second one through.
+  const repo = await makeTree(t, {
+    "index.qmd": qmd(
+      { title: "Root", description: "The root." },
+      indexBody(["a.qmd", "b.qmd"]),
+    ),
+    "a.qmd": qmd({ title: "A", description: "A page.", categories: "[theory]" }, [
+      "{{< env RESEARCH_LOOP_SECRET >}}",
+    ]),
+    "b.qmd": qmd({ title: "B", description: "A page.", categories: "[theory]" }, [
+      "{{< env RESEARCH_LOOP_SECRET >}}",
+    ]),
+  });
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    const graph = await loadKnowledge({ repoRoot: repo });
+    const workspace = await makeTempDir(t, "knowledge-workspace-");
+    await assert.rejects(
+      () =>
+        materializeQuartoProject({
+          graph,
+          workspace,
+          bibliographyPath: bibliographyOf(repo),
+        }),
+      /env` Quarto shortcode/u,
+      `attempt ${attempt} must be refused`,
+    );
+  }
+});
+
+test("a page carrying no shortcode is projected untouched", async (t) => {
+  // The refusal keys on `{{<`, so ordinary prose about Quarto, ordinary braces,
+  // and inline code must all survive it byte-for-byte.
+  const body = [
+    "A page may talk about braces: {{ not a shortcode }} and {< nor this >}.",
+    "",
+    "`{{` and `<` next to each other in code spans are fine too.",
+  ];
   const repo = await makeTree(t, {
     "index.qmd": qmd({ title: "Root", description: "The root." }, indexBody(["page.qmd"])),
-    "page.qmd": qmd({ title: "Page", description: "A page.", categories: "[theory]" }, [
-      "A keyboard shortcut: {{< kbd Ctrl-C >}}.",
-    ]),
+    "page.qmd": qmd(
+      { title: "Page", description: "A page.", categories: "[theory]" },
+      body,
+    ),
   });
   const { result } = await project(t, repo);
 
-  assert.match(
-    await readFile(path.join(result.projectDir, "page.qmd"), "utf8"),
-    /\{\{< kbd Ctrl-C >\}\}/,
-  );
+  const projected = await readFile(path.join(result.projectDir, "page.qmd"), "utf8");
+  for (const line of body) {
+    assert.ok(projected.includes(line), line);
+  }
 });

@@ -28,9 +28,21 @@
  *   YAML serializer and, in Markdown, through an escaper — never concatenated.
  *
  * The one thing validation cannot see is a Quarto shortcode: the parser models
- * links and images, and `{{< include ../../secret.qmd >}}` is neither. Verified
- * against Quarto 1.9.38, such an include reads and publishes a file *outside*
- * the project directory, so the projection refuses any page carrying one.
+ * links and images, and `{{< include ../../secret.qmd >}}` is neither. A
+ * shortcode expands *after* validation has run and *before* `--no-execute` can
+ * stop anything, which is exactly the gap between the two locks. Verified
+ * against Quarto 1.9.38, `include` reads and publishes a file outside the
+ * project directory and `env` publishes a build-host environment variable into
+ * the site; `embed` reads a notebook, `meta`/`var` publish project metadata,
+ * and `contents`/`video`/`kbd`/`pagebreak` merely emit markup today.
+ *
+ * So the gate is an allowlist of shortcodes known to read nothing, and that
+ * allowlist is **empty**: the projection refuses every page carrying a
+ * shortcode of any name, including one shown inside a fenced example. A
+ * denylist is how `env` was missed — it named the dangerous shortcodes of the
+ * day, and Quarto is free to ship another one. Admitting a shortcode is a
+ * deliberate one-line change to `ALLOWED_SHORTCODES` with a reason next to it;
+ * the knowledge tree needs none today.
  */
 
 import { mkdir, readFile, writeFile } from "node:fs/promises";
@@ -98,12 +110,30 @@ const CATEGORY_TITLE: Readonly<Record<KnowledgeCategory, string>> = {
 };
 
 /**
- * A Quarto shortcode that reads a file. `include` splices any path on disk into
- * the document; `embed` does the same for a notebook. Both are resolved by
- * Quarto against the filesystem, not against the knowledge tree, so both can
- * leave the project directory.
+ * The opener of a Quarto shortcode, and whatever name follows it.
+ *
+ * Matching `{{<` rather than a list of names is the whole point: the rule this
+ * replaces enumerated `include` and `embed`, and `{{< env SECRET >}}` — which
+ * publishes a build-host environment variable — walked straight through it. The
+ * name is captured only so that a refusal can say which shortcode it saw; a
+ * nameless or misspelt `{{<` matches too, and is refused just the same.
  */
-const FILE_SHORTCODE = /\{\{<\s*(include|embed)\b/iu;
+const SHORTCODE = /\{\{<\s*(\/?[^\s>}]*)/gu;
+
+/**
+ * The shortcodes a knowledge page may carry — deliberately none.
+ *
+ * Quarto's built-ins split three ways and only the third is even arguably
+ * admissible: `include`/`embed` read the filesystem, `env` reads the build
+ * process's environment, `meta`/`var` read project metadata, and
+ * `pagebreak`/`kbd`/`contents`/`video`/`lipsum` emit markup from their own
+ * arguments. Nothing in the knowledge tree needs the third group, and every
+ * page in it is Markdown a human reviewed, so the cost of refusing all of them
+ * is zero and the cost of guessing wrong once is a published secret. Adding a
+ * name here later is a one-line change that has to be argued for; leaving a
+ * name out of a denylist is a change nobody makes.
+ */
+const ALLOWED_SHORTCODES: ReadonlySet<string> = new Set<string>();
 
 /** One materialized project: where it is, where it renders to, and its views. */
 export interface QuartoProject {
@@ -223,21 +253,27 @@ function lineOf(source: string, index: number): number {
 }
 
 /**
- * Refuses a page that carries a file-reading shortcode.
+ * Refuses a page that carries a Quarto shortcode.
  *
  * The whole source is scanned, frontmatter included: Quarto expands shortcodes
  * in metadata as well as in the body. This is deliberately fail-closed — a
- * fenced code block showing `{{< include … >}}` is refused too — because the
- * alternative is a page that can read any file the build user can.
+ * fenced code block showing `{{< include … >}}` is refused too, and so is the
+ * escaped `{{{< … >}}}` form — because the alternative is deciding, per
+ * shortcode and per Quarto release, whether this one happens to read a file, an
+ * environment variable, or the project's metadata.
  */
-function assertNoFileShortcode(id: string, source: string): void {
-  const match = FILE_SHORTCODE.exec(source);
-  if (match === null) {
-    return;
+function assertNoShortcode(id: string, source: string): void {
+  for (const match of source.matchAll(SHORTCODE)) {
+    const name = (match[1] ?? "").toLowerCase();
+    if (ALLOWED_SHORTCODES.has(name)) {
+      continue;
+    }
+    throw new QuartoProjectionError(
+      `\`${id}\` line ${lineOf(source, match.index)}: a knowledge page may not use ${
+        name === "" ? "a Quarto shortcode" : `the \`${name}\` Quarto shortcode`
+      }; shortcodes expand after validation has read the page and are unaffected by \`--no-execute\`, so what one publishes — a file from the filesystem (\`include\`, \`embed\`), a build-host environment variable (\`env\`), or project metadata (\`meta\`, \`var\`) — is never anything the projection could check`,
+    );
   }
-  throw new QuartoProjectionError(
-    `\`${id}\` line ${lineOf(source, match.index)}: a knowledge page may not use the \`${match[1].toLowerCase()}\` shortcode; it reads a file from the filesystem rather than from the knowledge tree, and the projection cannot validate what it would publish`,
-  );
 }
 
 /**
@@ -427,7 +463,7 @@ export async function materializeQuartoProject(input: {
     assertNotReserved(id, "a knowledge page");
     assertSafeAliases(page);
     const bytes = await readFile(page.absolutePath);
-    assertNoFileShortcode(id, bytes.toString("utf8"));
+    assertNoShortcode(id, bytes.toString("utf8"));
     await writeInto(projectDir, id, bytes);
   }
 
