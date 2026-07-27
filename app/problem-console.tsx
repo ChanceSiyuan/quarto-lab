@@ -1,6 +1,11 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import {
+  buildProblemPresentation,
+  buildTierMetrics,
+  formatProblemTimestamp,
+} from "@/lib/problems/presentation.mjs";
 
 const statusLabels: Record<string, string> = {
   draft: "草稿",
@@ -73,10 +78,6 @@ type ProblemConsoleProps = {
   launch: Launch;
 };
 
-function formatTimestamp(value: string) {
-  return value.replace("T", " ").replace(/\.\d{3}Z$/, " UTC");
-}
-
 function ProblemStatus({ status }: { status: string }) {
   return (
     <span className={`status-badge status-${status}`}>
@@ -120,6 +121,11 @@ export function ProblemConsole({
     });
   }, [initialProblems, query, selectedStatuses, showArchived, showRejected]);
 
+  const visiblePresentations = useMemo(
+    () => visibleProblems.map(buildProblemPresentation),
+    [visibleProblems],
+  );
+
   function toggleStatus(status: string) {
     setSelectedStatuses((current) =>
       current.includes(status)
@@ -128,13 +134,7 @@ export function ProblemConsole({
     );
   }
 
-  const metrics: Array<[string, number | string]> = [
-    ["Total", summary.total],
-    ["Accepted", `${summary.accepted} / ${summary.target}`],
-    ["Solved", `${summary.solved} / ${summary.target}`],
-    ["Published", `${summary.published} / ${summary.target}`],
-    ["Rejected", summary.rejected],
-  ];
+  const metrics = buildTierMetrics(summary);
 
   return (
     <main className="console-shell">
@@ -154,7 +154,7 @@ export function ProblemConsole({
           <span className="health-dot" aria-hidden="true" />
           <div>
             <strong>{diagnostics.length ? `${diagnostics.length} index errors` : "Index healthy"}</strong>
-            <span>Generated {formatTimestamp(generatedAt)}</span>
+            <span>Generated {formatProblemTimestamp(generatedAt)}</span>
           </div>
         </div>
       </header>
@@ -286,28 +286,28 @@ export function ProblemConsole({
                     </section>
                   </td>
                 </tr>
-              ) : visibleProblems.map((problem) => (
-                <tr key={problem.id}>
+              ) : visiblePresentations.map((row) => (
+                <tr key={row.problem.id}>
                   <th scope="row">
-                    <a href={`/problems/${problem.id}`}>
-                      <span>{problem.id}</span>
-                      <strong>{problem.title}</strong>
-                      <small>{problem.summary}</small>
+                    <a href={row.open.href}>
+                      <span>{row.problem.id}</span>
+                      <strong>{row.problem.title}</strong>
+                      <small>{row.problem.summary}</small>
                     </a>
                   </th>
-                  <td><ProblemStatus status={problem.status} /></td>
+                  <td><ProblemStatus status={row.status.value} /></td>
                   <td className="cell-stack">
-                    <strong>{problem.gate.type}</strong>
-                    <small>{problem.gate.readiness}</small>
+                    <strong>{row.gate.primary}</strong>
+                    <small>{row.gate.secondary}</small>
                   </td>
-                  <td>{problem.provenance.sourceCount} sources</td>
+                  <td>{row.provenance.value}</td>
                   <td className="cell-stack">
-                    <strong>{problem.lastActivity.summary}</strong>
-                    <small>{formatTimestamp(problem.lastActivity.at)}</small>
+                    <strong>{row.activity.primary}</strong>
+                    <small>{row.activity.secondary}</small>
                   </td>
-                  <td>{formatTimestamp(problem.updatedAt)}</td>
+                  <td>{row.updated.value}</td>
                   <td>
-                    <a className="open-affordance" href={`/problems/${problem.id}`}>
+                    <a className="open-affordance" href={row.open.href}>
                       Open <span aria-hidden="true">→</span>
                     </a>
                   </td>
@@ -330,23 +330,23 @@ export function ProblemConsole({
                 <h2>No matching problems</h2>
                 <p>Adjust the search text or lifecycle filters.</p>
               </section>
-            ) : visibleProblems.map((problem) => (
-              <article className="problem-list-item" key={problem.id}>
+            ) : visiblePresentations.map((row) => (
+              <article className="problem-list-item" key={row.problem.id}>
                 <div className="mobile-problem-field">
-                  <span className="mobile-field-label">Problem</span>
-                  <span className="problem-id">{problem.id}</span>
-                  <h2>{problem.title}</h2>
-                  <p>{problem.summary}</p>
+                  <span className="mobile-field-label">{row.problem.label}</span>
+                  <span className="problem-id">{row.problem.id}</span>
+                  <h2>{row.problem.title}</h2>
+                  <p>{row.problem.summary}</p>
                 </div>
                 <dl>
-                  <div><dt>Status</dt><dd><ProblemStatus status={problem.status} /></dd></div>
-                  <div><dt>Executable gate</dt><dd>{problem.gate.type} · {problem.gate.readiness}</dd></div>
-                  <div><dt>Provenance</dt><dd>{problem.provenance.sourceCount} sources</dd></div>
-                  <div><dt>Recent activity</dt><dd>{problem.lastActivity.summary} · {formatTimestamp(problem.lastActivity.at)}</dd></div>
-                  <div><dt>Updated</dt><dd>{formatTimestamp(problem.updatedAt)}</dd></div>
+                  <div><dt>{row.status.label}</dt><dd><ProblemStatus status={row.status.value} /></dd></div>
+                  <div><dt>{row.gate.label}</dt><dd>{row.gate.primary} · {row.gate.secondary}</dd></div>
+                  <div><dt>{row.provenance.label}</dt><dd>{row.provenance.value}</dd></div>
+                  <div><dt>{row.activity.label}</dt><dd>{row.activity.primary} · {row.activity.secondary}</dd></div>
+                  <div><dt>{row.updated.label}</dt><dd>{row.updated.value}</dd></div>
                   <div>
-                    <dt>Open</dt>
-                    <dd><a className="open-affordance" href={`/problems/${problem.id}`}>Open problem <span aria-hidden="true">→</span></a></dd>
+                    <dt>{row.open.label}</dt>
+                    <dd><a className="open-affordance" href={row.open.href}>{row.open.value} <span aria-hidden="true">→</span></a></dd>
                   </div>
                 </dl>
               </article>

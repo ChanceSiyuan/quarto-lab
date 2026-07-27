@@ -1,5 +1,10 @@
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
 import test from "node:test";
+
+const generatedIndex = JSON.parse(
+  await readFile(new URL("../.generated/problem-index.json", import.meta.url), "utf8"),
+);
 
 async function render(pathname = "/") {
   const workerUrl = new URL("../dist/server/index.js", import.meta.url);
@@ -36,9 +41,16 @@ test("server-renders the problem console shell", async () => {
   assert.match(html, /Accepted/);
   assert.match(html, /Solved/);
   assert.match(html, /Published/);
-  assert.match(html, /<dt>Accepted<\/dt><dd>0 \/ 5<\/dd>/);
-  assert.match(html, /<dt>Solved<\/dt><dd>0 \/ 5<\/dd>/);
-  assert.match(html, /<dt>Published<\/dt><dd>0 \/ 5<\/dd>/);
+  for (const [label, key] of [
+    ["Accepted", "accepted"],
+    ["Solved", "solved"],
+    ["Published", "published"],
+  ]) {
+    assert.match(
+      html,
+      new RegExp(`<dt>${label}</dt><dd>${generatedIndex.summary[key]} / ${generatedIndex.summary.target}</dd>`),
+    );
+  }
   assert.match(
     html,
     /<th scope="col">Problem<\/th><th scope="col">Status<\/th><th scope="col">Executable gate<\/th><th scope="col">Provenance<\/th><th scope="col">Recent activity<\/th><th scope="col">Updated<\/th><th scope="col">Open<\/th>/,
