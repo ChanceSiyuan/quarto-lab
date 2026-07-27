@@ -12,7 +12,7 @@ bibliography: refs.bib
 The strip unit disk graphs (SUDG) is defined as disks $C_i, i \in [n]$ of diameter $1$ and
 centers $c_i=(x_i,y_i)$ lying in the horizontal strip $H=\mathbb{R}\times[0,1]$.
 We label the disk center (the vertex on the graph) as $x_j < x_k$ iff $1\le j<k\le n$.
-An important structure of SUDG is that the "right end" properties is sufficient to check the independent relations, as summarized in @udgstrip
+An important structure of SUDG is that the "right end" properties is sufficient to check the independent relations, as summarized in @lem-udgstrip
 
 ![Refer to @das2015approximation](strip.png)
 
@@ -51,7 +51,7 @@ $$
 :::{.callout-note collapse="true"}
 ## Proof (Click to expand)
 Supposed $C_j\cap C_k=\varnothing$. 
-Use @udgstrip, we noted that $S_{i,j}\cup\{k\}\in\mathcal I_{j,k}$ for all $i$ satisfied 
+Use @lem-udgstrip, we noted that $S_{i,j}\cup\{k\}\in\mathcal I_{j,k}$ for all $i$ satisfied
 $$
 0 <i<j, C_i\cap C_k=\varnothing \quad \text{or} \quad  i=0
 $$

@@ -54,9 +54,10 @@ IGNORED_DIR_NAMES = {
 }
 
 TITLE_OVERRIDES = {
-    "theory/Boolean_ana": "Boolean Analysis",
+    "theory/quantum_complexity/Boolean_ana": "Boolean Analysis",
+    "theory/Condensed_matter": "Condensed Matter",
     "theory/Factoring": "Factoring and Hidden Subgroup Problems",
-    "theory/Fermi-Hubbard": "Fermi-Hubbard Model",
+    "theory/Condensed_matter/Fermi-Hubbard": "Fermi-Hubbard Model",
     "theory/Fingerprint": "Quantum Fingerprinting",
     "theory/Ham_learning": "Hamiltonian Learning",
     "theory/LGT": "Lattice Gauge Theory",
@@ -66,12 +67,12 @@ TITLE_OVERRIDES = {
         "Scalable Quantum Non-Locality: Architectures, Noise Resilience, and Experimental Frontiers"
     ),
     "theory/OSF": "Generalized Stabilizer Formalism",
-    "theory/Perturbation": "Perturbation and Floquet Theory",
+    "theory/Dynamics": "Perturbation and Floquet Theory",
     "theory/QEC": "Quantum Error Correction",
-    "theory/Shadow_tomography": "Classical Shadow Tomography",
-    "theory/Spin_liquid": "Spin Liquids",
+    "theory/learning_theo/Shadow_tomography": "Classical Shadow Tomography",
+    "theory/Condensed_matter/TFIM": "Spin Liquids",
     "theory/TN_sim": "Tensor Network Simulation",
-    "theory/Virtual_Distillation": "Virtual Distillation for Quantum Error Mitigation",
+    "theory/learning_theo/Virtual_Distillation": "Virtual Distillation for Quantum Error Mitigation",
     "theory/compatibility": "Quantum Resource",
     "theory/drugs_design": (
         "Leveraging Analog Quantum Computing with Neutral Atoms for Solvent Configuration Prediction "
@@ -82,18 +83,30 @@ TITLE_OVERRIDES = {
     "theory/learning_theo/weak_schur": "Weak Schur Tools",
     "theory/quantum_complexity": "Quantum Complexity",
     "theory/stab_simulation": "Stabilizer Simulation",
-    "theory/supermacy": "IQP Circuit Supremacy",
-    "theory/supermacy/IQPs": "IQP Circuits",
-    "theory/supermacy/IQPs/simulations": "IQP Simulation Algorithms",
-    "theory/topo_matter": "Topological Matter",
+    "theory/quantum_complexity/supermacy": "IQP Circuit Supremacy",
+    "theory/quantum_complexity/supermacy/IQPs": "IQP Circuits",
+    "theory/quantum_complexity/supermacy/IQPs/simulations": "IQP Simulation Algorithms",
+    "theory/Condensed_matter/topo_matter": "Topological Matter",
     "Experiments/posts/simulation_model": "Analog Rydberg Quantum Simulation",
     "Experiments/posts/rydberg_qc": "Rydberg Atoms for Fault-Tolerant QC",
 }
 
 SIDEBAR_ID_OVERRIDES = {
+    "theory/Condensed_matter": "condensed_matter",
+    "theory/Condensed_matter/Fermi-Hubbard": "fermi_hubbard",
+    "theory/Condensed_matter/TFIM": "spin_liquid",
+    "theory/Condensed_matter/topo_matter": "topo_matter",
+    "theory/Dynamics": "perturbation",
     "theory/learning_theo": "learning_theory",
-    "theory/supermacy": "iqp",
     "theory/learning_theo/Lowerbounds": "lowerbounds",
+    "theory/learning_theo/Shadow_tomography": "shadow_tomography",
+    "theory/learning_theo/Virtual_Distillation": "virtual_distillation",
+    "theory/quantum_complexity/Boolean_ana": "boolean_ana",
+    "theory/quantum_complexity/supermacy": "iqp",
+    "theory/quantum_complexity/supermacy/IQPs": "theory_supermacy_iqps",
+    "theory/quantum_complexity/supermacy/IQPs/simulations": (
+        "theory_supermacy_iqps_simulations"
+    ),
     "Experiments/posts/simulation_model": "simulation_model",
     "Experiments/posts/rydberg_qc": "rydberg_qc",
 }
@@ -378,7 +391,7 @@ def build_notes_table(topic_dir: Path) -> str:
 def replace_or_append_block(text: str, begin: str, end: str, block: str) -> str:
     pattern = re.compile(rf"(?ms){re.escape(begin)}.*?{re.escape(end)}")
     if pattern.search(text):
-        return pattern.sub(block, text)
+        return pattern.sub(lambda _match: block, text)
     return text.rstrip() + "\n\n" + block + "\n"
 
 

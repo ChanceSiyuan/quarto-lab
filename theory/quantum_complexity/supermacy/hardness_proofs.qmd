@@ -147,7 +147,7 @@ $$
 c^{-1} \tilde{p}(y|x)\leq p(y|x) \leq c\, \tilde{p} (y|x) \Leftrightarrow |\tilde{p}(y|x) - p(y|x)| \leq \varepsilon\, p(y|x).
 $$
 
-The complexity of multiplicative approximation differs sharply between #P and GapP, See [this page](../quantum_complexity/counting_complexity.qmd#gap-p-and-multiplicative-approximation) for the full discussion.
+The complexity of multiplicative approximation differs sharply between #P and GapP, See [this page](../counting_complexity.qmd#gapp-hardness-of-multiplicative-approximation) for the full discussion.
 
 - For #P functions, nonnegativity enables Stockmeyer's hashing technique to yield a multiplicative approximation at the $\Delta_3 \subset \mathsf{PH} \subset \mathsf{P}^{\# \mathsf{P}}$ (3-rd level of Polynomial Hierarchy). 
 - For GapP functions, even multiplicative approximation is GapP-complete — no easier than exact computation. 
@@ -210,7 +210,7 @@ If a classical randomized algorithm samples $p_C$ to additive error $\varepsilon
 ::: {.callout-note collapse="true"}
 ## Proof (Click to expand)
 
-Let $\tilde p_x(C)$ be the probability that the classical sampler outputs $x$ on circuit $C$, so $\tfrac{1}{2}\sum_x|\tilde p_x(C)-p_C(x)| \leq \varepsilon$. Apply [Stockmeyer's algorithm](../quantum_complexity/counting_complexity.qmd#stockmeyers-algorithm) to $\tilde p_x$ to obtain, in $\mathsf{P}^{\mathsf{NP}^{\mathsf{NP}}}$, an estimate $q_x$ with $|q_x - \tilde p_x(C)| \leq c\,\tilde p_x(C)$. The triangle inequality gives the pointwise decomposition
+Let $\tilde p_x(C)$ be the probability that the classical sampler outputs $x$ on circuit $C$, so $\tfrac{1}{2}\sum_x|\tilde p_x(C)-p_C(x)| \leq \varepsilon$. Apply [Stockmeyer's algorithm](../counting_complexity.qmd#stockmeyers-algorithm) to $\tilde p_x$ to obtain, in $\mathsf{P}^{\mathsf{NP}^{\mathsf{NP}}}$, an estimate $q_x$ with $|q_x - \tilde p_x(C)| \leq c\,\tilde p_x(C)$. The triangle inequality gives the pointwise decomposition
 $$
 |q_x - p_C(x)| \;\leq\; c\, p_C(x) \;+\; (c+1)\,|\tilde p_x(C) - p_C(x)|,
 $$

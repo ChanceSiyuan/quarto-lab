@@ -27,7 +27,7 @@ Given an $n$-bit composite integer $N$, find nontrivial factors $P, Q > 1$ such 
 Given $f_{a,N}(x) = a^x \text{ mod } N$, where $a$ is chosen uniformly at random from $\{2, \ldots, N-1\}$ with $\gcd(a, N) = 1$. Find the smallest positive integer $r$ such that $f_{a,N}(r) = 1 \text{ mod } N$, which also called the **order** of $a$ modulo $N$.
 :::
 
-:::{#def-period-finding .callout-note icon="false"}
+:::{#def-rsa-inverse .callout-note icon="false"}
 ## (RSA inverse)
 Given $(N,e)$, find $d$ such that $ed \equiv 1 \pmod{\varphi(N)}$. This ensures that getting $c = m^e \bmod N$, we can always find $m$ by $m = c^d \bmod N$.
 :::
@@ -73,5 +73,3 @@ $$
 $$
 Thus $N$ divides the product $(a^{r/2} - 1)(a^{r/2} + 1)$. If neither factor is divisible by $N$, then $\gcd(a^{r/2} - 1, N)$ and $\gcd(a^{r/2} + 1, N)$ are nontrivial factors. It can be shown that for a randomly chosen $a$, the probability that $r$ is even and $a^{r/2} \not\equiv -1 \pmod{N}$ is at least $1 - 1/2^{k-1}$, where $k$ is the number of distinct prime factors of $N$. For $k \geq 2$ this gives probability at least $1/2$.
 :::
-
-

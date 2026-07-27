@@ -4,16 +4,30 @@ categories:
 date: '2026-07-06'
 description: 'Function fields, places, divisors, Riemann--Roch spaces, evaluation codes, and their use in classical and quantum code constructions.'
 lang: en
-title: 'Algebraic-Geometry Codes'
+title: 'Classical Algebraic-Geometry Codes'
 bibliography: ../refs.bib
 ---
 
 # From curves to function fields
 
-Algebraic-geometry (AG) codes replace the polynomial evaluation space of Reed--Solomon codes by a Riemann--Roch space on a curve. The central benefit is that a curve over a finite field can have many rational points relative to its genus, providing long evaluation codes with controlled rate and distance [@goppa1983algebraico; @stichtenoth2009algebraic].
+::: {#def-ag-function-field .callout-note icon="false"}
+## (Reed-Solomon codes)
+A Reed-solomon codes encodes $(a_0,a_1,\ldots,a_m)\in\mathbb F_q^{m+1}$ with codewords by (i). choosing the polynomial $f(x)=a_0+a_1x+\cdots+a_mx^m$, (ii). choose $n$ point $\alpha_1, \cdots ,\alpha_n$, (iii) output the codewords $f(\alpha_1),\cdots,f(\alpha_n)$.
+:::
+
+:::{#lem-codepara .callout-note icon="false"}
+The code parameter of RS code satisfied $[n,k,d]=[n,m+1,n-m]$.
+:::
+:::{.callout-note collapse="true"}
+## Proof
+Two different inputs encoded by polynomial $f$ and $g$ with $f - g \neq 0$ have the same codeword at point $i$ iff $f(\alpha_i) - g(\alpha_i) = 0$. Since $f - g$ is a nonzero polynomial with rank at least $m$.
+
+:::
+
+Algebraic-geometry (AG) codes replace the polynomial evaluation space of Reed-Solomon codes by a Riemann--Roch space on a curve. The central benefit is that a curve over a finite field can have many rational points relative to its genus, providing long evaluation codes with controlled rate and distance [@goppa1983algebraico; @stichtenoth2009algebraic].
 
 ::: {#def-ag-function-field .callout-note icon="false"}
-## Definition: algebraic function field
+## (algebraic function field)
 
 An algebraic function field $F/\mathbb F_q$ in one variable is a finite extension of $\mathbb F_q(x)$ for some element $x$ transcendental over $\mathbb F_q$. We assume that $\mathbb F_q$ is the full constant field of $F$: every element of $F$ algebraic over $\mathbb F_q$ already lies in $\mathbb F_q$.
 :::

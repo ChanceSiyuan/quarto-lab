@@ -117,7 +117,7 @@ Instead of uniform random Clifford sampling, these methods adjust the measuremen
 
 **(2) Greedy Derandomization**
 
-- **Iterative greedy selection** @huang2021efficient: Systematically replaces random measurements with deterministic ones. For estimating $L$ Pauli observables, achieves $O(\log L)$ sample complexity by greedily selecting measurement bases that maximize information gain. (See [Derandomized local shadows](../Virtual_Distillation/derandom_shadow.qmd) for details.)
+- **Iterative greedy selection** @huang2021efficient: Systematically replaces random measurements with deterministic ones. For estimating $L$ Pauli observables, achieves $O(\log L)$ sample complexity by greedily selecting measurement bases that maximize information gain. (See [Derandomized local shadows](Virtual_Distillation/derandom_shadow.qmd) for details.)
 
 **(3) Commuting Pauli Grouping**
 
@@ -201,9 +201,9 @@ As noted in @huggins2021virtual:
 
 - A $k$-replica strategy constructing classical shadows for $\rho^t$ exists, with explicit construction for $t=2$ using non-local circuits @liu2024auxiliary.
 
-- *Local 2-copy 3-design shadow* ([details](/theory/Shadow_tomography/3desgin_multi_local_shadow.qmd)): Information-complete with sampling advantages over Bell sampling in specific regimes for weighted purity and non-linear Pauli properties.
+- *Local 2-copy 3-design shadow* ([details](/theory/learning_theo/Shadow_tomography/3desgin_multi_local_shadow.qmd)): Information-complete with sampling advantages over Bell sampling in specific regimes for weighted purity and non-linear Pauli properties.
 
-- *Entanglement-fixed 2-copy shadow* ([details](/theory/Shadow_tomography/multicopy.qmd)): Information-complete only when entanglement is non-maximal.
+- *Entanglement-fixed 2-copy shadow* ([details](/theory/learning_theo/Shadow_tomography/multicopy.qmd)): Information-complete only when entanglement is non-maximal.
 
 ### Hybrid and Learning-based Methods
 
@@ -221,7 +221,7 @@ Based on the observation that all known local 2-replica shadow protocols exhibit
 :::
 
 
-A [4-replica non-local upper bound](/theory/Shadow_tomography/multicopy.qmd) exists for estimating $\{\mathrm{tr}(P\rho^2)\}$ for all $P \in \mathcal{P}_n$, suggesting that 4-replica local estimation may also be fundamentally limited.
+A [4-replica non-local upper bound](/theory/learning_theo/Shadow_tomography/multicopy.qmd) exists for estimating $\{\mathrm{tr}(P\rho^2)\}$ for all $P \in \mathcal{P}_n$, suggesting that 4-replica local estimation may also be fundamentally limited.
 
 # Open Questions and Outlook
 
@@ -249,4 +249,3 @@ with $\|O\|_\infty \leq O(1)$.
 2. Development of adaptive measurement strategies that interpolate between randomized and deterministic approaches
 3. Extension of lower bound techniques to broader classes of non-linear properties
 4. Connections to quantum computational complexity and the role of entanglement in local estimation
-

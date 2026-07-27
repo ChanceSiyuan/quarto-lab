@@ -1,0 +1,137 @@
+---
+title: "Rydberg Atoms for Fault-Tolerant Quantum Computation"
+date: "2026-03-06"
+categories:
+  - Index
+bibliography: refs.bib
+lang: en
+description: "Platform-level overview of Rydberg-atom quantum computers: from atomic physics and experimental apparatus to high-fidelity entangling gates and erasure error conversion."
+---
+
+# Overview
+
+Neutral Rydberg atom arrays have emerged as one of the leading platforms for fault-tolerant quantum computation, combining long coherence times, site-programmable connectivity, and the ability to convert dominant decay errors into detectable erasures. This topic covers the **physical and experimental layer** of the stack — from atomic physics through the laser/optical apparatus to individual gate protocols and error characterization.
+
+For the **analog quantum simulation** perspective (many-body Hamiltonians, phase diagrams), see the [Analog Rydberg Quantum Simulation](../simulation_model/index.qmd) topic. For **quantum error correction** theory (stabilizer codes, surface codes, decoders), see the [QEC](/theory/QEC/index.qmd) topic.
+
+---
+
+:::{.callout-note icon="false"}
+## Notation
+
+| Symbol | Definition |
+|:------:|:-----------|
+| $\Omega$ | Rabi frequency (laser coupling to Rydberg state) |
+| $\delta$ | Laser detuning from Rydberg transition |
+| $\Gamma$ | Spontaneous emission rate |
+| $n^*$ | Effective principal quantum number, $n^* = n - \delta_0(l,S,J)$ |
+| $\tau_0$ | Spontaneous emission lifetime, $\tau_0 = c_s(n^*)^3$ |
+| $\tau_{bb}$ | Blackbody-radiation-limited lifetime, $1/\tau_{bb} = 4\alpha^3 k_BT/3\hbar n^2$ |
+| $R_B$ | Blockade radius, $R_B = (C_k/\Omega)^{1/k}$ |
+| $C_6$ | van der Waals coefficient, $C_6 \propto (n^*)^{11}$ |
+| $\tilde\Omega(t)$ | Complex time-dependent Rabi amplitude (amplitude + phase) |
+| $B_{12}$ | Rydberg-Rydberg interaction energy |
+| $\bar F$ | Average gate fidelity |
+| $s_0 = 2\Omega^2/\Gamma^2$ | Saturation parameter |
+:::
+
+---
+
+# Foundations
+
+## [Light-Atom Interaction and Optical Bloch Equations](light_atom.qmd)
+
+Derives the rotating-wave approximation (RWA), Rabi oscillations, the full Optical Bloch Equations, and the steady-state saturation formula. Establishes the single-atom Hamiltonian used throughout the topic.
+
+**Key results:** Rabi oscillation probability $P_e(t) = (\Omega^2/\tilde\Omega^2)\sin^2(\tilde\Omega t/2)$; saturation parameter $s_0 = 2\Omega^2/\Gamma^2$; the coherent-state equivalence that justifies combining classical Rabi drive with Lindblad decay.
+
+## [Rydberg Atom Properties](rydberg_properties.qmd)
+
+Covers quantum defect theory, Rydberg lifetime scaling ($\tau_0 \propto (n^*)^3$, BBR correction), and the two-atom blockade in the van der Waals regime.
+
+**Key results:** Effective principal quantum number $n^*$; lifetime formula $1/\tau = 1/\tau_0 + 1/\tau_{bb}$; blockade radius $R_B = (C_6/\Omega)^{1/6}$; Dicke-state $\sqrt{N}\Omega$ enhancement; species comparison table ($^{88}$Sr vs. $^{87}$Rb).
+
+---
+
+# Platform Engineering
+
+## [Laser Systems and Frequency Stabilization](laser_systems.qmd)
+
+The seven-wavelength $^{88}$Sr laser system and the full derivation of Pound-Drever-Hall (PDH) locking. Phase noise power spectral density model.
+
+**Key results:** Magic wavelength 813.4 nm; PDH error signal $\propto \text{Re}[F(\omega_0)F^*(\omega_0+\Omega_m) - F^*(\omega_0)F(\omega_0-\Omega_m)]$; measured PSD for a Ti:Sa laser.
+
+## [Trapping, Cooling, and Atom Preparation](trapping_cooling.qmd)
+
+Zeeman slower, blue and red MOT operation, Sisyphus cooling mechanism, sideband cooling, single-atom production by pairwise loss, and fluorescence imaging.
+
+**Key results:** Sisyphus criterion (differential light shift + narrow linewidth); dipole radiation patterns $\mathcal{D}(\theta) = (3/8\pi)\sin^2\theta$ ($m_J=0$); 9-step deterministic single-atom loading protocol.
+
+## [Optical Tweezer Arrays](tweezer_arrays.qmd)
+
+Single-tweezer physics (focus amplitude, trapping depth, magic wavelength polarizability), AOD-based and SLM-based array generation, and the Weighted Gerchberg-Saxton (WGS) algorithm.
+
+**Key results:** Trapping depth maximized at $w_i \approx R$; magic-wavelength condition $\alpha_s({^1S_0}) = \alpha_s({^3P_0})$ at 813.4 nm; AOD Bragg deflection $\Delta\theta \propto \omega_a/\omega_o$; SLM DFT relationship and WGS algorithm (convergence to $<1\%$ intensity uniformity).
+
+---
+
+# Qubit Control
+
+## [Qubit Encoding and Single-Qubit Gates](single_qubit.qmd)
+
+Qubit bases in $^{88}$Sr (optical clock) and $^{87}$Rb (hyperfine), the single-qubit gate unitary, Euler decomposition for universality, and push-out / two-color measurement protocols.
+
+**Key results:** Gate unitary $U(\theta,\phi) = \begin{pmatrix}\cos\theta & -i\sin\theta\,e^{i\phi} \\ -i\sin\theta\,e^{-i\phi} & \cos\theta\end{pmatrix}$; Euler decomposition; push-out measurement for Rb; two-color shelving imaging for Sr.
+
+## [Two-Qubit Rydberg Gates](two_qubit_gates.qmd)
+
+Single-photon blockade Hamiltonian in the two effective subspaces $H_{01}$, $H_{11}$ with $\sqrt{2}$ Rabi enhancement; average gate fidelity formula; three gate protocols (Levine 2019 phase-shift, Jandura 2022 GRAPE, Evered 2023 ansatz); full two-photon Raman excitation for $^{87}$Rb with CG coefficients; amplitude-noise robust pulse design.
+
+**Key results:** Blockade Hamiltonians in [two-qubit gates](two_qubit_gates.qmd#eq-H01); average fidelity $\bar F = \frac{1}{20}(|1+2a_{01}+a_{11}|^2 + |a_{11}|^2 + 2|a_{01}|^2 + 1)$; effective Rabi frequency $\Omega_{\rm eff} = -\Omega_{1013}\Omega_{420}/2\Delta$; resonance condition $\Omega_{1013}/\Omega_{420} = 4/3$.
+
+---
+
+# Noise & Errors
+
+## [Noise Analysis and Error Channels](noise_errors.qmd)
+
+Phase noise as stochastic detuning $\delta(t) = -\dot\phi_n(t)$, amplitude noise and robust pulses, Doppler broadening, thermal Stark shifts, Rydberg decay Kraus operators (BBR and spontaneous emission), and erasure conversion.
+
+**Key results:** Phase noise PSD model; BBR Kraus operators; spontaneous emission Kraus operators; full Lindblad channel via propagator integration; erasure threshold $\sim50\%$ vs. $\sim1\%$ for Pauli errors; erasure conversion efficiency $\eta > 0.9$ achievable in optimized protocols.
+
+---
+
+# Gate Fidelity Milestones
+
+| Year | Group | Species | Protocol | $\bar F$ |
+|:----:|:-----:|:-------:|:--------:|:--------:|
+| 2019 | Lukin (Harvard) | $^{87}$Rb | Phase-shift (Levine) | 97.4% |
+| 2022 | Lukin (Harvard) | $^{87}$Rb | GRAPE (Jandura) | $\sim$99% |
+| 2023 | Lukin (Harvard) | $^{87}$Rb | Ansatz (Evered) | 99.5% |
+
+---
+
+# Species Comparison
+
+| Property | $^{88}$Sr | $^{87}$Rb |
+|:---------|:---------:|:---------:|
+| Qubit type | Optical clock | Hyperfine |
+| Magic wavelength tweezer | Yes (813.4 nm) | No |
+| Native erasure detection | Yes ($^3P_0$ shelving) | Partial |
+| Hyperfine intermediate states in Rydberg excitation | No | Yes (complicates CG structure) |
+| Current best two-qubit fidelity | $\sim$99% | 99.5% |
+
+<!-- BEGIN AUTO NOTES TABLE -->
+
+| Note | Status | Updated | Description |
+|---|---|---|---|
+| [Laser Systems and Frequency Stabilization](laser_systems.qmd) | draft | 2026-03-06 | TODO: add description |
+| [Light-Atom Interaction and Optical Bloch Equations](light_atom.qmd) | draft | 2026-03-06 | TODO: add description |
+| [Noise Sources and Error Channels in Rydberg Gates](noise_errors.qmd) | draft | 2026-03-06 | TODO: add description |
+| [Optical Tweezer Arrays: AOD, SLM, and the WGS Algorithm](tweezer_arrays.qmd) | draft | 2026-03-06 | TODO: add description |
+| [Qubit Encoding and Single-Qubit Gates](single_qubit.qmd) | draft | 2026-03-06 | TODO: add description |
+| [Rydberg Atom Properties: Quantum Defects, Lifetimes, and Blockade](rydberg_properties.qmd) | draft | 2026-03-06 | TODO: add description |
+| [Trapping, Cooling, and Atom Preparation](trapping_cooling.qmd) | draft | 2026-03-06 | TODO: add description |
+| [Two-Qubit Rydberg Gates: Protocols and Fidelity](two_qubit_gates.qmd) | draft | 2026-03-06 | TODO: add description |
+
+<!-- END AUTO NOTES TABLE -->

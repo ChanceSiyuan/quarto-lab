@@ -65,24 +65,24 @@ website:
     - id: boolean_ana
       title: "Boolean Analysis"
       contents:
-        - theory/Boolean_ana/index.qmd
+        - theory/quantum_complexity/Boolean_ana/index.qmd
         - section: "Notes"
           contents:
-            - theory/Boolean_ana/Influence.qmd
+            - theory/quantum_complexity/Boolean_ana/Influence.qmd
     - id: shadow_tomography
       title: "Classical Shadow Tomography"
       contents:
-        - theory/Shadow_tomography/index.qmd
+        - theory/learning_theo/Shadow_tomography/index.qmd
         - section: "Notes"
           contents:
-            - theory/Shadow_tomography/3desgin_multi_local_shadow.qmd
-            - theory/Shadow_tomography/3d2c_appli1.qmd
-            - theory/Shadow_tomography/3d2c_appli2.qmd
-            - theory/Shadow_tomography/intro.qmd
-            - theory/Shadow_tomography/Bell_shadows.qmd
-            - theory/Shadow_tomography/multicopy.qmd
-            - theory/Shadow_tomography/lowerbound.qmd
-            - theory/Shadow_tomography/nonlocal_multicopy.qmd
+            - theory/learning_theo/Shadow_tomography/3desgin_multi_local_shadow.qmd
+            - theory/learning_theo/Shadow_tomography/3d2c_appli1.qmd
+            - theory/learning_theo/Shadow_tomography/3d2c_appli2.qmd
+            - theory/learning_theo/Shadow_tomography/intro.qmd
+            - theory/learning_theo/Shadow_tomography/Bell_shadows.qmd
+            - theory/learning_theo/Shadow_tomography/multicopy.qmd
+            - theory/learning_theo/Shadow_tomography/lowerbound.qmd
+            - theory/learning_theo/Shadow_tomography/nonlocal_multicopy.qmd
     - id: noisy_complexity
       title: "Classical Simulation of Noisy Quantum Circuits"
       contents:
@@ -95,6 +95,26 @@ website:
             - theory/Noisy_complexity/operator_resource.qmd
             - theory/Noisy_complexity/pauli_path.qmd
             - theory/Noisy_complexity/percolation.qmd
+    - id: condensed_matter
+      title: "Condensed Matter"
+      contents:
+        - theory/Condensed_matter/index.qmd
+        - section: "Fermi-Hubbard Model"
+          contents:
+            - theory/Condensed_matter/Fermi-Hubbard/index.qmd
+            - theory/Condensed_matter/Fermi-Hubbard/intro.qmd
+        - section: "Spin Liquids"
+          contents:
+            - theory/Condensed_matter/TFIM/index.qmd
+            - theory/Condensed_matter/TFIM/kagome-lattice.qmd
+            - theory/Condensed_matter/TFIM/Square-lattice.qmd
+            - theory/Condensed_matter/TFIM/TFIM_super.qmd
+        - section: "Topological Matter"
+          contents:
+            - theory/Condensed_matter/topo_matter/index.qmd
+            - theory/Condensed_matter/topo_matter/2dHH.qmd
+            - theory/Condensed_matter/topo_matter/chern.qmd
+            - theory/Condensed_matter/topo_matter/honeycomb.qmd
     - id: theory_qec_construction
       title: "Construction"
       contents:
@@ -180,10 +200,10 @@ website:
     - id: fermi_hubbard
       title: "Fermi-Hubbard Model"
       contents:
-        - theory/Fermi-Hubbard/index.qmd
+        - theory/Condensed_matter/Fermi-Hubbard/index.qmd
         - section: "Notes"
           contents:
-            - theory/Fermi-Hubbard/intro.qmd
+            - theory/Condensed_matter/Fermi-Hubbard/intro.qmd
     - id: theory_qec_foundations
       title: "Foundations"
       contents:
@@ -205,53 +225,53 @@ website:
     - id: iqp
       title: "IQP Circuit Supremacy"
       contents:
-        - theory/supermacy/index.qmd
+        - theory/quantum_complexity/supermacy/index.qmd
         - section: "Notes"
           contents:
-            - theory/supermacy/QNC0.qmd
-            - theory/supermacy/Bellsamp.qmd
-            - theory/supermacy/classical_simulation.qmd
-            - theory/supermacy/hardness_proofs.qmd
-            - theory/supermacy/Peak.qmd
-            - theory/supermacy/verification.qmd
+            - theory/quantum_complexity/supermacy/QNC0.qmd
+            - theory/quantum_complexity/supermacy/Bellsamp.qmd
+            - theory/quantum_complexity/supermacy/classical_simulation.qmd
+            - theory/quantum_complexity/supermacy/hardness_proofs.qmd
+            - theory/quantum_complexity/supermacy/Peak.qmd
+            - theory/quantum_complexity/supermacy/verification.qmd
         - section: "IQP Circuits"
           contents:
-            - theory/supermacy/IQPs/index.qmd
-            - theory/supermacy/IQPs/Bell_on_iqp.qmd
-            - theory/supermacy/IQPs/ft_iqp.qmd
-            - theory/supermacy/IQPs/iqp_supremacy.qmd
-            - theory/supermacy/IQPs/mbqc_iqp.qmd
-            - theory/supermacy/IQPs/Real_noise_ana.qmd
-            - theory/supermacy/IQPs/reduct_deg3gap.qmd
-            - theory/supermacy/IQPs/sparse_iqp.qmd
+            - theory/quantum_complexity/supermacy/IQPs/index.qmd
+            - theory/quantum_complexity/supermacy/IQPs/Bell_on_iqp.qmd
+            - theory/quantum_complexity/supermacy/IQPs/ft_iqp.qmd
+            - theory/quantum_complexity/supermacy/IQPs/iqp_supremacy.qmd
+            - theory/quantum_complexity/supermacy/IQPs/mbqc_iqp.qmd
+            - theory/quantum_complexity/supermacy/IQPs/Real_noise_ana.qmd
+            - theory/quantum_complexity/supermacy/IQPs/reduct_deg3gap.qmd
+            - theory/quantum_complexity/supermacy/IQPs/sparse_iqp.qmd
             - section: "IQP Simulation Algorithms"
               contents:
-                - theory/supermacy/IQPs/simulations/index.qmd
-                - theory/supermacy/IQPs/simulations/noisy_iqp.qmd
+                - theory/quantum_complexity/supermacy/IQPs/simulations/index.qmd
+                - theory/quantum_complexity/supermacy/IQPs/simulations/noisy_iqp.qmd
     - id: theory_supermacy_iqps
       title: "IQP Circuits"
       contents:
-        - theory/supermacy/IQPs/index.qmd
+        - theory/quantum_complexity/supermacy/IQPs/index.qmd
         - section: "Notes"
           contents:
-            - theory/supermacy/IQPs/Bell_on_iqp.qmd
-            - theory/supermacy/IQPs/ft_iqp.qmd
-            - theory/supermacy/IQPs/iqp_supremacy.qmd
-            - theory/supermacy/IQPs/mbqc_iqp.qmd
-            - theory/supermacy/IQPs/Real_noise_ana.qmd
-            - theory/supermacy/IQPs/reduct_deg3gap.qmd
-            - theory/supermacy/IQPs/sparse_iqp.qmd
+            - theory/quantum_complexity/supermacy/IQPs/Bell_on_iqp.qmd
+            - theory/quantum_complexity/supermacy/IQPs/ft_iqp.qmd
+            - theory/quantum_complexity/supermacy/IQPs/iqp_supremacy.qmd
+            - theory/quantum_complexity/supermacy/IQPs/mbqc_iqp.qmd
+            - theory/quantum_complexity/supermacy/IQPs/Real_noise_ana.qmd
+            - theory/quantum_complexity/supermacy/IQPs/reduct_deg3gap.qmd
+            - theory/quantum_complexity/supermacy/IQPs/sparse_iqp.qmd
         - section: "IQP Simulation Algorithms"
           contents:
-            - theory/supermacy/IQPs/simulations/index.qmd
-            - theory/supermacy/IQPs/simulations/noisy_iqp.qmd
+            - theory/quantum_complexity/supermacy/IQPs/simulations/index.qmd
+            - theory/quantum_complexity/supermacy/IQPs/simulations/noisy_iqp.qmd
     - id: theory_supermacy_iqps_simulations
       title: "IQP Simulation Algorithms"
       contents:
-        - theory/supermacy/IQPs/simulations/index.qmd
+        - theory/quantum_complexity/supermacy/IQPs/simulations/index.qmd
         - section: "Notes"
           contents:
-            - theory/supermacy/IQPs/simulations/noisy_iqp.qmd
+            - theory/quantum_complexity/supermacy/IQPs/simulations/noisy_iqp.qmd
     - id: lgt
       title: "Lattice Gauge Theory"
       contents:
@@ -279,6 +299,17 @@ website:
             - theory/learning_theo/Estimation_rev.qmd
             - theory/learning_theo/phasegate_learn.qmd
             - theory/learning_theo/NTK.qmd
+        - section: "Classical Shadow Tomography"
+          contents:
+            - theory/learning_theo/Shadow_tomography/index.qmd
+            - theory/learning_theo/Shadow_tomography/3desgin_multi_local_shadow.qmd
+            - theory/learning_theo/Shadow_tomography/3d2c_appli1.qmd
+            - theory/learning_theo/Shadow_tomography/3d2c_appli2.qmd
+            - theory/learning_theo/Shadow_tomography/intro.qmd
+            - theory/learning_theo/Shadow_tomography/Bell_shadows.qmd
+            - theory/learning_theo/Shadow_tomography/multicopy.qmd
+            - theory/learning_theo/Shadow_tomography/lowerbound.qmd
+            - theory/learning_theo/Shadow_tomography/nonlocal_multicopy.qmd
         - section: "Lower Bounds Toolbox"
           contents:
             - theory/learning_theo/Lowerbounds/index.qmd
@@ -287,6 +318,14 @@ website:
             - theory/learning_theo/Lowerbounds/operator_mixed.qmd
             - theory/learning_theo/Lowerbounds/povm_restrictions.qmd
             - theory/learning_theo/Lowerbounds/adaptive_strategies.qmd
+        - section: "Virtual Distillation for Quantum Error Mitigation"
+          contents:
+            - theory/learning_theo/Virtual_Distillation/index.qmd
+            - theory/learning_theo/Virtual_Distillation/design.qmd
+            - theory/learning_theo/Virtual_Distillation/app_PCA.qmd
+            - theory/learning_theo/Virtual_Distillation/derandom_shadow.qmd
+            - theory/learning_theo/Virtual_Distillation/negativity.qmd
+            - theory/learning_theo/Virtual_Distillation/majorityvote.qmd
         - section: "Weak Schur Tools"
           contents:
             - theory/learning_theo/weak_schur/index.qmd
@@ -368,6 +407,33 @@ website:
             - theory/quantum_complexity/counting_complexity.qmd
             - theory/quantum_complexity/Ham_complexity.qmd
             - theory/quantum_complexity/interactive_proof.qmd
+        - section: "Boolean Analysis"
+          contents:
+            - theory/quantum_complexity/Boolean_ana/index.qmd
+            - theory/quantum_complexity/Boolean_ana/Influence.qmd
+        - section: "IQP Circuit Supremacy"
+          contents:
+            - theory/quantum_complexity/supermacy/index.qmd
+            - theory/quantum_complexity/supermacy/QNC0.qmd
+            - theory/quantum_complexity/supermacy/Bellsamp.qmd
+            - theory/quantum_complexity/supermacy/classical_simulation.qmd
+            - theory/quantum_complexity/supermacy/hardness_proofs.qmd
+            - theory/quantum_complexity/supermacy/Peak.qmd
+            - theory/quantum_complexity/supermacy/verification.qmd
+            - section: "IQP Circuits"
+              contents:
+                - theory/quantum_complexity/supermacy/IQPs/index.qmd
+                - theory/quantum_complexity/supermacy/IQPs/Bell_on_iqp.qmd
+                - theory/quantum_complexity/supermacy/IQPs/ft_iqp.qmd
+                - theory/quantum_complexity/supermacy/IQPs/iqp_supremacy.qmd
+                - theory/quantum_complexity/supermacy/IQPs/mbqc_iqp.qmd
+                - theory/quantum_complexity/supermacy/IQPs/Real_noise_ana.qmd
+                - theory/quantum_complexity/supermacy/IQPs/reduct_deg3gap.qmd
+                - theory/quantum_complexity/supermacy/IQPs/sparse_iqp.qmd
+                - section: "IQP Simulation Algorithms"
+                  contents:
+                    - theory/quantum_complexity/supermacy/IQPs/simulations/index.qmd
+                    - theory/quantum_complexity/supermacy/IQPs/simulations/noisy_iqp.qmd
     - id: qec
       title: "Quantum Error Correction"
       contents:
@@ -472,12 +538,12 @@ website:
     - id: spin_liquid
       title: "Spin Liquids"
       contents:
-        - theory/TFIM/index.qmd
+        - theory/Condensed_matter/TFIM/index.qmd
         - section: "Notes"
           contents:
-            - theory/TFIM/kagome-lattice.qmd
-            - theory/TFIM/Square-lattice.qmd
-            - theory/TFIM/TFIM_super.qmd
+            - theory/Condensed_matter/TFIM/kagome-lattice.qmd
+            - theory/Condensed_matter/TFIM/Square-lattice.qmd
+            - theory/Condensed_matter/TFIM/TFIM_super.qmd
     - id: stab_simulation
       title: "Stabilizer Simulation"
       contents:
@@ -502,23 +568,23 @@ website:
     - id: topo_matter
       title: "Topological Matter"
       contents:
-        - theory/topo_matter/index.qmd
+        - theory/Condensed_matter/topo_matter/index.qmd
         - section: "Notes"
           contents:
-            - theory/topo_matter/2dHH.qmd
-            - theory/topo_matter/chern.qmd
-            - theory/topo_matter/honeycomb.qmd
+            - theory/Condensed_matter/topo_matter/2dHH.qmd
+            - theory/Condensed_matter/topo_matter/chern.qmd
+            - theory/Condensed_matter/topo_matter/honeycomb.qmd
     - id: virtual_distillation
       title: "Virtual Distillation for Quantum Error Mitigation"
       contents:
-        - theory/Virtual_Distillation/index.qmd
+        - theory/learning_theo/Virtual_Distillation/index.qmd
         - section: "Notes"
           contents:
-            - theory/Virtual_Distillation/design.qmd
-            - theory/Virtual_Distillation/app_PCA.qmd
-            - theory/Virtual_Distillation/derandom_shadow.qmd
-            - theory/Virtual_Distillation/negativity.qmd
-            - theory/Virtual_Distillation/majorityvote.qmd
+            - theory/learning_theo/Virtual_Distillation/design.qmd
+            - theory/learning_theo/Virtual_Distillation/app_PCA.qmd
+            - theory/learning_theo/Virtual_Distillation/derandom_shadow.qmd
+            - theory/learning_theo/Virtual_Distillation/negativity.qmd
+            - theory/learning_theo/Virtual_Distillation/majorityvote.qmd
     - id: theory_learning_theo_weak_schur
       title: "Weak Schur Tools"
       contents:

@@ -240,7 +240,7 @@ For the $n$-qubit product observable $P = \bigotimes_l \sigma_l$, the $n$-qubit 
 
 **(b)** At each non-identity site $l$, the target functional is $|\mathrm{tr}(\sigma_l \rho_l)|^2 = \mathrm{tr}[(\sigma_l \otimes \sigma_l)\,\rho_l^{\otimes 2}]$. The linearization is $F_l = \sigma_l \otimes \sigma_l \in \mathcal{L}((\mathbb{C}^2)^{\otimes 2})$.
 
-The set $\{X \otimes X, Y \otimes Y, Z \otimes Z\}$ are mutually commuting with common eigenbasis being the Bell basis (as shown in [Prop. (Bell f-compat)](f-compatiability.qmd#prop-bell-f-compat)). The Bell measurement POVM $\Pi_j = |B_j\rangle\langle B_j|$ satisfies $\sum_j \Pi_j = \mathbb{I}_4$ (i.e., $s_l = 1$) and $\sum_j h_l(j) \Pi_j = \sigma_l \otimes \sigma_l$ where $h_l(j) = \pm 1$ are the Bell-state eigenvalues. All eigenvalues satisfy $|h_l(j)| = 1 \leq 1$.
+The set $\{X \otimes X, Y \otimes Y, Z \otimes Z\}$ are mutually commuting with common eigenbasis being the Bell basis. The Bell measurement POVM $\Pi_j = |B_j\rangle\langle B_j|$ satisfies $\sum_j \Pi_j = \mathbb{I}_4$ (i.e., $s_l = 1$) and $\sum_j h_l(j) \Pi_j = \sigma_l \otimes \sigma_l$ where $h_l(j) = \pm 1$ are the Bell-state eigenvalues. All eigenvalues satisfy $|h_l(j)| = 1 \leq 1$.
 
 Therefore $s^*_l = 1$ at every site, and $s^*_{\mathrm{loc}} = 1^n = 1$. The variance is bounded by $1$, yielding sample complexity $\mathcal{O}(\varepsilon^{-2} \log |\mathcal{A}|)$. $\blacksquare$
 :::

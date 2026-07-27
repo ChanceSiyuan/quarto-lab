@@ -41,7 +41,7 @@ $$
 
 In the seminar work @bravyi2018quantum , it is proved that any classical randomized circuit with fan-in at most $K$ and size-$N$ that solve all the 2d-HLF problem with probabilty greater than $7/8$ must have depth greater that $[\log(N)/8\log(K)]$. The core construction use non-locality of triangle graph state and lightcone of Boolean functions.
 
-:::{#def-HLF .callout-note icon="false"}
+:::{#def-boolean-lightcone .callout-note icon="false"}
 ## (lightcone of Boolean functions)
 Given classical circuit with input and output site $u,q$ and distance $\mathrm{dis}(i,o)$ decided by the circuit topology.
 We say a Boolean function $z_q=F_q(b_u,r)$ satisfied $z_q \in \mathrm{LC}(b_u)$ iff 
@@ -51,7 +51,7 @@ $$
 :::
 
 
-:::{#lem-BValg .callout-important icon="false"}
+:::{#lem-triangle-cycle-nonlocality .callout-important icon="false"}
 ## (Triangle cycle non-locality)
 Given a triangle cycle graph state $\ket{\Phi}$, then the measurement induced a set of strings
 $$
@@ -106,4 +106,3 @@ On the other hand, there exists a $\mathrm{QNC}_0$ algorithm that solve (a relax
 
 
 # Experiment demonstration
-

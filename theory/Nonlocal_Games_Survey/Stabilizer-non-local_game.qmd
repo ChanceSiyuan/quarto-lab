@@ -146,7 +146,7 @@ $$
 
 The games above only use 2 pairs of Bell pairs. In reference [@bulchandani2022playing], games involving quantum phases of matter are studied.
 
-::: {#def-stabilizer-testing-nonlocal-game .callout-important icon="false"}
+::: {#def-ghz-nonlocal-game .callout-important icon="false"}
 ## (Game Setup)
  A question binary $q_j \in \{0,1\}$ is chosen and sent to each player $j \in \{1,2,\ldots,n\}$. It is ensured that $\sum_{j=1}^n q_j = 0 \mod 2$. Each player $j$ is required to output an answer $a_j \in \{0,1\}$ without communicating with each other. The players win if:
   $(\sum_{j=1}^n q_j)/2 = \sum_{j=1}^n a_j \pmod 2$.
@@ -209,4 +209,3 @@ $$
 p_{\mathrm{cl}} = 1 - \frac{d_{H}(\mathrm{im}(A), c)}{2^r}
 $$
 where $\mathrm{im}(A)$ is the image of $A$ and $d_{H}(\cdot, \cdot)$ is the Hamming distance.
-
