@@ -149,6 +149,7 @@ const RAW_ATTRIBUTE = /^\{=[A-Za-z0-9_-]+\}/;
 
 type Citation = ParsedKnowledgePage["citations"][number];
 type UnsafeHtml = ParsedKnowledgePage["unsafeHtml"][number];
+type ReservedSectionRecord = ParsedKnowledgePage["reservedSections"][number];
 
 /** Turns a native path into the POSIX form every id and diagnostic uses. */
 function toPosix(value: string): string {
@@ -481,6 +482,7 @@ function readFrontmatter(
 interface Body {
   readingMap: MarkdownLink[];
   relatedTopics: MarkdownLink[];
+  reservedSections: ReservedSectionRecord[];
   localLinks: MarkdownLink[];
   citations: Citation[];
   unsafeHtml: UnsafeHtml[];
@@ -931,6 +933,7 @@ function readBody(
   const result: Body = {
     readingMap: [],
     relatedTopics: [],
+    reservedSections: [],
     localLinks: [],
     citations: [],
     unsafeHtml: [],
@@ -1022,6 +1025,13 @@ function readBody(
         continue;
       }
       reserved.seen = true;
+      // The declaration itself, which an empty section cannot express through
+      // its entries: `## Reading map` with no list is a topic with no children
+      // yet, and the graph must tell that from an index with no section at all.
+      result.reservedSections.push({
+        heading: reserved.heading,
+        location: atNode(child),
+      });
       open = reserved;
       continue;
     }
@@ -1207,6 +1217,7 @@ export function parseKnowledgePage(
     body: split.body,
     readingMap: body.readingMap,
     relatedTopics: body.relatedTopics,
+    reservedSections: body.reservedSections,
     localLinks: body.localLinks,
     citations: body.citations,
     unsafeHtml: body.unsafeHtml,

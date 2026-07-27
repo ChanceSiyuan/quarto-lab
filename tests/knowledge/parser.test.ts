@@ -966,7 +966,90 @@ test("a reserved heading only counts at level two and outside code", () => {
   assert.deepEqual(diagnostics(page), []);
   assert.deepEqual(targets(page.readingMap), []);
   assert.deepEqual(targets(page.relatedTopics), []);
+  assert.deepEqual(page.reservedSections, []);
   assert.equal(page.localLinks.length, 4);
+});
+
+test("records every declared reserved section, empty ones included", () => {
+  // A section with no entries is the one thing the entry lists cannot express:
+  // `## Reading map` with prose under it is a topic that has promoted nothing
+  // yet, which is exactly the shape of the production scaffold, and the graph
+  // has to tell it apart from an index that declares no section at all.
+  const declared = parse(
+    "ising/index.qmd",
+    [
+      "---",
+      "title: A topic",
+      "description: A description.",
+      "---",
+      "",
+      "Prose.",
+      "",
+      "## Reading map",
+      "",
+      "No topics have been promoted yet.",
+      "",
+      "## Related topics",
+      "",
+      "- [Root](../index.qmd)",
+      "",
+    ].join("\n"),
+  );
+
+  assert.deepEqual(diagnostics(declared), []);
+  assert.deepEqual(targets(declared.readingMap), []);
+  assert.deepEqual(
+    declared.reservedSections.map((section) => ({
+      heading: section.heading,
+      line: section.location.line,
+      column: section.location.column,
+    })),
+    [
+      { heading: "Reading map", line: 8, column: 1 },
+      { heading: "Related topics", line: 12, column: 1 },
+    ],
+  );
+
+  // A fenced sample shows the heading; it does not declare it.
+  const fenced = parse(
+    "ising/index.qmd",
+    indexPage(["```markdown", "## Reading map", "```", ""].join("\n")),
+  );
+  assert.deepEqual(fenced.reservedSections, []);
+
+  // A repeated heading is one declaration and one diagnostic.
+  const repeated = parse(
+    "ising/index.qmd",
+    indexPage(
+      [
+        "## Reading map",
+        "",
+        "- [One](one.qmd)",
+        "",
+        "## Reading map",
+        "",
+        "- [Two](two.qmd)",
+        "",
+      ].join("\n"),
+    ),
+  );
+  assert.deepEqual(codes(repeated), ["READING_MAP_DUPLICATE"]);
+  assert.deepEqual(
+    repeated.reservedSections.map((section) => section.heading),
+    ["Reading map"],
+  );
+
+  // A content page may declare one too; rejecting that is the graph's job, and
+  // it needs to see the declaration to do it.
+  const content = parse(
+    "ising/proof.qmd",
+    contentPage(["## Reading map", "", "- [One](one.qmd)", ""].join("\n")),
+  );
+  assert.deepEqual(diagnostics(content), []);
+  assert.deepEqual(
+    content.reservedSections.map((section) => section.heading),
+    ["Reading map"],
+  );
 });
 
 test("separates local targets from external ones", () => {

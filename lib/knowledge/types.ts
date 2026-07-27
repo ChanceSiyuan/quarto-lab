@@ -86,6 +86,19 @@ export interface ParsedKnowledgePage {
    */
   relatedTopics: readonly MarkdownLink[];
   /**
+   * The reserved level-two sections the page declares, in document order.
+   *
+   * A section is declared even when it lists nothing: `## Reading map` with
+   * prose under it is how a topic says "nothing has been promoted here yet",
+   * which is exactly what the empty production scaffold does. The entries above
+   * cannot express that — they are empty in both cases — so the graph reads the
+   * declaration from here rather than re-deriving the heading rule from the
+   * body, where a fenced code sample showing `## Reading map` would satisfy any
+   * cheaper test. Only the first occurrence of a heading is recorded; a second
+   * is a `READING_MAP_DUPLICATE`/`RELATED_TOPICS_DUPLICATE` diagnostic.
+   */
+  reservedSections: readonly { heading: string; location: SourceLocation }[];
+  /**
    * Every link and image on the page whose target must resolve inside the
    * knowledge tree, in document order. Reading-map and related-topic entries
    * appear here too, so link checking never has to be repeated per section.
