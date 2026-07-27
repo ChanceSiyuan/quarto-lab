@@ -59,7 +59,7 @@ export default async function ProblemDetailPage({
         <section className="attempt-ledger" aria-labelledby="attempt-ledger-heading">
           <div className="section-heading-row">
             <h2 id="attempt-ledger-heading">Attempts</h2>
-            <p>{ledger.rows.length} synthetic runs</p>
+            <p>{ledger.rows.length} synthetic attempts</p>
           </div>
           <div className="attempt-table-wrap">
             <table className="attempt-table">

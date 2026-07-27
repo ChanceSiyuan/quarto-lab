@@ -7,6 +7,7 @@ import {
   getStaticResearchExample,
   isStaticResearchExampleProblem,
   listStaticResearchAttempts,
+  validateStaticResearchFixture,
 } from "../lib/problems/example-research.mjs";
 import {
   buildAttemptDossier,
@@ -49,6 +50,33 @@ test("static example attempts form the declared predecessor chain", () => {
   assert.equal(getStaticResearchAttempt("QMB-001", "ATT-005").promoted, true);
   assert.equal(getStaticResearchAttempt("QMB-001", "ATT-999"), null);
   assert.equal(getStaticResearchExample("QMB-999"), null);
+});
+
+test("static example validation rejects malformed display fixture content", () => {
+  const example = getStaticResearchExample("QMB-001");
+  const malformedCases = [
+    ["manifest disclaimer", (manifest) => { manifest.disclaimer = "real results"; }, /disclaimer/],
+    ["attempt title", (_manifest, attempts) => { attempts[0].title = ""; }, /title/],
+    ["promoted rejection", (_manifest, attempts) => { attempts[0].promoted = true; }, /promoted/],
+    ["multiple promotions", (_manifest, attempts) => { attempts[2].promoted = true; }, /promoted/],
+    ["gate value", (_manifest, attempts) => { attempts[0].gate.containment = "unknown"; }, /gate/],
+    ["method changes", (_manifest, attempts) => { attempts[0].method.changes = []; }, /method/],
+    ["metric count", (_manifest, attempts) => { attempts[0].metrics.verifiedWitnesses = 25; }, /metrics/],
+    ["interpretation", (_manifest, attempts) => { attempts[0].interpretation = ""; }, /interpretation/],
+    ["provenance timestamp", (_manifest, attempts) => { attempts[0].createdAt = "not-a-timestamp"; }, /createdAt/],
+    ["unsafe artifact", (_manifest, attempts) => { attempts[0].artifacts[0] = "../../secret"; }, /artifact/],
+  ];
+
+  for (const [name, mutate, expectedMessage] of malformedCases) {
+    const manifest = structuredClone(example.manifest);
+    const attempts = structuredClone(example.attempts);
+    mutate(manifest, attempts);
+    assert.throws(
+      () => validateStaticResearchFixture(manifest, attempts),
+      expectedMessage,
+      `${name} must be rejected before presentation`,
+    );
+  }
 });
 
 test("static example presentation derives synthetic aggregate cards", () => {
