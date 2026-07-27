@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import { execFile } from "node:child_process";
-import { readFile, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
 import test from "node:test";
@@ -11,6 +13,16 @@ const generatedIndexUrl = new URL("../.generated/problem-index.json", import.met
 const generatedIndex = JSON.parse(
   await readFile(generatedIndexUrl, "utf8"),
 );
+
+const completeProblemMd = [
+  "Background and Gap",
+  "Research Objective",
+  "Publication Threshold",
+  "Executable Gate",
+  "Novelty Evidence",
+  "Provenance",
+  "Fresh Evaluation Plan",
+].map((heading) => `## ${heading}\nConcrete fixture content.`).join("\n\n");
 
 async function render(pathname = "/") {
   const workerUrl = new URL("../dist/server/index.js", import.meta.url);
@@ -33,55 +45,56 @@ async function render(pathname = "/") {
   );
 }
 
-async function renderPopulatedFixture(pathname = "/?fixture=populated") {
-  const originalIndexText = await readFile(generatedIndexUrl, "utf8");
-  const fixtureIndex = {
-    ...generatedIndex,
-    generatedAt: "2026-07-27T12:00:00.000Z",
-    nextProblemId: "QMB-018",
-    problems: [
-      {
-        schemaVersion: 1,
-        id: "QMB-017",
-        title: "Fresh Hamiltonian gate",
-        summary: "Interval arithmetic on held-out instances.",
-        status: "accepted",
-        gate: { type: "interval-arithmetic", readiness: "executable" },
-        provenance: { sourceCount: 12 },
-        lastActivity: {
-          summary: "Accepted after novelty review",
-          at: "2026-07-27T10:30:00.000Z",
-        },
-        createdAt: "2026-07-27T09:00:00.000Z",
-        updatedAt: "2026-07-27T11:45:00.000Z",
-      },
-    ],
-    summary: {
-      total: 1,
-      accepted: 1,
-      solved: 0,
-      published: 0,
-      rejected: 0,
-      archived: 0,
-      target: generatedIndex.summary.target,
+async function buildCurrentIndex() {
+  await execFileAsync(
+    fileURLToPath(new URL("../node_modules/.bin/vinext", import.meta.url)),
+    ["build"],
+    {
+      cwd: workspaceRoot,
+      env: { ...process.env, WRANGLER_LOG_PATH: ".wrangler/wrangler.log" },
+      maxBuffer: 10 * 1024 * 1024,
     },
-    diagnostics: [],
-  };
+  );
+}
 
-  async function buildCurrentIndex() {
+async function writeFixtureProblem(root, manifest) {
+  const problemDir = join(root, "problems", manifest.id);
+  await mkdir(join(problemDir, "generation"), { recursive: true });
+  await writeFile(join(problemDir, "problem.json"), `${JSON.stringify(manifest, null, 2)}\n`);
+  await writeFile(join(problemDir, "problem.md"), completeProblemMd);
+  await writeFile(join(problemDir, "generation", "initial-prompt.md"), "Fixture prompt.");
+  await writeFile(join(problemDir, "generation", "transcript.md"), "Fixture transcript.");
+  await writeFile(join(problemDir, "generation", "decision.md"), "Fixture decision.");
+}
+
+async function renderFilesystemFixture({ manifests, damagedIds = [] }, pathname = "/?fixture=filesystem") {
+  const originalIndexText = await readFile(generatedIndexUrl, "utf8");
+  const fixtureRoot = await mkdtemp(join(tmpdir(), "research-loop-render-"));
+  await mkdir(join(fixtureRoot, "problems"), { recursive: true });
+  for (const manifest of manifests) {
+    await writeFixtureProblem(fixtureRoot, manifest);
+  }
+  for (const id of damagedIds) {
+    const damagedDir = join(fixtureRoot, "problems", id);
+    await mkdir(damagedDir, { recursive: true });
+    await writeFile(join(damagedDir, "problem.json"), "{ broken json");
+  }
+
+  try {
     await execFileAsync(
-      fileURLToPath(new URL("../node_modules/.bin/vinext", import.meta.url)),
-      ["build"],
+      process.execPath,
+      [
+        "scripts/build-problem-index.mjs",
+        "--root",
+        fixtureRoot,
+        "--out",
+        fileURLToPath(generatedIndexUrl),
+      ],
       {
         cwd: workspaceRoot,
-        env: { ...process.env, WRANGLER_LOG_PATH: ".wrangler/wrangler.log" },
         maxBuffer: 10 * 1024 * 1024,
       },
     );
-  }
-
-  await writeFile(generatedIndexUrl, `${JSON.stringify(fixtureIndex, null, 2)}\n`);
-  try {
     await buildCurrentIndex();
     const response = await render(pathname);
     const html = await response.text();
@@ -89,8 +102,25 @@ async function renderPopulatedFixture(pathname = "/?fixture=populated") {
   } finally {
     await writeFile(generatedIndexUrl, originalIndexText);
     await buildCurrentIndex();
+    await rm(fixtureRoot, { recursive: true, force: true });
   }
 }
+
+const acceptedFixture = {
+  schemaVersion: 1,
+  id: "QMB-017",
+  title: "Fresh Hamiltonian gate",
+  summary: "Interval arithmetic on held-out instances.",
+  status: "accepted",
+  gate: { type: "interval-arithmetic", readiness: "executable" },
+  provenance: { sourceCount: 12 },
+  lastActivity: {
+    summary: "Accepted after novelty review",
+    at: "2026-07-27T10:30:00.000Z",
+  },
+  createdAt: "2026-07-27T09:00:00.000Z",
+  updatedAt: "2026-07-27T11:45:00.000Z",
+};
 
 test("server-renders the problem console shell", async () => {
   const response = await render();
@@ -101,6 +131,7 @@ test("server-renders the problem console shell", async () => {
   assert.match(html, /Research Loop/);
   assert.match(html, /问题/);
   assert.match(html, /增加问题/);
+  assert.match(html, />\+ Add first problem<\/a>/);
   assert.match(html, /Cannot open Codex\?/);
   assert.match(html, /codex:\/\/threads\/new/);
   assert.match(html, /Accepted/);
@@ -126,18 +157,43 @@ test("server-renders the problem console shell", async () => {
 });
 
 test("server-renders populated desktop and narrow problem rows", async () => {
-  const response = await renderPopulatedFixture();
+  const response = await renderFilesystemFixture({
+    manifests: [acceptedFixture],
+    damagedIds: ["QMB-018"],
+  });
   assert.equal(response.status, 200);
 
   const html = await response.text();
-  assert.match(
-    html,
-    /<tr><th scope="row"><a href="\/problems\/QMB-017"><span>QMB-017<\/span><strong>Fresh Hamiltonian gate<\/strong><small>Interval arithmetic on held-out instances\.<\/small><\/a><\/th><td><span class="status-badge status-accepted">已接受<\/span><\/td><td class="cell-stack"><strong>interval-arithmetic<\/strong><small>executable<\/small><\/td><td>12 sources<\/td><td class="cell-stack"><strong>Accepted after novelty review<\/strong><small>2026-07-27 10:30:00 UTC<\/small><\/td><td>2026-07-27 11:45:00 UTC<\/td><td><a class="open-affordance" href="\/problems\/QMB-017">Open <span aria-hidden="true">→<\/span><\/a><\/td><\/tr>/,
-  );
-  assert.match(
-    html,
-    /<article class="problem-list-item"><div class="mobile-problem-field"><span class="mobile-field-label">Problem<\/span><span class="problem-id">QMB-017<\/span><h2>Fresh Hamiltonian gate<\/h2><p>Interval arithmetic on held-out instances\.<\/p><\/div><dl><div><dt>Status<\/dt><dd><span class="status-badge status-accepted">已接受<\/span><\/dd><\/div><div><dt>Executable gate<\/dt><dd>interval-arithmetic<!-- --> · <!-- -->executable<\/dd><\/div><div><dt>Provenance<\/dt><dd>12 sources<\/dd><\/div><div><dt>Recent activity<\/dt><dd>Accepted after novelty review<!-- --> · <!-- -->2026-07-27 10:30:00 UTC<\/dd><\/div><div><dt>Updated<\/dt><dd>2026-07-27 11:45:00 UTC<\/dd><\/div><div><dt>Open<\/dt><dd><a class="open-affordance" href="\/problems\/QMB-017">Open problem<!-- --> <span aria-hidden="true">→<\/span><\/a><\/dd><\/div><\/dl><\/article>/,
-  );
+  assert.match(html, /<tr class="problem-table-row"><th scope="row"><a class="problem-row-link" href="\/problems\/QMB-017">/);
+  assert.match(html, /<a class="problem-list-item" href="\/problems\/QMB-017" aria-label="Open QMB-017: Fresh Hamiltonian gate">/);
+  assert.match(html, /Fresh Hamiltonian gate/);
+  assert.match(html, /Interval arithmetic on held-out instances\./);
+  assert.match(html, /interval-arithmetic/);
+  assert.match(html, /12 sources/);
+  assert.match(html, /Accepted after novelty review/);
+  assert.match(html, /2026-07-27 11:45:00 UTC/);
+  assert.match(html, /1 index errors/);
+  assert.match(html, /problems\/QMB-018\/problem\.json/);
+  assert.match(html, /Invalid JSON/);
+});
+
+test("server-renders a clear action when default-hidden records are the only results", async () => {
+  const response = await renderFilesystemFixture({
+    manifests: [{
+      ...acceptedFixture,
+      id: "QMB-020",
+      title: "Rejected fixture",
+      status: "rejected",
+      gate: { type: "python", readiness: "specified" },
+      rejection: { kind: "human", reason: "Novelty failed." },
+    }],
+  });
+  assert.equal(response.status, 200);
+
+  const html = await response.text();
+  assert.match(html, /No matching problems/);
+  assert.match(html, /<button class="state-action" type="button">Clear all filters<\/button>/);
+  assert.doesNotMatch(html, /<span class="problem-id">QMB-020<\/span>/);
 });
 
 test("returns a stable detail route response for unknown problem IDs", async () => {
@@ -146,7 +202,10 @@ test("returns a stable detail route response for unknown problem IDs", async () 
 });
 
 test("server-renders the populated problem detail shell", async () => {
-  const response = await renderPopulatedFixture("/problems/QMB-017?fixture=populated");
+  const response = await renderFilesystemFixture(
+    { manifests: [acceptedFixture] },
+    "/problems/QMB-017?fixture=filesystem",
+  );
   assert.equal(response.status, 200);
 
   const html = await response.text();

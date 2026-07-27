@@ -91,6 +91,35 @@ test("isolates damaged manifests and duplicate IDs", async () => {
   assert.match(index.diagnostics.map((item) => item.message).join("\n"), /Invalid JSON/);
 });
 
+test("reserves IDs from damaged problem directories without indexing them", async () => {
+  const root = await makeRoot();
+  const damagedDir = join(root, "problems", "QMB-001");
+  await mkdir(damagedDir, { recursive: true });
+  await writeFile(join(damagedDir, "problem.json"), "{ broken json");
+
+  const index = await buildProblemIndex({ rootDir: root });
+
+  assert.deepEqual(index.problems, []);
+  assert.equal(index.nextProblemId, "QMB-002");
+  assert.equal(index.diagnostics.length, 1);
+  assert.equal(index.diagnostics[0].relativePath, "problems/QMB-001/problem.json");
+  assert.match(index.diagnostics[0].message, /Invalid JSON/);
+});
+
+test("reserves parseable manifest IDs even when the record is invalid", async () => {
+  const root = await makeRoot();
+  await writeProblem(root, "candidate-draft", {
+    id: "QMB-007",
+    status: "not-a-status",
+  });
+
+  const index = await buildProblemIndex({ rootDir: root });
+
+  assert.deepEqual(index.problems, []);
+  assert.equal(index.nextProblemId, "QMB-008");
+  assert.ok(index.diagnostics.some((item) => item.field === "status"));
+});
+
 test("handles an empty repository and derives the first ID", async () => {
   const root = await makeRoot();
   const index = await buildProblemIndex({ rootDir: root });

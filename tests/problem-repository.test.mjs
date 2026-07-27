@@ -38,3 +38,18 @@ test("returns summary, diagnostics, and individual problems without mutation", (
   assert.equal(repository.getProblem("QMB-001").title, "Fresh Hamiltonian gate");
   assert.equal(repository.getProblem("QMB-404"), null);
 });
+
+test("returns cloned problem records from list and lookup operations", () => {
+  const repository = createProblemRepository(index);
+
+  const listed = repository.listProblems()[0];
+  listed.title = "Mutated title";
+  listed.gate.readiness = "missing";
+  const lookedUp = repository.getProblem("QMB-001");
+  lookedUp.lastActivity.summary = "Mutated activity";
+
+  assert.equal(repository.listProblems()[0].title, "Fresh Hamiltonian gate");
+  assert.equal(repository.listProblems()[0].gate.readiness, "executable");
+  assert.equal(repository.getProblem("QMB-001").lastActivity.summary, "Accepted");
+  assert.equal(index.problems[0].title, "Fresh Hamiltonian gate");
+});

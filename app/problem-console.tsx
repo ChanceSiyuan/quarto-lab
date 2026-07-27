@@ -6,6 +6,12 @@ import {
   buildTierMetrics,
   formatProblemTimestamp,
 } from "@/lib/problems/presentation.mjs";
+import {
+  ACTIVE_PROBLEM_STATUSES,
+  clearProblemFilters,
+  createDefaultProblemFilters,
+  filterProblems,
+} from "@/lib/problems/view-state.mjs";
 
 const statusLabels: Record<string, string> = {
   draft: "草稿",
@@ -18,16 +24,6 @@ const statusLabels: Record<string, string> = {
   rejected: "已拒绝",
   archived: "已归档",
 };
-
-const activeStatuses = [
-  "draft",
-  "qualifying",
-  "accepted",
-  "solving",
-  "solved",
-  "publishing",
-  "published",
-];
 
 type Problem = {
   id: string;
@@ -94,32 +90,18 @@ export function ProblemConsole({
   workspacePath,
   launch,
 }: ProblemConsoleProps) {
-  const [query, setQuery] = useState("");
-  const [selectedStatuses, setSelectedStatuses] = useState<string[]>(activeStatuses);
-  const [showRejected, setShowRejected] = useState(false);
-  const [showArchived, setShowArchived] = useState(false);
+  const defaults = createDefaultProblemFilters();
+  const [query, setQuery] = useState(defaults.query);
+  const [selectedStatuses, setSelectedStatuses] = useState<string[]>(defaults.selectedStatuses);
+  const [showRejected, setShowRejected] = useState(defaults.showRejected);
+  const [showArchived, setShowArchived] = useState(defaults.showArchived);
 
-  const visibleProblems = useMemo(() => {
-    const normalizedQuery = query.trim().toLowerCase();
-
-    return initialProblems.filter((problem) => {
-      if (problem.status === "rejected") {
-        if (!showRejected) return false;
-      } else if (problem.status === "archived") {
-        if (!showArchived) return false;
-      } else if (!selectedStatuses.includes(problem.status)) {
-        return false;
-      }
-
-      return (
-        !normalizedQuery ||
-        [problem.id, problem.title, problem.summary]
-          .join(" ")
-          .toLowerCase()
-          .includes(normalizedQuery)
-      );
-    });
-  }, [initialProblems, query, selectedStatuses, showArchived, showRejected]);
+  const visibleProblems = useMemo(() => filterProblems(initialProblems, {
+    query,
+    selectedStatuses,
+    showRejected,
+    showArchived,
+  }), [initialProblems, query, selectedStatuses, showArchived, showRejected]);
 
   const visiblePresentations = useMemo(
     () => visibleProblems.map(buildProblemPresentation),
@@ -132,6 +114,14 @@ export function ProblemConsole({
         ? current.filter((item) => item !== status)
         : [...current, status],
     );
+  }
+
+  function clearFilters() {
+    const cleared = clearProblemFilters();
+    setQuery(cleared.query);
+    setSelectedStatuses(cleared.selectedStatuses);
+    setShowRejected(cleared.showRejected);
+    setShowArchived(cleared.showArchived);
   }
 
   const metrics = buildTierMetrics(summary);
@@ -193,7 +183,7 @@ export function ProblemConsole({
           <fieldset className="status-filters">
             <legend>Lifecycle status</legend>
             <div className="filter-chips">
-              {activeStatuses.map((status) => (
+              {ACTIVE_PROBLEM_STATUSES.map((status) => (
                 <label className="filter-chip" key={status}>
                   <input
                     type="checkbox"
@@ -273,6 +263,7 @@ export function ProblemConsole({
                       <div>
                         <h2>No problems indexed yet</h2>
                         <p>Create a candidate in Codex, confirm its files, then rebuild the local index.</p>
+                        <a className="state-action" href={launch.href}>+ Add first problem</a>
                       </div>
                     </section>
                   </td>
@@ -283,13 +274,14 @@ export function ProblemConsole({
                     <section className="no-results">
                       <h2>No matching problems</h2>
                       <p>Adjust the search text or lifecycle filters.</p>
+                      <button className="state-action" type="button" onClick={clearFilters}>Clear all filters</button>
                     </section>
                   </td>
                 </tr>
               ) : visiblePresentations.map((row) => (
-                <tr key={row.problem.id}>
+                <tr className="problem-table-row" key={row.problem.id}>
                   <th scope="row">
-                    <a href={row.open.href}>
+                    <a className="problem-row-link" href={row.open.href}>
                       <span>{row.problem.id}</span>
                       <strong>{row.problem.title}</strong>
                       <small>{row.problem.summary}</small>
@@ -307,9 +299,9 @@ export function ProblemConsole({
                   </td>
                   <td>{row.updated.value}</td>
                   <td>
-                    <a className="open-affordance" href={row.open.href}>
+                    <span className="open-affordance">
                       Open <span aria-hidden="true">→</span>
-                    </a>
+                    </span>
                   </td>
                 </tr>
               ))}
@@ -323,15 +315,22 @@ export function ProblemConsole({
                 <div>
                   <h2>No problems indexed yet</h2>
                   <p>Create a candidate in Codex, confirm its files, then rebuild the local index.</p>
+                  <a className="state-action" href={launch.href}>+ Add first problem</a>
                 </div>
               </section>
             ) : visibleProblems.length === 0 ? (
               <section className="no-results">
                 <h2>No matching problems</h2>
                 <p>Adjust the search text or lifecycle filters.</p>
+                <button className="state-action" type="button" onClick={clearFilters}>Clear all filters</button>
               </section>
             ) : visiblePresentations.map((row) => (
-              <article className="problem-list-item" key={row.problem.id}>
+              <a
+                className="problem-list-item"
+                href={row.open.href}
+                aria-label={`Open ${row.problem.id}: ${row.problem.title}`}
+                key={row.problem.id}
+              >
                 <div className="mobile-problem-field">
                   <span className="mobile-field-label">{row.problem.label}</span>
                   <span className="problem-id">{row.problem.id}</span>
@@ -346,10 +345,10 @@ export function ProblemConsole({
                   <div><dt>{row.updated.label}</dt><dd>{row.updated.value}</dd></div>
                   <div>
                     <dt>{row.open.label}</dt>
-                    <dd><a className="open-affordance" href={row.open.href}>{row.open.value} <span aria-hidden="true">→</span></a></dd>
+                    <dd><span className="open-affordance">{row.open.value} <span aria-hidden="true">→</span></span></dd>
                   </div>
                 </dl>
-              </article>
+              </a>
             ))}
           </div>
         </div>
