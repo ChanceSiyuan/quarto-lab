@@ -1,11 +1,13 @@
-import { cp, mkdir, rm, writeFile } from "node:fs/promises";
-import { dirname, join, relative } from "node:path";
+import { cp, mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises";
+import { basename, dirname, extname, join, relative } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 const outDir = join(root, "out");
 const clientDir = join(root, "dist/client");
 const basePath = process.env.PAGES_BASE_PATH ?? "/research-loop";
+const siteOrigin = process.env.PAGES_SITE_ORIGIN ?? "https://nzy1997.github.io";
+const siteUrl = `${siteOrigin}${basePath}`;
 
 const routes = [
   "/",
@@ -25,10 +27,57 @@ function routeToOutputPath(route) {
 function rewriteHtml(html) {
   return html
     .replace(/<script\b[\s\S]*?<\/script>/gi, "")
-    .replace(/\s+href="\/(assets\/[^"]*)"/g, ` href="${basePath}/$1"`)
-    .replace(/\s+src="\/(assets\/[^"]*)"/g, ` src="${basePath}/$1"`)
+    .replace(/<link\b[^>]*rel="modulepreload"[^>]*>/gi, "")
+    .replace(/<section class="console-toolbar"[\s\S]*?<\/section>/, "")
+    .replace(/<details class="codex-fallback"[\s\S]*?<\/details>/g, "")
+    .replace(
+      /<div class="mode-indicator">[\s\S]*?<\/div>(?=<div class="index-health)/,
+      '<div class="mode-indicator"><span>Static showcase</span><code>GitHub Pages</code></div>',
+    )
+    .replace(/http:\/\/localhost:3000\/([^"]*)/g, `${siteUrl}/$1`)
+    .replace(/="\/assets\//g, `="${basePath}/assets/`)
+    .replace(/url\(\/assets\//g, `url(${basePath}/assets/`)
     .replace(/\s+href="\/problems\/([^"]*)"/g, ` href="${basePath}/problems/$1"`)
     .replace(/\s+href="\/"/g, ` href="${basePath}/"`);
+}
+
+async function listClientFiles(dir) {
+  const entries = await readdir(dir, { withFileTypes: true });
+  const files = [];
+  for (const entry of entries) {
+    const path = join(dir, entry.name);
+    if (entry.isDirectory()) {
+      files.push(...await listClientFiles(path));
+    } else {
+      files.push(path);
+    }
+  }
+  return files;
+}
+
+function shouldCopyClientAsset(path) {
+  const name = basename(path);
+  return [".css", ".woff2", ".svg", ".png", ".ico"].includes(extname(path))
+    || name === "_headers"
+    || name === ".assetsignore";
+}
+
+async function copyStaticClientAssets() {
+  const files = await listClientFiles(clientDir);
+  for (const source of files) {
+    if (!shouldCopyClientAsset(source)) {
+      continue;
+    }
+
+    const target = join(outDir, relative(clientDir, source));
+    await mkdir(dirname(target), { recursive: true });
+    if (extname(source) === ".css") {
+      const css = await readFile(source, "utf8");
+      await writeFile(target, css.replace(/url\(\/assets\//g, `url(${basePath}/assets/`));
+    } else {
+      await cp(source, target);
+    }
+  }
 }
 
 async function renderRoute(worker, route) {
@@ -57,7 +106,7 @@ async function renderRoute(worker, route) {
 async function main() {
   await rm(outDir, { recursive: true, force: true });
   await mkdir(outDir, { recursive: true });
-  await cp(clientDir, outDir, { recursive: true });
+  await copyStaticClientAssets();
   await writeFile(join(outDir, ".nojekyll"), "");
 
   const workerUrl = pathToFileURL(join(root, "dist/server/index.js"));
