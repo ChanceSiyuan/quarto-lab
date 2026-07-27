@@ -253,6 +253,228 @@ test("finds unsafe HTML that tag-shaped scanning would miss", () => {
   );
 });
 
+test("finds event handlers whatever delimiter precedes them", () => {
+  const cases: readonly { markup: string; column: number }[] = [
+    { markup: "<svg/onload=alert(1)>", column: 6 },
+    { markup: '<img/onerror="alert(1)" src=x>', column: 6 },
+    { markup: '<div id="a"onclick=alert(1)>x</div>', column: 12 },
+    { markup: "<div\tonmouseover=alert(1)>x</div>", column: 6 },
+    { markup: "<a href='x'ONFOCUS=alert(1)>x</a>", column: 12 },
+  ];
+
+  for (const { markup, column } of cases) {
+    const page = parse("ising/index.qmd", indexPage(`${markup}\n`));
+
+    assert.deepEqual(
+      page.unsafeHtml.map((entry) => ({
+        kind: entry.kind,
+        line: entry.location.line,
+        column: entry.location.column,
+      })),
+      [{ kind: "inline-handler", line: 6, column }],
+      markup,
+    );
+  }
+});
+
+test("does not mistake prose or a URL query parameter for a handler", () => {
+  const page = parse(
+    "ising/index.qmd",
+    indexPage(
+      [
+        "Sensors turn online=true when the run starts, and onerror=abort is a flag.",
+        "",
+        "See [the dashboard](https://example.com/runs?online=true&onerror=abort).",
+        "",
+        "<p>Documentation says onclick handlers are banned.</p>",
+        "",
+        '<div data-onclick="x" data-only="y">safe</div>',
+        "",
+      ].join("\n"),
+    ),
+  );
+
+  assert.deepEqual(page.unsafeHtml, []);
+});
+
+test("scans Pandoc raw blocks, which are code nodes carrying raw HTML", () => {
+  const page = parse(
+    "ising/index.qmd",
+    indexPage(
+      [
+        /*  6 */ "```{=html}",
+        /*  7 */ '<script>alert("fenced raw")</script>',
+        /*  8 */ "```",
+        /*  9 */ "",
+        /* 10 */ "Inline `<img src=x onerror=alert(1)>`{=html} raw block.",
+        /* 11 */ "",
+        /* 12 */ "```html",
+        /* 13 */ '<script>alert("ordinary fence")</script>',
+        /* 14 */ "```",
+        /* 15 */ "",
+        /* 16 */ "Ordinary span `<script>alert(2)</script>` stays escaped.",
+        /* 17 */ "",
+      ].join("\n"),
+    ),
+  );
+
+  assert.deepEqual(
+    page.unsafeHtml.map((entry) => ({
+      kind: entry.kind,
+      line: entry.location.line,
+      column: entry.location.column,
+    })),
+    [
+      { kind: "script", line: 7, column: 1 },
+      { kind: "inline-handler", line: 10, column: 20 },
+    ],
+  );
+});
+
+test("reports a Pandoc metadata block written after the frontmatter", () => {
+  const page = parse(
+    "ising/index.qmd",
+    indexPage(
+      [
+        /*  6 */ "Prose before the block.",
+        /*  7 */ "",
+        /*  8 */ "---",
+        /*  9 */ "execute:",
+        /* 10 */ "  enabled: true",
+        /* 11 */ "header-includes: |",
+        /* 12 */ "  <script>alert(1)</script>",
+        /* 13 */ "---",
+        /* 14 */ "",
+        /* 15 */ "Prose after the block.",
+        /* 16 */ "",
+      ].join("\n"),
+    ),
+  );
+
+  assert.deepEqual(diagnostics(page), [
+    { code: "FRONTMATTER_INVALID", line: 8, column: 1 },
+  ]);
+  assert.match(page.parseDiagnostics[0]?.message ?? "", /metadata block/i);
+
+  // A block closed by `...` counts too, and the frontmatter is still read.
+  const dots = parse(
+    "ising/index.qmd",
+    indexPage(["Prose.", "", "---", "resources: [../../secrets]", "...", ""].join("\n")),
+  );
+  assert.deepEqual(diagnostics(dots), [
+    { code: "FRONTMATTER_INVALID", line: 8, column: 1 },
+  ]);
+  assert.equal(dots.title, "A topic");
+});
+
+test("leaves horizontal rules and fenced YAML samples alone", () => {
+  const page = parse(
+    "ising/index.qmd",
+    indexPage(
+      [
+        "Before the rule.",
+        "",
+        "---",
+        "",
+        "After the rule.",
+        "",
+        "```yaml",
+        "---",
+        "execute:",
+        "  enabled: true",
+        "---",
+        "```",
+        "",
+        "---",
+        "Not a mapping, just prose between rules.",
+        "---",
+        "",
+      ].join("\n"),
+    ),
+  );
+
+  assert.deepEqual(diagnostics(page), []);
+});
+
+test("resolves reference-style links, images, and bare definitions", () => {
+  const page = parse(
+    "ising/index.qmd",
+    indexPage(
+      [
+        /*  6 */ "## Reading map",
+        /*  7 */ "",
+        /*  8 */ "- [Proof][proof]",
+        /*  9 */ "- [Proposal]",
+        /* 10 */ "- [Missing][nowhere]",
+        /* 11 */ "",
+        /* 12 */ "## Related topics",
+        /* 13 */ "",
+        /* 14 */ "- [QuSpin][quspin]",
+        /* 15 */ "",
+        /* 16 */ "Body ![Figure][fig] and [external][site].",
+        /* 17 */ "",
+        /* 18 */ "[proof]: proof.qmd",
+        /* 19 */ "[Proposal]: proposal.qmd",
+        /* 20 */ "[quspin]: ../software/quspin/index.qmd",
+        /* 21 */ "[fig]: diagram.svg",
+        /* 22 */ "[site]: https://example.com",
+        /* 23 */ "[evil]: javascript:alert(1)",
+        /* 24 */ "",
+      ].join("\n"),
+    ),
+  );
+
+  assert.deepEqual(diagnostics(page), []);
+  assert.deepEqual(targets(page.readingMap), ["proof.qmd", "proposal.qmd"]);
+  assert.deepEqual(
+    page.readingMap.map((link) => ({ label: link.label, line: link.location.line })),
+    [
+      { label: "Proof", line: 8 },
+      { label: "Proposal", line: 9 },
+    ],
+  );
+  assert.deepEqual(targets(page.relatedTopics), ["../software/quspin/index.qmd"]);
+
+  // Used definitions are reported at the usage; an unused one at its own line,
+  // so a dangling `javascript:` target still reaches link validation.
+  assert.deepEqual(
+    page.localLinks.map((link) => ({
+      kind: link.kind,
+      target: link.target,
+      line: link.location.line,
+    })),
+    [
+      { kind: "link", target: "proof.qmd", line: 8 },
+      { kind: "link", target: "proposal.qmd", line: 9 },
+      { kind: "link", target: "../software/quspin/index.qmd", line: 14 },
+      { kind: "image", target: "diagram.svg", line: 16 },
+      { kind: "link", target: "javascript:alert(1)", line: 23 },
+    ],
+  );
+});
+
+test("a reference-style duplicate is still a duplicate", () => {
+  const page = parse(
+    "ising/index.qmd",
+    indexPage(
+      [
+        "## Reading map",
+        "",
+        "- [Proof](proof.qmd)",
+        "- [Proof again][proof]",
+        "",
+        "[proof]: proof.qmd",
+        "",
+      ].join("\n"),
+    ),
+  );
+
+  assert.deepEqual(diagnostics(page), [
+    { code: "READING_MAP_DUPLICATE", line: 9, column: 3 },
+  ]);
+  assert.deepEqual(targets(page.readingMap), ["proof.qmd"]);
+});
+
 test("derives ids and owning topic ids from the path", () => {
   const cases: readonly {
     relativePath: string;
@@ -616,10 +838,15 @@ test("reports each frontmatter diagnostic code at its own location", () => {
       expected: [{ code: "FRONTMATTER_MISSING", line: 1, column: 1 }],
     },
     {
+      // Pandoc would still read the block as metadata, so both are reported:
+      // the page has no frontmatter, and it carries a stray metadata block.
       name: "FRONTMATTER_MISSING: frontmatter does not open on line one",
       relativePath: "ising/proof.qmd",
       source: ["", "---", "title: A page", "---", ""].join("\n"),
-      expected: [{ code: "FRONTMATTER_MISSING", line: 1, column: 1 }],
+      expected: [
+        { code: "FRONTMATTER_MISSING", line: 1, column: 1 },
+        { code: "FRONTMATTER_INVALID", line: 2, column: 1 },
+      ],
     },
     {
       name: "FRONTMATTER_INVALID: the block is never closed",

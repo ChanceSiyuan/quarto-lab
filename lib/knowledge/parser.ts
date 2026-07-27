@@ -15,6 +15,13 @@
  * - frontmatter keys are an allowlist. A page may set `title`, `description`,
  *   `categories`, and `aliases` and nothing else, so page content can never
  *   turn rendering into execution or inject filters, includes, or resources.
+ *   The allowlist covers the whole file, not just its first block: a second
+ *   YAML metadata block further down is reported as well.
+ *
+ * Where the renderer is more permissive than CommonMark — lenient HTML tags,
+ * Pandoc raw blocks, mid-document metadata — this parser follows the renderer,
+ * not remark. Anything Quarto would put on the page is something the graph
+ * must be able to see.
  */
 
 import path from "node:path";
@@ -25,7 +32,7 @@ import { unified } from "unified";
 import { visit } from "unist-util-visit";
 import { isMap, isScalar, isSeq, parseDocument, type Node as YamlNode } from "yaml";
 
-import type { Root } from "mdast";
+import type { Definition, Root } from "mdast";
 
 import {
   ALLOWED_FRONTMATTER_KEYS,
@@ -72,16 +79,30 @@ const CITATION_PREFIX = /[\s[;({,-]/;
 const HTML_SCRIPT_TAG = /<script\b/gi;
 
 /**
- * An inline event handler attribute (`onclick=`), including the whitespace
- * that separates it from what precedes it.
+ * An inline event handler attribute (`onclick=`).
  *
- * This is matched against the whole raw HTML node rather than against parsed
- * tags on purpose. Tag-shaped scanning is fooled by a `>` inside a quoted
- * attribute value (`<div title="a>b" onclick="...">`), and missing a handler
- * is far worse than reporting one inside HTML text: this feeds a security
- * check, so it errs towards over-detection.
+ * The lookbehind rejects only characters that could continue an attribute
+ * name, so every delimiter HTML actually allows before an attribute counts:
+ * whitespace, `/` (`<svg/onload=1>`), and a closing quote
+ * (`<div id="a"onclick=1>`). Requiring whitespace here — as an earlier version
+ * did — misses exactly the canonical evasions.
  */
-const HTML_EVENT_HANDLER = /\son[a-z][a-z0-9_.:-]*\s*=/gi;
+const HTML_EVENT_HANDLER = /(?<![A-Za-z0-9_.:-])on[a-z][a-z0-9_.:-]*\s*=/gi;
+
+/** Characters that may continue an HTML tag name. */
+const HTML_TAG_NAME_START = /[a-zA-Z]/;
+
+/**
+ * A Pandoc raw attribute: ```` ```{=html} ```` on a fence, or `` `…`{=html} ``
+ * after a code span. Pandoc copies the contents of such a block verbatim into
+ * the output, so it is raw HTML wearing a code node's clothes.
+ *
+ * Every raw format is treated as raw output, not just `{=html}`. Only `html`
+ * reaches this site's renderer today, but a raw block is by definition content
+ * the author wrote to bypass Markdown, and the tag-shaped gate below keeps the
+ * cost of scanning a `{=latex}` block at essentially zero.
+ */
+const RAW_ATTRIBUTE = /^\{=[A-Za-z0-9_-]+\}/;
 
 type Citation = ParsedKnowledgePage["citations"][number];
 type UnsafeHtml = ParsedKnowledgePage["unsafeHtml"][number];
@@ -428,6 +449,211 @@ function isLocalTarget(target: string): boolean {
   return !EXTERNAL_TARGET.test(trimmed);
 }
 
+/** A half-open source range of a code block or code span. */
+interface CodeRange {
+  start: number;
+  end: number;
+  /** True for a Pandoc raw block, whose contents reach the output verbatim. */
+  raw: boolean;
+}
+
+/**
+ * The ranges of every code block and code span in the body.
+ *
+ * Ordinary code is escaped by the renderer and is the one place a knowledge
+ * page may legitimately show `<script>` or `onclick=`. A Pandoc raw block
+ * (```` ```{=html} ````, `` `…`{=html} ``) is the opposite: a `code` node in
+ * mdast, but copied straight into the output, so it is marked `raw` and stays
+ * in scope for the unsafe-HTML scan.
+ */
+function collectCodeRanges(tree: Root): CodeRange[] {
+  const ranges: CodeRange[] = [];
+  visit(tree, (node, index, parent) => {
+    if (node.type !== "code" && node.type !== "inlineCode") {
+      return;
+    }
+    const start = node.position?.start.offset;
+    const end = node.position?.end.offset;
+    if (start === undefined || end === undefined) {
+      return;
+    }
+    if (node.type === "code") {
+      ranges.push({ start, end, raw: RAW_ATTRIBUTE.test((node.lang ?? "").trim()) });
+      return;
+    }
+    // An inline raw block is a code span followed by its `{=format}` attribute.
+    const next =
+      index === undefined || parent === undefined
+        ? undefined
+        : parent.children[index + 1];
+    const attribute = next?.type === "text" ? next.value : "";
+    ranges.push({ start, end, raw: RAW_ATTRIBUTE.test(attribute) });
+  });
+  return ranges;
+}
+
+/**
+ * True when an offset sits inside an HTML start tag: after a `<name` with no
+ * unquoted `>` between them.
+ *
+ * This is what keeps whole-document handler scanning honest in both
+ * directions. A quoted `>` (`<div title="a>b" onclick="…">`) does not end the
+ * tag, so the evasion is still caught; and an `onload=` that is merely prose or
+ * a URL query parameter (`…?online=true`) is not inside a tag, so it is not
+ * reported.
+ */
+function isInsideTag(text: string, offset: number): boolean {
+  const open = text.lastIndexOf("<", offset);
+  if (open < 0 || !HTML_TAG_NAME_START.test(text[open + 1] ?? "")) {
+    return false;
+  }
+  let quote: string | undefined;
+  for (let index = open + 1; index < offset; index += 1) {
+    const character = text[index];
+    if (quote !== undefined) {
+      if (character === quote) {
+        quote = undefined;
+      }
+      continue;
+    }
+    if (character === '"' || character === "'") {
+      quote = character;
+      continue;
+    }
+    if (character === ">") {
+      return false;
+    }
+  }
+  return true;
+}
+
+/**
+ * Finds raw `<script` tags and inline event handlers anywhere the renderer
+ * would emit them verbatim.
+ *
+ * The scan runs over the body source rather than over mdast `html` nodes,
+ * because CommonMark is stricter than Pandoc about what a tag is:
+ * `<svg/onload=alert(1)>` is a plain *text* node to remark, while Pandoc's
+ * lenient HTML reader passes it through to the page. Only ordinary code is
+ * exempt.
+ */
+function scanUnsafeHtml(
+  body: string,
+  codeRanges: readonly CodeRange[],
+  at: (offset: number) => SourceLocation,
+): UnsafeHtml[] {
+  const escaped = codeRanges.filter((range) => !range.raw);
+  const isEscaped = (offset: number): boolean =>
+    escaped.some((range) => offset >= range.start && offset < range.end);
+
+  const found: UnsafeHtml[] = [];
+  for (const match of body.matchAll(HTML_SCRIPT_TAG)) {
+    const offset = match.index ?? 0;
+    if (!isEscaped(offset)) {
+      found.push({ kind: "script", location: at(offset) });
+    }
+  }
+  for (const match of body.matchAll(HTML_EVENT_HANDLER)) {
+    const offset = match.index ?? 0;
+    if (!isEscaped(offset) && isInsideTag(body, offset)) {
+      found.push({ kind: "inline-handler", location: at(offset) });
+    }
+  }
+  return found.sort(
+    (left, right) =>
+      left.location.line - right.location.line ||
+      left.location.column - right.location.column,
+  );
+}
+
+/** True when a text block is a YAML mapping, which is what Pandoc requires. */
+function isYamlMapping(text: string): boolean {
+  try {
+    const document = parseDocument(text, { prettyErrors: false });
+    return document.errors.length === 0 && isMap(document.contents);
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Reports Pandoc YAML metadata blocks written *after* the frontmatter.
+ *
+ * Pandoc merges every metadata block in a file, so a second block halfway down
+ * a page silently sets page metadata — `header-includes` injects raw content
+ * into `<head>`, `execute` turns rendering into execution. The frontmatter
+ * allowlist would be worthless if it only guarded the first block.
+ *
+ * Detection follows Pandoc's own rule rather than the mdast shape (which is a
+ * thematic break, a paragraph, and possibly a setext heading): a `---` line
+ * that starts the body or follows a blank line, is not followed by a blank
+ * line, is closed by a later `---` or `...` line, and whose contents parse as a
+ * YAML mapping. Requiring a mapping is what keeps an ordinary `---` horizontal
+ * rule from being reported.
+ */
+function scanMetadataBlocks(
+  body: string,
+  starts: readonly number[],
+  codeRanges: readonly CodeRange[],
+  /** True when the body is the whole file, so its first line starts it. */
+  atDocumentStart: boolean,
+  at: (offset: number) => SourceLocation,
+  diagnostics: Diagnostic[],
+): void {
+  const lineAt = (index: number): string =>
+    body
+      .slice(starts[index] ?? body.length, starts[index + 1] ?? body.length)
+      .replace(/\r?\n$/, "");
+  const isCode = (index: number): boolean => {
+    const offset = starts[index] ?? body.length;
+    return codeRanges.some((range) => offset >= range.start && offset < range.end);
+  };
+
+  let index = 0;
+  while (index < starts.length) {
+    const opensBlock =
+      lineAt(index) === FRONTMATTER_DELIMITER &&
+      !isCode(index) &&
+      (index === 0 ? atDocumentStart : lineAt(index - 1).trim() === "") &&
+      index + 1 < starts.length &&
+      lineAt(index + 1).trim() !== "";
+    if (!opensBlock) {
+      index += 1;
+      continue;
+    }
+
+    let close: number | undefined;
+    for (let candidate = index + 1; candidate < starts.length; candidate += 1) {
+      const text = lineAt(candidate);
+      if ((text === FRONTMATTER_DELIMITER || text === "...") && !isCode(candidate)) {
+        close = candidate;
+        break;
+      }
+    }
+    if (close === undefined) {
+      index += 1;
+      continue;
+    }
+
+    const contents = body.slice(
+      starts[index + 1] ?? body.length,
+      starts[close] ?? body.length,
+    );
+    if (!isYamlMapping(contents)) {
+      index += 1;
+      continue;
+    }
+
+    diagnostics.push({
+      code: "FRONTMATTER_INVALID",
+      message:
+        "a second YAML metadata block appears here; Pandoc merges it into the page metadata, so only the frontmatter block at the top of the file may set metadata",
+      location: at(starts[index] ?? 0),
+    });
+    index = close + 1;
+  }
+}
+
 /**
  * Reads the Markdown body.
  *
@@ -437,6 +663,12 @@ function isLocalTarget(target: string): boolean {
  * heading of any level. Prose, sub-headings, nested lists, code, and inline
  * code are all outside the machine-readable contract, so a sentence that
  * happens to link to a page never silently becomes a containment edge.
+ *
+ * Reference-style links (`[Proof][proof]`, `[proof]`, `![Fig][fig]`) are
+ * resolved through their definitions, so the curated contract does not depend
+ * on which link syntax the author used. A reference with no definition renders
+ * as literal text and contributes nothing; the missing child then surfaces
+ * loudly in the graph rather than quietly here.
  */
 function readBody(
   body: string,
@@ -467,6 +699,36 @@ function readBody(
   });
 
   const tree = unified().use(remarkParse).parse(body) as Root;
+
+  // Link definitions first: the reserved sections and the link list both
+  // resolve reference-style links through them. CommonMark keeps the first
+  // definition when an identifier is defined twice.
+  const definitions = new Map<string, Definition>();
+  visit(tree, "definition", (node) => {
+    if (!definitions.has(node.identifier)) {
+      definitions.set(node.identifier, node);
+    }
+  });
+  const usedDefinitions = new Set<string>();
+  /** The target a link node points at, following a reference if needed. */
+  const targetOf = (node: {
+    type: string;
+    url?: string;
+    identifier?: string;
+  }): string | undefined => {
+    if (node.type === "link" || node.type === "image") {
+      return node.url;
+    }
+    if (node.identifier === undefined) {
+      return undefined;
+    }
+    const definition = definitions.get(node.identifier);
+    if (definition === undefined) {
+      return undefined;
+    }
+    usedDefinitions.add(node.identifier);
+    return definition.url;
+  };
 
   // The two reserved sections: the curated contract of an index page.
   const sections: ReservedSection[] = [
@@ -522,13 +784,17 @@ function readBody(
           continue;
         }
         for (const inline of block.children) {
-          if (inline.type !== "link") {
+          if (inline.type !== "link" && inline.type !== "linkReference") {
+            continue;
+          }
+          const target = targetOf(inline);
+          if (target === undefined) {
             continue;
           }
           const entry: MarkdownLink = {
             kind: "link",
             label: mdastToString(inline),
-            target: inline.url,
+            target,
             location: atNode(inline),
           };
           if (open.targets.has(entry.target)) {
@@ -547,64 +813,79 @@ function readBody(
   }
 
   visit(tree, (node) => {
-    if (node.type === "link" || node.type === "image") {
-      if (isLocalTarget(node.url)) {
+    if (
+      node.type === "link" ||
+      node.type === "image" ||
+      node.type === "linkReference" ||
+      node.type === "imageReference"
+    ) {
+      const target = targetOf(node);
+      if (target !== undefined && isLocalTarget(target)) {
         result.localLinks.push({
-          kind: node.type === "image" ? "image" : "link",
+          kind:
+            node.type === "image" || node.type === "imageReference"
+              ? "image"
+              : "link",
           label: mdastToString(node),
-          target: node.url,
+          target,
           location: atNode(node),
         });
       }
       return;
     }
 
+    if (node.type !== "text") {
+      return;
+    }
     const start = node.position?.start.offset;
     const end = node.position?.end.offset;
     if (start === undefined || end === undefined) {
       return;
     }
-    const raw = body.slice(start, end);
 
-    if (node.type === "text") {
-      for (const match of raw.matchAll(CITATION_KEY)) {
-        const offset = start + (match.index ?? 0);
-        const before = offset === 0 ? "" : (body[offset - 1] ?? "");
-        if (before !== "" && !CITATION_PREFIX.test(before)) {
-          continue;
-        }
-        // Pandoc allows punctuation inside a key but not at its end.
-        let key = match[0].slice(1);
-        while (key.length > 0 && !/[A-Za-z0-9_]$/.test(key)) {
-          key = key.slice(0, -1);
-        }
-        if (key.length > 0) {
-          result.citations.push({ key, location: atOffset(offset) });
-        }
+    // Citations are read from the raw source of the text node, not from its
+    // decoded value, so escapes and character references cannot shift a
+    // location or invent a key.
+    for (const match of body.slice(start, end).matchAll(CITATION_KEY)) {
+      const offset = start + (match.index ?? 0);
+      const before = offset === 0 ? "" : (body[offset - 1] ?? "");
+      if (before !== "" && !CITATION_PREFIX.test(before)) {
+        continue;
       }
-      return;
-    }
-
-    if (node.type === "html") {
-      for (const match of raw.matchAll(HTML_SCRIPT_TAG)) {
-        result.unsafeHtml.push({
-          kind: "script",
-          location: atOffset(start + (match.index ?? 0)),
-        });
+      // Pandoc allows punctuation inside a key but not at its end.
+      let key = match[0].slice(1);
+      while (key.length > 0 && !/[A-Za-z0-9_]$/.test(key)) {
+        key = key.slice(0, -1);
       }
-      for (const attribute of raw.matchAll(HTML_EVENT_HANDLER)) {
-        // The match starts on the whitespace before the attribute name.
-        const offset = start + (attribute.index ?? 0) + 1;
-        result.unsafeHtml.push({ kind: "inline-handler", location: atOffset(offset) });
+      if (key.length > 0) {
+        result.citations.push({ key, location: atOffset(offset) });
       }
     }
   });
 
-  result.unsafeHtml.sort(
+  // A definition nobody references still names a target, and its URL is the
+  // only place that target is written; a referenced definition is already
+  // covered at each usage.
+  for (const [identifier, definition] of definitions) {
+    if (usedDefinitions.has(identifier) || !isLocalTarget(definition.url)) {
+      continue;
+    }
+    result.localLinks.push({
+      kind: "link",
+      label: definition.label ?? identifier,
+      target: definition.url,
+      location: atNode(definition),
+    });
+  }
+  result.localLinks.sort(
     (left, right) =>
       left.location.line - right.location.line ||
       left.location.column - right.location.column,
   );
+
+  const codeRanges = collectCodeRanges(tree);
+  result.unsafeHtml.push(...scanUnsafeHtml(body, codeRanges, atOffset));
+  scanMetadataBlocks(body, starts, codeRanges, bodyLine === 1, atOffset, diagnostics);
 
   return result;
 }

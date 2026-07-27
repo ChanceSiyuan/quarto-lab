@@ -90,12 +90,23 @@ export interface ParsedKnowledgePage {
    * knowledge tree, in document order. Reading-map and related-topic entries
    * appear here too, so link checking never has to be repeated per section.
    * HTTP(S), `mailto:`, and pure `#fragment` targets are excluded; anything
-   * else, including a foreign scheme, is left for the graph to reject.
+   * else, including a foreign scheme such as `javascript:`, is left for the
+   * graph to reject.
+   *
+   * Reference-style links and images are resolved through their definitions
+   * and reported at the reference; a definition nobody references is reported
+   * at the definition line. Either way every declared target appears exactly
+   * once per use.
    */
   localLinks: readonly MarkdownLink[];
   /** Pandoc citation keys found in Markdown text, one entry per occurrence. */
   citations: readonly { key: string; location: SourceLocation }[];
-  /** Raw `<script` tags and inline `on*=` handlers found in raw HTML. */
+  /**
+   * Raw `<script` tags and inline `on*=` handlers anywhere the renderer would
+   * emit them verbatim: raw HTML, lenient tag syntax Pandoc accepts but
+   * CommonMark does not, and Pandoc raw blocks (```` ```{=html} ````). Ordinary
+   * code blocks and code spans are escaped by the renderer and are exempt.
+   */
   unsafeHtml: readonly {
     kind: "script" | "inline-handler";
     location: SourceLocation;
