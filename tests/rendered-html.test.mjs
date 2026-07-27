@@ -230,6 +230,44 @@ test("server-renders the static research ledger for QMB-001", async () => {
   assert.doesNotMatch(html, /[\u3400-\u9FFF]/u);
 });
 
+test("server-renders static attempt audit dossiers", async () => {
+  for (const [attemptId, title] of [
+    ["ATT-001", "Exact meet-in-the-middle baseline"],
+    ["ATT-002", "Random kernel sampling"],
+    ["ATT-003", "Verified quotient-coset descent"],
+    ["ATT-004", "Residual-seeded local search"],
+    ["ATT-005", "Adaptive verified portfolio"],
+  ]) {
+    const response = await render(`/problems/QMB-001/attempts/${attemptId}`);
+    assert.equal(response.status, 200);
+    const html = await response.text();
+    assert.match(html, new RegExp(`<p class="eyebrow">QMB-001 / ${attemptId}<\\/p>`));
+    assert.match(html, new RegExp(`<h1>${title}<\\/h1>`));
+    assert.match(html, /Example data - synthetic results for interface demonstration only\./);
+    assert.match(html, /Hypothesis/);
+    assert.match(html, /Evaluation path/);
+    assert.match(html, /Result interpretation/);
+    assert.match(html, /Learning carried forward/);
+    assert.match(html, /problems\/QMB-001\/attempts\//);
+    assert.match(html, /attempt\.json/);
+    assert.match(html, /LOG\.md/);
+    assert.doesNotMatch(html, /[\u3400-\u9FFF]/u);
+  }
+});
+
+test("returns 404 for unknown static attempt IDs", async () => {
+  const response = await render("/problems/QMB-001/attempts/ATT-999");
+  assert.equal(response.status, 404);
+});
+
+test("returns 404 for attempt routes on non-example problems", async () => {
+  const response = await renderFilesystemFixture(
+    { manifests: [acceptedFixture] },
+    "/problems/QMB-017/attempts/ATT-001?fixture=filesystem",
+  );
+  assert.equal(response.status, 404);
+});
+
 test("server-renders the generic problem detail shell for non-example problems", async () => {
   const response = await renderFilesystemFixture(
     { manifests: [acceptedFixture] },
