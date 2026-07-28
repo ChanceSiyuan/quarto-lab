@@ -8,6 +8,15 @@ import { buildResearchIndex } from "../lib/problems/research-indexer.mjs";
 import { createResearchRepository } from "../lib/problems/research-repository.mjs";
 import { RESEARCH_DISCLAIMER } from "../lib/problems/research-schema.mjs";
 
+const INFRASTRUCTURE_RANGES = [
+  { first: 1, last: 1, cohort: "cohort-001-100", commit: "c4533f982ece376c5f299a13edfabff0f489182c" },
+  { first: 2, last: 100, cohort: "cohort-001-100", commit: "3e61f5ac8143e4848e5e814188c83683c74dfe4c" },
+  { first: 101, last: 104, cohort: "cohort-101-200", commit: "12a8f794f68d63f07303df0cc38fa244c1ab1248" },
+  { first: 105, last: 107, cohort: "cohort-101-200", commit: "87f0972ca2551074546c723cf48053d569b9bf59" },
+  { first: 108, last: 108, cohort: "cohort-101-200", commit: "3f30f39a2f9be8ceead3821706aae77acdd980aa" },
+  { first: 109, last: 200, cohort: "cohort-101-200", commit: "b6a0e03c05a653b4e85160a703c0be4eef06b619" },
+];
+
 async function makeRoot() {
   const root = await mkdtemp(join(tmpdir(), "research-loop-research-index-"));
   await mkdir(join(root, "problems", "Prob-001", "attempts", "ATT-001"), { recursive: true });
@@ -17,12 +26,13 @@ async function makeRoot() {
 }
 
 function attempt(sequence = 1) {
+  const infrastructure = INFRASTRUCTURE_RANGES.find((range) => sequence >= range.first && sequence <= range.last);
   return {
     schemaVersion: 1,
     problemId: "Prob-001",
     id: `ATT-${String(sequence).padStart(3, "0")}`,
     sequence,
-    cohort: "cohort-001-100",
+    cohort: infrastructure.cohort,
     title: `CSS Distance Proposal ${String(sequence).padStart(3, "0")}`,
     summary: "Imported AutoQEC trial record.",
     stage: "development",
@@ -37,8 +47,8 @@ function attempt(sequence = 1) {
     },
     provenance: {
       sourceRepository: "AutoQEC", sourceBranch: "autoresearch/css-distance/run100-proposal-001",
-      sourceCommit: "f".repeat(40), sourceInfrastructureCommit: "c4533f982ece376c5f299a13edfabff0f489182c",
-      sourceCohort: "cohort-001-100", model: null,
+      sourceCommit: "f".repeat(40), sourceInfrastructureCommit: infrastructure.commit,
+      sourceCohort: infrastructure.cohort, model: null,
     },
     candidate: { status: "present", path: "candidate.py" },
     artifacts: [
@@ -49,7 +59,7 @@ function attempt(sequence = 1) {
   };
 }
 
-async function writeValidResearch(root) {
+async function writeValidResearch(root, sequences = Array.from({ length: 200 }, (_, index) => index + 1)) {
   await writeFile(join(root, "problems", "Prob-001", "research.json"), JSON.stringify({
     schemaVersion: 1, kind: "imported-research-record", problemId: "Prob-001", attemptCount: 200,
     attemptIdRange: ["ATT-001", "ATT-200"], disclaimer: RESEARCH_DISCLAIMER,
@@ -58,7 +68,11 @@ async function writeValidResearch(root) {
       { id: "cohort-101-200", first: 101, last: 200 },
     ],
   }, null, 2));
-  await writeFile(join(root, "problems", "Prob-001", "attempts", "ATT-001", "attempt.json"), JSON.stringify(attempt(), null, 2));
+  for (const sequence of sequences) {
+    const id = `ATT-${String(sequence).padStart(3, "0")}`;
+    await mkdir(join(root, "problems", "Prob-001", "attempts", id), { recursive: true });
+    await writeFile(join(root, "problems", "Prob-001", "attempts", id, "attempt.json"), JSON.stringify(attempt(sequence), null, 2));
+  }
 }
 
 test("builds a deterministic research index from committed attempts", async () => {
@@ -69,8 +83,45 @@ test("builds a deterministic research index from committed attempts", async () =
 
   assert.equal(index.schemaVersion, 1);
   assert.deepEqual(index.records.map((record) => record.problemId), ["Prob-001"]);
-  assert.deepEqual(index.records[0].attempts.map((item) => item.id), ["ATT-001"]);
+  assert.equal(index.records[0].attemptCount, 200);
+  assert.equal(index.records[0].attempts.length, 200);
+  assert.deepEqual(index.records[0].attempts.slice(0, 3).map((item) => item.id), ["ATT-001", "ATT-002", "ATT-003"]);
+  assert.equal(index.records[0].attempts.at(-1).id, "ATT-200");
   assert.deepEqual(index.diagnostics, []);
+});
+
+test("does not emit a partial ledger when declared attempts are missing", async () => {
+  const root = await makeRoot();
+  await writeValidResearch(root, [1]);
+
+  const index = await buildResearchIndex({ rootDir: root });
+
+  assert.deepEqual(index.records, []);
+  assert.match(index.diagnostics.map((item) => item.message).join("\n"), /Missing declared attempt directory: ATT-002/);
+});
+
+test("rejects unexpected attempt directories before indexing", async () => {
+  const root = await makeRoot();
+  await writeValidResearch(root);
+  await mkdir(join(root, "problems", "Prob-001", "attempts", "ATT-201"), { recursive: true });
+  await writeFile(join(root, "problems", "Prob-001", "attempts", "ATT-201", "attempt.json"), "{}\n");
+
+  const index = await buildResearchIndex({ rootDir: root });
+
+  assert.deepEqual(index.records, []);
+  assert.match(index.diagnostics.map((item) => item.message).join("\n"), /Unexpected attempt directory: ATT-201/);
+});
+
+test("rejects malformed attempt directories before indexing", async () => {
+  const root = await makeRoot();
+  await writeValidResearch(root);
+  await mkdir(join(root, "problems", "Prob-001", "attempts", "trial-001"), { recursive: true });
+  await writeFile(join(root, "problems", "Prob-001", "attempts", "trial-001", "attempt.json"), "{}\n");
+
+  const index = await buildResearchIndex({ rootDir: root });
+
+  assert.deepEqual(index.records, []);
+  assert.match(index.diagnostics.map((item) => item.message).join("\n"), /Malformed attempt directory: trial-001/);
 });
 
 test("surfaces corrupt attempts as diagnostics without returning a partial ledger", async () => {
