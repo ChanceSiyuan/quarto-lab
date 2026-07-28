@@ -106,6 +106,37 @@ test("watches research manifests and attempt manifests", async (t) => {
   assert.equal(changes, 1);
 });
 
+test("registers newly created attempt directories and rebuilds for their manifests", async (t) => {
+  const root = await mkdtemp(join(tmpdir(), "research-loop-dev-watch-"));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const attemptsPath = join(root, "problems", "Prob-001", "attempts");
+  const newAttemptPath = join(attemptsPath, "ATT-002");
+  await mkdir(attemptsPath, { recursive: true });
+
+  const watches = [];
+  let changes = 0;
+  const watcher = await watchProblemFiles({
+    rootDir: root,
+    onChange: () => { changes += 1; },
+    watchFn(path, options, callback) {
+      const record = { callback, closed: false, options, path };
+      watches.push(record);
+      return { close() { record.closed = true; } };
+    },
+  });
+  t.after(() => watcher.close());
+
+  await mkdir(newAttemptPath);
+  const attemptsWatch = watches.find((item) => item.path === attemptsPath && !item.closed);
+  attemptsWatch.callback("rename", "ATT-002");
+  await waitFor(() => watches.some((item) => item.path === newAttemptPath && !item.closed));
+
+  changes = 0;
+  const newAttemptWatch = watches.find((item) => item.path === newAttemptPath && !item.closed);
+  newAttemptWatch.callback("change", "attempt.json");
+  assert.equal(changes, 1);
+});
+
 test("reconciles problem directories and rebuilds only for index inputs", async (t) => {
   const root = await mkdtemp(join(tmpdir(), "research-loop-dev-watch-"));
   t.after(() => rm(root, { recursive: true, force: true }));

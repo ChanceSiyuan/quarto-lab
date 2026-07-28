@@ -29,7 +29,7 @@ export async function watchProblemFiles({ rootDir, onChange, watchFn = watch }) 
   function registerWatcher(watchers, path, filenames, callback = onChange) {
     watchers.push(watchFn(path, { recursive: false }, (_eventType, filename) => {
       const changedName = filename?.toString();
-      if (!changedName || filenames.has(changedName)) callback();
+      if (!changedName || filenames.size === 0 || filenames.has(changedName)) callback();
     }));
   }
 
