@@ -83,16 +83,38 @@ async function createSyntheticSource({
   const trialCommits = [];
   for (const sequence of [1, 101, 200]) {
     await runGit(sourceDir, ["checkout", "main"]);
-    await mkdir(join(sourceDir, "src"), { recursive: true });
-    await writeFile(join(sourceDir, "src", "infrastructure.py"), `EPOCH = ${sequence}\n`);
+    await rm(join(sourceDir, "src"), { recursive: true, force: true });
+    await rm(join(sourceDir, "containers"), { recursive: true, force: true });
+    await rm(join(sourceDir, "zoo"), { recursive: true, force: true });
+    await rm(join(sourceDir, "pyproject.toml"), { force: true });
+    await mkdir(join(sourceDir, "src", "autoqec_search"), { recursive: true });
+    await writeFile(join(sourceDir, "src", "autoqec_search", "__init__.py"), "");
+    await writeFile(join(sourceDir, "src", "autoqec_search", "css_distance_autoresearch.py"), [
+      "from autoqec_search.css_distance_container import DockerImage",
+      "from autoqec_search.css_distance_eval import DEFAULT_TIMEOUT_SECONDS",
+      "",
+      `EPOCH = ${sequence}`,
+      "",
+    ].join("\n"));
+    await writeFile(join(sourceDir, "src", "autoqec_search", "css_distance_container.py"), "class DockerImage:\n    pass\n");
+    await writeFile(join(sourceDir, "src", "autoqec_search", "css_distance_eval.py"), "DEFAULT_TIMEOUT_SECONDS = 300\n");
+    await writeFile(join(sourceDir, "src", "autoqec_search", "quantum_tanner_catalog.py"), "UNRELATED = True\n");
+    await mkdir(join(sourceDir, "containers", "css-distance-autoresearch"), { recursive: true });
+    await writeFile(join(sourceDir, "containers", "css-distance-autoresearch", "candidate-entrypoint.py"), "print('entry')\n");
+    await writeFile(join(sourceDir, "containers", "css-distance-autoresearch", "evaluator.Dockerfile"), "FROM python:3.11\n");
+    await writeFile(join(sourceDir, "containers", "css-distance-autoresearch", "proposal.Dockerfile"), "FROM python:3.11\n");
+    await writeFile(join(sourceDir, "containers", "css-distance-autoresearch", "requirements.txt"), "numpy\n");
+    await writeFile(join(sourceDir, "pyproject.toml"), "[project]\nname = \"synthetic-autoqec\"\n");
+    await mkdir(join(sourceDir, "zoo", "external", "eczoo", "views", "site"), { recursive: true });
+    await writeFile(join(sourceDir, "zoo", "external", "eczoo", "views", "site", "index.html"), "<!doctype html>\n");
     if (infrastructureSymlink && sequence === 1) {
-      await symlink("infrastructure.py", join(sourceDir, "src", "linked-infrastructure.py"));
+      await rm(join(sourceDir, "src", "autoqec_search", "css_distance_container.py"));
+      await symlink("css_distance_eval.py", join(sourceDir, "src", "autoqec_search", "css_distance_container.py"));
     }
-    await runGit(sourceDir, ["add", "src/infrastructure.py"]);
-    if (infrastructureSymlink && sequence === 1) await runGit(sourceDir, ["add", "src/linked-infrastructure.py"]);
+    await runGit(sourceDir, ["add", "src", "containers", "pyproject.toml", "zoo"]);
     if (infrastructureSubmodule && sequence === 1) {
       const gitlinkCommit = await gitOutput(sourceDir, ["rev-parse", "HEAD"]);
-      await runGit(sourceDir, ["update-index", "--add", "--cacheinfo", `160000,${gitlinkCommit},src/evaluator-submodule`]);
+      await runGit(sourceDir, ["update-index", "--add", "--cacheinfo", `160000,${gitlinkCommit},src/autoqec_search/css_distance_container.py`]);
     }
     await runGit(sourceDir, ["commit", "-m", `infrastructure ${sequence}`]);
     const firstParent = await gitOutput(sourceDir, ["rev-parse", "HEAD"]);
@@ -195,6 +217,16 @@ test("imports synthetic trials atomically with copied artifacts and snapshots", 
     assert.equal(await readFile(join(root, "problems", "Prob-001", "attempts", "ATT-200", "METHOD.txt"), "utf8"), "synthetic method\n");
     assert.equal(await fileExists(join(root, "problems", "Prob-001", "import-manifest.json")), true);
     assert.equal(await fileExists(join(root, "problems", "Prob-001", "infrastructure", "snapshots", firstParents[0], "source", ".gitignore")), false);
+    const firstSnapshotSource = join(root, "problems", "Prob-001", "infrastructure", "snapshots", firstParents[0], "source");
+    assert.equal(await fileExists(join(firstSnapshotSource, "src", "autoqec_search", "css_distance_autoresearch.py")), true);
+    assert.equal(await fileExists(join(firstSnapshotSource, "src", "autoqec_search", "css_distance_container.py")), true);
+    assert.equal(await fileExists(join(firstSnapshotSource, "src", "autoqec_search", "quantum_tanner_catalog.py")), false);
+    assert.equal(await fileExists(join(firstSnapshotSource, "zoo", "external", "eczoo", "views", "site", "index.html")), false);
+    const snapshotManifest = JSON.parse(await readFile(join(root, "problems", "Prob-001", "infrastructure", "snapshots", firstParents[0], "source-manifest.json"), "utf8"));
+    assert.deepEqual(snapshotManifest.entryPoints, [
+      "containers/css-distance-autoresearch/candidate-entrypoint.py",
+      "src/autoqec_search/css_distance_autoresearch.py",
+    ]);
     const provenance = JSON.parse(await readFile(join(root, "problems", "Prob-001", "attempts", "ATT-001", "attempt.json"), "utf8")).provenance;
     assert.equal(provenance.sourceCommit, trialCommits[0]);
     assert.equal(provenance.sourceInfrastructureCommit, firstParents[0]);
@@ -315,7 +347,7 @@ test("rejects Git symlink and submodule infrastructure entries without installin
         sourceDir,
         expectedAttempts: [1, 101, 200],
         infrastructureRanges: ranges,
-      }), /unsafe non-regular or symlink Git entry: src\/(?:linked-infrastructure\.py|evaluator-submodule)/);
+      }), /unsafe non-regular or symlink Git entry: src\/autoqec_search\/css_distance_container\.py/);
       assert.equal(await fileExists(join(root, "problems", "Prob-001")), false);
     } finally {
       await rm(root, { recursive: true, force: true });
