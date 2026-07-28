@@ -161,6 +161,7 @@ export async function main({
   runIndexBuildFn = runIndexBuild,
   watchProblemFilesFn = watchProblemFiles,
   startAssessmentServiceFn = startAssessmentService,
+  vinextDevArgs = process.argv.slice(2),
 } = {}) {
   const resolvedRootDir = resolve(rootDir);
 
@@ -198,7 +199,7 @@ export async function main({
       },
     });
 
-    child = spawnFn("vinext", ["dev"], {
+    child = spawnFn("vinext", ["dev", ...vinextDevArgs], {
       cwd: resolvedRootDir,
       env: {
         ...process.env,

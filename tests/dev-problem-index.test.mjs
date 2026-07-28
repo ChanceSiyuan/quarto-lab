@@ -74,6 +74,34 @@ test("dev wrapper starts the local assessment service and passes proxy env to vi
   assert.equal(vinext.options.env.LOCAL_ASSESSMENT_PROXY_TOKEN, service.token);
 });
 
+test("dev wrapper forwards vinext dev arguments", async () => {
+  const { main } = await import("../scripts/dev-problem-index.mjs");
+  const spawnCalls = [];
+  const child = new EventEmitter();
+  child.kill = () => {};
+  function spawnFn(command, args, options) {
+    spawnCalls.push({ command, args, options });
+    queueMicrotask(() => child.emit("exit", 0));
+    return child;
+  }
+
+  await main({
+    rootDir: "/tmp/research-loop-dev-root",
+    spawnFn,
+    runIndexBuildFn: async () => {},
+    watchProblemFilesFn: async () => ({ close() {} }),
+    startAssessmentServiceFn: async () => ({
+      url: "http://127.0.0.1:39001",
+      token: "token-123",
+      close: async () => {},
+    }),
+    vinextDevArgs: ["--port", "4174", "--hostname", "127.0.0.1"],
+  });
+
+  const vinext = spawnCalls.find((call) => call.command === "vinext");
+  assert.deepEqual(vinext.args, ["dev", "--port", "4174", "--hostname", "127.0.0.1"]);
+});
+
 test("dev wrapper closes the sidecar and watcher when vinext emits an error", async (t) => {
   const { main } = await import("../scripts/dev-problem-index.mjs");
   const originalExitCode = process.exitCode;

@@ -32,6 +32,7 @@
     "test:pages": "npm run pages:build && node --test tests/pages-showcase.test.mjs",
     "test:rendered": "node --test tests/rendered-html.test.mjs tests/built-static-assets.test.mjs",
     "test:e2e": "playwright test",
+    "test:e2e:assessment": "playwright test --config playwright.assessment.config.ts",
     "test": "npm run lint && npm run test:unit:problems && npm run test:unit && npm run build && npm run test:rendered && npm run test:pages && npm run test:e2e && npm run build",
     "db:generate": "drizzle-kit generate"
   },
