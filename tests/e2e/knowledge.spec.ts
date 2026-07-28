@@ -108,7 +108,14 @@ test.describe("published knowledge site", () => {
     );
     expect(await figure.evaluate((image: HTMLImageElement) => image.naturalWidth)).toBeGreaterThan(0);
 
-    await page.goto("/knowledge/ising/proposal.html");
+    // `domcontentloaded`, not the default `load`: this page is the one that
+    // carries mathematics, and Quarto renders it with MathJax fetched from a
+    // CDN. Waiting for `load` waits for that third-party request, so on a host
+    // that cannot reach the CDN quickly the navigation hangs until the test
+    // times out — a red suite that says nothing about this repository. Every
+    // assertion below is about markup Quarto emitted server-side, which is
+    // present as soon as the document is parsed.
+    await page.goto("/knowledge/ising/proposal.html", { waitUntil: "domcontentloaded" });
     await expect(page.locator("#quarto-document-content")).toContainText(
       "Measuring the Binder cumulant",
     );
