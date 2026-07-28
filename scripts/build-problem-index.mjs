@@ -2,6 +2,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { dirname, join, relative, resolve } from "node:path";
 
 import { buildProblemIndex } from "../lib/problems/indexer.mjs";
+import { buildResearchIndex } from "../lib/problems/research-indexer.mjs";
 
 function readArg(name, fallback) {
   const index = process.argv.indexOf(name);
@@ -23,3 +24,9 @@ const index = await buildProblemIndex({ rootDir, problemsDir, reservedIds });
 await mkdir(dirname(outputPath), { recursive: true });
 await writeFile(outputPath, `${JSON.stringify(index, null, 2)}\n`);
 console.log(`problem index: wrote ${relative(rootDir, outputPath)}`);
+
+const researchOutputPath = resolve(readArg("--research-out", join(rootDir, ".generated/research-index.json")));
+const researchIndex = await buildResearchIndex({ rootDir, problemsDir });
+await mkdir(dirname(researchOutputPath), { recursive: true });
+await writeFile(researchOutputPath, `${JSON.stringify(researchIndex, null, 2)}\n`);
+console.log(`research index: wrote ${relative(rootDir, researchOutputPath)}`);
