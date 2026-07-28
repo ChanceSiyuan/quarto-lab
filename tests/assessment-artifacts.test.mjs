@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtemp, mkdir, readFile, stat } from "node:fs/promises";
+import { mkdtemp, mkdir, readFile, stat, symlink } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
@@ -22,6 +22,30 @@ test("rejects traversal in problem and run IDs", async () => {
   const root = await mkdtemp(join(tmpdir(), "assessment-paths-"));
   await assert.rejects(() => resolveProblemDir(root, "../Prob-001"), /Invalid problem ID/);
   await assert.rejects(() => resolveRunDir(root, "Prob-001", "../x"), /Invalid run ID/);
+});
+
+test("rejects a problem directory symlink that escapes the problems root", async () => {
+  const root = await mkdtemp(join(tmpdir(), "assessment-paths-"));
+  const outside = await mkdtemp(join(tmpdir(), "assessment-outside-"));
+  await mkdir(join(root, "problems"));
+  await symlink(outside, join(root, "problems", "Prob-001"));
+
+  await assert.rejects(() => resolveProblemDir(root, "Prob-001"), /Path escapes expected root/);
+});
+
+test("rejects generated directories outside the workspace or behind a symlink", async () => {
+  const root = await mkdtemp(join(tmpdir(), "assessment-store-"));
+  const outside = await mkdtemp(join(tmpdir(), "assessment-outside-"));
+  await symlink(outside, join(root, ".generated"));
+
+  const symlinkedStore = createArtifactStore({ rootDir: root });
+  await assert.rejects(() => symlinkedStore.createAcceptedRun({ problemId: "Prob-001" }), /Path escapes expected root/);
+
+  const traversalStore = createArtifactStore({ rootDir: root, generatedDir: "../outside" });
+  await assert.rejects(() => traversalStore.createAcceptedRun({ problemId: "Prob-001" }), /Path escapes expected root/);
+
+  const absoluteStore = createArtifactStore({ rootDir: root, generatedDir: outside });
+  await assert.rejects(() => absoluteStore.createAcceptedRun({ problemId: "Prob-001" }), /Path escapes expected root/);
 });
 
 test("publishes completed artifacts atomically under the problem", async () => {
