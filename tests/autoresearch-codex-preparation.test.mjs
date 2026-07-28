@@ -16,9 +16,9 @@ const envelope = { outcome: "prepared", summary: "Ready", manifestPath: "infrast
 test("preflight checks codex version and login status", async () => {
   const calls = [];
   await preflightPreparationCodex({ codexPath: "codex", skillPath: "/skill", schemaPath: "/schema", processRunner: async (options) => calls.push(options) });
-  assert.deepEqual(calls.map(({ command, args, timeoutMs }) => ({ command, args, timeoutMs })), [
-    { command: "codex", args: ["--version"], timeoutMs: 15_000 },
-    { command: "codex", args: ["login", "status"], timeoutMs: 15_000 },
+  assert.deepEqual(calls.map(({ command, args, timeoutMs, env }) => ({ command, args, timeoutMs, env })), [
+    { command: "codex", args: ["--version"], timeoutMs: 15_000, env: { PATH: process.env.PATH, HOME: process.env.HOME, TMPDIR: process.env.TMPDIR, LANG: process.env.LANG, LC_ALL: process.env.LC_ALL, LC_CTYPE: process.env.LC_CTYPE, TERM: process.env.TERM } },
+    { command: "codex", args: ["login", "status"], timeoutMs: 15_000, env: { PATH: process.env.PATH, HOME: process.env.HOME, TMPDIR: process.env.TMPDIR, LANG: process.env.LANG, LC_ALL: process.env.LC_ALL, LC_CTYPE: process.env.LC_CTYPE, TERM: process.env.TERM } },
   ]);
   await assert.rejects(() => preflightPreparationCodex({ codexPath: "", skillPath: "/skill", schemaPath: "/schema", processRunner: async () => {} }), CodexPreparationError);
 });
@@ -49,6 +49,8 @@ test("runs the exact isolated codex invocation and trusts only host final output
     });
     assert.deepEqual(result, envelope);
     assert.equal(calls[0].cwd, stageDir);
+    assert.ok(calls[0].timeoutMs > 0, "Codex execution must set a host-controlled timeout");
+    assert.equal(calls[0].env.PATH, process.env.PATH);
     assert.deepEqual(calls[0].args, ["exec", "--sandbox", "workspace-write", "--ephemeral", "--json", "--output-schema", "/schema", "--output-last-message", join(stageDir, ".preparation-result.json"), calls[0].args.at(-1)]);
   } finally { await rm(stageDir, { recursive: true, force: true }); }
 });
