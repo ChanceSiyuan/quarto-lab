@@ -40,7 +40,7 @@ const REPO_ROOT = path.resolve(fileURLToPath(import.meta.url), "..", "..", "..")
 const SKILLS_ROOT = path.join(REPO_ROOT, "skills");
 
 /** The complete set of local skills this repository commits. */
-const SKILL_NAMES = ["add-problem", "download-ref", "read-knowledge", "review-draft"] as const;
+const SKILL_NAMES = ["add-problem", "download-ref", "prepare-autoresearch", "read-knowledge", "review-draft"] as const;
 
 type SkillName = (typeof SKILL_NAMES)[number];
 
@@ -391,8 +391,18 @@ const ADD_PROBLEM: readonly Clause[] = [
   { requirement: "re-previews collisions", in: "body", pattern: /collision[^.]*new ID[^.]*preview[^.]*confirm/i },
 ];
 
+const PREPARE_AUTORESEARCH: readonly Clause[] = [
+  { requirement: "writes only staging", in: "body", pattern: /write only[^.]*staging/i },
+  { requirement: "does not create attempts", in: "body", pattern: /never create[^.]*attempt/i },
+  { requirement: "does not fabricate domain authority", in: "body", pattern: /never fabricate[^.]*metric|correctness rule|private dataset/i },
+  { requirement: "uses one blocking question", in: "body", pattern: /exactly one blocking question/i },
+  { requirement: "returns structured output", in: "body", pattern: /structured output schema/i },
+  { requirement: "keeps private data outside the candidate tree", in: "body", pattern: /private[^.]*outside[^.]*candidate/i },
+];
+
 const CLAUSES: Readonly<Record<SkillName, readonly Clause[]>> = {
   "add-problem": ADD_PROBLEM,
+  "prepare-autoresearch": PREPARE_AUTORESEARCH,
   "read-knowledge": READ_KNOWLEDGE,
   "review-draft": REVIEW_DRAFT,
   "download-ref": DOWNLOAD_REF,
@@ -468,7 +478,7 @@ test("skills/ holds exactly the committed local skills", async () => {
   assert.deepEqual(
     entries.map((entry) => entry.name).sort(),
     [...SKILL_NAMES].sort(),
-    "skills/ must hold exactly the four documented local skills",
+    "skills/ must hold exactly the committed local skills",
   );
   assert.ok(
     entries.every((entry) => entry.isDirectory()),
@@ -651,6 +661,12 @@ test("every command a skill hands an agent is documented in docs/skills.md", asy
         (match) => match[1],
       ),
     );
+    // Preparation is called by the host with a supplied staging root, rather
+    // than through a repository command an agent could invoke directly.
+    if (name === "prepare-autoresearch") {
+      assert.equal(targets.size, 0, `${name}: the host owns invocation, not a Make target`);
+      continue;
+    }
     assert.ok(targets.size > 0, `${name}: a skill must hand the agent a command`);
     for (const target of targets) {
       assert.match(
