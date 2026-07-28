@@ -97,7 +97,7 @@ interface LiteratureRecord {
   };
   item_type?: string;
   title?: string;
-  authors?: Array<Record<string, string>>;
+  authors?: Array<{ name?: string; first?: string; last?: string }>;
   year?: number | null;
   abstract?: string;
   tags?: string[];
@@ -367,7 +367,9 @@ async function ensureCollectionRoot(literatureRoot: string): Promise<void> {
   );
 }
 
-function authors(data: ZoteroItem["data"]): Array<Record<string, string>> {
+function authors(
+  data: ZoteroItem["data"],
+): Array<{ name?: string; first?: string; last?: string }> {
   return (data.creators ?? [])
     .filter((creator) => creator.creatorType === "author")
     .map((creator) => creator.name
@@ -625,7 +627,9 @@ export async function importZoteroSnapshot(options: {
     imported += 1;
     const suggested = membershipsOf(item.data.collections ?? [], paths, config);
     const oldPath = existing.get(item.key);
-    const old = oldPath === undefined ? {} : await readRecord(oldPath);
+    const old: LiteratureRecord = oldPath === undefined
+      ? { schema_version: 2, origin: "zotero-import", materialization: "metadata-only" }
+      : await readRecord(oldPath);
     const oldPrimary = old.qlab?.primary_collection ?? null;
     const oldTopic = old.qlab?.primary_topic ??
       (oldPrimary === null ? config.default_topic : config.collection_map[oldPrimary]?.topic ?? config.default_topic);

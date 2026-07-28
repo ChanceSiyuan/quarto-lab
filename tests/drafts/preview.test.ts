@@ -114,17 +114,17 @@ async function fileTree(root: string): Promise<string[]> {
 // The committed project file: a preview, and nothing that looks like the site.
 // ---------------------------------------------------------------------------
 
-test("the drafts project renders one file, disables execution, and builds no site", async () => {
+test("the drafts project includes only QMD notes, disables execution, and builds no site", async () => {
   const config: unknown = parse(
     await readFile(path.join(REPO_ROOT, "drafts", "_quarto.yml"), "utf8"),
     { uniqueKeys: true },
   );
 
   // Compared whole rather than key by key: an extra `website`, `sidebar`,
-  // `filters`, or `resources` key would turn the preview of one untrusted note
-  // into a project render of the whole drafts tree.
+  // `filters`, or `resources` key would turn the local preview into a
+  // publishable site. The render allowlist excludes legacy imported Markdown.
   assert.deepEqual(config, {
-    project: { type: "default", "output-dir": ".preview" },
+    project: { type: "default", "output-dir": ".preview", render: ["**/*.qmd"] },
     format: { html: { toc: true } },
     execute: { enabled: false },
   });
