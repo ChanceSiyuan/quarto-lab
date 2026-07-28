@@ -11,7 +11,7 @@ const CANARY = "PRIVATE-CANARY-8eafbd8e";
 const FIXED_NOW = new Date("2026-07-28T12:00:00.000Z");
 const digest = (value) => createHash("sha256").update(value).digest("hex");
 
-async function fixture(t, { outcomes = {}, tamper = null } = {}) {
+async function fixture(t, { outcomes = {}, tamper = null, assertRuntimeIsolation = false } = {}) {
   const root = await mkdtemp(join(tmpdir(), "autoresearch-preflight-"));
   t.after(() => rm(root, { recursive: true, force: true }));
   const stageDir = join(root, "stage");
@@ -27,7 +27,11 @@ async function fixture(t, { outcomes = {}, tamper = null } = {}) {
   await writeFile(command, [
     "const check = process.argv.at(-1);",
     `const outcomes = ${JSON.stringify(outcomes)};`,
-    "process.stdout.write(JSON.stringify(outcomes[check] ?? (check === 'hard-code-negative' ? { ok: false } : { ok: true, score: 7, baselineScore: 7 })) + '\\n');",
+    "const evaluator = new Set(['correctness-negative', 'hard-code-negative', 'baseline-reproduction', 'score-arithmetic', 'reproducibility']).has(check);",
+    `const isolated = !${JSON.stringify(assertRuntimeIsolation)} || (evaluator ? process.env.AUTORESEARCH_PRIVATE_DATA_ROOT === ${JSON.stringify(privateDataRoot)} : !process.env.AUTORESEARCH_PRIVATE_DATA_ROOT && !process.env.HOME);`,
+    "const fallback = check === 'hard-code-negative' ? { ok: false } : check === 'baseline-reproduction' ? { ok: true, baseline: { id: 'baseline-v1', digest: 'e'.repeat(64), score: 7 } } : check === 'score-arithmetic' ? { ok: true, score: 7, components: [3, 4] } : { ok: true, score: 7, components: [3, 4] };",
+    "const result = outcomes[check] ?? fallback;",
+    "process.stdout.write(JSON.stringify(isolated ? result : { ok: check === 'hard-code-negative', diagnostics: 'runtime environment was not isolated' }) + '\\n');",
   ].join("\n"));
   await chmod(command, 0o755);
   const candidate = await readFile(join(stageDir, "candidate-template", "candidate.py"));
@@ -94,8 +98,14 @@ test("runs the stable host-owned suite with isolated candidate and evaluator inp
   assert.ok(candidateCalls.every((call) => !call.args.includes(value.privateDataRoot) && !Object.values(call.env).includes(value.privateDataRoot)));
   const evaluatorCalls = calls.filter((call) => call.privateDataRoot !== undefined);
   assert.ok(evaluatorCalls.length > 0);
-  assert.ok(evaluatorCalls.every((call) => call.privateDataRoot === value.privateDataRoot && call.privateDataReadOnly === true));
+  assert.ok(evaluatorCalls.every((call) => call.privateDataRoot === value.privateDataRoot));
   assert.doesNotMatch(`${JSON.stringify(report)}\n${await treeText(value.stageDir)}`, new RegExp(CANARY));
+});
+
+test("default runner mounts the private root only for evaluator commands and keeps candidate environment HOME-free", async (t) => {
+  const value = await fixture(t, { assertRuntimeIsolation: true });
+  const report = await runInfrastructurePreflight({ ...value, now: () => FIXED_NOW });
+  assert.equal(report.status, "passed");
 });
 
 test("fails closed on integrity or containment failure and records escaped diagnostics", async (t) => {
@@ -125,4 +135,30 @@ test("marks semantic benchmark defects as failed without short-circuiting safe c
     assert.equal(report.checks.find((item) => item.id === check).status, "failed", check);
     assert.equal(report.checks.at(-1).id, "reproducibility");
   }
+});
+
+test("independently rejects fabricated score arithmetic and baseline identity drift", async (t) => {
+  const score = await fixture(t, { outcomes: { "score-arithmetic": { ok: true, score: 7, components: [2, 2] } } });
+  const scoreReport = await runInfrastructurePreflight({ ...score, processRunner: runner([]), now: () => FIXED_NOW });
+  assert.equal(scoreReport.checks.find((check) => check.id === "score-arithmetic").status, "failed");
+
+  const baseline = await fixture(t, { outcomes: {
+    "baseline-reproduction": [
+      { ok: true, baseline: { id: "baseline-v1", digest: "e".repeat(64), score: 7 } },
+      { ok: true, baseline: { id: "baseline-v2", digest: "f".repeat(64), score: 7 } },
+    ],
+  } });
+  const counts = new Map();
+  const baselineRunner = async (options) => {
+    const check = options.args.at(-1);
+    const configured = check === "baseline-reproduction" ? [
+      { ok: true, baseline: { id: "baseline-v1", digest: "e".repeat(64), score: 7 } },
+      { ok: true, baseline: { id: "baseline-v2", digest: "f".repeat(64), score: 7 } },
+    ][counts.get(check) ?? 0] : null;
+    counts.set(check, (counts.get(check) ?? 0) + 1);
+    if (configured) return { stdout: JSON.stringify(configured) };
+    return runner([])(options);
+  };
+  const baselineReport = await runInfrastructurePreflight({ ...baseline, processRunner: baselineRunner, now: () => FIXED_NOW });
+  assert.equal(baselineReport.checks.find((check) => check.id === "baseline-reproduction").status, "failed");
 });
