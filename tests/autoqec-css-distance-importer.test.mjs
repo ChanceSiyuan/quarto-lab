@@ -188,7 +188,7 @@ test("imports synthetic trials atomically with copied artifacts and snapshots", 
     assert.equal(JSON.parse(await readFile(join(root, "problems", "Prob-001", "attempts", "ATT-101", "attempt.json"), "utf8")).candidate.status, "not-generated");
     assert.equal((await readdir(join(root, "problems", "Prob-001", "infrastructure", "snapshots"))).length, 3);
     assert.equal(await readFile(join(root, "problems", "Prob-001", "attempts", "ATT-200", "METHOD.txt"), "utf8"), "synthetic method\n");
-    assert.equal(await fileExists(join(root, "problems", "Prob-001", "import-manifest.json")), false);
+    assert.equal(await fileExists(join(root, "problems", "Prob-001", "import-manifest.json")), true);
     assert.equal(await fileExists(join(root, "problems", "Prob-001", "infrastructure", "snapshots", firstParents[0], "source", ".gitignore")), false);
     const provenance = JSON.parse(await readFile(join(root, "problems", "Prob-001", "attempts", "ATT-001", "attempt.json"), "utf8")).provenance;
     assert.equal(provenance.sourceCommit, trialCommits[0]);

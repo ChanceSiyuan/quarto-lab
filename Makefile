@@ -13,7 +13,8 @@
 	knowledge-check knowledge-resolve knowledge-preview \
 	draft-preview \
 	literature-index literature-fetch literature-sync \
-	migration-verify
+	migration-verify \
+	problem-import-autoqec-css-distance problem-import-verify
 
 help:
 	@echo 'Research Loop'
@@ -34,6 +35,8 @@ help:
 	@echo '  make literature-sync                            fetch the pinned source of every arXiv reference'
 	@echo
 	@echo '  make migration-verify                           re-check the imported harness cards against the manifest'
+	@echo '  make problem-import-autoqec-css-distance SOURCE=/Users/nzy/AutoQEC  import the 200-trial AutoQEC CSS-distance record as Prob-001'
+	@echo '  make problem-import-verify ID=Prob-001                         verify a committed imported problem without reading AutoQEC'
 
 dev: node_modules/.package-lock.json
 	npm run dev
@@ -85,6 +88,16 @@ literature-sync: node_modules/.package-lock.json
 
 migration-verify: node_modules/.package-lock.json
 	npm run migration:verify
+
+problem-import-autoqec-css-distance: node_modules/.package-lock.json
+	@if [ -z "$(SOURCE)" ]; then \
+		echo 'usage: make problem-import-autoqec-css-distance SOURCE=/Users/nzy/AutoQEC' >&2; \
+		exit 2; \
+	fi
+	npm run problem:import:autoqec-css-distance -- --source "$(SOURCE)"
+
+problem-import-verify: node_modules/.package-lock.json
+	npm run problem:import:verify -- --id "$(or $(ID),Prob-001)"
 
 node_modules/.package-lock.json: package-lock.json
 	npm ci
