@@ -137,6 +137,39 @@ test("rejects missing aggregate score intervals without throwing", () => {
   assert.match(result.errors.join("\n"), /score intervals are invalid/);
 });
 
+test("rejects evidence that labels drafts as trusted knowledge", () => {
+  const envelope = validEnvelope();
+  envelope.assessment.evidence[0].path = "drafts/unreviewed.qmd";
+  const result = validateAssessmentEnvelope(envelope);
+  assert.equal(result.ok, false);
+  assert.match(result.errors.join("\n"), /trusted knowledge path/);
+});
+
+test("rejects resolver topic and ordered files outside trusted knowledge", () => {
+  const envelope = validEnvelope();
+  envelope.knowledgeResolution.topic = "literature/external.qmd";
+  envelope.knowledgeResolution.orderedFiles = ["knowledge/index.qmd", "drafts/unreviewed.qmd"];
+  const result = validateAssessmentEnvelope(envelope);
+  assert.equal(result.ok, false);
+  assert.match(result.errors.join("\n"), /trusted knowledge path/);
+});
+
+test("requires both envelope branch fields even when one is null", () => {
+  const envelope = validEnvelope();
+  delete envelope.clarification;
+  const result = validateAssessmentEnvelope(envelope);
+  assert.equal(result.ok, false);
+  assert.match(result.errors.join("\n"), /assessment and clarification fields/);
+});
+
+test("requires possible verdict labels to include the selected verdict", () => {
+  const envelope = validEnvelope();
+  envelope.assessment.verdict.possibleLabels = ["REFRAME"];
+  const result = validateAssessmentEnvelope(envelope);
+  assert.equal(result.ok, false);
+  assert.match(result.errors.join("\n"), /verdict is invalid/);
+});
+
 test("parses Codex final message as the same strict envelope", () => {
   const result = parseAssessmentFinalMessage(JSON.stringify(validEnvelope()));
   assert.equal(result.ok, true);
