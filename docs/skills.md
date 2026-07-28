@@ -15,6 +15,8 @@ Each skill is a single `SKILL.md`. Anything executable belongs in `scripts/` and
 | `read-knowledge` | Answer a research question from the trusted tree: resolve, read the whole returned bundle, then answer. | Original to Research Loop. | `knowledge/**/*.qmd`, reached only through the resolver. | Nothing. It reads and answers. | Answering without resolving; reading part of a bundle; treating `drafts/` or `literature/` as a fallback; choosing between ambiguous candidates for the user. |
 | `review-draft` | Review one untrusted note and recommend one destination and one category; promote it only after the user confirms. | Original to Research Loop. | One user-named file under `drafts/`. | After confirmation only, on a non-`main` branch: one `knowledge/<topic>/*.qmd` page and its parent `## Reading map`. | Editing, moving, splitting, rewriting, or promoting before confirmation; promoting onto `main`; merging its own branch; recommending more than one destination. |
 | `download-ref` | Maintain the external literature corpus: one bibliography entry, the generated indexes, and the version-pinned arXiv source. | Adapted from the read-only `quantum.harness` download-ref skill. Layout and bibliography conventions are kept; every command and path was rewritten for this repository, and the harness's PDF-to-Markdown rendering helpers were deliberately not carried over. | `literature/ref.bib` and the arXiv source it pins. | `literature/ref.bib`, `literature/<method>/INDEX.md`, and the gitignored `.raw/` and `.figures/` trees. | Compiling downloaded TeX; producing `rendered.md` or any full-text mirror; hand-editing a generated `INDEX.md`; copying paper text into `knowledge/`. |
+| `expand-notes` | Turn rough academic material into polished Quarto drafts that can later be promoted. | Adapted from quarto-lab's `expand-notes`; its formal-block conventions are retained, while frontmatter, bibliography, categories, and promotion rules follow Research Loop. | User-named notes, LaTeX, lecture material, or conversation content; external evidence only when cited. | `drafts/` before approval; after approval, the selected `knowledge/` page and parent reading map. | Copying paper full text into knowledge; page-local bibliographies; unsupported frontmatter; promoting without confirmation. |
+| `render-site` | Validate, build, and preview the trusted knowledge site through the safe repository seam. | Adapted from quarto-lab's `render-site` to Research Loop's paths and Make targets. | Validated `knowledge/**/*.qmd` and `literature/ref.bib`. | Generated `public/knowledge/` through the builder only. | Calling Quarto directly; editing generated output; publishing drafts or literature full text. |
 
 ## Commands the skills hand to an agent
 
@@ -22,6 +24,9 @@ Each skill is a single `SKILL.md`. Anything executable belongs in `scripts/` and
 |---|---|
 | `make knowledge-resolve QUERY="…"` | `read-knowledge` |
 | `make knowledge-check` | `review-draft` |
+| `make knowledge-check` | `expand-notes`, `render-site` |
+| `make build` | `render-site` |
+| `make knowledge-preview` | `render-site` |
 | `make draft-preview FILE=drafts/…` | `review-draft` |
 | `make literature-index` | `download-ref` |
 | `make literature-fetch KEY=<citekey>` | `download-ref` |

@@ -442,7 +442,7 @@ const RENDER_SITE: readonly Clause[] = [
   {
     requirement: "builds through the safe target",
     in: "body",
-    pattern: /make knowledge-build/i,
+    pattern: /make build/i,
   },
   {
     requirement: "previews through the safe target",
