@@ -172,36 +172,58 @@ export async function main({
   });
 
   let timer;
-  const watcher = await watchProblemFilesFn({
-    rootDir: resolvedRootDir,
-    onChange() {
-      clearTimeout(timer);
-      timer = setTimeout(() => {
-        runIndexBuildFn(resolvedRootDir).catch((error) => console.error(error.message));
-      }, 150);
-    },
-  });
+  let watcher;
+  let cleanupPromise;
+  const cleanup = () => {
+    cleanupPromise ??= (async () => {
+      try {
+        watcher?.close();
+      } finally {
+        clearTimeout(timer);
+        await assessmentService.close();
+      }
+    })();
+    return cleanupPromise;
+  };
 
-  const child = spawnFn("vinext", ["dev"], {
-    cwd: resolvedRootDir,
-    env: {
-      ...process.env,
-      WRANGLER_LOG_PATH: ".wrangler/wrangler.log",
-      LOCAL_ASSESSMENT_SERVICE_URL: assessmentService.url,
-      LOCAL_ASSESSMENT_PROXY_TOKEN: assessmentService.token ?? assessmentToken,
-    },
-    stdio: "inherit",
-  });
+  let child;
+  try {
+    watcher = await watchProblemFilesFn({
+      rootDir: resolvedRootDir,
+      onChange() {
+        clearTimeout(timer);
+        timer = setTimeout(() => {
+          runIndexBuildFn(resolvedRootDir).catch((error) => console.error(error.message));
+        }, 150);
+      },
+    });
+
+    child = spawnFn("vinext", ["dev"], {
+      cwd: resolvedRootDir,
+      env: {
+        ...process.env,
+        WRANGLER_LOG_PATH: ".wrangler/wrangler.log",
+        LOCAL_ASSESSMENT_SERVICE_URL: assessmentService.url,
+        LOCAL_ASSESSMENT_PROXY_TOKEN: assessmentService.token ?? assessmentToken,
+      },
+      stdio: "inherit",
+    });
+  } catch (error) {
+    await cleanup();
+    throw error;
+  }
 
   for (const signal of ["SIGINT", "SIGTERM"]) {
     process.on(signal, () => child.kill(signal));
   }
 
   child.on("exit", async (code, signal) => {
-    watcher.close();
-    clearTimeout(timer);
-    await assessmentService.close();
+    await cleanup();
     process.exitCode = code ?? (signal ? 1 : 0);
+  });
+  child.on("error", async () => {
+    await cleanup();
+    process.exitCode = 1;
   });
 }
 

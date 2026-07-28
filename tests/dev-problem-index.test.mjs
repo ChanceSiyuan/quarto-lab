@@ -74,6 +74,54 @@ test("dev wrapper starts the local assessment service and passes proxy env to vi
   assert.equal(vinext.options.env.LOCAL_ASSESSMENT_PROXY_TOKEN, service.token);
 });
 
+test("dev wrapper closes the sidecar and watcher when vinext emits an error", async (t) => {
+  const { main } = await import("../scripts/dev-problem-index.mjs");
+  const originalExitCode = process.exitCode;
+  t.after(() => { process.exitCode = originalExitCode; });
+  const child = new EventEmitter();
+  child.kill = () => {};
+  child.on("error", () => {});
+  let serviceClosed = 0;
+  let watcherClosed = 0;
+
+  await main({
+    rootDir: "/tmp/research-loop-dev-root",
+    spawnFn: () => child,
+    runIndexBuildFn: async () => {},
+    watchProblemFilesFn: async () => ({ close() { watcherClosed += 1; } }),
+    startAssessmentServiceFn: async () => ({
+      url: "http://127.0.0.1:39001",
+      close: async () => { serviceClosed += 1; },
+    }),
+  });
+
+  child.emit("error", new Error("vinext unavailable"));
+  await delay(0);
+
+  assert.equal(serviceClosed, 1);
+  assert.equal(watcherClosed, 1);
+});
+
+test("dev wrapper closes the sidecar when watcher startup rejects", async () => {
+  const { main } = await import("../scripts/dev-problem-index.mjs");
+  let serviceClosed = 0;
+
+  await assert.rejects(
+    main({
+      rootDir: "/tmp/research-loop-dev-root",
+      runIndexBuildFn: async () => {},
+      watchProblemFilesFn: async () => { throw new Error("watcher unavailable"); },
+      startAssessmentServiceFn: async () => ({
+        url: "http://127.0.0.1:39001",
+        close: async () => { serviceClosed += 1; },
+      }),
+    }),
+    /watcher unavailable/,
+  );
+
+  assert.equal(serviceClosed, 1);
+});
+
 test("watches the problems/ tree without recursive repo-wide watchers", async (t) => {
   const root = await mkdtemp(join(tmpdir(), "research-loop-dev-watch-"));
   t.after(() => rm(root, { recursive: true, force: true }));
