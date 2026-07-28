@@ -26,8 +26,8 @@ On `match`, read every `bundle.orderedFiles` path before using knowledge. On
 `no-match`, say the learned knowledge has no match and mark affected dimensions
 unknown.
 
-Never use `drafts/` as learned knowledge; Never use `literature/` as learned
-knowledge. Use external research only when explicitly asked, and label it
+Never use `drafts/` as learned knowledge. Never use `literature/` as learned
+knowledge. External research requires an explicit user request; label it
 external evidence.
 
 ## Scoring
@@ -77,9 +77,9 @@ Bands: strong 70-100, mixed 40-69.99, weak 0-39.99.
 
 | Verdict | Condition |
 |---|---|
-| `DO NOW` | `V` and `A` strong. |
+| `DO_NOW` | `V` and `A` strong. |
 | `REFRAME` | `V` strong; a bounded reformulation could improve `A`. |
-| `NOT AUTORESEARCH` | `V` strong, `A` weak, with no credible bounded reformulation. |
+| `NOT_AUTORESEARCH` | `V` strong, `A` weak, with no credible bounded reformulation. |
 | `DEFER` | Otherwise. |
 
 If intervals cross verdict boundaries, report the midpoint verdict as
@@ -94,8 +94,10 @@ information to score the problem. Use the `needs_input` outcome when the
 resolver result is ambiguous and include every alternative exactly as reported.
 
 The JSON keys, dimension IDs, evidence states, verdict labels, and
-recommendation enums are English. Human-readable rationales should follow the
-primary language of the candidate `problem.md`.
+recommendation enums are English. Allowed verdict labels: `DO_NOW`, `REFRAME`,
+`NOT_AUTORESEARCH`, `DEFER`. Allowed autoresearch recommendation values:
+`proceed`, `reframe`, `reject`, `defer`. Human-readable rationales should
+follow the primary language of the candidate `problem.md`.
 
 For `match`, include the resolver query, topic, and every ordered bundle path
 that was read. For `no-match`, include the resolver query and mark

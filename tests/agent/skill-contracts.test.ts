@@ -560,7 +560,17 @@ const ASSESS_RESEARCH_PROBLEM: readonly Clause[] = [
   {
     requirement: "never uses drafts or literature as learned knowledge fallback",
     in: "body",
-    pattern: /Never use `drafts\/`[^.\n]*Never use `literature\//i,
+    pattern: /Never use `drafts\/` as learned knowledge\. Never use `literature\/` as learned knowledge\./i,
+  },
+  {
+    requirement: "pins the permitted verdict labels for structured output",
+    in: "body",
+    pattern: /Allowed verdict labels: `DO_NOW`, `REFRAME`, `NOT_AUTORESEARCH`, `DEFER`\./,
+  },
+  {
+    requirement: "pins the permitted autoresearch recommendation values for structured output",
+    in: "body",
+    pattern: /Allowed autoresearch recommendation values: `proceed`, `reframe`, `reject`, `defer`\./,
   },
   {
     requirement: "supports structured output when Codex receives the schema",
