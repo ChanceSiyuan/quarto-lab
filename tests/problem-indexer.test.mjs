@@ -160,3 +160,12 @@ test("scans explicit, damaged-directory, and parseable manifest reserved IDs", a
     reservedIds: ["Prob-000", "Prob-007"],
   }), ["Prob-000", "Prob-001", "Prob-007"]);
 });
+
+test("scans only valid explicit reserved IDs", async () => {
+  const root = await makeRoot();
+
+  assert.deepEqual(await scanReservedProblemIds({
+    rootDir: root,
+    reservedIds: ["Prob-000", "invalid", "Prob-1", "Prob-001"],
+  }), ["Prob-000", "Prob-001"]);
+});

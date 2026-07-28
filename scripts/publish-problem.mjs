@@ -12,7 +12,11 @@ const stageDir = readArg("--stage");
 const expectedId = readArg("--id");
 
 if (!stageDir || !expectedId) {
-  console.error("usage: node scripts/publish-problem.mjs --stage <path> --id Prob-NNN");
+  console.log(JSON.stringify({
+    status: "error",
+    code: "INVALID_ARGUMENTS",
+    errors: ["--stage and --id are required."],
+  }));
   process.exitCode = 2;
 } else {
   try {

@@ -155,3 +155,17 @@ test("CLI publishes a complete staged draft as one JSON object", async () => {
     indexPath: ".generated/problem-index.json",
   });
 });
+
+test("CLI reports missing publish arguments as one JSON error object", () => {
+  const child = spawnSync(process.execPath, ["scripts/publish-problem.mjs"], {
+    cwd: resolve("."),
+    encoding: "utf8",
+  });
+  assert.equal(child.status, 2);
+  assert.equal(child.stderr, "");
+  assert.deepEqual(JSON.parse(child.stdout), {
+    status: "error",
+    code: "INVALID_ARGUMENTS",
+    errors: ["--stage and --id are required."],
+  });
+});
