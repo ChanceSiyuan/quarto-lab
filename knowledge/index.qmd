@@ -1,21 +1,22 @@
 ---
-title: "Quantum Many-Body Knowledge"
-description: "Quarto edition of the harness knowledge cards."
+title: "Problem Factory Calibration Knowledge"
+description: "Focused trusted notes for the five calibration problems used by challenge #133."
 ---
 
-This topic collects the trusted notes for **Quantum Many-Body Knowledge**.
+This knowledge site is intentionally limited to the five calibration problems named by [challenge #133: The problem factory](https://github.com/QuantumBFS/quantum.harness/issues/133). It contains only the models, methods, physics concepts, software, and exact oracles needed to generate and validate those demonstrations.
+
+## Calibration problems
+
+- [#124 — Close the certified energy bracket for the kagome Heisenberg antiferromagnet](https://github.com/QuantumBFS/quantum.harness/issues/124): Heisenberg and frustrated-spin physics, with SDP lower bounds and DMRG, PEPS, NQS, and ED upper-bound or validation paths.
+- [#125 — Beat variational SOTA for square-lattice J1–J2 at J2/J1 = 0.5](https://github.com/QuantumBFS/quantum.harness/issues/125): the J1–J2 model, frustration, VMC/NQS and PEPS, with ED checks.
+- [#126 — Computer-assisted spectral-gap theorem for an open AKLT-type lattice](https://github.com/QuantumBFS/quantum.harness/issues/126): AKLT model and exact oracles, DMRG and ED, plus the gapless Heisenberg XXX chain as a negative control.
+- [#127 — Beat tensor-network contraction costs](https://github.com/QuantumBFS/quantum.harness/issues/127): tensor-network circuit simulation, contraction ordering, and the quimb/cotengra implementation surface.
+- [#128 — Tighter rigorous Trotter error bounds for a concrete 2D Hamiltonian](https://github.com/QuantumBFS/quantum.harness/issues/128): circuit simulation, TEBD/product formulas, Heisenberg Hamiltonians, and ED cross-checks.
 
 ## Reading map
 
-- [Exactly-Solvable Models Catalog — Index](solvable/index.qmd) — A curated reading map for Exactly-Solvable Models Catalog — Index.
-- [Method Zoo — Index](methods/index.qmd) — A curated reading map for Method Zoo — Index.
-- [Models](models/index.qmd) — Knowledge notes for Models.
-- [Physics](physics/index.qmd) — Knowledge notes for Physics.
-- [Software API references](software/index.qmd) — A curated reading map for Software API references.
-- [Conventions](conventions.qmd) — A curated knowledge note on Conventions, its assumptions, methods, limits, and verification context.
-- [Exact Limits and Reductions](limits.qmd) — A curated knowledge note on Exact Limits and Reductions, its assumptions, methods, limits, and verification context.
-- [Many-Body Computational Methods — Survey](method-survey.qmd) — A curated knowledge note on Many-Body Computational Methods — Survey, its assumptions, methods, limits, and verification context.
-- [Method Property Checklist](method-property-checklist.qmd) — A curated knowledge note on Method Property Checklist, its assumptions, methods, limits, and verification context.
-- [Method ↔ Property Map](method-property-map.qmd) — A curated knowledge note on Method ↔ Property Map, its assumptions, methods, limits, and verification context.
-- [Model Property Checklist](model-property-checklist.qmd) — A curated knowledge note on Model Property Checklist, its assumptions, methods, limits, and verification context.
-- [Symmetry Cheat-Sheet](symmetry-cheatsheet.qmd) — A curated knowledge note on Symmetry Cheat-Sheet, its assumptions, methods, limits, and verification context.
+- [Models](models/index.qmd) — AKLT, Heisenberg, and square-lattice J1–J2.
+- [Physics](physics/index.qmd) — Frustration and spin-liquid context.
+- [Methods](methods/index.qmd) — Numerical, variational, certified-bound, contraction, and time-evolution tools.
+- [Software](software/index.qmd) — The quimb tensor-network API used by the contraction demo.
+- [Exact oracles](solvable/index.qmd) — AKLT positive cases and the Heisenberg XXX negative control.
