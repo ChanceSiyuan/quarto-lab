@@ -68,6 +68,23 @@ test("persists complete job snapshots atomically and monotonically numbered even
   assert.ok(events.every((event) => event.at === FIXED_NOW.toISOString()));
 });
 
+test("serializes concurrent event appends and consecutive state transitions for one job", async (t) => {
+  const { rootDir, store } = await fixture(t);
+  const job = await store.create({ problemId: "Prob-007", kind: "preparation" });
+  await Promise.all([
+    store.appendEvent(job.jobId, { type: "first" }),
+    store.appendEvent(job.jobId, { type: "second" }),
+    store.appendEvent(job.jobId, { type: "third" }),
+  ]);
+  const events = (await readFile(join(rootDir, "jobs", job.jobId, "events.jsonl"), "utf8")).trim().split("\n").map(JSON.parse);
+  assert.deepEqual(events.map((event) => event.sequence), [1, 2, 3]);
+  await Promise.all([
+    store.transition(job.jobId, "scaffolding"),
+    store.transition(job.jobId, "building_benchmark"),
+  ]);
+  assert.equal((await store.read(job.jobId)).state, "building_benchmark");
+});
+
 test("recovers executing jobs as interrupted but preserves suspended and terminal jobs", async (t) => {
   const { store } = await fixture(t);
   const scaffolding = await store.create({ problemId: "Prob-001", kind: "preparation" });
