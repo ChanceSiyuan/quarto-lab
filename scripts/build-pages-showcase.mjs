@@ -44,7 +44,14 @@ function rewriteHtml(html) {
   return canonicalizeStaticRouteLinks(html
     .replace(/<script\b[\s\S]*?<\/script>/gi, "")
     .replace(/<link\b[^>]*rel="modulepreload"[^>]*>/gi, "")
-    .replace(/<section class="console-toolbar"[\s\S]*?<\/section>/, "")
+    .replace(
+      /<a class="primary-action" href="codex:[^"]*">\+ Add problem<\/a>/g,
+      '<span class="primary-action static-disabled" aria-disabled="true">+ Add problem</span>',
+    )
+    .replace(
+      /<a class="state-action" href="codex:[^"]*">\+ Add first problem<\/a>/g,
+      '<span class="state-action static-disabled" aria-disabled="true">+ Add first problem</span>',
+    )
     .replace(/<details class="codex-fallback"[\s\S]*?<\/details>/g, "")
     .replace(
       /<div class="mode-indicator">[\s\S]*?<\/div>(?=<div class="index-health)/,

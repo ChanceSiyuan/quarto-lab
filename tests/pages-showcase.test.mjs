@@ -65,6 +65,17 @@ test("pages showcase rewrites links for the repository base path", async () => {
   assert.doesNotMatch(html, /<script\b/i);
 });
 
+test("pages showcase preserves local controls as disabled visual affordances", async () => {
+  const html = await readFile(join(out, "index.html"), "utf8");
+
+  assert.match(html, /<section class="console-toolbar" aria-label="Problem filters">/);
+  assert.match(html, /Search problems/);
+  assert.match(html, /Lifecycle status/);
+  assert.match(html, /<span class="primary-action static-disabled" aria-disabled="true">\+ Add problem<\/span>/);
+  assert.doesNotMatch(html, /<a class="primary-action" href=/);
+  assert.doesNotMatch(html, /codex:\/\//i);
+});
+
 test("pages showcase copies client assets", async () => {
   const assets = await stat(join(out, "assets"));
   assert.equal(assets.isDirectory(), true);
@@ -81,7 +92,7 @@ test("pages showcase artifact contains no local agent launcher content", async (
     assert.doesNotMatch(text, /\/Users\/nzy\//, file);
     assert.doesNotMatch(text, /localhost:3000/, file);
     assert.doesNotMatch(text, /Cannot open Codex/, file);
-    assert.doesNotMatch(text, /\+ Add problem/, file);
+    assert.doesNotMatch(text, /<a class="primary-action" href=/, file);
     assert.doesNotMatch(text, /\b(?:href|src|data-rsc-css-href)="\/assets\//, file);
     assert.doesNotMatch(text, /url\(\/assets\//, file);
   }
