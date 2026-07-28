@@ -105,6 +105,36 @@ test("escalates output overflow to SIGKILL after its grace period", async () => 
   }
 });
 
+test("cancels overflow escalation when the child closes after SIGTERM", async () => {
+  const signals = [];
+  const timers = [];
+  const originalSetTimeout = globalThis.setTimeout;
+  const originalClearTimeout = globalThis.clearTimeout;
+  let value;
+  globalThis.setTimeout = (callback, delay) => {
+    const timer = { callback, delay, cancelled: false, unref() { return this; } };
+    timers.push(timer);
+    return timer;
+  };
+  globalThis.clearTimeout = (timer) => { timer.cancelled = true; };
+  try {
+    const pending = runProcess({
+      command: "codex", args: [], cwd: "/stage", env: {}, timeoutMs: 100, graceMs: 9,
+      killFn(_child, signal) { signals.push(signal); },
+      spawnFn() { value = child(); queueMicrotask(() => value.stdout.emit("data", Buffer.alloc(4 * 1024 * 1024 + 1))); return value; },
+    });
+    await assert.rejects(pending, ProcessOutputLimitError);
+    value.emit("exit", null, "SIGTERM");
+    value.emit("close", null, "SIGTERM");
+    assert.equal(timers[1].cancelled, true);
+    if (!timers[1].cancelled) timers[1].callback();
+    assert.deepEqual(signals, ["SIGTERM"]);
+  } finally {
+    globalThis.setTimeout = originalSetTimeout;
+    globalThis.clearTimeout = originalClearTimeout;
+  }
+});
+
 test("terminates with SIGTERM then SIGKILL after the precise grace period", async () => {
   const signals = [];
   let now = 0;
