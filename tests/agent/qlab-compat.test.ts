@@ -30,4 +30,7 @@ test("drafts-preview is a local no-execute compatibility surface", async () => {
   assert.match(makefile, /quarto preview drafts --no-execute/);
   const gitignore = await readFile(path.join(ROOT, ".gitignore"), "utf8");
   assert.match(gitignore, /^\/drafts\/\.preview\/$/m);
+  const config = await readFile(path.join(ROOT, "drafts", "_quarto.yml"), "utf8");
+  assert.match(config, /render:\s*\n\s*- "\*\*\/\*\.qmd"/);
+  assert.doesNotMatch(config, /\*\*\/\*\.md/);
 });
