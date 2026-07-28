@@ -6,12 +6,14 @@ lang: en
 title: Generalized Stabilizer Formalism
 description: "Generalized stabilizer-formalism notes covering vectorized Clifford actions, Pauli-to-computational-basis mappings, non-Pauli stabilizers, operator spreading, OTOCs, and operator magic."
 bibliography: refs.bib
-jupyter: python3
-keep-ipynb: false
-code-fold: true
 ---
 
 **Abstract**: Is there an advantage to using Clifford formalism in a vectorized space compared to using it directly? This is an on-going research topic.
+
+## Reading map
+
+- [Magic based on Pauli spectrum](operator_magic.qmd)
+- [OTOC and its simulation](OTOC.qmd)
 
 ## GSF and Its Advantages
 
@@ -273,7 +275,7 @@ In [@zhang2025classical], it is further shown that:
  Any degree-3 IQP circuit (IQP circuit with gate set $\{Z,CZ,CCZ\}$) can be compiled into T-depth one circuit, after appending $\mathcal{O}(nd)$ pure ancillas initialized to $\ket{0}$. 
 :::
 
- This means that **Amplitude estimation** (i.e., estimating $\bra{0^n} U^\dagger \ket{0^n}\!\bra{0^n} U \ket{0^n}$) and **weak simulation** of T-depth one circuit is hardest than that of the degree-3 IQP circuits, which is Gap-P complete and believed to cause $\Delta_3 P = PH$ under plausible conjusture You may refer to [this](/theory/quantum_complexity/supermacy/IQPs/iqp_supremacy.qmd)  for a walkthrough understanding of IQP's hardness.
+ This means that **Amplitude estimation** (i.e., estimating $\bra{0^n} U^\dagger \ket{0^n}\!\bra{0^n} U \ket{0^n}$) and **weak simulation** of T-depth one circuit is hardest than that of the degree-3 IQP circuits, which is Gap-P complete and believed to cause $\Delta_3 P = PH$ under plausible conjusture.
 
 :::{.callout-important icon="false"}
 ## Question: 
@@ -337,7 +339,7 @@ U^\dagger Q U  &= \left\{ \begin{aligned}
 \end{aligned} \right.
 \end{align*}
 $$
-Then use the fact that $PQ$ has vectorization $v_Q+ v_P \mod 2$ up to a global non-linear phase $i^{[v_Q,v_P]} (-1)^{d(v_Q, v_P)}$ (The exact proof of this identity may refer to here [#eq-pauli-multiplication](/theory/learning_theo/Shadow_tomography/3desgin_multi_local_shadow.qmd#eq-pauli-multiplication)).
+Then use the fact that $PQ$ has vectorization $v_Q+ v_P \mod 2$ up to a global non-linear phase $i^{[v_Q,v_P]} (-1)^{d(v_Q, v_P)}$ (The exact proof of this identity may refer to here [#eq-pauli-multiplication](../learning_theo/Shadow_tomography/3desgin_multi_local_shadow.qmd#eq-pauli-multiplication)).
 Thus in the GSF framework, we have:
 $$
 \begin{align*}
@@ -569,7 +571,7 @@ Consider whether the above setup can be used for noisy circuits.
 This type of noise has been studied extensively, including:
 
 1. Pauli-path simulation truncation
-2. [Random percolation based on graph states](/theory/Noisy_complexity/percolation.qmd)
+2. [Random percolation based on graph states](../Noisy_complexity/percolation.qmd)
 
 :::{.callout-important icon="false"}
 ## Question: (Noisy Circuit Simulation)
@@ -598,14 +600,3 @@ $$
 $$
 
 However, note that this difficulty is **purely classical**. Consider introducing **classical randomness** into the GSF to accomplish this task.
-
-<!-- BEGIN AUTO NOTES TABLE -->
-
-| Note | Status | Updated | Description |
-|---|---|---|---|
-| [Feynman-based simulation](Feynman_based.qmd) | draft | 2026-02-25 | TODO: add description |
-| [Magic based on Pauli spectrum](operator_magic.qmd) | draft | 2026-01-13 | TODO: add description |
-| [Non-Pauli Stabilizers](nonPauli_stab.qmd) | draft | 2026-06-25 | TODO: add description |
-| [OTOC and its simulation](OTOC.qmd) | draft | 2026-02-17 | TODO: add description |
-
-<!-- END AUTO NOTES TABLE -->

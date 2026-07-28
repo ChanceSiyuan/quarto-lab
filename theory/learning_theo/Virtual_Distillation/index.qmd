@@ -6,10 +6,16 @@ lang: en
 title: Virtual Distillation for Quantum Error Mitigation
 description: "Quantum error-mitigation notes on virtual distillation, cyclic-shift estimators, derandomized shadows, negativity, majority voting, PCA-style analysis, and circuit-design variants for noisy-state purification."
 bibliography: refs.bib
-status: draft
 ---
 
 **Citation**: William J. Huggins, et al., 2021, Physical Review X
+
+## Reading map
+
+- [Coherent LMR Algorithm and Density Matrix Exponentiation](app_PCA.qmd)
+- [Derandomized local shadows](derandom_shadow.qmd)
+- [Estimation of Negativity](negativity.qmd)
+- [Majority Vote for Pauli signal estimation](majorityvote.qmd)
 
 ## Abstract and Overview
 
@@ -280,15 +286,3 @@ Since 2-replica operation is not cheap in other platform (1/2 discount of qubit 
 
 ::: {#refs}
 :::
-
-<!-- BEGIN AUTO NOTES TABLE -->
-
-| Note | Status | Updated | Description |
-|---|---|---|---|
-| [A hierachy of different Virtual Distillation strategies](design.qmd) | draft | 2026-02-27 | TODO: add description |
-| [Coherent LMR Algorithm and Density Matrix Exponentiation](app_PCA.qmd) | draft | 2026-02-28 | TODO: add description |
-| [Derandomized local shadows](derandom_shadow.qmd) | draft | 2026-01-19 | TODO: add description |
-| [Estimation of Negativity](negativity.qmd) | draft | 2026-03-03 | Notes on the estimation of negativity using virtual distillation. |
-| [Majority Vote for Pauli signal estimation](majorityvote.qmd) | draft | 2026-04-25 | TODO: add description |
-
-<!-- END AUTO NOTES TABLE -->

@@ -22,11 +22,21 @@ The material is organized into four layers:
 3. Lower-bound methods: Le Cam's method, constrained POVMs, adaptive strategies, and hard instance constructions.
 4. Symmetry and moment tools: Weingarten calculus, Clifford commutants, symmetric strategies, and approximate designs.
 
-## [1. Neural Learning Dynamics](grokking_phase_transition.qmd)
+## Reading map
+
+- [Getting Groud states enpower the Neural Networks](gd_learn.qmd)
+- [Local Multi-copy Estimation of Quantum Observables](Estimation_rev.qmd)
+- [Phase gate learning](phasegate_learn.qmd)
+- [Classical Shadow Tomography](Shadow_tomography/index.qmd)
+- [Toolbox for Proving Lower Bounds](Lowerbounds/index.qmd)
+- [Virtual Distillation for Quantum Error Mitigation](Virtual_Distillation/index.qmd)
+- [Weak Schur Tools](weak_schur/index.qmd)
+
+## 1. Neural Learning Dynamics
 
 The main survey treats grokking as a phase transition from a lazy NTK-like regime to a rich feature-learning regime. It connects memorization plateaus, order parameters, mean-field descriptions, finite-width corrections, optimizer effects, and singular learning theory.
 
-**Core notes:** [Grokking as a Phase Transition](grokking_phase_transition.qmd), [Neural Tangent Kernel](NTK.qmd), [Ground-State Learning with Neural Networks](gd_learn.qmd)
+**Core note:** [Ground-State Learning with Neural Networks](gd_learn.qmd)
 
 **Key concepts:** NTK, lazy regime, feature learning, grokking delay, order parameters, mean-field dynamics, finite-width corrections
 
@@ -34,7 +44,7 @@ The main survey treats grokking as a phase transition from a lazy NTK-like regim
 
 The estimation notes study how quantum observables can be learned under local, multi-copy, and shadow-style measurement constraints. Approximate data loading complements this by comparing classical streaming/query resources with quantum sketching-style approaches.
 
-**Core notes:** [Local Multi-copy Estimation of Quantum Observables](Estimation_rev.qmd), [Approximate Data Loading](approx_dataload.qmd)
+**Core note:** [Local Multi-copy Estimation of Quantum Observables](Estimation_rev.qmd)
 
 **Key concepts:** Classical shadows, local measurements, Bell measurements, Pauli sums, non-linear property estimation, memory-sample tradeoffs
 
@@ -50,27 +60,6 @@ The lower-bound sequence develops a toolkit for proving sample-complexity imposs
 
 These notes provide the representation-theoretic and moment-calculus tools that support the lower-bound arguments. They cover Haar integration, Clifford-Weingarten formulas, symmetric strategy reductions, and approximate circuit designs.
 
-**Core notes:** [Weingarten Calculus](weak_schur/Weingarten_calculus.qmd), [Clifford-Weingarten Formula](weak_schur/Clifford-Weingarten.qmd), [Symmetric Strategies](weak_schur/symmetric_strategies.qmd), [Approximate Design of Quantum Circuits](weak_schur/approx_design.qmd)
+**Core note:** [Weingarten Calculus](weak_schur/Weingarten_calculus.qmd)
 
 **Key concepts:** Haar moments, permutation operators, Pauli monomials, Clifford commutants, symmetric strategies, approximate designs
-
-## [5. Research Framework](framework.qmd)
-
-The framework page is a placeholder for consolidating the above ingredients into a unified research program.
-
-**Core note:** [Framework](framework.qmd)
-
-<!-- BEGIN AUTO NOTES TABLE -->
-
-| Note | Status | Updated | Description |
-|---|---|---|---|
-| [Approximate Data Loading](approx_dataload.qmd) | draft | 2026-04-10 | Reading notes on approximate data loading problem. |
-| [Framework](framework.qmd) | draft | 2026-06-25 | TODO: add description |
-| [Getting Groud states enpower the Neural Networks](gd_learn.qmd) | draft | 2026-01-07 | TODO: add description |
-| [Grokking as a Phase Transition in Neural Networks](grokking_phase_transition.qmd) | draft | 2026-02-11 | TODO: add description |
-| [Hamiltonian Learning](ham_learning.qmd) | draft | 2026-02-01 | Hamiltonian-learning notes on ansatz-free structure and coefficient recovery for Pauli Hamiltonians, including Bell-basis sampling, ancilla-free alternatives, Ramsey-style estimation, and Rydberg-chain simulation examples. |
-| [Local Multi-copy Estimation of Quantum Observables](Estimation_rev.qmd) | draft | 2026-01-20 | TODO: add description |
-| [Phase gate learning](phasegate_learn.qmd) | draft | 2026-06-15 | Phase gate learning |
-| [Review of Neural Tangent Kernel](NTK.qmd) | draft | 2026-02-21 | TODO: add description |
-
-<!-- END AUTO NOTES TABLE -->

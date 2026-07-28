@@ -1,0 +1,26 @@
+---
+title: Nested Render Topic
+description: Exercises safe Quarto rendering without code execution.
+bibliography: refs.bib
+---
+
+# Nested Render Topic
+
+Inline mathematics renders as $\sigma_x^2 = I$.
+
+$$
+e^{i\pi} + 1 = 0.
+$$
+
+The bibliography fixture is cited here [@fixture2026].
+
+![Deterministic fixture diagram](diagram.svg)
+
+```{python}
+#| echo: false
+print("EXECUTED_SENTINEL_OUTPUT")
+```
+
+## Reading map
+
+No child pages have been promoted.

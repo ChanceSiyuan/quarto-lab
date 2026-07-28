@@ -17,25 +17,32 @@ Instantaneous Quantum Polynomial-time (IQP) circuits are a restricted class of q
 
 This collection is organized into the following sections:
 
+## Reading map
+
+- [Classical Simulation Theory](classical_simulation.qmd)
+- [Peak circuit supermacy](Peak.qmd)
+- [Verification of supremacy](verification.qmd)
+- [IQP Circuits](IQPs/index.qmd)
+
 ## [1. Classical Simulation Theory](classical_simulation.qmd)
 
 Definitions of strong simulation, weak simulation, and Pauli simulation. The fundamental relationships between these notions, including the proof that strong simulation implies weak simulation via marginal distributions.
 
 **Key concepts:** Strong/weak simulation, Pauli expectation values, Fourier relationship between probabilities and Pauli coefficients
 
-## [2. Hardness of Classical Simulation](hardness_proofs.qmd)
+## 2. Hardness of Classical Simulation
 
 Proofs that classical simulation of quantum circuits is computationally hard. GapP-completeness of exact simulation, hardness of multiplicative error approximation, Stockmeyer's algorithm bridging strong and weak simulation, and additive error hardness under anti-concentration and hiding assumptions.
 
 **Key concepts:** GapP-completeness, multiplicative error, Stockmeyer's algorithm, polynomial hierarchy collapse, anti-concentration
 
-## [3. IQP Supremacy](IQPs/iqp_supremacy.qmd)
+## 3. IQP Supremacy
 
 IQP-specific hardness results. Post-selected IQP equals post-BQP, sparse IQP circuits satisfy anti-concentration, and the connection to Ising partition function hardness conjectures.
 
 **Key concepts:** Post-selection universality, sparse IQP, Ising partition functions, average-case hardness
 
-## [4. MBQC-IQP](IQPs/mbqc_iqp.qmd)
+## 4. MBQC-IQP
 
 Measurement-based implementations of IQP circuits on cluster states. Experimental setups, supremacy proofs via Ising model hardness, and certification protocols using parent Hamiltonians and graph state verification.
 
@@ -128,16 +135,3 @@ $$
 
   
 :::
-
-<!-- BEGIN AUTO NOTES TABLE -->
-
-| Note | Status | Updated | Description |
-|---|---|---|---|
-| [Advantage of QNC](QNC0.qmd) | draft | 2026-07-06 | Advantage of QNC |
-| [Bell Sampling primitive for supremacy](Bellsamp.qmd) | draft | 2026-02-02 | TODO: add description |
-| [Classical Simulation Theory](classical_simulation.qmd) | draft | 2026-02-02 | TODO: add description |
-| [Hardness of Classical Simulation](hardness_proofs.qmd) | draft | 2026-02-02 | TODO: add description |
-| [Peak circuit supermacy](Peak.qmd) | draft | 2026-02-02 | TODO: add description |
-| [Verification of supremacy](verification.qmd) | draft | 2026-02-02 | TODO: add description |
-
-<!-- END AUTO NOTES TABLE -->

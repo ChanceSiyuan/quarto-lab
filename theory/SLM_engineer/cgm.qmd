@@ -5,7 +5,6 @@ date: 2026-04-09
 title: "Continuous Gradient Method for SLM Optimization"
 lang: en
 bibliography: refs.bib
-status: draft
 ---
 
 
@@ -13,7 +12,6 @@ status: draft
 
 The Rydberg Hamiltonian assumes a spatially uniform transverse field $|\Omega_i| = \Omega$ on a $16 \times 16$ array spanning $>100\;\mu\text{m}$ [@bernien2017probing], but an unshaped Gaussian beam produces large center-to-edge intensity variation. 
 Furthermore, for two-photon Rydberg excitation, the effective Rabi frequency $\Omega_{\rm eff} = \Omega_{420}\Omega_{1013}/2\delta$ contains the product of two beam intensities. If the 420 nm beam has $x\%$ inhomogeneity and the 1013 nm beam has $y\%$, the effective Rabi frequency inhomogeneity is approximately $(x + y)/2\%$ — amplifying the individual beam imperfections.
-A typical parameter of the uniformity is breifly reviewed [Here](/Experiments/posts/Lukin_timereview/singlezone_plan.html).
 
 ::: {.callout-note icon="false"}
 ## Performance Benchmarks
@@ -24,6 +22,7 @@ A typical parameter of the uniformity is breifly reviewed [Here](/Experiments/po
 | Flat-top coverage | 105 $\mu$m (flat width) $\times$ 25 $\mu$m (perpendicular Gaussian) | @ebadi2021quantum |
 | Wavefront error (corrected) | $< \lambda/100$ | @ebadi2021quantum |
 | Conversion efficiency | 30% (420 nm), 38% (1013 nm) | @ebadi2021quantum |
+
 :::
 
 The SLM operates in the Fourier plane, capable of converting the Rydberg excitation beams from Gaussian mode into 1D top-hat light sheets that homogeneously illuminate the atom plane [@ebadi2021quantum].
@@ -252,4 +251,3 @@ A comprehensive review of IFTA variants for beam shaping is provided by Ripoll e
 The [CGM approach](#sec-cgm) used in Rydberg experiments can be viewed as a gradient-descent variant of IFTA that replaces the heuristic projection steps with principled optimization of a differentiable cost function.
 
 Compared to IFTA methods for similar continuous patterns, CGM achieves 6--20$\times$ lower non-uniformity $\epsilon_{nu}$ and 1--2 orders of magnitude lower phase error $\epsilon_\Phi$, at the cost of lower light efficiency (the fundamental trade-off of regional constraint) [@Bowman_2017].
-

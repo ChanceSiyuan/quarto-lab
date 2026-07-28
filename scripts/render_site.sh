@@ -2,9 +2,15 @@
 set -euo pipefail
 
 repo_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
+if (( $# != 0 )); then
+  echo "Usage: ./scripts/render_site.sh" >&2
+  exit 2
+fi
+
+python_bin="python3"
 if [[ -x "$repo_root/.venv/bin/python" ]]; then
-  export PATH="$repo_root/.venv/bin:$PATH"
+  python_bin="$repo_root/.venv/bin/python"
 fi
 
 cd "$repo_root"
-quarto render "$@"
+exec "$python_bin" -m scripts.knowledge build

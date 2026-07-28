@@ -13,8 +13,6 @@ lang: en
 
 Rydberg atoms — atoms with one electron promoted to a state with principal quantum number $n \gg 1$ — possess extreme properties (large size, long lifetime, strong interactions) that make them the workhorse of neutral-atom quantum computing. This page derives the three pillars: the **quantum defect** correction to hydrogenic energy levels, the **lifetime** scaling with $n$, and the **Rydberg blockade** that underlies all two-qubit gate protocols.
 
-The many-body Hamiltonian used in analog quantum simulation is covered separately in the [Analog Rydberg Simulation](../simulation_model/index.qmd) topic.
-
 ---
 
 # Quantum Defect Theory {#sec-qdt}
@@ -454,7 +452,7 @@ Move to the frame rotating at $\omega_L$ via $U = e^{i\omega_L t\sum_i |r_i\rang
 
 Verification: for two atoms in $|rr\rangle$, the diagonal energy is $2\delta + V_{12}$ (one detuning per atom plus the interaction), as expected.
 
-This Hamiltonian is the starting point for analog quantum simulation of spin models — see the [Analog Rydberg Simulation](../simulation_model/index.qmd) topic for detailed treatment of its many-body physics.
+This Hamiltonian is the starting point for analog quantum simulation of spin models.
 $\square$
 :::
 

@@ -5,7 +5,6 @@ date: '2026-04-25'
 lang: en
 title: Majority Vote for Pauli signal estimation
 bibliography: refs.bib
-status: draft
 ---
 
 # Summary and question
@@ -53,4 +52,3 @@ The specific algorithm is as follows:
 ## (Quantum OR Bound)
 Given $E_1,\cdots,E_N, 0 \leq E_i \leq 1$ and ensure that either $\exist i, \mathrm{s.t.} \tr(E_i\rho) \geq c$ or $\forall i, \tr(E_i \rho) \leq c - \varepsilon$, then there exists an algorithm distinguishes the two cases with success probability at least $1-\delta$ with cost $\O(\varepsilon^{-2} \cdot \log M )$ copies of $\rho$.
 :::
-

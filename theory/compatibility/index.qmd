@@ -5,7 +5,6 @@ date: '2026-02-18'
 lang: en
 title: Quantum Resource
 description: "Quantum-resource and measurement-compatibility notes covering generalized robustness, joint measurability, multi-copy compatibility, local shadow estimation, projective simulation, and algebraic estimation frameworks."
-status: draft
 ---
 
 # Introduction
@@ -15,6 +14,13 @@ We consider general QRTs on a $d$-dimensional Hilbert space $\mathcal{H}$.
 The set $\mathcal{F} (\mathcal{H})$ of free states is defined as some closed subset of the density matrix $\mathcal{D}(\mathcal{H})$ in the system $\mathcal{H}$. The generalized robustness resource quantifier is defined as follows.
 
 :::{.callout-note icon="false"}
+
+## Reading map
+
+- [Compatibility and Others](compatiablity_and_others.qmd)
+- [compatibility in the multi-copy case](multicopy_compatiability.qmd)
+- [Quantum Resource Theory of Compatibility](compatiablity.qmd)
+
 ## Definition: Generalized Robustness
 
  Let $\rho \in \mathcal{D}(\mathcal{H})$ be a quantum state. The generalized robustness $\mathcal{R}_{\mathcal{F} (\mathcal{H})}(\rho)$ of $\rho$ with respect to the set $\mathcal{F} (\mathcal{H})$ of free states is defined as:
@@ -41,19 +47,3 @@ Let $\{\lambda_j\}$ denote the set of generalized Gell-Mann matrices defined abo
 ## Proof (Click to expand)
 t.b.c.
 :::
-
-<!-- BEGIN AUTO NOTES TABLE -->
-
-| Note | Status | Updated | Description |
-|---|---|---|---|
-| [Algebraic Framework for Multi-Copy Simultaneous Estimation](Algebraic_estimation_framework.qmd) | draft | 2026-03-09 | TODO: add description |
-| [Biased Multi-copy Local Shadows](multi-copy_localshadow.qmd) | draft | 2026-02-18 | TODO: add description |
-| [Compatibility and Others](compatiablity_and_others.qmd) | draft | 2026-02-18 | TODO: add description |
-| [compatibility in the multi-copy case](multicopy_compatiability.qmd) | draft | 2026-02-25 | TODO: add description |
-| [f-compatibility](f-compatiability.qmd) | draft | 2026-03-02 | TODO: add description |
-| [Local Optimal Shadow Tomography](local-optimal_shadow.qmd) | draft | 2026-03-21 | TODO: add description |
-| [Nonparametric Functional Estimation](nonparametric.qmd) | draft | 2026-03-10 | TODO: add description |
-| [Projective Simulations of Quantum Measurements](projective_sim.qmd) | draft | 2026-03-19 | TODO: add description |
-| [Quantum Resource Theory of Compatibility](compatiablity.qmd) | draft | 2026-02-18 | TODO: add description |
-
-<!-- END AUTO NOTES TABLE -->

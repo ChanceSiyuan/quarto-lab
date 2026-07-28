@@ -41,7 +41,7 @@ The choice of 813.4 nm for the tweezers exploits a **magic wavelength** at which
 
 PDH locking achieves sub-Hz linewidth by referencing the laser frequency to a high-finesse Fabry-Pérot (F-P) cavity through a phase-modulated error signal. The schematic is shown in @fig-pdh-lock.
 
-![Schematic of the Pound-Drever-Hall locking setup: laser passes through an EOM, reflects from a high-finesse Fabry-Pérot cavity, and the reflected signal is mixed with the modulation signal to produce the error signal.](Figures/PDH lock.png){#fig-pdh-lock width=60%}
+![Schematic of the Pound-Drever-Hall locking setup: laser passes through an EOM, reflects from a high-finesse Fabry-Pérot cavity, and the reflected signal is mixed with the modulation signal to produce the error signal.](Figures/pdh-lock.png){#fig-pdh-lock width=60%}
 
 ## Electro-Optic Modulation
 
@@ -83,7 +83,7 @@ $$ {#eq-error}
 
 Near a cavity resonance $\omega_n$, one has $F(\omega_0) \approx iA(\omega_0 - \omega_n)$ (linear dispersion). Provided $\Omega_m$ is much larger than the cavity linewidth, $F(\omega_0 \pm \Omega_m) \approx \pm ir$ (off-resonant sideband). Then $\epsilon \propto \omega_0 - \omega_n$: the error signal is an odd function of the frequency offset, serving as the feedback signal for the servo loop. The shape of the error signal as a function of $\omega_0$ is shown in @fig-pdh-error.
 
-![PDH error signal as a function of laser frequency $\omega_0$, showing the antisymmetric dispersion-like shape near the cavity resonance $\omega_n$. The monotonic region near the zero crossing serves as the discriminator for the feedback loop.](Figures/PDH error.png){#fig-pdh-error width=80%}
+![PDH error signal as a function of laser frequency $\omega_0$, showing the antisymmetric dispersion-like shape near the cavity resonance $\omega_n$. The monotonic region near the zero crossing serves as the discriminator for the feedback loop.](Figures/pdh-error.png){#fig-pdh-error width=80%}
 
 PDH locking achieves frequency stability limited by the cavity linewidth (typically $\sim$kHz for a 10-cm Finesse $\sim 10^4$ cavity). With PDH feedforward, laser phase noise can be suppressed beyond the bandwidth limit of the feedback servo [@chao2023pounddreverhall]. This is critical for the 689 nm laser driving the $\sim$7 kHz linewidth $^3P_1$ transition.
 

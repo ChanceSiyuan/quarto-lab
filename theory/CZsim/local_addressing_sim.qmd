@@ -6,22 +6,6 @@ description: "Simulating the local addressing on Rb87"
 lang: en
 title: "Local Addressing Simulation"
 bibliography: refs.bib
-status: draft
-format:
-  live-html:
-    html-math-method: katex
-    theme:
-      light: flatly
-      dark: darkly
-    css: ../../../styles.css
-    toc: true
-    code-copy: true
-    citations-hover: true
-    include-after-body: ../../../_includes/comment-github-link.html
-pyodide:
-  packages:
-    - numpy
-    - matplotlib
 ---
 
 # Summary and Questions
@@ -87,7 +71,7 @@ $$ {#eq-rydberg-state-local}
 
 Again, this is the unique allowed final state since $70S_{1/2}$ has $J = 1/2$ and the only option for $m_J = -3/2 + 1 = -1/2$ is $m_J = -1/2$. The coupling strength is $\langle r \rvert\, H\, \lvert e \rangle = \frac{\Omega_{1013}}{2}$.
 
-The entire excitation pathway is a **single chain** $\ket{g} \leftrightarrow \ket{e} \leftrightarrow \ket{r}$ with no branching. The Schrodinger equation in the rotating frame (cf. the general RWA Hamiltonian derived in the [CZ gate simulation](/Experiments/posts/CZsim/index.html)) is:
+The entire excitation pathway is a **single chain** $\ket{g} \leftrightarrow \ket{e} \leftrightarrow \ket{r}$ with no branching. The Schrodinger equation in the rotating frame is:
 $$
 \begin{aligned}
 i\hbar\,\partial_t \psi_e &= \frac{\Omega_{420}}{2}\,\psi_g + \frac{\Omega_{1013}}{2}\,\psi_r + \Delta\,\psi_e, \\
@@ -192,7 +176,7 @@ $$
 F = P(|rg\rangle) + P(|rr\rangle) + P(|gg\rangle) + (1.0 - e^{-\Gamma_{\rm sc} \cdot T})
 $$
 
-During the simulation, we hope the lightshift $\delta_A$ astisfied $\delta_A > 4 \Omega_{\mathrm{eff}}$ to ensure that the adiabaticity is satisfied, otherwise we would see the Stuckelberg oscillation effect, as reviewed in [Here](../../../theory/Dynamics/KZM.qmd) along with the Kibble-Zurek mechanism.
+During the simulation, we hope the lightshift $\delta_A$ astisfied $\delta_A > 4 \Omega_{\mathrm{eff}}$ to ensure that the adiabaticity is satisfied, otherwise we would see the Stuckelberg oscillation effect, as reviewed in [Here](../Dynamics/KZM.qmd) along with the Kibble-Zurek mechanism.
 
 
 # Results

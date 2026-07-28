@@ -18,6 +18,14 @@ bibliography: refs.bib
 - `backend="peps"`：YASTN 的有限 PEPS（finite PEPS）
 - `backend="gputn"`：GPU 上的张量网络 gate / contraction 路径（cuTensorNet）
 
+## Reading map
+
+- [AKLT Model as an Explicit MPS](MPS_AKLT.qmd)
+- [DMRG and Variational MPS Algorithms](MPS_DMRG.qmd)
+- [MPS Basics](MPS.qmd)
+- [PEPS](PEPS.qmd)
+- [time-dependent variational principle for MPS](TDVP.qmd)
+
 ## 总览（先读）
 
 :::{.callout-note icon="false"}
@@ -86,15 +94,3 @@ TEBD/MPS gate evolution 的核心源头。gputn 的物理层不是全新的变�
 :::
 
 最贴近 gputn 工程原理的是 **cuTensorNet** 文档 [@cutensornet_docs]：提供 tensor network creation、contraction path search、slicing、plan generation、SVD/QR decomposition、gate application、MPS compression 等 API。
-
-<!-- BEGIN AUTO NOTES TABLE -->
-
-| Note | Status | Updated | Description |
-|---|---|---|---|
-| [AKLT Model as an Explicit MPS](MPS_AKLT.qmd) | draft | 2026-06-08 | AKLT example extracted from the previous MPS report: projector Hamiltonian, valence-bond-solid ground state, and its explicit translationally invariant MPS representation. |
-| [DMRG and Variational MPS Algorithms](MPS_DMRG.qmd) | draft | 2026-06-08 | DMRG and vMPS notes extracted from the previous report: finite-MPS ground-state search, MPO construction for Bose-Hubbard, Heisenberg and XY models, iDMRG truncation logic, and the original simulation figures. |
-| [MPS Basics](MPS.qmd) | draft | 2026-06-08 | Basic MPS notes extracted from the previous Tensor Network Method report: Schmidt decomposition, canonical MPS forms, MPOs, contraction order, transfer maps, correlation decay, and the MPS to PEPS motivation. |
-| [PEPS](PEPS.qmd) | draft | 2026-06-13 | PEPS |
-| [time-dependent variational principle for MPS](TDVP.qmd) | draft | 2026-06-08 | TODO: add description |
-
-<!-- END AUTO NOTES TABLE -->

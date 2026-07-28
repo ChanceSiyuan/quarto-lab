@@ -5,9 +5,6 @@ date: '2026-02-17'
 lang: en
 title: OTOC and its simulation
 bibliography: refs.bib
-jupyter: python3
-code-fold: true
-status: draft
 ---
 
 # Summarize
@@ -406,4 +403,3 @@ That is, a result of the dual circuit of conjugate operation $U^{(k-1)} M U^{(k-
 Based on this analysis, a key question is, if $U$ is given as a encoded quantum state $\ket{U}$, how to generate the dual circuit of $U^{\dagger} M U$ without first measuring the encoded state $\ket{U}$? To be specific, we hope to transform the $OTOC^{2}$ into the following recursive ciruit, where $G$ is the gadget that accept input $\ket{U}, \ket{M}$ and output $\ket{U^\dagger M U}$ and $ \ket{0}$ through incomputation.
 
 ![Use dual circuit to generate OTOC](dual_gadget.png)
-

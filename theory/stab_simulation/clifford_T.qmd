@@ -7,7 +7,7 @@ title: "Stabilizer Rank Decomposition for Clifford+T Circuits"
 bibliography: refs.bib
 ---
 
-**Abstract.** We review the stabilizer rank framework for classically simulating Clifford+T circuits. The output state $\ket{\psi} = U\ket{0}^{\otimes n}$ is decomposed as a linear combination of stabilizer states $\ket{\psi} = \sum_\alpha b_\alpha \ket{\phi_\alpha}$, where the number of terms (the stabilizer rank $\chi$) governs the simulation cost. Strong simulation via **CH** marginals costs $\mathcal{O}(n^3 \chi^2)$, reducible to $\mathcal{O}(n^3 \chi)$ via Monte Carlo sampling [@bravyi2016improved]. We describe three decomposition algorithms: gadget-based, sum-over-Clifford [@bravyi2019simulation], and sparsification [@bravyi2019simulation]. This post builds on [CH and Affine Simulators](CH_affine.qmd) and provides the decomposition framework used in [Combining Simulation Methods](graph_combine.qmd).
+**Abstract.** We review the stabilizer rank framework for classically simulating Clifford+T circuits. The output state $\ket{\psi} = U\ket{0}^{\otimes n}$ is decomposed as a linear combination of stabilizer states $\ket{\psi} = \sum_\alpha b_\alpha \ket{\phi_\alpha}$, where the number of terms (the stabilizer rank $\chi$) governs the simulation cost. Strong simulation via **CH** marginals costs $\mathcal{O}(n^3 \chi^2)$, reducible to $\mathcal{O}(n^3 \chi)$ via Monte Carlo sampling [@bravyi2016improved]. We describe three decomposition algorithms: gadget-based, sum-over-Clifford [@bravyi2019simulation], and sparsification [@bravyi2019simulation]. This post builds on [CH and Affine Simulators](CH_affine.qmd).
 
 ---
 

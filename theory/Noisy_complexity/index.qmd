@@ -19,6 +19,15 @@ The key insight underlying most simulation methods is that noise suppresses quan
 
 These notes consolidate partial results from an ongoing research project, organizing them into a coherent framework with precise mathematical statements, proofs, and connections to the broader literature.
 
+## Reading map
+
+- [Gadget-Based Simulation](gadget_simulation.qmd)
+- [Non-Unital Noise and Simulation Barriers](non_unital.qmd)
+- [Open Problems and Future Directions](open_problems.qmd)
+- [Operator Entanglement and Resource Theory](operator_resource.qmd)
+- [Pauli Spectrum and Path Simulation Methods](pauli_path.qmd)
+- [Percolation Methods for Noisy Circuits](percolation.qmd)
+
 ## Overview and Motivation
 
 This collection is organized into the following sections:
@@ -120,16 +129,3 @@ For quantum channels, we use $\mathcal{E}, \mathcal{N}, \Lambda$ for general cha
 Begin with [Pauli Spectrum and Path Simulation](pauli_path.qmd) for the foundational Heisenberg-picture framework and spectral analysis. For readers interested in non-Clifford gate simulation, continue to [Gadget-Based Simulation](gadget_simulation.qmd) which connects stabilizer rank methods to the Pauli path framework. The [Percolation Methods](percolation.qmd) section offers an independent graph-theoretic perspective on simulation complexity.
 
 For noise model considerations, [Non-Unital Noise Barriers](non_unital.qmd) identifies fundamental limitations of the Pauli-based approaches. The [Operator Entanglement](operator_resource.qmd) section provides resource-theoretic context, and [Open Problems](open_problems.qmd) collects unresolved questions for future work.
-
-<!-- BEGIN AUTO NOTES TABLE -->
-
-| Note | Status | Updated | Description |
-|---|---|---|---|
-| [Gadget-Based Simulation](gadget_simulation.qmd) | draft | 2026-03-25 | T-gadget formalism replacing non-Clifford gates with magic state injection, stabilizer rank decomposition, graphical compilation to graph states, and noise thresholds for efficient simulation. |
-| [Non-Unital Noise and Simulation Barriers](non_unital.qmd) | draft | 2026-03-25 | Scaling-shifting decomposition for non-unital noise in Pauli path methods, amplitude damping toy model, and no-go theorem for Z-projection decomposition of non-unital channels. |
-| [Open Problems and Future Directions](open_problems.qmd) | draft | 2026-03-25 | Collected open questions on entropy reformulations, operator 1-norm, randomness assumptions, truncation-sampling separation, phase transition numerics, basis choice, and connections to Boolean function analysis. |
-| [Operator Entanglement and Resource Theory](operator_resource.qmd) | draft | 2026-03-25 | Vectorization framework via Pauli-Bell correspondence, operator stabilizer entropy as complexity measure, CSPO characterization of magic-free channels, 1-norm as space complexity indicator, and conjectures on Choi representation and gate-type sensitivity. |
-| [Pauli Spectrum and Path Simulation Methods](pauli_path.qmd) | draft | 2026-03-25 | Heisenberg-picture Pauli path framework, spectral analysis of Pauli coefficients, and three simulation algorithms with complexity governed by operator stabilizer entropy. |
-| [Percolation Methods for Noisy Circuits](percolation.qmd) | draft | 2026-03-25 | Graph state reduction under incoherent noise, CZ-commuting channel characterization, Z-projection decomposition, percolation threshold criteria, and MBQC-based simulation via rank-width. |
-
-<!-- END AUTO NOTES TABLE -->

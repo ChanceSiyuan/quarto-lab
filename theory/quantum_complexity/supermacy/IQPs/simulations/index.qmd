@@ -13,6 +13,11 @@ many other properties of IQP circuits can still be efficiently simulated.
 Among them, a particularly simple one is the estimation of Pauli-$X$ averages.
 
 ::: {#lem-iqp-x-pauli-average .callout-important icon="false"}
+
+## Reading map
+
+- [Noise and Classical Simulation](noisy_iqp.qmd)
+
 ## X-Pauli Average Estimation
 
 For any efficiently specified IQP circuit with diagonal part $D$, there is a $\mathsf{BPP}$ algorithm that estimates the Pauli-$X$ expectation value
@@ -64,11 +69,3 @@ $$
 N = \frac{2}{\varepsilon^2}\ln\frac{2}{\delta}
 $$
 makes this failure probability at most $\delta$. Thus the Pauli-$X$ average can be estimated to additive error $\varepsilon$ with confidence $1-\delta$ by a randomized classical algorithm running in polynomial time.
-
-<!-- BEGIN AUTO NOTES TABLE -->
-
-| Note | Status | Updated | Description |
-|---|---|---|---|
-| [Noise and Classical Simulation](noisy_iqp.qmd) | draft | 2026-02-02 | TODO: add description |
-
-<!-- END AUTO NOTES TABLE -->

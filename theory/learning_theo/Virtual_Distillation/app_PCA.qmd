@@ -4,7 +4,6 @@ date: "2026-02-28"
 categories:
 - Readings
 bibliography: refs.bib
-status: draft
 ---
 
 # Summary and questions
@@ -617,6 +616,3 @@ Holmes et al. @holmes2023nonlinear develop a systematic framework of *weighted s
 3. **QSP (Quantum State Polynomial)**: $\tilde{\tau} = \alpha_{00}\rho^{(0)} + \alpha_{11}\rho^{(1)} + \alpha_{01}\rho^{(0)}\rho^{(1)} + \alpha_{10}\rho^{(1)}\rho^{(0)}$, involving true *matrix products* via controlled-SWAP (same hardware as LMR). Special cases include $\rho^2$ (virtual distillation) and $[\rho^{(0)}, \rho^{(1)}]$ (commutator).
 
 **Key distinction.** QHP computes element-wise powers $\rho_{ij}^k$ (Hadamard product), while LMR/QSP computes matrix powers $(\rho^k)_{ij} = \sum_\ell \rho_{i\ell}\rho_{\ell j}\cdots$ (matrix multiplication). For NISQ hardware, QHP and GQT are particularly attractive since they require only depth 1-2 circuits with native CZ gates, whereas QSP requires the same controlled-SWAP resources as full LMR.
-
-
-
