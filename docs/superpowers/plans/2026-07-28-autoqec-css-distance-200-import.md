@@ -35,6 +35,7 @@
 - `lib/problems/research-indexer.mjs`: discover committed research records, validate integrity, and build `.generated/research-index.json`.
 - `lib/problems/research-repository.mjs`: immutable lookup helpers for indexed research records and attempts.
 - `lib/problems/research-presentation.mjs`: generic ledger and dossier display helpers shared by imported records and `Prob-000`.
+- `lib/problems/research-route-data.mjs`: route-state helpers that make real research route branching testable without rendering server components against generated files.
 - `lib/problems/example-presentation.mjs`: thin compatibility wrapper over `research-presentation.mjs` for the synthetic fixture.
 - `scripts/build-problem-index.mjs`: write both `.generated/problem-index.json` and `.generated/research-index.json` for the selected problem root.
 - `scripts/dev-problem-index.mjs`: watch top-level problem files plus `research.json`, `import-manifest.json`, cohort manifests, and attempt manifests.
@@ -871,6 +872,7 @@ git commit -m "feat: present imported research ledgers"
 ### Task 4: Render Real Research Routes
 
 **Files:**
+- Create: `lib/problems/research-route-data.mjs`
 - Modify: `app/problems/[id]/page.tsx`
 - Modify: `app/problems/[id]/attempts/[attemptId]/page.tsx`
 - Create: `tests/problem-routes-research.test.mjs`
@@ -878,84 +880,85 @@ git commit -m "feat: present imported research ledgers"
 
 **Interfaces:**
 - Consumes: `.generated/problem-index.json`, `.generated/research-index.json`, `createResearchRepository()`, `buildResearchLedger()`, `buildResearchAttemptDossier()`.
-- Produces: real `Prob-001` ledger and attempt dossier pages; unknown attempts still call `notFound()`.
+- Produces: `buildProblemDetailResearchState({ problem, researchRecord, diagnostics })`, `buildAttemptDetailResearchState({ problem, researchRecord, attemptId })`, real `Prob-001` ledger and attempt dossier pages; unknown attempts still call `notFound()`.
 
-- [ ] **Step 1: Write route tests against rendered HTML**
+- [ ] **Step 1: Write route-state tests that prove the real research branches**
 
 Create `tests/problem-routes-research.test.mjs`:
 
 ```js
 import assert from "node:assert/strict";
-import { execFile } from "node:child_process";
-import { mkdir, mkdtemp, readFile, writeFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
-import { promisify } from "node:util";
 import test from "node:test";
 
-const execFileAsync = promisify(execFile);
+import {
+  buildAttemptDetailResearchState,
+  buildProblemDetailResearchState,
+} from "../lib/problems/research-route-data.mjs";
 
-test("real research routes render imported ledgers and missing candidates", async () => {
-  const root = await mkdtemp(join(tmpdir(), "research-loop-routes-"));
-  await mkdir(join(root, ".generated"), { recursive: true });
-  await writeFile(join(root, ".generated", "problem-index.json"), JSON.stringify({
-    schemaVersion: 1,
-    generatedAt: "2026-07-28T00:00:00.000Z",
-    workspacePath: root,
-    nextProblemId: "Prob-002",
-    summary: { total: 1, accepted: 1, solved: 1, published: 0, rejected: 0, archived: 0 },
-    diagnostics: [],
-    problems: [{
-      schemaVersion: 1,
-      id: "Prob-001",
-      title: "AutoQEC CSS-distance autoresearch record",
-      summary: "Imported 200-trial CSS-distance experiment history.",
-      status: "solved",
-      gate: { type: "repository-import", readiness: "passed" },
-      provenance: { sourceCount: 200 },
-      lastActivity: { summary: "Imported AutoQEC record", at: "2026-07-28T00:00:00.000Z" },
-      createdAt: "2026-07-28T00:00:00.000Z",
-      updatedAt: "2026-07-28T00:00:00.000Z",
-    }],
-  }, null, 2));
-  await writeFile(join(root, ".generated", "research-index.json"), JSON.stringify({
-    schemaVersion: 1,
-    generatedAt: "2026-07-28T00:00:00.000Z",
-    workspacePath: root,
-    records: [{
-      problemId: "Prob-001",
-      manifest: {
-        problemId: "Prob-001",
-        disclaimer: "Imported experimental record - not reviewed knowledge.",
-      },
-      attempts: [{
-        problemId: "Prob-001",
-        id: "ATT-101",
-        sequence: 101,
-        cohort: "cohort-101-200",
-        title: "CSS Distance Proposal 101",
-        summary: "Imported AutoQEC trial record.",
-        stage: "development",
-        decision: "rejected",
-        gate: { containment: "passed", publicContract: "failed", development: "failed" },
-        method: { description: "Proposal contract failure", learnedFrom: null },
-        metrics: { runs: 0, verifiedWitnesses: 0, targetHits: 0, timeouts: 0, crashes: 0, invalidClaims: 1, weightedTargetHits: 0, normalizedQuality: 0, runtimeSeconds: null, averageSeconds: null, medianSeconds: null, p95Seconds: null, timingStatus: "not-run", speedup: null },
-        provenance: { sourceRepository: "AutoQEC", sourceBranch: "autoresearch/css-distance/run200-proposal-101", sourceCommit: "a".repeat(40), sourceInfrastructureCommit: "12a8f794f68d63f07303df0cc38fa244c1ab1248", sourceCohort: "cohort-101-200", model: null },
-        candidate: { status: "not-generated" },
-        artifacts: [{ path: "LOG.md", sha256: "b".repeat(64), sourcePath: "LOG.md" }],
-      }],
-      attemptCount: 1,
-    }],
-    diagnostics: [],
-  }, null, 2));
+const problem = {
+  id: "Prob-001",
+  title: "AutoQEC CSS-distance autoresearch record",
+  summary: "Imported 200-trial CSS-distance experiment history.",
+  status: "solved",
+};
 
-  await execFileAsync(process.execPath, ["scripts/build-problem-index.mjs", "--root", root], { cwd: process.cwd(), maxBuffer: 10 * 1024 * 1024 });
+const attempt101 = {
+  problemId: "Prob-001",
+  id: "ATT-101",
+  sequence: 101,
+  cohort: "cohort-101-200",
+  title: "CSS Distance Proposal 101",
+  summary: "Imported AutoQEC trial record.",
+  stage: "development",
+  decision: "rejected",
+  gate: { containment: "passed", publicContract: "failed", development: "failed" },
+  method: { description: "Proposal contract failure", learnedFrom: null },
+  metrics: { runs: 0, verifiedWitnesses: 0, targetHits: 0, timeouts: 0, crashes: 0, invalidClaims: 1, weightedTargetHits: 0, normalizedQuality: 0, runtimeSeconds: null, averageSeconds: null, medianSeconds: null, p95Seconds: null, timingStatus: "not-run", speedup: null },
+  provenance: { sourceRepository: "AutoQEC", sourceBranch: "autoresearch/css-distance/run200-proposal-101", sourceCommit: "a".repeat(40), sourceInfrastructureCommit: "12a8f794f68d63f07303df0cc38fa244c1ab1248", sourceCohort: "cohort-101-200", model: null },
+  candidate: { status: "not-generated" },
+  artifacts: [{ path: "LOG.md", sha256: "b".repeat(64), sourcePath: "LOG.md" }],
+};
 
-  assert.ok(await readFile(join(root, ".generated", "research-index.json"), "utf8"));
+const record = {
+  problemId: "Prob-001",
+  manifest: {
+    problemId: "Prob-001",
+    disclaimer: "Imported experimental record - not reviewed knowledge.",
+  },
+  attempts: [attempt101],
+};
+
+test("problem detail state chooses the real research ledger when a record exists", () => {
+  const state = buildProblemDetailResearchState({ problem, researchRecord: record, diagnostics: [] });
+
+  assert.equal(state.kind, "research");
+  assert.equal(state.problem.id, "Prob-001");
+  assert.equal(state.ledger.rows.length, 1);
+  assert.equal(state.ledger.rows[0].id, "ATT-101");
+  assert.equal(state.disclaimer, "Imported experimental record - not reviewed knowledge.");
+});
+
+test("problem detail state exposes integrity diagnostics instead of a partial ledger", () => {
+  const state = buildProblemDetailResearchState({
+    problem,
+    researchRecord: null,
+    diagnostics: [{ relativePath: "problems/Prob-001/attempts/ATT-101/attempt.json", field: "metrics", message: "bad metrics" }],
+  });
+
+  assert.equal(state.kind, "research-diagnostics");
+  assert.match(state.diagnostics[0].message, /bad metrics/);
+});
+
+test("attempt detail state returns dossiers for known attempts and not-found for unknown attempts", () => {
+  const found = buildAttemptDetailResearchState({ problem, researchRecord: record, attemptId: "ATT-101" });
+  assert.equal(found.kind, "research-attempt");
+  assert.equal(found.dossier.id, "ATT-101");
+  assert.equal(found.dossier.candidate.message, "Candidate code was not generated.");
+
+  const missing = buildAttemptDetailResearchState({ problem, researchRecord: record, attemptId: "ATT-999" });
+  assert.equal(missing.kind, "not-found");
 });
 ```
-
-This test intentionally starts as a smoke-level import contract for generated data. Route-level HTML is verified after Task 10 when `Prob-001` exists in the real app build.
 
 - [ ] **Step 2: Run route smoke test and verify RED**
 
@@ -965,16 +968,56 @@ Run:
 node --test tests/problem-routes-research.test.mjs
 ```
 
-Expected: FAIL until the test script is included and generated research index handling is present.
+Expected: FAIL because `research-route-data.mjs` does not exist.
 
-- [ ] **Step 3: Import and use generated research data in the problem detail route**
+- [ ] **Step 3: Implement the route-state helpers**
+
+Create `lib/problems/research-route-data.mjs`:
+
+```js
+import {
+  buildResearchAttemptDossier,
+  buildResearchLedger,
+} from "./research-presentation.mjs";
+
+export function buildProblemDetailResearchState({ problem, researchRecord, diagnostics = [] }) {
+  if (researchRecord) {
+    return {
+      kind: "research",
+      problem,
+      disclaimer: researchRecord.manifest.disclaimer,
+      ledger: buildResearchLedger(researchRecord),
+    };
+  }
+  if (diagnostics.length > 0) {
+    return {
+      kind: "research-diagnostics",
+      problem,
+      diagnostics: diagnostics.map((item) => ({ ...item })),
+    };
+  }
+  return { kind: "generic", problem };
+}
+
+export function buildAttemptDetailResearchState({ problem, researchRecord, attemptId }) {
+  const attempt = researchRecord?.attempts.find((item) => item.id === attemptId);
+  if (!attempt) return { kind: "not-found", problem };
+  return {
+    kind: "research-attempt",
+    problem,
+    dossier: buildResearchAttemptDossier(attempt, researchRecord.manifest),
+  };
+}
+```
+
+- [ ] **Step 4: Import and use generated research data in the problem detail route**
 
 Modify `app/problems/[id]/page.tsx`:
 
 ```tsx
 import generatedResearchIndex from "../../../.generated/research-index.json";
 import { createResearchRepository } from "@/lib/problems/research-repository.mjs";
-import { buildResearchLedger } from "@/lib/problems/research-presentation.mjs";
+import { buildProblemDetailResearchState } from "@/lib/problems/research-route-data.mjs";
 ```
 
 After loading `problem`, create:
@@ -983,13 +1026,14 @@ After loading `problem`, create:
 const researchRepository = createResearchRepository(generatedResearchIndex);
 const researchRecord = researchRepository.getResearchRecord(problem.id);
 const researchDiagnostics = researchRepository.getDiagnostics(problem.id);
+const researchState = buildProblemDetailResearchState({ problem, researchRecord, diagnostics: researchDiagnostics });
 ```
 
 Before the generic placeholder return, add a branch:
 
 ```tsx
-if (researchRecord) {
-  const ledger = buildResearchLedger(researchRecord);
+if (researchState.kind === "research") {
+  const ledger = researchState.ledger;
   return (
     <main className="detail-shell research-shell">
       <Link className="back-link" href="/">← Back to problems</Link>
@@ -1005,7 +1049,7 @@ if (researchRecord) {
           <span>{ledger.rows.length} attempts</span>
         </div>
       </header>
-      <p className="example-disclaimer">{researchRecord.manifest.disclaimer}</p>
+      <p className="example-disclaimer">{researchState.disclaimer}</p>
       <dl className="research-metric-strip" aria-label="Research metrics">
         {ledger.cards.map((card) => (
           <div key={card.label}><dt>{card.label}</dt><dd>{card.value}</dd></div>
@@ -1058,16 +1102,16 @@ if (researchRecord) {
 }
 ```
 
-If `researchDiagnostics.length > 0` and `researchRecord` is null, render a diagnostic panel instead of the generic placeholder.
+If `researchState.kind === "research-diagnostics"`, render a diagnostic panel instead of the generic placeholder.
 
-- [ ] **Step 4: Import and use generated research data in the attempt route**
+- [ ] **Step 5: Import and use generated research data in the attempt route**
 
 Modify `app/problems/[id]/attempts/[attemptId]/page.tsx`:
 
 ```tsx
 import generatedResearchIndex from "../../../../../.generated/research-index.json";
 import { createResearchRepository } from "@/lib/problems/research-repository.mjs";
-import { buildResearchAttemptDossier } from "@/lib/problems/research-presentation.mjs";
+import { buildAttemptDetailResearchState } from "@/lib/problems/research-route-data.mjs";
 ```
 
 After the synthetic example branch remains available, allow real attempts:
@@ -1075,10 +1119,10 @@ After the synthetic example branch remains available, allow real attempts:
 ```tsx
 const researchRepository = createResearchRepository(generatedResearchIndex);
 const researchRecord = researchRepository.getResearchRecord(problem.id);
-const researchAttempt = researchRepository.getAttempt(problem.id, attemptId);
+const researchState = buildAttemptDetailResearchState({ problem, researchRecord, attemptId });
 
-if (researchRecord && researchAttempt) {
-  const dossier = buildResearchAttemptDossier(researchAttempt, researchRecord.manifest);
+if (researchState.kind === "research-attempt") {
+  const dossier = researchState.dossier;
   return (
     <main className="detail-shell attempt-shell">
       <div className="breadcrumb-row">
@@ -1140,11 +1184,11 @@ if (researchRecord && researchAttempt) {
 
 Unknown real attempts must fall through to `notFound()`.
 
-- [ ] **Step 5: Add the route test to focused problem tests**
+- [ ] **Step 6: Add the route test to focused problem tests**
 
 Modify `package.json` `test:unit:problems` to include `tests/problem-routes-research.test.mjs`.
 
-- [ ] **Step 6: Run route and problem suites**
+- [ ] **Step 7: Run route and problem suites**
 
 Run:
 
@@ -1155,10 +1199,10 @@ npm run test:unit:problems
 
 Expected: PASS.
 
-- [ ] **Step 7: Commit routes**
+- [ ] **Step 8: Commit routes**
 
 ```bash
-git add 'app/problems/[id]/page.tsx' 'app/problems/[id]/attempts/[attemptId]/page.tsx' tests/problem-routes-research.test.mjs package.json
+git add lib/problems/research-route-data.mjs 'app/problems/[id]/page.tsx' 'app/problems/[id]/attempts/[attemptId]/page.tsx' tests/problem-routes-research.test.mjs package.json
 git commit -m "feat: render imported research routes"
 ```
 
@@ -1421,11 +1465,11 @@ git commit -m "feat: parse AutoQEC CSS distance reports"
 
 **Interfaces:**
 - Consumes: Tasks 1 and 5.
-- Produces: `expectedInfrastructureForAttempt(sequence)`, `buildCohortManifests()`, `buildInfrastructurePlan(trials)`, `importAutoqecCssDistance({ rootDir, sourceDir, now })`.
+- Produces: `expectedInfrastructureForAttempt(sequence, ranges = AUTOQEC_INFRASTRUCTURE_RANGES)`, `buildCohortManifests(ranges = AUTOQEC_INFRASTRUCTURE_RANGES)`, `buildInfrastructurePlan(trials, { ranges } = {})`, `importAutoqecCssDistance({ rootDir, sourceDir, now, expectedAttempts, infrastructureRanges })`.
 
 - [ ] **Step 1: Write importer tests with a synthetic Git source**
 
-Create `tests/autoqec-css-distance-importer.test.mjs`. The test source must be a tiny Git repo created under `tmpdir()` with two trial branches and two parent infrastructure commits. Use `git init`, `git add`, `git commit`, and branches named like real AutoQEC refs. The focused tests:
+Create `tests/autoqec-css-distance-importer.test.mjs`. The test source must be a tiny Git repo created under `tmpdir()` with three trial branches and three parent infrastructure commits. Use `git init`, `git add`, `git commit`, and branches named like real AutoQEC refs. The full real import uses `AUTOQEC_INFRASTRUCTURE_RANGES`; the synthetic import test passes an explicit `infrastructureRanges` array built from the synthetic first-parent commit IDs so the test does not depend on impossible real AutoQEC commit hashes. The focused tests:
 
 ```js
 test("maps attempts to the exact six infrastructure ranges", () => {
@@ -1451,13 +1495,28 @@ test("refuses an infrastructure first-parent mismatch", async () => {
   );
 });
 
+test("accepts a synthetic range map for temporary Git-source imports", async () => {
+  const ranges = [
+    { first: 1, last: 1, cohort: "cohort-001-100", commit: "1".repeat(40) },
+    { first: 101, last: 101, cohort: "cohort-101-200", commit: "2".repeat(40) },
+    { first: 200, last: 200, cohort: "cohort-101-200", commit: "3".repeat(40) },
+  ];
+  const plan = await buildInfrastructurePlan([
+    { sequence: 1, firstParent: "1".repeat(40) },
+    { sequence: 101, firstParent: "2".repeat(40) },
+    { sequence: 200, firstParent: "3".repeat(40) },
+  ], { ranges });
+
+  assert.deepEqual(plan.map((item) => item.commit), ["1".repeat(40), "2".repeat(40), "3".repeat(40)]);
+});
+
 test("safe artifact policy rejects path escapes and symlinks", async () => {
   assert.throws(() => assertSafeImportPath("../candidate.py"), /unsafe/);
   assert.throws(() => assertSafeImportPath("/candidate.py"), /unsafe/);
 });
 ```
 
-Also add a synthetic end-to-end import test that imports three trials through a test-only `expectedAttempts: [1, 101, 200]` option and asserts the generated structure:
+Also add a synthetic end-to-end import test that imports three trials through test-only `expectedAttempts: [1, 101, 200]` and `infrastructureRanges` options and asserts the generated structure:
 
 ```js
 assert.equal(await fileExists(join(root, "problems", "Prob-001", "attempts", "ATT-101", "candidate.py")), false);
@@ -1482,19 +1541,19 @@ Create `lib/problems/autoqec-css-distance/infrastructure.mjs`:
 ```js
 import { AUTOQEC_INFRASTRUCTURE_RANGES } from "../research-schema.mjs";
 
-export function expectedInfrastructureForAttempt(sequence) {
-  const range = AUTOQEC_INFRASTRUCTURE_RANGES.find((item) => sequence >= item.first && sequence <= item.last);
+export function expectedInfrastructureForAttempt(sequence, ranges = AUTOQEC_INFRASTRUCTURE_RANGES) {
+  const range = ranges.find((item) => sequence >= item.first && sequence <= item.last);
   if (!range) throw new Error(`No infrastructure range for ATT-${String(sequence).padStart(3, "0")}`);
   return range;
 }
 
-export function buildCohortManifests() {
+export function buildCohortManifests(ranges = AUTOQEC_INFRASTRUCTURE_RANGES) {
   return ["cohort-001-100", "cohort-101-200"].map((cohort) => ({
     schemaVersion: 1,
     kind: "autoqec-css-distance-cohort",
     id: cohort,
     problemId: "Prob-001",
-    attempts: AUTOQEC_INFRASTRUCTURE_RANGES
+    attempts: ranges
       .filter((range) => range.cohort === cohort)
       .map((range) => ({
         first: range.first,
@@ -1505,7 +1564,7 @@ export function buildCohortManifests() {
 }
 ```
 
-`buildInfrastructurePlan(trials)` must reject any trial whose `firstParent` does not equal `expectedInfrastructureForAttempt(trial.sequence).commit`.
+`buildInfrastructurePlan(trials, { ranges = AUTOQEC_INFRASTRUCTURE_RANGES } = {})` must reject any trial whose `firstParent` does not equal `expectedInfrastructureForAttempt(trial.sequence, ranges).commit`.
 
 - [ ] **Step 4: Implement safe import path and file metadata helpers**
 
@@ -1547,9 +1606,9 @@ const TRIAL_ARTIFACT_SOURCES = [
 Add:
 
 ```js
-export function normalizeAttempt({ sequence, parsedReport, sourceBranch, sourceCommit, sourceInfrastructureCommit, artifacts }) {
+export function normalizeAttempt({ sequence, parsedReport, sourceBranch, sourceCommit, sourceInfrastructureCommit, artifacts, infrastructureRanges = AUTOQEC_INFRASTRUCTURE_RANGES }) {
   const id = `ATT-${String(sequence).padStart(3, "0")}`;
-  const expected = expectedInfrastructureForAttempt(sequence);
+  const expected = expectedInfrastructureForAttempt(sequence, infrastructureRanges);
   const hasCandidate = artifacts.some((artifact) => artifact.path === "candidate.py");
   return {
     schemaVersion: 1,
@@ -1589,7 +1648,7 @@ Validate every generated attempt through `validateResearchAttempt()`.
 
 - [ ] **Step 6: Implement atomic import installation**
 
-`importAutoqecCssDistance({ rootDir, sourceDir, now = () => new Date(), expectedAttempts = [1..200] })` must:
+`importAutoqecCssDistance({ rootDir, sourceDir, now = () => new Date(), expectedAttempts = [1..200], infrastructureRanges = AUTOQEC_INFRASTRUCTURE_RANGES })` must:
 
 1. Refuse if `join(rootDir, "problems", "Prob-001")` exists.
 2. Create a temp directory under `tmpdir()`.
