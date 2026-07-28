@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { copyFile, lstat, mkdir, mkdtemp, readFile, rename, writeFile } from "node:fs/promises";
+import { copyFile, lstat, mkdir, mkdtemp, readFile, rename, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { spawnSync } from "node:child_process";
@@ -79,6 +79,33 @@ test("reports a collision from a damaged reserved directory without overwriting 
   const result = await publishStagedDraft({ ...fixture, expectedId: "Prob-001" });
   assert.deepEqual(result, { status: "collision", id: "Prob-001", nextProblemId: "Prob-002" });
   assert.equal(await readFile(join(reserved, "problem.json"), "utf8"), before);
+});
+
+test("reports a collision from an ID-shaped file and advances to the next ID", async () => {
+  const fixture = await makePublisherFixture("Prob-001");
+  const reserved = join(fixture.rootDir, "problems", "Prob-001");
+  await mkdir(join(fixture.rootDir, "problems"), { recursive: true });
+  await writeFile(reserved, "damaged file occupying the problem ID");
+
+  const result = await publishStagedDraft({ ...fixture, expectedId: "Prob-001" });
+
+  assert.deepEqual(result, { status: "collision", id: "Prob-001", nextProblemId: "Prob-002" });
+  assert.equal(await readFile(reserved, "utf8"), "damaged file occupying the problem ID");
+});
+
+test("reports a collision from an ID-shaped symlink and advances to the next ID", async () => {
+  const fixture = await makePublisherFixture("Prob-001");
+  const reserved = join(fixture.rootDir, "problems", "Prob-001");
+  const target = join(fixture.rootDir, "occupied-target");
+  await mkdir(join(fixture.rootDir, "problems"), { recursive: true });
+  await writeFile(target, "target occupied through a symlink");
+  await symlink(target, reserved);
+
+  const result = await publishStagedDraft({ ...fixture, expectedId: "Prob-001" });
+
+  assert.deepEqual(result, { status: "collision", id: "Prob-001", nextProblemId: "Prob-002" });
+  assert.equal((await lstat(reserved)).isSymbolicLink(), true);
+  assert.equal(await readFile(target, "utf8"), "target occupied through a symlink");
 });
 
 test("cleans only its incomplete target when copying fails and retains staging", async () => {

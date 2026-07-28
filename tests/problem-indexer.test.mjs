@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
@@ -121,6 +121,20 @@ test("reserves parseable manifest IDs even when the record is invalid", async ()
   assert.deepEqual(index.problems, []);
   assert.equal(index.nextProblemId, "Prob-008");
   assert.ok(index.diagnostics.some((item) => item.field === "status"));
+});
+
+test("reserves ID-shaped files and symlinks without reading them as manifests", async () => {
+  const root = await makeRoot();
+  await writeFile(join(root, "problems", "Prob-001"), "occupied by a damaged file");
+  await writeFile(join(root, "symlink-target"), "occupied through a symlink");
+  await symlink(join(root, "symlink-target"), join(root, "problems", "Prob-002"));
+
+  const index = await buildProblemIndex({ rootDir: root });
+
+  assert.deepEqual(index.problems, []);
+  assert.deepEqual(index.diagnostics, []);
+  assert.equal(index.nextProblemId, "Prob-003");
+  assert.deepEqual(await scanReservedProblemIds({ rootDir: root }), ["Prob-001", "Prob-002"]);
 });
 
 test("handles an empty repository and derives the first ID", async () => {
