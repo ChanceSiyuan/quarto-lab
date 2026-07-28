@@ -21,7 +21,6 @@
     "literature:index": "node --import tsx scripts/literature.ts index",
     "literature:fetch": "node --import tsx scripts/literature.ts fetch",
     "literature:sync": "node --import tsx scripts/literature.ts sync",
-    "migration:verify": "node --import tsx scripts/migrate-quantum-harness.ts verify",
     "lint": "node scripts/build-problem-index.mjs --reserve-id Prob-000 && eslint . --ignore-pattern dist --ignore-pattern .next --ignore-pattern .generated",
     "test:unit": "node --import tsx --test tests/knowledge/*.test.ts tests/migration/*.test.ts tests/literature/*.test.ts tests/drafts/*.test.ts tests/agent/*.test.ts",
     "test:unit:problems": "node --test tests/static-example-content.test.mjs tests/example-research.test.mjs tests/problem-schema.test.mjs tests/problem-indexer.test.mjs tests/dev-problem-index.test.mjs tests/problem-repository.test.mjs tests/codex-launch.test.mjs tests/problem-presentation.test.mjs tests/problem-view-state.test.mjs",

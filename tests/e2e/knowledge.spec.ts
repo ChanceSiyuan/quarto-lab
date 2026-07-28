@@ -223,8 +223,8 @@ test.describe("published knowledge site", () => {
       { url: "/drafts/", file: null, marker: null },
       {
         url: "/drafts/imported-quantum-harness/method-property-map.md",
-        file: "drafts/imported-quantum-harness/method-property-map.md",
-        marker: "Method ↔ Property Map",
+        file: null,
+        marker: null,
       },
       {
         url: "/drafts/.preview/smoke/imported-quantum-harness/conventions.html",

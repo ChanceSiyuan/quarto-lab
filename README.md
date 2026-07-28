@@ -140,7 +140,6 @@ make help
 | `./qlab literature import zotero` | Refresh Zotero metadata without propagating deletions |
 | `./qlab literature materialize <item-key>` | Fetch verified PDF and LaTeX evidence for one Zotero record |
 | `./qlab literature verify <item-key>` | Verify one materialized record against its manifest |
-| `make migration-verify` | Re-check the imported harness cards against their manifest |
 | `make zotero-plugin-test` | Type-check and test the standalone Zotero integration |
 | `make zotero-plugin` | Test and build the installable Research Loop Zotero XPI |
 

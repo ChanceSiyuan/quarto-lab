@@ -2,7 +2,7 @@
 /**
  * CLI for previewing one untrusted draft note.
  *
- *   draft-preview.ts --file drafts/imported-quantum-harness/conventions.md
+ *   draft-preview.ts --file drafts/reading-notes/example.qmd
  *
  * `--file` is a repository-relative path, and it is the whole interface: there
  * is no way to preview a directory, the drafts tree as a project, or a file
@@ -44,7 +44,7 @@ function requestedFileOf(argv: readonly string[]): string {
   }
   if (values.file === undefined) {
     throw new Error(
-      "draft-preview requires --file <path>, a repository-relative `.md` or `.qmd` file inside drafts/, for example `--file drafts/imported-quantum-harness/conventions.md`",
+      "draft-preview requires --file <path>, a repository-relative `.md` or `.qmd` file inside drafts/, for example `--file drafts/reading-notes/example.qmd`",
     );
   }
   return values.file;
