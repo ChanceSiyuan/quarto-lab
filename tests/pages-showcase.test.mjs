@@ -43,6 +43,7 @@ test("pages showcase writes static route files", async () => {
   for (const routeFile of [
     "index.html",
     "knowledge/index.html",
+    "knowledge/research-loop.css",
     "knowledge/search.json",
     "problems/Prob-000/index.html",
     "problems/Prob-000/attempts/ATT-001/index.html",
@@ -74,8 +75,24 @@ test("pages showcase links to the bundled knowledge site under the repository ba
 
   const knowledge = await readFile(join(out, "knowledge", "index.html"), "utf8");
   assert.match(knowledge, /Research Loop Knowledge/);
+  assert.match(knowledge, /href="(?:\.\/)?research-loop\.css"/);
+  assert.match(
+    knowledge,
+    /class="rl-home-link" href="\/research-loop\/" aria-label="Back to Research Loop home"/,
+  );
+  assert.doesNotMatch(
+    knowledge,
+    /class="rl-home-link" href="\/" aria-label="Back to Research Loop home"/,
+  );
   assert.doesNotMatch(knowledge, /\b(?:href|src)="\/knowledge\//);
   assert.doesNotMatch(knowledge, /url\(\/knowledge\//);
+
+  const theory = await readFile(join(out, "knowledge", "categories", "theory", "index.html"), "utf8");
+  assert.match(theory, /href="\.\.\/\.\.\/research-loop\.css"/);
+  assert.doesNotMatch(theory, /\b(?:href|src)="\/knowledge\//);
+
+  const stylesheet = await readFile(join(out, "knowledge", "research-loop.css"), "utf8");
+  assert.match(stylesheet, /--rl-green:\s*#174c3b;/);
 });
 
 test("pages showcase preserves local controls as disabled visual affordances", async () => {

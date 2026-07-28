@@ -72,16 +72,27 @@ function trackBrokenRequests(page: Page): string[] {
 test.describe("published knowledge site", () => {
   test("the index names the site and offers search", async ({ page }) => {
     const broken = trackBrokenRequests(page);
-    await page.goto("/knowledge/");
+    await page.goto(`/knowledge/?chrome=${Date.now()}`);
 
     await expect(page).toHaveTitle("Research Loop Knowledge");
-    await expect(page.locator(".sidebar-title")).toHaveText("Research Loop Knowledge");
+    await expect(page.locator("#quarto-sidebar .sidebar-title > a")).toHaveText(
+      "Research Loop Knowledge",
+    );
+    const homeLink = page
+      .locator("#quarto-sidebar")
+      .getByRole("link", { name: "Back to Research Loop home" });
+    await expect(homeLink).toBeVisible();
+    expect(new URL((await homeLink.getAttribute("href")) ?? "", page.url()).pathname).toBe("/");
     await expect(page.locator("#quarto-search")).toBeVisible();
     await expect(page.locator("#quarto-search").locator("input, button").first()).toBeVisible();
 
     // The curated reading map, and the generated category section beneath it.
     await expect(page.locator("#quarto-sidebar")).toContainText("Ising model");
     await expect(page.locator("#quarto-sidebar")).toContainText("Categories");
+
+    await homeLink.click();
+    await expect(page).toHaveURL("/");
+    await expect(page.locator(".console-topbar")).toContainText("Research Loop");
     expect(broken).toEqual([]);
   });
 
@@ -153,12 +164,31 @@ test.describe("published knowledge site", () => {
     }
   });
 
+  test("the home link remains visible when the sidebar is collapsed", async ({ page }) => {
+    await page.setViewportSize({ width: 640, height: 900 });
+    await page.goto(`/knowledge/?chrome=${Date.now()}`);
+
+    const homeLink = page
+      .locator("#quarto-header")
+      .getByRole("link", { name: "Back to Research Loop home" });
+    await expect(homeLink).toBeVisible();
+
+    await homeLink.click();
+    await expect(page).toHaveURL("/");
+    await expect(page.locator(".console-topbar")).toContainText("Research Loop");
+  });
+
   test("nested stylesheets and the search index are served", async ({ page }) => {
     const stylesheet = await page.request.get(
       "/knowledge/site_libs/bootstrap/bootstrap-icons.css",
     );
     expect(stylesheet.status()).toBe(200);
     expect(stylesheet.headers()["content-type"]).toMatch(/text\/css/);
+
+    const theme = await page.request.get("/knowledge/research-loop.css");
+    expect(theme.status()).toBe(200);
+    expect(theme.headers()["content-type"]).toMatch(/text\/css/);
+    expect(await theme.text()).toContain("--rl-paper: #f3f0e8;");
 
     const search = await page.request.get("/knowledge/search.json");
     expect(search.status()).toBe(200);
@@ -173,7 +203,12 @@ test.describe("published knowledge site", () => {
         (link) => new URL(link.href).pathname,
       ),
     );
+    expect(stylesheets).toContain("/knowledge/research-loop.css");
     expect(stylesheets.some((href) => href.startsWith("/knowledge/site_libs/"))).toBe(true);
+    await expect(page.locator("#quarto-document-content")).toHaveCSS(
+      "background-color",
+      "rgb(251, 250, 246)",
+    );
     expect(broken).toEqual([]);
   });
 

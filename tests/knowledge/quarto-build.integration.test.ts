@@ -53,6 +53,7 @@ const BASE_CONFIG = [
   "format:",
   "  html:",
   "    toc: true",
+  "    css: research-loop.css",
   "execute:",
   "  enabled: false",
   "",
@@ -298,6 +299,7 @@ async function fakeRender(call: RunCall): Promise<void> {
     await mkdir(path.dirname(file), { recursive: true });
     await writeFile(file, `<html>${relative}</html>`);
   }
+  await cp(path.join(call.options.cwd, "research-loop.css"), path.join(site, "research-loop.css"));
 }
 
 /** Real directory operations, with one injected failure. */
@@ -405,8 +407,13 @@ test("a successful render replaces the published site atomically", async (t) => 
     "index.html",
     "ising/finite-size/index.html",
     "ising/index.html",
+    "research-loop.css",
     "search.json",
   ]);
+  assert.match(
+    await readFile(path.join(result.outputDir, "research-loop.css"), "utf8"),
+    /--rl-green:\s*#174c3b;/,
+  );
   assert.equal(result.renderedFiles, published.length);
   assert.deepEqual(await workspaces(repo), [], "the workspace is removed after success");
   assert.deepEqual(await publicEntries(repo), ["knowledge"], "the backup is removed after success");
@@ -695,6 +702,7 @@ test("Quarto renders the whole fixture site, and executes nothing", { timeout: 3
     "categories/experiment/index.html",
     "categories/codes/index.html",
     "ising/diagram.svg",
+    "research-loop.css",
     "search.json",
   ]) {
     assert.ok(published.includes(expected), `${expected} is missing from ${published.join(", ")}`);
@@ -741,6 +749,9 @@ test("Quarto renders the whole fixture site, and executes nothing", { timeout: 3
   assert.match(root, /<title>Research Loop Knowledge<\/title>/);
   assert.match(root, /href="\.\/ising\/index\.html"/, "the curated sidebar is rendered");
   assert.match(root, /href="\.\/categories\/theory\/index\.html"/);
+  assert.match(root, /class="rl-home-link" href="\/" aria-label="Back to Research Loop home"/);
+  assert.match(root, /href="(?:\.\/)?research-loop\.css"/, "the Research Loop stylesheet is linked");
+  assert.match(await read("research-loop.css"), /#quarto-document-content/);
 
   // 4. Mathematics: inline and display, as Quarto's math markup.
   const proof = await read("ising/proof.html");

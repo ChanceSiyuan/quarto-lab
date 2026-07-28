@@ -4,10 +4,12 @@
  * and whatever Quarto reads is what the world sees. These tests therefore pin
  * three properties.
  *
- * - **It copies, it never invents.** Every page and every referenced asset
- *   arrives byte-for-byte; nothing that is not in the graph arrives at all —
- *   not drafts, not literature, not an unreferenced file sitting next to a
- *   diagram, not a `_`-prefixed page.
+ * - **It copies trusted content, and invents only code-owned chrome.** Every
+ *   page and every referenced asset arrives byte-for-byte; generated
+ *   navigation, bibliography plumbing, and the Research Loop stylesheet are
+ *   written from this module; nothing else arrives at all — not drafts, not
+ *   literature, not an unreferenced file sitting next to a diagram, not a
+ *   `_`-prefixed page.
  * - **It re-asserts the safety schema rather than trusting it.** The committed
  *   base `_quarto.yml` is read, compared against the fixed schema exactly, and
  *   then *regenerated*; a filter, an include, a resource, an extension, or an
@@ -60,6 +62,7 @@ const BASE_CONFIG = [
   "format:",
   "  html:",
   "    toc: true",
+  "    css: research-loop.css",
   "execute:",
   "  enabled: false",
   "",
@@ -203,6 +206,7 @@ test("the projection holds exactly the graph, the bibliography, and generated na
     "ising/proposal.qmd",
     "ising/verified-code.qmd",
     "references/ref.bib",
+    "research-loop.css",
   ]);
 
   // Byte-for-byte, not "equivalent": the projection may not normalize, rewrite
@@ -226,6 +230,13 @@ test("the projection holds exactly the graph, the bibliography, and generated na
     await readFile(bibliographyOf(repo)),
     "the bibliography is copied byte-for-byte",
   );
+  const stylesheet = await readFile(path.join(result.projectDir, "research-loop.css"), "utf8");
+  assert.match(stylesheet, /--rl-paper:\s*#f3f0e8;/);
+  assert.match(stylesheet, /--rl-green:\s*#174c3b;/);
+  assert.match(stylesheet, /#quarto-header/);
+  assert.match(stylesheet, /#quarto-sidebar/);
+  assert.match(stylesheet, /#quarto-document-content/);
+  assert.match(stylesheet, /\.rl-home-link/);
   assert.deepEqual(
     [...graph.assets.keys()],
     ["ising/diagram.svg"],
@@ -328,7 +339,7 @@ test("the generated configuration re-asserts every fixed safety setting", async 
   assert.equal(website["site-path"], "/knowledge/");
   assert.equal(website.search, true);
   assert.deepEqual(config.project, { type: "website", "output-dir": "_site" });
-  assert.deepEqual(config.format, { html: { toc: true } });
+  assert.deepEqual(config.format, { html: { toc: true, css: "research-loop.css" } });
   assert.deepEqual(config.execute, { enabled: false });
   assert.equal(
     config.bibliography,
@@ -780,6 +791,32 @@ test("a trusted page may not sit where the projection generates", async (t) => {
       `${id} must stop the projection`,
     );
   }
+});
+
+test("a trusted asset may not sit where the projection generates the stylesheet", async (t) => {
+  const repo = await makeTree(t, {
+    "index.qmd": qmd({ title: "Root", description: "The root." }, indexBody(["page.qmd"])),
+    "page.qmd": qmd({ title: "Page", description: "A page.", categories: "[theory]" }, [
+      "![Colliding stylesheet](research-loop.css)",
+    ]),
+  });
+  await writeFile(path.join(repo, "knowledge", "research-loop.css"), "body { color: red; }\n");
+  const graph = await loadKnowledge({ repoRoot: repo });
+  const workspace = await makeTempDir(t, "knowledge-workspace-");
+
+  await assert.rejects(
+    () =>
+      materializeQuartoProject({
+        graph,
+        workspace,
+        bibliographyPath: bibliographyOf(repo),
+      }),
+    (error: unknown) => {
+      assert.ok(error instanceof Error);
+      assert.match(error.message, /generated file name/);
+      return true;
+    },
+  );
 });
 
 test("an alias that Quarto would read as a path stops the projection", async (t) => {

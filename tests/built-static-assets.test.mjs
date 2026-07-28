@@ -111,6 +111,9 @@ test("the packaged assets contain the published knowledge site", async () => {
   // stylesheets work once deployed; they are nested assets, so they are the
   // ones a broken copy step loses first.
   assert.ok(existsSync(path.join(clientDir, "knowledge", "search.json")));
+  const theme = path.join(clientDir, "knowledge", "research-loop.css");
+  assert.ok(existsSync(theme), "the Research Loop stylesheet is packaged");
+  assert.match(await readFile(theme, "utf8"), /--rl-green:\s*#174c3b;/);
   const siteLibs = await filesUnder(path.join(clientDir, "knowledge", "site_libs"));
   assert.ok(siteLibs.some((file) => file.endsWith(".css")), "a stylesheet is packaged");
   assert.ok(siteLibs.some((file) => file.endsWith(".js")), "a script is packaged");
@@ -184,6 +187,13 @@ async function withBuiltApp(probe) {
     },
   );
   let log = "";
+  let closed = false;
+  const closedPromise = new Promise((resolve) => {
+    server.once("close", () => {
+      closed = true;
+      resolve();
+    });
+  });
   server.stdout.on("data", (chunk) => (log += chunk));
   server.stderr.on("data", (chunk) => (log += chunk));
 
@@ -205,12 +215,14 @@ async function withBuiltApp(probe) {
     }
     return await probe();
   } finally {
-    try {
-      process.kill(-server.pid, "SIGTERM");
-    } catch {
-      server.kill("SIGTERM");
+    if (!closed) {
+      try {
+        process.kill(-server.pid, "SIGTERM");
+      } catch {
+        server.kill("SIGTERM");
+      }
     }
-    await new Promise((resolve) => server.once("close", resolve));
+    await closedPromise;
   }
 }
 
@@ -253,6 +265,7 @@ test("the built app serves the dashboard and every nested knowledge route", asyn
     assert.equal(index.status, 200, `/knowledge/ returned ${index.status}`);
     assert.match(index.contentType, /^text\/html\b/i);
     assert.match(index.body, /Research Loop Knowledge/);
+    assert.match(index.body, /class="rl-home-link" href="\/" aria-label="Back to Research Loop home"/);
 
     for (const category of CATEGORIES) {
       const view = await get(`/knowledge/categories/${category}/`);
