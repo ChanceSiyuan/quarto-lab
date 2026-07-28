@@ -166,3 +166,29 @@ test("refuses a staged file symlink that resolves outside the staging root", asy
     (error) => error instanceof DraftStageError && /markdown must be a regular file/.test(error.errors.join("\n")),
   );
 });
+
+test("collects manifest schema errors when problem markdown cannot be read", async () => {
+  const fixture = await makeStage({ manifest: { title: "" } });
+  const markdownPath = join(fixture.stageDir, "problem.md");
+  await rm(markdownPath);
+  await mkdir(markdownPath);
+
+  await assert.rejects(
+    validateStagedDraft({ rootDir: fixture.rootDir, stageDir: fixture.stageDir, expectedId: "Prob-001" }),
+    (error) => error instanceof DraftStageError
+      && /markdown must be a regular file/.test(error.errors.join("\n"))
+      && /problem\.md cannot be read/.test(error.errors.join("\n"))
+      && /title: title must be a non-empty string/.test(error.errors.join("\n")),
+  );
+});
+
+test("collects schema errors when problem JSON parses to null", async () => {
+  const fixture = await makeStage();
+  await writeFile(join(fixture.stageDir, "problem.json"), "null\n");
+
+  await assert.rejects(
+    validateStagedDraft({ rootDir: fixture.rootDir, stageDir: fixture.stageDir, expectedId: "Prob-001" }),
+    (error) => error instanceof DraftStageError
+      && /manifest: Manifest must be an object/.test(error.errors.join("\n")),
+  );
+});
