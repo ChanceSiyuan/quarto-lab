@@ -25,7 +25,8 @@ Problems live in `problems/<id>/` and are indexed into `.generated/problem-index
 
 Only `problems/` is indexed by local development and ordinary production
 builds. The synthetic public example lives separately under
-`examples/showcase/problems/` and is not available from local routes.
+`examples/showcase/problems/` as `Prob-000` and is not available from local
+routes; ordinary local problem allocation starts at `Prob-001`.
 
 Run locally:
 

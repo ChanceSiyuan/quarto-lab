@@ -26,7 +26,7 @@ test("formats tier metrics as raw counts without a target cap", () => {
 
 test("builds every populated problem field in console order", () => {
   const row = buildProblemPresentation({
-    id: "QMB-017",
+    id: "Prob-017",
     title: "Fresh Hamiltonian gate",
     summary: "Interval arithmetic on held-out instances.",
     status: "accepted",
@@ -43,7 +43,7 @@ test("builds every populated problem field in console order", () => {
     {
       key: "problem",
       label: "Problem",
-      id: "QMB-017",
+      id: "Prob-017",
       title: "Fresh Hamiltonian gate",
       summary: "Interval arithmetic on held-out instances.",
     },
@@ -66,7 +66,7 @@ test("builds every populated problem field in console order", () => {
       key: "open",
       label: "Open",
       value: "Open problem",
-      href: "/problems/QMB-017",
+      href: "/problems/Prob-017",
     },
   ]);
 });

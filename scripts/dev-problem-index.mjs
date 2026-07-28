@@ -78,7 +78,7 @@ export function runIndexBuild(rootDir, spawnFn = spawn) {
   return new Promise((resolveBuild, rejectBuild) => {
     const builder = spawnFn(
       process.execPath,
-      ["scripts/build-problem-index.mjs", "--reserve-id", "QMB-001"],
+      ["scripts/build-problem-index.mjs", "--reserve-id", "Prob-000"],
       { cwd: rootDir, stdio: "inherit" },
     );
     builder.on("error", rejectBuild);

@@ -15,7 +15,7 @@ const completeProblemMd = REQUIRED_PROBLEM_MD_HEADINGS
 function manifest(overrides = {}) {
   return {
     schemaVersion: 1,
-    id: "QMB-001",
+    id: "Prob-001",
     title: "Certified timestep bounds for 1D lattice dynamics",
     summary: "Tighter machine-checkable bounds for fresh simulation instances.",
     status: "draft",

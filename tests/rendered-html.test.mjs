@@ -109,7 +109,7 @@ async function renderFilesystemFixture({ manifests, damagedIds = [] }, pathname 
 
 const acceptedFixture = {
   schemaVersion: 1,
-  id: "QMB-017",
+  id: "Prob-017",
   title: "Fresh Hamiltonian gate",
   summary: "Interval arithmetic on held-out instances.",
   status: "accepted",
@@ -133,7 +133,7 @@ test("server-renders the problem console shell", async () => {
   assert.match(html, /Problem Console/);
   assert.match(html, />\+ Add problem<\/a>/);
   assert.doesNotMatch(html, /CSS code-distance algorithm search/);
-  assert.doesNotMatch(html, /href="\/problems\/QMB-001"/);
+  assert.doesNotMatch(html, /href="\/problems\/Prob-000"/);
   assert.match(html, />\+ Add first problem<\/a>/);
   assert.match(html, /Cannot open Codex\?/);
   assert.match(html, /codex:\/\/threads\/new/);
@@ -164,7 +164,7 @@ test("server-renders the problem console shell", async () => {
 
 test("ordinary local build excludes and reserves the showcase problem", () => {
   assert.deepEqual(generatedIndex.problems.map((problem) => problem.id), []);
-  assert.equal(generatedIndex.nextProblemId, "QMB-002");
+  assert.equal(generatedIndex.nextProblemId, "Prob-001");
   assert.deepEqual(generatedIndex.diagnostics, []);
   assert.deepEqual(generatedIndex.summary, {
     total: 0,
@@ -186,14 +186,14 @@ test("homepage table links do not rely on absolute row overlays", async () => {
 test("server-renders populated desktop and narrow problem rows", async () => {
   const response = await renderFilesystemFixture({
     manifests: [acceptedFixture],
-    damagedIds: ["QMB-018"],
+    damagedIds: ["Prob-018"],
   });
   assert.equal(response.status, 200);
 
   const html = await response.text();
-  assert.match(html, /<tr class="problem-table-row"><th scope="row"><a class="problem-row-link" href="\/problems\/QMB-017">/);
-  assert.match(html, /<td><a class="open-affordance" href="\/problems\/QMB-017">Open <span aria-hidden="true">→<\/span><\/a><\/td>/);
-  assert.match(html, /<a class="problem-list-item" href="\/problems\/QMB-017" aria-label="Open QMB-017: Fresh Hamiltonian gate">/);
+  assert.match(html, /<tr class="problem-table-row"><th scope="row"><a class="problem-row-link" href="\/problems\/Prob-017">/);
+  assert.match(html, /<td><a class="open-affordance" href="\/problems\/Prob-017">Open <span aria-hidden="true">→<\/span><\/a><\/td>/);
+  assert.match(html, /<a class="problem-list-item" href="\/problems\/Prob-017" aria-label="Open Prob-017: Fresh Hamiltonian gate">/);
   assert.match(html, /Fresh Hamiltonian gate/);
   assert.match(html, /Interval arithmetic on held-out instances\./);
   assert.match(html, /interval-arithmetic/);
@@ -201,7 +201,7 @@ test("server-renders populated desktop and narrow problem rows", async () => {
   assert.match(html, /Accepted after novelty review/);
   assert.match(html, /2026-07-27 11:45:00 UTC/);
   assert.match(html, /1 index errors/);
-  assert.match(html, /problems\/QMB-018\/problem\.json/);
+  assert.match(html, /problems\/Prob-018\/problem\.json/);
   assert.match(html, /Invalid JSON/);
 });
 
@@ -209,7 +209,7 @@ test("server-renders a clear action when default-hidden records are the only res
   const response = await renderFilesystemFixture({
     manifests: [{
       ...acceptedFixture,
-      id: "QMB-020",
+      id: "Prob-020",
       title: "Rejected fixture",
       status: "rejected",
       gate: { type: "python", readiness: "specified" },
@@ -221,20 +221,20 @@ test("server-renders a clear action when default-hidden records are the only res
   const html = await response.text();
   assert.match(html, /No matching problems/);
   assert.match(html, /<button class="state-action" type="button">Clear all filters<\/button>/);
-  assert.doesNotMatch(html, /<span class="problem-id">QMB-020<\/span>/);
+  assert.doesNotMatch(html, /<span class="problem-id">Prob-020<\/span>/);
 });
 
 test("returns a stable detail route response for unknown problem IDs", async () => {
-  const response = await render("/problems/QMB-999");
+  const response = await render("/problems/Prob-999");
   assert.equal(response.status, 404);
 });
 
 test("ordinary local build returns 404 for every showcase route", async () => {
   for (const pathname of [
-    "/problems/QMB-001",
-    "/problems/QMB-001/attempts/ATT-001",
-    "/problems/QMB-001/attempts/ATT-005",
-    "/problems/QMB-001/attempts/ATT-999",
+    "/problems/Prob-000",
+    "/problems/Prob-000/attempts/ATT-001",
+    "/problems/Prob-000/attempts/ATT-005",
+    "/problems/Prob-000/attempts/ATT-999",
   ]) {
     const response = await render(pathname);
     assert.equal(response.status, 404, pathname);
@@ -244,7 +244,7 @@ test("ordinary local build returns 404 for every showcase route", async () => {
 test("returns 404 for attempt routes on non-example problems", async () => {
   const response = await renderFilesystemFixture(
     { manifests: [acceptedFixture] },
-    "/problems/QMB-017/attempts/ATT-001?fixture=filesystem",
+    "/problems/Prob-017/attempts/ATT-001?fixture=filesystem",
   );
   assert.equal(response.status, 404);
 });
@@ -252,12 +252,12 @@ test("returns 404 for attempt routes on non-example problems", async () => {
 test("server-renders the generic problem detail shell for non-example problems", async () => {
   const response = await renderFilesystemFixture(
     { manifests: [acceptedFixture] },
-    "/problems/QMB-017?fixture=filesystem",
+    "/problems/Prob-017?fixture=filesystem",
   );
   assert.equal(response.status, 200);
 
   const html = await response.text();
-  assert.match(html, /<p class="eyebrow">QMB-017<\/p>/);
+  assert.match(html, /<p class="eyebrow">Prob-017<\/p>/);
   assert.match(html, /<h1>Fresh Hamiltonian gate<\/h1>/);
   assert.match(html, /<p class="detail-summary">Interval arithmetic on held-out instances\.<\/p>/);
   assert.match(html, /The detailed problem workspace will be designed next; this page currently locks the route, identity, and return path\./);

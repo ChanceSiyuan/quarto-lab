@@ -15,12 +15,12 @@ const siteUrl = `${siteOrigin}${basePath}`;
 
 const routes = [
   "/",
-  "/problems/QMB-001",
-  "/problems/QMB-001/attempts/ATT-001",
-  "/problems/QMB-001/attempts/ATT-002",
-  "/problems/QMB-001/attempts/ATT-003",
-  "/problems/QMB-001/attempts/ATT-004",
-  "/problems/QMB-001/attempts/ATT-005",
+  "/problems/Prob-000",
+  "/problems/Prob-000/attempts/ATT-001",
+  "/problems/Prob-000/attempts/ATT-002",
+  "/problems/Prob-000/attempts/ATT-003",
+  "/problems/Prob-000/attempts/ATT-004",
+  "/problems/Prob-000/attempts/ATT-005",
 ];
 
 function routeToOutputPath(route) {

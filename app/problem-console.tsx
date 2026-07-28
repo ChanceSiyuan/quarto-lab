@@ -258,7 +258,7 @@ export function ProblemConsole({
                 <tr className="result-state-row">
                   <td colSpan={7}>
                     <section className="empty-state">
-                      <span aria-hidden="true">QMB—</span>
+                      <span aria-hidden="true">Prob—</span>
                       <div>
                         <h2>No problems indexed yet</h2>
                         <p>Create a candidate in Codex, confirm its files, then rebuild the local index.</p>
@@ -310,7 +310,7 @@ export function ProblemConsole({
           <div className="problem-list" aria-label="Problems">
             {initialProblems.length === 0 ? (
               <section className="empty-state">
-                <span aria-hidden="true">QMB—</span>
+                <span aria-hidden="true">Prob—</span>
                 <div>
                   <h2>No problems indexed yet</h2>
                   <p>Create a candidate in Codex, confirm its files, then rebuild the local index.</p>
