@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "problemId": "Prob-001",
+  "id": "ATT-172",
+  "sequence": 172,
+  "cohort": "cohort-101-200",
+  "title": "CSS Distance Proposal 172",
+  "summary": "Imported AutoQEC trial record.",
+  "stage": "development",
+  "decision": "accepted",
+  "gate": {
+    "containment": "passed",
+    "publicContract": "passed",
+    "development": "passed"
+  },
+  "method": {
+    "description": "Randomized quotient-kernel sampling with stabilizer-coset greedy and random-walk weight reduction; verified CSS logical witnesses only, reported as upper bounds",
+    "learnedFrom": null
+  },
+  "metrics": {
+    "runs": 24,
+    "verifiedWitnesses": 24,
+    "targetHits": 21,
+    "timeouts": 0,
+    "crashes": 0,
+    "invalidClaims": 0,
+    "weightedTargetHits": 21,
+    "normalizedQuality": 0.942550505050505,
+    "runtimeSeconds": 39.13510558201233,
+    "averageSeconds": 1.630629399250514,
+    "medianSeconds": 0.608319083490642,
+    "p95Seconds": 4.573300999996718,
+    "timingStatus": "recorded",
+    "speedup": null
+  },
+  "provenance": {
+    "sourceRepository": "AutoQEC",
+    "sourceBranch": "autoresearch/css-distance/run200-proposal-172",
+    "sourceCommit": "bcc391cb9197915d6118b2c063d336cb2934d19e",
+    "sourceInfrastructureCommit": "b6a0e03c05a653b4e85160a703c0be4eef06b619",
+    "sourceCohort": "cohort-101-200",
+    "model": null
+  },
+  "candidate": {
+    "status": "present",
+    "path": "candidate.py"
+  },
+  "artifacts": [
+    {
+      "path": "LOG.md",
+      "sha256": "ad9e2da3d9385d6414c0505caedb7d1fe0e6c277ea496d32cc094aebadf6cb90",
+      "sourcePath": "LOG.md"
+    },
+    {
+      "path": "REPORT.md",
+      "sha256": "9965df1fb376db7ff0c78390758cd69b8d98804fc44d99681eb3ffd485e1a5b9",
+      "sourcePath": "REPORT.md"
+    },
+    {
+      "path": "candidate.py",
+      "sha256": "bdb41faae87add0d6696ff13a1302108795bc27473f997e3e9e1b6dead88d7a4",
+      "sourcePath": "proposal-workspace/candidate.py"
+    },
+    {
+      "path": "METHOD.txt",
+      "sha256": "6ee36f8f254607c097bdf154cd98952fb3b21554913c5c803a86a68263ba9f04",
+      "sourcePath": "proposal-workspace/METHOD.txt"
+    }
+  ]
+}

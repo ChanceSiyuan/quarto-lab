@@ -44,10 +44,11 @@ npm run dev
 `npm run dev` builds the index once, watches `problems/` for changes to
 `problem.json` and `problem.md`, and rebuilds the index as it serves.
 
-To create a problem, click `+ Add problem` on the homepage. Codex opens a new
-task with the issue #133 context prefilled; send it, answer one question at a
-time, and only allow file writes after reviewing the proposed manifest,
-Markdown, generation record, and rubric decision.
+To create a problem, click `+ Add problem` on the homepage. Codex first uses
+the sci-brain idea discussion workflow. When a candidate is ready, the local
+`add-problem` skill shows an exact preview and, after explicit confirmation,
+registers it as a draft with its visible discussion record. Acceptance or
+rejection belongs to a separate qualification workflow.
 
 `npm run pages:build` snapshots the static `Prob-000` example — the homepage,
 the problem page, its five attempt pages, and the bundled knowledge site — into

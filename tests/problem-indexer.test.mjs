@@ -135,6 +135,20 @@ test("reserves parseable manifest IDs even when the record is invalid", async ()
   assert.ok(index.diagnostics.some((item) => item.field === "status"));
 });
 
+test("reserves ID-shaped files and symlinks without reading them as manifests", async () => {
+  const root = await makeRoot();
+  await writeFile(join(root, "problems", "Prob-001"), "occupied by a damaged file");
+  await writeFile(join(root, "symlink-target"), "occupied through a symlink");
+  await symlink(join(root, "symlink-target"), join(root, "problems", "Prob-002"));
+
+  const index = await buildProblemIndex({ rootDir: root });
+
+  assert.deepEqual(index.problems, []);
+  assert.deepEqual(index.diagnostics, []);
+  assert.equal(index.nextProblemId, "Prob-003");
+  assert.deepEqual(await scanReservedProblemIds({ rootDir: root }), ["Prob-001", "Prob-002"]);
+});
+
 test("handles an empty repository and derives the first ID", async () => {
   const root = await makeRoot();
   const index = await buildProblemIndex({ rootDir: root });
@@ -158,6 +172,19 @@ test("indexes only the selected problem root and honors reserved IDs", async () 
   assert.deepEqual(index.problems.map((problem) => problem.id), ["Prob-000"]);
   assert.equal(index.nextProblemId, "Prob-010");
   assert.deepEqual(index.diagnostics, []);
+});
+
+test("scans explicit, damaged-directory, and parseable manifest reserved IDs", async () => {
+  const root = await makeRoot();
+  const damaged = join(root, "problems", "Prob-001");
+  await mkdir(damaged, { recursive: true });
+  await writeFile(join(damaged, "problem.json"), "{ broken json");
+  await writeProblem(root, "candidate-draft", { id: "Prob-007", status: "not-a-status" });
+
+  assert.deepEqual(await scanReservedProblemIds({
+    rootDir: root,
+    reservedIds: ["Prob-000", "Prob-007"],
+  }), ["Prob-000", "Prob-001", "Prob-007"]);
 });
 
 test("scans reserved problem IDs from damaged directories and ID-shaped entries", async () => {

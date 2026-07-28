@@ -105,6 +105,16 @@ test("static example formatting is stable for route rendering", () => {
   );
 });
 
+test("static example retains its synthetic gate values through shared formatting", () => {
+  const example = getStaticResearchExample("Prob-000");
+  const ledger = buildExampleResearchLedger(example);
+  assert.deepEqual(ledger.rows[0].gate, [
+    { label: "Containment", value: "passed" },
+    { label: "Public smoke", value: "passed" },
+    { label: "Development", value: "failed" },
+  ]);
+});
+
 test("attempt dossier includes audit metadata and display sections", () => {
   const example = getStaticResearchExample("Prob-000");
   const attempt = getStaticResearchAttempt("Prob-000", "ATT-004");

@@ -41,6 +41,7 @@ const SKILLS_ROOT = path.join(REPO_ROOT, "skills");
 
 /** The complete set of local skills this repository commits. */
 const SKILL_NAMES = [
+  "add-problem",
   "capture-chat-draft",
   "complete-gaps",
   "conference-survey",
@@ -48,6 +49,7 @@ const SKILL_NAMES = [
   "expand-notes",
   "generate-issues",
   "integrate-paper",
+  "prepare-autoresearch",
   "read-knowledge",
   "render-site",
   "review-draft",
@@ -389,6 +391,29 @@ const DOWNLOAD_REF: readonly Clause[] = [
   },
 ];
 
+const ADD_PROBLEM: readonly Clause[] = [
+  { requirement: "triggers on registering a candidate in the Problem Console", in: "description", pattern: /Problem Console/i },
+  { requirement: "registers only a draft", in: "body", pattern: /status[^.]*exactly `draft`/i },
+  { requirement: "never accepts or rejects", in: "body", pattern: /never[^.]*accept[^.]*reject/i },
+  { requirement: "does not write rejection details", in: "body", pattern: /never[^.]*`rejection`/i },
+  { requirement: "limits draft gate readiness", in: "body", pattern: /`missing` or `specified`/i },
+  { requirement: "uses one registration timestamp", in: "body", pattern: /one[^.]*timestamp[^.]*`createdAt`[^.]*`updatedAt`[^.]*`lastActivity\.at`/i },
+  { requirement: "shows an exact preview before writes", in: "body", pattern: /exact preview[^.]*before[^.]*writ/i },
+  { requirement: "requires confirmation after the preview", in: "body", pattern: /confirm[^.]*after[^.]*preview/i },
+  { requirement: "writes no staging files before confirmation", in: "body", pattern: /including stag[^.]*until[^.]*confirm/i },
+  { requirement: "uses the safe publisher", in: "body", pattern: /make problem-publish STAGE=/ },
+  { requirement: "re-previews collisions", in: "body", pattern: /collision[^.]*new ID[^.]*preview[^.]*confirm/i },
+];
+
+const PREPARE_AUTORESEARCH: readonly Clause[] = [
+  { requirement: "writes only staging", in: "body", pattern: /write only[^.]*staging/i },
+  { requirement: "does not create attempts", in: "body", pattern: /never create[^.]*attempt/i },
+  { requirement: "does not fabricate domain authority", in: "body", pattern: /never fabricate[^.]*metric|correctness rule|private dataset/i },
+  { requirement: "uses one blocking question", in: "body", pattern: /exactly one blocking question/i },
+  { requirement: "returns structured output", in: "body", pattern: /structured output schema/i },
+  { requirement: "keeps private data outside the candidate tree", in: "body", pattern: /private[^.]*outside[^.]*candidate/i },
+];
+
 /** The adapted quarto-lab requirements for writing polished knowledge drafts. */
 const EXPAND_NOTES: readonly Clause[] = [
   {
@@ -505,6 +530,7 @@ const SCREEN_PAPER: readonly Clause[] = [
 ];
 
 const CLAUSES: Readonly<Record<SkillName, readonly Clause[]>> = {
+  "add-problem": ADD_PROBLEM,
   "capture-chat-draft": CAPTURE_CHAT_DRAFT,
   "complete-gaps": COMPLETE_GAPS,
   "conference-survey": CONFERENCE_SURVEY,
@@ -514,6 +540,7 @@ const CLAUSES: Readonly<Record<SkillName, readonly Clause[]>> = {
   "expand-notes": EXPAND_NOTES,
   "generate-issues": GENERATE_ISSUES,
   "integrate-paper": INTEGRATE_PAPER,
+  "prepare-autoresearch": PREPARE_AUTORESEARCH,
   "render-site": RENDER_SITE,
   "screen-paper": SCREEN_PAPER,
 };
@@ -687,6 +714,18 @@ const AGENTS_CLAUSES: readonly { requirement: string; pattern: RegExp }[] = [
     requirement: "no replacement site is created",
     pattern: /(replacement site|never invent)/i,
   },
+  {
+    requirement: "add-problem registers a candidate in the Problem Console",
+    pattern: /`add-problem`[^.]*Problem Console/i,
+  },
+  {
+    requirement: "add-problem is draft-only",
+    pattern: /`draft`/i,
+  },
+  {
+    requirement: "add-problem requires explicit confirmation",
+    pattern: /exact preview[^.]*confirm/i,
+  },
 ];
 
 test("AGENTS.md encodes the trust boundary an agent has to respect", async () => {
@@ -759,6 +798,12 @@ test("every command a skill hands an agent is documented in docs/skills.md", asy
         (match) => match[1],
       ),
     );
+    // Preparation is called by the host with a supplied staging root, rather
+    // than through a repository command an agent could invoke directly.
+    if (name === "prepare-autoresearch") {
+      assert.equal(targets.size, 0, `${name}: the host owns invocation, not a Make target`);
+      continue;
+    }
     assert.ok(targets.size > 0, `${name}: a skill must hand the agent a command`);
     for (const target of targets) {
       assert.match(

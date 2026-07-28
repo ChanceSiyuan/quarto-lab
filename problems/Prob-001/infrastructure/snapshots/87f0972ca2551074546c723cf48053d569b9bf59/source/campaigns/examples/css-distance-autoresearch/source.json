@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "repository": "https://github.com/m-webster/codeDistancePYPI",
+  "commit": "a4afe9c09bbf5790da9ecc05b65c5b62343979ad",
+  "license": "MIT",
+  "license_evidence": {
+    "license_file": "MIT",
+    "package_metadata": "GNUv3",
+    "status": "conflict",
+    "review": "operator-required"
+  },
+  "package_name": "codedistance",
+  "objective": "upper-bound",
+  "baseline_methods": [
+    "QDistEvol",
+    "QDistRndMW",
+    "decoderDist"
+  ],
+  "baseline_configuration": {
+    "decoderDist": {
+      "method_id": "decoderDist",
+      "params": {
+        "decoder": "bposd"
+      }
+    }
+  }
+}

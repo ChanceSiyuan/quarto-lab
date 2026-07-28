@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "problemId": "Prob-001",
+  "id": "ATT-117",
+  "sequence": 117,
+  "cohort": "cohort-101-200",
+  "title": "CSS Distance Proposal 117",
+  "summary": "Imported AutoQEC trial record.",
+  "stage": "development",
+  "decision": "rejected",
+  "gate": {
+    "containment": "passed",
+    "publicContract": "passed",
+    "development": "failed"
+  },
+  "method": {
+    "description": "Randomized quotient-logical sampling with stabilizer-coset greedy descent; every reported CSS logical is independently verified as an upper-bound witness",
+    "learnedFrom": null
+  },
+  "metrics": {
+    "runs": 24,
+    "verifiedWitnesses": 9,
+    "targetHits": 4,
+    "timeouts": 0,
+    "crashes": 0,
+    "invalidClaims": 15,
+    "weightedTargetHits": 4,
+    "normalizedQuality": 0.274729938271605,
+    "runtimeSeconds": 31.180287497118115,
+    "averageSeconds": 1.299178645713255,
+    "medianSeconds": 0.652344333502697,
+    "p95Seconds": 2.586547999992035,
+    "timingStatus": "recorded",
+    "speedup": null
+  },
+  "provenance": {
+    "sourceRepository": "AutoQEC",
+    "sourceBranch": "autoresearch/css-distance/run200-proposal-117",
+    "sourceCommit": "01a069d881d83dcae23b9419d86fd83ba0851410",
+    "sourceInfrastructureCommit": "b6a0e03c05a653b4e85160a703c0be4eef06b619",
+    "sourceCohort": "cohort-101-200",
+    "model": null
+  },
+  "candidate": {
+    "status": "present",
+    "path": "candidate.py"
+  },
+  "artifacts": [
+    {
+      "path": "LOG.md",
+      "sha256": "c54917bea5b8df7aeacb04e623c4fb88f38e846adfca10ae73005d78c9088bcc",
+      "sourcePath": "LOG.md"
+    },
+    {
+      "path": "REPORT.md",
+      "sha256": "083de461774627d110fd7050d92cd62661ef0ef1c0d7437db3853a3a5a5226b1",
+      "sourcePath": "REPORT.md"
+    },
+    {
+      "path": "candidate.py",
+      "sha256": "084cf8672354dca3dee62981d489cf97429af0092e0ef91d07f4aab9432f0fde",
+      "sourcePath": "proposal-workspace/candidate.py"
+    },
+    {
+      "path": "METHOD.txt",
+      "sha256": "00dfa186c33638a954b9ecac630eb39beb5bd7896d20db4f235edb94142725ae",
+      "sourcePath": "proposal-workspace/METHOD.txt"
+    }
+  ]
+}

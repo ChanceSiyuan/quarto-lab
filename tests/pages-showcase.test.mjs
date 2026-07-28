@@ -133,3 +133,18 @@ test("pages showcase artifact contains no local agent launcher content", async (
     assert.doesNotMatch(text, /url\(\/knowledge\//, file);
   }
 });
+
+test("pages showcase excludes imported AutoQEC problem data", async () => {
+  const files = await collectFiles(out);
+  const artifactPaths = files.map((file) => relative(out, file));
+
+  assert.equal(artifactPaths.some((path) => path.includes("Prob-001")), false);
+
+  for (const file of files.filter((file) => /\.(?:html|json|txt|css|js)$/.test(file))) {
+    const text = await readFile(file, "utf8");
+    assert.doesNotMatch(text, /AutoQEC CSS-distance autoresearch record/);
+    assert.doesNotMatch(text, /candidate\.py/);
+    assert.doesNotMatch(text, /b6a0e03c05a653b4e85160a703c0be4eef06b619/);
+    assert.doesNotMatch(text, /\/Users\/nzy\/AutoQEC/);
+  }
+});

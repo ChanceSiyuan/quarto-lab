@@ -13,6 +13,9 @@
 	knowledge-check knowledge-resolve knowledge-preview \
 	draft-preview drafts-preview \
 	literature-index literature-fetch literature-sync \
+	migration-verify \
+	problem-import-autoqec-css-distance problem-import-verify \
+	problem-index problem-publish \
 	zotero-plugin-test zotero-plugin
 
 help:
@@ -34,6 +37,11 @@ help:
 	@echo '  make literature-fetch KEY=citekey               fetch the pinned arXiv source of one reference'
 	@echo '  make literature-sync                            fetch the pinned source of every arXiv reference'
 	@echo
+	@echo '  make migration-verify                           re-check the imported harness cards against the manifest'
+	@echo '  make problem-import-autoqec-css-distance SOURCE=/Users/nzy/AutoQEC  import the 200-trial AutoQEC CSS-distance record as Prob-001'
+	@echo '  make problem-import-verify ID=Prob-001                         verify a committed imported problem without reading AutoQEC'
+	@echo '  make problem-index                                              refresh the generated problem index'
+	@echo '  make problem-publish STAGE=".generated/problem-staging/<run>/Prob-NNN" ID=Prob-NNN  publish one validated staged draft'
 	@echo '  make zotero-plugin-test                         type-check and test the Zotero integration'
 	@echo '  make zotero-plugin                              test and build the installable Zotero XPI'
 
@@ -96,6 +104,26 @@ zotero-plugin: zotero-plugin-test
 
 integrations/zotero/node_modules/.package-lock.json: integrations/zotero/package-lock.json
 	cd integrations/zotero && npm ci
+
+problem-import-autoqec-css-distance: node_modules/.package-lock.json
+	@if [ -z "$(SOURCE)" ]; then \
+		echo 'usage: make problem-import-autoqec-css-distance SOURCE=/Users/nzy/AutoQEC' >&2; \
+		exit 2; \
+	fi
+	npm run problem:import:autoqec-css-distance -- --source "$(SOURCE)"
+
+problem-import-verify: node_modules/.package-lock.json
+	npm run problem:import:verify -- --id "$(or $(ID),Prob-001)"
+
+problem-index: node_modules/.package-lock.json
+	@npm run --silent problem:index
+
+problem-publish: node_modules/.package-lock.json
+	@if [ -z "$(STAGE)" ] || [ -z "$(ID)" ]; then \
+		echo 'usage: make problem-publish STAGE=".generated/problem-staging/<run>/Prob-NNN" ID=Prob-NNN' >&2; \
+		exit 2; \
+	fi
+	@npm run --silent problem:publish -- --stage "$(STAGE)" --id "$(ID)"
 
 node_modules/.package-lock.json: package-lock.json
 	npm ci
