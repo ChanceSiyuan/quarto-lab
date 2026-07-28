@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { EventEmitter } from "node:events";
 import { mkdir, mkdtemp, rm, stat } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -25,10 +26,31 @@ test("ensures the dev watcher uses problems/ when the repo starts without one", 
   assert.equal((await stat(watchPath)).isDirectory(), true);
 });
 
+test("dev index builds reserve the showcase problem ID", async () => {
+  const { runIndexBuild } = await import("../scripts/dev-problem-index.mjs");
+  assert.equal(typeof runIndexBuild, "function");
+
+  const calls = [];
+  function spawnFn(command, args, options) {
+    calls.push({ command, args, options });
+    const child = new EventEmitter();
+    queueMicrotask(() => child.emit("exit", 0));
+    return child;
+  }
+
+  await runIndexBuild("/tmp/research-loop-dev-root", spawnFn);
+
+  assert.deepEqual(calls, [{
+    command: process.execPath,
+    args: ["scripts/build-problem-index.mjs", "--reserve-id", "Prob-000"],
+    options: { cwd: "/tmp/research-loop-dev-root", stdio: "inherit" },
+  }]);
+});
+
 test("watches the problems/ tree without recursive repo-wide watchers", async (t) => {
   const root = await mkdtemp(join(tmpdir(), "research-loop-dev-watch-"));
   t.after(() => rm(root, { recursive: true, force: true }));
-  await mkdir(join(root, "problems", "QMB-001"), { recursive: true });
+  await mkdir(join(root, "problems", "Prob-001"), { recursive: true });
 
   const watched = [];
   const watcher = await watchProblemFiles({
@@ -48,7 +70,7 @@ test("watches the problems/ tree without recursive repo-wide watchers", async (t
 
   assert.deepEqual(
     watched.map((item) => item.path).sort(),
-    [join(root, "problems"), join(root, "problems", "QMB-001")],
+    [join(root, "problems"), join(root, "problems", "Prob-001")],
   );
   assert.equal(watched[0].path, join(root, "problems"));
   assert.equal(watched.some((item) => item.path === root), false);
@@ -58,7 +80,7 @@ test("watches the problems/ tree without recursive repo-wide watchers", async (t
 test("reconciles problem directories and rebuilds only for index inputs", async (t) => {
   const root = await mkdtemp(join(tmpdir(), "research-loop-dev-watch-"));
   t.after(() => rm(root, { recursive: true, force: true }));
-  await mkdir(join(root, "problems", "QMB-001"), { recursive: true });
+  await mkdir(join(root, "problems", "Prob-001"), { recursive: true });
 
   const watches = [];
   let changes = 0;
@@ -80,14 +102,14 @@ test("reconciles problem directories and rebuilds only for index inputs", async 
   t.after(() => watcher.close());
 
   const rootWatch = watches.find((item) => item.path === join(root, "problems"));
-  const firstProblemWatch = watches.find((item) => item.path === join(root, "problems", "QMB-001"));
+  const firstProblemWatch = watches.find((item) => item.path === join(root, "problems", "Prob-001"));
 
-  await mkdir(join(root, "problems", "QMB-002"));
-  rootWatch.callback("rename", "QMB-002");
-  await waitFor(() => watches.some((item) => item.path === join(root, "problems", "QMB-002")));
+  await mkdir(join(root, "problems", "Prob-002"));
+  rootWatch.callback("rename", "Prob-002");
+  await waitFor(() => watches.some((item) => item.path === join(root, "problems", "Prob-002")));
 
-  await rm(join(root, "problems", "QMB-001"), { recursive: true });
-  rootWatch.callback("rename", "QMB-001");
+  await rm(join(root, "problems", "Prob-001"), { recursive: true });
+  rootWatch.callback("rename", "Prob-001");
   await waitFor(() => firstProblemWatch.closed);
 
   await mkdir(join(root, "problems", ".generated"));
@@ -96,7 +118,7 @@ test("reconciles problem directories and rebuilds only for index inputs", async 
   assert.equal(watches.some((item) => item.path === join(root, "problems", ".generated")), false);
 
   changes = 0;
-  const secondProblemWatch = watches.find((item) => item.path === join(root, "problems", "QMB-002"));
+  const secondProblemWatch = watches.find((item) => item.path === join(root, "problems", "Prob-002"));
   secondProblemWatch.callback("change", "notes.txt");
   secondProblemWatch.callback("change", "problem.json");
   secondProblemWatch.callback("change", "problem.md");

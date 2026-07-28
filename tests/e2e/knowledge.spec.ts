@@ -59,7 +59,10 @@ function trackBrokenRequests(page: Page): string[] {
     const url = new URL(request.url());
     // Only same-origin failures are this site's business; MathJax is loaded
     // from a CDN that a sandboxed run may not reach.
-    if (url.host === new URL(page.url() || "http://127.0.0.1:4173").host) {
+    if (
+      url.host === new URL(page.url() || "http://127.0.0.1:4173").host &&
+      url.pathname !== TOLERATED_MISSING
+    ) {
       broken.push(`failed ${url.pathname}`);
     }
   });

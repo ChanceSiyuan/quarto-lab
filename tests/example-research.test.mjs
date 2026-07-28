@@ -19,11 +19,11 @@ import {
 } from "../lib/problems/example-presentation.mjs";
 
 test("static example exposes five ordered immutable attempts", () => {
-  assert.equal(EXAMPLE_RESEARCH_PROBLEM_ID, "QMB-001");
-  assert.equal(isStaticResearchExampleProblem("QMB-001"), true);
-  assert.equal(isStaticResearchExampleProblem("QMB-999"), false);
+  assert.equal(EXAMPLE_RESEARCH_PROBLEM_ID, "Prob-000");
+  assert.equal(isStaticResearchExampleProblem("Prob-000"), true);
+  assert.equal(isStaticResearchExampleProblem("Prob-999"), false);
 
-  const example = getStaticResearchExample("QMB-001");
+  const example = getStaticResearchExample("Prob-000");
   assert.ok(example);
   assert.equal(
     example.manifest.disclaimer,
@@ -38,22 +38,22 @@ test("static example exposes five ordered immutable attempts", () => {
   ]);
 
   example.attempts[0].id = "MUTATED";
-  assert.equal(listStaticResearchAttempts("QMB-001")[0].id, "ATT-001");
+  assert.equal(listStaticResearchAttempts("Prob-000")[0].id, "ATT-001");
 });
 
 test("static example attempts form the declared predecessor chain", () => {
-  const attempts = listStaticResearchAttempts("QMB-001");
+  const attempts = listStaticResearchAttempts("Prob-000");
   assert.equal(attempts[0].method.learnedFrom, null);
   for (let index = 1; index < attempts.length; index += 1) {
     assert.equal(attempts[index].method.learnedFrom, attempts[index - 1].id);
   }
-  assert.equal(getStaticResearchAttempt("QMB-001", "ATT-005").promoted, true);
-  assert.equal(getStaticResearchAttempt("QMB-001", "ATT-999"), null);
-  assert.equal(getStaticResearchExample("QMB-999"), null);
+  assert.equal(getStaticResearchAttempt("Prob-000", "ATT-005").promoted, true);
+  assert.equal(getStaticResearchAttempt("Prob-000", "ATT-999"), null);
+  assert.equal(getStaticResearchExample("Prob-999"), null);
 });
 
 test("static example validation rejects malformed display fixture content", () => {
-  const example = getStaticResearchExample("QMB-001");
+  const example = getStaticResearchExample("Prob-000");
   const malformedCases = [
     ["manifest disclaimer", (manifest) => { manifest.disclaimer = "real results"; }, /disclaimer/],
     ["attempt title", (_manifest, attempts) => { attempts[0].title = ""; }, /title/],
@@ -80,7 +80,7 @@ test("static example validation rejects malformed display fixture content", () =
 });
 
 test("static example presentation derives synthetic aggregate cards", () => {
-  const example = getStaticResearchExample("QMB-001");
+  const example = getStaticResearchExample("Prob-000");
   const ledger = buildExampleResearchLedger(example);
   assert.deepEqual(ledger.cards, [
     { label: "Attempts", value: "5" },
@@ -90,7 +90,7 @@ test("static example presentation derives synthetic aggregate cards", () => {
   ]);
   assert.equal(ledger.rows[0].method, "Exact meet-in-the-middle baseline");
   assert.equal(ledger.rows[1].decision, "Rejected");
-  assert.equal(ledger.rows[4].href, "/problems/QMB-001/attempts/ATT-005");
+  assert.equal(ledger.rows[4].href, "/problems/Prob-000/attempts/ATT-005");
 });
 
 test("static example formatting is stable for route rendering", () => {
@@ -100,14 +100,14 @@ test("static example formatting is stable for route rendering", () => {
   assert.equal(formatSeconds(39.8), "39.8 s");
   assert.equal(formatSpeedup(118.2), "118.2x");
   assert.equal(
-    getStaticResearchArtifactPath("QMB-001", "ATT-003", "LOG.md"),
-    "problems/QMB-001/attempts/ATT-003/LOG.md",
+    getStaticResearchArtifactPath("Prob-000", "ATT-003", "LOG.md"),
+    "examples/showcase/problems/Prob-000/attempts/ATT-003/LOG.md",
   );
 });
 
 test("attempt dossier includes audit metadata and display sections", () => {
-  const example = getStaticResearchExample("QMB-001");
-  const attempt = getStaticResearchAttempt("QMB-001", "ATT-004");
+  const example = getStaticResearchExample("Prob-000");
+  const attempt = getStaticResearchAttempt("Prob-000", "ATT-004");
   const dossier = buildAttemptDossier(attempt, example.manifest);
   assert.equal(dossier.title, "Residual-seeded local search");
   assert.equal(dossier.metrics[2].label, "Quality");
@@ -119,7 +119,7 @@ test("attempt dossier includes audit metadata and display sections", () => {
     "Decision",
   ]);
   assert.deepEqual(dossier.artifacts, [
-    "problems/QMB-001/attempts/ATT-004/attempt.json",
-    "problems/QMB-001/attempts/ATT-004/LOG.md",
+    "examples/showcase/problems/Prob-000/attempts/ATT-004/attempt.json",
+    "examples/showcase/problems/Prob-000/attempts/ATT-004/LOG.md",
   ]);
 });

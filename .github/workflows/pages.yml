@@ -27,8 +27,6 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm ci
-      - name: Build app
-        run: npm run build
       - name: Build Pages showcase
         run: npm run pages:build
       - name: Test Pages showcase

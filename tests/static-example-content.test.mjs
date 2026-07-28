@@ -10,17 +10,22 @@ import test from "node:test";
 const execFileAsync = promisify(execFile);
 const workspaceRoot = fileURLToPath(new URL("../", import.meta.url));
 
-test("QMB-001 static example is accepted by the problem index", async () => {
+test("Prob-000 static example is accepted by the problem index", async () => {
   const tempRoot = await mkdtemp(join(tmpdir(), "research-loop-index-"));
   const outPath = join(tempRoot, "problem-index.json");
   try {
     await execFileAsync(
       process.execPath,
-      ["scripts/build-problem-index.mjs", "--root", workspaceRoot, "--out", outPath],
+      [
+        "scripts/build-problem-index.mjs",
+        "--root", workspaceRoot,
+        "--problems-dir", "examples/showcase/problems",
+        "--out", outPath,
+      ],
       { cwd: workspaceRoot, maxBuffer: 10 * 1024 * 1024 },
     );
     const index = JSON.parse(await readFile(outPath, "utf8"));
-    const problem = index.problems.find((item) => item.id === "QMB-001");
+    const problem = index.problems.find((item) => item.id === "Prob-000");
     assert.ok(problem);
     assert.equal(problem.title, "CSS code-distance algorithm search");
     assert.equal(problem.status, "solving");
@@ -35,9 +40,9 @@ test("QMB-001 static example is accepted by the problem index", async () => {
   }
 });
 
-test("QMB-001 static example records are labeled as synthetic display data", async () => {
+test("Prob-000 static example records are labeled as synthetic display data", async () => {
   const example = JSON.parse(
-    await readFile(new URL("../problems/QMB-001/example.json", import.meta.url), "utf8"),
+    await readFile(new URL("../examples/showcase/problems/Prob-000/example.json", import.meta.url), "utf8"),
   );
   assert.equal(example.kind, "static-research-example");
   assert.equal(
@@ -49,10 +54,15 @@ test("QMB-001 static example records are labeled as synthetic display data", asy
 
   for (const name of ["initial-prompt.md", "transcript.md", "decision.md"]) {
     const text = await readFile(
-      new URL(`../problems/QMB-001/generation/${name}`, import.meta.url),
+      new URL(`../examples/showcase/problems/Prob-000/generation/${name}`, import.meta.url),
       "utf8",
     );
     assert.match(text, /static example/i);
     assert.match(text, /synthetic/i);
   }
+
+  await assert.rejects(
+    readFile(new URL("../problems/Prob-000/problem.json", import.meta.url), "utf8"),
+    { code: "ENOENT" },
+  );
 });

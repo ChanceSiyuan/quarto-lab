@@ -30,6 +30,11 @@ Problems live in `problems/<id>/` and are indexed into
 generated index is ignored by Git; `problem.json`, `problem.md`, and
 `generation/` records are the durable audit trail.
 
+Only `problems/` is indexed by local development and ordinary production
+builds. The synthetic public example lives separately under
+`examples/showcase/problems/` as `Prob-000` and is not available from local
+routes; ordinary local problem allocation starts at `Prob-001`.
+
 Run locally:
 
 ```bash
@@ -44,7 +49,7 @@ task with the issue #133 context prefilled; send it, answer one question at a
 time, and only allow file writes after reviewing the proposed manifest,
 Markdown, generation record, and rubric decision.
 
-`npm run pages:build` snapshots the static `QMB-001` example — the homepage, the
+`npm run pages:build` snapshots the static `Prob-000` example — the homepage, the
 problem page, and its five attempt pages — into `out/` for GitHub Pages at
 `https://nzy1997.github.io/research-loop/`. The snapshot is script-free static
 HTML; it is a showcase of the example, not a deployment of the console.
@@ -100,7 +105,7 @@ make help
 | `make dev` | Install locked dependencies when needed, then serve the Problem Console locally with the problem index watched |
 | `make build` | Regenerate the problem index, validate and render `knowledge/` into `public/knowledge/`, then build the deployable app |
 | `make test` | Lint, both unit suites, the Pages showcase, rendered-output tests, and browser tests |
-| `make pages-build` | Snapshot the static `QMB-001` example into `out/` for GitHub Pages |
+| `make pages-build` | Snapshot the static `Prob-000` example into `out/` for GitHub Pages |
 | `make knowledge-check` | Validate the trusted knowledge tree |
 | `make knowledge-resolve QUERY="triangular TFIM"` | Print the reading bundle for one research question, as JSON |
 | `make knowledge-preview` | Serve the trusted knowledge site locally |

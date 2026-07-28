@@ -1,22 +1,26 @@
+import { execFile } from "node:child_process";
 import { cp, mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises";
 import { basename, dirname, extname, join, relative } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { promisify } from "node:util";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 const outDir = join(root, "out");
 const clientDir = join(root, "dist/client");
+const execFileAsync = promisify(execFile);
+const vinextBin = fileURLToPath(new URL("../node_modules/.bin/vinext", import.meta.url));
 const basePath = process.env.PAGES_BASE_PATH ?? "/research-loop";
 const siteOrigin = process.env.PAGES_SITE_ORIGIN ?? "https://nzy1997.github.io";
 const siteUrl = `${siteOrigin}${basePath}`;
 
 const routes = [
   "/",
-  "/problems/QMB-001",
-  "/problems/QMB-001/attempts/ATT-001",
-  "/problems/QMB-001/attempts/ATT-002",
-  "/problems/QMB-001/attempts/ATT-003",
-  "/problems/QMB-001/attempts/ATT-004",
-  "/problems/QMB-001/attempts/ATT-005",
+  "/problems/Prob-000",
+  "/problems/Prob-000/attempts/ATT-001",
+  "/problems/Prob-000/attempts/ATT-002",
+  "/problems/Prob-000/attempts/ATT-003",
+  "/problems/Prob-000/attempts/ATT-004",
+  "/problems/Prob-000/attempts/ATT-005",
 ];
 
 function routeToOutputPath(route) {
@@ -40,7 +44,14 @@ function rewriteHtml(html) {
   return canonicalizeStaticRouteLinks(html
     .replace(/<script\b[\s\S]*?<\/script>/gi, "")
     .replace(/<link\b[^>]*rel="modulepreload"[^>]*>/gi, "")
-    .replace(/<section class="console-toolbar"[\s\S]*?<\/section>/, "")
+    .replace(
+      /<a class="primary-action" href="codex:[^"]*">\+ Add problem<\/a>/g,
+      '<span class="primary-action static-disabled" aria-disabled="true">+ Add problem</span>',
+    )
+    .replace(
+      /<a class="state-action" href="codex:[^"]*">\+ Add first problem<\/a>/g,
+      '<span class="state-action static-disabled" aria-disabled="true">+ Add first problem</span>',
+    )
     .replace(/<details class="codex-fallback"[\s\S]*?<\/details>/g, "")
     .replace(
       /<div class="mode-indicator">[\s\S]*?<\/div>(?=<div class="index-health)/,
@@ -115,7 +126,24 @@ async function renderRoute(worker, route) {
   return rewriteHtml(await response.text());
 }
 
+async function buildShowcaseApp() {
+  await execFileAsync(
+    process.execPath,
+    [
+      "scripts/build-problem-index.mjs",
+      "--problems-dir", "examples/showcase/problems",
+    ],
+    { cwd: root, maxBuffer: 10 * 1024 * 1024 },
+  );
+  await execFileAsync(vinextBin, ["build"], {
+    cwd: root,
+    env: { ...process.env, WRANGLER_LOG_PATH: ".wrangler/wrangler.log" },
+    maxBuffer: 10 * 1024 * 1024,
+  });
+}
+
 async function main() {
+  await buildShowcaseApp();
   await rm(outDir, { recursive: true, force: true });
   await mkdir(outDir, { recursive: true });
   await copyStaticClientAssets();

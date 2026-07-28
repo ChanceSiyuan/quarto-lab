@@ -21,7 +21,7 @@ help:
 	@echo '  make dev                                        install if needed, then serve the problem console locally'
 	@echo '  make build                                      index problems/, render knowledge/ into public/knowledge/, then build the app'
 	@echo '  make test                                       lint, both unit suites, pages showcase, rendered-output tests, browser tests'
-	@echo '  make pages-build                                snapshot the static QMB-001 example into out/ for GitHub Pages'
+	@echo '  make pages-build                                snapshot the static Prob-000 example into out/ for GitHub Pages'
 	@echo
 	@echo '  make knowledge-check                            validate the trusted knowledge tree'
 	@echo '  make knowledge-resolve QUERY="triangular TFIM"  print the reading bundle for one research question'
