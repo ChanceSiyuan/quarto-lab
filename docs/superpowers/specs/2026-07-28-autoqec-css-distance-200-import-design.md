@@ -1,7 +1,7 @@
 # AutoQEC CSS-Distance 200-Trial Import Design
 
 Date: 2026-07-28
-Status: Revised in conversation; awaiting amended written-spec review
+Status: Approach A approved; hardening amendment awaiting written-spec review
 
 ## Purpose
 
@@ -297,6 +297,39 @@ of the same execution source.
 The snapshot contains no Git directory. Nothing in it is imported or executed
 by Research Loop's JavaScript or TypeScript runtime.
 
+### PR #5 hardening amendment
+
+The infrastructure snapshot is an execution closure, not a repository mirror.
+For each pinned infrastructure commit, the importer starts from the approved
+CSS-distance execution entry points and copies only:
+
+- those entry points and their recursively resolved local Python imports;
+- the exact container definitions, public campaign prompt, dependency
+  manifests, and focused public contract fixtures needed to understand those
+  entry points; and
+- no article corpus, code-zoo checkout, generated site bundle or index,
+  unrelated application source, or other file merely because it is present in
+  the same Git tree.
+
+Snapshot discovery fails closed. Every selected path must be justified by the
+closure or the explicit allowlist, and every local import from selected Python
+files must resolve inside the selected set. The six snapshots remain separate,
+but repeated unrelated trees are not copied into each snapshot.
+
+Committed-record verification compares the complete on-disk problem tree with
+`import-manifest.json`. Excluding only `import-manifest.json` itself, the two
+path sets must be identical; missing, extra, symlink, and other non-regular
+entries are errors before hashes are accepted.
+
+Research indexing compares the discovered attempt IDs with the exact IDs
+declared by `research.json`. For `Prob-001`, this is exactly `ATT-001` through
+`ATT-200`. A missing, extra, malformed, or duplicate attempt produces a
+problem-level diagnostic and prevents a partial ledger from being emitted.
+
+The corrected import is regenerated from the pinned read-only AutoQEC commits.
+The existing broad snapshots and their old `import-manifest.json` are replaced
+as one test-verified data change; they are not edited by hand.
+
 ## Import command and data flow
 
 The repository adds a single explicit Make target:
@@ -457,6 +490,8 @@ Tests use small synthetic source repositories and must not depend on the real
 - require exactly `ATT-001` through `ATT-200` for this record;
 - enforce cohort boundaries and candidate/report consistency;
 - verify the complete import manifest offline;
+- reject any file missing from or added outside the import manifest, including
+  symlinks and other non-regular entries;
 - verify the exact six infrastructure snapshots and their cohort range maps;
 - generate deterministic problem and research indexes; and
 - surface one corrupt attempt as a problem-level integrity diagnostic rather
@@ -490,11 +525,18 @@ Tests use small synthetic source repositories and must not depend on the real
 - No copied file is a symlink, hardlink, Git metadata file, credential, or
   private blind-evaluation artifact.
 - Offline verification passes without reading AutoQEC.
+- Offline verification rejects a missing listed file, an unlisted extra file,
+  and a symlink even when its target bytes match a listed hash.
+- Research indexing refuses to emit `Prob-001` when any ID from `ATT-001`
+  through `ATT-200` is missing or when any unexpected attempt directory exists.
 - The homepage lists `Prob-001`; its detail route shows all 200 attempts; every
   attempt route opens; and expected missing candidates are labeled explicitly.
 - The six frozen infrastructure snapshots record the exact commits above, every
   attempt points to the correct snapshot, and all manifest/import-closure checks
   pass.
+- The six snapshots contain only the approved execution closure and explicit
+  supporting allowlist; external article corpora, code-zoo mirrors, generated
+  site assets, and unrelated source trees are absent.
 - No imported code runs during import verification, indexing, building,
   testing, previewing, or page rendering.
 - `knowledge/`, `drafts/`, `literature/`, the dashboard appearance, and the
