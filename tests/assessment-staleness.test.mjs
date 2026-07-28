@@ -74,3 +74,34 @@ test("marks stale when resolver bundle path changes", async () => {
   assert.equal(result.stale, true);
   assert.match(result.reasons.join("\n"), /resolver result changed/);
 });
+
+test("keeps a matching report current with the resolver's bundle result shape", async () => {
+  const input = {
+    problemId: "Prob-001",
+    problemJsonHash: "same",
+    problemMdHash: "same",
+    skillHash: "same",
+    schemaHash: "same",
+    resolver: { query: "Fixture", status: "match", topic: "knowledge/a.qmd", orderedFiles: ["knowledge/a.qmd"] },
+    bundle: [{ path: "knowledge/a.qmd", hash: "same" }],
+  };
+  const result = await evaluateAssessmentStaleness({
+    rootDir: "/tmp/not-read",
+    input,
+    currentHashes: {
+      problemJsonHash: "same",
+      problemMdHash: "same",
+      skillHash: "same",
+      schemaHash: "same",
+      bundle: [{ path: "knowledge/a.qmd", hash: "same" }],
+    },
+    resolveKnowledge: async () => ({
+      status: "match",
+      bundle: {
+        topic: "knowledge/a.qmd",
+        orderedFiles: ["knowledge/a.qmd"],
+      },
+    }),
+  });
+  assert.deepEqual(result, { stale: false, reasons: [] });
+});
