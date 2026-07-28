@@ -44,6 +44,7 @@ function canonicalizeStaticRouteLinks(html) {
 
 function rewriteKnowledgeBasePath(text) {
   return text
+    .replace(/href="\/"(?=[^>]*aria-label="Back to Research Loop home")/g, `href="${basePath}/"`)
     .replace(/([("'=])\/knowledge\//g, `$1${basePath}/knowledge/`)
     .replace(/\burl\(\/knowledge\//g, `url(${basePath}/knowledge/`);
 }

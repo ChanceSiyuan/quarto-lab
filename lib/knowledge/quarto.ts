@@ -9,10 +9,11 @@
  *
  * Four rules follow from it:
  *
- * - **copy, never invent.** Pages and referenced assets arrive byte-for-byte;
- *   nothing rewrites a link or normalizes a page on the way in. The only files
- *   this module *writes* are the generated `_quarto.yml` and the three category
- *   views, and none of them ever lands in `knowledge/`;
+ * - **copy pages, generate chrome.** Pages and referenced assets arrive
+ *   byte-for-byte; nothing rewrites a link or normalizes a page on the way in.
+ *   The only files this module *writes* are the generated `_quarto.yml`, the
+ *   Research Loop stylesheet, and the three category views, and none of them
+ *   ever lands in `knowledge/`;
  * - **re-assert the schema, never trust it.** The committed base `_quarto.yml`
  *   is parsed and compared with the fixed safe schema exactly. A filter, an
  *   include, a resource glob, an extension, a render hook, or an execution
@@ -74,12 +75,325 @@ const CATEGORY_DIRECTORY = "categories";
 /** The project-relative path of the bibliography copy. */
 const BIBLIOGRAPHY_TARGET = "references/ref.bib";
 
+/** The generated stylesheet that makes Quarto read as part of Research Loop. */
+const THEME_CSS_FILENAME = "research-loop.css";
+
 /**
  * Directories the projection writes into. A trusted page may not live under
  * either of them: the generated file would silently win, so a topic that took
  * one of these names would publish navigation instead of its own content.
  */
 const RESERVED_DIRECTORIES = [CATEGORY_DIRECTORY, "references"] as const;
+
+/** Files the projection writes at the project root. */
+const RESERVED_FILES = [THEME_CSS_FILENAME] as const;
+
+const RESEARCH_LOOP_STYLESHEET = String.raw`:root {
+  --rl-ink: #17211d;
+  --rl-muted: #65716c;
+  --rl-paper: #f3f0e8;
+  --rl-surface: #fbfaf6;
+  --rl-soft: #f7f5ef;
+  --rl-line: #d9d7ce;
+  --rl-green: #174c3b;
+  --rl-lime: #c8f06f;
+  --rl-focus: #79a72f;
+  --bs-body-bg: var(--rl-paper);
+  --bs-body-color: var(--rl-ink);
+  --bs-link-color: var(--rl-green);
+  --bs-link-hover-color: #0f3529;
+  --bs-border-color: var(--rl-line);
+}
+
+html,
+body,
+#quarto-content {
+  background: var(--rl-paper);
+  color: var(--rl-ink);
+}
+
+body {
+  font-family: "Geist", Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+a {
+  color: var(--rl-green);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.18em;
+}
+
+a:hover {
+  color: #0f3529;
+}
+
+:focus-visible {
+  outline: 3px solid var(--rl-focus);
+  outline-offset: 3px;
+}
+
+#quarto-header .quarto-secondary-nav,
+#quarto-header .navbar {
+  min-height: 68px;
+  border-bottom: 1px solid var(--rl-line);
+  background: var(--rl-surface);
+  box-shadow: none;
+}
+
+#quarto-header .container-fluid {
+  min-height: 68px;
+  padding: 10px max(24px, calc((100vw - 1280px) / 2));
+}
+
+#quarto-header .quarto-page-breadcrumbs {
+  color: var(--rl-muted);
+  font-size: 11px;
+}
+
+#quarto-header .quarto-btn-toggle,
+#quarto-header .quarto-search-button {
+  min-height: 32px;
+  border: 1px solid var(--rl-line);
+  border-radius: 0;
+  background: var(--rl-soft);
+  color: var(--rl-green);
+  box-shadow: none;
+}
+
+#quarto-header .quarto-btn-toggle:hover,
+#quarto-header .quarto-search-button:hover {
+  border-color: var(--rl-green);
+  background: #edf0e8;
+}
+
+#quarto-header .rl-home-link,
+#quarto-sidebar .rl-home-link {
+  min-height: 32px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--rl-line);
+  background: var(--rl-soft);
+  color: var(--rl-green);
+  padding: 0 11px;
+  font-size: 12px;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+#quarto-header .rl-home-link:hover,
+#quarto-sidebar .rl-home-link:hover {
+  border-color: var(--rl-green);
+  background: #edf0e8;
+  color: var(--rl-green);
+}
+
+#quarto-sidebar .rl-home-link {
+  width: fit-content;
+  letter-spacing: 0;
+}
+
+#quarto-header .navbar-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 11px;
+  color: var(--rl-ink);
+  font-weight: 650;
+  letter-spacing: -0.02em;
+}
+
+#quarto-header .navbar-brand::before {
+  width: 34px;
+  height: 34px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--rl-ink);
+  color: var(--rl-lime);
+  content: "RL";
+  font: 700 11px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+}
+
+#quarto-header .navbar-title {
+  color: var(--rl-ink);
+  font-size: 14px;
+}
+
+#quarto-header .navbar-nav .nav-link {
+  color: var(--rl-muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+#quarto-header .navbar-nav .nav-link:hover,
+#quarto-header .navbar-nav .nav-link.active {
+  color: var(--rl-green);
+}
+
+#quarto-search .aa-DetachedSearchButton {
+  min-height: 32px;
+  border: 1px solid var(--rl-line);
+  border-radius: 0;
+  background: var(--rl-soft);
+  color: var(--rl-green);
+  box-shadow: none;
+}
+
+#quarto-search .aa-DetachedSearchButton:hover {
+  border-color: var(--rl-green);
+  background: #edf0e8;
+}
+
+#quarto-sidebar {
+  border-right: 1px solid var(--rl-line);
+  background: var(--rl-paper);
+}
+
+#quarto-sidebar .sidebar-title {
+  display: grid;
+  gap: 10px;
+  color: var(--rl-ink);
+  font-size: 14px;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+}
+
+#quarto-sidebar .sidebar-title > a {
+  display: inline-flex;
+  align-items: center;
+  gap: 11px;
+  color: var(--rl-ink);
+}
+
+#quarto-sidebar .sidebar-title > a::before {
+  width: 34px;
+  height: 34px;
+  display: inline-grid;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--rl-ink);
+  color: var(--rl-lime);
+  content: "RL";
+  font: 700 11px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+}
+
+#quarto-sidebar .sidebar-item-text,
+#quarto-sidebar .sidebar-item-toggle {
+  color: var(--rl-muted);
+}
+
+#quarto-sidebar .sidebar-item-container:hover,
+#quarto-sidebar .sidebar-item-container .active {
+  background: #edf0e8;
+  color: var(--rl-green);
+}
+
+#quarto-margin-sidebar {
+  border-left: 1px solid var(--rl-line);
+}
+
+#TOC {
+  color: var(--rl-muted);
+  font-size: 12px;
+}
+
+#TOC .active {
+  border-left-color: var(--rl-green);
+  color: var(--rl-green);
+}
+
+main.content {
+  padding-top: 34px;
+}
+
+#quarto-document-content {
+  border: 1px solid var(--rl-line);
+  background: var(--rl-surface);
+  padding: clamp(22px, 4vw, 46px);
+}
+
+.quarto-title,
+#title-block-header {
+  margin-bottom: 22px;
+}
+
+.quarto-title h1.title,
+h1.title {
+  color: var(--rl-ink);
+  font-size: clamp(32px, 5vw, 54px);
+  font-weight: 600;
+  letter-spacing: -0.055em;
+  line-height: 1;
+}
+
+.description,
+.abstract,
+.subtitle,
+.quarto-title-meta,
+.quarto-title-meta-contents {
+  color: var(--rl-muted);
+}
+
+h2,
+h3,
+h4 {
+  color: var(--rl-ink);
+  letter-spacing: -0.025em;
+}
+
+code:not(pre code) {
+  border: 1px solid var(--rl-line);
+  border-radius: 0;
+  background: var(--rl-soft);
+  color: var(--rl-green);
+  padding: 0.08rem 0.22rem;
+}
+
+pre,
+div.sourceCode {
+  border: 1px solid var(--rl-line);
+  border-radius: 0;
+  background: #f7f5ef;
+}
+
+blockquote {
+  border-left: 3px solid var(--rl-green);
+  color: var(--rl-muted);
+}
+
+table {
+  border-color: var(--rl-line);
+}
+
+thead,
+th {
+  background: #f7f5ef;
+}
+
+.callout {
+  border-radius: 0;
+  border-color: var(--rl-line);
+  background: var(--rl-surface);
+}
+
+.breadcrumb,
+.quarto-page-breadcrumbs {
+  color: var(--rl-muted);
+  font-size: 12px;
+}
+
+@media (max-width: 991.98px) {
+  #quarto-document-content {
+    border-left: 0;
+    border-right: 0;
+    padding: 22px;
+  }
+
+  #quarto-sidebar {
+    background: var(--rl-surface);
+  }
+}
+`;
 
 /**
  * The exact contents the committed base configuration must have.
@@ -98,7 +412,7 @@ const FIXED_BASE_CONFIG = {
     "site-path": "/knowledge/",
     search: true,
   },
-  format: { html: { toc: true } },
+  format: { html: { toc: true, css: THEME_CSS_FILENAME } },
   execute: { enabled: false },
 } as const;
 
@@ -299,8 +613,13 @@ function assertSafeAliases(page: ParsedKnowledgePage): void {
   }
 }
 
-/** Refuses an id that would collide with a directory the projection writes. */
+/** Refuses an id that would collide with generated project chrome. */
 function assertNotReserved(id: string, what: string): void {
+  if ((RESERVED_FILES as readonly string[]).includes(id)) {
+    throw new QuartoProjectionError(
+      `\`${id}\` is ${what} with a generated file name; rename it so that generated site chrome cannot overwrite trusted content`,
+    );
+  }
   const [first] = id.split("/");
   if ((RESERVED_DIRECTORIES as readonly string[]).includes(first)) {
     throw new QuartoProjectionError(
@@ -477,7 +796,11 @@ export async function materializeQuartoProject(input: {
   // must not depend on a path that leaves the workspace.
   await writeInto(projectDir, BIBLIOGRAPHY_TARGET, await readFile(bibliographyPath));
 
-  // 4. The three category views, in curated reading order then POSIX path.
+  // 4. The code-owned stylesheet that makes the Quarto site share the
+  // dashboard skin without letting the content tree control page chrome.
+  await writeInto(projectDir, THEME_CSS_FILENAME, RESEARCH_LOOP_STYLESHEET);
+
+  // 5. The three category views, in curated reading order then POSIX path.
   const order = curatedOrder(graph);
   const rankOf = (id: string): number => order.get(id) ?? UNCURATED;
   for (const category of KNOWLEDGE_CATEGORIES) {
@@ -487,7 +810,7 @@ export async function materializeQuartoProject(input: {
     await writeInto(projectDir, categoryPageId(category), categoryPage(category, pages));
   }
 
-  // 5. The configuration, generated from the fixed schema plus the graph.
+  // 6. The configuration, generated from the fixed schema plus the graph.
   const sitePath = FIXED_BASE_CONFIG.website["site-path"];
   await writeInto(
     projectDir,

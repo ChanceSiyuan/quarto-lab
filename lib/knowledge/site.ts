@@ -31,7 +31,7 @@
 import { spawn } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import { rmSync } from "node:fs";
-import { mkdir, mkdtemp, readdir, rename, rm, stat } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, readdir, rename, rm, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 import { loadKnowledge, type LoadKnowledgeOptions } from "./graph.js";
@@ -54,6 +54,14 @@ const DEFAULT_QUARTO_BIN = "quarto";
 
 /** The page every rendered knowledge site must have. */
 const REQUIRED_OUTPUT = "index.html";
+
+/** The generated sidebar tool that leaves the knowledge site for the dashboard. */
+const HOME_TOOL_LABEL = "Back to Research Loop home";
+const HEADER_HOME_LINK = `<a class="rl-home-link" href="/" aria-label="${HOME_TOOL_LABEL}"><span aria-hidden="true">←</span> Home</a>`;
+const SIDEBAR_HOME_LINK = `<a class="rl-home-link rl-home-link-sidebar" href="/" aria-label="${HOME_TOOL_LABEL}"><span aria-hidden="true">←</span> Home</a>`;
+const HEADER_CONTAINER = '<div class="container-fluid d-flex">';
+const SIDEBAR_TITLE =
+  /(<div class="sidebar-title mb-0 py-0">\s*<a href="[^"]*">Research Loop Knowledge<\/a>\s*<\/div>)/u;
 
 /**
  * Path components that may never appear in the published site.
@@ -225,6 +233,26 @@ async function auditRenderedSite(outputDir: string): Promise<number> {
   return files.length;
 }
 
+/** Adds the generated home link that leaves the knowledge site for the dashboard. */
+async function addHomeLinks(outputDir: string): Promise<void> {
+  for (const file of await outputFiles(outputDir)) {
+    if (!file.endsWith(".html")) {
+      continue;
+    }
+    const absolutePath = path.join(outputDir, ...file.split("/"));
+    const before = await readFile(absolutePath, "utf8");
+    const withHeader = before.includes('class="rl-home-link"')
+      ? before
+      : before.replace(HEADER_CONTAINER, `${HEADER_CONTAINER}\n      ${HEADER_HOME_LINK}`);
+    const after = withHeader.includes("rl-home-link-sidebar")
+      ? withHeader
+      : withHeader.replace(SIDEBAR_TITLE, `$1\n      ${SIDEBAR_HOME_LINK}`);
+    if (after !== before) {
+      await writeFile(absolutePath, after);
+    }
+  }
+}
+
 /**
  * The signals a terminal ends a render or a preview with.
  *
@@ -335,10 +363,17 @@ export async function buildKnowledgeSite(
       shell: false,
     });
 
-    // 6. Verify before replacing anything.
+    // 6. Quarto owns the knowledge navigation, but the app owns the way back
+    // to the dashboard. Add that generated chrome after render, before audit
+    // and publication, without letting trusted page content control it. The
+    // sidebar link is visible on desktop; the header link covers collapsed
+    // sidebar layouts.
+    await addHomeLinks(prepared.outputDir);
+
+    // 7. Verify before replacing anything.
     const renderedFiles = await auditRenderedSite(prepared.outputDir);
 
-    // 7-9. Publish: move the old site aside, move the new one in, and put the
+    // 8-10. Publish: move the old site aside, move the new one in, and put the
     // old one back if either move fails. The backup is a sibling so that both
     // renames stay within one directory, and therefore within one filesystem.
     await mkdir(path.dirname(outputDir), { recursive: true });
@@ -359,7 +394,7 @@ export async function buildKnowledgeSite(
       throw error;
     }
 
-    // 10. The old site is unreachable now; removing it is the only step whose
+    // 11. The old site is unreachable now; removing it is the only step whose
     // failure would be cosmetic.
     if (hadOldSite) {
       await directoryOps.rm(backup, { recursive: true, force: true });
