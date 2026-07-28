@@ -533,6 +533,56 @@ const SCREEN_PAPER: readonly Clause[] = [
 /** The plan's requirements for `assess-research-problem`, clause by clause. */
 const ASSESS_RESEARCH_PROBLEM: readonly Clause[] = [
   {
+    requirement: "triggers when judging whether a research problem is worth doing",
+    in: "description",
+    pattern: /worth doing/i,
+  },
+  {
+    requirement: "keeps the skill read-only",
+    in: "body",
+    pattern: /read-only/i,
+  },
+  {
+    requirement: "runs the repository resolver before evidence-dependent claims",
+    in: "body",
+    pattern: /make knowledge-resolve QUERY="<the candidate research question>"/,
+  },
+  {
+    requirement: "on ambiguous resolver output, returns needs_input in structured mode",
+    in: "body",
+    pattern: /`needs_input`[^.\n]*ambiguous/i,
+  },
+  {
+    requirement: "on no-match, marks evidence-dependent dimensions unknown",
+    in: "body",
+    pattern: /no-match[^.\n]*unknown/i,
+  },
+  {
+    requirement: "never uses drafts or literature as learned knowledge fallback",
+    in: "body",
+    pattern: /Never use `drafts\/`[^.\n]*Never use `literature\//i,
+  },
+  {
+    requirement: "supports structured output when Codex receives the schema",
+    in: "body",
+    pattern: /structured output schema/i,
+  },
+  {
+    requirement: "keeps Markdown sections for normal conversation mode",
+    in: "body",
+    pattern: /Markdown sections/i,
+  },
+  {
+    requirement: "keeps P equals NP as a scoring outcome rather than a blacklist",
+    in: "body",
+    pattern: /P = NP[^.\n]*not[^.\n]*blacklist/i,
+  },
+  {
+    requirement: "keeps the 5 minute runtime target soft",
+    in: "body",
+    pattern: /5 minutes[^.\n]*not a hard limit/i,
+  },
+  {
     requirement: "triggers on judging whether a research problem is worth doing",
     in: "description",
     pattern: /worth (doing|pursuing)/i,
@@ -555,12 +605,12 @@ const ASSESS_RESEARCH_PROBLEM: readonly Clause[] = [
   {
     requirement: "does not use drafts as a fallback",
     in: "body",
-    pattern: /(never|do not|don't)[^.\n]*`drafts\/`[^.\n]*fallback/i,
+    pattern: /Never use `drafts\/`[^.\n]*learned knowledge/i,
   },
   {
     requirement: "does not use literature as learned knowledge",
     in: "body",
-    pattern: /(never|do not|don't)[^.\n]*`literature\/`[^.\n]*learned knowledge/i,
+    pattern: /Never use `literature\/`[^.\n]*learned knowledge/i,
   },
   {
     requirement: "is read-only",
