@@ -169,9 +169,12 @@ test("accepts a synthetic range map for temporary Git-source imports", async () 
   assert.deepEqual(plan.map((item) => item.commit), ["1".repeat(40), "2".repeat(40), "3".repeat(40)]);
 });
 
-test("safe artifact policy rejects path escapes and symlinks", () => {
+test("safe artifact policy accepts Python package paths and rejects unsafe paths", () => {
+  assert.equal(assertSafeImportPath("src/autoqec_search/__init__.py"), "src/autoqec_search/__init__.py");
   assert.throws(() => assertSafeImportPath("../candidate.py"), /unsafe/);
   assert.throws(() => assertSafeImportPath("/candidate.py"), /unsafe/);
+  assert.throws(() => assertSafeImportPath("src/.cache/config"), /unsafe/);
+  assert.throws(() => assertSafeImportPath("src/.git/config"), /unsafe/);
 });
 
 test("imports synthetic trials atomically with copied artifacts and snapshots", async () => {

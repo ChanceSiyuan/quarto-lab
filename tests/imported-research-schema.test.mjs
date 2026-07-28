@@ -277,6 +277,26 @@ test("rejects malformed cohort and source ranges without throwing", () => {
   assert.equal(malformedSource.ok, false);
 });
 
+test("accepts Python package paths but rejects path escapes and dot metadata", () => {
+  const pythonPackage = validateSourceManifest(sourceManifest({ files: [{
+    path: "src/autoqec_search/__init__.py",
+    sha256: "f".repeat(64),
+    size: 1234,
+    executable: false,
+  }] }));
+  assert.equal(pythonPackage.ok, true);
+
+  for (const path of ["../__init__.py", "src/.cache/config", "src/.git/config"]) {
+    const unsafe = validateSourceManifest(sourceManifest({ files: [{
+      path,
+      sha256: "f".repeat(64),
+      size: 1234,
+      executable: false,
+    }] }));
+    assert.equal(unsafe.ok, false);
+  }
+});
+
 test("rejects unknown fields, bad hashes, and invalid import timestamps", () => {
   const unknown = validateResearchManifest({
     schemaVersion: 1,
