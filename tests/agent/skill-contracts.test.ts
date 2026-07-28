@@ -40,7 +40,13 @@ const REPO_ROOT = path.resolve(fileURLToPath(import.meta.url), "..", "..", "..")
 const SKILLS_ROOT = path.join(REPO_ROOT, "skills");
 
 /** The complete set of local skills this repository commits. */
-const SKILL_NAMES = ["download-ref", "read-knowledge", "review-draft"] as const;
+const SKILL_NAMES = [
+  "download-ref",
+  "expand-notes",
+  "read-knowledge",
+  "render-site",
+  "review-draft",
+] as const;
 
 type SkillName = (typeof SKILL_NAMES)[number];
 
@@ -377,10 +383,85 @@ const DOWNLOAD_REF: readonly Clause[] = [
   },
 ];
 
+/** The adapted quarto-lab requirements for writing polished knowledge drafts. */
+const EXPAND_NOTES: readonly Clause[] = [
+  {
+    requirement: "triggers on expanding rough academic notes into Quarto",
+    in: "description",
+    pattern: /rough academic notes[^,.]*Quarto/i,
+  },
+  {
+    requirement: "writes new work under drafts before promotion",
+    in: "body",
+    pattern: /`drafts\/`[^.\n]*(first|before)/i,
+  },
+  {
+    requirement: "uses only the repository frontmatter allowlist",
+    in: "body",
+    pattern: /`title`, `description`, `categories`, and optional `aliases`/i,
+  },
+  {
+    requirement: "uses exactly one supported category",
+    in: "body",
+    pattern: /exactly one[^.\n]*`theory`, `experiment`, or `codes`/i,
+  },
+  {
+    requirement: "keeps paper full text out of knowledge",
+    in: "body",
+    pattern: /never copy[^.\n]*paper[^.\n]*full text[^.\n]*`knowledge\/`/i,
+  },
+  {
+    requirement: "keeps citations in the repository bibliography",
+    in: "body",
+    pattern: /`literature\/ref\.bib`/i,
+  },
+  {
+    requirement: "checks the finished draft through the repository gate",
+    in: "body",
+    pattern: /make knowledge-check/i,
+  },
+];
+
+/** The adapted quarto-lab requirements for safe site rendering. */
+const RENDER_SITE: readonly Clause[] = [
+  {
+    requirement: "triggers on building or previewing the knowledge site",
+    in: "description",
+    pattern: /building[^,.]*previewing[^,.]*knowledge site/i,
+  },
+  {
+    requirement: "never invokes Quarto directly",
+    in: "body",
+    pattern: /never invoke[^.\n]*`quarto render`[^.\n]*directly/i,
+  },
+  {
+    requirement: "validates before rendering",
+    in: "body",
+    pattern: /make knowledge-check/i,
+  },
+  {
+    requirement: "builds through the safe target",
+    in: "body",
+    pattern: /make build/i,
+  },
+  {
+    requirement: "previews through the safe target",
+    in: "body",
+    pattern: /make knowledge-preview/i,
+  },
+  {
+    requirement: "does not edit generated output",
+    in: "body",
+    pattern: /never edit[^.\n]*`public\/knowledge`/i,
+  },
+];
+
 const CLAUSES: Readonly<Record<SkillName, readonly Clause[]>> = {
   "read-knowledge": READ_KNOWLEDGE,
   "review-draft": REVIEW_DRAFT,
   "download-ref": DOWNLOAD_REF,
+  "expand-notes": EXPAND_NOTES,
+  "render-site": RENDER_SITE,
 };
 
 for (const name of SKILL_NAMES) {
@@ -453,7 +534,7 @@ test("skills/ holds exactly the committed local skills", async () => {
   assert.deepEqual(
     entries.map((entry) => entry.name).sort(),
     [...SKILL_NAMES].sort(),
-    "skills/ must hold exactly the three documented local skills",
+    "skills/ must hold exactly the documented local skills",
   );
   assert.ok(
     entries.every((entry) => entry.isDirectory()),
