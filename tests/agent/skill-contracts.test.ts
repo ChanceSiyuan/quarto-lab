@@ -40,7 +40,7 @@ const REPO_ROOT = path.resolve(fileURLToPath(import.meta.url), "..", "..", "..")
 const SKILLS_ROOT = path.join(REPO_ROOT, "skills");
 
 /** The complete set of local skills this repository commits. */
-const SKILL_NAMES = ["download-ref", "read-knowledge", "review-draft"] as const;
+const SKILL_NAMES = ["add-problem", "download-ref", "read-knowledge", "review-draft"] as const;
 
 type SkillName = (typeof SKILL_NAMES)[number];
 
@@ -377,7 +377,22 @@ const DOWNLOAD_REF: readonly Clause[] = [
   },
 ];
 
+const ADD_PROBLEM: readonly Clause[] = [
+  { requirement: "triggers on registering a candidate in the Problem Console", in: "description", pattern: /Problem Console/i },
+  { requirement: "registers only a draft", in: "body", pattern: /status[^.]*exactly `draft`/i },
+  { requirement: "never accepts or rejects", in: "body", pattern: /never[^.]*accept[^.]*reject/i },
+  { requirement: "does not write rejection details", in: "body", pattern: /never[^.]*`rejection`/i },
+  { requirement: "limits draft gate readiness", in: "body", pattern: /`missing` or `specified`/i },
+  { requirement: "uses one registration timestamp", in: "body", pattern: /one[^.]*timestamp[^.]*`createdAt`[^.]*`updatedAt`[^.]*`lastActivity\.at`/i },
+  { requirement: "shows an exact preview before writes", in: "body", pattern: /exact preview[^.]*before[^.]*writ/i },
+  { requirement: "requires confirmation after the preview", in: "body", pattern: /confirm[^.]*after[^.]*preview/i },
+  { requirement: "writes no staging files before confirmation", in: "body", pattern: /including stag[^.]*until[^.]*confirm/i },
+  { requirement: "uses the safe publisher", in: "body", pattern: /make problem-publish STAGE=/ },
+  { requirement: "re-previews collisions", in: "body", pattern: /collision[^.]*new ID[^.]*preview[^.]*confirm/i },
+];
+
 const CLAUSES: Readonly<Record<SkillName, readonly Clause[]>> = {
+  "add-problem": ADD_PROBLEM,
   "read-knowledge": READ_KNOWLEDGE,
   "review-draft": REVIEW_DRAFT,
   "download-ref": DOWNLOAD_REF,
@@ -453,7 +468,7 @@ test("skills/ holds exactly the committed local skills", async () => {
   assert.deepEqual(
     entries.map((entry) => entry.name).sort(),
     [...SKILL_NAMES].sort(),
-    "skills/ must hold exactly the three documented local skills",
+    "skills/ must hold exactly the four documented local skills",
   );
   assert.ok(
     entries.every((entry) => entry.isDirectory()),
@@ -551,6 +566,18 @@ const AGENTS_CLAUSES: readonly { requirement: string; pattern: RegExp }[] = [
   {
     requirement: "no replacement site is created",
     pattern: /(replacement site|never invent)/i,
+  },
+  {
+    requirement: "add-problem registers a candidate in the Problem Console",
+    pattern: /`add-problem`[^.]*Problem Console/i,
+  },
+  {
+    requirement: "add-problem is draft-only",
+    pattern: /`draft`/i,
+  },
+  {
+    requirement: "add-problem requires explicit confirmation",
+    pattern: /exact preview[^.]*confirm/i,
   },
 ];
 

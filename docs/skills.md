@@ -15,6 +15,7 @@ Each skill is a single `SKILL.md`. Anything executable belongs in `scripts/` and
 | `read-knowledge` | Answer a research question from the trusted tree: resolve, read the whole returned bundle, then answer. | Original to Research Loop. | `knowledge/**/*.qmd`, reached only through the resolver. | Nothing. It reads and answers. | Answering without resolving; reading part of a bundle; treating `drafts/` or `literature/` as a fallback; choosing between ambiguous candidates for the user. |
 | `review-draft` | Review one untrusted note and recommend one destination and one category; promote it only after the user confirms. | Original to Research Loop. | One user-named file under `drafts/`. | After confirmation only, on a non-`main` branch: one `knowledge/<topic>/*.qmd` page and its parent `## Reading map`. | Editing, moving, splitting, rewriting, or promoting before confirmation; promoting onto `main`; merging its own branch; recommending more than one destination. |
 | `download-ref` | Maintain the external literature corpus: one bibliography entry, the generated indexes, and the version-pinned arXiv source. | Adapted from the read-only `quantum.harness` download-ref skill. Layout and bibliography conventions are kept; every command and path was rewritten for this repository, and the harness's PDF-to-Markdown rendering helpers were deliberately not carried over. | `literature/ref.bib` and the arXiv source it pins. | `literature/ref.bib`, `literature/<method>/INDEX.md`, and the gitignored `.raw/` and `.figures/` trees. | Compiling downloaded TeX; producing `rendered.md` or any full-text mirror; hand-editing a generated `INDEX.md`; copying paper text into `knowledge/`. |
+| `add-problem` | Register one discussed candidate in the Problem Console as a draft after an exact preview and explicit confirmation. | Original to Research Loop. | The user-visible idea discussion and one candidate ID hint; neither is trusted learned knowledge. | After confirmation only: one `problems/Prob-NNN/` draft and its generation record, through `make problem-publish`. | Accepting, rejecting, scoring, or qualifying the candidate; writing before confirmation; overwriting a reserved ID; publishing `problem.json` before the other records. |
 
 ## Commands the skills hand to an agent
 
@@ -26,6 +27,8 @@ Each skill is a single `SKILL.md`. Anything executable belongs in `scripts/` and
 | `make literature-index` | `download-ref` |
 | `make literature-fetch KEY=<citekey>` | `download-ref` |
 | `make literature-sync` | `download-ref` |
+| `make problem-index` | `add-problem`; refreshes generated problem data. |
+| `make problem-publish STAGE="..." ID=Prob-NNN` | `add-problem`; validates a staged draft, publishes the manifest last, and rebuilds the index. |
 
 Skills call these targets rather than the TypeScript underneath them, so the
 CLI stays the single observable interface to the knowledge graph.

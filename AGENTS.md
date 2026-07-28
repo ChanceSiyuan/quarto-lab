@@ -38,6 +38,12 @@ destination and one category; the user confirms; only then does anything move.
 Promotion happens on a non-`main` branch and is presented as a Git diff or pull
 request. Only the user's merge makes a note trusted.
 
+## Adding a problem
+
+Use the `add-problem` skill to register one user-confirmed candidate in the
+Problem Console as `draft`. Write no files before the exact preview is
+confirmed. Qualification is a separate workflow.
+
 ## External literature
 
 Use the `download-ref` skill. Keep external material under `literature/`, never
