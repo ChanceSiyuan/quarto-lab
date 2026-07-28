@@ -200,6 +200,32 @@ test("imports synthetic trials atomically with copied artifacts and snapshots", 
   }
 });
 
+test("stages a problems/Prob-001 tree before pre-rename verification", async () => {
+  const root = await mkdtemp(join(tmpdir(), "autoqec-import-root-"));
+  const { sourceDir, ranges } = await createSyntheticSource();
+  let verificationRan = false;
+  try {
+    await importAutoqecCssDistance({
+      rootDir: root,
+      sourceDir,
+      expectedAttempts: [1, 101, 200],
+      infrastructureRanges: ranges,
+      verifyStagedTree: async ({ rootDir }) => {
+        verificationRan = true;
+        assert.equal(await fileExists(join(rootDir, "problems", "Prob-001", "import-manifest.json")), true);
+        assert.equal(await fileExists(join(root, "problems", "Prob-001")), false);
+        return { ok: true };
+      },
+    });
+
+    assert.equal(verificationRan, true);
+    assert.equal(await fileExists(join(root, "problems", "Prob-001", "import-manifest.json")), true);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+    await rm(sourceDir, { recursive: true, force: true });
+  }
+});
+
 test("validates generated attempts even with injected infrastructure ranges", async () => {
   const root = await mkdtemp(join(tmpdir(), "autoqec-import-root-"));
   const { sourceDir, ranges } = await createSyntheticSource({ invalidPublicContract: true });
