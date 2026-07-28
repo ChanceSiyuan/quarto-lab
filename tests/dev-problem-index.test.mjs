@@ -77,6 +77,35 @@ test("watches the problems/ tree without recursive repo-wide watchers", async (t
   assert.deepEqual(watched.map((item) => item.options), [{ recursive: false }, { recursive: false }]);
 });
 
+test("watches research manifests and attempt manifests", async (t) => {
+  const root = await mkdtemp(join(tmpdir(), "research-loop-dev-watch-"));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  await mkdir(join(root, "problems", "Prob-001", "attempts", "ATT-001"), { recursive: true });
+  await mkdir(join(root, "problems", "Prob-001", "infrastructure", "cohorts"), { recursive: true });
+
+  const watches = [];
+  let changes = 0;
+  const watcher = await watchProblemFiles({
+    rootDir: root,
+    onChange: () => { changes += 1; },
+    watchFn(path, options, callback) {
+      watches.push({ path, options, callback });
+      return { close() {} };
+    },
+  });
+  t.after(() => watcher.close());
+
+  assert.ok(watches.some((item) => item.path === join(root, "problems", "Prob-001")));
+  assert.ok(watches.some((item) => item.path === join(root, "problems", "Prob-001", "attempts")));
+  assert.ok(watches.some((item) => item.path === join(root, "problems", "Prob-001", "attempts", "ATT-001")));
+  assert.ok(watches.some((item) => item.path === join(root, "problems", "Prob-001", "infrastructure", "cohorts")));
+
+  const attemptWatch = watches.find((item) => item.path === join(root, "problems", "Prob-001", "attempts", "ATT-001"));
+  attemptWatch.callback("change", "candidate.py");
+  attemptWatch.callback("change", "attempt.json");
+  assert.equal(changes, 1);
+});
+
 test("reconciles problem directories and rebuilds only for index inputs", async (t) => {
   const root = await mkdtemp(join(tmpdir(), "research-loop-dev-watch-"));
   t.after(() => rm(root, { recursive: true, force: true }));

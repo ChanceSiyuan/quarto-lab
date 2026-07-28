@@ -5,6 +5,14 @@ import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ignoredRoots = new Set([".generated", ".git", "node_modules", ".next", ".vinext", "dist", ".wrangler"]);
+const RESEARCH_INDEX_FILENAMES = new Set([
+  "problem.json",
+  "problem.md",
+  "research.json",
+  "import-manifest.json",
+]);
+const ATTEMPT_INDEX_FILENAMES = new Set(["attempt.json"]);
+const COHORT_INDEX_FILENAMES = new Set(["cohort-001-100.json", "cohort-101-200.json"]);
 
 export async function ensureProblemWatchDir(rootDir) {
   const problemsPath = join(rootDir, "problems");
@@ -16,14 +24,68 @@ export async function watchProblemFiles({ rootDir, onChange, watchFn = watch }) 
   const problemsPath = await ensureProblemWatchDir(rootDir);
   const problemWatchers = new Map();
   let closed = false;
+  let refresh = Promise.resolve();
 
-  function watchProblemDir(name) {
-    const problemPath = join(problemsPath, name);
-    const watcher = watchFn(problemPath, { recursive: false }, (_eventType, filename) => {
+  function registerWatcher(watchers, path, filenames, callback = onChange) {
+    watchers.push(watchFn(path, { recursive: false }, (_eventType, filename) => {
       const changedName = filename?.toString();
-      if (!changedName || changedName === "problem.json" || changedName === "problem.md") onChange();
-    });
-    problemWatchers.set(name, watcher);
+      if (!changedName || filenames.has(changedName)) callback();
+    }));
+  }
+
+  async function directoryEntries(path) {
+    try {
+      return await readdir(path, { withFileTypes: true });
+    } catch (error) {
+      if (error.code === "ENOENT") return null;
+      throw error;
+    }
+  }
+
+  async function watchProblemDir(name) {
+    const problemPath = join(problemsPath, name);
+    if (!(await directoryEntries(problemPath))) return;
+    const watchers = [];
+    watchers.push(watchFn(problemPath, { recursive: false }, (_eventType, filename) => {
+      const changedName = filename?.toString();
+      if (!changedName || RESEARCH_INDEX_FILENAMES.has(changedName)) onChange();
+      if (changedName === "attempts" || changedName === "infrastructure") refreshProblemWatcher(name);
+    }));
+
+    const attemptsPath = join(problemPath, "attempts");
+    const attemptEntries = await directoryEntries(attemptsPath);
+    if (attemptEntries) {
+      registerWatcher(watchers, attemptsPath, new Set(), () => {
+        refreshProblemWatcher(name);
+        onChange();
+      });
+      for (const entry of attemptEntries) {
+        if (entry.isDirectory()) {
+          registerWatcher(watchers, join(attemptsPath, entry.name), ATTEMPT_INDEX_FILENAMES);
+        }
+      }
+    }
+
+    const cohortsPath = join(problemPath, "infrastructure", "cohorts");
+    const cohortEntries = await directoryEntries(cohortsPath);
+    if (cohortEntries) {
+      registerWatcher(watchers, cohortsPath, COHORT_INDEX_FILENAMES);
+    }
+
+    problemWatchers.set(name, watchers);
+  }
+
+  function refreshProblemWatcher(name) {
+    refresh = refresh
+      .then(async () => {
+        const watchers = problemWatchers.get(name);
+        if (watchers) {
+          for (const watcher of watchers) watcher.close();
+          problemWatchers.delete(name);
+        }
+        if (!closed) await watchProblemDir(name);
+      })
+      .catch((error) => console.error(error.message));
   }
 
   async function refreshProblemWatchers() {
@@ -38,19 +100,18 @@ export async function watchProblemFiles({ rootDir, onChange, watchFn = watch }) 
         .map((entry) => entry.name),
     );
 
-    for (const [name, watcher] of problemWatchers) {
+    for (const [name, watchers] of problemWatchers) {
       if (!problemDirs.has(name)) {
-        watcher.close();
+        for (const watcher of watchers) watcher.close();
         problemWatchers.delete(name);
       }
     }
 
     for (const name of problemDirs) {
-      if (!problemWatchers.has(name)) watchProblemDir(name);
+      if (!problemWatchers.has(name)) await watchProblemDir(name);
     }
   }
 
-  let refresh = Promise.resolve();
   const rootWatcher = watchFn(problemsPath, { recursive: false }, (_eventType, filename) => {
     const changedName = filename?.toString();
     if (changedName && ignoredRoots.has(changedName)) return;
@@ -68,7 +129,9 @@ export async function watchProblemFiles({ rootDir, onChange, watchFn = watch }) 
     close() {
       closed = true;
       rootWatcher.close();
-      for (const watcher of problemWatchers.values()) watcher.close();
+      for (const watchers of problemWatchers.values()) {
+        for (const watcher of watchers) watcher.close();
+      }
       problemWatchers.clear();
     },
   };
