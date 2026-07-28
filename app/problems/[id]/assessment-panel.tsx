@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   assessmentStatusCopy,
   formatScoreInterval,
@@ -15,23 +15,59 @@ type ClarificationAlternative = {
   matchKind: string;
 };
 
+type ScoreInterval = {
+  min: number;
+  estimate: number;
+  max: number;
+};
+
+type AssessmentSummary = {
+  verdict?: string;
+  recommendation?: string;
+  confidence?: string;
+  scores?: {
+    researchValue?: ScoreInterval;
+    autoresearchSuitability?: ScoreInterval;
+    combined?: ScoreInterval;
+  };
+  largestBottleneck?: string;
+  reportHref?: string;
+};
+
+type AssessmentRun = {
+  runId?: string;
+  problemId?: string;
+  status?: string;
+  summary?: AssessmentSummary | null;
+  error?: { message?: string } | null;
+};
+
 type AssessmentState = {
   kind: string;
   runId?: string;
   reason?: string;
-  latest?: any;
-  runs?: any[];
+  latest?: AssessmentSummary | null;
+  runs?: AssessmentRun[];
   clarification?: {
     query?: string;
     reason?: string;
     alternatives?: ClarificationAlternative[];
   };
-  [key: string]: any;
+  queuePosition?: number;
+  elapsedSeconds?: number;
+};
+
+type ProblemAssessmentResponse = {
+  activeJob?: AssessmentState | null;
+  stale?: boolean;
+  latest?: AssessmentSummary | null;
+  runs?: AssessmentRun[];
 };
 
 type Props = { problemId: string };
+const EMPTY_ALTERNATIVES: ClarificationAlternative[] = [];
 
-function stateFromProblemResponse(body: any): AssessmentState {
+function stateFromProblemResponse(body: ProblemAssessmentResponse | null): AssessmentState {
   const runs = body?.runs ?? [];
   if (body?.activeJob) {
     const status = body.activeJob.status;
@@ -74,7 +110,7 @@ export function AssessmentPanel({ problemId }: Props) {
   const [busy, setBusy] = useState(false);
   const [selectedAlternativeIndex, setSelectedAlternativeIndex] = useState("0");
 
-  async function refresh() {
+  const refresh = useCallback(async () => {
     try {
       const response = await fetch(
         `/__local/assessments/problems/${encodeURIComponent(problemId)}`,
@@ -84,18 +120,21 @@ export function AssessmentPanel({ problemId }: Props) {
         setState(isLocalAssessmentUnavailable(response) ? { kind: "unavailable" } : serviceFailure(response));
         return;
       }
-      setState(stateFromProblemResponse(await response.json()));
+      setState(stateFromProblemResponse(await response.json() as ProblemAssessmentResponse));
     } catch (error) {
       setState(isLocalAssessmentUnavailable(error) ? { kind: "unavailable" } : {
         kind: "failed",
         reason: error instanceof Error ? error.message : String(error),
       });
     }
-  }
+  }, [problemId]);
 
   useEffect(() => {
-    void refresh();
-  }, [problemId]);
+    const timer = window.setTimeout(() => {
+      void refresh();
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, [refresh]);
 
   useEffect(() => {
     if (!["queued", "running"].includes(state.kind)) return undefined;
@@ -103,11 +142,7 @@ export function AssessmentPanel({ problemId }: Props) {
       void refresh();
     }, 2500);
     return () => window.clearInterval(timer);
-  }, [state.kind, problemId]);
-
-  useEffect(() => {
-    setSelectedAlternativeIndex("0");
-  }, [state.runId]);
+  }, [refresh, state.kind]);
 
   async function start() {
     setBusy(true);
@@ -129,7 +164,7 @@ export function AssessmentPanel({ problemId }: Props) {
     }
   }
 
-  const alternatives = state.clarification?.alternatives ?? [];
+  const alternatives = state.clarification?.alternatives ?? EMPTY_ALTERNATIVES;
   const selectedAlternative = useMemo(
     () => alternatives[Number.parseInt(selectedAlternativeIndex, 10)] ?? alternatives[0],
     [alternatives, selectedAlternativeIndex],
@@ -160,7 +195,7 @@ export function AssessmentPanel({ problemId }: Props) {
   }
 
   const copy = assessmentStatusCopy(state);
-  const latest = state.latest ?? latestAssessmentSummary(state);
+  const latest = state.latest ?? (latestAssessmentSummary(state) as AssessmentSummary | null);
 
   return (
     <section className={`assessment-panel assessment-${state.kind}`} aria-labelledby="assessment-heading">

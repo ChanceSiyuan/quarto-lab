@@ -1,5 +1,5 @@
 import { execFile } from "node:child_process";
-import { existsSync } from "node:fs";
+import { existsSync, type Dirent } from "node:fs";
 import { mkdir, readFile, readdir, rename, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -96,21 +96,27 @@ function isGeneratedBackupPath(candidate: string) {
   return isContained(generatedDir, candidate);
 }
 
-async function removeFixtureStaging(ids: string[]) {
+function filesystemErrorCode(error: unknown) {
+  return typeof error === "object" && error !== null && "code" in error
+    ? (error as { code?: unknown }).code
+    : undefined;
+}
+
+async function removeFixtureStaging() {
   const stagingRoot = path.join(generatedDir, "assessment-runs");
-  let entries = [];
+  let entries: Dirent[] = [];
   try {
     entries = await readdir(stagingRoot, { withFileTypes: true });
-  } catch (error: any) {
-    if (error.code !== "ENOENT") throw error;
+  } catch (error: unknown) {
+    if (filesystemErrorCode(error) !== "ENOENT") throw error;
   }
   for (const entry of entries.filter((item) => item.isDirectory())) {
     const runDir = path.join(stagingRoot, entry.name);
     try {
       const run = JSON.parse(await readFile(path.join(runDir, "run.json"), "utf8"));
       if (fixtureProblemIds.has(run.problemId)) await rm(runDir, { recursive: true, force: true });
-    } catch (error: any) {
-      if (error.code !== "ENOENT") throw error;
+    } catch (error: unknown) {
+      if (filesystemErrorCode(error) !== "ENOENT") throw error;
     }
   }
 }
@@ -152,7 +158,7 @@ export async function teardownLocalAssessmentFixture() {
   const metadata = await readMetadata();
   if (!metadata) return;
 
-  await removeFixtureStaging(problemIds);
+  await removeFixtureStaging();
   for (const problemId of problemIds) {
     await rm(problemDir(problemId), { recursive: true, force: true });
   }
