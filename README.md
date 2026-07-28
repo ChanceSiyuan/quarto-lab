@@ -49,10 +49,12 @@ task with the issue #133 context prefilled; send it, answer one question at a
 time, and only allow file writes after reviewing the proposed manifest,
 Markdown, generation record, and rubric decision.
 
-`npm run pages:build` snapshots the static `Prob-000` example — the homepage, the
-problem page, and its five attempt pages — into `out/` for GitHub Pages at
-`https://nzy1997.github.io/research-loop/`. The snapshot is script-free static
-HTML; it is a showcase of the example, not a deployment of the console.
+`npm run pages:build` snapshots the static `Prob-000` example — the homepage,
+the problem page, its five attempt pages, and the bundled knowledge site — into
+`out/` for GitHub Pages at `https://nzy1997.github.io/research-loop/`. The
+dashboard links to the knowledge copy at `/research-loop/knowledge/` inside
+that artifact. The console snapshot is script-free static HTML; it is a
+showcase of the example, not a deployment of the local console.
 
 ## The trust boundary
 
@@ -105,7 +107,7 @@ make help
 | `make dev` | Install locked dependencies when needed, then serve the Problem Console locally with the problem index watched |
 | `make build` | Regenerate the problem index, validate and render `knowledge/` into `public/knowledge/`, then build the deployable app |
 | `make test` | Lint, both unit suites, the Pages showcase, rendered-output tests, and browser tests |
-| `make pages-build` | Snapshot the static `Prob-000` example into `out/` for GitHub Pages |
+| `make pages-build` | Snapshot the static `Prob-000` example and bundled knowledge site into `out/` for GitHub Pages |
 | `make knowledge-check` | Validate the trusted knowledge tree |
 | `make knowledge-resolve QUERY="triangular TFIM"` | Print the reading bundle for one research question, as JSON |
 | `make knowledge-preview` | Serve the trusted knowledge site locally |

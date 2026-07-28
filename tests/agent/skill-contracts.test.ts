@@ -584,7 +584,7 @@ test("docs/skills.md documents ownership, inputs, writes, and prohibitions", asy
 
   assert.match(
     source,
-    /\/home\/chance\/quantum\.harness\/skills\/download-ref\/SKILL\.md/,
+    /quantum\.harness[^.\n]*download-ref skill/i,
     "docs/skills.md must attribute the adapted download-ref skill to its source",
   );
   assert.match(
@@ -597,6 +597,19 @@ test("docs/skills.md documents ownership, inputs, writes, and prohibitions", asy
     /not copied into this repository/i,
     "docs/skills.md must state that external skills are not copied into this repository",
   );
+});
+
+test("agent-facing docs do not preserve machine-specific checkout paths", async () => {
+  for (const relativePath of [
+    "AGENTS.md",
+    "docs/skills.md",
+    "docs/superpowers/specs/2026-07-27-quarto-knowledge-system-design.md",
+    "docs/superpowers/specs/2026-07-28-dashboard-knowledge-entry-design.md",
+    "docs/superpowers/specs/2026-07-28-literature-cache-integrity-design.md",
+  ]) {
+    const source = await readFile(path.join(REPO_ROOT, ...relativePath.split("/")), "utf8");
+    assert.doesNotMatch(source, /\/(?:Users|home)\/[^`)\s]+/, relativePath);
+  }
 });
 
 test("every command a skill hands an agent is documented in docs/skills.md", async () => {

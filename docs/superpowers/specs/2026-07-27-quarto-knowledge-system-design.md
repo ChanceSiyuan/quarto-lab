@@ -17,8 +17,8 @@ for a human-maintained body of learned knowledge. This design moves the knowledg
 workflow into `research-loop` as a Quarto-native system that humans and agents read
 from the same `.qmd` sources.
 
-The destination repository is `/home/chance/research-loop`. The quantum harness is
-the migration source only.
+The destination repository is the current `research-loop` checkout. The quantum
+harness is the migration source only.
 
 ## Goals
 

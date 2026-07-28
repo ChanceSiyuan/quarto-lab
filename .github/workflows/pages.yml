@@ -25,6 +25,10 @@ jobs:
         with:
           node-version: 24
           cache: npm
+      - name: Setup Quarto
+        uses: quarto-dev/quarto-actions/setup@v2
+        with:
+          version: 1.9.38
       - name: Install dependencies
         run: npm ci
       - name: Build Pages showcase

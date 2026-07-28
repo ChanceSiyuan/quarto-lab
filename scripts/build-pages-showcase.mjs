@@ -7,11 +7,13 @@ import { promisify } from "node:util";
 const root = fileURLToPath(new URL("../", import.meta.url));
 const outDir = join(root, "out");
 const clientDir = join(root, "dist/client");
+const knowledgeDir = join(root, "public/knowledge");
 const execFileAsync = promisify(execFile);
 const vinextBin = fileURLToPath(new URL("../node_modules/.bin/vinext", import.meta.url));
 const basePath = process.env.PAGES_BASE_PATH ?? "/research-loop";
 const siteOrigin = process.env.PAGES_SITE_ORIGIN ?? "https://nzy1997.github.io";
 const siteUrl = `${siteOrigin}${basePath}`;
+const knowledgeTextExtensions = new Set([".css", ".html", ".js", ".json", ".svg", ".txt", ".xml"]);
 
 const routes = [
   "/",
@@ -40,8 +42,14 @@ function canonicalizeStaticRouteLinks(html) {
   );
 }
 
+function rewriteKnowledgeBasePath(text) {
+  return text
+    .replace(/([("'=])\/knowledge\//g, `$1${basePath}/knowledge/`)
+    .replace(/\burl\(\/knowledge\//g, `url(${basePath}/knowledge/`);
+}
+
 function rewriteHtml(html) {
-  return canonicalizeStaticRouteLinks(html
+  return canonicalizeStaticRouteLinks(rewriteKnowledgeBasePath(html
     .replace(/<script\b[\s\S]*?<\/script>/gi, "")
     .replace(/<link\b[^>]*rel="modulepreload"[^>]*>/gi, "")
     .replace(
@@ -61,7 +69,7 @@ function rewriteHtml(html) {
     .replace(/="\/assets\//g, `="${basePath}/assets/`)
     .replace(/url\(\/assets\//g, `url(${basePath}/assets/`)
     .replace(/\s+href="\/problems\/([^"]*)"/g, ` href="${basePath}/problems/$1"`)
-    .replace(/\s+href="\/"/g, ` href="${basePath}/"`));
+    .replace(/\s+href="\/"/g, ` href="${basePath}/"`)));
 }
 
 async function listClientFiles(dir) {
@@ -103,6 +111,28 @@ async function copyStaticClientAssets() {
   }
 }
 
+async function rewriteCopiedKnowledgeAssets(dir) {
+  const entries = await readdir(dir, { withFileTypes: true });
+  for (const entry of entries) {
+    const target = join(dir, entry.name);
+    if (entry.isDirectory()) {
+      await rewriteCopiedKnowledgeAssets(target);
+      continue;
+    }
+
+    if (!knowledgeTextExtensions.has(extname(target))) {
+      continue;
+    }
+
+    await writeFile(target, rewriteKnowledgeBasePath(await readFile(target, "utf8")));
+  }
+}
+
+async function copyKnowledgeSite() {
+  await cp(knowledgeDir, join(outDir, "knowledge"), { recursive: true });
+  await rewriteCopiedKnowledgeAssets(join(outDir, "knowledge"));
+}
+
 async function renderRoute(worker, route) {
   const response = await worker.fetch(
     new Request(`http://localhost${route}`, {
@@ -135,6 +165,11 @@ async function buildShowcaseApp() {
     ],
     { cwd: root, maxBuffer: 10 * 1024 * 1024 },
   );
+  await execFileAsync(
+    process.execPath,
+    ["--import", "tsx", "scripts/knowledge.ts", "build"],
+    { cwd: root, maxBuffer: 10 * 1024 * 1024 },
+  );
   await execFileAsync(vinextBin, ["build"], {
     cwd: root,
     env: { ...process.env, WRANGLER_LOG_PATH: ".wrangler/wrangler.log" },
@@ -147,6 +182,7 @@ async function main() {
   await rm(outDir, { recursive: true, force: true });
   await mkdir(outDir, { recursive: true });
   await copyStaticClientAssets();
+  await copyKnowledgeSite();
   await writeFile(join(outDir, ".nojekyll"), "");
 
   const workerUrl = pathToFileURL(join(root, "dist/server/index.js"));

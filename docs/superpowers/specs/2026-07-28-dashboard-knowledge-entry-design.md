@@ -53,9 +53,12 @@ do not conflict with our markup, and our changes do not complicate their diffs.
 Styling lives in the new component's own contiguous block appended to
 `app/globals.css`, for the same reason.
 
-The link is a plain anchor to `/knowledge/`. It leaves the app router for a
-static site, which is what a full page navigation is for; no client-side routing
-is involved.
+The link is a plain anchor to `/knowledge/` in the application source. It leaves
+the app router for a static site, which is what a full page navigation is for;
+no client-side routing is involved. The GitHub Pages showcase is the one
+exception at artifact time: `scripts/build-pages-showcase.mjs` rewrites the
+snapshot link to the repository base path, `/research-loop/knowledge/`, and
+copies the rendered knowledge site into `out/knowledge/`.
 
 ### Knowledge → dashboard
 

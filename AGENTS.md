@@ -60,5 +60,5 @@ See `docs/skills.md` for what each skill owns, reads, and may write.
 
 ## Implementation guardrails
 
-- Implement only in `/home/chance/research-loop`. Treat `/home/chance/quantum.harness` as read-only migration input.
+- Implement only in the current `research-loop` checkout. Treat any external `quantum.harness` checkout as read-only migration input.
 - Use test-first commits. Do not combine unrelated tasks or silently repair unrelated repository state.

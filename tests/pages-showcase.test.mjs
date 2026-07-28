@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { access, readdir, readFile, stat } from "node:fs/promises";
-import { join } from "node:path";
+import { join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import test from "node:test";
 
@@ -42,6 +42,8 @@ test("pages build indexes only the public showcase root", () => {
 test("pages showcase writes static route files", async () => {
   for (const routeFile of [
     "index.html",
+    "knowledge/index.html",
+    "knowledge/search.json",
     "problems/Prob-000/index.html",
     "problems/Prob-000/attempts/ATT-001/index.html",
     "problems/Prob-000/attempts/ATT-002/index.html",
@@ -65,6 +67,17 @@ test("pages showcase rewrites links for the repository base path", async () => {
   assert.doesNotMatch(html, /<script\b/i);
 });
 
+test("pages showcase links to the bundled knowledge site under the repository base path", async () => {
+  const homepage = await readFile(join(out, "index.html"), "utf8");
+  assert.match(homepage, /<a class="topbar-link" href="\/research-loop\/knowledge\/">Knowledge <span aria-hidden="true">→<\/span><\/a>/);
+  assert.doesNotMatch(homepage, /href="\/knowledge\/"/);
+
+  const knowledge = await readFile(join(out, "knowledge", "index.html"), "utf8");
+  assert.match(knowledge, /Research Loop Knowledge/);
+  assert.doesNotMatch(knowledge, /\b(?:href|src)="\/knowledge\//);
+  assert.doesNotMatch(knowledge, /url\(\/knowledge\//);
+});
+
 test("pages showcase preserves local controls as disabled visual affordances", async () => {
   const html = await readFile(join(out, "index.html"), "utf8");
 
@@ -83,9 +96,13 @@ test("pages showcase copies client assets", async () => {
 
 test("pages showcase artifact contains no local agent launcher content", async () => {
   const files = await collectFiles(out);
-  assert.equal(files.some((file) => file.endsWith(".js")), false);
+  const scriptFilesOutsideKnowledgeSite = files.filter((file) => {
+    const artifactPath = relative(out, file);
+    return artifactPath.endsWith(".js") && !artifactPath.startsWith("knowledge/");
+  });
+  assert.deepEqual(scriptFilesOutsideKnowledgeSite, []);
 
-  const textFiles = files.filter((file) => /\.(?:html|css|svg|txt|json)$/.test(file));
+  const textFiles = files.filter((file) => /\.(?:css|html|js|json|svg|txt)$/.test(file));
   for (const file of textFiles) {
     const text = await readFile(file, "utf8");
     assert.doesNotMatch(text, /codex:\/\//i, file);
@@ -95,5 +112,7 @@ test("pages showcase artifact contains no local agent launcher content", async (
     assert.doesNotMatch(text, /<a class="primary-action" href=/, file);
     assert.doesNotMatch(text, /\b(?:href|src|data-rsc-css-href)="\/assets\//, file);
     assert.doesNotMatch(text, /url\(\/assets\//, file);
+    assert.doesNotMatch(text, /\b(?:href|src)="\/knowledge\//, file);
+    assert.doesNotMatch(text, /url\(\/knowledge\//, file);
   }
 });
