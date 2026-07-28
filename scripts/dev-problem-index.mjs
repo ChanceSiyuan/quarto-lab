@@ -1,8 +1,11 @@
 import { spawn } from "node:child_process";
+import { randomBytes } from "node:crypto";
 import { watch } from "node:fs";
 import { mkdir, readdir } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+
+import { startAssessmentService } from "./local-assessment-service.mjs";
 
 const ignoredRoots = new Set([".generated", ".git", "node_modules", ".next", ".vinext", "dist", ".wrangler"]);
 const RESEARCH_INDEX_FILENAMES = new Set([
@@ -152,36 +155,76 @@ export function runIndexBuild(rootDir, spawnFn = spawn) {
   });
 }
 
-export async function main({ rootDir = process.cwd() } = {}) {
+export async function main({
+  rootDir = process.cwd(),
+  spawnFn = spawn,
+  runIndexBuildFn = runIndexBuild,
+  watchProblemFilesFn = watchProblemFiles,
+  startAssessmentServiceFn = startAssessmentService,
+  vinextDevArgs = process.argv.slice(2),
+} = {}) {
   const resolvedRootDir = resolve(rootDir);
 
-  await runIndexBuild(resolvedRootDir);
+  await runIndexBuildFn(resolvedRootDir);
+  const assessmentToken = randomBytes(16).toString("hex");
+  const assessmentService = await startAssessmentServiceFn({
+    rootDir: resolvedRootDir,
+    token: assessmentToken,
+  });
 
   let timer;
-  const watcher = await watchProblemFiles({
-    rootDir: resolvedRootDir,
-    onChange() {
-      clearTimeout(timer);
-      timer = setTimeout(() => {
-        runIndexBuild(resolvedRootDir).catch((error) => console.error(error.message));
-      }, 150);
-    },
-  });
+  let watcher;
+  let cleanupPromise;
+  const cleanup = () => {
+    cleanupPromise ??= (async () => {
+      try {
+        watcher?.close();
+      } finally {
+        clearTimeout(timer);
+        await assessmentService.close();
+      }
+    })();
+    return cleanupPromise;
+  };
 
-  const child = spawn("vinext", ["dev"], {
-    cwd: resolvedRootDir,
-    env: { ...process.env, WRANGLER_LOG_PATH: ".wrangler/wrangler.log" },
-    stdio: "inherit",
-  });
+  let child;
+  try {
+    watcher = await watchProblemFilesFn({
+      rootDir: resolvedRootDir,
+      onChange() {
+        clearTimeout(timer);
+        timer = setTimeout(() => {
+          runIndexBuildFn(resolvedRootDir).catch((error) => console.error(error.message));
+        }, 150);
+      },
+    });
+
+    child = spawnFn("vinext", ["dev", ...vinextDevArgs], {
+      cwd: resolvedRootDir,
+      env: {
+        ...process.env,
+        WRANGLER_LOG_PATH: ".wrangler/wrangler.log",
+        LOCAL_ASSESSMENT_SERVICE_URL: assessmentService.url,
+        LOCAL_ASSESSMENT_PROXY_TOKEN: assessmentService.token ?? assessmentToken,
+      },
+      stdio: "inherit",
+    });
+  } catch (error) {
+    await cleanup();
+    throw error;
+  }
 
   for (const signal of ["SIGINT", "SIGTERM"]) {
     process.on(signal, () => child.kill(signal));
   }
 
-  child.on("exit", (code, signal) => {
-    watcher.close();
-    clearTimeout(timer);
+  child.on("exit", async (code, signal) => {
+    await cleanup();
     process.exitCode = code ?? (signal ? 1 : 0);
+  });
+  child.on("error", async () => {
+    await cleanup();
+    process.exitCode = 1;
   });
 }
 

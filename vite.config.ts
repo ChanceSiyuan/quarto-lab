@@ -42,11 +42,25 @@ export default defineConfig(async () => {
 
   // Wrangler snapshots its log path while the Cloudflare plugin is imported.
   const { cloudflare } = await import("@cloudflare/vite-plugin");
+  const localAssessmentTarget = process.env.LOCAL_ASSESSMENT_SERVICE_URL;
+  const localAssessmentToken = process.env.LOCAL_ASSESSMENT_PROXY_TOKEN;
+  const server = {
+    ...(isCodexSeatbeltSandbox ? { watch: { useFsEvents: false, usePolling: true } } : {}),
+    ...(localAssessmentTarget && localAssessmentToken
+      ? {
+          proxy: {
+            "/__local/assessments": {
+              target: localAssessmentTarget,
+              changeOrigin: false,
+              headers: { "x-local-assessment-token": localAssessmentToken },
+            },
+          },
+        }
+      : {}),
+  };
 
   return {
-    server: isCodexSeatbeltSandbox
-      ? { watch: { useFsEvents: false, usePolling: true } }
-      : undefined,
+    server: Object.keys(server).length ? server : undefined,
     plugins: [
       vinext(),
       sites(),
