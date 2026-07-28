@@ -1,10 +1,10 @@
 import assert from "node:assert/strict";
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
 
-import { buildProblemIndex, deriveNextProblemId } from "../lib/problems/indexer.mjs";
+import { buildProblemIndex, deriveNextProblemId, scanReservedProblemIds } from "../lib/problems/indexer.mjs";
 import { REQUIRED_PROBLEM_MD_HEADINGS } from "../lib/problems/schema.mjs";
 
 const completeProblemMd = REQUIRED_PROBLEM_MD_HEADINGS
@@ -109,6 +109,17 @@ test("reserves IDs from damaged problem directories without indexing them", asyn
   assert.match(index.diagnostics[0].message, /Invalid JSON/);
 });
 
+test("reserves IDs from non-directory problem entries without indexing them", async () => {
+  const root = await makeRoot();
+  await writeFile(join(root, "problems", "Prob-001"), "occupied by a damaged local problem artifact");
+
+  const index = await buildProblemIndex({ rootDir: root });
+
+  assert.deepEqual(index.problems, []);
+  assert.equal(index.nextProblemId, "Prob-002");
+  assert.deepEqual(index.diagnostics, []);
+});
+
 test("reserves parseable manifest IDs even when the record is invalid", async () => {
   const root = await makeRoot();
   await writeProblem(root, "candidate-draft", {
@@ -146,4 +157,19 @@ test("indexes only the selected problem root and honors reserved IDs", async () 
   assert.deepEqual(index.problems.map((problem) => problem.id), ["Prob-000"]);
   assert.equal(index.nextProblemId, "Prob-010");
   assert.deepEqual(index.diagnostics, []);
+});
+
+test("scans reserved problem IDs from damaged directories and ID-shaped entries", async () => {
+  const root = await makeRoot();
+  await writeProblem(root, "Prob-002");
+  await mkdir(join(root, "problems", "draft-with-manifest-id"), { recursive: true });
+  await writeFile(join(root, "problems", "draft-with-manifest-id", "problem.json"), JSON.stringify({ id: "Prob-007" }));
+  await writeFile(join(root, "problems", "Prob-001"), "occupied file");
+  await writeFile(join(root, "target"), "occupied symlink target");
+  await symlink(join(root, "target"), join(root, "problems", "Prob-003"));
+
+  assert.deepEqual(await scanReservedProblemIds({
+    rootDir: root,
+    reservedIds: ["Prob-000", "invalid", "Prob-1", "Prob-001"],
+  }), ["Prob-000", "Prob-001", "Prob-002", "Prob-003", "Prob-007"]);
 });
