@@ -101,7 +101,7 @@ test("static example formatting is stable for route rendering", () => {
   assert.equal(formatSpeedup(118.2), "118.2x");
   assert.equal(
     getStaticResearchArtifactPath("QMB-001", "ATT-003", "LOG.md"),
-    "problems/QMB-001/attempts/ATT-003/LOG.md",
+    "examples/showcase/problems/QMB-001/attempts/ATT-003/LOG.md",
   );
 });
 
@@ -119,7 +119,7 @@ test("attempt dossier includes audit metadata and display sections", () => {
     "Decision",
   ]);
   assert.deepEqual(dossier.artifacts, [
-    "problems/QMB-001/attempts/ATT-004/attempt.json",
-    "problems/QMB-001/attempts/ATT-004/LOG.md",
+    "examples/showcase/problems/QMB-001/attempts/ATT-004/attempt.json",
+    "examples/showcase/problems/QMB-001/attempts/ATT-004/LOG.md",
   ]);
 });
