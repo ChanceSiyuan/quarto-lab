@@ -1,0 +1,14 @@
+---
+title: Verified transfer-matrix code
+description: The transfer-matrix implementation checked against the exact solution.
+categories: [codes]
+---
+
+The implementation reproduces the closed form derived in
+[the proof](proof.qmd?exact=1#duality).
+
+```python
+def free_energy(beta: float) -> float:
+    """Exact free energy per site. <script>alert(1)</script> is inert here."""
+    return -beta
+```

@@ -134,6 +134,9 @@ export function ProblemConsole({
             <strong>Research Loop</strong>
             <span>Problem Console</span>
           </div>
+          <nav className="console-nav" aria-label="Primary">
+            <a className="topbar-link" href="/knowledge/">Knowledge <span aria-hidden="true">→</span></a>
+          </nav>
         </div>
         <div className="mode-indicator">
           <span>Local mode</span>

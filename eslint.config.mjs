@@ -13,6 +13,26 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
   ]),
+  // Generated output. ESLint 9's flat config does not read `.gitignore`, so
+  // every directory a build writes has to be named here or `eslint .` lints
+  // Quarto's bundled Bootstrap, Fuse, and Popper instead of this repository's
+  // source. All of these are gitignored and reproducible: `dist/` is the
+  // Worker bundle, `public/knowledge/` is the rendered knowledge site,
+  // `.generated/` is the problem index the console reads, `drafts/.preview/`
+  // is the untrusted-draft preview, `work/` holds render workspaces, and the
+  // rest are test and Wrangler artefacts.
+  globalIgnores([
+    "dist/**",
+    "public/knowledge/**",
+    ".generated/**",
+    "drafts/.preview/**",
+    "drafts/.quarto/**",
+    "work/**",
+    ".wrangler/**",
+    "playwright-report/**",
+    "test-results/**",
+    "tests/e2e/.screenshots-actual/**",
+  ]),
 ]);
 
 export default eslintConfig;

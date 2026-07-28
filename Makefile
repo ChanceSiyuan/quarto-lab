@@ -1,8 +1,90 @@
 .DEFAULT_GOAL := dev
 
-.PHONY: dev
+# Every target delegates to a package script, which delegates to the CLI in
+# scripts/, which calls the public interfaces of lib/. The Makefile is the
+# stable human- and agent-facing surface; it holds no knowledge-system logic of
+# its own, so a rule can never disagree with the code it fronts.
+#
+# QUERY, FILE, and KEY are refused when empty rather than passed through as an
+# empty string: exit 2 means "the invocation was wrong", the same code
+# scripts/draft-preview.ts uses for that failure.
+
+.PHONY: help dev build test pages-build \
+	knowledge-check knowledge-resolve knowledge-preview \
+	draft-preview \
+	literature-index literature-fetch literature-sync \
+	migration-verify
+
+help:
+	@echo 'Research Loop'
+	@echo
+	@echo '  make dev                                        install if needed, then serve the problem console locally'
+	@echo '  make build                                      index problems/, render knowledge/ into public/knowledge/, then build the app'
+	@echo '  make test                                       lint, both unit suites, pages showcase, rendered-output tests, browser tests'
+	@echo '  make pages-build                                snapshot the static Prob-000 example into out/ for GitHub Pages'
+	@echo
+	@echo '  make knowledge-check                            validate the trusted knowledge tree'
+	@echo '  make knowledge-resolve QUERY="triangular TFIM"  print the reading bundle for one research question'
+	@echo '  make knowledge-preview                          serve the trusted knowledge site locally'
+	@echo
+	@echo '  make draft-preview FILE=drafts/path.md          render one untrusted draft note locally'
+	@echo
+	@echo '  make literature-index                           regenerate every literature/<method>/INDEX.md'
+	@echo '  make literature-fetch KEY=citekey               fetch the pinned arXiv source of one reference'
+	@echo '  make literature-sync                            fetch the pinned source of every arXiv reference'
+	@echo
+	@echo '  make migration-verify                           re-check the imported harness cards against the manifest'
+
 dev: node_modules/.package-lock.json
 	npm run dev
+
+build: node_modules/.package-lock.json
+	npm run build
+
+test: node_modules/.package-lock.json
+	npm test
+
+# The GitHub Pages showcase snapshots `dist/`, so it needs a build first.
+pages-build: build
+	npm run pages:build
+
+knowledge-check: node_modules/.package-lock.json
+	npm run knowledge:check
+
+# Silent, and with the recipe unechoed: stdout is one JSON document that a
+# caller may pipe straight into a parser.
+knowledge-resolve: node_modules/.package-lock.json
+	@if [ -z "$(QUERY)" ]; then \
+		echo 'usage: make knowledge-resolve QUERY="<the research question>"' >&2; \
+		exit 2; \
+	fi
+	@npm run --silent knowledge:resolve -- --query "$(QUERY)"
+
+knowledge-preview: node_modules/.package-lock.json
+	npm run knowledge:preview
+
+draft-preview: node_modules/.package-lock.json
+	@if [ -z "$(FILE)" ]; then \
+		echo 'usage: make draft-preview FILE=drafts/<note>.md' >&2; \
+		exit 2; \
+	fi
+	npm run draft:preview -- --file "$(FILE)"
+
+literature-index: node_modules/.package-lock.json
+	npm run literature:index
+
+literature-fetch: node_modules/.package-lock.json
+	@if [ -z "$(KEY)" ]; then \
+		echo 'usage: make literature-fetch KEY=<citekey>' >&2; \
+		exit 2; \
+	fi
+	npm run literature:fetch -- --key "$(KEY)"
+
+literature-sync: node_modules/.package-lock.json
+	npm run literature:sync
+
+migration-verify: node_modules/.package-lock.json
+	npm run migration:verify
 
 node_modules/.package-lock.json: package-lock.json
 	npm ci
