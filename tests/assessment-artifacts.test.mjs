@@ -1,0 +1,72 @@
+import assert from "node:assert/strict";
+import { mkdtemp, mkdir, readFile, stat } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import test from "node:test";
+
+import {
+  RUN_ID_PATTERN,
+  createRunId,
+  resolveProblemDir,
+  resolveRunDir,
+} from "../lib/assessments/paths.mjs";
+import { createArtifactStore } from "../lib/assessments/artifact-store.mjs";
+
+test("creates sortable run IDs with fixed timestamp and random suffix", () => {
+  const runId = createRunId(new Date("2026-07-28T01:02:03.000Z"), () => Buffer.from("a1b2c3", "hex"));
+  assert.equal(runId, "20260728T010203Z-a1b2c3");
+  assert.match(runId, RUN_ID_PATTERN);
+});
+
+test("rejects traversal in problem and run IDs", async () => {
+  const root = await mkdtemp(join(tmpdir(), "assessment-paths-"));
+  await assert.rejects(() => resolveProblemDir(root, "../Prob-001"), /Invalid problem ID/);
+  await assert.rejects(() => resolveRunDir(root, "Prob-001", "../x"), /Invalid run ID/);
+});
+
+test("publishes completed artifacts atomically under the problem", async () => {
+  const root = await mkdtemp(join(tmpdir(), "assessment-store-"));
+  await mkdir(join(root, "problems", "Prob-001"), { recursive: true });
+  const store = createArtifactStore({
+    rootDir: root,
+    now: () => new Date("2026-07-28T01:02:03.000Z"),
+    randomBytes: () => Buffer.from("a1b2c3", "hex"),
+  });
+  const run = await store.createAcceptedRun({ problemId: "Prob-001" });
+  await store.appendEvent(run, { type: "stage", stage: "running" });
+  const terminal = await store.writeTerminalArtifacts(run, {
+    status: "completed",
+    input: { schemaVersion: 1, problemId: "Prob-001" },
+    assessment: { accepted: true },
+    reportHtml: "<!doctype html><title>Report</title>",
+    stderr: "",
+  });
+
+  assert.equal(terminal.status, "completed");
+  const finalDir = join(root, "problems", "Prob-001", "assessments", "20260728T010203Z-a1b2c3");
+  assert.equal((await stat(finalDir)).isDirectory(), true);
+  assert.deepEqual(JSON.parse(await readFile(join(finalDir, "run.json"), "utf8")).status, "completed");
+  assert.equal(await readFile(join(finalDir, "report.html"), "utf8"), "<!doctype html><title>Report</title>");
+});
+
+test("writes failed runs without assessment or report files", async () => {
+  const root = await mkdtemp(join(tmpdir(), "assessment-store-"));
+  await mkdir(join(root, "problems", "Prob-001"), { recursive: true });
+  const store = createArtifactStore({
+    rootDir: root,
+    now: () => new Date("2026-07-28T02:03:04.000Z"),
+    randomBytes: () => Buffer.from("d4e5f6", "hex"),
+  });
+  const run = await store.createAcceptedRun({ problemId: "Prob-001" });
+  await store.writeTerminalArtifacts(run, {
+    status: "failed",
+    input: { schemaVersion: 1, problemId: "Prob-001" },
+    error: { code: "CODEX_EXIT", message: "Codex exited with status 1." },
+    stderr: "diagnostic text",
+  });
+
+  const finalDir = join(root, "problems", "Prob-001", "assessments", "20260728T020304Z-d4e5f6");
+  await assert.rejects(() => readFile(join(finalDir, "assessment.json"), "utf8"), /ENOENT/);
+  await assert.rejects(() => readFile(join(finalDir, "report.html"), "utf8"), /ENOENT/);
+  assert.match(await readFile(join(finalDir, "stderr.log"), "utf8"), /diagnostic text/);
+});
