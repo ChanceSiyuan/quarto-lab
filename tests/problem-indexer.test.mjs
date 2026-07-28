@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
 
-import { buildProblemIndex, deriveNextProblemId } from "../lib/problems/indexer.mjs";
+import { buildProblemIndex, deriveNextProblemId, scanReservedProblemIds } from "../lib/problems/indexer.mjs";
 import { REQUIRED_PROBLEM_MD_HEADINGS } from "../lib/problems/schema.mjs";
 
 const completeProblemMd = REQUIRED_PROBLEM_MD_HEADINGS
@@ -146,4 +146,17 @@ test("indexes only the selected problem root and honors reserved IDs", async () 
   assert.deepEqual(index.problems.map((problem) => problem.id), ["Prob-000"]);
   assert.equal(index.nextProblemId, "Prob-010");
   assert.deepEqual(index.diagnostics, []);
+});
+
+test("scans explicit, damaged-directory, and parseable manifest reserved IDs", async () => {
+  const root = await makeRoot();
+  const damaged = join(root, "problems", "Prob-001");
+  await mkdir(damaged, { recursive: true });
+  await writeFile(join(damaged, "problem.json"), "{ broken json");
+  await writeProblem(root, "candidate-draft", { id: "Prob-007", status: "not-a-status" });
+
+  assert.deepEqual(await scanReservedProblemIds({
+    rootDir: root,
+    reservedIds: ["Prob-000", "Prob-007"],
+  }), ["Prob-000", "Prob-001", "Prob-007"]);
 });
