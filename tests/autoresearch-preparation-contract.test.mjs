@@ -125,6 +125,17 @@ test("preparation envelope accepts only one complete prepared or needs_input out
   assertInvalid(() => validatePreparationEnvelope({ outcome: "needs_input", summary: "Need input", manifestPath: null, question: { id: "Bad", prompt: "", answerType: "choice", choices: ["one"] } }), ["question.id", "question.prompt", "question.choices"]);
 });
 
+test("preparation envelope requires own fields rather than accepting inherited values", () => {
+  const inheritedEnvelope = Object.create({
+    outcome: "prepared",
+    summary: "Ready",
+    manifestPath: "infrastructure.json",
+    question: null,
+  });
+
+  assertInvalid(() => validatePreparationEnvelope(inheritedEnvelope), ["envelope.outcome", "envelope.summary", "envelope.manifestPath", "envelope.question"]);
+});
+
 test("infrastructure manifest returns a frozen normalized clone only when its complete host contract is valid", () => {
   const manifest = validManifest();
   const result = validateInfrastructureManifest(manifest, { problemId: "Prob-007", infrastructureId: "INF-001" });

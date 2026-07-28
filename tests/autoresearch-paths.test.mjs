@@ -24,11 +24,22 @@ test("autoresearch paths derive revisions beneath the named problem infrastructu
   const root = await mkdtemp(join(tmpdir(), "autoresearch-paths-"));
   t.after(() => rm(root, { recursive: true, force: true }));
   const paths = createAutoresearchPaths(root);
+  const canonicalRoot = await realpath(root);
 
-  assert.equal(paths.revisionRoot("Prob-007", "INF-004"), join(root, "problems", "Prob-007", "infrastructure", "INF-004"));
+  assert.equal(paths.revisionRoot("Prob-007", "INF-004"), join(canonicalRoot, "problems", "Prob-007", "infrastructure", "INF-004"));
   assert.throws(() => paths.revisionRoot("../escape", "INF-001"), /problem ID/i);
   assert.throws(() => paths.revisionRoot("Prob-007", "../../escape"), /infrastructure ID/i);
   assert.throws(() => assertContained(join(root, "outside"), paths.jobsRoot), /outside/i);
+});
+
+test("autoresearch paths reject a configured root that is a symlink", async (t) => {
+  const realRoot = await mkdtemp(join(tmpdir(), "autoresearch-paths-"));
+  const linkParent = await mkdtemp(join(tmpdir(), "autoresearch-links-"));
+  const linkedRoot = join(linkParent, "linked-root");
+  t.after(() => Promise.all([rm(realRoot, { recursive: true, force: true }), rm(linkParent, { recursive: true, force: true })]));
+  await symlink(realRoot, linkedRoot);
+
+  assert.throws(() => createAutoresearchPaths(linkedRoot), /symlink/i);
 });
 
 test("canonical containment rejects a nominal job path that crosses a symlink", async (t) => {
@@ -45,7 +56,7 @@ test("canonical containment rejects a nominal job path that crosses a symlink", 
     /outside|symlink/i,
   );
   assert.equal(typeof await realpath(outside), "string");
-  assert.equal(paths.jobsRoot, jobs);
+  assert.equal(paths.jobsRoot, join(await realpath(root), "jobs"));
 });
 
 test("containment rejects symlinks even when their destination remains inside the root", async (t) => {
