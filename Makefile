@@ -11,7 +11,7 @@
 
 .PHONY: help dev build test pages-build \
 	knowledge-check knowledge-resolve knowledge-preview \
-	draft-preview \
+	draft-preview drafts-preview \
 	literature-index literature-fetch literature-sync \
 	migration-verify zotero-plugin-test zotero-plugin
 
@@ -28,6 +28,7 @@ help:
 	@echo '  make knowledge-preview                          serve the trusted knowledge site locally'
 	@echo
 	@echo '  make draft-preview FILE=drafts/path.md          render one untrusted draft note locally'
+	@echo '  make drafts-preview                             preview the untrusted drafts workspace locally'
 	@echo
 	@echo '  make literature-index                           regenerate every literature/<method>/INDEX.md'
 	@echo '  make literature-fetch KEY=citekey               fetch the pinned arXiv source of one reference'
@@ -72,6 +73,9 @@ draft-preview: node_modules/.package-lock.json
 		exit 2; \
 	fi
 	npm run draft:preview -- --file "$(FILE)"
+
+drafts-preview: node_modules/.package-lock.json
+	quarto preview drafts --no-execute
 
 literature-index: node_modules/.package-lock.json
 	npm run literature:index

@@ -2,36 +2,4 @@
 set -eu
 
 repo_root=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
-
-usage() {
-  printf '%s\n' \
-    'Research Loop QLab compatibility commands:' \
-    '  ./qlab literature index' \
-    '  ./qlab literature fetch <citekey>' \
-    '  ./qlab literature sync'
-}
-
-if [ "${1:-}" != "literature" ]; then
-  usage >&2
-  exit 2
-fi
-
-case "${2:-}" in
-  index)
-    exec npm --prefix "$repo_root" run literature:index
-    ;;
-  fetch)
-    if [ "$#" -ne 3 ] || [ -z "${3:-}" ]; then
-      usage >&2
-      exit 2
-    fi
-    exec npm --prefix "$repo_root" run literature:fetch -- --key "$3"
-    ;;
-  sync)
-    exec npm --prefix "$repo_root" run literature:sync
-    ;;
-  *)
-    usage >&2
-    exit 2
-    ;;
-esac
+exec node --import tsx "$repo_root/scripts/qlab.ts" "$@"

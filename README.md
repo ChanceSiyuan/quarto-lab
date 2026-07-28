@@ -132,9 +132,14 @@ make help
 | `make knowledge-resolve QUERY="triangular TFIM"` | Print the reading bundle for one research question, as JSON |
 | `make knowledge-preview` | Serve the trusted knowledge site locally |
 | `make draft-preview FILE=drafts/note.md` | Render exactly one untrusted draft note locally |
+| `make drafts-preview` | Preview the whole untrusted drafts workspace locally with execution disabled |
 | `make literature-index` | Regenerate every `literature/<method>/INDEX.md` from `ref.bib` |
 | `make literature-fetch KEY=citekey` | Fetch one reference's version-pinned arXiv source |
 | `make literature-sync` | Fetch the pinned source of every arXiv reference |
+| `./qlab literature connect zotero` | Create the local Zotero collection mapping and metadata snapshot |
+| `./qlab literature import zotero` | Refresh Zotero metadata without propagating deletions |
+| `./qlab literature materialize <item-key>` | Fetch verified PDF and LaTeX evidence for one Zotero record |
+| `./qlab literature verify <item-key>` | Verify one materialized record against its manifest |
 | `make migration-verify` | Re-check the imported harness cards against their manifest |
 | `make zotero-plugin-test` | Type-check and test the standalone Zotero integration |
 | `make zotero-plugin` | Test and build the installable Research Loop Zotero XPI |

@@ -13,7 +13,7 @@ import {
   type ZoteroItem,
 } from "../../lib/literature/zotero.js";
 
-async function literatureRoot(t: TestContext): Promise<string> {
+async function makeLiteratureRoot(t: TestContext): Promise<string> {
   const root = await mkdtemp(path.join(tmpdir(), "research-loop-zotero-"));
   t.after(async () => rm(root, { recursive: true, force: true }));
   const literature = path.join(root, "literature");
@@ -47,7 +47,7 @@ function item(key = "ITEM0001", membership: string[] = ["C-DYN", "C-ALG"]): Zote
 }
 
 test("connect creates one collection-owned record and leaves ref.bib untouched", async (t) => {
-  const literatureRoot = await literatureRoot(t);
+  const literatureRoot = await makeLiteratureRoot(t);
   const report = await importZoteroSnapshot({
     literatureRoot,
     collections: collections(),
@@ -88,7 +88,7 @@ test("connect creates one collection-owned record and leaves ref.bib untouched",
 });
 
 test("nested Zotero collections preserve hierarchy and inherit the root topic", async (t) => {
-  const literatureRoot = await literatureRoot(t);
+  const literatureRoot = await makeLiteratureRoot(t);
   const report = await importZoteroSnapshot({
     literatureRoot,
     collections: collections(),
@@ -113,7 +113,7 @@ test("nested Zotero collections preserve hierarchy and inherit the root topic", 
 });
 
 test("refresh is idempotent, preserves materialized files, and does not propagate Zotero deletion", async (t) => {
-  const literatureRoot = await literatureRoot(t);
+  const literatureRoot = await makeLiteratureRoot(t);
   const first = await importZoteroSnapshot({
     literatureRoot,
     collections: collections(),
@@ -144,7 +144,7 @@ test("refresh is idempotent, preserves materialized files, and does not propagat
 });
 
 test("duplicate DOI candidates remain distinct Zotero identities", async (t) => {
-  const literatureRoot = await literatureRoot(t);
+  const literatureRoot = await makeLiteratureRoot(t);
   const report = await importZoteroSnapshot({
     literatureRoot,
     collections: collections(),
@@ -161,7 +161,7 @@ test("duplicate DOI candidates remain distinct Zotero identities", async (t) => 
 });
 
 test("import refuses to invent zotero.yml before connect", async (t) => {
-  const literatureRoot = await literatureRoot(t);
+  const literatureRoot = await makeLiteratureRoot(t);
   await assert.rejects(
     importZoteroSnapshot({
       literatureRoot,
@@ -194,7 +194,7 @@ test("ZoteroClient paginates metadata and exports a BibTeX snapshot", async () =
 });
 
 test("an existing mapping can ignore one collection without deleting its metadata", async (t) => {
-  const literatureRoot = await literatureRoot(t);
+  const literatureRoot = await makeLiteratureRoot(t);
   await importZoteroSnapshot({
     literatureRoot,
     collections: collections(),
