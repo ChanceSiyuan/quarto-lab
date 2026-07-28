@@ -11,7 +11,7 @@ const CANARY = "PRIVATE-CANARY-8eafbd8e";
 const FIXED_NOW = new Date("2026-07-28T12:00:00.000Z");
 const digest = (value) => createHash("sha256").update(value).digest("hex");
 
-async function fixture(t, { outcomes = {}, tamper = null, assertRuntimeIsolation = false } = {}) {
+async function fixture(t, { outcomes = {}, tamper = null, assertRuntimeIsolation = false, evaluatorWrites = false } = {}) {
   const root = await mkdtemp(join(tmpdir(), "autoresearch-preflight-"));
   t.after(() => rm(root, { recursive: true, force: true }));
   const stageDir = join(root, "stage");
@@ -24,20 +24,24 @@ async function fixture(t, { outcomes = {}, tamper = null, assertRuntimeIsolation
   await writeFile(join(privateDataRoot, "development.json"), `{\"development\":\"${CANARY}\"}\n`);
   await writeFile(join(privateDataRoot, "blind.json"), '{"blind":true}\n');
   const command = join(root, "fixture-command.mjs");
-  await writeFile(command, [
-    "const check = process.argv.at(-1);",
-    `const outcomes = ${JSON.stringify(outcomes)};`,
-    "const evaluator = new Set(['correctness-negative', 'hard-code-negative', 'baseline-reproduction', 'score-arithmetic', 'reproducibility']).has(check);",
-    `const isolated = !${JSON.stringify(assertRuntimeIsolation)} || (evaluator ? process.env.AUTORESEARCH_PRIVATE_DATA_ROOT === ${JSON.stringify(privateDataRoot)} : !process.env.AUTORESEARCH_PRIVATE_DATA_ROOT && !process.env.HOME);`,
-    "const fallback = check === 'hard-code-negative' ? { ok: false } : check === 'baseline-reproduction' ? { ok: true, baseline: { id: 'baseline-v1', digest: 'e'.repeat(64), score: 7 } } : check === 'score-arithmetic' ? { ok: true, score: 7, components: [3, 4] } : { ok: true, score: 7, components: [3, 4] };",
-    "const result = outcomes[check] ?? fallback;",
-    "process.stdout.write(JSON.stringify(isolated ? result : { ok: check === 'hard-code-negative', diagnostics: 'runtime environment was not isolated' }) + '\\n');",
-  ].join("\n"));
-  await chmod(command, 0o755);
   const candidate = await readFile(join(stageDir, "candidate-template", "candidate.py"));
   const publicData = await readFile(join(stageDir, "datasets", "public.json"));
   const development = await readFile(join(privateDataRoot, "development.json"));
   const blind = await readFile(join(privateDataRoot, "blind.json"));
+  const datasets = { public: digest(publicData), development: digest(development), blind: digest(blind) };
+  await writeFile(command, [
+    "const check = process.argv.at(-1);",
+    `const outcomes = ${JSON.stringify(outcomes)};`,
+    `const datasets = ${JSON.stringify(datasets)};`,
+    "const evaluator = new Set(['correctness-negative', 'hard-code-negative', 'baseline-reproduction', 'score-arithmetic', 'reproducibility']).has(check);",
+    `const isolated = !${JSON.stringify(assertRuntimeIsolation)} || (evaluator ? typeof process.env.AUTORESEARCH_PRIVATE_DATA_ROOT === 'string' && process.env.AUTORESEARCH_PRIVATE_DATA_ROOT !== ${JSON.stringify(privateDataRoot)} : !process.env.AUTORESEARCH_PRIVATE_DATA_ROOT && !process.env.HOME);`,
+    "const baseline = { id: 'baseline-v1', digest: 'e'.repeat(64), score: 7, components: [3, 4] };",
+    "const fallback = check === 'hard-code-negative' ? { ok: false } : check === 'baseline-reproduction' ? { ok: true, baseline, datasets } : check === 'reproducibility' ? { ok: true, score: 7, components: [3, 4], baseline, datasets } : check === 'score-arithmetic' ? { ok: true, score: 7, components: [3, 4] } : { ok: true, score: 7, components: [3, 4] };",
+    "const result = outcomes[check] ?? fallback;",
+    `if (${JSON.stringify(evaluatorWrites)} && evaluator) (await import('node:fs')).writeFileSync(process.env.AUTORESEARCH_PRIVATE_DATA_ROOT + '/development.json', 'tampered');`,
+    "process.stdout.write(JSON.stringify(isolated ? result : { ok: check === 'hard-code-negative', diagnostics: 'runtime environment was not isolated' }) + '\\n');",
+  ].join("\n"));
+  await chmod(command, 0o755);
   const manifest = {
     schemaVersion: 1, kind: "autoresearch-infrastructure", problemId: "Prob-007", id: "INF-001", status: "ready",
     candidate: { templatePath: "candidate-template/candidate.py", writablePaths: ["candidate.py"] },
@@ -47,9 +51,9 @@ async function fixture(t, { outcomes = {}, tamper = null, assertRuntimeIsolation
       evaluateDevelopment: [process.execPath, command], reproduceBaseline: [process.execPath, command],
     },
     datasets: {
-      public: { manifestPath: "datasets/public.json", digest: digest(publicData) },
-      development: { manifestPath: "development.json", digest: digest(development) },
-      blind: { manifestPath: "blind.json", digest: digest(blind) },
+      public: { manifestPath: "datasets/public.json", digest: datasets.public },
+      development: { manifestPath: "development.json", digest: datasets.development },
+      blind: { manifestPath: "blind.json", digest: datasets.blind },
     },
     resources: { attemptTimeoutSeconds: 60, terminationGraceSeconds: 5, memoryMb: 256, network: "denied" },
     files: [{ path: "candidate-template/candidate.py", sha256: digest(candidate), size: candidate.length, executable: false }],
@@ -98,7 +102,7 @@ test("runs the stable host-owned suite with isolated candidate and evaluator inp
   assert.ok(candidateCalls.every((call) => !call.args.includes(value.privateDataRoot) && !Object.values(call.env).includes(value.privateDataRoot)));
   const evaluatorCalls = calls.filter((call) => call.privateDataRoot !== undefined);
   assert.ok(evaluatorCalls.length > 0);
-  assert.ok(evaluatorCalls.every((call) => call.privateDataRoot === value.privateDataRoot));
+  assert.ok(evaluatorCalls.every((call) => typeof call.privateDataRoot === "string" && call.privateDataRoot !== value.privateDataRoot));
   assert.doesNotMatch(`${JSON.stringify(report)}\n${await treeText(value.stageDir)}`, new RegExp(CANARY));
 });
 
@@ -161,4 +165,21 @@ test("independently rejects fabricated score arithmetic and baseline identity dr
   };
   const baselineReport = await runInfrastructurePreflight({ ...baseline, processRunner: baselineRunner, now: () => FIXED_NOW });
   assert.equal(baselineReport.checks.find((check) => check.id === "baseline-reproduction").status, "failed");
+});
+
+test("isolates evaluator writes from the operator-owned private root", async (t) => {
+  const value = await fixture(t, { evaluatorWrites: true });
+  const before = await readFile(join(value.privateDataRoot, "development.json"), "utf8");
+  const report = await runInfrastructurePreflight({ ...value, now: () => FIXED_NOW });
+  assert.equal(await readFile(join(value.privateDataRoot, "development.json"), "utf8"), before);
+  assert.equal(report.status, "failed");
+  assert.ok(report.checks.some((check) => check.status === "failed"));
+});
+
+test("rejects stable evaluator claims that are not bound to manifest dataset digests", async (t) => {
+  const value = await fixture(t, { outcomes: {
+    "baseline-reproduction": { ok: true, baseline: { id: "baseline-v1", digest: "e".repeat(64), score: 7, components: [3, 4] }, datasets: { public: "0".repeat(64), development: "0".repeat(64), blind: "0".repeat(64) } },
+  } });
+  const report = await runInfrastructurePreflight({ ...value, processRunner: runner([]), now: () => FIXED_NOW });
+  assert.equal(report.checks.find((check) => check.id === "baseline-reproduction").status, "failed");
 });
