@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { execFile } from "node:child_process";
-import { mkdtemp, mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, mkdir, readFile, readdir, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { promisify } from "node:util";
@@ -62,21 +62,36 @@ The assigned exploration direction was **synthetic test method**.
 `;
 }
 
-async function createSyntheticSource() {
+async function createSyntheticSource({
+  invalidPublicContract = false,
+  trialArtifactSymlink = false,
+  infrastructureSymlink = false,
+  infrastructureSubmodule = false,
+} = {}) {
   const sourceDir = await mkdtemp(join(tmpdir(), "autoqec-import-source-"));
   await runGit(sourceDir, ["init", "--initial-branch=main"]);
   await runGit(sourceDir, ["config", "user.email", "test@example.com"]);
   await runGit(sourceDir, ["config", "user.name", "Importer Test"]);
   await writeFile(join(sourceDir, "README.md"), "synthetic AutoQEC\n");
-  await runGit(sourceDir, ["add", "README.md"]);
+  await writeFile(join(sourceDir, ".gitignore"), "scratch/\n");
+  await runGit(sourceDir, ["add", "README.md", ".gitignore"]);
   await runGit(sourceDir, ["commit", "-m", "base"]);
 
   const firstParents = [];
+  const trialCommits = [];
   for (const sequence of [1, 101, 200]) {
     await runGit(sourceDir, ["checkout", "main"]);
     await mkdir(join(sourceDir, "src"), { recursive: true });
     await writeFile(join(sourceDir, "src", "infrastructure.py"), `EPOCH = ${sequence}\n`);
+    if (infrastructureSymlink && sequence === 1) {
+      await symlink("infrastructure.py", join(sourceDir, "src", "linked-infrastructure.py"));
+    }
     await runGit(sourceDir, ["add", "src/infrastructure.py"]);
+    if (infrastructureSymlink && sequence === 1) await runGit(sourceDir, ["add", "src/linked-infrastructure.py"]);
+    if (infrastructureSubmodule && sequence === 1) {
+      const gitlinkCommit = await gitOutput(sourceDir, ["rev-parse", "HEAD"]);
+      await runGit(sourceDir, ["update-index", "--add", "--cacheinfo", `160000,${gitlinkCommit},src/evaluator-submodule`]);
+    }
     await runGit(sourceDir, ["commit", "-m", `infrastructure ${sequence}`]);
     const firstParent = await gitOutput(sourceDir, ["rev-parse", "HEAD"]);
     firstParents.push(firstParent);
@@ -84,19 +99,28 @@ async function createSyntheticSource() {
     const ref = `autoresearch/css-distance/run${sequence <= 100 ? "100" : "200"}-proposal-${String(sequence).padStart(3, "0")}`;
     await runGit(sourceDir, ["checkout", "-b", ref]);
     await writeFile(join(sourceDir, "LOG.md"), `log ${sequence}\n`);
-    await writeFile(join(sourceDir, "REPORT.md"), report(sequence, sequence === 101 ? { publicContract: "failed", runs: 0 } : {}));
+    await writeFile(join(sourceDir, "REPORT.md"), report(sequence, sequence === 101
+      ? { publicContract: invalidPublicContract ? "unknown" : "failed", runs: 0 }
+      : {}));
     if (sequence !== 101) {
       await mkdir(join(sourceDir, "proposal-workspace"), { recursive: true });
-      await writeFile(join(sourceDir, "proposal-workspace", "candidate.py"), `# candidate ${sequence}\n`);
+      if (trialArtifactSymlink && sequence === 1) {
+        await symlink("../LOG.md", join(sourceDir, "proposal-workspace", "candidate.py"));
+      } else {
+        await writeFile(join(sourceDir, "proposal-workspace", "candidate.py"), `# candidate ${sequence}\n`);
+      }
     }
     if (sequence === 200) await writeFile(join(sourceDir, "proposal-workspace", "METHOD.txt"), "synthetic method\n");
     await runGit(sourceDir, ["add", "."]);
     await runGit(sourceDir, ["commit", "-m", `trial ${sequence}`]);
+    trialCommits.push(await gitOutput(sourceDir, ["rev-parse", "HEAD"]));
   }
   await runGit(sourceDir, ["checkout", "main"]);
 
   return {
     sourceDir,
+    firstParents,
+    trialCommits,
     ranges: [
       { first: 1, last: 1, cohort: "cohort-001-100", commit: firstParents[0] },
       { first: 101, last: 101, cohort: "cohort-101-200", commit: firstParents[1] },
@@ -150,7 +174,7 @@ test("safe artifact policy rejects path escapes and symlinks", () => {
 
 test("imports synthetic trials atomically with copied artifacts and snapshots", async () => {
   const root = await mkdtemp(join(tmpdir(), "autoqec-import-root-"));
-  const { sourceDir, ranges } = await createSyntheticSource();
+  const { sourceDir, ranges, firstParents, trialCommits } = await createSyntheticSource();
   try {
     await importAutoqecCssDistance({
       rootDir: root,
@@ -165,9 +189,67 @@ test("imports synthetic trials atomically with copied artifacts and snapshots", 
     assert.equal((await readdir(join(root, "problems", "Prob-001", "infrastructure", "snapshots"))).length, 3);
     assert.equal(await readFile(join(root, "problems", "Prob-001", "attempts", "ATT-200", "METHOD.txt"), "utf8"), "synthetic method\n");
     assert.equal(await fileExists(join(root, "problems", "Prob-001", "import-manifest.json")), false);
+    assert.equal(await fileExists(join(root, "problems", "Prob-001", "infrastructure", "snapshots", firstParents[0], "source", ".gitignore")), false);
+    const provenance = JSON.parse(await readFile(join(root, "problems", "Prob-001", "attempts", "ATT-001", "attempt.json"), "utf8")).provenance;
+    assert.equal(provenance.sourceCommit, trialCommits[0]);
+    assert.equal(provenance.sourceInfrastructureCommit, firstParents[0]);
+    assert.notEqual(provenance.sourceCommit, provenance.sourceInfrastructureCommit);
   } finally {
     await rm(root, { recursive: true, force: true });
     await rm(sourceDir, { recursive: true, force: true });
+  }
+});
+
+test("validates generated attempts even with injected infrastructure ranges", async () => {
+  const root = await mkdtemp(join(tmpdir(), "autoqec-import-root-"));
+  const { sourceDir, ranges } = await createSyntheticSource({ invalidPublicContract: true });
+  try {
+    await assert.rejects(importAutoqecCssDistance({
+      rootDir: root,
+      sourceDir,
+      expectedAttempts: [1, 101, 200],
+      infrastructureRanges: ranges,
+    }), /Generated ATT-101 is invalid: gate\.publicContract/);
+    assert.equal(await fileExists(join(root, "problems", "Prob-001")), false);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+    await rm(sourceDir, { recursive: true, force: true });
+  }
+});
+
+test("rejects Git symlink trial artifacts without installing a destination", async () => {
+  const root = await mkdtemp(join(tmpdir(), "autoqec-import-root-"));
+  const { sourceDir, ranges } = await createSyntheticSource({ trialArtifactSymlink: true });
+  try {
+    await assert.rejects(importAutoqecCssDistance({
+      rootDir: root,
+      sourceDir,
+      expectedAttempts: [1, 101, 200],
+      infrastructureRanges: ranges,
+    }), /unsafe non-regular or symlink Git entry: proposal-workspace\/candidate\.py/);
+    assert.equal(await fileExists(join(root, "problems", "Prob-001")), false);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+    await rm(sourceDir, { recursive: true, force: true });
+  }
+});
+
+test("rejects Git symlink and submodule infrastructure entries without installing a destination", async () => {
+  for (const options of [{ infrastructureSymlink: true }, { infrastructureSubmodule: true }]) {
+    const root = await mkdtemp(join(tmpdir(), "autoqec-import-root-"));
+    const { sourceDir, ranges } = await createSyntheticSource(options);
+    try {
+      await assert.rejects(importAutoqecCssDistance({
+        rootDir: root,
+        sourceDir,
+        expectedAttempts: [1, 101, 200],
+        infrastructureRanges: ranges,
+      }), /unsafe non-regular or symlink Git entry: src\/(?:linked-infrastructure\.py|evaluator-submodule)/);
+      assert.equal(await fileExists(join(root, "problems", "Prob-001")), false);
+    } finally {
+      await rm(root, { recursive: true, force: true });
+      await rm(sourceDir, { recursive: true, force: true });
+    }
   }
 });
 
