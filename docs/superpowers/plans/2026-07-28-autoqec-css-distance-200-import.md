@@ -59,6 +59,514 @@
 
 ---
 
+## PR #5 Hardening Follow-up
+
+This follow-up fixes the review findings discovered after the initial import:
+partial ledgers from missing attempts, offline verification that ignores
+unmanifested files, broad infrastructure snapshots that mirror unrelated
+source trees, and superpowers planning/spec documents that should not ship in
+the PR diff.
+
+### Task H1: Require Exact Attempt Directories Before Indexing
+
+**Files:**
+- Modify: `tests/research-indexer.test.mjs`
+- Modify: `lib/problems/research-indexer.mjs`
+
+**Interfaces:**
+- Produces: `expectedAttemptIds(manifest)` returning `string[]`, for example `["ATT-001", ..., "ATT-200"]`.
+- Produces: problem-level diagnostics with `relativePath` set to `problems/Prob-001/attempts` for missing, unexpected, or malformed attempt directories.
+- Preserves: `buildResearchIndex({ rootDir, problemsDir })` return shape.
+
+- [ ] **Step H1.1: Update fixtures to create the complete declared attempt set**
+
+Replace the current one-attempt happy-path fixture with a helper that writes
+all declared attempts:
+
+```js
+async function writeValidResearch(root, sequences = Array.from({ length: 200 }, (_, index) => index + 1)) {
+  await writeFile(join(root, "problems", "Prob-001", "research.json"), JSON.stringify({
+    schemaVersion: 1,
+    kind: "imported-research-record",
+    problemId: "Prob-001",
+    attemptCount: 200,
+    attemptIdRange: ["ATT-001", "ATT-200"],
+    disclaimer: RESEARCH_DISCLAIMER,
+    cohorts: [
+      { id: "cohort-001-100", first: 1, last: 100 },
+      { id: "cohort-101-200", first: 101, last: 200 },
+    ],
+  }, null, 2));
+  for (const sequence of sequences) {
+    const id = `ATT-${String(sequence).padStart(3, "0")}`;
+    await mkdir(join(root, "problems", "Prob-001", "attempts", id), { recursive: true });
+    await writeFile(join(root, "problems", "Prob-001", "attempts", id, "attempt.json"), JSON.stringify(attempt(sequence), null, 2));
+  }
+}
+```
+
+- [ ] **Step H1.2: Write the missing-attempt failing test**
+
+Add this test:
+
+```js
+test("does not emit a partial ledger when declared attempts are missing", async () => {
+  const root = await makeRoot();
+  await writeValidResearch(root, [1]);
+
+  const index = await buildResearchIndex({ rootDir: root });
+
+  assert.deepEqual(index.records, []);
+  assert.match(index.diagnostics.map((item) => item.message).join("\n"), /Missing declared attempt directory: ATT-002/);
+});
+```
+
+- [ ] **Step H1.3: Write the unexpected-attempt failing test**
+
+Add this test:
+
+```js
+test("rejects unexpected attempt directories before indexing", async () => {
+  const root = await makeRoot();
+  await writeValidResearch(root);
+  await mkdir(join(root, "problems", "Prob-001", "attempts", "ATT-201"), { recursive: true });
+  await writeFile(join(root, "problems", "Prob-001", "attempts", "ATT-201", "attempt.json"), "{}\n");
+
+  const index = await buildResearchIndex({ rootDir: root });
+
+  assert.deepEqual(index.records, []);
+  assert.match(index.diagnostics.map((item) => item.message).join("\n"), /Unexpected attempt directory: ATT-201/);
+});
+```
+
+- [ ] **Step H1.4: Run the focused test and confirm RED**
+
+Run: `node --test tests/research-indexer.test.mjs`
+
+Expected: the two new tests fail because `buildResearchIndex()` currently
+filters to discovered `ATT-\d{3}` directories and emits a one-attempt ledger.
+
+- [ ] **Step H1.5: Implement exact attempt-set comparison**
+
+Add helpers to `lib/problems/research-indexer.mjs`:
+
+```js
+function expectedAttemptIds(manifest) {
+  const first = Number(manifest.attemptIdRange[0].slice("ATT-".length));
+  return Array.from({ length: manifest.attemptCount }, (_, index) => `ATT-${String(first + index).padStart(3, "0")}`);
+}
+
+function compareAttemptDirectorySet(entries, expectedIds, attemptsRelativePath) {
+  const expected = new Set(expectedIds);
+  const actual = new Set();
+  const errors = [];
+  for (const entry of entries) {
+    if (!entry.isDirectory()) continue;
+    if (!ATTEMPT_ID_PATTERN.test(entry.name)) {
+      errors.push(diagnostic(attemptsRelativePath, "attempts", `Malformed attempt directory: ${entry.name}`));
+      continue;
+    }
+    actual.add(entry.name);
+    if (!expected.has(entry.name)) {
+      errors.push(diagnostic(attemptsRelativePath, "attempts", `Unexpected attempt directory: ${entry.name}`));
+    }
+  }
+  for (const id of expectedIds) {
+    if (!actual.has(id)) errors.push(diagnostic(attemptsRelativePath, "attempts", `Missing declared attempt directory: ${id}`));
+  }
+  return errors;
+}
+```
+
+Use `expectedAttemptIds(manifestValidation.value)` to drive the read loop, and
+push problem diagnostics before creating the record whenever the directory set
+is not exact.
+
+- [ ] **Step H1.6: Run focused and problem tests**
+
+Run: `node --test tests/research-indexer.test.mjs`
+
+Run: `npm run test:unit:problems`
+
+Expected: both commands pass; corrupt attempts still suppress records rather
+than returning a partial ledger.
+
+- [ ] **Step H1.7: Commit exact attempt indexing**
+
+```bash
+git add tests/research-indexer.test.mjs lib/problems/research-indexer.mjs
+git commit -m "fix: require complete imported attempt ledgers"
+```
+
+### Task H2: Make Offline Import Verification Exact
+
+**Files:**
+- Modify: `tests/autoqec-css-distance-verify.test.mjs`
+- Modify: `lib/problems/autoqec-css-distance/importer.mjs`
+
+**Interfaces:**
+- Produces: `listVerifiedProblemFiles(problemPath, id)` returning sorted manifest-relative regular file paths excluding only `import-manifest.json`.
+- Preserves: `verifyImportedProblemTree({ rootDir, id })`.
+
+- [ ] **Step H2.1: Write the extra-file failing test**
+
+Add this test:
+
+```js
+test("offline verification rejects files missing from import-manifest", async () => {
+  const root = await mkdtemp(join(tmpdir(), "research-loop-import-verify-"));
+  const problem = join(root, "problems", "Prob-001");
+  const log = "log\n";
+  await mkdir(join(problem, "attempts", "ATT-001"), { recursive: true });
+  await writeFile(join(problem, "attempts", "ATT-001", "LOG.md"), log);
+  await writeFile(join(problem, "attempts", "ATT-001", "EXTRA.md"), "extra\n");
+  await writeFile(join(problem, "import-manifest.json"), JSON.stringify({
+    schemaVersion: 1,
+    kind: "autoqec-css-distance-import",
+    problemId: "Prob-001",
+    sourceRepository: "AutoQEC",
+    importedAt: "2026-07-28T00:00:00.000Z",
+    attempts: 1,
+    files: [{
+      path: "attempts/ATT-001/LOG.md",
+      sourcePath: "LOG.md",
+      sha256: "9b75290f6a6359a2a3471022cbba4b724e45105b313ae8f6c103a2f79e82a857",
+      size: 4,
+      generated: false,
+    }],
+  }, null, 2));
+
+  const result = await verifyImportedProblemTree({ rootDir: root });
+
+  assert.equal(result.ok, false);
+  assert.match(result.errors.map((item) => item.message).join("\n"), /Unexpected file not listed in import-manifest: attempts\/ATT-001\/EXTRA.md/);
+});
+```
+
+- [ ] **Step H2.2: Write the symlink failing test**
+
+Add `symlink` to the `node:fs/promises` import and add this test:
+
+```js
+test("offline verification rejects symlinks inside the imported problem tree", async () => {
+  const root = await mkdtemp(join(tmpdir(), "research-loop-import-verify-"));
+  const problem = join(root, "problems", "Prob-001");
+  await mkdir(join(problem, "attempts", "ATT-001"), { recursive: true });
+  await writeFile(join(problem, "attempts", "ATT-001", "LOG.md"), "log\n");
+  await symlink("LOG.md", join(problem, "attempts", "ATT-001", "alias.md"));
+  await writeFile(join(problem, "import-manifest.json"), JSON.stringify({
+    schemaVersion: 1,
+    kind: "autoqec-css-distance-import",
+    problemId: "Prob-001",
+    sourceRepository: "AutoQEC",
+    importedAt: "2026-07-28T00:00:00.000Z",
+    attempts: 1,
+    files: [],
+  }, null, 2));
+
+  const result = await verifyImportedProblemTree({ rootDir: root });
+
+  assert.equal(result.ok, false);
+  assert.match(result.errors.map((item) => item.message).join("\n"), /Non-regular file in imported problem tree: attempts\/ATT-001\/alias.md/);
+});
+```
+
+- [ ] **Step H2.3: Run the focused test and confirm RED**
+
+Run: `node --test tests/autoqec-css-distance-verify.test.mjs`
+
+Expected: the extra-file test fails because verification only checks manifest
+entries; the symlink test fails because the directory tree is not enumerated.
+
+- [ ] **Step H2.4: Implement exact tree comparison**
+
+In `lib/problems/autoqec-css-distance/importer.mjs`, import `lstat` and add:
+
+```js
+async function listVerifiedProblemFiles(problemPath, id, directory = problemPath) {
+  const files = [];
+  for (const entry of await readdir(directory, { withFileTypes: true })) {
+    const absolutePath = join(directory, entry.name);
+    const relativePath = absolutePath.slice(problemPath.length + 1);
+    if (relativePath === "import-manifest.json") continue;
+    const metadata = await lstat(absolutePath);
+    if (metadata.isDirectory()) {
+      files.push(...await listVerifiedProblemFiles(problemPath, id, absolutePath));
+    } else if (metadata.isFile()) {
+      assertSafeImportPath(relativePath);
+      files.push(relativePath);
+    } else {
+      throw new Error(`Non-regular file in imported problem tree: ${relativePath}`);
+    }
+  }
+  return files.sort((left, right) => left.localeCompare(right));
+}
+```
+
+After validating `manifest.files`, compare `new Set(manifest.files.map((entry) => entry.path))`
+with the `listVerifiedProblemFiles()` result. Add diagnostics for duplicate
+manifest paths, missing listed files, and unexpected on-disk files before hash
+checks complete.
+
+- [ ] **Step H2.5: Run focused and importer tests**
+
+Run: `node --test tests/autoqec-css-distance-verify.test.mjs`
+
+Run: `node --test tests/autoqec-css-distance-importer.test.mjs`
+
+Expected: both commands pass; existing hash mismatch behavior is unchanged.
+
+- [ ] **Step H2.6: Commit exact offline verification**
+
+```bash
+git add tests/autoqec-css-distance-verify.test.mjs lib/problems/autoqec-css-distance/importer.mjs
+git commit -m "fix: verify exact imported problem file sets"
+```
+
+### Task H3: Freeze CSS-Distance Infrastructure as a Closed File Set
+
+**Files:**
+- Modify: `tests/autoqec-css-distance-importer.test.mjs`
+- Modify: `lib/problems/autoqec-css-distance/infrastructure.mjs`
+- Modify: `lib/problems/autoqec-css-distance/importer.mjs`
+
+**Interfaces:**
+- Produces: `selectCssDistanceInfrastructurePaths({ paths, readText })` returning `{ paths: string[], entryPoints: string[] }`.
+- Consumes: `readText(path)` async function that reads a UTF-8 Git blob for one selected Python source path.
+- Preserves: `buildInfrastructurePlan(trials, options)` and `buildCohortManifests(ranges)`.
+
+- [ ] **Step H3.1: Update synthetic source fixtures to include CSS-distance entry points**
+
+In `createSyntheticSource()`, replace `src/infrastructure.py` with these files
+for every synthetic infrastructure commit:
+
+```js
+await mkdir(join(sourceDir, "src", "autoqec_search"), { recursive: true });
+await writeFile(join(sourceDir, "src", "autoqec_search", "__init__.py"), "");
+await writeFile(join(sourceDir, "src", "autoqec_search", "css_distance_autoresearch.py"), [
+  "from autoqec_search.css_distance_container import DockerImage",
+  "from autoqec_search.css_distance_eval import DEFAULT_TIMEOUT_SECONDS",
+  "",
+  `EPOCH = ${sequence}`,
+  "",
+].join("\n"));
+await writeFile(join(sourceDir, "src", "autoqec_search", "css_distance_container.py"), "class DockerImage:\n    pass\n");
+await writeFile(join(sourceDir, "src", "autoqec_search", "css_distance_eval.py"), "DEFAULT_TIMEOUT_SECONDS = 300\n");
+await writeFile(join(sourceDir, "src", "autoqec_search", "quantum_tanner_catalog.py"), "UNRELATED = True\n");
+await mkdir(join(sourceDir, "containers", "css-distance-autoresearch"), { recursive: true });
+await writeFile(join(sourceDir, "containers", "css-distance-autoresearch", "candidate-entrypoint.py"), "print('entry')\n");
+await writeFile(join(sourceDir, "containers", "css-distance-autoresearch", "evaluator.Dockerfile"), "FROM python:3.11\n");
+await writeFile(join(sourceDir, "containers", "css-distance-autoresearch", "proposal.Dockerfile"), "FROM python:3.11\n");
+await writeFile(join(sourceDir, "containers", "css-distance-autoresearch", "requirements.txt"), "numpy\n");
+await writeFile(join(sourceDir, "pyproject.toml"), "[project]\nname = \"synthetic-autoqec\"\n");
+```
+
+Update the corresponding `git add` call to stage `src`, `containers`, and
+`pyproject.toml`.
+
+- [ ] **Step H3.2: Write the focused snapshot-closure failing assertion**
+
+Extend `imports synthetic trials atomically with copied artifacts and snapshots`:
+
+```js
+const firstSnapshotSource = join(root, "problems", "Prob-001", "infrastructure", "snapshots", firstParents[0], "source");
+assert.equal(await fileExists(join(firstSnapshotSource, "src", "autoqec_search", "css_distance_autoresearch.py")), true);
+assert.equal(await fileExists(join(firstSnapshotSource, "src", "autoqec_search", "css_distance_container.py")), true);
+assert.equal(await fileExists(join(firstSnapshotSource, "src", "autoqec_search", "quantum_tanner_catalog.py")), false);
+assert.equal(await fileExists(join(firstSnapshotSource, "zoo", "external", "eczoo", "views", "site", "index.html")), false);
+const snapshotManifest = JSON.parse(await readFile(join(root, "problems", "Prob-001", "infrastructure", "snapshots", firstParents[0], "source-manifest.json"), "utf8"));
+assert.deepEqual(snapshotManifest.entryPoints, [
+  "containers/css-distance-autoresearch/candidate-entrypoint.py",
+  "src/autoqec_search/css_distance_autoresearch.py",
+]);
+```
+
+- [ ] **Step H3.3: Run the focused test and confirm RED**
+
+Run: `node --test tests/autoqec-css-distance-importer.test.mjs`
+
+Expected: it fails because `freezeSnapshots()` currently copies every
+non-dot/non-private tree entry and reports all Python files as entry points.
+
+- [ ] **Step H3.4: Implement recursive local Python import closure**
+
+In `lib/problems/autoqec-css-distance/infrastructure.mjs`, add approved roots:
+
+```js
+export const CSS_DISTANCE_INFRASTRUCTURE_ENTRY_POINTS = [
+  "containers/css-distance-autoresearch/candidate-entrypoint.py",
+  "src/autoqec_search/css_distance_autoresearch.py",
+  "src/autoqec_search/css_distance_autoresearch_batch.py",
+];
+
+export const CSS_DISTANCE_INFRASTRUCTURE_ALLOWLIST = [
+  "campaigns/examples/css-distance-autoresearch/README.md",
+  "campaigns/examples/css-distance-autoresearch/proposal-prompt.txt",
+  "campaigns/examples/css-distance-autoresearch/research-brief.md",
+  "campaigns/examples/css-distance-autoresearch/results.md",
+  "campaigns/examples/css-distance-autoresearch/source.json",
+  "containers/css-distance-autoresearch/evaluator.Dockerfile",
+  "containers/css-distance-autoresearch/proposal.Dockerfile",
+  "containers/css-distance-autoresearch/requirements.txt",
+  "pyproject.toml",
+  "results/css-distance-autoresearch-100/development-baseline-aggregate.json",
+  "zoo/codes/rotated-surface-code/instances/rotated-surface-d3-example/hx.json",
+  "zoo/codes/rotated-surface-code/instances/rotated-surface-d3-example/hz.json",
+  "zoo/codes/rotated-surface-code/instances/rotated-surface-d3-example/instance.json",
+];
+```
+
+Implement `selectCssDistanceInfrastructurePaths({ paths, readText })` so it:
+starts from existing approved Python entry points, adds existing allowlisted
+files, reads each selected local Python file, resolves `autoqec_search.*` and
+same-package relative imports to `src/autoqec_search/*.py` or
+`src/autoqec_search/*/__init__.py`, adds package `__init__.py` files when
+present, recurses until stable, and throws `Unresolved local Python import`
+when a local import cannot be mapped to an existing path.
+
+- [ ] **Step H3.5: Wire the selector into snapshot freezing**
+
+In `freezeSnapshots()`, read the complete Git tree into entries, call
+`selectCssDistanceInfrastructurePaths({ paths: [...entries.keys()], readText })`,
+copy only selected paths, and set `source-manifest.json.entryPoints` to the
+selector's returned `entryPoints` instead of every `.py` file.
+
+- [ ] **Step H3.6: Run focused and problem tests**
+
+Run: `node --test tests/autoqec-css-distance-importer.test.mjs`
+
+Run: `npm run test:unit:problems`
+
+Expected: both commands pass and synthetic unrelated files stay out of
+snapshots.
+
+- [ ] **Step H3.7: Commit closed snapshot selection**
+
+```bash
+git add tests/autoqec-css-distance-importer.test.mjs lib/problems/autoqec-css-distance/infrastructure.mjs lib/problems/autoqec-css-distance/importer.mjs
+git commit -m "fix: freeze focused AutoQEC infrastructure snapshots"
+```
+
+### Task H4: Regenerate Prob-001 From the Corrected Importer
+
+**Files:**
+- Modify: `problems/Prob-001/**`
+
+**Interfaces:**
+- Consumes: `make problem-import-autoqec-css-distance SOURCE=/Users/nzy/AutoQEC`.
+- Consumes: `make problem-import-verify ID=Prob-001`.
+- Produces: a committed `problems/Prob-001` tree whose snapshots contain no
+  `articles/`, `zoo/external/`, generated `views/site/`, or unrelated
+  `docs/superpowers/` content.
+
+- [ ] **Step H4.1: Confirm the tracked destination has no uncommitted user edits**
+
+Run: `git status --short -- problems/Prob-001`
+
+Expected: no uncommitted changes under `problems/Prob-001` before replacing the
+generated data tree.
+
+- [ ] **Step H4.2: Generate a corrected tree in temporary space**
+
+Run: `make problem-import-autoqec-css-distance SOURCE=/Users/nzy/AutoQEC ROOT=/private/tmp/research-loop-autoqec-corrected`
+
+If the Make target does not expose `ROOT`, run the importer CLI against a
+temporary root with the existing script interface and the same `SOURCE`
+argument.
+
+- [ ] **Step H4.3: Verify the temporary tree**
+
+Run: `make problem-import-verify ID=Prob-001 ROOT=/private/tmp/research-loop-autoqec-corrected`
+
+If the Make target does not expose `ROOT`, run `node scripts/import-autoqec-css-distance.mjs verify --id Prob-001 --root /private/tmp/research-loop-autoqec-corrected`.
+
+Expected: verification passes with the exact manifest/file-set check from Task
+H2.
+
+- [ ] **Step H4.4: Replace only the generated Prob-001 tree**
+
+Move the current generated tree to `/private/tmp/research-loop-Prob-001-backup-<timestamp>`
+and move the verified temporary `Prob-001` into `/Users/nzy/mcode/research-loop/problems/Prob-001`.
+Do not remove or stage `.gitignore`.
+
+- [ ] **Step H4.5: Check the broad snapshot paths are gone**
+
+Run: `rg --files problems/Prob-001/infrastructure/snapshots | rg 'articles|zoo/external|views/site|docs/superpowers'`
+
+Expected: no matching output.
+
+- [ ] **Step H4.6: Verify regenerated data and tests**
+
+Run: `make problem-import-verify ID=Prob-001`
+
+Run: `npm run test:unit:problems`
+
+Expected: both commands pass.
+
+- [ ] **Step H4.7: Commit regenerated data**
+
+```bash
+git add problems/Prob-001
+git commit -m "data: regenerate focused AutoQEC import"
+```
+
+### Task H5: Remove Planning Artifacts From the PR Diff
+
+**Files:**
+- Delete: `docs/superpowers/plans/2026-07-28-add-problem-skill.md`
+- Delete: `docs/superpowers/plans/2026-07-28-autoqec-css-distance-200-import.md`
+- Delete: `docs/superpowers/plans/2026-07-28-autoresearch-campaigns.md`
+- Delete: `docs/superpowers/plans/2026-07-28-autoresearch-preparation.md`
+- Delete: `docs/superpowers/plans/2026-07-28-local-assessment-reports.md`
+- Delete: `docs/superpowers/specs/2026-07-28-add-problem-skill-design.md`
+- Delete: `docs/superpowers/specs/2026-07-28-autoqec-css-distance-200-import-design.md`
+- Delete: `docs/superpowers/specs/2026-07-28-autoresearch-button-design.md`
+- Delete: `docs/superpowers/specs/2026-07-28-local-assessment-reports-design.md`
+
+**Interfaces:**
+- Consumes: the exact newly added superpowers docs from `git diff --name-only d428044 -- docs/superpowers/specs docs/superpowers/plans`.
+- Produces: no `A docs/superpowers/...` entries in the PR diff against `d428044`.
+
+- [ ] **Step H5.1: Confirm the exact planning/spec files added by this PR**
+
+Run: `git diff --name-only d428044 -- docs/superpowers/specs docs/superpowers/plans`
+
+Expected: the nine files listed above.
+
+- [ ] **Step H5.2: Delete only those added files**
+
+Run: `git rm` with exactly the nine paths listed in this task.
+
+- [ ] **Step H5.3: Verify no superpowers docs remain in the PR diff**
+
+Run: `git diff --name-only d428044 -- docs/superpowers/specs docs/superpowers/plans`
+
+Expected: no output.
+
+- [ ] **Step H5.4: Run final local verification**
+
+Run: `git diff --check`
+
+Run: `make problem-import-verify ID=Prob-001`
+
+Run: `npm run test:unit:problems`
+
+Run: `make test`
+
+Expected: `git diff --check`, `make problem-import-verify`, and
+`npm run test:unit:problems` pass. If `make test` fails because Quarto or another
+documented external binary is missing, capture the exact command output and
+report it as an environment gap, not a code pass.
+
+- [ ] **Step H5.5: Commit PR hygiene cleanup**
+
+```bash
+git add docs/superpowers/plans docs/superpowers/specs
+git commit -m "chore: keep planning artifacts out of PR"
+```
+
+---
+
 ### Task 1: Add Imported Research Schemas
 
 **Files:**
