@@ -74,9 +74,13 @@ export async function watchProblemFiles({ rootDir, onChange, watchFn = watch }) 
   };
 }
 
-function runIndexBuild(rootDir) {
+export function runIndexBuild(rootDir, spawnFn = spawn) {
   return new Promise((resolveBuild, rejectBuild) => {
-    const builder = spawn(process.execPath, ["scripts/build-problem-index.mjs"], { cwd: rootDir, stdio: "inherit" });
+    const builder = spawnFn(
+      process.execPath,
+      ["scripts/build-problem-index.mjs", "--reserve-id", "QMB-001"],
+      { cwd: rootDir, stdio: "inherit" },
+    );
     builder.on("error", rejectBuild);
     builder.on("exit", (code) => {
       if (code === 0) resolveBuild();

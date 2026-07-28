@@ -132,9 +132,9 @@ test("server-renders the problem console shell", async () => {
   assert.match(html, /Research Loop/);
   assert.match(html, /Problem Console/);
   assert.match(html, />\+ Add problem<\/a>/);
-  assert.match(html, /CSS code-distance algorithm search/);
-  assert.match(html, /href="\/problems\/QMB-001"/);
-  assert.doesNotMatch(html, />\+ Add first problem<\/a>/);
+  assert.doesNotMatch(html, /CSS code-distance algorithm search/);
+  assert.doesNotMatch(html, /href="\/problems\/QMB-001"/);
+  assert.match(html, />\+ Add first problem<\/a>/);
   assert.match(html, /Cannot open Codex\?/);
   assert.match(html, /codex:\/\/threads\/new/);
   assert.match(html, /Accepted/);
@@ -160,6 +160,20 @@ test("server-renders the problem console shell", async () => {
   assert.doesNotMatch(html, /Turn open literature into/);
   assert.doesNotMatch(html, /Reset demo/);
   assert.doesNotMatch(html, /localStorage/);
+});
+
+test("ordinary local build excludes and reserves the showcase problem", () => {
+  assert.deepEqual(generatedIndex.problems.map((problem) => problem.id), []);
+  assert.equal(generatedIndex.nextProblemId, "QMB-002");
+  assert.deepEqual(generatedIndex.diagnostics, []);
+  assert.deepEqual(generatedIndex.summary, {
+    total: 0,
+    accepted: 0,
+    solved: 0,
+    published: 0,
+    rejected: 0,
+    archived: 0,
+  });
 });
 
 test("homepage table links do not rely on absolute row overlays", async () => {
@@ -215,57 +229,16 @@ test("returns a stable detail route response for unknown problem IDs", async () 
   assert.equal(response.status, 404);
 });
 
-test("server-renders the static research ledger for QMB-001", async () => {
-  const response = await render("/problems/QMB-001");
-  assert.equal(response.status, 200);
-
-  const html = await response.text();
-  assert.match(html, /<a href="\/" class="back-link">← Back to problems<\/a>/);
-  assert.match(html, /<p class="eyebrow">QMB-001<\/p>/);
-  assert.match(html, /<h1>CSS code-distance algorithm search<\/h1>/);
-  assert.match(html, /Example data - synthetic results for interface demonstration only\./);
-  assert.match(html, /Blind evaluation/);
-  assert.match(html, /300 s \/ run/);
-  assert.match(html, /<dt>Attempts<\/dt><dd>5<\/dd>/);
-  assert.match(html, /<dt>Best speedup<\/dt><dd>118\.2x<\/dd>/);
-  assert.match(html, /<th scope="col">Attempt<\/th><th scope="col">Method<\/th><th scope="col">Stage<\/th><th scope="col">Decision<\/th><th scope="col">Gate<\/th><th scope="col">Verified<\/th><th scope="col">Hits<\/th><th scope="col">Quality<\/th><th scope="col">Runtime<\/th><th scope="col">P95<\/th><th scope="col">Speedup<\/th><th scope="col">Open<\/th>/);
-  for (const attemptId of ["ATT-001", "ATT-002", "ATT-003", "ATT-004", "ATT-005"]) {
-    assert.match(html, new RegExp(`href="\\/problems\\/QMB-001\\/attempts\\/${attemptId}"`));
-  }
-  assert.match(html, /Adaptive verified portfolio/);
-  assert.match(html, /118\.2x/);
-  assert.doesNotMatch(html, /The detailed problem workspace will be designed next/);
-  assert.doesNotMatch(html, /[\u3400-\u9FFF]/u);
-});
-
-test("server-renders static attempt audit dossiers", async () => {
-  for (const [attemptId, title] of [
-    ["ATT-001", "Exact meet-in-the-middle baseline"],
-    ["ATT-002", "Random kernel sampling"],
-    ["ATT-003", "Verified quotient-coset descent"],
-    ["ATT-004", "Residual-seeded local search"],
-    ["ATT-005", "Adaptive verified portfolio"],
+test("ordinary local build returns 404 for every showcase route", async () => {
+  for (const pathname of [
+    "/problems/QMB-001",
+    "/problems/QMB-001/attempts/ATT-001",
+    "/problems/QMB-001/attempts/ATT-005",
+    "/problems/QMB-001/attempts/ATT-999",
   ]) {
-    const response = await render(`/problems/QMB-001/attempts/${attemptId}`);
-    assert.equal(response.status, 200);
-    const html = await response.text();
-    assert.match(html, new RegExp(`<p class="eyebrow">QMB-001 / ${attemptId}<\\/p>`));
-    assert.match(html, new RegExp(`<h1>${title}<\\/h1>`));
-    assert.match(html, /Example data - synthetic results for interface demonstration only\./);
-    assert.match(html, /Hypothesis/);
-    assert.match(html, /Evaluation path/);
-    assert.match(html, /Result interpretation/);
-    assert.match(html, /Learning carried forward/);
-    assert.match(html, /problems\/QMB-001\/attempts\//);
-    assert.match(html, /attempt\.json/);
-    assert.match(html, /LOG\.md/);
-    assert.doesNotMatch(html, /[\u3400-\u9FFF]/u);
+    const response = await render(pathname);
+    assert.equal(response.status, 404, pathname);
   }
-});
-
-test("returns 404 for unknown static attempt IDs", async () => {
-  const response = await render("/problems/QMB-001/attempts/ATT-999");
-  assert.equal(response.status, 404);
 });
 
 test("returns 404 for attempt routes on non-example problems", async () => {

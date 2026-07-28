@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { EventEmitter } from "node:events";
 import { mkdir, mkdtemp, rm, stat } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -23,6 +24,27 @@ test("ensures the dev watcher uses problems/ when the repo starts without one", 
 
   assert.equal(watchPath, join(root, "problems"));
   assert.equal((await stat(watchPath)).isDirectory(), true);
+});
+
+test("dev index builds reserve the showcase problem ID", async () => {
+  const { runIndexBuild } = await import("../scripts/dev-problem-index.mjs");
+  assert.equal(typeof runIndexBuild, "function");
+
+  const calls = [];
+  function spawnFn(command, args, options) {
+    calls.push({ command, args, options });
+    const child = new EventEmitter();
+    queueMicrotask(() => child.emit("exit", 0));
+    return child;
+  }
+
+  await runIndexBuild("/tmp/research-loop-dev-root", spawnFn);
+
+  assert.deepEqual(calls, [{
+    command: process.execPath,
+    args: ["scripts/build-problem-index.mjs", "--reserve-id", "QMB-001"],
+    options: { cwd: "/tmp/research-loop-dev-root", stdio: "inherit" },
+  }]);
 });
 
 test("watches the problems/ tree without recursive repo-wide watchers", async (t) => {
