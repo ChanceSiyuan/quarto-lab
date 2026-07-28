@@ -79,6 +79,7 @@ test("publishes completed artifacts atomically under the problem", async () => {
     assessment: { accepted: true },
     summary,
     reportHtml: "<!doctype html><title>Report</title>",
+    eventsText: '{"type":"codex-complete"}\n',
     stderr: "",
   });
 
@@ -91,6 +92,10 @@ test("publishes completed artifacts atomically under the problem", async () => {
   assert.equal("stagingDir" in runJson, false);
   assert.equal("finalDir" in runJson, false);
   assert.equal(await readFile(join(finalDir, "report.html"), "utf8"), "<!doctype html><title>Report</title>");
+  assert.equal(
+    await readFile(join(finalDir, "events.jsonl"), "utf8"),
+    '{"at":"2026-07-28T01:02:03.000Z","type":"stage","stage":"running"}\n{"type":"codex-complete"}\n',
+  );
 });
 
 test("read paths do not create problem directories", async () => {

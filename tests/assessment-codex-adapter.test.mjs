@@ -75,6 +75,40 @@ test("prompt names the repo skill and forbids lifecycle mutation", () => {
   assert.match(prompt, /Return only the structured schema response/);
 });
 
+test("a host-selected bundle tells Codex to continue without asking for ambiguity input again", () => {
+  const prompt = buildAssessmentPrompt({
+    problem: { id: "Prob-001", title: "Fixture", summary: "Summary" },
+    problemMarkdown: "## Background and Gap\nText.",
+    selectedAlternative: {
+      page: "knowledge/alpha/note.qmd",
+      topic: "knowledge/alpha/index.qmd",
+      title: "Alpha",
+      matchKind: "exact-title",
+    },
+    trustedResolution: {
+      schemaVersion: 1,
+      query: "Fixture",
+      status: "match",
+      bundle: {
+        topic: "knowledge/alpha/index.qmd",
+        ancestorIndexes: ["knowledge/index.qmd", "knowledge/alpha/index.qmd"],
+        contentPages: ["knowledge/alpha/note.qmd"],
+        orderedFiles: [
+          "knowledge/index.qmd",
+          "knowledge/alpha/index.qmd",
+          "knowledge/alpha/note.qmd",
+        ],
+      },
+      alternatives: [],
+    },
+  });
+
+  assert.match(prompt, /host resolver has already applied the user's explicit selection/i);
+  assert.match(prompt, /knowledge\/alpha\/note\.qmd/);
+  assert.match(prompt, /do not return needs_input/i);
+  assert.doesNotMatch(prompt, /If the resolver is ambiguous, return outcome needs_input/);
+});
+
 test("codex runner uses safe argv, read-only sandbox, ephemeral mode, JSONL, schema, and output-last-message", async () => {
   const root = await mkdtemp(join(tmpdir(), "assessment-codex-"));
   const runDir = join(root, ".generated", "assessment-runs", "run");

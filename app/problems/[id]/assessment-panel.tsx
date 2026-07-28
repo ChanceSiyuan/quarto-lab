@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   assessmentStatusCopy,
+  assessmentServiceFailure,
+  assessmentStateFromProblemResponse,
   formatScoreInterval,
   isLocalAssessmentUnavailable,
   latestAssessmentSummary,
@@ -68,44 +70,6 @@ type Props = { problemId: string };
 const EMPTY_ALTERNATIVES: ClarificationAlternative[] = [];
 const DEFAULT_SELECTION = { runId: null, index: "0" };
 
-function stateFromProblemResponse(body: ProblemAssessmentResponse | null): AssessmentState {
-  const runs = body?.runs ?? [];
-  if (body?.activeJob) {
-    const status = body.activeJob.status;
-    return {
-      kind: status === "queued" ? "queued" : status,
-      ...body.activeJob,
-      runs,
-    };
-  }
-  if (body?.stale) return { kind: "stale", latest: body.latest, runs };
-  if (body?.latest) return { kind: "completed", latest: body.latest, runs };
-  const latest = latestAssessmentSummary(body);
-  if (latest) return { kind: "completed", latest, runs };
-  const latestRun = runs[0];
-  if (latestRun?.status === "failed") {
-    return {
-      kind: "failed",
-      reason: latestRun.error?.message ?? "Open diagnostics for details.",
-      runs,
-    };
-  }
-  if (latestRun?.status === "completed") {
-    return {
-      kind: "completed",
-      latest: {
-        reportHref: `/__local/assessments/reports/${encodeURIComponent(latestRun.problemId)}/${encodeURIComponent(latestRun.runId)}`,
-      },
-      runs,
-    };
-  }
-  return { kind: "never", runs };
-}
-
-function serviceFailure(response: Response) {
-  return { kind: "failed", reason: `Local service returned ${response.status}.` };
-}
-
 export function AssessmentPanel({ problemId }: Props) {
   const [state, setState] = useState<AssessmentState>({ kind: "unavailable" });
   const [busy, setBusy] = useState(false);
@@ -118,10 +82,12 @@ export function AssessmentPanel({ problemId }: Props) {
         { cache: "no-store" },
       );
       if (!response.ok) {
-        setState(isLocalAssessmentUnavailable(response) ? { kind: "unavailable" } : serviceFailure(response));
+        setState(isLocalAssessmentUnavailable(response)
+          ? { kind: "unavailable" }
+          : await assessmentServiceFailure(response));
         return;
       }
-      setState(stateFromProblemResponse(await response.json() as ProblemAssessmentResponse));
+      setState(assessmentStateFromProblemResponse(await response.json() as ProblemAssessmentResponse) as AssessmentState);
     } catch (error) {
       setState(isLocalAssessmentUnavailable(error) ? { kind: "unavailable" } : {
         kind: "failed",
@@ -154,7 +120,7 @@ export function AssessmentPanel({ problemId }: Props) {
         body: JSON.stringify({ problemId }),
       });
       if (response.ok) await refresh();
-      else setState(serviceFailure(response));
+      else setState(await assessmentServiceFailure(response));
     } catch (error) {
       setState(isLocalAssessmentUnavailable(error) ? { kind: "unavailable" } : {
         kind: "failed",
@@ -186,7 +152,7 @@ export function AssessmentPanel({ problemId }: Props) {
         },
       );
       if (response.ok) await refresh();
-      else setState(serviceFailure(response));
+      else setState(await assessmentServiceFailure(response));
     } catch (error) {
       setState(isLocalAssessmentUnavailable(error) ? { kind: "unavailable" } : {
         kind: "failed",

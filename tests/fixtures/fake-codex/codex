@@ -1,5 +1,9 @@
 #!/usr/bin/env node
+import { execFile } from "node:child_process";
 import { writeFile } from "node:fs/promises";
+import { promisify } from "node:util";
+
+const execFileAsync = promisify(execFile);
 
 const args = process.argv.slice(2);
 
@@ -25,16 +29,33 @@ function dimension(id, label, weight, estimate = 4) {
   };
 }
 
-function completedEnvelope(problemId) {
+function normalizedResolution(result) {
+  return {
+    query: result.query,
+    status: result.status,
+    topic: result.bundle?.topic ?? null,
+    orderedFiles: result.bundle?.orderedFiles ?? [],
+  };
+}
+
+async function resolveKnowledge(query, selectedPage = null) {
+  const args = [
+    "--import", "tsx", "scripts/knowledge.ts", "resolve", "--query", query,
+    ...(selectedPage ? ["--select-page", selectedPage] : []),
+  ];
+  const { stdout } = await execFileAsync(process.execPath, args, {
+    cwd: process.cwd(),
+    maxBuffer: 10 * 1024 * 1024,
+  });
+  return JSON.parse(stdout);
+}
+
+function completedEnvelope(problemId, resolution) {
+  const knowledgePath = resolution.orderedFiles.at(-1);
   return {
     outcome: "assessment",
     language: "en",
-    knowledgeResolution: {
-      query: `${problemId} browser fixture`,
-      status: "match",
-      topic: "knowledge/index.qmd",
-      orderedFiles: ["knowledge/index.qmd"],
-    },
+    knowledgeResolution: resolution,
     assessment: {
       schemaVersion: 1,
       normalizedProblem: `Fake Codex completed assessment for ${problemId}.`,
@@ -82,9 +103,9 @@ function completedEnvelope(problemId) {
         {
           id: "k1",
           kind: "knowledge",
-          path: "knowledge/index.qmd",
-          locator: "Reading map",
-          summary: "Trusted knowledge root exists in the repository.",
+          path: knowledgePath,
+          locator: "Trusted resolver bundle",
+          summary: "Trusted knowledge selected by the repository resolver.",
         },
       ],
     },
@@ -92,34 +113,21 @@ function completedEnvelope(problemId) {
   };
 }
 
-function ambiguousEnvelope() {
+function ambiguousEnvelope(result) {
   return {
     outcome: "needs_input",
     language: "en",
-    knowledgeResolution: {
-      query: "Prob-902 browser fixture",
-      status: "ambiguous",
-      topic: null,
-      orderedFiles: [],
-    },
+    knowledgeResolution: normalizedResolution(result),
     assessment: null,
     clarification: {
-      query: "Prob-902 browser fixture",
+      query: result.query,
       reason: "Fake Codex found two trusted knowledge candidates.",
-      alternatives: [
-        {
-          page: "knowledge/a/index.qmd",
-          topic: "fixture-a",
-          title: "Fixture Knowledge A",
-          matchKind: "title",
-        },
-        {
-          page: "knowledge/b/index.qmd",
-          topic: "fixture-b",
-          title: "Fixture Knowledge B",
-          matchKind: "title",
-        },
-      ],
+      alternatives: result.alternatives.map(({ page, topic, title, matchKind }) => ({
+        page,
+        topic,
+        title,
+        matchKind,
+      })),
     },
   };
 }
@@ -138,8 +146,12 @@ if (!outputPath) {
 
 const prompt = args.at(-1) ?? "";
 const problemId = prompt.includes("Problem ID: Prob-902") ? "Prob-902" : "Prob-901";
-const needsInitialAmbiguity = problemId === "Prob-902" && !prompt.includes("User selected resolver alternative");
+const query = problemId === "Prob-902" ? "exact oracle" : "AKLT";
+const selectedPage = prompt.match(/^Page: (knowledge\/[^\n]+)$/m)?.[1] ?? null;
+const resolved = await resolveKnowledge(query, selectedPage);
 await writeFile(outputPath, `${JSON.stringify(
-  needsInitialAmbiguity ? ambiguousEnvelope() : completedEnvelope(problemId),
+  resolved.status === "ambiguous"
+    ? ambiguousEnvelope(resolved)
+    : completedEnvelope(problemId, normalizedResolution(resolved)),
 )}\n`);
 process.stdout.write(`${JSON.stringify({ type: "stage", stage: "fake-complete" })}\n`);

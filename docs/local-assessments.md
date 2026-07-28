@@ -24,8 +24,15 @@ Completed runs include `run.json`, `input.json`, `assessment.json`,
 `clarification.json`. Failed and interrupted runs include diagnostics but no
 formal assessment and no report.
 
-The service never stages or commits these files. Review them as ordinary local
-repository changes.
+The service never stages or commits these files, and `/problems/Prob-*` is
+gitignored. Inspect a run directly under the path above (for example with
+`find problems/Prob-###/assessments -maxdepth 2 -type f`) rather than expecting
+it to appear in `git status`.
+
+When `knowledge.ts resolve --query <text>` returns `ambiguous`, the local
+service may apply one of that exact result's alternatives with
+`--select-page <knowledge/...qmd>`. The flag is rejected when the query is no
+longer ambiguous or the page was not one of its alternatives.
 
 ## Manual smoke test with real Codex
 

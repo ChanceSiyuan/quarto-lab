@@ -23,11 +23,13 @@ async function createLocalRepository(rootDir) {
   };
 }
 
-function createKnowledgeResolver(rootDir) {
-  return async function resolveKnowledge(query) {
-    const { stdout } = await execFileAsync(
+export function createKnowledgeResolver(rootDir, { execFileFn = execFileAsync } = {}) {
+  return async function resolveKnowledge(query, { selectedPage } = {}) {
+    const args = ["--import", "tsx", "scripts/knowledge.ts", "resolve", "--query", query];
+    if (selectedPage) args.push("--select-page", selectedPage);
+    const { stdout } = await execFileFn(
       process.execPath,
-      ["--import", "tsx", "scripts/knowledge.ts", "resolve", "--query", query],
+      args,
       { cwd: rootDir, maxBuffer: 10 * 1024 * 1024 },
     );
     return JSON.parse(stdout);

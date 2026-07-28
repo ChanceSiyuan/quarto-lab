@@ -32,7 +32,7 @@ test("requires explicit resolver selection for ambiguous knowledge", async ({ pa
   await page.getByRole("button", { name: "Run assessment" }).click();
 
   await expect(page.getByRole("heading", { name: "Knowledge match needs input" })).toBeVisible({ timeout: 120_000 });
-  await page.getByLabel(/knowledge\/a\/index\.qmd/).check();
+  await page.getByLabel(/knowledge\/solvable\/aklt-chain\/ORACLE\.qmd/).check();
   await page.getByRole("button", { name: "Continue assessment" }).click();
 
   await expect(page.getByRole("heading", { name: /Assessment complete|Assessment may be stale/ })).toBeVisible({ timeout: 120_000 });

@@ -37,6 +37,40 @@ test("refuses to start on a non-loopback host", async () => {
   await assert.rejects(startAssessmentService({ host: "0.0.0.0" }), /127\.0\.0\.1/);
 });
 
+test("the local knowledge adapter forwards a selected page to the trusted resolver CLI", async () => {
+  const localServiceModule = await import("../scripts/local-assessment-service.mjs");
+  assert.equal(typeof localServiceModule.createKnowledgeResolver, "function");
+  const calls = [];
+  const resolver = localServiceModule.createKnowledgeResolver("/repo", {
+    execFileFn: async (command, args, options) => {
+      calls.push({ command, args, options });
+      return {
+        stdout: JSON.stringify({
+          schemaVersion: 1,
+          query: "Fixture",
+          status: "match",
+          bundle: {
+            topic: "knowledge/a/index.qmd",
+            ancestorIndexes: ["knowledge/index.qmd", "knowledge/a/index.qmd"],
+            contentPages: ["knowledge/a.qmd"],
+            orderedFiles: ["knowledge/index.qmd", "knowledge/a/index.qmd", "knowledge/a.qmd"],
+          },
+          alternatives: [],
+        }),
+      };
+    },
+  });
+
+  const result = await resolver("Fixture", { selectedPage: "knowledge/a.qmd" });
+
+  assert.equal(result.bundle.contentPages[0], "knowledge/a.qmd");
+  assert.deepEqual(calls[0].args, [
+    "--import", "tsx", "scripts/knowledge.ts", "resolve",
+    "--query", "Fixture", "--select-page", "knowledge/a.qmd",
+  ]);
+  assert.equal(calls[0].options.cwd, "/repo");
+});
+
 test("standalone service close shuts down the assessment manager", async () => {
   let shutdowns = 0;
   const service = await startAssessmentService({
@@ -70,6 +104,38 @@ test("starts jobs through the POST endpoint", async () => {
   assert.equal(response.status, 202);
   assert.deepEqual(calls, ["Prob-001"]);
   assert.equal((await response.json()).runId, runId);
+});
+
+test("rejects non-JSON mutation requests before manager calls", async () => {
+  const server = createAssessmentService({
+    token: "secret",
+    manager: { start: async () => assert.fail("manager should not be called") },
+  });
+  const response = await request(server, "/__local/assessments/jobs", {
+    method: "POST",
+    headers: { ...tokenHeaders, "content-type": "text/plain" },
+    body: JSON.stringify({ problemId: "Prob-001" }),
+  });
+
+  assert.equal(response.status, 415);
+});
+
+test("rejects cross-origin mutation requests before manager calls", async () => {
+  const server = createAssessmentService({
+    token: "secret",
+    manager: { start: async () => assert.fail("manager should not be called") },
+  });
+  const response = await request(server, "/__local/assessments/jobs", {
+    method: "POST",
+    headers: {
+      ...tokenHeaders,
+      "content-type": "application/json",
+      origin: "https://attacker.example",
+    },
+    body: JSON.stringify({ problemId: "Prob-001" }),
+  });
+
+  assert.equal(response.status, 403);
 });
 
 test("rejects traversal IDs before manager calls", async () => {

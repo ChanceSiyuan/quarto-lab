@@ -36,10 +36,12 @@ test("builds input snapshot from problem, skill, schema, and matched bundle", as
     },
     skillPath: join(root, "skills", "assess-research-problem", "SKILL.md"),
     schemaPath: join(root, "schemas", "research-problem-assessment.schema.json"),
+    selectedAlternative: { page: "knowledge/example/index.qmd" },
   });
 
   assert.equal(input.problemId, "Prob-001");
   assert.equal(input.resolver.status, "match");
+  assert.equal(input.resolver.selectedPage, "knowledge/example/index.qmd");
   assert.equal(input.bundle[0].path, "knowledge/example/index.qmd");
   assert.match(input.problemJsonHash, /^[a-f0-9]{64}$/);
   assert.match(input.skillHash, /^[a-f0-9]{64}$/);
@@ -103,5 +105,42 @@ test("keeps a matching report current with the resolver's bundle result shape", 
       },
     }),
   });
+  assert.deepEqual(result, { stale: false, reasons: [] });
+});
+
+test("rechecks a user-selected report with the same selected resolver page", async () => {
+  const input = {
+    problemId: "Prob-001",
+    problemJsonHash: "same",
+    problemMdHash: "same",
+    skillHash: "same",
+    schemaHash: "same",
+    resolver: {
+      query: "Fixture",
+      status: "match",
+      topic: "knowledge/a/index.qmd",
+      orderedFiles: ["knowledge/a.qmd"],
+      selectedPage: "knowledge/a.qmd",
+    },
+    bundle: [{ path: "knowledge/a.qmd", hash: "same" }],
+  };
+  const result = await evaluateAssessmentStaleness({
+    rootDir: "/tmp/not-read",
+    input,
+    currentHashes: {
+      problemJsonHash: "same",
+      problemMdHash: "same",
+      skillHash: "same",
+      schemaHash: "same",
+      bundle: [{ path: "knowledge/a.qmd", hash: "same" }],
+    },
+    resolveKnowledge: async (_query, options) => options?.selectedPage === "knowledge/a.qmd"
+      ? {
+          status: "match",
+          bundle: { topic: "knowledge/a/index.qmd", orderedFiles: ["knowledge/a.qmd"] },
+        }
+      : { status: "ambiguous", bundle: null, alternatives: [] },
+  });
+
   assert.deepEqual(result, { stale: false, reasons: [] });
 });

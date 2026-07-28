@@ -110,7 +110,13 @@ function completedCodexResult() {
   };
   const validation = validateAssessmentEnvelope(envelope);
   assert.equal(validation.ok, true, validation.errors?.join("\n"));
-  return { ok: true, envelope: validation.value, computed: validation.computed, stderr: "" };
+  return {
+    ok: true,
+    envelope: validation.value,
+    computed: validation.computed,
+    eventsText: '{"type":"complete"}\n',
+    stderr: "",
+  };
 }
 
 test("rejects unknown problem IDs before accepting a run", async () => {
@@ -223,6 +229,81 @@ test("selection consumes a clarification run and records the selected alternativ
   assert.equal((await manager.getProblemState("Prob-001")).activeJob, null);
 });
 
+test("selection supplies the exact host bundle and rejects a child query change", async () => {
+  const selected = { page: "knowledge/a.qmd", topic: "knowledge/a/index.qmd", title: "A", matchKind: "exact-title" };
+  const other = { page: "knowledge/b.qmd", topic: "knowledge/b/index.qmd", title: "B", matchKind: "exact-title" };
+  const store = fakeStore();
+  const manager = createAssessmentJobManager({
+    rootDir: "/repo",
+    repository: fakeRepository(),
+    store,
+    codex: {
+      preflight: async () => ({ ok: true }),
+      run: async ({ selectedAlternative, trustedResolution }) => {
+        if (!selectedAlternative) {
+          return {
+            ok: true,
+            envelope: {
+              outcome: "needs_input",
+              language: "en",
+              knowledgeResolution: { query: "Fixture", status: "ambiguous", topic: null, orderedFiles: [] },
+              assessment: null,
+              clarification: { query: "Fixture", reason: "Choose one.", alternatives: [selected, other] },
+            },
+            stderr: "",
+          };
+        }
+        if (trustedResolution?.bundle?.orderedFiles.at(-1) !== selected.page) {
+          return { ok: false, code: "MISSING_TRUSTED_SELECTION", message: "selected bundle was not supplied", stderr: "" };
+        }
+        const completed = completedCodexResult();
+        completed.envelope.knowledgeResolution = {
+          query: "Forged child query",
+          status: "match",
+          topic: selected.topic,
+          orderedFiles: ["knowledge/index.qmd", selected.topic, selected.page],
+        };
+        return completed;
+      },
+    },
+    resolveKnowledge: async (_query, options) => options?.selectedPage
+      ? {
+          schemaVersion: 1,
+          query: "Fixture",
+          status: "match",
+          bundle: {
+            topic: selected.topic,
+            ancestorIndexes: ["knowledge/index.qmd", selected.topic],
+            contentPages: [selected.page],
+            orderedFiles: ["knowledge/index.qmd", selected.topic, selected.page],
+          },
+          alternatives: [],
+        }
+      : {
+          schemaVersion: 1,
+          query: "Fixture",
+          status: "ambiguous",
+          bundle: null,
+          alternatives: [
+            { ...selected, tier: 0, matchedTerms: 1 },
+            { ...other, tier: 0, matchedTerms: 1 },
+          ],
+        },
+    snapshot: { build: async () => ({ schemaVersion: 1, problemId: "Prob-001" }) },
+    reportRenderer: { render: () => "<!doctype html><title>Assessment</title>" },
+  });
+
+  const parent = await manager.start("Prob-001");
+  await new Promise((resolve) => setTimeout(resolve, 20));
+  const child = await manager.select(parent.runId, selected);
+  await new Promise((resolve) => setTimeout(resolve, 20));
+
+  const childRun = store.runs.find((run) => run.runId === child.runId);
+  assert.equal(childRun?.status, "failed");
+  assert.equal(childRun?.artifacts.error.code, "KNOWLEDGE_RESOLUTION_MISMATCH");
+  assert.equal(childRun?.artifacts.assessment, undefined);
+});
+
 test("hydrates a persisted clarification after restart for deduplication and selection", async () => {
   const alternative = { page: "knowledge/topic.qmd", topic: "topic", title: "Topic", matchKind: "title" };
   const store = fakeStore();
@@ -283,6 +364,118 @@ test("persists completed run summaries for problem page polling", async () => {
   assert.equal("stagingDir" in run, false);
   assert.equal("artifacts" in run, false);
   assert.equal(store.runs[0].artifacts.assessment.envelope.assessment.normalizedProblem, "Fixture problem.");
+  assert.equal(store.runs[0].artifacts.eventsText, '{"type":"complete"}\n');
+});
+
+test("retains Codex events when assessment post-processing fails", async () => {
+  const store = fakeStore();
+  const manager = createAssessmentJobManager({
+    rootDir: "/repo",
+    repository: fakeRepository(),
+    store,
+    codex: {
+      preflight: async () => ({ ok: true }),
+      run: async () => completedCodexResult(),
+    },
+    snapshot: {
+      build: async () => { throw new Error("snapshot failed"); },
+    },
+  });
+
+  await manager.start("Prob-001");
+  await new Promise((resolve) => setTimeout(resolve, 20));
+
+  assert.equal(store.runs[0].status, "failed");
+  assert.equal(store.runs[0].artifacts.error.message, "snapshot failed");
+  assert.equal(store.runs[0].artifacts.eventsText, '{"type":"complete"}\n');
+});
+
+test("rejects a completed assessment when the host resolver disagrees with the model", async () => {
+  const store = fakeStore();
+  const manager = createAssessmentJobManager({
+    rootDir: "/repo",
+    repository: fakeRepository(),
+    store,
+    codex: {
+      preflight: async () => ({ ok: true }),
+      run: async () => completedCodexResult(),
+    },
+    resolveKnowledge: async () => ({
+      schemaVersion: 1,
+      query: "Fixture",
+      status: "no-match",
+      bundle: null,
+      alternatives: [],
+    }),
+    snapshot: {
+      build: async () => {
+        throw new Error("a mismatched assessment must not build a trusted snapshot");
+      },
+    },
+  });
+
+  await manager.start("Prob-001");
+  await new Promise((resolve) => setTimeout(resolve, 20));
+
+  assert.equal(store.runs[0].status, "failed");
+  assert.deepEqual(store.runs[0].artifacts.error, {
+    code: "KNOWLEDGE_RESOLUTION_MISMATCH",
+    message: "Codex knowledge resolution does not match the trusted host resolver.",
+  });
+  assert.equal(store.runs[0].artifacts.assessment, undefined);
+  assert.equal(store.runs[0].artifacts.reportHtml, undefined);
+});
+
+test("rejects model-supplied ambiguity alternatives that differ from the host resolver", async () => {
+  const store = fakeStore();
+  const manager = createAssessmentJobManager({
+    rootDir: "/repo",
+    repository: fakeRepository(),
+    store,
+    codex: {
+      preflight: async () => ({ ok: true }),
+      run: async () => ({
+        ok: true,
+        envelope: {
+          outcome: "needs_input",
+          language: "en",
+          knowledgeResolution: {
+            query: "Fixture",
+            status: "ambiguous",
+            topic: null,
+            orderedFiles: [],
+          },
+          assessment: null,
+          clarification: {
+            query: "Fixture",
+            reason: "Choose one trusted topic.",
+            alternatives: [
+              { page: "knowledge/a.qmd", topic: "knowledge/a/index.qmd", title: "Altered A", matchKind: "exact-title" },
+              { page: "knowledge/b.qmd", topic: "knowledge/b/index.qmd", title: "B", matchKind: "exact-title" },
+            ],
+          },
+        },
+        stderr: "",
+      }),
+    },
+    resolveKnowledge: async () => ({
+      schemaVersion: 1,
+      query: "Fixture",
+      status: "ambiguous",
+      bundle: null,
+      alternatives: [
+        { page: "knowledge/a.qmd", topic: "knowledge/a/index.qmd", title: "A", matchKind: "exact-title", tier: 0, matchedTerms: 1 },
+        { page: "knowledge/b.qmd", topic: "knowledge/b/index.qmd", title: "B", matchKind: "exact-title", tier: 0, matchedTerms: 1 },
+      ],
+    }),
+  });
+
+  await manager.start("Prob-001");
+  await new Promise((resolve) => setTimeout(resolve, 20));
+
+  assert.equal(store.runs[0].status, "failed");
+  assert.equal(store.runs[0].artifacts.error.code, "KNOWLEDGE_RESOLUTION_MISMATCH");
+  assert.equal(store.runs[0].artifacts.clarification, undefined);
 });
 
 test("problem state surfaces stale latest summaries", async () => {
@@ -305,7 +498,13 @@ test("problem state surfaces stale latest summaries", async () => {
     reportRenderer: {
       render: () => "<!doctype html><title>Assessment</title>",
     },
-    resolveKnowledge: async () => ({ status: "match", bundle: { topic: "knowledge/topic.qmd", orderedFiles: ["knowledge/topic.qmd"] } }),
+    resolveKnowledge: async () => ({
+      schemaVersion: 1,
+      query: "Fixture",
+      status: "match",
+      bundle: { topic: "knowledge/topic.qmd", orderedFiles: ["knowledge/topic.qmd"] },
+      alternatives: [],
+    }),
     staleness: {
       evaluate: async ({ input, resolveKnowledge }) => {
         await resolveKnowledge(input.resolver.query);
