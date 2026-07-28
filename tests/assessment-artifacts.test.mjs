@@ -33,6 +33,14 @@ test("rejects a problem directory symlink that escapes the problems root", async
   await assert.rejects(() => resolveProblemDir(root, "Prob-001"), /Path escapes expected root/);
 });
 
+test("rejects a problems root symlink that escapes the workspace", async () => {
+  const root = await mkdtemp(join(tmpdir(), "assessment-paths-"));
+  const outside = await mkdtemp(join(tmpdir(), "assessment-outside-"));
+  await symlink(outside, join(root, "problems"));
+
+  await assert.rejects(() => resolveProblemDir(root, "Prob-001"), /Path escapes expected root/);
+});
+
 test("rejects generated directories outside the workspace or behind a symlink", async () => {
   const root = await mkdtemp(join(tmpdir(), "assessment-store-"));
   const outside = await mkdtemp(join(tmpdir(), "assessment-outside-"));
