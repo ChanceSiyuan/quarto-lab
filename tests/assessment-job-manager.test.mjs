@@ -43,6 +43,9 @@ function fakeStore() {
     async readClarification(problemId, runId) {
       return runs.find((run) => run.problemId === problemId && run.runId === runId)?.artifacts?.clarification ?? null;
     },
+    async readInput(problemId, runId) {
+      return runs.find((run) => run.problemId === problemId && run.runId === runId)?.artifacts?.input ?? null;
+    },
   };
 }
 
@@ -137,6 +140,36 @@ test("returns the active run for duplicate starts", async () => {
   const first = await manager.start("Prob-001");
   const second = await manager.start("Prob-001");
   assert.equal(second.runId, first.runId);
+  release();
+});
+
+test("problem state exposes public active job fields only", async () => {
+  let release;
+  const store = fakeStore();
+  const manager = createAssessmentJobManager({
+    rootDir: "/repo",
+    repository: fakeRepository(),
+    store,
+    codex: {
+      preflight: async () => ({ ok: true }),
+      run: async ({ onChild }) => {
+        onChild?.({ kill() {}, spawnargs: ["codex", "exec", "secret prompt"] });
+        return new Promise((resolve) => {
+          release = () => resolve({ ok: false, code: "CODEX_EXIT", message: "done", eventsText: "", stderr: "" });
+        });
+      },
+    },
+  });
+
+  const accepted = await manager.start("Prob-001");
+  const state = await manager.getProblemState("Prob-001");
+
+  assert.equal(state.activeJob.runId, accepted.runId);
+  assert.equal(state.activeJob.status, "running");
+  assert.equal("run" in state.activeJob, false);
+  assert.equal("child" in state.activeJob, false);
+  assert.equal("stagingDir" in state.activeJob, false);
+  assert.equal(JSON.stringify(state).includes("secret prompt"), false);
   release();
 });
 
@@ -247,5 +280,45 @@ test("persists completed run summaries for problem page polling", async () => {
   assert.equal(run.summary.recommendation, "proceed");
   assert.equal(run.summary.lifecycleMutation, false);
   assert.equal(run.summary.reportHref, `/__local/assessments/reports/Prob-001/${run.runId}`);
-  assert.equal(run.artifacts.assessment.envelope.assessment.normalizedProblem, "Fixture problem.");
+  assert.equal("stagingDir" in run, false);
+  assert.equal("artifacts" in run, false);
+  assert.equal(store.runs[0].artifacts.assessment.envelope.assessment.normalizedProblem, "Fixture problem.");
+});
+
+test("problem state surfaces stale latest summaries", async () => {
+  const store = fakeStore();
+  const manager = createAssessmentJobManager({
+    rootDir: "/repo",
+    repository: fakeRepository(),
+    store,
+    codex: {
+      preflight: async () => ({ ok: true }),
+      run: async () => completedCodexResult(),
+    },
+    snapshot: {
+      build: async () => ({
+        schemaVersion: 1,
+        problemId: "Prob-001",
+        resolver: { query: "Fixture", status: "match", topic: "knowledge/topic.qmd", orderedFiles: ["knowledge/topic.qmd"] },
+      }),
+    },
+    reportRenderer: {
+      render: () => "<!doctype html><title>Assessment</title>",
+    },
+    resolveKnowledge: async () => ({ status: "match", bundle: { topic: "knowledge/topic.qmd", orderedFiles: ["knowledge/topic.qmd"] } }),
+    staleness: {
+      evaluate: async ({ input, resolveKnowledge }) => {
+        await resolveKnowledge(input.resolver.query);
+        return { stale: true, reasons: ["problemMdHash changed"] };
+      },
+    },
+  });
+
+  await manager.start("Prob-001");
+  await new Promise((resolve) => setTimeout(resolve, 20));
+  const state = await manager.getProblemState("Prob-001");
+
+  assert.equal(state.latest.verdict, "DO_NOW");
+  assert.equal(state.stale, true);
+  assert.deepEqual(state.staleReasons, ["problemMdHash changed"]);
 });

@@ -88,7 +88,18 @@ test("publishes completed artifacts atomically under the problem", async () => {
   const runJson = JSON.parse(await readFile(join(finalDir, "run.json"), "utf8"));
   assert.equal(runJson.status, "completed");
   assert.deepEqual(runJson.summary, summary);
+  assert.equal("stagingDir" in runJson, false);
+  assert.equal("finalDir" in runJson, false);
   assert.equal(await readFile(join(finalDir, "report.html"), "utf8"), "<!doctype html><title>Report</title>");
+});
+
+test("read paths do not create problem directories", async () => {
+  const root = await mkdtemp(join(tmpdir(), "assessment-read-paths-"));
+  const store = createArtifactStore({ rootDir: root });
+
+  assert.deepEqual(await store.listRuns("Prob-001"), []);
+  await assert.rejects(() => store.readRun("Prob-001", "20260728T010203Z-a1b2c3"), /ENOENT/);
+  await assert.rejects(() => stat(join(root, "problems", "Prob-001")), /ENOENT/);
 });
 
 test("writes failed runs without assessment or report files", async () => {

@@ -35,6 +35,6 @@ test("requires explicit resolver selection for ambiguous knowledge", async ({ pa
   await page.getByLabel(/knowledge\/a\/index\.qmd/).check();
   await page.getByRole("button", { name: "Continue assessment" }).click();
 
-  await expect(page.getByRole("heading", { name: "Assessment complete" })).toBeVisible({ timeout: 120_000 });
+  await expect(page.getByRole("heading", { name: /Assessment complete|Assessment may be stale/ })).toBeVisible({ timeout: 120_000 });
   await expect(page.getByText("Recommendation", { exact: true })).toBeVisible();
 });

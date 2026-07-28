@@ -1,10 +1,14 @@
 import { randomBytes } from "node:crypto";
+import { execFile } from "node:child_process";
 import { readFile } from "node:fs/promises";
 import { resolve, join } from "node:path";
+import { promisify } from "node:util";
 
 import { createAssessmentJobManager } from "../lib/assessments/job-manager.mjs";
 import { createAssessmentService } from "../lib/assessments/local-service.mjs";
 import { createProblemRepository } from "../lib/problems/repository.mjs";
+
+const execFileAsync = promisify(execFile);
 
 async function createLocalRepository(rootDir) {
   const generatedIndex = JSON.parse(await readFile(join(rootDir, ".generated", "problem-index.json"), "utf8"));
@@ -19,16 +23,32 @@ async function createLocalRepository(rootDir) {
   };
 }
 
+function createKnowledgeResolver(rootDir) {
+  return async function resolveKnowledge(query) {
+    const { stdout } = await execFileAsync(
+      process.execPath,
+      ["--import", "tsx", "scripts/knowledge.ts", "resolve", "--query", query],
+      { cwd: rootDir, maxBuffer: 10 * 1024 * 1024 },
+    );
+    return JSON.parse(stdout);
+  };
+}
+
 export async function startAssessmentService({
   rootDir = process.cwd(),
   token = process.env.LOCAL_ASSESSMENT_TOKEN ?? randomBytes(16).toString("hex"),
   port = 0,
   host = "127.0.0.1",
+  manager = null,
 } = {}) {
   if (host !== "127.0.0.1") throw new Error("Local assessment service must bind to 127.0.0.1.");
   const workspaceRoot = resolve(rootDir);
-  const manager = createAssessmentJobManager({ rootDir: workspaceRoot, repository: await createLocalRepository(workspaceRoot) });
-  const server = createAssessmentService({ rootDir: workspaceRoot, token, manager });
+  const assessmentManager = manager ?? createAssessmentJobManager({
+    rootDir: workspaceRoot,
+    repository: await createLocalRepository(workspaceRoot),
+    resolveKnowledge: createKnowledgeResolver(workspaceRoot),
+  });
+  const server = createAssessmentService({ rootDir: workspaceRoot, token, manager: assessmentManager });
   await new Promise((resolveListen, reject) => {
     server.once("error", reject);
     server.listen(port, host, () => {
@@ -41,7 +61,10 @@ export async function startAssessmentService({
   return {
     server,
     url,
-    close: () => new Promise((resolveClose, reject) => server.close((error) => error ? reject(error) : resolveClose())),
+    close: async () => {
+      await assessmentManager.shutdown?.();
+      await new Promise((resolveClose, reject) => server.close((error) => error ? reject(error) : resolveClose()));
+    },
   };
 }
 

@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtemp, mkdir, writeFile } from "node:fs/promises";
+import { mkdtemp, mkdir, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
@@ -35,6 +35,20 @@ test("rejects an absent capability token while constructing the service", () => 
 
 test("refuses to start on a non-loopback host", async () => {
   await assert.rejects(startAssessmentService({ host: "0.0.0.0" }), /127\.0\.0\.1/);
+});
+
+test("standalone service close shuts down the assessment manager", async () => {
+  let shutdowns = 0;
+  const service = await startAssessmentService({
+    token: "secret",
+    manager: {
+      shutdown: async () => { shutdowns += 1; },
+    },
+  });
+
+  await service.close();
+
+  assert.equal(shutdowns, 1);
 });
 
 test("starts jobs through the POST endpoint", async () => {
@@ -139,4 +153,12 @@ test("serves report and diagnostic log from the requested run only", async () =>
   assert.match(log.headers.get("content-type"), /^text\/plain; charset=utf-8$/);
   assert.match(log.headers.get("content-disposition"), /^attachment/);
   assert.equal(await log.text(), "diagnostic text\n");
+});
+
+test("missing report reads do not create problem directories", async () => {
+  const rootDir = await mkdtemp(join(tmpdir(), "assessment-service-read-"));
+  const response = await request(createAssessmentService({ rootDir, token: "secret", manager: {} }), `/__local/assessments/reports/Prob-001/${runId}`, { headers: tokenHeaders });
+
+  assert.equal(response.status, 404);
+  await assert.rejects(() => stat(join(rootDir, "problems", "Prob-001")), /ENOENT/);
 });
