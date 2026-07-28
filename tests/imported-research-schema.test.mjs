@@ -142,6 +142,18 @@ test("validates real attempt metadata including present and missing candidates",
   assert.equal(validateResearchAttempt(missingCandidate).ok, true);
 });
 
+test("accepts the real not-run public-contract gate status", () => {
+  const notRunPublicContract = structuredClone(baseAttempt);
+  notRunPublicContract.id = "ATT-063";
+  notRunPublicContract.sequence = 63;
+  notRunPublicContract.cohort = "cohort-001-100";
+  notRunPublicContract.provenance.sourceInfrastructureCommit = "3e61f5ac8143e4848e5e814188c83683c74dfe4c";
+  notRunPublicContract.provenance.sourceCohort = "cohort-001-100";
+  notRunPublicContract.gate.publicContract = "not-run";
+
+  assert.equal(validateResearchAttempt(notRunPublicContract).ok, true);
+});
+
 test("rejects unsafe attempt artifacts and unexplained missing candidates", () => {
   const unsafe = structuredClone(baseAttempt);
   unsafe.artifacts[0].path = "../LOG.md";

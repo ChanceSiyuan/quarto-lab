@@ -88,6 +88,11 @@ const report200 = report101
   .replace("| Median seconds | not run |", "| Median seconds | 2.232983041496482 |")
   .replace("| P95 seconds | not run |", "| P95 seconds | 9.437287125037983 |");
 
+const report063 = report001
+  .replace("001", "063")
+  .replace("run100-proposal-001", "run100-proposal-063")
+  .replace("**passed**", "**not-run**");
+
 test("maps proposal numbers to the exact AutoQEC trial refs", () => {
   assert.equal(buildTrialRef(1), "autoresearch/css-distance/run100-proposal-001");
   assert.equal(buildTrialRef(100), "autoresearch/css-distance/run100-proposal-100");
@@ -117,6 +122,13 @@ test("parses failed public-contract reports as not-run missing-candidate attempt
   assert.equal(parsed.metrics.runs, 0);
   assert.equal(parsed.metrics.runtimeSeconds, null);
   assert.equal(parsed.metrics.timingStatus, "not-run");
+});
+
+test("parses the real not-run public-contract status", () => {
+  const parsed = parseAutoqecReport(report063, { proposalNumber: 63 });
+
+  assert.equal(parsed.branch, "autoresearch/css-distance/run100-proposal-063");
+  assert.equal(parsed.publicContract, "not-run");
 });
 
 test("parses recorded timing in 101-200 reports", () => {
