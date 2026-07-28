@@ -41,11 +41,17 @@ const SKILLS_ROOT = path.join(REPO_ROOT, "skills");
 
 /** The complete set of local skills this repository commits. */
 const SKILL_NAMES = [
+  "capture-chat-draft",
+  "complete-gaps",
+  "conference-survey",
   "download-ref",
   "expand-notes",
+  "generate-issues",
+  "integrate-paper",
   "read-knowledge",
   "render-site",
   "review-draft",
+  "screen-paper",
 ] as const;
 
 type SkillName = (typeof SKILL_NAMES)[number];
@@ -456,12 +462,60 @@ const RENDER_SITE: readonly Clause[] = [
   },
 ];
 
+const CAPTURE_CHAT_DRAFT: readonly Clause[] = [
+  { requirement: "writes a reviewable reading note under drafts", in: "body", pattern: /`drafts\/reading-notes\//i },
+  { requirement: "separates paper claims from user hypotheses and open questions", in: "body", pattern: /paper-backed[^.]*user hypotheses[^.]*open questions/i },
+  { requirement: "never promotes the capture into knowledge", in: "body", pattern: /never[^.]*`knowledge\/`/i },
+  { requirement: "previews the exact captured draft", in: "body", pattern: /make draft-preview FILE=/i },
+];
+
+const COMPLETE_GAPS: readonly Clause[] = [
+  { requirement: "works on an untrusted draft copy", in: "body", pattern: /`drafts\/`/i },
+  { requirement: "requires explicit approval before writing", in: "body", pattern: /explicit approval/i },
+  { requirement: "leaves trusted knowledge unchanged", in: "body", pattern: /trusted[^.]*`knowledge\/`[^.]*unchanged/i },
+  { requirement: "previews the completed draft", in: "body", pattern: /make draft-preview FILE=/i },
+];
+
+const CONFERENCE_SURVEY: readonly Clause[] = [
+  { requirement: "stores conference surveys as drafts", in: "body", pattern: /`drafts\/conference-surveys\/`/i },
+  { requirement: "audits every oral before filtering", in: "body", pattern: /every oral/i },
+  { requirement: "never writes conference output into knowledge", in: "body", pattern: /never[^.]*`knowledge\/`/i },
+  { requirement: "previews the survey draft", in: "body", pattern: /make draft-preview FILE=/i },
+];
+
+const GENERATE_ISSUES: readonly Clause[] = [
+  { requirement: "writes untrusted issue proposals under projects", in: "body", pattern: /`projects\/<project>\/issues\/`/i },
+  { requirement: "does not write issue proposals into knowledge", in: "body", pattern: /never[^.]*`knowledge\/`/i },
+  { requirement: "resolves trusted source context", in: "body", pattern: /make knowledge-resolve QUERY=/i },
+  { requirement: "requires approval before writing issue files", in: "body", pattern: /explicit approval/i },
+];
+
+const INTEGRATE_PAPER: readonly Clause[] = [
+  { requirement: "treats drafts and literature as untrusted", in: "body", pattern: /`drafts\/`[^.]*`literature\/`[^.]*untrusted/i },
+  { requirement: "resolves trusted qmd context", in: "body", pattern: /make knowledge-resolve QUERY=/i },
+  { requirement: "requires approval for the section map", in: "body", pattern: /explicit approval/i },
+  { requirement: "never edits knowledge while integrating a manuscript", in: "body", pattern: /never[^.]*edit[^.]*`knowledge\/`/i },
+];
+
+const SCREEN_PAPER: readonly Clause[] = [
+  { requirement: "does rapid triage rather than deep review", in: "body", pattern: /triage[^.]*not[^.]*deep review/i },
+  { requirement: "does not hardcode one lab research focus", in: "body", pattern: /user's screening criteria/i },
+  { requirement: "resolves learned screening context", in: "body", pattern: /make knowledge-resolve QUERY=/i },
+  { requirement: "does not modify repository content", in: "body", pattern: /Do not modify/i },
+];
+
 const CLAUSES: Readonly<Record<SkillName, readonly Clause[]>> = {
+  "capture-chat-draft": CAPTURE_CHAT_DRAFT,
+  "complete-gaps": COMPLETE_GAPS,
+  "conference-survey": CONFERENCE_SURVEY,
   "read-knowledge": READ_KNOWLEDGE,
   "review-draft": REVIEW_DRAFT,
   "download-ref": DOWNLOAD_REF,
   "expand-notes": EXPAND_NOTES,
+  "generate-issues": GENERATE_ISSUES,
+  "integrate-paper": INTEGRATE_PAPER,
   "render-site": RENDER_SITE,
+  "screen-paper": SCREEN_PAPER,
 };
 
 for (const name of SKILL_NAMES) {
