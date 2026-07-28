@@ -66,6 +66,7 @@ type ProblemAssessmentResponse = {
 
 type Props = { problemId: string };
 const EMPTY_ALTERNATIVES: ClarificationAlternative[] = [];
+const DEFAULT_SELECTION = { runId: null, index: "0" };
 
 function stateFromProblemResponse(body: ProblemAssessmentResponse | null): AssessmentState {
   const runs = body?.runs ?? [];
@@ -108,7 +109,7 @@ function serviceFailure(response: Response) {
 export function AssessmentPanel({ problemId }: Props) {
   const [state, setState] = useState<AssessmentState>({ kind: "unavailable" });
   const [busy, setBusy] = useState(false);
-  const [selectedAlternativeIndex, setSelectedAlternativeIndex] = useState("0");
+  const [selection, setSelection] = useState<{ runId: string | null; index: string }>(DEFAULT_SELECTION);
 
   const refresh = useCallback(async () => {
     try {
@@ -165,6 +166,8 @@ export function AssessmentPanel({ problemId }: Props) {
   }
 
   const alternatives = state.clarification?.alternatives ?? EMPTY_ALTERNATIVES;
+  const selectionRunId = state.runId ?? null;
+  const selectedAlternativeIndex = selection.runId === selectionRunId ? selection.index : "0";
   const selectedAlternative = useMemo(
     () => alternatives[Number.parseInt(selectedAlternativeIndex, 10)] ?? alternatives[0],
     [alternatives, selectedAlternativeIndex],
@@ -224,7 +227,7 @@ export function AssessmentPanel({ problemId }: Props) {
                   name={`assessment-alternative-${state.runId}`}
                   value={String(index)}
                   checked={selectedAlternativeIndex === String(index)}
-                  onChange={() => setSelectedAlternativeIndex(String(index))}
+                  onChange={() => setSelection({ runId: selectionRunId, index: String(index) })}
                 />
                 <span>
                   <strong>{alternative.title}</strong>
