@@ -24,7 +24,7 @@ test("runs local assessment and opens generated report", async ({ context, page 
   await report.goto(reportHref ?? "");
   await expect(report.getByRole("heading", { name: /Research Problem Assessment/ })).toBeVisible();
   await expect(report.getByRole("heading", { name: "Research Value Audit" })).toBeVisible();
-  await expect(report.getByText("Fake Codex completed the assessment.")).toBeVisible();
+  await expect(report.getByText(`Fake Codex completed assessment for ${LOCAL_ASSESSMENT_COMPLETE_PROBLEM_ID}.`)).toBeVisible();
 });
 
 test("requires explicit resolver selection for ambiguous knowledge", async ({ page }) => {
