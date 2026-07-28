@@ -6,6 +6,9 @@ import test from "node:test";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 const out = join(root, "out");
+const generatedIndex = JSON.parse(
+  await readFile(join(root, ".generated/problem-index.json"), "utf8"),
+);
 
 async function fileExists(path) {
   try {
@@ -29,6 +32,12 @@ async function collectFiles(dir) {
   }
   return files;
 }
+
+test("pages build indexes only the public showcase root", () => {
+  assert.deepEqual(generatedIndex.problems.map((problem) => problem.id), ["QMB-001"]);
+  assert.equal(generatedIndex.summary.total, 1);
+  assert.equal(generatedIndex.problems[0].title, "CSS code-distance algorithm search");
+});
 
 test("pages showcase writes static route files", async () => {
   for (const routeFile of [

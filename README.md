@@ -23,6 +23,10 @@ This starter does not use `wrangler.jsonc`.
 
 Problems live in `problems/<id>/` and are indexed into `.generated/problem-index.json` before dev, lint, build, and test commands. The generated index is ignored by Git; `problem.json`, `problem.md`, and `generation/` records are the durable audit trail.
 
+Only `problems/` is indexed by local development and ordinary production
+builds. The synthetic public example lives separately under
+`examples/showcase/problems/` and is not available from local routes.
+
 Run locally:
 
 ```bash
@@ -109,8 +113,9 @@ actions tied to the current ChatGPT user. Leave public content anonymous.
 
 - `make dev`: install dependencies when needed and start local development
 - `npm run build`: verify the vinext build output
-- `npm run pages:build`: snapshot the static `QMB-001` example into `out/`
-  for GitHub Pages at `https://nzy1997.github.io/research-loop/`
+- `npm run pages:build`: build only the synthetic fixtures under
+  `examples/showcase/problems/` and snapshot them into `out/` for GitHub Pages
+  at `https://nzy1997.github.io/research-loop/`
 - `npm test`: build the starter and verify its rendered loading skeleton
 - `npm run db:generate`: generate Drizzle migrations after schema changes
 

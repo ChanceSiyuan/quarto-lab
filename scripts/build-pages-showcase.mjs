@@ -1,10 +1,14 @@
+import { execFile } from "node:child_process";
 import { cp, mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises";
 import { basename, dirname, extname, join, relative } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { promisify } from "node:util";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 const outDir = join(root, "out");
 const clientDir = join(root, "dist/client");
+const execFileAsync = promisify(execFile);
+const vinextBin = fileURLToPath(new URL("../node_modules/.bin/vinext", import.meta.url));
 const basePath = process.env.PAGES_BASE_PATH ?? "/research-loop";
 const siteOrigin = process.env.PAGES_SITE_ORIGIN ?? "https://nzy1997.github.io";
 const siteUrl = `${siteOrigin}${basePath}`;
@@ -115,7 +119,24 @@ async function renderRoute(worker, route) {
   return rewriteHtml(await response.text());
 }
 
+async function buildShowcaseApp() {
+  await execFileAsync(
+    process.execPath,
+    [
+      "scripts/build-problem-index.mjs",
+      "--problems-dir", "examples/showcase/problems",
+    ],
+    { cwd: root, maxBuffer: 10 * 1024 * 1024 },
+  );
+  await execFileAsync(vinextBin, ["build"], {
+    cwd: root,
+    env: { ...process.env, WRANGLER_LOG_PATH: ".wrangler/wrangler.log" },
+    maxBuffer: 10 * 1024 * 1024,
+  });
+}
+
 async function main() {
+  await buildShowcaseApp();
   await rm(outDir, { recursive: true, force: true });
   await mkdir(outDir, { recursive: true });
   await copyStaticClientAssets();
