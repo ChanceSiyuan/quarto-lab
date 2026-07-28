@@ -1,8 +1,10 @@
 import assert from "node:assert/strict";
+import { execFile } from "node:child_process";
 import { createHash } from "node:crypto";
-import { chmod, lstat, mkdir, mkdtemp, readFile, readdir, rm, symlink, writeFile } from "node:fs/promises";
+import { chmod, lstat, mkdir, mkdtemp, readFile, readdir, rm, symlink, truncate, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { promisify } from "node:util";
 import test from "node:test";
 
 import {
@@ -16,6 +18,8 @@ import {
 
 const JOB_ID = "ARJ-20260728T080000Z-deadbeef";
 const PROBLEM_ID = "Prob-007";
+const MAX_REVISION_BYTES = 512 * 1024 * 1024;
+const execFileAsync = promisify(execFile);
 
 function digest(text) {
   return createHash("sha256").update(text).digest("hex");
@@ -46,6 +50,14 @@ async function fixture(t) {
   t.after(() => rm(rootDir, { recursive: true, force: true }));
   const stage = await createPreparationStage({ rootDir, jobId: JOB_ID, problemId: PROBLEM_ID });
   return { rootDir, ...stage };
+}
+
+async function readyWorkspace(stage, contents = "safe\n") {
+  await mkdir(join(stage.workspaceDir, "candidate-template"), { recursive: true });
+  await writeFile(join(stage.workspaceDir, "candidate-template", "candidate.py"), contents);
+  const manifest = manifestFor(contents);
+  await writeAtomicJson(join(stage.workspaceDir, "infrastructure.json"), manifest);
+  return { contents, manifest };
 }
 
 test("preparation staging creates only private state, logs, and an isolated workspace", async (t) => {
@@ -173,4 +185,112 @@ test("revision readers sort IDs and return only the latest ready manifest", asyn
   const latest = await readLatestReadyInfrastructure({ rootDir: stage.rootDir, problemId: PROBLEM_ID });
   assert.equal(latest.id, "INF-010");
   assert.equal(latest.status, "ready");
+});
+
+test("publication counts the new manifest against the aggregate revision budget", async (t) => {
+  const stage = await fixture(t);
+  const { contents } = await readyWorkspace(stage);
+  const payloadBytes = Buffer.byteLength(contents);
+  const base = join(stage.rootDir, "problems", PROBLEM_ID, "infrastructure", "INF-002");
+  await mkdir(base, { recursive: true });
+  await writeFile(join(base, "filler"), "");
+  await truncate(join(base, "filler"), MAX_REVISION_BYTES - payloadBytes);
+
+  await assert.rejects(
+    () => publishInfrastructureRevision({ rootDir: stage.rootDir, stageDir: stage.stageDir, problemId: PROBLEM_ID, expectedRevisionId: "INF-001" }),
+    /512 MiB/,
+  );
+});
+
+test("publication refuses symlinked destination components before writing outside the checkout", async (t) => {
+  const stage = await fixture(t);
+  await readyWorkspace(stage);
+  const outside = await mkdtemp(join(tmpdir(), "autoresearch-outside-"));
+  t.after(() => rm(outside, { recursive: true, force: true }));
+  await symlink(outside, join(stage.rootDir, "problems"));
+
+  await assert.rejects(
+    () => publishInfrastructureRevision({ rootDir: stage.rootDir, stageDir: stage.stageDir, problemId: PROBLEM_ID, expectedRevisionId: "INF-001" }),
+    /symlink|outside/i,
+  );
+  assert.deepEqual(await readdir(outside), []);
+});
+
+test("publication rejects symlinks, special files, missing listed files, and existing revision IDs", async (t) => {
+  const symlinked = await fixture(t);
+  const external = join(symlinked.rootDir, "external.py");
+  await writeFile(external, "safe\n");
+  await mkdir(join(symlinked.workspaceDir, "candidate-template"), { recursive: true });
+  await symlink(external, join(symlinked.workspaceDir, "candidate-template", "candidate.py"));
+  await writeAtomicJson(join(symlinked.workspaceDir, "infrastructure.json"), manifestFor("safe\n"));
+  await assert.rejects(
+    () => publishInfrastructureRevision({ rootDir: symlinked.rootDir, stageDir: symlinked.stageDir, problemId: PROBLEM_ID, expectedRevisionId: "INF-001" }),
+    /symlink/i,
+  );
+
+  if (process.platform !== "win32") {
+    const special = await fixture(t);
+    await readyWorkspace(special);
+    await execFileAsync("mkfifo", [join(special.workspaceDir, "pipe")]);
+    await assert.rejects(
+      () => publishInfrastructureRevision({ rootDir: special.rootDir, stageDir: special.stageDir, problemId: PROBLEM_ID, expectedRevisionId: "INF-001" }),
+      /special/i,
+    );
+  }
+
+  const missing = await fixture(t);
+  const { manifest } = await readyWorkspace(missing);
+  manifest.files.push({ path: "missing.txt", sha256: digest("missing\n"), size: 8, executable: false });
+  await writeAtomicJson(join(missing.workspaceDir, "infrastructure.json"), manifest);
+  await assert.rejects(
+    () => publishInfrastructureRevision({ rootDir: missing.rootDir, stageDir: missing.stageDir, problemId: PROBLEM_ID, expectedRevisionId: "INF-001" }),
+    /missing/i,
+  );
+
+  const collision = await fixture(t);
+  await readyWorkspace(collision);
+  await publishInfrastructureRevision({ rootDir: collision.rootDir, stageDir: collision.stageDir, problemId: PROBLEM_ID, expectedRevisionId: "INF-001" });
+  await assert.rejects(
+    () => publishInfrastructureRevision({ rootDir: collision.rootDir, stageDir: collision.stageDir, problemId: PROBLEM_ID, expectedRevisionId: "INF-001" }),
+    /exist/i,
+  );
+});
+
+test("publication rejects per-file size overflow and cleans up manifest copy or rename failures", async (t) => {
+  const oversized = await fixture(t);
+  const { manifest } = await readyWorkspace(oversized);
+  const source = join(oversized.workspaceDir, "candidate-template", "candidate.py");
+  await truncate(source, 16 * 1024 * 1024 + 1);
+  manifest.files[0].size = 16 * 1024 * 1024 + 1;
+  manifest.files[0].sha256 = digest(await readFile(source));
+  await writeAtomicJson(join(oversized.workspaceDir, "infrastructure.json"), manifest);
+  await assert.rejects(
+    () => publishInfrastructureRevision({ rootDir: oversized.rootDir, stageDir: oversized.stageDir, problemId: PROBLEM_ID, expectedRevisionId: "INF-001" }),
+    /16 MiB/,
+  );
+
+  for (const failure of ["manifest-copy", "manifest-rename"]) {
+    const stage = await fixture(t);
+    await readyWorkspace(stage);
+    const fs = await import("node:fs/promises");
+    await assert.rejects(
+      () => publishInfrastructureRevision({
+        rootDir: stage.rootDir, stageDir: stage.stageDir, problemId: PROBLEM_ID, expectedRevisionId: "INF-001",
+        fileOps: {
+          mkdir: fs.mkdir,
+          copyFile: async (...args) => {
+            if (failure === "manifest-copy" && args[1].endsWith(".infrastructure.json.tmp")) throw new Error(failure);
+            return fs.copyFile(...args);
+          },
+          rename: async (...args) => {
+            if (failure === "manifest-rename") throw new Error(failure);
+            return fs.rename(...args);
+          },
+          rm: fs.rm,
+        },
+      }),
+      new RegExp(failure),
+    );
+    await assert.rejects(() => lstat(join(stage.rootDir, "problems", PROBLEM_ID, "infrastructure", "INF-001")), /ENOENT/);
+  }
 });
