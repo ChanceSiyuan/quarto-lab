@@ -1,0 +1,19 @@
+{
+  "manifest_version": 2,
+  "name": "Research Loop — Local Codex for Zotero",
+  "version": "0.8.0",
+  "description": "Use local Codex to read Zotero papers and work with a selected Research Loop repository.",
+  "author": "Research Loop contributors; based on QLab and Zotkit Reader",
+  "icons": {
+    "48": "chrome/content/icons/icon.svg",
+    "96": "chrome/content/icons/icon.svg"
+  },
+  "applications": {
+    "zotero": {
+      "id": "qlab-zotero@quarto-lab.local",
+      "update_url": "https://qlab.invalid/updates.json",
+      "strict_min_version": "9.0",
+      "strict_max_version": "9.0.*"
+    }
+  }
+}

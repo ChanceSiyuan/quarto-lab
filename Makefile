@@ -13,7 +13,7 @@
 	knowledge-check knowledge-resolve knowledge-preview \
 	draft-preview \
 	literature-index literature-fetch literature-sync \
-	migration-verify
+	migration-verify zotero-plugin-test zotero-plugin
 
 help:
 	@echo 'Research Loop'
@@ -34,6 +34,9 @@ help:
 	@echo '  make literature-sync                            fetch the pinned source of every arXiv reference'
 	@echo
 	@echo '  make migration-verify                           re-check the imported harness cards against the manifest'
+	@echo
+	@echo '  make zotero-plugin-test                         type-check and test the Zotero integration'
+	@echo '  make zotero-plugin                              test and build the installable Zotero XPI'
 
 dev: node_modules/.package-lock.json
 	npm run dev
@@ -85,6 +88,15 @@ literature-sync: node_modules/.package-lock.json
 
 migration-verify: node_modules/.package-lock.json
 	npm run migration:verify
+
+zotero-plugin-test: integrations/zotero/node_modules/.package-lock.json
+	cd integrations/zotero && npm run check && npm test
+
+zotero-plugin: zotero-plugin-test
+	cd integrations/zotero && npm run build
+
+integrations/zotero/node_modules/.package-lock.json: integrations/zotero/package-lock.json
+	cd integrations/zotero && npm ci
 
 node_modules/.package-lock.json: package-lock.json
 	npm ci

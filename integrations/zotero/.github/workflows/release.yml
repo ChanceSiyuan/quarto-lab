@@ -1,0 +1,46 @@
+name: Release (XPI)
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write   # create the GitHub Release and upload the XPI asset
+
+jobs:
+  build-xpi:
+    # macOS: the native helper is built as a universal (arm64+x86_64) binary
+    # with an ad-hoc signature by `make universal`, which build.mjs invokes.
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      # Full gate before we ship an artifact: type-check, JS tests, native tests.
+      - run: npm run check
+      - run: npm test
+      - run: npm run native:test
+      # build.mjs always rebuilds the universal helper from source (never trusts
+      # a pre-existing dist binary) and produces dist/Zotkit-<version>.xpi + .sha256.
+      - run: npm run build
+      - name: Verify tag matches manifest version
+        run: |
+          manifest_version=$(node -p "require('./manifest.json').version")
+          tag_version="${GITHUB_REF_NAME#v}"
+          if [ "$manifest_version" != "$tag_version" ]; then
+            echo "::error::tag $GITHUB_REF_NAME does not match manifest version $manifest_version"
+            exit 1
+          fi
+      - name: Publish GitHub Release with XPI
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            dist/Zotkit-*.xpi \
+            dist/Zotkit-*.xpi.sha256 \
+            --title "$GITHUB_REF_NAME" \
+            --notes "Zotero Reader plugin $GITHUB_REF_NAME. Manual install: download the XPI and add it via Zotero → Tools → Add-ons. Automatic updates require a real update_url feed (tracked separately)."

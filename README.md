@@ -96,6 +96,26 @@ the allowlist is what keeps a page from turning a render into code execution.
 duplicate parents, broken links, cycles, path escapes, and citation keys that
 are not in `literature/ref.bib`.
 
+## Zotero integration
+
+The Zotero add-on under `integrations/zotero/` is the QLab Reader and Workbench
+integration carried over intact. Its visible product name and build artifact
+use **Research Loop**, while its established plugin ID, preferences, QLab
+commands, and trust-boundary behavior remain compatible with the original.
+
+Build the installable add-on from this repository:
+
+```bash
+make zotero-plugin
+```
+
+Install the resulting
+`integrations/zotero/dist/Research-Loop-Zotero-<version>.xpi` from Zotero's
+Add-ons window. When the add-on asks for a QLab repository, choose this Research
+Loop repository (normally `/Users/chance/research-loop`). The root-level `qlab`
+compatibility command and expected `literature/`, `drafts/`, and `knowledge/`
+directories let the unchanged workflow recognize it as a valid repository.
+
 ## Commands
 
 ```bash
@@ -116,6 +136,8 @@ make help
 | `make literature-fetch KEY=citekey` | Fetch one reference's version-pinned arXiv source |
 | `make literature-sync` | Fetch the pinned source of every arXiv reference |
 | `make migration-verify` | Re-check the imported harness cards against their manifest |
+| `make zotero-plugin-test` | Type-check and test the standalone Zotero integration |
+| `make zotero-plugin` | Test and build the installable Research Loop Zotero XPI |
 
 Equivalent package scripts exist underneath (`npm run knowledge:check`, and so
 on), but documentation and skills use the Make targets, so there is one stable
