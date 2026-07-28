@@ -1,0 +1,105 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "title",
+    "backend",
+    "impl_key",
+    "language",
+    "parameters",
+    "execution_status"
+  ],
+  "properties": {
+    "id": { "type": "string", "minLength": 1 },
+    "title": { "type": "string", "minLength": 1 },
+    "backend": { "const": "rsinter" },
+    "impl_key": { "enum": ["rmatching", "rbposd", "rilpqec", "predict-zero"] },
+    "language": { "const": "rust" },
+    "parameters": { "type": "object" },
+    "execution_status": { "const": "real" }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": { "impl_key": { "const": "rmatching" } },
+        "required": ["impl_key"]
+      },
+      "then": {
+        "properties": {
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "maxProperties": 0
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": { "impl_key": { "const": "predict-zero" } },
+        "required": ["impl_key"]
+      },
+      "then": {
+        "properties": {
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "maxProperties": 0
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": { "impl_key": { "const": "rbposd" } },
+        "required": ["impl_key"]
+      },
+      "then": {
+        "properties": {
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "bp_algorithm": { "enum": ["min_sum"] },
+              "bp_iters": { "type": "integer", "minimum": 0 },
+              "max_bp_iterations": { "type": "integer", "minimum": 0 },
+              "early_stop": { "type": "boolean" },
+              "osd_method": { "enum": ["combination_sweep"] },
+              "osd_order": { "type": "integer", "minimum": 0 }
+            },
+            "not": {
+              "required": ["bp_iters", "max_bp_iterations"]
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": { "impl_key": { "const": "rilpqec" } },
+        "required": ["impl_key"]
+      },
+      "then": {
+        "properties": {
+          "parameters": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "backend": { "enum": ["auto", "highs", "gurobi"] },
+              "time_limit_s": { "type": "number", "exclusiveMinimum": 0 },
+              "mip_gap": {
+                "type": "number",
+                "minimum": 0,
+                "exclusiveMaximum": 1
+              },
+              "threads": { "type": "integer", "minimum": 1 },
+              "verbose": { "type": "boolean" }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

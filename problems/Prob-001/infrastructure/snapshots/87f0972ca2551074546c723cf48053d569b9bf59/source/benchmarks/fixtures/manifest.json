@@ -1,0 +1,34 @@
+{
+  "fixtures": [
+    {
+      "id": "rotated-d3",
+      "description": "Small known-answer rotated surface code memory-X fixture for search-layer preflight checks.",
+      "provenance": {
+        "source": "autoqec-search eval smoke backed by rsinter",
+        "command": "python3 -m autoqec_search.cli eval --root . --campaign rotated-surface-baseline --distance 3 --decoder rmatching-default-v1 --p 0.005",
+        "rsinter_source": "GitHub working tree on PATH",
+        "rstim_revision": "2e4ae26d089fd7bb2214e1ffcffd9855f595ffe1",
+        "recorded_at": "2026-06-14T03:30:00Z"
+      },
+      "input": {
+        "dem": "rotated-d3/dem.txt"
+      },
+      "results": "rotated-d3/results.jsonl",
+      "expected": "rotated-d3/expected.json",
+      "verifier": {
+        "tool": "autoqec-search preflight",
+        "checks": [
+          "results JSONL loads",
+          "shots and errors match expected.json",
+          "logical_error_rate equals errors / shots",
+          "logical_error_rate lies inside expected binomial_ci_95"
+        ]
+      },
+      "consuming_issues": [
+        "M1-2",
+        "M1-4",
+        "M1-5"
+      ]
+    }
+  ]
+}

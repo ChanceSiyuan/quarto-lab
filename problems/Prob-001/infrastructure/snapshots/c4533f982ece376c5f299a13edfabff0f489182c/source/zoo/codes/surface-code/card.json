@@ -1,0 +1,37 @@
+{
+  "id": "surface-code",
+  "kind": "code_family",
+  "title": "Surface Code",
+  "aliases": ["toric code on a planar patch"],
+  "summary": "A topological stabilizer-code family defined on two-dimensional lattices with local parity checks.",
+  "construction": {
+    "type": "topological_css",
+    "description": "Surface-code families place X and Z stabilizers on a two-dimensional cell complex with boundary choices defining variants."
+  },
+  "parameters": {
+    "logical_qubits": "variant dependent",
+    "distance_formula": "d",
+    "rate_scaling": "k / n -> 0"
+  },
+  "assumptions": [
+    "2D local geometry",
+    "stabilizer syndrome measurements"
+  ],
+  "known_decoders": [
+    "MWPM",
+    "Union-Find",
+    "Tensor-network decoder"
+  ],
+  "distance_methods": [
+    "analytical from geometry"
+  ],
+  "relations": [
+    {
+      "type": "has_variant",
+      "target": "rotated-surface-code"
+    }
+  ],
+  "evidence_refs": [],
+  "source_refs": [],
+  "updated_at": "2026-05-27"
+}

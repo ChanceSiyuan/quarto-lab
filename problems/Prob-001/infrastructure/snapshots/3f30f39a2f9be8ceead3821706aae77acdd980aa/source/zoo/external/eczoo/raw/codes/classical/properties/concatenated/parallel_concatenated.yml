@@ -1,0 +1,28 @@
+#######################################################
+## This is a code entry in the error correction zoo. ##
+##       https://github.com/errorcorrectionzoo       ##
+#######################################################
+
+code_id: parallel_concatenated
+
+name: 'Parallel concatenated code'
+
+description: |
+  A code obtained by encoding the same information sequence using two or more component encoders in parallel, often with one branch preceded by an interleaver. Turbo codes are a standard example \cite{doi:10.1109/TIT.2005.846392}.
+
+protection: ''
+
+#notes:
+#  - ''
+
+relations:
+  parents:
+    - code_id: ecc
+
+
+# Begin Entry Meta Information
+_meta:
+  # Change log - most recent first
+  changelog:
+    - user_id: VictorVAlbert
+      date: '2022-03-22'

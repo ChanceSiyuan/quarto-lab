@@ -1,0 +1,41 @@
+{
+  "collection": {
+    "batch_size": 64,
+    "decoder_overrides": {
+      "predict-zero-v1": {
+        "max_errors": 64,
+        "max_shots": 64
+      },
+      "rbposd-bb72-osd1-v1": {
+        "batch_size": 16,
+        "max_errors": 8,
+        "max_shots": 16
+      }
+    },
+    "max_errors": 32,
+    "max_shots": 64
+  },
+  "css_memory": {
+    "basis": "x",
+    "observables": "required",
+    "schedule": "greedy",
+    "seed": 12345
+  },
+  "execution_status": "real",
+  "id": "bb-css-memory-x-cdep-v1",
+  "input_type": "css",
+  "noise_model": "circuit_depolarizing",
+  "observable": "logical_x",
+  "p_list": [
+    0.003,
+    0.01
+  ],
+  "result_metrics": [
+    "logical_error_rate"
+  ],
+  "rounds_policy": {
+    "kind": "fixed",
+    "rounds": 3
+  },
+  "title": "BB72 CSS Memory X under circuit depolarizing noise"
+}

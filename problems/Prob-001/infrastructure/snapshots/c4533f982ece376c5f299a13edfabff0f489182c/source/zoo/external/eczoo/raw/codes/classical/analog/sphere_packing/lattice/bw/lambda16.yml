@@ -1,0 +1,38 @@
+#######################################################
+## This is a code entry in the error correction zoo. ##
+##       https://github.com/errorcorrectionzoo       ##
+#######################################################
+
+code_id: lambda16
+physical: reals
+logical: reals
+
+name: '\(\Lambda_{16}\) Barnes-Wall lattice'
+short_name: '\(\Lambda_{16}\)'
+introduced: '\cite{doi:10.1017/S1446788700025064}'
+
+description: |
+  BW lattice in dimension \(16\).
+
+protection: |
+  Exhibits the densest known lattice packing in 16 dimensions.
+
+relations:
+  parents:
+    - code_id: barnes_wall
+#    - code_id: construction_a
+  cousins:
+    - code_id: leech
+      detail: 'The \(\Lambda_{16}\) Barnes-Wall lattice can be obtained from the Leech lattice by restricting to the fixed-point 16-dimensional subspace of an involution \cite[Ch. 4, pg. 131]{doi:10.1007/978-1-4757-6568-7}.'
+    - code_id: biorthogonal
+      detail: 'Applying Construction B to the first-order RM\((1,4)\) code yields the \(\Lambda_{16}\) Barnes-Wall lattice \cite[Ch. 4, pg. 130]{doi:10.1007/978-1-4757-6568-7}\cite[Exam. 10.7.2]{preset:EricZin}.'
+    - code_id: q-ary_repetition
+      detail: 'The \(\Lambda_{16}\) Barnes-Wall lattice can be obtained from the \([4,1,4]\) repetition code over \(\mathbb{F}_9\) via Quebbemann''s construction \cite[Ch. 8, pg. 219]{doi:10.1007/978-1-4757-6568-7}.'
+
+
+# Begin Entry Meta Information
+_meta:
+  # Change log - most recent first
+  changelog:
+    - user_id: VictorVAlbert
+      date: '2022-11-22'

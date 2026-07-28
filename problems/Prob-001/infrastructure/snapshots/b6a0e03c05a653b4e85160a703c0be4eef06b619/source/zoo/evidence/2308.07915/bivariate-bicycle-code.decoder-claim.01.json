@@ -1,0 +1,37 @@
+{
+  "id": "2308.07915:bivariate-bicycle-code.decoder",
+  "paper_id": "2308.07915",
+  "code_id": "bivariate-bicycle-code",
+  "claim_type": "decoder_claim",
+  "title": "BP-OSD is the decoder used for circuit-level BB simulations",
+  "context": {
+    "noise_model": "circuit-based noise model",
+    "decoder": "BP-OSD",
+    "distance_method": null,
+    "assumptions": [
+      "numerical experiments use repeated syndrome-measurement cycles"
+    ],
+    "parameter_point": {}
+  },
+  "claim": {
+    "statement": "The paper bases its numerical experiments on BP-OSD and extends that decoder from a memory-only toy model to the circuit-based noise model used for BB-code fault-tolerant memory simulations.",
+    "value": {
+      "name": "BP-OSD",
+      "extended_from": "memory-only toy noise model",
+      "used_for": [
+        "fault-tolerant memory simulation",
+        "distance estimation"
+      ]
+    },
+    "unit": null,
+    "qualifiers": [
+      "Section 6 decoder discussion"
+    ]
+  },
+  "provenance": {
+    "section": "Decoder overview before Section 6",
+    "quote_ref": "fulltext:l132-l133",
+    "confidence": "high"
+  },
+  "uncertainty_flags": []
+}

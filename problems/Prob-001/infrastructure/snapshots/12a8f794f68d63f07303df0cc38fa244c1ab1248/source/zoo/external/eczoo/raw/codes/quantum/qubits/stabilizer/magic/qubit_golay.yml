@@ -1,0 +1,79 @@
+#######################################################
+## This is a code entry in the error correction zoo. ##
+##       https://github.com/errorcorrectionzoo       ##
+#######################################################
+
+code_id: qubit_golay
+physical: qubits
+logical: qubits
+
+name: '\([[23, 1, 7]]\) Quantum Golay code'
+introduced: '\cite{arxiv:quant-ph/9605021}'
+
+alternative_names:
+  - 'Qubit Golay code'
+
+description: |
+  A \([[23, 1, 7]]\) self-dual CSS code with eleven stabilizer generators of each type, and with each generator being weight eight.
+
+  The code's 11-by-23 stabilizer generator matrix blocks \(H_{X}\) and \(H_{Z}\) are both parity-check matrices of the classical Golay code.
+  Equivalently, it can be obtained from the \([24,12,8]\) extended Golay code by shortening on one bit to a self-orthogonal \([23,11,7]\) code \cite[Appx. A.1.5]{arxiv:1703.07847}.
+  It can be punctured twice to obtain a \([[21,3,5]]\) code \cite{arxiv:1703.07847}.
+
+  The automorphism group of the code is \(M_{23}\) \cite{arxiv:2109.12735}.
+
+protection: 'Detects up to 6-qubit errors and corrects up to 3-qubit errors.'
+
+features:
+  encoders:
+    - 'Fault-tolerant depth-7 circuit consisting of 57 CNOT gates and preparing a logical-zero state \cite{arxiv:1106.2190}.'
+    - 'Circuit with 56 entangling gates using reinforcement learning \cite{arxiv:2503.14660}.'
+
+  magic_scaling_exponent: 'Magic-state distillation scaling exponent \(\gamma=\log_2 23 \approx 4.52\)\cite{arxiv:2003.02717}.'
+
+  transversal_gates:
+    - '\hyperref[topic:clifford]{Single-qubit Clifford group} by choosing \(\overline{U}=U^{\otimes 23}\) for every Clifford unitary \(U\) \cite{arxiv:1106.2190}.'
+
+  general_gates:
+    - 'The Golay code can be used to perform magic-state distillation for the magic state defined as \(|T\rangle\langle T|=\frac{1}{2}(I+\frac{1}{\sqrt{3}}(X+Y+Z) )\), where \(|T\rangle\) is an eigenstate of the Clifford "facet" gate \(SH\) \cite{arxiv:quant-ph/0411036}.'
+    - 'Pipelining the \([[23,1,7]]\) code after \([[7,1,3]]\) and \([[17,1,5]]\) inner-code stages yields a 95-to-1 seventh-order magic-state distillation protocol \cite[Sec. V.B.3]{arxiv:1703.07847}.'
+
+  decoders:
+    - 'Meggitt decoding for the cyclic CSS structure was used in comparative logical-CNOT simulations \cite{arxiv:0711.1556}.'
+
+  fault_tolerance:
+    - 'Fault-tolerant depth-7 circuit consisting of 57 CNOT gates and preparing a logical-zero state \cite{arxiv:1106.2190}.'
+
+  threshold:
+    - '\(1.32\times 10^{-3}\)-per gate error rate for depolarizing noise upon recursive concatenation \cite{arxiv:1106.2190}, improving previous lower bounds \cite{arxiv:quant-ph/0207119,arxiv:0711.1556,manual:{B. Reichardt and Y. Ouyang. Unpublished (2006)}}. A numerical study \cite{arxiv:quant-ph/0207119} found that the Golay code achieved the highest threshold among a dozen well-known codes at the time \cite{arxiv:0711.1556}.'
+
+notes:
+  - 'See Ref. \cite{arxiv:quant-ph/0612004} for more details.'
+  - 'Two levels of concatenation of the qubit Golay code can tolerate high teleportation errors \cite{arxiv:quant-ph/0607065,arxiv:quant-ph/0701043}.'
+
+relations:
+  parents:
+    - code_id: self_dual_css
+    - code_id: galois_quad_residue
+      detail: 'The Golay code is a qubit quantum QR code \cite{arxiv:0712.0103,arxiv:1907.01393}.'
+    - code_id: data_syndrome
+      detail: 'There exists a \([[23,1,7:18]]\) QDS code based on the qubit Golay code, requiring 18 additional stabilizer measurements instead of 24 from the general cyclic construction \cite[Ex. 15]{arxiv:1907.01393}.'
+  cousins:
+    - code_id: golay
+      detail: 'The qubit Golay code is a CSS code constructed with the Golay code.'
+    - code_id: qutrit_golay
+      detail: 'The qubit Golay code is the qubit counterpart of the qutrit Golay code.'
+    - code_id: quantum_triorthogonal
+      detail: 'A \([[95,1,7]]\) triorthogonal code with a transversal \(T\) gate can be obtained from the qubit Golay code via the doubling transformation \cite{arxiv:2307.14425}.'
+    - code_id: small_distance_qubit_stabilizer
+      detail: 'The quantum Golay code can be punctured twice to obtain a \([[21,3,5]]\) code.'
+
+
+# Begin Entry Meta Information
+_meta:
+  # Change log - most recent first
+  changelog:
+    - user_id: YinchenLiu
+      date: '2024-03-15'
+    - user_id: VictorVAlbert
+      date: '2024-03-15'

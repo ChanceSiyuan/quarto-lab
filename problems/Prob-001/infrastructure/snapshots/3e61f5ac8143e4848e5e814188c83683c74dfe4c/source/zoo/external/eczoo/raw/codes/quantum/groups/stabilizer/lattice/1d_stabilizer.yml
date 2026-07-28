@@ -1,0 +1,36 @@
+#######################################################
+## This is a code entry in the error correction zoo. ##
+##       https://github.com/errorcorrectionzoo       ##
+#######################################################
+
+code_id: 1d_stabilizer
+physical: groups
+# includes both Galois and modular
+
+name: '1D lattice stabilizer code'
+
+description: |
+  Lattice stabilizer code in one Euclidean dimension, using either the ordinary block notion of locality or the fermionic/Majorana notion of locality.
+
+  Any modular-qudit code can be converted to several copies of the 1D repetition code along with some trivial codes via a local constant-depth Clifford circuit \cite{arxiv:1607.01387}.
+  There is no 1D bosonic topological order at nonzero temperature \cite{arxiv:1804.05457,arxiv:2511.14699,arxiv:2602.13386}.
+
+features:
+  fault_tolerance:
+    - 'A fault-tolerant quantum computation scheme on a 1D nearest-neighbor qubit line can be built from a modified tower of interleaved quantum Hamming codes. It achieves coding rate above \(5\%\), constant space overhead, quasi-polylogarithmic time overhead, and a threshold \cite{arxiv:2502.16132}.'
+
+
+relations:
+  parents:
+    - code_id: translationally_invariant_stabilizer
+  cousins:
+    - code_id: quantum_cyclic
+      detail: 'A 1D lattice stabilizer code with periodic boundary conditions is a quantum cyclic code.'
+
+
+# Begin Entry Meta Information
+_meta:
+  # Change log - most recent first
+  changelog:
+    - user_id: VictorVAlbert
+      date: '2026-02-23'

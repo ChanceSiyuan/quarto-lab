@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="560" viewBox="0 0 900 560" role="img" aria-label="Candidate logical error rate plot">
+<style>
+.plot-bg{fill:#ffffff}
+.axis{stroke:#20242a;stroke-width:1.2}
+.grid{stroke:#d9dee7;stroke-width:1;stroke-dasharray:3 4}
+.tick-label,.axis-label,.footer,.legend{font-family:Arial,sans-serif;fill:#20242a}
+.tick-label{font-size:11px}
+.axis-label{font-size:13px;font-weight:600}
+.footer{font-size:11px;fill:#4c5564}
+.legend{font-size:12px}
+.ci-interval{stroke-width:1.8;stroke-linecap:round;opacity:.85}
+.decoder-series{fill:none;stroke-width:2.4;stroke-linejoin:round;stroke-linecap:round}
+.point-marker{stroke:#ffffff;stroke-width:1.5}
+</style>
+<rect class="plot-bg" x="0" y="0" width="900" height="560"/>
+<text class="axis-label" x="78" y="28">Logical error rate vs physical error rate</text>
+<line class="axis" x1="78" y1="464" x2="866" y2="464"/>
+<line class="axis" x1="78" y1="52" x2="78" y2="464"/>
+<line class="grid" x1="107.185" y1="52" x2="107.185" y2="464"/>
+<line class="axis" x1="107.185" y1="464" x2="107.185" y2="469"/>
+<text class="tick-label" x="107.185" y="484" text-anchor="middle">p=0.008</text>
+<line class="grid" x1="319.134" y1="52" x2="319.134" y2="464"/>
+<line class="axis" x1="319.134" y1="464" x2="319.134" y2="469"/>
+<text class="tick-label" x="319.134" y="484" text-anchor="middle">p=0.009</text>
+<line class="grid" x1="508.729" y1="52" x2="508.729" y2="464"/>
+<line class="axis" x1="508.729" y1="464" x2="508.729" y2="469"/>
+<text class="tick-label" x="508.729" y="484" text-anchor="middle">p=0.01</text>
+<line class="grid" x1="680.239" y1="52" x2="680.239" y2="464"/>
+<line class="axis" x1="680.239" y1="464" x2="680.239" y2="469"/>
+<text class="tick-label" x="680.239" y="484" text-anchor="middle">p=0.011</text>
+<line class="grid" x1="836.815" y1="52" x2="836.815" y2="464"/>
+<line class="axis" x1="836.815" y1="464" x2="836.815" y2="469"/>
+<text class="tick-label" x="836.815" y="484" text-anchor="middle">p=0.012</text>
+<line class="grid" x1="78" y1="464" x2="866" y2="464"/>
+<line class="axis" x1="73" y1="464" x2="78" y2="464"/>
+<text class="tick-label" x="69" y="464" text-anchor="end" dominant-baseline="middle">0.144674122854</text>
+<line class="grid" x1="78" y1="426.448" x2="866" y2="426.448"/>
+<line class="axis" x1="73" y1="426.448" x2="78" y2="426.448"/>
+<text class="tick-label" x="69" y="426.448" text-anchor="end" dominant-baseline="middle">0.159286396942</text>
+<line class="grid" x1="78" y1="322.093" x2="866" y2="322.093"/>
+<line class="axis" x1="73" y1="322.093" x2="78" y2="322.093"/>
+<text class="tick-label" x="69" y="322.093" text-anchor="end" dominant-baseline="middle">0.208116545265</text>
+<line class="grid" x1="78" y1="212.437" x2="866" y2="212.437"/>
+<line class="axis" x1="73" y1="212.437" x2="78" y2="212.437"/>
+<text class="tick-label" x="69" y="212.437" text-anchor="end" dominant-baseline="middle">0.275633958104</text>
+<line class="grid" x1="78" y1="148.656" x2="866" y2="148.656"/>
+<line class="axis" x1="73" y1="148.656" x2="78" y2="148.656"/>
+<text class="tick-label" x="69" y="148.656" text-anchor="end" dominant-baseline="middle">0.324569944823</text>
+<line class="grid" x1="78" y1="85.997" x2="866" y2="85.997"/>
+<line class="axis" x1="73" y1="85.997" x2="78" y2="85.997"/>
+<text class="tick-label" x="69" y="85.997" text-anchor="end" dominant-baseline="middle">0.381097560976</text>
+<line class="grid" x1="78" y1="52" x2="866" y2="52"/>
+<line class="axis" x1="73" y1="52" x2="78" y2="52"/>
+<text class="tick-label" x="69" y="52" text-anchor="end" dominant-baseline="middle">0.41578425736</text>
+<text class="axis-label" x="472.0" y="512" text-anchor="middle">Physical error rate p (log scale)</text>
+<text class="axis-label" transform="translate(22 258.0) rotate(-90)" text-anchor="middle">Logical error rate (log scale)</text>
+<polyline class="decoder-series" data-decoder-id="rmatching-default-v1" points="107.185,426.448 319.134,322.093 508.729,212.437 680.239,148.656 836.815,85.997" stroke="#1f77b4"/>
+<line class="ci-interval" data-decoder-id="rmatching-default-v1" x1="107.185" y1="448.741" x2="107.185" y2="404.395" stroke="#1f77b4"/>
+<circle class="point-marker" data-decoder-id="rmatching-default-v1" cx="107.185" cy="426.448" r="4.4" fill="#1f77b4"><title>rmatching-default-v1: p=0.008, LER=0.159286396942, CI=[0.150442829999, 0.168546684159]</title></circle>
+<line class="ci-interval" data-decoder-id="rmatching-default-v1" x1="319.134" y1="343.767" x2="319.134" y2="300.73" stroke="#1f77b4"/>
+<circle class="point-marker" data-decoder-id="rmatching-default-v1" cx="319.134" cy="322.093" r="4.4" fill="#1f77b4"><title>rmatching-default-v1: p=0.009, LER=0.208116545265, CI=[0.196873220594, 0.219826219039]</title></circle>
+<line class="ci-interval" data-decoder-id="rmatching-default-v1" x1="508.729" y1="233.224" x2="508.729" y2="192.063" stroke="#1f77b4"/>
+<circle class="point-marker" data-decoder-id="rmatching-default-v1" cx="508.729" cy="212.437" r="4.4" fill="#1f77b4"><title>rmatching-default-v1: p=0.01, LER=0.275633958104, CI=[0.261336922005, 0.290405642979]</title></circle>
+<line class="ci-interval" data-decoder-id="rmatching-default-v1" x1="680.239" y1="168.772" x2="680.239" y2="129.026" stroke="#1f77b4"/>
+<circle class="point-marker" data-decoder-id="rmatching-default-v1" cx="680.239" cy="148.656" r="4.4" fill="#1f77b4"><title>rmatching-default-v1: p=0.011, LER=0.324569944823, CI=[0.30826415365, 0.34131266741]</title></circle>
+<line class="ci-interval" data-decoder-id="rmatching-default-v1" x1="836.815" y1="105.305" x2="836.815" y2="67.259" stroke="#1f77b4"/>
+<circle class="point-marker" data-decoder-id="rmatching-default-v1" cx="836.815" cy="85.997" r="4.4" fill="#1f77b4"><title>rmatching-default-v1: p=0.012, LER=0.381097560976, CI=[0.362701691084, 0.39984107405]</title></circle>
+<line x1="90" y1="70" x2="110" y2="70" stroke="#1f77b4" stroke-width="2.4"/>
+<circle cx="100" cy="70" r="3.5" fill="#1f77b4" stroke="#ffffff" stroke-width="1"/>
+<text class="legend" x="118" y="70" dominant-baseline="middle">rmatching-default-v1</text>
+<text class="footer" x="78" y="542">candidate=rotated-surface-d7-example, distance=7, task=rotated-memory-z-cdep-v1, generated=2026-06-16T13:21:01Z</text>
+</svg>

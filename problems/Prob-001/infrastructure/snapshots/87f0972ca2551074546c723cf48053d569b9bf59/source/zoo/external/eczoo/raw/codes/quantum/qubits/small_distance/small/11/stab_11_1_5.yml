@@ -1,0 +1,51 @@
+#######################################################
+## This is a code entry in the error correction zoo. ##
+##       https://github.com/errorcorrectionzoo       ##
+#######################################################
+
+code_id: stab_11_1_5
+physical: qubits
+logical: qubits
+
+name: '\([[11,1,5]]\) quantum dodecacode'
+short_name: '\([[11,1,5]]\)'
+introduced: '\cite{arxiv:quant-ph/9608006}'
+
+description: |
+  Eleven-qubit \hyperref[topic:quantum-weight-enumerator]{pure} stabilizer code that is the smallest qubit stabilizer code to correct two-qubit errors.
+  It can be obtained from the non-additive dodecacode by puncturing \cite[Table IV]{arxiv:quant-ph/9608006}.
+
+  A stabilizer tableau for the code is given by \cite[Table 8.5]{arxiv:quant-ph/9705052}\cite{arxiv:quant-ph/0406063}
+  \begin{align}
+  \begin{array}{ccccccccccc}
+    Z & Z & Z & Z & Z & Z & I & I & I & I & I \\
+    X & X & X & X & X & X & I & I & I & I & I \\
+    I & I & I & Z & X & Y & Y & Y & Y & X & Z \\
+    I & I & I & X & Y & Z & Z & Z & Z & Y & X \\
+    Z & Y & X & I & I & I & Z & Y & X & I & I \\
+    X & Z & Y & I & I & I & X & Z & Y & I & I \\
+    I & I & I & Z & Y & X & X & Y & Z & I & I \\
+    I & I & I & X & Z & Y & Z & X & Y & I & I \\
+    Z & X & Y & I & I & I & Z & Z & Z & X & Y \\
+    Y & Z & X & I & I & I & Y & Y & Y & Z & X
+  \end{array}~.
+  \end{align}
+  The code has paired support despite not being Hermitian \cite{arxiv:2605.15344}.
+
+protection: 'Smallest stabilizer code that protects against errors on any two qubits. Detects four-qubit errors.'
+
+features:
+  encoders:
+    - 'Encoding circuit consisting of 32 gates constructed from reinforcement learning \cite{arxiv:2311.04750}.'
+
+relations:
+  parents:
+    - code_id: small_distance_qubit_stabilizer
+# Not over \mathbb{F}_4 because dodecacode is not additive
+
+# Begin Entry Meta Information
+_meta:
+  # Change log - most recent first
+  changelog:
+    - user_id: VictorVAlbert
+      date: '2023-11-26'

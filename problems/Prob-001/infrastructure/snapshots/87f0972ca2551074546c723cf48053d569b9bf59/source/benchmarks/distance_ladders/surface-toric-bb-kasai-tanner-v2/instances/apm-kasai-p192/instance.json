@@ -1,0 +1,32 @@
+{
+  "instance_id": "apm-kasai-p192",
+  "code_id": "apm-kasai-code",
+  "qec_code_spec": "apm_kasai:p=192",
+  "n": 2304,
+  "k": 1156,
+  "expected_distance": 14,
+  "expected_bound_type": "upper",
+  "artifacts": {
+    "hx": "hx.json",
+    "hz": "hz.json"
+  },
+  "generator": {
+    "tool": "qec-code",
+    "hx_command": [
+      "qec-code",
+      "code",
+      "css",
+      "export",
+      "apm_kasai:p=192",
+      "hx"
+    ],
+    "hz_command": [
+      "qec-code",
+      "code",
+      "css",
+      "export",
+      "apm_kasai:p=192",
+      "hz"
+    ]
+  }
+}

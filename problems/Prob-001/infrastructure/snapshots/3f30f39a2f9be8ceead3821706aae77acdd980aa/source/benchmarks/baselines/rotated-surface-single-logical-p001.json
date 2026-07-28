@@ -1,0 +1,49 @@
+{
+  "baseline_id": "rotated-surface-single-logical-p001",
+  "code_id": "rotated-surface-code",
+  "layout": "rotated",
+  "result_kind": "smoke_fixture",
+  "source": {
+    "description": "M1 single-logical rotated surface smoke fixture for comparison-contract validation",
+    "instances_root": "zoo/codes/rotated-surface-code/instances"
+  },
+  "rows": [
+    {
+      "ci_high": 0.0008817357722363795,
+      "ci_low": 0.00010203219941781007,
+      "decoder_id": "rmatching-default-v1",
+      "distance": 3,
+      "failures": 3,
+      "ler": 0.0003,
+      "logical_qubits": 1,
+      "p": 0.001,
+      "physical_qubits": 9,
+      "shots": 10000
+    },
+    {
+      "ci_high": 0.0005662688974013381,
+      "ci_low": 0.00001765267360112231,
+      "decoder_id": "rmatching-default-v1",
+      "distance": 5,
+      "failures": 1,
+      "ler": 0.0001,
+      "logical_qubits": 1,
+      "p": 0.001,
+      "physical_qubits": 25,
+      "shots": 10000
+    },
+    {
+      "ci_high": 0.00038399837067659573,
+      "ci_low": 0.0,
+      "decoder_id": "rmatching-default-v1",
+      "distance": 7,
+      "failures": 0,
+      "ler": 0.0,
+      "logical_qubits": 1,
+      "p": 0.001,
+      "physical_qubits": 49,
+      "shots": 10000
+    }
+  ],
+  "schema_version": 1
+}

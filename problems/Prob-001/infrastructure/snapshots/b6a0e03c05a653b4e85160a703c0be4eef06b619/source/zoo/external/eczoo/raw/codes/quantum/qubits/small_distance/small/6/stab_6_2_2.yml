@@ -1,0 +1,78 @@
+#######################################################
+## This is a code entry in the error correction zoo. ##
+##       https://github.com/errorcorrectionzoo       ##
+#######################################################
+
+code_id: stab_6_2_2
+physical: qubits
+logical: qubits
+
+name: '\([[6,2,2]]\) \(C_6\) code'
+introduced: '\cite{arxiv:quant-ph/0410199}'
+
+description: |
+  Error-detecting normal self-dual CSS code on three qubit pairs that encodes a logical qubit pair and detects any error acting on one pair \cite{arxiv:quant-ph/0410199}.
+  In Knill's \(C_4/C_6\) architecture, this code is used at the second and higher concatenation levels.
+
+  A stabilizer tableau for the code is given by \cite[ID 126]{preset:qiskit}
+  \begin{align}
+  \begin{array}{cccccc}
+    Z & Z & Z & Z & I & I \\
+    Z & Z & I & I & Z & Z \\
+    X & X & X & X & I & I \\
+    X & X & I & I & X & X
+  \end{array}~.
+  \end{align}
+  Its logical operators are \(X_L = IIXXII\), \(Z_L = ZIIZZI\), \(X_S = IXIXXI\), and \(Z_S = IIIIZZ\) \cite{arxiv:quant-ph/0410199}.
+
+
+protection: |
+  As a distance-two code, the \(C_6\) code detects any single-qubit error.
+  In the qubit-pair grouping used by Knill, it detects any error acting on one of the three pairs, and therefore can correct a pair error when its location is already known \cite{arxiv:quant-ph/0410199}.
+
+features:
+  magic_scaling_exponent: 'Various magic-state distillation protocols exist for the \([[4,2,2]]\) qubit code and the \(C_6\) code in what are known as Meier-Eastin-Knill (MEK) protocols \cite{arxiv:1204.4221}.
+  For example, the magic-state yield parameter is \(\gamma = \log_2 5 \approx 2.322\) for a protocol using the \([[10,2,2]]\) code \cite[Box 2]{arxiv:1612.07330}; see also \cite[Table IV]{arxiv:1709.02789}.'
+
+  transversal_gates:
+    - 'Transversal physical Hadamards preserve the codespace because the displayed \(X\)- and \(Z\)-check spaces coincide, making this a normal self-dual qubit CSS code \cite{arxiv:2602.22211}.'
+
+  general_gates:
+    - 'Fault-tolerant magic-state preparation \cite{arxiv:2506.14688}.'
+
+  fault_tolerance:
+    - 'Knill''s \(C_4/C_6\) architecture uses the \([[4,2,2]]\) code at the first level and the \(C_6\) code at higher levels, together with error-correcting teleportation \cite{arxiv:quant-ph/0410199}. That paper gives evidence for postselected thresholds above \(0.03\) and extrapolates to \(0.06\), while the error-correcting architecture has evidence for a threshold above \(0.01\). Later work refined the postselected-threshold analysis \cite{arxiv:quant-ph/0608018,arxiv:quant-ph/0703264} (see also Ref. \cite{arxiv:quant-ph/0612073}).'
+    - 'Concatenating quantum Hamming codes on top of the \([[4,2,2]]\) and \(C_6\) codes yields fault-tolerant quantum computation with constant space and quasi-polylogarithmic time overheads \cite{arxiv:2402.09606}. In the optimized protocol of Ref. \cite{arxiv:2402.09606}, a level-five \(C_4/C_6\) code underlies concatenated quantum Hamming codes \(\mathcal{Q}_5,\mathcal{Q}_6,\mathcal{Q}_7,\mathcal{Q}_7\), yielding a \(2.5\%\) threshold and space overheads \(162\) and \(373\) physical qubits per logical qubit at physical error rate \(0.1\%\) for logical CNOT error rates \(10^{-10}\) and \(10^{-24}\), respectively.'
+    - 'Fault-tolerant magic-state preparation \cite{arxiv:2506.14688}.'
+    - 'One of the code''s logical qubits can be relaxed to a gauge qubit to yield a \([[6,1,1,2]]\) subsystem qubit stabilizer code with a particular set of transversal gates. This code admits a fault-tolerant circuit relevant to magic-state preparation \cite{arxiv:2501.17447}.'
+
+realizations: 
+    - 'Trapped ions: fault-tolerant magic-state preparation demonstrated on a 20-qubit H1-1 device by Quantinuum \cite{arxiv:2506.14688}.'
+
+
+relations:
+  parents:
+    - code_id: 2d_color
+      detail: 'The \(C_6\) code is a color code on a ladder with three rungs and periodic boundary conditions, (a.k.a. a triangular prism with no top and bottom faces) \cite{preset:albertPC25}. Purely \(Z\)- or \(X\)-type stabilizers lie on the three square faces of the ladder.'
+    - code_id: quantum_h
+      detail: 'The \([[k+4,k,2]]\) H code for \(k=2\) is the \(C_6\) code.'
+    - code_id: goy
+      detail: 'The Ganti-Onunkwo-Young code for \(r=1\) is the \(C_6\) code.'
+    - code_id: kls
+      detail: 'The Khesin-Lu-Shor code for \(r=2\) and \(m=2^r - 1 = 3\) is the \(C_6\) code.'
+    - code_id: stabilizer_over_gf4
+      detail: 'The \(C_6\) code is Hermitian \cite[ID 126]{preset:qiskit}\cite[Table 6]{arxiv:2501.17447}.'
+  cousins:
+    - code_id: css_6_1_2
+      detail: 'Fixing one logical qubit of the \([[6,2,2]]\) \(C_6\) code to \(|Y^{-}\rangle_L\) yields this \([[6,1,2]]\) code \cite[ID 59]{preset:qiskit}\cite{arxiv:2507.10519}.'
+    - code_id: qubit_concatenated
+      detail: 'Concatenations of \([[4,2,2]]\) and \(C_6\) codes yield fault-tolerant quantum computation schemes \cite{arxiv:quant-ph/0410199} admitting a post-selected threshold \cite{arxiv:quant-ph/0608018,arxiv:quant-ph/0703264} (see also Ref. \cite{arxiv:quant-ph/0612073}) and the Meier-Eastin-Knill (MEK) magic-state distillation protocols \cite{arxiv:1204.4221}.
+      Concatenating quantum Hamming codes on top of the \([[4,2,2]]\) and \(C_6\) codes yields fault-tolerant quantum computation with constant space and quasi-polylogarithmic time overheads \cite{arxiv:2402.09606}. In the optimized protocol of Ref. \cite{arxiv:2402.09606}, a level-five \(C_4/C_6\) code underlies concatenated quantum Hamming codes \(\mathcal{Q}_5,\mathcal{Q}_6,\mathcal{Q}_7,\mathcal{Q}_7\), yielding a \(2.5\%\) threshold and space overheads \(162\) and \(373\) physical qubits per logical qubit at physical error rate \(0.1\%\) for logical CNOT error rates \(10^{-10}\) and \(10^{-24}\), respectively.'
+
+
+# Begin Entry Meta Information
+_meta:
+  # Change log - most recent first
+  changelog:
+    - user_id: VictorVAlbert
+      date: '2024-03-28'

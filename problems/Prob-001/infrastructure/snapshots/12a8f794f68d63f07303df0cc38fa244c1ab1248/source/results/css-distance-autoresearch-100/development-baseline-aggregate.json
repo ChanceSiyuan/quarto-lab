@@ -1,0 +1,68 @@
+{
+  "case_count": 24,
+  "rows": [
+    {
+      "average_seconds": 199.97822826916672,
+      "cases": 24,
+      "completed": 10,
+      "crashes": 0,
+      "interpretation": "Open-source qec-code randomized window baseline on the 24-case blinded development split.",
+      "invalid_claims": 0,
+      "key": "random-window-upper-bound",
+      "median_seconds": 300.0,
+      "normalized_quality": 0.4166666666666667,
+      "target_hits": 10,
+      "timeouts": 14,
+      "total_seconds": 4799.477478460001,
+      "weighted_target_hits": 10
+    },
+    {
+      "average_seconds": 26.896774928788847,
+      "cases": 24,
+      "completed": 23,
+      "crashes": 0,
+      "interpretation": "Open-source codedistance random information-set baseline on the same 24-case split.",
+      "invalid_claims": 0,
+      "key": "codedistance/QDistRndMW",
+      "median_seconds": 12.72794268745929,
+      "normalized_quality": 0.9541666666666666,
+      "target_hits": 22,
+      "timeouts": 1,
+      "total_seconds": 645.5225982909324,
+      "weighted_target_hits": 22
+    },
+    {
+      "average_seconds": 26.501154371418426,
+      "cases": 24,
+      "completed": 23,
+      "crashes": 0,
+      "interpretation": "Open-source codedistance evolutionary baseline on the same 24-case split.",
+      "invalid_claims": 0,
+      "key": "codedistance/QDistEvol",
+      "median_seconds": 12.567122146021575,
+      "normalized_quality": 0.9503787878787878,
+      "target_hits": 21,
+      "timeouts": 1,
+      "total_seconds": 636.0277049140423,
+      "weighted_target_hits": 21
+    },
+    {
+      "average_seconds": 60.87070583670235,
+      "cases": 24,
+      "completed": 23,
+      "crashes": 0,
+      "interpretation": "Open-source codedistance BP-OSD baseline on the same 24-case split.",
+      "invalid_claims": 0,
+      "key": "codedistance/decoderDist",
+      "median_seconds": 39.0821257919888,
+      "normalized_quality": 0.9583333333333334,
+      "target_hits": 23,
+      "timeouts": 1,
+      "total_seconds": 1460.8969400808564,
+      "weighted_target_hits": 23
+    }
+  ],
+  "schema_version": 1,
+  "suite": "css-distance-paper-development",
+  "time_limit_seconds": 300.0
+}

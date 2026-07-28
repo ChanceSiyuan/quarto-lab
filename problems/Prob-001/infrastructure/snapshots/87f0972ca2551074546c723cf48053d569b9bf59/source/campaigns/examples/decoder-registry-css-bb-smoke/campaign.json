@@ -1,0 +1,19 @@
+{
+  "id": "decoder-registry-css-bb-smoke",
+  "title": "Decoder Registry CSS BB Smoke",
+  "objective": "Validate the CSS bivariate-bicycle smoke benchmark contracts through the decoder registry.",
+  "family_id": "bivariate-bicycle-code",
+  "default_suite_id": "decoder-registry-css-bb-smoke-v1",
+  "budget": {
+    "wall_clock_seconds": 600,
+    "max_candidates": 1
+  },
+  "stop_conditions": {
+    "max_candidates": 1,
+    "max_wall_clock_seconds": 600
+  },
+  "random_seed_policy": {
+    "mode": "fixed",
+    "seed": 7
+  }
+}

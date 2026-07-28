@@ -1,0 +1,41 @@
+{
+  "id": "2308.07915:bivariate-bicycle-code.surface-comparison",
+  "paper_id": "2308.07915",
+  "code_id": "bivariate-bicycle-code",
+  "claim_type": "relation_claim",
+  "title": "BB-code overhead comparison against the surface code at p = 10^-3",
+  "context": {
+    "noise_model": "circuit-based noise model",
+    "decoder": null,
+    "distance_method": null,
+    "assumptions": [
+      "comparison example for 12 logical qubits",
+      "physical error rate fixed at 1e-3"
+    ],
+    "parameter_point": {
+      "bb_instance": "[[144,12,12]]",
+      "logical_qubits": 12,
+      "physical_error_rate": 0.001
+    }
+  },
+  "claim": {
+    "statement": "In the comparison around Figure 2B, the paper states that at p = 10^-3 the [[144,12,12]] BB code can preserve 12 logical qubits for nearly one million syndrome cycles using 288 physical qubits, whereas separate surface-code patches would require nearly 3000 physical qubits.",
+    "value": {
+      "bb_total_physical_qubits": 288,
+      "surface_total_physical_qubits_approx": 3000,
+      "bb_logical_error_rate": 2e-7,
+      "target_timescale_syndrome_cycles_approx": 1000000
+    },
+    "unit": null,
+    "qualifiers": [
+      "comparison tied to the distance-12 BB code",
+      "surface-code requirement is stated as approximate"
+    ]
+  },
+  "provenance": {
+    "section": "Figure 2 comparison example",
+    "quote_ref": "fulltext:l148-l150",
+    "confidence": "high"
+  },
+  "uncertainty_flags": []
+}

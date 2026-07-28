@@ -1,0 +1,54 @@
+{
+  "id": "2308.07915:bivariate-bicycle-code.distance",
+  "paper_id": "2308.07915",
+  "code_id": "bivariate-bicycle-code",
+  "claim_type": "distance_claim",
+  "title": "Table 3 distances and upper bounds for BB instances",
+  "context": {
+    "noise_model": null,
+    "decoder": null,
+    "distance_method": "mixed integer programming",
+    "assumptions": [
+      "finite-size instances listed in Table 3",
+      "upper-bound notation <= d is part of the paper's table"
+    ],
+    "parameter_point": {
+      "instance_keys": [
+        "[[72,12,6]]",
+        "[[90,8,10]]",
+        "[[108,8,10]]",
+        "[[144,12,12]]",
+        "[[288,12,18]]",
+        "[[360,12,<=24]]",
+        "[[756,16,<=34]]"
+      ]
+    }
+  },
+  "claim": {
+    "statement": "The paper reports distances for several explicit BB instances and states that these values were computed by a mixed integer programming approach; two larger instances are marked only with upper bounds.",
+    "value": {
+      "[[72,12,6]]": 6,
+      "[[90,8,10]]": 10,
+      "[[108,8,10]]": 10,
+      "[[144,12,12]]": 12,
+      "[[288,12,18]]": 18,
+      "[[360,12,<=24]]": {
+        "upper_bound": 24
+      },
+      "[[756,16,<=34]]": {
+        "upper_bound": 34
+      }
+    },
+    "unit": null,
+    "qualifiers": [
+      "Table 3",
+      "paper distinguishes exact distances from upper bounds"
+    ]
+  },
+  "provenance": {
+    "section": "Section 4 Table 3",
+    "quote_ref": "fulltext:l209-l221",
+    "confidence": "high"
+  },
+  "uncertainty_flags": []
+}

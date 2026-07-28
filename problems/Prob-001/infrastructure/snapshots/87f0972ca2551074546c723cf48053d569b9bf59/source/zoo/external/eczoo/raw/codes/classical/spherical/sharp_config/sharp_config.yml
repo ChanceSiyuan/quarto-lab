@@ -1,0 +1,41 @@
+#######################################################
+## This is a code entry in the error correction zoo. ##
+##       https://github.com/errorcorrectionzoo       ##
+#######################################################
+
+code_id: sharp_config
+physical: spheres
+logical: reals
+
+name: 'Spherical sharp configuration'
+introduced: '\cite{preset:Levenshtein78,preset:Levenshtein79,preset:Levenshtein83,doi:10.1007/BF00053379,preset:HPLevBounds,arxiv:math/0607446}'
+
+alternative_names:
+  - 'Delsarte code on Euclidean spheres'
+  - 'Spherical Delsarte code'
+
+description: |
+  A spherical code that is a spherical design of strength \(2m-1\) for some \(m\) and that has \(m\) distances between distinct points.
+  All known spherical sharp configurations are either obtained from the Leech or \(E_8\) lattice, certain regular polytopes, or are CGS isotropic subspace spherical codes \cite[Table 1]{arxiv:1603.05202} (see also \cite[Table 9.1]{doi:10.1007/BF00053379}).
+
+
+relations:
+  parents:
+    - code_id: univ_opt_spherical
+      detail: 'All sharp configurations are universally optimal \cite{arxiv:math/0607446}, but not all universally optimal spherical codes are sharp configurations.
+      The one known exception is the 600-cell.'
+    - code_id: delsarte_optimal
+    - code_id: spherical_design
+      detail: 'Spherical sharp configurations are spherical designs of strength \(2m-1\) for some \(m\).'
+
+
+# Begin Entry Meta Information
+_meta:
+  # Change log - most recent first
+  changelog:
+    - user_id: VictorVAlbert
+      date: '2023-03-05'
+    - user_id: AlexanderBarg
+      date: '2023-03-05'
+    - user_id: VictorVAlbert
+      date: '2023-02-23'

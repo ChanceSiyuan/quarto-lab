@@ -1,0 +1,39 @@
+#######################################################
+## This is a code entry in the error correction zoo. ##
+##       https://github.com/errorcorrectionzoo       ##
+#######################################################
+
+code_id: analog
+physical: reals
+logical: reals
+
+name: 'Analog code'
+
+alternative_names:
+  - 'Code over \(\mathbb{R}\)'
+
+description: |
+  Encodes states (codewords) into continuous coordinates in the \(n\)-dimensional (real or complex) coordinate space (\(\mathbb{R}^n\) or \(\mathbb{C}^n\)).
+  Important subclasses include sphere packings, tilings, and modulation constellations.
+  The number of codewords may be infinite because the coordinate space is infinite, so various restricted versions have to be constructed in practice.
+
+
+relations:
+  parents:
+    - code_id: block
+    - code_id: group_classical
+      detail: 'Analog code alphabets, such as \(\mathbb{R}^n\) or \(\mathbb{C}^n\), are additive groups.'
+  cousins:
+    - code_id: bosonic_classical_into_quantum
+      detail: 'Any analog code can be embedded into a bosonic Hilbert space, and thus passed through a bosonic channel, by associating the reals with the configuration space of position states of bosonic modes.'
+    - code_id: 2pt_homogeneous
+      detail: 'Euclidean space \(\mathbb{R}^n\) is a noncompact two-point homogeneous space and is, in fact, a noncompact three-point homogeneous space \cite[Sec. 6.6.1.1]{doi:10.1007/978-3-642-18245-7}. One can also think of \(\mathbb{R}^n\) as a homogeneous space of the Euclidean group by the orthogonal group, \(E(n)/O(n)\) \cite[Ch. XI]{preset:Vilenkin78}.'
+    # Not sure about C^n so its a cousin
+
+
+# Begin Entry Meta Information
+_meta:
+  # Change log - most recent first
+  changelog:
+    - user_id: VictorVAlbert
+      date: '2025-01-02'

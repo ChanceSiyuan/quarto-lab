@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="560" viewBox="0 0 900 560" role="img" aria-label="Candidate logical error rate plot">
+<style>
+.plot-bg{fill:#ffffff}
+.axis{stroke:#20242a;stroke-width:1.2}
+.grid{stroke:#d9dee7;stroke-width:1;stroke-dasharray:3 4}
+.tick-label,.axis-label,.footer,.legend{font-family:Arial,sans-serif;fill:#20242a}
+.tick-label{font-size:11px}
+.axis-label{font-size:13px;font-weight:600}
+.footer{font-size:11px;fill:#4c5564}
+.legend{font-size:12px}
+.ci-interval{stroke-width:1.8;stroke-linecap:round;opacity:.85}
+.decoder-series{fill:none;stroke-width:2.4;stroke-linejoin:round;stroke-linecap:round}
+.point-marker{stroke:#ffffff;stroke-width:1.5}
+</style>
+<rect class="plot-bg" x="0" y="0" width="900" height="560"/>
+<text class="axis-label" x="78" y="28">Logical error rate vs physical error rate</text>
+<line class="axis" x1="78" y1="464" x2="866" y2="464"/>
+<line class="axis" x1="78" y1="52" x2="78" y2="464"/>
+<line class="grid" x1="472" y1="52" x2="472" y2="464"/>
+<line class="axis" x1="472" y1="464" x2="472" y2="469"/>
+<text class="tick-label" x="472" y="484" text-anchor="middle">p=0.003</text>
+<line class="grid" x1="78" y1="464" x2="866" y2="464"/>
+<line class="axis" x1="73" y1="464" x2="78" y2="464"/>
+<text class="tick-label" x="69" y="464" text-anchor="end" dominant-baseline="middle">0.385468101929</text>
+<line class="grid" x1="78" y1="271.104" x2="866" y2="271.104"/>
+<line class="axis" x1="73" y1="271.104" x2="78" y2="271.104"/>
+<text class="tick-label" x="69" y="271.104" text-anchor="end" dominant-baseline="middle">0.516129032258</text>
+<line class="grid" x1="78" y1="191.935" x2="866" y2="191.935"/>
+<line class="axis" x1="73" y1="191.935" x2="78" y2="191.935"/>
+<text class="tick-label" x="69" y="191.935" text-anchor="end" dominant-baseline="middle">0.581818181818</text>
+<line class="grid" x1="78" y1="52" x2="866" y2="52"/>
+<line class="axis" x1="73" y1="52" x2="78" y2="52"/>
+<text class="tick-label" x="69" y="52" text-anchor="end" dominant-baseline="middle">0.719037338235</text>
+<text class="axis-label" x="472.0" y="512" text-anchor="middle">Physical error rate p (log scale)</text>
+<text class="axis-label" transform="translate(22 258.0) rotate(-90)" text-anchor="middle">Logical error rate (log scale)</text>
+<polyline class="decoder-series" data-decoder-id="predict-zero-v1" points="472,191.935" stroke="#1f77b4"/>
+<line class="ci-interval" data-decoder-id="predict-zero-v1" x1="472" y1="361.228" x2="472" y2="67.259" stroke="#1f77b4"/>
+<circle class="point-marker" data-decoder-id="predict-zero-v1" cx="472" cy="191.935" r="4.4" fill="#1f77b4"><title>predict-zero-v1: p=0.003, LER=0.581818181818, CI=[0.450328683312, 0.702624329523]</title></circle>
+<line x1="90" y1="70" x2="110" y2="70" stroke="#1f77b4" stroke-width="2.4"/>
+<circle cx="100" cy="70" r="3.5" fill="#1f77b4" stroke="#ffffff" stroke-width="1"/>
+<text class="legend" x="118" y="70" dominant-baseline="middle">predict-zero-v1</text>
+<polyline class="decoder-series" data-decoder-id="rbposd-osd0-v1" points="472,271.104" stroke="#d62728"/>
+<line class="ci-interval" data-decoder-id="rbposd-osd0-v1" x1="472" y1="448.741" x2="472" y2="133.194" stroke="#d62728"/>
+<circle class="point-marker" data-decoder-id="rbposd-osd0-v1" cx="472" cy="271.104" r="4.4" fill="#d62728"><title>rbposd-osd0-v1 decoder_parameters={&quot;bp_iters&quot;: 50, &quot;early_stop&quot;: true, &quot;osd_order&quot;: 0}: p=0.003, LER=0.516129032258, CI=[0.394472474606, 0.635903457935]</title></circle>
+<line x1="90" y1="88" x2="110" y2="88" stroke="#d62728" stroke-width="2.4"/>
+<circle cx="100" cy="88" r="3.5" fill="#d62728" stroke="#ffffff" stroke-width="1"/>
+<text class="legend" x="118" y="88" dominant-baseline="middle">rbposd-osd0-v1 decoder_parameters={&quot;bp_iters&quot;: 50, &quot;early_stop&quot;: true, &quot;osd_order&quot;: 0}</text>
+<text class="footer" x="78" y="542">candidate=bivariate-bicycle-code-m6-n6, distance=unavailable, task=bb-css-memory-x-cdep-v1, generated=2026-06-16T18:40:24Z</text>
+</svg>

@@ -1,0 +1,32 @@
+{
+  "instance_id": "toric-d21",
+  "code_id": "toric-code",
+  "qec_code_spec": "toric:d=21",
+  "n": 882,
+  "k": 2,
+  "expected_distance": 21,
+  "expected_bound_type": "exact",
+  "artifacts": {
+    "hx": "hx.json",
+    "hz": "hz.json"
+  },
+  "generator": {
+    "tool": "qec-code",
+    "hx_command": [
+      "qec-code",
+      "code",
+      "css",
+      "export",
+      "toric:d=21",
+      "hx"
+    ],
+    "hz_command": [
+      "qec-code",
+      "code",
+      "css",
+      "export",
+      "toric:d=21",
+      "hz"
+    ]
+  }
+}

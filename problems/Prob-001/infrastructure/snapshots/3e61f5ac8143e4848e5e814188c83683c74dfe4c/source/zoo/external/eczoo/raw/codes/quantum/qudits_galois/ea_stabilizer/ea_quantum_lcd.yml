@@ -1,0 +1,36 @@
+#######################################################
+## This is a code entry in the error correction zoo. ##
+##       https://github.com/errorcorrectionzoo       ##
+#######################################################
+
+code_id: ea_quantum_lcd
+physical: galois
+logical: galois
+
+name: 'EA quantum LCD code'
+introduced: '\cite{arxiv:1606.00134}'
+
+description: |
+  An EA Galois-qudit stabilizer code constructed from an LCD code.
+  This family includes the first asymptotically good EA Galois-qudit codes.
+
+features:
+  rate: 'Asymptotically good maximal-entanglement EA Galois-qudit stabilizer codes can be constructed from LCD codes \cite{arxiv:1606.00134}.'
+
+relations:
+  parents:
+    - code_id: ea_galois_stabilizer
+  cousins:
+    - code_id: lcd
+      detail: 'Asymptotically good maximal-entanglement EA Galois-qudit stabilizer codes can be constructed from LCD codes \cite{arxiv:1606.00134}.'
+    - code_id: maximal_entanglement_galois_stabilizer
+      detail: 'Asymptotically good maximal-entanglement EA Galois-qudit stabilizer codes can be constructed from LCD codes \cite{arxiv:1606.00134}.'
+    # Also maximal_entanglement_galois_stabilizer <--> lcd
+
+
+# Begin Entry Meta Information
+_meta:
+  # Change log - most recent first
+  changelog:
+    - user_id: VictorVAlbert
+      date: '2023-07-18'

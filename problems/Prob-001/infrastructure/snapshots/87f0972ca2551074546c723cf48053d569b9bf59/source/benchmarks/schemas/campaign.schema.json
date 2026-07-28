@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "title",
+    "objective",
+    "family_id",
+    "default_suite_id",
+    "budget",
+    "stop_conditions",
+    "random_seed_policy"
+  ],
+  "properties": {
+    "id": { "type": "string", "minLength": 1 },
+    "title": { "type": "string", "minLength": 1 },
+    "objective": { "type": "string", "minLength": 1 },
+    "family_id": { "type": "string", "minLength": 1 },
+    "default_suite_id": { "type": "string", "minLength": 1 },
+    "budget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["wall_clock_seconds", "max_candidates"],
+      "properties": {
+        "wall_clock_seconds": { "type": "integer", "minimum": 1 },
+        "max_candidates": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "stop_conditions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["max_candidates", "max_wall_clock_seconds"],
+      "properties": {
+        "max_candidates": { "type": "integer", "minimum": 1 },
+        "max_wall_clock_seconds": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "random_seed_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode", "seed"],
+      "properties": {
+        "mode": { "enum": ["fixed", "none"] },
+        "seed": { "type": ["integer", "null"] }
+      }
+    }
+  }
+}

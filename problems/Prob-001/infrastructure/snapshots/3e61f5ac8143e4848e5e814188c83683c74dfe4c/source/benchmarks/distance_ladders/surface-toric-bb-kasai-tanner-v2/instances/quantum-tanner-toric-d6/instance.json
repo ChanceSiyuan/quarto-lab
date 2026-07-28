@@ -1,0 +1,35 @@
+{
+  "instance_id": "quantum-tanner-toric-d6",
+  "code_id": "quantum-tanner-code",
+  "qec_code_spec": "quantum_tanner:toric_d6",
+  "quantum_tanner_spec": "surface-toric-bb-kasai-tanner-v2/quantum_tanner_specs/toric-d6.json",
+  "n": 36,
+  "k": 2,
+  "expected_distance": 6,
+  "expected_bound_type": "exact",
+  "artifacts": {
+    "hx": "hx.json",
+    "hz": "hz.json"
+  },
+  "generator": {
+    "tool": "qec-code",
+    "hx_command": [
+      "qec-code",
+      "code",
+      "css",
+      "quantum-tanner",
+      "--spec",
+      "benchmarks/distance_ladders/surface-toric-bb-kasai-tanner-v2/quantum_tanner_specs/toric-d6.json",
+      "hx"
+    ],
+    "hz_command": [
+      "qec-code",
+      "code",
+      "css",
+      "quantum-tanner",
+      "--spec",
+      "benchmarks/distance_ladders/surface-toric-bb-kasai-tanner-v2/quantum_tanner_specs/toric-d6.json",
+      "hz"
+    ]
+  }
+}

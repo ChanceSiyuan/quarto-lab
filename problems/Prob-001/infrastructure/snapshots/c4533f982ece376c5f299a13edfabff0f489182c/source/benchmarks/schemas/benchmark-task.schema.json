@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "title",
+    "observable",
+    "noise_model",
+    "input_type",
+    "p_list",
+    "rounds_policy",
+    "collection",
+    "result_metrics",
+    "execution_status"
+  ],
+  "properties": {
+    "id": { "type": "string", "minLength": 1 },
+    "title": { "type": "string", "minLength": 1 },
+    "observable": { "type": "string", "minLength": 1 },
+    "noise_model": { "type": "string", "minLength": 1 },
+    "input_type": { "type": "string", "minLength": 1 },
+    "p_list": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "number",
+        "exclusiveMinimum": 0,
+        "exclusiveMaximum": 1
+      }
+    },
+    "rounds_policy": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "multiplier", "minimum"],
+          "properties": {
+            "kind": { "const": "distance-scaled" },
+            "multiplier": { "type": "integer", "minimum": 1 },
+            "minimum": { "type": "integer", "minimum": 1 }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "rounds"],
+          "properties": {
+            "kind": { "const": "fixed" },
+            "rounds": { "type": "integer", "minimum": 1 }
+          }
+        }
+      ]
+    },
+    "collection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["max_shots", "max_errors"],
+      "properties": {
+        "max_shots": { "type": "integer", "minimum": 1 },
+        "max_errors": { "type": "integer", "minimum": 1 },
+        "batch_size": { "type": "integer", "minimum": 1 },
+        "decoder_overrides": {
+          "type": "object",
+          "propertyNames": { "minLength": 1 },
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "minProperties": 1,
+            "properties": {
+              "max_shots": { "type": "integer", "minimum": 1 },
+              "max_errors": { "type": "integer", "minimum": 1 },
+              "batch_size": { "type": "integer", "minimum": 1 }
+            }
+          }
+        }
+      }
+    },
+    "result_metrics": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "css_memory": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["basis", "schedule"],
+      "properties": {
+        "basis": { "enum": ["x", "z"] },
+        "schedule": { "enum": ["greedy", "sequential"] },
+        "seed": { "type": "integer", "minimum": 0 },
+        "observables": { "enum": ["required", "optional"] }
+      }
+    },
+    "execution_status": { "enum": ["real"] }
+  }
+}

@@ -1,0 +1,36 @@
+#######################################################
+## This is a code entry in the error correction zoo. ##
+##       https://github.com/errorcorrectionzoo       ##
+#######################################################
+
+code_id: hyperoval
+physical: q-ary_digits
+logical: q-ary_digits
+
+name: 'Hyperoval code'
+introduced: '\cite{preset:Bose47}'
+
+description: |
+  Projective code constructed from a hyperoval in the projective plane \(PG(2,q)\), where \(q\) is even. Since a hyperoval is a set of \(q+2\) points with no three collinear, the corresponding projective code has parameters \([q+2,3,q]_q\) \cite[Exam. 19.2.1]{preset:HKStwoweight}; the \([6,3,4]_4\) hexacode is the smallest example.
+
+relations:
+  parents:
+    - code_id: projective
+  cousins:
+    - code_id: delsarte_optimal_q-ary
+      detail: 'Codes based on hyperovals in \(PG(2,q)\) are \(q\)-ary sharp configurations \cite[Table 12.1]{preset:HKSbounds}.'
+    - code_id: projective_two_weight
+      detail: 'Codes based on hyperovals in \(PG(2,q)\) with even \(q\) are projective two-weight codes \cite[Exam. 19.2.1]{preset:HKStwoweight}\cite{doi:10.1016/0022-314X(87)90099-0,doi:10.1017/9781009057226}\cite[Table 7.1]{doi:10.1016/0097-3165(83)90002-X}.'
+
+
+
+# Begin Entry Meta Information
+_meta:
+  # Change log - most recent first
+  changelog:
+    - user_id: VictorVAlbert
+      date: '2023-03-05'
+    - user_id: AlexanderBarg
+      date: '2023-03-05'
+    - user_id: VictorVAlbert
+      date: '2023-02-24'

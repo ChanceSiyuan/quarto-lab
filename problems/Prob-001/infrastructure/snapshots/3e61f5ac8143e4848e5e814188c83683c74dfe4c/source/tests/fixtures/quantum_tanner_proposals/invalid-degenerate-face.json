@@ -1,0 +1,44 @@
+{
+  "proposal_id": "invalid-degenerate-face-d3",
+  "schema_version": 1,
+  "construction_mode": "lr_cayley_no_cover_v1",
+  "base_group": {
+    "name": "D3",
+    "element_order": "id = i + 3*j for r^i s^j with i in Z3 and j in Z2",
+    "order": 6,
+    "identity": 0,
+    "multiplication_table": [
+      [0, 1, 2, 3, 4, 5],
+      [1, 2, 0, 4, 5, 3],
+      [2, 0, 1, 5, 3, 4],
+      [3, 5, 4, 0, 2, 1],
+      [4, 3, 5, 1, 0, 2],
+      [5, 4, 3, 2, 1, 0]
+    ]
+  },
+  "a_generator_indices": [1, 2, 3],
+  "b_generator_indices": [1, 2, 4],
+  "local_codes": {
+    "matrix_role": "parity_check",
+    "field": "GF(2)",
+    "h_a": [
+      [1, 0, 1],
+      [0, 1, 1]
+    ],
+    "h_b": [
+      [1, 1, 0],
+      [1, 0, 1]
+    ]
+  },
+  "search_hints": {
+    "target_distance": 3,
+    "max_group_order": 12,
+    "tags": ["non-toric", "degenerate-face", "catalog-fixture"]
+  },
+  "provenance": {
+    "source": "test-fixture",
+    "model": "fixture-author",
+    "generated_at": "2026-07-10T00:00:00Z",
+    "prompt_summary": "Schema-valid proposal that qec-code rejects because it has a degenerate Cayley face."
+  }
+}

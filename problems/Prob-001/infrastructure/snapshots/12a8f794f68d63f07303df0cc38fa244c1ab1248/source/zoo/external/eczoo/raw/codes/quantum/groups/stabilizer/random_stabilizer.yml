@@ -1,0 +1,39 @@
+#######################################################
+## This is a code entry in the error correction zoo. ##
+##       https://github.com/errorcorrectionzoo       ##
+#######################################################
+
+code_id: random_stabilizer
+physical: groups
+
+name: 'Random stabilizer code'
+introduced: '\cite{arxiv:quant-ph/9605005,arxiv:quant-ph/9512032,arxiv:quant-ph/9705052}'
+
+alternative_names:
+  - 'Random Clifford-circuit code'
+
+description: |
+  An \(n\)-qubit, modular-qudit, or Galois-qudit stabilizer code whose construction is non-deterministic.
+  Since stabilizer encoders are Clifford circuits, such codes can be thought of as arising from random Clifford circuits.
+
+features:
+  rate: >-
+    Random qubit stabilizer codes asymptotically saturate the non-degenerate quantum Hamming bound, and hence achieve the 
+    \hyperref[topic:quantum-gv-bound]{quantum GV bound}, because a typical random stabilizer has negligible degeneracy 
+    \cite[Sec. 7.6]{arxiv:quant-ph/9705052}; see notes \cite{preset:PreskillNotes}. In fact, sampling random CSS codes is sufficient 
+    \cite{arxiv:quant-ph/9512032}; see also the original random-coding argument \cite{arxiv:quant-ph/9605005}.
+
+relations:
+  parents:
+    - code_id: stabilizer
+  cousins:
+    - code_id: random_circuit
+      detail: 'Random stabilizer codes can be constructed by sampling random Clifford circuits.'
+
+
+# Begin Entry Meta Information
+_meta:
+  # Change log - most recent first
+  changelog:
+    - user_id: VictorVAlbert
+      date: '2024-06-30'

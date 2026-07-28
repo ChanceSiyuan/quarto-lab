@@ -1,0 +1,44 @@
+#######################################################
+## This is a code entry in the error correction zoo. ##
+##       https://github.com/errorcorrectionzoo       ##
+#######################################################
+
+code_id: construction_a4
+physical: reals
+logical: reals
+
+# Nonlinear codes into sphere packings not proven; is there a ref? if changed, edit to code instead of lattice
+name: 'Construction \(A_4\) lattice'
+# introduced: '\cite{doi:10.4153/CJM-1967-017-0}'
+
+alternative_names:
+  - 'Mod-four lattice'
+
+description: |
+  A lattice that is constructed from a linear code over \(\mathbb{Z}_4\) using \term{Construction \(A_4\)}.
+
+  \begin{defterm}{Construction \(A_4\)}
+  Construction \(A_4\) converts a linear code over \(\mathbb{Z}_4\) into a lattice \cite[Sec. 12.5.3]{doi:10.1017/CBO9780511807077}.
+  In the normalization used here, a code \(C\subseteq \mathbb{Z}_4^n\) yields the lattice
+  \begin{align}
+    \Lambda(C)=\frac{1}{2}\{x\in\mathbb{Z}^n:x\bmod 4\in C\}~,
+  \end{align}
+  i.e., each codeword \(c\) determines all points \(x/2\) whose residue class modulo four is \(c\).
+  \end{defterm}
+
+
+# Nonlinear codes into sphere packings not proven; is there a ref?
+relations:
+  parents:
+    - code_id: points_into_lattices
+  cousins:
+    - code_id: quaternary_over_z4
+      detail: 'Every linear code over \(\mathbb{Z}_4\) yields a lattice under \term{Construction \(A_4\)} \cite[Sec. 12.5.3]{doi:10.1017/CBO9780511807077}.'
+
+
+# Begin Entry Meta Information
+_meta:
+  # Change log - most recent first
+  changelog:
+    - user_id: VictorVAlbert
+      date: '2025-04-03'

@@ -1,0 +1,43 @@
+{
+  "id": "bivariate-bicycle-code",
+  "kind": "code_family",
+  "title": "Bivariate Bicycle Code",
+  "aliases": ["BB code"],
+  "summary": "A qLDPC code family built from pairs of bivariate circulant polynomials.",
+  "construction": {
+    "type": "qldpc_css",
+    "description": "Constructed from commuting parity-check matrices derived from bivariate bicycle polynomial data."
+  },
+  "parameters": {
+    "logical_qubits": "construction dependent",
+    "distance_formula": "not fixed in closed form",
+    "rate_scaling": "family dependent"
+  },
+  "assumptions": [
+    "CSS construction",
+    "circulant polynomial input data"
+  ],
+  "known_decoders": [
+    "belief propagation",
+    "ordered statistics decoding"
+  ],
+  "distance_methods": [
+    "algorithmic search",
+    "matrix-based lower-bound analysis"
+  ],
+  "relations": [],
+  "evidence_refs": [
+    "2308.07915:bivariate-bicycle-code.construction",
+    "2308.07915:bivariate-bicycle-code.decoder",
+    "2308.07915:bivariate-bicycle-code.distance",
+    "2308.07915:bivariate-bicycle-code.parameters",
+    "2308.07915:bivariate-bicycle-code.pseudo-thresholds",
+    "2308.07915:bivariate-bicycle-code.surface-comparison",
+    "2408.10001:bivariate-bicycle-code.parameters"
+  ],
+  "source_refs": [
+    "2308.07915",
+    "2408.10001"
+  ],
+  "updated_at": "2026-05-28"
+}

@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "problemId": "Prob-001",
+  "id": "ATT-079",
+  "sequence": 79,
+  "cohort": "cohort-001-100",
+  "title": "CSS Distance Proposal 079",
+  "summary": "Imported AutoQEC trial record.",
+  "stage": "development",
+  "decision": "accepted",
+  "gate": {
+    "containment": "passed",
+    "publicContract": "passed",
+    "development": "passed"
+  },
+  "method": {
+    "description": "heavy-tail restart scheduling over randomized logical searches",
+    "learnedFrom": null
+  },
+  "metrics": {
+    "runs": 24,
+    "verifiedWitnesses": 24,
+    "targetHits": 21,
+    "timeouts": 0,
+    "crashes": 0,
+    "invalidClaims": 0,
+    "weightedTargetHits": 21,
+    "normalizedQuality": 0.946264245014245,
+    "runtimeSeconds": 171.68938654306112,
+    "averageSeconds": null,
+    "medianSeconds": null,
+    "p95Seconds": null,
+    "timingStatus": "legacy-not-recorded",
+    "speedup": null
+  },
+  "provenance": {
+    "sourceRepository": "AutoQEC",
+    "sourceBranch": "autoresearch/css-distance/run100-proposal-079",
+    "sourceCommit": "ebc2e1641dcffdf9ee1f780d2bdc71616a0acee6",
+    "sourceInfrastructureCommit": "3e61f5ac8143e4848e5e814188c83683c74dfe4c",
+    "sourceCohort": "cohort-001-100",
+    "model": null
+  },
+  "candidate": {
+    "status": "present",
+    "path": "candidate.py"
+  },
+  "artifacts": [
+    {
+      "path": "LOG.md",
+      "sha256": "8a38d606867e4466bde9610d3fbb0b151f3259f541f63de305f3e059d75e0d15",
+      "sourcePath": "LOG.md"
+    },
+    {
+      "path": "REPORT.md",
+      "sha256": "23604466459fc533d45bd8ed637b48582483f21e98cd8348447243f6049f9ef5",
+      "sourcePath": "REPORT.md"
+    },
+    {
+      "path": "candidate.py",
+      "sha256": "9c2e1042858647a586866ef8972cd0242613f7646efb38ea337fa35a86a915e5",
+      "sourcePath": "proposal-workspace/candidate.py"
+    }
+  ]
+}

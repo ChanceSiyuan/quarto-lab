@@ -1,0 +1,33 @@
+#######################################################
+## This is a code entry in the error correction zoo. ##
+##       https://github.com/errorcorrectionzoo       ##
+#######################################################
+
+code_id: fsk
+physical: reals
+logical: reals
+
+name: 'Frequency-shift keying (FSK) modulation format'
+short_name: 'FSK'
+
+alternative_names:
+  - 'Frequency-shift keying (FSK) modulation code'
+  - 'Frequency-shift keying (FSK) modulation scheme'
+  - 'Frequency-shift keying (FSK) signaling format'
+
+description: |
+  A \(q\)-ary frequency-shift keying (\(q\)-FSK) encodes one \(q\)-ary digit of information into signals with \(q\) different frequencies.
+  In its standard orthogonal form, each symbol is carried by one of \(q\) approximately orthogonal tones over a fixed symbol interval.
+
+
+relations:
+  parents:
+    - code_id: modulation
+
+
+# Begin Entry Meta Information
+_meta:
+  # Change log - most recent first
+  changelog:
+    - user_id: VictorVAlbert
+      date: '2022-12-04'

@@ -1,0 +1,57 @@
+#######################################################
+## This is a code entry in the error correction zoo. ##
+##       https://github.com/errorcorrectionzoo       ##
+#######################################################
+
+code_id: tesselation
+physical: quotients
+
+name: 'Hyperbolic tessellation code'
+introduced: '\cite{arxiv:2410.18713}'
+
+description: |
+  Homogeneous-space code whose codewords are superpositions of positional delta functions on the hyperbolic plane.
+  The positions are chosen according to regular triangle tessellations, and the code projector picks out an irreducible representation of the corresponding proper triangle group.
+   
+  Examples in Ref. \cite{arxiv:2410.18713} are the \(\{5,5,5\}\) tessellation realizing the Pauli group of a five-dimensional qudit, the \(\{6,4,8\}\) tessellation realizing the \hyperref[topic:clifford]{single-qubit Clifford group}, and the \(\{4,3,5\}\) tessellation realizing the binary icosahedral group \(2I\).
+
+
+protection: |
+  Protects against sufficiently small position and momentum shifts on the hyperbolic plane.
+  In the three explicit examples of Ref. \cite{arxiv:2410.18713}, position-translation errors are correctable up to resolutions \(d_x \approx 1.6169\), \(0.6605\), and \(0.5011\), respectively.
+  Momentum errors are represented by hyperbolic Laplacian eigenfunctions; the \(\{5,5,5\}\) example corrects all modes with angular index \(n<5\), and more generally the compact quotient \(\mathbb{H}^2/\Gamma\) provides a nonzero Laplacian gap that acts as a momentum-error distance scale.
+
+features:
+  general_gates:
+    - 'Logical operations are realized by rotations around selected vertices of the hyperbolic tessellation. In the \(\{6,4,8\}\) example, \(S\) and \(U\) are implemented by \(\pi/4\) and \(\pi/3\) rotations, while the \(\{4,3,5\}\) example realizes binary-icosahedral non-Clifford gates by \(2\pi/3\) and \(2\pi/5\) rotations \cite{arxiv:2410.18713}.'
+
+relations:
+  parents:
+    - code_id: homogeneous_space_quantum
+      detail: 'Hyperbolic tessellation codes are defined on the space of functions on the hyperbolic plane, the symmetric space \(G/H\) for \(G = SO(2,1)\) the proper Lorentz group and \(H = O(2)\).'
+    - code_id: group_representation
+      detail: 'Hyperbolic tessellation-code projections are onto a copy of an irreducible representation of the proper triangle group associated with the tessellation, and the resulting logical gates are implemented geometrically by hyperbolic rotations \cite{arxiv:2410.18713}.'
+  cousins:
+    - code_id: hyperbolic
+      detail: 'Hyperbolic tessellation codes are quantum counterparts of hyperbolic sphere packings because they store information in quantum superpositions of points on the hyperbolic plane.'
+    - code_id: pauli_qsc
+      detail: 'The tessellation-code framework spans spherical, Euclidean, and hyperbolic geometries; the Pauli tessellation QSC is the spherical member \cite{arxiv:2410.18713}.'
+    - code_id: qutrit_pauli_gkp_subcode
+      detail: 'The qutrit-Pauli tessellation code is the Euclidean \(\{3,3,3\}\) member of the same curvature-dependent tessellation-code framework \cite{arxiv:2410.18713}.'
+    - code_id: gkp_concatenated
+      detail: 'The qubit-Pauli tessellation GKP code \cite{arxiv:2410.18713} is the Euclidean \(\{2,4,4\}\) member of the curvature-dependent tessellation-code framework.
+      It is a two-mode code in which each Cartesian direction is a single-mode qubit GKP code, making the full code a 2-to-1 concatenated qubit encoding.
+      The logical \hyperref[topic:pauli]{single-qubit Pauli group} is implemented geometrically by one \(\pi\) rotation and two \(\pi/2\) rotations on the Euclidean tessellation \cite{arxiv:2410.18713}.'
+
+
+
+# Begin Entry Meta Information
+_meta:
+  # Change log - most recent first
+  changelog:
+    - user_id: VictorVAlbert
+      date: '2026-04-22'
+    - user_id: YixuWang
+      date: '2025-10-29'
+    - user_id: VictorVAlbert
+      date: '2025-10-29'

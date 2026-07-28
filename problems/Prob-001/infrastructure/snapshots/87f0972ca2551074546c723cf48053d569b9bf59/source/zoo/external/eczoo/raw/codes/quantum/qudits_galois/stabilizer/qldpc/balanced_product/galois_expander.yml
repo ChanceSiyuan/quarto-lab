@@ -1,0 +1,49 @@
+#######################################################
+## This is a code entry in the error correction zoo. ##
+##       https://github.com/errorcorrectionzoo       ##
+#######################################################
+
+code_id: galois_expander
+physical: galois
+logical: galois
+
+name: 'Galois-qudit expander code'
+introduced: '\cite{arxiv:2410.14662}'
+
+alternative_names:
+  - 'Galois-qudit Sipser-Spielman code'
+
+description: |
+  Galois-qudit CSS code obtained from tensor products of chain complexes associated with an explicit family of expander codes with Reed-Solomon local checks.
+
+  In the explicit construction of \cite{arxiv:2410.14662}, these expander-code complexes contain planted GRM codewords, yielding a \textit{multiplication property} that allows QLDPC Galois-qudit quantum expander codes with transversal \(C^{r-1} Z\) gates while achieving \(D\geq N^{1/r}/\operatorname{poly}(\log N)\) and \(w\leq\operatorname{poly}(\log N)\).
+
+features:
+  magic_scaling_exponent: 'For every integer \(r\geq 2\) and every \(\epsilon>0\), the construction yields \([[N,K\geq N^{1-\epsilon},D\geq N^{1/r}/\operatorname{poly}(\log N)]]_q\) QLDPC Galois-qudit quantum expander codes with transversal \(C^{r-1} Z\) gates and stabilizer weight \(w\leq\operatorname{poly}(\log N)\) \cite{arxiv:2410.14662}. This construction allows for arbitrarily small magic-state yield parameter \(\gamma\).'
+
+  transversal_gates:
+    - 'For every integer \(r\geq 2\), there are QLDPC Galois-qudit quantum expander codes with transversal \(C^{r-1} Z\) gates and parameters \([[N,K\geq N^{1-\epsilon},D\geq N^{1/r}/\operatorname{poly}(\log N)]]_q\) \cite{arxiv:2410.14662}. By decomposing each Galois qudit into a Kronecker product of qubits, this yields an explicit qubit CSS QLDPC family with parameters \([[N,K\geq N^{1-\epsilon},D\geq N^{1/r}/\operatorname{poly}(\log N)]]\), stabilizer weight \(\operatorname{poly}(\log N)\), and transversal \(C^{r-1}Z\) gates acting on \(N^{1-\epsilon}\) disjoint logical \(r\)-tuples.'
+
+
+relations:
+  parents:
+    - code_id: galois_hypergraph_product
+  cousins:
+    - code_id: reed_solomon
+      detail: 'The explicit expander-code construction with Reed-Solomon local checks in \cite{arxiv:2410.14662} yields \([[N,K\geq N^{1-\epsilon},D\geq N^{1/r}/\operatorname{poly}(\log N)]]_q\) QLDPC Galois-qudit quantum expander codes with transversal \(C^{r-1} Z\) gates. Balanced products of the same RS-based complexes also yield \([n,k\geq n^{1-\epsilon},d\geq n/\operatorname{poly}(\log n)]_q\) LTCs exhibiting the multiplication property.'
+    - code_id: expander
+      detail: 'The explicit expander-code construction of \cite{arxiv:2410.14662} yields \([[N,K\geq N^{1-\epsilon},D\geq N^{1/r}/\operatorname{poly}(\log N)]]_q\) QLDPC Galois-qudit quantum expander codes with transversal \(C^{r-1} Z\) gates. Balanced products of the same expander-code complexes also yield \([n,k\geq n^{1-\epsilon},d\geq n/\operatorname{poly}(\log n)]_q\) LTCs exhibiting the multiplication property.'
+    - code_id: generalized_reed_muller
+      detail: 'The explicit expander-code construction of \cite{arxiv:2410.14662} contains planted GRM codewords.'
+    - code_id: balanced_product
+      detail: 'Balanced products of the RS-based expander-code complexes in \cite{arxiv:2410.14662} yield \([n,k\geq n^{1-\epsilon},d\geq n/\operatorname{poly}(\log n)]_q\) LTCs exhibiting the multiplication property.'
+    - code_id: q-ary_ltc
+      detail: 'Balanced products of the RS-based expander-code complexes in \cite{arxiv:2410.14662} yield \([n,k\geq n^{1-\epsilon},d\geq n/\operatorname{poly}(\log n)]_q\) LTCs exhibiting the multiplication property.'
+
+
+# Begin Entry Meta Information
+_meta:
+  # Change log - most recent first
+  changelog:
+    - user_id: VictorVAlbert
+      date: '2024-10-23'

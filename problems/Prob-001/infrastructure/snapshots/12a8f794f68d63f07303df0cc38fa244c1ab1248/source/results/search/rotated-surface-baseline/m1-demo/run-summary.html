@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>AutoQEC autoresearch run m1-demo</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 2rem; color: #1f2933; }
+    table { border-collapse: collapse; width: 100%; max-width: 1200px; margin: 1rem 0; }
+    th, td { border: 1px solid #c7d0d9; padding: 0.45rem 0.6rem; text-align: left; }
+    th { background: #eef2f6; }
+    .keep { color: #0f6b3d; font-weight: 700; }
+    .discard { color: #8a5a00; font-weight: 700; }
+    .crash { color: #a51d2d; font-weight: 700; }
+    .meta { display: grid; grid-template-columns: max-content 1fr; gap: 0.35rem 0.8rem; }
+  </style>
+</head>
+<body>
+  <h1>AutoQEC Autoresearch Run</h1>
+  <section class="meta">
+    <strong>Campaign</strong><span>rotated-surface-baseline</span>
+    <strong>Run</strong><span>m1-demo</span>
+    <strong>Branch tag</strong><span>m1-demo</span>
+    <strong>Wall clock seconds</strong><span>3600</span>
+    <strong>Seed</strong><span>7</span>
+    <strong>Strategy</strong><span>grid</span>
+    <strong>Strategy params</strong><span>{}</span>
+    <strong>Stop reason</strong><span>max-candidates</span>
+    <strong>Verdicts</strong><span>3 keep, 0 discard, 0 crash</span>
+  </section>
+  <h2>Timeline</h2>
+  <table>
+    <thead><tr><th>Candidate</th><th>Status</th><th>LER</th><th>Description</th></tr></thead>
+    <tbody>
+<tr><td>rotated-surface-d3-example</td><td class='keep'>keep</td><td>0.107032002569</td><td>entered frontier for distance 3</td></tr>
+<tr><td>rotated-surface-d5-example</td><td class='keep'>keep</td><td>0.140291806958</td><td>entered frontier for distance 5</td></tr>
+<tr><td>rotated-surface-d7-example</td><td class='keep'>keep</td><td>0.159286396942</td><td>entered frontier for distance 7</td></tr>
+    </tbody>
+  </table>
+  <h2>Running Leaderboard</h2>
+  <table>
+    <thead><tr><th>Candidate</th><th>Distance</th><th>Decoder</th><th>p</th><th>LER</th><th>Manifest</th></tr></thead>
+    <tbody>
+<tr><td>rotated-surface-d3-example</td><td>3</td><td>rmatching-default-v1</td><td>0.008</td><td>0.107032002569</td><td><a href='candidates/rotated-surface-d3-example/evaluations/rotated-memory-z-cdep-v1/rmatching-default-v1/manifest.json'>manifest</a></td></tr>
+<tr><td>rotated-surface-d5-example</td><td>5</td><td>rmatching-default-v1</td><td>0.008</td><td>0.140291806958</td><td><a href='candidates/rotated-surface-d5-example/evaluations/rotated-memory-z-cdep-v1/rmatching-default-v1/manifest.json'>manifest</a></td></tr>
+<tr><td>rotated-surface-d7-example</td><td>7</td><td>rmatching-default-v1</td><td>0.008</td><td>0.159286396942</td><td><a href='candidates/rotated-surface-d7-example/evaluations/rotated-memory-z-cdep-v1/rmatching-default-v1/manifest.json'>manifest</a></td></tr>
+    </tbody>
+  </table>
+</body>
+</html>

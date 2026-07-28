@@ -1,0 +1,38 @@
+#######################################################
+## This is a code entry in the error correction zoo. ##
+##       https://github.com/errorcorrectionzoo       ##
+#######################################################
+
+code_id: ea_quantum_convolutional
+physical: qubits
+logical: qubits
+
+name: 'EA quantum convolutional code'
+introduced: '\cite{arxiv:0712.2223,arxiv:0806.4214,arxiv:0807.3803}'
+
+description: |-
+  A quantum convolutional code designed to utilize pre-shared entanglement between sender and receiver \cite{arxiv:0712.2223,arxiv:0806.4214,arxiv:0807.3803}.
+  Entanglement assistance removes the self-orthogonality constraint that ordinary quantum convolutional codes inherit from the stabilizer formalism, allowing arbitrary classical convolutional codes to be imported into quantum ones \cite{arxiv:0807.3803}.
+  In some constructions, the additional ebits also reduce the memory requirements of the encoding circuit \cite{arxiv:0812.4449}.
+
+features:
+  encoders:
+    - 'Importing arbitrary classical quaternary convolutional codes into entanglement-assisted quantum convolutional encoders \cite{arxiv:0712.2223,arxiv:0807.3803}.'
+
+
+relations:
+  parents:
+    - code_id: eastab
+  cousins:
+    - code_id: convolutional
+      detail: 'EA quantum convolutional codes are entanglement-assisted quantum analogues of convolutional codes.'
+    - code_id: quantum_convolutional
+      detail: 'EA quantum convolutional codes are entanglement-assisted versions of quantum convolutional codes.'
+
+
+# Begin Entry Meta Information
+_meta:
+  # Change log - most recent first
+  changelog:
+    - user_id: VictorVAlbert
+      date: '2024-07-31'

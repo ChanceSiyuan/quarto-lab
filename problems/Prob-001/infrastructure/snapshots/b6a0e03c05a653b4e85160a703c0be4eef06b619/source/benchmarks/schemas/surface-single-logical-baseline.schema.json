@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "baseline_id",
+    "schema_version",
+    "code_id",
+    "layout",
+    "result_kind",
+    "source",
+    "rows"
+  ],
+  "properties": {
+    "baseline_id": { "type": "string", "minLength": 1 },
+    "schema_version": { "const": 1 },
+    "code_id": { "const": "rotated-surface-code" },
+    "layout": { "const": "rotated" },
+    "result_kind": { "enum": ["smoke_fixture", "benchmark_result"] },
+    "source": {
+      "type": "object",
+      "additionalProperties": { "type": "string", "minLength": 1 },
+      "minProperties": 1
+    },
+    "rows": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "p",
+          "distance",
+          "logical_qubits",
+          "physical_qubits",
+          "decoder_id",
+          "shots",
+          "failures",
+          "ler",
+          "ci_low",
+          "ci_high"
+        ],
+        "properties": {
+          "p": { "type": "number", "exclusiveMinimum": 0, "exclusiveMaximum": 1 },
+          "distance": { "type": "integer", "minimum": 1 },
+          "logical_qubits": { "type": "integer", "minimum": 1 },
+          "physical_qubits": { "type": "integer", "minimum": 1 },
+          "decoder_id": { "type": "string", "minLength": 1 },
+          "shots": { "type": "integer", "minimum": 1 },
+          "failures": { "type": "integer", "minimum": 0 },
+          "ler": { "type": "number", "minimum": 0, "maximum": 1 },
+          "ci_low": { "type": "number", "minimum": 0, "maximum": 1 },
+          "ci_high": { "type": "number", "minimum": 0, "maximum": 1 }
+        }
+      }
+    }
+  }
+}

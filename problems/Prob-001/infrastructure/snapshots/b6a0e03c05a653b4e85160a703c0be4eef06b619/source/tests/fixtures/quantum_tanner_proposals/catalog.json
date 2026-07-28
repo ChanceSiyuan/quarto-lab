@@ -1,0 +1,42 @@
+{
+  "catalog_id": "quantum-tanner-proposal-fixtures-v1",
+  "schema_version": 1,
+  "schema_path": "benchmarks/schemas/quantum-tanner-proposal.schema.json",
+  "entries": [
+    {
+      "fixture_id": "valid-dihedral-d3",
+      "path": "tests/fixtures/quantum_tanner_proposals/valid-dihedral-d3.json",
+      "provenance": {
+        "kind": "hand-authored-test-fixture",
+        "source_issue": "https://github.com/nzy1997/AutoQEC/issues/88",
+        "purpose": "schema-valid non-toric proposal"
+      },
+      "expected_status": "valid",
+      "expected_error_kind": null
+    },
+    {
+      "fixture_id": "invalid-missing-local-codes",
+      "path": "tests/fixtures/quantum_tanner_proposals/invalid-missing-local-codes.json",
+      "provenance": {
+        "kind": "hand-authored-test-fixture",
+        "source_issue": "https://github.com/nzy1997/AutoQEC/issues/88",
+        "purpose": "schema-invalid proposal missing required local_codes"
+      },
+      "expected_status": "invalid",
+      "expected_error_kind": "required",
+      "expected_error_pointer": "/"
+    },
+    {
+      "fixture_id": "invalid-bad-field",
+      "path": "tests/fixtures/quantum_tanner_proposals/invalid-bad-field.json",
+      "provenance": {
+        "kind": "hand-authored-test-fixture",
+        "source_issue": "https://github.com/nzy1997/AutoQEC/issues/88",
+        "purpose": "schema-invalid proposal with unsupported local code field"
+      },
+      "expected_status": "invalid",
+      "expected_error_kind": "const",
+      "expected_error_pointer": "/local_codes/field"
+    }
+  ]
+}

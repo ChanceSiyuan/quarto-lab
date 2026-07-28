@@ -1,0 +1,46 @@
+{
+  "artifacts": {
+    "hx": "hx.json",
+    "hz": "hz.json"
+  },
+  "code_id": "rotated-surface-code",
+  "derived_properties": {
+    "distance": 7,
+    "kx": null,
+    "kz": null,
+    "mx": 24,
+    "mz": 24,
+    "n": 49
+  },
+  "family_id": "surface-code",
+  "id": "rotated-surface-d7-example",
+  "instance_kind": "finite_css_instance",
+  "matrix_format": "dense_binary_json",
+  "parameters": {
+    "distance": 7,
+    "layout": "rotated"
+  },
+  "provenance": {
+    "generated_at": "2026-06-15T00:00:00Z",
+    "generator": "tensorQEC.jl",
+    "generator_env": "julia/tensorqec_env",
+    "generator_parameters": {
+      "distance": 7,
+      "layout": "rotated"
+    },
+    "generator_script": "julia/tensorqec_env/scripts/generate_instance.jl",
+    "promote_rules": {
+      "max_ler_at_p": {
+        "ler": 0.5,
+        "p": 0.005
+      },
+      "min_distance": 3,
+      "require_distance_verified": true
+    },
+    "promoted_by": "autoqec-search promote",
+    "source_candidate_id": "rotated-surface-d7-example",
+    "source_manifest_path": "candidates/rotated-surface-d7-example/evaluations/rotated-memory-x-cdep-v1/rmatching-default-v1/manifest.json",
+    "source_run": "rotated-surface-baseline/m1-demo"
+  },
+  "title": "Rotated Surface Code d=7"
+}

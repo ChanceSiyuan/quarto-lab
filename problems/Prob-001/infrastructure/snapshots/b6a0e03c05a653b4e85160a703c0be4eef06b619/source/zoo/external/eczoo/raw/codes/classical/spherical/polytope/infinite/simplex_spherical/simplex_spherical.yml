@@ -1,0 +1,59 @@
+#######################################################
+## This is a code entry in the error correction zoo. ##
+##       https://github.com/errorcorrectionzoo       ##
+#######################################################
+
+code_id: simplex_spherical
+physical: spheres
+logical: reals
+
+name: 'Simplex spherical code'
+
+description: |
+  Spherical \((n,n+1,2+2/n)\) code whose codewords are all permutations of the \(n+1\)-dimensional vector \((1,1,\cdots,1,-n)\), up to normalization, forming an \(n\)-simplex.
+  Codewords are all equidistant and their components add up to zero.
+  Simplex spherical codewords in 2 (3, 4) dimensions form the vertices of a triangle (tetrahedron, 5-cell).
+  In general, the code makes up the vertices of an \(n\)-simplex.
+  The union of a simplex and its antipodal simplex forms the vertices of a bi-simplex, which has \(2(n+1)\) vertices.
+
+  See \cite[Sec. 7.7]{preset:EricZin} for a parameterization.
+
+  \begin{figure}
+    \includegraphics{simplex_spherical.svg}
+    \caption{Projection of the coordinates of the 5-cell (4D simplex).}
+    \label{figure:simplex_spherical}
+  \end{figure}
+
+protection: |
+  Simplex spherical codes saturate the absolute bound, the Levenshtein bound and, for \(2 < \rho \leq 4\), the first two Rankin bounds \cite{preset:EricZin}.
+  All simplex codes are unique up to equivalence \cite[pg. 18]{preset:EricZin}, which follows from saturating the Boroczky bound \cite{preset:Boroczky78}.
+
+notes:
+  - 'See the corresponding Bendwavy database entry for the 5-cell \cite{manual:{R. Klitzing, “Pen”, Polytopes \& their Incidence Matrices \href{https://bendwavy.org/klitzing/incmats/pen.htm}{URL}}}.'
+
+relations:
+  parents:
+    - code_id: self_dual_polytope
+      detail: 'The simplex is self-dual.'
+    - code_id: sharp_config
+    # QSC paper has design strength 2 for bi-simplex, but it needs to be 3
+    - code_id: permutation_spherical
+  cousins:
+    - code_id: spherical_design
+      detail: 'Simplex spherical codes are the only tight spherical 2-designs \cite[Tab. 9.3]{preset:EricZin}. The bi-simplex is a spherical 3-design since antipodal codes have zero averages over odd-degree polynomials.'
+    - code_id: dodecahedron
+      detail: 'Vertices of a dodecahedron can be split up into vertices of five tetrahedra, which are simplex spherical codes for \(n=3\) \cite{preset:coxeter}.'
+    - code_id: binary_antipodal
+      detail: 'Binary simplex codes map to \((2^m,2^m+1)\) simplex spherical codes under the \hyperref[topic:antipodal_mapping]{antipodal mapping} \cite[Sec. 6.5.2]{preset:Forney03}\cite[pg. 18]{preset:EricZin}. In other words, simplex (simplex spherical) codes form simplices in Hamming (Euclidean) space.'
+    - code_id: antiprism
+      detail: 'The antiprism reduces to the tetrahedron for \(q=2\).'
+
+
+# Begin Entry Meta Information
+_meta:
+  # Change log - most recent first
+  changelog:
+    - user_id: ShubhamPJain
+      date: '2026-05-05'
+    - user_id: VictorVAlbert
+      date: '2022-11-15'

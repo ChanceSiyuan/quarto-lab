@@ -1,0 +1,32 @@
+{
+  "instance_id": "surface-rotated-d9",
+  "code_id": "rotated-surface-code",
+  "qec_code_spec": "surface_rotated:d=9",
+  "n": 81,
+  "k": 1,
+  "expected_distance": 9,
+  "expected_bound_type": "exact",
+  "artifacts": {
+    "hx": "hx.json",
+    "hz": "hz.json"
+  },
+  "generator": {
+    "tool": "qec-code",
+    "hx_command": [
+      "qec-code",
+      "code",
+      "css",
+      "export",
+      "surface_rotated:d=9",
+      "hx"
+    ],
+    "hz_command": [
+      "qec-code",
+      "code",
+      "css",
+      "export",
+      "surface_rotated:d=9",
+      "hz"
+    ]
+  }
+}

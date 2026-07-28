@@ -1,0 +1,33 @@
+{
+  "fixture_id": "rotated-d3",
+  "task_id": "rotated-memory-x-cdep-v1",
+  "decoder_id": "rmatching-default-v1",
+  "distance": 3,
+  "rounds": 3,
+  "p": 0.005,
+  "shots": 76533,
+  "errors": 1000,
+  "logical_error_rate": 0.013066258999385886,
+  "binomial_ci_95": {
+    "method": "wilson",
+    "lower": 0.012285801778695208,
+    "upper": 0.013895597376401364
+  },
+  "literature_threshold_band": {
+    "observable": "surface-code circuit-level threshold",
+    "lower": 0.005,
+    "upper": 0.01,
+    "citations": [
+      {
+        "label": "Dennis-Kitaev-Landahl-Preskill 2002",
+        "local_source": ".knowledge/1302.1035_leveraging-automorphisms-of-quantum-codes-for-fault-tolerant.md",
+        "note": "Cited there as Topological quantum memory, Journal of Mathematical Physics 43, 4452-4505."
+      },
+      {
+        "label": "Fowler-Mariantoni-Martinis-Cleland 2012",
+        "local_source": ".knowledge/1302.1035_leveraging-automorphisms-of-quantum-codes-for-fault-tolerant.md",
+        "note": "Cited there as Surface codes: Towards practical large-scale quantum computation, Phys. Rev. A 86, 032324."
+      }
+    ]
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "id": "rotated-surface-code",
+  "kind": "code_variant",
+  "title": "Rotated Surface Code",
+  "family": "surface-code",
+  "aliases": ["rotated planar code"],
+  "summary": "A surface-code variant with a rotated lattice layout that reduces physical-qubit count for the same code distance.",
+  "construction": {
+    "type": "topological_css",
+    "description": "Defined on a rotated square lattice with boundary choices that preserve one logical qubit while compressing the layout."
+  },
+  "parameters": {
+    "logical_qubits": "typically 1",
+    "distance_formula": "d",
+    "block_length_formula": "2d^2 - 1"
+  },
+  "assumptions": [
+    "2D nearest-neighbor geometry",
+    "stabilizer measurements available"
+  ],
+  "known_decoders": [
+    "MWPM",
+    "Union-Find"
+  ],
+  "distance_methods": [
+    "analytical from geometry"
+  ],
+  "relations": [
+    {
+      "type": "variant_of",
+      "target": "surface-code"
+    }
+  ],
+  "evidence_refs": [],
+  "source_refs": [],
+  "updated_at": "2026-05-27"
+}

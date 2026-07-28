@@ -1,0 +1,27 @@
+#######################################################
+## This is a code entry in the error correction zoo. ##
+##       https://github.com/errorcorrectionzoo       ##
+#######################################################
+
+code_id: multiple_erasure_lrc
+
+name: '\(t\)-erasure LRC'
+
+alternative_names:
+  - 'Multiple-erasure LRC'
+
+description: |
+  A code which admits local recoverability against more than one coordinate erasure, typically up to some specified number \(t\) of erasures per local group.
+
+relations:
+  parents:
+    - code_id: locally_recoverable
+      detail: 'A \(t\)-erasure LRC is locally recoverable by definition since \(t > 1\).'
+
+
+# Begin Entry Meta Information
+_meta:
+  # Change log - most recent first
+  changelog:
+    - user_id: VictorVAlbert
+      date: '2024-07-08'

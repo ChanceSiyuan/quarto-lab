@@ -1,0 +1,27 @@
+{
+  "id": "rotated-memory-z-cdep-v1",
+  "title": "Rotated Memory Z under circuit depolarizing noise",
+  "observable": "logical_z",
+  "noise_model": "circuit_depolarizing",
+  "input_type": "memory-z",
+  "p_list": [
+    0.008,
+    0.009,
+    0.01,
+    0.011,
+    0.012
+  ],
+  "rounds_policy": {
+    "kind": "distance-scaled",
+    "multiplier": 3,
+    "minimum": 3
+  },
+  "collection": {
+    "max_shots": 100000,
+    "max_errors": 1000
+  },
+  "result_metrics": [
+    "logical_error_rate"
+  ],
+  "execution_status": "real"
+}

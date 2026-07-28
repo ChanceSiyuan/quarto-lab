@@ -1,0 +1,50 @@
+#######################################################
+## This is a code entry in the error correction zoo. ##
+##       https://github.com/errorcorrectionzoo       ##
+#######################################################
+
+code_id: stab_8_2_2
+physical: qubits
+logical: qubits
+
+name: '\([[8,2,2]]\) hyperbolic color code'
+introduced: '\cite{arxiv:1906.11394}'
+
+description: |
+  An \([[8,2,2]]\) hyperbolic color code defined on the projective plane. It is a self-dual CSS code.
+
+  A stabilizer tableau for the code is given by \cite[ID 4926]{preset:qiskit}
+  \begin{align}
+  \begin{array}{cccccccc}
+    Z & Z & Z & Z & I & I & I & I \\
+    X & X & X & X & I & I & I & I \\
+    Z & Z & I & I & Z & Z & I & I \\
+    X & X & I & I & X & X & I & I \\
+    Z & Z & I & I & I & I & Z & Z \\
+    X & X & I & I & I & I & X & X
+  \end{array}~.
+  \end{align}
+# Transversal H match
+
+features:
+  transversal_gates:
+    - 'Applying transversal \(S\) and \(S^{\dagger}\), \(\sqrt{X}\), and Hadamard gates yields various logical gates \cite{arxiv:1912.10063}. For instance, the physical gate \(S^{\dagger}_{2}S^{\dagger}_{3}S_{4}S_{5}S_{6}S_{7}CZ_{01}\) implements the logical action \(\bar{S}_{0} \bar{Z}_{1} \overline{CZ}_{01}\).'
+
+relations:
+  parents:
+    - code_id: hyperbolic_color
+      detail: 'The \([[8,2,2]]\) hyperbolic color code is defined on the projective plane.'
+    - code_id: stabilizer_over_gf4
+      detail: 'The \([[8,2,2]]\) hyperbolic color code is Hermitian \cite[ID 4926]{preset:qiskit}.'
+    - code_id: self_dual_css
+    - code_id: small_distance_qubit_stabilizer
+  cousins:
+    - code_id: shor_nine
+      detail: 'Like the Shor code, the \([[8,2,2]]\) hyperbolic color code is a small code defined on the projective plane.'
+
+
+# Begin Entry Meta Information
+_meta:
+  changelog:
+    - user_id: VictorVAlbert
+      date: '2024-02-13'
