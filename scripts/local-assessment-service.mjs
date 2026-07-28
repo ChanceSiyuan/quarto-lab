@@ -2,12 +2,12 @@ import { randomBytes } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { resolve, join } from "node:path";
 
-import generatedIndex from "../.generated/problem-index.json" with { type: "json" };
 import { createAssessmentJobManager } from "../lib/assessments/job-manager.mjs";
 import { createAssessmentService } from "../lib/assessments/local-service.mjs";
 import { createProblemRepository } from "../lib/problems/repository.mjs";
 
-function createLocalRepository(rootDir) {
+async function createLocalRepository(rootDir) {
+  const generatedIndex = JSON.parse(await readFile(join(rootDir, ".generated", "problem-index.json"), "utf8"));
   const repository = createProblemRepository(generatedIndex);
   return {
     ...repository,
@@ -25,8 +25,9 @@ export async function startAssessmentService({
   port = 0,
   host = "127.0.0.1",
 } = {}) {
+  if (host !== "127.0.0.1") throw new Error("Local assessment service must bind to 127.0.0.1.");
   const workspaceRoot = resolve(rootDir);
-  const manager = createAssessmentJobManager({ rootDir: workspaceRoot, repository: createLocalRepository(workspaceRoot) });
+  const manager = createAssessmentJobManager({ rootDir: workspaceRoot, repository: await createLocalRepository(workspaceRoot) });
   const server = createAssessmentService({ rootDir: workspaceRoot, token, manager });
   await new Promise((resolveListen, reject) => {
     server.once("error", reject);

@@ -5,6 +5,8 @@ import { join } from "node:path";
 import test from "node:test";
 
 import { createAssessmentService } from "../lib/assessments/local-service.mjs";
+import { startAssessmentService } from "../scripts/local-assessment-service.mjs";
+import { createAssessmentJobManager } from "../lib/assessments/job-manager.mjs";
 
 const tokenHeaders = { "x-local-assessment-token": "secret" };
 const runId = "20260728T010203Z-a1b2c3";
@@ -24,6 +26,15 @@ test("rejects requests missing the capability token", async () => {
   const server = createAssessmentService({ token: "secret", manager: {} });
   const response = await request(server, "/__local/assessments/problems/Prob-001");
   assert.equal(response.status, 401);
+});
+
+test("rejects an absent capability token while constructing the service", () => {
+  assert.throws(() => createAssessmentService({ manager: {} }), /token/i);
+  assert.throws(() => createAssessmentService({ token: "", manager: {} }), /token/i);
+});
+
+test("refuses to start on a non-loopback host", async () => {
+  await assert.rejects(startAssessmentService({ host: "0.0.0.0" }), /127\.0\.0\.1/);
 });
 
 test("starts jobs through the POST endpoint", async () => {
@@ -56,23 +67,59 @@ test("rejects traversal IDs before manager calls", async () => {
   assert.equal(response.status, 400);
 });
 
-test("posts a selection only for a validated parent run", async () => {
+test("selection rejects an altered alternative and accepts the recorded alternative", async () => {
   const chosen = { page: "knowledge/topic.qmd", topic: "topic", title: "Topic", matchKind: "title" };
+  const runs = [];
+  const manager = createAssessmentJobManager({
+    rootDir: "/repo",
+    repository: {
+      getProblem: (id) => id === "Prob-001" ? { id, title: "Fixture", summary: "Summary" } : null,
+      readProblemMarkdown: async () => "# Fixture",
+    },
+    store: {
+      async createAcceptedRun({ problemId, parentRunId = null }) {
+        const run = { schemaVersion: 1, runId: runs.length ? "20260728T010204Z-d4e5f6" : runId, problemId, parentRunId, status: "queued", stagingDir: "/tmp/run" };
+        runs.push(run);
+        return run;
+      },
+      async listRuns(problemId) { return runs.filter((run) => run.problemId === problemId); },
+      async writeTerminalArtifacts(run, artifacts) {
+        run.status = artifacts.status;
+        run.artifacts = artifacts;
+        return run;
+      },
+      async readClarification(problemId, selectedRunId) {
+        return runs.find((run) => run.problemId === problemId && run.runId === selectedRunId)?.artifacts?.clarification ?? null;
+      },
+    },
+    codex: {
+      preflight: async () => ({ ok: true }),
+      run: async ({ selectedAlternative }) => selectedAlternative
+        ? { ok: false, code: "CODEX_EXIT", message: "done", stderr: "" }
+        : { ok: true, envelope: { outcome: "needs_input", clarification: { alternatives: [chosen] } }, stderr: "" },
+    },
+  });
+  const parent = await manager.start("Prob-001");
+  await new Promise((resolve) => setTimeout(resolve, 20));
   const server = createAssessmentService({
     token: "secret",
-    manager: { select: async (actualRunId, alternative) => {
-      assert.equal(actualRunId, runId);
-      assert.deepEqual(alternative, chosen);
-      return { accepted: true, runId: "20260728T010204Z-d4e5f6", status: "queued" };
-    } },
+    manager,
   });
-  const response = await request(server, `/__local/assessments/jobs/${runId}/selection`, {
+  const rejected = await request(server, `/__local/assessments/jobs/${parent.runId}/selection`, {
+    method: "POST",
+    headers: { ...tokenHeaders, "content-type": "application/json" },
+    body: JSON.stringify({ alternative: { ...chosen, title: "Altered" } }),
+  });
+  assert.equal(rejected.status, 400);
+  assert.equal((await rejected.json()).code, "INVALID_SELECTION");
+
+  const accepted = await request(createAssessmentService({ token: "secret", manager }), `/__local/assessments/jobs/${parent.runId}/selection`, {
     method: "POST",
     headers: { ...tokenHeaders, "content-type": "application/json" },
     body: JSON.stringify({ alternative: chosen }),
   });
-  assert.equal(response.status, 202);
-  assert.equal((await response.json()).status, "queued");
+  assert.equal(accepted.status, 202);
+  assert.equal((await accepted.json()).runId, "20260728T010204Z-d4e5f6");
 });
 
 test("serves report and diagnostic log from the requested run only", async () => {
