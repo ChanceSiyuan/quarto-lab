@@ -47,6 +47,33 @@ test("dev index builds reserve the showcase problem ID", async () => {
   }]);
 });
 
+test("dev wrapper starts the local assessment service and passes proxy env to vinext", async () => {
+  const { main } = await import("../scripts/dev-problem-index.mjs");
+  const spawnCalls = [];
+  const child = new EventEmitter();
+  child.kill = () => {};
+  function spawnFn(command, args, options) {
+    spawnCalls.push({ command, args, options });
+    queueMicrotask(() => child.emit("exit", 0));
+    return child;
+  }
+  const service = {
+    url: "http://127.0.0.1:39001",
+    token: "token-123",
+    close: async () => {},
+  };
+  await main({
+    rootDir: "/tmp/research-loop-dev-root",
+    spawnFn,
+    runIndexBuildFn: async () => {},
+    watchProblemFilesFn: async () => ({ close() {} }),
+    startAssessmentServiceFn: async () => service,
+  });
+  const vinext = spawnCalls.find((call) => call.command === "vinext");
+  assert.equal(vinext.options.env.LOCAL_ASSESSMENT_SERVICE_URL, service.url);
+  assert.equal(vinext.options.env.LOCAL_ASSESSMENT_PROXY_TOKEN, service.token);
+});
+
 test("watches the problems/ tree without recursive repo-wide watchers", async (t) => {
   const root = await mkdtemp(join(tmpdir(), "research-loop-dev-watch-"));
   t.after(() => rm(root, { recursive: true, force: true }));

@@ -1,8 +1,11 @@
 import { spawn } from "node:child_process";
+import { randomBytes } from "node:crypto";
 import { watch } from "node:fs";
 import { mkdir, readdir } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+
+import { startAssessmentService } from "./local-assessment-service.mjs";
 
 const ignoredRoots = new Set([".generated", ".git", "node_modules", ".next", ".vinext", "dist", ".wrangler"]);
 const RESEARCH_INDEX_FILENAMES = new Set([
@@ -152,25 +155,41 @@ export function runIndexBuild(rootDir, spawnFn = spawn) {
   });
 }
 
-export async function main({ rootDir = process.cwd() } = {}) {
+export async function main({
+  rootDir = process.cwd(),
+  spawnFn = spawn,
+  runIndexBuildFn = runIndexBuild,
+  watchProblemFilesFn = watchProblemFiles,
+  startAssessmentServiceFn = startAssessmentService,
+} = {}) {
   const resolvedRootDir = resolve(rootDir);
 
-  await runIndexBuild(resolvedRootDir);
+  await runIndexBuildFn(resolvedRootDir);
+  const assessmentToken = randomBytes(16).toString("hex");
+  const assessmentService = await startAssessmentServiceFn({
+    rootDir: resolvedRootDir,
+    token: assessmentToken,
+  });
 
   let timer;
-  const watcher = await watchProblemFiles({
+  const watcher = await watchProblemFilesFn({
     rootDir: resolvedRootDir,
     onChange() {
       clearTimeout(timer);
       timer = setTimeout(() => {
-        runIndexBuild(resolvedRootDir).catch((error) => console.error(error.message));
+        runIndexBuildFn(resolvedRootDir).catch((error) => console.error(error.message));
       }, 150);
     },
   });
 
-  const child = spawn("vinext", ["dev"], {
+  const child = spawnFn("vinext", ["dev"], {
     cwd: resolvedRootDir,
-    env: { ...process.env, WRANGLER_LOG_PATH: ".wrangler/wrangler.log" },
+    env: {
+      ...process.env,
+      WRANGLER_LOG_PATH: ".wrangler/wrangler.log",
+      LOCAL_ASSESSMENT_SERVICE_URL: assessmentService.url,
+      LOCAL_ASSESSMENT_PROXY_TOKEN: assessmentService.token ?? assessmentToken,
+    },
     stdio: "inherit",
   });
 
@@ -178,9 +197,10 @@ export async function main({ rootDir = process.cwd() } = {}) {
     process.on(signal, () => child.kill(signal));
   }
 
-  child.on("exit", (code, signal) => {
+  child.on("exit", async (code, signal) => {
     watcher.close();
     clearTimeout(timer);
+    await assessmentService.close();
     process.exitCode = code ?? (signal ? 1 : 0);
   });
 }
