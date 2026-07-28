@@ -10,6 +10,7 @@ import { createResearchRepository } from "@/lib/problems/research-repository.mjs
 import { buildProblemDetailResearchState } from "@/lib/problems/research-route-data.mjs";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { AssessmentPanel } from "./assessment-panel";
 
 export default async function ProblemDetailPage({
   params,
@@ -58,6 +59,7 @@ export default async function ProblemDetailPage({
         </header>
 
         <p className="example-disclaimer">{example.manifest.disclaimer}</p>
+        <AssessmentPanel problemId={problem.id} />
 
         <dl className="research-metric-strip" aria-label="Research metrics">
           {ledger.cards.map((card) => (
@@ -210,6 +212,7 @@ export default async function ProblemDetailPage({
       <p className="eyebrow">{problem.id}</p>
       <h1>{problem.title}</h1>
       <p className="detail-summary">{problem.summary}</p>
+      <AssessmentPanel problemId={problem.id} />
       <section className="detail-panel" aria-labelledby="detail-status-heading">
         <h2 id="detail-status-heading">Problem detail</h2>
         <p>The detailed problem workspace will be designed next; this page currently locks the route, identity, and return path.</p>
