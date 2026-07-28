@@ -1,17 +1,17 @@
 # AutoQEC CSS-Distance 200-Trial Import Design
 
 Date: 2026-07-28
-Status: Approved in conversation; awaiting written-spec review
+Status: Revised in conversation; awaiting amended written-spec review
 
 ## Purpose
 
 Import the completed 200-trial AutoQEC CSS-distance autoresearch record into
 Research Loop as the first real repository-backed research problem. The import
 must preserve every trial, its actual generated candidate when one exists, and
-the execution infrastructure used by each of the two trial cohorts. The copied
-record must be self-contained inside this repository: viewing, indexing, and
-building Research Loop must not access `/Users/nzy/AutoQEC` or any other
-external checkout.
+every distinct execution-infrastructure revision used across the two report
+cohorts. The copied record must be self-contained inside this repository:
+viewing, indexing, and building Research Loop must not access
+`/Users/nzy/AutoQEC` or any other external checkout.
 
 The imported problem is an experimental audit record, not trusted learned
 knowledge. It belongs under `problems/`, never under `knowledge/`, and is not a
@@ -30,9 +30,10 @@ source for `make knowledge-resolve`.
   attempt. Research Loop does not invent a candidate or method file for it.
 - Research Loop generates one normalized `attempt.json` per trial without
   rewriting the copied source artifacts.
-- The execution infrastructure for trials 001–100 and 101–200 is frozen in two
-  separate cohort snapshots because the controller and report contracts
-  changed between the cohorts.
+- Trials remain grouped into two logical report cohorts, 001–100 and 101–200,
+  because their report contracts differ. Execution infrastructure is frozen
+  separately by the actual first-parent commit of each trial ref. This produces
+  six physical source snapshots rather than assuming one snapshot per cohort.
 - Private blind-evaluation material, selection secrets, salts, answer keys,
   case-level results, and credentials are not imported.
 - The GitHub Pages showcase remains synthetic and continues to publish only
@@ -58,7 +59,7 @@ The imported record does not change any of the existing content authorities:
 
 Ordinary local problem indexing includes `Prob-001`. `pages:build` continues
 to build its explicit synthetic fixture and must not copy `Prob-001`, its
-candidates, or its infrastructure snapshot into the public Pages artifact.
+candidates, or its infrastructure snapshots into the public Pages artifact.
 
 ## Repository layout
 
@@ -73,20 +74,28 @@ problems/Prob-001/
     transcript.md
     decision.md
   infrastructure/
-    cohort-001-100/
-      source-manifest.json
-      source/
-        src/autoqec_search/...
-        containers/css-distance-autoresearch/...
-        campaigns/examples/css-distance-autoresearch/...
-        tests/...
-    cohort-101-200/
-      source-manifest.json
-      source/
-        src/autoqec_search/...
-        containers/css-distance-autoresearch/...
-        campaigns/examples/css-distance-autoresearch/...
-        tests/...
+    cohorts/
+      cohort-001-100.json
+      cohort-101-200.json
+    snapshots/
+      c4533f982ece376c5f299a13edfabff0f489182c/
+        source-manifest.json
+        source/...
+      3e61f5ac8143e4848e5e814188c83683c74dfe4c/
+        source-manifest.json
+        source/...
+      12a8f794f68d63f07303df0cc38fa244c1ab1248/
+        source-manifest.json
+        source/...
+      87f0972ca2551074546c723cf48053d569b9bf59/
+        source-manifest.json
+        source/...
+      3f30f39a2f9be8ceead3821706aae77acdd980aa/
+        source-manifest.json
+        source/...
+      b6a0e03c05a653b4e85160a703c0be4eef06b619/
+        source-manifest.json
+        source/...
   attempts/
     ATT-001/
       attempt.json
@@ -189,6 +198,7 @@ The stable shape is:
     "sourceRepository": "AutoQEC",
     "sourceBranch": "autoresearch/css-distance/run200-proposal-200",
     "sourceCommit": "705563faed99c094534394e5ca8774f3d74863aa",
+    "sourceInfrastructureCommit": "b6a0e03c05a653b4e85160a703c0be4eef06b619",
     "sourceCohort": "cohort-101-200",
     "model": null
   },
@@ -232,7 +242,19 @@ The infrastructure under `Prob-001` is problem-specific experimental
 provenance. Research Loop's reusable indexing and presentation infrastructure
 continues to live in `lib/problems/`, `app/problems/`, and `scripts/`.
 
-Each cohort snapshot preserves the exact versions used by that cohort of:
+The two report cohorts and the physical infrastructure snapshots are separate
+concepts. Audit of the 200 trial refs produces this exact mapping:
+
+| Attempts | Report cohort | Infrastructure commit |
+|---|---|---|
+| `ATT-001` | `cohort-001-100` | `c4533f982ece376c5f299a13edfabff0f489182c` |
+| `ATT-002`–`ATT-100` | `cohort-001-100` | `3e61f5ac8143e4848e5e814188c83683c74dfe4c` |
+| `ATT-101`–`ATT-104` | `cohort-101-200` | `12a8f794f68d63f07303df0cc38fa244c1ab1248` |
+| `ATT-105`–`ATT-107` | `cohort-101-200` | `87f0972ca2551074546c723cf48053d569b9bf59` |
+| `ATT-108` | `cohort-101-200` | `3f30f39a2f9be8ceead3821706aae77acdd980aa` |
+| `ATT-109`–`ATT-200` | `cohort-101-200` | `b6a0e03c05a653b4e85160a703c0be4eef06b619` |
+
+Each distinct snapshot preserves the exact versions at its commit of:
 
 - the CSS-distance batch controller and its transitive local Python import
   closure;
@@ -245,21 +267,32 @@ Each cohort snapshot preserves the exact versions used by that cohort of:
 - dependency manifests required to understand the frozen environment; and
 - focused contract tests and fixtures that contain no private evaluation data.
 
-The importer determines the local Python import closure from the frozen source
+For every trial ref, the importer resolves the trial commit and its first
+parent. The trial commit is recorded as `sourceCommit`; the first parent is
+recorded as `sourceInfrastructureCommit`. Trials with the same infrastructure
+commit share one copied snapshot. The importer rejects a trial whose resolved
+mapping differs from the exact table above.
+
+The importer determines the local Python import closure from each frozen source
 tree, copies each regular file while preserving its relative path, and then
 verifies that every local import made by a copied entry point resolves within
 the snapshot. It rejects a snapshot with an unresolved local import. It does
 not copy unrelated AutoQEC code merely because it shares the same package.
 
-Each cohort's `source-manifest.json` records:
+Each snapshot's `source-manifest.json` records:
 
 - full source commit and source ref;
-- cohort range;
+- every attempt range that uses the snapshot;
 - entry-point paths;
 - every copied relative path, byte size, executable bit, and SHA-256;
 - intentionally excluded private path classes; and
 - the fact that the snapshot preserves execution code but cannot reproduce the
   withheld blind dataset.
+
+Each `infrastructure/cohorts/*.json` manifest records its logical cohort and an
+ordered list of inclusive attempt ranges mapped to full infrastructure commit
+IDs. This keeps cohort/report parsing explicit while avoiding duplicate copies
+of the same execution source.
 
 The snapshot contains no Git directory. Nothing in it is imported or executed
 by Research Loop's JavaScript or TypeScript runtime.
@@ -283,7 +316,8 @@ The command implements this sequence:
 4. Parse the cohort-specific report and log contracts.
 5. Copy every existing source artifact byte-for-byte into a temporary
    `Prob-001` tree and generate normalized JSON beside it.
-6. Freeze the two infrastructure snapshots from their exact source commits.
+6. Resolve each trial's first parent, require the exact six-range mapping above,
+   and freeze each of the six distinct infrastructure commits once.
 7. Generate `import-manifest.json`, including hashes for every copied and
    generated file other than the manifest itself, plus the original relative
    paths.
@@ -363,7 +397,8 @@ with real-record labels. It shows:
 - sequence, cohort, method, stage, decision, and candidate presence;
 - recorded metrics without synthetic defaults;
 - containment, public-contract, and development gate states;
-- source branch, full commit, cohort snapshot, and recorded model when known;
+- source branch, full trial commit, full infrastructure commit, report cohort,
+  and recorded model when known;
 - copied artifact paths and SHA-256 values; and
 - an explicit `Candidate code was not generated` message when appropriate.
 
@@ -408,8 +443,9 @@ Test-first implementation covers these layers:
 - accept an expected missing candidate and reject an unexplained one;
 - reject duplicate IDs, gaps, traversal, symlinks, hardlinks, mutation during
   copy, private markers, and hash mismatches;
-- freeze two distinct infrastructure commits and reject unresolved imports;
-  and
+- derive infrastructure commits from trial first parents, deduplicate shared
+  commits, preserve multiple commits inside one report cohort, and reject
+  unresolved imports; and
 - install only a complete 200-attempt temporary tree.
 
 Tests use small synthetic source repositories and must not depend on the real
@@ -421,6 +457,7 @@ Tests use small synthetic source repositories and must not depend on the real
 - require exactly `ATT-001` through `ATT-200` for this record;
 - enforce cohort boundaries and candidate/report consistency;
 - verify the complete import manifest offline;
+- verify the exact six infrastructure snapshots and their cohort range maps;
 - generate deterministic problem and research indexes; and
 - surface one corrupt attempt as a problem-level integrity diagnostic rather
   than a partial ledger.
@@ -446,8 +483,8 @@ Tests use small synthetic source repositories and must not depend on the real
 ## Completion criteria
 
 - `problems/Prob-001` contains a valid problem, research manifest, import
-  manifest, generation record, two infrastructure snapshots, and exactly 200
-  ordered attempt directories.
+  manifest, generation record, two logical cohort maps, six infrastructure
+  snapshots, and exactly 200 ordered attempt directories.
 - Every source `LOG.md`, `REPORT.md`, `candidate.py`, and `METHOD.txt` that is
   expected and present is copied byte-for-byte with traceable provenance.
 - No copied file is a symlink, hardlink, Git metadata file, credential, or
@@ -455,8 +492,9 @@ Tests use small synthetic source repositories and must not depend on the real
 - Offline verification passes without reading AutoQEC.
 - The homepage lists `Prob-001`; its detail route shows all 200 attempts; every
   attempt route opens; and expected missing candidates are labeled explicitly.
-- The two frozen infrastructure snapshots record exact source commits and pass
-  their manifest/import-closure checks.
+- The six frozen infrastructure snapshots record the exact commits above, every
+  attempt points to the correct snapshot, and all manifest/import-closure checks
+  pass.
 - No imported code runs during import verification, indexing, building,
   testing, previewing, or page rendering.
 - `knowledge/`, `drafts/`, `literature/`, the dashboard appearance, and the
