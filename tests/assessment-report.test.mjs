@@ -80,6 +80,9 @@ test("renders a standalone report with required audit sections and no scripts", 
   assert.match(html, /Autoresearch Fit Audit/);
   assert.match(html, /Evidence Appendix/);
   assert.match(html, /Fixture &lt;problem&gt;/);
+  assert.match(html, /<strong>Research Value<\/strong><br>80 \(60-100\)<\/div>/);
+  assert.match(html, /<strong>Autoresearch Suitability<\/strong><br>60 \(40-80\)<\/div>/);
+  assert.match(html, /<strong>Combined<\/strong><br>68\.57 \(48-88\.89\)<\/div>/);
   assert.doesNotMatch(html, /<script/i);
   assert.doesNotMatch(html, /https?:\/\//i);
 });
