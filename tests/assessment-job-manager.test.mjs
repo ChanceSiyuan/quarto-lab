@@ -34,6 +34,12 @@ function fakeStore() {
     async listRuns(problemId) {
       return runs.filter((run) => run.problemId === problemId);
     },
+    async findRun(runId) {
+      return runs.find((run) => run.runId === runId) ?? null;
+    },
+    async readClarification(problemId, runId) {
+      return runs.find((run) => run.problemId === problemId && run.runId === runId)?.artifacts?.clarification ?? null;
+    },
   };
 }
 
@@ -115,4 +121,34 @@ test("selection consumes a clarification run and records the selected alternativ
   assert.equal(store.runs.length, 2);
   assert.deepEqual(store.runs[1].artifacts.selection, alternative);
   assert.equal((await manager.getProblemState("Prob-001")).activeJob, null);
+});
+
+test("hydrates a persisted clarification after restart for deduplication and selection", async () => {
+  const alternative = { page: "knowledge/topic.qmd", topic: "topic", title: "Topic", matchKind: "title" };
+  const store = fakeStore();
+  const codex = {
+    preflight: async () => ({ ok: true }),
+    run: async ({ selectedAlternative }) => selectedAlternative
+      ? { ok: false, code: "CODEX_EXIT", message: "done", eventsText: "", stderr: "" }
+      : { ok: true, envelope: { outcome: "needs_input", clarification: { alternatives: [alternative] } }, stderr: "" },
+  };
+  const firstManager = createAssessmentJobManager({ rootDir: "/repo", repository: fakeRepository(), store, codex });
+  const parent = await firstManager.start("Prob-001");
+  await new Promise((resolve) => setTimeout(resolve, 20));
+
+  const restartedManager = createAssessmentJobManager({ rootDir: "/repo", repository: fakeRepository(), store, codex });
+  const state = await restartedManager.getProblemState("Prob-001");
+  const duplicate = await restartedManager.start("Prob-001");
+  const child = await restartedManager.select(parent.runId, alternative);
+  await new Promise((resolve) => setTimeout(resolve, 20));
+  const retriedSelection = await createAssessmentJobManager({ rootDir: "/repo", repository: fakeRepository(), store, codex })
+    .select(parent.runId, alternative);
+
+  assert.equal(state.activeJob.runId, parent.runId);
+  assert.deepEqual(state.activeJob.clarification.alternatives, [alternative]);
+  assert.equal(duplicate.runId, parent.runId);
+  assert.equal(child.accepted, true);
+  assert.equal(retriedSelection.runId, child.runId);
+  assert.equal(store.runs.length, 2);
+  assert.equal(store.runs[1].parentRunId, parent.runId);
 });
