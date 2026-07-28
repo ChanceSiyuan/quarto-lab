@@ -90,6 +90,7 @@ test("codex runner uses safe argv, read-only sandbox, ephemeral mode, JSONL, sch
       await writeFile(join(runDir, "final-message.json"), fakeEnvelopeText());
       child.stdout.emit("data", Buffer.from("{\"type\":\"stage\",\"stage\":\"done\"}\n"));
       child.emit("exit", 0, null);
+      child.emit("close", 0, null);
     });
     return child;
   }
@@ -114,4 +115,38 @@ test("codex runner uses safe argv, read-only sandbox, ephemeral mode, JSONL, sch
   ]);
   assert.equal(calls[0].options.cwd, root);
   assert.equal(calls[0].options.shell, false);
+});
+
+test("codex runner captures stream data that drains after exit", async () => {
+  const root = await mkdtemp(join(tmpdir(), "assessment-codex-drain-"));
+  const runDir = join(root, ".generated", "assessment-runs", "run");
+  await mkdir(runDir, { recursive: true });
+  function spawnFn() {
+    const child = new EventEmitter();
+    child.stdout = new EventEmitter();
+    child.stderr = new EventEmitter();
+    child.kill = () => {};
+    queueMicrotask(async () => {
+      await writeFile(join(runDir, "final-message.json"), fakeEnvelopeText());
+      child.emit("exit", 0, null);
+      setTimeout(() => {
+        child.stdout.emit("data", Buffer.from("{\"type\":\"complete\"}\n"));
+        child.stderr.emit("data", Buffer.from("late diagnostic\n"));
+        child.emit("close", 0, null);
+      }, 10);
+    });
+    return child;
+  }
+  const result = await runCodexAssessment({
+    rootDir: root,
+    problem: { id: "Prob-001", title: "Fixture", summary: "Summary" },
+    problemMarkdown: "Problem markdown.",
+    runDir,
+    schemaPath: join(root, "schemas", "research-problem-assessment.schema.json"),
+    spawnFn,
+    timeoutMs: 5000,
+  });
+  assert.equal(result.ok, true);
+  assert.equal(result.eventsText, "{\"type\":\"complete\"}\n");
+  assert.equal(result.stderr, "late diagnostic\n");
 });
