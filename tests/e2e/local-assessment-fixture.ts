@@ -1,7 +1,6 @@
 import { execFile } from "node:child_process";
 import { existsSync } from "node:fs";
 import { mkdir, readFile, readdir, rename, rm, writeFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
@@ -12,6 +11,7 @@ const repoRoot = path.resolve(fileURLToPath(import.meta.url), "..", "..", "..");
 const generatedDir = path.join(repoRoot, ".generated");
 const metadataPath = path.join(generatedDir, "local-assessment-e2e-fixture.json");
 const generatedIndexPath = path.join(generatedDir, "problem-index.json");
+const problemsDir = path.join(repoRoot, "problems");
 
 export const LOCAL_ASSESSMENT_COMPLETE_PROBLEM_ID = "Prob-901";
 export const LOCAL_ASSESSMENT_AMBIGUOUS_PROBLEM_ID = "Prob-902";
@@ -20,9 +20,22 @@ const problemIds = [
   LOCAL_ASSESSMENT_COMPLETE_PROBLEM_ID,
   LOCAL_ASSESSMENT_AMBIGUOUS_PROBLEM_ID,
 ];
+const fixtureProblemIds = new Set(problemIds);
+
+function isContained(parent: string, candidate: string) {
+  const relative = path.relative(parent, path.resolve(candidate));
+  return relative !== "" && !relative.startsWith("..") && !path.isAbsolute(relative);
+}
 
 function problemDir(problemId: string) {
-  return path.join(repoRoot, "problems", problemId);
+  if (!fixtureProblemIds.has(problemId)) {
+    throw new Error(`Refusing to operate on non-fixture problem ID ${problemId}.`);
+  }
+  const dir = path.resolve(problemsDir, problemId);
+  if (!isContained(problemsDir, dir)) {
+    throw new Error(`Fixture problem path escapes problems/: ${problemId}.`);
+  }
+  return dir;
 }
 
 function completeProblemMarkdown(problemId: string) {
@@ -80,8 +93,7 @@ async function readMetadata() {
 }
 
 function isGeneratedBackupPath(candidate: string) {
-  const relative = path.relative(generatedDir, path.resolve(candidate));
-  return relative !== "" && !relative.startsWith("..") && !path.isAbsolute(relative);
+  return isContained(generatedDir, candidate);
 }
 
 async function removeFixtureStaging(ids: string[]) {
@@ -96,7 +108,7 @@ async function removeFixtureStaging(ids: string[]) {
     const runDir = path.join(stagingRoot, entry.name);
     try {
       const run = JSON.parse(await readFile(path.join(runDir, "run.json"), "utf8"));
-      if (ids.includes(run.problemId)) await rm(runDir, { recursive: true, force: true });
+      if (fixtureProblemIds.has(run.problemId)) await rm(runDir, { recursive: true, force: true });
     } catch (error: any) {
       if (error.code !== "ENOENT") throw error;
     }
@@ -140,14 +152,15 @@ export async function teardownLocalAssessmentFixture() {
   const metadata = await readMetadata();
   if (!metadata) return;
 
-  const ids = Array.isArray(metadata.problemIds) ? metadata.problemIds : problemIds;
-  await removeFixtureStaging(ids);
-  for (const problemId of ids) {
+  await removeFixtureStaging(problemIds);
+  for (const problemId of problemIds) {
     await rm(problemDir(problemId), { recursive: true, force: true });
   }
 
-  for (const backup of metadata.backedUpProblems ?? []) {
+  const backups = Array.isArray(metadata.backedUpProblems) ? metadata.backedUpProblems : [];
+  for (const backup of backups) {
     if (typeof backup.problemId === "string"
+      && fixtureProblemIds.has(backup.problemId)
       && typeof backup.backupPath === "string"
       && isGeneratedBackupPath(backup.backupPath)
       && existsSync(backup.backupPath)) {
@@ -164,7 +177,7 @@ export async function teardownLocalAssessmentFixture() {
 
   if (typeof metadata.backupRoot === "string"
     && isGeneratedBackupPath(metadata.backupRoot)
-    && path.dirname(metadata.backupRoot) !== tmpdir()) {
+    && path.basename(metadata.backupRoot).startsWith("local-assessment-e2e-backup-")) {
     await rm(metadata.backupRoot, { recursive: true, force: true });
   }
   await rm(metadataPath, { force: true });
