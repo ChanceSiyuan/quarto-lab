@@ -223,6 +223,16 @@ async function fileMatches(
   return bytes.length === expected.bytes && sha256(bytes) === expected.sha256;
 }
 
+async function fileDigestMatches(file: string, expectedSha256: string): Promise<boolean> {
+  let bytes: Buffer;
+  try {
+    bytes = await readFile(file);
+  } catch {
+    return false;
+  }
+  return sha256(bytes) === expectedSha256;
+}
+
 /**
  * Whether one method directory already holds the whole fetch.
  *
@@ -247,8 +257,23 @@ async function isComplete(
   ) {
     return false;
   }
+  for (const file of manifest.extraction.files) {
+    if (
+      !(await fileMatches(
+        path.join(destination.raw, SOURCE_TREE_DIRECTORY, file.path),
+        file,
+      ))
+    ) {
+      return false;
+    }
+  }
   for (const figure of manifest.extraction.figures) {
-    if (!(await pathExists(path.join(destination.figures, figure.destination)))) {
+    if (
+      !(await fileDigestMatches(
+        path.join(destination.figures, figure.destination),
+        figure.sha256,
+      ))
+    ) {
       return false;
     }
   }

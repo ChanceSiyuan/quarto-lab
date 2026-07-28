@@ -436,6 +436,67 @@ test("an existing pin is reused without asking the network anything", async (t) 
   assert.deepEqual(await snapshot(rawDir(root, "ed", "beta_2018_latest")), before);
 });
 
+test("a cached source tree file with the wrong bytes is refetched and repaired", async (t) => {
+  const root = await literatureRoot(t);
+  const first = await arxivMock();
+  const manifest = await fetchLiteratureEntry({
+    literatureRoot: root,
+    citekey: "alpha_2016_source",
+    fetchImpl: first.fetchImpl,
+  });
+  const sourceFile = manifest.extraction.files.find((file) => file.path === "main.tex");
+  assert.ok(sourceFile, "the fixture manifest did not record main.tex");
+  const sourcePath = path.join(
+    rawDir(root, "ed", "alpha_2016_source"),
+    "source",
+    sourceFile.path,
+  );
+  await writeFile(sourcePath, "% tampered cache\n", "utf8");
+
+  const second = await arxivMock();
+  const repaired = await fetchLiteratureEntry({
+    literatureRoot: root,
+    citekey: "alpha_2016_source",
+    fetchImpl: second.fetchImpl,
+  });
+
+  const restored = await readFile(sourcePath);
+  assert.deepEqual(second.calls.map((call) => call.url), [SOURCE_URL, PDF_URL]);
+  assert.deepEqual(repaired, manifest);
+  assert.equal(restored.length, sourceFile.bytes);
+  assert.equal(sha256(restored), sourceFile.sha256);
+});
+
+test("a cached figure with the wrong bytes is refetched and repaired", async (t) => {
+  const root = await literatureRoot(t);
+  const first = await arxivMock();
+  const manifest = await fetchLiteratureEntry({
+    literatureRoot: root,
+    citekey: "alpha_2016_source",
+    fetchImpl: first.fetchImpl,
+  });
+  const figure = manifest.extraction.figures.find(
+    (candidate) => candidate.destination === "figures/sketch.svg",
+  );
+  assert.ok(figure, "the fixture manifest did not record figures/sketch.svg");
+  const figurePath = path.join(
+    figuresDir(root, "ed", "alpha_2016_source"),
+    figure.destination,
+  );
+  await writeFile(figurePath, "<svg>tampered</svg>\n", "utf8");
+
+  const second = await arxivMock();
+  const repaired = await fetchLiteratureEntry({
+    literatureRoot: root,
+    citekey: "alpha_2016_source",
+    fetchImpl: second.fetchImpl,
+  });
+
+  assert.deepEqual(second.calls.map((call) => call.url), [SOURCE_URL, PDF_URL]);
+  assert.deepEqual(repaired, manifest);
+  assert.equal(sha256(await readFile(figurePath)), figure.sha256);
+});
+
 test("a pin is never silently replaced when the bibliography moves on", async (t) => {
   const root = await literatureRoot(t);
   const first = await arxivMock({ latest: "v4" });
