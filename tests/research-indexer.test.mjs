@@ -77,7 +77,7 @@ test("surfaces corrupt attempts as diagnostics without returning a partial ledge
   const root = await makeRoot();
   await writeValidResearch(root);
   const broken = attempt();
-  broken.sequence = 2;
+  broken.provenance.sourceInfrastructureCommit = "d".repeat(40);
   await writeFile(join(root, "problems", "Prob-001", "attempts", "ATT-001", "attempt.json"), JSON.stringify(broken, null, 2));
 
   const index = await buildResearchIndex({ rootDir: root });
@@ -85,6 +85,20 @@ test("surfaces corrupt attempts as diagnostics without returning a partial ledge
   assert.deepEqual(index.records, []);
   assert.equal(index.diagnostics.length, 1);
   assert.match(index.diagnostics[0].relativePath, /attempts\/ATT-001\/attempt\.json/);
+});
+
+test("returns every validator diagnostic for a corrupt attempt", async () => {
+  const root = await makeRoot();
+  await writeValidResearch(root);
+  const broken = attempt();
+  broken.sequence = 2;
+  broken.title = "";
+  await writeFile(join(root, "problems", "Prob-001", "attempts", "ATT-001", "attempt.json"), JSON.stringify(broken, null, 2));
+
+  const index = await buildResearchIndex({ rootDir: root });
+
+  assert.deepEqual(index.records, []);
+  assert.deepEqual(index.diagnostics.map((item) => item.field), ["id", "title", "provenance.sourceInfrastructureCommit"]);
 });
 
 test("repository returns immutable research records and attempts", async () => {
