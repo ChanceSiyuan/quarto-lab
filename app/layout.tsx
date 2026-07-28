@@ -19,25 +19,25 @@ export async function generateMetadata(): Promise<Metadata> {
   const protocol = incomingHeaders.get("x-forwarded-proto") ?? (host.startsWith("localhost") ? "http" : "https");
   const origin = `${protocol}://${host}`;
   const description =
-    "An auditable control center for discovering, verifying, solving, and publishing research problems.";
+    "A local problem console for generating, qualifying, solving, and publishing auditable research problems.";
 
   return {
     metadataBase: new URL(origin),
-    title: "Research Loop — Automata",
+    title: "Research Loop Problem Console",
     description,
     icons: {
       icon: "/favicon.svg",
       shortcut: "/favicon.svg",
     },
     openGraph: {
-      title: "Research Loop — Automata",
+      title: "Research Loop Problem Console",
       description,
       type: "website",
       images: [{ url: `${origin}/og.png`, width: 1200, height: 630, alt: "Research Loop by Automata" }],
     },
     twitter: {
       card: "summary_large_image",
-      title: "Research Loop — Automata",
+      title: "Research Loop Problem Console",
       description,
       images: [`${origin}/og.png`],
     },

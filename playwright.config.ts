@@ -4,9 +4,9 @@ import { defineConfig, devices } from "@playwright/test";
  * Browser tests for the deployed shape of this repository.
  *
  * They run against the *built* app — `npm run start:test`, the same command the
- * deployment runs — because the two things they check only exist after a build:
- * the dashboard's client bundle, and the published knowledge site under
- * `/knowledge/`. A dev server would prove neither.
+ * deployment runs — because what they check only exists after a build: the
+ * published knowledge site under `/knowledge/`, served by the same Worker that
+ * serves the Problem Console at `/`. A dev server would prove neither.
  *
  * The server command builds the browser fixture first. The committed knowledge
  * tree holds only what a user has promoted, which today is one page, so the
@@ -17,10 +17,10 @@ import { defineConfig, devices } from "@playwright/test";
  * fixture is never committed and never deployed: it lands in the gitignored
  * `public/knowledge`, and `npm test` rebuilds the production tree afterwards.
  *
- * One browser, one platform. The baselines under
- * `tests/e2e/*-snapshots/` are Linux Chromium and nothing else, so the snapshot
- * path carries the platform but not the project name — a second project would
- * silently compare its own rendering against them.
+ * One browser, one platform. Any baseline written under
+ * `tests/e2e/*-snapshots/` would be Linux Chromium and nothing else, so the
+ * snapshot path carries the platform but not the project name — a second
+ * project would silently compare its own rendering against them.
  */
 
 const PORT = 4173;

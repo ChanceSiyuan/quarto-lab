@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "problemId": "QMB-001",
+  "id": "ATT-005",
+  "sequence": 5,
+  "title": "Adaptive verified portfolio",
+  "summary": "Combine the exact baseline, quotient descent, and residual seeding under a verified adaptive scheduler.",
+  "stage": "development",
+  "decision": "accepted",
+  "promoted": true,
+  "gate": { "publicSmoke": "passed", "containment": "passed", "development": "passed" },
+  "method": {
+    "hypothesis": "An adaptive portfolio can spend a tiny exact budget for calibration, then switch between verified quotient descent and residual-seeded search based on instance features.",
+    "changes": [
+      "Run a short exact calibration pass inspired by ATT-001.",
+      "Use ATT-004 residual seeding as the default worker.",
+      "Fallback to ATT-003 quotient descent when the residual score is ambiguous."
+    ],
+    "learnedFrom": "ATT-004"
+  },
+  "metrics": { "runs": 24, "verifiedWitnesses": 24, "targetHits": 24, "timeouts": 0, "crashes": 0, "invalidClaims": 0, "normalizedQuality": 1.0, "runtimeSeconds": 15.4, "medianSeconds": 0.62, "p95Seconds": 1.24, "speedup": 118.2 },
+  "interpretation": "The synthetic portfolio reaches every target instance, preserves verification, and crosses the 100x display threshold against the synthetic baseline.",
+  "learnings": [
+    "Promotion came from combining accepted components rather than replacing them.",
+    "The verifier is the invariant across the whole story.",
+    "A real project would now freeze this candidate for hidden evaluation."
+  ],
+  "provenance": { "branch": "example/css-distance/att-005", "commit": "e100005", "worktreeState": "example", "model": "example-agent" },
+  "artifacts": ["attempt.json", "LOG.md"],
+  "createdAt": "2026-07-27T02:32:00.000Z"
+}

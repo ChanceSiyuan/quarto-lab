@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "problemId": "QMB-001",
+  "id": "ATT-002",
+  "sequence": 2,
+  "title": "Random kernel sampling",
+  "summary": "Try a very fast randomized kernel sampler and measure how much verification rejects.",
+  "stage": "development",
+  "decision": "rejected",
+  "promoted": false,
+  "gate": { "publicSmoke": "passed", "containment": "passed", "development": "failed" },
+  "method": {
+    "hypothesis": "Sampling sparse vectors from the kernel of the CSS checks may locate low-weight logical operators much faster than exact enumeration.",
+    "changes": [
+      "Replace meet-in-the-middle enumeration with random kernel basis combinations.",
+      "Cap each restart by elapsed time rather than candidate count.",
+      "Keep ATT-001 witness verification after every proposed hit."
+    ],
+    "learnedFrom": "ATT-001"
+  },
+  "metrics": { "runs": 24, "verifiedWitnesses": 15, "targetHits": 12, "timeouts": 0, "crashes": 0, "invalidClaims": 4, "normalizedQuality": 0.5, "runtimeSeconds": 42.6, "medianSeconds": 1.4, "p95Seconds": 2.9, "speedup": 42.7 },
+  "interpretation": "The sampler is fast, but invalid witness claims make the apparent hit count unreliable. Verification prevents a false promotion.",
+  "learnings": [
+    "A fast proposal stage needs a stronger quotient-space constraint.",
+    "Display invalid claims separately from crashes and misses.",
+    "Do not rank candidates by speed alone."
+  ],
+  "provenance": { "branch": "example/css-distance/att-002", "commit": "e100002", "worktreeState": "example", "model": "example-agent" },
+  "artifacts": ["attempt.json", "LOG.md"],
+  "createdAt": "2026-07-27T01:18:00.000Z"
+}

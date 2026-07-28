@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "problemId": "QMB-001",
+  "id": "ATT-004",
+  "sequence": 4,
+  "title": "Residual-seeded local search",
+  "summary": "Improve quotient-coset descent by seeding from residual syndromes.",
+  "stage": "development",
+  "decision": "accepted",
+  "promoted": false,
+  "gate": { "publicSmoke": "passed", "containment": "passed", "development": "passed" },
+  "method": {
+    "hypothesis": "Residual syndrome features can seed quotient-coset descent close to low-weight witnesses and reduce restart waste.",
+    "changes": [
+      "Rank initial states by residual syndrome sparsity.",
+      "Carry the ATT-003 quotient verifier unchanged.",
+      "Stop early once a verified target-distance witness is found."
+    ],
+    "learnedFrom": "ATT-003"
+  },
+  "metrics": { "runs": 24, "verifiedWitnesses": 24, "targetHits": 22, "timeouts": 0, "crashes": 0, "invalidClaims": 0, "normalizedQuality": 0.97, "runtimeSeconds": 39.8, "medianSeconds": 1.6, "p95Seconds": 3.8, "speedup": 45.7 },
+  "interpretation": "Residual seeding sharply improves speed and hit rate while preserving verification, but the synthetic speedup is still below the headline target.",
+  "learnings": [
+    "Seeding is more valuable than adding more restarts.",
+    "The accepted core can be wrapped in a portfolio scheduler.",
+    "Promotion should require perfect synthetic target hits."
+  ],
+  "provenance": { "branch": "example/css-distance/att-004", "commit": "e100004", "worktreeState": "example", "model": "example-agent" },
+  "artifacts": ["attempt.json", "LOG.md"],
+  "createdAt": "2026-07-27T02:06:00.000Z"
+}

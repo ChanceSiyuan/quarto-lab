@@ -73,6 +73,35 @@ the two items that did block merge were fixed in `e761250` and `2108c0a`.
     and `ch <Eric.M.990909@gmail.com>` (ledger line 45). Cosmetic; normalize
     with a rebase before merge if the history matters.
 
+## Inherited from the `origin/main` merge (2)
+
+Both arrived with the Problem Console / GitHub Pages showcase work and reproduce
+on `origin/main` on its own. Neither is caused by the merge, and neither was
+patched inside the merge commit; they are recorded here so they are not mistaken
+for knowledge-system defects.
+
+15. **`npx --no-install tsc --noEmit` reports 8 `TS7006` implicit-`any`
+    errors** in `app/problem-console.tsx` (2), `app/problems/[id]/page.tsx` (3),
+    and `app/problems/[id]/attempts/[attemptId]/page.tsx` (3). `lib/problems/*.mjs`
+    is untyped JavaScript, so every value that crosses that boundary is `any`
+    and each `.map((row) => …)` callback trips `noImplicitAny`. Verified
+    identical on `origin/main` alone; this branch was `tsc`-clean before the
+    merge. `tsc --noEmit` is a plan acceptance command but is wired into no npm
+    script, so `npm test` still passes. Fix by adding JSDoc `@param`/`@returns`
+    types to `lib/problems/*.mjs`, or — cheaply — by annotating the callbacks
+    with `ReturnType<typeof buildProblemPresentation>`.
+16. **`npm run pages:build` copies orphan knowledge stylesheets into `out/`.**
+    `scripts/build-pages-showcase.mjs:70` (`shouldCopyClientAsset`) is an
+    extension allowlist over all of `dist/client`, so it sweeps up Quarto's
+    bundled CSS under `dist/client/knowledge/site_libs/`. The GitHub Pages
+    artifact therefore carries 4 files / ~624 KB at `out/knowledge/site_libs/**`
+    (Bootstrap, Bootstrap Icons, Quarto syntax highlighting, tippy) with no
+    knowledge HTML to use them, and `bootstrap-icons.css` points at a
+    `bootstrap-icons.woff` that the `.woff2`-only allowlist leaves behind.
+    Nothing on the Pages site links to them, so this is dead weight, not a leak
+    of unpublished content — the knowledge HTML, `search.json`, and JS are all
+    excluded. Scope the copy to the showcase routes' own assets if it matters.
+
 ## Accepted residual risk
 
 The unsafe-HTML scanner in `lib/knowledge/parser.ts` does not model every Pandoc

@@ -9,7 +9,7 @@
 # empty string: exit 2 means "the invocation was wrong", the same code
 # scripts/draft-preview.ts uses for that failure.
 
-.PHONY: help dev build test \
+.PHONY: help dev build test pages-build \
 	knowledge-check knowledge-resolve knowledge-preview \
 	draft-preview \
 	literature-index literature-fetch literature-sync \
@@ -18,9 +18,10 @@
 help:
 	@echo 'Research Loop'
 	@echo
-	@echo '  make dev                                        install if needed, then serve the dashboard locally'
-	@echo '  make build                                      render knowledge/ into public/knowledge/, then build the app'
-	@echo '  make test                                       lint, unit tests, rendered-output tests, browser tests'
+	@echo '  make dev                                        install if needed, then serve the problem console locally'
+	@echo '  make build                                      index problems/, render knowledge/ into public/knowledge/, then build the app'
+	@echo '  make test                                       lint, both unit suites, pages showcase, rendered-output tests, browser tests'
+	@echo '  make pages-build                                snapshot the static QMB-001 example into out/ for GitHub Pages'
 	@echo
 	@echo '  make knowledge-check                            validate the trusted knowledge tree'
 	@echo '  make knowledge-resolve QUERY="triangular TFIM"  print the reading bundle for one research question'
@@ -42,6 +43,10 @@ build: node_modules/.package-lock.json
 
 test: node_modules/.package-lock.json
 	npm test
+
+# The GitHub Pages showcase snapshots `dist/`, so it needs a build first.
+pages-build: build
+	npm run pages:build
 
 knowledge-check: node_modules/.package-lock.json
 	npm run knowledge:check

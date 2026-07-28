@@ -1,14 +1,53 @@
 # Research Loop
 
-A shared human-and-agent knowledge system. The existing dashboard stays at `/`,
-a Quarto site of reviewed research knowledge is published at `/knowledge/`, and
-both are packaged into one deployable artifact by the existing vinext build.
+A shared human-and-agent research workspace. A local Problem Console runs at
+`/`, a Quarto site of reviewed research knowledge is published at `/knowledge/`,
+and both are packaged into one deployable artifact by the existing vinext build.
 
-- `/` — the preserved Research Loop dashboard. Its source and appearance are
-  authoritative: `app/page.tsx`, `app/globals.css`, and `app/layout.tsx` are not
-  rewritten to accommodate the knowledge system.
+- `/` — the Problem Console. It reads `problems/<id>/` through the generated
+  index at `.generated/problem-index.json` and presents problems, attempts, and
+  the Codex hand-off for authoring a new problem.
 - `/knowledge/` — a static Quarto website rendered from `knowledge/**/*.qmd`
   into the gitignored `public/knowledge/`, with code execution disabled.
+
+## Prerequisites
+
+- Node.js `22.23.1` (pinned in `.node-version`; the package `engines` floor is
+  `>=22.13.0`)
+- Quarto `1.9.38` on `PATH`, for rendering and previewing the knowledge site
+
+```bash
+make dev
+```
+
+The command installs the locked dependencies when needed, then starts the local
+site. This starter does not use `wrangler.jsonc`.
+
+## Local Problem Console
+
+Problems live in `problems/<id>/` and are indexed into
+`.generated/problem-index.json` before dev, lint, build, and test commands. The
+generated index is ignored by Git; `problem.json`, `problem.md`, and
+`generation/` records are the durable audit trail.
+
+Run locally:
+
+```bash
+npm run dev
+```
+
+`npm run dev` builds the index once, watches `problems/` for changes to
+`problem.json` and `problem.md`, and rebuilds the index as it serves.
+
+To create a problem, click `+ Add problem` on the homepage. Codex opens a new
+task with the issue #133 context prefilled; send it, answer one question at a
+time, and only allow file writes after reviewing the proposed manifest,
+Markdown, generation record, and rubric decision.
+
+`npm run pages:build` snapshots the static `QMB-001` example — the homepage, the
+problem page, and its five attempt pages — into `out/` for GitHub Pages at
+`https://nzy1997.github.io/research-loop/`. The snapshot is script-free static
+HTML; it is a showcase of the example, not a deployment of the console.
 
 ## The trust boundary
 
@@ -26,6 +65,9 @@ the whole returned bundle; a question the trusted tree does not cover gets an
 explicit "no match" rather than a quiet fallback to the other two trees. See
 `AGENTS.md` for the rules and `docs/skills.md` for the skills that implement
 them.
+
+`problems/` is a fourth tree with its own role: it is the record of what is
+being worked on, not a source of reviewed answers. The resolver never reads it.
 
 ## Knowledge pages
 
@@ -47,11 +89,6 @@ the allowlist is what keeps a page from turning a render into code execution.
 duplicate parents, broken links, cycles, path escapes, and citation keys that
 are not in `literature/ref.bib`.
 
-## Prerequisites
-
-- Node.js `22.23.1` (pinned in `.node-version`)
-- Quarto `1.9.38` on `PATH`, for rendering and previewing
-
 ## Commands
 
 ```bash
@@ -60,9 +97,10 @@ make help
 
 | Command | What it does |
 |---|---|
-| `make dev` | Install locked dependencies when needed, then serve the dashboard locally |
-| `make build` | Validate and render `knowledge/` into `public/knowledge/`, then build the deployable app |
-| `make test` | Lint, unit tests, rendered-output tests, and browser tests |
+| `make dev` | Install locked dependencies when needed, then serve the Problem Console locally with the problem index watched |
+| `make build` | Regenerate the problem index, validate and render `knowledge/` into `public/knowledge/`, then build the deployable app |
+| `make test` | Lint, both unit suites, the Pages showcase, rendered-output tests, and browser tests |
+| `make pages-build` | Snapshot the static `QMB-001` example into `out/` for GitHub Pages |
 | `make knowledge-check` | Validate the trusted knowledge tree |
 | `make knowledge-resolve QUERY="triangular TFIM"` | Print the reading bundle for one research question, as JSON |
 | `make knowledge-preview` | Serve the trusted knowledge site locally |
@@ -81,6 +119,28 @@ name for each workflow.
 argument-taking targets refuse an empty variable with a one-line usage message
 and exit 2.
 
+The package scripts that have no Make target:
+
+- `npm run lint`: regenerate the problem index, then run ESLint
+- `npm run test:unit`: the TypeScript knowledge, literature, drafts, migration,
+  and agent suites
+- `npm run test:unit:problems`: the problem-console `.mjs` suites — schema,
+  indexer, repository, presentation, view state, dev watcher, Codex launch, and
+  the static example content
+- `npm run test:pages`: `pages:build` followed by the Pages showcase assertions
+- `npm run test:rendered`: assertions against the built HTML and static assets
+- `npm run test:e2e`: Playwright, against the built site
+- `npm run db:generate`: generate Drizzle migrations after schema changes
+
+## Included shape
+
+- site code lives under `app/`
+- `.openai/hosting.json` declares optional Sites D1 and R2 bindings
+- `vite.config.ts` simulates declared bindings for local development
+- `db/schema.ts` starts intentionally empty
+- `examples/d1/` contains an optional D1 example surface
+- `drizzle.config.ts` supports local migration generation when needed
+
 ## Deployment
 
 `.openai/hosting.json` pins the existing Sites project
@@ -89,6 +149,9 @@ never reformatted, replaced, or re-created. Deployment may remain blocked while
 that project is not visible to the current account; local completion — build,
 tests, and rendered output — is valid on its own, and the artifact is ready for
 whenever access returns.
+
+The GitHub Pages showcase is a separate, static destination: `.github/workflows/pages.yml`
+publishes the `out/` snapshot produced by `npm run pages:build`.
 
 ## Not in this phase
 
@@ -154,7 +217,8 @@ SIWC establishes identity only; it does not prove workspace membership. Use the
 Sites hosting platform's access policy controls for workspace-wide restrictions,
 or enforce explicit server-side membership or allowlist checks.
 
-This starter does not use `wrangler.jsonc`.
+Use SIWC for account pages, user-specific dashboards, saved records, and write
+actions tied to the current ChatGPT user. Leave public content anonymous.
 
 ## Learn More
 
