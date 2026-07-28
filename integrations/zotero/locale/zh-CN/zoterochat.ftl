@@ -1,0 +1,12 @@
+zotkit-pane-header =
+    .label = Research Loop · Local Codex
+    .aria-label = Research Loop · Local Codex
+zotkit-pane-sidenav =
+    .tooltiptext = Research Loop · Local Codex
+    .aria-label = Research Loop · Local Codex
+zotkit-section-new-chat =
+    .tooltiptext = 用当前 PDF 选区开始新对话
+    .aria-label = 用当前 PDF 选区开始新对话
+zotkit-section-terminal =
+    .tooltiptext = 打开高级 Agent CLI Terminal
+    .aria-label = 打开高级 Agent CLI Terminal

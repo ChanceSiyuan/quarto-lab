@@ -653,13 +653,13 @@ test("`knowledge.ts check` accepts the production tree", async () => {
 });
 
 test("`knowledge.ts resolve` prints formatted JSON and exits 0 on no-match", async () => {
-  const result = await knowledgeCli("resolve", "--query", "triangular TFIM");
+  const result = await knowledgeCli("resolve", "--query", "qxjzvplmokn");
 
   assert.equal(result.code, 0, result.stderr);
   const parsed: unknown = JSON.parse(result.stdout);
   assert.deepEqual(parsed, {
     schemaVersion: 1,
-    query: "triangular TFIM",
+    query: "qxjzvplmokn",
     status: "no-match",
     bundle: null,
     alternatives: [],

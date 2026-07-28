@@ -40,7 +40,21 @@ const REPO_ROOT = path.resolve(fileURLToPath(import.meta.url), "..", "..", "..")
 const SKILLS_ROOT = path.join(REPO_ROOT, "skills");
 
 /** The complete set of local skills this repository commits. */
-const SKILL_NAMES = ["add-problem", "download-ref", "prepare-autoresearch", "read-knowledge", "review-draft"] as const;
+const SKILL_NAMES = [
+  "add-problem",
+  "capture-chat-draft",
+  "complete-gaps",
+  "conference-survey",
+  "download-ref",
+  "expand-notes",
+  "generate-issues",
+  "integrate-paper",
+  "prepare-autoresearch",
+  "read-knowledge",
+  "render-site",
+  "review-draft",
+  "screen-paper",
+] as const;
 
 type SkillName = (typeof SKILL_NAMES)[number];
 
@@ -400,12 +414,135 @@ const PREPARE_AUTORESEARCH: readonly Clause[] = [
   { requirement: "keeps private data outside the candidate tree", in: "body", pattern: /private[^.]*outside[^.]*candidate/i },
 ];
 
+/** The adapted quarto-lab requirements for writing polished knowledge drafts. */
+const EXPAND_NOTES: readonly Clause[] = [
+  {
+    requirement: "triggers on expanding rough academic notes into Quarto",
+    in: "description",
+    pattern: /rough academic notes[^,.]*Quarto/i,
+  },
+  {
+    requirement: "writes new work under drafts before promotion",
+    in: "body",
+    pattern: /`drafts\/`[^.\n]*(first|before)/i,
+  },
+  {
+    requirement: "uses only the repository frontmatter allowlist",
+    in: "body",
+    pattern: /`title`, `description`, `categories`, and optional `aliases`/i,
+  },
+  {
+    requirement: "uses exactly one supported category",
+    in: "body",
+    pattern: /exactly one[^.\n]*`theory`, `experiment`, or `codes`/i,
+  },
+  {
+    requirement: "keeps paper full text out of knowledge",
+    in: "body",
+    pattern: /never copy[^.\n]*paper[^.\n]*full text[^.\n]*`knowledge\/`/i,
+  },
+  {
+    requirement: "keeps citations in the repository bibliography",
+    in: "body",
+    pattern: /`literature\/ref\.bib`/i,
+  },
+  {
+    requirement: "checks the finished draft through the repository gate",
+    in: "body",
+    pattern: /make knowledge-check/i,
+  },
+];
+
+/** The adapted quarto-lab requirements for safe site rendering. */
+const RENDER_SITE: readonly Clause[] = [
+  {
+    requirement: "triggers on building or previewing the knowledge site",
+    in: "description",
+    pattern: /building[^,.]*previewing[^,.]*knowledge site/i,
+  },
+  {
+    requirement: "never invokes Quarto directly",
+    in: "body",
+    pattern: /never invoke[^.\n]*`quarto render`[^.\n]*directly/i,
+  },
+  {
+    requirement: "validates before rendering",
+    in: "body",
+    pattern: /make knowledge-check/i,
+  },
+  {
+    requirement: "builds through the safe target",
+    in: "body",
+    pattern: /make build/i,
+  },
+  {
+    requirement: "previews through the safe target",
+    in: "body",
+    pattern: /make knowledge-preview/i,
+  },
+  {
+    requirement: "does not edit generated output",
+    in: "body",
+    pattern: /never edit[^.\n]*`public\/knowledge`/i,
+  },
+];
+
+const CAPTURE_CHAT_DRAFT: readonly Clause[] = [
+  { requirement: "writes a reviewable reading note under drafts", in: "body", pattern: /`drafts\/reading-notes\//i },
+  { requirement: "separates paper claims from user hypotheses and open questions", in: "body", pattern: /paper-backed[^.]*user hypotheses[^.]*open questions/i },
+  { requirement: "never promotes the capture into knowledge", in: "body", pattern: /never[^.]*`knowledge\/`/i },
+  { requirement: "previews the exact captured draft", in: "body", pattern: /make draft-preview FILE=/i },
+];
+
+const COMPLETE_GAPS: readonly Clause[] = [
+  { requirement: "works on an untrusted draft copy", in: "body", pattern: /`drafts\/`/i },
+  { requirement: "requires explicit approval before writing", in: "body", pattern: /explicit approval/i },
+  { requirement: "leaves trusted knowledge unchanged", in: "body", pattern: /trusted[^.]*`knowledge\/`[^.]*unchanged/i },
+  { requirement: "previews the completed draft", in: "body", pattern: /make draft-preview FILE=/i },
+];
+
+const CONFERENCE_SURVEY: readonly Clause[] = [
+  { requirement: "stores conference surveys as drafts", in: "body", pattern: /`drafts\/conference-surveys\/`/i },
+  { requirement: "audits every oral before filtering", in: "body", pattern: /every oral/i },
+  { requirement: "never writes conference output into knowledge", in: "body", pattern: /never[^.]*`knowledge\/`/i },
+  { requirement: "previews the survey draft", in: "body", pattern: /make draft-preview FILE=/i },
+];
+
+const GENERATE_ISSUES: readonly Clause[] = [
+  { requirement: "writes untrusted issue proposals under projects", in: "body", pattern: /`projects\/<project>\/issues\/`/i },
+  { requirement: "does not write issue proposals into knowledge", in: "body", pattern: /never[^.]*`knowledge\/`/i },
+  { requirement: "resolves trusted source context", in: "body", pattern: /make knowledge-resolve QUERY=/i },
+  { requirement: "requires approval before writing issue files", in: "body", pattern: /explicit approval/i },
+];
+
+const INTEGRATE_PAPER: readonly Clause[] = [
+  { requirement: "treats drafts and literature as untrusted", in: "body", pattern: /`drafts\/`[^.]*`literature\/`[^.]*untrusted/i },
+  { requirement: "resolves trusted qmd context", in: "body", pattern: /make knowledge-resolve QUERY=/i },
+  { requirement: "requires approval for the section map", in: "body", pattern: /explicit approval/i },
+  { requirement: "never edits knowledge while integrating a manuscript", in: "body", pattern: /never[^.]*edit[^.]*`knowledge\/`/i },
+];
+
+const SCREEN_PAPER: readonly Clause[] = [
+  { requirement: "does rapid triage rather than deep review", in: "body", pattern: /triage[^.]*not[^.]*deep review/i },
+  { requirement: "does not hardcode one lab research focus", in: "body", pattern: /user's screening criteria/i },
+  { requirement: "resolves learned screening context", in: "body", pattern: /make knowledge-resolve QUERY=/i },
+  { requirement: "does not modify repository content", in: "body", pattern: /Do not modify/i },
+];
+
 const CLAUSES: Readonly<Record<SkillName, readonly Clause[]>> = {
   "add-problem": ADD_PROBLEM,
-  "prepare-autoresearch": PREPARE_AUTORESEARCH,
+  "capture-chat-draft": CAPTURE_CHAT_DRAFT,
+  "complete-gaps": COMPLETE_GAPS,
+  "conference-survey": CONFERENCE_SURVEY,
   "read-knowledge": READ_KNOWLEDGE,
   "review-draft": REVIEW_DRAFT,
   "download-ref": DOWNLOAD_REF,
+  "expand-notes": EXPAND_NOTES,
+  "generate-issues": GENERATE_ISSUES,
+  "integrate-paper": INTEGRATE_PAPER,
+  "prepare-autoresearch": PREPARE_AUTORESEARCH,
+  "render-site": RENDER_SITE,
+  "screen-paper": SCREEN_PAPER,
 };
 
 for (const name of SKILL_NAMES) {
@@ -478,7 +615,7 @@ test("skills/ holds exactly the committed local skills", async () => {
   assert.deepEqual(
     entries.map((entry) => entry.name).sort(),
     [...SKILL_NAMES].sort(),
-    "skills/ must hold exactly the committed local skills",
+    "skills/ must hold exactly the documented local skills",
   );
   assert.ok(
     entries.every((entry) => entry.isDirectory()),

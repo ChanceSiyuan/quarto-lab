@@ -11,11 +11,12 @@
 
 .PHONY: help dev build test pages-build \
 	knowledge-check knowledge-resolve knowledge-preview \
-	draft-preview \
+	draft-preview drafts-preview \
 	literature-index literature-fetch literature-sync \
 	migration-verify \
 	problem-import-autoqec-css-distance problem-import-verify \
-	problem-index problem-publish
+	problem-index problem-publish \
+	zotero-plugin-test zotero-plugin
 
 help:
 	@echo 'Research Loop'
@@ -30,6 +31,7 @@ help:
 	@echo '  make knowledge-preview                          serve the trusted knowledge site locally'
 	@echo
 	@echo '  make draft-preview FILE=drafts/path.md          render one untrusted draft note locally'
+	@echo '  make drafts-preview                             preview the untrusted drafts workspace locally'
 	@echo
 	@echo '  make literature-index                           regenerate every literature/<method>/INDEX.md'
 	@echo '  make literature-fetch KEY=citekey               fetch the pinned arXiv source of one reference'
@@ -40,6 +42,8 @@ help:
 	@echo '  make problem-import-verify ID=Prob-001                         verify a committed imported problem without reading AutoQEC'
 	@echo '  make problem-index                                              refresh the generated problem index'
 	@echo '  make problem-publish STAGE=".generated/problem-staging/<run>/Prob-NNN" ID=Prob-NNN  publish one validated staged draft'
+	@echo '  make zotero-plugin-test                         type-check and test the Zotero integration'
+	@echo '  make zotero-plugin                              test and build the installable Zotero XPI'
 
 dev: node_modules/.package-lock.json
 	npm run dev
@@ -76,6 +80,9 @@ draft-preview: node_modules/.package-lock.json
 	fi
 	npm run draft:preview -- --file "$(FILE)"
 
+drafts-preview: node_modules/.package-lock.json
+	quarto preview drafts --no-execute
+
 literature-index: node_modules/.package-lock.json
 	npm run literature:index
 
@@ -89,8 +96,14 @@ literature-fetch: node_modules/.package-lock.json
 literature-sync: node_modules/.package-lock.json
 	npm run literature:sync
 
-migration-verify: node_modules/.package-lock.json
-	npm run migration:verify
+zotero-plugin-test: integrations/zotero/node_modules/.package-lock.json
+	cd integrations/zotero && npm run check && npm test
+
+zotero-plugin: zotero-plugin-test
+	cd integrations/zotero && npm run build
+
+integrations/zotero/node_modules/.package-lock.json: integrations/zotero/package-lock.json
+	cd integrations/zotero && npm ci
 
 problem-import-autoqec-css-distance: node_modules/.package-lock.json
 	@if [ -z "$(SOURCE)" ]; then \

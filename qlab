@@ -1,0 +1,5 @@
+#!/bin/sh
+set -eu
+
+repo_root=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+exec node --import tsx "$repo_root/scripts/qlab.ts" "$@"

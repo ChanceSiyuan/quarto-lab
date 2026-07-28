@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
-import { mkdir, symlink, writeFile } from "node:fs/promises";
+import { spawnSync } from "node:child_process";
+import { mkdir, readFile, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
@@ -109,6 +110,17 @@ test("reserves IDs from damaged problem directories without indexing them", asyn
   assert.match(index.diagnostics[0].message, /Invalid JSON/);
 });
 
+test("reserves IDs from non-directory problem entries without indexing them", async () => {
+  const root = await makeRoot();
+  await writeFile(join(root, "problems", "Prob-001"), "occupied by a damaged local problem artifact");
+
+  const index = await buildProblemIndex({ rootDir: root });
+
+  assert.deepEqual(index.problems, []);
+  assert.equal(index.nextProblemId, "Prob-002");
+  assert.deepEqual(index.diagnostics, []);
+});
+
 test("reserves parseable manifest IDs even when the record is invalid", async () => {
   const root = await makeRoot();
   await writeProblem(root, "candidate-draft", {
@@ -175,11 +187,44 @@ test("scans explicit, damaged-directory, and parseable manifest reserved IDs", a
   }), ["Prob-000", "Prob-001", "Prob-007"]);
 });
 
-test("scans only valid explicit reserved IDs", async () => {
+test("scans reserved problem IDs from damaged directories and ID-shaped entries", async () => {
   const root = await makeRoot();
+  await writeProblem(root, "Prob-002");
+  await mkdir(join(root, "problems", "draft-with-manifest-id"), { recursive: true });
+  await writeFile(join(root, "problems", "draft-with-manifest-id", "problem.json"), JSON.stringify({ id: "Prob-007" }));
+  await writeFile(join(root, "problems", "Prob-001"), "occupied file");
+  await writeFile(join(root, "target"), "occupied symlink target");
+  await symlink(join(root, "target"), join(root, "problems", "Prob-003"));
 
   assert.deepEqual(await scanReservedProblemIds({
     rootDir: root,
     reservedIds: ["Prob-000", "invalid", "Prob-1", "Prob-001"],
-  }), ["Prob-000", "Prob-001"]);
+  }), ["Prob-000", "Prob-001", "Prob-002", "Prob-003", "Prob-007"]);
+});
+
+test("ignores ID-shaped problem directories, files, and symlinks", async () => {
+  const root = await makeRoot();
+  await writeFile(join(root, ".gitignore"), await readFile(new URL("../.gitignore", import.meta.url)));
+  await mkdir(join(root, "problems", "Prob-001"), { recursive: true });
+  await writeFile(join(root, "problems", "Prob-001", "local.txt"), "local workspace");
+  await writeFile(join(root, "problems", "Prob-002"), "damaged local artifact");
+  await writeFile(join(root, "symlink-target"), "occupied through a symlink");
+  await symlink(join(root, "symlink-target"), join(root, "problems", "Prob-003"));
+
+  const initialized = spawnSync("git", ["init", "--quiet"], { cwd: root, encoding: "utf8" });
+  assert.equal(initialized.status, 0, initialized.stderr);
+
+  const candidates = [
+    "problems/Prob-001/local.txt",
+    "problems/Prob-002",
+    "problems/Prob-003",
+  ];
+  const ignored = spawnSync("git", ["check-ignore", "--no-index", "--stdin"], {
+    cwd: root,
+    encoding: "utf8",
+    input: `${candidates.join("\n")}\n`,
+  });
+
+  assert.equal(ignored.status, 0, ignored.stderr);
+  assert.deepEqual(ignored.stdout.trim().split("\n"), candidates);
 });

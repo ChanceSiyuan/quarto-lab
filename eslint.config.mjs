@@ -19,8 +19,9 @@ const eslintConfig = defineConfig([
   // source. All of these are gitignored and reproducible: `dist/` is the
   // Worker bundle, `public/knowledge/` is the rendered knowledge site,
   // `.generated/` is the problem index the console reads, `drafts/.preview/`
-  // is the untrusted-draft preview, `work/` holds render workspaces, and the
-  // rest are test and Wrangler artefacts.
+  // is the untrusted-draft preview, `work/` holds render workspaces, and
+  // `integrations/zotero/` is a standalone add-on with its own type-check and
+  // test configuration. The rest are test and Wrangler artefacts.
   globalIgnores([
     "dist/**",
     "public/knowledge/**",
@@ -28,6 +29,7 @@ const eslintConfig = defineConfig([
     "drafts/.preview/**",
     "drafts/.quarto/**",
     "work/**",
+    "integrations/zotero/**",
     ".wrangler/**",
     "playwright-report/**",
     "test-results/**",
