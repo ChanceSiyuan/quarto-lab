@@ -14,6 +14,8 @@ import {
 import {
   assertSafeImportPath,
   importAutoqecCssDistance,
+  sha256,
+  verifyStagedImportTree,
 } from "../lib/problems/autoqec-css-distance/importer.mjs";
 
 const execFileAsync = promisify(execFile);
@@ -223,6 +225,46 @@ test("stages a problems/Prob-001 tree before pre-rename verification", async () 
   } finally {
     await rm(root, { recursive: true, force: true });
     await rm(sourceDir, { recursive: true, force: true });
+  }
+});
+
+test("canonical staged verification selects the default offline verifier", async () => {
+  const root = await mkdtemp(join(tmpdir(), "autoqec-import-stage-"));
+  const problem = join(root, "problems", "Prob-001");
+  const log = Buffer.from("log\n");
+  let injectedVerifierRan = false;
+  try {
+    await mkdir(join(problem, "attempts", "ATT-001"), { recursive: true });
+    await writeFile(join(problem, "attempts", "ATT-001", "LOG.md"), log);
+    await writeFile(join(problem, "import-manifest.json"), JSON.stringify({
+      schemaVersion: 1,
+      kind: "autoqec-css-distance-import",
+      problemId: "Prob-001",
+      sourceRepository: "AutoQEC",
+      importedAt: "2026-07-28T00:00:00.000Z",
+      attempts: 1,
+      files: [{
+        path: "attempts/ATT-001/LOG.md",
+        sourcePath: "LOG.md",
+        sha256: sha256(log),
+        size: log.byteLength,
+        generated: false,
+      }],
+    }));
+
+    const result = await verifyStagedImportTree({
+      rootDir: root,
+      expectedAttempts: Array.from({ length: 200 }, (_, index) => index + 1),
+      verifyStagedTree: async () => {
+        injectedVerifierRan = true;
+        return { ok: false, errors: [] };
+      },
+    });
+
+    assert.equal(result.ok, true);
+    assert.equal(injectedVerifierRan, false);
+  } finally {
+    await rm(root, { recursive: true, force: true });
   }
 });
 
