@@ -131,6 +131,7 @@ test("server-renders the problem console shell", async () => {
   const html = await response.text();
   assert.match(html, /Research Loop/);
   assert.match(html, /Problem Console/);
+  assert.match(html, /<a class="topbar-link" href="\/knowledge\/">Knowledge <span aria-hidden="true">→<\/span><\/a>/);
   assert.match(html, />\+ Add problem<\/a>/);
   assert.doesNotMatch(html, /CSS code-distance algorithm search/);
   assert.doesNotMatch(html, /href="\/problems\/Prob-000"/);
