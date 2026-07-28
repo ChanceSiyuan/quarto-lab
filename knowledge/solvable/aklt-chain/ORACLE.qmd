@@ -10,7 +10,7 @@ Technique: T5 (frustration-free / exact eigenstates) · Tier: C (exact ground st
 
 $$ H = \sum_{i=1}^{L} \left[ \mathbf{S}_i\cdot\mathbf{S}_{i+1} + \tfrac{1}{3}\left(\mathbf{S}_i\cdot\mathbf{S}_{i+1}\right)^2 \right], \qquad \text{PBC } (\mathbf{S}_{L+1}\equiv\mathbf{S}_1) $$
 
-Conventions: spin-1 `S`-operators (`d=3`, `S^z = +1,0,-1`); the biquadratic coefficient is fixed at `1/3` (the AKLT point); coupling set to the energy unit `J=1`. See `knowledge/conventions.md`.
+Conventions: spin-1 `S`-operators (`d=3`, `S^z = +1,0,-1`); the biquadratic coefficient is fixed at `1/3` (the AKLT point); coupling is set to the energy unit `J=1`.
 
 Physics card: `knowledge/models/aklt/MODEL.md`. That card uses the **same** spin-1 `S`-operator convention and the same `H = Σ [S_i·S_{i+1} + ⅓(S_i·S_{i+1})²]` form, and quotes the identical exact anchors (`E/N = −2/3`, string order magnitude `4/9`, correlation length `ξ = 1/ln 3`). No convention translation is needed between the two cards.
 

@@ -15,7 +15,7 @@ Distinct from `spin-1-xxz` (the tunable spin-1 family): AKLT is the single exact
 
 $$ H = \sum_i \left[ \mathbf{S}_i\cdot\mathbf{S}_{i+1} + \tfrac{1}{3}\left(\mathbf{S}_i\cdot\mathbf{S}_{i+1}\right)^2 \right] $$
 
-Conventions: spin-1 `S`-operators (`d=3`); the coefficient ratio is fixed (biquadratic = `1/3` × bilinear) — this is the special point where `H` is, up to a constant, a sum of projectors onto total spin-2 on each bond, making the VBS the exact zero-energy ground state. Coupling set to the energy unit `J = 1`. See `knowledge/conventions.md`.
+Conventions: spin-1 `S`-operators (`d=3`); the coefficient ratio is fixed (biquadratic = `1/3` × bilinear) — this is the special point where `H` is, up to a constant, a sum of projectors onto total spin-2 on each bond, making the VBS the exact zero-energy ground state. Coupling is set to the energy unit `J = 1`.
 
 ### Properties (A1–D16)
 
@@ -51,7 +51,7 @@ Conventions: spin-1 `S`-operators (`d=3`); the coefficient ratio is fixed (biqua
 
 ### Recommended methods
 
-- Primary: **DMRG/MPS** — the ground state is literally a bond-dimension-2 MPS, so DMRG is exact at tiny `χ`; MPS natively measures string order and the entanglement spectrum (per `method-property-map.md` B7-SPT row).
+- Primary: **DMRG/MPS** — the ground state is a bond-dimension-2 MPS, so DMRG is exact at tiny `χ`; MPS natively measures string order and the entanglement spectrum.
 - Cross-check: **ED** on `L ≲ 14` for the exact spectrum/gap and edge-state degeneracy; the analytic VBS construction provides closed-form benchmarks (`E/N`, string order).
 
 ### Key reference

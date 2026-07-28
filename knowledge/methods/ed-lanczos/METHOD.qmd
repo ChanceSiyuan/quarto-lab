@@ -4,10 +4,6 @@ description: "A curated knowledge note on Exact Diagonalization — Iterative La
 categories: [codes]
 ---
 
-<!-- Method-card template. Axis definitions: ../method-property-checklist.md (M1–M14).
-     Inverse model→method map: ../method-property-map.md. Cost derivations & citations:
-     ../method-survey.md. Cite keys resolve in ../ref.bib. -->
-
 Krylov-subspace iteration (Lanczos / Arnoldi / shift-invert) to compute a few extremal or interior eigenpairs of a sparse Hamiltonian, matrix-free.
 
 ## Method card
@@ -63,7 +59,7 @@ ED Lanczos builds an orthonormal Krylov basis `{|v₀⟩, H|v₀⟩, H²|v₀⟩
 - **Dynamical properties `S(q,ω)` on small clusters:** frustrated magnets (B8, C12 sign-ful) where QMC cannot reach real-frequency data without analytic continuation
 - **Finite-cluster Krylov dynamics:** quench dynamics, spectral weight computation on clusters where TEBD would be overkill
 - **Interior excited states (shift-invert):** eigenstate thermalization hypothesis (ETH) studies in specific energy windows
-- Per `method-property-map.md` (ED profile): applicable when `D_H ≲ 10⁷–10⁸` after symmetry reduction; preferred over ED full whenever the full spectrum is not required
+- Applicable when `D_H ≲ 10⁷–10⁸` after symmetry reduction; preferred over full ED whenever the full spectrum is not required.
 
 ### Key reference
 
@@ -73,10 +69,10 @@ ED Lanczos builds an orthonormal Krylov basis `{|v₀⟩, H|v₀⟩, H²|v₀⟩
 
 ### Benchmarks
 
-- ED Lanczos frontier: **48–50 sites** (spin-½ kagome/triangular with full symmetry, sublattice coding) [Wietek–Läuchli, arXiv:1804.05028; verified in `method-survey.md` §1.2].
+- ED Lanczos frontier: **48–50 sites** (spin-½ kagome/triangular with full symmetry and sublattice coding) [Wietek–Läuchli, arXiv:1804.05028].
 - GS energy convergence: residual `< 10⁻¹²` in < 200 Lanczos steps for gapped 1D Heisenberg (`N=36`) [@sandvik_2010_computational].
 - `S(q,ω)` via continued-fraction: `n_CF ≈ 200` Lanczos steps per `q` point for Heisenberg chain `N=24` [@gagliano_1987_dynamical].
-- `n_iter` ~ 50 (gapped) vs ~ 500 (critical, near-degenerate) — `B6` dependence verified in `method-survey.md` §1.2.
+- `n_iter` is typically about 50 for gapped cases and can approach 500 for critical or near-degenerate cases.
 
 ## How it is used / Operational
 
@@ -95,6 +91,4 @@ ED Lanczos builds an orthonormal Krylov basis `{|v₀⟩, H|v₀⟩, H²|v₀⟩
 - For dynamics, energy conservation: `⟨E(t)⟩` should be constant to `< 10⁻¹⁰` relative.
 
 **Cross-links:**
-- Survey: `method-survey.md` §1.2 (Exact diagonalization — iterative)
-- Model↔method gate: `method-property-map.md` (ED profile)
 - Complementary methods: ED full (full spectrum, smaller `N`), FTLM/TPQ (finite-T, same memory footprint), KPM (spectral densities without eigenstates)

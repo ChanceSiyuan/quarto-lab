@@ -4,10 +4,6 @@ description: "A curated knowledge note on Time-Evolving Block Decimation (TEBD),
 categories: [codes]
 ---
 
-<!-- Method-card template. Axis definitions: ../method-property-checklist.md (M1–M14).
-     Inverse model→method map: ../method-property-map.md. Cost derivations & citations:
-     ../method-survey.md. Cite keys resolve in ../ref.bib. -->
-
 Trotter-decomposed MPS time evolution: applies nearest-neighbor two-site gates in alternating sweeps to evolve an MPS in real or imaginary time.
 
 ## Method card
@@ -62,7 +58,7 @@ TEBD represents the quantum state as a matrix product state (MPS) and evolves it
 - **Imaginary-time GS for short-range 1D models** when DMRG is unavailable
 - **MBL systems (D15):** slow entanglement growth extends reachable `t*`; TEBD is the standard tool for probing l-bit dynamics
 - **Integrable systems (C11):** slower-than-linear `S(t)` growth (logarithmic for MBL, subdiffusive for integrable) allows long-time evolution
-- Per `method-property-map.md` (TEBD profile): preferred over TDVP when `H` is strictly nearest-neighbor (A4 = short-range) and swap-gate sequences are not needed
+- Preferred over TDVP when `H` is strictly nearest-neighbor and swap-gate sequences are not needed.
 
 ### Key reference
 
@@ -71,8 +67,8 @@ TEBD represents the quantum state as a matrix product state (MPS) and evolves it
 ### Benchmarks
 
 - Entanglement growth after a global quench in the XX chain: entanglement grows **linearly**, `S(t) ≃ (π c /3) v_F t` (c=1 for the XX chain), until finite-χ truncation caps it — this linear growth is the entanglement barrier [@vidal_2003_efficient; @calabrese_2005_evolution]. Saturation at `S~log(χ)` sets the reachable time `t*∝log(χ)/rate`.
-- Heisenberg chain quench at `χ=512`: reachable `tJ≈6` before truncation error exceeds `10⁻³` (method-survey.md §5.1).
-- MBL phase (D15, W/J=5): `S(t)~log(t)`, `χ` grows logarithmically → reachable `tJ~100` at `χ=512` (method-survey.md §5.1).
+- Heisenberg chain quench at `χ=512`: reachable `tJ≈6` before truncation error exceeds `10⁻³`.
+- MBL phase (`W/J=5`): `S(t)~log(t)`, so `χ` grows logarithmically and `tJ~100` is reachable at `χ=512`.
 
 ## How it is used / Operational
 
@@ -92,6 +88,4 @@ TEBD represents the quantum state as a matrix product state (MPS) and evolves it
 - Compare `S(t)` entanglement growth to CFT predictions for integrable systems.
 
 **Cross-links:**
-- Survey: `method-survey.md` §5.1 (TEBD — Trotter MPS time evolution)
-- Model↔method gate: `method-property-map.md` (TEBD profile)
 - Complementary methods: TDVP (long-range `H`, energy-conserving), mps-finite-t (finite-T purification), DMRG-X (excited eigenstates in MBL)

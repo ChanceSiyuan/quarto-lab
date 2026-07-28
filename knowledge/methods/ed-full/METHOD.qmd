@@ -4,10 +4,6 @@ description: "A curated knowledge note on Exact Diagonalization — Full (ED ful
 categories: [codes]
 ---
 
-<!-- Method-card template. Axis definitions: ../method-property-checklist.md (M1–M14).
-     Inverse model→method map: ../method-property-map.md. Cost derivations & citations:
-     ../method-survey.md. Cite keys resolve in ../ref.bib. -->
-
 Full diagonalization of the finite Hamiltonian matrix; returns the complete spectrum and all eigenvectors.
 
 ## Method card
@@ -64,7 +60,7 @@ ED full constructs the Hamiltonian matrix in a symmetry-reduced block (using U(1
 - **Thermodynamics at all temperatures:** small frustrated clusters (kagome, pyrochlore) where QMC has a sign problem (C12) and FTLM requires many random vectors
 - **Topological models (B7):** ED on a torus gives ground-state degeneracy and TEE directly
 - **Any model with small Hilbert space:** spin-½ chains up to `N≈20`, Hubbard up to `N≈12–16` sites
-- Per `method-property-map.md` (ED profile): applicable when `D_H ≲ 10⁷–10⁸` after symmetry reduction
+- Applicable when `D_H ≲ 10⁷–10⁸` after symmetry reduction.
 
 ### Key reference
 
@@ -75,9 +71,9 @@ ED full constructs the Hamiltonian matrix in a symmetry-reduced block (using U(1
 ### Benchmarks
 
 - Dense ED frontier: **~28–30 sites** (spin-½ with full U(1) + translation + point-group symmetry); N=28 gives D_blk~1.8×10⁵ → ~250–520 GB (real vs complex double) for the dense matrix; N=32 → ~44 TB, infeasible.
-- Iterative (Lanczos/Krylov) ED frontier: **48–50 sites** (spin-½ kagome/square lattice with sublattice coding, sparse matrix-vector products) [Wietek–Läuchli, arXiv:1804.05028; method-survey.md §1.1] — this belongs to ed-lanczos, not ed-full.
+- Iterative Lanczos/Krylov ED reaches **48–50 sites** for spin-½ kagome or square lattices with sublattice coding and sparse matrix-vector products [Wietek–Läuchli, arXiv:1804.05028]; that frontier belongs to ED Lanczos, not full ED.
 - Spin-½ chain `N=20`: Hilbert-space dim `D_H = 2^20 ≈ 10^6`; with U(1) largest block `C(20,10) ≈ 184,756`; dense diag trivial on a laptop [@sandvik_2010_computational].
-- Hubbard `d=4`, `N=16`: `D_H = 4^16 ≈ 4×10^9` (full Fock space, all fillings; at half-filling `D_H = C(16,8)² ≈ 1.66×10^8`); requires full symmetry reduction to be tractable [method-survey.md §1.1].
+- Hubbard `d=4`, `N=16`: `D_H = 4^16 ≈ 4×10^9` in the full Fock space; at half-filling `D_H = C(16,8)² ≈ 1.66×10^8`, so strong symmetry reduction is required.
 
 ## How it is used / Operational
 
@@ -95,6 +91,4 @@ ED full constructs the Hamiltonian matrix in a symmetry-reduced block (using U(1
 - For thermodynamics, verify high-T limit matches the exactly known entropy `S = N ln d`.
 
 **Cross-links:**
-- Survey: `method-survey.md` §1.1 (Exact diagonalization — full)
-- Model↔method gate: `method-property-map.md` (ED profile)
 - Complementary methods: ED Lanczos (fewer eigenstates, larger `N`), FTLM/TPQ (finite-T without full diag)

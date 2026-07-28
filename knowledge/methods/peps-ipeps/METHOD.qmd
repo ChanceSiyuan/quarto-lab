@@ -4,10 +4,6 @@ description: "A curated knowledge note on Projected Entangled Pair States (PEPS 
 categories: [codes]
 ---
 
-<!-- Method-card template. Axis definitions: ../method-property-checklist.md (M1–M14).
-     Inverse model→method map: ../method-property-map.md. Cost derivations & citations:
-     ../method-survey.md. Cite keys resolve in ../ref.bib. -->
-
 2D tensor-network variational ansatz that encodes the 2D area law at fixed virtual bond D; the natural extension of MPS to two dimensions.
 
 ## Method card
@@ -61,7 +57,7 @@ PEPS represents a 2D quantum state as a network of rank-5 tensors (one per site,
 - **Primary GS solver for 2D lattice models**: 2D Heisenberg on square/triangular/kagome, 2D Hubbard model at half-filling and doped, frustrated J₁-J₂ models
 - **Sign-ful 2D regimes** (frustrated magnets, doped fermions): sign-immune alternative to QMC
 - **Thermodynamic-limit observables** without finite-size extrapolation (iPEPS)
-- Per `method-property-map.md`: optimal when A1=2D, B5=2D-area-law, C12=sign-ful; disfavored for A1=3D, D13=real-time, or D=very large (cost prohibitive)
+- Best suited to signful two-dimensional area-law states; disfavored in three dimensions, long real-time evolution, or very large bond dimension.
 
 ### Key reference
 
@@ -94,6 +90,4 @@ PEPS represents a 2D quantum state as a network of rank-5 tensors (one per site,
 - For topological phases, check TEE or topological degeneracy on a torus.
 
 **Cross-links:**
-- Survey: `method-survey.md` §3.2 (PEPS / iPEPS — 2D)
-- Model↔method gate: `method-property-map.md` (iPEPS profile)
 - Complementary methods: DMRG (1D/quasi-1D and cylinder benchmarks), VMC/NQS (sign-immune alternative), QMC (sign-free 2D benchmark)

@@ -4,10 +4,6 @@ description: "A curated knowledge note on Variational Monte Carlo & Neural Quant
 categories: [codes]
 ---
 
-<!-- Method-card template. Axis definitions: ../method-property-checklist.md (M1–M14).
-     Inverse model→method map: ../method-property-map.md. Cost derivations & citations:
-     ../method-survey.md. Cite keys resolve in ../ref.bib. -->
-
 Parameterized-wavefunction ansatz sampled with Monte Carlo; energy minimized by stochastic reconfiguration or natural-gradient descent — sign-immune, no sign problem.
 
 ## Method card
@@ -62,7 +58,7 @@ VMC-NQS represents the many-body wavefunction as a parameterized ansatz (Jastrow
 - **2D/3D systems:** where MPS bond-dimension wall is prohibitive but exact methods are out of reach
 - **Benchmarking against AFQMC:** VMC-NQS upper bound + AFQMC constrained energy validates phaseless approximation quality
 - **Upper-half of a rigorous energy bracket:** pair with `/method-polyopt` (SDP lower bound) to bracket the GS energy rigorously
-- Per `method-property-map.md`: recommended when C12 sign-ful AND A1 2D/3D AND need variational upper bound
+- Recommended for signful two- or three-dimensional problems that need a variational upper bound.
 
 ### Key reference
 
@@ -92,6 +88,4 @@ VMC-NQS represents the many-body wavefunction as a parameterized ansatz (Jastrow
 - Check variance of local energy → 0 at convergence (zero variance property: `Var[E_loc]=0` iff `ψ` is an exact eigenstate).
 
 **Cross-links:**
-- Survey: `method-survey.md` §4.1 (Variational Monte Carlo & neural quantum states)
-- Model↔method gate: `method-property-map.md` (VMC/NQS profile)
 - Complementary methods: `/method-polyopt` (SDP lower bound for rigorous bracket); DQMC/AFQMC for fermions in sign-free regimes; ED oracle for small systems

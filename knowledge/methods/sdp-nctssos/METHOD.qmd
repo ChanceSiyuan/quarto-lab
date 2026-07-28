@@ -4,10 +4,6 @@ description: "A curated knowledge note on Certified Bounds — SDP / Moment-SOS 
 categories: [codes]
 ---
 
-<!-- Method-card template. Axis definitions: ../method-property-checklist.md (M1–M14).
-     Inverse model→method map: ../method-property-map.md. Cost derivations & citations:
-     ../method-survey.md. Cite keys resolve in ../ref.bib. -->
-
 Rigorous certified LOWER bounds on ground-state energies (and bounds on observables) via semidefinite relaxations of the noncommutative moment problem — the sign-immune complement to variational upper bounds.
 
 ## Method card
@@ -61,7 +57,7 @@ The method constructs a hierarchy of semidefinite programs (SDPs) whose optimal 
 - **Frustrated magnets (B8) and sign-ful (C12) models:** the only method that certifies lower bounds without a sign problem (Heisenberg kagome, triangular, J₁-J₂ models)
 - **Certification of variational results:** pair with VMC/NQS or DMRG to bracket the GS energy
 - **1D/2D lattice models with symmetry:** use C9 block-diagonalization to make `k=2,3` tractable
-- Per `method-property-map.md`: niche method for sign-immune certification; complements all variational methods
+- A specialized sign-immune certification method that complements variational upper bounds.
 
 ### Key reference
 
@@ -73,7 +69,7 @@ The method constructs a hierarchy of semidefinite programs (SDPs) whose optimal 
 
 - 1D Heisenberg chain: certified lower bound matches exact GS energy to `<0.01%` at `k=2` with NCTSSOS sparsity [@wang_2024_certifying].
 - 2D `10×10` Heisenberg: tight two-sided bracket combining SDP lower + VMC upper bounds [@wang_2024_certifying].
-- Convergence of NPA hierarchy: guaranteed by Pironio–Navascués–Acín (2010) [@pironio_2010_convergent]; verified in `method-survey.md` §7.6.
+- Convergence of the NPA hierarchy is guaranteed by Pironio–Navascués–Acín (2010) [@pironio_2010_convergent].
 
 ## How it is used / Operational
 
@@ -92,6 +88,4 @@ The method constructs a hierarchy of semidefinite programs (SDPs) whose optimal 
 - Check SDP feasibility and dual certificate for numerical reliability.
 
 **Cross-links:**
-- Survey: `method-survey.md` §7.6 (Certified bounds — SDP / moment-SOS relaxations)
-- Model↔method gate: `method-property-map.md` (sdp-nctssos profile)
 - Complementary methods: VMC/NQS (variational upper bound, pairs with SDP lower bound), ED (oracle for small-system verification), AFQMC (sign-ful ground states where SDP certifies)

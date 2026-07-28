@@ -4,10 +4,6 @@ description: "A curated knowledge note on Quantum-Circuit Simulation — State-V
 categories: [codes]
 ---
 
-<!-- Method-card template. Axis definitions: ../method-property-checklist.md (M1–M14).
-     Inverse model→method map: ../method-property-map.md. Cost derivations & citations:
-     ../method-survey.md. Cite keys resolve in ../ref.bib. -->
-
 Classical simulation of quantum circuits using three complementary engines: exact state-vector evolution, tensor-network contraction, and stabilizer/Clifford simulation; together they cover the full spectrum from shallow low-entanglement circuits to near-Clifford circuits.
 
 ## Method card
@@ -61,7 +57,7 @@ Classical circuit simulation chooses an engine based on circuit structure and en
 - **State-vector:** small-`n` circuits (`n ≲ 30`) where exactness is required; debugging and validating quantum algorithms
 - **TN / MPS:** 1D brickwork circuits, shallow 2D circuits, VQE with low entanglement [@vidal_2003_slightly]; hyper-optimized for random 2D circuits up to Google Sycamore scale [@gray_2021_hyper]
 - **Stabilizer:** Clifford circuits of any size (QEC, stabilizer state prep); near-Clifford approximations when T-count is small
-- Per `method-property-map.md`: choose engine by matching circuit entanglement to the engine's efficiency regime
+- Choose the engine by matching circuit entanglement to the engine's efficiency regime.
 
 ### Key reference
 
@@ -74,8 +70,8 @@ Classical circuit simulation chooses an engine based on circuit structure and en
 ### Benchmarks
 
 - State-vector frontier: `n=53` Google Sycamore (2019); `n≈50` routine on HPC clusters.
-- TN treewidth result: Markov–Shi (2008) proved cost = `exp(treewidth)` [@markov_2008_simulating]; verified in `method-survey.md` §7.5.
-- Stabilizer rank exponent: `α≈0.396` (Qassim–Pashayan–Gosset 2021) — verified in `method-survey.md` §7.5.
+- TN treewidth result: Markov–Shi (2008) proved cost = `exp(treewidth)` [@markov_2008_simulating].
+- Stabilizer rank exponent: `α≈0.396` (Qassim–Pashayan–Gosset 2021).
 - MPS VQE for 1D circuits: polynomial cost for area-law entanglement [@vidal_2003_slightly].
 
 ## How it is used / Operational
@@ -95,6 +91,4 @@ Classical circuit simulation chooses an engine based on circuit structure and en
 - For VQE, check energy convergence and compare with ED at small system sizes.
 
 **Cross-links:**
-- Survey: `method-survey.md` §7.5 (Quantum-circuit simulation)
-- Model↔method gate: `method-property-map.md` (circuit-sim profile)
 - Complementary methods: TEBD (same MPS engine for lattice dynamics), VMC/NQS (variational, no circuit structure required)

@@ -4,10 +4,6 @@ description: "A curated knowledge note on Density-Matrix Renormalization Group (
 categories: [codes]
 ---
 
-<!-- Method-card template. Axis definitions: ../method-property-checklist.md (M1–M14).
-     Inverse model→method map: ../method-property-map.md. Cost derivations & citations:
-     ../method-survey.md. Cite keys resolve in ../ref.bib. -->
-
 Variational optimization over matrix product states (MPS); the method of choice for 1D and quasi-1D ground states.
 
 ## Method card
@@ -64,7 +60,7 @@ DMRG represents the many-body ground state as a matrix product state — a chain
 - **1D critical systems** (XXX chain, transverse-field Ising at Jc): larger χ (polynomial growth with L), finite-size scaling needed
 - **Quasi-1D / ladder geometries**: ladders, zig-zag chains, narrow cylinders — gold standard, χ scales exponentially with ladder width
 - **2D as benchmarking tool on cylinders**: torus / cylindrical Hubbard, Heisenberg on width-W cylinders (W ≤ 6 practical)
-- Per `method-property-map.md`: optimal when A1=1D, B5=area-law or area+log, C12=sign-ful (frustrated), C9/C10 present (big speedup); disfavored for A1=2D bulk, D13=real-time, or B5=volume-law
+- Best suited to one-dimensional area-law or critical states, including frustrated signful problems; disfavored for two-dimensional bulk, long real-time evolution, or volume-law states.
 
 ### Key reference
 
@@ -94,6 +90,4 @@ DMRG represents the many-body ground state as a matrix product state — a chain
 - Verify sum rules for S(q,ω) if computed.
 
 **Cross-links:**
-- Survey: `method-survey.md` §3.1 (DMRG / MPS — finite and infinite)
-- Model↔method gate: `method-property-map.md` (MPS/DMRG profile)
 - Complementary methods: TEBD (real-time dynamics, §5.1), TDVP (§5.2), PEPS/iPEPS (2D bulk), ED (benchmark oracle for small clusters)

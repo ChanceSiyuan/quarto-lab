@@ -12,7 +12,7 @@ Solve J1-J2 spin-model ground-state problems. Competing nearest- and next-neares
 
 $$ H = J_1 \sum_{\langle ij\rangle} \mathbf{S}_i\cdot\mathbf{S}_j + J_2 \sum_{\langle\langle ij\rangle\rangle} \mathbf{S}_i\cdot\mathbf{S}_j $$
 
-Conventions: `S`-operator normalization, `⟨ij⟩` nearest-neighbor and `⟨⟨ij⟩⟩` next-nearest-neighbor (diagonal) bonds, each counted once; `J_1, J_2 > 0` AFM; `J_1 = 1` sets the scale, `g ≡ J_2/J_1` is the control parameter. See `knowledge/conventions.md`.
+Conventions: `S`-operator normalization, `⟨ij⟩` nearest-neighbor and `⟨⟨ij⟩⟩` next-nearest-neighbor (diagonal) bonds, each counted once; `J_1, J_2 > 0` AFM; `J_1 = 1` sets the scale, and `g ≡ J_2/J_1` is the control parameter.
 
 ### Properties (A1–D16)
 
@@ -49,7 +49,7 @@ Conventions: `S`-operator normalization, `⟨ij⟩` nearest-neighbor and `⟨⟨
 
 ### Recommended methods
 
-- Primary: **DMRG on cylinders** + **PEPS/iPEPS** — frustration sign-blocks QMC, so tensor networks carry the load in 2D (per `method-property-map.md` B8/C12 gate).
+- Primary: **DMRG on cylinders** + **PEPS/iPEPS** — frustration sign-blocks QMC, so tensor networks carry the load in 2D.
 - Cross-check: **VMC/NQS** (variational upper bound, compare ansatz families); **ED** on `N ≤ 40` clusters; **PolyOpt** for a certified lower bound. Cross-method disagreement in the window is a known, reportable phenomenon — do not average it away.
 
 ### Key reference
@@ -69,7 +69,7 @@ Infer setup from the user's prompt and propose for ratification.
 
 **Proposal pattern:** "Going with: square lattice, S=1/2, J1=1, J2/J1=[value], cylinder Ly=4 Lx=12, target E/N + structure factor. Override any, or pick: pending ED small cluster (N≤32), Néel-regime check (J2/J1<0.4), intermediate-regime diagnostic (J2/J1≈0.5 → routes to spin-liquid)."
 
-Build per `knowledge/conventions.md`: `H = J1 Σ S_i·S_j + J2 Σ S_i·S_j` (NN+NNN).
+Build `H = J1 Σ S_i·S_j + J2 Σ S_i·S_j`, with the first sum over nearest-neighbor bonds and the second over next-nearest-neighbor bonds, each counted once.
 
 ## Workflow
 
@@ -103,7 +103,7 @@ Build per `knowledge/conventions.md`: `H = J1 Σ S_i·S_j + J2 Σ S_i·S_j` (NN+
 
 Default checks:
 
-- **Limit checks** via `knowledge/limits.md`: `J2 = 0` → NN Heisenberg (compare to the published square-lattice value if available); `J1 = 0` → decoupled sublattices (each is NN Heisenberg).
+- **Limit checks:** `J2 = 0` gives nearest-neighbor Heisenberg; `J1 = 0` gives decoupled sublattices, each equivalent to a nearest-neighbor Heisenberg model.
 - **Symmetry**: total `S^z = 0` for AFM; lattice point group respected.
 - **Convergence**: bond-dim sweep + cylinder-width comparison. For the intermediate regime, document both — the answer often depends on the geometry choice.
 - **Internal consistency**: variance, sub-leading bond-dim corrections.

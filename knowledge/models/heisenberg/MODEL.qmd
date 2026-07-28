@@ -13,7 +13,7 @@ Exact solution: see `knowledge/solvable/heisenberg-xxx/` (oracle card).
 
 $$ H = J \sum_{\langle ij\rangle} \mathbf{S}_i\cdot\mathbf{S}_j $$
 
-Conventions: `S`-operator normalization (`S^a = σ^a/2` for S=1/2), `⟨ij⟩` = nearest-neighbor bonds counted once, `J > 0` antiferromagnetic (AFM), `J < 0` ferromagnetic (FM); largest coupling set to `J = 1`. See `knowledge/conventions.md`.
+Conventions: `S`-operator normalization (`S^a = σ^a/2` for S=1/2), `⟨ij⟩` = nearest-neighbor bonds counted once, `J > 0` antiferromagnetic (AFM), `J < 0` ferromagnetic (FM); the largest coupling is set to `J = 1`.
 
 ### Properties (A1–D16)
 
@@ -51,7 +51,7 @@ Conventions: `S`-operator normalization (`S^a = σ^a/2` for S=1/2), `⟨ij⟩` =
 
 ### Recommended methods
 
-- Primary: **DMRG/MPS** for 1D chains, ladders, and 2D cylinders — near-exact in 1D area-law/area+log regimes; SU(2)/U(1) quantum-number conservation cuts cost (per `method-property-map.md` §MPS).
+- Primary: **DMRG/MPS** for 1D chains, ladders, and 2D cylinders — near-exact in 1D area-law or critical regimes; SU(2)/U(1) quantum-number conservation cuts cost.
 - Primary (unfrustrated 2D/3D, large `N`): **sign-free QMC** (SSE) — bipartite Marshall sign rule makes it exact at scale (§QMC, C12).
 - Cross-check: **ED** on small clusters (exact spectrum, oracle); **VMC/NQS** for frustrated 2D where QMC is sign-blocked.
 
@@ -72,11 +72,11 @@ Infer the canonical setup from the user's prompt and propose it for ratification
 
 **Proposal pattern:** "Going with: 1D chain, S=1/2, J=1 AFM, OBC, N=20, target E/N. Override any, or pick a variant: square lattice (4×4 pending ED), triangular cylinder (Ly=4), kagome cylinder (Ly=4)."
 
-Only surface a real choice when the prompt is genuinely ambiguous about the lattice family. Build the Hamiltonian per `knowledge/conventions.md`.
+Only surface a real choice when the prompt is genuinely ambiguous about the lattice family. Build the Hamiltonian with explicit spin normalization, bond-counting, sign, and energy-scale conventions.
 
 ## Workflow
 
-1. Set up sites and Hamiltonian per conventions; pin sector via conservation laws (see `knowledge/symmetry-cheatsheet.md`).
+1. Set up sites and the Hamiltonian explicitly; pin the sector using total-spin or total-`S^z` conservation where applicable.
 2. Pick method per the table below.
 3. Run a short, conservative first calculation; verify it ran cleanly and respected conservation laws.
 4. Sweep the convergence parameter (bond dim for DMRG, basis size for ED) until the target observable stops moving within the accuracy goal.
@@ -110,8 +110,8 @@ Only surface a real choice when the prompt is genuinely ambiguous about the latt
 
 Default checks (all auto-run; results aggregated into the report's verification line):
 
-- **Limit checks** — confirm sign convention and trivial limits via `knowledge/limits.md`. Examples: at `Δ = 1` XXZ reduces to isotropic Heisenberg; ferromagnetic ground state is fully polarized; `J = 0` gives uncoupled spins.
-- **Symmetry** — total `S^z` conservation; expected ground-state sector (singlet for finite AFM); lattice point group respected (see `knowledge/symmetry-cheatsheet.md`).
+- **Limit checks** — confirm the sign convention and trivial limits: at `Δ = 1` XXZ reduces to isotropic Heisenberg; a ferromagnetic ground state is fully polarized; `J = 0` gives uncoupled spins.
+- **Symmetry** — verify total `S^z` conservation, the expected ground-state sector (a singlet for a finite AFM), and the relevant lattice point-group symmetries.
 - **Convergence** — bond-dim or basis-size sweep produces a monotonic, asymptoting curve. Report the curve, not just the final value.
 - **Internal consistency** — energy variance is small relative to `E²` at the reported accuracy.
 - **Cross-method validation (auto-paired when available)** — use TEBD or another active independent route. Use an ED cross-check via `/method-ed`.
