@@ -1,0 +1,51 @@
+import { randomBytes } from "node:crypto";
+import { readFile } from "node:fs/promises";
+import { resolve, join } from "node:path";
+
+import generatedIndex from "../.generated/problem-index.json" with { type: "json" };
+import { createAssessmentJobManager } from "../lib/assessments/job-manager.mjs";
+import { createAssessmentService } from "../lib/assessments/local-service.mjs";
+import { createProblemRepository } from "../lib/problems/repository.mjs";
+
+function createLocalRepository(rootDir) {
+  const repository = createProblemRepository(generatedIndex);
+  return {
+    ...repository,
+    async readProblemMarkdown(problemId) {
+      const problem = repository.getProblem(problemId);
+      if (!problem) return null;
+      return readFile(join(rootDir, "problems", problemId, "problem.md"), "utf8");
+    },
+  };
+}
+
+export async function startAssessmentService({
+  rootDir = process.cwd(),
+  token = process.env.LOCAL_ASSESSMENT_TOKEN ?? randomBytes(16).toString("hex"),
+  port = 0,
+  host = "127.0.0.1",
+} = {}) {
+  const workspaceRoot = resolve(rootDir);
+  const manager = createAssessmentJobManager({ rootDir: workspaceRoot, repository: createLocalRepository(workspaceRoot) });
+  const server = createAssessmentService({ rootDir: workspaceRoot, token, manager });
+  await new Promise((resolveListen, reject) => {
+    server.once("error", reject);
+    server.listen(port, host, () => {
+      server.off("error", reject);
+      resolveListen();
+    });
+  });
+  const address = server.address();
+  const url = `http://${host}:${address.port}`;
+  return {
+    server,
+    url,
+    close: () => new Promise((resolveClose, reject) => server.close((error) => error ? reject(error) : resolveClose())),
+  };
+}
+
+if (import.meta.url === `file://${process.argv[1]}`) {
+  const token = process.env.LOCAL_ASSESSMENT_TOKEN ?? randomBytes(16).toString("hex");
+  const service = await startAssessmentService({ token });
+  console.log(JSON.stringify({ url: service.url, token }));
+}
