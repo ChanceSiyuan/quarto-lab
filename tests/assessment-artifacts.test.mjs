@@ -66,10 +66,18 @@ test("publishes completed artifacts atomically under the problem", async () => {
   });
   const run = await store.createAcceptedRun({ problemId: "Prob-001" });
   await store.appendEvent(run, { type: "stage", stage: "running" });
+  const summary = {
+    runId: "20260728T010203Z-a1b2c3",
+    problemId: "Prob-001",
+    verdict: "DO_NOW",
+    recommendation: "proceed",
+    lifecycleMutation: false,
+  };
   const terminal = await store.writeTerminalArtifacts(run, {
     status: "completed",
     input: { schemaVersion: 1, problemId: "Prob-001" },
     assessment: { accepted: true },
+    summary,
     reportHtml: "<!doctype html><title>Report</title>",
     stderr: "",
   });
@@ -77,7 +85,9 @@ test("publishes completed artifacts atomically under the problem", async () => {
   assert.equal(terminal.status, "completed");
   const finalDir = join(root, "problems", "Prob-001", "assessments", "20260728T010203Z-a1b2c3");
   assert.equal((await stat(finalDir)).isDirectory(), true);
-  assert.deepEqual(JSON.parse(await readFile(join(finalDir, "run.json"), "utf8")).status, "completed");
+  const runJson = JSON.parse(await readFile(join(finalDir, "run.json"), "utf8"));
+  assert.equal(runJson.status, "completed");
+  assert.deepEqual(runJson.summary, summary);
   assert.equal(await readFile(join(finalDir, "report.html"), "utf8"), "<!doctype html><title>Report</title>");
 });
 

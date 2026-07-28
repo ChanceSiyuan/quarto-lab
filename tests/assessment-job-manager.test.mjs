@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
+import { validateAssessmentEnvelope } from "../lib/assessments/contract.mjs";
 import { createAssessmentJobManager } from "../lib/assessments/job-manager.mjs";
 
 function fakeRepository() {
@@ -28,6 +29,8 @@ function fakeStore() {
     async appendEvent() {},
     async writeTerminalArtifacts(run, artifacts) {
       run.status = artifacts.status;
+      run.error = artifacts.error ?? null;
+      run.summary = artifacts.summary ?? null;
       run.artifacts = artifacts;
       return run;
     },
@@ -41,6 +44,70 @@ function fakeStore() {
       return runs.find((run) => run.problemId === problemId && run.runId === runId)?.artifacts?.clarification ?? null;
     },
   };
+}
+
+function dimension({ id, label, weight }) {
+  return {
+    id,
+    label,
+    weight,
+    score: { min: 4, estimate: 4, max: 4 },
+    evidenceState: "supported",
+    rationale: `${label} is supported in the fixture.`,
+    evidenceRefs: ["p1"],
+  };
+}
+
+function completedCodexResult() {
+  const envelope = {
+    outcome: "assessment",
+    language: "en",
+    knowledgeResolution: {
+      query: "Fixture",
+      status: "match",
+      topic: "knowledge/topic.qmd",
+      orderedFiles: ["knowledge/topic.qmd"],
+    },
+    assessment: {
+      schemaVersion: 1,
+      normalizedProblem: "Fixture problem.",
+      verdict: { label: "DO_NOW", provisional: false, possibleLabels: ["DO_NOW"] },
+      recommendation: "proceed",
+      scores: {
+        researchValue: { min: 80, estimate: 80, max: 80 },
+        autoresearchSuitability: { min: 80, estimate: 80, max: 80 },
+        combined: { min: 80, estimate: 80, max: 80 },
+      },
+      confidence: { level: "medium", rationale: "Fixture confidence." },
+      dimensions: {
+        researchValue: [
+          { id: "importance", label: "Importance", weight: 20 },
+          { id: "gap_and_novelty", label: "Gap and novelty", weight: 20 },
+          { id: "plausibility", label: "Plausibility", weight: 15 },
+          { id: "learning_from_failure", label: "Learning from failure", weight: 15 },
+          { id: "generality_and_publication", label: "Generality and publication potential", weight: 15 },
+          { id: "expected_value_relative_to_cost", label: "Expected value relative to cost", weight: 15 },
+        ].map(dimension),
+        autoresearchSuitability: [
+          { id: "modifiable_search_object", label: "Modifiable search object", weight: 20 },
+          { id: "executable_objective", label: "Executable objective", weight: 20 },
+          { id: "correctness_and_anti_gaming", label: "Correctness and anti-gaming", weight: 15 },
+          { id: "incremental_feedback", label: "Incremental feedback", weight: 15 },
+          { id: "fresh_evaluation", label: "Fresh evaluation", weight: 10 },
+          { id: "reproducibility_and_auditability", label: "Reproducibility and auditability", weight: 10 },
+          { id: "attempt_runtime", label: "Attempt runtime", weight: 10 },
+        ].map(dimension),
+      },
+      largestBottleneck: "No bottleneck in the fixture.",
+      recommendedReframe: { kind: "none", text: "No reframe needed." },
+      informationGaps: ["None in fixture."],
+      evidence: [{ id: "p1", kind: "problem", path: "problems/Prob-001/problem.md", locator: null, summary: "Fixture problem." }],
+    },
+    clarification: null,
+  };
+  const validation = validateAssessmentEnvelope(envelope);
+  assert.equal(validation.ok, true, validation.errors?.join("\n"));
+  return { ok: true, envelope: validation.value, computed: validation.computed, stderr: "" };
 }
 
 test("rejects unknown problem IDs before accepting a run", async () => {
@@ -151,4 +218,34 @@ test("hydrates a persisted clarification after restart for deduplication and sel
   assert.equal(retriedSelection.runId, child.runId);
   assert.equal(store.runs.length, 2);
   assert.equal(store.runs[1].parentRunId, parent.runId);
+});
+
+test("persists completed run summaries for problem page polling", async () => {
+  const store = fakeStore();
+  const manager = createAssessmentJobManager({
+    rootDir: "/repo",
+    repository: fakeRepository(),
+    store,
+    codex: {
+      preflight: async () => ({ ok: true }),
+      run: async () => completedCodexResult(),
+    },
+    snapshot: {
+      build: async () => ({ schemaVersion: 1, problemId: "Prob-001" }),
+    },
+    reportRenderer: {
+      render: () => "<!doctype html><title>Assessment</title>",
+    },
+  });
+
+  await manager.start("Prob-001");
+  await new Promise((resolve) => setTimeout(resolve, 20));
+  const state = await manager.getProblemState("Prob-001");
+  const run = state.runs.find((item) => item.status === "completed");
+
+  assert.equal(run.summary.verdict, "DO_NOW");
+  assert.equal(run.summary.recommendation, "proceed");
+  assert.equal(run.summary.lifecycleMutation, false);
+  assert.equal(run.summary.reportHref, `/__local/assessments/reports/Prob-001/${run.runId}`);
+  assert.equal(run.artifacts.assessment.envelope.assessment.normalizedProblem, "Fixture problem.");
 });
