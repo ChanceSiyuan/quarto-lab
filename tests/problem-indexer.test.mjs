@@ -23,7 +23,11 @@ async function mkdtempDisposable() {
 }
 
 async function writeProblem(root, id, manifestOverrides = {}, problemMd = completeProblemMd) {
-  const dir = join(root, "problems", id);
+  await writeProblemAt(root, "problems", id, manifestOverrides, problemMd);
+}
+
+async function writeProblemAt(root, problemsDir, id, manifestOverrides = {}, problemMd = completeProblemMd) {
+  const dir = join(root, problemsDir, id);
   await mkdir(join(dir, "generation"), { recursive: true });
   const manifest = {
     schemaVersion: 1,
@@ -126,4 +130,20 @@ test("handles an empty repository and derives the first ID", async () => {
   assert.deepEqual(index.problems, []);
   assert.equal(index.nextProblemId, "QMB-001");
   assert.equal(deriveNextProblemId([{ id: "QMB-009" }, { id: "QMB-011" }]), "QMB-012");
+});
+
+test("indexes only the selected problem root and honors reserved IDs", async () => {
+  const root = await makeRoot();
+  await writeProblemAt(root, "problems", "QMB-002");
+  await writeProblemAt(root, "examples/showcase/problems", "QMB-001");
+
+  const index = await buildProblemIndex({
+    rootDir: root,
+    problemsDir: "examples/showcase/problems",
+    reservedIds: ["QMB-009"],
+  });
+
+  assert.deepEqual(index.problems.map((problem) => problem.id), ["QMB-001"]);
+  assert.equal(index.nextProblemId, "QMB-010");
+  assert.deepEqual(index.diagnostics, []);
 });
