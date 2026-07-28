@@ -229,3 +229,118 @@ test("validates cohort, snapshot, and import manifests", () => {
   });
   assert.equal(importManifest.ok, true);
 });
+
+function sourceManifest(overrides = {}) {
+  return {
+    schemaVersion: 1,
+    kind: "autoqec-css-distance-source-snapshot",
+    problemId: "Prob-001",
+    sourceRepository: "AutoQEC",
+    sourceCommit: "b6a0e03c05a653b4e85160a703c0be4eef06b619",
+    attemptRanges: [{ first: 109, last: 200 }],
+    entryPoints: ["src/autoqec_search/css_distance_autoresearch_batch.py"],
+    excludedPathClasses: ["blind-evaluation-private"],
+    files: [{
+      path: "src/autoqec_search/css_distance_autoresearch_batch.py",
+      sha256: "f".repeat(64),
+      size: 1234,
+      executable: false,
+    }],
+    blindDatasetReproducible: false,
+    ...overrides,
+  };
+}
+
+test("rejects malformed cohort and source ranges without throwing", () => {
+  const malformedCohort = validateCohortManifest({
+    schemaVersion: 1,
+    kind: "autoqec-css-distance-cohort",
+    id: "cohort-101-200",
+    problemId: "Prob-001",
+    attempts: [null],
+  });
+  assert.equal(malformedCohort.ok, false);
+
+  const malformedSource = validateSourceManifest(sourceManifest({ attemptRanges: [null] }));
+  assert.equal(malformedSource.ok, false);
+});
+
+test("rejects unknown fields, bad hashes, and invalid import timestamps", () => {
+  const unknown = validateResearchManifest({
+    schemaVersion: 1,
+    kind: "imported-research-record",
+    problemId: "Prob-001",
+    attemptCount: 200,
+    attemptIdRange: ["ATT-001", "ATT-200"],
+    disclaimer: RESEARCH_DISCLAIMER,
+    cohorts: [
+      { id: "cohort-001-100", first: 1, last: 100 },
+      { id: "cohort-101-200", first: 101, last: 200 },
+    ],
+    unexpected: true,
+  });
+  assert.equal(unknown.ok, false);
+  assert.match(unknown.errors.map((error) => error.field).join(","), /unexpected/);
+
+  const badHash = structuredClone(baseAttempt);
+  badHash.artifacts[0].sha256 = "not-a-sha256";
+  assert.equal(validateResearchAttempt(badHash).ok, false);
+
+  const badTimestamp = validateImportManifest({
+    schemaVersion: 1,
+    kind: "autoqec-css-distance-import",
+    problemId: "Prob-001",
+    sourceRepository: "AutoQEC",
+    importedAt: "not-a-timestamp",
+    attempts: 200,
+    files: [{ path: "attempts/ATT-200/attempt.json", sourcePath: null, sha256: "b".repeat(64), size: 1, generated: true }],
+  });
+  assert.equal(badTimestamp.ok, false);
+});
+
+test("rejects non-contiguous and mismatched infrastructure ranges", () => {
+  const nonContiguous = validateCohortManifest({
+    schemaVersion: 1,
+    kind: "autoqec-css-distance-cohort",
+    id: "cohort-101-200",
+    problemId: "Prob-001",
+    attempts: [
+      { first: 101, last: 104, sourceInfrastructureCommit: "12a8f794f68d63f07303df0cc38fa244c1ab1248" },
+      { first: 106, last: 107, sourceInfrastructureCommit: "87f0972ca2551074546c723cf48053d569b9bf59" },
+      { first: 108, last: 108, sourceInfrastructureCommit: "3f30f39a2f9be8ceead3821706aae77acdd980aa" },
+      { first: 109, last: 200, sourceInfrastructureCommit: "b6a0e03c05a653b4e85160a703c0be4eef06b619" },
+    ],
+  });
+  assert.equal(nonContiguous.ok, false);
+
+  const mismatchedAttempt = structuredClone(baseAttempt);
+  mismatchedAttempt.provenance.sourceInfrastructureCommit = "12a8f794f68d63f07303df0cc38fa244c1ab1248";
+  assert.equal(validateResearchAttempt(mismatchedAttempt).ok, false);
+
+  const partialSnapshot = validateSourceManifest(sourceManifest({ attemptRanges: [{ first: 109, last: 150 }] }));
+  assert.equal(partialSnapshot.ok, false);
+});
+
+test("enforces every timing status contract", () => {
+  const recorded = structuredClone(baseAttempt);
+  recorded.metrics.averageSeconds = 0;
+  assert.equal(validateResearchAttempt(recorded).ok, false);
+
+  const legacy = structuredClone(baseAttempt);
+  legacy.metrics.timingStatus = "legacy-not-recorded";
+  legacy.metrics.averageSeconds = 1;
+  legacy.metrics.medianSeconds = null;
+  legacy.metrics.p95Seconds = null;
+  legacy.metrics.speedup = null;
+  assert.equal(validateResearchAttempt(legacy).ok, false);
+
+  const notRun = structuredClone(baseAttempt);
+  notRun.metrics.timingStatus = "not-run";
+  notRun.metrics.runs = 1;
+  notRun.metrics.runtimeSeconds = null;
+  notRun.metrics.averageSeconds = null;
+  notRun.metrics.medianSeconds = null;
+  notRun.metrics.p95Seconds = null;
+  notRun.metrics.speedup = null;
+  assert.equal(validateResearchAttempt(notRun).ok, false);
+});
