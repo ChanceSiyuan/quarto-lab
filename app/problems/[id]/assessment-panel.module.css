@@ -1,0 +1,133 @@
+.valuationStrip {
+  border: 1px solid color-mix(in srgb, #53715f 32%, transparent);
+  border-radius: 18px;
+  padding: 16px;
+  margin: 0 0 16px;
+  background: color-mix(in srgb, #ecf7ef 72%, white);
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+}
+
+.valuationStrip h3,
+.confirmation h3 {
+  margin: 0 0 4px;
+  font-size: 1rem;
+}
+
+.valuationStrip p,
+.scopeChooser label {
+  margin: 0;
+}
+
+.valuationStrip small {
+  color: #65716c;
+  overflow-wrap: anywhere;
+}
+
+.eyebrow {
+  margin: 0 0 4px;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #65716c;
+}
+
+.primary {
+  border: 0;
+  border-radius: 999px;
+  background: #17211d;
+  color: #fbfaf6;
+  padding: 0.7rem 1rem;
+  font: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.primary:disabled {
+  cursor: not-allowed;
+  opacity: 0.52;
+}
+
+.scopeChooser,
+.confirmation {
+  border: 1px solid #d9d7ce;
+  border-radius: 16px;
+  padding: 14px;
+  margin: 0 0 16px;
+  background: #fbfaf6;
+}
+
+.scopeChooser {
+  display: flex;
+  align-items: end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.scopeChooser select,
+.choice select {
+  border: 1px solid #c6c2b8;
+  border-radius: 10px;
+  background: white;
+  color: #17211d;
+  padding: 0.55rem 0.7rem;
+  font: inherit;
+}
+
+.confirmation fieldset {
+  border: 0;
+  padding: 0;
+  margin: 12px 0;
+}
+
+.confirmation legend {
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.choice {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 10px;
+  border: 1px solid #e3e0d7;
+  border-radius: 12px;
+  margin: 8px 0;
+  background: #fffefa;
+}
+
+.choice span {
+  display: grid;
+  gap: 2px;
+}
+
+.choice small {
+  color: #65716c;
+  overflow-wrap: anywhere;
+}
+
+.metricGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.metricGrid div {
+  border: 1px solid #d9d7ce;
+  border-radius: 14px;
+  background: #fbfaf6;
+  padding: 12px;
+}
+
+.metricGrid dt {
+  color: #65716c;
+  font-size: 0.78rem;
+}
+
+.metricGrid dd {
+  margin: 4px 0 0;
+  font-weight: 700;
+}

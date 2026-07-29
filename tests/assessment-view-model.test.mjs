@@ -5,13 +5,50 @@ import * as viewModel from "../lib/assessments/view-model.mjs";
 
 const {
   assessmentStatusCopy,
+  formatKnownInterval,
+  formatMoneyInterval,
   formatScoreInterval,
   isLocalAssessmentUnavailable,
   latestAssessmentSummary,
+  valuationStatusCopy,
 } = viewModel;
 
 test("formats score intervals compactly", () => {
   assert.equal(formatScoreInterval({ min: 60, estimate: 72.5, max: 80 }), "72.5 (60-80)");
+});
+
+test("formats unknown and private quantitative values without fake zeroes", () => {
+  assert.equal(formatKnownInterval({ state: "unknown", reason: "No comparable papers." }), "Unknown");
+  assert.equal(formatMoneyInterval({ visibility: "private", redacted: true }), "Private");
+});
+
+test("formats scientific attention, probability, and money intervals", () => {
+  assert.equal(formatKnownInterval({
+    state: "known",
+    interval: { low: 72, base: 80, high: 91 },
+    unit: "percent",
+  }), "80% (72-91%)");
+  assert.equal(formatKnownInterval({
+    state: "known",
+    interval: { low: 0.2, base: 0.35, high: 0.5 },
+    unit: "fraction",
+  }), "35% (20-50%)");
+  assert.equal(formatMoneyInterval({
+    state: "known",
+    interval: { low: 1_000_000, base: 2_500_000, high: 4_000_000 },
+    unit: "USD_2026",
+    currency: "USD",
+    priceBaseYear: 2026,
+  }), "$2.5M ($1.0M-$4.0M, USD 2026)");
+});
+
+test("provides copy for valuation workflow states", () => {
+  assert.equal(valuationStatusCopy({ kind: "no_evidence" }).actionLabel, "Research evidence");
+  assert.equal(valuationStatusCopy({ kind: "researching" }).actionLabel, null);
+  assert.equal(valuationStatusCopy({ kind: "needs_confirmation" }).actionLabel, "Review assumptions");
+  assert.equal(valuationStatusCopy({ kind: "ready" }).actionLabel, "Run assessment");
+  assert.equal(valuationStatusCopy({ kind: "stale" }).actionLabel, "Refresh evidence");
+  assert.equal(valuationStatusCopy({ kind: "research_failed" }).actionLabel, "Retry research");
 });
 
 test("provides copy for every panel state", () => {
