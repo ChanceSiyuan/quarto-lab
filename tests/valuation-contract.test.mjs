@@ -113,7 +113,7 @@ test("validates unique aggregate IDs and all declared cross-references", () => {
       sourceIds: ["src-1"],
       sources: [source("src-1")],
     }],
-    stages: [{ id: "stage-1", inputIds: ["cost-1"], sourceIds: ["src-1"] }],
+    stages: [{ id: "stage-1", inputIds: ["cost-1"], outputIds: ["out-1"], sourceIds: ["src-1"] }],
     outputs: [{ id: "out-1", inputIds: ["cost-1"], sourceIds: ["src-1"] }],
     assumptions: [{ id: "assumption-1", inputIds: ["cost-1"], sourceIds: ["src-1"] }],
     scoreAnchors: [{ id: "anchor-1", outputIds: ["out-1"], sourceIds: ["src-1"] }],
@@ -122,4 +122,26 @@ test("validates unique aggregate IDs and all declared cross-references", () => {
   assert.equal(validateQuantitativeEvidence({ ...valid, sources: [source("src-1"), source("src-1")] }).ok, false);
   assert.equal(validateQuantitativeEvidence({ ...valid, stages: [{ id: "stage-1", inputIds: ["missing"], sourceIds: ["src-1"] }] }).ok, false);
   assert.equal(validateQuantitativeEvidence({ ...valid, scoreAnchors: [{ id: "anchor-1", outputIds: ["missing"], sourceIds: ["src-1"] }] }).ok, false);
+});
+
+test("accepts identified unknown inputs without treating them as zero", () => {
+  const result = validateQuantitativeEvidence({
+    sources: [],
+    inputs: [{ id: "unavailable-market-price", ...unknownValue("No public contract price.") }],
+    stages: [],
+    outputs: [],
+    assumptions: [],
+    scoreAnchors: [],
+  });
+  assert.equal(result.ok, true);
+  assert.deepEqual(result.value.inputs[0], {
+    id: "unavailable-market-price",
+    state: "unknown",
+    reason: "No public contract price.",
+  });
+  assert.equal(validateAtomicEvidence({
+    id: "unavailable-market-price",
+    ...unknownValue("No public contract price."),
+    unit: "USD_2026",
+  }).ok, false);
 });
