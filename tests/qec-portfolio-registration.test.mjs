@@ -128,6 +128,27 @@ test("skips only an exact previously published five-file draft on restart", asyn
   assert.deepEqual(summary, { published: [], skipped: ["Prob-002"], failed: [] });
 });
 
+test("rejects a restart target with an extra file before publishing later IDs", async () => {
+  const { rootDir } = await createRegistrationFixture();
+  const record = QEC_PORTFOLIO_PROBLEMS[0];
+  const staged = await stageQecProblem({ rootDir, runId: "first-run", record });
+  const target = join(rootDir, "problems", record.id);
+  await cp(staged.stageDir, target, { recursive: true });
+  await writeFile(join(target, "extra.md"), "This file is not part of the approved draft.\n");
+  assert.equal(await verifyPublishedProblem({ rootDir, record, digest: staged.digest }), false);
+  const calls = [];
+  const summary = await registerQecPortfolio({ rootDir, records: QEC_PORTFOLIO_PROBLEMS.slice(0, 2), publish: async ({ id }) => {
+    calls.push(id);
+    return { status: "published", id };
+  }});
+  assert.deepEqual(calls, []);
+  assert.deepEqual(summary, {
+    published: [],
+    skipped: [],
+    failed: [{ id: "Prob-002", code: "PROBLEM_COLLISION", message: "Existing problem does not match the approved staged draft." }],
+  });
+});
+
 test("reports a non-identical existing draft before invoking the publisher or later IDs", async () => {
   const { rootDir } = await createRegistrationFixture();
   const record = QEC_PORTFOLIO_PROBLEMS[0];
