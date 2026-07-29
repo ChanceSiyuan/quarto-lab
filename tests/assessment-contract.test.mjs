@@ -87,8 +87,8 @@ function quantitativeEvidence(overrides = {}) {
       visibility: "public",
     },
     scientificAttention: {
-      value: { state: "known", interval: { low: 80, base: 80, high: 80 }, unit: "normalized-percentile-points", visibility: "public", evidenceState: "reported", evidenceTier: "primary", sourceIds: ["citation-source"], sources: [{ id: "citation-source", url: "https://example.test/citations", locator: "table 1", kind: "citation-index" }] },
-      momentum: { state: "known", interval: { low: 0.1, base: 0.1, high: 0.1 }, unit: "log-citation-growth", visibility: "public", evidenceState: "reported", evidenceTier: "primary", sourceIds: ["citation-source"], sources: [{ id: "citation-source", url: "https://example.test/citations", locator: "table 1", kind: "citation-index" }] },
+      value: { state: "known", interval: { low: 80, base: 80, high: 80 }, unit: "percent", visibility: "public", evidenceState: "reported", evidenceTier: "primary", sourceIds: ["citation-source"], sources: [{ id: "citation-source", url: "https://example.test/citations", locator: "table 1", kind: "citation-index" }] },
+      momentum: { state: "known", interval: { low: 0.1, base: 0.1, high: 0.1 }, unit: "fraction", visibility: "public", evidenceState: "reported", evidenceTier: "primary", sourceIds: ["citation-source"], sources: [{ id: "citation-source", url: "https://example.test/citations", locator: "table 1", kind: "citation-index" }] },
       coverage: 0.9,
       concentration: 0.2,
       warnings: [],
@@ -194,12 +194,37 @@ test("rejects momentum or citation evidence anchored to novelty", () => {
   assert.match(result.errors.join("\n"), /novelty/i);
 });
 
+test("rejects opaque quantitative evidence IDs used to bypass anchor restrictions", () => {
+  const envelope = validQuantumEnvelopeV2();
+  envelope.assessment.quantitativeEvidence.scoreAnchors[0].dimensionId = "gap_and_novelty";
+  envelope.assessment.quantitativeEvidence.scoreAnchors[0].evidenceIds = ["opaque-1"];
+  const result = validateAssessmentEnvelope(envelope);
+  assert.equal(result.ok, false);
+  assert.match(result.errors.join("\n"), /known quantitative outputs|novelty/i);
+});
+
 test("rejects a momentum movement greater than a quarter point", () => {
   const envelope = validQuantumEnvelopeV2();
   envelope.assessment.quantitativeEvidence.scoreAnchors[0].momentumAdjustment = 0.26;
   const result = validateAssessmentEnvelope(envelope);
   assert.equal(result.ok, false);
   assert.match(result.errors.join("\n"), /momentum/i);
+});
+
+test("rejects quantitative evidence with unresolved source provenance", () => {
+  const envelope = validQuantumEnvelopeV2();
+  envelope.assessment.quantitativeEvidence.scientificAttention.value.sourceIds = ["missing-source"];
+  const result = validateAssessmentEnvelope(envelope);
+  assert.equal(result.ok, false);
+  assert.match(result.errors.join("\n"), /source/i);
+});
+
+test("rejects non-ISO quantitative snapshot timestamps", () => {
+  const envelope = validQuantumEnvelopeV2();
+  envelope.assessment.quantitativeEvidence.snapshot.createdAt = "July 29, 2026";
+  const result = validateAssessmentEnvelope(envelope);
+  assert.equal(result.ok, false);
+  assert.match(result.errors.join("\n"), /snapshot/i);
 });
 
 test("rejects envelopes that contain both assessment and clarification", () => {
