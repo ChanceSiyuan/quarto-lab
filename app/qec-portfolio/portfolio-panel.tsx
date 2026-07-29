@@ -83,7 +83,7 @@ function Links({ row }: { row: PortfolioRow }) {
 }
 
 function rowAriaSort(sort: SortKey, key: SortKey) {
-  return sort === key ? "descending" : "none";
+  return sort === key ? key === "verdict" ? "ascending" : "descending" : "none";
 }
 
 export function PortfolioPanel() {

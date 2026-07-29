@@ -36,3 +36,8 @@ test("portfolio panel fetches only the read-only endpoint and renders unknown re
   assert.match(source, /Open detailed report/);
   assert.doesNotMatch(source, /\/valuation\/jobs|\/assessment\/jobs/);
 });
+
+test("portfolio panel reports Verdict's ascending order to assistive technology", async () => {
+  const source = await readFile(panelPath, "utf8");
+  assert.match(source, /key === "verdict" \? "ascending" : "descending"/);
+});
