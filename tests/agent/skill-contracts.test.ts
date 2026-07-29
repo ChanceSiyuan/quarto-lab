@@ -700,6 +700,26 @@ const ASSESS_RESEARCH_PROBLEM: readonly Clause[] = [
     in: "body",
     pattern: /`Recommended reframe`[^.\n]*exactly one/i,
   },
+  {
+    requirement: "limits version-2 quantum scoring to its host-frozen valuation snapshot",
+    in: "body",
+    pattern: /version-2 quantum assessment[^.\n]*only[^.\n]*host-frozen valuation snapshot/i,
+  },
+  {
+    requirement: "does not browse during version-2 quantum scoring",
+    in: "body",
+    pattern: /must not browse during scoring/i,
+  },
+  {
+    requirement: "does not relabel valuation snapshot evidence as trusted knowledge",
+    in: "body",
+    pattern: /must not relabel snapshot evidence as trusted knowledge/i,
+  },
+  {
+    requirement: "does not alter the host-frozen valuation snapshot",
+    in: "body",
+    pattern: /must not alter the snapshot/i,
+  },
 ];
 
 const CLAUSES: Readonly<Record<SkillName, readonly Clause[]>> = {
