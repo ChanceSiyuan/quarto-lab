@@ -253,3 +253,20 @@ test("public indexing rejects an unredacted private valuation before writing eit
   await assert.rejects(readFile(join(root, "public-index.json")));
   await assert.rejects(readFile(join(root, "public-research-index.json")));
 });
+
+test("public indexing rejects an unrecognized visibility label", async () => {
+  const root = await makeRoot();
+  await writeProblem(root, "Prob-001");
+  const valuationDir = join(root, "problems", "Prob-001", "valuation", "snapshots", "20260729T091011Z-abcdef123456");
+  await mkdir(valuationDir, { recursive: true });
+  await writeFile(join(valuationDir, "manifest.json"), JSON.stringify({ visibility: "restricted", value: 42 }));
+
+  const publicResult = spawnSync("node", ["scripts/build-problem-index.mjs", "--public", "--root", root, "--out", join(root, "public-index.json"), "--research-out", join(root, "public-research-index.json")], {
+    cwd: new URL("..", import.meta.url),
+    encoding: "utf8",
+  });
+  assert.notEqual(publicResult.status, 0);
+  assert.match(publicResult.stderr, /problems\/Prob-001\/valuation\/snapshots\/20260729T091011Z-abcdef123456\/manifest\.json/);
+  await assert.rejects(readFile(join(root, "public-index.json")));
+  await assert.rejects(readFile(join(root, "public-research-index.json")));
+});

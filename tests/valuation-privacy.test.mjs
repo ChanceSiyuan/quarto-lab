@@ -40,6 +40,11 @@ test("private input makes a dependent output private", () => {
   });
 });
 
+test("unknown visibility fails closed at the public boundary", () => {
+  assert.equal(propagateVisibility([{ visibility: "restricted", value: 42 }]), "private");
+  assert.throws(() => assertPublicSafeValuation({ visibility: "restricted", value: 42 }), /visibility|private/i);
+});
+
 test("redaction removes all sensitive fields from every private subtree", () => {
   const redacted = redactPrivate({
     visibility: "public",

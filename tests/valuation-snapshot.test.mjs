@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtemp, mkdir, readdir, readFile, writeFile } from "node:fs/promises";
+import { mkdtemp, mkdir, readdir, readFile, symlink, unlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
@@ -92,4 +92,33 @@ test("private overlays are local-only and make frozen snapshots private", async 
   });
   const frozen = await store.freeze("Prob-001", { ...snapshotInputs(), manifest: { ...snapshotInputs().manifest, ...(await store.readInputs("Prob-001")) } });
   assert.equal(frozen.manifest.visibility, "private");
+});
+
+test("refuses a symlinked public inputs file for both reads and writes", async () => {
+  const root = await makeRoot();
+  const store = createValuationSnapshotStore({ rootDir: root });
+  const valuationDir = join(root, "problems", "Prob-001", "valuation");
+  const outside = join(root, "outside-public.json");
+  await mkdir(valuationDir, { recursive: true });
+  await writeFile(outside, '{"outside":true}');
+  await symlink(outside, join(valuationDir, "inputs.json"));
+
+  await assert.rejects(store.readInputs("Prob-001"), /symbolic link/i);
+  await assert.rejects(store.writeInputs("Prob-001", { visibility: "public", value: 3 }), /symbolic link/i);
+  assert.equal(await readFile(outside, "utf8"), '{"outside":true}');
+});
+
+test("refuses a symlinked private inputs overlay", async () => {
+  const root = await makeRoot();
+  const store = createValuationSnapshotStore({ rootDir: root });
+  const valuationDir = join(root, "problems", "Prob-001", "valuation");
+  const outside = join(root, "outside-private.json");
+  await mkdir(valuationDir, { recursive: true });
+  await writeFile(join(valuationDir, "inputs.json"), '{"public":true}');
+  await writeFile(outside, '{"secret":42}');
+  await symlink(outside, join(valuationDir, "inputs.private.json"));
+
+  await assert.rejects(store.readInputs("Prob-001"), /symbolic link/i);
+  await unlink(join(valuationDir, "inputs.private.json"));
+  assert.equal(await readFile(outside, "utf8"), '{"secret":42}');
 });
