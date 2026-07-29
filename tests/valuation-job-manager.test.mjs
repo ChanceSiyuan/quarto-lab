@@ -1,10 +1,11 @@
 import assert from "node:assert/strict";
-import { mkdtemp, readFile, stat } from "node:fs/promises";
+import { mkdtemp, readFile, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
 
 import { createValuationJobManager } from "../lib/valuations/job-manager.mjs";
+import { createValuationSnapshotStore } from "../lib/valuations/snapshot-store.mjs";
 
 const now = () => new Date("2026-07-29T09:10:11Z");
 
@@ -81,10 +82,11 @@ function fixtureManager({
     countsByYear: [{ year: 2024, citedByCount: 1 }, { year: 2025, citedByCount: 2 }],
   }],
   rootDir = join(tmpdir(), "valuation-job-manager-fixture"),
+  store: suppliedStore = null,
 } = {}) {
   const snapshots = [];
   const frozen = [];
-  const store = {
+  const store = suppliedStore ?? {
     readInputs: async () => structuredClone(inputs),
     freeze: async (problemId, snapshot) => {
       const snapshotId = `20260729T091011Z-${String(frozen.length + 1).padStart(12, "0")}`;
@@ -195,6 +197,62 @@ test("never sends private input values to the public-source research process", a
   assert.deepEqual(receivedInputs, { contract: { visibility: "private", redacted: true } });
 });
 
+test("freezes the complete confirmed candidate and local private inputs for audit", async () => {
+  const rootDir = await mkdtemp(join(tmpdir(), "valuation-job-manager-private-"));
+  const store = createValuationSnapshotStore({ rootDir, now });
+  const publicInputs = { publicCurrent: knownEvidence("public-current") };
+  const privateInputs = { privateCurrent: { ...knownEvidence("private-current"), visibility: "private" } };
+  await store.writeInputs("Prob-007", publicInputs);
+  await writeFile(
+    join(rootDir, "problems", "Prob-007", "valuation", "inputs.private.json"),
+    JSON.stringify(privateInputs),
+  );
+  const completeCandidate = candidate({
+    technicalStages: [{ id: "stage-1", description: "Prepare the controlled hardware run." }],
+    warnings: ["Public estimates remain sparse."],
+  });
+  const { manager } = fixtureManager({
+    rootDir,
+    store,
+    researchResult: { ok: true, candidate: completeCandidate, stderr: "" },
+    expand: async () => [],
+  });
+  const started = await manager.start("Prob-007");
+  await waitFor(() => manager.getJob(started.runId).status === "needs_confirmation");
+  const run = manager.getJob(started.runId);
+
+  await confirmed(manager, started);
+  await waitFor(() => !["queued", "researching", "needs_confirmation", "confirming"].includes(manager.getJob(started.runId).status));
+  assert.equal(manager.getJob(started.runId).status, "ready");
+  const snapshot = await store.read("Prob-007", manager.getJob(started.runId).snapshotId);
+
+  assert.equal(snapshot.manifest.visibility, "private");
+  assert.deepEqual(snapshot.manifest.currentInputs, { ...publicInputs, ...privateInputs });
+  assert.deepEqual(snapshot.manifest.confirmedCandidate, run.candidate);
+  assert.deepEqual(snapshot.manifest.confirmedCandidate.technicalStages, completeCandidate.technicalStages);
+  assert.deepEqual(snapshot.manifest.confirmedCandidate.classicalBaseline, completeCandidate.classicalBaseline);
+  assert.deepEqual(snapshot.manifest.confirmedCandidate.atomicInputs, completeCandidate.atomicInputs);
+  assert.deepEqual(snapshot.manifest.confirmedCandidate.materialAssumptions, completeCandidate.materialAssumptions);
+  assert.deepEqual(snapshot.manifest.confirmedCandidate.paperInclusionRules, completeCandidate.paperInclusionRules);
+  assert.deepEqual(snapshot.manifest.confirmedCandidate.warnings, completeCandidate.warnings);
+});
+
+test("discovers the latest ready snapshot from the immutable store after restart", async () => {
+  const store = {
+    readInputs: async () => ({}),
+    freeze: async () => assert.fail("restart discovery should not freeze a new snapshot"),
+    list: async (problemId) => problemId === "Prob-007"
+      ? ["20260728T010203Z-aaaaaaaaaaaa", "20260729T010203Z-bbbbbbbbbbbb"]
+      : [],
+  };
+  const { manager } = fixtureManager({ store });
+
+  const state = await manager.getProblemState("Prob-007");
+
+  assert.equal(state.readySnapshotId, "20260729T010203Z-bbbbbbbbbbbb");
+  assert.deepEqual(state.jobs, []);
+});
+
 test("does not research unsupported or ambiguous legacy problems", async () => {
   let researchCalls = 0;
   const unsupported = fixtureManager({ problemValue: problem({ domain: "biology", quantumArea: undefined }) });
@@ -244,12 +302,12 @@ test("deduplicates active jobs and preserves the last ready snapshot when resear
   assert.equal(duplicate.runId, first.runId);
   await confirmed(manager, first);
   await waitFor(() => manager.getJob(first.runId).status === "ready");
-  const previous = manager.getProblemState("Prob-007").readySnapshotId;
+  const previous = (await manager.getProblemState("Prob-007")).readySnapshotId;
 
   researchResult = { ok: false, code: "CODEX_EXIT", message: "failed" };
   const failedStart = await manager.start("Prob-007");
   await waitFor(() => manager.getJob(failedStart.runId).status === "research_failed");
-  assert.equal(manager.getProblemState("Prob-007").readySnapshotId, previous);
+  assert.equal((await manager.getProblemState("Prob-007")).readySnapshotId, previous);
 });
 
 test("creates a local staging directory and shuts queued work down", async () => {
