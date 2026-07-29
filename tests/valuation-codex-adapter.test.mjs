@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { EventEmitter } from "node:events";
 import { readFile } from "node:fs/promises";
+import { fileURLToPath } from "node:url";
 import test from "node:test";
 
 import {
@@ -9,6 +10,7 @@ import {
 } from "../lib/valuations/codex-research-adapter.mjs";
 
 const schemaPath = new URL("../schemas/quantum-valuation-research.schema.json", import.meta.url);
+const localSchemaPath = fileURLToPath(schemaPath);
 
 function knownEvidence(id) {
   return {
@@ -56,7 +58,7 @@ function validResearchCandidate() {
   };
 }
 
-function fakeSuccessfulCodex(calls, candidate, { stderr = "" } = {}) {
+function fakeSuccessfulCodex(calls, candidate, { stderr = "", eventType = "item.completed" } = {}) {
   return (command, args, options) => {
     calls.push({ command, args, options });
     const child = new EventEmitter();
@@ -65,7 +67,7 @@ function fakeSuccessfulCodex(calls, candidate, { stderr = "" } = {}) {
     child.kill = () => {};
     queueMicrotask(() => {
       child.stdout.emit("data", Buffer.from(`${JSON.stringify({
-        type: "item.completed",
+        type: eventType,
         item: { type: "agent_message", text: JSON.stringify(candidate) },
       })}\n`));
       if (stderr) child.stderr.emit("data", Buffer.from(stderr));
@@ -115,14 +117,14 @@ test("valuation preflight checks Codex version and login status", async () => {
   const calls = [];
   const result = await checkValuationCodexPreflight({
     rootDir: "/repo",
-    schemaPath: "/repo/schemas/quantum-valuation-research.schema.json",
+    schemaPath: localSchemaPath,
     fileExists: async () => true,
     execFileFn(command, args, options, callback) {
       calls.push({ command, args, options });
       callback(null, args[0] === "--version" ? "codex 1.0\n" : "Logged in\n", "");
     },
   });
-  assert.equal(result.ok, true);
+  assert.equal(result.ok, true, result.message);
   assert.deepEqual(calls.map((call) => call.args), [["--version"], ["login", "status"]]);
   assert.deepEqual(calls.map((call) => call.options.cwd), ["/repo", "/repo"]);
 });
@@ -136,10 +138,10 @@ test("valuation research runs Codex read-only with a strict schema", async () =>
     quantumScope: { status: "supported", domain: "quantum-computing", quantumArea: "hardware-and-control" },
     currentInputs: { note: "Existing public input." },
     priorSnapshotSummary: { snapshotId: "20260729T000000Z-abcdef123456" },
-    schemaPath: "/repo/schemas/quantum-valuation-research.schema.json",
+    schemaPath: localSchemaPath,
     spawnFn: fakeSuccessfulCodex(calls, validResearchCandidate(), { stderr: "public-source warning\n" }),
   });
-  assert.equal(result.ok, true);
+  assert.equal(result.ok, true, result.message);
   assert.deepEqual(result.candidate, validResearchCandidate());
   assert.equal(result.stderr, "public-source warning\n");
   assert.match(calls[0].args.join(" "), /exec --sandbox read-only/);
@@ -158,16 +160,44 @@ test("valuation research rejects a JSONL candidate that violates the schema cont
     problem: { id: "Prob-007", title: "Fixture", summary: "Summary" },
     problemMarkdown: "Candidate question.",
     quantumScope: { status: "supported", domain: "quantum-computing", quantumArea: "hardware-and-control" },
-    schemaPath: "/repo/schemas/quantum-valuation-research.schema.json",
+    schemaPath: localSchemaPath,
     spawnFn: fakeSuccessfulCodex([], { ...validResearchCandidate(), unexpected: true }),
   });
-  assert.deepEqual(result, {
-    ok: false,
-    code: "INVALID_FINAL",
-    message: "Candidate contains unsupported fields.",
-    eventsText: result.eventsText,
-    stderr: "",
+  assert.equal(result.ok, false);
+  assert.equal(result.code, "INVALID_FINAL");
+  assert.match(result.message, /unsupported field: unexpected/i);
+  assert.equal(result.stderr, "");
+});
+
+test("valuation research rejects nested fields forbidden by its output schema", async () => {
+  const result = await runValuationResearch({
+    rootDir: "/repo",
+    problem: { id: "Prob-007", title: "Fixture", summary: "Summary" },
+    problemMarkdown: "Candidate question.",
+    quantumScope: { status: "supported", domain: "quantum-computing", quantumArea: "hardware-and-control" },
+    schemaPath: localSchemaPath,
+    spawnFn: fakeSuccessfulCodex([], {
+      ...validResearchCandidate(),
+      scope: { ...validResearchCandidate().scope, extra: true },
+    }),
   });
+  assert.equal(result.ok, false);
+  assert.equal(result.code, "INVALID_FINAL");
+  assert.match(result.message, /scope.*unsupported field/i);
+});
+
+test("valuation research ignores an agent message until its JSONL item is completed", async () => {
+  const result = await runValuationResearch({
+    rootDir: "/repo",
+    problem: { id: "Prob-007", title: "Fixture", summary: "Summary" },
+    problemMarkdown: "Candidate question.",
+    quantumScope: { status: "supported", domain: "quantum-computing", quantumArea: "hardware-and-control" },
+    schemaPath: localSchemaPath,
+    spawnFn: fakeSuccessfulCodex([], validResearchCandidate(), { eventType: "item.updated" }),
+  });
+  assert.equal(result.ok, false);
+  assert.equal(result.code, "INVALID_FINAL");
+  assert.match(result.message, /final message/i);
 });
 
 test("valuation research terminates a timed-out child and retains stderr", async () => {
@@ -188,7 +218,7 @@ test("valuation research terminates a timed-out child and retains stderr", async
     problem: { id: "Prob-007", title: "Fixture", summary: "Summary" },
     problemMarkdown: "Candidate question.",
     quantumScope: { status: "supported", domain: "quantum-computing", quantumArea: "hardware-and-control" },
-    schemaPath: "/repo/schemas/quantum-valuation-research.schema.json",
+    schemaPath: localSchemaPath,
     spawnFn,
     timeoutMs: 5,
   });

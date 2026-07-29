@@ -720,6 +720,11 @@ const ASSESS_RESEARCH_PROBLEM: readonly Clause[] = [
     in: "body",
     pattern: /must not alter the snapshot/i,
   },
+  {
+    requirement: "keeps version-2 snapshot scoring out of the resolver and trusted knowledge tree",
+    in: "body",
+    pattern: /must not use the `read-knowledge` resolver or read `knowledge\/` during snapshot scoring/i,
+  },
 ];
 
 const CLAUSES: Readonly<Record<SkillName, readonly Clause[]>> = {
