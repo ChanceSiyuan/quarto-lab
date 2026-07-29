@@ -5,8 +5,10 @@ import { resolve, join } from "node:path";
 import { promisify } from "node:util";
 
 import { createAssessmentJobManager } from "../lib/assessments/job-manager.mjs";
+import { createArtifactStore } from "../lib/assessments/artifact-store.mjs";
 import { createAssessmentService } from "../lib/assessments/local-service.mjs";
 import { createProblemRepository } from "../lib/problems/repository.mjs";
+import { createQecPortfolioReader } from "../lib/qec-portfolio/reader.mjs";
 import { createValuationJobManager } from "../lib/valuations/job-manager.mjs";
 import { createOpenAlexClient } from "../lib/valuations/openalex-client.mjs";
 import { createValuationSnapshotStore } from "../lib/valuations/snapshot-store.mjs";
@@ -49,16 +51,19 @@ export async function startAssessmentService({
   valuationResearcher = null,
   openAlex = null,
   valuationStore = null,
+  portfolioReader = null,
 } = {}) {
   if (host !== "127.0.0.1") throw new Error("Local assessment service must bind to 127.0.0.1.");
   const workspaceRoot = resolve(rootDir);
-  const repository = manager && valuationManager ? null : await createLocalRepository(workspaceRoot);
+  const repository = manager && valuationManager && portfolioReader ? null : await createLocalRepository(workspaceRoot);
   const localValuationStore = valuationStore ?? createValuationSnapshotStore({ rootDir: workspaceRoot });
+  const localAssessmentStore = createArtifactStore({ rootDir: workspaceRoot });
   const assessmentManager = manager ?? createAssessmentJobManager({
     rootDir: workspaceRoot,
     repository,
     resolveKnowledge: createKnowledgeResolver(workspaceRoot),
     valuationStore: localValuationStore,
+    store: localAssessmentStore,
   });
   const localValuationManager = valuationManager ?? createValuationJobManager({
     rootDir: workspaceRoot,
@@ -67,7 +72,14 @@ export async function startAssessmentService({
     openAlex: openAlex ?? createOpenAlexClient({ apiKey: process.env.OPENALEX_API_KEY }),
     store: localValuationStore,
   });
-  const server = createAssessmentService({ rootDir: workspaceRoot, token, manager: assessmentManager, valuationManager: localValuationManager });
+  const localPortfolioReader = portfolioReader ?? createQecPortfolioReader({ repository, assessmentStore: localAssessmentStore });
+  const server = createAssessmentService({
+    rootDir: workspaceRoot,
+    token,
+    manager: assessmentManager,
+    valuationManager: localValuationManager,
+    portfolioReader: localPortfolioReader,
+  });
   await new Promise((resolveListen, reject) => {
     server.once("error", reject);
     server.listen(port, host, () => {

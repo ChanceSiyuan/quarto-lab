@@ -28,6 +28,17 @@ test("rejects requests missing the capability token", async () => {
   assert.equal(response.status, 401);
 });
 
+test("serves the portfolio only with the local capability token", async () => {
+  const portfolioReader = {
+    read: async () => ({ schemaVersion: 1, generatedAt: "2026-07-29T00:00:00.000Z", evidenceLabel: "External-evidence-backed advisory comparison", count: 21, rows: [] }),
+  };
+  const unauthorized = await request(createAssessmentService({ token: "secret", manager: {}, portfolioReader }), "/__local/assessments/portfolio");
+  assert.equal(unauthorized.status, 401);
+  const response = await request(createAssessmentService({ token: "secret", manager: {}, portfolioReader }), "/__local/assessments/portfolio", { headers: tokenHeaders });
+  assert.equal(response.status, 200);
+  assert.equal((await response.json()).count, 21);
+});
+
 test("rejects an absent capability token while constructing the service", () => {
   assert.throws(() => createAssessmentService({ manager: {} }), /token/i);
   assert.throws(() => createAssessmentService({ token: "", manager: {} }), /token/i);
@@ -82,6 +93,7 @@ test("standalone service close shuts down the assessment manager", async () => {
     valuationManager: {
       shutdown: async () => { valuationShutdowns += 1; },
     },
+    portfolioReader: { read: async () => ({ count: 0, rows: [] }) },
   });
 
   await service.close();
