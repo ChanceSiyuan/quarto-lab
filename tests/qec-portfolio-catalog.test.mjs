@@ -82,6 +82,36 @@ test("catalog rejects invalid visible copy and source anchors", () => {
   ]);
 });
 
+test("catalog validator rejects missing anchor fields and registration timestamps", () => {
+  const invalid = structuredClone(QEC_PORTFOLIO_PROBLEMS);
+  delete invalid[0].technicalAnchor.relevanceRationale;
+  delete invalid[1].updatedAt;
+  invalid[2].technicalAnchor.id = "";
+  invalid[3].technicalAnchor.title = " ";
+  invalid[4].technicalAnchor.relevanceRationale = "";
+  const result = validateQecPortfolioCatalog(invalid);
+  assert.equal(result.ok, false);
+  assert.deepEqual(result.errors, [
+    "Technical anchor fields are invalid for Prob-002.",
+    "Registration timestamps are invalid for Prob-003.",
+    "Technical anchor copy is incomplete for Prob-004.",
+    "Technical anchor copy is incomplete for Prob-005.",
+    "Technical anchor copy is incomplete for Prob-006.",
+  ]);
+});
+
+test("catalog validator rejects extra record and anchor fields", () => {
+  const invalid = structuredClone(QEC_PORTFOLIO_PROBLEMS);
+  invalid[0].unexpected = true;
+  invalid[1].technicalAnchor.unexpected = true;
+  const result = validateQecPortfolioCatalog(invalid);
+  assert.equal(result.ok, false);
+  assert.deepEqual(result.errors, [
+    "Catalog record fields are invalid for Prob-002.",
+    "Technical anchor fields are invalid for Prob-003.",
+  ]);
+});
+
 test("catalog lookup and common economic evidence keep approved external provenance immutable", () => {
   assert.strictEqual(getQecPortfolioProblem("Prob-011"), QEC_PORTFOLIO_PROBLEMS[9]);
   assert.equal(getQecPortfolioProblem("Prob-001"), null);
