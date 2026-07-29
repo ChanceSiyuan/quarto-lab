@@ -1,0 +1,57 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 4V4D3YYG
+  item_version: 96161
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: NFDUTLVP
+      name: Machine learning
+      path: Quantum Learning/Machine learning
+qlab:
+  primary_collection: NFDUTLVP
+  indexed_collections:
+    - NFDUTLVP
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: preprint
+title: Quantum advantage for learning shallow neural networks with natural data
+  distributions
+authors:
+  - first: Laura
+    last: Lewis
+  - first: Dar
+    last: Gilboa
+  - first: Jarrod R.
+    last: McClean
+year: 2025
+abstract: "The application of quantum computers to machine learning tasks is an
+  exciting potential direction to explore in search of quantum advantage. In the
+  absence of large quantum computers to empirically evaluate performance,
+  theoretical frameworks such as the quantum probably approximately correct
+  (PAC) and quantum statistical query (QSQ) models have been proposed to study
+  quantum algorithms for learning classical functions. Despite numerous works
+  investigating quantum advantage in these models, we nevertheless only
+  understand it at two extremes: either exponential quantum advantages for
+  uniform input distributions or no advantage for potentially adversarial
+  distributions. In this work, we study the gap between these two regimes by
+  designing an efficient quantum algorithm for learning periodic neurons in the
+  QSQ model over a broad range of non-uniform distributions, which includes
+  Gaussian, generalized Gaussian, and logistic distributions. To our knowledge,
+  our work is also the first result in quantum learning theory for classical
+  functions that explicitly considers real-valued functions. Recent advances in
+  classical learning theory prove that learning periodic neurons is hard for any
+  classical gradient-based algorithm, giving us an exponential quantum advantage
+  over such algorithms, which are the standard workhorses of machine learning.
+  Moreover, in some parameter regimes, the problem remains hard for classical
+  statistical query algorithms and even general classical algorithms learning
+  under small amounts of noise."
+tags:
+  - Computer Science - Machine Learning
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2503.20879
+  arxiv: "2503.20879"

@@ -1,0 +1,69 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: Z7YYVIDT
+  item_version: 96127
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 6G4SDVIU
+      name: devices characterization
+      path: Quantum Resource/devices characterization
+    - key: VMP2AYWR
+      name: Bell sampling and generalization
+      path: Quantum Learning/_Review/Bell sampling and generalization
+    - key: ZTZAL49L
+      name: non-linear
+      path: Quantum Learning/Learning on states/non-linear
+qlab:
+  primary_collection: 6G4SDVIU
+  indexed_collections:
+    - 6G4SDVIU
+    - VMP2AYWR
+    - ZTZAL49L
+  primary_topic: quantum-resource
+  indexed_topics:
+    - quantum-learning
+    - quantum-resource
+item_type: preprint
+title: Optimal randomized measurements for a family of non-linear quantum properties
+authors:
+  - first: Zhenyu
+    last: Du
+  - first: Yifan
+    last: Tang
+  - first: Andreas
+    last: Elben
+  - first: Ingo
+    last: Roth
+  - first: Jens
+    last: Eisert
+  - first: Zhenhuan
+    last: Liu
+year: 2025
+abstract: Quantum learning encounters fundamental challenges when estimating
+  non-linear properties, owing to the inherent linearity of quantum mechanics.
+  Although recent advances in single-copy randomized measurement protocols have
+  achieved optimal sample complexity for specific tasks like state purity
+  estimation, generalizing these protocols to estimate broader classes of
+  non-linear properties without sacrificing optimality remains an open problem.
+  In this work, we introduce the observable-driven randomized measurement (ORM)
+  protocol enabling the estimation of ${\rm Tr}(O\rho^2)$ for an arbitrary
+  observable $O$ -- an essential quantity in quantum computing and many-body
+  physics. ORM achieves this by decomposing the observable $O$ into dichotomic
+  observables and extracting the information of each eigenspace through
+  randomized measurements with block-diagonal unitaries. We establish an upper
+  bound for ORM's sample complexity and prove its optimality for all Pauli
+  observables, closing a gap in the literature. Furthermore, we develop
+  simplified variants of ORM for local Pauli observables and introduce a
+  braiding randomized measurement protocol for fidelity estimation, both of
+  which significantly reduce circuit complexities in practical applications.
+  Numerical experiments validate that ORM requires substantially fewer state
+  samples to achieve the same precision compared to classical shadows.
+tags:
+  - Condensed Matter - Other Condensed Matter
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2505.09206
+  arxiv: "2505.09206"

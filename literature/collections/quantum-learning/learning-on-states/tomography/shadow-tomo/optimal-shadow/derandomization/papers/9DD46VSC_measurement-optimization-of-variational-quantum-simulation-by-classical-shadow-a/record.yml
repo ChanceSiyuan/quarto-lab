@@ -1,0 +1,59 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 9DD46VSC
+  item_version: 96158
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: IGCYLEHL
+      name: derandomization
+      path: Quantum Learning/Learning on states/Tomography/shadow
+        tomo/Optimal_shadow/derandomization
+qlab:
+  primary_collection: IGCYLEHL
+  indexed_collections:
+    - IGCYLEHL
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: journalArticle
+title: Measurement optimization of variational quantum simulation by classical
+  shadow and derandomization
+authors:
+  - first: Kouhei
+    last: Nakaji
+  - first: Suguru
+    last: Endo
+  - first: Yuichiro
+    last: Matsuzaki
+  - first: Hideaki
+    last: Hakoshima
+year: 2023
+abstract: Simulating large quantum systems is the ultimate goal of quantum
+  computing. Variational quantum simulation (VQS) gives us a tool to achieve the
+  goal in near-term devices by distributing the computation load to both
+  classical and quantum computers. However, as the size of the quantum system
+  becomes large, the execution of VQS becomes more and more challenging. One of
+  the most severe challenges is the drastic increase in the number of
+  measurements; for example, the number of measurements tends to increase by the
+  fourth power of the number of qubits in a quantum simulation with a chemical
+  Hamiltonian. This work aims to dramatically decrease the number of
+  measurements in VQS by recently proposed shadow-based strategies such as
+  classical shadow and derandomization. Even though previous literature shows
+  that shadow-based strategies successfully optimize measurements in the
+  variational quantum optimization (VQO), how to apply them to VQS was unclear
+  due to the gap between VQO and VQS in measuring observables. In this paper, we
+  bridge the gap by changing the way of measuring observables in VQS and propose
+  an algorithm to optimize measurements in VQS by shadow-based strategies. Our
+  theoretical analysis not only reveals the advantage of using our algorithm in
+  VQS but theoretically supports using shadow-based strategies in VQO, whose
+  advantage has only been given numerically. Additionally, our numerical
+  experiment shows the validity of using our algorithm with a quantum chemical
+  system.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.22331/q-2023-05-04-995
+  arxiv: "2208.13934"

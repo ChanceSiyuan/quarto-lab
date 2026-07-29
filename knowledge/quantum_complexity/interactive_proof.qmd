@@ -1,0 +1,101 @@
+---
+title: Interactive Proofs
+description: About interactive proofs (IP, AM, MA) and graph isomorphism (GI).
+categories:
+  - theory
+---
+
+# Formal definitions
+
+A system of axioms is consist of statement $x \in \{0,1\}^*$ and a set of inference rules $V(x,\phi)$ such that
+$$
+x\in L \Leftrightarrow \exists \phi, \quad V(x,\phi)=1
+$$
+Usually, we restrict $V(x,\phi)$ to be computable in polynomial time. 
+the langurage  
+$$
+\{(x,1^n):\exists \varphi,\ |\varphi|\le n,\ V_A(x,\varphi)=1\}
+$$
+then is in $\mathrm{NP}$ by definition.
+
+Rather than a single $V$, a interaction process can be used for verification.
+The interaction process can be viewed as a dialogue between the Verifier ($V$) and the Prover ($P$).
+
+- **One-round interaction**:
+    $$a_1 = V(x), \quad a_2 = P(x,a_1), \quad \text{Output} = V(x,a_1,a_2)$$
+- **Two-round interaction**:
+    $$a_1 = V(x), \quad a_2 = P(x,a_1), \quad a_3=V(x,a_1,a_2), \quad \text{Output} = V(x,a_1,a_2,a_3)$$
+
+More generally, the definition of $k$-round interaction proof system can be defined in the same manner.
+
+::: {.callout-note icon="false"}
+## Definition: $\mathsf{IP}[k]/\mathsf{dIP}[k]$
+$L \subset \{0,1\}^*$ belongs to $\mathsf{IP}[k]$ ($\mathsf{dIP}[k]$) if and only if there exists a probabilistic (deterministic) Turing machine $V:\{0,1\}^* \to \{0,1\}^*$ such that for input $x$:
+
+1.  **Completeness**: If $x \in L$, then there exists a proof function $P$ such that the probability of outputting 1 after $k \sim \text{poly}(|x|)$ rounds of interaction is greater than $2/3$ ($1$).
+2.  **Soundness**: If $x \notin L$, then for any proof function $P$, the probability of outputting 0 after $k \sim \text{poly}(|x|)$ rounds of interaction is greater than $2/3$ ($1$).
+:::
+
+
+1. $$\mathsf{dIP} = \mathsf{NP}$$ can be proved.
+2. $\mathsf{IP} = \mathsf{PSPACE}$ likely exceeds $\mathsf{NP}$ otherwise collapse the polynomial hierarchy.
+3. Intuitively, many problems in $\mathsf{coNP}$ are unknown to be in $\mathsf{NP}$ because the $\forall$ in the definition of $\mathsf{coNP}$ requires traversing an exponential number of Certifications. However, $\mathsf{IP}$ can establish a distribution over these exponentially many Certifications, thereby verifying some problems in $\mathsf{coNP}$.
+
+We note that the formal proof of conclusion 1-3 is not important, but the examples and constructions behind those proofs are important.
+Here below we summarize those constuctions to understand what structure in the problem will leads the problem into IP.
+
+
+
+
+# Chernoff bound
+These examples simply use Chernoff bound to show the probability of the output is close to 1.
+Actually, any co-NP problem can be verified by IP in this way
+
+### Example: QNR (Quadratic Non-Residue)
+
+This is a problem that is unknown to be in $\mathsf{NP}$ but confirmed to be in $\mathsf{IP}$.
+
+**Problem**: Given $(a, p)$ where $p$ is prime. Determine if $a$ is **not** a quadratic residue modulo $p$ (Quadratic Non-Residue).
+
+**Protocol (one-round interaction)**:
+
+1.  **Verifier**:
+    -   Establishes a probability distribution $Q$ over quadratic residues modulo $p$: randomly selects $r$, computes $x = r^2 \pmod p$.
+    -   Randomly offsets this distribution with $a$: randomly chooses $b \in \{0,1\}$ and calculates $r_1 = a^b \cdot x \pmod p$.
+        -   (Case a) If $a$ is a quadratic residue, then $r_1$ remains a quadratic residue (since multiplication forms a group), the distribution remains unchanged.
+        -   (Case b) If not, the product changes the random distribution of quadratic residues to $Q'$ ($r_1$ becomes non-quadratic).
+    -   Sends $r_1$ to Prover.
+2.  **Prover**:
+    -   Responds with a value that depends on whether $a$ is a QNR or QR.
+
+
+### Graph Isomorphism (GI)
+
+Definition ($\mathsf{GI}$): Given graphs $G_1=(V_1,E_1), G_2=(V_2,E_2)$, determine if there exists a vertex permutation $\pi$ such that $G_1 \cong G_2$.
+
+
+# Algebraic approach
+
+
+# Polynomial interpolation approach
+
+# Self-reducible problems
+
+
+
+# The Merlin-Arthur protocol
+A restriction of IP is to require the Prover do not have private coins.
+
+
+::: {.callout-note icon="false"}
+## Definition: Randomized NP ($\mathsf{MA}$)
+$L \subset \{0,1\}^*$ belongs to $\mathsf{MA}$ if and only if there exists a probabilistic Turing machine $V$ such that for input $x$:
+
+1.  If $x \in L$, there exists a Certification $r$ (provided by Prover) such that $\Pr[V(x,r)=1] > 2/3$.
+2.  If $x \notin L$, for any Certification $r$, $\Pr[V(x,r)=0] > 2/3$.
+:::
+
+::: {.callout-important icon="false"}
+## Theorem
+$$\mathsf{AM}[k] = \mathsf{AM}[2] = \mathsf{BP} \cdot \mathsf{NP}$$
+:::

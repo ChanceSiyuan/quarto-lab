@@ -68,6 +68,8 @@ function setup() {
       destroy: vi.fn(),
       focusComposer: vi.fn(),
       setState: vi.fn(),
+      isMainSiteOpen: vi.fn(() => false),
+      setMainSiteOpen: vi.fn(),
     };
     views.push(view);
     return view;
@@ -106,7 +108,7 @@ describe("WorkbenchTabManager", () => {
   it("creates an empty native tab and later binds it to a selected Zotero paper", () => {
     const source = fakeWindow("source");
     const { manager } = setup();
-    const entry = manager.open(source, { icon: "attachmentPDF", title: "QLab 工作台" });
+    const entry = manager.open(source, { icon: "attachmentPDF", title: "QLab Workbench" });
 
     expect(source.records[0]!.data.itemID).toBeUndefined();
     manager.update(source, entry.id, data("QLab · Selected Paper"));
@@ -147,10 +149,36 @@ describe("WorkbenchTabManager", () => {
     expect(restored).toEqual({ itemID: 42 });
     expect(source.records.some((record) => record.title === "QLab · Restored")).toBe(true);
 
+    (views[0]!.isMainSiteOpen as ReturnType<typeof vi.fn>).mockReturnValue(true);
     await hooks.moveToNewWindow[QLAB_WORKBENCH_TAB_TYPE](source.records[0], 1);
     expect(openNewWindow).toHaveBeenCalledWith(source);
     expect(target.records).toHaveLength(1);
+    expect(target.records[0]!.data.qlabMainSiteOpen).toBe(true);
+    expect(views.at(-1)!.setMainSiteOpen).toHaveBeenCalledWith(true);
     expect(source.Zotero_Tabs.close).toHaveBeenCalledWith(entry.id);
+  });
+
+  it("keeps the original tab and reports migration failures", async () => {
+    const source = fakeWindow("source");
+    const onMoveError = vi.fn();
+    const createView = vi.fn((): WorkbenchTabView => ({
+      show: vi.fn(), destroy: vi.fn(), focusComposer: vi.fn(), setState: vi.fn(),
+      isMainSiteOpen: vi.fn(() => false), setMainSiteOpen: vi.fn(),
+    }));
+    const manager = new WorkbenchTabManager({
+      createView,
+      openNewWindow: vi.fn(async () => { throw new Error("window not ready"); }),
+      onMoveError,
+    });
+    manager.install(source);
+    const entry = manager.open(source, data());
+
+    await source.Zotero_Tabs.tabHooks.moveToNewWindow[QLAB_WORKBENCH_TAB_TYPE](source.records[0], 0);
+
+    expect(onMoveError).toHaveBeenCalledWith(expect.objectContaining({ message: "window not ready" }), source);
+    expect(source.records).toHaveLength(1);
+    expect(source.records[0]!.id).toBe(entry.id);
+    expect(source.Zotero_Tabs.close).not.toHaveBeenCalled();
   });
 
   it("destroys its view when Zotero closes the tab and removes owned hooks on uninstall", () => {

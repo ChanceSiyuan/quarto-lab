@@ -1,0 +1,48 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: QJ3UG3N7
+  item_version: 96139
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: TXYVEX48
+      name: unstructured
+      path: Quantum Complexity/Sampling/supermacy verification/unstructured
+qlab:
+  primary_collection: TXYVEX48
+  indexed_collections:
+    - TXYVEX48
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: preprint
+title: Estimating the cost of generic quantum pre-image attacks on SHA-2 and SHA-3
+authors:
+  - first: Matthew
+    last: Amy
+  - first: Olivia Di
+    last: Matteo
+  - first: Vlad
+    last: Gheorghiu
+  - first: Michele
+    last: Mosca
+  - first: Alex
+    last: Parent
+  - first: John
+    last: Schanck
+year: 2016
+abstract: We investigate the cost of Grover’s quantum search algorithm when used
+  in the context of pre-image attacks on the SHA-2 and SHA-3 families of hash
+  functions. Our cost model assumes that the attack is run on a surface code
+  based fault-tolerant quantum computer. Our estimates rely on a time-area
+  metric that costs the number of logical qubits times the depth of the circuit
+  in units of surface code cycles. As a surface code cycle involves a signiﬁcant
+  classical processing stage, our cost estimates allow for crude, but direct,
+  comparisons of classical and quantum algorithms.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.1603.09383
+  arxiv: "1603.09383"

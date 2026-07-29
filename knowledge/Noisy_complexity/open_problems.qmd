@@ -1,0 +1,302 @@
+---
+title: Open Problems and Future Directions
+description: Collected open questions on entropy reformulations, operator 1-norm, randomness assumptions, truncation-sampling separation, phase transition numerics, basis choice, and connections to Boolean function analysis.
+categories:
+  - theory
+---
+
+# Summary and Key Questions
+
+This section collects open problems and conjectures that emerged from the research on classical simulation of noisy quantum circuits. The problems span several levels of abstraction: concrete mathematical questions (entropy reformulation of spectral conditions, provable truncation-sampling separation), algorithmic challenges (fixed-circuit simulation without ensemble averaging, extending Pauli path methods to general noise), and conceptual questions linking simulation complexity to resource theory and random matrix theory. Many of these problems originate from the research diary discussions and remain unresolved even after the formal results in the companion pages. Where possible, we indicate partial progress and connections to recent literature.
+
+- Can Pauli spectral conditions for simulability be reformulated as entropy bounds, providing a single scalar diagnostic?
+- What is the fundamental role of the Pauli $\ell_1$-norm $\sum_i |c_i|$ as a complexity indicator mediating the competition between magic and noise?
+- How can simulation results be extended from random/averaged circuits to fixed circuits without ensemble averaging?
+- Is there a provable separation between truncation-based and sampling-based Pauli path methods?
+- What spectral statistics (GUE vs Poisson) govern the Pauli coefficient distribution, and do they undergo a noise-driven phase transition?
+- How does the choice of operator basis (Pauli, computational, stabilizer) affect simulation complexity, and can this be quantified via operator entanglement?
+
+# Spectral Reformulations
+
+## Entropy Formulation of Pauli Spectra
+
+The [Pauli spectrum analysis](pauli_path.qmd) establishes that efficient truncation requires inverse polynomial decay of the sorted squared Pauli coefficients $\{c_i^2\}$. A natural question is whether this condition admits a more compact entropy reformulation.
+
+::: {.callout-note icon="false"}
+## Open Problem 1: Entropy Characterization of Simulability
+
+Normalize the Pauli spectrum $\{c_i^2\}$ to a probability distribution $\{p_i = c_i^2 / \sum_j c_j^2\}$. Does the inverse polynomial scaling condition $c_i^2 = O(i^{-(1+\delta)})$ translate into a bound on the Rényi entropy $H_\alpha(\{p_i\})$ for some $\alpha$? Specifically, does there exist a polynomial $f(n)$ such that $H_\alpha < f(n)$ characterizes classical simulability via truncation?
+:::
+
+The appeal of an entropy formulation is twofold. First, it replaces a full spectral condition (requiring knowledge of the entire sorted sequence) with a single scalar quantity, simplifying the diagnostic. Second, entropies are often more robust to perturbation than spectral decay rates, potentially enabling tighter and more stable bounds.
+
+**Connection to operator stabilizer entropy.** The $\frac{1}{2}$-operator stabilizer entropy (OSE) $Q_{1/2}(O)$ already provides an entropy-like characterization of the Pauli decomposition of an operator $O = \sum_P c_P P$: we have $\exp[Q_{1/2}] = \sum_P |c_P|$, which is precisely the 1-norm discussed below. The Rényi-$\alpha$ family of OSE [@dowling2024magic] interpolates between different moments of the coefficient distribution, but the precise connection between the OSE hierarchy and the spectral decay condition for truncation efficiency remains to be established.
+
+**Partial progress from the diary (Round 11).** The research diary notes (2025/02/10) consider whether there exists an "entropy-like" quantity describing spectral decay faster than $i^{-1}$ for fixed circuits, but concludes that the specific form of such a quantity is unclear, particularly for non-random circuits where the spectral structure may differ qualitatively from the ensemble-averaged case.
+
+## Pauli $\ell_1$-Norm as Complexity Indicator {#sec-operator-1-norm}
+
+::: {.callout-note icon="false"}
+## Open Problem 2: Role of the Pauli $\ell_1$-Norm
+
+Does the Pauli $\ell_1$-norm $\|O_H\|_{\ell_1} := \sum_i |c_i|$ (where $O_H = \mathcal{C}^\dagger[O] = \sum_i c_i P_i$ is the Heisenberg-evolved observable) serve as a fundamental complexity indicator for Pauli path simulation? More precisely, does $\|O_H\|_{\ell_1} = O(\text{poly}(n))$ imply efficient simulability via sampling, and does $\|O_H\|_{\ell_1} = 2^{\Omega(n)}$ imply hardness?
+
+**Notation:** $\|\cdot\|_{\ell_1}$ denotes the $\ell_1$-norm of the Pauli coefficients, *not* the trace norm $\|A\|_1 = \text{tr}\sqrt{A^\dagger A}$. These coincide only for diagonal operators in the Pauli basis.
+:::
+
+Key observations supporting the $\ell_1$-norm as the central quantity:
+
+- **Clifford gates** permute and re-sign Pauli operators, leaving $\|O_H\|_{\ell_1}$ invariant.
+- **T gates** can increase the $\ell_1$-norm: each non-$Z$ Pauli encounter multiplies by $\sqrt{2}$ in the 2-norm normalization, and the number of Pauli terms doubles. After $u$ layers of T gates, $\|O_H\|_{\ell_1} \leq \sqrt{n_u}$ by Cauchy--Schwarz applied to $\sum_i |c_i| \leq \sqrt{(\vec{c} \cdot \vec{c})(\vec{1} \cdot \vec{1})} = \sqrt{n_u}$, where $n_u$ is the number of Pauli terms.
+- **Depolarizing noise** reduces the $\ell_1$-norm exponentially: each Pauli is multiplied by $(1 - 4p/3)$, so $\|O_H\|_{\ell_1} \to (1-4p/3)^d \|O_H\|_{\ell_1}$ after $d$ noise layers.
+
+Therefore, the $\ell_1$-norm captures the **competition between magic and noise**: $\|O_H\|_{\ell_1} \lessgtr 1$ indicates whether noise or magic dominates. This connects to the $\frac{1}{2}$-OSE, since $\exp[Q_{1/2}] = \sum_i |c_i|$ (the $\ell_1$-norm of the coefficients after channel action).
+
+**Relation to spectral decay.** The inverse polynomial spectral condition $c_k^2 = O(k^{-(1+2/r)})$ implies $\|O_H\|_{\ell_1} = \sum_k |c_k| = O(\text{poly}(n))$ when $2/r > 1$ (i.e., $r < 2$). But the converse need not hold: bounded $\ell_1$-norm does not require fast spectral decay. As noted in the diary (2025/02/16), taking $c_i = (1/2)^n$ for all $2^n$ terms gives $\sum |c_i| = 1$ (bounded 1-norm) but $|c_i|^2 = 4^{-n}$ is flat. For $0 < \delta \leq 1$, the flat spectrum *does* satisfy $c_k^2 \leq C k^{-(1+\delta)}$ with $C = O(1)$ (since $c_k^2 \cdot k^{1+\delta}\big|_{k=2^n} = 2^{n(\delta-1)} \to 0$). However, for $\delta > 1$ the product $2^{n(\delta-1)} \to \infty$, so no fixed $C$ can certify the bound. Note that the necessary spectral condition for efficient truncation ([Theorem (necessary condition)](pauli_path.qmd#thm-necessary-condition)) is only $c_k^2 = o(k^{-1})$, i.e., $\delta > 0$, which the flat spectrum satisfies for any $\delta < 1$. Moreover, the total squared mass $\sum_k c_k^2 = 2^n \cdot 4^{-n} = 2^{-n}$ is exponentially small, so Frobenius-norm truncation to *any* $K \geq 1$ achieves negligible error. The flat spectrum is therefore efficiently truncatable under the Frobenius-norm FPTAS. It fails only for **direct $\ell_1$-truncation** (without randomness reduction): keeping the top $K = \text{poly}(n)$ terms gives $\ell_1$-residual $\sum_{k > K} |c_k| = (2^n - K) \cdot 2^{-n} \approx 1$. The stronger condition $\delta > 1$ (i.e., $r < 2$) is sufficient for the spectral envelope alone to guarantee polynomial $\ell_1$-convergence $\sum_{k>K} |c_k| = O(K^{-(\delta-1)/2})$, but this is strictly stronger than the necessary condition for efficient simulation.
+
+**Space complexity gap.** Even when the $\ell_1$-norm is bounded, the sampling algorithm may require storing exponentially many Pauli operators in memory. The diary observation (2025/01/01, Round 9) notes that all suppression coefficients from unitary gates are lost in the count of stored Paulis: for example, a T gate has $1/\sqrt{2}$ $\ell_1$-norm contribution but doubles the number of terms from 1 to 2. Thus, the space complexity of the random branching algorithm is bounded not by the $\ell_1$-norm but by the *number* of surviving Pauli terms.
+
+## Phase Transition Diagnostic Refinement
+
+The diagnostic $C(\alpha) = \log \max_i \{c_i^2 \, i^\alpha\}$ introduced in the [Pauli path analysis](pauli_path.qmd) predicts a first-order transition at a critical $\alpha_0$. A refinement question is:
+
+::: {.callout-note icon="false"}
+## Open Problem 3: Sharpness of the Phase Transition Diagnostic
+
+For a given circuit family, does the phase transition diagnostic $C(\alpha)$ exhibit a sharp transition (discontinuous derivative) or a smooth crossover? Can the transition point $\alpha_0$ be related to a physical quantity such as the noise rate, T-gate density, or circuit depth?
+:::
+
+The diary (Round 11, 2025/02/10) proposes numerical simulations of $Cl, Cl + T, Cl + T + N$ circuits to study the Pauli spectrum's relationship with Poisson, GOE, and GUE distributions, but no conclusive results are reported.
+
+# Randomness Assumptions and Their Reductions
+
+## Dictionary of Randomness-to-Norm Reductions
+
+The reduction from estimation error to Frobenius norm relies on randomness assumptions. The [Pauli path analysis](pauli_path.qmd) establishes this for two cases; several variants remain open.
+
+::: {.callout-note icon="false"}
+## Open Problem 4: Unifying Randomness Reductions
+
+Establish a systematic dictionary relating different randomness assumptions to the norm controlling the truncation residual $\|\Delta O_H\|$:
+
+| Randomness assumption | Induced norm | Reference |
+|----------------------|-------------|-----------|
+| Random circuit (hiding property) | Frobenius $\|\Delta O_H\|_F$ | [@aharonov2023polynomial] |
+| Random input (low-average) | Frobenius $\|\Delta O_H\|_F$ | [@schuster2024polynomial] |
+| Random sampling direction | $\|\Delta O_H\|_?$ | Open |
+| Random operator | $\|\Delta O_H\|_?$ | Open |
+| No randomness (fixed circuit) | $\|\Delta O_H\|_?$ | Open |
+
+Can all these reductions be unified under a single framework? Does the derivation extend to norms other than Frobenius?
+:::
+
+The key insight is that the necessary condition $c_k^2 = o(k^{-1})$ only assumes the existence of *some* randomness reduction to a norm. Different randomness assumptions may lead to different norms but the same qualitative conclusion about spectral decay.
+
+**Recent progress.** González-García, Cirac, and Trivedi [@gonzalez2024pauli] extend Pauli path simulation beyond the average case, providing sufficient conditions for simulability of *fixed* Clifford+T circuits with depolarizing noise. They show that when noise is introduced at a rate faster than T gates generate magic, individual circuit instances become classically tractable. This partially fills the "no randomness" row in the table above, though the conditions remain sufficient rather than necessary.
+
+## Fixed Circuit Simulation
+
+::: {.callout-note icon="false"}
+## Open Problem 5: Beyond Ensemble Averaging
+
+For a fixed circuit $\mathcal{C}$ and fixed input $|0\rangle^{\otimes n}$, the expectation value is:
+$$
+\langle O \rangle = \sum_i c_i \operatorname{tr}(P_i |0\rangle\langle 0|^{\otimes n}) = \sum_i v_i.
+$$
+Can one establish that $\{v_i\}$ must have inverse polynomial scaling for efficient simulation? The difficulty is that $v_i$ is **not positive definite**, so the Frobenius norm argument does not directly apply.
+:::
+
+Additional complications for fixed circuits:
+
+- The input state $|0\rangle^{\otimes n}$ annihilates $X$ and $Y$ on each qubit, so many $v_i = 0$ identically. This sparsity helps but does not resolve the sign problem.
+- Without ensemble averaging, the worst-case error may be much larger than the average-case error. The diary (Round 5, 11.29) notes: "Fixed-input noisy circuits still lack a general simulation method."
+- The positive definiteness of the reduction map (which converts estimation error to a norm) fails for individual circuits.
+
+**Concrete hard instance for truncation.** The diary provides a concrete example where truncation fails for fixed circuits. The construction uses the **3-bit majority gate** $V$, a reversible 3-qubit gate whose action on computational basis states satisfies $\langle x | V^\dagger Z_{\text{out}} V | x \rangle = (-1)^{\text{MAJ}(x_1,x_2,x_3)}$, where $\text{MAJ}(a,b,c) = ab \oplus bc \oplus ac$ is the majority function. (A standard implementation uses two Toffoli gates and one CNOT.) The Pauli back-propagation of $Z$ on the majority output is determined by the Fourier expansion of $(-1)^{\text{MAJ}}$:
+$$
+V^\dagger Z_{\text{out}} V = \tfrac{1}{2}(Z_1 + Z_2 + Z_3) - \tfrac{1}{2}Z_1 Z_2 Z_3,
+$$
+producing 4 Pauli terms with $\ell_1$-norm $2$.
+
+Consider a circuit of $n/3$ parallel copies of $V$ with amplitude damping noise at rate $p$, input $|0\rangle^{\otimes n}$, and observable $O = g(n)^{-1} \sum_{k=1}^{g(n)} \prod_{i=1}^{4k} Z_{3i-2}$, where $g(n) = \Theta((\log n)^2)$ and $Z_{3i-2}$ acts on the majority output of the $i$-th block. Under amplitude damping in the Heisenberg picture, each $Z_j$ maps to $(1-p)Z_j + pI$ (while $X_j, Y_j$ are suppressed by $\sqrt{1-p}$). Since $V^\dagger Z_{\text{out}} V$ contains only $Z$-type Paulis, substituting $(1-p)Z_j + pI$ for each $Z_j$ and expanding gives the per-block operator with 8 Pauli-$Z$ string coefficients:
+
+| Weight $w$ | Terms | Coefficient $c_w(p)$ |
+|:---:|:---:|:---:|
+| 0 | $I_3$ | $\frac{p}{2}(3 - p^2)$ |
+| 1 | $Z_j$ ($\times 3$) | $\frac{1}{2}(1-p)^2(1+p)$ |
+| 2 | $Z_jZ_k$ ($\times 3$) | $-\frac{p}{2}(1-p)^2$ |
+| 3 | $Z_1Z_2Z_3$ | $-\frac{1}{2}(1-p)^3$ |
+
+: Per-block Pauli coefficients after majority gate + amplitude damping. {#tbl-majority-coefficients}
+
+The weight-2 and weight-3 coefficients arise from expanding $-\frac{1}{2}\prod_{j=1}^3[(1-p)Z_j + pI]$. The total $\ell_1$-norm is $|c_0| + 3|c_1| + 3|c_2| + |c_3| = 1 + (1-p)^2(1+2p) = 1 + 3(1-p)^2 - 2(1-p)^3 > 1$ for all $p < 1$ (since $(1-p)^2(1+2p) = (p-1)^2(2p+1) > 0$). The truncation and sampling thresholds arise from analyzing the *product structure* of $O$ across $4k$ blocks:
+
+- **Truncation threshold** ($p \lesssim 0.16$): By Parseval's theorem, the total $\ell_2^2$ of the 4-term majority expansion at $p=0$ is $\sum_S \hat{f}(S)^2 = 1$, with the weight-1 Fourier mass $W^{=1}[\text{MAJ}] = 3 \times (1/2)^2 = 3/4$. After amplitude damping, the coefficients follow from @tbl-majority-coefficients: the weight-1 coefficient per term is $c_1(p) = \frac{1}{2}(1-p)^2(1+p)$, giving weight-1 $\ell_2^2$ contribution $3c_1(p)^2 = \frac{3}{4}(1-p)^4(1+p)^2$ per block. (Note: the suppression is $(1-p)^2(1+p)$ per weight-1 coefficient, not simply $(1-p)$, because the amplitude damping identity shift $Z \to (1-p)Z + pI$ mixes Pauli weights — the factor $(1-p)^2(1+p)$ arises from the product structure of the $Z_1Z_2Z_3$ term contributing identity shifts to lower-weight coefficients.) For the product of $m = 4k$ blocks on disjoint qubits, the total Pauli weight is a sum of per-block weights; truncation to total weight $\leq l$ fails when the weight-1 $\ell_2^2$ per block exceeds half the total per-block $\ell_2^2$. Setting $\frac{3}{4}(1-p)^4(1+p)^2 = \frac{1}{2}\sum_w f_w(p)$ and solving numerically yields a threshold $p \approx 0.16$. Below this threshold, the $\ell_2^2$ mass concentrates at total weight $\Theta(n)$ by the law of large numbers, so truncation to weight $l = O(\log n)$ incurs error $\Omega(1)$.
+- **Sampling threshold** ($1 - p > ((\sqrt{13}-3)/2)^{0.25} \approx 0.742$): The per-block $\ell_1$-norm satisfies $\ell_1 = 1 + (1-p)^2(1+2p) > 1$ for all $p < 1$, so the product of per-block $\ell_1$-norms diverges exponentially. However, the sampling algorithm exploits cancellations in the $\ell_1$-norm of the *product* observable via the random branching procedure. The threshold arises from bounding the fourth moment of the per-block branching coefficients: writing $u = (1-p)^4$, the variance remains polynomial when $u^2 + 3u - 1 < 0$, i.e., $u < (\sqrt{13}-3)/2$, giving $(1-p)^4 < (\sqrt{13}-3)/2 \approx 0.303$.
+
+This demonstrates a concrete regime ($0.16 \lesssim p \lesssim 0.258$) where sampling outperforms truncation.
+
+**Complexity-theoretic context.** The diary (Round 8, 12.23) raises the question of lower bounds: whether combining the two algorithms (truncation and sampling) still leaves some circuits hard to simulate. The key difficulty is that NISQ circuits without intermediate measurements may not admit standard $\#$P-hardness reductions, as the hardness proofs for noiseless circuits typically rely on adaptive measurements or postselection.
+
+# Truncation vs Sampling Separation
+
+::: {.callout-note icon="false"}
+## Open Problem 6: Provable Separation
+
+Exhibit a family of noisy circuits where truncation-based methods require super-polynomial time but sampling-based methods succeed in polynomial time, or vice versa.
+:::
+
+**Sampling beats truncation.** The amplitude damping toy model (see [Non-Unital Noise Barriers](non_unital.qmd)) provides a strong example. Consider Clifford circuits with $|0\rangle^{\otimes n}$ inputs and amplitude damping noise at rate $p < 1/2$. Back-propagating $Z^{\otimes n}$ through a single layer of amplitude damping produces a binomial distribution $C_n^i p^{n-i}(1-p)^i$ over $Z$-strings of weight $i$, concentrated at $i = n(1-p)$. The optimal truncation requires retaining $\Omega(n^{-1} e^{H(p) \cdot n})$ Pauli operators, which is exponential with base $e^{H(p)} < 2$ (i.e., $2^{\Theta(n)}$ but with a smaller base than the full $4^n$ Pauli group). However, the randomized sampling algorithm estimates the Pauli average with constant variance because the branching coefficients are normalized under the $\ell_1$-norm (not the 2-norm).
+
+**Flat spectrum example.** A noisy circuit where all Pauli coefficients are equal ($c_i = 2^{-n}$ for $2^n$ operators containing only $I$ and $Z$) has $\sum c_k^2 = 2^{-n}$, so Frobenius-norm truncation trivially succeeds (the entire tail beyond $K = 1$ contributes negligible squared error). However, **direct $\ell_1$-truncation** fails: keeping only $K = \text{poly}(n)$ terms leaves $\ell_1$-residual $\sum_{k>K} |c_k| \approx 1$. Meanwhile, the sampling algorithm succeeds with zero variance because each sampled Pauli has expectation value equal to the exact result. This example thus separates $\ell_1$-truncation from sampling, not Frobenius-norm truncation from sampling.
+
+**Converse direction: truncation beats sampling.** As shown in the diary (Round 11, 2025/02/16), if $|c_i|^2$ decays faster than $i^{-2}$, then $\sum |c_i| = O(n)$, which implies polynomial sampling cost. However, if $|c_i|^2 \sim i^{-(1+\delta)}$ for $0 < \delta < 1$ (fast enough for truncation but slow for $\ell_1$-norm convergence), the $\ell_1$-norm can still be exponentially large. The specific counterexample: take $c_i = i^{-1/2-\delta}$ for $i = 1, \ldots, O(2^n)$, then $\sum |c_i| \sim \int_0^{O(2^n)} x^{-1/2-\delta} dx = [O(2^n)]^{1/2-\delta}$, which is still exponential for $\delta < 1/2$. Thus truncation can succeed where sampling has exponential variance.
+
+**Unifying measure.** Is there a single complexity measure that captures both truncation hardness and sampling hardness? Candidates include:
+
+- The $\ell_1$-norm $\sum_i |c_i|$ (governs sampling variance but not truncation directly).
+- The spectral decay rate (governs truncation but not sampling directly).
+- Some entropy-like quantity that interpolates between the two, potentially related to the Rényi-$\alpha$ OSE family for different values of $\alpha$.
+
+# Phase Transition Numerics
+
+::: {.callout-note icon="false"}
+## Open Problem 7: Spectral Phase Transitions
+
+The [phase transition diagnostic](pauli_path.qmd) $C(\alpha) = \log \max_i \{c_i^2 i^\alpha\}$ predicts a first-order transition at $\alpha_0$. Can this transition be numerically observed in:
+
+1. **Brick-layer random circuits** with varying noise rates?
+2. **Clifford+T circuits** with varying T-gate density?
+3. **Structured circuits** (e.g., QAOA, VQE ansätze)?
+:::
+
+The diary (Round 11, 2025/02/10) proposes simulating $Cl$, $Cl + T$, $Cl + T + N$ circuits and examining the Pauli spectrum for signatures of Poisson, GOE, and GUE statistics. The Pauli spectrum may reveal **chaotic behavior**: a transition from GUE (Gaussian Unitary Ensemble) statistics at low noise to Poisson statistics at high noise, analogous to the spectral statistics of many-body Hamiltonians. Numerical signatures to look for:
+
+- **Level spacing distribution** of $\{c_i^2\}$: Wigner--Dyson (chaotic) vs Poisson (integrable). In the noiseless regime, random circuits generate pseudo-random unitaries whose Pauli coefficients should follow GUE statistics. As noise increases, the spectrum concentrates on low-weight Paulis and the correlations between coefficients should weaken, approaching Poisson statistics.
+- **Spectral form factor** of the Pauli coefficient sequence: a dip-ramp-plateau structure would indicate chaotic Pauli dynamics.
+- **Correlation between spectral decay rate and circuit scrambling time**: faster-scrambling circuits should exhibit faster spectral decay under noise, connecting to the results of [@angrisani2024classically] on noiseless estimation of scrambling circuits.
+
+The diary also proposes using QULACS (Round 11, 2025/02/13) to numerically study Clifford+T circuits interleaved with three types of noise, characterizing the spectral change with qubit number via the diagnostic $A = i^{(\max)} \cdot c_i^{(\min)}$.
+
+# Basis Choice and Operator Decomposition
+
+## Pauli vs Computational vs Stabilizer Bases
+
+The research diary (Motivation and Problems 2, 2025/04/13) raises a fundamental question about the choice of operator basis for simulation:
+
+::: {.callout-note icon="false"}
+## Open Problem 8: Optimal Basis for Classical Simulation
+
+An operator $O$ can be expanded in the Pauli basis, the computational basis, the stabilizer state basis, or various magic-unitary rotated bases. The MPO decomposition complexity depends on the choice of basis:
+
+- In the **Pauli basis**: only T gates (and other non-Clifford gates) increase the bond dimension; Clifford gates merely permute.
+- In the **computational basis**: only CCX (Toffoli) and similar non-classical gates increase the bond dimension; classical-reversible gates permute.
+
+Can one characterize, for a given operator $O$, which basis minimizes the simulation complexity? Is this determined by the operator's proximity to the respective basis (measured, e.g., by the bipartite entanglement of the Choi representation)?
+:::
+
+The diary observation is that the entanglement of an operator under the $AB : A'B'$ partition of its Choi state determines the "H/T response": operators closer to the Pauli basis (low magic, high coherence) respond primarily to H gates, while operators closer to the computational basis respond primarily to T gates. This motivates the "Choi representation decides H/T response" conjecture discussed in [Operator Entanglement](operator_resource.qmd).
+
+**Numerical evidence (Round 1).** For $X^{\otimes 6}$ input (zero magic operator) on a fixed CNOT circuit with randomly interleaved T gates, the bond entropy saturates at $\sim 1.5$; additional H gates are required to reach maximal entropy $\sim 4$. Conversely, for $(|0\rangle\langle 0|)^{\otimes 6}$ input (zero coherence), only H gates generate nonzero entanglement up to $\sim 3$, and T gates are needed for maximal entropy. This asymmetry suggests that the two types of non-Clifford resources (magic and coherence) independently contribute to operator entanglement growth.
+
+## Connections to Boolean Function Analysis
+
+The diary (Round 12, 2025/03/04) identifies a structural analogy between Pauli path truncation and Fourier analysis of Boolean functions:
+
+::: {.callout-note icon="false"}
+## Open Problem 9: Fourier--Pauli Correspondence
+
+Consider the following dictionary:
+
+| Boolean function analysis | Quantum circuit simulation |
+|--------------------------|--------------------------|
+| Value $f(x)$ for $x \in \{0,1\}^n$ | Expectation $\langle O \rangle_{|x\rangle}$ |
+| Fourier decomposition $f(x) = \sum_t \hat{f}(t)(-1)^{t \cdot x}$ | Pauli decomposition $O = \sum_s f_s P_s$ |
+| Fourier spectrum is $\varepsilon$-concentrated | Pauli spectrum is $\varepsilon$-concentrated |
+| Efficient computation of $\sum_x f(x) g(x)$ | Efficient computation of $\operatorname{tr}(O \, |0\rangle\langle 0|^{\otimes n})$ |
+| $f$ computable by poly-depth classical circuit | $O$ generated by poly-depth quantum circuit via $UZU^\dagger$ |
+
+Given a Boolean function $f$ computable by a polynomial-depth classical circuit with $\varepsilon$-concentrated Fourier spectrum, is there an efficient algorithm to approximate $\sum_x f(x)$? Is this connection the classical analogue of Pauli path truncation?
+:::
+
+The diary notes that $\sum_x f(x)$ for a general polynomial-depth Boolean function is $\#$P-hard, but the question is whether Fourier concentration (the analogue of Pauli spectral decay) enables efficient approximation. Under bit-flip noise $\mathcal{N}(x) = (x, 1-p; \bar{x}, p)$, the noisy Fourier coefficients become $(1-2p)^{|t|} \hat{f}(t)$, directly paralleling the depolarizing noise suppression $(1-\varepsilon)^{|s|} f_s$ in the Pauli case.
+
+A recent formalization of this connection appears in [@cirstoiu2024fourier], which applies harmonic analysis to parametrized quantum circuits, expanding them in a truncated multi-path operator basis. For noisy circuits, the spectral gap of the noise channel acts as a band-limiting mechanism, yielding polynomial-time algorithms analogous to low-degree Fourier approximations.
+
+# Bridging Operator-Level and Circuit-Level Analysis
+
+::: {.callout-note icon="false"}
+## Open Problem 10: Operator vs Circuit Properties
+
+The necessary spectral condition established in the [Pauli path analysis](pauli_path.qmd) is an **operator-level** property (it depends only on the output operator $O_H$), not a **circuit-level** property (which would depend on the circuit structure, depth, and intermediate Pauli propagation). Can the spectral analysis be extended to incorporate circuit structure?
+:::
+
+In practical Pauli path algorithms, the computational cost depends on the path structure (depth, intermediate Pauli branching, noise placement), not just the final spectrum. Several approaches to bridging this gap:
+
+**Time-resolved spectral analysis.** Introduce a time register tracking the depth dimension alongside the Pauli index, yielding a two-dimensional spectral analysis. The Pauli weight distribution at each layer, $P^{(r)}(w)$, evolves according to a branching process whose generating function encodes the circuit structure. The diary (Round 7, 12.13) proposes viewing the weight truncation as a tensor network truncation in the Pauli index space.
+
+**Pauli tensor network formulation.** Any operator can be decomposed as $\hat{O} = \sum_\mu O_\mu \Sigma^\mu$ where $\mu \in \{I,X,Y,Z\}^{\otimes n}$ labels Pauli operators. The expectation value $\langle \psi | U^\dagger \Sigma^\mu U | \psi \rangle$ for a Clifford+T circuit $U$ admits a tensor network contraction where each T gate introduces a branching tensor and each Clifford gate permutes indices. Truncating high-weight paths corresponds to bond dimension truncation in this tensor network. The diary (Round 8) asks whether this Pauli tensor network truncation is equivalent to the graph-state percolation of the [gadget-based approach](gadget_simulation.qmd).
+
+**Mean-field truncation.** The diary (Round 9, 1.3) proposes an alternative to hard truncation: when a Pauli operator $P$ exceeds weight $l$ during back-propagation, instead of discarding it, replace selected qubits' Pauli factors with their mean-field expectation values $\langle P_i \rangle \mathbb{I}_i$ until the weight drops to $l$. This introduces additional unknown parameters $\langle P_i \rangle$ that can be self-consistently determined by iterating the algorithm.
+
+# Connections to Other Frameworks
+
+## Percolation--Truncation Duality
+
+The diary (Round 7--8) repeatedly asks whether Pauli path truncation can be interpreted as a form of percolation on the gadget circuit. The [percolation approach](percolation.qmd) maps simulation to graph connectivity, where noise deletes edges. The [Pauli path approach](pauli_path.qmd) truncates high-weight operators. Are these two perspectives dual?
+
+::: {.callout-note icon="false"}
+## Open Problem 11: Percolation--Truncation Correspondence
+
+For T-sparse Clifford+T circuits with depolarizing noise:
+
+1. Does subcritical percolation in the gadget graph imply that the Pauli spectrum has fast decay (and vice versa)?
+2. Can the Pauli weight truncation threshold $l$ be mapped to a percolation probability $q$ such that the truncation error equals the probability of a connected component exceeding size $l$?
+3. Is the tree-width of the percolated graph related to the space complexity of Pauli path simulation?
+:::
+
+The diary (Round 8, 12.16) asks directly: "Can Pauli truncation be understood as gadget-measurement percolation?" A positive answer would unify the two main simulation frameworks, providing a single criterion (subcritical percolation $\Leftrightarrow$ fast spectral decay $\Leftrightarrow$ bounded $\ell_1$-norm) for classical simulability.
+
+## Non-Unital Noise: Stabilizer-Preserving Decomposition
+
+The [non-unital noise analysis](non_unital.qmd) establishes that amplitude damping cannot be decomposed into Pauli noise plus Z-projection. A remaining question is:
+
+::: {.callout-note icon="false"}
+## Open Problem 12: Universal Scaling-Shifting Decomposition
+
+For any single-qubit CSPO (completely stabilizer-preserving operation) $\mathcal{N}(\rho) = U\Lambda(V\rho V^\dagger)U^\dagger$ with $U, V$ Clifford and $\Lambda$ incoherent, can the conjugate map $\Lambda^\dagger$ always be decomposed into a scaling part $\mathbb{S}$ followed by a shifting part $\mathbb{T}$ with valid sampling parameters $p_i, s_i \in [0,1]$?
+:::
+
+The diary (Quantifying channel magic, p.75) conjectures that this holds for all single-qubit channels that are completely stabilizer-preserving. The importance is that only such a decomposition validates the random branching sampling algorithm for non-unital noise without increasing variance. The diary notes (Round 10, 1.23) that for magic-free circuits, non-unital and unital noise have essentially the same simulation complexity --- the fundamental distinction arises only when magic is present.
+
+## Weak vs Strong Simulation
+
+The diary (Round 6, p.41) reproduces a complexity classification table from [@chen2023complexity] for NISQ circuits, distinguishing between:
+
+- **Non-adaptive vs adaptive** circuits (with/without intermediate measurements)
+- **Weak vs strong** simulation (sampling vs computing amplitudes)
+- **Single-bit vs product-state vs many-bit** inputs/outputs
+
+::: {.callout-note icon="false"}
+## Open Problem 13: Adaptive NISQ Simulation Complexity
+
+For pure Clifford circuits, switching from non-adaptive to adaptive makes strong simulation $\#$P-hard while weak simulation remains Cl-P. Does this separation persist under noise? Specifically, can noisy adaptive Clifford circuits be weakly simulated in polynomial time even when strong simulation remains hard?
+:::
+
+The diary notes that for non-adaptive circuits with magic inputs, both weak and strong simulation with single-bit output are easy (corresponding to efficient Pauli simulation). This suggests that the adaptive/non-adaptive distinction may be more fundamental than the noise/noiseless distinction for simulation complexity.
+
+## Quantum Refrigerator and Computational Power
+
+The [non-unital noise page](non_unital.qmd) discusses the quantum refrigerator result of Ben-Or, Gottesman, and Hassidim [@ben2013quantum]. A remaining question concerns the precise complexity boundary:
+
+::: {.callout-note icon="false"}
+## Open Problem 14: Non-Unital Noise and Computation Length
+
+Under what conditions does non-unital noise enable exponentially long computation (via the refrigerator mechanism) while remaining classically simulable? The diary (Motivations, p.17) frames this as: NISQ circuits under depolarizing noise have computational power equivalent to log-depth circuits (QNC1) [@aharonov1996limitations], but non-unital noise may break this equivalence.
+:::
+
+The diary argues that the distinction is whether the noise can be used to produce fresh $|0\rangle$ qubits (refrigeration). If so, the circuit effectively gains access to intermediate measurement and reset, dramatically increasing computational power. The simulability question then becomes: can the Pauli path method still efficiently handle circuits that exploit refrigeration?
+
+---
+
+[← Operator Entanglement](operator_resource.qmd) | [Back to Index](index.qmd)

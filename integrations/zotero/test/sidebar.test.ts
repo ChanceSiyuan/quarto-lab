@@ -4,8 +4,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
+const storedPrefs = new Map<string, number>();
 vi.mock("../src/platform", () => ({
   copyToClipboard: vi.fn(() => true),
+  prefInt: vi.fn((name: string, fallback: number) => storedPrefs.get(name) ?? fallback),
+  setPrefInt: vi.fn((name: string, value: number) => { storedPrefs.set(name, value); }),
 }));
 
 import { SidebarView, type SidebarCallbacks, type SidebarState } from "../src/sidebar";
@@ -40,6 +43,7 @@ function callbacks(): SidebarCallbacks {
 describe("SidebarView", () => {
   beforeEach(() => {
     document.body.replaceChildren();
+    delete (document as any).createXULElement;
   });
 
   it("keeps the advanced Terminal reachable when app-server is unavailable", () => {
@@ -50,7 +54,7 @@ describe("SidebarView", () => {
     view.setState({ phase: "unavailable", error: "app-server is unavailable" });
 
     const button = [...body.querySelectorAll<HTMLButtonElement>("button")]
-      .find((candidate) => candidate.textContent === "打开高级 Terminal")!;
+      .find((candidate) => candidate.textContent === "Open Advanced Terminal")!;
     button.click();
 
     expect(handlers.onOpenTerminal).toHaveBeenCalledOnce();
@@ -67,7 +71,7 @@ describe("SidebarView", () => {
 
       const settings = body.querySelector<HTMLButtonElement>(".zc-error-settings");
       expect(settings).not.toBeNull();
-      expect(settings!.textContent).toBe("选择 QLab 仓库");
+      expect(settings!.textContent).toBe("Choose QLab Repository");
       settings!.click();
 
       expect(handlers.onChooseQLabRoot).toHaveBeenCalledOnce();
@@ -101,22 +105,21 @@ describe("SidebarView", () => {
     });
 
     expect(body.textContent).toContain("A Test Paper");
-    expect(body.textContent).toContain("选区 16 字");
+    expect(body.textContent).toContain("Selection: 16 characters");
     body.querySelector<HTMLButtonElement>(".zc-turn-summary")?.click();
     expect(body.textContent).toContain("zotero_get_current_page");
     expect(body.querySelector("strong")?.textContent).toBe("Result:");
-    expect(body.textContent).toContain("Agent");
-    expect(body.querySelector<HTMLButtonElement>('button[title="打开 Terminal"]')?.textContent).toContain("Terminal");
+    expect(body.querySelector<HTMLButtonElement>('button[title="Open Terminal"]')?.textContent).toContain("Terminal");
     expect(body.textContent).toContain("Research Loop · Local Codex");
-    for (const title of ["对话历史", "新对话", "打开 Terminal", "账户", "刷新 Reader 上下文", "发送"]) {
+    for (const title of ["Conversation History", "New Conversation", "Open Terminal", "Account", "Refresh Reader Context", "Send"]) {
       expect(body.querySelector(`button[title="${title}"] svg.zc-button-icon`)).not.toBeNull();
     }
   });
 
-  it("shows all six QLab commands directly and sends a clicked command through the host", () => {
+  it("keeps the repository selector without the QLab shortcut grid", () => {
     const body = document.createElement("div");
     document.body.appendChild(body);
-    const handlers = { ...callbacks(), onQLabCommand: vi.fn(), onChooseQLabRoot: vi.fn() };
+    const handlers = { ...callbacks(), onChooseQLabRoot: vi.fn() };
     const view = new SidebarView(body, handlers);
     view.setState({
       phase: "ready",
@@ -124,17 +127,8 @@ describe("SidebarView", () => {
       context: { key: "ITEM0001", title: "Paper" },
     });
 
-    const buttons = [...body.querySelectorAll<HTMLButtonElement>(".zc-qlab-command-button")];
-    expect(buttons.map((button) => button.dataset.commandId)).toEqual([
-      "qlab_get_paper",
-      "qlab_search_literature",
-      "qlab_propose_patch",
-      "qlab_propose_promotion",
-      "qlab_validate",
-      "qlab_preview",
-    ]);
-    buttons.find((button) => button.dataset.commandId === "qlab_propose_promotion")!.click();
-    expect(handlers.onQLabCommand).toHaveBeenCalledWith("qlab_propose_promotion");
+    expect(body.querySelector(".zc-qlab-command-grid")).toBeNull();
+    expect(body.querySelector(".zc-qlab-command-button")).toBeNull();
 
     body.querySelector<HTMLButtonElement>(".zc-qlab-root-button")!.click();
     expect(handlers.onChooseQLabRoot).toHaveBeenCalledOnce();
@@ -153,7 +147,7 @@ describe("SidebarView", () => {
 
     expect(body.querySelector(".zc-model-settings")).toBeNull();
     const repository = body.querySelector<HTMLButtonElement>(".zc-qlab-root-button")!;
-    expect(repository.textContent).toContain("选择仓库");
+    expect(repository.textContent).toContain("Choose repository");
     repository.click();
 
     expect(handlers.onChooseQLabRoot).toHaveBeenCalledOnce();
@@ -176,8 +170,8 @@ describe("SidebarView", () => {
         selectionText: "selected theorem",
       },
       contextChips: [
-        { id: "paper", kind: "paper", label: "当前论文" },
-        { id: "selection", kind: "selection", label: "选区 · 16 字", removable: true },
+        { id: "paper", kind: "paper", label: "Current Paper" },
+        { id: "selection", kind: "selection", label: "选区 · 16 characters", removable: true },
       ],
       contextSuggestions: [
         { id: "annotations", kind: "annotation", label: "Annotations", detail: "12 notes" },
@@ -190,14 +184,17 @@ describe("SidebarView", () => {
     });
 
     expect(body.querySelector('.zc-sidebar')?.getAttribute("data-mode")).toBe("agent");
-    expect(body.textContent).toContain("需审批");
+    // The composer no longer advertises an approval mode: it is fixed, so the
+    // chip only ever restated what the mode already is.
+    expect(body.textContent).not.toContain("需审批");
+    expect(body.querySelector(".zc-safety-chip")).toBeNull();
     expect(body.querySelectorAll(".zc-thread-tab")).toHaveLength(2);
     body.querySelector<HTMLButtonElement>('[data-thread-id="thread-b"]')?.click();
     expect(handlers.onSelectThread).toHaveBeenCalledWith("thread-b");
 
     expect(body.querySelector('select[title="研究模式"]')).toBeNull();
 
-    body.querySelector<HTMLButtonElement>('button[title="移除上下文：选区 · 16 字"]')?.click();
+    body.querySelector<HTMLButtonElement>('button[title="Remove context: 选区 · 16 characters"]')?.click();
     expect(handlers.onRemoveContext).toHaveBeenCalledWith("selection");
 
     const input = body.querySelector<HTMLTextAreaElement>("textarea")!;
@@ -233,7 +230,7 @@ describe("SidebarView", () => {
     expect(deleteButtons).toHaveLength(2);
     for (const button of deleteButtons) {
       expect(button.textContent).toBe("×");
-      expect(button.title).toBe("删除对话");
+      expect(button.title).toBe("Delete Conversation");
     }
 
     deleteButtons[1]!.click();
@@ -242,7 +239,27 @@ describe("SidebarView", () => {
     expect(handlers.onSelectThread).not.toHaveBeenCalled();
   });
 
-  it("gives every row in the 对话历史 dropdown a delete button too, not just the 12-item tab strip (reviewer Important #2)", () => {
+  it("immediately marks a requested conversation and shows new-conversation progress", () => {
+    const body = document.createElement("div");
+    document.body.appendChild(body);
+    const view = new SidebarView(body, callbacks());
+    view.setState({
+      phase: "ready",
+      creatingThread: true,
+      threads: [
+        { id: "thread-a", title: "A", updatedAt: "2026-07-28", active: true },
+        { id: "thread-b", title: "B", updatedAt: "2026-07-27", active: false, status: "switching" },
+      ],
+    });
+
+    const switching = body.querySelector<HTMLButtonElement>('[data-thread-id="thread-b"]')!;
+    expect(switching.classList.contains("is-switching")).toBe(true);
+    expect(switching.getAttribute("aria-busy")).toBe("true");
+    expect(body.querySelector<HTMLButtonElement>('.zc-thread-tab-add')!.disabled).toBe(true);
+    expect(body.querySelector<HTMLButtonElement>('button[title="Creating a new conversation…"]')).not.toBeNull();
+  });
+
+  it("gives every row in the Conversation History dropdown a delete button too, not just the 12-item tab strip (reviewer Important #2)", () => {
     const body = document.createElement("div");
     document.body.appendChild(body);
     const handlers = callbacks();
@@ -256,7 +273,7 @@ describe("SidebarView", () => {
       ],
     });
 
-    body.querySelector<HTMLButtonElement>('button[title="对话历史"]')!.click();
+    body.querySelector<HTMLButtonElement>('button[title="Conversation History"]')!.click();
     const menu = body.querySelector<HTMLElement>(".zc-history-menu")!;
     expect(menu).not.toBeNull();
     const deleteButtons = menu.querySelectorAll<HTMLButtonElement>(".zc-thread-delete");
@@ -270,13 +287,12 @@ describe("SidebarView", () => {
     expect(body.querySelector(".zc-history-menu")).toBeNull();
   });
 
-  it("renders plan, diff review, pending approval, and restorable checkpoints", () => {
+  it("renders plan, diff review, and pending approval without checkpoint history", () => {
     const body = document.createElement("div");
     document.body.appendChild(body);
     const handlers = callbacks();
     handlers.onReviewDecision = vi.fn();
     handlers.onApprovalDecision = vi.fn();
-    handlers.onRestoreCheckpoint = vi.fn();
     const view = new SidebarView(body, handlers);
     view.setState({
       phase: "ready",
@@ -309,55 +325,53 @@ describe("SidebarView", () => {
     expect(body.textContent).toContain("1/2");
     expect(body.querySelector(".zc-diff-view .is-addition")?.textContent).toBe("+new");
     [...body.querySelectorAll<HTMLButtonElement>("button")]
-      .find((button) => button.textContent === "接受建议")?.click();
+      .find((button) => button.textContent === "Accept Suggestion")?.click();
     expect(handlers.onReviewDecision).toHaveBeenCalledWith("review-1", "accept");
     [...body.querySelectorAll<HTMLButtonElement>("button")]
-      .find((button) => button.textContent === "仅允许这一次")?.click();
+      .find((button) => button.textContent === "Allow Once")?.click();
     expect(handlers.onApprovalDecision).toHaveBeenCalledWith("approval-1", "approve-once");
-    [...body.querySelectorAll<HTMLButtonElement>("button")]
-      .find((button) => button.textContent === "Restore")?.click();
-    expect(handlers.onRestoreCheckpoint).toHaveBeenCalledWith("checkpoint-1");
+    expect(body.querySelector(".zc-checkpoint-card")).toBeNull();
+    expect(body.textContent).not.toContain("Checkpoints");
   });
 
-  it("disables every Restore button while a review is mid-resolution, and re-enables once it settles", () => {
+  it("does not expose stored checkpoints in the transcript", () => {
     const body = document.createElement("div");
     document.body.appendChild(body);
-    const handlers = callbacks();
-    handlers.onRestoreCheckpoint = vi.fn();
-    const view = new SidebarView(body, handlers);
+    const view = new SidebarView(body, callbacks());
     view.setState({
       phase: "ready",
-      reviews: [{
-        id: "review-1",
-        title: "Proposed change",
-        diff: "@@ x\n-old\n+new",
-        state: "resolving",
-      }],
       checkpoints: [
         { id: "checkpoint-1", label: "Before comparison", createdAt: "2026-07-22T10:30:00Z" },
         { id: "checkpoint-2", label: "Earlier", createdAt: "2026-07-21T10:30:00Z" },
       ],
     });
 
-    const restoreButtons = [...body.querySelectorAll<HTMLButtonElement>("button")]
-      .filter((button) => button.textContent === "Restore");
-    expect(restoreButtons).toHaveLength(2);
-    for (const button of restoreButtons) expect(button.disabled).toBe(true);
+    expect(body.querySelector(".zc-checkpoint-card")).toBeNull();
+    expect([...body.querySelectorAll("button")].some((button) => button.textContent === "Restore")).toBe(false);
+  });
 
-    // Settling the review (state moves off "resolving") must re-render the
-    // checkpoint card and re-enable Restore -- the cachedEntryNode fingerprint
-    // has to reflect review-resolving state, not just the checkpoint list, or
-    // this would keep showing the stale disabled buttons.
+  it("collapses a long user message and lets the user expand and collapse it", () => {
+    const body = document.createElement("div");
+    document.body.appendChild(body);
+    const view = new SidebarView(body, callbacks());
     view.setState({
-      reviews: [{ id: "review-1", title: "Proposed change", diff: "@@ x\n-old\n+new", state: "accepted" }],
+      phase: "ready",
+      entries: [{ id: "long-user", kind: "user", text: "很长的用户消息.".repeat(80) }],
     });
 
-    const restoreButtonsAfter = [...body.querySelectorAll<HTMLButtonElement>("button")]
-      .filter((button) => button.textContent === "Restore");
-    expect(restoreButtonsAfter).toHaveLength(2);
-    for (const button of restoreButtonsAfter) expect(button.disabled).toBe(false);
-    restoreButtonsAfter[0]!.click();
-    expect(handlers.onRestoreCheckpoint).toHaveBeenCalledWith("checkpoint-1");
+    const bubble = body.querySelector<HTMLElement>(".zc-user-bubble")!;
+    const toggle = body.querySelector<HTMLButtonElement>(".zc-user-message-toggle")!;
+    expect(bubble.classList.contains("is-collapsed")).toBe(true);
+    expect(toggle.textContent).toBe("Show Full Message");
+    expect(toggle.getAttribute("aria-expanded")).toBe("false");
+
+    toggle.click();
+    expect(bubble.classList.contains("is-collapsed")).toBe(false);
+    expect(toggle.textContent).toBe("Collapse");
+    expect(toggle.getAttribute("aria-expanded")).toBe("true");
+
+    toggle.click();
+    expect(bubble.classList.contains("is-collapsed")).toBe(true);
   });
 
   it("can reveal the composer when Zotero expands the custom section", () => {
@@ -380,7 +394,7 @@ describe("SidebarView", () => {
       phase: "ready",
       entries: [
         { id: "u1", kind: "user", text: "问" },
-        { id: "tool-1", kind: "reasoning", title: "思考过程", text: "first", state: "complete" },
+        { id: "tool-1", kind: "reasoning", title: "Reasoning", text: "first", state: "complete" },
         { id: "answer-1", kind: "assistant", text: "stable" }
       ]
     });
@@ -392,7 +406,7 @@ describe("SidebarView", () => {
     view.setState({
       entries: [
         { id: "u1", kind: "user", text: "问" },
-        { id: "tool-1", kind: "reasoning", title: "思考过程", text: "first second", state: "complete" },
+        { id: "tool-1", kind: "reasoning", title: "Reasoning", text: "first second", state: "complete" },
         { id: "answer-1", kind: "assistant", text: "stable" }
       ]
     });
@@ -421,17 +435,17 @@ describe("SidebarView", () => {
 
       const button = body.querySelector<HTMLButtonElement>(".zc-copy-answer")!;
       expect(button).not.toBeNull();
-      expect(button.title).toBe("复制回答");
+      expect(button.title).toBe("Copy Answer");
 
       button.click();
 
       expect(copyToClipboard).toHaveBeenCalledWith("**Result:** page 7");
       expect(button.classList.contains("is-copied")).toBe(true);
-      expect(button.title).toBe("已复制");
+      expect(button.title).toBe("Copied");
 
       vi.advanceTimersByTime(1500);
       expect(button.classList.contains("is-copied")).toBe(false);
-      expect(button.title).toBe("复制回答");
+      expect(button.title).toBe("Copy Answer");
       vi.useRealTimers();
     });
 
@@ -449,7 +463,7 @@ describe("SidebarView", () => {
       button.click();
 
       expect(button.classList.contains("is-copied")).toBe(false);
-      expect(button.title).toBe("复制回答");
+      expect(button.title).toBe("Copy Answer");
     });
 
     it("does not render a copy button on error entries", () => {
@@ -578,11 +592,11 @@ describe("SidebarView", () => {
     expect(handlers.onStop).not.toHaveBeenCalled();
 
     input.value = "And keep the page citations.";
-    const followUp = body.querySelector<HTMLButtonElement>('button[title="发送补充"]')!;
+    const followUp = body.querySelector<HTMLButtonElement>('button[title="Send Follow-up"]')!;
     followUp.click();
     expect(handlers.onSend).toHaveBeenLastCalledWith("And keep the page citations.");
 
-    const stop = body.querySelector<HTMLButtonElement>('button[title="停止生成（Esc）"]')!;
+    const stop = body.querySelector<HTMLButtonElement>('button[title="Stop Generating (Esc)"]')!;
     expect(stop.hidden).toBe(false);
     stop.click();
     input.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
@@ -610,10 +624,10 @@ describe("SidebarView", () => {
       effort: "medium"
     });
 
-    const select = body.querySelector<HTMLSelectElement>('select[title="思考强度"]')!;
+    const select = body.querySelector<HTMLSelectElement>('select[title="Reasoning Effort"]')!;
     expect([...select.options].map((option) => option.value)).toEqual(["low", "max", "ultra"]);
     expect(select.value).toBe("low");
-    expect([...select.options].map((option) => option.textContent)).toContain("思考 Ultra");
+    expect([...select.options].map((option) => option.textContent)).toContain("Reasoning: Ultra");
   });
 
   it("shows ChatGPT login without exposing a token field", () => {
@@ -623,7 +637,7 @@ describe("SidebarView", () => {
     const view = new SidebarView(body, handlers);
     view.setState({ phase: "signed-out" });
     const button = [...body.querySelectorAll("button")]
-      .find((candidate) => candidate.textContent === "使用 ChatGPT 登录")!;
+      .find((candidate) => candidate.textContent === "Sign In with ChatGPT")!;
     button.click();
     expect(handlers.onLogin).toHaveBeenCalledOnce();
     expect(body.querySelector('input[type="password"]')).toBeNull();
@@ -635,9 +649,9 @@ describe("SidebarView", () => {
     const handlers = { ...callbacks(), onPaperTrailConsent: vi.fn() };
     const view = new SidebarView(body, handlers as any);
     view.setState({ phase: "ready", paperTrailConsent: { question: "为什么?", pageNumber: 7 } });
-    expect(body.textContent).toContain("自动创建高亮批注");
+    expect(body.textContent).toContain("Create highlight annotation automatically");
     const buttons = [...body.querySelectorAll(".zc-consent-card button")];
-    (buttons.find((b) => b.textContent?.includes("允许")) as HTMLButtonElement).click();
+    (buttons.find((b) => b.textContent?.includes("Allow")) as HTMLButtonElement).click();
     expect(handlers.onPaperTrailConsent).toHaveBeenCalledWith("accept");
   });
 
@@ -663,22 +677,16 @@ describe("SidebarView", () => {
     expect(body.querySelector(".zc-login-button")).toBeNull();
   });
 
-  it("renders the question list ordered as given, with status marks and jump", () => {
+  it("does not render question-anchor tags in the chat", () => {
     const body = document.createElement("div");
     document.body.appendChild(body);
-    const handlers = { ...callbacks(), onAnchorJump: vi.fn(), onAnchorResolve: vi.fn() };
-    const view = new SidebarView(body, handlers as any);
+    const view = new SidebarView(body, callbacks() as any);
     view.setState({ ...baseState(), anchors: [
       { anchorId: "a1", pageNumber: 3, question: "为什么收敛?", status: "open" },
       { anchorId: "a2", pageNumber: 9, question: "数据集?", status: "resolved" },
     ] } as any);
-    const items = [...body.querySelectorAll(".zc-question-item")];
-    expect(items).toHaveLength(2);
-    expect(items[0]!.textContent).toContain("p.3");
-    expect(items[0]!.textContent).toContain("●");
-    expect(items[1]!.textContent).toContain("✓");
-    (items[0]!.querySelector(".zc-question-jump") as HTMLButtonElement).click();
-    expect(handlers.onAnchorJump).toHaveBeenCalledWith("a1");
+    expect(body.querySelector(".zc-question-list")).toBeNull();
+    expect(body.querySelector(".zc-question-item")).toBeNull();
   });
 
   it("hides the question list when there are no anchors", () => {
@@ -700,8 +708,8 @@ describe("SidebarView", () => {
       versions: [{ key: "OLD", title: "old-notes" }], error: null,
     } } as any);
     const card = body.querySelector(".zc-noting-card")!;
-    expect(card.textContent).toContain("5 个锚点");
-    expect(card.textContent).toContain("2 个公式待核对");
+    expect(card.textContent).toContain("5 anchors");
+    expect(card.textContent).toContain("2 formulas to verify");
     (card.querySelector(".zc-noting-apply") as HTMLButtonElement).click();
     expect(handlers.onNotingApply).toHaveBeenCalledWith({ kind: "new" });
   });
@@ -716,9 +724,9 @@ describe("SidebarView", () => {
     };
     const view = new SidebarView(body, handlers as any);
     view.setState(baseState() as any);
-    (body.querySelector('[title="在 Zotero 标签页打开 QLab 工作台"]') as HTMLButtonElement).click();
+    (body.querySelector('[title="Open the QLab Workbench in a Zotero tab"]') as HTMLButtonElement).click();
     expect(handlers.onOpenWorkbench).toHaveBeenCalled();
-    (body.querySelector('[title="总结当前聊天并整理到 Draft"]') as HTMLButtonElement).click();
+    (body.querySelector('[title="Summarize this chat into a Draft"]') as HTMLButtonElement).click();
     expect(handlers.onCaptureChatDraft).toHaveBeenCalled();
   });
 
@@ -733,10 +741,10 @@ describe("SidebarView", () => {
     const root = body.querySelector<HTMLElement>(".zc-sidebar.zc-workbench-chat")!;
     expect(root.getAttribute("role")).toBe("main");
     expect(root.querySelector<HTMLButtonElement>(".zc-workbench-open")!.hidden).toBe(true);
-    expect(root.querySelectorAll(".zc-qlab-command-button")).toHaveLength(6);
+    expect(root.querySelectorAll(".zc-qlab-command-button")).toHaveLength(0);
     const choose = root.querySelector<HTMLButtonElement>(".zc-choose-paper")!;
-    expect(choose.textContent).toBe("选择论文");
-    expect((body.querySelector(".zc-composer-input") as HTMLTextAreaElement).placeholder).toBe("给 QLab 发消息…");
+    expect(choose.textContent).toBe("Choose Paper");
+    expect((body.querySelector(".zc-composer-input") as HTMLTextAreaElement).placeholder).toBe("Message QLab…");
     expect(root.querySelector<HTMLButtonElement>(".zc-open-paper")!.hidden).toBe(true);
     const terminal = root.querySelector<HTMLButtonElement>(".zc-terminal-button")!;
     terminal.click();
@@ -749,12 +757,87 @@ describe("SidebarView", () => {
     expect(handlers.onChoosePaper).toHaveBeenCalledOnce();
 
     view.setState({ context: { key: "1-A", title: "Paper A" } as any });
-    expect(choose.textContent).toBe("更换论文");
+    expect(choose.textContent).toBe("Change Paper");
     const openPaper = root.querySelector<HTMLButtonElement>(".zc-open-paper")!;
     expect(openPaper.hidden).toBe(false);
     openPaper.click();
     expect(handlers.onOpenPaper).toHaveBeenCalledOnce();
-    expect((body.querySelector(".zc-composer-input") as HTMLTextAreaElement).placeholder).toBe("询问这篇论文…");
+    expect((body.querySelector(".zc-composer-input") as HTMLTextAreaElement).placeholder).toBe("Ask about this paper…");
+  });
+
+  it("checks the main site and opens it from one workbench button", async () => {
+    const browser = document.createElement("browser");
+    const createXULElement = vi.fn(() => browser);
+    (document as any).createXULElement = createXULElement;
+    const body = document.createElement("div");
+    document.body.appendChild(body);
+    const handlers = {
+      ...callbacks(),
+      onCheckMainSite: vi.fn(async () => true),
+      onDeployMainSite: vi.fn(async () => undefined),
+    };
+    const view = new SidebarView(body, handlers, { surface: "workbench" });
+    await vi.waitFor(() => {
+      expect(body.querySelector<HTMLButtonElement>(".zc-main-site-button")!.textContent).toBe("Main Site");
+    });
+
+    const button = body.querySelector<HTMLButtonElement>(".zc-main-site-button")!;
+    button.click();
+    await vi.waitFor(() => expect(createXULElement).toHaveBeenCalledWith("browser"));
+
+    expect(handlers.onDeployMainSite).not.toHaveBeenCalled();
+    expect(browser.getAttribute("src")).toBe("http://127.0.0.1:4180/");
+    expect(body.querySelector(".zc-workbench-chat")!.classList.contains("is-main-site-open")).toBe(true);
+    expect(button.getAttribute("aria-pressed")).toBe("true");
+    expect((body.querySelector(".zc-transcript") as HTMLElement).hidden).toBe(false);
+    expect((body.querySelector(".zc-composer-wrap") as HTMLElement).hidden).toBe(false);
+
+    const styles = readFileSync(join(process.cwd(), "src", "styles.css"), "utf8");
+    // The chat column is a draggable share, not a fixed 40%, and the middle
+    // track is the handle — so the site view is column 3.
+    expect(styles).toContain(
+      "grid-template-columns: minmax(280px, var(--zc-split-ratio, 40%)) 6px minmax(300px, 1fr);",
+    );
+    expect(styles).toContain(
+      ".zc-workbench-chat.is-main-site-open > .zc-main-site-view {\n  grid-column: 3;\n  grid-row: 1 / -1;",
+    );
+    expect(styles).not.toContain(
+      ".zc-workbench-chat.is-main-site-open > .zc-transcript,\n.zc-workbench-chat.is-main-site-open > .zc-composer-wrap",
+    );
+
+    body.querySelector<HTMLButtonElement>(".zc-main-site-back")!.click();
+    expect(body.querySelector(".zc-workbench-chat")!.classList.contains("is-main-site-open")).toBe(false);
+    expect(button.getAttribute("aria-pressed")).toBe("false");
+    view.destroy();
+  });
+
+  it("offers deployment when the main site is offline and opens it after startup", async () => {
+    const browser = document.createElement("browser");
+    (document as any).createXULElement = vi.fn(() => browser);
+    const body = document.createElement("div");
+    document.body.appendChild(body);
+    const handlers = {
+      ...callbacks(),
+      onCheckMainSite: vi.fn(async () => false),
+      onDeployMainSite: vi.fn(async () => undefined),
+    };
+    new SidebarView(body, handlers, { surface: "workbench" });
+    const button = body.querySelector<HTMLButtonElement>(".zc-main-site-button")!;
+    await vi.waitFor(() => expect(button.textContent).toBe("Start Main Site"));
+    expect(button.classList.contains("is-offline")).toBe(true);
+
+    button.click();
+    expect(button.textContent).toBe("Starting…");
+    await vi.waitFor(() => expect(handlers.onDeployMainSite).toHaveBeenCalledOnce());
+    await vi.waitFor(() => expect(button.textContent).toBe("Main Site"));
+    expect(body.querySelector(".zc-workbench-chat")!.classList.contains("is-main-site-open")).toBe(true);
+  });
+
+  it("does not add a main-site button to the compact sidebar", () => {
+    const body = document.createElement("div");
+    document.body.appendChild(body);
+    new SidebarView(body, callbacks());
+    expect(body.querySelector(".zc-main-site-button")).toBeNull();
   });
 });
 
@@ -776,13 +859,13 @@ describe("SidebarView activity line", () => {
       running: true, turnStartedAt: Date.now(),
       entries: [
         { id: "u1", kind: "user", text: "问" },
-        { id: "r1", kind: "reasoning", title: "思考过程", text: "…", state: "complete" },
+        { id: "r1", kind: "reasoning", title: "Reasoning", text: "…", state: "complete" },
         { id: "t1", kind: "tool", title: "zotero_read_pdf_pages", text: "", state: "running" },
       ],
     });
     expect(host.querySelectorAll(".zc-tool-card").length).toBe(0);
     const label = host.querySelector(".zc-activity-label")!;
-    expect(label.textContent).toBe("正在调用 读取论文页面");
+    expect(label.textContent).toBe("Calling Read Paper Pages");
   });
 
   it("renders an expandable summary line after completion", () => {
@@ -798,7 +881,7 @@ describe("SidebarView activity line", () => {
     expect(host.querySelector(".zc-activity")).toBeNull();
     const summary = host.querySelector(".zc-turn-summary")!;
     expect(summary.textContent).toContain("28s");
-    expect(summary.textContent).toContain("1 个步骤");
+    expect(summary.textContent).toContain("1 steps");
     expect(host.querySelector(".zc-turn-detail")).toBeNull();
     (summary as HTMLElement).click();
     expect(host.querySelectorAll(".zc-turn-detail .zc-tool-card").length).toBe(1);
@@ -827,7 +910,7 @@ describe("SidebarView activity line", () => {
     });
     const node = host.querySelector(".zc-activity");
     expect(node).not.toBeNull();
-    expect(host.querySelector(".zc-activity-label")?.textContent).toBe("思考中…");
+    expect(host.querySelector(".zc-activity-label")?.textContent).toBe("Thinking…");
 
     // A streaming delta re-renders the whole transcript; the spinner/shimmer
     // node identity must be stable so its CSS animation is not restarted.
@@ -839,7 +922,7 @@ describe("SidebarView activity line", () => {
     });
 
     expect(host.querySelector(".zc-activity")).toBe(node);
-    expect(host.querySelector(".zc-activity-label")?.textContent).toBe("正在调用 读取论文页面");
+    expect(host.querySelector(".zc-activity-label")?.textContent).toBe("Calling Read Paper Pages");
   });
 
   describe("pinned autoscroll", () => {
@@ -966,7 +1049,7 @@ describe("SidebarView activity line", () => {
       view.setState({
         entries: [
           { id: "u1", kind: "user", text: "问" },
-          { id: "r1", kind: "reasoning", text: "思考中…", state: "running" },
+          { id: "r1", kind: "reasoning", text: "Thinking…", state: "running" },
         ],
       });
 
@@ -1009,10 +1092,13 @@ describe("SidebarView activity line", () => {
 describe("Reader pane layout CSS", () => {
   it("uses a bounded compact grid without a transcript minimum that can push the composer below the pane", () => {
     const styles = readFileSync(join(process.cwd(), "src/styles.css"), "utf8");
-    expect(styles).toContain("grid-template-rows: auto auto auto auto minmax(0, 1fr) auto");
+    expect(styles).toContain("grid-template-rows: auto auto auto minmax(0, 1fr) auto");
     expect(styles).toContain("height: clamp(420px, 72vh, 780px)");
-    expect(styles).toContain(".zc-composer-wrap { grid-row: 6; position: sticky; bottom: 0;");
+    expect(styles).toContain(".zc-composer-wrap { grid-row: 5; position: sticky; bottom: 0;");
     expect(styles).toContain(".zc-context-menu { position: absolute;");
+    expect(styles).toContain("grid-auto-rows: minmax(40px, auto)");
+    expect(styles).toContain(".zc-context-option { display: grid;");
+    expect(styles).toContain("min-height: 40px");
     // The optional formula rail is hidden by default. Pin the terminal surface
     // to the final flexible row so CSS Grid does not leave xterm at 0px tall.
     expect(styles).toContain(".zc-terminal-surface { grid-row: 4;");
@@ -1044,5 +1130,58 @@ describe("renderMarkdown", () => {
     host.appendChild(renderMarkdown(document, '<img src=x onerror="alert(1)">'));
     expect(host.querySelector("img")).toBeNull();
     expect(host.textContent).toContain("<img");
+  });
+});
+
+describe("SidebarView top-bar menus", () => {
+  beforeEach(() => {
+    document.body.replaceChildren();
+    delete (document as any).createXULElement;
+  });
+
+  it("opens the account and history menus inside the actions row, not at the window edge", () => {
+    const body = document.createElement("div");
+    document.body.appendChild(body);
+    const view = new SidebarView(body, callbacks());
+    view.setState(baseState() as any);
+
+    const actions = body.querySelector(".zc-top-actions")!;
+    body.querySelector<HTMLButtonElement>('button[title="Account"]')!.click();
+    expect(actions.querySelector(".zc-account-menu")).not.toBeNull();
+
+    body.querySelector<HTMLButtonElement>('button[title="Conversation History"]')!.click();
+    expect(actions.querySelector(".zc-history-menu")).not.toBeNull();
+    // Anchoring is what keeps them under their button once the workbench
+    // layout gives the root a second column.
+    expect(body.querySelector(".zc-sidebar > .zc-account-menu")).toBeNull();
+    expect(body.querySelector(".zc-sidebar > .zc-history-menu")).toBeNull();
+    view.destroy();
+  });
+
+  it("remembers the chat/pane ratio a drag produced", () => {
+    const body = document.createElement("div");
+    document.body.appendChild(body);
+    const view = new SidebarView(body, callbacks(), { surface: "workbench" });
+    const root = body.querySelector<HTMLElement>(".zc-workbench-chat")!;
+    const handle = root.querySelector<HTMLElement>(".zc-split-handle")!;
+
+    // happy-dom performs no layout, so the pane geometry has to be supplied.
+    root.getBoundingClientRect = () => ({
+      left: 0, right: 1000, top: 0, bottom: 800, width: 1000, height: 800, x: 0, y: 0,
+      toJSON: () => ({}),
+    }) as DOMRect;
+
+    handle.dispatchEvent(new MouseEvent("mousedown", { bubbles: true, clientX: 400 }));
+    window.dispatchEvent(new MouseEvent("mousemove", { bubbles: true, clientX: 550 }));
+    window.dispatchEvent(new MouseEvent("mouseup", { bubbles: true }));
+
+    expect(root.style.getPropertyValue("--zc-split-ratio")).toBe("55%");
+
+    const secondHost = document.body.appendChild(document.createElement("div"));
+    const second = new SidebarView(secondHost, callbacks(), { surface: "workbench" });
+    expect(secondHost.querySelector<HTMLElement>(".zc-workbench-chat")!
+      .style.getPropertyValue("--zc-split-ratio")).toBe("55%");
+    second.destroy();
+    view.destroy();
   });
 });

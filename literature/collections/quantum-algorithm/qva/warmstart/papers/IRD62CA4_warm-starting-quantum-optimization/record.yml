@@ -1,0 +1,53 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: IRD62CA4
+  item_version: 96022
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 2LNPPZG9
+      name: warmstart
+      path: Quantum Algorithm/QVA/warmstart
+qlab:
+  primary_collection: 2LNPPZG9
+  indexed_collections:
+    - 2LNPPZG9
+  primary_topic: quantum-algorithm
+  indexed_topics:
+    - quantum-algorithm
+item_type: journalArticle
+title: Warm-starting quantum optimization
+authors:
+  - first: Daniel J.
+    last: Egger
+  - first: Jakub
+    last: Marecek
+  - first: Stefan
+    last: Woerner
+year: 2021
+abstract: There is an increasing interest in quantum algorithms for problems of
+  integer programming and combinatorial optimization. Classical solvers for such
+  problems employ relaxations, which replace binary variables with continuous
+  ones, for instance in the form of higher-dimensional matrix-valued problems
+  (semidefinite programming). Under the Unique Games Conjecture, these
+  relaxations often provide the best performance ratios available classically in
+  polynomial time. Here, we discuss how to warm-start quantum optimization with
+  an initial state corresponding to the solution of a relaxation of a
+  combinatorial optimization problem and how to analyze properties of the
+  associated quantum algorithms. In particular, this allows the quantum
+  algorithm to inherit the performance guarantees of the classical algorithm. We
+  illustrate this in the context of portfolio optimization, where our results
+  indicate that warm-starting the Quantum Approximate Optimization Algorithm
+  (QAOA) is particularly beneficial at low depth. Likewise, Recursive QAOA for
+  MAXCUT problems shows a systematic increase in the size of the obtained cut
+  for fully connected graphs with random weights, when Goemans-Williamson
+  randomized rounding is utilized in a warm start. It is straightforward to
+  apply the same ideas to other randomized-rounding schemes and optimization
+  problems.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.22331/q-2021-06-17-479
+  arxiv: "2009.10095"

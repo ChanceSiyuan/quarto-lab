@@ -1,0 +1,70 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: TJGGMDMX
+  item_version: 110296
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 3TT6GSQZ
+      name: MWIS
+      path: Quantum N-Atom/App-Analog simulation/MWIS
+qlab:
+  primary_collection: 3TT6GSQZ
+  indexed_collections:
+    - 3TT6GSQZ
+  primary_topic: quantum-n-atom
+  indexed_topics:
+    - quantum-n-atom
+item_type: preprint
+title: "qReduMIS: A Quantum-Informed Reduction Algorithm for the Maximum
+  Independent Set Problem"
+authors:
+  - first: Martin J. A.
+    last: Schuetz
+  - first: Romina
+    last: Yalovetzky
+  - first: Ruben S.
+    last: Andrist
+  - first: Grant
+    last: Salton
+  - first: Yue
+    last: Sun
+  - first: Rudy
+    last: Raymond
+  - first: Shouvanik
+    last: Chakrabarti
+  - first: Atithi
+    last: Acharya
+  - first: Ruslan
+    last: Shaydulin
+  - first: Marco
+    last: Pistoia
+  - first: Helmut G.
+    last: Katzgraber
+year: 2026
+abstract: We propose and implement a quantum-informed reduction algorithm for
+  the maximum independent set problem that integrates classical kernelization
+  techniques with information extracted from quantum devices. Our larger
+  framework consists of dedicated application, algorithm, and hardware layers,
+  and easily generalizes to the maximum weight independent set problem. In this
+  hybrid quantum-classical framework, which we call qReduMIS, the quantum
+  computer is used as a co-processor to inform classical reduction logic about
+  frozen vertices that are likely (or unlikely) to be in large independent sets,
+  thereby opening up the reduction space after removal of targeted subgraphs. We
+  systematically assess the performance of qReduMIS based on experiments with up
+  to 231 qubits run on Rydberg quantum hardware available through Amazon Braket.
+  Our experiments show that qReduMIS can help address fundamental performance
+  limitations faced by a broad set of (quantum) solvers including Rydberg
+  quantum devices. We outline implementations of qReduMIS with alternative
+  platforms, such as superconducting qubits or trapped ions, and we discuss
+  potential future extensions.
+tags:
+  - Condensed Matter - Disordered Systems and Neural Networks
+  - Condensed Matter - Quantum Gases
+  - Mathematics - Optimization and Control
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2503.12551
+  arxiv: "2503.12551"

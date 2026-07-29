@@ -1,0 +1,51 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: N97848CU
+  item_version: 96125
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: MWVDGGYP
+      name: Non-Markovian
+      path: Quantum Dynamics/Non-Markovian
+qlab:
+  primary_collection: MWVDGGYP
+  indexed_collections:
+    - MWVDGGYP
+  primary_topic: quantum-dynamics
+  indexed_topics:
+    - quantum-dynamics
+item_type: journalArticle
+title: Machine learning non-Markovian quantum dynamics
+authors:
+  - first: I. A.
+    last: Luchnikov
+  - first: S. V.
+    last: Vintskevich
+  - first: D. A.
+    last: Grigoriev
+  - first: S. N.
+    last: Filippov
+year: 2020
+abstract: Machine learning methods have proved to be useful for the recognition
+  of patterns in statistical data. The measurement outcomes are intrinsically
+  random in quantum physics, however, they do have a pattern when the
+  measurements are performed successively on an open quantum system. This
+  pattern is due to the system-environment interaction and contains information
+  about the relaxation rates as well as non-Markovian memory effects. Here we
+  develop a method to extract the information about the unknown environment from
+  a series of projective single-shot measurements on the system (without
+  resorting to the process tomography). The method is based on embedding the
+  non-Markovian system dynamics into a Markovian dynamics of the system and the
+  effective reservoir of finite dimension. The generator of Markovian embedding
+  is learned by the maximum likelihood estimation. We verify the method by
+  comparing its prediction with an exactly solvable non-Markovian dynamics. The
+  developed algorithm to learn unknown quantum environments enables one to
+  efficiently control and manipulate quantum systems.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.1103/physrevlett.124.140502
+  arxiv: "1902.07019"

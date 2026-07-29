@@ -1,0 +1,40 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 9EUGRK2F
+  item_version: 103522
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: EPSDBKR5
+      name: Feynman-path
+      path: Quantum Complexity/QCsim/Feynman-path
+qlab:
+  primary_collection: EPSDBKR5
+  indexed_collections:
+    - EPSDBKR5
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: journalArticle
+title: Quantum circuits and low-degree polynomials over F_2
+authors:
+  - first: Ashley
+    last: Montanaro
+year: 2017
+abstract: In this work we explore a correspondence between quantum circuits and
+  low-degree polynomials over the finite field F_2. Any quantum circuit made up
+  of Hadamard, Z, controlled-Z and controlled-controlled-Z gates gives rise to a
+  degree-3 polynomial over F_2 such that calculating quantum circuit amplitudes
+  is equivalent to counting zeroes of the corresponding polynomial. We exploit
+  this connection, which is especially clean and simple for this particular gate
+  set, in two directions. First, we give proofs of classical hardness results
+  based on quantum circuit concepts. Second, we find efficient classical
+  simulation algorithms for certain classes of quantum circuits based on
+  efficient algorithms for classes of polynomials.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.1088/1751-8121/aa565f
+  arxiv: "1607.08473"

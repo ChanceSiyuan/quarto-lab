@@ -1,0 +1,54 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: UD9FKPHA
+  item_version: 96136
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: TZ42IFP4
+      name: Optimization
+      path: Quantum Algorithm/Optimization
+qlab:
+  primary_collection: TZ42IFP4
+  indexed_collections:
+    - TZ42IFP4
+  primary_topic: quantum-algorithm
+  indexed_topics:
+    - quantum-algorithm
+item_type: preprint
+title: Quantum Speedups for Markov Chain Monte Carlo Methods with Application to
+  Optimization
+authors:
+  - first: Guneykan
+    last: Ozgul
+  - first: Xiantao
+    last: Li
+  - first: Mehrdad
+    last: Mahdavi
+  - first: Chunhao
+    last: Wang
+year: 2025
+abstract: We propose quantum algorithms that provide provable speedups for
+  Markov Chain Monte Carlo (MCMC) methods commonly used for sampling from
+  probability distributions of the form $\pi \propto e^{-f}$, where $f$ is a
+  potential function. Our first approach considers Gibbs sampling for finite-sum
+  potentials in the stochastic setting, employing an oracle that provides
+  gradients of individual functions. In the second setting, we consider access
+  only to a stochastic evaluation oracle, allowing simultaneous queries at two
+  points of the potential function under the same stochastic parameter. By
+  introducing novel techniques for stochastic gradient estimation, our
+  algorithms improve the gradient and evaluation complexities of classical
+  samplers, such as Hamiltonian Monte Carlo (HMC) and Langevin Monte Carlo (LMC)
+  in terms of dimension, precision, and other problem-dependent parameters.
+  Furthermore, we achieve quantum speedups in optimization, particularly for
+  minimizing non-smooth and approximately convex functions that commonly appear
+  in empirical risk minimization problems.
+tags:
+  - Computer Science - Machine Learning
+  - Mathematics - Optimization and Control
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2504.03626
+  arxiv: "2504.03626"

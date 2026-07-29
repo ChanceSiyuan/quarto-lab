@@ -1,0 +1,55 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: PKWS8F6J
+  item_version: 96123
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: WFIYMWN6
+      name: MBQC+IQP
+      path: Quantum Complexity/Sampling/IQP/MBQC+IQP
+qlab:
+  primary_collection: WFIYMWN6
+  indexed_collections:
+    - WFIYMWN6
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: journalArticle
+title: Measurement-based classical computation
+authors:
+  - first: Matty J.
+    last: Hoban
+  - first: Joel J.
+    last: Wallman
+  - first: Hussain
+    last: Anwar
+  - first: Naïri
+    last: Usher
+  - first: Robert
+    last: Raussendorf
+  - first: Dan E.
+    last: Browne
+year: 2014
+abstract: Measurement-based quantum computation (MBQC) is a model of quantum
+  computation, in which computation proceeds via adaptive single qubit
+  measurements on a multi-qubit quantum state. It is computationally equivalent
+  to the circuit model. Unlike the circuit model, however, its classical analog
+  is little studied. Here we present a classical analog of MBQC whose
+  computational complexity presents a rich structure. To do so, we identify
+  uniform families of quantum computations (refining the circuits introduced by
+  Bremner, Jozsa and Shepherd in Proc. R. Soc. A 467, 459 (2011)) whose output
+  is likely hard to exactly simulate (sample) classically. We demonstrate that
+  these circuit families can be efficiently implemented in the MBQC model
+  without adaptive measurement, and thus can be achieved in a classical analog
+  of MBQC whose resource state is a probability distribution which has been
+  created quantum mechanically. Such states (by definition) violate no Bell
+  inequality, but nevertheless exhibit non-classicality when used as a
+  computational resource - an imprint of their quantum origin.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.1103/physrevlett.112.140505
+  arxiv: "1304.2667"

@@ -1,0 +1,45 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 4G93NN8R
+  item_version: 101317
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: ZTZAL49L
+      name: non-linear
+      path: Quantum Learning/Learning on states/non-linear
+qlab:
+  primary_collection: ZTZAL49L
+  indexed_collections:
+    - ZTZAL49L
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: journalArticle
+title: Improved quantum data analysis
+authors:
+  - first: Costin
+    last: Bădescu
+  - first: Ryan
+    last: O'Donnell
+year: 2024
+abstract: We provide more sample-efficient versions of some basic routines in
+  quantum data analysis, along with simpler proofs. Particularly, we give a
+  quantum "Threshold Search" algorithm that requires only $O((\log^2 m)/ε^2)$
+  samples of a $d$-dimensional state $ρ$. That is, given observables $0 \le A_1,
+  A_2, ..., A_m \le 1$ such that $\mathrm{tr}(ρA_i) \ge 1/2$ for at least one
+  $i$, the algorithm finds $j$ with $\mathrm{tr}(ρA_j) \ge 1/2-ε$. As a
+  consequence, we obtain a Shadow Tomography algorithm requiring only
+  $\tilde{O}((\log^2 m)(\log d)/ε^4)$ samples, which simultaneously achieves the
+  best known dependence on each parameter $m$, $d$, $ε$. This yields the same
+  sample complexity for quantum Hypothesis Selection among $m$ states; we also
+  give an alternative Hypothesis Selection method using $\tilde{O}((\log^3
+  m)/ε^2)$ samples.
+tags:
+  - Computer Science - Computational Complexity
+  - Quantum Physics
+identifiers:
+  doi: 10.46298/theoretics.24.7
+  arxiv: "2011.10908"

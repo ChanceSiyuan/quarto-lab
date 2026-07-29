@@ -1,0 +1,63 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: XNR8B4FT
+  item_version: 96118
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 5JAXQATC
+      name: Boson sampling
+      path: Quantum Complexity/Sampling/Boson sampling
+    - key: KJHSPUHS
+      name: Fermion-based simulation
+      path: Quantum Complexity/QCsim/Fermion-based simulation
+qlab:
+  primary_collection: 5JAXQATC
+  indexed_collections:
+    - 5JAXQATC
+    - KJHSPUHS
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: journalArticle
+title: Classical algorithm for simulating experimental Gaussian boson sampling
+authors:
+  - first: Changhun
+    last: Oh
+  - first: Minzhao
+    last: Liu
+  - first: Yuri
+    last: Alexeev
+  - first: Bill
+    last: Fefferman
+  - first: Liang
+    last: Jiang
+year: 2024
+abstract: Gaussian boson sampling is a promising candidate for showing
+  experimental quantum advantage. While there is evidence that noiseless
+  Gaussian boson sampling is hard to efficiently simulate using a classical
+  computer, the current Gaussian boson sampling experiments inevitably suffer
+  from loss and other noise models. Despite a high photon loss rate and the
+  presence of noise, they are currently claimed to be hard to classically
+  simulate with the best-known classical algorithm. In this work, we present a
+  classical tensor-network algorithm that simulates Gaussian boson sampling and
+  whose complexity can be significantly reduced when the photon loss rate is
+  high. By generalizing the existing thermal-state approximation algorithm of
+  lossy Gaussian boson sampling, the proposed algorithm allows us to achieve
+  increased accuracy as the running time of the algorithm scales, as opposed to
+  the algorithm that samples from the thermal state, which can give only a fixed
+  accuracy. This generalization enables us to simulate the largest scale
+  Gaussian boson sampling experiment so far using relatively modest
+  computational resources, even though the output state of these experiments is
+  not believed to be close to a thermal state. By demonstrating that our new
+  classical algorithm outperforms the large-scale experiments on the benchmarks
+  used as evidence for quantum advantage, we exhibit evidence that our classical
+  sampler can simulate the ground-truth distribution better than the experiment
+  can, which disputes the experimental quantum advantage claims.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.1038/s41567-024-02535-8
+  arxiv: "2306.03709"

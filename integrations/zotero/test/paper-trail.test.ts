@@ -9,16 +9,16 @@ import {
 } from "../src/paper-trail";
 import type { ReaderContext } from "../src/reader-context";
 
-const TRUNCATED_MARKER = "\n\n（对话过长，已截断，完整记录见对话面板）";
+const TRUNCATED_MARKER = "\n\n(Conversation truncated; the complete record remains in the chat panel.)";
 
 describe("buildAnchorTranscriptComment", () => {
   it("joins Q/A rounds with a blank line, preserving full text verbatim", () => {
     const comment = buildAnchorTranscriptComment([
-      { question: "为什么用 KL 散度?", answer: "因为它衡量分布差异。" },
-      { question: "还有别的散度吗?", answer: "还有 JS 散度等。" },
+      { question: "为什么用 KL 散度?", answer: "因为它衡量分布差异." },
+      { question: "还有别的散度吗?", answer: "还有 JS 散度等." },
     ]);
     expect(comment).toBe(
-      "Q: 为什么用 KL 散度?\n\nA: 因为它衡量分布差异。\n\nQ: 还有别的散度吗?\n\nA: 还有 JS 散度等。",
+      "Q: 为什么用 KL 散度?\n\nA: 因为它衡量分布差异.\n\nQ: 还有别的散度吗?\n\nA: 还有 JS 散度等.",
     );
   });
 
@@ -49,7 +49,7 @@ describe("buildAnchorTranscriptComment", () => {
 
 describe("summaryFallback", () => {
   it("returns the first paragraph with markdown markers stripped", () => {
-    expect(summaryFallback("**核心**是 `注意力`。\n\n后续段落")).toBe("核心是 注意力。");
+    expect(summaryFallback("**核心**是 `注意力`.\n\n后续段落")).toBe("核心是 注意力.");
   });
   it("caps at 300 characters", () => {
     expect(summaryFallback("长".repeat(400)).length).toBe(300);
@@ -187,7 +187,7 @@ describe("PaperTrailService", () => {
     const host = makeHost();
     const round = [
       { id: "u1", kind: "user", text: "q" },
-      { id: "a1", kind: "assistant", text: "**核心**结论在这里。\n\n后续细节段落" },
+      { id: "a1", kind: "assistant", text: "**核心**结论在这里.\n\n后续细节段落" },
     ] as any;
     const callbacks = makeCallbacks("on", { "thread-a": turnsAt(0, round) });
     const service = new PaperTrailService(host, callbacks);
@@ -195,9 +195,9 @@ describe("PaperTrailService", () => {
     service.beginPendingAnchor(context, "q", "thread-a");
     const anchor = await service.completeTurn(context, "thread-a", round, 0);
     // The digest is the free, synchronous first-paragraph fallback...
-    expect(anchor?.answerSummary).toBe("核心结论在这里。");
+    expect(anchor?.answerSummary).toBe("核心结论在这里.");
     // ...and the annotation comment is the real transcript, independent of it.
-    expect(host.created[0].comment).toBe("Q: q\n\nA: **核心**结论在这里。\n\n后续细节段落");
+    expect(host.created[0].comment).toBe("Q: q\n\nA: **核心**结论在这里.\n\n后续细节段落");
   });
 
   it("records the anchor without an annotation when consent is off", async () => {
@@ -219,7 +219,7 @@ describe("PaperTrailService", () => {
     const context = trailContext();
     service.beginPendingAnchor(context, "q", "thread-a");
     const anchor = await service.completeTurn(context, "thread-a", entries, 0);
-    expect(anchor?.annotationKey).toBeUndefined();       // 先落记录,不写批注
+    expect(anchor?.annotationKey).toBeUndefined();       // 先落记录,Do Not Annotate
     expect(service.consentRequest()).toMatchObject({ question: "q" });
     await service.resolveConsent(context, "accept");
     expect(callbacks.setConsent).toHaveBeenCalledWith("on");

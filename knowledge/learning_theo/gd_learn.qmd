@@ -1,0 +1,27 @@
+---
+title: Getting Groud states enpower the Neural Networks
+description: "Citation: Hsin-Yuan Huang, et al., 2022, arXiv:2106.12627"
+categories:
+  - theory
+---
+
+**Citation**: Hsin-Yuan Huang, et al., 2022, arXiv:2106.12627
+
+## Abstract and My Thoughts
+
+A family of Hamiltonians $\{H(x): x \in [-1,1]^m\}$ is defined, where the parameter $x$ can vary continuously over real numbers within a region where the gap of $H$ remains constant. The ground state of $H(x)$ is denoted by $\rho(x)$. The author proves the following two conclusions:
+
+- If one can prepare quantum states $\{\{\rho(x), x\}| x \in \mathcal{S}\}$ and then train a neural network using its classical shadow, it is possible to use a neural network in the Lazy zone to learn the behavior of any few-body operator's ground state mean values at any $x \in \mathcal{S}$. This operation is also mentioned in the paper [@Wei_2024].
+- If one attempts to use a classical algorithm $\mathcal{A}$ to learn the behavior of single-operator means on the ground states of arbitrary two-dimensional $H(x)$, it is NP-hard.
+
+Interesting details/techniques worth learning are:
+
+1. How to rigorously prove that learning a smooth function with a neural network is feasible?
+2. What if this task is extended to quantum states using classical shadows and then transformed into some linear/nonlinear functions of the quantum state?
+3. Is it really, on average, difficult to compute single-operator means on the ground states of smoothly gapped Hamiltonians? How does the paper prove this?
+
+## References
+
+
+::: {#refs}
+:::

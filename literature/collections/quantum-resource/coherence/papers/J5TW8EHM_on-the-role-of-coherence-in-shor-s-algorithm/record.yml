@@ -1,0 +1,57 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: J5TW8EHM
+  item_version: 96141
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: TE3WA97U
+      name: Coherence
+      path: Quantum Resource/Coherence
+    - key: WE3HPMT6
+      name: ECC compilation
+      path: Circuit Compilation/ECC compilation
+qlab:
+  primary_collection: TE3WA97U
+  indexed_collections:
+    - TE3WA97U
+    - WE3HPMT6
+  primary_topic: quantum-resource
+  indexed_topics:
+    - circuit-compilation
+    - quantum-resource
+item_type: journalArticle
+title: On the Role of Coherence in Shor's Algorithm
+authors:
+  - first: Felix
+    last: Ahnefeld
+  - first: Thomas
+    last: Theurer
+  - first: Dario
+    last: Egloff
+  - first: Juan Mauricio
+    last: Matera
+  - first: Martin B.
+    last: Plenio
+year: 2022
+abstract: Shor's factoring algorithm provides a super-polynomial speed-up over
+  all known classical factoring algorithms. Here, we address the question of
+  which quantum properties fuel this advantage. We investigate a sequential
+  variant of Shor's algorithm with a fixed overall structure and identify the
+  role of coherence for this algorithm quantitatively. We analyze this protocol
+  in the framework of dynamical resource theories, which capture the resource
+  character of operations that can create and detect coherence. This allows us
+  to derive a lower and an upper bound on the success probability of the
+  protocol, which depend on rigorously defined measures of coherence as a
+  dynamical resource. We compare these bounds with the classical limit of the
+  protocol and conclude that within the fixed structure that we consider,
+  coherence is the quantum resource that determines its performance by bounding
+  the success probability from below and above. Therefore, we shine new light on
+  the fundamental role of coherence in quantum computation.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.1103/physrevlett.129.120501
+  arxiv: "2203.10632"

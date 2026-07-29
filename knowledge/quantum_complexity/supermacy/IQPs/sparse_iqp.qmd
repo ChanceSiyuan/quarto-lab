@@ -1,0 +1,75 @@
+---
+title: supermacy on sparse iqp circuits
+description: Although fully IQP circuit instances holds average case hardness (under reasonable conjestures), it is still unknown how to reach this ergodicity.
+categories:
+  - theory
+---
+
+# Summary and question
+
+Although fully IQP circuit instances holds average case hardness (under reasonable conjestures),
+it is still unknown how to reach this ergodicity.
+
+In real experimnent, there exists two sets of elementary gate sets that can be chosen:
+
+- **Degree-based**: $\{Z,CZ,CCZ,\cdots,C^kZ\}$, which we called the k-degree IQP circuits. This gate sets require $k$-body interactions.
+- **Rotation-based**: $\{\mathrm{diag}(1,1,1,e^{ik\pi/2}), \mathrm{diag}(1,e^{il\pi/4})\}$ for $k = 0,1,2,3$ and $l \in 0\cdots,7$. This gate sets require small single qubit $Z$-rotating gates and two-body interactions
+
+Furthermore, all those elementary $n > 2$ qubits gates might can only be implemented 1d/2d locally, due to the restrictive topology of quantum devices.
+
+:::{.callout-important icon = "false"}
+## Question
+For the Rotation-based model,
+a randomized atom distance is more feasible than the randomized implementation.
+However, whether their hardness correspondence?
+:::
+
+
+# Rotation-based model
+
+The first 
+
+- For each pair of qubits, a two-qubit gate is applied with probability $p = \gamma (\ln n)/n$.
+- Each two-qubit gate is chosen uniformly from $\text{diag}(1, 1, 1, e^{ik\pi/2})$, $k \in \{0,1,2,3\}$.
+- Each qubit has a random single-qubit gate chosen uniformly from $\text{diag}(1, e^{ik\pi/4})$, $k \in \{0, \ldots, 7\}$.
+
+::: {#thm-sparse-anticoncentration .callout-important icon="false"}
+## (Sparse IQP Anti-Concentration)
+This $\gamma$-sparse random IQP ensemble satisfies the hiding property, and for sufficiently large $\gamma$:
+$$
+\mathbb{E}_C\!\left[|\langle 0|C|0\rangle|^2\right] = 2^{-n}, \quad \mathbb{E}_C\!\left[|\langle 0|C|0\rangle|^4\right] \leq 5 \times 2^{-2n}.
+$$
+:::
+
+
+Using the Paley-Zygmund inequality for random variables in $[0,1]$:
+
+$$
+\Pr[R \geq \alpha\, \mathbb{E}(R)] \geq (1-\alpha)^2 \frac{\mathbb{E}(R)^2}{\mathbb{E}(R^2)}, \quad \alpha \in (0,1),
+$$
+one can show:
+$$
+\Pr_{C \sim \mathcal{C}}\!\left[p_C(x) \geq \frac{\alpha}{2^n}\right] \geq \frac{(1-\alpha)^2}{5}.
+$$
+
+**Conjecture** (Average-case hardness of Ising partition function) [@bremner2016sparse, Conjecture 8]: If $\gamma$-sparse random IQP circuits satisfy $\Pr_{C \sim \mathcal{C}}[p_C(x) \geq \alpha/2^n] \geq p$ and a classical algorithm can weakly simulate all instances to additive error $\varepsilon$, then a $\mathsf{P}^{\mathsf{NP}^{\mathsf{NP}}}$ machine can solve the following problem:
+
+Let $q_{i,j}$ be nonzero with probability $\ln(n)/n$, and let $q_{i,j}, v_k \in \{0, \ldots, 7\}$ be uniformly random. Under this randomness, for a $p(1-\delta)$ fraction of partition functions, approximate $|Z(e^{i\pi/8})|^2$ to multiplicative error $1 + 4\varepsilon/(\alpha\delta)$.
+
+This problem is \#P-hard in the worst case, and we conjecture it is \#P-hard in the average case.
+
+
+
+## Parallelising and Sorting
+
+::: {#lem-parallelising .callout-important icon="false"}
+## Parallelising
+
+For $n$ qubits where any pair has a two-qubit phase gate with probability $p = \gamma(\ln n)/n$, with failure probability $\delta < n^{1 - \gamma/4}$, Vizing's theorem guarantees the gates can always be partitioned into $t < 1 + 2\gamma(\ln n)$ layers, where each qubit is acted on by at most one two-qubit gate per layer [@bremner2016sparse, Lemma 9].
+:::
+
+::: {#lem-sorting .callout-important icon="false"}
+## Sorting
+
+Any $t$-layer quantum circuit on $n$ qubits can be implemented on a $\sqrt{n} \times \sqrt{n}$ two-dimensional grid using $\mathcal{O}(t\sqrt{n})$ layers of local gates [@bremner2016sparse, Theorem 3].
+:::

@@ -1,0 +1,53 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: QCSPYR3D
+  item_version: 96148
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: A3CH6HMR
+      name: Maxcut
+      path: Quantum Algorithm/Optimization/Maxcut
+qlab:
+  primary_collection: A3CH6HMR
+  indexed_collections:
+    - A3CH6HMR
+  primary_topic: quantum-algorithm
+  indexed_topics:
+    - quantum-algorithm
+item_type: preprint
+title: Clifford Accelerated Adaptive QAOA
+authors:
+  - first: Théo
+    last: Lisart-Liebermann
+  - first: Arcesio Castañeda
+    last: Medina
+year: 2025
+abstract: Clifford Circuit Initializaton improves on initial guess of parameters
+  on Parametric Quantum Circuits (PQCs) by leveraging efficient simulation of
+  circuits made out of gates from the Clifford Group. The parameter space is
+  pre-optimized by exploring the Hilbert space in a reduced ensemble of
+  Clifford-expressible points (Clifford Points), providing better
+  initialization. Simultaneously, dynamical circuit reconfiguration algorithms,
+  such as ADAPT-QAOA, improve on QAOA performances by providing a gate
+  re-configuration routine while the optimization is being executed. In this
+  article, we show that Clifford Point approximations at multiple levels of
+  ADAPT allow for multiple improvements while increasing quantum-classical
+  integration opportunities. First we show numerically that Clifford Point
+  preoptimization offers non-trivial gate-selection behavior in ADAPT with some
+  possible convergence improvement. Second, that Clifford Point approximations
+  allows for more suited, fully parallel and fully classical ADAPT operator
+  selection for MaxCut and the TFIM problem. Finally, we show that applying 10
+  to 30\% error approximation on T-gates using low-rank stabilizer decomposition
+  can provide significative improvements in convergence quality for the MaxCut
+  and TFIM problem. The latter hints at significant T-gate over-representation
+  in antsatz design, opening opportunities for aggressive compilation
+  optimizations.
+tags:
+  - Mathematics - Optimization and Control
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2508.16443
+  arxiv: "2508.16443"

@@ -1,0 +1,66 @@
+---
+title: Classical Simulation Theory
+description: This section introduces the fundamental notions of classical simulation of quantum circuits, following the framework of @hangleiter2023computational.
+categories:
+  - theory
+---
+
+# Strong Simulation, Weak Simulation, and Pauli Estimation
+
+This section introduces the fundamental notions of classical simulation of quantum circuits, following the framework of @hangleiter2023computational.
+
+## Definitions
+
+::: {#def-strong-weak .callout-important icon="false"}
+## Strong and Weak Simulation
+
+Suppose $C$ belongs to some family of quantum circuits $\mathcal{A}$ (e.g., IQP, universal quantum computation). Let $P_A(x|C)$ denote the probability of output $x$.
+
+- **Weak simulation** of $\mathcal{A}$: for any $C \in \mathcal{A}$, a classical polynomial-time algorithm can sample $x$ with probability $P_A(x|C)$.
+- **Strong simulation** of $\mathcal{A}$: for any $C \in \mathcal{A}$, a classical polynomial-time algorithm can compute any probability $P_A(x|C)$ and any marginal distribution $\sum_{x \in X_i} P_A(x|C)$.
+:::
+
+**Remark:** The marginal distribution refers to the probability over a subset of $t < n$ bits $s_1, \ldots, s_t$, where the remaining $n - t$ bits can take any value. There are $2^{n-t}$ possibilities, so computing the marginal requires summing proportionally to $2^n$ probabilities $P_A(x|C)$. Therefore, efficient classical computation of $P_A(x|C)$ alone does not imply that the marginal probabilities can be computed in polynomial time in $n$.
+
+Strong simulation implies weak simulation, where the condition "can efficiently compute all marginals" is crucial [@bremner2017simulate]. This is captured by the following:
+
+::: {#lem-strong-implies-weak .callout-important icon="false"}
+## Strong Simulation Implies Weak Simulation
+
+Let $p(x_1, \ldots, x_n)$ be a probability distribution over $n$ binary variables. Suppose the $n$ marginal distributions $p(x_1), p(x_1, x_2), \ldots, p(x_1, \ldots, x_n)$ can each be efficiently computed classically for any values $x_1, \ldots, x_n$. If any binomial distribution $\{p_0, 1 - p_0\}$ can be efficiently sampled, then we can efficiently sample from $p(x_1, \ldots, x_n)$.
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+
+*Proof.* To sample from $p(x_1, \ldots, x_n)$, first compute $p_1(x_1) := \sum_{x_2, \ldots, x_n} p(x_1, \ldots, x_n)$ and perform a binomial sample $\{\Pr(x_1 = 0), \Pr(x_1 = 1)\} = \{p_1(0), 1 - p_1(0)\}$, recording $x_1 = a_1$. Next, since $x_1$ is now known, compute the conditional distribution:
+
+$$
+p_2(x_2) := \frac{\sum_{x_3, \ldots, x_n} p(a_1, x_2, \ldots, x_n)}{\sum_{x_2, \ldots, x_n} p(a_1, \ldots, x_n)} = \frac{\sum_{x_3, \ldots, x_n} p(a_1, x_2, \ldots, x_n)}{p_1(a_1)}
+$$
+
+Perform a binomial sample according to this polynomial-time computable probability to determine $x_2$, and continue iteratively. This requires only $\mathcal{O}(n)$ calls to the marginal computation oracle to sample from $p(x_1, \ldots, x_n)$. $\square$
+:::
+
+## Pauli Simulation
+
+Beyond the above two types of simulation, there is also Pauli simulation, which uses an efficient classical algorithm to compute the expectation value of a Pauli operator.
+
+::: {#def-pauli-sim .callout-important icon="false"}
+## Pauli Simulation
+
+**Pauli simulation** of $\mathcal{A}$: for any $C \in \mathcal{A}$, a classical polynomial-time algorithm can compute any Pauli expectation value $\hat{p}(\vec{s}) := \langle 0|^{\otimes n} U^\dagger P^{\vec{s}} U |0\rangle^{\otimes n}$.
+:::
+
+## Fourier Relationship
+
+To understand the relationship between Pauli simulation and strong simulation, first note the identity $|\vec{a}\rangle\!\langle\vec{a}| = 2^{-n} \sum_{\vec{s} \in \mathbb{F}_2^n} Z^{\vec{s}} (-1)^{\vec{a} \cdot \vec{s}}$. Therefore the two are related by a Fourier transform:
+
+$$
+\begin{aligned}
+p(\vec{a}) &= \sum_{\vec{s}} \langle 0|^{\otimes n} U^\dagger Z^{\vec{s}} U |0\rangle^{\otimes n} \cdot 2^{-n} (-1)^{\vec{a} \cdot \vec{s}} = \frac{1}{2^n} \sum_{\vec{s}} \hat{p}(\vec{s})\, (-1)^{\vec{a} \cdot \vec{s}}, \\
+\hat{p}(\vec{s}) &= \sum_{\vec{a}} p(\vec{a})\, (-1)^{\vec{a} \cdot \vec{s}}.
+\end{aligned}
+$$
+
+Regarding the relationship to weak simulation: calling a weak simulator polynomially many times suffices to estimate any Pauli expectation value to polynomial precision.

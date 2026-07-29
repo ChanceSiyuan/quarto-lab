@@ -1,0 +1,63 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: NMB6FNV3
+  item_version: 96543
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: XAB9VQZP
+      name: experiment
+      path: Quantum Learning/Learning on
+        states/non-linear/Virtual_distillation/experiment
+qlab:
+  primary_collection: XAB9VQZP
+  indexed_collections:
+    - XAB9VQZP
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: journalArticle
+title: Experimental virtual distillation of entanglement and coherence
+authors:
+  - first: Ting
+    last: Zhang
+  - first: Yukun
+    last: Zhang
+  - first: Lu
+    last: Liu
+  - first: Xiao-Xu
+    last: Fang
+  - first: Qian-Xi
+    last: Zhang
+  - first: Xiao
+    last: Yuan
+  - first: He
+    last: Lu
+year: 2024
+abstract: Noise is in general inevitable and detrimental to practical and useful
+  quantum communication and computation. Under the resource theory framework,
+  resource distillation serves as a generic tool to overcome the effect of
+  noise. Yet, conventional resource distillation protocols generally require
+  operations on multi-copies of resource states, and strong limitations exist
+  that restrict their practical utilities. Recently, by relaxing the setting of
+  resource distillation to only approximating the measurement statistics instead
+  of the quantum state, a resource-frugal protocol, virtual resource
+  distillation, is proposed, which allows more effective distillation of noisy
+  resources. Here, we report its experimental implementation on a photonic
+  quantum system for the distillation of quantum coherence (up to dimension 4)
+  and bipartite entanglement. We show the virtual distillation of the maximal
+  superposed state of dimension four from the state of dimension two, an
+  impossible task in conventional coherence distillation. Furthermore, we
+  demonstrate the virtual distillation of entanglement with operations acting
+  only on a single copy of the noisy EPR pair and showcase the quantum
+  teleportation task using the virtually distilled EPR pair with a significantly
+  improved fidelity of the teleported state. These results illustrate the
+  feasibility of the virtual resource distillation method and pave the way for
+  accurate manipulation of quantum resources with noisy quantum hardware.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.1103/physrevlett.132.180201
+  arxiv: "2311.09874"

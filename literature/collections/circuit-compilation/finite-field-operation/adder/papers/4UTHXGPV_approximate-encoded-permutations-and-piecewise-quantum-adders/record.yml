@@ -1,0 +1,41 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 4UTHXGPV
+  item_version: 96023
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 9BSNNHUE
+      name: adder
+      path: Circuit Compilation/Finite field operation/adder
+qlab:
+  primary_collection: 9BSNNHUE
+  indexed_collections:
+    - 9BSNNHUE
+  primary_topic: circuit-compilation
+  indexed_topics:
+    - circuit-compilation
+item_type: preprint
+title: Approximate encoded permutations and piecewise quantum adders
+authors:
+  - first: Craig
+    last: Gidney
+year: 2019
+abstract: We present a paradigm for constructing approximate quantum circuits
+  from reversible classical circuits that operate on many possible encodings of
+  an input and send almost all encodings of that input to an encoding of the
+  correct output. We introduce oblivious carry runways, which use piecewise
+  addition circuits to perform approximate encoded additions and reduce the
+  asymptotic depth of addition to $O(\lg \lg n)$. We show that the coset
+  representation of modular integers (Zalka 2006) is an approximate encoded
+  modular addition, and that it can be used in combination with oblivious carry
+  runways. We prove error bounds on these approximate representations, and use
+  them to construct 2s-complement adders and modular adders with lower costs
+  than in previous work at register sizes relevant in practice.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.1905.08488
+  arxiv: "1905.08488"

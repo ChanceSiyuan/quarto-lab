@@ -1,0 +1,67 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 74F5SR6U
+  item_version: 109115
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: EIP4ZQQD
+      name: Tomography
+      path: Quantum Learning/Learning on states/Tomography
+    - key: UEQI7UKL
+      name: ham
+      path: Quantum Learning/Learning on operations/ham
+qlab:
+  primary_collection: EIP4ZQQD
+  indexed_collections:
+    - EIP4ZQQD
+    - UEQI7UKL
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: preprint
+title: Scalable Bayesian Hamiltonian learning
+authors:
+  - first: Tim J.
+    last: Evans
+  - first: Robin
+    last: Harper
+  - first: Steven T.
+    last: Flammia
+year: 2019
+abstract: "As the size of quantum devices continues to grow, the development of
+  scalable methods to characterise and diagnose noise is becoming an
+  increasingly important problem. Recent methods have shown how to efficiently
+  estimate Hamiltonians in principle, but they are poorly conditioned and can
+  only characterize the system up to a scalar factor, making them difficult to
+  use in practice. In this work we present a Bayesian methodology, called
+  Bayesian Hamiltonian Learning (BHL), that addresses both of these issues by
+  making use of any or all, of the following: well-characterised experimental
+  control of Hamiltonian couplings, the preparation of multiple states, and the
+  availability of any prior information for the Hamiltonian. Importantly, BHL
+  can be used online as an adaptive measurement protocol, updating estimates and
+  their corresponding uncertainties as experimental data become available. In
+  addition, we show that multiple input states and control fields enable BHL to
+  reconstruct Hamiltonians that are neither generic nor spatially local. We
+  demonstrate the scalability and accuracy of our method with numerical
+  simulations on up to 100 qubits. These practical results are complemented by
+  several theoretical contributions. We prove that a $k$-body Hamiltonian $H$
+  whose correlation matrix has a spectral gap $\\Delta$ can be estimated to
+  precision $\\varepsilon$ with only $\\tilde{O}\\bigl(n^{3k}/(\\varepsilon
+  \\Delta)^{3/2}\\bigr)$ measurements. We use two subroutines that may be of
+  independent interest: First, an algorithm to approximate a steady state of $H$
+  starting from an arbitrary input that converges factorially in the number of
+  samples; and second, an algorithm to estimate the expectation values of $m$
+  Pauli operators with weight $\\le k$ to precision $\\epsilon$ using only
+  $O(\\epsilon^{-2} 3^k \\log m)$ measurements, which quadratically improves a
+  recent result by Cotler and Wilczek."
+tags:
+  - Condensed Matter - Mesoscale and Nanoscale Physics
+  - Condensed Matter - Quantum Gases
+  - Condensed Matter - Strongly Correlated Electrons
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.1912.07636
+  arxiv: "1912.07636"

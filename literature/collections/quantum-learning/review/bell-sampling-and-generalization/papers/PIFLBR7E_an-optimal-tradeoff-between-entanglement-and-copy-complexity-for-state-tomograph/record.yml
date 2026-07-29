@@ -1,0 +1,48 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: PIFLBR7E
+  item_version: 96016
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: VMP2AYWR
+      name: Bell sampling and generalization
+      path: Quantum Learning/_Review/Bell sampling and generalization
+qlab:
+  primary_collection: VMP2AYWR
+  indexed_collections:
+    - VMP2AYWR
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: conferencePaper
+title: An Optimal Tradeoff between Entanglement and Copy Complexity for State
+  Tomography
+authors:
+  - first: Sitan
+    last: Chen
+  - first: Jerry
+    last: Li
+  - first: Allen
+    last: Liu
+year: 2024
+abstract: There has been signiﬁcant interest in understanding how practical
+  constraints on contemporary quantum devices impact the complexity of quantum
+  learning. For the classic question of tomography, recent work [9] tightly
+  characterized the copy complexity for any protocol that can only measure one
+  copy of the unknown state at a time, showing it is polynomially worse than if
+  one can make fullyentangled measurements. While we now have a fairly complete
+  picture of the rates for such tasks in the near-term and fault-tolerant
+  regimes, it remains poorly understood what the landscape in between these
+  extremes looks like, and in particular how to gracefully scale up our
+  protocols as we transition away from NISQ. In this work, we study tomography
+  in the natural setting where one can make measurements of 𝑡 copies at a time.
+  For suﬃciently small 𝜖, we show that for any 𝑡 ≤ 𝑑2, ˜Θ( √𝑑𝑡3𝜖2 ) copies
+  are necessary and suﬃcient to learn an unknown 𝑑-dimensional state 𝜌 to
+  trace distance 𝜖. This gives a smooth and optimal interpolation between the
+  known rates for single-copy measurements and fully-entangled measurements.
+tags: []
+identifiers:
+  doi: 10.1145/3618260.3649704

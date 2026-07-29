@@ -1,0 +1,49 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: YPIS98F6
+  item_version: 96150
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: KIMTUQTJ
+      name: photon_realization
+      path: Quantum Algorithm/Experiment/photon_realization
+qlab:
+  primary_collection: KIMTUQTJ
+  indexed_collections:
+    - KIMTUQTJ
+  primary_topic: quantum-algorithm
+  indexed_topics:
+    - quantum-algorithm
+item_type: preprint
+title: Benchmarking ORCA PT-1 Boson Sampler in Simulation
+authors:
+  - first: Jessica
+    last: Park
+  - first: Susan
+    last: Stepney
+  - first: Irene
+    last: D'Amico
+year: 2025
+abstract: Boson Sampling, a non-universal computing paradigm, has resulted in
+  impressive claims of quantum supremacy. ORCA Computing have developed a
+  time-bin interferometer (TBI) that claims to use the principles of boson
+  sampling to solve a number of computational problems including optimisation
+  and generative adversarial networks. We solve a dominating set problem with a
+  surveillance use case on the ORCA TBI simulator to benchmark the use of these
+  devices against classical algorithms. Simulation has been used to consider the
+  optimal performance of the computing paradigm without having to factor in
+  noise, errors and scaling limitations. We show that the ORCA TBI is capable of
+  solving moderately sized (n<250) dominating set problems with comparable
+  success to linear programming and greedy methods. Wall clock timing shows that
+  the simulator has worse scaling than the classical methods, but this is
+  unlikely to carry over to the physical device where the outputs are measured
+  rather than calculated.
+tags:
+  - Computer Science - Emerging Technologies
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2505.23217
+  arxiv: "2505.23217"

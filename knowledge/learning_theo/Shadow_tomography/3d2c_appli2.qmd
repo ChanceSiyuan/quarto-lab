@@ -1,0 +1,200 @@
+---
+title: 3-design multi-copy shadow, Application to weighted purity.
+description: Local 2-copy 3-design shadow is worse because it is too universal.
+categories:
+  - theory
+---
+
+## Application to estimate weighted purity.
+
+Local 2-copy 3-design shadow is worse because it is too universal. As a
+generalization of purity, in the following we consider a set of weighted
+purity operators and show that the Local 2-copy 3-design shadow has
+exponentially sampling supremacy compared to the Bell sampling method.
+
+::: {#lem-max-variance .callout-important icon="false"}
+## (Maximum Variance of Observable)
+Let $O$ be a Hermitian operator with the maximum and minimum eigenvalues
+$\lambda_{\text{max}}$ and $\lambda_{\text{min}}$. Then its variance
+$\text{Var}_{\rho}(O) := \langle O^2 \rangle_{\rho} - \langle O \rangle_{\rho}^2$
+satisfied
+$\sup_{\rho \in \mathcal{D}(\mathcal{H}_n)}\text{Var}_{\rho}(O) = \left( {(\lambda_{\text{max}} - \lambda_{\text{min}})}/{2} \right)^2$.
+This maximum is achieved at pure state such as
+$|\psi\rangle = \frac{1}{\sqrt{2}}(|\psi_{\text{max}}\rangle + |\psi_{\text{min}}\rangle)$.
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+The variance of an observable $O$ with respect to a quantum
+state $\rho$ is defined as We first show that the function
+$f(\rho):= \text{Var}_{\rho}(O)$ is a concave function of $\rho$. Use
+the fact that
+$[(1 - \theta)x_1 + \theta x_2]^2 \geq (1- \theta)x_1^2 + \theta x_2^2$
+due to the convexity of function $g(x) = x^2$, we have $$\begin{align*}
+        f((1- \theta)\rho + \theta \sigma) - (1- \theta)f(\rho) - \theta f(\sigma) = -\left[(1- \theta)\text{tr}(O\rho) + \theta \text{tr}(O\sigma)\right]^2 + (1- \theta)\left[\text{tr}(O\rho)\right]^2 + \theta \left[\text{tr}(O\sigma)\right]^2 \leq 0, \notag
+\end{align*}$$ which showed the concavity of $f(\rho)$. The maximum value
+of a concave function over a convex set is attained at an extreme point.
+Therefore, the problem reduces to maximizing the variance over all pure
+states
+$|\psi\rangle,  \text{Var}_{\psi}(O) = \langle\psi|O^2|\psi\rangle - (\langle\psi|O|\psi\rangle)^2$.
+Let $\{|\lambda_i\rangle\}$ be the orthonormal eigenbasis of $O$ with
+corresponding eigenvalues $\{\lambda_i\}$, and express pure state
+$|\psi\rangle$ in this basis as
+$|\psi\rangle = \sum_i c_i |\lambda_i\rangle$, where
+$\{p_i:=|c_i|^2\}_i$ forms a valid probability. Then
+$\text{Var}(O) = \sum_i p_i \lambda_i^2 - \left(\sum_i p_i \lambda_i\right)^2 = \sum_{i} p_i(\lambda_i - \bar{\lambda})^2$.
+Keeping $\bar \lambda$ unchanged, we should concentrate $p_i$ on the
+most extreme values available $\lambda_{\text{max}}$ and
+$\lambda_{\text{min}}$. Let us consider a distribution where probability
+$p$ is assigned to $\lambda_{\text{max}}$ and $1-p$ to
+$\lambda_{\text{min}}$. The variance for this distribution is
+$\mathbf{V}(p) = [p\lambda_{\text{max}}^2 + (1-p)\lambda_{\text{min}}^2] - [p\lambda_{\text{max}} + (1-p)\lambda_{\text{min}}]^2$.
+Assuming $\lambda_{\text{max}} \neq \lambda_{\text{min}}$, we can find
+the maximum by differentiate with respect to $p$ and find $p=1/2$. This
+corresponds to an equal mixture of the minimum and maximum eigenvalues.
+Substituting $p=1/2$ back into the variance expression gives
+$$\begin{align*}
+    \text{Var}_{\text{max}}(O) &= \left[\frac{1}{2}\lambda_{\text{max}}^2 + \frac{1}{2}\lambda_{\text{min}}^2\right] - \left[\frac{1}{2}\lambda_{\text{max}} + \frac{1}{2}\lambda_{\text{min}}\right]^2 = \left( \frac{\lambda_{\text{max}} - \lambda_{\text{min}}}{2} \right)^2.
+\end{align*}$$ ◻
+:::
+
+::: {#lem-superm-2copy-shadow .callout-important icon="false"}
+## (Supremum of 2-Copy Shadow Variance)
+Given even numbers of qubits $n$ and the local operator
+$O_{\alpha}^{(2)}:= \left[2^{-1}\mathbb{I}^{\otimes 2} + (\alpha/2) \cdot(X^{\otimes 2}+Y^{\otimes 2}+Z^{\otimes 2})\right]^{\otimes n}$,
+we can estimate $\text{tr}(O^{(2)}_{\alpha} \rho^{\otimes 2})$ using the
+local 2-copy 3-design shadow and the Bell sampling, with variance
+$\text{Var}_{\mathrm{s}}(\rho ,\alpha)$ and
+$\text{Var}_{\mathrm{b}}(\rho ,\alpha)$ separately. They satisfied
+$$\begin{align*}
+        \sup_{\rho \in \mathcal{D}(\mathcal{H}_n)}\text{Var}_{\mathrm{s}}(\rho ,\alpha) &= \left[{(35\alpha^2 + 6 \alpha +3)}/{12}\right]^n - \min \{[(1+ \alpha)/2]^{2n},[(1- 3\alpha)/2]^{2n} \},\\
+        \sup_{\rho \in \mathcal{D}(\mathcal{H}_n)}\text{Var}_{b}(\rho,\alpha) &= 4^{-1}\left[[(1+ \alpha)/2]^{n}-[(1- 3\alpha)/2]^{n}\right]^2,\\
+        \sup_{\rho \in \mathcal{D}(\mathcal{H}_n)} \left[ \text{Var}_{b}(\rho,\alpha) - \text{Var}_{s}(\rho,\alpha) \right] &= \max \{[(1+ \alpha)/2]^{2n},[(1- 3\alpha)/2]^{2n} \}-\left[\frac{35\alpha^2 + 6\alpha +3}{12}\right]^{n}.
+\end{align*}$$ If $\alpha \in [-3,0]$, then
+$\exists \rho \in \mathcal{D}(\mathcal{H}_n) \text{~s.t.~}\text{Var}_{b}(\rho,\alpha)\geq  \text{Var}_{s}(\rho,\alpha)$.
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+
+*Proof.* To show whether $O_\alpha^{(2)}$ can be estimated by Bell
+sampling method, we noted that it is diagonal under Bell basis. Because
+$O_\alpha^{(2)}$ is a local operator, we can set
+$O_\alpha^{(2)} = \bigotimes_{i=1}^n \sum_{s_i} v_{s_i}\ket{\Phi_{s_i}}\!\bra{\Phi_{s_i}}$
+with $s_i = (a_x^{(i)}a_z^{(i)}) \in\{00,01,10,11\}$. Use the identity
+$$\begin{align*}
+        \ket{\Phi_{a_x^{(i)}a_z^{(i)}}}\!\bra{\Phi_{a_x^{(i)}a_z^{(i)}}} =\frac{\mathbb{I}\mathbb{I} + (-1)^{a_x^{(i)}} XX - (-1)^{a_x^{(i)}+a_z^{(i)}}YY + (-1)^{a_z^{(i)}} ZZ}{4},
+\end{align*}$$ we conclude that
+$\mathbf{v}:= (v_{00},v_{10},v_{11},v_{01})$ must satisfy the identity
+below in order to estimate $O_\alpha^{(2)}$ unbiasedly: $$\begin{align*}
+        \frac{1}{4} \begin{pmatrix}
+            1&1&-1&1\\
+            1&1&1&-1\\
+            1&-1&-1&-1\\
+            1&-1&1&1
+        \end{pmatrix}\mathbf{v} = \frac{1}{2} \begin{pmatrix}
+            1\\ \alpha \\ \alpha \\ \alpha
+        \end{pmatrix} \Rightarrow \mathbf{v} =  \frac{1}{2}\begin{pmatrix}
+           1+ \alpha \\ 1+ \alpha \\ 1- 3\alpha \\ 1+ \alpha
+        \end{pmatrix}.
+\end{align*}$$ Thus, $O^{(2)}_{\alpha}$ is an operator diagonal on Bell
+basis, with eigenvalue $\{[(1+ \alpha)/2],[(1- 3\alpha)/2] \}^{n}$.
+Because $n$ is even, we have
+$\{\lambda_{\max}, \lambda_{\min}\} = \{[(1+ \alpha)/2]^n,[(1- 3\alpha)/2]^n \}$.
+Then based on @lem-max-variance, the variance of this estimator satisfies $$\begin{align*}
+        \sup_{\rho \in \mathcal{D}(\mathcal{H}_n)}\text{Var}_{b}(\rho,\alpha) &= 4^{-1}\left[[(1+ \alpha)/2]^{n}-[(1- 3\alpha)/2]^{n}\right]^2,
+\end{align*}$$ To prove the variance of the shadow method, based on
+[Lemma (Local k-Copy Shadow Variance)](3desgin_multi_local_shadow.qmd#lem-LC-shadow-kcopy)
+the variance operator $\mathbf{V}$ as $$\begin{align*}
+        &\mathbf{V}:= \sum_{W,W' \in \mathcal{P}_2^{\otimes n}} \alpha_{W}\alpha_{W'} R(W,W') W W'= 4^{-n}\bigotimes_{i =1}^n \left(\sum_{W_i,W_i' \in \{\mathbb{I}\mathbb{I},XX,YY,ZZ\}} R(W_i,W'_i) \alpha_{W_i} \alpha_{W_i'}W_i W_i'\right).\notag\\
+       &= 4^{-n}\left( \mathbb{I}\mathbb{I}+\alpha XX+ \alpha YY+ \alpha ZZ + \alpha XX+5 \alpha^2 \mathbb{I}\mathbb{I} -\frac{5}{3} \alpha^2 ZZ -\frac{5}{3} \alpha^2 YY\right.\notag\\
+       &\hspace{1.5cm}\left.+ \alpha YY - \frac{5}{3}\alpha^2 ZZ + 5\alpha^2 \mathbb{I}\mathbb{I}-\frac{5}{3}\alpha^2 XX + \alpha ZZ-\frac{5}{3}\alpha^2 YY- \frac{5}{3}\alpha^2 XX+ 5\alpha^2 \mathbb{I}\mathbb{I}\right)^{\otimes n}\notag\\
+      & = \left(\frac{1 + 15\alpha^2}{4}\mathbb{I}\mathbb{I} - \frac{2 \alpha - \frac{10}{3}\alpha^2}{4}(XX+YY+ZZ)\right)^{\otimes n} = \left(\frac{35\alpha^2 + 6\alpha +3}{12}\mathbb{I}^{\otimes 2} + \frac{10 \alpha^2 - 6\alpha}{3} \Pi_{\mathrm{asym}}\right)^{\otimes n}.
+\end{align*}$$ Here in the second line we use
+$\alpha_{W} = \prod_{i =1}^n \alpha_{W_i}$, with
+$\alpha_{W_i} = \begin{cases}\alpha/2 &\text{if~} W_i = \mathbb{I}^{\otimes 2},\\ 1/2 &\text{if~} W_i = XX,YY,ZZ.\end{cases}$
+In the last equality we use the fact that
+$\Pi_{\mathrm{asym}} = (\mathbb{I}_2 - \text{SWAP})/2 = {(\mathbb{I}_2 - XX-YY-ZZ)}/{4}$.
+Then use the fact that the input state is symmetric,
+$\text{tr}(\rho \otimes \rho \cdot \prod_{\mathrm{asym}}^{\otimes t} \otimes \mathbb{I}_2^{\otimes(n-t)}) = 0$.
+According to
+[Lemma (Local k-Copy Shadow Variance)](3desgin_multi_local_shadow.qmd#lem-LC-shadow-kcopy)
+takes the value
+$\langle (\hat{o}^{(k)})^2 \rangle_{\rho} = \text{tr}(\rho \otimes \rho \cdot \mathbf{V}) = \left[{(35\alpha^2 + 6 \alpha +3)}/{12}\right]^n$,
+which leads to the result
+$\text{Var}_s(\rho,\alpha) = \left[{(35\alpha^2 + 6 \alpha +3)}/{12}\right]^n - \langle O_\alpha^{(2)} \rangle_{\rho}^2$.
+Again use the convexity of $\langle O_\alpha^{(2)} \rangle_{\rho}^2$
+with respect to $\rho$, we conclude that $$\begin{align*}
+        \sup_{\rho \in \mathcal{D}(\mathcal{H}_n)}\text{Var}_{\mathrm{s}}(\rho ,\alpha) &= \left[{(35\alpha^2 + 6 \alpha +3)}/{12}\right]^n - \min \{[(1+ \alpha)/2]^{2n},[(1- 3\alpha)/2]^{2n} \}.
+\end{align*}$$ To compare this two variance on the same state $\rho$, we
+first express the Bell sampling variance in terms of second moment
+average as $$\begin{align*}
+        \text{Var}_{\mathrm b}(\rho,\alpha) &=\sum_{\mathbf{s} \in \mathbb{F}_2^{2n}}\text{tr}\left(\rho \otimes \rho\cdot \bigotimes_{i=1}^n\ket{\Phi_{s_i}}\!\bra{\Phi_{s_i}}\right) \prod_{i=1}^n v_{{s}_i}^2 -\langle O^{(2)} \rangle_{\rho}^2 = \text{tr}(\rho^{\otimes 2} \left(O^{(2)}_{\alpha}\right)^2) -\langle O_\alpha^{(2)} \rangle_{\rho}^2.
+\end{align*}$$ Here $\left(O^{(2)}_{\alpha}\right)^2$ is again an
+operator diagonal on the Bell basis with eigenvalue
+$\{[(1+ \alpha)/2]^2,[(1- 3\alpha)/2]^2 \}^{n}$. We then conclude that
+$$\begin{align*}
+            \sup_{\rho \in \mathcal{D}(\mathcal{H}_n)} \left[ \text{Var}_{b}(\rho,\alpha) - \text{Var}_{s}(\rho,\alpha) \right] &=\sup_{\rho \in \mathcal{D}(\mathcal{H}_n)} \text{tr}(\rho^{\otimes 2} \left(O^{(2)}_{\alpha}\right)^2)  - \left[\frac{35\alpha^2 + 6\alpha +3}{12}\right]^{n} \\
+            &= \max \{[(1+ \alpha)/2]^{2n},[(1- 3\alpha)/2]^{2n} \}-\left[\frac{35\alpha^2 + 6\alpha +3}{12}\right]^{n} \geq 0.
+\end{align*}$$ We conclude that in the region $\alpha \in [-3,0]$, this
+inequality is satisfied, which means that $O_\alpha^{(2)}$ can be more
+efficient estimated by local 2-copy shadows for certain density matrix
+$\rho^{\otimes 2}$ in this case. ◻
+:::
+
+This estimation task in @lem-superm-2copy-shadow is motivated by the non-linear property
+$L_{\gamma}(\rho):= \sum_{P \in \mathcal{P}_n }\gamma^{\mathrm{wt}(P)}\text{tr}(P \rho P \rho)$.
+We find its two-copy estimator as stated by @lem-otoc-nonlinear below.
+
+::: {#lem-otoc-nonlinear .callout-important icon="false"}
+## (OTOC Non-linear Estimator)
+The non-linear value $L_\gamma(\rho)$ has a two-copy unbiased estimator $$\begin{align*}
+        \hat{L}_{\gamma}^{(2)}:= \left[\frac{3\gamma + 1}{2} \mathbb{I}^{\otimes 2} + \frac{1 - \gamma}{2}(X^{\otimes 2} + Y^{\otimes 2} + Z^{\otimes 2})\right]^{\otimes n} .
+\end{align*}$$
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+
+*Proof.* Use the fact that
+$\text{SWAP} = 2^{-1}(\mathbb{I}^{\otimes 2} + X^{\otimes 2} + Y^{\otimes 2} + Z^{\otimes 2})$,
+we noted that $$\begin{align*}
+        \left[\frac{3\gamma + 1}{4} \mathbb{I}^{\otimes 2} + \frac{1 - \gamma}{2}(X^{\otimes 2} + Y^{\otimes 2} + Z^{\otimes 2})\right]\cdot \text{SWAP}   &= \frac{3\gamma + 1}{4} \mathbb{I}^{\otimes 2} + \frac{1 - \gamma}{4}X^{\otimes 2} + \frac{1 - \gamma}{4}Y^{\otimes 2} + \frac{1 - \gamma}{4}Z^{\otimes 2}\notag\\
+        &+\frac{3\gamma + 1}{4} X^{\otimes 2} + \frac{1 - \gamma}{4}\mathbb{I}^{\otimes 2} - \frac{1 - \gamma}{4}Z^{\otimes 2} - \frac{1 - \gamma}{4}Y^{\otimes 2}\notag\\
+        &+\frac{3\gamma + 1}{4} Y^{\otimes 2} - \frac{1 - \gamma}{4}Z^{\otimes 2} + \frac{1 - \gamma}{4}\mathbb{I}^{\otimes 2} - \frac{1 - \gamma}{4}X^{\otimes 2}\notag\\
+        &+\frac{3\gamma + 1}{4} {Z}^{\otimes 2} - \frac{1 - \gamma}{4}Y^{\otimes 2} -\frac{1 - \gamma}{4}X^{\otimes 2} + \frac{1 - \gamma}{4}\mathbb{I}^{\otimes 2}\notag\\
+        &=\mathbb{I}^{\otimes 2}+{\gamma}({X}^{\otimes 2}+{Y}^{\otimes 2}+{Z}^{\otimes 2}).
+\end{align*}$$ Based on the fact that
+$\text{tr}(\text{SWAP}^{\otimes n} \rho \otimes \sigma) = \text{tr}(\rho \cdot \sigma)$,
+we conclude that $$\begin{align*}
+        \text{tr}(\hat{L}^{(2)} \cdot \rho \otimes \rho) &=  \text{tr}\left( \text{SWAP}^{\otimes n}\cdot (\rho \otimes \rho) \cdot \left[ \mathbb{I}^{\otimes 2}+{\gamma}({X}^{\otimes 2}+{Y}^{\otimes 2}+{Z}^{\otimes 2})\right]^{\otimes n}\right) \\
+        &=\text{tr}\left( \text{SWAP}^{\otimes n} \cdot (\rho \otimes \rho) \sum_{P \in \{\mathbb{I},X,Y,Z\}^{\otimes n}}\gamma^{\text{wt}(P)} P \otimes P\right)\\
+        &= \sum_{P \in \mathcal{P}_n }\gamma^{\mathrm{wt}(P)}\text{tr}(\rho P \rho P ) = L_{\gamma}(\rho).
+\end{align*}$$ ◻
+:::
+
+<figure id="fig:comp_shadow_bell" data-latex-placement="htbp!">
+<img src="var_compare.png" style="width:60.0%" />
+<figcaption>The comparison of Bell sampling estiamtion method and the
+two-copy shadow method. </figcaption>
+</figure>
+
+Noticed that $\hat{L}_{\gamma} = (3\gamma+1)^n {O}_{\alpha}^{(2)}$ with
+$\alpha = {(1-\gamma)}/{(3\gamma + 1)}$. Use @lem-superm-2copy-shadow, we conclude that the variance of Bell sampling methods and 2-copy local 3-design shadow are separately
+shown below. We compared these variance in
+Figure [1.1](#fig:comp_shadow_bell){reference-type="ref"
+reference="fig:comp_shadow_bell"}. $$\begin{align*}
+    &\sup_{\rho}\text{Var}_s(\hat L_{\gamma}) =  (3\gamma+1)^{2n} \cdot \left[\left[{(35\alpha^2 + 6 \alpha +3)}/{12}\right]^n - \min \{[(1+ \alpha)/2]^{2n},[(1- 3\alpha)/2]^{2n} \}\right],\\
+    &\sup_{\rho}\text{Var}_b(\hat L_{\gamma}) = 4^{-1}(3\gamma+1)^{2n}\left[[(1+ \alpha)/2]^{n}-[(1- 3\alpha)/2]^{n}\right]^2 \\
+    &\sup_{\rho}\left[\text{Var}_b(\hat L_{\gamma}) -\text{Var}_s(\hat L_{\gamma}) \right] = (3\gamma+1)^{2n}\left[\max \{[(1+ \alpha)/2]^{2n},[(1- 3\alpha)/2]^{2n} \}-\left[\frac{35\alpha^2 + 6\alpha +3}{12}\right]^{n}\right].
+\end{align*}$$
+
+::: {#lem-super-nonli .callout-important icon="false"}
+## (Shadow vs Bell Sampling Comparison)
+To estimate $L_{\gamma}(\rho):= \sum_{P \in \mathcal{P}_n }\gamma^{\mathrm{wt}(P)}\text{tr}(P \rho P \rho)$
+for $\gamma>1$ or $\gamma < -0.5$, there exist density matrix $\rho$,
+such as
+$\rho = \psi^{\otimes n}, \ket{\psi} = \sqrt{2^{-1}}(i\ket{01}-i\ket{10})$,
+such that the local 2-copy 2-design shadow strategy is better than the
+Bell sampling method.
+:::

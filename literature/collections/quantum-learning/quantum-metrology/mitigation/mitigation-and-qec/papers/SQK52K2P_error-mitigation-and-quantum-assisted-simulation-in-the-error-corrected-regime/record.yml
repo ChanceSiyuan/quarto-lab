@@ -1,0 +1,46 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: SQK52K2P
+  item_version: 96080
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: GYX7HGXH
+      name: Mitigation and QEC
+      path: Quantum Learning/Quantum Metrology/Mitigation/Mitigation and QEC
+qlab:
+  primary_collection: GYX7HGXH
+  indexed_collections:
+    - GYX7HGXH
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: journalArticle
+title: Error mitigation and quantum-assisted simulation in the error corrected regime
+authors:
+  - first: Matteo
+    last: Lostaglio
+  - first: Alessandro
+    last: Ciani
+year: 2021
+abstract: A standard approach to quantum computing is based on the idea of
+  promoting a classically simulable and fault-tolerant set of operations to a
+  universal set by the addition of `magic' quantum states. In this context, we
+  develop a general framework to discuss the value of the available, non-ideal
+  magic resources, relative to those ideally required. We single out a quantity,
+  the Quantum-assisted Robustness of Magic (QRoM), which measures the overhead
+  of simulating the ideal resource with the non-ideal ones through
+  quasiprobability-based methods. This extends error mitigation techniques,
+  originally developed for Noisy Intermediate Scale Quantum (NISQ) devices, to
+  the case where qubits are logically encoded. The QRoM shows how the addition
+  of noisy magic resources allows one to boost classical quasiprobability
+  simulations of a quantum circuit and enables the construction of explicit
+  protocols, interpolating between classical simulation and an ideal quantum
+  computer.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.1103/physrevlett.127.200506
+  arxiv: "2103.07526"

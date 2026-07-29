@@ -1,0 +1,60 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: Q7HMVVZA
+  item_version: 96022
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 2LNPPZG9
+      name: warmstart
+      path: Quantum Algorithm/QVA/warmstart
+qlab:
+  primary_collection: 2LNPPZG9
+  indexed_collections:
+    - 2LNPPZG9
+  primary_topic: quantum-algorithm
+  indexed_topics:
+    - quantum-algorithm
+item_type: journalArticle
+title: Bridging Classical and Quantum with SDP initialized warm-starts for QAOA
+authors:
+  - first: Reuben
+    last: Tate
+  - first: Majid
+    last: Farhadi
+  - first: Creston
+    last: Herold
+  - first: Greg
+    last: Mohler
+  - first: Swati
+    last: Gupta
+year: 2023
+abstract: >-
+  We study the Quantum Approximate Optimization Algorithm (
+                QAOA
+                ) in the context of the
+                Max-Cut
+                problem. Noisy quantum devices are only able to accurately execute
+                QAOA
+                at low circuit depths, while classically-challenging problem instances may call for a relatively high circuit-depth. This is due to the need to build correlations between reachable pairs of vertices in potentially large graphs [
+                16
+                ]. To enhance the solving power of low-depth QAOA, we introduce a classical pre-processing step that initializes
+                QAOA
+                with a biased superposition of possible cuts in the graph, referred to as a
+                warm-start
+                . In particular, we initialize
+                QAOA
+                with a solution to a low-rank semidefinite programming relaxation of the
+                Max-Cut
+                problem. Our experimental results show that this variant of
+                QAOA
+                , called
+                QAOA-warm
+                , is able to outperform standard
+                QAOA
+                on lower circuit depths in solution quality and training time. While this improvement is partly due to the classical warm-start, we find strong evidence of further improvement using QAOA circuit at small depth. We provide experimental evidence of improved performance as well as theoretical properties of the proposed framework.
+tags: []
+identifiers:
+  doi: 10.1145/3549554

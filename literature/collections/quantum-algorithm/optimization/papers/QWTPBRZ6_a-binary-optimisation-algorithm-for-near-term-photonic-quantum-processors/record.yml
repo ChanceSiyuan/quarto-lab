@@ -1,0 +1,64 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: QWTPBRZ6
+  item_version: 96149
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: TZ42IFP4
+      name: Optimization
+      path: Quantum Algorithm/Optimization
+    - key: KIMTUQTJ
+      name: photon_realization
+      path: Quantum Algorithm/Experiment/photon_realization
+qlab:
+  primary_collection: TZ42IFP4
+  indexed_collections:
+    - KIMTUQTJ
+    - TZ42IFP4
+  primary_topic: quantum-algorithm
+  indexed_topics:
+    - quantum-algorithm
+item_type: preprint
+title: A Binary Optimisation Algorithm for Near-Term Photonic Quantum Processors
+authors:
+  - first: Alexander
+    last: Makarovskiy
+  - first: Mateusz
+    last: Slysz
+  - first: Łukasz
+    last: Grodzki
+  - first: Dawid
+    last: Siera
+  - first: Thorin
+    last: Farnsworth
+  - first: William R.
+    last: Clements
+  - first: Piotr
+    last: Rydlichowski
+  - first: Krzysztof
+    last: Kurowski
+year: 2025
+abstract: Binary optimisation tasks are ubiquitous in areas ranging from
+  logistics to cryptography. The exponential complexity of such problems means
+  that the performance of traditional computational methods decreases rapidly
+  with increasing problem sizes. Here, we propose a new algorithm for binary
+  optimisation, the Bosonic Binary Solver, designed for near-term photonic
+  quantum processors. This variational algorithm uses samples from a quantum
+  optical circuit, which are post-processed using trainable classical bit-flip
+  probabilities, to propose candidate solutions. A gradient-based training loop
+  finds progressively better solutions until convergence. We perform ablation
+  tests that validate the structure of the algorithm. We then evaluate its
+  performance on an illustrative range of binary optimisation problems, using
+  both simulators and real hardware, and perform comparisons to classical
+  algorithms. We find that this algorithm produces high-quality solutions to
+  these problems. As such, this algorithm is a promising method for leveraging
+  the scalable nature of photonic quantum processors to solve large-scale
+  real-world optimisation problems.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2510.08274
+  arxiv: "2510.08274"

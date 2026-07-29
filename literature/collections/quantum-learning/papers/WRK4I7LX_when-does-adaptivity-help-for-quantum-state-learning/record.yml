@@ -1,0 +1,68 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: WRK4I7LX
+  item_version: 96015
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: ISN46ZEU
+      name: Quantum Learning
+      path: Quantum Learning
+qlab:
+  primary_collection: ISN46ZEU
+  indexed_collections:
+    - ISN46ZEU
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: preprint
+title: When Does Adaptivity Help for Quantum State Learning?
+authors:
+  - first: Sitan
+    last: Chen
+  - first: Brice
+    last: Huang
+  - first: Jerry
+    last: Li
+  - first: Allen
+    last: Liu
+  - first: Mark
+    last: Sellke
+year: 2023
+abstract: "We consider the classic question of state tomography: given copies of
+  an unknown quantum state $\\rho\\in\\mathbb{C}^{d\\times d}$, output
+  $\\widehat{\\rho}$ which is close to $\\rho$ in some sense, e.g. trace
+  distance or fidelity. When one is allowed to make coherent measurements
+  entangled across all copies, $\\Theta(d^2/\\epsilon^2)$ copies are necessary
+  and sufficient to get trace distance $\\epsilon$. Unfortunately, the protocols
+  achieving this rate incur large quantum memory overheads that preclude
+  implementation on near-term devices. On the other hand, the best known
+  protocol using incoherent (single-copy) measurements uses $O(d^3/\\epsilon^2)$
+  copies, and multiple papers have posed it as an open question to understand
+  whether or not this rate is tight. In this work, we fully resolve this
+  question, by showing that any protocol using incoherent measurements, even if
+  they are chosen adaptively, requires $\\Omega(d^3/\\epsilon^2)$ copies,
+  matching the best known upper bound. We do so by a new proof technique which
+  directly bounds the ``tilt'' of the posterior distribution after measurements,
+  which yields a surprisingly short proof of our lower bound, and which we
+  believe may be of independent interest. While this implies that adaptivity
+  does not help for tomography with respect to trace distance, we show that it
+  actually does help for tomography with respect to infidelity. We give an
+  adaptive algorithm that outputs a state which is $\\gamma$-close in infidelity
+  to $\\rho$ using only $\\tilde{O}(d^3/\\gamma)$ copies, which is optimal for
+  incoherent measurements. In contrast, it is known that any nonadaptive
+  algorithm requires $\\Omega(d^3/\\gamma^2)$ copies. While it is folklore that
+  in $2$ dimensions, one can achieve a scaling of $O(1/\\gamma)$, to the best of
+  our knowledge, our algorithm is the first to achieve the optimal rate in all
+  dimensions."
+tags:
+  - Computer Science - Computational Complexity
+  - Computer Science - Information Theory
+  - Computer Science - Machine Learning
+  - Mathematics - Information Theory
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2206.05265
+  arxiv: "2206.05265"

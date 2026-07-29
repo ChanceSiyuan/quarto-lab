@@ -1,0 +1,58 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: HC7BY9CK
+  item_version: 96124
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: GQHRZLGB
+      name: gate simulation
+      path: Quantum N-Atom/Basic-Sr tech/gate simulation
+qlab:
+  primary_collection: GQHRZLGB
+  indexed_collections:
+    - GQHRZLGB
+  primary_topic: quantum-n-atom
+  indexed_topics:
+    - quantum-n-atom
+item_type: preprint
+title: Benchmarking and linear response modeling of high-fidelity Rydberg gates
+authors:
+  - first: Richard Bing-Shiun
+    last: Tsai
+  - first: Xiangkai
+    last: Sun
+  - first: Adam L.
+    last: Shaw
+  - first: Ran
+    last: Finkelstein
+  - first: Manuel
+    last: Endres
+year: 2024
+abstract: The fidelity of entangling operations is a key figure of merit in
+  quantum information processing, especially in the context of quantum error
+  correction. High-fidelity entangling gates in neutral atoms have seen
+  remarkable advancement recently. A full understanding of error sources and
+  their respective contributions to gate infidelity will enable the prediction
+  of fundamental limits on quantum gates in neutral atom platforms with
+  realistic experimental constraints. In this work, we implement the
+  time-optimal Rydberg CZ gate, design a circuit to benchmark its fidelity, and
+  achieve a fidelity, averaged over symmetric input states, of 0.9971(5),
+  setting a new state-of-the-art for neutral atoms. The remaining infidelity is
+  explained by an ab initio error model, consistent with our experimental
+  results over a range of gate speeds, with varying contributions from different
+  error sources. Further, we develop a linear response formalism to efficiently
+  predict infidelity from laser noise with non-trivial power spectral densities
+  and derive scaling laws of infidelity with gate speed. Besides its capability
+  of predicting gate fidelity, we also utilize the linear response formalism to
+  compare and optimize gate protocols, to learn laser frequency noise, and to
+  study the noise response for quantum simulation tasks. Finally, we predict
+  that a CZ gate fidelity of ${\gtrsim} 0.999$ is feasible with realistic
+  experimental upgrades.
+tags:
+  - Physics - Atomic Physics
+  - Quantum Physics
+identifiers:
+  arxiv: "2407.20184"

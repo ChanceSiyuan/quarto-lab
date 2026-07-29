@@ -1,0 +1,61 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: SFEPHECZ
+  item_version: 106725
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: BJW2K6QP
+      name: iPEPS
+      path: Quantum Complexity/QCsim/tensor network/2D-PEPS/iPEPS
+qlab:
+  primary_collection: BJW2K6QP
+  indexed_collections:
+    - BJW2K6QP
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: journalArticle
+title: "The iPEPS algorithm, improved: fast full update and gauge fixing"
+authors:
+  - first: Ho N.
+    last: Phien
+  - first: Johann A.
+    last: Bengua
+  - first: Hoang D.
+    last: Tuan
+  - first: Philippe
+    last: Corboz
+  - first: Roman
+    last: Orus
+year: 2015
+abstract: 'The infinite Projected Entangled Pair States (iPEPS) algorithm [J.
+  Jordan et al, PRL 101, 250602 (2008)] has become a useful tool in the
+  calculation of ground state properties of 2d quantum lattice systems in the
+  thermodynamic limit. Despite its many successful implementations, the method
+  has some limitations in its present formulation which hinder its application
+  to some highly-entangled systems. The purpose of this paper is to unravel some
+  of these issues, in turn enhancing the stability and efficiency of iPEPS
+  methods. For this, we first introduce the fast full update scheme, where
+  effective environment and iPEPS tensors are both simultaneously updated (or
+  evolved) throughout time. As we shall show, this implies two crucial
+  advantages: (i) dramatic computational savings, and (ii) improved overall
+  stability. Besides, we extend the application of the \emph{local gauge
+  fixing}, successfully implemented for finite-size PEPS [M. Lubasch, J. Ignacio
+  Cirac, M.-C. Bañuls, PRB 90, 064425 (2014)], to the iPEPS algorithm. We see
+  that the gauge fixing not only further improves the stability of the method,
+  but also accelerates the convergence of the alternating least squares sweeping
+  in the (either "full" or "fast full") tensor update scheme. The improvement in
+  terms of computational cost and stability of the resulting "improved" iPEPS
+  algorithm is benchmarked by studying the ground state properties of the
+  quantum Heisenberg and transverse-field Ising models on an infinite square
+  lattice.'
+tags:
+  - Condensed Matter - Strongly Correlated Electrons
+  - High Energy Physics - Lattice
+  - Quantum Physics
+identifiers:
+  doi: 10.1103/physrevb.92.035142
+  arxiv: "1503.05345"

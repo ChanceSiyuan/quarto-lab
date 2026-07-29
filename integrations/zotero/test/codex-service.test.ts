@@ -91,6 +91,57 @@ function deferred<T>() {
 }
 
 describe("CodexService follow-up turns", () => {
+  it("publishes an immediate switching state and clears it after the selected conversation is ready", async () => {
+    const resumed = deferred<{ thread: { id: string; turns: never[] } }>();
+    const client = {
+      threadResume: vi.fn(() => resumed.promise),
+      threadRead: vi.fn(async () => ({ thread: { id: "thread-b", turns: [] } })),
+      turnInterrupt: vi.fn(async () => ({})),
+    };
+    const { service, callbacks } = serviceWithClient(client);
+    const internal = service as any;
+    internal.saveSessions = vi.fn(async () => undefined);
+    internal.sessions = {
+      version: 1,
+      papers: { "1-ATTACH": { threadId: "thread-a", title: "A", workspace: "/profile/papers/1-ATTACH", updatedAt: "2026-07-28" } },
+      history: { "1-ATTACH": [{ threadId: "thread-b", title: "B", workspace: "/profile/papers/1-ATTACH", updatedAt: "2026-07-27" }] },
+    };
+
+    const switching = service.switchThread("thread-b");
+    expect(service.state.switchingThreadId).toBe("thread-b");
+    expect(callbacks.onState).toHaveBeenCalled();
+    expect(service.state.activeThreadId).toBe("thread-a");
+
+    resumed.resolve({ thread: { id: "thread-b", turns: [] } });
+    await switching;
+
+    expect(service.state.activeThreadId).toBe("thread-b");
+    expect(service.state.switchingThreadId).toBeNull();
+    expect(client.threadRead).toHaveBeenCalledWith("thread-b", true);
+  });
+
+  it("coalesces repeated new-conversation clicks while creation is in flight", async () => {
+    const started = deferred<{ thread: { id: string } }>();
+    const client = {
+      threadStart: vi.fn(() => started.promise),
+      threadSetName: vi.fn(async () => ({})),
+      turnInterrupt: vi.fn(async () => ({})),
+    };
+    const { service } = serviceWithClient(client);
+    const internal = service as any;
+    internal.saveSessions = vi.fn(async () => undefined);
+
+    const first = service.newThread();
+    const second = service.newThread();
+    expect(service.state.creatingThread).toBe(true);
+    expect(first).toBe(second);
+    started.resolve({ thread: { id: "thread-new" } });
+    await first;
+
+    expect(client.threadStart).toHaveBeenCalledOnce();
+    expect(service.state.creatingThread).toBe(false);
+  });
+
   it("marks Reader and pinned paper content untrusted while keeping host guidance application-owned", async () => {
     const client = {
       turnStart: vi.fn().mockResolvedValue({ turn: { id: "turn-a" } }),
@@ -256,7 +307,7 @@ describe("CodexService Cursor-style modes and approvals", () => {
     expect(service.getCheckpoints()).toEqual([
       expect.objectContaining({ sourceThreadId: "thread-a", beforeTurnId: "turn-agent" }),
     ]);
-    await expect(service.setMode("ask")).rejects.toThrow("只提供 Agent 模式");
+    await expect(service.setMode("ask")).rejects.toThrow("only supports Agent mode");
     vi.unstubAllGlobals();
   });
 
@@ -690,7 +741,7 @@ describe("CodexService utility turns", () => {
   it("runs a turn on a hidden thread and resolves with the assistant text", async () => {
     const store = new Map<string, any>();
     store.set("util-1", { turns: [{ id: "t1", status: "completed", items: [
-      { id: "i1", type: "agentMessage", text: "两句要点。" },
+      { id: "i1", type: "agentMessage", text: "两句要点." },
     ] }] });
     const client = {
       threadStart: vi.fn(async () => ({ thread: { id: "util-1" } })),
@@ -708,7 +759,7 @@ describe("CodexService utility turns", () => {
       method: "turn/completed",
       params: { threadId: "util-1", turn: { id: "t1" } },
     });
-    await expect(pending).resolves.toBe("两句要点。");
+    await expect(pending).resolves.toBe("两句要点.");
     expect(service.state.activeThreadId).toBe("thread-a"); // 活动线程未被切换
   });
 
@@ -722,7 +773,7 @@ describe("CodexService utility turns", () => {
     const pending = service.runUtilityTurn("x", { timeoutMs: 50 });
     const guarded = pending.catch((error) => error);
     await vi.advanceTimersByTimeAsync(60);
-    expect(String(await guarded)).toContain("超时");
+    expect(String(await guarded)).toContain("timed out");
     vi.useRealTimers();
   });
 
@@ -757,9 +808,9 @@ describe("CodexService utility turns", () => {
     await Promise.resolve();
     (service as any).handleNotification({
       method: "turn/failed",
-      params: { threadId: "util-4", turn: { id: "t1", error: { message: "沙盒被拒绝" } } },
+      params: { threadId: "util-4", turn: { id: "t1", error: { message: "沙盒被Reject" } } },
     });
-    await expect(pending).rejects.toThrow("沙盒被拒绝");
+    await expect(pending).rejects.toThrow("沙盒被Reject");
     expect((service as any).utilityWaiters.size).toBe(0);
     expect(service.state.activeThreadId).toBe("thread-a");
     expect(service.state.running).toBe(false);
@@ -802,7 +853,7 @@ describe("CodexService entriesForTurn duplicate-user defense (bug-triage #1)", (
               { id: "t1:item:0", type: "userMessage", content: [{ type: "text", text: "浮点数怎么表示?" }] },
               // ... and the server's real id from a later item/completed notification.
               { id: "real-item-9", type: "userMessage", content: [{ type: "text", text: "浮点数怎么表示?" }] },
-              { id: "a1", type: "agentMessage", text: "用 IEEE 754。" },
+              { id: "a1", type: "agentMessage", text: "用 IEEE 754." },
             ],
           },
         ],
@@ -824,16 +875,16 @@ describe("CodexService entriesForTurn duplicate-user defense (bug-triage #1)", (
             id: "t1",
             status: "completed",
             items: [
-              { id: "u1", type: "userMessage", content: [{ type: "text", text: "先看第 2 节" }] },
+              { id: "u1", type: "userMessage", content: [{ type: "text", text: "先看Page 2 节" }] },
               { id: "u2", type: "userMessage", content: [{ type: "text", text: "不,先看摘要" }] },
-              { id: "a1", type: "agentMessage", text: "好的。" },
+              { id: "a1", type: "agentMessage", text: "好的." },
             ],
           },
         ],
       }),
     };
     const userEntries = service.getChatEntries().filter((entry) => entry.kind === "user");
-    expect(userEntries.map((entry) => entry.text)).toEqual(["先看第 2 节", "不,先看摘要"]);
+    expect(userEntries.map((entry) => entry.text)).toEqual(["先看Page 2 节", "不,先看摘要"]);
   });
 
   it("does not dedup identical user text across two different turns", () => {

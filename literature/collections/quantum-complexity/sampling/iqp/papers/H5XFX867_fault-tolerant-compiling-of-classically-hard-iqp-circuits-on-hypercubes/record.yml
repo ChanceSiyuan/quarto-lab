@@ -1,0 +1,88 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: H5XFX867
+  item_version: 96088
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 9HSDA5Q3
+      name: IQP
+      path: Quantum Complexity/Sampling/IQP
+    - key: KXL6J577
+      name: universal without distillation
+      path: Quantum Error correction/Fault-tolerant/universal without distillation
+    - key: AC5RCSNL
+      name: transversal CCZ/T
+      path: Quantum Error correction/Fault-tolerant/transversal gate/transversal CCZ/T
+    - key: H5F9PKZR
+      name: verification
+      path: Quantum Complexity/Sampling/supermacy verification/verification
+qlab:
+  primary_collection: 9HSDA5Q3
+  indexed_collections:
+    - 9HSDA5Q3
+    - AC5RCSNL
+    - H5F9PKZR
+    - KXL6J577
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+    - quantum-error-correction
+item_type: preprint
+title: Fault-tolerant compiling of classically hard IQP circuits on hypercubes
+authors:
+  - first: Dominik
+    last: Hangleiter
+  - first: Marcin
+    last: Kalinowski
+  - first: Dolev
+    last: Bluvstein
+  - first: Madelyn
+    last: Cain
+  - first: Nishad
+    last: Maskara
+  - first: Xun
+    last: Gao
+  - first: Aleksander
+    last: Kubica
+  - first: Mikhail D.
+    last: Lukin
+  - first: Michael J.
+    last: Gullans
+year: 2024
+abstract: Realizing computationally complex quantum circuits in the presence of
+  noise and imperfections is a challenging task. While fault-tolerant quantum
+  computing provides a route to reducing noise, it requires a large overhead for
+  generic algorithms. Here, we develop and analyze a hardware-efficient,
+  fault-tolerant approach to realizing complex sampling circuits. We co-design
+  the circuits with the appropriate quantum error correcting codes for efficient
+  implementation in a reconfigurable neutral atom array architecture,
+  constituting what we call a fault-tolerant compilation of the sampling
+  algorithm. Specifically, we consider a family of $[[2^D , D, 2]]$ quantum
+  error detecting codes whose transversal and permutation gate set can realize
+  arbitrary degree-$D$ instantaneous quantum polynomial (IQP) circuits. Using
+  native operations of the code and the atom array hardware, we compile a
+  fault-tolerant and fast-scrambling family of such IQP circuits in a hypercube
+  geometry, realized recently in the experiments by Bluvstein et al. [Nature
+  626, 7997 (2024)]. We develop a theory of second-moment properties of
+  degree-$D$ IQP circuits for analyzing hardness and verification of random
+  sampling by mapping to a statistical mechanics model. We provide evidence that
+  sampling from hypercube IQP circuits is classically hard to simulate and
+  analyze the linear cross-entropy benchmark (XEB) in comparison to the average
+  fidelity. To realize a fully scalable approach, we first show that Bell
+  sampling from degree-$4$ IQP circuits is classically intractable and can be
+  efficiently validated. We further devise new families of $[[O(d^D),D,d]]$
+  color codes of increasing distance $d$, permitting exponential error
+  suppression for transversal IQP sampling. Our results highlight fault-tolerant
+  compiling as a powerful tool in co-designing algorithms with specific
+  error-correcting codes and realistic hardware.
+tags:
+  - Computer Science - Computational Complexity
+  - Condensed Matter - Quantum Gases
+  - Condensed Matter - Statistical Mechanics
+  - Physics - Atomic Physics
+  - Quantum Physics
+identifiers:
+  arxiv: "2404.19005"

@@ -1,0 +1,37 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: RCG28EVX
+  item_version: 96042
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: BWI5ZT63
+      name: IQP as algorithm
+      path: Quantum Complexity/Sampling/IQP/IQP as algorithm
+qlab:
+  primary_collection: BWI5ZT63
+  indexed_collections:
+    - BWI5ZT63
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: journalArticle
+title: "The Born supremacy: quantum advantage and training of an Ising Born machine"
+authors:
+  - first: Brian
+    last: Coyle
+  - first: Daniel
+    last: Mills
+  - first: Vincent
+    last: Danos
+  - first: Elham
+    last: Kashefi
+year: 2020
+abstract: >-
+  Abstract
+              The search for an application of near-term quantum devices is widespread. Quantum machine learning is touted as a potential utilisation of such devices, particularly those out of reach of the simulation capabilities of classical computers. In this work, we study such an application in generative modelling, focussing on a class of quantum circuits known as Born machines. Specifically, we define a subset of this class based on Ising Hamiltonians and show that the circuits encountered during gradient-based training cannot be efficiently sampled from classically up to multiplicative error in the worst case. Our gradient-based training methods use cost functions known as the Sinkhorn divergence and the Stein discrepancy, which have not previously been used in the gradient-based training of quantum circuits, and we also introduce quantum kernels to generative modelling. We show that these methods outperform the previous standard method, which used maximum mean discrepancy (MMD) as a cost function, and achieve this with minimal overhead. Finally, we discuss the ability of the model to learn hard distributions and provide formal definitions for ‘quantum learning supremacy’. We also exemplify the work of this paper by using generative modelling to perform quantum circuit compilation.
+tags: []
+identifiers:
+  doi: 10.1038/s41534-020-00288-9

@@ -1,0 +1,58 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: XZLR75MV
+  item_version: 96033
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: VQWX7XGH
+      name: Open-dynamics
+      path: Quantum Complexity/QCsim/Open-dynamics
+    - key: BLR38PUL
+      name: classical simulation
+      path: Quantum Complexity/Sampling/IQP/classical simulation
+    - key: PBGR25EN
+      name: percolation of stablizers
+      path: Quantum Complexity/QCsim/Open-dynamics/percolation of stablizers
+qlab:
+  primary_collection: VQWX7XGH
+  indexed_collections:
+    - BLR38PUL
+    - PBGR25EN
+    - VQWX7XGH
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: preprint
+title: Polynomial-Time Classical Simulation of Noisy IQP Circuits with Constant Depth
+authors:
+  - first: Joel
+    last: Rajakumar
+  - first: James D.
+    last: Watson
+  - first: Yi-Kai
+    last: Liu
+year: 2024
+abstract: Sampling from the output distributions of quantum computations
+  comprising only commuting gates, known as instantaneous quantum polynomial
+  (IQP) computations, is believed to be intractable for classical computers, and
+  hence this task has become a leading candidate for testing the capabilities of
+  quantum devices. Here we demonstrate that for an arbitrary IQP circuit
+  undergoing dephasing or depolarizing noise, whose depth is greater than a
+  critical $O(1)$ threshold, the output distribution can be efficiently sampled
+  by a classical computer. Unlike other simulation algorithms for quantum
+  supremacy tasks, we do not require assumptions on the circuit's architecture,
+  on anti-concentration properties, nor do we require $\Omega(\log(n))$ circuit
+  depth. We take advantage of the fact that IQP circuits have deep sections of
+  diagonal gates, which allows the noise to build up predictably and induce a
+  large-scale breakdown of entanglement within the circuit. Our results suggest
+  that quantum supremacy experiments based on IQP circuits may be more
+  susceptible to classical simulation than previously thought.
+tags:
+  - Computer Science - Computational Complexity
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2403.14607
+  arxiv: "2403.14607"

@@ -11,7 +11,8 @@
     "test:watch": "vitest",
     "verify": "npm run check && npm test && npm run build",
     "native:test": "make -C native test",
-    "native:universal": "make -C native universal"
+    "native:universal": "make -C native universal",
+    "test:visual": "node --test test/visual/*.test.mjs"
   },
   "devDependencies": {
     "@types/node": "24.1.0",
@@ -21,6 +22,7 @@
     "esbuild": "0.28.1",
     "happy-dom": "20.11.0",
     "katex": "0.18.1",
+    "playwright": "^1.61.1",
     "typescript": "7.0.2",
     "vitest": "4.1.10"
   },

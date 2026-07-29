@@ -1,0 +1,68 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: ZLA2L46I
+  item_version: 110986
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: S9IUATA5
+      name: Experiments
+      path: Quantum Learning/Experiments
+    - key: Y87T7GAE
+      name: Channel tomo
+      path: Quantum Learning/Learning on operations/Channel tomo
+qlab:
+  primary_collection: S9IUATA5
+  indexed_collections:
+    - S9IUATA5
+    - Y87T7GAE
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: journalArticle
+title: Classical shadows for quantum process tomography on near-term quantum computers
+authors:
+  - first: Ryan
+    last: Levy
+  - first: Di
+    last: Luo
+  - first: Bryan K.
+    last: Clark
+year: 2024
+abstract: >-
+  Quantum process tomography is a powerful tool for understanding quantum
+  channels and characterizing the properties of quantum devices. Inspired by
+  recent advances using classical shadows in quantum state tomography [H.-Y.
+  Huang, R. Kueng, and J. Preskill, .], we have developed ShadowQPT, a classical
+  shadow method for quantum process tomography. We introduce two related
+  formulations with and without ancilla qubits. ShadowQPT stochastically
+  reconstructs the Choi matrix of the device allowing for an  classical
+  evaluation of the device on arbitrary inputs with respect to arbitrary
+  outputs. Using shadows, we then show how to compute overlaps, generate all
+                
+                  k
+                
+                -weight reduced processes, and perform reconstruction via Hamiltonian learning. These latter two tasks are efficient for large systems as the number of quantum measurements needed scales only logarithmically with the number of qubits. A number of additional approximations and improvements are developed, including the use of a pair-factorized Clifford shadow and a series of postprocessing techniques that significantly enhance the accuracy for recovering the quantum channel. We have implemented ShadowQPT using both Pauli and Clifford measurements on the IonQ trapped ion quantum computer for quantum processes up to
+                
+                  
+                    n
+                    =
+                    4
+                  
+                
+                qubits, and we achieved good performance.
+              
+              
+                
+                
+                  
+                    Published by the American Physical Society
+                    2024
+tags:
+  - Condensed Matter - Strongly Correlated Electrons
+  - Physics - Computational Physics
+  - Quantum Physics
+identifiers:
+  doi: 10.1103/physrevresearch.6.013029

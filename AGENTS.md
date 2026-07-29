@@ -49,7 +49,7 @@ confirmed. Qualification is a separate workflow.
 Use the `download-ref` skill. Keep external material under `literature/`, never
 compile downloaded LaTeX, and never mirror paper text into `knowledge/`.
 
-See `docs/skills.md` for what each skill owns, reads, and may write.
+See `.research-loop/docs/project/skills.md` for what each skill owns, reads, and may write.
 
 ## Building and validating
 
@@ -60,7 +60,7 @@ See `docs/skills.md` for what each skill owns, reads, and may write.
 
 ## Preserved surfaces
 
-- Preserve the current dashboard source and appearance. Do not rewrite `app/page.tsx`, `app/globals.css`, or `app/layout.tsx` to make tests pass.
+- Preserve the current dashboard source and appearance. Do not rewrite `src/app/page.tsx`, `src/app/globals.css`, or `src/app/layout.tsx` to make tests pass.
 - Reuse the opaque Sites project ID in `.openai/hosting.json` exactly: `appgprj_6a66e89526a88191a9e969c6f441086c`. Never invent, reformat, or replace it, and never create a replacement site; deployment may stay blocked until that project is visible.
 - The only autonomous backend is the local loopback autoresearch sidecar.
   It may write `.generated/autoresearch-*` staging and, after host validation,

@@ -1,0 +1,67 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: UMLLPB4Z
+  item_version: 96141
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: A3CH6HMR
+      name: Maxcut
+      path: Quantum Algorithm/Optimization/Maxcut
+qlab:
+  primary_collection: A3CH6HMR
+  indexed_collections:
+    - A3CH6HMR
+  primary_topic: quantum-algorithm
+  indexed_topics:
+    - quantum-algorithm
+item_type: journalArticle
+title: Near-term quantum algorithm for solving the MaxCut problem with fewer
+  quantum resources
+authors:
+  - first: Xiumei
+    last: Zhao
+  - first: Yongmei
+    last: Li
+  - first: Jing
+    last: Li
+  - first: Shasha
+    last: Wang
+  - first: Song
+    last: Wang
+  - first: Sujuan
+    last: Qin
+  - first: Fei
+    last: Gao
+year: 2024
+abstract: MaxCut is an NP-hard combinatorial optimization problem in graph
+  theory. The quantum approximate optimization algorithms (QAOAs) offer new
+  methods for solving such problems, which are potentially better than classical
+  schemes. However, the requirement of 𝑁 qubits for solving graphs with
+  𝑁-vertex in QAOA, coupled with the large-𝑁 trainability issue due to barren
+  plateaus, poses a substantial challenge for noisy intermediate-scale quantum
+  (NISQ) devices. Recently, a hybrid quantum–classical algorithm has been
+  proposed for solving semidefinite programs (SDPs), named NISQ SDP Solver
+  (NSS). In this paper, we study the performance of the NSS for solving MaxCut
+  problem via the introduction of a near-term quantum algorithm and execution of
+  experimental simulations. Since the MaxCut problem admits a relaxation into an
+  SDP formulation, the SDP can be solved using NSS, with a subsequent classical
+  post-processing step converting the hybrid density matrix into a MaxCut
+  solution. After performing these steps, the near-term quantum algorithm will
+  also inherit the advantages of NSS. We analyze the algorithm as compared to
+  QAOAs and find that the depth of the quantum circuit is independent of the
+  number of edges on the graph. Our algorithm requires log 𝑁 qubits and has
+  𝑂(1) circuit depth. This implies that it uses exponentially fewer qubits
+  compared to QAOAs while also requiring a significantly reduced circuit depth
+  to solve the MaxCut problem. To demonstrate the effectiveness of the NSS, we
+  focused on 3-regular graphs, 9-regular graphs, and ER graphs. Numerical
+  results indicate that the quantum algorithm achieves a comparable
+  approximation ratio with classical methods by solving the original high
+  dimensional problem within a lower dimensional ansatz space. Analysis under
+  various initial states shows that the algorithm exhibits a remarkably stable
+  performance.
+tags: []
+identifiers:
+  doi: 10.1016/j.physa.2024.129951

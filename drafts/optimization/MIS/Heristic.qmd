@@ -1,0 +1,113 @@
+---
+title: Heristic algorithm for MWIS
+description: "Heristic algorithm for MWIS"
+categories:
+  - theory
+---
+
+# Sweep Line Algorithm (SLA)
+
+The sweeping line algorithm (SLA) is an exact frontier dynamic program for MIS. It replaces the processed region by its boundary assignment and the best score compatible with that assignment [@andrist2023hardness].
+Fix a processing order $v_1,\ldots,v_n$ of $G=(V,E)$, and write $N(v)$ for the neighbors of $v$. After step $t$, define
+$$
+P_t=\{v_1,\ldots,v_t\},
+\qquad
+U_t=V\setminus P_t,
+\qquad
+B_t=\{u\in P_t:N(u)\cap U_t\neq\varnothing\}.
+$$
+For each reachable independent subset $S\subseteq B_t$, SLA stores
+$$
+f_t(S) := \max\left\{ |I|: I\subseteq P_t\text{ is independent and }I\cap B_t=S \right\}.
+$$
+The subset $S$ is the boundary bit string. If two processed histories
+induce the same $S$, only the one with the larger score is retained.
+
+![Refer to @andrist2023hardness](SLA.png)
+
+- Let $v=v_{t+1}$. After processing $v$, Updating new boundary through
+$$
+B_{t+1} =
+\left\{ u\in P_t\cup\{v\}: N(u)\cap\bigl(U_t\setminus\{v\}\bigr)\neq\varnothing \right\}.
+$$
+
+Initialize the new table to $-\infty$. For every stored
+$S\subseteq B_t$, apply
+
+$$
+\begin{aligned}
+\text{skip }v:\quad
+&T_0=S\cap B_{t+1},
+&
+f_{t+1}(T_0)
+&\leftarrow
+\max\{f_{t+1}(T_0),f_t(S)\},
+\\
+\text{select }v:\quad
+&T_1=(S\cup\{v\})\cap B_{t+1},
+&
+f_{t+1}(T_1)
+&\leftarrow
+\max\{f_{t+1}(T_1),f_t(S)+1\},
+\end{aligned}
+$$
+
+where the second line is used only if
+
+$$
+S\cap N(v)=\varnothing.
+$$
+
+This boundary check is sufficient: every processed neighbor of
+$v\in U_t$ belongs to $B_t$ by definition.
+
+Intersecting with $B_{t+1}$ forgets every vertex that no longer touches
+the future. In Fig. 2, the light-blue vertex enters the boundary and the
+lower-left blue vertex leaves it.
+
+The forgotten bit is discarded, but its contribution remains in
+$f_t(S)$. If several old states project to the same new state, the
+maximum operation keeps only the best history.
+
+:::{.callout-note collapse="true" icon="false"}
+## Correctness and cost
+
+The invariant is the definition of $f_t$: it is the largest independent
+set in $P_t$ compatible with each boundary state. Initially,
+$P_0=B_0=\varnothing$ and $f_0(\varnothing)=0$.
+
+Every independent set in $P_{t+1}$ either excludes or includes $v$,
+giving the two transitions above. The inclusion branch is legal exactly
+when $S\cap N(v)=\varnothing$.
+
+Vertices removed from the boundary have no neighbors in $U_{t+1}$.
+Histories with the same projected boundary state therefore have the same
+future extensions, so max-merging cannot remove an optimum.
+
+After the final vertex, $U_n=B_n=\varnothing$, and hence
+
+$$
+f_n(\varnothing)=\alpha(G)=|\mathrm{MIS}|.
+$$
+
+If $b=\max_t|B_t|$, at most $2^b$ states are stored. The generic memory
+cost is $O(2^b)$ and the runtime is
+$O(n2^b\operatorname{poly}(b))$.
+
+For the quasiplanar UD instances studied in
+@andrist2023hardness, valid boundary states satisfy a Fibonacci bound.
+With $N\asymp L^2$, the reported scaling is
+
+$$
+O_{\mathrm{mem}}\!\left(\mathrm{Fib}(\sqrt N)\right),
+\qquad
+O_{\mathrm{time}}\!\left(N\,\mathrm{Fib}(\sqrt N)\right)
+\approx O\!\left(N\phi^{\sqrt N}\right).
+$$
+
+For MWIS, replace $|I|$ by $w(I)$ and the increment $+1$ by $+w(v)$;
+the state space and correctness argument are unchanged.
+:::
+
+
+# Branch and Bound

@@ -1,0 +1,51 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: TSPMSRH3
+  item_version: 96891
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: EPSDBKR5
+      name: Feynman-path
+      path: Quantum Complexity/QCsim/Feynman-path
+qlab:
+  primary_collection: EPSDBKR5
+  indexed_collections:
+    - EPSDBKR5
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: conferencePaper
+title: Hybrid Schrödinger-Feynman Simulation of Quantum Circuits With Decision
+  Diagrams
+authors:
+  - first: Lukas
+    last: Burgholzer
+  - first: Hartwig
+    last: Bauer
+  - first: Robert
+    last: Wille
+year: 2021
+abstract: Classical simulations of quantum computations are vital for the future
+  development of this emerging technology. To this end, decision diagrams have
+  been proposed as a complementary technique which frequently allows to tackle
+  the inherent exponential complexity of these simulations. In the worst case,
+  however, they still cannot escape this complexity. Additionally, while other
+  techniques make use of all the available processing power, decision
+  diagram-based simulation to date cannot exploit the many processing units of
+  today's systems. In this work, we show that both problems can be tackled
+  together by employing a hybrid Schrödinger-Feynman scheme for the simulation.
+  More precisely, we show that realizing such a scheme with decision diagrams is
+  indeed possible, we discuss the resulting problems in its realization, and
+  propose solutions how they can be handled. Experimental evaluations confirm
+  that this significantly advances the state of the art in decision
+  diagram-based simulation -- allowing to simulate certain hard circuits within
+  minutes that could not be simulated in a whole day thus far.
+tags:
+  - Computer Science - Emerging Technologies
+  - Quantum Physics
+identifiers:
+  doi: 10.1109/qce52317.2021.00037
+  arxiv: "2105.07045"

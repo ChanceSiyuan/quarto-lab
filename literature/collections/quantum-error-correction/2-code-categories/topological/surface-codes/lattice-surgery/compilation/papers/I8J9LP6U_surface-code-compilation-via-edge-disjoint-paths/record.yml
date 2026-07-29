@@ -1,0 +1,57 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: I8J9LP6U
+  item_version: 96109
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: PXRQMBZS
+      name: Compilation
+      path: Quantum Error correction/2-Code categories/Topological/surface
+        codes/Lattice Surgery/Compilation
+qlab:
+  primary_collection: PXRQMBZS
+  indexed_collections:
+    - PXRQMBZS
+  primary_topic: quantum-error-correction
+  indexed_topics:
+    - quantum-error-correction
+item_type: journalArticle
+title: Surface code compilation via edge-disjoint paths
+authors:
+  - first: Michael
+    last: Beverland
+  - first: Vadym
+    last: Kliuchnikov
+  - first: Eddie
+    last: Schoute
+year: 2022
+abstract: We provide an efficient algorithm to compile quantum circuits for
+  fault-tolerant execution. We target surface codes, which form a 2D grid of
+  logical qubits with nearest-neighbor logical operations. Embedding an input
+  circuit's qubits in surface codes can result in long-range two-qubit
+  operations across the grid. We show how to prepare many long-range Bell pairs
+  on qubits connected by edge-disjoint paths of ancillas in constant depth that
+  can be used to perform these long-range operations. This forms one core part
+  of our Edge-Disjoint Paths Compilation (EDPC) algorithm, by easily performing
+  many parallel long-range Clifford operations in constant depth. It also allows
+  us to establish a connection between surface code compilation and several
+  well-studied edge-disjoint paths problems. Similar techniques allow us to
+  perform non-Clifford single-qubit rotations far from magic state distillation
+  factories. In this case, we can easily find the maximum set of paths by a
+  max-flow reduction, which forms the other major part of EDPC. EDPC has the
+  best asymptotic worst-case performance guarantees on the circuit depth for
+  compiling parallel operations when compared to related compilation methods
+  based on swaps and network coding. EDPC also shows a quadratic depth
+  improvement over sequential Pauli-based compilation for parallel rotations
+  requiring magic resources. We implement EDPC and find significantly improved
+  performance for circuits built from parallel cnots, and for circuits which
+  implement the multi-controlled $X$ gate.
+tags:
+  - Computer Science - Emerging Technologies
+  - Quantum Physics
+identifiers:
+  doi: 10.1103/prxquantum.3.020342
+  arxiv: "2110.11493"

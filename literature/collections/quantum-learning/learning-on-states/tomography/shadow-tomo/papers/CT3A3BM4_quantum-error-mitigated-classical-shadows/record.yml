@@ -1,0 +1,74 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: CT3A3BM4
+  item_version: 96158
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 9ISUJVXK
+      name: shadow tomo
+      path: Quantum Learning/Learning on states/Tomography/shadow tomo
+qlab:
+  primary_collection: 9ISUJVXK
+  indexed_collections:
+    - 9ISUJVXK
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: journalArticle
+title: Quantum Error Mitigated Classical Shadows
+authors:
+  - first: Hamza
+    last: Jnane
+  - first: Jonathan
+    last: Steinberg
+  - first: Zhenyu
+    last: Cai
+  - first: H. Chau
+    last: Nguyen
+  - first: Bálint
+    last: Koczor
+year: 2024
+abstract: >-
+  Classical shadows enable us to learn many properties of a quantum state
+                
+                  ρ
+                
+                with very few measurements. However, near-term and early fault-tolerant quantum computers will only be able to prepare noisy quantum states
+                
+                  ρ
+                
+                and it is thus a considerable challenge to efficiently learn properties of an ideal, noise-free state
+                
+                  
+                    ρ
+                    id
+                  
+                
+                . We consider error mitigation techniques, such as probabilistic error cancelation (PEC), zero noise extrapolation (ZNE), and symmetry verification (SV), which have been developed for mitigating errors in single expected value measurements and generalize them for mitigating errors in classical shadows. We find that PEC is the most natural candidate and thus develop a thorough theoretical framework for PEC shadows with the following rigorous theoretical guarantees: PEC shadows are an unbiased estimator for the ideal quantum state
+                
+                  
+                    ρ
+                    id
+                  
+                
+                ; the sample complexity for simultaneously predicting many linear properties of
+                
+                  
+                    ρ
+                    id
+                  
+                
+                is identical to that of the conventional shadows approach up to a multiplicative factor, which is the sample overhead due to error mitigation. Due to efficient postprocessing of shadows, this overhead does not depend directly on the number of qubits but rather grows exponentially with the number of noisy gates. The broad set of tools introduced in this work may be instrumental in exploiting near-term and early fault-tolerant quantum computers: we demonstrate in detailed numerical simulations a range of practical applications of quantum computers that will significantly benefit from our techniques.
+              
+              
+                
+                
+                  
+                    Published by the American Physical Society
+                    2024
+tags: []
+identifiers:
+  doi: 10.1103/prxquantum.5.010324

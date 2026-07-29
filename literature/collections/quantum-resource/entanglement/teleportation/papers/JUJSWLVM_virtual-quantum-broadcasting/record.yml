@@ -1,0 +1,55 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: JUJSWLVM
+  item_version: 96051
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: ZBR8IAWR
+      name: Teleportation
+      path: Quantum Resource/Entanglement/Teleportation
+    - key: SV9NKJPG
+      name: Cloning
+      path: Quantum Resource/Distinguishability/Cloning
+qlab:
+  primary_collection: ZBR8IAWR
+  indexed_collections:
+    - SV9NKJPG
+    - ZBR8IAWR
+  primary_topic: quantum-resource
+  indexed_topics:
+    - quantum-resource
+item_type: journalArticle
+title: Virtual quantum broadcasting
+authors:
+  - first: Arthur J.
+    last: Parzygnat
+  - first: James
+    last: Fullwood
+  - first: Francesco
+    last: Buscemi
+  - first: Giulio
+    last: Chiribella
+year: 2024
+abstract: "The quantum no-broadcasting theorem states that it is impossible to
+  produce perfect copies of an arbitrary quantum state, even if the copies are
+  allowed to be correlated. Here we show that, although quantum broadcasting
+  cannot be achieved by any physical process, it can be achieved by a virtual
+  process, described by a Hermitian-preserving trace-preserving map. This
+  virtual process is canonical: it is the only map that broadcasts all quantum
+  states, is covariant under unitary evolution, is invariant under permutations
+  of the copies, and reduces to the classical broadcasting map when subjected to
+  decoherence. We show that the optimal physical approximation to the canonical
+  broadcasting map is the optimal universal quantum cloning, and we also show
+  that virtual broadcasting can be achieved by a virtual measure-and-prepare
+  protocol, where a virtual measurement is performed, and, depending on the
+  outcomes, two copies of a virtual quantum state are generated. Finally, we use
+  canonical virtual broadcasting to prove a uniqueness result for quantum states
+  over time."
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.1103/physrevlett.132.110203
+  arxiv: "2310.13049"

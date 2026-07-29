@@ -1,0 +1,58 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 8IV3TW9T
+  item_version: 101281
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: KS8H3U7A
+      name: Nonparametric
+      path: Quantum Learning/Machine learning/Nonparametric
+qlab:
+  primary_collection: KS8H3U7A
+  indexed_collections:
+    - KS8H3U7A
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: journalArticle
+title: "Deep learning: a statistical viewpoint"
+authors:
+  - first: Peter L.
+    last: Bartlett
+  - first: Andrea
+    last: Montanari
+  - first: Alexander
+    last: Rakhlin
+year: 2021
+abstract: "The remarkable practical success of deep learning has revealed some
+  major surprises from a theoretical perspective. In particular, simple gradient
+  methods easily ﬁnd near-optimal solutions to non-convex optimization problems,
+  and despite giving a near-perfect ﬁt to training data without any explicit
+  eﬀort to control model complexity, these methods exhibit excellent predictive
+  accuracy. We conjecture that speciﬁc principles underlie these phenomena: that
+  overparametrization allows gradient methods to ﬁnd interpolating solutions,
+  that these methods implicitly impose regularization, and that
+  overparametrization leads to benign overﬁtting, that is, accurate predictions
+  despite overﬁtting training data. In this article, we survey recent progress
+  in statistical learning theory that provides examples illustrating these
+  principles in simpler settings. We ﬁrst review classical uniform convergence
+  results and why they fall short of explaining aspects of the behavior of deep
+  learning methods. We give examples of implicit regularization in simple
+  settings, where gradient methods lead to minimal norm functions that perfectly
+  ﬁt the training data. Then we review prediction methods that exhibit benign
+  overﬁtting, focusing on regression problems with quadratic loss. For these
+  methods, we can decompose the prediction rule into a simple component that is
+  useful for prediction and a spiky component that is useful for overﬁtting but,
+  in a favorable setting, does not harm prediction accuracy. We focus
+  speciﬁcally on the linear regime for neural networks, where the network can be
+  approximated by a linear model. In this regime, we demonstrate the success of
+  gradient ﬂow, and we consider benign overﬁtting with two-layer networks,
+  giving an exact asymptotic analysis that precisely demonstrates the impact of
+  overparametrization. We conclude by highlighting the key challenges that arise
+  in extending these insights to realistic deep learning settings."
+tags: []
+identifiers:
+  doi: 10.1017/s0962492921000027

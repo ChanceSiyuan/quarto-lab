@@ -1,0 +1,55 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 27QU9P5E
+  item_version: 96567
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 9ISUJVXK
+      name: shadow tomo
+      path: Quantum Learning/Learning on states/Tomography/shadow tomo
+qlab:
+  primary_collection: 9ISUJVXK
+  indexed_collections:
+    - 9ISUJVXK
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: preprint
+title: "Logical shadow tomography: Efficient estimation of error-mitigated
+  observables"
+authors:
+  - first: Hong-Ye
+    last: Hu
+  - first: Ryan
+    last: LaRose
+  - first: Yi-Zhuang
+    last: You
+  - first: Eleanor
+    last: Rieffel
+  - first: Zhihui
+    last: Wang
+year: 2022
+abstract: We introduce a technique to estimate error-mitigated expectation
+  values on noisy quantum computers. Our technique performs shadow tomography on
+  a logical state to produce a memory-efficient classical reconstruction of the
+  noisy density matrix. Using efficient classical post-processing, one can
+  mitigate errors by projecting a general nonlinear function of the noisy
+  density matrix into the codespace. The subspace expansion and virtual
+  distillation can be viewed as special cases of the new framekwork. We show our
+  method is favorable in the quantum and classical resources overhead. Relative
+  to subspace expansion which requires $O\left(2^{N} \right)$ samples to
+  estimate a logical Pauli observable with $[[N, k]]$ error correction code, our
+  technique requires only $O\left(4^{k} \right)$ samples. Relative to virtual
+  distillation, our technique can compute powers of the density matrix without
+  additional copies of quantum states or quantum memory. We present numerical
+  evidence using logical states encoded with up to sixty physical qubits and
+  show fast convergence to error-free expectation values with only $10^5$
+  samples under 1% depolarizing noise.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2203.07263
+  arxiv: "2203.07263"

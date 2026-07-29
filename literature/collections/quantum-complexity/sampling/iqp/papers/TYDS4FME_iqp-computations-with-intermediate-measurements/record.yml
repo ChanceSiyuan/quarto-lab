@@ -1,0 +1,43 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: TYDS4FME
+  item_version: 96041
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 9HSDA5Q3
+      name: IQP
+      path: Quantum Complexity/Sampling/IQP
+qlab:
+  primary_collection: 9HSDA5Q3
+  indexed_collections:
+    - 9HSDA5Q3
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: preprint
+title: IQP computations with intermediate measurements
+authors:
+  - first: Richard
+    last: Jozsa
+  - first: Soumik
+    last: Ghosh
+  - first: Sergii
+    last: Strelchuk
+year: 2024
+abstract: We consider the computational model of IQP circuits (in which all
+  computational steps are X-basis diagonal gates), supplemented by intermediate
+  X- or Z-basis measurements. We show that if we allow non-adaptive or adaptive
+  X-basis measurements, or allow non-adaptive Z-basis measurements, then the
+  computational power remains the same as that of the original IQP model; and
+  with adaptive Z-basis measurements the model becomes quantum universal.
+  Furthermore we show that the computational model having circuits of only CZ
+  gates and adaptive X-basis measurements, with input states that are tensor
+  products of 1-qubit states from the set |+>, |->, |0>+i|1> and |0>+ e^{i
+  pi/4}|1> (each normalised), is quantum universal.
+tags:
+  - Quantum Physics
+identifiers:
+  arxiv: "2408.10093"

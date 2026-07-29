@@ -1,0 +1,53 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: H333UKLS
+  item_version: 96051
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: FMTRVYEI
+      name: Membership Complexity
+      path: Quantum Resource/Entanglement/seperability verification/Membership
+        Complexity
+qlab:
+  primary_collection: FMTRVYEI
+  indexed_collections:
+    - FMTRVYEI
+  primary_topic: quantum-resource
+  indexed_topics:
+    - quantum-resource
+item_type: preprint
+title: Computational complexity of the quantum separability problem
+authors:
+  - first: Lawrence M.
+    last: Ioannou
+year: 2007
+abstract: Ever since entanglement was identified as a computational and
+  cryptographic resource, researchers have sought efficient ways to tell whether
+  a given density matrix represents an unentangled, or separable, state. This
+  paper gives the first systematic and comprehensive treatment of this
+  (bipartite) quantum separability problem, focusing on its deterministic (as
+  opposed to randomized) computational complexity. First, I review the one-sided
+  tests for separability, paying particular attention to the semidefinite
+  programming methods. Then, I discuss various ways of formulating the quantum
+  separability problem, from exact to approximate formulations, the latter of
+  which are the paper's main focus. I then give a thorough treatment of the
+  problem's relationship with the complexity classes NP, NP-complete, and co-NP.
+  I also discuss extensions of Gurvits' NP-hardness result to strong NP-hardness
+  of certain related problems. A major open question is whether the NP-contained
+  formulation (QSEP) of the quantum separability problem is Karp-NP-complete;
+  QSEP may be the first natural example of a problem that is Turing-NP-complete
+  but not Karp-NP-complete. Finally, I survey all the proposed (deterministic)
+  algorithms for the quantum separability problem, including the bounded search
+  for symmetric extensions (via semidefinite programming), based on the recent
+  quantum de Finetti theorem; and the entanglement-witness search (via
+  interior-point algorithms and global optimization). These two algorithms have
+  the lowest complexity, with the latter being the best under advice of
+  asymptotically optimal point-coverings of the sphere.
+tags:
+  - Computer Science - Computational Complexity
+  - Quantum Physics
+identifiers:
+  arxiv: quant-ph/0603199

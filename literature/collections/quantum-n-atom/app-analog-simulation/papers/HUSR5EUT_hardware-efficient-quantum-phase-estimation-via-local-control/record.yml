@@ -1,0 +1,56 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: HUSR5EUT
+  item_version: 96647
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: IKQPEJ3W
+      name: App-Analog simulation
+      path: Quantum N-Atom/App-Analog simulation
+qlab:
+  primary_collection: IKQPEJ3W
+  indexed_collections:
+    - IKQPEJ3W
+  primary_topic: quantum-n-atom
+  indexed_topics:
+    - quantum-n-atom
+item_type: journalArticle
+title: Hardware-efficient quantum phase estimation via local control
+authors:
+  - first: Benjamin F.
+    last: Schiffer
+  - first: Dominik S.
+    last: Wild
+  - first: Nishad
+    last: Maskara
+  - first: Mikhail D.
+    last: Lukin
+  - first: J. Ignacio
+    last: Cirac
+year: 2025
+abstract: Quantum phase estimation plays a central role in quantum simulation as
+  it enables the study of spectral properties of many-body quantum systems. Most
+  variants of the phase estimation algorithm require the application of the
+  global unitary evolution conditioned on the state of one or more auxiliary
+  qubits, posing a significant challenge for current quantum devices. In this
+  work, we present an approach to quantum phase estimation that uses only
+  locally controlled operations, resulting in a significantly reduced circuit
+  depth. At the heart of our approach are efficient routines to measure the
+  complex phase of the expectation value of the time-evolution operator, the
+  so-called Loschmidt echo, for both circuit dynamics and Hamiltonian dynamics.
+  By tracking changes in the phase during the dynamics, the routines trade
+  circuit depth for an increased sampling cost and classical postprocessing. Our
+  approach does not rely on reference states and is applicable to any
+  efficiently preparable state, regardless of its correlations. We provide a
+  comprehensive analysis of the sample complexity and illustrate the results
+  with numerical simulations. Our methods offer a practical pathway for
+  measuring spectral properties in large many-body quantum systems using current
+  quantum devices.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.1103/zlp8-rz9n
+  arxiv: "2506.18765"

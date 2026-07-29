@@ -1,0 +1,47 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: DGM3788B
+  item_version: 96117
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: KJHSPUHS
+      name: Fermion-based simulation
+      path: Quantum Complexity/QCsim/Fermion-based simulation
+qlab:
+  primary_collection: KJHSPUHS
+  indexed_collections:
+    - KJHSPUHS
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: preprint
+title: Polynomially restricted operator growth in dynamically integrable models
+authors:
+  - first: Igor
+    last: Ermakov
+  - first: Tim
+    last: Byrnes
+  - first: Oleg
+    last: Lychkovskiy
+year: 2024
+abstract: We provide a framework to determine the upper bound to the complexity
+  of a computing a given observable with respect to a Hamiltonian. By
+  considering the Heisenberg evolution of the observable, we show that each
+  Hamiltonian defines an equivalence relation, causing the operator space to be
+  partitioned into equivalence classes. Any operator within a specific class
+  never leaves its equivalence class during the evolution. We provide a method
+  to determine the dimension of the equivalence classes and evaluate it for
+  various models, such as the $ XY $ chain and Kitaev model on trees. Our
+  findings reveal that the complexity of operator evolution in the $XY$ model
+  grows from the edge to the bulk, which is physically manifested as suppressed
+  relaxation of qubits near the boundary. Our methods are used to reveal several
+  new cases of simulable quantum dynamics, including a $XY$-$ZZ$ model which
+  cannot be reduced to free fermions.
+tags:
+  - Condensed Matter - Statistical Mechanics
+  - Quantum Physics
+identifiers:
+  arxiv: "2406.13026"

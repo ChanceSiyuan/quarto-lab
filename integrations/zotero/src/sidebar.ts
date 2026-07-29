@@ -1,6 +1,8 @@
 import { renderMarkdown } from "./markdown";
 import { renderModelOptions } from "./model-menu";
-import { copyToClipboard } from "./platform";
+import { copyToClipboard, prefInt, setPrefInt } from "./platform";
+import { ResearchLoopSiteView } from "./research-loop-site";
+import { QmdWorkspaceView } from "./qmd-workspace";
 import {
   activityLabel,
   contentEntries,
@@ -10,7 +12,6 @@ import {
   type Exchange,
 } from "./exchanges";
 import type { NotingPhase, NotingView } from "./noting";
-import { QLAB_COMMANDS, type QLabCommandID } from "./qlab-commands";
 
 export type SidebarPhase = "connecting" | "signed-out" | "ready" | "unavailable" | "error";
 
@@ -51,7 +52,7 @@ export interface ThreadOption {
   title: string;
   updatedAt: string;
   active: boolean;
-  status?: "idle" | "running" | "attention";
+  status?: "idle" | "running" | "attention" | "switching";
 }
 
 export type ResearchMode = "ask" | "agent";
@@ -113,13 +114,6 @@ export interface CheckpointOption {
   createdAt?: string;
 }
 
-export interface QuestionListItem {
-  anchorId: string;
-  pageNumber?: number;
-  question: string;
-  status: "open" | "resolved";
-}
-
 export interface SidebarState {
   phase: SidebarPhase;
   accountLabel?: string;
@@ -131,6 +125,7 @@ export interface SidebarState {
   selectedModel: string;
   effort: string;
   running: boolean;
+  creatingThread?: boolean;
   threadTitle?: string;
   mode: ResearchMode;
   contextChips: ResearchContextChip[];
@@ -142,7 +137,6 @@ export interface SidebarState {
   turnStartedAt: number | null;
   turnDurations: Record<string, number>;
   paperTrailConsent: { question: string; pageNumber?: number } | null;
-  anchors: QuestionListItem[];
   noting: NotingView | null;
   /** Feature flags for the active backend; an absent flag defaults to `true`. */
   capabilities?: { supportsAgentMode: boolean; supportsLogin: boolean };
@@ -170,17 +164,17 @@ export interface SidebarCallbacks {
   onApprovalDecision?(approvalId: string, decision: "approve-once" | "reject"): void;
   onRestoreCheckpoint?(checkpointId: string): void;
   onPaperTrailConsent?(decision: "accept" | "decline"): void;
-  onAnchorJump?(anchorId: string): void;
-  onAnchorResolve?(anchorId: string): void;
   onNotingStart?(): void;
   onNotingDecision?(decision: "continue" | "cancel"): void;
   onNotingApply?(mode: { kind: "new" } | { kind: "replace"; key: string }): void;
   onNotingCancel?(): void;
-  onQLabCommand?(command: QLabCommandID): void;
   onChooseQLabRoot?(): void;
   onCaptureChatDraft?(): void;
   onChoosePaper?(): void;
   onOpenPaper?(): void;
+  onCheckMainSite?(): Promise<boolean>;
+  onDeployMainSite?(onProgress?: (message: string) => void): Promise<void>;
+  onOpenDocument?(relativePath: string): void;
 }
 
 export interface SidebarViewOptions {
@@ -189,11 +183,55 @@ export interface SidebarViewOptions {
 
 export type SidebarIcon = "history" | "new" | "terminal" | "more" | "refresh" | "send" | "stop" | "context" | "close" | "copy" | "note";
 
+const LONG_USER_MESSAGE_CHARACTERS = 420;
+const LONG_USER_MESSAGE_LINES = 8;
+
+/** Renders long user prompts compactly without discarding any of their text. */
+export function appendUserMessage(
+  doc: Document,
+  article: HTMLElement,
+  entry: Pick<ChatEntry, "id" | "text">,
+  expandedMessages: Set<string>,
+): void {
+  const bubble = doc.createElement("div");
+  bubble.className = "zc-user-bubble";
+  bubble.textContent = entry.text;
+  const isLong = entry.text.length > LONG_USER_MESSAGE_CHARACTERS
+    || entry.text.split(/\r?\n/u).length > LONG_USER_MESSAGE_LINES;
+  if (!isLong) {
+    article.appendChild(bubble);
+    return;
+  }
+
+  const toggle = doc.createElement("button");
+  toggle.type = "button";
+  toggle.className = "zc-user-message-toggle";
+  const syncExpandedState = () => {
+    const expanded = expandedMessages.has(entry.id);
+    bubble.classList.toggle("is-collapsed", !expanded);
+    toggle.textContent = expanded ? "Collapse" : "Show Full Message";
+    toggle.title = expanded ? "Collapse this message" : "Show the complete message";
+    toggle.setAttribute("aria-expanded", String(expanded));
+  };
+  toggle.addEventListener("click", () => {
+    if (expandedMessages.has(entry.id)) expandedMessages.delete(entry.id);
+    else expandedMessages.add(entry.id);
+    syncExpandedState();
+  });
+  syncExpandedState();
+  article.append(bubble, toggle);
+}
+
+/** The chat column never shrinks past a quarter or grows past two thirds. */
+function clampSplitRatio(percent: number): number {
+  if (!Number.isFinite(percent)) return 40;
+  return Math.round(Math.min(68, Math.max(25, percent)));
+}
+
 export class SidebarView {
   private readonly doc: Document;
   private readonly root: HTMLElement;
   private readonly surface: "sidebar" | "workbench";
-  private questionList!: HTMLElement;
   private transcript!: HTMLElement;
   private textarea!: HTMLTextAreaElement;
   private sendButton!: HTMLButtonElement;
@@ -201,9 +239,7 @@ export class SidebarView {
   private modelSelect!: HTMLSelectElement;
   private effortSelect!: HTMLSelectElement;
   private composerControls!: HTMLElement;
-  private safetyChip!: HTMLElement;
   private qlabRootLabel!: HTMLElement;
-  private qlabCommandButtons: HTMLButtonElement[] = [];
   private contextTitle!: HTMLElement;
   private contextMeta!: HTMLElement;
   private choosePaperButton!: HTMLButtonElement;
@@ -219,6 +255,14 @@ export class SidebarView {
   private loginLayer!: HTMLElement;
   private threadTitle!: HTMLElement;
   private accountButton!: HTMLButtonElement;
+  private historyButton!: HTMLButtonElement;
+  private topActions!: HTMLElement;
+  private splitHandle!: HTMLButtonElement;
+  private splitRatio = clampSplitRatio(prefInt("splitRatio", 40));
+  private newThreadButton!: HTMLButtonElement;
+  private mainSiteButton: HTMLButtonElement | null = null;
+  private mainSiteView: ResearchLoopSiteView | null = null;
+  private workspaceView: QmdWorkspaceView | null = null;
   private state: SidebarState;
   private readonly entryNodes = new Map<string, { fingerprint: string; node: HTMLElement }>();
   private emptyState: HTMLElement | null = null;
@@ -227,6 +271,7 @@ export class SidebarView {
   private contextMenuSelection = 0;
   private contextQueryStart: number | null = null;
   private readonly expandedTurns = new Set<string>();
+  private readonly expandedUserMessages = new Set<string>();
   private activityTimer: number | null = null;
   private activityNode: HTMLElement | null = null;
   private activityLabelEl: HTMLElement | null = null;
@@ -246,8 +291,9 @@ export class SidebarView {
       ? "zc-sidebar zc-workbench-chat"
       : "zc-sidebar";
     this.root.setAttribute("role", this.surface === "workbench" ? "main" : "region");
-    this.root.setAttribute("aria-label", this.surface === "workbench" ? "QLab 工作台" : "QLab 助手");
+    this.root.setAttribute("aria-label", this.surface === "workbench" ? "QLab Workbench" : "QLab Assistant");
     body.replaceChildren(this.root);
+    this.applySplitRatio(this.splitRatio);
     this.state = {
       phase: "connecting",
       entries: [],
@@ -267,7 +313,6 @@ export class SidebarView {
       turnStartedAt: null,
       turnDurations: {},
       paperTrailConsent: null,
-      anchors: [],
       noting: null,
     };
     this.build();
@@ -279,6 +324,8 @@ export class SidebarView {
       this.doc.defaultView?.clearInterval(this.activityTimer);
       this.activityTimer = null;
     }
+    this.mainSiteView?.destroy();
+    this.workspaceView?.destroy();
     this.root.remove();
   }
 
@@ -292,6 +339,7 @@ export class SidebarView {
   }
 
   focusComposer(text?: string): void {
+    if (this.mainSiteView?.isVisible() || this.workspaceView?.isVisible()) return;
     if (text !== undefined) {
       const prefix = this.textarea.value.trim() ? `${this.textarea.value.trim()}\n\n` : "";
       this.textarea.value = prefix + text;
@@ -313,7 +361,7 @@ export class SidebarView {
     this.terminalDrawer.setAttribute("aria-hidden", String(!open));
     this.root.classList.toggle("is-terminal-open", open);
     this.terminalButton.setAttribute("aria-pressed", String(open));
-    this.terminalButton.title = open ? "收起 Terminal" : "打开 Terminal";
+    this.terminalButton.title = open ? "Collapse Terminal" : "Open Terminal";
   }
 
   revealComposer(): void {
@@ -335,7 +383,7 @@ export class SidebarView {
     product.textContent = "Research Loop · Local Codex";
     this.threadTitle = this.doc.createElement("div");
     this.threadTitle.className = "zc-thread-title";
-    this.threadTitle.textContent = "论文助手";
+    this.threadTitle.textContent = "Paper Assistant";
     titles.append(product, this.threadTitle);
     identity.append(icon, titles);
 
@@ -343,33 +391,53 @@ export class SidebarView {
     actions.className = "zc-top-actions";
     const noteButton = this.iconButton(
       "note",
-      "总结当前聊天并整理到 Draft",
+      "Summarize this chat into a Draft",
       () => this.callbacks.onCaptureChatDraft?.(),
     );
     const workbenchButton = this.doc.createElement("button");
     workbenchButton.type = "button";
     workbenchButton.className = "zc-workbench-open";
-    workbenchButton.title = "在 Zotero 标签页打开 QLab 工作台";
-    workbenchButton.textContent = "工作台";
+    workbenchButton.title = "Open the QLab Workbench in a Zotero tab";
+    workbenchButton.textContent = "Workbench";
     workbenchButton.hidden = this.surface === "workbench";
     workbenchButton.addEventListener("click", () => this.callbacks.onOpenWorkbench());
-    const historyButton = this.iconButton("history", "对话历史", () => this.toggleHistoryMenu());
-    const newButton = this.iconButton("new", "新对话", () => this.callbacks.onNewThread());
+    if (this.surface === "workbench") {
+      this.mainSiteButton = this.doc.createElement("button");
+      this.mainSiteButton.type = "button";
+      this.mainSiteButton.className = "zc-main-site-button is-checking";
+      this.mainSiteButton.textContent = "Checking main site…";
+      this.mainSiteButton.title = "Check Research Loop main site";
+      this.mainSiteButton.disabled = true;
+      this.mainSiteButton.setAttribute("aria-pressed", "false");
+      this.mainSiteButton.addEventListener("click", () => void this.activateMainSite());
+    }
+    this.topActions = actions;
+    const historyButton = this.iconButton("history", "Conversation History", () => this.toggleHistoryMenu());
+    this.historyButton = historyButton;
+    this.newThreadButton = this.iconButton("new", "New Conversation", () => this.callbacks.onNewThread());
     this.terminalButton = this.iconButton(
       "terminal",
-      "打开 Terminal",
+      "Open Terminal",
       () => this.callbacks.onOpenTerminal(),
       "Terminal",
     );
     this.terminalButton.classList.add("zc-terminal-button");
     this.terminalButton.setAttribute("aria-pressed", "false");
-    this.accountButton = this.iconButton("more", "账户", () => this.toggleAccountMenu());
-    actions.append(workbenchButton, noteButton, historyButton, newButton, this.terminalButton, this.accountButton);
+    this.accountButton = this.iconButton("more", "Account", () => this.toggleAccountMenu());
+    actions.append(
+      workbenchButton,
+      ...(this.mainSiteButton ? [this.mainSiteButton] : []),
+      noteButton,
+      historyButton,
+      this.newThreadButton,
+      this.terminalButton,
+      this.accountButton,
+    );
     topbar.append(identity, actions);
 
     this.threadTabs = this.doc.createElement("nav");
     this.threadTabs.className = "zc-thread-tabs";
-    this.threadTabs.setAttribute("aria-label", "论文对话标签");
+    this.threadTabs.setAttribute("aria-label", "Paper conversation tabs");
 
     const contextCard = this.doc.createElement("section");
     contextCard.className = "zc-context-card";
@@ -383,7 +451,7 @@ export class SidebarView {
     this.contextMeta = this.doc.createElement("div");
     this.contextMeta.className = "zc-context-meta";
     contextCopy.append(this.contextTitle, this.contextMeta);
-    const refresh = this.iconButton("refresh", "刷新 Reader 上下文", () => this.callbacks.onRefreshContext());
+    const refresh = this.iconButton("refresh", "Refresh Reader Context", () => this.callbacks.onRefreshContext());
     this.choosePaperButton = this.doc.createElement("button");
     this.choosePaperButton.type = "button";
     this.choosePaperButton.className = "zc-choose-paper";
@@ -391,16 +459,10 @@ export class SidebarView {
     this.openPaperButton = this.doc.createElement("button");
     this.openPaperButton.type = "button";
     this.openPaperButton.className = "zc-open-paper";
-    this.openPaperButton.textContent = "打开 PDF";
-    this.openPaperButton.title = "在新的 Zotero PDF 标签页中打开当前论文";
+    this.openPaperButton.textContent = "Open PDF";
+    this.openPaperButton.title = "Open the current paper in a new Zotero PDF tab";
     this.openPaperButton.addEventListener("click", () => this.callbacks.onOpenPaper?.());
     contextCard.append(contextIcon, contextCopy, this.openPaperButton, this.choosePaperButton, refresh);
-
-    // Attached/detached dynamically by renderQuestionList() -- absent from
-    // the DOM entirely (not merely `hidden`) when there are no anchors, so
-    // it never claims a CSS Grid row (or a querySelector hit) while empty.
-    this.questionList = this.doc.createElement("section");
-    this.questionList.className = "zc-question-list";
 
     this.transcript = this.doc.createElement("main");
     this.transcript.className = "zc-transcript";
@@ -427,32 +489,19 @@ export class SidebarView {
     const qlabIdentity = this.doc.createElement("button");
     qlabIdentity.type = "button";
     qlabIdentity.className = "zc-qlab-root-button";
-    qlabIdentity.title = "选择 QLab 仓库";
+    qlabIdentity.title = "Choose QLab Repository";
     qlabIdentity.addEventListener("click", () => this.callbacks.onChooseQLabRoot?.());
     const qlabMark = this.doc.createElement("strong");
     qlabMark.textContent = "QLab";
     this.qlabRootLabel = this.doc.createElement("span");
     this.qlabRootLabel.className = "zc-qlab-root-label";
     qlabIdentity.append(qlabMark, this.qlabRootLabel);
-    const commandGrid = this.doc.createElement("div");
-    commandGrid.className = "zc-qlab-command-grid";
-    for (const command of QLAB_COMMANDS) {
-      const button = this.doc.createElement("button");
-      button.type = "button";
-      button.className = "zc-qlab-command-button";
-      button.dataset.commandId = command.id;
-      button.textContent = command.label;
-      button.title = command.description;
-      button.addEventListener("click", () => this.callbacks.onQLabCommand?.(command.id));
-      this.qlabCommandButtons.push(button);
-      commandGrid.appendChild(button);
-    }
-    qlabBar.append(qlabIdentity, commandGrid);
+    qlabBar.appendChild(qlabIdentity);
     const composer = this.doc.createElement("div");
     composer.className = "zc-composer";
     this.contextChips = this.doc.createElement("div");
     this.contextChips.className = "zc-composer-chips";
-    const addContext = this.iconButton("context", "添加论文上下文（@）", () => {
+    const addContext = this.iconButton("context", "Add paper context (@)", () => {
       this.openContextMenu("");
       this.textarea.focus();
     });
@@ -463,22 +512,22 @@ export class SidebarView {
     this.contextMenu.className = "zc-context-menu";
     this.contextMenu.hidden = true;
     const contextMenuHeader = this.doc.createElement("header");
-    contextMenuHeader.textContent = "添加上下文";
+    contextMenuHeader.textContent = "Add Context";
     const contextMenuHint = this.doc.createElement("span");
-    contextMenuHint.textContent = "输入 @ 快速筛选";
+    contextMenuHint.textContent = "Type @ to filter";
     contextMenuHeader.appendChild(contextMenuHint);
     this.contextMenuList = this.doc.createElement("div");
     this.contextMenuList.className = "zc-context-menu-list";
     this.contextMenuList.setAttribute("role", "listbox");
     this.contextMenuEmpty = this.doc.createElement("div");
     this.contextMenuEmpty.className = "zc-context-menu-empty";
-    this.contextMenuEmpty.textContent = "没有匹配的上下文";
+    this.contextMenuEmpty.textContent = "No matching context";
     this.contextMenu.append(contextMenuHeader, this.contextMenuList, this.contextMenuEmpty);
 
     this.textarea = this.doc.createElement("textarea");
     this.textarea.className = "zc-composer-input";
     this.textarea.rows = 1;
-    this.textarea.placeholder = "询问这篇论文…";
+    this.textarea.placeholder = "Ask about this paper…";
     this.textarea.addEventListener("input", () => {
       this.autoSizeComposer();
       this.updateContextMenuFromComposer();
@@ -502,18 +551,16 @@ export class SidebarView {
     this.composerControls = controls;
     this.modelSelect = this.doc.createElement("select");
     this.modelSelect.className = "zc-compact-select";
-    this.modelSelect.title = "模型";
+    this.modelSelect.title = "Model";
     this.modelSelect.addEventListener("change", () => {
       this.renderEfforts(this.modelSelect.value, true);
       this.callbacks.onModelChange(this.modelSelect.value);
     });
     this.effortSelect = this.doc.createElement("select");
     this.effortSelect.className = "zc-compact-select";
-    this.effortSelect.title = "思考强度";
+    this.effortSelect.title = "Reasoning Effort";
     this.effortSelect.addEventListener("change", () => this.callbacks.onEffortChange(this.effortSelect.value));
-    this.safetyChip = this.doc.createElement("span");
-    this.safetyChip.className = "zc-safety-chip";
-    controls.append(this.modelSelect, this.effortSelect, this.safetyChip);
+    controls.append(this.modelSelect, this.effortSelect);
     this.sendButton = this.doc.createElement("button");
     this.sendButton.type = "button";
     this.sendButton.className = "zc-send-button";
@@ -522,7 +569,7 @@ export class SidebarView {
     this.stopButton.type = "button";
     this.stopButton.className = "zc-send-button is-running";
     this.setButtonIcon(this.stopButton, "stop");
-    this.stopButton.title = "停止生成（Esc）";
+    this.stopButton.title = "Stop Generating (Esc)";
     this.stopButton.setAttribute("aria-label", this.stopButton.title);
     this.stopButton.addEventListener("click", () => this.callbacks.onStop());
     const composerActions = this.doc.createElement("div");
@@ -542,8 +589,15 @@ export class SidebarView {
     this.terminalDrawer.setAttribute("aria-label", "QLab Terminal");
     this.terminalDrawer.setAttribute("aria-hidden", "true");
 
+    this.splitHandle = this.doc.createElement("button");
+    this.splitHandle.type = "button";
+    this.splitHandle.className = "zc-split-handle";
+    this.splitHandle.setAttribute("aria-label", "Resize chat and the right pane");
+    this.splitHandle.addEventListener("mousedown", (event) => this.beginSplitDrag(event));
+
     this.root.append(
       topbar,
+      this.splitHandle,
       this.threadTabs,
       contextCard,
       this.transcript,
@@ -551,23 +605,165 @@ export class SidebarView {
       this.loginLayer,
       this.terminalDrawer,
     );
+    if (this.surface === "workbench") {
+      this.mainSiteView = new ResearchLoopSiteView(this.root, {
+        onBack: () => this.setMainSiteOpen(false),
+        onOpenDocument: this.callbacks.onOpenDocument,
+      });
+      void this.refreshMainSiteStatus();
+    }
+  }
+
+  private async refreshMainSiteStatus(): Promise<boolean> {
+    const button = this.mainSiteButton;
+    if (!button) return false;
+    button.disabled = true;
+    button.className = "zc-main-site-button is-checking";
+    button.textContent = "Checking main site…";
+    button.title = "Check Research Loop main site";
+    let available = false;
+    try {
+      available = await this.callbacks.onCheckMainSite?.() || false;
+    }
+    catch {
+      available = false;
+    }
+    if (!button.isConnected) return available;
+    button.disabled = false;
+    button.className = available
+      ? "zc-main-site-button is-available"
+      : "zc-main-site-button is-offline";
+    button.textContent = available ? "Main Site" : "Start Main Site";
+    button.title = available
+      ? "Open the Research Loop main site in Zotero"
+      : "The main site is not running; click to build and start it";
+    return available;
+  }
+
+  private async activateMainSite(): Promise<void> {
+    if (!this.mainSiteButton || !this.mainSiteView) return;
+    if (this.mainSiteView.isVisible()) {
+      this.setMainSiteOpen(false);
+      return;
+    }
+    const available = this.mainSiteButton.classList.contains("is-available");
+    if (!available) {
+      this.mainSiteButton.disabled = true;
+      this.mainSiteButton.className = "zc-main-site-button is-deploying";
+      this.mainSiteButton.textContent = "Starting…";
+      this.mainSiteButton.title = "Building and starting the Research Loop main site";
+      try {
+        if (!this.callbacks.onDeployMainSite) throw new Error("Main-site deployment is unavailable");
+        await this.callbacks.onDeployMainSite((message) => {
+          if (!this.mainSiteButton?.isConnected) return;
+          this.mainSiteButton.textContent = message;
+          this.mainSiteButton.title = message;
+        });
+      }
+      catch (error) {
+        if (!this.mainSiteButton.isConnected) return;
+        this.mainSiteButton.disabled = false;
+        this.mainSiteButton.className = "zc-main-site-button is-error";
+        this.mainSiteButton.textContent = "Retry Main Site";
+        this.mainSiteButton.title = error instanceof Error ? error.message : String(error);
+        return;
+      }
+      if (!this.mainSiteButton.isConnected) return;
+      this.mainSiteButton.disabled = false;
+      this.mainSiteButton.className = "zc-main-site-button is-available";
+      this.mainSiteButton.textContent = "Main Site";
+      this.mainSiteButton.title = "Open the Research Loop main site in Zotero";
+    }
+    this.setMainSiteOpen(true);
+  }
+
+  isMainSiteOpen(): boolean {
+    return Boolean(this.mainSiteView?.isVisible());
+  }
+
+  setMainSiteOpen(open: boolean): void {
+    if (!this.mainSiteButton || !this.mainSiteView) return;
+    if (open) {
+      this.setTerminalOpen(false);
+      this.setWorkspaceOpen(false);
+      this.mainSiteView.show();
+    }
+    else {
+      this.mainSiteView.hide();
+    }
+    this.root.classList.toggle("is-main-site-open", open);
+    this.mainSiteButton.setAttribute("aria-pressed", String(open));
+  }
+
+  /** Hosts the document workspace, which shares the right-hand column. */
+  attachWorkspace(build: (host: HTMLElement) => QmdWorkspaceView): QmdWorkspaceView | null {
+    if (this.surface !== "workbench") return null;
+    this.workspaceView ??= build(this.root);
+    return this.workspaceView;
+  }
+
+  workspace(): QmdWorkspaceView | null {
+    return this.workspaceView;
+  }
+
+  /**
+   * Drags the boundary between the chat and the right-hand pane.
+   *
+   * The ratio is a custom property rather than a fixed percentage so that the
+   * login layer and the terminal drawer, which are positioned against the same
+   * boundary, follow it without a second source of truth.
+   */
+  private beginSplitDrag(event: MouseEvent): void {
+    event.preventDefault();
+    const view = this.doc.defaultView;
+    if (!view) return;
+    this.splitHandle.classList.add("is-dragging");
+    const onMove = (moved: MouseEvent) => {
+      const bounds = this.root.getBoundingClientRect();
+      if (bounds.width <= 0) return;
+      this.applySplitRatio(((moved.clientX - bounds.left) / bounds.width) * 100);
+    };
+    const onUp = () => {
+      this.splitHandle.classList.remove("is-dragging");
+      view.removeEventListener("mousemove", onMove, true);
+      view.removeEventListener("mouseup", onUp, true);
+      setPrefInt("splitRatio", this.splitRatio);
+    };
+    view.addEventListener("mousemove", onMove, true);
+    view.addEventListener("mouseup", onUp, true);
+  }
+
+  private applySplitRatio(percent: number): void {
+    this.splitRatio = clampSplitRatio(percent);
+    this.root.style.setProperty("--zc-split-ratio", `${this.splitRatio}%`);
+  }
+
+  setWorkspaceOpen(open: boolean): void {
+    if (!this.workspaceView) return;
+    if (open) {
+      this.setTerminalOpen(false);
+      this.mainSiteView?.hide();
+      this.root.classList.remove("is-main-site-open");
+      this.mainSiteButton?.setAttribute("aria-pressed", "false");
+      this.workspaceView.show();
+    }
+    else {
+      this.workspaceView.hide();
+    }
+    this.root.classList.toggle("is-workspace-open", open);
   }
 
   private render(): void {
-    this.threadTitle.textContent = this.state.threadTitle || "论文助手";
+    this.threadTitle.textContent = this.state.threadTitle || "Paper Assistant";
     this.root.dataset.mode = "agent";
-    this.safetyChip.textContent = "Agent · 需审批";
-    this.safetyChip.title = "QLab 固定使用 Agent 模式；命令和文件变更仍需审批";
     this.qlabRootLabel.textContent = this.state.qlabRoot
       ? compactPath(this.state.qlabRoot)
-      : "选择仓库…";
-    this.qlabRootLabel.title = this.state.qlabRoot || "尚未配置 QLab 仓库";
-    for (const button of this.qlabCommandButtons) {
-      button.disabled = !this.state.qlabRoot || this.state.phase !== "ready";
-    }
+      : "Choose repository…";
+    this.qlabRootLabel.title = this.state.qlabRoot || "QLab repository is not configured";
+    this.newThreadButton.disabled = Boolean(this.state.creatingThread);
+    this.newThreadButton.title = this.state.creatingThread ? "Creating a new conversation…" : "New Conversation";
     this.renderThreadTabs();
     this.renderContext();
-    this.renderQuestionList();
     this.renderContextChips();
     this.renderContextMenu();
     this.renderModels();
@@ -575,81 +771,36 @@ export class SidebarView {
     this.renderTranscript();
     this.renderLoginLayer();
     this.setButtonIcon(this.sendButton, "send");
-    this.sendButton.title = this.state.running ? "发送补充" : "发送";
+    this.sendButton.title = this.state.running ? "Send Follow-up" : "Send";
     this.sendButton.setAttribute("aria-label", this.sendButton.title);
     this.stopButton.hidden = !this.state.running;
     this.stopButton.style.display = this.state.running ? "grid" : "none";
     this.textarea.disabled = this.state.phase !== "ready";
     this.statusArea.textContent = this.state.error || (this.state.running
-      ? "Enter 发送补充 · Esc 停止生成"
-      : "Codex 可能会出错，请核对论文原文与页码。");
+      ? "Enter sends a follow-up · Esc stops generation"
+      : "Codex can make mistakes; verify the paper text and page numbers.");
     this.statusArea.classList.toggle("is-error", Boolean(this.state.error));
   }
 
   private renderContext(): void {
     const context = this.state.context;
-    this.choosePaperButton.textContent = context ? "更换论文" : "选择论文";
-    this.choosePaperButton.title = context ? "为这个 QLab 标签页选择另一篇论文" : "从 Zotero 文库选择要阅读的论文";
+    this.choosePaperButton.textContent = context ? "Change Paper" : "Choose Paper";
+    this.choosePaperButton.title = context ? "Choose another paper for this QLab tab" : "Choose a paper to read from the Zotero library";
     this.openPaperButton.hidden = !context;
     this.openPaperButton.disabled = !context;
-    this.textarea.placeholder = context ? "询问这篇论文…" : "给 QLab 发消息…";
+    this.textarea.placeholder = context ? "Ask about this paper…" : "Message QLab…";
     if (!context) {
-      this.contextTitle.textContent = "尚未选择论文";
-      this.contextMeta.textContent = "可以先聊天，也可以从 Zotero 文库选择一篇论文";
+      this.contextTitle.textContent = "No paper selected";
+      this.contextMeta.textContent = "Start chatting, or choose a paper from your Zotero library";
       return;
     }
-    this.contextTitle.textContent = context.title || "当前 PDF";
+    this.contextTitle.textContent = context.title || "Current PDF";
     const pieces = [
-      context.pageLabel ? `第 ${context.pageLabel} 页` : "PDF 已连接",
-      context.pagesCount ? `共 ${context.pagesCount} 页` : "",
-      context.selectionText ? `选区 ${context.selectionText.length} 字` : "未选中文本"
+      context.pageLabel ? `Page ${context.pageLabel}` : "PDF connected",
+      context.pagesCount ? `Total ${context.pagesCount} pages` : "",
+      context.selectionText ? `Selection: ${context.selectionText.length} characters` : "No text selected"
     ].filter(Boolean);
     this.contextMeta.textContent = pieces.join(" · ");
-  }
-
-  private renderQuestionList(): void {
-    this.questionList.replaceChildren();
-    if (!this.state.anchors.length) {
-      this.questionList.remove();
-      return;
-    }
-    for (const anchor of this.state.anchors) {
-      const item = this.doc.createElement("div");
-      item.className = `zc-question-item is-${anchor.status}`;
-      item.dataset.anchorId = anchor.anchorId;
-      const status = this.doc.createElement("span");
-      status.className = "zc-question-status";
-      status.textContent = anchor.status === "resolved" ? "✓" : "●";
-      status.setAttribute("aria-hidden", "true");
-      const page = this.doc.createElement("span");
-      page.className = "zc-question-page";
-      page.textContent = anchor.pageNumber !== undefined ? `p.${anchor.pageNumber}` : "p.?";
-      const text = this.doc.createElement("span");
-      text.className = "zc-question-text";
-      text.textContent = anchor.question;
-      text.title = anchor.question;
-      const actions = this.doc.createElement("div");
-      actions.className = "zc-question-actions";
-      const jump = this.doc.createElement("button");
-      jump.type = "button";
-      jump.className = "zc-question-jump";
-      jump.textContent = "跳转";
-      jump.addEventListener("click", () => this.callbacks.onAnchorJump?.(anchor.anchorId));
-      actions.appendChild(jump);
-      if (anchor.status === "open") {
-        const resolve = this.doc.createElement("button");
-        resolve.type = "button";
-        resolve.className = "zc-question-resolve";
-        resolve.textContent = "已理解";
-        resolve.addEventListener("click", () => this.callbacks.onAnchorResolve?.(anchor.anchorId));
-        actions.appendChild(resolve);
-      }
-      item.append(status, page, text, actions);
-      this.questionList.appendChild(item);
-    }
-    if (!this.questionList.isConnected) {
-      this.root.insertBefore(this.questionList, this.transcript);
-    }
   }
 
   private renderThreadTabs(): void {
@@ -664,15 +815,18 @@ export class SidebarView {
       const button = this.doc.createElement("button");
       button.type = "button";
       button.className = "zc-thread-tab";
-      button.classList.toggle("is-active", thread.active);
+      const switching = thread.status === "switching";
+      button.classList.toggle("is-active", thread.active || switching);
+      button.classList.toggle("is-switching", switching);
       button.dataset.threadId = thread.id;
-      button.title = thread.title || "论文对话";
+      button.title = thread.title || "Paper Conversation";
       if (thread.active) button.setAttribute("aria-current", "page");
+      if (switching) button.setAttribute("aria-busy", "true");
       const state = this.doc.createElement("span");
       state.className = `zc-thread-tab-state is-${thread.status || "idle"}`;
       state.setAttribute("aria-hidden", "true");
       const label = this.doc.createElement("span");
-      label.textContent = thread.title || "论文对话";
+      label.textContent = thread.title || "Paper Conversation";
       button.append(state, label);
       button.addEventListener("click", () => this.callbacks.onSelectThread(thread.id));
       item.appendChild(button);
@@ -683,8 +837,8 @@ export class SidebarView {
       const remove = this.doc.createElement("button");
       remove.type = "button";
       remove.className = "zc-thread-delete";
-      remove.title = "删除对话";
-      remove.setAttribute("aria-label", "删除对话");
+      remove.title = "Delete Conversation";
+      remove.setAttribute("aria-label", "Delete Conversation");
       remove.textContent = "×";
       remove.addEventListener("click", (event) => {
         event.stopPropagation();
@@ -693,8 +847,10 @@ export class SidebarView {
       item.appendChild(remove);
       scroller.appendChild(item);
     }
-    const add = this.iconButton("new", "新对话", () => this.callbacks.onNewThread());
+    const add = this.iconButton("new", "New Conversation", () => this.callbacks.onNewThread());
     add.classList.add("zc-thread-tab-add");
+    add.disabled = Boolean(this.state.creatingThread);
+    add.title = this.state.creatingThread ? "Creating a new conversation…" : "New Conversation";
     this.threadTabs.append(scroller, add);
   }
 
@@ -714,7 +870,7 @@ export class SidebarView {
       label.textContent = chip.label;
       wrapper.append(icon, label);
       if (chip.removable) {
-        const remove = this.iconButton("close", `移除上下文：${chip.label}`, () => {
+        const remove = this.iconButton("close", `Remove context: ${chip.label}`, () => {
           this.callbacks.onRemoveContext?.(chip.id);
         });
         remove.classList.add("zc-context-chip-remove");
@@ -722,7 +878,7 @@ export class SidebarView {
       }
       this.contextChips.appendChild(wrapper);
     }
-    const add = this.iconButton("context", "添加论文上下文（@）", () => {
+    const add = this.iconButton("context", "Add paper context (@)", () => {
       this.openContextMenu("");
       this.textarea.focus();
     });
@@ -737,7 +893,7 @@ export class SidebarView {
     const chips: ResearchContextChip[] = [{
       id: "active-paper",
       kind: "paper",
-      label: "当前论文",
+      label: "Current Paper",
       detail: context.title,
       removable: false,
     }];
@@ -745,7 +901,7 @@ export class SidebarView {
       chips.push({
         id: "current-page",
         kind: "page",
-        label: `第 ${context.pageLabel} 页`,
+        label: `Page ${context.pageLabel}`,
         removable: true,
       });
     }
@@ -753,7 +909,7 @@ export class SidebarView {
       chips.push({
         id: "current-selection",
         kind: "selection",
-        label: `选区 · ${context.selectionText.length} 字`,
+        label: `Selection · ${context.selectionText.length} characters`,
         removable: true,
       });
     }
@@ -767,38 +923,38 @@ export class SidebarView {
       {
         id: "active-paper",
         kind: "paper",
-        label: "当前论文",
-        detail: context?.title || "Zotero Reader 中打开的 PDF",
+        label: "Current Paper",
+        detail: context?.title || "PDF open in Zotero Reader",
         disabled: !context,
       },
       {
         id: "current-page",
         kind: "page",
-        label: context?.pageLabel ? `当前页 · 第 ${context.pageLabel} 页` : "当前页",
-        detail: "当前可见 PDF 页面的文字",
+        label: context?.pageLabel ? `Current Page · Page ${context.pageLabel}` : "Current Page",
+        detail: "Text on the currently visible PDF page",
         disabled: !context,
       },
       {
         id: "current-selection",
         kind: "selection",
-        label: "当前选区",
+        label: "Current Selection",
         detail: context?.selectionText
-          ? `${context.selectionText.length} 字`
-          : "请先在 PDF 中选择文字",
+          ? `${context.selectionText.length} characters`
+          : "Select text in the PDF first",
         disabled: !context?.selectionText,
       },
       {
         id: "active-annotations",
         kind: "annotation",
-        label: "这篇论文的批注",
-        detail: "按需读取高亮、评论与页码",
+        label: "Annotations for this paper",
+        detail: "Read highlights, comments, and page numbers on demand",
         disabled: !context,
       },
       {
         id: "zotero-library",
         kind: "library",
-        label: "Zotero 文库",
-        detail: "搜索其他论文、分类与标签",
+        label: "Zotero Library",
+        detail: "Search other papers, collections, and tags",
       },
     ];
     return suggestions;
@@ -949,7 +1105,7 @@ export class SidebarView {
     const previous = this.modelSelect.value;
     const models = this.state.models.length
       ? this.state.models
-      : [{ id: "", label: "默认模型" }];
+      : [{ id: "", label: "Default Model" }];
     renderModelOptions(this.modelSelect, models, this.state.selectedModel || previous || models[0]?.id || "");
   }
 
@@ -967,7 +1123,7 @@ export class SidebarView {
     for (const effort of efforts) {
       const option = this.doc.createElement("option");
       option.value = effort.reasoningEffort;
-      option.textContent = `思考 ${effortLabel(effort.reasoningEffort)}`;
+      option.textContent = `Reasoning: ${effortLabel(effort.reasoningEffort)}`;
       if (effort.description) option.title = effort.description;
       this.effortSelect.appendChild(option);
     }
@@ -982,22 +1138,21 @@ export class SidebarView {
       this.state.plan
       || this.state.reviews.length
       || this.state.pendingApproval
-      || this.state.checkpoints.length
       || this.state.noting,
     );
     if (!this.state.entries.length && !hasWorkbenchCards && this.state.phase === "ready") {
       this.emptyState ||= this.createEmptyState();
       const title = this.emptyState.querySelector("h2");
       const subtitle = this.emptyState.querySelector("p");
-      if (title) title.textContent = this.state.context ? "和当前论文一起思考" : "今天想研究什么？";
+      if (title) title.textContent = this.state.context ? "Think with the Current Paper" : "What would you like to research?";
       if (subtitle) {
         subtitle.textContent = this.state.context
-          ? "Codex 能按需读取当前页、选区、全文和批注，并在回答中给出位置。"
-          : "可以直接开始聊天，也可以从上方选择一篇 Zotero 论文作为上下文。";
+          ? "Codex can read the current page, selection, full text, and annotations on demand and cite their locations."
+          : "Start chatting directly, or choose a Zotero paper above as context.";
       }
       const prompts = this.state.context
-        ? ["解释当前选中的段落", "总结本页的核心论证", "这篇论文有哪些关键假设？"]
-        : ["搜索我的 Zotero 文库", "帮我梳理一个研究问题", "规划一份新的 Draft"];
+        ? ["Explain the selected passage", "Summarize the main argument on this page", "What are this paper's key assumptions?"]
+        : ["Search my Zotero Library", "Help me shape a research question", "Plan a new Draft"];
       [...this.emptyState.querySelectorAll<HTMLButtonElement>(".zc-suggestions button")]
         .forEach((button, index) => { button.textContent = prompts[index] || ""; });
       desired.push(this.emptyState);
@@ -1084,22 +1239,6 @@ export class SidebarView {
       desired.push(this.cachedEntryNode(id, fingerprint, () => this.renderConsentCard(consent)));
     }
 
-    if (this.state.checkpoints.length) {
-      const id = "research-checkpoints";
-      // A review mid-Apply/Reject shares the same host-side serialized
-      // queue as checkpoint restore (see ZoteroMutationService#runExclusive):
-      // restoring while one is "resolving" would just queue behind it, but
-      // disabling Restore up front avoids a click that appears to hang.
-      const restoreDisabled = this.state.reviews.some((review) => review.state === "resolving");
-      const fingerprint = JSON.stringify({ checkpoints: this.state.checkpoints, restoreDisabled });
-      activeIDs.add(id);
-      desired.push(this.cachedEntryNode(
-        id,
-        fingerprint,
-        () => this.renderCheckpointCard(this.state.checkpoints, restoreDisabled),
-      ));
-    }
-
     if (this.state.noting) {
       const noting = this.state.noting;
       const id = "noting";
@@ -1147,7 +1286,7 @@ export class SidebarView {
     button.className = "zc-turn-summary";
     const parts: string[] = [];
     if (elapsed !== undefined) parts.push(`⏱ ${formatElapsed(elapsed)}`);
-    if (steps > 0) parts.push(`${steps} 个步骤`);
+    if (steps > 0) parts.push(`${steps} steps`);
     button.textContent = parts.join(" · ");
     button.addEventListener("click", () => {
       if (this.expandedTurns.has(group.id)) this.expandedTurns.delete(group.id);
@@ -1256,7 +1395,7 @@ export class SidebarView {
     details.open = true;
     const summary = this.doc.createElement("summary");
     const title = this.doc.createElement("span");
-    title.textContent = plan.title || "研究计划";
+    title.textContent = plan.title || "Research Plan";
     const progress = this.doc.createElement("small");
     const complete = plan.steps.filter((step) => step.status === "complete").length;
     progress.textContent = `${complete}/${plan.steps.length}`;
@@ -1299,9 +1438,9 @@ export class SidebarView {
     const identity = this.doc.createElement("span");
     identity.textContent = review.title;
     const badge = this.doc.createElement("small");
-    badge.textContent = review.state === "accepted" ? "已接受"
-      : review.state === "rejected" ? "已忽略"
-        : review.state === "failed" ? "应用失败" : "Review";
+    badge.textContent = review.state === "accepted" ? "Accepted"
+      : review.state === "rejected" ? "Dismissed"
+        : review.state === "failed" ? "Apply Failed" : "Review";
     summary.append(identity, badge);
     const body = this.doc.createElement("div");
     body.className = "zc-review-body";
@@ -1324,13 +1463,13 @@ export class SidebarView {
     actions.className = "zc-review-actions";
     const reject = this.doc.createElement("button");
     reject.type = "button";
-    reject.textContent = "忽略";
+    reject.textContent = "Dismiss";
     reject.disabled = Boolean(review.state && review.state !== "pending");
     reject.addEventListener("click", () => this.callbacks.onReviewDecision?.(review.id, "reject"));
     const accept = this.doc.createElement("button");
     accept.type = "button";
     accept.className = "is-primary";
-    accept.textContent = "接受建议";
+    accept.textContent = "Accept Suggestion";
     accept.disabled = Boolean(review.state && review.state !== "pending");
     accept.addEventListener("click", () => this.callbacks.onReviewDecision?.(review.id, "accept"));
     actions.append(reject, accept);
@@ -1347,8 +1486,8 @@ export class SidebarView {
     const heading = this.doc.createElement("div");
     heading.className = "zc-approval-heading";
     const badge = this.doc.createElement("span");
-    badge.textContent = approval.kind === "command" ? "命令审批"
-      : approval.kind === "tool" ? "工具审批" : "需要确认";
+    badge.textContent = approval.kind === "command" ? "Command Approval"
+      : approval.kind === "tool" ? "Tool Approval" : "Confirmation Required";
     const title = this.doc.createElement("strong");
     title.textContent = approval.title;
     heading.append(badge, title);
@@ -1367,14 +1506,14 @@ export class SidebarView {
     actions.className = "zc-approval-actions";
     const reject = this.doc.createElement("button");
     reject.type = "button";
-    reject.textContent = "拒绝";
+    reject.textContent = "Reject";
     reject.addEventListener("click", () => {
       this.callbacks.onApprovalDecision?.(approval.id, "reject");
     });
     const approve = this.doc.createElement("button");
     approve.type = "button";
     approve.className = "is-primary";
-    approve.textContent = "仅允许这一次";
+    approve.textContent = "Allow Once";
     approve.addEventListener("click", () => {
       this.callbacks.onApprovalDecision?.(approval.id, "approve-once");
     });
@@ -1390,70 +1529,32 @@ export class SidebarView {
     const heading = this.doc.createElement("div");
     heading.className = "zc-approval-heading";
     const badge = this.doc.createElement("span");
-    badge.textContent = "阅读留痕";
+    badge.textContent = "Reading Trail";
     const title = this.doc.createElement("strong");
-    title.textContent = "自动创建高亮批注";
+    title.textContent = "Create highlight annotation automatically";
     heading.append(badge, title);
     article.appendChild(heading);
     const description = this.doc.createElement("p");
-    const pageLabel = consent.pageNumber !== undefined ? `第 ${consent.pageNumber} 页` : "当前位置";
-    description.textContent = `QLab 将在你提问的位置自动创建高亮批注（问题 + 答案要点），可随时关闭。${pageLabel}：“${consent.question}”`;
+    const pageLabel = consent.pageNumber !== undefined ? `Page ${consent.pageNumber}` : "Current location";
+    description.textContent = `QLab will create a highlight annotation at the question location (question and answer summary). You can disable this at any time. ${pageLabel}: “${consent.question}”`;
     article.appendChild(description);
     const actions = this.doc.createElement("div");
     actions.className = "zc-approval-actions";
     const decline = this.doc.createElement("button");
     decline.type = "button";
-    decline.textContent = "不写批注";
+    decline.textContent = "Do Not Annotate";
     decline.addEventListener("click", () => {
       this.callbacks.onPaperTrailConsent?.("decline");
     });
     const accept = this.doc.createElement("button");
     accept.type = "button";
     accept.className = "is-primary";
-    accept.textContent = "允许";
+    accept.textContent = "Allow";
     accept.addEventListener("click", () => {
       this.callbacks.onPaperTrailConsent?.("accept");
     });
     actions.append(decline, accept);
     article.appendChild(actions);
-    return article;
-  }
-
-  private renderCheckpointCard(checkpoints: CheckpointOption[], restoreDisabled: boolean): HTMLElement {
-    const article = this.doc.createElement("article");
-    article.className = "zc-entry zc-checkpoint-card";
-    article.dataset.entryId = "research-checkpoints";
-    const heading = this.doc.createElement("div");
-    heading.className = "zc-checkpoint-heading";
-    const title = this.doc.createElement("strong");
-    title.textContent = "Checkpoints";
-    const detail = this.doc.createElement("small");
-    detail.textContent = "恢复到先前的研究上下文";
-    heading.append(title, detail);
-    const list = this.doc.createElement("div");
-    list.className = "zc-checkpoint-list";
-    for (const checkpoint of checkpoints.slice(0, 4)) {
-      const row = this.doc.createElement("div");
-      const copy = this.doc.createElement("span");
-      const label = this.doc.createElement("strong");
-      label.textContent = checkpoint.label;
-      const time = this.doc.createElement("small");
-      time.textContent = formatDateTime(checkpoint.createdAt);
-      copy.append(label, time);
-      const restore = this.doc.createElement("button");
-      restore.type = "button";
-      restore.textContent = "Restore";
-      // Disabled while any review is mid-Apply/Reject: restoring now would
-      // just queue behind it on the shared host-side serialization, so
-      // disabling up front avoids a click that appears to hang.
-      restore.disabled = restoreDisabled;
-      restore.addEventListener("click", () => {
-        this.callbacks.onRestoreCheckpoint?.(checkpoint.id);
-      });
-      row.append(copy, restore);
-      list.appendChild(row);
-    }
-    article.append(heading, list);
     return article;
   }
 
@@ -1465,7 +1566,7 @@ export class SidebarView {
     const heading = this.doc.createElement("div");
     heading.className = "zc-approval-heading";
     const badge = this.doc.createElement("span");
-    badge.textContent = "阅读笔记";
+    badge.textContent = "Reading Notes";
     const title = this.doc.createElement("strong");
     title.textContent = NOTING_PHASE_TITLES[noting.phase];
     heading.append(badge, title);
@@ -1481,17 +1582,17 @@ export class SidebarView {
 
     if (noting.phase === "confirm-mismatch") {
       const warning = this.doc.createElement("p");
-      warning.textContent = "论文文件已变化，旧锚点基于上一版本。";
+      warning.textContent = "The paper file changed; existing anchors refer to the previous version.";
       const actions = this.doc.createElement("div");
       actions.className = "zc-noting-actions";
       const cancel = this.doc.createElement("button");
       cancel.type = "button";
-      cancel.textContent = "取消";
+      cancel.textContent = "Cancel";
       cancel.addEventListener("click", () => this.callbacks.onNotingDecision?.("cancel"));
       const proceed = this.doc.createElement("button");
       proceed.type = "button";
       proceed.className = "is-primary";
-      proceed.textContent = "继续生成";
+      proceed.textContent = "Continue";
       proceed.addEventListener("click", () => this.callbacks.onNotingDecision?.("continue"));
       actions.append(cancel, proceed);
       article.append(warning, actions);
@@ -1501,7 +1602,7 @@ export class SidebarView {
     if (noting.phase === "generating" || noting.phase === "applying") {
       const spinner = this.doc.createElement("p");
       spinner.className = "zc-noting-spinner";
-      spinner.textContent = noting.phase === "generating" ? "正在综合……" : "正在写入附件……";
+      spinner.textContent = noting.phase === "generating" ? "Synthesizing…" : "Writing attachment…";
       article.appendChild(spinner);
       return article;
     }
@@ -1509,20 +1610,20 @@ export class SidebarView {
     if (noting.phase === "failed") {
       const error = this.doc.createElement("p");
       error.className = "zc-noting-error";
-      error.textContent = noting.error || "生成失败";
+      error.textContent = noting.error || "Generation Failed";
       const actions = this.doc.createElement("div");
       actions.className = "zc-noting-actions";
-      actions.appendChild(closeButton("关闭"));
+      actions.appendChild(closeButton("Close"));
       article.append(error, actions);
       return article;
     }
 
     if (noting.phase === "done") {
       const done = this.doc.createElement("p");
-      done.textContent = "已写入 ✓";
+      done.textContent = "Written ✓";
       const actions = this.doc.createElement("div");
       actions.className = "zc-noting-actions";
-      actions.appendChild(closeButton("关闭"));
+      actions.appendChild(closeButton("Close"));
       article.append(done, actions);
       return article;
     }
@@ -1530,7 +1631,7 @@ export class SidebarView {
     // preview
     const stats = this.doc.createElement("p");
     stats.className = "zc-noting-stats";
-    stats.textContent = `${noting.anchorCount} 个锚点 · ${noting.openCount} 个未解决 · ${noting.mathErrors} 个公式待核对`;
+    stats.textContent = `${noting.anchorCount} anchors · ${noting.openCount} unresolved · ${noting.mathErrors} formulas to verify`;
 
     const preview = this.doc.createElement("div");
     preview.className = "zc-noting-preview";
@@ -1554,21 +1655,21 @@ export class SidebarView {
       option.append(input, text);
       versionGroup.appendChild(option);
     };
-    addOption("new", "新建版本", true, () => { selectedMode = { kind: "new" }; });
+    addOption("new", "Create New Version", true, () => { selectedMode = { kind: "new" }; });
     for (const version of noting.versions) {
-      addOption(version.key, `替换：${version.title}`, false, () => { selectedMode = { kind: "replace", key: version.key }; });
+      addOption(version.key, `Replace: ${version.title}`, false, () => { selectedMode = { kind: "replace", key: version.key }; });
     }
 
     const actions = this.doc.createElement("div");
     actions.className = "zc-noting-actions";
     const cancel = this.doc.createElement("button");
     cancel.type = "button";
-    cancel.textContent = "取消";
+    cancel.textContent = "Cancel";
     cancel.addEventListener("click", () => this.callbacks.onNotingCancel?.());
     const apply = this.doc.createElement("button");
     apply.type = "button";
     apply.className = "zc-noting-apply is-primary";
-    apply.textContent = "Apply 写入附件";
+    apply.textContent = "Apply to Attachment";
     apply.addEventListener("click", () => {
       // Belt-and-suspenders alongside NotingService's own reentrancy guard:
       // disable immediately so a rapid double-click can't even dispatch a
@@ -1588,10 +1689,7 @@ export class SidebarView {
     article.className = `zc-entry zc-entry-${entry.kind}`;
     article.dataset.entryId = entry.id;
     if (entry.kind === "user") {
-      const bubble = this.doc.createElement("div");
-      bubble.className = "zc-user-bubble";
-      bubble.textContent = entry.text;
-      article.appendChild(bubble);
+      appendUserMessage(this.doc, article, entry, this.expandedUserMessages);
       return article;
     }
     if (entry.kind === "tool" || entry.kind === "command" || entry.kind === "reasoning") {
@@ -1603,7 +1701,7 @@ export class SidebarView {
       state.className = `zc-tool-state ${entry.state || "complete"}`;
       state.textContent = entry.state === "running" ? "◌" : entry.state === "failed" ? "!" : "✓";
       const label = this.doc.createElement("span");
-      label.textContent = entry.title || (entry.kind === "reasoning" ? "思考过程" : "工具");
+      label.textContent = entry.title || (entry.kind === "reasoning" ? "Reasoning" : "Tool");
       summary.append(state, label);
       const content = this.doc.createElement("div");
       content.className = "zc-tool-content";
@@ -1637,15 +1735,15 @@ export class SidebarView {
     const button = this.doc.createElement("button");
     button.type = "button";
     button.className = "zc-copy-answer";
-    button.title = "复制回答";
+    button.title = "Copy Answer";
     button.replaceChildren(createSidebarIcon(this.doc, "copy"));
     button.addEventListener("click", () => {
       if (!copyToClipboard(text)) return;
       button.classList.add("is-copied");
-      button.title = "已复制";
+      button.title = "Copied";
       this.doc.defaultView?.setTimeout(() => {
         button.classList.remove("is-copied");
-        button.title = "复制回答";
+        button.title = "Copy Answer";
       }, 1500);
     });
     return button;
@@ -1666,15 +1764,15 @@ export class SidebarView {
     button.type = "button";
     button.className = "zc-login-button";
     if (this.state.phase === "connecting") {
-      title.textContent = "正在连接 Codex";
-      detail.textContent = "读取你已有的 Codex CLI 登录状态…";
+      title.textContent = "Connecting to Codex";
+      detail.textContent = "Reading the existing Codex CLI sign-in state…";
       button.hidden = true;
     }
     else if (this.state.phase === "signed-out") {
-      title.textContent = "在 Zotero 中使用 Codex";
-      detail.textContent = "使用 ChatGPT 登录。登录状态由本机 Codex CLI 管理；插件不会读取或保存令牌。";
+      title.textContent = "Use Codex in Zotero";
+      detail.textContent = "Sign in with ChatGPT. The local Codex CLI manages the session; the plugin never reads or stores tokens.";
       if (this.state.capabilities?.supportsLogin !== false) {
-        button.textContent = "使用 ChatGPT 登录";
+        button.textContent = "Sign In with ChatGPT";
         button.addEventListener("click", () => this.callbacks.onLogin());
       }
       else {
@@ -1685,9 +1783,9 @@ export class SidebarView {
       }
     }
     else {
-      title.textContent = this.state.phase === "unavailable" ? "未找到 Codex CLI" : "Codex 暂时不可用";
-      detail.textContent = this.state.error || "请确认 Codex CLI 已安装，然后重试。";
-      button.textContent = "重试";
+      title.textContent = this.state.phase === "unavailable" ? "Codex CLI Not Found" : "Codex is temporarily unavailable";
+      detail.textContent = this.state.error || "Confirm that the Codex CLI is installed, then retry.";
+      button.textContent = "Retry";
       button.addEventListener("click", () => this.callbacks.onRefreshContext());
     }
     card.append(icon, title, detail, ...(button ? [button] : []));
@@ -1695,7 +1793,7 @@ export class SidebarView {
       const terminal = this.doc.createElement("button");
       terminal.type = "button";
       terminal.className = "zc-login-secondary";
-      terminal.textContent = "打开高级 Terminal";
+      terminal.textContent = "Open Advanced Terminal";
       terminal.addEventListener("click", () => this.callbacks.onOpenTerminal());
       card.appendChild(terminal);
     }
@@ -1707,7 +1805,7 @@ export class SidebarView {
       const settings = this.doc.createElement("button");
       settings.type = "button";
       settings.className = "zc-login-secondary zc-error-settings";
-      settings.textContent = "选择 QLab 仓库";
+      settings.textContent = "Choose QLab Repository";
       settings.addEventListener("click", () => this.callbacks.onChooseQLabRoot?.());
       card.appendChild(settings);
     }
@@ -1726,20 +1824,20 @@ export class SidebarView {
     label.textContent = this.state.accountLabel || "Codex";
     const readonly = this.doc.createElement("small");
     readonly.textContent = this.state.mode === "ask"
-      ? "Ask：文库只读"
-      : "Agent：变更需审批并生成 Checkpoint";
+      ? "Ask: Library is read-only"
+      : "Agent: changes require approval";
     menu.append(label, readonly);
     if (this.state.capabilities?.supportsLogin !== false) {
       const logout = this.doc.createElement("button");
       logout.type = "button";
-      logout.textContent = "退出 Codex 登录";
+      logout.textContent = "Sign Out of Codex";
       logout.addEventListener("click", () => {
         menu.remove();
         this.callbacks.onLogout();
       });
       menu.appendChild(logout);
     }
-    this.root.appendChild(menu);
+    this.placeMenu(menu, this.accountButton);
   }
 
   private toggleHistoryMenu(): void {
@@ -1753,11 +1851,11 @@ export class SidebarView {
     menu.className = "zc-history-menu";
     const heading = this.doc.createElement("div");
     heading.className = "zc-menu-heading";
-    heading.textContent = "这篇论文的对话";
+    heading.textContent = "Conversations for this paper";
     menu.appendChild(heading);
     if (!this.state.threads.length) {
       const empty = this.doc.createElement("small");
-      empty.textContent = "还没有历史对话";
+      empty.textContent = "No conversation history yet";
       menu.appendChild(empty);
     }
     for (const thread of this.state.threads) {
@@ -1767,7 +1865,7 @@ export class SidebarView {
       button.type = "button";
       button.className = thread.active ? "is-active" : "";
       const title = this.doc.createElement("span");
-      title.textContent = thread.title || "论文对话";
+      title.textContent = thread.title || "Paper Conversation";
       const time = this.doc.createElement("small");
       const date = new Date(thread.updatedAt);
       time.textContent = Number.isNaN(date.getTime()) ? "" : date.toLocaleDateString();
@@ -1785,8 +1883,8 @@ export class SidebarView {
       const remove = this.doc.createElement("button");
       remove.type = "button";
       remove.className = "zc-thread-delete";
-      remove.title = "删除对话";
-      remove.setAttribute("aria-label", "删除对话");
+      remove.title = "Delete Conversation";
+      remove.setAttribute("aria-label", "Delete Conversation");
       remove.textContent = "×";
       remove.addEventListener("click", (event) => {
         event.stopPropagation();
@@ -1796,7 +1894,24 @@ export class SidebarView {
       item.appendChild(remove);
       menu.appendChild(item);
     }
-    this.root.appendChild(menu);
+    this.placeMenu(menu, this.historyButton);
+  }
+
+  /**
+   * Opens a menu underneath the button that owns it.
+   *
+   * These used to be appended to the sidebar root and positioned with a fixed
+   * `right` offset, which put them at the window edge as soon as the workbench
+   * layout gave the root a second column. Anchoring to the actions row keeps
+   * "underneath its button" true whatever the layout does.
+   */
+  private placeMenu(menu: HTMLElement, anchor: HTMLElement): void {
+    this.topActions.appendChild(menu);
+    const button = anchor.getBoundingClientRect();
+    const container = this.topActions.getBoundingClientRect();
+    if (!container.width && !container.height) return; // No layout yet; CSS defaults apply.
+    menu.style.top = `${Math.round(button.bottom - container.top + 6)}px`;
+    menu.style.right = `${Math.round(Math.max(0, container.right - button.right))}px`;
   }
 
   private submit(): void {
@@ -1873,12 +1988,12 @@ export function createSidebarIcon(doc: Document, icon: SidebarIcon): SVGElement 
 }
 
 const NOTING_PHASE_TITLES: Record<NotingPhase, string> = {
-  "confirm-mismatch": "PDF 已变化",
-  generating: "正在综合……",
-  preview: "阅读笔记预览",
-  applying: "正在写入附件……",
-  done: "已写入 ✓",
-  failed: "生成失败",
+  "confirm-mismatch": "PDF Changed",
+  generating: "Synthesizing…",
+  preview: "Reading-note preview",
+  applying: "Writing attachment…",
+  done: "Written ✓",
+  failed: "Generation Failed",
 };
 
 const FALLBACK_REASONING_EFFORTS: ReasoningEffortOption[] = [
@@ -1893,12 +2008,12 @@ const FALLBACK_REASONING_EFFORTS: ReasoningEffortOption[] = [
 
 function effortLabel(effort: string): string {
   const labels: Record<string, string> = {
-    minimal: "最少",
-    low: "低",
-    medium: "中",
-    high: "高",
-    xhigh: "极高",
-    max: "最大",
+    minimal: "Minimal",
+    low: "Low",
+    medium: "Medium",
+    high: "High",
+    xhigh: "Extra High",
+    max: "Maximum",
     ultra: "Ultra"
   };
   return labels[effort] || effort;
@@ -1926,13 +2041,13 @@ function contextGlyph(kind: ResearchContextKind): string {
 
 function contextKindLabel(kind: ResearchContextKind): string {
   const labels: Record<ResearchContextKind, string> = {
-    paper: "论文",
-    page: "PDF 页面",
-    selection: "Reader 选区",
-    annotation: "Zotero 批注",
-    library: "文库",
-    collection: "分类",
-    "external-paper": "其他论文",
+    paper: "Paper",
+    page: "PDF Page",
+    selection: "Reader Selection",
+    annotation: "Zotero Annotation",
+    library: "Library",
+    collection: "Collection",
+    "external-paper": "Other Paper",
   };
   return labels[kind];
 }

@@ -1,0 +1,43 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: RPIW8PPZ
+  item_version: 96140
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 7DTZK7TI
+      name: Classical
+      path: Quantum Algorithm/Optimization/Maxcut/Classical
+qlab:
+  primary_collection: 7DTZK7TI
+  indexed_collections:
+    - 7DTZK7TI
+  primary_topic: quantum-algorithm
+  indexed_topics:
+    - quantum-algorithm
+item_type: book
+title: An explicit vector algorithm for high-girth MaxCut
+authors:
+  - first: Jessica K.
+    last: Thompson
+  - first: Ojas
+    last: Parekh
+  - first: Kunal
+    last: Marwaha
+year: 2022
+abstract: We give an approximation algorithm for MaxCut and provide guarantees
+  on the average fraction of edges cut on $d$-regular graphs of girth $\geq 2k$.
+  For every $d \geq 3$ and $k \geq 4$, our approximation guarantees are better
+  than those of all other classical and quantum algorithms known to the authors.
+  Our algorithm constructs an explicit vector solution to the standard
+  semidefinite relaxation of MaxCut and applies hyperplane rounding. It may be
+  viewed as a simplification of the previously best known technique, which
+  approximates Gaussian wave processes on the infinite $d$-regular tree.
+tags:
+  - Computer Science - Data Structures and Algorithms
+  - Quantum Physics
+identifiers:
+  doi: 10.1137/1.9781611977066.17
+  arxiv: "2108.12477"

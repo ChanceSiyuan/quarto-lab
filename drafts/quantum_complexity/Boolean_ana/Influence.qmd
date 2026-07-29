@@ -1,0 +1,179 @@
+---
+title: Influence of Boolean Functions
+description: "Influence of boolean functions"
+categories:
+  - theory
+---
+
+# Questions and summary
+This post is meant to discuss the Boolean function in the DNF form.
+Typically, those Boolean functions related to the Boolean circuit with constant depth and polynomial size ($\mathrm{AC}^0$), 
+and sometimes can be computed by a decision tree with polynomial size ($\mathrm{DT}_{\mathrm{poly}}$, or $\mathrm{NC}^0$).
+
+Critical properties are summarized as follows:
+
+
+
+# Definitions and universality
+
+:::{#def-dnf .callout-important icon="false"}
+## Definition: DNF Formula
+A DNF formula can be expressed as:
+$$
+\begin{align*}
+f(x) &= T_1(x) \vee T_2(x) \vee \cdots \vee T_s(x), \quad T_i(x) = (x_{i_1} \wedge \neg x_{i_2} \wedge x_{i_3} \wedge \cdots \wedge x_{i_w}).
+\end{align*}
+$$
+The size $s:= \mathrm{DNFsize}(f)$ of a DNF formula is its number of terms. The width $w:= \mathrm{DNFwidth}(f)$ is the maximum width of its terms.
+We use $\mathrm{DNF}_{s,w}$ to denote the family of Boolean functions that can be computed by a DNF formula with size $s$ and width $w$.
+:::
+
+The DNF form above natually compiles all Boolean functions.
+
+:::{#lem-universality-dnf .callout-important icon="false"}
+## Lemma: Universality of DNF Formulas
+Any Boolean function $f: \{0,1\}^n \to \{0,1\}$ can be computed by a DNF formula with size $s = O(2^n)$ and width $w = O(n)$.
+:::
+
+:::{.callout-note collapse="true"}
+## Proof (Click to expand)
+For every inputs with $\{a|f(a) = 1\}$, we construct a term $T_i(x)$ that is $x_i$ on $a_i = 1$ and $\bar{x}_i$ on other inputs.
+$vee$ all these terms together to get the DNF formula with size $s = O(2^n)$ and width $w = O(n)$.
+:::
+
+# Constant-width DNF Formulas
+
+
+Formally, a family of Boolean circuits is in $\mathrm{AC}^k$ if it can be computed by $\mathrm{NOT}$ and unbounded fan-in $\mathrm{AND}, \mathrm{OR}$ with depth $O((\log n)^k)$ (the depth of the circuit) and size $\mathrm{poly}(n)$ (the maximum number of gates).
+If we further require to the binary fan-in $\mathrm{AND}, \mathrm{OR}$ gates, the family is in $\mathrm{NC}^k$.
+
+:::{#lem-dnf .callout-important icon="false"}
+## Lemma: AC&NC Complexity
+$\mathrm{NC}^k \subsetneq \mathrm{AC}^k \subsetneq \mathrm{NC}^{k+1}$.
+:::
+
+:::{.callout-note collapse="true"}
+## Proof (Click to expand)
+The intuition is, the gate with $n$-inputs can be realized by $\log n$-gates with binary fan-in, i.e., $\mathrm{AC}^0 \subsetneq \mathrm{NC}^{1}$.
+Rigrously,
+[todo: add rigorous discussion]
+:::
+
+
+We see that a DNF is in $\mathrm{AC}^0$ since it can be computed by two-layers: (i).layers of $\wedge$ gates; (ii).layers of $\vee$ gates.
+Furthermore, a DNF formula with width $w$ and size $s$ covers all Decision Tree computations with depth $w$ and size $s$.
+
+:::{#def-decision-tree .callout-important icon="false"}
+## Definition: Decision Tree
+A deterministic decision tree (DT) is a family of rooted binary trees $\{T_n\}$ that satisfying:
+
+- Each internal node is labeled with a variable $x_i$, where $i \in [n]$.
+- Each internal node has two outgoing edges, each labeled with the evaluation of $x_i$ as 0 and 1 respectively. 
+- Each leaf node is labeled with a output value 0 or 1. 
+:::
+
+A family of Boolean functions $f_n: \{0,1\}^n \to \{0,1\}$ can be computed by a rooted decision tree $T_n$ through the process:
+
+1. Each internal nodes correspond to one of the input labels $x = (x_1, \ldots, x_n)$.
+2. Starting from the root, if the current node is labeled with $x_i$, query $x_i$. 
+3. If the current node is labeled with 0, go to the left child; if the current node is labeled with 1, go to the right child. 
+4. Until the leaf node is reached, output the label of the leaf node and get $f_n(x)$.
+
+The complexity of the optimal decision tree computational model of $f_n$ decides two complexity parameters:
+
+- $\mathrm{DTdepth}(f) = \min_{T} \{ \text{depth}(T) \}$, the worst-case number of input bits needed to be queried.
+- $\mathrm{DTsize}(f) = \min_{T} \{ \text{number of leaves of T} \}$, the number of leaves of the tree, at most $2^n$ (trivially check inputs one by one).
+
+
+:::{#lem-decision-tree .callout-important icon="false"}
+## Lemma: Decision Tree Complexity
+$\mathrm{DT}_{w = O(1)} = \mathrm{NC}^0 \subsetneq \mathrm{DT}_{w = \mathrm{poly}(n)} \subsetneq \mathrm{DNF}_{w=2,s = \mathrm{poly}(n)} \subsetneq \mathrm{AC}^0$.
+:::
+
+:::{.callout-note collapse="true"}
+## Proof (Click to expand)
+Each path from the root to a leaf node at most check $x_{i_1},\cdots,x_{i_s}$ variables.
+The number of paths that leads to $1$ is at most $w$.
+We can use a CNF to record those paths (clause in DNF) in parallel and the check whether the inputs satisfy one of them (OR of clauses).
+
+We show the width-2 CNF 
+$$
+f_{2m}(x)
+=
+\bigvee_{i=1}^{m}
+\left(x_{2i-1}\wedge x_{2i}\right).
+$$
+cannot have polynomial DTsize.
+
+Note that each path that leads to $0$-leaf corresponds to a subset of $2^{2m}$ inputs.
+For each subset and each $i \in [m]$, one of $\{x_{2i-1}, x_{2i}\}$ must be in the subset,
+otherwise we are free to set both of them being $1$ and leads to $f_{2m}(x) = 1$, a contradiction.
+Therefore, each subsets at most contain $2^{2m-m} = 2^m$ number of strings.
+Those subsets are disjoint (each input corresponds to exactly one path) and cover all inputs with result $0$ (faithfulness of the DT).
+The total number of strings with result $0$ is $3^m$.
+This means that there exists at least $(3/2)^m$ number of paths/leaves in the DT.
+
+To show $\mathrm{NC}^0 \subsetneq \mathrm{DT}_{\mathrm{poly}}$,
+we note that $\mathrm{OR}_n(x)=x_1\vee\cdots\vee x_n$ is not in $\mathrm{NC}^0$ (actually, it is in $\mathrm{NC}^1$), but in $\mathrm{DT}_{\mathrm{poly}}$.
+:::
+
+
+
+# Polynomial size DNF Formulas
+
+:::{#def-influence .callout-important icon="false"}
+## Definition: Influence
+Given a Boolean function $f: \{-1,1\}^n \to \mathbb{R}$, and $x \sim \{-1,1\}^n$ as uniformly random, we define:
+
+1. The derivative at position $i$ is defined as $D_i[f](x) = [f(x^{i \to 1}) - f(x^{i \to -1})]/2$, where $x^{i \to 1}$ is the string that $x$ with the $i$-th bit flipped to $1$, and $x^{i \to 0}$ is the string that $x$ with the $i$-th bit flipped to $0$.
+2. The influence of a variable $x_i$ is defined as $\mathrm{Inf}_i[f] = \mathbb{E}_{x} [D_i[f](x)]^2$,The total influence is defined as $I[f]=\sum_{i=1}^n \mathrm{Inf}_i[f]$.
+3. If restricted to $\mathbb{R} \to \{-1,1\}$, derivative reduced to sensitivity $\mathrm{sens}_f(x)=\#\{i:f(x)\ne f(x^{\oplus i})\}$, with influence $\mathrm{Inf}_i[f] = \mathrm{Pr}_x [f(x) \neq f(x \oplus e_i)]$.
+:::
+
+This definition highly related to the concentration of the Fourier spectrum of the Boolean function.
+
+:::{#thm-influence-sensitivity .callout-important icon="false"}
+## Lemma: Influence and Fourier Expansion
+For any Boolean function $f: \{-1,1\}^n \to \mathbb{R}$, admitting Fourier expansion 
+$$
+f(x)=\sum_{S\subseteq[n]}\widehat f(S)\chi_S(x),
+\quad
+\chi_S(x)=\prod_{j\in S}x_j,
+$$
+we have $\mathrm{Inf}_i[f] = \sum_{S\subseteq[n], i\in S} |\widehat f(S)|^2$ and $I[f] = \sum_{S\subseteq[n]} |S||\widehat f(S)|^2$.
+:::
+
+:::{.callout-note collapse="true"}
+## Proof (Click to expand)
+[todo: Add a rigorous proof]
+:::
+
+An important corollary of these properties is the approximation of Boolean functions by DNF formulas.
+We first state a approximation version of @lem-universality-dnf.
+
+:::{#thm-approximation-dnf .callout-important icon="false"}
+## Theorem: Approximation of Boolean Functions by DNF Formulas
+Given approximation error $\varepsilon > 0$, any Boolean function $f: \{0,1\}^n \to \{0,1\}$ computable by a DNF of size $s$ is $\varepsilon$-close to a function $g$ computable by a DNF of width $w = \lceil \log(s/ \varepsilon) \rceil$.
+:::
+
+:::{.callout-note collapse="true"}
+## Proof (Click to expand)
+Given $f(x)=T_1(x)\vee T_2(x)\vee\cdots\vee T_s(x)$, simply cancel out those $T_i(x)$ with width greater than $w$, we get a function $g(x)$ with
+$$
+g(x)=\bigvee_{j:\,\mathrm{width}(T_j)\le w}T_j(x),\quad \mathrm{DNFwidth}(g)\le w,\, \mathrm{DNFsize}(g)\le s.
+$$
+We note that if $f(x) \neq g(x)$, then $T_j(x) = 0, \forall j:\,\mathrm{width}(T_j)\leq w$ and there must exists a term $T_i(x)$ with $\mathrm{width}(T_j)> w$ such that $T_j(x) = 1$. Note that $\Pr[T_j(x)=1]=2^{-\mathrm{width}(T_j)} \leq 2^{-w}$ for $x$ uniformly random. Therefore, 
+$$
+\Pr[f(x)\ne g(x)]
+\le
+\sum_{j:\,\mathrm{width}(T_j)>w}
+\Pr[T_j(x)=1]
+\le
+s\cdot \frac{\varepsilon}{s}
+=
+\varepsilon.
+$$
+:::
+
+@thm-approximation-dnf indicates that a function admitting a polynomial size, unrestricted width DNF must admit a small width DNF approximation.
+Taken $s = 2^n$ recovers an approximation version of @lem-universality-dnf.

@@ -1,0 +1,65 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 4ZZU2AT2
+  item_version: 96068
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: BLVCXCAT
+      name: new
+      path: Quantum N-Atom/App-Analog simulation/new
+    - key: L2LCLEDL
+      name: Lukin
+      path: Quantum N-Atom/_Review/servey accr. to Groups/Lukin
+    - key: FT7RMPBE
+      name: Experiment
+      path: Quantum Error correction/2-Code categories/Anyion/Experiment
+qlab:
+  primary_collection: BLVCXCAT
+  indexed_collections:
+    - BLVCXCAT
+    - FT7RMPBE
+    - L2LCLEDL
+  primary_topic: quantum-n-atom
+  indexed_topics:
+    - quantum-error-correction
+    - quantum-n-atom
+item_type: journalArticle
+title: Non-Abelian Floquet Spin Liquids in a Digital Rydberg Simulator
+authors:
+  - first: Marcin
+    last: Kalinowski
+  - first: Nishad
+    last: Maskara
+  - first: Mikhail D.
+    last: Lukin
+year: 2023
+abstract: Understanding topological matter is an outstanding challenge across
+  several disciplines of physical science. Programmable quantum simulators have
+  emerged as a powerful approach to studying such systems. While quantum spin
+  liquids of paradigmatic toric code type have recently been realized in the
+  laboratory, controlled exploration of topological phases with non-abelian
+  excitations remains an open problem. We introduce and analyze a new approach
+  to simulating topological matter based on periodic driving. Specifically, we
+  describe a model for a so-called Floquet spin liquid, obtained through a
+  periodic sequence of parallel quantum gate operations that effectively
+  simulates the Hamiltonian of the non-abelian spin liquid in Kitaev's honeycomb
+  model. We show that this approach, including the toolbox for preparation,
+  control, and readout of topological states, can be efficiently implemented in
+  state-of-the-art experimental platforms. One specific implementation scheme is
+  based on Rydberg atom arrays and utilizes recently demonstrated coherent qubit
+  transport combined with controlled-phase gate operations. We describe methods
+  for probing the non-abelian excitations, and the associated Majorana zero
+  modes, and simulate possible fusion and braiding experiments. Our analysis
+  demonstrates the potential of programmable quantum simulators for exploring
+  topological phases of matter. Extensions including simulation of Kitaev
+  materials and lattice gauge theories are also discussed.
+tags:
+  - Condensed Matter - Strongly Correlated Electrons
+  - Physics - Atomic Physics
+  - Quantum Physics
+identifiers:
+  doi: 10.1103/physrevx.13.031008
+  arxiv: "2211.00017"

@@ -1,0 +1,42 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: ENZZJ5LS
+  item_version: 0
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: ZKNJ5925
+      name: Magic
+      path: Quantum Resource/Magic
+qlab:
+  primary_collection: ZKNJ5925
+  indexed_collections:
+    - ZKNJ5925
+  primary_topic: quantum-resource
+  indexed_topics:
+    - quantum-resource
+item_type: journalArticle
+title: Quantum Chaos is Quantum
+authors:
+  - first: Lorenzo
+    last: Leone
+  - first: Salvatore F. E.
+    last: Oliviero
+  - first: You
+    last: Zhou
+  - first: Alioscia
+    last: Hamma
+year: 2021
+abstract: It is well known that a quantum circuit on $N$ qubits composed of
+  Clifford gates with the addition of $k$ non Clifford gates can be simulated on
+  a classical computer by an algorithm scaling as $\text{poly}(N)\exp(k)$[1]. We
+  show that, for a quantum circuit to simulate quantum chaotic behavior, it is
+  both necessary and sufficient that $k=O(N)$. This result implies the
+  impossibility of simulating quantum chaos on a classical computer.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.22331/q-2021-05-04-453
+  arxiv: "2102.08406"

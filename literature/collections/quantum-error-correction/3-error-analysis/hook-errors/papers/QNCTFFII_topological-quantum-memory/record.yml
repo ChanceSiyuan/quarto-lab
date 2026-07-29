@@ -1,0 +1,63 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: QNCTFFII
+  item_version: 96086
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: SMD6TZRD
+      name: Hook errors
+      path: Quantum Error correction/3-Error analysis/Hook errors
+    - key: UYKBZX3C
+      name: _Review
+      path: Quantum Error correction/2-Code categories/Topological/surface
+        codes/_Review
+qlab:
+  primary_collection: SMD6TZRD
+  indexed_collections:
+    - SMD6TZRD
+    - UYKBZX3C
+  primary_topic: quantum-error-correction
+  indexed_topics:
+    - quantum-error-correction
+item_type: journalArticle
+title: Topological quantum memory
+authors:
+  - first: Eric
+    last: Dennis
+  - first: Alexei
+    last: Kitaev
+  - first: Andrew
+    last: Landahl
+  - first: John
+    last: Preskill
+year: 2002
+abstract: We analyze surface codes, the topological quantum error-correcting
+  codes introduced by Kitaev. In these codes, qubits are arranged in a
+  two-dimensional array on a surface of nontrivial topology, and encoded quantum
+  operations are associated with nontrivial homology cycles of the surface. We
+  formulate protocols for error recovery, and study the efficacy of these
+  protocols. An order-disorder phase transition occurs in this system at a
+  nonzero critical value of the error rate; if the error rate is below the
+  critical value (the accuracy threshold), encoded information can be protected
+  arbitrarily well in the limit of a large code block. This phase transition can
+  be accurately modeled by a three-dimensional Z_2 lattice gauge theory with
+  quenched disorder. We estimate the accuracy threshold, assuming that all
+  quantum gates are local, that qubits can be measured rapidly, and that
+  polynomial-size classical computations can be executed instantaneously. We
+  also devise a robust recovery procedure that does not require measurement or
+  fast classical processing; however for this procedure the quantum gates are
+  local only if the qubits are arranged in four or more spatial dimensions. We
+  discuss procedures for encoding, measurement, and performing fault-tolerant
+  universal quantum computation with surface codes, and argue that these codes
+  provide a promising framework for quantum computing architectures.
+tags:
+  - Condensed Matter - Statistical Mechanics
+  - High Energy Physics - Lattice
+  - High Energy Physics - Theory
+  - Quantum Physics
+identifiers:
+  doi: 10.1063/1.1499754
+  arxiv: quant-ph/0110143

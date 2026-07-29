@@ -1,0 +1,54 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: MCDNH26V
+  item_version: 96133
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: A3CH6HMR
+      name: Maxcut
+      path: Quantum Algorithm/Optimization/Maxcut
+    - key: 7DTZK7TI
+      name: Classical
+      path: Quantum Algorithm/Optimization/Maxcut/Classical
+qlab:
+  primary_collection: A3CH6HMR
+  indexed_collections:
+    - 7DTZK7TI
+    - A3CH6HMR
+  primary_topic: quantum-algorithm
+  indexed_topics:
+    - quantum-algorithm
+item_type: preprint
+title: More on greedy construction heuristics for the MAX-CUT problem
+authors:
+  - first: Jianan
+    last: Wang
+  - first: Chuixiong
+    last: Wu
+  - first: Fen
+    last: Zuo
+year: 2023
+abstract: A cut of a graph can be represented in many different ways. Here we
+  propose to represent a cut through a “relation tree”, which is a spanning tree
+  with signed edges. We show that this picture helps to classify the main greedy
+  heuristics for the maximum cut problem, in analogy with the minimum spanning
+  tree problem. Namely, all versions of the Sahni-Gonzalez (SG) algorithms could
+  be classified as the Prim class, while various Edge-Contraction (EC)
+  algorithms are of the Kruskal class. We further elucidate the relation of this
+  framework to the stabilizer formalism in quantum computing, and point out that
+  the recently proposed ADAPT-Clifford algorithm is a reformulation of a refined
+  version of the SG algorithm, SG3. Numerical performance of the typical
+  algorithms from the two classes are studied with various kinds of graphs. It
+  turns out that, the Prim-class algorithms perform better for general dense
+  graphs, and the Kruskal-class algorithms performs better when the graphs are
+  sparse enough.
+tags:
+  - Mathematics - Combinatorics
+  - Mathematics - Optimization and Control
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2312.10895
+  arxiv: "2312.10895"

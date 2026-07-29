@@ -1,0 +1,64 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 6RYVHMV9
+  item_version: 103034
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: VMP2AYWR
+      name: Bell sampling and generalization
+      path: Quantum Learning/_Review/Bell sampling and generalization
+    - key: ITLT2FDY
+      name: lowerbounds
+      path: Quantum Learning/Learning on states/lowerbounds
+qlab:
+  primary_collection: VMP2AYWR
+  indexed_collections:
+    - ITLT2FDY
+    - VMP2AYWR
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: preprint
+title: Optimal tradeoffs for estimating Pauli observables
+authors:
+  - first: Sitan
+    last: Chen
+  - first: Weiyuan
+    last: Gong
+  - first: Qi
+    last: Ye
+year: 2024
+abstract: "We revisit the problem of Pauli shadow tomography: given copies of an
+  unknown $n$-qubit quantum state $\\rho$, estimate $\\text{tr}(P\\rho)$ for
+  some set of Pauli operators $P$ to within additive error $\\epsilon$. This has
+  been a popular testbed for exploring the advantage of protocols with quantum
+  memory over those without: with enough memory to measure two copies at a time,
+  one can use Bell sampling to estimate $|\\text{tr}(P\\rho)|$ for all $P$ using
+  $O(n/\\epsilon^4)$ copies, but with $k\\le n$ qubits of memory,
+  $\\Omega(2^{(n-k)/3})$ copies are needed. These results leave open several
+  natural questions. How does this picture change in the physically relevant
+  setting where one only needs to estimate a certain subset of Paulis? What is
+  the optimal dependence on $\\epsilon$? What is the optimal tradeoff between
+  quantum memory and sample complexity? We answer all of these questions. For
+  any subset $A$ of Paulis and any family of measurement strategies, we
+  completely characterize the optimal sample complexity, up to $\\log |A|$
+  factors. We show any protocol that makes $\\text{poly}(n)$-copy measurements
+  must make $\\Omega(1/\\epsilon^4)$ measurements. For any protocol that makes
+  $\\text{poly}(n)$-copy measurements and only has $k < n$ qubits of memory, we
+  show that $\\widetilde{\\Theta}(\\min\\{2^n/\\epsilon^2,
+  2^{n-k}/\\epsilon^4\\})$ copies are necessary and sufficient. The protocols we
+  propose can also estimate the actual values $\\text{tr}(P\\rho)$, rather than
+  just their absolute values as in prior work. Additionally, as a byproduct of
+  our techniques, we establish tight bounds for the task of purity testing and
+  show that it exhibits an intriguing phase transition not present in the
+  memory-sample tradeoff for Pauli shadow tomography."
+tags:
+  - Computer Science - Information Theory
+  - Mathematics - Information Theory
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2404.19105
+  arxiv: "2404.19105"

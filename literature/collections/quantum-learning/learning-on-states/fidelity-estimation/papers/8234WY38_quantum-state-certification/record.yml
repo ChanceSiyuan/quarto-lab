@@ -1,0 +1,51 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 8234WY38
+  item_version: 96081
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: YS8L9GJT
+      name: Fidelity Estimation
+      path: Quantum Learning/Learning on states/Fidelity Estimation
+    - key: TJMTPHKH
+      name: certification
+      path: Quantum Learning/Learning on states/certification
+    - key: YCBHDN7M
+      name: Application
+      path: Quantum Learning/Learning on states/non-linear/Application
+qlab:
+  primary_collection: YS8L9GJT
+  indexed_collections:
+    - TJMTPHKH
+    - YCBHDN7M
+    - YS8L9GJT
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: preprint
+title: Quantum state certification
+authors:
+  - first: Costin
+    last: Bădescu
+  - first: Ryan
+    last: O'Donnell
+  - first: John
+    last: Wright
+year: 2017
+abstract: "We consider the problem of quantum state certiﬁcation, where one is
+  given n copies of an unknown d-dimensional quantum mixed state ρ, and one
+  wants to test whether ρ is equal to some known mixed state σ or else is ǫ-far
+  from σ. The goal is to use notably fewer copies than the Ω(d2) needed for full
+  tomography on ρ (i.e., density estimation). We give two robust state
+  certiﬁcation algorithms: one with respect to ﬁdelity using n = O(d/ǫ) copies,
+  and one with respect to trace distance using n = O(d/ǫ2) copies. The latter
+  algorithm also applies when σ is unknown as well. These copy complexities are
+  optimal up to constant factors."
+tags:
+  - Computer Science - Data Structures and Algorithms
+  - Quantum Physics
+identifiers:
+  arxiv: "1708.06002"

@@ -1,0 +1,42 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: RJDJTMVE
+  item_version: 96138
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: C3CSREHF
+      name: Fourier transform
+      path: Quantum Algorithm/Fourier transform
+qlab:
+  primary_collection: C3CSREHF
+  indexed_collections:
+    - C3CSREHF
+  primary_topic: quantum-algorithm
+  indexed_topics:
+    - quantum-algorithm
+item_type: journalArticle
+title: Semiclassical Fourier Transform for Quantum Computation
+authors:
+  - first: Robert B.
+    last: Griffiths
+  - first: Chi-Sheng
+    last: Niu
+year: 1996
+abstract: Shor's algorithms for factorization and discrete logarithms on a
+  quantum computer employ Fourier transforms preceding a final measurement. It
+  is shown that such a Fourier transform can be carried out in a semi-classical
+  way in which a ``classical'' (macroscopic) signal resulting from the
+  measurement of one bit (embodied in a two-state quantum system) is employed to
+  determine the type of measurement carried out on the next bit, and so forth.
+  In this way the two-bit gates in the Fourier transform can all be replaced by
+  a smaller number of one-bit gates controlled by classical signals. Success in
+  simplifying the Fourier transform suggests that it may be worthwhile looking
+  for other ways of using semi-classical methods in quantum computing.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.1103/physrevlett.76.3228
+  arxiv: quant-ph/9511007

@@ -1,0 +1,50 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: CKW87EZW
+  item_version: 96087
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: TZ42IFP4
+      name: Optimization
+      path: Quantum Algorithm/Optimization
+qlab:
+  primary_collection: TZ42IFP4
+  indexed_collections:
+    - TZ42IFP4
+  primary_topic: quantum-algorithm
+  indexed_topics:
+    - quantum-algorithm
+item_type: preprint
+title: Solving boolean satisfiability problems with the quantum approximate
+  optimization algorithm
+authors:
+  - first: Sami
+    last: Boulebnane
+  - first: Ashley
+    last: Montanaro
+year: 2022
+abstract: The quantum approximate optimization algorithm (QAOA) is one of the
+  most prominent proposed applications for near-term quantum computing. Here we
+  study the ability of QAOA to solve hard constraint satisfaction problems, as
+  opposed to optimization problems. We focus on the fundamental boolean
+  satisfiability problem, in the form of random $k$-SAT. We develop analytic
+  bounds on the average success probability of QAOA over random boolean formulae
+  at the satisfiability threshold, as the number of variables $n$ goes to
+  infinity. The bounds hold for fixed parameters and when $k$ is a power of 2.
+  We complement these theoretical results with numerical results on the
+  performance of QAOA for small $n$, showing that these match the limiting
+  theoretical bounds closely. We then use these results to compare QAOA with
+  leading classical solvers. In the case of random 8-SAT, we find that for
+  around 14 ansatz layers, QAOA matches the scaling performance of the
+  highest-performance classical solver we tested, WalkSATlm. For larger numbers
+  of layers, QAOA outperforms WalkSATlm, with an ultimate level of advantage
+  that is still to be determined. Our methods provide a framework for analysing
+  the performance of QAOA for hard constraint satisfaction problems and finding
+  further speedups over classical algorithms.
+tags:
+  - Quantum Physics
+identifiers:
+  arxiv: "2208.06909"

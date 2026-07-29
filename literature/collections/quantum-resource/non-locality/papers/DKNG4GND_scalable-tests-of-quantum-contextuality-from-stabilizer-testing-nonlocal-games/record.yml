@@ -1,0 +1,59 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: DKNG4GND
+  item_version: 96164
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: E37296D2
+      name: Non-locality
+      path: Quantum Resource/Non-locality
+qlab:
+  primary_collection: E37296D2
+  indexed_collections:
+    - E37296D2
+  primary_topic: quantum-resource
+  indexed_topics:
+    - quantum-resource
+item_type: preprint
+title: Scalable tests of quantum contextuality from stabilizer-testing nonlocal games
+authors:
+  - first: Wanbing
+    last: Zhao
+  - first: H. W. Shawn
+    last: Liew
+  - first: Wen Wei
+    last: Ho
+  - first: Chunxiao
+    last: Liu
+  - first: Vir B.
+    last: Bulchandani
+year: 2025
+abstract: 'Soon after the dawn of quantum error correction, DiVincenzo and Peres
+  observed that stabilizer codewords could give rise to simple proofs of
+  quantumness via contextuality. This discovery can be recast in the language of
+  nonlocal games: every $n$-qubit stabilizer state defines a specific
+  "stabilizer-testing" $n$-player nonlocal game, which quantum players can win
+  with probability one. If quantum players can moreover outperform all possible
+  classical players, then the state is contextual. However, the classical values
+  of stabilizer-testing games are largely unknown for scalable examples beyond
+  the $n$-qubit GHZ state. We introduce several new methods for upper-bounding
+  the classical values of these games. We first prove a general coding-theory
+  bound for all stabilizer-testing games: if the classical value
+  $p_{\mathrm{cl}}^* < 1$, then $p_{\mathrm{cl}}^* \leq 7/8$, i.e., there is no
+  classical strategy that can perform as well as the optimal quantum strategy
+  even in an asymptotic sense. We then show how to tighten this bound for the
+  most common scalable examples, namely GHZ, toric-code and cyclic cluster
+  states. In particular, we establish an asymptotically tight upper bound for
+  cyclic cluster states using transfer-matrix methods. This leads to the
+  striking conclusion that measuring an exponentially small fidelity to the
+  cyclic cluster state will suffice to witness its contextuality.'
+tags:
+  - Condensed Matter - Statistical Mechanics
+  - Condensed Matter - Strongly Correlated Electrons
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2512.16654
+  arxiv: "2512.16654"

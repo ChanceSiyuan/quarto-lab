@@ -1,13 +1,14 @@
 .DEFAULT_GOAL := dev
 
-# Every target delegates to a package script, which delegates to the CLI in
-# scripts/, which calls the public interfaces of lib/. The Makefile is the
+# Every target delegates to a package script, which delegates to the packed CLI
+# under .research-loop/tooling/, which calls the public interfaces of src/lib/.
+# The Makefile is the
 # stable human- and agent-facing surface; it holds no knowledge-system logic of
 # its own, so a rule can never disagree with the code it fronts.
 #
 # QUERY, FILE, and KEY are refused when empty rather than passed through as an
 # empty string: exit 2 means "the invocation was wrong", the same code
-# scripts/draft-preview.ts uses for that failure.
+# packed draft-preview CLI uses for that failure.
 
 .PHONY: help dev build test pages-build \
 	knowledge-check knowledge-resolve knowledge-preview \
@@ -17,7 +18,7 @@
 	problem-import-autoqec-css-distance problem-import-verify \
 	problem-index problem-publish \
 	autoresearch-service \
-	zotero-plugin-test zotero-plugin
+	zotero-plugin-test zotero-plugin clean clean-all
 
 help:
 	@echo 'Research Loop'
@@ -47,6 +48,9 @@ help:
 	@echo '  make autoresearch-service                       serve local-only autoresearch preparation diagnostics'
 	@echo '  make zotero-plugin-test                         type-check and test the Zotero integration'
 	@echo '  make zotero-plugin                              test and build the installable Zotero XPI'
+	@echo
+	@echo '  make clean                                      remove generated builds, previews, and test output'
+	@echo '  make clean-all                                  also remove local dependency and tool caches'
 
 dev: node_modules/.package-lock.json
 	@if [ -z "$(AUTORESEARCH_PRIVATE_ROOT)" ]; then \
@@ -103,11 +107,21 @@ literature-fetch: node_modules/.package-lock.json
 literature-sync: node_modules/.package-lock.json
 	npm run literature:sync
 
+migration-verify: node_modules/.package-lock.json
+	npm run migration:verify
+
 zotero-plugin-test: integrations/zotero/node_modules/.package-lock.json
 	cd integrations/zotero && npm run check && npm test
 
 zotero-plugin: zotero-plugin-test
 	cd integrations/zotero && npm run build
+
+clean:
+	rm -rf dist out test-results work .generated public/knowledge \
+		drafts/.preview drafts/.quarto integrations/zotero/build integrations/zotero/dist
+
+clean-all: clean
+	rm -rf node_modules integrations/zotero/node_modules .vinext .wrangler
 
 integrations/zotero/node_modules/.package-lock.json: integrations/zotero/package-lock.json
 	cd integrations/zotero && npm ci

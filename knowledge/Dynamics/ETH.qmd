@@ -1,0 +1,119 @@
+---
+title: Eigenstate Thermalization Hypothesis
+description: "The eigenstate thermalization hypothesis (ETH) resolves a fundamental paradox in quantum statistical mechanics: how does unitary evolution of a pure state produce thermal behavior?"
+categories:
+  - theory
+---
+
+# Summary and questions
+
+The eigenstate thermalization hypothesis (ETH) resolves a fundamental paradox in quantum statistical mechanics: how does unitary evolution of a pure state produce thermal behavior? The answer lies in subsystem entanglement — the global state remains pure, but the reduced density matrix of any local subsystem $A$ becomes indistinguishable from a thermal (Gibbs) state. ETH achieves this by encoding thermal physics into *individual* energy eigenstates: one need not average over many microstates to recover thermodynamics. Quantum many-body scars (QMBS) are rare eigenstates that violate this structure.
+
+Key questions addressed:
+
+- How does $\rho_A(t) = \text{Tr}_B(|\psi(t)\rangle\langle\psi(t)|)$ converge to a Gibbs state under unitary evolution?
+- What do the diagonal and off-diagonal parts of the ETH ansatz each contribute to thermalization?
+- How do quantum many-body scars violate ETH and produce anomalous periodic revivals?
+
+# Core results
+
+:::{#def-eth .callout-note icon="false"}
+Given a quantum many-body system with Hamiltonian $H$, the eigenstate thermalization hypothesis (ETH) proposes that for any local observable $\hat{O}$ (e.g., a spin at a particular site), the matrix element $\langle E_\alpha | \hat{O} | E_\beta \rangle$ in the eigenstate basis must satisfy the following strict form:   
+$$
+\langle E_\alpha | \hat{O} | E_\beta \rangle = O_{mc}(\bar{E}) \delta_{\alpha\beta} + e^{-S(\bar{E})/2} f_{\hat{O}}(\bar{E}, \omega) R_{\alpha\beta}
+$$
+where
+- $O_{mc}(E) = \text{Tr}(\hat{O} \rho_{mc})$ is microcanonical ensemble average with $\rho_{mc} = \frac{1}{\mathcal{N}_{E}} \sum |E_\alpha\rangle\langle E_\alpha|$. Here $\mathcal{N}_{E}$ is the number of eigenstates in the energy window $[E-\Delta E, E+\Delta E]$.
+- $\bar{E} = (E_\alpha + E_\beta)/2$ is the average energy of the pair of eigenstates.
+- $\omega = E_\alpha - E_\beta$ is the energy difference.
+- $S(\bar{E}) = \ln \mathcal{N}(\bar{E})$ is the microcanonical entropy (Boltzmann entropy with $k_B = 1$). Since $\mathcal{N}(\bar{E}) = \rho(\bar{E})\,\Delta E$ where $\rho(\bar{E})$ is the density of states, and $\rho(E) \propto e^{s(\epsilon) N}$ for a system of $N$ particles with energy density $\epsilon = E/N$, the entropy is extensive: $S \propto N$.
+- $f_{\hat{O}}(\bar{E}, \omega)$ is a smooth spectral function characterizing the observable $\hat{O}$.
+- $R_{\alpha\beta}$ is a random variable with zero mean and unit variance.
+:::
+
+The factor $e^{-S(\bar{E})/2}$ is astronomically small for macroscopic systems ($S \sim N \gg 1$), ensuring that off-diagonal matrix elements are negligible. The exponent $1/2$ follows from normalization: there are $\mathcal{N} = e^S$ states sharing unit total transition probability, so each $|\langle E_\alpha|\hat{O}|E_\beta\rangle|^2 \sim e^{-S}$, giving amplitude $\sim e^{-S/2}$.
+
+:::{#def-quench .callout-note icon="false"}
+## Definition: Quantum Quench
+A **quantum quench** is a protocol in which a system is prepared in a state $|\psi(0)\rangle$ (typically an eigenstate of some initial Hamiltonian $H_0$), and at $t = 0$ the Hamiltonian is suddenly switched to $H \neq H_0$. Since $|\psi(0)\rangle$ is generically not an eigenstate of $H$, the system undergoes non-trivial unitary evolution $|\psi(t)\rangle = e^{-iHt}|\psi(0)\rangle$.
+:::
+
+:::{#thm-subsystem-thermal .callout-important icon="false"}
+## Theorem: Subsystem Thermalization from ETH
+Consider a Hamiltonian $H$ satisfying ETH with non-degenerate spectrum. After a quantum quench from $|\psi(0)\rangle = \sum_\alpha c_\alpha |E_\alpha\rangle$ with coefficients concentrated in a narrow energy window around $\bar{E}$, the long-time average of any local observable $\hat{O}$ equals the microcanonical prediction:
+$$
+\overline{\langle \hat{O} \rangle} \equiv \lim_{T\to\infty} \frac{1}{T}\int_0^T \langle\psi(t)|\hat{O}|\psi(t)\rangle\, dt = \sum_\alpha |c_\alpha|^2 O_{mc}(E_\alpha) \approx O_{mc}(\bar{E})
+$$
+:::
+
+:::{.callout-note collapse="true"}
+## Proof sketch (click to expand)
+Expand the expectation value in the energy eigenbasis:
+$$
+\langle\psi(t)|\hat{O}|\psi(t)\rangle = \sum_\alpha |c_\alpha|^2 \langle E_\alpha|\hat{O}|E_\alpha\rangle + \sum_{\alpha \neq \beta} c_\alpha^* c_\beta\, e^{i(E_\alpha - E_\beta)t}\, \langle E_\alpha|\hat{O}|E_\beta\rangle
+$$
+
+**Diagonal part** (time-independent): ETH gives $\langle E_\alpha|\hat{O}|E_\alpha\rangle = O_{mc}(E_\alpha)$. For coefficients concentrated in a narrow energy window, $\sum_\alpha |c_\alpha|^2 O_{mc}(E_\alpha) \approx O_{mc}(\bar{E})$.
+
+**Off-diagonal part**: For non-degenerate spectrum, the time average of $e^{i(E_\alpha - E_\beta)t}$ vanishes. Moreover, each off-diagonal matrix element is suppressed by $e^{-S(\bar{E})/2}$, exponentially small in system size. Both mechanisms ensure the oscillating terms average to zero. $\square$
+
+See [@deutsch1991quantum; @srednicki1994chaos; @dalessio2016quantum] for detailed treatments.
+:::
+
+A revolutionary implication of the diagonal part alone is that **each individual eigenstate is already thermal** for local measurements: $\text{Tr}_A(\hat{O}\, \rho_A^{(\alpha)}) = O_{mc}(E_\alpha)$ where $\rho_A^{(\alpha)} = \text{Tr}_B(|E_\alpha\rangle\langle E_\alpha|)$. One does not need ensemble averaging over many microstates — thermal physics is encoded in every single high-energy eigenstate. In the thermodynamic limit, ensemble equivalence further gives $O_{mc}(\bar{E}) \approx \text{Tr}(\hat{O}\, e^{-H/k_BT})/Z$, where the effective temperature $T$ is fixed by $\langle\psi(0)|H|\psi(0)\rangle = \text{Tr}(H\, e^{-H/k_BT})/Z$ [@rigol2008thermalization].
+
+The ETH ansatz was independently proposed by Deutsch [@deutsch1991quantum] and Srednicki [@srednicki1994chaos]. Rigol, Dunjko, and Olshanii [@rigol2008thermalization] provided compelling numerical evidence in non-integrable lattice models by comparing quantum quench dynamics with microcanonical predictions. A comprehensive review is given by D'Alessio et al. [@dalessio2016quantum]. For integrable systems, ETH is violated and the appropriate description is the generalized Gibbs ensemble [@rigol2007relaxation].
+
+# Violation of ETH
+Quantum many-body scars (QMBS) are rare eigenstates that violate the ETH ansatz for both the diagonal and off-diagonal terms, producing persistent non-thermal dynamics in otherwise ergodic systems.
+
+:::{#thm-qmbs-eth .callout-important icon="false"}
+## Theorem: QMBS Violate ETH
+In the PXP model (and related constrained models), there exist anomalous eigenstates $\{|E_n^{\text{scar}}\rangle\}$ forming a "scar tower" that violate ETH in three ways [@turner2018weak; @serbyn2021quantum]:
+
+1. **Diagonal violation**: $\langle E_n^{\text{scar}}|\hat{O}|E_n^{\text{scar}}\rangle \neq O_{mc}(E_n^{\text{scar}})$ for local observables (e.g., staggered magnetization). Scar eigenstate expectation values deviate significantly from the microcanonical prediction at the same energy density.
+
+2. **Off-diagonal violation**: The matrix elements $\langle E_n^{\text{scar}}|\hat{O}|E_{n+1}^{\text{scar}}\rangle$ between adjacent scar states are anomalously large — not suppressed by $e^{-S/2}$ — and are algebraically structured rather than random.
+
+3. **Equal spacing**: The scar energies are approximately equally spaced, $E_{n+1}^{\text{scar}} - E_n^{\text{scar}} \approx \Omega_{\text{scar}}$, providing a common fundamental frequency.
+:::
+
+:::{.callout-note collapse="true"}
+## Proof sketch: anomalous revivals (click to expand)
+The Néel state $|Z_2\rangle = |rgrg\cdots\rangle$ has dominant overlap with the scar tower and negligible overlap with thermal eigenstates. Its dynamics is therefore governed by:
+$$
+\langle\psi(t)|\hat{O}|\psi(t)\rangle \approx \sum_n |c_n|^2 \langle E_n^s|\hat{O}|E_n^s\rangle + \sum_{n \neq m} c_n^* c_m\, e^{i(E_n^s - E_m^s)t}\, \langle E_n^s|\hat{O}|E_m^s\rangle
+$$
+
+- The diagonal part $\neq O_{\text{thermal}}$ (retains initial-state structure due to diagonal ETH violation).
+- The off-diagonal part does **not** dephase: matrix elements are large (off-diagonal violation) and phases are commensurate ($E_n^s - E_m^s \approx (n-m)\,\Omega_{\text{scar}}$).
+- Result: periodic recurrence with period $T = 2\pi/\Omega_{\text{scar}}$, manifesting as anomalous revivals of the staggered magnetization. $\square$
+
+See [@turner2018weak; @serbyn2021quantum].
+:::
+
+Key experiments demonstrating QMBS:
+
+1. **51-atom Rydberg chain** [@bernien2017probing]: first observation of anomalous revivals from $|Z_2\rangle$ in a programmable quantum simulator. Revivals of staggered magnetization persisted for several oscillation periods while generic initial states thermalized rapidly.
+
+2. **Floquet-stabilized scars** [@bluvstein2021controlling]: periodic driving of the PXP chain stabilized scar revivals and demonstrated a scar-mediated discrete time crystal with subharmonic response.
+
+3. **256-atom QuEra experiment** [@maskara2025emergent]: largest QMBS observation to date, revealing competition between scar revivals and emergent disorder from atomic position noise.
+
+On the theoretical side, Turner et al. [@turner2018weak] introduced the forward-scattering approximation to explain the scar tower structure via Krylov subspace methods. Shiraishi and Mori [@shiraishi2017systematic] developed a systematic framework for constructing Hamiltonians with embedded non-thermal eigenstates, providing rigorous proof that ETH-violating states can be embedded in otherwise thermalizing spectra. A comprehensive review connecting scars to weak ergodicity breaking and spectrum-generating algebras is given by Serbyn, Abanin, and Papic [@serbyn2021quantum].
+
+# Related to error correction
+
+Unlike conventional **active** quantum error correction (e.g., surface codes) which requires continuous syndrome measurement and classical feedback, QMBS offer a route toward **passive quantum error correction**: encoding logical qubits in scar subspaces that are intrinsically protected from thermalization by the system's own Hamiltonian dynamics. Three main approaches have emerged:
+
+1. **Decoherence-free subspaces from scar states.** Logical quantum information encoded in the scar subspace is protected because scar eigenstates violate ETH and resist thermalization. Wang et al. [@wang2024embedding] showed how to embed QMBS into decoherence-free subspaces (DFS) of Lindblad master equations, achieving persistent oscillations that are robust to perturbations — unlike closed-system scars, which are sensitive to initial state preparation.
+
+2. **Stabilizer scars in lattice gauge theories.** In certain LGTs ($Z_2$, $U(1)$), the scar subspace coincides with a stabilizer state manifold, directly bridging QMBS and stabilizer QEC. Aramthottil et al. [@aramthottil2022scar] identified scar states in the deconfined regime of $Z_2$ LGT. Hartse, Fidkowski, and Mueller [@hartse2025stabilizer] proved that exact scar solutions in 2+1D LGT are zero-magic stabilizer states, establishing a formal connection between QMBS and stabilizer codes. Halimeh et al. [@halimeh2023robust] showed that terms linear in gauge-symmetry generators can make scars robust to experimental errors.
+
+3. **Floquet and dissipative engineering.** Periodic driving can tune the energy spectrum to widen the gap between scar states and thermal states, extending scar lifetimes. Mukherjee et al. [@mukherjee2020collapse] demonstrated Floquet control of transitions between ergodic and scarred regimes; Bluvstein et al. [@bluvstein2021controlling] realized Floquet-stabilized scars experimentally. Complementarily, engineered Lindblad dissipators can project erroneous (leaked) states back into the scar subspace, turning environmental coupling from a source of decoherence into a stabilization mechanism [@wang2024embedding].
+
+This field is theoretically very active but experimentally in an early stage. While scar states resist internal thermalization, they remain sensitive to external hardware noise — particularly position disorder in neutral-atom arrays [@maskara2025emergent] — which breaks the symmetry of the scar subspace. A key open challenge is achieving robust passive protection in 2D geometries with realistic noise levels.
+
+---
+
+[The Quantum States That Refuse to Thermalize](https://www.youtube.com/watch?v=QDV2v0R3x7I) — video summary of QMBS, their resistance to thermalization, and potential applications in quantum memory.

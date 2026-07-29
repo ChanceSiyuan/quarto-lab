@@ -1,0 +1,56 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 8PVVWX7G
+  item_version: 96109
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: FWFF8ZT4
+      name: Universal gates
+      path: Quantum Resource/Magic/Universal gates
+    - key: 8NTY9LVA
+      name: code
+      path: Quantum Complexity/QCsim/stabilizer simulation/code
+qlab:
+  primary_collection: FWFF8ZT4
+  indexed_collections:
+    - 8NTY9LVA
+    - FWFF8ZT4
+  primary_topic: quantum-resource
+  indexed_topics:
+    - quantum-complexity
+    - quantum-resource
+item_type: journalArticle
+title: Improved Simulation of Stabilizer Circuits
+authors:
+  - first: Scott
+    last: Aaronson
+  - first: Daniel
+    last: Gottesman
+year: 2004
+abstract: The Gottesman-Knill theorem says that a stabilizer circuit -- that is,
+  a quantum circuit consisting solely of CNOT, Hadamard, and phase gates -- can
+  be simulated efficiently on a classical computer. This paper improves that
+  theorem in several directions. First, by removing the need for Gaussian
+  elimination, we make the simulation algorithm much faster at the cost of a
+  factor-2 increase in the number of bits needed to represent a state. We have
+  implemented the improved algorithm in a freely-available program called CHP
+  (CNOT-Hadamard-Phase), which can handle thousands of qubits easily. Second, we
+  show that the problem of simulating stabilizer circuits is complete for the
+  classical complexity class ParityL, which means that stabilizer circuits are
+  probably not even universal for classical computation. Third, we give
+  efficient algorithms for computing the inner product between two stabilizer
+  states, putting any n-qubit stabilizer circuit into a "canonical form" that
+  requires at most O(n^2/log n) gates, and other useful tasks. Fourth, we extend
+  our simulation algorithm to circuits acting on mixed states, circuits
+  containing a limited number of non-stabilizer gates, and circuits acting on
+  general tensor-product initial states but containing only a limited number of
+  measurements.
+tags:
+  - Computer Science - Computational Complexity
+  - Quantum Physics
+identifiers:
+  doi: 10.1103/physreva.70.052328
+  arxiv: quant-ph/0406196

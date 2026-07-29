@@ -1,0 +1,48 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: CWCVLFZ4
+  item_version: 96049
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: MSCEQ3D9
+      name: Learning
+      path: Quantum Resource/Magic/Quantification/Learning
+qlab:
+  primary_collection: MSCEQ3D9
+  indexed_collections:
+    - MSCEQ3D9
+  primary_topic: quantum-resource
+  indexed_topics:
+    - quantum-resource
+item_type: preprint
+title: Agnostic Tomography of Stabilizer Product States
+authors:
+  - first: Sabee
+    last: Grewal
+  - first: Vishnu
+    last: Iyer
+  - first: William
+    last: Kretschmer
+  - first: Daniel
+    last: Liang
+year: 2024
+abstract: We define a quantum learning task called agnostic tomography, where
+  given copies of an arbitrary state $\rho$ and a class of quantum states
+  $\mathcal{C}$, the goal is to output a succinct description of a state that
+  approximates $\rho$ at least as well as any state in $\mathcal{C}$ (up to some
+  small error $\varepsilon$). This task generalizes ordinary quantum tomography
+  of states in $\mathcal{C}$ and is more challenging because the learning
+  algorithm must be robust to perturbations of $\rho$. We give an efficient
+  agnostic tomography algorithm for the class $\mathcal{C}$ of $n$-qubit
+  stabilizer product states. Assuming $\rho$ has fidelity at least $\tau$ with a
+  stabilizer product state, the algorithm runs in time $n^{O(1 + \log(1/\tau))}
+  / \varepsilon^2$. This runtime is quasipolynomial in all parameters, and
+  polynomial if $\tau$ is a constant.
+tags:
+  - Computer Science - Machine Learning
+  - Quantum Physics
+identifiers:
+  arxiv: "2404.03813"

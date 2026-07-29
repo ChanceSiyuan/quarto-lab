@@ -1,0 +1,58 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: PCAGZ8RF
+  item_version: 107481
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 6WY42VZD
+      name: SimulationAlg
+      path: Condensed matter/Ising Model/TFIM/SimulationAlg
+    - key: XM8QHEMQ
+      name: 2D-PEPS
+      path: Quantum Complexity/QCsim/tensor network/2D-PEPS
+    - key: BJW2K6QP
+      name: iPEPS
+      path: Quantum Complexity/QCsim/tensor network/2D-PEPS/iPEPS
+qlab:
+  primary_collection: 6WY42VZD
+  indexed_collections:
+    - 6WY42VZD
+    - BJW2K6QP
+    - XM8QHEMQ
+  primary_topic: condensed-matter
+  indexed_topics:
+    - condensed-matter
+    - quantum-complexity
+item_type: journalArticle
+title: "Time evolution of an infinite projected entangled pair state: a
+  neighborhood tensor update"
+authors:
+  - first: Jacek
+    last: Dziarmaga
+year: 2021
+abstract: "The simple update (SU) and full update (FU) are the two paradigmatic
+  time evolution algorithms for a tensor network known as the infinite projected
+  entangled pair state (iPEPS). They differ by an error measure that is either,
+  respectively, local or takes into account full infinite tensor environment. In
+  this paper we test an intermediate neighborhood tensor update (NTU) accounting
+  for the nearest neighbor environment. This small environment can be contracted
+  exactly in a parallelizable way. It provides an error measure that is
+  Hermitian and non-negative down to machine precision. In the 2D quantum Ising
+  model NTU is shown to yield stable unitary time evolution following a sudden
+  quench. It also yields accurate thermal states despite correlation lengths
+  that reach up to 20 lattice sites. The latter simulations were performed with
+  a manifestly Hermitian purification of a thermal state. Both were performed
+  with reduced tensors that do not include physical (and ancilla) indices. This
+  modification naturally leads to two other schemes: a local SVD update (SVDU)
+  and a full tensor update (FTU) being a variant of FU."
+tags:
+  - Condensed Matter - Quantum Gases
+  - Condensed Matter - Statistical Mechanics
+  - Condensed Matter - Strongly Correlated Electrons
+  - Quantum Physics
+identifiers:
+  doi: 10.1103/physrevb.104.094411
+  arxiv: "2107.06635"

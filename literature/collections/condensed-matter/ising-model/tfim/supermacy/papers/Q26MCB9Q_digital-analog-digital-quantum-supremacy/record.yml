@@ -1,0 +1,48 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: Q26MCB9Q
+  item_version: 105356
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: CV26EI3E
+      name: supermacy
+      path: Condensed matter/Ising Model/TFIM/supermacy
+qlab:
+  primary_collection: CV26EI3E
+  indexed_collections:
+    - CV26EI3E
+  primary_topic: condensed-matter
+  indexed_topics:
+    - condensed-matter
+item_type: preprint
+title: Digital-Analog-Digital Quantum Supremacy
+authors:
+  - first: Daniel
+    last: Lidar
+year: 2025
+abstract: Quantum supremacy has been explored extensively in gate-model
+  settings. Here, we introduce a quantum-supremacy framework for a hybrid
+  digital-analog-digital quantum computing (DADQC) model. We consider a device
+  that applies an initial layer of single-qubit gates, a single transverse-field
+  Ising analog block, and a final single-qubit layer before $Z$-basis readout.
+  The analog block approximates $Z$-diagonal Ising evolution, and we prove that
+  the resulting output distribution is within constant total-variation (TV)
+  distance of an Instantaneous Quantum Polynomial-time (IQP) circuit. Our bounds
+  and constructions are established for fully connected as well as
+  bounded-degree hardware graphs, matching a variety of architectures, including
+  trapped-ion, neutral atom, and superconducting platforms. Assuming
+  anticoncentration (which we prove for all-to-all hardware graphs and
+  conjecture for bounded-degree hardware graphs) and an average-case hardness
+  conjecture for the associated complex-temperature Ising partition functions,
+  standard reductions imply that any efficient classical sampler achieving
+  constant TV error collapses the polynomial hierarchy. Our results imply that
+  quantum-supremacy tests are possible on today's quantum annealers, as well as
+  other devices capable of hybrid digital-analog quantum evolution.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2512.07127
+  arxiv: "2512.07127"

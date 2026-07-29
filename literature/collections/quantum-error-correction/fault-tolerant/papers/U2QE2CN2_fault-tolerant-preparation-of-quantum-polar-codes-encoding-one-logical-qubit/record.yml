@@ -1,0 +1,56 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: U2QE2CN2
+  item_version: 96087
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: PLKWCPKI
+      name: Fault-tolerant
+      path: Quantum Error correction/Fault-tolerant
+qlab:
+  primary_collection: PLKWCPKI
+  indexed_collections:
+    - PLKWCPKI
+  primary_topic: quantum-error-correction
+  indexed_topics:
+    - quantum-error-correction
+item_type: preprint
+title: Fault-Tolerant Preparation of Quantum Polar Codes Encoding One Logical Qubit
+authors:
+  - first: Ashutosh
+    last: Goswami
+  - first: Mehdi
+    last: Mhalla
+  - first: Valentin
+    last: Savin
+year: 2023
+abstract: This paper explores a new approach to fault-tolerant quantum computing
+  (FTQC), relying on quantum polar codes. We consider quantum polar codes of
+  Calderbank-Shor-Steane type, encoding one logical qubit, which we refer to as
+  $\mathcal{Q}_1$ codes. First, we show that a subfamily of $\mathcal{Q}_1$
+  codes is equivalent to the well-known family of Shor codes. Moreover, we show
+  that $\mathcal{Q}_1$ codes significantly outperform Shor codes, of the same
+  length and minimum distance. Second, we consider the fault-tolerant
+  preparation of $\mathcal{Q}_1$ code states. We give a recursive procedure to
+  prepare a $\mathcal{Q}_1$ code state, based on two-qubit Pauli measurements
+  only. The procedure is not by itself fault-tolerant, however, the measurement
+  operations therein provide redundant classical bits, which can be
+  advantageously used for error detection. Fault-tolerance is then achieved by
+  combining the proposed recursive procedure with an error detection method.
+  Finally, we consider the fault-tolerant error correction of $\mathcal{Q}_1$
+  codes. We use Steane error correction, which incorporates the proposed
+  fault-tolerant code state preparation procedure. We provide numerical
+  estimates of the logical error rates for $\mathcal{Q}_1$ and Shor codes of
+  length $16$ and $64$ qubits, assuming a circuit-level depolarizing noise
+  model. Remarkably, the $\mathcal{Q}_1$ code of length $64$ qubits achieves a
+  logical error rate very close to $10^{-6}$ for the physical error rate $p =
+  10^{-3}$, therefore, demonstrating the potential of the proposed polar codes
+  based approach to FTQC.
+tags:
+  - Computer Science - Information Theory
+  - Quantum Physics
+identifiers:
+  arxiv: "2209.06673"

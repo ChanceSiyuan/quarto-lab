@@ -1,0 +1,53 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: BRXL65XZ
+  item_version: 96115
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: Y8GNXK9L
+      name: Bell sampling based
+      path: Quantum Learning/Experiments/Bell sampling based
+qlab:
+  primary_collection: Y8GNXK9L
+  indexed_collections:
+    - Y8GNXK9L
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: preprint
+title: Efficient quantum algorithms for stabilizer entropies
+authors:
+  - first: Tobias
+    last: Haug
+  - first: Soovin
+    last: Lee
+  - first: M. S.
+    last: Kim
+year: 2024
+abstract: Stabilizer entropies (SEs) are measures of nonstabilizerness or
+  `magic' that quantify the degree to which a state is described by stabilizers.
+  SEs are especially interesting due to their connections to scrambling,
+  localization and property testing. However, applications have been limited so
+  far as previously known measurement protocols for SEs scale exponentially with
+  the number of qubits. Here, we efficiently measure SEs for integer R\'enyi
+  index $n>1$ via Bell measurements. The SE of $N$-qubit quantum states can be
+  measured with $O(n)$ copies and $O(nN)$ classical computational time, where
+  for even $n$ we additionally require the complex conjugate of the state. We
+  provide efficient bounds of various nonstabilizerness monotones which are
+  intractable to compute beyond a few qubits. Using the IonQ quantum computer,
+  we measure SEs of random Clifford circuits doped with non-Clifford gates and
+  give bounds for the stabilizer fidelity, stabilizer extent and robustness of
+  magic. We provide efficient algorithms to measure Clifford-averaged $4n$-point
+  out-of-time-order correlators and multifractal flatness. With these measures
+  we study the scrambling time of doped Clifford circuits and random Hamiltonian
+  evolution depending on nonstabilizerness. Counter-intuitively, random
+  Hamiltonian evolution becomes less scrambled at long times which we reveal
+  with the multifractal flatness. Our results open up the exploration of
+  nonstabilizerness with quantum computers.
+tags:
+  - Quantum Physics
+identifiers:
+  arxiv: "2305.19152"

@@ -1,0 +1,50 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: VWVAJMDW
+  item_version: 96113
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: F28II9EE
+      name: magic injection
+      path: Quantum Resource/Magic/Magic state distillation/magic injection
+    - key: 5NHU7AP5
+      name: Concatenation
+      path: Quantum Error correction/2-Code categories/Concatenation
+qlab:
+  primary_collection: F28II9EE
+  indexed_collections:
+    - 5NHU7AP5
+    - F28II9EE
+  primary_topic: quantum-resource
+  indexed_topics:
+    - quantum-error-correction
+    - quantum-resource
+item_type: preprint
+title: Noise Threshold for a Fault-Tolerant Two-Dimensional Lattice Architecture
+authors:
+  - first: Krysta M.
+    last: Svore
+  - first: David P.
+    last: DiVincenzo
+  - first: Barbara M.
+    last: Terhal
+year: 2006
+abstract: We consider a model of quantum computation in which the set of
+  operations is limited to nearest-neighbor interactions on a 2D lattice. We
+  model movement of qubits with noisy SWAP operations. For this architecture we
+  design a fault-tolerant coding scheme using the concatenated [[7,1,3]] Steane
+  code. Our scheme is potentially applicable to ion-trap and solid-state quantum
+  technologies. We calculate a lower bound on the noise threshold for our local
+  model using a detailed failure probability analysis. We obtain a threshold of
+  1.85 x 10^-5 for the local setting, where memory error rates are one-tenth of
+  the failure rates of gates, measurement, and preparation steps. For the
+  analogous nonlocal setting, we obtain a noise threshold of 3.61 x 10^-5. Our
+  results thus show that the additional SWAP operations required to move qubits
+  in the local model affect the noise threshold only moderately.
+tags:
+  - Quantum Physics
+identifiers:
+  arxiv: quant-ph/0604090

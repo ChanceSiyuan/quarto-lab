@@ -1,0 +1,47 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 8UMXQNFJ
+  item_version: 96126
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 9BSNNHUE
+      name: adder
+      path: Circuit Compilation/Finite field operation/adder
+qlab:
+  primary_collection: 9BSNNHUE
+  indexed_collections:
+    - 9BSNNHUE
+  primary_topic: circuit-compilation
+  indexed_topics:
+    - circuit-compilation
+item_type: preprint
+title: Quantum Addition Circuits and Unbounded Fan-Out
+authors:
+  - first: Yasuhiro
+    last: Takahashi
+  - first: Seiichiro
+    last: Tani
+  - first: Noboru
+    last: Kunihiro
+year: 2009
+abstract: We first show how to construct an O(n)-depth O(n)-size quantum circuit
+  for addition of two n-bit binary numbers with no ancillary qubits. The exact
+  size is 7n-6, which is smaller than that of any other quantum circuit ever
+  constructed for addition with no ancillary qubits. Using the circuit, we then
+  propose a method for constructing an O(d(n))-depth O(n)-size quantum circuit
+  for addition with O(n/d(n)) ancillary qubits for any d(n)=\Omega(log n). If we
+  are allowed to use unbounded fan-out gates with length O(n^c) for an arbitrary
+  small positive constant c, we can modify the method and construct an
+  O(e(n))-depth O(n)-size circuit with o(n) ancillary qubits for any
+  e(n)=\Omega(log* n). In particular, these methods yield efficient circuits
+  with depth O(log n) and with depth O(log* n), respectively. We apply our
+  circuits to constructing efficient quantum circuits for Shor's discrete
+  logarithm algorithm.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.0910.2530
+  arxiv: "0910.2530"

@@ -1,0 +1,59 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: MVN5DYPB
+  item_version: 96134
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: PPA3CWGW
+      name: matchgate
+      path: Quantum Complexity/QCsim/Fermion-based simulation/matchgate
+    - key: EIP4ZQQD
+      name: Tomography
+      path: Quantum Learning/Learning on states/Tomography
+qlab:
+  primary_collection: PPA3CWGW
+  indexed_collections:
+    - EIP4ZQQD
+    - PPA3CWGW
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+    - quantum-learning
+item_type: journalArticle
+title: Matchgate Shadows for Fermionic Quantum Simulation
+authors:
+  - first: Kianna
+    last: Wan
+  - first: William J.
+    last: Huggins
+  - first: Joonho
+    last: Lee
+  - first: Ryan
+    last: Babbush
+year: 2023
+abstract: Classical shadows” are estimators of an unknown quantum state,
+  constructed from suitably distributed random measurements on copies of that
+  state (Huang et al. in Nat Phys 16:1050, 2020,
+  https://doi.org/10.1038/s41567-020-0932-7). In this paper, we analyze
+  classical shadows obtained using random matchgate circuits, which correspond
+  to fermionic Gaussian unitaries. We prove that the ﬁrst three moments of the
+  Haar distribution over the continuous group of matchgate circuits are equal to
+  those of the discrete uniform distribution over only the matchgate circuits
+  that are also Clifford unitaries; thus, the latter forms a “matchgate
+  3-design.” This implies that the classical shadows resulting from the two
+  ensembles are functionally equivalent. We show how one can use these matchgate
+  shadows to efﬁciently estimate inner products between an arbitrary quantum
+  state and fermionic Gaussian states, as well as the expectation values of
+  local fermionic operators and various other quantities, thus surpassing the
+  capabilities of prior work. As a concrete application, this enables us to
+  apply wavefunction constraints that control the fermion sign problem in the
+  quantum-classical auxiliary-ﬁeld quantum Monte Carlo algorithm (QC-AFQMC)
+  (Huggins et al. in Nature 603:416, 2022,
+  https://doi.org/10.1038/s41586-021-04351-z), without the exponential
+  post-processing cost incurred by the original approach.
+tags: []
+identifiers:
+  doi: 10.1007/s00220-023-04844-0

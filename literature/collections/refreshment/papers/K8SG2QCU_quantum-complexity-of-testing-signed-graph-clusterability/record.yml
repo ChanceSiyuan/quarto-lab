@@ -1,0 +1,45 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: K8SG2QCU
+  item_version: 96116
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: H6ZPXCRW
+      name: Refreshment
+      path: Refreshment
+qlab:
+  primary_collection: H6ZPXCRW
+  indexed_collections:
+    - H6ZPXCRW
+  primary_topic: refreshment
+  indexed_topics:
+    - refreshment
+item_type: preprint
+title: (Quantum) complexity of testing signed graph clusterability
+authors:
+  - first: Kuo-Chin
+    last: Chen
+  - first: Simon
+    last: Apers
+  - first: Min-Hsiu
+    last: Hsieh
+year: 2023
+abstract: This study examines clusterability testing for a signed graph in the
+  bounded-degree model. Our contributions are two-fold. First, we provide a
+  quantum algorithm with query complexity $\tilde{O}(N^{1/3})$ for testing
+  clusterability, which yields a polynomial speedup over the best classical
+  clusterability tester known [arXiv:2102.07587]. Second, we prove an
+  $\tilde{\Omega}(\sqrt{N})$ classical query lower bound for testing
+  clusterability, which nearly matches the upper bound from [arXiv:2102.07587].
+  This settles the classical query complexity of clusterability testing, and it
+  shows that our quantum algorithm has an advantage over any classical
+  algorithm.
+tags:
+  - Computer Science - Computational Complexity
+  - Computer Science - Data Structures and Algorithms
+  - Quantum Physics
+identifiers:
+  arxiv: "2311.10480"

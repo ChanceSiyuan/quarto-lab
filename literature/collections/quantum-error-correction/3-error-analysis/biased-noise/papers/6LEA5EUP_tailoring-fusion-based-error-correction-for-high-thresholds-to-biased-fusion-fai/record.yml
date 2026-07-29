@@ -1,0 +1,46 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 6LEA5EUP
+  item_version: 96114
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 9PACYK6B
+      name: Biased Noise
+      path: Quantum Error correction/3-Error analysis/Biased Noise
+qlab:
+  primary_collection: 9PACYK6B
+  indexed_collections:
+    - 9PACYK6B
+  primary_topic: quantum-error-correction
+  indexed_topics:
+    - quantum-error-correction
+item_type: journalArticle
+title: Tailoring fusion-based error correction for high thresholds to biased
+  fusion failures
+authors:
+  - first: Kaavya
+    last: Sahay
+  - first: Jahan
+    last: Claes
+  - first: Shruti
+    last: Puri
+year: 2023
+abstract: We introduce fault-tolerant (FT) architectures for error correction
+  with the XZZX cluster state based on performing measurements of two-qubit
+  Pauli operators $Z\otimes Z$ and $X\otimes X$, or fusions, on a collection of
+  few-body entangled resource states. Our construction is tailored to be
+  effective against noise that predominantly causes faulty $X\otimes X$
+  measurements during fusions. This feature offers practical advantage in linear
+  optical quantum computing with dual-rail photonic qubits, where failed fusions
+  only erase $X\otimes X$ measurement outcomes. By applying our construction to
+  this platform, we find a record high FT threshold to fusion failures exceeding
+  $25\%$ in the experimentally relevant regime of non-zero loss rate per photon,
+  considerably simplifying hardware requirements.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.1103/physrevlett.131.120604
+  arxiv: "2301.00019"

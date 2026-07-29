@@ -32,8 +32,8 @@ generated index is ignored by Git; `problem.json`, `problem.md`, and
 
 Only `problems/` is indexed by local development and ordinary production
 builds. The synthetic public example lives separately under
-`examples/showcase/problems/` as `Prob-000` and is not available from local
-routes; ordinary local problem allocation starts at `Prob-001`.
+`.research-loop/fixtures/showcase/problems/` as `Prob-000` and is not available
+from local routes; ordinary local problem allocation starts at `Prob-001`.
 
 Run locally:
 
@@ -45,10 +45,14 @@ npm run dev
 `problem.json` and `problem.md`, and rebuilds the index as it serves.
 
 To create a problem, click `+ Add problem` on the homepage. Codex first uses
-the sci-brain idea discussion workflow. When a candidate is ready, the local
-`add-problem` skill shows an exact preview and, after explicit confirmation,
-registers it as a draft with its visible discussion record. Acceptance or
-rejection belongs to a separate qualification workflow.
+the sci-brain idea discussion workflow. The generated task first runs
+`npm run skills:ensure-sci-brain`: on a new computer this installs the pinned
+official sci-brain release into the user's Codex skills, while repeated runs
+leave existing skills unchanged. The skill is named `brainstorm-ideas` in
+Codex; `sci-brain` is the package that provides it. When a candidate is ready,
+the local `add-problem` skill shows an exact preview and, after explicit
+confirmation, registers it as a draft with its visible discussion record.
+Acceptance or rejection belongs to a separate qualification workflow.
 
 `npm run pages:build` snapshots the static `Prob-000` example — the homepage,
 the problem page, its five attempt pages, and the bundled knowledge site — into
@@ -78,8 +82,8 @@ nothing can quietly promote itself.
 Agents answer research questions by resolving against `knowledge/` and reading
 the whole returned bundle; a question the trusted tree does not cover gets an
 explicit "no match" rather than a quiet fallback to the other two trees. See
-`AGENTS.md` for the rules and `docs/skills.md` for the skills that implement
-them.
+`AGENTS.md` for the rules and `.research-loop/docs/project/skills.md` for the
+skills that implement them.
 
 `problems/` is a fourth tree with its own role: it is the record of what is
 being worked on, not a source of reviewed answers. The resolver never reads it.
@@ -120,7 +124,7 @@ make zotero-plugin
 Install the resulting
 `integrations/zotero/dist/Research-Loop-Zotero-<version>.xpi` from Zotero's
 Add-ons window. When the add-on asks for a QLab repository, choose this Research
-Loop repository (normally `/Users/chance/research-loop`). The root-level `qlab`
+Loop repository (normally a local `research-loop` checkout). The root-level `qlab`
 compatibility command and expected `literature/`, `drafts/`, and `knowledge/`
 directories let the unchanged workflow recognize it as a valid repository.
 
@@ -150,6 +154,8 @@ make help
 | `./qlab literature verify <item-key>` | Verify one materialized record against its manifest |
 | `make zotero-plugin-test` | Type-check and test the standalone Zotero integration |
 | `make zotero-plugin` | Test and build the installable Research Loop Zotero XPI |
+| `make clean` | Remove generated builds, previews, and test output |
+| `make clean-all` | Also remove local dependencies and tool caches |
 
 Equivalent package scripts exist underneath (`npm run knowledge:check`, and so
 on), but documentation and skills use the Make targets, so there is one stable
@@ -173,16 +179,27 @@ The package scripts that have no Make target:
 - `npm run test:pages`: `pages:build` followed by the Pages showcase assertions
 - `npm run test:rendered`: assertions against the built HTML and static assets
 - `npm run test:e2e`: Playwright, against the built site
-- `npm run db:generate`: generate Drizzle migrations after schema changes
 
 ## Included shape
 
-- site code lives under `app/`
-- `.openai/hosting.json` declares optional Sites D1 and R2 bindings
-- `vite.config.ts` simulates declared bindings for local development
-- `db/schema.ts` starts intentionally empty
-- `examples/d1/` contains an optional D1 example surface
-- `drizzle.config.ts` supports local migration generation when needed
+The repository root is intentionally split into a small user workspace and two
+implementation areas:
+
+| Path | Purpose |
+|---|---|
+| `knowledge/`, `drafts/`, `literature/` | Trusted notes, untrusted work in progress, and external evidence |
+| `problems/` | Durable problem, attempt, and imported research records shown by the console |
+| `integrations/` | Standalone integrations, currently the Zotero add-on |
+| `skills/` | Committed agent workflows |
+| `schemas/` | Machine-readable contracts shared with local research preparation tools |
+| `src/` | Website, reusable application code, and the Worker entry point |
+| `.research-loop/` | Project tests, fixtures, internal documentation, and maintenance CLIs |
+| `public/` | Framework static assets plus the generated knowledge site |
+| root launchers and configs | Stable `make`, `./qlab`, npm, Quarto, Vite, and hosting entry points |
+
+Generated directories such as `dist/`, `out/`, `.generated/`, and
+`test-results/` are ignored and reproducible. Run `make clean` whenever the
+checkout should return to its compact working shape.
 
 ## Deployment
 
@@ -198,10 +215,10 @@ publishes the `out/` snapshot produced by `npm run pages:build`.
 
 ## Not in this phase
 
-- No remote or cloud queue, D1/R2 model, or deployed autonomous service.
-- No D1 or R2 data model. The bindings in `.openai/hosting.json` stay `null`,
-  `db/schema.ts` is intentionally empty, and `examples/d1/` plus
-  `drizzle.config.ts` remain an unused optional surface.
+- No remote or cloud queue and no unattended solver. The local autoresearch
+  sidecar prepares infrastructure but does not start attempt batches.
+- No D1 or R2 data model. The bindings in `.openai/hosting.json` stay `null`;
+  the previously unused D1/Drizzle starter surface is not part of this repo.
 - No published draft or literature source: `drafts/`, `literature/`, and the
   local `.raw/` and `.figures/` trees never reach the deployed artifact.
 - No embeddings, no `.knowledge` compatibility tree, and no generated Markdown
@@ -238,7 +255,7 @@ export default async function Home() {
 }
 ```
 
-Import the ready-to-use helpers from `app/chatgpt-auth.ts` when the site needs
+Import the ready-to-use helpers from `src/app/chatgpt-auth.ts` when the site needs
 optional or required ChatGPT sign-in:
 
 - Use `getChatGPTUser()` for optional signed-in UI.
@@ -267,4 +284,3 @@ actions tied to the current ChatGPT user. Leave public content anonymous.
 
 - [Quarto Documentation](https://quarto.org/docs/guide/)
 - [vinext Documentation](https://github.com/cloudflare/vinext)
-- [Drizzle D1 Guide](https://orm.drizzle.team/docs/get-started/d1-new)

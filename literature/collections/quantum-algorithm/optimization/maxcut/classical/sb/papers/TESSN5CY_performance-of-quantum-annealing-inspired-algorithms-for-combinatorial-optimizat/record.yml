@@ -1,0 +1,42 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: TESSN5CY
+  item_version: 110332
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: UENTJBK7
+      name: SB
+      path: Quantum Algorithm/Optimization/Maxcut/Classical/SB
+qlab:
+  primary_collection: UENTJBK7
+  indexed_collections:
+    - UENTJBK7
+  primary_topic: quantum-algorithm
+  indexed_topics:
+    - quantum-algorithm
+item_type: journalArticle
+title: Performance of quantum annealing inspired algorithms for combinatorial
+  optimization problems
+authors:
+  - first: Qing-Guo
+    last: Zeng
+  - first: Xiao-Peng
+    last: Cui
+  - first: Bowen
+    last: Liu
+  - first: Yao
+    last: Wang
+  - first: Pavel
+    last: Mosharev
+  - first: Man-Hong
+    last: Yung
+year: 2024
+abstract: >-
+  Abstract
+              Two classes of quantum-annealing-inspired-algorithms (QAIA), namely different variants of simulated coherent Ising machine and simulated bifurcation, have been proposed for efficiently solving combinatorial optimization problems recently. In order to certify the superiority of these algorithms, standardized comparisons among them and against other physics-based algorithms are necessary. In this work, for Max-Cut problems up to 20,000 nodes, we benchmark QAIA against quantum annealing and other physics-based algorithms. We found that ballistic simulated bifurcation excelled for chimera and small-scale graphs, achieving nearly a 50-fold reduction in time-to-solution compared to quantum annealing. For large-scale graphs, discrete simulated bifurcation achieves the lowest time-to-target and outperforms D-Wave Advantage system when tasked with finding the maximum cut value in pegasus graphs. Our results suggest that QAIA represents a promising means for solving combinatorial optimization problems in practice, and can act as a natural baseline for competing quantum algorithms.
+tags: []
+identifiers:
+  doi: 10.1038/s42005-024-01705-7

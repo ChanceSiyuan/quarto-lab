@@ -1,0 +1,71 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: SNRC2475
+  item_version: 96027
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 5HV9YSRT
+      name: Experiment
+      path: Quantum Algorithm/Experiment
+qlab:
+  primary_collection: 5HV9YSRT
+  indexed_collections:
+    - 5HV9YSRT
+  primary_topic: quantum-algorithm
+  indexed_topics:
+    - quantum-algorithm
+item_type: preprint
+title: Identifying hard native instances for the maximum independent set problem
+  on neutral atoms quantum processors
+authors:
+  - first: Pierre
+    last: Cazals
+  - first: Aymeric
+    last: François
+  - first: Loïc
+    last: Henriet
+  - first: Lucas
+    last: Leclerc
+  - first: Malory
+    last: Marin
+  - first: Yassine
+    last: Naghmouchi
+  - first: Wesley da Silva
+    last: Coelho
+  - first: Florian
+    last: Sikora
+  - first: Vittorio
+    last: Vitale
+  - first: Rémi
+    last: Watrigant
+  - first: Monique Witt
+    last: Garzillo
+  - first: Constantin
+    last: Dalyac
+year: 2025
+abstract: The Maximum Independent Set (MIS) problem is a fundamental
+  combinatorial optimization task that can be naturally mapped onto the Ising
+  Hamiltonian of neutral atom quantum processors. Given its connection to
+  NP-hard problems and real-world applications, there has been significant
+  experimental interest in exploring quantum advantage for MIS. Pioneering
+  experiments on King's Lattice graphs suggested a quadratic speed-up over
+  simulated annealing, but recent benchmarks using state-of-the-art methods
+  found no clear advantage, likely due to the structured nature of the tested
+  instances. In this work, we generate hard instances of unit-disk graphs by
+  leveraging complexity theory results and varying key hardness parameters such
+  as density and treewidth. For a fixed graph size, we show that increasing
+  these parameters can lead to prohibitive classical runtime increases of
+  several orders of magnitude. We then compare classical and quantum approaches
+  on small instances and find that, at this scale, quantum solutions are slower
+  than classical ones for finding exact solutions. Based on extended classical
+  benchmarks at larger problem sizes, we estimate that scaling up to a thousand
+  atoms with a 1 kHz repetition rate is a necessary step toward demonstrating a
+  computational advantage with quantum methods.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2502.04291
+  arxiv: "2502.04291"

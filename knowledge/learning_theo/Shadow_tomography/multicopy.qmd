@@ -1,0 +1,248 @@
+---
+title: Local k-copy Pauli Shadow Tomography with Entanglement-fixed channel
+description: In the langurage of shadow tomography, this channel on the two-replica space is not invertible since if .
+categories:
+  - theory
+---
+
+# local 2-copy entanglement-fixed shadow
+
+Now we consider the unitary ensemble $\mathcal{U}_\theta^{\otimes n}$.
+For $i$-th qubit pair $\bar A_1 \bar A_2$, we first independently select
+single qubit gates $R_1,R_2 \sim \text{Haar}(2)$ and implement
+$R_1 \otimes R_2$ on the first qubit $\bar A_1$ and the second qubit
+$\bar A_2$. Then we implement the two-qubit unitary $$\begin{align*}
+  U_\theta =  \begin{pmatrix}
+    \sin \theta &0             &0             &\cos \theta\\
+    0           &\sqrt{2^{-1}} &\sqrt{2^{-1}} &0          \\
+    0           &\sqrt{2^{-1}} &-\sqrt{2^{-1}}&0          \\
+    \cos \theta &0             &0             &-\sin \theta
+   \end{pmatrix}.
+\end{align*}$$ and measured on the computational basis to get result
+$\mathbf{r} = (\mathbf{r}_1,\cdots,\mathbf{r}_n) \in (\mathbb{F}_2^{2})^{n}$.
+Follow the same proof procedure in
+Lemma (onsite_2design)
+channel $\mathcal{M}$ as $$\begin{align*}
+    \mathcal{M}(\otimes_{i = 1}^n \rho_i) 
+    &=\mathbb{E}_{\substack{U = \bigotimes_{i=1}^n\text{U}_i \\ \text{U}_i \sim \mathcal{U}_{\theta_i}}} \sum_{\mathbf{r} \in \mathbb{F}_2^{2n}} \bra{{\mathbf r}} \text{U} (\otimes_{i = 1}^n \rho_i) \text{U}^{\dagger} \ket{{\mathbf r}} \cdot \text{U}^{\dagger} \ket{{\mathbf r}}\!\bra{{\mathbf r}} \text{U} \notag\\
+    &= \text{tr}_{\bar A}\left( \bigotimes_{i = 1}^n\left( \rho_i^{(\bar A)}\otimes \mathbb{I}_2^{(A)}\right) \cdot \bigotimes_{i = 1}^n \sum_{\mathbf{r}_i \in \mathbb{F}_2^2} \mathbb{E}_{\substack{\text{U}_i \sim \mathcal{U}_{\theta_i}}}  (\text{U}_i^{\dagger} \ket{\mathbf{r}_{i}}\bra{\mathbf{r}_{i}} \text{U}_i)^{(\bar A)} \otimes (\text{U}_i^{\dagger} \ket{\mathbf{r}_{i}}\!\bra{\mathbf{r}_{i}} \text{U}_i)^{(A)} \right)\notag\\
+    &=\bigotimes_{i = 1}^n \text{tr}_{\bar A}\left( \left(\begin{aligned}&\rho_i^{(\bar A)}\\&\bigotimes \\ &\mathbb{I}_2^{(A)}\end{aligned}\right) \cdot  \sum_{\mathbf{r}_i \in \mathbb{F}_2^2} \mathbb{E}_{\substack{\text{R} \sim \text{Haar}(2)}}  
+    \left(\begin{aligned}(\text{R}_1\otimes \text{R}_2)^{\dagger} \ket{\phi_{\mathbf{r}_{i}}^{\theta_i}}&\!\bra{\phi_{\mathbf{r}_{i}}^{\theta_i}} (\text{R}_1\otimes \text{R}_2)^{(\bar A)}\\ &\bigotimes \\(\text{R}_1\otimes \text{R}_2)^{\dagger} \ket{\phi_{\mathbf{r}_{i}}^{\theta_i}}&\!\bra{\phi_{\mathbf{r}_{i}}^{\theta_i}} (\text{R}_1\otimes \text{R}_2)^{(A)} \end{aligned}\right)
+    \right) \notag \\
+    &= \bigotimes_{i = 1}^n \sum_{\mathbf{r}_i \in \mathbb{F}_2^2}\text{tr}\left( \ket{\phi_{\mathbf{r}_{i}}^{\theta_i}}\!\bra{\phi_{\mathbf{r}_{i}}^{\theta_i}}^{(\bar A)} \otimes \ket{\phi_{\mathbf{r}_{i}}^{\theta_i}}\!\bra{\phi_{\mathbf{r}_{i}}^{\theta_i}}^{(A)}\cdot B_{\mathbf{v}}\right) \text{tr}_{\bar A} \left( \rho_i^{(\bar A)} \otimes \mathbb{I}_2^{( A)} \cdot B_{\mathbf u}\right) \text{Wg}^2(|\mathbf u - \mathbf v|,2). \notag
+\end{align*}$$ Here in the third line we use the definition
+$U_i = U_{\theta_i} \cdot (R_1 \otimes R_2),\ket{\phi_{\mathbf{r}_{i}}^{\theta_i}}:= U_{\theta_i}^\dagger\ket{\mathbf{r}_{i}}$.
+In the last line we use
+Lemma (2-foldWein)
+$B_\mathbf{v} = \text{SWAP}_{\bar A_1,A_1}^{v_1} \otimes \text{SWAP}_{\bar A_2,A_2}^{v_2}$
+and $\text{Wg}^2(w,2) =\left\{\begin{aligned}
+    {1}/{9} &\text{~if~} w = 0\\
+     -{1}/{18} &\text{~if~} w = 1\\
+     {1}/{36} &\text{~if~} w = 2.
+\end{aligned}\right.$. Calculation shows that $$\begin{align*}
+    &\sum_{\mathbf{r}_i \in \mathbb{F}_2^2}\text{tr}\left( \ket{\phi_{\mathbf{r}_{i}}^{\theta_i}}\!\bra{\phi_{\mathbf{r}_{i}}^{\theta_i}}^{(\bar A)} \otimes \ket{\phi_{\mathbf{r}_{i}}^{\theta_i}}\!\bra{\phi_{\mathbf{r}_{i}}^{\theta_i}}^{(A)}\cdot B_{\mathbf{v}}\right) = \left\{\begin{aligned}
+        &\qquad 4 &\text{~if~} \mathbf{v} = (0,0),(1,1),\\
+        &2 + \cos^2 (2 \theta_i)&\text{~if~} \mathbf{v} = (0,1),(1,0),
+    \end{aligned}\right. \\
+    &\text{tr}_{\bar A} \left( \rho_i^{(\bar A)} \otimes \mathbb{I}_2^{( A)} \cdot B_{\mathbf u}\right) = \left\{\begin{aligned}
+        &\rho_i^{(1)} \otimes \mathbb{I}^{(2)}&\text{~if~} \mathbf{u} = (1,0),\quad&\mathbb{I}^{(1)}\otimes\rho_i^{(2)} &\text{~if~} \mathbf{u} = (0,1),\\
+        &\rho_i&\text{~if~} \mathbf{u} = (1,1),\quad&\text{tr}\rho_i \cdot \mathbb{I}_2&\text{~if~} \mathbf{u} = (0,0).
+    \end{aligned}\right.
+\end{align*}$$ Combining these two equations gives the channel outputs,
+as $$\begin{align*}
+    \mathcal{M}(\otimes_{i = 1}^n \rho_i) &= \bigotimes_{i = 1}^n \left[ 4 \cdot \left[\frac{1}{9}\text{tr}\rho_i \cdot \mathbb{I}_2 -\frac{1}{18} \mathbb{I}^{(1)}\otimes\rho_i^{(2)} -\frac{1}{18} \rho_i^{(1)} \otimes \mathbb{I}^{(2)} + \frac{1}{36}\rho_i\right]\right.\\
+    &+(2 + \cos^2(2 \theta_i)) \cdot \left[-\frac{1}{18}\text{tr}\rho_i \cdot \mathbb{I}_2 + \frac{1}{9}\mathbb{I}^{(1)}\otimes\rho_i^{(2)} + \frac{1}{36}\rho_i^{(1)} \otimes \mathbb{I}^{(2)}  -\frac{1}{18}\rho_i\right]\\
+    &+(2 + \cos^2(2 \theta_i)) \cdot \left[-\frac{1}{18}\text{tr}\rho_i \cdot \mathbb{I}_2 + \frac{1}{36}\mathbb{I}^{(1)}\otimes\rho_i^{(2)} + \frac{1}{9}\rho_i^{(1)} \otimes \mathbb{I}^{(2)} -\frac{1}{18}\rho_i\right]\\
+    &\left.+4 \cdot \left[\frac{1}{36}\text{tr}\rho_i \cdot \mathbb{I}_2 -\frac{1}{18} \mathbb{I}^{(1)}\otimes\rho_i^{(2)} -\frac{1}{18} \rho_i^{(1)} \otimes \mathbb{I}^{(2)} + \frac{1}{9}\rho_i\right] \right]\\
+    &= \bigotimes_{i = 1}^n\left[\frac{3 - \cos^2(2\theta_i)}{9}(\text{tr}\rho_i \cdot \mathbb{I}_2 + \rho_i) + \frac{5\cos^2(2\theta_i) -6}{36}(\mathbb{I}^{(1)}\otimes\rho_i^{(2)}+ \rho_i^{(1)} \otimes \mathbb{I}^{(2)})\right]\\
+    &=\bigotimes_{i = 1}^n\left[p_1\text{tr}\rho_i \cdot \frac{\mathbb{I}_2}{4} + p_2\rho_i + p_3\cdot \frac{(\mathbb{I}^{(1)}/2)\otimes\rho_i^{(2)}+ \rho_i^{(1)} \otimes (\mathbb{I}^{(2)}/2)}{2}\right].
+\end{align*}$$ where we defined the distribution
+$\left\{\begin{aligned}p_1 &= \frac{12 - 4\cos^2(2\theta_i)}{9}, \\ p_2 &= \frac{3 - \cos^2(2\theta_i)}{9},\\ p_3&= \frac{5\cos^2(2\theta_i) -6}{9}<0. \end{aligned}\right.$
+This channel is separable
+$\mathcal{M} = \mathcal{M}_{\theta_i}^{\otimes n}$ and generate no
+entanglement between different site $i$. But the negativity of $p_3$
+shows the inherent entangled property of channel $\mathcal{M}_{\theta}$
+between the first and the second copy. Now we calculate its inverse
+point-wisely, by first suggesting that $$\begin{align*}
+    \rho := \mathcal{M}_{\theta}^{-1}(\sigma) &= q_1 \text{tr} \sigma \cdot \frac{\mathbb{I}_2}{4} + q_2 \sigma + \frac{q_3}{2} (\mathbb{I}^{(1)}/2)\otimes\sigma^{(2)} + \frac{q_3}{2} \sigma^{(1)}\otimes(\mathbb{I}^{(2)}/2). \\
+    \text{tr}\rho &=  (q_1 + q_2 + q_3) \cdot \text{tr} \sigma,\\
+     \rho^{(1)} &= (q_1 + q_3/2)\text{tr}\sigma\cdot(\mathbb{I}^{(1)}/2) + (q_2 + q_3/2) \sigma^{(1)},\\
+     \rho^{(2)} &= (q_1 + q_3/2)\text{tr}\sigma\cdot(\mathbb{I}^{(2)}/2) + (q_2 + q_3/2) \sigma^{(2)}.
+\end{align*}$$ Plug these equations into
+Eq.[\[eq:ent_rest_channel\]](#eq:ent_rest_channel){reference-type="eqref"
+reference="eq:ent_rest_channel"}, and use the identity
+$\mathcal{M}_{\theta}\left(\mathcal{M}_{\theta}^{-1}(\sigma)\right) = \sigma$,
+we get the equation: $$\begin{align*}
+    \sigma = &p_1\text{tr}\rho \cdot \frac{\mathbb{I}_2}{4}+ p_2\rho + \frac{p_3}{2}\cdot {(\mathbb{I}^{(1)}/2)\otimes\rho^{(2)}}+ \frac{p_3}{2}\rho^{(1)} \otimes (\mathbb{I}^{(2)}/2) \\
+    = &p_1(q_1 + q_2 + q_3) \cdot \text{tr} \sigma \cdot (\mathbb{I}_2/4) \notag\\
+    &+ p_2q_1 \text{tr} \sigma \cdot (\mathbb{I}_2/4) + p_2q_2 \sigma + p_2\frac{q_3}{2} (\mathbb{I}^{(1)}/2)\otimes\sigma^{(2)} + p_2\frac{q_3}{2} \sigma^{(1)}\otimes(\mathbb{I}^{(2)}/2)\notag \\
+    &+ ({p_3}/{2})(q_1 + q_3/2)\text{tr}\sigma\cdot(\mathbb{I}_2/4)  + ({p_3}/{2})(q_2 + q_3/2) (\mathbb{I}^{(1)}/2)\otimes\sigma^{(2)}\notag\\
+    &+ ({p_3}/{2})(q_1 + q_3/2)\text{tr}\sigma\cdot(\mathbb{I}_2/4) + ({p_3}/{2})(q_2 + q_3/2) \sigma^{(1)} \otimes (\mathbb{I}^{(2)}/2)\\
+    =&\left[p_1(q_1 + q_2 + q_3) + p_2q_1 +p_3(q_1 + q_3/2)\right]\text{tr} \sigma \cdot (\mathbb{I}_2/4) + p_2q_2 \sigma \notag\\
+    &+ \left[({p_3}/{2})(q_2 + q_3/2) + p_2\frac{q_3}{2} \right]\left((\mathbb{I}^{(1)}/2)\otimes\sigma^{(2)} +\sigma^{(1)} \otimes (\mathbb{I}^{(2)}/2)\right),
+\end{align*}$$ which leads to $\left\{\begin{aligned}
+    &(p_1+ p_2+p_3)q_1 + p_1q_2 + (p_1+ p_3/2)q_3 = 0,\\
+    &p_2q_2 = 1,\\
+    &p_3q_2 + (p_3/2 + p_2)q_3 = 0.
+\end{aligned}\right.$. Use the fact that $\left\{\begin{aligned}
+    &p_2+p_3/2 = \cos^2(2\theta)/6,\\
+    &p_1 + p_3/2 =1 - \cos^2(2\theta)/6,
+\end{aligned}\right.$ we get the final result $$\begin{align*}
+    \left\{\begin{aligned}
+        &q_1 = -\frac{p_1q_2 + (p_1+ p_3/2)q_3}{p_1+ p_2+p_3} = -4 + \frac{6 - 5\cos^2(2\theta)}{3 - \cos^2(2\theta)} - \frac{6- 5\cos^2(2\theta)}{3 - \cos^2 (2\theta)} \cdot \frac{6}{\cos^2 (2\theta) },\\
+        &q_2 =\frac{1}{p_2}= \frac{9}{3 - \cos^2(2\theta_i)},\quad q_3 = - \frac{p_3}{p_3/2 + p_2}q_2 = \frac{6- 5\cos^2(2\theta)}{3 - \cos^2 (2\theta)} \cdot \frac{6}{\cos^2 (2\theta) }.
+    \end{aligned}\right.
+\end{align*}$$ If we decomposed the inputs into two-qubits Pauli operator
+$W_i \in \{\mathbb{I},X,Y,Z\}^{\otimes 2}$, we get the result
+$$\begin{align*}
+    \mathcal{M}^{-1}_{\theta}(W_i) = f_{\theta}(W_i) W_i,  f_{\theta}(W_i) = \begin{cases}
+        1& \text{~if~} W_i = \mathbb{I}_2,\\
+        {6}/{\cos^2(2\theta)}& \text{~if~} W_i = \mathbb{I} \otimes P,P\otimes\mathbb{I},  \\
+        {9}/{(3 - \cos^2(2\theta))}& \text{~if~} W_i = P \otimes Q.
+    \end{cases}
+\end{align*}$$ Noted that when $\theta = \pi /4$, which implements local
+randomized Bell measurements, the inverse channel does not exist. When
+$\theta = 0$, the inverse channel exists and writes $$\begin{align*}
+    \mathcal{M}^{-1}(\otimes_{i=1}^n O_i) =\bigotimes_{i=1}^n \left[ -\frac{13}{2} \text{tr} O_i \cdot \frac{\mathbb{I}_2}{4} + \frac{9}{2}O_i + \frac{3}{2}\left(O_i^{(1)} \otimes \frac{\mathbb{I}}{2} + \frac{\mathbb{I}}{2} \otimes  O_i^{(2)}\right)\right].
+\end{align*}$$ Similarly, we first noted that given a local observable
+$O = \otimes_{i=1}^n O_i$ that supports on local two-copy states
+$\otimes_{i=1}^n\rho_i$, we can calculate the variance of the estimator
+as 
+$$
+\begin{align*}
+        \langle \hat{o}^2 \rangle_{\rho} &=\mathbb{E}_{U \sim \mathcal{U}_\theta^{\otimes n}}\sum_{\mathbf b \in \mathbb{F}_2^{2n}}\bra{\mathbf b}U {\rho} U^\dagger \ket{\mathbf{b}} \bra{\mathbf b}U{\mathcal{M}}^{-1}({O}) U^\dagger\ket{\mathbf b}^2\\
+        &=\prod_{i = 1}^n \text{tr}
+        \left( \left(\begin{aligned}&\qquad\rho_i\\&\quad\bigotimes \\ &\mathcal{M}_{\theta_i}^{-1}({O_i})\\ &\quad\bigotimes \\ &\mathcal{M}_{\theta_i}^{-1}({O_i})\end{aligned}\right) \cdot  \sum_{\mathbf{r}_i \in \mathbb{F}_2^2} \mathbb{E}_{\substack{\text{R} \sim \text{Haar}(2)}}  
+        \left(\begin{aligned}(\text{R}_1\otimes \text{R}_2)^{\dagger} \ket{\phi_{\mathbf{r}_{i}}^{\theta_i}}&\!\bra{\phi_{\mathbf{r}_{i}}^{\theta_i}} (\text{R}_1\otimes \text{R}_2)\\ &\otimes \\(\text{R}_1\otimes \text{R}_2)^{\dagger} \ket{\phi_{\mathbf{r}_{i}}^{\theta_i}}&\!\bra{\phi_{\mathbf{r}_{i}}^{\theta_i}} (\text{R}_1\otimes \text{R}_2)\\ &\otimes \\(\text{R}_1\otimes \text{R}_2)^{\dagger} \ket{\phi_{\mathbf{r}_{i}}^{\theta_i}}&\!\bra{\phi_{\mathbf{r}_{i}}^{\theta_i}} (\text{R}_1\otimes \text{R}_2) \end{aligned}\right)
+        \right) \\
+        &=\prod_{i = 1}^n \text{tr}\left(\rho_i \otimes \mathcal{M}_{\theta_i}^{-1}(O_i) \otimes \mathcal{M}_{\theta_i}^{-1}(O_i)\cdot B_{\mathbf{v}}\right) \cdot \sum_{\mathbf{r}_i \in \mathbb{F}_2^2}\text{tr}\left(\ket{\phi_{\mathbf{r}_{i}}^{\theta_i}}\!\bra{\phi_{\mathbf{r}_{i}}^{\theta_i}}^{\otimes 3} B_{\mathbf{u}}\right)\cdot \mathrm{Wg}^{n=2}(\mathbf{v}\mathbf{u}^{-1},d = 2).
+\end{align*}
+$$
+Here in the last line $\mathbf{u},\mathbf{v} \in (S_3)^2$.
+Explicit calculation shows that 
+
+$$
+\begin{align*}
+        &\sum_{\mathbf{r}_i \in \mathbb{F}_2^2}\text{tr}\left(\ket{\phi_{\mathbf{r}_{i}}^{\theta_i}}\!\bra{\phi_{\mathbf{r}_{i}}^{\theta_i}}^{\otimes 3} B_{\mathbf{u}}\right) = 
+        \left\{\begin{aligned}
+            &4\text{~if~} u_1\cdot u_2 \in [1^3] \\
+            &2 + \cos^2(2\theta)\text{~if~} u_1\cdot u_2  \in [21] \\
+            &\frac{5 - 3 \sin^2(2\theta)}{2}\text{~if~} u_1\cdot u_2  \in [3]. 
+        \end{aligned}\right.\\
+        &\mathrm{Wg}^{2}(\mathbf{v}\mathbf{u}^{-1},d = 2) = \left\{\begin{aligned}
+            &\frac{17^2}{144^2}\text{~if~} \mathbf{v}\mathbf{u}^{-1} \in ([1^3],[1^3]) ,\quad \frac{17}{144^2}\text{~if~} \mathbf{v}\mathbf{u}^{-1}  \in ([21],[1^3]),([1^3],[21]) \\
+            &\frac{-17\cdot 7}{144^2}\text{~if~} \mathbf{v}\mathbf{u}^{-1}  \in ([3],[1^3]),([1^3],[3]) ,\quad \frac{1}{144^2}\text{~if~} \mathbf{v}\mathbf{u}^{-1}  \in ([21],[21]) \\
+            &\frac{-7}{144^2}\text{~if~} \mathbf{v}\mathbf{u}^{-1}  \in ([21],[3]),([3],[21]) ,\quad \frac{49}{144^2}\text{~if~} \mathbf{v}\mathbf{u}^{-1}  \in ([3],[3]).
+        \end{aligned}\right.
+\end{align*}
+$$
+
+# Maximum entanglement strategies{#max-entanglement-strategies}
+
+## Bell measurement and its restriction
+Contrast to conclusion in the last section, we noted that the purity estimation strategy using Bell measurements already reach the $\mathcal{O}(1)$ sampling complexity.
+Bell measurement is a two-copy local measurement strategy.
+ The Bell measurement projector satisfied
+$$
+\begin{align}
+    \ket{\Phi_{00}}\!\bra{\Phi_{00}}&:= \frac{(II + XX - YY + ZZ)}{4},\ket{\Phi_{10}}\!\bra{\Phi_{10}}:= \frac{(II + XX + YY - ZZ)}{4},\\
+    \ket{\Phi_{01}}\!\bra{\Phi_{01}}&:= \frac{(II - XX + YY + ZZ)}{4},\ket{\Phi_{11}}\!\bra{\Phi_{11}}:= \frac{(II - XX - YY - ZZ)}{4}.
+\end{align}
+$$
+Thus, in terms of sympletic representation, we have $\ket{\Phi_{\mathbf{r}}}\!\bra{\Phi_{\mathbf{r}}} = 4^{-n}\sum_{\mathbf{p}} (-1)^{[\mathbf{r}, \mathbf{p}] + \mathbf{p}_x\cdot \mathbf{p}_z}\sigma_{\mathbf{p}} \otimes \sigma_{\mathbf{p}} $ and
+$$
+\begin{align}
+    \mathcal{M}_{I}(\rho^{\otimes 2}) &= 16^{-n}\sum_{\mathbf{r}}  \sum_{\mathbf{p},\mathbf{q}} (-1)^{[\mathbf{r}, \mathbf{p} + \mathbf{q}] + \mathbf{p}_x\cdot \mathbf{p}_z +  \mathbf{q}_x\cdot \mathbf{q}_z}\mathrm{tr}\left[(\sigma_{\mathbf{p}} \otimes \sigma_{\mathbf{p}})\cdot\rho^{\otimes 2}\right] \sigma_{\mathbf{q}} \otimes \sigma_{\mathbf{q}}\\
+    &= 4^{-n}\sum_{\mathbf{p}}\mathrm{tr}\left[(\sigma_{\mathbf{p}} \otimes \sigma_{\mathbf{p}})\cdot\rho^{\otimes 2}\right]\sigma_{\mathbf{p}} \otimes \sigma_{\mathbf{p}}.
+\end{align}
+$$
+
+In the langurage of shadow tomography, this channel on the two-replica space $\mathcal{H}(d^2)$ is not invertible since $\mathcal{M}_{I}(\sigma_{\mathbf{p}} \otimes \sigma_{\mathbf{q}}) = 0$ if $\mathbf{p} \neq \mathbf{q}$. 
+However, if we restrained on the operator subspace spanned by $\mathbf{S}:=\mathrm{span}\{\sigma_{\mathbf{p} }\otimes \sigma_{\mathbf{p}}\}_{\mathbf{p} \in \mathbb{F}_2^{2n}}$, this channel takes itself as the inverse.
+Then given an operator $O = \sum_{\mathbf{p}} \alpha_{\mathbf{p}} \sigma_{\mathbf{p}} \otimes \sigma_{\mathbf{p}}$, we use Bell measurment result $\{\mathbf{r}\}$ to construct the shadow estimator $\hat{o}(\mathbf{r}) = \mathrm{tr}\left[\mathcal{M}_{I}^{-1,\dagger}[O] \ket{\Phi_{\mathbf{r}}}\!\bra{{\Phi_{\mathbf{r}}}}\right]= \mathrm{tr}\left[O \ket{\Phi_{\mathbf{r}}}\!\bra{{\Phi_{\mathbf{r}}}}\right]$. This estimator has variance $\mathrm{tr}(\rho O^2) - \mathrm{tr}^2(\rho O) \leq \left[(\lambda_{\max}(O) - \lambda_{\min}(O))/2\right]^2$, as shown by the lemma below:
+
+::: {#lem-max-variance-bell .callout-note icon="false"}
+## (Maximum Variance - Bell Shadow)
+Let $O$ be a Hermitian operator with the maximum and minimum eigenvalues $\lambda_{\text{max}}$ and $\lambda_{\text{min}}$. Then its variance $\text{Var}_{\rho}(O) := \langle O^2 \rangle_{\rho} - \langle O \rangle_{\rho}^2$ satisfies $\sup_{\rho \in \mathcal{D}(\mathcal{H}_n)}\text{Var}_{\rho}(O) = \left( {(\lambda_{\text{max}} - \lambda_{\text{min}})}/{2} \right)^2$. This maximum is achieved at pure state such as $|\psi\rangle = \frac{1}{\sqrt{2}}(|\psi_{\text{max}}\rangle + |\psi_{\text{min}}\rangle)$.
+:::
+
+:::{.callout-note collapse="true"}
+## Proof
+The variance of an observable $O$ with respect to a quantum state $\rho$ is defined as
+We first show that the function $f(\rho):= \text{Var}_{\rho}(O)$ is a concave function of $\rho$. Use the fact that $[(1 - \theta)x_1 + \theta x_2]^2 \geq (1- \theta)x_1^2 + \theta x_2^2$ due to the convexity of function $g(x) = x^2$, we have
+$$
+\begin{align}
+   f((1- \theta)\rho + \theta \sigma) - (1- \theta)f(\rho) - \theta f(\sigma) = -\left[(1- \theta)\text{tr}(O\rho) + \theta \text{tr}(O\sigma)\right]^2 + (1- \theta)\left[\text{tr}(O\rho)\right]^2 + \theta \left[\text{tr}(O\sigma)\right]^2 \leq 0, \notag
+\end{align}
+$$
+which showed the concavity of $f(\rho)$.
+The maximum value of a concave function over a convex set is attained at an extreme point. Therefore, the problem reduces to maximizing the variance over all pure states $|\psi\rangle,  \text{Var}_{\psi}(O) = \langle\psi|O^2|\psi\rangle - (\langle\psi|O|\psi\rangle)^2 $.
+Let $\{|\lambda_i\rangle\}$ be the orthonormal eigenbasis of $O$ with corresponding eigenvalues $\{\lambda_i\}$, and express pure state $|\psi\rangle$ in this basis as $|\psi\rangle = \sum_i c_i |\lambda_i\rangle$, where $\{p_i:=|c_i|^2\}_i$ forms a valid probability. Then
+$ \text{Var}(O) = \sum_i p_i \lambda_i^2 - \left(\sum_i p_i \lambda_i\right)^2 = \sum_{i} p_i(\lambda_i - \bar{\lambda})^2 $.
+Keeping $\bar \lambda$ unchanged, we should concentrate $p_i$ on the most extreme values available $\lambda_{\text{max}}$ and $\lambda_{\text{min}}$. Let us consider a distribution where probability $p$ is assigned to $\lambda_{\text{max}}$ and $1-p$ to $\lambda_{\text{min}}$. The variance for this distribution is $ \mathbf{V}(p) = [p\lambda_{\text{max}}^2 + (1-p)\lambda_{\text{min}}^2] - [p\lambda_{\text{max}} + (1-p)\lambda_{\text{min}}]^2 $. 
+Assuming $\lambda_{\text{max}} \neq \lambda_{\text{min}}$, we can find the maximum by differentiate with respect to $p$ and find $p=1/2$. This corresponds to an equal mixture of the minimum and maximum eigenvalues.
+Substituting $p=1/2$ back into the variance expression gives 
+$$
+\begin{align}
+\text{Var}_{\text{max}}(O) &= \left[\frac{1}{2}\lambda_{\text{max}}^2 + \frac{1}{2}\lambda_{\text{min}}^2\right] - \left[\frac{1}{2}\lambda_{\text{max}} + \frac{1}{2}\lambda_{\text{min}}\right]^2 = \left( \frac{\lambda_{\text{max}} - \lambda_{\text{min}}}{2} \right)^2.
+\end{align}
+$$
+:::
+This means that Bell shadow can effeciently estimates operators $O = \sum_{\mathbf{p}} \alpha_{\mathbf{p}} \sigma_{\mathbf{p}} \otimes \sigma_{\mathbf{p}}$ with bounded $\infty$-norm $\|O\|_{\infty}$.
+This include the SWAP operator and single Pauli operator $P \otimes P$, which estimates critical values for $\mathrm{tr}(\rho^2)$ and $|\mathrm{tr}(P \rho)|^2$. Their estimator writes 
+$$
+\begin{align}
+    &\hat{o}_{\mathrm{swap}}(\mathbf{r}) = \mathrm{tr}\left[\mathrm{SWAP}^{\otimes n} \ket{\Phi_{\mathbf{r}}}\!\bra{{\Phi_{\mathbf{r}}}}\right] = 2^{-n}\sum_{\mathbf{p}_x,\mathbf{p}_z} (-1)^{\mathbf{r}_z\mathbf{p}_x + (\mathbf{r}_x + \mathbf{p}_x)\mathbf{p}_z} = (-1)^{\mathbf{r}_z \mathbf{r}_x},\\
+&\hat{o}_{\mathbf{q}}(\mathbf{r}) =\mathrm{tr}\left[\sigma_{\mathbf{q}} \otimes \sigma_{\mathbf{q}} \ket{\Phi_{\mathbf{r}}}\!\bra{{\Phi_{\mathbf{r}}}}\right] =(-1)^{[\mathbf{r}, \mathbf{q}] + \mathbf{q}_x\cdot \mathbf{q}_z},
+\end{align}
+$$
+respectively. Both of them are bounded within $[-1,1]$, thus induces two effecient estimation algorithm according to the Hoffding inequality.
+
+:::{.callout-note icon="false"}
+## Algorithm 1: Estimation of $\text{tr}(\rho^2)$
+This algorithm estimates the purity of an $n$-qubit density matrix $\rho$ using Bell measurements.
+
+Require: $n$-qubits density matrix $\rho$
+
+Ensure: Estimates $\text{tr}(\rho^2)$ within $\varepsilon$ additive error and confidence $1 -\delta$.
+
+1. Implement $N \sim 4 \ln(2/\delta)/\varepsilon^2$ times Bell measurement and get the result $\mathbf{r}_1, \cdots, \mathbf{r}_N$.
+2. For each result $\mathbf{r}_i$, denotes $s_i =\mathbf{r}_{i,x}\cdot \mathbf{r}_{i,z}$, which indicates the number of Bell measurement result $(11)$.
+3. **Return** ${M}(\rho) = \sum_{i = 1}^N(-1)^{s_i}/{N}$.
+:::
+
+:::{.callout-note icon="false"}
+## Algorithm 2: Estimation of $|\text{tr}(\rho P)|^2$
+This algorithm estimates the squared expectation values of a set of Pauli operators.
+Require: $n$-qubit density matrix $\rho$ and a set of target Pauli operator $\{\sigma_{\mathbf{y}^{(1)}},\cdots,\sigma_{\mathbf{y}^{(M)}}\}$.
+
+Ensure: Collect enough classical information such that $\forall i, |\text{tr}(\rho \sigma_{\mathbf{y}^{(i)}})|^2$ can be estimated within $\varepsilon$ additive error and $1 - \delta$ success rate.
+
+1. Implements $N \sim 4 \ln(2M/\delta)/\varepsilon^2$ times Bell measurement and restore the result $\mathbf{r}_1, \cdots, \mathbf{r}_N$ with $\mathbf{r}_i \in \mathbb{F}_2^{2n}$.
+2. To estimate $|\text{tr}(\rho \sigma_{\mathbf{y}})|^2$, take the xz decomposition of $\mathbf y = (\mathbf{y}_x, \mathbf{y}_z)$.
+3. Calculate the average and **Return** $R =({1}/{N})\cdot\sum_{i = 1}^N(-1)^{[\mathbf r_i, \mathbf y]+\mathbf y_{x} \cdot \mathbf y_z}$.
+:::
+
+## A non-adaptive randomized strategy
+Unfortunately, for operators out of $\mathbf{S}$ such as
+$$
+\begin{align}
+    O_{\mathbf{q}}:=(\sigma_{\mathbf{q}} \otimes \mathbb{I}_n) \cdot \mathrm{SWAP}^{\otimes n}=2^{-n}\sum_{\mathbf{p}}\sigma_{\mathbf{q}}\sigma_{\mathbf{p}} \otimes \sigma_{\mathbf{p}},
+\end{align}
+$$
+which is a critical observable that investigate the value of $\mathrm{tr}(\sigma_{\mathbf{r}}\rho^2)$, Bell sampling lost its capacity.
+We consider the case $\mathbf{q}_i \neq 0, \forall i = 1,\cdots,n$, otherwise we reorder the terms in $\sigma_{\mathbf{q}}$ such that $O = (\sigma_{\mathbf{q}'} \otimes \mathbb{I}_{n'}) \cdot \mathrm{SWAP}^{\otimes n'} \otimes \mathrm{SWAP}^{\otimes (n -n')} $, and run algorithms $\mathcal{A}$ on the first $n'$ qubits and Bell measurement strategy on the last $(n-n')$ qubits.
+Given $\mathbf{p}$, we defined the index set $ A_{\mathbf{p}}:=\{i\in \{1,\cdots,n\}|\mathbf{p}_i \notin \{\mathbf{q}_i,\mathbf{0}\}\}$. For $i\in A_{\mathbf{p}}$, the Pauli operator $\sigma_{\mathbf{p}_i}$ and $\sigma_{\mathbf{q}_i}$ are anti-commute. 
+We can then construct $L_\mathbf{q}:= \bigotimes_{i\in A_{\mathbf{p}}} e^{i\frac{\pi}{4} \sigma_{\mathbf{q}_i}} $ and conclude that $ i\sigma_{\mathbf{q}} \sigma_{\mathbf{p}} =L_\mathbf{q}\sigma_{\mathbf{p}}L_\mathbf{q}^\dagger$ on the index set $A_{\mathbf{p}}$.
+Unfortunately, for the rest indexes  $\bar{A}_{\mathbf{p}}:= \{i \in \{1,\cdots,n\}| \mathbf{p}_i=\mathbf{q}_i\text{~or~} \mathbf{0}\}$ ,  there exists no local Clifford that realizes $\sigma_{\mathbf{p}_i} \otimes \sigma_{\mathbf{p}_i} \to \sigma_{\mathbf{q}_i}\sigma_{\mathbf{p}_i} \otimes \sigma_{\mathbf{p}_i}$. 
+In this case, we can separate $\bar{A}_{\mathbf{p}}$ into two parts $R_{\mathbf{p}}:=\{i| \mathbf{p}_i = \mathbf{q}_i\}$ and $L_{\mathbf{p}}:=\{i| \mathbf{p}_i = \mathbf{0}\}$ and conclude that
+$$
+\begin{align}
+\label{eq:2rep_decomp_Prho2}
+    O = 2^{-n}\sum_{\mathbf{p}}\sigma_{\mathbf{q}}\sigma_{\mathbf{p}} \otimes \sigma_{\mathbf{p}}= 2^{-n}\sum_{\mathbf{p}} \bigotimes_{i \in A_{\mathbf{p}}} (-iL_{\mathbf{q}_i} \sigma_{\mathbf{p}_i}L_{\mathbf{q}_i}^{\dagger} \otimes \sigma_{\mathbf{p}_i}) \bigotimes_{i \in R_{\mathbf{p}}} (\mathbb{I} \otimes \sigma_{\mathbf{q}_i}) \bigotimes_{i \in L_{\mathbf{p}}} (\sigma_{\mathbf{q}_i} \otimes \mathbb{I})
+\end{align}
+$$
+
+---
+
+[← Previous: Local k-copy Pauli Shadow Tomography with Entanglement-fixed channel](multicopy.qmd) | [Back to Index](index.qmd) | [Next: Non-local k-copy Pauli Shadow Tomography →](nonlocal_multicopy.qmd)

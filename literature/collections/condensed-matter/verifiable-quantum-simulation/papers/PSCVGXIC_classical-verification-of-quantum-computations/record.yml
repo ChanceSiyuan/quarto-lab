@@ -1,0 +1,39 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: PSCVGXIC
+  item_version: 96041
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: NYS8AXTD
+      name: Verifiable quantum simulation
+      path: Condensed matter/Verifiable quantum simulation
+qlab:
+  primary_collection: NYS8AXTD
+  indexed_collections:
+    - NYS8AXTD
+  primary_topic: condensed-matter
+  indexed_topics:
+    - condensed-matter
+item_type: preprint
+title: Classical Verification of Quantum Computations
+authors:
+  - first: Urmila
+    last: Mahadev
+year: 2023
+abstract: "We present the first protocol allowing a classical computer to
+  interactively verify the result of an efficient quantum computation. We
+  achieve this by constructing a measurement protocol, which enables a classical
+  verifier to use a quantum prover as a trusted measurement device. The protocol
+  forces the prover to behave as follows: the prover must construct an n qubit
+  state of his choice, measure each qubit in the Hadamard or standard basis as
+  directed by the verifier, and report the measurement results to the verifier.
+  The soundness of this protocol is enforced based on the assumption that the
+  learning with errors problem is computationally intractable for efficient
+  quantum machines."
+tags:
+  - Quantum Physics
+identifiers:
+  arxiv: "1804.01082"

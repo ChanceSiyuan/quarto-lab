@@ -1,0 +1,67 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 8IYZWPRD
+  item_version: 96151
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: NJTHAXWQ
+      name: RB
+      path: Quantum Learning/Learning on operations/RB
+    - key: TPFCHX2W
+      name: Benchmark
+      path: Quantum N-Atom/Basic-Rydberg protocol/Multi-qubits gate/Benchmark
+qlab:
+  primary_collection: NJTHAXWQ
+  indexed_collections:
+    - NJTHAXWQ
+    - TPFCHX2W
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+    - quantum-n-atom
+item_type: journalArticle
+title: Efficient measurement of quantum gate error by interleaved randomized
+  benchmarking
+authors:
+  - first: Easwar
+    last: Magesan
+  - first: Jay M.
+    last: Gambetta
+  - first: B. R.
+    last: Johnson
+  - first: Colm A.
+    last: Ryan
+  - first: Jerry M.
+    last: Chow
+  - first: Seth T.
+    last: Merkel
+  - first: Marcus P. da
+    last: Silva
+  - first: George A.
+    last: Keefe
+  - first: Mary B.
+    last: Rothwell
+  - first: Thomas A.
+    last: Ohki
+  - first: Mark B.
+    last: Ketchen
+  - first: M.
+    last: Steffen
+year: 2012
+abstract: We describe a scalable experimental protocol for obtaining estimates
+  of the error rate of individual quantum computational gates. This protocol, in
+  which random Clifford gates are interleaved between a gate of interest,
+  provides a bounded estimate of the average error of the gate under test so
+  long as the average variation of the noise affecting the full set of Clifford
+  gates is small. This technique takes into account both state preparation and
+  measurement errors and is scalable in the number of qubits. We apply this
+  protocol to a superconducting qubit system and find gate errors that compare
+  favorably with the gate errors extracted via quantum process tomography.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.1103/physrevlett.109.080505
+  arxiv: "1203.4550"

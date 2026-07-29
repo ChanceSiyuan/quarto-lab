@@ -1,0 +1,42 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: HPI69LN9
+  item_version: 96094
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: AGQ9C27P
+      name: Magic state distillation
+      path: Quantum Resource/Magic/Magic state distillation
+qlab:
+  primary_collection: AGQ9C27P
+  indexed_collections:
+    - AGQ9C27P
+  primary_topic: quantum-resource
+  indexed_topics:
+    - quantum-resource
+item_type: journalArticle
+title: Towards low overhead magic state distillation
+authors:
+  - first: Anirudh
+    last: Krishna
+  - first: Jean-Pierre
+    last: Tillich
+year: 2019
+abstract: Magic state distillation is a resource intensive sub-routine for
+  quantum computation. The ratio of noisy input states to output states with
+  error rate at most $\epsilon$ scales as $O(\log^{\gamma}(1/\epsilon))$ (Bravyi
+  and Haah, PRA 2012). In a breakthrough paper, Hastings and Haah (PRL 2018)
+  showed that it is possible to construct distillation routines with
+  sub-logarithmic overhead, achieving $\gamma \approx 0.6779$ and falsifying a
+  conjecture that $\gamma$ is lower bounded by $1$. They then ask whether
+  $\gamma$ can be made arbitrarily close to $0$. We answer this question in the
+  affirmative for magic state distillation routines using qudits ($d$
+  dimensional quantum systems).
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.1103/physrevlett.123.070507
+  arxiv: "1811.08461"

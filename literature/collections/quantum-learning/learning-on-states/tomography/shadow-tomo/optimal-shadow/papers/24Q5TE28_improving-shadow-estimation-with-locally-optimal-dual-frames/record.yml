@@ -1,0 +1,49 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 24Q5TE28
+  item_version: 101507
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 6BXXRXDA
+      name: Optimal_shadow
+      path: Quantum Learning/Learning on states/Tomography/shadow tomo/Optimal_shadow
+qlab:
+  primary_collection: 6BXXRXDA
+  indexed_collections:
+    - 6BXXRXDA
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: preprint
+title: Improving shadow estimation with locally-optimal dual frames
+authors:
+  - first: Keijo
+    last: Korhonen
+  - first: Stefano
+    last: Mangini
+  - first: Joonas
+    last: Malmi
+  - first: Hetta
+    last: Vappula
+  - first: Daniel
+    last: Cavalcanti
+year: 2025
+abstract: Accurate estimation of observables in quantum systems is a central
+  challenge in quantum information science, yet practical implementations are
+  fundamentally constrained by the limited number of measurement shots. In this
+  work we explore a variation of the classical shadows protocol in which the
+  measurements are kept local while allowing the resulting classical shadows
+  themselves to be correlated. By constructing locally optimal shadows, we
+  obtain unbiased estimators that outperform state-of-the-art methods, achieving
+  the same accuracy with substantially fewer measurements. We validate our
+  approach through numerical experiments on molecular Hamiltonians with up to 40
+  qubits and a 50-qubit Ising model consistently observing significant
+  reductions in estimation errors.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2511.02555
+  arxiv: "2511.02555"

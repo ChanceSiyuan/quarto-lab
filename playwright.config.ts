@@ -11,14 +11,14 @@ import { defineConfig, devices } from "@playwright/test";
  * The server command builds the browser fixture first. The committed knowledge
  * tree holds only what a user has promoted, which today is one page, so the
  * knowledge tests would have nothing to look at; `npm run build:e2e` renders
- * `tests/fixtures/knowledge/valid` instead and rebuilds the app around it.
+ * `.research-loop/tests/fixtures/knowledge/valid` instead and rebuilds the app around it.
  * Chaining it into the server command rather than leaving it to the caller is
  * what makes the served bytes and the asserted bytes the same bytes. The
  * fixture is never committed and never deployed: it lands in the gitignored
  * `public/knowledge`, and `npm test` rebuilds the production tree afterwards.
  *
  * One browser, one platform. Any baseline written under
- * `tests/e2e/*-snapshots/` would be Linux Chromium and nothing else, so the
+ * `.research-loop/tests/e2e/*-snapshots/` would be Linux Chromium and nothing else, so the
  * snapshot path carries the platform but not the project name — a second
  * project would silently compare its own rendering against them.
  */
@@ -27,7 +27,7 @@ const PORT = 4173;
 const BASE_URL = `http://127.0.0.1:${PORT}`;
 
 export default defineConfig({
-  testDir: "tests/e2e",
+  testDir: ".research-loop/tests/e2e",
   testMatch: /knowledge\.spec\.ts/,
   snapshotPathTemplate: "{testDir}/{testFilePath}-snapshots/{arg}-{platform}{ext}",
   fullyParallel: true,

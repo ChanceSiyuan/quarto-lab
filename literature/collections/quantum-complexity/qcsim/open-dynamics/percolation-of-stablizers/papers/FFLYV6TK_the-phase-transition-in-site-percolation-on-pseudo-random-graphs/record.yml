@@ -1,0 +1,44 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: FFLYV6TK
+  item_version: 96035
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: PBGR25EN
+      name: percolation of stablizers
+      path: Quantum Complexity/QCsim/Open-dynamics/percolation of stablizers
+qlab:
+  primary_collection: PBGR25EN
+  indexed_collections:
+    - PBGR25EN
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: preprint
+title: The phase transition in site percolation on pseudo-random graphs
+authors:
+  - first: Michael
+    last: Krivelevich
+year: 2015
+abstract: We establish the existence of the phase transition in site percolation
+  on pseudo-random $d$-regular graphs. Let $G=(V,E)$ be an
+  $(n,d,\lambda)$-graph, that is, a $d$-regular graph on $n$ vertices in which
+  all eigenvalues of the adjacency matrix, but the first one, are at most
+  $\lambda$ in their absolute values. Form a random subset $R$ of $V$ by putting
+  every vertex $v\in V$ into $R$ independently with probability $p$. Then for
+  any small enough constant $\epsilon>0$, if $p=\frac{1-\epsilon}{d}$, then with
+  high probability all connected components of the subgraph of $G$ induced by
+  $R$ are of size at most logarithmic in $n$, while for
+  $p=\frac{1+\epsilon}{d}$, if the eigenvalue ratio $\lambda/d$ is small enough
+  as a function of $\epsilon$, then typically $R$ spans a connected component of
+  size at least $\frac{\epsilon n}{d}$ and a path of length proportional to
+  $\frac{\epsilon^2n}{d}$.
+tags:
+  - Mathematics - Combinatorics
+  - Mathematics - Probability
+identifiers:
+  doi: 10.48550/arxiv.1404.5731
+  arxiv: "1404.5731"

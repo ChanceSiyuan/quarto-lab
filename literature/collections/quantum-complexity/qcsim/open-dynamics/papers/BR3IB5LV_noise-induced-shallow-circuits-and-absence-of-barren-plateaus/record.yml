@@ -1,0 +1,66 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: BR3IB5LV
+  item_version: 96050
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: VQWX7XGH
+      name: Open-dynamics
+      path: Quantum Complexity/QCsim/Open-dynamics
+    - key: Y2U79FCU
+      name: complexity analysis
+      path: Quantum Complexity/QCsim/Open-dynamics/complexity analysis
+qlab:
+  primary_collection: VQWX7XGH
+  indexed_collections:
+    - VQWX7XGH
+    - Y2U79FCU
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: preprint
+title: Noise-induced shallow circuits and absence of barren plateaus
+authors:
+  - first: Antonio Anna
+    last: Mele
+  - first: Armando
+    last: Angrisani
+  - first: Soumik
+    last: Ghosh
+  - first: Sumeet
+    last: Khatri
+  - first: Jens
+    last: Eisert
+  - first: Daniel Stilck
+    last: França
+  - first: Yihui
+    last: Quek
+year: 2024
+abstract: Motivated by realistic hardware considerations of the
+  pre-fault-tolerant era, we comprehensively study the impact of uncorrected
+  noise on quantum circuits. We first show that any noise `truncates' most
+  quantum circuits to effectively logarithmic depth, in the task of computing
+  Pauli expectation values. We then prove that quantum circuits under any
+  non-unital noise exhibit lack of barren plateaus for cost functions composed
+  of local observables. But, by leveraging the effective shallowness, we also
+  design a classical algorithm to estimate Pauli expectation values within
+  inverse-polynomial additive error with high probability over the ensemble. Its
+  runtime is independent of circuit depth and it operates in polynomial time in
+  the number of qubits for one-dimensional architectures and quasi-polynomial
+  time for higher-dimensional ones. Taken together, our results showcase that,
+  unless we carefully engineer the circuits to take advantage of the noise, it
+  is unlikely that noisy quantum circuits are preferable over shallow quantum
+  circuits for algorithms that output Pauli expectation value estimates, like
+  many variational quantum machine learning proposals. Moreover, we anticipate
+  that our work could provide valuable insights into the fundamental open
+  question about the complexity of sampling from (possibly non-unital) noisy
+  random circuits.
+tags:
+  - Condensed Matter - Other Condensed Matter
+  - Mathematical Physics
+  - Quantum Physics
+identifiers:
+  arxiv: "2403.13927"

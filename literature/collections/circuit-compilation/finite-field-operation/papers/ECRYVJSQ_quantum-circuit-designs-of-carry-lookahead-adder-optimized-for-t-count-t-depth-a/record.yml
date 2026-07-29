@@ -1,0 +1,52 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: ECRYVJSQ
+  item_version: 96128
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: LESICR3C
+      name: Finite field operation
+      path: Circuit Compilation/Finite field operation
+qlab:
+  primary_collection: LESICR3C
+  indexed_collections:
+    - LESICR3C
+  primary_topic: circuit-compilation
+  indexed_topics:
+    - circuit-compilation
+item_type: journalArticle
+title: Quantum circuit designs of carry lookahead adder optimized for T-count
+  T-depth and qubits
+authors:
+  - first: Himanshu
+    last: Thapliyal
+  - first: Edgard
+    last: Muñoz-Coreas
+  - first: Vladislav
+    last: Khalus
+year: 2021
+abstract: Quantum circuits of arithmetic operations such as addition are needed
+  to implement quantum algorithms in hardware. Quantum circuits based on
+  Clifford+T gates are used as they can be made tolerant to noise. The tradeoff
+  of gaining fault tolerance from using Clifford+T gates and error-correcting
+  codes is the high implementation overhead of the T gate. As a result, the
+  T-count and T-depth performance measures have become important in quantum
+  circuit design. Due to noise, the risk for errors in a quantum circuit
+  computation increases as the number of gate layers (or depth) in the circuit
+  increases. As a result, low depth circuits such as quantum carry lookahead
+  adders (QCLA)s have caught the attention of researchers. This work presents
+  two QCLA designs each optimized with emphasis on T-count and T-depth or qubit
+  cost, respectively. In-place and out-of-place versions of each design are
+  shown. The proposed QCLAs are compared against the existing works in terms of
+  T-count and Tdepth. The proposed QCLAs for out-of-place addition achieve
+  average T-count savings of 54.34% and 37.21%, respectively. The proposed QCLAs
+  for out-of-place addition achieve up to a 33.33% reduction in T-depth. The
+  proposed QCLAs for in-place addition achieve average T-count savings of 65.31%
+  and 30.63%, respectively. When compared to existing works, the proposed QCLAs
+  for in-place addition achieves T-depth savings ranging from 33.33% to 95.56%.
+tags: []
+identifiers:
+  doi: 10.1016/j.suscom.2020.100457

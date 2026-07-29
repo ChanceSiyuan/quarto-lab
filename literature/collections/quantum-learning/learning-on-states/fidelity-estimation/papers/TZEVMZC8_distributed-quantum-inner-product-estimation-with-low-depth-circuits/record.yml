@@ -1,0 +1,57 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: TZEVMZC8
+  item_version: 96148
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: YS8L9GJT
+      name: Fidelity Estimation
+      path: Quantum Learning/Learning on states/Fidelity Estimation
+qlab:
+  primary_collection: YS8L9GJT
+  indexed_collections:
+    - YS8L9GJT
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: preprint
+title: Distributed Quantum Inner Product Estimation with Low-Depth Circuits
+authors:
+  - first: Congcong
+    last: Zheng
+  - first: Kun
+    last: Wang
+  - first: Xutao
+    last: Yu
+  - first: Ping
+    last: Xu
+  - first: Zaichen
+    last: Zhang
+year: 2025
+abstract: Distributed inner product estimation (DIPE) is a fundamental task in
+  quantum information, aiming to estimate the inner product between two unknown
+  quantum states prepared on distributed quantum platforms. Existing rigorous
+  sample complexity analyses are limited to unitary $4$-designs, which present
+  practical challenges for near-term quantum devices. This work addresses this
+  challenge by exploring DIPE with low-depth quantum circuits. We first
+  establish that DIPE with an arbitrary unitary $2$-design ensemble achieves an
+  average sample complexity of $\Theta(\sqrt{2^n})$, where $n$ is the number of
+  qubits. We then analyze ensembles below unitary $2$-designs -- specifically,
+  the brickwork and local unitary $2$-design ensembles -- showing average sample
+  complexities of $O(\sqrt{2.18^n})$ and $O(\sqrt{2.5^n})$, respectively.
+  Furthermore, we analyze the state-dependent variance for the brickwork and
+  Clifford ensembles. Remarkably, we find that DIPE with the global Clifford
+  ensemble requires $\Theta(\sqrt{2^n})$ copies for arbitrary state pairs, with
+  its efficiency further enhanced by the nonstabilizerness of the state pairs.
+  Numerical simulations with GHZ states and Haar random states up to $26$ qubits
+  show that low-depth circuit ensembles can match the performance of unitary
+  $4$-designs in practice. Our findings offer theoretically guaranteed methods
+  for implementing DIPE with experimentally feasible unitary ensembles.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2506.19574
+  arxiv: "2506.19574"

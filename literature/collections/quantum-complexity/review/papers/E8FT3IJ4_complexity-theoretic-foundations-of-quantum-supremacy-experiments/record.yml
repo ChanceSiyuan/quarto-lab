@@ -1,0 +1,59 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: E8FT3IJ4
+  item_version: 96029
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: TGMXFJ5K
+      name: _Review
+      path: Quantum Complexity/_Review
+qlab:
+  primary_collection: TGMXFJ5K
+  indexed_collections:
+    - TGMXFJ5K
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: preprint
+title: Complexity-Theoretic Foundations of Quantum Supremacy Experiments
+authors:
+  - first: Scott
+    last: Aaronson
+  - first: Lijie
+    last: Chen
+year: 2016
+abstract: "In the near future, there will likely be special-purpose quantum
+  computers with 40-50 high-quality qubits. This paper lays general theoretical
+  foundations for how to use such devices to demonstrate \"quantum supremacy\":
+  that is, a clear quantum speedup for some task, motivated by the goal of
+  overturning the Extended Church-Turing Thesis as confidently as possible.
+  First, we study the hardness of sampling the output distribution of a random
+  quantum circuit, along the lines of a recent proposal by the the Quantum AI
+  group at Google. We show that there's a natural hardness assumption, which has
+  nothing to do with sampling, yet implies that no efficient classical algorithm
+  can pass a statistical test that the quantum sampling procedure's outputs do
+  pass. Compared to previous work, the central advantage is that we can now talk
+  directly about the observed outputs, rather than about the distribution being
+  sampled. Second, in an attempt to refute our hardness assumption, we give a
+  new algorithm, for simulating a general quantum circuit with n qubits and m
+  gates in polynomial space and m^O(n) time. We then discuss why this and other
+  known algorithms fail to refute our assumption. Third, resolving an open
+  problem of Aaronson and Arkhipov, we show that any strong quantum supremacy
+  theorem--of the form \"if approximate quantum sampling is classically easy,
+  then PH collapses\"--must be non-relativizing. Fourth, refuting a conjecture
+  by Aaronson and Ambainis, we show that the Fourier Sampling problem achieves a
+  constant versus linear separation between quantum and randomized query
+  complexities. Fifth, we study quantum supremacy relative to oracles in P/poly.
+  Previous work implies that, if OWFs exist, then quantum supremacy is possible
+  relative to such oracles. We show that some assumption is needed: if
+  SampBPP=SampBQP and NP is in BPP, then quantum supremacy is impossible
+  relative to such oracles."
+tags:
+  - Computer Science - Computational Complexity
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.1612.05903
+  arxiv: "1612.05903"

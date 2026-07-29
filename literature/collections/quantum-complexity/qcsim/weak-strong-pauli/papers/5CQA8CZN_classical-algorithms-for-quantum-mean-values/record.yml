@@ -1,0 +1,54 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 5CQA8CZN
+  item_version: 96048
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: XTNBJHDY
+      name: Weak&Strong&Pauli
+      path: Quantum Complexity/QCsim/Weak&Strong&Pauli
+qlab:
+  primary_collection: XTNBJHDY
+  indexed_collections:
+    - XTNBJHDY
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: journalArticle
+title: Classical algorithms for quantum mean values
+authors:
+  - first: Sergey
+    last: Bravyi
+  - first: David
+    last: Gosset
+  - first: Ramis
+    last: Movassagh
+year: 2021
+abstract: We consider the task of estimating the expectation value of an
+  $n$-qubit tensor product observable $O_1\otimes O_2\otimes \cdots \otimes O_n$
+  in the output state of a shallow quantum circuit. This task is a cornerstone
+  of variational quantum algorithms for optimization, machine learning, and the
+  simulation of quantum many-body systems. Here we study its computational
+  complexity for constant-depth quantum circuits and three types of single-qubit
+  observables $O_j$ which are (a) close to the identity, (b) positive
+  semidefinite, (c) arbitrary. It is shown that the mean value problem admits a
+  classical approximation algorithm with runtime scaling as $\mathrm{poly}(n)$
+  and $2^{\tilde{O}(\sqrt{n})}$ in cases (a,b) respectively. In case (c) we give
+  a linear-time algorithm for geometrically local circuits on a two-dimensional
+  grid. The mean value is approximated with a small relative error in case (a),
+  while in cases (b,c) we satisfy a less demanding additive error bound. The
+  algorithms are based on (respectively) Barvinok's polynomial interpolation
+  method, a polynomial approximation for the OR function arising from quantum
+  query complexity, and a Monte Carlo method combined with Matrix Product State
+  techniques. We also prove a technical lemma characterizing a zero-free region
+  for certain polynomials associated with a quantum circuit, which may be of
+  independent interest.
+tags:
+  - Computer Science - Computational Complexity
+  - Quantum Physics
+identifiers:
+  doi: 10.1038/s41567-020-01109-8
+  arxiv: "1909.11485"

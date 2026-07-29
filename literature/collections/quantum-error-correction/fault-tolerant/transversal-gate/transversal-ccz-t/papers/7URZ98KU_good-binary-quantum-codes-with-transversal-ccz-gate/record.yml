@@ -1,0 +1,40 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 7URZ98KU
+  item_version: 96045
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: AC5RCSNL
+      name: transversal CCZ/T
+      path: Quantum Error correction/Fault-tolerant/transversal gate/transversal CCZ/T
+qlab:
+  primary_collection: AC5RCSNL
+  indexed_collections:
+    - AC5RCSNL
+  primary_topic: quantum-error-correction
+  indexed_topics:
+    - quantum-error-correction
+item_type: preprint
+title: Good binary quantum codes with transversal CCZ gate
+authors:
+  - first: Quynh T.
+    last: Nguyen
+year: 2024
+abstract: We give an asymptotically good family of quantum CSS codes on qubits
+  with a transversal CCZ gate, meaning that the parallel logical CCZ on all
+  logical qubits is performed by parallel physical CCZs on (a subset of)
+  physical qubits. Our construction is based on the observation that any
+  classical code satisfying a multiplication property can be used to construct a
+  quantum CSS code with transversal (qudit) CCZ. To obtain a constant-rate and
+  linear-distance family, we instantiate this construction with a classical good
+  family of algebraic-geometry codes on a non-binary, but constant-sized,
+  alphabet. We then use a technique from the arithmetic secret sharing
+  literature to reduce the alphabet to binary. As a corollary, our code family
+  provides a constant-overhead magic state distillation scheme.
+tags:
+  - Quantum Physics
+identifiers:
+  arxiv: "2408.10140"

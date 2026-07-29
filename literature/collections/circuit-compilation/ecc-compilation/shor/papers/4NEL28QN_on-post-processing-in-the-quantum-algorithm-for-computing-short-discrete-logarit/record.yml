@@ -1,0 +1,43 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 4NEL28QN
+  item_version: 96018
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: LIVJUSB2
+      name: Shor
+      path: Circuit Compilation/ECC compilation/Shor
+qlab:
+  primary_collection: LIVJUSB2
+  indexed_collections:
+    - LIVJUSB2
+  primary_topic: circuit-compilation
+  indexed_topics:
+    - circuit-compilation
+item_type: journalArticle
+title: On post-processing in the quantum algorithm for computing short discrete
+  logarithms
+authors:
+  - first: Martin
+    last: Ekerå
+year: 2020
+abstract: We revisit the quantum algorithm for computing short discrete
+  logarithms that was recently introduced by Ekerå and Håstad. By carefully
+  analyzing the probability distribution induced by the algorithm, we show its
+  success probability to be higher than previously reported. Inspired by our
+  improved understanding of the distribution, we propose an improved
+  postprocessing algorithm that is considerably more efﬁcient, enables better
+  tradeoffs to be achieved, and requires fewer runs, than the original
+  post-processing algorithm. To prove these claims, we construct a classical
+  simulator for the quantum algorithm by sampling the probability distribution
+  it induces for given logarithms. This simulator is in itself a key
+  contribution. We use it to demonstrate that Ekerå–Håstad achieves an advantage
+  over Shor, not only in each individual run, but also overall, when targeting
+  cryptographically relevant instances of RSA and Difﬁe–Hellman with short
+  exponents.
+tags: []
+identifiers:
+  doi: 10.1007/s10623-020-00783-2

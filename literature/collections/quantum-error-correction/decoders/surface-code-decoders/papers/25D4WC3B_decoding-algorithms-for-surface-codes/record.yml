@@ -1,0 +1,58 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 25D4WC3B
+  item_version: 96086
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: D4U5RH44
+      name: Surface code Decoders
+      path: Quantum Error correction/Decoders/Surface code Decoders
+qlab:
+  primary_collection: D4U5RH44
+  indexed_collections:
+    - D4U5RH44
+  primary_topic: quantum-error-correction
+  indexed_topics:
+    - quantum-error-correction
+item_type: preprint
+title: Decoding algorithms for surface codes
+authors:
+  - first: Antonio deMarti
+    last: iOlius
+  - first: Patricio
+    last: Fuentes
+  - first: Román
+    last: Orús
+  - first: Pedro M.
+    last: Crespo
+  - first: Josu Etxezarreta
+    last: Martinez
+year: 2023
+abstract: Quantum technologies have the potential to solve computationally hard
+  problems that are intractable via classical means. Unfortunately, the unstable
+  nature of quantum information makes it prone to errors. For this reason,
+  quantum error correction is an invaluable tool to make quantum information
+  reliable and enable the ultimate goal of fault-tolerant quantum computing.
+  Surface codes currently stand as the most promising candidates to build error
+  corrected qubits given their two-dimensional architecture, a requirement of
+  only local operations, and high tolerance to quantum noise. Decoding
+  algorithms are an integral component of any error correction scheme, as they
+  are tasked with producing accurate estimates of the errors that affect quantum
+  information, so that it can subsequently be corrected. A critical aspect of
+  decoding algorithms is their speed, since the quantum state will suffer
+  additional errors with the passage of time. This poses a connundrum-like
+  tradeoff, where decoding performance is improved at the expense of complexity
+  and viceversa. In this review, a thorough discussion of state-of-the-art
+  surface code decoding algorithms is provided. The core operation of these
+  methods is described along with existing variants that show promise for
+  improved results. In addition, both the decoding performance, in terms of
+  error correction capability, and decoding complexity, are compared. A review
+  of the existing software tools regarding surface code decoding is also
+  provided.
+tags:
+  - Quantum Physics
+identifiers:
+  arxiv: "2307.14989"

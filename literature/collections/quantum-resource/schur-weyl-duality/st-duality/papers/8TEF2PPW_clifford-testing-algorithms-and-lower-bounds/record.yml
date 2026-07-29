@@ -1,0 +1,58 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 8TEF2PPW
+  item_version: 96156
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: DXJPAS4L
+      name: ST-duality
+      path: Quantum Resource/Schur-Weyl duality/ST-duality
+qlab:
+  primary_collection: DXJPAS4L
+  indexed_collections:
+    - DXJPAS4L
+  primary_topic: quantum-resource
+  indexed_topics:
+    - quantum-resource
+item_type: preprint
+title: "Clifford testing: algorithms and lower bounds"
+authors:
+  - first: Marcel
+    last: Hinsche
+  - first: Zongbo
+    last: Bao
+  - first: Philippe van
+    last: Dordrecht
+  - first: Jens
+    last: Eisert
+  - first: Jop
+    last: Briët
+  - first: Jonas
+    last: Helsen
+year: 2025
+abstract: We consider the problem of Clifford testing, which asks whether a
+  black-box $n$-qubit unitary is a Clifford unitary or at least
+  $\varepsilon$-far from every Clifford unitary. We give the first 4-query
+  Clifford tester, which decides this problem with probability
+  $\mathrm{poly}(\varepsilon)$. This contrasts with the minimum of 6 copies
+  required for the closely-related task of stabilizer testing. We show that our
+  tester is tolerant, by adapting techniques from tolerant stabilizer testing to
+  our setting. In doing so, we settle in the positive a conjecture of Bu, Gu and
+  Jaffe, by proving a polynomial inverse theorem for a non-commutative Gowers
+  3-uniformity norm. We also consider the restricted setting of single-copy
+  access, where we give an $O(n)$-query Clifford tester that requires no
+  auxiliary memory qubits or adaptivity. We complement this with a lower bound,
+  proving that any such, potentially adaptive, single-copy algorithm needs at
+  least $Ω(n^{1/4})$ queries. To obtain our results, we leverage the structure
+  of the commutant of the Clifford group, obtaining several technical statements
+  that may be of independent interest.
+tags:
+  - Computer Science - Computational Complexity
+  - Computer Science - Data Structures and Algorithms
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2510.07164
+  arxiv: "2510.07164"

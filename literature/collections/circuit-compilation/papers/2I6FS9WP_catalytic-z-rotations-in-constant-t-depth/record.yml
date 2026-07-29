@@ -1,0 +1,43 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 2I6FS9WP
+  item_version: 96020
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 2DQJ4S34
+      name: Circuit Compilation
+      path: Circuit Compilation
+    - key: 4K42JR3Z
+      name: lower bound
+      path: Circuit Compilation/lower bound
+qlab:
+  primary_collection: 2DQJ4S34
+  indexed_collections:
+    - 2DQJ4S34
+    - 4K42JR3Z
+  primary_topic: circuit-compilation
+  indexed_topics:
+    - circuit-compilation
+item_type: preprint
+title: Catalytic $z$-rotations in constant $T$-depth
+authors:
+  - first: Isaac H.
+    last: Kim
+year: 2025
+abstract: We show that the $T$-depth of any single-qubit $z$-rotation can be
+  reduced to $3$ if a certain catalyst state is available. To achieve an
+  $\epsilon$-approximation, it suffices to have a catalyst state of size
+  polynomial in $\log(1/\epsilon)$. This implies that
+  $\mathsf{QNC}^0_f/\mathsf{qpoly}$ admits a finite universal gate set
+  consisting of Clifford+$T$. In particular, there are catalytic constant
+  $T$-depth circuits that approximate multi-qubit Toffoli, adder, and quantum
+  Fourier transform arbitrarily well. We also show that the catalyst state can
+  be prepared in time polynomial in $\log (1/\epsilon)$.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2506.15147
+  arxiv: "2506.15147"

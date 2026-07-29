@@ -1,0 +1,54 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: E9HDBQ6G
+  item_version: 96158
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: BSN2UUCK
+      name: Diffussion
+      path: Quantum Learning/Machine learning/Diffussion
+qlab:
+  primary_collection: BSN2UUCK
+  indexed_collections:
+    - BSN2UUCK
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: preprint
+title: Quantum State Generation with Structure-Preserving Diffusion Model
+authors:
+  - first: Yuchen
+    last: Zhu
+  - first: Tianrong
+    last: Chen
+  - first: Evangelos A.
+    last: Theodorou
+  - first: Xie
+    last: Chen
+  - first: Molei
+    last: Tao
+year: 2024
+abstract: This article considers the generative modeling of the (mixed) states
+  of quantum systems, and an approach based on denoising diffusion model is
+  proposed. The key contribution is an algorithmic innovation that respects the
+  physical nature of quantum states. More precisely, the commonly used density
+  matrix representation of mixed-state has to be complex-valued Hermitian,
+  positive semi-definite, and trace one. Generic diffusion models, or other
+  generative methods, may not be able to generate data that strictly satisfy
+  these structural constraints, even if all training data do. To develop a
+  machine learning algorithm that has physics hard-wired in, we leverage mirror
+  diffusion and borrow the physical notion of von Neumann entropy to design a
+  new map, for enabling strict structure-preserving generation. Both
+  unconditional generation and conditional generation via classifier-free
+  guidance are experimentally demonstrated efficacious, the latter enabling the
+  design of new quantum states when generated on unseen labels.
+tags:
+  - Computer Science - Machine Learning
+  - Quantum Physics
+  - Statistics - Machine Learning
+identifiers:
+  doi: 10.48550/arxiv.2404.06336
+  arxiv: "2404.06336"

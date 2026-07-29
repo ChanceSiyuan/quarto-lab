@@ -1,0 +1,57 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 47AC6TWH
+  item_version: 96163
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: P4HQDZ8G
+      name: BPs
+      path: Quantum Error correction/Decoders/BPs
+qlab:
+  primary_collection: P4HQDZ8G
+  indexed_collections:
+    - P4HQDZ8G
+  primary_topic: quantum-error-correction
+  indexed_topics:
+    - quantum-error-correction
+item_type: preprint
+title: Improved belief propagation is sufficient for real-time decoding of
+  quantum memory
+authors:
+  - first: Tristan
+    last: Müller
+  - first: Thomas
+    last: Alexander
+  - first: Michael E.
+    last: Beverland
+  - first: Markus
+    last: Bühler
+  - first: Blake R.
+    last: Johnson
+  - first: Thilo
+    last: Maurer
+  - first: Drew
+    last: Vandeth
+year: 2025
+abstract: "We introduce a new heuristic decoder, Relay-BP, targeting real-time
+  quantum circuit decoding for large-scale quantum computers. Relay-BP achieves
+  high accuracy across circuit-noise decoding problems: significantly
+  outperforming BP+OSD+CS-10 for bivariate-bicycle codes and comparable to
+  min-weight-matching for surface codes. As a lightweight message-passing
+  decoder, Relay-BP is inherently parallel, enabling rapid low-footprint
+  decoding with FPGA or ASIC real-time implementations, similar to standard BP.
+  A core aspect of our decoder is its enhancement of the standard BP algorithm
+  by incorporating disordered memory strengths. This dampens oscillations and
+  breaks symmetries that trap traditional BP algorithms. By dynamically
+  adjusting memory strengths in a relay approach, Relay-BP can consecutively
+  encounter multiple valid corrections to improve decoding accuracy. We observe
+  that a problem-dependent distribution of memory strengths that includes
+  negative values is indispensable for good performance."
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2506.01779
+  arxiv: "2506.01779"

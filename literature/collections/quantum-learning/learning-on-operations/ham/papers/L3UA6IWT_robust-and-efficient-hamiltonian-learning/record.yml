@@ -1,0 +1,58 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: L3UA6IWT
+  item_version: 109138
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: UEQI7UKL
+      name: ham
+      path: Quantum Learning/Learning on operations/ham
+qlab:
+  primary_collection: UEQI7UKL
+  indexed_collections:
+    - UEQI7UKL
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: journalArticle
+title: Robust and Efficient Hamiltonian Learning
+authors:
+  - first: Wenjun
+    last: Yu
+  - first: Jinzhao
+    last: Sun
+  - first: Zeyao
+    last: Han
+  - first: Xiao
+    last: Yuan
+year: 2023
+abstract: With the fast development of quantum technology, the sizes of both
+  digital and analog quantum systems increase drastically. In order to have
+  better control and understanding of the quantum hardware, an important task is
+  to characterize the interaction, i.e., to learn the Hamiltonian, which
+  determines both static and dynamic properties of the system. Conventional
+  Hamiltonian learning methods either require costly process tomography or adopt
+  impractical assumptions, such as prior information on the Hamiltonian
+  structure and the ground or thermal states of the system. In this work, we
+  present a robust and efficient Hamiltonian learning method that circumvents
+  these limitations based only on mild assumptions. The proposed method can
+  efficiently learn any Hamiltonian that is sparse on the Pauli basis using only
+  short-time dynamics and local operations without any information on the
+  Hamiltonian or preparing any eigenstates or thermal states. The method has a
+  scalable complexity and a vanishing failure probability regarding the qubit
+  number. Meanwhile, it performs robustly given the presence of state
+  preparation and measurement errors and resiliently against a certain amount of
+  circuit and shot noise. We numerically test the scaling and the estimation
+  accuracy of the method for transverse field Ising Hamiltonian with random
+  interaction strengths and molecular Hamiltonians, both with varying sizes and
+  manually added noise. All these results verify the robustness and efficacy of
+  the method, paving the way for a systematic understanding of the dynamics of
+  large quantum systems.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.22331/q-2023-06-29-1045
+  arxiv: "2201.00190"

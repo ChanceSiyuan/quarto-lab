@@ -1,0 +1,53 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: JDK75VHM
+  item_version: 96133
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 3ETSVPSR
+      name: experiment
+      path: Quantum Resource/Magic/experiment
+qlab:
+  primary_collection: 3ETSVPSR
+  indexed_collections:
+    - 3ETSVPSR
+  primary_topic: quantum-resource
+  indexed_topics:
+    - quantum-resource
+item_type: preprint
+title: Efficient witnessing and testing of magic in mixed quantum states
+authors:
+  - first: Tobias
+    last: Haug
+  - first: Poetri Sonya
+    last: Tarabunga
+year: 2025
+abstract: "Nonstabilizerness or `magic' is a crucial resource for quantum
+  computers which can be distilled from noisy quantum states. However,
+  determining the magic of mixed quantum has been a notoriously difficult task.
+  Here, we provide efficient witnesses of magic based on the stabilizer R\\'enyi
+  entropy which robustly indicate the presence of magic and quantitatively
+  estimate magic monotones. We also design efficient property testing algorithms
+  to reliably distinguish states with high and low magic, assuming the entropy
+  is bounded. We apply our methods to certify the number of noisy T-gates under
+  a wide class of noise models. Additionally, using the IonQ quantum computer,
+  we experimentally verify the magic of noisy random quantum circuits.
+  Surprisingly, we find that magic is highly robust, persisting even under
+  exponentially strong noise. Our witnesses can also be efficiently computed for
+  matrix product states, revealing that subsystems of many-body quantum states
+  can contain extensive magic despite entanglement. Finally, our work also has
+  direct implications for cryptography and pseudomagic: To mimic high magic
+  states with as little magic as possible, one requires an extensive amount of
+  entropy. This implies that entropy is a necessary resource to hide magic from
+  eavesdroppers. Our work uncovers powerful tools to verify and study the
+  complexity of noisy quantum systems."
+tags:
+  - Computer Science - Computational Complexity
+  - Condensed Matter - Statistical Mechanics
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2504.18098
+  arxiv: "2504.18098"

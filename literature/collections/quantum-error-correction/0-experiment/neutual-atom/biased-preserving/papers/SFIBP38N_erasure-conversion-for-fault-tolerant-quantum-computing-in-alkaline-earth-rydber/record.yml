@@ -1,0 +1,60 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: SFIBP38N
+  item_version: 96082
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: FXVBT6M3
+      name: Biased preserving
+      path: Quantum Error correction/0-Experiment/Neutual atom/Biased preserving
+    - key: APL6PF3L
+      name: Experiments
+      path: Quantum Error correction/3-Error analysis/Biased Noise/Experiments
+qlab:
+  primary_collection: FXVBT6M3
+  indexed_collections:
+    - APL6PF3L
+    - FXVBT6M3
+  primary_topic: quantum-error-correction
+  indexed_topics:
+    - quantum-error-correction
+item_type: journalArticle
+title: Erasure conversion for fault-tolerant quantum computing in alkaline earth
+  Rydberg atom arrays
+authors:
+  - first: Yue
+    last: Wu
+  - first: Shimon
+    last: Kolkowitz
+  - first: Shruti
+    last: Puri
+  - first: Jeff D.
+    last: Thompson
+year: 2022
+abstract: Executing quantum algorithms on error-corrected logical qubits is a
+  critical step for scalable quantum computing, but the requisite numbers of
+  qubits and physical error rates are demanding for current experimental
+  hardware. Recently, the development of error correcting codes tailored to
+  particular physical noise models has helped relax these requirements. In this
+  work, we propose a qubit encoding and gate protocol for ${}^{171}$Yb neutral
+  atom qubits that converts the dominant physical errors into erasures, that is,
+  errors in known locations. The key idea is to encode qubits in a metastable
+  electronic level, such that gate errors predominantly result in transitions to
+  disjoint subspaces whose populations can be continuously monitored via
+  fluorescence. We estimate that 98% of errors can be converted into erasures.
+  We quantify the benefit of this approach via circuit-level simulations of the
+  surface code, finding a threshold increase from 0.937% to 4.15%. We also
+  observe a larger code distance near the threshold, leading to a faster
+  decrease in the logical error rate for the same number of physical qubits,
+  which is important for near-term implementations. Erasure conversion should
+  benefit any error correcting code, and may also be applied to design new gates
+  and encodings in other qubit platforms.
+tags:
+  - Physics - Atomic Physics
+  - Quantum Physics
+identifiers:
+  doi: 10.1038/s41467-022-32094-6
+  arxiv: "2201.03540"

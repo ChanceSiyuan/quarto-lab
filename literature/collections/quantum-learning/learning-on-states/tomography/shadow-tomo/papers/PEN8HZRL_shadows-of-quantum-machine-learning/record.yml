@@ -1,0 +1,39 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: PEN8HZRL
+  item_version: 96159
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 9ISUJVXK
+      name: shadow tomo
+      path: Quantum Learning/Learning on states/Tomography/shadow tomo
+qlab:
+  primary_collection: 9ISUJVXK
+  indexed_collections:
+    - 9ISUJVXK
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: journalArticle
+title: Shadows of quantum machine learning
+authors:
+  - first: Sofiene
+    last: Jerbi
+  - first: Casper
+    last: Gyurik
+  - first: Simon C.
+    last: Marshall
+  - first: Riccardo
+    last: Molteni
+  - first: Vedran
+    last: Dunjko
+year: 2024
+abstract: >-
+  Abstract
+              Quantum machine learning is often highlighted as one of the most promising practical applications for which quantum computers could provide a computational advantage. However, a major obstacle to the widespread use of quantum machine learning models in practice is that these models, even once trained, still require access to a quantum computer in order to be evaluated on new data. To solve this issue, we introduce a class of quantum models where quantum resources are only required during training, while the deployment of the trained model is classical. Specifically, the training phase of our models ends with the generation of a ‘shadow model’ from which the classical deployment becomes possible. We prove that: (i) this class of models is universal for classically-deployed quantum machine learning; (ii) it does have restricted learning capacities compared to ‘fully quantum’ models, but nonetheless (iii) it achieves a provable learning advantage over fully classical learners, contingent on widely believed assumptions in complexity theory. These results provide compelling evidence that quantum machine learning can confer learning advantages across a substantially broader range of scenarios, where quantum computers are exclusively employed during the training phase. By enabling classical deployment, our approach facilitates the implementation of quantum machine learning models in various practical contexts.
+tags: []
+identifiers:
+  doi: 10.1038/s41467-024-49877-8

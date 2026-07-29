@@ -1,0 +1,55 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: SSN6XVSV
+  item_version: 96160
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 9ISUJVXK
+      name: shadow tomo
+      path: Quantum Learning/Learning on states/Tomography/shadow tomo
+qlab:
+  primary_collection: 9ISUJVXK
+  indexed_collections:
+    - 9ISUJVXK
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: preprint
+title: "Shadow Quantum Linear Solver: A Resource Efficient Quantum Algorithm for
+  Linear Systems of Equations"
+authors:
+  - first: Francesco
+    last: Ghisoni
+  - first: Francesco
+    last: Scala
+  - first: Daniele
+    last: Bajoni
+  - first: Dario
+    last: Gerace
+year: 2025
+abstract: Finding the solution to linear systems is at the heart of many
+  applications in science and technology. Over the years a number of algorithms
+  have been proposed to solve this problem on a digital quantum device, yet most
+  of these are too demanding to be applied to the current noisy hardware. In
+  this work, an original algorithmic procedure to solve the Quantum Linear
+  System Problem (QLSP) is presented, which combines ideas from Variational
+  Quantum Algorithms (VQA) and the framework of classical shadows. The result is
+  the Shadow Quantum Linear Solver (SQLS), a quantum algorithm solving the QLSP
+  avoiding the need for large controlled unitaries, requiring a number of qubits
+  that is logarithmic in the system size. In particular, our heuristics show an
+  exponential advantage of the SQLS in circuit execution per cost function
+  evaluation when compared to other notorious variational approaches to solving
+  linear systems of equations. We test the convergence of the SQLS on a number
+  of linear systems, and results highlight how the theoretical bounds on the
+  number of resources used by the SQLS are conservative. Finally, we apply this
+  algorithm to a physical problem of practical relevance, by leveraging
+  decomposition theorems from linear algebra to solve the discretized Laplace
+  Equation in a 2D grid for the first time using a hybrid quantum algorithm.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2409.08929
+  arxiv: "2409.08929"

@@ -1,0 +1,61 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: J98CWMI8
+  item_version: 96156
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: BSN2UUCK
+      name: Diffussion
+      path: Quantum Learning/Machine learning/Diffussion
+qlab:
+  primary_collection: BSN2UUCK
+  indexed_collections:
+    - BSN2UUCK
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: preprint
+title: "Quantum Generative Diffusion Model: A Fully Quantum-Mechanical Model for
+  Generating Quantum State Ensemble"
+authors:
+  - first: Chuangtao
+    last: Chen
+  - first: Qinglin
+    last: Zhao
+  - first: MengChu
+    last: Zhou
+  - first: Zhimin
+    last: He
+  - first: Zhili
+    last: Sun
+  - first: Haozhen
+    last: Situ
+year: 2024
+abstract: Classical diffusion models have shown superior generative results.
+  Exploring them in the quantum domain can advance the field of quantum
+  generative learning. This work introduces Quantum Generative Diffusion Model
+  (QGDM) as their simple and elegant quantum counterpart. Through a non-unitary
+  forward process, any target quantum state can be transformed into a completely
+  mixed state that has the highest entropy and maximum uncertainty about the
+  system. A trainable backward process is used to recover the former from the
+  latter. The design requirements for its backward process includes
+  non-unitarity and small parameter count. We introduce partial trace operations
+  to enforce non-unitary and reduce the number of trainable parameters by using
+  a parameter-sharing strategy and incorporating temporal information as an
+  input in the backward process. We present QGDM's resource-efficient version to
+  reduce auxiliary qubits while preserving generative capabilities. QGDM
+  exhibits faster convergence than Quantum Generative Adversarial Network (QGAN)
+  because its adopted convex-based optimization can result in better
+  convergence. The results of comparing it with QGAN demonstrate its
+  effectiveness in generating both pure and mixed quantum states. It can achieve
+  53.02% higher fidelity in mixed-state generation than QGAN. The results
+  highlight its great potential to tackle challenging quantum generation tasks.
+tags:
+  - Computer Science - Machine Learning
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2401.07039
+  arxiv: "2401.07039"

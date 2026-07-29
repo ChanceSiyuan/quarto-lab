@@ -1,0 +1,50 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: Y7TQUZFQ
+  item_version: 96121
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: PJEQGAH3
+      name: MBQC simulation
+      path: Quantum Complexity/QCsim/MBQC simulation
+    - key: U25TN33U
+      name: QC&Ising
+      path: Quantum Complexity/QCsim/Fermion-based simulation/QC&Ising
+qlab:
+  primary_collection: PJEQGAH3
+  indexed_collections:
+    - PJEQGAH3
+    - U25TN33U
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: journalArticle
+title: Completeness of the classical 2D Ising model and universal quantum computation
+authors:
+  - first: M. Van den
+    last: Nest
+  - first: W.
+    last: Dür
+  - first: H. J.
+    last: Briegel
+year: 2008
+abstract: We prove that the 2D Ising model is complete in the sense that the
+  partition function of any classical q-state spin model (on an arbitrary graph)
+  can be expressed as a special instance of the partition function of a 2D Ising
+  model with complex inhomogeneous couplings and external fields. In the case
+  where the original model is an Ising or Potts-type model, we find that the
+  corresponding 2D square lattice requires only polynomially more spins w.r.t
+  the original one, and we give a constructive method to map such models to the
+  2D Ising model. For more general models the overhead in system size may be
+  exponential. The results are established by connecting classical spin models
+  with measurement-based quantum computation and invoking the universality of
+  the 2D cluster states.
+tags:
+  - Condensed Matter - Statistical Mechanics
+  - Quantum Physics
+identifiers:
+  doi: 10.1103/physrevlett.100.110501
+  arxiv: "0708.2275"

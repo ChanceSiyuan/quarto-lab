@@ -1,0 +1,95 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: QNRG7I7P
+  item_version: 96112
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: TGMXFJ5K
+      name: _Review
+      path: Quantum Complexity/_Review
+qlab:
+  primary_collection: TGMXFJ5K
+  indexed_collections:
+    - TGMXFJ5K
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: thesis
+title: The complexity of sampling from a weak quantum computer
+authors:
+  - first: Saeed
+    last: Mehraban
+year: null
+abstract: >-
+  Quantum computers have the promise of revolutionizing information technology,
+  artificial intelligence, cryptography, and industries such as drug design. Up
+  until this point our main understanding of quantum computing has been bound to
+  theoretical speculations which has successfully lead to the design of
+  algorithms and communication protocols which would dramatically change
+  information technology but work well only assuming if we can experimentally
+  build a reliable and large quantum computer which at the moment seems to be
+  beyond the bounds of possibility. As of August 30, 2019, it appears that we
+  are about to enter a new era in quantum technology. Over the next few years,
+  intermediate-scale quantum computers with ~ 50-100 qubits are expected to
+  become practical. These computers are too small to do error correction and
+  they may not even capture the full power of a universal quantum computer.
+   
+  This is a significant step and inevitably we encounter the question "what can
+  we do with this new technology?". A major theoretical challenge is to
+  understand the capabilities and limitations of these devices. In order to
+  approach this challenge, quantum supremacy experiments have been proposed as a
+  near-term milestone. The objective of quantum supremacy is to find
+  computational problems that are feasible on a small-scale quantum computer but
+  are hard to simulate classically. Even though a quantum supremacy experiment
+  may not have practical applications, achieving it will demonstrate that
+  quantum computers can significantly outperform classical ones on, at least,
+  artificially designed computational problems. Among other proposals, over the
+  recent years, two sampling-based quantum supremacy experiments have been
+  proposed: (1) The first proposal, known as Boson Sampling (Aaronson Arkhipov
+  '10), is based on linear optical experiments.
+   
+  A baseline conjecture of Boson Sampling is that it is #P-hard to approximate
+  the permanent of a Gaussian matrix with zero mean and unit variance with high
+  probability. This is known as the permanent of Gaussians conjecture. (2) The
+  second one is based on sampling from the output of a random circuit applied to
+  a square grid of qubits. The Google quantum AI group is planning to implement
+  this task on a processor composed of a few (~ 50-100) superconducting qubits.
+  In order to argue that this sampling task is hard, building on previous works
+  of Aaronson, Arkhipov, and others, they conjectured that the output
+  distribution of a low-depth circuit, i.e., depth scaling asymptotically as the
+  square root of the number of qubits, is anti-concentrated meaning that it has
+  nearly maximal entropy. This is known as the "anti-concentration" conjecture.
+   
+  The first part of this thesis makes progress towards the permanent of
+  Gaussians conjecture and shows that the permanent of Gaussian matrices can
+  indeed be approximated in quasi-polynomial time with high probability if
+  instead of zero mean one considers a nonzero but vanishing mean (~ 1/ poly log
+  log in the size of the matrix). This result finds, to the best of our
+  knowledge, the first example of a natural counting problem that is #P-hard to
+  compute exactly on average and #P-hard to approximate in the worst case but
+  becomes easy only when approximation and average case are combined. This
+  result is based on joint work with Lior Eldar. The second part of this thesis
+  proves the anti-concentration conjecture for random quantum circuits. The
+  proof is an immediate consequence of our main result which settles a
+  conjecture of Brandão-Harrow-Horodecki '12 that short-depth random circuits
+  are pseudorandom.
+   
+  These pseudo-random quantum processes have many applications in algorithms,
+  communication, cryptography as well as theoretical physics e.g. the so-called
+  black hole information problem. This result is based on joint work with Aram
+  Harrow. We furthermore study the speed of scrambling using random quantum
+  circuits with different geometrical connectivity of qubits. We show that this
+  speed crucially depends on the way we define scrambling and on the details of
+  connectivity between qubits. In particular, we show that entanglement and the
+  so-called out of time-ordered correlators are inequivalent measures of
+  scrambling if the gates of the random circuit are applied between
+  nearest-neighbor qubits on a graph with a tight bottleneck, e.g., a binary
+  tree. A major implication of this result is that the scrambling speed of black
+  holes may depend critically on the way one defines scrambling. Previously, it
+  was believed that black holes are the fastest scramblers of quantum
+  information.
+tags: []
+identifiers: {}

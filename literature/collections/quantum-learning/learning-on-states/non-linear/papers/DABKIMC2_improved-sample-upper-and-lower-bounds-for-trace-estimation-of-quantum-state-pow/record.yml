@@ -1,0 +1,52 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: DABKIMC2
+  item_version: 96147
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: ZTZAL49L
+      name: non-linear
+      path: Quantum Learning/Learning on states/non-linear
+qlab:
+  primary_collection: ZTZAL49L
+  indexed_collections:
+    - ZTZAL49L
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: preprint
+title: Improved Sample Upper and Lower Bounds for Trace Estimation of Quantum
+  State Powers
+authors:
+  - first: Kean
+    last: Chen
+  - first: Qisheng
+    last: Wang
+year: 2025
+abstract: "As often emerges in various basic quantum properties such as entropy,
+  the trace of quantum state powers $\\operatorname{tr}(\\rho^q)$ has attracted
+  a lot of attention. The recent work of Liu and Wang (SODA 2025) showed that
+  $\\operatorname{tr}(\\rho^q)$ can be estimated to within additive error
+  $\\varepsilon$ with a dimension-independent sample complexity of $\\widetilde
+  O(1/\\varepsilon^{3+\\frac{2}{q-1}})$ for any constant $q > 1$, where only an
+  $\\Omega(1/\\varepsilon)$ lower bound was given. In this paper, we
+  significantly improve the sample complexity of estimating
+  $\\operatorname{tr}(\\rho^q)$ in both the upper and lower bounds. In
+  particular: - For $q > 2$, we settle the sample complexity with matching upper
+  and lower bounds $\\widetilde \\Theta(1/\\varepsilon^2)$. - For $1 < q < 2$,
+  we provide an upper bound $\\widetilde O(1/\\varepsilon^{\\frac{2}{q-1}})$,
+  with a lower bound $\\Omega(1/\\varepsilon^{\\max\\{\\frac{1}{q-1}, 2\\}})$
+  for dimension-independent estimators, implying there is only room for a
+  quadratic improvement. Our upper bounds are obtained by (non-plug-in) quantum
+  estimators based on weak Schur sampling, in sharp contrast to the prior
+  approach based on quantum singular value transformation and samplizer."
+tags:
+  - Computer Science - Information Theory
+  - Mathematics - Information Theory
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2505.09563
+  arxiv: "2505.09563"

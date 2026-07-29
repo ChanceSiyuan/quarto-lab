@@ -1,0 +1,53 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: CPNM44PQ
+  item_version: 96691
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: XAB9VQZP
+      name: experiment
+      path: Quantum Learning/Learning on
+        states/non-linear/Virtual_distillation/experiment
+qlab:
+  primary_collection: XAB9VQZP
+  indexed_collections:
+    - XAB9VQZP
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: journalArticle
+title: Quantum dynamics simulations beyond the coherence time on NISQ hardware
+  by variational Trotter compression
+authors:
+  - first: Noah F.
+    last: Berthusen
+  - first: Thaís V.
+    last: Trevisan
+  - first: Thomas
+    last: Iadecola
+  - first: Peter P.
+    last: Orth
+year: 2022
+abstract: We demonstrate a post-quench dynamics simulation of a Heisenberg model
+  on present-day IBM quantum hardware that extends beyond the coherence time of
+  the device. This is achieved using a hybrid quantum-classical algorithm that
+  propagates a state using Trotter evolution and then performs a classical
+  optimization that effectively compresses the time-evolved state into a
+  variational form. When iterated, this procedure enables simulations to
+  arbitrary times with an error controlled by the compression fidelity and a
+  fixed Trotter step size. We show how to measure the required cost function,
+  the overlap between the time-evolved and variational states, on present-day
+  hardware, making use of several error mitigation methods. In addition to
+  carrying out simulations on real hardware, we investigate the performance and
+  scaling behavior of the algorithm with noiseless and noisy classical
+  simulations. We find the main bottleneck in going to larger system sizes to be
+  the difficulty of carrying out the optimization of the noisy cost function.
+tags:
+  - Condensed Matter - Strongly Correlated Electrons
+  - Quantum Physics
+identifiers:
+  doi: 10.1103/physrevresearch.4.023097
+  arxiv: "2112.12654"

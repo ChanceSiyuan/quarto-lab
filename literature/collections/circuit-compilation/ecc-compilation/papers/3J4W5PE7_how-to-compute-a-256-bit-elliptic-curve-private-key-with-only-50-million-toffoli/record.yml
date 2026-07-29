@@ -1,0 +1,46 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 3J4W5PE7
+  item_version: 96143
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: WE3HPMT6
+      name: ECC compilation
+      path: Circuit Compilation/ECC compilation
+qlab:
+  primary_collection: WE3HPMT6
+  indexed_collections:
+    - WE3HPMT6
+  primary_topic: circuit-compilation
+  indexed_topics:
+    - circuit-compilation
+item_type: preprint
+title: How to compute a 256-bit elliptic curve private key with only 50 million
+  Toffoli gates
+authors:
+  - first: Daniel
+    last: Litinski
+year: 2023
+abstract: We use Shor's algorithm for the computation of elliptic curve private
+  keys as a case study for resource estimates in the silicon-photonics-inspired
+  active-volume architecture. Here, a fault-tolerant surface-code quantum
+  computer consists of modules with a logarithmic number of non-local
+  inter-module connections, modifying the algorithmic cost function compared to
+  2D-local architectures. We find that the non-local connections reduce the cost
+  per key by a factor of 300-700 depending on the operating regime. At 10%
+  threshold, assuming a 10-$\mu$s code cycle and non-local connections, one key
+  can be generated every 10 minutes using 6000 modules with 1152 physical qubits
+  each. By contrast, a device with strict 2D-local connectivity requires more
+  qubits and produces one key every 38 hours. We also find simple
+  architecture-independent algorithmic modifications that reduce the Toffoli
+  count per key by up to a factor of 5. These modifications involve reusing the
+  stored state for multiple keys and spreading the cost of the modular division
+  operation over multiple parallel instances of the algorithm.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2306.08585
+  arxiv: "2306.08585"

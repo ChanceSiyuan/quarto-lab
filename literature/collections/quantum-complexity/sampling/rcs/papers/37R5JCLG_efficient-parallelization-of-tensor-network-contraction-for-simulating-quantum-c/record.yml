@@ -1,0 +1,75 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 37R5JCLG
+  item_version: 96122
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 87L9D7SW
+      name: RCS
+      path: Quantum Complexity/Sampling/RCS
+qlab:
+  primary_collection: 87L9D7SW
+  indexed_collections:
+    - 87L9D7SW
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: journalArticle
+title: Efficient parallelization of tensor network contraction for simulating
+  quantum computation
+authors:
+  - first: Cupjin
+    last: Huang
+  - first: Fang
+    last: Zhang
+  - first: Michael
+    last: Newman
+  - first: Xiaotong
+    last: Ni
+  - first: Dawei
+    last: Ding
+  - first: Junjie
+    last: Cai
+  - first: Xun
+    last: Gao
+  - first: Tenghui
+    last: Wang
+  - first: Feng
+    last: Wu
+  - first: Gengyan
+    last: Zhang
+  - first: Hsiang-Sheng
+    last: Ku
+  - first: Zhengxiong
+    last: Tian
+  - first: Junyin
+    last: Wu
+  - first: Haihong
+    last: Xu
+  - first: Huanjun
+    last: Yu
+  - first: Bo
+    last: Yuan
+  - first: Mario
+    last: Szegedy
+  - first: Yaoyun
+    last: Shi
+  - first: Hui-Hai
+    last: Zhao
+  - first: Chunqing
+    last: Deng
+  - first: Jianxin
+    last: Chen
+year: 2021
+abstract: >-
+  Abstract
+              
+                We develop an algorithmic framework for contracting tensor networks and demonstrate its power by classically simulating quantum computation of sizes previously deemed out of reach. Our main contribution, index slicing, is a method that efficiently parallelizes the contraction by breaking it down into much smaller and identically structured subtasks, which can then be executed in parallel without dependencies. We benchmark our algorithm on a class of random quantum circuits, achieving greater than 10
+                5
+                times acceleration over the original estimate of the simulation cost. We then demonstrate applications of the simulation framework for aiding the development of quantum algorithms and quantum error correction. As tensor networks are widely used in computational science, our simulation framework may find further applications.
+tags: []
+identifiers:
+  doi: 10.1038/s43588-021-00119-7

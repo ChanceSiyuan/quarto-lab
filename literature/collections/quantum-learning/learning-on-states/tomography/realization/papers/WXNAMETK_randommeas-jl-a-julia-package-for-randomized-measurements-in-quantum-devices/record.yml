@@ -1,0 +1,47 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: WXNAMETK
+  item_version: 96149
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: MRJ9FXFV
+      name: Realization
+      path: Quantum Learning/Learning on states/Tomography/Realization
+qlab:
+  primary_collection: MRJ9FXFV
+  indexed_collections:
+    - MRJ9FXFV
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: preprint
+title: "RandomMeas.jl: A Julia Package for Randomized Measurements in Quantum Devices"
+authors:
+  - first: Andreas
+    last: Elben
+  - first: Benoît
+    last: Vermersch
+year: 2025
+abstract: We introduce RandomMeas.jl, a modular and high-performance open-source
+  software package written in Julia for implementing and analyzing randomized
+  measurement protocols in quantum computing. Randomized measurements provide a
+  powerful framework for extracting properties of quantum states and processes
+  such as expectation values, entanglement, and fidelities using simple
+  experimental procedures combined with classical post-processing, most
+  prominently via the classical shadow formalism. RandomMeas.jl covers the full
+  randomized measurement workflow, from the generation of measurement settings
+  for use on a quantum computer, the optional classical simulation of randomized
+  measurements with tensor networks, to a suite of estimators for physical
+  properties based on classical shadows. The package includes advanced features
+  such as robust and shallow shadow techniques, batch estimators, and built-in
+  statistical uncertainty estimation. Its unified, composable design enables the
+  scalable application and further development of randomized measurements
+  protocols across theoretical and experimental contexts.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2509.12749
+  arxiv: "2509.12749"

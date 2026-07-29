@@ -1,0 +1,44 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: LYKGV5P9
+  item_version: 96049
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: UJ7EZN4C
+      name: Verification
+      path: Quantum Resource/Magic/Quantification/Verification
+qlab:
+  primary_collection: UJ7EZN4C
+  indexed_collections:
+    - UJ7EZN4C
+  primary_topic: quantum-resource
+  indexed_topics:
+    - quantum-resource
+item_type: preprint
+title: Tolerant testing stabilizer states
+authors:
+  - first: Srinivasan
+    last: Arunachalam
+  - first: Arkopal
+    last: Dutt
+year: 2024
+abstract: "We consider the following task: suppose an algorithm is given copies
+  of an unknown $n$-qubit quantum state $|\\psi\\rangle$ promised $(i)$
+  $|\\psi\\rangle$ is $\\varepsilon_1$-close to a stabilizer state in fidelity
+  or $(ii)$ $|\\psi\\rangle$ is $\\varepsilon_2$-far from all stabilizer states,
+  decide which is the case. We give a $\\textsf{poly}(1/\\varepsilon_1)$-sample
+  and $n\\cdot \\textsf{poly}(1/\\varepsilon_1)$-time algorithm for this task
+  for every $\\varepsilon_1>0$ and $\\varepsilon_2\\leq
+  2^{-\\textsf{poly}(1/\\varepsilon_1)}$. Our proof includes a new definition of
+  Gowers norm for quantum states, an inverse theorem for the Gowers-$3$ norm of
+  states and new bounds on stabilizer covering for structured subsets of Paulis
+  using results in additive combinatorics."
+tags:
+  - Computer Science - Computational Complexity
+  - Computer Science - Data Structures and Algorithms
+  - Quantum Physics
+identifiers:
+  arxiv: "2408.06289"

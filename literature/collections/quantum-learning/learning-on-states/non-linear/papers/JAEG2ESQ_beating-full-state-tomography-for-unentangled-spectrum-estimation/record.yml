@@ -1,0 +1,64 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: JAEG2ESQ
+  item_version: 96148
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: ZTZAL49L
+      name: non-linear
+      path: Quantum Learning/Learning on states/non-linear
+    - key: EIP4ZQQD
+      name: Tomography
+      path: Quantum Learning/Learning on states/Tomography
+qlab:
+  primary_collection: ZTZAL49L
+  indexed_collections:
+    - EIP4ZQQD
+    - ZTZAL49L
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: preprint
+title: Beating full state tomography for unentangled spectrum estimation
+authors:
+  - first: Angelos
+    last: Pelecanos
+  - first: Xinyu
+    last: Tan
+  - first: Ewin
+    last: Tang
+  - first: John
+    last: Wright
+year: 2025
+abstract: How many copies of a mixed state $\rho \in \mathbb{C}^{d \times d}$
+  are needed to learn its spectrum? To date, the best known algorithms for
+  spectrum estimation require as many copies as full state tomography,
+  suggesting the possibility that learning a state's spectrum might be as
+  difficult as learning the entire state. We show that this is not the case in
+  the setting of unentangled measurements, by giving a spectrum estimation
+  algorithm that uses $n = O(d^3\cdot (\log\log(d) / \log(d))^4 )$ copies of
+  $\rho$, which is asymptotically fewer than the $n = \Omega(d^3)$ copies
+  necessary for full state tomography. Our algorithm is inspired by the
+  technique of local moment matching from classical statistics, and shows how it
+  can be applied in the quantum setting. As an important subroutine in our
+  spectrum estimation algorithm, we give an estimator of the $k$-th moment
+  $\operatorname{tr}(\rho^k)$ which performs unentangled measurements and uses
+  $O(d^{3-2/k})$ copies of $\rho$ in order to achieve a constant multiplicative
+  error. This directly translates to an additive-error estimator of quantum
+  Renyi entropy of order $k$ with the same number of copies. Finally, we present
+  numerical evidence that the sample complexity of spectrum estimation can only
+  improve over full state tomography by a sub-polynomial factor. Specifically,
+  for spectrum learning with fully entangled measurements, we run simulations
+  which suggest a lower bound of $\Omega(d^{2 - \gamma})$ copies for any
+  constant $\gamma > 0$. From this, we conclude the current best lower bound of
+  $\Omega(d)$ is likely not tight.
+tags:
+  - Computer Science - Computational Complexity
+  - Computer Science - Data Structures and Algorithms
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2504.02785
+  arxiv: "2504.02785"

@@ -1,0 +1,60 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 8CCWBRAW
+  item_version: 96134
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: IYPP5A8R
+      name: Quantum Algorithm
+      path: Quantum Algorithm
+qlab:
+  primary_collection: IYPP5A8R
+  indexed_collections:
+    - IYPP5A8R
+  primary_topic: quantum-algorithm
+  indexed_topics:
+    - quantum-algorithm
+item_type: preprint
+title: The Classification of Reversible Bit Operations
+authors:
+  - first: Scott
+    last: Aaronson
+  - first: Daniel
+    last: Grier
+  - first: Luke
+    last: Schaeffer
+year: 2015
+abstract: We present a complete classification of all possible sets of classical
+  reversible gates acting on bits, in terms of which reversible transformations
+  they generate, assuming swaps and ancilla bits are available for free. Our
+  classification can be seen as the reversible-computing analogue of Post's
+  lattice, a central result in mathematical logic from the 1940s. It is a step
+  toward the ambitious goal of classifying all possible quantum gate sets acting
+  on qubits. Our theorem implies a linear-time algorithm (which we have
+  implemented), that takes as input the truth tables of reversible gates G and
+  H, and that decides whether G generates H. Previously, this problem was not
+  even known to be decidable. The theorem also implies that any n-bit reversible
+  circuit can be "compressed" to an equivalent circuit, over the same gates,
+  that uses at most 2^n*poly(n) gates and O(1) ancilla bits; these are the first
+  upper bounds on these quantities known, and are close to optimal. Finally, the
+  theorem implies that every non-degenerate reversible gate can implement either
+  every reversible transformation, or every affine transformation, when
+  restricted to an "encoded subspace." Briefly, the theorem says that every set
+  of reversible gates generates either all reversible transformations on n-bit
+  strings (as the Toffoli gate does); no transformations; all transformations
+  that preserve Hamming weight (as the Fredkin gate does); all transformations
+  that preserve Hamming weight mod k for some k; all affine transformations (as
+  the Controlled-NOT gate does); all affine transformations that preserve
+  Hamming weight mod 2 or mod 4, inner products mod 2, or a combination thereof;
+  or a previous class augmented by a NOT or NOTNOT gate. Ruling out the
+  possibility of additional classes, not in the list, requires some arguments
+  about polynomials, lattices, and Diophantine equations.
+tags:
+  - Computer Science - Computational Complexity
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.1504.05155
+  arxiv: "1504.05155"

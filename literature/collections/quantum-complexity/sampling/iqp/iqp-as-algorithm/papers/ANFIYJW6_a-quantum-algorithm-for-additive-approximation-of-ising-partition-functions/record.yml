@@ -1,0 +1,60 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: ANFIYJW6
+  item_version: 96042
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: BWI5ZT63
+      name: IQP as algorithm
+      path: Quantum Complexity/Sampling/IQP/IQP as algorithm
+qlab:
+  primary_collection: BWI5ZT63
+  indexed_collections:
+    - BWI5ZT63
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: journalArticle
+title: A quantum algorithm for additive approximation of Ising partition functions
+authors:
+  - first: Akira
+    last: Matsuo
+  - first: Keisuke
+    last: Fujii
+  - first: Nobuyuki
+    last: Imoto
+year: 2014
+abstract: We investigate quantum computational complexity of calculating
+  partition functions of Ising models. We construct a quantum algorithm for an
+  additive approximation of Ising partition functions on square lattices. To
+  this end, we utilize the overlap mapping developed by Van den Nest, D\"ur, and
+  Briegel [Phys. Rev. Lett. 98, 117207 (2007)] and its interpretation through
+  measurement-based quantum computation (MBQC). We specify an algorithmic
+  domain, on which the proposed algorithm works, and an approximation scale,
+  which determines the accuracy of the approximation. We show that the proposed
+  algorithm does a nontrivial task, which would be intractable on any classical
+  computer, by showing the problem solvable by the proposed quantum algorithm
+  are BQP-complete. In the construction of the BQP-complete problem coupling
+  strengths and magnetic fields take complex values. However, the Ising models
+  that are of central interest in statistical physics and computer science
+  consist of real coupling strengths and magnetic fields. Thus we extend the
+  algorithmic domain of the proposed algorithm to such a real physical parameter
+  region and calculate the approximation scale explicitly. We found that the
+  overlap mapping and its MBQC interpretation improves the approximation scale
+  exponentially compared to a straightforward constant depth quantum algorithm.
+  On the other hand, the proposed quantum algorithm also provides us a partial
+  evidence that there exist no efficient classical algorithm for a
+  multiplicative approximation of the Ising partition functions even on the
+  square lattice. This result supports that the proposed quantum algorithm does
+  a nontrivial task also in the physical parameter region.
+tags:
+  - Computer Science - Computational Complexity
+  - Condensed Matter - Disordered Systems and Neural Networks
+  - Condensed Matter - Statistical Mechanics
+  - Quantum Physics
+identifiers:
+  doi: 10.1103/physreva.90.022304
+  arxiv: "1405.2749"

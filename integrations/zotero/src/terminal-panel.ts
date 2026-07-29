@@ -187,11 +187,11 @@ export class TerminalPanel {
     bar.className = "zc-terminal-titlebar";
     const traffic = doc.createElement("div");
     traffic.className = "zc-traffic-lights";
-    const stop = this.trafficButton(doc, "close", "收起 Terminal（保留会话）", () => {
+    const stop = this.trafficButton(doc, "close", "Collapse Terminal (keep session)", () => {
       this.callbacks.onOpenChat?.();
     });
-    const clear = this.trafficButton(doc, "minimize", "清屏", () => this.current?.terminal.clear());
-    const focus = this.trafficButton(doc, "expand", "聚焦终端", () => this.focus());
+    const clear = this.trafficButton(doc, "minimize", "Clear Terminal", () => this.current?.terminal.clear());
+    const focus = this.trafficButton(doc, "expand", "Focus Terminal", () => this.focus());
     traffic.append(stop, clear, focus);
 
     this.title = doc.createElement("div");
@@ -200,7 +200,7 @@ export class TerminalPanel {
 
     this.agentPicker = doc.createElement("select");
     this.agentPicker.className = "zc-agent-picker";
-    this.agentPicker.title = "选择本地 CLI";
+    this.agentPicker.title = "Choose Local CLI";
     for (const [value, label] of [["shell", "Terminal"], ["codex", "Codex"]] as const) {
       const option = doc.createElement("option");
       option.value = value;
@@ -217,15 +217,15 @@ export class TerminalPanel {
     const chatButton = doc.createElement("button");
     chatButton.type = "button";
     chatButton.className = "zc-terminal-chat-button";
-    chatButton.textContent = "收起";
-    chatButton.title = "收起 Terminal，保留当前会话";
+    chatButton.textContent = "Collapse";
+    chatButton.title = "Collapse Terminal and keep the current session";
     chatButton.addEventListener("click", () => this.callbacks.onOpenChat?.());
     this.mathPreviewToggle = doc.createElement("button");
     this.mathPreviewToggle.type = "button";
     this.mathPreviewToggle.className = "zc-math-preview-toggle";
     this.mathPreviewToggle.textContent = "ƒx";
-    this.mathPreviewToggle.title = "打开公式预览";
-    this.mathPreviewToggle.setAttribute("aria-label", "打开公式预览");
+    this.mathPreviewToggle.title = "Open Formula Preview";
+    this.mathPreviewToggle.setAttribute("aria-label", "Open Formula Preview");
     this.mathPreviewToggle.addEventListener("click", () => {
       if (!this.current?.mathExpressions.length) return;
       this.current.mathPreviewDismissed = false;
@@ -246,26 +246,26 @@ export class TerminalPanel {
     contextCopy.className = "zc-terminal-context-copy";
     this.paperTitle = doc.createElement("div");
     this.paperTitle.className = "zc-terminal-paper-title";
-    this.paperTitle.textContent = "QLab 仓库";
+    this.paperTitle.textContent = "QLab Repository";
     this.contextMeta = doc.createElement("div");
     this.contextMeta.className = "zc-terminal-context-meta";
-    this.contextMeta.textContent = "真实本地 shell · 可运行命令或启动 Codex";
+    this.contextMeta.textContent = "Real local shell · run commands or start Codex";
     contextCopy.append(this.paperTitle, this.contextMeta);
     this.zotkitStatus = doc.createElement("span");
     this.zotkitStatus.className = "zc-zotkit-status is-checking";
-    this.zotkitStatus.textContent = "内置 Zotkit：准备中…";
-    this.zotkitStatus.title = "XPI 内置只读 Zotkit CLI 与文库工具";
+    this.zotkitStatus.textContent = "Built-in Zotkit: preparing…";
+    this.zotkitStatus.title = "Built-in read-only Zotkit CLI and library tools";
     const actions = doc.createElement("div");
     actions.className = "zc-terminal-context-actions";
     const paste = doc.createElement("button");
     paste.type = "button";
-    paste.textContent = "粘贴选区";
-    paste.title = "把当前 PDF 选区原文插入终端，不自动发送";
+    paste.textContent = "Paste Selection";
+    paste.title = "Insert the current PDF selection into the terminal without sending it";
     paste.addEventListener("click", () => this.callbacks.onPasteSelection?.());
     const refresh = doc.createElement("button");
     refresh.type = "button";
-    refresh.textContent = "刷新";
-    refresh.title = "刷新当前论文、页码和选区";
+    refresh.textContent = "Refresh";
+    refresh.title = "Refresh the current paper, page, and selection";
     refresh.addEventListener("click", () => this.callbacks.onRefreshContext?.());
     actions.append(paste, refresh);
     context.append(paperMark, contextCopy, this.zotkitStatus, actions);
@@ -280,14 +280,14 @@ export class TerminalPanel {
     mathGlyph.className = "zc-math-preview-glyph";
     mathGlyph.textContent = "ƒx";
     this.mathPreviewTitle = doc.createElement("strong");
-    this.mathPreviewTitle.textContent = "公式预览";
+    this.mathPreviewTitle.textContent = "Formula Preview";
     mathIdentity.append(mathGlyph, this.mathPreviewTitle);
     const mathActions = doc.createElement("div");
     mathActions.className = "zc-math-preview-actions";
     this.mathPreviewCollapse = doc.createElement("button");
     this.mathPreviewCollapse.type = "button";
-    this.mathPreviewCollapse.textContent = "收起";
-    this.mathPreviewCollapse.title = "折叠公式预览";
+    this.mathPreviewCollapse.textContent = "Collapse";
+    this.mathPreviewCollapse.title = "Collapse Formula Preview";
     this.mathPreviewCollapse.addEventListener("click", () => {
       if (!this.current) return;
       this.current.mathPreviewCollapsed = !this.current.mathPreviewCollapsed;
@@ -298,8 +298,8 @@ export class TerminalPanel {
     mathClose.type = "button";
     mathClose.className = "zc-math-preview-close";
     mathClose.textContent = "×";
-    mathClose.title = "关闭公式预览";
-    mathClose.setAttribute("aria-label", "关闭公式预览");
+    mathClose.title = "Close Formula Preview";
+    mathClose.setAttribute("aria-label", "Close Formula Preview");
     mathClose.addEventListener("click", () => {
       if (!this.current) return;
       this.current.mathPreviewDismissed = true;
@@ -316,7 +316,7 @@ export class TerminalPanel {
     this.surface.className = "zc-terminal-surface";
     this.status = doc.createElement("div");
     this.status.className = "zc-terminal-status";
-    this.status.textContent = "打开后将在 QLab 根目录启动本地 Terminal";
+    this.status.textContent = "Opening starts a local Terminal in the QLab repository root";
     this.surface.appendChild(this.status);
     root.append(bar, context, this.mathPreview, this.surface);
     host.replaceChildren(root);
@@ -373,7 +373,7 @@ export class TerminalPanel {
     this.currentOptions = { ...options };
     this.setVisible(true);
     this.setZotkitStatus("checking");
-    this.showStatus("正在连接本地 CLI…");
+    this.showStatus("Connecting to the local CLI…");
     // This is the deliberate lazy-start boundary. `mount()` never gets here.
     if (!this.bridge.connected) await this.bridge.start();
     await this.activate(options);
@@ -398,12 +398,12 @@ export class TerminalPanel {
     if (!this.current.ready) {
       const available = MAX_PENDING_TERMINAL_INPUT - this.current.pendingInput.length;
       if (available <= 0) {
-        this.showError("CLI 启动期间等待插入的文本过长，请在终端就绪后重试");
+        this.showError("Text queued while the CLI was starting is too long; retry after the terminal is ready");
         return;
       }
       this.current.pendingInput += input.slice(0, available);
       if (input.length > available) {
-        this.showError("CLI 启动期间的插入文本已限制为 128 KiB");
+        this.showError("Text inserted while the CLI was starting was limited to 128 KiB");
       }
     }
     else this.bridge.input(this.current.sessionId, input);
@@ -580,7 +580,7 @@ export class TerminalPanel {
     let argv: string[];
     if (session.agent === "shell") {
       const shell = await findLoginShell();
-      if (!shell) throw new Error("未找到可用的本地 shell");
+      if (!shell) throw new Error("No local shell was found");
       argv = [shell, "-l"];
     }
     else {
@@ -593,7 +593,7 @@ export class TerminalPanel {
         args: ["--zotkit-mcp", "--context", session.workspace],
       };
       const executable = await findExecutable("codex");
-      if (!executable) throw new Error("未找到 Codex CLI");
+      if (!executable) throw new Error("Codex CLI Not Found");
       const readerArguments = session.pdfPath
         ? [
             "-c", `developer_instructions=${tomlString(CODEX_READER_DEVELOPER_INSTRUCTIONS)}`,
@@ -744,8 +744,8 @@ export class TerminalPanel {
         String(hasExpressions && !session.mathPreviewDismissed),
       );
       this.mathPreviewToggle.title = hasExpressions
-        ? `打开最近 ${session.mathExpressions.length} 个公式的预览`
-        : "检测到 LaTeX 输出后可打开公式预览";
+        ? `Preview the latest ${session.mathExpressions.length} formulas`
+        : "Formula preview becomes available after LaTeX output is detected";
     }
     if (!hasExpressions || session.mathPreviewDismissed) {
       this.mathPreview.hidden = true;
@@ -756,13 +756,13 @@ export class TerminalPanel {
     this.mathPreview.hidden = false;
     this.mathPreview.classList.toggle("is-collapsed", session.mathPreviewCollapsed);
     if (this.mathPreviewTitle) {
-      this.mathPreviewTitle.textContent = `公式预览 · ${session.mathExpressions.length}`;
+      this.mathPreviewTitle.textContent = `Formula Preview · ${session.mathExpressions.length}`;
     }
     if (this.mathPreviewCollapse) {
-      this.mathPreviewCollapse.textContent = session.mathPreviewCollapsed ? "展开" : "收起";
+      this.mathPreviewCollapse.textContent = session.mathPreviewCollapsed ? "Expand" : "Collapse";
       this.mathPreviewCollapse.title = session.mathPreviewCollapsed
-        ? "展开公式预览"
-        : "折叠公式预览";
+        ? "Expand Formula Preview"
+        : "Collapse Formula Preview";
     }
     this.mathPreviewBody.replaceChildren();
     if (session.mathPreviewCollapsed) return;
@@ -774,7 +774,7 @@ export class TerminalPanel {
       const label = doc.createElement("span");
       label.className = "zc-math-preview-label";
       label.textContent = index === session.mathExpressions.length - 1
-        ? "最新"
+        ? "Latest"
         : `−${session.mathExpressions.length - index - 1}`;
       const formula = doc.createElement("div");
       formula.className = "zc-math-preview-formula";
@@ -804,16 +804,16 @@ export class TerminalPanel {
     this.zotkitStatus.classList.remove("is-checking", "is-enabled", "is-missing");
     this.zotkitStatus.classList.add(`is-${state}`);
     if (state === "enabled") {
-      this.zotkitStatus.textContent = "内置 Zotkit：已启用";
-      this.zotkitStatus.title = "XPI 内置只读 CLI 与 zotkit_library MCP；无需 Python、凭据或额外安装";
+      this.zotkitStatus.textContent = "Built-in Zotkit: enabled";
+      this.zotkitStatus.title = "Built-in read-only CLI and zotkit_library MCP; no Python, credentials, or extra installation required";
     }
     else if (state === "missing") {
-      this.zotkitStatus.textContent = "内置 Zotkit：快照不可用";
-      this.zotkitStatus.title = "当前文库元数据快照不可用；Reader MCP 仍可使用";
+      this.zotkitStatus.textContent = "Built-in Zotkit: snapshot unavailable";
+      this.zotkitStatus.title = "The current library metadata snapshot is unavailable; Reader MCP is still available";
     }
     else {
-      this.zotkitStatus.textContent = "内置 Zotkit：准备中…";
-      this.zotkitStatus.title = "正在准备 XPI 内置只读文库工具";
+      this.zotkitStatus.textContent = "Built-in Zotkit: preparing…";
+      this.zotkitStatus.title = "Preparing built-in read-only library tools";
     }
   }
 

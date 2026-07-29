@@ -1,0 +1,50 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: JC8HRCFT
+  item_version: 96139
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 2S4MCSXP
+      name: Limitations
+      path: Quantum Algorithm/Optimization/Maxcut/Limitations
+qlab:
+  primary_collection: 2S4MCSXP
+  indexed_collections:
+    - 2S4MCSXP
+  primary_topic: quantum-algorithm
+  indexed_topics:
+    - quantum-algorithm
+item_type: preprint
+title: "The Quantum Approximate Optimization Algorithm Needs to See the Whole
+  Graph: Worst Case Examples"
+authors:
+  - first: Edward
+    last: Farhi
+  - first: David
+    last: Gamarnik
+  - first: Sam
+    last: Gutmann
+year: 2020
+abstract: The Quantum Approximate Optimization Algorithm can be applied to
+  search problems on graphs with a cost function that is a sum of terms
+  corresponding to the edges. When conjugating an edge term, the QAOA unitary at
+  depth p produces an operator that depends only on the subgraph consisting of
+  edges that are at most p away from the edge in question. On random d-regular
+  graphs, with d fixed and with p a small constant time log n, these
+  neighborhoods are almost all trees and so the performance of the QAOA is
+  determined only by how it acts on an edge in the middle of tree. Both
+  bipartite random d-regular graphs and general random d-regular graphs locally
+  are trees so the QAOA's performance is the same on these two ensembles. Using
+  this we can show that the QAOA with $(d-1)^{2p} < n^A$ for any $A<1$, can only
+  achieve an approximation ratio of 1/2 for Max-Cut on bipartite random
+  d-regular graphs for d large. For Maximum Independent Set, in the same
+  setting, the best approximation ratio is a d-dependent constant that goes to 0
+  as d gets big.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2005.08747
+  arxiv: "2005.08747"

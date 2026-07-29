@@ -1,0 +1,123 @@
+---
+title: Basic SLM Engineering
+description: Spatial light modulators (SLMs) are indispensable in programmable Rydberg atom quantum simulators, serving two physically distinct roles that demand different optimization algorithms
+categories:
+  - experiment
+---
+
+# Introduction to SLM devices
+
+Spatial light modulators (SLMs) are indispensable in programmable Rydberg atom quantum simulators, serving two physically distinct roles that demand different optimization algorithms:
+
+1. Discrete tweezer array generation for Local Control
+2. Continuous beam shaping for Rydberg excitation beams
+
+Both applications share the underlying SLM-Fourier optics relationship, but diverge in their optimization strategy, feedback mechanism, and post-processing pipeline. Typically, a SLM optical system use:
+
+1. A laser beam input on the SLM plane
+2. A lens to focus the beam to the back-focal-plane
+3. A detector to measure the intensity distribution on the back-focal-plane
+
+
+# Analysis of transformation
+Then we will analyze the transformation from the SLM plane to the back-focal-plane.
+For mathematical simplicity, the finite and discrete phase distribution on the SLM screen is periodically extended to the entire front focal plane. 
+Also, we are approximating the phase distribution on the SLM plane as a sum of delta functions at sampling points.
+
+:::{#lem-SLM-periodic .callout-important icon="false"}
+## Approximation of SLM result
+Given a $L_x'\times L_y'$ SLM plane with pixel size $\Delta$ and Pixel count $N_x\times N_y$, the amplitude distribution on the SLM plane is $\epsilon_{m',n'}$ at the $m',n'$-th pixel, the amplitude distribution on the back-focal-plane of a lens with focal length $f$ is 
+$$
+\epsilon_{m,n} = \sum_{m'=0}^{N_x-1}\sum_{n'=0}^{N_y-1}\epsilon_{m',n'}\,\exp\!\left[-2\pi i\!\left(\frac{mm'}{N_x} + \frac{nn'}{N_y}\right)\right],
+$$
+where $\epsilon_{m,n}$ indicates the amplitude at the position
+$$
+(m, n) \;\mapsto\; (x_m, y_n) = \left(\frac{\lambda f m}{N_x\Delta},\;\frac{\lambda f n}{N_y\Delta}\right),
+$$ 
+on the back-focal-plane.
+:::
+
+:::{.callout-note collapse="true"}
+## Proof (Click to expand)
+
+ Under the delta function approximation and the periodic extension, the continuous Fourier integral becomes:
+$$
+\epsilon(x,y) = \sum_{q=0,\pm1,\ldots} e^{-2\pi i q(L_x' x + L_y' y)/\lambda f}\sum_{m',n'}\epsilon_{m',n'}\,e^{-2\pi i(xm'\Delta + yn'\Delta)/\lambda f},
+$$ 
+
+Mathematically, the first summation gives:
+$$
+\sum_{q=0,\pm1,\ldots} e^{-2\pi i q(L_x' x + L_y' y)/\lambda f}  = \delta(x - x_m, y - y_n),  
+$$
+where $x_m = \frac{\lambda f m}{N_x \Delta}, y_n = \frac{\lambda f n}{N_y \Delta}$, $m, n \in \mathbb{Z}$.
+This means that on the back-focal-plane, it only has non-vanished amplitude at grid point 
+$$
+(m, n) \;\mapsto\; (x_m, y_n) = \left(\frac{\lambda f m}{N_x\Delta},\;\frac{\lambda f n}{N_y\Delta}\right),
+$$ 
+each with amplitude $\epsilon_{m,n}$.
+$$
+\epsilon_{m,n} = A\sum_{m'=0}^{N_x-1}\sum_{n'=0}^{N_y-1}\epsilon_{m',n'}\,\exp\!\left[-2\pi i\!\left(\frac{mm'}{N_x'} + \frac{nn'}{N_y'}\right)\right],
+$$ 
+:::
+
+
+The periodic extension and delta function approximation is unreal, the real intensity distribution on the back-focal-plane is a continuous function.
+ However, given a continuous target intensity distribution function, the steps:
+
+1. Finite space periodic samples on this continuous function,
+2. FFT back to the SLM plane,
+3. Cut off and only keep results within the range $L_x'\times L_y'$,
+turns out generates a good approximation of the phase distribution on the SLM plane that generates the desired intensity distribution on the back-focal-plane. Iterative optimization algorithms must also be used to cancel the approximation error.
+
+#### Enlarged pixel size
+In the real experiment,
+we first select a calculation pixel $C_x \times C_y$, which isnot necessary to be the same as the SLM pixel but large that it.
+Then we supposed that both the SLM and the target intensity distribution are in this calculation pixel to calculate the Fourier transform.
+
+
+
+
+#### Fast Fourier Transform
+
+The transformatiion between $\epsilon_{m,n}$ and $\epsilon_{m',n'}$ is actually a discrete 2d Fourier transform.
+ We can use the Fast Fourier Transform (FFT) to calculate it efficiently.
+The Fourier transform of a function $f: \mathbf{Z}_{M} \to \mathbb{C}$ is defined as:
+$$
+\hat{f}(x)=\frac{1}{\sqrt{M}}\sum_{y\in\mathbf{Z}_{M}}f(y)\omega^{xy}
+$$
+
+If we simply calculate the Fourier transform of $Z_M$ according to the definition, for each of the $M$ possible inputs of $\hat f$, we need to calculate $M$ multiplications, and the time for addition is not counted, then the computational complexity is $M^2$。A faster classical algorithm uses the following method to reduce the computational complexity to $O(M \text{ln}M)$。Taking $M$ as an even number as an example,
+$$
+\begin{aligned}\hat{f}(x)&=\frac{1}{\sqrt{M}}\sum_{y\in Z_{M}}f(y)\omega^{xy}\\
+&=\frac{1}{\sqrt{M}}\sum_{y\in Z_{M},y\text{~even}}f(y)\omega^{-2x(y/2)}+\omega^{x}\frac{1}{\sqrt{M}}\sum_{y\in Z_{M},y\text{~odds}}f(y)\omega^{2x(y-1)/2}\\
+&=\frac{1}{\sqrt{M}}\sum_{y\in Z_{M},y\text{~even}}f(y)\Omega^{-x(y/2)}+\omega^{x}\frac{1}{\sqrt{M}}\sum_{y\in Z_{M},y\text{~odds}}f(y)\Omega^{x(y-1)/2}
+\end{aligned}
+$$
+When $x = 0, \cdots, M/2-1$, $\omega^x = 1,\omega, \cdots, \omega^{M/2-1}$
+When $x = M/2, \cdots, M-1$, $\omega^x = -1,-\omega, \cdots, -\omega^{M/2-1}$
+Therefore, by splitting $x$ into the above two parts, we have the following two equations:
+$$
+\hat f(x) = \frac1{\sqrt{2}} \left[\hat f_{\text{even}} + \text{diag}(1,\omega, \cdots, \omega^{M/2-1})\hat f_{\text{odds}}\right], x = 0, \cdots, M/2-1,\\
+\hat f(x) = \frac1{\sqrt{2}} \left[\hat f_{\text{even}} - \text{diag}(1,\omega, \cdots, \omega^{M/2-1})\hat f_{\text{odds}}\right], x=M/2, \cdots, M-1.
+$$
+Thus, the problem of calculating the Fourier transform of $Z_M$ is transformed into the problem of calculating the Fourier transform of $Z_{M/2}$, and so on.
+This algorithm is called the **fast Fourier transform** (FFT).
+
+
+# Setup of the target intensity distribution
+
+For example, to build up a $L_x \times L_y$ tweezer array with spacing $s_x \times s_y$ and center at $(x_0, y_0)$, we first select a calculation pixel (not necessary to be the same as the SLM pixel) with size $C_x \times C_y$, then transform the $s$ into array index through:
+$$
+\begin{align*}
+(i_x, i_y) = \left(s_x \cdot \left(\frac{\lambda f}{C_x \Delta}\right)^{-1}, s_y \cdot \left(\frac{\lambda f}{C_y \Delta}\right)^{-1}\right), \\
+\left(c_x, c_y\right) = \left(x_0 \cdot \left(\frac{\lambda f}{C_x \Delta}\right)^{-1}, y_0 \cdot \left(\frac{\lambda f}{C_y \Delta}\right)^{-1}\right),
+\end{align*}
+$$
+Then the matrix on the camera plane is build through setting normalized amplitude on indexes
+$$
+\epsilon_{m,n} = \begin{cases}
+1, & \text{if } m = r_x i_x + c_x, n = r_y i_y + c_y, \\
+0, & \text{otherwise}.
+\end{cases}
+$$
+For $r_x, r_y \in [0,L_x-1] \times [0,L_y-1]$,respectively.

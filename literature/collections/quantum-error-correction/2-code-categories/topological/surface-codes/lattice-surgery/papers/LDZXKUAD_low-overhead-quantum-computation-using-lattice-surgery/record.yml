@@ -1,0 +1,41 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: LDZXKUAD
+  item_version: 96084
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: GXUBA6FS
+      name: Lattice Surgery
+      path: Quantum Error correction/2-Code categories/Topological/surface
+        codes/Lattice Surgery
+qlab:
+  primary_collection: GXUBA6FS
+  indexed_collections:
+    - GXUBA6FS
+  primary_topic: quantum-error-correction
+  indexed_topics:
+    - quantum-error-correction
+item_type: preprint
+title: Low overhead quantum computation using lattice surgery
+authors:
+  - first: Austin G.
+    last: Fowler
+  - first: Craig
+    last: Gidney
+year: 2019
+abstract: When calculating the overhead of a quantum algorithm made
+  fault-tolerant using the surface code, many previous works have used defects
+  and braids for logical qubit storage and state distillation. In this work, we
+  show that lattice surgery reduces the storage overhead by over a factor of 4,
+  and the distillation overhead by nearly a factor of 5, making it possible to
+  run algorithms with $10^8$ T gates using only $3.7\times 10^5$ physical qubits
+  capable of executing gates with error $p\sim 10^{-3}$. These numbers strongly
+  suggest that defects and braids in the surface code should be deprecated in
+  favor of lattice surgery.
+tags:
+  - Quantum Physics
+identifiers:
+  arxiv: "1808.06709"

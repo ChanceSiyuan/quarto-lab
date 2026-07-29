@@ -1,0 +1,57 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 9LD4METF
+  item_version: 96017
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: AC56KB4S
+      name: Untitled
+      path: Circuit Compilation/Untitled
+qlab:
+  primary_collection: AC56KB4S
+  indexed_collections:
+    - AC56KB4S
+  primary_topic: circuit-compilation
+  indexed_topics:
+    - circuit-compilation
+item_type: conferencePaper
+title: An Abstract Model and Efficient Routing for Logical Entangling Gates on
+  Zoned Neutral Atom Architectures
+authors:
+  - first: Yannick
+    last: Stade
+  - first: Ludwig
+    last: Schmid
+  - first: Lukas
+    last: Burgholzer
+  - first: Robert
+    last: Wille
+year: 2024
+abstract: Recent experimental achievements have demonstrated the potential of
+  neutral atom architectures for fault-tolerant quantum computing. These
+  architectures feature the dynamic rearrangement of atoms during computation,
+  enabling nearly arbitrary two-dimensional rearrangements. Additionally, they
+  employ a zoned layout with dedicated regions for entangling, storage, and
+  readout. This architecture requires design automation software that
+  efficiently compiles quantum circuits to this hardware and takes care that
+  atoms are in the right place at the right time. In this paper, we initiate
+  this line of work by providing, (1) an abstract model of the novel
+  architecture and, (2) an efficient solution to the routing problem of
+  entangling gates. By this, we aim to maximize the parallelism of entangling
+  gates and minimize the overhead caused by the routing of atoms between zones.
+  In addition to that, we keep the realm of fault-tolerant quantum computing in
+  mind and consider logical qubit arrays, each of which encodes one logical
+  qubit. We implemented the proposed idea as a tool called NALAC and
+  demonstrated its effectiveness and efficiency by showing that it can
+  significantly reduce the routing overhead of logical entangling gates compared
+  to the naive approach. As part of the Munich Quantum Toolkit (MQT), NALAC is
+  publicly available as open-source at https://github.com/cda-tum/mqt-qmap.
+tags:
+  - Computer Science - Emerging Technologies
+  - Quantum Physics
+identifiers:
+  doi: 10.1109/qce60285.2024.00098
+  arxiv: "2405.08068"

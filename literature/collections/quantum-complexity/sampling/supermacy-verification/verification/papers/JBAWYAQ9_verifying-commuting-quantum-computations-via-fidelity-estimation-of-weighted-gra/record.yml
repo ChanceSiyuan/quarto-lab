@@ -1,0 +1,38 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: JBAWYAQ9
+  item_version: 96043
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: H5F9PKZR
+      name: verification
+      path: Quantum Complexity/Sampling/supermacy verification/verification
+    - key: WFIYMWN6
+      name: MBQC+IQP
+      path: Quantum Complexity/Sampling/IQP/MBQC+IQP
+qlab:
+  primary_collection: H5F9PKZR
+  indexed_collections:
+    - H5F9PKZR
+    - WFIYMWN6
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: journalArticle
+title: Verifying commuting quantum computations via fidelity estimation of
+  weighted graph states
+authors:
+  - first: Masahito
+    last: Hayashi
+  - first: Yuki
+    last: Takeuchi
+year: 2019
+abstract: >-
+  Abstract
+              The instantaneous quantum polynomial time (IQP) model is one of promising models to demonstrate a quantum computational advantage over classical computers. If the IQP model can be efficiently simulated by a classical computer, an unlikely consequence in computer science can be obtained (under some unproven conjectures). In order to experimentally demonstrate the advantage using medium or large-scale IQP circuits, it is inevitable to efficiently verify whether the constructed IQP circuits faithfully work. There exist two types of IQP models, each of which is the sampling on hypergraph states or weighted graph states. For the first-type IQP model, polynomial-time verification protocols have already been proposed. In this paper, we propose verification protocols for the second-type IQP model. To this end, we propose polynomial-time fidelity estimation protocols of weighted graph states for each of the following four situations where a verifier can (i) choose any measurement basis and perform adaptive measurements, (ii) only choose restricted measurement bases and perform adaptive measurements, (iii) choose any measurement basis and only perform non-adaptive measurements, and (iv) only choose restricted measurement bases and only perform non-adaptive measurements. In all of our verification protocols, the verifier’s quantum operations are only single-qubit measurements. Since we assume no independent and identically distributed property on quantum states, our protocols work in any situation.
+tags: []
+identifiers:
+  doi: 10.1088/1367-2630/ab3d88

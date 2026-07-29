@@ -1,0 +1,134 @@
+---
+title: Weighted Gerchberg-Saxton Algorithm Family
+description: WGS
+categories:
+  - experiment
+---
+
+
+# Gerchberg-Saxton Algorithm Family
+
+The Gerchberg-Saxton (GS) algorithm [@gerchberg1972practical] is the foundational iterative phase retrieval method.
+It is introduced to optical tweezers by Curtis et al. [@curtis2002dynamic], however, with significant intensity non-uniformity across multi-site arrays (often $>20\%$ variation), motivating the weighted and phase-fixed variants below.
+[@Kim_2019] increase the intensity uniformity to $>98\%$ by introducing adaptive intensity weighting to redistribute power toward underperforming trap sites.
+
+![Weighted Gerchberg-Saxton (WGS) algorithm flowchart. The algorithm iterates between the SLM plane and the focal plane via FFT/IFFT, enforcing the Gaussian amplitude constraint on the SLM side and updating intensity weights on the focal-plane side until convergence.](WGSal.png){#fig-wgs width=55%}
+
+:::{.callout-note icon="false"}
+## Algorithm: WGS (Weighted Gerchberg-Saxton)
+
+**Input:** Sampling numbers $N_x, N_y$; initial SLM field $L_0$ (randomly phased Gaussian); desired right-focal-plane intensity $E$; iteration count $N$; uniformity threshold $t$.
+
+**Output:** SLM phase distribution $\text{phase}(L_N)$ generating intensity pattern $E$.
+
+Initialize: $i = 0$, $g = 1$, $E_{\rm mask} = \mathbf{MASK}(E)$ (binary mask of target positions).
+
+**Repeat** until $i = N$:
+
+1. $R_i \gets \mathbf{FFT}(L_i)$
+2. $R_{{\rm mask},i} \gets E_{\rm mask} \odot R_i$ (elementwise)
+3. $g_i \gets g \odot |R_{{\rm mask},i}| / \bar R_{{\rm mask},i}$, where $\bar R_{{\rm mask},i}$ is the mean of nonzero elements
+4. **If** $\max|R_{{\rm mask},i}|/\bar R_{{\rm mask},i} - 1 > t$ **and** $i > 0$: $\;{\rm phase}_i \gets \text{phase}(R_{{\rm mask},i})$; **else**: freeze ${\rm phase}_i \gets {\rm phase}_{i-1}$
+5. $R_i' \gets E \odot g_i \odot {\rm phase}_i$
+6. $L_{i+1}' \gets \mathbf{IFFT}(R_i')$
+7. $L_{i+1} \gets |L_0| \odot \text{phase}(L_{i+1}')$ (Gaussian amplitude, updated phase)
+8. $i \gets i + 1$
+:::
+
+The variant of WGS [@kim2019gerchberg] also proposed to realized the continuous beam reshaping.
+
+---
+
+## Hologram Geometric Transformation {#sec-hologram-transform}
+
+Perfectly matching a second SLM's local-addressing pattern to the primary tweezer array is computationally prohibitive via direct recalculation.
+The $1\ \mu\text{m}$ local spot is typically found to be off by a $0.05\ \mu\text{m}$ distance.
+However, $\mathrm{MASK}$ operation in step 2 of WGS algorithm is a finite matrix with minimum distance~ $0.5\ \mu\text{m}$. 
+Thus the only way to directly realized a $0.05\ \mu\text{m}$ shifted lattice is to increase the pixel density of the SLM plane.
+[@manovitz2025coarsening] proposed to use Zernike polynomials to correct those tilt and defocus of the hologram.
+
+### Zernike Polynomials for Tilt and Defocus {#sec-zernike}
+
+Zernike polynomials 
+$$
+Z_n^m(\rho, \theta) = \begin{cases} 
+N_n^m R_n^{|m|}(\rho) \cos(m\theta) & m \ge 0 \\
+N_n^m R_n^{|m|}(\rho) \sin(|m|\theta) & m < 0 
+\end{cases}
+$$ 
+form a complete orthonormal basis over the unit disk, making them the natural decomposition for wavefront aberrations in circular-aperture optical systems [@noll1976zernike]. For hologram alignment, adding low-order Zernike phases directly to the SLM pattern achieves tilt and defocus adjustments without physical lens movement:
+$$
+\phi_{\rm aligned}(\rho, \theta) = \phi_{\rm WGS}(\rho, \theta) + \sum_{j} a_j\, Z_j(\rho, \theta),
+$$ {#eq-zernike-correction}
+where the coefficients $a_j$ (for tilt and defocus) are optimized via feedback from the atom signal.
+ The first few low-order terms have direct physical meaning:
+
+| Noll index | $Z_n^m$ | Aberration | Effect on beam |
+|:---:|:---:|:---|:---|
+| 2 | $Z_1^1 \propto x$ | Tilt (x) | Lateral shift in focal plane |
+| 3 | $Z_1^{-1} \propto y$ | Tilt (y) | Lateral shift in focal plane |
+| 4 | $Z_2^0 \propto 2(x^2 + y^2) - 1$ | Defocus | Axial shift of focal plane |
+| 5--6 | $Z_2^{\pm2} \propto x^2 - y^2, xy$ | Astigmatism | Elliptical distortion |
+
+
+
+### Anti-Aliasing via Gaussian Convolution {#sec-gaussian-convolution}
+
+While Zernike polynomials handle tilt and defocus efficiently, in-plane **rotation** and **stretching** of the hologram require more care. Naively applying affine transformations to a pixelated phase hologram introduces severe interpolation artifacts that distort the intensity pattern [@manovitz2025coarsening].
+
+The mitigation strategy operates in the image plane:
+
+:::{.callout-note icon="false"}
+## Algorithm: Anti-Aliased Hologram Transformation
+
+**Input:** Phase hologram $\phi(\mathbf{r})$ from WGS; rotation angle $\theta$; stretch factors $(s_x, s_y)$; Gaussian width $\sigma$.
+
+**Output:** Transformed hologram $\phi'(\mathbf{r})$ with preserved intensity uniformity.
+
+1. **FFT to image plane:** $E_{\rm img} = \mathcal{F}\{\exp(i\phi)\}$
+2. **Gaussian convolution:** $\tilde{E}_{\rm img} = E_{\rm img} * G_\sigma$, where $G_\sigma$ is a 2D Gaussian kernel with width $\sigma$ chosen to broaden each spot over several pixels
+3. **Apply affine transformation:** Rotate by $\theta$ and stretch by $(s_x, s_y)$ on the smoothed image $\tilde{E}_{\rm img}$ — interpolation artifacts are now suppressed because the sharp spots have been broadened
+4. **IFFT back to Fourier plane:** $\phi' = \text{phase}\{\mathcal{F}^{-1}\{\tilde{E}_{\rm img}'\}\}$
+:::
+
+The cost is a slight broadening of the final spots, which is acceptable when the spot size is already much smaller than the inter-site spacing.
+
+---
+
+## In-Situ Calibration and Closed-Loop Feedback {#sec-insitu-feedback}
+
+### Spin-Echo Alignment {#sec-spin-echo}
+
+Coarse alignment of the local-addressing SLM to the primary tweezer array can be performed on a camera, but sub-micron precision requires using the atoms themselves as sensors [@manovitz2025coarsening].
+
+The procedure uses a **spin-echo** measurement sequence to directly probe the AC Stark shift at each atom site:
+
+1. Prepare atoms in a known superposition state.
+2. Apply the local-addressing SLM light for a controlled duration.
+3. The accumulated phase shift $\delta\phi = \delta_{\rm AC} \cdot t$ is proportional to the local light intensity.
+4. A spin-echo pulse refocuses global detuning drifts, isolating the site-resolved AC Stark shift.
+5. Readout gives the light shift at each atom position.
+
+The alignment parameters (rotation $\theta$, stretch $s_x, s_y$, Zernike tilt/defocus coefficients) are iteratively adjusted to maximize the measured light shift at the atom sites. Precise alignment also prevents atom loss from the primary traps due to a misaligned addressing potential.
+
+### Weight Correction from Physical Measurements {#sec-weight-feedback}
+
+After spatial alignment, the measured light shifts reveal residual intensity non-uniformity across sites — caused by optical aberrations, SLM pixel response variation, and imperfect hologram optimization. These fitted light-shift values are fed back as updated **target weights** into the WGS algorithm:
+$$
+w_j^{(k+1)} = w_j^{(k)} \cdot \frac{\bar{\delta}_{\rm target}}{\delta_j^{\rm measured}},
+$$ {#eq-weight-feedback}
+where $w_j$ is the weight for site $j$, and $\delta_j^{\rm measured}$ is the measured AC Stark shift. This physical closed-loop feedback corrects for real-world imperfections that purely computational optimization cannot capture.
+
+For large-scale arrays (6100 atoms), Manetsch et al. [@manetsch2025tweezer] demonstrated a multi-step feedback protocol: first optimizing weights from CCD camera photon counts, then refining based on atomic loading probability with variable gain. See also @feedback2024equalization for a systematic treatment of feedback intensity equalization in holographic tweezer arrays.
+
+---
+
+## Physics-Informed Intensity Weighting {#sec-physics-weighting}
+
+In quantum simulation experiments, the goal is often not uniform intensity but rather a **physics-aware** intensity distribution. When using local detuning to pin atoms to the ground state and seed domain-wall patterns, the standard uniform-intensity target must be modified [@manovitz2025coarsening].
+
+At the boundary between different antiferromagnetic orders and at the edges of the array, the mean-field repulsive interaction strength decreases for atoms with fewer Rydberg neighbors. To compensate, the local detuning strength is weighted inversely proportional to the number of neighbors:
+$$
+\delta_j \propto \frac{1}{z_j},
+$$ {#eq-neighbor-weight}
+where $z_j$ is the coordination number (number of nearest Rydberg neighbors) of site $j$. The total power is held constant — it is redistributed among the addressed sites accordingly. This ensures uniform pinning effectiveness across the array, achieving 93--95% ground-state preparation probability on pinned sites.

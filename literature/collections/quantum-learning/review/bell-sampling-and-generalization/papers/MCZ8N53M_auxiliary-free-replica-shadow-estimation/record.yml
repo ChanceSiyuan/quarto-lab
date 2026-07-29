@@ -1,0 +1,62 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: MCZ8N53M
+  item_version: 96146
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: VMP2AYWR
+      name: Bell sampling and generalization
+      path: Quantum Learning/_Review/Bell sampling and generalization
+    - key: ZTZAL49L
+      name: non-linear
+      path: Quantum Learning/Learning on states/non-linear
+    - key: EIP4ZQQD
+      name: Tomography
+      path: Quantum Learning/Learning on states/Tomography
+qlab:
+  primary_collection: VMP2AYWR
+  indexed_collections:
+    - EIP4ZQQD
+    - VMP2AYWR
+    - ZTZAL49L
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: preprint
+title: Auxiliary-free replica shadow estimation
+authors:
+  - first: Qing
+    last: Liu
+  - first: Zihao
+    last: Li
+  - first: Xiao
+    last: Yuan
+  - first: Huangjun
+    last: Zhu
+  - first: You
+    last: Zhou
+year: 2024
+abstract: Efficiently measuring nonlinear properties, like the entanglement
+  spectrum, is a significant yet challenging task from quantum information
+  processing to many-body physics. Current methodologies often suffer from an
+  exponential scaling of the sampling cost or require auxiliary qubits and deep
+  quantum circuits. To address these limitations, we propose an efficient
+  auxiliary-free replica shadow (AFRS) framework, which leverages the power of
+  the joint entangling operation on a few input replicas while integrating the
+  mindset of shadow estimation. We rigorously prove that AFRS can offer
+  exponential improvements in estimation accuracy compared with the conventional
+  shadow method, and facilitate the simultaneous estimation of various nonlinear
+  properties, unlike the destructive swap test. Additionally, we introduce an
+  advanced local-AFRS variant tailored to estimating local observables with even
+  constant-depth local quantum circuits, which significantly simplifies the
+  experimental realization compared with the general swap test. Our work paves
+  the way for the application of AFRS on near-term quantum hardware, opening new
+  avenues for efficient and practical quantum measurements.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2407.20865
+  arxiv: "2407.20865"

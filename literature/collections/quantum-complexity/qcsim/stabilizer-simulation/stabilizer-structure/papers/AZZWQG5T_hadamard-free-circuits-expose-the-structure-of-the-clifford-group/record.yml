@@ -1,0 +1,53 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: AZZWQG5T
+  item_version: 96142
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: H73LF478
+      name: stabilizer structure
+      path: Quantum Complexity/QCsim/stabilizer simulation/stabilizer structure
+qlab:
+  primary_collection: H73LF478
+  indexed_collections:
+    - H73LF478
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: journalArticle
+title: Hadamard-free circuits expose the structure of the Clifford group
+authors:
+  - first: Sergey
+    last: Bravyi
+  - first: Dmitri
+    last: Maslov
+year: 2021
+abstract: The Clifford group plays a central role in quantum randomized
+  benchmarking, quantum tomography, and error correction protocols. Here we
+  study the structural properties of this group. We show that any Clifford
+  operator can be uniquely written in the canonical form $F_1HSF_2$, where $H$
+  is a layer of Hadamard gates, $S$ is a permutation of qubits, and $F_i$ are
+  parameterized Hadamard-free circuits chosen from suitable subgroups of the
+  Clifford group. Our canonical form provides a one-to-one correspondence
+  between Clifford operators and layered quantum circuits. We report a
+  polynomial-time algorithm for computing the canonical form. We employ this
+  canonical form to generate a random uniformly distributed $n$-qubit Clifford
+  operator in runtime $O(n^2)$. The number of random bits consumed by the
+  algorithm matches the information-theoretic lower bound. A surprising
+  connection is highlighted between random uniform Clifford operators and the
+  Mallows distribution on the symmetric group. The variants of the canonical
+  form, one with a short Hadamard-free part and one allowing a circuit depth
+  $9n$ implementation of arbitrary Clifford unitaries in the Linear Nearest
+  Neighbor architecture are also discussed. Finally, we study computational
+  quantum advantage where a classical reversible linear circuit can be
+  implemented more efficiently using Clifford gates, and show an explicit
+  example where such an advantage takes place.
+tags:
+  - Computer Science - Emerging Technologies
+  - Quantum Physics
+identifiers:
+  doi: 10.1109/tit.2021.3081415
+  arxiv: "2003.09412"

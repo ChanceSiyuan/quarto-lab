@@ -1,0 +1,45 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: I4GINLGK
+  item_version: 96117
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: KJHSPUHS
+      name: Fermion-based simulation
+      path: Quantum Complexity/QCsim/Fermion-based simulation
+qlab:
+  primary_collection: KJHSPUHS
+  indexed_collections:
+    - KJHSPUHS
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: preprint
+title: Unified framework for efficiently computable quantum circuits
+authors:
+  - first: Igor
+    last: Ermakov
+  - first: Oleg
+    last: Lychkovskiy
+  - first: Tim
+    last: Byrnes
+year: 2024
+abstract: Quantum circuits consisting of Clifford and matchgates are two classes
+  of circuits that are known to be efficiently simulatable on a classical
+  computer. We introduce a unified framework that shows in a transparent way the
+  special structure that allows these circuits can be efficiently simulatable.
+  The approach relies on analyzing the operator spread within a network of basis
+  operators during the evolution of quantum circuit. Quantifying the complexity
+  of a calculation by the number of operators with amplitude above a threshold
+  value, we show that there is a generic form of the complexity curve involving
+  an initial exponential growth, saturation, then exponential decay in the
+  presence of decoherence. Our approach is naturally adaptable into a numerical
+  procedure, where errors can be consistently controlled as a function of the
+  complexity of the simulation.
+tags:
+  - Quantum Physics
+identifiers:
+  arxiv: "2401.08187"

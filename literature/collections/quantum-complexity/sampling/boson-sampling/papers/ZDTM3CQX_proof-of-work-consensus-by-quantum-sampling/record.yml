@@ -1,0 +1,59 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: ZDTM3CQX
+  item_version: 96027
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 5JAXQATC
+      name: Boson sampling
+      path: Quantum Complexity/Sampling/Boson sampling
+qlab:
+  primary_collection: 5JAXQATC
+  indexed_collections:
+    - 5JAXQATC
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: preprint
+title: Proof-of-work consensus by quantum sampling
+authors:
+  - first: Deepesh
+    last: Singh
+  - first: Gopikrishnan
+    last: Muraleedharan
+  - first: Boxiang
+    last: Fu
+  - first: Chen-Mou
+    last: Cheng
+  - first: Nicolas Roussy
+    last: Newton
+  - first: Peter P.
+    last: Rohde
+  - first: Gavin K.
+    last: Brennen
+year: 2024
+abstract: Since its advent in 2011, boson sampling has been a preferred
+  candidate for demonstrating quantum advantage because of its simplicity and
+  near-term requirements compared to other quantum algorithms. We propose to use
+  a variant, called coarse-grained boson-sampling (CGBS), as a quantum
+  Proof-of-Work (PoW) scheme for blockchain consensus. The users perform boson
+  sampling using input states that depend on the current block information and
+  commit their samples to the network. Afterwards, CGBS strategies are
+  determined which can be used to both validate samples and reward successful
+  miners. By combining rewards for miners committing honest samples together
+  with penalties for miners committing dishonest samples, a Nash equilibrium is
+  found that incentivizes honest nodes. We provide numerical evidence that these
+  validation tests are hard to spoof classically without knowing the binning
+  scheme ahead of time and show the robustness of our protocol to small partial
+  distinguishability of photons. The scheme works for both Fock state boson
+  sampling and Gaussian boson sampling and provides dramatic speedup and energy
+  savings relative to computation by classical hardware.
+tags:
+  - Quantitative Finance - General Finance
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2305.19865
+  arxiv: "2305.19865"

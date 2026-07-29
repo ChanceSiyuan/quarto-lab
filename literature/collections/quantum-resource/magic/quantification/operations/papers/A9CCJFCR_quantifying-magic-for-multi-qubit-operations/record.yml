@@ -1,0 +1,46 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: A9CCJFCR
+  item_version: 96094
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: KQ8WNR34
+      name: operations
+      path: Quantum Resource/Magic/Quantification/operations
+    - key: PEV4TKAZ
+      name: noisy PBC method
+      path: Quantum Complexity/QCsim/Open-dynamics/noisy PBC method
+qlab:
+  primary_collection: KQ8WNR34
+  indexed_collections:
+    - KQ8WNR34
+    - PEV4TKAZ
+  primary_topic: quantum-resource
+  indexed_topics:
+    - quantum-complexity
+    - quantum-resource
+item_type: journalArticle
+title: Quantifying magic for multi-qubit operations
+authors:
+  - first: James R.
+    last: Seddon
+  - first: Earl T.
+    last: Campbell
+year: 2019
+abstract: >-
+  The development of a framework for quantifying ‘non-stabilizerness’ of quantum
+  operations is motivated by the magic state model of fault-tolerant quantum
+  computation and by the need to estimate classical simulation cost for noisy
+  intermediate-scale quantum (NISQ) devices. The robustness of magic was
+  recently proposed as a well-behaved magic monotone for multi-qubit states and
+  quantifies the simulation overhead of circuits composed of Clifford + 
+                T
+                gates, or circuits using other gates from the Clifford hierarchy. Here we present a general theory of the ‘non-stabilizerness’ of quantum operations rather than states, which are useful for classical simulation of more general circuits. We introduce two magic monotones, called channel robustness and magic capacity, which are well-defined for general
+                n
+                -qubit channels and treat all stabilizer-preserving CPTP maps as free operations. We present two complementary Monte Carlo-type classical simulation algorithms with sample complexity given by these quantities and provide examples of channels where the complexity of our algorithms is exponentially better than previously known simulators. We present additional techniques that ease the difficulty of calculating our monotones for special classes of channels.
+tags: []
+identifiers:
+  doi: 10.1098/rspa.2019.0251

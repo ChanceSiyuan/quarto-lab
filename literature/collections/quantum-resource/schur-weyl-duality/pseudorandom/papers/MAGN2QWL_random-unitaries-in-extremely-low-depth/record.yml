@@ -1,0 +1,54 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: MAGN2QWL
+  item_version: 96112
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 2CJWFJFQ
+      name: pseudorandom
+      path: Quantum Resource/Schur-Weyl duality/pseudorandom
+qlab:
+  primary_collection: 2CJWFJFQ
+  indexed_collections:
+    - 2CJWFJFQ
+  primary_topic: quantum-resource
+  indexed_topics:
+    - quantum-resource
+item_type: preprint
+title: Random unitaries in extremely low depth
+authors:
+  - first: Thomas
+    last: Schuster
+  - first: Jonas
+    last: Haferkamp
+  - first: Hsin-Yuan
+    last: Huang
+year: 2024
+abstract: We prove that random quantum circuits on any geometry, including a 1D
+  line, can form approximate unitary designs over $n$ qubits in $\log n$ depth.
+  In a similar manner, we construct pseudorandom unitaries (PRUs) in 1D circuits
+  in $\text{poly} \log n $ depth, and in all-to-all-connected circuits in
+  $\text{poly} \log \log n $ depth. In all three cases, the $n$ dependence is
+  optimal and improves exponentially over known results. These shallow quantum
+  circuits have low complexity and create only short-range entanglement, yet are
+  indistinguishable from unitaries with exponential complexity. Our construction
+  glues local random unitaries on $\log n$-sized or $\text{poly} \log n$-sized
+  patches of qubits to form a global random unitary on all $n$ qubits. In the
+  case of designs, the local unitaries are drawn from existing constructions of
+  approximate unitary $k$-designs, and hence also inherit an optimal scaling in
+  $k$. In the case of PRUs, the local unitaries are drawn from existing unitary
+  ensembles conjectured to form PRUs. Applications of our results include
+  proving that classical shadows with 1D log-depth Clifford circuits are as
+  powerful as those with deep circuits, demonstrating superpolynomial quantum
+  advantage in learning low-complexity physical systems, and establishing
+  quantum hardness for recognizing phases of matter with topological order.
+tags:
+  - Computer Science - Computational Complexity
+  - Computer Science - Information Theory
+  - Condensed Matter - Strongly Correlated Electrons
+  - Quantum Physics
+identifiers:
+  arxiv: "2407.07754"

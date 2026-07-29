@@ -1,0 +1,54 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: WDGYJ9ZD
+  item_version: 96110
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: PXRQMBZS
+      name: Compilation
+      path: Quantum Error correction/2-Code categories/Topological/surface
+        codes/Lattice Surgery/Compilation
+qlab:
+  primary_collection: PXRQMBZS
+  indexed_collections:
+    - PXRQMBZS
+  primary_topic: quantum-error-correction
+  indexed_topics:
+    - quantum-error-correction
+item_type: journalArticle
+title: A High Performance Compiler for Very Large Scale Surface Code Computations
+authors:
+  - first: George
+    last: Watkins
+  - first: Hoang Minh
+    last: Nguyen
+  - first: Keelan
+    last: Watkins
+  - first: Steven
+    last: Pearce
+  - first: Hoi-Kwan
+    last: Lau
+  - first: Alexandru
+    last: Paler
+year: 2024
+abstract: "We present the first high performance compiler for very large scale
+  quantum error correction: it translates an arbitrary quantum circuit to
+  surface code operations based on lattice surgery. Our compiler offers an end
+  to end error correction workflow implemented by a pluggable architecture
+  centered around an intermediate representation of lattice surgery
+  instructions. Moreover, the compiler supports customizable circuit layouts,
+  can be used for quantum benchmarking and includes a quantum resource
+  estimator. The compiler can process millions of gates using a streaming
+  pipeline at a speed geared towards real-time operation of a physical device.
+  We compiled within seconds 80 million logical surface code instructions,
+  corresponding to a high precision Clifford+T implementation of the 128-qubit
+  Quantum Fourier Transform (QFT). Our code is open-sourced at
+  \\url{https://github.com/latticesurgery-com}."
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.22331/q-2024-05-22-1354
+  arxiv: "2302.02459"

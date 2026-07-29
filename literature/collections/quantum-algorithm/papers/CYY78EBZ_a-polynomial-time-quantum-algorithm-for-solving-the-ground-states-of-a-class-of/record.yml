@@ -1,0 +1,59 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: CYY78EBZ
+  item_version: 96055
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: IYPP5A8R
+      name: Quantum Algorithm
+      path: Quantum Algorithm
+qlab:
+  primary_collection: IYPP5A8R
+  indexed_collections:
+    - IYPP5A8R
+  primary_topic: quantum-algorithm
+  indexed_topics:
+    - quantum-algorithm
+item_type: preprint
+title: A polynomial-time quantum algorithm for solving the ground states of a
+  class of classically hard Hamiltonians
+authors:
+  - first: Zhong-Xia
+    last: Shang
+  - first: Zi-Han
+    last: Chen
+  - first: Chao-Yang
+    last: Lu
+  - first: Jian-Wei
+    last: Pan
+  - first: Ming-Cheng
+    last: Chen
+year: 2024
+abstract: In this work, we present a polynomial-time quantum algorithm for
+  solving the ground states of a class of classically hard Hamiltonians. The
+  mechanism of the exponential speedup that appeared in our algorithm is
+  different from all existing quantum algorithms. The idea is to introduce a
+  mapping $f:\text{ }\rho\rightarrow |\rho\rangle$ to use density matrices to
+  represent pure states. We show that this mapping makes sense by giving an
+  efficient method to obtain the information of $|\rho\rangle$ from measurements
+  on $\rho$. Under this mapping, the Lindblad master equation (LME) becomes a
+  Schr\"odinger equation with non-Hermitian Hamiltonian which contains natural
+  imaginary time evolution. The steady state of the LME, therefore, corresponds
+  to the ground state of $L^\dag L$ with $L$ the Liouvillian operator of the
+  LME. We show the runtime of the LME has the $\mathcal{O}(log(\zeta^{-1}))$
+  scaling with $\zeta$ the overlap between the initial state and the ground
+  state compared with the $\mathcal{O}(poly(\zeta^{-1}))$ scaling in other
+  algorithms. The Hamiltonians $L^\dag L$ are guaranteed to be difficult for
+  classical computers if we believe the simulation of LME is difficult. Further,
+  for any given local Hamiltonian $H$ with known ground energy $E_0$, we give a
+  polynomial-time classical procedure to judge and solve whether there exists
+  $L$ such that $H-E_0=L^\dag L$. Later, We discuss and analyze several
+  important aspects of the algorithm including the non-linear dynamics that
+  appeared in the algorithm.
+tags:
+  - Quantum Physics
+identifiers:
+  arxiv: "2401.13946"

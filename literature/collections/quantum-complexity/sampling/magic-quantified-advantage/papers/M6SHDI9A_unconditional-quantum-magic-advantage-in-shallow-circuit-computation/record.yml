@@ -1,0 +1,57 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: M6SHDI9A
+  item_version: 96091
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: JXDP37DL
+      name: magic quantified advantage
+      path: Quantum Complexity/Sampling/magic quantified advantage
+qlab:
+  primary_collection: JXDP37DL
+  indexed_collections:
+    - JXDP37DL
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: preprint
+title: Unconditional quantum MAGIC advantage in shallow circuit computation
+authors:
+  - first: Xingjian
+    last: Zhang
+  - first: Zhaokai
+    last: Pan
+  - first: Guoding
+    last: Liu
+year: 2024
+abstract: Quantum theory promises computation speed-ups than classical means.
+  The full power is believed to reside in "magic" states, or equivalently
+  non-Clifford operations -- the secret sauce to establish universal quantum
+  computing. Despite the celebrated Gottesman-Knill Theorem stating that
+  magic-free computation can be efficiently simulated by a classical computer,
+  it is still questionable whether "magic" is really magical. Indeed, all the
+  existing results establish its supremacy for efficient computation upon
+  unproven complexity assumptions or queries to black-box oracles. In this work,
+  we show that the magic advantage can be unconditionally established, at least
+  in a shallow circuit with a constant depth. For this purpose, we first
+  construct a specific nonlocal game inspired by the linear binary constraint
+  system, which requires the magic resource to generate the desired nonlocal
+  statistics or quantum "pseudo telepathy." For a relation problem targeting
+  generating such correlations between arbitrary nonlocal computation sites, we
+  construct a shallow circuit with bounded fan-in gates that takes the strategy
+  for quantum pseudo telepathy as a sub-routine to solve the problem with
+  certainty. In contrast, magic-free counterparts inevitably require a
+  logarithmic circuit depth to the input size, and the separation is proven
+  optimal. As by-products, we prove that the nonlocal game we construct has
+  non-unique perfect winning strategies, answering an open problem in quantum
+  self-testing. We also provide an efficient algorithm to aid the search for
+  potential magic-requiring nonlocal games similar to the current one. We
+  anticipate our results to enlighten the ultimate establishment of the
+  unconditional advantage of universal quantum computation.
+tags:
+  - Quantum Physics
+identifiers:
+  arxiv: "2402.12246"

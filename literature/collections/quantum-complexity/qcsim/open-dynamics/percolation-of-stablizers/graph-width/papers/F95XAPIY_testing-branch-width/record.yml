@@ -1,0 +1,42 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: F95XAPIY
+  item_version: 96026
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: IA9JXAWN
+      name: graph width
+      path: Quantum Complexity/QCsim/Open-dynamics/percolation of stablizers/graph
+        width
+qlab:
+  primary_collection: IA9JXAWN
+  indexed_collections:
+    - IA9JXAWN
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: journalArticle
+title: Testing branch-width
+authors:
+  - first: Sang-il
+    last: Oum
+  - first: Paul
+    last: Seymour
+year: 2007
+abstract: "An integer-valued function f on the set 2V of all subsets of a ﬁnite
+  set V is a connectivity function if it satisﬁes the following conditions: (1)
+  f (X) + f (Y ) ≥ f (X ∩ Y ) + f (X ∪ Y ) for all subsets X, Y of V , (2) f (X)
+  = f (V \\ X) for all X ⊆ V , and (3) f (∅) = 0. Branch-width is deﬁned for
+  graphs, matroids, and more generally, connectivity functions. We show that for
+  each constant k, there is a polynomial-time (in |V |) algorithm to decide
+  whether the branch-width of a connectivity function f is at most k, if f is
+  given by an oracle. This algorithm can be applied to branch-width,
+  carving-width, and rank-width of graphs. In particular, we can recognize
+  matroids M of branch-width at most k in polynomial (in |E(M)|) time if the
+  matroid is given by an independence oracle."
+tags: []
+identifiers:
+  doi: 10.1016/j.jctb.2006.06.006

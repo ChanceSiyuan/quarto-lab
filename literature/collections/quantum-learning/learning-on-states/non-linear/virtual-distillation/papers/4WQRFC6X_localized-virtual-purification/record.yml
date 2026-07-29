@@ -1,0 +1,56 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 4WQRFC6X
+  item_version: 96661
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: BJ4JTXLM
+      name: Virtual_distillation
+      path: Quantum Learning/Learning on states/non-linear/Virtual_distillation
+qlab:
+  primary_collection: BJ4JTXLM
+  indexed_collections:
+    - BJ4JTXLM
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: journalArticle
+title: Localized Virtual Purification
+authors:
+  - first: Hideaki
+    last: Hakoshima
+  - first: Suguru
+    last: Endo
+  - first: Kaoru
+    last: Yamamoto
+  - first: Yuichiro
+    last: Matsuzaki
+  - first: Nobuyuki
+    last: Yoshioka
+year: 2024
+abstract: Analog and digital quantum simulators can efficiently simulate quantum
+  many-body systems that appear in natural phenomena. However, experimental
+  limitations of near-term devices still make it challenging to perform the
+  entire process of quantum simulation. The purification-based quantum
+  simulation methods can alleviate the limitations in experiments such as the
+  cooling temperature and noise from the environment, while this method has the
+  drawback that it requires global entangled measurement with a prohibitively
+  large number of measurements that scales exponentially with the system size.
+  In this Letter, we propose that we can overcome these problems by restricting
+  the entangled measurements to the vicinity of the local observables to be
+  measured, when the locality of the system can be exploited. We provide
+  theoretical guarantees that the global purification operation can be replaced
+  with local operations under some conditions, in particular for the task of
+  cooling and error mitigation. We furthermore give a numerical verification
+  that the localized purification is valid even when conditions are not
+  satisfied. Our method bridges the fundamental concept of locality with quantum
+  simulators, and therefore expected to open a path to unexplored quantum
+  many-body phenomena.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.1103/physrevlett.133.080601
+  arxiv: "2308.13500"

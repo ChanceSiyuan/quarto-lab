@@ -4,6 +4,30 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 describe("browser style bundle", () => {
+  it("ships an English-only user interface", async () => {
+    const result = await build({
+      entryPoints: [join(process.cwd(), "src/index.ts")],
+      bundle: true,
+      platform: "browser",
+      format: "iife",
+      target: ["firefox140"],
+      write: false,
+      outdir: "out",
+      loader: {
+        ".svg": "dataurl",
+        ".woff2": "file",
+        ".woff": "file",
+        ".ttf": "file",
+      },
+    });
+
+    const javascript = result.outputFiles
+      .filter((file) => file.path.endsWith(".js"))
+      .map((file) => file.text)
+      .join("\n");
+    expect(javascript).not.toMatch(/[\u3400-\u9fff]/u);
+  });
+
   it("includes KaTeX CSS and emits its local fonts", async () => {
     const result = await build({
       entryPoints: [join(process.cwd(), "src/index.ts")],
@@ -89,9 +113,8 @@ describe("browser style bundle", () => {
     expect(css).toMatch(
       /\.zc-workbench-chat\s*\{[^}]*width:\s*100%;[^}]*height:\s*100%;[^}]*border:\s*0;[^}]*\}/,
     );
-    expect(css).toMatch(
-      /\.zc-workbench-chat \.zc-qlab-command-grid\s*\{[^}]*grid-template-columns:\s*repeat\(3,/,
-    );
+    expect(css).not.toContain(".zc-qlab-command-grid");
+    expect(css).toMatch(/\.zc-qmd-file-toggle\s*\{[^}]*width:\s*18px;[^}]*cursor:\s*pointer;/);
     expect(css).toContain(".zc-choose-paper");
     // The blanket `cursor: auto` on every transcript descendant (needed so
     // selectable prose doesn't show a pointer) must not beat `cursor: pointer`

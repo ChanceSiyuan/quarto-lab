@@ -1,0 +1,48 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: MTMCRFGZ
+  item_version: 96163
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: P4HQDZ8G
+      name: BPs
+      path: Quantum Error correction/Decoders/BPs
+qlab:
+  primary_collection: P4HQDZ8G
+  indexed_collections:
+    - P4HQDZ8G
+  primary_topic: quantum-error-correction
+  indexed_topics:
+    - quantum-error-correction
+item_type: journalArticle
+title: Improved single-shot decoding of higher dimensional hypergraph product codes
+authors:
+  - first: Oscar
+    last: Higgott
+  - first: Nikolas P.
+    last: Breuckmann
+year: 2023
+abstract: In this work we study the single-shot performance of higher
+  dimensional hypergraph product codes decoded using belief-propagation and
+  ordered-statistics decoding [Panteleev and Kalachev, 2021]. We find that
+  decoding data qubit and syndrome measurement errors together in a single stage
+  leads to single-shot thresholds that greatly exceed all previously observed
+  single-shot thresholds for these codes. For the 3D toric code and a
+  phenomenological noise model, our results are consistent with a sustainable
+  threshold of 7.1% for $Z$ errors, compared to the threshold of 2.90%
+  previously found using a two-stage decoder~[Quintavalle et al., 2021]. For the
+  4D toric code, for which both $X$ and $Z$ error correction is single-shot, our
+  results are consistent with a sustainable single-shot threshold of 4.3% which
+  is even higher than the threshold of 2.93% for the 2D toric code for the same
+  noise model but using $L$ rounds of stabiliser measurement. We also explore
+  the performance of balanced product and 4D hypergraph product codes which we
+  show lead to a reduction in qubit overhead compared the surface code for
+  phenomenological error rates as high as 1%.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.1103/prxquantum.4.020332
+  arxiv: "2206.03122"

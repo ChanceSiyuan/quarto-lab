@@ -1,0 +1,52 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: Y8HDYE2A
+  item_version: 96022
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: UIINBQXV
+      name: Anyion
+      path: Quantum Error correction/2-Code categories/Anyion
+qlab:
+  primary_collection: UIINBQXV
+  indexed_collections:
+    - UIINBQXV
+  primary_topic: quantum-error-correction
+  indexed_topics:
+    - quantum-error-correction
+item_type: preprint
+title: Adaptive constant-depth circuits for manipulating non-abelian anyons
+authors:
+  - first: Sergey
+    last: Bravyi
+  - first: Isaac
+    last: Kim
+  - first: Alexander
+    last: Kliesch
+  - first: Robert
+    last: Koenig
+year: 2022
+abstract: We consider Kitaev's quantum double model based on a finite group $G$
+  and describe quantum circuits for (a) preparation of the ground state, (b)
+  creation of anyon pairs separated by an arbitrary distance, and (c)
+  non-destructive topological charge measurement. We show that for any solvable
+  group $G$ all above tasks can be realized by constant-depth adaptive circuits
+  with geometrically local unitary gates and mid-circuit measurements. Each gate
+  may be chosen adaptively depending on previous measurement outcomes.
+  Constant-depth circuits are well suited for implementation on a noisy hardware
+  since it may be possible to execute the entire circuit within the qubit
+  coherence time. Thus our results could facilitate an experimental study of
+  exotic phases of matter with a non-abelian particle statistics. We also show
+  that adaptiveness is essential for our circuit construction. Namely, task (b)
+  cannot be realized by non-adaptive constant-depth local circuits for any
+  non-abelian group $G$. This is in a sharp contrast with abelian anyons which
+  can be created and moved over an arbitrary distance by a depth-$1$ circuit
+  composed of generalized Pauli gates.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2205.01933
+  arxiv: "2205.01933"

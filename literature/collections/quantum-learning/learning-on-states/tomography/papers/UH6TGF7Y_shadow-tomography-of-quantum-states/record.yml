@@ -1,0 +1,45 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: UH6TGF7Y
+  item_version: 96100
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: EIP4ZQQD
+      name: Tomography
+      path: Quantum Learning/Learning on states/Tomography
+qlab:
+  primary_collection: EIP4ZQQD
+  indexed_collections:
+    - EIP4ZQQD
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: preprint
+title: Shadow Tomography of Quantum States
+authors:
+  - first: Scott
+    last: Aaronson
+year: 2018
+abstract: "We introduce the problem of shadow tomography: given an unknown
+  D-dimensional quantum mixed state ρ, as well as known two-outcome measurements
+  E1, . . . , EM , estimate the probability that Ei accepts ρ, to within
+  additive error ε, for each of the M measurements. How many copies of ρ are
+  needed to achieve this, with high probability? Surprisingly, we give a
+  procedure that solves the problem by measuring only O ε−4 · log4 M · log D
+  copies. This means, for example, that we can learn the behavior of an
+  arbitrary n-qubit state, on all accepting/rejecting circuits of some ﬁxed
+  polynomial size, by measuring only nO(1) copies of the state. This resolves an
+  open problem of the author, which arose from his work on private-key quantum
+  money schemes, but which also has applications to quantum copy-protected
+  software, quantum advice, and quantum one-way communication. Recently,
+  building on this work, Branda˜o et al. have given a diﬀerent approach to
+  shadow tomography using semideﬁnite programming, which achieves a savings in
+  computation time."
+tags:
+  - Computer Science - Computational Complexity
+  - Quantum Physics
+identifiers:
+  arxiv: "1711.01053"

@@ -1,0 +1,93 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: IPPUKTC2
+  item_version: 96138
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: B6GUBCDK
+      name: Special structure
+      path: Quantum Complexity/QCsim/stabilizer simulation/Extension/Special structure
+qlab:
+  primary_collection: B6GUBCDK
+  indexed_collections:
+    - B6GUBCDK
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: journalArticle
+title: Classical Simulability of Quantum Circuits with Shallow Magic Depth
+authors:
+  - first: Yifan
+    last: Zhang
+  - first: Yuxuan
+    last: Zhang
+year: 2025
+abstract: >-
+  Quantum magic is a necessary resource for quantum computers to be not
+  efficiently simulable by classical computers. Previous results have linked
+  the  of quantum magic, characterized by the number of
+                
+                  T
+                
+                gates or the stabilizer rank, to classical simulability. However, the effect of the  of quantum magic on the hardness of simulating a quantum circuit remains open. In this work, we investigate the classical simulability of quantum circuits with alternating Clifford and
+                
+                  T
+                
+                layers across three tasks: amplitude estimation, sampling, and evaluating Pauli observables. In the case in which all
+                
+                  T
+                
+                gates are distributed in a single layer, performing amplitude estimation and sampling to multiplicative error are already classically intractable under reasonable assumptions, but Pauli observables are easy to evaluate. Surprisingly, with the addition of just one
+                
+                  T
+                
+                -gate layer or merely replacing all
+                
+                  T
+                
+                gates with
+                
+                  
+                    T
+                    
+                      1
+                      /
+                      2
+                    
+                  
+                
+                , the Pauli evaluation task reveals a sharp complexity transition from being in P to being GapP-complete. Nevertheless, when the precision requirement is relaxed to
+                
+                  1
+                  
+                    
+                      /
+                      poly
+                    
+                  
+                  (
+                  n
+                  )
+                
+                additive error, we are able to give a polynomial-time classical algorithm to compute amplitudes, Pauli observables, and sampling from
+                
+                  log
+                  ﻿
+                  (
+                  n
+                  )
+                
+                -sized marginal distributions for any magic-depth-1 circuit that is decomposable into a product of diagonal gates. This rules out certain forms of quantum advantage in these circuits. Our research provides new techniques to simulate highly magical circuits while shedding light on their complexity and their significant dependence on the magic depth.
+              
+              
+                
+                
+                  
+                    Published by the American Physical Society
+                    2025
+tags: []
+identifiers:
+  doi: 10.1103/prxquantum.6.010337

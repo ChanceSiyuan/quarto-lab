@@ -1,0 +1,57 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: EA9KGX2U
+  item_version: 96088
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: ZTMJV3G4
+      name: Fidelity verification
+      path: Quantum Learning/Learning on states/certification/Fidelity verification
+    - key: X35L7LFT
+      name: Learning on states
+      path: Quantum Learning/Learning on states
+qlab:
+  primary_collection: ZTMJV3G4
+  indexed_collections:
+    - X35L7LFT
+    - ZTMJV3G4
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: journalArticle
+title: Sample-efficient device-independent quantum state verification and
+  certification
+authors:
+  - first: Aleksandra
+    last: Gočanin
+  - first: Ivan
+    last: Šupić
+  - first: Borivoje
+    last: Dakić
+year: 2022
+abstract: "Authentication of quantum sources is a crucial task in building
+  reliable and efficient protocols for quantum-information processing. Steady
+  progress vis-\\`{a}-vis verification of quantum devices in the scenario with
+  fully characterized measurement devices has been observed in recent years.
+  When it comes to the scenario with uncharacterized measurements, the so-called
+  black-box scenario, practical verification methods are still rather scarce.
+  Development of self-testing methods is an important step forward, but these
+  results so far have been used for reliable verification only by considering
+  the asymptotic behavior of large, identically and independently distributed
+  (IID) samples of a quantum resource. Such strong assumptions deprive the
+  verification procedure of its truly device-independent character. In this
+  paper, we develop a systematic approach to device-independent verification of
+  quantum states free of IID assumptions in the finite copy regime. Remarkably,
+  we show that device-independent verification can be performed with optimal
+  sample efficiency. Finally, for the case of independent copies, we develop a
+  device-independent protocol for quantum state certification: a protocol in
+  which a fragment of the resource copies is measured to warrant the rest of the
+  copies to be close to some target state."
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.1103/prxquantum.3.010317
+  arxiv: "2105.05832"

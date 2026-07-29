@@ -1,0 +1,45 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: GRMZ7E9E
+  item_version: 96022
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: UJ7EZN4C
+      name: Verification
+      path: Quantum Resource/Magic/Quantification/Verification
+qlab:
+  primary_collection: UJ7EZN4C
+  indexed_collections:
+    - UJ7EZN4C
+  primary_topic: quantum-resource
+  indexed_topics:
+    - quantum-resource
+item_type: preprint
+title: A note on polynomial-time tolerant testing stabilizer states
+authors:
+  - first: Srinivasan
+    last: Arunachalam
+  - first: Sergey
+    last: Bravyi
+  - first: Arkopal
+    last: Dutt
+year: 2024
+abstract: "We show an improved inverse theorem for the Gowers-$3$ norm of
+  $n$-qubit quantum states $|\\psi\\rangle$ which states that: for every
+  $\\gamma\\geq 0$, if the $\\textsf{Gowers}(|\\psi \\rangle,3)^8 \\geq \\gamma$
+  then the stabilizer fidelity of $|\\psi\\rangle$ is at least $\\gamma^C$ for
+  some constant $C>1$. This implies a constant-sample polynomial-time tolerant
+  testing algorithm for stabilizer states which accepts if an unknown state is
+  $\\varepsilon_1$-close to a stabilizer state in fidelity and rejects when
+  $|\\psi\\rangle$ is $\\varepsilon_2 \\leq \\varepsilon_1^C$-far from all
+  stabilizer states, promised one of them is the case."
+tags:
+  - Computer Science - Computational Complexity
+  - Computer Science - Data Structures and Algorithms
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2410.22220
+  arxiv: "2410.22220"

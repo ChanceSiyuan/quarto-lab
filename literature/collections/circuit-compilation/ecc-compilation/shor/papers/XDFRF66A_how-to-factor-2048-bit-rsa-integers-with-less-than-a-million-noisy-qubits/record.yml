@@ -1,0 +1,48 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: XDFRF66A
+  item_version: 96023
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: LIVJUSB2
+      name: Shor
+      path: Circuit Compilation/ECC compilation/Shor
+qlab:
+  primary_collection: LIVJUSB2
+  indexed_collections:
+    - LIVJUSB2
+  primary_topic: circuit-compilation
+  indexed_topics:
+    - circuit-compilation
+item_type: preprint
+title: How to factor 2048 bit RSA integers with less than a million noisy qubits
+authors:
+  - first: Craig
+    last: Gidney
+year: 2025
+abstract: "Planning the transition to quantum-safe cryptosystems requires
+  understanding the cost of quantum attacks on vulnerable cryptosystems. In
+  Gidney+Eker{\\aa} 2019, I co-published an estimate stating that 2048 bit RSA
+  integers could be factored in eight hours by a quantum computer with 20
+  million noisy qubits. In this paper, I substantially reduce the number of
+  qubits required. I estimate that a 2048 bit RSA integer could be factored in
+  less than a week by a quantum computer with less than a million noisy qubits.
+  I make the same assumptions as in 2019: a square grid of qubits with nearest
+  neighbor connections, a uniform gate error rate of $0.1\\%$, a surface code
+  cycle time of 1 microsecond, and a control system reaction time of $10$
+  microseconds. The qubit count reduction comes mainly from using approximate
+  residue arithmetic (Chevignard+Fouque+Schrottenloher 2024), from storing idle
+  logical qubits with yoked surface codes (Gidney+Newman+Brooks+Jones 2023), and
+  from allocating less space to magic state distillation by using magic state
+  cultivation (Gidney+Shutty+Jones 2024). The longer runtime is mainly due to
+  performing more Toffoli gates and using fewer magic state factories compared
+  to Gidney+Eker{\\aa} 2019. That said, I reduce the Toffoli count by over 100x
+  compared to Chevignard+Fouque+Schrottenloher 2024."
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2505.15917
+  arxiv: "2505.15917"

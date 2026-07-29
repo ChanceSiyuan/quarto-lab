@@ -1,0 +1,49 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: SZ6AXQB6
+  item_version: 96111
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 2U9FYC86
+      name: PBC and stabilizer rank
+      path: Quantum Complexity/QCsim/stabilizer simulation/Extension/PBC and
+        stabilizer rank
+qlab:
+  primary_collection: 2U9FYC86
+  indexed_collections:
+    - 2U9FYC86
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: journalArticle
+title: Quantum circuit compilation and hybrid computation using Pauli-based
+  computation
+authors:
+  - first: Filipa C. R.
+    last: Peres
+  - first: Ernesto F.
+    last: Galvão
+year: 2023
+abstract: Pauli-based computation (PBC) is driven by a sequence of adaptively
+  chosen, non-destructive measurements of Pauli observables. Any quantum circuit
+  written in terms of the Clifford+$T$ gate set and having $t$ $T$ gates can be
+  compiled into a PBC on $t$ qubits. Here we propose practical ways of
+  implementing PBC as adaptive quantum circuits and provide code to do the
+  required classical side-processing. Our schemes reduce the number of quantum
+  gates to $O(t^2)$ (from a previous $O(t^3 / \log t)$ scaling) and space/time
+  trade-offs are discussed which lead to a reduction of the depth from $O(t \log
+  t)$ to $O(t)$ within our schemes, at the cost of $t$ additional auxiliary
+  qubits. We compile examples of random and hidden-shift quantum circuits into
+  adaptive PBC circuits. We also simulate hybrid quantum computation, where a
+  classical computer effectively extends the working memory of a small quantum
+  computer by $k$ virtual qubits, at a cost exponential in $k$. Our results
+  demonstrate the practical advantage of PBC techniques for circuit compilation
+  and hybrid computation.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.22331/q-2023-10-03-1126
+  arxiv: "2203.01789"

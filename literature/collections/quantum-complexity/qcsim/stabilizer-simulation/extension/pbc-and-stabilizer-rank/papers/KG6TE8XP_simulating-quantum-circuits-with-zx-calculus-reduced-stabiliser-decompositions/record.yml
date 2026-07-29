@@ -1,0 +1,51 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: KG6TE8XP
+  item_version: 96111
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 2U9FYC86
+      name: PBC and stabilizer rank
+      path: Quantum Complexity/QCsim/stabilizer simulation/Extension/PBC and
+        stabilizer rank
+    - key: PBGR25EN
+      name: percolation of stablizers
+      path: Quantum Complexity/QCsim/Open-dynamics/percolation of stablizers
+qlab:
+  primary_collection: 2U9FYC86
+  indexed_collections:
+    - 2U9FYC86
+    - PBGR25EN
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: journalArticle
+title: Simulating quantum circuits with ZX-calculus reduced stabiliser decompositions
+authors:
+  - first: Aleks
+    last: Kissinger
+  - first: John
+    last: Van De Wetering
+year: 2022
+abstract: We introduce an enhanced technique for strong classical simulation of
+  quantum circuits which combines the ‘sum-of-stabilisers’ method with an
+  automated simpliﬁcation strategy based on the ZX-calculus. Recently it was
+  shown that quantum circuits can be classically simulated by expressing the
+  non-stabiliser gates in a circuit as magic state injections and decomposing
+  them in chunks of 2–6 states at a time, obtaining sums of
+  (efﬁciently-simulable) stabiliser states with many fewer terms than the naive
+  approach. We adapt these techniques from the original setting of Clifford
+  circuits with magic state injection to generic ZX-diagrams and show that, by
+  interleaving this ‘chunked’ decomposition with a ZX-calculus-based
+  simpliﬁcation strategy, we can obtain stabiliser decompositions that are many
+  orders of magnitude smaller than existing approaches. We illustrate this
+  technique to perform exact norm calculations (and hence strong simulation) on
+  the outputs of random 50- and 100-qubit Clifford + T circuits with up to 70
+  T-gates as well as a family of hidden shift circuits previously considered by
+  Bravyi and Gosset with over 1000 T-gates.
+tags: []
+identifiers:
+  doi: 10.1088/2058-9565/ac5d20

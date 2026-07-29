@@ -1,0 +1,42 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: RDJD346G
+  item_version: 99481
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: SBZ2XZ7E
+      name: Non-abelian
+      path: Quantum Algorithm/Fourier transform/Non-abelian
+qlab:
+  primary_collection: SBZ2XZ7E
+  indexed_collections:
+    - SBZ2XZ7E
+  primary_topic: quantum-algorithm
+  indexed_topics:
+    - quantum-algorithm
+item_type: preprint
+title: A subexponential-time quantum algorithm for the dihedral hidden subgroup
+  problem
+authors:
+  - first: Greg
+    last: Kuperberg
+year: 2004
+abstract: We present a quantum algorithm for the dihedral hidden subgroup
+  problem with time and query complexity $O(\exp(C\sqrt{\log N}))$. In this
+  problem an oracle computes a function $f$ on the dihedral group $D_N$ which is
+  invariant under a hidden reflection in $D_N$. By contrast the classical query
+  complexity of DHSP is $O(\sqrt{N})$. The algorithm also applies to the hidden
+  shift problem for an arbitrary finitely generated abelian group. The algorithm
+  begins with the quantum character transform on the group, just as for other
+  hidden subgroup problems. Then it tensors irreducible representations of $D_N$
+  and extracts summands to obtain target representations. Finally, state
+  tomography on the target representations reveals the hidden subgroup.
+tags:
+  - Mathematics - Representation Theory
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.quant-ph/0302112
+  arxiv: quant-ph/0302112

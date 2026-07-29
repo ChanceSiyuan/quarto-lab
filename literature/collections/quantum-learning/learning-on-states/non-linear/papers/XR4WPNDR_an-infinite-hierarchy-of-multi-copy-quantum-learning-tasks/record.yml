@@ -1,0 +1,57 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: XR4WPNDR
+  item_version: 96149
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: ZTZAL49L
+      name: non-linear
+      path: Quantum Learning/Learning on states/non-linear
+    - key: CT88KZFU
+      name: local/adaptive
+      path: Quantum Learning/Learning on states/Tomography/shadow tomo/local/adaptive
+qlab:
+  primary_collection: ZTZAL49L
+  indexed_collections:
+    - CT88KZFU
+    - ZTZAL49L
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: preprint
+title: An infinite hierarchy of multi-copy quantum learning tasks
+authors:
+  - first: Jan
+    last: Nöller
+  - first: Viet T.
+    last: Tran
+  - first: Mariami
+    last: Gachechiladze
+  - first: Richard
+    last: Kueng
+year: 2025
+abstract: "Learning properties of quantum states from measurement data is a
+  fundamental challenge in quantum information. The sample complexity of such
+  tasks depends crucially on the measurement primitive. While shadow tomography
+  achieves sample-efficient learning by allowing entangling measurements across
+  many copies, it requires prohibitively deep circuits. At the other extreme,
+  two-copy measurements already yield exponential advantages over single-copy
+  strategies in tasks such as Pauli tomography. In this work we show that such
+  sharp separations extend far beyond the two-copy regime: for every prime c we
+  construct explicit learning tasks of degree c, which are exponentially hard
+  with (c - 1)-copy measurements but efficiently solvable with c-copy
+  measurements. Our protocols are not only sample-efficient but also realizable
+  with shallow circuits. Extending further, we show that such finite-degree
+  tasks exist for all square-free integers c, pointing toward a general
+  principle underlying their existence. Together, our results reveal an infinite
+  hierarchy of multi-copy learning problems, uncovering new phase transitions in
+  sample complexity and underscoring the role of reliable quantum memory as a
+  key resource for exponential quantum advantage."
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2510.08070
+  arxiv: "2510.08070"

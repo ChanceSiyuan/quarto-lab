@@ -1,0 +1,53 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: NA7ZPS6B
+  item_version: 96054
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 4ID5CU4Q
+      name: Optimal Control Algorithm
+      path: Quantum N-Atom/Basic-Rydberg protocol/Multi-qubits gate/Optimal Control
+        Algorithm
+qlab:
+  primary_collection: 4ID5CU4Q
+  indexed_collections:
+    - 4ID5CU4Q
+  primary_topic: quantum-n-atom
+  indexed_topics:
+    - quantum-n-atom
+item_type: preprint
+title: Robust Quantum Optimal Control with Trajectory Optimization
+authors:
+  - first: Thomas
+    last: Propson
+  - first: Brian E.
+    last: Jackson
+  - first: Jens
+    last: Koch
+  - first: Zachary
+    last: Manchester
+  - first: David I.
+    last: Schuster
+year: 2021
+abstract: The ability to engineer high-fidelity gates on quantum processors in
+  the presence of systematic errors remains the primary barrier to achieving
+  quantum advantage. Quantum optimal control methods have proven effective in
+  experimentally realizing high-fidelity gates, but they require exquisite
+  calibration to be performant. We apply robust trajectory optimization
+  techniques to suppress gate errors arising from system parameter uncertainty.
+  We propose a derivative-based approach that maintains computational efficiency
+  by using forward-mode differentiation. Additionally, the effect of
+  depolarization on a gate is typically modeled by integrating the Lindblad
+  master equation, which is computationally expensive. We employ a
+  computationally efficient model and utilize time-optimal control to achieve
+  high-fidelity gates in the presence of depolarization. We apply these
+  techniques to a fluxonium qubit and suppress simulated gate errors due to
+  parameter uncertainty below $10^{-7}$ for static parameter deviations on the
+  order of $1\%$.
+tags:
+  - Quantum Physics
+identifiers:
+  arxiv: "2103.15716"

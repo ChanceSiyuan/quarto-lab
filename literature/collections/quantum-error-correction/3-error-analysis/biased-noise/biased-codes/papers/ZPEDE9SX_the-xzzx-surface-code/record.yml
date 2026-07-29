@@ -1,0 +1,56 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: ZPEDE9SX
+  item_version: 96082
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: EYQCPB4I
+      name: Biased Codes
+      path: Quantum Error correction/3-Error analysis/Biased Noise/Biased Codes
+qlab:
+  primary_collection: EYQCPB4I
+  indexed_collections:
+    - EYQCPB4I
+  primary_topic: quantum-error-correction
+  indexed_topics:
+    - quantum-error-correction
+item_type: journalArticle
+title: The XZZX Surface Code
+authors:
+  - first: J. Pablo Bonilla
+    last: Ataides
+  - first: David K.
+    last: Tuckett
+  - first: Stephen D.
+    last: Bartlett
+  - first: Steven T.
+    last: Flammia
+  - first: Benjamin J.
+    last: Brown
+year: 2021
+abstract: Performing large calculations with a quantum computer will likely
+  require a fault-tolerant architecture based on quantum error-correcting codes.
+  The challenge is to design practical quantum error-correcting codes that
+  perform well against realistic noise using modest resources. Here we show that
+  a variant of the surface code -- the XZZX code -- offers remarkable
+  performance for fault-tolerant quantum computation. The error threshold of
+  this code matches what can be achieved with random codes (hashing) for every
+  single-qubit Pauli noise channel; it is the first explicit code shown to have
+  this universal property. We present numerical evidence that the threshold even
+  exceeds this hashing bound for an experimentally relevant range of noise
+  parameters. Focusing on the common situation where qubit dephasing is the
+  dominant noise, we show that this code has a practical, high-performance
+  decoder and surpasses all previously known thresholds in the realistic setting
+  where syndrome measurements are unreliable. We go on to demonstrate the
+  favourable sub-threshold resource scaling that can be obtained by specialising
+  a code to exploit structure in the noise. We show that it is possible to
+  maintain all of these advantages when we perform fault-tolerant quantum
+  computation.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.1038/s41467-021-22274-1
+  arxiv: "2009.07851"

@@ -1,0 +1,47 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: MV6BDY96
+  item_version: 96066
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: ZTMJV3G4
+      name: Fidelity verification
+      path: Quantum Learning/Learning on states/certification/Fidelity verification
+qlab:
+  primary_collection: ZTMJV3G4
+  indexed_collections:
+    - ZTMJV3G4
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: journalArticle
+title: Optimal verification of entangled states with local measurements
+authors:
+  - first: Sam
+    last: Pallister
+  - first: Noah
+    last: Linden
+  - first: Ashley
+    last: Montanaro
+year: 2018
+abstract: Consider the task of verifying that a given quantum device, designed
+  to produce a particular entangled state, does indeed produce that state. One
+  natural approach would be to characterise the output state by quantum state
+  tomography; or alternatively to perform some kind of Bell test, tailored to
+  the state of interest. We show here that neither approach is optimal amongst
+  local verification strategies for two qubit states. We find the optimal
+  strategy in this case and show that quadratically fewer total measurements are
+  needed to verify to within a given fidelity than in published results for
+  quantum state tomography, Bell test, or fidelity estimation protocols. We also
+  give efficient verification protocols for any stabilizer state. Additionally,
+  we show that requiring that the strategy be constructed from local,
+  non-adaptive and non-collective measurements only incurs a constant-factor
+  penalty over a strategy without these restrictions.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.1103/physrevlett.120.170502
+  arxiv: "1709.03353"

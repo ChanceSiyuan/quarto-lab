@@ -1,0 +1,50 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 6VEYWEAB
+  item_version: 96016
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: AC56KB4S
+      name: Untitled
+      path: Circuit Compilation/Untitled
+qlab:
+  primary_collection: AC56KB4S
+  indexed_collections:
+    - AC56KB4S
+  primary_topic: circuit-compilation
+  indexed_topics:
+    - circuit-compilation
+item_type: conferencePaper
+title: Qubit Movement-Optimized Program Generation on Zoned Neutral Atom Processors
+authors:
+  - first: Enhyeok
+    last: Jang
+  - first: Youngmin
+    last: Kim
+  - first: Hyungseok
+    last: Kim
+  - first: Seungwoo
+    last: Choi
+  - first: Yipeng
+    last: Huang
+  - first: Won Woo
+    last: Ro
+year: 2025
+abstract: "A zoned neutral atom architecture achieves exceptional fidelity by
+  segregating the execution spaces of 1- and 2-qubit gates, being a promising
+  candidate for high-accuracy quantum systems. Unfortunately, naïvely applying
+  programs designed for static qubit topologies to zoned architectures may
+  result in most execution time being consumed by intra-zone travels of atoms.
+  To address this, we introduce Mantra (Minimizing trAp movemeNts for aTom aRray
+  Architectures), which rewrites quantum programs to reduce the interleaving of
+  single- and two-qubit gates. Mantra incorporates three strategies: (i) a
+  fountain-shaped controlled-Z (CZ) chain, (ii) ZZ-interaction protocol without
+  a 1-qubit gate, and (iii) preemptive gate scheduling. Mantra reduces
+  inter-zone movements by 68%, physical gate counts by 35%, and improves circuit
+  fidelities by 17% compared to the standard executions."
+tags: []
+identifiers:
+  doi: 10.1145/3696443.3708937

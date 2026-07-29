@@ -1,0 +1,54 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: EQVQULFA
+  item_version: 106928
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: Y6TXPH3H
+      name: TVDP
+      path: Quantum Complexity/QCsim/tensor network/MPS/TVDP
+qlab:
+  primary_collection: Y6TXPH3H
+  indexed_collections:
+    - Y6TXPH3H
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: preprint
+title: Efficient Emulation of Neutral Atom Quantum Hardware
+authors:
+  - first: Kemal
+    last: Bidzhiev
+  - first: Stefano
+    last: Grava
+  - first: Pablo le
+    last: Henaff
+  - first: Mauro
+    last: Mendizabal
+  - first: Elie
+    last: Merhej
+  - first: Anton
+    last: Quelle
+year: 2025
+abstract: Simulating the dynamics of neutral atom arrays is a challenging
+  problem. To address this, we introduce two emulators, emu-sv and emu-mps, as
+  computational backends for Pasqal's pulser package. Emu-sv is designed for
+  high-precision state-vector simulations, giving the possibility to emulate
+  systems of up to $\thicksim 27$ qubits on an A100 40GB GPU, making it perfect
+  for cases where numerically exact results are needed. In contrast, emu-mps
+  uses a Matrix Product State representation and other controlled approximations
+  to efficiently simulate much larger arrays of atoms with manageable errors. We
+  show through benchmark comparisons that both emulators provide significant
+  speed-ups over generic solvers such as QuTiP. In addition, we provide
+  practical guidance on choosing between the two emulators. These quantum
+  software tools are designed to support researchers and developers aiming to
+  simulate quantum systems either as a precursor to full hardware implementation
+  or as a means of benchmarking hardware performance.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2510.09813
+  arxiv: "2510.09813"

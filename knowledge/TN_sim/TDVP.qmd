@@ -1,0 +1,22 @@
+---
+title: time-dependent variational principle for MPS
+description: "The MPS state with truncation dimension forms the MPS manifold: While the real evolution derivative do not in this manifold."
+categories:
+  - codes
+---
+
+[<- Back to TN Simulation](index.qmd)
+
+The MPS state with truncation dimension $\chi$ forms the MPS manifold:
+$$
+\mathcal M_\chi = \{ \text{bond dimension less than } \chi \text{ 的 MPS} \},
+$$
+While the real evolution derivative $-iH\ket{\psi}$ do not in this manifold.
+One thus find:
+$$
+\begin{align*}
+|\dot\psi\rangle=
+\arg\min_{v\in T_\psi\mathcal M_\chi}
+\left\|v+iH|\psi\rangle\right\|^2, \quad |\dot\psi\rangle \in T_\psi \mathcal M_\chi
+\end{align*}
+$$

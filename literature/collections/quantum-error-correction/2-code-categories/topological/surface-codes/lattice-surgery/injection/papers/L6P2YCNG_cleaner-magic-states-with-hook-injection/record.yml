@@ -1,0 +1,43 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: L6P2YCNG
+  item_version: 96057
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: PB79WWE8
+      name: Injection
+      path: Quantum Error correction/2-Code categories/Topological/surface
+        codes/Lattice Surgery/Injection
+    - key: F28II9EE
+      name: magic injection
+      path: Quantum Resource/Magic/Magic state distillation/magic injection
+qlab:
+  primary_collection: PB79WWE8
+  indexed_collections:
+    - F28II9EE
+    - PB79WWE8
+  primary_topic: quantum-error-correction
+  indexed_topics:
+    - quantum-error-correction
+    - quantum-resource
+item_type: preprint
+title: Cleaner magic states with hook injection
+authors:
+  - first: Craig
+    last: Gidney
+year: 2023
+abstract: In this paper, I show how an intentional hook error mechanism can be
+  used as a control knob for injecting magic states into surface codes. The
+  limitation, and benefit, of this approach is that it can only inject states in
+  the XY or YZ plane of the Bloch sphere. This increases fidelity, because
+  perturbations out of the target plane can be detected as errors. I use Monte
+  Carlo sampling to show that this technique outperforms previous injection
+  techniques, achieving lower error rates at smaller spacetime cost under
+  digitized circuit noise.
+tags:
+  - Quantum Physics
+identifiers:
+  arxiv: "2302.12292"

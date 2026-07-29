@@ -1,0 +1,50 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: EU78HPSZ
+  item_version: 96163
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: IGCYLEHL
+      name: derandomization
+      path: Quantum Learning/Learning on states/Tomography/shadow
+        tomo/Optimal_shadow/derandomization
+qlab:
+  primary_collection: IGCYLEHL
+  indexed_collections:
+    - IGCYLEHL
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: preprint
+title: Measuring Incompatible Observables with Quantum Neural Networks
+authors:
+  - first: Muchun
+    last: Yang
+  - first: Yibin
+    last: Huang
+  - first: D. L.
+    last: Zhou
+year: 2025
+abstract: The Heisenberg uncertainty principle imposes a fundamental restriction
+  in quantum mechanics, stipulating that measuring one observable completely
+  erases the information on its conjugate one, thereby preventing simultaneous
+  measurements of incompatible observables. Quantum neural networks (QNNs) is
+  one of the most significant applications on near-term devices in noisy
+  intermediate-scale quantum era. Here, we demonstrate that by implementing a
+  multiple-output QNN that emulates a unital quantum channel, one can measure
+  the expectation values of many incompatible observables simultaneously by
+  Pauli-$Z$ measurements on distinct output qubits. We prove the existence of
+  such quantum channel, derive analytical scaling constraints of the measured
+  expectation values, and validate this framework by numerical simulations of
+  observables learning tasks. Notably, our analysis reveals that it requires
+  fewer copies of state when measuring some incompatible observables by the
+  multiple-output QNNs, which demonstrates a resource efficiency advantage
+  compared to separately applying projective measurements.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2503.20565
+  arxiv: "2503.20565"

@@ -1,0 +1,44 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 2WXZBCPQ
+  item_version: 96143
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: WE3HPMT6
+      name: ECC compilation
+      path: Circuit Compilation/ECC compilation
+qlab:
+  primary_collection: WE3HPMT6
+  indexed_collections:
+    - WE3HPMT6
+  primary_topic: circuit-compilation
+  indexed_topics:
+    - circuit-compilation
+item_type: preprint
+title: Shor's discrete logarithm quantum algorithm for elliptic curves
+authors:
+  - first: John
+    last: Proos
+  - first: Christof
+    last: Zalka
+year: 2004
+abstract: We show in some detail how to implement Shor's efficient quantum
+  algorithm for discrete logarithms for the particular case of elliptic curve
+  groups. It turns out that for this problem a smaller quantum computer can
+  solve problems further beyond current computing than for integer
+  factorisation. A 160 bit elliptic curve cryptographic key could be broken on a
+  quantum computer using around 1000 qubits while factoring the security-wise
+  equivalent 1024 bit RSA modulus would require about 2000 qubits. In this paper
+  we only consider elliptic curves over GF($p$) and not yet the equally
+  important ones over GF($2^n$) or other finite fields. The main technical
+  difficulty is to implement Euclid's gcd algorithm to compute multiplicative
+  inverses modulo $p$. As the runtime of Euclid's algorithm depends on the
+  input, one difficulty encountered is the ``quantum halting problem''.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.quant-ph/0301141
+  arxiv: quant-ph/0301141

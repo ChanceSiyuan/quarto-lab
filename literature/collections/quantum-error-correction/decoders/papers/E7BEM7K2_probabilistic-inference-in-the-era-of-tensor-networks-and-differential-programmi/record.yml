@@ -1,0 +1,57 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: E7BEM7K2
+  item_version: 96164
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: B3RQWHII
+      name: Decoders
+      path: Quantum Error correction/Decoders
+qlab:
+  primary_collection: B3RQWHII
+  indexed_collections:
+    - B3RQWHII
+  primary_topic: quantum-error-correction
+  indexed_topics:
+    - quantum-error-correction
+item_type: journalArticle
+title: Probabilistic Inference in the Era of Tensor Networks and Differential
+  Programming
+authors:
+  - first: Martin
+    last: Roa-Villescas
+  - first: Xuanzhao
+    last: Gao
+  - first: Sander
+    last: Stuijk
+  - first: Henk
+    last: Corporaal
+  - first: Jin-Guo
+    last: Liu
+year: 2024
+abstract: "Probabilistic inference is a fundamental task in modern machine
+  learning. Recent advances in tensor network (TN) contraction algorithms have
+  enabled the development of better exact inference methods. However, many
+  common inference tasks in probabilistic graphical models (PGMs) still lack
+  corresponding TN-based adaptations. In this work, we advance the connection
+  between PGMs and TNs by formulating and implementing tensor-based solutions
+  for the following inference tasks: (i) computing the partition function, (ii)
+  computing the marginal probability of sets of variables in the model, (iii)
+  determining the most likely assignment to a set of variables, and (iv) the
+  same as (iii) but after having marginalized a different set of variables. We
+  also present a generalized method for generating samples from a learned
+  probability distribution. Our work is motivated by recent technical advances
+  in the fields of quantum circuit simulation, quantum many-body physics, and
+  statistical physics. Through an experimental evaluation, we demonstrate that
+  the integration of these quantum technologies with a series of algorithms
+  introduced in this study significantly improves the effectiveness of existing
+  methods for solving probabilistic inference tasks."
+tags:
+  - Computer Science - Machine Learning
+  - Physics - Computational Physics
+identifiers:
+  doi: 10.1103/physrevresearch.6.033261
+  arxiv: "2405.14060"

@@ -1,0 +1,42 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: JEFNSRW5
+  item_version: 96142
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: WE3HPMT6
+      name: ECC compilation
+      path: Circuit Compilation/ECC compilation
+qlab:
+  primary_collection: WE3HPMT6
+  indexed_collections:
+    - WE3HPMT6
+  primary_topic: circuit-compilation
+  indexed_topics:
+    - circuit-compilation
+item_type: preprint
+title: Quantum binary field multiplication with subquadratic Toffoli gate count
+  and low space-time cost
+authors:
+  - first: Vivien
+    last: Vandaele
+year: 2025
+abstract: Multiplication over binary fields is a crucial operation in quantum
+  algorithms designed to solve the discrete logarithm problem for elliptic curve
+  defined over $GF(2^n)$. In this paper, we present an algorithm for
+  constructing quantum circuits that perform multiplication over $GF(2^n)$ with
+  $\mathcal{O}(n^{\log_2(3)})$ Toffoli gates. We propose a variant of our
+  construction that achieves linear depth by using $\mathcal{O}(n\log_2(n))$
+  ancillary qubits. This approach provides the best known space-time trade-off
+  for binary field multiplication with a subquadratic number of Toffoli gates.
+  Additionally, we demonstrate that for some particular families of primitive
+  polynomials, such as trinomials, the multiplication can be done in logarithmic
+  depth and with $\mathcal{O}(n^{\log_2(3)})$ gates.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2501.16136
+  arxiv: "2501.16136"

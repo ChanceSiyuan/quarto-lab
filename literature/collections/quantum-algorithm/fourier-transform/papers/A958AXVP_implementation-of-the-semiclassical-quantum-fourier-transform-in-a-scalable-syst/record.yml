@@ -1,0 +1,64 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: A958AXVP
+  item_version: 96138
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: C3CSREHF
+      name: Fourier transform
+      path: Quantum Algorithm/Fourier transform
+qlab:
+  primary_collection: C3CSREHF
+  indexed_collections:
+    - C3CSREHF
+  primary_topic: quantum-algorithm
+  indexed_topics:
+    - quantum-algorithm
+item_type: journalArticle
+title: Implementation of the Semiclassical Quantum Fourier Transform in a
+  Scalable System
+authors:
+  - first: J.
+    last: Chiaverini
+  - first: J.
+    last: Britton
+  - first: D.
+    last: Leibfried
+  - first: E.
+    last: Knill
+  - first: M. D.
+    last: Barrett
+  - first: R. B.
+    last: Blakestad
+  - first: W. M.
+    last: Itano
+  - first: J. D.
+    last: Jost
+  - first: C.
+    last: Langer
+  - first: R.
+    last: Ozeri
+  - first: T.
+    last: Schaetz
+  - first: D. J.
+    last: Wineland
+year: 2005
+abstract: We report the implementation of the semiclassical quantum Fourier
+  transform in a system of three beryllium ion qubits (two-level quantum
+  systems) confined in a segmented multizone trap. The quantum Fourier transform
+  is the crucial final step in Shor's algorithm, and it acts on a register of
+  qubits to determine the periodicity of the quantum state's amplitudes. Because
+  only probability amplitudes are required for this task, a more efficient
+  semiclassical version can be used, for which only single-qubit operations
+  conditioned on measurement outcomes are required. We apply the transform to
+  several input states of different periodicities; the results enable the
+  location of peaks corresponding to the original periods. This demonstration
+  incorporates the key elements of a scalable ion-trap architecture, suggesting
+  the future capability of applying the quantum Fourier transform to a large
+  number of qubits as required for a useful quantum factoring algorithm.
+tags: []
+identifiers:
+  doi: 10.1126/science.1110335

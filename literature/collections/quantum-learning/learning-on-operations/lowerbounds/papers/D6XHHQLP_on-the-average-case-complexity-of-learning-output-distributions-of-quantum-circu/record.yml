@@ -1,0 +1,66 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: D6XHHQLP
+  item_version: 110965
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: YW9TBWJI
+      name: lowerbounds
+      path: Quantum Learning/Learning on operations/lowerbounds
+    - key: ABE862DE
+      name: Circuit learning
+      path: Quantum Learning/Learning on operations/Circuit learning
+qlab:
+  primary_collection: YW9TBWJI
+  indexed_collections:
+    - ABE862DE
+    - YW9TBWJI
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: journalArticle
+title: On the average-case complexity of learning output distributions of
+  quantum circuits
+authors:
+  - first: Alexander
+    last: Nietner
+  - first: Marios
+    last: Ioannou
+  - first: Ryan
+    last: Sweke
+  - first: Richard
+    last: Kueng
+  - first: Jens
+    last: Eisert
+  - first: Marcel
+    last: Hinsche
+  - first: Jonas
+    last: Haferkamp
+year: 2025
+abstract: "In this work, we show that learning the output distributions of
+  brickwork random quantum circuits is average-case hard in the statistical
+  query model. This learning model is widely used as an abstract computational
+  model for most generic learning algorithms. In particular, for brickwork
+  random quantum circuits on $n$ qubits of depth $d$, we show three main
+  results: - At super logarithmic circuit depth $d=ω(\\log(n))$, any learning
+  algorithm requires super polynomially many queries to achieve a constant
+  probability of success over the randomly drawn instance. - There exists a
+  $d=O(n)$, such that any learning algorithm requires $Ω(2^n)$ queries to
+  achieve a $O(2^{-n})$ probability of success over the randomly drawn instance.
+  - At infinite circuit depth $d\\to\\infty$, any learning algorithm requires
+  $2^{2^{Ω(n)}}$ many queries to achieve a $2^{-2^{Ω(n)}}$ probability of
+  success over the randomly drawn instance. As an auxiliary result of
+  independent interest, we show that the output distribution of a brickwork
+  random quantum circuit is constantly far from any fixed distribution in total
+  variation distance with probability $1-O(2^{-n})$, which confirms a variant of
+  a conjecture by Aaronson and Chen."
+tags:
+  - Computer Science - Computational Complexity
+  - Quantum Physics
+  - Statistics - Machine Learning
+identifiers:
+  doi: 10.22331/q-2025-10-13-1883
+  arxiv: "2305.05765"

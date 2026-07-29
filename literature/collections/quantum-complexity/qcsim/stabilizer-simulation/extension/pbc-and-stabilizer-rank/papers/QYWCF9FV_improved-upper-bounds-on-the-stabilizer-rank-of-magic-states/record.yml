@@ -1,0 +1,202 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: QYWCF9FV
+  item_version: 96112
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 2U9FYC86
+      name: PBC and stabilizer rank
+      path: Quantum Complexity/QCsim/stabilizer simulation/Extension/PBC and
+        stabilizer rank
+qlab:
+  primary_collection: 2U9FYC86
+  indexed_collections:
+    - 2U9FYC86
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: journalArticle
+title: Improved upper bounds on the stabilizer rank of magic states
+authors:
+  - first: Hammam
+    last: Qassim
+  - first: Hakop
+    last: Pashayan
+  - first: David
+    last: Gosset
+year: 2021
+abstract: >-
+  In this work we improve the runtime of recent classical algorithms for strong
+  simulation of quantum circuits composed of Clifford and T gates. The
+  improvement is obtained by establishing a new upper bound on the stabilizer
+  rank of
+                
+                  m
+                
+                copies of the magic state
+                
+                  
+                    |
+                  
+                  T
+                  ⟩
+                  =
+                  
+                    
+                      2
+                    
+                    
+                      −
+                      1
+                    
+                  
+                  (
+                  
+                    |
+                  
+                  0
+                  ⟩
+                  +
+                  
+                    e
+                    
+                      i
+                      π
+                      
+                        /
+                      
+                      4
+                    
+                  
+                  
+                    |
+                  
+                  1
+                  ⟩
+                  )
+                
+                in the limit of large
+                
+                  m
+                
+                . In particular, we show that
+                
+                  
+                    |
+                  
+                  T
+                  
+                    ⟩
+                    
+                      ⊗
+                      m
+                    
+                  
+                
+                can be exactly expressed as a superposition of at most
+                
+                  O
+                  (
+                  
+                    2
+                    
+                      α
+                      m
+                    
+                  
+                  )
+                
+                stabilizer states, where
+                
+                  α
+                  ≤
+                  0.3963
+                
+                , improving on the best previously known bound
+                
+                  α
+                  ≤
+                  0.463
+                
+                . This furnishes, via known techniques, a classical algorithm which approximates output probabilities of an
+                
+                  n
+                
+                -qubit Clifford + T circuit
+                
+                  U
+                
+                with
+                
+                  m
+                
+                uses of the T gate to within a given inverse polynomial relative error using a runtime
+                
+                  
+                    p
+                    o
+                    l
+                    y
+                  
+                  (
+                  n
+                  ,
+                  m
+                  )
+                  
+                    2
+                    
+                      α
+                      m
+                    
+                  
+                
+                . We also provide improved upper bounds on the stabilizer rank of symmetric product states
+                
+                  
+                    |
+                  
+                  ψ
+                  
+                    ⟩
+                    
+                      ⊗
+                      m
+                    
+                  
+                
+                more generally; as a consequence we obtain a strong simulation algorithm for circuits consisting of Clifford gates and
+                
+                  m
+                
+                instances of any (fixed) single-qubit
+                
+                  Z
+                
+                -rotation gate with runtime
+                
+                  poly
+                  (
+                  n
+                  ,
+                  m
+                  )
+                  
+                    2
+                    
+                      m
+                      
+                        /
+                      
+                      2
+                    
+                  
+                
+                . We suggest a method to further improve the upper bounds by constructing linear codes with certain properties.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.22331/q-2021-12-20-606

@@ -1,0 +1,59 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 2QKMHCK9
+  item_version: 96160
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: GUEN2X99
+      name: shallow
+      path: Quantum Learning/Learning on states/Tomography/shadow tomo/shallow
+qlab:
+  primary_collection: GUEN2X99
+  indexed_collections:
+    - GUEN2X99
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: journalArticle
+title: Robust ultra-shallow shadows
+authors:
+  - first: Renato M. S.
+    last: Farias
+  - first: Raghavendra D.
+    last: Peddinti
+  - first: Ingo
+    last: Roth
+  - first: Leandro
+    last: Aolita
+year: 2025
+abstract: We present a robust shadow estimation protocol for wide classes of
+  low-depth measurement circuits that mitigates noise as long as the effective
+  measurement map including noise is locally unitarily invariant. This is in
+  practice an excellent approximation, encompassing for instance the case of
+  ideal single-qubit Clifford gates composing the first circuit layer of an
+  otherwise arbitrary circuit architecture and even non-Markovian,
+  gate-dependent noise in the rest of the circuit. We argue that for
+  weakly-correlated local noise, the measurement channel has an efficient
+  matrix-product representation, and show how to estimate this directly from
+  experimental data using tensor-network tools, eliminating the need for
+  analytical or numeric calculations. We illustrate the relevance of our method
+  with both numerics and proof-of-principle experiments on an IBM Quantum
+  device. Numerically, we show that unmitigated shallow shadows with noisy
+  circuits become more biased as the depth increases. In contrast, using the
+  same number of samples, robust ultra-shallow shadows become more precise with
+  increasing depth for relevant parameter regimes. The gain in sample efficiency
+  is still limited by the noise per gate, resulting in an optimal circuit depth
+  per noise level. Experimentally, we observe improved precision in two simple
+  fidelity estimation tasks using five-qubit circuits with up to two layers of
+  entangling gates, by about an order of magnitude. Under the practical
+  constraints of current and near-term noisy quantum devices, our method
+  maximally realizes the potential of shadow estimation with global rotations
+  and identifies its fundamental limitations in the presence of noise.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.1088/2058-9565/adc14f
+  arxiv: "2405.06022"

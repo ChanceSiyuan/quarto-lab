@@ -1,0 +1,14 @@
+---
+title: Reduction to Degree-3 Bolean gaps
+description: Let be a quantum circuit on qubits consisting of Hadamard, Z, CZ and CCZ gates, starting and ending with a column of Hadamard gates, and containing internal Hadamard gates.
+categories:
+  - theory
+---
+
+Let $C$ be a quantum circuit on $l$ qubits consisting of Hadamard, Z, CZ and CCZ gates,
+starting and ending with a column of Hadamard gates,
+and containing $h$ internal Hadamard gates. 
+Then the exists a Boolean function $f_C(y)$ such that $G(C,y):= f_C(y)$ is polynomial-time computable Boolean predicate and
+$$
+\langle 0|C|0\rangle = \frac{\mathrm{gap}(f_C)}{2^{l + h/2}}
+$$

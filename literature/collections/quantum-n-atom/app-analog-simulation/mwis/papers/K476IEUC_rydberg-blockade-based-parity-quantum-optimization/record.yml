@@ -1,0 +1,44 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: K476IEUC
+  item_version: 110109
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 3TT6GSQZ
+      name: MWIS
+      path: Quantum N-Atom/App-Analog simulation/MWIS
+qlab:
+  primary_collection: 3TT6GSQZ
+  indexed_collections:
+    - 3TT6GSQZ
+  primary_topic: quantum-n-atom
+  indexed_topics:
+    - quantum-n-atom
+item_type: journalArticle
+title: Rydberg blockade based parity quantum optimization
+authors:
+  - first: Martin
+    last: Lanthaler
+  - first: Clemens
+    last: Dlaska
+  - first: Kilian
+    last: Ender
+  - first: Wolfgang
+    last: Lechner
+year: 2023
+abstract: We present a scalable architecture for solving higher-order
+  constrained binary optimization problems on current neutral-atom hardware
+  operating in the Rydberg blockade regime. In particular, we formulate the
+  recently developed parity encoding of arbitrary connected higher-order
+  optimization problems as a maximum-weight independent set (\textsf{MWIS})
+  problem on disk graphs, that are directly encodable on such devices. Our
+  architecture builds from small \textsf{MWIS} modules in a problem-independent
+  way, crucial for practical scalability.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.1103/physrevlett.130.220601
+  arxiv: "2210.05604"

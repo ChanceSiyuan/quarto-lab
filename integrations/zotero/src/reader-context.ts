@@ -3218,7 +3218,7 @@ export function createZotero9ReadAdapter(
           if (items.length > MAX_PDF_OUTLINE_ENTRIES) return;
           const record = asRecord(node);
           items.push({
-            title: cleanText(String(record.title ?? "")) || "(无标题)",
+            title: cleanText(String(record.title ?? "")) || "(untitled)",
             page: await resolvePage(record.dest),
             depth,
           });

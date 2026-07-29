@@ -1,0 +1,51 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: TTAJGWK9
+  item_version: 106328
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: AJIR76C4
+      name: automaton
+      path: Quantum Dynamics/automaton
+qlab:
+  primary_collection: AJIR76C4
+  indexed_collections:
+    - AJIR76C4
+  primary_topic: quantum-dynamics
+  indexed_topics:
+    - quantum-dynamics
+item_type: journalArticle
+title: Reliable Cellular Automata with Self-Organization
+authors:
+  - first: Peter
+    last: Gacs
+year: 2001
+abstract: "In a probabilistic cellular automaton in which all local transitions
+  have positive probability, the problem of keeping a bit of information
+  indefinitely is nontrivial, even in an infinite automaton. Still, there is a
+  solution in 2 dimensions, and this solution can be used to construct a simple
+  3-dimensional discrete-time universal fault-tolerant cellular automaton. This
+  technique does not help much to solve the following problems: remembering a
+  bit of information in 1 dimension; computing in dimensions lower than 3;
+  computing in any dimension with non-synchronized transitions. Our more complex
+  technique organizes the cells in blocks that perform a reliable simulation of
+  a second (generalized) cellular automaton. The cells of the latter automaton
+  are also organized in blocks, simulating even more reliably a third automaton,
+  etc. Since all this (a possibly infinite hierarchy) is organized in
+  ``software'', it must be under repair all the time from damage caused by
+  errors. A large part of the problem is essentially self-stabilization
+  recovering from a mess of arbitrary size and content. The present paper
+  constructs an asynchronous one-dimensional fault-tolerant cellular automaton,
+  with the further feature of ``self-organization''. The latter means that the
+  initial configuration does not have to encode an infinite hierarchy -- this
+  will be built up over time. This is a corrected and strengthened version of
+  the journal paper of 2001."
+tags:
+  - Computer Science - Distributed, Parallel, and Cluster Computing
+  - Mathematics - Probability
+identifiers:
+  doi: 10.1023/a:1004823720305
+  arxiv: math/0003117

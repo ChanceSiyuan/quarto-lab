@@ -1,0 +1,56 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 5TPP9UAB
+  item_version: 105241
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: YHB9EFGP
+      name: Sampling
+      path: Quantum Complexity/Sampling
+    - key: QXW6QJUD
+      name: peak
+      path: Quantum Complexity/Sampling/supermacy verification/peak
+qlab:
+  primary_collection: YHB9EFGP
+  indexed_collections:
+    - QXW6QJUD
+    - YHB9EFGP
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: preprint
+title: On verifiable quantum advantage with peaked circuit sampling
+authors:
+  - first: Scott
+    last: Aaronson
+  - first: Yuxuan
+    last: Zhang
+year: 2024
+abstract: 'Over a decade after its proposal, the idea of using quantum computers
+  to sample hard distributions has remained a key path to demonstrating quantum
+  advantage. Yet a severe drawback remains: verification seems to require
+  classical computation exponential in the system size, $n$. As an attempt to
+  overcome this difficulty, we propose a new candidate for quantum advantage
+  experiments with otherwise random "peaked circuits", i.e., quantum circuits
+  whose outputs have high concentrations on a computational basis state.
+  Naturally, the heavy output string can be used for classical verification. In
+  this work, we analytically and numerically study an explicit model of peaked
+  circuits, in which $\tau_r$ layers of uniformly random gates are augmented by
+  $\tau_p$ layers of gates that are optimized to maximize peakedness. We show
+  that getting $1/\text{poly}(n)$ peakedness from such circuits requires
+  $\tau_{p} = \Omega((\tau_r/n)^{0.19})$ with overwhelming probability. However,
+  we also give numerical evidence that nontrivial peakedness is possible in this
+  model -- decaying exponentially with the number of qubits, but more than can
+  be explained by any approximation where the output of a random quantum circuit
+  is treated as a Haar-random state. This suggests that these peaked circuits
+  have the potential for future verifiable quantum advantage experiments. Our
+  work raises numerous open questions about random peaked circuits, including
+  how to generate them efficiently, and whether they can be distinguished from
+  fully random circuits in classical polynomial time.'
+tags:
+  - Quantum Physics
+identifiers:
+  arxiv: "2404.14493"

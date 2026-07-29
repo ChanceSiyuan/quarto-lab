@@ -1,0 +1,52 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: JBRADYN2
+  item_version: 96044
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: KQ8WNR34
+      name: operations
+      path: Quantum Resource/Magic/Quantification/operations
+    - key: PEV4TKAZ
+      name: noisy PBC method
+      path: Quantum Complexity/QCsim/Open-dynamics/noisy PBC method
+qlab:
+  primary_collection: KQ8WNR34
+  indexed_collections:
+    - KQ8WNR34
+    - PEV4TKAZ
+  primary_topic: quantum-resource
+  indexed_topics:
+    - quantum-complexity
+    - quantum-resource
+item_type: preprint
+title: Qubit magic-breaking channels
+authors:
+  - first: Ayan
+    last: Patra
+  - first: Rivu
+    last: Gupta
+  - first: Alessandro
+    last: Ferraro
+  - first: Aditi Sen
+    last: De
+year: 2024
+abstract: We develop a notion of quantum channels that can make states useless
+  for universal quantum computation by destroying their magic
+  (non-stabilizerness) - we refer to them as magic-breaking channels. We
+  establish the properties of these channels in arbitrary dimensions. We prove
+  the necessary and sufficient criteria for qubit channels to be magic-breaking
+  and present an algorithm for determining the same. Moreover, we provide
+  compact criteria in terms of the parameters for several classes of qubit
+  channels to be magic-breaking under various post-processing operations.
+  Further, we investigate the necessary and sufficient conditions for the tensor
+  product of multiple qubit channels to be magic-breaking. We establish
+  implications of the same for the dynamical resource theory of magic
+  preservability.
+tags:
+  - Quantum Physics
+identifiers:
+  arxiv: "2409.04425"

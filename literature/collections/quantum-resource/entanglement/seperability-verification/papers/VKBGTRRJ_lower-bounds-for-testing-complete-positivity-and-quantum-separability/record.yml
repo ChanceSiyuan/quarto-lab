@@ -1,0 +1,47 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: VKBGTRRJ
+  item_version: 96049
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: GB35ZQY9
+      name: seperability verification
+      path: Quantum Resource/Entanglement/seperability verification
+qlab:
+  primary_collection: GB35ZQY9
+  indexed_collections:
+    - GB35ZQY9
+  primary_topic: quantum-resource
+  indexed_topics:
+    - quantum-resource
+item_type: preprint
+title: Lower bounds for testing complete positivity and quantum separability
+authors:
+  - first: Costin
+    last: Bădescu
+  - first: Ryan
+    last: O'Donnell
+year: 2019
+abstract: In this work we are interested the problem of testing quantum
+  entanglement. More specifically, we study the separability problem in quantum
+  property testing, where one is given $n$ copies of an unknown mixed quantum
+  state $\varrho$ on $\mathbb{C}^d \otimes \mathbb{C}^d$, and one wants to test
+  whether $\varrho$ is separable or $\epsilon$-far from all separable states in
+  trace distance. We prove that $n = \Omega(d^2/\epsilon^2)$ copies are
+  necessary to test separability, assuming $\epsilon$ is not too small, viz.\
+  $\epsilon = \Omega(1/\sqrt{d})$. We also study completely positive
+  distributions on the grid $[d] \times [d]$, as a classical analogue of
+  separable states. We analogously prove that $\Omega(d/\epsilon^2)$ samples
+  from an unknown distribution $p$ are necessary to decide whether $p$ is
+  completely positive or $\epsilon$-far from all completely positive
+  distributions in total variation distance. Towards showing that the true
+  complexity may in fact be higher, we also show that learning an unknown
+  completely positive distribution on $[d] \times [d]$ requires
+  $\Omega(d^2/\epsilon^2)$ samples.
+tags:
+  - Quantum Physics
+identifiers:
+  arxiv: "1905.01542"

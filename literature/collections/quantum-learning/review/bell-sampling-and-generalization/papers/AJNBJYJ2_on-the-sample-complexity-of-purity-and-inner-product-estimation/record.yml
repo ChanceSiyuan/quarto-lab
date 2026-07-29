@@ -1,0 +1,71 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: AJNBJYJ2
+  item_version: 96016
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: VMP2AYWR
+      name: Bell sampling and generalization
+      path: Quantum Learning/_Review/Bell sampling and generalization
+    - key: ITLT2FDY
+      name: lowerbounds
+      path: Quantum Learning/Learning on states/lowerbounds
+qlab:
+  primary_collection: VMP2AYWR
+  indexed_collections:
+    - ITLT2FDY
+    - VMP2AYWR
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: preprint
+title: On the sample complexity of purity and inner product estimation
+authors:
+  - first: Weiyuan
+    last: Gong
+  - first: Jonas
+    last: Haferkamp
+  - first: Qi
+    last: Ye
+  - first: Zhihan
+    last: Zhang
+year: 2024
+abstract: We study the sample complexity of the prototypical tasks quantum
+  purity estimation and quantum inner product estimation. In purity estimation,
+  we are to estimate $tr(\rho^2)$ of an unknown quantum state $\rho$ to additive
+  error $\epsilon$. Meanwhile, for quantum inner product estimation, Alice and
+  Bob are to estimate $tr(\rho\sigma)$ to additive error $\epsilon$ given copies
+  of unknown quantum state $\rho$ and $\sigma$ using classical communication and
+  restricted quantum communication. In this paper, we show a strong connection
+  between the sample complexity of purity estimation with bounded quantum memory
+  and inner product estimation with bounded quantum communication and
+  unentangled measurements. We propose a protocol that solves quantum inner
+  product estimation with $k$-qubit one-way quantum communication and
+  unentangled local measurements using
+  $O(median\{1/\epsilon^2,2^{n/2}/\epsilon,2^{n-k}/\epsilon^2\})$ copies of
+  $\rho$ and $\sigma$. Our protocol can be modified to estimate the purity of an
+  unknown quantum state $\rho$ using $k$-qubit quantum memory with the same
+  complexity. We prove that arbitrary protocols with $k$-qubit quantum memory
+  that estimate purity to error $\epsilon$ require
+  $\Omega(median\{1/\epsilon^2,2^{n/2}/\sqrt{\epsilon},2^{n-k}/\epsilon^2\})$
+  copies of $\rho$. This indicates the same lower bound for quantum inner
+  product estimation with one-way $k$-qubit quantum communication and classical
+  communication, and unentangled local measurements. For purity estimation, we
+  further improve the lower bound to
+  $\Omega(\max\{1/\epsilon^2,2^{n/2}/\epsilon\})$ for any protocols using an
+  identical single-copy projection-valued measurement. Additionally, we
+  investigate a decisional variant of quantum distributed inner product
+  estimation without quantum communication for mixed state and provide a lower
+  bound on the sample complexity.
+tags:
+  - Computer Science - Data Structures and Algorithms
+  - Computer Science - Information Theory
+  - Computer Science - Machine Learning
+  - Mathematics - Information Theory
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2410.12712
+  arxiv: "2410.12712"

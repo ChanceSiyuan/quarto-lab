@@ -1,0 +1,60 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: BQ9RZLJ5
+  item_version: 102755
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: J83CW6YG
+      name: whatif_nosign
+      path: Quantum Learning/Learning on states/non-linear/Application/whatif_nosign
+qlab:
+  primary_collection: J83CW6YG
+  indexed_collections:
+    - J83CW6YG
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: journalArticle
+title: Algorithmic Shadow Spectroscopy
+authors:
+  - first: Hans Hon Sang
+    last: Chan
+  - first: Richard
+    last: Meister
+  - first: Matthew L.
+    last: Goh
+  - first: Bálint
+    last: Koczor
+year: 2025
+abstract: "We present shadow spectroscopy as a simulator-agnostic quantum
+  algorithm for estimating energy gaps using very few circuit repetitions
+  (shots) and no extra resources (ancilla qubits) beyond performing time
+  evolution and measurements. The approach builds on the fundamental feature
+  that every observable property of a quantum system must evolve according to
+  the same harmonic components: we can reveal them by post-processing classical
+  shadows of time-evolved quantum states to extract a large number of
+  time-periodic signals $N_o\\propto 10^8$, whose frequencies correspond to
+  Hamiltonian energy differences with Heisenberg-limited precision. We provide
+  strong analytical guarantees that (a) quantum resources scale as $O(\\log
+  N_o)$, while the classical computational complexity is linear $O(N_o)$, (b)
+  the signal-to-noise ratio increases with the number of processed signals as
+  $\\propto \\sqrt{N_o}$, and (c) spectral peak positions are immune to
+  reasonable levels of noise. We demonstrate our approach on model spin systems
+  and the excited state conical intersection of molecular CH$_2$ and verify that
+  our method is indeed intuitively easy to use in practice, robust against gate
+  noise, amiable to a new type of algorithmic-error mitigation technique, and
+  uses orders of magnitude fewer number of shots than typical near-term quantum
+  algorithms -- as low as 10 shots per timestep is sufficient. Finally, we
+  measured a high-quality, experimental shadow spectrum of a spin chain on
+  readily-available IBM quantum computers, achieving the same precision as in
+  noise-free simulations without using any advanced error mitigation, and
+  verified scalability in tensor-network simulations of up to 100-qubit
+  systems."
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.1103/prxquantum.6.010352
+  arxiv: "2212.11036"

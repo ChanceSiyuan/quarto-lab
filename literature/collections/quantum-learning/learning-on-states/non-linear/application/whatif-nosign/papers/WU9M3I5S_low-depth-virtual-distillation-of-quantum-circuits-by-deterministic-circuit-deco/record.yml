@@ -1,0 +1,74 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: WU9M3I5S
+  item_version: 104842
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: J83CW6YG
+      name: whatif_nosign
+      path: Quantum Learning/Learning on states/non-linear/Application/whatif_nosign
+qlab:
+  primary_collection: J83CW6YG
+  indexed_collections:
+    - J83CW6YG
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: journalArticle
+title: Low depth virtual distillation of quantum circuits by deterministic
+  circuit decomposition
+authors:
+  - first: Akib
+    last: Karim
+  - first: Shaobo
+    last: Zhang
+  - first: Muhammad
+    last: Usman
+year: 2024
+abstract: >-
+  Virtual distillation using measurements of multiple copies of a quantum
+  circuit have recently been proposed as a method of noise mitigation of
+  expectation values. Circuit decompositions known as B gates were found only
+  for 1-local Hamiltonians, however practical problems for chemistry require
+                
+                  n
+                
+                -local Hamiltonians, which cannot be corrected with B gates. We discover low depth circuit decompositions for expectation values for
+                
+                  n
+                
+                -local Pauli strings by combining multiple projections to recover the correct measurement statistics or expectation values. Our method adds linear entangling gates with the number of qubits, but it requires extra measurements. Furthermore, in applications to find ground states such as the variational quantum eigensolver (VQE) algorithm, the variational principle is required which states that the energy cannot go below the ground-state energy. We find that the variational principle is violated when using B gates and is preserved if we use our low depth decomposition on all expectation values. We perform a demonstration on real devices, and we show that our decomposition can mitigate real experimental noise in VQE for the
+                
+                  
+                    H
+                    2
+                  
+                
+                molecule with a two-qubit tapered mapping,
+                
+                  
+                    H
+                    3
+                  
+                
+                with three qubits, and
+                
+                  
+                    H
+                    2
+                  
+                
+                with four qubits. Our decomposition provides a way to perform duplicate circuit virtual distillation on real devices at significantly lower depth and for arbitrary observables.
+              
+              
+                
+                
+                  
+                    Published by the American Physical Society
+                    2024
+tags: []
+identifiers:
+  doi: 10.1103/physrevresearch.6.033223

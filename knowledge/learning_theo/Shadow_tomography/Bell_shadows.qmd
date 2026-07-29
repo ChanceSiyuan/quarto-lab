@@ -1,0 +1,413 @@
+---
+title: Classical Shadows Based on Locally-Entangled Measurements
+description: 'Citation: Matteo Ippoliti, "Classical shadows based on locally-entangled measurements", Quantum 8, 1293 (2024)'
+categories:
+  - theory
+---
+
+**Citation**: Matteo Ippoliti, "Classical shadows based on locally-entangled measurements", Quantum 8, 1293 (2024)
+
+## Abstract and Overview
+
+This paper introduces **Bell shadows** and related protocols that use locally-entangled measurements (rather than single-qubit measurements) for classical shadow tomography. The key innovation is using two-qubit Bell measurements, which achieves a **quadratic improvement** in sample complexity (from $\sim 3^k$ to $\sim 3^{k/2}$) for compatible operators, at the cost of making some operators unlearnable. The paper shows how tuning the amount of entanglement creates a family of protocols interpolating between Pauli and Bell shadows.
+
+**Main contributions:**
+1. Bell shadows protocol using two-qubit entangled measurements
+2. Characterization of compatible operators and their improved sample complexity
+3. Extension to $n$-qubit GHZ measurements achieving $\sim (3/2)^k$ scaling
+4. Comparison with shallow shadows showing competitive performance
+
+---
+
+# Part 1: Core Theoretical Framework
+
+## 1.1 Rigorous Definitions & Intuitions
+
+::: {.callout-note icon="false"}
+## Definition 1: Shadow Channel
+
+Given an ensemble of random unitaries $\mathcal{U}$, the **shadow channel** $\mathcal{M}$ is the linear map relating the quantum state $\rho$ to the expected snapshot:
+$$
+\mathbb{E}_{U \sim \mathcal{U}, b \sim U\rho U^\dagger}[\hat{\sigma}] = \mathcal{M}(\rho)
+$$
+where $\hat{\sigma} = U^\dagger |b\rangle\langle b| U$ is a snapshot obtained by measuring $U\rho U^\dagger$ in the computational basis with outcome $b$.
+
+The **inverted snapshot** is defined as $\hat{\rho} = \mathcal{M}^{-1}(\hat{\sigma})$, which satisfies $\mathbb{E}[\hat{\rho}] = \rho$ by construction.
+:::
+
+### Intuition & Example
+
+**Why this definition?** The shadow channel $\mathcal{M}$ captures how the measurement protocol "depolarizes" the quantum state. By inverting this channel, we can construct unbiased estimators for state properties.
+
+**Toy Example**: For random Pauli measurements (measuring each qubit in $X$, $Y$, or $Z$ basis randomly), the shadow channel factors as:
+$$
+\mathcal{M} = \mathcal{E}_1^{\otimes N}
+$$
+where each single-qubit channel $\mathcal{E}_1$ acts on Pauli matrices as:
+$$
+\mathcal{E}_1(\sigma^0) = \sigma^0, \quad \mathcal{E}_1(\sigma^\alpha) = \frac{1}{3}\sigma^\alpha \text{ for } \alpha \in \{x,y,z\}
+$$
+
+This means the identity is preserved, but traceless Paulis are depolarized by a factor of $1/3$ (because only 1 out of 3 random basis choices "hits" a given Pauli).
+
+**Physical interpretation**: The shadow channel represents the information loss due to randomized measurements. The factor $1/3$ arises because we randomly choose among 3 bases, and only the correct choice contributes useful information.
+
+---
+
+::: {.callout-note icon="false"}
+## Definition 2: Shadow Norm
+
+For a Pauli operator $P$ in an $N$-qubit system with Pauli-invariant measurement ensemble, the **shadow norm** is:
+$$
+\|P\|_{\text{sh}}^2 = \frac{1}{2^N} \text{Tr}(P \mathcal{M}^{-1}(P))
+$$
+
+This norm determines the sample complexity for learning $\langle P \rangle$ to accuracy $\epsilon$: approximately $\|P\|_{\text{sh}}^2/\epsilon^2$ measurements are needed.
+:::
+
+### Intuition & Example
+
+**Why this definition?** The shadow norm quantifies how "difficult" it is to learn an operator. The inverse channel $\mathcal{M}^{-1}$ appears because we construct inverted snapshots, amplifying the depolarization effect.
+
+**Toy Example**: For random Pauli measurements and a weight-$k$ Pauli operator $P$:
+$$
+\|P\|_{\text{sh}}^2 = 3^k
+$$
+
+This is because $\mathcal{M}^{-1}$ inverts the depolarization: $\mathcal{E}_1^{-1}(\sigma^\alpha) = 3\sigma^\alpha$ for $\alpha \neq 0$. Since $P$ has $k$ nontrivial Paulis, we get $(1/3)^{-k} = 3^k$.
+
+**Concrete calculation**: For $P = X_1 Z_2$ (weight $k=2$):
+$$
+\mathcal{M}^{-1}(X_1 Z_2) = \mathcal{E}_1^{-1}(X_1) \otimes \mathcal{E}_1^{-1}(Z_2) = 3X_1 \otimes 3Z_2 = 9(X_1 Z_2)
+$$
+Thus $\|X_1 Z_2\|_{\text{sh}}^2 = \frac{1}{4}\text{Tr}(X_1 Z_2 \cdot 9 X_1 Z_2) = \frac{9 \cdot 4}{4} = 9 = 3^2$. ✓
+
+---
+
+::: {.callout-note icon="false"}
+## Definition 3: Dimer Covering and Compatible Operators
+
+A **dimer covering** is a partition of the $N$ qubits into $N/2$ pairs (dimers).
+
+A Pauli operator $P$ is **compatible** with a dimer covering if its support intersects each dimer in either 0 or 2 sites. Otherwise, $P$ is **incompatible**.
+:::
+
+### Intuition & Example
+
+**Why this definition?** Bell measurements on a dimer can only measure operators that act nontrivially on both qubits or neither. Operators acting on only one qubit of a dimer cannot be learned.
+
+**Toy Example**: Consider 4 qubits with dimer covering $(1,2)$ and $(3,4)$:
+
+**Compatible operators:**
+- $X_1 Z_2$ (acts on both qubits of dimer 1, none of dimer 2) ✓
+- $X_1 Z_2 \otimes Y_3 Y_4$ (acts on both qubits of both dimers) ✓
+- $I$ (acts on no qubits) ✓
+
+**Incompatible operators:**
+- $X_1$ (acts on only one qubit of dimer 1) ✗
+- $X_1 Z_3$ (acts on one qubit from each dimer) ✗
+
+**Geometric interpretation**: On a 1D chain with nearest-neighbor dimers, compatible operators have "even support" - they touch each dimer an even number of times (0 or 2).
+
+---
+
+::: {.callout-note icon="false"}
+## Definition 4: Bell Shadow Channel
+
+For Bell measurements on dimers with local scrambling, the shadow channel factors as:
+$$
+\mathcal{M} = \mathcal{E}_2^{\otimes N/2}
+$$
+where each two-qubit channel $\mathcal{E}_2$ acts on a dimer as:
+$$
+\mathcal{E}_2(\sigma^\alpha \otimes \sigma^\beta) = \lambda_{\alpha\beta} \sigma^\alpha \otimes \sigma^\beta
+$$
+with eigenvalues:
+$$
+\lambda_{00} = 1, \quad \lambda_{0\bullet} = \lambda_{\bullet 0} = 0, \quad \lambda_{\bullet\bullet} = \frac{1}{3}
+$$
+where $0$ denotes identity and $\bullet$ denotes any traceless Pauli $\{x,y,z\}$.
+:::
+
+### Intuition & Example
+
+**Why these eigenvalues?**
+- $\lambda_{00} = 1$: Identity is always preserved
+- $\lambda_{0\bullet} = 0$: Operators acting on only one qubit cannot be measured (incompatible!)
+- $\lambda_{\bullet\bullet} = 1/3$: For weight-2 operators, Bell measurements "hit" 3 out of 9 possibilities
+
+**Toy Example**: For a dimer, there are 9 weight-2 Pauli operators: $\{X,Y,Z\} \otimes \{X,Y,Z\}$. A Bell measurement outcome (e.g., $|XX\rangle = +1$, $|YZ\rangle = -1$) tells us about 3 operators:
+- $XX = +1$ (measured directly)
+- $YZ = -1$ (measured directly)
+- $ZY = XX \cdot YZ = -1$ (inferred)
+
+So we learn 3 out of 9 operators, giving probability $1/3$ per dimer.
+
+**Verification**: For $P = X_1 X_2$ on a single dimer:
+$$
+\mathcal{E}_2(X_1 X_2) = \lambda_{\bullet\bullet} X_1 X_2 = \frac{1}{3} X_1 X_2
+$$
+Thus $\mathcal{E}_2^{-1}(X_1 X_2) = 3 X_1 X_2$, giving $\|X_1 X_2\|_{\text{sh}}^2 = 3 = 3^{2/2}$. ✓
+
+---
+
+## 1.2 Main Theorems & Key Insights
+
+::: {.callout-important icon="false"}
+## Theorem 1: Bell Shadow Sample Complexity
+
+For a weight-$k$ Pauli operator $P$ that is **compatible** with the dimer covering, the Bell shadow norm is:
+$$
+\|P\|_{\text{sh}}^2 = 3^{k/2}
+$$
+
+This represents a **quadratic improvement** over random Pauli measurements ($3^k$).
+
+For **incompatible** operators, $\|P\|_{\text{sh}}^2 = \infty$ (not learnable).
+:::
+
+### Intuition of Validity
+
+**Why quadratic improvement?** The key insight is that Bell measurements provide information about **pairs** of qubits simultaneously.
+
+For a weight-$k$ operator compatible with the dimer covering:
+- It acts nontrivially on $k/2$ dimers (since it touches each dimer on 0 or 2 sites)
+- Each dimer contributes a factor of $3$ to the shadow norm (from $\lambda_{\bullet\bullet}^{-1} = 3$)
+- Total: $(3)^{k/2} = 3^{k/2}$
+
+**Comparison with Pauli shadows:**
+- Pauli: Each of $k$ qubits contributes factor $3$ → $3^k$
+- Bell: Each of $k/2$ dimers contributes factor $3$ → $3^{k/2}$
+
+**Why incompatible operators fail?** If $P$ acts on only one qubit of a dimer, that dimer contributes $\lambda_{0\bullet}^{-1} = 1/0 = \infty$.
+
+**Verification with toy example**: For $P = X_1 Z_2 \otimes Y_3 Y_4$ (weight $k=4$, compatible with dimers $(1,2)$ and $(3,4)$):
+$$
+\|P\|_{\text{sh}}^2 = \lambda_{\bullet\bullet}^{-1} \cdot \lambda_{\bullet\bullet}^{-1} = 3 \cdot 3 = 9 = 3^{4/2}
+$$
+
+This means we need $\sim 9/\epsilon^2$ measurements instead of $\sim 81/\epsilon^2$ for Pauli shadows - a **9× improvement**!
+
+---
+
+::: {.callout-important icon="false"}
+## Theorem 2: Fraction of Learnable Operators
+
+The fraction of Pauli operators that are compatible with a dimer covering is:
+$$
+\frac{10^{N/2}}{4^N} \approx 0.79^N
+$$
+
+This fraction decreases exponentially with system size.
+:::
+
+### Intuition of Validity
+
+**Why this fraction?** For each dimer, we can place:
+- $\sigma^0 \otimes \sigma^0$ (1 option) - identity on both
+- $\sigma^\alpha \otimes \sigma^\beta$ with $\alpha, \beta \in \{x,y,z\}$ (9 options) - nontrivial on both
+
+Total: $1 + 9 = 10$ compatible options per dimer.
+
+Since there are $N/2$ dimers and each can independently have 10 options:
+$$
+\text{Compatible operators} = 10^{N/2}
+$$
+
+Total Pauli operators: $4^N$ (each qubit can have $\{I, X, Y, Z\}$).
+
+Fraction: $10^{N/2}/4^N = (10/16)^{N/2} = (5/8)^{N/2} \approx 0.79^N$.
+
+**Trade-off interpretation**: Bell shadows sacrifice exponentially many operators to achieve quadratic speedup on the remaining ones. This is worthwhile when the operators of interest are geometrically local and compatible with a natural dimer covering.
+
+---
+
+::: {.callout-important icon="false"}
+## Theorem 3: GHZ Shadow Scaling
+
+For $n$-qubit GHZ measurements (measuring $n$ qubits in the GHZ basis), compatible weight-$k$ operators achieve:
+$$
+\|P\|_{\text{sh}}^2 = \left(\frac{3}{2}\right)^k
+$$
+
+This is the best possible scaling, but applies to an increasingly restricted set of operators as $n$ grows.
+:::
+
+### Intuition of Validity
+
+**Why $(3/2)^k$?** GHZ measurements on $n$ qubits can measure $2^{n-1}$ out of $3^n$ weight-$n$ operators (the stabilizer group of GHZ states has size $2^n$, but we exclude the identity).
+
+For large $n$, the ratio approaches:
+$$
+\frac{2^{n-1}}{3^n} \approx \left(\frac{2}{3}\right)^n
+$$
+
+For a weight-$k$ operator touching $k/n$ groups of $n$ qubits:
+$$
+\|P\|_{\text{sh}}^2 \approx \left(\frac{3}{2}\right)^k
+$$
+
+**Comparison:**
+- Pauli shadows: $3^k$
+- Bell shadows ($n=2$): $3^{k/2} = (\sqrt{3})^k \approx 1.73^k$
+- GHZ shadows (large $n$): $(3/2)^k = 1.5^k$
+
+**Trade-off**: As $n$ increases, the scaling improves but the fraction of learnable operators decreases even faster: $\sim (2/3)^{nN/n} = (2/3)^N$ for $n$-qubit groups.
+
+---
+
+# Part 2: Technical Deep Dive
+
+## 2.1 Derivation of Bell Shadow Channel Eigenvalues
+
+::: {.callout-note collapse="true"}
+## Detailed Derivation (Click to expand)
+
+We derive the eigenvalues $\lambda_{\alpha\beta}$ of the Bell shadow channel $\mathcal{E}_2$.
+
+**Step 1: Express the channel**
+
+The channel acts on a dimer as:
+$$
+\mathcal{E}_2(\rho) = \sum_\alpha \int \text{d}u\, \text{d}v\, \langle\Phi^\alpha| u\otimes v \rho (u \otimes v)^\dagger |\Phi^\alpha\rangle \times (u \otimes v)^\dagger |\Phi^\alpha\rangle\langle\Phi^\alpha| u\otimes v
+$$
+
+where $\text{d}u$, $\text{d}v$ are Haar measures over $U(2)$ (using 2-design property of Clifford gates), and $|\Phi^\alpha\rangle$ are the four Bell states.
+
+**Step 2: Diagonality in Pauli basis**
+
+Due to local scrambling with random Clifford gates, the channel is diagonal in the Pauli basis:
+$$
+\mathcal{E}_2(\sigma^\alpha \otimes \sigma^\beta) = \lambda_{\alpha\beta} \sigma^\alpha \otimes \sigma^\beta
+$$
+
+**Step 3: Compute eigenvalues**
+
+The eigenvalue is:
+$$
+\lambda_{\alpha\beta} = \frac{1}{4} \text{Tr}[\sigma^\alpha \otimes \sigma^\beta \mathcal{E}_2(\sigma^\alpha\otimes \sigma^\beta)]
+$$
+
+Substituting the channel expression and using $\langle\Phi^0| B\otimes C|\Phi^0\rangle = \frac{1}{2}\text{Tr}(BC^T)$:
+$$
+\lambda_{\alpha\beta} = \frac{1}{4} \int\text{d}u\, \text{d}v\, [\text{Tr}(u\sigma^\alpha u^\dagger v \sigma^\beta v^\dagger)]^2
+$$
+
+**Key observation**: The integrand depends only on $u^\dagger v$, so one rotation is redundant. We can integrate over $u^\dagger v$ alone.
+
+**Step 4: Evaluate specific cases**
+
+**Case 1**: $\alpha = \beta = 0$ (both identity)
+$$
+\lambda_{00} = \frac{1}{4} \int\text{d}u\, [\text{Tr}(u u^\dagger)]^2 = \frac{1}{4} \cdot 4 = 1
+$$
+
+**Case 2**: $\alpha = 0, \beta \neq 0$ (one identity, one traceless)
+$$
+\lambda_{0\bullet} = \frac{1}{4} \int\text{d}u\, [\text{Tr}(u \sigma^\beta u^\dagger)]^2
+$$
+
+Since $\sigma^\beta$ is traceless and $u$ is Haar-random, $\text{Tr}(u \sigma^\beta u^\dagger) = \text{Tr}(\sigma^\beta) = 0$. Thus $\lambda_{0\bullet} = 0$.
+
+**Case 3**: $\alpha, \beta \neq 0$ (both traceless)
+
+Using the 2-design property, for traceless Paulis:
+$$
+\int\text{d}u\, (u\sigma^\alpha u^\dagger)_{ij} (u\sigma^\beta u^\dagger)_{kl} = \frac{1}{3}\delta_{\alpha\beta}(\delta_{ik}\delta_{jl} - \frac{1}{2}\delta_{ij}\delta_{kl})
+$$
+
+After calculation:
+$$
+\lambda_{\bullet\bullet} = \frac{1}{3}
+$$
+
+This completes the derivation of Eq. (1) in the paper.
+
+:::
+
+---
+
+## 2.2 Sample Complexity Analysis for Specific Operators
+
+::: {.callout-note collapse="true"}
+## Application to 1D Pauli Strings (Click to expand)
+
+**Setup**: Consider a 1D chain with $N$ qubits. We want to learn Pauli string operators of the form $P = \bigotimes_{i=1}^k \sigma^{\alpha_i}_{x_i}$ where $x_1 < x_2 < \cdots < x_k$ are the support sites.
+
+**Dimer covering strategy**: Use two dimer coverings:
+1. **Even covering**: Dimers $(1,2), (3,4), (5,6), \ldots$
+2. **Odd covering**: Dimers $(2,3), (4,5), (6,7), \ldots$
+
+**Key observation**: Any Pauli string of **even length** $k$ is compatible with at least one of these two coverings.
+
+**Proof**:
+- If $k$ is even and the string starts on an odd site, it's compatible with the even covering
+- If $k$ is even and the string starts on an even site, it's compatible with the odd covering
+
+**Sample complexity**: For even-length strings, we achieve:
+$$
+\|P\|_{\text{sh}}^2 = 3^{k/2}
+$$
+
+**Comparison with Pauli shadows**:
+- Pauli: $3^k$ measurements
+- Bell (2 coverings): $2 \times 3^{k/2}$ measurements (factor 2 for two coverings)
+
+**Speedup**: For $k=10$: Pauli needs $\sim 59,000$ measurements, Bell needs $\sim 2 \times 243 = 486$ measurements - a **120× improvement**!
+
+**Limitation**: Odd-length strings are incompatible with both coverings and cannot be learned.
+
+:::
+
+---
+
+## 2.3 Comparison with Shallow Shadows
+
+::: {.callout-note collapse="true"}
+## Performance Comparison (Click to expand)
+
+**Shallow shadows** use variable-depth random circuits to interpolate between Pauli and Clifford measurements. For contiguous Pauli strings in 1D, they achieve:
+$$
+\|P\|_{\text{sh}}^2 \sim k \cdot 2^k
+$$
+when tuned to optimal depth $\sim k$.
+
+**Bell shadows** achieve:
+$$
+\|P\|_{\text{sh}}^2 = 3^{k/2}
+$$
+
+**Comparison**:
+- For $k=4$: Shallow $\sim 64$, Bell $= 9$ → Bell wins
+- For $k=8$: Shallow $\sim 2048$, Bell $= 81$ → Bell wins
+- For $k=12$: Shallow $\sim 49152$, Bell $= 729$ → Bell wins
+
+**Key advantage of Bell shadows**:
+1. **Simpler protocol**: Only requires two-qubit gates, no variable depth
+2. **Lower hardware requirements**: Constant-depth circuit
+3. **Better scaling**: $3^{k/2}$ vs $k \cdot 2^k$ for many operators
+
+**Trade-off**: Bell shadows only work for compatible operators (even-length strings with appropriate dimer covering), while shallow shadows work for all operators but with worse scaling.
+
+:::
+
+---
+
+## Key Takeaways
+
+1. **Bell shadows achieve quadratic improvement** in sample complexity ($3^k \to 3^{k/2}$) for compatible operators by using two-qubit entangled measurements.
+
+2. **The price is selectivity**: Only $\sim 0.79^N$ of all Pauli operators are learnable, but these include many physically-relevant operators (local strings, plaquettes, etc.).
+
+3. **The improvement comes from measuring pairs**: Bell measurements provide information about 3 out of 9 weight-2 operators per dimer, vs 1 out of 3 per qubit for Pauli measurements.
+
+4. **Scaling can be further improved** to $(3/2)^k$ using $n$-qubit GHZ measurements, at the cost of even more restricted operator sets.
+
+5. **Practical advantage**: Bell shadows can outperform shallow shadows for many physically-relevant tasks while requiring simpler hardware (constant-depth circuits with only two-qubit gates).
+
+6. **Design principle**: Tuning the amount of entanglement in measurement bases creates a family of protocols with different trade-offs between sample complexity and operator coverage.
+
+## References
+
+::: {#refs}
+:::

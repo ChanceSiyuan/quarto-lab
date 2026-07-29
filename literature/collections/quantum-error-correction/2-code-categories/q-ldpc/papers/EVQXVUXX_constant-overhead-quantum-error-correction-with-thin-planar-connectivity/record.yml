@@ -1,0 +1,48 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: EVQXVUXX
+  item_version: 96108
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: B87X4JQW
+      name: q-LDPC
+      path: Quantum Error correction/2-Code categories/q-LDPC
+qlab:
+  primary_collection: B87X4JQW
+  indexed_collections:
+    - B87X4JQW
+  primary_topic: quantum-error-correction
+  indexed_topics:
+    - quantum-error-correction
+item_type: journalArticle
+title: Constant-overhead quantum error correction with thin planar connectivity
+authors:
+  - first: Maxime A.
+    last: Tremblay
+  - first: Nicolas
+    last: Delfosse
+  - first: Michael E.
+    last: Beverland
+year: 2022
+abstract: Quantum LDPC codes may provide a path to build low-overhead
+  fault-tolerant quantum computers. However, as general LDPC codes lack
+  geometric constraints, na\"ive layouts couple many distant qubits with
+  crossing connections which could be hard to build in hardware and could result
+  in performance-degrading crosstalk. We propose a 2D layout for quantum LDPC
+  codes by decomposing their Tanner graphs into a small number of planar layers.
+  Each layer contains long-range connections which do not cross. For any CSS
+  code with a degree-$\delta$ Tanner graph, we design stabilizer measurement
+  circuits with depth at most $(2\delta +2)$ using at most $\lceil \delta/2
+  \rceil$ layers. We observe a circuit-noise threshold of 0.28\% for a
+  positive-rate code family using 49 physical qubits per logical qubit. For a
+  physical error rate of $10^{-4}$, this family reaches a logical error rate of
+  $10^{-15}$ using fourteen times fewer physical qubits than the surface code.
+tags:
+  - Computer Science - Information Theory
+  - Quantum Physics
+identifiers:
+  doi: 10.1103/physrevlett.129.050504
+  arxiv: "2109.14609"
