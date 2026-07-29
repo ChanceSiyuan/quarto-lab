@@ -74,3 +74,46 @@ test("bounds expansion, supplies abort signals, and reports provider failures", 
   const fixturePapers = await fixtureClient.expand({ anchors: [], topicIds: ["T7"], normalizedProblem: "quantum" });
   assert.equal(fixturePapers.length, 1);
 });
+
+test("retains confirmed anchors under the final ceiling and bounds reference requests", async () => {
+  const calls = [];
+  const fetchFn = async (url) => {
+    const target = String(url);
+    calls.push(target);
+    if (target.includes("/works/W900")) return json(work({
+      id: "https://openalex.org/W900",
+      referenced_works: Array.from({ length: 101 }, (_, index) => `https://openalex.org/W${1000 + index}`),
+    }));
+    if (target.includes("filter=cites%3AW900")) return json({
+      results: Array.from({ length: 100 }, (_, index) => work({ id: `https://openalex.org/W${String(index).padStart(3, "0")}` })),
+    });
+    return json({ results: [] });
+  };
+  const client = createOpenAlexClient({ fetchFn, apiKey: "test-key", maxWorks: 100 });
+  const papers = await client.expand({ anchors: ["W900"], topicIds: [], normalizedProblem: "quantum error correction" });
+  assert.equal(papers.length, 100);
+  assert.ok(papers.some((paper) => paper.id === "W900"));
+  assert.deepEqual(papers.map((paper) => paper.id), [...papers].map((paper) => paper.id).sort());
+  assert.ok(calls.filter((target) => /\/works\/W1\d{3}/.test(target)).length <= 100);
+});
+
+test("aborts a request when its timeout signal fires", async () => {
+  const originalSetTimeout = globalThis.setTimeout;
+  let aborted = false;
+  globalThis.setTimeout = (callback) => originalSetTimeout(callback, 0);
+  try {
+    const client = createOpenAlexClient({
+      apiKey: "test-key",
+      fetchFn: async (_url, { signal }) => new Promise((_resolve, reject) => {
+        signal.addEventListener("abort", () => {
+          aborted = true;
+          reject(new Error("fake transport aborted"));
+        }, { once: true });
+      }),
+    });
+    await assert.rejects(client.expand({ anchors: [], topicIds: ["T7"] }), (error) => error.code === "OPENALEX_PROVIDER_ERROR");
+    assert.equal(aborted, true);
+  } finally {
+    globalThis.setTimeout = originalSetTimeout;
+  }
+});
