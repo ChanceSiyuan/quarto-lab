@@ -7,6 +7,9 @@ import { promisify } from "node:util";
 import { createAssessmentJobManager } from "../lib/assessments/job-manager.mjs";
 import { createAssessmentService } from "../lib/assessments/local-service.mjs";
 import { createProblemRepository } from "../lib/problems/repository.mjs";
+import { createValuationJobManager } from "../lib/valuations/job-manager.mjs";
+import { createOpenAlexClient } from "../lib/valuations/openalex-client.mjs";
+import { createValuationSnapshotStore } from "../lib/valuations/snapshot-store.mjs";
 
 const execFileAsync = promisify(execFile);
 
@@ -42,15 +45,23 @@ export async function startAssessmentService({
   port = 0,
   host = "127.0.0.1",
   manager = null,
+  valuationManager = null,
 } = {}) {
   if (host !== "127.0.0.1") throw new Error("Local assessment service must bind to 127.0.0.1.");
   const workspaceRoot = resolve(rootDir);
+  const repository = manager && valuationManager ? null : await createLocalRepository(workspaceRoot);
   const assessmentManager = manager ?? createAssessmentJobManager({
     rootDir: workspaceRoot,
-    repository: await createLocalRepository(workspaceRoot),
+    repository,
     resolveKnowledge: createKnowledgeResolver(workspaceRoot),
   });
-  const server = createAssessmentService({ rootDir: workspaceRoot, token, manager: assessmentManager });
+  const localValuationManager = valuationManager ?? createValuationJobManager({
+    rootDir: workspaceRoot,
+    repository,
+    openAlex: createOpenAlexClient({ apiKey: process.env.OPENALEX_API_KEY }),
+    store: createValuationSnapshotStore({ rootDir: workspaceRoot }),
+  });
+  const server = createAssessmentService({ rootDir: workspaceRoot, token, manager: assessmentManager, valuationManager: localValuationManager });
   await new Promise((resolveListen, reject) => {
     server.once("error", reject);
     server.listen(port, host, () => {
@@ -65,6 +76,7 @@ export async function startAssessmentService({
     url,
     close: async () => {
       await assessmentManager.shutdown?.();
+      await localValuationManager.shutdown?.();
       await new Promise((resolveClose, reject) => server.close((error) => error ? reject(error) : resolveClose()));
     },
   };

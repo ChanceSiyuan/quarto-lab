@@ -73,16 +73,21 @@ test("the local knowledge adapter forwards a selected page to the trusted resolv
 
 test("standalone service close shuts down the assessment manager", async () => {
   let shutdowns = 0;
+  let valuationShutdowns = 0;
   const service = await startAssessmentService({
     token: "secret",
     manager: {
       shutdown: async () => { shutdowns += 1; },
+    },
+    valuationManager: {
+      shutdown: async () => { valuationShutdowns += 1; },
     },
   });
 
   await service.close();
 
   assert.equal(shutdowns, 1);
+  assert.equal(valuationShutdowns, 1);
 });
 
 test("starts jobs through the POST endpoint", async () => {
@@ -104,6 +109,123 @@ test("starts jobs through the POST endpoint", async () => {
   assert.equal(response.status, 202);
   assert.deepEqual(calls, ["Prob-001"]);
   assert.equal((await response.json()).runId, runId);
+});
+
+test("serves valuation state and starts a scoped valuation job through local-only routes", async () => {
+  const calls = [];
+  const state = { problemId: "Prob-007", activeJob: null, readySnapshotId: "20260729T091011Z-abcdef123456", jobs: [] };
+  const server = createAssessmentService({
+    token: "secret",
+    manager: {},
+    valuationManager: {
+      getProblemState: async (problemId) => {
+        calls.push(["state", problemId]);
+        return state;
+      },
+      start: async (problemId, options) => {
+        calls.push(["start", problemId, options]);
+        return { accepted: true, runId, status: "queued" };
+      },
+    },
+  });
+  const stateResponse = await request(server, "/__local/assessments/problems/Prob-007/valuation", { headers: tokenHeaders });
+  assert.equal(stateResponse.status, 200);
+  assert.deepEqual(await stateResponse.json(), state);
+
+  const started = await request(createAssessmentService({
+    token: "secret",
+    manager: {},
+    valuationManager: {
+      getProblemState: async () => state,
+      start: async (problemId, options) => {
+        calls.push(["start", problemId, options]);
+        return { accepted: true, runId, status: "queued" };
+      },
+    },
+  }), "/__local/assessments/problems/Prob-007/valuation/jobs", {
+    method: "POST",
+    headers: { ...tokenHeaders, "content-type": "application/json" },
+    body: JSON.stringify({ scopeOverride: "hardware-and-control" }),
+  });
+  assert.equal(started.status, 202);
+  assert.equal((await started.json()).runId, runId);
+  assert.deepEqual(calls, [
+    ["state", "Prob-007"],
+    ["start", "Prob-007", { scopeOverride: "hardware-and-control" }],
+  ]);
+});
+
+test("confirms valuation candidates only with authenticated same-origin JSON requests", async () => {
+  const confirmation = {
+    candidateHash: "a".repeat(64),
+    acceptedAnchorIds: ["anchor-1"],
+    assumptionDecisions: [{ id: "assumption-1", decision: "accept" }],
+  };
+  const calls = [];
+  const manager = {
+    confirm: async (receivedRunId, receivedConfirmation) => {
+      calls.push([receivedRunId, receivedConfirmation]);
+      return { accepted: true, runId: receivedRunId, status: "confirming" };
+    },
+  };
+  const badContent = await request(createAssessmentService({ token: "secret", manager: {}, valuationManager: manager }), `/__local/assessments/valuation/jobs/${runId}/confirmation`, {
+    method: "POST",
+    headers: tokenHeaders,
+    body: JSON.stringify(confirmation),
+  });
+  assert.equal(badContent.status, 415);
+
+  const crossOrigin = await request(createAssessmentService({ token: "secret", manager: {}, valuationManager: manager }), `/__local/assessments/valuation/jobs/${runId}/confirmation`, {
+    method: "POST",
+    headers: { ...tokenHeaders, "content-type": "application/json", origin: "https://attacker.example" },
+    body: JSON.stringify(confirmation),
+  });
+  assert.equal(crossOrigin.status, 403);
+
+  const accepted = await request(createAssessmentService({ token: "secret", manager: {}, valuationManager: manager }), `/__local/assessments/valuation/jobs/${runId}/confirmation`, {
+    method: "POST",
+    headers: { ...tokenHeaders, "content-type": "application/json" },
+    body: JSON.stringify(confirmation),
+  });
+  assert.equal(accepted.status, 202);
+  assert.deepEqual(calls, [[runId, confirmation]]);
+});
+
+test("rejects invalid valuation route IDs, scope overrides, and oversized bodies before manager calls", async () => {
+  const manager = {
+    start: async () => assert.fail("valuation manager should not be called"),
+    confirm: async () => assert.fail("valuation manager should not be called"),
+  };
+  const invalidProblem = await request(createAssessmentService({ token: "secret", manager: {}, valuationManager: manager }), "/__local/assessments/problems/not-a-problem/valuation/jobs", {
+    method: "POST",
+    headers: { ...tokenHeaders, "content-type": "application/json" },
+    body: "{}",
+  });
+  assert.equal(invalidProblem.status, 400);
+  assert.equal((await invalidProblem.json()).error, "INVALID_PROBLEM_ID");
+
+  const invalidScope = await request(createAssessmentService({ token: "secret", manager: {}, valuationManager: manager }), "/__local/assessments/problems/Prob-007/valuation/jobs", {
+    method: "POST",
+    headers: { ...tokenHeaders, "content-type": "application/json" },
+    body: JSON.stringify({ scopeOverride: "unlisted-area" }),
+  });
+  assert.equal(invalidScope.status, 400);
+  assert.equal((await invalidScope.json()).error, "INVALID_SCOPE_OVERRIDE");
+
+  const invalidRun = await request(createAssessmentService({ token: "secret", manager: {}, valuationManager: manager }), "/__local/assessments/valuation/jobs/not-a-run/confirmation", {
+    method: "POST",
+    headers: { ...tokenHeaders, "content-type": "application/json" },
+    body: "{}",
+  });
+  assert.equal(invalidRun.status, 400);
+  assert.equal((await invalidRun.json()).error, "INVALID_RUN_ID");
+
+  const oversized = await request(createAssessmentService({ token: "secret", manager: {}, valuationManager: manager }), "/__local/assessments/problems/Prob-007/valuation/jobs", {
+    method: "POST",
+    headers: { ...tokenHeaders, "content-type": "application/json" },
+    body: JSON.stringify({ padding: "x".repeat(17 * 1024) }),
+  });
+  assert.equal(oversized.status, 413);
 });
 
 test("rejects non-JSON mutation requests before manager calls", async () => {
