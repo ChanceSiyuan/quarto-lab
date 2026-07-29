@@ -7,8 +7,12 @@ import { createArtifactStore } from "../lib/assessments/artifact-store.mjs";
 import { resolveExistingRunDir } from "../lib/assessments/paths.mjs";
 import { createAssessmentJobManager } from "../lib/assessments/job-manager.mjs";
 import { createProblemRepository } from "../lib/problems/repository.mjs";
-import { createQecPortfolioBatchRunner, verifyQecPortfolio } from "../lib/qec-portfolio/batch-runner.mjs";
-import { QEC_PORTFOLIO_IDS, QEC_PORTFOLIO_PROBLEMS } from "../lib/qec-portfolio/catalog.mjs";
+import {
+  createQecPortfolioBatchRunner,
+  QEC_PORTFOLIO_BATCH_IDS,
+  verifyQecPortfolio,
+} from "../lib/qec-portfolio/batch-runner.mjs";
+import { QEC_PORTFOLIO_PROBLEMS } from "../lib/qec-portfolio/catalog.mjs";
 import { createRetryingOpenAlexClient } from "../lib/qec-portfolio/openalex-retry.mjs";
 import { registerQecPortfolio } from "../lib/qec-portfolio/registration.mjs";
 import { createQecPortfolioValuationResearcher } from "../lib/qec-portfolio/valuation-researcher.mjs";
@@ -24,7 +28,7 @@ function readArg(name) {
   return index === -1 ? undefined : process.argv[index + 1];
 }
 
-async function createLocalRepository(rootDir) {
+export async function createLocalRepository(rootDir) {
   const index = JSON.parse(await readFile(join(rootDir, ".generated", "problem-index.json"), "utf8"));
   const repository = createProblemRepository(index);
   return {
@@ -50,78 +54,76 @@ function withAssessmentReaders(rootDir, store) {
   };
 }
 
-async function rebuildAndVerifyIndex(rootDir) {
-  await execFile(process.execPath, ["scripts/build-problem-index.mjs", "--reserve-id", "Prob-000"], { cwd: rootDir });
-  const index = JSON.parse(await readFile(join(rootDir, ".generated", "problem-index.json"), "utf8"));
+export async function rebuildAndVerifyIndex(rootDir, { execFileFn = execFile, readFileFn = readFile } = {}) {
+  await execFileFn(process.execPath, ["scripts/build-problem-index.mjs", "--reserve-id", "Prob-000"], { cwd: rootDir });
+  const index = JSON.parse(await readFileFn(join(rootDir, ".generated", "problem-index.json"), "utf8"));
   const qecIds = index.problems
     .filter((problem) => problem.domain === "quantum-computing" && problem.quantumArea === "error-correction-and-fault-tolerance")
     .map((problem) => problem.id)
     .sort();
-  return JSON.stringify(qecIds) === JSON.stringify([...QEC_PORTFOLIO_IDS].sort());
+  return JSON.stringify(qecIds) === JSON.stringify([...QEC_PORTFOLIO_BATCH_IDS].sort());
 }
 
-const rootDir = resolve(readArg("--root") ?? process.cwd());
-const apiKey = process.env.OPENALEX_API_KEY?.trim();
-
-if (!apiKey) {
-  console.log(JSON.stringify({
+export async function runQecPortfolio({ rootDir, apiKey = process.env.OPENALEX_API_KEY?.trim() } = {}) {
+  const workspaceRoot = resolve(rootDir ?? process.cwd());
+  if (!apiKey) return {
     status: "incomplete",
     phases: { preflight: "failed" },
     problems: [],
     error: { code: "OPENALEX_KEY_REQUIRED" },
-  }));
-  process.exitCode = 1;
-} else {
+  };
   let valuationManager = null;
   let assessmentManager = null;
   try {
-    const repository = await createLocalRepository(rootDir);
-    const valuationStore = createValuationSnapshotStore({ rootDir });
-    const assessmentStore = withAssessmentReaders(rootDir, createArtifactStore({ rootDir }));
-    valuationManager = createValuationJobManager({
-      rootDir,
-      repository,
-      researcher: createQecPortfolioValuationResearcher(),
-      openAlex: createRetryingOpenAlexClient({ client: createOpenAlexClient({ apiKey }) }),
-      store: valuationStore,
-    });
-    assessmentManager = createAssessmentJobManager({
-      rootDir,
-      repository,
-      store: assessmentStore,
-      valuationStore,
-      resolveKnowledge: createKnowledgeResolver(rootDir),
-    });
+    const valuationStore = createValuationSnapshotStore({ rootDir: workspaceRoot });
+    const assessmentStore = withAssessmentReaders(workspaceRoot, createArtifactStore({ rootDir: workspaceRoot }));
     const runner = createQecPortfolioBatchRunner({
       records: QEC_PORTFOLIO_PROBLEMS,
       register: ({ records }) => registerQecPortfolio({
-        rootDir,
+        rootDir: workspaceRoot,
         records,
         publish: async ({ id, stageDir }) => {
-          const { stdout } = await execFile("make", ["problem-publish", `STAGE=${relative(rootDir, stageDir)}`, `ID=${id}`], { cwd: rootDir });
+          const { stdout } = await execFile("make", ["problem-publish", `STAGE=${relative(workspaceRoot, stageDir)}`, `ID=${id}`], { cwd: workspaceRoot });
           return JSON.parse(stdout);
         },
       }),
-      verifyIndex: () => rebuildAndVerifyIndex(rootDir),
-      valuationManager,
-      valuationStore,
-      assessmentManager,
-      assessmentStore,
-      verifyPortfolio: () => verifyQecPortfolio({ rootDir }),
+      verifyIndex: () => rebuildAndVerifyIndex(workspaceRoot),
+      createManagers: async () => {
+        const repository = await createLocalRepository(workspaceRoot);
+        valuationManager = createValuationJobManager({
+          rootDir: workspaceRoot,
+          repository,
+          researcher: createQecPortfolioValuationResearcher(),
+          openAlex: createRetryingOpenAlexClient({ client: createOpenAlexClient({ apiKey }) }),
+          store: valuationStore,
+        });
+        assessmentManager = createAssessmentJobManager({
+          rootDir: workspaceRoot,
+          repository,
+          store: assessmentStore,
+          valuationStore,
+          resolveKnowledge: createKnowledgeResolver(workspaceRoot),
+        });
+        return { valuationManager, valuationStore, assessmentManager, assessmentStore };
+      },
+      verifyPortfolio: () => verifyQecPortfolio({ rootDir: workspaceRoot }),
     });
-    const summary = await runner.run();
-    console.log(JSON.stringify(summary));
-    if (summary.status !== "complete") process.exitCode = 1;
+    return await runner.run();
   } catch (error) {
-    console.log(JSON.stringify({
+    return {
       status: "incomplete",
       phases: { execution: "failed" },
       problems: [],
       error: { code: error?.code ?? "QEC_PORTFOLIO_RUN_FAILED", message: error.message },
-    }));
-    process.exitCode = 1;
+    };
   } finally {
     await assessmentManager?.shutdown?.();
     await valuationManager?.shutdown?.();
   }
+}
+
+if (import.meta.url === `file://${process.argv[1]}`) {
+  const summary = await runQecPortfolio({ rootDir: readArg("--root") });
+  console.log(JSON.stringify(summary));
+  if (summary.status !== "complete") process.exitCode = 1;
 }
