@@ -133,9 +133,9 @@ test("server-renders the problem console shell", async () => {
   assert.match(html, /Problem Console/);
   assert.match(html, /<a class="topbar-link" href="\/knowledge\/">Knowledge <span aria-hidden="true">→<\/span><\/a>/);
   assert.match(html, />\+ Add problem<\/a>/);
-  assert.doesNotMatch(html, /CSS code-distance algorithm search/);
-  assert.doesNotMatch(html, /href="\/problems\/Prob-000"/);
-  assert.match(html, />\+ Add first problem<\/a>/);
+  assert.match(html, /AutoQEC CSS Distance Campaign/);
+  assert.match(html, /href="\/problems\/Prob-001"/);
+  assert.doesNotMatch(html, />\+ Add first problem<\/a>/);
   assert.match(html, /Cannot open Codex\?/);
   assert.match(html, /codex:\/\/threads\/new/);
   assert.match(html, /Accepted/);
@@ -163,14 +163,14 @@ test("server-renders the problem console shell", async () => {
   assert.doesNotMatch(html, /localStorage/);
 });
 
-test("ordinary local build excludes and reserves the showcase problem", () => {
-  assert.deepEqual(generatedIndex.problems.map((problem) => problem.id), []);
-  assert.equal(generatedIndex.nextProblemId, "Prob-001");
+test("ordinary local build indexes the tracked campaign and reserves the next problem ID", () => {
+  assert.deepEqual(generatedIndex.problems.map((problem) => problem.id), ["Prob-001"]);
+  assert.equal(generatedIndex.nextProblemId, "Prob-002");
   assert.deepEqual(generatedIndex.diagnostics, []);
   assert.deepEqual(generatedIndex.summary, {
-    total: 0,
-    accepted: 0,
-    solved: 0,
+    total: 1,
+    accepted: 1,
+    solved: 1,
     published: 0,
     rejected: 0,
     archived: 0,
@@ -261,6 +261,9 @@ test("server-renders the generic problem detail shell for non-example problems",
   assert.match(html, /<p class="eyebrow">Prob-017<\/p>/);
   assert.match(html, /<h1>Fresh Hamiltonian gate<\/h1>/);
   assert.match(html, /<p class="detail-summary">Interval arithmetic on held-out instances\.<\/p>/);
+  assert.match(html, /Available in local mode/);
+  assert.match(html, /<button[^>]*disabled=""[^>]*>Prepare autoresearch<\/button>/);
+  assert.doesNotMatch(html, /<h2[^>]*>Prepare infrastructure<\/h2>/);
   assert.match(html, /<section class="assessment-panel assessment-unavailable" aria-labelledby="assessment-heading">/);
   assert.match(html, /Local assessment unavailable/);
   assert.match(html, /The detailed problem workspace will be designed next; this page currently locks the route, identity, and return path\./);

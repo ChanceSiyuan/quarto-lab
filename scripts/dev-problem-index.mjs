@@ -6,6 +6,7 @@ import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { startAssessmentService } from "./local-assessment-service.mjs";
+import { startService as startLocalAutoresearchService } from "./local-autoresearch-service.mjs";
 
 const ignoredRoots = new Set([".generated", ".git", "node_modules", ".next", ".vinext", "dist", ".wrangler"]);
 const RESEARCH_INDEX_FILENAMES = new Set([
@@ -16,6 +17,30 @@ const RESEARCH_INDEX_FILENAMES = new Set([
 ]);
 const ATTEMPT_INDEX_FILENAMES = new Set(["attempt.json"]);
 const COHORT_INDEX_FILENAMES = new Set(["cohort-001-100.json", "cohort-101-200.json"]);
+const LOOPBACK_DEV_HOSTS = new Set(["127.0.0.1", "::1", "[::1]", "localhost"]);
+
+function devHostArguments(args) {
+  const hosts = [];
+  for (let index = 0; index < args.length; index += 1) {
+    const argument = args[index];
+    if (argument === "--host" || argument === "--hostname") {
+      const value = args[index + 1];
+      hosts.push(typeof value === "string" && !value.startsWith("-") ? value : null);
+      index += 1;
+    } else if (argument.startsWith("--host=") || argument.startsWith("--hostname=")) {
+      hosts.push(argument.slice(argument.indexOf("=") + 1));
+    }
+  }
+  return hosts;
+}
+
+export function assertAutoresearchDevLoopback({ enabled, configuredHost, args = [] }) {
+  if (!enabled) return;
+  const hosts = [configuredHost, ...devHostArguments(args)].filter((value) => value !== undefined);
+  if (hosts.some((host) => typeof host !== "string" || !LOOPBACK_DEV_HOSTS.has(host))) {
+    throw new TypeError("Autoresearch dev server host must be loopback.");
+  }
+}
 
 export async function ensureProblemWatchDir(rootDir) {
   const problemsPath = join(rootDir, "problems");
@@ -140,12 +165,27 @@ export async function watchProblemFiles({ rootDir, onChange, watchFn = watch }) 
   };
 }
 
-export function runIndexBuild(rootDir, spawnFn = spawn) {
+export function runIndexBuild(rootDir, spawnFn = spawn, { outputRootDir = rootDir } = {}) {
   return new Promise((resolveBuild, rejectBuild) => {
+    const resolvedRootDir = resolve(rootDir);
+    const resolvedOutputRootDir = resolve(outputRootDir);
+    const args = ["scripts/build-problem-index.mjs", "--reserve-id", "Prob-000"];
+    if (resolvedRootDir !== resolvedOutputRootDir) {
+      args.splice(
+        1,
+        0,
+        "--root",
+        resolvedRootDir,
+        "--out",
+        join(resolvedOutputRootDir, ".generated", "problem-index.json"),
+        "--research-out",
+        join(resolvedOutputRootDir, ".generated", "research-index.json"),
+      );
+    }
     const builder = spawnFn(
       process.execPath,
-      ["scripts/build-problem-index.mjs", "--reserve-id", "Prob-000"],
-      { cwd: rootDir, stdio: "inherit" },
+      args,
+      { cwd: resolvedOutputRootDir, stdio: "inherit" },
     );
     builder.on("error", rejectBuild);
     builder.on("exit", (code) => {
@@ -157,23 +197,32 @@ export function runIndexBuild(rootDir, spawnFn = spawn) {
 
 export async function main({
   rootDir = process.cwd(),
-  spawnFn = spawn,
   runIndexBuildFn = runIndexBuild,
   watchProblemFilesFn = watchProblemFiles,
+  startAutoresearchServiceFn = startLocalAutoresearchService,
   startAssessmentServiceFn = startAssessmentService,
+  spawnFn = spawn,
+  processRef = process,
+  environment = process.env,
   vinextDevArgs = process.argv.slice(2),
 } = {}) {
   const resolvedRootDir = resolve(rootDir);
-
-  await runIndexBuildFn(resolvedRootDir);
-  const assessmentToken = randomBytes(16).toString("hex");
-  const assessmentService = await startAssessmentServiceFn({
-    rootDir: resolvedRootDir,
-    token: assessmentToken,
+  const workspaceRootDir = resolve(environment.AUTORESEARCH_WORKSPACE_ROOT ?? resolvedRootDir);
+  const privateDataRoot = environment.AUTORESEARCH_PRIVATE_ROOT;
+  assertAutoresearchDevLoopback({
+    enabled: typeof privateDataRoot === "string" && privateDataRoot.length > 0,
+    configuredHost: environment.AUTORESEARCH_DEV_HOST,
+    args: vinextDevArgs,
   });
 
+  await runIndexBuildFn(workspaceRootDir, spawnFn, { outputRootDir: resolvedRootDir });
+
+  const assessmentToken = randomBytes(16).toString("hex");
   let timer;
   let watcher;
+  let assessmentService;
+  let autoresearchService;
+  let child;
   let cleanupPromise;
   const cleanup = () => {
     cleanupPromise ??= (async () => {
@@ -181,31 +230,69 @@ export async function main({
         watcher?.close();
       } finally {
         clearTimeout(timer);
-        await assessmentService.close();
+        const closePromises = [];
+        if (assessmentService) closePromises.push(assessmentService.close());
+        if (autoresearchService) closePromises.push(autoresearchService.close());
+        await Promise.all(closePromises);
       }
     })();
     return cleanupPromise;
   };
 
-  let child;
   try {
-    watcher = await watchProblemFilesFn({
+    assessmentService = await startAssessmentServiceFn({
       rootDir: resolvedRootDir,
+      token: assessmentToken,
+    });
+
+    if (typeof privateDataRoot === "string" && privateDataRoot.length > 0) {
+      autoresearchService = await startAutoresearchServiceFn({
+        rootDir: workspaceRootDir,
+        privateDataRoot,
+        codexPath: environment.AUTORESEARCH_CODEX_PATH,
+        schemaPath: environment.AUTORESEARCH_SCHEMA_PATH,
+        indexOutputRoot: resolvedRootDir,
+      });
+    }
+
+    watcher = await watchProblemFilesFn({
+      rootDir: workspaceRootDir,
       onChange() {
         clearTimeout(timer);
         timer = setTimeout(() => {
-          runIndexBuildFn(resolvedRootDir).catch((error) => console.error(error.message));
+          runIndexBuildFn(workspaceRootDir, spawnFn, { outputRootDir: resolvedRootDir }).catch((error) => console.error(error.message));
         }, 150);
       },
     });
 
-    child = spawnFn("vinext", ["dev", ...vinextDevArgs], {
+    const vinextEnvironment = { ...environment };
+    for (const key of [
+      "AUTORESEARCH_PRIVATE_ROOT",
+      "AUTORESEARCH_WORKSPACE_ROOT",
+      "AUTORESEARCH_CODEX_PATH",
+      "AUTORESEARCH_SCHEMA_PATH",
+      "AUTORESEARCH_INDEX_OUTPUT_ROOT",
+      "AUTORESEARCH_DEV_HOST",
+      "AUTORESEARCH_DEV_PORT",
+    ]) delete vinextEnvironment[key];
+
+    const vinextArgs = ["dev", ...vinextDevArgs];
+    const devHost = environment.AUTORESEARCH_DEV_HOST;
+    const devPort = environment.AUTORESEARCH_DEV_PORT;
+    if (typeof devHost === "string" && devHost.length > 0) vinextArgs.push("--host", devHost);
+    if (typeof devPort === "string" && devPort.length > 0) vinextArgs.push("--port", devPort);
+
+    child = spawnFn("vinext", vinextArgs, {
       cwd: resolvedRootDir,
       env: {
-        ...process.env,
+        ...vinextEnvironment,
         WRANGLER_LOG_PATH: ".wrangler/wrangler.log",
         LOCAL_ASSESSMENT_SERVICE_URL: assessmentService.url,
         LOCAL_ASSESSMENT_PROXY_TOKEN: assessmentService.token ?? assessmentToken,
+        ...(autoresearchService ? {
+          AUTORESEARCH_CAPABILITY_TOKEN: autoresearchService.token,
+          AUTORESEARCH_SERVICE_ORIGIN: autoresearchService.origin,
+        } : {}),
       },
       stdio: "inherit",
     });
@@ -214,17 +301,24 @@ export async function main({
     throw error;
   }
 
+  let stopped = false;
+  const stop = (signal) => {
+    if (stopped) return;
+    stopped = true;
+    child.kill(signal);
+    cleanup().catch((error) => console.error(error.message));
+  };
   for (const signal of ["SIGINT", "SIGTERM"]) {
-    process.on(signal, () => child.kill(signal));
+    processRef.on(signal, () => stop(signal));
   }
 
   child.on("exit", async (code, signal) => {
     await cleanup();
-    process.exitCode = code ?? (signal ? 1 : 0);
+    processRef.exitCode = code ?? (signal ? 1 : 0);
   });
   child.on("error", async () => {
     await cleanup();
-    process.exitCode = 1;
+    processRef.exitCode = 1;
   });
 }
 

@@ -1,7 +1,8 @@
 import vinext from "vinext";
 import { defineConfig } from "vite";
-import hostingConfig from "./.openai/hosting.json";
-import { sites } from "./build/sites-vite-plugin";
+import type { IncomingMessage, ServerResponse } from "node:http";
+import hostingConfig from "./.openai/hosting.json" with { type: "json" };
+import { sites } from "./build/sites-vite-plugin.ts";
 
 const SITE_CREATOR_PLACEHOLDER_DATABASE_ID =
   "00000000-0000-4000-8000-000000000000";
@@ -10,6 +11,68 @@ const { d1, r2 } = hostingConfig;
 
 // macOS Seatbelt blocks FSEvents, so Codex previews need polling for HMR.
 const isCodexSeatbeltSandbox = process.env.CODEX_SANDBOX === "seatbelt";
+const SAFE_PROXY_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
+
+function rejectCrossSiteMutation(request: IncomingMessage, response?: ServerResponse) {
+  if (SAFE_PROXY_METHODS.has(request.method ?? "GET")) return undefined;
+  const host = request.headers.host;
+  const origin = request.headers.origin;
+  const fetchSite = request.headers["sec-fetch-site"];
+  let sameOrigin = false;
+  try {
+    const parsedOrigin = typeof origin === "string" ? new URL(origin) : null;
+    sameOrigin = parsedOrigin?.protocol === "http:"
+      && parsedOrigin.host.toLowerCase() === host?.toLowerCase();
+  } catch {
+    sameOrigin = false;
+  }
+  if (sameOrigin && (fetchSite === undefined || fetchSite === "same-origin")) return undefined;
+  response?.writeHead(403, {
+    "cache-control": "no-store",
+    "content-type": "application/json; charset=utf-8",
+  });
+  response?.end(JSON.stringify({ error: { code: "INVALID_REQUEST", message: "Cross-site mutation is not allowed." } }));
+  return false;
+}
+
+export function buildAutoresearchProxy({ origin, token }: { origin?: string; token?: string }) {
+  if (!origin || !token) return undefined;
+  return {
+    "/__local/autoresearch": {
+      target: origin,
+      changeOrigin: true,
+      headers: { "x-research-loop-capability": token },
+      bypass: rejectCrossSiteMutation,
+    },
+  };
+}
+
+export function buildLocalServiceProxy({
+  assessmentTarget,
+  assessmentToken,
+  autoresearchOrigin,
+  autoresearchToken,
+}: {
+  assessmentTarget?: string;
+  assessmentToken?: string;
+  autoresearchOrigin?: string;
+  autoresearchToken?: string;
+}) {
+  const autoresearch = buildAutoresearchProxy({ origin: autoresearchOrigin, token: autoresearchToken }) ?? {};
+  const proxy = {
+    ...(assessmentTarget && assessmentToken
+      ? {
+          "/__local/assessments": {
+            target: assessmentTarget,
+            changeOrigin: false,
+            headers: { "x-local-assessment-token": assessmentToken },
+          },
+        }
+      : {}),
+    ...autoresearch,
+  };
+  return Object.keys(proxy).length > 0 ? proxy : undefined;
+}
 
 const localBindingConfig = {
   main: "./worker/index.ts",
@@ -44,22 +107,23 @@ export default defineConfig(async () => {
   const { cloudflare } = await import("@cloudflare/vite-plugin");
   const localAssessmentTarget = process.env.LOCAL_ASSESSMENT_SERVICE_URL;
   const localAssessmentToken = process.env.LOCAL_ASSESSMENT_PROXY_TOKEN;
+  const autoresearchOrigin = process.env.AUTORESEARCH_SERVICE_ORIGIN;
+  const autoresearchToken = process.env.AUTORESEARCH_CAPABILITY_TOKEN;
+  const proxy = buildLocalServiceProxy({
+    assessmentTarget: localAssessmentTarget,
+    assessmentToken: localAssessmentToken,
+    autoresearchOrigin,
+    autoresearchToken,
+  });
   const server = {
     ...(isCodexSeatbeltSandbox ? { watch: { useFsEvents: false, usePolling: true } } : {}),
-    ...(localAssessmentTarget && localAssessmentToken
-      ? {
-          proxy: {
-            "/__local/assessments": {
-              target: localAssessmentTarget,
-              changeOrigin: false,
-              headers: { "x-local-assessment-token": localAssessmentToken },
-            },
-          },
-        }
-      : {}),
+    ...(proxy ? { proxy } : {}),
   };
 
   return {
+    define: {
+      __AUTORESEARCH_SIDECAR_AVAILABLE__: JSON.stringify(Boolean(autoresearchOrigin && autoresearchToken)),
+    },
     server: Object.keys(server).length ? server : undefined,
     plugins: [
       vinext(),

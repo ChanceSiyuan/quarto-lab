@@ -11,6 +11,9 @@ import { buildProblemDetailResearchState } from "@/lib/problems/research-route-d
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AssessmentPanel } from "./assessment-panel";
+import { StaticAutoresearchPanel } from "./static-autoresearch-panel";
+
+declare const __AUTORESEARCH_SIDECAR_AVAILABLE__: boolean;
 
 export default async function ProblemDetailPage({
   params,
@@ -33,6 +36,7 @@ export default async function ProblemDetailPage({
     researchRecord,
     diagnostics: researchDiagnostics,
   });
+  const sidecarAvailable = __AUTORESEARCH_SIDECAR_AVAILABLE__;
 
   if (isStaticResearchExampleProblem(problem.id)) {
     const example = getStaticResearchExample(problem.id);
@@ -57,6 +61,8 @@ export default async function ProblemDetailPage({
             <span>300 s / run</span>
           </div>
         </header>
+
+        <StaticAutoresearchPanel />
 
         <p className="example-disclaimer">{example.manifest.disclaimer}</p>
         <AssessmentPanel problemId={problem.id} />
@@ -116,6 +122,8 @@ export default async function ProblemDetailPage({
     );
   }
 
+  const { AutoresearchPanel } = await import("./autoresearch-panel");
+
   if (researchState.kind === "research") {
     const ledger = researchState.ledger;
     return (
@@ -133,6 +141,8 @@ export default async function ProblemDetailPage({
             <span>{ledger.rows.length} attempts</span>
           </div>
         </header>
+        <AutoresearchPanel problemId={problem.id} initialEligibility={problem.status === "qualifying" || problem.status === "accepted"} sidecarAvailable={sidecarAvailable} />
+        <AssessmentPanel problemId={problem.id} />
         <p className="example-disclaimer">{researchState.disclaimer}</p>
         <dl className="research-metric-strip" aria-label="Research metrics">
           {ledger.cards.map((card) => (
@@ -212,6 +222,7 @@ export default async function ProblemDetailPage({
       <p className="eyebrow">{problem.id}</p>
       <h1>{problem.title}</h1>
       <p className="detail-summary">{problem.summary}</p>
+      <AutoresearchPanel problemId={problem.id} initialEligibility={problem.status === "qualifying" || problem.status === "accepted"} sidecarAvailable={sidecarAvailable} />
       <AssessmentPanel problemId={problem.id} />
       <section className="detail-panel" aria-labelledby="detail-status-heading">
         <h2 id="detail-status-heading">Problem detail</h2>
