@@ -15,7 +15,7 @@
 	literature-index literature-fetch literature-sync \
 	migration-verify \
 	problem-import-autoqec-css-distance problem-import-verify \
-	problem-index problem-publish qec-portfolio-register \
+	problem-index problem-publish qec-portfolio-register qec-portfolio-run qec-portfolio-verify \
 	autoresearch-service \
 	zotero-plugin-test zotero-plugin
 
@@ -45,6 +45,8 @@ help:
 	@echo '  make problem-index                                              refresh the generated problem index'
 	@echo '  make problem-publish STAGE=".generated/problem-staging/<run>/Prob-NNN" ID=Prob-NNN  publish one validated staged draft'
 	@echo '  make qec-portfolio-register                                   register the approved QEC portfolio drafts'
+	@echo '  make qec-portfolio-run                                        run restartable QEC valuations and assessments (requires OPENALEX_API_KEY)'
+	@echo '  make qec-portfolio-verify                                     verify persisted QEC portfolio artifacts without writing'
 	@echo '  make autoresearch-service                       serve local-only autoresearch preparation diagnostics'
 	@echo '  make zotero-plugin-test                         type-check and test the Zotero integration'
 	@echo '  make zotero-plugin                              test and build the installable Zotero XPI'
@@ -135,6 +137,12 @@ problem-publish: node_modules/.package-lock.json
 
 qec-portfolio-register: node_modules/.package-lock.json
 	@npm run --silent qec-portfolio:register
+
+qec-portfolio-run: node_modules/.package-lock.json
+	@npm run --silent qec-portfolio:run
+
+qec-portfolio-verify: node_modules/.package-lock.json
+	@npm run --silent qec-portfolio:verify
 
 autoresearch-service: node_modules/.package-lock.json
 	@if [ -z "$(AUTORESEARCH_PRIVATE_ROOT)" ]; then \
