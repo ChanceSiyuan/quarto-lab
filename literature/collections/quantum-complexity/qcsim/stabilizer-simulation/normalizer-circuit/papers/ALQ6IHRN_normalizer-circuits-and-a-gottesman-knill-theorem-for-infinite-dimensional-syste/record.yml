@@ -1,0 +1,66 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: ALQ6IHRN
+  item_version: 96016
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 7NMLWSXU
+      name: normalizer circuit
+      path: Quantum Complexity/QCsim/stabilizer simulation/normalizer circuit
+qlab:
+  primary_collection: 7NMLWSXU
+  indexed_collections:
+    - 7NMLWSXU
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: preprint
+title: Normalizer circuits and a Gottesman-Knill theorem for
+  infinite-dimensional systems
+authors:
+  - first: Juan
+    last: Bermejo-Vega
+  - first: Cedric Yen-Yu
+    last: Lin
+  - first: Maarten Van den
+    last: Nest
+year: 2015
+abstract: "$\\textit{Normalizer circuits}$ [1,2] are generalized Clifford
+  circuits that act on arbitrary finite-dimensional systems
+  $\\mathcal{H}_{d_1}\\otimes ... \\otimes \\mathcal{H}_{d_n}$ with a standard
+  basis labeled by the elements of a finite Abelian group
+  $G=\\mathbb{Z}_{d_1}\\times... \\times \\mathbb{Z}_{d_n}$. Normalizer gates
+  implement operations associated with the group $G$ and can be of three types:
+  quantum Fourier transforms, group automorphism gates and quadratic phase
+  gates. In this work, we extend the normalizer formalism [1,2] to infinite
+  dimensions, by allowing normalizer gates to act on systems of the form
+  $\\mathcal{H}_\\mathbb{Z}^{\\otimes a}$: each factor
+  $\\mathcal{H}_\\mathbb{Z}$ has a standard basis labeled by
+  $\\textit{integers}$ $\\mathbb{Z}$, and a Fourier basis labeled by
+  $\\textit{angles}$, elements of the circle group $\\mathbb{T}$. Normalizer
+  circuits become hybrid quantum circuits acting both on continuous- and
+  discrete-variable systems. We show that infinite-dimensional normalizer
+  circuits can be efficiently simulated classically with a generalized
+  $\\textit{stabilizer formalism}$ for Hilbert spaces associated with groups of
+  the form $\\mathbb{Z}^a\\times \\mathbb{T}^b \\times
+  \\mathbb{Z}_{d_1}\\times...\\times \\mathbb{Z}_{d_n}$. We develop new
+  techniques to track stabilizer-groups based on normal forms for group
+  automorphisms and quadratic functions. We use our normal forms to reduce the
+  problem of simulating normalizer circuits to that of finding general solutions
+  of systems of mixed real-integer linear equations [3] and exploit this fact to
+  devise a robust simulation algorithm: the latter remains efficient even in
+  pathological cases where stabilizer groups become infinite, uncountable and
+  non-compact. The techniques developed in this paper might find applications in
+  the study of fault-tolerant quantum computation with superconducting qubits
+  [4,5]."
+tags:
+  - Computer Science - Computational Complexity
+  - Mathematical Physics
+  - Mathematics - Mathematical Physics
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.1409.3208
+  arxiv: "1409.3208"

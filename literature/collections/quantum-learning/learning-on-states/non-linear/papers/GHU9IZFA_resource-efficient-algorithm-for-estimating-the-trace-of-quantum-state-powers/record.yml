@@ -1,0 +1,59 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: GHU9IZFA
+  item_version: 96147
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: ZTZAL49L
+      name: non-linear
+      path: Quantum Learning/Learning on states/non-linear
+qlab:
+  primary_collection: ZTZAL49L
+  indexed_collections:
+    - ZTZAL49L
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: preprint
+title: Resource-efficient algorithm for estimating the trace of quantum state powers
+authors:
+  - first: Myeongjin
+    last: Shin
+  - first: Junseo
+    last: Lee
+  - first: Seungwoo
+    last: Lee
+  - first: Kabgyun
+    last: Jeong
+year: 2025
+abstract: Estimating the trace of quantum state powers, $\text{Tr}(\rho^k)$, for
+  $k$ identical quantum states is a fundamental task with numerous applications
+  in quantum information processing, including nonlinear function estimation of
+  quantum states and entanglement detection. On near-term quantum devices,
+  reducing the required quantum circuit depth, the number of multi-qubit quantum
+  operations, and the copies of the quantum state needed for such computations
+  is crucial. In this work, inspired by the Newton-Girard method, we
+  significantly improve upon existing results by introducing an algorithm that
+  requires only $\mathcal{O}(\widetilde{r})$ qubits and
+  $\mathcal{O}(\widetilde{r})$ multi-qubit gates, where $\widetilde{r} =
+  \min\left\{\text{rank}(\rho),
+  \left\lceil\ln\left({2k}/{\epsilon}\right)\right\rceil\right\}$. This approach
+  is efficient, as it employs the $\tilde{r}$-entangled copy measurement instead
+  of the conventional $k$-entangled copy measurement, while asymptotically
+  preserving the known sample complexity upper bound. Furthermore, we prove that
+  estimating $\{\text{Tr}(\rho^i)\}_{i=1}^{\tilde{r}}$ is sufficient to
+  approximate $\text{Tr}(\rho^k)$ even for large integers $k > \widetilde{r}$.
+  This leads to a rank-dependent complexity for solving the problem, providing
+  an efficient algorithm for low-rank quantum states while also improving
+  existing methods when the rank is unknown or when the state is not low-rank.
+  Building upon these advantages, we extend our algorithm to the estimation of
+  $\text{Tr}(M\rho^k)$ for arbitrary observables and $\text{Tr}(\rho^k
+  \sigma^l)$ for multiple quantum states.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2408.00314
+  arxiv: "2408.00314"

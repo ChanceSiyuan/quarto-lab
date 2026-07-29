@@ -1,0 +1,57 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: YPLI8R6L
+  item_version: 96026
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: SHZ4SM7W
+      name: LWT method
+      path: Quantum Complexity/QCsim/Open-dynamics/LWT method
+qlab:
+  primary_collection: SHZ4SM7W
+  indexed_collections:
+    - SHZ4SM7W
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: preprint
+title: Simulating quantum circuits with arbitrary local noise using Pauli Propagation
+authors:
+  - first: Armando
+    last: Angrisani
+  - first: Antonio A.
+    last: Mele
+  - first: Manuel S.
+    last: Rudolph
+  - first: M.
+    last: Cerezo
+  - first: Zoe
+    last: Holmes
+year: 2025
+abstract: We present a polynomial-time classical algorithm for estimating
+  expectation values of arbitrary observables on typical quantum circuits under
+  any incoherent local noise, including non-unital or dephasing. Although
+  previous research demonstrated that some carefully designed quantum circuits
+  affected by non-unital noise cannot be efficiently simulated, we show that
+  this does not apply to average-case circuits, as these can be efficiently
+  simulated using Pauli-path methods. Specifically, we prove that, with high
+  probability over the circuit gates choice, Pauli propagation algorithms with
+  tailored truncation strategies achieve an inversely polynomially small
+  simulation error. This result holds for arbitrary circuit topologies and for
+  any local noise, under the assumption that the distribution of each circuit
+  layer is invariant under single-qubit random gates. Under the same minimal
+  assumptions, we also prove that most noisy circuits can be truncated to an
+  effective logarithmic depth for the task of {estimating} expectation values of
+  observables, thus generalizing prior results to a significantly broader class
+  of circuit ensembles. We further numerically validate our algorithm with
+  simulations on a $6\times6$ lattice of qubits under the effects of amplitude
+  damping and dephasing noise, as well as real-time dynamics on an $11\times11$
+  lattice of qubits affected by amplitude damping.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2501.13101
+  arxiv: "2501.13101"

@@ -1,0 +1,68 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: UVEUN7TC
+  item_version: 96015
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: ISN46ZEU
+      name: Quantum Learning
+      path: Quantum Learning
+    - key: VMP2AYWR
+      name: Bell sampling and generalization
+      path: Quantum Learning/_Review/Bell sampling and generalization
+qlab:
+  primary_collection: ISN46ZEU
+  indexed_collections:
+    - ISN46ZEU
+    - VMP2AYWR
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: journalArticle
+title: Lower Bounds for Learning Quantum States with Single-Copy Measurements
+authors:
+  - first: Angus
+    last: Lowe
+  - first: Ashwin
+    last: Nayak
+year: 2025
+abstract: We study the problems of quantum tomography and shadow tomography
+  using measurements performed on individual, identical copies of an
+  unknown             d            -dimensional state. We first revisit known
+  lower bounds [            23            ] on quantum tomography with accuracy
+  ε in trace distance, when the measurement choices are independent of
+  previously observed outcomes, i.e., they are nonadaptive. We give a succinct
+  proof of these results through the χ            2            -divergence
+  between suitable distributions. Unlike prior work, we do not require that the
+  measurements be given by rank-one operators. This leads to stronger lower
+  bounds when the learner uses measurements with a constant number of outcomes
+  (e.g., two-outcome measurements). In particular, this rigorously establishes
+  the optimality of the folklore “Pauli tomography” algorithm in terms of its
+  sample complexity. We also derive novel bounds
+  of                          \(\Omega (r^2 d/\epsilon
+  ^2)\)                        and                          \(\Omega (r^2
+  d^2/\epsilon ^2)\)                        for learning
+  rank             r            states using arbitrary and constant-outcome
+  measurements, respectively, in the nonadaptive
+  case.                                In addition to the sample complexity, a
+  resource of practical significance for learning quantum states is the number
+  of unique measurement settings required (i.e., the number of different
+  measurements used by an algorithm, each possibly with an arbitrary number of
+  outcomes). Motivated by this consideration, we employ concentration of measure
+  of χ            2            -divergence of suitable distributions to extend
+  our lower bounds to the case where the learner performs possibly adaptive
+  measurements from a fixed set of                           \(\exp
+  (O(d))\)                        possible measurements. This implies in
+  particular that adaptivity does not give us any advantage using single-copy
+  measurements that are efficiently implementable. We also obtain a similar
+  bound in the case where the goal is to predict the expectation values of a
+  given sequence of observables, a task known as shadow tomography. Finally, in
+  the case of adaptive, single-copy measurements implementable with
+  polynomial-size circuits, we prove that a straightforward strategy based on
+  computing sample means of the given observables is optimal.
+tags: []
+identifiers:
+  doi: 10.1145/3717450

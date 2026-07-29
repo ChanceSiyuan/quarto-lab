@@ -1,0 +1,40 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: FAGN5C2T
+  item_version: 96058
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: AGQ9C27P
+      name: Magic state distillation
+      path: Quantum Resource/Magic/Magic state distillation
+qlab:
+  primary_collection: AGQ9C27P
+  indexed_collections:
+    - AGQ9C27P
+  primary_topic: quantum-resource
+  indexed_topics:
+    - quantum-resource
+item_type: journalArticle
+title: "Magic State Distillation: Not as Costly as You Think"
+authors:
+  - first: Daniel
+    last: Litinski
+year: 2019
+abstract: Despite significant overhead reductions since its first proposal,
+  magic state distillation is often considered to be a very costly procedure
+  that dominates the resource cost of fault-tolerant quantum computers. The goal
+  of this work is to demonstrate that this is not true. By writing distillation
+  circuits in a form that separates qubits that are capable of error detection
+  from those that are not, most logical qubits used for distillation can be
+  encoded at a very low code distance. This significantly reduces the space-time
+  cost of distillation, as well as the number of qubits. In extreme cases, it
+  can cost less to distill a magic state than to perform a logical Clifford gate
+  on full-distance logical qubits.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.22331/q-2019-12-02-205
+  arxiv: "1905.06903"

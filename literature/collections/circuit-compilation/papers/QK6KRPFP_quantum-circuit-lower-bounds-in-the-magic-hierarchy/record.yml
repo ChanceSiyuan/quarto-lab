@@ -1,0 +1,50 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: QK6KRPFP
+  item_version: 96020
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 2DQJ4S34
+      name: Circuit Compilation
+      path: Circuit Compilation
+qlab:
+  primary_collection: 2DQJ4S34
+  indexed_collections:
+    - 2DQJ4S34
+  primary_topic: circuit-compilation
+  indexed_topics:
+    - circuit-compilation
+item_type: preprint
+title: Quantum circuit lower bounds in the magic hierarchy
+authors:
+  - first: Natalie
+    last: Parham
+year: 2025
+abstract: "We introduce the magic hierarchy, a quantum circuit model that
+  alternates between arbitrary-sized Clifford circuits and constant-depth
+  circuits with two-qubit gates ($\\textsf{QNC}^0$). This model unifies existing
+  circuit models, such as $\\textsf{QAC}^0_f$ and models with adaptive
+  intermediate measurements. Despite its generality, we are able to prove
+  nontrivial lower bounds. We prove new lower bounds in the first level of the
+  hierarchy, showing that certain explicit quantum states cannot be
+  approximately prepared by circuits consisting of a Clifford circuit followed
+  by $\\textsf{QNC}^0$. These states include ground states of some topologically
+  ordered Hamiltonians and nonstabilizer quantum codes. Our techniques exploit
+  the rigid structure of stabilizer codes and introduce an infectiousness
+  property: if even a single state in a high distance code can be approximately
+  prepared by one of these circuits, then the entire subspace must lie close to
+  a perturbed stabilizer code. We also show that proving state preparation lower
+  bounds beyond a certain level of the hierarchy would imply classical circuit
+  lower bounds beyond the reach of current techniques in complexity theory. More
+  broadly, our techniques go beyond lightcone-based methods and highlight how
+  the magic hierarchy provides a natural framework for connecting circuit
+  complexity, condensed matter, and Hamiltonian complexity."
+tags:
+  - Computer Science - Computational Complexity
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2504.19966
+  arxiv: "2504.19966"

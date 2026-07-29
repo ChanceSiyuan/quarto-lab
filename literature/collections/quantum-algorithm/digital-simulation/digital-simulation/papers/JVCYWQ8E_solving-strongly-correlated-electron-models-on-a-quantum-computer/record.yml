@@ -1,0 +1,60 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: JVCYWQ8E
+  item_version: 96074
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: BV8KJ6KE
+      name: digital simulation
+      path: Quantum Algorithm/Digital Simulation/digital simulation
+qlab:
+  primary_collection: BV8KJ6KE
+  indexed_collections:
+    - BV8KJ6KE
+  primary_topic: quantum-algorithm
+  indexed_topics:
+    - quantum-algorithm
+item_type: journalArticle
+title: Solving strongly correlated electron models on a quantum computer
+authors:
+  - first: Dave
+    last: Wecker
+  - first: Matthew B.
+    last: Hastings
+  - first: Nathan
+    last: Wiebe
+  - first: Bryan K.
+    last: Clark
+  - first: Chetan
+    last: Nayak
+  - first: Matthias
+    last: Troyer
+year: 2015
+abstract: One of the main applications of future quantum computers will be the
+  simulation of quantum models. While the evolution of a quantum state under a
+  Hamiltonian is straightforward (if sometimes expensive), using quantum
+  computers to determine the ground state phase diagram of a quantum model and
+  the properties of its phases is more involved. Using the Hubbard model as a
+  prototypical example, we here show all the steps necessary to determine its
+  phase diagram and ground state properties on a quantum computer. In
+  particular, we discuss strategies for efficiently determining and preparing
+  the ground state of the Hubbard model starting from various mean-field states
+  with broken symmetry. We present an efficient procedure to prepare arbitrary
+  Slater determinants as initial states and present the complete set of quantum
+  circuits needed to evolve from these to the ground state of the Hubbard model.
+  We show that, using efficient nesting of the various terms each time step in
+  the evolution can be performed with just $\mathcal{O}(N)$ gates and
+  $\mathcal{O}(\log N)$ circuit depth. We give explicit circuits to measure
+  arbitrary local observables and static and dynamic correlation functions, both
+  in the time and frequency domain. We further present efficient non-destructive
+  approaches to measurement that avoid the need to re-prepare the ground state
+  after each measurement and that quadratically reduce the measurement error.
+tags:
+  - Condensed Matter - Strongly Correlated Electrons
+  - Quantum Physics
+identifiers:
+  doi: 10.1103/physreva.92.062318
+  arxiv: "1506.05135"

@@ -1,0 +1,54 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: UVAKVDSV
+  item_version: 96161
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: BHQ436R2
+      name: AI4Q
+      path: Quantum Learning/Machine learning/AI4Q
+qlab:
+  primary_collection: BHQ436R2
+  indexed_collections:
+    - BHQ436R2
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: preprint
+title: When can classical neural networks represent quantum states?
+authors:
+  - first: Tai-Hsuan
+    last: Yang
+  - first: Mehdi
+    last: Soleimanifar
+  - first: Thiago
+    last: Bergamaschi
+  - first: John
+    last: Preskill
+year: 2024
+abstract: A naive classical representation of an n-qubit state requires
+  specifying exponentially many amplitudes in the computational basis. Past
+  works have demonstrated that classical neural networks can succinctly express
+  these amplitudes for many physically relevant states, leading to
+  computationally powerful representations known as neural quantum states. What
+  underpins the efficacy of such representations? We show that conditional
+  correlations present in the measurement distribution of quantum states control
+  the performance of their neural representations. Such conditional correlations
+  are basis dependent, arise due to measurement-induced entanglement, and reveal
+  features not accessible through conventional few-body correlations often
+  examined in studies of phases of matter. By combining theoretical and
+  numerical analysis, we demonstrate how the state's entanglement and sign
+  structure, along with the choice of measurement basis, give rise to distinct
+  patterns of short- or long-range conditional correlations. Our findings
+  provide a rigorous framework for exploring the expressive power of neural
+  quantum states.
+tags:
+  - Computer Science - Machine Learning
+  - Condensed Matter - Strongly Correlated Electrons
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2410.23152
+  arxiv: "2410.23152"

@@ -1,0 +1,52 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: SNPM6D2P
+  item_version: 96113
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 2U9FYC86
+      name: PBC and stabilizer rank
+      path: Quantum Complexity/QCsim/stabilizer simulation/Extension/PBC and
+        stabilizer rank
+qlab:
+  primary_collection: 2U9FYC86
+  indexed_collections:
+    - 2U9FYC86
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: preprint
+title: Improved Strong Simulation of Universal Quantum Circuits
+authors:
+  - first: Lucas
+    last: Kocia
+year: 2022
+abstract: We find a scaling reduction in the stabilizer rank of the twelve-qubit
+  tensored $T$ gate magic state. This lowers its asymptotic bound to $2^{\sim
+  0.463 t}$ for multi-Pauli measurements on $t$ magic states, improving over the
+  best previously found bound of $2^{\sim 0.468 t}$. We numerically demonstrate
+  this reduction. This constructively produces the most efficient strong
+  simulation algorithm of the Clifford+$T$ gateset to relative or multiplicative
+  error. We then examine the cost of Pauli measurement in terms of its Gauss sum
+  rank, which is a slight generalization of the stabilizer rank and is a lower
+  bound on its asymptotic scaling. We demonstrate that this lower bound appears
+  to be tight at low $t$-counts, which suggests that the stabilizer rank found
+  at the twelve-qubit state can be lowered further to $2^{\sim 0.449 t}$ and we
+  prove and numerically show that this is the case for single-Pauli
+  measurements. Our construction directly shows how the reduction at $12$ qubits
+  is iteratively based on the reduction obtained at $6$, $3$, $2$, and $1$
+  qubits. This explains why novel reductions are found at tensor factors for
+  these number of qubit primitives, an explanation lacking previously in the
+  literature. Furthermore, in the process we observe an interesting relationship
+  between the T gate magic state's stabilizer rank and decompositions that are
+  Clifford-isomorphic to a computational sub-basis tensored with single-qubit
+  states that produce minimal unique stabilizer state inner products -- the same
+  relationship that allowed for finding minimal numbers of unique Gauss sums in
+  the odd-dimensional qudit Wigner formulation of Pauli measurements.
+tags:
+  - Quantum Physics
+identifiers:
+  arxiv: "2012.11739"

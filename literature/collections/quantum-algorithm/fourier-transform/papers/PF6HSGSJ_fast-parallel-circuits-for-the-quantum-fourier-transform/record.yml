@@ -1,0 +1,55 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: PF6HSGSJ
+  item_version: 97563
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: C3CSREHF
+      name: Fourier transform
+      path: Quantum Algorithm/Fourier transform
+    - key: T827FPA5
+      name: QFT
+      path: Circuit Compilation/QFT
+qlab:
+  primary_collection: C3CSREHF
+  indexed_collections:
+    - C3CSREHF
+    - T827FPA5
+  primary_topic: quantum-algorithm
+  indexed_topics:
+    - circuit-compilation
+    - quantum-algorithm
+item_type: preprint
+title: Fast parallel circuits for the quantum Fourier transform
+authors:
+  - first: Richard
+    last: Cleve
+  - first: John
+    last: Watrous
+year: 2000
+abstract: We give new bounds on the circuit complexity of the quantum Fourier
+  transform (QFT). We give an upper bound of O(log n + log log (1/epsilon)) on
+  the circuit depth for computing an approximation of the QFT with respect to
+  the modulus 2^n with error bounded by epsilon. Thus, even for exponentially
+  small error, our circuits have depth O(log n). The best previous depth bound
+  was O(n), even for approximations with constant error. Moreover, our circuits
+  have size O(n log (n/epsilon)). We also give an upper bound of O(n (log n)^2
+  log log n) on the circuit size of the exact QFT modulo 2^n, for which the best
+  previous bound was O(n^2). As an application of the above depth bound, we show
+  that Shor's factoring algorithm may be based on quantum circuits with depth
+  only O(log n) and polynomial-size, in combination with classical
+  polynomial-time pre- and post-processing. In the language of computational
+  complexity, this implies that factoring is in the complexity class ZPP^BQNC,
+  where BQNC is the class of problems computable with bounded-error probability
+  by quantum circuits with poly-logarithmic depth and polynomial size. Finally,
+  we prove an Omega(log n) lower bound on the depth complexity of approximations
+  of the QFT with constant error. This implies that the above upper bound is
+  asymptotically optimal (for a reasonable range of values of epsilon).
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.quant-ph/0006004
+  arxiv: quant-ph/0006004

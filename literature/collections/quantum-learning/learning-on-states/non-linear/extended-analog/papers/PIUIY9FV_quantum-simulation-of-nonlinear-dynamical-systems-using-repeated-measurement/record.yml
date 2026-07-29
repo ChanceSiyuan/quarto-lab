@@ -1,0 +1,51 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: PIUIY9FV
+  item_version: 101050
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: SP3ZCRVA
+      name: extended_analog
+      path: Quantum Learning/Learning on states/non-linear/extended_analog
+qlab:
+  primary_collection: SP3ZCRVA
+  indexed_collections:
+    - SP3ZCRVA
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: journalArticle
+title: Quantum Simulation of Nonlinear Dynamical Systems Using Repeated Measurement
+authors:
+  - first: Joseph
+    last: Andress
+  - first: Alexander
+    last: Engel
+  - first: Yuan
+    last: Shi
+  - first: Scott
+    last: Parker
+year: 2025
+abstract: We present a quantum algorithm based on repeated measurement to solve
+  initial-value problems for nonlinear ordinary differential equations (ODEs),
+  which may be generated from partial differential equations in plasma physics.
+  We map a dynamical system to a Hamiltonian form, where the Hamiltonian matrix
+  is a function of dynamical variables. To advance in time, we measure
+  expectation values from the previous time step, and evaluate the Hamiltonian
+  function classically, which introduces stochasticity into the dynamics. We
+  then perform standard quantum Hamiltonian simulation over a short time, using
+  the evaluated constant Hamiltonian matrix. This approach requires evolving an
+  ensemble of quantum states, which are consumed each step to measure required
+  observables. We apply this approach to the classic logistic and Lorenz
+  systems, in both integrable and chaotic regimes. Out analysis shows that
+  solutions' accuracy is influenced by both the stochastic sampling rate and the
+  nature of the dynamical system.
+tags:
+  - Physics - Plasma Physics
+  - Quantum Physics
+identifiers:
+  doi: 10.1017/s0022377825000091
+  arxiv: "2410.03838"

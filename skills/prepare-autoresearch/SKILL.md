@@ -15,6 +15,10 @@ anti-gaming tests. Never fabricate a domain-valid metric, correctness rule, or
 private dataset. When one material decision is missing, return `needs_input`
 with exactly one blocking question.
 
+For every prepared infrastructure manifest, set `runtime.image` to an immutable
+OCI digest reference. The selected runtime must already exist locally and must
+never use a mutable tag.
+
 Raw development and blind cases remain outside the candidate workspace. Store
 only safe manifests and digests in staging; keep private material outside the
 candidate tree. When invoked with the structured output schema, return exactly

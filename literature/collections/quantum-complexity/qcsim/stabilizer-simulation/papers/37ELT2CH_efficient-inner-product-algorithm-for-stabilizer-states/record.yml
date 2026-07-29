@@ -1,0 +1,59 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 37ELT2CH
+  item_version: 96103
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 28HZJPSW
+      name: stabilizer simulation
+      path: Quantum Complexity/QCsim/stabilizer simulation
+    - key: 8NTY9LVA
+      name: code
+      path: Quantum Complexity/QCsim/stabilizer simulation/code
+qlab:
+  primary_collection: 28HZJPSW
+  indexed_collections:
+    - 28HZJPSW
+    - 8NTY9LVA
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: preprint
+title: Efficient Inner-product Algorithm for Stabilizer States
+authors:
+  - first: Hector J.
+    last: Garcia
+  - first: Igor L.
+    last: Markov
+  - first: Andrew W.
+    last: Cross
+year: 2013
+abstract: "Large-scale quantum computation is likely to require massive quantum
+  error correction (QEC). QEC codes and circuits are described via the
+  stabilizer formalism, which represents stabilizer states by keeping track of
+  the operators that preserve them. Such states are obtained by stabilizer
+  circuits (consisting of CNOT, Hadamard and Phase only) and can be represented
+  compactly on conventional computers using Omega(n^2) bits, where n is the
+  number of qubits. Although techniques for the efficient simulation of
+  stabilizer circuits have been studied extensively, techniques for efficient
+  manipulation of stabilizer states are not currently available. To this end, we
+  design new algorithms for: (i) obtaining canonical generators for stabilizer
+  states, (ii) obtaining canonical stabilizer circuits, and (iii) computing the
+  inner product between stabilizer states. Our inner-product algorithm takes
+  O(n^3) time in general, but observes quadratic behavior for many practical
+  instances relevant to QECC (e.g., GHZ states). We prove that each n-qubit
+  stabilizer state has exactly 4(2^n - 1) nearest-neighbor stabilizer states,
+  and verify this claim experimentally using our algorithms. We design
+  techniques for representing arbitrary quantum states using stabilizer frames
+  and generalize our algorithms to compute the inner product between two such
+  frames."
+tags:
+  - Computer Science - Computational Geometry
+  - Computer Science - Data Structures and Algorithms
+  - Computer Science - Emerging Technologies
+  - Quantum Physics
+identifiers:
+  arxiv: "1210.6646"

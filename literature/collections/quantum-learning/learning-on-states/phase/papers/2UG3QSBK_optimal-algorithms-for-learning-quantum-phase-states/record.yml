@@ -1,0 +1,55 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 2UG3QSBK
+  item_version: 111788
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: QPFX87N4
+      name: phase
+      path: Quantum Learning/Learning on states/phase
+qlab:
+  primary_collection: QPFX87N4
+  indexed_collections:
+    - QPFX87N4
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: preprint
+title: Optimal algorithms for learning quantum phase states
+authors:
+  - first: Srinivasan
+    last: Arunachalam
+  - first: Sergey
+    last: Bravyi
+  - first: Arkopal
+    last: Dutt
+  - first: Theodore J.
+    last: Yoder
+year: 2023
+abstract: We analyze the complexity of learning $n$-qubit quantum phase states.
+  A degree-$d$ phase state is defined as a superposition of all $2^n$ basis
+  vectors $x$ with amplitudes proportional to $(-1)^{f(x)}$, where $f$ is a
+  degree-$d$ Boolean polynomial over $n$ variables. We show that the sample
+  complexity of learning an unknown degree-$d$ phase state is $Θ(n^d)$ if we
+  allow separable measurements and $Θ(n^{d-1})$ if we allow entangled
+  measurements. Our learning algorithm based on separable measurements has
+  runtime $\textsf{poly}(n)$ (for constant $d$) and is well-suited for near-term
+  demonstrations as it requires only single-qubit measurements in the Pauli $X$
+  and $Z$ bases. We show similar bounds on the sample complexity for learning
+  generalized phase states with complex-valued amplitudes. We further consider
+  learning phase states when $f$ has sparsity-$s$, degree-$d$ in its
+  $\mathbb{F}_2$ representation (with sample complexity $O(2^d sn)$), $f$ has
+  Fourier-degree-$t$ (with sample complexity $O(2^{2t})$), and learning
+  quadratic phase states with $\varepsilon$-global depolarizing noise (with
+  sample complexity $O(n^{1+\varepsilon})$). These learning algorithms give us a
+  procedure to learn the diagonal unitaries of the Clifford hierarchy and
+  IQP~circuits.
+tags:
+  - Computer Science - Data Structures and Algorithms
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2208.07851
+  arxiv: "2208.07851"

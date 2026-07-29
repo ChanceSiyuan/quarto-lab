@@ -1,0 +1,58 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: M8VKCKCI
+  item_version: 96090
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: UAFEZRD5
+      name: ZX calculus
+      path: Quantum Resource/MBQC/ZX calculus
+qlab:
+  primary_collection: UAFEZRD5
+  indexed_collections:
+    - UAFEZRD5
+  primary_topic: quantum-resource
+  indexed_topics:
+    - quantum-resource
+item_type: journalArticle
+title: "There and back again: A circuit extraction tale"
+authors:
+  - first: Miriam
+    last: Backens
+  - first: Hector
+    last: Miller-Bakewell
+  - first: Giovanni
+    last: de Felice
+  - first: Leo
+    last: Lobski
+  - first: John
+    last: van de Wetering
+year: 2021
+abstract: Translations between the quantum circuit model and the
+  measurement-based one-way model are useful for verification and optimisation
+  of quantum computations. They make crucial use of a property known as gflow.
+  While gflow is defined for one-way computations allowing measurements in three
+  different planes of the Bloch sphere, most research so far has focused on
+  computations containing only measurements in the XY-plane. Here, we give the
+  first circuit-extraction algorithm to work for one-way computations containing
+  measurements in all three planes and having gflow. The algorithm is efficient
+  and the resulting circuits do not contain ancillae. One-way computations are
+  represented using the ZX-calculus, hence the algorithm also represents the
+  most general known procedure for extracting circuits from ZX-diagrams. In
+  developing this algorithm, we generalise several concepts and results
+  previously known for computations containing only XY-plane measurements. We
+  bring together several known rewrite rules for measurement patterns and
+  formalise them in a unified notation using the ZX-calculus. These rules are
+  used to simplify measurement patterns by reducing the number of qubits while
+  preserving both the semantics and the existence of gflow. The results can be
+  applied to circuit optimisation by translating circuits to patterns and back
+  again.
+tags:
+  - 81P68
+  - Quantum Physics
+identifiers:
+  doi: 10.22331/q-2021-03-25-421
+  arxiv: "2003.01664"

@@ -1,0 +1,48 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: MJSLZF5D
+  item_version: 96082
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 9PACYK6B
+      name: Biased Noise
+      path: Quantum Error correction/3-Error analysis/Biased Noise
+qlab:
+  primary_collection: 9PACYK6B
+  indexed_collections:
+    - 9PACYK6B
+  primary_topic: quantum-error-correction
+  indexed_topics:
+    - quantum-error-correction
+item_type: preprint
+title: Tailoring quantum error correction to spin qubits
+authors:
+  - first: Bence
+    last: Hetényi
+  - first: James R.
+    last: Wootton
+year: 2023
+abstract: Spin qubits in semiconductor structures bring the promise of
+  large-scale 2D integration, with the possibility to incorporate the control
+  electronics on the same chip. In order to perform error correction on this
+  platform, the characteristic features of spin qubits need to be accounted for.
+  E.g., qubit readout involves an additional qubit which necessitates careful
+  reconsideration of the qubit layout. The noise affecting spin qubits has
+  further peculiarities such as the strong bias towards dephasing. In this work
+  we consider state-of-the-art error correction codes that require only
+  nearest-neighbour connectivity and are amenable to fast decoding via
+  minimum-weight perfect matching. Compared to the surface code, the XZZX code,
+  the reduced-connectivity surface code, the XYZ$^2$ matching code, and the
+  Floquet code all bring different advantages in terms of error threshold,
+  connectivity, or logical qubit encoding. We present the spin-qubit layout
+  required for each of these error correction codes, accounting for reference
+  qubits required for spin readout. The performance of these codes are studied
+  under circuit-level noise accounting for distinct error rates for gates,
+  readout and qubit decoherence during idling stages.
+tags:
+  - Quantum Physics
+identifiers:
+  arxiv: "2306.17786"

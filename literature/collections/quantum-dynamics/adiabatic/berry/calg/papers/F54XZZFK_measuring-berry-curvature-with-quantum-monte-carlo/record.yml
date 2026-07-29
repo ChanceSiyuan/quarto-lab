@@ -1,0 +1,49 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: F54XZZFK
+  item_version: 107161
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: IPQBNDW7
+      name: Calg
+      path: Quantum Dynamics/Adiabatic/Berry/Calg
+qlab:
+  primary_collection: IPQBNDW7
+  indexed_collections:
+    - IPQBNDW7
+  primary_topic: quantum-dynamics
+  indexed_topics:
+    - quantum-dynamics
+item_type: journalArticle
+title: Measuring Berry curvature with quantum Monte Carlo
+authors:
+  - first: Michael
+    last: Kolodrubetz
+year: 2014
+abstract: The Berry curvature and its descendant, the Berry phase, play an
+  important role in quantum mechanics. They can be used to understand the
+  Aharonov-Bohm effect, define topological Chern numbers, and generally to
+  investigate the geometric properties of a quantum ground state manifold. While
+  Berry curvature has been well-studied in the regimes of few-body physics and
+  non-interacting particles, its use in the regime of strong interactions is
+  hindered by the lack of numerical methods to solve it. In this paper we fill
+  this gap by implementing a quantum Monte Carlo method to solve for the Berry
+  curvature, based on interpreting Berry curvature as a leading correction to
+  imaginary time ramps. We demonstrate our algorithm using the transverse-field
+  Ising model in one and two dimensions, the latter of which is non-integrable.
+  Despite the fact that the Berry curvature gives information about the phase of
+  the wave function, we show that our algorithm has no sign or phase problem for
+  standard sign-problem-free Hamiltonians. Our algorithm scales similarly to
+  conventional methods as a function of system size and energy gap, and
+  therefore should prove a valuable tool in investigating the quantum geometry
+  of many-body systems.
+tags:
+  - Condensed Matter - Strongly Correlated Electrons
+  - Physics - Computational Physics
+  - Quantum Physics
+identifiers:
+  doi: 10.1103/physrevb.89.045107
+  arxiv: "1310.2644"

@@ -1,0 +1,50 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: F7JKL4EI
+  item_version: 96109
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: A3L6E8EJ
+      name: supermacy verification
+      path: Quantum Complexity/Sampling/supermacy verification
+qlab:
+  primary_collection: A3L6E8EJ
+  indexed_collections:
+    - A3L6E8EJ
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: preprint
+title: "Anti-Forging Quantum Data: Cryptographic Verification of Quantum
+  Computational Power"
+authors:
+  - first: Man-Hong
+    last: Yung
+  - first: Bin
+    last: Cheng
+year: 2022
+abstract: Quantum cloud computing is emerging as a popular model for users to
+  experience the power of quantum computing through the internet, enabling
+  quantum computing as a service. The question is, when the scale of the
+  computational problems becomes out of reach of classical computers, how can
+  users be sure that the output strings sent by the server are really from a
+  quantum hardware? In 2008, Shepherd and Bremner proposed a cryptographic
+  verification protocol based on a simplified circuit model called IQP
+  (instantaneous quantum polynomial-time), which can potentially be applied to
+  most existing quantum cloud platforms. However, the Shepherd-Bremner protocol
+  has recently been shown to be insecure by Kahanamoku-Meyer. Here we present an
+  extended model of IQP-based cryptographic verification protocol, where the
+  Shepherd-Bremner construction can be regarded as a special case. This protocol
+  not only can avoid the attack by Kahanamoku-Meyer but also provide several
+  additional security measures for anti-forging quantum data. In particular, our
+  protocol admits a simultaneous encoding of multiple secret strings,
+  strengthening significantly the hardness for classical hacking. Furthermore,
+  we provide methods for estimating the correlation functions associated with
+  the secret strings, which are the key elements in our verification protocol.
+tags:
+  - Quantum Physics
+identifiers:
+  arxiv: "2005.01510"

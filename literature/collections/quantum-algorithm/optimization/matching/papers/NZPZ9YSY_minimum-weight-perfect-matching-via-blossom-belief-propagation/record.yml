@@ -1,0 +1,51 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: NZPZ9YSY
+  item_version: 96132
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: YMQPXEL8
+      name: Matching
+      path: Quantum Algorithm/Optimization/Matching
+qlab:
+  primary_collection: YMQPXEL8
+  indexed_collections:
+    - YMQPXEL8
+  primary_topic: quantum-algorithm
+  indexed_topics:
+    - quantum-algorithm
+item_type: journalArticle
+title: Minimum Weight Perfect Matching via Blossom Belief Propagation
+authors:
+  - first: Sung-Soo
+    last: Ahn
+  - first: Sejun
+    last: Park
+  - first: Michael
+    last: Chertkov
+  - first: Jinwoo
+    last: Shin
+year: null
+abstract: "Max-product Belief Propagation (BP) is a popular message-passing
+  algorithm for computing a Maximum-A-Posteriori (MAP) assignment over a
+  distribution represented by a Graphical Model (GM). It has been shown that BP
+  can solve a number of combinatorial optimization problems including minimum
+  weight matching, shortest path, network ﬂow and vertex cover under the
+  following common assumption: the respective Linear Programming (LP) relaxation
+  is tight, i.e., no integrality gap is present. However, when LP shows an
+  integrality gap, no model has been known which can be solved systematically
+  via sequential applications of BP. In this paper, we develop the ﬁrst such
+  algorithm, coined Blossom-BP, for solving the minimum weight matching problem
+  over arbitrary graphs. Each step of the sequential algorithm requires applying
+  BP over a modiﬁed graph constructed by contractions and expansions of
+  blossoms, i.e., odd sets of vertices. Our scheme guarantees termination in
+  O(n2) of BP runs, where n is the number of vertices in the original graph. In
+  essence, the Blossom-BP offers a distributed version of the celebrated
+  Edmonds’ Blossom algorithm by jumping at once over many sub-steps with a
+  single BP. Moreover, our result provides an interpretation of the Edmonds’
+  algorithm as a sequence of LPs."
+tags: []
+identifiers: {}

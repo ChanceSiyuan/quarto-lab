@@ -1,0 +1,58 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: T9YFRJ5P
+  item_version: 96138
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: F28II9EE
+      name: magic injection
+      path: Quantum Resource/Magic/Magic state distillation/magic injection
+qlab:
+  primary_collection: F28II9EE
+  indexed_collections:
+    - F28II9EE
+  primary_topic: quantum-resource
+  indexed_topics:
+    - quantum-resource
+item_type: preprint
+title: Efficient Magic State Cultivation on $\mathbb{RP}^2$
+authors:
+  - first: Zi-Han
+    last: Chen
+  - first: Ming-Cheng
+    last: Chen
+  - first: Chao-Yang
+    last: Lu
+  - first: Jian-Wei
+    last: Pan
+year: 2025
+abstract: Preparing high-fidelity logical magic states is crucial for
+  fault-tolerant quantum computation. Among prior attempts to reduce the
+  substantial cost of magic state preparation, magic state cultivation (MSC), a
+  recently proposed protocol for preparing $\mathrm{T}$ states without magic
+  state distillation, achieves state-of-the-art efficiency. Inspired by this
+  work, we propose a new MSC procedure that would produce a logical $\mathrm{T}$
+  state on a rotated surface code at a further reduced cost. For our MSC
+  protocol, we define a new code family, the $\mathbb {RP}^2$ code, by putting
+  the rotated surface code on $\mathbb{RP}^2$ (a two-dimensional manifold), as
+  well as two self-dual CSS codes named SRP-3 and SRP-5 respectively. Small
+  $\mathbb{RP}^2$ codes are used to hold logical information and checked by
+  syndrome extraction (SE) circuits. We design fast morphing circuits that
+  enable switching between a distance 3 (5) $\mathbb{RP}^2$ code and an SRP-3
+  (SRP-5) code on which we can efficiently check the correctness of the logical
+  state. To preserve the high accuracy of the cultivated logical $\mathrm{T}$
+  state, we design an efficient and easy-to-decode expansion stage that grows a
+  small $\mathbb{RP}^2$ code to a large rotated surface code in one round. Our
+  MSC protocol utilizes non-local connectivity, available on both neutral atom
+  array and ion trap platforms. According to our Monte Carlo sampling results,
+  our MSC protocol requires about an order of magnitude smaller space-time
+  volume to reach a target logical error rate around $10^{-9}$ compared to the
+  original MSC protocol.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2503.18657
+  arxiv: "2503.18657"

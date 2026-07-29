@@ -1,0 +1,37 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 8ATKSCGS
+  item_version: 96125
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: BLR38PUL
+      name: classical simulation
+      path: Quantum Complexity/Sampling/IQP/classical simulation
+    - key: Y2U79FCU
+      name: complexity analysis
+      path: Quantum Complexity/QCsim/Open-dynamics/complexity analysis
+qlab:
+  primary_collection: BLR38PUL
+  indexed_collections:
+    - BLR38PUL
+    - Y2U79FCU
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: journalArticle
+title: Computational quantum-classical boundary of noisy commuting quantum circuits
+authors:
+  - first: Keisuke
+    last: Fujii
+  - first: Shuhei
+    last: Tamate
+year: 2016
+abstract: >-
+  Abstract
+              It is often said that the transition from quantum to classical worlds is caused by decoherence originated from an interaction between a system of interest and its surrounding environment. Here we establish a computational quantum-classical boundary from the viewpoint of classical simulatability of a quantum system under decoherence. Specifically, we consider commuting quantum circuits being subject to decoherence. Or equivalently, we can regard them as measurement-based quantum computation on decohered weighted graph states. To show intractability of classical simulation in the quantum side, we utilize the postselection argument and crucially strengthen it by taking noise effect into account. Classical simulatability in the classical side is also shown constructively by using both separable criteria in a projected-entangled-pair-state picture and the Gottesman-Knill theorem for mixed state Clifford circuits. We found that when each qubit is subject to a single-qubit complete-positive-trace-preserving noise, the computational quantum-classical boundary is sharply given by the noise rate required for the distillability of a magic state. The obtained quantum-classical boundary of noisy quantum dynamics reveals a complexity landscape of controlled quantum systems. This paves a way to an experimentally feasible verification of quantum mechanics in a high complexity limit beyond classically simulatable region.
+tags: []
+identifiers:
+  doi: 10.1038/srep25598

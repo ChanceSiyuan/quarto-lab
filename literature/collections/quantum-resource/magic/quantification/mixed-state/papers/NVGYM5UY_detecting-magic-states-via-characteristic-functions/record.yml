@@ -1,0 +1,56 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: NVGYM5UY
+  item_version: 96049
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 7KDCZFZ5
+      name: mixed state
+      path: Quantum Resource/Magic/Quantification/mixed state
+    - key: UJ7EZN4C
+      name: Verification
+      path: Quantum Resource/Magic/Quantification/Verification
+qlab:
+  primary_collection: 7KDCZFZ5
+  indexed_collections:
+    - 7KDCZFZ5
+    - UJ7EZN4C
+  primary_topic: quantum-resource
+  indexed_topics:
+    - quantum-resource
+item_type: journalArticle
+title: Detecting Magic States via Characteristic Functions
+authors:
+  - first: Hao
+    last: Dai
+  - first: Shuangshuang
+    last: Fu
+  - first: Shunlong
+    last: Luo
+year: 2022
+abstract: Magic (non-stabilizerness) is a crucial resource for universal
+  fault-tolerant quantum computation in the stabilizer formalism, without which
+  the computation can be classically emulated, as demonstrated by the celebrated
+  Gottesman-Knill theorem. Characterizations of magic, including its detection
+  and quantification, are of interest in quantum computation and have attracted
+  much attention. However, most quantifiers of magic are generally quite
+  difficult to calculate even numerically, or are restricted to systems of
+  special dimensions. The discrete Wigner formalism has been exploited to
+  quantify magic, although it is computable, its application is limited since
+  its formalism is quite different in odd prime power dimensions and other
+  dimensions. In this work, we propose a quantifier of magic in terms of
+  characteristic functions (Fourier transforms) of quantum states, and reveal
+  its basic properties. This quantifier, apart from its nice properties, is well
+  defined in all dimensions and is straightforward to compute. We illustrate the
+  effectiveness of this quantifier in detecting the magic of several
+  representative quantum states. Employing this quantifier, we show that the
+  group covariant symmetric informationally complete (SIC) states possess the
+  maximal magic. Finally, we compare the quantifier of magic with some existing
+  ones including the well known sum negativity and the so called thauma, and
+  show that they yield different orderings of magic.
+tags: []
+identifiers:
+  doi: 10.1007/s10773-022-05027-8

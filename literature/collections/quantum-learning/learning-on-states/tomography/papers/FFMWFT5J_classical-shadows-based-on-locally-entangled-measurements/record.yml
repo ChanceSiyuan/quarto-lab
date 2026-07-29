@@ -1,0 +1,51 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: FFMWFT5J
+  item_version: 96942
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: EIP4ZQQD
+      name: Tomography
+      path: Quantum Learning/Learning on states/Tomography
+    - key: 9ISUJVXK
+      name: shadow tomo
+      path: Quantum Learning/Learning on states/Tomography/shadow tomo
+qlab:
+  primary_collection: EIP4ZQQD
+  indexed_collections:
+    - 9ISUJVXK
+    - EIP4ZQQD
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: journalArticle
+title: Classical shadows based on locally-entangled measurements
+authors:
+  - first: Matteo
+    last: Ippoliti
+year: 2024
+abstract: 'We study classical shadows protocols based on randomized measurements
+  in $n$-qubit entangled bases, generalizing the random Pauli measurement
+  protocol ($n = 1$). We show that entangled measurements ($n\geq 2$) enable
+  nontrivial and potentially advantageous trade-offs in the sample complexity of
+  learning Pauli expectation values. This is sharply illustrated by shadows
+  based on two-qubit Bell measurements: the scaling of sample complexity with
+  Pauli weight $k$ improves quadratically (from $\sim 3^k$ down to $\sim
+  3^{k/2}$) for many operators, while others become impossible to learn. Tuning
+  the amount of entanglement in the measurement bases defines a family of
+  protocols that interpolate between Pauli and Bell shadows, retaining some of
+  the benefits of both. For large $n$, we show that randomized measurements in
+  $n$-qubit GHZ bases further improve the best scaling to $\sim (3/2)^k$, albeit
+  on an increasingly restricted set of operators. Despite their simplicity and
+  lower hardware requirements, these protocols can match or outperform
+  recently-introduced "shallow shadows" in some practically-relevant Pauli
+  estimation tasks.'
+tags:
+  - Condensed Matter - Statistical Mechanics
+  - Quantum Physics
+identifiers:
+  doi: 10.22331/q-2024-03-21-1293
+  arxiv: "2305.10723"

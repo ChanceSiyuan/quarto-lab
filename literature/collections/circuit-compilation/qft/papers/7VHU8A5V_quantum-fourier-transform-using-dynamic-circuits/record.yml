@@ -1,0 +1,58 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 7VHU8A5V
+  item_version: 101059
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: T827FPA5
+      name: QFT
+      path: Circuit Compilation/QFT
+qlab:
+  primary_collection: T827FPA5
+  indexed_collections:
+    - T827FPA5
+  primary_topic: circuit-compilation
+  indexed_topics:
+    - circuit-compilation
+item_type: preprint
+title: Quantum Fourier Transform using Dynamic Circuits
+authors:
+  - first: Elisa
+    last: Bäumer
+  - first: Vinay
+    last: Tripathi
+  - first: Alireza
+    last: Seif
+  - first: Daniel
+    last: Lidar
+  - first: Derek S.
+    last: Wang
+year: 2024
+abstract: In dynamic quantum circuits, classical information from mid-circuit
+  measurements is fed forward during circuit execution. This emerging capability
+  of quantum computers confers numerous advantages that can enable more
+  efficient and powerful protocols by drastically reducing the resource
+  requirements for certain core algorithmic primitives. In particular, in the
+  case of the $n$-qubit quantum Fourier transform followed immediately by
+  measurement, the scaling of resource requirements is reduced from $O(n^2)$
+  two-qubit gates in an all-to-all connectivity in the standard unitary
+  formulation to $O(n)$ mid-circuit measurements in its dynamic counterpart
+  without any connectivity constraints. Here, we demonstrate the advantage of
+  dynamic quantum circuits for the quantum Fourier transform on IBM's
+  superconducting quantum hardware with certified process fidelities of $>50\%$
+  on up to $16$ qubits and $>1\%$ on up to $37$ qubits, exceeding previous
+  reports across all quantum computing platforms. These results are enabled by
+  our contribution of an efficient method for certifying the process fidelity,
+  as well as of a dynamical decoupling protocol for error suppression during
+  mid-circuit measurements and feed-forward within a dynamic quantum circuit
+  that we call ``feed-forward-compensated dynamical decoupling" (FC-DD). Our
+  results demonstrate the advantages of leveraging dynamic circuits in
+  optimizing the compilation of quantum algorithms.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2403.09514
+  arxiv: "2403.09514"

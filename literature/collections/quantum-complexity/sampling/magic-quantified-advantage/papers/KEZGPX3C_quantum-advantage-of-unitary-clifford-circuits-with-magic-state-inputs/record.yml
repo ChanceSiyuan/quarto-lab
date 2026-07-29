@@ -1,0 +1,49 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: KEZGPX3C
+  item_version: 96095
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: JXDP37DL
+      name: magic quantified advantage
+      path: Quantum Complexity/Sampling/magic quantified advantage
+    - key: 2U9FYC86
+      name: PBC and stabilizer rank
+      path: Quantum Complexity/QCsim/stabilizer simulation/Extension/PBC and
+        stabilizer rank
+qlab:
+  primary_collection: JXDP37DL
+  indexed_collections:
+    - 2U9FYC86
+    - JXDP37DL
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: journalArticle
+title: Quantum advantage of unitary Clifford circuits with magic state inputs
+authors:
+  - first: Mithuna
+    last: Yoganathan
+  - first: Richard
+    last: Jozsa
+  - first: Sergii
+    last: Strelchuk
+year: 2019
+abstract: We study the computational power of unitary Clifford circuits with
+  solely magic state inputs (CM circuits), supplemented by classical efficient
+  computation. We show that CM circuits are hard to classically simulate up to
+  multiplicative error (assuming polynomial hierarchy non-collapse), and also up
+  to additive error under plausible average-case hardness conjectures. Unlike
+  other such known classes, a broad variety of possible conjectures apply. Along
+  the way, we give an extension of the Gottesman–Knill theorem that applies to
+  universal computation, showing that for Clifford circuits with joint
+  stabilizer and non-stabilizer inputs, the stabilizer part can be eliminated in
+  favour of classical simulation, leaving a Clifford circuit on only the
+  non-stabilizer part. Finally, we discuss implementational advantages of CM
+  circuits.
+tags: []
+identifiers:
+  doi: 10.1098/rspa.2018.0427

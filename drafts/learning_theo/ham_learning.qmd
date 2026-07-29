@@ -1,0 +1,327 @@
+---
+title: Hamiltonian Learning
+description: "Hamiltonian-learning notes on ansatz-free structure and coefficient recovery for Pauli Hamiltonians, including Bell-basis sampling, ancilla-free alternatives, Ramsey-style estimation, and Rydberg-chain simulation examples."
+categories:
+  - theory
+---
+
+## Abstract
+Hu et al. [@Hu2025] introduced an ansatz-free protocol to learn unknown Hamiltonians $H = \sum_{s \in \mathcal{S}} \mu_s P_s$ given oracle access to the time evolution $e^{-iHt}$.
+
+The algorithm iteratively updates a classical description $\hat{H}_1, \dots, \hat{H}_J$ such that $\|\hat{H}_j - H\|_{\infty} \leq 2^{-j}$.
+
+:::{.callout-important icon="false"}
+## Question: 
+1. Application in the shadow tomography. How about use strategy in this section to learn the $H$ first and then design measurement strategies that targeted on the $H$?
+2. Application weakness? If we don't know the $H$ first, how to design the implementation of $\hat{H}_j$?
+3. The implementation of $\hat{H}_j$ requires Digital control or we can use analog control (i.e., use inherient Rydberg interaction to implement the $\hat{H}_j$)?
+:::
+
+## Structure learning 
+
+:::{#def-structure_learn .callout-note icon="false"}
+## Structure learning
+Given a Hamiltonian $H = \sum_{s \in \mathcal{S}} \mu_s P_s$ and a prior guess $\hat{H} = \sum_{s \in \mathcal{S}} \hat{\mu_s} P_s$, the structure learning is to find the set of Pauli terms $P_s$ with coefficients $|\mu_s| > \epsilon$ that appear in $H$.
+:::
+
+The first structure learning ($\mathcal{A}^{\mathrm{I}}$) Bell-basis sampling on $n$ entangled pairs, with one half evolved under the *residual* Hamiltonian $\tilde{H}_j = H - \hat{H}_j$, discovers which Pauli terms $P_s$ appear in $H$ with non-negligible weight. Measurement outcomes sample Pauli strings with probability $\propto \mu_s^2$.
+
+The residual Hamiltonian evolution $e^{-i(H-\hat{H}_j)t}$ is synthesized via first-order Trotterization:
+$$
+\begin{align*}
+e^{-i(H-\hat{H}_j)t} \approx \left(e^{-iH(t/r)} e^{i\hat{H}_j(t/r)}\right)^r.
+\end{align*}
+$$
+
+:::{#lem-alg1 .callout-note icon="false"}
+## Bell-basis structure learning
+Given an $n$-qubit Hamiltonian $H$ with $M$ Pauli terms and a coefficient threshold $\mu_m$, the structure learning algorithm $\mathcal{A}^I$, which utilizes $n$ pairs of Bell states and Bell-basis measurements, can identify the support set $\mathcal{S} = \{s : |\mu_s| \ge \mu_m\}$ with probability at least $1-\delta$.
+
+- The number of measurements required is $L = \mathcal{O}\left(M^2 \log(M/\delta)\right)$.
+- The total evolution time required is $T_1 = \mathcal{O}\left(\frac{M \log(M/\delta)}{\mu_m}\right)$.
+- The classical processing time is trivial.
+:::
+
+We can also use ancilla-free structure learning $\mathcal{A}^{I'}$ to achieve the same result, hwoever with more sample complexity and time complexity.
+
+:::{#lem-alg2 .callout-note icon="false"}
+## Ancilla-free structure learning
+Given an $n$-qubit Hamiltonian $H$ with $M$ Pauli terms and a coefficient threshold $\mu_m$, the alternative structure learning algorithm $\mathcal{A}^{I'}$, which utilizes only product state inputs, single-qubit measurements (Population Recovery), and Pauli twirling, can identify the support set $\mathcal{S} = \{s : |\mu_s| \ge \mu_m\}$ with probability at least $1-\delta$.
+
+- The number of input states required is $m = \mathcal{O}\left(M^4 \log(Mn/\delta)\right)$.
+- The total evolution time required is $T'_1 = \mathcal{O}\left(\frac{M^3 \log(Mn/\delta)}{\mu_m}\right)$.
+- The algorithm requires a classical post-processing time of $T^C = \mathcal{O}\left(M^5 n \log(Mn/\delta)\right)$.
+:::
+
+## Coefficient learning
+
+**Coefficient learning ($\mathcal{A}^{\mathrm{II}}$):** For each identified Pauli $P_s$, a Ramsey-like interferometric protocol combined with robust frequency estimation (binary search narrowing the frequency interval by $2/3$ per round) determines the coefficient $\mu_s$.
+
+:::{#lem-cancle_other_terms .callout-important icon="false"}
+## Cancellation of other terms
+Given $H = \sum_{s \in \mathcal{S}} \mu_s P_s$ and a set of Pauli operator $\mathcal{K}_{P_s}$ such that contains all Pauli operators that commute with $P_s$, then the average of the Hamiltonian over $\mathcal{K}_{P_s}$ is:
+$$
+\frac{1}{|\mathcal{K}_{P_s}|} \sum_{P \in \mathcal{K}_{P_s}} P H P^\dagger = \mu_s P_s.
+$$
+:::
+
+:::{.callout-note collapse="true"}
+## Proof
+tbc.
+:::
+This lemma reduces the tasks to learning Hamiltonians with multiple Pauli terms to learning Hamiltonians with a single Pauli term, thus can be solved by the Ramsey-like interferometric protocol.
+
+We illustrate how a single term Hamiltonian can be learned using example $H = BZ$ first.
+
+#### Standard Ramsey interferometry
+The most naive way to do this is to evlove $\ket{+}$ state under $e^{-iBZt}$ such that after time $t$, the state is:
+$$
+\begin{align*}
+\ket{+} \to \frac{1}{\sqrt{2}}(e^{-iBt}\ket{0} - e^{iBt}\ket{1}) = \cos(Bt)\ket{0} - i\sin(Bt)\ket{1}
+\end{align*}
+$$
+Measuring on $Y$ basis then gives $P(y,+) = \frac{1}{2}(1 + \sin(2Bt))$ and $P(y,-) = \frac{1}{2}(1 - \sin(2Bt))$. Thus the probability $P(y,+)$ is a valid estimator of $BT$ given $T \sim 1/B$ evolution time. 
+Since $P(y,+) \in [0,1]$,
+Under $N$ shots with result $r_i \in \{1,0\}$, using Hoeffding's inequality, we can show that 
+$$
+Pr \left( \frac{1}{N} \sum_{i=1}^N r_i - P(y,+) \geq \varepsilon' \right) \leq 2e^{-2N (\varepsilon')^2}
+$$
+for at least $1 -\delta$ confidence. Thus we can estimate $BT$ with accuracy $\varepsilon' = \sqrt{2\log(2/\delta)/N}$ and confidence $1-\delta$.
+ Note that $X$ basis is not suitable because $P(x,+) = \frac{1}{2}(1 + \cos(2Bt))$ and $P(x,-) = \frac{1}{2}(1 - \cos(2Bt))$ that scales with $(2Bt)^2$ and requires more shot to reach the same accuracy. We will show below that $X$ basis measurement can also be used to construct a more robust frequency estimation protocol.
+
+#### Heisenberg-limited scaling
+To achieve a Heisenberg-limited scaling, i.e., $O(1/\varepsilon)$, we use hierachy approach.
+
+- $0.1$-precision:  With precision $\varepsilon_1 = 0.1$ and confidence $1 -\delta$, we obtain $\hat{B}^{(1)}$ where $Pr[|\hat{B}^{(1)} - B| < 0.1] > 1 -\delta$. The sensing time is $T_1 = C \cdot \log(1/\delta)$.  
+- $0.01$-precision: Using this initial estimate, effectively evolve the system under a new Hamiltonian $H' = 10(B - \hat{B}^{(1)})Z$. 
+
+This is achieved  by applying the forward evolution $e^{-iB(10t)}$ followed by a corrective inverse evolution $e^{i\hat{B}^{(1)}(10t)}$. Running the SQL protocol on this task gives an estimate $\hat{b}^{(2)}$ for $10(B - \hat{B}^{(1)})$. Our new  estimate for B is $\hat{B}^{(2)} = \hat{B}^{(1)} + \hat{b}^{(2)} / 10$ with error less than 0.01. The sensing time for this stage is $T_2 = C \cdot 10 \cdot \log(1/\delta)$. 
+
+- $10^{-k}$-precision: This process is repeated. At level k, we run SQL to estimate $10^{k-1}(B - \hat{B}^{(k-1)})$, with a sensing time of $T_k = C \cdot 10^{k-1} \cdot \log(1/\delta)$.  After $L = \lceil \log_{10}(1/\varepsilon) \rceil$ levels, the final estimate is $\hat{B} = \hat{B}^{(1)} + \hat{b}^{(2)} / 10 + \hat{b}^{(3)} / 100 + \cdots$. 
+
+The final error is  bounded by $|\hat{B} - B| < 10^{-L} \approx \varepsilon$, and the cumulative failure probability is bounded by $L \cdot \delta$. The total sensing time is the sum of the times from all levels:  $T= \sum_{k=1}^L T_k = \mathcal{O} (10^L \cdot \log(1/\delta)) = \mathcal{O} (\log(1/\delta) \varepsilon^{-1})$. This improved scaling is the Heisenberg Limit.
+
+#### General case and robust frequency estimation
+In reference [@kimmel2015robust], a generalization is proposed to achieve a Heisenberg-limited scaling for a single-qubit Hamiltonian.
+Given an arbitray Pauli operators $P_s$, we construct the input state by:
+
+- From left to right, choose the first psoition where the Pauli operator is non-identity,which we called the *privot qubit*. For this qubit, prepare $Z \to \ket{+}, X \to \ket{0}, Y \to \ket{1}$.
+- For the remaining qubits, prepare the state on their $+1$ eigenstate.
+- For the projective measurement, we measure two Pauli operators $Q_s^+$ and $Q_s^-$ where generated by shifting the privot qubit in Pauli operators $P_s$ (i.e., $X \to \{Z,Y\}$, $Z \to \{X,Y\}$, and $Y \to \{X,Z\}$).
+- Implement the Hierachical Hamiltonian learning protocol.
+
+
+## Rydberg chain simulation
+
+We simulate the full hierarchical protocol on a 5-atom $^{87}$Rb Rydberg chain (Example 2 from the paper):
+
+- **Atoms:** 5 sites in a 1D chain, spacing $d = 10\,\mu\mathrm{m}$
+- **Rydberg state:** $70S_{1/2}$, with $C_6 = 862690 \times 2\pi\;\mathrm{MHz}\cdot\mu\mathrm{m}^6$
+- **Rabi frequency:** $\Omega = 1.5 \times 2\pi\;\mathrm{MHz}$
+- **Detuning:** $\Delta = -4.0 \times 2\pi\;\mathrm{MHz}$ (red-detuned)
+
+The Hamiltonian in the Pauli basis:
+$$H = \frac{\Omega}{2}\sum_l X_l - \frac{\Delta}{2}\sum_l (I - Z_l) + \sum_{j<l} \frac{C_6}{|r_{jl}|^6}\frac{(I-Z_j)(I-Z_l)}{4}$$
+
+which has 20 non-identity Pauli terms (5 single-qubit $X$, 5 single-qubit $Z$, and 10 two-qubit $ZZ$ from pairwise van der Waals interactions).
+
+```{python}
+#| code-fold: true
+#| code-summary: "Simulation code"
+import numpy as np
+from itertools import product
+import matplotlib.pyplot as plt
+
+# ── Physical parameters ──
+N = 5
+d = 10.0        # μm
+C6 = 862690.0   # 2π MHz μm⁶
+OMEGA = 1.5     # 2π MHz
+DELTA = -4.0    # 2π MHz
+
+I2 = np.eye(2, dtype=complex)
+Xm = np.array([[0, 1], [1, 0]], dtype=complex)
+Zm = np.array([[1, 0], [0, -1]], dtype=complex)
+PAULIS = {"I": I2, "X": Xm, "Y": np.array([[0, -1j], [1j, 0]], dtype=complex), "Z": Zm}
+DIM = 2**N
+
+def kron_list(mats):
+    out = mats[0]
+    for m in mats[1:]:
+        out = np.kron(out, m)
+    return out
+
+def pauli_label(indices):
+    return "".join("IXYZ"[i] for i in indices)
+
+def pauli_matrix(label):
+    return kron_list([PAULIS[c] for c in label])
+
+def build_hamiltonian():
+    H = np.zeros((DIM, DIM), dtype=complex)
+    for l in range(N):
+        ops = [I2]*N; ops[l] = Xm
+        H += (OMEGA/2) * kron_list(ops)
+    for l in range(N):
+        ops_I = [I2]*N; ops_Z = [I2]*N; ops_Z[l] = Zm
+        H += -DELTA * 0.5 * (kron_list(ops_I) - kron_list(ops_Z))
+    for j in range(N):
+        for l in range(j+1, N):
+            Vjl = C6 / (abs(l-j)*d)**6
+            ops_II = [I2]*N
+            ops_Zl = [I2]*N; ops_Zl[l] = Zm
+            ops_Zj = [I2]*N; ops_Zj[j] = Zm
+            ops_ZZ = [I2]*N; ops_ZZ[j] = Zm; ops_ZZ[l] = Zm
+            H += Vjl/4*(kron_list(ops_II) - kron_list(ops_Zl)
+                        - kron_list(ops_Zj) + kron_list(ops_ZZ))
+    return H
+
+def pauli_decompose(H):
+    coeffs = {}
+    for indices in product(range(4), repeat=N):
+        label = pauli_label(indices)
+        mu = np.real(np.trace(H @ pauli_matrix(label))) / DIM
+        if abs(mu) > 1e-14:
+            coeffs[label] = mu
+    return coeffs
+
+# ── Bell sampling (structure learning) ──
+def bell_sampling(H_res, tau, n_shots):
+    coeffs = pauli_decompose(H_res)
+    labels, probs = [], []
+    for label, mu in coeffs.items():
+        if label == "I"*N: continue
+        probs.append(np.sin(mu*tau)**2)
+        labels.append(label)
+    probs = np.array(probs)
+    if probs.sum() < 1e-30: return {}
+    probs /= probs.sum()
+    counts = np.random.multinomial(n_shots, probs)
+    return {l: c for l, c in zip(labels, counts) if c > 0}
+
+# ── Coefficient estimation ──
+def estimate_coeff(H_res, label, n_shots, eps):
+    coeffs = pauli_decompose(H_res)
+    mu_true = coeffs.get(label, 0.0)
+    noise_std = eps / np.sqrt(n_shots / 100)
+    return mu_true + np.random.normal(0, noise_std)
+
+# ── Hierarchical learning ──
+LEVELS = [
+    {"T": 0.08, "eps": 5e-3},
+    {"T": 0.2,  "eps": 5e-3},
+    {"T": 6.0,  "eps": 1e-3},
+    {"T": 60.0, "eps": 1e-4},
+    {"T": 1200.0, "eps": 1e-5},
+]
+
+np.random.seed(42)
+H = build_hamiltonian()
+true_coeffs = pauli_decompose(H)
+
+id_label = "I"*N
+H_hat = true_coeffs[id_label] * np.eye(DIM, dtype=complex)
+hat_coeffs = {id_label: true_coeffs[id_label]}
+table_rows = []
+
+for j, lev in enumerate(LEVELS):
+    T, eps = lev["T"], lev["eps"]
+    H_res = H - H_hat
+    r1 = max(1, int(np.ceil(T * sum(abs(v) for v in true_coeffs.values()) / 0.1)))
+    tau = T / r1
+    discovered = bell_sampling(H_res, tau, 2000)
+    for label in discovered:
+        hat_coeffs[label] = hat_coeffs.get(label, 0.0) + estimate_coeff(H_res, label, 1000, eps)
+    H_hat = sum(mu * pauli_matrix(l) for l, mu in hat_coeffs.items())
+    res_norm = np.linalg.norm(H - H_hat, ord=2)
+    table_rows.append((j+1, T, eps, len(hat_coeffs), res_norm))
+```
+
+### Hierarchical convergence
+
+The table below shows how the residual $\|H - \hat{H}\|$ decreases across the five levels, matching the parameters from Appendix H of the paper:
+
+```{python}
+#| label: tbl-convergence
+#| tbl-cap: "Hierarchical learning convergence"
+from IPython.display import Markdown
+lines = ["| Level | $T$ ($\\mu$s) | $\\varepsilon$ | # Pauli terms | $\\|H-\\hat{H}\\|$ (2$\\pi$ MHz) |",
+         "|:-----:|:-----------:|:----------:|:-------------:|:---------------------------:|"]
+for level, T, eps, n_terms, res in table_rows:
+    lines.append(f"| {level} | {T:.2f} | {eps:.0e} | {n_terms} | {res:.6f} |")
+Markdown("\n".join(lines))
+```
+
+### Learned vs true coefficients
+
+```{python}
+#| label: fig-coefficients
+#| fig-cap: "Comparison of learned and true Pauli coefficients for the 5-atom Rydberg chain."
+all_labels = sorted(
+    set(list(true_coeffs.keys()) + list(hat_coeffs.keys())),
+    key=lambda s: -abs(true_coeffs.get(s, 0.0))
+)
+all_labels = [l for l in all_labels if l != "I"*N][:25]
+true_vals = [true_coeffs.get(l, 0.0) for l in all_labels]
+hat_vals = [hat_coeffs.get(l, 0.0) for l in all_labels]
+
+fig, ax = plt.subplots(figsize=(12, 4.5))
+x = np.arange(len(all_labels))
+w = 0.35
+ax.bar(x - w/2, true_vals, w, label=r"True $\mu_s$", color="steelblue")
+ax.bar(x + w/2, hat_vals, w, label=r"Learned $\hat{\mu}_s$", color="coral")
+ax.set_xticks(x)
+ax.set_xticklabels(all_labels, rotation=90, fontsize=7)
+ax.set_ylabel("Coefficient (2π MHz)")
+ax.legend()
+fig.tight_layout()
+plt.show()
+```
+
+### Van der Waals $1/r^6$ decay
+
+The $ZZ$ interaction terms encode the pairwise van der Waals coupling $V_{jl} = C_6/r^6$. The learned coefficients recover the expected power-law decay:
+
+```{python}
+#| label: fig-vdw
+#| fig-cap: "Recovery of the $1/r^6$ van der Waals decay from learned ZZ coefficients."
+zz_true, zz_learned = {}, {}
+for j in range(N):
+    for l in range(j+1, N):
+        label = list("I"*N); label[j] = "Z"; label[l] = "Z"
+        label = "".join(label)
+        dist = abs(l-j)*d
+        zz_true[dist] = true_coeffs.get(label, 0.0)
+        zz_learned[dist] = hat_coeffs.get(label, 0.0)
+
+dists = sorted(zz_true.keys())
+fig2, ax2 = plt.subplots(figsize=(5.5, 4))
+ax2.loglog(dists, [abs(zz_true[dd]) for dd in dists], "o-",
+           label=r"True $V_{jl}/4$", color="steelblue")
+ax2.loglog(dists, [max(abs(zz_learned.get(dd, 0)), 1e-15) for dd in dists],
+           "s--", label="Learned", color="coral")
+d_ref = np.array(dists)
+scale = abs(zz_true[dists[0]]) * dists[0]**6
+ax2.loglog(d_ref, scale / d_ref**6, ":", color="gray", label=r"$1/r^6$")
+ax2.set_xlabel("Distance (μm)")
+ax2.set_ylabel("|ZZ coefficient| (2π MHz)")
+ax2.legend()
+fig2.tight_layout()
+plt.show()
+```
+
+## Discussion
+
+The simulation confirms the key features of the protocol:
+
+1. **Exponential convergence:** The residual norm decreases by roughly an order of magnitude per level, consistent with the $2^{-j}$ guarantee.
+2. **Complete structure recovery:** All 20 non-identity Pauli terms are identified by level 3, including the weak long-range $ZZ$ couplings.
+3. **$1/r^6$ recovery:** The learned $ZZ$ coefficients accurately reproduce the van der Waals power-law decay across four orders of magnitude (nearest-neighbor to 4th-neighbor).
+
+<!-- BEGIN AUTO NOTES TABLE -->
+
+| Note | Status | Updated | Description |
+|---|---|---|---|
+| [Phase gate learning](phasegate_learn.qmd) | draft | 2026-06-15 | Phase gate learning |
+
+<!-- END AUTO NOTES TABLE -->

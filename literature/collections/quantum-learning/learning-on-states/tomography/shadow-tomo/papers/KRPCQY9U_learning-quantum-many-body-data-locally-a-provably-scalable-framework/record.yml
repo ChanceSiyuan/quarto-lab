@@ -1,0 +1,60 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: KRPCQY9U
+  item_version: 96158
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 9ISUJVXK
+      name: shadow tomo
+      path: Quantum Learning/Learning on states/Tomography/shadow tomo
+qlab:
+  primary_collection: 9ISUJVXK
+  indexed_collections:
+    - 9ISUJVXK
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: preprint
+title: "Learning quantum many-body data locally: A provably scalable framework"
+authors:
+  - first: Koki
+    last: Chinzei
+  - first: Quoc Hoan
+    last: Tran
+  - first: Norifumi
+    last: Matsumoto
+  - first: Yasuhiro
+    last: Endo
+  - first: Hirotaka
+    last: Oshima
+year: 2025
+abstract: Machine learning (ML) holds great promise for extracting insights from
+  complex quantum many-body data obtained in quantum experiments. This approach
+  can efficiently solve certain quantum problems that are classically
+  intractable, suggesting potential advantages of harnessing quantum data.
+  However, addressing large-scale problems still requires significant amounts of
+  data beyond the limited computational resources of near-term quantum devices.
+  We propose a scalable ML framework called Geometrically Local Quantum Kernel
+  (GLQK), designed to efficiently learn quantum many-body experimental data by
+  leveraging the exponential decay of correlations, a phenomenon prevalent in
+  noncritical systems. In the task of learning an unknown polynomial of quantum
+  expectation values, we rigorously prove that GLQK substantially improves
+  polynomial sample complexity in the number of qubits $n$, compared to the
+  existing shadow kernel, by constructing a feature space from local quantum
+  information at the correlation length scale. This improvement is particularly
+  notable when each term of the target polynomial involves few local subsystems.
+  Remarkably, for translationally symmetric data, GLQK achieves constant sample
+  complexity, independent of $n$. We numerically demonstrate its high
+  scalability in two learning tasks on quantum many-body phenomena. These
+  results establish new avenues for utilizing experimental data to advance the
+  understanding of quantum many-body physics.
+tags:
+  - Computer Science - Machine Learning
+  - Condensed Matter - Statistical Mechanics
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2509.13705
+  arxiv: "2509.13705"

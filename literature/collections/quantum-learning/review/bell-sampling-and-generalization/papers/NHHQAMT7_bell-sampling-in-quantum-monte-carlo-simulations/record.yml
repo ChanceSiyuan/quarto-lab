@@ -1,0 +1,52 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: NHHQAMT7
+  item_version: 96155
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: VMP2AYWR
+      name: Bell sampling and generalization
+      path: Quantum Learning/_Review/Bell sampling and generalization
+qlab:
+  primary_collection: VMP2AYWR
+  indexed_collections:
+    - VMP2AYWR
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: journalArticle
+title: Bell sampling in Quantum Monte Carlo simulations
+authors:
+  - first: Poetri Sonya
+    last: Tarabunga
+  - first: Yi-Ming
+    last: Ding
+year: 2025
+abstract: Quantum Monte Carlo (QMC) methods are essential for the numerical
+  study of large-scale quantum many-body systems, yet their utility has been
+  significantly hampered by the difficulty in computing key quantities such as
+  off-diagonal operators and entanglement. This work introduces Bell-QMC, a
+  novel QMC framework leveraging Bell sampling, a two-copy measurement protocol
+  in the transversal Bell basis. We demonstrate that Bell-QMC enables an
+  efficient and unbiased estimation of both challenging classes of observables,
+  offering a significant advantage over previous QMC approaches. Notably, the
+  entanglement across all system partitions can be computed in a single Bell-QMC
+  simulation. We implement this method within the stochastic series expansion
+  (SSE), where we design an efficient update scheme for sampling the
+  configurations in the Bell basis. We demonstrate our algorithm in the
+  one-dimensional transverse-field Ising model and the two-dimensional
+  $\mathbb{Z}_2$ lattice gauge theory, extracting universal quantum features
+  using only simple diagonal measurements. This work establishes Bell-QMC as a
+  powerful framework that significantly expands the accessible quantum
+  properties in QMC simulations, providing a substantial advantage over
+  conventional QMC.
+tags:
+  - Condensed Matter - Statistical Mechanics
+  - Condensed Matter - Strongly Correlated Electrons
+  - Quantum Physics
+identifiers:
+  doi: 10.1103/fq8z-y55j
+  arxiv: "2505.14869"

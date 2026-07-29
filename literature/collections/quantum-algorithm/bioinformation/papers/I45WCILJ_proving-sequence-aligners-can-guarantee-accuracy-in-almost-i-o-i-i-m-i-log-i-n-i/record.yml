@@ -1,0 +1,98 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: I45WCILJ
+  item_version: 99966
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 2P447KPE
+      name: bioinformation
+      path: Quantum Algorithm/bioinformation
+qlab:
+  primary_collection: 2P447KPE
+  indexed_collections:
+    - 2P447KPE
+  primary_topic: quantum-algorithm
+  indexed_topics:
+    - quantum-algorithm
+item_type: journalArticle
+title: Proving sequence aligners can guarantee accuracy in almost <i>O</i> (
+  <i>m</i> log <i>n</i> ) time through an average-case analysis of the
+  seed-chain-extend heuristic
+authors:
+  - first: Jim
+    last: Shaw
+  - first: Yun William
+    last: Yu
+year: 2023
+abstract: >-
+  Seed-chain-extend with
+                k
+                -mer seeds is a powerful heuristic technique for sequence alignment used by modern sequence aligners. Although effective in practice for both runtime and accuracy, theoretical guarantees on the resulting alignment do not exist for seed-chain-extend. In this work, we give the first rigorous bounds for the efficacy of seed-chain-extend with
+                k
+                -mers
+                in expectation
+                . Assume we are given a random nucleotide sequence of length ∼
+                n
+                that is indexed (or seeded) and a mutated substring of length ∼
+                m
+                ≤
+                n
+                with mutation rate θ < 0.206. We prove that we can find a
+                k
+                = Θ(log
+                n
+                ) for the
+                k
+                -mer size such that the expected runtime of seed-chain-extend under optimal linear-gap cost chaining and quadratic time gap extension is
+                O
+                (
+                mn
+                
+                  f
+                
+                (θ)
+                log
+                n
+                ), where
+                f
+                (θ) < 2.43 · θ holds as a loose bound. The alignment also turns out to be good; we prove that more than
+                
+                  
+                    1
+                    −
+                    O
+                    
+                      (
+                      
+                        
+                          
+                            
+                              
+                                1
+                                m
+                              
+                            
+                          
+                        
+                      
+                      )
+                    
+                  
+                
+                fraction of the homologous bases is
+                recoverable
+                under an optimal chain. We also show that our bounds work when
+                k
+                -mers are
+                sketched
+                , that is, only a subset of all
+                k
+                -mers is selected, and that sketching reduces chaining time without increasing alignment time or decreasing accuracy too much, justifying the effectiveness of sketching as a practical speedup in sequence alignment. We verify our results in simulation and on real noisy long-read data and show that our theoretical runtimes can predict real runtimes accurately. We conjecture that our bounds can be improved further, and in particular,
+                f
+                (θ) can be further reduced.
+tags: []
+identifiers:
+  doi: 10.1101/gr.277637.122

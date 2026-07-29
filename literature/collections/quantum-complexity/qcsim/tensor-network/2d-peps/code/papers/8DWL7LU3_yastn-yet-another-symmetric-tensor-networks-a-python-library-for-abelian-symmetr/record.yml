@@ -1,0 +1,48 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 8DWL7LU3
+  item_version: 107924
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: H72IBW4B
+      name: code
+      path: Quantum Complexity/QCsim/tensor network/2D-PEPS/code
+qlab:
+  primary_collection: H72IBW4B
+  indexed_collections:
+    - H72IBW4B
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: journalArticle
+title: "YASTN: Yet another symmetric tensor networks; A Python library for
+  Abelian symmetric tensor network calculations"
+authors:
+  - first: Marek
+    last: Rams
+  - first: Gabriela
+    last: Wojtowicz
+  - first: Aritra
+    last: Sinha
+  - first: Juraj
+    last: Hasik
+year: 2025
+abstract: We present an open-source tensor network Python library for quantum
+  many-body simulations. At its core is an Abelian-symmetric tensor, implemented
+  as a sparse block structure managed by a logical layer on top of a dense
+  multidimensional array backend. This serves as the basis for higher-level
+  tensor network algorithms operating on matrix product states and projected
+  entangled pair states. An appropriate backend, such as PyTorch, gives direct
+  access to automatic differentiation (AD) for cost-function gradient
+  calculations and execution on GPU and other supported accelerators. We show
+  the library performance in simulations with infinite projected entangled-pair
+  states, such as finding the ground states with AD and simulating thermal
+  states of the Hubbard model via imaginary time evolution. For these
+  challenging examples, we identify and quantify sources of the numerical
+  advantage exploited by the symmetric-tensor implementation.
+tags: []
+identifiers:
+  doi: 10.21468/scipostphyscodeb.52

@@ -1,0 +1,50 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: ZPVVSNE5
+  item_version: 96096
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: PPA3CWGW
+      name: matchgate
+      path: Quantum Complexity/QCsim/Fermion-based simulation/matchgate
+qlab:
+  primary_collection: PPA3CWGW
+  indexed_collections:
+    - PPA3CWGW
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: journalArticle
+title: Matchgates and classical simulation of quantum circuits
+authors:
+  - first: Richard
+    last: Jozsa
+  - first: Akimasa
+    last: Miyake
+year: 2008
+abstract: Let G(A,B) denote the 2-qubit gate which acts as the 1-qubit SU(2)
+  gates A and B in the even and odd parity subspaces respectively, of two
+  qubits. Using a Clifford algebra formalism we show that arbitrary uniform
+  families of circuits of these gates, restricted to act only on nearest
+  neighbour (n.n.) qubit lines, can be classically efficiently simulated. This
+  reproduces a result originally proved by Valiant using his matchgate
+  formalism, and subsequently related by others to free fermionic physics. We
+  further show that if the n.n. condition is slightly relaxed, to allowing the
+  same gates to act only on n.n. and next-n.n. qubit lines, then the resulting
+  circuits can efficiently perform universal quantum computation. From this
+  point of view, the gap between efficient classical and quantum computational
+  power is bridged by a very modest use of a seemingly innocuous resource (qubit
+  swapping). We also extend the simulation result above in various ways. In
+  particular, by exploiting properties of Clifford operations in conjunction
+  with the Jordan-Wigner representation of a Clifford algebra, we show how one
+  may generalise the simulation result above to provide further classes of
+  classically efficiently simulatable quantum circuits, which we call Gaussian
+  quantum circuits.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.1098/rspa.2008.0189
+  arxiv: "0804.4050"

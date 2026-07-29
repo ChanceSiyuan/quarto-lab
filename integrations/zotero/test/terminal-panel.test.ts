@@ -158,8 +158,8 @@ describe("TerminalPanel right-sidebar lifecycle", () => {
     panel.mount(host);
 
     expect(host.querySelector(".zc-terminal-sidebar")).not.toBeNull();
-    expect(host.textContent).toContain("QLab 根目录启动本地 Terminal");
-    expect(host.querySelector(".zc-zotkit-status")?.textContent).toContain("准备中");
+    expect(host.textContent).toContain("local Terminal in the QLab repository root");
+    expect(host.querySelector(".zc-zotkit-status")?.textContent).toContain("preparing");
     expect(bridge.start).not.toHaveBeenCalled();
   });
 
@@ -350,13 +350,13 @@ describe("TerminalPanel right-sidebar lifecycle", () => {
     panel.mount(host);
 
     panel.setZotkitStatus("enabled");
-    expect(host.querySelector(".zc-zotkit-status")?.textContent).toContain("已启用");
+    expect(host.querySelector(".zc-zotkit-status")?.textContent).toContain("enabled");
     expect(host.querySelector(".zc-zotkit-status")?.classList.contains("is-enabled")).toBe(true);
 
     panel.setZotkitStatus("missing");
-    expect(host.querySelector(".zc-zotkit-status")?.textContent).toContain("快照不可用");
+    expect(host.querySelector(".zc-zotkit-status")?.textContent).toContain("snapshot unavailable");
     expect(host.querySelector(".zc-zotkit-status")?.getAttribute("title"))
-      .toContain("Reader MCP 仍可使用");
+      .toContain("Reader MCP is still available");
   });
 
   it("inserts terminal text without an implicit carriage return", () => {

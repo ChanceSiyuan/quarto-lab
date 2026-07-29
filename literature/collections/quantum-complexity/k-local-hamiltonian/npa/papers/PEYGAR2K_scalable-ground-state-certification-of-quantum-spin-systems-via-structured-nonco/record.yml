@@ -1,0 +1,57 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: PEYGAR2K
+  item_version: 0
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 2BCU6HFL
+      name: NPA
+      path: Quantum Complexity/k-local Hamiltonian/NPA
+qlab:
+  primary_collection: 2BCU6HFL
+  indexed_collections:
+    - 2BCU6HFL
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: preprint
+title: Scalable Ground-State Certification of Quantum Spin Systems via
+  Structured Noncommutative Polynomial Optimization
+authors:
+  - first: Jie
+    last: Wang
+  - first: David
+    last: Jansen
+  - first: Irénée
+    last: Frerot
+  - first: Marc-Olivier
+    last: Renou
+  - first: Victor
+    last: Magron
+  - first: Antonio
+    last: Acín
+year: 2026
+abstract: A fundamental challenge in quantum physics is determining the
+  ground-state properties of many-body systems. Whereas standard approaches,
+  such as variational calculations, consist of writing down a wave function
+  ansatz and minimizing over the possible states expressible by this ansatz, one
+  can alternatively formulate the problem as a noncommutative polynomial
+  optimization problem. This optimization problem can then be addressed using a
+  hierarchy of semidefinite programming relaxations. In contrast to variational
+  calculations, the semidefinite program can provide lower bounds for ground
+  state energies and upper and lower bounds on observable expectation values.
+  However, this approach typically suffers from severe scalability issues,
+  limiting its applicability to small-to-medium-scale systems. In this article,
+  we demonstrate that leveraging the inherent structures of the system can
+  significantly mitigate these scalability challenges and thus allows us to
+  compute meaningful bounds for quantum spin systems on up to $16\times16$
+  square lattices.
+tags:
+  - Mathematics - Optimization and Control
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2604.01555
+  arxiv: "2604.01555"

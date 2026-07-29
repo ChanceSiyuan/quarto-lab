@@ -12,34 +12,34 @@ export const ANCHOR_COLOR = "#a28ae5";
 export interface AnchorRecord {
   anchorId: string;
   libraryID: number | string;
-  itemKey: string | null;        // 父条目 key;解析失败时 null
+  itemKey: string | null;        // Parent item key; null when resolution fails.
   attachmentKey: string;
-  pdfSha256: string | null;      // 创建时的 PDF hash;取不到文件时 null
-  annotationKey?: string;        // 高亮写入成功后回填
+  pdfSha256: string | null;      // PDF hash at creation; null when the file is unavailable.
+  annotationKey?: string;        // Filled after the highlight is written.
   pageNumber?: number;
-  position?: JsonValue;          // ReaderSelection.position 原样
+  position?: JsonValue;          // ReaderSelection.position as received.
   selectedText: string;
   question: string;
   answerSummary?: string;
   threadId: string;
-  turnRange: [number, number];   // store 内 turn 下标闭区间;追问扩展末端
+  turnRange: [number, number];   // Inclusive store turn range; follow-ups extend the end.
   status: "open" | "resolved";
   createdAt: string;
   resolvedAt?: string;
 }
 
-/** 一条锚点对应的对话轮次(question + answer 原文,均未截断)。 */
+/** Conversation rounds for one anchor (verbatim question and answer, never truncated). */
 export interface TranscriptExchange {
   question: string;
   answer: string;
 }
 
 const TRANSCRIPT_CHAR_CAP = 50_000;
-const TRANSCRIPT_TRUNCATED_MARKER = "\n\n（对话过长，已截断，完整记录见对话面板）";
+const TRANSCRIPT_TRUNCATED_MARKER = "\n\n(Conversation truncated; the complete record remains in the chat panel.)";
 
 /**
  * Full-transcript annotation comment (spec amendment 2026-07-26, replacing
- * the old "Q + 要点" `buildAnchorComment`): every `Q:`/`A:` round verbatim,
+ * the old "Q + summary" `buildAnchorComment`): every `Q:`/`A:` round verbatim,
  * joined with a blank line, capped at TRANSCRIPT_CHAR_CAP total characters.
  * Individual answers are never pre-truncated -- only the joined total is,
  * with a marker appended pointing back at the live conversation panel.
@@ -50,7 +50,7 @@ export function buildAnchorTranscriptComment(exchanges: TranscriptExchange[]): s
   return `${full.slice(0, TRANSCRIPT_CHAR_CAP)}${TRANSCRIPT_TRUNCATED_MARKER}`;
 }
 
-/** 首段纯文本降级摘要:去掉常见 Markdown 记号,≤300 字。 */
+/** Plain-text fallback summary: first paragraph, common Markdown removed, at most 300 characters. */
 export function summaryFallback(answerMarkdown: string): string {
   const firstParagraph = answerMarkdown.split(/\n\s*\n/, 1)[0] ?? "";
   return firstParagraph
@@ -62,8 +62,9 @@ export function summaryFallback(answerMarkdown: string): string {
 }
 
 /**
- * Zotero annotationSortIndex 近似值。第三段本应是"距页顶距离"(需页高),
- * 这里用 9999 - rect 顶边近似 —— 只影响批注侧栏排序,不影响定位。
+ * Approximate Zotero annotationSortIndex. The third segment normally encodes
+ * distance from the page top (which requires page height); 9999 minus the
+ * rectangle top is sufficient for sidebar ordering and never affects location.
  */
 export function computeSortIndex(position: unknown): string {
   const record = (position && typeof position === "object" ? position : {}) as Record<string, unknown>;
@@ -133,7 +134,7 @@ export function createZoteroAnchorHost(zotero: any): AnchorHost {
       annotation.annotationPosition = JSON.stringify(target.position);
       for (const tag of target.tags) annotation.addTag?.(tag);
       await annotation.saveTx();
-      if (!annotation.key) throw new Error("Zotero 未返回批注 key");
+      if (!annotation.key) throw new Error("Zotero did not return an annotation key");
       return annotation.key as string;
     },
     async swapAnnotationTags(libraryID, annotationKey, add, remove) {
@@ -370,7 +371,7 @@ export class PaperTrailService {
    * summaryFallback) rather than an LLM-generated one: the spec amendment
    * that introduced the full-transcript comment also retired the old
    * blocking `summarize()` round-trip (a 10s-capped runUtilityTurn call)
-   * that used to feed the now-deprecated "Q + 要点" comment -- its only
+   * that used to feed the now-deprecated "Q + summary" comment -- its only
    * remaining consumer is noting.ts's degenerate "thread unreadable"
    * fallback, which doesn't justify gating every write on an LLM call.
    * The annotation comment itself no longer depends on the summary at all:

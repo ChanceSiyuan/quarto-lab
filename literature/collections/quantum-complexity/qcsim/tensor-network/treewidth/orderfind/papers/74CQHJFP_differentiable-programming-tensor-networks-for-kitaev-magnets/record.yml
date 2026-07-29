@@ -1,0 +1,60 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 74CQHJFP
+  item_version: 106752
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: RTPIB7Q6
+      name: orderfind
+      path: Quantum Complexity/QCsim/tensor network/treewidth/orderfind
+qlab:
+  primary_collection: RTPIB7Q6
+  indexed_collections:
+    - RTPIB7Q6
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: journalArticle
+title: Differentiable programming tensor networks for Kitaev magnets
+authors:
+  - first: Xing-Yu
+    last: Zhang
+  - first: Shuang
+    last: Liang
+  - first: Hai-Jun
+    last: Liao
+  - first: Wei
+    last: Li
+  - first: Lei
+    last: Wang
+year: 2023
+abstract: We present a general computational framework to investigate ground
+  state properties of quantum spin models on infinite two-dimensional lattices
+  using automatic differentiation-based gradient optimization of infinite
+  projected entangled-pair states. The approach exploits the variational uniform
+  matrix product states to contract infinite tensor networks with unit-cell
+  structure and incorporates automatic differentiation to optimize the local
+  tensors. We applied this framework to the Kitaev-type model, which involves
+  complex interactions and competing ground states. To evaluate the accuracy of
+  this method, we compared the results with exact solutions for the Kitaev model
+  and found that it has a better agreement for various observables compared to
+  previous tensor network calculations based on imaginary-time projection.
+  Additionally, by finding out the ground state with lower variational energy
+  compared to previous studies, we provided convincing evidence for the
+  existence of nematic paramagnetic phases and 18-site configuration in the
+  phase diagram of the $K$-$Γ$ model. Furthermore, in the case of the realistic
+  $K$-$J$-$Γ$-$Γ'$ model for the Kitaev material $α$-RuCl$_3$, we discovered a
+  non-colinear zigzag ground state. Lastly, we also find that the strength of
+  the critical out-of-plane magnetic field that suppresses such a zigzag state
+  has a lower transition field value than the previous finite-cylinder
+  calculations. The framework is versatile and will be useful for a quick scan
+  of phase diagrams for a broad class of quantum spin models.
+tags:
+  - Condensed Matter - Strongly Correlated Electrons
+  - Physics - Computational Physics
+identifiers:
+  doi: 10.1103/physrevb.108.085103
+  arxiv: "2304.01551"

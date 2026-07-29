@@ -1,0 +1,57 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: A9E9EI4Y
+  item_version: 96036
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: Y2U79FCU
+      name: complexity analysis
+      path: Quantum Complexity/QCsim/Open-dynamics/complexity analysis
+qlab:
+  primary_collection: Y2U79FCU
+  indexed_collections:
+    - Y2U79FCU
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: preprint
+title: The Complexity of NISQ
+authors:
+  - first: Sitan
+    last: Chen
+  - first: Jordan
+    last: Cotler
+  - first: Hsin-Yuan
+    last: Huang
+  - first: Jerry
+    last: Li
+year: 2022
+abstract: The recent proliferation of NISQ devices has made it imperative to
+  understand their computational power. In this work, we define and study the
+  complexity class $\textsf{NISQ} $, which is intended to encapsulate problems
+  that can be efficiently solved by a classical computer with access to a NISQ
+  device. To model existing devices, we assume the device can (1) noisily
+  initialize all qubits, (2) apply many noisy quantum gates, and (3) perform a
+  noisy measurement on all qubits. We first give evidence that
+  $\textsf{BPP}\subsetneq \textsf{NISQ}\subsetneq \textsf{BQP}$, by
+  demonstrating super-polynomial oracle separations among the three classes,
+  based on modifications of Simon's problem. We then consider the power of
+  $\textsf{NISQ}$ for three well-studied problems. For unstructured search, we
+  prove that $\textsf{NISQ}$ cannot achieve a Grover-like quadratic speedup over
+  $\textsf{BPP}$. For the Bernstein-Vazirani problem, we show that
+  $\textsf{NISQ}$ only needs a number of queries logarithmic in what is required
+  for $\textsf{BPP}$. Finally, for a quantum state learning problem, we prove
+  that $\textsf{NISQ}$ is exponentially weaker than classical computation with
+  access to noiseless constant-depth quantum circuits.
+tags:
+  - Computer Science - Computational Complexity
+  - Computer Science - Information Theory
+  - Computer Science - Machine Learning
+  - Mathematics - Information Theory
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2210.07234
+  arxiv: "2210.07234"

@@ -1,0 +1,59 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 3MZ8PA8K
+  item_version: 96124
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: A3L6E8EJ
+      name: supermacy verification
+      path: Quantum Complexity/Sampling/supermacy verification
+    - key: L8VVG2ZC
+      name: spoofing sampling
+      path: Quantum Complexity/QCsim/spoofing sampling
+qlab:
+  primary_collection: A3L6E8EJ
+  indexed_collections:
+    - A3L6E8EJ
+    - L8VVG2ZC
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: journalArticle
+title: Spoofing Linear Cross-Entropy Benchmarking in Shallow Quantum Circuits
+authors:
+  - first: Boaz
+    last: Barak
+  - first: Chi-Ning
+    last: Chou
+  - first: Xun
+    last: Gao
+year: 2021
+abstract: >-
+  The linear cross-entropy benchmark (Linear XEB) has been used as a test for
+  procedures simulating quantum circuits. Given a quantum circuit C with n
+  inputs and outputs and purported simulator whose output is distributed
+  according to a distribution p over {0,1}ⁿ, the linear XEB fidelity of the
+  simulator is ℱ_C(p) = 2ⁿ 𝔼_{x ∼ p} q_C(x) -1, where q_C(x) is the probability
+  that x is output from the distribution C |0ⁿ⟩. A trivial simulator (e.g., the
+  uniform distribution) satisfies ℱ_C(p) = 0, while Google’s noisy quantum
+  simulation of a 53-qubit circuit C achieved a fidelity value of (2.24
+  ±0.21)×10^{-3} (Arute et. al., Nature'19). 
+
+  In this work we give a classical randomized algorithm that for a given circuit
+  C of depth d with Haar random 2-qubit gates achieves in expectation a fidelity
+  value of Ω(n/L⋅15^{-d}) in running time poly(n,2^L). Here L is the size of the
+  light cone of C: the maximum number of input bits that each output bit depends
+  on. In particular, we obtain a polynomial-time algorithm that achieves large
+  fidelity of ω(1) for depth O(√{log n}) two-dimensional circuits. This is the
+  first such result for two dimensional circuits of super-constant depth. Our
+  results can be considered as an evidence that fooling the linear XEB test
+  might be easier than achieving a full simulation of the quantum circuit.
+tags:
+  - Linear cross-entropy benchmark
+  - Quantum supremacy
+  - Theory of computation → Quantum complexity theory
+identifiers:
+  doi: 10.4230/lipics.itcs.2021.30

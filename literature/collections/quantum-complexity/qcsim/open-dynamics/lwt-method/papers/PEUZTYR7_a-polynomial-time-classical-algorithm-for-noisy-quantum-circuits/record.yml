@@ -1,0 +1,51 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: PEUZTYR7
+  item_version: 96036
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: SHZ4SM7W
+      name: LWT method
+      path: Quantum Complexity/QCsim/Open-dynamics/LWT method
+qlab:
+  primary_collection: SHZ4SM7W
+  indexed_collections:
+    - SHZ4SM7W
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: preprint
+title: A polynomial-time classical algorithm for noisy quantum circuits
+authors:
+  - first: Thomas
+    last: Schuster
+  - first: Chao
+    last: Yin
+  - first: Xun
+    last: Gao
+  - first: Norman Y.
+    last: Yao
+year: 2024
+abstract: "We provide a polynomial-time classical algorithm for noisy quantum
+  circuits. The algorithm computes the expectation value of any observable for
+  any circuit, with a small average error over input states drawn from an
+  ensemble (e.g. the computational basis). Our approach is based upon the
+  intuition that noise exponentially damps non-local correlations relative to
+  local correlations. This enables one to classically simulate a noisy quantum
+  circuit by only keeping track of the dynamics of local quantum information.
+  Our algorithm also enables sampling from the output distribution of a circuit
+  in quasi-polynomial time, so long as the distribution anti-concentrates. A
+  number of practical implications are discussed, including a fundamental limit
+  on the efficacy of noise mitigation strategies: any quantum circuit for which
+  error mitigation is efficient must be classically simulable."
+tags:
+  - Computer Science - Computational Complexity
+  - Computer Science - Information Theory
+  - Mathematical Physics
+  - Physics - Atomic Physics
+  - Quantum Physics
+identifiers:
+  arxiv: "2407.12768"

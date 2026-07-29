@@ -1,0 +1,55 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 8EUFRGU7
+  item_version: 114118
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: YCBHDN7M
+      name: Application
+      path: Quantum Learning/Learning on states/non-linear/Application
+    - key: 9ZUW8QFW
+      name: Noise
+      path: Quantum Learning/Learning on states/non-linear/Virtual_distillation/Noise
+qlab:
+  primary_collection: YCBHDN7M
+  indexed_collections:
+    - 9ZUW8QFW
+    - YCBHDN7M
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: journalArticle
+title: Study of noise in virtual distillation circuits for quantum error mitigation
+authors:
+  - first: Pontus
+    last: Vikstål
+  - first: Giulia
+    last: Ferrini
+  - first: Shruti
+    last: Puri
+year: 2024
+abstract: Virtual distillation has been proposed as an error mitigation protocol
+  for estimating the expectation values of observables in quantum algorithms. It
+  proceeds by creating a cyclic permutation of $M$ noisy copies of a quantum
+  state using a sequence of controlled-swap gates. If the noise does not shift
+  the dominant eigenvector of the density operator away from the ideal state,
+  then the error in expectation-value estimation can be exponentially reduced
+  with $M$. In practice, subsequent error mitigation techniques are required to
+  suppress the effect of noise in the cyclic permutation circuit itself, leading
+  to increased experimental complexity. Here, we perform a careful analysis of
+  the effect of uncorrelated, identical noise in the cyclic permutation circuit
+  and find that the estimation of expectation value of observables are robust
+  against dephasing noise. We support the analytical result with numerical
+  simulations and find that $67\%$ of errors are reduced for $M=2$, with
+  physical dephasing error probabilities as high as $10\%$. Our results imply
+  that a broad class of quantum algorithms can be implemented with higher
+  accuracy in the near-term with qubit platforms where non-dephasing errors are
+  suppressed, such as superconducting bosonic qubits and Rydberg atoms.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.22331/q-2024-08-14-1441
+  arxiv: "2210.15317"

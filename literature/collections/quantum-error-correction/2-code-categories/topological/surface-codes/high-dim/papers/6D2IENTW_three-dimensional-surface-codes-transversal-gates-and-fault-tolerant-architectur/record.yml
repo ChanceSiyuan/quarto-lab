@@ -1,0 +1,59 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 6D2IENTW
+  item_version: 96116
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: JYKK3NK9
+      name: High-dim
+      path: Quantum Error correction/2-Code categories/Topological/surface
+        codes/High-dim
+    - key: KXL6J577
+      name: universal without distillation
+      path: Quantum Error correction/Fault-tolerant/universal without distillation
+    - key: AC5RCSNL
+      name: transversal CCZ/T
+      path: Quantum Error correction/Fault-tolerant/transversal gate/transversal CCZ/T
+qlab:
+  primary_collection: JYKK3NK9
+  indexed_collections:
+    - AC5RCSNL
+    - JYKK3NK9
+    - KXL6J577
+  primary_topic: quantum-error-correction
+  indexed_topics:
+    - quantum-error-correction
+item_type: journalArticle
+title: "Three-dimensional surface codes: Transversal gates and fault-tolerant
+  architectures"
+authors:
+  - first: Michael
+    last: Vasmer
+  - first: Dan E.
+    last: Browne
+year: 2019
+abstract: One of the leading quantum computing architectures is based on the
+  two-dimensional (2D) surface code. This code has many advantageous properties
+  such as a high error threshold and a planar layout of physical qubits where
+  each physical qubit need only interact with its nearest neighbours. However,
+  the transversal logical gates available in 2D surface codes are limited. This
+  means that an additional (resource intensive) procedure known as magic state
+  distillation is required to do universal quantum computing with 2D surface
+  codes. Here, we examine three-dimensional (3D) surface codes in the context of
+  quantum computation. We introduce a picture for visualizing 3D surface codes
+  which is useful for analysing stacks of three 3D surface codes. We use this
+  picture to prove that the $CZ$ and $CCZ$ gates are transversal in 3D surface
+  codes. We also generalize the techniques of 2D surface code lattice surgery to
+  3D surface codes. We combine these results and propose two quantum computing
+  architectures based on 3D surface codes. Magic state distillation is not
+  required in either of our architectures. Finally, we show that a stack of
+  three 3D surface codes can be transformed into a single 3D color code (another
+  type of quantum error-correcting code) using code concatenation.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.1103/physreva.100.012312
+  arxiv: "1801.04255"

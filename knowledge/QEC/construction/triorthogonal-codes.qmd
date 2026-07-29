@@ -1,0 +1,198 @@
+---
+title: Triorthogonal Codes and Transversal T Gates
+description: Triorthogonal matrices, their CSS codes, transversal T gates, and the fifteen-to-one Reed--Muller magic-state distillation protocol.
+categories:
+  - theory
+---
+
+# Motivation
+
+Transversal gates act independently on corresponding physical qubits in each code block, so a single physical fault cannot spread within a block. No quantum code admits a universal set consisting entirely of transversal logical gates [@eastin2009restrictions]. A useful alternative is to choose codes with a transversal non-Clifford gate and connect them to a Clifford fault-tolerant scheme through magic-state distillation or code switching.
+
+Bravyi and Haah introduced triorthogonal matrices as a systematic source of CSS codes with transversal $T$ action, possibly followed by a known Clifford correction [@bravyi2012magic].
+
+# Triorthogonal matrices
+
+For binary vectors $f,g\in\mathbb F_2^n$, write
+
+$$
+|f\cdot g|=\sum_{j=1}^nf_jg_j,
+$$
+
+and similarly for triple componentwise products.
+
+::: {#def-triorthogonal-matrix .callout-note icon="false"}
+## Definition: triorthogonal matrix
+
+A binary matrix $G$ with rows $g^1,\ldots,g^m$ is triorthogonal when, for every set of distinct row indices,
+
+$$
+|g^a\cdot g^b|=0\pmod2
+$$
+
+and
+
+$$
+|g^a\cdot g^b\cdot g^c|=0\pmod2.
+$$
+
+Partition its rows into the even-weight submatrix $G_0$ and odd-weight submatrix $G_1$.
+:::
+
+Assume the rows of $G$ are independent and $G_1$ has $k$ rows $f^1,\ldots,f^k$. Let
+
+$$
+\mathcal G_0=\operatorname{rowspan}G_0,
+\qquad
+\mathcal G=\operatorname{rowspan}G.
+$$
+
+# Associated CSS code
+
+Define a CSS code with
+
+$$
+X\text{-stabilizer space }\mathcal G_0,
+\qquad
+Z\text{-stabilizer space }\mathcal G^\perp.
+$$
+
+Because $\mathcal G_0\subseteq\mathcal G$, the two stabilizer spaces are orthogonal. The $k$ odd rows provide logical Pauli representatives
+
+$$
+\overline X_a=X(f^a),
+\qquad
+\overline Z_a=Z(f^a).
+$$
+
+Pairwise triorthogonality gives
+
+$$
+f^a\cdot f^b=\delta_{ab}\pmod2,
+$$
+
+so each logical pair anticommutes while distinct logical operators commute.
+
+::: {#thm-triorthogonal-code-dimension .callout-important icon="false"}
+## Theorem: encoded dimension
+
+If $G$ has independent rows and $G_1$ contains $k$ rows, then the CSS construction above encodes $k$ logical qubits.
+:::
+
+::: {.callout-note collapse="true"}
+## Proof
+
+There are $n$ physical qubits, $\operatorname{rank}G_0$ independent $X$ stabilizers, and
+
+$$
+\dim\mathcal G^\perp=n-\operatorname{rank}G
+$$
+
+independent $Z$ stabilizers. Hence
+
+$$
+k_Q=n-\operatorname{rank}G_0-(n-\operatorname{rank}G)
+=\operatorname{rank}G-\operatorname{rank}G_0=k.
+$$
+:::
+
+Normalized logical basis states may be written
+
+$$
+|x_1\cdots x_k\rangle_L
+=\frac{1}{\sqrt{|\mathcal G_0|}}
+\sum_{g\in\mathcal G_0}
+\left|g+\sum_{a=1}^kx_af^a\right\rangle.
+$$
+
+# Why triorthogonality controls transversal phase
+
+Let $\omega=e^{i\pi/4}$, so
+
+$$
+T^{\otimes n}|v\rangle=\omega^{|v|}|v\rangle.
+$$
+
+For binary vectors $g^a$ and coefficients $x_a$, inclusion--exclusion modulo eight gives
+
+$$
+\left|\bigoplus_ax_ag^a\right|
+\equiv
+\sum_ax_a|g^a|
+-2\sum_{a<b}x_ax_b|g^a\cdot g^b|
++4\sum_{a<b<c}x_ax_bx_c|g^a\cdot g^b\cdot g^c|
+\pmod8.
+$$
+
+Terms involving four or more distinct rows carry a factor divisible by eight. Pairwise and triple even-overlap conditions force the remaining cross terms to produce at most a diagonal Clifford phase. With additional divisibility conditions on row weights and overlaps, those Clifford corrections vanish.
+
+::: {#thm-triorthogonal-transversal-t .callout-important icon="false"}
+## Theorem: transversal $T$
+
+The CSS code associated with a triorthogonal matrix is preserved by transversal $T$, up to a diagonal Clifford correction determined by the row weights and overlaps. On the logical subspace, the non-Clifford part is a product of logical $T$ or $T^\dagger$ gates, with the sign fixed by convention [@bravyi2012magic].
+:::
+
+Thus “triorthogonal” alone should not be paraphrased as “$T^{\otimes n}$ equals exactly $T_L^{\otimes k}$.” The correction and phase convention must be computed.
+
+# The fifteen-qubit example
+
+Index the fifteen coordinates by the nonzero points $u\in\mathbb F_2^4$. Define evaluation vectors
+
+$$
+[1]_u=1,
+\qquad
+[x_i]_u=u_i,
+\qquad i=1,\ldots,4.
+$$
+
+Let $G_1$ contain the all-ones row $[1]$ and let $G_0$ contain $[x_1],\ldots,[x_4]$. Their weights and overlaps are
+
+$$
+|[1]|=15,
+\quad
+|[x_i]|=8,
+\quad
+|[x_ix_j]|=4,
+\quad
+|[x_ix_jx_k]|=2
+$$
+
+for distinct indices. Hence the five-row matrix is triorthogonal. Moreover,
+
+$$
+\mathcal G^\perp
+=\operatorname{span}\{[x_i],[x_ix_j]:1\le i<j\le4\},
+$$
+
+which has dimension ten. The resulting code is the $[[15,1,3]]$ punctured Reed--Muller code.
+
+The logical Pauli operators may both be represented by the all-ones vector. For an affine linear word
+
+$$
+v=z_0[1]+\sum_{i=1}^4z_i[x_i],
+$$
+
+the weight is a multiple of eight when $z_0=0$, and is congruent to seven modulo eight when $z_0=1$. Therefore
+
+$$
+T^{\otimes15}|+\rangle_L
+=T_L^\dagger|+\rangle_L
+$$
+
+under this choice of $T=\operatorname{diag}(1,e^{i\pi/4})$. Reversing the physical phase convention exchanges $T$ and $T^\dagger$.
+
+# Fifteen-to-one magic-state distillation
+
+Prepare fifteen noisy $T$-type resource states, project onto the code space using the stabilizer checks, reject on a nontrivial syndrome, and decode the surviving logical qubit. Because the code has distance three, every weight-one or weight-two input error is detected; the leading accepted output error is cubic in the input error rate. The protocol is therefore called “15-to-1.”
+
+The usefulness of this construction is operational: Clifford gates and Pauli measurements implement the checking circuit, while the transversal phase relation transfers the non-Clifford resource to the logical output [@bravyi2005universal; @bravyi2012magic]. Resource estimates must also include acceptance probability, Clifford-circuit faults, and the target logical error rate.
+
+# Relation to code switching
+
+Triorthogonal codes suggest a division of labor:
+
+1. store and manipulate data in a code optimized for locality and Clifford operations;
+2. switch or teleport into a code with the required transversal non-Clifford gate;
+3. apply the transversal gate and return.
+
+Magic-state distillation and code switching are not automatically equivalent, but both consume an auxiliary code structure to evade the absence of a universal transversal gate set. Establishing a concrete conversion requires a fault-tolerant interface, syndrome handling, and a bound on error propagation; triorthogonality supplies only the transversal-phase component.

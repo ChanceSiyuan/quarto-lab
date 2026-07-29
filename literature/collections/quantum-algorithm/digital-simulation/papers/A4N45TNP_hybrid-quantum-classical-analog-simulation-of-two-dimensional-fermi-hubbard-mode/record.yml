@@ -1,0 +1,76 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: A4N45TNP
+  item_version: 97300
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: AGLEQVVP
+      name: Digital Simulation
+      path: Quantum Algorithm/Digital Simulation
+    - key: HN8LIGHZ
+      name: hubbard
+      path: Quantum N-Atom/App-Analog simulation/hubbard
+qlab:
+  primary_collection: AGLEQVVP
+  indexed_collections:
+    - AGLEQVVP
+    - HN8LIGHZ
+  primary_topic: quantum-algorithm
+  indexed_topics:
+    - quantum-algorithm
+    - quantum-n-atom
+item_type: preprint
+title: Hybrid quantum-classical analog simulation of two-dimensional
+  Fermi-Hubbard models with neutral atoms
+authors:
+  - first: Sergi
+    last: Julià-Farré
+  - first: Antoine
+    last: Michel
+  - first: Christophe
+    last: Domain
+  - first: Joseph
+    last: Mikael
+  - first: Jacques-Charles
+    last: Lafoucriere
+  - first: Joseph
+    last: Vovrosh
+  - first: Ahmed
+    last: Chahlaoui
+  - first: Dorian
+    last: Claveau
+  - first: Guillaume
+    last: Villaret
+  - first: Julius de
+    last: Hond
+  - first: Loïc
+    last: Henriet
+  - first: Antoine
+    last: Browaeys
+  - first: Thomas
+    last: Ayral
+  - first: Alexandre
+    last: Dauphin
+year: 2025
+abstract: "We experimentally study the two-dimensional Fermi-Hubbard model using
+  a Rydberg-based quantum processing unit in the analog mode. Our approach
+  avoids encoding directly the original fermions into qubits and instead relies
+  on reformulating the original model onto a system of fermions coupled to spins
+  and then decoupling them in a self-consistent manner. We then introduce the
+  auxiliary spin solver: this hybrid quantum-classical algorithm handles a
+  free-fermion problem, which can be solved efficiently with a few classical
+  resources, and an interacting spin problem, which can be naturally encoded in
+  the analog quantum computer. This algorithm can be used to study both the
+  equilibrium Mott transition as well as non-equilibrium properties of the
+  original Fermi-Hubbard model, highlighting the potential of quantum-classical
+  hybrid approaches to study strongly correlated matter."
+tags:
+  - Condensed Matter - Quantum Gases
+  - Condensed Matter - Strongly Correlated Electrons
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2510.05897
+  arxiv: "2510.05897"

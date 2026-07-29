@@ -1,0 +1,45 @@
+---
+title: Quantum Resource
+description: Quantum-resource and measurement-compatibility notes covering generalized robustness, joint measurability, multi-copy compatibility, local shadow estimation, projective simulation, and algebraic estimation frameworks.
+---
+
+# Introduction
+An interesting conclusion in any convex QRT on finite-dimensional state spaces, the generalized robustness can be interpreted operationally as the advantage of a quantum resource state in some channel discrimination task. 
+
+We consider general QRTs on a $d$-dimensional Hilbert space $\mathcal{H}$.
+The set $\mathcal{F} (\mathcal{H})$ of free states is defined as some closed subset of the density matrix $\mathcal{D}(\mathcal{H})$ in the system $\mathcal{H}$. The generalized robustness resource quantifier is defined as follows.
+
+:::{.callout-note icon="false"}
+
+## Reading map
+
+- [Compatibility and Others](compatiablity_and_others.qmd)
+- [compatibility in the multi-copy case](multicopy_compatiability.qmd)
+- [Quantum Resource Theory of Compatibility](compatiablity.qmd)
+
+## Definition: Generalized Robustness
+
+ Let $\rho \in \mathcal{D}(\mathcal{H})$ be a quantum state. The generalized robustness $\mathcal{R}_{\mathcal{F} (\mathcal{H})}(\rho)$ of $\rho$ with respect to the set $\mathcal{F} (\mathcal{H})$ of free states is defined as:
+$$
+ \mathcal{R}_{\mathcal{F} (\mathcal{H})}(\rho) = \min_{\tau \in \mathcal{D}(\mathcal{H})}  \left\{ s \geq 0 : \frac{\rho + s\tau}{1 + s} \in \mathcal{F} (\mathcal{H}) \right\}
+$$
+:::
+
+:::{.callout-note icon="false"}
+## Definition: Generalized Gell-Mann Matrices
+For a $d$-dimensional Hilbert space $\mathcal{H}$ with the standard computational basis $\{|1\rangle, |2\rangle, \dots, |d\rangle\}$, the $d^2 - 1$ generalized Gell-Mann matrices are Hermitian operators defined by the following three categories:
+
+1. Symmetric (off-diagonal) matrices: For $1 \le j < k \le d$,$\Lambda_S^{j,k} = |j\rangle\langle k| + |k\rangle\langle j|$
+2. Antisymmetric (off-diagonal) matrices: For $1 \le j < k \le d$,$\Lambda_A^{j,k} = -i(|j\rangle\langle k| - |k\rangle\langle j|)$
+3. Diagonal matrices: For $1 \le l \le d-1$,$\Lambda_D^{l} = \sqrt{\frac{2}{l(l+1)}} \left( \sum_{m=1}^{l} |m\rangle\langle m| - l|l+1\rangle\langle l+1| \right)$
+:::
+
+:::{#lem-orthon .callout-note icon="false"}
+## (Orthogonality of Generalized Gell-Mann Matrices)
+Let $\{\lambda_j\}$ denote the set of generalized Gell-Mann matrices defined above. For any two matrices $\lambda_i$ and $\lambda_j$ in this set, the trace inner product satisfies:$$\tr[\lambda_i^\dagger \lambda_j] = 2\delta_{ij}$$
+:::
+
+:::{.callout-note icon="false" collapse="true"}
+## Proof (Click to expand)
+t.b.c.
+:::

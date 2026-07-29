@@ -1,0 +1,62 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 58TPXXU5
+  item_version: 96160
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: GUEN2X99
+      name: shallow
+      path: Quantum Learning/Learning on states/Tomography/shadow tomo/shallow
+qlab:
+  primary_collection: GUEN2X99
+  indexed_collections:
+    - GUEN2X99
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: journalArticle
+title: "Shallow shadows: Expectation estimation using low-depth random Clifford
+  circuits"
+authors:
+  - first: Christian
+    last: Bertoni
+  - first: Jonas
+    last: Haferkamp
+  - first: Marcel
+    last: Hinsche
+  - first: Marios
+    last: Ioannou
+  - first: Jens
+    last: Eisert
+  - first: Hakop
+    last: Pashayan
+year: 2024
+abstract: We provide practical and powerful schemes for learning many properties
+  of an unknown n-qubit quantum state using a sparing number of copies of the
+  state. Specifically, we present a depth-modulated randomized measurement
+  scheme that interpolates between two known classical shadows schemes based on
+  random Pauli measurements and random Clifford measurements. These can be seen
+  within our scheme as the special cases of zero and infinite depth,
+  respectively. We focus on the regime where depth scales logarithmically in n
+  and provide evidence that this retains the desirable properties of both
+  extremal schemes whilst, in contrast to the random Clifford scheme, also being
+  experimentally feasible. We present methods for two key tasks; estimating
+  expectation values of certain observables from generated classical shadows
+  and, computing upper bounds on the depth-modulated shadow norm, thus providing
+  rigorous guarantees on the accuracy of the output estimates. We consider
+  observables that can be written as a linear combination of poly(n) Paulis and
+  observables that can be written as a low bond dimension matrix product
+  operator. For the former class of observables both tasks are solved
+  efficiently in n. For the latter class, we do not guarantee efficiency but
+  present a method that works in practice; by variationally computing a heralded
+  approximate inverses of a tensor network that can then be used for efficiently
+  executing both these tasks.
+tags:
+  - Condensed Matter - Other Condensed Matter
+  - Quantum Physics
+identifiers:
+  doi: 10.1103/physrevlett.133.020602
+  arxiv: "2209.12924"

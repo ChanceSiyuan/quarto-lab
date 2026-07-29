@@ -1,0 +1,61 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: FZCJJP2D
+  item_version: 96149
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: ZTZAL49L
+      name: non-linear
+      path: Quantum Learning/Learning on states/non-linear
+    - key: ITLT2FDY
+      name: lowerbounds
+      path: Quantum Learning/Learning on states/lowerbounds
+qlab:
+  primary_collection: ZTZAL49L
+  indexed_collections:
+    - ITLT2FDY
+    - ZTZAL49L
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: preprint
+title: Exponential Advantage from One More Replica in Estimating Nonlinear
+  Properties of Quantum States
+authors:
+  - first: Qi
+    last: Ye
+  - first: Zhenhuan
+    last: Liu
+  - first: Dong-Ling
+    last: Deng
+year: 2025
+abstract: Inferring nonlinear features of quantum states is fundamentally
+  important across quantum information science, but remains challenging due to
+  the intrinsic linearity of quantum mechanics. It is widely recognized that
+  quantum memory and coherent operations help avoid exponential sample
+  complexity, by mapping nonlinear properties onto linear observables over
+  multiple copies of the target state. In this work, we prove that such a
+  conversion is not only sufficient but also necessary. Specifically, we prove
+  that the estimation of tr(𝜌𝑘𝑂) for a broad class of observables 𝑂 is
+  exponentially hard for any protocol restricted to (𝑘 − 1)-replica joint
+  measurements, whereas access to one additional replica reduces the complexity
+  to a constant. These results establish, for the first time, an exponential
+  separation between (𝑘 − 1)- and 𝑘-replica protocols for any integer 𝑘 > 2,
+  thereby introducing a fine-grained hierarchy of replica-based quantum
+  advantage and resolving an open question in the literature. The technical core
+  is a general indistinguishability principle showing that any ensemble
+  constructed from large Haar random states via tensor products and mixtures is
+  hard to distinguish from its average. Leveraging this principle, we further
+  prove that 𝑘-replica joint measurements are also necessary for distinguishing
+  rank-𝑘 density matrices from rank-(𝑘 − 1) ones. Overall, our work delineates
+  sharp boundaries on the power of joint measurements, highlighting
+  resource–complexity trade-offs in quantum learning theory and deepening the
+  understanding of quantum mechanics’ intrinsic linearity.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2509.24000
+  arxiv: "2509.24000"

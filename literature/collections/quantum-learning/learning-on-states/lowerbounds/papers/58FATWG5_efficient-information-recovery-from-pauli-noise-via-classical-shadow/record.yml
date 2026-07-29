@@ -1,0 +1,62 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 58FATWG5
+  item_version: 96152
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: ITLT2FDY
+      name: lowerbounds
+      path: Quantum Learning/Learning on states/lowerbounds
+qlab:
+  primary_collection: ITLT2FDY
+  indexed_collections:
+    - ITLT2FDY
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: preprint
+title: Efficient information recovery from Pauli noise via classical shadow
+authors:
+  - first: Yifei
+    last: Chen
+  - first: Zhan
+    last: Yu
+  - first: Chenghong
+    last: Zhu
+  - first: Xin
+    last: Wang
+year: 2023
+abstract: The rapid advancement of quantum computing has led to an extensive
+  demand for effective techniques to extract classical information from quantum
+  systems, particularly in fields like quantum machine learning and quantum
+  chemistry. However, quantum systems are inherently susceptible to noises,
+  which adversely corrupt the information encoded in quantum systems. In this
+  work, we introduce an efficient algorithm that can recover information from
+  quantum states under Pauli noise. The core idea is to learn the necessary
+  information of the unknown Pauli channel by post-processing the classical
+  shadows of the channel. For a local and bounded-degree observable, only
+  partial knowledge of the channel is required rather than its complete
+  classical description to recover the ideal information, resulting in a
+  polynomial-time algorithm. This contrasts with conventional methods such as
+  probabilistic error cancellation, which requires the full information of the
+  channel and exhibits exponential scaling with the number of qubits. We also
+  prove that this scalable method is optimal on the sample complexity and
+  generalise the algorithm to the weight contracting channel. Furthermore, we
+  demonstrate the validity of the algorithm on the 1D anisotropic
+  Heisenberg-type model via numerical simulations. As a notable application, our
+  method can be severed as a sample-efficient error mitigation scheme for
+  Clifford circuits.
+tags:
+  - Computer Science - Information Retrieval
+  - Computer Science - Information Theory
+  - Computer Science - Machine Learning
+  - Mathematical Physics
+  - Mathematics - Information Theory
+  - Mathematics - Mathematical Physics
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2305.04148
+  arxiv: "2305.04148"

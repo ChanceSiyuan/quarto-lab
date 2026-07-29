@@ -1,0 +1,54 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: WVWXW3TE
+  item_version: 96539
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: XAB9VQZP
+      name: experiment
+      path: Quantum Learning/Learning on
+        states/non-linear/Virtual_distillation/experiment
+qlab:
+  primary_collection: XAB9VQZP
+  indexed_collections:
+    - XAB9VQZP
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: journalArticle
+title: "Shadow Distillation: Quantum Error Mitigation with Classical Shadows for
+  Near-Term Quantum Processors"
+authors:
+  - first: Alireza
+    last: Seif
+  - first: Ze-Pei
+    last: Cian
+  - first: Sisi
+    last: Zhou
+  - first: Senrui
+    last: Chen
+  - first: Liang
+    last: Jiang
+year: 2023
+abstract: Mitigating errors in quantum information processing devices is
+  especially important in the absence of fault tolerance. An effective method in
+  suppressing state-preparation errors is using multiple copies to distill the
+  ideal component from a noisy quantum state. Here, we use classical shadows and
+  randomized measurements to circumvent the need for coherent access to multiple
+  copies at an exponential cost. We study the scaling of resources using
+  numerical simulations and find that the overhead is still favorable compared
+  to full state tomography. We optimize measurement resources under realistic
+  experimental constraints and apply our method to an experiment preparing
+  Greenberger-Horne-Zeilinger (GHZ) state with trapped ions. In addition to
+  improving stabilizer measurements, the analysis of the improved results
+  reveals the nature of errors affecting the experiment. Hence, our results
+  provide a directly applicable method for mitigating errors in near-term
+  quantum computers.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.1103/prxquantum.4.010303
+  arxiv: "2203.07309"

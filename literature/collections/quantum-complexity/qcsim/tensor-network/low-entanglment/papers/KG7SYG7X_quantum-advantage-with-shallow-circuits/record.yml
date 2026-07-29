@@ -1,0 +1,55 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: KG7SYG7X
+  item_version: 111971
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 2I3KSGTV
+      name: Low entanglment
+      path: Quantum Complexity/QCsim/tensor network/Low entanglment
+    - key: E37296D2
+      name: Non-locality
+      path: Quantum Resource/Non-locality
+    - key: B2HQNY6V
+      name: QNC0
+      path: Quantum Complexity/QNC0
+qlab:
+  primary_collection: 2I3KSGTV
+  indexed_collections:
+    - 2I3KSGTV
+    - B2HQNY6V
+    - E37296D2
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+    - quantum-resource
+item_type: journalArticle
+title: Quantum advantage with shallow circuits
+authors:
+  - first: Sergey
+    last: Bravyi
+  - first: David
+    last: Gosset
+  - first: Robert
+    last: Koenig
+year: 2018
+abstract: We prove that constant-depth quantum circuits are more powerful than
+  their classical counterparts. To this end we introduce a non-oracular version
+  of the Bernstein-Vazirani problem which we call the 2D Hidden Linear Function
+  problem. An instance of the problem is specified by a quadratic form q that
+  maps n-bit strings to integers modulo four. The goal is to identify a linear
+  boolean function which describes the action of q on a certain subset of n-bit
+  strings. We prove that any classical probabilistic circuit composed of bounded
+  fan-in gates that solves the 2D Hidden Linear Function problem with high
+  probability must have depth logarithmic in n. In contrast, we show that this
+  problem can be solved with certainty by a constant-depth quantum circuit
+  composed of one- and two-qubit gates acting locally on a two-dimensional grid.
+tags:
+  - Computer Science - Computational Complexity
+  - Quantum Physics
+identifiers:
+  doi: 10.1126/science.aar3106
+  arxiv: "1704.00690"

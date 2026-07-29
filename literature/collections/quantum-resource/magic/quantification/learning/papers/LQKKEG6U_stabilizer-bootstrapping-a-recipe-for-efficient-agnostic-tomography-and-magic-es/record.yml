@@ -1,0 +1,62 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: LQKKEG6U
+  item_version: 96021
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: MSCEQ3D9
+      name: Learning
+      path: Quantum Resource/Magic/Quantification/Learning
+qlab:
+  primary_collection: MSCEQ3D9
+  indexed_collections:
+    - MSCEQ3D9
+  primary_topic: quantum-resource
+  indexed_topics:
+    - quantum-resource
+item_type: preprint
+title: "Stabilizer bootstrapping: A recipe for efficient agnostic tomography and
+  magic estimation"
+authors:
+  - first: Sitan
+    last: Chen
+  - first: Weiyuan
+    last: Gong
+  - first: Qi
+    last: Ye
+  - first: Zhihan
+    last: Zhang
+year: 2024
+abstract: "We study the task of agnostic tomography: given copies of an unknown
+  $n$-qubit state $\\rho$ which has fidelity $\\tau$ with some state in a given
+  class $C$, find a state which has fidelity $\\ge \\tau - \\epsilon$ with
+  $\\rho$. We give a new framework, stabilizer bootstrapping, for designing
+  computationally efficient protocols for this task, and use this to get new
+  agnostic tomography protocols for the following classes: Stabilizer states: We
+  give a protocol that runs in time $\\mathrm{poly}(n,1/\\epsilon)\\cdot
+  (1/\\tau)^{O(\\log(1/\\tau))}$, answering an open question posed by Grewal,
+  Iyer, Kretschmer, Liang [40] and Anshu and Arunachalam [6]. Previous protocols
+  ran in time $\\mathrm{exp}(\\Theta(n))$ or required $\\tau>\\cos^2(\\pi/8)$.
+  States with stabilizer dimension $n - t$: We give a protocol that runs in time
+  $n^3\\cdot(2^t/\\tau)^{O(\\log(1/\\epsilon))}$, extending recent work on
+  learning quantum states prepared by circuits with few non-Clifford gates,
+  which only applied in the realizable setting where $\\tau = 1$ [30, 37, 46,
+  61]. Discrete product states: If $C = K^{\\otimes n}$ for some
+  $\\mu$-separated discrete set $K$ of single-qubit states, we give a protocol
+  that runs in time $(n/\\mu)^{O((1 + \\log (1/\\tau))/\\mu)}/\\epsilon^2$. This
+  strictly generalizes a prior guarantee which applied to stabilizer product
+  states [39]. For stabilizer product states, we give a further improved
+  protocol that runs in time $(n^2/\\epsilon^2)\\cdot
+  (1/\\tau)^{O(\\log(1/\\tau))}$. As a corollary, we give the first protocol for
+  estimating stabilizer fidelity, a standard measure of magic for quantum
+  states, to error $\\epsilon$ in $n^3 \\mathrm{quasipoly}(1/\\epsilon)$ time."
+tags:
+  - Computer Science - Computational Complexity
+  - Computer Science - Data Structures and Algorithms
+  - Computer Science - Machine Learning
+  - Quantum Physics
+identifiers:
+  arxiv: "2408.06967"

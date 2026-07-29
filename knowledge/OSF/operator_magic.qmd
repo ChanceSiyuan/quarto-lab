@@ -1,0 +1,327 @@
+---
+title: Magic based on Pauli spectrum
+description: This paper defines a measure of magicness for pure states, introduces the Operator Magic (OSE) for an operation , and highlights its properties
+categories:
+  - theory
+---
+
+**Links:** 
+
+## Abstract
+
+This paper defines a measure of magicness for pure states, introduces the Operator Magic (OSE) for an operation $U$, and highlights its properties:
+
+1. It is subsystem additive, faithful, and invariant under Clifford operations.
+2. It reflects the minimum number of T gates in circuit $U$ and also constitutes a lower bound on the unitary stabilizer nullity of $U$.
+3. It analytically calculates how the OSE of a local operator evolves over time under the XXZ Hamiltonian.
+4. It analytically computes the OSE for Haar random unitaries.
+
+## SRE and OSE
+
+Since $\sum_{P}\text{tr}^2(O P) = 2^n\text{tr}(O^2)$, then $p_{\psi}(P) = [2^n\text{tr}(O^2)]^{-1} \text{tr}^2(O P)$ is a probability distribution.
+
+Specifically,
+
+- For a pure state $\psi$, the function $p_{\psi}(x) = \frac{1}{2^n} \text{tr}^2(\psi P_x)$ is a probability distribution, and stabilizer states uniformly support on $|S| = 2^n$ stabilizers $S$.
+- For an operator $O$ with $\mathrm{tr}(OO^\dagger) = d$, the function $p_{O}(x) = \frac{1}{4^n} \text{tr}^2(O P_x)$ is a probability distribution, and Pauli operators are distributed over only one element.
+
+Thus, the collision probability of this distribution clearly describes the stabilizer properties of pure states. We can also compute higher-order collisions to obtain Rényi-$k$ stabilizer entropy.
+
+::: {.callout-note icon="false"}
+## Definition: Stabilizer Renyi Entropy 
+The $k$-stabilizer-Rényi Entropy for a pure state $\psi$ is defined as:
+\begin{align*}
+\mathrm{SRE}_k(\psi) &= \frac{1}{1 - k} \left[\ln \left(\sum_x p_{\psi}^k(x)\right) - \ln \left(\frac{1}{2^{kn}} \cdot 2^n\right)\right]= \frac{1}{1 - k} \mathrm{tr}(O^{\otimes k} T^{A}_{(12)(34)} \otimes T^{\bar{A}}_{(14)(23)})
+\end{align*}
+For an operator $O$, the linearized entanglement is given by:
+$$
+E_{\mathrm{lin}}(O) = \mathrm{tr}(O^{\otimes 4} \cdot T^{A}_{(12)(34)} \otimes T^{\bar{A}}_{(14)(23)})
+$$
+
+:::
+
+We compute the above average for TE-matching operators, considering $O$ under Clifford operations. For simplicity, we consider $O = \ket{0}\!\bra{0}^{\otimes r} \otimes Z^{n - r}$.
+Using the result of the Clifford 4-fold average, we calculate:
+$$
+\mathrm{tr}[O^{\otimes 4} \Lambda^{\pm} T_{\pi}] = \pm d^{-2} \sum_{P \in \mathcal{P}_n} \mathrm{tr}[(O \cdot P)^{\otimes 4} T_{\pi}] + \delta_{\pm,-} \mathrm{tr}(O^{\otimes 4} T_{\pi})
+$$
+It is worth noting the computation of $\sum_{P \in \mathcal{P}_n} (O \cdot P)^{\otimes 4}$ using symplectic notation for Pauli operators:
+$$
+\begin{aligned}
+\sum_{\mathbf{r} \in \mathbb{F}_2^{2n}} \left[(\ket{0}\!\bra{0}^{\otimes s} \otimes Z^{n - s}) \cdot \sigma_{\mathbf r} \right]^{\otimes 4} &= \sum_{\mathbf{r} \in \mathbb{F}_2^{2n}}\delta_{\mathbf{r}^{(s)}_x , \mathbf{0}^{(s)}} \left[\ket{0}\!\bra{0}^{\otimes s} \otimes \sigma_{\mathbf{r}^{(n-s)} + \mathbf{0}^{(n-s)}\mathbf{1}^{(n-s)}}\right]^{\otimes 4}\\
+&=2^{s}\delta_{\mathbf{r}^{(s)}_x , \mathbf{0}^{(s)}}\sum_{\mathbf{r}^{(n-s)} \in \mathbb{F}_2^{2n-2s}} \left[\ket{0}\!\bra{0}^{\otimes s} \otimes \sigma_{\mathbf{r}^{(n-s)} + \mathbf{0}^{(n-s)}\mathbf{1}^{(n-s)}}\right]^{\otimes 4}
+\end{aligned}
+$$
+
+Dividing the permutation group $S_4$ into two categories, one containing only even cycles: $[22]$ or $[4]$, which totals to $C_{4}^2/2 + 2C_3^2 = 9$. The other category contains odd cycles: $[1111],[211],[31]$, totaling $1 + C_4^2 + 2\times C_4^3 = 15$.
+
+## Magic-coherence Duality
+
+::: {.callout-note icon="false"}
+## Definition: Generalized Clifford group on basis $\mathcal{B}$
+Given a set of phase-sensitive and complete matrix basis $\mathcal{B}=\{{B}_j\}_{j = 1}^{N} \cup \{0\}$ such that ${B}_j \cdot{B}_k \in \mathcal{B}, B_j^\dagger \in \mathcal{B}$ and the basis product map $B_j \cdot B_k \to B_l$ can be calculated within $\text{poly}(n)$ bra-ket. 
+The unitary transformation such that  $U^\dagger B_iU = B_{\pi (i)}$ is call the generalized Clifford of $\mathcal{B}$, which we denoted as $\mathcal{C}(\mathcal{B})$.
+The unitary  $U \in \mathcal{C}(\mathcal{B})$ is a Pauli components in $\mathcal{C}(\mathcal{B})$ iff $U = U^\dagger$ and $U^\dagger B_iU = \alpha_i B_i$, which we denote $\mathcal{P}(\mathcal{B})$. 
+:::
+The generalized Pauli gates have the property that it can commute with generalized Clifford gates, at a cost of a generalized Pauli gate correction. This is proved by the lemma below.
+
+::: {#lem:comm_Pauli .callout-note icon="false"}
+## Lemma: Property of generalized Pauli operators
+Generalized Pauli operators satisfied the properties below:
+
+- Take $P \in \mathcal{P}(\mathcal{B}), \text{Cl} \in \mathcal{C}(\mathcal{B})$, then $\text{Cl}^\dagger P\text{Cl} \in \mathcal{P}(\mathcal{B})$.
+- Element $P\in \mathcal{P}(\mathcal{B})$ is either commute with all elements in $\mathcal{P}(\mathcal{B})$ , which we called \textit{decoherence like}, or on the other hand, anti-commute with at least half of the elements within $\mathcal{P}(\mathcal{B})$, which we called \textit{magic-like}.
+- If $\mathcal{B}$  has finite elements, then element $\text{Cl}\in \mathcal{C}(\mathcal{B})$ can be finitely generated by some basic gate set $\mathcal{GC}(\mathcal{B})$.
+:::
+
+::: {#proof:comm_Pauli .callout-note collapse="true"}
+## Proof
+  It is trivial to check that $\text{Cl}^\dagger P \text{Cl}$ is Hermitian.
+  By definition,   $\text{Cl}^\dagger B_i\text{Cl} = \alpha_i B_{\pi (i)}$, which means that $\text{Cl}B_{i}\text{Cl}^{\dagger} = \alpha_{\pi^{-1}(i)}^{-1}B_{\pi^{-1}(i)}$. Then it can be shown that
+$$
+  \begin{align*}
+    \text{Cl}^\dagger P^\dagger\text{Cl} B_j \text{Cl}^\dagger P\text{Cl} &=  \text{Cl}^\dagger P^\dagger \alpha_{\pi^{-1}(j)}^{-1} B_{\pi^{-1}(j)}^\dagger P\text{Cl} \\
+    &=\text{Cl}^\dagger \beta_{\pi^{-1}(j)} \alpha_{\pi^{-1}(j)}^{-1} B_{\pi^{-1}(j)}^\dagger\text{Cl} \\
+    &= \beta_{\pi^{-1}(j)} \alpha_{\pi^{-1}(j)}^{-1}\alpha_{\pi^{-1}(j)} \gamma_{\pi^{-1}(j)} B_{j}^\dagger.
+  \end{align*}
+$$
+
+  This proves the property (i). By definition, for $U_1,U_2 \in\mathcal{P}(\mathcal{B})$,
+
+$$
+\begin{align*}
+      &(U_1U_2)^\dagger B_i(U_1U_2) = \alpha_i^{(1)}\alpha_i^{(2)}B_i =(U_2U_1)^\dagger B_i(U_2U_1),\\
+      &(U_2U_1)(U_1U_2)^\dagger B_i(U_1U_2)(U_2U_1)^\dagger= B_i.
+\end{align*}
+$$
+
+By defining  $R=U_2U_1U_2^\dagger U_1^\dagger$, we noted that $[R,B_i] = 0$.
+Because $B_i \in \mathcal{B}$ forms a complete basis of matrix, this means that $[R ,M] = 0$ for arbitrary matrix $M \in \mathbb{C}^n \times \mathbb{C}^n$ .
+This concludes that $R = \alpha \mathbb{I}, \alpha \in \mathbb{C}$.
+Because $U_1,U_2$ as hermitian by definition, we conclude that $U_2U_1 = \pm U_1 U_2$. 
+This shows that $U_1,U_2 \in \mathcal{P}(\mathcal{B})$ are either commute or anti-commute.
+Given arbitrary element $P \in \mathcal{P}(\mathcal{B})$, find the center $C(P)$ of $P$, which is the maximum set of operators that that commute with $P$.
+If $C(P) = \mathcal{P}(\mathcal{B})$,  then $P$ commute with all the other elements
+If $C(P) \neq \mathcal{P}(\mathcal{B})$,  then there must exist $Q \in \mathcal{P}(\mathcal{B})$ such that $PQ = -QP$. 
+Then elements in $Q\cdot C(P):= \{Q\cdot e| e\in C(P)\}$ all anti-commute with $P$. 
+Finally, we note that $|C(P)| = |Q\cdot C(P)|$ and $C(P) \cup Q\cdot C(P) = \mathcal{P}(\mathcal{B})$ because  $C(P)$ is maximum. 
+This proves the second statement.
+Noted that $\mathcal{B}$ has finite elements, thus $ \mathcal{C}(\mathcal{B})$ is a subgroup of $\pi(|\mathcal{B}|)$, being another finite group.
+Then Element $\text{Cl}\in \mathcal{C}(\mathcal{B})$ can be finitely generated by some basic gate set $\mathcal{GC}(\mathcal{B})$.
+:::
+
+A well known example is the Pauli basis $\mathcal{B}_{\text{Pauli}}:=\{\pm i,\pm1\} \times \{I,Z,X,Y\}^{\otimes n} \cup \{0\}$ and its Clifford gates $\mathcal{C}(\mathcal{B}_{\text{Pauli}})$ generated by gates  $\{CX,S,H\}$. 
+Other interesting examples are:
+
+- Unitary equivalent Pauli basis $\mathcal{B}_{\text{Pauli}}(R):= \{R PR^\dagger | P \in \mathcal{B}_{\text{Pauli}}\}$, 
+- Stabilizer basis  $\mathcal{B}_{\text{STAB}}:=\{2^{-p/2}\omega^m|\omega = e^{i\pi/4},p \in \mathbb{Z}_{\geq 0},m \in \mathbb{Z}_8\} \times  \{\ket{\psi}\!\bra{\phi} | \ket{\psi},\ket{\phi} \in \text{STAB}_n\}$.
+- Mutually unbiased basis $\mathcal{B}_{\text{MUB}}:=\{z \in \mathbb{C}||z| = d^{-p/2}, p  = \mathbb{Z}_{\geq 0}\} \times  \{\ket{\psi}\!\bra{\phi} | \ket{\psi},\ket{\phi} \in \text{MUB}(d)\}$.
+- Pauli-computational mixed basis $\mathcal{B}_{\text{MIX}}:=\{\pm i,\pm1\} \times \{I,Z,X,Y\}^{\otimes r} \otimes \{\ket{\mathbf j}\!\bra{\mathbf k}\}_{\mathbf j,\mathbf k \in \{0,1\}^{ n -r}}\cup \{0\}$.
+
+The choice related to coherence, which we will further discussed in this section, is the phase-restrained computational basis 
+$\mathcal{B}_{\text{comp}} =  \left\{ \{\pm i, \pm 1\} \times\ket{\mathbf j}\!\bra{\mathbf k}\right\}_{\mathbf j,\mathbf k \in \{0,1\}^{ n}}\cup \{0\}$ with $4 \times 4^n + 1$ elements.
+For $\mathcal{B} = \mathcal{B}_{\text{comp}}$, The set $\mathcal{C}(\mathcal{B})$ and $\mathcal{P}(\mathcal{B} )$ forms a group and actually has the form
+$$
+\begin{align*}
+    &\mathcal{C}(\mathcal{B})\!=\!\left\{\!\!\sum_{j \in \{0,1\}^n}\!\!\!\!\!e^{i\frac{\pi}{2}\phi(j) } \!\ket{\pi(j)}\!\bra{j} ;\phi(j)\!\!:\!\!\{0,1\}^n \to \mathbb{Z}_4, \!\pi \!\in\! S_n\!\right\},
+\end{align*}
+$${#eq-comp_C}
+$$
+\begin{align*}
+    \mathcal{P}(\mathcal{B})\! =\! \left\{\!\!\sum_{j \in \{0,1\}^n}e^{i\frac{\pi}{2}\phi(j) } \ket{j}\!\bra{j} ;\phi(j): \{0,1\}^n \to \{0,2\}\right\},
+\end{align*}
+$${#eq-comp_P}
+It is also simple to see that both $\mathcal{C}(\mathcal{B}_{\text{comp}})$ and $\mathcal{P}(\mathcal{B}_{\text{comp}})$ forms group and inherits many properties in ordinary Clifford gates, as proved below.
+
+::: {#lem-Generalized_Cliff_comp .callout-note icon="false"}
+## Lemma: Property of  $\mathcal{B}_{\text{comp}}$
+The group $\mathcal{C}(\mathcal{B}_{\text{comp}} )$ has the form @eq-comp_C and can be finitely generated by gate set $\mathcal{GC}(\mathcal{B}_{\text{comp}})=\{CX,S,CCX\}$.
+        The group $\mathcal{P}(\mathcal{B}_{\text{comp}} )$ has the form @eq-comp_P and composed of real-valued diagonal gates that encodes arbitrary Boolean function $f: \{0,1\}^n \to \{+1,-1\}$.
+:::
+::: {.callout-note collapse="true"}
+## Proof
+By definition, for $U \in \mathcal{C}(\mathcal{B}_{\text{comp}})$ , $U \ket{j}\!\bra{k}U^\dagger = \alpha_{jk} \ket{\pi_L(j,k)}\!\bra{\pi_R(j,k)}$, where $\pi_L,\pi_R$ are permutation of length-$2n$ binary strings. The phase shift satisfied $\alpha_{ij} =e^{i\frac{\pi}{2}\phi(i,j) }$ with $\phi(:,:)$ a map $\{0,1\}^n \times \{0,1\}^n \to \mathbb{Z}_4$ because the constant before the basis are in the set $\{\pm 1,\pm i\}$.
+Similarly, we see that $U \ket{k}\!\bra{j'}U^\dagger = \alpha_{kj'} \ket{\pi_L(k,j')}\!\bra{\pi_R(k,j')}$ . 
+Taking $j = j'$, then conjugation gives $\alpha_{jk} = \alpha_{kj}^*$.
+Multiplying these two equalities will gives
+$$
+\begin{align*}
+    U \ket{j}\!\bra{j'}U^\dagger&&= \alpha_{jk}\alpha_{kj'} \ket{\pi_L(j,k)}\!\bra{\pi_R(j,k)}{\pi_L(k,j')}\rangle\!\bra{\pi_R(k,j')}\\
+    &&= \alpha_{jk}\alpha_{kj'} \delta_{{\pi_R(j,k)},{\pi_L(k,j')}} \ket{\pi_L(j,k)}\!\bra{\pi_R(k,j')}\\
+    &&=\alpha_{jj'} \ket{\pi_L(j,j')}\!\bra{\pi_R(j,j')}.
+\end{align*}
+$$
+  Because $U$ is unitary, we conclude that $\alpha_{jj} \neq 0$. Then for arbitrary $k,j \in \{0,1\}^n$ , we have
+$$
+\begin{align}
+\alpha_{jk}\alpha_{kj} &= \alpha_{jj} = 1,\pi_R(j,k) = \pi_L(k,j) ,\\
+            \pi_L(j,j) &= \pi_L(j,k),  \pi_R(k,j) = \pi_R(j,j).
+\end{align}
+$${#eq-perm_ident}
+ It is thus convenient to denote $\pi_L(j):=\pi_L(j,k) \equiv \pi_L(j,j)$ and $\pi_R(j) := \pi_R(k,j)\equiv \pi_R(j,j)$ .
+ Because the second line in @eq-perm_ident, we conclude $\pi_L(k) = \pi_R(k):=\pi(k)$. 
+ Then we conclude
+$$
+ \begin{align*}
+     U \ket{j}\!\bra{k}U^\dagger U \ket{k}\!\bra{j'}U^\dagger &= \alpha_{jk} \alpha_{kj'} \ket{\pi(j)}\!\bra{\pi(j')} =\alpha_{jj'} \ket{\pi(j)}\!\bra{\pi(j')},
+ \end{align*}
+$$
+ which means that $\phi(j,k) - \phi(j',k) = \phi(j,j'), \forall j,j',k \in \{0,1\}^n$, fixing the phase function as the form $\phi(j,k) := \phi(j) - \phi(k)$.
+ Based on analysis above, valid unitary operations must have form
+$$
+\begin{align*}
+U \ket{j}\!\bra{k}U^\dagger &= \alpha_{jk} \ket{\pi(j)}\!\bra{\pi(k)}\\
+&= \left(\sum_{j' \in \{0,1\}^n}e^{i\frac{\pi}{2}\phi(j') } \ket{\pi(j')}\!\bra{j'} \right) \ket{j}\!\bra{k} \left(\sum_{k' \in \{0,1\}^n}e^{-i\frac{\pi}{2}\phi(k') } \ket{k'}\bra{\pi(k')}\right)
+\end{align*}
+$$
+ This prove our first claim.
+
+ To show that  $\{CCX,S,X\}$ forms a complete generator set of this group, it is trivial to see that $CX_{12}CX_{21}CX_{12}= SWAP_{12}$ forms permutation between any two bits, which can generate arbitrary permutation in $S_n$ group.
+ Thus the problem reduced to construct phase operation $D\ket{j} \to e^{i \frac{\pi}{2} \phi(j)} \ket{j}$ for $D \in \mathcal{GC}(\mathcal{B}_{\text{comp}})$.
+ Noted that every function $\phi:\{0,1\}^n \to \mathbb{Z}_4$ can be uniquely expressed as a multilinear polynomial
+$$
+ \begin{align*}
+ \phi(j) = \sum_{S \subseteq[n]} a_Sj^S    ,\text{where~}a_S \in \mathbb{Z}_4, j^S:= \prod_{t \in S}j_t.
+ \end{align*}
+$$
+ 
+Combined with arbitrary $SWAP$ gate, it is sufficient to construct gate $D(a,t)\ket{j} \to e^{i \frac{a\pi}{2}j_1\cdots j_t} \ket{j}$ for arbitrary $a \in \mathbb{Z}_4$ and $t \in [n]$. Notice that If we can construct the operation 
+$$
+\begin{align*}
+    M(t) \ket{j_1,\cdots,j_n} = M(t)\left| j_1,\cdots,j_{t-1},\prod_{r =1}^tj_r,j_{t+1},\cdots,j_n\right\rangle,
+\end{align*}
+$$
+We can use de-computation to construct gate $D(a,t)$ as:
+$$
+\begin{align*}
+ M(t)^{-1}  S_{j_t}^{a}  M(t) \ket{j_1,\cdots,j_n}  = e^{i \frac{a\pi}{2}j_1\cdots j_t} \ket{j_1,\cdots,j_n}.
+\end{align*}
+$$
+Using the fact that $\{CCX,X\}$ constitute a universal reversible gate set in classical Boolean circuit~\cite{fredkin1982conservative}, we conclude the existence of $M(t)$.
+The next statement is explicit from @eq-comp_C, with the hermitian property.
+:::
+
+
+## Phase gate average
+To see the difference between ordinary Clifford gate set $\{H,S,CX\}$ and the generalized Clifford gate set $\{CX,S,CCX\}$, we have to first define the Haar measure on the group $\mathcal{C}(\mathcal{B}_{\text{comp}})$ generated by $\{CX,S,CCX\}$. 
+
+Based on @lem-Generalized_Cliff_comp, we can see that the Haar measure on the group $\mathcal{C}(\mathcal{B}_{\text{comp}})$ is build on function $\phi(j) = \sum_{S \subseteq [n]} a_Sj^S$ and permutation $\pi \in S_n$. 
+Here $j = (j_1, \cdots, j_n) \in \{0,1\}^n$ is a length-$n$ binary vector. We can always transformed the variable $j_{k} \to (s_k + 1)/2$ with $s_i$ evaluating in $\{+1,-1\}^n$ such that $\phi(j(s))$ is also a multilinear polynomial of $s_i$. For example,
+$$
+j^{S} =j_1j_2j_3 \to \frac{1}{2}(s_1 + 1)(s_2 + 1)(s_3 + 1)
+$$
+Thus here below, we redefined the constants $a_S \in \mathbb{Z}_4, S\subseteq [n]$ as
+$$
+\phi(j) = \sum_{S \subseteq [n]} a_S (-1)^{\sum_{t \in S} j_t} ,\quad U({a}_S,\pi)  = \sum_{j \in \{0,1\}^n}e^{i\frac{\pi}{2}\phi(j) } \ket{\pi(j)}\!\bra{j} \
+$$
+This means that elements in the group $\mathcal{C}(\mathcal{B}_{\text{comp}})$ actually can be represented by a $2^n$-dimensional vector ${a}_S \in \mathbb{Z}_4^{2^n}$ where index $S$ indicates a subset $S \subseteq [n]$, and a permutation $\pi \in S_n$.
+
+:::{#lem-U_property .callout-important icon="false"}
+The unitary operation $U({a}_S,\pi)$ is a representation of the group $\{({a}_S,\pi)\}$, which is a semi-product of the group $\mathbb{Z}_4^{2^n}$ and $S_n$.
+$$
+U({a}_S,\pi) \cdot U({a}_S',\pi') = U({a}_{\pi'^{-1}(S)} + {a}_S',\pi \circ \pi').
+$$
+:::
+
+:::{.callout-note collapse="false"}
+## Proof
+By definition, we have
+
+$$
+\begin{align*}
+    U({a}_S,\pi) \cdot U({a}_S',\pi') &= \sum_{j \in \{0,1\}^n}e^{i\frac{\pi}{2}\phi(j) } \ket{\pi(j)}\!\bra{j} \cdot \sum_{j' \in \{0,1\}^n}e^{i\frac{\pi}{2}\phi'(j') } \ket{\pi'(j')}\!\bra{j'} \\
+    &= \sum_{j' \in \{0,1\}^n}e^{i\frac{\pi}{2}\phi(\pi'(j')) } e^{i\frac{\pi}{2}\phi'(j') } \ket{\pi(\pi'(j'))}\!\bra{j'} \\
+    &= U({a}_{\pi'^{-1}(S)} + {a}_S',\pi \circ \pi').
+\end{align*}
+$$
+:::
+Based on this, we conclude that the Haar measure on the group $\mathcal{C}(\mathcal{B}_{\text{comp}})$ is given by
+$$
+\begin{align*}
+   \mathrm{Pr}(a_S, \pi) = \frac{1}{4^{2^n}\cdot n!}, \forall a_S \in \mathbb{Z}_4^{2^n}, \pi \in S_n.
+\end{align*}
+$$
+Given an arbirary operator on $k$-replica space, which is denoted as 
+$$
+O = \sum_{c_1,\cdots,c_k; r_1,\cdots,r_k \in \{0,1\}^n} O_{c_1,\cdots,c_k; r_1,\cdots,r_k} \ket{c_1,\cdots,c_k}\!\bra{r_1,\cdots,r_k},
+$$
+the average of $O$ over the group $\mathcal{C}(\mathcal{B}_{\text{comp}})$ is given by
+$$
+\begin{align*}
+   \mathbb{E}[O] &= \sum_{a_S \in \mathbb{Z}_4^{2^n}} \sum_{\pi \in S_n} \mathrm{Pr}(a_S, \pi) U^{\otimes k}(a_S,\pi)O U^{\otimes k, \dagger}(a_S,\pi)\\
+   &= \sum_{c_1,\cdots,c_k; r_1,\cdots,r_k \in \{0,1\}^n}\frac{1}{4^{2^n}\cdot n!} \sum_{\pi \in S_n} O_{\pi(c_1),\cdots,\pi(c_k); \pi(r_1),\cdots,\pi(r_k)}\\
+   &\cdot  \sum_{a_S \in \mathbb{Z}_4^{2^n}} i^{\sum_{S \subseteq [n]} a_S\cdot[\sum_{t = 1}^k (c_t^{\pi(S)}- r_t^{\pi(S)})]} \ket{c_1,\cdots,c_k}\!\bra{r_1,\cdots,r_k}.
+\end{align*}
+$$
+Use the fact that
+$$
+\begin{align*}
+ \sum_{a_S \in \mathbb{Z}_4^{2^n}} i^{\sum_{S \subseteq [n]} a_S\cdot[\sum_{t = 1}^k (c_t^{\pi(S)}- r_t^{\pi(S)})]} &= \prod_{S \subseteq [n]} \left(\sum_{a_S = 0}^{3} i^{a_S m_S}\right), \quad m_S \equiv \sum_{t=1}^k (c_t^S - r_t^S).
+ \end{align*}
+$$
+Since $\sum_{a=0}^{3} i^{a m} = 4\,\delta_{m \equiv 0 \pmod{4}}$, this gives
+$$
+\prod_{S \subseteq [n]} \delta_{\sum_{t=1}^k c_t^S \equiv \sum_{t=1}^k r_t^S \pmod{4}}.
+$$
+
+### Interpreting the constraint via Möbius inversion
+
+We need to understand when the system of constraints $\sum_{t=1}^k c_t^S = \sum_{t=1}^k r_t^S$ for all $S \subseteq [n]$ forces $(r_1, \ldots, r_k)$ to be a permutation of $(c_1, \ldots, c_k)$. The key tool is Möbius inversion on the Boolean lattice.
+
+::: {#thm-mobius-inversion .callout-note icon="false"}
+## Theorem (Möbius inversion on the Boolean lattice) [@rota1964mobius; @stanley2012enumerative]
+Let $f, g : 2^{[n]} \to \mathbb{R}$ be functions on the subsets of $[n]$. If
+$$
+f(S) = \sum_{T \subseteq S} g(T) \quad \text{for all } S \subseteq [n],
+$$
+then
+$$
+g(S) = \sum_{T \subseteq S} (-1)^{|S| - |T|} f(T) \quad \text{for all } S \subseteq [n].
+$$
+The Möbius function of the Boolean lattice $2^{[n]}$ is $\mu(T, S) = (-1)^{|S|-|T|}$ for $T \subseteq S$.
+:::
+
+::: {.proof}
+For any $S \subseteq [n]$, substitute the definition of $f$ into the proposed formula for $g$:
+$$
+\sum_{T \subseteq S} (-1)^{|S|-|T|} f(T) = \sum_{T \subseteq S} (-1)^{|S|-|T|} \sum_{R \subseteq T} g(R) = \sum_{R \subseteq S} g(R) \sum_{R \subseteq T \subseteq S} (-1)^{|S|-|T|}.
+$$
+The inner sum equals $\sum_{j=0}^{|S|-|R|} \binom{|S|-|R|}{j}(-1)^j = (1-1)^{|S|-|R|} = \delta_{|R|,|S|} = \delta_{R,S}$, which recovers $g(S)$.
+:::
+
+**Application to our constraint.** For each $x \in \{0,1\}^n$, define the multiplicity functions
+$$
+N_c(x) = \left|\{t : c_t = x\}\right|, \qquad N_r(x) = \left|\{t : r_t = x\}\right|.
+$$
+The parity character $c_t^S = \prod_{i \in S}(c_t)_i = (-1)^{\sum_{i \in S}(c_t)_i}$ takes value $+1$ if $c_t$ has even overlap with $S$ and $-1$ if odd. Define
+$$
+f_c(S) = \sum_{t=1}^k c_t^S = \sum_{x \in \{0,1\}^n} N_c(x)\,(-1)^{\sum_{i \in S} x_i}, \qquad f_r(S) = \sum_{t=1}^k r_t^S = \sum_{x} N_r(x)\,(-1)^{\sum_{i \in S} x_i}.
+$$
+The constraint $f_c(S) = f_r(S)$ for all $S \subseteq [n]$ means
+$$
+\sum_{x \in \{0,1\}^n} \bigl[N_c(x) - N_r(x)\bigr]\,(-1)^{\sum_{i \in S} x_i} = 0, \quad \forall\, S \subseteq [n].
+$$
+Since the functions $\{x \mapsto (-1)^{\sum_{i \in S} x_i}\}_{S \subseteq [n]}$ form a complete orthogonal basis on $\{0,1\}^n$ (the Walsh–Hadamard basis), the only solution is $N_c(x) = N_r(x)$ for all $x$. This means the multisets $\{c_1, \ldots, c_k\}$ and $\{r_1, \ldots, r_k\}$ are identical, i.e., $(r_1, \ldots, r_k)$ is a permutation of $(c_1, \ldots, c_k)$.
+
+**For $k \leq 3$**: since $m_S = f_c(S) - f_r(S) \in \{-k, \ldots, k\} \subseteq \{-3, \ldots, 3\}$, the condition $m_S \equiv 0 \pmod{4}$ is equivalent to $m_S = 0$ exactly. So the mod 4 constraint forces $(r_1, \ldots, r_k)$ to be a permutation of $(c_1, \ldots, c_k)$.
+
+### Final form of the Haar average ($k \leq 3$)
+
+Substituting back, we obtain
+$$
+\boxed{\mathbb{E}[O] = \frac{1}{n!}\sum_{\pi \in S_n} \sum_{\sigma \in S_k} \sum_{c_1,\ldots,c_k} O_{\pi(c_1),\ldots,\pi(c_k);\,\pi(c_{\sigma(1)}),\ldots,\pi(c_{\sigma(k)})} \ket{c_1,\ldots,c_k}\!\bra{c_{\sigma(1)},\ldots,c_{\sigma(k)}}}.
+$$
+
+This is an **$S_k$ replica permutation algebra** (Schur–Weyl-like), additionally constrained by **$S_n$ bit-permutation invariance**. The commutant of the $k$-fold diagonal action of $\mathcal{C}(\mathcal{B}_{\text{comp}})$ is generated by:
+
+1. **Replica permutations** $\sigma \in S_k$ that permute the $k$ copies, and
+2. **Bit-permutation averaging** over $\pi \in S_n$ acting simultaneously on all copies.
+
+### Breakdown for $k \geq 4$
+
+For $k \geq 4$, the mod 4 constraint is strictly weaker than exact equality. For example, with $n = 1$ and $k = 4$: setting $c_t = 0$ for all $t$ and $r_t = 1$ for all $t$ gives $m_{\{1\}} = 0 - 4 = -4 \equiv 0 \pmod{4}$, so this pair satisfies the constraint despite $(r_1,\ldots,r_4)$ not being a permutation of $(c_1,\ldots,c_4)$. The commutant is therefore strictly larger than $\mathbb{C}[S_k]$.
+
+### Summary
+
+- **$k \leq 3$**: The Haar average projects onto the $S_k$ replica permutation algebra (tensored with $S_n$ bit-permutation symmetry). The result is Schur–Weyl-like.
+- **$k \geq 4$**: The commutant algebra is strictly larger than replica permutations, due to the mod 4 (rather than exact) constraint on the parity characters.

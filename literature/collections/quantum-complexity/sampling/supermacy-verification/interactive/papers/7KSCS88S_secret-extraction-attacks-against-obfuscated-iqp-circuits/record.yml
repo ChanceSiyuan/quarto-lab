@@ -1,0 +1,54 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 7KSCS88S
+  item_version: 96047
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 42XFNF94
+      name: interactive
+      path: Quantum Complexity/Sampling/supermacy verification/interactive
+qlab:
+  primary_collection: 42XFNF94
+  indexed_collections:
+    - 42XFNF94
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: preprint
+title: Secret extraction attacks against obfuscated IQP circuits
+authors:
+  - first: David
+    last: Gross
+  - first: Dominik
+    last: Hangleiter
+year: 2023
+abstract: Quantum computing devices can now perform sampling tasks which,
+  according to complexity-theoretic and numerical evidence, are beyond the reach
+  of classical computers. This raises the question of how one can efficiently
+  verify that a quantum computer operating in this regime works as intended. In
+  2008, Shepherd and Bremner proposed a protocol in which a verifier constructs
+  a unitary from the comparatively easy-to-implement family of so-called IQP
+  circuits, and challenges a prover to execute it on a quantum computer. The
+  challenge problem is designed to contain an obfuscated secret, which can be
+  turned into a statistical test that accepts samples from a correct quantum
+  implementation. It was conjectured that extracting the secret from the
+  challenge problem is NP-hard, so that the ability to pass the test constitutes
+  strong evidence that the prover possesses a quantum device and that it works
+  as claimed. Unfortunately, about a decade later, Kahanamoku-Meyer found an
+  efficient classical secret extraction attack. Bremner, Cheng, and Ji very
+  recently followed up by constructing a wide-ranging generalization of the
+  original protocol. Their IQP Stabilizer Scheme has been explicitly designed to
+  circumvent the known weakness. They also suggested that the original
+  construction can be made secure by adjusting the problem parameters. In this
+  work, we develop a number of secret extraction attacks which are effective
+  against both new approaches in a wide range of problem parameters. The
+  important problem of finding an efficient and reliable verification protocol
+  for sampling-based proofs of quantum supremacy thus remains open.
+tags:
+  - Computer Science - Cryptography and Security
+  - Quantum Physics
+identifiers:
+  arxiv: "2312.10156"

@@ -8,3 +8,18 @@ format:
     toc: true
 execute:
   enabled: false
+bibliography: ../literature/ref.bib
+crossref:
+  custom:
+    - kind: float
+      key: lem
+      reference-prefix: "Lemma"
+      space-before-numbering: true
+    - kind: float
+      key: thm
+      reference-prefix: "Theorem"
+      space-before-numbering: true
+    - kind: float
+      key: def
+      reference-prefix: "Definition"
+      space-before-numbering: true

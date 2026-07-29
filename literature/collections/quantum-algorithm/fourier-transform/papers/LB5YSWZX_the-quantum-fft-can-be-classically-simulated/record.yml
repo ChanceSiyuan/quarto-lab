@@ -1,0 +1,60 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: LB5YSWZX
+  item_version: 96029
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: C3CSREHF
+      name: Fourier transform
+      path: Quantum Algorithm/Fourier transform
+    - key: RLFPX37S
+      name: treewidth
+      path: Quantum Complexity/QCsim/tensor network/treewidth
+qlab:
+  primary_collection: C3CSREHF
+  indexed_collections:
+    - C3CSREHF
+    - RLFPX37S
+  primary_topic: quantum-algorithm
+  indexed_topics:
+    - quantum-algorithm
+    - quantum-complexity
+item_type: preprint
+title: The quantum FFT can be classically simulated
+authors:
+  - first: Dorit
+    last: Aharonov
+  - first: Zeph
+    last: Landau
+  - first: Johann
+    last: Makowsky
+year: 2007
+abstract: "In this note we describe a simple and intriguing observation: the
+  quantum Fourier transform (QFT) over $Z_q$, which is considered the most
+  ``quantum'' part of Shor's algorithm, can in fact be simulated efficiently by
+  classical computers. More precisely, we observe that the QFT can be performed
+  by a circuit of poly-logarithmic path-width, if the circuit is allowed to
+  apply not only unitary gates but also general linear gates. Recalling the
+  results of Markov and Shi [MaSh] and Jozsa [Jo] which provided classical
+  simulations of such circuits in time exponential in the tree-width, this
+  implies the result stated in the title. Classical simulations of the FFT are
+  of course meaningless when applied to classical input strings on which their
+  result is already known; Our observation might be interesting only in the
+  context in which the QFT is used as a subroutine and applied to more
+  interesting superpositions. We discuss the reasons why this idea seems to fail
+  to provide an efficient classical simulation of the entire factoring
+  algorithm. In the course of proving our observation, we provide two
+  alternative proofs of the results of [MaSh,Jo] which we use. One proof is very
+  similar in spirit to that of [MaSh] but is more visual, and is based on a
+  graph parameter which we call the ``bubble width'', tightly related to the
+  path- and tree-width. The other proof is based on connections to the Jones
+  polynomial; It is very short, if one is willing to rely on several known
+  results."
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.quant-ph/0611156
+  arxiv: quant-ph/0611156

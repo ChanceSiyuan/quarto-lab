@@ -1,0 +1,62 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: X4XWPXYS
+  item_version: 111984
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: KS8H3U7A
+      name: Nonparametric
+      path: Quantum Learning/Machine learning/Nonparametric
+    - key: FMTRVYEI
+      name: Membership Complexity
+      path: Quantum Resource/Entanglement/seperability verification/Membership
+        Complexity
+qlab:
+  primary_collection: KS8H3U7A
+  indexed_collections:
+    - FMTRVYEI
+    - KS8H3U7A
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+    - quantum-resource
+item_type: journalArticle
+title: A complete family of separability criteria
+authors:
+  - first: Andrew C.
+    last: Doherty
+  - first: Pablo A.
+    last: Parrilo
+  - first: Federico M.
+    last: Spedalieri
+year: 2004
+abstract: We introduce a new family of separability criteria that are based on
+  the existence of extensions of a bipartite quantum state $ρ$ to a larger
+  number of parties satisfying certain symmetry properties. It can be easily
+  shown that all separable states have the required extensions, so the
+  non-existence of such an extension for a particular state implies that the
+  state is entangled. One of the main advantages of this approach is that
+  searching for the extension can be cast as a convex optimization problem known
+  as a semidefinite program (SDP). Whenever an extension does not exist, the
+  dual optimization constructs an explicit entanglement witness for the
+  particular state. These separability tests can be ordered in a hierarchical
+  structure whose first step corresponds to the well-known Positive Partial
+  Transpose (Peres-Horodecki) criterion, and each test in the hierarchy is at
+  least as powerful as the preceding one. This hierarchy is complete, in the
+  sense that any entangled state is guaranteed to fail a test at some finite
+  point in the hierarchy, thus showing it is entangled. The entanglement
+  witnesses corresponding to each step of the hierarchy have well-defined and
+  very interesting algebraic properties that in turn allow for a
+  characterization of the interior of the set of positive maps. Coupled with
+  some recent results on the computational complexity of the separability
+  problem, which has been shown to be NP-hard, this hierarchy of tests gives a
+  complete and also computationally and theoretically appealing characterization
+  of mixed bipartite entangled states.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.1103/physreva.69.022308
+  arxiv: quant-ph/0308032

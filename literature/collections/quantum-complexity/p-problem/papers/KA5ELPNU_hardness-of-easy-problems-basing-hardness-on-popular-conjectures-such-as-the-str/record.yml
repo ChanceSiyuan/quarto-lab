@@ -1,0 +1,54 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: KA5ELPNU
+  item_version: 96145
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: PCMTX2TZ
+      name: "#P-problem"
+      path: Quantum Complexity/#P-problem
+qlab:
+  primary_collection: PCMTX2TZ
+  indexed_collections:
+    - PCMTX2TZ
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: journalArticle
+title: "Hardness of Easy Problems: Basing Hardness on Popular Conjectures such
+  as the Strong Exponential Time Hypothesis (Invited Talk)"
+authors:
+  - first: Virginia
+    last: Vassilevska Williams
+year: 2015
+abstract: "Algorithmic research strives to develop fast algorithms for
+  fundamental problems. Despite its many successes, however, many problems still
+  do not have very eﬃcient algorithms. For years researchers have explained the
+  hardness for key problems by proving NP-hardness, utilizing polynomial time
+  reductions to base the hardness of key problems on the famous conjecture P 6=
+  NP. For problems that already have polynomial time algorithms, however, it
+  does not seem that one can show any sort of hardness based on P 6= NP.
+  Nevertheless, we would like to provide evidence that a problem A with a
+  running time O(nk) that has not been improved in decades, also requires
+  nk−o(1) time, thus explaining the lack of progress on the problem. Such
+  unconditional time lower bounds seem very diﬃcult to obtain, unfortunately.
+  Recent work has concentrated on an approach mimicking NP-hardness: (1) select
+  a few key problems that are conjectured to require T (n) time to solve, (2)
+  use special, ﬁne-grained reductions to prove time lower bounds for many
+  diverse problems in P based on the conjectured hardness of the key problems.
+  In this abstract we outline the approach, give some examples of hardness
+  results based on the Strong Exponential Time Hypothesis, and present an
+  overview of some of the recent work on the topic."
+tags:
+  - 3SUM
+  - equivalences
+  - fine-grained complexity
+  - reductions
+  - satisfiability
+  - shortest paths
+  - strong exponential time hypothesis
+identifiers:
+  doi: 10.4230/lipics.ipec.2015.17

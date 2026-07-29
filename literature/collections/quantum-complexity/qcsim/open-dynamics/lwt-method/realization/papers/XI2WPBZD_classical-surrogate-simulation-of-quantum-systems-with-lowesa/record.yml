@@ -1,0 +1,51 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: XI2WPBZD
+  item_version: 96025
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: HN3SWD95
+      name: Realization
+      path: Quantum Complexity/QCsim/Open-dynamics/LWT method/Realization
+qlab:
+  primary_collection: HN3SWD95
+  indexed_collections:
+    - HN3SWD95
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: preprint
+title: Classical surrogate simulation of quantum systems with LOWESA
+authors:
+  - first: Manuel S.
+    last: Rudolph
+  - first: Enrico
+    last: Fontana
+  - first: Zoë
+    last: Holmes
+  - first: Lukasz
+    last: Cincio
+year: 2023
+abstract: We introduce LOWESA as a classical algorithm for faithfully simulating
+  quantum systems via a classically constructed surrogate expectation landscape.
+  After an initial overhead to build the surrogate landscape, one can rapidly
+  study entire families of Hamiltonians, initial states and target observables.
+  As a case study, we simulate the 127-qubit transverse-field Ising quantum
+  system on a heavy-hexagon lattice with up to 20 Trotter steps which was
+  recently presented in Nature 618, 500-505 (2023). Specifically, we
+  approximately reconstruct (in minutes to hours on a laptop) the entire
+  expectation landscape spanned by the heavy-hex Ising model. The expectation of
+  a given observable can then be evaluated at different parameter values, i.e.
+  with different onsite magnetic fields and coupling strengths, in fractions of
+  a second on a laptop. This highlights that LOWESA can attain state-of-the-art
+  performance in quantum simulation tasks, with the potential to become the
+  algorithm of choice for scanning a wide range of systems quickly.
+tags:
+  - Condensed Matter - Strongly Correlated Electrons
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2308.09109
+  arxiv: "2308.09109"

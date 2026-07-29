@@ -1,0 +1,700 @@
+---
+title: Haar-Assembled Ensembles
+description: The lower bound of many problem are find by first reduce this problem to distinguishing one specific state with a state ensemble.
+categories:
+  - theory
+---
+
+[← Back to Index](index.qmd)
+
+# Haar-Assembled Ensembles {#sec-haar-ensemble}
+
+## Properties of Haar-Assembled Ensembles {#sec-haar-props}
+
+The lower bound of many problem are find by first reduce this problem to
+distinguishing one specific state with a state ensemble. One useful
+state ensembles are constructed from reducing Haar random state.
+
+::: {.callout-note icon="false"}
+## Definition
+
+Given a $D = 2^{n + \log(1/\varepsilon)} = d\cdot \varepsilon^{-1}$
+dimensional Haar random state $\ket{H} \sim \mathrm{Haar}(D)$. The
+$2^n$-dimensional reduced Haar-induced (**RH**) state is defined as
+$\mathcal{E}_{\varepsilon}:=\{\text{tr}_{>n} \ket{H}\!\bra{H}\}_{\ket{H} \sim \mathrm{Haar}(D)}$.
+:::
+
+Depending on the scale of reduced parts, the $RH$-ensemble has tunable
+purity. We then show in
+Lemma that the random variable
+$\mathrm{tr}(\rho^2), \rho \sim \mathcal{E}^{\mathrm{RH}}_{\varepsilon}$
+is well concentrated and separate from maximum mixed state purity $1/d$.
+This statement is useful to proving the reduction of
+$\mathrm{tr}(\rho^2)$ problem.
+
+::: {.callout-important icon="false"}
+## Lemma
+
+[]{#lemma:purity_of_RH label="lemma:purity_of_RH"} The $c$-copy average
+of $\rho \in \mathcal{E}_{\varepsilon}$ writes: $$\begin{align}
+        \mathbb{E}_{\rho \sim \mathcal{E}_{\varepsilon}} \rho^{\otimes c} = \frac{1}{D^{\uparrow c}}\sum_{\pi \in S_c} \varepsilon^{-c(\pi)}\mathbb{P}_{\pi}^{d}.
+\end{align}$$ Furthermore, its purity average and variance writes:
+$$\begin{align}
+        \mathbb{E}_{\rho \sim \mathcal{E}_{\varepsilon}} \mathrm{tr}(\rho^2) = \frac{2^n\varepsilon + 1}{2^n + \varepsilon},\quad \mathrm{Var}_{\rho \sim \mathcal{E}_{\varepsilon}} [\mathrm{tr}(\rho^2)] = \frac{2(2^{2n} - 1)(1/\varepsilon^2-1)}{(2^n/\varepsilon + 1)^2 (2^n/\varepsilon+2)(2^n/\varepsilon+3)}.
+\end{align}$$
+:::
+
+:::: proof
+*Proof.* On going proof\... $$\begin{align}
+        \mathbb{E}_{\rho \sim \mathcal{E}_{\varepsilon}}\rho^{\otimes c}&=\mathbb{E}_{H \sim \mathrm{Haar}(D)}(\text{tr}_{>n} \ket{H}\!\bra{H})^{\otimes c} = \frac{1}{D^{\uparrow c}}\mathrm{tr}_{>n}(\sum_{\pi \in S_c} \mathbb{P}_{\pi}^{d} \otimes \mathbb{P}_{\pi}^{\varepsilon^{-1}})=\frac{1}{D^{\uparrow c}}\sum_{\pi \in S_c} \varepsilon^{-c(\pi)}\mathbb{P}_{\pi}^{d}.
+\end{align}$$ Then the average of purity can be directly calculate as
+$$\begin{align}
+    \mathbb{E}_{\rho \sim \mathcal{E}_{\varepsilon}} \mathrm{tr}(\rho^2)
+    &=\mathrm{tr}\left(\frac{\varepsilon^{-2} \mathbb{I}_{n}^{\otimes 2}+\varepsilon^{-1} \mathrm{SWAP}^{\otimes n}}{D(D+1)} \cdot \mathrm{SWAP}^{\otimes n}\right) = \frac{\varepsilon^{-2} 2^n + \varepsilon^{-1} 2^{2n}}{2^n\varepsilon^{-1}(2^n \varepsilon^{-1}+1)}= \frac{2^n\varepsilon + 1}{2^n + \varepsilon},\\
+    \mathbb{E}_{\rho \sim \mathcal{E}_{\varepsilon}} [\mathrm{tr}(\rho^2)]^2&=\mathrm{tr}\left(\frac{ \sum_{\pi \in S_4}{\varepsilon^{-c(\pi)}\mathbb{P}_{\pi}^{d}}}{D(D+1)(D+2)(D+3)}\mathbb{P}_{(12)(34)}^{d}\right)=\frac{\sum_{\pi \in S_4}d^{c(\pi \cdot (12)(34))}(1/\varepsilon)^{c(\pi)}}{D(D+1)(D+2)(D+3)}.
+\end{align}$$ Here $c(\pi)$ count the number of cycles for permutation
+$\pi$. To calculate this value, we classify the $S_4$ group as shown in
+Table 1.1. Through denoting
+$d_A = 2^n, d_B = 1 / \varepsilon$, $D = d_Ad_B$. We get the results
+$$\begin{align}
+        \mathrm{Var}_{\rho \sim \mathcal{E}_{\varepsilon}} [\mathrm{tr}(\rho^2)] &= \frac{d_A^2 d_B^4+2 d_A^3 d_B^3+5 d_A d_B^3+10 d_A^2 d_B^2+5 d_A^3 d_B+d_A^4 d_B^2}{(d_Ad_B)(d_Ad_B+1)(d_Ad_B+2)(d_Ad_B+3)} - \frac{(d_A + d_B)^2}{(d_Ad_B+1)^2}\notag\\
+        &= \frac{2d_B\left[1 + d_A^3 - 2d_A -d_B +d_Ad_B\right]}{(d_Ad_B + 1)^2 (d_Ad_B+2)(d_Ad_B+3)} = \frac{2/\varepsilon\left[1 + 2^{3n} - 2^{2n+1} - 1/\varepsilon +2^n/\varepsilon\right]}{(2^n/\varepsilon + 1)^2 (2^n/\varepsilon+2)(2^n/\varepsilon+3)}
+\end{align}$$
+
+::: {#tab:S4_terms}
+  **$\pi$**                                                         **number**   **$c(\pi)$**  **$\pi \cdot (12)(34)$**                                          **$c(\pi \cdot (12)(34))$**  **summation**
+  ---------------------------------------------------------------- ------------ -------------- ---------------------------------------------------------------- ----------------------------- -----------------
+  $e$                                                                   1             4        (12)(34)                                                                       2               $d_A^2 d_B^4$
+  (12),(34),                                                         $C_4^2$          3        (34),(12)                                                                      3               $2 d_A^3 d_B^3$
+  4-6 (13),(14),(23),(24)                                                                      (1432),(1342),(1243),(1342)                                                    1               $4 d_A d_B^3$
+  $\substack{(123),(321),(124),(421),\\(134),(431),(234),(432)}$     $2C_4^3$         2        $\substack{(243),(143),(213),(421),\\(134),(431),(234),(432)}$                 2               $8 d_A^2 d_B^2$
+  $\substack{(1234),(1243),(1324),\\(1342),(1423),(1432)}$            (4-1)!          1        \(13\)                                                                         3               $6 d_A^3 d_B$
+  $\substack{(12)(34),}$                                                3             2        $e$                                                                            4               $d_A^4 d_B^2$
+  4-6 $\substack{(13)(24),(14)(23)}$                                                           $(14)(23)$                                                                     2               $2 d_A^2 d_B^2$
+
+  : Classification of $S_4$ to calculate
+  $\sum_{\pi \in S_4}(d_A)^{c(\pi \cdot (12)(34))}(d_B)^{c(\pi)}$
+:::
+
+ ◻
+::::
+
+State ensembles can also be constructed from mixing independent Haar
+random state.
+
+::: {.callout-note icon="false"}
+## Definition
+
+[]{#def:MH_ensemble label="def:MH_ensemble"} Given a probability
+$\{p_r\}_{r = 0}^{m}$, defined the multi-variant Haar ensemble (**MH**)
+as the mix states
+$\mathcal{E}^{\mathrm{MH}}_{\mathbf{p}}:=\{p_0 {\mathbb{I}(d)}/{d} + \sum_{j = 1}^{m} p_j \psi_j\}_{\psi_j \sim \mathrm{Haar}(d)}$.
+:::
+
+As a generalization of
+Lemma, we then try to conclude that for an
+arbitrary k-replica operator $O$, it is possible to construct two
+**MH**-ensemble
+$\mathcal{E}^{\mathrm{MH}}_{\mathbf{p}},\mathcal{E}^{\mathrm{MH}}_{\mathbf{q}}$
+such that
+$\{\mathrm{tr}(O\rho^k)\}_{\rho \sim \mathcal{E}^{\mathrm{MH}}_{\mathbf{p}}}$
+and
+$\{\mathrm{tr}(O\rho^k)\}_{\rho \sim \mathcal{E}^{\mathrm{MH}}_{\mathbf{q}}}$
+are well separated and both well concentrated. To prove this, we rewrite
+the k-replica of **MH**-ensembles as $$\begin{align}
+    \mathcal{E}^{\mathrm{MH},\otimes k}_{m} = \left\{\sum_{A_0 \cup \cdots \cup A_m = \{1,\cdots,k\}}\left(p_0^{|A_0|}\prod_{r = 1}^{m} p_r^{ |A_r|}\right)\cdot \psi^{\otimes A_1}_1 \otimes \cdots \otimes \psi^{\otimes A_m}_m \otimes \left(\frac{\mathbb{I}(d)}{d}\right)^{\otimes A_0}\right\}_{\psi_r \sim \mathrm{Haar}(d)},\label{eq:k_rep_MH}
+\end{align}$$ where $A_0 \cup \cdots \cup A_m = \{1,\cdots,k\}$ go over
+all $(m+1)$-partition of $k$ elements and $\psi_r^{A_r}$ means
+distributing state $\psi_r$ at elements within $A_r$. If we use
+$j = (A_1,\cdots,A_m,A_0)$ to denote a partition of $\{1,\cdots,k\}$ and
+$p_j = p_0^{|A_0|}\prod_{r = 1}^{m} p_r^{ |A_r|}$ to denote the mixing
+rate, and use unitary $U_j$ to sort the qudits in an order such that
+$\psi_1,\psi_2,\cdots,\psi_m$ supports on
+$\{1,\cdots,|A_1|\},\{|A_1|+1,\cdots,|A_1|+|A_2|\}, \cdots,\{|A_{m}|+1,\cdots,k\}$
+respectively, we get the extended Haar-induced ensemble below.
+
+::: {.callout-note icon="false"}
+## Definition
+
+[]{#def:EHI_ensemble label="def:EHI_ensemble"} Given $m$ Haar random
+state $\{\psi_1,\cdots,\psi_m\}$, each with dimension $d_1,\cdots,d_m$,
+multiplicity parameter
+$\mathbf{a} \in (\mathbb{Z}_+)^{m} =(a_1,\cdots,a_m)$, and the
+r-dimensional complement state $\tau$ such that
+$\sum_{k=1}^m a_k\cdot d_k + r  = D$. A $D$-dimensional
+$(\mathbf{a}^{(j)}, \tau^{(j)})$ extended Haar-induced (**EH**) ensemble
+is an ensemble of $D$-dimensional mixed state that is specified by a
+$\mathcal{U} := \{p_j,U_j\}_{j = 1}^J$ unitary mixing of D-dimensional
+pure state
+$\psi_1^{\otimes a_1} \otimes \cdots\otimes \psi_m^{\otimes a_m} \otimes \tau$,
+written as $$\begin{align}
+        \mathcal{E}_{\mathcal{U},\mathbf{a}, \tau} := \{\sum_{j= 1}^J p_j U_j \psi_1^{\otimes a^{(j)}_1} \otimes \cdots\otimes \psi_m^{\otimes a^{(j)}_m} \otimes \tau^{(j)} U_j^\dagger\}_{\psi_k \sim \mathrm{Haar}(d_k)}.
+\end{align}$$
+:::
+
+Thus, it is sufficient to prove that
+$\mathrm{tr}(O\sigma), \sigma \sim \mathcal{E}^{\mathrm{EH}}_{\mathbf{a}}$
+is separated and concentrated. For the separated part, we prove the
+lemma below
+
+::: {.callout-important icon="false"}
+## Lemma
+
+Suppose
+$\forall i= 1,\cdots,k, \sum_{r = 1}^m p_r^{i} = \sum_{r = 1}^m q_r^{i}$
+and $p_0 = q_0$, the multi-variant Haar induced ensemble
+$\mathcal{E}^{\mathrm{MH}}_{\mathbf{p}}$ and
+$\mathcal{E}^{\mathrm{MH}}_{\mathbf{q}}$ satisfied $$\begin{align}
+        &\forall i= 1,\cdots,k, \mathbb{E}_{\rho \sim \mathcal{E}^{\mathrm{MH}}_{\mathbf{p}}} \rho^i - \mathbb{E}_{\rho \sim \mathcal{E}^{\mathrm{MH}}_{\mathbf{q}}} \rho^i = 0\\
+        &\mathbb{E}_{\rho \sim \mathcal{E}^{\mathrm{MH}}_{\mathbf{p}}} \rho^{k+1} - \mathbb{E}_{\rho \sim \mathcal{E}^{\mathrm{MH}}_{\mathbf{q}}} \rho^{k+1} = (\sum_{r=1}^m p_r^{k+1} - \sum_{r=1}^m q_r^{k+1}) \Delta_{k+1}\\
+\end{align}$$
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+
+*Proof.* Refer to
+Eq.~(eq:k_rep_MH), we conclude that ◻
+:::
+
+Then we show the lemma below for the bound of specific $O$
+
+::: {.callout-important icon="false"}
+## Lemma
+
+Given $k+1$ qudit operator $O$, then $$\begin{align}
+        \left|\sum_{\pi \in S_{k+1}^{\mathrm{circ}}} c_{\pi} (O) - \mathrm{tr}(O \Delta_{k+1})\right| \leq \frac{(k+1)^{2k}}{d}.
+\end{align}$$
+:::
+
+For the second parts, we prove the following Lemma, as a generalization
+of Levy's Lemma.
+
+::: {.callout-important icon="false"}
+## Lemma
+
+$$\begin{align}
+        \mathrm{Pr}_{\sigma \sim \mathcal{E}^{\mathrm{EH}}_{\mathcal{U},\mathbf{a}, \tau}}\left(\left|\mathrm{tr}(O \sigma) - \mu\right| > t\right) \leq 2 \sum_{r =1}^m e^{-\frac{d_r t^2}{18\pi^3m^2a_r^2\|O\|^2_{\infty}}}
+\end{align}$$
+:::
+
+## Pure-Identity Test {#sec-pure-id-test}
+
+Perhaps the most simple one are the maximum mixed state
+$\mathbb{I}(d)/d$ with all possible pure state $\ket{\psi}$.
+
+::: problem
+[]{#prob:2k_PItest label="prob:2k_PItest"} Design an algorithm using
+restrained measurements that, given access to a device guaranteed to
+prepare a state that is either (i)one of pure states $\ket{\psi}$ or
+(ii) the maximally mixed state $d^{-1}\mathbb{I}$, can distinguish
+between these two cases with an error of at most $1/2-\varepsilon$.
+:::
+
+Based on
+Lemma, in the following we relax the problem
+with a problem ensemble $\ket{\psi} \sim \mathrm{Haar}(d)$. This
+reduction is sufficient, while not fully characterize the hardness of
+pure-identity test. To fully pinned down the hardness, ones should build
+arbitrary ensemble on pure states and check the hardness. Thus,
+
+## Single-Replica Strategy {#sec-1-replica}
+
+We first consider the 1-replica restriction on measurements.
+
+For a $T$-round 1-replica adaptive strategy
+$M_s = F^{u_1}_{s_1} \otimes \cdots \otimes F^{u_T}_{s_T}$, we use
+Lemma and lower bounds its leaves' likelihood:
+$$\begin{align}
+    \mathbb{E}_{\psi} L_{\psi} = \mathbb{E}_{{\psi} \sim \mathrm{Haar}(d)}\frac{d^{T}\mathrm{tr}(M_s \ket{\psi}\!\bra{\psi}^{\otimes T})}{\mathrm{tr}(M_s)} = \frac{d^T}{d(d+1)\cdots(d+T-1)}  \frac{\mathrm{tr}\left(\sum_{\pi \in S_T}\mathbb{P}^d_{\pi} \cdot M_s\right)}{\mathrm{tr}\left( \bigotimes_{t = 1}^T\left[\mathbb{I}(d)\right]\cdot M_s\right)}.\label{eq:midres_1repPItest}
+\end{align}$$ To do this, we upper bounds each term in the RHS of
+Eq.~(eq:midres_1repPItest). For the constant, we conclude that
+$$\begin{align}
+    \frac{d^T}{d(d+1)\cdots(d+T-1)}&=\left(1 \cdot (1+\frac{1}{d})\cdots(1+\frac{T-1}{d})\right)^{-1}\geq (1 + T/d)^{-T} \notag \\
+    &=e^{-T\ln(1 + T/d)} \geq e^{-T^2/d}. \label{eq:lb_upfrac}
+\end{align}$$ For the second term, we decomposed $M_s$ into its
+eigenvector through defining
+$F_{s_j}^{u_j} =\sum_{s}\lambda_{j,s}{v_{j,s}}$ with
+$\lambda_{j,s_j}\geq 0$ and writes $$\begin{align}
+    {\mathrm{tr}\left(\sum_{\pi \in S_T}\mathbb{P}^d_{\pi} \cdot M_s\right)} &= T!\cdot\sum_{s_1,\cdots,s_T}\lambda_{1,s_1}\cdots\lambda_{T,s_T} \mathrm{tr}\left(\Pi_{sym}{v_{1,s_1} \otimes\cdots\otimes v_{T,s_T}}\right)\\
+    &\geq \sum_{s_1,\cdots,s_T}\lambda_{1,s_1}\cdots \lambda_{T,s_T}={\mathrm{tr}\left( \bigotimes_{t = 1}^T\left[\mathbb{I}(d)\right]\cdot M_s\right)}
+\end{align}$$ Here in the second line we show the lemma below:
+
+::: {.callout-important icon="false"}
+## Lemma
+
+[]{#lemma:sym_prod_lb label="lemma:sym_prod_lb"} For $T$ numbers of
+$d$-qudit pure states $\ket{\psi_1}, \cdots,\ket{\psi_T}$ and the
+symmetrization projector
+$\Pi_{\mathrm{sym},T} := (T!)^{-1}\sum_{\pi \in S_T} \mathbb{P}^{d}_{\pi}$,
+we conclude that
+$\text{tr}\left(\Pi_{\mathrm{sym},T}\bigotimes_{t = 1}^T \ket{\psi_t} \!\bra{\psi_t}\right) \geq (T!)^{-1}.$
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+
+*Proof.* ◻
+:::
+
+Thus, we conclude that
+$max_{\{M_s = \otimes_{t=1}^{T}F_{s_t}^{u_t}\}_s}\|p_{\mathbb{I}} - p_{\psi}\|_{\mathrm{TV}} \leq 1 - \min_{\{M_s\}_s, s} \mathbb{E}_{\psi} L_{\psi}(s) \leq 1 - e^{-T^2/d} \leq T^2/d$
+based on the first equation in
+Lemma. This means that to reach success rate
+$1/2 + \varepsilon$, $T^2/d \geq 2\varepsilon$ must be satisfied, thus
+gives $T \geq \mathcal{O}({\sqrt{d}})$.
+
+## Two-Replica Strategy with $k$-Memory {#sec-2-replica-kmem}
+
+Now we consider a fine-tuned setting of the measurement restriction. We
+consider $d = 2^n$ as $n$-qubits and allow 2-replica measurements but
+restrained on the $\{M_s\}_s \subset \mathcal{M}_{2,n}^k$ as defined in
+definition. Similar to the 1-replica analysis, we
+first write its Haar-average leaf likelihood $$\begin{align}
+    \mathbb{E}_{\psi} L_{\psi} &= \mathbb{E}_{{\psi} \sim \mathrm{Haar}(d)}\frac{d^{2T}\mathrm{tr}(M_s \ket{\psi}\!\bra{\psi}^{\otimes 2T})}{\mathrm{tr}(M_s)} = \frac{d^{2T}}{d(d+1)\cdots(d+2T-1)}  \frac{\mathrm{tr}\left(\sum_{\pi \in S_{2T}}\mathbb{P}^d_{\pi} \cdot M_s\right)}{\mathrm{tr}\left( \bigotimes_{t = 1}^T\left[\mathbb{I}(d)\right]\cdot M_s\right)}\\
+    &\geq e^{-4d^{-1}T^2}\cdot \frac{\mathrm{tr}\left(\sum_{\pi \in S_{2T}}\mathbb{P}^d_{\pi} \cdot M_s\right)}{\mathrm{tr}\left( S_2^{\otimes T}\cdot M_s\right)} \cdot\prod_{t = 1}^T \frac{\mathrm{tr}\left(\sum_{\pi \in S_2}\mathbb{P}^d_{\pi} \cdot F_{s_t}^{u_t}\right)}{\mathrm{tr}\left(F_{s_t}^{u_t}\right)}\\
+    &\geq (1{-4d^{-1}T^2})\cdot \prod_{t = 1}^T \frac{\mathrm{tr}\left(\sum_{\pi \in S_2}\mathbb{P}^d_{\pi} \cdot F_{s_t}^{u_t}\right)}{\mathrm{tr}\left(F_{s_t}^{u_t}\right)}\geq (1{-4d^{-1}T^2})\left(\frac{2^{2n}}{2^n(2^n+1)}\right)^T \prod_{t = 1}^T \frac{\mathrm{tr}\left(\sum_{\pi \in S_2}\mathbb{P}^d_{\pi} \cdot F_{s_t}^{u_t}\right)}{\mathrm{tr}\left(F_{s_t}^{u_t}\right)} \label{eq:2rep_kmemo_leaflike}
+\end{align}$$ Here in the second line we do the same calculation of
+Eq.~(eq:lb_upfrac) and insert a value
+$\mathrm{tr}\left( S_2^{\otimes T}\cdot M_s\right)$ in the denominator.
+The third line is bounded by
+Lemma below, as a generalization of
+Lemma.
+
+::: {.callout-important icon="false"}
+## Lemma
+
+[]{#lemma:sepa_S_smaller label="lemma:sepa_S_smaller"} Given a
+semi-positive operator $F = F_A \otimes F_B$ that separable on set of
+qudits $A$ and qudits $B$. Denote
+$S_a = \sum_{\pi \in S_{|A|}} \mathbb{P}_{\pi}^{d}$ and similar for
+$S_B,S_{A+B}$. Then
+$\mathrm{tr}\left({S_A \otimes S_B F}\right) \leq \mathrm{tr}\left({S_{A+B}F}\right)$.
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+
+*Proof.* ◻
+:::
+
+For the second inequality in
+Eq.~(eq:2rep_kmemo_leaflike), we noted that if we use
+$M_s = \otimes_{t = 1}^T F_{s_t}^{u_t}$ to discriminate
+$\rho = \mathbb{I}(d^2)/d^2$ and
+$\sigma = [2^n(2^n+1)]^{-1}(\mathbb{I}_n^{\otimes 2} + \mathrm{SWAP}^{\otimes n})$
+in the 2-replica space $\mathcal{H}(d^2)$, the likelihood function
+satisfied: $$\begin{align}
+    L'(s) =\left(\frac{2^{2n}}{2^n(2^n+1)}\right)^T \prod_{t = 1}^T \frac{\mathrm{tr}\left(\sum_{\pi \in S_2}\mathbb{P}^d_{\pi} \cdot F_{s_t}^{u_t}\right)}{\mathrm{tr}\left(F_{s_t}^{u_t}\right)}.
+\end{align}$$ It is thus sufficient to show a upper bound for $L'$.
+Refer to
+Lemma, we consider the chi-squared divergence with
+$\rho$ and $\sigma$. $$\begin{align}
+    \delta_{\mathcal{M},\rho,\sigma}&=\max_{\{F_s\}_s \in \mathcal{M}^{k}_{2,n}}\sum_{s}\frac{\mathrm{tr}(F_{s})}{4^n}\left[\frac{2^{n}\mathrm{tr}\left[(\mathbb{I}_n^{\otimes 2} + \mathrm{SWAP}^{\otimes n})F_{s}\right]}{(2^n+1)\mathrm{tr}(F_{s})} - 1\right]^2 \notag\\
+    &=\max_{\{F_s\}_s \in \mathcal{M}^{k}_{2,n}}\sum_{s} \frac{\mathrm{tr}(F_s)}{4^n}(2^n+1)^{-2}\left[2^n \frac{\mathrm{tr}(\mathrm{SWAP}^{\otimes n} F_s)}{\mathrm{tr}(F_s)} - 1\right]^2\notag\\
+    &=\max_{\{F_s\}_s \in \mathcal{M}^{k}_{2,n}}\frac{1}{4^n}(2^n+1)^{-2}\left[4^n \sum_{s} \frac{[\mathrm{tr}(\mathrm{SWAP}^{\otimes n} F_s)]^2}{\mathrm{tr}(F_s)} - 2 \times 2^n {\mathrm{tr}\left(\mathrm{SWAP}^{\otimes n}\sum_{s}F_s\right)} + \mathrm{tr}\left(\sum_{s}F_s\right)\right]\notag\\
+    &=\frac{1}{(2^n+1)^{2}}\left[\max_{\{F_s\}_s \in \mathcal{M}^{k}_{2,n}} \sum_{s} \frac{[\mathrm{tr}(\mathrm{SWAP}^{\otimes n} F_s)]^2}{\mathrm{tr}(F_s)} - 1\right].
+\end{align}$$ Here in the last line, we use
+$\sum_{s} F_s = \mathbb{I}_{2n}$ and
+$\text{tr}(\mathrm{SWAP}^{\otimes n}) = 2^n$. If Bell measurements
+$F_{\mathbf{s}} = \Phi_{\mathbf{s}}$ is allowed, we can verify that
+$\sum_{\mathbf{s}}[\mathrm{tr}(\mathrm{SWAP}^{\otimes n} \Phi_{\mathbf{s}})]^2/{\mathrm{tr}(\Phi_{\mathbf{s}})} = 4^n$.
+However, the $k$-memeory restriction on $F_s$ prevent this measurement
+and imposed a upper bound on the MPS-rank of projected basis, as
+depicted in
+Lemma. This lower bounds the maximum
+value as $\delta_{\mathcal{M},\rho,\sigma}  \leq 2^{k-n} - 2^{-2n}$.
+Based on
+Lemma, we conclude that
+$\mathrm{Pr}_{l \sim p_{\mathbb{I}, \mathcal{T}}}(L'(l) \geq 1 - c_1) \geq 1 - c_2 - c_3\cdot (2^{k-n} - 2^{-2n})T$.
+Then plug into
+Eq.~(eq:2rep_kmemo_leaflike) to replace $L'$ by
+$\mathbb{\psi}L_{\psi}$, we conclude that
+$\forall c_1\in (0,1/3), c_2 > 0, \exists c_3>0$ such that
+$\mathrm{Pr}_{l \sim p_{\mathbb{I}, \mathcal{T}}}\left[\mathbb{E}_{\psi} L_{\psi}(l) \leq (1{-4d^{-1}T^2})(1 - c_1)\right] \leq c_2 + c_3\cdot (2^{k-n} - 2^{-2n})T.$
+Finally, using the second identity in
+Lemma for $a$ being a unique element with
+$p^{(a)} = \mathbb{E}_{\psi} p_{\psi, \mathcal{T}}$, we must have
+$$\begin{align}
+    2\varepsilon \leq \|p_{\mathbb{I}, \mathcal{T}} - \mathbb{E}_{\psi} p_{\psi, \mathcal{T}}\|_{\mathrm{TV}} 
+    &\leq c_2 + c_3\cdot (2^{k-n} - 2^{-2n})T + 1 - (1{-4\times 2^{-n}T^2})(1 - c_1)
+\end{align}$$ Without lose of generality, we set $\varepsilon = 1/6$,
+i.e., to be $1/6$ better than random guessing. We have
+$0.2 +  2\gamma T ( -2^{-2n} + 2^{k - n})+3.6\times 2^{-n} T^2 > 1/3$,
+where we take $c_1= c_2 = 0.1,c_3 = \gamma>0$. This gives the inequality
+$$\begin{align}
+\label{eq:T_ineq}
+    T^2 + \frac{\gamma(-2^{-n} + 2^k)}{1.8} T - \frac{2^n}{54} >0.
+\end{align}$$ We conclude that there exist constants $a_1,a_2$ that
+satisfy
+$0<a_1 < a_2 \leq (1/2)\cdot [\sqrt{(\gamma /1.8)^2 + 1/9} - \gamma/1.8]$,
+such that $T > \min\{a_12^{n/2}, a_22^{n-k}\}$ must be satisfied
+otherwise $$\begin{align}
+    LHS \leq a_1^2 2^n + \frac{\gamma }{1.8}(a_2 2^n) - \frac{2^n}{54}\leq (a_1^2 + \gamma \frac{a_2}{1.8}-1/54)2^n<(a_2^2 +  \frac{\gamma}{1.8}a_2-1/54)2^n < 0,
+\end{align}$$ which is contradictory with
+Eq.~(eq:T_ineq). This proves the lower bound
+$T \geq \Omega(\min\{2^{n/2}, 2^{n-k}\})$ for the 2-copy k-memory
+adaptive strategy that solve the purity-identity test problem with $2/3$
+correct rate.
+
+## MH-Ensemble Test {#sec-mh-test}
+
+Now we consider a general case where we supposed to distinguish an
+arbitrary element within **MH** ensemble from its average.
+
+::: problem
+[]{#prob:MHtest label="prob:MHtest"} Design an algorithm that
+distinguishes between two cases below using restrained measurements at
+error rate less than $1/2-\varepsilon$. (i)One of state within
+$\mathcal{E}_{p} := \{p_0 {\mathbb{I}(d)}/{d} + \sum_{j = 1}^{m} p_j \psi_j\}$
+or (ii) One of state within
+$\mathcal{E}_{q}:=\{q_0 {\mathbb{I}(d)}/{d} + \sum_{j = 1}^{m} q_j \psi_j\}$
+:::
+
+It is easy to check that pure-identity test in
+Problem is a special case of
+Problem, with $p_1 = 1, p_m = 0,\forall m \neq 1$ and
+$q_0 = 1, q_m = 0,\forall m \neq 0$. However, this problem might be too
+hard, as $\mathcal{E}_{p} \cap \mathcal{E}_{q}\neq \emptyset$ if there
+exist a distribution $\lambda$ such that
+$\lambda \succ \{p_j/(1 - p_0)\}_j$ and
+$\lambda \succ \{q_j/(1-q_0)\}_j$. We thus relax this problem by setting
+the problem ensemble as
+$\psi_{j} \sim \mathrm{Haar}(d), \forall j=1,\cdots,m$. To further fix
+this testing problem, we also imposed the rank-$k$ condition:
+$$\begin{align}
+    \mathbb{E}_{\psi_j\sim \mathrm{Haar}(d)} \left(p_0 {\mathbb{I}(d)}/{d} + \sum_{j = 1}^{m} p_j \psi_j\right)^{\otimes k} = \mathbb{E}_{\psi_j\sim \mathrm{Haar}(d)} \left(q_0 {\mathbb{I}(d)}/{d} + \sum_{j = 1}^{m} q_j \psi_j\right)^{\otimes k}
+\end{align}$$
+
+## The $k$-Replica Strategy {#sec-k-replica}
+
+We directly discuss its lower bound under the $k$-replica measurement
+restrictions.
+
+## EH-Ensemble Test {#sec-eh-test}
+
+::: problem
+[]{#prob:EAtest label="prob:EAtest"} Design an algorithm using
+restrained measurements to distinguish between two cases below with an
+error no more than $1/2-\varepsilon$.(i)one of the states
+$\rho \in  \mathcal{E}_{\mathcal{U},\mathbf{a},\tau}$ or (ii) the
+average mixed state
+$\mathbb{E}_{\rho \sim \mathcal{E}_{\mathcal{U},\mathbf{a},\tau} }\rho$.
+:::
+
+Suppose we adapt the adaptive strategy $\mathcal{T}$ with corresponding
+measurement $M_s = F^{u_1}_{s_1}\otimes \cdots \otimes F^{u_T}_{s_T}$,
+the measurement results give two distribution: $$\begin{align}
+    p_0(s) = \mathrm{tr}\left[ M_s \sum_{\mathbf{j} \in [J]^T}\left(\prod_{t = 1}^T p_{j_t}\right) \bigotimes_{t=1}^{T} \mathbb{E}{\sigma_{j_t}}\right],\quad
+    p_{\psi_1,\cdots,\psi_m}(s) = \mathrm{tr}\left[ M_s \sum_{\mathbf{j} \in [J]^T}\left(\prod_{t = 1}^T p_{j_t}\right) \bigotimes_{t=1}^{T} {\sigma_{j_t}}\right],
+\end{align}$$ where we use abbreviation
+$\sigma_{j_t} = U_{j_t} \psi_{1}^{\otimes a_{1}^{(j_t)}} \otimes \cdots \otimes \psi_{m}^{\otimes a_{m}^{(j_t)}} \otimes \tau^{(j_t)} U_{j_t}^\dagger$
+and
+$\mathbb{E}\sigma_{j_t} = \mathbb{E}_{\psi_j \sim \mathrm{Haar}(d_j)} U_{j_t} \psi_{1}^{\otimes a_{1}^{(j_t)}} \otimes \cdots \otimes \psi_{m}^{\otimes a_{m}^{(j_t)}} \otimes \tau^{(j_t)} U_{j_t}^\dagger$.
+Lower bounding the
+Problem require the analysis of the similarity between
+the distribution $p_{0}$ and $\{p_{\psi_1,\cdots,\psi_m}\}_{\psi_j}$.
+Based on
+Lemma, we choose
+$\psi_k \sim \mathrm{Haar}(d_k)$. Then we remove the effects of mixing
+probability $p_j$ in the **EH**-ensemble through the inequality
+$$\begin{align}
+    \|p_{0} - \mathbb{E}p_{\psi_1,\cdots,\psi_m}\|_{\mathrm{TV}} \leq \sum_{j_1,\cdots,j_T \in [J]}\left(\prod_{t = 1}^T p_{j_t}\right) \|q_{0,\mathbf{j}} -  \mathbb{E}q_{\psi_1,\cdots,\psi_m,\mathbf{j}}\|_{\mathrm{TV}}.
+\end{align}$$ It is sufficient to find an upper bound of
+$\|q_{0,\mathbf{j}} -  \mathbb{E} q_{\psi_1,\cdots,\psi_m,\mathbf{j}}\|_{\mathrm{TV}}$
+for an arbitrary fixed choice of $\mathbf{j}$. The probability
+$q_{0,\mathbf{j}} = \mathrm{tr}\left[ M_s \bigotimes_{t=1}^{T} \mathbb{E}{\sigma_{j_t}}\right]$
+and
+$q_{\psi_1,\cdots,\psi_m,\mathbf{j}} = \mathrm{tr}\left[ M_s \bigotimes_{t=1}^{T} {\sigma_{j_t}}\right]$
+are the measurement results distribution with testing strategy
+$\{M_s\}_s$ for two different input states. Defining
+$V = U_{j_1}\otimes \cdots \otimes U_{j_T}$, an $m \times T$ matrix
+$\mathbf{A}$ with
+$A_{k,t} := a_{k}^{(j_t)}, {A}_{r,:} = a_{r}^{(j_1)} +\cdots+ a_{r}^{(j_T)}$,
+and $\zeta = \bigotimes_{t = 1}^T \tau^{(j_t)}$, this reduces the
+**EH**-ensemble to a two-state discrimination problem.
+
+::: problem
+[]{#prob:reduced_EAtest label="prob:reduced_EAtest"} Design an algorithm
+using restrained single-replica measurements that can distinguish
+between these two states below with an error of at most
+$1/2-\varepsilon$: (i)
+$\rho_{\mathbf{j}} =V \left[\mathbb{E} \psi_1^{\otimes A_{1,:}} \otimes \cdots\otimes \psi_m^{\otimes A_{m,:}} \otimes \xi \right] V^\dagger$
+or (ii)
+$\sigma_{\mathbf{j}} = V \left[\bigotimes_{t = 1}^T \left(\mathbb{E} \psi_{1}^{\otimes A_{1,t}} \otimes \cdots \otimes \psi_{m}^{\otimes A_{m,t}} \right) \otimes \xi \right] V^\dagger$.
+:::
+
+by the virtue of the first inequality in
+Lemma and it is sufficient to show an upper bound
+for their likelihood $$\begin{align}
+    \|q_{0,\mathbf{j}} -  \mathbb{E} q_{\psi_1,\cdots,\psi_m,\mathbf{j}}\|_{\mathrm{TV}} &\leq 1- \min_{s}\frac{\mathrm{tr}(M_s \rho_{\mathbf{j}})}{\mathrm{tr}(M_s \sigma_{\mathbf{j}})} = 1 - \min_{s}\frac{\mathrm{tr}(M'_s \mathbb{E} \psi_1^{\otimes A_{1,:}} \otimes \cdots\otimes \psi_m^{\otimes A_{m,:}} )}{\mathrm{tr}(M'_s \bigotimes_{t = 1}^T \left[\mathbb{E} \psi_{1}^{\otimes A_{1,t}} \otimes \cdots \otimes \psi_{m}^{\otimes A_{m,t}} \right])}\\
+    &=1 - \frac{\prod_{t = 1}^T \left[d_1^{\uparrow A_{1,t}}\cdots d_m^{\uparrow A_{m,t}}\right]}{d_1^{\uparrow A_{1,:}}\cdots d_m^{\uparrow A_{m,:}}}\max_{s}\frac{\mathrm{tr}(M'_s  S^{A_{1,:}} \otimes \cdots\otimes S^{A_{m,:}} )}{\mathrm{tr}(M'_s \bigotimes_{t = 1}^T \left[ S^{A_{1,t}} \otimes \cdots \otimes S^{A_{m,t}} \right])},\label{eq:midres_EHI}
+\end{align}$$ where we use $S^{A}$ to denote the centralizer of
+permutations $S_{A} = \sum_{\pi \in S_{A}} \mathbb{P}_{\pi}^{d}$ that
+supports on the qudits counted by $A$. We then show the lower bound of
+the LHS in Eq.~(eq:midres_EHI) through two lemmas below.
+
+::: {.callout-important icon="false"}
+## Lemma
+
+Given $A = \cup_{k = 1}^{m} \cup_{t = 1}^T A_{k,t}$ as a partition of
+qudits set $A$. Ensure that the qudits in subset $\cup_{t} A_{k,t}$ have
+the same dimension $d_k$, such that both $A_{k,t}$ and
+$\cup_{t} A_{k,t}$ forms the identical qudits set. Denotes
+$S^{A_{k,t}},S^{A_{k,:}}$ as the representation of permutation group
+$S_{|A_{k,t}|}, S_{A_{k,:}}$ on these identical qudits sets. Then for
+arbitrary operator $M$ that is the product form under the separation
+$\left(\cup_{k = 1}^{m}A_{k,1}\right) \cup \cdots \cup \left(\cup_{k = 1}^{m}A_{k,T}\right)$,
+we have: $$\begin{align}
+    {\mathrm{tr}(M  S^{A_{1,:}} \otimes \cdots\otimes S^{A_{m,:}} )} \leq {\mathrm{tr}(M \bigotimes_{t = 1}^T \left[ S^{A_{1,t}} \otimes \cdots \otimes S^{A_{m,t}} \right])}.
+\end{align}$$
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+
+*Proof.* ◻
+:::
+
+::: {.callout-important icon="false"}
+## Lemma
+
+Given a length-T vector $(v_1,\cdots,v_T)$ with $v_i \in \mathbb{Z}_+$,
+the inequality below is satisfied: $$\begin{align}
+        \frac{d^{\uparrow y_1} \cdots d^{\uparrow y_T}}{ d^{\uparrow y_1 + \cdots + y_T} } \geq e^{-d^{-1} \left(\sum_{t = 1}^T y_t\right)^2}.
+\end{align}$$
+:::
+
+## RH-Ensemble Test {#sec-rh-test}
+
+::: problem
+[]{#prob:RHtest label="prob:RHtest"} Design an algorithm using
+restrained measurements to distinguish between two cases below with
+success rate $1/2+\delta$.(i)the maximum mixed state $\mathbb{I}/d$ or
+(ii) states set with problem ensemble $\mathcal{E}_{\varepsilon}$.
+:::
+
+## Subspace RH-Ensemble Test {#sec-subspace-rh-test}
+
+::: problem
+Given **RH** ensemble
+$\mathcal{E}_{1 - R\delta}, \mathcal{E}_{L\delta}$, as defined in
+Problem, with $R = (2^{n-1} + 1)/(2^{n-1} - 1 +\delta)$
+and $L = (1 - 4^{-n+1} - 2^{-n+1} \delta)^{-1}$, try to design an
+algorithm that $\forall C \in \mathcal{C}$, discriminates two
+subspace-**RH** ensembles below: $$\begin{align}
+        &\mathcal{E}_{(1,0),C} := \left\{\sigma_{(1,0),C}:= C \left[\frac{1}{2} \ket{0}\!\bra{0} \otimes \psi + \frac{1}{2} \ket{1}\!\bra{1} \otimes (\mathbb{I}/2^{n-1}) \right] C^{\dagger}\right\}_{\psi \sim \mathrm{Haar}_{n-1}},\\
+        &\mathcal{E}_{(1 - R\delta,U\delta),C} := \left\{ \sigma_{(1 - R\delta,L\delta),C} :=C \left[\frac{1}{2} \ket{0}\!\bra{0} \otimes \rho_{1 - R\delta} + \frac{1}{2} \ket{1}\!\bra{1} \otimes \rho_{L\delta} \right] C^{\dagger}\right\}_{\rho_{\varepsilon} \sim \mathcal{E}_{\varepsilon}}.
+\end{align}$$
+:::
+
+This construction ensures that the average purity of
+$\mathcal{E}_{(1,0)}$ and $\mathcal{E}_{(1 - R\delta,L\delta)}$ equals
+each others, as manifest below: $$\begin{align}
+    &\mathbb{E}_{\rho \sim \mathcal{E}_{(1,0),C}} \mathrm{tr}\left(\rho^{2}\right) = 1/4 +  (1/4) \cdot (1/2^{n-1}) =  \frac{1}{4}\left(1+\frac{1}{2^{n-1}}\right), \\
+    &\mathbb{E}_{\rho \sim \mathcal{E}_{(1 - R\delta,U\delta),C}} \mathrm{tr}\left(\rho^{2}\right) = \frac{1}{4}\frac{2^{n-1}(1 - R\delta) + 1}{2^{n-1} + 1 - R\delta} + \frac{1}{4}\frac{2^{n-1} L\delta + 1}{2^{n-1} + L\delta} = \frac{1}{4}(1 - \delta) + \frac{1}{4}(\frac{1}{2^{n-1}} + \delta) = \frac{1}{4}\left(1+\frac{1}{2^{n-1}}\right).
+\end{align}$$ We now build uniform distribution on all $n$-qubit
+Clifford gates $\mathcal{D}$. Since Clifford gate forms a 2-design, we
+can directly write the average based on the value of average purity
+$$\begin{align}
+    &\rho_0 := \mathbb{E}_{\rho \sim \mathcal{E}_{(1,0),C\sim \mathcal{D}}} \rho^{\otimes 2}=\mathbb{E}_{\rho \sim \mathcal{E}_{(1 - R\delta,U\delta),C\sim \mathcal{D}}} \rho^{\otimes 2} = a\cdot \mathbb{I}_{2n}/2^{2n} + b\cdot \mathrm{SWAP}^{\otimes n}/2^{n}, \\
+    & a + b = 1, \quad 2^{-n} a + 2^{n} b = \text{Avg. Purity} = 4^{-1}(1 + 2^{-n+1}).
+\end{align}$$ Solve the equation for $a$ and $b$, we get the result:
+$$\begin{align}
+    \rho_0 = (1 - \mu)  \frac{\mathbb{I}_n^{\otimes 2}}{2^{2n}} + \mu \frac{\mathbb{I}_n^{\otimes 2} + \mathrm{SWAP}^{\otimes n}}{2^n(2^{n} + 1)}, \text{~where~} \mu = 4^{-1} \frac{2^n -2}{2^n - 1}.
+\end{align}$$ This prevents the
+Lemma giving an efficient 2-replica strategy
+that discriminates $\mathcal{E}_{(1,0),C}$ and
+$\mathcal{E}_{(1 - R\delta,U\delta),C}$. However, given a fixed
+$C \in \mathcal{C}$, the average of $\mathrm{tr}(P \rho^2)$ for
+$P = C^\dagger Z_1 C$ has a constant gap $\delta/2$: $$\begin{align}
+    &\mathbb{E}_{\rho \sim \mathcal{E}_{(1,0),C}} \mathrm{tr}\left(P\rho^{2}\right) = 1/4 -  (1/4) \cdot (1/2^{n-1}) = \frac{1}{4}\left(1- \frac{1}{2^{n-1}}\right) ,\\
+    &\mathbb{E}_{\rho \sim \mathcal{E}_{(1 - R\delta,U\delta),C}} \mathrm{tr}\left(P\rho^{2}\right)  = \frac{1}{4}(1 - \delta) - \frac{1}{4}(\frac{1}{2^{n-1}} + \delta) = \frac{1}{4}\left(1- \frac{1}{2^{n-1}}\right) - \frac{\delta}{2}.
+\end{align}$$ This means that if one can use strategy $\mathcal{A}$ to
+estimate
+$\mathrm{tr}(P \rho^2), \forall P \in \{C^\dagger Z_1 C\}_{C \in \mathcal{C}}$
+within additive error $\delta/4$, he can use $\mathcal{A}$ to
+discriminate $\mathcal{E}_{(1,0),C}$ and
+$\mathcal{E}_{(1 - R\delta,U\delta),C}$, as rigorously proved below:
+
+::: {.callout-important icon="false"}
+## Lemma
+
+An algorithm that estimates
+$\mathrm{tr}(P \rho^2), \forall P \in \{C Z_1 C^\dagger\}_{C \in \mathcal{C}}$
+can be used to distinguish $\mathcal{E}_{(1,0),C}$ from
+$\mathcal{E}_{(1 - R\delta,U\delta),C}$ for arbitrary distribution on
+$\mathcal{C}$.
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+
+*Proof.* ◻
+:::
+
+Now we prove that two-replica strategy that discriminate
+$\sigma_{(1,0),C}^{\otimes 2}$ from
+$\sigma_{(1 - R\delta,L\delta),C}^{\otimes 2}$ require $\Omega(2^{n})$
+rounds. Given a $T$-round $2$-replica measurement strategy
+$M_s = \bigotimes_{t = 1}^{T} F_{s_t}^{u_t}$, where $\{F_{s}^{u}\}_{s}$
+is a POVM on space $\mathcal{H}(d^2)$. Now the **TVD** under this
+measurement takes the value: $$\begin{align}
+    \delta_{\mathrm{tvd}} = \left|\mathrm{tr}\left(M_s  \mathbb{E}_{C}C^{\otimes 2T}\mathbb{E}_{\psi}\left(\sigma_{(1,0),I}^{\otimes 2T} - \sigma_{(1 - R\delta,L\delta),I}^{\otimes 2T}\right)(C^\dagger)^{\otimes 2T}\right)\right|,
+\end{align}$$ where the Haar average takes the value: $$\begin{align}
+    \mathbb{E}_{\psi}\sigma_{(1,0),I}^{\otimes 2T} &= \left[\frac{1}{2}\ket{0}\!\bra{0} \otimes \psi  + \frac{1}{2}\ket{1}\!\bra{1} \otimes 2^{-n+1}\mathbb{I}_{n-1}\right]^{\otimes 2T} = \sum_{\mathbf{a} \in \mathbb{F}_2^{2T}} \frac{2^{-2T}\ket{\bar{\mathbf{a}}}\!\bra{\bar{\mathbf{a}}} }{d^{\uparrow |\mathbf{a}|} d^{2T - |\mathbf{a}|}}\otimes\sum_{\pi \in S_{2T}^{\mathbf{a}}} \mathbb{P}_{\pi}^{d},\\
+    \mathbb{E}_{\psi}\sigma_{(1 - R\delta,L\delta),I}^{\otimes 2T} &= \left[\frac{1}{2}\ket{0}\!\bra{0} \otimes \rho_{1 - R\delta} + \frac{1}{2}\ket{1}\!\bra{1} \otimes 2^{-n+1}\rho_{L\delta}\right]^{\otimes 2T} \\
+    &= \sum_{\mathbf{a} \in \mathbb{F}_2^{2T}} {2^{-2T}\ket{\bar{\mathbf{a}}}\!\bra{\bar{\mathbf{a}}}} \otimes \frac{\sum_{\pi \in S_{2T}^{\mathbf{a}}, \sigma \in S_{2T}^{\bar{\mathbf{a}}}} \mathbb{P}_{\pi \sigma}^{d} (1 - R \delta)^{-c(\pi)} (L\delta)^{-c(\sigma)}}{[d/(1 - R\delta)]^{\uparrow |\mathbf{a}|} [d/L\delta]^{\uparrow |\bar{\mathbf{a}}|}},
+\end{align}$$ where $d = 2^{n-1}$ and $S_{2T}^{\mathbf{a}}$ denoting the
+permutation contained in position $\{i|a_i = 1\}$. If we defined the
+operator
+$\mathbb{S}^{\mathbf{a}} = \sum_{\pi \in S_{2T}^{\mathbf{a}}} \mathbb{P}_{\pi}^{d}$
+and $D = 2d = 2^n$, we conclude that $$\begin{align}
+    \Phi_{\mathrm{U},2T}\left[ \ket{{\mathbf{a}}}\!\bra{{\mathbf{a}}}\otimes\mathbb{S}^{\mathbf{a}}\right] = \sum_{\rho \sigma \in S_{2T}} \mathrm{Wg}_{\rho\sigma}^{D} \mathrm{tr}\left[\ket{{\mathbf{a}}}\!\bra{{\mathbf{a}}}\otimes\mathbb{S}^{\mathbf{a}} \cdot \mathrm{SWAP}_{\sigma} \otimes \mathbb{P}_{\sigma}^{d}\right] \mathbb{P}_{\rho}^{D}.
+\end{align}$$ The trace term can be explicitly calcluated as
+$$\begin{align}
+    &\mathrm{tr}\left[\ket{{\mathbf{a}}}\!\bra{{\mathbf{a}}}\otimes\mathbb{S}^{\mathbf{a}} \cdot \mathrm{SWAP}_{\sigma} \otimes \mathbb{P}_{\sigma}^{d}\right]= \delta_{\mathbf{a}, \sigma{\mathbf{a}}} \sum_{\pi \in S_{2T}^{\mathbf{a}}} \mathrm{tr}\left(\mathbb{P}_{\pi \sigma}^{d}\right) = \delta_{\sigma, \beta \gamma} \sum_{\pi \in S_{2T}^{{\mathbf{a}}}} d^{c(\pi\gamma)} = \delta_{\sigma, \beta \gamma} \frac{d^{\uparrow |\mathbf{a}|}}{d^{|{\mathbf{a}}|}}d^{c(\gamma)}.
+\end{align}$$ Here in the second equality we use the fact that
+$\mathbf{a} = \sigma(\mathbf{a})$ if and only if
+$\sigma = \beta \cdot \gamma$ for $\beta\in S_{2T}^{\mathbf{a}}$ and
+$\gamma \in S_{2T}^{\bar{\mathbf{a}}}$. In the last equality, we use the
+identity $$\begin{align}
+   \forall \gamma \in S_{2T}^{\bar{\mathbf{a}}}, \sum_{\pi\in S_{2T}^{\mathbf{a}}} d^{c(\pi\gamma )} =  \frac{d^{\uparrow |\mathbf{a}|}}{d^{|{\mathbf{a}}|}}d^{c(\gamma)}
+\end{align}$$ Noted that the unitary average of
+$\sum_{\mathbf{a}}2^{-2T}\ket{{\mathbf{a}}}\!\bra{{\mathbf{a}}} \otimes \rho_{\mathbf{a}}$
+and
+$\sum_{\mathbf{a}}2^{-2T}\ket{\bar{\mathbf{a}}}\!\bra{\bar{\mathbf{a}}}\otimes \rho_{\mathbf{a}}$
+are identical since $\ket{\mathbf{a}}$ can be transformed into
+$\ket{\bar{\mathbf{a}}}$ through $2T$-fold unitary $X^{2T}$ and Haar
+random unitary is shift invariant. Thus, the average state $\rho_0$ is
+the linear combination of permutation operators: $$\begin{align}
+    &\Phi_{\mathrm{U},2T}\left[ \mathbb{E}_{\psi}\sigma_{(1,0),I}^{\otimes 2T} \right] = \Phi_{\mathrm{U},2T}\left[ \mathbb{E}_{\psi}\sigma_{(0,1),I}^{\otimes 2T} \right] :=\rho_0 =  \Phi_{\mathrm{U},2T}\left[ \sum_{\mathbf{a} \in \mathbb{F}_2^{2T}}\frac{ \ket{{\mathbf{a}}}\!\bra{{\mathbf{a}}}\otimes\mathbb{S}^{\mathbf{a}}}{2^{2T}d^{\uparrow |\mathbf{a}|} d^{2T - |\mathbf{a}|}}\right]\\
+    & = \sum_{\mathbf{a} \in \mathbb{F}_2^{2T}}\sum_{\sigma,\rho \in S_{2T}}\frac{\mathrm{Wg}_{\rho \sigma}^{D}\cdot \delta_{\sigma,\beta\gamma}\frac{d^{\uparrow |\mathbf{a}|}}{d^{|{\mathbf{a}}|}}d^{c(\gamma)}}{2^{2T}d^{\uparrow |\mathbf{a}|} d^{2T - |\mathbf{a}|}} \mathbb{P}_{\rho}^{D} 
+    =\sum_{\mathbf{a} \in \mathbb{F}_2^{2T}}\sum_{\rho \in S_{2T}}\sum_{\beta \in S_{2T}^{{\mathbf{a}}},\gamma\in S_{2T}^{\bar{\mathbf{a}}}}\frac{\mathrm{Wg}_{\rho(\beta\gamma)}^{D}\cdot d^{c(\gamma)}}{2^{2T} d^{2T}} \mathbb{P}_{\rho}^{D}
+\end{align}$$ Similarly, we calculate $$\begin{align}
+    &\mathrm{tr}\left[\left(\ket{\bar{\mathbf{a}}}\!\bra{\bar{\mathbf{a}}}\otimes \frac{\sum_{\pi \in S_{2T}^{\mathbf{a}}, \nu \in S_{2T}^{\bar{\mathbf{a}}}} \mathbb{P}_{\pi \nu}^{d} (1 - R \delta)^{-c(\pi)} (L\delta)^{-c(\nu)}}{[d/(1 - R\delta)]^{\uparrow |\mathbf{a}|} [d/L\delta]^{\uparrow |\bar{\mathbf{a}}|}}\right)\cdot \mathrm{SWAP}_{\sigma} \otimes \mathbb{P}_{\sigma}^{d}\right]\\
+    &= \delta_{\sigma, \beta\gamma}\sum_{\pi \in S_{2T}^{\mathbf{a}}, \nu \in S_{2T}^{\bar{\mathbf{a}}}}\frac{ d^{c(\pi \nu)} (1 - R \delta)^{-c(\pi \beta^{-1})} (L\delta)^{-c(\nu\gamma^{-1})}}{[d/(1 - R\delta)]^{\uparrow |\mathbf{a}|} [d/L\delta]^{\uparrow |\bar{\mathbf{a}}|}}.
+\end{align}$$ When $\delta = 0$, this expression reduced to
+$\delta_{\sigma,\beta\gamma}d^{-2T} d^{c(\gamma)}$. We thus Taylor
+expands this expression in terms of $\delta$. $$\begin{align}
+    &\Phi_{\mathrm{U},2T}\left[ \mathbb{E}_{\psi}\sigma_{(1-R\delta,L\delta),I}^{\otimes 2T} \right]  = \sum_{\mathbf{a} \in \mathbb{F}_2^{2T}}\sum_{\rho \in S_{2T}}\sum_{\beta \in S_{2T}^{{\mathbf{a}}},\gamma\in S_{2T}^{\bar{\mathbf{a}}}}\mathrm{Wg}_{\rho(\beta\gamma)}^{D}\cdot \frac{ d^{c(\pi \nu)} (1 - R \delta)^{-c(\pi \beta^{-1})} (L\delta)^{-c(\nu\gamma^{-1})}}{2^{2T}[d/(1 - R\delta)]^{\uparrow |\mathbf{a}|} [d/L\delta]^{\uparrow |\bar{\mathbf{a}}|}} \mathbb{P}_{\rho}^{D}
+\end{align}$$ The difference of two average can then be reform into the
+discrimination between $\mathbb{I}_{n}^{\otimes 2T}/d^{2T}$ from the
+mixed state $$\begin{align}
+    \Phi_{\mathrm{U},2T}\left[ \mathbb{E}_{\psi}\sigma_{(1,0),I}^{\otimes 2T} \right] -\Phi_{\mathrm{U},2T}\left[ \mathbb{E}_{\psi}\sigma_{(1-R\delta,L\delta),I}^{\otimes 2T} \right] =  \mathbb{I}_{n}^{\otimes 2T}/D^{2T} + \left[\sum_{\rho \in S_{2T}} \lambda_{\rho} \mathbb{P}_{\rho}^{D} \right]
+\end{align}$$ This **TVD** is bounded by the leaves likelihood for
+$M_s = \otimes_{t =1}^{T} F_{s_t}^{u_t}$ as $$\begin{align}
+    L(s) = \frac{D^{2T}\mathrm{tr}\left(M_s\left[\sum_{\rho \in S_{2T}} \lambda_{\rho} \mathbb{P}_{\rho}^{D} \right]\right)}{\mathrm{tr}\left(M_s\right)} 
+    \geq  D^{2T} \prod_{t = 1}^{2T} \frac{\mathrm{tr}\left(F_{s_t}^{u_t}\left[\sum_{\rho \in S_{2}} \lambda'_{\rho} \mathbb{P}_{\rho}^{D} \right]\right)}{\mathrm{tr}\left(F_{s_t}^{u_t}\right)}
+\end{align}$$ This further reduced the problem to the discrimination
+between $\mathbb{I}(D)^{\otimes 2}/D^2$ and
+$\sum_{\rho \in S_{2}} \lambda'_{\rho} \mathbb{P}_{\rho}^{D}$ Based on
+Lemma, we calculate its chi-square
+divergence first: $$\begin{align}
+    \delta_{\mathcal{D}} &= \max_{\{F_s\}_s \in \mathcal{M}} \sum_{s} \mathrm{tr}\left(\rho_0 F_s\right) \mathbb{E}_{\substack{C \sim \mathcal{D},\psi}} \left[\frac{\mathrm{tr}\left(\sigma_{(1,0),C}^{\otimes 2} F_s\right)}{\mathrm{tr}\left(\rho_0 F_s\right)} - 1\right]^2 = \max_{\{F_s\}_s \in \mathcal{M}} \sum_{s}  \mathbb{E}_{\substack{C \sim \mathcal{D}, \psi}}\frac{\left\{\mathrm{tr} \left[\left(\sigma_{(1,0),C}^{\otimes 2} - \rho_0\right) F_s\right]\right\}^2}{\mathrm{tr}\left(\rho_0F_s\right)} \notag \\
+     &\leq (1 - \mu)^{-1}\max_{\{F_s\}_s \in \mathcal{M}}  \mathbb{E}_{\substack{C \sim \mathcal{D},\psi}}\sum_{s} \frac{2^{2n}\left\{\mathrm{tr} \left[\left(\sigma_{(1,0),C}^{\otimes 2} - \rho_0\right) F_s\right]\right\}^2}{\mathrm{tr}\left(F_s\right)}\\
+     &=(1 - \mu)^{-1}\max_{\{F_s\}_s \in \mathcal{M}}  \sum_{s} \frac{2^{2n}\mathrm{tr} \left[\mathbb{E}_{\substack{C \sim \mathcal{D}}} C^{\otimes 4}\left(\mathbb{E}_{\psi}\left(\sigma_{(1,0),I}^{\otimes 2} - \rho_0\right)^{\otimes 2} \right)(C^\dagger)^{\otimes 4}F_s^{\otimes 2}\right]}{\mathrm{tr}\left(F_s\right)}\\
+     &=(1 - \mu)^{-1}\max_{\ket{\psi_s}}  \sum_{s} {(2^{2n})^2 w_s\mathrm{tr} \left[\mathbb{E}_{\substack{C \sim \mathcal{D}}} C^{\otimes 4}\left(\mathbb{E}_{\psi}\left(\sigma_{(1,0),I}^{\otimes 2} - \rho_0\right)^{\otimes 2} \right)(C^\dagger)^{\otimes 4}\psi_s^{\otimes 2}\right]}.
+\end{align}$$ Here in the third equality we use the fact that
+$C^{\otimes 2} \rho_0 (C^{\dagger})^{\otimes 2} = \rho_0$ and
+$\sigma_{(1,0),C} = C^{\otimes 2} \sigma_{(1,0),I} (C^{\dagger})^{\otimes 2}$.
+In the last equality, we plug in
+$F_s = 2^{2n} w_s \ket{\psi_s}\!\bra{\psi_s}$ we calculate the critical
+term $$\begin{align}
+    \mathbb{E}_{\psi}\left(\sigma_{(1,0),I}^{\otimes 2} - \rho_0\right)^{\otimes 2}  =  \mathbb{E}_{\psi}\sigma_{(1,0),I}^{\otimes 4} - \left(\mathbb{E}_{\psi}\sigma_{(1,0),I}^{\otimes 2}\right) \otimes \rho_0 - \rho_0 \otimes \left(\mathbb{E}_{\psi}\sigma_{(1,0),I}^{\otimes 2}\right) +\rho_0^{\otimes 2}.
+\end{align}$$ Again use the fact that
+$C^{\otimes 2} \rho_0 (C^{\dagger})^{\otimes 2} = \rho_0$, the 4-fold
+Clifford average of the last three terms reduced to 2-fold Clifford and
+canceled respectively. Since Clifford forms a 3-design, it can be safely
+replaced by 2-fold unitary average. Since
+$\mathbb{E}_{C \sim \mathcal{D}} C^{\otimes 2}\mathbb{E}_{\psi}\sigma_{(1,0),I}^{\otimes 2} (C^\dagger)^{\otimes 2} = \rho_0$,
+we have: $$\begin{align}
+    \mathbb{E}_{C \sim \mathcal{D}}C^{\otimes 4}\mathbb{E}_{\psi}&\left(\sigma_{(1,0),I}^{\otimes 2} - \rho_0\right)^{\otimes 2}(C^\dagger)^{\otimes 4}  = \mathbb{E}_{C \sim \mathcal{D}} C^{\otimes 4} \mathbb{E}_{\psi}\sigma_{(1,0),I}^{\otimes 4}(C^\dagger)^{\otimes 4}  -\rho_0^{\otimes 2}\\
+    &=\Phi_{\mathrm{Cl},4}\left( \mathbb{E}_{\psi}\sigma_{(1,0),I}^{\otimes 4}\right) -\Phi_{\mathrm{U},4}\left(  \mathbb{E}_{\psi}\sigma_{(1,0),I}^{\otimes 4}\right) +\Phi_{\mathrm{U},4}\left(\sigma_{(1,0),I}^{\otimes 4}\right) -\Phi_{\mathrm{U},2}\left(\sigma_{(1,0),I}^{\otimes 2}\right)^{\otimes 2}
+\end{align}$$ where the 4-fold Clifford average of
+$\mathbb{E}_{\psi}\sigma_{(1,0),I}^{\otimes 4}$ is the only left term to
+be further calculated. For the second difference, we notice that
+$\Phi_{\mathrm{U},4}\left(\mathbb{E}_{\psi}\sigma_{(1,0),I}^{\otimes 4}\right) = \Phi_{\mathrm{U},4}\left(\sigma_{(1,0),I}^{\otimes 4}\right)$,
+and $$\begin{align}
+    &\Phi_{\mathrm{U},4}\left(\sigma_{(1,0),I}^{\otimes 4}\right) = \sum_{u,v \in S_4}\mathrm{Wg}(uv,d) \mathrm{tr}\left(\mathbb{P}_{v}^{d} \sigma_{(1,0),I}^{\otimes 4}\right) \mathbb{P}_{u}^{d}\\
+    &=
+\end{align}$$ Noted that the $\Phi_{\mathrm{Cl},2T}$ shall be decomposed
+into commutants of $2T$-fold Clifford, which are generated by
+$\Omega_4 = \sum_{P \in \mathcal{P}_{n}} P^{\otimes 4}$,
+$\Omega_6 = \sum_{P \in \mathcal{P}_{n}}P^{\otimes 6}$,
+$\Omega_{2T} = \sum_{P \in \mathcal{P}_{n}}P^{\otimes 2T}$ if $T \mod 2$
+and all the permutations on $2T$ copies of $n$-qubit state. Notice that
+$\mathrm{tr}\left[\left(\ket{{\mathbf{a}}}\!\bra{{\mathbf{a}}}  - \ket{\bar{\mathbf{a}}}\!\bra{\bar{\mathbf{a}}} \right) \Omega\cdot \mathrm{SWAP}_{\pi}\right] = 0, \forall \pi \in S_{2T}$
+and $\Omega$ generated by $\{\Omega_4,\Omega_6,\Omega_{2T}\}$ that
+supports on different parts of $2T$-qubits.
+
+We the conclude the theorem below:
+
+::: {.callout-important icon="false"}
+## Lemma
+
+Given an operator $X$ on $k$-replica
+:::
+
+also means that
+$\mathbb{E}_{\rho \sim \mathcal{E}_{(1,0)}} \rho^{\otimes 2}$ To show
+the hardness in the 2-replica strategy, we first check the difference of
+their $2$-replica average. $$\begin{align}
+    \mathbb{E}_{\rho \sim \mathcal{E}_{(2\varepsilon,0)}} \rho^{\otimes 2} &=  C^{\otimes 2} \mathbb{E}_{\rho_{2\varepsilon} \sim \mathcal{E}_{2 \varepsilon}} \left[\frac{1}{2} \ket{0}\!\bra{0} \otimes \rho_{2 \varepsilon} + \frac{1}{2}\ket{1}\!\bra{1} \otimes \mathbb{I}_{n-1}/2^{n-1}\right]^{\otimes 2}(C^\dagger)^{\otimes 2}\\
+    &= \frac{1}{4}C^{\otimes 2}  \ket{00}\!\bra{00} \otimes \left[\frac{\mathbb{I}_{2n-2} + 2\varepsilon\mathrm{SWAP}^{\otimes (n-1)}}{d(d+ 2\varepsilon)} - \left(\frac{\mathbb{I}_{n-1}}{d}\right)^{\otimes 2}\right] (C^\dagger)^{\otimes 2} + \left(\frac{\mathbb{I}_{n}}{2^n}\right)^{\otimes 2}\\
+    &= \frac{2\varepsilon }{4} C^{\otimes 2} \ket{00}\!\bra{00} \otimes \frac{d\mathrm{SWAP}^{\otimes (n-1)} - \mathbb{I}_{2n-2}}{d^2(d+2\varepsilon)}(C^\dagger)^{\otimes 2}+ \left(\frac{\mathbb{I}_{n}}{2^n}\right)^{\otimes 2},\text{~where~} d = 2^{n-1}.\\
+    \mathbb{E}_{\rho \sim \mathcal{E}_{(\varepsilon,\varepsilon)}} \rho^{\otimes 2} &= C^{\otimes 2} \left[\left(\frac{\mathbb{I}}{2}\right)^{\otimes 2} \otimes \frac{\mathbb{I}_{2n-2} + \varepsilon\mathrm{SWAP}^{\otimes (n-1)}}{d(d+ \varepsilon)}\right] (C^\dagger)^{\otimes 2}\\
+    &=\varepsilon C^{\otimes 2} \frac{\mathbb{I}_2 \otimes \mathrm{SWAP}^{\otimes n-1}}{4d(d+\varepsilon)}(C^\dagger)^{\otimes 2}+\frac{\mathbb{I}_{2n}}{2^n(2^n + 2\varepsilon)}.
+\end{align}$$ Here we use the fact that
+$\mathbb{E}_{\rho \sim \mathcal{E}_{\varepsilon}} \rho = \mathbb{I}_{n-1}/d$
+and
+$\mathbb{E}_{\rho \sim \mathcal{E}_{\varepsilon}} \rho^{\otimes 2} = \left[\mathbb{I}_{2n-2} + \varepsilon\mathrm{SWAP}^{\otimes (n-1)}\right]/[d(d+ \varepsilon)]$.
+Then their difference
+$\Delta_2(C) := \mathbb{E}_{\rho \sim \mathcal{E}_{(2\varepsilon,0)}} \rho^{\otimes 2} - \mathbb{E}_{\rho \sim \mathcal{E}_{(\varepsilon,\varepsilon)}} \rho^{\otimes 2}$
+writes: $$\begin{align}
+    \Delta_2(C) : = \frac{2 \varepsilon}{2^{2n}(2^n + 2 \varepsilon)}\mathbb{I}_{2n} + \varepsilon C^{\otimes 2} \left[\frac{\ket{00}\!\bra{00}}{2} \otimes \frac{\mathrm{SWAP}^{\otimes (n-1)} - d^{-1}\mathbb{I}_{2n-2}}{d(d+ 2\varepsilon)} - \frac{\mathbb{I}_2 \otimes \mathrm{SWAP}^{\otimes n-1}}{4d(d+\varepsilon)}\right] (C^\dagger)^{\otimes 2}.
+\end{align}$$ This operator has constant 1-norm, thus implies a
+2-replica discrimination strategy below:
+
+::: {.callout-important icon="false"}
+## Lemma
+
+An algorithm that estimates
+$\mathrm{tr}(P \rho^2), \forall P \in \{C Z_1 C^\dagger\}_{C \in \mathcal{C}}$
+can be used to distinguish $\mathcal{E}_{(2\varepsilon, 0)}$ from
+$\mathcal{E}_{(\varepsilon, \varepsilon)}$.
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+
+*Proof.* As shown by
+Lemma, the value of
+$\mathrm{tr}(P \rho^2) = \mathrm{tr}\left((P\otimes \mathbb{I}) \cdot  \mathrm{SWAP}^{\otimes n} \cdot \rho^{\otimes 2}\right)$
+can be calculated as
+$\mathbb{E}_{\rho \in \mathcal{E}_{(\varepsilon, \varepsilon)}}\mathrm{tr}(P \rho^2) = 0$
+and $$\begin{align}
+        &\mathbb{E}_{\rho \in \mathcal{E}_{(2\varepsilon, 0)}}\mathrm{tr}(P \rho^2) = \frac{\mathbb{E}_{\rho \in \mathcal{E}_{2\varepsilon}}\mathrm{tr}(P \rho^2) - \mathbb{E}_{\rho \in \mathcal{E}_{0}}\mathrm{tr}(P \rho^2)}{4} = \frac{1}{4}\left[\frac{2^{n} \varepsilon + 1}{2^{n-1} + 2 \varepsilon} - \frac{1}{2^{n-1}}\right] = \frac{2^{2n} - 4}{2^{n+1}(2^n + 4\varepsilon)} \varepsilon.
+\end{align}$$ ◻
+:::
+
+However, if we build uniform distribution on all possible Pauli
+operators, which in turn induces uniform distribution on all $n$-qubit
+Clifford gates $\mathcal{D}$, the operator
+$\mathbb{E}_{C \sim \mathcal{D}} \Delta_2$ has exponentially small
+one-norm, as calculated below: $$\begin{align}
+    &\mathbb{E}_{C \sim \mathcal{D}} \Delta_2(C) = a \mathrm{SWAP}^{\otimes n} + b \mathbb{I}_{2n}, \text{~with~}\begin{cases}
+        2^n a + 2^{2n}b = 0.\\
+        2^{2n} a + 2^{n}b = \frac{\varepsilon}{2} \cdot \frac{d + 3\varepsilon - \varepsilon d^2}{d(d+\varepsilon)(d + 2 \varepsilon)} .
+    \end{cases}
+\end{align}$$ Thus, we have $a+b,|a-b| \sim \mathcal{O}(2^{-3n})$, and
+$\|\mathbb{E}_{C \sim \mathcal{D}} \Delta_2(C)\|_{1} = \mathcal{O}(2^{-n})$.
+
+$$\begin{align}
+    \delta_{\mathcal{D}} = \max_{\{F_s\}_s \in \mathcal{M}} \sum_{s} \mathrm{tr}\left(\sigma_{(\varepsilon,\varepsilon),C}^{\otimes 2} F_s\right) \mathbb{E}_{C \sim \mathcal{D}} \left[\frac{\mathrm{tr}\left(\sigma_{(2\varepsilon,0),C}^{\otimes 2} F_s\right)}{\mathrm{tr}\left(\sigma_{(\varepsilon,\varepsilon),C}^{\otimes 2} F_s\right)} - 1\right]^2
+\end{align}$$
+
+
+---
+
+[← Previous: Operator Mixed Ensembles](operator_mixed.qmd) | [Back to Index](index.qmd) | [End →](index.qmd)

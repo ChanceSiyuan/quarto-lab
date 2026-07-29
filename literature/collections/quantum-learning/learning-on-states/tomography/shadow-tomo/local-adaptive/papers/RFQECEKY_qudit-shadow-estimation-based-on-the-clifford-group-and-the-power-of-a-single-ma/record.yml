@@ -1,0 +1,48 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: RFQECEKY
+  item_version: 96159
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: CT88KZFU
+      name: local/adaptive
+      path: Quantum Learning/Learning on states/Tomography/shadow tomo/local/adaptive
+qlab:
+  primary_collection: CT88KZFU
+  indexed_collections:
+    - CT88KZFU
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: journalArticle
+title: Qudit Shadow Estimation Based on the Clifford Group and the Power of a
+  Single Magic Gate
+authors:
+  - first: Chengsi
+    last: Mao
+  - first: Changhao
+    last: Yi
+  - first: Huangjun
+    last: Zhu
+year: 2025
+abstract: Shadow estimation is a sample-efficient protocol for learning the
+  properties of a quantum system using randomized measurements, but the current
+  understanding of qudit shadow estimation is quite limited compared with the
+  qubit setting. Here we clarify the sample complexity of qudit shadow
+  estimation based on the Clifford group, where the local dimension $d$ is an
+  odd prime. Notably, we show that the overhead of qudit shadow estimation over
+  the qubit counterpart is only $\mathcal{O}(d)$, independent of the qudit
+  number $n$, although the set of stabilizer states may deviate exponentially
+  from a 3-design with respect to the third moment operator. Furthermore, by
+  adding one layer of magic gates, we propose a simple circuit that can
+  significantly boost the efficiency. Actually, a single magic gate can already
+  eliminate the $\mathcal{O}(d)$ overhead in qudit shadow estimation and bridge
+  the gap from the qubit setting.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.1103/physrevlett.134.160801
+  arxiv: "2410.13572"

@@ -1,0 +1,56 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: TSIDTH9H
+  item_version: 96148
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: E37296D2
+      name: Non-locality
+      path: Quantum Resource/Non-locality
+qlab:
+  primary_collection: E37296D2
+  indexed_collections:
+    - E37296D2
+  primary_topic: quantum-resource
+  indexed_topics:
+    - quantum-resource
+item_type: preprint
+title: Coordinating Decisions via Quantum Telepathy
+authors:
+  - first: Dawei
+    last: Ding
+  - first: Liang
+    last: Jiang
+year: 2024
+abstract: "Quantum telepathy is the phenomenon where two non-communicating
+  parties can exhibit correlated behaviors that are impossible to achieve using
+  classical mechanics. This is also known as Bell inequality violation and is
+  made possible by quantum entanglement. In this work, we present a conceptual
+  framework for applying quantum telepathy to real-world problems. In general,
+  the problems involve coordinating decisions given a set of observations
+  without being able to communicate. We argue this inability is actually quite
+  prevalent in the modern era where the decision-making timescales of computer
+  processors are so short that the speed of light delay is actually quite
+  appreciable in comparison. We highlight the example of high-frequency trading
+  (HFT), where trades are made at microsecond timescales, but the speed of light
+  delay between different exchanges can range from the order of 100 microseconds
+  to 10 milliseconds. Due to the maturity of Bell inequality violation
+  experiments, experimental realization of quantum telepathy schemes that can
+  attain a quantum advantage for real-world problems $\\textit{is already almost
+  immediately possible}$. We demonstrate this by conducting a case study for a
+  concrete HFT scenario that gives rise to a generalization of the CHSH game and
+  evaluate different possible physical implementations for achieving a quantum
+  advantage. It is well known that Bell inequality violation is a rigorous
+  mathematical proof of a quantum advantage over any classical strategy and does
+  not need any complexity-theoretic assumptions such as
+  $\\text{BQP}\\neq\\text{BPP}$. Moreover, fault tolerance is not necessary to
+  realize a quantum advantage: for example, violating the CHSH inequality only
+  requires single-qubit gates applied on two entangled physical qubits."
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2407.21723
+  arxiv: "2407.21723"

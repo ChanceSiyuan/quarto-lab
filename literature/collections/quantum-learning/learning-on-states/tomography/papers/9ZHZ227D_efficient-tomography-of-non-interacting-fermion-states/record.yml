@@ -1,0 +1,41 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 9ZHZ227D
+  item_version: 96015
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: EIP4ZQQD
+      name: Tomography
+      path: Quantum Learning/Learning on states/Tomography
+qlab:
+  primary_collection: EIP4ZQQD
+  indexed_collections:
+    - EIP4ZQQD
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: preprint
+title: Efficient Tomography of Non-Interacting Fermion States
+authors:
+  - first: Scott
+    last: Aaronson
+  - first: Sabee
+    last: Grewal
+year: 2023
+abstract: We give an efficient algorithm that learns a non-interacting fermion
+  state, given copies of the state. For a system of $n$ non-interacting fermions
+  and $m$ modes, we show that $O(m^3 n^2 \log(1/\delta) / \epsilon^4)$ copies of
+  the input state and $O(m^4 n^2 \log(1/\delta)/ \epsilon^4)$ time are
+  sufficient to learn the state to trace distance at most $\epsilon$ with
+  probability at least $1 - \delta$. Our algorithm empirically estimates
+  one-mode correlations in $O(m)$ different measurement bases and uses them to
+  reconstruct a succinct description of the entire state efficiently.
+tags:
+  - Computer Science - Machine Learning
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2102.10458
+  arxiv: "2102.10458"

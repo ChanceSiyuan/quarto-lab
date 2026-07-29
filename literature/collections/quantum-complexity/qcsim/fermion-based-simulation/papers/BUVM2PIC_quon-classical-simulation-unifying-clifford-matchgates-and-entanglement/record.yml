@@ -1,0 +1,54 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: BUVM2PIC
+  item_version: 96021
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: KJHSPUHS
+      name: Fermion-based simulation
+      path: Quantum Complexity/QCsim/Fermion-based simulation
+qlab:
+  primary_collection: KJHSPUHS
+  indexed_collections:
+    - KJHSPUHS
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: preprint
+title: "Quon Classical Simulation: Unifying Clifford, Matchgates and Entanglement"
+authors:
+  - first: Zixuan
+    last: Feng
+  - first: Zhengwei
+    last: Liu
+  - first: Fan
+    last: Lu
+  - first: Ningfeng
+    last: Wang
+year: 2025
+abstract: We propose a unified classical simulation framework for quantum
+  circuits, termed Quon Classical Simulation (QCS), built upon the diagrammatic
+  formalism of the Quon language. Central to this framework is the introduction
+  of magic holes, a topological feature that captures the global source of
+  computational hardness in simulating quantum systems. Unlike conventional
+  measures, the complexity of QCS is governed by the topological entanglement
+  entropy associated with these magic holes. We show that Clifford circuits and
+  Matchgate circuits are free of magic holes and thus efficiently simulable
+  within our model. To capture the interaction structure of magic holes, we
+  define a topological tensor network representation and develop novel skein
+  relations and reduction algorithms to simplify circuit representations. This
+  approach significantly improves the efficiency of classical simulations and
+  provides a unified explanation for the tractability of various known quantum
+  circuit classes. Our work offers a new topological perspective on the
+  classical simulability of quantum systems and topological complexity.
+tags:
+  - Computer Science - Computational Complexity
+  - Mathematical Physics
+  - Mathematics - Mathematical Physics
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2505.07804
+  arxiv: "2505.07804"

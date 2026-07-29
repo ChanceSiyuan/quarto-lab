@@ -1,0 +1,1055 @@
+---
+title: Real noise analysis for IQP circuits
+description: The Bell-sampling protocol measures a two-copy observable.
+categories:
+  - theory
+---
+
+# Summary and Questions
+
+The Bell-sampling protocol measures a two-copy observable.  It can be used as a fidelity proxy only after one has controlled a specific experimental loophole: the two copies must see effectively independent noise, or the correlations between their noise realizations must be measured and incorporated into the estimator.  In an IQP experiment, the dangerous noise sources are precisely the ones that are often slow or common-mode: preparation-angle bias, global phase drift, pulse-area inhomogeneity, and coherent over-rotations.
+
+The goal of this note is to separate three quantities:
+
+1. The target-state fidelity
+$$
+F=\mathbb E\!\left[|\langle\psi_0|\psi_{\epsilon,\delta}\rangle|^2\right].
+$$
+
+2. The ideal state-level Bell overlap
+$$
+P_{12}
+=
+\mathbb E_{\rm joint}
+\!\left[
+|\langle\psi_{\epsilon^{(1)},\delta^{(1)}}|
+\psi_{\epsilon^{(2)},\delta^{(2)}}\rangle|^2
+\right].
+$$
+
+3. The experimentally observed raw Bell parity
+$$
+P_{\rm raw}=s^T p_{\rm obs},
+$$
+which equals neither of the above before readout correction.
+
+Bell sampling measures two copies in a transversal Bell basis and extracts the SWAP parity from the number of $Y$-Bell outcomes [@hangleiter2024bell].  The root-purity estimator $\sqrt{P_{12}}$ is justified for independently compiled or effectively Pauli-twirled circuit noise, but correlated coherent errors are a failure mode.  Randomized compiling is one standard way to suppress coherent correlations by tailoring suitable Markovian noise into stochastic Pauli noise [@wallman2016noise].  For IQP specifically, noise is also structurally important because diagonal layers allow dephasing and depolarizing noise to accumulate in ways that can change classical simulability [@bremner2016sparse; @rajakumar2025polynomial].
+
+# IQP state and real-noise model
+
+Let
+$$
+Z_{S_a}:=\prod_{j\in S_a} Z_j,\qquad
+U_\phi=\exp\left(i\sum_{a=1}^m \phi_a Z_{S_a}\right),
+$$
+and
+$$
+|\Omega\rangle=|+\rangle^{\otimes n}.
+$$
+The ideal IQP phase state is
+$$
+|\psi_0\rangle
+=
+U_\phi|\Omega\rangle
+=
+2^{-n/2}\sum_{x\in\{0,1\}^n} e^{i\phi^T v(x)}|x\rangle,
+$$
+where
+$$
+v_a(x)=(-1)^{\sum_{j\in S_a}x_j},
+\qquad
+v(x)=(v_1(x),\ldots,v_m(x)).
+$$
+
+For copy $c=1,2$, the noisy state is modeled as
+$$
+|\psi_c\rangle
+=
+|\psi_{\epsilon_c,\delta_c}\rangle
+=
+\exp\left(i\sum_a(\phi_a+\delta_c^{(a)})Z_{S_a}\right)
+|\eta_{\epsilon_c}\rangle,
+$$
+with local preparation state
+$$
+|\eta_{\epsilon_c}\rangle
+=
+\bigotimes_{i=1}^n
+\left[
+\sin\left(\frac{\pi}{4}+\epsilon_c^{(i)}\right)|0\rangle
++
+\cos\left(\frac{\pi}{4}+\epsilon_c^{(i)}\right)|1\rangle
+\right].
+$$
+Equivalently,
+$$
+\sin\left(\frac{\pi}{4}+\epsilon\right)|0\rangle
++
+\cos\left(\frac{\pi}{4}+\epsilon\right)|1\rangle
+=
+\cos\epsilon\,|+\rangle+\sin\epsilon\,|-\rangle,
+$$
+so $\epsilon_i$ is the local angular deviation from $|+\rangle$.
+
+In the computational basis define
+$$
+A_\epsilon(x)=
+\prod_{i=1}^n
+\left[
+\sin\left(\frac{\pi}{4}+\epsilon_i\right)
+\right]^{1-x_i}
+\left[
+\cos\left(\frac{\pi}{4}+\epsilon_i\right)
+\right]^{x_i}.
+$$
+Then
+$$
+|\psi_{\epsilon,\delta}\rangle
+=
+\sum_x
+A_\epsilon(x)\,
+e^{i\phi^T v(x)}
+e^{i\delta^T v(x)}
+|x\rangle.
+$$
+There is no extra $2^{-n/2}$ in this expression: $A_0(x)=2^{-n/2}$ already.
+
+## Gaussian process origin of the noise
+
+The symbols $\epsilon_i$ and $\delta_a$ are effective integrated errors.  They need not be independent Gaussian variables.  A more physical model starts from a continuous-time classical Gaussian stochastic process $\xi(t)$, or from a vector process $\xi_\alpha(t)$ if several control channels contribute.  For a scalar process,
+$$
+\mathbb E[\xi(t)]=\mu_\xi(t),
+$$
+and
+$$
+\mathbb E[(\xi(t)-\mu_\xi(t))(\xi(t')-\mu_\xi(t'))]
+=C(t,t').
+$$
+If the process is stationary, $C(t,t')=C(t-t')$ and the spectrum is
+$$
+S(\omega)=\int_{-\infty}^{\infty}d\tau\,e^{i\omega\tau}C(\tau).
+$$
+
+The effective phase and preparation errors are linear filters of this process:
+$$
+\delta_c^{(a)}
+=
+\int dt\, f_c^{(a)}(t)\xi(t),
+\qquad
+\epsilon_c^{(i)}
+=
+\int dt\, g_c^{(i)}(t)\xi(t).
+$$
+Consequently they are jointly Gaussian.  For example,
+$$
+\mathbb E[\delta_c^{(a)}]
+=
+\int dt\,f_c^{(a)}(t)\mu_\xi(t),
+$$
+and
+$$
+\operatorname{Cov}(\delta_c^{(a)},\delta_d^{(b)})
+=
+\int dt\,dt'\,
+f_c^{(a)}(t)C(t,t')f_d^{(b)}(t').
+$$
+The same formula with $g$ filters gives preparation-noise covariance, and mixed $f$-$g$ filters give preparation-phase covariance.
+
+The filter functions are experimentally meaningful.  If a gate $e^{i\phi_a Z_{S_a}}$ is applied during $[T_a,T_a+\tau_a]$ and the noise Hamiltonian is $\xi(t)Z_{S_a}$, then the simplest sensitivity function is
+$$
+f_a(t)=
+\begin{cases}
+1,& t\in[T_a,T_a+\tau_a],\\
+0,&\text{otherwise}.
+\end{cases}
+$$
+Pulse shaping replaces this indicator by an envelope, and echo or sign-reversal sequences allow $f_a(t)$ to take both signs.
+
+Three limits are useful:
+
+- White noise: $C(t,t')=\gamma\delta(t-t')$, so
+$$
+\operatorname{Cov}(\delta_a,\delta_b)=\gamma\int dt\,f_a(t)f_b(t).
+$$
+Non-overlapping gates are then uncorrelated.
+
+- Quasi-static noise: $\xi(t)=X$ during one shot, with $X\sim\mathcal N(0,\sigma^2)$.  Then
+$$
+\delta_a=X\int dt\,f_a(t),
+$$
+so all gates in the same shot are correlated.  If two copies share the same $X$, Bell purity is insensitive to this common-mode phase drift.
+
+- Ornstein-Uhlenbeck colored noise:
+$$
+C(t-t')=\sigma^2e^{-|t-t'|/\tau_c}.
+$$
+If copy 2 is delayed by $\Delta$ and the filter shapes match, then typically
+$$
+K(\Delta)\approx \Sigma e^{-|\Delta|/\tau_c},
+\qquad
+\rho_\phi(\Delta)\approx e^{-|\Delta|/\tau_c}.
+$$
+This is the basic reason a two-copy delay sweep can measure noise correlations.
+
+# State-level quantities
+
+::: {#def-state-quantities .callout-note icon="false"}
+## State-level fidelity and Bell overlap
+
+The target fidelity is
+$$
+F
+=
+\mathbb E_{\epsilon,\delta}
+\left[
+|\langle\psi_0|\psi_{\epsilon,\delta}\rangle|^2
+\right]
+=
+\langle\psi_0|\bar\rho|\psi_0\rangle,
+$$
+where
+$$
+\bar\rho
+=
+\mathbb E_{\epsilon,\delta}
+\left[
+|\psi_{\epsilon,\delta}\rangle\langle\psi_{\epsilon,\delta}|
+\right].
+$$
+
+The ideal Bell-sampling parity estimator measures
+$$
+P_{12}
+=
+\mathbb E_{\rm joint}
+\left[
+|\langle\psi_{\epsilon^{(1)},\delta^{(1)}}|
+\psi_{\epsilon^{(2)},\delta^{(2)}}\rangle|^2
+\right].
+$$
+If the two copies are independent and identically distributed, then
+$$
+P_{12}=\operatorname{tr}(\bar\rho^2).
+$$
+If the two copies are correlated, $P_{12}$ is not the single-copy purity; it is a two-copy reproducibility measure.
+:::
+
+The Bell measurement identity is the SWAP test written in the Bell basis.  On one qubit pair,
+$$
+\mathsf S
+=
+|\sigma_{00}\rangle\!\langle\sigma_{00}|
++
+|\sigma_{01}\rangle\!\langle\sigma_{01}|
++
+|\sigma_{10}\rangle\!\langle\sigma_{10}|
+-
+|\sigma_{11}\rangle\!\langle\sigma_{11}|.
+$$
+Thus for Bell label string $r$, with $N_Y(r)$ the number of $\sigma_{11}$ outcomes,
+$$
+s_r=(-1)^{N_Y(r)}
+$$
+satisfies
+$$
+\sum_r s_r p_{\rm Bell}(r)
+=
+\operatorname{tr}[(\rho_1\otimes\rho_2)\mathsf S^{\otimes n}]
+=
+\operatorname{tr}(\rho_1\rho_2).
+$$
+
+# Exact Gaussian characteristic-function formulas
+
+For fixed $\epsilon,\delta$,
+$$
+\langle\psi_0|\psi_{\epsilon,\delta}\rangle
+=
+2^{-n/2}\sum_x
+A_\epsilon(x)e^{i\delta^T v(x)},
+$$
+so
+$$
+|\langle\psi_0|\psi_{\epsilon,\delta}\rangle|^2
+=
+2^{-n}
+\sum_{x,y}
+A_\epsilon(x)A_\epsilon(y)
+e^{i\delta^T[v(x)-v(y)]}.
+$$
+Similarly,
+$$
+|\langle\psi_1|\psi_2\rangle|^2
+=
+\sum_{x,y}
+A_{\epsilon^{(1)}}(x)A_{\epsilon^{(2)}}(x)
+A_{\epsilon^{(1)}}(y)A_{\epsilon^{(2)}}(y)
+e^{i(\delta^{(2)}-\delta^{(1)})^T[v(x)-v(y)]}.
+$$
+
+If $X\sim\mathcal N(\mu,\Sigma)$, then for any vector $w$,
+$$
+\mathbb E[e^{iX^T w}]
+=
+\exp\left(i\mu^T w-\frac12 w^T\Sigma w\right).
+$$
+This gives the exact formulas below whenever phase noise is independent of preparation noise, or after replacing $\mu,\Sigma$ by conditional Gaussian parameters.
+
+::: {#lem-exact-gaussian .callout-important icon="false"}
+## Exact Gaussian phase average
+
+Assume $\delta\sim\mathcal N(\mu,\Sigma)$.  Then
+$$
+F
+=
+\mathbb E_{\epsilon}
+\left[
+2^{-n}
+\sum_{x,y}
+A_\epsilon(x)A_\epsilon(y)
+\exp\left(
+i\mu^T[v(x)-v(y)]
+-\frac12 [v(x)-v(y)]^T\Sigma[v(x)-v(y)]
+\right)
+\right].
+$$
+
+For two copies define
+$$
+\mu_\Delta=\mu^{(2)}-\mu^{(1)}
+$$
+and
+$$
+\Sigma_\Delta
+=
+\Sigma^{(1)}+\Sigma^{(2)}-K-K^T,
+$$
+where
+$$
+K
+=
+\mathbb E[
+(\delta^{(1)}-\mu^{(1)})
+(\delta^{(2)}-\mu^{(2)})^T
+].
+$$
+Then
+$$
+\begin{aligned}
+P_{12}
+&=
+\mathbb E_{\epsilon^{(1)},\epsilon^{(2)}}
+\left[
+\sum_{x,y}
+A_{\epsilon^{(1)}}(x)A_{\epsilon^{(2)}}(x)
+A_{\epsilon^{(1)}}(y)A_{\epsilon^{(2)}}(y)
+\right.\\
+&\qquad\qquad\left.
+\times
+\exp\left(
+i\mu_\Delta^T[v(x)-v(y)]
+-\frac12 [v(x)-v(y)]^T
+\Sigma_\Delta
+[v(x)-v(y)]
+\right)
+\right].
+\end{aligned}
+$$
+:::
+
+If preparation and phase errors are generated by the same Gaussian process, they may be correlated.  The exact formula remains Gaussian but must be written conditionally.  For instance, let $\eta$ collect all preparation errors and suppose
+$$
+\begin{pmatrix}
+\eta\\
+\delta
+\end{pmatrix}
+\sim
+\mathcal N
+\left(
+\begin{pmatrix}\bar\eta\\ \mu\end{pmatrix},
+\begin{pmatrix}
+\Gamma & C_{\eta\delta}\\
+C_{\delta\eta} & \Sigma
+\end{pmatrix}
+\right).
+$$
+Then
+$$
+\delta\mid \eta=e
+\sim
+\mathcal N(\mu_{\delta|e},\Sigma_{\delta|\eta}),
+$$
+with
+$$
+\mu_{\delta|e}
+=
+\mu+C_{\delta\eta}\Gamma^+(e-\bar\eta),
+$$
+and
+$$
+\Sigma_{\delta|\eta}
+=
+\Sigma-C_{\delta\eta}\Gamma^+C_{\eta\delta},
+$$
+where $\Gamma^+$ is the Moore-Penrose inverse.  The first formula in @lem-exact-gaussian then holds with $\mu,\Sigma$ replaced by $\mu_{\delta|\epsilon},\Sigma_{\delta|\epsilon}$ inside the $\epsilon$ average.  The two-copy expression is analogous with $\eta=(\epsilon^{(1)},\epsilon^{(2)})$ and $\delta$ replaced by $\delta^{(2)}-\delta^{(1)}$.
+
+# Small-noise log-asymptotics
+
+The exponential formulas used in experiments are not exact identities.  They are the second-order logarithmic asymptotics obtained by scaling all error amplitudes by $\lambda\to0$:
+$$
+\epsilon\mapsto\lambda\epsilon,\qquad
+\delta\mapsto\lambda\delta.
+$$
+
+::: {#lem-state-expansion .callout-important icon="false"}
+## A second-order state-overlap lemma
+
+Let
+$$
+|\psi(\lambda)\rangle
+=
+|\Omega\rangle+\lambda|u\rangle+O(\lambda^2),
+\qquad
+\langle\psi(\lambda)|\psi(\lambda)\rangle=1.
+$$
+Define
+$$
+|u_\perp\rangle
+=
+(I-|\Omega\rangle\langle\Omega|)|u\rangle.
+$$
+Then
+$$
+|\langle\Omega|\psi(\lambda)\rangle|^2
+=
+1-\lambda^2\|u_\perp\|^2+O(\lambda^3).
+$$
+For two normalized families
+$$
+|\psi_c(\lambda)\rangle
+=
+|\Omega\rangle+\lambda|u_c\rangle+O(\lambda^2),
+\qquad c=1,2,
+$$
+one has
+$$
+|\langle\psi_1(\lambda)|\psi_2(\lambda)\rangle|^2
+=
+1-\lambda^2\|u_{1,\perp}-u_{2,\perp}\|^2+O(\lambda^3).
+$$
+:::
+
+:::{.callout-note collapse="true"}
+## Proof
+
+Write
+$$
+|\psi(\lambda)\rangle
+=
+|\Omega\rangle+\lambda|u\rangle+\lambda^2|v\rangle+O(\lambda^3).
+$$
+Normalization gives
+$$
+2\operatorname{Re}\langle\Omega|u\rangle=0
+$$
+and
+$$
+2\operatorname{Re}\langle\Omega|v\rangle+\langle u|u\rangle=0.
+$$
+Therefore
+$$
+\begin{aligned}
+|\langle\Omega|\psi(\lambda)\rangle|^2
+&=
+1+\lambda^2
+\left(
+|\langle\Omega|u\rangle|^2
++2\operatorname{Re}\langle\Omega|v\rangle
+\right)
++O(\lambda^3)\\
+&=
+1-\lambda^2
+\left(
+\langle u|u\rangle-|\langle\Omega|u\rangle|^2
+\right)
++O(\lambda^3)\\
+&=
+1-\lambda^2\|u_\perp\|^2+O(\lambda^3).
+\end{aligned}
+$$
+The two-copy formula follows by expanding the overlap between the two families and applying the same normalization constraints to both copies.
+:::
+
+Since $U_\phi$ commutes with all $Z_{S_a}$, it can be removed from the overlap calculations.  Define
+$$
+A_\epsilon=\sum_i\epsilon_i Z_i,
+\qquad
+B_\delta=\sum_a\delta_a Z_{S_a}.
+$$
+The preparation operator satisfies
+$$
+\prod_i(\cos(\lambda\epsilon_i)I+\sin(\lambda\epsilon_i)Z_i)
+=
+I+\lambda A_\epsilon+O(\lambda^2),
+$$
+and
+$$
+e^{iB_{\lambda\delta}}
+=
+I+i\lambda B_\delta+O(\lambda^2).
+$$
+Thus
+$$
+|\psi_{\epsilon,\delta}(\lambda)\rangle
+=
+|\Omega\rangle
++\lambda(A_\epsilon+iB_\delta)|\Omega\rangle
++O(\lambda^2).
+$$
+
+The phase covariance matrix of the IQP $Z$ strings is
+$$
+G_{ab}
+=
+\langle Z_{S_a}Z_{S_b}\rangle_{\psi_0}
+-
+\langle Z_{S_a}\rangle_{\psi_0}
+\langle Z_{S_b}\rangle_{\psi_0}.
+$$
+Equivalently, because $U_\phi$ is diagonal in the same $Z$ basis,
+$$
+G_{ab}
+=
+\langle\Omega|Z_{S_a}Z_{S_b}|\Omega\rangle
+-
+\langle\Omega|Z_{S_a}|\Omega\rangle
+\langle\Omega|Z_{S_b}|\Omega\rangle.
+$$
+
+::: {#thm-small-noise .callout-important icon="false"}
+## Purity-fidelity correspondence in the small-noise limit
+
+Let every error amplitude be scaled by $\lambda$.  Then
+$$
+-\log F_\lambda
+=
+\lambda^2(\chi_{\rm prep}+\chi_\phi)+o(\lambda^2),
+$$
+and
+$$
+-\log P_{12,\lambda}
+=
+\lambda^2(\chi_{\rm prep}^{\Delta}+\chi_\phi^\Delta)+o(\lambda^2).
+$$
+
+The single-copy contributions are
+$$
+\chi_{\rm prep}
+=
+\sum_i\mathbb E[\epsilon_i^2],
+$$
+and
+$$
+\chi_\phi
+=
+\operatorname{Tr}(G\Sigma)+\mu^TG\mu,
+$$
+where $\mu=\mathbb E[\delta]$ and $\Sigma=\operatorname{Cov}(\delta)$.
+
+The two-copy mismatch contributions are
+$$
+\chi_{\rm prep}^{\Delta}
+=
+\sum_i
+\mathbb E[
+(\epsilon_i^{(1)}-\epsilon_i^{(2)})^2
+],
+$$
+and
+$$
+\chi_\phi^\Delta
+=
+\operatorname{Tr}
+\left[
+G(\Sigma^{(1)}+\Sigma^{(2)}-K-K^T)
+\right]
++
+\mu_\Delta^TG\mu_\Delta,
+$$
+where
+$$
+\mu_\Delta=\mu^{(2)}-\mu^{(1)}.
+$$
+Hence, to second order,
+$$
+F\approx\exp[-\chi_{\rm prep}-\chi_\phi],
+\qquad
+P_{12}\approx
+\exp[-\chi_{\rm prep}^{\Delta}-\chi_\phi^\Delta].
+$$
+:::
+
+:::{.callout-note collapse="true"}
+## Proof
+
+For one copy, @lem-state-expansion gives the loss
+$$
+\|(A_\epsilon+iB_\delta)_\perp|\Omega\rangle\|^2.
+$$
+Since $A_\epsilon$ and $B_\delta$ are real linear combinations of commuting $Z$ strings, the preparation-phase cross term is purely imaginary after multiplication by $i$ and contributes zero to the real norm.  Thus
+$$
+\|(A_\epsilon+iB_\delta)_\perp|\Omega\rangle\|^2
+=
+\|A_\epsilon|\Omega\rangle\|^2
++
+\|(B_\delta-\langle B_\delta\rangle)|\Omega\rangle\|^2.
+$$
+The preparation term is
+$$
+\|A_\epsilon|\Omega\rangle\|^2
+=
+\sum_{i,j}\epsilon_i\epsilon_j
+\langle\Omega|Z_iZ_j|\Omega\rangle
+=
+\sum_i\epsilon_i^2.
+$$
+The phase term is
+$$
+\|(B_\delta-\langle B_\delta\rangle)|\Omega\rangle\|^2
+=
+\langle B_\delta^2\rangle-\langle B_\delta\rangle^2
+=
+\delta^TG\delta.
+$$
+Therefore, for fixed errors,
+$$
+|\langle\psi_0|\psi_{\epsilon,\delta}(\lambda)\rangle|^2
+=
+1-\lambda^2
+\left(
+\sum_i\epsilon_i^2+\delta^TG\delta
+\right)
++O(\lambda^3).
+$$
+Averaging and using
+$$
+\mathbb E[\delta^TG\delta]
+=
+\operatorname{Tr}(G\Sigma)+\mu^TG\mu
+$$
+gives the fidelity expansion.  Since $-\log(1-\lambda^2 a+o(\lambda^2))=\lambda^2a+o(\lambda^2)$, the logarithmic form follows.
+
+For two copies,
+$$
+u_{1,\perp}-u_{2,\perp}
+=
+A_{\epsilon^{(1)}-\epsilon^{(2)}}|\Omega\rangle
++
+i\left(
+B_{\delta^{(1)}-\delta^{(2)}}
+-
+\langle B_{\delta^{(1)}-\delta^{(2)}}\rangle
+\right)|\Omega\rangle.
+$$
+Again the cross term has zero real part, so the fixed-error loss is
+$$
+\sum_i(\epsilon_i^{(1)}-\epsilon_i^{(2)})^2
++
+(\delta^{(1)}-\delta^{(2)})^T
+G
+(\delta^{(1)}-\delta^{(2)}).
+$$
+The covariance of $\delta^{(2)}-\delta^{(1)}$ is
+$$
+\Sigma^{(1)}+\Sigma^{(2)}-K-K^T,
+$$
+and its mean is $\mu_\Delta=\mu^{(2)}-\mu^{(1)}$.  This gives $\chi_\phi^\Delta$ and the logarithmic expansion for $P_{12,\lambda}$.
+:::
+
+## When is $G=I$?
+
+For $|\Omega\rangle=|+\rangle^{\otimes n}$,
+$$
+\langle\Omega|Z_S|\Omega\rangle=0
+$$
+for every nonempty $S$.  Moreover,
+$$
+\langle\Omega|Z_{S_a}Z_{S_b}|\Omega\rangle
+=
+\langle\Omega|Z_{S_a\triangle S_b}|\Omega\rangle
+=
+\begin{cases}
+1,&S_a=S_b,\\
+0,&S_a\ne S_b,
+\end{cases}
+$$
+provided both strings are nonempty.  Therefore, if the circuit contains distinct nontrivial $Z$ strings, then
+$$
+G_{ab}=\delta_{ab}.
+$$
+If the same $Z_S$ string appears multiple times, $G$ has an all-ones block on the repeated entries.  Such repeated phase terms should be merged into one effective phase angle before applying the diagonal $G=I$ simplification.  Empty strings represent global phases and give zero rows and columns in $G$.
+
+# Effective two-copy correlations
+
+Assume for this subsection that the two copies have identical single-copy error strength:
+$$
+\chi_{\rm prep}^{(1)}=\chi_{\rm prep}^{(2)}=\chi_{\rm prep},
+\qquad
+\chi_\phi^{(1)}=\chi_\phi^{(2)}=\chi_\phi.
+$$
+Define
+$$
+\rho_{\rm prep}
+=
+1-\frac{\chi_{\rm prep}^{\Delta}}{2\chi_{\rm prep}},
+\qquad
+\rho_\phi
+=
+1-\frac{\chi_\phi^\Delta}{2\chi_\phi}.
+$$
+Then
+$$
+P_{12}
+\approx
+\exp[
+-2(1-\rho_{\rm prep})\chi_{\rm prep}
+-2(1-\rho_\phi)\chi_\phi
+].
+$$
+By comparison,
+$$
+F\approx\exp[-\chi_{\rm prep}-\chi_\phi].
+$$
+
+Thus
+$$
+F_{\rm root}:=\sqrt{P_{12}}
+$$
+is reliable only when
+$$
+\rho_{\rm prep}\approx 0,
+\qquad
+\rho_\phi\approx 0.
+$$
+If either correlation is positive, $\sqrt{P_{12}}$ systematically overestimates the target fidelity.  In the extreme common-mode case
+$$
+\epsilon^{(1)}\approx\epsilon^{(2)},
+\qquad
+\delta^{(1)}\approx\delta^{(2)},
+$$
+one can have $P_{12}\approx1$ while $F\ll1$.
+
+For a single effective correlation coefficient $\rho_{\rm eff}$,
+$$
+P_{12}\approx F^{2(1-\rho_{\rm eff})}.
+$$
+Therefore
+$$
+F\approx P_{12}^{1/[2(1-\rho_{\rm eff})]},
+$$
+not $\sqrt{P_{12}}$, unless $\rho_{\rm eff}=0$.
+
+# Measurement error and statistical error
+
+Let $p_{\rm Bell}$ be the ideal Bell-label distribution and let $p_{\rm obs}$ be the observed distribution after readout noise.  Model readout by a classical confusion matrix
+$$
+p_{\rm obs}=Rp_{\rm Bell}.
+$$
+The ideal parity vector is
+$$
+s_r=(-1)^{N_Y(r)}.
+$$
+The raw estimator is
+$$
+P_{\rm raw}=s^Tp_{\rm obs}=s^TRp_{\rm Bell}.
+$$
+In general,
+$$
+P_{\rm raw}\ne P_{12}.
+$$
+Only in special symmetric readout models does readout produce a scalar attenuation of the ideal parity.
+
+If $R$ is calibrated and invertible, an unbiased corrected estimator is
+$$
+P_{\rm corr}
+=
+(R^{-T}s)^Tp_{\rm obs}.
+$$
+Indeed,
+$$
+\mathbb E[P_{\rm corr}]
+=
+(R^{-T}s)^TRp_{\rm Bell}
+=
+s^Tp_{\rm Bell}
+=
+P_{12}.
+$$
+If $R$ is ill-conditioned, one should report the regularization or truncation used, because the inverse estimator can have large variance.
+
+For $M$ ideal Bell shots, the simple parity estimator
+$$
+\hat P=\frac1M\sum_{\ell=1}^M s_{r_\ell}
+$$
+has
+$$
+\operatorname{Var}(\hat P)
+=
+\frac{1-P_{12}^2}{M}.
+$$
+For corrected readout, let
+$$
+w=R^{-T}s.
+$$
+The single-shot score is $w_r$ for observed Bell label $r$, and
+$$
+\hat P_{\rm corr}
+=
+\frac1M\sum_{\ell=1}^M w_{r_\ell}.
+$$
+Its variance is
+$$
+\operatorname{Var}(\hat P_{\rm corr})
+=
+\frac{1}{M}
+\left(
+\sum_r p_{\rm obs}(r)w_r^2
+-
+P_{12}^2
+\right).
+$$
+Thus readout correction is unbiased but can amplify shot noise.  This variance should be propagated through
+$$
+F_{\rm root}=\sqrt{P_{\rm corr}}
+$$
+or through any model-corrected fidelity estimator.
+
+# Experimental extraction of the error parameters
+
+The state-level theory gives the relation between $F$ and $P_{12}$ once the noise strengths and two-copy correlations are known.  An experiment must therefore estimate the readout correction, the preparation contribution, and the phase-noise decorrelation curve.
+
+## 1. Readout calibration
+
+Prepare known Bell-label states and estimate the Bell-label confusion matrix $R$.  For large $n$, a full $4^n\times4^n$ matrix is impractical; then one must assume and test a local or low-order factorization of $R$.  All fidelity comparisons should use
+$$
+P_{\rm corr}=(R^{-T}s)^Tp_{\rm obs},
+$$
+not $P_{\rm raw}$.
+
+## 2. Preparation-only calibration
+
+Run the preparation circuit with no IQP phase gates.  For one qubit,
+$$
+|+_\epsilon\rangle
+=
+\cos\epsilon\,|+\rangle+\sin\epsilon\,|-\rangle,
+$$
+so
+$$
+\langle X\rangle_\epsilon=\cos(2\epsilon),
+\qquad
+\langle Z\rangle_\epsilon=\sin(2\epsilon).
+$$
+For small random preparation error,
+$$
+\mathbb E[\epsilon_i^2]
+\approx
+\frac{1-\langle X_i\rangle}{2},
+$$
+and
+$$
+\mathbb E[\epsilon_i]
+\approx
+\frac{\langle Z_i\rangle}{2}.
+$$
+Therefore
+$$
+\chi_{\rm prep}
+\approx
+\frac12\sum_i(1-\langle X_i\rangle).
+$$
+
+Now perform a Bell measurement on two preparation-only copies separated by delay $\Delta t$.  The exact single-qubit overlap is
+$$
+|\langle +_{\epsilon_i^{(1)}}|+_{\epsilon_i^{(2)}}\rangle|^2
+=
+\cos^2(\epsilon_i^{(1)}-\epsilon_i^{(2)}).
+$$
+Hence
+$$
+P_{\rm prep}^{12}(\Delta t)
+=
+\mathbb E
+\left[
+\prod_i
+\cos^2(\epsilon_i^{(1)}-\epsilon_i^{(2)})
+\right],
+$$
+and in the small-noise limit,
+$$
+-\log P_{\rm prep}^{12}(\Delta t)
+\approx
+\chi_{\rm prep}^{\Delta}(\Delta t).
+$$
+The effective preparation correlation is then
+$$
+\rho_{\rm prep}(\Delta t)
+\approx
+1-
+\frac{
+-\log P_{\rm prep}^{12}(\Delta t)
+}{
+2\chi_{\rm prep}
+}.
+$$
+
+This calibration is essential because fixed spatial inhomogeneity is invisible to same-shot Bell overlap:
+$$
+\epsilon_i^{(1)}=\epsilon_i^{(2)}=\epsilon_i
+\quad\Longrightarrow\quad
+P_{\rm prep}^{12}=1,
+$$
+while
+$$
+F_{\rm prep}
+=
+\prod_i\cos^2\epsilon_i
+\approx
+\exp\left[-\sum_i\epsilon_i^2\right].
+$$
+
+## 3. Full IQP Bell delay sweep
+
+Run the full IQP circuit and measure the corrected Bell overlap
+$$
+P_{\rm IQP}^{12}(\Delta t)
+$$
+for several two-copy delays.  Subtract the preparation-only contribution at the same delay:
+$$
+L_\phi(\Delta t)
+=
+-\log P_{\rm IQP}^{12}(\Delta t)
++
+\log P_{\rm prep}^{12}(\Delta t).
+$$
+Then
+$$
+L_\phi(\Delta t)
+\approx
+\chi_\phi^\Delta(\Delta t).
+$$
+
+If a large delay $\Delta t_\infty$ is available such that the phase noise in the two copies is decorrelated, then
+$$
+L_\phi(\Delta t_\infty)
+\approx
+2\chi_\phi.
+$$
+Thus
+$$
+\rho_\phi(\Delta t)
+\approx
+1-\frac{L_\phi(\Delta t)}{L_\phi(\Delta t_\infty)}.
+$$
+If such a delay is unavailable, use independent randomized compiling, independent phase cycling, or an equivalent control-randomization protocol to construct a decorrelated reference.
+
+## 4. Model-corrected fidelity
+
+The model-corrected target fidelity is
+$$
+F_{\rm model}
+=
+\exp[-\chi_{\rm prep}-\chi_\phi].
+$$
+Using the decorrelated delay-sweep reference,
+$$
+\chi_\phi
+\approx
+\frac12 L_\phi(\Delta t_\infty),
+$$
+so
+$$
+F_{\rm model}
+\approx
+\exp
+\left[
+-\chi_{\rm prep}
+-\frac12L_\phi(\Delta t_\infty)
+\right].
+$$
+The simultaneous-copy Bell value
+$$
+P_{\rm IQP}^{12}(0)
+$$
+should be reported as a reproducibility metric.  It becomes a fidelity proxy only after the two-copy correlations have been shown to be negligible or after the correlation correction has been applied.
+
+# Reporting checklist
+
+A complete experimental error analysis should report:
+$$
+P_{\rm raw}(0),
+\qquad
+P_{\rm corr}(0),
+\qquad
+P_{\rm prep}^{12}(0),
+\qquad
+P_{\rm IQP}^{12}(0),
+$$
+and, when a decorrelating delay or randomized reference is available,
+$$
+P_{\rm prep}^{12}(\Delta t_\infty),
+\qquad
+P_{\rm IQP}^{12}(\Delta t_\infty).
+$$
+It should also report
+$$
+\chi_{\rm prep},
+\qquad
+\chi_\phi,
+\qquad
+\rho_{\rm prep},
+\qquad
+\rho_\phi,
+$$
+with the method used to estimate each one.  The final fidelity-related quantities should be separated:
+$$
+F_{\rm root}=\sqrt{P_{\rm corr}(0)},
+\qquad
+F_{\rm model}=\exp[-\chi_{\rm prep}-\chi_\phi].
+$$
+
+If
+$$
+F_{\rm root}\gg F_{\rm model},
+$$
+then Bell purity is mostly detecting two-copy reproducibility rather than target-state fidelity.  If
+$$
+F_{\rm root}\approx F_{\rm model},
+$$
+then the two-copy noise is close to independent, and Bell purity can be used as a reliable fidelity proxy within the small-noise regime.
+
+# Assumptions and failure modes
+
+This analysis assumes:
+
+1. The dominant preparation error is a small local deviation from $|+\rangle$.
+2. The dominant IQP gate error is diagonal phase noise.
+3. The integrated phase errors are approximately Gaussian, or at least have a valid second-order cumulant expansion.
+4. Measurement error can be calibrated by a classical Bell-label confusion matrix.
+5. Non-diagonal coherent errors, leakage, and crosstalk are either negligible or randomized into an effective stochastic model.
+
+The main failure mode is common-mode coherent noise:
+$$
+\epsilon^{(1)}\approx\epsilon^{(2)}
+\quad\text{or}\quad
+\delta^{(1)}\approx\delta^{(2)}.
+$$
+Then
+$$
+P_{12}\approx1
+$$
+can hold even when
+$$
+F\ll1.
+$$
+A high Bell purity alone therefore does not certify high IQP target fidelity unless the two-copy noise correlation has been measured or suppressed.

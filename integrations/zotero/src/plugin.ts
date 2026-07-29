@@ -31,6 +31,20 @@ import {
   WorkbenchTabManager,
   type WorkbenchTabData,
 } from "./workbench-tab";
+import {
+  createResearchLoopSiteRuntime,
+  ResearchLoopSiteService,
+} from "./research-loop-site";
+import { createQmdRenderRuntime, QmdRenderService } from "./qmd-render";
+import { QmdWorkspaceView } from "./qmd-workspace";
+import { buildQmdIndex, geckoScanner } from "./qmd-index";
+import {
+  createExternalEditorRuntime,
+  installedEditors,
+  openInExternalEditor,
+  preferredEditor,
+  type ExternalEditorApp,
+} from "./external-editor";
 import { TerminalPanel, type TerminalPaperOptions } from "./terminal-panel";
 import { loadSettings, saveQLabRoot, type ZoteroChatSettings } from "./settings";
 import {
@@ -45,6 +59,10 @@ import {
   normalizeQLabRoot,
 } from "./qlab-workspace";
 import { QLabLiteratureService } from "./qlab-library";
+import {
+  createQLabZoteroSyncRuntime,
+  QLabZoteroSyncService,
+} from "./qlab-zotero-sync";
 import { defaultSelectableModel } from "./model-menu";
 import { shouldAutoOpenFloat } from "./plugin-helpers";
 import {
@@ -101,9 +119,12 @@ export class ZoteroChatPlugin {
   private settings!: ZoteroChatSettings;
   private readerContext!: ReaderContextService;
   private bridge!: NativeBridge;
+  private mainSite!: ResearchLoopSiteService;
+  private qmdRender!: QmdRenderService;
   private terminal!: TerminalPanel;
   private codex!: CodexService;
   private literature!: QLabLiteratureService;
+  private zoteroSync!: QLabZoteroSyncService;
   private mutations!: ZoteroMutationService;
   private paperTrail!: PaperTrailService;
   private noting!: NotingService;
@@ -174,9 +195,13 @@ export class ZoteroChatPlugin {
     this.workbenchTabs = new WorkbenchTabManager({
       createView: (host, win, tabID) => this.createWorkbenchView(host, win, tabID),
       openNewWindow: (source) => this.openWorkbenchWindow(source),
+      onMoveError: (error) => this.reportError(error),
     });
     this.bridge = new NativeBridge(data.rootURI, data.version);
+    this.mainSite = new ResearchLoopSiteService(createResearchLoopSiteRuntime(this.bridge));
+    this.qmdRender = new QmdRenderService(createQmdRenderRuntime(this.bridge));
     this.literature = new QLabLiteratureService();
+    this.zoteroSync = new QLabZoteroSyncService(createQLabZoteroSyncRuntime(this.bridge));
     this.terminal = new TerminalPanel(this.bridge, this.settings.terminalHeight, {
       onPasteSelection: () => void this.pasteSelectionToTerminal(),
       onRefreshContext: () => void this.refreshAndSwitch().catch((error) => this.reportError(error)),
@@ -204,7 +229,7 @@ export class ZoteroChatPlugin {
         onError: (error) => this.reportError(error),
         onFallbackRequested: (error) => {
           this.chatPhase = "unavailable";
-          this.chatError = `${error.message}。你仍可从顶部打开高级 Terminal。`;
+          this.chatError = `${error.message}. You can still open the Advanced Terminal from the top bar.`;
           this.renderChatViews();
         },
       },
@@ -223,7 +248,7 @@ export class ZoteroChatPlugin {
         // full-transcript annotation comment (see paper-trail.ts's
         // transcriptExchangesFor). No LLM round-trip on the write path
         // anymore: the old `summarize()` callback (a 10s-capped
-        // runUtilityTurn call feeding the deprecated "Q + 要点" comment
+        // runUtilityTurn call feeding the deprecated "Q + summary" comment
         // format) is gone -- answerSummary is now the free, synchronous
         // summaryFallback() digest instead.
         readThreadTurns: (threadId) => this.codex.readThreadTurns(threadId),
@@ -451,7 +476,7 @@ export class ZoteroChatPlugin {
         }
       },
     });
-    if (!paneID) throw new Error("无法注册 Zotkit 侧栏");
+    if (!paneID) throw new Error("Unable to register the Zotkit sidebar");
     this.registeredPaneID = paneID;
   }
 
@@ -461,7 +486,7 @@ export class ZoteroChatPlugin {
       this.installShortcutHandler(doc.defaultView);
       const button = doc.createElement("button");
       button.type = "button";
-      button.title = "打开 QLab Local Codex（⌘I）";
+      button.title = "Open QLab Local Codex (⌘I)";
       button.setAttribute("aria-label", button.title);
       button.style.cssText = "display:grid;place-items:center;width:32px;height:32px;border:0;border-radius:8px;background:transparent;cursor:pointer;padding:5px";
       const icon = doc.createElement("img");
@@ -703,8 +728,8 @@ export class ZoteroChatPlugin {
     view = new SidebarView(body, {
       onSend: (text) => void this.sendChat(text).catch((error) => this.reportError(error)),
       onStop: () => void this.codex.interrupt().catch((error) => this.reportError(error)),
-      onNewThread: () => void this.newChat().catch((error) => this.reportError(error)),
-      onSelectThread: (threadID) => void this.codex.switchThread(threadID).catch((error) => this.reportError(error)),
+      onNewThread: () => void this.newChat(view!).catch((error) => this.reportError(error)),
+      onSelectThread: (threadID) => void this.selectThread(view!, threadID),
       onDeleteThread: (threadID) => void this.codex.deleteThread(threadID).catch((error) => this.reportError(error)),
       onLogin: () => void this.codex.login().catch((error) => this.reportError(error)),
       onLogout: () => void this.codex.logout().catch((error) => this.reportError(error)),
@@ -716,9 +741,6 @@ export class ZoteroChatPlugin {
       onChooseQLabRoot: () => {
         void this.chooseQLabRoot(body.ownerDocument.defaultView || undefined)
           .catch((error) => this.reportError(error));
-      },
-      onQLabCommand: (command) => {
-        void this.insertQLabCommand(view!, command).catch((error) => this.reportError(error));
       },
       onCaptureChatDraft: () => {
         void this.captureChatDraft().catch((error) => this.reportError(error));
@@ -735,7 +757,7 @@ export class ZoteroChatPlugin {
       },
       onApprovalDecision: (approvalID, decision) => {
         if (!this.codex.resolveApproval(approvalID, decision)) {
-          this.reportError(new Error("这个审批请求已经过期"));
+          this.reportError(new Error("This approval request has expired"));
         }
       },
       onRestoreCheckpoint: (checkpointID) => {
@@ -745,15 +767,6 @@ export class ZoteroChatPlugin {
         const context = this.context;
         if (!context) return;
         void this.paperTrail.resolveConsent(context, decision);
-      },
-      onAnchorJump: (anchorId) => {
-        const anchor = this.findAnchor(anchorId);
-        if (anchor) void this.jumpToAnchor(anchor).catch((error) => this.reportError(error));
-      },
-      onAnchorResolve: (anchorId) => {
-        const context = this.context;
-        if (!context) return;
-        void this.paperTrail.resolveAnchor(context, anchorId);
       },
       onNotingStart: () => { void this.noting.run(); },
       onNotingDecision: (decision) => { void this.noting.decide(decision); },
@@ -826,7 +839,7 @@ export class ZoteroChatPlugin {
     }
     catch (error) {
       const value = error instanceof Error ? error : new Error(String(error));
-      this.chatPhase = value.message.includes("未找到 Codex CLI") ? "unavailable" : "error";
+      this.chatPhase = value.message.includes("Codex CLI Not Found") ? "unavailable" : "error";
       this.chatError = value.message;
       throw value;
     }
@@ -843,7 +856,7 @@ export class ZoteroChatPlugin {
   private async sendChat(text: string): Promise<void> {
     if (!this.codex.state.connected) await this.ensureChatSession();
     if (!this.codex.isSignedIn()) {
-      throw new Error("请先使用 ChatGPT 登录本地 Codex");
+      throw new Error("Sign in to the local Codex with ChatGPT first");
     }
     this.chatPhase = "ready";
     const context = this.context;
@@ -854,13 +867,25 @@ export class ZoteroChatPlugin {
     }
   }
 
-  private async newChat(): Promise<void> {
+  private async newChat(preferredView?: SidebarView): Promise<void> {
     await this.openResearchChat(undefined, false);
     if (!this.codex.isSignedIn()) {
-      throw new Error("请先使用 ChatGPT 登录本地 Codex");
+      throw new Error("Sign in to the local Codex with ChatGPT first");
     }
     await this.codex.newThread();
-    this.activeWorkbenchEntry()?.view.focusComposer();
+    (preferredView || this.activeWorkbenchEntry()?.view)?.focusComposer();
+  }
+
+  private async selectThread(view: SidebarView, threadID: string): Promise<void> {
+    try {
+      await this.codex.switchThread(threadID);
+      this.chatError = "";
+      this.renderChatViews();
+      view.focusComposer();
+    }
+    catch (error) {
+      this.reportError(error);
+    }
   }
 
   private async openChatWithSelection(newThread: boolean): Promise<void> {
@@ -944,8 +969,8 @@ export class ZoteroChatPlugin {
     view = new SidebarView(host, {
       onSend: (text) => void this.sendChat(text).catch((error) => this.reportError(error)),
       onStop: () => void this.codex.interrupt().catch((error) => this.reportError(error)),
-      onNewThread: () => void this.newChat().catch((error) => this.reportError(error)),
-      onSelectThread: (threadID) => void this.codex.switchThread(threadID).catch((error) => this.reportError(error)),
+      onNewThread: () => void this.newChat(view).catch((error) => this.reportError(error)),
+      onSelectThread: (threadID) => void this.selectThread(view, threadID),
       onDeleteThread: (threadID) => void this.codex.deleteThread(threadID).catch((error) => this.reportError(error)),
       onLogin: () => void this.codex.login().catch((error) => this.reportError(error)),
       onLogout: () => void this.codex.logout().catch((error) => this.reportError(error)),
@@ -968,7 +993,7 @@ export class ZoteroChatPlugin {
       },
       onApprovalDecision: (approvalID, decision) => {
         if (!this.codex.resolveApproval(approvalID, decision)) {
-          this.reportError(new Error("这个审批请求已经过期"));
+          this.reportError(new Error("This approval request has expired"));
         }
       },
       onRestoreCheckpoint: (checkpointID) => {
@@ -978,23 +1003,12 @@ export class ZoteroChatPlugin {
         const context = this.context;
         if (context) void this.paperTrail.resolveConsent(context, decision);
       },
-      onAnchorJump: (anchorId) => {
-        const anchor = this.findAnchor(anchorId);
-        if (anchor) void this.jumpToAnchor(anchor).catch((error) => this.reportError(error));
-      },
-      onAnchorResolve: (anchorId) => {
-        const context = this.context;
-        if (context) void this.paperTrail.resolveAnchor(context, anchorId);
-      },
       onNotingStart: () => { void this.noting.run(); },
       onNotingDecision: (decision) => { void this.noting.decide(decision); },
       onNotingApply: (mode) => { void this.noting.apply(mode).catch(() => {}); },
       onNotingCancel: () => { this.noting.cancel(); },
       onChooseQLabRoot: () => {
         void this.chooseQLabRoot(win).catch((error) => this.reportError(error));
-      },
-      onQLabCommand: (command) => {
-        void this.insertQLabCommand(view, command).catch((error) => this.reportError(error));
       },
       onCaptureChatDraft: () => {
         void this.captureChatDraft().catch((error) => this.reportError(error));
@@ -1005,12 +1019,74 @@ export class ZoteroChatPlugin {
       onOpenPaper: () => {
         void this.openContextPDF().catch((error) => this.reportError(error));
       },
+      onCheckMainSite: () => this.mainSite.isAvailable(),
+      onDeployMainSite: async (onProgress) => {
+        let root = this.settings?.qlabRoot || "";
+        if (!root) root = await this.chooseQLabRoot(win) || "";
+        await this.mainSite.deploy(root, onProgress);
+      },
+      onOpenDocument: (relativePath) => void this.openQmdDocument(view, relativePath, win),
     }, { surface: "workbench" });
     return view;
   }
 
+  /**
+   * Previews one QMD, and offers to hand it to a real editor.
+   *
+   * The workspace is created on first use rather than with the sidebar,
+   * because most sessions never open one.
+   */
+  private async openQmdDocument(
+    sidebar: SidebarView,
+    relativePath: string,
+    win = Zotero.getMainWindow(),
+  ): Promise<void> {
+    let root = this.settings?.qlabRoot || "";
+    if (!root) root = await this.chooseQLabRoot(win) || "";
+    if (!root) return;
+
+    const workspace = sidebar.attachWorkspace((host: HTMLElement) => new QmdWorkspaceView(host, {
+      onBack: () => sidebar.setWorkspaceOpen(false),
+      renderService: this.qmdRender,
+      index: () => buildQmdIndex(geckoScanner, this.settings?.qlabRoot || ""),
+      editors: () => this.availableEditors(),
+      openExternally: (editor, path) => openInExternalEditor(
+        this.externalEditorRuntime(),
+        editor,
+        this.settings?.qlabRoot || "",
+        path,
+      ),
+      onEditorChosen: (editorId) => setPrefString("externalEditor", editorId),
+      onActiveDocument: (path) => this.codex.setActiveDocument(path ? { relativePath: path } : null),
+    }));
+    if (!workspace) return;
+    workspace.repoRootHint = root;
+    sidebar.setWorkspaceOpen(true);
+    await workspace.open(relativePath);
+  }
+
+  /** Spawns a launcher through the native bridge, with no shell in between. */
+  private externalEditorRuntime(): ReturnType<typeof createExternalEditorRuntime> {
+    return createExternalEditorRuntime(async (argv) => {
+      await this.bridge.start();
+      await this.bridge.spawnPipe(`open-editor-${Date.now()}`, {
+        argv: [...argv],
+        cwd: this.settings?.qlabRoot || "/",
+        env: { PATH: "/usr/bin:/bin:/usr/sbin:/sbin" },
+      });
+    });
+  }
+
+  /** The installed editors, with the remembered one first. */
+  private async availableEditors(): Promise<ExternalEditorApp[]> {
+    const installed = await installedEditors(this.externalEditorRuntime());
+    const remembered = preferredEditor(installed, prefString("externalEditor", ""));
+    if (!remembered) return installed;
+    return [remembered, ...installed.filter((editor) => editor.id !== remembered.id)];
+  }
+
   private async openWorkbenchTab(win = Zotero.getMainWindow()): Promise<void> {
-    if (!win) throw new Error("Zotero 主窗口不可用");
+    if (!win) throw new Error("The Zotero main window is unavailable");
     const selectedType = String(win.Zotero_Tabs?.selectedType || "");
     const selectedIsReader = this.isReaderTabType(selectedType);
     const existing = this.workbenchTabs.entries(win)[0];
@@ -1037,7 +1113,7 @@ export class ZoteroChatPlugin {
     const data: WorkbenchTabData = {
       ...(this.context?.attachment.id ? { itemID: this.context.attachment.id } : {}),
       icon: QLAB_WORKBENCH_TAB_ICON,
-      title: context ? `QLab · ${paperTitle(context)}` : "QLab 工作台",
+      title: context ? `QLab · ${paperTitle(context)}` : "QLab Workbench",
     };
     const entry = this.workbenchTabs.open(win, data);
     Zotero.Session?.debounceSave?.();
@@ -1070,7 +1146,7 @@ export class ZoteroChatPlugin {
     if (!selectedID) return;
 
     const selected = await Zotero.Items.getAsync(selectedID);
-    if (!selected) throw new Error("所选 Zotero 条目不存在");
+    if (!selected) throw new Error("The selected Zotero item does not exist");
     let attachment = selected;
     if (!selected.isPDFAttachment?.()) {
       attachment = selected.isRegularItem?.() ? await selected.getBestAttachment?.() : null;
@@ -1078,7 +1154,7 @@ export class ZoteroChatPlugin {
     const isPDF = Boolean(attachment?.isPDFAttachment?.())
       || attachment?.attachmentContentType === "application/pdf";
     if (!attachment?.id || !isPDF) {
-      throw new Error("这篇 Zotero 条目没有可阅读的 PDF 附件");
+      throw new Error("This Zotero item has no readable PDF attachment");
     }
 
     const opened = await Zotero.Reader.open(attachment.id, null, {
@@ -1109,7 +1185,7 @@ export class ZoteroChatPlugin {
     if (!accepted) {
       throw lastError instanceof Error
         ? lastError
-        : new Error("Zotero Reader 尚未准备好这篇论文，请稍后重试");
+        : new Error("Zotero Reader has not prepared this paper yet; try again shortly");
     }
 
     this.addedContextIDs.delete("current-selection");
@@ -1128,16 +1204,23 @@ export class ZoteroChatPlugin {
   private async openWorkbenchWindow(source: Window): Promise<Window> {
     const existing = new Set<Window>(Zotero.getMainWindows?.() || []);
     Zotero.openMainWindow?.();
-    for (let attempt = 0; attempt < 100; attempt++) {
+    for (let attempt = 0; attempt < 200; attempt++) {
       await new Promise<void>((resolve) => setTimeout(resolve, 50));
       const target = (Zotero.getMainWindows?.() || []).find(
         (candidate: Window) => candidate !== source && !existing.has(candidate) && !candidate.closed,
       );
       if (!target) continue;
+      // Window enumeration happens before Zotero has necessarily installed
+      // its native tab deck. Returning in that gap makes moveToNewWindow try
+      // Zotero_Tabs.add too early and silently strands an empty window.
+      if (!target.document?.documentElement || typeof target.Zotero_Tabs?.add !== "function") {
+        continue;
+      }
       if (!this.shortcutWindows.has(target)) await this.onMainWindowLoad(target);
+      if (typeof target.Zotero_Tabs?.add !== "function") continue;
       return target;
     }
-    throw new Error("无法创建新的 Zotero 窗口");
+    throw new Error("The new Zotero window could not prepare a native tab");
   }
 
   private async toggleFloatPanel(): Promise<void> {
@@ -1228,7 +1311,7 @@ export class ZoteroChatPlugin {
         running: this.codex.state.running,
         error: this.chatError || this.codex.state.fallbackReason || undefined,
         entries: latestExchange(this.codex.getChatEntries()),
-        paperTitle: context ? paperTitle(context) : "论文助手",
+        paperTitle: context ? paperTitle(context) : "Paper Assistant",
         models: this.codex.state.models,
         selectedModel: this.selectedModel,
         capabilities: {
@@ -1277,7 +1360,7 @@ export class ZoteroChatPlugin {
     } : null;
     const conversationCheckpoints: CheckpointOption[] = this.codex.getCheckpoints().map((checkpoint) => ({
       id: `conversation:${checkpoint.id}`,
-      label: `对话 · ${checkpoint.label}`,
+      label: `Conversation · ${checkpoint.label}`,
       createdAt: checkpoint.createdAt,
     }));
     const checkpoints = [
@@ -1308,15 +1391,17 @@ export class ZoteroChatPlugin {
         models: this.codex.state.models,
         threads: this.codex.getThreadOptions().map((thread) => ({
           ...thread,
-          status: thread.active && this.codex.state.running ? "running"
+          status: thread.id === this.codex.state.switchingThreadId ? "switching"
+            : thread.active && this.codex.state.running ? "running"
             : pendingApproval && thread.active ? "attention" : "idle",
         })),
         selectedModel: this.selectedModel,
         effort: this.selectedEffort,
         running: this.codex.state.running,
+        creatingThread: this.codex.state.creatingThread,
         threadTitle: context
           ? paperTitle(context)
-          : entry.data.title.replace(/^QLab\s*·\s*/, "") || "论文助手",
+          : entry.data.title.replace(/^QLab\s*·\s*/, "") || "Paper Assistant",
         mode: this.codex.state.mode,
         contextChips: this.contextChips(),
         contextSuggestions: this.contextSuggestions(),
@@ -1329,15 +1414,6 @@ export class ZoteroChatPlugin {
           : null,
         turnDurations: this.turnDurationsForActiveThread(),
         paperTrailConsent: this.paperTrail?.consentRequest() ?? null,
-        anchors: (context ? this.codex.getAnchors(context) : [])
-          .slice()
-          .sort((a, b) => (a.pageNumber ?? Number.MAX_SAFE_INTEGER) - (b.pageNumber ?? Number.MAX_SAFE_INTEGER))
-          .map((anchor) => ({
-            anchorId: anchor.anchorId,
-            pageNumber: anchor.pageNumber,
-            question: anchor.question,
-            status: anchor.status,
-          })),
         noting: this.noting?.view() ?? null,
       });
     }
@@ -1345,7 +1421,7 @@ export class ZoteroChatPlugin {
 
   private attachSelection(focus: boolean): void {
     if (!this.context?.selection?.text) {
-      this.chatError = "请先在 PDF 中选择文字";
+      this.chatError = "Select text in the PDF first";
       this.renderChatViews();
       if (focus) this.activeChatView()?.focusComposer();
       return;
@@ -1490,7 +1566,7 @@ export class ZoteroChatPlugin {
     } : null;
     const conversationCheckpoints: CheckpointOption[] = this.codex.getCheckpoints().map((checkpoint) => ({
       id: `conversation:${checkpoint.id}`,
-      label: `对话 · ${checkpoint.label}`,
+      label: `Conversation · ${checkpoint.label}`,
       createdAt: checkpoint.createdAt,
     }));
     const checkpoints = [
@@ -1526,13 +1602,15 @@ export class ZoteroChatPlugin {
         models: this.codex.state.models,
         threads: this.codex.getThreadOptions().map((thread) => ({
           ...thread,
-          status: thread.active && this.codex.state.running ? "running"
+          status: thread.id === this.codex.state.switchingThreadId ? "switching"
+            : thread.active && this.codex.state.running ? "running"
             : pendingApproval && thread.active ? "attention" : "idle",
         })),
         selectedModel: this.selectedModel,
         effort: this.selectedEffort,
         running: this.codex.state.running,
-        threadTitle: context ? paperTitle(context) : "论文助手",
+        creatingThread: this.codex.state.creatingThread,
+        threadTitle: context ? paperTitle(context) : "Paper Assistant",
         mode: this.codex.state.mode,
         contextChips: this.contextChips(),
         contextSuggestions: this.contextSuggestions(),
@@ -1545,10 +1623,6 @@ export class ZoteroChatPlugin {
           : null,
         turnDurations: this.turnDurationsForActiveThread(),
         paperTrailConsent: this.paperTrail?.consentRequest() ?? null,
-        anchors: (context ? this.codex.getAnchors(context) : [])
-          .slice()
-          .sort((a, b) => (a.pageNumber ?? Number.MAX_SAFE_INTEGER) - (b.pageNumber ?? Number.MAX_SAFE_INTEGER))
-          .map((a) => ({ anchorId: a.anchorId, pageNumber: a.pageNumber, question: a.question, status: a.status })),
         noting: this.noting?.view() ?? null,
       });
     }
@@ -1633,7 +1707,7 @@ export class ZoteroChatPlugin {
    */
   private async buildNotingSnapshot(): Promise<NotingSnapshot> {
     const context = this.context;
-    if (!context) throw new Error("没有可用的论文上下文");
+    if (!context) throw new Error("No paper context is available");
 
     const anchors = this.codex.getAnchors(context);
     const threadIds = [...new Set(anchors.map((anchor) => anchor.threadId))];
@@ -1737,12 +1811,12 @@ export class ZoteroChatPlugin {
   }
 
   /**
-   * "继续对话" from a batch-written annotation: switches to the anchor's
+   * "Continue Conversation" from a batch-written annotation: switches to the anchor's
    * thread (via the same codex.switchThread() path onSelectThread uses) when
    * it isn't already active, then opens the float panel. When no anchor
    * matches the annotation, just opens the panel as-is. Uses
    * ensureFloatPanelOpen() rather than toggleFloatPanel() -- this action
-   * always means "open" (per the plan's "打开浮窗"), so it must never close
+   * always means "open" (per the plan's "open popup"), so it must never close
    * a panel the user already has open.
    */
   private async resumeAnchorChat(annotationKey: string): Promise<void> {
@@ -1763,7 +1837,7 @@ export class ZoteroChatPlugin {
     }
     else if (this.chatPhase === "ready") {
       this.chatPhase = "error";
-      this.chatError ||= "Codex 连接已断开，请重试；高级 Terminal 仍可使用。";
+      this.chatError ||= "The Codex connection was lost. Retry; the advanced Terminal remains available.";
     }
     this.scheduleChatRender();
   }
@@ -1782,33 +1856,33 @@ export class ZoteroChatPlugin {
     const chips: ResearchContextChip[] = [{
       id: "active-paper",
       kind: "paper",
-      label: "当前论文",
+      label: "Current Paper",
       detail: paperTitle(context),
       removable: false,
     }, {
       id: "current-page",
       kind: "page",
-      label: `第 ${context.page.pageLabel || context.page.pageNumber} 页`,
-      detail: "自动随 Reader 更新",
+      label: `Page ${context.page.pageLabel || context.page.pageNumber}`,
+      detail: "Updates automatically with Reader",
       removable: false,
     }];
     if (context.selection?.text) chips.push({
       id: "current-selection",
       kind: "selection",
-      label: `选区 · ${context.selection.text.length} 字`,
-      detail: "自动随 Reader 选区更新",
+      label: `Selection · ${context.selection.text.length} characters`,
+      detail: "Updates automatically with the Reader selection",
       removable: false,
     });
     if (this.addedContextIDs.has("active-annotations")) chips.push({
       id: "active-annotations",
       kind: "annotation",
-      label: "论文批注",
+      label: "Paper Annotations",
       removable: true,
     });
     if (this.addedContextIDs.has("zotero-library")) chips.push({
       id: "zotero-library",
       kind: "library",
-      label: "Zotero 文库",
+      label: "Zotero Library",
       removable: true,
     });
     return chips;
@@ -1819,32 +1893,32 @@ export class ZoteroChatPlugin {
     return [{
       id: "active-paper",
       kind: "paper",
-      label: "当前论文",
-      detail: context ? paperTitle(context) : "请先打开 PDF",
+      label: "Current Paper",
+      detail: context ? paperTitle(context) : "Open a PDF first",
       disabled: !context,
     }, {
       id: "current-page",
       kind: "page",
-      label: "当前页",
-      detail: context ? `PDF 第 ${context.page.pageNumber} 页` : "请先打开 PDF",
+      label: "Current Page",
+      detail: context ? `PDF page ${context.page.pageNumber}` : "Open a PDF first",
       disabled: !context,
     }, {
       id: "current-selection",
       kind: "selection",
-      label: "当前选区",
-      detail: context?.selection?.text ? `${context.selection.text.length} 字` : "请先选择 PDF 文本",
+      label: "Current Selection",
+      detail: context?.selection?.text ? `${context.selection.text.length} characters` : "Select PDF text first",
       disabled: !context?.selection?.text,
     }, {
       id: "active-annotations",
       kind: "annotation",
-      label: "这篇论文的批注",
-      detail: "高亮、评论与页码",
+      label: "Annotations for this paper",
+      detail: "Highlights, comments, and page numbers",
       disabled: !context || this.addedContextIDs.has("active-annotations"),
     }, {
       id: "zotero-library",
       kind: "library",
-      label: "Zotero 文库",
-      detail: "搜索其他论文、分类与标签",
+      label: "Zotero Library",
+      detail: "Search other papers, collections, and tags",
       disabled: this.addedContextIDs.has("zotero-library"),
     }];
   }
@@ -1864,7 +1938,7 @@ export class ZoteroChatPlugin {
     if (!checkpointID.startsWith("conversation:")) throw new Error("Unknown checkpoint");
     const result = await this.codex.restoreCheckpoint(checkpointID.slice("conversation:".length));
     if (!result.filesystemRestored && result.turnDiff) {
-      this.chatError = "已恢复对话分支；Codex 协议不会自动回滚文件。需要恢复 Zotero/PDF 时，请使用对应的 Zotero Checkpoint。";
+      this.chatError = "The conversation branch was restored. The Codex protocol does not roll files back automatically; use the corresponding Zotero checkpoint to restore Zotero or PDF state.";
     }
     this.renderChatViews();
   }
@@ -1930,7 +2004,7 @@ export class ZoteroChatPlugin {
       }
     }
     if (failures.length) {
-      throw new Error(`PDF 已更新，但 ${failures.length} 个 Zotero Reader 视图重载失败：${failures[0]}`);
+      throw new Error(`The PDF was updated, but ${failures.length} Zotero Reader view(s) failed to reload: ${failures[0]}`);
     }
   }
 
@@ -1962,11 +2036,11 @@ export class ZoteroChatPlugin {
   }
 
   private async openWorkbenchTerminal(win = Zotero.getMainWindow()): Promise<void> {
-    if (!win) throw new Error("Zotero 主窗口不可用");
+    if (!win) throw new Error("The Zotero main window is unavailable");
     await this.openWorkbenchTab(win);
     const entry = this.activeWorkbenchEntry(win);
-    if (!entry) throw new Error("无法创建 QLab 工作台");
-    if (!(entry.view instanceof SidebarView)) throw new Error("QLab 工作台尚未准备好");
+    if (!entry) throw new Error("Unable to create the QLab Workbench");
+    if (!(entry.view instanceof SidebarView)) throw new Error("The QLab Workbench is not ready");
     if (!entry.view.isTerminalOpen()) {
       await this.openWorkbenchTerminalDrawer(entry.view, win);
     }
@@ -2016,12 +2090,12 @@ export class ZoteroChatPlugin {
       || (!body ? this.activeWorkbenchEntry() : null);
     if (workbenchEntry?.view instanceof SidebarView) {
       const win = workbenchEntry.host.ownerDocument.defaultView;
-      if (!win) throw new Error("Zotero 主窗口不可用");
+      if (!win) throw new Error("The Zotero main window is unavailable");
       await this.openWorkbenchTerminalDrawer(workbenchEntry.view, win);
       return;
     }
     const host = body || workbenchEntry?.host || this.activeSidebarBody();
-    if (!host) throw new Error("请先打开 QLab 工作台");
+    if (!host) throw new Error("Open the QLab Workbench first");
     this.paneMode = "terminal";
     if (workbenchEntry) {
       workbenchEntry.view.destroy();
@@ -2074,14 +2148,14 @@ export class ZoteroChatPlugin {
     // private fallback when that index is unavailable.
     const context = this.context;
     const root = this.settings?.qlabRoot || "";
-    if (!root) throw new Error("请先选择 QLab 仓库");
+    if (!root) throw new Error("Choose a QLab repository first");
     if (context?.workspace) await this.readerContext.ensureCurrentPdfTextReference();
     return {
       host,
       paperKey: context
         ? `${context.attachment.libraryID ?? "0"}-${context.attachment.key}`
         : `qlab-${root}`,
-      paperTitle: context ? paperTitle(context) : "QLab 仓库",
+      paperTitle: context ? paperTitle(context) : "QLab Repository",
       workspace: context?.workspace?.root || root,
       workingDirectory: root,
       pdfPath: context?.pdfPath || null,
@@ -2094,7 +2168,7 @@ export class ZoteroChatPlugin {
 
   private async openContextPDF(): Promise<void> {
     const attachment = this.readerContextItem();
-    if (!attachment?.id) throw new Error("请先在 QLab 标签页选择一篇论文");
+    if (!attachment?.id) throw new Error("Choose a paper in the QLab tab first");
     await Zotero.Reader.open(attachment.id, null, {
       allowDuplicate: false,
       openInBackground: false,
@@ -2116,7 +2190,7 @@ export class ZoteroChatPlugin {
   private insertSelectionPrompt(): void {
     const context = this.context;
     if (!context?.selection?.text) {
-      this.terminal.showError("请先在 PDF 中选择文字");
+      this.terminal.showError("Select text in the PDF first");
       return;
     }
     this.terminal.insert(buildSelectionPrompt(context), false);
@@ -2193,7 +2267,7 @@ export class ZoteroChatPlugin {
     const host = createGeckoQLabPathHost();
     const root = await normalizeQLabRoot(String(picker.file.path), host);
     if (!await isQLabRepositoryShape(root, host)) {
-      throw new Error("所选目录不是 QLab 仓库：需要 AGENTS.md、qlab、literature/、drafts/ 和 knowledge/");
+      throw new Error("The selected folder is not a QLab repository: AGENTS.md, qlab, literature/, drafts/, and knowledge/ are required");
     }
     saveQLabRoot(root);
     this.settings = { ...this.settings, qlabRoot: root };
@@ -2223,7 +2297,7 @@ export class ZoteroChatPlugin {
     if (!root) return;
     const entries = this.codex.getChatEntries();
     if (!entries.some((entry) => entry.kind === "assistant")) {
-      throw new Error("请先完成至少一轮论文对话，再整理到 Draft");
+      throw new Error("Complete at least one paper conversation before organizing it into a Draft");
     }
     const itemKey = this.context?.parent?.key || this.context?.attachment.key || null;
     await this.openWorkbenchTab();
@@ -2265,7 +2339,7 @@ export class ZoteroChatPlugin {
     });
     const importItem = doc.createXULElement("menuitem");
     importItem.id = "qlab-zotero-import-literature";
-    importItem.setAttribute("label", "Import/Refresh QLab Literature");
+    importItem.setAttribute("label", "Sync Zotero ↔ QLab Literature");
     importItem.addEventListener("command", () => {
       void this.importQLabLiterature(win).catch((error) => this.reportError(error));
     });
@@ -2287,11 +2361,12 @@ export class ZoteroChatPlugin {
     let root = this.settings?.qlabRoot || "";
     if (!root) root = await this.chooseQLabRoot(win) || "";
     if (!root) return;
+    const imported = await this.zoteroSync.sync(root);
     const result = await this.literature.sync(root);
     Services.prompt.alert(
       win,
       "QLab Literature",
-      `Scanned ${result.scanned}; created ${result.created}; refreshed ${result.updated}.`,
+      `${imported}\n\nQLab → Zotero: scanned ${result.scanned}; created ${result.created}; refreshed ${result.updated}.`,
     );
   }
 
@@ -2343,7 +2418,7 @@ export function formatPendingApprovalDescription(
       rendered = "(unable to display malformed permission request)";
     }
     const maximum = 6_000;
-    details.push(`请求的权限：${rendered.length > maximum ? `${rendered.slice(0, maximum)}…` : rendered}`);
+    details.push(`Requested permissions: ${rendered.length > maximum ? `${rendered.slice(0, maximum)}…` : rendered}`);
   }
   const value = details.filter(Boolean).join("\n");
   return value || undefined;
@@ -2438,28 +2513,28 @@ export function buildSelectionPrompt(context: ReaderContext): string {
     || context.page.pageNumber;
   const directory = pdfDirectory(context.pdfPath);
   const metadata = [
-    `论文：${safeTerminalText(paperTitle(context))}`,
-    authors ? `作者：${safeTerminalText(authors)}` : "",
-    parent?.year ? `年份：${safeTerminalText(parent.year)}` : "",
-    parent?.doi ? `DOI：${safeTerminalText(parent.doi)}` : "",
-    context.pdfPath ? `PDF：${safeTerminalText(context.pdfPath)}` : "",
-    directory ? `目录：${safeTerminalText(directory)}` : "",
-    `PDF 页：${page}`,
-  ].filter(Boolean).join("；");
+    `Paper: ${safeTerminalText(paperTitle(context))}`,
+    authors ? `Authors: ${safeTerminalText(authors)}` : "",
+    parent?.year ? `Year: ${safeTerminalText(parent.year)}` : "",
+    parent?.doi ? `DOI: ${safeTerminalText(parent.doi)}` : "",
+    context.pdfPath ? `PDF: ${safeTerminalText(context.pdfPath)}` : "",
+    directory ? `Directory: ${safeTerminalText(directory)}` : "",
+    `PDF page: ${page}`,
+  ].filter(Boolean).join("; ");
   const rawSelection = safeTerminalText(context.selection?.text || "");
   const selection = rawSelection.length <= MAX_SELECTION_PROMPT_CHARACTERS
     ? rawSelection
-    : `${rawSelection.slice(0, MAX_SELECTION_PROMPT_CHARACTERS)}… [选区过长；完整文本仍可通过 zotero_reader 获取]`;
+    : `${rawSelection.slice(0, MAX_SELECTION_PROMPT_CHARACTERS)}… [selection truncated; the full text remains available through zotero_reader]`;
   // There is deliberately no CR/LF in this value: it is visible in the TUI
   // and cannot submit itself. The user types the question and presses Enter.
-  return `[Zotero Reader 上下文｜${metadata}] 选中文本：“${selection}” 问题：`;
+  return `[Zotero Reader context | ${metadata}] Selection: “${selection}” Question: `;
 }
 
 function paperTitle(context: ReaderContext): string {
   return context.parent?.title
     || context.attachment.title
     || context.attachment.filename
-    || "当前 PDF";
+    || "Current PDF";
 }
 
 function safeTerminalText(value: string): string {

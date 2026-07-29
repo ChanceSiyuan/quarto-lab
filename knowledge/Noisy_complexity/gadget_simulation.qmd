@@ -1,0 +1,296 @@
+---
+title: Gadget-Based Simulation
+description: T-gadget formalism replacing non-Clifford gates with magic state injection, stabilizer rank decomposition, graphical compilation to graph states, and noise thresholds for efficient simulation.
+categories:
+  - theory
+---
+
+# Summary and Key Questions
+
+The gadget-based approach recasts the simulation of Clifford+T circuits as a problem about stabilizer decompositions of magic states. Each $T$ gate is replaced by a **T-gadget**: an ancilla prepared in the magic state $|H\rangle$, a CZ entangling gate, and a Pauli-basis measurement with adaptive correction. After this replacement, the circuit becomes entirely Clifford, and the output probability reduces to an inner product between a stabilizer state and the tensor product $|A^{\otimes t}\rangle$ of $t$ magic states. Since any stabilizer overlap is efficiently computable, simulation complexity is governed by the **stabilizer rank** $\chi(t)$ --- the minimum number of stabilizer states needed to decompose $|A^{\otimes t}\rangle$.
+
+The best known exact decomposition gives $\chi(t) \leq 2^{\alpha t}$ with $\alpha \approx 0.396$ [@qassim2021improved], while the strongest lower bound is only $\chi(t) = \Omega(t^2)$ [@mehraban2024quadratic], leaving a large gap. For circuits with $t = \omega(\log n)$, direct stabilizer decomposition is exponentially costly. However, two structural insights alleviate this bottleneck: (1) **graphical compilation** reduces the noiseless problem to computing overlaps on graph states, where the rank-width of the underlying graph governs tractability; and (2) under noise, the **diagonalization theorem** reduces the circuit to a noisy IQP form, connecting to the [percolation framework](percolation.qmd) where edge deletion from noise can fragment the graph into classically simulable components.
+
+The key contribution of this framework is bridging the traditional stabilizer-rank approach with the [Pauli path methods](pauli_path.qmd): in the Heisenberg picture, the gadget circuit's back-propagated observable lives on the ancilla register, and its structure --- as a graph state or a noisy mixture thereof --- determines whether truncation, sampling, or percolation methods can achieve efficient simulation.
+
+- How does the T-gadget replacement preserve circuit output while enabling stabilizer-based simulation?
+- What are the best known bounds on stabilizer rank $\chi(t)$, and why does the exponential gap between upper and lower bounds persist?
+- How does graphical compilation reduce the simulation to a graph-state overlap, and when is this overlap efficiently computable via rank-width?
+- How does the diagonalization theorem connect gadget-based methods to [percolation](percolation.qmd) and [Pauli path](pauli_path.qmd) approaches?
+- At what noise threshold does noise-induced magic suppression make simulation efficient?
+
+# T-Gadget Formalism
+
+## Gate Replacement: T $\to$ Magic State Injection
+
+Consider a quantum circuit consisting of $t$ $T$-gates ($T = \text{diag}(1, e^{i\pi/4})$) and Clifford gates. In the gadget-based approach, each $T$ gate is replaced with a **T-gate gadget** consisting of:
+
+1. An ancillary qubit prepared in the magic state $|H\rangle = \cos(\pi/8)|0\rangle + \sin(\pi/8)|1\rangle$, where $|H\rangle \equiv HT|+\rangle$ up to global phase (here $|+\rangle = (|0\rangle + |1\rangle)/\sqrt{2}$).
+2. A CZ gate coupling the ancilla to the target qubit, injecting magic into the circuit.
+3. Measurement of the ancillary qubit in the $\{|+\rangle, |-\rangle\}$ basis, with an $S$-gate correction conditioned on the $|-\rangle$ outcome.
+
+::: {#def-t-gadget .callout-note icon="false"}
+## Definition: T-Gadget
+The T-gadget for a single $T$ gate on qubit $q$ consists of:
+$$
+T_q \equiv \text{(prepare } |H\rangle_a\text{)} \to \text{CZ}_{qa} \to \text{(measure } a \text{ in } X \text{ basis)} \to S_q^{m_a},
+$$
+where $m_a \in \{0,1\}$ is the measurement outcome and $S_q^{m_a}$ applies $S$ when $m_a = 1$. Note that $\langle +|_a \,\text{CZ}_{qa}(|\psi\rangle_q \otimes |H\rangle_a) = \sin(3\pi/8)\,\alpha|0\rangle + \sin(\pi/8)\,\beta|1\rangle$ for $|\psi\rangle = \alpha|0\rangle + \beta|1\rangle$, which is *not* proportional to $T|\psi\rangle$ per-gate. The gadget does not implement $T$ gate-by-gate; rather, when the full circuit's $T$-gates are simultaneously replaced by gadgets and all ancillae are post-selected onto $|+\rangle$, the overall output probability reproduces that of the original circuit (see @eq-gadget-prob).
+:::
+
+By replacing the measurement with a projector onto $|+\rangle$, the adaptive $S$-gate corrections are eliminated and the sampling probability becomes:
+$$
+p(x) = 2^t \left|\langle +^{\otimes n} \otimes A^{\otimes t} | V^\dagger | x_+ \otimes +^{\otimes t}\rangle\right|^2,
+$$ {#eq-gadget-prob}
+where $V$ is the Clifford part of the gadget circuit (all CZ gates plus original Clifford gates) acting on $n + t$ qubits, $|A\rangle = |H\rangle$ is the magic state, and $|x_+\rangle := H^{\otimes n}|x\rangle$ is the $n$-qubit state encoding the output bitstring $x \in \{0,1\}^n$ in the $X$-eigenbasis (each qubit in $|+\rangle$ or $|-\rangle$ according to the bits of $x$). The factor $2^t$ compensates for the projection probability.
+
+Starting from the stabilizer of $V^\dagger|x_+ \otimes +^{\otimes t}\rangle$, one can compute the $w$-qubit marginal distribution (where $w \leq n$ is the number of output qubits of interest) in $O((w+t)(c+t))$ time, where $c$ is the number of Clifford gates. The corresponding stabilizer subspace $\mathcal{V}_0$ simplifies @eq-gadget-prob to
+$$
+p(x) = 2^t \langle +^{\otimes n} \otimes A^{\otimes t} | \frac{\sum_{g \in \mathcal{V}_0} g}{2^{w+t}} | +^{\otimes n} \otimes A^{\otimes t}\rangle.
+$$
+Since any $Z$ or $Y$ operator on the first $n$ qubits gives zero overlap with $\langle +^{\otimes n}|$, we extract from $\mathcal{V}_0$ only elements acting as $I$ or $X$ on the first $n$ qubits to form a commuting subspace $\mathcal{V}_1$ (via Gaussian elimination). This reduces the probability to an inner product on the $t$-qubit ancilla register alone:
+$$
+p(x) = 2^t \langle A^{\otimes t} | \frac{\sum_{g \in \mathcal{V}_1} g}{2^{w+t}} | A^{\otimes t}\rangle.
+$$ {#eq-gadget-stabilizer}
+
+## Stabilizer Rank Decomposition
+
+::: {#def-stabilizer-rank .callout-note icon="false"}
+## Definition: Stabilizer Rank
+The **stabilizer rank** $\chi(|\psi\rangle)$ of a pure state $|\psi\rangle$ is the minimum integer $k$ such that
+$$
+|\psi\rangle = \sum_{a=1}^{k} c_a |\phi_a\rangle, \quad |\phi_a\rangle \in \text{STAB}_n,
+$$
+where $\text{STAB}_n$ denotes the set of $n$-qubit stabilizer states. The **approximate stabilizer rank** $\tilde{\chi}_\delta(|\psi\rangle)$ is the minimum $k$ such that $\||\psi\rangle - \sum_{a=1}^{k} c_a |\phi_a\rangle\| \leq \delta$.
+:::
+
+The key computational step is decomposing the magic state tensor product:
+$$
+|A^{\otimes t}\rangle = \sum_{a=1}^{\chi(t)} c_a |\psi_a\rangle, \quad |\psi_a\rangle \in \text{STAB}_t.
+$$
+Given such a decomposition, the output probability (@eq-gadget-stabilizer) requires computing $\chi(t)^2$ stabilizer inner products:
+$$
+p(x) = 2^t \sum_{a,b} c_a c_b^* \langle \psi_a | \frac{\sum_{g \in \mathcal{V}_1} g}{2^{w+t}} | \psi_b \rangle,
+$$
+where $w$ is the number of marginal output qubits and $\mathcal{V}_1$ is the commuting subspace defined above. Each stabilizer inner product is computable in $\text{poly}(n + t)$ time, yielding total runtime $O(\text{poly}(n) \cdot \chi(t)^2)$.
+
+### Bounds on Stabilizer Rank
+
+The scaling of $\chi(t)$ is a central open problem in quantum simulation theory. The stabilizer rank is submultiplicative ($\chi(|\psi\rangle \otimes |\phi\rangle) \leq \chi(|\psi\rangle) \cdot \chi(|\phi\rangle)$), so $\chi(|H^{\otimes t}\rangle) \leq \chi(|H\rangle)^t$, but tighter bounds exploit correlations in the tensor product structure.
+
+::: {#thm-stabilizer-rank .callout-important icon="false"}
+## Theorem: Stabilizer Rank Bounds
+The stabilizer rank $\chi(t)$ of $|H^{\otimes t}\rangle$ satisfies:
+
+- **Upper bound (exact):** $\chi(t) \leq 2^{\alpha t}$ with $\alpha \leq 0.3963$ [@qassim2021improved], improving the earlier bound $\alpha \leq 0.463$ of [@bravyi2019simulation].
+- **Upper bound (approximate):** The approximate stabilizer rank satisfies $\tilde{\chi}_\delta(t) \leq 2^{\beta t} \cdot \text{poly}(1/\delta)$ with $\beta \approx 0.48$ for inverse-polynomial $\delta$ [@bravyi2019simulation].
+- **Lower bound:** $\chi(t) = \Omega(t^2)$ [@mehraban2024quadratic], proved via a probabilistic argument using the structure of Clifford orbits.
+
+The exact stabilizer rank is widely conjectured to grow exponentially with $t$, but the exponential gap between the $\Omega(t^2)$ lower bound and the $O(2^{0.3963t})$ upper bound remains open.
+:::
+
+::: {.callout-note collapse="true"}
+## Proof sketch: Upper bound (Click to expand)
+The Qassim-Pashayan-Gosset construction [@qassim2021improved] uses a specific family of stabilizer states built from affine subspaces over $\mathbb{F}_2$. For $t$ copies of $|H\rangle = \cos(\pi/8)|0\rangle + \sin(\pi/8)|1\rangle$, the tensor product $|H^{\otimes t}\rangle$ is expanded in the computational basis, and the coefficients are grouped by Hamming weight. Stabilizer states corresponding to Reed-Muller-like codes provide an efficient basis for these weight classes. A careful counting argument over the coset structure of the relevant affine subspaces yields the improved exponent $\alpha \leq \log_2(3)/4 \approx 0.3963$. $\square$
+:::
+
+Using approximate decompositions and randomized sampling, Bravyi and Gosset [@bravyi2016improved] showed that circuits with $t$ $T$-gates can be simulated in time $\text{poly}(n, 1/\varepsilon) \cdot \tilde{\chi}(t)$ for additive error $\varepsilon$. For circuits with $t = \omega(\log n)$, the exponential stabilizer rank renders direct simulation infeasible, motivating the graphical compilation approach below.
+
+## From Gadgets to Pauli Paths {#sec-gadget-to-pauli}
+
+The connection between gadget-based and Pauli path methods emerges through the **Heisenberg picture** of the gadget circuit. After T-gadget replacement, the original $n$-qubit circuit becomes an $(n+t)$-qubit Clifford circuit (with noise channels), and the sampling probability takes the form:
+$$
+p_C(+^{\otimes n}) = 2^t \cdot \text{tr}\left[\left(|0\rangle\langle 0|^{\otimes n} \otimes |A\rangle\langle A|^{\otimes t}\right) \cdot \hat{O}\right],
+$$
+where the input state is $|0\rangle^{\otimes n} \otimes |A\rangle^{\otimes t}$ and $\hat{O}$ is the Heisenberg-evolved measurement operator:
+$$
+\hat{O} = (\mathcal{N}_1^\dagger \circ \mathcal{CZ}_1^\dagger \circ \mathcal{C}_1^\dagger) \circ \cdots \circ (\mathcal{N}_d^\dagger \circ \mathcal{CZ}_d^\dagger \circ \mathcal{C}_d^\dagger) \circ \mathcal{N}_0^\dagger[|+\rangle\langle+|^{\otimes(n+t)}].
+$$
+
+Tracing out the first $n$ qubits against the computational basis input $|0\rangle^{\otimes n}$, define the **reduced ancilla operator**:
+$$
+\hat{O}' = 2^n \, \text{tr}_{\{1,\ldots,n\}}\left(\hat{O} \cdot |0\rangle\langle 0|^{\otimes n} \otimes I^{\otimes t}\right).
+$$
+Then the probability factorizes as:
+$$
+p_C(+^{\otimes n}) = 2^{t-n} \, \text{tr}\left(\hat{O}' \cdot |A\rangle\langle A|^{\otimes t}\right).
+$$ {#eq-gadget-factorization}
+
+The operator $\hat{O}'$ acts only on the $t$-qubit ancilla register and encodes all information about the Clifford circuit and noise. In the noiseless case, $\hat{O}'$ is a stabilizer state projector; under noise, it becomes a mixture of stabilizer states weighted by noise parameters. The properties of $\hat{O}'$ --- specifically, whether it can be represented as a low-rank graph state --- determine the simulation hardness.
+
+This factorization is the conceptual bridge between the gadget and [Pauli path](pauli_path.qmd) frameworks: the Pauli path expansion of $\hat{O}'$ in the ancilla register is precisely the Pauli spectrum analysis applied to the reduced problem, and the [operator stabilizer entropy](operator_resource.qmd) of $\hat{O}'$ governs the variance of sampling algorithms.
+
+# Graphical Compilation
+
+## Noiseless Case
+
+For noiseless Clifford+T circuits, $\hat{O}'$ is a pure stabilizer state projector $|S\rangle\langle S|$ on $t$ qubits, and the probability reduces to:
+$$
+p_C(+^{\otimes n}) = 2^{t-n} |\langle S' | A\rangle^{\otimes t}|^2 = 2^{t-n} |\langle G | L^\dagger | A\rangle^{\otimes t}|^2,
+$$
+where $|S'\rangle$ is the $t$-qubit stabilizer state obtained by measuring the first $n$ qubits of $|S\rangle$ in the $|0\rangle$ basis, and $|G\rangle = L|S'\rangle$ is the corresponding graph state obtained via local Clifford equivalence.
+
+::: {#lem-stabilizer-to-graph .callout-important icon="false"}
+## Lemma: Stabilizer-to-Graph State Reduction
+Given an $n$-qubit stabilizer state $|S'\rangle$, a local Clifford operation $L = \bigotimes_{i=1}^n L_i$ can be found in $\text{poly}(n)$ time such that $|S'\rangle = L|G\rangle$, where $|G\rangle$ is a graph state with graph $G = (V, E)$ [@van2004graphical].
+:::
+
+::: {.callout-note collapse="true"}
+## Proof sketch (Click to expand)
+Every stabilizer state has a unique stabilizer group $\mathcal{S} = \langle g_1, \ldots, g_n \rangle$. By performing row reduction (Gaussian elimination) on the stabilizer tableau, one can bring it to a canonical form where each generator $g_i$ acts as $X_i$ on qubit $i$ (up to local Clifford rotations) and as products of $Z$ on other qubits. In this form, the generators define the adjacency matrix of a graph: $g_i = X_i \prod_{j \in N(i)} Z_j$, which is precisely the stabilizer group of the graph state $|G\rangle = \prod_{(i,j) \in E} \text{CZ}_{ij} |+\rangle^{\otimes n}$. The local Clifford $L$ accounts for the rotations applied during row reduction. $\square$
+:::
+
+This compiles the amplitude $p_C(+^{\otimes n})$ into a computation on a $t$-vertex graph: the overlap $\langle G | \bigotimes_i L_i^\dagger |A\rangle$ is a product-state measurement on the graph state $|G\rangle$ in single-qubit bases $\{L_i^\dagger |A\rangle\}$.
+
+::: {#thm-rankwidth .callout-important icon="false"}
+## Theorem: Rank-Width Criterion for Efficient Simulation
+If the graph $G$ obtained from the graphical compilation has rank-width $r = O(\log n)$, then the overlap $\langle G | \bigotimes_i L_i^\dagger |A\rangle$ can be computed exactly in $\text{poly}(n)$ time via a tree tensor network (TTN) representation with bond dimension $D = O(2^r) = \text{poly}(n)$ [@van2007classical].
+:::
+
+::: {.callout-note collapse="true"}
+## Proof sketch (Click to expand)
+A graph of rank-width $r$ admits a decomposition into a binary tree of width $r$. Each node of the tree corresponds to a bipartition of the vertices, with at most $2^r$ boundary degrees of freedom across each cut. The overlap with a product state can be computed by contracting tensors along the tree bottom-up: each tensor at a leaf has dimension $2^r$, and the contraction at each internal node involves matrix multiplication of dimension $O(2^r)$. The total number of contractions is $O(n)$, giving runtime $O(n \cdot 2^{3r}) = \text{poly}(n)$ when $r = O(\log n)$ [@van2007classical; @markov2008simulating]. $\square$
+:::
+
+**Implication for simulation hardness.** Testing the rank-width of graph $G$ determines whether the noiseless Clifford+T circuit admits efficient amplitude computation. Graphs with unbounded rank-width (e.g., complete graphs, expanders) correspond to circuits that are plausibly hard to simulate. This provides a graph-theoretic diagnostic for quantum computational advantage complementary to the spectral diagnostic $C(\alpha)$ from [Pauli path methods](pauli_path.qmd).
+
+## Diagonalization Under Noise {#sec-diagonalization}
+
+Under Pauli noise, the noiseless graph-state reduction generalizes via a key structural theorem: Clifford gates acting on stabilizer states can be decomposed into local Clifford plus CZ gates, and this decomposition **persists under interleaved incoherent noise** (i.e., noise channels can be pushed through the decomposition with at most a local Clifford rotation).
+
+::: {#thm-noisy-reduction .callout-important icon="false"}
+## Theorem: Noisy Reduction to Graph States
+Let $\text{Cl}$ denote a Clifford gate and $\mathcal{N}$ a Pauli noise channel. In the absence of noise, $\text{Cl}|S\rangle = LG|S\rangle$ where $L$ is a local Clifford operation and $G$ is a product of CZ gates. This decomposition persists under noise:
+$$
+\text{Cl} \circ \mathcal{N}[|S\rangle\langle S|] = LG \circ \mathcal{N}[|S\rangle\langle S|].
+$$
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+In the noiseless case, $|S\rangle = L_S G_S |+\rangle$ by the graph state decomposition. Then $\text{Cl}|S\rangle = L' G' |+\rangle = L''' G''' |S\rangle$, where $G'''$ consists of CZ gates (since conjugating CZ by local Clifford yields control-Pauli gates, which decompose into CZ plus commutable phase gates).
+
+Given $\text{Cl} = LAG$ with $LG|S\rangle = \text{Cl}|S\rangle$, we have $AG|S\rangle = G|S\rangle$, so $G^\dagger A G$ is a stabilizer of $|S\rangle$. Then:
+$$\begin{align}
+\text{Cl} \circ \mathcal{N}[|S\rangle\langle S|] &= LG \circ (G^\dagger A G) \mathcal{N} (G^\dagger A^\dagger G)[|S\rangle\langle S|] \\
+&= LG \circ \mathcal{N}[|S\rangle\langle S|],
+\end{align}$$
+where the last step uses that $G^\dagger A G$ is a Pauli product, which commutes with the incoherent (Pauli-diagonal) noise channel $\mathcal{N}$. $\square$
+:::
+
+This theorem enables the **diagonalization of Pauli-noise Clifford circuits**: the entire Heisenberg-picture conjugation can be reduced (modulo noise layers) to a noisy IQP circuit. Control-Pauli gates arising from the graph-state decomposition are transformed into CZ gates using the graphical rules of [@van2004graphical; @mor2023noisy].
+
+::: {#thm-diagonalization .callout-important icon="false"}
+## Theorem: Diagonalization of Pauli-Noise Clifford Circuits
+Consider a NISQ circuit with $d$ layers of Clifford gates $\{\text{Cl}_i\}_{i=1}^d$ and T-gates. After T-gadget replacement and CZ decomposition, the transformed gates and noise channels satisfy:
+$$\begin{align}
+&G_j G_{j-1} \cdots G_1 = D_j^\dagger, \quad \text{where } \text{Cl}_j^\dagger \cdots \text{Cl}_1^\dagger |+\rangle^{\otimes n} = L_j^\dagger D_j^\dagger |+\rangle^{\otimes n}, \\
+&P_j = A_j Z A_j^\dagger, \quad \text{where } A_j \text{ are explicitly computable Clifford operators}, \\
+&\mathcal{N}_j'(\rho) = L_j \circ \mathcal{N}_j \circ L_j^\dagger(\rho).
+\end{align}$$
+The diagonalized circuit is equivalent to the original up to local Clifford rotations of the noise channels.
+:::
+
+::: {.callout-note collapse="true"}
+## Proof sketch (Click to expand)
+The proof proceeds inductively over the circuit layers. At each layer $j$:
+
+1. The accumulated Clifford $\text{Cl}_j^\dagger \cdots \text{Cl}_1^\dagger$ acts on $|+\rangle^{\otimes n}$, producing a stabilizer state that admits a graph-state decomposition $L_j^\dagger D_j^\dagger |+\rangle^{\otimes n}$ where $D_j$ is a product of CZ gates.
+2. By the noisy reduction theorem, inserting noise $\mathcal{N}_j$ between Clifford layers commutes through the stabilizer-graph decomposition, picking up only the local Clifford conjugation: $\mathcal{N}_j' = L_j \circ \mathcal{N}_j \circ L_j^\dagger$.
+3. The CZ gates compose into a single diagonal circuit $D_j$, while local Cliffords are absorbed into the noise rotation.
+
+The resulting circuit consists entirely of CZ gates interspersed with rotated noise channels, which is a noisy IQP circuit. $\square$
+:::
+
+The diagonalization procedure is the critical link connecting the gadget approach to the [percolation methods](percolation.qmd): once the circuit is in noisy IQP form (CZ gates + local noise), the [Z-projection decomposition](percolation.qmd) of each noise channel translates to edge/vertex deletion in the interaction graph, and the percolation threshold governs simulation complexity.
+
+# When Noise Obscures Magic
+
+## Pauli Average Estimation
+
+The efficiency of Pauli average estimation depends on whether noise suppresses magic faster than T-gates generate it. From the [Pauli path analysis](pauli_path.qmd), the gate sampling algorithm for sparse Clifford+T circuits with depolarizing noise rate $p$ has variance:
+$$
+\text{Var} \leq \exp\left[\frac{1}{2}\mathcal{M}^{(1/2)}[\mathcal{C}_N^\dagger(O)] + \mathcal{M}^{(0)}[\mathcal{C}_U^\dagger(O)]\right],
+$$
+where $\mathcal{M}^{(1/2)} \leq 0$ is the noise suppression (from the $1/2$-[operator stabilizer entropy](operator_resource.qmd)) and $\mathcal{M}^{(0)} \geq 0$ is the magic generation (from the $0$-OSE).
+
+::: {#thm-noise-threshold .callout-important icon="false"}
+## Theorem: Noise Threshold for Efficient Gate Sampling
+For a $(Q, k)$-sparse Clifford+T circuit with depolarizing noise rate $p$, if
+$$
+2^Q(1-p) < 1,
+$$
+then the variance of the gate sampling algorithm satisfies $\text{Var} \leq \text{poly}(n)$, and the Pauli average can be estimated within additive error $\varepsilon$ in time $\text{poly}(n, 1/\varepsilon)$.
+:::
+
+This condition has a transparent interpretation in the gadget picture. Each T-gate encountered by a non-$Z$ Pauli operator during back-propagation contributes a factor of $\sqrt{2}$ to the Pauli coefficient (branching into $X \pm Y$), yielding a cumulative amplification of $2^{Q/2}$ in amplitude or $2^Q$ in variance. Each noise layer suppresses by $(1-p)$. When suppression dominates ($2^Q(1-p) < 1$), the total variance remains bounded.
+
+The robustness of this threshold to additional amplitude damping noise follows from the 1-norm preservation of the [scaling-shifting decomposition](non_unital.qmd): amplitude damping introduces $Z \to I$ branching with coefficients summing to 1 under the 1-norm, which does not increase the gate sampling variance.
+
+## Amplitude Sampling
+
+For the amplitude sampling task (classically reproducing the full output distribution), the efficiency criterion is different. After diagonalization (@sec-diagonalization), the circuit reduces to a noisy IQP form, and the simulation problem maps to a graph-state overlap:
+$$
+p_C(x) = 2^{t-n} \, \text{tr}\left(\hat{O}'_{\text{noisy}} \cdot |A\rangle\langle A|^{\otimes t}\right),
+$$
+where $\hat{O}'_{\text{noisy}}$ is a convex mixture of graph-state projectors weighted by noise parameters.
+
+The [percolation criterion](percolation.qmd) applies: if the Z-projection decomposition of each noise channel assigns deletion probability $2p$ per vertex and the resulting random graph has subcritical percolation (maximum component size $O(\log n)$ with high probability), then each component's overlap with magic states is computed independently in time $2^{O(\log n)} = \text{poly}(n)$.
+
+::: {#thm-amplitude-threshold .callout-important icon="false"}
+## Theorem: Dual Thresholds for Simulation Tasks
+For a noisy Clifford+T circuit with depolarizing noise rate $p$ and $t$ T-gates:
+
+1. **Pauli average estimation** is efficient when $2^Q(1-p) < 1$ (magic-noise competition per path).
+2. **Amplitude sampling** is efficient when the diagonalized graph is subcritical under vertex deletion with probability $2p$ (percolation threshold).
+
+These thresholds are generally different: amplitude sampling can be harder, as it requires controlling the full output distribution rather than individual expectation values.
+:::
+
+The gap between these thresholds reflects a fundamental distinction between the two simulation tasks. Pauli average estimation succeeds whenever the Heisenberg-picture expansion has sufficient spectral decay, while amplitude sampling requires global control over the graph-state structure. See [Open Problems](open_problems.qmd) for conjectures on the relationship between these thresholds.
+
+## Weak-Simulation Compilation {#sec-weak-sim-compilation}
+
+The graphical compilation extends beyond computing single amplitudes to **weak simulation** (sampling from the output distribution). A universal Clifford+T circuit composed of the gate set $\{CZ, T, H\}$ can be compiled into a POVM on a graph state via three steps:
+
+1. **T-gate teleportation:** Replace each T gate with a T-gadget (ancilla $|A\rangle$, CZ, and X-basis measurement), as in @def-t-gadget.
+2. **H-gate deferral:** Move all H gates to the end of the circuit using the identity $(I_i \otimes H_j)\,\text{CZ}_{ij} = \text{CX}_{ij}\,(I_i \otimes H_j)$, which follows from $HZH = X$. Each H gate on qubit $j$ commutes past a CZ gate at the cost of converting that CZ into a CX (with $j$ as the target). The resulting CX gates are then converted back to CZ form in the next step.
+3. **CX $\to$ CZ conversion:** Decompose each CX gate as $\text{CX}_{ij} = (I_i \otimes H_j)\,\text{CZ}_{ij}\,(I_i \otimes H_j)$. The new H gates are either absorbed into adjacent H gates (cancelling by $H^2 = I$) or pushed further toward the output, where they are absorbed into the measurement basis.
+
+After these transformations, the circuit consists entirely of CZ gates on $n + t$ qubits (with $|+\rangle^{\otimes n} \otimes |A\rangle^{\otimes t}$ input), followed by single-qubit measurements. The CZ gates define a graph $G$ on $n+t$ vertices, and the output distribution is generated by performing adaptive single-qubit POVMs on the graph state $|G\rangle$. This reduction means that any efficient algorithm for sampling from POVM outcomes on graph states immediately yields a weak simulator for the original circuit.
+
+*Source: Folder2, draft.tex, Section "Graphical compilation for weak-simulation."*
+
+## Percolation on Low-Purity Stabilizer States {#sec-low-purity}
+
+The variance of the percolation-based sampling algorithm is controlled by the purity of the mixed stabilizer state $\sigma = \text{tr}_{[n]}(\rho \, |0\rangle\langle 0|^{\otimes n})$ obtained by tracing out the input qubits. The key variance bound and its consequence are:
+
+::: {#thm-purity-percolation .callout-important icon="false"}
+## Theorem: Purity Bound and Percolation Decomposition
+The purity of $\sigma$ satisfies
+$$
+\text{tr}(\sigma^2) = 2^t \langle\!\langle \sigma | \sigma \rangle\!\rangle \leq 2^{-n} \sum_{E_0, E_i} 2^{-n-t}(1-\gamma)^{2f(E_0, E_i)},
+$$
+where the sum runs over Pauli error configurations, $\gamma$ is the noise rate, and $f(E_0, E_i)$ counts the number of noise channels traversed. If this sum scales as $\text{poly}(n)$, then $\text{tr}(\sigma^2) \leq \text{poly}(n) \cdot 2^{-n}$.
+
+Furthermore, any mixed stabilizer state with $\text{tr}(\sigma^2) < \text{poly}(n) \cdot 2^{-n}$ admits a convex decomposition into pure stabilizer states $\sigma = \sum_i p_i |\psi_i\rangle\langle\psi_i|$ such that each $|\psi_i\rangle$ localizes on $O(\log n)$ qubits.
+
+*Source: Folder2, draft.tex, Theorem 3.*
+:::
+
+::: {.callout-note collapse="true"}
+## Proof sketch (Click to expand)
+**Variance bound:** Each sample from the percolation algorithm yields a graph state $|G_i\rangle$ with local Clifford corrections $L_i$, where $t'_i$ ancilla vertices survive the noise-induced deletion. The inner product with magic state inputs satisfies $|\langle G_i | L_i \, |A\rangle^{\otimes t}|^2 \leq 2^{-t'_i}$. This follows because, even after noise removes some CZ gates (and hence ancilla vertices), the remaining circuit is a valid gadget circuit with $t'_i$ surviving gadget ancillas. Each surviving ancilla contributes a post-selection *amplitude* factor of $2^{-1/2}$ (probability factor $2^{-1}$): projecting $\langle +|$ on the ancilla after the controlled-Pauli gadget interaction gives $\langle +| \,\text{CP}\, (|A\rangle_t \otimes |\phi\rangle_n) = 2^{-1/2}\,e^{-i\pi Q/8}|\phi\rangle$, where $Q$ is a Pauli operator determined by the local Clifford frame. Since $e^{-i\pi Q/8}$ is unitary, the squared norm is exactly $2^{-1}$ per ancilla, yielding the bound $2^{-t'_i}$ for $t'_i$ ancillas. By Hoeffding's inequality, $N = O(\varepsilon^{-2}\log(1/\delta))$ samples suffice for additive error $\varepsilon$ with probability $\geq 1-\delta$.
+
+**Localization:** Low purity $\text{tr}(\sigma^2) < \text{poly}(n) \cdot 2^{-n}$ implies that the stabilizer group generators of $\sigma$'s pure-state decomposition have $O(\log n)$ support. This follows from the graph-state structure: if the underlying random graph has percolated into components of size $O(\log n)$, each pure stabilizer state in the convex decomposition is supported on one such component, and its overlap with $|A\rangle^{\otimes t}$ is computable in $\text{poly}(n)$ time via the rank-width criterion (@thm-rankwidth). $\square$
+:::
+
+This theorem closes the logical chain: noise $\to$ purity bound $\to$ percolation $\to$ localization $\to$ efficient overlap computation. The $\text{poly}(n)$ scaling condition on the error sum is the quantitative criterion determining when noise is strong enough to fragment the graph into simulable components.
+
+## Connection to Stabilizer Tensor Networks
+
+Recent work on stabilizer tensor networks (STN) with magic state injection [@masot2024stabilizer] provides an alternative perspective on the gadget approach. In the STN framework, the circuit is represented as a tensor network of stabilizer tensors, and magic states are injected at specific sites. The computational cost scales as $O(\text{poly}(n) \cdot 2^{r \cdot t_{\text{eff}}})$, where $r$ is the bond dimension and $t_{\text{eff}}$ is an effective magic count that can be smaller than $t$ when noise suppresses magic. This connects naturally to the rank-width criterion of @thm-rankwidth: the bond dimension of the STN corresponds to the tree-width of the graphical compilation, and noise-induced rank reduction translates to smaller effective $t_{\text{eff}}$.
+
+---
+
+[← Pauli Path Methods](pauli_path.qmd) | [Back to Index](index.qmd) | [Next: Percolation Methods →](percolation.qmd)

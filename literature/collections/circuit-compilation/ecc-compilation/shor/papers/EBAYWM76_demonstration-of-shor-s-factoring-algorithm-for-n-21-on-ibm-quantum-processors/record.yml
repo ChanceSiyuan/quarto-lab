@@ -1,0 +1,45 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: EBAYWM76
+  item_version: 96136
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: LIVJUSB2
+      name: Shor
+      path: Circuit Compilation/ECC compilation/Shor
+qlab:
+  primary_collection: LIVJUSB2
+  indexed_collections:
+    - LIVJUSB2
+  primary_topic: circuit-compilation
+  indexed_topics:
+    - circuit-compilation
+item_type: journalArticle
+title: Demonstration of Shor's factoring algorithm for N=21 on IBM quantum processors
+authors:
+  - first: Unathi
+    last: Skosana
+  - first: Mark
+    last: Tame
+year: 2021
+abstract: We report a proof-of-concept demonstration of a quantum order-finding
+  algorithm for factoring the integer 21. Our demonstration involves the use of
+  a compiled version of the quantum phase estimation routine, and builds upon a
+  previous demonstration by Mart\'in-L\'{o}pez et al. in Nature Photonics 6, 773
+  (2012). We go beyond this work by using a configuration of approximate Toffoli
+  gates with residual phase shifts, which preserves the functional correctness
+  and allows us to achieve a complete factoring of N=21. We implemented the
+  algorithm on IBM quantum processors using only 5 qubits and successfully
+  verified the presence of entanglement between the control and work register
+  qubits, which is a necessary condition for the algorithm's speedup in general.
+  The techniques we employ may be useful in carrying out Shor's algorithm for
+  larger integers, or other algorithms in systems with a limited number of noisy
+  qubits.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.1038/s41598-021-95973-w
+  arxiv: "2103.13855"

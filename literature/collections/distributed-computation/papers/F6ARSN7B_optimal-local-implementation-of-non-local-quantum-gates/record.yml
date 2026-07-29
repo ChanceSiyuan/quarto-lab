@@ -1,0 +1,48 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: F6ARSN7B
+  item_version: 96064
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: HW3L6KQE
+      name: distributed computation
+      path: distributed computation
+qlab:
+  primary_collection: HW3L6KQE
+  indexed_collections:
+    - HW3L6KQE
+  primary_topic: distributed-computation
+  indexed_topics:
+    - distributed-computation
+item_type: journalArticle
+title: Optimal local implementation of non-local quantum gates
+authors:
+  - first: J.
+    last: Eisert
+  - first: K.
+    last: Jacobs
+  - first: P.
+    last: Papadopoulos
+  - first: M. B.
+    last: Plenio
+year: 2000
+abstract: We investigate the minimal resources that are required in the local
+  implementation of non-local quantum gates in a distributed quantum computer.
+  Both classical communication requirements and entanglement consumption are
+  investigated. We present general statements on the minimal resource
+  requirements and present optimal procedures for a number of important gates,
+  including CNOT and Toffoli gates. We show that one bit of classical
+  communication in each direction is both necessary and sufficient for the
+  non-local implementation of the quantum CNOT, while in general two bits in
+  each direction is required for the implementation of a general two bit quantum
+  gate. In particular, the state-swapper requires this maximum classical
+  communication overhead. Extensions of these ideas to multi-party gates are
+  presented.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.1103/physreva.62.052317
+  arxiv: quant-ph/0005101

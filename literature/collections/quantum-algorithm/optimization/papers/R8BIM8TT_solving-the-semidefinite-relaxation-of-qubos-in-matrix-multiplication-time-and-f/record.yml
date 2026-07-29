@@ -1,0 +1,54 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: R8BIM8TT
+  item_version: 96144
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: TZ42IFP4
+      name: Optimization
+      path: Quantum Algorithm/Optimization
+qlab:
+  primary_collection: TZ42IFP4
+  indexed_collections:
+    - TZ42IFP4
+  primary_topic: quantum-algorithm
+  indexed_topics:
+    - quantum-algorithm
+item_type: preprint
+title: Solving the semidefinite relaxation of QUBOs in matrix multiplication
+  time, and faster with a quantum computer
+authors:
+  - first: Brandon
+    last: Augustino
+  - first: Giacomo
+    last: Nannicini
+  - first: Tamás
+    last: Terlaky
+  - first: Luis
+    last: Zuluaga
+year: 2023
+abstract: Recent works on quantum algorithms for solving semidefinite
+  optimization (SDO) problems have leveraged a quantum-mechanical interpretation
+  of positive semidefinite matrices to develop methods that obtain quantum
+  speedups with respect to the dimension $n$ and number of constraints $m$.
+  While their dependence on other parameters suggests no overall speedup over
+  classical methodologies, some quantum SDO solvers provide speedups in the
+  low-precision regime. We exploit this fact to our advantage, and present an
+  iterative refinement scheme for the Hamiltonian Updates algorithm of Brand\~ao
+  et al. (Quantum 6, 625 (2022)) to exponentially improve the dependence of
+  their algorithm on precision. As a result, we obtain a classical algorithm to
+  solve the semidefinite relaxation of Quadratic Unconstrained Binary
+  Optimization problems (QUBOs) in matrix multiplication time. Provided access
+  to a quantum read/classical write random access memory (QRAM), a quantum
+  implementation of our algorithm exhibits a worst case running time of
+  $\mathcal{O} \left(ns + n^{1.5} \cdot \text{polylog} \left(n, \| C \|_F,
+  \frac{1}{\epsilon} \right) \right)$.
+tags:
+  - Mathematics - Optimization and Control
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2301.04237
+  arxiv: "2301.04237"

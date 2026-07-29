@@ -1,0 +1,63 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: NBRCBADJ
+  item_version: 96132
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: TXSWCKCN
+      name: _Review
+      path: Quantum Resource/_Review
+qlab:
+  primary_collection: TXSWCKCN
+  indexed_collections:
+    - TXSWCKCN
+  primary_topic: quantum-resource
+  indexed_topics:
+    - quantum-resource
+item_type: preprint
+title: Quantum thermodynamics and semi-definite optimization
+authors:
+  - first: Nana
+    last: Liu
+  - first: Michele
+    last: Minervini
+  - first: Dhrumil
+    last: Patel
+  - first: Mark M.
+    last: Wilde
+year: 2025
+abstract: In quantum thermodynamics, a system is described by a Hamiltonian and
+  a list of non-commuting charges representing conserved quantities like
+  particle number or electric charge, and an important goal is to determine the
+  system's minimum energy in the presence of these conserved charges. In
+  optimization theory, a semi-definite program (SDP) involves a linear objective
+  function optimized over the cone of positive semi-definite operators
+  intersected with an affine space. These problems arise from differing
+  motivations in the physics and optimization communities and are phrased using
+  very different terminology, yet they are essentially identical mathematically.
+  By adopting Jaynes' mindset motivated by quantum thermodynamics, we observe
+  that minimizing free energy in the aforementioned thermodynamics problem,
+  instead of energy, leads to an elegant solution in terms of a dual chemical
+  potential maximization problem that is concave in the chemical potential
+  parameters. As such, one can employ standard (stochastic) gradient ascent
+  methods to find the optimal values of these parameters, and these methods are
+  guaranteed to converge quickly. At low temperature, the minimum free energy
+  provides an excellent approximation for the minimum energy. We then show how
+  this Jaynes-inspired gradient-ascent approach can be used in both first- and
+  second-order classical and hybrid quantum-classical algorithms for minimizing
+  energy, and equivalently, how it can be used for solving SDPs, with guarantees
+  on the runtimes of the algorithms. The approach discussed here is well
+  grounded in quantum thermodynamics and, as such, provides physical motivation
+  underpinning why algorithms published fifty years after Jaynes' seminal work,
+  including the matrix multiplicative weights update method, the matrix
+  exponentiated gradient update method, and their quantum algorithmic
+  generalizations, perform well at solving SDPs.
+tags:
+  - Condensed Matter - Statistical Mechanics
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2505.04514
+  arxiv: "2505.04514"

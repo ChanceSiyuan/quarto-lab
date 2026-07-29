@@ -1,0 +1,57 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: LWVQKYM3
+  item_version: 108206
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: JHQV7MG3
+      name: complexity
+      path: Quantum Complexity/QCsim/tensor network/2D-PEPS/complexity
+qlab:
+  primary_collection: JHQV7MG3
+  indexed_collections:
+    - JHQV7MG3
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: journalArticle
+title: Contracting projected entangled pair states is average-case hard
+authors:
+  - first: Jonas
+    last: Haferkamp
+  - first: Dominik
+    last: Hangleiter
+  - first: Jens
+    last: Eisert
+  - first: Marek
+    last: Gluza
+year: 2020
+abstract: "An accurate calculation of the properties of quantum many-body
+  systems is one of the most important yet intricate challenges of modern
+  physics and computer science. In recent years, the tensor network ansatz has
+  established itself as one of the most promising approaches enabling striking
+  efficiency of simulating static properties of one-dimensional systems and
+  abounding numerical applications in condensed matter theory. In higher
+  dimensions, however, a connection to the field of computational complexity
+  theory has shown that the accurate normalization of the two-dimensional tensor
+  networks called projected entangled pair states (PEPS) is #P-complete.
+  Therefore, an efficient algorithm for PEPS contraction would allow to solve
+  exceedingly difficult combinatorial counting problems, which is considered
+  highly unlikely. Due to the importance of understanding two- and
+  three-dimensional systems the question currently remains: Are the known
+  constructions typical of states relevant for quantum many-body systems? In
+  this work, we show that an accurate evaluation of normalization or expectation
+  values of PEPS is as hard to compute for typical instances as for special
+  configurations of highest computational hardness. We discuss the structural
+  property of average-case hardness in relation to the current research on
+  efficient algorithms attempting tensor network contraction, hinting at a
+  wealth of possible further insights into the average-case hardness of
+  important problems in quantum many-body theory."
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.1103/physrevresearch.2.013010
+  arxiv: "1810.00738"

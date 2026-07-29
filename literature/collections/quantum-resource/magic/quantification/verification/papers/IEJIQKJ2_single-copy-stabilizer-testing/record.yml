@@ -1,0 +1,49 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: IEJIQKJ2
+  item_version: 96126
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: UJ7EZN4C
+      name: Verification
+      path: Quantum Resource/Magic/Quantification/Verification
+qlab:
+  primary_collection: UJ7EZN4C
+  indexed_collections:
+    - UJ7EZN4C
+  primary_topic: quantum-resource
+  indexed_topics:
+    - quantum-resource
+item_type: preprint
+title: Single-copy stabilizer testing
+authors:
+  - first: Marcel
+    last: Hinsche
+  - first: Jonas
+    last: Helsen
+year: 2024
+abstract: We consider the problem of testing whether an unknown $n$-qubit
+  quantum state $|\psi\rangle$ is a stabilizer state, with only single-copy
+  access. We give an algorithm solving this problem using $O(n)$ copies, and
+  conversely prove that $\Omega(\sqrt{n})$ copies are required for any
+  algorithm. The main observation behind our algorithm is that when repeatedly
+  measuring in a randomly chosen stabilizer basis, stabilizer states are the
+  most likely among the set of all pure states to exhibit linear dependencies in
+  measurement outcomes. Our algorithm is designed to probe deviations from this
+  extremal behavior. For the lower bound, we first reduce stabilizer testing to
+  the task of distinguishing random stabilizer states from the maximally mixed
+  state. We then argue that, without loss of generality, it is sufficient to
+  consider measurement strategies that a) lie in the commutant of the tensor
+  action of the Clifford group and b) satisfy a Positive Partial Transpose (PPT)
+  condition. By leveraging these constraints, together with novel results on the
+  partial transposes of the generators of the Clifford commutant, we derive the
+  lower bound on the sample complexity.
+tags:
+  - Computer Science - Computational Complexity
+  - Computer Science - Data Structures and Algorithms
+  - Quantum Physics
+identifiers:
+  arxiv: "2410.07986"

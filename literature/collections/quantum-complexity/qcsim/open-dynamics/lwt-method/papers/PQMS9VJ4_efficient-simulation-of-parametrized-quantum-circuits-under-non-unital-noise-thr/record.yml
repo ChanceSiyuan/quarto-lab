@@ -1,0 +1,58 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: PQMS9VJ4
+  item_version: 96028
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: SHZ4SM7W
+      name: LWT method
+      path: Quantum Complexity/QCsim/Open-dynamics/LWT method
+qlab:
+  primary_collection: SHZ4SM7W
+  indexed_collections:
+    - SHZ4SM7W
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: preprint
+title: Efficient simulation of parametrized quantum circuits under non-unital
+  noise through Pauli backpropagation
+authors:
+  - first: Victor
+    last: Martinez
+  - first: Armando
+    last: Angrisani
+  - first: Ekaterina
+    last: Pankovets
+  - first: Omar
+    last: Fawzi
+  - first: Daniel Stilck
+    last: França
+year: 2025
+abstract: As quantum devices continue to grow in size but remain affected by
+  noise, it is crucial to determine when and how they can outperform classical
+  computers on practical tasks. A central piece in this effort is to develop the
+  most efficient classical simulation algorithms possible. Among the most
+  promising approaches are Pauli backpropagation algorithms, which have already
+  demonstrated their ability to efficiently simulate certain classes of
+  parameterized quantum circuits-a leading contender for near-term quantum
+  advantage-under random circuit assumptions and depolarizing noise. However,
+  their efficiency was not previously established for more realistic non-unital
+  noise models, such as amplitude damping, that better capture noise on existing
+  hardware. Here, we close this gap by adapting Pauli backpropagation to
+  non-unital noise, proving that it remains efficient even under these more
+  challenging conditions. Our proof leverages a refined combinatorial analysis
+  to handle the complexities introduced by non-unital channels, thus
+  strengthening Pauli backpropagation as a powerful tool for simulating
+  near-term quantum devices.
+tags:
+  - Computer Science - Computational Complexity
+  - Mathematical Physics
+  - Mathematics - Mathematical Physics
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2501.13050
+  arxiv: "2501.13050"

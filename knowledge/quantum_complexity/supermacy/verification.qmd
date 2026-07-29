@@ -1,0 +1,108 @@
+---
+title: Verification of supremacy
+description: The above results claim that classical algorithms achieving for each instance is impossible (under certain assumptions), while quantum computers can do it.
+categories:
+  - theory
+---
+
+[← Back to Index](index.qmd)
+
+
+
+
+# Verification of supremacy
+
+The above results claim that classical algorithms achieving $\frac{1}{2}\sum_x |P_A(x|C) - P_A^{\text{ap}}(x|C)| \leq \varepsilon$ for each instance is impossible (under certain assumptions), while quantum computers can do it. But how do we verify that a quantum device actually meets this requirement?
+
+### Sample Complexity Lower Bound
+
+Directly verifying the total variation distance $\varepsilon(n)$ of an experimental distribution $P_C$ is provably exponentially hard in both samples and computation.
+
+::: {#thm-identity-testing .callout-important icon="false"}
+## Optimal Identity Testing
+
+There exist constants $c_1, c_2 > 0$ such that for any $\varepsilon > 0$ and target distribution $P$, there exists a test that, given samples from distribution $Q$, distinguishes $P = Q$ from $\|P - Q\|_{\text{TV}} > 1 - \varepsilon$ using only $c_1 \max\{\varepsilon^{-1}, \varepsilon^{-2} \|P_{-\varepsilon/16}^{-\max}\|_{\ell^{2/3}}\}$ samples. On the other hand, with fewer than $c_1 \max\{\varepsilon^{-1}, \varepsilon^{-2} \|P_{-2\varepsilon}^{-\max}\|_{\ell^{2/3}}\}$ samples, no such test exists [@hangleiter2023computational, Theorem 25].
+:::
+
+::: {#lem-exponential-samples .callout-important icon="false"}
+## Exponential Sample Requirement
+
+If a random circuit ensemble satisfies $\mathbb{E}_{C \sim \mathcal{C}} \sum_x p_x(C)^2 \leq \mathcal{O}(2^{-n})$, then completing the identity test of @thm-identity-testing requires at least $\Omega(2^{n/4})$ samples.
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+
+*Proof.* Random circuits satisfying the hiding property, combined with $\mathbb{E}_{C \sim \mathcal{C}} \sum_x p_x(C)^2 \leq \mathcal{O}(2^{-n})$, necessarily satisfy the anti-concentration condition.
+
+First prove the following inequality:
+
+$$
+\|P_{-\varepsilon}^{-\max}\|_{\ell^{2/3}} \geq p_0^{-1/2}(1 - \varepsilon - p_0)^{3/2} \geq e^{H_2(P)/4}(1 - \varepsilon - e^{-H_2(P)/2}).
+$$
+
+The exponential scaling of the right-hand side in $n$ (via the Rényi entropy $H_2$) then implies the $\Omega(2^{n/4})$ sample lower bound. $\square$
+:::
+
+### Cross-Entropy Benchmarking (XEB)
+
+To circumvent the above problem, rather than directly verifying the total variation distance between the output distribution $Q$ and the ideal distribution $P$, one instead checks their cross-entropy. This resolves the sample-hardness issue:
+
+$$
+F_f(Q, P) := \sum_x Q(x)\, f[P(x)].
+$$
+
+Specifically, the **linear cross-entropy benchmark** (XEB) is defined as:
+
+$$
+F_X(q, p_U) = \sum_x q(x) \left[2^n \cdot p_U(x) - 1\right] = 2^n \left[\sum_x q(x)\, p_U(x)\right] - 1,
+$$
+
+called the cross-entropy fidelity of distributions $q$ and $p_U$. It has the following properties:
+
+::: {#lem-xeb-properties .callout-important icon="false"}
+## XEB Properties
+
+1. The cross-entropy fidelity between the uniform distribution and any distribution is 0.
+2. If random circuits $U \sim \mathcal{U}$ form a 2-design, then $\mathbb{E}[F_X(p_U, p_U)] = 1 + \mathcal{O}(2^{-n})$ [@hangleiter2023computational, Eq. 163].
+:::
+
+The average XEB is itself a measure of the anti-concentration property:
+
+::: {#lem-xeb-anticoncentration .callout-important icon="false"}
+## XEB Implies Anti-Concentration
+
+In the noiseless case, define $\chi := \mathbb{E}_{U \sim \mathcal{U}} F_X(p_U, p_U) = 2^n \left[\mathbb{E}_{U \sim \mathcal{U}} \sum_x p_U(x)^2\right] - 1$. If $\chi = \mathcal{O}(1)$ and the circuit satisfies the hiding property, then it satisfies anti-concentration.
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+
+*Proof.* From the definition, $\mathbb{E}_{U \sim \mathcal{U}}[p_U(x)^2] \leq (1 + \chi) \cdot 2^{-2n}$.
+
+Using the Paley-Zygmund inequality for random variables in $[0,1]$:
+
+$$
+\Pr[R \geq \alpha\, \mathbb{E}(R)] \geq (1 - \alpha)^2 \frac{\mathbb{E}(R)^2}{\mathbb{E}(R^2)}, \quad \alpha \in (0,1),
+$$
+
+one obtains:
+
+$$
+\Pr_{C \sim \mathcal{C}}\!\left[p_C(x) \geq \frac{\alpha}{2^n}\right] \geq \frac{(1 - \alpha)^2}{5}. \quad \square
+$$
+:::
+
+For distributions that are sufficiently concentrated, XEB provides a sampling-efficient but computation-hard estimation method:
+
+::: {#thm-xeb-sampling .callout-important icon="false"}
+## XEB is Sampling Efficient
+
+- If random circuits are drawn from the Haar measure $\mathcal{U}$, the output probabilities $p_U(x) := |\langle x|U|0\rangle|^2$ satisfy a Porter-Thomas distribution: $\mathbb{P}_{U \sim \mathcal{U}}[p_U(x) \geq t] \leq e^{-dt/e}$.
+- If $q$ satisfies the above Porter-Thomas distribution, then with $m \geq \frac{e^2}{2\varepsilon^2} \ln^2(2^{n+1}/\delta) \ln(2/\delta)$ samples, $F_X(q, p_U)$ can be estimated to additive error $\varepsilon$ with confidence $1 - \delta$ [@eisert2020certification, Lemma 59--62].
+:::
+
+**Limitations:**
+
+1. The above discussion only shows that in the noiseless case, XEB necessarily takes the value $1 + \mathcal{O}(2^{-n})$. What remains to be discussed is whether XEB $\approx 1$ implies high-fidelity realization of $p_U(x)$. In general, this does not hold and depends on the form of noise [@ware2024xeb].
+2. Computing $p_U(x)$ is itself hard, so one can only verify "trends."

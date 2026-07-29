@@ -1,0 +1,49 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: PQESUCD7
+  item_version: 96035
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 6RFCL2MN
+      name: Hyperbolic
+      path: Quantum Error correction/2-Code categories/q-LDPC/Construction/Hyperbolic
+qlab:
+  primary_collection: 6RFCL2MN
+  indexed_collections:
+    - 6RFCL2MN
+  primary_topic: quantum-error-correction
+  indexed_topics:
+    - quantum-error-correction
+item_type: journalArticle
+title: Subsystem codes with high thresholds by gauge fixing and reduced qubit overhead
+authors:
+  - first: Oscar
+    last: Higgott
+  - first: Nikolas P.
+    last: Breuckmann
+year: 2021
+abstract: We introduce a technique that uses gauge fixing to significantly
+  improve the quantum error correcting performance of subsystem codes. By
+  changing the order in which check operators are measured, valuable additional
+  information can be gained, and we introduce a new method for decoding which
+  uses this information to improve performance. Applied to the subsystem toric
+  code with three-qubit check operators, we increase the threshold under
+  circuit-level depolarising noise from $0.67\%$ to $0.81\%$. The threshold
+  increases further under a circuit-level noise model with small finite bias, up
+  to $2.22\%$ for infinite bias. Furthermore, we construct families of
+  finite-rate subsystem LDPC codes with three-qubit check operators and
+  optimal-depth parity-check measurement schedules. To the best of our
+  knowledge, these finite-rate subsystem codes outperform all known codes at
+  circuit-level depolarising error rates as high as $0.2\%$, where they have a
+  qubit overhead that is $4.3\times$ lower than the most efficient version of
+  the surface code and $5.1\times$ lower than the subsystem toric code. Their
+  threshold and pseudo-threshold exceeds $0.42\%$ for circuit-level depolarising
+  noise, increasing to $2.4\%$ under infinite bias using gauge fixing.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.1103/physrevx.11.031039
+  arxiv: "2010.09626"

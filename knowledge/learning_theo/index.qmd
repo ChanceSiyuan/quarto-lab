@@ -1,0 +1,57 @@
+---
+title: Learning Theory and Quantum Learning
+description: Neural network learning dynamics, quantum observable estimation, sample-complexity lower bounds, and symmetry tools.
+---
+
+# Introduction
+
+This collection groups the notes in `learning_theo` into a single reading path. The central theme is how learning dynamics, measurement constraints, and symmetry reductions determine what can be learned efficiently.
+
+The material is organized into four layers:
+
+1. Neural-network learning dynamics: NTK, lazy training, feature learning, grokking, and ground-state learning with neural networks.
+2. Quantum learning and estimation: local multi-copy observable estimation and approximate data loading.
+3. Lower-bound methods: Le Cam's method, constrained POVMs, adaptive strategies, and hard instance constructions.
+4. Symmetry and moment tools: Weingarten calculus, Clifford commutants, symmetric strategies, and approximate designs.
+
+## Reading map
+
+- [Getting Groud states enpower the Neural Networks](gd_learn.qmd)
+- [Local Multi-copy Estimation of Quantum Observables](Estimation_rev.qmd)
+- [Phase gate learning](phasegate_learn.qmd)
+- [Classical Shadow Tomography](Shadow_tomography/index.qmd)
+- [Toolbox for Proving Lower Bounds](Lowerbounds/index.qmd)
+- [Virtual Distillation for Quantum Error Mitigation](Virtual_Distillation/index.qmd)
+- [Weak Schur Tools](weak_schur/index.qmd)
+
+## 1. Neural Learning Dynamics
+
+The main survey treats grokking as a phase transition from a lazy NTK-like regime to a rich feature-learning regime. It connects memorization plateaus, order parameters, mean-field descriptions, finite-width corrections, optimizer effects, and singular learning theory.
+
+**Core note:** [Ground-State Learning with Neural Networks](gd_learn.qmd)
+
+**Key concepts:** NTK, lazy regime, feature learning, grokking delay, order parameters, mean-field dynamics, finite-width corrections
+
+## [2. Quantum Learning and Estimation](Estimation_rev.qmd)
+
+The estimation notes study how quantum observables can be learned under local, multi-copy, and shadow-style measurement constraints. Approximate data loading complements this by comparing classical streaming/query resources with quantum sketching-style approaches.
+
+**Core note:** [Local Multi-copy Estimation of Quantum Observables](Estimation_rev.qmd)
+
+**Key concepts:** Classical shadows, local measurements, Bell measurements, Pauli sums, non-linear property estimation, memory-sample tradeoffs
+
+## [3. Lower Bounds Toolbox](Lowerbounds/index.qmd)
+
+The lower-bound sequence develops a toolkit for proving sample-complexity impossibility results. It begins with classical two-point testing and then adds quantum-specific constraints such as memory-limited measurements, locality, adaptivity, and resource restrictions.
+
+**Core notes:** [Toolbox Overview](Lowerbounds/index.qmd), [Le Cam's Method](Lowerbounds/lecam_method.qmd), [Restrictions on POVMs](Lowerbounds/povm_restrictions.qmd), [Adaptive Strategies](Lowerbounds/adaptive_strategies.qmd), [Operator Mixed Ensembles](Lowerbounds/operator_mixed.qmd), [Haar-Assembled Ensembles](Lowerbounds/haar_ensembles.qmd)
+
+**Key concepts:** Total variation distance, coarse graining, POVM restrictions, decision trees, chi-squared divergence, operator-mixed ensembles, Haar hard instances
+
+## [4. Symmetry and Weingarten Tools](weak_schur/Weingarten_calculus.qmd)
+
+These notes provide the representation-theoretic and moment-calculus tools that support the lower-bound arguments. They cover Haar integration, Clifford-Weingarten formulas, symmetric strategy reductions, and approximate circuit designs.
+
+**Core note:** [Weingarten Calculus](weak_schur/Weingarten_calculus.qmd)
+
+**Key concepts:** Haar moments, permutation operators, Pauli monomials, Clifford commutants, symmetric strategies, approximate designs

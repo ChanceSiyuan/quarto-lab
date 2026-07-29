@@ -2,7 +2,7 @@ import vinext from "vinext";
 import { defineConfig } from "vite";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import hostingConfig from "./.openai/hosting.json" with { type: "json" };
-import { sites } from "./build/sites-vite-plugin.ts";
+import { sites } from "./.research-loop/tooling/sites/sites-vite-plugin.ts";
 
 const SITE_CREATOR_PLACEHOLDER_DATABASE_ID =
   "00000000-0000-4000-8000-000000000000";
@@ -75,7 +75,7 @@ export function buildLocalServiceProxy({
 }
 
 const localBindingConfig = {
-  main: "./worker/index.ts",
+  main: "./src/worker/index.ts",
   compatibility_flags: ["nodejs_compat"],
   d1_databases: d1
     ? [

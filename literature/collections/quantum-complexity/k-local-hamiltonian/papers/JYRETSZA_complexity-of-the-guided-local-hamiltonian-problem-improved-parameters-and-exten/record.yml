@@ -1,0 +1,50 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: JYRETSZA
+  item_version: 96087
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 9DNRTS45
+      name: k-local Hamiltonian
+      path: Quantum Complexity/k-local Hamiltonian
+qlab:
+  primary_collection: 9DNRTS45
+  indexed_collections:
+    - 9DNRTS45
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: preprint
+title: "Complexity of the Guided Local Hamiltonian Problem: Improved Parameters
+  and Extension to Excited States"
+authors:
+  - first: Chris
+    last: Cade
+  - first: Marten
+    last: Folkertsma
+  - first: Jordi
+    last: Weggemans
+year: 2024
+abstract: "Recently it was shown that the so-called guided local Hamiltonian
+  problem -- estimating the smallest eigenvalue of a $k$-local Hamiltonian when
+  provided with a description of a quantum state ('guiding state') that is
+  guaranteed to have substantial overlap with the true groundstate -- is
+  BQP-complete for $k \\geq 6$ when the required precision is inverse polynomial
+  in the system size $n$, and remains hard even when the overlap of the guiding
+  state with the groundstate is close to a constant $\\left(\\frac12 -
+  \\Omega\\left(\\frac{1}{\\mathop{poly}(n)}\\right)\\right)$. We improve upon
+  this result in three ways: by showing that it remains BQP-complete when i) the
+  Hamiltonian is 2-local, ii) the overlap between the guiding state and target
+  eigenstate is as large as $1 -
+  \\Omega\\left(\\frac{1}{\\mathop{poly}(n)}\\right)$, and iii) when one is
+  interested in estimating energies of excited states, rather than just the
+  groundstate. Interestingly, iii) is only made possible by first showing that
+  ii) holds."
+tags:
+  - Computer Science - Computational Complexity
+  - Quantum Physics
+identifiers:
+  arxiv: "2207.10097"

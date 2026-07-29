@@ -1,0 +1,54 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: QD89HE55
+  item_version: 96125
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: BLGT7IW5
+      name: Lattice theory
+      path: Condensed matter/Lattice theory
+qlab:
+  primary_collection: BLGT7IW5
+  indexed_collections:
+    - BLGT7IW5
+  primary_topic: condensed-matter
+  indexed_topics:
+    - condensed-matter
+item_type: journalArticle
+title: Toward scalable simulations of Lattice Gauge Theories on quantum computers
+authors:
+  - first: Simon V.
+    last: Mathis
+  - first: Guglielmo
+    last: Mazzola
+  - first: Ivano
+    last: Tavernelli
+year: 2020
+abstract: The simulation of real-time dynamics in lattice gauge theories is
+  particularly hard for classical computing due to the exponential scaling of
+  the required resources. On the other hand, quantum algorithms can potentially
+  perform the same calculation with a polynomial dependence on the number of
+  degrees of freedom. A precise estimation is however particularly challenging
+  for the simulation of lattice gauge theories in arbitrary dimensions, where,
+  gauge fields are dynamical variables, in addition to the particle fields.
+  Moreover, there exist several choices for discretizing particles and gauge
+  fields on a lattice, each of them coming at different prices in terms of qubit
+  register size and circuit depth. Here we provide a resource counting for
+  real-time evolution of $U(1)$ gauge theories, such as Quantum Electrodynamics,
+  on arbitrary dimension using the Wilson fermion representation for the
+  particles, and the Quantum Link Model approach for the gauge fields. We study
+  the phenomena of flux-string breaking up to a genuine bi-dimensional model
+  using classical simulations of the quantum circuits, and discuss the
+  advantages of our discretization choice in simulation of more challenging
+  $SU(N)$ gauge theories such as Quantum Chromodynamics.
+tags:
+  - Condensed Matter - Statistical Mechanics
+  - Condensed Matter - Strongly Correlated Electrons
+  - High Energy Physics - Lattice
+  - Quantum Physics
+identifiers:
+  doi: 10.1103/physrevd.102.094501
+  arxiv: "2005.10271"

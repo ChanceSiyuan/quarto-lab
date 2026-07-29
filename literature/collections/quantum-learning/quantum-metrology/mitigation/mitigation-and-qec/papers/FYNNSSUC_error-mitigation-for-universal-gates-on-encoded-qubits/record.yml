@@ -1,0 +1,56 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: FYNNSSUC
+  item_version: 96079
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: GYX7HGXH
+      name: Mitigation and QEC
+      path: Quantum Learning/Quantum Metrology/Mitigation/Mitigation and QEC
+qlab:
+  primary_collection: GYX7HGXH
+  indexed_collections:
+    - GYX7HGXH
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: journalArticle
+title: Error mitigation for universal gates on encoded qubits
+authors:
+  - first: Christophe
+    last: Piveteau
+  - first: David
+    last: Sutter
+  - first: Sergey
+    last: Bravyi
+  - first: Jay M.
+    last: Gambetta
+  - first: Kristan
+    last: Temme
+year: 2021
+abstract: The Eastin-Knill theorem states that no quantum error correcting code
+  can have a universal set of transversal gates. For CSS codes that can
+  implement Clifford gates transversally it suffices to provide one additional
+  non-Clifford gate, such as the T-gate, to achieve universality. Common methods
+  to implement fault-tolerant T-gates like magic state distillation generate a
+  significant hardware overhead that will likely prevent their practical usage
+  in the near-term future. Recently methods have been developed to mitigate the
+  effect of noise in shallow quantum circuits that are not protected by error
+  correction. Error mitigation methods require no additional hardware resources
+  but suffer from a bad asymptotic scaling and apply only to a restricted class
+  of quantum algorithms. In this work, we combine both approaches and show how
+  to implement encoded Clifford+T circuits where Clifford gates are protected
+  from noise by error correction while errors introduced by noisy encoded
+  T-gates are mitigated using the quasi-probability method. As a result,
+  Clifford+T circuits with a number of T-gates inversely proportional to the
+  physical noise rate can be implemented on small error-corrected devices
+  without magic state distillation. We argue that such circuits can be out of
+  reach for state-of-the-art classical simulation algorithms.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.1103/physrevlett.127.200505
+  arxiv: "2103.04915"

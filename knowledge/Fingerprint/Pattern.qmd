@@ -1,0 +1,15 @@
+---
+title: Pattern Matching
+description: Trusted knowledge note for Pattern Matching.
+categories:
+  - theory
+---
+
+# Summary and questions
+
+
+# Pattern Matching
+
+:::{#def-pattern-matching .callout-note icon="false"}
+Given pattern $P$ of length $m$ and a text $T$ of length $n$, the classical Exact Pattern Matching problem asks to identify the fragments of $T$ that match $P$ exactly: $Occ(P, T) = \{i \in [0, n-m] \mid P = T[i, i+m)\}$.
+:::

@@ -1,0 +1,52 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: FQ8HLVCZ
+  item_version: 109129
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: ABE862DE
+      name: Circuit learning
+      path: Quantum Learning/Learning on operations/Circuit learning
+qlab:
+  primary_collection: ABE862DE
+  indexed_collections:
+    - ABE862DE
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: preprint
+title: Efficient Learning of Structured Quantum Circuits via Pauli
+  Dimensionality and Sparsity
+authors:
+  - first: Sabee
+    last: Grewal
+  - first: Daniel
+    last: Liang
+year: 2026
+abstract: We study the problem of efficiently learning an unknown $n$-qubit
+  unitary channel in diamond distance given query access. We present a general
+  framework showing that if Pauli operators remain low-complexity under
+  conjugation by a unitary, then the unitary can be learned efficiently. This
+  framework yields polynomial-time algorithms for a wide range of circuit
+  classes, including $O(\log \log n)$-depth circuits, quantum $O(\log
+  n)$-juntas, near-Clifford circuits, the Clifford hierarchy, fermionic
+  matchgate circuits, and certain compositions thereof. Our results unify and
+  generalize prior work, and yield efficient learning algorithms for more
+  expressive circuit classes than were previously known. Our framework is
+  powered by new learning algorithms for unitaries whose Pauli spectrum is
+  either supported on a small subgroup or is sparse. If the Pauli spectrum is
+  supported on a subgroup of size $2^k$, we give an $\widetilde{O}(2^k/ε)$-query
+  algorithm and a nearly matching $Ω(2^k/ε)$ lower bound. For $k = 2n$, we
+  recover the optimal $O(4^n/ε)$-query algorithm of Haah, Kothari, O'Donnell,
+  and Tang [FOCS '23]. If the Pauli spectrum is supported on $s$ Pauli
+  operators, we give an $O(s^2/ε^2)$-query algorithm and an $Ω(s/ε)$ lower
+  bound.
+tags:
+  - Computer Science - Data Structures and Algorithms
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2510.00168
+  arxiv: "2510.00168"

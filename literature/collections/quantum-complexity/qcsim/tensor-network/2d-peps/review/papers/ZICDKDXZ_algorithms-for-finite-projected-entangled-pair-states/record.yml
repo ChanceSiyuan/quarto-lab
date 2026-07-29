@@ -1,0 +1,47 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: ZICDKDXZ
+  item_version: 107854
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: ZGV2NFH9
+      name: Review
+      path: Quantum Complexity/QCsim/tensor network/2D-PEPS/Review
+qlab:
+  primary_collection: ZGV2NFH9
+  indexed_collections:
+    - ZGV2NFH9
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: journalArticle
+title: Algorithms for finite Projected Entangled Pair States
+authors:
+  - first: Michael
+    last: Lubasch
+  - first: J. Ignacio
+    last: Cirac
+  - first: Mari-Carmen
+    last: Bañuls
+year: 2014
+abstract: Projected Entangled Pair States (PEPS) are a promising ansatz for the
+  study of strongly correlated quantum many-body systems in two dimensions. But
+  due to their high computational cost, developing and improving PEPS algorithms
+  is necessary to make the ansatz widely usable in practice. Here we analyze
+  several algorithmic aspects of the method. On the one hand, we quantify the
+  connection between the correlation length of the PEPS and the accuracy of its
+  approximate contraction, and discuss how purifications can be used in the
+  latter. On the other, we present algorithmic improvements for the update of
+  the tensor that introduce drastic gains in the numerical conditioning and the
+  efficiency of the algorithms. Finally, the state-of-the-art general PEPS code
+  is benchmarked with the Heisenberg and quantum Ising models on lattices of up
+  to $21 \times 21$ sites.
+tags:
+  - Condensed Matter - Strongly Correlated Electrons
+  - Quantum Physics
+identifiers:
+  doi: 10.1103/physrevb.90.064425
+  arxiv: "1405.3259"

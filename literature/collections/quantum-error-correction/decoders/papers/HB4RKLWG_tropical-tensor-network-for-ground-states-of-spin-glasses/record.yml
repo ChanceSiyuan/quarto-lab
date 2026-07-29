@@ -1,0 +1,57 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: HB4RKLWG
+  item_version: 96163
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: B3RQWHII
+      name: Decoders
+      path: Quantum Error correction/Decoders
+qlab:
+  primary_collection: B3RQWHII
+  indexed_collections:
+    - B3RQWHII
+  primary_topic: quantum-error-correction
+  indexed_topics:
+    - quantum-error-correction
+item_type: journalArticle
+title: Tropical Tensor Network for Ground States of Spin Glasses
+authors:
+  - first: Jin-Guo
+    last: Liu
+  - first: Lei
+    last: Wang
+  - first: Pan
+    last: Zhang
+year: 2021
+abstract: We present a unified exact tensor network approach to compute the
+  ground state energy, identify the optimal configuration, and count the number
+  of solutions for spin glasses. The method is based on tensor networks with the
+  Tropical Algebra defined on the semiring. Contracting the tropical tensor
+  network gives the ground state energy; differentiating through the tensor
+  network contraction gives the ground state configuration; mixing the tropical
+  algebra and the ordinary algebra counts the ground state degeneracy. The
+  approach brings together the concepts from graphical models, tensor networks,
+  differentiable programming, and quantum circuit simulation, and easily
+  utilizes the computational power of graphical processing units (GPUs). For
+  applications, we compute the exact ground state energy of Ising spin glasses
+  on square lattice up to 1024 spins, on cubic lattice up to 216 spins, and on 3
+  regular random graphs up to 220 spins, on a single GPU; We obtain exact ground
+  state energy of (+/-)J Ising spin glass on the chimera graph of D-Wave quantum
+  annealer of 512 qubits in less than 100 seconds and investigate the exact
+  value of the residual entropy of (+/-)J spin glasses on the chimera graph;
+  Finally, we investigate ground-state energy and entropy of 3-state Potts
+  glasses on square lattices up to size 18 x 18. Our approach provides baselines
+  and benchmarks for exact algorithms for spin glasses and combinatorial
+  optimization problems, and for evaluating heuristic algorithms and mean-field
+  theories.
+tags:
+  - Condensed Matter - Statistical Mechanics
+  - Quantum Physics
+  - Statistics - Computation
+identifiers:
+  doi: 10.1103/physrevlett.126.090506
+  arxiv: "2008.06888"

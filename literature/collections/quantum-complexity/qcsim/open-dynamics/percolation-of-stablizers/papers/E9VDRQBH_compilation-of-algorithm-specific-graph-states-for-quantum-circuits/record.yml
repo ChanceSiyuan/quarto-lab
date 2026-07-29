@@ -1,0 +1,50 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: E9VDRQBH
+  item_version: 96025
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: PBGR25EN
+      name: percolation of stablizers
+      path: Quantum Complexity/QCsim/Open-dynamics/percolation of stablizers
+qlab:
+  primary_collection: PBGR25EN
+  indexed_collections:
+    - PBGR25EN
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: journalArticle
+title: Compilation of algorithm-specific graph states for quantum circuits
+authors:
+  - first: Madhav
+    last: Krishnan Vijayan
+  - first: Alexandru
+    last: Paler
+  - first: Jason
+    last: Gavriel
+  - first: Casey R
+    last: Myers
+  - first: Peter P
+    last: Rohde
+  - first: Simon J
+    last: Devitt
+year: 2024
+abstract: We present a quantum circuit compiler that prepares an
+  algorithm-specific graph state from quantum circuits described in high level
+  languages, such as Cirq and Q#. The computation can then be implemented using
+  a series of non-Pauli measurements on this graph state. By compiling the graph
+  state directly instead of starting with a standard lattice cluster state and
+  preparing it over the course of the computation, we are able to better
+  understand the resource costs involved and eliminate wasteful Pauli
+  measurements on the actual quantum device. Access to this algorithm-specific
+  graph state also allows for optimisation over locally equivalent graph states
+  to implement the same quantum circuit. The compiler presented here finds ready
+  application in measurement based quantum computing, NISQ devices and logical
+  level compilation for fault tolerant implementations.
+tags: []
+identifiers:
+  doi: 10.1088/2058-9565/ad1f39

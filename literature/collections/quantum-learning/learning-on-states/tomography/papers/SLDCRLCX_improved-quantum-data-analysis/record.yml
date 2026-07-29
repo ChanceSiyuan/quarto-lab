@@ -1,0 +1,40 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: SLDCRLCX
+  item_version: 96149
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: EIP4ZQQD
+      name: Tomography
+      path: Quantum Learning/Learning on states/Tomography
+qlab:
+  primary_collection: EIP4ZQQD
+  indexed_collections:
+    - EIP4ZQQD
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: journalArticle
+title: Improved Quantum data analysis
+authors:
+  - first: Costin
+    last: Bădescu
+  - first: Ryan
+    last: O'Donnell
+year: 2021
+abstract: We provide more sample-efficient versions of some basic routines in
+  quantum data analysis, along with simpler proofs. Particularly, we give a
+  quantum ”Threshold Search” algorithm that requires only O((log2 m)/є2) samples
+  of a d-dimensional state ρ. That is, given observables 0 ≤ A1, A2, …, Am ≤ 1
+  such that (ρ Ai) ≥ 1/2 for at least one i, the algorithm finds j with (ρ Aj) ≥
+  1/2−є. As a consequence, we obtain a Shadow Tomography algorithm requiring
+  only O((log2 m)(logd)/є4) samples, which simultaneously achieves the best
+  known dependence on each parameter m, d, є. This yields the same sample
+  complexity for quantum Hypothesis Selection among m states; we also give an
+  alternative Hypothesis Selection method using O((log3 m)/є2) samples.
+tags: []
+identifiers:
+  doi: 10.1145/3406325.3451109

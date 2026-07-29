@@ -1,0 +1,59 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 8RMADBAV
+  item_version: 96049
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 4YJDR2TB
+      name: Schur-Weyl duality
+      path: Quantum Resource/Schur-Weyl duality
+    - key: ISN46ZEU
+      name: Quantum Learning
+      path: Quantum Learning
+qlab:
+  primary_collection: 4YJDR2TB
+  indexed_collections:
+    - 4YJDR2TB
+    - ISN46ZEU
+  primary_topic: quantum-resource
+  indexed_topics:
+    - quantum-learning
+    - quantum-resource
+item_type: preprint
+title: The role of shared randomness in quantum state certification with
+  unentangled measurements
+authors:
+  - first: Yuhan
+    last: Liu
+  - first: Jayadev
+    last: Acharya
+year: 2024
+abstract: Given $n$ copies of an unknown quantum state
+  $\rho\in\mathbb{C}^{d\times d}$, quantum state certification is the task of
+  determining whether $\rho=\rho_0$ or $\|\rho-\rho_0\|_1>\varepsilon$, where
+  $\rho_0$ is a known reference state. We study quantum state certification
+  using unentangled quantum measurements, namely measurements which operate only
+  on one copy of $\rho$ at a time. When there is a common source of shared
+  randomness available and the unentangled measurements are chosen based on this
+  randomness, prior work has shown that $\Theta(d^{3/2}/\varepsilon^2)$ copies
+  are necessary and sufficient. This holds even when the measurements are
+  allowed to be chosen adaptively. We consider deterministic measurement schemes
+  (as opposed to randomized) and demonstrate that ${\Theta}(d^2/\varepsilon^2)$
+  copies are necessary and sufficient for state certification. This shows a
+  separation between algorithms with and without shared randomness. We develop a
+  unified lower bound framework for both fixed and randomized measurements,
+  under the same theoretical framework that relates the hardness of testing to
+  the well-established L\"uders rule. More precisely, we obtain lower bounds for
+  randomized and fixed schemes as a function of the eigenvalues of the L\"uders
+  channel which characterizes one possible post-measurement state
+  transformation.
+tags:
+  - Computer Science - Computational Complexity
+  - Computer Science - Information Theory
+  - Mathematics - Information Theory
+  - Quantum Physics
+identifiers:
+  arxiv: "2401.09650"

@@ -1,0 +1,83 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: T99MQLZR
+  item_version: 96016
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: VMP2AYWR
+      name: Bell sampling and generalization
+      path: Quantum Learning/_Review/Bell sampling and generalization
+    - key: S9IUATA5
+      name: Experiments
+      path: Quantum Learning/Experiments
+    - key: FPA4Q6YB
+      name: _Experiment
+      path: Quantum Learning/Learning on operations/_Experiment
+    - key: ITLT2FDY
+      name: lowerbounds
+      path: Quantum Learning/Learning on states/lowerbounds
+qlab:
+  primary_collection: VMP2AYWR
+  indexed_collections:
+    - FPA4Q6YB
+    - ITLT2FDY
+    - S9IUATA5
+    - VMP2AYWR
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: journalArticle
+title: Quantum advantage in learning from experiments
+authors:
+  - first: Hsin-Yuan
+    last: Huang
+  - first: Michael
+    last: Broughton
+  - first: Jordan
+    last: Cotler
+  - first: Sitan
+    last: Chen
+  - first: Jerry
+    last: Li
+  - first: Masoud
+    last: Mohseni
+  - first: Hartmut
+    last: Neven
+  - first: Ryan
+    last: Babbush
+  - first: Richard
+    last: Kueng
+  - first: John
+    last: Preskill
+  - first: Jarrod R.
+    last: McClean
+year: 2022
+abstract: Quantum technology has the potential to revolutionize how we acquire
+  and process experimental data to learn about the physical world. An
+  experimental setup that transduces data from a physical system to a stable
+  quantum memory, and processes that data using a quantum computer, could have
+  significant advantages over conventional experiments in which the physical
+  system is measured and the outcomes are processed using a classical computer.
+  We prove that, in various tasks, quantum machines can learn from exponentially
+  fewer experiments than those required in conventional experiments. The
+  exponential advantage holds in predicting properties of physical systems,
+  performing quantum principal component analysis on noisy states, and learning
+  approximate models of physical dynamics. In some tasks, the quantum processing
+  needed to achieve the exponential advantage can be modest; for example, one
+  can simultaneously learn about many noncommuting observables by processing
+  only two copies of the system. Conducting experiments with up to 40
+  superconducting qubits and 1300 quantum gates, we demonstrate that a
+  substantial quantum advantage can be realized using today's relatively noisy
+  quantum processors. Our results highlight how quantum technology can enable
+  powerful new strategies to learn about nature.
+tags:
+  - Computer Science - Information Theory
+  - Computer Science - Machine Learning
+  - Mathematics - Information Theory
+  - Quantum Physics
+identifiers:
+  doi: 10.1126/science.abn7293
+  arxiv: "2112.00778"

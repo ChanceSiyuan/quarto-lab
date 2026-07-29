@@ -1,0 +1,65 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 6KKVHKC7
+  item_version: 96158
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 9ISUJVXK
+      name: shadow tomo
+      path: Quantum Learning/Learning on states/Tomography/shadow tomo
+    - key: BHQ436R2
+      name: AI4Q
+      path: Quantum Learning/Machine learning/AI4Q
+qlab:
+  primary_collection: 9ISUJVXK
+  indexed_collections:
+    - 9ISUJVXK
+    - BHQ436R2
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: journalArticle
+title: Neural-shadow quantum state tomography
+authors:
+  - first: Victor
+    last: Wei
+  - first: W. A.
+    last: Coish
+  - first: Pooya
+    last: Ronagh
+  - first: Christine A.
+    last: Muschik
+year: 2024
+abstract: >-
+  Quantum state tomography (QST) is the art of reconstructing an unknown quantum
+  state through measurements. It is a key primitive for developing quantum
+  technologies. Neural network quantum state tomography (NNQST), which aims to
+  reconstruct the quantum state via a neural network ansatz, is often
+  implemented via a basis-dependent cross-entropy loss function.
+  State-of-the-art implementations of NNQST are often restricted to
+  characterizing a particular subclass of states, to avoid an exponential growth
+  in the number of required measurement settings. To provide a more broadly
+  applicable method for efficient state reconstruction, we present
+  “neural-shadow quantum state tomography” (NSQST)—an alternative neural
+  network-based QST protocol that uses infidelity as the loss function. The
+  infidelity is estimated using the classical shadows of the target state.
+  Infidelity is a natural choice for training loss, benefiting from the proven
+  measurement sample efficiency of the classical shadow formalism. Furthermore,
+  NSQST is robust against various types of noise without any error mitigation.
+  We numerically demonstrate the advantage of NSQST over NNQST at learning the
+  relative phases of three target quantum states of practical interest, as well
+  as the advantage over direct shadow estimation. NSQST greatly extends the
+  practical reach of NNQST and provides a novel route to effective quantum state
+  tomography.
+              
+                
+                
+                  
+                    Published by the American Physical Society
+                    2024
+tags: []
+identifiers:
+  doi: 10.1103/physrevresearch.6.023250

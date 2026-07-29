@@ -1,0 +1,71 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 8VJUYC3U
+  item_version: 96041
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: H5F9PKZR
+      name: verification
+      path: Quantum Complexity/Sampling/supermacy verification/verification
+    - key: BWI5ZT63
+      name: IQP as algorithm
+      path: Quantum Complexity/Sampling/IQP/IQP as algorithm
+    - key: BLR38PUL
+      name: classical simulation
+      path: Quantum Complexity/Sampling/IQP/classical simulation
+qlab:
+  primary_collection: H5F9PKZR
+  indexed_collections:
+    - BLR38PUL
+    - BWI5ZT63
+    - H5F9PKZR
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: journalArticle
+title: Methods for classically simulating noisy networked quantum architectures
+authors:
+  - first: Iskren
+    last: Vankov
+  - first: Daniel
+    last: Mills
+  - first: Petros
+    last: Wallden
+  - first: Elham
+    last: Kashefi
+year: 2020
+abstract: >-
+  Abstract
+              
+                As research on building scalable quantum computers advances, it is important to be able to certify their correctness. Due to the exponential hardness of classically simulating quantum computation, straight-forward verification through classical simulation fails. However, we
+                can
+                classically simulate small scale quantum computations and hence we
+                are
+                able to test that devices behave as expected in this domain. This constitutes the first step towards obtaining confidence in the anticipated quantum-advantage when we extend to scales that can no longer be simulated. Realistic devices have restrictions due to their architecture and limitations due to physical imperfections and noise. Here we extend the usual ideal simulations by considering those effects. We provide a general methodology for constructing realistic simulations emulating the physical system which will both provide a benchmark for realistic devices, and guide experimental research in the quest for quantum-advantage. We exemplify our methodology by simulating a networked architecture and corresponding noise-model; in particular that of the device developed in the Networked Quantum Information Technologies Hub (NQIT) (Networked Quantum Information Technologies Hub 2018
+                https://nqit.ox.ac.uk/
+                ; 2016 private communication. The error model was based on communication with Chris Balance and Tom Harty, mediated through Niel de Beaudrap, early on the NQIT project. Continued collaboration and communication with experimentalists could lead in refinement of the error model, which could be subject for future work.). For our simulations we use, with suitable modification, the classical simulator of Bravyi and Gosset 2016 (
+                Phys. Rev. Lett.
+                116
+                250501). The specific problems considered belong to the class of instantaneous quantum polynomial-time (
+                IQP
+                ) problems (Shepherd and Bremner 2009
+                Proc. R. Soc.
+                A
+                465
+                141339), a class believed to be hard for classical computing devices, and to be a promising candidate for the first demonstration of quantum-advantage. We first consider a subclass of
+                IQP
+                , defined in Bermejo-Vega
+                et al
+                2018 (
+                Phys. Rev.
+                X
+                8
+                021010), involving two-dimensional dynamical quantum simulators, before moving to more general instances of
+                IQP
+                , but which are still restricted to the architecture of NQIT.
+tags: []
+identifiers:
+  doi: 10.1088/2058-9565/ab54a4

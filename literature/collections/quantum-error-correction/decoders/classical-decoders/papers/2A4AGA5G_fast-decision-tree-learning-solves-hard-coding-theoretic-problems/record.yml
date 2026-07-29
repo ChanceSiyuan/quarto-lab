@@ -1,0 +1,53 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 2A4AGA5G
+  item_version: 96129
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: CKIJBABT
+      name: classical decoders
+      path: Quantum Error correction/Decoders/classical decoders
+qlab:
+  primary_collection: CKIJBABT
+  indexed_collections:
+    - CKIJBABT
+  primary_topic: quantum-error-correction
+  indexed_topics:
+    - quantum-error-correction
+item_type: preprint
+title: Fast decision tree learning solves hard coding-theoretic problems
+authors:
+  - first: Caleb
+    last: Koch
+  - first: Carmen
+    last: Strassle
+  - first: Li-Yang
+    last: Tan
+year: 2024
+abstract: "We connect the problem of properly PAC learning decision trees to the
+  parameterized Nearest Codeword Problem ($k$-NCP). Despite significant effort
+  by the respective communities, algorithmic progress on both problems has been
+  stuck: the fastest known algorithm for the former runs in quasipolynomial time
+  (Ehrenfeucht and Haussler 1989) and the best known approximation ratio for the
+  latter is $O(n/\\log n)$ (Berman and Karpinsky 2002; Alon, Panigrahy, and
+  Yekhanin 2009). Research on both problems has thus far proceeded independently
+  with no known connections. We show that $\\textit{any}$ improvement of
+  Ehrenfeucht and Haussler's algorithm will yield $O(\\log n)$-approximation
+  algorithms for $k$-NCP, an exponential improvement of the current state of the
+  art. This can be interpreted either as a new avenue for designing algorithms
+  for $k$-NCP, or as one for establishing the optimality of Ehrenfeucht and
+  Haussler's algorithm. Furthermore, our reduction along with existing
+  inapproximability results for $k$-NCP already rule out polynomial-time
+  algorithms for properly learning decision trees. A notable aspect of our
+  hardness results is that they hold even in the setting of $\\textit{weak}$
+  learning whereas prior ones were limited to the setting of strong learning."
+tags:
+  - Computer Science - Computational Complexity
+  - Computer Science - Data Structures and Algorithms
+  - Computer Science - Machine Learning
+identifiers:
+  doi: 10.48550/arxiv.2409.13096
+  arxiv: "2409.13096"

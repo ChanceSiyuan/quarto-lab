@@ -1,0 +1,54 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: VM3Y8T36
+  item_version: 96043
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: F28II9EE
+      name: magic injection
+      path: Quantum Resource/Magic/Magic state distillation/magic injection
+qlab:
+  primary_collection: F28II9EE
+  indexed_collections:
+    - F28II9EE
+  primary_topic: quantum-resource
+  indexed_topics:
+    - quantum-resource
+item_type: preprint
+title: Even more efficient magic state distillation by zero-level distillation
+authors:
+  - first: Tomohiro
+    last: Itogawa
+  - first: Yugo
+    last: Takada
+  - first: Yutaka
+    last: Hirano
+  - first: Keisuke
+    last: Fujii
+year: 2024
+abstract: Magic state distillation (MSD) is an essential element for universal
+  fault-tolerant quantum computing, which distills a high fidelity magic state
+  from noisy magic states using ideal (error-corrected) Clifford operations. For
+  ideal Clifford operations, it needs to be performed on the logical qubits and
+  hence takes a large spatiotemporal overhead, which is one of the major
+  bottlenecks for the realization of fault-tolerant quantum computers (FTQC).
+  Here we propose zero-level distillation, which prepares a high fidelity
+  logical magic state using physical qubits on a square lattice using
+  nearest-neighbor two-qubit gates without using multiple logical qubits. The
+  key idea behind is using the Steane code to distill a logical magic state by
+  using noisy Clifford gates with error detection. Then the Steane code state is
+  teleported or converted to the surface codes. By carefully designing such
+  circuits fault-tolerantly, the error rate of the logical magic state scales
+  $\sim 100 \times p^2$ in terms of the physical error rate $p$. For example,
+  with a physical error rate of $p=10^{-4}$ ($10^{-3}$), the logical error rate
+  is reduced to $p_L=10^{-6}$ ($10^{-4}$), resulting in an improvement of two
+  (one) orders of magnitude. This contributes to reducing both space and time
+  overhead for early FTQC as well as full-fledged FTQC combined with
+  conventional multi-level distillation protocols.
+tags:
+  - Quantum Physics
+identifiers:
+  arxiv: "2403.03991"

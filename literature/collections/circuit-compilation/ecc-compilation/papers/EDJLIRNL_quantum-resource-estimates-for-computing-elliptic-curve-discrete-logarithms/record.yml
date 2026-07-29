@@ -1,0 +1,57 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: EDJLIRNL
+  item_version: 96136
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: WE3HPMT6
+      name: ECC compilation
+      path: Circuit Compilation/ECC compilation
+qlab:
+  primary_collection: WE3HPMT6
+  indexed_collections:
+    - WE3HPMT6
+  primary_topic: circuit-compilation
+  indexed_topics:
+    - circuit-compilation
+item_type: preprint
+title: Quantum resource estimates for computing elliptic curve discrete logarithms
+authors:
+  - first: Martin
+    last: Roetteler
+  - first: Michael
+    last: Naehrig
+  - first: Krysta M.
+    last: Svore
+  - first: Kristin
+    last: Lauter
+year: 2017
+abstract: We give precise quantum resource estimates for Shor's algorithm to
+  compute discrete logarithms on elliptic curves over prime fields. The
+  estimates are derived from a simulation of a Toffoli gate network for
+  controlled elliptic curve point addition, implemented within the framework of
+  the quantum computing software tool suite LIQ$Ui|\rangle$. We determine
+  circuit implementations for reversible modular arithmetic, including modular
+  addition, multiplication and inversion, as well as reversible elliptic curve
+  point addition. We conclude that elliptic curve discrete logarithms on an
+  elliptic curve defined over an $n$-bit prime field can be computed on a
+  quantum computer with at most $9n + 2\lceil\log_2(n)\rceil+10$ qubits using a
+  quantum circuit of at most $448 n^3 \log_2(n) + 4090 n^3$ Toffoli gates. We
+  are able to classically simulate the Toffoli networks corresponding to the
+  controlled elliptic curve point addition as the core piece of Shor's algorithm
+  for the NIST standard curves P-192, P-224, P-256, P-384 and P-521. Our
+  approach allows gate-level comparisons to recent resource estimates for Shor's
+  factoring algorithm. The results also support estimates given earlier by Proos
+  and Zalka and indicate that, for current parameters at comparable classical
+  security levels, the number of qubits required to tackle elliptic curves is
+  less than for attacking RSA, suggesting that indeed ECC is an easier target
+  than RSA.
+tags:
+  - Computer Science - Emerging Technologies
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.1706.06752
+  arxiv: "1706.06752"

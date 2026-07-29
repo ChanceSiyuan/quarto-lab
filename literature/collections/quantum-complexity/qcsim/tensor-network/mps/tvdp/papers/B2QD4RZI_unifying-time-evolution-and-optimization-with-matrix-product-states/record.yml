@@ -1,0 +1,55 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: B2QD4RZI
+  item_version: 106948
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: Y6TXPH3H
+      name: TVDP
+      path: Quantum Complexity/QCsim/tensor network/MPS/TVDP
+qlab:
+  primary_collection: Y6TXPH3H
+  indexed_collections:
+    - Y6TXPH3H
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: journalArticle
+title: Unifying time evolution and optimization with matrix product states
+authors:
+  - first: Jutho
+    last: Haegeman
+  - first: Christian
+    last: Lubich
+  - first: Ivan
+    last: Oseledets
+  - first: Bart
+    last: Vandereycken
+  - first: Frank
+    last: Verstraete
+year: 2016
+abstract: We show that the time-dependent variational principle provides a
+  unifying framework for time-evolution methods and optimisation methods in the
+  context of matrix product states. In particular, we introduce a new
+  integration scheme for studying time-evolution, which can cope with arbitrary
+  Hamiltonians, including those with long-range interactions. Rather than a
+  Suzuki-Trotter splitting of the Hamiltonian, which is the idea behind the
+  adaptive time-dependent density matrix renormalization group method or
+  time-evolving block decimation, our method is based on splitting the projector
+  onto the matrix product state tangent space as it appears in the Dirac-Frenkel
+  time-dependent variational principle. We discuss how the resulting algorithm
+  resembles the density matrix renormalization group (DMRG) algorithm for
+  finding ground states so closely that it can be implemented by changing just a
+  few lines of code and it inherits the same stability and efficiency. In
+  particular, our method is compatible with any Hamiltonian for which DMRG can
+  be implemented efficiently and DMRG is obtained as a special case of imaginary
+  time evolution with infinite time step.
+tags:
+  - Condensed Matter - Strongly Correlated Electrons
+  - Quantum Physics
+identifiers:
+  doi: 10.1103/physrevb.94.165116
+  arxiv: "1408.5056"

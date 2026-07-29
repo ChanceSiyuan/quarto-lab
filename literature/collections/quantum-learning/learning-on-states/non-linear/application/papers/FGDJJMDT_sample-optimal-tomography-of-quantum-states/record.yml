@@ -1,0 +1,52 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: FGDJJMDT
+  item_version: 96046
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: YCBHDN7M
+      name: Application
+      path: Quantum Learning/Learning on states/non-linear/Application
+qlab:
+  primary_collection: YCBHDN7M
+  indexed_collections:
+    - YCBHDN7M
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: journalArticle
+title: Sample-optimal tomography of quantum states
+authors:
+  - first: Jeongwan
+    last: Haah
+  - first: Aram W.
+    last: Harrow
+  - first: Zhengfeng
+    last: Ji
+  - first: Xiaodi
+    last: Wu
+  - first: Nengkun
+    last: Yu
+year: 2017
+abstract: It is a fundamental problem to decide how many copies of an unknown
+  mixed quantum state are necessary and sufficient to determine the state.
+  Previously, it was known only that estimating states to error $\epsilon$ in
+  trace distance required $O(dr^2/\epsilon^2)$ copies for a $d$-dimensional
+  density matrix of rank $r$. Here, we give a theoretical measurement scheme
+  (POVM) that requires $O (dr/ \delta ) \ln (d/\delta) $ copies of $\rho$ to
+  error $\delta$ in infidelity, and a matching lower bound up to logarithmic
+  factors. This implies $O( (dr / \epsilon^2) \ln (d/\epsilon) )$ copies suffice
+  to achieve error $\epsilon$ in trace distance. We also prove that for
+  independent (product) measurements, $\Omega(dr^2/\delta^2) / \ln(1/\delta)$
+  copies are necessary in order to achieve error $\delta$ in infidelity. For
+  fixed $d$, our measurement can be implemented on a quantum computer in time
+  polynomial in $n$.
+tags:
+  - Computer Science - Information Theory
+  - Quantum Physics
+identifiers:
+  doi: 10.1109/tit.2017.2719044
+  arxiv: "1508.01797"

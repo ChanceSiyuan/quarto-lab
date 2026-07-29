@@ -1,0 +1,52 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: D5TZ6YNA
+  item_version: 107161
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: IPQBNDW7
+      name: Calg
+      path: Quantum Dynamics/Adiabatic/Berry/Calg
+qlab:
+  primary_collection: IPQBNDW7
+  indexed_collections:
+    - IPQBNDW7
+  primary_topic: quantum-dynamics
+  indexed_topics:
+    - quantum-dynamics
+item_type: journalArticle
+title: Quasi-adiabatic quantum Monte Carlo algorithm for quantum evolution in
+  imaginary time
+authors:
+  - first: Cheng-Wei
+    last: Liu
+  - first: Anatoli
+    last: Polkovnikov
+  - first: Anders W.
+    last: Sandvik
+year: 2013
+abstract: We propose a quantum Monte Carlo (QMC) algorithm for non-equilibrium
+  dynamics in a system with a parameter varying as a function of time. The
+  method is based on successive applications of an evolving Hamiltonian to an
+  initial state and delivers results for a whole range of the tuning parameter
+  in a single run, allowing for access to both static and dynamic properties of
+  the system. This approach reduces to the standard Schrödinger dynamics in
+  imaginary time for quasi-adiabatic evolutions, i.e., including the leading
+  non-adiabatic correction to the adiabatic limit. We here demonstrate this
+  quasi-adiabatic QMC (QAQMC) method for linear ramps of the transverse-field
+  Ising model across its quantum-critical point in one and two dimensions. The
+  critical behavior can be described by generalized dynamic scaling. For the
+  two-dimensional square-lattice system we use the method to obtain a
+  high-precision estimate of the quantum-critical point $(h/J)_c=3.04463(12)$,
+  where $h$ is the transverse magnetic field and $J$ the nearest-neighbor Ising
+  coupling. The QAQMC method can also be used to extract the Berry curvature and
+  the metric tensor.
+tags:
+  - Condensed Matter - Statistical Mechanics
+  - Quantum Physics
+identifiers:
+  doi: 10.1103/physrevb.87.174302
+  arxiv: "1212.4815"

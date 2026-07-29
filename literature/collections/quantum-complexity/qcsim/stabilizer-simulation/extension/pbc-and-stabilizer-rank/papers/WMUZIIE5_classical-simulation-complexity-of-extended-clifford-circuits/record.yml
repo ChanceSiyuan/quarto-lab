@@ -1,0 +1,57 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: WMUZIIE5
+  item_version: 96036
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 2U9FYC86
+      name: PBC and stabilizer rank
+      path: Quantum Complexity/QCsim/stabilizer simulation/Extension/PBC and
+        stabilizer rank
+    - key: Y2U79FCU
+      name: complexity analysis
+      path: Quantum Complexity/QCsim/Open-dynamics/complexity analysis
+    - key: ZE8P2GDP
+      name: Extension
+      path: Quantum Complexity/QCsim/stabilizer simulation/Extension
+qlab:
+  primary_collection: 2U9FYC86
+  indexed_collections:
+    - 2U9FYC86
+    - Y2U79FCU
+    - ZE8P2GDP
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: preprint
+title: Classical simulation complexity of extended Clifford circuits
+authors:
+  - first: Richard
+    last: Jozsa
+  - first: Maarten Van den
+    last: Nest
+year: 2013
+abstract: "Clifford gates are a winsome class of quantum operations combining
+  mathematical elegance with physical significance. The Gottesman-Knill theorem
+  asserts that Clifford computations can be classically efficiently simulated
+  but this is true only in a suitably restricted setting. Here we consider
+  Clifford computations with a variety of additional ingredients: (a) strong vs.
+  weak simulation, (b) inputs being computational basis states vs. general
+  product states, (c) adaptive vs. non-adaptive choices of gates for circuits
+  involving intermediate measurements, (d) single line outputs vs. multi-line
+  outputs. We consider the classical simulation complexity of all combinations
+  of these ingredients and show that many are not classically efficiently
+  simulatable (subject to common complexity assumptions such as P not equal to
+  NP). Our results reveal a surprising proximity of classical to quantum
+  computing power viz. a class of classically simulatable quantum circuits which
+  yields universal quantum computation if extended by a purely classical
+  additional ingredient that does not extend the class of quantum processes
+  occurring."
+tags:
+  - Computer Science - Computational Complexity
+  - Quantum Physics
+identifiers:
+  arxiv: "1305.6190"

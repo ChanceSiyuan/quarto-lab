@@ -1,0 +1,74 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: GEE4WG6E
+  item_version: 96058
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: FXVBT6M3
+      name: Biased preserving
+      path: Quantum Error correction/0-Experiment/Neutual atom/Biased preserving
+    - key: 9PACYK6B
+      name: Biased Noise
+      path: Quantum Error correction/3-Error analysis/Biased Noise
+    - key: APL6PF3L
+      name: Experiments
+      path: Quantum Error correction/3-Error analysis/Biased Noise/Experiments
+    - key: EYQCPB4I
+      name: Biased Codes
+      path: Quantum Error correction/3-Error analysis/Biased Noise/Biased Codes
+    - key: VEV8YB6T
+      name: biased presering operations
+      path: Quantum Error correction/3-Error analysis/Biased Noise/biased presering
+        operations
+qlab:
+  primary_collection: FXVBT6M3
+  indexed_collections:
+    - 9PACYK6B
+    - APL6PF3L
+    - EYQCPB4I
+    - FXVBT6M3
+    - VEV8YB6T
+  primary_topic: quantum-error-correction
+  indexed_topics:
+    - quantum-error-correction
+item_type: journalArticle
+title: High threshold codes for neutral atom qubits with biased erasure errors
+authors:
+  - first: Kaavya
+    last: Sahay
+  - first: Junlan
+    last: Jin
+  - first: Jahan
+    last: Claes
+  - first: Jeff D.
+    last: Thompson
+  - first: Shruti
+    last: Puri
+year: 2023
+abstract: The requirements for fault-tolerant quantum error correction can be
+  simplified by leveraging structure in the noise of the underlying hardware. In
+  this work, we identify a new type of structured noise motivated by neutral
+  atom qubits, biased erasure errors, which arises when qubit errors are
+  dominated by detectable leakage from only one of the computational states of
+  the qubit. We study the performance of this model using gate-level simulations
+  of the XZZX surface code. Using the predicted erasure fraction and bias of
+  metastable $^{171}$Yb qubits, we find a threshold of 8.2% for two-qubit gate
+  errors, which is 1.9 times higher than the threshold for unbiased erasures,
+  and 7.5 times higher than the threshold for depolarizing errors. Surprisingly,
+  the improved threshold is achieved without bias-preserving controlled-not
+  gates, and instead results from the lower noise entropy in this model. We also
+  introduce an XZZX cluster state construction for measurement-based error
+  correction, hybrid-fusion, that is optimized for this noise model. By
+  combining fusion operations and deterministic entangling gates, this
+  construction preserves the intrinsic symmetry of the XZZX code, leading to a
+  higher threshold of 10.3% and enabling the use of rectangular codes with fewer
+  qubits. We discuss a potential physical implementation using a single plane of
+  atoms and moveable tweezers.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.1103/physrevx.13.041013
+  arxiv: "2302.03063"

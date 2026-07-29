@@ -1,0 +1,45 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: WRBQEP9W
+  item_version: 108074
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: R73JXEEI
+      name: BP
+      path: Quantum Complexity/QCsim/tensor network/2D-PEPS/environment/BP
+qlab:
+  primary_collection: R73JXEEI
+  indexed_collections:
+    - R73JXEEI
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: journalArticle
+title: Gauging tensor networks with belief propagation
+authors:
+  - first: Joseph
+    last: Tindall
+  - first: Matthew
+    last: Fishman
+year: 2023
+abstract: Effectively compressing and optimizing tensor networks requires
+  reliable methods for fixing the latent degrees of freedom of the tensors,
+  known as the gauge. Here we introduce a new algorithm for gauging tensor
+  networks using belief propagation, a method that was originally formulated for
+  performing statistical inference on graphical models and has recently found
+  applications in tensor network algorithms. We show that this method is closely
+  related to known tensor network gauging methods. It has the practical
+  advantage, however, that existing belief propagation implementations can be
+  repurposed for tensor network gauging, and that belief propagation is a very
+  simple algorithm based on just tensor contractions so it can be easier to
+  implement, optimize, and generalize. We present numerical evidence and scaling
+  arguments that this algorithm is faster than existing gauging algorithms,
+  demonstrating its usage on structured, unstructured, and infinite tensor
+  networks. Additionally, we apply this method to improve the accuracy of the
+  widely used simple update gate evolution algorithm.
+tags: []
+identifiers:
+  doi: 10.21468/scipostphys.15.6.222

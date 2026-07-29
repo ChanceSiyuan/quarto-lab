@@ -1,0 +1,63 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: B8HTBB3H
+  item_version: 96666
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: XAB9VQZP
+      name: experiment
+      path: Quantum Learning/Learning on
+        states/non-linear/Virtual_distillation/experiment
+qlab:
+  primary_collection: XAB9VQZP
+  indexed_collections:
+    - XAB9VQZP
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: journalArticle
+title: Can Error Mitigation Improve Trainability of Noisy Variational Quantum
+  Algorithms?
+authors:
+  - first: Samson
+    last: Wang
+  - first: Piotr
+    last: Czarnik
+  - first: Andrew
+    last: Arrasmith
+  - first: M.
+    last: Cerezo
+  - first: Lukasz
+    last: Cincio
+  - first: Patrick J.
+    last: Coles
+year: 2024
+abstract: Variational Quantum Algorithms (VQAs) are often viewed as the best
+  hope for near-term quantum advantage. However, recent studies have shown that
+  noise can severely limit the trainability of VQAs, e.g., by exponentially
+  flattening the cost landscape and suppressing the magnitudes of cost
+  gradients. Error Mitigation (EM) shows promise in reducing the impact of noise
+  on near-term devices. Thus, it is natural to ask whether EM can improve the
+  trainability of VQAs. In this work, we first show that, for a broad class of
+  EM strategies, exponential cost concentration cannot be resolved without
+  committing exponential resources elsewhere. This class of strategies includes
+  as special cases Zero Noise Extrapolation, Virtual Distillation, Probabilistic
+  Error Cancellation, and Clifford Data Regression. Second, we perform
+  analytical and numerical analysis of these EM protocols, and we find that some
+  of them (e.g., Virtual Distillation) can make it harder to resolve cost
+  function values compared to running no EM at all. As a positive result, we do
+  find numerical evidence that Clifford Data Regression (CDR) can aid the
+  training process in certain settings where cost concentration is not too
+  severe. Our results show that care should be taken in applying EM protocols as
+  they can either worsen or not improve trainability. On the other hand, our
+  positive results for CDR highlight the possibility of engineering error
+  mitigation methods to improve trainability.
+tags:
+  - Computer Science - Machine Learning
+  - Quantum Physics
+identifiers:
+  doi: 10.22331/q-2024-03-14-1287
+  arxiv: "2109.01051"

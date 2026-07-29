@@ -1,0 +1,48 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: KSJVPQAG
+  item_version: 96136
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: SCZRERSA
+      name: Path-sum
+      path: Quantum Complexity/QCsim/stabilizer simulation/Extension/Path-sum
+qlab:
+  primary_collection: SCZRERSA
+  indexed_collections:
+    - SCZRERSA
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: journalArticle
+title: Computing quopit Clifford circuit amplitudes by the sum-over-paths technique
+authors:
+  - first: Dax Enshan
+    last: Koh
+  - first: Mark D.
+    last: Penney
+  - first: Robert W.
+    last: Spekkens
+year: 2017
+abstract: "By the Gottesman-Knill Theorem, the outcome probabilities of Clifford
+  circuits can be computed efficiently. We present an alternative proof of this
+  result for quopit Clifford circuits (i.e., Clifford circuits on collections of
+  $p$-level systems, where $p$ is an odd prime) using Feynman's sum-over-paths
+  technique, which allows the amplitudes of arbitrary quantum circuits to be
+  expressed in terms of a weighted sum over computational paths. For a general
+  quantum circuit, the sum over paths contains an exponential number of terms,
+  and no efficient classical algorithm is known that can compute the sum. For
+  quopit Clifford circuits, however, we show that the sum over paths takes a
+  special form: it can be expressed as a product of Weil sums with quadratic
+  polynomials, which can be computed efficiently. This provides a method for
+  computing the outcome probabilities and amplitudes of such circuits
+  efficiently, and is an application of the circuit-polynomial correspondence
+  which relates quantum circuits to low-degree polynomials."
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.26421/qic17.13-14-1
+  arxiv: "1702.03316"

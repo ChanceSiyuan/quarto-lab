@@ -1,0 +1,49 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 9VLEXS6X
+  item_version: 96017
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: GXUBA6FS
+      name: Lattice Surgery
+      path: Quantum Error correction/2-Code categories/Topological/surface
+        codes/Lattice Surgery
+qlab:
+  primary_collection: GXUBA6FS
+  indexed_collections:
+    - GXUBA6FS
+  primary_topic: quantum-error-correction
+  indexed_topics:
+    - quantum-error-correction
+item_type: preprint
+title: A Resource Allocating Compiler for Lattice Surgery
+authors:
+  - first: Alan
+    last: Robertson
+  - first: Haowen
+    last: Gao
+  - first: Yuval R.
+    last: Sanders
+year: 2025
+abstract: The emerging field of quantum resource estimation is aimed at
+  providing estimates of the hardware requirements (`quantum resources') needed
+  to execute a useful, fault-tolerant quantum computation. Given that quantum
+  computers are intended to compete with supercomputers, useful quantum
+  computations are likely to involve the use of millions of qubits and error
+  correction clock cycles. The compilation and benchmarking of these circuits
+  depends on placement and routing algorithms, which are infeasible to construct
+  at scale by hand. We offer a compiler that transforms a quantum circuit into a
+  sequence of lattice surgery operations. The compiler manages memory in terms
+  of surface code patches and costs the space-time volume and cycle counts of
+  the input circuits. These compiled lattice surgery objects are then
+  recursively repurposed as gates for larger scale compilations. Our code is
+  available on GitHub under a permissive software license and we welcome
+  community contributions.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2506.04620
+  arxiv: "2506.04620"

@@ -1,0 +1,55 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: BGP874X5
+  item_version: 96325
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 5SFGQYSS
+      name: commute_measure
+      path: Quantum Resource/commute_measure
+qlab:
+  primary_collection: 5SFGQYSS
+  indexed_collections:
+    - 5SFGQYSS
+  primary_topic: quantum-resource
+  indexed_topics:
+    - quantum-resource
+item_type: journalArticle
+title: Optimal Fermionic Joint Measurements for Estimating Non-Commuting
+  Majorana Observables
+authors:
+  - first: Daniel
+    last: McNulty
+  - first: Susane
+    last: Calegari
+  - first: Michał
+    last: Oszmaniec
+year: 2025
+abstract: An important class of fermionic observables, relevant in tasks such as
+  fermionic partial tomography and estimating energy levels of chemical
+  Hamiltonians, are the binary measurements obtained from the product of
+  anti-commuting Majorana operators. In this work, we investigate efficient
+  estimation strategies of these observables based on a joint measurement which,
+  after classical post-processing, yields all sufficiently unsharp (noisy)
+  Majorana observables of even-degree. By exploiting the symmetry properties of
+  the Majorana observables, as described by the braid group, we show that the
+  incompatibility robustness, i.e., the minimal classical noise necessary for
+  joint measurability, relates to the spectral properties of the
+  Sachdev-Ye-Kitaev (SYK) model. In particular, we show that for an $n$ mode
+  fermionic system, the incompatibility robustness of all degree-$2k$ Majorana
+  observables satisfies $Θ(n^{-k/2})$ for $k\leq 5$. Furthermore, we present a
+  joint measurement scheme achieving the asymptotically optimal noise,
+  implemented by a small number of fermionic Gaussian unitaries and sampling
+  from the set of all Majorana monomials. Our joint measurement, which can be
+  performed via a randomization over projective measurements, provides rigorous
+  performance guarantees for estimating fermionic observables comparable with
+  fermionic classical shadows.
+tags:
+  - Mathematical Physics
+  - Quantum Physics
+identifiers:
+  doi: 10.22331/q-2025-11-17-1914
+  arxiv: "2402.19349"

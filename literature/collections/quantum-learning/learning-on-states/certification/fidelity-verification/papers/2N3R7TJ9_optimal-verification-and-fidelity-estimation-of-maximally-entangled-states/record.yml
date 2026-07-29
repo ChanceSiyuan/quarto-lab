@@ -1,0 +1,54 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 2N3R7TJ9
+  item_version: 96066
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: ZTMJV3G4
+      name: Fidelity verification
+      path: Quantum Learning/Learning on states/certification/Fidelity verification
+    - key: HJEH4ZTS
+      name: Entanglment Quantity
+      path: Quantum Resource/Entanglement/Entanglment Quantity
+qlab:
+  primary_collection: ZTMJV3G4
+  indexed_collections:
+    - HJEH4ZTS
+    - ZTMJV3G4
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+    - quantum-resource
+item_type: journalArticle
+title: Optimal verification and fidelity estimation of maximally entangled states
+authors:
+  - first: Huangjun
+    last: Zhu
+  - first: Masahito
+    last: Hayashi
+year: 2019
+abstract: "We study the verification of maximally entangled states by virtue of
+  the simplest measurement settings: local projective measurements without
+  adaption. We show that optimal protocols are in one-to-one correspondence with
+  complex projective 2-designs constructed from orthonormal bases. Optimal
+  protocols with minimal measurement settings are in one-to-one correspondence
+  with complete sets of mutually unbiased bases. Based on this observation,
+  optimal protocols are constructed explicitly for any local dimension, which
+  can also be applied to estimating the fidelity with the target state and to
+  detecting entanglement. In addition, we show that incomplete sets of mutually
+  unbiased bases are optimal for verifying maximally entangled states when the
+  number of measurement settings is restricted. Moreover, we construct optimal
+  protocols for the adversarial scenario in which state preparation is not
+  trusted. The number of tests has the same scaling behavior as the counterpart
+  for the nonadversarial scenario; the overhead is no more than three times. We
+  also show that the entanglement of the maximally entangled state can be
+  certified with any given significance level using only one test as long as the
+  local dimension is large enough."
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.1103/physreva.99.052346
+  arxiv: "1901.09772"

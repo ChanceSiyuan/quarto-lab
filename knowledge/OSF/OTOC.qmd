@@ -1,0 +1,403 @@
+---
+title: OTOC and its simulation
+description: To estimate time-ordered correlation, we shall set up initial state as the eigenbasis of and then implement the circuit , end with a measurement of observable .
+categories:
+  - theory
+---
+
+# Summarize
+
+
+
+# Basic concepts
+
+## Finite temperature OTOC
+
+#### Time-ordered correlation
+Consider a randomized unitary circuit $U$ on $n$ qubits with $D = 2^n$. Let $M$ being a Pauli operator satisfying $\mathrm{tr}(M) = 0$. Let $B$ be another traceless Pauli operator, which we called the betterfly operator, and its evolution under $U$ is $B(t) = U^\dagger B U$. In the real experiment, for simplicity, $B$ and $M$ both only support on constant number of qubit @abanin2025constructive. 
+
+:::{#def-time-ordered-correlator .callout-note icon="false"}
+## (Time-ordered correlator)
+Define the **time-ordered correlator operator** $C = U^\dagger B U M$. Then the inifinite temperature time-ordered correlation and zero-temperature time-ordered correlation (with respect to $\ket{0^n}$) are respectively:
+$$
+2^{-n}\mathrm{tr}(C) =  2^{-n}\sum_{\mathbf{s}}\langle \mathbf{s}|C|\mathbf{s}\rangle    \quad \text{and} \quad   \langle 0^n|C|0^n\rangle.
+$$
+:::
+
+To estimate time-ordered correlation, we shall set up initial state $\ket{\mathbf{s}}$ as the eigenbasis of $M$ and then implement the circuit $U$, end with a measurement of observable $M$.
+
+For example, if $M = Z^{\otimes n}$, then the initial state can be chosen as $\ket{0^n}$. 
+$\langle 0^n|C|0^n\rangle $ then can be estimated by preparing $\ket{0^n}$ and evolve under circuit $U^\dagger Z^{\otimes n} U$, finnally calculate the probability that gives $\mathbf{s}$.
+
+For infinite temperature case, since $M\ket{\mathbf{s}} = (-1)^{|\mathbf{s}|}\ket{\mathbf{s}}$, the correlation then can be calculated as:
+$$
+2^{-n}\sum_{\mathbf{s}}\langle \mathbf{s}|C|\mathbf{s}\rangle =2^{-n}\sum_{\mathbf{s}}(-1)^{|\mathbf{s}|} \langle \mathbf{s}|U^\dagger B U|\mathbf{s}\rangle.
+$$
+Thus on a quantum computer, time-ordered correlation can be realized by sampling $\mathbf{s}$ from $2^n$ choices and evolve under circuit $U^\dagger B U$, finnally calculate the probability that gives $\mathbf{s}$.
+ 
+Then what's the expected value of correlation given $U$?
+
+:::{#lem-correlator_avg .callout-important icon="false"}
+## (Correlator Average)
+If $U$ is sampled from a 2-design, then
+given $B$ a traceless Pauli operator and $M$ a Pauli-$Z$ operator, the time-ordered correlator average $\langle 0^n|U^\dagger B U M|0^n\rangle$ is $0$, with variance $1/(2^n + 1)$. 
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+The integral of a projector over the Haar measure yields the maximally mixed state, given $\langle 0^n|U^\dagger B U M|0^n\rangle = x$, we have
+$$
+\mathbb{E}[x] = \mathrm{tr}\left(O \frac{I}{D}\right) = \frac{\mathrm{tr}(O)}{D}
+$$
+Because Pauli operators (like the single-qubit observable $A$, or the butterfly operator $B$ mentioned in the text) are traceless, $\mathrm{tr}(O) = 0$. Therefore, the mean expectation value is strictly 0. To compute the variance, we need to compute the second moment of the correlator average.
+$$
+\begin{align*}
+\mathbb{E}[x^2] &= \mathbb{E}_{U} \mathrm{tr} \left(B^{\otimes 2} U^{\otimes 2} |0^{2n}\rangle \! \langle 0^{2n}|U^{\dagger, \otimes 2}\right)\\
+&= \mathrm{tr}\left[B^{\otimes 2} \frac{\mathbb{I}_n^{\otimes 2} + \mathrm{SWAP}^{\otimes n}}{2^n(2^n + 1)}\right] = \frac{1}{2^n + 1}
+\end{align*}
+$$
+
+:::
+
+This means that "guessing zero" is a good classical simulation strategy for the time-ordered correlator if $U$ forms a $2$-design.
+
+#### OTOCs
+
+To probe genuine scrambling, we need the **out-of-time-order correlator** (OTOC). 
+
+:::{#def-otoc .callout-note icon="false"}
+## (Out-of-time-order correlator)
+Given definition $B(t) = U^\dagger B U, C = B(t)M$, the zero-temperator OTOCs with respect to $\ket{0^n}$ are respectively:
+$$
+\begin{align*}
+&\mathrm{OTOC}^{1} := \langle 0^n | C^2 | 0^n \rangle = \langle 0^n | U^\dagger B U M U^\dagger B U M | 0^n \rangle\\
+&\mathrm{OTOC}^{2} := \langle 0^n | C^4 | 0^n \rangle = \langle 0^n | U^\dagger B U M U^\dagger B U M U^\dagger B U M U^\dagger B U M | 0^n \rangle\\
+&\mathrm{OTOC}^{k} :=\langle 0^n | C^{2k} | 0^n \rangle = \cdots
+\end{align*}
+$$
+:::
+
+Usually, it is set that $M\ket{0^n} = \ket{0^n}$, the trailing $M$ acts trivially and $\mathrm{OTOC}^{1} = \langle 0^n|U^\dagger B U M U^\dagger B U M|0^n\rangle$ and can be estimated on qunautm computer through preparing initial state $\ket{0^n}$ and evolve under circuit $U^\dagger B U M U^\dagger B U M$, finnally calculate the probability that gives $0^n$.
+
+:::{#lem-otoc .callout-important icon="false"}
+## (OTOC Average)[@maldacena2016bound; @roberts2017chaos]
+
+1. If $U$ is shallow such that $[B(t), M] = 0$, then $\langle 0^n|C^2|0^n\rangle = 1$.
+2. If $U$ is drawn from a **unitary 2-design**, then $\mathbb{E}[\langle 0^n|C^2|0^n\rangle] = -\dfrac{1}{D^2 - 1}$.
+3. Computing $\mathrm{Var}[\langle 0^n|C^2|0^n\rangle]$ requires a **4-design** (since $U$ appears at degree 4 in $\mathbb{E}[x^2]$).
+:::
+
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+
+**Part 1 (Shallow circuit).** When $[\tilde{A}, M] = 0$:
+$$
+C^2 = \tilde{A} M \tilde{A} M = \tilde{A}^2 M^2 = I
+$$
+since $\tilde{A}^2 = (U^\dagger B U)^2 = U^\dagger B^2 U = I$ and $M^2 = I$ (both are Pauli operators). Therefore $\langle 0^n|C^2|0^n\rangle = 1$.
+
+**Part 2 (2-design average).** Let $x = \langle 0^n|\tilde{A} M \tilde{A}|0^n\rangle$ and $\rho_0 = \ket{0^n}\!\bra{0^n}$.
+
+*Step 1 (Replica trick).* Using the trace identity $\mathrm{tr}_{12}(\mathrm{SWAP} \cdot (X \otimes Y)) = \mathrm{tr}(XY)$:
+$$
+x = \mathrm{tr}(\rho_0\, \tilde{A}\, M\, \tilde{A}) = \mathrm{tr}_{12}\!\left(\mathrm{SWAP} \cdot (\rho_0 \otimes M) \cdot (\tilde{A} \otimes \tilde{A})\right)
+$$ {#eq-replica}
+
+*Step 2 (Factor).* $\tilde{A} \otimes \tilde{A} = (U^\dagger)^{\otimes 2}(B \otimes B)\, U^{\otimes 2}$.
+
+*Step 3 (2-design twirl).* Over a unitary 2-design, the Weingarten calculus gives:
+$$
+\mathbb{E}\!\left[(U^\dagger)^{\otimes 2} X\, U^{\otimes 2}\right] = \sum_{\sigma,\tau \in S_2} \mathrm{Wg}(\sigma^{-1}\tau,\, D)\; \mathrm{tr}(P_\sigma\, X)\; P_\tau
+$$
+with $\mathrm{Wg}(e, D) = 1/(D^2-1)$ and $\mathrm{Wg}((12), D) = -1/(D(D^2-1))$. For $X = B \otimes B$:
+
+- $\mathrm{tr}(B \otimes B) = \mathrm{tr}(B)^2 = 0$ (tracelessness of $B$)
+- $\mathrm{tr}(\mathrm{SWAP} \cdot B \otimes B) = \mathrm{tr}(B^2) = D$ (Pauli unitarity)
+
+Substituting:
+$$
+\mathbb{E}[\tilde{A} \otimes \tilde{A}] = \frac{-\,I^{\otimes 2} + D\;\mathrm{SWAP}}{D^2 - 1}
+$$ {#eq-twirl}
+
+*Step 4 (Evaluate).* Inserting @eq-twirl into @eq-replica:
+$$
+\begin{aligned}
+\mathbb{E}[x] &= \frac{1}{D^2-1}\Big(-\,\mathrm{tr}_{12}\!\big(\mathrm{SWAP}\cdot(\rho_0 \otimes M)\big) + D\;\mathrm{tr}_{12}\!\big(\mathrm{SWAP}\cdot(\rho_0 \otimes M)\cdot\mathrm{SWAP}\big)\Big)\\[4pt]
+&= \frac{-\,\mathrm{tr}(\rho_0 M) \;+\; D\;\mathrm{tr}(M)\,\mathrm{tr}(\rho_0)}{D^2-1} = \frac{-1 + 0}{D^2-1} = \boxed{-\frac{1}{D^2-1}}
+\end{aligned}
+$$
+where we used $\mathrm{tr}_{12}(\mathrm{SWAP}\cdot(A \otimes B)) = \mathrm{tr}(AB)$ for the first term, and $\mathrm{SWAP}(A \otimes B)\mathrm{SWAP} = B \otimes A$ (so the second term factorizes as $\mathrm{tr}(M)\,\mathrm{tr}(\rho_0)$), together with $\mathrm{tr}(\rho_0 M) = \bra{0^n}M\ket{0^n} = 1$ and $\mathrm{tr}(M) = 0$.
+
+**Part 3 (Variance requires 4-design).** The second moment $\mathbb{E}[x^2]$ involves $U$ at degree 4 (and $U^\dagger$ at degree 4), since $x$ itself is degree 2 in $U$. The Weingarten integral over $S_4$ has $|S_4| = 24$ permutation pairs. The full computation is omitted; the result scales as $\mathrm{Var}[x] = O(1/D^2)$.
+
+:::
+
+#### Numerical verification
+
+Sample Haar-random unitaries and compare the empirical OTOC mean to $-1/(D^2-1)$.
+
+```{python}
+import numpy as np
+from qiskit.quantum_info import random_unitary
+import matplotlib.pyplot as plt
+
+np.random.seed(42)
+
+fig, axes = plt.subplots(1, 2, figsize=(10, 4))
+
+for idx, n_qubits in enumerate([1, 2]):
+    D = 2**n_qubits
+    n_samples = 5000
+
+    # |0^n>
+    psi = np.zeros(D, dtype=complex)
+    psi[0] = 1.0
+
+    # B: traceless Pauli (X on first qubit, I on rest)
+    X = np.array([[0, 1], [1, 0]], dtype=complex)
+    I2 = np.eye(2, dtype=complex)
+    B = X if n_qubits == 1 else np.kron(X, np.eye(D // 2, dtype=complex))
+
+    # M: Pauli-Z measurement (Z on all qubits), M|0^n> = |0^n>, tr(M) = 0
+    Z = np.array([[1, 0], [0, -1]], dtype=complex)
+    M = Z
+    for _ in range(n_qubits - 1):
+        M = np.kron(M, Z)
+
+    otoc_values = []
+    for _ in range(n_samples):
+        U = random_unitary(D).data
+        A_tilde = U.conj().T @ B @ U  # U†BU
+        x = psi.conj() @ A_tilde @ M @ A_tilde @ psi
+        otoc_values.append(x.real)
+
+    theory_mean = -1 / (D**2 - 1)
+    emp_mean = np.mean(otoc_values)
+
+    print(f"n = {n_qubits}, D = {D}")
+    print(f"  Empirical mean:     {emp_mean:.6f}")
+    print(f"  Theory -1/(D²-1):  {theory_mean:.6f}")
+    print(f"  |Difference|:       {abs(emp_mean - theory_mean):.6f}")
+    print()
+
+    axes[idx].hist(otoc_values, bins=50, density=True, alpha=0.7, color="steelblue")
+    axes[idx].axvline(theory_mean, color="red", linestyle="--", linewidth=2,
+                      label=f"$-1/(D^2-1) = {theory_mean:.4f}$")
+    axes[idx].axvline(emp_mean, color="orange", linestyle="-", linewidth=2,
+                      label=f"empirical = {emp_mean:.4f}")
+    axes[idx].set_xlabel("OTOC value")
+    axes[idx].set_ylabel("Density")
+    axes[idx].set_title(f"$n = {n_qubits}$, $D = {D}$")
+    axes[idx].legend(fontsize=8)
+
+plt.tight_layout()
+plt.show()
+```
+
+## Regularized OTOCs
+
+As shown above, the time-ordered correlation operator $\langle 0^n|C|0^n\rangle, C = U^\dagger B U M$ is defined as zero-temperature correlation and its higher order generalizations, known as out-of-time-order correlators (OTOCs), are important in quantum many-body physics.
+
+
+Given the Heisenberg-picture operator $O(t) = e^{iHt} O e^{-iHt}$, the partition function $Z = \mathrm{tr}(e^{-\beta H})$, and the unnormalized thermal operator $\rho_\beta \equiv e^{-\beta H}$, the Wightman inner product, a regularization of ordinary correlation function, is defined as:
+$$
+C_{\beta}(O_1,O_2) = \frac{1}{Z} \mathrm{tr}(e^{-(\beta/2) H}O_1 e^{-(\beta/2) H} O_2 ).
+$$
+Here regularization means that we transformed $tr(O_1O_2\rho)$ to $tr(O_1\rho^{\alpha_1}O_2\rho^{\alpha_2})$ with $\alpha_1 + \alpha_2 = 1$.
+We can show that different regularization schemes contains the same information in terms of they can be transformed to each other by fixed algorithm.
+
+:::{#lem-regularized-otoc .callout-note icon="false"}
+## (Regularized correlation functions are spectrally equivalent)
+Given $\alpha_1 + \alpha_2 = 1$, define the regularized two-point function
+$$
+C_{\alpha_1, \alpha_2}(t) = \frac{1}{Z} \mathrm{tr}\!\left(e^{-\alpha_1 \beta H}\, O_1(t)\, e^{-\alpha_2 \beta H}\, O_2(0)\right).
+$$
+Then in the frequency domain, any two regularizations $(\alpha_1, \alpha_2)$ and $(\alpha'_1, \alpha'_2)$ are related by
+$$
+C_{\alpha'_1, \alpha'_2}(\omega) = e^{(\alpha'_2 - \alpha_2)\beta\omega}\; C_{\alpha_1, \alpha_2}(\omega),
+$$ {#eq-reg-conversion}
+where $C_{\alpha_1, \alpha_2}(\omega) = \int_{-\infty}^{\infty} dt\, e^{i\omega t}\, C_{\alpha_1, \alpha_2}(t)$. In particular, all regularizations contain the same physical information and can be recovered from any single one via @eq-reg-conversion. This is a direct consequence of the KMS (Kubo-Martin-Schwinger) condition [@kubo1957statistical].
+:::
+
+:::{.callout-note collapse="true"}
+## Proof (Click to expand)
+
+**Step 1 (Lehmann representation).** Insert two complete sets of energy eigenstates $\{|n\rangle\}$ with $H|n\rangle = E_n |n\rangle$:
+$$
+C_{\alpha_1, \alpha_2}(t) = \frac{1}{Z} \sum_{n,m} e^{-\alpha_1 \beta E_n}\, e^{-\alpha_2 \beta E_m}\, e^{i(E_n - E_m)t}\, \langle n|O_1|m\rangle \langle m|O_2|n\rangle.
+$$
+
+**Step 2 (Fourier transform).** Taking the Fourier transform $C_{\alpha_1,\alpha_2}(\omega) = \int dt\, e^{i\omega t} C_{\alpha_1,\alpha_2}(t)$ and using $\int dt\, e^{i(\omega + E_n - E_m)t} = 2\pi\,\delta(\omega - (E_m - E_n))$:
+$$
+C_{\alpha_1,\alpha_2}(\omega) = \frac{2\pi}{Z} \sum_{n,m} e^{-\alpha_1 \beta E_n}\, e^{-\alpha_2 \beta E_m}\, |\langle n|O_1|m\rangle|^2\; \delta(\omega - (E_m - E_n)).
+$$
+
+**Step 3 (Factor out $\alpha$-dependence).** The $\delta$-function enforces $E_m = E_n + \omega$, so
+$$
+e^{-\alpha_1 \beta E_n}\, e^{-\alpha_2 \beta E_m} = e^{-(\alpha_1+\alpha_2)\beta E_n}\, e^{-\alpha_2 \beta \omega} = e^{-\beta E_n}\, e^{-\alpha_2 \beta \omega}.
+$$
+Define the $\alpha$-independent spectral function
+$$
+\mathcal{A}(\omega) \equiv \frac{2\pi}{Z} \sum_{n,m} e^{-\beta E_n}\, |\langle n|O_1|m\rangle|^2\; \delta(\omega - (E_m - E_n)).
+$$
+Then $C_{\alpha_1,\alpha_2}(\omega) = e^{-\alpha_2 \beta \omega}\, \mathcal{A}(\omega)$.
+
+**Step 4 (Conversion).** For any two regularizations $(\alpha_1, \alpha_2)$ and $(\alpha'_1, \alpha'_2)$:
+$$
+\frac{C_{\alpha'_1,\alpha'_2}(\omega)}{C_{\alpha_1,\alpha_2}(\omega)} = \frac{e^{-\alpha'_2 \beta\omega}}{e^{-\alpha_2 \beta\omega}} = e^{(\alpha_2 - \alpha'_2)\beta\omega}.
+$$
+Rearranging gives @eq-reg-conversion. $\square$
+:::
+
+*Discussions*: Although the regularized correlation function contains the same information as the original correlation function, This is an "ill-posed problem" when noise exists. If you measure $C_{\alpha_1, \alpha_2}(t)$ from a quantum computer or real experiment, the data must contain small noise. When you multiply the exponential factor $e^{\Delta \alpha \beta \omega}$ in the frequency domain, the measurement noise in the high frequency region will be amplified exponentially, causing the real-time curve to completely collapse when inverse Fourier transformed back.
+
+For example, we demonstrate this with a 4-site TFIM: measure $C_{1/2,1/2}(t)$ (the Wightman inner product), add small Gaussian noise, then attempt to convert to $C_{1,0}(t)$ via @eq-reg-conversion. The high-frequency noise is exponentially amplified by $e^{\beta\omega/2}$, destroying the signal.
+
+```{python}
+#| label: fig-noise-amplification
+#| fig-cap: "Ill-posedness of regularization conversion. Left: the noisy Wightman correlator $C_{1/2,1/2}(t)$ is visually indistinguishable from the exact one. Right: after frequency-domain conversion via $e^{\\beta\\omega/2}$, the result (orange) deviates wildly from the exact $C_{1,0}(t)$ (blue dashed)."
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.linalg import expm
+
+# --- 4-site TFIM Hamiltonian ---
+n = 4
+D = 2**n
+sx = np.array([[0,1],[1,0]], dtype=complex)
+sz = np.array([[1,0],[0,-1]], dtype=complex)
+Id = np.eye(2, dtype=complex)
+
+def kron_chain(ops):
+    out = ops[0]
+    for o in ops[1:]:
+        out = np.kron(out, o)
+    return out
+
+J, h = 1.0, 0.5
+H = np.zeros((D, D), dtype=complex)
+for i in range(n - 1):
+    ops = [Id]*n; ops[i] = sz; ops[i+1] = sz
+    H -= J * kron_chain(ops)
+for i in range(n):
+    ops = [Id]*n; ops[i] = sx
+    H -= h * kron_chain(ops)
+
+# Operators: O1 = sigma^z_0, O2 = sigma^z_1
+ops1 = [Id]*n; ops1[0] = sz; O1 = kron_chain(ops1)
+ops2 = [Id]*n; ops2[1] = sz; O2 = kron_chain(ops2)
+
+beta = 2.0
+rho = expm(-beta * H)
+Z = np.trace(rho)
+
+# --- Compute exact correlators ---
+ts = np.linspace(0, 10, 512)
+dt = ts[1] - ts[0]
+
+def correlator(alpha1, alpha2, ts):
+    rho1 = expm(-alpha1 * beta * H)
+    rho2 = expm(-alpha2 * beta * H)
+    vals = []
+    for t in ts:
+        U = expm(1j * H * t)
+        O1t = U @ O1 @ U.conj().T
+        vals.append(np.trace(rho1 @ O1t @ rho2 @ O2).real / Z)
+    return np.array(vals)
+
+C_half = correlator(0.5, 0.5, ts)   # Wightman
+C_10   = correlator(1.0, 0.0, ts)   # standard
+
+# --- Add noise to Wightman and convert ---
+np.random.seed(0)
+noise_level = 1e-3
+C_half_noisy = C_half + noise_level * np.random.randn(len(ts))
+
+# FFT -> multiply by exp(beta*omega/2) -> IFFT
+freqs = np.fft.fftfreq(len(ts), d=dt) * 2 * np.pi
+C_half_hat = np.fft.fft(C_half_noisy)
+# Convert from (1/2,1/2) to (1,0): multiply by exp((0 - 1/2)*beta*omega) = exp(-beta*omega/2)
+# i.e. C_{1,0}(w) = exp(-beta*w/2) * C_{1/2,1/2}(w)
+# Actually from the formula: alpha_2=1/2 -> alpha'_2=0, factor = exp((alpha_2 - alpha'_2)*beta*w) = exp(beta*w/2)
+# But we want C_{alpha'} = exp((alpha'_2 - alpha_2)*beta*w) * C_{alpha}
+# = exp((0 - 0.5)*beta*w) * C_{1/2,1/2} = exp(-beta*w/2) * C_{1/2,1/2}
+conversion = np.exp(-0.5 * beta * freqs)
+C_10_converted = np.fft.ifft(C_half_hat * conversion).real
+
+# exact conversion (no noise)
+C_half_hat_exact = np.fft.fft(C_half)
+C_10_exact_conv = np.fft.ifft(C_half_hat_exact * conversion).real
+
+fig, axes = plt.subplots(1, 2, figsize=(11, 4))
+
+axes[0].plot(ts, C_half, 'b-', lw=1.5, label='exact $C_{1/2,1/2}$')
+axes[0].plot(ts, C_half_noisy, 'orange', lw=0.8, alpha=0.7, label=f'noisy (σ={noise_level})')
+axes[0].set_xlabel('$t$'); axes[0].set_ylabel('$C_{1/2,1/2}(t)$')
+axes[0].set_title('Wightman correlator'); axes[0].legend(fontsize=8)
+
+axes[1].plot(ts, C_10, 'b--', lw=2, label='exact $C_{1,0}$')
+axes[1].plot(ts, C_10_exact_conv, 'g-', lw=1, alpha=0.6, label='converted (no noise)')
+axes[1].plot(ts, C_10_converted, 'orange', lw=1, label='converted (noisy)')
+axes[1].set_xlabel('$t$'); axes[1].set_ylabel('$C_{1,0}(t)$')
+axes[1].set_title('After conversion $e^{-\\beta\\omega/2}$'); axes[1].legend(fontsize=8)
+
+plt.tight_layout()
+plt.show()
+```
+
+This is why physicists still have to measure specific symmetric regularizations (like Wightman Inner Product, $\alpha_1=\alpha_2=1/2$) directly on hardware instead of measuring the standard ones and then converting them using classical computers.
+
+
+Similar to correlation function, the OTOCs can also be generalized to the thermally regulated OTOCs [@maldacena2016bound; @chiew2026quantum], by estimates the square average of correlation function and splits density matrix into four part. For example, the thermally regulated 2-OTOCs is defined as:
+
+:::{#def-thermal-otoc .callout-note icon="false"}
+## (thermally regulated OTOCs)
+$$
+\mathrm{OTOC}_\beta(O(t), A, B;\,\alpha_1,\alpha_2,\alpha_3,\alpha_4)
+  \equiv \frac{1}{Z}\,\mathrm{tr}\!\left(
+    \rho_\beta^{\alpha_1}\, O(t)\;
+    \rho_\beta^{\alpha_2}\, A\;
+    \rho_\beta^{\alpha_3}\, O(t)\;
+    \rho_\beta^{\alpha_4}\, B
+  \right),
+$$ {#eq-thermal-otoc}
+where $\alpha_i \in [0,1]$ with $\alpha_1 + \alpha_2 + \alpha_3 + \alpha_4 = 1$.
+:::
+
+*Special cases*:
+Setting $\alpha_1 = 1,\; \alpha_2 = \alpha_3 = \alpha_4 = 0$ (so that $\rho_\beta^0 = I$), @eq-thermal-otoc reduces to
+$$
+\mathrm{OTOC}_\beta(O(t), A, B;\,1,0,0,0)
+= \frac{1}{Z}\,\mathrm{tr}\!\left(\rho_\beta\, O(t)\, A\, O(t)\, B\right).
+$$
+
+**Zero temperature** ($\beta \to \infty$): the thermal operator projects onto the ground state $\rho_\beta \to \ket{0^n}\!\bra{0^n}$ and $Z \to 1$. With $O(t) \to B(t) = U^\dagger B U$ and $A = B = M$ as in last section, this gives
+$$
+\mathrm{OTOC}_{\beta\to\infty}(B(t), M, M;\,1,0,0,0)
+= \langle 0^n|\, B(t)\, M\, B(t)\, M\, |0^n\rangle
+= \langle 0^n|\, C^2\, |0^n\rangle,
+$$
+recovering the zero-temperature $\mathrm{OTOC}^1$.
+
+**Infinite temperature** ($\beta = 0$): $\rho_\beta = I$ and $Z = 2^n$, giving
+$$
+\mathrm{OTOC}_{\beta=0}(O(t), A, B;\,1,0,0,0)
+= 2^{-n}\,\mathrm{tr}\!\left(O(t)\, A\, O(t)\, B\right),
+$$
+the infinite-temperature OTOC of last section [@chiew2026quantum].
+
+
+
+# CBE algorithm for OTOC
+
+In the experiment, 
+
+We already see that the OTOC is defined recursivly. For example, $\mathrm{OTOC}^{2} = \langle 0^n | U^\dagger B U M U^\dagger B U M U^\dagger B U M U^\dagger B U | 0^n \rangle$ consider the conjugated operation of $U^{(2)}:= U^\dagger B U M U^\dagger B U$ on $M$. To get $U^{(2)}$, we have to calculate the conjugate operation of $U^{(1)}:= U^\dagger B U$ on $M$. At last, to get  $U^{(1)}$, this is reduced to conjugate operation of $U$ on $B$.
+
+In the current GSF framework, we manually find gate's dual circuit. For example, by replacing each gate in $U$ to its dual to get the whole dual circuit $\mathbf{U}$. 
+However, to take advantage of the recursive structure of OTOC, we note that the $U^{(k)}$ is encoded in quantum state.
+That is, a result of the dual circuit of conjugate operation $U^{(k-1)} M U^{(k-1),\dagger}$, which is a $2n$-qubit quantum state under the correspondence $\{I,X,Y,Z\} \to \{\ket{00},\ket{10},\ket{11},\ket{01}\}$. 
+
+Based on this analysis, a key question is, if $U$ is given as a encoded quantum state $\ket{U}$, how to generate the dual circuit of $U^{\dagger} M U$ without first measuring the encoded state $\ket{U}$? To be specific, we hope to transform the $OTOC^{2}$ into the following recursive ciruit, where $G$ is the gadget that accept input $\ket{U}, \ket{M}$ and output $\ket{U^\dagger M U}$ and $ \ket{0}$ through incomputation.
+
+![Use dual circuit to generate OTOC](dual_gadget.png)

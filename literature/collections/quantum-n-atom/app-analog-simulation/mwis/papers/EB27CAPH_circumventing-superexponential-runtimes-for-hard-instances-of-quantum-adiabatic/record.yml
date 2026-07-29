@@ -1,0 +1,62 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: EB27CAPH
+  item_version: 110077
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 3TT6GSQZ
+      name: MWIS
+      path: Quantum N-Atom/App-Analog simulation/MWIS
+qlab:
+  primary_collection: 3TT6GSQZ
+  indexed_collections:
+    - 3TT6GSQZ
+  primary_topic: quantum-n-atom
+  indexed_topics:
+    - quantum-n-atom
+item_type: journalArticle
+title: Circumventing superexponential runtimes for hard instances of quantum
+  adiabatic optimization
+authors:
+  - first: Benjamin F.
+    last: Schiffer
+  - first: Dominik S.
+    last: Wild
+  - first: Nishad
+    last: Maskara
+  - first: Madelyn
+    last: Cain
+  - first: Mikhail D.
+    last: Lukin
+  - first: Rhine
+    last: Samajdar
+year: 2024
+abstract: >-
+  Classical optimization problems can be solved by adiabatically preparing the
+  ground state of a quantum Hamiltonian that encodes the problem. The
+  performance of this approach is determined by the smallest gap encountered
+  during the evolution. Here, we consider the maximum independent set problem,
+  which can be efficiently encoded in the Hamiltonian describing a Rydberg atom
+  array. We present a general construction of instances of the problem for which
+  the minimum gap decays superexponentially with system size, implying a
+  superexponentially large time to solution via adiabatic evolution. The small
+  gap arises from locally independent choices which cause the system to
+  initially evolve and localize into a configuration far from the solution in
+  terms of Hamming distance. We investigate remedies to this problem.
+  Specifically, we show that quantum quenches in these models can exhibit
+  signatures of quantum many-body scars, which in turn, can circumvent the
+  superexponential gaps. By quenching from a suboptimal configuration, states
+  with a larger ground-state overlap can be prepared, illustrating the utility
+  of quantum quenches as an algorithmic tool.
+              
+                
+                
+                  
+                    Published by the American Physical Society
+                    2024
+tags: []
+identifiers:
+  doi: 10.1103/physrevresearch.6.013271

@@ -1,0 +1,46 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: S9GLZUUH
+  item_version: 96156
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: BSN2UUCK
+      name: Diffussion
+      path: Quantum Learning/Machine learning/Diffussion
+qlab:
+  primary_collection: BSN2UUCK
+  indexed_collections:
+    - BSN2UUCK
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: preprint
+title: Denoising Diffusion Probabilistic Models
+authors:
+  - first: Jonathan
+    last: Ho
+  - first: Ajay
+    last: Jain
+  - first: Pieter
+    last: Abbeel
+year: 2020
+abstract: We present high quality image synthesis results using diffusion
+  probabilistic models, a class of latent variable models inspired by
+  considerations from nonequilibrium thermodynamics. Our best results are
+  obtained by training on a weighted variational bound designed according to a
+  novel connection between diffusion probabilistic models and denoising score
+  matching with Langevin dynamics, and our models naturally admit a progressive
+  lossy decompression scheme that can be interpreted as a generalization of
+  autoregressive decoding. On the unconditional CIFAR10 dataset, we obtain an
+  Inception score of 9.46 and a state-of-the-art FID score of 3.17. On 256x256
+  LSUN, we obtain sample quality similar to ProgressiveGAN. Our implementation
+  is available at https://github.com/hojonathanho/diffusion
+tags:
+  - Computer Science - Machine Learning
+  - Statistics - Machine Learning
+identifiers:
+  doi: 10.48550/arxiv.2006.11239
+  arxiv: "2006.11239"

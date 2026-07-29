@@ -1,0 +1,51 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: PB495GUH
+  item_version: 96162
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 2XJCHV6G
+      name: Quantum Metrology
+      path: Quantum Learning/Quantum Metrology
+qlab:
+  primary_collection: 2XJCHV6G
+  indexed_collections:
+    - 2XJCHV6G
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: journalArticle
+title: Robust Calibration of a Universal Single-Qubit Gate-Set via Robust Phase
+  Estimation
+authors:
+  - first: Shelby
+    last: Kimmel
+  - first: Guang Hao
+    last: Low
+  - first: Theodore J.
+    last: Yoder
+year: 2015
+abstract: An important step in building a quantum computer is calibrating
+  experimentally implemented quantum gates to produce operations that are close
+  to ideal unitaries. The calibration step involves estimating the systematic
+  errors in gates and then using controls to correct the implementation. Quantum
+  process tomography is a standard technique for estimating these errors, but is
+  both time consuming, (when one only wants to learn a few key parameters), and
+  is usually inaccurate without resources like perfect state preparation and
+  measurement, which might not be available. With the goal of efficiently and
+  accurately estimating specific errors using minimal resources, we develop a
+  parameter estimation technique, which can gauge key systematic parameters
+  (specifically, amplitude and off-resonance errors) in a universal single-qubit
+  gate-set with provable robustness and efficiency. In particular, our estimates
+  achieve the optimal efficiency, Heisenberg scaling, and do so without
+  entanglement and entirely within a single-qubit Hilbert space. Our main
+  theorem making this possible is a robust version of the phase estimation
+  procedure of Higgins et al. [B. L. Higgins, New J. Phys. 11, 073023 (2009)].
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.1103/physreva.92.062315
+  arxiv: "1502.02677"

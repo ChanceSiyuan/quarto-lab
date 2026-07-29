@@ -1,0 +1,56 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: YVQSVI32
+  item_version: 96030
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: XAMFDVE4
+      name: TN&magic
+      path: Quantum Complexity/QCsim/tensor network/TN&magic
+qlab:
+  primary_collection: XAMFDVE4
+  indexed_collections:
+    - XAMFDVE4
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: preprint
+title: Stabilizer Tensor Networks with Magic State Injection
+authors:
+  - first: Azar C.
+    last: Nakhl
+  - first: Ben
+    last: Harper
+  - first: Maxwell
+    last: West
+  - first: Neil
+    last: Dowling
+  - first: Martin
+    last: Sevior
+  - first: Thomas
+    last: Quella
+  - first: Muhammad
+    last: Usman
+year: 2024
+abstract: This work augments the recently introduced Stabilizer Tensor Network
+  (STN) protocol with magic state injection, reporting a new framework with
+  significantly enhanced ability to simulate circuits with an extensive number
+  of non-Clifford operations. Specifically, for random $T$-doped $N$-qubit
+  Clifford circuits the computational cost of circuits prepared with magic state
+  injection scales as $\mathcal{O}(\text{poly}(N))$ when the circuit has $t
+  \lesssim N$ $T$-gates compared to an exponential scaling for the STN approach,
+  which is demonstrated in systems of up to $200$ qubits. In the case of the
+  Hidden Bit Shift circuit, a paradigmatic benchmarking system for extended
+  stabilizer methods with a tunable amount of magic, we report that our magic
+  state injected STN framework can efficiently simulate $4000$ qubits and $320$
+  $T$-gates. These findings provide a promising outlook for the use of this
+  protocol in the classical modelling of quantum circuits that are
+  conventionally difficult to simulate efficiently.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2411.12482
+  arxiv: "2411.12482"

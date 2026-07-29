@@ -1,0 +1,19 @@
+---
+title: Phase gate learning
+description: Phase gate learning
+categories:
+  - theory
+---
+
+# Summary and questions
+
+# Phase gate learning
+
+:::{#def-phasegate-learn .callout-note icon="false"}
+Inputs: A black-box unitary $U \ket{s} = e^{i\phi(s)} \ket{s}$, where $\phi(s)$ is a degree-$k$ polynomial of $s \in \{-1,1\}^{n} \to \mathbb{R}$ such that:
+$$
+\phi(s) = \sum_{S \subseteq [n],|S| \le k} a_S \prod_{t \in S} s_t, \quad a_S \in \mathbb{R}
+$$
+
+Ensure: Approximates $a_S \in \mathbb{R}, \forall |S| \le k$ within additive error $\varepsilon$.
+:::

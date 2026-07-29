@@ -1,0 +1,53 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: PB985TG5
+  item_version: 96037
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: SHZ4SM7W
+      name: LWT method
+      path: Quantum Complexity/QCsim/Open-dynamics/LWT method
+qlab:
+  primary_collection: SHZ4SM7W
+  indexed_collections:
+    - SHZ4SM7W
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: preprint
+title: Pauli path simulations of noisy quantum circuits beyond average case
+authors:
+  - first: Guillermo
+    last: González-García
+  - first: J. Ignacio
+    last: Cirac
+  - first: Rahul
+    last: Trivedi
+year: 2024
+abstract: For random quantum circuits on $n$ qubits of depth $\Theta(\log n)$
+  with depolarizing noise, the task of sampling from the output state can be
+  efficiently performed classically using a Pauli path method [Aharonov et al.
+  Proceedings of the 55th Annual ACM Symposium on Theory of Computing. 2023] .
+  This paper aims to study the performance of this method beyond random
+  circuits. We first consider the classical simulation of local observables in
+  circuits composed of Clifford and T gates $\unicode{x2013}$ going beyond the
+  average case analysis, we derive sufficient conditions for simulatability in
+  terms of the noise rate and the fraction of gates that are T gates, and show
+  that if noise is introduced at a faster rate than T gates, the simulation
+  becomes classically easy. As an application of this result, we study 2D QAOA
+  circuits that attempt to find low-energy states of classical Ising models on
+  general graphs. There, our results shows that for hard instances of the
+  problem, which correspond to Ising model's graph being geometrically
+  non-local, a QAOA algorithm mapped to a geometrically local circuit
+  architecture using SWAP gates does not have any asymptotic advantage over
+  classical algorithms if depolarized at a constant rate. Finally, we illustrate
+  instances where the Pauli path method fails to give the correct result, and
+  also initiate a study of the trade-off between fragility to noise and
+  classical complexity of simulating a given quantum circuit.
+tags:
+  - Quantum Physics
+identifiers:
+  arxiv: "2407.16068"

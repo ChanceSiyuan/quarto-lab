@@ -1,0 +1,60 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: UJSE3Z6I
+  item_version: 96140
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: QC6SLUXJ
+      name: DQI
+      path: Quantum Algorithm/Optimization/DQI
+qlab:
+  primary_collection: QC6SLUXJ
+  indexed_collections:
+    - QC6SLUXJ
+  primary_topic: quantum-algorithm
+  indexed_topics:
+    - quantum-algorithm
+item_type: preprint
+title: Optimization by Decoded Quantum Interferometry
+authors:
+  - first: Stephen P.
+    last: Jordan
+  - first: Noah
+    last: Shutty
+  - first: Mary
+    last: Wootters
+  - first: Adam
+    last: Zalcman
+  - first: Alexander
+    last: Schmidhuber
+  - first: Robbie
+    last: King
+  - first: Sergei V.
+    last: Isakov
+  - first: Ryan
+    last: Babbush
+year: 2025
+abstract: Whether quantum computers can achieve exponential speedups in
+  optimization has been a major open question in quantum algorithms since the
+  field began. Here we introduce a quantum algorithm called Decoded Quantum
+  Interferometry (DQI), which uses the quantum Fourier transform to reduce
+  optimization problems to decoding problems. For approximating optimal
+  polynomial fits to data over finite fields, DQI efficiently achieves a better
+  approximation ratio than any polynomial time classical algorithm known to us,
+  thus suggesting exponential quantum speedup. We also extend this to
+  multivariate polynomials. These optimization problems are solved approximately
+  by quantum reduction to decoding of Reed-Solomon and Reed-Muller codes,
+  respectively. Sparse unstructured optimization problems such as max-k-XORSAT
+  are reduced to decoding of LDPC codes. Although we have not identified quantum
+  advantage for the sparse unstructured case, we prove a theorem which allows
+  the performance of DQI to be calculated instance-by-instance based on the
+  empirical performance of classical LDPC decoders such as belief propagation.
+  We demonstrate this by benchmarking on an instance with over 30,000 variables.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2408.08292
+  arxiv: "2408.08292"

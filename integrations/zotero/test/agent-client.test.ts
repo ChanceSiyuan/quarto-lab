@@ -42,17 +42,17 @@ describe("capability guards", () => {
     const { service } = engineLikeService({});
     service.state.running = true;
     service.state.activeTurnId = "turn-1";
-    await expect(service.send("追问", "engine:p:m", "medium"))
-      .rejects.toThrow(/不支持在回答进行中追加/);
+    await expect(service.send("follow up", "engine:p:m", "medium"))
+      .rejects.toThrow(/cannot append while a response is running/);
   });
 
   it("rejects agent mode when unsupported", async () => {
     const { service } = engineLikeService({});
-    await expect(service.setMode("agent")).rejects.toThrow(/不支持 Agent 模式/);
+    await expect(service.setMode("agent")).rejects.toThrow(/does not support Agent mode/);
   });
 
   it("rejects login when unsupported", async () => {
     const { service } = engineLikeService({});
-    await expect(service.login()).rejects.toThrow(/不需要登录|不支持登录/);
+    await expect(service.login()).rejects.toThrow(/does not require sign-in|does not support sign-in/);
   });
 });

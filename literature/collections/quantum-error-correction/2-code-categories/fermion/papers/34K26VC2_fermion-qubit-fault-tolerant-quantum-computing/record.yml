@@ -1,0 +1,72 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 34K26VC2
+  item_version: 96117
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: U8IYMEW5
+      name: Fermion
+      path: Quantum Error correction/2-Code categories/Fermion
+    - key: KJHSPUHS
+      name: Fermion-based simulation
+      path: Quantum Complexity/QCsim/Fermion-based simulation
+qlab:
+  primary_collection: U8IYMEW5
+  indexed_collections:
+    - KJHSPUHS
+    - U8IYMEW5
+  primary_topic: quantum-error-correction
+  indexed_topics:
+    - quantum-complexity
+    - quantum-error-correction
+item_type: preprint
+title: Fermion-qubit fault-tolerant quantum computing
+authors:
+  - first: Alexander
+    last: Schuckert
+  - first: Eleanor
+    last: Crane
+  - first: Alexey V.
+    last: Gorshkov
+  - first: Mohammad
+    last: Hafezi
+  - first: Michael J.
+    last: Gullans
+year: 2024
+abstract: Simulating the dynamics of electrons and other fermionic particles in
+  quantum chemistry, material science, and high-energy physics is one of the
+  most promising applications of fault-tolerant quantum computers. However, the
+  overhead in mapping time evolution under fermionic Hamiltonians to qubit gates
+  renders this endeavor challenging. We introduce fermion-qubit fault-tolerant
+  quantum computing, a framework which removes this overhead altogether. Using
+  native fermionic operations we first construct a repetition code which
+  corrects phase errors only. We then engineer a fermionic color code which
+  corrects for both phase and loss errors. We show how to realize a universal
+  fermionic gate set in this code, including transversal Clifford gates.
+  Interfacing with qubit color codes we realize qubit-fermion fault-tolerant
+  computation, which allows for qubit-controlled fermionic time evolution, a
+  crucial subroutine in state-of-the-art quantum algorithms for simulating
+  fermions. We show how our framework can be implemented in neutral atoms,
+  overcoming the apparent inability of neutral atoms to implement
+  non-number-conserving gates by introducing a neutral-atom braiding gate using
+  photodissociation of bosonic molecules. As an application, we consider the
+  fermionic fast Fourier transform, an important subroutine for simulating
+  crystalline materials, finding an exponential improvement in circuit depth
+  from $\mathcal{O}(N)$ to $\mathcal{O}(\log(N))$ with respect to lattice site
+  number $N$ and a linear improvement from $\mathcal{O}(N^2)$ to
+  $\mathcal{O}(N\log(N))$ in Clifford gate complexity compared to
+  state-of-the-art qubit-only approaches. Our work opens the door to
+  fermion-qubit fault-tolerant quantum computation in platforms with native
+  fermions such as neutral atoms, quantum dots and donors in silicon, with
+  applications in quantum chemistry, material science, and high-energy physics.
+tags:
+  - Condensed Matter - Materials Science
+  - Condensed Matter - Quantum Gases
+  - Condensed Matter - Strongly Correlated Electrons
+  - Nuclear Theory
+  - Quantum Physics
+identifiers:
+  arxiv: "2411.08955"

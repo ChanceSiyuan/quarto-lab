@@ -1,0 +1,49 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: CD2PF5LX
+  item_version: 96161
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: CAZT6YV3
+      name: Locality_restriction
+      path: Quantum Learning/_Review/Locality_restriction
+qlab:
+  primary_collection: CAZT6YV3
+  indexed_collections:
+    - CAZT6YV3
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: journalArticle
+title: Quantum proofs can be verified using only single qubit measurements
+authors:
+  - first: Tomoyuki
+    last: Morimae
+  - first: Daniel
+    last: Nagaj
+  - first: Norbert
+    last: Schuch
+year: 2016
+abstract: "QMA (Quantum Merlin Arthur) is the class of problems which, though
+  potentially hard to solve, have a quantum solution which can be verified
+  efficiently using a quantum computer. It thus forms a natural quantum version
+  of the classical complexity class NP (and its probabilistic variant MA,
+  Merlin-Arthur games), where the verifier has only classical computational
+  resources. In this paper, we study what happens when we restrict the quantum
+  resources of the verifier to the bare minimum: individual measurements on
+  single qubits received as they come, one-by-one. We find that despite this
+  grave restriction, it is still possible to soundly verify any problem in QMA
+  for the verifier with the minimum quantum resources possible, without using
+  any quantum memory or multiqubit operations. We provide two independent proofs
+  of this fact, based on measurement based quantum computation and the local
+  Hamiltonian problem, respectively. The former construction also applies to
+  QMA$_1$, i.e., QMA with one-sided error."
+tags:
+  - Computer Science - Computational Complexity
+  - Quantum Physics
+identifiers:
+  doi: 10.1103/physreva.93.022326
+  arxiv: "1510.06789"

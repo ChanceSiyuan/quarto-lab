@@ -1,0 +1,65 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: HZJDHRWU
+  item_version: 110975
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: QXW6QJUD
+      name: peak
+      path: Quantum Complexity/Sampling/supermacy verification/peak
+qlab:
+  primary_collection: QXW6QJUD
+  indexed_collections:
+    - QXW6QJUD
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: preprint
+title: Heuristic Quantum Advantage with Peaked Circuits
+authors:
+  - first: Hrant
+    last: Gharibyan
+  - first: Mohammed Zuhair
+    last: Mullath
+  - first: Nicholas E.
+    last: Sherman
+  - first: Vincent P.
+    last: Su
+  - first: Hayk
+    last: Tepanyan
+  - first: Yuxuan
+    last: Zhang
+year: 2025
+abstract: We design and demonstrate heuristic quantum advantage with peaked
+  circuits (HQAP circuits) on Quantinuum's System Model H2 quantum processor.
+  Through extensive experimentation with state-of-the-art classical simulation
+  strategies, we identify a clear gap between classical and quantum runtimes.
+  Our largest instance involves all-to-all connectivity with 2000 two-qubit
+  gates, which H2 can produce the target peaked bitstring directly in under 2
+  hours. Our extrapolations from leading classical simulation techniques such as
+  tensor networks with belief propagation and Pauli path simulators indicate the
+  same instance would take years on exascale systems (Frontier, Summit),
+  suggesting a potentially exponential separation. This work marks an important
+  milestone toward verifiable quantum advantage, as well as providing a useful
+  benchmarking protocol for current utility-scale quantum hardware. We sketch
+  our protocol for designing these circuits and provide extensive numerical
+  results leading to our extrapolation estimates. Separate from our constructed
+  HQAP circuits, we prove hardness on a decision problem involving generic
+  peaked circuits. When both the input and output bitstrings of a peaked circuit
+  are unknown, determining whether the circuit is peaked constitutes a
+  QCMA-complete problem, meaning the problem remains hard even for a quantum
+  polynomial-time machine under commonly accepted complexity assumptions.
+  Inspired by this observation, we propose an application of the peaked circuits
+  as a potentially quantum-safe encryption
+  scheme~\cite{chen2016report,kumar2020post,joseph2022transitioning,dam2023survey}.
+  We make our peaked circuits publicly available and invite the community to try
+  additional methods to solve these circuits to see if this gap persists even
+  with novel classical techniques.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2510.25838
+  arxiv: "2510.25838"

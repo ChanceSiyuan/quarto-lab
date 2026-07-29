@@ -17,7 +17,7 @@ title, summary, candidate question, or motivation cannot be recovered. Derive
 the discussion summary and open qualification questions from the conversation;
 write "None discussed" under evidence when no source was explicitly named.
 
-Treat the launch ID as a hint. Read `lib/problems/schema.mjs` before constructing
+Treat the launch ID as a hint. Read `src/lib/problems/schema.mjs` before constructing
 the manifest. Set `status` exactly `draft` and never write `rejection`. Set gate
 readiness to `missing` or `specified`: use `missing` with type `unspecified`
 when no gate was discussed; otherwise record the candidate gate and readiness

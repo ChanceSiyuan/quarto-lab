@@ -1,0 +1,57 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: BRLQBFG4
+  item_version: 96126
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: YHB9EFGP
+      name: Sampling
+      path: Quantum Complexity/Sampling
+    - key: VQWX7XGH
+      name: Open-dynamics
+      path: Quantum Complexity/QCsim/Open-dynamics
+qlab:
+  primary_collection: YHB9EFGP
+  indexed_collections:
+    - VQWX7XGH
+    - YHB9EFGP
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: preprint
+title: Effect of non-unital noise on random circuit sampling
+authors:
+  - first: Bill
+    last: Fefferman
+  - first: Soumik
+    last: Ghosh
+  - first: Michael
+    last: Gullans
+  - first: Kohdai
+    last: Kuroiwa
+  - first: Kunal
+    last: Sharma
+year: 2023
+abstract: In this work, drawing inspiration from the type of noise present in
+  real hardware, we study the output distribution of random quantum circuits
+  under practical non-unital noise sources with constant noise rates. We show
+  that even in the presence of unital sources like the depolarizing channel, the
+  distribution, under the combined noise channel, never resembles a maximally
+  entropic distribution at any depth. To show this, we prove that the output
+  distribution of such circuits never anticoncentrates $\unicode{x2014}$ meaning
+  it is never too "flat" $\unicode{x2014}$ regardless of the depth of the
+  circuit. This is in stark contrast to the behavior of noiseless random quantum
+  circuits or those with only unital noise, both of which anticoncentrate at
+  sufficiently large depths. As consequences, our results have interesting
+  algorithmic implications on both the hardness and easiness of noisy random
+  circuit sampling, since anticoncentration is a critical property exploited by
+  both state-of-the-art classical hardness and easiness results.
+tags:
+  - Computer Science - Computational Complexity
+  - Condensed Matter - Statistical Mechanics
+  - Quantum Physics
+identifiers:
+  arxiv: "2306.16659"

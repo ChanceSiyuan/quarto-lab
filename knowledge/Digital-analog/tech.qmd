@@ -1,0 +1,810 @@
+---
+title: The technical details of the digital-analog conversion
+description: This note is a summary of the technical details of the digital-analog conversion.
+categories:
+  - theory
+---
+
+[← Back to Index](index.qmd)
+
+# Summary and questions
+
+This note is a summary of the technical details of the digital-analog conversion.
+The target is to realize an analog IQP circuit on the lattice.
+
+
+# The Hamiltonian
+The $\ket{1}-\ket{r}$ model is only an effective Hamiltonian of the full $\{\ket{0},\ket{1},\ket{e_\mu},\ket{r}\}$ system,
+and the actual physical energy level brings up:
+
+1. A stark-shift term due to the detuning of $\ket{e},\ket{0}$.
+2. An atom loss due to the decay of $\ket{e},\ket{r}$.
+
+For one atom, take
+$$
+\begin{align*}
+&\ket 0=\ket{5S_{1/2},F=1,m_F=0},\qquad\ket1=\ket{5S_{1/2},F=2,m_F=0},\\
+&\ket{e_{F'}}=\ket{6P_{3/2},F',m_F=-1},\qquad F'=1,2,3,\\
+&\ket r=\ket{70S_{1/2},m_J=-1/2}, \qquad\ket{r'}=\ket{70S_{1/2},m_J=1/2}.
+\end{align*}
+$$
+where the 420-nm beam is assumed to be pure $\sigma_-$ and the 1013-nm beam is assumed to drive the target Rydberg state through the corresponding $\sigma_+$ leg.
+The target Hamiltonian before choosing the optical rotating frame is:
+$$
+\begin{align*}
+&H_P^{\rm bare}(t)
+=
+-\varepsilon_0\ket0\bra0  + \sum_{F=1}^3 \varepsilon_F\ket{e_{F}}\bra{e_{F}}
+ +
+(\varepsilon_r-\Delta_R^{\rm bare}(t))\ket r\bra r \\
+& V_{\rm hf}(t) = \frac{\Omega^{\rm bare}_{\rm hf}(t)e^{i\Phi_{\mathrm{hf}}(t)}}{2}\ket1\bra0 + \mathrm{h.c.},\\
+& V(t) =
+\sum_{F'=1}^3 \sum_{a \in \{0,1,r\}}
+\left[
+\frac{\Omega_{F'a}(t)e^{i\Phi_{F'a}(t)}}{2}\ket{e_{F'}}\bra a
++\mathrm{h.c.}\right].
+\end{align*}
+$$
+All the laser phase contains the fast rotating terms, i.e.,
+$$
+\begin{align*}
+&\Phi_{F'0}(t)=\Phi_{F'1}(t) = \phi_{\mathrm{420}}(t) - \omega_{\mathrm{420}} t,\\
+&\Phi_{F'r}(t) = \omega_{\mathrm{1013}}t,\\
+&\Phi_{\mathrm{hf}}(t) = \varepsilon_0 t + \phi_{\mathrm{hf}}(t).
+\end{align*}
+$$
+We first use a unitary transformation $\ket{\psi} \to U\ket{\psi}$, $H = U H U^\dagger + i (\partial_t U) U^\dagger$ to transform the inherent energy level shifts to the driving frequency. A convenient optical-frame transformation matching the convention is
+$$
+\begin{align*}
+&U_{\rm opt}(t) =
+\exp\left[
+-i\sum_{F'=1}^3\theta_{e}(t)\ket{e_{F'}}\bra{e_{F'}}
+-i\theta_r(t)(\ket r\bra r + \ket{r'}\bra{r'})\right],\\
+&i\partial_t U_{\rm opt}(t)U^\dagger_{\rm opt}(t) = \sum_{F'=1}^3\dot\theta_{e}(t)\ket{e_{F'}}\bra{e_{F'}} + \dot\theta_r(t)(\ket r\bra r + \ket{r'}\bra{r'}).
+\end{align*}
+$$
+The phases are chosen so that the 1013-nm couplings are time independent,
+while the 420-nm couplings carry one residual programmed phase. In particular,
+for the target ladder one may choose the gauge such that
+$$
+\theta_{e}(t)-\theta_r(t)= \omega_{\mathrm{1013}}t,
+\quad
+\theta_{e}(t) =  -\omega_{\mathrm{420}} t,
+$$
+which solve to the result 
+$$
+\dot\theta_{e}(t) = -\omega_{\mathrm{420}}, \quad \dot\theta_r = (-\omega_{\mathrm{1013}} -\omega_{\mathrm{420}}).
+$$
+Defining 
+$$
+\begin{align*}
+\Delta_e = \varepsilon_{F = 2}  - \omega_{\mathrm{420}}, \quad 
+\delta_r = \varepsilon_r - \omega_{\mathrm{1013}} - \omega_{\mathrm{420}},
+\end{align*}
+$$
+We choose the gauge such that $\delta_r = 0$.
+the Hamiltonian in this rotating frame is
+$$
+\begin{align*}
+&H_P^{\rm bare}(t)
+=-\varepsilon_0\ket0\bra0 -\Delta_R^{\rm bare}(t)\ket r\bra r
++ \sum_{F=1}^3 (\Delta_e + \eta_F)\ket{e_{F}}\bra{e_{F}},\\
+& V_{\rm hf}(t) = \frac{\Omega^{\rm bare}_{\rm hf}(t)e^{i(\phi_{\mathrm{hf}}(t) + \varepsilon_0 t)}}{2}\ket1\bra0 + \mathrm{h.c.},\\
+& V_{\rm 420}(t) =
+\sum_{F'=1}^3
+\left[
+\frac{\Omega_{F'1}(t)e^{i\phi_{\mathrm{420}}(t)}}{2}\ket{e_{F'}}\bra1
++\mathrm{h.c.}\right],  \\
+&\qquad \qquad +\sum_{F'=1}^3
+\left[
+\frac{\Omega_{F'0}(t)e^{i\phi_{\mathrm{420}}(t)}}{2}\ket{e_{F'}}\bra0
++\mathrm{h.c.}\right],\\
+& V_{\rm 1013}(t) =\sum_{F'=1}^3
+\left[
+\frac{\Omega_{F'r}}{2}\ket{e_{F'}}\bra r
++\mathrm{h.c.}\right].
+\end{align*}
+$$
+
+- Here $\eta_F$ indicates the hyperfine shift of the $\ket{6P_{3/2},F'= 1,2,3}$ state relative to the $\ket{5S_{1/2},F=2,m_F=-1}$ state.
+$$
+\eta_1=-2\pi\times 51\,{\rm MHz},\qquad
+\eta_2=0,\qquad
+\eta_3=+2\pi\times 87\,{\rm MHz}.
+$$
+- The $\varepsilon_0$ is the gap between the $\ket{0}$ and $\ket{1}$ states. For $^{87}\mathrm{Rb}$ atoms, $\varepsilon_0 = 2\pi \times  6.835\,{\rm GHz}$.
+- In the case $V_{\rm hf} = 0$, this rotation frame only contains slowly varying terms.
+Otherwise, ones have to expanding the $V_{\rm hf}$ to eliminate the fast rotating terms $e^{i\varepsilon_0 t}$. In the case below, we always assume $V_{\rm hf} = 0$ for simplicity.
+
+::: {.callout-note collapse="true"}
+## Note (proportion of $\Omega_{F'a}(t)$ and $\Omega_{F'r}(t)$)
+The 420-nm coupling is evaluated in the uncoupled $\ket{m_J,m_I}$ basis, where the electric dipole operator preserves $m_I$ and changes $m_J$ by $q=-1$. With $I=3/2$ and Condon-Shortley phases,
+$$
+\begin{aligned}
+\ket1
+&=\frac{1}{\sqrt2}
+\left(
+\ket{m_J=\tfrac12,m_I=-\tfrac12}
++\ket{m_J=-\tfrac12,m_I=\tfrac12}
+\right),\\
+\ket0
+&=\frac{1}{\sqrt2}
+\left(
+-\ket{m_J=\tfrac12,m_I=-\tfrac12}
++\ket{m_J=-\tfrac12,m_I=\tfrac12}
+\right).
+\end{aligned}
+$$
+Only two components of each $\ket{e_{F'}}=\ket{6P_{3/2},F',m_F=-1}$ are reached from $m_F=0$ by $\sigma_-$:
+$$
+\begin{array}{c|cc}
+F'&
+\ket{m_J=-\tfrac32,m_I=\tfrac12}&
+\ket{m_J=-\tfrac12,m_I=-\tfrac12}\\
+\hline
+1&\sqrt{\frac{3}{10}}&-\sqrt{\frac{2}{5}}\\
+2&-\sqrt{\frac{1}{2}}&0\\
+3&\sqrt{\frac{1}{5}}&\sqrt{\frac{3}{5}}
+\end{array}
+$$
+The overall phase of each $\ket{e_{F'}}$ is conventional; the phase choice above matches the signs used for the effective Rabi sum.
+
+Define
+$$
+\begin{aligned}
+\Omega_{420}(t)
+&:=
+\frac{
+\langle 6P_{3/2},m_J=-\tfrac32,m_I=\tfrac12|
+e\mathbf r\cdot\mathbf E^{(1)}_-(t)
+|5S_{1/2},m_J=-\tfrac12,m_I=\tfrac12\rangle
+}{\sqrt2\,\hbar},\\
+\gamma\,\Omega_{420}(t)
+&:=
+\frac{
+\langle 6P_{3/2},m_J=-\tfrac12,m_I=-\tfrac12|
+e\mathbf r\cdot\mathbf E^{(1)}_-(t)
+|5S_{1/2},m_J=\tfrac12,m_I=-\tfrac12\rangle
+}{\sqrt2\,\hbar}.
+\end{aligned}
+$$
+By the Wigner-Eckart theorem,
+$$
+\gamma
+=
+\frac{
+\langle J'=\tfrac32,m_J'=-\tfrac12|d_{-1}|J=\tfrac12,m_J=\tfrac12\rangle
+}{
+\langle J'=\tfrac32,m_J'=-\tfrac32|d_{-1}|J=\tfrac12,m_J=-\tfrac12\rangle
+}
+=\sqrt{\frac{1}{3}},
+$$
+assuming ideal $\sigma_-$ polarization and no magnetic-field mixing.
+
+The resulting 420-nm Rabi amplitudes are
+$$
+\begin{aligned}
+\Omega_{420,1}^{(1)}
+&=
+\left(
+\sqrt{\frac{3}{10}}
+-\sqrt{\frac{2}{5}}\gamma
+\right)\Omega_{420},&
+\Omega_{420,1}^{(0)}
+&=
+\left(
+\sqrt{\frac{3}{10}}
++\sqrt{\frac{2}{5}}\gamma
+\right)\Omega_{420},\\
+\Omega_{420,2}^{(1)}
+&=
+-\sqrt{\frac{1}{2}}\Omega_{420},&
+\Omega_{420,2}^{(0)}
+&=
+-\sqrt{\frac{1}{2}}\Omega_{420},\\
+\Omega_{420,3}^{(1)}
+&=
+\left(
+\sqrt{\frac{1}{5}}
++\sqrt{\frac{3}{5}}\gamma
+\right)\Omega_{420},&
+\Omega_{420,3}^{(0)}
+&=
+\left(
+\sqrt{\frac{1}{5}}
+-\sqrt{\frac{3}{5}}\gamma
+\right)\Omega_{420}.
+\end{aligned}
+$$
+There is no extra factor of $1/2$ in these amplitudes; the factor $1/2$ enters the Hamiltonian matrix element.
+
+Substituting $\gamma=\sqrt{1/3}$ gives
+$$
+\begin{aligned}
+\sum_{F'=1}^3\frac{|\Omega_{420,F'}^{(1)}|^2}{\Omega_{420}^2}
+&=
+\left(\sqrt{\frac{3}{10}}-\sqrt{\frac{2}{15}}\right)^2
++\frac{1}{2}
++\left(2\sqrt{\frac{1}{5}}\right)^2\\
+&=
+\frac{1}{30}+\frac{1}{2}+\frac{4}{5}
+=\frac{4}{3},
+\end{aligned}
+$$
+and similarly
+$$
+\begin{aligned}
+\sum_{F'=1}^3\frac{|\Omega_{420,F'}^{(0)}|^2}{\Omega_{420}^2}
+&=
+\left(\sqrt{\frac{3}{10}}+\sqrt{\frac{2}{15}}\right)^2
++\frac{1}{2}
++0\\
+&=
+\frac{5}{6}+\frac{1}{2}
+=\frac{4}{3}.
+\end{aligned}
+$$
+
+For the target Rydberg state, the 1013-nm coupling uses the $\ket{m_J=-3/2,m_I=1/2}$ component of each $\ket{e_{F'}}$:
+$$
+\begin{align*}
+\Omega_{1013,1}^{(r)}=\sqrt{\frac{3}{10}}\Omega_{1013}, \quad 
+\Omega_{1013,2}^{(r)}=-\sqrt{\frac{1}{2}}\Omega_{1013}, \quad 
+\Omega_{1013,3}^{(r)}=\sqrt{\frac{1}{5}}\Omega_{1013},
+\end{align*}
+$$
+so
+$$
+\sum_{F'=1}^3\frac{|\Omega_{1013,F'}^{(r)}|^2}{\Omega_{1013}^2}
+=\frac{3}{10}+\frac{1}{2}+\frac{1}{5}=1.
+$$
+The same products give the two-photon matrix-element sum
+$$
+\sum_{F'=1}^3
+\frac{\Omega_{1013,F'}^{(r)*}\Omega_{420,F'}^{(1)}}{\Omega_{1013}\Omega_{420}}
+=1,
+$$
+which is why the effective Rabi frequency has the usual magnitude $\Omega_R=\Omega_{420}\Omega_{1013}/(2\Delta_e)$ after the sign is absorbed into the phase.
+:::
+
+After specifying the realistic Hamiltonian, we can proceed to eliminate the large detuning mid-energy levels through rigrous SW-transformation.
+
+::: {#thm-stark-elimination .callout-important icon="false"}
+## (Intermediate-Manifold Stark Self-Energy)
+
+If $|\Delta_e|\gg |\Omega_{F'a}(t)|,\|\Delta_{\rm hf}^{\rm bare}(t)\|,\|\Delta_R^{\rm bare}(t)\|,|\dot\Omega_{F'a}(t)/\Omega_{F'a}(t)|,|\dot\Delta_{aF'}(t)/\Delta_{aF'}(t)|$, the second-order block Hamiltonian in the $\ket{0}, \ket{1}, \ket{r}$ subspace of the Hamiltonian $H_P^{\rm bare}+V(t)$ is
+$$
+H_P^{\rm eff}=H_0^P+
+D_0+D_1+D_r + K_{1r}|1\rangle\langle r| +
+K_{01}|0\rangle\langle1| + K_{0r}|0\rangle\langle r| +\mathrm{h.c.}
+$$
+with the coefficients:
+:::
+
+::: {.callout-note collapse="false"}
+### Derivation: Schrieffer-Wolff Elimination
+Use the time-dependent Schrieffer-Wolff transformation
+$$
+H_{\rm SW}=e^S H e^{-S}+i\dot e^S e^{-S},
+\qquad
+\ket{\psi_{\rm SW}}=e^S\ket{\psi},
+$$
+Denote the target Hamiltonian $H=H_0+\varepsilon V$ with $H_0, V$ separate with respect to diagonal and off-diagonal subspaces $P\oplus Q$, where $P:= \sum_{a} \ket a\bra a$ and $Q:= \sum_{F'} \ket{e_{F'}}\bra{e_{F'}}$.
+The block-off-diagonal part we hope to eliminate is $V_{\mathrm 420}$ and $V_{\mathrm 1013}$.
+The SW transformation is given by an anti-Hermitian generator $S(t)=S_1(t)+S_2(t)+\cdots$,
+with each $S_n(t) \propto \varepsilon^n$ and block-off-diagonal, i.e.,$P S_n(t)P=Q S_n(t)Q=0$. 
+Takes the BCH expansion
+$$
+\begin{align*}
+&H_{\rm SW, \varepsilon}
+=
+H_0+
+\epsilon\left(
+V+[S_1,H_0]+i\dot S_1
+\right)\\
+&+
+\epsilon^2
+\left(
+[S_2,H_0]+i\dot S_2
++
+[S_1,V]
++
+\frac12[S_1,[S_1,H_0]]
++
+\frac{i}{2}[S_1,\dot S_1]
+\right)
++
+O(\epsilon^3).
+\end{align*}
+$$
+
+The $O(\varepsilon)$ off-block part vanish fixes the first order $S_1$ and gives the second-order correction
+$$
+\begin{align*} 
+&V+[S_1,H_0]+i\dot S_1=0 ,\\
+P H_{\rm SW, \varepsilon}P
+&=
+H_0 +
+\epsilon^2
+\left(
+[S_1,V]
++
+\frac12[S_1,[S_1,H_0]]
++
+\frac{i}{2}[S_1,\dot S_1]
+\right)
++
+O(\epsilon^3)\\
+&= H_0 + \frac{\epsilon^2}{2}[S_1,V] + O(\epsilon^3).
+\end{align*}
+$$
+ Specifically, we take
+$$
+\begin{align*}
+S^{(1)}(t)&=
+\sum_{F'=1}^3
+\left[
+\lambda_{F'0}(t)\ket{e_{F'}}\bra 0
++\lambda_{F'1}(t)\ket{e_{F'}}\bra 1
++\lambda_{F'r}(t)\ket{e_{F'}}\bra r
+\right] - \mathrm{h.c.}.
+\end{align*}
+$$
+
+Using $H_P^{\rm bare}(t)=-\varepsilon_0\ket0\bra0 -\Delta_R^{\rm bare}(t)\ket r\bra r+ \sum_{F=1}^3 (\Delta_e + \eta_F)\ket{e_{F}}\bra{e_{F}}$, we conclude that:
+$$
+\begin{align*}
+&[\,\ket{e_{F}}\bra 0,H_P^{\rm bare}]=-(\varepsilon_0 +\Delta_e + \eta_F)\ket{e_{F}}\bra 0, \\
+&[\,\ket{e_{F}}\bra 1,H_P^{\rm bare}]=-(\Delta_e + \eta_F)\ket{e_{F}}\bra 1, \\
+&[\,\ket{e_{F}}\bra r,H_P^{\rm bare}]=-(\Delta_e + \eta_F + \Delta_R^{\rm bare})\ket{e_{F}}\bra r,
+\end{align*}
+$$
+ the
+$\ket{e_{F}}\bra a$ component is the generator equation
+$$
+\begin{align*}
+&\frac{1}{2}\Omega_{F0}(t)e^{i\phi_{\mathrm{420}}(t)}-(\varepsilon_0 +\Delta_e + \eta_F)\lambda_{F0}+i\dot\lambda_{F0}=0, \\
+&\frac{1}{2}\Omega_{F1}(t)e^{i\phi_{\mathrm{420}}(t)}-(\Delta_e + \eta_F)\lambda_{F1}+i\dot\lambda_{F1}=0, \\
+&\frac{1}{2}\Omega_{Fr} - (\Delta_e + \eta_F + \Delta_R^{\rm bare})\lambda_{Fr}+i\dot\lambda_{Fr}=0,
+\end{align*}
+$$
+Writing $\lambda_{Fa}=\tilde\lambda_{Fa}e^{i\phi_{Fa}}$ and $\dot\lambda_{Fa}=(\dot{\widetilde\lambda}_{Fa}+i\dot\phi_{Fa}\,\widetilde\lambda_{Fa})e^{i\phi_{Fa}}$ with 
+$\left\{\begin{aligned}\phi_{F0} &= \phi_{\mathrm{420}}(t),\\\phi_{F1} &= \phi_{\mathrm{420}}(t),\\ \phi_{Fr} &= 0,\end{aligned}\right.$
+gives 
+$$
+\begin{align*}
+\left\{
+    \begin{aligned}
+&\frac{1}{2}\Omega_{F0}(t)-\left[\varepsilon_0 +\Delta_e + \eta_F + \dot \phi_{\mathrm{420}}(t)\right]\tilde\lambda_{F0}+i\dot{\tilde\lambda}_{F0} = 0,\\
+&\frac{1}{2}\Omega_{F1}(t)-\left[\Delta_e + \eta_F + \dot \phi_{\mathrm{420}}(t)\right]\tilde\lambda_{F1}+i\dot{\tilde\lambda}_{F1} = 0,\\
+&\frac{1}{2}\Omega_{Fr}-\left[\Delta_e + \eta_F + \Delta_R^{\rm bare} \right]\tilde\lambda_{Fr}+i\dot{\tilde\lambda}_{Fr} = 0.
+\end{aligned}
+\right.
+\end{align*}
+$$
+They are independent ODEs with identical form $\dot{\tilde\lambda}_{Fa}(t)+i\Delta_{Fa}(t)\tilde\lambda_{Fa}(t)=iG_{Fa}(t)$ with
+$$
+\begin{align*}
+\left\{
+\begin{aligned}
+\Delta_{F0}(t) &= \varepsilon_0 +\Delta_e + \eta_F + \dot \phi_{\mathrm{420}}(t),\\
+\Delta_{F1}(t) &= \Delta_e + \eta_F + \dot \phi_{\mathrm{420}}(t),\\
+\Delta_{Fr}(t) &= \Delta_e + \eta_F + \Delta_R^{\rm bare},
+\end{aligned}
+\right. 
+\qquad
+\left\{
+\begin{aligned}
+G_{F0}(t) &= \frac{\Omega_{F0}(t)}{2},\\
+G_{F1}(t) &= \frac{\Omega_{F1}(t)}{2},\\
+G_{Fr}(t) &= \frac{\Omega_{Fr}(t)}{2},
+\end{aligned}
+\right. 
+\end{align*}
+$$
+For simplicity, we omitted the label and write $\tilde\lambda(t), G(t), \Delta(t)$ uniformly.
+Defining $\Theta(t,s)=\int_s^t du\,\Delta(u)$, the solution is
+$$
+\tilde\lambda(t)
+= e^{-i\Theta(t,t_\ast)}\tilde\lambda(t_\ast)+
+i\int_{t_\ast}^{t}ds\, e^{-i\Theta(t,s)}G(s)
+$$
+for initial condition $\tilde\lambda(t_\ast)$. Define $G(s)=\Delta(s)A(s)$ and use the fact that
+$$
+\begin{align*}
+i\int_{t_\ast}^{t}ds\, e^{-i\Theta(t,s)}G(s) &= i\int_{t_\ast}^{t}ds\, e^{-i\Theta(t,s)}\Delta(s)A(s)=\int_{t_\ast}^{t}ds\, A(s)\partial_s e^{-i\Theta(t,s)}\\
+&=A(s)e^{-i\Theta(t,s)}|_{s = t_\ast}^{t} - \int_{t_\ast}^{t}ds\, e^{-i\Theta(t,s)}\partial_s A(s)\\
+&= A(t) - A(t_\ast)e^{-i\Theta(t,t_\ast)} -\int_{t_\ast}^{t}ds\, e^{-i\Theta(t,s)} \frac{dA(s)}{ds}.
+\end{align*}
+$$
+Plugging back to the solution, we get
+$$
+\begin{align*}
+\tilde\lambda(t)
+&= e^{-i\Theta(t,t_\ast)}\tilde\lambda(t_\ast)+
+A(t) - A(t_\ast)e^{-i\Theta(t,t_\ast)} -\int_{t_\ast}^{t}ds\, e^{-i\Theta(t,s)} \frac{dA(s)}{ds}\\
+&= \frac{G(t)}{\Delta(t)}
++
+e^{-i\Theta(t,t_\ast)}
+\left[
+\tilde\lambda(t_\ast)-\frac{G(t_\ast)}{\Delta(t_\ast)}
+\right]
+-
+\int_{t_\ast}^{t}ds\, e^{-i\Theta(t,s)}\frac{d}{ds}\left(\frac{G(s)}{\Delta(s)}\right)
+\end{align*}
+$$
+We are free to choose the SW transformation with the initial condition $\tilde\lambda(t_\ast) = \frac{G(t_\ast)}{\Delta(t_\ast)}$ to eliminate the second term. 
+For the integral term, the fast rotating phase $e^{i \Theta(t,s)}$ eliminates. Rigrously, consider the following identity:
+$$
+\begin{align*}
+&\int_{t_\ast}^{t}ds\, e^{-i\Theta(t,s)}\frac{d}{ds}\left(\frac{G(s)}{\Delta(s)}\right)
+=\int_{t_\ast}^{t}ds\, \left(\partial_s e^{-i\Theta(t,s)}\right) \frac{1}{i\Delta(s)}\frac{d}{ds}\left(\frac{G(s)}{\Delta(s)}\right)\\
+&=\left.-i \frac{e^{-i\Theta(t,s)}}{\Delta(s)}\frac{d}{ds}\left(\frac{G(s)}{\Delta(s)}\right)\right|_{t_\ast}^{t} + i \int_{t_\ast}^{t}ds\, e^{-i\Theta(t,s)}\frac{d}{ds}\left[\frac{1}{\Delta(s)}\frac{d}{ds}\left(\frac{G(s)}{\Delta(s)}\right)\right]\\
+\end{align*}
+$$
+$$
+\begin{align*}
+&\lambda_{F0}(t) = \frac{\Omega_{F0}(t)e^{i\phi_{\mathrm{420}}(t)}}{2\Delta_{F0}(t)} - e^{i\phi_{\mathrm{420}}(t)}\int_{t_\ast}^{t}ds\, e^{-i\Theta_{F0}(t,s)}\frac{d}{ds}\left(\frac{\Omega_{F0}(s)}{2\Delta_{F0}(s)}\right),\\
+&\lambda_{F1}(t) = \frac{\Omega_{F1}(t)e^{i\phi_{\mathrm{420}}(t)}}{2\Delta_{F1}(t)} - e^{i\phi_{\mathrm{420}}(t)} \int_{t_\ast}^{t}ds\, e^{-i\Theta_{F1}(t,s)}\frac{d}{ds}\left(\frac{\Omega_{F1}(s)}{2\Delta_{F1}(s)}\right),\\
+&\lambda_{Fr}(t) = \frac{\Omega_{Fr}(t)}{2\Delta_{Fr}(t)} - \int_{t_\ast}^{t}ds\, e^{-i\Theta_{Fr}(t,s)}\frac{d}{ds}\left(\frac{\Omega_{Fr}(s)}{2\Delta_{Fr}(s)} \right),
+\end{align*}
+$$
+Use the condition $\frac{\dot\Omega}{\Omega \Delta} \ll 1$ and $|\dot\Delta|/|\Delta|^2$, keeps the first terms only.
+Direct multiplication yields
+$$
+\begin{align*}
+&\frac{1}{2}P[S_1,V]P \\
+& = \sum_{F,F'= 1}^3\sum_{a,b}  \frac{1}{2}P \left[\lambda_{Fa}\ket{e_{F}}\bra{a} -\lambda^*_{Fa}\ket{a}\bra{e_{F}},\frac{\Omega_{F'b}(t)e^{i\phi_{F'b}(t)}}{2}\ket{e_{F'}}\bra{b} + \frac{\Omega_{F'b}(t)e^{-i\phi_{F'b}(t)}}{2}\ket{b}\bra{e_{F'}} \right]P \\
+&=- \sum_{F,F'= 1}^3\sum_{a,b}  \frac{\lambda^*_{Fa}\Omega_{F'b}(t)e^{i\phi_{F'b}(t)}}{4}P \left[\ket{a}\bra{e_{F}},\ket{e_{F'}}\bra{b} \right]P + \sum_{F,F'= 1}^3\sum_{a,b}  \frac{\lambda_{Fa}\Omega_{F'b}(t)e^{-i\phi_{F'b}(t)}}{4}P \left[\ket{e_{F}}\bra{a},\ket{b}\bra{e_{F'}} \right]P \\
+&=- \sum_{a,b}\sum_{F,F'= 1}^3  \frac{\lambda^*_{Fa}\Omega_{Fb}(t)e^{i\phi_{Fb}(t)}}{4} \ket{a}\bra{b}  - \sum_{a,b} \sum_{F= 1}^3 \frac{\lambda_{Fa}\Omega_{Fb}(t)e^{-i\phi_{Fb}(t)}}{4} \ket{b}\bra{a}.
+\end{align*}
+$$
+The $a = b$ terms are the AC Stark shifts, which evaluates to
+$$
+\begin{align*}
+D_0 &=  -\left(\sum_{F= 1}^3 \frac{\lambda^*_{F0}\Omega_{F0}(t)e^{i\phi_{F0}(t)}}{4} + \frac{\lambda_{F0}\Omega_{F0}(t)e^{-i\phi_{F0}(t)}}{4}\right) \ket{0}\bra{0} = -\sum_{F= 1}^3\frac{\Omega^2_{F0}(t)}{4 \Delta_{F0}(t)} \ket{0}\bra{0},\\
+D_1 &=  -\left(\sum_{F= 1}^3 \frac{\lambda^*_{F1}\Omega_{F1}(t)e^{i\phi_{F1}(t)}}{4} + \frac{\lambda_{F1}\Omega_{F1}(t)e^{-i\phi_{F1}(t)}}{4}\right) \ket{1}\bra{1} = -\sum_{F= 1}^3\frac{\Omega^2_{F1}(t)}{4 \Delta_{F1}(t)} \ket{1}\bra{1},\\
+D_r &=  -\left(\sum_{F= 1}^3 \frac{\lambda^*_{Fr}\Omega_{Fr}(t)e^{i\phi_{Fr}(t)}}{4} + \frac{\lambda_{Fr}\Omega_{Fr}(t)e^{-i\phi_{Fr}(t)}}{4}\right) \ket{r}\bra{r} = -\sum_{F= 1}^3\frac{\Omega^2_{Fr}(t)}{4 \Delta_{Fr}(t)} \ket{r}\bra{r}.
+\end{align*}
+$$
+The $a \neq b$ terms are equivalent to the effective two-photon Rabi coupling:
+$$
+\begin{align*}
+V_{1r} &=  -\frac{1}{2}\sum_{F= 1}^3\left(\frac{\lambda^*_{F1}\Omega_{Fr}(t)e^{i\phi_{Fr}(t)}}{2} + \frac{\lambda_{Fr}\Omega_{F1}(t)e^{-i\phi_{F1}(t)}}{2}\right) \ket{1}\bra{r} + \mathrm{h.c.} \\
+&= -\frac{e^{-i\phi_{\rm 420}(t)}}{2}\sum_{F= 1}^3\left(\frac{\Omega_{F1}(t)\Omega_{Fr}(t)}{4\Delta_{F1}(t)}  + \frac{\Omega_{Fr}(t)\Omega_{F1}(t)}{4\Delta_{Fr}(t)} \right)\ket{1}\bra{r} + \mathrm{h.c.}, \\
+V_{0r} &= -\frac{1}{2}\sum_{F= 1}^3 \left(\frac{\lambda^*_{F0}\Omega_{Fr}(t)e^{i\phi_{Fr}(t)}}{2} + \frac{\lambda_{Fr}\Omega_{F0}(t)e^{-i\phi_{F0}(t)}}{2}\right) \ket{0}\bra{r} + \mathrm{h.c.} \\
+&= -\frac{e^{-i\phi_{\rm 420}(t)}}{2}\sum_{F= 1}^3\left(\frac{\Omega_{F0}(t)\Omega_{Fr}(t)}{4\Delta_{F0}(t)}  + \frac{\Omega_{Fr}(t)\Omega_{F0}(t)}{4\Delta_{Fr}(t)} \right)\ket{0}\bra{r} + \mathrm{h.c.}, \\
+V_{01} &=-\frac{1}{2}\sum_{F= 1}^3 \left(\frac{\lambda^*_{F0}\Omega_{F1}(t)e^{i\phi_{F1}(t)}}{2} + \frac{\lambda_{F1}\Omega_{F0}(t)e^{-i\phi_{F0}(t)}}{2}\right) \ket{0}\bra{1} + \mathrm{h.c.} \\
+&= -\frac{1}{2}\sum_{F= 1}^3\left(\frac{\Omega_{F0}(t)\Omega_{F1}(t)}{4\Delta_{F0}(t)}  + \frac{\Omega_{F1}(t)\Omega_{F0}(t)}{4\Delta_{F1}(t)} \right)\ket{0}\bra{1} + \mathrm{h.c.}. \\
+\end{align*}
+$$
+
+:::
+
+The diagonal shifts are therefore
+$$
+\begin{aligned}
+\delta_0(t)
+&=
+-\sum_{F'=1}^3
+\frac{|\Omega_{420,F'}^{(0)}(t)|^2}{4\Delta_{0F'}(t)},\\
+\delta_1(t)
+&=
+-\sum_{F'=1}^3
+\frac{|\Omega_{420,F'}^{(1)}(t)|^2}{4\Delta_{1F'}(t)},\\
+\delta_r(t)
+&=
+-\sum_{F'=1}^3
+\frac{|\Omega_{1013,F'}^{(r)}|^2}{4\Delta_{rF'}(t)}.
+\end{aligned}
+$$
+The denominators are not all the same physical detuning. Let $\omega_a$ and $\omega_{e_{F'}}$ denote bare atomic angular frequencies, and let $\omega_{01}=\omega_1-\omega_0$. With the sign convention used above, $H_P$ contains $-\Delta_R^{\rm bare}\ket r\bra r$, where
+$$
+\Delta_R^{\rm bare}
+=\omega_{420}+\omega_{1013}-(\omega_r-\omega_1).
+$$
+Then
+$$
+\begin{aligned}
+\Delta_{1F'}^{(420)}
+&=(\omega_{e_{F'}}-\omega_1)-\omega_{420},\\
+\Delta_{0F'}^{(420)}
+&=(\omega_{e_{F'}}-\omega_0)-\omega_{420}
+=\Delta_{1F'}^{(420)}+\omega_{01},\\
+\Delta_{rF'}^{(1013)}
+&=(\omega_{e_{F'}}+\omega_{1013})-\omega_r
+=\Delta_{1F'}^{(420)}+\Delta_R^{\rm bare}.
+\end{aligned}
+$$
+Thus $\Delta_{rF'}$ is a 1013-nm leg detuning, not the same physical laser detuning as $\Delta_{1F'}$. They are approximately equal only near two-photon resonance, where $|\Delta_R^{\rm bare}|\ll |\Delta_{1F'}|$. If $\Delta_e$ is defined as a reference detuning for the $\ket1\leftrightarrow 6P_{3/2}$ leg and $\eta_{F'}$ is the $6P_{3/2}$ hyperfine offset of level $F'$ from that reference, then
+$$
+\Delta_{1F'}=\Delta_e+\eta_{F'},\qquad
+\Delta_{0F'}=\Delta_e+\eta_{F'}+\omega_{01},\qquad
+\Delta_{rF'}=\Delta_e+\eta_{F'}+\Delta_R^{\rm bare}.
+$$
+
+
+Neglecting the $6P_{3/2}$ hyperfine spread $\eta_{F'}$ and the small two-photon detuning inside the 1013-nm denominator gives the practical estimates
+$$
+\begin{aligned}
+\delta_1(t)
+&\simeq
+-\frac{4}{3}\frac{\Omega_{420}^2(t)}{4\Delta_e},\\
+\delta_0(t)
+&\simeq
+-\frac{4}{3}\frac{\Omega_{420}^2(t)}{4(\Delta_e+\omega_{01})},\\
+\delta_r(t)
+&\simeq
+-\frac{\Omega_{1013}^2}{4\Delta_e}.
+\end{aligned}
+$$
+For a numerical estimate at GHz precision, use the explicit sums over $F'$ rather than these collapsed prefactors, especially for $\delta_0$ because the extra $\omega_{01}$ denominator is comparable to common intermediate detunings.
+
+
+These shifts tell us how to recover the missing phase from the simplified $\ket{1}-\ket{r}$ simulation. The full three-state diagonal Hamiltonian after elimination is
+$$
+H_{\rm diag}/\hbar
+=\delta_0 n^0+\left[-\Delta_{\rm hf}^{\rm bare}(t)+\delta_1(t)\right]n^1
++\left[-\Delta_R^{\rm bare}(t)+\delta_r(t)\right]n^r .
+$$
+Since $n^0+n^1+n^r=1$ on each occupied site, subtracting the scalar $\delta_0(t)$ gives the same Hamiltonian up to a global phase:
+$$
+H_{\rm diag}/\hbar\doteq
+-\Delta_{\rm hf}^{\rm eff}(t)n^1
+-\Delta_R^{\rm eff}(t)n^r,
+$$
+with the replacement rule for the Hamiltonian written at the top of this note
+$$
+\begin{aligned}
+\Delta_{\rm hf,i}^{\rm eff}(t)
+&=
+\Delta_{\rm hf,i}^{\rm bare}(t)+\delta_0(t)-\delta_1(t),\\
+\Delta_R^{\rm eff}(t)
+&=
+\Delta_R^{\rm bare}(t)+\delta_0(t)-\delta_r(t).
+\end{aligned}
+$$
+Consequently the restricted $\ket1-\ket r$ detuning that enters the Pauli-field coefficient is
+$$
+\Delta_R^{\rm eff}(t)-\Delta_{\rm hf,i}^{\rm eff}(t)
+=
+\Delta_R^{\rm bare}(t)-\Delta_{\rm hf,i}^{\rm bare}(t)
++\delta_1(t)-\delta_r(t).
+$$
+If a simulation instead defines a two-level detuning $\widetilde\Delta_R$ with $\ket1$ set to zero from the start, then its replacement is
+$$
+\widetilde\Delta_R^{\rm eff}(t)
+=\widetilde\Delta_R^{\rm bare}(t)+\delta_1(t)-\delta_r(t).
+$$
+This is the common two-level convention, but it is not the replacement for the $-\Delta_R n^r$ coefficient in the full $\ket0,\ket1,\ket r$ Hamiltonian.
+
+Equivalently, if the population dynamics have already been simulated with the intended $\Omega_R(t)$ and detuning trajectory and the Stark shifts were not included in that trajectory, add the Stark phase afterwards. Since each $\delta_a$ is the diagonal energy of level $a$, the general Stark phase accumulated by site $i$ is
+$$
+\phi_{\rm Stark}
+=
+-\int_0^T dt\,
+\sum_i
+\left[
+\delta_0(t)\,n_i^0(t)
++\delta_1(t)\,n_i^1(t)
++\delta_r(t)\,n_i^r(t)
+\right],
+$$
+valid for any single-atom occupations, including the case where $\Omega_{\rm hf,i}(t)$ transfers population between $\ket0$ and $\ket1$. For the restricted dynamics used here, the $\ket0$ atoms are spectators with fixed occupation, so the configuration $\ket{s}$ specializes this to
+$$
+\phi_{\rm Stark}(s)
+=
+-\int_0^T dt\,
+\left[
+\sum_{i:s_i=0}\delta_0(t)
++
+\sum_{i:s_i=1}
+\left(
+\delta_1(t)n_i^1(t)+\delta_r(t)n_i^r(t)
+\right)
+\right].
+$$
+Here $n_i^0(t)=1$ for atoms whose computational value is $s_i=0$, while $n_i^0(t)=0$ and $n_i^1(t)+n_i^r(t)=1$ for atoms whose computational value is $s_i=1$ and are included in the restricted $\ket1-\ket r$ dynamics.
+Equivalently, after subtracting the global phase $-\int_0^T N\delta_0(t)\,dt$ for a fixed atom number $N$,
+$$
+\phi_{\rm Stark}(s)\doteq
+-\int_0^T dt
+\sum_{i:s_i=1}
+\left[
+(\delta_1-\delta_0)n_i^1(t)
++(\delta_r-\delta_0)n_i^r(t)
+\right].
+$$
+For configuration-dependent phase gates, this term must be included before extracting the relative phase, because the number and locations of $\ket{0}$ atoms vary with the computational string $\ket{s}$.
+
+If the experimental detunings $\Delta_R(t)$ and $\Delta_{\rm hf,i}(t)$ are calibrated spectroscopically, part of the above shift may already be included.
+In that case one should add only the residual shift not absorbed into the calibrated detuning; otherwise the Stark phase is double-counted.
+This is consistent with the Rydberg-gate practice of extracting single-photon Rabi frequencies from measured light shifts and optimizing beam parameters using differential light shifts [@evered2023highfidelity].
+
+In the digital-analog mapping protocols, we consider $\ket{0} = \ket{5S_{1/2}, F=1, m_F=0}$ and $\ket{1} = \ket{5S_{1/2}, F=2, m_F=0}$.
+We use the Rydberg state $\ket{r} = \ket{nS_{1/2}, m_J= - 1/2}$.
+The effective Hamiltonian is:
+$$
+\begin{align*}
+&H(t)/\hbar =
+\frac{\Omega_{R}(t)}{2} \sum_i 
+\left(|r_i\rangle\langle 1_i|+\mathrm{h.c.}\right)
+- \Delta_{R}(t) \sum_i  n_i^r\\
+&+
+\sum_i \frac{\Omega_{\rm hf,i}(t)}{2}
+\left(|1_i\rangle\langle0_i|+\mathrm{h.c.}\right)
+-\sum_i \Delta_{\rm hf,i}(t) n_i^1
++
+\sum_{i<j}V_{ij}n_i^r n_j^r ,
+\end{align*}
+$$
+Here $\Delta_e$ denotes the single-photon detuning from the virtual $6P_{3/2}$ intermediate manifold, whereas $\Delta_R(t)$ denotes the effective two-photon detuning of the $\ket{1}\leftrightarrow\ket{r}$ transition.
+In the large-detuning regime, the intermediate manifold can be adiabatically eliminated, giving the effective two-photon Rabi frequency
+$$
+\Omega_R(t)=\frac{\Omega_{420}(t)\Omega_{1013}}{2\Delta_e}.
+$$
+The Rydberg controls $\Omega_R(t)$ and $\Delta_R(t)$ are global because of the experimental optical setup.
+The microwave or Raman controls $\Omega_{\rm hf,i}(t),\Delta_{\rm hf,i}(t)$ drive the $\ket{0}\leftrightarrow\ket{1}$ transition and add a site-resolved light shift to $\ket{1}$.
+
+
+
+# Adiabatic computation
+
+ A critical step in the Time-optimal (TO) Rydberg CPHASE gate protocol is to design a $\Delta_R(t)$ that allows $\{\ket{00},\ket{01},\ket{10},\ket{11}\}$ to be excited to Rydberg state and then return to $\{\ket{00},\ket{01},\ket{10},\ket{11}\}$ with different accumulated phases. 
+
+In analogy, we hope to design a time-dependent pulse $\Omega_R(t),\Omega_{\rm hf,i}(t), \Delta_R(t), \Delta_{\rm hf,i}(t)$ that allows $\{\ket{\mathbf{s}}\}_{\mathbf{s} \in \{\ket{0},\ket{1}\}^n}$ to be excited to Rydberg state and then precisely return to the original state $\{e^{i \phi(\mathbf{s})}\ket{\mathbf{s}}\}_{\mathbf{s} \in \{\ket{0},\ket{1}\}^n}$ with different accumulated phases.
+
+- For a multi-qubit system, adiabatic computation is more applicable than finding a time-optimal pulse.
+- For different configurations $\ket{s}$, only atoms in the $\ket{1}$ state participate in the Rydberg excitation; 
+- atoms in $\ket{0}$ are far detuned from the $\ket{0} \leftrightarrow \ket{r}$ transition and can be dropped from the restricted Rydberg dynamics.
+- This leaves a subsystem of $\ket{1},\ket{r}$ atoms with configuration-dependent interaction terms $V^{(s)}_{ij}$ ($2^n$ configurations in total since each atom can be in $\ket{0}$ or $\ket{1}$).
+- Specifically, we fix a configuration $\ket{s}$, set $J_{ij} := V^{(s)}_{ij}$, and restrict to the $\ket{1},\ket{r}$ subspace.
+ 
+For simplicity, we consider the Pauli basis, i.e.,
+consider $X_i = \ket{1}\bra{r}+\ket{r}\bra{1}$, and $Z_i = \ket{1}\bra{1} - \ket{r}\bra{r}$ as the Pauli operators, and a time-dependent Hamiltonian with:
+$$
+\begin{align*}
+H(t)
+&\doteq \frac{1}{2} \sum_{i} \Omega(t)X_i  + \sum_{i<j} J_{ij} \frac{\mathbb{I}_i - Z_i}{2} \frac{\mathbb{I}_j - Z_j}{2}
++ \sum_{i} \frac{\Delta_R(t)-\Delta_{\rm hf,i}(t)}{2} Z_i\\
+&\doteq \frac{1}{2} \sum_{i} \Omega(t)X_i  + \frac{1}{4}\sum_{i<j} J_{ij}  Z_i Z_j + \sum_{i} h_i(t) Z_i := H_X(t) + H_Z(t),
+\end{align*}
+$$
+where $\doteq$ means equality up to a scalar energy shift and
+$$
+h_i(t)=\frac{\Delta_R(t)-\Delta_{\rm hf,i}(t)}{2}-\frac{1}{4}\sum_{j\neq i}J_{ij}.
+$$
+
+- We consider the case $H(0)=H(T)=H_Z(0)$,  with $\Omega(0) = \Omega(T) = 0$.
+- This indicates that the computational beginning state $\ket{s}$ faithfully returns to the original state $\ket{s}$ with a geometric phase $\phi(s)$.
+- The accumulated phase contains both **dynamical** and **geometric** contributions; see the detailed analysis [here](../Dynamics/geometric_phase.qmd).
+
+Then we analyze how the dynamical and geometric phases are related to the configuration $\ket{s}$, which changes $J_{ij}$ and $h_i$, and whether a global phase can be extracted so that only the relative geometric phase is observable across different configurations.
+
+
+# Atom loss analysis
+
+The decay rate of the state $\ket{r} = \ket{70S_{1/2}}$ is $\Gamma_r = 1/151.55\,(\mu s)^{-1}$, which gives
+$$
+p_{r,i} := \Gamma_r\int_0^T n^r_i(t)\, dt.
+$$
+
+The scattering rate from the virtual intermediate state is due to the $420$-nm and $1013$-nm lasers coupling through the $6P_{3/2}$ manifold.
+For the clock-state encoding, the Clebsch--Gordan decomposition of the $420$-nm coupling gives the same $4/3$ prefactor as in the CZ-gate model, while the $1013$-nm light shift of the Rydberg state has unit prefactor [@evered2023highfidelity].
+The $6P$ lifetime in rubidium is about $120.7\,\mathrm{ns}$ [@gomez2004lifetime]; in the high-fidelity gate simulations of Ref. [@evered2023highfidelity], a comparable intermediate-state lifetime of $110\,\mathrm{ns}$ is used together with explicit scattering branching ratios.
+
+::: {#thm-intermediate-scattering .callout-important icon="false"}
+### Theorem: Intermediate-State Scattering
+Under condition the mid-state detunings satisfy $|\Delta_e|,\ |\Delta_e+\omega_{01}|\gg |\Omega_{420,\mu}^{(1)}|,\ |\Omega_{420,\mu}^{(0)}|,\ |\Omega_{1013,\mu}|,\ \Gamma_e,\ \|H_g\|$,
+then the scattering rate from the intermediate state at time $t$ is approximately
+$$
+\dot p_{e,i}^{\rm sc}(t)
+\simeq
+\Gamma_e
+\left[
+\frac{4}{3}\left(\frac{\Omega_{420}(t)}{2\Delta_e}\right)^2 n_i^1(t)
++
+\frac{4}{3}\left(\frac{\Omega_{420}(t)}{2(\Delta_e+\omega_{01})}\right)^2 n_i^0(t)
++
+\left(\frac{\Omega_{1013}}{2\Delta_e}\right)^2 n_i^r(t)
+\right],
+$$
+where the factor $4/3$ is the clock-state Clebsch--Gordan sum for the $420$-nm leg (identical for $\ket0$ and $\ket1$, as derived in the Stark-shift section), the factor $1$ is the $1013$-nm sum, and the $\ket0$ leg carries the extra ground hyperfine detuning $\omega_{01}/2\pi\simeq6.835\,$GHz. The $\ket0$ term is the off-resonant scattering of the global $420$-nm beam on the spectator $\ket0$ atoms; it is suppressed by $(\Delta_e/(\Delta_e+\omega_{01}))^2$ and may be dropped when $\Delta_e\gg\omega_{01}$. Integrating this rate over $t\in[0,T]$ gives the approximation below.
+:::
+
+::: {.callout-note collapse="true"}
+### Proof Sketch
+The rigorous way to eliminate a decaying intermediate manifold is to use the effective-operator formalism for open systems [@reiter2012effective; @brion2007adiabatic]. For each spontaneous-emission channel $a$, write
+$$
+L_{\mu a}=\sqrt{\eta_{\mu a}\Gamma_e}\ket{a}\bra{e_\mu},
+\qquad \sum_a\eta_{\mu a}=1.
+$$
+Open-system adiabatic elimination gives the effective jump operator
+$$
+L_{\rm eff}^{\mu a}=L_{\mu a}H_{\rm NH}^{-1}V_+(t)
+=
+\sqrt{\eta_{\mu a}\Gamma_e}\,
+\ket{a}\left[
+\frac{\Omega_{420,\mu}^{(1)}(t)}{2(\Delta_\mu-i\Gamma_e/2)}\bra{1}
++
+\frac{\Omega_{420,\mu}^{(0)}(t)}{2(\Delta_\mu+\omega_{01}-i\Gamma_e/2)}\bra{0}
++
+\frac{\Omega_{1013,\mu}}{2(\Delta_\mu-i\Gamma_e/2)}\bra{r}
+\right],
+$$
+where the $\ket0$ leg inherits the same $\omega_{01}$-shifted denominator as $\delta_0$.
+Thus the instantaneous total scattering rate from site $i$ is
+$$
+\dot p_{e,i}^{\rm sc}(t)=
+\sum_{\mu,a}\operatorname{Tr}\!\left[
+\left(L_{\rm eff}^{\mu a}\right)^\dagger
+L_{\rm eff}^{\mu a}\rho_i(t)
+\right].
+$$
+Using $\sum_a\eta_{\mu a}=1$, and dropping the $\ket0$-containing coherences $\rho_{01}^{(i)},\rho_{0r}^{(i)}$ (the $\ket0$ atoms are spectators that carry no coherence with the active $\ket1,\ket r$ subspace in the restricted dynamics) under the same secular approximation, yields
+$$
+\dot p_{e,i}^{\rm sc}(t)
+=
+\Gamma_e\sum_\mu
+\left[
+\frac{
+|\Omega_{420,\mu}^{(1)}(t)|^2\rho_{11}^{(i)}(t)
++
+|\Omega_{1013,\mu}|^2\rho_{rr}^{(i)}(t)
++
+2\,\operatorname{Re}\!\left[
+\Omega_{420,\mu}^{(1)}(t)\Omega_{1013,\mu}^*\,\rho_{1r}^{(i)}(t)
+\right]
+}{4\Delta_\mu^2}
++
+\frac{|\Omega_{420,\mu}^{(0)}(t)|^2\rho_{00}^{(i)}(t)}{4(\Delta_\mu+\omega_{01})^2}
+\right]
++O\!\left(\frac{\Omega^2\Gamma_e^3}{\Delta^4},\frac{\Omega^3\Gamma_e}{\Delta^3}\right).
+$$
+In the large-detuning regime, $(\Delta_\mu^2+\Gamma_e^2/4)^{-1}=\Delta_\mu^{-2}+O(\Gamma_e^2/\Delta_\mu^4)$. Finally, setting $\Delta_\mu\simeq\Delta_e$, replacing $\rho_{00}^{(i)},\rho_{11}^{(i)},\rho_{rr}^{(i)}$ by $n_i^0,n_i^1,n_i^r$, dropping the coherence term under the stated secular or population-only approximation, and using the Clebsch--Gordan sums derived in the Stark-shift section,
+$$
+\sum_\mu|\Omega_{420,\mu}^{(1)}|^2=\sum_\mu|\Omega_{420,\mu}^{(0)}|^2=\frac{4}{3}\Omega_{420}^2,\qquad
+\sum_\mu|\Omega_{1013,\mu}|^2=\Omega_{1013}^2,
+$$
+gives the stated estimate.
+:::
+
+Thus we estimate the total intermediate-state scattering probability on site $i$ by
+$$
+p_{e,i}^{\rm sc}\simeq
+\Gamma_e\int_0^T
+\left[
+\frac{4}{3}\left(\frac{\Omega_{420}(t)}{2\Delta_e}\right)^2 n_i^1(t)
++
+\frac{4}{3}\left(\frac{\Omega_{420}(t)}{2(\Delta_e+\omega_{01})}\right)^2 n_i^0(t)
++
+\left(\frac{\Omega_{1013}}{2\Delta_e}\right)^2 n_i^r(t)
+\right]\,dt,
+$$
+where the $\ket0$ term may be dropped in the $\Delta_e\gg\omega_{01}$ limit.
+Only part of this scattering is direct atom loss.
+Using the branching ratio $\eta_{e\to L}$ into loss channels gives
+$$
+p_{e,i}^{\rm loss}\simeq \eta_{e\to L}\,p_{e,i}^{\rm sc}.
+$$
+For a rough estimate one may take $\Gamma_e\simeq 1/(110\,\mathrm{ns})$ and $\eta_{e\to L}\simeq0.614$ from the error model in Ref. [@evered2023highfidelity].
+The far-detuned scaling $p_e\propto(\Omega/2\Delta_e)^2$ is the usual off-resonant scattering estimate for a weakly saturated optical transition [@grimm2000optical].
+
+
+# Numerical simulation
+
+To find the best adiabatic pulse, we use numerical simulation.
+We simulate on $L\times L$ square lattice with $L = 2,3,4$. For each scale, we simulate the following Hamiltonian:
+$$
+H(t) = \sum_{i=0}^{L^2-1}\left[\frac{\Omega(t)}{2}\,\sigma^x_i - \Delta_i(t)\,n^r_i\right] + \sum_{\langle i,j\rangle} V_{ij}\,n^r_i n^r_j
+$$
+where $\sigma^x_i=|r\rangle\langle 1|_i+|1\rangle\langle r|_i, n^r_i=|r\rangle\langle r|_i$.
+
+The changeable parameters are $\Omega(t), \Delta(t)$, and $V_{ij} = C_6/r_{ij}^6$ where $C_6=2\pi\times874\ \mathrm{GHz\cdot\mu m^6}$.
+We choose lattice spacing $r\in [5\,\mu m, 10\,\mu m]$ for simulation.
+This induces a Rydberg interaction strength $V\in [2\pi\times18\ \mathrm{MHz}, 2\pi\times0.874\ \mathrm{MHz}]$.
+
+
+Besides the adiabatic loss, we also consider Rydberg-state decay and intermediate-state scattering in first-order approximation.
+Namely, for each site $i$, we calculate the accumulation of $\ket{r}$ state population $n^r_i(t)$ and $\ket{1}$ state population $n^1_i(t)$ during the evolution.
+For the lossless effective two-level trajectory, the total population is conserved, i.e., $n^r_i(t) + n^1_i(t) = 1$.

@@ -1,0 +1,50 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 3K82VNEV
+  item_version: 96116
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: U3LSFM3D
+      name: QVA
+      path: Quantum Algorithm/QVA
+    - key: TZ42IFP4
+      name: Optimization
+      path: Quantum Algorithm/Optimization
+qlab:
+  primary_collection: U3LSFM3D
+  indexed_collections:
+    - TZ42IFP4
+    - U3LSFM3D
+  primary_topic: quantum-algorithm
+  indexed_topics:
+    - quantum-algorithm
+item_type: preprint
+title: A Quantum Approximate Optimization Algorithm
+authors:
+  - first: Edward
+    last: Farhi
+  - first: Jeffrey
+    last: Goldstone
+  - first: Sam
+    last: Gutmann
+year: 2014
+abstract: We introduce a quantum algorithm that produces approximate solutions
+  for combinatorial optimization problems. The algorithm depends on an integer p
+  ≥ 1 and the quality of the approximation improves as p is increased. The
+  quantum circuit that implements the algorithm consists of unitary gates whose
+  locality is at most the locality of the objective function whose optimum is
+  sought. The depth of the circuit grows linearly with p times (at worst) the
+  number of constraints. If p is ﬁxed, that is, independent of the input size,
+  the algorithm makes use of eﬃcient classical preprocessing. If p grows with
+  the input size a diﬀerent strategy is proposed. We study the algorithm as
+  applied to MaxCut on regular graphs and analyze its performance on 2-regular
+  and 3-regular graphs for ﬁxed p. For p = 1, on 3-regular graphs the quantum
+  algorithm always ﬁnds a cut that is at least 0.6924 times the size of the
+  optimal cut.
+tags:
+  - Quantum Physics
+identifiers:
+  arxiv: "1411.4028"

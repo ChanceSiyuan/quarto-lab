@@ -1,0 +1,50 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: QEF32XMC
+  item_version: 101548
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: TTLDCUVL
+      name: quantum
+      path: Quantum Learning/Machine learning/Nonparametric/quantum
+qlab:
+  primary_collection: TTLDCUVL
+  indexed_collections:
+    - TTLDCUVL
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: journalArticle
+title: Quantum state estimation with nuisance parameters
+authors:
+  - first: Jun
+    last: Suzuki
+  - first: Yuxiang
+    last: Yang
+  - first: Masahito
+    last: Hayashi
+year: 2020
+abstract: In parameter estimation, nuisance parameters refer to parameters that
+  are not of interest but nevertheless affect the precision of estimating other
+  parameters of interest. For instance, the strength of noises in a probe can be
+  regarded as a nuisance parameter. Despite its long history in classical
+  statistics, the nuisance parameter problem in quantum estimation remains
+  largely unexplored. The goal of this article is to provide a systematic review
+  of quantum estimation in the presence of nuisance parameters, and to supply
+  those who work in quantum tomography and quantum metrology with tools to
+  tackle relevant problems. After an introduction to the nuisance parameter and
+  quantum estimation theory, we explicitly formulate the problem of quantum
+  state estimation with nuisance parameters. We extend quantum Cramer-Rao bounds
+  to the nuisance parameter case and provide a parameter orthogonalization tool
+  to separate the nuisance parameters from the parameters of interest. In
+  particular, we put more focus on the case of one-parameter estimation in the
+  presence of nuisance parameters, as it is most frequently encountered in
+  practice.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.1088/1751-8121/ab8b78
+  arxiv: "1911.02790"

@@ -1,0 +1,54 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: ABB2NSQ6
+  item_version: 107124
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: F8JXZ7FS
+      name: Qalg
+      path: Quantum Dynamics/Adiabatic/Berry/Qalg
+qlab:
+  primary_collection: F8JXZ7FS
+  indexed_collections:
+    - F8JXZ7FS
+  primary_topic: quantum-dynamics
+  indexed_topics:
+    - quantum-dynamics
+item_type: journalArticle
+title: Calculating nonadiabatic couplings and Berry's phase by variational
+  quantum eigensolvers
+authors:
+  - first: Shiro
+    last: Tamiya
+  - first: Sho
+    last: Koh
+  - first: Yuya O.
+    last: Nakagawa
+year: 2021
+abstract: The variational quantum eigensolver (VQE) is an algorithm to find
+  eigenenergies and eigenstates of systems in quantum chemistry and quantum
+  many-body physics. The VQE is one of the most promising applications of
+  near-term quantum devices to investigate such systems. Here we propose an
+  extension of the VQE to calculate the nonadiabatic couplings of molecules in
+  quantum chemical systems and Berry's phase in quantum many-body systems. Both
+  quantities play an important role to understand the properties of a system
+  beyond the naive adiabatic picture, e.g., nonadiabatic dynamics and
+  topological phase of matter. We provide quantum circuits and classical
+  post-processings to calculate the nonadiabatic couplings and Berry's phase.
+  Specifically, we show that the evaluation of the nonadiabatic couplings
+  reduces to that of expectation values of observables while that of Berry's
+  phase also requires one additional Hadamard test. Furthermore, we simulate the
+  photodissociation dynamics of a lithium fluoride molecule using the
+  nonadiabatic couplings evaluated on a real quantum device. Our proposal widens
+  the applicability of the VQE and the possibility of near-term quantum devices
+  to study molecules and quantum many-body systems.
+tags:
+  - Condensed Matter - Strongly Correlated Electrons
+  - Physics - Chemical Physics
+  - Quantum Physics
+identifiers:
+  doi: 10.1103/physrevresearch.3.023244
+  arxiv: "2003.01706"

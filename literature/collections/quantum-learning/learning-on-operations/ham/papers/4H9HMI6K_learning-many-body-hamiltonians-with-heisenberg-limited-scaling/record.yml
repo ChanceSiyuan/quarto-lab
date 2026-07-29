@@ -1,0 +1,54 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 4H9HMI6K
+  item_version: 109119
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: UEQI7UKL
+      name: ham
+      path: Quantum Learning/Learning on operations/ham
+qlab:
+  primary_collection: UEQI7UKL
+  indexed_collections:
+    - UEQI7UKL
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: journalArticle
+title: Learning many-body Hamiltonians with Heisenberg-limited scaling
+authors:
+  - first: Hsin-Yuan
+    last: Huang
+  - first: Yu
+    last: Tong
+  - first: Di
+    last: Fang
+  - first: Yuan
+    last: Su
+year: 2023
+abstract: Learning a many-body Hamiltonian from its dynamics is a fundamental
+  problem in physics. In this work, we propose the first algorithm to achieve
+  the Heisenberg limit for learning an interacting $N$-qubit local Hamiltonian.
+  After a total evolution time of $\mathcal{O}(ε^{-1})$, the proposed algorithm
+  can efficiently estimate any parameter in the $N$-qubit Hamiltonian to
+  $ε$-error with high probability. The proposed algorithm is robust against
+  state preparation and measurement error, does not require eigenstates or
+  thermal states, and only uses $\mathrm{polylog}(ε^{-1})$ experiments. In
+  contrast, the best previous algorithms, such as recent works using
+  gradient-based optimization or polynomial interpolation, require a total
+  evolution time of $\mathcal{O}(ε^{-2})$ and $\mathcal{O}(ε^{-2})$ experiments.
+  Our algorithm uses ideas from quantum simulation to decouple the unknown
+  $N$-qubit Hamiltonian $H$ into noninteracting patches, and learns $H$ using a
+  quantum-enhanced divide-and-conquer approach. We prove a matching lower bound
+  to establish the asymptotic optimality of our algorithm.
+tags:
+  - Computer Science - Information Theory
+  - Computer Science - Machine Learning
+  - Mathematics - Numerical Analysis
+  - Quantum Physics
+identifiers:
+  doi: 10.1103/physrevlett.130.200403
+  arxiv: "2210.03030"

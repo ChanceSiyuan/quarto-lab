@@ -1,0 +1,361 @@
+---
+title: Chern number in Majorana fermion model
+description: We introduce the concept of Majorana unpaired modes in a one-dimensional interacting fermion model with Hamiltonian The terms are nearest-neighbor hopping induced by Coulomb interaction, the are on-site energies controll
+categories:
+  - theory
+---
+
+# Summary and questions
+
+This post develops the **Majorana number** $\mathcal{M}$ as a $\mathbb{Z}_2$ topological invariant that detects unpaired Majorana zero modes in free-fermion systems. Starting from the 1D Kitaev chain [@Kitaev_2001] as a toy model, we introduce the cut-bipartition formalism and prove that a topological obstruction to local pairing implies the existence of zero modes. The Pfaffian criterion $\mathcal{M}_{\mathbf{n}}(B_S) = -1$ provides a computable sufficient condition, which in two dimensions reduces to the parity of the **Chern number** $\nu(P)$. The physical consequence is that systems with odd Chern number necessarily host unpaired Majorana zero modes at vortex defects, yielding non-abelian braiding statistics [@Kitaev_2006].
+
+# Unpaired Majorana mode in 1D
+
+We introduce the concept of Majorana unpaired modes in a one-dimensional interacting fermion model [@Kitaev_2001] with Hamiltonian
+$$
+\begin{align*}
+\mathcal{H} &= -\sum_{n=1}^{N} \left(\Delta\, \psi_n^\dagger \psi_{n+1}^\dagger + t\, \psi_n^\dagger \psi_{n+1} + \text{h.c.}\right) + \mu\, \psi_n^\dagger \psi_n.
+\end{align*}
+$$
+The $t\,\psi_n^\dagger \psi_{n+1} + \text{h.c.}$ terms are nearest-neighbor hopping induced by Coulomb interaction, the $\mu\, \psi_n^\dagger \psi_n$ are on-site energies controlled by the chemical potential, and the $\Delta\, \psi_n^\dagger \psi_{n+1}^\dagger + \text{h.c.}$ terms are the electron-electron pairing induced by phonons under mean-field approximation.
+
+Two boundary conditions apply to this 1D chain: the periodic condition $\psi_{N+1} = \psi_1$ and the open boundary condition $\psi_{N+1} = 0$.
+
+Taking the open boundary condition and defining the Majorana operators
+$$
+c_{2n-1} = \psi_n^\dagger + \psi_n, \qquad c_{2n} = i(\psi_n^\dagger - \psi_n),
+$$
+one can expand the Hamiltonian as
+$$
+\begin{align*}
+\mathcal{H} &= \sum_{n=1}^{N-1} i\frac{\Delta+t}{2}\, c_{2n} c_{2n+1} + \sum_{n=1}^{N-1} i\frac{\Delta-t}{2}\, c_{2n-1} c_{2n+2} - \frac{\mu}{2}\sum_{n=1}^{N} (1 + i\, c_{2n-1} c_{2n}).
+\end{align*}
+$$
+
+We focus on the special case $t = \Delta$. Ignoring the identity part,
+$$
+\begin{align*}
+\mathcal{H} = \underbrace{\sum_{n=1}^{N-1} i\Delta\, c_{2n} c_{2n+1}}_{\mathcal{H}_L} - \underbrace{\sum_{n=1}^{N} i\frac{\mu}{2}\, c_{2n-1} c_{2n}}_{\mathcal{H}_R}.
+\end{align*}
+$$ {#eq-chain-ham}
+
+The two parts of @eq-chain-ham differ only by a shift $c_j \to c_{j+1}$, yet this gives rise to fundamentally different pairing structures.
+
+## Left pairing: Majorana zero modes
+
+For $\mathcal{H}_L$, pair operators $c_{2n}$ and $c_{2n+1}$ to construct new fermions $f_n := \frac{1}{2}(c_{2n} + i c_{2n+1})$. Using the identity $2f_n^\dagger f_n - 1 = i c_{2n} c_{2n+1}$, we obtain $\mathcal{H}_L = \sum_{n=1}^{N-1} \Delta(2f_n^\dagger f_n - 1)$ with $\{f_j, f_k^\dagger\} = \delta_{jk}$.
+
+The pairs $(c_2, c_3), \ldots, (c_{2N-2}, c_{2N-1})$ are the **Majorana paired modes** of $\mathcal{H}_L$. However, $c_1$ and $c_{2N}$ are not involved in $\mathcal{H}_L$. They can be formally included by writing
+$$
+\mathcal{H}_L = \sum_{n=1}^{N-1} \Delta(2f_n^\dagger f_n - 1) + 0 \cdot f_N^\dagger f_N, \qquad \text{where } \begin{cases} f_N = \frac{1}{2}(c_{2N} + ic_1) \\ f_n = \frac{1}{2}(c_{2n} + ic_{2n+1}) \end{cases}.
+$$
+This means $\mathcal{H}_L$ has degenerate ground states $\{|\Omega\rangle, f_N^\dagger |\Omega\rangle\}$, since the energy is independent of the occupation of the $f_N$ mode. The operators $c_1$ and $c_{2N}$ are called **Majorana zero modes**.
+
+## Right pairing: fully paired
+
+For $\mathcal{H}_R$, set $g_n = \frac{1}{2}(c_{2n-1} + ic_{2n})$ and use $2g_n^\dagger g_n - 1 = ic_{2n-1} c_{2n}$:
+$$
+\mathcal{H}_R = \sum_{n=1}^{N} \frac{\mu}{2}(2g_n^\dagger g_n - 1).
+$$
+All Majorana operators are paired as $(c_1, c_2), \ldots, (c_{2N-1}, c_{2N})$ and no zero mode exists.
+
+## Antisymmetric matrix representation
+
+This difference can be characterized by writing the Hamiltonian in terms of an antisymmetric matrix $A_{jk}$:
+$$
+\mathcal{H}_{L/R} = \frac{i}{4} \sum_{j,k=1}^{2N} A_{jk}^{L/R}\, c_j c_k.
+$$
+For $N=4$ and $\Delta = 1/2, \mu = -1$:
+$$
+A^L(\mathbf{u}) = \begin{pmatrix} 0 & 0 & 0 & 0 & 0 & 0 & 0 & -\mathbf{u} \\ 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 \\ 0 & -1 & 0 & 0 & 0 & 0 & 0 & 0 \\ 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 \\ 0 & 0 & 0 & -1 & 0 & 0 & 0 & 0 \\ 0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 \\ 0 & 0 & 0 & 0 & 0 & -1 & 0 & 0 \\ \mathbf{u} & 0 & 0 & 0 & 0 & 0 & 0 & 0 \end{pmatrix}
+$$ {#eq-AL}
+
+$$
+A^R = \begin{pmatrix} 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 \\ -1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\ 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 \\ 0 & 0 & -1 & 0 & 0 & 0 & 0 & 0 \\ 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 \\ 0 & 0 & 0 & 0 & -1 & 0 & 0 & 0 \\ 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 \\ 0 & 0 & 0 & 0 & 0 & 0 & -1 & 0 \end{pmatrix}
+$$ {#eq-AR}
+
+Here $A^L = A^L(\mathbf{u}=0)$ due to the open boundary condition. The matrix $A^L$ has a $2\times 2$ zero block at positions $(1,8)$ and $(8,1)$, reflecting the unpaired modes $c_1, c_{2N}$. In contrast, $A^R$ is a perfect block-diagonal of $2\times 2$ skew-symmetric blocks, reflecting complete pairing.
+
+## Translational symmetrization and cut bipartition
+
+The open boundary condition breaks translational symmetry. We define the **translational symmetrization** by passing to the periodic boundary condition: $A^{SL} = A^L(\mathbf{u}=1)$ and $A^{SR} = A^R$. The existence of unpaired Majorana modes is reflected in the algebraic properties of $A^{SR}$ and $A^{SL}$ under cut bipartition.
+
+:::{#def-cut-bipartition .callout-note icon="false"}
+## Definition (Cut Bipartition)
+
+Let $\mathbf{n}$ be the normal vector of a $(d-1)$-dimensional surface cutting a $d$-dimensional lattice. The **cut projector** is
+$$
+\Pi^{\mathbf{n}} |\mathbf{x}\rangle = \begin{cases} |\mathbf{x}\rangle & \text{if } \mathbf{n} \cdot \mathbf{x} \geq 0 \\ 0 & \text{otherwise} \end{cases}.
+$$
+Under the bipartition $\mathbf{n}$, define:
+
+- **Bipartition diagonal:** $\mathcal{D}_{\mathbf{n}}(A) = \Pi^{\mathbf{n}} A \Pi^{\mathbf{n}} + (\mathbb{I} - \Pi^{\mathbf{n}}) A (\mathbb{I} - \Pi^{\mathbf{n}})$
+- **Bipartition flip:** $\mathcal{F}_{\mathbf{n}}(A) = (\mathbb{I} - 2\Pi^{\mathbf{n}}) A (\mathbb{I} - 2\Pi^{\mathbf{n}})$
+- **Local correction near $\mathbf{n}$:** $[\mathcal{L}_{\mathbf{n}}(A)]_{\mathbf{j}\mathbf{k}} = A_{\mathbf{j}\mathbf{k}}$ for all $(\mathbf{j},\mathbf{k})$ such that $\mathbf{j}\cdot\mathbf{n}, \mathbf{k}\cdot\mathbf{n} \notin [-\delta, \delta]$
+
+:::
+
+In the 1D case, $\mathbf{n} = \eta \in [0,N]$ and $\Pi^\eta |i\rangle = |i\rangle$ if $i \in [\eta, N]$, and $0$ otherwise. The bipartition diagonal $\mathcal{D}_\eta(A)$ zeroes out the off-diagonal blocks connecting sites $[1,\eta-1]$ and $[\eta,N]$.
+
+:::{#lem-weak-obs .callout-note icon="false"}
+## (Weak Obstruction in 1D)
+
+There **exists** $\eta \in [1,N]$ such that $\mathcal{D}_\eta(A^{SR})^2 = -\mathbb{I}$, but there **does not exist** $\eta \in [1,N]$ such that $\mathcal{D}_\eta(A^{SL})^2 = -\mathbb{I}$.
+:::
+
+:::{.callout-note collapse="true"}
+## Proof (click to expand)
+
+As shown in @eq-AL and @eq-AR, the bipartition diagonal projects out the off-diagonal entries connecting the two halves. For $A^R$, the pairing is entirely within $2\times 2$ blocks along the diagonal; choosing $\eta = 4$ (the midpoint between the 4th and 5th block) leaves $A^{SR}$ unchanged, so $\mathcal{D}_\eta(A^{SR})^2 = (A^{SR})^2 = -\mathbb{I}$.
+
+For $A^{SL}(\eta)$, any choice of $\eta \in [1,N]$ necessarily cuts through the $(1,2N)$ coupling that wraps around under the periodic condition. The resulting matrix has $\det(\mathcal{D}_\eta(A^{SL})) = 0$, hence $\mathcal{D}_\eta(A^{SL})^2 \neq -\mathbb{I}$.
+:::
+
+# Topological obstruction in general systems
+
+## Pairing matrix
+
+We now generalize to an arbitrary free Majorana system $\mathcal{H} = \frac{i}{4}\sum_{j,k=1}^{2N} A_{jk}\, c_j c_k$ where $A$ is a real skew-symmetric matrix.
+
+:::{#lem-schur-decomp .callout-note icon="false"}
+## (Real Skew-Symmetric Normal Form)
+
+For any even-dimensional real skew-symmetric matrix $A$ (i.e., $A^T = -A$), there exists a real orthogonal matrix $Q \in SO(2N)$ such that
+$$
+A = Q \begin{pmatrix} \begin{matrix} 0 & \varepsilon_1 \\ -\varepsilon_1 & 0 \end{matrix} & & \\ & \ddots & \\ & & \begin{matrix} 0 & \varepsilon_N \\ -\varepsilon_N & 0 \end{matrix} \end{pmatrix} Q^T
+$$
+where all $\varepsilon_i \geq 0$.
+:::
+
+:::{.callout-note collapse="true"}
+## Proof (click to expand)
+
+The matrix $-A^2 = A^T A$ is real symmetric and positive semi-definite, hence diagonalizable with non-negative eigenvalues $\varepsilon_1^2, \varepsilon_1^2, \ldots, \varepsilon_N^2, \varepsilon_N^2$ (each with even multiplicity, since $A$ is skew-symmetric). Within each $\varepsilon_i$-eigenspace of $A^TA$, the restriction of $A$ is a skew-symmetric operator on a real vector space; by induction on dimension, one can choose an orthonormal basis in which $A$ takes the standard $2\times 2$ skew-symmetric block form. This yields the orthogonal matrix $Q$.
+:::
+
+Based on @lem-schur-decomp, write $Q = (\mathbf{q}_1, \ldots, \mathbf{q}_{2N})$ and define the transformed Majorana operators $F(\mathbf{q}) = \sum_j q_j c_j$ for any normalized real vector $\mathbf{q}$. Then
+$$
+\mathcal{H} = \frac{i}{4} \sum_{j,k=1}^{2N} \Lambda_{jk}(\varepsilon_r)\, F(\mathbf{q}_j) F(\mathbf{q}_k).
+$$
+
+The exact values of $\varepsilon_i$ do not affect the existence of Majorana zero modes. Thus, we define the **pairing matrix**
+$$
+B = Q \begin{pmatrix} \begin{matrix} 0 & 1 \\ -1 & 0 \end{matrix} & & \\ & \ddots & \\ & & \begin{matrix} 0 & 1 \\ -1 & 0 \end{matrix} \end{pmatrix} Q^T,
+$$ {#eq-pairing-matrix}
+which satisfies $B^2 = -\mathbb{I}$.
+
+Note that $B$ always has the form of $A^R$ in @eq-AR. However, this does not mean the system has no Majorana zero modes: a non-local translation $\{N \to 1, 1 \to 2, \ldots\}$ can transform $A^L(\mathbf{u}=1)$ into $A^R$, and such non-local transformations are implicitly absorbed into the matrix $Q$.
+
+We now seek a criterion that resolves this ambiguity. The key question is:
+
+> Given an arbitrary free-Majorana system with Hamiltonian matrix $A$ and orthogonal decomposition $Q$, find vectors $\mathbf{q}_A, \mathbf{q}_B$ supported on label sets $A, B \subset \{1,\ldots,2N\}$ with $\min_{a \in A, b \in B} |a-b| = \mathcal{O}(N)$, such that $[F(\mathbf{q}_A) F(\mathbf{q}_B), \mathcal{H}] = 0$. Such $F(\mathbf{q}_A)$ and $F(\mathbf{q}_B)$ are the topologically protected **Majorana zero modes**.
+
+The **topological obstruction** is a necessary condition for their existence:
+
+:::{#thm-topo-obstruction .callout-important icon="false"}
+## (Topological Obstruction)
+
+Rewrite $\mathcal{H}$ under the periodic boundary condition as $\mathcal{H}_S$ with matrices $A_S, B_S$. If it is impossible to find any cut $\mathbf{n}$ such that $[\mathcal{D}_{\mathbf{n}} \circ \mathcal{L}_{\mathbf{n}}(B_S)]^2 = -\mathbb{I}$, then the Majorana zero modes of $\mathcal{H}$ **exist**.
+:::
+
+:::{.callout-note collapse="true"}
+## Proof (click to expand)
+
+We prove the contrapositive: if no Majorana zero modes exist, then some cut admits a valid local pairing.
+
+Suppose there are no topologically protected zero modes, i.e., every operator that commutes with $\mathcal{H}$ can be decomposed into modes whose supports do not separate by $\mathcal{O}(N)$. Then the pairing matrix $B_S$ can be locally deformed — all fermion modes $f_n = \frac{1}{2}(F(\mathbf{q}_{2n}) + iF(\mathbf{q}_{2n+1}))$ have supports that are localized within regions of diameter $\delta \ll N$.
+
+Choose a cut $\mathbf{n}$ that avoids all these localized supports (possible since the supports are finitely many and each has diameter $\delta$). The local correction $\mathcal{L}_{\mathbf{n}}$ fixes the entries near the cut boundary without altering the pairing structure away from it. The bipartition diagonal $\mathcal{D}_{\mathbf{n}}$ then simply decomposes $B_S$ into two independent blocks, each of which inherits the complete pairing from $B_S$. Hence $[\mathcal{D}_{\mathbf{n}} \circ \mathcal{L}_{\mathbf{n}}(B_S)]^2 = -\mathbb{I}$.
+
+For the detailed construction, see [@Kitaev_2006, Section 8].
+:::
+
+## Pfaffian criterion
+
+To make @thm-topo-obstruction computable, we introduce the Fredholm Pfaffian.
+
+:::{#def-fredholm-pfaffian .callout-note icon="false"}
+## Definition (Fredholm Pfaffian)
+
+Given an even-dimensional real skew-symmetric matrix $A$ and an invertible skew-symmetric matrix $B$, the **Fredholm Pfaffian** is defined via $K = AB^{-1}$ as
+$$
+\operatorname{Pf}(A,B) = e^{(1/2)\operatorname{Tr}\ln(1+K)} := 1 + \frac{1}{2}\operatorname{Tr}K + \left(-\frac{1}{4}\operatorname{Tr}K^2 + \frac{1}{8}(\operatorname{Tr}K)^2\right) + \cdots
+$$
+It satisfies:
+
+(i) $\operatorname{Pf}(WAW^T, VBV^T) = \operatorname{Pf}(A,B)\,\det(V^{-1}W)$
+
+(ii) $\operatorname{Pf}(A,A) = 1$
+:::
+
+We define the **Majorana number** at cut $\mathbf{n}$ as
+$$
+\mathcal{M}_{\mathbf{n}}(B) := \operatorname{Pf}(\mathcal{F}_{\mathbf{n}}(B), B).
+$$
+
+:::{#thm-pfaffian-bipartition .callout-important icon="false"}
+## (Pfaffian-Bipartition Link)
+
+Given a matrix $B$ with $B^2 = -\mathbb{I}$, then $\mathcal{M}_{\mathbf{n}}(B) = \pm 1$. Furthermore,
+$$
+[\mathcal{D}_{\mathbf{n}} \circ \mathcal{L}_{\mathbf{n}}(B)]^2 = -\mathbb{I} \implies \mathcal{M}_{\mathbf{n}}(B) = +1.
+$$
+:::
+
+:::{.callout-note collapse="true"}
+## Proof (click to expand)
+
+**Step 1: $\mathcal{M}_{\mathbf{n}}(B) = \pm 1$ and cut-independence up to sign.**
+
+Given two cuts $\mathbf{n}$ and $\mathbf{m}$, set $V_{\mathbf{r}} = \mathbb{I} - 2\Pi^{\mathbf{r}}$. Then:
+$$
+\begin{align*}
+\mathcal{M}_{\mathbf{n}}(B) \cdot \mathcal{M}_{\mathbf{m}}(B)^{-1} &= \operatorname{Pf}(\mathcal{F}_{\mathbf{n}}(B), B) \cdot \operatorname{Pf}(B, \mathcal{F}_{\mathbf{m}}(B)) \\
+&= \operatorname{Pf}(\mathcal{F}_{\mathbf{n}}(B), \mathcal{F}_{\mathbf{m}}(B)) \\
+&= \operatorname{Pf}(V_{\mathbf{n}} B V_{\mathbf{n}},\, V_{\mathbf{m}} B V_{\mathbf{m}}) \\
+&= \operatorname{Pf}(B,B) \cdot \det(V_{\mathbf{m}}^{-1} V_{\mathbf{n}}) = \pm 1.
+\end{align*}
+$$
+
+Thus, $\mathcal{M}_{\mathbf{n}}(B) \cdot \mathcal{M}_{\mathbf{n}}(B') = \mathcal{M}_{\mathbf{m}}(B) \cdot \mathcal{M}_{\mathbf{m}}(B')$ for any two matrices $B, B'$ with $B^2 = B'^2 = -\mathbb{I}$.
+
+**Step 2: $\mathcal{M}_{\mathbf{n}}(B) = \mathcal{M}_{\mathbf{n}}(B')$ when $B$ and $B'$ agree near the cut.**
+
+Say $B$ and $B'$ are **similar at the cut edge** of $\mathbf{n}$ if $B_{\mathbf{j}\mathbf{k}} = B'_{\mathbf{j}\mathbf{k}}$ for all $\mathbf{j}, \mathbf{k}$ with $\mathbf{j}\cdot\mathbf{n}, \mathbf{k}\cdot\mathbf{n} \in [-\delta, \delta]$.
+
+Since $B$ is $\delta$-quasi-diagonal ($B_{\mathbf{j}\mathbf{k}} = 0$ for $|\mathbf{j}-\mathbf{k}| > \delta$), the matrix $\mathcal{F}_{\mathbf{n}}(B) - B$ is nonzero only in the region $\{(\mathbf{j},\mathbf{k}) : \mathbf{j}\cdot\mathbf{n} \leq 0,\, \mathbf{k}\cdot\mathbf{n} \geq 0,\, |\mathbf{j}-\mathbf{k}| \leq \delta\}$. From the constraint
+$$
+\left\{\begin{aligned} &|(\mathbf{j}-\mathbf{k})\cdot\mathbf{n}| \leq |\mathbf{j}-\mathbf{k}| \leq \delta \\ &\mathbf{j}\cdot\mathbf{n} \leq 0,\quad \mathbf{k}\cdot\mathbf{n} \geq 0 \end{aligned}\right. \implies -\delta \leq \mathbf{j}\cdot\mathbf{n},\, \mathbf{k}\cdot\mathbf{n} \leq \delta,
+$$
+we conclude $\mathcal{F}_{\mathbf{n}}(B) - B$ depends only on entries within the $[-\delta, \delta]$ strip. If $B$ and $B'$ agree there, then $(\mathcal{F}_{\mathbf{n}}(B) - B)(-B) = (\mathcal{F}_{\mathbf{n}}(B') - B')(-B')$. Combined with $B^2 = B'^2 = -\mathbb{I}$, this gives $\mathcal{F}_{\mathbf{n}}(B) B^{-1} = \mathcal{F}_{\mathbf{n}}(B')(B')^{-1}$, hence $\mathcal{M}_{\mathbf{n}}(B) = \mathcal{M}_{\mathbf{n}}(B')$.
+
+**Step 3: The implication.**
+
+Suppose $[\mathcal{D}_{\mathbf{n}} \circ \mathcal{L}_{\mathbf{n}}(B)]^2 = -\mathbb{I}$. Set $B' = \mathcal{D}_{\mathbf{n}} \circ \mathcal{L}_{\mathbf{n}}(B)$, an invertible bipartition-diagonal matrix. Choose $\mathbf{m}$ far enough from $\mathbf{n}$ so that $B$ and $B'$ agree at the cut edge of $\mathbf{m}$. Then $\mathcal{M}_{\mathbf{m}}(B) = \mathcal{M}_{\mathbf{m}}(B')$ and by Step 1, $\mathcal{M}_{\mathbf{n}}(B)\cdot\mathcal{M}_{\mathbf{n}}(B') = \mathcal{M}_{\mathbf{m}}(B)\cdot\mathcal{M}_{\mathbf{m}}(B') = +1$.
+
+However,
+$$
+\begin{align*}
+\mathcal{M}_{\mathbf{n}}(B') &= \mathcal{M}_{\mathbf{n}}(\mathcal{D}_{\mathbf{n}} \circ \mathcal{L}_{\mathbf{n}}(B)) \\
+&= \mathcal{M}_{\mathbf{n}}(\mathcal{D}_{\mathbf{n}}(B)) \\
+&= \operatorname{Pf}(\mathcal{F}_{\mathbf{n}}(\mathcal{D}_{\mathbf{n}}(B)),\, \mathcal{D}_{\mathbf{n}}(B)) \\
+&= \operatorname{Pf}(\mathcal{D}_{\mathbf{n}}(B),\, \mathcal{D}_{\mathbf{n}}(B)) = +1.
+\end{align*}
+$$
+In the second equality, $\mathcal{D}_{\mathbf{n}}(B)$ and $\mathcal{D}_{\mathbf{n}} \circ \mathcal{L}_{\mathbf{n}}(B)$ agree at the cut edge of $\mathbf{n}$. In the fourth, $\mathcal{F}_{\mathbf{n}}$ acts trivially on any bipartition-diagonal matrix. Thus $\mathcal{M}_{\mathbf{n}}(B) = +1$.
+:::
+
+:::{#thm-sufficient-zero-modes .callout-important icon="false"}
+## (Sufficient Condition for Majorana Zero Modes)
+
+If for an arbitrary cut $\mathbf{n}$, $\mathcal{M}_{\mathbf{n}}(B_S) = -1$, then the Majorana zero modes **exist** within $\mathcal{H}$.
+:::
+
+:::{.callout-note collapse="true"}
+## Proof (click to expand)
+
+By @thm-pfaffian-bipartition,
+$$
+\forall\, \mathbf{n},\quad \mathcal{M}_{\mathbf{n}}(B_S) = -1 \implies \forall\, \mathbf{n},\quad [\mathcal{D}_{\mathbf{n}} \circ \mathcal{L}_{\mathbf{n}}(B_S)]^2 \neq -\mathbb{I}.
+$$
+By @thm-topo-obstruction,
+$$
+\forall\, \mathbf{n},\quad [\mathcal{D}_{\mathbf{n}} \circ \mathcal{L}_{\mathbf{n}}(B_S)]^2 \neq -\mathbb{I} \implies \text{Majorana zero modes exist.}
+$$
+:::
+
+# Calculation of the Chern number
+
+We now show how to compute $\mathcal{M}_{\mathbf{n}}(B)$ for a matrix $B$ satisfying the periodic boundary condition and $B^2 = -\mathbb{I}$.
+
+The description of arbitrary cuts $\mathbf{n}$ is complex. Fortunately, as shown in the proof of @thm-pfaffian-bipartition, we can eliminate the $\mathbf{n}$-dependence by defining the **relative Majorana number**.
+
+:::{#lem-relative-majorana .callout-note icon="false"}
+## (Relative Majorana Number)
+
+Given two matrices $B, B'$ with $B^2 = B'^2 = -\mathbb{I}$, the relative Majorana number $\mathcal{M}(B,B') := \mathcal{M}_{\mathbf{n}}(B) \cdot \mathcal{M}_{\mathbf{n}}(B')$ does not depend on the choice of cut $\mathbf{n}$. Furthermore,
+$$
+\mathcal{M}(B,B') = \det(e^{-\pi X} e^{\pi X'}), \qquad \text{where } X = \frac{1}{2}(\Pi^{\mathbf{e}_0} B + B\, \Pi^{\mathbf{e}_0}).
+$$
+:::
+
+We focus on the two-dimensional case with $\mathbf{e}_x = (1,0)$ and $\mathbf{e}_y = (0,1)$. Choose $B' = (\mathbb{I} - 2\Pi^{\mathbf{e}_y}) B (\mathbb{I} - 2\Pi^{\mathbf{e}_y})$ and represent the result in terms of the projector $P = \frac{1}{2}(\mathbb{I} - iB)$.
+
+:::{#thm-chern-number .callout-important icon="false"}
+## (Chern Number Formula)
+
+$$
+\mathcal{M}(B,B') = (-1)^{\nu(P)}, \qquad \text{where } \nu(P) = \frac{1}{2\pi i} \operatorname{Tr}\!\left([P\Pi^{\mathbf{e}_x}P,\, P\Pi^{\mathbf{e}_y}P]\right).
+$$
+:::
+
+The integer $\nu(P)$ is the **Chern number** of the projector $P$. It can be computed explicitly for translationally invariant systems via Fourier analysis.
+
+Given a translationally invariant matrix $P_{\mathbf{s}\lambda, \mathbf{t}\mu}$, where $\mathbf{s}, \mathbf{t}$ label unit cells and $\lambda, \mu$ label sites within a cell, define the Fourier transform
+$$
+\tilde{P}_{\lambda,\mu}(\mathbf{q}) := \sum_{\mathbf{t}} e^{i\mathbf{q}\cdot\mathbf{t}}\, P_{\mathbf{0}\lambda, \mathbf{t}\mu}.
+$$
+
+:::{#lem-fourier-trace .callout-note icon="false"}
+## (Fourier Transform Identities)
+
+Given a translationally invariant matrix $P$ with Fourier transform $\tilde{P}(\mathbf{q})$, and the position operator $X_{\mathbf{s}\lambda, \mathbf{t}\mu} = s_x\, \delta_{\mathbf{s},\mathbf{t}}\, \delta_{\lambda,\mu}$:
+$$
+[X, P] \longleftrightarrow i\frac{\partial \tilde{P}}{\partial q_x}, \qquad \operatorname{Tr}(P) = \int_{-\pi}^{\pi} \frac{d^n\mathbf{q}}{(2\pi)^n}\, \operatorname{Tr}(\tilde{P}(\mathbf{q})).
+$$
+:::
+
+In particular,
+$$
+\operatorname{Tr}(P^\dagger [X,P]) = \int_{-\pi}^{\pi} dq_x\, \operatorname{Tr}\!\left(\tilde{P}^\dagger \frac{\partial \tilde{P}}{\partial q_x}\right).
+$$ {#eq-trace-to-integral}
+
+Using @eq-trace-to-integral, we arrive at the standard integral formula for the Chern number:
+
+:::{#lem-chern-integral .callout-note icon="false"}
+## (Chern Number as Berry Curvature Integral)
+
+Given the Fourier transform $\tilde{P}(\mathbf{q})$ of a translationally invariant projector $P$, the Chern number defined in @thm-chern-number equals
+$$
+\nu(P) = \frac{1}{2\pi i} \int dq_x\, dq_y\; \operatorname{Tr}\!\left(\tilde{P}(\mathbf{q})\left[\frac{\partial \tilde{P}(\mathbf{q})}{\partial q_x},\, \frac{\partial \tilde{P}(\mathbf{q})}{\partial q_y}\right]\right),
+$$
+where the commutator expands as $\frac{\partial \tilde{P}}{\partial q_x}\frac{\partial \tilde{P}}{\partial q_y} - \frac{\partial \tilde{P}}{\partial q_y}\frac{\partial \tilde{P}}{\partial q_x}$. This is the integral of the Berry curvature over the Brillouin zone.
+:::
+
+# Physical consequences: vortices and non-abelian statistics
+
+The Chern number $\nu(P)$ established above has profound physical consequences. In Kitaev's honeycomb model [@Kitaev_2006], the gapped phase B (under a weak time-reversal-breaking perturbation) maps at low energies to a spinless chiral $p_x + ip_y$ topological superconductor with Chern number $C = 1$ [@ReadGreen2000].
+
+## Zero modes at vortices
+
+In this mapping, a gauge flux ($W_p = -1$) in the Kitaev model corresponds to a $\pi$-vortex in the effective superconductor. In the continuum limit, the BdG Hamiltonian near a vortex with winding number $n$ takes the form
+$$
+\mathcal{H}_{\text{BdG}} = \begin{pmatrix} -\frac{\nabla^2}{2m} - \mu & \frac{1}{2}\{\Delta(\mathbf{r}),\, p_x - ip_y\} \\ \frac{1}{2}\{\Delta^*(\mathbf{r}),\, p_x + ip_y\} & \frac{\nabla^2}{2m} + \mu \end{pmatrix},
+$$
+where $\Delta(\mathbf{r}) = \Delta_0(r)\, e^{in\theta}$.
+
+The index theorem [@JackiwRossi1981; @Volovik1999] establishes a rigorous equality between the number of zero-energy solutions and the topological invariant:
+$$
+N_{\text{zero}} = C \times n,
+$$
+where $C$ is the bulk Chern number and $n$ is the vortex winding number.
+
+## Parity and topological protection
+
+The parity of $N_{\text{zero}}$ is the key to topological protection:
+
+- **$C = 1$:** Each fundamental vortex ($n=1$) hosts exactly one Majorana zero mode. Since a Majorana fermion satisfies $\gamma = \gamma^\dagger$, a single mode cannot pair with itself to acquire a finite energy. The zero energy is **topologically pinned**.
+- **$C = 2$:** Two zero modes $\gamma_1, \gamma_2$ at the same vortex can hybridize into a complex fermion $f = (\gamma_1 + i\gamma_2)/2$ with finite energy splitting. The zero modes are **not protected**.
+
+This is precisely the algebraic content of @thm-sufficient-zero-modes: $\mathcal{M} = (-1)^C = -1$ when $C$ is odd, guaranteeing unpaired zero modes.
+
+## Non-abelian braiding statistics
+
+When multiple vortices are present, each hosting one Majorana zero mode $\gamma_i$, the system has a $2^{N/2 - 1}$-fold degenerate ground state. As shown by Ivanov [@Ivanov2001], adiabatic exchange of two vortices $i$ and $j$ implements the unitary
+$$
+U_{ij} = \exp\!\left(\frac{\pi}{4}\gamma_i\gamma_j\right) = \frac{1}{\sqrt{2}}(1 + \gamma_i\gamma_j).
+$$
+Since $[U_{ij}, U_{jk}] \neq 0$ for distinct $i,j,k$, this constitutes **non-abelian braiding statistics** — the foundation of topological quantum computation.
+
+:::{#refs}
+:::

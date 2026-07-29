@@ -1,0 +1,76 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: EBZ26B6M
+  item_version: 96126
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: PLKWCPKI
+      name: Fault-tolerant
+      path: Quantum Error correction/Fault-tolerant
+    - key: L2LCLEDL
+      name: Lukin
+      path: Quantum N-Atom/_Review/servey accr. to Groups/Lukin
+    - key: IR2NG99V
+      name: correlated decoding
+      path: Quantum Error correction/Decoders/Surface code Decoders/correlated
+        decoding
+qlab:
+  primary_collection: PLKWCPKI
+  indexed_collections:
+    - IR2NG99V
+    - L2LCLEDL
+    - PLKWCPKI
+  primary_topic: quantum-error-correction
+  indexed_topics:
+    - quantum-error-correction
+    - quantum-n-atom
+item_type: preprint
+title: Algorithmic Fault Tolerance for Fast Quantum Computing
+authors:
+  - first: Hengyun
+    last: Zhou
+  - first: Chen
+    last: Zhao
+  - first: Madelyn
+    last: Cain
+  - first: Dolev
+    last: Bluvstein
+  - first: Casey
+    last: Duckering
+  - first: Hong-Ye
+    last: Hu
+  - first: Sheng-Tao
+    last: Wang
+  - first: Aleksander
+    last: Kubica
+  - first: Mikhail D.
+    last: Lukin
+year: 2024
+abstract: Fast, reliable logical operations are essential for the realization of
+  useful quantum computers, as they are required to implement practical quantum
+  algorithms at large scale. By redundantly encoding logical qubits into many
+  physical qubits and using syndrome measurements to detect and subsequently
+  correct errors, one can achieve very low logical error rates. However, for
+  most practical quantum error correcting (QEC) codes such as the surface code,
+  it is generally believed that due to syndrome extraction errors, multiple
+  extraction rounds -- on the order of the code distance d -- are required for
+  fault-tolerant computation. Here, we show that contrary to this common belief,
+  fault-tolerant logical operations can be performed with constant time overhead
+  for a broad class of QEC codes, including the surface code with magic state
+  inputs and feed-forward operations, to achieve "algorithmic fault tolerance".
+  Through the combination of transversal operations and novel strategies for
+  correlated decoding, despite only having access to partial syndrome
+  information, we prove that the deviation from the ideal measurement result
+  distribution can be made exponentially small in the code distance. We
+  supplement this proof with circuit-level simulations in a range of relevant
+  settings, demonstrating the fault tolerance and competitive performance of our
+  approach. Our work sheds new light on the theory of fault tolerance,
+  potentially reducing the space-time cost of practical fault-tolerant quantum
+  computation by orders of magnitude.
+tags:
+  - Quantum Physics
+identifiers:
+  arxiv: "2406.17653"

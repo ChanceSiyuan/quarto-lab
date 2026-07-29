@@ -1,0 +1,60 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: E9S7Z52U
+  item_version: 96048
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: GB35ZQY9
+      name: seperability verification
+      path: Quantum Resource/Entanglement/seperability verification
+qlab:
+  primary_collection: GB35ZQY9
+  indexed_collections:
+    - GB35ZQY9
+  primary_topic: quantum-resource
+  indexed_topics:
+    - quantum-resource
+item_type: journalArticle
+title: 'Schr\"odinger as a Quantum Programmer: Estimating Entanglement via Steering'
+authors:
+  - first: Aby
+    last: Philip
+  - first: Soorya
+    last: Rethinasamy
+  - first: Vincent
+    last: Russo
+  - first: Mark M.
+    last: Wilde
+year: 2024
+abstract: 'Quantifying entanglement is an important task by which the
+  resourcefulness of a quantum state can be measured. Here, we develop a quantum
+  algorithm that tests for and quantifies the separability of a general
+  bipartite state by using the quantum steering effect, the latter initially
+  discovered by Schr\"odinger. Our separability test consists of a distributed
+  quantum computation involving two parties: a computationally limited client,
+  who prepares a purification of the state of interest, and a computationally
+  unbounded server, who tries to steer the reduced systems to a probabilistic
+  ensemble of pure product states. To design a practical algorithm, we replace
+  the role of the server with a combination of parameterized unitary circuits
+  and classical optimization techniques to perform the necessary computation.
+  The result is a variational quantum steering algorithm (VQSA), a modified
+  separability test that is implementable on quantum computers that are
+  available today. We then simulate our VQSA on noisy quantum simulators and
+  find favorable convergence properties on the examples tested. We also develop
+  semidefinite programs, executable on classical computers, that benchmark the
+  results obtained from our VQSA. Thus, our findings provide a meaningful
+  connection between steering, entanglement, quantum algorithms, and quantum
+  computational complexity theory. They also demonstrate the value of a
+  parameterized mid-circuit measurement in a VQSA.'
+tags:
+  - Computer Science - Computational Complexity
+  - Computer Science - Data Structures and Algorithms
+  - Condensed Matter - Statistical Mechanics
+  - High Energy Physics - Theory
+  - Quantum Physics
+identifiers:
+  doi: 10.22331/q-2024-06-11-1366
+  arxiv: "2303.07911"

@@ -1,0 +1,617 @@
+---
+title: Coherent LMR Algorithm and Density Matrix Exponentiation
+description: This post reviews the coherent LMR algorithm (also called density matrix exponentiation, DME) @lloyd2014quantum, which uses copies of an unknown state to implement the unitary via sequential partial swap operations.
+categories:
+  - theory
+---
+
+# Summary and questions
+
+This post reviews the coherent LMR algorithm (also called density matrix exponentiation, DME) @lloyd2014quantum, which uses $O(t^2/\delta)$ copies of an unknown state $\rho$ to implement the unitary $e^{-i\rho t}$ via sequential partial swap operations. We discuss two efficient gate implementations (LCU-based and Trotter-based), the connection to the no-programming theorem, measurement-based alternatives for non-coherent settings, and applications to nonlinear quantum evolution.
+
+
+:::{.callout-important collapse="false"}
+## Question
+In analog with the fact that $\mathrm{tr}(\rho^2)$ can either be estimated by a CSWAP gate and a transversal Bell measurement,
+Can we replace the evolution operator $e^{iS\Delta}$ by a ancilla qubit assisted measurement?
+:::
+
+::: {.callout-tip icon="false" collapse="false"}
+## Discussion
+ [@kjaergaard2022demonstration] An experimental protocol demonstrated on superconducting qubits, where each partial swap step is followed by measurement of the auxiliary register and qubit reset. Classical feedback adjusts subsequent operations based on measurement outcomes, trading coherence for increased stochasticity per step. This avoids storing all $\rho$ copies simultaneously at the cost of additional measurement noise.
+:::
+
+
+
+We see that $O(t^2/\delta)$ copies of $\rho$ are required to implement unitary $e^{-i\rho t}$ up to error $\delta$ in diamond norm. This related to the famous [no-programming theorem](https://arxiv.org/pdf/1805.00756)
+
+::: {#thm-no-programming .callout-important icon="false"}
+## Theorem (No-Programming Theorem, @nielsen1997programmable)
+Let $\{U_x\}_{x \in X}$ be a continuous family of unitary operators parameterized by $x$. No fixed unitary $G$ acting on a system register and a finite-dimensional program register $\mathcal{H}_P$ can deterministically implement all $U_x$ via
+$$
+G\,(\ket{\psi}_S \otimes \ket{P_x}_P) = (U_x\ket{\psi}_S) \otimes \ket{P'_x}_P
+$$
+for any input state $\ket{\psi}$. Deterministic universal programmability requires $\dim(\mathcal{H}_P) = \infty$.
+:::
+Kimmel et al. @kimmel2017hamiltonian prove that $O(t^2/\delta)$ is *optimal* in both $t$ and $\delta$ simultaneously -- no quantum algorithm can implement $e^{-i\rho t}$ with fewer copies of an unknown $\rho$. The $O(1/\delta)$ scaling in the error can be understood as the fundamental price of approximate programming with finite-dimensional quantum software. 
+
+:::{.callout-important collapse="false"}
+## Question
+:::
+What if on the vectorization space?
+$$
+G\,(\ket{\psi}_S \otimes \ket{P_x}_P) = (U_x\otimes U_x^{*}\ket{\psi}_S) \otimes \ket{P'_x}_P
+$$
+What if we allowed non-unitary $G$, for example, a measurement?
+
+::: {.callout-tip icon="false" collapse="false"}
+## Discussion
+(to be filled)
+:::
+
+
+# Introduction to LMR algorithm
+
+LMR considers a unique quantum simulation method given the ability to access multi-copies of quantum state $\rho$. To be specific, it implements the following map:
+
+$$
+\sigma \otimes \underbrace{\rho \otimes \cdots \otimes \rho}_{n} \rightarrow e^{-i\rho t} \sigma e^{i\rho t}
+$$
+The construction of the algorithm relies on the following key identity about partial swaps.
+
+::: {#lem-partial-swap .callout-note icon="false"}
+## Lemma (Partial Swap Identity)
+Let $S$ be the swap operator on $\mathcal{H} \otimes \mathcal{H}$, satisfying $S^2 = \mathbb{I}$. Then
+$$
+e^{-iS\Delta} = (\cos\Delta)\,\mathbb{I} - i(\sin\Delta)\,S.
+$$ {#eq-partial-swap}
+:::
+
+:::{.callout-note collapse="true"}
+## Proof (Click to expand)
+Since $S^2 = \mathbb{I}$, the eigenvalues of $S$ are $\pm 1$. Let $P_{\pm} = (\mathbb{I} \pm S)/2$ be the projectors onto the symmetric ($+1$) and antisymmetric ($-1$) eigenspaces. Then $S = P_+ - P_-$ and
+$$
+e^{-iS\Delta} = e^{-i\Delta} P_+ + e^{i\Delta} P_- = \frac{e^{-i\Delta} + e^{i\Delta}}{2}\,\mathbb{I} + \frac{e^{-i\Delta} - e^{i\Delta}}{2}\,S = (\cos\Delta)\,\mathbb{I} - i(\sin\Delta)\,S.
+$$
+:::
+
+::: {#lem-swap-trace .callout-note icon="false"}
+## (SWAP partial trace identity)
+For any operators $A, B$ on $\mathcal{H}$, and $S$ the SWAP on $\mathcal{H} \otimes \mathcal{H}$:
+$$
+\mathrm{Tr}_2[S\,(A \otimes B)] = BA, \qquad \mathrm{Tr}_2[(A \otimes B)\,S] = AB.
+$$
+:::
+
+:::{.callout-note collapse="true"}
+## Proof (Click to expand)
+Write $S = \sum_{a,b} \ket{b}\!\bra{a} \otimes \ket{a}\!\bra{b}$. Then
+$$
+\mathrm{Tr}_2[S\,(A \otimes B)] = \sum_{a,b} \ket{b}\!\bra{a} A \cdot \mathrm{Tr}[\ket{a}\!\bra{b} B] = \sum_{a,b} \bra{b}B\ket{a}\,\ket{b}\!\bra{a}A = BA.
+$$
+The second identity follows by taking $\mathrm{Tr}_2[(A\otimes B)S] = \mathrm{Tr}_2[S(B \otimes A)]^T|_{\text{relabel}}$, or by direct computation.
+:::
+Then we shall calculate:
+$$
+\begin{align*}
+\mathrm{Tr}_2[e^{-iS\Delta}(\sigma \otimes \rho)e^{iS\Delta}] &= \cos^2\!\Delta\,\sigma + \sin^2\!\Delta\,\rho - i\sin\Delta\cos\Delta\,(\rho\sigma - \sigma\rho) \\
+&= \sigma - \sin^2\!\Delta\,(\sigma - \rho) - i\sin\Delta\cos\Delta\,[\rho,\sigma] \\
+&= \sigma - i[\rho,\sigma]\Delta + O(\Delta^2),\\
+& = e^{-i\rho\Delta}\sigma e^{i\rho\Delta} + O(\Delta^2).
+\end{align*}
+$$
+
+This in general leads to the following theorem:
+
+:::{#thm-lmr14 .callout-important icon="false"}
+## (LMR algorithm in @lloyd2014quantum)
+Let $\rho \in D(\mathcal{H}_A)$ and $\sigma \in D(\mathcal{H}_A \otimes \mathcal{H}_B)$ be two unknown quantum states and $t \in \mathbb{R}$ (can be either positive or negative). Then there exists a quantum algorithm that transforms $\sigma_{AB} \otimes \rho_{A_1} \otimes \cdots \otimes \rho_{A_n}$ into $\tilde{\sigma}_{AB}$ such that
+$$
+\frac{1}{2} \left\| (e^{-i\rho A t} \otimes 1_B) \sigma_{AB} (e^{i\rho A t} \otimes 1_B) - \tilde{\sigma}_{AB} \right\|_1 \leq \delta,
+$$
+as long as the number of copies of $\rho$ is $n = O(t^2/\delta)$. In other words, this quantum algorithm implements the unitary $e^{-i\rho t}$ up to error $\delta$ in diamond norm, using $O(t^2/\delta)$ copies of $\rho$.
+:::
+
+
+
+:::{.callout-note collapse="true"}
+## Proof of @thm-lmr14 (Click to expand)
+We give a sketch of the proof; for the full proof see Appendix B of @lloyd2014quantum. For simplicity we assume $\rho$ and $\sigma$ have the same dimension, i.e. $\mathcal{H}_B$ is one-dimensional. Then by the Hadamard Lemma (see Appendix A), the target state is
+$$
+e^{-i\rho t} \sigma e^{i\rho t} = \sigma - i[\rho, \sigma]t - \frac{1}{2!} [\rho, [\rho, \sigma]]t^2 + \cdots.
+$$
+
+**Key calculation.** We show that for small $\Delta$, a single partial swap step approximates $e^{-i\rho\Delta}\sigma e^{i\rho\Delta}$. Using @eq-partial-swap:
+$$
+e^{-iS\Delta}(\sigma \otimes \rho)e^{iS\Delta} = \cos^2\!\Delta\,(\sigma\otimes\rho) - i\sin\Delta\cos\Delta\,[S,\, \sigma\otimes\rho] + \sin^2\!\Delta\, S(\sigma\otimes\rho)S.
+$$
+
+Compute the partial traces of the second subsystem, we have:
+$$
+\begin{align*}
+&\mathrm{Tr}_2[\sigma\otimes\rho] = \sigma, \quad \mathrm{Tr}_2[S(\sigma\otimes\rho)S] = \mathrm{Tr}_2[\rho\otimes\sigma] = \rho\\
+&\mathrm{Tr}_2[S(\sigma\otimes\rho)] = \rho\sigma, \quad \mathrm{Tr}_2[(\sigma\otimes\rho)S] = \sigma\rho
+\end{align*}
+$$
+Assembling all terms, we have:
+$$
+\begin{align*}
+\mathrm{Tr}_2[e^{-iS\Delta}(\sigma \otimes \rho)e^{iS\Delta}] &= \cos^2\!\Delta\,\sigma + \sin^2\!\Delta\,\rho - i\sin\Delta\cos\Delta\,(\rho\sigma - \sigma\rho) \\
+&= \sigma - \sin^2\!\Delta\,(\sigma - \rho) - i\sin\Delta\cos\Delta\,[\rho,\sigma] \\
+&= \sigma - i[\rho,\sigma]\Delta + O(\Delta^2),\\
+& = e^{-i\rho\Delta}\sigma e^{i\rho\Delta} + O(\Delta^2).
+\end{align*}
+$$
+where in the last line we used $\sin\Delta\cos\Delta = \Delta + O(\Delta^3)$ and $\sin^2\Delta = O(\Delta^2)$ if $\Delta \ll 1$.
+
+If we take $\Delta = \delta/t$ and repeat this procedure $n = t/\Delta = t^2/\delta$ times, each time using a fresh copy of $\rho$, the per-step error is $O(\Delta^2)$ and the total accumulated error is
+$$
+n \cdot O(\Delta^2) = \frac{t^2}{\delta} \cdot O\!\left(\frac{\delta^2}{t^2}\right) = O(\delta).
+$$
+Thus the LMR protocol uses $O(t^2/\delta)$ copies of $\rho$ to implement the unitary $e^{-i\rho t}$ up to error $\delta$ in trace norm. To obtain the result for diamond norm, we can simply replace $\rho$ by $\rho_A \otimes 1_B$ and $\sigma$ by $\sigma_{AB}$. See Appendix B of @lloyd2014quantum for a more detailed proof.
+:::
+
+Many optimizations of LMR have been proposed.
+
+1. **Ancilla-assisted (LCU) implementation** @kimmel2017hamiltonian. Since the partial swap decomposes as a linear combination of two unitaries $e^{-iS\Delta} = (\cos\Delta)\,\mathbb{I} - i(\sin\Delta)\,S$ (@eq-partial-swap), it can be implemented via the LCU (Linear Combination of Unitaries) technique:
+
+   - Prepare one ancilla qubit in state $\ket{\theta} = \cos(\theta/2)\ket{0} + \sin(\theta/2)\ket{1}$ with appropriate $\theta$;
+   - Apply a controlled-$S$ (Fredkin gate) conditioned on the ancilla being $\ket{1}$;
+   - Un-compute the ancilla via oblivious amplitude amplification.
+
+   Each controlled-$S$ on $n$-qubit registers decomposes into $O(n)$ Fredkin gates acting qubit-by-qubit. Over $n = O(t^2/\delta)$ Trotter steps, the total gate count is $O(n \cdot t^2/\delta)$. @kimmel2017hamiltonian further prove this sample complexity is *optimal*.
+
+2. **$XX,YY,ZZ$-decomposed (Trotter) implementation** @marvian2016universal. The SWAP operator on qubits decomposes as
+$$
+S = \frac{1}{2}(\mathbb{I} + X\otimes X + Y\otimes Y + Z\otimes Z),
+$$
+so each partial swap can be Trotterized:
+$$
+e^{-iS\Delta} \approx e^{-i\Delta/2}\prod_{\alpha \in \{X,Y,Z\}} e^{-i(\alpha\otimes\alpha)\Delta/2}.
+$$
+This means that the given system $\sigma$ and system $\rho$ that local pairwisely interacts via Heisenberg $XX$ exchange is enough to implement the LMR. The Trotter approximation of $e^{-iS\Delta}$ itself incurs $O(\Delta^2)$ error, requiring inner Trotter refinement. The total gate count becomes $O(\log D \cdot t^2/\delta \cdot \log(t^2/\delta))$. 
+
+
+# A analog friendly LMR strategy
+The hardness of LMR comes from:
+
+1. Requirement of multi-copy $\rho$
+2. Repeat and frequent implementation of $e^{i\Delta S t}$ gate, 
+3. Coherent storage of evolved state $\sigma$.
+
+#### Proposal 1: Multi-copy assisted analog simulation
+
+The first optimization of LMR is to utilize the analog evolution power to cover most of the time evolution within $e^{i \rho t}$. 
+
+To be specific, supposed that system are allowed to impose an original Hamiltonian $H_0$ on the system, while we hope to implement $H = H_0 + \sum_{i} U_i H_0 U_i^\dagger$ Hamiltonian where $U_i$ are local unitary transformations.
+
+We shall prepare $\rho(t) = e^{-i H_0 t} \rho_0 e^{i H_0 t}$ and $\sigma(t) = U_i^\dagger e^{-i H_0 t}U_i \sigma_0 U_i^\dagger e^{i H_0 t}U_i$ state. Then we implement $e^{i \Delta S}$ gate, which is locally and transversally applied to local qubit pairs. After tracing out the second replica, we get the reduced state
+$$
+\begin{align*}
+\sigma_{\mathrm{eff}}(t) &= e^{-i U_i^\dagger H_0 U_i t} \sigma_0  e^{i U_i^\dagger H_0 U_i t} + e^{-i e^{i H_0 t} \rho_0 e^{-i H_0 t} \Delta}e^{-i U_i^\dagger H_0 U_i t} \sigma_0  e^{i U_i^\dagger H_0 U_i t}  e^{i e^{i H_0 t} \rho_0 e^{-i H_0 t} \Delta} + O(\Delta^2)\\
+&= e^{-i U_i^\dagger H_0 U_i t} \sigma_0  e^{i U_i^\dagger H_0 U_i t} +e^{i H_0 t} e^{-i  \rho_0 \Delta} e^{-i H_0 t}e^{-i U_i^\dagger H_0 U_i t} \sigma_0  e^{i U_i^\dagger H_0 U_i t} e^{i H_0 t} e^{i  \rho_0  \Delta} e^{-i H_0 t}+ O(\Delta^2)
+\end{align*}
+$$
+
+If we count the effect if finite $\Delta$, we have:
+$$
+\begin{align*}
+\sigma_{\mathrm{eff}}(t) &:= \cos^2\!\Delta\,\sigma(t) + \sin^2\!\Delta \rho(t) - i\sin\Delta\cos\Delta\,[\rho(t),\sigma(t)] \\
+&=\cos^2\!\Delta U_i^\dagger e^{-i H_0 t}U_i \sigma_0 U_i^\dagger e^{i H_0 t}U_i + \sin^2\!\Delta e^{i H_0 t} \rho_0 e^{-i H_0 t} \\
+\quad &- i\sin\Delta\cos\Delta\,[e^{i H_0 t} \rho_0 e^{-i H_0 t},U_i^\dagger e^{-i H_0 t}U_i \sigma_0 U_i^\dagger e^{i H_0 t}U_i] \\
+&=\cos^2\!\Delta  e^{-i U_i^\dagger H_0 U_i t} \sigma_0  e^{i U_i^\dagger H_0 U_i t} + \sin^2\!\Delta e^{i H_0 t} \rho_0 e^{-i H_0 t} \\
+&\quad\quad - i\sin\Delta\cos\Delta\,[e^{i H_0 t} \rho_0 e^{-i H_0 t}, e^{-i U_i^\dagger H_0 U_i t} \sigma_0  e^{i U_i^\dagger H_0 U_i t}] 
+\end{align*}
+$$
+This means that:
+$$
+\begin{align*}
+e^{- i H_0 t}\sigma_{\mathrm{eff}}(t) e^{i H_0 t}&=\cos^2\!\Delta  e^{- i H_0 t} e^{-i U_i^\dagger H_0 U_i t} \sigma_0  e^{i U_i^\dagger H_0 U_i t}e^{i H_0 t} + \sin^2\!\Delta  \rho_0  \\
+& \quad\quad - i\sin\Delta\cos\Delta\,[\rho_0, e^{- i H_0 t}e^{-i U_i^\dagger H_0 U_i t} \sigma_0  e^{i U_i^\dagger H_0 U_i t}e^{i H_0 t}] 
+\end{align*}
+$$
+This means that the effective Hamiltonian is 
+
+:::{.callout-important icon="false"}
+## Question: 
+Any difference with the floquet engineering?
+:::
+
+For example, if we hope to simulate Heisenberg Hamiltonian $H = \sum_{(i,j) \in E} X_i X_j+Z_i Z_j+Y_i Y_j$ by using the Rydberg interactions $H_0 = \sum_{(i,j) \in E} \frac{1}{4} Z_i Z_j$, 
+
+#### Proposal 2: Oscillating Rydberg patch
+Consider the case we can keeps 2-replica of $\rho$ and $\sigma$ as two $L \times L$ square lattices of neutral atoms arrays in the xy-surfaces at $z = 0$ and $z = z_0$.
+Supposed they can be coherently reconfigured such that we can keep the analog simulation Hamiltonian $H_1,H_2$ inside each replica.
+We can thus build a time-dependent Rydberg coupling between the two replicas pairwisely by changing the z-distance $z_0$ between the two surfaces.
+
+In general, we are realizing a analog Hamiltonian:
+$$
+\begin{align*}
+H &= H^{(1)} + H^{(2)} + \sum_{i = 1}^n V(z(t)) Z^{(1)}_{i}Z^{(2)}_{i},\\
+H^{(1)} &= \sum_{k<l}\frac{V_{kl}}{4}Z^{(1)}_k Z^{(1)}_l + \sum_k \Omega_k X^{(1)}_k + \sum_k \tilde{\delta}_k Z^{(1)}_k + \text{const},\\
+H^{(2)} &= \sum_{k<l}\frac{V_{kl}}{4}Z^{(2)}_k Z^{(2)}_l + \sum_k \Omega_k X^{(2)}_k + \sum_k \tilde{\delta}_k Z^{(2)}_k + \text{const},\\
+V(z(t)) &= C/z(t)^6.
+\end{align*}
+$$
+
+As in the case of LMR strategy, where we discretely implement $e^{i X^{(1)}X^{(2)} \Delta},e^{i Y^{(1)}Y^{(2)} \Delta},e^{i Z^{(1)}Z^{(2)}\Delta}$ and constantly trace out the second replica, here after the evolution of this time-dependent Hamiltonian, we trace out the second replica to get the effective Hamiltonian of the first replica.
+
+
+#### Proposal 3: Bell measurement assisted analog simulation
+
+Given an analog simulation of $H$ is realizable on $n = n_A + n_B$-qubits set that separted into two sections $A \cup B$.
+We prepare two copies of state with different inputs $(\rho,\sigma)$ and different evolution times $(t,\tau)$.
+Then we put them together $e^{iH\tau} \rho e^{-iH\tau}, e^{iHt} \sigma e^{-iHt}$ as two-copies, implement Bell measurement on section $A$ with result $\mathbf{r}_{A} \in (\mathbb{F}_2^2)^{n_A}$ indicates $n_A$ Bell measurement results $\{00,01,10,11\} \to \{\ket{00}+\ket{11},\ket{00}-\ket{11},\ket{01}+\ket{10},\ket{10}-\ket{01}\}$, keeping the section $B$ unchanged as state $\Sigma_B$. What's the result of $\Sigma_B$ in terms of $\rho,\sigma,H,t,\tau,\mathbf{r}_{A}$? Can we regards $\Sigma_B$ as a evolution result of a effective Hamiltonian $H_{\text{eff}}$ under certain tracable correction based on classical information $\mathbf{r}_{A}$?
+
+We define the evolved states
+$$
+\rho' = e^{-iH\tau}\,\rho\,e^{iH\tau}, \qquad \sigma' = e^{-iHt}\,\sigma\,e^{iHt}.
+$$
+The two-copy pre-measurement state lives on $(A_1 B_1) \otimes (A_2 B_2)$ as $\rho'_{A_1 B_1} \otimes \sigma'_{A_2 B_2}$. Each Bell outcome $r_i = (r_{i,1}, r_{i,2}) \in \mathbb{F}_2^2$ on qubit pair $i$ (one from $A_1$, one from $A_2$) corresponds to the Bell state
+$$
+\ket{\beta_{r_i}} = \frac{1}{\sqrt{2}}(I \otimes X^{r_{i,1}} Z^{r_{i,2}})\ket{\Phi^+}, \qquad \ket{\Phi^+} = \frac{1}{\sqrt{2}}(\ket{00}+\ket{11}).
+$$
+The full $n_A$-qubit Bell projector factorizes as $\Pi_{\mathbf{r}_A} = \bigotimes_{i=1}^{n_A} \ket{\beta_{r_i}}\!\bra{\beta_{r_i}}$, with the collective Pauli operator $P_{\mathbf{r}_A} = \bigotimes_{i} X_i^{r_{i,1}} Z_i^{r_{i,2}}$.
+
+Then we have the following lemma:
+
+:::{#lem-bell-measurement-assisted-analog-simulation .callout-important icon="false"}
+## (Bell measurement assisted analog simulation)
+Notating $\Sigma_B(\mathbf{r}_A)$ as the post-measurement state on section $B$ after Bell measurement on section $A$ with result $\mathbf{r}_A$, then we have:
+$$
+\tilde{\Sigma}_{B_1 B_2}(\mathbf{r}_A) = \frac{1}{2^{n_A}}\,\mathrm{Tr}_A\!\Big[\rho'^{\,T_A} \cdot \sigma'_P\Big].
+$$
+Here $T_A$ is the partial transpose on section $A$.
+:::
+
+
+To prove lemma @lem-bell-measurement-assisted-analog-simulation, we first establish useful identities.
+
+::: {#lem-bell-projector .callout-note icon="false"}
+## (Bell projector decomposition)
+The $n_A$-qubit Bell projector admits the expansion
+$$
+\Pi_{\mathbf{r}_A} = \frac{1}{2^{n_A}} \sum_{\mathbf{a},\mathbf{b} \in \{0,1\}^{n_A}} \ket{\mathbf{a}}\!\bra{\mathbf{b}}_{A_1} \otimes P_{\mathbf{r}_A}\ket{\mathbf{a}}\!\bra{\mathbf{b}}P_{\mathbf{r}_A}^\dagger{}_{A_2}.
+$$ {#eq-bell-proj}
+:::
+
+:::{.callout-note collapse="true"}
+## Proof (Click to expand)
+For a single qubit pair, $\ket{\Phi^+} = \frac{1}{\sqrt{2}}\sum_a \ket{a}_1\ket{a}_2$, so
+$$
+\ket{\beta_r}\!\bra{\beta_r} = \frac{1}{2}\sum_{a,b} \ket{a}\!\bra{b}_1 \otimes X^{r_1}Z^{r_2}\ket{a}\!\bra{b}(X^{r_1}Z^{r_2})^\dagger{}_2.
+$$
+Taking the tensor product over all $n_A$ qubit pairs gives @eq-bell-proj.
+:::
+
+:::{.callout-note collapse="true"}
+## Proof of @lem-bell-measurement-assisted-analog-simulation (Click to expand)
+The unnormalized post-measurement state on $B_1 B_2$ is
+$$
+\tilde{\Sigma}_{B_1 B_2}(\mathbf{r}_A) = \mathrm{Tr}_{A_1 A_2}\!\left[\Pi_{\mathbf{r}_A}\,(\rho'_{A_1 B_1} \otimes \sigma'_{A_2 B_2})\right].
+$$
+Substituting @eq-bell-proj and using $\mathrm{Tr}_{A}[\ket{\mathbf{a}}\!\bra{\mathbf{b}}_A \cdot \rho'_{AB}] = \langle\mathbf{b}|_A\,\rho'\,|\mathbf{a}\rangle_A$ (an operator on $B$), the partial traces over $A_1$ and $A_2$ factorize:
+$$
+\tilde{\Sigma}_{B_1 B_2}(\mathbf{r}_A) = \frac{1}{2^{n_A}} \sum_{\mathbf{a},\mathbf{b}} \underbrace{\left(\langle\mathbf{b}|_A\,\rho'\,|\mathbf{a}\rangle_A\right)}_{B_1} \otimes \underbrace{\left(\langle\mathbf{b}|_A\,\sigma'_P\,|\mathbf{a}\rangle_A\right)}_{B_2},
+$$ {#eq-sigma-B-sum}
+where $\sigma'_P \equiv (P_{\mathbf{r}_A}^\dagger \otimes I_B)\,\sigma'\,(P_{\mathbf{r}_A} \otimes I_B)$ is the **Pauli-corrected** second copy (the Pauli correction acts only on subsystem $A$).
+
+The double sum in @eq-sigma-B-sum is precisely the *link product* (partial-transpose contraction) over subsystem $A$. Recalling that the partial transpose $\rho'^{T_A}$ has matrix elements $\langle\mathbf{a}|_A\,\rho'^{T_A}\,|\mathbf{b}\rangle_A = \langle\mathbf{b}|_A\,\rho'\,|\mathbf{a}\rangle_A$, one can verify that
+$$
+\boxed{\tilde{\Sigma}_{B_1 B_2}(\mathbf{r}_A) = \frac{1}{2^{n_A}}\,\mathrm{Tr}_A\!\Big[\rho'^{\,T_A} \cdot \sigma'_P\Big],}
+$$ {#eq-sigma-B-compact}
+where both $\rho'^{T_A}$ and $\sigma'_P$ share a single copy of the $A$ Hilbert space in the matrix product, and $\mathrm{Tr}_A$ contracts it away. The normalized state is
+$$
+\Sigma_B(\mathbf{r}_A) = \frac{\tilde{\Sigma}_{B_1 B_2}(\mathbf{r}_A)}{p(\mathbf{r}_A)}, \qquad p(\mathbf{r}_A) = \mathrm{Tr}\!\left[\tilde{\Sigma}_{B_1 B_2}(\mathbf{r}_A)\right].
+$$
+:::
+
+*Examples.*
+For $\mathbf{r}_A = \mathbf{0}$ (all outcomes $\Phi^+$), $P_{\mathbf{0}} = I$, so $\sigma'_P = \sigma'$. If further $\rho = \sigma$ and $\tau = t$, then $\rho' = \sigma'$ and
+$$
+\tilde{\Sigma}_{B_1 B_2} = \frac{1}{2^{n_A}}\mathrm{Tr}_A[\rho'^{T_A}\rho'].
+$$
+Tracing the SWAP on $B_1 B_2$ gives $\mathrm{Tr}[\rho_B'^2]/2^{n_A}$, recovering the standard virtual distillation purity estimation @huggins2021virtual.
+
+
+The Pauli correction absorbs cleanly into the time evolution. Since $P_{\mathbf{r}_A}$ acts only on $A$:
+$$
+\sigma'_P = (P_{\mathbf{r}_A}^\dagger \otimes I_B)\,e^{-iHt}\,\sigma\,e^{iHt}\,(P_{\mathbf{r}_A} \otimes I_B) = e^{-i\widetilde{H}_{\mathbf{r}_A} t}\;\widetilde{\sigma}_{\mathbf{r}_A}\;e^{i\widetilde{H}_{\mathbf{r}_A} t},
+$$
+where
+$$
+\widetilde{H}_{\mathbf{r}_A} = (P_{\mathbf{r}_A}^\dagger \otimes I_B)\,H\,(P_{\mathbf{r}_A} \otimes I_B), \qquad \widetilde{\sigma}_{\mathbf{r}_A} = (P_{\mathbf{r}_A}^\dagger \otimes I_B)\,\sigma\,(P_{\mathbf{r}_A} \otimes I_B).
+$$
+
+Substituting back into @eq-sigma-B-compact, the complete picture is:
+$$
+\begin{align*}
+\Sigma_B(\mathbf{r}_A) &\propto \mathrm{Tr}_A\!\Big[\big(e^{-iH\tau}\,\rho\,e^{iH\tau}\big)^{T_A} \cdot e^{-i\widetilde{H}_{\mathbf{r}_A} t}\;\widetilde{\sigma}_{\mathbf{r}_A}\;e^{i\widetilde{H}_{\mathbf{r}_A} t}\Big]
+\end{align*}
+$$ {#eq-sigma-B-final}
+
+To answer the original question, we try to interpret the partial trace and partial transpose operation of A-subsystem, as shown in the following theorem.
+
+:::{#thm-partial-trace-interpretation .callout-important icon="false"}
+## (Partial trace interpretation)
+For any operator $H = \sum_{k} \mu_k P_k$ (where $P_k = P_{k,A} \otimes P_{k,B}$ are Pauli operators) and an initial ancilla state $\sigma$ that supports on $A \cup B$, we have:
+
+**(a) Pauli-conjugated Hamiltonian decomposition.** The effective Hamiltonian for the second copy is
+$$
+\widetilde{H}_{\mathbf{r}_A} = \sum_k (-1)^{\omega(P_{k,A},\, P_{\mathbf{r}_A})}\, \mu_k\, P_{k,A} \otimes P_{k,B},
+$$ {#eq-pauli-conjugated-H}
+where $\omega(P, Q) \in \{0,1\}$ is the symplectic inner product on the Pauli group: $\omega = 0$ if $[P,Q] = 0$ and $\omega = 1$ if $\{P,Q\} = 0$. Each Hamiltonian term is preserved or sign-flipped depending on whether its $A$-component commutes or anticommutes with the Bell-outcome Pauli $P_{\mathbf{r}_A}$.
+
+**(b) Pauli correlation formula.** For any product observable $O_{B_1} \otimes O_{B_2}$ on the two $B$ subsystems:
+$$
+\mathrm{Tr}[(O_{B_1} \otimes O_{B_2})\,\tilde{\Sigma}_{B_1 B_2}] = \frac{1}{d_A^2}\sum_{P_A \in \mathcal{P}_{n_A}} \langle P_A \otimes O_{B_1}\rangle_{\rho'}\;\langle P_A \otimes O_{B_2}\rangle_{\sigma'_P},
+$$ {#eq-pauli-correlation}
+where $d_A = 2^{n_A}$ and $\mathcal{P}_{n_A}$ is the set of all $4^{n_A}$ Pauli operators on subsystem $A$. The Bell measurement on $A$ effectively correlates the two $B$ subsystems through the Pauli spectrum on $A$: each expectation value is a sum over all $A$-Pauli correlation functions from both copies.
+:::
+
+:::{.callout-note collapse="true"}
+## Proof (Click to expand)
+
+**(a)** Since $P_{\mathbf{r}_A}$ is a Pauli operator acting only on $A$:
+$$
+P_{\mathbf{r}_A}^\dagger\,(P_{k,A} \otimes P_{k,B})\,P_{\mathbf{r}_A} = (P_{\mathbf{r}_A}\, P_{k,A}\, P_{\mathbf{r}_A}) \otimes P_{k,B}.
+$$
+For any two Pauli operators $P, Q$, they either commute ($PQ = QP$) or anticommute ($PQ = -QP$). In the commuting case $P Q P = Q$; in the anticommuting case $P Q P = -Q$. Therefore $P_{\mathbf{r}_A}\, P_{k,A}\, P_{\mathbf{r}_A} = (-1)^{\omega(P_{k,A}, P_{\mathbf{r}_A})} P_{k,A}$, and summing over $k$ gives @eq-pauli-conjugated-H.
+
+**(b)** From @eq-sigma-B-sum, the expectation value of $O_{B_1} \otimes O_{B_2}$ on $\tilde{\Sigma}_{B_1 B_2}$ is:
+$$
+\frac{1}{d_A}\sum_{\mathbf{a},\mathbf{b}} \mathrm{Tr}[(|\mathbf{a}\rangle\langle\mathbf{b}|_A \otimes O_{B_1})\,\rho'] \cdot \mathrm{Tr}[(|\mathbf{a}\rangle\langle\mathbf{b}|_A \otimes O_{B_2})\,\sigma'_P].
+$$
+Expand each outer product in the Pauli basis using the completeness relation $|\mathbf{a}\rangle\langle\mathbf{b}| = \frac{1}{d_A}\sum_{P_A \in \mathcal{P}_{n_A}} \langle\mathbf{b}|P_A|\mathbf{a}\rangle\, P_A$. Substituting into both factors and summing over $\mathbf{a}, \mathbf{b}$:
+$$
+\sum_{\mathbf{a},\mathbf{b}} \langle\mathbf{b}|P_A|\mathbf{a}\rangle\,\langle\mathbf{b}|Q_A|\mathbf{a}\rangle = \sum_{\mathbf{a}} \langle\mathbf{a}|P_A^\dagger Q_A|\mathbf{a}\rangle = \mathrm{Tr}[P_A Q_A] = d_A\,\delta_{P_A, Q_A},
+$$
+where we used $\sum_\mathbf{b}|\mathbf{b}\rangle\langle\mathbf{b}| = I$ and the Pauli orthogonality $\mathrm{Tr}[P_A Q_A] = d_A\,\delta_{P_A,Q_A}$ (since Paulis are Hermitian). This collapses the double Pauli sum to a single sum, yielding @eq-pauli-correlation.
+:::
+
+ The Bell measurement outcome $\mathbf{r}_A$ selects a Pauli-conjugated Hamiltonian $\widetilde{H}_{\mathbf{r}_A}$ for the second copy's evolution, while the first copy evolves under the original $H$. The post-measurement state on $B$ (@eq-sigma-B-final) encodes the interplay between these two evolutions through the partial-transpose contraction, with all corrections classically tractable from the measurement record $\mathbf{r}_A$.
+
+**Physical example: Rydberg Hamiltonian.** For a native Rydberg Hamiltonian
+$$
+H = \sum_{ij} V_{ij}\, n_i n_j + \sum_i (\Omega_i X_i + \delta_i n_i),
+$$
+the Pauli conjugation produces physically distinct effective Hamiltonians:
+
+- **Outcome $r_k = (1,0)$** ($\Psi^+$ on qubit $k$): correction is $X_k$, mapping $n_k \to 1 - n_k$. This *flips the sign* of $V_{ij}$ interactions involving qubit $k$ and shifts $\delta_k \to -\delta_k$, generating **anti-blockade** terms not natively realizable.
+- **Outcome $r_k = (0,1)$** ($\Phi^-$ on qubit $k$): correction is $Z_k$, mapping $X_k \to -X_k$. This flips the sign of the transverse driving field on qubit $k$.
+- **Outcome $r_k = (1,1)$** ($\Psi^-$ on qubit $k$): correction is $iY_k = XZ$, combining both effects.
+
+Different Bell outcomes thus generate a **family** of effective Hamiltonians $\{\widetilde{H}_{\mathbf{r}_A}\}_{\mathbf{r}_A}$ that enlarges the accessible Hamiltonian space beyond the native Ising evolution. This is a form of **entanglement-swapping-assisted Hamiltonian engineering** @zukowski1993event: the Bell measurement on $A$ teleports the entanglement structure between $A$ and $B$ from the first copy onto the second, but with a Pauli twist determined by the measurement outcome.
+
+## Extending Rydberg analog simulation
+
+The Pauli conjugation analysis above shows that different Bell outcomes can flip signs of parameters in $\{n_in_j, X_i, n_i\}$, but the operator types remain unchanged — we stay within the transverse-field Ising family. However, the partial transpose $\rho'^{T_A}$ appearing in @eq-sigma-B-compact introduces a fundamentally deeper effect: **genuinely new operator types** that are absent from the native Rydberg Hamiltonian.
+
+### The partial transpose correction
+
+:::{#lem-pt-correction .callout-important icon="false"}
+## (Partial transpose non-commutativity)
+For any Hamiltonian $H = \sum_k \mu_k P_{k,A} \otimes P_{k,B}$ with $H^{T_A} = H$ (all $A$-factors real-symmetric in the computational basis), the partial transpose does **not** commute with exponentiation:
+$$
+(e^{-iH\tau})^{T_A} \neq e^{-iH^{T_A}\tau} = e^{-iH\tau}.
+$$
+The leading correction at second order is
+$$
+(H^2)^{T_A} - H^2 = -\sum_{j,m} \mu_j\mu_m\,(P_{j,A} P_{m,A}) \otimes [P_{j,B},\, P_{m,B}],
+$$ {#eq-pt-correction}
+which vanishes only when all $B$-factors mutually commute.
+:::
+
+:::{.callout-note collapse="true"}
+## Proof (Click to expand)
+
+Partial transpose is **not** an algebra homomorphism: $(MN)^{T_A} \neq M^{T_A} N^{T_A}$ in general. Expanding $H^2$:
+$$
+H^2 = \sum_{j,m} \mu_j\mu_m\,(P_{j,A} P_{m,A}) \otimes (P_{j,B}\, P_{m,B}).
+$$
+Apply $T_A$: since each $P_{k,A}$ is real-symmetric ($P_{k,A}^T = P_{k,A}$), we have $(P_{j,A} P_{m,A})^T = P_{m,A} P_{j,A}$. Relabeling $j \leftrightarrow m$:
+$$
+(H^2)^{T_A} = \sum_{j,m} \mu_j\mu_m\,(P_{j,A} P_{m,A}) \otimes (P_{m,B}\, P_{j,B}).
+$$
+Subtracting gives @eq-pt-correction. The same argument extends to $(H^n)^{T_A} - H^n$ for $n \geq 2$ via nested commutators.
+:::
+
+**Application to Rydberg.** For the Rydberg Hamiltonian, the nonvanishing $B$-commutator arises from cross terms between the interaction and driving:
+$$
+[V_{kl}\,n_k \otimes n_l,\;\Omega_k X_k \otimes I_B] = -iV_{kl}\Omega_k\;Y_k \otimes n_l,
+$$
+where $k \in A$, $l \in B$, and we used $[n_k, X_k] = -iY_k$. Since $Y^T = -Y$, these $Y_A$-type terms **flip sign** under partial transpose. Physically, $Y_k \otimes n_l$ represents a **density-dependent complex driving** — a coherent transition on qubit $k$ with a phase that depends on the occupation of its neighbor $l$ — which is completely absent from the native Rydberg Hamiltonian.
+
+### Exact Pauli decomposition formula
+
+The perturbative picture captures the mechanism but breaks down at long times ($V\Omega\tau \gg 1$). An exact, non-perturbative formula follows from the Pauli basis decomposition.
+
+The partial transpose has a clean action on Pauli operators: $I^T = I$, $X^T = X$, $Z^T = Z$, $Y^T = -Y$. For a multi-qubit Pauli string $\sigma_\alpha^A$ on subsystem $A$, define the **transpose sign**:
+$$
+\eta_\alpha = (-1)^{|Y(\alpha)|},
+$$
+where $|Y(\alpha)|$ counts the number of $Y$ factors in the Pauli string $\alpha$. Define the **conditional operators** on $B$:
+$$
+R_\alpha(\tau) := \mathrm{Tr}_A[\sigma_\alpha^A \cdot \rho'], \qquad S_\alpha(t) := \mathrm{Tr}_A[\sigma_\alpha^A \cdot \sigma'_P],
+$$
+which encode the residual $B$-information after "measuring" Pauli $\sigma_\alpha^A$ on subsystem $A$.
+
+:::{#thm-exact-pauli-decomposition .callout-important icon="false"}
+## (Exact Pauli decomposition)
+The post-measurement state @eq-sigma-B-compact admits the exact decomposition
+$$
+\tilde{\Sigma}_{B_1 B_2} = \frac{1}{2^{n_A}} \sum_{\alpha \in \{I,X,Y,Z\}^{n_A}} \eta_\alpha\; R_\alpha(\tau) \otimes S_\alpha(t),
+$$ {#eq-exact-pauli-decomposition}
+valid for all evolution times $\tau, t$ with no approximation. The sum splits into a **standard term** ($\eta_\alpha = +1$, $Y$-even) and a **non-Rydberg correction** ($\eta_\alpha = -1$, $Y$-odd):
+$$
+\tilde{\Sigma}_{B_1B_2} = \underbrace{\frac{1}{2^{n_A}}\sum_{\alpha:\,|Y(\alpha)|\text{ even}} R_\alpha \otimes S_\alpha}_{\text{standard (no PT effect)}} \;-\; \underbrace{\frac{1}{2^{n_A}}\sum_{\alpha:\,|Y(\alpha)|\text{ odd}} R_\alpha \otimes S_\alpha}_{\Delta\Sigma\;\text{(non-Rydberg correction)}}.
+$$
+:::
+
+:::{.callout-note collapse="true"}
+## Proof (Click to expand)
+
+Expand $\rho'^{T_A}$ in the Pauli basis. Any operator $M$ on $\mathcal{H}_A \otimes \mathcal{H}_B$ has the expansion $M = \frac{1}{2^n}\sum_{\alpha,\beta} m_{\alpha\beta}\,\sigma_\alpha^A \otimes \sigma_\beta^B$ where $m_{\alpha\beta} = \mathrm{Tr}[(\sigma_\alpha^A \otimes \sigma_\beta^B)\,M]$. The partial transpose acts as:
+$$
+M^{T_A} = \frac{1}{2^n}\sum_{\alpha,\beta} m_{\alpha\beta}\,\eta_\alpha\,\sigma_\alpha^A \otimes \sigma_\beta^B.
+$$
+Substituting into $\mathrm{Tr}_A[\rho'^{T_A} \cdot \sigma'_P]$ and using Pauli orthogonality $\mathrm{Tr}[\sigma_\alpha^A \sigma_\gamma^A] = 2^{n_A}\delta_{\alpha\gamma}$, the trace over $A$ collapses the double Pauli sum to a single sum over $\alpha$. Collecting the $B_1$ factor from $\rho'$ and the $B_2$ factor from $\sigma'_P$ gives @eq-exact-pauli-decomposition.
+:::
+
+The $Y_A$-odd components $R_\alpha(\tau)$ are **dynamically generated** by Rydberg evolution. Starting from a computational basis state ($\rho = |0\rangle\langle 0|^{\otimes n}$, no $Y_A$ components), the Heisenberg equation generates $Y_A$ at rate $\sim V\Omega$ through commutators like $[V_{kl}n_k \otimes n_l, \Omega_k X_k \otimes I_B] = -iV_{kl}\Omega_k\,Y_k \otimes n_l$. At long times ($V\Omega\tau \gg 1$), thermalization drives $Y_A$-odd components to the same magnitude as $Y_A$-even components, so $\Delta\Sigma$ becomes **comparable** to the standard term — not a small correction.
+
+### Physical interpretation: observable estimation
+
+::: {.callout-tip icon="false" collapse="false"}
+## Discussion
+
+The map $\sigma \mapsto \Sigma_B$ is **not** unitary evolution on $B$. The partial trace irreversibly discards $A$ information, and the partial transpose breaks complete positivity:
+
+| Property | Satisfied? | Reason |
+|----------|:----------:|--------|
+| Linear | Yes | $\sigma$ enters linearly |
+| Trace-preserving | No | $p(\mathbf{r}_A)$ depends on $\sigma$ |
+| Completely positive | No | $\eta_\alpha = -1$ terms break positivity |
+| Unitary | No | Partial trace irreversibly discards $A$ |
+
+The **non-CP structure is precisely what enables non-Rydberg physics**: completely positive maps are constrained by Stinespring dilation to the native Hamiltonian's unitary evolution, but the partial transpose breaks this constraint. The cost is post-selection (probabilistic outcomes) and potentially non-physical intermediate states (requiring classical post-processing).
+
+The protocol is therefore an **observable estimation** scheme: it does not prepare a state evolving under a non-Rydberg Hamiltonian, but it allows **measuring expectation values** that would correspond to such evolution. For equilibrium properties — phase diagrams, order parameters, correlation functions — this distinction is immaterial.
+:::
+
+**Tuning $\sigma$ for maximal non-Rydberg effect.** The expectation value of any $B$-observable $O_B$ is:
+$$
+\langle O_B\rangle_{\Sigma_B} = \frac{\sum_\alpha \eta_\alpha\;r_\alpha(\tau)\;s_\alpha(t, O_B)}{\sum_\alpha \eta_\alpha\;r_\alpha(\tau)\;s_\alpha(t, I_B)},
+$$
+where $r_\alpha = \mathrm{Tr}[\sigma_\alpha^A \cdot \rho']$ and $s_\alpha(O_B) = \mathrm{Tr}[(\sigma_\alpha^A \otimes O_B)\cdot\sigma'_P]$. The weights $r_\alpha$ are controlled by $\rho$ and $\tau$; the correlation functions $s_\alpha$ are controlled by $\sigma$ and $t$. To maximize non-Rydberg effects, both $|r_\alpha|$ and $|s_\alpha|$ must be large in the $Y_A$-odd channels simultaneously. Key strategies:
+
+- **$\rho$ with $Y_A$ eigenstates**: choosing $\rho_A = |{+i}\rangle\langle{+i}|$ gives $r_{Y_k} = +1$ immediately, without waiting for dynamical generation.
+- **$\sigma_B$ in the target eigenbasis**: initializing $B$-sites in eigenstates of the desired coupling operator ($|0\rangle$ for $Z$, $|{+}\rangle$ for $X$, $|{+i}\rangle$ for $Y$) selectively activates the corresponding Pauli channel.
+- **Long evolution times**: $V\Omega t \gg 1$ allows the Heisenberg chain to fill all Pauli channels via ergodization.
+
+### Reachable Hamiltonian space
+
+Writing the Rydberg Hamiltonian in Pauli form ($n_k = (I-Z_k)/2$):
+$$
+H_{\text{Ryd}} = \sum_{k<l}\frac{V_{kl}}{4}Z_kZ_l + \sum_k \Omega_k X_k + \sum_k \tilde{\delta}_k Z_k + \text{const}.
+$$
+The three layers of the protocol progressively enlarge the accessible operator space on subsystem $B$:
+
+| Layer | Source | Accessible operators on $B$ |
+|-------|--------|---------------------------|
+| Native Rydberg | Direct evolution | $\{Z_lZ_m,\; X_l,\; Z_l\}$ — transverse-field Ising |
+| + Pauli conjugation | Bell outcome $\mathbf{r}_A$ | Same $\{Z_lZ_m, X_l, Z_l\}$ with **sign-flipped** parameters |
+| + Partial transpose | $\eta_\alpha$ correction | Full $\{P_lP_m : P \in \{X,Y,Z\}\} + \{X_l, Y_l, Z_l\}$ |
+
+$$
+\boxed{\text{Ising } \{ZZ, X, Z\} \;\xrightarrow{\;\text{Bell + partial transpose}\;}\; \text{full two-body } \{P_l P_m\} + \{X, Y, Z\}}
+$$
+
+This covers the complete $\mathfrak{su}(4)$ two-body interaction space for each qubit pair. Specifically accessible models include:
+
+- **Heisenberg/XXZ model**: $J_{xy}(X_lX_m + Y_lY_m) + J_z Z_lZ_m$. The spin-flip exchange $X_lX_m + Y_lY_m = 2(S_l^+S_m^- + S_l^-S_m^+)$ is ubiquitous in condensed matter but natively inaccessible on Rydberg platforms.
+- **XY model**: $J_z = 0$ case of the above.
+- **Dzyaloshinskii-Moriya interaction**: $\vec{D}\cdot(\vec{S}_l\times\vec{S}_m)$; the $z$-component $D^z(X_lY_m - Y_lX_m)$ is fully within the reachable set. This drives **chiral magnetic order** and **topological magnons**.
+- **Kitaev honeycomb model** @kitaev2006anyons: bond-dependent $J_x X_lX_m + J_y Y_lY_m + J_z Z_lZ_m$. The $Z_lZ_m$ bonds are native; $X_lX_m$ and $Y_lY_m$ bonds come from the protocol. This model hosts **exactly solvable spin liquid ground states** with non-Abelian anyons.
+- **1D Fermi-Hubbard model**: via Jordan-Wigner, nearest-neighbor hopping $c_l^\dagger c_m + \text{h.c.} \leftrightarrow \frac{1}{2}(X_lX_m + Y_lY_m)$ (no $Z$-string for adjacent sites), while the Hubbard $U$ term $n_{l\uparrow}n_{l\downarrow} \sim Z_lZ_{l'}$ is natively available.
+
+**Constraints and costs.** The extension is not free: (i) post-selection on Bell outcomes costs $\sim 4^{-n_A}$ in sampling efficiency (mitigated by using all outcomes and locality of observables); (ii) effective $B$-$B$ couplings are mediated by $A$ atoms, so the range is bounded by $A$-$B$ connectivity; (iii) the protocol estimates **expectation values** of non-Rydberg Hamiltonians, not their unitary time evolution.
+
+### Concrete example: Kitaev honeycomb implementation {#sec-kitaev-example}
+
+We illustrate the protocol with a concrete proposal for simulating the Kitaev honeycomb model @kitaev2006anyons:
+$$
+H_K = J_x\!\!\sum_{\langle l,m\rangle_x}\!\!X_lX_m + J_y\!\!\sum_{\langle l,m\rangle_y}\!\!Y_lY_m + J_z\!\!\sum_{\langle l,m\rangle_z}\!\!Z_lZ_m,
+$$ {#eq-kitaev}
+where $\langle l,m\rangle_\gamma$ denotes $\gamma$-type bonds on the honeycomb lattice.
+
+**Decorated honeycomb lattice.** Place $B$ atoms on honeycomb vertices (target system) and $A$ atoms at bond midpoints (ancilla mediators):
+$$
+B = \text{honeycomb vertices}, \qquad A = A_x \sqcup A_y \sqcup A_z = \text{bond midpoints},
+$$
+with $|A_\gamma| = N_B/2$ for each bond type, giving $N_A = \frac{3}{2}N_B$ total ancillas. Each $A$ atom $k$ couples to exactly two $B$ neighbors $l(k), m(k)$ via Rydberg interaction $V_0 = C_6/(a/2)^6$, while direct $B$-$B$ coupling is suppressed by a geometric factor of $1/64$.
+
+**Key simplification: $\tau = 0$.** By choosing $\rho_A = |{+i}\rangle\langle{+i}|$ (the $Y$ eigenstate) on active $A$ atoms with **no evolution** ($\tau = 0$), the $Y$-channel weight is immediately maximal ($r_{Y_k} = +1$, $\eta_{Y_k}r_{Y_k} = -1$) without any dynamical generation. Copy 1 serves only as a **partial-transpose phase anchor**; its $B$ subsystem completely factors out. The post-measurement state simplifies to:
+$$
+\Sigma_{B_2} \propto \mathrm{Tr}_A[\sigma'_P] - \mathrm{Tr}_A[Y_A\cdot\sigma'_P].
+$$
+
+**Three-round measurement protocol.** For each bond type $\gamma \in \{x,y,z\}$, run a separate experiment round. Only $A_\gamma$ atoms are active (others detuned with $\delta_k \gg \Omega_k$):
+
+| Parameter | Round $z$ | Round $x$ | Round $y$ |
+|-----------|:---------:|:---------:|:---------:|
+| $\rho_A^{(\gamma)}$ (active $A$, Copy 1) | $\|{+i}\rangle^{\otimes\|A_z\|}$ | $\|{+i}\rangle^{\otimes\|A_x\|}$ | $\|{+i}\rangle^{\otimes\|A_y\|}$ |
+| $\tau$ | $0$ | $0$ | $0$ |
+| $\sigma_B^{(\gamma)}$ ($B$ atoms, Copy 2) | $\|0\rangle^{\otimes N_B}$ | $\|{+}\rangle^{\otimes N_B}$ | $\|{+i}\rangle^{\otimes N_B}$ |
+| $\sigma_A^{(\gamma)}$ (active $A$, Copy 2) | $\|0\rangle$ | $\|0\rangle$ | $\|0\rangle$ |
+| Evolution time $t_\gamma$ | $\frac{\pi}{2\Omega_{\text{eff}}}$ | $\frac{\pi}{2\Omega_{\text{eff}}}$ | $= t_x$ |
+| Bell measurement | $A_z$ pairs | $A_x$ pairs | $A_y$ pairs |
+
+**Why $\sigma_B$ controls coupling type.** The selectivity follows from a $Z$-rotation symmetry: $R_z^B(\pi/2) = e^{-i\pi Z/4}$ on all $B$ sites maps $|{+}\rangle \to |{+i}\rangle$ and $X_lX_m \to Y_lY_m$. Since the Rydberg Hamiltonian's $n_k = (I-Z_k)/2$ is invariant under $R_z^B$, the three-body correlator transforms as $\langle Y_k X_l X_m \rangle|_{\sigma_B = |{+}\rangle} = \langle Y_k Y_l Y_m \rangle|_{\sigma_B = |{+i}\rangle}$. The $Z$ eigenstates $|0\rangle$ naturally select $Z_lZ_m$ since $\langle Z \rangle_{|0\rangle} = 1$ while $\langle X \rangle_{|0\rangle} = \langle Y \rangle_{|0\rangle} = 0$.
+
+**Resource analysis.**
+
+| System size | $N_B$ | $N_A$ | Per copy | Two copies |
+|-------------|:------:|:------:|:--------:|:----------:|
+| Single hexagon | 6 | 9 | 15 | 30 |
+| $2\times 2$ unit cells | 8 | 12 | 20 | 40 |
+| $4\times 4$ unit cells | 32 | 48 | 80 | 160 |
+| $6\times 6$ unit cells | 72 | 108 | 180 | 360 |
+
+The $4\times 4$ case (160 atoms) is within reach of current Rydberg tweezer arrays @bluvstein2022quantum @evered2023high. Post-selection per bond requires only a single mediator, so $p_{\text{local}} \sim 1/4$ and $N_{\text{shots}} \sim 4/\epsilon^2$ for precision $\epsilon$. Three rounds with $\epsilon = 0.01$ need $\sim 10^5$ total experiments, feasible in minutes.
+
+**Observable extraction.** The Kitaev energy is directly assembled from three rounds:
+$$
+\langle H_K\rangle = J_x\!\!\sum_{\langle l,m\rangle_x}\!\!\langle X_lX_m\rangle_{\text{round }x} + J_y\!\!\sum_{\langle l,m\rangle_y}\!\!\langle Y_lY_m\rangle_{\text{round }y} + J_z\!\!\sum_{\langle l,m\rangle_z}\!\!\langle Z_lZ_m\rangle_{\text{round }z}.
+$$
+The Wilson loop plaquette operator $W_p = \prod_{(l,m) \in \text{hexagon}} \sigma_l^\gamma \sigma_m^\gamma$ (cycling through $X, Y, Z$ around a hexagon) is reconstructed by combining six bond correlators from all three rounds. The eigenvalue $\langle W_p \rangle = \pm 1$ diagnoses the gapped/gapless spin liquid phases.
+
+
+# Measurement-feedback analog simulation
+The implementation of multiple $CSWAP$ might require too much on the coherence time (for both storing $\rho^{\otimes n}$ and evolved state that being implemented the $CSWAP$ gates).
+An alternative approach to go beyond the Heisenberg evolution is to use the measurement-feedback approach.
+
+The central bottleneck of coherent LMR is that $n = O(t^2/\delta)$ partial swap operations must be applied *sequentially*, each consuming a fresh copy of $\rho$. On near-term hardware, storing all copies and maintaining coherence throughout the sequence is prohibitively expensive. Three alternative strategies relax this requirement:
+
+1. **DME2 (measurement + reset + feedback)** @kjaergaard2022demonstration. Rather than maintaining coherence across all $n$ steps, each partial swap is followed by measurement of the auxiliary register, qubit reset, and classical feedforward. This eliminates the need to store all $\rho$ copies simultaneously, at the cost of: (i) stochastic noise from each mid-circuit measurement, and (ii) the need for fast classical feedback. Demonstrated experimentally on superconducting transmon qubits with controlled-phase fidelity $>99.7\%$.
+
+2. **Shadow Distillation** @seif2023shadow. When only expectation values $\mathrm{tr}(O\rho^M)$ are needed (not the coherent state $e^{-i\rho t}\sigma e^{i\rho t}$), classical shadows from single-copy randomized measurements can extract nonlinear functions of $\rho$ via classical post-processing. This avoids multi-register hardware entirely, but incurs exponential classical sample complexity for high-weight observables.
+
+3. **Hybrid Shadow Framework** @zhou2024hybrid. A quantum-classical hybrid that uses partial SWAP tests on $k$ copies to obtain a partially-processed quantum state, then applies classical shadow post-processing to estimate the remaining terms. This interpolates between fully coherent LMR ($k = n$) and fully classical shadow estimation ($k = 0$), allowing the coherence depth to be tuned to hardware constraints.
+
+| Approach | Circuit depth | Output type | Copies |
+|---|---|---|---|
+| LMR (coherent) | $O(t^2/\delta)$ sequential | Quantum state | $O(t^2/\delta)$ |
+| DME2 (feedback) | $O(1)$ per step | Quantum state (noisy) | $O(t^2/\delta)$ |
+| Shadow Distillation | $O(1)$ | Scalar $\mathrm{tr}(O\rho^M)$ | $M$ copies |
+| Hybrid Shadow | Tunable | Scalar | Tunable |
+
+Based on algorithms above, certain interesting non-linear quantum evolution can be simulated.
+
+#### Example 1: State-Based Quantum Simulation (SBQS)
+
+The SBQS framework @alipour2025sbqs extends LMR to simulate *state-dependent* Hamiltonians $H(\rho)$, where the generator itself depends on the evolving state. The motivating example is the **Gross-Pitaevskii equation** for mean-field Bose-Einstein condensates:
+$$
+i\dot{\psi}(r,t) = \left(-\frac{\nabla^2}{2m} + V(r) + g|\psi(r,t)|^2\right)\psi(r,t).
+$$
+The nonlinear $|\psi|^2$ term makes the Hamiltonian state-dependent. In the density matrix formulation, the discretized Hamiltonian becomes
+$$
+H(\rho) = H_0 + g\sum_r \Pi_r\, \rho\, \Pi_r,
+$$
+where $\Pi_r = \ket{r}\!\bra{r}$ are position projectors and $H_0$ encodes kinetic energy and external potential. Since $H(\rho)$ is a linear function of $\rho$, LMR can implement $e^{-iH(\rho)\Delta}$ at each Trotter step using fresh copies of $\rho$ at the *current* time step.
+
+SBQS also enables a **counterdiabatic** variant: the state-dependent counterdiabatic Hamiltonian $\widetilde{H}_{\mathrm{CD}}(t) = H(t) + i[\dot{\sigma}(t), \sigma(t)]$ avoids both the adiabatic slowness requirement and the need to know the instantaneous eigenstate, since $\dot{\sigma} \approx (\sigma(t) - \sigma(t-\tau))/\tau$ is a delayed differential equation simulable by SBQS.
+
+**Caveat.** The copy count per Trotter step is $O(C)$ where $C$ depends on the Hamiltonian norm, and the total copy count over $n$ time steps scales as $O(C^n)$ -- exponential in simulation time. This is consistent with the BQP-hardness of general nonlinear differential equations @childs2020quantum.
+
+#### Example 2: Weighted State Primitives for Nonlinear Transformations
+
+Holmes et al. @holmes2023nonlinear develop a systematic framework of *weighted states* -- mathematical objects $\tilde{\tau}$ that need not be positive-definite or normalized, obtained from multi-copy quantum circuits plus classical post-processing. Three basic primitives:
+
+1. **QHP (Quantum Hadamard Product)**: $\rho^{(0)} \odot \rho^{(1)}$, where $(\rho^{(0)} \odot \rho^{(1)})_{ij} = \rho^{(0)}_{ij}\,\rho^{(1)}_{ij}$ is the element-wise product in the computational basis. Circuit depth: 1 (single CNOT layer), then measure the second register and post-select. Iterated QHP produces amplitude powers: $\ket{\psi^k} = \sum_i \psi_i^k \ket{i}$.
+
+2. **GQT (Generalized Quantum Transpose)**: $\tilde{\tau} = \sigma \odot \rho^T$, combining transposition with element-wise reweighting. Circuit depth: 2 (Bell measurement = CNOT + Hadamard + measurement). Application: partial transpose for entanglement detection via the PPT criterion.
+
+3. **QSP (Quantum State Polynomial)**: $\tilde{\tau} = \alpha_{00}\rho^{(0)} + \alpha_{11}\rho^{(1)} + \alpha_{01}\rho^{(0)}\rho^{(1)} + \alpha_{10}\rho^{(1)}\rho^{(0)}$, involving true *matrix products* via controlled-SWAP (same hardware as LMR). Special cases include $\rho^2$ (virtual distillation) and $[\rho^{(0)}, \rho^{(1)}]$ (commutator).
+
+**Key distinction.** QHP computes element-wise powers $\rho_{ij}^k$ (Hadamard product), while LMR/QSP computes matrix powers $(\rho^k)_{ij} = \sum_\ell \rho_{i\ell}\rho_{\ell j}\cdots$ (matrix multiplication). For NISQ hardware, QHP and GQT are particularly attractive since they require only depth 1-2 circuits with native CZ gates, whereas QSP requires the same controlled-SWAP resources as full LMR.

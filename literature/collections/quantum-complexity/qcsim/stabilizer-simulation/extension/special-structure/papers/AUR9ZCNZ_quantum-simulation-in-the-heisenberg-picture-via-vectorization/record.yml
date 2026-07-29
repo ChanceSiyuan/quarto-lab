@@ -1,0 +1,50 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: AUR9ZCNZ
+  item_version: 98519
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: B6GUBCDK
+      name: Special structure
+      path: Quantum Complexity/QCsim/stabilizer simulation/Extension/Special structure
+qlab:
+  primary_collection: B6GUBCDK
+  indexed_collections:
+    - B6GUBCDK
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: preprint
+title: Quantum simulation in the Heisenberg picture via vectorization
+authors:
+  - first: Shao-Hen
+    last: Chiew
+  - first: Armando
+    last: Angrisani
+  - first: Zoë
+    last: Holmes
+  - first: Giuseppe
+    last: Carleo
+year: 2026
+abstract: We present a general framework for simulating quantum systems in the
+  Heisenberg picture on quantum hardware. Based on the vectorization map, our
+  framework fully exploits the mapping between operators and quantum states,
+  allowing any task defined on Heisenberg operators to be mapped to standard
+  Schrödinger-picture tasks that are naturally accessible via quantum computers
+  and simulators. This yields new or improved protocols for tasks such as
+  operator sampling, the computation of OTOCs/superoperator expectation values
+  and their higher order moments, two-point correlators, and operator stabilizer
+  and entanglement entropies. Our approach is also amenable to implementation,
+  as it inherits the structure and resource requirements of the (forward and
+  time-reversed) Schrödinger-picture quantum simulation problem. We demonstrate
+  this by proposing implementations of our framework for a 2D problem on digital
+  and analog quantum simulators, taking into account device connectivity
+  constraints.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2602.20154
+  arxiv: "2602.20154"

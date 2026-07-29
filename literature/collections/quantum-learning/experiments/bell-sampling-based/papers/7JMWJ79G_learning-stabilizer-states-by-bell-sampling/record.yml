@@ -1,0 +1,42 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 7JMWJ79G
+  item_version: 112873
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: Y8GNXK9L
+      name: Bell sampling based
+      path: Quantum Learning/Experiments/Bell sampling based
+    - key: UJ7EZN4C
+      name: Verification
+      path: Quantum Resource/Magic/Quantification/Verification
+    - key: QPFX87N4
+      name: phase
+      path: Quantum Learning/Learning on states/phase
+qlab:
+  primary_collection: Y8GNXK9L
+  indexed_collections:
+    - QPFX87N4
+    - UJ7EZN4C
+    - Y8GNXK9L
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+    - quantum-resource
+item_type: preprint
+title: Learning stabilizer states by Bell sampling
+authors:
+  - first: Ashley
+    last: Montanaro
+year: 2017
+abstract: We show that measuring pairs of qubits in the Bell basis can be used
+  to obtain a simple quantum algorithm for efficiently identifying an unknown
+  stabilizer state of n qubits. The algorithm uses O(n) copies of the input
+  state and fails with exponentially small probability.
+tags:
+  - Quantum Physics
+identifiers:
+  arxiv: "1707.04012"

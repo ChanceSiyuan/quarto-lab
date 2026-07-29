@@ -1,0 +1,50 @@
+---
+title: The Adiabatic computation
+description: A Hamiltonian is stoquastic under basis iff
+categories:
+  - theory
+---
+
+# Summary and Questions
+
+
+# The Adiabatic computation
+
+A Hamiltonian is stoquastic under basis $\mathcal{B}$ iff,
+$$
+\begin{align*}
+\langle b|H|b'\rangle \in \mathbb R,\qquad \forall b, b' \in \mathcal{B}, \langle b|H|b'\rangle \le 0
+\end{align*}
+$$
+
+
+#### Kato projector method
+Given the projector $P(s)$ that projects onto the certain energy subspace of $H(s)$:
+$$
+P(s)=-\frac{1}{2\pi i} \oint_\Gamma(H(s)-z)^{-1}dz,
+$$
+where $\Gamma$ is a closed contour in the complex plane that encloses the spectrum of $H(s)$ and other spectrum of $H(s)$ contains at least $\Delta(s)$ distance from the spectrum of $H(s)$.
+
+The corrected Hamitlonian 
+$$
+H_A(s) = H(s) + \frac{i}{t_f}[\dot P(s),P(s)]
+$$
+ensures that $U_A(s)P(0)U_A^\dagger(s)=P(s)$.
+Using this method, we can show the following theorem:
+
+:::{#thm-adiabatic-projection .callout-important icon="false"}
+## (Adiabatic projection)
+Suppose that:
+
+1. The spectrum of $H(s)$ restricted to $P(s)$ consists of $m(s)$ eigenvalues separated by a gap $\Delta(s) = \varepsilon_1(s) - \varepsilon_0(s) > 0$ from the rest of the spectrum of $H(s)$, 
+2. The $H(s)$ is twice continuously differentiable with respect to $s$, denoted by $H^{(1)}(s)$ and $H^{(2)}(s)$ as bounded operators,
+3. $P_t(s)$ is the dynamical projector at time $t$ with respect to $H(s(t))$,
+
+Then for any $s \in [0,1]$,
+$$
+\begin{align*}
+\|P_{t}(s) - P(s)\| &\leq\frac{ m(0)\|H^{(1)}(0)\| }{t_f\Delta^2(0)} + \frac{ m(s)\|H^{(1)}(s)\| }{t_f\Delta^2(s)} + \\
+&\frac{1}{t_f} \int_0^s \left[\frac{m(x)\|H^{(2)}(x)\|}{\Delta(x)^2} +  \frac{7m\sqrt{m}\|H^{(1)}(x)\|^2}{\Delta(x)^{3}} \right]dx.
+\end{align*}
+$$
+:::

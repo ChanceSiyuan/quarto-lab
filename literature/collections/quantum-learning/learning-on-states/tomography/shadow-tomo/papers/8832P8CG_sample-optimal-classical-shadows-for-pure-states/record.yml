@@ -1,0 +1,56 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 8832P8CG
+  item_version: 96153
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 9ISUJVXK
+      name: shadow tomo
+      path: Quantum Learning/Learning on states/Tomography/shadow tomo
+qlab:
+  primary_collection: 9ISUJVXK
+  indexed_collections:
+    - 9ISUJVXK
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: journalArticle
+title: Sample-optimal classical shadows for pure states
+authors:
+  - first: Daniel
+    last: Grier
+  - first: Hakop
+    last: Pashayan
+  - first: Luke
+    last: Schaeffer
+year: 2024
+abstract: We consider the classical shadows task for pure states in the setting
+  of both joint and independent measurements. The task is to measure few copies
+  of an unknown pure state $\rho$ in order to learn a classical description
+  which suffices to later estimate expectation values of observables.
+  Specifically, the goal is to approximate $\mathrm{Tr}(O \rho)$ for any
+  Hermitian observable $O$ to within additive error $\epsilon$ provided
+  $\mathrm{Tr}(O^2)\leq B$ and $\lVert O \rVert = 1$. Our main result applies to
+  the joint measurement setting, where we show
+  $\tilde{\Theta}(\sqrt{B}\epsilon^{-1} + \epsilon^{-2})$ samples of $\rho$ are
+  necessary and sufficient to succeed with high probability. The upper bound is
+  a quadratic improvement on the previous best sample complexity known for this
+  problem. For the lower bound, we see that the bottleneck is not how fast we
+  can learn the state but rather how much any classical description of $\rho$
+  can be compressed for observable estimation. In the independent measurement
+  setting, we show that $\mathcal O(\sqrt{Bd} \epsilon^{-1} + \epsilon^{-2})$
+  samples suffice. Notably, this implies that the random Clifford measurements
+  algorithm of Huang, Kueng, and Preskill, which is sample-optimal for mixed
+  states, is not optimal for pure states. Interestingly, our result also uses
+  the same random Clifford measurements but employs a different estimator.
+tags:
+  - Computer Science - Information Theory
+  - Computer Science - Machine Learning
+  - Mathematics - Information Theory
+  - Quantum Physics
+identifiers:
+  doi: 10.22331/q-2024-06-17-1373
+  arxiv: "2211.11810"

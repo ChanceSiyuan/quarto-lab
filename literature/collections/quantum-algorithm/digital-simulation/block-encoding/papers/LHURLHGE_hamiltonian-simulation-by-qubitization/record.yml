@@ -1,0 +1,49 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: LHURLHGE
+  item_version: 96028
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 2VS9GHMW
+      name: Block-encoding
+      path: Quantum Algorithm/Digital Simulation/Block-encoding
+qlab:
+  primary_collection: 2VS9GHMW
+  indexed_collections:
+    - 2VS9GHMW
+  primary_topic: quantum-algorithm
+  indexed_topics:
+    - quantum-algorithm
+item_type: journalArticle
+title: Hamiltonian Simulation by Qubitization
+authors:
+  - first: Guang Hao
+    last: Low
+  - first: Isaac L.
+    last: Chuang
+year: 2019
+abstract: We present the problem of approximating the time-evolution operator
+  $e^{-i\hat{H}t}$ to error $\epsilon$, where the Hamiltonian $\hat{H}=(\langle
+  G|\otimes\hat{\mathcal{I}})\hat{U}(|G\rangle\otimes\hat{\mathcal{I}})$ is the
+  projection of a unitary oracle $\hat{U}$ onto the state $|G\rangle$ created by
+  another unitary oracle. Our algorithm solves this with a query complexity
+  $\mathcal{O}\big(t+\log({1/\epsilon})\big)$ to both oracles that is optimal
+  with respect to all parameters in both the asymptotic and non-asymptotic
+  regime, and also with low overhead, using at most two additional ancilla
+  qubits. This approach to Hamiltonian simulation subsumes important prior art
+  considering Hamiltonians which are $d$-sparse or a linear combination of
+  unitaries, leading to significant improvements in space and gate complexity,
+  such as a quadratic speed-up for precision simulations. It also motivates
+  useful new instances, such as where $\hat{H}$ is a density matrix. A key
+  technical result is `qubitization', which uses the controlled version of these
+  oracles to embed any $\hat{H}$ in an invariant $\text{SU}(2)$ subspace. A
+  large class of operator functions of $\hat{H}$ can then be computed with
+  optimal query complexity, of which $e^{-i\hat{H}t}$ is a special case.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.22331/q-2019-07-12-163
+  arxiv: "1610.06546"

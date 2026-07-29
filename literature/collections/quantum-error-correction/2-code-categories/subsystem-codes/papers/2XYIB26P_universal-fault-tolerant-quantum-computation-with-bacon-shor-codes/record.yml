@@ -1,0 +1,48 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 2XYIB26P
+  item_version: 96128
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: NIDB9VPA
+      name: Subsystem codes
+      path: Quantum Error correction/2-Code categories/Subsystem codes
+    - key: KXL6J577
+      name: universal without distillation
+      path: Quantum Error correction/Fault-tolerant/universal without distillation
+    - key: AC5RCSNL
+      name: transversal CCZ/T
+      path: Quantum Error correction/Fault-tolerant/transversal gate/transversal CCZ/T
+qlab:
+  primary_collection: NIDB9VPA
+  indexed_collections:
+    - AC5RCSNL
+    - KXL6J577
+    - NIDB9VPA
+  primary_topic: quantum-error-correction
+  indexed_topics:
+    - quantum-error-correction
+item_type: preprint
+title: Universal fault-tolerant quantum computation with Bacon-Shor codes
+authors:
+  - first: Theodore J.
+    last: Yoder
+year: 2017
+abstract: We present a fault-tolerant universal gate set consisting of Hadamard
+  and controlled-controlled-Z (CCZ) on Bacon-Shor subsystem codes. Transversal
+  non-Clifford gates on these codes are intriguing in that higher levels of the
+  Clifford hierarchy become accessible as the code becomes more asymmetric. For
+  instance, in an appropriate gauge, Bacon-Shor codes on an $m\times m^k$
+  lattice have transversal $k$-qubit-controlled $Z$. Through a variety of
+  tricks, including intermediate error-correction and non-Pauli recovery, we
+  reduce the overhead required for fault-tolerant CCZ. We calculate
+  pseudothresholds for our universal gate set on the smallest $3\times3$
+  Bacon-Shor code and also compare our gates with magic-states within the
+  framework of a proposed ion trap architecture.
+tags:
+  - Quantum Physics
+identifiers:
+  arxiv: "1705.01686"

@@ -10,7 +10,6 @@ const eslintConfig = defineConfig([
     // Default ignores of eslint-config-next:
     ".next/**",
     "out/**",
-    "build/**",
     "next-env.d.ts",
   ]),
   // Generated output. ESLint 9's flat config does not read `.gitignore`, so
@@ -33,7 +32,7 @@ const eslintConfig = defineConfig([
     ".wrangler/**",
     "playwright-report/**",
     "test-results/**",
-    "tests/e2e/.screenshots-actual/**",
+    ".research-loop/tests/e2e/.screenshots-actual/**",
   ]),
 ]);
 

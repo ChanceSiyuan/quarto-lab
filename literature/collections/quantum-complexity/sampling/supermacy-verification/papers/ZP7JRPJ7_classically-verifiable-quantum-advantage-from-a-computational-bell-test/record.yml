@@ -1,0 +1,41 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: ZP7JRPJ7
+  item_version: 96117
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: A3L6E8EJ
+      name: supermacy verification
+      path: Quantum Complexity/Sampling/supermacy verification
+    - key: H5F9PKZR
+      name: verification
+      path: Quantum Complexity/Sampling/supermacy verification/verification
+qlab:
+  primary_collection: A3L6E8EJ
+  indexed_collections:
+    - A3L6E8EJ
+    - H5F9PKZR
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: journalArticle
+title: Classically verifiable quantum advantage from a computational Bell test
+authors:
+  - first: Gregory D.
+    last: Kahanamoku-Meyer
+  - first: Soonwon
+    last: Choi
+  - first: Umesh V.
+    last: Vazirani
+  - first: Norman Y.
+    last: Yao
+year: 2022
+abstract: >-
+  Abstract
+              Existing experimental demonstrations of quantum computational advantage have had the limitation that verifying the correctness of the quantum device requires exponentially costly classical computations. Here we propose and analyse an interactive protocol for demonstrating quantum computational advantage, which is efficiently classically verifiable. Our protocol relies on a class of cryptographic tools called trapdoor claw-free functions. Although this type of function has been applied to quantum advantage protocols before, our protocol employs a surprising connection to Bell’s inequality to avoid the need for a demanding cryptographic property called the adaptive hardcore bit, while maintaining essentially no increase in the quantum circuit complexity and no extra assumptions. Leveraging the relaxed cryptographic requirements of the protocol, we present two trapdoor claw-free function constructions, based on Rabin’s function and the Diffie–Hellman problem, which have not been used in this context before. We also present two independent innovations that improve the efficiency of our implementation and can be applied to other quantum cryptographic protocols. First, we give a scheme to discard so-called garbage bits, removing the need for reversibility in the quantum circuits. Second, we show a natural way of performing postselection that reduces the fidelity needed to demonstrate quantum advantage. Combining these results, we describe a blueprint for implementing our protocol on Rydberg atom-based quantum devices, using hardware-native operations that have already been demonstrated experimentally.
+tags: []
+identifiers:
+  doi: 10.1038/s41567-022-01643-7

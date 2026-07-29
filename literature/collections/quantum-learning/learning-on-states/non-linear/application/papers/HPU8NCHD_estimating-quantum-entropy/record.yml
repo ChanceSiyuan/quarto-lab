@@ -1,0 +1,49 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: HPU8NCHD
+  item_version: 102967
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: YCBHDN7M
+      name: Application
+      path: Quantum Learning/Learning on states/non-linear/Application
+    - key: QUFU6Q56
+      name: Entropy
+      path: Quantum Learning/Learning on states/non-linear/Entropy
+qlab:
+  primary_collection: YCBHDN7M
+  indexed_collections:
+    - QUFU6Q56
+    - YCBHDN7M
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: journalArticle
+title: Estimating Quantum Entropy
+authors:
+  - first: Jayadev
+    last: Acharya
+  - first: Ibrahim
+    last: Issa
+  - first: Nirmal V.
+    last: Shende
+  - first: Aaron B.
+    last: Wagner
+year: 2020
+abstract: The entropy of a quantum system is a measure of its randomness, and
+  has applications in measuring quantum entanglement. We study the problem of
+  estimating the von Neumann entropy, S(ρ), and Rényi entropy, Sα(ρ) of an
+  unknown mixed quantum state ρ in d dimensions, given access to independent
+  copies of ρ. We provide algorithms with copy complexity O(d2/α) for estimating
+  Sα(ρ) for α < 1, and copy complexity O(d2) for estimating S(ρ), and Sα(ρ) for
+  non-integral α > 1. These bounds are at least quadratic in d, which is the
+  order dependence on the number of copies required for estimating the entire
+  state ρ. For integral α > 1, on the other hand, we provide an algorithm for
+  estimating Sα(ρ) with a sub-quadratic copy complexity of O(d2−2/α), and we
+  show the optimality of the algorithms by providing a matching lower bound.
+tags: []
+identifiers:
+  doi: 10.1109/jsait.2020.3015235

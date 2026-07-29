@@ -1,0 +1,69 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: CYBCPE85
+  item_version: 96147
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: FPA4Q6YB
+      name: _Experiment
+      path: Quantum Learning/Learning on operations/_Experiment
+qlab:
+  primary_collection: FPA4Q6YB
+  indexed_collections:
+    - FPA4Q6YB
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: journalArticle
+title: Entanglement-enabled advantage for learning a bosonic random displacement
+  channel
+authors:
+  - first: Changhun
+    last: Oh
+  - first: Senrui
+    last: Chen
+  - first: Yat
+    last: Wong
+  - first: Sisi
+    last: Zhou
+  - first: Hsin-Yuan
+    last: Huang
+  - first: Jens A. H.
+    last: Nielsen
+  - first: Zheng-Hao
+    last: Liu
+  - first: Jonas S.
+    last: Neergaard-Nielsen
+  - first: Ulrik L.
+    last: Andersen
+  - first: Liang
+    last: Jiang
+  - first: John
+    last: Preskill
+year: 2024
+abstract: We show that quantum entanglement can provide an exponential advantage
+  in learning properties of a bosonic continuous-variable (CV) system. The task
+  we consider is estimating a probabilistic mixture of displacement operators
+  acting on $n$ bosonic modes, called a random displacement channel. We prove
+  that if the $n$ modes are not entangled with an ancillary quantum memory, then
+  the channel must be sampled a number of times exponential in $n$ in order to
+  estimate its characteristic function to reasonable precision; this lower bound
+  on sample complexity applies even if the channel inputs and measurements
+  performed on channel outputs are chosen adaptively. On the other hand, we
+  present a simple entanglement-assisted scheme that only requires a number of
+  samples independent of $n$, given a sufficient amount of squeezing. This
+  establishes an exponential separation in sample complexity. We then analyze
+  the effect of photon loss and show that the entanglement-assisted scheme is
+  still significantly more efficient than any lossless entanglement-free scheme
+  under mild experimental conditions. Our work illuminates the role of
+  entanglement in learning continuous-variable systems and points toward
+  experimentally feasible demonstrations of provable entanglement-enabled
+  advantage using CV quantum platforms.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.1103/physrevlett.133.230604
+  arxiv: "2402.18809"

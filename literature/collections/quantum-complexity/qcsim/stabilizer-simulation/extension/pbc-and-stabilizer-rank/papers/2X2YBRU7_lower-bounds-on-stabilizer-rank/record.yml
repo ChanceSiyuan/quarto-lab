@@ -1,0 +1,53 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 2X2YBRU7
+  item_version: 96113
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 2U9FYC86
+      name: PBC and stabilizer rank
+      path: Quantum Complexity/QCsim/stabilizer simulation/Extension/PBC and
+        stabilizer rank
+qlab:
+  primary_collection: 2U9FYC86
+  indexed_collections:
+    - 2U9FYC86
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: journalArticle
+title: Lower Bounds on Stabilizer Rank
+authors:
+  - first: Shir
+    last: Peleg
+  - first: Amir
+    last: Shpilka
+  - first: Ben Lee
+    last: Volk
+year: 2022
+abstract: The stabilizer rank of a quantum state $\psi$ is the minimal $r$ such
+  that $\left| \psi \right \rangle = \sum_{j=1}^r c_j \left|\varphi_j
+  \right\rangle$ for $c_j \in \mathbb{C}$ and stabilizer states $\varphi_j$. The
+  running time of several classical simulation methods for quantum circuits is
+  determined by the stabilizer rank of the $n$-th tensor power of single-qubit
+  magic states. We prove a lower bound of $\Omega(n)$ on the stabilizer rank of
+  such states, improving a previous lower bound of $\Omega(\sqrt{n})$ of Bravyi,
+  Smith and Smolin (arXiv:1506.01396). Further, we prove that for a sufficiently
+  small constant $\delta$, the stabilizer rank of any state which is
+  $\delta$-close to those states is $\Omega(\sqrt{n}/\log n)$. This is the first
+  non-trivial lower bound for approximate stabilizer rank. Our techniques rely
+  on the representation of stabilizer states as quadratic functions over affine
+  subspaces of $\mathbb{F}_2^n$, and we use tools from analysis of boolean
+  functions and complexity theory. The proof of the first result involves a
+  careful analysis of directional derivatives of quadratic polynomials, whereas
+  the proof of the second result uses Razborov-Smolensky low degree polynomial
+  approximations and correlation bounds against the majority function.
+tags:
+  - Computer Science - Computational Complexity
+  - Quantum Physics
+identifiers:
+  doi: 10.22331/q-2022-02-15-652
+  arxiv: "2106.03214"

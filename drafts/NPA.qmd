@@ -1,0 +1,145 @@
+---
+title: Non-commutative polynomial
+description: "tbc"
+categories:
+  - theory
+---
+
+# Question and summarize
+
+# Definition and basics
+
+Let $\mathbf{x}=(x_1,\ldots,x_n)$ be a tuple of noncommuting variables,
+and let $\langle\mathbf{x}\rangle$ denote the set of all finite words in these
+variables, including the empty word $1$.
+The free noncommutative polynomial
+algebra $\mathbb{C}\langle\mathbf{x}\rangle$ consists of all finite complex
+linear combinations of such words.
+
+Equip $\mathbb{C}\langle\mathbf{x}\rangle$ with the involution $\star$ that
+conjugates coefficients, fixes each generator pointwise, and reverses words.
+Thus $x_i^\star=x_i$ and
+
+$$
+(x_{i_1}\cdots x_{i_r})^\star
+=x_{i_r}\cdots x_{i_1}.
+$$
+
+For $d\in\mathbb{N}$, let $W_d$ be the column vector of all words of length at
+most $d$, arranged in a fixed order. A polynomial is a sum of Hermitian squares
+(SOHS) if it can be written as a finite sum $\sum_k g_k^\star g_k$. For a
+complex vector or matrix, $*$ denotes its conjugate transpose.
+
+:::{#lem-SOS .callout-important icon="false"}
+## Gram-matrix characterization of SOHS
+Let $f\in\mathbb{C}\langle\mathbf{x}\rangle$ satisfy $\deg f=2d$.
+Then $f$ is a SOHS if and only if there exists a Hermitian positive semidefinite matrix
+$G\in\mathbb{H}^{|W_d|}_+$ such that $f=W_d^\star G W_d$.
+:::
+
+:::{.callout-note collapse="true"}
+## Proof
+
+We prove the two implications separately. In the forward implication, the only
+subtle point is to show that a SOHS of degree $2d$ can be decomposed using
+polynomials of degree at most $d$. For this, we first show that the leading
+terms of Hermitian squares cannot cancel.
+
+Let
+
+$$
+p=\sum_{k=1}^t q_k^\star q_k\neq 0,
+\qquad
+D:=\max_{1\leq k\leq t}\deg q_k.
+$$
+
+Write $q_k=\sum_u a_{k,u}u$, and choose a word $w$ of length $D$ such that
+$a_{k_0,w}\neq0$ for some $k_0$. In the degree-$2D$ part of $p$, the coefficient
+of $w^\star w$ is
+
+$$
+\sum_{k=1}^t |a_{k,w}|^2>0.
+$$
+
+Indeed, a contribution $u^\star v=w^\star w$ of degree $2D$ must have
+$|u|=|v|=D$; the unique splitting of words in the free algebra then gives
+$u=v=w$. Since every $q_k^\star q_k$ has degree at most $2D$, it follows that
+
+$$
+\deg\!\left(\sum_{k=1}^t q_k^\star q_k\right)=2D.
+\tag{1}
+$$
+
+**Forward implication.** Suppose that $f$ is a SOHS:
+
+$$
+f=\sum_{k=1}^t g_k^\star g_k.
+$$
+
+If $D:=\max_k\deg g_k$, equation (1) and $\deg f=2d$ imply $D=d$. Hence every
+$g_k$ is a linear combination of the words in $W_d$. After fixing the ordering
+of $W_d$, there is a unique row vector $c_k\in\mathbb{C}^{1\times |W_d|}$ such
+that
+
+$$
+g_k=c_kW_d.
+$$
+
+Consequently,
+
+$$
+g_k^\star g_k = W_d^\star c_k^*c_kW_d,
+$$
+
+and therefore
+
+$$
+f
+=W_d^\star\left(\sum_{k=1}^t c_k^*c_k\right)W_d.
+$$
+
+Define
+
+$$
+G:=\sum_{k=1}^t c_k^*c_k.
+$$
+
+This matrix is Hermitian, and for every $z\in\mathbb{C}^{|W_d|}$,
+
+$$
+z^*Gz
+=\sum_{k=1}^t(c_kz)^*(c_kz)
+=\sum_{k=1}^t|c_kz|^2\geq0.
+$$
+
+Thus $G\succeq0$ and $f=W_d^\star G W_d$.
+
+**Reverse implication.** Suppose that $G\in\mathbb{H}^{|W_d|}_+$ and
+$f=W_d^\star G W_d$. Since $G$ is Hermitian positive semidefinite, it admits a
+factorization
+
+$$
+G=C^*C.
+$$
+
+For example, if $G=U\Lambda U^*$ is a spectral decomposition, one may take
+$C=\Lambda^{1/2}U^*$. Let $c_1,\ldots,c_m$ be the rows of $C$, where
+$m=|W_d|$, and define $g_k:=c_kW_d$. Then
+
+$$
+\begin{aligned}
+f
+&=W_d^\star C^*C W_d \\
+&=(CW_d)^\star(CW_d) \\
+&=\sum_{k=1}^m g_k^\star g_k.
+\end{aligned}
+$$
+
+Hence $f$ is a SOHS, proving the equivalence.
+
+The degree argument above uses the linear independence of distinct words in
+the free algebra. It does not carry over unchanged to quotient algebras such as
+the Pauli algebra, where relations including $(\sigma_i^a)^2=1$ identify words
+of different lengths.
+
+:::

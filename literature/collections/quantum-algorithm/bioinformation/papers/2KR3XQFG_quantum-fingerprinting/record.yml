@@ -1,0 +1,50 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 2KR3XQFG
+  item_version: 99955
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 2P447KPE
+      name: bioinformation
+      path: Quantum Algorithm/bioinformation
+qlab:
+  primary_collection: 2P447KPE
+  indexed_collections:
+    - 2P447KPE
+  primary_topic: quantum-algorithm
+  indexed_topics:
+    - quantum-algorithm
+item_type: journalArticle
+title: Quantum fingerprinting
+authors:
+  - first: Harry
+    last: Buhrman
+  - first: Richard
+    last: Cleve
+  - first: John
+    last: Watrous
+  - first: Ronald de
+    last: Wolf
+year: 2001
+abstract: "Classical fingerprinting associates with each string a shorter string
+  (its fingerprint), such that, with high probability, any two distinct strings
+  can be distinguished by comparing their fingerprints alone. The fingerprints
+  can be exponentially smaller than the original strings if the parties
+  preparing the fingerprints share a random key, but not if they only have
+  access to uncorrelated random sources. In this paper we show that fingerprints
+  consisting of quantum information can be made exponentially smaller than the
+  original strings without any correlations or entanglement between the parties:
+  we give a scheme where the quantum fingerprints are exponentially shorter than
+  the original strings and we give a test that distinguishes any two unknown
+  quantum fingerprints with high probability. Our scheme implies an exponential
+  quantum/classical gap for the equality problem in the simultaneous message
+  passing model of communication complexity. We optimize several aspects of our
+  scheme."
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.1103/physrevlett.87.167902
+  arxiv: quant-ph/0102001

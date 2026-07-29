@@ -1,0 +1,51 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: UVN2YZBC
+  item_version: 96111
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: MSCEQ3D9
+      name: Learning
+      path: Quantum Resource/Magic/Quantification/Learning
+qlab:
+  primary_collection: MSCEQ3D9
+  indexed_collections:
+    - MSCEQ3D9
+  primary_topic: quantum-resource
+  indexed_topics:
+    - quantum-resource
+item_type: journalArticle
+title: Learning quantum circuits of some $T$ gates
+authors:
+  - first: Ching-Yi
+    last: Lai
+  - first: Hao-Chung
+    last: Cheng
+year: 2022
+abstract: In this paper, we study the problem of learning an unknown quantum
+  circuit of a certain structure. If the unknown target is an $n$-qubit Clifford
+  circuit, we devise an efficient algorithm to reconstruct its circuit
+  representation by using $O(n^2)$ queries to it. For decades, it has been
+  unknown how to handle circuits beyond the Clifford group since the stabilizer
+  formalism cannot be applied in this case. Herein, we study quantum circuits of
+  $T$-depth one on the computational basis. We show that the output state of a
+  $T$-depth one circuit {\textit{of full $T$-rank}} can be represented by a
+  stabilizer pseudomixture with a specific algebraic structure. Using Pauli and
+  Bell measurements on copies of the output states, we can generate a hypothesis
+  circuit that is equivalent to the unknown target circuit on computational
+  basis states as input. If the number of $T$ gates of the target is of the
+  order $O({{\log n}})$, our algorithm requires $O(n^2)$ queries to it and
+  produces its equivalent circuit representation on the computational basis in
+  time $O(n^3)$. Using further additional $O(4^{3n})$ classical computations, we
+  can derive an exact description of the target for arbitrary input states. Our
+  results greatly extend the previously known facts that stabilizer states can
+  be efficiently identified based on the stabilizer formalism.
+tags:
+  - Computer Science - Information Theory
+  - Quantum Physics
+identifiers:
+  doi: 10.1109/tit.2022.3151760
+  arxiv: "2106.12524"

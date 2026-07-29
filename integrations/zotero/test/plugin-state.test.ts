@@ -16,6 +16,34 @@ import {
 import type { ReaderContext } from "../src/reader-context";
 
 describe("Zotkit Reader terminal state", () => {
+  it("waits for a new Zotero window's native tab deck before migrating Workbench", async () => {
+    const previousZotero = (globalThis as any).Zotero;
+    const source = { closed: false } as Window;
+    const target = { closed: false, document } as unknown as Window & { Zotero_Tabs?: any };
+    let windows: Window[] = [source];
+    (globalThis as any).Zotero = {
+      getMainWindows: () => windows,
+      openMainWindow: () => { windows = [source, target]; },
+    };
+    const plugin = new ZoteroChatPlugin() as any;
+    plugin.shortcutWindows = new Set([target]);
+    let settled = false;
+
+    try {
+      const pending = plugin.openWorkbenchWindow(source).then((value: Window) => {
+        settled = true;
+        return value;
+      });
+      await new Promise((resolve) => setTimeout(resolve, 70));
+      expect(settled).toBe(false);
+      target.Zotero_Tabs = { add: vi.fn(), tabHooks: {} };
+      await expect(pending).resolves.toBe(target);
+    }
+    finally {
+      (globalThis as any).Zotero = previousZotero;
+    }
+  });
+
   it("opens the paper bound to the QLab tab as a normal Zotero PDF tab", async () => {
     const originalZotero = (globalThis as any).Zotero;
     const open = vi.fn(async () => ({}));
@@ -50,7 +78,7 @@ describe("Zotkit Reader terminal state", () => {
 
     expect(options).toMatchObject({
       host,
-      paperTitle: "QLab 仓库",
+      paperTitle: "QLab Repository",
       workspace: "/research/quarto-lab",
       workingDirectory: "/research/quarto-lab",
       pdfPath: null,
@@ -208,7 +236,7 @@ describe("Zotkit Reader terminal state", () => {
     const root = document.querySelector<HTMLElement>(".zc-float")!;
     expect(root.textContent).toContain("latest question");
     expect(root.textContent).not.toContain("old question");
-    expect(root.textContent).toContain("已选 14 字");
+    expect(root.textContent).toContain("Selected 14 characters");
     expect(root.querySelector<HTMLElement>(".zc-float-stop")!.hidden).toBe(false);
     expect(root.querySelector(".zc-float-title")?.textContent).toBe("QLab · A Test Paper");
     const modelSelect = root.querySelector<HTMLSelectElement>(".zc-float-model")!;
@@ -851,8 +879,7 @@ describe("Zotkit Reader terminal state", () => {
 
 describe("Reader context copied into the terminal", () => {
   it("uses the original PDF directory when the path is absolute", () => {
-    expect(pdfDirectory("/Users/chance/Documents/papers/example.pdf"))
-      .toBe("/Users/chance/Documents/papers");
+    expect(pdfDirectory("/workspace/fixtures/papers/example.pdf")).toBe("/workspace/fixtures/papers");
     expect(pdfDirectory("relative/example.pdf")).toBeNull();
     expect(pdfDirectory(null)).toBeNull();
   });
@@ -876,7 +903,7 @@ describe("Reader context copied into the terminal", () => {
         doi: "10.1/example",
         tags: [],
       },
-      pdfPath: "/Users/chance/Documents/papers/quantum.pdf",
+      pdfPath: "/workspace/fixtures/papers/quantum.pdf",
       page: {
         pageIndex: 6,
         pageNumber: 7,
@@ -898,10 +925,10 @@ describe("Reader context copied into the terminal", () => {
     expect(prompt).toContain("Quantum Control");
     expect(prompt).toContain("Ada Lovelace");
     expect(prompt).toContain("10.1/example");
-    expect(prompt).toContain("/Users/chance/Documents/papers/quantum.pdf");
-    expect(prompt).toContain("PDF 页：7");
+    expect(prompt).toContain("/workspace/fixtures/papers/quantum.pdf");
+    expect(prompt).toContain("PDF page: 7");
     expect(prompt).toContain("first line second line [31m");
-    expect(prompt).toMatch(/问题：$/);
+    expect(prompt).toMatch(/Question: $/);
     expect(prompt).not.toMatch(/[\r\n\u001b]/);
   });
 
@@ -923,7 +950,7 @@ describe("Reader context copied into the terminal", () => {
     } as ReaderContext;
 
     const prompt = buildSelectionPrompt(context);
-    expect(prompt).toContain("完整文本仍可通过 zotero_reader 获取");
+    expect(prompt).toContain("full text remains available through zotero_reader");
     expect(prompt.length).toBeLessThan(MAX_SELECTION_PROMPT_CHARACTERS + 500);
   });
 });
@@ -975,7 +1002,7 @@ describe("paper-trail wiring", () => {
     const { ZOTERO_MUTATION_TOOL } = await import("../src/zotero-mutations");
     expect(ZOTERO_MUTATION_TOOL).toBe("zotero_propose_changes");
     const source = readFileSync(join(__dirname, "../src/paper-trail.ts"), "utf8");
-    expect(source).not.toMatch(/tools\s*[:=]/);   // paper-trail 永不注册模型工具
+    expect(source).not.toMatch(/tools\s*[:=]/);   // paper-trail 永不注册Model工具
   });
 
   it("jumpToAnchor opens the reader at the annotation", async () => {

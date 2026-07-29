@@ -1,0 +1,54 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: J77BRXXB
+  item_version: 112506
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: S72WG465
+      name: encoding
+      path: Quantum N-Atom/App-Analog simulation/MWIS/encoding
+qlab:
+  primary_collection: S72WG465
+  indexed_collections:
+    - S72WG465
+  primary_topic: quantum-n-atom
+  indexed_topics:
+    - quantum-n-atom
+item_type: journalArticle
+title: "Approximate combinatorial optimization with Rydberg atoms: the barrier
+  of interpretability"
+authors:
+  - first: Christian de
+    last: Correc
+  - first: Thomas
+    last: Ayral
+  - first: Corentin
+    last: Bertrand
+year: 2025
+abstract: Analog quantum computing with Rydberg atoms is seen as an avenue to
+  solve hard graph optimization problems, because they naturally encode the
+  Maximum Independent Set (MIS) problem on Unit-Disk (UD) graphs, a problem that
+  admits rather efficient approximation schemes on classical computers. Going
+  beyond UD-MIS to address generic graphs requires embedding schemes, typically
+  with chains of ancilla atoms, and an interpretation algorithm to map results
+  back to the original problem. However, interpreting approximate solutions
+  obtained with realistic quantum computers proves to be a difficult problem. As
+  a case study, we evaluate the ability of two interpretation strategies to
+  correct errors in the recently introduced Crossing Lattice embedding. We find
+  that one strategy, based on finding the closest embedding solution, leads to
+  very high qualities, albeit at an exponential cost. The second strategy, based
+  on ignoring defective regions of the embedding graph, is polynomial in the
+  graph size, but it leads to a degradation of the solution quality which is
+  prohibitive under realistic assumptions on the defect generation. Moreover,
+  more favorable defect scalings lead to a contradiction with well-known
+  approximability conjectures. Therefore, it is unlikely that a scalable and
+  generic improvement in solution quality can be achieved with Rydberg platforms
+  -- thus moving the focus to heuristic algorithms.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.1103/ss3t-j4y5
+  arxiv: "2507.22761"

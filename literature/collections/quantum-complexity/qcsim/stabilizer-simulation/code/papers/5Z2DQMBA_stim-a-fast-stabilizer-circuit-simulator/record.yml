@@ -1,0 +1,44 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 5Z2DQMBA
+  item_version: 96123
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 8NTY9LVA
+      name: code
+      path: Quantum Complexity/QCsim/stabilizer simulation/code
+qlab:
+  primary_collection: 8NTY9LVA
+  indexed_collections:
+    - 8NTY9LVA
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: journalArticle
+title: "Stim: a fast stabilizer circuit simulator"
+authors:
+  - first: Craig
+    last: Gidney
+year: 2021
+abstract: This paper presents ``Stim", a fast simulator for quantum stabilizer
+  circuits. The paper explains how Stim works and compares it to existing tools.
+  With no foreknowledge, Stim can analyze a distance 100 surface code circuit
+  (20 thousand qubits, 8 million gates, 1 million measurements) in 15 seconds
+  and then begin sampling full circuit shots at a rate of 1 kHz. Stim uses a
+  stabilizer tableau representation, similar to Aaronson and Gottesman's CHP
+  simulator, but with three main improvements. First, Stim improves the
+  asymptotic complexity of deterministic measurement from quadratic to linear by
+  tracking the {\em inverse} of the circuit's stabilizer tableau. Second, Stim
+  improves the constant factors of the algorithm by using a cache-friendly data
+  layout and 256 bit wide SIMD instructions. Third, Stim only uses expensive
+  stabilizer tableau simulation to create an initial reference sample. Further
+  samples are collected in bulk by using that sample as a reference for batches
+  of Pauli frames propagating through the circuit.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.22331/q-2021-07-06-497
+  arxiv: "2103.02202"

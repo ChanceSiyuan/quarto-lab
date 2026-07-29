@@ -1,0 +1,50 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: C65HNFLT
+  item_version: 96143
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: WE3HPMT6
+      name: ECC compilation
+      path: Circuit Compilation/ECC compilation
+qlab:
+  primary_collection: WE3HPMT6
+  indexed_collections:
+    - WE3HPMT6
+  primary_topic: circuit-compilation
+  indexed_topics:
+    - circuit-compilation
+item_type: preprint
+title: Quantum resource estimates for computing binary elliptic curve discrete
+  logarithms
+authors:
+  - first: Michael
+    last: Garn
+  - first: Angus
+    last: Kan
+year: 2025
+abstract: We perform logical and physical resource estimation for computing
+  binary elliptic curve discrete logarithms using Shor's algorithm on
+  fault-tolerant quantum computers. We adopt a windowed approach to design our
+  circuit implementation of the algorithm, which comprises repeated applications
+  of elliptic curve point addition operations and table look-ups. Unlike
+  previous work, the point addition operation is implemented exactly, including
+  all exceptional cases. We provide exact logical gate and qubit counts of our
+  algorithm for cryptographically relevant binary field sizes. Furthermore, we
+  estimate the hardware footprint and runtime of our algorithm executed on
+  surface-code matter-based quantum computers with a baseline architecture,
+  where logical qubits have nearest-neighbor connectivity, and on a surface-code
+  photonic fusion-based quantum computer with an active-volume architecture,
+  which enjoys a logarithmic number of non-local connections between logical
+  qubits. At 10$\%$ threshold and compared to a baseline device with a $1\mu s$
+  code cycle, our algorithm runs $\gtrsim$ 2-20 times faster, depending on the
+  operating regime of the hardware and over all considered field sizes, on a
+  photonic active-volume device.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2503.02984
+  arxiv: "2503.02984"

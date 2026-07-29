@@ -1,0 +1,65 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: ZA32S6DN
+  item_version: 96659
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: BLVCXCAT
+      name: new
+      path: Quantum N-Atom/App-Analog simulation/new
+    - key: XAB9VQZP
+      name: experiment
+      path: Quantum Learning/Learning on
+        states/non-linear/Virtual_distillation/experiment
+qlab:
+  primary_collection: BLVCXCAT
+  indexed_collections:
+    - BLVCXCAT
+    - XAB9VQZP
+  primary_topic: quantum-n-atom
+  indexed_topics:
+    - quantum-learning
+    - quantum-n-atom
+item_type: journalArticle
+title: Error-Mitigated Simulation of Quantum Many-Body Scars on Quantum
+  Computers with Pulse-Level Control
+authors:
+  - first: I.-Chi
+    last: Chen
+  - first: Benjamin
+    last: Burdick
+  - first: Yongxin
+    last: Yao
+  - first: Peter P.
+    last: Orth
+  - first: Thomas
+    last: Iadecola
+year: 2022
+abstract: Quantum many-body scars are an intriguing dynamical regime in which
+  quantum systems exhibit coherent dynamics and long-range correlations when
+  prepared in certain initial states. We use this combination of coherence and
+  many-body correlations to benchmark the performance of present-day quantum
+  computing devices by using them to simulate the dynamics of an
+  antiferromagnetic initial state in mixed-field Ising chains of up to 19 sites.
+  In addition to calculating the dynamics of local observables, we also
+  calculate the Loschmidt echo and a nontrivial connected correlation function
+  that witnesses long-range many-body correlations in the scarred dynamics. We
+  find coherent dynamics to persist over up to 40 Trotter steps even in the
+  presence of various sources of error. To obtain these results, we leverage a
+  variety of error mitigation techniques including noise tailoring, zero-noise
+  extrapolation, dynamical decoupling, and physically motivated postselection of
+  measurement results. Crucially, we also find that using pulse-level control to
+  implement the Ising interaction yields a substantial improvement over the
+  standard CNOT-based compilation of this interaction. Our results demonstrate
+  the power of error mitigation techniques and pulse-level control to probe
+  many-body coherence and correlation effects on present-day quantum hardware.
+tags:
+  - Condensed Matter - Statistical Mechanics
+  - Condensed Matter - Strongly Correlated Electrons
+  - Quantum Physics
+identifiers:
+  doi: 10.1103/physrevresearch.4.043027
+  arxiv: "2203.08291"

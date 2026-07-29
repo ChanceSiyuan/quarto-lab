@@ -1,0 +1,52 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: I9EI96ES
+  item_version: 96120
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: XM8QHEMQ
+      name: 2D-PEPS
+      path: Quantum Complexity/QCsim/tensor network/2D-PEPS
+qlab:
+  primary_collection: XM8QHEMQ
+  indexed_collections:
+    - XM8QHEMQ
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: preprint
+title: Real-time quantum dynamics of thermal states with neural thermofields
+authors:
+  - first: Jannes
+    last: Nys
+  - first: Zakari
+    last: Denis
+  - first: Giuseppe
+    last: Carleo
+year: 2024
+abstract: 'Solving the time-dependent quantum many-body Schr\"odinger equation
+  is a challenging task, especially for states at a finite temperature, where
+  the environment affects the dynamics. Most existing approximating methods are
+  designed to represent static thermal density matrices, 1D systems, and/or
+  zero-temperature states. In this work, we propose a method to study the
+  real-time dynamics of thermal states in two dimensions, based on thermofield
+  dynamics, variational Monte Carlo, and neural-network quantum states. To this
+  aim, we introduce two novel tools: (i) a procedure to accurately simulate the
+  cooling down of arbitrary quantum variational states from infinite
+  temperature, and (ii) a generic thermal (autoregressive) recurrent
+  neural-network (ARNNO) Ansatz that allows for direct sampling from the density
+  matrix using thermofield basis rotations. We apply our technique to the
+  transverse-field Ising model subject to an additional longitudinal field and
+  demonstrate that the time-dependent observables, including correlation
+  operators, can be accurately reproduced for a 4x4 spin lattice. We provide
+  predictions of the real-time dynamics on a 6x6 lattice that lies outside the
+  reach of exact simulations.'
+tags:
+  - Condensed Matter - Other Condensed Matter
+  - Physics - Computational Physics
+  - Quantum Physics
+identifiers:
+  arxiv: "2309.07063"

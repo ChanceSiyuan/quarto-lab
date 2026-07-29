@@ -1,0 +1,283 @@
+---
+title: Virtual Distillation for Quantum Error Mitigation
+description: Quantum error-mitigation notes on virtual distillation, cyclic-shift estimators, derandomized shadows, negativity, majority voting, PCA-style analysis, and circuit-design variants for noisy-state purification.
+---
+
+**Citation**: William J. Huggins, et al., 2021, Physical Review X
+
+## Reading map
+
+- [Coherent LMR Algorithm and Density Matrix Exponentiation](app_PCA.qmd)
+- [Derandomized local shadows](derandom_shadow.qmd)
+- [Estimation of Negativity](negativity.qmd)
+- [Majority Vote for Pauli signal estimation](majorityvote.qmd)
+
+## Abstract and Overview
+
+This paper proposes **virtual distillation**, a near-term quantum error mitigation strategy that uses $M$ copies of a noisy state $\rho$ to estimate expectation values with respect to $\rho^M/\text{Tr}(\rho^M)$ without explicitly preparing it. The key contributions are:
+
+1. A practical protocol using cyclic shift measurements to access $\text{Tr}(O\rho^M)$
+2. Analytical framework showing orthogonal errors are exponentially suppressed while non-orthogonal errors set a performance floor
+3. Sample complexity analysis and collective measurement improvements
+4. Numerical demonstrations of multi-order magnitude error suppression
+
+---
+
+# Basic concept
+
+::: {#def-virtual-distillation .callout-note icon="false"}
+## (Virtual Distillation Estimator)
+
+Given $M$ copies of a noisy density matrix $\rho$ and an observable $O$, the **virtual distillation estimator** for the error-mitigated expectation value is:
+$$
+\langle O \rangle_{\text{corrected}} := \frac{\text{Tr}(O \rho^M)}{\text{Tr}(\rho^M)}
+$$
+
+This estimator measures expectation values with respect to the "virtually distilled" state $\rho^M/\text{Tr}(\rho^M)$ without explicitly preparing it.
+:::
+This "distills" the noisy state toward its dominant eigenvector (closest pure state) by exponentially suppressing contributions from non-dominant eigenvectors, as a simplified version of quantum principal component analysis (PCA) @lloyd2014quantum.
+Consider the spectral decomposition $\rho = \sum_i p_i |i\rangle\langle i|$ where $p_0 > p_1 > p_2 > \cdots$. Then:
+$$
+\frac{\rho^M}{\text{Tr}(\rho^M)} = \frac{\sum_i p_i^M |i\rangle\langle i|}{\sum_i p_i^M}
+$$
+
+The relative weight of the $i$-th eigenvector is $p_i^M/\sum_j p_j^M$, which decays **exponentially** in $M$ for $i \neq 0$.
+Specifically, consider a 2-level system with noisy state $\rho = 0.7|0\rangle\langle 0| + 0.3|1\rangle\langle 1|$.
+For $M=2$, we have
+$$
+\frac{\rho^2}{\text{Tr}(\rho^2)} = \frac{0.49|0\rangle\langle 0| + 0.09|1\rangle\langle 1|}{0.49 + 0.09} = 0.845|0\rangle\langle 0| + 0.155|1\rangle\langle 1|
+$$
+
+The weight of $|0\rangle$ increased from 70% to 84.5%, while $|1\rangle$ decreased from 30% to 15.5%. The ratio changed from $0.3/0.7 \approx 0.43$ to $(0.3/0.7)^2 \approx 0.18$.
+
+
+One thing left is how to estimate the expectation value of $O$ with respect to $\rho^M/\text{Tr}(\rho^M)$? To describe the strategy, we first introduce identities below.
+
+::: {.callout-note icon="false"}
+## Definition 2: Cyclic Shift Operator
+
+For $M$ copies of an $N$-qubit system, the **cyclic shift operator** $S^{(M)}$ acts on product states as:
+$$
+S^{(M)}|\psi_1\rangle \otimes |\psi_2\rangle \otimes \cdots \otimes |\psi_M\rangle = |\psi_2\rangle \otimes |\psi_3\rangle \otimes \cdots \otimes |\psi_M\rangle \otimes |\psi_1\rangle
+$$
+
+For $M=2$, this reduces to the **swap operator**: $S^{(2)} = \text{SWAP}$.
+:::
+
+::: {#thm-cyclic-shift-trace-identity .callout-important icon="false"}
+## (Cyclic Shift Trace Identity)
+
+For any observable $O$ acting on a single system, density matrix $\rho$, and $M$ copies:
+$$
+\text{Tr}(O \rho^M) = \text{Tr}(O^{\mathbf{i}} S^{(M)} \rho^{\otimes M})
+$$
+
+where $O^{\mathbf{i}}$ is $O$ acting on any subsystem $i$ (the choice of $i$ doesn't matter).
+:::
+
+:::{.callout-note collapse="true"}
+## Proof (Click to expand)
+
+Consider the estimator $\text{tr}(S^{(M)} \cdot (O\rho)\otimes \rho^{\otimes (k-1)})$. The sample complexity can be bounded through Hoeffding inequality or from variance in and Chebyshev's inequality. To show that this is a estimator for $\text{tr}(O\rho^{\otimes k})$, we prove that
+$$
+\begin{align*}
+   \text{tr}(S^{(M)} \cdot \rho_1\otimes \cdots\otimes \rho_{k}) &= \sum_{v_1,\cdots,v_k \in [k]} \bra{v_1v_2\cdots v_k} \rho_1\otimes \cdots\otimes \rho_{k} \ket{v_2v_3\cdots v_kv_1} \\
+   &= \sum_{v_1,\cdots,v_k \in [k]} \bra{v_1} \rho_1 \ket{v_2}\bra{v_2} \rho_2 \cdots \ket{v_k}\bra{v_k}\rho_{k}\ket{v_1} \\
+   &= \sum_{v_1\in [k]} \bra{v_1} \rho_1 \left(\sum_{v_2\in [k]}\ket{v_2}\!\bra{v_2}\right) \rho_2 \cdots\left(\sum_{v_k\in [k]}\ket{v_k}\!\bra{v_k}\right)\rho_{k}\ket{v_1} \\
+   &= \text{tr}(\rho_1\cdots\rho_k).
+\end{align*}
+$$
+:::
+
+To realized the estimation of $O^{\mathbf{i}} S^{(M)}$ in experiment, we can either use Hardmard test @koczor2021exponential or Measurement by Diagonalization @huggins2021virtual 
+
+#### Measurement by Diagonalization
+we first present a straightforward strategy applicable when the operator $O$ is the Pauli $Z$ operator acting on a **single qubit** and $M = 2$.
+
+::: {#lem-virtual-distillation-of-local-z .callout-note icon="false"}
+## (Virsual distillation of Local-Z)
+The virtual distillation values $\{\mathrm{tr}(Z_i \rho^2)\}_{i =1}^{n}$ can be estimated by the following two steps:
+
+1. Implement the two-qubits gate $B^{(2)} = \begin{pmatrix}1 & 0 & 0 & 0 \\ 0 & \frac{\sqrt{2}}{2} & -\frac{\sqrt{2}}{2} & 0 \\ 0 & \frac{\sqrt{2}}{2} & \frac{\sqrt{2}}{2} & 0 \\ 0 & 0 & 0 & 1\end{pmatrix}$ locally and transverally.
+2. Measure all qubits on Pauli-$Z$ basis and record the result $\mathbf{r}_1,\cdots, \mathbf{r}_n$ with $\mathbf{r}_k \in \{00,01,10,11\}$.
+3. Do this mutiple times $j = 1,\cdots, N$. Then $\mathrm{tr}(Z_r \rho^2) = \prod_{k=1}^{n} \lambda_k(\mathbf{r}_k)$ with $\lambda_k(\mathbf{r}_k) = \begin{cases} -(\mathbf{r}_k)_1 \cdot (\mathbf{r}_k)_2 &\text{if~} k = r \\ (-1)^{|\mathbf{r}_k|} &\text{if~} k \neq r \end{cases}$.
+:::
+
+:::{.callout-note collapse="true"}
+## Proof (Click to expand)
+Given $\mathrm{sym}(Z_k):= Z_k \otimes \mathbb{I} + \mathbb{I} \otimes Z_k$ as the local $Z$ Pauli operator at site $k$ on 2-copies of n-qubit state.
+Then the set of operator $\{\mathrm{sym}(Z_k) \cdot S^{(2)}\}_{k =1}^{n}$ are mutually commuting with $4^n$ common eigenbasis $\{\ket{00},\frac{1}{\sqrt{2}}(\ket{01} + \ket{10}), \frac{1}{\sqrt{2}}(\ket{01} - \ket{10}), \ket{11}\}^{\otimes n}$.
+To esstimate $\mathrm{sym}(Z_r) \cdot S^{(2)}$, we consider its $4^n$ eigenvalues:
+
+- Except position $k \neq r$, we disttibute value $\lambda_k$ based on the rule: $\{\ket{00},\frac{1}{\sqrt{2}}(\ket{01} + \ket{10}), \frac{1}{\sqrt{2}}(\ket{01} - \ket{10}), \ket{11}\} \to \{1,1,-1,1\}$.
+- For position $k = r$, we disttibute value $\lambda_r$ based on the rule: $\{\ket{00},\frac{1}{\sqrt{2}}(\ket{01} + \ket{10}), \frac{1}{\sqrt{2}}(\ket{01} - \ket{10}), \ket{11}\} \to \{1,0,0,-1\}$.
+- Return the value $\prod_{k = 1}^{n} \lambda_k$.
+:::
+
+Actually, this cocnlusion can be generalized to arbitrary Pauli operator, even for arbitrary operator in the form of tensor product of canonial matrix.
+specifically, when $A_i \in \mathrm{SWAP} \cdot \{I, X, Y, Z\}$, the operator $\mathrm{SWAP} \cdot P$ is non-Hermitian but normal (satisfying $[SP, (SP)^\dagger] = 0$), hence diagonalizable.
+
+::: {#lem-two-copy-local-estimation-of-pauli-weighted-purity .callout-note icon="false"}
+## (Two-copy Local Estimation of $\mathrm{tr}(Z^{\otimes n}\rho^2)$)
+
+The value $\mathrm{tr}(P\rho^2)$ can be estimated by a 2-copy local circuit:
+
+1. Apply $\mathrm{CNOT}_{12}$ between corresponding qubits
+2. Measure $Z$ on the second qubit with result $s_1$
+3. Adaptively apply $S \cdot H$ gate if $s_1 = 1$, then measure $Z$ on the first qubit with result $s_2$
+4. Construct estimator $\hat{o} = \mathrm{Re}\left[\prod_k i^{2s_2^{(k)} + s_1^{(k)}}\right]$
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+
+Full-weight Pauli operators can be locally transformed to $Z^{\otimes n}$ using local Clifford gates ($HXH = Z$, $HS^\dagger YSH = Z$).
+
+The observable becomes $O = [(Z \otimes I) \cdot \mathrm{SWAP}]^{\otimes n} = A^{\otimes n}$. The local operator $A$, though non-Hermitian, is normal and admits the spectral decomposition:
+
+$$
+\begin{align}
+    A &= |00\rangle\langle00| - |11\rangle\langle11| + i|\Phi^+\rangle\langle\Phi^+| - i|\Phi^-\rangle\langle\Phi^-|
+\end{align}
+$$
+
+where $|\Phi^\pm\rangle = (|01\rangle \pm i|10\rangle)/\sqrt{2}$.
+
+Measurement in the basis $\{|00\rangle, |11\rangle, |\Phi^+\rangle, |\Phi^-\rangle\}$ yields outcomes $\hat{o}_i \in \{+1, -1, +i, -i\}$. Both $\mathrm{Im}(\prod_i \hat{o}_i)$ and $\mathrm{Re}(\prod_i \hat{o}_i)$ are bounded, so Hoeffding's inequality ensures efficient estimation.
+
+The circuit implementation uses:
+$$
+\mathrm{CNOT}|00\rangle = |00\rangle, \quad \mathrm{CNOT}|11\rangle = |10\rangle, \quad \mathrm{CNOT}|\Phi^\pm\rangle = (SH|0/1\rangle)|1\rangle
+$$
+:::
+
+This is strategy is first proposed in @cai2023looped. 
+
+
+# Analysis of error suppression
+
+::: {#thm-orthogonal-error-suppression .callout-important icon="false"}
+## (Orthogonal Error Suppression)
+Under the orthogonal error model where errors occur with probability $p$ per gate and send the state to orthogonal error states.
+For error with $G$ independent parts, each part has probability $p$ to occur, the fidelity of the distilled state is:
+$$
+\frac{\text{Tr}(\rho_0 \rho^M)}{\text{Tr}(\rho^M)} \simeq 1 - Gp^M + O(Gp^{M+1})
+$$
+
+where $\rho_0$ is the ideal state and $\rho_{\text{corrected}} = \rho^M/\text{Tr}(\rho^M)$ is our distilled state.
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+**Setup**: Consider a circuit with $G$ gates. Model each gate as a stochastic channel where with probability $p$, an error occurs and sends the state to a new orthogonal error state. With probability $1-p$, the gate is perfect.
+
+**Step 1: Density matrix after $G$ gates**
+
+After $G$ gates, the density matrix is a mixture of the ideal state and error states:
+$$
+\rho = (1-p)^G\rho_0 + (1-p)^{G-1}p \sum_{j=1}^G \rho_{j} + (1-p)^{G-2}p^2\sum_{j_1 \neq j_2} \rho_{j_1,j_2} + \cdots
+$$
+
+where:
+- $\rho_0$ is the ideal state (no errors)
+- $\rho_j$ are states with exactly one error at gate $j$
+- $\rho_{j_1,j_2}$ are states with exactly two errors at gates $j_1$ and $j_2$
+- All these states are mutually orthogonal by assumption
+
+**Step 2: Compute $\rho^M$**
+
+Since all states are orthogonal, $\text{Tr}(\rho_i \rho_j) = \delta_{ij}$. Therefore:
+$$
+\rho^M = (1-p)^{MG}\rho_0 + (1-p)^{(M-1)G}p^M \sum_{j=1}^G \rho_j + \cdots
+$$
+
+**Key observation**: Each coefficient gets raised to the $M$-th power. The coefficient of $\rho_0$ is $(1-p)^{MG}$, while error terms have coefficients $\sim p^M$.
+
+**Step 3: Compute the purity $\text{Tr}(\rho^M)$**
+
+$$
+\text{Tr}(\rho^M) = (1-p)^{MG} + (1-p)^{(M-1)G}p^M \cdot G + \cdots
+$$
+
+For small $p$, the dominant terms are:
+$$
+\text{Tr}(\rho^M) \approx (1-p)^{MG} + Gp^M(1-p)^{(M-1)G}
+$$
+
+**Step 4: Compute the fidelity**
+
+$$
+\text{Fidelity} = \frac{\text{Tr}(\rho_0 \rho^M)}{\text{Tr}(\rho^M)} = \frac{(1-p)^{MG}}{(1-p)^{MG} + Gp^M(1-p)^{(M-1)G}}
+$$
+
+Dividing numerator and denominator by $(1-p)^{MG}$:
+$$
+\text{Fidelity} = \frac{1}{1 + Gp^M(1-p)^{-G}} \approx \frac{1}{1 + Gp^M} \approx 1 - Gp^M
+$$
+
+**Alternative derivation using binomial expansion**:
+
+Note that $\text{Tr}(\rho^M)$ can be written as:
+$$
+\text{Tr}(\rho^M) = \sum_{\text{all states}} (\text{coefficient})^M = ((1-p)^M + p^M)^G
+$$
+
+using the multinomial theorem. Then:
+$$
+\text{Fidelity} = \frac{(1-p)^{MG}}{((1-p)^M + p^M)^G}
+$$
+
+For small $p$: $(1-p)^M \approx 1 - Mp$ and $p^M \approx 0$, so:
+$$
+\text{Fidelity} \approx \frac{(1-Mp)^G}{(1-Mp + p^M)^G} \approx (1-Mp)^G (1 + Gp^M) \approx 1 - GMp + Gp^M \approx 1 - Gp^M
+$$
+
+for $M \geq 2$ (since $p^M \ll Mp$ for small $p$).
+
+:::
+
+Although the orthogonal error is suppressed exponentially, we note that the sampling complextiy is exponential in $G$ even for $M=2$.
+
+::: {#thm-variance-of-virtual-distillation-estimator .callout-important icon="false"}
+## (Variance of Virtual Distillation Estimator)
+
+For $M=2$ and $R$ measurement repetitions, the variance of the error-mitigated estimator is:
+$$
+\begin{align*}
+\text{Var}(\langle O \rangle_{\text{corrected}}) \approx \frac{1}{R}\Big(&\frac{1}{\text{Tr}(\rho^2)^2}\big(\frac{1}{2}\text{Tr}(\rho O^2) + \frac{1}{2}\text{Tr}(\rho O)^2 - \text{Tr}(\rho^2 O)^2\big) \\
+&- 2 \frac{\text{Tr}(\rho^2 O)}{\text{Tr}(\rho^2)^3}\big(\text{Tr}(\rho O) - \text{Tr}(\rho^2 O)\text{Tr}(\rho^2)\big) \\
+&+ \frac{\text{Tr}(\rho^2 O)^2}{\text{Tr}(\rho^2)^4}\big(1 - \text{Tr}(\rho^2)^2\big)\Big)
+\end{align*}
+$$
+In the case $G$ independent orthogonal errors with  uniform probability $p$, this term scale as $(1-p)^{-4G}$.
+:::
+
+# Experiment review
+
+The virtual distillation is just a tool. Actually, it belongs to a broader category of error mitigation techniques.
+It is thus necessary to proposed scientific esperiments that can be benifited from this tool.
+I believe the most promising application includes:
+
+1. Estimates gradient on all kinds of QAOA algorithms @wang2024can.
+2. Increase the coherence time for simulation of Lattice gauge theory such that the thermalization of gauge theories can be studied @zhou2022thermalization @wang2023interrelated.
+3. Quantum many-body scars @chen2022error
+4. Strongly correlated quantum chemistry via Multi-Reference Error Mitigation (MREM) @zou2025multireference, which generalizes virtual distillation to multi-reference electronic states. Standard VD assumes a dominant principal eigenstate; MREM extends this to molecules where strong correlation demands a multi-determinant reference (e.g., N₂, H₂O, F₂) @lolur2023reference.
+5. Strongly correlated condensed matter via the Fermi-Hubbard model — purification-based error mitigation enables observation of ground-state phenomena (metal-insulator transition, Friedel oscillations, antiferromagnetic order) on near-term hardware @stanisic2022observing @o2023purification.
+
+
+The following list the **examined experimental realizations** of Virtual Distillation.
+
+- @o2023purification prepared the ground state of Richardson-Gaudin (RG) model on hardware (measured on 4, 6, 8, 10 qubits) and successfully extracted the superconducting order parameter. They also successfully simulated the energy change during the ring opening reaction of cyclobutene (Cyclobutene ring opening) on 6 and 10 qubits.
+- @huo2022dual implemented Dual-State Purification (DSP), a closely related purification-based method using forward-backward circuit evolution (no additional qubits required), on IBM Falcon 27-qubit superconducting processors. They demonstrated 1–2 orders of magnitude error reduction for VQE circuits preparing the HCl molecule ground state.
+
+
+Since 2-replica operation is not cheap in other platform (1/2 discount of qubit number and topological restricitions), many strategy use local shadow to estimate $\mathrm{tr}(O \rho^2)$ instead of Bell measurement/ CSWAP operations.
+
+- @zhang2024experimental: Photonic Quantum Network (SPDC \+ Linear Optics) | Coherence and Bipartite Entanglement Distillation, High-Fidelity Teleportation | Reliance on probabilistic entangling operations; exponentially decaying post-selection yield for multi-photon events. 
+- @seif2023shadow: Trapped-Ion| 5-qubit GHZ state generation, verification of high-weight stabilizers | Exponential classical sample complexity for shadow reconstruction; prolonged measurement times.
+- @huo2022dual: IBM Superconducting (27-qubit Falcon) | VQE for HCl molecule ground state | Temporal forward-backward evolution acts as an implicit second copy, eliminating multi-qubit register overhead at the cost of doubled circuit depth. Requires no classical post-processing or CSWAP gates.
+
+## References
+
+::: {#refs}
+:::

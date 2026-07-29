@@ -1,0 +1,51 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: LZLY22ZJ
+  item_version: 107962
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: XM8QHEMQ
+      name: 2D-PEPS
+      path: Quantum Complexity/QCsim/tensor network/2D-PEPS
+qlab:
+  primary_collection: XM8QHEMQ
+  indexed_collections:
+    - XM8QHEMQ
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: journalArticle
+title: Tensor network decompositions in the presence of a global symmetry
+authors:
+  - first: Sukhwinder
+    last: Singh
+  - first: Robert N. C.
+    last: Pfeifer
+  - first: Guifre
+    last: Vidal
+year: 2010
+abstract: "Tensor network decompositions offer an efficient description of
+  certain many-body states of a lattice system and are the basis of a wealth of
+  numerical simulation algorithms. We discuss how to incorporate a global
+  symmetry, given by a compact, completely reducible group G, in tensor network
+  decompositions and algorithms. This is achieved by considering tensors that
+  are invariant under the action of the group G. Each symmetric tensor
+  decomposes into two types of tensors: degeneracy tensors, containing all the
+  degrees of freedom, and structural tensors, which only depend on the symmetry
+  group. In numerical calculations, the use of symmetric tensors ensures the
+  preservation of the symmetry, allows selection of a specific symmetry sector,
+  and significantly reduces computational costs. On the other hand, the
+  resulting tensor network can be interpreted as a superposition of
+  exponentially many spin networks. Spin networks are used extensively in loop
+  quantum gravity, where they represent states of quantum geometry. Our work
+  highlights their importance also in the context of tensor network algorithms,
+  thus setting the stage for cross-fertilization between these two areas of
+  research."
+tags:
+  - Condensed Matter - Strongly Correlated Electrons
+identifiers:
+  doi: 10.1103/physreva.82.050301
+  arxiv: "0907.2994"

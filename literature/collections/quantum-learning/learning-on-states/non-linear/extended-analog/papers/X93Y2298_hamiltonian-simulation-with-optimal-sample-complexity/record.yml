@@ -1,0 +1,50 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: X93Y2298
+  item_version: 101050
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: SP3ZCRVA
+      name: extended_analog
+      path: Quantum Learning/Learning on states/non-linear/extended_analog
+qlab:
+  primary_collection: SP3ZCRVA
+  indexed_collections:
+    - SP3ZCRVA
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: journalArticle
+title: Hamiltonian Simulation with Optimal Sample Complexity
+authors:
+  - first: Shelby
+    last: Kimmel
+  - first: Cedric Yen-Yu
+    last: Lin
+  - first: Guang Hao
+    last: Low
+  - first: Maris
+    last: Ozols
+  - first: Theodore J.
+    last: Yoder
+year: 2017
+abstract: "We investigate the sample complexity of Hamiltonian simulation: how
+  many copies of an unknown quantum state are required to simulate a Hamiltonian
+  encoded by the density matrix of that state? We show that the procedure
+  proposed by Lloyd, Mohseni, and Rebentrost [Nat. Phys., 10(9):631--633, 2014]
+  is optimal for this task. We further extend their method to the case of
+  multiple input states, showing how to simulate any Hermitian polynomial of the
+  states provided. As applications, we derive optimal algorithms for commutator
+  simulation and orthogonality testing, and we give a protocol for creating a
+  coherent superposition of pure states, when given sample access to those
+  states. We also show that this sample-based Hamiltonian simulation can be used
+  as the basis of a universal model of quantum computation that requires only
+  partial swap operations and simple single-qubit states."
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.1038/s41534-017-0013-7
+  arxiv: "1608.00281"

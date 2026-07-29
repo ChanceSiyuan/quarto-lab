@@ -1,0 +1,61 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: TXA8VHP8
+  item_version: 96056
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: PB79WWE8
+      name: Injection
+      path: Quantum Error correction/2-Code categories/Topological/surface
+        codes/Lattice Surgery/Injection
+    - key: F28II9EE
+      name: magic injection
+      path: Quantum Resource/Magic/Magic state distillation/magic injection
+qlab:
+  primary_collection: PB79WWE8
+  indexed_collections:
+    - F28II9EE
+    - PB79WWE8
+  primary_topic: quantum-error-correction
+  indexed_topics:
+    - quantum-error-correction
+    - quantum-resource
+item_type: journalArticle
+title: High-Fidelity Magic-State Preparation with a Biased-Noise Architecture
+authors:
+  - first: Shraddha
+    last: Singh
+  - first: Andrew S.
+    last: Darmawan
+  - first: Benjamin J.
+    last: Brown
+  - first: Shruti
+    last: Puri
+year: 2022
+abstract: Magic state distillation is a resource intensive subroutine that
+  consumes noisy input states to produce high-fidelity resource states that are
+  used to perform logical operations in practical quantum-computing
+  architectures. The resource cost of magic state distillation can be reduced by
+  improving the fidelity of the raw input states. To this end, we propose an
+  initialization protocol that offers a quadratic improvement in the error rate
+  of the input magic states in architectures with biased noise. This is achieved
+  by preparing an error-detecting code which detects the dominant errors that
+  occur during state preparation. We obtain this advantage by exploiting the
+  native gate operations of an underlying qubit architecture that experiences
+  biases in its noise profile. We perform simulations to analyze the performance
+  of our protocol with the XZZX surface code. Even at modest physical parameters
+  with a two-qubit gate error rate of $0.7\%$ and total probability of dominant
+  errors in the gate $O(10^3)$ larger compared to that of non-dominant errors,
+  we find that our preparation scheme delivers magic states with logical error
+  rate $O(10^{-8})$ after a single round of the standard 15-to-1 distillation
+  protocol; two orders of magnitude lower than using conventional state
+  preparation. Our approach therefore promises considerable savings in overheads
+  with near-term technology.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.1103/physreva.105.052410
+  arxiv: "2109.02677"

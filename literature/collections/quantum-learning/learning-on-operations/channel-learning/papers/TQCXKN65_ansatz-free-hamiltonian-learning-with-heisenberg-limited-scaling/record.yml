@@ -1,0 +1,74 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: TQCXKN65
+  item_version: 109115
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: AENR6HI9
+      name: channel learning
+      path: Quantum Learning/Learning on operations/channel learning
+    - key: UEQI7UKL
+      name: ham
+      path: Quantum Learning/Learning on operations/ham
+qlab:
+  primary_collection: AENR6HI9
+  indexed_collections:
+    - AENR6HI9
+    - UEQI7UKL
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: preprint
+title: Ansatz-free Hamiltonian learning with Heisenberg-limited scaling
+authors:
+  - first: Hong-Ye
+    last: Hu
+  - first: Muzhou
+    last: Ma
+  - first: Weiyuan
+    last: Gong
+  - first: Qi
+    last: Ye
+  - first: Yu
+    last: Tong
+  - first: Steven T.
+    last: Flammia
+  - first: Susanne F.
+    last: Yelin
+year: 2025
+abstract: Learning the unknown interactions that govern a quantum system is
+  crucial for quantum information processing, device benchmarking, and quantum
+  sensing. The problem, known as Hamiltonian learning, is well understood under
+  the assumption that interactions are local, but this assumption may not hold
+  for arbitrary Hamiltonians. Previous methods all require high-order inverse
+  polynomial dependency with precision, unable to surpass the standard quantum
+  limit and reach the gold standard Heisenberg-limited scaling. Whether
+  Heisenberg-limited Hamiltonian learning is possible without prior assumptions
+  about the interaction structures, a challenge we term \emph{ansatz-free
+  Hamiltonian learning}, remains an open question. In this work, we present a
+  quantum algorithm to learn arbitrary sparse Hamiltonians without any structure
+  constraints using only black-box queries of the system's real-time evolution
+  and minimal digital controls to attain Heisenberg-limited scaling in
+  estimation error. Our method is also resilient to
+  state-preparation-and-measurement errors, enhancing its practical feasibility.
+  We numerically demonstrate our ansatz-free protocol for learning physical
+  Hamiltonians and validating analog quantum simulations, benchmarking our
+  performance against the state-of-the-art Heisenberg-limited learning approach.
+  Moreover, we establish a fundamental trade-off between total evolution time
+  and quantum control on learning arbitrary interactions, revealing the
+  intrinsic interplay between controllability and total evolution time
+  complexity for any learning algorithm. These results pave the way for further
+  exploration into Heisenberg-limited Hamiltonian learning in complex quantum
+  systems under minimal assumptions, potentially enabling new benchmarking and
+  verification protocols.
+tags:
+  - Computer Science - Information Theory
+  - Computer Science - Machine Learning
+  - Mathematics - Information Theory
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2502.11900
+  arxiv: "2502.11900"

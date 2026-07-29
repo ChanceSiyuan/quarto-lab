@@ -1,0 +1,44 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: FLHQKHVS
+  item_version: 101130
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: KS8H3U7A
+      name: Nonparametric
+      path: Quantum Learning/Machine learning/Nonparametric
+qlab:
+  primary_collection: KS8H3U7A
+  indexed_collections:
+    - KS8H3U7A
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: preprint
+title: Minimax rates of entropy estimation on large alphabets via best
+  polynomial approximation
+authors:
+  - first: Yihong
+    last: Wu
+  - first: Pengkun
+    last: Yang
+year: 2016
+abstract: Consider the problem of estimating the Shannon entropy of a
+  distribution over $k$ elements from $n$ independent samples. We show that the
+  minimax mean-square error is within universal multiplicative constant factors
+  of $$\Big(\frac{k }{n \log k}\Big)^2 + \frac{\log^2 k}{n}$$ if $n$ exceeds a
+  constant factor of $\frac{k}{\log k}$; otherwise there exists no consistent
+  estimator. This refines the recent result of Valiant-Valiant \cite{VV11} that
+  the minimal sample size for consistent entropy estimation scales according to
+  $Θ(\frac{k}{\log k})$. The apparatus of best polynomial approximation plays a
+  key role in both the construction of optimal estimators and, via a duality
+  argument, the minimax lower bound.
+tags:
+  - Computer Science - Information Theory
+  - Mathematics - Statistics Theory
+identifiers:
+  doi: 10.48550/arxiv.1407.0381
+  arxiv: "1407.0381"

@@ -1,0 +1,58 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: UBQEY8JU
+  item_version: 107186
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: F8JXZ7FS
+      name: Qalg
+      path: Quantum Dynamics/Adiabatic/Berry/Qalg
+qlab:
+  primary_collection: F8JXZ7FS
+  indexed_collections:
+    - F8JXZ7FS
+  primary_topic: quantum-dynamics
+  indexed_topics:
+    - quantum-dynamics
+item_type: journalArticle
+title: A hybrid quantum algorithm to detect conical intersections
+authors:
+  - first: Emiel
+    last: Koridon
+  - first: Joana
+    last: Fraxanet
+  - first: Alexandre
+    last: Dauphin
+  - first: Lucas
+    last: Visscher
+  - first: Thomas E.
+    last: O'Brien
+  - first: Stefano
+    last: Polla
+year: 2024
+abstract: Conical intersections are topologically protected crossings between
+  the potential energy surfaces of a molecular Hamiltonian, known to play an
+  important role in chemical processes such as photoisomerization and
+  non-radiative relaxation. They are characterized by a non-zero Berry phase,
+  which is a topological invariant defined on a closed path in atomic coordinate
+  space, taking the value $π$ when the path encircles the intersection manifold.
+  In this work, we show that for real molecular Hamiltonians, the Berry phase
+  can be obtained by tracing a local optimum of a variational ansatz along the
+  chosen path and estimating the overlap between the initial and final state
+  with a control-free Hadamard test. Moreover, by discretizing the path into $N$
+  points, we can use $N$ single Newton-Raphson steps to update our state
+  non-variationally. Finally, since the Berry phase can only take two discrete
+  values (0 or $π$), our procedure succeeds even for a cumulative error bounded
+  by a constant; this allows us to bound the total sampling cost and to readily
+  verify the success of the procedure. We demonstrate numerically the
+  application of our algorithm on small toy models of the formaldimine molecule
+  (\ce{H2C=NH}).
+tags:
+  - Physics - Chemical Physics
+  - Quantum Physics
+identifiers:
+  doi: 10.22331/q-2024-02-20-1259
+  arxiv: "2304.06070"

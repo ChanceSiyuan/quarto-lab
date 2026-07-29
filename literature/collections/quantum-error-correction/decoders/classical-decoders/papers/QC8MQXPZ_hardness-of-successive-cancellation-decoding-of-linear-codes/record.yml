@@ -1,0 +1,50 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: QC8MQXPZ
+  item_version: 96129
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: CKIJBABT
+      name: classical decoders
+      path: Quantum Error correction/Decoders/classical decoders
+qlab:
+  primary_collection: CKIJBABT
+  indexed_collections:
+    - CKIJBABT
+  primary_topic: quantum-error-correction
+  indexed_topics:
+    - quantum-error-correction
+item_type: conferencePaper
+title: Hardness of Successive-Cancellation Decoding of Linear Codes
+authors:
+  - first: Arman
+    last: Fazeli
+  - first: Alexander
+    last: Vardy
+  - first: Hanwen
+    last: Yao
+year: 2020
+abstract: Successive-cancellation decoding has gained much renewed interest
+  since the advent of polar coding a decade ago. For polar codes,
+  successive-cancellation decoding can be accomplished in time O(n log n).
+  However, the complexity of successivecancellation decoding for other families
+  of codes remains largely unexplored. Herein, we prove that
+  successive-cancellation decoding of general binary linear codes is NP-hard. In
+  order to establish this result, we reduce from maximum-likelihood decoding of
+  linear codes, a well-known NP-complete problem. Unlike maximum-likelihood
+  decoding, however, the successive-cancellation decoding problem depends on the
+  choice of a generator matrix. Thus we further strengthen our result by showing
+  that there exist codes for which successive-cancellation decoding remains hard
+  for every possible choice of the generator matrix. On the other hand, we also
+  observe that polynomial-time successive-cancellation decoding can be extended
+  from polar codes to many other linear codes. Finally, we show that every
+  binary linear code can be encoded as a polar code with dynamically frozen
+  bits. This approach makes it possible to use list-decoding of polar codes to
+  approximate the maximum-likelihood decoding performance of arbitrary codes.
+tags: []
+identifiers:
+  doi: 10.1109/isit44484.2020.9174469
+  isbn: 978-1-7281-6432-8

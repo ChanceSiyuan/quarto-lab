@@ -1,0 +1,56 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 5439GJRW
+  item_version: 103283
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: EHI2P49X
+      name: measurement_based
+      path: Quantum N-Atom/App-Analog simulation/LGT/measurement_based
+qlab:
+  primary_collection: EHI2P49X
+  indexed_collections:
+    - EHI2P49X
+  primary_topic: quantum-n-atom
+  indexed_topics:
+    - quantum-n-atom
+item_type: journalArticle
+title: Measurement-based quantum simulation of Abelian lattice gauge theories
+authors:
+  - first: Hiroki
+    last: Sukeno
+  - first: Takuya
+    last: Okuda
+year: 2023
+abstract: Numerical simulation of lattice gauge theories is an indispensable
+  tool in high energy physics, and their quantum simulation is expected to
+  become a major application of quantum computers in the future. In this work,
+  for an Abelian lattice gauge theory in $d$ spacetime dimensions, we define an
+  entangled resource state (generalized cluster state) that reflects the
+  spacetime structure of the gauge theory. We show that sequential single-qubit
+  measurements with the bases adapted according to the former measurement
+  outcomes induce a deterministic Hamiltonian quantum simulation of the gauge
+  theory on the boundary. Our construction includes the $(2+1)$-dimensional
+  Abelian lattice gauge theory simulated on three-dimensional cluster state as
+  an example, and generalizes to the simulation of Wegner's lattice models
+  $M_{(d,n)}$ that involve higher-form Abelian gauge fields. We demonstrate that
+  the generalized cluster state has a symmetry-protected topological order with
+  respect to generalized global symmetries that are related to the symmetries of
+  the simulated gauge theories on the boundary. Our procedure can be generalized
+  to the simulation of Kitaev's Majorana chain on a fermionic resource state. We
+  also study the imaginary-time quantum simulation with two-qubit measurements
+  and post-selections, and a classical-quantum correspondence, where the
+  statistical partition function of the model $M_{(d,n)}$ is written as the
+  overlap between the product of two-qubit measurement bases and the wave
+  function of the generalized cluster state.
+tags:
+  - Condensed Matter - Strongly Correlated Electrons
+  - High Energy Physics - Lattice
+  - High Energy Physics - Theory
+  - Quantum Physics
+identifiers:
+  doi: 10.21468/scipostphys.14.5.129
+  arxiv: "2210.10908"

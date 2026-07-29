@@ -1,0 +1,65 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: LFA8GI4R
+  item_version: 96142
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: WE3HPMT6
+      name: ECC compilation
+      path: Circuit Compilation/ECC compilation
+qlab:
+  primary_collection: WE3HPMT6
+  indexed_collections:
+    - WE3HPMT6
+  primary_topic: circuit-compilation
+  indexed_topics:
+    - circuit-compilation
+item_type: journalArticle
+title: Quantum Binary Field Multiplication with Optimized Toffoli Depth and
+  Extension to Quantum Inversion
+authors:
+  - first: Kyungbae
+    last: Jang
+  - first: Wonwoong
+    last: Kim
+  - first: Sejin
+    last: Lim
+  - first: Yeajun
+    last: Kang
+  - first: Yujin
+    last: Yang
+  - first: Hwajeong
+    last: Seo
+year: 2023
+abstract: The Shor’s algorithm can ﬁnd solutions to the discrete logarithm
+  problem on binary elliptic curves in polynomial time. A major challenge in
+  implementing Shor’s algorithm is the overhead of representing and performing
+  arithmetic on binary elliptic curves using quantum circuits. Multiplication of
+  binary ﬁelds is one of the critical operations in the context of elliptic
+  curve arithmetic, and it is especially costly in the quantum setting. Our goal
+  in this paper is to optimize quantum multiplication in the binary ﬁeld. In the
+  past, efforts to optimize quantum multiplication have centred on reducing the
+  Toffoli gate count or qubits required. However, despite the fact that circuit
+  depth is an important metric for indicating the performance of a quantum
+  circuit, previous studies have lacked sufﬁcient consideration for reducing
+  circuit depth. Our approach to optimizing quantum multiplication differs from
+  previous work in that we aim at reducing the Toffoli depth and full depth. To
+  optimize quantum multiplication, we adopt the Karatsuba multiplication method
+  which is based on the divide-and-conquer approach. In summary, we present an
+  optimized quantum multiplication that has a Toffoli depth of one.
+  Additionally, the full depth of the quantum circuit is also reduced thanks to
+  our Toffoli depth optimization strategy. To demonstrate the effectiveness of
+  our proposed method, we evaluate its performance using various metrics such as
+  the qubit count, quantum gates, and circuit depth, as well as the qubits-depth
+  product. These metrics provide insight into the resource requirements and
+  complexity of the method. Our work achieves the lowest Toffoli depth, full
+  depth, and the best trade-off performance for quantum multiplication. Further,
+  our multiplication is more effective when not used in stand-alone cases. We
+  show this effectiveness by using our multiplication to the Itoh–Tsujii
+  algorithm-based inversion of F(x8 + x4 + x3 + x + 1).
+tags: []
+identifiers:
+  doi: 10.3390/s23063156

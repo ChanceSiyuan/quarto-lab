@@ -1,0 +1,49 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: IW9DZBZ8
+  item_version: 96122
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: LI9H4GUR
+      name: DQC1
+      path: Quantum Complexity/DQC1
+qlab:
+  primary_collection: LI9H4GUR
+  indexed_collections:
+    - LI9H4GUR
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: journalArticle
+title: On the hardness of classically simulating the one clean qubit model
+authors:
+  - first: Tomoyuki
+    last: Morimae
+  - first: Keisuke
+    last: Fujii
+  - first: Joseph F.
+    last: Fitzsimons
+year: 2014
+abstract: Deterministic quantum computation with one quantum bit (DQC1) is a
+  model of quantum computing where the input restricted to containing a single
+  qubit in a pure state and with all other qubits in a completely-mixed state,
+  with only a single qubit measurement at the end of the computation [E. Knill
+  and R. Laflamme, Phys. Rev. Lett. {\bf81}, 5672 (1998)]. While it is known
+  that DQC1 can efficiently solve several problems for which no known classical
+  efficient algorithms exist, the question of whether DQC1 is really more
+  powerful than classical computation remains open. In this paper, we introduce
+  a slightly modified version of DQC1, which we call DQC1$_k$, where $k$ output
+  qubits are measured, and show that DQC1$_k$ cannot be classically efficiently
+  simulated for any $k\geq3$ unless the polynomial hierarchy collapses at the
+  third level.
+tags:
+  - Computer Science - Computational Complexity
+  - Condensed Matter - Statistical Mechanics
+  - Condensed Matter - Strongly Correlated Electrons
+  - Quantum Physics
+identifiers:
+  doi: 10.1103/physrevlett.112.130502
+  arxiv: "1312.2496"

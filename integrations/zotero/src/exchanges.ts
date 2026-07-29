@@ -5,16 +5,16 @@ export interface Exchange { id: string; entries: ChatEntry[] }
 const PROCESS_KINDS = new Set<ChatEntry["kind"]>(["reasoning", "tool", "command"]);
 
 const FRIENDLY_TOOL_NAMES: Record<string, string> = {
-  zotero_get_reader_context: "读取阅读器上下文",
-  zotero_get_current_page: "读取当前页",
-  zotero_get_current_selection: "读取选中文本",
-  zotero_search_current_pdf: "检索本篇 PDF",
-  zotero_read_pdf_pages: "读取论文页面",
-  zotero_search_library: "检索文库",
-  zotero_read_library_pdf_pages: "读取文库论文页面",
-  zotero_search_library_pdf: "检索文库 PDF",
-  zotero_list_annotations: "查看批注",
-  zotero_get_pdf_outline: "读取论文目录",
+  zotero_get_reader_context: "Read Reader Context",
+  zotero_get_current_page: "Read Current Page",
+  zotero_get_current_selection: "Read Selection",
+  zotero_search_current_pdf: "Search Current PDF",
+  zotero_read_pdf_pages: "Read Paper Pages",
+  zotero_search_library: "Search Library",
+  zotero_read_library_pdf_pages: "Read Library Paper Pages",
+  zotero_search_library_pdf: "Search Library PDF",
+  zotero_list_annotations: "View Annotations",
+  zotero_get_pdf_outline: "Read Paper Outline",
 };
 
 export function isProcessKind(kind: ChatEntry["kind"]): boolean {
@@ -50,12 +50,12 @@ export function activityLabel(entries: ChatEntry[]): string {
   for (let index = entries.length - 1; index >= 0; index--) {
     const entry = entries[index]!;
     if (entry.state !== "running") continue;
-    if (entry.kind === "reasoning") return "思考中…";
-    if (entry.kind === "tool") return `正在调用 ${friendlyToolName(entry.title || "工具")}`;
-    if (entry.kind === "command") return "执行命令…";
-    if (entry.kind === "assistant") return "正在撰写回答…";
+    if (entry.kind === "reasoning") return "Thinking…";
+    if (entry.kind === "tool") return `Calling ${friendlyToolName(entry.title || "tool")}`;
+    if (entry.kind === "command") return "Running command…";
+    if (entry.kind === "assistant") return "Writing response…";
   }
-  return "思考中…";
+  return "Thinking…";
 }
 
 export function formatElapsed(ms: number): string {

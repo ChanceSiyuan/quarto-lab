@@ -151,11 +151,11 @@ function appendCodeBlock(
   const copy = doc.createElement("button");
   copy.type = "button";
   copy.className = "zc-copy-button";
-  copy.textContent = "复制";
+  copy.textContent = "Copy";
   copy.addEventListener("click", () => {
     void doc.defaultView?.navigator.clipboard?.writeText(content.join("\n"));
-    copy.textContent = "已复制";
-    setTimeout(() => { copy.textContent = "复制"; }, 1200);
+    copy.textContent = "Copied";
+    setTimeout(() => { copy.textContent = "Copy"; }, 1200);
   });
   header.appendChild(copy);
   const pre = doc.createElement("pre");
@@ -238,11 +238,11 @@ function appendMath(
   }
   element.classList.add("zc-math-copy");
   element.setAttribute("data-latex", expression);
-  element.setAttribute("title", "点击复制 LaTeX");
+  element.setAttribute("title", "Click to copy LaTeX");
   parent.appendChild(element);
 }
 
-function hardenKatexOutput(root: Element): void {
+export function hardenKatexOutput(root: Element): void {
   for (const unsafe of root.querySelectorAll(UNSAFE_KATEX_ELEMENTS)) unsafe.remove();
   for (const element of root.querySelectorAll("*")) {
     for (const attribute of [...element.attributes]) {

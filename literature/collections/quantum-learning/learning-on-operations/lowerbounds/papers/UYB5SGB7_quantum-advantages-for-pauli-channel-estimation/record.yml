@@ -1,0 +1,55 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: UYB5SGB7
+  item_version: 96154
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: YW9TBWJI
+      name: lowerbounds
+      path: Quantum Learning/Learning on operations/lowerbounds
+qlab:
+  primary_collection: YW9TBWJI
+  indexed_collections:
+    - YW9TBWJI
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: journalArticle
+title: Quantum advantages for Pauli channel estimation
+authors:
+  - first: Senrui
+    last: Chen
+  - first: Sisi
+    last: Zhou
+  - first: Alireza
+    last: Seif
+  - first: Liang
+    last: Jiang
+year: 2022
+abstract: We show that entangled measurements provide an exponential advantage
+  in sample complexity for Pauli channel estimation, which is both a fundamental
+  problem and a practically important subroutine for benchmarking near-term
+  quantum devices. The specific task we consider is to simultaneously learn all
+  the eigenvalues of an $n$-qubit Pauli channel to $\pm\varepsilon$ precision.
+  We give an estimation protocol with an $n$-qubit ancilla that succeeds with
+  high probability using only $O(n/\varepsilon^{2})$ copies of the Pauli
+  channel, while prove that any ancilla-free protocol (possibly with adaptive
+  control and channel concatenation) would need at least $Ω(2^{n/3})$ rounds of
+  measurement. We further study the advantages provided by a small number of
+  ancillas. For the case that a $k$-qubit ancilla ($k\le n$) is available, we
+  obtain a sample complexity lower bound of $Ω(2^{(n-k)/3})$ for any
+  non-concatenating protocol, and a stronger lower bound of $Ω(n2^{n-k})$ for
+  any non-adaptive, non-concatenating protocol, which is shown to be tight. We
+  also show how to apply the ancilla-assisted estimation protocol to a practical
+  quantum benchmarking task in a noise-resilient and sample-efficient manner,
+  given reasonable noise assumptions. Our results provide a
+  practically-interesting example for quantum advantages in learning and also
+  bring new insight for quantum benchmarking.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.1103/physreva.105.032435
+  arxiv: "2108.08488"

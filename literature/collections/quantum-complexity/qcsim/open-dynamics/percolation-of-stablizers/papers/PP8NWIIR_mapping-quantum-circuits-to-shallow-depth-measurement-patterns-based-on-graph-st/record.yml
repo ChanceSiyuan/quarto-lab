@@ -1,0 +1,57 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: PP8NWIIR
+  item_version: 96025
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: PBGR25EN
+      name: percolation of stablizers
+      path: Quantum Complexity/QCsim/Open-dynamics/percolation of stablizers
+qlab:
+  primary_collection: PBGR25EN
+  indexed_collections:
+    - PBGR25EN
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: journalArticle
+title: Mapping quantum circuits to shallow-depth measurement patterns based on
+  graph states
+authors:
+  - first: Thierry N
+    last: Kaldenbach
+  - first: Matthias
+    last: Heller
+year: 2025
+abstract: The paradigm of measurement-based quantum computing (MBQC) starts from
+  a highly entangled resource state on which unitary operations are executed
+  through adaptive measurements and corrections ensuring determinism. This is
+  set in contrast to the more common quantum circuit model, in which unitary
+  operations are directly implemented through quantum gates prior to final
+  measurements. In this work, we incorporate concepts from MBQC into the circuit
+  model to create a hybrid simulation technique, permitting us to split any
+  quantum circuit into a classically efficiently simulatable Clifford-part and a
+  second part consisting of a stabilizer state and local (adaptive) measurement
+  instructions—a so-called standard form—which is executed on a quantum
+  computer. We further process the stabilizer state with the graph state
+  formalism, thus, enabling a significant decrease in circuit depth for certain
+  applications. We show that groups of mutually-commuting operators can be
+  implemented using fully-parallel, i.e. non-adaptive, measurements within our
+  protocol. In addition, we discuss how groups of mutually commuting observables
+  can be simulatenously measured by adjusting the resource state, rather than
+  performing a costly basis transformation prior to the measurement as it is
+  done in the circuit model. Finally, we demonstrate the utility of our
+  technique on two examples of high practical relevance—the Quantum Approximate
+  Optimization Algorithm and the Variational Quantum Eigensolver (VQE) for the
+  ground-state energy estimation of the water molecule. For the VQE, we find a
+  reduction of the depth by a factor of 4 to 5 using measurement patterns vs.
+  the standard circuit model. At the same time, since we incorporate the
+  simultaneous measurements, our patterns allow us to save shots by a factor of
+  at least 3.5 compared to measuring Pauli strings individually in the circuit
+  model.
+tags: []
+identifiers:
+  doi: 10.1088/2058-9565/ad802b

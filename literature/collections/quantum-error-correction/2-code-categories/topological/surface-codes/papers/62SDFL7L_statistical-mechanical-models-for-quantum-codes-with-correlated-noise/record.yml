@@ -1,0 +1,52 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 62SDFL7L
+  item_version: 96086
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 9GMYMWC7
+      name: surface codes
+      path: Quantum Error correction/2-Code categories/Topological/surface codes
+qlab:
+  primary_collection: 9GMYMWC7
+  indexed_collections:
+    - 9GMYMWC7
+  primary_topic: quantum-error-correction
+  indexed_topics:
+    - quantum-error-correction
+item_type: journalArticle
+title: Statistical mechanical models for quantum codes with correlated noise
+authors:
+  - first: Christopher T.
+    last: Chubb
+  - first: Steven T.
+    last: Flammia
+year: 2021
+abstract: We give a broad generalisation of the mapping, originally due to
+  Dennis, Kitaev, Landahl and Preskill, from quantum error correcting codes to
+  statistical mechanical models. We show how the mapping can be extended to
+  arbitrary stabiliser or subsystem codes subject to correlated Pauli noise
+  models, including models of fault tolerance. This mapping connects the error
+  correction threshold of the quantum code to a phase transition in the
+  statistical mechanical model. Thus, any existing method for finding phase
+  transitions, such as Monte Carlo simulations, can be applied to approximate
+  the threshold of any such code, without having to perform optimal decoding. By
+  way of example, we numerically study the threshold of the surface code under
+  mildly correlated bit-flip noise, showing that noise with bunching
+  correlations causes the threshold to drop to $p_{\textrm{corr}}=10.04(6)\%$,
+  from its known iid value of $p_{\text{iid}}=10.917(3)\%$. Complementing this,
+  we show that the mapping also allows us to utilise any algorithm which can
+  calculate/approximate partition functions of classical statistical mechanical
+  models to perform optimal/approximately optimal decoding. Specifically, for 2D
+  codes subject to locally correlated noise, we give a linear-time tensor
+  network-based algorithm for approximate optimal decoding which extends the MPS
+  decoder of Bravyi, Suchara and Vargo.
+tags:
+  - Condensed Matter - Statistical Mechanics
+  - Quantum Physics
+identifiers:
+  doi: 10.4171/aihpd/105
+  arxiv: "1809.10704"

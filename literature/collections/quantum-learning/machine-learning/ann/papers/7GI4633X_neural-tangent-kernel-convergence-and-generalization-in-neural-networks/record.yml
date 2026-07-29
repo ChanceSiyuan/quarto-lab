@@ -1,0 +1,58 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 7GI4633X
+  item_version: 96162
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 6AY3BX5Y
+      name: ANN
+      path: Quantum Learning/Machine learning/ANN
+qlab:
+  primary_collection: 6AY3BX5Y
+  indexed_collections:
+    - 6AY3BX5Y
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: preprint
+title: "Neural Tangent Kernel: Convergence and Generalization in Neural Networks"
+authors:
+  - first: Arthur
+    last: Jacot
+  - first: Franck
+    last: Gabriel
+  - first: Clément
+    last: Hongler
+year: 2020
+abstract: "At initialization, artificial neural networks (ANNs) are equivalent
+  to Gaussian processes in the infinite-width limit, thus connecting them to
+  kernel methods. We prove that the evolution of an ANN during training can also
+  be described by a kernel: during gradient descent on the parameters of an ANN,
+  the network function $f_θ$ (which maps input vectors to output vectors)
+  follows the kernel gradient of the functional cost (which is convex, in
+  contrast to the parameter cost) w.r.t. a new kernel: the Neural Tangent Kernel
+  (NTK). This kernel is central to describe the generalization features of ANNs.
+  While the NTK is random at initialization and varies during training, in the
+  infinite-width limit it converges to an explicit limiting kernel and it stays
+  constant during training. This makes it possible to study the training of ANNs
+  in function space instead of parameter space. Convergence of the training can
+  then be related to the positive-definiteness of the limiting NTK. We prove the
+  positive-definiteness of the limiting NTK when the data is supported on the
+  sphere and the non-linearity is non-polynomial. We then focus on the setting
+  of least-squares regression and show that in the infinite-width limit, the
+  network function $f_θ$ follows a linear differential equation during training.
+  The convergence is fastest along the largest kernel principal components of
+  the input data with respect to the NTK, hence suggesting a theoretical
+  motivation for early stopping. Finally we study the NTK numerically, observe
+  its behavior for wide networks, and compare it to the infinite-width limit."
+tags:
+  - Computer Science - Machine Learning
+  - Computer Science - Neural and Evolutionary Computing
+  - Mathematics - Probability
+  - Statistics - Machine Learning
+identifiers:
+  doi: 10.48550/arxiv.1806.07572
+  arxiv: "1806.07572"

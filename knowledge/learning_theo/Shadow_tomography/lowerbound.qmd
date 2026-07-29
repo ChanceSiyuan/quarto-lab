@@ -1,0 +1,74 @@
+---
+title: Lower bounds for Pauli Shadow Tomography
+description: For the non-linear Pauli shadow , we proved similar reduction by substitutes into , as shown below
+categories:
+  - theory
+---
+
+# Lower bounds for Pauli Shadow Tomography
+
+## Non-linear shadows.
+
+For the non-linear Pauli shadow $\mathrm{tr}(\rho^2P)$, we proved
+similar reduction by substitutes $P$ into
+$O_P := 2^{-1}(P \otimes \mathbb{I} +\mathbb{I}\otimes P)\cdot \mathrm{SWAP}^{\otimes n}$,
+as shown below:
+
+::: {#lem-shadow-discrimination .callout-important icon="false"}
+## (Shadow to Discrimination Reduction)
+Suppose an algorithm gets classical shadow for $\{\mathrm{tr}(P\rho^{2})\}_{P \in \mathcal{O}}$ with additive error $\varepsilon$ and constant success rate $1- \delta$ using $2N$ copies. Then with the same success rate, its result can be used to discriminate mixed state ensemble $\mathcal{E}_1 = \{\left(\mathbb{I}_{2n} + 3\varepsilon (P\otimes \mathbb{I}) \cdot O_P\right)/2^{2n}\}_{P \in \mathcal{O}}$ from the maximally mixed state $\mathbb{I}_{2n}/2^{2n}$.
+:::
+
+::: {#lem-shadow-ensemble-discrimination .callout-important icon="false"}
+## (Shadow to Ensemble Discrimination)
+Suppose an algorithm gets classical shadow for $\{\mathrm{tr}(P\rho^{2})\}_{P \in \mathcal{O}}$ with additive error $\varepsilon$ and constant success rate $1- \delta$. Then with the same success rate, its result can be used to discriminate mixed state ensemble $\mathcal{E}_1 = \{\left(\mathbb{I} + 3\varepsilon P\right)/d\}_{P \in \mathcal{O}}$ from the ensemble 
+$$
+\begin{align*}
+        \mathcal{E}_2 := \left\{\mathrm{Cl}^\dagger \left(\frac{\mathbb{I} + 3\varepsilon Z}{2} \otimes \psi \right) \mathrm{Cl}\right\}_{\mathrm{Cl} \in \mathrm{Cliff}_{n}(\mathcal{O}), \psi \sim \mathrm{Haar}_{n-1}},
+\end{align*}
+$$ where $\mathrm{Cl} \in \mathrm{Cliff}_{n}(\mathcal{O})$
+includes all possible Clifford gates that map $Z \otimes \mathbb{I}$ to
+$P \in \mathcal{O}$.
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+
+Supposed we design an algorithm that estimates
+$\{\mathrm{tr}(P\rho^{2})\}_{P \in \mathcal{O}}$ with
+$\varepsilon$-additive error and $1 - \delta$ correction rate. Then for
+mixed state $\rho_0 = (\mathbb{I} + 3 \varepsilon P_0)/d$ in
+$\mathcal{E} _1$, estimation gives result
+$\mathrm{tr}(P_0\rho^{2}) = 6d^{-1}\varepsilon$ and vanish for others.
+For state
+$\rho = \mathrm{Cl}_0^\dagger \left(\frac{\mathbb{I} + 3\varepsilon Z}{2} \otimes \psi \right) \mathrm{Cl}_0$
+in $\mathcal{E}_2$, we take $P_0 \in \mathcal{O}$ such that
+$\mathrm{Cl}_0 P_0 \mathrm{Cl}_0^\dagger = Z \otimes \mathbb{I}_{n-1}$.
+The estimation of $\mathrm{tr}(P_0\rho^{2})$ then gives the result
+$$
+\begin{align*}
+        \mathrm{tr}(P_0\rho^{2}) &= \mathrm{tr}\left(P_0\mathrm{Cl}_0^\dagger \cdot\left(\frac{\mathbb{I} + 3\varepsilon Z}{2} \right)^2\otimes \psi \cdot \mathrm{Cl}_0\right) \\
+        &= \mathrm{tr}\left[\left(Z\cdot\frac{(1 + 9\varepsilon^2)\mathbb{I} + 6\varepsilon Z}{4} \right)\otimes (\mathbb{I}_{n-1} \cdot \psi) \right]
+        = 3 \varepsilon.
+\end{align*}
+$$
+ Considering the $\varepsilon$ additive error, we can then
+discriminate $\mathcal{E}_1$ and $\mathcal{E}_2$ by choosing
+$\varepsilon_{\mathrm{th}} \in [(6d^{-1} + 1)\varepsilon, 2 \varepsilon]$
+and checking whether there exists $P_0 \in \mathcal{O}$ with
+$\mathrm{tr}(P_0\rho^{2}) > \varepsilon_{\mathrm{th}}$. ◻
+:::
+
+In the discussion of strategy with replica restriction $k < 4$, we are
+free to replace $\psi \sim \mathrm{Haar}_{n-1}$ to
+$\psi \sim \mathrm{Cliff}_{n-1}$. If we further choose
+$\mathcal{O} = \mathcal{P}_n$ as all Pauli operators, the ensemble in
+Eq.[\[eq:nshd_red_ensem\]](#eq:nshd_red_ensem){reference-type="eqref"
+reference="eq:nshd_red_ensem"} can be further simplified as:
+$$\begin{align*}
+    \mathcal{E}_2^* := \left\{(1 + 3\varepsilon)/2\ket{0_L}\!\bra{0_L} + (1 - 3\varepsilon)/2\ket{1_L}\!\bra{1_L}\right\}_{\{\ket{0_L},\ket{1_L}\} \in C_{n}},
+\end{align*}$$
+
+---
+
+[← Previous: Non-local k-copy Pauli Shadow Tomography](nonlocal_multicopy.qmd) | [Back to Index](index.qmd) | [Next: →](index.qmd)

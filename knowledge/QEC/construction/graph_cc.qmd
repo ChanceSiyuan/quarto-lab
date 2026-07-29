@@ -1,0 +1,243 @@
+---
+title: Compelx chain on graph
+description: How to construct chain complex on udirected graphs
+categories:
+  - theory
+---
+
+# Summary and questions
+
+graph的关键在于边空间到顶点空间的映射$\partial_0$以及面空间到边空间的映射$ \partial_1 $,且他们满足条件$ \partial_0 \partial_1 = 0$。 满足这种组合的线性空间和映射是2-complexes. 
+
+# Graphs as chain complexes
+
+We first introduce some basic defintion of rigrous graph theory
+
+A walking of graph $G = (V,E)$ from $u$ to $v$ is a tumple $W=(u = a_1, e_1, a_2, e_2,\cdots, e_{n−1}, a_n = v)$ with vertex $a_i \in V$ and edge $e_i \in E$ alternatively ordered, such that for $1\leq i < n$, the $e_i$ is an edge that connect $a_i$ and $a_{i+1}$.
+
+- When $a_i, 1\leq i < n$ do not repeat, it is a *path*.
+- When $a_1=a_n$, it is a *cycle*.
+- If $a_1 = a_n$ is the only vertex that repeats in $W$，it is a *simple cycle*.
+
+::: {#lem-graph-walk-contains-path .callout-important icon="false"}
+## (Every walk contains a path)
+Every $u\to v$ walk $W$ in a graph contains a subsequence $S$ that is a $u\to v$ path.
+:::
+
+::: {#thm-graph-tree-characterizations .callout-important icon="false"}
+## (Equivalent characterizations of a tree)
+
+A **tree** is a connected graph with no simple cycles. Equivalently, it satisfies any of the following conditions:
+
+1. There is a unique path between every pair of vertices.
+2. It is minimally connected: removing any edge makes the graph disconnected.
+3. It is maximally acyclic: adding any new edge creates a cycle.
+4. It is a connected graph with $n$ vertices and $n-1$ edges.
+
+A tree also has the following useful properties:
+
+1. **A tree has a strict parent--child hierarchy.** The vertices of a finite tree can be ordered, nonuniquely, as $v_1,v_2,\ldots,v_n$ so that, for every $i\ge2$, $v_i$ is adjacent to one of $v_1,\ldots,v_{i-1}$.
+2. **A spanning tree records the number of cycles in a graph.** A spanning tree of $G$ is a tree subgraph containing every vertex. Every connected graph has at least one spanning tree.
+3. Given a spanning tree $T$ of $G$, every edge outside $T$ is called a **chord** of $G$ relative to $T$. The number of chords is
+$$
+C_G=|E_G|-|E_T|=|E_G|-|V_G|+|V_T|-|E_T|=1-\chi(G).
+$$
+:::
+
+After specify those concepts, we introduce the vector space on the edge and vertex of graph:
+
+::: {#def-space_on_graph .callout-note icon="false"}
+## (Vector space on graph)
+- **Vertex space $C_0(\Gamma)$.** Vector space by assigning $\mathbb Z$ or the prime field $\mathbb Z_k$ to each vertex.
+- **Oriented-edge space.** Vector space by assigning $\mathbb Z$ or the prime field $\mathbb Z_k$ to each edge with its orientation specified. The basis is specified by $(e,s,t)$ for $e \in E, s,t\in V, s,t \in E$.
+- **Edge space $C_1(\Gamma)$.** Vector space by assigning $\mathbb Z$ or the prime field $\mathbb Z_k$ to each edge. Can be constructed from oriented-edge space by: (i) choosing an orientation for each edge, (ii) setting up the relation $(e,s,t)+(e,t,s)=0$ and canel the unchosen directions.
+- **Boundary operator $\partial$.** The map from the oriented-edge space to $C_0(\Gamma)$ defined by $(e,s,t)\longmapsto t-s$. This also induces a map $\partial:C_1(\Gamma)\to C_0(\Gamma)$ after an orientation has been chosen.
+- **Cycle space.** The kernel of the boundary operator.
+:::
+
+The first benifit of the definitions above is that the cycle space counts how many more edges the graph has than a spanning tree. In particular, the cycle space of a tree is zero-dimensional.
+
+::: {#lem-graph-cycle-space-dimension .callout-important icon="false"}
+## (Dimension of the cycle space)
+For any choice of orientation, the cycle space of a graph with $c$ connected components has dimension $|E|-|V|+c$. If the graph is connected, this dimension equals $C_G = 1 - \chi(G) = 1 - (|V_G|-|E_G|)$.
+:::
+
+The second benefit is that every graph defines a classical code.
+From this point onward, take the PID to be the binary field $\mathbb F_2=\{0,1\}$. 
+
+::: {#thm-graph-boundary-code .callout-important icon="false"}
+## (boundary operator as a parity-check matrix)
+Let $\Gamma=(V,E)$ be a finite graph with $c$ connected components. Over $\mathbb F_2$, consider the boundary operator $\partial_1(e)=u+v$ for every edge $e=\{u,v\}$ gives a parity-check matrix $H_\Gamma=[\partial_1]\in\mathbb F_2^{|V|\times|E|}$
+that defines the classical linear code $\mathcal C(\Gamma)=\ker\partial_1$
+with code parameters
+$$
+[n,k,d]=\bigl[|E|,|E|-|V|+c,\operatorname{girth}(\Gamma)\bigr].
+$$
+In particular, if $\Gamma$ is connected, then $k=|E|-|V|+1=1-\chi(\Gamma).$
+:::
+
+::: {.callout-note collapse="true"}
+## Proof
+Each column of $H_\Gamma$ has ones at the two endpoints of the corresponding edge. Hence $H_\Gamma x=0$ exactly when every vertex is incident to an even number of edges in the support of $x$.
+Therefore, $\mathcal C(\Gamma)=\ker\partial_1$ is precisely the cycle space of $\Gamma$. Since $\operatorname{rank}\partial_1=|V|-c,$
+the rank--nullity theorem gives
+$$
+k =|E|-\operatorname{rank}\partial_1 =|E|-|V|+c.
+$$
+Every nonempty binary cycle is an Eulerian subgraph and therefore contains a simple cycle. Its weight is consequently at least $\operatorname{girth}(\Gamma)$.
+Conversely, the incidence vector of every simple cycle belongs to $\ker\partial_1$. Thus $d=\operatorname{girth}(\Gamma).$
+:::
+  
+To construct a quantum error-correcting code, the dual graph has to be included.
+We first introduce the dual spaces and the following structures.
+
+- **Dual vertex space $C^0(\Gamma)$.** The dual of the vertex space $C_0(\Gamma)$.
+- **Dual edge space $C^1(\Gamma)$.** The dual of the edge space $C_1(\Gamma)$.
+- **Coboundary operator $\delta$.** This is the map $\delta:C^0(\Gamma)\to C^1(\Gamma)$ defined by $\delta(v^*)(c_1)=v^*\!\left(\partial c_1\right)$.
+
+After identifying each finite-dimensional space with its dual through the chosen bases, $\delta$ is also denoted by $\partial^{\mathsf T}$.
+
+::: {#lem-graph-coboundary-incidence .callout-important icon="false"}
+## (Coboundary of a vertex)
+
+For a dual vertex basis element $v^*$,
+
+$$
+\delta v^*=\sum_{e\in\operatorname{inc}(v)}e^*,
+$$
+
+the sum of all dual edges incident to $v$. The identity
+
+$$
+\operatorname{im}(A^{\mathsf T})=(\ker A)^\perp
+$$
+
+immediately gives $\operatorname{im}(\delta)\perp\ker(\partial)$.
+:::
+
+The preceding definitions give the pair of maps
+
+$$
+\begin{array}{ccc}
+C^0 & \xrightarrow{\partial_1^{\mathsf T}} & C^1 \\
+\cong\,\downarrow & & \downarrow\,\cong \\
+C_0 & \xleftarrow{\partial_1} & C_1 .
+\end{array}
+$$
+
+Define the $X$-stabilizer space as $\ker(\partial_1)$ and the $Z$-stabilizer space as
+
+$$
+\operatorname{im}(\partial_1^{\mathsf T})
+=\ker(\partial_1)^\perp.
+$$
+
+The edge spaces $C_1\cong C^1$ index the physical qubits. This construction encodes no logical qubits because
+
+$$
+\dim\ker(\partial_1)
++\dim\ker(\partial_1)^\perp
+=\dim C_1.
+$$
+
+With qubits placed on edges, the associated quantum state is the equal superposition of all cycles in the graph.
+
+::: {#lem-graph-css-cycle-state .callout-important icon="false"}
+## (CSS states as superpositions of cycles)
+Every CSS state can be represented as an equal superposition of cycles in some graph.
+:::
+
+::: {.callout-note collapse="true"}
+## Proof
+
+Represent each $X$ stabilizer by a vertex. Connect two vertices whenever the corresponding stabilizers share an element.
+
+Embed the resulting graph, which has $k$ vertices, into a surface; the surface may have high genus. The dual of this embedded graph gives the graph representation of the CSS state.
+:::
+
+To obtain a positive-dimensional logical subspace, introduce the more appropriate complex
+
+$$
+\begin{array}{ccccc}
+C^0 & \xrightarrow{\partial_1^{\mathsf T}} & C^1 & & \\
+\cong\,\downarrow & & \downarrow\,\cong & & \\
+C_0 & \xleftarrow{\partial_1} & C_1 & \xleftarrow{\partial_2} & C_2 .
+\end{array}
+$$
+
+Here $C_2$ is the space generated by the faces of the graph; assigning a face fills the corresponding cycle.
+
+Modify the $X$-stabilizer space to $\operatorname{im}(\partial_2)$, while retaining $\operatorname{im}(\partial_1^{\mathsf T})$ as the $Z$-stabilizer space.
+
+Since $\partial_1\partial_2=0$, the two spaces are orthogonal:
+
+$$
+\operatorname{im}(\partial_2)
+\perp
+\operatorname{im}(\partial_1^{\mathsf T}).
+$$
+
+The number of logical qubits is
+
+$$
+\begin{aligned}
+k
+&=\dim C_1
+-\dim\operatorname{im}(\partial_1^{\mathsf T})
+-\dim\operatorname{im}(\partial_2)\\
+&=\dim C_1
+-\bigl(\dim C_1-\dim\ker\partial_1\bigr)
+-\dim\operatorname{im}(\partial_2)\\
+&=\dim\ker(\partial_1)-\dim\operatorname{im}(\partial_2).
+\end{aligned}
+$$
+
+This is the dimension of the first homology group of the graph with its chosen faces.
+
+
+
+## Topological quantum error correction in general
+
+We now generalize the preceding discussion from a square lattice to an arbitrary CW complex, and from $C_0,C_1,C_2$ to a general chain complex $C_i$.
+
+A two-dimensional CW complex embedded in a two-dimensional manifold is a graph equipped with faces,
+
+$$
+G=(V,E,F).
+$$
+
+Given such a graph, its faces, edges, and vertices determine a two-step chain complex and therefore an error-correcting code through the construction above.
+
+For the quadrilateral tiling considered here, the dual tiling is again quadrilateral. Construct it by replacing each face with a vertex.
+
+Two dual vertices are adjacent exactly when their corresponding primal faces share an edge. The dual vertices are therefore in one-to-one correspondence with the original faces, and the two quadrilateral graphs are isomorphic.
+
+
+
+
+
+## LDPC codes from tilings of closed surfaces
+
+A code has finitely many physical qubits, so the Euclidean plane $\mathbb E^2$ must be compactified. Choose a subgroup $H\subseteq\operatorname{Isom}(\mathbb E^2)$ and consider the quotient $\mathbb E^2/H$.
+
+The orbit of a point $P$ is
+
+$$
+[P]=\{P*g:g\in H\}.
+$$
+
+For suitable choices of $H$, the quotient can be a cylinder, torus, Möbius strip, or Klein bottle. Tilings of these bounded surfaces give families of surface codes.
+
+A tiling graph is a special kind of graph. Suppose a collection of finite planar regions covers $\mathbb E^2$, and any two regions are either disjoint or intersect only along their boundaries.
+
+This collection is a **tiling** of $\mathbb E^2$, and each element is called a **tile** or **face**. The orbit of a fundamental domain naturally produces such a tiling.
+
+Consider a triangular region $p\subset\mathbb E^2$ and the reflections $a,b,c$ across its three sides. Each reflection defines an isometry of $\mathbb E^2$.
+
+Their composition is defined by
+
+$$
+a\circ b(p,x):=a\bigl(b(p,p),b(p,x)\bigr).
+$$
+
+Under this composition law, the reflections $a,b,c$ generate an infinite group.

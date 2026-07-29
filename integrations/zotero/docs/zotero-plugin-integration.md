@@ -55,7 +55,7 @@ The Workbench exposes these stable operations as direct buttons:
 Choosing a command inserts a complete prompt into the composer. The user can
 fill placeholders or edit any detail before sending it.
 
-The **整理当前聊天到 Draft** action invokes `capture-chat-draft` in the active
+The **Organize this chat into a Draft** action invokes `capture-chat-draft` in the active
 conversation and writes a grounded reading note under `drafts/reading-notes/`.
 
 The Workbench uses Zotero's native tab deck rather than a floating overlay.

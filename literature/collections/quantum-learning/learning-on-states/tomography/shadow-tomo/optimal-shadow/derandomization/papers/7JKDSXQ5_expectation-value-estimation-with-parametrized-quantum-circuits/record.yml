@@ -1,0 +1,59 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 7JKDSXQ5
+  item_version: 96163
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: IGCYLEHL
+      name: derandomization
+      path: Quantum Learning/Learning on states/Tomography/shadow
+        tomo/Optimal_shadow/derandomization
+qlab:
+  primary_collection: IGCYLEHL
+  indexed_collections:
+    - IGCYLEHL
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: preprint
+title: Expectation value estimation with parametrized quantum circuits
+authors:
+  - first: Bujiao
+    last: Wu
+  - first: Lingyu
+    last: Kong
+  - first: Yuxuan
+    last: Yan
+  - first: Fuchuan
+    last: Wei
+  - first: Zhenhuan
+    last: Liu
+year: 2025
+abstract: Estimating properties of quantum states, such as fidelities, molecular
+  energies, and correlation functions, is a fundamental task in quantum
+  information science. Due to the limitation of practical quantum devices,
+  including limited circuit depth and connectivity, estimating even linear
+  properties encounters high sample complexity. To address this inefficiency, we
+  propose a framework that optimizes sample complexity for estimating the
+  expectation value of any observable using a shallow parameterized quantum
+  circuit. Within this framework, we introduce two decomposition algorithms, a
+  tensor network approach and a greedy projection approach that decompose the
+  target observable into a linear combination of multiple observables, each of
+  which can be diagonalized with the shallow circuit. Using this decomposition,
+  we then apply an importance sampling algorithm to estimate the expectation
+  value of the target observable. We numerically demonstrate the performance of
+  our algorithm by estimating the expectation values of some specific
+  Hamiltonians and inner product of a Slater determinant with a pure state,
+  highlighting advantages compared to some conventional methods. Additionally,
+  we derive the fundamental lower bound for the sample complexity required to
+  estimate a target observable using a given shallow quantum circuit, thereby
+  enhancing our understanding of the capabilities of shallow circuits in quantum
+  learning tasks.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2407.19499
+  arxiv: "2407.19499"

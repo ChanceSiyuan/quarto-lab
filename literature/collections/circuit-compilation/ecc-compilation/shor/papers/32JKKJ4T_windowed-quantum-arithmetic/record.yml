@@ -1,0 +1,37 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 32JKKJ4T
+  item_version: 96143
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: LIVJUSB2
+      name: Shor
+      path: Circuit Compilation/ECC compilation/Shor
+qlab:
+  primary_collection: LIVJUSB2
+  indexed_collections:
+    - LIVJUSB2
+  primary_topic: circuit-compilation
+  indexed_topics:
+    - circuit-compilation
+item_type: preprint
+title: Windowed quantum arithmetic
+authors:
+  - first: Craig
+    last: Gidney
+year: 2019
+abstract: We demonstrate a technique for optimizing quantum circuits that is
+  analogous to classical windowing. Specifically, we show that small table
+  lookups can allow control qubits to be iterated in groups instead of
+  individually. We present various windowed quantum arithmetic circuits,
+  including a windowed modular exponentiation with nested windowed modular
+  multiplications, which have lower Toffoli counts than previous work at
+  register sizes ranging from tens of qubits to thousands of qubits.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.1905.07682
+  arxiv: "1905.07682"

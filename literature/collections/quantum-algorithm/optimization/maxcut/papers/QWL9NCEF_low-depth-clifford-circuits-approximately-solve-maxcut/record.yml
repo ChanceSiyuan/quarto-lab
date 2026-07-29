@@ -1,0 +1,55 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: QWL9NCEF
+  item_version: 96130
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: A3CH6HMR
+      name: Maxcut
+      path: Quantum Algorithm/Optimization/Maxcut
+qlab:
+  primary_collection: A3CH6HMR
+  indexed_collections:
+    - A3CH6HMR
+  primary_topic: quantum-algorithm
+  indexed_topics:
+    - quantum-algorithm
+item_type: journalArticle
+title: Low-depth Clifford circuits approximately solve MaxCut
+authors:
+  - first: Manuel H.
+    last: Muñoz-Arias
+  - first: Stefanos
+    last: Kourtis
+  - first: Alexandre
+    last: Blais
+year: 2024
+abstract: We introduce a quantum-inspired approximation algorithm for MaxCut
+  based on low-depth Clifford circuits. We start by showing that the solution
+  unitaries found by the adaptive quantum approximation optimization algorithm
+  (ADAPT-QAOA) for the MaxCut problem on weighted fully connected graphs are
+  (almost) Clifford circuits. Motivated by this observation, we devise an
+  approximation algorithm for MaxCut, \emph{ADAPT-Clifford}, that searches
+  through the Clifford manifold by combining a minimal set of generating
+  elements of the Clifford group. Our algorithm finds an approximate solution of
+  MaxCut on an $N$-vertex graph by building a depth $O(N)$ Clifford circuit. The
+  algorithm has runtime complexity $O(N^2)$ and $O(N^3)$ for sparse and dense
+  graphs, respectively, and space complexity $O(N^2)$, with improved solution
+  quality achieved at the expense of more demanding runtimes. We implement
+  ADAPT-Clifford and characterize its performance on graphs with positive and
+  signed weights. The case of signed weights is illustrated with the
+  paradigmatic Sherrington-Kirkpatrick model, for which our algorithm finds
+  solutions with ground-state mean energy density corresponding to $\sim94\%$ of
+  the Parisi value in the thermodynamic limit. The case of positive weights is
+  investigated by comparing the cut found by ADAPT-Clifford with the cut found
+  with the Goemans-Williamson (GW) algorithm. For both sparse and dense
+  instances we provide copious evidence that, up to hundreds of nodes,
+  ADAPT-Clifford finds cuts of lower energy than GW.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.1103/physrevresearch.6.023294
+  arxiv: "2310.15022"

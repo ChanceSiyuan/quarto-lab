@@ -1,0 +1,46 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: ZNJU4ENM
+  item_version: 96040
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: Y78VBKK6
+      name: tensor network
+      path: Quantum Complexity/QCsim/tensor network
+qlab:
+  primary_collection: Y78VBKK6
+  indexed_collections:
+    - Y78VBKK6
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: preprint
+title: Tensor Networks for Simulating Quantum Circuits on FPGAs
+authors:
+  - first: Maksim
+    last: Levental
+year: 2021
+abstract: Most research in quantum computing today is performed against
+  simulations of quantum computers rather than true quantum computers.
+  Simulating a quantum computer entails implementing all of the unitary
+  operators corresponding to the quantum gates as tensors. For high numbers of
+  qubits, performing tensor multiplications for these simulations becomes quite
+  expensive, since N -qubit gates correspond to 2N -dimensional tensors. One way
+  to accelerate such a simulation is to use ﬁeld programmable gate array (FPGA)
+  hardware to eﬃciently compute the matrix multiplications. Though FPGAs can
+  eﬃciently perform tensor multiplications, they are memory bound, having
+  relatively small block random access memory. One way to potentially reduce the
+  memory footprint of a quantum computing system is to represent it as a tensor
+  network; tensor networks are a formalism for representing compositions of
+  tensors wherein economical tensor contractions are readily identiﬁed. Thus we
+  explore tensor networks as a means to reducing the memory footprint of quantum
+  computing systems and broadly accelerating simulations of such systems.
+tags:
+  - Computer Science - Emerging Technologies
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2108.06831
+  arxiv: "2108.06831"

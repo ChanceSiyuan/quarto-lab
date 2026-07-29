@@ -1,0 +1,60 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: Y4UBVWK6
+  item_version: 96034
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: ZKNJ5925
+      name: Magic
+      path: Quantum Resource/Magic
+qlab:
+  primary_collection: ZKNJ5925
+  indexed_collections:
+    - ZKNJ5925
+  primary_topic: quantum-resource
+  indexed_topics:
+    - quantum-resource
+item_type: preprint
+title: Hamiltonians whose low-energy states require $Ω(n)$ T gates
+authors:
+  - first: Nolan J.
+    last: Coble
+  - first: Matthew
+    last: Coudron
+  - first: Jon
+    last: Nelson
+  - first: Seyed Sajjad
+    last: Nezhadi
+year: 2024
+abstract: 'The recent resolution of the NLTS Conjecture [ABN22] establishes a
+  prerequisite to the Quantum PCP (QPCP) Conjecture through a novel use of
+  newly-constructed QLDPC codes [LZ22]. Even with NLTS now solved, there remain
+  many independent and unresolved prerequisites to the QPCP Conjecture, such as
+  the NLSS Conjecture of [GL22]. In this work we focus on a specific and natural
+  prerequisite to both NLSS and the QPCP Conjecture, namely, the existence of
+  local Hamiltonians whose low-energy states all require $\omega(\log n)$ T
+  gates to prepare. In fact, we prove a stronger result which is not necessarily
+  implied by either conjecture: we construct local Hamiltonians whose low-energy
+  states require $\Omega(n)$ T gates. We further show that our procedure can be
+  applied to the NLTS Hamiltonians of [ABN22] to yield local Hamiltonians whose
+  low-energy states require both $\Omega(\log n)$-depth and $\Omega(n)$ T gates
+  to prepare. In order to accomplish this we define a "pseudo-stabilizer"
+  property of a state with respect to each local Hamiltonian term, and prove an
+  additive local energy lower bound for each term at which the state is
+  pseudo-stabilizer. By proving a relationship between the number of T gates
+  preparing a state and the number of terms at which the state is
+  pseudo-stabilizer, we are able to give a constant energy lower bound which
+  applies to any state with T-count less than $c \cdot n$ for some fixed
+  positive constant $c$. This result represents a significant improvement over
+  [CCNN23] where we used a different technique to give an energy bound which
+  only distinguishes between stabilizer states and states which require a
+  non-zero number of T gates.'
+tags:
+  - Computer Science - Computational Complexity
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2310.01347
+  arxiv: "2310.01347"

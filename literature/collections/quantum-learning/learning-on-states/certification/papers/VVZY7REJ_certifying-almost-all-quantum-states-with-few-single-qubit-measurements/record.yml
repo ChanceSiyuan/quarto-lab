@@ -1,0 +1,55 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: VVZY7REJ
+  item_version: 96099
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: TJMTPHKH
+      name: certification
+      path: Quantum Learning/Learning on states/certification
+    - key: CAZT6YV3
+      name: Locality_restriction
+      path: Quantum Learning/_Review/Locality_restriction
+qlab:
+  primary_collection: TJMTPHKH
+  indexed_collections:
+    - CAZT6YV3
+    - TJMTPHKH
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: preprint
+title: Certifying almost all quantum states with few single-qubit measurements
+authors:
+  - first: Hsin-Yuan
+    last: Huang
+  - first: John
+    last: Preskill
+  - first: Mehdi
+    last: Soleimanifar
+year: 2024
+abstract: Certifying that an n-qubit state synthesized in the lab is close to
+  the target state is a fundamental task in quantum information science.
+  However, existing rigorous protocols either require deep quantum circuits or
+  exponentially many single-qubit measurements. In this work, we prove that
+  almost all n-qubit target states, including those with exponential circuit
+  complexity, can be certified from only O(n^2) single-qubit measurements. This
+  result is established by a new technique that relates certification to the
+  mixing time of a random walk. Our protocol has applications for benchmarking
+  quantum systems, for optimizing quantum circuits to generate a desired target
+  state, and for learning and verifying neural networks, tensor networks, and
+  various other representations of quantum states using only single-qubit
+  measurements. We show that such verified representations can be used to
+  efficiently predict highly non-local properties that would otherwise require
+  an exponential number of measurements. We demonstrate these applications in
+  numerical experiments with up to 120 qubits, and observe advantage over
+  existing methods such as cross-entropy benchmarking (XEB).
+tags:
+  - Computer Science - Information Theory
+  - Computer Science - Machine Learning
+  - Quantum Physics
+identifiers:
+  arxiv: "2404.07281"

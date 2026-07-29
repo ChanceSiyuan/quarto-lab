@@ -1,0 +1,49 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: L9GHETYH
+  item_version: 96097
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 9HSDA5Q3
+      name: IQP
+      path: Quantum Complexity/Sampling/IQP
+qlab:
+  primary_collection: 9HSDA5Q3
+  indexed_collections:
+    - 9HSDA5Q3
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: preprint
+title: Classical simulation of commuting quantum computations implies collapse
+  of the polynomial hierarchy
+authors:
+  - first: Michael J.
+    last: Bremner
+  - first: Richard
+    last: Jozsa
+  - first: Dan J.
+    last: Shepherd
+year: 2010
+abstract: We consider quantum computations comprising only commuting gates,
+  known as IQP computations, and provide compelling evidence that the task of
+  sampling their output probability distributions is unlikely to be achievable
+  by any efficient classical means. More specifically we introduce the class
+  post-IQP of languages decided with bounded error by uniform families of IQP
+  circuits with post-selection, and prove first that post-IQP equals the
+  classical class PP. Using this result we show that if the output distributions
+  of uniform IQP circuit families could be classically efficiently sampled, even
+  up to 41% multiplicative error in the probabilities, then the infinite tower
+  of classical complexity classes known as the polynomial hierarchy, would
+  collapse to its third level. We mention some further results on the classical
+  simulation properties of IQP circuit families, in particular showing that if
+  the output distribution results from measurements on only O(log n) lines then
+  it may in fact be classically efficiently sampled.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.1098/rspa.2010.0301
+  arxiv: "1005.1407"

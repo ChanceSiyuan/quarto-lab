@@ -1,0 +1,245 @@
+---
+title: Quantum Kibble-Zurek Mechanism and the Landau-Zener Formula
+description: In this section, we first derive the KZM on a 2-level system .
+categories:
+  - theory
+---
+
+# Summary and questions
+
+The **quantum Kibble-Zurek mechanism (QKZM)** predicts that when a quantum system is driven through a quantum critical point at a finite rate, it inevitably produces topological defects whose density obeys universal scaling laws governed by the critical exponents of the phase transition [@Kibble1976; @Zurek1985; @Dziarmaga2010]. In the simplest two-level limit, the QKZM reduces exactly to the **Landau-Zener (LZ) transition**: the defect probability is controlled by the ratio of the gap squared to the sweep rate. This post derives the LZ formula via two independent methods — Zener's exact solution through parabolic cylinder functions [@Zener1932] and Landau's semi-classical approach via the Dykhne-Davis-Pechukas (DDP) formula [@Landau1932; @Dykhne1962] — and then discusses how the result generalizes to the many-body setting.
+
+**Key questions:**
+
+1. How does the Landau-Zener transition emerge as the two-atom limit of QKZM?
+2. How do the exact Zener solution and the semi-classical DDP approach arrive at the same formula from entirely different mathematical machinery?
+3. What qualitatively changes when passing from a two-level system (fixed gap) to a many-body system (gap closing as $N \to \infty$)?
+
+# The KZM on 2-level system
+
+In this section, we first derive the KZM on a 2-level system $\{\ket{1}, \ket{2}\}$. The evolution Hamiltonian is given by
+$$
+H(t) = \frac{1}{2} \begin{pmatrix} -v t & \Omega \\ \Omega & v t \end{pmatrix}
+$$ {#eq-lz-hamiltonian}
+
+Beginning from $\ket{1}$ at $t = -\infty$, we are interested in the probability $P_{\text{defect}}$ that the system stays in the bare state $\ket{1}$ at $t \to +\infty$. This probability is given by the famous Landau-Zener formula:
+
+:::{#thm-landau-zener .callout-important icon="false"}
+### (Landau-Zener Formula)
+$$
+P_{\text{defect}}  = \exp\left( -2\pi \frac{\Omega^2}{4v} \right) = \exp\left( -\frac{\pi \Omega^2}{2v} \right)
+$$
+:::
+
+:::{.callout-note icon="false" collapse="true"}
+## Proof (Zener's Exact Solution)
+
+We follow the exact analytical approach of @Zener1932, which maps the time-dependent Schrödinger equation to the Weber (parabolic cylinder function) equation.
+
+**Step 1: Reduce to a second-order ODE.**
+Write the wave function as $\ket{\psi(t)} = c_1(t)\ket{1} + c_2(t)\ket{2}$. The Schrödinger equation $i\frac{d}{dt}\ket{\psi} = H(t)\ket{\psi}$ gives the coupled system:
+$$
+i \dot{c}_1 = -\frac{vt}{2}\, c_1 + \frac{\Omega}{2}\, c_2, \qquad
+i \dot{c}_2 = \frac{\Omega}{2}\, c_1 + \frac{vt}{2}\, c_2.
+$$ {#eq-coupled-ode}
+
+From the first equation, solve for $c_2$ and its derivative:
+$$
+c_2 = \frac{2i}{\Omega}\,\dot{c}_1 + \frac{vt}{\Omega}\,c_1, \qquad
+\dot{c}_2 = \frac{2i}{\Omega}\,\ddot{c}_1 + \frac{v}{\Omega}\,c_1 + \frac{vt}{\Omega}\,\dot{c}_1.
+$$
+
+Substituting into the second equation, the first-order derivative terms cancel exactly (no approximation), yielding:
+$$
+\ddot{c}_1 + \left( \frac{\Omega^2}{4} - i\frac{v}{2} + \frac{v^2 t^2}{4} \right) c_1 = 0.
+$$ {#eq-zener-ode}
+
+**Step 2: Map to the Weber equation.**
+Define the complex variable $z = \sqrt{v}\, e^{-i\pi/4}\, t$, so that $\frac{d^2}{dt^2} = -iv\,\frac{d^2}{dz^2}$ and $\frac{v^2 t^2}{4} = i\frac{v}{4}\,z^2$. Substituting into @eq-zener-ode and dividing by $-iv$:
+$$
+\frac{d^2 c_1}{dz^2} + \left( n + \frac{1}{2} - \frac{z^2}{4} \right) c_1 = 0,
+$$ {#eq-weber}
+where the (complex) order parameter is
+$$
+n = i\gamma, \qquad \gamma \equiv \frac{\Omega^2}{4v}.
+$$
+This is the standard **Weber equation** (parabolic cylinder function equation) [@WhittakerWatson, Ch. 16].
+
+**Step 3: General solution and boundary conditions.**
+The two linearly independent solutions of @eq-weber are the parabolic cylinder functions $D_{i\gamma}(z)$ and $D_{-i\gamma - 1}(iz)$. The general solution is:
+$$
+c_1(z) = A\, D_{i\gamma}(z) + B\, D_{-i\gamma - 1}(iz).
+$$
+
+Apply the physical boundary condition: at $t \to -\infty$, the system is entirely in state $\ket{1}$, so $|c_1(-\infty)| = 1$ and $|c_2(-\infty)| = 0$. By examining the asymptotic expansion of $D_{-i\gamma-1}(iz)$ as $t \to -\infty$ and substituting back into the relation $c_2 = \frac{2i}{\Omega}\dot{c}_1 + \frac{vt}{\Omega}c_1$, the requirement $c_2(-\infty) = 0$ forces $B = 0$. The normalization $|c_1(-\infty)| = 1$ then fixes $|A| = e^{\pi\gamma/4}$.
+
+**Step 4: Extract the asymptotic probability.**
+We need $|c_1(+\infty)|^2$. The asymptotic behavior of $D_{i\gamma}(z)$ along the direction $\arg z = -\pi/4$ as $|z| \to \infty$ is given by the connection formula for parabolic cylinder functions [@WhittakerWatson, §16.5]:
+$$
+|c_1(+\infty)|^2 = |A|^2 \cdot |D_{i\gamma}(z)|^2\big|_{t\to+\infty} = e^{-2\pi\gamma}.
+$$
+
+Substituting $\gamma = \Omega^2/(4v)$:
+$$
+P_{\text{defect}} = |c_1(+\infty)|^2 = \exp\!\left(-2\pi\,\frac{\Omega^2}{4v}\right) = \exp\!\left(-\frac{\pi\Omega^2}{2v}\right).
+$$
+$\square$
+:::
+
+This means that as long as $\Omega \neq 0$ and the sweep rate $v$ is small enough, the system will adiabatically follow the ground state.
+
+## Semi-classical derivation via the DDP formula
+
+Besides the exact solution, we can derive the Landau-Zener formula using a semi-classical approach based on analytic continuation in the complex time plane. This method, due to @Landau1932 and later made rigorous by @Dykhne1962 and @DavisPechukas1976, yields the same result with greater physical transparency.
+
+At time $t$, set up the instantaneous eigenbasis $H(t) |n(t)\rangle = E_n(t) |n(t)\rangle$ for $n = 1, 2$.
+Expanding the wave function in the adiabatic basis with dynamical phases extracted:
+$$
+|\psi(t)\rangle = c_1(t)\, e^{-i \int_{0}^t E_1(t')\, dt'} |1(t)\rangle + c_2(t)\, e^{-i \int_{0}^t E_2(t')\, dt'} |2(t)\rangle,
+$$
+the exact evolution of the coefficients yields:
+$$
+\dot{c}_2(t) = -c_1(t) \langle 2(t) | \dot{1}(t) \rangle \exp\!\left( i \int_{0}^t \Delta E(t')\, dt' \right),
+$$ {#eq-c2-exact}
+where $\Delta E(t) = E_2(t) - E_1(t)$ is the adiabatic gap and $\langle 2(t)|\dot{1}(t)\rangle$ is the non-adiabatic coupling matrix element.
+
+In the near-adiabatic limit, setting $c_1(t) \approx 1$ (undepleted initial state), the transition amplitude becomes:
+$$
+A \approx - \int_{-\infty}^{+\infty} \langle 2(t) | \dot{1}(t) \rangle \exp\!\left( i \int_{0}^t \Delta E(t')\, dt' \right) dt.
+$$ {#eq-transition-amplitude}
+
+To evaluate this integral, we use the method of steepest descent in the complex time plane:
+
+:::{#lem-steepest-descent .callout-note icon="false"}
+### Lemma: Method of Steepest Descent
+Consider an integral of the form
+$$
+I = \int_{-\infty}^{+\infty} f(t)\, \exp\!\left( i\lambda\, g(t) \right) dt,
+$$
+where $\lambda \gg 1$ is a large parameter, $f(t)$ is slowly varying, and $g(t)$ is a smooth phase function. When $\lambda$ is large, the integrand oscillates rapidly on the real axis and the integral is exponentially small. By the **Cauchy integral theorem**, the contour may be deformed into the complex $t$-plane without changing the value of $I$, provided no singularities are crossed. The optimal deformation passes through **saddle points** $t_s$ where $g'(t_s) = 0$, along the **steepest descent contour** on which $\operatorname{Im}[\lambda\, g(t)]$ is constant while $\operatorname{Re}[i\lambda\, g(t)]$ decreases most rapidly away from $t_s$. The leading-order asymptotic is then [@BenderOrszag, Ch. 6]:
+$$
+I \sim \sqrt{\frac{2\pi}{\lambda\,|g''(t_s)|}}\; f(t_s)\, \exp\!\left(i\lambda\, g(t_s) + i\phi\right),
+$$
+where $\phi$ is a phase determined by the direction of steepest descent. When the dominant singularity is a **branch point** rather than a saddle point, the integral magnitude is controlled by the exponential factor $\exp\!\bigl(\operatorname{Re}[i\lambda\, g(t_s)]\bigr)$.
+:::
+
+:::{.callout-note icon="false" collapse="true"}
+## Proof (sketch)
+
+The key steps are standard [@BenderOrszag, Ch. 6]:
+
+1. **Contour deformation.** Since $f(t)e^{i\lambda g(t)}$ is analytic (away from branch points), Cauchy's theorem permits deforming the real-axis contour into the complex plane. Choose the path passing through the saddle $t_s$ (where $g'(t_s) = 0$) along the direction where $\operatorname{Re}[i\lambda g(t)]$ decreases most steeply.
+
+2. **Local expansion.** Near $t_s$, expand $g(t) = g(t_s) + \frac{1}{2}g''(t_s)(t - t_s)^2 + \cdots$. Along the steepest descent direction, the quadratic term is real and negative, so the integrand has a Gaussian profile of width $\sim (\lambda|g''(t_s)|)^{-1/2}$.
+
+3. **Gaussian dominance.** The contribution from the $O((t-t_s)^2)$ neighborhood dominates; higher-order corrections are suppressed by powers of $\lambda^{-1/2}$. Evaluating the Gaussian integral gives the leading asymptotic.
+
+4. **Branch point variant.** When the relevant singularity is a branch point $t_c$ (as in the LZ problem, where $\Delta E(t_c) = 0$), the contour wraps around $t_c$ and the integral magnitude is controlled by $|\exp(i\lambda g(t_c))| = \exp(-\lambda\,\operatorname{Im}[g(t_c)])$.
+
+$\square$
+:::
+
+Applying this machinery to @eq-transition-amplitude leads to the Dykhne-Davis-Pechukas formula:
+
+:::{#thm-ddp .callout-important icon="false"}
+### (Dykhne-Davis-Pechukas Formula)
+For a two-level system with adiabatic gap $\Delta E(t)$ and a complex branch point $t_c$ in the upper half-plane satisfying $\Delta E(t_c) = 0$, the non-adiabatic transition probability in the near-adiabatic limit is [@Dykhne1962; @DavisPechukas1976]:
+$$
+P = \exp\!\left( -2\,\operatorname{Im} \int_{0}^{t_c} \Delta E(t)\, dt \right).
+$$ {#eq-ddp}
+:::
+
+:::{.callout-note icon="false" collapse="true"}
+## Proof
+
+Starting from @eq-transition-amplitude, we proceed in three stages.
+
+**1. Analytic structure of the integrand.**
+The phase accumulated in the exponential is $\Phi(t) = \int_0^t \Delta E(t')\,dt'$. On the real axis, $\Delta E(t) > 0$ for all $t$, so $\Phi(t)$ grows monotonically and the exponential $e^{i\Phi(t)}$ oscillates with ever-increasing frequency. By the Riemann-Lebesgue lemma, the integral is therefore exponentially small — the positive and negative oscillations nearly cancel.
+
+**2. Analytic continuation and contour deformation.**
+The function $\Delta E(t) = \sqrt{v^2 t^2 + \Omega^2}$ is analytic in $t$ except at the branch points where $\Delta E(t_c) = 0$, i.e., $v^2 t_c^2 + \Omega^2 = 0$, giving $t_c = \pm i\Omega/v$. Take $t_c = +i\Omega/v$ in the upper half-plane.
+
+By Cauchy's theorem, deform the integration contour from the real axis upward toward $t_c$. As the contour moves into the upper half-plane (setting $t = t_r + it_i$ with $t_i > 0$), the oscillatory phase acquires a real part:
+$$
+e^{i\Phi(t)} \to e^{i\,\operatorname{Re}\Phi - \operatorname{Im}\Phi}.
+$$
+The factor $e^{-\operatorname{Im}\Phi}$ provides exponential suppression or growth depending on direction.
+
+**3. Steepest descent dominance.**
+The branch point $t_c$ is the location where the exponent reaches its extremum in the imaginary direction. By the steepest descent argument (@lem-steepest-descent), the entire integral is dominated by the neighborhood of $t_c$, and the magnitude of the transition amplitude is:
+$$
+|A| \sim \exp\!\left(-\operatorname{Im}\int_0^{t_c} \Delta E(t)\,dt\right).
+$$
+The transition probability $P = |A|^2$ then gives:
+$$
+P = \exp\!\left(-2\,\operatorname{Im}\int_0^{t_c} \Delta E(t)\,dt\right).
+$$
+$\square$
+:::
+
+## Applying the DDP formula to recover the LZ result
+
+We now apply @eq-ddp to the Hamiltonian @eq-lz-hamiltonian. The adiabatic energy gap is:
+$$
+\Delta E(t) = \sqrt{v^2 t^2 + \Omega^2}.
+$$
+
+The complex branch point satisfying $\Delta E(t_c) = 0$ is:
+$$
+v^2 t_c^2 + \Omega^2 = 0 \quad \Longrightarrow \quad t_c = \frac{i\Omega}{v}.
+$$
+
+We must evaluate $I = \int_{0}^{i\Omega/v} \sqrt{v^2 t^2 + \Omega^2}\, dt$. Substitute $t = \frac{i\Omega}{v}\,x$ with $x \in [0,1]$, so $dt = \frac{i\Omega}{v}\,dx$:
+$$
+I = \int_0^1 \sqrt{v^2\!\left(\frac{i\Omega}{v}\right)^{\!2} x^2 + \Omega^2}\;\frac{i\Omega}{v}\,dx = \frac{i\Omega}{v}\int_0^1 \sqrt{-\Omega^2 x^2 + \Omega^2}\,dx = \frac{i\Omega^2}{v}\int_0^1 \sqrt{1 - x^2}\,dx.
+$$
+
+The remaining definite integral is the area of a quarter unit circle:
+$$
+\int_0^1 \sqrt{1 - x^2}\,dx = \frac{\pi}{4}.
+$$
+
+Therefore:
+$$
+I = \frac{i\pi\Omega^2}{4v}, \qquad \operatorname{Im}(I) = \frac{\pi\Omega^2}{4v}.
+$$
+
+Substituting into the DDP formula @eq-ddp:
+$$
+P_{\text{defect}} = \exp\!\left(-2 \cdot \frac{\pi\Omega^2}{4v}\right) = \exp\!\left(-\frac{\pi\Omega^2}{2v}\right),
+$$
+in perfect agreement with the exact Zener result (@thm-landau-zener). The semi-classical DDP approach thus gives the exact answer for the linear LZ model — a remarkable coincidence rooted in the fact that the LZ Hamiltonian has only a single pair of branch points in the complex plane.
+
+
+# The KZM on large number of levels {#sec-many-body-kzm}
+
+The two-level Landau-Zener model captures the essence of non-adiabatic transitions, but the full quantum Kibble-Zurek mechanism emerges only in many-body systems near a quantum phase transition. The crucial difference is the behavior of the energy gap.
+
+**Fixed gap vs. closing gap.**
+In the two-level system, the minimum gap $\Delta_{\min} = \Omega$ is a fixed constant set by the coupling strength. For any given $\Omega$, one can always choose a sufficiently small sweep rate $v$ to make $P_{\text{defect}}$ arbitrarily small.
+
+In an $N$-body system near a quantum critical point (QCP), the situation is fundamentally different. The gap between the ground state and first excited state closes as a power law in the system size:
+$$
+\Delta_{\min} \sim N^{-z},
+$$
+where $z$ is the **dynamic critical exponent**. In the thermodynamic limit $N \to \infty$, the gap vanishes, and the system's relaxation time diverges — this is **critical slowing down**. No matter how slowly one sweeps through the QCP, the system inevitably falls out of equilibrium in a neighborhood of the critical point, producing defects.
+
+**The KZM scaling argument.**
+Consider driving a system parameter (e.g., detuning $\Delta$) linearly through the QCP at rate $s = |d\Delta/dt|$. The QKZM predicts that the resulting defect density and correlation length obey universal power-law scaling in the quench rate:
+
+:::{#thm-kzm-scaling .callout-important icon="false"}
+### (KZM Scaling Relations)
+For a system driven through a continuous quantum phase transition with correlation length exponent $\nu$ and dynamic critical exponent $z$ in $d$ spatial dimensions, the **freeze-out** correlation length and defect density scale as [@Kibble1976; @Zurek1985]:
+$$
+\hat{\xi} \sim \tau_Q^{\,\nu/(1 + z\nu)}, \qquad n_{\text{defect}} \sim \tau_Q^{\,-d\nu/(1 + z\nu)},
+$$ {#eq-kzm-scaling}
+where $\tau_Q = |\Delta_c|/s$ is the quench timescale set by the sweep rate $s$.
+:::
+
+The physical picture is as follows. Far from the QCP, the gap is large and the system evolves adiabatically. As the system approaches the critical point, the gap shrinks and the relaxation time grows. At a characteristic time $\hat{t}$ before the transition, the relaxation time exceeds the remaining time to the QCP, and the system effectively **freezes**. After crossing the QCP, the system re-enters the adiabatic regime, but it retains the frozen correlation length $\hat{\xi}$ — domains of locally ordered regions separated by topological defects (domain walls).
+
+**Experimental signature: data collapse.**
+The defining experimental test of QKZM is that correlation data measured at different sweep rates, when rescaled by the appropriate powers of $s$ from @eq-kzm-scaling, collapse onto a single universal curve. This data collapse is direct evidence that the defect formation is governed by the universal critical exponents of the underlying phase transition, independent of microscopic details [@Dziarmaga2010].
+
+In summary, the two-level LZ transition is the *building block* of the many-body QKZM: in a spatially extended system, the closing gap forces innumerable local LZ-type transitions to fail simultaneously, fragmenting the system into finite-sized ordered domains whose statistics encode the universality class of the quantum phase transition.

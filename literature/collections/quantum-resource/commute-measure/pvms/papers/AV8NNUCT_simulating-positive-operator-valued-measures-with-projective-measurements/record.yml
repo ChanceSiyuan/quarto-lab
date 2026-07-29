@@ -1,0 +1,52 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: AV8NNUCT
+  item_version: 98397
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: KP92XQYK
+      name: PVMs
+      path: Quantum Resource/commute_measure/PVMs
+qlab:
+  primary_collection: KP92XQYK
+  indexed_collections:
+    - KP92XQYK
+  primary_topic: quantum-resource
+  indexed_topics:
+    - quantum-resource
+item_type: journalArticle
+title: Simulating positive-operator-valued measures with projective measurements
+authors:
+  - first: Michał
+    last: Oszmaniec
+  - first: Leonardo
+    last: Guerini
+  - first: Peter
+    last: Wittek
+  - first: Antonio
+    last: Acín
+year: 2017
+abstract: Standard projective measurements represent a subset of all possible
+  measurements in quantum physics, defined by positive-operator-valued measures.
+  We study what quantum measurements are projective simulable, that is, can be
+  simulated by using projective measurements and classical randomness. We first
+  prove that every measurement on a given quantum system can be realised by
+  classical processing of projective measurements on the system plus an ancilla
+  of the same dimension. Then, given a general measurement in dimension two or
+  three, we show that deciding whether it is projective-simulable can be solved
+  by means of semi-definite programming. We also establish conditions for the
+  simulation of measurements using projective ones valid for any dimension. As
+  an application of our formalism, we improve the range of visibilities for
+  which two-qubit Werner states do not violate any Bell inequality for all
+  measurements. From an implementation point of view, our work provides bounds
+  on the amount of noise a measurement tolerates before losing any advantage
+  over projective ones.
+tags:
+  - Mathematical Physics
+  - Quantum Physics
+identifiers:
+  doi: 10.1103/physrevlett.119.190501
+  arxiv: "1609.06139"

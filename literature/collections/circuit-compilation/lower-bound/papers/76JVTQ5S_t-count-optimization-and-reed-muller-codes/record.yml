@@ -1,0 +1,48 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 76JVTQ5S
+  item_version: 96018
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 4K42JR3Z
+      name: lower bound
+      path: Circuit Compilation/lower bound
+qlab:
+  primary_collection: 4K42JR3Z
+  indexed_collections:
+    - 4K42JR3Z
+  primary_topic: circuit-compilation
+  indexed_topics:
+    - circuit-compilation
+item_type: journalArticle
+title: T-count optimization and Reed-Muller codes
+authors:
+  - first: Matthew
+    last: Amy
+  - first: Michele
+    last: Mosca
+year: 2019
+abstract: In this paper, we study the close relationship between Reed-Muller
+  codes and single-qubit phase gates from the perspective of $T$-count
+  optimization. We prove that minimizing the number of $T$ gates in an $n$-qubit
+  quantum circuit over CNOT and $T$, together with the Clifford group powers of
+  $T$, corresponds to finding a minimum distance decoding of a length $2^n-1$
+  binary vector in the order $n-4$ punctured Reed-Muller code. Moreover, we show
+  that the problems are polynomially equivalent in the length of the code. As a
+  consequence, we derive an algorithm for the optimization of $T$-count in
+  quantum circuits based on Reed-Muller decoders, along with a new upper bound
+  of $O(n^2)$ on the number of $T$ gates required to implement an $n$-qubit
+  unitary over CNOT and $T$ gates. We further generalize this result to show
+  that minimizing small angle rotations corresponds to decoding lower order
+  binary Reed-Muller codes. In particular, we show that minimizing the number of
+  $R_Z(2\pi/d)$ gates for any integer $d$ is equivalent to minimum distance
+  decoding in $\mathcal{RM}(n - k - 1, n)^*$, where $k$ is the highest power of
+  $2$ dividing $d$.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.1109/tit.2019.2906374
+  arxiv: "1601.07363"

@@ -1,0 +1,49 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: APZ6SXSS
+  item_version: 96089
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 28HZJPSW
+      name: stabilizer simulation
+      path: Quantum Complexity/QCsim/stabilizer simulation
+    - key: ZE8P2GDP
+      name: Extension
+      path: Quantum Complexity/QCsim/stabilizer simulation/Extension
+qlab:
+  primary_collection: 28HZJPSW
+  indexed_collections:
+    - 28HZJPSW
+    - ZE8P2GDP
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: preprint
+title: Classical simulation of quantum computation, the Gottesman-Knill theorem,
+  and slightly beyond
+authors:
+  - first: M. Van den
+    last: Nest
+year: 2009
+abstract: "We study classical simulation of quantum computation, taking the
+  Gottesman-Knill theorem as a starting point. We show how each Clifford circuit
+  can be reduced to an equivalent, manifestly simulatable circuit (normal form).
+  This provides a simple proof of the Gottesman-Knill theorem without resorting
+  to stabilizer techniques. The normal form highlights why Clifford circuits
+  have such limited computational power in spite of their high entangling power.
+  At the same time, the normal form shows how the classical simulation of
+  Clifford circuits fits into the standard way of embedding classical
+  computation into the quantum circuit model. This leads to simple extensions of
+  Clifford circuits which are classically simulatable. These circuits can be
+  efficiently simulated by classical sampling ('weak simulation') even though
+  the problem of exactly computing the outcomes of measurements for these
+  circuits ('strong simulation') is proved to be #P-complete--thus showing that
+  there is a separation between weak and strong classical simulation of quantum
+  computation."
+tags:
+  - Quantum Physics
+identifiers:
+  arxiv: "0811.0898"

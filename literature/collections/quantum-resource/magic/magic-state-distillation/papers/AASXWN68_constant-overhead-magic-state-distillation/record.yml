@@ -1,0 +1,68 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: AASXWN68
+  item_version: 96023
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: AGQ9C27P
+      name: Magic state distillation
+      path: Quantum Resource/Magic/Magic state distillation
+    - key: AC5RCSNL
+      name: transversal CCZ/T
+      path: Quantum Error correction/Fault-tolerant/transversal gate/transversal CCZ/T
+    - key: UX8NQT5A
+      name: Classical code
+      path: Quantum Error correction/Classical code
+qlab:
+  primary_collection: AGQ9C27P
+  indexed_collections:
+    - AC5RCSNL
+    - AGQ9C27P
+    - UX8NQT5A
+  primary_topic: quantum-resource
+  indexed_topics:
+    - quantum-error-correction
+    - quantum-resource
+item_type: preprint
+title: Constant-Overhead Magic State Distillation
+authors:
+  - first: Adam
+    last: Wills
+  - first: Min-Hsiu
+    last: Hsieh
+  - first: Hayata
+    last: Yamasaki
+year: 2024
+abstract: Magic state distillation is a crucial yet resource-intensive process
+  in fault-tolerant quantum computation. The protocol's overhead, defined as the
+  number of input magic states required per output magic state with an error
+  rate below $\epsilon$, typically grows as
+  $\mathcal{O}(\log^\gamma(1/\epsilon))$. Achieving smaller overheads, i.e.,
+  smaller exponents $\gamma$, is highly desirable; however, all existing
+  protocols require polylogarithmically growing overheads with some $\gamma >
+  0$, and identifying the smallest achievable exponent $\gamma$ for distilling
+  magic states of qubits has remained challenging. To address this issue, we
+  develop magic state distillation protocols for qubits with efficient,
+  polynomial-time decoding that achieve an $\mathcal{O}(1)$ overhead, meaning
+  the optimal exponent $\gamma = 0$; this improves over the previous best of
+  $\gamma \approx 0.678$ due to Hastings and Haah. In our construction, we
+  employ algebraic geometry codes to explicitly present asymptotically good
+  quantum codes for $2^{10}$-dimensional qudits that support transversally
+  implementable logical gates in the third level of the Clifford hierarchy. The
+  use of asymptotically good codes with non-vanishing rate and relative distance
+  leads to the constant overhead. These codes can be realised by representing
+  each $2^{10}$-dimensional qudit as a set of $10$ qubits, using stabiliser
+  operations on qubits. The $10$-qubit magic states distilled with these codes
+  can be converted to and from conventional magic states for the
+  controlled-controlled-$Z$ ($CCZ$) and $T$ gates on qubits with only a constant
+  overhead loss, making it possible to achieve constant-overhead distillation of
+  such standard magic states for qubits. These results resolve the fundamental
+  open problem in quantum information theory concerning the construction of
+  magic state distillation protocols with the optimal exponent.
+tags:
+  - Quantum Physics
+identifiers:
+  arxiv: "2408.07764"

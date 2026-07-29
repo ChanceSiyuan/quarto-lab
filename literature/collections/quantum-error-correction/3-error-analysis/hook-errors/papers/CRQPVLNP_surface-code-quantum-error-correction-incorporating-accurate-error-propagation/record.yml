@@ -1,0 +1,50 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: CRQPVLNP
+  item_version: 96105
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: SMD6TZRD
+      name: Hook errors
+      path: Quantum Error correction/3-Error analysis/Hook errors
+    - key: 64N9RMR8
+      name: exact threshold
+      path: Quantum Error correction/Fault-tolerant/exact threshold
+qlab:
+  primary_collection: SMD6TZRD
+  indexed_collections:
+    - 64N9RMR8
+    - SMD6TZRD
+  primary_topic: quantum-error-correction
+  indexed_topics:
+    - quantum-error-correction
+item_type: preprint
+title: Surface code quantum error correction incorporating accurate error propagation
+authors:
+  - first: Austin G.
+    last: Fowler
+  - first: David S.
+    last: Wang
+  - first: Lloyd C. L.
+    last: Hollenberg
+year: 2010
+abstract: The surface code is a powerful quantum error correcting code that can
+  be defined on a 2-D square lattice of qubits with only nearest neighbor
+  interactions. Syndrome and data qubits form a checkerboard pattern.
+  Information about errors is obtained by repeatedly measuring each syndrome
+  qubit after appropriate interaction with its four nearest neighbor data
+  qubits. Changes in the measurement value indicate the presence of chains of
+  errors in space and time. The standard method of determining operations likely
+  to return the code to its error-free state is to use the minimum weight
+  matching algorithm to connect pairs of measurement changes with chains of
+  corrections such that the minimum total number of corrections is used. Prior
+  work has not taken into account the propagation of errors in space and time by
+  the two-qubit interactions. We show that taking this into account leads to a
+  quadratic improvement of the logical error rate.
+tags:
+  - Quantum Physics
+identifiers:
+  arxiv: "1004.0255"

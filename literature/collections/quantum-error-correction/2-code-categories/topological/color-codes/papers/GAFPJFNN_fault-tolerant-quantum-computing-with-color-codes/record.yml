@@ -1,0 +1,59 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: GAFPJFNN
+  item_version: 96103
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: MHVUU2SQ
+      name: Color codes
+      path: Quantum Error correction/2-Code categories/Topological/Color codes
+qlab:
+  primary_collection: MHVUU2SQ
+  indexed_collections:
+    - MHVUU2SQ
+  primary_topic: quantum-error-correction
+  indexed_topics:
+    - quantum-error-correction
+item_type: preprint
+title: Fault-tolerant quantum computing with color codes
+authors:
+  - first: Andrew J.
+    last: Landahl
+  - first: Jonas T.
+    last: Anderson
+  - first: Patrick R.
+    last: Rice
+year: 2011
+abstract: "We present and analyze protocols for fault-tolerant quantum computing
+  using color codes. We present circuit-level schemes for extracting the error
+  syndrome of these codes fault-tolerantly. We further present an
+  integer-program-based decoding algorithm for identifying the most likely error
+  given the syndrome. We simulated our syndrome extraction and decoding
+  algorithms against three physically-motivated noise models using Monte Carlo
+  methods, and used the simulations to estimate the corresponding accuracy
+  thresholds for fault-tolerant quantum error correction. We also used a
+  self-avoiding walk analysis to lower-bound the accuracy threshold for two of
+  these noise models. We present and analyze two architectures for
+  fault-tolerantly computing with these codes: one with 2D arrays of qubits are
+  stacked atop each other and one in a single 2D substrate. Our analysis
+  demonstrates that color codes perform slightly better than Kitaev's surface
+  codes when circuit details are ignored. When these details are considered, we
+  estimate that color codes achieve a threshold of 0.082(3)%, which is higher
+  than the threshold of $1.3 \\times 10^{-5}$ achieved by concatenated coding
+  schemes restricted to nearest-neighbor gates in two dimensions but lower than
+  the threshold of 0.75% to 1.1% reported for the Kitaev codes subject to the
+  same restrictions. Finally, because the behavior of our decoder's performance
+  for two of the noise models we consider maps onto an order-disorder phase
+  transition in the three-body random-bond Ising model in 2D and the
+  corresponding random-plaquette gauge model in 3D, our results also answer the
+  Nishimori conjecture for these models in the negative: the
+  statistical-mechanical classical spin systems associated to the 4.8.8 color
+  codes are counterintuitively more ordered at positive temperature than at zero
+  temperature."
+tags:
+  - Quantum Physics
+identifiers:
+  arxiv: "1108.5738"

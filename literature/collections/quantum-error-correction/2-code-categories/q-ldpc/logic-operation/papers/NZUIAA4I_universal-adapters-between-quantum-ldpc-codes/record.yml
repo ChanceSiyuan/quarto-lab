@@ -1,0 +1,46 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: NZUIAA4I
+  item_version: 96033
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: DUIGCVWH
+      name: Logic operation
+      path: Quantum Error correction/2-Code categories/q-LDPC/Logic operation
+qlab:
+  primary_collection: DUIGCVWH
+  indexed_collections:
+    - DUIGCVWH
+  primary_topic: quantum-error-correction
+  indexed_topics:
+    - quantum-error-correction
+item_type: preprint
+title: Universal adapters between quantum LDPC codes
+authors:
+  - first: Esha
+    last: Swaroop
+  - first: Tomas
+    last: Jochym-O'Connor
+  - first: Theodore J.
+    last: Yoder
+year: 2024
+abstract: We propose the repetition code adapter as a way to perform joint
+  logical Pauli measurements within a quantum low-density parity check (LDPC)
+  codeblock or between separate such codeblocks. This adapter is universal in
+  the sense that it works regardless of the LDPC codes involved and the Paulis
+  being measured. The construction achieves joint logical Pauli measurement of
+  $t$ weight $O(d)$ operators using $O(td\log^2d)$ additional qubits and checks
+  and $O(d)$ time. We also show for some geometrically-local codes in fixed
+  $D\ge2$ dimensions that only $O(td)$ additional qubits and checks are required
+  instead. By extending the adapter in the case $t=2$, we construct a toric code
+  adapter that uses $O(d^2)$ additional qubits and checks to perform targeted
+  logical CNOT gates on arbitrary LDPC codes via Dehn twists. To obtain some of
+  these results, we develop a novel weaker form of graph edge expansion.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2410.03628
+  arxiv: "2410.03628"

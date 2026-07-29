@@ -24,20 +24,20 @@ describe("groupEntries", () => {
 
 describe("activityLabel", () => {
   it("labels the latest running entry by kind", () => {
-    expect(activityLabel([e("r", "reasoning", { state: "running" })])).toBe("思考中…");
+    expect(activityLabel([e("r", "reasoning", { state: "running" })])).toBe("Thinking…");
     expect(activityLabel([
       e("r", "reasoning", { state: "complete" }),
       e("t", "tool", { state: "running", title: "zotero_read_pdf_pages" }),
-    ])).toBe("正在调用 读取论文页面");
-    expect(activityLabel([e("c", "command", { state: "running" })])).toBe("执行命令…");
-    expect(activityLabel([e("a", "assistant", { state: "running" })])).toBe("正在撰写回答…");
-    expect(activityLabel([e("a", "assistant", { state: "complete" })])).toBe("思考中…");
+    ])).toBe("Calling Read Paper Pages");
+    expect(activityLabel([e("c", "command", { state: "running" })])).toBe("Running command…");
+    expect(activityLabel([e("a", "assistant", { state: "running" })])).toBe("Writing response…");
+    expect(activityLabel([e("a", "assistant", { state: "complete" })])).toBe("Thinking…");
   });
 });
 
 describe("friendlyToolName / formatElapsed", () => {
   it("maps known tools and passes through unknown ones", () => {
-    expect(friendlyToolName("zotero_search_current_pdf")).toBe("检索本篇 PDF");
+    expect(friendlyToolName("zotero_search_current_pdf")).toBe("Search Current PDF");
     expect(friendlyToolName("unknown_tool")).toBe("unknown_tool");
   });
   it("formats seconds and minutes", () => {

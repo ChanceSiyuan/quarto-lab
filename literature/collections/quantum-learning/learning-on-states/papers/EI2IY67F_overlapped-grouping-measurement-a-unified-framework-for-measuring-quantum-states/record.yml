@@ -1,0 +1,56 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: EI2IY67F
+  item_version: 96163
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: X35L7LFT
+      name: Learning on states
+      path: Quantum Learning/Learning on states
+qlab:
+  primary_collection: X35L7LFT
+  indexed_collections:
+    - X35L7LFT
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: journalArticle
+title: "Overlapped grouping measurement: A unified framework for measuring
+  quantum states"
+authors:
+  - first: Bujiao
+    last: Wu
+  - first: Jinzhao
+    last: Sun
+  - first: Qi
+    last: Huang
+  - first: Xiao
+    last: Yuan
+year: 2023
+abstract: Quantum algorithms designed for realistic quantum many-body systems,
+  such as chemistry and materials, usually require a large number of
+  measurements of the Hamiltonian. Exploiting different ideas, such as
+  {importance sampling,} observable compatibility, or classical shadows of
+  quantum states, different advanced measurement schemes have been proposed to
+  greatly reduce the large measurement cost. Yet, the underline cost reduction
+  mechanisms seem distinct from each other, and how to systematically find the
+  optimal scheme remains a critical challenge. Here, we address this challenge
+  by proposing a unified framework of quantum measurements, incorporating
+  advanced measurement methods as special cases. Our framework allows us to
+  introduce a general scheme~ -- ~overlapped grouping measurement, which
+  simultaneously exploits the advantages of most existing methods. An intuitive
+  understanding of the scheme is to partition the measurements into overlapped
+  groups with each one consisting of compatible measurements. We provide
+  explicit grouping strategies and numerically verify its performance for
+  different molecular Hamiltonians with up to 16 qubits. Our numerical result
+  shows significant improvements over existing schemes. Our work paves the way
+  for efficient quantum measurement and fast quantum processing with current and
+  near-term quantum devices.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.22331/q-2023-01-13-896
+  arxiv: "2105.13091"

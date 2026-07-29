@@ -1,0 +1,70 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: F2F3QUDD
+  item_version: 96117
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: MHVUU2SQ
+      name: Color codes
+      path: Quantum Error correction/2-Code categories/Topological/Color codes
+    - key: KXL6J577
+      name: universal without distillation
+      path: Quantum Error correction/Fault-tolerant/universal without distillation
+qlab:
+  primary_collection: MHVUU2SQ
+  indexed_collections:
+    - KXL6J577
+    - MHVUU2SQ
+  primary_topic: quantum-error-correction
+  indexed_topics:
+    - quantum-error-correction
+item_type: preprint
+title: Fault-Tolerant One-Bit Addition with the Smallest Interesting Colour Code
+authors:
+  - first: Yang
+    last: Wang
+  - first: Selwyn
+    last: Simsek
+  - first: Thomas M.
+    last: Gatterman
+  - first: Justin A.
+    last: Gerber
+  - first: Kevin
+    last: Gilmore
+  - first: Dan
+    last: Gresh
+  - first: Nathan
+    last: Hewitt
+  - first: Chandler V.
+    last: Horst
+  - first: Mitchell
+    last: Matheny
+  - first: Tanner
+    last: Mengle
+  - first: Brian
+    last: Neyenhuis
+  - first: Ben
+    last: Criger
+year: 2023
+abstract: Fault-tolerant operations based on stabilizer codes are the state of
+  the art in suppressing error rates in quantum computations. Most such codes do
+  not permit a straightforward implementation of non-Clifford logical
+  operations, which are necessary to define a universal gate set. As a result,
+  implementations of these operations must either use error-correcting codes
+  with more complicated error correction procedures or gate teleportation and
+  magic states, which are prepared at the logical level, increasing overhead to
+  a degree that precludes near-term implementation. In this work, we implement a
+  small quantum algorithm, one-qubit addition, fault-tolerantly on the
+  Quantinuum H1-1 quantum computer, using the [[8,3,2]] colour code. By removing
+  unnecessary error-correction circuits and using low-overhead techniques for
+  fault-tolerant preparation and measurement, we reduce the number of
+  error-prone two-qubit gates and measurements to 36. We observe arithmetic
+  errors with a rate of $\sim 1.1 \times 10^{-3}$ for the fault-tolerant circuit
+  and $\sim 9.5 \times 10^{-3}$ for the unencoded circuit.
+tags:
+  - Quantum Physics
+identifiers:
+  arxiv: "2309.09893"

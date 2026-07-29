@@ -1,0 +1,58 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: QKR7NS35
+  item_version: 107115
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: F8JXZ7FS
+      name: Qalg
+      path: Quantum Dynamics/Adiabatic/Berry/Qalg
+qlab:
+  primary_collection: F8JXZ7FS
+  indexed_collections:
+    - F8JXZ7FS
+  primary_topic: quantum-dynamics
+  indexed_topics:
+    - quantum-dynamics
+item_type: preprint
+title: Computational complexity of Berry phase estimation in topological phases
+  of matter
+authors:
+  - first: Ryu
+    last: Hayakawa
+  - first: Kazuki
+    last: Sakamoto
+  - first: Chusei
+    last: Kiumi
+year: 2025
+abstract: The Berry phase is a fundamental quantity in the classification of
+  topological phases of matter. In this paper, we present a new quantum
+  algorithm and several complexity-theoretical results for the Berry phase
+  estimation (BPE) problems. Our new quantum algorithm achieves BPE in a more
+  general setting than previously known quantum algorithms, with a theoretical
+  guarantee. For the complexity-theoretic results, we consider three cases.
+  First, we prove $\mathsf{BQP}$-completeness when we are given a guiding state
+  that has a large overlap with the ground state. This result establishes an
+  exponential quantum speedup for estimating the Berry phase. Second, we prove
+  $\mathsf{dUQMA}$-completeness when we have $\textit{a priori}$ bound for
+  ground state energy. Here, $\mathsf{dUQMA}$ is a variant of the unique witness
+  version of $\mathsf{QMA}$ (i.e., $\mathsf{UQMA}$), which we introduce in this
+  paper, and this class precisely captures the complexity of BPE without the
+  known guiding state. Remarkably, this problem turned out to be the first
+  natural problem contained in both $\mathsf{UQMA}$ and
+  $\mathsf{co}$-$\mathsf{UQMA}$. Third, we show
+  $\mathsf{P}^{\mathsf{dUQMA[log]}}$-hardness and containment in
+  $\mathsf{P}^{\mathsf{PGQMA[log]}}$ when we have no additional assumption.
+  These results advance the role of quantum computing in the study of
+  topological phases of matter and provide a pathway for clarifying the
+  connection between topological phases of matter and computational complexity.
+tags:
+  - Computer Science - Computational Complexity
+  - Condensed Matter - Strongly Correlated Electrons
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2509.13423
+  arxiv: "2509.13423"
