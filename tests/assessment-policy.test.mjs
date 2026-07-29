@@ -14,8 +14,8 @@ import {
   weightedInterval,
 } from "../lib/assessments/policy.mjs";
 
-test("assessment policy exposes stable version one and dimension weights", () => {
-  assert.equal(ASSESSMENT_POLICY_VERSION, 1);
+test("assessment policy exposes version two without changing dimension weights", () => {
+  assert.equal(ASSESSMENT_POLICY_VERSION, 2);
   assert.deepEqual(RESEARCH_VALUE_DIMENSIONS.map((item) => item.id), [
     "importance",
     "gap_and_novelty",

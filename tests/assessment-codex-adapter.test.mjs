@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { EventEmitter } from "node:events";
-import { mkdtemp, mkdir, writeFile } from "node:fs/promises";
+import { mkdtemp, mkdir, readFile, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
@@ -10,6 +10,30 @@ import {
   checkCodexPreflight,
   runCodexAssessment,
 } from "../lib/assessments/codex-adapter.mjs";
+
+test("assessment output schema gives every literal an explicit Codex type", async () => {
+  const schema = JSON.parse(await readFile(new URL("../schemas/research-problem-assessment.schema.json", import.meta.url), "utf8"));
+  const missingTypes = [];
+  function visit(value, path = "$") {
+    if (!value || typeof value !== "object") return;
+    if ((Object.hasOwn(value, "const") || Object.hasOwn(value, "enum")) && !Object.hasOwn(value, "type")) missingTypes.push(path);
+    for (const [key, child] of Object.entries(value)) visit(child, `${path}.${key}`);
+  }
+  visit(schema);
+  assert.deepEqual(missingTypes, []);
+});
+
+test("assessment output schema avoids array keywords rejected by Codex", async () => {
+  const schema = JSON.parse(await readFile(new URL("../schemas/research-problem-assessment.schema.json", import.meta.url), "utf8"));
+  const unsupportedKeywords = [];
+  function visit(value, path = "$") {
+    if (!value || typeof value !== "object") return;
+    if (Object.hasOwn(value, "uniqueItems")) unsupportedKeywords.push(`${path}.uniqueItems`);
+    for (const [key, child] of Object.entries(value)) visit(child, `${path}.${key}`);
+  }
+  visit(schema);
+  assert.deepEqual(unsupportedKeywords, []);
+});
 
 function fakeEnvelopeText() {
   const dimsV = [
