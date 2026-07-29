@@ -46,20 +46,26 @@ export async function startAssessmentService({
   host = "127.0.0.1",
   manager = null,
   valuationManager = null,
+  valuationResearcher = null,
+  openAlex = null,
+  valuationStore = null,
 } = {}) {
   if (host !== "127.0.0.1") throw new Error("Local assessment service must bind to 127.0.0.1.");
   const workspaceRoot = resolve(rootDir);
   const repository = manager && valuationManager ? null : await createLocalRepository(workspaceRoot);
+  const localValuationStore = valuationStore ?? createValuationSnapshotStore({ rootDir: workspaceRoot });
   const assessmentManager = manager ?? createAssessmentJobManager({
     rootDir: workspaceRoot,
     repository,
     resolveKnowledge: createKnowledgeResolver(workspaceRoot),
+    valuationStore: localValuationStore,
   });
   const localValuationManager = valuationManager ?? createValuationJobManager({
     rootDir: workspaceRoot,
     repository,
-    openAlex: createOpenAlexClient({ apiKey: process.env.OPENALEX_API_KEY }),
-    store: createValuationSnapshotStore({ rootDir: workspaceRoot }),
+    ...(valuationResearcher ? { researcher: valuationResearcher } : {}),
+    openAlex: openAlex ?? createOpenAlexClient({ apiKey: process.env.OPENALEX_API_KEY }),
+    store: localValuationStore,
   });
   const server = createAssessmentService({ rootDir: workspaceRoot, token, manager: assessmentManager, valuationManager: localValuationManager });
   await new Promise((resolveListen, reject) => {

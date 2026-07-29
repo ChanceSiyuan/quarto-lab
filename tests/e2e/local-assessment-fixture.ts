@@ -15,10 +15,12 @@ const problemsDir = path.join(repoRoot, "problems");
 
 export const LOCAL_ASSESSMENT_COMPLETE_PROBLEM_ID = "Prob-901";
 export const LOCAL_ASSESSMENT_AMBIGUOUS_PROBLEM_ID = "Prob-902";
+export const LOCAL_ASSESSMENT_QUANTUM_PROBLEM_ID = "Prob-903";
 
 const problemIds = [
   LOCAL_ASSESSMENT_COMPLETE_PROBLEM_ID,
   LOCAL_ASSESSMENT_AMBIGUOUS_PROBLEM_ID,
+  LOCAL_ASSESSMENT_QUANTUM_PROBLEM_ID,
 ];
 const fixtureProblemIds = new Set(problemIds);
 
@@ -72,6 +74,41 @@ async function writeProblemFixture(problemId: string, title: string) {
   await writeFile(path.join(dir, "generation", "initial-prompt.md"), "Fixture prompt.\n");
   await writeFile(path.join(dir, "generation", "transcript.md"), "Fixture transcript.\n");
   await writeFile(path.join(dir, "generation", "decision.md"), "Fixture decision.\n");
+}
+
+async function writeQuantumProblemFixture() {
+  const problemId = LOCAL_ASSESSMENT_QUANTUM_PROBLEM_ID;
+  const dir = problemDir(problemId);
+  await mkdir(path.join(dir, "generation"), { recursive: true });
+  await writeFile(path.join(dir, "problem.json"), `${JSON.stringify({
+    schemaVersion: 1,
+    id: problemId,
+    title: "Quantum valuation browser fixture",
+    summary: "Browser fixture for a quantum valuation and assessment flow.",
+    status: "accepted",
+    domain: "quantum-computing",
+    quantumArea: "resource-estimation-and-benchmarks",
+    gate: { type: "fake-quantum-valuation", readiness: "executable" },
+    provenance: { sourceCount: 1 },
+    lastActivity: {
+      summary: "Fixture prepared for quantum valuation browser assessment.",
+      at: "2026-07-29T00:00:00.000Z",
+    },
+    createdAt: "2026-07-29T00:00:00.000Z",
+    updatedAt: "2026-07-29T00:00:00.000Z",
+  }, null, 2)}\n`);
+  await writeFile(path.join(dir, "problem.md"), `${[
+    ["Background and Gap", "Quantum resource-estimation benchmarks need valuation evidence before scoring."],
+    ["Research Objective", "Assess a bounded quantum benchmark with frozen citation and economic evidence."],
+    ["Publication Threshold", "The report must show external valuation evidence without treating it as trusted knowledge."],
+    ["Executable Gate", "The fake valuation and assessment adapters return deterministic outputs."],
+    ["Novelty Evidence", "The fixture uses frozen external evidence and trusted resolver context without browsing during scoring."],
+    ["Provenance", "Created by the Playwright quantum valuation fixture."],
+    ["Fresh Evaluation Plan", "Use fake valuation research, fake OpenAlex expansion, and fake Codex assessment for a quota-free browser proof."],
+  ].map(([heading, body]) => `## ${heading}\n${body}`).join("\n\n")}\n`);
+  await writeFile(path.join(dir, "generation", "initial-prompt.md"), "Quantum fixture prompt.\n");
+  await writeFile(path.join(dir, "generation", "transcript.md"), "Quantum fixture transcript.\n");
+  await writeFile(path.join(dir, "generation", "decision.md"), "Quantum fixture decision.\n");
 }
 
 async function rebuildProblemIndex() {
@@ -147,6 +184,7 @@ export async function setupLocalAssessmentFixture() {
 
     await writeProblemFixture(LOCAL_ASSESSMENT_COMPLETE_PROBLEM_ID, "Completed assessment browser fixture");
     await writeProblemFixture(LOCAL_ASSESSMENT_AMBIGUOUS_PROBLEM_ID, "Ambiguous resolver browser fixture");
+    await writeQuantumProblemFixture();
     await rebuildProblemIndex();
   } catch (error) {
     await teardownLocalAssessmentFixture();

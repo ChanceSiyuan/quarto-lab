@@ -113,6 +113,7 @@ type ValuationCandidate = {
 type ValuationJob = {
   runId?: string;
   status?: string;
+  snapshotId?: string | null;
   error?: { message?: string } | null;
   candidate?: ValuationCandidate | null;
 };
@@ -241,7 +242,7 @@ export function AssessmentPanel({ problemId }: Props) {
     () => new Set((candidate?.anchorCandidates ?? []).map((item) => item.id)),
     [candidate?.anchorCandidates],
   );
-  const selectedAnchorIds = anchorSelection?.candidateHash === candidate?.contentHash
+  const selectedAnchorIds = candidate && anchorSelection?.candidateHash === candidate.contentHash
     ? anchorSelection.ids
     : defaultAnchorIds;
 
@@ -311,21 +312,26 @@ export function AssessmentPanel({ problemId }: Props) {
 
   const copy = assessmentStatusCopy(state);
   const latest = state.latest ?? (latestAssessmentSummary(state) as AssessmentSummary | null);
+  const latestValuationJob = [...(valuation?.jobs ?? [])]
+    .reverse()
+    .find((job) => job.status === "ready" || job.status === "research_failed");
+  const readySnapshotId = valuation?.readySnapshotId ?? (latestValuationJob?.status === "ready" ? latestValuationJob.snapshotId : null);
   const valuationKind = (() => {
     const status = valuation?.activeJob?.status;
     if (status === "research_failed") return "research_failed";
+    if (!status && latestValuationJob?.status === "research_failed") return "research_failed";
     if (status === "needs_confirmation") return "needs_confirmation";
     if (status && ["queued", "researching", "confirming"].includes(status)) return "researching";
-    if (valuation?.readySnapshotId && state.kind === "stale") return "stale";
-    if (valuation?.readySnapshotId) return "ready";
+    if (readySnapshotId && state.kind === "stale") return "stale";
+    if (readySnapshotId) return "ready";
     return "no_evidence";
   })();
-  const valuationCopy = valuationStatusCopy({ kind: valuationKind, error: valuation?.activeJob?.error });
+  const valuationCopy = valuationStatusCopy({ kind: valuationKind, error: valuation?.activeJob?.error ?? latestValuationJob?.error });
   const valuationAction = valuationKind === "ready" ? start : startValuation;
   const metricCards = latest?.quantitative ? [
     ["Scientific attention", formatKnownInterval(latest.quantitative.scientificAttention)],
     ["Technical success", formatKnownInterval(latest.quantitative.technicalSuccess)],
-    ["Industry/social value", formatMoneyInterval(latest.quantitative.socialValue)],
+    ["Industry / social", formatMoneyInterval(latest.quantitative.socialValue)],
     ["Capturable value", formatMoneyInterval(latest.quantitative.capturableValue)],
     ["Largest sensitivity", latest.quantitative.largestSensitivity?.label
       ? `${latest.quantitative.largestSensitivity.label} (${latest.quantitative.largestSensitivity.swing ?? "—"})`
@@ -340,9 +346,9 @@ export function AssessmentPanel({ problemId }: Props) {
             <p className={styles.eyebrow}>QUANTUM VALUATION</p>
             <h3>{valuationCopy.heading}</h3>
             <p>{valuationCopy.body}</p>
-            {valuation.readySnapshotId && <small>Snapshot {valuation.readySnapshotId}</small>}
+            {readySnapshotId && <small>Snapshot {readySnapshotId}</small>}
           </div>
-          {valuationCopy.actionLabel && valuationKind !== "needs_confirmation" && (
+          {valuationCopy.actionLabel && valuationKind !== "needs_confirmation" && valuationKind !== "ready" && (
             <button className={styles.primary} type="button" onClick={valuationAction} disabled={busy}>
               {busy ? "Working…" : valuationCopy.actionLabel}
             </button>
@@ -364,7 +370,7 @@ export function AssessmentPanel({ problemId }: Props) {
 
       {valuationKind === "needs_confirmation" && candidate && (
         <form className={styles.confirmation} onSubmit={confirmValuation}>
-          <h3>Review valuation assumptions</h3>
+          <h3>Confirm valuation snapshot</h3>
           <fieldset>
             <legend>Anchor papers</legend>
             {(candidate.anchorCandidates ?? []).map((anchor) => (

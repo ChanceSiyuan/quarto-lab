@@ -237,6 +237,42 @@ test("freezes the complete confirmed candidate and local private inputs for audi
   assert.deepEqual(snapshot.manifest.confirmedCandidate.warnings, completeCandidate.warnings);
 });
 
+test("freezes citation metrics as atomic evidence with provenance", async () => {
+  const rootDir = await mkdtemp(join(tmpdir(), "valuation-job-manager-citation-"));
+  const store = createValuationSnapshotStore({ rootDir, now });
+  const { manager } = fixtureManager({
+    rootDir,
+    store,
+    expand: async () => [{
+      id: "W1",
+      doi: "10.1234/fixture.one",
+      relevance: 1,
+      citationNormalizedPercentile: 0.9,
+      citedByCount: 12,
+      countsByYear: [{ year: 2024, citedByCount: 3 }, { year: 2025, citedByCount: 8 }],
+    }, {
+      id: "W2",
+      doi: "10.1234/fixture.two",
+      relevance: 1,
+      citationNormalizedPercentile: 0.7,
+      citedByCount: 9,
+      countsByYear: [{ year: 2024, citedByCount: 2 }, { year: 2025, citedByCount: 5 }],
+    }],
+  });
+  const started = await manager.start("Prob-007");
+
+  await confirmed(manager, started);
+  await waitFor(() => manager.getJob(started.runId).status === "ready");
+  const snapshot = await store.read("Prob-007", manager.getJob(started.runId).snapshotId);
+
+  assert.equal(snapshot.manifest.scientificAttention.id, "scientific-attention");
+  assert.equal(snapshot.manifest.scientificAttention.unit, "percent");
+  assert.equal(snapshot.manifest.scientificAttention.evidenceTier, "authoritative-secondary");
+  assert.deepEqual(snapshot.manifest.scientificAttention.sourceIds, ["citation-W1", "citation-W2"]);
+  assert.equal(snapshot.manifest.citation.momentum.id, "citation-momentum");
+  assert.equal(snapshot.manifest.citation.momentum.unit, "fraction");
+});
+
 test("discovers the latest ready snapshot from the immutable store after restart", async () => {
   const store = {
     readInputs: async () => ({}),
