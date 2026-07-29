@@ -143,9 +143,11 @@ manifest; the assessment also embeds every numeric model input needed to
 recalculate its outputs.
 
 The snapshot identifier includes a sortable timestamp and a content-hash
-prefix. The full content hash covers canonical JSON for all three files. An
-assessment records `snapshotId` and `contentHash`, and validation fails if they
-do not identify the exact frozen content.
+prefix. The full content hash covers canonical JSON for all three files after
+omitting the manifest identity fields `snapshotId` and `contentHash`; those two
+fields are derived only after hashing, so the digest is not self-referential.
+An assessment records `snapshotId` and `contentHash`, and validation fails if
+they do not identify the exact frozen content.
 
 Snapshots are external evidence. They may be committed when appropriate, but
 they are never resolvable trusted knowledge and never appear under
