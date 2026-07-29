@@ -93,3 +93,39 @@ test("sorts public portfolio copies without mutating the source rows", () => {
   assert.deepEqual(sortPortfolioRows(rows, "verdict").map((row) => row.problemId), ["Prob-003", "Prob-002", "Prob-001"]);
   assert.deepEqual(rows.map((row) => row.problemId), ["Prob-003", "Prob-002", "Prob-001"]);
 });
+
+test("redacts private assessment values and leaves store-owned run order unchanged", async () => {
+  const privateSummary = summary("Prob-001", "private-run", 77, {
+    scientificAttention: {
+      visibility: "private",
+      state: "known",
+      interval: { low: 700, base: 777, high: 800 },
+      sources: [{ url: "https://private.example/value", locator: "Private locator" }],
+    },
+  });
+  privateSummary.visibility = "private";
+  privateSummary.quantitative.technicalSuccess = {
+    visibility: "private",
+    value: 1,
+    sources: [{ url: "https://private.example/success", locator: "Secret success" }],
+  };
+  const runs = [
+    { runId: "old-run", status: "completed", updatedAt: "2026-07-28T10:00:00.000Z", summary: summary("Prob-001", "old-run", 99) },
+    { runId: "private-run", status: "completed", updatedAt: "2026-07-29T10:00:00.000Z", summary: privateSummary },
+  ];
+  const reader = createQecPortfolioReader({
+    repository: {
+      listProblems: () => [{ id: "Prob-001", title: "Private fixture", status: "draft", domain: "quantum-computing", quantumArea: QEC_AREA }],
+    },
+    assessmentStore: { listRuns: async () => runs },
+  });
+
+  const response = await reader.read();
+
+  assert.deepEqual(runs.map((run) => run.runId), ["old-run", "private-run"]);
+  assert.deepEqual(response.rows[0].combinedPriority, null);
+  assert.equal(response.rows[0].scientificAttention, null);
+  assert.equal(response.rows[0].technicalSuccess, null);
+  assert.equal(response.rows[0].snapshotId, null);
+  assert.doesNotMatch(JSON.stringify(response), /private\.example|Private locator|Secret success|777/);
+});
