@@ -4,16 +4,42 @@ import test from "node:test";
 import { validateAssessmentEnvelope } from "../lib/assessments/contract.mjs";
 import { createAssessmentJobManager } from "../lib/assessments/job-manager.mjs";
 
-function fakeRepository() {
+function fakeRepository(problemValue = { id: "Prob-001", title: "Fixture", summary: "Summary" }) {
   return {
     getProblem(id) {
-      return id === "Prob-001"
-        ? { id, title: "Fixture", summary: "Summary" }
+      return id === problemValue.id
+        ? structuredClone(problemValue)
         : null;
     },
     async readProblemMarkdown(id) {
       return `# ${id}\n\nProblem body.`;
     },
+  };
+}
+
+function quantumProblem(overrides = {}) {
+  return {
+    id: "Prob-001",
+    title: "Quantum fixture",
+    summary: "A quantum fixture.",
+    domain: "quantum-computing",
+    quantumArea: "hardware-and-control",
+    ...overrides,
+  };
+}
+
+function valuationSnapshot(overrides = {}) {
+  return {
+    manifest: {
+      snapshotId: "20260729T010203Z-0123456789ab",
+      contentHash: "a".repeat(64),
+      createdAt: "2026-07-29T01:02:03Z",
+      scope: { status: "supported", domain: "quantum-computing", quantumArea: "hardware-and-control" },
+    },
+    recalculationInputs: { technicalStages: [] },
+    papers: [],
+    marketEvidence: [],
+    ...overrides,
   };
 }
 
@@ -129,6 +155,113 @@ test("rejects unknown problem IDs before accepting a run", async () => {
   const result = await manager.start("Prob-999");
   assert.equal(result.accepted, false);
   assert.equal(result.code, "UNKNOWN_PROBLEM");
+});
+
+test("requires a ready valuation snapshot before starting a quantum assessment", async () => {
+  let preflightCalls = 0;
+  const store = fakeStore();
+  const manager = createAssessmentJobManager({
+    rootDir: "/repo",
+    repository: fakeRepository(quantumProblem()),
+    store,
+    codex: {
+      preflight: async () => { preflightCalls += 1; return { ok: true }; },
+      run: async () => assert.fail("Codex must not run before valuation is ready."),
+    },
+    valuationStore: {
+      list: async () => [],
+      verify: async () => assert.fail("No snapshot should be verified when the list is empty."),
+    },
+    valuationManager: {
+      getProblemState: async () => ({ problemId: "Prob-001", activeJob: null, readySnapshotId: null, jobs: [] }),
+    },
+  });
+
+  const result = await manager.start("Prob-001");
+
+  assert.equal(result.accepted, false);
+  assert.equal(result.code, "VALUATION_REQUIRED");
+  assert.equal(preflightCalls, 0);
+  assert.equal(store.runs.length, 0);
+});
+
+test("reports pending valuation confirmation before starting a quantum assessment", async () => {
+  const manager = createAssessmentJobManager({
+    rootDir: "/repo",
+    repository: fakeRepository(quantumProblem()),
+    store: fakeStore(),
+    codex: {
+      preflight: async () => assert.fail("Codex preflight must wait for valuation confirmation."),
+      run: async () => assert.fail("Codex must not run before valuation confirmation."),
+    },
+    valuationStore: {
+      list: async () => [],
+      verify: async () => assert.fail("No snapshot should be verified before confirmation."),
+    },
+    valuationManager: {
+      getProblemState: async () => ({
+        problemId: "Prob-001",
+        activeJob: { runId: "20260729T010203Z-a1b2c3", status: "needs_confirmation" },
+        readySnapshotId: null,
+        jobs: [],
+      }),
+    },
+  });
+
+  const result = await manager.start("Prob-001");
+
+  assert.equal(result.accepted, false);
+  assert.equal(result.code, "VALUATION_NEEDS_CONFIRMATION");
+});
+
+test("rejects a tampered valuation snapshot before starting Codex", async () => {
+  const manager = createAssessmentJobManager({
+    rootDir: "/repo",
+    repository: fakeRepository(quantumProblem()),
+    store: fakeStore(),
+    codex: {
+      preflight: async () => assert.fail("Codex preflight must not run for a tampered snapshot."),
+      run: async () => assert.fail("Codex must not run for a tampered snapshot."),
+    },
+    valuationStore: {
+      list: async () => ["20260729T010203Z-0123456789ab"],
+      verify: async () => { throw new Error("Snapshot hash mismatch."); },
+    },
+  });
+
+  const result = await manager.start("Prob-001");
+
+  assert.equal(result.accepted, false);
+  assert.equal(result.code, "VALUATION_TAMPERED");
+  assert.match(result.message, /hash mismatch/i);
+});
+
+test("passes the verified frozen valuation packet to quantum Codex scoring", async () => {
+  let receivedValuation = null;
+  const manager = createAssessmentJobManager({
+    rootDir: "/repo",
+    repository: fakeRepository(quantumProblem()),
+    store: fakeStore(),
+    codex: {
+      preflight: async () => ({ ok: true }),
+      run: async ({ valuationInput }) => {
+        receivedValuation = valuationInput;
+        return { ok: false, code: "CODEX_EXIT", message: "stop after capture", eventsText: "", stderr: "" };
+      },
+    },
+    valuationStore: {
+      list: async () => ["20260729T010203Z-0123456789ab"],
+      verify: async () => valuationSnapshot(),
+    },
+  });
+
+  const result = await manager.start("Prob-001");
+  await new Promise((resolve) => setTimeout(resolve, 20));
+
+  assert.equal(result.accepted, true);
+  assert.equal(receivedValuation.snapshotId, "20260729T010203Z-0123456789ab");
+  assert.equal(receivedValuation.contentHash, "a".repeat(64));
+  assert.deepEqual(receivedValuation.recalculationInputs, { technicalStages: [] });
 });
 
 test("returns the active run for duplicate starts", async () => {

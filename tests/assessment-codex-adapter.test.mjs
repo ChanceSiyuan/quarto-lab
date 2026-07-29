@@ -133,6 +133,22 @@ test("a host-selected bundle tells Codex to continue without asking for ambiguit
   assert.doesNotMatch(prompt, /If the resolver is ambiguous, return outcome needs_input/);
 });
 
+test("prompt attaches frozen valuation evidence without widening Codex permissions", () => {
+  const prompt = buildAssessmentPrompt({
+    problem: { id: "Prob-001", title: "Fixture", summary: "Summary", domain: "quantum-computing", quantumArea: "hardware-and-control" },
+    problemMarkdown: "## Background and Gap\nText.",
+    valuationInput: {
+      snapshotId: "20260729T010203Z-0123456789ab",
+      contentHash: "a".repeat(64),
+      recalculationInputs: { technicalStages: [] },
+    },
+  });
+
+  assert.match(prompt, /host has frozen external valuation evidence/i);
+  assert.match(prompt, /Do not browse, refresh, rewrite, or relabel/i);
+  assert.match(prompt, /20260729T010203Z-0123456789ab/);
+});
+
 test("codex runner uses safe argv, read-only sandbox, ephemeral mode, JSONL, schema, and output-last-message", async () => {
   const root = await mkdtemp(join(tmpdir(), "assessment-codex-"));
   const runDir = join(root, ".generated", "assessment-runs", "run");
@@ -158,6 +174,7 @@ test("codex runner uses safe argv, read-only sandbox, ephemeral mode, JSONL, sch
     problemMarkdown: "Problem markdown.",
     runDir,
     schemaPath: join(root, "schemas", "research-problem-assessment.schema.json"),
+    valuationInput: { snapshotId: "20260729T010203Z-0123456789ab", contentHash: "a".repeat(64) },
     spawnFn,
     timeoutMs: 5000,
   });
@@ -173,6 +190,7 @@ test("codex runner uses safe argv, read-only sandbox, ephemeral mode, JSONL, sch
   ]);
   assert.equal(calls[0].options.cwd, root);
   assert.equal(calls[0].options.shell, false);
+  assert.match(calls[0].args.at(-1), /20260729T010203Z-0123456789ab/);
 });
 
 test("codex runner captures stream data that drains after exit", async () => {
