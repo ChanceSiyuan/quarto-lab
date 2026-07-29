@@ -404,6 +404,9 @@ const ADD_PROBLEM: readonly Clause[] = [
   { requirement: "writes no staging files before confirmation", in: "body", pattern: /including stag[^.]*until[^.]*confirm/i },
   { requirement: "uses the safe publisher", in: "body", pattern: /make problem-publish STAGE=/ },
   { requirement: "re-previews collisions", in: "body", pattern: /collision[^.]*new ID[^.]*preview[^.]*confirm/i },
+  { requirement: "records confirmed quantum-computing domain scope", in: "body", pattern: /`domain: quantum-computing`/ },
+  { requirement: "records a confirmed quantum area", in: "body", pattern: /confirmed `quantumArea`/i },
+  { requirement: "does not infer quantum scope for non-quantum candidates", in: "body", pattern: /Do not infer or add quantum scope to a non-quantum candidate/ },
 ];
 
 const PREPARE_AUTORESEARCH: readonly Clause[] = [

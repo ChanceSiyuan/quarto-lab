@@ -4,7 +4,9 @@ import test from "node:test";
 import {
   ACTIVE_WITH_GATE_STATUSES,
   PROBLEM_STATUSES,
+  QUANTUM_AREAS,
   REQUIRED_PROBLEM_MD_HEADINGS,
+  classifyQuantumScope,
   validateProblemManifest,
 } from "../lib/problems/schema.mjs";
 
@@ -64,6 +66,52 @@ test("rejects unknown top-level manifest fields", () => {
   assert.equal(result.ok, false);
   assert.deepEqual(result.errors.map((error) => error.field), ["typoStatus"]);
   assert.match(result.errors[0].message, /Unknown top-level field/);
+});
+
+test("accepts an explicit quantum-computing scope", () => {
+  const candidate = manifest({
+    domain: "quantum-computing",
+    quantumArea: "algorithms-and-applications",
+  });
+
+  assert.equal(validateProblemManifest(candidate).ok, true);
+  assert.equal(QUANTUM_AREAS.length, 6);
+  assert.deepEqual(classifyQuantumScope(candidate), {
+    status: "supported",
+    domain: "quantum-computing",
+    quantumArea: "algorithms-and-applications",
+    source: "manifest",
+  });
+});
+
+test("rejects quantumArea without the quantum-computing domain", () => {
+  const result = validateProblemManifest(
+    manifest({ domain: "classical-computing", quantumArea: "algorithms-and-applications" }),
+  );
+
+  assert.equal(result.ok, false);
+  assert.match(result.errors.map((error) => error.field).join(","), /quantumArea/);
+});
+
+test("rejects an unknown quantum area", () => {
+  const result = validateProblemManifest(
+    manifest({ domain: "quantum-computing", quantumArea: "quantum-magic" }),
+  );
+
+  assert.equal(result.ok, false);
+  assert.match(result.errors.map((error) => error.field).join(","), /quantumArea/);
+});
+
+test("preserves legacy manifests and does not guess their scope", () => {
+  const candidate = manifest();
+
+  assert.equal(validateProblemManifest(candidate).ok, true);
+  assert.deepEqual(classifyQuantumScope(candidate), {
+    status: "needs_input",
+    domain: null,
+    quantumArea: null,
+    source: "legacy",
+  });
 });
 
 test("requires executable or passed gate readiness for accepted and later statuses", () => {

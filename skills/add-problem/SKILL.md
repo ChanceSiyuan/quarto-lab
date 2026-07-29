@@ -12,6 +12,11 @@ what was discussed; a separate qualification workflow decides research quality.
 
 ## Prepare the preview
 
+When the discussed candidate is explicitly a quantum-computing problem, include
+`domain: quantum-computing` and one confirmed `quantumArea` from
+`lib/problems/schema.mjs`; if the area is ambiguous, ask one question before the
+preview. Do not infer or add quantum scope to a non-quantum candidate.
+
 Read the user-visible discussion. Ask one question at a time only when the
 title, summary, candidate question, or motivation cannot be recovered. Derive
 the discussion summary and open qualification questions from the conversation;
