@@ -91,6 +91,35 @@ test("rejects every problem outside the approved twenty-one record portfolio", a
   });
 });
 
+test("fails closed when an injected catalog alters approved technical evidence", async () => {
+  const altered = structuredClone(QEC_PORTFOLIO_PROBLEMS);
+  altered[0].technicalAnchor.sourceUrl = "https://unapproved.example/anchor";
+  const researcher = createQecPortfolioValuationResearcher({ catalog: altered });
+  const result = await researcher.run({
+    problem: { id: "Prob-002", title: altered[0].title, summary: altered[0].summary },
+    quantumScope: SCOPE,
+  });
+  assert.deepEqual(result, {
+    ok: false,
+    code: "INVALID_APPROVED_CATALOG",
+    message: "Supplied catalog does not match the approved QEC portfolio.",
+  });
+});
+
+test("fails closed when an injected catalog omits an approved record", async () => {
+  const incomplete = structuredClone(QEC_PORTFOLIO_PROBLEMS.slice(0, -1));
+  const researcher = createQecPortfolioValuationResearcher({ catalog: incomplete });
+  const result = await researcher.run({
+    problem: { id: "Prob-021", title: QEC_PORTFOLIO_PROBLEMS.at(-1).title, summary: QEC_PORTFOLIO_PROBLEMS.at(-1).summary },
+    quantumScope: SCOPE,
+  });
+  assert.deepEqual(result, {
+    ok: false,
+    code: "INVALID_APPROVED_CATALOG",
+    message: "Supplied catalog does not match the approved QEC portfolio.",
+  });
+});
+
 test("hands an approved candidate to the valuation manager for exact-anchor confirmation", async () => {
   const researcher = createQecPortfolioValuationResearcher();
   const record = QEC_PORTFOLIO_PROBLEMS[0];
