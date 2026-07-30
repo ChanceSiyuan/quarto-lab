@@ -69,6 +69,9 @@ const PROJECT_DIRECTORY = "project";
 /** Quarto's own default, named here because the site build renames it. */
 const OUTPUT_DIRECTORY = "_site";
 
+/** Every projected QMD should render even when the workspace is gitignored. */
+const RENDER_ALL_QMDS = "**/*.qmd";
+
 /** The generated directory holding the three category views. */
 const CATEGORY_DIRECTORY = "categories";
 
@@ -875,7 +878,7 @@ export async function materializeQuartoProject(input: {
         project: {
           type: FIXED_BASE_CONFIG.project.type,
           "output-dir": OUTPUT_DIRECTORY,
-          ...(input.renderOnly ? { render: [input.renderOnly] } : {}),
+          render: [input.renderOnly ?? RENDER_ALL_QMDS],
         },
         website: { ...FIXED_BASE_CONFIG.website, sidebar: { contents: sidebarContents(graph) } },
         format: FIXED_BASE_CONFIG.format,
