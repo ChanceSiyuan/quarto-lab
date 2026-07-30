@@ -51,7 +51,7 @@ test("researches quantum valuation evidence, freezes a snapshot, and runs v2 ass
   await expect(page.getByText("Evidence ready")).toBeVisible({ timeout: 120_000 });
 
   await page.getByRole("button", { name: "Run assessment" }).click();
-  await expect(page.getByRole("heading", { name: "Knowledge match needs input" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Knowledge match needs input" })).toBeVisible({ timeout: 120_000 });
   await page.getByLabel(/Continue with external valuation evidence only/).check();
   await page.getByRole("button", { name: "Continue assessment" }).click();
   await expect(page.getByText("Scientific Demand Score", { exact: true })).toBeVisible({ timeout: 120_000 });

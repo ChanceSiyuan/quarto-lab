@@ -4,11 +4,12 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const REPO_ROOT = path.dirname(fileURLToPath(import.meta.url));
-const PORT = 4174;
+const PORT = 4176;
 const BASE_URL = `http://localhost:${PORT}`;
 const FIXTURE_ROOT = path.join(REPO_ROOT, ".generated", "autoresearch-e2e", "root");
 const PRIVATE_ROOT = path.join(REPO_ROOT, ".research-loop", "tests", "fixtures", "autoresearch", "fake-private");
 const FAKE_CODEX = path.join(REPO_ROOT, ".research-loop", "tests", "fixtures", "autoresearch", "fake-codex.mjs");
+const FAKE_OCI_BIN = path.join(REPO_ROOT, ".research-loop", "tests", "fixtures", "autoresearch", "fake-oci");
 const FIXED_TIME = "2026-07-28T08:00:00.000Z";
 
 function cleanEnvironment() {
@@ -86,6 +87,7 @@ export default defineConfig({
     cwd: REPO_ROOT,
     env: {
       ...cleanEnvironment(),
+      PATH: `${FAKE_OCI_BIN}${path.delimiter}${process.env.PATH ?? ""}`,
       AUTORESEARCH_WORKSPACE_ROOT: FIXTURE_ROOT,
       AUTORESEARCH_PRIVATE_ROOT: PRIVATE_ROOT,
       AUTORESEARCH_CODEX_PATH: FAKE_CODEX,
