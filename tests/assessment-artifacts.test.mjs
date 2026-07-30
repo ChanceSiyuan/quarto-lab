@@ -98,6 +98,39 @@ test("publishes completed artifacts atomically under the problem", async () => {
   );
 });
 
+test("publishes derivation provenance with terminal artifacts", async () => {
+  const root = await mkdtemp(join(tmpdir(), "assessment-store-derivation-"));
+  await mkdir(join(root, "problems", "Prob-001"), { recursive: true });
+  const store = createArtifactStore({
+    rootDir: root,
+    now: () => new Date("2026-07-30T01:02:03.000Z"),
+    randomBytes: () => Buffer.from("abc123", "hex"),
+  });
+  const run = await store.createAcceptedRun({ problemId: "Prob-001" });
+  const derivation = {
+    schemaVersion: 1,
+    kind: "qec-valuation-only-refresh",
+    problemId: "Prob-001",
+    runId: "20260730T010203Z-abc123",
+    sourceRunId: "20260729T010203Z-source",
+    sourceSnapshotId: "20260729T010203Z-111111111111",
+    refreshedSnapshotId: "20260730T010203Z-222222222222",
+    notice: "Qualitative assessment retained from a prior completed run; quantitative valuation refreshed from the bound Scientific Demand snapshot.",
+  };
+
+  await store.writeTerminalArtifacts(run, {
+    status: "completed",
+    input: { schemaVersion: 2, problemId: "Prob-001" },
+    assessment: { accepted: true },
+    summary: { runId: "20260730T010203Z-abc123", problemId: "Prob-001" },
+    reportHtml: "<!doctype html><title>Derived</title>",
+    derivation,
+  });
+
+  const text = await readFile(join(root, "problems", "Prob-001", "assessments", "20260730T010203Z-abc123", "derivation.json"), "utf8");
+  assert.deepEqual(JSON.parse(text), derivation);
+});
+
 test("read paths do not create problem directories", async () => {
   const root = await mkdtemp(join(tmpdir(), "assessment-read-paths-"));
   const store = createArtifactStore({ rootDir: root });
