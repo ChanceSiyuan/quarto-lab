@@ -39,24 +39,18 @@ falls back to drafts or downloaded literature when trusted knowledge is absent.
 
 ## A method for evaluating research problems
 
-Research Loop asks two different questions about every candidate:
+Research Loop evaluates each candidate through three separate lenses:
 
-| Score | Question |
+| Measure | Question |
 |---|---|
-| **Research Value (V)** | Is this problem important, novel, plausible, generalizable, and worth its cost? |
-| **Autoresearch Fit (A)** | Can progress be measured through a bounded, reproducible, hard-to-game search loop? |
-| **Combined Priority (S)** | Is the problem strong on both dimensions? |
+| **Scientific Demand Score** | Does the literature show sustained scientific attention? It combines evidence-weighted influence, momentum, and breadth rather than summing raw citations. |
+| **Expected Attributable Net Social Value (EANSV)** | How much expected social value is attributable to doing this research, after subtracting the without-research counterfactual and research cost? |
+| **Autoresearch Fit** | Can progress be measured through a bounded, reproducible, hard-to-game loop with useful feedback and practical attempt times? |
 
-V and A are weighted scores from 0–100. S is their harmonic mean, so an
-important but untestable problem—or an easy but low-value problem—does not rank
-high by accident.
-
-The assessment produces one advisory verdict:
-
-- `DO_NOW` — high research value and strong autoresearch fit;
-- `REFRAME` — valuable, but needs a more bounded formulation;
-- `NOT_AUTORESEARCH` — valuable, but unsuitable for this research loop; or
-- `DEFER` — current evidence does not justify priority.
+These measures keep scientific demand, attributable social value, and execution
+fit distinct. A popular topic is not automatically valuable, a broad market
+forecast is not credited to one problem, and a valuable problem is not assumed
+to be suitable for autonomous search.
 
 Assessments bind the problem description, the trusted knowledge resolver result,
 and a frozen evidence snapshot. Completed runs are immutable and keep their
@@ -65,7 +59,7 @@ Missing evidence stays unknown rather than becoming a fake zero.
 
 The method is advisory, not a calibrated scientific or investment forecast. It
 does not treat citations as proof of novelty, external evidence as trusted
-knowledge, or modeled technical success as a completed benchmark.
+knowledge, or scenario assumptions as observed outcomes.
 
 ## Quick start
 
