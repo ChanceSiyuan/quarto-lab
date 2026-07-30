@@ -1,5 +1,12 @@
 const SCIENTIFIC_ACTIVE_WEIGHT = 0.9;
 
+const STATIC_EXAMPLE_POINTS = Object.freeze({
+  scientificDemand: 33.4,
+  eansv: 181_422.55,
+  eansvDisplay: "+$180K USD 2026",
+  autoresearchFit: 88.5,
+});
+
 export const AUTORESEARCH_DIMENSIONS = Object.freeze([
   { id: "modifiable", label: "modifiable search object", weight: 20 },
   { id: "objective", label: "executable objective", weight: 20 },
@@ -155,6 +162,9 @@ export function getStaticEvaluation(problemId) {
 }
 
 export function getStaticEvaluationPoints(problemId) {
+  if (problemId === "Prob-000") {
+    return STATIC_EXAMPLE_POINTS;
+  }
   const scenario = SCENARIOS[problemId];
   if (!scenario) return null;
   const rawFit = calculateAutoresearchFit(scenario.fit.map(([id, score]) => ({ id, score })), 1);

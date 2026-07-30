@@ -55,10 +55,10 @@ type ProblemConsoleProps = {
   launch: Launch;
 };
 
-function ProblemStatus({ status }: { status: string }) {
+function ProblemStatus({ problemId, status }: { problemId: string; status: string }) {
   return (
     <span className={`status-badge status-${status}`}>
-      {judgmentStatusCopy(status)}
+      {judgmentStatusCopy(status, problemId)}
     </span>
   );
 }
@@ -149,7 +149,7 @@ export function ProblemConsole({
                       <small>{row.problem.summary}</small>
                     </a>
                   </th>
-                  <td><ProblemStatus status={row.status.value} /></td>
+                  <td><ProblemStatus problemId={row.problem.id} status={row.status.value} /></td>
                   <td>
                     <div className="cell-stack">
                       <strong>{row.gate.primary}</strong>
@@ -188,7 +188,7 @@ export function ProblemConsole({
                   <p>{row.problem.summary}</p>
                 </div>
                 <dl>
-                  <div><dt>{row.status.label}</dt><dd><ProblemStatus status={row.status.value} /></dd></div>
+                  <div><dt>{row.status.label}</dt><dd><ProblemStatus problemId={row.problem.id} status={row.status.value} /></dd></div>
                   <div><dt>{row.gate.label}</dt><dd>{row.gate.primary} · {row.gate.secondary}</dd></div>
                   <div><dt>{row.scientificDemand.label}</dt><dd>{row.scientificDemand.value}</dd></div>
                   <div><dt>{row.eansv.label}</dt><dd>{row.eansv.value}</dd></div>

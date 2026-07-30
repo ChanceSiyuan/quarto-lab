@@ -91,6 +91,12 @@ test("pages showcase renders the five official public problem details", async ()
   for (const id of PUBLIC_PROBLEM_IDS.slice(1)) {
     const html = await readFile(join(out, "problems", id, "index.html"), "utf8");
     assert.match(html, new RegExp(`<p class="eyebrow">${id}</p>`));
+    assert.match(html, /<main class="detail-shell research-shell /);
+    assert.match(html, />Autoresearch status<\/h2>/);
+    assert.match(html, />Not started\.<\/p>/);
+    assert.doesNotMatch(html, /Problem detail/);
+    assert.doesNotMatch(html, /The detailed problem workspace will be designed next/);
+    assert.doesNotMatch(html, /class="detail-summary"/);
     assert.match(html, /href="\/research-loop\/"/);
     assert.doesNotMatch(html, /<script\b/i);
     assert.doesNotMatch(html, /codex:\/\//i);
@@ -99,6 +105,19 @@ test("pages showcase renders the five official public problem details", async ()
     assert.doesNotMatch(html, /Prepare autoresearch/);
     assert.doesNotMatch(html, /Local assessment unavailable/);
   }
+});
+
+test("pages showcase homepage marks Prob-000 done and the other five judged", async () => {
+  const html = await readFile(join(out, "index.html"), "utf8");
+  const doneLabels = html.match(/>Done<\/span>/g) ?? [];
+  const judgedLabels = html.match(/>Judged<\/span>/g) ?? [];
+
+  assert.equal(doneLabels.length, 2, "Prob-000 appears once in each responsive view");
+  assert.equal(judgedLabels.length, 10, "the other five appear once in each responsive view");
+  assert.match(html, /33\.4 \/ 100/);
+  assert.match(html, /\+\$180K USD 2026/);
+  assert.match(html, /88\.5 \/ 100/);
+  assert.doesNotMatch(html, /Solving judged done/);
 });
 
 test("pages showcase links to the bundled knowledge site under the repository base path", async () => {

@@ -185,7 +185,7 @@ test("server-renders the problem console shell", async () => {
   assert.match(html, /Cannot open Codex\?/);
   assert.match(html, /codex:\/\/threads\/new/);
   assert.match(html, /<span class="status-badge status-draft">Awaiting judgment<\/span>/);
-  assert.match(html, /<span class="status-badge status-solved">Solving judged done<\/span>/);
+  assert.match(html, /<span class="status-badge status-solved">Judged<\/span>/);
   assert.match(html, /\$3\.0M USD 2026/);
   assert.doesNotMatch(html, /metric-strip/);
   assert.doesNotMatch(html, /console-toolbar/);
@@ -232,7 +232,7 @@ test("server-renders populated desktop and narrow problem rows", async () => {
   assert.match(html, /Fresh Hamiltonian gate/);
   assert.match(html, /Interval arithmetic on held-out instances\./);
   assert.match(html, /interval-arithmetic/);
-  assert.match(html, /<span class="status-badge status-accepted">Solving judged done<\/span>/);
+  assert.match(html, /<span class="status-badge status-accepted">Solving<\/span>/);
   assert.match(html, /<td>—<\/td><td>—<\/td><td>—<\/td>/);
   assert.match(html, /1 index errors/);
   assert.match(html, /problems\/Prob-018\/problem\.json/);
@@ -364,9 +364,12 @@ test("pages static showcase renders public problem details without local control
 
   const html = await response.text();
   assert.match(html, /<p class="eyebrow">Prob-017<\/p>/);
-  assert.match(html, /<h1>Fresh Hamiltonian gate<\/h1>/);
-  assert.match(html, /<p class="detail-summary">Interval arithmetic on held-out instances\.<\/p>/);
-  assert.match(html, /The detailed problem workspace will be designed next; this page currently locks the route, identity, and return path\./);
+  assert.match(html, />Fresh Hamiltonian gate<\/h1>/);
+  assert.doesNotMatch(html, /class="detail-summary"/);
+  assert.match(html, /Autoresearch status/);
+  assert.match(html, /Not started\./);
+  assert.doesNotMatch(html, /Problem detail/);
+  assert.doesNotMatch(html, /The detailed problem workspace will be designed next/);
   assert.doesNotMatch(html, /Available in local mode/);
   assert.doesNotMatch(html, /Prepare autoresearch/);
   assert.doesNotMatch(html, /Local assessment unavailable/);

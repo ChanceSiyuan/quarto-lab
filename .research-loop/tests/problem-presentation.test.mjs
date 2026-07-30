@@ -3,6 +3,7 @@ import test from "node:test";
 import {
   buildProblemPresentation,
   buildTierMetrics,
+  judgmentStatusCopy,
 } from "../../src/lib/problems/presentation.mjs";
 
 test("formats tier metrics as raw counts without a target cap", () => {
@@ -82,4 +83,29 @@ test("renders recorded evaluation points for scenario-backed problems", () => {
   assert.equal(row.scientificDemand.value, "81 / 100");
   assert.equal(row.eansv.value, "$3.0M USD 2026");
   assert.equal(row.autoresearchFit.value, "98 / 100");
+});
+
+test("renders the approved Prob-000 evaluation points on the homepage", () => {
+  const row = buildProblemPresentation({
+    id: "Prob-000",
+    title: "CSS code-distance algorithm search",
+    summary: "Find a publishable CSS code-distance algorithm.",
+    status: "solving",
+    gate: { type: "python-benchmark", readiness: "executable" },
+    provenance: { sourceCount: 3 },
+    lastActivity: { summary: "Static example ledger prepared", at: "2026-07-27T02:40:00.000Z" },
+    updatedAt: "2026-07-27T02:40:00.000Z",
+  });
+
+  assert.equal(row.scientificDemand.value, "33.4 / 100");
+  assert.equal(row.eansv.value, "+$180K USD 2026");
+  assert.equal(row.autoresearchFit.value, "88.5 / 100");
+});
+
+test("renders solving, judged, and done as distinct judgment labels", () => {
+  assert.equal(judgmentStatusCopy("accepted", "Prob-017"), "Solving");
+  assert.equal(judgmentStatusCopy("solved", "Prob-001"), "Judged");
+  assert.equal(judgmentStatusCopy("published", "Prob-002"), "Done");
+  assert.equal(judgmentStatusCopy("solving", "Prob-000"), "Done");
+  assert.equal(judgmentStatusCopy("archived", "Prob-124"), "Judged");
 });

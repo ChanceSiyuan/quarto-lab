@@ -15,14 +15,23 @@ export function buildTierMetrics(summary) {
   ];
 }
 
-export function judgmentStatusCopy(status) {
+export function judgmentStatusCopy(status, problemId) {
+  if (problemId === "Prob-000") {
+    return "Done";
+  }
+  if (getStaticEvaluationPoints(problemId)) {
+    return "Judged";
+  }
+
   switch (status) {
     case "accepted":
     case "solving":
+      return "Solving";
     case "solved":
     case "publishing":
+      return "Judged";
     case "published":
-      return "Solving judged done";
+      return "Done";
     case "rejected":
       return "Rejected";
     case "archived":
@@ -66,7 +75,7 @@ export function buildProblemPresentation(problem) {
   const eansvField = {
     key: "eansv",
     label: "Expected Attributable Net Social Value (EANSV)",
-    value: points ? formatEansvPoint(points.eansv) : UNSCORED,
+    value: points ? points.eansvDisplay ?? formatEansvPoint(points.eansv) : UNSCORED,
   };
   const autoresearchFitField = {
     key: "autoresearchFit",
