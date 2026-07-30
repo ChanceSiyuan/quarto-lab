@@ -105,13 +105,10 @@ test("problem routes place the local preparation panel between headers and resea
 });
 
 test("preserved dashboard and global layout sources are unchanged from the task base", async () => {
-  const preservedBase = "11cc858a30f4424f6ec04490b8df14713c84f0bb";
+  const preservedBase = "9b0de684eec7bee49523562b833bca2a1784e7bb";
   for (const path of ["globals.css", "page.tsx", "layout.tsx"]) {
     const current = await readFile(new URL(`../../src/app/${path}`, import.meta.url), "utf8");
-    const base = execFileSync("git", ["show", `${preservedBase}:app/${path}`], { encoding: "utf8" });
-    const normalizedCurrent = path === "page.tsx"
-      ? current.replace('from "../../.generated/problem-index.json"', 'from "../.generated/problem-index.json"')
-      : current;
-    assert.equal(normalizedCurrent, base, path);
+    const base = execFileSync("git", ["show", `${preservedBase}:src/app/${path}`], { encoding: "utf8" });
+    assert.equal(current, base, path);
   }
 });
