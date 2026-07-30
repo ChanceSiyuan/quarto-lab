@@ -124,6 +124,8 @@ describe("ResearchLoopSiteService", () => {
   it("reuses an already-running site without spawning another process", async () => {
     const runtime = {
       check: vi.fn(async () => true),
+      repositoryState: vi.fn(async () => "ready"),
+      initialize: vi.fn(),
       startBridge: vi.fn(),
       spawn: vi.fn(),
       sleep: vi.fn(),
@@ -143,6 +145,8 @@ describe("ResearchLoopSiteService", () => {
         .mockResolvedValueOnce(false)
         .mockResolvedValueOnce(true),
       startBridge: vi.fn(async () => undefined),
+      repositoryState: vi.fn(async () => "ready"),
+      initialize: vi.fn(),
       hasBuild: vi.fn(async () => false),
       listen: vi.fn(() => () => {}),
       spawn: vi.fn(async () => undefined),
@@ -170,6 +174,8 @@ describe("ResearchLoopSiteService", () => {
         .mockResolvedValueOnce(false)
         .mockResolvedValueOnce(true),
       hasBuild: vi.fn(async () => true),
+      repositoryState: vi.fn(async () => "ready"),
+      initialize: vi.fn(),
       startBridge: vi.fn(async () => undefined),
       listen: vi.fn(() => () => {}),
       spawn: vi.fn(async () => undefined),
@@ -182,7 +188,53 @@ describe("ResearchLoopSiteService", () => {
     expect(progress).toHaveBeenCalledWith("Starting the existing main site…");
     const script = (runtime.spawn as any).mock.calls[0][1].argv[2] as string;
     expect(script).toContain('if [ ! -f "$1/dist/server/index.js" ]');
+    expect(script).toContain('if [ ! -f "$1/node_modules/.package-lock.json" ]');
+    expect(script).toContain("Research Loop requires Node.js and npm");
+    expect(script).toContain("Research Loop requires Quarto");
+    expect(script).toContain("npm ci");
     expect(script).toContain("npm run build");
+  });
+
+  it.each(["empty", "partial"] as const)(
+    "initializes a %s content directory before installing and starting the site",
+    async (repositoryState) => {
+      const progress = vi.fn();
+      const runtime = {
+        check: vi.fn()
+          .mockResolvedValueOnce(false)
+          .mockResolvedValueOnce(true),
+        repositoryState: vi.fn(async () => repositoryState),
+        initialize: vi.fn(async () => undefined),
+        hasBuild: vi.fn(async () => false),
+        startBridge: vi.fn(async () => undefined),
+        listen: vi.fn(() => () => {}),
+        spawn: vi.fn(async () => undefined),
+        sleep: vi.fn(async () => undefined),
+      };
+      const service = new ResearchLoopSiteService(runtime as any);
+
+      await service.deploy("/repo", progress);
+
+      expect(runtime.initialize).toHaveBeenCalledWith("/repo");
+      expect(progress).toHaveBeenCalledWith(repositoryState === "empty"
+        ? "Initializing Research Loop…"
+        : "Completing the Research Loop structure…");
+    },
+  );
+
+  it("refuses a non-empty unrelated directory without starting any process", async () => {
+    const runtime = {
+      repositoryState: vi.fn(async () => "incompatible"),
+      initialize: vi.fn(),
+      check: vi.fn(async () => false),
+      startBridge: vi.fn(),
+      spawn: vi.fn(),
+    };
+    const service = new ResearchLoopSiteService(runtime as any);
+
+    await expect(service.deploy("/documents")).rejects.toThrow("contains files");
+    expect(runtime.initialize).not.toHaveBeenCalled();
+    expect(runtime.spawn).not.toHaveBeenCalled();
   });
 
   it("rejects deployment when no repository is selected", async () => {
@@ -197,6 +249,8 @@ describe("researchLoopBuildProgress", () => {
       .toBe("Building Knowledge 42/139…");
     expect(researchLoopBuildProgress("> research-loop@0.1.0 build:app"))
       .toBe("Building the main-site application…");
+    expect(researchLoopBuildProgress("[research-loop] installing dependencies"))
+      .toBe("Installing main-site dependencies…");
     expect(researchLoopBuildProgress("Build complete. Run `vinext start`"))
       .toBe("Build complete; starting the main site…");
   });

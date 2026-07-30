@@ -57,18 +57,23 @@ export function workspaceToolbar() {
   return `<section class="zc-sidebar zc-workbench-chat is-workspace-open" data-mode="agent">
     <section class="zc-qmd-workspace">
       <header class="zc-qmd-toolbar">
-        <button class="zc-qmd-back">← Back to AI</button>
-        <button class="zc-qmd-files">文件</button>
-        <button class="zc-qmd-quickopen-button">Open…</button>
-        <strong class="zc-qmd-path">knowledge/learning_theo/Virtual_Distillation/majorityvote.qmd</strong>
-        <span class="zc-qmd-tree-badge" data-tree="knowledge">Trusted Knowledge</span>
+        <button class="zc-qmd-back" title="Back to AI">←</button>
+        <button class="zc-qmd-quickopen-button" title="Open a QMD">⌕</button>
+        <strong class="zc-qmd-path">drafts/learning_theo/Virtual_Distillation/majorityvote.qmd</strong>
+        <span class="zc-qmd-tree-badge" data-tree="drafts">Draft</span>
+        <button class="zc-qmd-compliance" title="Draft checks passed">✓</button>
+        <button class="zc-qmd-review" title="Add to Knowledge">↑</button>
+        <button class="zc-qmd-compare" title="Show AI-modified Draft preview">◉</button>
+        <button class="zc-qmd-change-keep" title="Keep AI version">✓</button>
         <select class="zc-qmd-editor-picker"><option>Cursor</option><option>VS Code</option></select>
-        <button class="zc-qmd-edit-external">在 Cursor 中编辑</button>
-        <button class="zc-qmd-refresh">Refresh</button>
+        <button class="zc-qmd-edit-external" title="Edit in Cursor">✎</button>
+        <button class="zc-qmd-refresh" title="Refresh Preview">↻</button>
       </header>
       <div class="zc-qmd-status">Preview ready · refreshes automatically after save</div>
+      <div class="zc-qmd-compliance-details" hidden></div>
       <div class="zc-qmd-body">
         <nav class="zc-qmd-filecolumn"></nav>
+        <button class="zc-qmd-file-toggle">‹</button>
         <div class="zc-qmd-render"></div>
       </div>
     </section>

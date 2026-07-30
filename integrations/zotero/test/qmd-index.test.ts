@@ -25,7 +25,11 @@ const FIXTURE = scanner({
   "/repo/knowledge": ["Magic/", "index.qmd", "_quarto.yml", "styles.css"],
   "/repo/knowledge/Magic": ["Bell_magic.qmd", "Bell_table.svg"],
   "/repo/drafts": ["Dynamics/", "_quarto.yml"],
-  "/repo/drafts/Dynamics": ["floquet.qmd", ".preview/"],
+  "/repo/drafts/Dynamics": [
+    "floquet.qmd",
+    "floquet.qlab-preview-aaaaaaaaaaaa.qmd",
+    ".preview/",
+  ],
   "/repo/drafts/Dynamics/.preview": ["floquet.html"],
 });
 
@@ -44,6 +48,7 @@ describe("buildQmdIndex", () => {
   it("skips generated preview output", async () => {
     const entries = await buildQmdIndex(FIXTURE, "/repo");
     expect(entries.some((entry) => entry.relativePath.includes(".preview"))).toBe(false);
+    expect(entries.some((entry) => entry.relativePath.includes(".qlab-preview-"))).toBe(false);
   });
 
   it("treats a missing tree as empty rather than as a failure", async () => {

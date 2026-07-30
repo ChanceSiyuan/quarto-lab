@@ -116,6 +116,28 @@ describe("SidebarView", () => {
     }
   });
 
+  it("forwards assistant PDF citations to Zotero page navigation", () => {
+    const body = document.createElement("div");
+    document.body.appendChild(body);
+    const handlers = { ...callbacks(), onOpenPdfPage: vi.fn() };
+    const view = new SidebarView(body, handlers);
+    view.setState({
+      phase: "ready",
+      entries: [{
+        id: "a1",
+        kind: "assistant",
+        text: "See [PDF 第6–7页](https://arxiv.org/pdf/2306.13123#page=6)",
+      }],
+    });
+
+    body.querySelector<HTMLAnchorElement>(".zc-pdf-page-link")!.click();
+    expect(handlers.onOpenPdfPage).toHaveBeenCalledWith({
+      page: 6,
+      endPage: 7,
+      sourceUrl: "https://arxiv.org/pdf/2306.13123#page=6",
+    });
+  });
+
   it("keeps the repository selector without the QLab shortcut grid", () => {
     const body = document.createElement("div");
     document.body.appendChild(body);
@@ -170,7 +192,7 @@ describe("SidebarView", () => {
         selectionText: "selected theorem",
       },
       contextChips: [
-        { id: "paper", kind: "paper", label: "Current Paper" },
+        { id: "paper", kind: "paper", label: "Current Paper", removable: true },
         { id: "selection", kind: "selection", label: "选区 · 16 characters", removable: true },
       ],
       contextSuggestions: [
@@ -194,6 +216,9 @@ describe("SidebarView", () => {
 
     expect(body.querySelector('select[title="研究模式"]')).toBeNull();
 
+    body.querySelector<HTMLButtonElement>('[data-context-id="paper"]')?.click();
+    expect(handlers.onRemoveContext).toHaveBeenCalledWith("paper");
+
     body.querySelector<HTMLButtonElement>('button[title="Remove context: 选区 · 16 characters"]')?.click();
     expect(handlers.onRemoveContext).toHaveBeenCalledWith("selection");
 
@@ -210,7 +235,112 @@ describe("SidebarView", () => {
     expect(menu.hidden).toBe(true);
   });
 
-  it("gives every thread tab a delete button that removes the record without switching to it (bug-triage #3)", () => {
+  it("keeps an explicitly empty chip list empty after every selected context is removed", () => {
+    const body = document.createElement("div");
+    document.body.appendChild(body);
+    const view = new SidebarView(body, callbacks());
+    view.setState({
+      phase: "ready",
+      context: {
+        key: "ABC123",
+        title: "A Test Paper",
+        pageLabel: "5",
+      },
+      contextChips: [],
+    });
+
+    expect(body.querySelector(".zc-context-chip")).toBeNull();
+    expect(body.querySelector(".zc-add-context-button")).not.toBeNull();
+  });
+
+  it("renders a collapsible searchable Workbench history rail for Codex and imported ChatGPT", () => {
+    vi.useFakeTimers();
+    try {
+      const body = document.createElement("div");
+      document.body.appendChild(body);
+      const handlers = {
+        ...callbacks(),
+        onHistorySearch: vi.fn(),
+        onHistoryLoadMore: vi.fn(),
+        onSelectHistoryConversation: vi.fn(),
+        onToggleHistoryPin: vi.fn(),
+        onOpenChatGPT: vi.fn(),
+        onImportChatGPTHistory: vi.fn(),
+        onReturnToLiveConversation: vi.fn(),
+      };
+      const view = new SidebarView(body, handlers, { surface: "workbench" });
+      view.setState({
+        phase: "ready",
+        historyConversations: [{
+          id: "codex-a",
+          title: "Pinned Codex task",
+          updatedAt: "2026-07-30T00:00:00.000Z",
+          source: "codex",
+          sourceLabel: "Codex App",
+          pinned: true,
+        }, {
+          id: "chatgpt-a",
+          title: "Imported physics chat",
+          updatedAt: "2026-07-29T00:00:00.000Z",
+          source: "chatgpt",
+          sourceLabel: "Imported ChatGPT",
+          readOnly: true,
+          active: true,
+        }],
+        historyHasMore: true,
+        readOnlyConversation: true,
+      });
+
+      const rail = body.querySelector<HTMLElement>(".zc-history-rail")!;
+      const dock = body.querySelector<HTMLElement>(".zc-workbench-dock")!;
+      const historyButton = body.querySelector<HTMLButtonElement>('[title="Conversation History"]')!;
+      expect(body.querySelector(".zc-topbar")).toBeNull();
+      expect(body.querySelector(".zc-thread-tabs")?.firstElementChild).toBe(historyButton);
+      expect(historyButton.textContent).toBe("");
+      expect(dock.parentElement).toBe(body.querySelector(".zc-workbench-chat"));
+      expect(dock.querySelector('[title="Summarize this chat into a Draft"]')).toBeNull();
+      expect(rail.hidden).toBe(false);
+      expect(rail.textContent).toContain("Pinned Codex task");
+      expect(rail.textContent).toContain("Imported physics chat");
+      expect(body.querySelector<HTMLTextAreaElement>(".zc-composer-input")!.disabled).toBe(true);
+
+      body.querySelector<HTMLButtonElement>('.zc-history-pin[title="Unpin Conversation"]')!.click();
+      expect(handlers.onToggleHistoryPin).toHaveBeenCalledWith("codex-a", false);
+      [...body.querySelectorAll<HTMLButtonElement>(".zc-history-open")]
+        .find((button) => button.textContent?.includes("Imported physics chat"))!.click();
+      expect(handlers.onSelectHistoryConversation).toHaveBeenCalledWith(
+        expect.objectContaining({ id: "chatgpt-a", source: "chatgpt" }),
+      );
+      body.querySelector<HTMLButtonElement>(".zc-history-return-live")!.click();
+      expect(handlers.onReturnToLiveConversation).toHaveBeenCalledOnce();
+      body.querySelector<HTMLButtonElement>(".zc-history-load-more")!.click();
+      expect(handlers.onHistoryLoadMore).toHaveBeenCalledOnce();
+
+      const search = body.querySelector<HTMLInputElement>(".zc-history-search")!;
+      search.value = "physics";
+      search.dispatchEvent(new Event("input", { bubbles: true }));
+      expect(rail.textContent).not.toContain("Pinned Codex task");
+      expect(rail.textContent).toContain("Imported physics chat");
+      vi.advanceTimersByTime(250);
+      expect(handlers.onHistorySearch).toHaveBeenCalledWith("physics");
+
+      body.querySelector<HTMLButtonElement>('[title="Open your live ChatGPT account history"]')!.click();
+      body.querySelector<HTMLButtonElement>('[title*="Import conversations.json"]')!.click();
+      expect(handlers.onOpenChatGPT).toHaveBeenCalledOnce();
+      expect(handlers.onImportChatGPTHistory).toHaveBeenCalledOnce();
+
+      body.querySelector<HTMLButtonElement>('[title="Conversation History"]')!.click();
+      expect(rail.hidden).toBe(true);
+      expect(dock.isConnected).toBe(true);
+      dock.querySelector<HTMLButtonElement>('[title="Account"]')!.click();
+      expect(dock.querySelector(".zc-account-menu")).not.toBeNull();
+    }
+    finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("gives every open conversation tab a close button without switching to it", () => {
     const body = document.createElement("div");
     document.body.appendChild(body);
     const handlers = callbacks();
@@ -230,7 +360,7 @@ describe("SidebarView", () => {
     expect(deleteButtons).toHaveLength(2);
     for (const button of deleteButtons) {
       expect(button.textContent).toBe("×");
-      expect(button.title).toBe("Delete Conversation");
+      expect(button.title).toBe("Close Tab");
     }
 
     deleteButtons[1]!.click();
@@ -259,7 +389,7 @@ describe("SidebarView", () => {
     expect(body.querySelector<HTMLButtonElement>('button[title="Creating a new conversation…"]')).not.toBeNull();
   });
 
-  it("gives every row in the Conversation History dropdown a delete button too, not just the 12-item tab strip (reviewer Important #2)", () => {
+  it("gives every row in the compact conversation picker a close button", () => {
     const body = document.createElement("div");
     document.body.appendChild(body);
     const handlers = callbacks();
@@ -348,6 +478,29 @@ describe("SidebarView", () => {
 
     expect(body.querySelector(".zc-checkpoint-card")).toBeNull();
     expect([...body.querySelectorAll("button")].some((button) => button.textContent === "Restore")).toBe(false);
+  });
+
+  it("does not show stale approval actions for Agent changes that were already applied", () => {
+    const body = document.createElement("div");
+    document.body.appendChild(body);
+    const handlers = callbacks();
+    handlers.onReviewDecision = vi.fn();
+    const view = new SidebarView(body, handlers);
+    view.setState({
+      phase: "ready",
+      reviews: [{
+        id: "workspace:turn-1",
+        title: "Agent workspace changes",
+        summary: "Review the visible Draft on the right.",
+        diff: "@@ draft\n-old\n+new",
+        state: "applied",
+      }],
+    });
+
+    expect(body.textContent).toContain("Applied");
+    expect(body.textContent).not.toContain("Accept Suggestion");
+    expect(body.textContent).not.toContain("Dismiss");
+    expect(handlers.onReviewDecision).not.toHaveBeenCalled();
   });
 
   it("collapses a long user message and lets the user expand and collapse it", () => {
@@ -714,7 +867,7 @@ describe("SidebarView", () => {
     expect(handlers.onNotingApply).toHaveBeenCalledWith({ kind: "new" });
   });
 
-  it("uses topbar actions for the native workbench tab and chat-to-draft skill", () => {
+  it("keeps the Workbench launcher but removes the redundant chat-to-draft button", () => {
     const body = document.createElement("div");
     document.body.appendChild(body);
     const handlers = {
@@ -726,8 +879,8 @@ describe("SidebarView", () => {
     view.setState(baseState() as any);
     (body.querySelector('[title="Open the QLab Workbench in a Zotero tab"]') as HTMLButtonElement).click();
     expect(handlers.onOpenWorkbench).toHaveBeenCalled();
-    (body.querySelector('[title="Summarize this chat into a Draft"]') as HTMLButtonElement).click();
-    expect(handlers.onCaptureChatDraft).toHaveBeenCalled();
+    expect(body.querySelector('[title="Summarize this chat into a Draft"]')).toBeNull();
+    expect(handlers.onCaptureChatDraft).not.toHaveBeenCalled();
   });
 
   it("uses the complete chat UI once in workbench mode and lets an empty tab choose a paper", () => {
@@ -740,6 +893,8 @@ describe("SidebarView", () => {
 
     const root = body.querySelector<HTMLElement>(".zc-sidebar.zc-workbench-chat")!;
     expect(root.getAttribute("role")).toBe("main");
+    expect(root.querySelector(".zc-topbar")).toBeNull();
+    expect(root.querySelector(":scope > .zc-workbench-dock")).not.toBeNull();
     expect(root.querySelector<HTMLButtonElement>(".zc-workbench-open")!.hidden).toBe(true);
     expect(root.querySelectorAll(".zc-qlab-command-button")).toHaveLength(0);
     const choose = root.querySelector<HTMLButtonElement>(".zc-choose-paper")!;
@@ -831,6 +986,54 @@ describe("SidebarView", () => {
     await vi.waitFor(() => expect(handlers.onDeployMainSite).toHaveBeenCalledOnce());
     await vi.waitFor(() => expect(button.textContent).toBe("Main Site"));
     expect(body.querySelector(".zc-workbench-chat")!.classList.contains("is-main-site-open")).toBe(true);
+  });
+
+  it.each(["empty", "partial"] as const)(
+    "offers Initialize for a %s Research Loop directory",
+    async (repositoryState) => {
+      const browser = document.createElement("browser");
+      (document as any).createXULElement = vi.fn(() => browser);
+      const body = document.createElement("div");
+      document.body.appendChild(body);
+      const handlers = {
+        ...callbacks(),
+        onCheckMainSiteRepository: vi.fn(async () => repositoryState),
+        onCheckMainSite: vi.fn(async () => true),
+        onDeployMainSite: vi.fn(async (progress?: (message: string) => void) => {
+          progress?.("Initializing Research Loop…");
+        }),
+      };
+      new SidebarView(body, handlers, { surface: "workbench" });
+      const button = body.querySelector<HTMLButtonElement>(".zc-main-site-button")!;
+
+      await vi.waitFor(() => expect(button.textContent).toBe("Initialize"));
+      expect(button.classList.contains("is-initialize")).toBe(true);
+      expect(handlers.onCheckMainSite).not.toHaveBeenCalled();
+      button.click();
+      await vi.waitFor(() => expect(handlers.onDeployMainSite).toHaveBeenCalledOnce());
+      await vi.waitFor(() => expect(button.textContent).toBe("Main Site"));
+    },
+  );
+
+  it("sends an incompatible directory back to the folder picker without deploying", async () => {
+    const body = document.createElement("div");
+    document.body.appendChild(body);
+    let repositoryState: "incompatible" | "empty" = "incompatible";
+    const handlers = {
+      ...callbacks(),
+      onCheckMainSiteRepository: vi.fn(async () => repositoryState),
+      onCheckMainSite: vi.fn(async () => false),
+      onDeployMainSite: vi.fn(async () => undefined),
+      onChooseQLabRoot: vi.fn(async () => { repositoryState = "empty"; }),
+    };
+    new SidebarView(body, handlers, { surface: "workbench" });
+    const button = body.querySelector<HTMLButtonElement>(".zc-main-site-button")!;
+
+    await vi.waitFor(() => expect(button.textContent).toBe("Choose Empty Folder"));
+    button.click();
+    await vi.waitFor(() => expect(handlers.onChooseQLabRoot).toHaveBeenCalledOnce());
+    await vi.waitFor(() => expect(button.textContent).toBe("Initialize"));
+    expect(handlers.onDeployMainSite).not.toHaveBeenCalled();
   });
 
   it("does not add a main-site button to the compact sidebar", () => {

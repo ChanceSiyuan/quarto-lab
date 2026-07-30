@@ -60,10 +60,22 @@ test("the preview toolbar keeps every control inside a narrow pane", async () =>
     html: workspaceToolbar(),
     width: 480,
     height: 640,
-    measure: [".zc-qmd-edit-external", ".zc-qmd-refresh", ".zc-qmd-tree-badge"],
+    measure: [
+      ".zc-qmd-compliance",
+      ".zc-qmd-review",
+      ".zc-qmd-edit-external",
+      ".zc-qmd-refresh",
+      ".zc-qmd-tree-badge",
+    ],
   });
 
-  for (const selector of [".zc-qmd-edit-external", ".zc-qmd-refresh", ".zc-qmd-tree-badge"]) {
+  for (const selector of [
+    ".zc-qmd-compliance",
+    ".zc-qmd-review",
+    ".zc-qmd-edit-external",
+    ".zc-qmd-refresh",
+    ".zc-qmd-tree-badge",
+  ]) {
     assert.equal(measurements[selector].found, true, `${selector} is missing`);
     assert.equal(
       measurements[selector].clippedRight,
@@ -71,4 +83,20 @@ test("the preview toolbar keeps every control inside a narrow pane", async () =>
       `${selector} overflows the toolbar at 480px; the path label must give way first`,
     );
   }
+});
+
+test("the preview body consumes the remaining workspace height when compliance details are hidden", async () => {
+  const { measurements } = await renderSurface({
+    html: workspaceToolbar(),
+    width: 760,
+    height: 640,
+    measure: [".zc-qmd-workspace", ".zc-qmd-toolbar", ".zc-qmd-status", ".zc-qmd-body"],
+  });
+  const available = measurements[".zc-qmd-workspace"].height
+    - measurements[".zc-qmd-toolbar"].height
+    - measurements[".zc-qmd-status"].height;
+  assert.ok(
+    measurements[".zc-qmd-body"].height >= available - 2,
+    `preview body leaves ${available - measurements[".zc-qmd-body"].height}px blank below it`,
+  );
 });

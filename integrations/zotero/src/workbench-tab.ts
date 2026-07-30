@@ -1,3 +1,5 @@
+import type { QmdWorkspaceView } from "./qmd-workspace";
+
 export const QLAB_WORKBENCH_TAB_TYPE = "qlab";
 export const QLAB_WORKBENCH_TAB_ICON = "qlabChat";
 
@@ -15,6 +17,7 @@ export interface WorkbenchTabView {
   setState(next: any): void;
   isMainSiteOpen?(): boolean;
   setMainSiteOpen?(open: boolean): void;
+  workspace?(): QmdWorkspaceView | null;
 }
 
 export interface WorkbenchTabEntry {

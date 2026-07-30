@@ -10,14 +10,22 @@ prioritized Chinese triage, not an exhaustive prose summary.
 
 ## Outputs
 
-Write durable, untrusted files under
-`drafts/conference-surveys/<conference>-<topic>/`:
-the parent `drafts/conference-surveys/` tree remains outside trusted knowledge.
+Write durable, untrusted files under one directory per conference:
+`drafts/conference/<conference>/`. The parent `drafts/conference/` tree remains
+outside trusted knowledge, and multiple topic audits for the same conference
+share that conference directory.
 
 - `<slug>.qmd` — recommendation article;
 - `<slug>_review.tsv` — page-by-page audit;
 - `<slug>_review_summary.txt` — counts and limitations;
 - `<slug>_presentations.json` — scrape cache when enumeration is expensive.
+
+Keep `drafts/conference/index.qmd` and the conference's own `index.qmd` linked
+to the new article. Every QMD frontmatter contains exactly `title`,
+`description`, and one `categories` value chosen from `theory`, `experiment`,
+or `codes`. Do not add a page-local bibliography or Quarto project file: every
+QMD inherits execution-disabled preview settings and `literature/ref.bib` from
+`drafts/_quarto.yml`.
 
 Never write a conference survey directly into `knowledge/`.
 
@@ -41,7 +49,7 @@ Never write a conference survey directly into `knowledge/`.
 6. Remove placeholders and preview the article:
 
 ```bash
-make draft-preview FILE=drafts/conference-surveys/<conference>-<topic>/<slug>.qmd
+make draft-preview FILE=drafts/conference/<conference>/<slug>.qmd
 ```
 
 Report output paths, decision counts, inaccessible pages, and other audit

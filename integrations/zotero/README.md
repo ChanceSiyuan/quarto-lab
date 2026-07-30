@@ -22,6 +22,10 @@ there are no API-provider, Claude, or remote-SSH controls in the product UI.
 - Uses a full chat-application layout in the tab: conversation history,
   complete transcript, optional paper context, approvals, reading notes, and
   the composer share the normal document area.
+- Keeps opened conversations in a horizontally scrollable tab strip across
+  papers. Switching a tab also switches the visible literature card and its
+  Reader context; closing a tab never deletes the conversation, which remains
+  available from the collapsible history rail controlled at the top left.
 - Opens Terminal as a bottom drawer in that same tab instead of replacing the
   chat. It starts a real local shell with the selected QLab root as `cwd`, keeps
   its session alive when collapsed, and can switch to the local Codex CLI.
@@ -31,13 +35,18 @@ there are no API-provider, Claude, or remote-SSH controls in the product UI.
   compact window and provides a direct jump to the full Workbench tab.
 - Lets the user choose a local QLab repository. A valid root contains
   `AGENTS.md`, `qlab`, `literature/`, `drafts/`, and `knowledge/`.
+- Treats an empty folder, or a content-only folder containing just
+  `knowledge/`, `drafts/`, and `literature/`, as safely initializable. The Main
+  Site action becomes **Initialize**, adds only missing infrastructure, and
+  never replaces existing user files. A non-empty unrelated folder is refused
+  and the user is asked to choose an empty folder instead.
 - Shows the selected repository explicitly and offers six direct command
   buttons. Selecting one inserts a complete, editable instruction for Codex:
   `qlab_get_paper`, `qlab_search_literature`, `qlab_propose_patch`,
   `qlab_propose_promotion`, `qlab_validate`, and `qlab_preview`.
-- Turns **Organize this chat into a Draft** into a skill-backed capture: Codex separates
-  paper-backed claims, user hypotheses, and open questions, then writes a
-  reviewable note under `drafts/reading-notes/`.
+- Lets the user ask Codex directly to organize a conversation into a Draft;
+  Codex separates paper-backed claims, user hypotheses, and open questions,
+  then writes a reviewable note under `drafts/reading-notes/`.
 - Keeps ordinary Agent writes inside `literature/`, `drafts/`, and generated
   local state under `work/`. A knowledge promotion is review-only in its proposal
   turn and requires later explicit approval plus `make knowledge-check`.
@@ -49,10 +58,19 @@ there are no API-provider, Claude, or remote-SSH controls in the product UI.
   the local Research Loop deployment, builds and starts it when needed, then
   loads it beside the chat in Zotero's native browser without publishing
   Drafts or Literature.
+- Keeps the Draft Preview toolbar compact: icon controls expose compliance,
+  **Add to Knowledge**, external editing, and refresh through hover labels.
+  Add to Knowledge starts a non-mutating Agent review before any promotion.
+  When an Agent changes the visible Draft, a right-side overlay shows
+  reader-facing red/green changes or the exact read-only QMD diff. **Keep**
+  performs no extra compile; **Undo** restores only if the file still matches
+  the reviewed version, so newer user edits are never overwritten.
 
 ## Build and test
 
-Requires Node.js 20+, Xcode command-line tools on macOS, and a local Codex CLI.
+Building the add-on requires Node.js 20+, Xcode command-line tools on macOS,
+and a local Codex CLI. Starting an initialized main site requires Node.js
+22.13+ and Quarto; the Workbench reports either missing dependency directly.
 
 ```sh
 cd integrations/zotero
@@ -73,6 +91,15 @@ Tools menu, and use **Tools → Open QLab Workbench** (or `⌘I` in Reader) to o
 the native chat tab. Start without a paper or choose one from the paper card.
 Sign in through the local Codex CLI when prompted. Commands typed directly in
 the Terminal drawer are explicit user actions and are not Agent-sandboxed.
+
+The Workbench's top-left history control opens a left-hand rail listing user-facing conversations stored by the local
+Codex app-server (Codex App, CLI, and IDE), with search, pagination, Zotero-local pinning,
+and reopen-as-tab support. Ordinary ChatGPT web conversations
+are not exposed by the Codex protocol. Use **Open ChatGPT** for the live account
+history, or export ChatGPT data and import its extracted `conversations.json`.
+Imported ChatGPT conversations are normalized into the Zotero profile with
+owner-only permissions and remain read-only; they are never copied into the
+QLab repository or sent to Codex merely by opening them.
 
 ## Trust boundary
 

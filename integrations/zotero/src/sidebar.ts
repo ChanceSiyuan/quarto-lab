@@ -1,4 +1,4 @@
-import { renderMarkdown } from "./markdown";
+import { renderMarkdown, type PdfPageReference } from "./markdown";
 import { renderModelOptions } from "./model-menu";
 import { copyToClipboard, prefInt, setPrefInt } from "./platform";
 import { ResearchLoopSiteView } from "./research-loop-site";
@@ -12,6 +12,7 @@ import {
   type Exchange,
 } from "./exchanges";
 import type { NotingPhase, NotingView } from "./noting";
+import type { QLabRepositoryState } from "./qlab-workspace";
 
 export type SidebarPhase = "connecting" | "signed-out" | "ready" | "unavailable" | "error";
 
@@ -50,9 +51,25 @@ export interface ReasoningEffortOption {
 export interface ThreadOption {
   id: string;
   title: string;
+  paperTitle?: string;
   updatedAt: string;
   active: boolean;
+  source?: "codex" | "chatgpt";
+  readOnly?: boolean;
   status?: "idle" | "running" | "attention" | "switching";
+}
+
+export interface HistoryConversationOption {
+  id: string;
+  title: string;
+  preview?: string;
+  updatedAt: string;
+  source: "codex" | "chatgpt";
+  sourceLabel: string;
+  cwd?: string;
+  pinned?: boolean;
+  active?: boolean;
+  readOnly?: boolean;
 }
 
 export type ResearchMode = "ask" | "agent";
@@ -96,7 +113,7 @@ export interface DiffReview {
   title: string;
   summary?: string;
   diff: string;
-  state?: "pending" | "resolving" | "accepted" | "rejected" | "failed";
+  state?: "pending" | "resolving" | "applied" | "accepted" | "rejected" | "failed";
 }
 
 export interface PendingApproval {
@@ -122,6 +139,11 @@ export interface SidebarState {
   entries: ChatEntry[];
   models: ModelOption[];
   threads: ThreadOption[];
+  historyConversations: HistoryConversationOption[];
+  historyLoading: boolean;
+  historyHasMore: boolean;
+  historyError?: string;
+  readOnlyConversation?: boolean;
   selectedModel: string;
   effort: string;
   running: boolean;
@@ -149,7 +171,17 @@ export interface SidebarCallbacks {
   onStop(): void;
   onNewThread(): void;
   onSelectThread(threadId: string): void;
+  /** Closes a visible tab without deleting the underlying conversation. */
+  onCloseThread?(threadId: string): void;
+  /** @deprecated Compatibility callback for older sidebar hosts. */
   onDeleteThread?(threadId: string): void;
+  onHistorySearch?(query: string): void;
+  onHistoryLoadMore?(): void;
+  onSelectHistoryConversation?(conversation: HistoryConversationOption): void;
+  onToggleHistoryPin?(threadId: string, pinned: boolean): void;
+  onOpenChatGPT?(): void;
+  onImportChatGPTHistory?(): void;
+  onReturnToLiveConversation?(): void;
   onLogin(): void;
   onLogout(): void;
   onOpenTerminal(): void;
@@ -168,11 +200,13 @@ export interface SidebarCallbacks {
   onNotingDecision?(decision: "continue" | "cancel"): void;
   onNotingApply?(mode: { kind: "new" } | { kind: "replace"; key: string }): void;
   onNotingCancel?(): void;
-  onChooseQLabRoot?(): void;
+  onChooseQLabRoot?(): void | Promise<void>;
   onCaptureChatDraft?(): void;
   onChoosePaper?(): void;
   onOpenPaper?(): void;
+  onOpenPdfPage?(reference: PdfPageReference): void;
   onCheckMainSite?(): Promise<boolean>;
+  onCheckMainSiteRepository?(): Promise<QLabRepositoryState>;
   onDeployMainSite?(onProgress?: (message: string) => void): Promise<void>;
   onOpenDocument?(relativePath: string): void;
 }
@@ -256,6 +290,10 @@ export class SidebarView {
   private threadTitle!: HTMLElement;
   private accountButton!: HTMLButtonElement;
   private historyButton!: HTMLButtonElement;
+  private historyRail: HTMLElement | null = null;
+  private historyList: HTMLElement | null = null;
+  private historySearch: HTMLInputElement | null = null;
+  private historyLoadMore: HTMLButtonElement | null = null;
   private topActions!: HTMLElement;
   private splitHandle!: HTMLButtonElement;
   private splitRatio = clampSplitRatio(prefInt("splitRatio", 40));
@@ -278,6 +316,10 @@ export class SidebarView {
   private activityElapsedEl: HTMLElement | null = null;
   private pinnedToBottom = true;
   private lastActiveThreadId: string | undefined = undefined;
+  private contextChipsExplicit = false;
+  private historyOpen = true;
+  private historyQuery = "";
+  private historySearchTimer: number | null = null;
 
   constructor(
     body: HTMLElement,
@@ -285,6 +327,7 @@ export class SidebarView {
     options: SidebarViewOptions = {},
   ) {
     this.surface = options.surface || "sidebar";
+    this.historyOpen = this.surface === "workbench" && prefInt("historySidebarOpen", 1) !== 0;
     this.doc = body.ownerDocument;
     this.root = this.doc.createElement("section");
     this.root.className = this.surface === "workbench"
@@ -299,6 +342,9 @@ export class SidebarView {
       entries: [],
       models: [],
       threads: [],
+      historyConversations: [],
+      historyLoading: false,
+      historyHasMore: false,
       selectedModel: "",
       effort: "medium",
       mode: "agent",
@@ -324,6 +370,10 @@ export class SidebarView {
       this.doc.defaultView?.clearInterval(this.activityTimer);
       this.activityTimer = null;
     }
+    if (this.historySearchTimer !== null) {
+      this.doc.defaultView?.clearTimeout(this.historySearchTimer);
+      this.historySearchTimer = null;
+    }
     this.mainSiteView?.destroy();
     this.workspaceView?.destroy();
     this.root.remove();
@@ -334,8 +384,83 @@ export class SidebarView {
   }
 
   setState(next: Partial<SidebarState>): void {
+    if (Object.prototype.hasOwnProperty.call(next, "contextChips")) {
+      this.contextChipsExplicit = true;
+    }
     this.state = { ...this.state, ...next };
     this.render();
+  }
+
+  private setHistoryOpen(open: boolean): void {
+    if (!this.historyRail) return;
+    this.historyOpen = open;
+    this.historyRail.hidden = !open;
+    this.root.classList.toggle("is-history-open", open);
+    this.historyButton.setAttribute("aria-pressed", String(open));
+    this.historyButton.title = open ? "Hide Conversation History" : "Show Conversation History";
+    setPrefInt("historySidebarOpen", open ? 1 : 0);
+  }
+
+  private buildHistoryRail(): void {
+    const rail = this.doc.createElement("aside");
+    rail.className = "zc-history-rail";
+    rail.setAttribute("aria-label", "All Codex and imported ChatGPT conversations");
+    rail.hidden = !this.historyOpen;
+
+    const header = this.doc.createElement("header");
+    const title = this.doc.createElement("strong");
+    title.textContent = "Conversations";
+    const close = this.iconButton("close", "Hide Conversation History", () => this.setHistoryOpen(false));
+    header.append(title, close);
+
+    const search = this.doc.createElement("input");
+    search.type = "search";
+    search.className = "zc-history-search";
+    search.placeholder = "Search conversations";
+    search.setAttribute("aria-label", "Search conversations");
+    search.addEventListener("input", () => {
+      this.historyQuery = search.value;
+      this.renderHistoryRail();
+      if (this.historySearchTimer !== null) {
+        this.doc.defaultView?.clearTimeout(this.historySearchTimer);
+      }
+      this.historySearchTimer = this.doc.defaultView?.setTimeout(() => {
+        this.historySearchTimer = null;
+        this.callbacks.onHistorySearch?.(this.historyQuery);
+      }, 250) ?? null;
+    });
+    this.historySearch = search;
+
+    const actions = this.doc.createElement("div");
+    actions.className = "zc-history-actions";
+    const openChatGPT = this.doc.createElement("button");
+    openChatGPT.type = "button";
+    openChatGPT.textContent = "Open ChatGPT";
+    openChatGPT.title = "Open your live ChatGPT account history";
+    openChatGPT.addEventListener("click", () => this.callbacks.onOpenChatGPT?.());
+    const importChatGPT = this.doc.createElement("button");
+    importChatGPT.type = "button";
+    importChatGPT.textContent = "Import Export";
+    importChatGPT.title = "Import conversations.json from a ChatGPT data export (read-only)";
+    importChatGPT.addEventListener("click", () => this.callbacks.onImportChatGPTHistory?.());
+    actions.append(openChatGPT, importChatGPT);
+
+    const list = this.doc.createElement("div");
+    list.className = "zc-history-list";
+    this.historyList = list;
+
+    const loadMore = this.doc.createElement("button");
+    loadMore.type = "button";
+    loadMore.className = "zc-history-load-more";
+    loadMore.textContent = "Load More";
+    loadMore.addEventListener("click", () => this.callbacks.onHistoryLoadMore?.());
+    this.historyLoadMore = loadMore;
+
+    const privacy = this.doc.createElement("small");
+    privacy.className = "zc-history-privacy";
+    privacy.textContent = "Codex history stays local. Imported ChatGPT exports are read-only.";
+    rail.append(header, search, actions, list, loadMore, privacy);
+    this.historyRail = rail;
   }
 
   focusComposer(text?: string): void {
@@ -388,12 +513,10 @@ export class SidebarView {
     identity.append(icon, titles);
 
     const actions = this.doc.createElement("div");
-    actions.className = "zc-top-actions";
-    const noteButton = this.iconButton(
-      "note",
-      "Summarize this chat into a Draft",
-      () => this.callbacks.onCaptureChatDraft?.(),
-    );
+    actions.className = this.surface === "workbench"
+      ? "zc-top-actions zc-workbench-dock"
+      : "zc-top-actions";
+    if (this.surface === "workbench") actions.setAttribute("aria-label", "Workbench tools");
     const workbenchButton = this.doc.createElement("button");
     workbenchButton.type = "button";
     workbenchButton.className = "zc-workbench-open";
@@ -412,8 +535,13 @@ export class SidebarView {
       this.mainSiteButton.addEventListener("click", () => void this.activateMainSite());
     }
     this.topActions = actions;
-    const historyButton = this.iconButton("history", "Conversation History", () => this.toggleHistoryMenu());
+    const historyButton = this.iconButton("history", "Conversation History", () => {
+      if (this.surface === "workbench") this.setHistoryOpen(!this.historyOpen);
+      else this.toggleHistoryMenu();
+    });
+    historyButton.classList.add("zc-history-toggle");
     this.historyButton = historyButton;
+    this.historyButton.setAttribute("aria-pressed", String(this.historyOpen));
     this.newThreadButton = this.iconButton("new", "New Conversation", () => this.callbacks.onNewThread());
     this.terminalButton = this.iconButton(
       "terminal",
@@ -427,17 +555,17 @@ export class SidebarView {
     actions.append(
       workbenchButton,
       ...(this.mainSiteButton ? [this.mainSiteButton] : []),
-      noteButton,
-      historyButton,
-      this.newThreadButton,
+      ...(this.surface === "workbench" ? [] : [this.newThreadButton]),
       this.terminalButton,
       this.accountButton,
     );
-    topbar.append(identity, actions);
+    topbar.append(historyButton, identity, actions);
 
     this.threadTabs = this.doc.createElement("nav");
     this.threadTabs.className = "zc-thread-tabs";
-    this.threadTabs.setAttribute("aria-label", "Paper conversation tabs");
+    this.threadTabs.setAttribute("aria-label", "Open conversation tabs");
+
+    if (this.surface === "workbench") this.buildHistoryRail();
 
     const contextCard = this.doc.createElement("section");
     contextCard.className = "zc-context-card";
@@ -596,16 +724,19 @@ export class SidebarView {
     this.splitHandle.addEventListener("mousedown", (event) => this.beginSplitDrag(event));
 
     this.root.append(
-      topbar,
+      ...(this.surface === "workbench" ? [] : [topbar]),
+      ...(this.historyRail ? [this.historyRail] : []),
       this.splitHandle,
       this.threadTabs,
       contextCard,
       this.transcript,
       composerWrap,
+      ...(this.surface === "workbench" ? [this.topActions] : []),
       this.loginLayer,
       this.terminalDrawer,
     );
     if (this.surface === "workbench") {
+      this.root.classList.toggle("is-history-open", this.historyOpen);
       this.mainSiteView = new ResearchLoopSiteView(this.root, {
         onBack: () => this.setMainSiteOpen(false),
         onOpenDocument: this.callbacks.onOpenDocument,
@@ -614,7 +745,7 @@ export class SidebarView {
     }
   }
 
-  private async refreshMainSiteStatus(): Promise<boolean> {
+  async refreshMainSiteStatus(): Promise<boolean> {
     const button = this.mainSiteButton;
     if (!button) return false;
     button.disabled = true;
@@ -622,14 +753,35 @@ export class SidebarView {
     button.textContent = "Checking main site…";
     button.title = "Check Research Loop main site";
     let available = false;
+    let repositoryState: QLabRepositoryState = "ready";
     try {
-      available = await this.callbacks.onCheckMainSite?.() || false;
+      repositoryState = await this.callbacks.onCheckMainSiteRepository?.() || "ready";
+      available = repositoryState === "ready"
+        ? await this.callbacks.onCheckMainSite?.() || false
+        : false;
     }
     catch {
       available = false;
     }
     if (!button.isConnected) return available;
+    button.dataset.repositoryState = repositoryState;
     button.disabled = false;
+    if (repositoryState === "missing" || repositoryState === "incompatible") {
+      button.className = "zc-main-site-button is-invalid";
+      button.textContent = repositoryState === "missing" ? "Choose Repository" : "Choose Empty Folder";
+      button.title = repositoryState === "missing"
+        ? "Choose an empty folder or an existing Research Loop repository"
+        : "This folder contains unrelated files; choose an empty folder instead";
+      return false;
+    }
+    if (repositoryState === "empty" || repositoryState === "partial") {
+      button.className = "zc-main-site-button is-initialize";
+      button.textContent = "Initialize";
+      button.title = repositoryState === "empty"
+        ? "Initialize Research Loop in this empty folder"
+        : "Complete the Research Loop structure without overwriting existing Knowledge, Drafts, or Literature";
+      return false;
+    }
     button.className = available
       ? "zc-main-site-button is-available"
       : "zc-main-site-button is-offline";
@@ -646,11 +798,19 @@ export class SidebarView {
       this.setMainSiteOpen(false);
       return;
     }
+    const repositoryState = this.mainSiteButton.dataset.repositoryState as QLabRepositoryState | undefined;
+    if (repositoryState === "missing" || repositoryState === "incompatible") {
+      await this.callbacks.onChooseQLabRoot?.();
+      await this.refreshMainSiteStatus();
+      return;
+    }
     const available = this.mainSiteButton.classList.contains("is-available");
     if (!available) {
       this.mainSiteButton.disabled = true;
       this.mainSiteButton.className = "zc-main-site-button is-deploying";
-      this.mainSiteButton.textContent = "Starting…";
+      this.mainSiteButton.textContent = repositoryState === "empty" || repositoryState === "partial"
+        ? "Initializing…"
+        : "Starting…";
       this.mainSiteButton.title = "Building and starting the Research Loop main site";
       try {
         if (!this.callbacks.onDeployMainSite) throw new Error("Main-site deployment is unavailable");
@@ -762,6 +922,7 @@ export class SidebarView {
     this.qlabRootLabel.title = this.state.qlabRoot || "QLab repository is not configured";
     this.newThreadButton.disabled = Boolean(this.state.creatingThread);
     this.newThreadButton.title = this.state.creatingThread ? "Creating a new conversation…" : "New Conversation";
+    this.renderHistoryRail();
     this.renderThreadTabs();
     this.renderContext();
     this.renderContextChips();
@@ -775,11 +936,111 @@ export class SidebarView {
     this.sendButton.setAttribute("aria-label", this.sendButton.title);
     this.stopButton.hidden = !this.state.running;
     this.stopButton.style.display = this.state.running ? "grid" : "none";
-    this.textarea.disabled = this.state.phase !== "ready";
-    this.statusArea.textContent = this.state.error || (this.state.running
+    this.textarea.disabled = this.state.phase !== "ready" || Boolean(this.state.readOnlyConversation);
+    this.sendButton.disabled = Boolean(this.state.readOnlyConversation);
+    if (this.state.readOnlyConversation) {
+      this.textarea.placeholder = "Imported ChatGPT history is read-only";
+    }
+    this.statusArea.textContent = this.state.error || (this.state.readOnlyConversation
+      ? "Imported ChatGPT history is read-only and stored only in this Zotero profile."
+      : this.state.running
       ? "Enter sends a follow-up · Esc stops generation"
       : "Codex can make mistakes; verify the paper text and page numbers.");
     this.statusArea.classList.toggle("is-error", Boolean(this.state.error));
+  }
+
+  private renderHistoryRail(): void {
+    if (!this.historyRail || !this.historyList || !this.historyLoadMore) return;
+    this.historyRail.hidden = !this.historyOpen;
+    if (this.historySearch && this.historySearch.value !== this.historyQuery) {
+      this.historySearch.value = this.historyQuery;
+    }
+    this.historyList.replaceChildren();
+    const query = this.historyQuery.trim().toLocaleLowerCase();
+    const conversations = this.state.historyConversations.filter((conversation) => {
+      if (!query) return true;
+      return [conversation.title, conversation.preview, conversation.cwd, conversation.sourceLabel]
+        .some((value) => value?.toLocaleLowerCase().includes(query));
+    });
+
+    if (this.state.readOnlyConversation) {
+      const live = this.doc.createElement("button");
+      live.type = "button";
+      live.className = "zc-history-return-live";
+      live.textContent = "← Return to Live Codex";
+      live.addEventListener("click", () => this.callbacks.onReturnToLiveConversation?.());
+      this.historyList.appendChild(live);
+    }
+
+    const addGroup = (label: string, items: HistoryConversationOption[]): void => {
+      if (!items.length) return;
+      const heading = this.doc.createElement("div");
+      heading.className = "zc-history-group-heading";
+      heading.textContent = label;
+      this.historyList!.appendChild(heading);
+      for (const conversation of items) {
+        const row = this.doc.createElement("div");
+        row.className = "zc-history-row";
+        row.classList.toggle("is-active", Boolean(conversation.active));
+        const open = this.doc.createElement("button");
+        open.type = "button";
+        open.className = "zc-history-open";
+        open.title = [conversation.title, conversation.cwd || conversation.preview || ""]
+          .filter(Boolean).join("\n");
+        const title = this.doc.createElement("span");
+        title.className = "zc-history-row-title";
+        title.textContent = conversation.title;
+        const meta = this.doc.createElement("span");
+        meta.className = "zc-history-row-meta";
+        const date = new Date(conversation.updatedAt);
+        meta.textContent = [
+          conversation.sourceLabel,
+          Number.isNaN(date.getTime()) ? "" : date.toLocaleDateString(),
+          conversation.readOnly ? "Read-only" : "",
+        ].filter(Boolean).join(" · ");
+        open.append(title, meta);
+        open.addEventListener("click", () => this.callbacks.onSelectHistoryConversation?.(conversation));
+        row.appendChild(open);
+        if (conversation.source === "codex") {
+          const pin = this.doc.createElement("button");
+          pin.type = "button";
+          pin.className = "zc-history-pin";
+          pin.textContent = conversation.pinned ? "★" : "☆";
+          pin.title = conversation.pinned ? "Unpin Conversation" : "Pin Conversation";
+          pin.setAttribute("aria-label", pin.title);
+          pin.addEventListener("click", () => {
+            this.callbacks.onToggleHistoryPin?.(conversation.id, !conversation.pinned);
+          });
+          row.appendChild(pin);
+        }
+        this.historyList!.appendChild(row);
+      }
+    };
+
+    addGroup("Pinned", conversations.filter((conversation) => conversation.source === "codex" && conversation.pinned));
+    addGroup("Codex", conversations.filter((conversation) => conversation.source === "codex" && !conversation.pinned));
+    addGroup("Imported ChatGPT", conversations.filter((conversation) => conversation.source === "chatgpt"));
+
+    if (!conversations.length && !this.state.historyLoading) {
+      const empty = this.doc.createElement("div");
+      empty.className = "zc-history-empty";
+      empty.textContent = query ? "No matching conversations" : "No conversation history yet";
+      this.historyList.appendChild(empty);
+    }
+    if (this.state.historyError) {
+      const error = this.doc.createElement("div");
+      error.className = "zc-history-error";
+      error.textContent = this.state.historyError;
+      this.historyList.appendChild(error);
+    }
+    if (this.state.historyLoading) {
+      const loading = this.doc.createElement("div");
+      loading.className = "zc-history-loading";
+      loading.textContent = "Loading conversations…";
+      this.historyList.appendChild(loading);
+    }
+    this.historyLoadMore.hidden = !this.state.historyHasMore;
+    this.historyLoadMore.disabled = this.state.historyLoading;
   }
 
   private renderContext(): void {
@@ -805,11 +1066,10 @@ export class SidebarView {
 
   private renderThreadTabs(): void {
     this.threadTabs.replaceChildren();
-    this.threadTabs.hidden = this.state.threads.length === 0;
-    if (!this.state.threads.length) return;
+    this.threadTabs.hidden = this.state.threads.length === 0 && this.surface !== "workbench";
     const scroller = this.doc.createElement("div");
     scroller.className = "zc-thread-tab-scroll";
-    for (const thread of this.state.threads.slice(0, 12)) {
+    for (const thread of this.state.threads) {
       const item = this.doc.createElement("span");
       item.className = "zc-thread-tab-item";
       const button = this.doc.createElement("button");
@@ -819,30 +1079,35 @@ export class SidebarView {
       button.classList.toggle("is-active", thread.active || switching);
       button.classList.toggle("is-switching", switching);
       button.dataset.threadId = thread.id;
-      button.title = thread.title || "Paper Conversation";
+      const tabLabel = thread.paperTitle || thread.title || "Conversation";
+      const conversationDetail = thread.paperTitle && thread.title !== thread.paperTitle
+        ? ` · ${thread.title}`
+        : "";
+      button.title = thread.readOnly
+        ? `${tabLabel}${conversationDetail} · Read-only`
+        : `${tabLabel}${conversationDetail}`;
       if (thread.active) button.setAttribute("aria-current", "page");
       if (switching) button.setAttribute("aria-busy", "true");
       const state = this.doc.createElement("span");
       state.className = `zc-thread-tab-state is-${thread.status || "idle"}`;
       state.setAttribute("aria-hidden", "true");
       const label = this.doc.createElement("span");
-      label.textContent = thread.title || "Paper Conversation";
+      label.textContent = tabLabel;
       button.append(state, label);
       button.addEventListener("click", () => this.callbacks.onSelectThread(thread.id));
       item.appendChild(button);
-      // Deleting only forgets the local picker record -- recoverable by
-      // starting a new chat, so a single click is enough (no typed
-      // confirmation). stopPropagation keeps the click from also bubbling
-      // into anything listening on the tab row itself.
+      // Closing a tab never deletes its Codex/ChatGPT history. The history
+      // rail can reopen it later. stopPropagation prevents an accidental
+      // switch immediately before the close callback.
       const remove = this.doc.createElement("button");
       remove.type = "button";
       remove.className = "zc-thread-delete";
-      remove.title = "Delete Conversation";
-      remove.setAttribute("aria-label", "Delete Conversation");
+      remove.title = "Close Tab";
+      remove.setAttribute("aria-label", `Close ${thread.title || "Conversation"}`);
       remove.textContent = "×";
       remove.addEventListener("click", (event) => {
         event.stopPropagation();
-        this.callbacks.onDeleteThread?.(thread.id);
+        (this.callbacks.onCloseThread || this.callbacks.onDeleteThread)?.(thread.id);
       });
       item.appendChild(remove);
       scroller.appendChild(item);
@@ -851,16 +1116,24 @@ export class SidebarView {
     add.classList.add("zc-thread-tab-add");
     add.disabled = Boolean(this.state.creatingThread);
     add.title = this.state.creatingThread ? "Creating a new conversation…" : "New Conversation";
-    this.threadTabs.append(scroller, add);
+    if (this.surface === "workbench") {
+      this.threadTabs.append(this.historyButton, scroller, add);
+    }
+    else {
+      this.threadTabs.append(scroller, add);
+    }
   }
 
   private renderContextChips(): void {
     this.contextChips.replaceChildren();
     for (const chip of this.effectiveContextChips()) {
-      const wrapper = this.doc.createElement("span");
+      const wrapper = this.doc.createElement(chip.removable ? "button" : "span");
+      if (chip.removable) (wrapper as HTMLButtonElement).type = "button";
       wrapper.className = `zc-context-chip is-${chip.kind}`;
       wrapper.dataset.contextId = chip.id;
-      wrapper.title = chip.detail || chip.label;
+      wrapper.title = chip.removable
+        ? `Remove context: ${chip.label}`
+        : chip.detail || chip.label;
       const icon = this.doc.createElement("span");
       icon.className = "zc-context-chip-icon";
       icon.textContent = contextGlyph(chip.kind);
@@ -870,11 +1143,9 @@ export class SidebarView {
       label.textContent = chip.label;
       wrapper.append(icon, label);
       if (chip.removable) {
-        const remove = this.iconButton("close", `Remove context: ${chip.label}`, () => {
-          this.callbacks.onRemoveContext?.(chip.id);
-        });
-        remove.classList.add("zc-context-chip-remove");
-        wrapper.appendChild(remove);
+        wrapper.classList.add("is-removable");
+        wrapper.setAttribute("aria-label", `Remove context: ${chip.label}`);
+        wrapper.addEventListener("click", () => this.callbacks.onRemoveContext?.(chip.id));
       }
       this.contextChips.appendChild(wrapper);
     }
@@ -887,7 +1158,7 @@ export class SidebarView {
   }
 
   private effectiveContextChips(): ResearchContextChip[] {
-    if (this.state.contextChips.length) return this.state.contextChips;
+    if (this.contextChipsExplicit) return this.state.contextChips;
     const context = this.state.context;
     if (!context) return [];
     const chips: ResearchContextChip[] = [{
@@ -895,7 +1166,7 @@ export class SidebarView {
       kind: "paper",
       label: "Current Paper",
       detail: context.title,
-      removable: false,
+      removable: true,
     }];
     if (context.pageLabel) {
       chips.push({
@@ -1438,10 +1709,19 @@ export class SidebarView {
     const identity = this.doc.createElement("span");
     identity.textContent = review.title;
     const badge = this.doc.createElement("small");
-    badge.textContent = review.state === "accepted" ? "Accepted"
+    badge.textContent = review.state === "applied" ? "Applied"
+      : review.state === "accepted" ? "Accepted"
       : review.state === "rejected" ? "Dismissed"
         : review.state === "failed" ? "Apply Failed" : "Review";
     summary.append(identity, badge);
+    if (review.state === "applied") {
+      // Draft writes already landed in the isolated AI working copy. The
+      // rendered eye/Keep controls are the single human review surface, so a
+      // second disabled Accept Suggestion action here would be misleading.
+      details.append(summary);
+      article.appendChild(details);
+      return article;
+    }
     const body = this.doc.createElement("div");
     body.className = "zc-review-body";
     if (review.summary) {
@@ -1705,7 +1985,7 @@ export class SidebarView {
       summary.append(state, label);
       const content = this.doc.createElement("div");
       content.className = "zc-tool-content";
-      content.appendChild(renderMarkdown(this.doc, entry.text));
+      content.appendChild(renderMarkdown(this.doc, entry.text, this.markdownOptions()));
       details.append(summary, content);
       article.appendChild(details);
       return article;
@@ -1722,13 +2002,19 @@ export class SidebarView {
     content.className = "zc-entry-content";
     const markdownBody = this.doc.createElement("div");
     markdownBody.className = "zc-markdown";
-    markdownBody.appendChild(renderMarkdown(this.doc, entry.text));
+    markdownBody.appendChild(renderMarkdown(this.doc, entry.text, this.markdownOptions()));
     content.appendChild(markdownBody);
     if (entry.kind === "assistant") {
       content.appendChild(this.createCopyAnswerButton(entry.text));
     }
     article.append(avatar, content);
     return article;
+  }
+
+  private markdownOptions(): { onPdfPageLink: (reference: PdfPageReference) => void } | Record<string, never> {
+    return this.callbacks.onOpenPdfPage
+      ? { onPdfPageLink: this.callbacks.onOpenPdfPage }
+      : {};
   }
 
   private createCopyAnswerButton(text: string): HTMLButtonElement {
@@ -1851,7 +2137,7 @@ export class SidebarView {
     menu.className = "zc-history-menu";
     const heading = this.doc.createElement("div");
     heading.className = "zc-menu-heading";
-    heading.textContent = "Conversations for this paper";
+    heading.textContent = "Open Conversations";
     menu.appendChild(heading);
     if (!this.state.threads.length) {
       const empty = this.doc.createElement("small");
@@ -1875,21 +2161,21 @@ export class SidebarView {
         this.callbacks.onSelectThread(thread.id);
       });
       item.appendChild(button);
-      // Full picker, not just the 12-item tab strip -- every row here needs
-      // its own delete affordance too (bug-triage #3 reviewer follow-up).
+      // The compact picker mirrors the Workbench tab strip: closing a row
+      // never deletes its underlying conversation history.
       // stopPropagation keeps this from also selecting the thread; closing
       // the whole menu (same as a select click already does) makes the
       // deleted row disappear immediately instead of leaving it stale.
       const remove = this.doc.createElement("button");
       remove.type = "button";
       remove.className = "zc-thread-delete";
-      remove.title = "Delete Conversation";
-      remove.setAttribute("aria-label", "Delete Conversation");
+      remove.title = "Close Tab";
+      remove.setAttribute("aria-label", `Close ${thread.title || "Conversation"}`);
       remove.textContent = "×";
       remove.addEventListener("click", (event) => {
         event.stopPropagation();
         menu.remove();
-        this.callbacks.onDeleteThread?.(thread.id);
+        (this.callbacks.onCloseThread || this.callbacks.onDeleteThread)?.(thread.id);
       });
       item.appendChild(remove);
       menu.appendChild(item);
@@ -1910,6 +2196,13 @@ export class SidebarView {
     const button = anchor.getBoundingClientRect();
     const container = this.topActions.getBoundingClientRect();
     if (!container.width && !container.height) return; // No layout yet; CSS defaults apply.
+    if (this.surface === "workbench") {
+      menu.style.top = "auto";
+      menu.style.bottom = `${Math.round(container.bottom - button.top + 6)}px`;
+      menu.style.left = `${Math.round(Math.max(0, button.left - container.left))}px`;
+      menu.style.right = "auto";
+      return;
+    }
     menu.style.top = `${Math.round(button.bottom - container.top + 6)}px`;
     menu.style.right = `${Math.round(Math.max(0, container.right - button.right))}px`;
   }

@@ -1,20 +1,39 @@
 import type { BridgeEvent, NativeBridge, SpawnOptions } from "./native-bridge";
-import { sleep } from "./platform";
+import { sha256Bytes } from "./hashing";
+import { profilePath, sleep } from "./platform";
 import { knowledgeUrlToQmdPath } from "./editor-tree";
+import {
+  createGeckoQLabPathHost,
+  isQLabRepositoryShape,
+  qlabRepositoryState,
+  QLAB_STARTER_MARKER,
+  type QLabRepositoryState,
+} from "./qlab-workspace";
 
 export const RESEARCH_LOOP_SITE_URL = "http://127.0.0.1:4180/";
 const SITE_SESSION_ID = "research-loop-site";
+const INITIALIZE_SESSION_ID = "research-loop-initialize";
 const START_SCRIPT = [
   'cd -- "$1"',
+  'command -v npm >/dev/null 2>&1 || { echo "Research Loop requires Node.js and npm. Install Node.js 22 or newer, then try again." >&2; exit 127; }',
+  'command -v quarto >/dev/null 2>&1 || { echo "Research Loop requires Quarto. Install Quarto, then try again." >&2; exit 127; }',
+  'if [ ! -f "$1/node_modules/.package-lock.json" ]; then echo "[research-loop] installing dependencies"; npm ci; fi',
   'if [ ! -f "$1/dist/server/index.js" ]; then npm run build; fi',
   "exec npm run start -- --hostname 127.0.0.1 --port 4180",
 ].join(" && ");
+const INITIALIZE_SCRIPT = [
+  "set -eu",
+  '/usr/bin/unzip -n -q "$2" -d "$1"',
+  '/bin/chmod 0700 "$1/qlab"',
+  'if [ ! -d "$1/.git" ]; then /usr/bin/git -C "$1" init -q -b main; fi',
+].join("\n");
 
 export type ResearchLoopSiteProcessEvent =
   | { type: "output"; text: string }
   | { type: "exit"; exitCode: number | null };
 
 export function researchLoopBuildProgress(output: string): string | null {
+  if (/\[research-loop\] installing dependencies/u.test(output)) return "Installing main-site dependencies…";
   const pages = [...output.matchAll(/\[\s*(\d+)\/(\d+)\]/gu)].at(-1);
   if (pages) return `Building Knowledge ${Number(pages[1])}/${Number(pages[2])}…`;
   if (/\bknowledge:build\b|knowledge\.ts build/u.test(output)) return "Preparing the Knowledge build…";
@@ -25,6 +44,8 @@ export function researchLoopBuildProgress(output: string): string | null {
 
 export interface ResearchLoopSiteRuntime {
   check(url: string): Promise<boolean>;
+  repositoryState(repositoryRoot: string): Promise<QLabRepositoryState>;
+  initialize(repositoryRoot: string): Promise<void>;
   hasBuild(repositoryRoot: string): Promise<boolean>;
   startBridge(): Promise<void>;
   spawn(sessionId: string, options: SpawnOptions): Promise<void>;
@@ -32,7 +53,12 @@ export interface ResearchLoopSiteRuntime {
   sleep(milliseconds: number): Promise<void>;
 }
 
-export function createResearchLoopSiteRuntime(bridge: NativeBridge): ResearchLoopSiteRuntime {
+export function createResearchLoopSiteRuntime(
+  bridge: NativeBridge,
+  bundledRootURI: string,
+  version: string,
+): ResearchLoopSiteRuntime {
+  const pathHost = createGeckoQLabPathHost();
   return {
     async check(url) {
       const controller = new AbortController();
@@ -50,6 +76,51 @@ export function createResearchLoopSiteRuntime(bridge: NativeBridge): ResearchLoo
       finally {
         clearTimeout(timer);
       }
+    },
+    repositoryState: (repositoryRoot) => qlabRepositoryState(repositoryRoot, pathHost),
+    initialize: async (repositoryRoot) => {
+      const markerDirectory = PathUtils.join(repositoryRoot, ".research-loop");
+      await IOUtils.makeDirectory(markerDirectory, {
+        createAncestors: true,
+        ignoreExisting: true,
+        permissions: 0o700,
+      });
+      const markerPath = PathUtils.join(repositoryRoot, QLAB_STARTER_MARKER);
+      await IOUtils.writeUTF8(markerPath, `${JSON.stringify({
+        schemaVersion: 1,
+        state: "initializing",
+        source: "research-loop-zotero-xpi",
+      }, null, 2)}\n`, { tmpPath: `${markerPath}.tmp` });
+
+      const archiveBytes = await readBundledAsset(
+        `${bundledRootURI}starter/research-loop-starter.zip`,
+      );
+      const expectedDigest = new TextDecoder().decode(await readBundledAsset(
+        `${bundledRootURI}starter/research-loop-starter.sha256`,
+      )).trim();
+      if (!/^[a-f0-9]{64}$/u.test(expectedDigest) || sha256Bytes(archiveBytes) !== expectedDigest) {
+        throw new Error("The bundled Research Loop starter failed its integrity check");
+      }
+      const archiveDirectory = profilePath("starter", version);
+      const archivePath = PathUtils.join(archiveDirectory, "research-loop-starter.zip");
+      await IOUtils.makeDirectory(archiveDirectory, {
+        createAncestors: true,
+        ignoreExisting: true,
+        permissions: 0o700,
+      });
+      await IOUtils.write(archivePath, archiveBytes, { tmpPath: `${archivePath}.tmp` });
+
+      await bridge.start();
+      await runInitializationProcess(bridge, repositoryRoot, archivePath);
+      if (!await isQLabRepositoryShape(repositoryRoot, pathHost)) {
+        throw new Error("Research Loop initialization did not produce the required repository structure");
+      }
+      await IOUtils.writeUTF8(markerPath, `${JSON.stringify({
+        schemaVersion: 1,
+        state: "ready",
+        source: "research-loop-zotero-xpi",
+        pluginVersion: version,
+      }, null, 2)}\n`, { tmpPath: `${markerPath}.tmp` });
     },
     hasBuild: (repositoryRoot) =>
       IOUtils.exists(PathUtils.join(repositoryRoot, "dist", "server", "index.js")),
@@ -72,6 +143,74 @@ export function createResearchLoopSiteRuntime(bridge: NativeBridge): ResearchLoo
   };
 }
 
+async function readBundledAsset(uri: string): Promise<Uint8Array> {
+  try {
+    const response = await fetch(uri);
+    if (response.ok || response.status === 0) return new Uint8Array(await response.arrayBuffer());
+  }
+  catch { /* jar: fetch can be unavailable on some Zotero builds */ }
+
+  return new Promise<Uint8Array>((resolve, reject) => {
+    try {
+      const channel = NetUtil.newChannel({
+        uri: Services.io.newURI(uri),
+        loadUsingSystemPrincipal: true,
+      });
+      NetUtil.asyncFetch(channel, (stream: any, status: number) => {
+        if (!Components.isSuccessCode(status)) {
+          reject(new Error(`Could not read bundled Research Loop starter (${status})`));
+          return;
+        }
+        try {
+          const binary = Components.classes["@mozilla.org/binaryinputstream;1"]
+            .createInstance(Components.interfaces.nsIBinaryInputStream);
+          binary.setInputStream(stream);
+          resolve(Uint8Array.from(binary.readByteArray(binary.available())));
+        }
+        catch (error) {
+          reject(error);
+        }
+      });
+    }
+    catch (error) {
+      reject(error);
+    }
+  });
+}
+
+async function runInitializationProcess(
+  bridge: NativeBridge,
+  repositoryRoot: string,
+  archivePath: string,
+): Promise<void> {
+  let output = "";
+  let settle: ((event: { exitCode: number | null }) => void) | null = null;
+  const exited = new Promise<{ exitCode: number | null }>((resolve) => { settle = resolve; });
+  const unsubscribe = bridge.onEvent((event: BridgeEvent) => {
+    if (!("sessionId" in event) || event.sessionId !== INITIALIZE_SESSION_ID) return;
+    if (event.type === "output") output = `${output}${bridge.decodeOutput(event.sessionId, event.data)}`.slice(-12_000);
+    if (event.type === "exit") {
+      output = `${output}${bridge.flushOutput(event.sessionId)}`.slice(-12_000);
+      settle?.({ exitCode: event.exitCode });
+    }
+  });
+  try {
+    await bridge.spawnPipe(INITIALIZE_SESSION_ID, {
+      argv: ["/bin/zsh", "-lc", INITIALIZE_SCRIPT, INITIALIZE_SESSION_ID, repositoryRoot, archivePath],
+      cwd: repositoryRoot,
+      env: { PATH: "/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin" },
+    });
+    const { exitCode } = await exited;
+    if (exitCode !== 0) {
+      const detail = output.trim().split("\n").slice(-8).join("\n");
+      throw new Error(detail || `Research Loop initialization failed (code ${exitCode ?? "unknown"})`);
+    }
+  }
+  finally {
+    unsubscribe();
+  }
+}
+
 export class ResearchLoopSiteService {
   constructor(private readonly runtime: ResearchLoopSiteRuntime) {}
 
@@ -79,9 +218,22 @@ export class ResearchLoopSiteService {
     return this.runtime.check(RESEARCH_LOOP_SITE_URL);
   }
 
+  repositoryState(repositoryRoot: string): Promise<QLabRepositoryState> {
+    return this.runtime.repositoryState(repositoryRoot);
+  }
+
   async deploy(repositoryRoot: string, onProgress: (message: string) => void = () => {}): Promise<void> {
-    if (await this.isAvailable()) return;
     if (!repositoryRoot.trim()) throw new Error("Choose a Research Loop repository first");
+    const state = await this.repositoryState(repositoryRoot);
+    if (state === "incompatible") {
+      throw new Error("This folder contains files but is not a Research Loop repository. Choose an empty folder, or a folder containing only knowledge/, drafts/, and literature/.");
+    }
+    if (state === "missing") throw new Error("Choose a Research Loop repository first");
+    if (state === "empty" || state === "partial") {
+      onProgress(state === "empty" ? "Initializing Research Loop…" : "Completing the Research Loop structure…");
+      await this.runtime.initialize(repositoryRoot);
+    }
+    if (await this.isAvailable()) return;
 
     const hasBuild = await this.runtime.hasBuild(repositoryRoot);
     onProgress(hasBuild ? "Starting the existing main site…" : "Preparing the first main-site build…");
