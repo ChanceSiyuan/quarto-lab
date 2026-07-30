@@ -3,6 +3,10 @@ import { mkdtemp, mkdir, readFile, readdir, rm, writeFile } from "node:fs/promis
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
+import {
+  PAGES_CHALLENGE_IDS,
+  PAGES_CHALLENGES,
+} from "../../src/lib/pages-showcase/challenge-catalog.mjs";
 
 const stagingModule = await import("../tooling/scripts/pages-showcase-problems.mjs").catch(() => ({}));
 const {
@@ -32,17 +36,14 @@ async function fixture(t) {
   return { fixtureProblemsDir, officialProblemsDir, stageProblemsDir };
 }
 
-test("declares the five official public problem IDs and derives their detail routes", () => {
+test("declares all open challenge IDs and derives their detail routes", () => {
   assert.equal(typeof createPagesShowcaseRoutes, "function");
-  assert.deepEqual(PAGES_PUBLIC_PROBLEM_IDS, OFFICIAL_IDS);
+  assert.deepEqual(PAGES_PUBLIC_PROBLEM_IDS, PAGES_CHALLENGE_IDS);
+  assert.equal(PAGES_PUBLIC_PROBLEM_IDS.length, 77);
   assert.deepEqual(createPagesShowcaseRoutes(), [
     "/",
     "/problems/Prob-000",
-    "/problems/Prob-124",
-    "/problems/Prob-125",
-    "/problems/Prob-126",
-    "/problems/Prob-127",
-    "/problems/Prob-128",
+    ...PAGES_CHALLENGE_IDS.map((id) => `/problems/${id}`),
     "/problems/Prob-000/autoresearch",
     "/problems/Prob-000/attempts/ATT-001",
     "/problems/Prob-000/attempts/ATT-002",
@@ -52,16 +53,23 @@ test("declares the five official public problem IDs and derives their detail rou
   ]);
 });
 
-test("stages only display files for the five allowlisted official problems", async (t) => {
+test("stages only display files for all allowlisted public challenges", async (t) => {
   assert.equal(typeof stagePagesShowcaseProblems, "function");
   const paths = await fixture(t);
   const result = await stagePagesShowcaseProblems(paths);
-  assert.deepEqual(result.problemIds, ["Prob-000", ...OFFICIAL_IDS]);
-  assert.deepEqual((await readdir(result.problemsDir)).sort(), ["Prob-000", ...OFFICIAL_IDS].sort());
-  for (const id of OFFICIAL_IDS) {
+  assert.deepEqual(result.problemIds, ["Prob-000", ...PAGES_CHALLENGE_IDS]);
+  assert.deepEqual((await readdir(result.problemsDir)).sort(), ["Prob-000", ...PAGES_CHALLENGE_IDS].sort());
+  for (const id of PAGES_CHALLENGE_IDS) {
     assert.deepEqual((await readdir(join(result.problemsDir, id))).sort(), ["problem.json", "problem.md"]);
+  }
+  for (const id of OFFICIAL_IDS) {
     assert.equal(await readFile(join(result.problemsDir, id, "problem.md"), "utf8"), `# ${id}\n`);
   }
+  const first = PAGES_CHALLENGES[0];
+  const manifest = JSON.parse(await readFile(join(result.problemsDir, first.id, "problem.json"), "utf8"));
+  assert.equal(manifest.status, "archived");
+  assert.equal(manifest.title, first.title);
+  assert.match(await readFile(join(result.problemsDir, first.id, "problem.md"), "utf8"), new RegExp(first.sourceUrl));
 });
 
 test("fails with the allowlisted ID and file when a public display source is missing", async (t) => {

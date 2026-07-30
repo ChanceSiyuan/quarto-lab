@@ -47,7 +47,11 @@ describe("bundled Research Loop starter", () => {
     expect(example).toContain('collapse="true"');
     expect(example).toContain("categories: [theory]");
     expect(JSON.parse(await readFile(path.join(target, ".openai", "hosting.json"), "utf8")))
-      .toEqual({ project_id: null, d1: null, r2: null });
+      .toEqual({
+        project_id: "appgprj_6a66e89526a88191a9e969c6f441086c",
+        d1: null,
+        r2: null,
+      });
   });
 
   it("never overwrites pre-existing Knowledge, Draft, or Literature files during initialization", async () => {

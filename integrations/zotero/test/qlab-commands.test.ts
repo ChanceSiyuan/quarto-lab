@@ -55,10 +55,13 @@ describe("QLab command palette", () => {
     expect(prompt).toContain("Never write to knowledge/");
   });
 
-  it("limits Agent writes to persistent Draft working copies", () => {
+  it("limits Agent writes to untrusted content and generated work trees", () => {
     expect(qlabWritableRoots("/repo")).toEqual([
-      "/repo/work/qlab-zotero/draft-changes",
+      "/repo/drafts",
+      "/repo/literature",
+      "/repo/work",
     ]);
+    expect(qlabWritableRoots("/repo")).not.toContain("/repo/knowledge");
   });
 
   it("binds Draft Preview review to one file without granting promotion permission", () => {

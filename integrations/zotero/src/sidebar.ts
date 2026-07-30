@@ -204,6 +204,7 @@ export interface SidebarCallbacks {
   onCaptureChatDraft?(): void;
   onChoosePaper?(): void;
   onOpenPaper?(): void;
+  canOpenPdfPage?(reference: PdfPageReference): boolean;
   onOpenPdfPage?(reference: PdfPageReference): void;
   onCheckMainSite?(): Promise<boolean>;
   onCheckMainSiteRepository?(): Promise<QLabRepositoryState>;
@@ -2004,9 +2005,15 @@ export class SidebarView {
     return article;
   }
 
-  private markdownOptions(): { onPdfPageLink: (reference: PdfPageReference) => void } | Record<string, never> {
-    return this.callbacks.onOpenPdfPage
-      ? { onPdfPageLink: this.callbacks.onOpenPdfPage }
+  private markdownOptions(): {
+    onPdfPageLink: (reference: PdfPageReference) => void;
+    canOpenPdfPageLink: (reference: PdfPageReference) => boolean;
+  } | Record<string, never> {
+    return this.callbacks.onOpenPdfPage && this.callbacks.canOpenPdfPage
+      ? {
+          onPdfPageLink: this.callbacks.onOpenPdfPage,
+          canOpenPdfPageLink: this.callbacks.canOpenPdfPage,
+        }
       : {};
   }
 

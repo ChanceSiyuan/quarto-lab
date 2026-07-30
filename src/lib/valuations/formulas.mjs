@@ -99,6 +99,177 @@ export function calculateInformationValue({ valueWithSampleInformation, valueCur
   return { evsi, enbs: subtractIntervals(evsi, studyCost) };
 }
 
+function assertPlainObject(value, name) {
+  if (value === null || typeof value !== "object" || Array.isArray(value)) {
+    throw new TypeError(`${name} must be an object.`);
+  }
+}
+
+function assertNonNegativeFinite(value, name) {
+  if (!Number.isFinite(value) || value < 0) {
+    throw new TypeError(`${name} must be a non-negative finite number.`);
+  }
+}
+
+function assertPositiveInteger(value, name) {
+  if (!Number.isInteger(value) || value <= 0) {
+    throw new TypeError(`${name} must be a positive integer.`);
+  }
+}
+
+function validateAnnualPerRunModel(valueModel, outcomeLabel) {
+  assertPositiveInteger(valueModel.teams, `${outcomeLabel} teams`);
+  assertPositiveInteger(valueModel.runsPerTeamPerYear, `${outcomeLabel} runsPerTeamPerYear`);
+  if (!Array.isArray(valueModel.years) || valueModel.years.length === 0) {
+    throw new TypeError(`${outcomeLabel} years must be a non-empty array.`);
+  }
+  const years = new Set();
+  for (const year of valueModel.years) {
+    assertPositiveInteger(year, `${outcomeLabel} years`);
+    if (years.has(year)) {
+      throw new TypeError(`${outcomeLabel} years must be unique.`);
+    }
+    years.add(year);
+  }
+
+  assertPlainObject(valueModel.compute, `${outcomeLabel} compute`);
+  assertNonNegativeFinite(
+    valueModel.compute.pricePerInstanceHour,
+    `${outcomeLabel} compute pricePerInstanceHour`,
+  );
+  assertNonNegativeFinite(
+    valueModel.compute.instanceHoursAvoided,
+    `${outcomeLabel} compute instanceHoursAvoided`,
+  );
+
+  assertPlainObject(valueModel.productiveTime, `${outcomeLabel} productiveTime`);
+  assertNonNegativeFinite(
+    valueModel.productiveTime.hoursReleased,
+    `${outcomeLabel} productiveTime hoursReleased`,
+  );
+  assertNonNegativeFinite(
+    valueModel.productiveTime.loadedHourlyValue,
+    `${outcomeLabel} productiveTime loadedHourlyValue`,
+  );
+  assertNonNegativeFinite(
+    valueModel.productiveTime.recaptureRate,
+    `${outcomeLabel} productiveTime recaptureRate`,
+  );
+  if (valueModel.productiveTime.recaptureRate > 1) {
+    throw new RangeError(`${outcomeLabel} productiveTime recaptureRate must not exceed one.`);
+  }
+}
+
+function validateEansvModel(model) {
+  assertPlainObject(model, "EANSV model");
+  if (!Number.isFinite(model.socialDiscountRate) || model.socialDiscountRate <= -1) {
+    throw new RangeError("EANSV model socialDiscountRate must be finite and greater than -1.");
+  }
+  assertNonNegativeFinite(
+    model.withoutResearchCounterfactualPresentValue,
+    "EANSV model withoutResearchCounterfactualPresentValue",
+  );
+  assertNonNegativeFinite(model.researchCostPresentValue, "EANSV model researchCostPresentValue");
+  if (!Array.isArray(model.outcomes) || model.outcomes.length === 0) {
+    throw new TypeError("EANSV model outcomes must be a non-empty array.");
+  }
+
+  const outcomeIds = new Set();
+  let probabilityTotal = 0;
+  for (const [index, outcome] of model.outcomes.entries()) {
+    const outcomeLabel = `EANSV outcome ${index + 1}`;
+    assertPlainObject(outcome, outcomeLabel);
+    if (typeof outcome.id !== "string" || outcome.id.trim().length === 0 || outcomeIds.has(outcome.id)) {
+      throw new TypeError(`${outcomeLabel} outcome id must be a unique non-empty string.`);
+    }
+    outcomeIds.add(outcome.id);
+    if (!Number.isFinite(outcome.probability)
+      || outcome.probability < 0
+      || outcome.probability > 1) {
+      throw new RangeError(`${outcomeLabel} probability must be between zero and one.`);
+    }
+    probabilityTotal += outcome.probability;
+
+    assertPlainObject(outcome.valueModel, `${outcomeLabel} valueModel`);
+    if (outcome.valueModel.kind === "annual-per-run") {
+      validateAnnualPerRunModel(outcome.valueModel, outcomeLabel);
+    } else if (outcome.valueModel.kind === "present-value") {
+      assertNonNegativeFinite(outcome.valueModel.amount, `${outcomeLabel} amount`);
+    } else {
+      throw new TypeError(`${outcomeLabel} valueModel kind is unsupported.`);
+    }
+  }
+  if (Math.abs(probabilityTotal - 1) > 1e-12) {
+    throw new RangeError("EANSV model outcome probabilities must sum to one.");
+  }
+}
+
+function roundToCents(value) {
+  return Math.round((value + Number.EPSILON) * 100) / 100;
+}
+
+function calculateEansvOutcome(outcome, socialDiscountRate) {
+  if (outcome.valueModel.kind === "present-value") {
+    const presentValue = outcome.valueModel.amount;
+    return {
+      id: outcome.id,
+      probability: outcome.probability,
+      kind: outcome.valueModel.kind,
+      presentValue,
+      expectedPresentValue: outcome.probability * presentValue,
+    };
+  }
+
+  const computeSavingPerRun = roundToCents(
+    outcome.valueModel.compute.pricePerInstanceHour
+      * outcome.valueModel.compute.instanceHoursAvoided,
+  );
+  const productiveTimeValuePerRun = roundToCents(
+    outcome.valueModel.productiveTime.hoursReleased
+      * outcome.valueModel.productiveTime.loadedHourlyValue
+      * outcome.valueModel.productiveTime.recaptureRate,
+  );
+  const perRunBenefit = computeSavingPerRun + productiveTimeValuePerRun;
+  const annualBenefit = outcome.valueModel.teams
+    * outcome.valueModel.runsPerTeamPerYear
+    * perRunBenefit;
+  const presentValue = outcome.valueModel.years.reduce(
+    (sum, year) => sum + annualBenefit / ((1 + socialDiscountRate) ** year),
+    0,
+  );
+  return {
+    id: outcome.id,
+    probability: outcome.probability,
+    kind: outcome.valueModel.kind,
+    computeSavingPerRun,
+    productiveTimeValuePerRun,
+    perRunBenefit,
+    annualBenefit,
+    presentValue,
+    expectedPresentValue: outcome.probability * presentValue,
+  };
+}
+
+export function calculateExpectedAttributableNetSocialValue(model) {
+  validateEansvModel(model);
+  const outcomes = model.outcomes.map(
+    (outcome) => calculateEansvOutcome(outcome, model.socialDiscountRate),
+  );
+  const withResearchPresentValue = outcomes.reduce(
+    (sum, outcome) => sum + outcome.expectedPresentValue,
+    0,
+  );
+  return {
+    outcomes,
+    withResearchPresentValue,
+    withoutResearchCounterfactualPresentValue: model.withoutResearchCounterfactualPresentValue,
+    researchCostPresentValue: model.researchCostPresentValue,
+    eansv: withResearchPresentValue
+      - model.withoutResearchCounterfactualPresentValue
+      - model.researchCostPresentValue,
+  };
+}
+
 function metricValue(result, metric) {
   const value = result?.[metric];
   if (Number.isFinite(value)) return value;

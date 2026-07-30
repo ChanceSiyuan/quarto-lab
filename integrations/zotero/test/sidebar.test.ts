@@ -119,7 +119,11 @@ describe("SidebarView", () => {
   it("forwards assistant PDF citations to Zotero page navigation", () => {
     const body = document.createElement("div");
     document.body.appendChild(body);
-    const handlers = { ...callbacks(), onOpenPdfPage: vi.fn() };
+    const handlers = {
+      ...callbacks(),
+      canOpenPdfPage: vi.fn(() => true),
+      onOpenPdfPage: vi.fn(),
+    };
     const view = new SidebarView(body, handlers);
     view.setState({
       phase: "ready",

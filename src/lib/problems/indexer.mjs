@@ -87,7 +87,7 @@ export async function buildProblemIndex({
   }
 
   for (const entry of entries) {
-    if (PROBLEM_ID_PATTERN.test(entry.name)) {
+    if (!entry.isDirectory() && PROBLEM_ID_PATTERN.test(entry.name)) {
       reservedIds.add(entry.name);
     }
   }
@@ -105,12 +105,13 @@ export async function buildProblemIndex({
     try {
       manifest = JSON.parse(await readFile(manifestPath, "utf8"));
     } catch (error) {
-      const message = error.code === "ENOENT"
-        ? "Missing problem.json."
-        : `Invalid JSON: ${error.message}`;
-      diagnostics.push(diagnostic(relativePath, "manifest", message));
+      if (error.code === "ENOENT") continue;
+      if (PROBLEM_ID_PATTERN.test(entry.name)) reservedIds.add(entry.name);
+      diagnostics.push(diagnostic(relativePath, "manifest", `Invalid JSON: ${error.message}`));
       continue;
     }
+
+    if (PROBLEM_ID_PATTERN.test(entry.name)) reservedIds.add(entry.name);
 
     if (typeof manifest?.id === "string" && PROBLEM_ID_PATTERN.test(manifest.id)) {
       reservedIds.add(manifest.id);
@@ -141,10 +142,7 @@ export async function buildProblemIndex({
     problems.push(manifest);
   }
 
-  problems.sort((left, right) => (
-    Date.parse(right.updatedAt) - Date.parse(left.updatedAt)
-    || left.id.localeCompare(right.id)
-  ));
+  problems.sort((left, right) => left.id.localeCompare(right.id));
 
   return {
     schemaVersion: 1,

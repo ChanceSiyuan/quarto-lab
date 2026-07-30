@@ -36,7 +36,7 @@ describe("safe paper Markdown renderer", () => {
     host.appendChild(renderMarkdown(document, [
       "[PDF 第5页](https://arxiv.org/pdf/2306.13123#page=5)",
       "[PDF 第6–7页](https://arxiv.org/pdf/2306.13123#page=6)",
-    ].join(" "), { onPdfPageLink }));
+    ].join(" "), { onPdfPageLink, canOpenPdfPageLink: () => true }));
     const links = [...host.querySelectorAll<HTMLAnchorElement>(".zc-pdf-page-link")];
 
     expect(links).toHaveLength(2);
@@ -62,7 +62,7 @@ describe("safe paper Markdown renderer", () => {
     host.appendChild(renderMarkdown(document, [
       "[PDF pages 12-14](https://example.org/article.pdf?page=12)",
       "[results page](https://example.org/search?page=3)",
-    ].join(" "), { onPdfPageLink }));
+    ].join(" "), { onPdfPageLink, canOpenPdfPageLink: () => true }));
 
     const links = [...host.querySelectorAll<HTMLAnchorElement>("a")];
     expect(links[0]?.classList.contains("zc-pdf-page-link")).toBe(true);
@@ -73,6 +73,23 @@ describe("safe paper Markdown renderer", () => {
       endPage: 14,
       sourceUrl: "https://example.org/article.pdf?page=12",
     });
+  });
+
+  it("keeps an unmatched external PDF citation as a normal browser link", () => {
+    const onPdfPageLink = vi.fn();
+    const host = document.createElement("div");
+    host.appendChild(renderMarkdown(
+      document,
+      "[PDF page 8](https://example.org/another-paper.pdf#page=8)",
+      { onPdfPageLink, canOpenPdfPageLink: () => false },
+    ));
+
+    const link = host.querySelector<HTMLAnchorElement>("a")!;
+    expect(link.classList.contains("zc-pdf-page-link")).toBe(false);
+    expect(link.target).toBe("_blank");
+    link.addEventListener("click", (event) => event.preventDefault(), { once: true });
+    link.click();
+    expect(onPdfPageLink).not.toHaveBeenCalled();
   });
 
   it("rejects executable and credential-bearing link destinations without parsing HTML", () => {

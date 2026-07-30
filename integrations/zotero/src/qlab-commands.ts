@@ -65,7 +65,11 @@ export function commandDefinition(id: QLabCommandID): QLabCommandDefinition {
 
 export function qlabWritableRoots(root: string): string[] {
   const base = root.replace(/[\\/]+$/, "");
-  return [`${base}/work/qlab-zotero/draft-changes`];
+  return [
+    `${base}/drafts`,
+    `${base}/literature`,
+    `${base}/work`,
+  ];
 }
 
 export function buildQLabCommandPrompt(

@@ -5,8 +5,12 @@ import {
   getStaticResearchExampleProblem,
   isStaticResearchExampleProblem,
 } from "@/lib/problems/example-research.mjs";
+import { getStaticExampleValuation } from "@/lib/problems/example-valuation.mjs";
+import { buildStaticExampleEansvCard } from "@/lib/problems/example-valuation-presentation.mjs";
+import { getPagesChallenge } from "@/lib/pages-showcase/challenge-catalog.mjs";
 import { buildProblemDiscussLaunch } from "@/lib/problems/codex-launch.mjs";
 import { buildExampleResearchLedger } from "@/lib/problems/example-presentation.mjs";
+import { isQh127ResearchProblem } from "@/lib/problems/qh127-research.mjs";
 import { createProblemRepository } from "@/lib/problems/repository.mjs";
 import { createResearchRepository } from "@/lib/problems/research-repository.mjs";
 import { buildProblemDetailResearchState } from "@/lib/problems/research-route-data.mjs";
@@ -42,13 +46,16 @@ export default async function ProblemDetailPage({
   });
   const sidecarAvailable = __AUTORESEARCH_SIDECAR_AVAILABLE__;
   const pagesStaticShowcase = __PAGES_STATIC_SHOWCASE__;
+  const pagesChallenge = getPagesChallenge(problem.id);
 
   if (isStaticResearchExampleProblem(problem.id)) {
     const example = getStaticResearchExample(problem.id);
-    if (!example) {
+    const valuationExample = getStaticExampleValuation(problem.id);
+    if (!example || !valuationExample) {
       notFound();
     }
     const ledger = buildExampleResearchLedger(example);
+    const eansvCard = buildStaticExampleEansvCard(valuationExample);
     const discussLaunch = buildProblemDiscussLaunch({
       workspacePath: generatedIndex.workspacePath,
       problem,
@@ -78,7 +85,7 @@ export default async function ProblemDetailPage({
           </div>
         </header>
 
-        <StaticAssessmentPanel />
+        <StaticAssessmentPanel eansvCard={eansvCard} />
 
         <section className={detailStyles.linkPanel} aria-labelledby="autoresearch-link-heading">
           <div>
@@ -95,15 +102,39 @@ export default async function ProblemDetailPage({
 
   if (pagesStaticShowcase) {
     return (
-      <main className="detail-shell">
+      <main className={`detail-shell research-shell ${detailStyles.shellZoom}`}>
         <Link className="back-link" href="/">← Back to problems</Link>
-        <p className="eyebrow">{problem.id}</p>
-        <h1>{problem.title}</h1>
-        <p className="detail-summary">{problem.summary}</p>
-        <section className="detail-panel" aria-labelledby="detail-status-heading">
-          <h2 id="detail-status-heading">Problem detail</h2>
-          <p>The detailed problem workspace will be designed next; this page currently locks the route, identity, and return path.</p>
-        </section>
+        <header className="research-header">
+          <div>
+            <p className="eyebrow">{problem.id}</p>
+            <h1 className={detailStyles.title}>{problem.title}</h1>
+            <p>{problem.summary}</p>
+          </div>
+          {pagesChallenge ? (
+            <a className="open-affordance" href={pagesChallenge.sourceUrl}>
+              Open source issue #{pagesChallenge.issueNumber} <span aria-hidden="true">→</span>
+            </a>
+          ) : null}
+        </header>
+        <StaticAssessmentPanel problemId={problem.id} />
+        {isQh127ResearchProblem(problem.id) ? (
+          <section className={detailStyles.linkPanel} aria-labelledby="autoresearch-link-heading">
+            <div>
+              <h2 id="autoresearch-link-heading">Autoresearch results</h2>
+              <p>9 real attempts with public cost metrics plus the one-shot sealed finalization outcome.</p>
+            </div>
+            <Link className="open-affordance" href={`/problems/${problem.id}/autoresearch`}>
+              Open autoresearch results <span aria-hidden="true">→</span>
+            </Link>
+          </section>
+        ) : (
+          <section className={detailStyles.linkPanel} aria-labelledby="autoresearch-status-heading">
+            <div>
+              <h2 id="autoresearch-status-heading">Autoresearch status</h2>
+              <p>Not started.</p>
+            </div>
+          </section>
+        )}
       </main>
     );
   }

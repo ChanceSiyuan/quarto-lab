@@ -3,6 +3,10 @@ import { access, readdir, readFile, stat } from "node:fs/promises";
 import { join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import test from "node:test";
+import {
+  PAGES_CHALLENGE_IDS,
+  PAGES_CHALLENGES,
+} from "../../src/lib/pages-showcase/challenge-catalog.mjs";
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
 const out = join(root, "out");
@@ -11,11 +15,7 @@ const generatedIndex = JSON.parse(
 );
 const PUBLIC_PROBLEM_IDS = [
   "Prob-000",
-  "Prob-124",
-  "Prob-125",
-  "Prob-126",
-  "Prob-127",
-  "Prob-128",
+  ...PAGES_CHALLENGE_IDS,
 ];
 
 async function fileExists(path) {
@@ -43,7 +43,7 @@ async function collectFiles(dir) {
 
 test("pages build indexes only the approved public problem records", () => {
   assert.deepEqual(generatedIndex.problems.map((problem) => problem.id).sort(), PUBLIC_PROBLEM_IDS);
-  assert.equal(generatedIndex.summary.total, 6);
+  assert.equal(generatedIndex.summary.total, 78);
 });
 
 test("pages showcase writes static route files", async () => {
@@ -53,12 +53,8 @@ test("pages showcase writes static route files", async () => {
     "knowledge/research-loop.css",
     "knowledge/search.json",
     "problems/Prob-000/index.html",
-    "problems/Prob-124/index.html",
-    "problems/Prob-125/index.html",
-    "problems/Prob-126/index.html",
-    "problems/Prob-127/index.html",
-    "problems/Prob-128/index.html",
     "problems/Prob-000/autoresearch/index.html",
+    "problems/Prob-127/autoresearch/index.html",
     "problems/Prob-000/attempts/ATT-001/index.html",
     "problems/Prob-000/attempts/ATT-002/index.html",
     "problems/Prob-000/attempts/ATT-003/index.html",
@@ -67,6 +63,9 @@ test("pages showcase writes static route files", async () => {
     ".nojekyll",
   ]) {
     assert.equal(await fileExists(join(out, routeFile)), true, `${routeFile} should exist`);
+  }
+  for (const id of PAGES_CHALLENGE_IDS) {
+    assert.equal(await fileExists(join(out, "problems", id, "index.html")), true, `${id} should exist`);
   }
 });
 
@@ -87,10 +86,18 @@ test("pages showcase rewrites links for the repository base path", async () => {
   assert.doesNotMatch(autoresearch, /<script\b/i);
 });
 
-test("pages showcase renders the five official public problem details", async () => {
-  for (const id of PUBLIC_PROBLEM_IDS.slice(1)) {
+test("pages showcase renders all public challenge details without starting autoresearch", async () => {
+  for (const id of PAGES_CHALLENGE_IDS) {
     const html = await readFile(join(out, "problems", id, "index.html"), "utf8");
     assert.match(html, new RegExp(`<p class="eyebrow">${id}</p>`));
+    assert.match(html, /<main class="detail-shell research-shell /);
+    if (id !== "Prob-127") {
+      assert.match(html, />Autoresearch status<\/h2>/);
+      assert.match(html, />Not started\.<\/p>/);
+    }
+    assert.doesNotMatch(html, /Problem detail/);
+    assert.doesNotMatch(html, /The detailed problem workspace will be designed next/);
+    assert.doesNotMatch(html, /class="detail-summary"/);
     assert.match(html, /href="\/research-loop\/"/);
     assert.doesNotMatch(html, /<script\b/i);
     assert.doesNotMatch(html, /codex:\/\//i);
@@ -98,7 +105,21 @@ test("pages showcase renders the five official public problem details", async ()
     assert.doesNotMatch(html, /Available in local mode/);
     assert.doesNotMatch(html, /Prepare autoresearch/);
     assert.doesNotMatch(html, /Local assessment unavailable/);
+    assert.match(html, new RegExp(`https://github\\.com/QuantumBFS/quantum\\.harness/issues/${Number(id.slice(5))}`));
   }
+});
+
+test("pages showcase homepage marks Prob-000 done and every challenge judged", async () => {
+  const html = await readFile(join(out, "index.html"), "utf8");
+  const doneLabels = html.match(/>Done<\/span>/g) ?? [];
+  const judgedLabels = html.match(/>Judged<\/span>/g) ?? [];
+
+  assert.equal(doneLabels.length, 2, "Prob-000 appears once in each responsive view");
+  assert.equal(judgedLabels.length, PAGES_CHALLENGE_IDS.length * 2, "each challenge appears once in each responsive view");
+  assert.match(html, /33\.4 \/ 100/);
+  assert.match(html, /\+\$180K USD 2026/);
+  assert.match(html, /88\.5 \/ 100/);
+  assert.doesNotMatch(html, /Solving judged done/);
 });
 
 test("pages showcase links to the bundled knowledge site under the repository base path", async () => {
@@ -193,7 +214,10 @@ test("pages showcase contains only the noninteractive local-mode preparation not
   assert.doesNotMatch(problem, /Example data - synthetic results for interface demonstration only\./);
   assert.doesNotMatch(problem, /Assessment methodology demo/);
   assert.match(problem, /Scientific Demand Score/);
-  assert.match(problem, /Industry \/ social proxy/);
+  assert.match(problem, /Expected Attributable Net Social Value/);
+  assert.match(problem, /\+\$180K USD 2026/);
+  assert.doesNotMatch(problem, /Industry \/ social proxy/);
+  assert.doesNotMatch(problem, /\$57\.0B USD 2035/);
   assert.match(problem, /Autoresearch Fit/);
   assert.match(problem, /Methodology documentation/);
   assert.doesNotMatch(problem, /Research Value \(V\)/);
@@ -211,6 +235,46 @@ test("pages showcase contains only the noninteractive local-mode preparation not
   assert.match(autoresearch, /Best speedup/);
   assert.match(autoresearch, /Example data - synthetic results for interface demonstration only\./);
   assert.doesNotMatch(autoresearch, /\/__local\/assessments/);
+});
+
+test("pages showcase publishes the agreed evaluation cards on every challenge detail", async () => {
+  for (const challenge of PAGES_CHALLENGES) {
+    const { id } = challenge;
+    const html = await readFile(join(out, "problems", id, "index.html"), "utf8");
+    assert.match(html, /Scientific Demand Score/);
+    assert.match(html, /Expected Attributable Net Social Value \(EANSV\)/);
+    assert.match(html, /Autoresearch Fit/);
+    assert.match(html, /P\(useful outcome with this research\) - P\(useful outcome without this research\)/);
+    assert.doesNotMatch(html, /Industry \/ social proxy/);
+    assert.equal(html.includes(`${challenge.scientificDemand} / 100`), true, `${id} scientific score`);
+    const millions = challenge.eansv / 1_000_000;
+    const digits = millions > 0 && millions < 1 && !Number.isInteger(millions * 10) ? 2 : 1;
+    assert.equal(html.includes(`$${millions.toFixed(digits)}M USD 2026`), true, `${id} EANSV`);
+    assert.equal(html.includes(`${challenge.autoresearchFit} / 100`), true, `${id} autoresearch score`);
+  }
+});
+
+test("pages showcase publishes the qh-127 real autoresearch results", async () => {
+  const detail = await readFile(join(out, "problems", "Prob-127", "index.html"), "utf8");
+  assert.match(detail, /Autoresearch results/);
+  assert.match(detail, /href="\/research-loop\/problems\/Prob-127\/autoresearch\/"/);
+  assert.doesNotMatch(detail, /synthetic attempts/);
+
+  const page = await readFile(join(out, "problems", "Prob-127", "autoresearch", "index.html"), "utf8");
+  assert.match(page, /Autoresearch results/);
+  assert.match(page, /Real run/);
+  assert.match(page, /Blind sealed evaluation/);
+  assert.match(page, /attempts \+ 1 finalization/);
+  assert.match(page, /attempt-001/);
+  assert.match(page, /attempt-009/);
+  assert.match(page, /accepted · best/);
+  assert.match(page, /0\.603x/);
+  assert.match(page, /Sealed finalization/);
+  assert.match(page, /EXHAUSTED/);
+  assert.match(page, /href="\/research-loop\/problems\/Prob-127\/"/);
+  assert.doesNotMatch(page, /Example data - synthetic results/);
+  assert.doesNotMatch(page, /<script\b/i);
+  assert.doesNotMatch(page, /codex:\/\//i);
 });
 
 test("pages showcase exposes exactly the approved public problem routes", async () => {

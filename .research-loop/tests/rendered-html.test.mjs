@@ -1,11 +1,18 @@
 import assert from "node:assert/strict";
 import { execFile } from "node:child_process";
-import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
 import test from "node:test";
+
+import {
+  ACTIVE_WITH_GATE_STATUSES,
+  PROBLEM_ID_PATTERN,
+  PUBLISHED_STATUSES,
+  SOLVED_OR_LATER_STATUSES,
+} from "../../src/lib/problems/schema.mjs";
 
 const execFileAsync = promisify(execFile);
 const workspaceRoot = fileURLToPath(new URL("../../", import.meta.url));
@@ -14,6 +21,7 @@ const generatedIndex = JSON.parse(
   await readFile(generatedIndexUrl, "utf8"),
 );
 const fixedPublicationTargetPattern = new RegExp(["publication", "target"].join("\\s+"), "i");
+const trackedProblemManifests = await readTrackedProblemManifests();
 
 const completeProblemMd = [
   "Background and Gap",
@@ -44,6 +52,44 @@ async function render(pathname = "/") {
       passThroughOnException() {},
     },
   );
+}
+
+async function readTrackedProblemManifests() {
+  const problemsDir = join(workspaceRoot, "problems");
+  const entries = await readdir(problemsDir, { withFileTypes: true });
+  const manifests = [];
+  for (const entry of entries) {
+    if (!entry.isDirectory() || !PROBLEM_ID_PATTERN.test(entry.name)) continue;
+    let manifestText;
+    try {
+      manifestText = await readFile(join(problemsDir, entry.name, "problem.json"), "utf8");
+    } catch (error) {
+      if (error?.code === "ENOENT") continue;
+      throw error;
+    }
+    const manifest = JSON.parse(manifestText);
+    manifests.push(manifest);
+  }
+  return manifests;
+}
+
+function expectedNextProblemId(manifests) {
+  const max = manifests.reduce((current, manifest) => {
+    const match = PROBLEM_ID_PATTERN.exec(manifest.id);
+    return match ? Math.max(current, Number(match[1])) : current;
+  }, 0);
+  return `Prob-${String(max + 1).padStart(3, "0")}`;
+}
+
+function expectedProblemSummary(manifests) {
+  return {
+    total: manifests.length,
+    accepted: manifests.filter((problem) => ACTIVE_WITH_GATE_STATUSES.includes(problem.status)).length,
+    solved: manifests.filter((problem) => SOLVED_OR_LATER_STATUSES.includes(problem.status)).length,
+    published: manifests.filter((problem) => PUBLISHED_STATUSES.includes(problem.status)).length,
+    rejected: manifests.filter((problem) => problem.status === "rejected").length,
+    archived: manifests.filter((problem) => problem.status === "archived").length,
+  };
 }
 
 async function buildCurrentIndex(env = {}) {
@@ -138,8 +184,9 @@ test("server-renders the problem console shell", async () => {
   assert.doesNotMatch(html, />\+ Add first problem<\/a>/);
   assert.match(html, /Cannot open Codex\?/);
   assert.match(html, /codex:\/\/threads\/new/);
-  assert.match(html, /<span class="status-badge status-draft">Draft<\/span>/);
-  assert.match(html, /<span class="status-badge status-solved">Solved<\/span>/);
+  assert.match(html, /<span class="status-badge status-draft">Awaiting judgment<\/span>/);
+  assert.match(html, /<span class="status-badge status-solved">Judged<\/span>/);
+  assert.match(html, /\$3\.0M USD 2026/);
   assert.doesNotMatch(html, /metric-strip/);
   assert.doesNotMatch(html, /console-toolbar/);
   assert.doesNotMatch(html, /Index diagnostics/);
@@ -148,7 +195,7 @@ test("server-renders the problem console shell", async () => {
   assert.doesNotMatch(html, /[\u3400-\u9FFF]/u);
   assert.match(
     html,
-    /<th scope="col">Problem<\/th><th scope="col">Status<\/th><th scope="col">Executable gate<\/th><th scope="col">Provenance<\/th><th scope="col">Recent activity<\/th><th scope="col">Updated<\/th><th scope="col">Open<\/th>/,
+    /<th scope="col">Problem<\/th><th scope="col">Status<\/th><th scope="col">Executable gate<\/th><th scope="col">Scientific Demand Score<\/th><th scope="col">Expected Attributable Net Social Value \(EANSV\)<\/th><th scope="col">Autoresearch Fit<\/th>/,
   );
   assert.doesNotMatch(html, /Turn open literature into/);
   assert.doesNotMatch(html, /Reset demo/);
@@ -158,25 +205,11 @@ test("server-renders the problem console shell", async () => {
 test("ordinary local build indexes all tracked QEC problems and reserves the next problem ID", () => {
   assert.deepEqual(
     generatedIndex.problems.map((problem) => problem.id).sort(),
-    [
-      ...Array.from({ length: 21 }, (_, index) => `Prob-${String(index + 1).padStart(3, "0")}`),
-      "Prob-124",
-      "Prob-125",
-      "Prob-126",
-      "Prob-127",
-      "Prob-128",
-    ].sort(),
+    trackedProblemManifests.map((problem) => problem.id).sort(),
   );
-  assert.equal(generatedIndex.nextProblemId, "Prob-129");
+  assert.equal(generatedIndex.nextProblemId, expectedNextProblemId(trackedProblemManifests));
   assert.deepEqual(generatedIndex.diagnostics, []);
-  assert.deepEqual(generatedIndex.summary, {
-    total: 26,
-    accepted: 4,
-    solved: 1,
-    published: 0,
-    rejected: 0,
-    archived: 2,
-  });
+  assert.deepEqual(generatedIndex.summary, expectedProblemSummary(trackedProblemManifests));
 });
 
 test("homepage table links do not rely on absolute row overlays", async () => {
@@ -195,14 +228,12 @@ test("server-renders populated desktop and narrow problem rows", async () => {
 
   const html = await response.text();
   assert.match(html, /<tr class="problem-table-row"><th scope="row"><a class="problem-row-link" href="\/problems\/Prob-017">/);
-  assert.match(html, /<td><a class="open-affordance" href="\/problems\/Prob-017">Open <span aria-hidden="true">→<\/span><\/a><\/td>/);
   assert.match(html, /<a class="problem-list-item" href="\/problems\/Prob-017" aria-label="Open Prob-017: Fresh Hamiltonian gate">/);
   assert.match(html, /Fresh Hamiltonian gate/);
   assert.match(html, /Interval arithmetic on held-out instances\./);
   assert.match(html, /interval-arithmetic/);
-  assert.match(html, /12 sources/);
-  assert.match(html, /Accepted after novelty review/);
-  assert.match(html, /2026-07-27 11:45:00 UTC/);
+  assert.match(html, /<span class="status-badge status-accepted">Solving<\/span>/);
+  assert.match(html, /<td>—<\/td><td>—<\/td><td>—<\/td>/);
   assert.match(html, /1 index errors/);
   assert.match(html, /problems\/Prob-018\/problem\.json/);
   assert.match(html, /Invalid JSON/);
@@ -259,7 +290,10 @@ test("ordinary local build serves the static demo route and rejects unknown demo
   const problemHtml = await problemResponse.text();
   assert.doesNotMatch(problemHtml, /Assessment methodology demo/);
   assert.match(problemHtml, /Scientific Demand Score/);
-  assert.match(problemHtml, /Industry \/ social proxy/);
+  assert.match(problemHtml, /Expected Attributable Net Social Value/);
+  assert.match(problemHtml, /\+\$180K USD 2026/);
+  assert.doesNotMatch(problemHtml, /Industry \/ social proxy/);
+  assert.doesNotMatch(problemHtml, /\$57\.0B USD 2035/);
   assert.match(problemHtml, /Autoresearch Fit/);
   assert.match(problemHtml, /Discuss in Codex/);
   assert.match(problemHtml, /href="\/problems\/Prob-000\/autoresearch"/);
@@ -330,9 +364,12 @@ test("pages static showcase renders public problem details without local control
 
   const html = await response.text();
   assert.match(html, /<p class="eyebrow">Prob-017<\/p>/);
-  assert.match(html, /<h1>Fresh Hamiltonian gate<\/h1>/);
-  assert.match(html, /<p class="detail-summary">Interval arithmetic on held-out instances\.<\/p>/);
-  assert.match(html, /The detailed problem workspace will be designed next; this page currently locks the route, identity, and return path\./);
+  assert.match(html, />Fresh Hamiltonian gate<\/h1>/);
+  assert.doesNotMatch(html, /class="detail-summary"/);
+  assert.match(html, /Autoresearch status/);
+  assert.match(html, /Not started\./);
+  assert.doesNotMatch(html, /Problem detail/);
+  assert.doesNotMatch(html, /The detailed problem workspace will be designed next/);
   assert.doesNotMatch(html, /Available in local mode/);
   assert.doesNotMatch(html, /Prepare autoresearch/);
   assert.doesNotMatch(html, /Local assessment unavailable/);
@@ -353,8 +390,15 @@ test("server-renders the static assessment methodology demo for the static examp
   assert.match(html, /<section class="assessment-panel [^"]+" aria-label="Assessment">/);
   assert.doesNotMatch(html, /Assessment methodology demo/);
   assert.match(html, /Scientific Demand Score/);
-  assert.match(html, /Industry \/ social proxy/);
+  assert.match(html, /Expected Attributable Net Social Value/);
+  assert.match(html, /\+\$180K USD 2026/);
+  assert.doesNotMatch(html, /Industry \/ social proxy/);
+  assert.doesNotMatch(html, /\$57\.0B USD 2035/);
   assert.match(html, /Autoresearch Fit/);
+  assert.match(html, /88\.5 \/ 100/);
+  assert.match(html, /weighted sum = 442\.5 \/ 100 = 4\.425/);
+  assert.doesNotMatch(html, /38\.5 \/ 100/);
+  assert.doesNotMatch(html, /S = 2 x V x A/);
   assert.match(html, /Methodology documentation/);
   assert.doesNotMatch(html, /Technical Success Estimate/);
   assert.doesNotMatch(html, /Local assessment unavailable/);

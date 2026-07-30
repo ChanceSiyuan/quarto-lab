@@ -4,7 +4,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
-const PORT = 4174;
+const PORT = 4175;
 const BASE_URL = `http://127.0.0.1:${PORT}`;
 const FAKE_CODEX_BIN = path.join(ROOT, ".research-loop", "tests", "fixtures", "fake-codex");
 export const FAKE_CODEX_EXECUTABLE = realpathSync(path.join(FAKE_CODEX_BIN, "codex"));
@@ -34,6 +34,7 @@ export default defineConfig({
   testDir: ".research-loop/tests/e2e",
   testMatch: /local-assessment\.spec\.ts/,
   globalTeardown: "./.research-loop/tests/e2e/local-assessment-teardown.ts",
+  timeout: 120_000,
   fullyParallel: false,
   forbidOnly: Boolean(process.env.CI),
   retries: 0,

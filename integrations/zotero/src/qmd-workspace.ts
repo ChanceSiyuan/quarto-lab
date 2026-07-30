@@ -415,7 +415,7 @@ export class QmdWorkspaceView {
       this.hasAgentChange = true;
     }
     if (!diffChanged && !revisionChanged) return;
-    this.setPendingEntry(current.relativePath, true);
+    this.setPendingEntry(current.relativePath, this.hasAgentChange);
     this.renderFileColumn();
     this.updateChangeControls();
     await this.ensureChangedPreview(generation);

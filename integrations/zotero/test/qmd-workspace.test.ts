@@ -559,6 +559,26 @@ describe("QmdWorkspaceView", () => {
     view.destroy();
   });
 
+  it("clears pending dots when the working copy returns to the Draft baseline", async () => {
+    (document as unknown as { createXULElement(name: string): HTMLElement }).createXULElement =
+      vi.fn(() => document.createElement("div"));
+    const { host, view, setPending } = mount();
+    view.show();
+    await view.open(DRAFT);
+
+    setPending(true, "changed-revision");
+    view.syncAgentChanges({ activeTurnId: "turn-restore", diffs: [] });
+    await settle();
+    expect(host.querySelector('[data-path="drafts"] .zc-qmd-pending-dot')).not.toBeNull();
+
+    setPending(false, "original-revision-again");
+    view.syncAgentChanges({ activeTurnId: "turn-restore", diffs: [] });
+    await settle();
+    expect(host.querySelector('[data-path="drafts"] .zc-qmd-pending-dot')).toBeNull();
+    expect(host.querySelector<HTMLButtonElement>(".zc-qmd-compare")!.disabled).toBe(true);
+    view.destroy();
+  });
+
   it("does not attach another paper or Draft's Agent diff to the visible Draft", async () => {
     const { host, view, changeRenderService } = mount();
     view.show();

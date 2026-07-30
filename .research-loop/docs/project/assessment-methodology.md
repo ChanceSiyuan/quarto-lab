@@ -293,6 +293,141 @@ These proxies are intentionally labeled as broad evidence. They help the UI
 avoid empty economic columns, but they do not prove problem-specific revenue,
 pricing power, adoption, novelty, or technical feasibility.
 
+### Prob-000 Expected Attributable Net Social Value example
+
+The preserved Prob-000 showcase uses a separate problem-specific worked
+example instead of allocating a percentage of the broad USD 43-71 billion
+quantum-computing forecast to one research problem. The example is deliberately
+limited to Prob-000 and does not alter production QEC portfolio assessments.
+
+**Expected Attributable Net Social Value (EANSV)** is the product's descriptive
+label for a synthesis of standard social cost-benefit, counterfactual, and
+expected-value-of-information ideas. It is not a named formula taken from one
+publication. Conceptually:
+
+```text
+EANSV = E_Y[max_a E_theta(W_R(a, theta, Y) | Y)]
+        - max_a E_theta(W_0(a, theta))
+        - PV(C_R)
+```
+
+The finite Prob-000 fixture treats every outcome branch as the present value
+under the best modeled downstream response, so the implemented form is:
+
+```text
+with_research_value = sum_y(probability_y * branch_present_value_y)
+
+EANSV = with_research_value
+        - without_research_counterfactual_PV
+        - research_cost_PV
+```
+
+The counterfactual prevents the research from receiving credit for value that
+is expected to arise without it. Research cost is then deducted to produce a
+net value. The result may be negative and is not clamped to zero.
+
+#### External evidence versus scenario assumptions
+
+External evidence supports the existence of the repeated technical task,
+public software, and one observable compute-price anchor. It does not establish
+future adoption, productivity, success probability, the counterfactual, or the
+final value.
+
+| Input | Value used | Classification |
+|---|---:|---|
+| c3-standard-8 public price | USD 0.403216 per instance-hour | External price evidence, accessed 2026-07-30. |
+| Social discount rate | 3.5% | Scenario assumption; adopts the UK Green Book headline rate for this worked example. |
+| Full-success probability | 0.35 | Scenario assumption. |
+| Full-success adoption and workload | 30 teams; 1,000 runs/team/year; years 1-5 | Scenario assumptions. |
+| Full-success time effects | 0.5 compute hour and 0.5 researcher hour released per run | Scenario assumptions. |
+| Partial-success probability | 0.25 | Scenario assumption. |
+| Partial-success adoption and workload | 10 teams; 500 runs/team/year; years 1-3 | Scenario assumptions. |
+| Partial-success time effects | 0.25 compute hour and 0.25 researcher hour released per run | Scenario assumptions. |
+| Loaded researcher-hour social value | USD 100/hour | Scenario assumption. |
+| Productive recapture fraction | 0.20 | Scenario assumption. |
+| Decision-useful negative-result branch | probability 0.40; USD 75,000 PV | Scenario assumptions. |
+| Without-research counterfactual | USD 100,000 PV | Scenario assumption. |
+| Research cost | USD 250,000 PV | Scenario assumption. |
+
+The compute component is rounded to cents before aggregation. Productive time
+is also rounded to cents:
+
+```text
+compute saving per run
+  = round_to_cents(price per instance-hour * instance-hours avoided)
+
+productive-time value per run
+  = round_to_cents(researcher-hours released
+                   * loaded hourly social value
+                   * productive recapture fraction)
+```
+
+All amounts below are constant 2026 USD. With a 3.5% social discount rate, the
+full-success branch is:
+
+```text
+per-run benefit = round_to_cents(0.403216 * 0.5)
+                  + round_to_cents(0.5 * 100 * 0.20)
+                = 0.20 + 10.00
+                = 10.20
+
+annual benefit = 30 * 1,000 * 10.20 = 306,000
+branch PV = sum(306,000 / 1.035^year, year = 1..5)
+          = 1,381,606.026894049
+```
+
+The partial-success branch is:
+
+```text
+per-run benefit = round_to_cents(0.403216 * 0.25)
+                  + round_to_cents(0.25 * 100 * 0.20)
+                = 0.10 + 5.00
+                = 5.10
+
+annual benefit = 10 * 500 * 5.10 = 25,500
+branch PV = sum(25,500 / 1.035^year, year = 1..3)
+          = 71,441.74301329814
+```
+
+The decision-useful negative-result branch has an assumed base-year present
+value of USD 75,000. Combining the mutually exclusive branches gives:
+
+```text
+with-research expected PV
+  = 0.35 * 1,381,606.026894049
+    + 0.25 * 71,441.74301329814
+    + 0.40 * 75,000
+  = 531,422.5451662417
+
+EANSV = 531,422.5451662417 - 100,000 - 250,000
+      = 181,422.5451662417
+```
+
+The static card rounds that calculated result to the nearest USD 10,000 and
+displays one number: `+$180K USD 2026`. The rounded card value is not stored in
+the fixture.
+
+The external technical and method references for this worked example are:
+
+- [QDistRnd, JOSS 7(72), DOI 10.21105/joss.04120](https://doi.org/10.21105/joss.04120),
+  supporting the existence of a published public distance-calculation tool;
+- [Distance-Finding Algorithms for Quantum Codes and Circuits](https://arxiv.org/abs/2603.22532),
+  used as external current technical context;
+- [qLDPC](https://github.com/qLDPCOrg/qLDPC), documenting public software
+  integration;
+- [Google Cloud general-purpose machine pricing](https://cloud.google.com/products/compute/pricing/general-purpose),
+  supplying the mutable unit-price anchor;
+- [NIST IR 7319](https://doi.org/10.6028/NIST.IR.7319) and the
+  [UK Green Book](https://www.gov.uk/government/publications/the-green-book-appraisal-and-evaluation-in-central-government),
+  for general cost-benefit, counterfactual, and discounting conventions;
+- the ISPOR Value of Information Analysis Task Force
+  [Report 1](https://doi.org/10.1016/j.jval.2020.01.001) and
+  [Report 2](https://doi.org/10.1016/j.jval.2020.01.004), for EVSI/ENBS
+  concepts; and
+- UK DSIT's [The value of public R&D](https://www.gov.uk/government/publications/the-value-of-public-rd/the-value-of-public-rd),
+  which cautions against assigning portfolio-average returns to an individual
+  program.
+
 ## Score anchors and quantitative evidence
 
 Assessment v2 can include `scoreAnchors` that recommend bounded dimension

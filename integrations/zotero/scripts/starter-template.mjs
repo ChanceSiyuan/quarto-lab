@@ -9,6 +9,7 @@ import path from "node:path";
 export const STARTER_COPY_PATHS = Object.freeze([
   ".gitignore",
   ".node-version",
+  ".openai/hosting.json",
   "AGENTS.md",
   "CLAUDE.md",
   "Makefile",
@@ -36,11 +37,6 @@ export const STARTER_COPY_PATHS = Object.freeze([
 ]);
 
 export const STARTER_GENERATED_FILES = Object.freeze({
-  ".openai/hosting.json": `${JSON.stringify({
-    project_id: null,
-    d1: null,
-    r2: null,
-  }, null, 2)}\n`,
   ".research-loop/starter.json": `${JSON.stringify({
     schemaVersion: 1,
     state: "ready",
