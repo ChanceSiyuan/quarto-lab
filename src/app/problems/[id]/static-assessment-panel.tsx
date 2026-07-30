@@ -1,10 +1,12 @@
 import styles from "./static-assessment-panel.module.css";
 
+const METHODOLOGY_HREF =
+  "https://github.com/nzy1997/research-loop/blob/main/.research-loop/docs/project/assessment-methodology.md";
+
 const METRIC_CARDS = [
   {
     label: "Scientific Demand Score",
     value: "33.4 / 100",
-    note: "Citation-derived attention proxy, not a raw citation count.",
     formula: [
       "2 confirmed-anchor papers; evidence weight each",
       "  = max(0.25 anchor floor, relevance) x match_confidence x independence_discount",
@@ -22,16 +24,12 @@ const METRIC_CARDS = [
       "score = round_1dp( 100 x (0.45 x 0.0041 + 0.30 x 0.7692 + 0.15 x 0.4519) / 0.90 )",
       "      = round_1dp( 100 x 0.3004 / 0.90 ) = 33.4",
     ],
-    reasons: [
-      "Only QDistRnd (JOSS 2022, 16 citations) has complete-year counts (2 in 2024, 9 in 2025); the 2026 anchor paper has no year data, so momentum rests on a single paper.",
-      "Influence sits near the 0.4th citation percentile because the newer anchor paper has zero citations so far, and equal 0.25 anchor weights put the weighted median on it.",
-      "Evidence confidence is low (fewer than 3 comparable papers): 33.4 is a sparse-evidence attention proxy, not proof of novelty.",
-    ],
+    reason:
+      "Both anchor papers carry equal 0.25 weights, so the zero-citation 2026 paper pulls influence down and momentum rests on one paper — sparse evidence, low confidence.",
   },
   {
     label: "Industry / social proxy",
     value: "$57.0B USD 2035",
-    note: "Broad quantum-computing market proxy, not problem-specific welfare.",
     formula: [
       "source = McKinsey Quantum Technology Monitor 2026",
       "reported 2035 internal quantum-computing market = USD 43B - 71B (2035 dollars)",
@@ -39,15 +37,12 @@ const METRIC_CARDS = [
       "",
       "displayed value = base of the interval = $57.0B USD 2035",
     ],
-    reasons: [
-      "Proxy mckinsey-qc-internal-market-2035 fills the economic column because no problem-specific market model exists for this candidate.",
-      "It states the enabling quantum-computing market reaches tens of billions by 2035; it says nothing about this problem's capturable revenue, pricing power, adoption, or welfare.",
-    ],
+    reason:
+      "This is only the base of McKinsey's broad 2035 enabling-market range, used because no problem-specific market model exists.",
   },
   {
     label: "Autoresearch Fit",
     value: "38.5 / 100",
-    note: "Suitability for a bounded autonomous search loop.",
     formula: [
       "A = 100 x weighted_average(0-5 dimension estimates) / 5",
       "",
@@ -63,11 +58,8 @@ const METRIC_CARDS = [
       "A = 100 x 1.925 / 5 = 38.5",
       "S = 2 x V x A / (V + A) = 2 x 71.0 x 38.5 / 109.5 = 49.9",
     ],
-    reasons: [
-      "Weakest dimensions are modifiable search object, executable objective, and incremental feedback (all 1.5 / 5): the sealed benchmark, baseline, and primary success metric are not frozen yet.",
-      "A = 38.5 falls in the weak band (< 40), so the harmonic mean holds combined priority at S = 49.9 despite strong research value V = 71.0.",
-      "That arithmetic is exactly why the demo verdict is REFRAME rather than DO_NOW.",
-    ],
+    reason:
+      "The 1.5 / 5 scores on modifiable object, executable objective, and incremental feedback reflect the unfrozen benchmark and primary metric — that is why the verdict is REFRAME.",
   },
 ];
 
@@ -78,10 +70,7 @@ export function StaticAssessmentPanel() {
         <div>
           <p className="eyebrow">QUALIFICATION</p>
           <h2 id="assessment-heading">Assessment methodology demo</h2>
-          <p>
-            Three headline metrics for this demo problem. Expand any card to see
-            the formula worked through with the actual input data.
-          </p>
+          <p>Expand any card to see the formula worked through with the actual input data.</p>
         </div>
         <span className={styles.pill}>Static example</span>
       </div>
@@ -92,18 +81,19 @@ export function StaticAssessmentPanel() {
             <summary>
               <span className={styles.metricLabel}>{card.label}</span>
               <span className={styles.metricValue}>{card.value}</span>
-              <span className={styles.metricNote}>{card.note}</span>
               <span className={styles.metricToggle}>Formula &amp; reasoning</span>
             </summary>
             <div className={styles.metricDetail}>
               <pre className={styles.formula}>{card.formula.join("\n")}</pre>
-              <ul>
-                {card.reasons.map((reason) => <li key={reason}>{reason}</li>)}
-              </ul>
+              <p className={styles.reason}>{card.reason}</p>
             </div>
           </details>
         ))}
       </div>
+
+      <a className={`open-affordance ${styles.methodologyLink}`} href={METHODOLOGY_HREF}>
+        Methodology documentation <span aria-hidden="true">→</span>
+      </a>
     </section>
   );
 }
