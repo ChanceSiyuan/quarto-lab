@@ -7,6 +7,8 @@ export interface QmdIndexEntry {
   name: string;
   /** Lower-cased path segments, for matching. */
   segments: string[];
+  /** A persistent Agent working copy differs from the original Draft. */
+  pendingChange?: boolean;
 }
 
 export interface QmdIndexScanner {
@@ -38,7 +40,7 @@ export async function buildQmdIndex(
         await walk(relative);
         continue;
       }
-      if (child.name.startsWith(".")) continue;
+      if (child.name.startsWith(".") || child.name.includes(".qlab-preview-")) continue;
       const tree = treeForPath(relative);
       if (!tree) continue;
       entries.push({

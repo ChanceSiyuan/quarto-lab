@@ -65,11 +65,7 @@ export function commandDefinition(id: QLabCommandID): QLabCommandDefinition {
 
 export function qlabWritableRoots(root: string): string[] {
   const base = root.replace(/[\\/]+$/, "");
-  return [
-    `${base}/literature`,
-    `${base}/drafts`,
-    `${base}/work`,
-  ];
+  return [`${base}/work/qlab-zotero/draft-changes`];
 }
 
 export function buildQLabCommandPrompt(
@@ -138,5 +134,34 @@ export function buildCaptureChatDraftPrompt(context: QLabCommandContext): string
     "Treat the current visible Codex thread as the conversation to capture.",
     "Write the grounded result under drafts/reading-notes/ and show the final diff.",
     "Never write to knowledge/, literature/, Zotero data, or the source PDF.",
+  ].join("\n");
+}
+
+/** Starts the publish-intent workflow; its first turn is a non-mutating AI gate. */
+export function buildReviewDraftPrompt(
+  context: QLabCommandContext,
+  relativePath: string,
+): string {
+  const root = context.qlabRoot.replace(/[\\/]+$/, "");
+  if (!root) throw new Error("Choose a QLab repository before reviewing a Draft");
+  const segments = relativePath.split("/");
+  if (!relativePath.startsWith("drafts/")
+      || !relativePath.endsWith(".qmd")
+      || segments.some((segment) => !segment || segment === "." || segment === ".." || segment.startsWith("-"))) {
+    throw new Error("Draft review requires exactly one safe .qmd path under drafts/");
+  }
+  const itemKey = context.zoteroItemKey || "(no active Zotero parent item key)";
+  return [
+    "QLab action: review_current_draft",
+    `QLab repository: ${root}`,
+    `Current Draft: ${relativePath}`,
+    `Active Zotero item key: ${itemKey}`,
+    "Read and follow skills/review-draft/SKILL.md in this repository.",
+    "The user has started Add to Knowledge: treat this as publish intent and run the repository's AI review gate now.",
+    `Run npm run draft:check -- --file "${relativePath}" before making the placement recommendation.`,
+    "This turn is review-only: inspect exactly the current Draft and do not modify the repository or knowledge/.",
+    "Starting Add to Knowledge does not approve final promotion; a later explicit user confirmation is required.",
+    "Keep the current Zotero PDF as evidence context alongside the Draft, and cite its page locations when relevant.",
+    "Return the skill's four required sections, including one placement recommendation, then wait.",
   ].join("\n");
 }

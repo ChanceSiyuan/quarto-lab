@@ -289,6 +289,14 @@ export interface ProtocolThread {
   name?: string | null;
   preview?: string;
   cwd?: string;
+  source?: string | Record<string, unknown>;
+  modelProvider?: string;
+  createdAt?: number;
+  updatedAt?: number;
+  recencyAt?: number;
+  isPinned?: boolean;
+  archived?: boolean;
+  ephemeral?: boolean;
   status?: unknown;
   turns?: ProtocolTurn[];
   [key: string]: unknown;

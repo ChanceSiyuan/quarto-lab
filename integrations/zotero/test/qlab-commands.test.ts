@@ -3,6 +3,7 @@ import {
   QLAB_COMMANDS,
   buildCaptureChatDraftPrompt,
   buildQLabCommandPrompt,
+  buildReviewDraftPrompt,
   qlabWritableRoots,
 } from "../src/qlab-commands";
 
@@ -54,11 +55,26 @@ describe("QLab command palette", () => {
     expect(prompt).toContain("Never write to knowledge/");
   });
 
-  it("limits ordinary Agent writes to evidence, drafts, and local staging", () => {
+  it("limits Agent writes to persistent Draft working copies", () => {
     expect(qlabWritableRoots("/repo")).toEqual([
-      "/repo/literature",
-      "/repo/drafts",
-      "/repo/work",
+      "/repo/work/qlab-zotero/draft-changes",
     ]);
+  });
+
+  it("binds Draft Preview review to one file without granting promotion permission", () => {
+    const prompt = buildReviewDraftPrompt({
+      qlabRoot: "/repo",
+      zoteroItemKey: "ITEM0001",
+    }, "drafts/topic/note.qmd");
+
+    expect(prompt).toContain("skills/review-draft/SKILL.md");
+    expect(prompt).toContain("drafts/topic/note.qmd");
+    expect(prompt).toContain("ITEM0001");
+    expect(prompt).toContain("review-only");
+    expect(prompt).toContain("publish intent");
+    expect(prompt).toContain(`npm run draft:check -- --file "drafts/topic/note.qmd"`);
+    expect(prompt).toContain("do not modify");
+    expect(prompt).toContain("does not approve final promotion");
+    expect(prompt).toContain("current Zotero PDF");
   });
 });

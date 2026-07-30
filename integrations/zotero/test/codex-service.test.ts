@@ -172,6 +172,293 @@ describe("CodexService follow-up turns", () => {
     )).toBe(true);
   });
 
+  it("sends the active Draft and Zotero PDF context together", async () => {
+    const client = {
+      turnStart: vi.fn().mockResolvedValue({ turn: { id: "turn-a" } }),
+    };
+    const { service } = serviceWithClient(client);
+    const editablePath = `work/qlab-zotero/draft-changes/${"a".repeat(64)}/draft.qmd`;
+    service.setActiveDocument({ relativePath: "drafts/topic/note.qmd", editablePath });
+
+    await service.send("Revise the current Draft.", "gpt-5.6-sol", "medium");
+
+    const additionalContext = client.turnStart.mock.calls[0]![0].additionalContext;
+    expect(additionalContext["QMD Editor"]).toMatchObject({
+      kind: "application",
+      value: expect.stringContaining("drafts/topic/note.qmd"),
+    });
+    expect(additionalContext["QMD Editor"].value).toContain(editablePath);
+    expect(additionalContext["QMD Editor"].value).toContain("one latest cumulative AI version");
+    expect(additionalContext["Zotero Reader"]).toMatchObject({
+      kind: "untrusted",
+      value: expect.stringContaining("Current PDF page: 3"),
+    });
+  });
+
+  it("omits Reader context chips that the user deselected", async () => {
+    const client = {
+      turnStart: vi.fn().mockResolvedValue({ turn: { id: "turn-a" } }),
+    };
+    const { service } = serviceWithClient(client);
+    service.setReaderContextSelection({ paper: false, page: true, selection: false });
+
+    await service.send("Explain the visible page.", "gpt-5.6-sol", "medium");
+
+    const additionalContext = client.turnStart.mock.calls[0]![0].additionalContext;
+    const readerValue = additionalContext["Zotero Reader"].value as string;
+    expect(readerValue).toContain("Current PDF page: 3");
+    expect(readerValue).toContain("Current page text:\nCurrent page");
+    expect(readerValue).not.toContain("Current Zotero paper");
+    expect(readerValue).not.toContain("Attachment key");
+    expect(readerValue).not.toContain("Current selection");
+  });
+
+  it("sends no implicit Reader payload after all Reader chips are deselected", async () => {
+    const client = {
+      turnStart: vi.fn().mockResolvedValue({ turn: { id: "turn-a" } }),
+    };
+    const { service } = serviceWithClient(client);
+    service.setInteractionContext({
+      "QLab repository": { kind: "application", value: "/research-loop" },
+    });
+    service.setReaderContextSelection({ paper: false, page: false, selection: false });
+
+    await service.send("Work only from the repository.", "gpt-5.6-sol", "medium");
+
+    const additionalContext = client.turnStart.mock.calls[0]![0].additionalContext;
+    expect(additionalContext["Zotkit Reader integration"]).toBeUndefined();
+    expect(additionalContext["Zotero Reader"]).toBeUndefined();
+    expect(additionalContext["QLab repository"]).toEqual({
+      kind: "application",
+      value: "/research-loop",
+    });
+  });
+
+  it("lists all user-facing Codex sources with pagination and stable history metadata", async () => {
+    const client = {
+      threadList: vi.fn()
+        .mockResolvedValueOnce({
+          data: [{
+            id: "global-a",
+            name: "Pinned task",
+            preview: "Fix the project",
+            source: "appServer",
+            cwd: "/repo/a",
+            updatedAt: 200,
+            isPinned: true,
+          }],
+          nextCursor: "page-2",
+        })
+        .mockResolvedValueOnce({
+          data: [{
+            id: "global-b",
+            preview: "CLI task",
+            source: "cli",
+            updatedAt: 100,
+          }],
+          nextCursor: null,
+        }),
+    };
+    const { service } = serviceWithClient(client);
+    (service as any).sessions.pinnedThreads = ["global-a"];
+
+    await service.refreshGlobalHistory();
+    expect(client.threadList).toHaveBeenNthCalledWith(1, expect.objectContaining({
+      cursor: null,
+      sourceKinds: ["cli", "vscode", "appServer"],
+      archived: false,
+      sortKey: "updated_at",
+    }));
+    expect(service.getGlobalHistory()).toEqual([
+      expect.objectContaining({
+        id: "global-a",
+        title: "Pinned task",
+        sourceLabel: "Codex App",
+        cwd: "/repo/a",
+        pinned: true,
+      }),
+    ]);
+    expect(service.getGlobalHistoryState()).toMatchObject({ hasMore: true, loading: false });
+
+    await service.loadMoreGlobalHistory();
+    expect(client.threadList).toHaveBeenNthCalledWith(2, expect.objectContaining({ cursor: "page-2" }));
+    expect(service.getGlobalHistory().map((thread) => thread.id)).toEqual(["global-a", "global-b"]);
+    expect(service.getGlobalHistoryState().hasMore).toBe(false);
+  });
+
+  it("pins a global Codex conversation and resumes it into the current paper safely", async () => {
+    const client = {
+      threadList: vi.fn(async () => ({
+        data: [{ id: "global-a", name: "Global task", source: "vscode", updatedAt: 200 }],
+        nextCursor: null,
+      })),
+      threadResume: vi.fn(async () => ({ thread: { id: "global-a", turns: [] } })),
+      threadRead: vi.fn(async () => ({ thread: { id: "global-a", turns: [] } })),
+      turnInterrupt: vi.fn(async () => ({})),
+    };
+    const { service } = serviceWithClient(client);
+    const internal = service as any;
+    internal.saveSessions = vi.fn(async () => {});
+    internal.sessions.papers["1-ATTACH"] = {
+      threadId: "thread-a",
+      title: "Paper thread",
+      workspace: "/profile/papers/1-ATTACH",
+      updatedAt: "2026-07-22T00:00:00.000Z",
+      backend: "codex",
+    };
+    await service.refreshGlobalHistory();
+
+    await service.setGlobalThreadPinned("global-a", true);
+    expect(service.getGlobalHistory()[0]?.pinned).toBe(true);
+    expect(internal.sessions.pinnedThreads).toEqual(["global-a"]);
+
+    await service.openGlobalThread("global-a");
+    expect(client.threadResume).toHaveBeenCalledWith(expect.objectContaining({
+      threadId: "global-a",
+      approvalPolicy: "never",
+      approvalsReviewer: "auto_review",
+      sandbox: "workspace-write",
+    }));
+    expect(client.threadRead).toHaveBeenCalledWith("global-a", true);
+    expect(service.state.activeThreadId).toBe("global-a");
+    expect(service.getThreadOptions()).toEqual(expect.arrayContaining([
+      expect.objectContaining({ id: "global-a", active: true }),
+      expect.objectContaining({ id: "thread-a", active: false }),
+    ]));
+  });
+
+  it("keeps open conversation tabs across papers and restores the matching Reader context", async () => {
+    const client = {
+      threadResume: vi.fn(async ({ threadId }: { threadId: string }) => ({ thread: { id: threadId, turns: [] } })),
+      threadRead: vi.fn(async (threadId: string) => ({ thread: { id: threadId, turns: [] } })),
+      turnInterrupt: vi.fn(async () => ({})),
+    };
+    const { service } = serviceWithClient(client);
+    const internal = service as any;
+    internal.saveSessions = vi.fn(async () => {});
+    const first = paperContext();
+    const second: ReaderContext = {
+      ...paperContext(),
+      attachment: { ...paperContext().attachment, id: 17, key: "SECOND", title: "Second PDF" },
+      parent: { ...paperContext().parent!, id: 16, key: "SECOND-PARENT", title: "A Different Paper" },
+      workspace: { ...paperContext().workspace!, root: "/profile/papers/1-SECOND" },
+    };
+    internal.activeContext = first;
+    internal.activePaperKey = "1-ATTACH";
+    internal.paperContexts.set("1-ATTACH", first);
+    internal.paperContexts.set("1-SECOND", second);
+    internal.sessions = {
+      version: 1,
+      papers: {
+        "1-ATTACH": { threadId: "thread-a", title: "A Paper", paperTitle: "A Paper", workspace: first.workspace!.root, updatedAt: "2026-07-30" },
+        "1-SECOND": { threadId: "thread-b", title: "Different proof", paperTitle: "A Different Paper", workspace: second.workspace!.root, updatedAt: "2026-07-30" },
+      },
+      openThreads: ["thread-a", "thread-b"],
+    };
+
+    await service.switchThread("thread-b");
+
+    expect(service.getActiveReaderContext()?.parent?.title).toBe("A Different Paper");
+    expect(service.getThreadOptions()).toEqual([
+      expect.objectContaining({ id: "thread-a", paperTitle: "A Paper", active: false }),
+      expect.objectContaining({ id: "thread-b", paperTitle: "A Different Paper", active: true }),
+    ]);
+  });
+
+  it("keeps PDF focus, selected chat, and running turns independent", async () => {
+    const client = {
+      threadResume: vi.fn(async ({ threadId }: { threadId: string }) => ({ thread: { id: threadId, turns: [] } })),
+      threadRead: vi.fn(async (threadId: string) => ({ thread: { id: threadId, turns: [] } })),
+      threadSetName: vi.fn(async () => ({})),
+      turnStart: vi.fn(async () => ({ turn: { id: "turn-b" } })),
+      turnInterrupt: vi.fn(async () => ({})),
+    };
+    const { service } = serviceWithClient(client);
+    const internal = service as any;
+    internal.saveSessions = vi.fn(async () => {});
+    const first = paperContext();
+    const second: ReaderContext = {
+      ...paperContext(),
+      attachment: { ...paperContext().attachment, id: 17, key: "SECOND", title: "Second PDF" },
+      parent: { ...paperContext().parent!, id: 16, key: "SECOND-PARENT", title: "A Different Paper" },
+      workspace: { ...paperContext().workspace!, root: "/profile/papers/1-SECOND" },
+    };
+    internal.paperContexts.set("1-ATTACH", first);
+    internal.sessions = {
+      version: 1,
+      papers: {
+        "1-ATTACH": { threadId: "thread-a", title: "A", workspace: first.workspace!.root, updatedAt: "2026-07-30" },
+        "1-SECOND": { threadId: "thread-b", title: "B", workspace: second.workspace!.root, updatedAt: "2026-07-30" },
+      },
+      openThreads: ["thread-a", "thread-b"],
+    };
+    internal.runningTurns.set("thread-a", "turn-a");
+    internal.syncActiveTurnState();
+
+    await service.setPaper(second);
+
+    expect(service.state).toMatchObject({
+      activeThreadId: "thread-a",
+      activeTurnId: "turn-a",
+      running: true,
+    });
+    expect(service.getActiveReaderContext()?.attachment.key).toBe("ATTACH");
+    expect(internal.focusedContext.attachment.key).toBe("SECOND");
+    expect(client.threadResume).not.toHaveBeenCalled();
+    expect(client.turnInterrupt).not.toHaveBeenCalled();
+
+    await service.switchThread("thread-b");
+    expect(service.state).toMatchObject({
+      activeThreadId: "thread-b",
+      activeTurnId: null,
+      running: false,
+    });
+    expect(client.turnInterrupt).not.toHaveBeenCalled();
+    expect(service.getThreadOptions()).toEqual(expect.arrayContaining([
+      expect.objectContaining({ id: "thread-a", status: "running", active: false }),
+      expect.objectContaining({ id: "thread-b", status: "idle", active: true }),
+    ]));
+
+    await service.send("Work on B too.", "gpt-5.6-sol", "high");
+    expect(client.turnStart).toHaveBeenCalledWith(expect.objectContaining({ threadId: "thread-b" }));
+    expect(internal.runningTurns.get("thread-a")).toBe("turn-a");
+    expect(internal.runningTurns.get("thread-b")).toBe("turn-b");
+
+    await service.switchThread("thread-a");
+    expect(service.state).toMatchObject({ activeThreadId: "thread-a", activeTurnId: "turn-a", running: true });
+    internal.handleNotification({
+      method: "turn/completed",
+      params: { threadId: "thread-a", turn: { id: "turn-a" } },
+    });
+    expect(service.state).toMatchObject({ activeThreadId: "thread-a", activeTurnId: null, running: false });
+    expect(service.getThreadOptions()).toEqual(expect.arrayContaining([
+      expect.objectContaining({ id: "thread-b", status: "running" }),
+    ]));
+  });
+
+  it("closes a tab without deleting its conversation record", async () => {
+    const { service } = serviceWithClient({ turnInterrupt: vi.fn(async () => ({})) });
+    const internal = service as any;
+    internal.saveSessions = vi.fn(async () => {});
+    internal.sessions = {
+      version: 1,
+      papers: {
+        "1-ATTACH": { threadId: "thread-a", title: "A", workspace: "/profile/papers/1-ATTACH", updatedAt: "2026-07-30" },
+      },
+      history: {
+        "1-ATTACH": [{ threadId: "thread-b", title: "B", workspace: "/profile/papers/1-ATTACH", updatedAt: "2026-07-29" }],
+      },
+      openThreads: ["thread-a", "thread-b"],
+    };
+
+    await service.closeThread("thread-b");
+
+    expect(service.getThreadOptions().map((thread) => thread.id)).toEqual(["thread-a"]);
+    expect(internal.sessions.history["1-ATTACH"]).toEqual([
+      expect.objectContaining({ threadId: "thread-b" }),
+    ]);
+  });
+
   it("steers the exact active thread and turn while a response is running", async () => {
     const client = {
       turnStart: vi.fn(),
@@ -282,7 +569,7 @@ describe("CodexService model capabilities", () => {
 });
 
 describe("CodexService Cursor-style modes and approvals", () => {
-  it("always uses an approval-gated workspace Agent turn and rejects Ask mode", async () => {
+  it("uses an auto-reviewed sandboxed Agent turn and rejects Ask mode", async () => {
     vi.stubGlobal("Services", {
       uuid: { generateUUID: () => "{checkpoint-test}" },
     });
@@ -296,8 +583,8 @@ describe("CodexService Cursor-style modes and approvals", () => {
 
     await service.send("Update the reviewed metadata.", "gpt-5.6-sol", "high");
     expect(client.turnStart).toHaveBeenCalledWith(expect.objectContaining({
-      approvalPolicy: "untrusted",
-      approvalsReviewer: "user",
+      approvalPolicy: "never",
+      approvalsReviewer: "auto_review",
       sandboxPolicy: expect.objectContaining({
         type: "workspaceWrite",
         writableRoots: ["/profile/papers/1-ATTACH"],
@@ -311,7 +598,7 @@ describe("CodexService Cursor-style modes and approvals", () => {
     vi.unstubAllGlobals();
   });
 
-  it("waits for the user before answering command, file, and permission requests", async () => {
+  it("auto-approves safe requests and silently rejects out-of-scope writes", async () => {
     const { service, callbacks } = serviceWithClient({});
     service.state.mode = "agent";
     service.state.running = true;
@@ -332,15 +619,8 @@ describe("CodexService Cursor-style modes and approvals", () => {
         availableDecisions: ["accept", "decline"],
       },
     });
-    expect(service.getPendingApprovals()).toEqual([
-      expect.objectContaining({
-        kind: "commandExecution",
-        requestId: "rpc-command",
-        command: "python update_metadata.py",
-      }),
-    ]);
-    expect(service.resolveApproval(service.getPendingApprovals()[0]!.id, "approve-once")).toBe(true);
-    await expect(command).resolves.toEqual({ decision: "accept" });
+    expect(service.getPendingApprovals()).toEqual([]);
+    await expect(command).resolves.toEqual({ decision: "acceptForSession" });
 
     const permission = requestApproval({
       kind: "permissions",
@@ -363,7 +643,6 @@ describe("CodexService Cursor-style modes and approvals", () => {
         },
       },
     });
-    expect(service.resolveApproval(service.getPendingApprovals()[0]!.id, "approve-session")).toBe(true);
     await expect(permission).resolves.toEqual({
       permissions: {
         fileSystem: {
@@ -447,8 +726,8 @@ describe("CodexService Cursor-style modes and approvals", () => {
     expect(service.getPendingApprovals()).toEqual([]);
   });
 
-  it("keeps an in-workspace modern permission request visible for explicit review", async () => {
-    const { service } = serviceWithClient({});
+  it("rejects network escalation without showing an approval card", async () => {
+    const { service, callbacks } = serviceWithClient({});
     service.state.mode = "agent";
     service.state.running = true;
     service.state.activeTurnId = "turn-a";
@@ -481,11 +760,11 @@ describe("CodexService Cursor-style modes and approvals", () => {
       },
     });
 
-    expect(service.getPendingApprovals()[0]).toMatchObject({
-      requestedPermissions,
-    });
-    service.resolveApproval(service.getPendingApprovals()[0]!.id, "reject");
+    expect(service.getPendingApprovals()).toEqual([]);
     await expect(response).resolves.toEqual({ permissions: {}, scope: "turn" });
+    expect(callbacks.onError).toHaveBeenCalledWith(expect.objectContaining({
+      message: expect.stringContaining("network access"),
+    }));
   });
 
   it("rejects a writable path whose existing workspace symlink resolves outside", async () => {
@@ -575,6 +854,47 @@ describe("CodexService Cursor-style modes and approvals", () => {
       "preview_zotero_change",
       { title: "New title" },
       expect.objectContaining({ pdfPath: "/papers/paper.pdf" }),
+    );
+  });
+
+  it("keeps background Reader tool calls scoped to their conversation paper", async () => {
+    const first = paperContext();
+    const second: ReaderContext = {
+      ...paperContext(),
+      attachment: { ...paperContext().attachment, id: 17, key: "SECOND" },
+      parent: { ...paperContext().parent!, id: 16, key: "SECOND-PARENT", title: "Second" },
+    };
+    const readerContext = {
+      tools: [{ name: "zotero_get_current_page", description: "Read", inputSchema: { type: "object" } }],
+      invokeTool: vi.fn().mockResolvedValue({ pageNumber: 3 }),
+    } as unknown as ReaderContextService;
+    const service = new CodexService(
+      {} as NativeBridge,
+      readerContext,
+      "test",
+      { onState: vi.fn(), onError: vi.fn() },
+    );
+    const internal = service as any;
+    internal.activeContext = second;
+    internal.activePaperKey = "1-SECOND";
+    internal.paperContexts.set("1-ATTACH", first);
+    internal.paperContexts.set("1-SECOND", second);
+    internal.threadPaperKeys.set("thread-a", "1-ATTACH");
+    internal.threadPaperKeys.set("thread-b", "1-SECOND");
+    service.state.activeThreadId = "thread-b";
+
+    await expect(internal.handleDynamicTool({
+      threadId: "thread-a",
+      turnId: "turn-a",
+      callId: "call-a",
+      namespace: null,
+      tool: "zotero_get_current_page",
+      arguments: {},
+    })).resolves.toMatchObject({ success: true });
+    expect(readerContext.invokeTool).toHaveBeenCalledWith(
+      "zotero_get_current_page",
+      {},
+      expect.objectContaining({ attachment: expect.objectContaining({ key: "ATTACH" }) }),
     );
   });
 
@@ -840,6 +1160,29 @@ describe("CodexService utility turns", () => {
 });
 
 describe("CodexService entriesForTurn duplicate-user defense (bug-triage #1)", () => {
+  it("renders commentary as collapsible progress, dedupes repeats, and keeps only the final answer as assistant content", () => {
+    const { service } = serviceWithClient({});
+    (service as any).store = {
+      getThread: () => ({
+        turns: [{
+          id: "t1",
+          status: "completed",
+          items: [
+            { id: "u1", type: "userMessage", content: [{ type: "text", text: "总结论文" }] },
+            { id: "c1", type: "agentMessage", phase: "commentary", text: "Reading the paper…" },
+            { id: "c2", type: "agentMessage", phase: "commentary", text: "Reading the paper…" },
+            { id: "a1", type: "agentMessage", phase: "final_answer", text: "The main result is…" },
+          ],
+        }],
+      }),
+    };
+
+    const entries = service.getChatEntries();
+    expect(entries.map((entry) => entry.kind)).toEqual(["user", "reasoning", "assistant"]);
+    expect(entries[1]).toMatchObject({ title: "Progress", text: "Reading the paper…" });
+    expect(entries[2]).toMatchObject({ text: "The main result is…" });
+  });
+
   it("collapses two userMessage items with different ids but identical text into a single user entry", () => {
     const { service } = serviceWithClient({});
     (service as any).store = {

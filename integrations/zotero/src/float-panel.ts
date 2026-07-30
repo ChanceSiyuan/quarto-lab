@@ -1,4 +1,4 @@
-import { renderMarkdown } from "./markdown";
+import { renderMarkdown, type PdfPageReference } from "./markdown";
 import { renderModelOptions } from "./model-menu";
 import { copyToClipboard } from "./platform";
 import { QLAB_COMMANDS, type QLabCommandID } from "./qlab-commands";
@@ -60,6 +60,7 @@ export interface FloatPanelCallbacks {
   onQLabCommand(command: QLabCommandID): void;
   onCaptureChatDraft(): void;
   onOpenWorkbench(): void;
+  onOpenPdfPage?(reference: PdfPageReference): void;
 }
 
 export interface FloatPanelOptions {
@@ -343,12 +344,7 @@ export class FloatPanelView {
     this.qlabRootLabel = this.doc.createElement("span");
     repository.append(repositoryMark, this.qlabRootLabel);
     repository.addEventListener("click", () => this.callbacks.onChooseQLabRoot());
-    const capture = this.doc.createElement("button");
-    capture.type = "button";
-    capture.className = "zc-workbench-capture";
-    capture.textContent = "Organize this chat into a Draft";
-    capture.addEventListener("click", () => this.callbacks.onCaptureChatDraft());
-    toolsHeader.append(repository, capture);
+    toolsHeader.append(repository);
     const commandGrid = this.doc.createElement("div");
     commandGrid.className = "zc-workbench-command-grid";
     for (const command of QLAB_COMMANDS) {
@@ -790,7 +786,7 @@ export class FloatPanelView {
       summary.textContent = entry.title || (entry.kind === "reasoning" ? "Reasoning" : "Tool");
       const content = this.doc.createElement("div");
       content.className = "zc-tool-content";
-      content.appendChild(renderMarkdown(this.doc, entry.text));
+      content.appendChild(renderMarkdown(this.doc, entry.text, this.markdownOptions()));
       details.append(summary, content);
       article.appendChild(details);
       return article;
@@ -803,13 +799,19 @@ export class FloatPanelView {
     content.className = "zc-entry-content";
     const markdownBody = this.doc.createElement("div");
     markdownBody.className = "zc-markdown";
-    markdownBody.appendChild(renderMarkdown(this.doc, entry.text));
+    markdownBody.appendChild(renderMarkdown(this.doc, entry.text, this.markdownOptions()));
     content.appendChild(markdownBody);
     if (entry.kind === "assistant") {
       content.appendChild(this.createCopyAnswerButton(entry.text));
     }
     article.appendChild(content);
     return article;
+  }
+
+  private markdownOptions(): { onPdfPageLink: (reference: PdfPageReference) => void } | Record<string, never> {
+    return this.callbacks.onOpenPdfPage
+      ? { onPdfPageLink: this.callbacks.onOpenPdfPage }
+      : {};
   }
 
   private createCopyAnswerButton(text: string): HTMLButtonElement {

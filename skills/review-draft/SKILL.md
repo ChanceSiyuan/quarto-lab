@@ -18,7 +18,7 @@ a glob, or more than one file, and refuse any path outside `drafts/`; ask the
 user to name one note. To read it rendered:
 
 ```bash
-make draft-preview FILE=drafts/<path>.md
+make draft-preview FILE=drafts/<path>.qmd
 ```
 
 ## The report

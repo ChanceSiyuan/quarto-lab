@@ -21,6 +21,17 @@ export interface QmdValidation {
   output: string;
 }
 
+export interface QmdDraftDiagnostic {
+  code: string;
+  message: string;
+  line: number;
+}
+
+export interface QmdDraftCompliance {
+  ok: boolean;
+  diagnostics: QmdDraftDiagnostic[];
+}
+
 export interface QmdRenderRuntime {
   start(
     tree: EditorTree,
@@ -29,6 +40,7 @@ export interface QmdRenderRuntime {
     port: number,
   ): Promise<QmdRenderProcess>;
   validate(repoRoot: string, command: string): Promise<QmdValidation>;
+  checkDraft(repoRoot: string, relativePath: string): Promise<QmdDraftCompliance>;
   diff(repoRoot: string, relativePath: string): Promise<string>;
 }
 
@@ -95,6 +107,10 @@ export class QmdRenderService {
   validate(tree: EditorTree, repoRoot: string): Promise<QmdValidation> | null {
     if (!tree.validateCommand) return null;
     return this.runtime.validate(repoRoot, tree.validateCommand);
+  }
+
+  checkDraft(repoRoot: string, relativePath: string): Promise<QmdDraftCompliance> {
+    return this.runtime.checkDraft(repoRoot, relativePath);
   }
 
   diff(repoRoot: string, relativePath: string): Promise<string> {
@@ -274,6 +290,37 @@ export function createQmdRenderRuntime(bridge: NativeBridge): QmdRenderRuntime {
         env: { PATH: PROCESS_PATH },
       });
       return { ok: result.exitCode === 0, output: result.output.trim() };
+    },
+
+    async checkDraft(repoRoot, relativePath) {
+      const result = await run(processID("draft-check"), {
+        argv: [
+          "/bin/zsh", "-lc",
+          'npm run --silent draft:check -- --file "$1" --json',
+          "draft-check", relativePath,
+        ],
+        cwd: repoRoot,
+        env: { PATH: PROCESS_PATH },
+      });
+      const output = result.output.trim();
+      try {
+        const json = output.split(/\r?\n/).reverse().find((line) => line.trimStart().startsWith("{"));
+        const parsed = JSON.parse(json || output) as QmdDraftCompliance;
+        if (typeof parsed.ok !== "boolean" || !Array.isArray(parsed.diagnostics)) {
+          throw new Error("unexpected Draft check result");
+        }
+        return parsed;
+      }
+      catch {
+        return {
+          ok: false,
+          diagnostics: [{
+            code: "DRAFT_CHECK_FAILED",
+            message: output || `Draft check exited with code ${result.exitCode}`,
+            line: 1,
+          }],
+        };
+      }
     },
 
     async diff(repoRoot, relativePath) {

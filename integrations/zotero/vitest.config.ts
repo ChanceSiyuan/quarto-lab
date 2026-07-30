@@ -6,6 +6,6 @@ export default defineConfig({
     // `test/visual/` runs under node:test in a real browser (`npm run
     // test:visual`). It measures layout, which no DOM shim provides, so it
     // cannot run here.
-    exclude: ["**/node_modules/**", "**/dist/**", "test/visual/**"],
+    exclude: ["**/node_modules/**", "**/build/**", "**/dist/**", "test/visual/**"],
   },
 });
