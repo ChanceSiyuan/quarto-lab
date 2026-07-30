@@ -5,7 +5,10 @@ import { join } from "node:path";
 import test from "node:test";
 
 import { createArtifactStore } from "../lib/assessments/artifact-store.mjs";
-import { refreshQecValuationOnlyPortfolio } from "../scripts/refresh-qec-valuation-only.mjs";
+import {
+  ensureQecScientificDemandSnapshot,
+  refreshQecValuationOnlyPortfolio,
+} from "../scripts/refresh-qec-valuation-only.mjs";
 import {
   createValuationOnlyDerivation,
   createValuationOnlyEnvelope,
@@ -486,4 +489,78 @@ test("refreshes a supplied portfolio ID list from verified current-formula snaps
   assert.deepEqual(result.errors, []);
   assert.equal(result.problems[0].status, "completed");
   assert.equal(result.problems[0].snapshotId, "20260730T010203Z-222222222222");
+});
+
+test("ensures a missing current-formula snapshot without invoking qualitative assessment", async () => {
+  const calls = { start: [], confirm: [] };
+  const statuses = new Map([["valuation-Prob-001", "needs_confirmation"]]);
+  const valuationManager = {
+    start: async (problemId) => {
+      calls.start.push(problemId);
+      return { accepted: true, runId: `valuation-${problemId}` };
+    },
+    getJob: async (runId) => ({
+      status: statuses.get(runId),
+      candidate: {
+        contentHash: "f".repeat(64),
+        anchorCandidates: [{ id: "anchor-1" }, { id: "anchor-2" }],
+        materialAssumptions: [],
+      },
+    }),
+    confirm: async (runId, confirmation) => {
+      calls.confirm.push({ runId, confirmation });
+      statuses.set(runId, "ready");
+      return { accepted: true, runId };
+    },
+    getProblemState: async () => ({ readySnapshotId: "20260730T010203Z-222222222222" }),
+  };
+  const valuationStore = {
+    list: async () => [],
+    verify: async (problemId, snapshotId) => {
+      assert.equal(problemId, "Prob-001");
+      assert.equal(snapshotId, "20260730T010203Z-222222222222");
+      return valuationSnapshot();
+    },
+  };
+
+  const result = await ensureQecScientificDemandSnapshot({
+    valuationManager,
+    valuationStore,
+    problemId: "Prob-001",
+    delay: async () => {},
+    pollIntervalMs: 0,
+  });
+
+  assert.equal(result.status, "completed");
+  assert.equal(result.snapshot.manifest.snapshotId, "20260730T010203Z-222222222222");
+  assert.deepEqual(calls.start, ["Prob-001"]);
+  assert.deepEqual(calls.confirm, [{
+    runId: "valuation-Prob-001",
+    confirmation: {
+      candidateHash: "f".repeat(64),
+      acceptedAnchorIds: ["anchor-1", "anchor-2"],
+      assumptionDecisions: [],
+    },
+  }]);
+});
+
+test("snapshot ensure reuses an existing current-formula snapshot", async () => {
+  const valuationStore = {
+    list: async () => ["20260730T010203Z-222222222222"],
+    verify: async () => valuationSnapshot(),
+  };
+  const valuationManager = {
+    start: async () => {
+      throw new Error("start should not be called");
+    },
+  };
+
+  const result = await ensureQecScientificDemandSnapshot({
+    valuationManager,
+    valuationStore,
+    problemId: "Prob-001",
+  });
+
+  assert.equal(result.status, "verified-existing");
+  assert.equal(result.snapshot.manifest.snapshotId, "20260730T010203Z-222222222222");
 });
