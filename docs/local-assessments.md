@@ -4,6 +4,9 @@ Local assessment reports are generated only when the app is running through
 `make dev` or `npm run dev`. The deployed static showcase cannot start Codex
 and does not publish assessment artifacts.
 
+For the scoring formulas, evidence rules, and QEC valuation workflow semantics,
+see [Assessment Methodology](assessment-methodology.md).
+
 ## Running an assessment
 
 1. Start the local app with `make dev`.
@@ -35,7 +38,7 @@ before scoring.
    problem lifecycle, or start autoresearch.
 
 If OpenAlex or another evidence provider fails, the valuation manager may still
-freeze an incomplete snapshot. Unknown values remain explicit `{ state:
+freeze an incomplete snapshot. Missing values remain explicit `{ state:
 "unknown" }` values and never become fake zeroes; the later assessment can widen
 or omit quantitative anchors accordingly.
 
