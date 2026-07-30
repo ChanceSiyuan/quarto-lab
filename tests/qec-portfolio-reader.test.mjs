@@ -6,7 +6,18 @@ import { sortPortfolioRows } from "../lib/qec-portfolio/view-model.mjs";
 
 const QEC_AREA = "error-correction-and-fault-tolerance";
 
-function summary(problemId, runId, combined, { researchValue = combined, autoresearchFit = combined, scientificAttention = null } = {}) {
+function summary(problemId, runId, combined, {
+  researchValue = combined,
+  autoresearchFit = combined,
+  scientificAttention = {
+    state: "known",
+    interval: { low: 68.4, base: 68.4, high: 68.4 },
+    unit: "score-100",
+    formulaId: "qec-scientific-demand-v1",
+    evidenceConfidence: "medium",
+  },
+  technicalSuccess = { state: "known", interval: { low: 60, base: 60, high: 60 }, unit: "percent", estimateKind: "model" },
+} = {}) {
   return {
     runId,
     problemId,
@@ -21,7 +32,7 @@ function summary(problemId, runId, combined, { researchValue = combined, autores
     reportHref: `/__local/assessments/reports/${problemId}/${runId}`,
     quantitative: {
       scientificAttention,
-      technicalSuccess: { state: "unknown", reason: "Not run." },
+      technicalSuccess,
       socialValue: { state: "unknown", reason: "No model." },
       capturableValue: { state: "unknown", reason: "No pricing evidence." },
       snapshotId: `snapshot-${problemId}`,
@@ -49,13 +60,17 @@ function fixtureReader() {
     domain: "quantum-computing",
     quantumArea: "hardware-and-control",
   });
-  const runs = new Map([
-    ["Prob-002", [{ runId: "run-2", status: "completed", updatedAt: "2026-07-29T10:00:00.000Z", summary: summary("Prob-002", "run-2", 80) }]],
-    ["Prob-003", [
+  const runs = new Map(problems.slice(0, 21).map((problem) => [problem.id, [{
+    runId: `run-${problem.id}`,
+    status: "completed",
+    updatedAt: "2026-07-29T09:00:00.000Z",
+    summary: summary(problem.id, `run-${problem.id}`, 40),
+  }]]));
+  runs.set("Prob-002", [{ runId: "run-2", status: "completed", updatedAt: "2026-07-29T10:00:00.000Z", summary: summary("Prob-002", "run-2", 80) }]);
+  runs.set("Prob-003", [
       { runId: "run-old", status: "completed", updatedAt: "2026-07-28T10:00:00.000Z", summary: summary("Prob-003", "run-old", 99) },
       { runId: "run-3", status: "completed", updatedAt: "2026-07-29T11:00:00.000Z", summary: summary("Prob-003", "run-3", 95, { scientificAttention: { state: "known", interval: { low: 90, base: 91, high: 92 } } }) },
       { runId: "run-incomplete", status: "needs-input", updatedAt: "2026-07-30T10:00:00.000Z", summary: summary("Prob-003", "run-incomplete", 100) },
-    ]],
   ]);
   return createQecPortfolioReader({
     repository: { listProblems: () => problems },
@@ -72,12 +87,57 @@ test("returns all QEC rows with the newest completed summary and public fields o
   assert.equal(response.rows[0].problemHref, "/problems/Prob-003");
   assert.equal(response.rows[0].reportHref, "/__local/assessments/reports/Prob-003/run-3");
   assert.equal(response.rows[0].combinedPriority.estimate, 95);
-  assert.equal(response.rows.at(-1).combinedPriority, null);
+  assert.equal(response.rows[0].technicalSuccess.state, "known");
+  assert.equal(response.rows[0].socialValue.state, "known");
+  assert.equal(response.rows[0].capturableValue.state, "known");
+  assert.equal(response.rows[0].capturableValue.id, "ibm-quantum-investment-floor-2026");
+  assert.equal(response.rows[0].capturableValue.interval.base, 10_000_000_000);
+  assert.doesNotMatch(JSON.stringify(response.rows), /"state":"unknown"|Unknown/i);
+  for (const row of response.rows) {
+    assert.equal(row.scientificAttention.state, "known");
+    assert.equal(Number.isFinite(row.scientificAttention.interval.base), true);
+    assert.equal(row.technicalSuccess.state, "known");
+    assert.equal(Number.isFinite(row.technicalSuccess.interval.base), true);
+    assert.equal(row.socialValue.state, "known");
+    assert.equal(row.capturableValue.state, "known");
+  }
+  assert.doesNotMatch(JSON.stringify(response), /pending|not-modeled|Pending sealed evaluation/i);
   assert.deepEqual(Object.keys(response.rows[0]), [
     "problemId", "title", "status", "verdict", "confidence", "researchValue", "autoresearchFit", "combinedPriority",
     "scientificAttention", "technicalSuccess", "socialValue", "capturableValue", "largestBottleneck", "snapshotId", "problemHref", "reportHref",
   ]);
   assert.doesNotMatch(JSON.stringify(response), /must-not-leak/);
+});
+
+test("rejects an incomplete public portfolio row instead of displaying pending metrics", async () => {
+  const incomplete = summary("Prob-002", "run-2", 80, {
+    scientificAttention: { state: "unknown", reason: "No citation point." },
+    technicalSuccess: { state: "unknown", reason: "No technical point." },
+  });
+  const reader = createQecPortfolioReader({
+    repository: {
+      listProblems: () => [{
+        id: "Prob-002",
+        title: "Incomplete public fixture",
+        status: "draft",
+        domain: "quantum-computing",
+        quantumArea: QEC_AREA,
+      }],
+    },
+    assessmentStore: {
+      listRuns: async () => [{
+        runId: "run-2",
+        status: "completed",
+        updatedAt: "2026-07-29T10:00:00.000Z",
+        summary: incomplete,
+      }],
+    },
+  });
+
+  await assert.rejects(
+    () => reader.read(),
+    /Prob-002.*scientificAttention.*technicalSuccess/,
+  );
 });
 
 test("sorts public portfolio copies without mutating the source rows", () => {

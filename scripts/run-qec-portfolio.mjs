@@ -19,6 +19,7 @@ import { createQecPortfolioValuationResearcher } from "../lib/qec-portfolio/valu
 import { createValuationJobManager } from "../lib/valuations/job-manager.mjs";
 import { createOpenAlexClient } from "../lib/valuations/openalex-client.mjs";
 import { createValuationSnapshotStore } from "../lib/valuations/snapshot-store.mjs";
+import { SCIENTIFIC_DEMAND_FORMULA_ID } from "../lib/valuations/citations.mjs";
 import { createKnowledgeResolver } from "./local-assessment-service.mjs";
 
 const execFile = promisify(execFileCallback);
@@ -64,7 +65,11 @@ export async function rebuildAndVerifyIndex(rootDir, { execFileFn = execFile, re
   return JSON.stringify(qecIds) === JSON.stringify([...QEC_PORTFOLIO_BATCH_IDS].sort());
 }
 
-export async function runQecPortfolio({ rootDir, apiKey = process.env.OPENALEX_API_KEY?.trim() } = {}) {
+export async function runQecPortfolio({
+  rootDir,
+  apiKey = process.env.OPENALEX_API_KEY?.trim(),
+  forceValuationRefresh = false,
+} = {}) {
   const workspaceRoot = resolve(rootDir ?? process.cwd());
   if (!apiKey) return {
     status: "incomplete",
@@ -107,6 +112,8 @@ export async function runQecPortfolio({ rootDir, apiKey = process.env.OPENALEX_A
         return { valuationManager, valuationStore, assessmentManager, assessmentStore };
       },
       verifyPortfolio: () => verifyQecPortfolio({ rootDir: workspaceRoot }),
+      requiredCitationFormulaId: SCIENTIFIC_DEMAND_FORMULA_ID,
+      forceValuationRefresh,
     });
     return await runner.run();
   } catch (error) {
@@ -123,7 +130,10 @@ export async function runQecPortfolio({ rootDir, apiKey = process.env.OPENALEX_A
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
-  const summary = await runQecPortfolio({ rootDir: readArg("--root") });
+  const summary = await runQecPortfolio({
+    rootDir: readArg("--root"),
+    forceValuationRefresh: process.argv.includes("--refresh-scientific-demand"),
+  });
   console.log(JSON.stringify(summary));
   if (summary.status !== "complete") process.exitCode = 1;
 }

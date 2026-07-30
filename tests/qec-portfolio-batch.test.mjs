@@ -12,13 +12,22 @@ import {
 import { QEC_PORTFOLIO_BATCH_IDS } from "../lib/qec-portfolio/batch-runner.mjs";
 import { QEC_PORTFOLIO_PROBLEMS } from "../lib/qec-portfolio/catalog.mjs";
 import { createLocalRepository, rebuildAndVerifyIndex } from "../scripts/run-qec-portfolio.mjs";
+import { SCIENTIFIC_DEMAND_FORMULA_ID } from "../lib/valuations/citations.mjs";
 
 const RECORDS = [
   { id: "Prob-003", title: "Third", summary: "Third approved QEC problem.", technicalAnchor: { id: "anchor-Prob-003" } },
   { id: "Prob-002", title: "Second", summary: "Second approved QEC problem.", technicalAnchor: { id: "anchor-Prob-002" } },
 ];
 
-function fixtureRunner({ records = RECORDS, verifiedSnapshot = false, completedAssessment = false, valuationFailure = false, createManagers = false } = {}) {
+function fixtureRunner({
+  records = RECORDS,
+  verifiedSnapshot = false,
+  snapshotFormulaId = SCIENTIFIC_DEMAND_FORMULA_ID,
+  completedAssessment = false,
+  valuationFailure = false,
+  createManagers = false,
+  forceValuationRefresh = false,
+} = {}) {
   const calls = { register: [], valuationStart: [], confirm: [], assessmentStart: [], select: [], verify: [], phases: [] };
   const valuationStatuses = new Map();
   const assessmentStatuses = new Map();
@@ -33,7 +42,8 @@ function fixtureRunner({ records = RECORDS, verifiedSnapshot = false, completedA
     list: async (id) => verifiedSnapshot ? [`snapshot-${id}`] : [],
     verify: async (id, snapshotId) => {
       calls.verify.push([id, snapshotId]);
-      return { manifest: { snapshotId, contentHash: `hash-${id}`, complete: true } };
+      const formulaId = calls.valuationStart.includes(id) ? SCIENTIFIC_DEMAND_FORMULA_ID : snapshotFormulaId;
+      return { manifest: { snapshotId, contentHash: `hash-${id}`, complete: true, citation: { formulaId } } };
     },
   };
   const assessmentStore = {
@@ -44,7 +54,7 @@ function fixtureRunner({ records = RECORDS, verifiedSnapshot = false, completedA
     readReport: async () => "<html>English report</html>",
   };
   const assessmentManager = {
-    start: async (id) => { calls.assessmentStart.push(id); assessmentStatuses.set(`assessment-new-${id}`, "needs-input"); return { accepted: true, runId: `assessment-new-${id}` }; },
+    start: async (id, options = {}) => { calls.assessmentStart.push({ id, options }); assessmentStatuses.set(`assessment-new-${id}`, "needs-input"); return { accepted: true, runId: `assessment-new-${id}` }; },
     getJob: (runId) => ({ status: assessmentStatuses.get(runId) }),
     select: async (runId, alternative) => { calls.select.push({ runId, alternative }); const selected = `${runId}-selected`; assessmentStatuses.set(selected, "completed"); return { accepted: true, runId: selected }; },
   };
@@ -62,6 +72,8 @@ function fixtureRunner({ records = RECORDS, verifiedSnapshot = false, completedA
     verifyPortfolio: async () => ({ ok: !valuationFailure }),
     delay: async () => {},
     pollIntervalMs: 0,
+    requiredCitationFormulaId: SCIENTIFIC_DEMAND_FORMULA_ID,
+    forceValuationRefresh,
   });
   return { runner, calls };
 }
@@ -79,6 +91,20 @@ test("confirms approved anchors and selects only the external valuation alternat
   assert.deepEqual(calls.select[0].alternative, EXTERNAL_VALUATION_ALTERNATIVE);
 });
 
+test("starts fresh portfolio assessments through the explicit external valuation route", async () => {
+  const { runner, calls } = fixtureRunner();
+
+  await runner.run();
+
+  assert.deepEqual(calls.assessmentStart[0], {
+    id: "Prob-001",
+    options: {
+      valuationSnapshotId: "snapshot-Prob-001",
+      selectedAlternative: EXTERNAL_VALUATION_ALTERNATIVE,
+    },
+  });
+});
+
 test("restart skips only verified snapshots and completed version-two assessments", async () => {
   const { runner, calls } = fixtureRunner({ verifiedSnapshot: true, completedAssessment: true });
   const summary = await runner.run();
@@ -87,6 +113,33 @@ test("restart skips only verified snapshots and completed version-two assessment
   assert.equal(summary.problems[0].assessment, "verified-existing");
   assert.equal(calls.valuationStart.length, 0);
   assert.equal(calls.assessmentStart.length, 0);
+});
+
+test("replaces an old-formula snapshot with a new immutable valuation", async () => {
+  const { runner, calls } = fixtureRunner({
+    verifiedSnapshot: true,
+    snapshotFormulaId: null,
+    completedAssessment: true,
+  });
+
+  const summary = await runner.run();
+
+  assert.equal(summary.problems[0].valuation, "completed");
+  assert.equal(calls.valuationStart.includes("Prob-001"), true);
+  assert.ok(calls.verify.some(([, snapshotId]) => snapshotId === "snapshot-Prob-001"));
+});
+
+test("force refresh creates a new valuation even when the current formula exists", async () => {
+  const { runner, calls } = fixtureRunner({
+    verifiedSnapshot: true,
+    completedAssessment: true,
+    forceValuationRefresh: true,
+  });
+
+  const summary = await runner.run();
+
+  assert.equal(summary.problems[0].valuation, "completed");
+  assert.equal(calls.valuationStart.includes("Prob-001"), true);
 });
 
 test("includes the existing Prob-001 profile in the production-shaped 21-problem valuation and assessment batch", async () => {
@@ -98,7 +151,7 @@ test("includes the existing Prob-001 profile in the production-shaped 21-problem
   assert.equal(prob001.valuation, "completed");
   assert.equal(prob001.assessment, "completed");
   assert.equal(calls.valuationStart.includes("Prob-001"), true);
-  assert.equal(calls.assessmentStart.includes("Prob-001"), true);
+  assert.equal(calls.assessmentStart.some((call) => call.id === "Prob-001"), true);
 });
 
 test("creates managers only after registration and rebuilt-index verification", async () => {
