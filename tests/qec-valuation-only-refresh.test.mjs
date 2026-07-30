@@ -325,6 +325,48 @@ test("derives a valid envelope that retains qualitative fields and replaces quan
   assert.deepEqual(source.assessment.quantitativeEvidence.snapshot.snapshotId, "20260729T010203Z-111111111111");
 });
 
+test("accepts a known Scientific Demand Score even when citation momentum is an evidence gap", () => {
+  const snapshot = valuationSnapshot();
+  snapshot.manifest.citation = {
+    ...snapshot.manifest.citation,
+    momentum: { state: "unknown", reason: "No papers have citation counts for both complete years." },
+    components: {
+      ...snapshot.manifest.citation.components,
+      momentum: {
+        availability: "unknown",
+        reason: "No papers have citation counts for both complete years.",
+        weight: 0.30,
+        unit: "fraction",
+      },
+    },
+  };
+
+  const derived = createValuationOnlyEnvelope({
+    sourceEnvelope: sourceEnvelope(),
+    valuationSnapshot: snapshot,
+  });
+
+  assert.equal(derived.assessment.quantitativeEvidence.scientificAttention.value.state, "known");
+  assert.equal(derived.assessment.quantitativeEvidence.scientificAttention.momentum.state, "unknown");
+});
+
+test("rejects snapshots whose Scientific Demand Score remains an evidence gap", () => {
+  const snapshot = valuationSnapshot();
+  snapshot.manifest.citation = {
+    ...snapshot.manifest.citation,
+    scientificDemand: { state: "unknown", reason: "Citation evidence insufficient." },
+    scientificAttention: { state: "unknown", reason: "Citation evidence insufficient." },
+  };
+
+  assert.throws(
+    () => createValuationOnlyEnvelope({
+      sourceEnvelope: sourceEnvelope(),
+      valuationSnapshot: snapshot,
+    }),
+    /complete verified qec-scientific-demand-v1/,
+  );
+});
+
 test("rejects incomplete or wrong-formula snapshots instead of converting missing citations to zero", () => {
   const source = sourceEnvelope();
 

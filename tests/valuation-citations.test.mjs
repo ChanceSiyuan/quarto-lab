@@ -42,12 +42,16 @@ test("calculates the versioned Scientific Demand Score from influence, momentum,
   assert.equal(result.coverage, 1);
 });
 
-test("requires normalized influence evidence without fabricating a zero", () => {
+test("uses available nonzero demand components without fabricating a zero", () => {
   const result = calculateCitationMetrics([paper({ citationNormalizedPercentile: null })], { currentYear: 2026 });
-  assert.equal(result.scientificDemand.state, "unknown");
-  assert.match(result.scientificDemand.reason, /citation evidence insufficient/i);
+  assert.equal(result.components.influence.availability, "unknown");
+  assert.equal(result.components.breadth.availability, "known");
+  assert.equal(result.scientificDemand.state, "known");
+  assert.equal(result.scientificDemand.interval.base, 40.9);
+  assert.ok(result.scientificDemand.interval.base > 0);
   assert.equal(result.scientificAttention, result.scientificDemand);
   assert.equal(result.coverage, 0);
+  assert.equal(result.evidenceConfidence, "low");
 });
 
 test("maps the evidence-weighted median momentum through a logistic transform", () => {
