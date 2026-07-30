@@ -1054,7 +1054,6 @@
   white-space: nowrap;
   cursor: pointer;
 }
-.zc-qmd-toolbar button[hidden] { display: none; }
 .zc-qmd-toolbar .zc-qmd-editor-picker { max-width: 84px; }
 .zc-qmd-editor-icon {
   display: block;
@@ -1613,6 +1612,10 @@
 .zc-split-handle:hover,
 .zc-split-handle.is-dragging { background: var(--zc-accent); }
 .zc-workbench-chat:not(.is-main-site-open):not(.is-workspace-open) > .zc-split-handle { display: none; }
+
+:root[data-qlab-workbench-window="true"] #tab-bar-container .tab[data-id="zotero-pane"] {
+  display: none !important;
+}
 
 .zc-qmd-editor-picker {
   min-width: 0;

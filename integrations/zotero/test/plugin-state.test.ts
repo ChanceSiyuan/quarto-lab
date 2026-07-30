@@ -127,7 +127,8 @@ describe("Zotkit Reader terminal state", () => {
   it("waits for a new Zotero window's native tab deck before migrating Workbench", async () => {
     const previousZotero = (globalThis as any).Zotero;
     const source = { closed: false } as Window;
-    const target = { closed: false, document } as unknown as Window & { Zotero_Tabs?: any };
+    const targetDocument = document.implementation.createHTMLDocument("Dedicated QLab");
+    const target = { closed: false, document: targetDocument } as unknown as Window & { Zotero_Tabs?: any };
     let windows: Window[] = [source];
     (globalThis as any).Zotero = {
       getMainWindows: () => windows,
@@ -144,8 +145,18 @@ describe("Zotkit Reader terminal state", () => {
       });
       await new Promise((resolve) => setTimeout(resolve, 70));
       expect(settled).toBe(false);
-      target.Zotero_Tabs = { add: vi.fn(), tabHooks: {} };
+      target.Zotero_Tabs = {
+        add: vi.fn(),
+        close: vi.fn(),
+        tabHooks: {},
+        _tabs: [
+          { id: "zotero-pane", type: "library" },
+          { id: "restored-reader", type: "reader" },
+        ],
+      };
       await expect(pending).resolves.toBe(target);
+      expect(targetDocument.documentElement.getAttribute("data-qlab-workbench-window")).toBe("true");
+      expect(target.Zotero_Tabs.close).toHaveBeenCalledWith(["restored-reader"]);
     }
     finally {
       (globalThis as any).Zotero = previousZotero;
@@ -172,6 +183,87 @@ describe("Zotkit Reader terminal state", () => {
     }
   });
 
+  it("opens a QLab-only window's paper in a standalone Reader window", async () => {
+    const originalZotero = (globalThis as any).Zotero;
+    const open = vi.fn(async () => ({}));
+    (globalThis as any).Zotero = { Reader: { open } };
+    const plugin = new ZoteroChatPlugin() as any;
+    plugin.readerContextItem = vi.fn(() => ({ id: 42 }));
+
+    try {
+      await plugin.openContextPDF(true);
+      expect(open).toHaveBeenCalledWith(42, null, {
+        allowDuplicate: false,
+        openInBackground: false,
+        preventJumpback: false,
+        openInWindow: true,
+      });
+    }
+    finally {
+      (globalThis as any).Zotero = originalZotero;
+    }
+  });
+
+  it("keeps Change Paper from adding a PDF tab to a QLab-only window", async () => {
+    const originalZotero = (globalThis as any).Zotero;
+    let resolveSelection!: () => void;
+    const deferred = {
+      promise: new Promise<void>((resolve) => { resolveSelection = resolve; }),
+      resolve: () => resolveSelection(),
+    };
+    const attachment = {
+      id: 42,
+      key: "PAPER",
+      libraryID: 1,
+      title: "Dedicated Paper",
+      creators: [],
+      isPDFAttachment: () => true,
+    };
+    const reader = { itemID: 42 };
+    const open = vi.fn(async () => reader);
+    (globalThis as any).Zotero = {
+      Promise: { defer: () => deferred },
+      Items: { getAsync: vi.fn(async () => attachment) },
+      Reader: { open },
+      Session: { debounceSave: vi.fn() },
+    };
+    const targetDocument = document.implementation.createHTMLDocument("Dedicated QLab");
+    targetDocument.documentElement.setAttribute("data-qlab-workbench-window", "true");
+    const target = {
+      document: targetDocument,
+      setTimeout,
+      openDialog: vi.fn((_url: string, _name: string, _features: string, io: any) => {
+        io.dataOut = [42];
+        io.deferred.resolve();
+      }),
+    } as unknown as Window;
+    const accepted = { attachment, parent: { title: "Dedicated Paper", creators: [] } };
+    const plugin = new ZoteroChatPlugin() as any;
+    plugin.readerContext = { acceptReaderHook: vi.fn(async () => accepted) };
+    plugin.addedContextIDs = new Set();
+    plugin.contextRequestSequence = 0;
+    plugin.applyContext = vi.fn(async () => {});
+    plugin.renderChatViews = vi.fn();
+    plugin.workbenchTabs = {
+      update: vi.fn(),
+      entries: vi.fn(() => []),
+    };
+
+    try {
+      await plugin.chooseWorkbenchPaper(target, "qlab-tab");
+      expect(open).toHaveBeenCalledWith(42, null, {
+        allowDuplicate: false,
+        openInBackground: true,
+        preventJumpback: true,
+        openInWindow: true,
+      });
+      expect(plugin.applyContext).toHaveBeenCalledWith(accepted, 1);
+    }
+    finally {
+      (globalThis as any).Zotero = originalZotero;
+    }
+  });
+
   it("opens page citations in the selected conversation PDF without changing or interrupting chat state", async () => {
     const originalZotero = (globalThis as any).Zotero;
     const open = vi.fn(async () => ({}));
@@ -191,12 +283,13 @@ describe("Zotkit Reader terminal state", () => {
     };
 
     try {
-      await plugin.openConversationPDFPage(6);
+      await plugin.openConversationPDFPage(6, true);
       expect(getByLibraryAndKey).toHaveBeenCalledWith(1, "PAPER-A");
       expect(open).toHaveBeenCalledWith(42, { pageIndex: 5 }, {
         allowDuplicate: false,
         openInBackground: false,
         preventJumpback: false,
+        openInWindow: true,
       });
       expect(plugin.codex.interrupt).not.toHaveBeenCalled();
       expect(plugin.context.attachment.key).toBe("PAPER-B");

@@ -2,16 +2,6 @@
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { EXTERNAL_EDITORS, type ExternalEditorApp } from "../src/external-editor";
-import {
-  QMD_INLINE_CONFIGURE_TOPIC,
-  QMD_INLINE_CONFIGURED_TOPIC,
-  QMD_INLINE_EDIT_TOPIC,
-  QMD_INLINE_NAVIGATE_TOPIC,
-  QMD_INLINE_READY_TOPIC,
-  QMD_INLINE_RESULT_TOPIC,
-  applyQmdEditableBlock,
-  editableQmdBlocks,
-} from "../src/qmd-inline-edit";
 import type { QmdIndexEntry } from "../src/qmd-index";
 import {
   QmdWorkspaceView,
@@ -19,38 +9,12 @@ import {
 } from "../src/qmd-workspace";
 
 const PAGE = "knowledge/Magic/Bell_magic.qmd";
-const ROOT_PAGE = "knowledge/index.qmd";
-const LINKED_PAGE = "knowledge/Noisy_complexity/index.qmd";
 const DRAFT = "drafts/Dynamics/floquet.qmd";
-const SECOND_DRAFT = "drafts/Second.qmd";
 const CHANGE = "work/qlab-zotero/draft-changes/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/draft.qmd";
 const CHANGE_PREVIEW = "drafts/Dynamics/floquet.qlab-preview-aaaaaaaaaaaa.qmd";
 
 const CURSOR = EXTERNAL_EDITORS.find((editor) => editor.id === "cursor")!;
 const VSCODE = EXTERNAL_EDITORS.find((editor) => editor.id === "vscode")!;
-
-function remoteBrowserHarness() {
-  const listeners = new Map<string, (message: { data: unknown }) => void>();
-  const messageManager = {
-    loadFrameScript: vi.fn(),
-    addMessageListener: vi.fn((topic: string, listener: (message: { data: unknown }) => void) => {
-      listeners.set(topic, listener);
-    }),
-    removeMessageListener: vi.fn((topic: string) => listeners.delete(topic)),
-    sendAsyncMessage: vi.fn(),
-  };
-  const browser = document.createElement("div") as unknown as HTMLElement & {
-    messageManager: typeof messageManager;
-  };
-  browser.messageManager = messageManager;
-  return {
-    browser,
-    messageManager,
-    emit(topic: string, data: unknown) {
-      listeners.get(topic)?.({ data });
-    },
-  };
-}
 
 function entry(relativePath: string): QmdIndexEntry {
   const parts = relativePath.split("/");
@@ -64,7 +28,7 @@ function entry(relativePath: string): QmdIndexEntry {
 
 function mount(
   editors: ExternalEditorApp[] = [CURSOR, VSCODE],
-  options: { pending?: boolean; indexedPending?: boolean; secondDraft?: boolean } = {},
+  options: { pending?: boolean; indexedPending?: boolean } = {},
 ) {
   const host = document.createElement("div");
   document.body.appendChild(host);
@@ -97,21 +61,6 @@ function mount(
     revision,
   }));
   const refreshChangePreview = vi.fn(async () => {});
-  let draftSource = "# Floquet dynamics\n\nA plain Draft paragraph.\n";
-  const editableBlocks = vi.fn(async () => editableQmdBlocks(draftSource));
-  const applyManualEdit = vi.fn(async (
-    _path: string,
-    block: ReturnType<typeof editableQmdBlocks>[number],
-    text: string,
-  ) => {
-    draftSource = applyQmdEditableBlock(draftSource, block, text).source;
-    return {
-      changePath: CHANGE,
-      previewPath: CHANGE_PREVIEW,
-      changed: pending,
-      revision,
-    };
-  });
   const keepChange = vi.fn(async () => {
     pending = false;
     return {
@@ -127,7 +76,7 @@ function mount(
     onBack: vi.fn(),
     renderService: renderService as never,
     changeRenderService: changeRenderService as never,
-    index: async () => [entry(PAGE), draftEntry, ...(options.secondDraft ? [entry(SECOND_DRAFT)] : [])],
+    index: async () => [entry(PAGE), draftEntry],
     editors: async () => editors,
     openExternally,
     onEditorChosen,
@@ -136,8 +85,6 @@ function mount(
     prepareChange,
     refreshChangePreview,
     keepChange,
-    editableBlocks,
-    applyManualEdit,
   });
   view.repoRootHint = "/repo";
   return {
@@ -152,8 +99,6 @@ function mount(
     prepareChange,
     refreshChangePreview,
     keepChange,
-    editableBlocks,
-    applyManualEdit,
     setPending(value: boolean, nextRevision = revision) {
       pending = value;
       revision = nextRevision;
@@ -216,179 +161,6 @@ describe("QmdWorkspaceView", () => {
     expect(host.querySelector(".zc-qmd-status")!.textContent).toContain("Draft");
     expect(host.querySelector(".zc-qmd-compliance")!.getAttribute("aria-label")).toContain("checks passed");
     expect(host.querySelector<HTMLButtonElement>(".zc-qmd-review")!.hidden).toBe(false);
-    view.destroy();
-  });
-
-  it("keeps the compiled website read-only until inline edit mode is explicitly enabled", async () => {
-    const remote = remoteBrowserHarness();
-    (document as unknown as { createXULElement(name: string): HTMLElement }).createXULElement =
-      vi.fn(() => remote.browser);
-    const { host, view, editableBlocks } = mount();
-    view.show();
-    await view.open(DRAFT);
-
-    expect(remote.messageManager.loadFrameScript).toHaveBeenCalledOnce();
-    expect(host.querySelector(".zc-qmd-source-editor")).toBeNull();
-    expect(host.querySelector(".zc-qmd-source-toggle")).toBeNull();
-
-    remote.emit(QMD_INLINE_READY_TOPIC, { url: "http://127.0.0.1:44100/Dynamics/floquet.html" });
-    await settle();
-
-    expect(editableBlocks).not.toHaveBeenCalled();
-    expect(remote.messageManager.sendAsyncMessage).toHaveBeenLastCalledWith(
-      QMD_INLINE_CONFIGURE_TOPIC,
-      { enabled: false, blocks: [] },
-    );
-
-    const mode = host.querySelector<HTMLButtonElement>(".zc-qmd-edit-preview")!;
-    mode.click();
-    await settle();
-
-    expect(editableBlocks).toHaveBeenCalledWith(DRAFT);
-    expect(remote.messageManager.sendAsyncMessage).toHaveBeenCalledWith(
-      QMD_INLINE_CONFIGURE_TOPIC,
-      expect.objectContaining({
-        enabled: true,
-        blocks: expect.arrayContaining([
-          expect.objectContaining({ text: "A plain Draft paragraph." }),
-        ]),
-      }),
-    );
-    expect(mode.getAttribute("aria-pressed")).toBe("true");
-    expect(mode.getAttribute("aria-label")).toContain("Return to website view");
-
-    mode.click();
-    expect(mode.getAttribute("aria-pressed")).toBe("false");
-    expect(remote.messageManager.sendAsyncMessage).toHaveBeenLastCalledWith(
-      QMD_INLINE_CONFIGURE_TOPIC,
-      { enabled: false, blocks: [] },
-    );
-    view.destroy();
-  });
-
-  it("attaches inline editing after a remote browser creates its message manager on load", async () => {
-    const remote = remoteBrowserHarness();
-    delete (remote.browser as HTMLElement & { messageManager?: unknown }).messageManager;
-    (document as unknown as { createXULElement(name: string): HTMLElement }).createXULElement =
-      vi.fn(() => remote.browser);
-    const { host, view } = mount();
-    view.show();
-    await view.open(DRAFT);
-
-    expect(remote.messageManager.loadFrameScript).not.toHaveBeenCalled();
-    (remote.browser as HTMLElement & { messageManager: unknown }).messageManager = remote.messageManager;
-    remote.browser.dispatchEvent(new Event("load"));
-    expect(remote.messageManager.loadFrameScript).toHaveBeenCalledOnce();
-
-    host.querySelector<HTMLButtonElement>(".zc-qmd-edit-preview")!.click();
-    remote.emit(QMD_INLINE_READY_TOPIC, {});
-    await settle();
-    remote.emit(QMD_INLINE_CONFIGURED_TOPIC, { enabled: true, mapped: 2, total: 2 });
-
-    expect(host.querySelector(".zc-qmd-status")!.textContent).toContain("2 editable regions ready");
-    view.destroy();
-  });
-
-  it("keeps Draft file-list navigation working while inline edit mode is active", async () => {
-    const remote = remoteBrowserHarness();
-    (document as unknown as { createXULElement(name: string): HTMLElement }).createXULElement =
-      vi.fn(() => remote.browser);
-    const { host, view, renderService } = mount(
-      [CURSOR, VSCODE],
-      { secondDraft: true },
-    );
-    view.show();
-    await view.open(DRAFT);
-    host.querySelector<HTMLButtonElement>(".zc-qmd-edit-preview")!.click();
-    await settle();
-
-    host.querySelector<HTMLButtonElement>(`[data-path="${SECOND_DRAFT}"]`)!.click();
-    await settle();
-    remote.emit(QMD_INLINE_READY_TOPIC, {});
-    await settle();
-
-    expect(host.querySelector(".zc-qmd-path")!.textContent).toBe(SECOND_DRAFT);
-    expect(renderService.open).toHaveBeenLastCalledWith(
-      expect.objectContaining({ id: "drafts" }),
-      "/repo",
-      SECOND_DRAFT,
-    );
-    expect(host.querySelector<HTMLButtonElement>(".zc-qmd-edit-preview")!.getAttribute("aria-pressed"))
-      .toBe("true");
-    view.destroy();
-  });
-
-  it("saves an in-preview edit immediately while preserving a pending AI version", async () => {
-    const remote = remoteBrowserHarness();
-    (document as unknown as { createXULElement(name: string): HTMLElement }).createXULElement =
-      vi.fn(() => remote.browser);
-    const { host, view, applyManualEdit } = mount(
-      [CURSOR, VSCODE],
-      { pending: true, indexedPending: true },
-    );
-    view.show();
-    await view.open(DRAFT);
-    host.querySelector<HTMLButtonElement>(".zc-qmd-edit-preview")!.click();
-    await settle();
-    remote.emit(QMD_INLINE_READY_TOPIC, {});
-    await settle();
-    const configured = remote.messageManager.sendAsyncMessage.mock.calls
-      .filter(([topic]) => topic === QMD_INLINE_CONFIGURE_TOPIC)
-      .at(-1)?.[1] as { blocks: Array<{ id: string; text: string }> };
-    const paragraph = configured.blocks.find((block) => block.text === "A plain Draft paragraph.")!;
-
-    remote.emit(QMD_INLINE_EDIT_TOPIC, {
-      id: paragraph.id,
-      text: "A clearer paragraph written directly in Preview.",
-    });
-    await settle();
-
-    expect(applyManualEdit).toHaveBeenCalledWith(
-      DRAFT,
-      expect.objectContaining({ id: paragraph.id }),
-      "A clearer paragraph written directly in Preview.",
-    );
-    expect(host.querySelector(".zc-qmd-status")!.textContent).toContain("Draft saved");
-    expect(host.querySelector<HTMLButtonElement>(".zc-qmd-compare")!.disabled).toBe(false);
-    expect(host.querySelector<HTMLButtonElement>(".zc-qmd-change-keep")!.disabled).toBe(false);
-    expect(remote.messageManager.sendAsyncMessage).toHaveBeenCalledWith(
-      QMD_INLINE_RESULT_TOPIC,
-      expect.objectContaining({ id: paragraph.id, ok: true }),
-    );
-    view.destroy();
-  });
-
-  it("edits only the original Draft preview and keeps the AI comparison read-only", async () => {
-    const remote = remoteBrowserHarness();
-    (document as unknown as { createXULElement(name: string): HTMLElement }).createXULElement =
-      vi.fn(() => remote.browser);
-    const { host, view } = mount([CURSOR, VSCODE], { pending: true });
-    view.show();
-    await view.open(DRAFT);
-    host.querySelector<HTMLButtonElement>(".zc-qmd-edit-preview")!.click();
-    await settle();
-    remote.emit(QMD_INLINE_READY_TOPIC, {});
-    await settle();
-
-    expect(remote.messageManager.sendAsyncMessage).toHaveBeenLastCalledWith(
-      QMD_INLINE_CONFIGURE_TOPIC,
-      expect.objectContaining({
-        enabled: true,
-        blocks: expect.arrayContaining([
-          expect.objectContaining({ text: "A plain Draft paragraph." }),
-        ]),
-      }),
-    );
-
-    host.querySelector<HTMLButtonElement>(".zc-qmd-compare")!.click();
-    await settle();
-    remote.emit(QMD_INLINE_READY_TOPIC, {});
-    await settle();
-
-    expect(remote.messageManager.sendAsyncMessage).toHaveBeenLastCalledWith(
-      QMD_INLINE_CONFIGURE_TOPIC,
-      expect.objectContaining({ enabled: false, blocks: [] }),
-    );
     view.destroy();
   });
 
@@ -462,68 +234,15 @@ describe("QmdWorkspaceView", () => {
 
     const button = host.querySelector<HTMLButtonElement>(".zc-qmd-edit-external")!;
     expect(button.disabled).toBe(false);
-    expect(button.querySelector(".zc-qmd-editor-icon")).not.toBeNull();
-    expect(button.getAttribute("aria-label")).toBe("Edit in Cursor");
-    button.click();
-    await settle();
-
-    expect(openExternally).toHaveBeenCalledWith(CURSOR, PAGE);
-    view.destroy();
-  });
-
-  it("shows the packaged static Cursor icon", async () => {
-    const { host, view } = mount([CURSOR]);
-    view.show();
-    await view.open(PAGE);
-
-    const button = host.querySelector<HTMLButtonElement>(".zc-qmd-edit-external")!;
     const icon = button.querySelector<HTMLImageElement>(".zc-qmd-editor-icon")!;
     expect(icon).not.toBeNull();
     expect(icon.getAttribute("src")).toBe("chrome://zotkit/content/icons/cursor.png");
     expect(icon.alt).toBe("");
     expect(button.getAttribute("aria-label")).toBe("Edit in Cursor");
-    view.destroy();
-  });
-
-  it("opens QMD links as compiled workspace pages instead of raw source", async () => {
-    const remote = remoteBrowserHarness();
-    (document as unknown as { createXULElement(name: string): HTMLElement }).createXULElement =
-      vi.fn(() => remote.browser);
-    const { host, view, renderService } = mount();
-    view.show();
-    await view.open(ROOT_PAGE);
-
-    remote.emit(QMD_INLINE_NAVIGATE_TOPIC, {
-      href: "http://127.0.0.1:44100/Noisy_complexity/index.qmd",
-    });
+    button.click();
     await settle();
 
-    expect(host.querySelector(".zc-qmd-path")!.textContent).toBe(LINKED_PAGE);
-    expect(renderService.open).toHaveBeenLastCalledWith(
-      expect.objectContaining({ id: "knowledge" }),
-      "/repo",
-      LINKED_PAGE,
-    );
-    expect(remote.browser.getAttribute("src")).not.toContain(".qmd");
-    view.destroy();
-  });
-
-  it("forces the selected page back into view after an in-page navigation", async () => {
-    const remote = remoteBrowserHarness();
-    (document as unknown as { createXULElement(name: string): HTMLElement }).createXULElement =
-      vi.fn(() => remote.browser);
-    const { host, view } = mount([CURSOR, VSCODE], { secondDraft: true });
-    view.show();
-    await view.open(SECOND_DRAFT);
-    const first = remote.browser.getAttribute("src");
-
-    host.querySelector<HTMLButtonElement>(`[data-path="${SECOND_DRAFT}"]`)!.click();
-    await settle();
-
-    const second = remote.browser.getAttribute("src");
-    expect(second).not.toBe(first);
-    expect(second).toContain("Second.html");
-    expect(second).not.toContain(".qmd");
+    expect(openExternally).toHaveBeenCalledWith(CURSOR, PAGE);
     view.destroy();
   });
 
@@ -660,7 +379,7 @@ describe("QmdWorkspaceView", () => {
     view.destroy();
   });
 
-  it("reopens the render service and forces navigation when refreshing a preview", async () => {
+  it("reopens the render service before refreshing a refused preview URL", async () => {
     const reload = vi.fn();
     (document as unknown as { createXULElement(name: string): HTMLElement }).createXULElement =
       vi.fn(() => {
@@ -676,9 +395,7 @@ describe("QmdWorkspaceView", () => {
     await settle();
 
     expect(renderService.open).toHaveBeenCalledTimes(2);
-    expect(reload).not.toHaveBeenCalled();
-    expect(host.querySelector(".zc-qmd-render-browser")!.getAttribute("src"))
-      .toContain("qlab-preview=2");
+    expect(reload).toHaveBeenCalledOnce();
     view.destroy();
   });
 
@@ -694,7 +411,6 @@ describe("QmdWorkspaceView", () => {
       [".zc-qmd-review", "Add to Knowledge"],
       [".zc-qmd-compare", "No AI version to compare"],
       [".zc-qmd-change-keep", "No AI changes to keep"],
-      [".zc-qmd-edit-preview", "Edit directly in Preview"],
       [".zc-qmd-edit-external", "Edit in Cursor"],
       [".zc-qmd-refresh", "Refresh Preview"],
     ]);

@@ -33,9 +33,11 @@ import {
 } from "./chatgpt-history";
 import { FloatPanelView, latestExchange } from "./float-panel";
 import {
+  QLAB_WORKBENCH_WINDOW_ATTRIBUTE,
   QLAB_WORKBENCH_TAB_TYPE,
   QLAB_WORKBENCH_TAB_ICON,
   WorkbenchTabManager,
+  isDedicatedWorkbenchWindow,
   type WorkbenchTabData,
 } from "./workbench-tab";
 import {
@@ -44,11 +46,6 @@ import {
 } from "./research-loop-site";
 import { createQmdRenderRuntime, QmdRenderService } from "./qmd-render";
 import { QmdWorkspaceView } from "./qmd-workspace";
-import {
-  applyQmdEditableBlock,
-  editableQmdBlocks,
-  type QmdEditableBlock,
-} from "./qmd-inline-edit";
 import { buildQmdIndex, geckoScanner } from "./qmd-index";
 import {
   createExternalEditorRuntime,
@@ -242,6 +239,7 @@ export class ZoteroChatPlugin {
     this.workbenchTabs = new WorkbenchTabManager({
       createView: (host, win, tabID) => this.createWorkbenchView(host, win, tabID),
       openNewWindow: (source) => this.openWorkbenchWindow(source),
+      onMoveComplete: () => this.renderChatViews(),
       onMoveError: (error) => this.reportError(error),
     });
     this.bridge = new NativeBridge(data.rootURI, data.version);
@@ -1176,10 +1174,11 @@ export class ZoteroChatPlugin {
         void this.chooseWorkbenchPaper(win, tabID).catch((error) => this.reportError(error));
       },
       onOpenPaper: () => {
-        void this.openContextPDF().catch((error) => this.reportError(error));
+        void this.openContextPDF(isDedicatedWorkbenchWindow(win)).catch((error) => this.reportError(error));
       },
       onOpenPdfPage: (reference) => {
-        void this.openConversationPDFPage(reference.page).catch((error) => this.reportError(error));
+        void this.openConversationPDFPage(reference.page, isDedicatedWorkbenchWindow(win))
+          .catch((error) => this.reportError(error));
       },
       onCheckMainSite: () => this.mainSite.isAvailable(),
       onCheckMainSiteRepository: () => this.mainSite.repositoryState(this.settings?.qlabRoot || ""),
@@ -1236,8 +1235,6 @@ export class ZoteroChatPlugin {
       refreshChangePreview: (path, changePath, previewPath) =>
         this.refreshQmdChangePreview(path, changePath, previewPath),
       keepChange: (path, changePath) => this.keepQmdChange(path, changePath),
-      editableBlocks: (path) => this.qmdEditableBlocks(path),
-      applyManualEdit: (path, block, text) => this.applyQmdManualEdit(path, block, text),
     }));
     if (!workspace) return;
     workspace.repoRootHint = root;
@@ -1525,43 +1522,6 @@ export class ZoteroChatPlugin {
     return { ...paths, changed: false, revision: this.hashQmdSource(original) };
   }
 
-  private async qmdEditableBlocks(relativePath: string): Promise<QmdEditableBlock[]> {
-    if (!relativePath.endsWith(".qmd")) {
-      throw new Error("Inline editing is available only for QMD Drafts");
-    }
-    return editableQmdBlocks(await IOUtils.readUTF8(this.safeRepositoryPath(relativePath)));
-  }
-
-  /**
-   * A human preview edit owns the original Draft, just like a Cursor save.
-   * Prepare first so an incomplete AI trace blocks no user write, then rebase
-   * the private AI version after the atomic save without overwriting it.
-   */
-  private async applyQmdManualEdit(
-    relativePath: string,
-    block: QmdEditableBlock,
-    text: string,
-  ): Promise<{
-    changePath: string;
-    previewPath: string;
-    changed: boolean;
-    revision: string;
-  }> {
-    if (!relativePath.startsWith("drafts/") || !relativePath.endsWith(".qmd")) {
-      throw new Error("Inline editing is available only for Draft QMD files");
-    }
-    await this.prepareQmdChange(relativePath);
-    const absolutePath = this.safeRepositoryPath(relativePath);
-    const before = await IOUtils.readUTF8(absolutePath);
-    const edited = applyQmdEditableBlock(before, block, text);
-    if (edited.changed) {
-      await IOUtils.writeUTF8(absolutePath, edited.source, {
-        tmpPath: `${absolutePath}.qlab-inline-${Date.now()}.tmp`,
-      });
-    }
-    return this.prepareQmdChange(relativePath);
-  }
-
   private async refreshQmdChangePreview(
     relativePath: string,
     changePath: string,
@@ -1731,6 +1691,7 @@ export class ZoteroChatPlugin {
       allowDuplicate: false,
       openInBackground: true,
       preventJumpback: true,
+      ...(isDedicatedWorkbenchWindow(win) ? { openInWindow: true } : {}),
     });
     let accepted: ReaderContext | null = null;
     let lastError: unknown = null;
@@ -1788,9 +1749,20 @@ export class ZoteroChatPlugin {
       }
       if (!this.shortcutWindows.has(target)) await this.onMainWindowLoad(target);
       if (typeof target.Zotero_Tabs?.add !== "function") continue;
+      this.prepareDedicatedWorkbenchWindow(target);
       return target;
     }
     throw new Error("The new Zotero window could not prepare a native tab");
+  }
+
+  private prepareDedicatedWorkbenchWindow(win: Window): void {
+    win.document.documentElement.setAttribute(QLAB_WORKBENCH_WINDOW_ATTRIBUTE, "true");
+    const tabs = Array.isArray(win.Zotero_Tabs?._tabs) ? win.Zotero_Tabs._tabs : [];
+    const contentTabIDs = tabs
+      .filter((tab: any) => String(tab?.id || "") !== "zotero-pane")
+      .map((tab: any) => String(tab.id))
+      .filter(Boolean);
+    if (contentTabIDs.length) win.Zotero_Tabs?.close?.(contentTabIDs);
   }
 
   private async toggleFloatPanel(): Promise<void> {
@@ -2770,7 +2742,7 @@ export class ZoteroChatPlugin {
     };
   }
 
-  private async openContextPDF(): Promise<void> {
+  private async openContextPDF(openInWindow = false): Promise<void> {
     const context = this.codex?.getActiveReaderContext?.() || this.context;
     const attachment = this.readerContextItem(context);
     if (!attachment?.id) throw new Error("Choose a paper in the QLab tab first");
@@ -2778,6 +2750,7 @@ export class ZoteroChatPlugin {
       allowDuplicate: false,
       openInBackground: false,
       preventJumpback: false,
+      ...(openInWindow ? { openInWindow: true } : {}),
     });
   }
 
@@ -2785,7 +2758,7 @@ export class ZoteroChatPlugin {
    * Opens a citation against the PDF pinned to the selected AI conversation.
    * Reader focus is deliberately independent from chat/task selection.
    */
-  private async openConversationPDFPage(pageNumber: number): Promise<void> {
+  private async openConversationPDFPage(pageNumber: number, openInWindow = false): Promise<void> {
     if (!Number.isSafeInteger(pageNumber) || pageNumber < 1) {
       throw new Error("The PDF citation has an invalid page number");
     }
@@ -2796,6 +2769,7 @@ export class ZoteroChatPlugin {
       allowDuplicate: false,
       openInBackground: false,
       preventJumpback: false,
+      ...(openInWindow ? { openInWindow: true } : {}),
     });
   }
 

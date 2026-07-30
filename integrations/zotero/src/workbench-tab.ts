@@ -2,6 +2,12 @@ import type { QmdWorkspaceView } from "./qmd-workspace";
 
 export const QLAB_WORKBENCH_TAB_TYPE = "qlab";
 export const QLAB_WORKBENCH_TAB_ICON = "qlabChat";
+export const QLAB_WORKBENCH_WINDOW_ATTRIBUTE = "data-qlab-workbench-window";
+
+/** True for a Zotero main window reserved for a moved QLab Workbench tab. */
+export function isDedicatedWorkbenchWindow(win: Window | null | undefined): boolean {
+  return win?.document?.documentElement?.getAttribute(QLAB_WORKBENCH_WINDOW_ATTRIBUTE) === "true";
+}
 
 export interface WorkbenchTabData {
   itemID?: number | string;
@@ -36,6 +42,7 @@ interface WorkbenchTabOptions {
 interface WorkbenchTabManagerCallbacks {
   createView(host: HTMLElement, win: Window, tabID: string): WorkbenchTabView;
   openNewWindow(source: Window): Promise<Window>;
+  onMoveComplete?(source: Window, target: Window): void;
   onMoveError?(error: Error, source: Window): void;
 }
 
@@ -103,6 +110,7 @@ export class WorkbenchTabManager {
           this.install(target);
           this.open(target, data, { forceNew: true, select: true });
           win.Zotero_Tabs?.close?.(tab.id);
+          this.callbacks.onMoveComplete?.(win, target);
         }
         catch (error) {
           this.callbacks.onMoveError?.(

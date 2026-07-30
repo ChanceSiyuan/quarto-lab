@@ -5,7 +5,9 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   QLAB_WORKBENCH_TAB_ICON,
   QLAB_WORKBENCH_TAB_TYPE,
+  QLAB_WORKBENCH_WINDOW_ATTRIBUTE,
   WorkbenchTabManager,
+  isDedicatedWorkbenchWindow,
   type WorkbenchTabData,
   type WorkbenchTabView,
 } from "../src/workbench-tab";
@@ -76,12 +78,20 @@ function setup() {
   });
   const target = fakeWindow("target");
   const openNewWindow = vi.fn(async () => target);
-  const manager = new WorkbenchTabManager({ createView, openNewWindow });
-  return { manager, createView, openNewWindow, target, views };
+  const onMoveComplete = vi.fn();
+  const manager = new WorkbenchTabManager({ createView, openNewWindow, onMoveComplete });
+  return { manager, createView, openNewWindow, onMoveComplete, target, views };
 }
 
 describe("WorkbenchTabManager", () => {
   beforeEach(() => document.body.replaceChildren());
+
+  it("recognizes a Zotero window reserved for the moved QLab Workbench", () => {
+    const dedicated = fakeWindow("dedicated");
+    expect(isDedicatedWorkbenchWindow(dedicated)).toBe(false);
+    dedicated.document.documentElement.setAttribute(QLAB_WORKBENCH_WINDOW_ATTRIBUTE, "true");
+    expect(isDedicatedWorkbenchWindow(dedicated)).toBe(true);
+  });
 
   it("adds QLab to Zotero's native tab deck and reuses the primary tab", () => {
     const source = fakeWindow("source");
@@ -123,7 +133,7 @@ describe("WorkbenchTabManager", () => {
 
   it("installs PDF-like tab hooks for focus, duplicate, restore, undo-close, and window migration", async () => {
     const source = fakeWindow("source");
-    const { manager, openNewWindow, target, views } = setup();
+    const { manager, openNewWindow, onMoveComplete, target, views } = setup();
     manager.install(source);
     const entry = manager.open(source, data());
     const hooks = source.Zotero_Tabs.tabHooks;
@@ -156,6 +166,7 @@ describe("WorkbenchTabManager", () => {
     expect(target.records[0]!.data.qlabMainSiteOpen).toBe(true);
     expect(views.at(-1)!.setMainSiteOpen).toHaveBeenCalledWith(true);
     expect(source.Zotero_Tabs.close).toHaveBeenCalledWith(entry.id);
+    expect(onMoveComplete).toHaveBeenCalledWith(source, target);
   });
 
   it("keeps the original tab and reports migration failures", async () => {
