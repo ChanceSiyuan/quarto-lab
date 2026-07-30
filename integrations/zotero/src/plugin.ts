@@ -44,6 +44,11 @@ import {
 } from "./research-loop-site";
 import { createQmdRenderRuntime, QmdRenderService } from "./qmd-render";
 import { QmdWorkspaceView } from "./qmd-workspace";
+import {
+  applyQmdEditableBlock,
+  editableQmdBlocks,
+  type QmdEditableBlock,
+} from "./qmd-inline-edit";
 import { buildQmdIndex, geckoScanner } from "./qmd-index";
 import {
   createExternalEditorRuntime,
@@ -1231,6 +1236,8 @@ export class ZoteroChatPlugin {
       refreshChangePreview: (path, changePath, previewPath) =>
         this.refreshQmdChangePreview(path, changePath, previewPath),
       keepChange: (path, changePath) => this.keepQmdChange(path, changePath),
+      editableBlocks: (path) => this.qmdEditableBlocks(path),
+      applyManualEdit: (path, block, text) => this.applyQmdManualEdit(path, block, text),
     }));
     if (!workspace) return;
     workspace.repoRootHint = root;
@@ -1516,6 +1523,43 @@ export class ZoteroChatPlugin {
       throw error;
     }
     return { ...paths, changed: false, revision: this.hashQmdSource(original) };
+  }
+
+  private async qmdEditableBlocks(relativePath: string): Promise<QmdEditableBlock[]> {
+    if (!relativePath.endsWith(".qmd")) {
+      throw new Error("Inline editing is available only for QMD Drafts");
+    }
+    return editableQmdBlocks(await IOUtils.readUTF8(this.safeRepositoryPath(relativePath)));
+  }
+
+  /**
+   * A human preview edit owns the original Draft, just like a Cursor save.
+   * Prepare first so an incomplete AI trace blocks no user write, then rebase
+   * the private AI version after the atomic save without overwriting it.
+   */
+  private async applyQmdManualEdit(
+    relativePath: string,
+    block: QmdEditableBlock,
+    text: string,
+  ): Promise<{
+    changePath: string;
+    previewPath: string;
+    changed: boolean;
+    revision: string;
+  }> {
+    if (!relativePath.startsWith("drafts/") || !relativePath.endsWith(".qmd")) {
+      throw new Error("Inline editing is available only for Draft QMD files");
+    }
+    await this.prepareQmdChange(relativePath);
+    const absolutePath = this.safeRepositoryPath(relativePath);
+    const before = await IOUtils.readUTF8(absolutePath);
+    const edited = applyQmdEditableBlock(before, block, text);
+    if (edited.changed) {
+      await IOUtils.writeUTF8(absolutePath, edited.source, {
+        tmpPath: `${absolutePath}.qlab-inline-${Date.now()}.tmp`,
+      });
+    }
+    return this.prepareQmdChange(relativePath);
   }
 
   private async refreshQmdChangePreview(

@@ -1,5 +1,15 @@
 import { EDITOR_TREES, treeForPath, type EditorTree } from "./editor-tree";
 import type { ExternalEditorApp } from "./external-editor";
+import {
+  QMD_INLINE_CONFIGURE_TOPIC,
+  QMD_INLINE_EDIT_TOPIC,
+  QMD_INLINE_READY_TOPIC,
+  QMD_INLINE_RESULT_TOPIC,
+  qmdInlineFrameScript,
+  type QmdEditableBlock,
+  type QmdInlineEditMessage,
+  type QmdInlineResultMessage,
+} from "./qmd-inline-edit";
 import { filterQmdIndex, groupIntoTree, type QmdIndexEntry, type QmdTreeNode } from "./qmd-index";
 import type { QmdRenderService } from "./qmd-render";
 
@@ -33,6 +43,25 @@ export interface QmdWorkspaceOptions {
   refreshChangePreview?(relativePath: string, changePath: string, previewPath: string): Promise<void>;
   /** Replaces the Draft with its reviewed copy after adopting direct editor saves as the new baseline. */
   keepChange?(relativePath: string, changePath: string): Promise<QmdPreparedChange>;
+  /** Editable source regions mapped from one QMD to its compiled HTML. */
+  editableBlocks?(relativePath: string): Promise<QmdEditableBlock[]>;
+  /** Atomically saves one in-preview human edit to the original Draft. */
+  applyManualEdit?(
+    relativePath: string,
+    block: QmdEditableBlock,
+    text: string,
+  ): Promise<QmdPreparedChange>;
+}
+
+interface QmdRemoteMessage {
+  data?: unknown;
+}
+
+interface QmdRemoteMessageManager {
+  loadFrameScript(uri: string, allowDelayedLoad: boolean): void;
+  addMessageListener(topic: string, listener: (message: QmdRemoteMessage) => void): void;
+  removeMessageListener(topic: string, listener: (message: QmdRemoteMessage) => void): void;
+  sendAsyncMessage(topic: string, data: unknown): void;
 }
 
 export interface QmdAgentDiff {
@@ -81,13 +110,15 @@ export function qmdDiffForPath(diff: string, relativePath: string): string | nul
 /**
  * The QMD preview workspace.
  *
- * It previews and it does not grow a source editor of its own. A pane sharing
- * width with the chat column is a poor place to write in, and a researcher's
- * own editor is better at writing than anything that would fit there — so this
- * shows the rendered page and hands the source to Cursor or VS Code. Agent
- * edits accumulate in a private QMD working copy; the eye switches between
- * the compiled original and working copy, and Keep is the only promotion from
- * that copy back to the user's Draft.
+ * It keeps the compiled Quarto page as the default reading surface. A toolbar
+ * button explicitly switches that same page into inline edit mode: plain prose
+ * edits in place, formulas expose only their LaTeX, and rich Markdown or a
+ * complete thm/lem/def block temporarily exposes its QMD source. Human preview
+ * edits save to the original Draft,
+ * just like Cursor; Agent edits remain in the private working copy. The eye
+ * switches between the compiled original and working copy, and Keep is the
+ * only promotion from the Agent copy back to the user's Draft. Cursor and VS
+ * Code remain available for full-document source work.
  *
  * Both trees are previewable. `drafts/` is rendered as a single file and stays
  * out of the published site, which is the whole reason it has no URL to reach
@@ -112,11 +143,15 @@ export class QmdWorkspaceView {
   private readonly renderPane: HTMLElement;
   private readonly compareButton: HTMLButtonElement;
   private readonly keepChangesButton: HTMLButtonElement;
+  private readonly editPreviewButton: HTMLButtonElement;
   private readonly quickOpen: HTMLElement;
   private readonly quickOpenInput: HTMLInputElement;
   private readonly quickOpenList: HTMLElement;
 
   private renderBrowser: HTMLElement | null = null;
+  private inlineMessageManager: QmdRemoteMessageManager | null = null;
+  private readonly inlineBlocks = new Map<string, QmdEditableBlock>();
+  private inlineSave: Promise<void> = Promise.resolve();
   private renderedUrl = "";
   private changedUrl = "";
   private changePath: string | null = null;
@@ -124,6 +159,7 @@ export class QmdWorkspaceView {
   private changeRevision = "";
   private hasAgentChange = false;
   private showingAgentChange = false;
+  private inlineEditingEnabled = false;
   private current: { relativePath: string; tree: EditorTree } | null = null;
   private entries: QmdIndexEntry[] = [];
   private available: ExternalEditorApp[] = [];
@@ -132,6 +168,20 @@ export class QmdWorkspaceView {
   private openGeneration = 0;
   private complianceGeneration = 0;
   private readonly knownDiffs = new Map<string, string>();
+  private readonly onInlineReadyMessage = (_message: QmdRemoteMessage): void => {
+    void this.configureInlineEditing();
+  };
+  private readonly onInlineEditMessage = (message: QmdRemoteMessage): void => {
+    const data = message.data as Partial<QmdInlineEditMessage> | undefined;
+    if (!data || typeof data.id !== "string" || typeof data.text !== "string") return;
+    const generation = this.openGeneration;
+    this.inlineSave = this.inlineSave
+      .then(() => this.applyInlineEdit({ id: data.id!, text: data.text! }, generation))
+      .catch((error) => {
+        if (generation !== this.openGeneration || this.destroyed) return;
+        this.setStatus(error instanceof Error ? error.message : String(error), "error");
+      });
+  };
 
   constructor(host: HTMLElement, private readonly options: QmdWorkspaceOptions) {
     this.doc = host.ownerDocument;
@@ -189,6 +239,14 @@ export class QmdWorkspaceView {
     );
     this.keepChangesButton.hidden = true;
     this.keepChangesButton.disabled = true;
+    this.editPreviewButton = this.iconButton(
+      "zc-qmd-edit-preview",
+      "✐",
+      "Edit directly in Preview",
+      () => void this.toggleInlineEditing(),
+    );
+    this.editPreviewButton.hidden = true;
+    this.editPreviewButton.setAttribute("aria-pressed", "false");
 
     this.editorPicker = this.doc.createElement("select");
     this.editorPicker.className = "zc-qmd-editor-picker";
@@ -209,7 +267,7 @@ export class QmdWorkspaceView {
     const refresh = this.iconButton("zc-qmd-refresh", "↻", "Refresh Preview", () => void this.reloadRender());
     toolbar.append(back, quickOpenButton, this.pathLabel, this.treeBadge,
       this.complianceButton, this.reviewButton, this.compareButton, this.keepChangesButton,
-      this.editorPicker, this.editButton, refresh);
+      this.editPreviewButton, this.editorPicker, this.editButton, refresh);
 
     this.status = make("div", "zc-qmd-status");
     this.status.textContent = "Choose a QMD page to preview";
@@ -283,6 +341,7 @@ export class QmdWorkspaceView {
   /** Previews one QMD, starting or reusing its render process. */
   async open(relativePath: string): Promise<void> {
     const generation = ++this.openGeneration;
+    this.disableInlineEditing();
     const tree = treeForPath(relativePath);
     if (!tree) {
       this.setStatus("Only QMD files in knowledge/ or drafts/ can be previewed", "error");
@@ -353,8 +412,8 @@ export class QmdWorkspaceView {
         : diagnostic
         ? `Preview is showing the last successful result: ${diagnostic}`
         : tree.published ? "Preview ready · refreshes automatically after save"
-          : this.hasAgentChange ? "Original Draft preview · an AI version is available"
-            : "Original Draft preview · AI edits are kept in a separate working copy",
+          : this.hasAgentChange ? "Website view · Original Draft preview · an AI version is available"
+            : "Website view · Original Draft preview · AI edits are kept in a separate working copy",
       prepareError || diagnostic ? "error" : "valid",
     );
     await draftCheck;
@@ -366,6 +425,7 @@ export class QmdWorkspaceView {
     this.openGeneration += 1;
     this.options.renderService.stop();
     this.options.changeRenderService.stop();
+    this.detachInlineEditor();
     this.options.onActiveDocument?.(null);
     this.root.remove();
   }
@@ -383,6 +443,7 @@ export class QmdWorkspaceView {
     this.changedUrl = "";
     this.hasAgentChange = false;
     this.showingAgentChange = false;
+    this.inlineBlocks.clear();
     this.updateChangeControls();
   }
 
@@ -456,6 +517,7 @@ export class QmdWorkspaceView {
 
   private async toggleAgentPreview(): Promise<void> {
     if (!this.hasAgentChange || !this.current || this.current.tree.published) return;
+    this.disableInlineEditing();
     if (!this.showingAgentChange) {
       const url = await this.ensureChangedPreview();
       if (!url) return;
@@ -486,6 +548,7 @@ export class QmdWorkspaceView {
       this.hasAgentChange = prepared.changed;
       this.setPendingEntry(current.relativePath, prepared.changed);
       this.showingAgentChange = false;
+      this.disableInlineEditing();
       this.renderFileColumn();
       this.updateChangeControls();
       this.options.onActiveDocument?.(current.relativePath, this.changePath);
@@ -519,8 +582,21 @@ export class QmdWorkspaceView {
     const isDraft = Boolean(this.current && !this.current.tree.published);
     this.compareButton.hidden = !isDraft;
     this.keepChangesButton.hidden = !isDraft;
+    this.editPreviewButton.hidden = !isDraft;
     this.compareButton.disabled = !this.hasAgentChange;
     this.keepChangesButton.disabled = !this.hasAgentChange;
+    this.editPreviewButton.disabled = !isDraft || this.showingAgentChange;
+    this.editPreviewButton.setAttribute(
+      "aria-pressed",
+      String(this.inlineEditingEnabled && !this.showingAgentChange),
+    );
+    this.presentIcon(
+      this.editPreviewButton,
+      "✐",
+      this.showingAgentChange
+        ? "Inline editing is available on the original Draft"
+        : this.inlineEditingEnabled ? "Return to website view" : "Edit directly in Preview",
+    );
     this.compareButton.setAttribute("aria-pressed", String(this.showingAgentChange));
     this.presentIcon(
       this.compareButton,
@@ -732,11 +808,181 @@ export class QmdWorkspaceView {
     browser.setAttribute("maychangeremoteness", "true");
     browser.addEventListener("load", () => {
       const active = this.current;
-      if (!active || active.tree.published || this.destroyed) return;
-      void this.updateDraftCompliance(active.relativePath, this.openGeneration);
+      if (!active || this.destroyed) return;
+      if (!active.tree.published) {
+        void this.updateDraftCompliance(active.relativePath, this.openGeneration);
+      }
+      void this.configureInlineEditing();
     });
     this.renderBrowser = browser;
     this.renderPane.appendChild(browser);
+    this.attachInlineEditor(browser);
+  }
+
+  private attachInlineEditor(browser: HTMLElement): void {
+    const manager = (browser as HTMLElement & {
+      messageManager?: QmdRemoteMessageManager;
+    }).messageManager;
+    if (!manager) return;
+    this.inlineMessageManager = manager;
+    manager.addMessageListener(QMD_INLINE_READY_TOPIC, this.onInlineReadyMessage);
+    manager.addMessageListener(QMD_INLINE_EDIT_TOPIC, this.onInlineEditMessage);
+    const source = qmdInlineFrameScript();
+    manager.loadFrameScript(
+      `data:application/javascript;charset=UTF-8,${encodeURIComponent(source)}`,
+      true,
+    );
+  }
+
+  private detachInlineEditor(): void {
+    const manager = this.inlineMessageManager;
+    if (!manager) return;
+    manager.removeMessageListener(QMD_INLINE_READY_TOPIC, this.onInlineReadyMessage);
+    manager.removeMessageListener(QMD_INLINE_EDIT_TOPIC, this.onInlineEditMessage);
+    this.inlineMessageManager = null;
+    this.inlineBlocks.clear();
+  }
+
+  private disableInlineEditing(): void {
+    this.inlineBlocks.clear();
+    this.inlineMessageManager?.sendAsyncMessage(QMD_INLINE_CONFIGURE_TOPIC, {
+      enabled: false,
+      blocks: [],
+    });
+  }
+
+  private async configureInlineEditing(): Promise<void> {
+    const manager = this.inlineMessageManager;
+    const current = this.current;
+    const generation = this.openGeneration;
+    const editable = Boolean(
+      manager
+      && current
+      && !current.tree.published
+      && this.changePath
+      && this.options.editableBlocks
+      && this.options.applyManualEdit
+      && this.inlineEditingEnabled
+      && !this.showingAgentChange,
+    );
+    if (!editable || !manager || !current) {
+      this.disableInlineEditing();
+      return;
+    }
+
+    const sourcePath = current.relativePath;
+    let blocks: QmdEditableBlock[];
+    try {
+      blocks = await this.options.editableBlocks!(sourcePath);
+    }
+    catch (error) {
+      if (generation === this.openGeneration && !this.destroyed) {
+        this.disableInlineEditing();
+        this.setStatus(
+          `Inline Draft editing is unavailable: ${error instanceof Error ? error.message : String(error)}`,
+          "error",
+        );
+      }
+      return;
+    }
+    if (generation !== this.openGeneration || this.destroyed || current !== this.current) return;
+    this.inlineBlocks.clear();
+    for (const candidate of blocks) this.inlineBlocks.set(candidate.id, candidate);
+    manager.sendAsyncMessage(QMD_INLINE_CONFIGURE_TOPIC, {
+      enabled: true,
+      blocks: blocks.map(({ id, kind, text, domId, domKind, ordinal }) => ({
+        id,
+        kind,
+        text,
+        domId,
+        domKind,
+        ordinal,
+      })),
+    });
+  }
+
+  private async applyInlineEdit(message: QmdInlineEditMessage, generation: number): Promise<void> {
+    const current = this.current;
+    const changePath = this.changePath;
+    const block = this.inlineBlocks.get(message.id);
+    const canEdit = Boolean(
+      current
+      && !current.tree.published
+      && changePath
+      && block
+      && this.options.applyManualEdit
+      && this.inlineEditingEnabled
+      && !this.showingAgentChange,
+    );
+    if (!canEdit || !current || !changePath || !block || !this.options.applyManualEdit) {
+      this.sendInlineResult({
+        id: message.id,
+        ok: false,
+        text: block?.text ?? "",
+        error: "This preview version is read-only. Switch to the edited version before changing it.",
+      });
+      return;
+    }
+
+    try {
+      const prepared = await this.options.applyManualEdit(
+        current.relativePath,
+        block,
+        message.text,
+      );
+      if (generation !== this.openGeneration || this.destroyed || current !== this.current) return;
+      this.changePath = prepared.changePath;
+      this.changePreviewPath = prepared.previewPath;
+      this.changeRevision = prepared.revision;
+      this.hasAgentChange = prepared.changed;
+      this.showingAgentChange = false;
+      this.setPendingEntry(current.relativePath, prepared.changed);
+      this.renderFileColumn();
+      this.updateChangeControls();
+      this.options.onActiveDocument?.(current.relativePath, this.changePath);
+      this.sendInlineResult({ id: message.id, ok: true, text: message.text });
+      this.setStatus(
+        "Draft saved · the compiled preview is updating automatically",
+        "saved",
+      );
+      await this.configureInlineEditing();
+      void this.updateDraftCompliance(current.relativePath, generation);
+    }
+    catch (error) {
+      this.sendInlineResult({
+        id: message.id,
+        ok: false,
+        text: block.text,
+        error: error instanceof Error ? error.message : String(error),
+      });
+      if (generation === this.openGeneration && !this.destroyed) {
+        this.setStatus(
+          `${error instanceof Error ? error.message : String(error)} No Draft file was changed.`,
+          "error",
+        );
+      }
+    }
+  }
+
+  private sendInlineResult(result: QmdInlineResultMessage): void {
+    this.inlineMessageManager?.sendAsyncMessage(QMD_INLINE_RESULT_TOPIC, result);
+  }
+
+  private async toggleInlineEditing(): Promise<void> {
+    if (!this.current || this.current.tree.published || this.showingAgentChange) return;
+    this.inlineEditingEnabled = !this.inlineEditingEnabled;
+    this.updateChangeControls();
+    if (this.inlineEditingEnabled) {
+      this.setStatus(
+        "Inline edit mode · click text, formulas, or thm/lem/def blocks · changes save on blur",
+        "valid",
+      );
+      await this.configureInlineEditing();
+    }
+    else {
+      this.disableInlineEditing();
+      this.setStatus("Website view · showing the compiled Quarto page", "valid");
+    }
   }
 
   private toggleFileColumn(): void {
