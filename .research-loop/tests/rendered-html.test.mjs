@@ -1,11 +1,18 @@
 import assert from "node:assert/strict";
 import { execFile } from "node:child_process";
-import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
 import test from "node:test";
+
+import {
+  ACTIVE_WITH_GATE_STATUSES,
+  PROBLEM_ID_PATTERN,
+  PUBLISHED_STATUSES,
+  SOLVED_OR_LATER_STATUSES,
+} from "../../src/lib/problems/schema.mjs";
 
 const execFileAsync = promisify(execFile);
 const workspaceRoot = fileURLToPath(new URL("../../", import.meta.url));
@@ -14,6 +21,7 @@ const generatedIndex = JSON.parse(
   await readFile(generatedIndexUrl, "utf8"),
 );
 const fixedPublicationTargetPattern = new RegExp(["publication", "target"].join("\\s+"), "i");
+const trackedProblemManifests = await readTrackedProblemManifests();
 
 const completeProblemMd = [
   "Background and Gap",
@@ -44,6 +52,44 @@ async function render(pathname = "/") {
       passThroughOnException() {},
     },
   );
+}
+
+async function readTrackedProblemManifests() {
+  const problemsDir = join(workspaceRoot, "problems");
+  const entries = await readdir(problemsDir, { withFileTypes: true });
+  const manifests = [];
+  for (const entry of entries) {
+    if (!entry.isDirectory() || !PROBLEM_ID_PATTERN.test(entry.name)) continue;
+    let manifestText;
+    try {
+      manifestText = await readFile(join(problemsDir, entry.name, "problem.json"), "utf8");
+    } catch (error) {
+      if (error?.code === "ENOENT") continue;
+      throw error;
+    }
+    const manifest = JSON.parse(manifestText);
+    manifests.push(manifest);
+  }
+  return manifests;
+}
+
+function expectedNextProblemId(manifests) {
+  const max = manifests.reduce((current, manifest) => {
+    const match = PROBLEM_ID_PATTERN.exec(manifest.id);
+    return match ? Math.max(current, Number(match[1])) : current;
+  }, 0);
+  return `Prob-${String(max + 1).padStart(3, "0")}`;
+}
+
+function expectedProblemSummary(manifests) {
+  return {
+    total: manifests.length,
+    accepted: manifests.filter((problem) => ACTIVE_WITH_GATE_STATUSES.includes(problem.status)).length,
+    solved: manifests.filter((problem) => SOLVED_OR_LATER_STATUSES.includes(problem.status)).length,
+    published: manifests.filter((problem) => PUBLISHED_STATUSES.includes(problem.status)).length,
+    rejected: manifests.filter((problem) => problem.status === "rejected").length,
+    archived: manifests.filter((problem) => problem.status === "archived").length,
+  };
 }
 
 async function buildCurrentIndex(env = {}) {
@@ -158,25 +204,11 @@ test("server-renders the problem console shell", async () => {
 test("ordinary local build indexes all tracked QEC problems and reserves the next problem ID", () => {
   assert.deepEqual(
     generatedIndex.problems.map((problem) => problem.id).sort(),
-    [
-      ...Array.from({ length: 21 }, (_, index) => `Prob-${String(index + 1).padStart(3, "0")}`),
-      "Prob-124",
-      "Prob-125",
-      "Prob-126",
-      "Prob-127",
-      "Prob-128",
-    ].sort(),
+    trackedProblemManifests.map((problem) => problem.id).sort(),
   );
-  assert.equal(generatedIndex.nextProblemId, "Prob-129");
+  assert.equal(generatedIndex.nextProblemId, expectedNextProblemId(trackedProblemManifests));
   assert.deepEqual(generatedIndex.diagnostics, []);
-  assert.deepEqual(generatedIndex.summary, {
-    total: 26,
-    accepted: 4,
-    solved: 1,
-    published: 0,
-    rejected: 0,
-    archived: 2,
-  });
+  assert.deepEqual(generatedIndex.summary, expectedProblemSummary(trackedProblemManifests));
 });
 
 test("homepage table links do not rely on absolute row overlays", async () => {
