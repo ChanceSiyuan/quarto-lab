@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { EventEmitter } from "node:events";
-import { mkdtemp, mkdir, writeFile } from "node:fs/promises";
+import { mkdtemp, mkdir, readFile, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
@@ -10,6 +10,62 @@ import {
   checkCodexPreflight,
   runCodexAssessment,
 } from "../../src/lib/assessments/codex-adapter.mjs";
+
+test("assessment output schema gives every literal an explicit Codex type", async () => {
+  const schema = JSON.parse(await readFile(new URL("../../schemas/research-problem-assessment.schema.json", import.meta.url), "utf8"));
+  const missingTypes = [];
+  function visit(value, path = "$") {
+    if (!value || typeof value !== "object") return;
+    if ((Object.hasOwn(value, "const") || Object.hasOwn(value, "enum")) && !Object.hasOwn(value, "type")) missingTypes.push(path);
+    for (const [key, child] of Object.entries(value)) visit(child, `${path}.${key}`);
+  }
+  visit(schema);
+  assert.deepEqual(missingTypes, []);
+});
+
+test("assessment output schema avoids array keywords rejected by Codex", async () => {
+  const schema = JSON.parse(await readFile(new URL("../../schemas/research-problem-assessment.schema.json", import.meta.url), "utf8"));
+  const unsupportedKeywords = [];
+  function visit(value, path = "$") {
+    if (!value || typeof value !== "object") return;
+    if (Object.hasOwn(value, "uniqueItems")) unsupportedKeywords.push(`${path}.uniqueItems`);
+    for (const [key, child] of Object.entries(value)) visit(child, `${path}.${key}`);
+  }
+  visit(schema);
+  assert.deepEqual(unsupportedKeywords, []);
+});
+
+test("assessment output schema avoids composition keywords rejected by Codex", async () => {
+  const schema = JSON.parse(await readFile(new URL("../../schemas/research-problem-assessment.schema.json", import.meta.url), "utf8"));
+  const unsupportedKeywords = [];
+  function visit(value, path = "$") {
+    if (!value || typeof value !== "object") return;
+    if (Object.hasOwn(value, "allOf")) unsupportedKeywords.push(`${path}.allOf`);
+    if (Object.hasOwn(value, "oneOf")) unsupportedKeywords.push(`${path}.oneOf`);
+    for (const [key, child] of Object.entries(value)) visit(child, `${path}.${key}`);
+  }
+  visit(schema);
+  assert.deepEqual(unsupportedKeywords, []);
+});
+
+test("assessment output schema requires every declared object property for Codex strict mode", async () => {
+  const schema = JSON.parse(await readFile(new URL("../../schemas/research-problem-assessment.schema.json", import.meta.url), "utf8"));
+  const missingRequired = [];
+  function hasObjectType(value) {
+    return value?.type === "object" || (Array.isArray(value?.type) && value.type.includes("object"));
+  }
+  function visit(value, path = "$") {
+    if (!value || typeof value !== "object") return;
+    if (hasObjectType(value) && value.properties) {
+      const required = new Set(value.required ?? []);
+      const missing = Object.keys(value.properties).filter((field) => !required.has(field));
+      if (missing.length > 0) missingRequired.push(`${path}: ${missing.join(",")}`);
+    }
+    for (const [key, child] of Object.entries(value)) visit(child, `${path}.${key}`);
+  }
+  visit(schema);
+  assert.deepEqual(missingRequired, []);
+});
 
 function fakeEnvelopeText() {
   const dimsV = [
@@ -109,6 +165,47 @@ test("a host-selected bundle tells Codex to continue without asking for ambiguit
   assert.doesNotMatch(prompt, /If the resolver is ambiguous, return outcome needs_input/);
 });
 
+test("an external valuation selection tells Codex to continue with no trusted match", () => {
+  const prompt = buildAssessmentPrompt({
+    problem: { id: "Prob-001", title: "Fixture", summary: "Summary" },
+    problemMarkdown: "## Background and Gap\nText.",
+    selectedAlternative: {
+      page: "__external__/valuation-snapshot",
+      topic: "external-valuation",
+      title: "Continue with external valuation evidence only",
+      matchKind: "external-valuation",
+    },
+    trustedResolution: {
+      schemaVersion: 1,
+      query: "Fixture",
+      status: "no-match",
+      bundle: null,
+      alternatives: [],
+    },
+  });
+
+  assert.match(prompt, /external valuation evidence only/i);
+  assert.match(prompt, /"status": "no-match"/);
+  assert.match(prompt, /Do not cite trusted knowledge/i);
+  assert.doesNotMatch(prompt, /If the resolver is ambiguous, return outcome needs_input/);
+});
+
+test("prompt attaches frozen valuation evidence without widening Codex permissions", () => {
+  const prompt = buildAssessmentPrompt({
+    problem: { id: "Prob-001", title: "Fixture", summary: "Summary", domain: "quantum-computing", quantumArea: "hardware-and-control" },
+    problemMarkdown: "## Background and Gap\nText.",
+    valuationInput: {
+      snapshotId: "20260729T010203Z-0123456789ab",
+      contentHash: "a".repeat(64),
+      recalculationInputs: { technicalStages: [] },
+    },
+  });
+
+  assert.match(prompt, /host has frozen external valuation evidence/i);
+  assert.match(prompt, /Do not browse, refresh, rewrite, or relabel/i);
+  assert.match(prompt, /20260729T010203Z-0123456789ab/);
+});
+
 test("codex runner uses safe argv, read-only sandbox, ephemeral mode, JSONL, schema, and output-last-message", async () => {
   const root = await mkdtemp(join(tmpdir(), "assessment-codex-"));
   const runDir = join(root, ".generated", "assessment-runs", "run");
@@ -134,6 +231,7 @@ test("codex runner uses safe argv, read-only sandbox, ephemeral mode, JSONL, sch
     problemMarkdown: "Problem markdown.",
     runDir,
     schemaPath: join(root, "schemas", "research-problem-assessment.schema.json"),
+    valuationInput: { snapshotId: "20260729T010203Z-0123456789ab", contentHash: "a".repeat(64) },
     spawnFn,
     timeoutMs: 5000,
   });
@@ -149,6 +247,7 @@ test("codex runner uses safe argv, read-only sandbox, ephemeral mode, JSONL, sch
   ]);
   assert.equal(calls[0].options.cwd, root);
   assert.equal(calls[0].options.shell, false);
+  assert.match(calls[0].args.at(-1), /20260729T010203Z-0123456789ab/);
 });
 
 test("codex runner captures stream data that drains after exit", async () => {

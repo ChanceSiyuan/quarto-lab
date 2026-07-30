@@ -2,6 +2,7 @@ import generatedIndex from "../../../../.generated/problem-index.json";
 import generatedResearchIndex from "../../../../.generated/research-index.json";
 import {
   getStaticResearchExample,
+  getStaticResearchExampleProblem,
   isStaticResearchExampleProblem,
 } from "@/lib/problems/example-research.mjs";
 import { buildExampleResearchLedger } from "@/lib/problems/example-presentation.mjs";
@@ -12,6 +13,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AssessmentPanel } from "./assessment-panel";
 import { StaticAutoresearchPanel } from "./static-autoresearch-panel";
+import { StaticAssessmentPanel } from "./static-assessment-panel";
 
 declare const __AUTORESEARCH_SIDECAR_AVAILABLE__: boolean;
 
@@ -22,7 +24,7 @@ export default async function ProblemDetailPage({
 }) {
   const { id } = await params;
   const repository = createProblemRepository(generatedIndex);
-  const problem = repository.getProblem(id);
+  const problem = repository.getProblem(id) ?? getStaticResearchExampleProblem(id);
 
   if (!problem) {
     notFound();
@@ -65,7 +67,7 @@ export default async function ProblemDetailPage({
         <StaticAutoresearchPanel />
 
         <p className="example-disclaimer">{example.manifest.disclaimer}</p>
-        <AssessmentPanel problemId={problem.id} />
+        <StaticAssessmentPanel />
 
         <dl className="research-metric-strip" aria-label="Research metrics">
           {ledger.cards.map((card) => (

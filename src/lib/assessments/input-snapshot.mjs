@@ -3,6 +3,8 @@ import { readFile } from "node:fs/promises";
 import { join, relative, resolve } from "node:path";
 
 import { ASSESSMENT_POLICY_VERSION } from "./policy.mjs";
+import { evaluateValuationFreshness } from "../valuations/freshness.mjs";
+import { canonicalJson } from "../valuations/snapshot-store.mjs";
 
 export function sha256Text(text) {
   return createHash("sha256").update(text).digest("hex");
@@ -17,7 +19,29 @@ export async function hashFile(path) {
   }
 }
 
-export async function buildInputSnapshot({ rootDir, problem, envelope, skillPath, schemaPath, selectedAlternative = null }) {
+function cloneJson(value) {
+  return value === undefined ? undefined : structuredClone(value);
+}
+
+export function buildValuationInput(valuationSnapshot, { now = new Date() } = {}) {
+  if (!valuationSnapshot) return null;
+  const manifest = valuationSnapshot.manifest ?? {};
+  const valuationInput = {
+    snapshotId: manifest.snapshotId,
+    contentHash: manifest.contentHash,
+    snapshotHash: sha256Text(canonicalJson(valuationSnapshot)),
+    visibility: manifest.visibility ?? "public",
+    freshness: evaluateValuationFreshness(valuationSnapshot, now),
+    recalculationInputs: cloneJson(valuationSnapshot.recalculationInputs ?? {
+      manifest,
+      papers: valuationSnapshot.papers ?? [],
+      marketEvidence: valuationSnapshot.marketEvidence ?? [],
+    }),
+  };
+  return valuationInput;
+}
+
+export async function buildInputSnapshot({ rootDir, problem, envelope, skillPath, schemaPath, selectedAlternative = null, valuationSnapshot = null, valuationInput = null, now = new Date() }) {
   const root = resolve(rootDir);
   const problemDir = join(root, "problems", problem.id);
   const resolver = envelope.knowledgeResolution;
@@ -28,8 +52,9 @@ export async function buildInputSnapshot({ rootDir, problem, envelope, skillPath
       hash: await hashFile(join(root, orderedPath)),
     });
   }
+  const frozenValuation = valuationInput ?? buildValuationInput(valuationSnapshot, { now });
   return {
-    schemaVersion: 1,
+    schemaVersion: frozenValuation ? 2 : 1,
     policyVersion: ASSESSMENT_POLICY_VERSION,
     problemId: problem.id,
     problemTitle: problem.title,
@@ -48,5 +73,6 @@ export async function buildInputSnapshot({ rootDir, problem, envelope, skillPath
       ...(selectedAlternative?.page ? { selectedPage: selectedAlternative.page } : {}),
     },
     bundle,
+    ...(frozenValuation ? { valuation: frozenValuation } : {}),
   };
 }

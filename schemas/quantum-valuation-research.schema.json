@@ -1,0 +1,84 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "problemId", "scope", "anchorCandidates", "paperInclusionRules", "technicalStages", "classicalBaseline", "marketEvidence", "atomicInputs", "materialAssumptions", "warnings"],
+  "properties": {
+    "schemaVersion": { "type": "integer", "const": 1 },
+    "problemId": { "type": "string", "minLength": 1 },
+    "scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "domain", "quantumArea"],
+      "properties": {
+        "status": { "type": "string", "enum": ["supported"] },
+        "domain": { "type": "string", "enum": ["quantum-computing"] },
+        "quantumArea": { "type": "string", "enum": ["algorithms-and-applications", "error-correction-and-fault-tolerance", "compilation-and-architecture", "hardware-and-control", "resource-estimation-and-benchmarks", "classical-simulation-and-verification"] }
+      }
+    },
+    "anchorCandidates": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 10,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "persistentId", "title", "relevanceRationale", "sourceUrl"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "persistentId": { "type": "string", "minLength": 1 },
+          "title": { "type": "string", "minLength": 1 },
+          "relevanceRationale": { "type": "string", "minLength": 1 },
+          "sourceUrl": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "paperInclusionRules": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["include", "exclude"],
+      "properties": {
+        "include": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "exclude": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+      }
+    },
+    "technicalStages": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "description"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "description": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "classicalBaseline": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["description", "sourceUrl"],
+      "properties": {
+        "description": { "type": "string", "minLength": 1 },
+        "sourceUrl": { "type": "string", "minLength": 1 }
+      }
+    },
+    "marketEvidence": { "type": "array", "items": { "type": "object", "additionalProperties": false, "required": ["id", "state", "reason", "interval", "unit", "visibility", "evidenceState", "evidenceTier", "sourceIds", "sources", "currency", "priceBaseYear", "conversionSourceId", "derivation", "kind"], "properties": { "id": { "type": ["string", "null"] }, "state": { "type": "string", "enum": ["known", "unknown"] }, "reason": { "type": ["string", "null"] }, "interval": { "type": ["object", "null"], "additionalProperties": false, "required": ["low", "base", "high"], "properties": { "low": { "type": "number" }, "base": { "type": "number" }, "high": { "type": "number" } } }, "unit": { "type": ["string", "null"] }, "visibility": { "type": ["string", "null"], "enum": ["public", null] }, "evidenceState": { "type": ["string", "null"], "enum": ["reported", "inferred", null] }, "evidenceTier": { "type": ["string", "null"], "enum": ["primary", "authoritative-secondary", "vendor-or-news", "assumption", null] }, "sourceIds": { "type": "array", "items": { "type": "string" } }, "sources": { "type": "array", "items": { "type": "object", "additionalProperties": false, "required": ["id", "url", "locator", "kind"], "properties": { "id": { "type": "string" }, "url": { "type": "string" }, "locator": { "type": "string" }, "kind": { "type": "string" } } } }, "currency": { "type": ["string", "null"], "enum": ["USD", "CNY", "EUR", "GBP", "JPY", null] }, "priceBaseYear": { "type": ["integer", "null"] }, "conversionSourceId": { "type": ["string", "null"] }, "derivation": { "type": ["object", "null"], "additionalProperties": false, "required": ["formulaId", "inputIds"], "properties": { "formulaId": { "type": "string" }, "inputIds": { "type": "array", "items": { "type": "string" } } } }, "kind": { "type": ["string", "null"] } } } },
+    "atomicInputs": { "type": "array", "items": { "type": "object", "additionalProperties": false, "required": ["id", "state", "reason", "interval", "unit", "visibility", "evidenceState", "evidenceTier", "sourceIds", "sources", "currency", "priceBaseYear", "conversionSourceId", "derivation", "kind"], "properties": { "id": { "type": ["string", "null"] }, "state": { "type": "string", "enum": ["known", "unknown"] }, "reason": { "type": ["string", "null"] }, "interval": { "type": ["object", "null"], "additionalProperties": false, "required": ["low", "base", "high"], "properties": { "low": { "type": "number" }, "base": { "type": "number" }, "high": { "type": "number" } } }, "unit": { "type": ["string", "null"] }, "visibility": { "type": ["string", "null"], "enum": ["public", null] }, "evidenceState": { "type": ["string", "null"], "enum": ["reported", "inferred", null] }, "evidenceTier": { "type": ["string", "null"], "enum": ["primary", "authoritative-secondary", "vendor-or-news", "assumption", null] }, "sourceIds": { "type": "array", "items": { "type": "string" } }, "sources": { "type": "array", "items": { "type": "object", "additionalProperties": false, "required": ["id", "url", "locator", "kind"], "properties": { "id": { "type": "string" }, "url": { "type": "string" }, "locator": { "type": "string" }, "kind": { "type": "string" } } } }, "currency": { "type": ["string", "null"], "enum": ["USD", "CNY", "EUR", "GBP", "JPY", null] }, "priceBaseYear": { "type": ["integer", "null"] }, "conversionSourceId": { "type": ["string", "null"] }, "derivation": { "type": ["object", "null"], "additionalProperties": false, "required": ["formulaId", "inputIds"], "properties": { "formulaId": { "type": "string" }, "inputIds": { "type": "array", "items": { "type": "string" } } } }, "kind": { "type": ["string", "null"] } } } },
+    "materialAssumptions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "question", "proposedValue", "sensitivityRank", "confirmationRequired"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "question": { "type": "string", "minLength": 1 },
+          "proposedValue": { "type": "object", "additionalProperties": false, "required": ["id", "state", "reason", "interval", "unit", "visibility", "evidenceState", "evidenceTier", "sourceIds", "sources", "currency", "priceBaseYear", "conversionSourceId", "derivation", "kind"], "properties": { "id": { "type": ["string", "null"] }, "state": { "type": "string", "enum": ["known", "unknown"] }, "reason": { "type": ["string", "null"] }, "interval": { "type": ["object", "null"], "additionalProperties": false, "required": ["low", "base", "high"], "properties": { "low": { "type": "number" }, "base": { "type": "number" }, "high": { "type": "number" } } }, "unit": { "type": ["string", "null"] }, "visibility": { "type": ["string", "null"], "enum": ["public", null] }, "evidenceState": { "type": ["string", "null"], "enum": ["reported", "inferred", null] }, "evidenceTier": { "type": ["string", "null"], "enum": ["primary", "authoritative-secondary", "vendor-or-news", "assumption", null] }, "sourceIds": { "type": "array", "items": { "type": "string" } }, "sources": { "type": "array", "items": { "type": "object", "additionalProperties": false, "required": ["id", "url", "locator", "kind"], "properties": { "id": { "type": "string" }, "url": { "type": "string" }, "locator": { "type": "string" }, "kind": { "type": "string" } } } }, "currency": { "type": ["string", "null"], "enum": ["USD", "CNY", "EUR", "GBP", "JPY", null] }, "priceBaseYear": { "type": ["integer", "null"] }, "conversionSourceId": { "type": ["string", "null"] }, "derivation": { "type": ["object", "null"], "additionalProperties": false, "required": ["formulaId", "inputIds"], "properties": { "formulaId": { "type": "string" }, "inputIds": { "type": "array", "items": { "type": "string" } } } }, "kind": { "type": ["string", "null"] } } },
+          "sensitivityRank": { "type": "integer", "minimum": 1 },
+          "confirmationRequired": { "type": "boolean" }
+        }
+      }
+    },
+    "warnings": { "type": "array", "items": { "type": "string" } }
+  }
+}
