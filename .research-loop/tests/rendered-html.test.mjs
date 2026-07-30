@@ -138,19 +138,11 @@ test("server-renders the problem console shell", async () => {
   assert.doesNotMatch(html, />\+ Add first problem<\/a>/);
   assert.match(html, /Cannot open Codex\?/);
   assert.match(html, /codex:\/\/threads\/new/);
-  assert.match(html, /Accepted/);
-  assert.match(html, /Solved/);
-  assert.match(html, /Published/);
-  for (const [label, key] of [
-    ["Accepted", "accepted"],
-    ["Solved", "solved"],
-    ["Published", "published"],
-  ]) {
-    assert.match(
-      html,
-      new RegExp(`<dt>${label}</dt><dd>${generatedIndex.summary[key]}</dd>`),
-    );
-  }
+  assert.match(html, /<span class="status-badge status-draft">Draft<\/span>/);
+  assert.match(html, /<span class="status-badge status-solved">Solved<\/span>/);
+  assert.doesNotMatch(html, /metric-strip/);
+  assert.doesNotMatch(html, /console-toolbar/);
+  assert.doesNotMatch(html, /Index diagnostics/);
   assert.doesNotMatch(html, fixedPublicationTargetPattern);
   assert.doesNotMatch(html, /\/\s*5\b/);
   assert.doesNotMatch(html, /[\u3400-\u9FFF]/u);
@@ -166,17 +158,24 @@ test("server-renders the problem console shell", async () => {
 test("ordinary local build indexes all tracked QEC problems and reserves the next problem ID", () => {
   assert.deepEqual(
     generatedIndex.problems.map((problem) => problem.id).sort(),
-    Array.from({ length: 21 }, (_, index) => `Prob-${String(index + 1).padStart(3, "0")}`),
+    [
+      ...Array.from({ length: 21 }, (_, index) => `Prob-${String(index + 1).padStart(3, "0")}`),
+      "Prob-124",
+      "Prob-125",
+      "Prob-126",
+      "Prob-127",
+      "Prob-128",
+    ].sort(),
   );
-  assert.equal(generatedIndex.nextProblemId, "Prob-022");
+  assert.equal(generatedIndex.nextProblemId, "Prob-129");
   assert.deepEqual(generatedIndex.diagnostics, []);
   assert.deepEqual(generatedIndex.summary, {
-    total: 21,
-    accepted: 1,
+    total: 26,
+    accepted: 4,
     solved: 1,
     published: 0,
     rejected: 0,
-    archived: 0,
+    archived: 2,
   });
 });
 
@@ -209,7 +208,7 @@ test("server-renders populated desktop and narrow problem rows", async () => {
   assert.match(html, /Invalid JSON/);
 });
 
-test("server-renders a clear action when default-hidden records are the only results", async () => {
+test("server-renders rejected records in the unfiltered index listing", async () => {
   const response = await renderFilesystemFixture({
     manifests: [{
       ...acceptedFixture,
@@ -223,9 +222,9 @@ test("server-renders a clear action when default-hidden records are the only res
   assert.equal(response.status, 200);
 
   const html = await response.text();
-  assert.match(html, /No matching problems/);
-  assert.match(html, /<button class="state-action" type="button">Clear all filters<\/button>/);
-  assert.doesNotMatch(html, /<span class="problem-id">Prob-020<\/span>/);
+  assert.match(html, /Rejected fixture/);
+  assert.match(html, /<span class="status-badge status-rejected">Rejected<\/span>/);
+  assert.match(html, /<span class="problem-id">Prob-020<\/span>/);
 });
 
 test("pages static showcase homepage makes archived public examples visible", async () => {

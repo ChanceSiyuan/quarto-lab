@@ -128,12 +128,14 @@ test("pages showcase links to the bundled knowledge site under the repository ba
   assert.match(stylesheet, /--rl-green:\s*#174c3b;/);
 });
 
-test("pages showcase preserves local controls as disabled visual affordances", async () => {
+test("pages showcase preserves the add-problem control as a disabled visual affordance", async () => {
   const html = await readFile(join(out, "index.html"), "utf8");
 
-  assert.match(html, /<section class="console-toolbar" aria-label="Problem filters">/);
-  assert.match(html, /Search problems/);
-  assert.match(html, /Lifecycle status/);
+  assert.doesNotMatch(html, /console-toolbar/);
+  assert.doesNotMatch(html, /Search problems/);
+  assert.doesNotMatch(html, /Lifecycle status/);
+  assert.doesNotMatch(html, /metric-strip/);
+  assert.doesNotMatch(html, /Index diagnostics/);
   assert.match(html, /<span class="primary-action static-disabled" aria-disabled="true">\+ Add problem<\/span>/);
   assert.doesNotMatch(html, /<a class="primary-action" href=/);
   assert.doesNotMatch(html, /codex:\/\//i);
