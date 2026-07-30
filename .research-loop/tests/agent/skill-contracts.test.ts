@@ -419,6 +419,9 @@ const ADD_PROBLEM: readonly Clause[] = [
   { requirement: "writes no staging files before confirmation", in: "body", pattern: /including stag[^.]*until[^.]*confirm/i },
   { requirement: "uses the safe publisher", in: "body", pattern: /make problem-publish STAGE=/ },
   { requirement: "re-previews collisions", in: "body", pattern: /collision[^.]*new ID[^.]*preview[^.]*confirm/i },
+  { requirement: "records confirmed quantum-computing domain scope", in: "body", pattern: /`domain: quantum-computing`/ },
+  { requirement: "records a confirmed quantum area", in: "body", pattern: /confirmed `quantumArea`/i },
+  { requirement: "does not infer quantum scope for non-quantum candidates", in: "body", pattern: /Do not infer or add quantum scope to a non-quantum candidate/ },
 ];
 
 const PREPARE_AUTORESEARCH: readonly Clause[] = [
@@ -711,6 +714,31 @@ const ASSESS_RESEARCH_PROBLEM: readonly Clause[] = [
     requirement: "returns exactly one recommended reframe",
     in: "body",
     pattern: /`Recommended reframe`[^.\n]*exactly one/i,
+  },
+  {
+    requirement: "limits version-2 quantum scoring to its host-frozen valuation snapshot",
+    in: "body",
+    pattern: /version-2 quantum assessment[^.\n]*only[^.\n]*host-frozen valuation snapshot/i,
+  },
+  {
+    requirement: "does not browse during version-2 quantum scoring",
+    in: "body",
+    pattern: /must not browse during scoring/i,
+  },
+  {
+    requirement: "does not relabel valuation snapshot evidence as trusted knowledge",
+    in: "body",
+    pattern: /must not relabel snapshot evidence as trusted knowledge/i,
+  },
+  {
+    requirement: "does not alter the host-frozen valuation snapshot",
+    in: "body",
+    pattern: /must not alter the snapshot/i,
+  },
+  {
+    requirement: "keeps version-2 snapshot scoring out of the resolver and trusted knowledge tree",
+    in: "body",
+    pattern: /must not use the `read-knowledge` resolver or read `knowledge\/` during snapshot scoring/i,
   },
 ];
 

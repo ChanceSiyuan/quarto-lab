@@ -1,286 +1,108 @@
 # Research Loop
 
-A shared human-and-agent research workspace. A local Problem Console runs at
-`/`, a Quarto site of reviewed research knowledge is published at `/knowledge/`,
-and both are packaged into one deployable artifact by the existing vinext build.
+Research Loop is a human-and-agent workspace for building trusted research
+knowledge and deciding which research problems deserve attention.
 
-- `/` — the Problem Console. It reads `problems/<id>/` through the generated
-  index at `.generated/problem-index.json` and presents problems, attempts, and
-  the Codex hand-off for authoring a new problem.
-- `/knowledge/` — a static Quarto website rendered from `knowledge/**/*.qmd`
-  into the gitignored `public/knowledge/`, with code execution disabled.
+It brings two workflows together:
 
-## Prerequisites
+- a reviewed **knowledge base** that agents can safely answer from; and
+- an auditable **problem-assessment method** that separates research value from
+  suitability for bounded, automated research.
 
-- Node.js `22.23.1` (pinned in `.node-version`; the package `engines` floor is
-  `>=22.13.0`)
-- Quarto `1.9.38` on `PATH`, for rendering and previewing the knowledge site
+The local app serves the Problem Console at `/` and the knowledge site at
+`/knowledge/`.
 
-```bash
-make dev
-```
+## A knowledge base you can trust
 
-The command installs the locked dependencies when needed, then starts the local
-site. This starter does not use `wrangler.jsonc`.
+Research Loop makes trust a physical boundary, not a prompt instruction.
 
-## Local Problem Console
-
-Problems live in `problems/<id>/` and are indexed into
-`.generated/problem-index.json` before dev, lint, build, and test commands. The
-generated index is ignored by Git; `problem.json`, `problem.md`, and
-`generation/` records are the durable audit trail.
-
-Only `problems/` is indexed by local development and ordinary production
-builds. The synthetic public example lives separately under
-`.research-loop/fixtures/showcase/problems/` as `Prob-000` and is not available
-from local routes; ordinary local problem allocation starts at `Prob-001`.
-
-Run locally:
-
-```bash
-npm run dev
-```
-
-`npm run dev` builds the index once, watches `problems/` for changes to
-`problem.json` and `problem.md`, and rebuilds the index as it serves.
-
-To create a problem, click `+ Add problem` on the homepage. Codex first uses
-the sci-brain idea discussion workflow. The generated task first runs
-`npm run skills:ensure-sci-brain`: on a new computer this installs the pinned
-official sci-brain release into the user's Codex skills, while repeated runs
-leave existing skills unchanged. The skill is named `brainstorm-ideas` in
-Codex; `sci-brain` is the package that provides it. When a candidate is ready,
-the local `add-problem` skill shows an exact preview and, after explicit
-confirmation, registers it as a draft with its visible discussion record.
-Acceptance or rejection belongs to a separate qualification workflow.
-
-`npm run pages:build` snapshots the static `Prob-000` example — the homepage,
-the problem page, its five attempt pages, and the bundled knowledge site — into
-`out/` for GitHub Pages at `https://nzy1997.github.io/research-loop/`. The
-dashboard links to the knowledge copy at `/research-loop/knowledge/` inside
-that artifact. The console snapshot is script-free static HTML; it is a
-showcase of the example, not a deployment of the local console.
-
-## Local assessment reports
-
-When running the app locally, a problem page can start a read-only Codex CLI
-assessment and write immutable local artifacts under the problem directory. See
-[`docs/local-assessments.md`](docs/local-assessments.md) for the workflow,
-artifact layout, and manual smoke test.
-
-## The trust boundary
-
-Three trees, three different levels of trust. The separation is physical, so
-nothing can quietly promote itself.
-
-| Tree | Status | What it means |
+| Tree | Role | Trust |
 |---|---|---|
-| `knowledge/` | trusted | The only content authority. A page is here because a human reviewed it and merged it. It is the only thing published at `/knowledge/`. |
-| `drafts/` | untrusted | Imported cards, pasted notes, agent output. No required categories, hierarchy, catalog, or frontmatter. Never published; never an answer source. |
-| `literature/` | external | Papers and their pinned arXiv sources — evidence to check a claim against, not a conclusion this project has drawn. Never published. |
+| `knowledge/` | Human-reviewed research notes | The only trusted answer source and the only content published at `/knowledge/` |
+| `drafts/` | Imported notes and agent-written work | Untrusted; never published or used as an answer source |
+| `literature/` | Papers and external evidence | Evidence to inspect, not conclusions the project has accepted |
 
-Agents answer research questions by resolving against `knowledge/` and reading
-the whole returned bundle; a question the trusted tree does not cover gets an
-explicit "no match" rather than a quiet fallback to the other two trees. See
-`AGENTS.md` for the rules and `.research-loop/docs/project/skills.md` for the
-skills that implement them.
+Every knowledge page is reviewed before merge. Curated reading maps define how
+pages belong to topics and the order in which they should be read. Validation
+checks ownership, links, citations, categories, cycles, path escapes, and safe
+Quarto frontmatter.
 
-`problems/` is a fourth tree with its own role: it is the record of what is
-being worked on, not a source of reviewed answers. The resolver never reads it.
-
-## Knowledge pages
-
-Every page is a `.qmd` file with a small, strictly allowlisted frontmatter:
-`title`, `description`, `categories`, and `aliases`. Nothing else is accepted —
-the allowlist is what keeps a page from turning a render into code execution.
-
-- **Three categories.** A content page declares exactly one of `theory`,
-  `experiment`, or `codes`. A topic's `index.qmd` declares none.
-- **The reading map is curated, not derived.** Each `index.qmd` carries a
-  `## Reading map` section listing the pages that belong to that topic, in the
-  order a reader should meet them. That list defines ownership, the site's
-  sidebar order, and the resolver's ordering. A page no reading map lists is an
-  orphan, and validation fails.
-- **`## Related topics` is a cross-reference.** It may point anywhere in the
-  tree and changes no ownership.
-
-`make knowledge-check` enforces all of it: allowlists, categories, orphans,
-duplicate parents, broken links, cycles, path escapes, and citation keys that
-are not in `literature/ref.bib`.
-
-## Zotero integration
-
-The Zotero add-on under `integrations/zotero/` is the QLab Reader and Workbench
-integration carried over intact. Its visible product name and build artifact
-use **Research Loop**, while its established plugin ID, preferences, QLab
-commands, and trust-boundary behavior remain compatible with the original.
-
-Build the installable add-on from this repository:
+Before answering a research question, an agent resolves it against the trusted
+tree and reads the complete returned bundle:
 
 ```bash
-make zotero-plugin
+make knowledge-resolve QUERY="your research question"
 ```
 
-Install the resulting
-`integrations/zotero/dist/Research-Loop-Zotero-<version>.xpi` from Zotero's
-Add-ons window. When the add-on asks for a QLab repository, choose this Research
-Loop repository (normally a local `research-loop` checkout). The root-level `qlab`
-compatibility command and expected `literature/`, `drafts/`, and `knowledge/`
-directories let the unchanged workflow recognize it as a valid repository.
+The resolver returns `match`, `ambiguous`, or `no-match`. It never silently
+falls back to drafts or downloaded literature when trusted knowledge is absent.
 
-## Commands
+## A method for evaluating research problems
 
-```bash
-make help
-```
+Research Loop evaluates each candidate through three separate lenses:
 
-| Command | What it does |
+| Measure | Question |
 |---|---|
-| `make dev` | Install locked dependencies when needed, then serve the Problem Console locally with the problem index watched |
-| `make build` | Regenerate the problem index, validate and render `knowledge/` into `public/knowledge/`, then build the deployable app |
-| `make test` | Lint, both unit suites, the Pages showcase, rendered-output tests, and browser tests |
-| `make pages-build` | Snapshot the static `Prob-000` example and bundled knowledge site into `out/` for GitHub Pages |
+| **Scientific Demand Score** | Does the literature show sustained scientific attention? It combines evidence-weighted influence, momentum, and breadth rather than summing raw citations. |
+| **Expected Attributable Net Social Value (EANSV)** | How much expected social value is attributable to doing this research, after subtracting the without-research counterfactual and research cost? |
+| **Autoresearch Fit** | Can progress be measured through a bounded, reproducible, hard-to-game loop with useful feedback and practical attempt times? |
+
+These measures keep scientific demand, attributable social value, and execution
+fit distinct. A popular topic is not automatically valuable, a broad market
+forecast is not credited to one problem, and a valuable problem is not assumed
+to be suitable for autonomous search.
+
+Assessments bind the problem description, the trusted knowledge resolver result,
+and a frozen evidence snapshot. Completed runs are immutable and keep their
+scores, rationales, confidence, provenance, and evidence references together.
+Missing evidence stays unknown rather than becoming a fake zero.
+
+The method is advisory, not a calibrated scientific or investment forecast. It
+does not treat citations as proof of novelty, external evidence as trusted
+knowledge, or scenario assumptions as observed outcomes.
+
+## Quick start
+
+Requirements: Node.js `22.23.1`, Quarto `1.9.38`, and an absolute private-data
+directory for local autoresearch isolation.
+
+```bash
+AUTORESEARCH_PRIVATE_ROOT=/absolute/private-data make dev
+```
+
+Then open the local URL printed by the development server. Use the homepage to
+browse problems and `/knowledge/` to browse reviewed knowledge.
+
+## Core commands
+
+| Command | Purpose |
+|---|---|
+| `make dev` | Start the local Problem Console |
 | `make knowledge-check` | Validate the trusted knowledge tree |
-| `make knowledge-resolve QUERY="triangular TFIM"` | Print the reading bundle for one research question, as JSON |
-| `make knowledge-preview` | Serve the trusted knowledge site locally |
-| `make draft-preview FILE=drafts/note.md` | Render exactly one untrusted draft note locally |
-| `make drafts-preview` | Preview the whole untrusted drafts workspace locally with execution disabled |
-| `make literature-index` | Regenerate every `literature/<method>/INDEX.md` from `ref.bib` |
-| `make literature-fetch KEY=citekey` | Fetch one reference's version-pinned arXiv source |
-| `make literature-sync` | Fetch the pinned source of every arXiv reference |
-| `./qlab literature connect zotero` | Create the local Zotero collection mapping and metadata snapshot |
-| `./qlab literature import zotero` | Refresh Zotero metadata without propagating deletions |
-| `./qlab literature materialize <item-key>` | Fetch verified PDF and LaTeX evidence for one Zotero record |
-| `./qlab literature verify <item-key>` | Verify one materialized record against its manifest |
-| `make zotero-plugin-test` | Type-check and test the standalone Zotero integration |
-| `make zotero-plugin` | Test and build the installable Research Loop Zotero XPI |
-| `make clean` | Remove generated builds, previews, and test output |
-| `make clean-all` | Also remove local dependencies and tool caches |
+| `make knowledge-resolve QUERY="..."` | Resolve a question to its trusted reading bundle |
+| `make knowledge-preview` | Preview the knowledge site |
+| `make build` | Validate, render, and build the complete app |
+| `make test` | Run the full local test suite |
 
-Equivalent package scripts exist underneath (`npm run knowledge:check`, and so
-on), but documentation and skills use the Make targets, so there is one stable
-name for each workflow.
+Run `make help` for the complete command list.
 
-`make knowledge-resolve` prints one JSON document and exits 0 for `match`,
-`ambiguous`, and `no-match` alike — a status is an answer, not a failure. The
-argument-taking targets refuse an empty variable with a one-line usage message
-and exit 2.
-
-The package scripts that have no Make target:
-
-- `npm run lint`: regenerate the problem index, then run ESLint
-- `npm run test:unit`: the TypeScript knowledge, literature, drafts, migration,
-  and agent suites
-- `npm run test:unit:problems`: the problem-console `.mjs` suites — schema,
-  indexer, repository, presentation, view state, dev watcher, Codex launch, and
-  the static example content, including local autoresearch preparation
-- `npm run test:autoresearch:preparation`: focused local autoresearch
-  preparation contract, process, service, scheduler, and view-model suites
-- `npm run test:pages`: `pages:build` followed by the Pages showcase assertions
-- `npm run test:rendered`: assertions against the built HTML and static assets
-- `npm run test:e2e`: Playwright, against the built site
-
-## Included shape
-
-The repository root is intentionally split into a small user workspace and two
-implementation areas:
+## Project structure
 
 | Path | Purpose |
 |---|---|
-| `knowledge/`, `drafts/`, `literature/` | Trusted notes, untrusted work in progress, and external evidence |
-| `problems/` | Durable problem, attempt, and imported research records shown by the console |
-| `integrations/` | Standalone integrations, currently the Zotero add-on |
-| `skills/` | Committed agent workflows |
-| `schemas/` | Machine-readable contracts shared with local research preparation tools |
-| `src/` | Website, reusable application code, and the Worker entry point |
-| `.research-loop/` | Project tests, fixtures, internal documentation, and maintenance CLIs |
-| `public/` | Framework static assets plus the generated knowledge site |
-| root launchers and configs | Stable `make`, `./qlab`, npm, Quarto, Vite, and hosting entry points |
+| `knowledge/` | Reviewed, trusted knowledge |
+| `problems/` | Research problems, attempts, and local assessment records |
+| `drafts/` | Untrusted work in progress |
+| `literature/` | External references and evidence |
+| `skills/` | Agent workflows for reading, reviewing, and evaluating research |
+| `src/` | Problem Console and application code |
 
-Generated directories such as `dist/`, `out/`, `.generated/`, and
-`test-results/` are ignored and reproducible. Run `make clean` whenever the
-checkout should return to its compact working shape.
+## Methodology and workflows
 
-## Deployment
+- [Assessment methodology](.research-loop/docs/project/assessment-methodology.md)
+- [Running local assessments](.research-loop/docs/project/local-assessments.md)
+- [Agent workflow boundaries](.research-loop/docs/project/skills.md)
+- [Repository rules](AGENTS.md)
 
-`.openai/hosting.json` pins the existing Sites project
-`appgprj_6a66e89526a88191a9e969c6f441086c`. That exact project is reused: it is
-never reformatted, replaced, or re-created. Deployment may remain blocked while
-that project is not visible to the current account; local completion — build,
-tests, and rendered output — is valid on its own, and the artifact is ready for
-whenever access returns.
-
-The GitHub Pages showcase is a separate, static destination: `.github/workflows/pages.yml`
-publishes the `out/` snapshot produced by `npm run pages:build`.
-
-## Not in this phase
-
-- No remote or cloud queue and no unattended solver. The local autoresearch
-  sidecar prepares infrastructure but does not start attempt batches.
-- No D1 or R2 data model. The bindings in `.openai/hosting.json` stay `null`;
-  the previously unused D1/Drizzle starter surface is not part of this repo.
-- No published draft or literature source: `drafts/`, `literature/`, and the
-  local `.raw/` and `.figures/` trees never reach the deployed artifact.
-- No embeddings, no `.knowledge` compatibility tree, and no generated Markdown
-  mirror of the knowledge pages.
-
-## Hosting platform notes
-
-OpenAI workspace sites can read the current user's email from
-`oai-authenticated-user-email`.
-
-SIWC-authenticated workspace sites may also receive
-`oai-authenticated-user-full-name` when the user's SIWC profile has a non-empty
-`name` claim. The full-name value is percent-encoded UTF-8 and is accompanied by
-`oai-authenticated-user-full-name-encoding: percent-encoded-utf-8`.
-
-Treat the full name as optional and fall back to email when it is absent:
-
-```tsx
-import { headers } from "next/headers";
-
-export default async function Home() {
-  const requestHeaders = await headers();
-  const email = requestHeaders.get("oai-authenticated-user-email");
-  const encodedFullName = requestHeaders.get("oai-authenticated-user-full-name");
-  const fullName =
-    encodedFullName &&
-    requestHeaders.get("oai-authenticated-user-full-name-encoding") ===
-      "percent-encoded-utf-8"
-      ? decodeURIComponent(encodedFullName)
-      : null;
-
-  const displayName = fullName ?? email;
-  // ...
-}
-```
-
-Import the ready-to-use helpers from `src/app/chatgpt-auth.ts` when the site needs
-optional or required ChatGPT sign-in:
-
-- Use `getChatGPTUser()` for optional signed-in UI.
-- Use `requireChatGPTUser(returnTo)` for server-rendered pages that should send
-  anonymous visitors through Sign in with ChatGPT.
-- Use `chatGPTSignInPath(returnTo)` and `chatGPTSignOutPath(returnTo)` for
-  browser links or actions.
-- Pass a same-origin relative `returnTo` path for the destination after sign-in
-  or sign-out. The helper validates and safely encodes it.
-- Mark protected pages with `export const dynamic = "force-dynamic"` because
-  they depend on per-request identity headers.
-
-Dispatch owns `/signin-with-chatgpt`, `/signout-with-chatgpt`, `/callback`, the
-OAuth cookies, and identity header injection. Do not implement app routes for
-those reserved paths. Routes that do not import and call the helper remain
-anonymous-compatible.
-
-SIWC establishes identity only; it does not prove workspace membership. Use the
-Sites hosting platform's access policy controls for workspace-wide restrictions,
-or enforce explicit server-side membership or allowlist checks.
-
-Use SIWC for account pages, user-specific dashboards, saved records, and write
-actions tied to the current ChatGPT user. Leave public content anonymous.
-
-## Learn More
-
-- [Quarto Documentation](https://quarto.org/docs/guide/)
-- [vinext Documentation](https://github.com/cloudflare/vinext)
+Generated output under `public/knowledge/` is build-owned. Do not edit or commit
+it directly.

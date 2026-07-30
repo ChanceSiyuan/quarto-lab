@@ -7,7 +7,7 @@ description: Use when judging whether a proposed research problem is worth doing
 
 ## Overview
 
-Judge research value and autoresearch suitability separately.
+Separate research value and autoresearch suitability.
 
 This skill is read-only. Do not answer the research question or solve the
 research problem, run experiments, create or update `problems/`, or modify
@@ -21,19 +21,25 @@ Before research facts or interpretations, use `read-knowledge`:
 make knowledge-resolve QUERY="<the candidate research question>"
 ```
 
-On `match`, read every `bundle.orderedFiles` path before using knowledge. On
-`ambiguous`, present every alternative and ask the user to choose. On
-`no-match`, say the learned knowledge has no match and mark affected dimensions
-unknown.
+On `match`, read every `bundle.orderedFiles` path. On `ambiguous`, present
+alternatives and ask the user to choose. On `no-match`, say learned knowledge
+has no match and mark dimensions unknown.
 
 Never use `drafts/` as learned knowledge. Never use `literature/` as learned
-knowledge. External research requires an explicit user request; label it
+knowledge. External research requires explicit user request; label it
 external evidence.
+
+Version-2 quantum assessment may only read the host-frozen valuation snapshot
+named in input. It must not browse during scoring, must
+not relabel snapshot evidence as trusted knowledge, and must not alter the
+snapshot.
+It must not use the `read-knowledge` resolver or read `knowledge/` during
+snapshot scoring.
 
 ## Scoring
 
-Score dimensions 0-5 as `supported`, `inferred`, or `unknown`; keep `unknown`
-as an interval, not zero.
+Score 0-5 as `supported`, `inferred`, or `unknown`; keep `unknown` an interval,
+not zero.
 
 Research value `V` is 0-100:
 
@@ -58,7 +64,7 @@ Autoresearch suitability `A` is 0-100:
 | Reproducibility and auditability | 10 | Are code, inputs, environment, logs, and results inspectable? |
 | Attempt runtime | 10 | How fast is one feedback cycle? |
 
-Runtime is soft. 5 minutes ideal, not a hard limit:
+Runtime: 5 minutes ideal, not a hard limit:
 
 ```text
 T = clamp(5 - log2(max(t, 5) / 5), 0, 5)
@@ -87,8 +93,8 @@ provisional, confidence low, its range, and one question likely to resolve it.
 
 ## Structured output mode
 
-When Codex is invoked with the repository's structured output schema, return
-one JSON object matching that schema instead of Markdown sections. Use
+With a structured output schema, return one matching JSON object instead of
+Markdown sections. Use
 `outcome: "assessment"` only after the resolver path has produced enough
 information to score the problem. Use the `needs_input` outcome when the
 resolver result is ambiguous and include every alternative exactly as reported.
@@ -104,12 +110,11 @@ that was read. For `no-match`, include the resolver query and mark
 evidence-dependent dimensions as `unknown`. For `ambiguous`, do not score the
 problem and do not choose among alternatives.
 
-Keep Markdown sections for normal conversation mode when no structured output
-schema is supplied.
+Keep Markdown sections without a structured output schema.
 
 ## Output
 
-Return these sections, in order: `Normalized problem` (one sentence);
+Return: `Normalized problem` (one sentence);
 `Verdict` (label, `V`, `A`, `S`, confidence); `Research value` and
 `Autoresearch suitability` (score, weight, evidence state, rationale per
 dimension); `Largest bottleneck` (exactly one); `Recommended reframe` (exactly

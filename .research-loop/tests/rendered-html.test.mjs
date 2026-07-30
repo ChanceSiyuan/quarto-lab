@@ -46,13 +46,13 @@ async function render(pathname = "/") {
   );
 }
 
-async function buildCurrentIndex() {
+async function buildCurrentIndex(env = {}) {
   await execFileAsync(
     fileURLToPath(new URL("../../node_modules/.bin/vinext", import.meta.url)),
     ["build"],
     {
       cwd: workspaceRoot,
-      env: { ...process.env, WRANGLER_LOG_PATH: ".wrangler/wrangler.log" },
+      env: { ...process.env, ...env, WRANGLER_LOG_PATH: ".wrangler/wrangler.log" },
       maxBuffer: 10 * 1024 * 1024,
     },
   );
@@ -68,7 +68,7 @@ async function writeFixtureProblem(root, manifest) {
   await writeFile(join(problemDir, "generation", "decision.md"), "Fixture decision.");
 }
 
-async function renderFilesystemFixture({ manifests, damagedIds = [] }, pathname = "/?fixture=filesystem") {
+async function renderFilesystemFixture({ manifests, damagedIds = [], buildEnv = {} }, pathname = "/?fixture=filesystem") {
   const originalIndexText = await readFile(generatedIndexUrl, "utf8");
   const fixtureRoot = await mkdtemp(join(tmpdir(), "research-loop-render-"));
   await mkdir(join(fixtureRoot, "problems"), { recursive: true });
@@ -96,7 +96,7 @@ async function renderFilesystemFixture({ manifests, damagedIds = [] }, pathname 
         maxBuffer: 10 * 1024 * 1024,
       },
     );
-    await buildCurrentIndex();
+    await buildCurrentIndex(buildEnv);
     const response = await render(pathname);
     const html = await response.text();
     return new Response(html, { status: response.status, headers: response.headers });
@@ -163,12 +163,15 @@ test("server-renders the problem console shell", async () => {
   assert.doesNotMatch(html, /localStorage/);
 });
 
-test("ordinary local build indexes the tracked campaign and reserves the next problem ID", () => {
-  assert.deepEqual(generatedIndex.problems.map((problem) => problem.id), ["Prob-001"]);
-  assert.equal(generatedIndex.nextProblemId, "Prob-002");
+test("ordinary local build indexes all tracked QEC problems and reserves the next problem ID", () => {
+  assert.deepEqual(
+    generatedIndex.problems.map((problem) => problem.id).sort(),
+    Array.from({ length: 21 }, (_, index) => `Prob-${String(index + 1).padStart(3, "0")}`),
+  );
+  assert.equal(generatedIndex.nextProblemId, "Prob-022");
   assert.deepEqual(generatedIndex.diagnostics, []);
   assert.deepEqual(generatedIndex.summary, {
-    total: 1,
+    total: 21,
     accepted: 1,
     solved: 1,
     published: 0,
@@ -225,21 +228,66 @@ test("server-renders a clear action when default-hidden records are the only res
   assert.doesNotMatch(html, /<span class="problem-id">Prob-020<\/span>/);
 });
 
+test("pages static showcase homepage makes archived public examples visible", async () => {
+  const archivedFixture = {
+    ...acceptedFixture,
+    id: "Prob-124",
+    title: "Archived public example",
+    summary: "Archived display record for GitHub Pages.",
+    status: "archived",
+    gate: { type: "documentation", readiness: "specified" },
+  };
+  const response = await renderFilesystemFixture({
+    manifests: [archivedFixture],
+    buildEnv: { PAGES_STATIC_SHOWCASE: "1" },
+  });
+  assert.equal(response.status, 200);
+
+  const html = await response.text();
+  assert.match(html, /<span>Prob-124<\/span>/);
+  assert.match(html, /Archived public example/);
+  assert.doesNotMatch(html, /No matching problems/);
+});
+
 test("returns a stable detail route response for unknown problem IDs", async () => {
   const response = await render("/problems/Prob-999");
   assert.equal(response.status, 404);
 });
 
-test("ordinary local build returns 404 for every showcase route", async () => {
+test("ordinary local build serves the static demo route and rejects unknown demo attempts", async () => {
+  const problemResponse = await render("/problems/Prob-000");
+  assert.equal(problemResponse.status, 200);
+  const problemHtml = await problemResponse.text();
+  assert.doesNotMatch(problemHtml, /Assessment methodology demo/);
+  assert.match(problemHtml, /Scientific Demand Score/);
+  assert.match(problemHtml, /Industry \/ social proxy/);
+  assert.match(problemHtml, /Autoresearch Fit/);
+  assert.match(problemHtml, /Discuss in Codex/);
+  assert.match(problemHtml, /href="\/problems\/Prob-000\/autoresearch"/);
+  assert.doesNotMatch(problemHtml, /Local assessment unavailable/);
+  assert.doesNotMatch(problemHtml, /\/__local\/assessments/);
+
+  const autoresearchResponse = await render("/problems/Prob-000/autoresearch");
+  assert.equal(autoresearchResponse.status, 200);
+  const autoresearchHtml = await autoresearchResponse.text();
+  assert.match(autoresearchHtml, /Autoresearch results/);
+  assert.match(autoresearchHtml, /ATT-001/);
+  assert.match(autoresearchHtml, /Best speedup/);
+  assert.match(autoresearchHtml, /Example data - synthetic results for interface demonstration only\./);
+  assert.doesNotMatch(autoresearchHtml, /Local assessment unavailable/);
+
   for (const pathname of [
-    "/problems/Prob-000",
     "/problems/Prob-000/attempts/ATT-001",
     "/problems/Prob-000/attempts/ATT-005",
-    "/problems/Prob-000/attempts/ATT-999",
   ]) {
     const response = await render(pathname);
-    assert.equal(response.status, 404, pathname);
+    assert.equal(response.status, 200, pathname);
+    const html = await response.text();
+    assert.match(html, /Example data - synthetic results for interface demonstration only\./);
   }
+
+  const unknownAttempt = await render("/problems/Prob-000/attempts/ATT-999");
+  assert.equal(unknownAttempt.status, 404);
 });
 
 test("returns 404 for attempt routes on non-example problems", async () => {
@@ -271,7 +319,29 @@ test("server-renders the generic problem detail shell for non-example problems",
   assert.match(html, /<a href="\/" class="back-link">← Back to problems<\/a>/);
 });
 
-test("server-renders unavailable assessment copy for the static example detail shell", async () => {
+test("pages static showcase renders public problem details without local controls", async () => {
+  const response = await renderFilesystemFixture(
+    {
+      manifests: [acceptedFixture],
+      buildEnv: { PAGES_STATIC_SHOWCASE: "1" },
+    },
+    "/problems/Prob-017?fixture=filesystem",
+  );
+  assert.equal(response.status, 200);
+
+  const html = await response.text();
+  assert.match(html, /<p class="eyebrow">Prob-017<\/p>/);
+  assert.match(html, /<h1>Fresh Hamiltonian gate<\/h1>/);
+  assert.match(html, /<p class="detail-summary">Interval arithmetic on held-out instances\.<\/p>/);
+  assert.match(html, /The detailed problem workspace will be designed next; this page currently locks the route, identity, and return path\./);
+  assert.doesNotMatch(html, /Available in local mode/);
+  assert.doesNotMatch(html, /Prepare autoresearch/);
+  assert.doesNotMatch(html, /Local assessment unavailable/);
+  assert.doesNotMatch(html, /\/__local\/assessments/);
+  assert.doesNotMatch(html, /\/__local\/autoresearch/);
+});
+
+test("server-renders the static assessment methodology demo for the static example detail shell", async () => {
   const response = await renderFilesystemFixture(
     { manifests: [{ ...acceptedFixture, id: "Prob-000" }] },
     "/problems/Prob-000?fixture=filesystem",
@@ -279,7 +349,14 @@ test("server-renders unavailable assessment copy for the static example detail s
   assert.equal(response.status, 200);
 
   const html = await response.text();
-  assert.match(html, /Example data - synthetic results for interface demonstration only\./);
-  assert.match(html, /<section class="assessment-panel assessment-unavailable" aria-labelledby="assessment-heading">/);
-  assert.match(html, /Local assessment unavailable/);
+  assert.doesNotMatch(html, /Example data - synthetic results for interface demonstration only\./);
+  assert.doesNotMatch(html, /Available in local mode/);
+  assert.match(html, /<section class="assessment-panel [^"]+" aria-label="Assessment">/);
+  assert.doesNotMatch(html, /Assessment methodology demo/);
+  assert.match(html, /Scientific Demand Score/);
+  assert.match(html, /Industry \/ social proxy/);
+  assert.match(html, /Autoresearch Fit/);
+  assert.match(html, /Methodology documentation/);
+  assert.doesNotMatch(html, /Technical Success Estimate/);
+  assert.doesNotMatch(html, /Local assessment unavailable/);
 });

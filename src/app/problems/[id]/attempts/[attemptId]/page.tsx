@@ -4,6 +4,7 @@ import { buildAttemptDossier } from "@/lib/problems/example-presentation.mjs";
 import {
   getStaticResearchAttempt,
   getStaticResearchExample,
+  getStaticResearchExampleProblem,
   isStaticResearchExampleProblem,
 } from "@/lib/problems/example-research.mjs";
 import { createProblemRepository } from "@/lib/problems/repository.mjs";
@@ -11,6 +12,7 @@ import { createResearchRepository } from "@/lib/problems/research-repository.mjs
 import { buildAttemptDetailResearchState } from "@/lib/problems/research-route-data.mjs";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import detailStyles from "../../research-detail.module.css";
 
 export default async function AttemptDetailPage({
   params,
@@ -19,7 +21,7 @@ export default async function AttemptDetailPage({
 }) {
   const { id, attemptId } = await params;
   const repository = createProblemRepository(generatedIndex);
-  const problem = repository.getProblem(id);
+  const problem = repository.getProblem(id) ?? getStaticResearchExampleProblem(id);
 
   if (!problem) {
     notFound();
@@ -36,9 +38,9 @@ export default async function AttemptDetailPage({
     const dossier = buildAttemptDossier(attempt, example.manifest);
 
     return (
-      <main className="detail-shell attempt-shell">
+      <main className={`detail-shell attempt-shell ${detailStyles.shellZoom}`}>
         <div className="breadcrumb-row">
-          <Link className="back-link" href={`/problems/${problem.id}`}>← Back to research ledger</Link>
+          <Link className="back-link" href={`/problems/${problem.id}/autoresearch`}>← Back to autoresearch results</Link>
           <Link className="back-link muted-back-link" href="/">Problem library</Link>
         </div>
 

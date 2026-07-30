@@ -46,21 +46,37 @@ export function buildAssessmentPrompt({
   problemMarkdown,
   selectedAlternative = null,
   trustedResolution = null,
+  valuationInput = null,
 }) {
   const hasHostSelection = selectedAlternative && trustedResolution?.status === "match";
+  const hasExternalValuationSelection = selectedAlternative?.matchKind === "external-valuation" && trustedResolution?.status === "no-match";
   const resolverInstruction = hasHostSelection
     ? [
         "The host resolver has already applied the user's explicit selection.",
         "Treat the supplied trusted resolution as final: read every ordered file in order, do not rerun the resolver, and do not return needs_input.",
         "Return the supplied query, status, topic, and orderedFiles exactly in knowledgeResolution.",
       ].join(" ")
+    : hasExternalValuationSelection
+      ? [
+          "The user explicitly selected external valuation evidence only because the trusted alternatives were not applicable.",
+          "Do not rerun or override the trusted resolver. Do not return needs_input for trusted-knowledge ambiguity.",
+          "Return the supplied no-match query, status, topic, and orderedFiles exactly in knowledgeResolution.",
+          "Do not cite trusted knowledge; cite only problem evidence and the frozen valuation input packet.",
+        ].join(" ")
     : "If the resolver is ambiguous, return outcome needs_input with every alternative.";
   const selectionText = selectedAlternative
     ? [
         `User selected resolver alternative title: ${selectedAlternative.title}`,
         `Page: ${selectedAlternative.page}`,
         `Topic: ${selectedAlternative.topic}`,
-        hasHostSelection
+        hasExternalValuationSelection
+          ? `Trusted knowledge resolution:\n${JSON.stringify({
+              query: trustedResolution.query,
+              status: trustedResolution.status,
+              topic: null,
+              orderedFiles: [],
+            }, null, 2)}`
+          : hasHostSelection
           ? `Trusted knowledge resolution:\n${JSON.stringify({
               query: trustedResolution.query,
               status: trustedResolution.status,
@@ -70,12 +86,21 @@ export function buildAssessmentPrompt({
           : "",
       ].filter(Boolean).join("\n")
     : "";
+  const valuationText = valuationInput
+    ? [
+        "The host has frozen external valuation evidence in the attached input packet.",
+        "Use it only to propose score anchors and rationales. Do not browse, refresh, rewrite, or relabel it as trusted knowledge.",
+        "Keep A unchanged and do not add raw quantitative metrics to V, A, or S arithmetic.",
+        `Frozen valuation input packet:\n${JSON.stringify(valuationInput, null, 2)}`,
+      ].join("\n")
+    : "";
   return [
     "Use the repo-local assess-research-problem skill.",
     "Return only the structured schema response.",
     "Do not modify problem.json, problem.md, knowledge, drafts, literature, or assessments.",
     resolverInstruction,
     selectionText,
+    valuationText,
     `Problem ID: ${problem.id}`,
     `Problem title: ${problem.title}`,
     `Problem summary: ${problem.summary}`,
@@ -95,11 +120,12 @@ export function runCodexAssessment({
   timeoutMs = DEFAULT_CODEX_TIMEOUT_MS,
   selectedAlternative = null,
   trustedResolution = null,
+  valuationInput = null,
   onChild = null,
 }) {
   return new Promise((resolve) => {
     const finalMessagePath = join(runDir, "final-message.json");
-    const prompt = buildAssessmentPrompt({ problem, problemMarkdown, selectedAlternative, trustedResolution });
+    const prompt = buildAssessmentPrompt({ problem, problemMarkdown, selectedAlternative, trustedResolution, valuationInput });
     const args = [
       "exec",
       "--sandbox", "read-only",

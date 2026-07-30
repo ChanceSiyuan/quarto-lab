@@ -3,6 +3,10 @@ import { cp, mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises";
 import { basename, dirname, extname, join, relative } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { promisify } from "node:util";
+import {
+  createPagesShowcaseRoutes,
+  stagePagesShowcaseProblems,
+} from "./pages-showcase-problems.mjs";
 
 const root = fileURLToPath(new URL("../../../", import.meta.url));
 const outDir = join(root, "out");
@@ -15,15 +19,7 @@ const siteOrigin = process.env.PAGES_SITE_ORIGIN ?? "https://nzy1997.github.io";
 const siteUrl = `${siteOrigin}${basePath}`;
 const knowledgeTextExtensions = new Set([".css", ".html", ".js", ".json", ".svg", ".txt", ".xml"]);
 
-const routes = [
-  "/",
-  "/problems/Prob-000",
-  "/problems/Prob-000/attempts/ATT-001",
-  "/problems/Prob-000/attempts/ATT-002",
-  "/problems/Prob-000/attempts/ATT-003",
-  "/problems/Prob-000/attempts/ATT-004",
-  "/problems/Prob-000/attempts/ATT-005",
-];
+const routes = createPagesShowcaseRoutes();
 
 function routeToOutputPath(route) {
   const routePath = route === "/" ? "index.html" : `${route.slice(1)}/index.html`;
@@ -60,6 +56,10 @@ function rewriteHtml(html) {
     .replace(
       /<a class="state-action" href="codex:[^"]*">\+ Add first problem<\/a>/g,
       '<span class="state-action static-disabled" aria-disabled="true">+ Add first problem</span>',
+    )
+    .replace(
+      /<a class="state-action" href="codex:[^"]*">Discuss in Codex<\/a>/g,
+      '<span class="state-action static-disabled" aria-disabled="true">Discuss in Codex</span>',
     )
     .replace(/<details class="codex-fallback"[\s\S]*?<\/details>/g, "")
     .replace(
@@ -158,11 +158,17 @@ async function renderRoute(worker, route) {
 }
 
 async function buildShowcaseApp() {
+  const { problemsDir } = await stagePagesShowcaseProblems({
+    fixtureProblemsDir: join(root, ".research-loop/fixtures/showcase/problems"),
+    officialProblemsDir: join(root, "problems"),
+    stageProblemsDir: join(root, ".generated/pages-showcase/problems"),
+  });
   await execFileAsync(
     process.execPath,
     [
       ".research-loop/tooling/scripts/build-problem-index.mjs",
-      "--problems-dir", ".research-loop/fixtures/showcase/problems",
+      "--public",
+      "--problems-dir", relative(root, problemsDir),
     ],
     { cwd: root, maxBuffer: 10 * 1024 * 1024 },
   );
@@ -173,7 +179,7 @@ async function buildShowcaseApp() {
   );
   await execFileAsync(vinextBin, ["build"], {
     cwd: root,
-    env: { ...process.env, WRANGLER_LOG_PATH: ".wrangler/wrangler.log" },
+    env: { ...process.env, WRANGLER_LOG_PATH: ".wrangler/wrangler.log", PAGES_STATIC_SHOWCASE: "1" },
     maxBuffer: 10 * 1024 * 1024,
   });
 }

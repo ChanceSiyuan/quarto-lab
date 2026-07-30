@@ -1,0 +1,101 @@
+.panel {
+  background:
+    radial-gradient(circle at top right, color-mix(in srgb, var(--amber) 18%, transparent), transparent 32%),
+    var(--surface);
+}
+
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0;
+  margin: 0;
+  border: 1px solid var(--line);
+}
+
+.metric {
+  min-width: 0;
+  border-right: 1px solid var(--line);
+}
+
+.metric:last-child {
+  border-right: 0;
+}
+
+.metric summary {
+  display: grid;
+  gap: 5px;
+  padding: 12px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.metric summary::-webkit-details-marker {
+  display: none;
+}
+
+.metricLabel {
+  color: var(--muted);
+  font: 10px var(--font-geist-mono);
+}
+
+.metricValue {
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -.03em;
+}
+
+.metricToggle {
+  margin-top: 4px;
+  color: var(--green);
+  font: 10px var(--font-geist-mono);
+  text-transform: uppercase;
+}
+
+.metricToggle::after {
+  content: " +";
+}
+
+.metric[open] .metricToggle::after {
+  content: " -";
+}
+
+.metricDetail {
+  border-top: 1px solid var(--line);
+  padding: 12px;
+  background: rgba(255, 255, 255, .025);
+}
+
+.formula {
+  margin: 0;
+  overflow-x: auto;
+  color: var(--green);
+  font: 11px/1.6 var(--font-geist-mono);
+  white-space: pre;
+}
+
+.reason {
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.methodologyLink {
+  display: inline-flex;
+  margin-top: 12px;
+}
+
+@media (max-width: 760px) {
+  .metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .metric {
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .metric:last-child {
+    border-bottom: 0;
+  }
+}
