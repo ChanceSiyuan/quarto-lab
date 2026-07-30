@@ -187,6 +187,44 @@ test("accepts versioned Scientific Demand Score audit metadata", () => {
   assert.equal(result.ok, true, result.errors?.join("\n"));
 });
 
+test("accepts frozen derivation references for an inferred Scientific Demand Score", () => {
+  const envelope = validQuantumEnvelopeV2();
+  const sources = [
+    {
+      id: "citation-W4220854529",
+      url: "https://doi.org/10.21105/joss.04120",
+      locator: "OpenAlex work W4220854529",
+      kind: "citation-index",
+    },
+    {
+      id: "citation-W4403007328",
+      url: "https://doi.org/10.1145/3795877",
+      locator: "OpenAlex work W4403007328",
+      kind: "citation-index",
+    },
+  ];
+  envelope.assessment.quantitativeEvidence.scientificAttention.value = {
+    id: "scientific-attention",
+    state: "known",
+    interval: { low: 33.4, base: 33.4, high: 33.4 },
+    unit: "score-100",
+    visibility: "public",
+    evidenceState: "inferred",
+    evidenceTier: "authoritative-secondary",
+    sourceIds: sources.map((source) => source.id),
+    sources,
+    derivation: {
+      formulaId: "qec-scientific-demand-v1",
+      inputIds: sources.map((source) => source.id),
+    },
+    kind: "scientific-demand-model",
+  };
+
+  const result = validateAssessmentEnvelope(envelope);
+
+  assert.equal(result.ok, true, result.errors?.join("\n"));
+});
+
 test("rejects coverage as a score bonus", () => {
   const envelope = validQuantumEnvelopeV2();
   envelope.assessment.quantitativeEvidence.scoreAnchors[0].evidenceIds = ["coverage"];
