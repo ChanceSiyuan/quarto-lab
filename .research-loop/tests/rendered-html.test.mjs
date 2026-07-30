@@ -228,6 +228,27 @@ test("server-renders a clear action when default-hidden records are the only res
   assert.doesNotMatch(html, /<span class="problem-id">Prob-020<\/span>/);
 });
 
+test("pages static showcase homepage makes archived public examples visible", async () => {
+  const archivedFixture = {
+    ...acceptedFixture,
+    id: "Prob-124",
+    title: "Archived public example",
+    summary: "Archived display record for GitHub Pages.",
+    status: "archived",
+    gate: { type: "documentation", readiness: "specified" },
+  };
+  const response = await renderFilesystemFixture({
+    manifests: [archivedFixture],
+    buildEnv: { PAGES_STATIC_SHOWCASE: "1" },
+  });
+  assert.equal(response.status, 200);
+
+  const html = await response.text();
+  assert.match(html, /<span>Prob-124<\/span>/);
+  assert.match(html, /Archived public example/);
+  assert.doesNotMatch(html, /No matching problems/);
+});
+
 test("returns a stable detail route response for unknown problem IDs", async () => {
   const response = await render("/problems/Prob-999");
   assert.equal(response.status, 404);

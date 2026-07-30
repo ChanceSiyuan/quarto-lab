@@ -71,6 +71,7 @@ type ProblemConsoleProps = {
   generatedAt: string;
   workspacePath: string;
   launch: Launch;
+  initialShowArchived?: boolean;
 };
 
 function ProblemStatus({ status }: { status: string }) {
@@ -88,12 +89,13 @@ export function ProblemConsole({
   generatedAt,
   workspacePath,
   launch,
+  initialShowArchived = false,
 }: ProblemConsoleProps) {
   const defaults = createDefaultProblemFilters();
   const [query, setQuery] = useState(defaults.query);
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>(defaults.selectedStatuses);
   const [showRejected, setShowRejected] = useState(defaults.showRejected);
-  const [showArchived, setShowArchived] = useState(defaults.showArchived);
+  const [showArchived, setShowArchived] = useState(defaults.showArchived || initialShowArchived);
 
   const visibleProblems = useMemo(() => filterProblems(initialProblems, {
     query,
