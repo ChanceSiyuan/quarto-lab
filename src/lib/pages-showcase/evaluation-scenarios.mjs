@@ -1,3 +1,5 @@
+import { getPagesChallenge } from "./challenge-catalog.mjs";
+
 const SCIENTIFIC_ACTIVE_WEIGHT = 0.9;
 
 const STATIC_EXAMPLE_POINTS = Object.freeze({
@@ -79,13 +81,68 @@ const SCENARIOS = Object.freeze({
   },
 });
 
+function createCatalogScenario(challenge) {
+  const normalizedDemand = challenge.scientificDemand / 100;
+  const researchCost = Math.max(200_000, challenge.eansv * 0.10);
+  const informationValue = researchCost * 0.50;
+  const incrementalSuccessProbability = 0.10;
+  const conditionalSocialValue = (
+    challenge.eansv + researchCost - informationValue
+  ) / incrementalSuccessProbability;
+  const commonFit = Math.round((challenge.autoresearchFit / 20) * 10) / 10;
+  const runtimeFit = (challenge.autoresearchFit * 5 - commonFit * 90) / 10;
+  const fitBand = challenge.autoresearchFit >= 90
+    ? "The issue exposes a strong candidate/output loop and a replayable success criterion; the dimension allocation remains provisional until the harness is pinned."
+    : challenge.autoresearchFit >= 75
+      ? "Several parts of the loop are executable, but at least one objective, verification, runtime, or fresh-evaluation dimension still needs to be pinned."
+      : "The current issue depends heavily on broad hypothesis formation, long feedback cycles, or manual theoretical judgment, so it should be reframed before autonomous execution.";
+
+  return {
+    scientific: {
+      influence: Math.min(1, normalizedDemand + 0.02),
+      momentum: Math.min(1, normalizedDemand + 0.01),
+      breadth: Math.max(0, normalizedDemand - 0.08),
+      range: [Math.max(0, challenge.scientificDemand - 12), Math.min(100, challenge.scientificDemand + 10)],
+      digits: 0,
+    },
+    eansv: {
+      incrementalSuccessProbability,
+      conditionalSocialValue,
+      informationValue,
+      researchCost,
+      range: [-researchCost, Math.max(challenge.eansv * 10, challenge.eansv + 1_000_000)],
+    },
+    fit: [
+      ["modifiable", commonFit],
+      ["objective", commonFit],
+      ["correctness", commonFit],
+      ["feedback", commonFit],
+      ["fresh", commonFit],
+      ["reproducibility", commonFit],
+      ["runtime", runtimeFit],
+    ],
+    scientificReason: "Low-confidence issue-text estimate of influence, current momentum, and research breadth; no per-issue citation audit has been completed.",
+    eansvReason: "Provisional five-year attributable-value scenario based on the issue-defined outcome. It is not an industry market-size estimate and should be audited before prioritization.",
+    fitReason: fitBand,
+    disclosure: "Low-confidence issue-text scenario · five-year horizon · 2026 USD · autoresearch not started.",
+  };
+}
+
+function getScenario(problemId) {
+  if (SCENARIOS[problemId]) return SCENARIOS[problemId];
+  const challenge = getPagesChallenge(problemId);
+  return challenge ? createCatalogScenario(challenge) : null;
+}
+
 function formatDecimal(value, digits = 1) {
   return Number(value).toFixed(digits);
 }
 
 function formatUsd(value) {
   const sign = value < 0 ? "-" : "";
-  return `${sign}$${formatDecimal(Math.abs(value) / 1_000_000, 1)}M`;
+  const millions = Math.abs(value) / 1_000_000;
+  const digits = millions > 0 && millions < 1 && !Number.isInteger(millions * 10) ? 2 : 1;
+  return `${sign}$${formatDecimal(millions, digits)}M`;
 }
 
 function scientificCard(scenario) {
@@ -153,7 +210,7 @@ function fitCard(scenario) {
 }
 
 export function getStaticEvaluation(problemId) {
-  const scenario = SCENARIOS[problemId];
+  const scenario = getScenario(problemId);
   if (!scenario) return null;
   return {
     disclosure: scenario.disclosure ?? "Low-confidence external-evidence scenario · five-year horizon · 2026 USD · not a frozen assessment snapshot.",
@@ -165,7 +222,7 @@ export function getStaticEvaluationPoints(problemId) {
   if (problemId === "Prob-000") {
     return STATIC_EXAMPLE_POINTS;
   }
-  const scenario = SCENARIOS[problemId];
+  const scenario = getScenario(problemId);
   if (!scenario) return null;
   const rawFit = calculateAutoresearchFit(scenario.fit.map(([id, score]) => ({ id, score })), 1);
   return {

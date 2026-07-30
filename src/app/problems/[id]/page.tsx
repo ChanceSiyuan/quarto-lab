@@ -7,6 +7,7 @@ import {
 } from "@/lib/problems/example-research.mjs";
 import { getStaticExampleValuation } from "@/lib/problems/example-valuation.mjs";
 import { buildStaticExampleEansvCard } from "@/lib/problems/example-valuation-presentation.mjs";
+import { getPagesChallenge } from "@/lib/pages-showcase/challenge-catalog.mjs";
 import { buildProblemDiscussLaunch } from "@/lib/problems/codex-launch.mjs";
 import { buildExampleResearchLedger } from "@/lib/problems/example-presentation.mjs";
 import { createProblemRepository } from "@/lib/problems/repository.mjs";
@@ -44,6 +45,7 @@ export default async function ProblemDetailPage({
   });
   const sidecarAvailable = __AUTORESEARCH_SIDECAR_AVAILABLE__;
   const pagesStaticShowcase = __PAGES_STATIC_SHOWCASE__;
+  const pagesChallenge = getPagesChallenge(problem.id);
 
   if (isStaticResearchExampleProblem(problem.id)) {
     const example = getStaticResearchExample(problem.id);
@@ -105,7 +107,13 @@ export default async function ProblemDetailPage({
           <div>
             <p className="eyebrow">{problem.id}</p>
             <h1 className={detailStyles.title}>{problem.title}</h1>
+            <p>{problem.summary}</p>
           </div>
+          {pagesChallenge ? (
+            <a className="open-affordance" href={pagesChallenge.sourceUrl}>
+              Open source issue #{pagesChallenge.issueNumber} <span aria-hidden="true">→</span>
+            </a>
+          ) : null}
         </header>
         <StaticAssessmentPanel problemId={problem.id} />
         <section className={detailStyles.linkPanel} aria-labelledby="autoresearch-status-heading">

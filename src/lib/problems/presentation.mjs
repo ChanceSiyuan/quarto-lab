@@ -60,7 +60,9 @@ const UNSCORED = "—";
 
 function formatEansvPoint(value) {
   const sign = value < 0 ? "-" : "";
-  return `${sign}$${(Math.abs(value) / 1_000_000).toFixed(1)}M USD 2026`;
+  const millions = Math.abs(value) / 1_000_000;
+  const digits = millions > 0 && millions < 1 && !Number.isInteger(millions * 10) ? 2 : 1;
+  return `${sign}$${millions.toFixed(digits)}M USD 2026`;
 }
 
 export function buildProblemPresentation(problem) {

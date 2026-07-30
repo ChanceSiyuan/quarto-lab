@@ -5,6 +5,7 @@ import {
   getStaticEvaluation,
   getStaticEvaluationPoints,
 } from "../../src/lib/pages-showcase/evaluation-scenarios.mjs";
+import { PAGES_CHALLENGES } from "../../src/lib/pages-showcase/challenge-catalog.mjs";
 
 const EXPECTED = {
   "Prob-124": { scientificDemand: 79, eansv: 300_000, autoresearchFit: 71 },
@@ -20,8 +21,19 @@ test("recomputes the five published Pages evaluation points from scenario inputs
   }
 });
 
+test("publishes point estimates for all 77 open Quantum Harness challenges", () => {
+  assert.equal(PAGES_CHALLENGES.length, 77);
+  for (const challenge of PAGES_CHALLENGES) {
+    assert.deepEqual(getStaticEvaluationPoints(challenge.id), {
+      scientificDemand: challenge.scientificDemand,
+      eansv: challenge.eansv,
+      autoresearchFit: challenge.autoresearchFit,
+    }, challenge.id);
+  }
+});
+
 test("renders the same three metric definitions for every public Pages problem", () => {
-  for (const problemId of Object.keys(EXPECTED)) {
+  for (const { id: problemId } of PAGES_CHALLENGES) {
     const evaluation = getStaticEvaluation(problemId);
     assert.deepEqual(evaluation.cards.map((card) => card.label), [
       "Scientific Demand Score",

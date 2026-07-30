@@ -3,6 +3,10 @@ import { access, readdir, readFile, stat } from "node:fs/promises";
 import { join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import test from "node:test";
+import {
+  PAGES_CHALLENGE_IDS,
+  PAGES_CHALLENGES,
+} from "../../src/lib/pages-showcase/challenge-catalog.mjs";
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
 const out = join(root, "out");
@@ -11,11 +15,7 @@ const generatedIndex = JSON.parse(
 );
 const PUBLIC_PROBLEM_IDS = [
   "Prob-000",
-  "Prob-124",
-  "Prob-125",
-  "Prob-126",
-  "Prob-127",
-  "Prob-128",
+  ...PAGES_CHALLENGE_IDS,
 ];
 
 async function fileExists(path) {
@@ -43,7 +43,7 @@ async function collectFiles(dir) {
 
 test("pages build indexes only the approved public problem records", () => {
   assert.deepEqual(generatedIndex.problems.map((problem) => problem.id).sort(), PUBLIC_PROBLEM_IDS);
-  assert.equal(generatedIndex.summary.total, 6);
+  assert.equal(generatedIndex.summary.total, 78);
 });
 
 test("pages showcase writes static route files", async () => {
@@ -53,11 +53,6 @@ test("pages showcase writes static route files", async () => {
     "knowledge/research-loop.css",
     "knowledge/search.json",
     "problems/Prob-000/index.html",
-    "problems/Prob-124/index.html",
-    "problems/Prob-125/index.html",
-    "problems/Prob-126/index.html",
-    "problems/Prob-127/index.html",
-    "problems/Prob-128/index.html",
     "problems/Prob-000/autoresearch/index.html",
     "problems/Prob-000/attempts/ATT-001/index.html",
     "problems/Prob-000/attempts/ATT-002/index.html",
@@ -67,6 +62,9 @@ test("pages showcase writes static route files", async () => {
     ".nojekyll",
   ]) {
     assert.equal(await fileExists(join(out, routeFile)), true, `${routeFile} should exist`);
+  }
+  for (const id of PAGES_CHALLENGE_IDS) {
+    assert.equal(await fileExists(join(out, "problems", id, "index.html")), true, `${id} should exist`);
   }
 });
 
@@ -87,8 +85,8 @@ test("pages showcase rewrites links for the repository base path", async () => {
   assert.doesNotMatch(autoresearch, /<script\b/i);
 });
 
-test("pages showcase renders the five official public problem details", async () => {
-  for (const id of PUBLIC_PROBLEM_IDS.slice(1)) {
+test("pages showcase renders all public challenge details without starting autoresearch", async () => {
+  for (const id of PAGES_CHALLENGE_IDS) {
     const html = await readFile(join(out, "problems", id, "index.html"), "utf8");
     assert.match(html, new RegExp(`<p class="eyebrow">${id}</p>`));
     assert.match(html, /<main class="detail-shell research-shell /);
@@ -104,16 +102,17 @@ test("pages showcase renders the five official public problem details", async ()
     assert.doesNotMatch(html, /Available in local mode/);
     assert.doesNotMatch(html, /Prepare autoresearch/);
     assert.doesNotMatch(html, /Local assessment unavailable/);
+    assert.match(html, new RegExp(`https://github\\.com/QuantumBFS/quantum\\.harness/issues/${Number(id.slice(5))}`));
   }
 });
 
-test("pages showcase homepage marks Prob-000 done and the other five judged", async () => {
+test("pages showcase homepage marks Prob-000 done and every challenge judged", async () => {
   const html = await readFile(join(out, "index.html"), "utf8");
   const doneLabels = html.match(/>Done<\/span>/g) ?? [];
   const judgedLabels = html.match(/>Judged<\/span>/g) ?? [];
 
   assert.equal(doneLabels.length, 2, "Prob-000 appears once in each responsive view");
-  assert.equal(judgedLabels.length, 10, "the other five appear once in each responsive view");
+  assert.equal(judgedLabels.length, PAGES_CHALLENGE_IDS.length * 2, "each challenge appears once in each responsive view");
   assert.match(html, /33\.4 \/ 100/);
   assert.match(html, /\+\$180K USD 2026/);
   assert.match(html, /88\.5 \/ 100/);
@@ -235,23 +234,20 @@ test("pages showcase contains only the noninteractive local-mode preparation not
   assert.doesNotMatch(autoresearch, /\/__local\/assessments/);
 });
 
-test("pages showcase publishes the agreed evaluation cards on official problem details", async () => {
-  const expected = {
-    "Prob-124": ["79 / 100", "$0.3M USD 2026", "71 / 100"],
-    "Prob-125": ["85 / 100", "$0.0M USD 2026", "85 / 100"],
-    "Prob-126": ["70 / 100", "$0.8M USD 2026", "65 / 100"],
-    "Prob-127": ["81 / 100", "$3.0M USD 2026", "98 / 100"],
-    "Prob-128": ["79 / 100", "$1.4M USD 2026", "92 / 100"],
-  };
-
-  for (const [id, values] of Object.entries(expected)) {
+test("pages showcase publishes the agreed evaluation cards on every challenge detail", async () => {
+  for (const challenge of PAGES_CHALLENGES) {
+    const { id } = challenge;
     const html = await readFile(join(out, "problems", id, "index.html"), "utf8");
     assert.match(html, /Scientific Demand Score/);
     assert.match(html, /Expected Attributable Net Social Value \(EANSV\)/);
     assert.match(html, /Autoresearch Fit/);
     assert.match(html, /P\(useful outcome with this research\) - P\(useful outcome without this research\)/);
     assert.doesNotMatch(html, /Industry \/ social proxy/);
-    for (const value of values) assert.equal(html.includes(value), true, `${id} should contain ${value}`);
+    assert.equal(html.includes(`${challenge.scientificDemand} / 100`), true, `${id} scientific score`);
+    const millions = challenge.eansv / 1_000_000;
+    const digits = millions > 0 && millions < 1 && !Number.isInteger(millions * 10) ? 2 : 1;
+    assert.equal(html.includes(`$${millions.toFixed(digits)}M USD 2026`), true, `${id} EANSV`);
+    assert.equal(html.includes(`${challenge.autoresearchFit} / 100`), true, `${id} autoresearch score`);
   }
 });
 
