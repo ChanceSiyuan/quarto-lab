@@ -79,7 +79,7 @@ test("problem routes place the local preparation panel between headers and resea
   const css = await readFile(new URL("../../src/app/problems/[id]/autoresearch-panel.module.css", import.meta.url), "utf8");
 
   assert.doesNotMatch(page, /StaticAutoresearchPanel/);
-  assert.match(page, /<\/header>\s*<StaticAssessmentPanel\s*\/>/);
+  assert.match(page, /<\/header>\s*<StaticAssessmentPanel eansvCard=\{eansvCard\}\s*\/>/);
   assert.doesNotMatch(page, /<AutoresearchPanel[\s\S]*?staticMode=\{true\}/);
   assert.ok(page.indexOf('if (isStaticResearchExampleProblem(problem.id))') < page.indexOf('await import("./autoresearch-panel")'));
   assert.match(page, /<\/header>\s*<AutoresearchPanel[\s\S]*?\/>\s*<p className="example-disclaimer">/);
