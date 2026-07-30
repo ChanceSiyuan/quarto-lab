@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   QMD_INLINE_CONFIGURE_TOPIC,
   QMD_INLINE_EDIT_TOPIC,
+  QMD_INLINE_NAVIGATE_TOPIC,
   editableQmdBlocks,
   qmdInlineFrameScript,
 } from "../src/qmd-inline-edit";
@@ -19,6 +20,7 @@ describe("remote QMD inline editor frame", () => {
 
   it("turns formulas and complete thm blocks into local source editors on click", () => {
     document.body.innerHTML = `
+      <nav><a href="/Noisy_complexity/index.qmd">Noisy circuits</a></nav>
       <main class="content">
         <p>Energy <span class="math inline"><span>rendered E</span></span>.</p>
         <div id="thm-energy" class="callout callout-important">
@@ -40,6 +42,11 @@ describe("remote QMD inline editor frame", () => {
     (globalThis as Record<string, unknown>).sendAsyncMessage = send;
 
     expect(() => new Function(qmdInlineFrameScript())()).not.toThrow();
+    document.querySelector<HTMLAnchorElement>("a")!.click();
+    expect(send).toHaveBeenCalledWith(
+      QMD_INLINE_NAVIGATE_TOPIC,
+      expect.objectContaining({ href: expect.stringMatching(/Noisy_complexity\/index\.qmd$/) }),
+    );
     listeners.get(QMD_INLINE_CONFIGURE_TOPIC)?.({
       data: {
         enabled: true,

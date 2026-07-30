@@ -6,6 +6,7 @@ import {
   QMD_INLINE_CONFIGURE_TOPIC,
   QMD_INLINE_CONFIGURED_TOPIC,
   QMD_INLINE_EDIT_TOPIC,
+  QMD_INLINE_NAVIGATE_TOPIC,
   QMD_INLINE_READY_TOPIC,
   QMD_INLINE_RESULT_TOPIC,
   applyQmdEditableBlock,
@@ -18,6 +19,8 @@ import {
 } from "../src/qmd-workspace";
 
 const PAGE = "knowledge/Magic/Bell_magic.qmd";
+const ROOT_PAGE = "knowledge/index.qmd";
+const LINKED_PAGE = "knowledge/Noisy_complexity/index.qmd";
 const DRAFT = "drafts/Dynamics/floquet.qmd";
 const SECOND_DRAFT = "drafts/Second.qmd";
 const CHANGE = "work/qlab-zotero/draft-changes/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/draft.qmd";
@@ -459,7 +462,7 @@ describe("QmdWorkspaceView", () => {
 
     const button = host.querySelector<HTMLButtonElement>(".zc-qmd-edit-external")!;
     expect(button.disabled).toBe(false);
-    expect(button.textContent).toBe("✎");
+    expect(button.querySelector(".zc-qmd-editor-icon")).not.toBeNull();
     expect(button.getAttribute("aria-label")).toBe("Edit in Cursor");
     button.click();
     await settle();
@@ -468,18 +471,59 @@ describe("QmdWorkspaceView", () => {
     view.destroy();
   });
 
-  it("shows Cursor's native application icon when its bundle path is known", async () => {
-    const cursor = { ...CURSOR, path: "/Applications/Cursor.app" };
-    const { host, view } = mount([cursor]);
+  it("shows the packaged static Cursor icon", async () => {
+    const { host, view } = mount([CURSOR]);
     view.show();
     await view.open(PAGE);
 
     const button = host.querySelector<HTMLButtonElement>(".zc-qmd-edit-external")!;
     const icon = button.querySelector<HTMLImageElement>(".zc-qmd-editor-icon")!;
     expect(icon).not.toBeNull();
-    expect(icon.getAttribute("src")).toBe("moz-icon://file:///Applications/Cursor.app?size=32");
+    expect(icon.getAttribute("src")).toBe("chrome://zotkit/content/icons/cursor.png");
     expect(icon.alt).toBe("");
     expect(button.getAttribute("aria-label")).toBe("Edit in Cursor");
+    view.destroy();
+  });
+
+  it("opens QMD links as compiled workspace pages instead of raw source", async () => {
+    const remote = remoteBrowserHarness();
+    (document as unknown as { createXULElement(name: string): HTMLElement }).createXULElement =
+      vi.fn(() => remote.browser);
+    const { host, view, renderService } = mount();
+    view.show();
+    await view.open(ROOT_PAGE);
+
+    remote.emit(QMD_INLINE_NAVIGATE_TOPIC, {
+      href: "http://127.0.0.1:44100/Noisy_complexity/index.qmd",
+    });
+    await settle();
+
+    expect(host.querySelector(".zc-qmd-path")!.textContent).toBe(LINKED_PAGE);
+    expect(renderService.open).toHaveBeenLastCalledWith(
+      expect.objectContaining({ id: "knowledge" }),
+      "/repo",
+      LINKED_PAGE,
+    );
+    expect(remote.browser.getAttribute("src")).not.toContain(".qmd");
+    view.destroy();
+  });
+
+  it("forces the selected page back into view after an in-page navigation", async () => {
+    const remote = remoteBrowserHarness();
+    (document as unknown as { createXULElement(name: string): HTMLElement }).createXULElement =
+      vi.fn(() => remote.browser);
+    const { host, view } = mount([CURSOR, VSCODE], { secondDraft: true });
+    view.show();
+    await view.open(SECOND_DRAFT);
+    const first = remote.browser.getAttribute("src");
+
+    host.querySelector<HTMLButtonElement>(`[data-path="${SECOND_DRAFT}"]`)!.click();
+    await settle();
+
+    const second = remote.browser.getAttribute("src");
+    expect(second).not.toBe(first);
+    expect(second).toContain("Second.html");
+    expect(second).not.toContain(".qmd");
     view.destroy();
   });
 
@@ -616,7 +660,7 @@ describe("QmdWorkspaceView", () => {
     view.destroy();
   });
 
-  it("reopens the render service before refreshing a refused preview URL", async () => {
+  it("reopens the render service and forces navigation when refreshing a preview", async () => {
     const reload = vi.fn();
     (document as unknown as { createXULElement(name: string): HTMLElement }).createXULElement =
       vi.fn(() => {
@@ -632,7 +676,9 @@ describe("QmdWorkspaceView", () => {
     await settle();
 
     expect(renderService.open).toHaveBeenCalledTimes(2);
-    expect(reload).toHaveBeenCalledOnce();
+    expect(reload).not.toHaveBeenCalled();
+    expect(host.querySelector(".zc-qmd-render-browser")!.getAttribute("src"))
+      .toContain("qlab-preview=2");
     view.destroy();
   });
 

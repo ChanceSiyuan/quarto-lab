@@ -1,15 +1,17 @@
 import { EDITOR_TREES, treeForPath, type EditorTree } from "./editor-tree";
-import { externalEditorIconUrl, type ExternalEditorApp } from "./external-editor";
+import type { ExternalEditorApp } from "./external-editor";
 import {
   QMD_INLINE_CONFIGURE_TOPIC,
   QMD_INLINE_CONFIGURED_TOPIC,
   QMD_INLINE_EDIT_TOPIC,
+  QMD_INLINE_NAVIGATE_TOPIC,
   QMD_INLINE_READY_TOPIC,
   QMD_INLINE_RESULT_TOPIC,
   qmdInlineFrameScript,
   type QmdEditableBlock,
   type QmdInlineConfiguredMessage,
   type QmdInlineEditMessage,
+  type QmdInlineNavigateMessage,
   type QmdInlineResultMessage,
 } from "./qmd-inline-edit";
 import { filterQmdIndex, groupIntoTree, type QmdIndexEntry, type QmdTreeNode } from "./qmd-index";
@@ -155,6 +157,7 @@ export class QmdWorkspaceView {
   private readonly inlineBlocks = new Map<string, QmdEditableBlock>();
   private inlineSave: Promise<void> = Promise.resolve();
   private renderedUrl = "";
+  private browserNavigationRevision = 0;
   private changedUrl = "";
   private changePath: string | null = null;
   private changePreviewPath: string | null = null;
@@ -201,6 +204,32 @@ export class QmdWorkspaceView {
         if (generation !== this.openGeneration || this.destroyed) return;
         this.setStatus(error instanceof Error ? error.message : String(error), "error");
       });
+  };
+  private readonly onInlineNavigateMessage = (message: QmdRemoteMessage): void => {
+    const data = message.data as Partial<QmdInlineNavigateMessage> | undefined;
+    const current = this.current;
+    if (!current || typeof data?.href !== "string") return;
+    let target: URL;
+    let preview: URL;
+    try {
+      target = new URL(data.href);
+      preview = new URL(this.renderedUrl);
+    }
+    catch {
+      return;
+    }
+    if (target.origin !== preview.origin || !target.pathname.endsWith(".qmd")) return;
+    let within: string;
+    try {
+      within = decodeURIComponent(target.pathname).replace(/^\/+/, "");
+    }
+    catch {
+      return;
+    }
+    const relativePath = `${current.tree.prefix}${within}`;
+    const tree = treeForPath(relativePath);
+    if (!tree || tree.id !== current.tree.id) return;
+    void this.open(relativePath);
   };
 
   constructor(host: HTMLElement, private readonly options: QmdWorkspaceOptions) {
@@ -587,15 +616,21 @@ export class QmdWorkspaceView {
 
   private showBrowserUrl(url: string, reload: boolean): void {
     if (!this.renderBrowser || !url) return;
+    if (reload) {
+      // In-page navigation does not update a XUL browser's `src` attribute.
+      // Reloading it would therefore refresh the current destination (possibly
+      // raw QMD) instead of returning to the file selected in the workspace.
+      // A changing query forces a top-level navigation to the compiled page.
+      const target = new URL(url);
+      target.searchParams.set("qlab-preview", String(++this.browserNavigationRevision));
+      this.renderBrowser.setAttribute("src", target.href);
+      return;
+    }
     const current = this.renderBrowser.getAttribute("src") || "";
     if (current !== url) {
       this.renderBrowser.setAttribute("src", url);
       return;
     }
-    if (!reload) return;
-    const browser = this.renderBrowser as HTMLElement & { reload?(): void };
-    if (typeof browser.reload === "function") browser.reload();
-    else browser.setAttribute("src", url);
   }
 
   private updateChangeControls(): void {
@@ -777,14 +812,13 @@ export class QmdWorkspaceView {
       return;
     }
     const label = `Edit in ${editor.label}`;
-    const iconUrl = externalEditorIconUrl(editor);
-    if (!iconUrl) {
+    if (editor.id !== "cursor") {
       this.presentIcon(this.editButton, "✎", label);
       return;
     }
     const icon = this.doc.createElement("img");
     icon.className = "zc-qmd-editor-icon";
-    icon.src = iconUrl;
+    icon.src = "chrome://zotkit/content/icons/cursor.png";
     icon.alt = "";
     icon.setAttribute("aria-hidden", "true");
     this.editButton.replaceChildren(icon);
@@ -867,6 +901,7 @@ export class QmdWorkspaceView {
     manager.addMessageListener(QMD_INLINE_READY_TOPIC, this.onInlineReadyMessage);
     manager.addMessageListener(QMD_INLINE_CONFIGURED_TOPIC, this.onInlineConfiguredMessage);
     manager.addMessageListener(QMD_INLINE_EDIT_TOPIC, this.onInlineEditMessage);
+    manager.addMessageListener(QMD_INLINE_NAVIGATE_TOPIC, this.onInlineNavigateMessage);
     const source = qmdInlineFrameScript();
     manager.loadFrameScript(
       `data:application/javascript;charset=UTF-8,${encodeURIComponent(source)}`,
@@ -880,6 +915,7 @@ export class QmdWorkspaceView {
     manager.removeMessageListener(QMD_INLINE_READY_TOPIC, this.onInlineReadyMessage);
     manager.removeMessageListener(QMD_INLINE_CONFIGURED_TOPIC, this.onInlineConfiguredMessage);
     manager.removeMessageListener(QMD_INLINE_EDIT_TOPIC, this.onInlineEditMessage);
+    manager.removeMessageListener(QMD_INLINE_NAVIGATE_TOPIC, this.onInlineNavigateMessage);
     this.inlineMessageManager = null;
     this.inlineBlocks.clear();
   }

@@ -3,6 +3,7 @@ export const QMD_INLINE_CONFIGURE_TOPIC = "ResearchLoop:QmdInlineConfigure";
 export const QMD_INLINE_CONFIGURED_TOPIC = "ResearchLoop:QmdInlineConfigured";
 export const QMD_INLINE_EDIT_TOPIC = "ResearchLoop:QmdInlineEdit";
 export const QMD_INLINE_RESULT_TOPIC = "ResearchLoop:QmdInlineResult";
+export const QMD_INLINE_NAVIGATE_TOPIC = "ResearchLoop:QmdInlineNavigate";
 
 export type QmdEditableBlockKind =
   | "heading"
@@ -65,6 +66,10 @@ export interface QmdInlineResultMessage {
   ok: boolean;
   text?: string;
   error?: string;
+}
+
+export interface QmdInlineNavigateMessage {
+  href: string;
 }
 
 interface SourceLine {
@@ -479,6 +484,7 @@ export function qmdInlineFrameScript(): string {
     const CONFIGURED = ${JSON.stringify(QMD_INLINE_CONFIGURED_TOPIC)};
     const EDIT = ${JSON.stringify(QMD_INLINE_EDIT_TOPIC)};
     const RESULT = ${JSON.stringify(QMD_INLINE_RESULT_TOPIC)};
+    const NAVIGATE = ${JSON.stringify(QMD_INLINE_NAVIGATE_TOPIC)};
     const normalize = (value) => String(value || "").replace(/\s+/g, " ").trim();
     const original = new WeakMap();
     const metadata = new WeakMap();
@@ -633,6 +639,20 @@ export function qmdInlineFrameScript(): string {
     }
 
     content.addEventListener("click", (event) => {
+      const link = event.target?.closest?.("a[href]");
+      if (link) {
+        let target;
+        try { target = new URL(link.href, content.location.href); } catch {}
+        if (target && /^https?:$/.test(target.protocol) && target.pathname.endsWith(".qmd")) {
+          // A single-page Quarto preview cannot rewrite links to pages outside
+          // its render list. Ask the privileged workspace to open the target
+          // as a compiled page instead of letting the browser expose raw QMD.
+          event.preventDefault();
+          event.stopPropagation();
+          sendAsyncMessage(NAVIGATE, { href: target.href });
+          return;
+        }
+      }
       const formula = event.target?.closest?.("span.math[data-qlab-qmd-block]");
       if (formula && !formula.querySelector(".qlab-qmd-latex")) {
         event.preventDefault();

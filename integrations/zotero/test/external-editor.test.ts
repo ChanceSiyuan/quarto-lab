@@ -40,8 +40,8 @@ describe("installedEditors", () => {
       "/Users/researcher/Applications/Cursor.app",
     ]));
     expect(found.map((editor) => editor.id)).toEqual(["cursor", "vscode"]);
-    expect(found[0]?.path).toBe("/Users/researcher/Applications/Cursor.app");
-    expect(found[1]?.path).toBe("/Applications/Visual Studio Code.app");
+    expect(found[0]).toBe(CURSOR);
+    expect(found[1]?.id).toBe("vscode");
   });
 
   it("returns nothing when no editor is installed", async () => {
