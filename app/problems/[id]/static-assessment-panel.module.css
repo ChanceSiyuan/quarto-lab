@@ -1,0 +1,83 @@
+.panel {
+  background:
+    radial-gradient(circle at top right, color-mix(in srgb, var(--amber) 18%, transparent), transparent 32%),
+    var(--surface);
+}
+
+.pill {
+  border: 1px solid color-mix(in srgb, var(--amber) 58%, var(--line));
+  padding: 7px 9px;
+  color: var(--amber);
+  font: 10px var(--font-geist-mono);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0;
+  margin: 14px 0 0;
+  border: 1px solid var(--line);
+}
+
+.metrics > div {
+  min-width: 0;
+  border-right: 1px solid var(--line);
+  padding: 12px;
+}
+
+.metrics > div:last-child {
+  border-right: 0;
+}
+
+.metrics dt {
+  color: var(--muted);
+  font: 10px var(--font-geist-mono);
+}
+
+.metrics dd {
+  margin: 5px 0 0;
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -.03em;
+}
+
+.metrics p {
+  margin-top: 7px;
+}
+
+.method {
+  margin-top: 14px;
+  border: 1px solid var(--line);
+  padding: 14px;
+  background: rgba(255, 255, 255, .025);
+}
+
+.method h3 {
+  margin: 0;
+  font-size: 13px;
+}
+
+.method ul {
+  margin: 10px 0 0;
+  padding-left: 18px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+@media (max-width: 760px) {
+  .metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .metrics > div {
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .metrics > div:last-child {
+    border-bottom: 0;
+  }
+}

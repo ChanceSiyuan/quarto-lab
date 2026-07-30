@@ -274,7 +274,7 @@ test("server-renders the generic problem detail shell for non-example problems",
   assert.match(html, /<a href="\/" class="back-link">← Back to problems<\/a>/);
 });
 
-test("server-renders unavailable assessment copy for the static example detail shell", async () => {
+test("server-renders the static assessment methodology demo for the static example detail shell", async () => {
   const response = await renderFilesystemFixture(
     { manifests: [{ ...acceptedFixture, id: "Prob-000" }] },
     "/problems/Prob-000?fixture=filesystem",
@@ -283,6 +283,10 @@ test("server-renders unavailable assessment copy for the static example detail s
 
   const html = await response.text();
   assert.match(html, /Example data - synthetic results for interface demonstration only\./);
-  assert.match(html, /<section class="assessment-panel assessment-unavailable" aria-labelledby="assessment-heading">/);
-  assert.match(html, /Local assessment unavailable/);
+  assert.match(html, /<section class="assessment-panel [^"]+" aria-labelledby="assessment-heading">/);
+  assert.match(html, /Assessment methodology demo/);
+  assert.match(html, /Research Value \(V\)/);
+  assert.match(html, /Scientific Demand Score/);
+  assert.match(html, /Technical Success Estimate/);
+  assert.doesNotMatch(html, /Local assessment unavailable/);
 });

@@ -155,6 +155,12 @@ test("pages showcase contains only the noninteractive local-mode preparation not
 
   const problem = await readFile(join(out, "problems", "Prob-000", "index.html"), "utf8");
   assert.match(problem, /Available in local mode/);
+  assert.match(problem, /Assessment methodology demo/);
+  assert.match(problem, /Research Value \(V\)/);
+  assert.match(problem, /Scientific Demand Score/);
+  assert.match(problem, /Technical Success Estimate/);
+  assert.doesNotMatch(problem, /Local assessment unavailable/);
+  assert.doesNotMatch(problem, /\/__local\/assessments/);
   assert.doesNotMatch(problem, /Autoresearch preparation is available only for qualifying or accepted local problems\./);
   assert.doesNotMatch(problem, /Prepare autoresearch/);
 });

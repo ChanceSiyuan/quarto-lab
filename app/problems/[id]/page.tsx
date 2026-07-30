@@ -12,6 +12,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AssessmentPanel } from "./assessment-panel";
 import { StaticAutoresearchPanel } from "./static-autoresearch-panel";
+import { StaticAssessmentPanel } from "./static-assessment-panel";
 
 declare const __AUTORESEARCH_SIDECAR_AVAILABLE__: boolean;
 
@@ -65,7 +66,7 @@ export default async function ProblemDetailPage({
         <StaticAutoresearchPanel />
 
         <p className="example-disclaimer">{example.manifest.disclaimer}</p>
-        <AssessmentPanel problemId={problem.id} />
+        <StaticAssessmentPanel />
 
         <dl className="research-metric-strip" aria-label="Research metrics">
           {ledger.cards.map((card) => (
