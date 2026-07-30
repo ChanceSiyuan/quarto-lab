@@ -1,5 +1,6 @@
 export const QMD_INLINE_READY_TOPIC = "ResearchLoop:QmdInlineReady";
 export const QMD_INLINE_CONFIGURE_TOPIC = "ResearchLoop:QmdInlineConfigure";
+export const QMD_INLINE_CONFIGURED_TOPIC = "ResearchLoop:QmdInlineConfigured";
 export const QMD_INLINE_EDIT_TOPIC = "ResearchLoop:QmdInlineEdit";
 export const QMD_INLINE_RESULT_TOPIC = "ResearchLoop:QmdInlineResult";
 
@@ -51,6 +52,12 @@ export interface QmdInlineConfigureMessage {
 export interface QmdInlineEditMessage {
   id: string;
   text: string;
+}
+
+export interface QmdInlineConfiguredMessage {
+  enabled: boolean;
+  mapped: number;
+  total: number;
 }
 
 export interface QmdInlineResultMessage {
@@ -469,6 +476,7 @@ export function qmdInlineFrameScript(): string {
     globalThis.__researchLoopQmdInlineEdit = true;
     const READY = ${JSON.stringify(QMD_INLINE_READY_TOPIC)};
     const CONFIGURE = ${JSON.stringify(QMD_INLINE_CONFIGURE_TOPIC)};
+    const CONFIGURED = ${JSON.stringify(QMD_INLINE_CONFIGURED_TOPIC)};
     const EDIT = ${JSON.stringify(QMD_INLINE_EDIT_TOPIC)};
     const RESULT = ${JSON.stringify(QMD_INLINE_RESULT_TOPIC)};
     const normalize = (value) => String(value || "").replace(/\s+/g, " ").trim();
@@ -542,9 +550,13 @@ export function qmdInlineFrameScript(): string {
 
     function configure(data) {
       clear();
-      if (!data || !data.enabled || !Array.isArray(data.blocks)) return;
+      if (!data || !data.enabled || !Array.isArray(data.blocks)) {
+        sendAsyncMessage(CONFIGURED, { enabled: false, mapped: 0, total: 0 });
+        return;
+      }
       ensureStyle();
       const available = candidates();
+      let mapped = 0;
       for (const block of data.blocks) {
         const formula = block.kind === "inline-math" || block.kind === "display-math";
         const theorem = block.kind === "theorem-block";
@@ -583,6 +595,7 @@ export function qmdInlineFrameScript(): string {
           element = editable;
         }
         element.setAttribute("data-qlab-qmd-block", block.id);
+        mapped += 1;
         metadata.set(element, { kind: block.kind });
         original.set(element, block.text);
         if (theorem || rich) {
@@ -601,6 +614,7 @@ export function qmdInlineFrameScript(): string {
           element.spellcheck = true;
         }
       }
+      sendAsyncMessage(CONFIGURED, { enabled: true, mapped, total: data.blocks.length });
     }
 
     function renderMath(element, latex, kind) {

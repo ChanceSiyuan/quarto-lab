@@ -2,11 +2,13 @@ import { EDITOR_TREES, treeForPath, type EditorTree } from "./editor-tree";
 import type { ExternalEditorApp } from "./external-editor";
 import {
   QMD_INLINE_CONFIGURE_TOPIC,
+  QMD_INLINE_CONFIGURED_TOPIC,
   QMD_INLINE_EDIT_TOPIC,
   QMD_INLINE_READY_TOPIC,
   QMD_INLINE_RESULT_TOPIC,
   qmdInlineFrameScript,
   type QmdEditableBlock,
+  type QmdInlineConfiguredMessage,
   type QmdInlineEditMessage,
   type QmdInlineResultMessage,
 } from "./qmd-inline-edit";
@@ -170,6 +172,24 @@ export class QmdWorkspaceView {
   private readonly knownDiffs = new Map<string, string>();
   private readonly onInlineReadyMessage = (_message: QmdRemoteMessage): void => {
     void this.configureInlineEditing();
+  };
+  private readonly onInlineConfiguredMessage = (message: QmdRemoteMessage): void => {
+    const data = message.data as Partial<QmdInlineConfiguredMessage> | undefined;
+    if (!data?.enabled || !this.inlineEditingEnabled || this.showingAgentChange) return;
+    const mapped = Number(data.mapped ?? 0);
+    const total = Number(data.total ?? 0);
+    if (mapped > 0) {
+      this.setStatus(
+        `Inline edit mode · ${mapped} editable regions ready · changes save on blur`,
+        "valid",
+      );
+    }
+    else {
+      this.setStatus(
+        `Inline edit mode could not map this compiled page (${mapped}/${total} regions)`,
+        "error",
+      );
+    }
   };
   private readonly onInlineEditMessage = (message: QmdRemoteMessage): void => {
     const data = message.data as Partial<QmdInlineEditMessage> | undefined;
@@ -809,6 +829,10 @@ export class QmdWorkspaceView {
     browser.addEventListener("load", () => {
       const active = this.current;
       if (!active || this.destroyed) return;
+      // A remote XUL browser often creates its message manager only after the
+      // first navigation. Attaching solely at construction makes the toolbar
+      // switch modes while leaving the compiled page completely read-only.
+      this.attachInlineEditor(browser);
       if (!active.tree.published) {
         void this.updateDraftCompliance(active.relativePath, this.openGeneration);
       }
@@ -824,8 +848,11 @@ export class QmdWorkspaceView {
       messageManager?: QmdRemoteMessageManager;
     }).messageManager;
     if (!manager) return;
+    if (this.inlineMessageManager === manager) return;
+    if (this.inlineMessageManager) this.detachInlineEditor();
     this.inlineMessageManager = manager;
     manager.addMessageListener(QMD_INLINE_READY_TOPIC, this.onInlineReadyMessage);
+    manager.addMessageListener(QMD_INLINE_CONFIGURED_TOPIC, this.onInlineConfiguredMessage);
     manager.addMessageListener(QMD_INLINE_EDIT_TOPIC, this.onInlineEditMessage);
     const source = qmdInlineFrameScript();
     manager.loadFrameScript(
@@ -838,6 +865,7 @@ export class QmdWorkspaceView {
     const manager = this.inlineMessageManager;
     if (!manager) return;
     manager.removeMessageListener(QMD_INLINE_READY_TOPIC, this.onInlineReadyMessage);
+    manager.removeMessageListener(QMD_INLINE_CONFIGURED_TOPIC, this.onInlineConfiguredMessage);
     manager.removeMessageListener(QMD_INLINE_EDIT_TOPIC, this.onInlineEditMessage);
     this.inlineMessageManager = null;
     this.inlineBlocks.clear();

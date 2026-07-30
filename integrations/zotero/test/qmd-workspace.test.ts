@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { EXTERNAL_EDITORS, type ExternalEditorApp } from "../src/external-editor";
 import {
   QMD_INLINE_CONFIGURE_TOPIC,
+  QMD_INLINE_CONFIGURED_TOPIC,
   QMD_INLINE_EDIT_TOPIC,
   QMD_INLINE_READY_TOPIC,
   QMD_INLINE_RESULT_TOPIC,
@@ -18,6 +19,7 @@ import {
 
 const PAGE = "knowledge/Magic/Bell_magic.qmd";
 const DRAFT = "drafts/Dynamics/floquet.qmd";
+const SECOND_DRAFT = "drafts/Second.qmd";
 const CHANGE = "work/qlab-zotero/draft-changes/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/draft.qmd";
 const CHANGE_PREVIEW = "drafts/Dynamics/floquet.qlab-preview-aaaaaaaaaaaa.qmd";
 
@@ -59,7 +61,7 @@ function entry(relativePath: string): QmdIndexEntry {
 
 function mount(
   editors: ExternalEditorApp[] = [CURSOR, VSCODE],
-  options: { pending?: boolean; indexedPending?: boolean } = {},
+  options: { pending?: boolean; indexedPending?: boolean; secondDraft?: boolean } = {},
 ) {
   const host = document.createElement("div");
   document.body.appendChild(host);
@@ -122,7 +124,7 @@ function mount(
     onBack: vi.fn(),
     renderService: renderService as never,
     changeRenderService: changeRenderService as never,
-    index: async () => [entry(PAGE), draftEntry],
+    index: async () => [entry(PAGE), draftEntry, ...(options.secondDraft ? [entry(SECOND_DRAFT)] : [])],
     editors: async () => editors,
     openExternally,
     onEditorChosen,
@@ -258,6 +260,58 @@ describe("QmdWorkspaceView", () => {
       QMD_INLINE_CONFIGURE_TOPIC,
       { enabled: false, blocks: [] },
     );
+    view.destroy();
+  });
+
+  it("attaches inline editing after a remote browser creates its message manager on load", async () => {
+    const remote = remoteBrowserHarness();
+    delete (remote.browser as HTMLElement & { messageManager?: unknown }).messageManager;
+    (document as unknown as { createXULElement(name: string): HTMLElement }).createXULElement =
+      vi.fn(() => remote.browser);
+    const { host, view } = mount();
+    view.show();
+    await view.open(DRAFT);
+
+    expect(remote.messageManager.loadFrameScript).not.toHaveBeenCalled();
+    (remote.browser as HTMLElement & { messageManager: unknown }).messageManager = remote.messageManager;
+    remote.browser.dispatchEvent(new Event("load"));
+    expect(remote.messageManager.loadFrameScript).toHaveBeenCalledOnce();
+
+    host.querySelector<HTMLButtonElement>(".zc-qmd-edit-preview")!.click();
+    remote.emit(QMD_INLINE_READY_TOPIC, {});
+    await settle();
+    remote.emit(QMD_INLINE_CONFIGURED_TOPIC, { enabled: true, mapped: 2, total: 2 });
+
+    expect(host.querySelector(".zc-qmd-status")!.textContent).toContain("2 editable regions ready");
+    view.destroy();
+  });
+
+  it("keeps Draft file-list navigation working while inline edit mode is active", async () => {
+    const remote = remoteBrowserHarness();
+    (document as unknown as { createXULElement(name: string): HTMLElement }).createXULElement =
+      vi.fn(() => remote.browser);
+    const { host, view, renderService } = mount(
+      [CURSOR, VSCODE],
+      { secondDraft: true },
+    );
+    view.show();
+    await view.open(DRAFT);
+    host.querySelector<HTMLButtonElement>(".zc-qmd-edit-preview")!.click();
+    await settle();
+
+    host.querySelector<HTMLButtonElement>(`[data-path="${SECOND_DRAFT}"]`)!.click();
+    await settle();
+    remote.emit(QMD_INLINE_READY_TOPIC, {});
+    await settle();
+
+    expect(host.querySelector(".zc-qmd-path")!.textContent).toBe(SECOND_DRAFT);
+    expect(renderService.open).toHaveBeenLastCalledWith(
+      expect.objectContaining({ id: "drafts" }),
+      "/repo",
+      SECOND_DRAFT,
+    );
+    expect(host.querySelector<HTMLButtonElement>(".zc-qmd-edit-preview")!.getAttribute("aria-pressed"))
+      .toBe("true");
     view.destroy();
   });
 
