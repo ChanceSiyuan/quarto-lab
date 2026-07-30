@@ -35,10 +35,13 @@ test("distinguishes a known zero from missing evidence", () => {
 });
 
 test("accepts a bounded Scientific Demand Score unit", () => {
-  const { currency: _currency, priceBaseYear: _priceBaseYear, conversionSourceId: _conversionSourceId, ...demand } = knownEvidence({
+  const demand = knownEvidence({
     interval: { low: 56.5, base: 56.5, high: 56.5 },
     unit: "score-100",
   });
+  delete demand.currency;
+  delete demand.priceBaseYear;
+  delete demand.conversionSourceId;
   assert.equal(validateAtomicEvidence(demand).ok, true);
 });
 

@@ -170,8 +170,8 @@ function fixtureRunner({
   };
   const assessmentStore = {
     listRuns: async (id) => completedAssessment ? [{ runId: `assessment-${id}`, status: "completed", summary: { verdict: "DO_NOW" } }] : [],
-    readInput: async (id, runId) => ({ schemaVersion: 2, valuation: { snapshotId: `snapshot-${id}`, contentHash: `hash-${id}` } }),
-    readRun: async (id, runId) => ({ status: "completed", summary: { verdict: "DO_NOW" } }),
+    readInput: async (id) => ({ schemaVersion: 2, valuation: { snapshotId: `snapshot-${id}`, contentHash: `hash-${id}` } }),
+    readRun: async () => ({ status: "completed", summary: { verdict: "DO_NOW" } }),
     readAssessment: async () => ({ envelope: { language: "en" } }),
     readReport: async () => "<html>English report</html>",
   };
