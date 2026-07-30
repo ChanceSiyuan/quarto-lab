@@ -186,6 +186,7 @@ test("server-renders the problem console shell", async () => {
   assert.match(html, /codex:\/\/threads\/new/);
   assert.match(html, /<span class="status-badge status-draft">Awaiting judgment<\/span>/);
   assert.match(html, /<span class="status-badge status-solved">Solving judged done<\/span>/);
+  assert.match(html, /\$3\.0M USD 2026/);
   assert.doesNotMatch(html, /metric-strip/);
   assert.doesNotMatch(html, /console-toolbar/);
   assert.doesNotMatch(html, /Index diagnostics/);
@@ -232,9 +233,7 @@ test("server-renders populated desktop and narrow problem rows", async () => {
   assert.match(html, /Interval arithmetic on held-out instances\./);
   assert.match(html, /interval-arithmetic/);
   assert.match(html, /<span class="status-badge status-accepted">Solving judged done<\/span>/);
-  assert.match(html, /33\.4 \/ 100/);
-  assert.match(html, /\$1\.1B USD 2035/);
-  assert.match(html, /38\.5 \/ 100/);
+  assert.match(html, /<td>—<\/td><td>—<\/td><td>—<\/td>/);
   assert.match(html, /1 index errors/);
   assert.match(html, /problems\/Prob-018\/problem\.json/);
   assert.match(html, /Invalid JSON/);
