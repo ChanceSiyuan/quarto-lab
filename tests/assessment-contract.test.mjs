@@ -168,6 +168,25 @@ test("rejects raw citation addition to aggregate scoring", () => {
   assert.match(result.errors.join("\n"), /quantitativeEvidence/i);
 });
 
+test("accepts versioned Scientific Demand Score audit metadata", () => {
+  const envelope = validQuantumEnvelopeV2();
+  envelope.assessment.quantitativeEvidence.scientificAttention = {
+    ...envelope.assessment.quantitativeEvidence.scientificAttention,
+    formulaId: "qec-scientific-demand-v1",
+    evidenceConfidence: "high",
+    paperCount: 5,
+    components: {
+      influence: { availability: "known", value: 0.72, weight: 0.45, unit: "fraction" },
+      momentum: { availability: "known", value: 0.61, weight: 0.30, unit: "fraction" },
+      breadth: { availability: "known", value: 0.45, weight: 0.15, unit: "fraction" },
+      network: { availability: "reserved", weight: 0.10 },
+    },
+  };
+
+  const result = validateAssessmentEnvelope(envelope);
+  assert.equal(result.ok, true, result.errors?.join("\n"));
+});
+
 test("rejects coverage as a score bonus", () => {
   const envelope = validQuantumEnvelopeV2();
   envelope.assessment.quantitativeEvidence.scoreAnchors[0].evidenceIds = ["coverage"];
@@ -355,4 +374,40 @@ test("v2 summary exposes headline quantitative metrics and private visibility", 
     snapshotId: "20260729T010203Z-0123456789ab",
     freshness: "fresh",
   });
+});
+
+test("v2 public summary completes scientific-demand and modeled technical point estimates", () => {
+  const validation = validateAssessmentEnvelope(validQuantumEnvelopeV2());
+  assert.equal(validation.ok, true);
+
+  const summary = summarizeCompletedAssessment({
+    run: { runId: "20260729T010203Z-a1b2c3", problemId: "Prob-001", createdAt: "2026-07-29T01:02:03.000Z" },
+    envelope: validation.value,
+    computed: validation.computed,
+    input: {
+      valuation: {
+        recalculationInputs: {
+          manifest: {
+            createdAt: "2026-07-29T01:02:03.000Z",
+            citation: {
+              formulaId: "qec-scientific-demand-v1",
+              scientificDemand: { state: "known", interval: { low: 68.4, base: 68.4, high: 68.4 }, unit: "score-100", visibility: "public" },
+              components: {},
+              evidenceConfidence: "medium",
+              coverage: 0.75,
+              paperCount: 3,
+            },
+          },
+          papers: [{ id: "W1", citedByCount: 9, citationNormalizedPercentile: 0.8, relevance: 1 }],
+        },
+      },
+    },
+  });
+
+  assert.equal(summary.quantitative.scientificAttention.interval.base, 68.4);
+  assert.equal(summary.quantitative.scientificAttention.estimateKind, "scientific-demand-model");
+  assert.equal(summary.quantitative.scientificAttention.formulaId, "qec-scientific-demand-v1");
+  assert.equal(summary.quantitative.technicalSuccess.interval.base, 80);
+  assert.equal(summary.quantitative.technicalSuccess.estimateKind, "model");
+  assert.equal(summary.quantitative.technicalSuccessMethod.formulaId, "qec-technical-success-v1");
 });

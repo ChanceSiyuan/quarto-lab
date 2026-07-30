@@ -35,6 +35,38 @@ test("assessment output schema avoids array keywords rejected by Codex", async (
   assert.deepEqual(unsupportedKeywords, []);
 });
 
+test("assessment output schema avoids composition keywords rejected by Codex", async () => {
+  const schema = JSON.parse(await readFile(new URL("../schemas/research-problem-assessment.schema.json", import.meta.url), "utf8"));
+  const unsupportedKeywords = [];
+  function visit(value, path = "$") {
+    if (!value || typeof value !== "object") return;
+    if (Object.hasOwn(value, "allOf")) unsupportedKeywords.push(`${path}.allOf`);
+    if (Object.hasOwn(value, "oneOf")) unsupportedKeywords.push(`${path}.oneOf`);
+    for (const [key, child] of Object.entries(value)) visit(child, `${path}.${key}`);
+  }
+  visit(schema);
+  assert.deepEqual(unsupportedKeywords, []);
+});
+
+test("assessment output schema requires every declared object property for Codex strict mode", async () => {
+  const schema = JSON.parse(await readFile(new URL("../schemas/research-problem-assessment.schema.json", import.meta.url), "utf8"));
+  const missingRequired = [];
+  function hasObjectType(value) {
+    return value?.type === "object" || (Array.isArray(value?.type) && value.type.includes("object"));
+  }
+  function visit(value, path = "$") {
+    if (!value || typeof value !== "object") return;
+    if (hasObjectType(value) && value.properties) {
+      const required = new Set(value.required ?? []);
+      const missing = Object.keys(value.properties).filter((field) => !required.has(field));
+      if (missing.length > 0) missingRequired.push(`${path}: ${missing.join(",")}`);
+    }
+    for (const [key, child] of Object.entries(value)) visit(child, `${path}.${key}`);
+  }
+  visit(schema);
+  assert.deepEqual(missingRequired, []);
+});
+
 function fakeEnvelopeText() {
   const dimsV = [
     ["importance", 20], ["gap_and_novelty", 20], ["plausibility", 15],
@@ -130,6 +162,31 @@ test("a host-selected bundle tells Codex to continue without asking for ambiguit
   assert.match(prompt, /host resolver has already applied the user's explicit selection/i);
   assert.match(prompt, /knowledge\/alpha\/note\.qmd/);
   assert.match(prompt, /do not return needs_input/i);
+  assert.doesNotMatch(prompt, /If the resolver is ambiguous, return outcome needs_input/);
+});
+
+test("an external valuation selection tells Codex to continue with no trusted match", () => {
+  const prompt = buildAssessmentPrompt({
+    problem: { id: "Prob-001", title: "Fixture", summary: "Summary" },
+    problemMarkdown: "## Background and Gap\nText.",
+    selectedAlternative: {
+      page: "__external__/valuation-snapshot",
+      topic: "external-valuation",
+      title: "Continue with external valuation evidence only",
+      matchKind: "external-valuation",
+    },
+    trustedResolution: {
+      schemaVersion: 1,
+      query: "Fixture",
+      status: "no-match",
+      bundle: null,
+      alternatives: [],
+    },
+  });
+
+  assert.match(prompt, /external valuation evidence only/i);
+  assert.match(prompt, /"status": "no-match"/);
+  assert.match(prompt, /Do not cite trusted knowledge/i);
   assert.doesNotMatch(prompt, /If the resolver is ambiguous, return outcome needs_input/);
 });
 

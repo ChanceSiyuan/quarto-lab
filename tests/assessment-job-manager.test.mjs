@@ -43,6 +43,13 @@ function valuationSnapshot(overrides = {}) {
   };
 }
 
+const EXTERNAL_VALUATION_SELECTION = Object.freeze({
+  page: "__external__/valuation-snapshot",
+  topic: "external-valuation",
+  title: "Continue with external valuation evidence only",
+  matchKind: "external-valuation",
+});
+
 function fakeStore() {
   const runs = [];
   return {
@@ -143,6 +150,62 @@ function completedCodexResult() {
     eventsText: '{"type":"complete"}\n',
     stderr: "",
   };
+}
+
+function completedQuantumCodexResult() {
+  const result = completedCodexResult();
+  const source = {
+    id: "citation-source",
+    url: "https://openalex.org/W1",
+    locator: "OpenAlex work W1",
+    kind: "citation-index",
+  };
+  result.envelope.assessment = {
+    ...result.envelope.assessment,
+    schemaVersion: 2,
+    visibility: "public",
+    quantitativeEvidence: {
+      domain: "quantum-computing",
+      quantumArea: "hardware-and-control",
+      snapshot: {
+        snapshotId: "20260729T010203Z-0123456789ab",
+        contentHash: "a".repeat(64),
+        createdAt: "2026-07-29T01:02:03.000Z",
+        freshness: "fresh",
+        visibility: "public",
+      },
+      scientificAttention: {
+        value: {
+          id: "scientific-attention",
+          state: "known",
+          interval: { low: 9, base: 9, high: 9 },
+          unit: "count",
+          visibility: "public",
+          evidenceState: "reported",
+          evidenceTier: "authoritative-secondary",
+          sourceIds: [source.id],
+          sources: [source],
+        },
+        momentum: { state: "unknown", reason: "No complete-year comparison." },
+        coverage: 1,
+        concentration: 1,
+        warnings: [],
+      },
+      technicalFeasibility: { state: "unknown", reason: "No measured sealed gate." },
+      socialValue: { state: "unknown", reason: "No problem-specific social model." },
+      capturableValue: { state: "unknown", reason: "No problem-specific capture model." },
+      informationValue: { state: "unknown", reason: "No information-value model." },
+      scoreAnchors: [],
+      sensitivity: [],
+      assumptions: [],
+      warnings: [],
+    },
+  };
+  const validation = validateAssessmentEnvelope(result.envelope);
+  assert.equal(validation.ok, true, validation.errors?.join("\n"));
+  result.envelope = validation.value;
+  result.computed = validation.computed;
+  return result;
 }
 
 test("rejects unknown problem IDs before accepting a run", async () => {
@@ -264,6 +327,63 @@ test("passes the verified frozen valuation packet to quantum Codex scoring", asy
   assert.deepEqual(receivedValuation.recalculationInputs, { technicalStages: [] });
 });
 
+test("persists completed quantum summaries with derived point estimates", async () => {
+  const store = fakeStore();
+  const manager = createAssessmentJobManager({
+    rootDir: "/repo",
+    repository: fakeRepository(quantumProblem()),
+    store,
+    codex: {
+      preflight: async () => ({ ok: true }),
+      run: async () => completedQuantumCodexResult(),
+    },
+    valuationStore: {
+      list: async () => ["20260729T010203Z-0123456789ab"],
+      verify: async () => valuationSnapshot(),
+    },
+    snapshot: {
+      build: async () => ({
+        schemaVersion: 2,
+        problemId: "Prob-001",
+        resolver: { query: "Fixture", status: "match", topic: "knowledge/topic.qmd", orderedFiles: ["knowledge/topic.qmd"] },
+        valuation: {
+          recalculationInputs: {
+            manifest: {
+              createdAt: "2026-07-29T01:02:03.000Z",
+              citation: {
+                formulaId: "qec-scientific-demand-v1",
+                scientificDemand: { state: "known", interval: { low: 68.4, base: 68.4, high: 68.4 }, unit: "score-100", visibility: "public" },
+                components: {},
+                evidenceConfidence: "medium",
+                coverage: 0.75,
+                paperCount: 3,
+              },
+            },
+            papers: [{ id: "W1", citedByCount: 9, citationNormalizedPercentile: 0.8, relevance: 1 }],
+          },
+        },
+      }),
+    },
+    reportRenderer: { render: () => "<!doctype html><title>Assessment</title>" },
+    resolveKnowledge: async () => ({
+      schemaVersion: 1,
+      query: "Fixture",
+      status: "match",
+      bundle: { topic: "knowledge/topic.qmd", orderedFiles: ["knowledge/topic.qmd"] },
+      alternatives: [],
+    }),
+  });
+
+  await manager.start("Prob-001");
+  await new Promise((resolve) => setTimeout(resolve, 20));
+
+  assert.equal(store.runs[0].status, "completed");
+  assert.equal(store.runs[0].summary.quantitative.scientificAttention.interval.base, 68.4);
+  assert.equal(store.runs[0].summary.quantitative.scientificAttention.estimateKind, "scientific-demand-model");
+  assert.equal(store.runs[0].summary.quantitative.technicalSuccess.interval.base, 80);
+  assert.equal(store.runs[0].summary.quantitative.technicalSuccessMethod.formulaId, "qec-technical-success-v1");
+});
+
 test("returns the active run for duplicate starts", async () => {
   let release;
   const store = fakeStore();
@@ -360,6 +480,150 @@ test("selection consumes a clarification run and records the selected alternativ
   assert.equal(store.runs.length, 2);
   assert.deepEqual(store.runs[1].artifacts.selection, alternative);
   assert.equal((await manager.getProblemState("Prob-001")).activeJob, null);
+});
+
+test("valuation-backed ambiguity can continue with explicit external evidence only", async () => {
+  const trusted = { page: "knowledge/topic.qmd", topic: "topic", title: "Topic", matchKind: "title" };
+  let childTrustedResolution = null;
+  let childSelection = null;
+  let childValuationInput = null;
+  const store = fakeStore();
+  const manager = createAssessmentJobManager({
+    rootDir: "/repo",
+    repository: fakeRepository(quantumProblem()),
+    store,
+    codex: {
+      preflight: async () => ({ ok: true }),
+      run: async ({ selectedAlternative, trustedResolution, valuationInput }) => {
+        if (!selectedAlternative) {
+          return {
+            ok: true,
+            envelope: {
+              outcome: "needs_input",
+              language: "en",
+              knowledgeResolution: { query: "Quantum fixture", status: "ambiguous", topic: null, orderedFiles: [] },
+              assessment: null,
+              clarification: { query: "Quantum fixture", reason: "Choose one.", alternatives: [trusted] },
+            },
+            stderr: "",
+          };
+        }
+        childSelection = selectedAlternative;
+        childTrustedResolution = trustedResolution;
+        childValuationInput = valuationInput;
+        return { ok: false, code: "STOP_AFTER_SELECTION", message: "selected", eventsText: "", stderr: "" };
+      },
+    },
+    valuationStore: {
+      list: async () => ["20260729T010203Z-0123456789ab"],
+      verify: async () => valuationSnapshot(),
+    },
+  });
+
+  const parent = await manager.start("Prob-001");
+  await new Promise((resolve) => setTimeout(resolve, 20));
+
+  const state = await manager.getProblemState("Prob-001");
+  const external = state.activeJob.clarification.alternatives.find((alternative) => alternative.matchKind === "external-valuation");
+  assert.equal(external.title, "Continue with external valuation evidence only");
+
+  await manager.select(parent.runId, external);
+  await new Promise((resolve) => setTimeout(resolve, 20));
+
+  assert.equal(childSelection.matchKind, "external-valuation");
+  assert.equal(childTrustedResolution.status, "no-match");
+  assert.deepEqual(childTrustedResolution.bundle, null);
+  assert.equal(childValuationInput.snapshotId, "20260729T010203Z-0123456789ab");
+  assert.deepEqual(store.runs[1].artifacts.selection, external);
+});
+
+test("valuation-backed starts can explicitly force external evidence only", async () => {
+  let childTrustedResolution = null;
+  let childSelection = null;
+  let resolverCalls = 0;
+  const manager = createAssessmentJobManager({
+    rootDir: "/repo",
+    repository: fakeRepository(quantumProblem({ title: "Quantum fixture" })),
+    store: fakeStore(),
+    codex: {
+      preflight: async () => ({ ok: true }),
+      run: async ({ selectedAlternative, trustedResolution }) => {
+        childSelection = selectedAlternative;
+        childTrustedResolution = trustedResolution;
+        return { ok: false, code: "STOP_AFTER_SELECTION", message: "selected", eventsText: "", stderr: "" };
+      },
+    },
+    resolveKnowledge: async () => {
+      resolverCalls += 1;
+      return {
+        schemaVersion: 1,
+        query: "Quantum fixture",
+        status: "match",
+        bundle: { topic: "knowledge/topic.qmd", orderedFiles: ["knowledge/topic.qmd"] },
+        alternatives: [],
+      };
+    },
+    valuationStore: {
+      list: async () => ["20260729T010203Z-0123456789ab"],
+      verify: async () => valuationSnapshot(),
+    },
+  });
+
+  await manager.start("Prob-001", {
+    valuationSnapshotId: "20260729T010203Z-0123456789ab",
+    selectedAlternative: EXTERNAL_VALUATION_SELECTION,
+  });
+  await new Promise((resolve) => setTimeout(resolve, 20));
+
+  assert.deepEqual(childSelection, EXTERNAL_VALUATION_SELECTION);
+  assert.equal(childTrustedResolution.status, "no-match");
+  assert.equal(childTrustedResolution.query, "Quantum fixture");
+  assert.deepEqual(childTrustedResolution.bundle, null);
+  assert.equal(resolverCalls, 0);
+});
+
+test("host ambiguity is materialized before Codex runs when valuation evidence is ready", async () => {
+  const trusted = { page: "knowledge/topic.qmd", topic: "topic", title: "Topic", matchKind: "body-term" };
+  let preflightCalls = 0;
+  let resolvedQuery = null;
+  const store = fakeStore();
+  const manager = createAssessmentJobManager({
+    rootDir: "/repo",
+    repository: fakeRepository(quantumProblem()),
+    store,
+    codex: {
+      preflight: async () => { preflightCalls += 1; return { ok: true }; },
+      run: async () => assert.fail("Codex must not run until the host ambiguity is explicitly selected."),
+    },
+    resolveKnowledge: async (query) => {
+      resolvedQuery = query;
+      return {
+        schemaVersion: 1,
+        query,
+        status: "ambiguous",
+        bundle: null,
+        alternatives: [{ ...trusted, tier: 5, matchedTerms: 1 }],
+      };
+    },
+    valuationStore: {
+      list: async () => ["20260729T010203Z-0123456789ab"],
+      verify: async () => valuationSnapshot(),
+    },
+  });
+
+  const accepted = await manager.start("Prob-001");
+  await new Promise((resolve) => setTimeout(resolve, 20));
+  const state = await manager.getProblemState("Prob-001");
+  const alternatives = state.activeJob.clarification.alternatives;
+
+  assert.equal(accepted.accepted, true);
+  assert.equal(preflightCalls, 1);
+  assert.equal(resolvedQuery, "Quantum fixture");
+  assert.equal(store.runs[0].status, "needs-input");
+  assert.equal(state.activeJob.runId, accepted.runId);
+  assert.deepEqual(alternatives[0], trusted);
+  assert.equal(alternatives.at(-1).matchKind, "external-valuation");
+  assert.equal(store.runs[0].artifacts.input.valuation.snapshotId, "20260729T010203Z-0123456789ab");
 });
 
 test("selection supplies the exact host bundle and rejects a child query change", async () => {
@@ -559,7 +823,7 @@ test("rejects a completed assessment when the host resolver disagrees with the m
   assert.equal(store.runs[0].artifacts.reportHtml, undefined);
 });
 
-test("rejects model-supplied ambiguity alternatives that differ from the host resolver", async () => {
+test("materializes host ambiguity before Codex can supply altered alternatives", async () => {
   const store = fakeStore();
   const manager = createAssessmentJobManager({
     rootDir: "/repo",
@@ -567,29 +831,7 @@ test("rejects model-supplied ambiguity alternatives that differ from the host re
     store,
     codex: {
       preflight: async () => ({ ok: true }),
-      run: async () => ({
-        ok: true,
-        envelope: {
-          outcome: "needs_input",
-          language: "en",
-          knowledgeResolution: {
-            query: "Fixture",
-            status: "ambiguous",
-            topic: null,
-            orderedFiles: [],
-          },
-          assessment: null,
-          clarification: {
-            query: "Fixture",
-            reason: "Choose one trusted topic.",
-            alternatives: [
-              { page: "knowledge/a.qmd", topic: "knowledge/a/index.qmd", title: "Altered A", matchKind: "exact-title" },
-              { page: "knowledge/b.qmd", topic: "knowledge/b/index.qmd", title: "B", matchKind: "exact-title" },
-            ],
-          },
-        },
-        stderr: "",
-      }),
+      run: async () => assert.fail("Codex must not supply ambiguity alternatives once the host resolver is ambiguous."),
     },
     resolveKnowledge: async () => ({
       schemaVersion: 1,
@@ -606,9 +848,12 @@ test("rejects model-supplied ambiguity alternatives that differ from the host re
   await manager.start("Prob-001");
   await new Promise((resolve) => setTimeout(resolve, 20));
 
-  assert.equal(store.runs[0].status, "failed");
-  assert.equal(store.runs[0].artifacts.error.code, "KNOWLEDGE_RESOLUTION_MISMATCH");
-  assert.equal(store.runs[0].artifacts.clarification, undefined);
+  assert.equal(store.runs[0].status, "needs-input");
+  assert.deepEqual(store.runs[0].artifacts.clarification.clarification.alternatives, [
+    { page: "knowledge/a.qmd", topic: "knowledge/a/index.qmd", title: "A", matchKind: "exact-title" },
+    { page: "knowledge/b.qmd", topic: "knowledge/b/index.qmd", title: "B", matchKind: "exact-title" },
+  ]);
+  assert.equal("error" in store.runs[0].artifacts, false);
 });
 
 test("problem state surfaces stale latest summaries", async () => {
@@ -653,4 +898,40 @@ test("problem state surfaces stale latest summaries", async () => {
   assert.equal(state.latest.verdict, "DO_NOW");
   assert.equal(state.stale, true);
   assert.deepEqual(state.staleReasons, ["problemMdHash changed"]);
+});
+
+test("problem state chooses the completed summary with the latest update time", async () => {
+  const store = fakeStore();
+  store.runs.push(
+    {
+      schemaVersion: 1,
+      runId: "20260729T112500Z-aaaaaa",
+      problemId: "Prob-001",
+      status: "completed",
+      createdAt: "2026-07-29T11:25:00.000Z",
+      updatedAt: "2026-07-29T11:25:00.000Z",
+      summary: { runId: "20260729T112500Z-aaaaaa" },
+    },
+    {
+      schemaVersion: 1,
+      runId: "20260729T112114Z-bbbbbb",
+      problemId: "Prob-001",
+      status: "completed",
+      createdAt: "2026-07-29T11:21:14.000Z",
+      updatedAt: "2026-07-29T11:26:36.000Z",
+      summary: { runId: "20260729T112114Z-bbbbbb" },
+    },
+  );
+  const manager = createAssessmentJobManager({
+    rootDir: "/repo",
+    repository: fakeRepository(),
+    store,
+    codex: {
+      preflight: async () => ({ ok: true }),
+      run: async () => assert.fail("No assessment run should start."),
+    },
+  });
+
+  const state = await manager.getProblemState("Prob-001");
+  assert.equal(state.latest.runId, "20260729T112114Z-bbbbbb");
 });

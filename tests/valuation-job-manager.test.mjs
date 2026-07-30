@@ -268,8 +268,13 @@ test("freezes citation metrics as atomic evidence with provenance", async () => 
 
   assert.equal(snapshot.manifest.scientificAttention.id, "scientific-attention");
   assert.equal(snapshot.manifest.scientificAttention.unit, "score-100");
+  assert.equal(snapshot.manifest.scientificAttention.estimateKind, "scientific-demand-model");
   assert.equal(snapshot.manifest.scientificAttention.evidenceTier, "authoritative-secondary");
   assert.deepEqual(snapshot.manifest.scientificAttention.sourceIds, ["citation-W1", "citation-W2"]);
+  assert.equal(snapshot.manifest.citation.formulaId, "qec-scientific-demand-v1");
+  assert.equal(snapshot.manifest.citation.evidenceConfidence, "low");
+  assert.equal(snapshot.manifest.citation.paperCount, 2);
+  assert.equal(snapshot.manifest.citation.components.influence.weight, 0.45);
   assert.equal(snapshot.manifest.citation.momentum.id, "citation-momentum");
   assert.equal(snapshot.manifest.citation.momentum.unit, "fraction");
 });
