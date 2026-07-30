@@ -5,6 +5,7 @@ import {
   getStaticResearchExampleProblem,
   isStaticResearchExampleProblem,
 } from "@/lib/problems/example-research.mjs";
+import { buildProblemDiscussLaunch } from "@/lib/problems/codex-launch.mjs";
 import { buildExampleResearchLedger } from "@/lib/problems/example-presentation.mjs";
 import { createProblemRepository } from "@/lib/problems/repository.mjs";
 import { createResearchRepository } from "@/lib/problems/research-repository.mjs";
@@ -14,6 +15,7 @@ import { notFound } from "next/navigation";
 import { AssessmentPanel } from "./assessment-panel";
 import { StaticAutoresearchPanel } from "./static-autoresearch-panel";
 import { StaticAssessmentPanel } from "./static-assessment-panel";
+import detailStyles from "./research-detail.module.css";
 
 declare const __AUTORESEARCH_SIDECAR_AVAILABLE__: boolean;
 
@@ -46,6 +48,10 @@ export default async function ProblemDetailPage({
       notFound();
     }
     const ledger = buildExampleResearchLedger(example);
+    const discussLaunch = buildProblemDiscussLaunch({
+      workspacePath: generatedIndex.workspacePath,
+      problem,
+    });
 
     return (
       <main className="detail-shell research-shell">
@@ -53,14 +59,21 @@ export default async function ProblemDetailPage({
         <header className="research-header">
           <div>
             <p className="eyebrow">{problem.id}</p>
-            <h1>{problem.title}</h1>
-            <p className="detail-summary">{problem.summary}</p>
+            <h1 className={detailStyles.title}>{problem.title}</h1>
           </div>
-          <div className="research-badges" aria-label="Research metadata">
-            <span>Solving</span>
-            <span>Example data</span>
-            <span>Blind evaluation</span>
-            <span>300 s / run</span>
+          <div className={detailStyles.headerSide}>
+            <div className="research-badges" aria-label="Research metadata">
+              <span>Solving</span>
+              <span>Example data</span>
+              <span>Blind evaluation</span>
+              <span>300 s / run</span>
+            </div>
+            <a className="state-action" href={discussLaunch.href}>Discuss in Codex</a>
+            <details className="codex-fallback">
+              <summary>Cannot open Codex?</summary>
+              <p>Copy this complete prompt into a new Codex task.</p>
+              <textarea readOnly value={discussLaunch.fallbackText} aria-label="Discuss problem fallback prompt" />
+            </details>
           </div>
         </header>
 
@@ -78,47 +91,14 @@ export default async function ProblemDetailPage({
           ))}
         </dl>
 
-        <section className="attempt-ledger" aria-labelledby="attempt-ledger-heading">
-          <div className="section-heading-row">
-            <h2 id="attempt-ledger-heading">Attempts</h2>
-            <p>{ledger.rows.length} synthetic attempts</p>
+        <section className={detailStyles.linkPanel} aria-labelledby="autoresearch-link-heading">
+          <div>
+            <h2 id="autoresearch-link-heading">Autoresearch results</h2>
+            <p>{ledger.rows.length} synthetic attempts with gate, verification, and runtime metrics.</p>
           </div>
-          <div className="attempt-table-wrap">
-            <table className="attempt-table">
-              <thead>
-                <tr>
-                  <th scope="col">Attempt</th><th scope="col">Method</th><th scope="col">Stage</th><th scope="col">Decision</th><th scope="col">Gate</th><th scope="col">Verified</th><th scope="col">Hits</th><th scope="col">Quality</th><th scope="col">Runtime</th><th scope="col">P95</th><th scope="col">Speedup</th><th scope="col">Open</th>
-                </tr>
-              </thead>
-              <tbody>
-                {ledger.rows.map((row) => (
-                  <tr key={row.id}>
-                    <th scope="row"><Link href={row.href}>{row.id}</Link></th>
-                    <td><strong>{row.method}</strong><span>{row.summary}</span></td>
-                    <td>{row.stage}</td>
-                    <td>{row.decision}</td>
-                    <td>{row.gate.map((item) => <span key={item.label}>{item.label}: {item.value}</span>)}</td>
-                    <td>{row.verified}</td>
-                    <td>{row.hits}</td>
-                    <td>{row.quality}</td>
-                    <td>{row.runtime}</td>
-                    <td>{row.p95}</td>
-                    <td>{row.speedup}</td>
-                    <td><Link href={row.href}>Open</Link></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <div className="attempt-card-list" aria-label="Attempt cards">
-            {ledger.rows.map((row) => (
-              <Link className="attempt-card" href={row.href} key={row.id}>
-                <span>{row.id}</span>
-                <strong>{row.method}</strong>
-                <small>{row.decision} · {row.verified} verified · {row.speedup}</small>
-              </Link>
-            ))}
-          </div>
+          <Link className="open-affordance" href={`/problems/${problem.id}/autoresearch`}>
+            Open autoresearch results <span aria-hidden="true">→</span>
+          </Link>
         </section>
       </main>
     );

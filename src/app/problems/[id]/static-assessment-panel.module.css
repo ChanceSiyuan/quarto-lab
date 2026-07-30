@@ -15,51 +15,80 @@
 
 .metrics {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 0;
   margin: 14px 0 0;
   border: 1px solid var(--line);
 }
 
-.metrics > div {
+.metric {
   min-width: 0;
   border-right: 1px solid var(--line);
-  padding: 12px;
 }
 
-.metrics > div:last-child {
+.metric:last-child {
   border-right: 0;
 }
 
-.metrics dt {
+.metric summary {
+  display: grid;
+  gap: 5px;
+  padding: 12px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.metric summary::-webkit-details-marker {
+  display: none;
+}
+
+.metricLabel {
   color: var(--muted);
   font: 10px var(--font-geist-mono);
 }
 
-.metrics dd {
-  margin: 5px 0 0;
+.metricValue {
   font-size: 19px;
   font-weight: 700;
   letter-spacing: -.03em;
 }
 
-.metrics p {
-  margin-top: 7px;
+.metricNote {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.5;
 }
 
-.method {
-  margin-top: 14px;
-  border: 1px solid var(--line);
-  padding: 14px;
+.metricToggle {
+  margin-top: 4px;
+  color: var(--green);
+  font: 10px var(--font-geist-mono);
+  text-transform: uppercase;
+}
+
+.metricToggle::after {
+  content: " +";
+}
+
+.metric[open] .metricToggle::after {
+  content: " -";
+}
+
+.metricDetail {
+  border-top: 1px solid var(--line);
+  padding: 12px;
   background: rgba(255, 255, 255, .025);
 }
 
-.method h3 {
+.formula {
   margin: 0;
-  font-size: 13px;
+  overflow-x: auto;
+  color: var(--green);
+  font: 11px/1.6 var(--font-geist-mono);
+  white-space: pre;
 }
 
-.method ul {
+.metricDetail ul {
   margin: 10px 0 0;
   padding-left: 18px;
   color: var(--muted);
@@ -67,17 +96,21 @@
   line-height: 1.55;
 }
 
+.metricDetail li + li {
+  margin-top: 6px;
+}
+
 @media (max-width: 760px) {
   .metrics {
     grid-template-columns: 1fr;
   }
 
-  .metrics > div {
+  .metric {
     border-right: 0;
     border-bottom: 1px solid var(--line);
   }
 
-  .metrics > div:last-child {
+  .metric:last-child {
     border-bottom: 0;
   }
 }
