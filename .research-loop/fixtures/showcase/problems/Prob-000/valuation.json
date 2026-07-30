@@ -1,0 +1,248 @@
+{
+  "schemaVersion": 1,
+  "kind": "static-eansv-example",
+  "problemId": "Prob-000",
+  "metric": {
+    "id": "prob-000-eansv-v1",
+    "label": "Expected Attributable Net Social Value",
+    "currency": "USD",
+    "constantDollarYear": 2026
+  },
+  "evidence": [
+    {
+      "id": "qdis-rnd-joss-2022",
+      "kind": "technical-context",
+      "title": "QDistRnd: A GAP package for computing the distance of quantum error-correcting codes",
+      "url": "https://doi.org/10.21105/joss.04120",
+      "accessedAt": "2026-07-30",
+      "supports": "A published public implementation exists for repeated quantum-code distance calculations."
+    },
+    {
+      "id": "distance-finding-2026",
+      "kind": "technical-context",
+      "title": "Distance-Finding Algorithms for Quantum Codes and Circuits",
+      "url": "https://arxiv.org/abs/2603.22532",
+      "accessedAt": "2026-07-30",
+      "supports": "Distance finding remains an active algorithmic task with explicit computational methods."
+    },
+    {
+      "id": "qldpc-integration",
+      "kind": "technical-context",
+      "title": "qLDPC public software repository",
+      "url": "https://github.com/qLDPCOrg/qLDPC",
+      "accessedAt": "2026-07-30",
+      "supports": "QDistRnd is integrated into a public quantum-code software ecosystem."
+    },
+    {
+      "id": "google-cloud-c3-price",
+      "kind": "external-price",
+      "title": "Google Cloud general-purpose machine pricing",
+      "url": "https://cloud.google.com/products/compute/pricing/general-purpose",
+      "accessedAt": "2026-07-30",
+      "supports": "The listed c3-standard-8 price supplies a mutable public compute-cost anchor, not a measured Prob-000 saving.",
+      "numericValue": 0.403216,
+      "unit": "USD per c3-standard-8 instance-hour"
+    }
+  ],
+  "assumptions": [
+    {
+      "id": "social-discount-rate",
+      "label": "Social discount rate",
+      "value": 0.035,
+      "unit": "ratio per year",
+      "rationale": "Worked-example choice aligned with the UK Green Book headline social time preference rate."
+    },
+    {
+      "id": "full-probability",
+      "label": "Full-success probability",
+      "value": 0.35,
+      "unit": "probability",
+      "rationale": "Scenario probability for a result that supports the full modeled benefit path."
+    },
+    {
+      "id": "full-teams",
+      "label": "Full-success adopting teams",
+      "value": 30,
+      "unit": "teams",
+      "rationale": "Scenario adoption count; no external source establishes future Prob-000 adoption."
+    },
+    {
+      "id": "full-runs",
+      "label": "Full-success runs per team per year",
+      "value": 1000,
+      "unit": "runs per team-year",
+      "rationale": "Scenario workload for repeated distance calculations."
+    },
+    {
+      "id": "full-years",
+      "label": "Full-success benefit years",
+      "value": [1, 2, 3, 4, 5],
+      "unit": "years after research",
+      "rationale": "Five-year scenario horizon with end-of-year benefits."
+    },
+    {
+      "id": "full-compute-hours-avoided",
+      "label": "Full-success compute time avoided",
+      "value": 0.5,
+      "unit": "instance-hours per run",
+      "rationale": "Scenario runtime reduction applied to the public price anchor."
+    },
+    {
+      "id": "full-researcher-hours-released",
+      "label": "Full-success researcher time released",
+      "value": 0.5,
+      "unit": "researcher-hours per run",
+      "rationale": "Scenario time release before applying the productive recapture fraction."
+    },
+    {
+      "id": "partial-probability",
+      "label": "Partial-success probability",
+      "value": 0.25,
+      "unit": "probability",
+      "rationale": "Scenario probability for a narrower but useful result."
+    },
+    {
+      "id": "partial-teams",
+      "label": "Partial-success adopting teams",
+      "value": 10,
+      "unit": "teams",
+      "rationale": "Lower scenario adoption than the full-success branch."
+    },
+    {
+      "id": "partial-runs",
+      "label": "Partial-success runs per team per year",
+      "value": 500,
+      "unit": "runs per team-year",
+      "rationale": "Lower scenario workload than the full-success branch."
+    },
+    {
+      "id": "partial-years",
+      "label": "Partial-success benefit years",
+      "value": [1, 2, 3],
+      "unit": "years after research",
+      "rationale": "Three-year scenario horizon with end-of-year benefits."
+    },
+    {
+      "id": "partial-compute-hours-avoided",
+      "label": "Partial-success compute time avoided",
+      "value": 0.25,
+      "unit": "instance-hours per run",
+      "rationale": "Half the full-success runtime reduction."
+    },
+    {
+      "id": "partial-researcher-hours-released",
+      "label": "Partial-success researcher time released",
+      "value": 0.25,
+      "unit": "researcher-hours per run",
+      "rationale": "Half the full-success researcher-time release."
+    },
+    {
+      "id": "loaded-hourly-social-value",
+      "label": "Loaded researcher-hour social value",
+      "value": 100,
+      "unit": "USD per researcher-hour",
+      "rationale": "Scenario conversion value, not a measured wage or market price for all users."
+    },
+    {
+      "id": "productive-recapture-rate",
+      "label": "Productive time recapture fraction",
+      "value": 0.2,
+      "unit": "ratio",
+      "rationale": "Only one fifth of released researcher time is assumed to become additional productive work."
+    },
+    {
+      "id": "negative-result-probability",
+      "label": "Decision-useful negative-result probability",
+      "value": 0.4,
+      "unit": "probability",
+      "rationale": "Scenario probability for learning that prevents futile follow-up."
+    },
+    {
+      "id": "negative-result-decision-value",
+      "label": "Avoided futile follow-up value",
+      "value": 75000,
+      "unit": "2026 USD present value",
+      "rationale": "Scenario decision value of a technically negative result."
+    },
+    {
+      "id": "without-research-counterfactual",
+      "label": "Without-research counterfactual value",
+      "value": 100000,
+      "unit": "2026 USD present value",
+      "rationale": "Benefits expected without the proposed research and therefore not attributable to it."
+    },
+    {
+      "id": "research-cost",
+      "label": "Research cost",
+      "value": 250000,
+      "unit": "2026 USD present value",
+      "rationale": "Scenario present value of the resources required to perform the research."
+    }
+  ],
+  "model": {
+    "socialDiscountRateAssumptionId": "social-discount-rate",
+    "outcomes": [
+      {
+        "id": "full-success",
+        "probabilityAssumptionId": "full-probability",
+        "technicalEvidenceIds": [
+          "qdis-rnd-joss-2022",
+          "distance-finding-2026",
+          "qldpc-integration"
+        ],
+        "valueModel": {
+          "kind": "annual-per-run",
+          "teamsAssumptionId": "full-teams",
+          "runsPerTeamPerYearAssumptionId": "full-runs",
+          "yearsAssumptionId": "full-years",
+          "compute": {
+            "priceEvidenceId": "google-cloud-c3-price",
+            "instanceHoursAvoidedAssumptionId": "full-compute-hours-avoided"
+          },
+          "productiveTime": {
+            "hoursReleasedAssumptionId": "full-researcher-hours-released",
+            "loadedHourlyValueAssumptionId": "loaded-hourly-social-value",
+            "recaptureRateAssumptionId": "productive-recapture-rate"
+          }
+        }
+      },
+      {
+        "id": "partial-success",
+        "probabilityAssumptionId": "partial-probability",
+        "technicalEvidenceIds": [
+          "qdis-rnd-joss-2022",
+          "distance-finding-2026",
+          "qldpc-integration"
+        ],
+        "valueModel": {
+          "kind": "annual-per-run",
+          "teamsAssumptionId": "partial-teams",
+          "runsPerTeamPerYearAssumptionId": "partial-runs",
+          "yearsAssumptionId": "partial-years",
+          "compute": {
+            "priceEvidenceId": "google-cloud-c3-price",
+            "instanceHoursAvoidedAssumptionId": "partial-compute-hours-avoided"
+          },
+          "productiveTime": {
+            "hoursReleasedAssumptionId": "partial-researcher-hours-released",
+            "loadedHourlyValueAssumptionId": "loaded-hourly-social-value",
+            "recaptureRateAssumptionId": "productive-recapture-rate"
+          }
+        }
+      },
+      {
+        "id": "useful-negative-result",
+        "probabilityAssumptionId": "negative-result-probability",
+        "technicalEvidenceIds": [
+          "distance-finding-2026"
+        ],
+        "valueModel": {
+          "kind": "present-value",
+          "amountAssumptionId": "negative-result-decision-value"
+        }
+      }
+    ],
+    "withoutResearchCounterfactualAssumptionId": "without-research-counterfactual",
+    "researchCostAssumptionId": "research-cost"
+  }
+}
