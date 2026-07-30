@@ -238,10 +238,20 @@ test("ordinary local build serves the static demo route and rejects unknown demo
   assert.equal(problemResponse.status, 200);
   const problemHtml = await problemResponse.text();
   assert.match(problemHtml, /Assessment methodology demo/);
-  assert.match(problemHtml, /Research Value \(V\)/);
   assert.match(problemHtml, /Scientific Demand Score/);
+  assert.match(problemHtml, /Industry \/ social proxy/);
+  assert.match(problemHtml, /Autoresearch Fit/);
+  assert.match(problemHtml, /Discuss in Codex/);
+  assert.match(problemHtml, /href="\/problems\/Prob-000\/autoresearch"/);
   assert.doesNotMatch(problemHtml, /Local assessment unavailable/);
   assert.doesNotMatch(problemHtml, /\/__local\/assessments/);
+
+  const autoresearchResponse = await render("/problems/Prob-000/autoresearch");
+  assert.equal(autoresearchResponse.status, 200);
+  const autoresearchHtml = await autoresearchResponse.text();
+  assert.match(autoresearchHtml, /Autoresearch results/);
+  assert.match(autoresearchHtml, /ATT-001/);
+  assert.doesNotMatch(autoresearchHtml, /Local assessment unavailable/);
 
   for (const pathname of [
     "/problems/Prob-000/attempts/ATT-001",
@@ -297,8 +307,9 @@ test("server-renders the static assessment methodology demo for the static examp
   assert.match(html, /Example data - synthetic results for interface demonstration only\./);
   assert.match(html, /<section class="assessment-panel [^"]+" aria-labelledby="assessment-heading">/);
   assert.match(html, /Assessment methodology demo/);
-  assert.match(html, /Research Value \(V\)/);
   assert.match(html, /Scientific Demand Score/);
-  assert.match(html, /Technical Success Estimate/);
+  assert.match(html, /Industry \/ social proxy/);
+  assert.match(html, /Autoresearch Fit/);
+  assert.doesNotMatch(html, /Technical Success Estimate/);
   assert.doesNotMatch(html, /Local assessment unavailable/);
 });

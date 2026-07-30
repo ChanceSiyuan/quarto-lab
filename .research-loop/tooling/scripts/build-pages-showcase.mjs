@@ -18,6 +18,7 @@ const knowledgeTextExtensions = new Set([".css", ".html", ".js", ".json", ".svg"
 const routes = [
   "/",
   "/problems/Prob-000",
+  "/problems/Prob-000/autoresearch",
   "/problems/Prob-000/attempts/ATT-001",
   "/problems/Prob-000/attempts/ATT-002",
   "/problems/Prob-000/attempts/ATT-003",
@@ -60,6 +61,10 @@ function rewriteHtml(html) {
     .replace(
       /<a class="state-action" href="codex:[^"]*">\+ Add first problem<\/a>/g,
       '<span class="state-action static-disabled" aria-disabled="true">+ Add first problem</span>',
+    )
+    .replace(
+      /<a class="state-action" href="codex:[^"]*">Discuss in Codex<\/a>/g,
+      '<span class="state-action static-disabled" aria-disabled="true">Discuss in Codex</span>',
     )
     .replace(/<details class="codex-fallback"[\s\S]*?<\/details>/g, "")
     .replace(
