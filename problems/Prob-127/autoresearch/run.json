@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "kind": "quantum-harness-autoresearch-run",
+  "problemId": "Prob-127",
+  "runId": "qh-127",
+  "title": "Tensor-network contraction cost (qh-127 calibration)",
+  "status": "EXHAUSTED",
+  "dataNote": "Real run data from the qh-127 public experiment ledger; sealed evaluation aggregate only.",
+  "baseline": {
+    "label": "Frozen public cotengra baseline (seed 127000, 300 s)",
+    "cost": "258740108409287437870694400"
+  },
+  "attemptBudget": 10,
+  "attemptsRecorded": 9,
+  "bestAttempt": "attempt-003",
+  "bestCost": "155998914207778362993147904",
+  "finalization": {
+    "attempt": "attempt-003",
+    "verdict": "failed",
+    "strictlyBetter": false,
+    "note": "One-shot sealed finalization was spent on the best public attempt. The candidate improved strictly on the public instance (0.603x baseline) but was not strictly better on the sealed holdout instance, so the run closed as EXHAUSTED. Sealed plans, scores, and validator internals stay private."
+  },
+  "completedAt": "2026-07-30T11:05:00.000Z"
+}

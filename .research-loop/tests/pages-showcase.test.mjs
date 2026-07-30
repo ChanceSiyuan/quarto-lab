@@ -59,6 +59,7 @@ test("pages showcase writes static route files", async () => {
     "problems/Prob-127/index.html",
     "problems/Prob-128/index.html",
     "problems/Prob-000/autoresearch/index.html",
+    "problems/Prob-127/autoresearch/index.html",
     "problems/Prob-000/attempts/ATT-001/index.html",
     "problems/Prob-000/attempts/ATT-002/index.html",
     "problems/Prob-000/attempts/ATT-003/index.html",
@@ -234,6 +235,29 @@ test("pages showcase publishes the agreed evaluation cards on official problem d
     assert.doesNotMatch(html, /Industry \/ social proxy/);
     for (const value of values) assert.equal(html.includes(value), true, `${id} should contain ${value}`);
   }
+});
+
+test("pages showcase publishes the qh-127 real autoresearch results", async () => {
+  const detail = await readFile(join(out, "problems", "Prob-127", "index.html"), "utf8");
+  assert.match(detail, /Autoresearch results/);
+  assert.match(detail, /href="\/research-loop\/problems\/Prob-127\/autoresearch\/"/);
+  assert.doesNotMatch(detail, /synthetic attempts/);
+
+  const page = await readFile(join(out, "problems", "Prob-127", "autoresearch", "index.html"), "utf8");
+  assert.match(page, /Autoresearch results/);
+  assert.match(page, /Real run/);
+  assert.match(page, /Blind sealed evaluation/);
+  assert.match(page, /attempts \+ 1 finalization/);
+  assert.match(page, /attempt-001/);
+  assert.match(page, /attempt-009/);
+  assert.match(page, /accepted · best/);
+  assert.match(page, /0\.603x/);
+  assert.match(page, /Sealed finalization/);
+  assert.match(page, /EXHAUSTED/);
+  assert.match(page, /href="\/research-loop\/problems\/Prob-127\/"/);
+  assert.doesNotMatch(page, /Example data - synthetic results/);
+  assert.doesNotMatch(page, /<script\b/i);
+  assert.doesNotMatch(page, /codex:\/\//i);
 });
 
 test("pages showcase exposes exactly the approved public problem routes", async () => {

@@ -9,6 +9,7 @@ import { getStaticExampleValuation } from "@/lib/problems/example-valuation.mjs"
 import { buildStaticExampleEansvCard } from "@/lib/problems/example-valuation-presentation.mjs";
 import { buildProblemDiscussLaunch } from "@/lib/problems/codex-launch.mjs";
 import { buildExampleResearchLedger } from "@/lib/problems/example-presentation.mjs";
+import { isQh127ResearchProblem } from "@/lib/problems/qh127-research.mjs";
 import { createProblemRepository } from "@/lib/problems/repository.mjs";
 import { createResearchRepository } from "@/lib/problems/research-repository.mjs";
 import { buildProblemDetailResearchState } from "@/lib/problems/research-route-data.mjs";
@@ -105,6 +106,17 @@ export default async function ProblemDetailPage({
         <h1>{problem.title}</h1>
         <p className="detail-summary">{problem.summary}</p>
         <StaticAssessmentPanel problemId={problem.id} />
+        {isQh127ResearchProblem(problem.id) ? (
+          <section className={detailStyles.linkPanel} aria-labelledby="autoresearch-link-heading">
+            <div>
+              <h2 id="autoresearch-link-heading">Autoresearch results</h2>
+              <p>9 real attempts with public cost metrics plus the one-shot sealed finalization outcome.</p>
+            </div>
+            <Link className="open-affordance" href={`/problems/${problem.id}/autoresearch`}>
+              Open autoresearch results <span aria-hidden="true">→</span>
+            </Link>
+          </section>
+        ) : null}
         <section className="detail-panel" aria-labelledby="detail-status-heading">
           <h2 id="detail-status-heading">Problem detail</h2>
           <p>The detailed problem workspace will be designed next; this page currently locks the route, identity, and return path.</p>

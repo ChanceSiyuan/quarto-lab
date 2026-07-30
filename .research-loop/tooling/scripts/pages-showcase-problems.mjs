@@ -17,6 +17,7 @@ export function createPagesShowcaseRoutes() {
     "/problems/Prob-000",
     ...PAGES_PUBLIC_PROBLEM_IDS.map((id) => `/problems/${id}`),
     "/problems/Prob-000/autoresearch",
+    "/problems/Prob-127/autoresearch",
     "/problems/Prob-000/attempts/ATT-001",
     "/problems/Prob-000/attempts/ATT-002",
     "/problems/Prob-000/attempts/ATT-003",
