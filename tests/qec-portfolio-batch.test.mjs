@@ -7,17 +7,139 @@ import test from "node:test";
 import {
   createQecPortfolioBatchRunner,
   EXTERNAL_VALUATION_ALTERNATIVE,
+  verifyQecPortfolio,
   waitForTerminalState,
 } from "../lib/qec-portfolio/batch-runner.mjs";
 import { QEC_PORTFOLIO_BATCH_IDS } from "../lib/qec-portfolio/batch-runner.mjs";
 import { QEC_PORTFOLIO_PROBLEMS } from "../lib/qec-portfolio/catalog.mjs";
+import { renderProblemManifest } from "../lib/qec-portfolio/registration.mjs";
+import { VALUATION_ONLY_NOTICE } from "../lib/qec-portfolio/valuation-only-refresh.mjs";
 import { createLocalRepository, rebuildAndVerifyIndex } from "../scripts/run-qec-portfolio.mjs";
 import { SCIENTIFIC_DEMAND_FORMULA_ID } from "../lib/valuations/citations.mjs";
+import { createValuationSnapshotStore } from "../lib/valuations/snapshot-store.mjs";
 
 const RECORDS = [
   { id: "Prob-003", title: "Third", summary: "Third approved QEC problem.", technicalAnchor: { id: "anchor-Prob-003" } },
   { id: "Prob-002", title: "Second", summary: "Second approved QEC problem.", technicalAnchor: { id: "anchor-Prob-002" } },
 ];
+
+async function writeJson(path, value) {
+  await writeFile(path, `${JSON.stringify(value, null, 2)}\n`);
+}
+
+function citationSource(problemId) {
+  return {
+    id: `citation-W${problemId.replace("Prob-", "")}`,
+    url: `https://openalex.org/W${problemId.replace("Prob-", "")}`,
+    locator: `OpenAlex work W${problemId.replace("Prob-", "")}`,
+    kind: "citation-index",
+  };
+}
+
+function citationValue(problemId, { id, unit, value, inferred }) {
+  const source = citationSource(problemId);
+  return {
+    id,
+    state: "known",
+    interval: { low: value, base: value, high: value },
+    unit,
+    visibility: "public",
+    evidenceState: inferred ? "inferred" : "reported",
+    evidenceTier: "authoritative-secondary",
+    sourceIds: [source.id],
+    sources: [source],
+    ...(inferred ? {
+      estimateKind: "scientific-demand-model",
+      derivation: { formulaId: SCIENTIFIC_DEMAND_FORMULA_ID, inputIds: [source.id] },
+    } : {}),
+  };
+}
+
+function snapshotManifest(problemId) {
+  return {
+    schemaVersion: 1,
+    problemId,
+    createdAt: "2026-07-30T01:02:03.000Z",
+    complete: true,
+    citation: {
+      formulaId: SCIENTIFIC_DEMAND_FORMULA_ID,
+      scientificDemand: citationValue(problemId, { id: "scientific-demand-score", unit: "score-100", value: 61.2, inferred: true }),
+      scientificAttention: citationValue(problemId, { id: "scientific-demand-score", unit: "score-100", value: 61.2, inferred: true }),
+      momentum: citationValue(problemId, { id: "citation-momentum", unit: "fraction", value: 0.2, inferred: false }),
+      components: {
+        influence: { availability: "known", value: 0.61, weight: 0.45, unit: "fraction" },
+        momentum: { availability: "known", value: 0.2, weight: 0.30, unit: "fraction" },
+        breadth: { availability: "known", value: 0.5, weight: 0.15, unit: "fraction" },
+        network: { availability: "reserved", weight: 0.10 },
+      },
+      evidenceConfidence: "medium",
+      coverage: 0.8,
+      concentration: null,
+      warnings: [],
+      paperCount: 3,
+    },
+    feasibility: { state: "unknown", reason: "No sealed technical gate has been measured." },
+    value: { state: "unknown", reason: "No problem-specific value model has been identified." },
+  };
+}
+
+async function writeVerifierFixture(rootDir) {
+  const valuationStore = createValuationSnapshotStore({
+    rootDir,
+    now: () => new Date("2026-07-30T01:02:03.000Z"),
+  });
+  const snapshots = {};
+  for (const [index, problemId] of QEC_PORTFOLIO_BATCH_IDS.entries()) {
+    const problemDir = join(rootDir, "problems", problemId);
+    await mkdir(problemDir, { recursive: true });
+    const record = QEC_PORTFOLIO_PROBLEMS.find((item) => item.id === problemId);
+    const manifest = problemId === "Prob-001"
+      ? {
+          id: "Prob-001",
+          title: "AutoQEC CSS Distance Campaign",
+          summary: "Imported AutoQEC CSS-distance experimental audit record.",
+          status: "active",
+          domain: "quantum-computing",
+          quantumArea: "error-correction-and-fault-tolerance",
+        }
+      : renderProblemManifest(record);
+    await writeJson(join(problemDir, "problem.json"), manifest);
+    await writeFile(join(problemDir, "problem.md"), `# ${manifest.title}\n\n${manifest.summary}\n`);
+    const snapshot = await valuationStore.freeze(problemId, {
+      manifest: snapshotManifest(problemId),
+      papers: [],
+      marketEvidence: [],
+    });
+    snapshots[problemId] = snapshot;
+    const runId = `20260730T020304Z-${String(index + 1).padStart(6, "0")}`;
+    const runDir = join(problemDir, "assessments", runId);
+    await mkdir(runDir, { recursive: true });
+    await writeJson(join(runDir, "run.json"), {
+      schemaVersion: 1,
+      runId,
+      problemId,
+      parentRunId: null,
+      status: "completed",
+      createdAt: "2026-07-30T02:03:04.000Z",
+      updatedAt: "2026-07-30T02:04:04.000Z",
+      error: null,
+      summary: { runId, problemId, verdict: "DO_NOW" },
+    });
+    await writeJson(join(runDir, "input.json"), {
+      schemaVersion: 2,
+      problemId,
+      valuation: {
+        snapshotId: snapshot.manifest.snapshotId,
+        contentHash: snapshot.manifest.contentHash,
+      },
+    });
+    await writeJson(join(runDir, "assessment.json"), {
+      envelope: { language: "en" },
+    });
+    await writeFile(join(runDir, "report.html"), "<!doctype html><html lang=\"en\"><body>Completed English report</body></html>");
+  }
+  return snapshots;
+}
 
 function fixtureRunner({
   records = RECORDS,
@@ -204,4 +326,40 @@ test("polling rejects a terminal failure and deadline", async () => {
     waitForTerminalState(() => ({ status: "failed", error: { code: "FAILED" } }), { delay: async () => {}, timeoutMs: 1 }),
     (error) => error.code === "FAILED",
   );
+});
+
+test("portfolio verification rejects malformed valuation-only derivation provenance", async () => {
+  const rootDir = await mkdtemp(join(tmpdir(), "qec-portfolio-derivation-"));
+  const snapshots = await writeVerifierFixture(rootDir);
+  const runId = "20260730T020304Z-000001";
+  const derivationPath = join(rootDir, "problems", "Prob-001", "assessments", runId, "derivation.json");
+  await writeJson(derivationPath, {
+    schemaVersion: 1,
+    kind: "qec-valuation-only-refresh",
+    problemId: "Prob-001",
+    runId,
+    sourceRunId: "20260729T010203Z-abcdef",
+    sourceSnapshotId: "20260729T010203Z-111111111111",
+    refreshedSnapshotId: snapshots["Prob-001"].manifest.snapshotId,
+    notice: "Malformed notice",
+  });
+
+  const malformed = await verifyQecPortfolio({ rootDir });
+
+  assert.equal(malformed.ok, false);
+  assert.match(malformed.errors.join("\n"), /invalid valuation-only derivation provenance/);
+
+  await writeJson(derivationPath, {
+    schemaVersion: 1,
+    kind: "qec-valuation-only-refresh",
+    problemId: "Prob-001",
+    runId,
+    sourceRunId: "20260729T010203Z-abcdef",
+    sourceSnapshotId: "20260729T010203Z-111111111111",
+    refreshedSnapshotId: snapshots["Prob-001"].manifest.snapshotId,
+    notice: VALUATION_ONLY_NOTICE,
+  });
+
+  const valid = await verifyQecPortfolio({ rootDir });
+  assert.equal(valid.ok, true, valid.errors.join("\n"));
 });
