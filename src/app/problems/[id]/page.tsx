@@ -17,6 +17,7 @@ import { StaticAssessmentPanel } from "./static-assessment-panel";
 import detailStyles from "./research-detail.module.css";
 
 declare const __AUTORESEARCH_SIDECAR_AVAILABLE__: boolean;
+declare const __PAGES_STATIC_SHOWCASE__: boolean;
 
 export default async function ProblemDetailPage({
   params,
@@ -40,6 +41,7 @@ export default async function ProblemDetailPage({
     diagnostics: researchDiagnostics,
   });
   const sidecarAvailable = __AUTORESEARCH_SIDECAR_AVAILABLE__;
+  const pagesStaticShowcase = __PAGES_STATIC_SHOWCASE__;
 
   if (isStaticResearchExampleProblem(problem.id)) {
     const example = getStaticResearchExample(problem.id);
@@ -86,6 +88,21 @@ export default async function ProblemDetailPage({
           <Link className="open-affordance" href={`/problems/${problem.id}/autoresearch`}>
             Open autoresearch results <span aria-hidden="true">→</span>
           </Link>
+        </section>
+      </main>
+    );
+  }
+
+  if (pagesStaticShowcase) {
+    return (
+      <main className="detail-shell">
+        <Link className="back-link" href="/">← Back to problems</Link>
+        <p className="eyebrow">{problem.id}</p>
+        <h1>{problem.title}</h1>
+        <p className="detail-summary">{problem.summary}</p>
+        <section className="detail-panel" aria-labelledby="detail-status-heading">
+          <h2 id="detail-status-heading">Problem detail</h2>
+          <p>The detailed problem workspace will be designed next; this page currently locks the route, identity, and return path.</p>
         </section>
       </main>
     );

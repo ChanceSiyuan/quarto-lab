@@ -109,6 +109,7 @@ export default defineConfig(async () => {
   const localAssessmentToken = process.env.LOCAL_ASSESSMENT_PROXY_TOKEN;
   const autoresearchOrigin = process.env.AUTORESEARCH_SERVICE_ORIGIN;
   const autoresearchToken = process.env.AUTORESEARCH_CAPABILITY_TOKEN;
+  const pagesStaticShowcase = process.env.PAGES_STATIC_SHOWCASE === "1";
   const proxy = buildLocalServiceProxy({
     assessmentTarget: localAssessmentTarget,
     assessmentToken: localAssessmentToken,
@@ -123,6 +124,7 @@ export default defineConfig(async () => {
   return {
     define: {
       __AUTORESEARCH_SIDECAR_AVAILABLE__: JSON.stringify(Boolean(autoresearchOrigin && autoresearchToken)),
+      __PAGES_STATIC_SHOWCASE__: JSON.stringify(pagesStaticShowcase),
     },
     server: Object.keys(server).length ? server : undefined,
     plugins: [
