@@ -5,12 +5,14 @@ import { createHash } from "node:crypto";
 import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
+import { stageStarterTemplate } from "./starter-template.mjs";
 
 const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const buildDir = path.join(repo, "build");
 const root = path.join(buildDir, "xpi-root");
 const content = path.join(root, "chrome", "content");
 const dist = path.join(repo, "dist");
+const researchLoopRoot = path.resolve(repo, "..", "..");
 
 async function copy(source, target) {
   await mkdir(path.dirname(target), { recursive: true });
@@ -31,6 +33,19 @@ function buildNativeHelper() {
 await rm(root, { recursive: true, force: true });
 await mkdir(content, { recursive: true });
 await mkdir(dist, { recursive: true });
+
+const starterRoot = path.join(buildDir, "starter-root");
+const starterArchive = path.join(buildDir, "research-loop-starter.zip");
+await rm(starterRoot, { recursive: true, force: true });
+await rm(starterArchive, { force: true });
+await stageStarterTemplate(researchLoopRoot, starterRoot);
+execFileSync("/usr/bin/zip", ["-X", "-q", "-r", starterArchive, "."], {
+  cwd: starterRoot,
+  stdio: "inherit"
+});
+const starterBytes = await readFile(starterArchive);
+const starterDigest = createHash("sha256").update(starterBytes).digest("hex");
+await mkdir(path.join(root, "starter"), { recursive: true });
 
 await build({
   entryPoints: [path.join(repo, "src", "index.ts")],
@@ -60,7 +75,9 @@ await Promise.all([
   copy(path.join(repo, "prefs.js"), path.join(root, "prefs.js")),
   copy(path.join(repo, "assets"), path.join(content, "icons")),
   copy(path.join(repo, "locale"), path.join(root, "locale")),
-  copy(helper, path.join(root, "native", "zoterochat-helper"))
+  copy(helper, path.join(root, "native", "zoterochat-helper")),
+  copy(starterArchive, path.join(root, "starter", "research-loop-starter.zip")),
+  writeFile(path.join(root, "starter", "research-loop-starter.sha256"), `${starterDigest}\n`)
 ]);
 
 const helperBytes = await readFile(helper);

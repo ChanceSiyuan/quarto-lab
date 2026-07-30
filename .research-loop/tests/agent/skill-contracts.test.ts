@@ -518,7 +518,7 @@ const COMPLETE_GAPS: readonly Clause[] = [
 ];
 
 const CONFERENCE_SURVEY: readonly Clause[] = [
-  { requirement: "stores conference surveys as drafts", in: "body", pattern: /`drafts\/conference-surveys\/`/i },
+  { requirement: "stores conference surveys as drafts", in: "body", pattern: /`drafts\/conference\/`/i },
   { requirement: "audits every oral before filtering", in: "body", pattern: /every oral/i },
   { requirement: "never writes conference output into knowledge", in: "body", pattern: /never[^.]*`knowledge\/`/i },
   { requirement: "previews the survey draft", in: "body", pattern: /make draft-preview FILE=/i },

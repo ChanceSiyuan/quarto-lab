@@ -10,12 +10,120 @@ import {
   buildSelectionPrompt,
   clampFloatOpacity,
   clampFloatSize,
+  draftChangeRebaseAction,
   formatPendingApprovalDescription,
   pdfDirectory,
 } from "../src/plugin";
 import type { ReaderContext } from "../src/reader-context";
 
 describe("Zotkit Reader terminal state", () => {
+  it("treats a Cursor save as the new Draft baseline without discarding a real AI version", () => {
+    expect(draftChangeRebaseAction("old-original", "cursor-save", "ai-version"))
+      .toBe("preserve-ai-version");
+  });
+
+  it("moves an untouched AI working copy forward when Cursor saves the original Draft", () => {
+    expect(draftChangeRebaseAction("old-original", "cursor-save", "old-original"))
+      .toBe("refresh-working-copy");
+    expect(draftChangeRebaseAction("same", "same", "ai-version"))
+      .toBe("already-current");
+  });
+
+  it("creates every legal Draft staging parent without rejecting intermediate work directories", async () => {
+    const originalComponents = (globalThis as any).Components;
+    const originalIOUtils = (globalThis as any).IOUtils;
+    const originalPathUtils = (globalThis as any).PathUtils;
+    const directories = new Set(["/repo"]);
+    const makeDirectory = vi.fn(async (path: string) => {
+      const parent = path.slice(0, path.lastIndexOf("/")) || "/";
+      if (!directories.has(parent)) throw new Error(`missing parent ${parent}`);
+      directories.add(path);
+    });
+    (globalThis as any).PathUtils = { join: (...parts: string[]) => parts.join("/").replace(/\/{2,}/g, "/") };
+    (globalThis as any).IOUtils = {
+      exists: async (path: string) => directories.has(path),
+      makeDirectory,
+    };
+    (globalThis as any).Components = {
+      interfaces: { nsIFile: {} },
+      classes: {
+        "@mozilla.org/file/local;1": {
+          createInstance: () => {
+            let path = "";
+            return {
+              initWithPath(value: string) { path = value; },
+              exists: () => directories.has(path),
+              isSymlink: () => false,
+              isDirectory: () => directories.has(path),
+              normalize: () => {},
+              get path() { return path; },
+            };
+          },
+        },
+      },
+    };
+    const plugin = new ZoteroChatPlugin() as any;
+    plugin.settings = { qlabRoot: "/repo" };
+
+    try {
+      await plugin.ensureSafeChangeDirectory(
+        `work/qlab-zotero/draft-changes/${"a".repeat(64)}`,
+      );
+      expect([...directories]).toEqual([
+        "/repo",
+        "/repo/work",
+        "/repo/work/qlab-zotero",
+        "/repo/work/qlab-zotero/draft-changes",
+        `/repo/work/qlab-zotero/draft-changes/${"a".repeat(64)}`,
+      ]);
+      expect(makeDirectory).toHaveBeenCalledTimes(4);
+    }
+    finally {
+      (globalThis as any).Components = originalComponents;
+      (globalThis as any).IOUtils = originalIOUtils;
+      (globalThis as any).PathUtils = originalPathUtils;
+    }
+  });
+
+  it("toggles the current-paper and current-page chips and the model context together", () => {
+    const plugin = new ZoteroChatPlugin() as any;
+    plugin.context = {
+      attachment: { key: "ATTACH", libraryID: 1, title: "Paper", creators: [] },
+      parent: { title: "Paper", creators: [], tags: [] },
+      page: { pageNumber: 5, pageLabel: "5" },
+    };
+    plugin.codex = {
+      setReaderContextSelection: vi.fn(),
+      setInteractionContext: vi.fn(),
+    };
+    plugin.renderChatViews = vi.fn();
+
+    plugin.removeInteractionContext("active-paper");
+    expect(plugin.contextChips().map((chip: { id: string }) => chip.id)).toEqual(["current-page"]);
+    expect(plugin.contextSuggestions().find((item: { id: string }) => item.id === "active-paper").disabled).toBe(false);
+    expect(plugin.codex.setReaderContextSelection).toHaveBeenLastCalledWith({
+      paper: false,
+      page: true,
+      selection: false,
+    });
+
+    plugin.removeInteractionContext("current-page");
+    expect(plugin.contextChips()).toEqual([]);
+    expect(plugin.codex.setReaderContextSelection).toHaveBeenLastCalledWith({
+      paper: false,
+      page: false,
+      selection: false,
+    });
+
+    plugin.addInteractionContext({ id: "active-paper", kind: "paper", label: "Current Paper" });
+    expect(plugin.contextChips().map((chip: { id: string }) => chip.id)).toEqual(["active-paper"]);
+    expect(plugin.codex.setReaderContextSelection).toHaveBeenLastCalledWith({
+      paper: true,
+      page: false,
+      selection: false,
+    });
+  });
+
   it("waits for a new Zotero window's native tab deck before migrating Workbench", async () => {
     const previousZotero = (globalThis as any).Zotero;
     const source = { closed: false } as Window;
@@ -58,6 +166,40 @@ describe("Zotkit Reader terminal state", () => {
         openInBackground: false,
         preventJumpback: false,
       });
+    }
+    finally {
+      (globalThis as any).Zotero = originalZotero;
+    }
+  });
+
+  it("opens page citations in the selected conversation PDF without changing or interrupting chat state", async () => {
+    const originalZotero = (globalThis as any).Zotero;
+    const open = vi.fn(async () => ({}));
+    const conversationAttachment = { id: 42, key: "PAPER-A" };
+    const focusedAttachment = { id: 84, key: "PAPER-B" };
+    const getByLibraryAndKey = vi.fn((_libraryID: number, key: string) => (
+      key === "PAPER-A" ? conversationAttachment : focusedAttachment
+    ));
+    (globalThis as any).Zotero = { Reader: { open }, Items: { getByLibraryAndKey } };
+    const plugin = new ZoteroChatPlugin() as any;
+    plugin.context = { attachment: { id: 84, libraryID: 1, key: "PAPER-B" } };
+    plugin.codex = {
+      getActiveReaderContext: vi.fn(() => ({
+        attachment: { id: 42, libraryID: 1, key: "PAPER-A" },
+      })),
+      interrupt: vi.fn(),
+    };
+
+    try {
+      await plugin.openConversationPDFPage(6);
+      expect(getByLibraryAndKey).toHaveBeenCalledWith(1, "PAPER-A");
+      expect(open).toHaveBeenCalledWith(42, { pageIndex: 5 }, {
+        allowDuplicate: false,
+        openInBackground: false,
+        preventJumpback: false,
+      });
+      expect(plugin.codex.interrupt).not.toHaveBeenCalled();
+      expect(plugin.context.attachment.key).toBe("PAPER-B");
     }
     finally {
       (globalThis as any).Zotero = originalZotero;
@@ -469,7 +611,7 @@ describe("Zotkit Reader terminal state", () => {
     }
   });
 
-  it("clears stale turn timers for other threads once the service goes idle", () => {
+  it("keeps a background thread timer alive across tab switches and completes it on return", () => {
     vi.useFakeTimers();
     try {
       const plugin = new ZoteroChatPlugin() as any;
@@ -497,7 +639,7 @@ describe("Zotkit Reader terminal state", () => {
       vi.setSystemTime(new Date("2026-07-23T10:00:00Z"));
       plugin.renderChatViews(); // Thread A starts running.
 
-      // The user switches to thread B mid-turn; the service interrupts A and goes idle on B.
+      // The user switches to idle thread B mid-turn; A continues in the background.
       vi.setSystemTime(new Date("2026-07-23T10:05:00Z"));
       plugin.codex.state.activeThreadId = "B";
       plugin.codex.state.running = false;
@@ -507,8 +649,9 @@ describe("Zotkit Reader terminal state", () => {
       expect(plugin.turnDurationsForActiveThread()).toEqual({});
       expect(plugin.onTurnCompleted).not.toHaveBeenCalled();
 
-      // Reopening A while idle must not fabricate a completed turn from the stale start time.
+      // Reopening A while it is still running resumes the same visible clock.
       plugin.codex.state.activeThreadId = "A";
+      plugin.codex.state.running = true;
       plugin.codex.getChatEntries = () => [
         { id: "u1", kind: "user", text: "问 A" },
       ];
@@ -516,6 +659,11 @@ describe("Zotkit Reader terminal state", () => {
 
       expect(plugin.turnDurationsForActiveThread()).toEqual({});
       expect(plugin.onTurnCompleted).not.toHaveBeenCalled();
+
+      vi.setSystemTime(new Date("2026-07-23T10:06:00Z"));
+      plugin.codex.state.running = false;
+      plugin.renderChatViews();
+      expect(plugin.turnDurationsForActiveThread()).toEqual({ u1: 360_000 });
     }
     finally {
       vi.useRealTimers();

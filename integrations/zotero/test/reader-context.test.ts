@@ -1037,6 +1037,13 @@ describe("ReaderContextService", () => {
     const firstA = await service.refresh();
     activeHook = { reader: readerB, item: attachmentB };
     const contextB = await service.refresh();
+    const backgroundA = await service.invokeTool(
+      "zotero_get_current_page",
+      {},
+      firstA,
+    ) as { text: string };
+    expect(backgroundA.text).toBe("reader-a page 2");
+    expect(service.getCachedContext()?.attachment.key).toBe("ATTACH-B");
     activeHook = { reader: readerA, item: attachmentA };
     const secondA = await service.refresh();
 

@@ -867,6 +867,8 @@ export class ReaderContextService<TReader = unknown, TItem = unknown> {
   };
   private latestHook: ReaderHook<TReader, TItem> | null = null;
   private snapshot: Snapshot<TReader, TItem> | null = null;
+  /** Last live snapshot for every observed paper so background conversations keep their own Reader. */
+  private readonly snapshots = new Map<string, Snapshot<TReader, TItem>>();
   private captureSequence = 0;
   private profileSyncTail: Promise<void> = Promise.resolve();
   private readonly fullTextCache = new Map<string, Promise<CachedFullText>>();
@@ -1124,6 +1126,7 @@ export class ReaderContextService<TReader = unknown, TItem = unknown> {
     const key = attachmentCacheKey(attachment);
     this.fullTextCache.delete(key);
     this.pdfTextReferences.delete(key);
+    this.snapshots.delete(key);
     const active = this.snapshot;
     if (!active || attachmentCacheKey(active.context.attachment) !== key) return;
 
@@ -1199,28 +1202,34 @@ export class ReaderContextService<TReader = unknown, TItem = unknown> {
     return this.snapshot?.context ?? null;
   }
 
-  async invokeTool(name: ReaderToolName, args: Record<string, unknown> = {}): Promise<unknown> {
+  async invokeTool(
+    name: ReaderToolName,
+    args: Record<string, unknown> = {},
+    context?: ReaderContext,
+  ): Promise<unknown> {
     if (!(READER_TOOL_NAMES as readonly string[]).includes(name)) {
       throw new Error(`Unknown Reader tool: ${name}`);
     }
     switch (name) {
       case "zotero_get_reader_context":
-        return this.getReaderContext();
+        return this.getReaderContext(context);
       case "zotero_get_current_page":
-        return this.getCurrentPage();
+        return this.getCurrentPage(context);
       case "zotero_get_pdf_outline":
-        return this.getPdfOutline();
+        return this.getPdfOutline(context);
       case "zotero_get_current_selection":
-        return this.getCurrentSelection();
+        return this.getCurrentSelection(context);
       case "zotero_search_current_pdf":
         return this.searchCurrentPdf(
           this.requireQuery(args.query),
           this.parseLimit(args.limit),
+          context,
         );
       case "zotero_read_pdf_pages":
         return this.readPdfPages(
           positiveInteger(args.start_page),
           positiveInteger(args.end_page),
+          context,
         );
       case "zotero_search_library":
         return this.searchLibrary(
@@ -1242,45 +1251,49 @@ export class ReaderContextService<TReader = unknown, TItem = unknown> {
       case "zotero_list_annotations":
         return this.listAnnotations(
           args.page === undefined ? undefined : positiveInteger(args.page),
+          context,
         );
       case "zotkit_find_items":
         return this.findZotkitItems(
           this.requireQuery(args.query),
           this.parseListLimit(args.limit, 100, this.options.maxSearchResults),
+          context,
         );
       case "zotkit_get_item":
-        return this.getZotkitItem(cleanText(args.key));
+        return this.getZotkitItem(cleanText(args.key), context);
       case "zotkit_list_collections":
         return this.listZotkitCollections(
           cleanText(args.query),
           this.parseListLimit(args.limit, 500, 100),
+          context,
         );
       case "zotkit_list_tags":
         return this.listZotkitTags(
           cleanText(args.query),
           this.parseListLimit(args.limit, 500, 100),
+          context,
         );
     }
   }
 
-  async getReaderContext(): Promise<ReaderContext> {
-    return (await this.ensureSnapshot()).context;
+  async getReaderContext(context?: ReaderContext): Promise<ReaderContext> {
+    return (await this.ensureSnapshot(context)).context;
   }
 
-  async getCurrentPage(): Promise<PageTextResult> {
-    return (await this.ensureSnapshot()).context.page;
+  async getCurrentPage(context?: ReaderContext): Promise<PageTextResult> {
+    return (await this.ensureSnapshot(context)).context.page;
   }
 
-  async getCurrentSelection(): Promise<ReaderSelection | null> {
-    return (await this.ensureSnapshot()).context.selection;
+  async getCurrentSelection(context?: ReaderContext): Promise<ReaderSelection | null> {
+    return (await this.ensureSnapshot(context)).context.selection;
   }
 
-  async getPdfOutline(): Promise<{
+  async getPdfOutline(context?: ReaderContext): Promise<{
     items: PdfOutlineEntry[];
     totalPages: number | null;
     warnings: string[];
   }> {
-    const snapshot = await this.ensureSnapshot();
+    const snapshot = await this.ensureSnapshot(context);
     const outline = await this.zotero.extractPdfOutline(snapshot.hook.reader);
     const warnings: string[] = [];
     let items = outline ?? [];
@@ -1299,18 +1312,22 @@ export class ReaderContextService<TReader = unknown, TItem = unknown> {
     };
   }
 
-  async searchCurrentPdf(query: string, limit = this.options.maxSearchResults): Promise<{
+  async searchCurrentPdf(
+    query: string,
+    limit = this.options.maxSearchResults,
+    context?: ReaderContext,
+  ): Promise<{
     query: string;
     source: FullTextResult["source"];
     matches: SearchMatch[];
   }> {
-    const snapshot = await this.ensureSnapshot();
+    const snapshot = await this.ensureSnapshot(context);
     const fullText = await this.ensureFullText(snapshot);
     const matches = searchPageText(fullText.text, query, limit);
     return { query, source: fullText.source, matches };
   }
 
-  async readPdfPages(startPage: number, endPage: number): Promise<{
+  async readPdfPages(startPage: number, endPage: number, context?: ReaderContext): Promise<{
     startPage: number;
     endPage: number;
     pages: PageTextResult[];
@@ -1322,7 +1339,7 @@ export class ReaderContextService<TReader = unknown, TItem = unknown> {
       throw new RangeError(`A maximum of ${this.options.maxReadPages} pages can be read at once`);
     }
 
-    const snapshot = await this.ensureSnapshot();
+    const snapshot = await this.ensureSnapshot(context);
     let pageCount = snapshot.context.page.pageCount;
     if (pageCount !== undefined && endPage > pageCount) {
       throw new RangeError(`Requested page ${endPage}, but the PDF has ${pageCount} pages`);
@@ -1590,11 +1607,11 @@ export class ReaderContextService<TReader = unknown, TItem = unknown> {
     };
   }
 
-  async listAnnotations(page?: number): Promise<{
+  async listAnnotations(page?: number, context?: ReaderContext): Promise<{
     attachmentKey: string;
     annotations: ReaderAnnotation[];
   }> {
-    const snapshot = await this.ensureSnapshot();
+    const snapshot = await this.ensureSnapshot(context);
     const annotations = await this.zotero.listAnnotations(snapshot.attachmentHandle);
     const normalized = annotations
       .map(normalizeAnnotation)
@@ -1607,13 +1624,13 @@ export class ReaderContextService<TReader = unknown, TItem = unknown> {
     return { attachmentKey: snapshot.context.attachment.key, annotations: normalized };
   }
 
-  async findZotkitItems(query: string, limit: number): Promise<{
+  async findZotkitItems(query: string, limit: number, context?: ReaderContext): Promise<{
     query: string;
     libraryID: number | string;
     complete: boolean;
     matches: Array<Record<string, JsonValue>>;
   }> {
-    const snapshot = await this.ensureZotkitLibraryData();
+    const snapshot = await this.ensureZotkitLibraryData(false, context);
     const needle = query.toLocaleLowerCase();
     const collections = new Map(snapshot.collections.map((collection) => [collection.key, collection]));
     const matches: Array<Record<string, JsonValue>> = [];
@@ -1660,9 +1677,9 @@ export class ReaderContextService<TReader = unknown, TItem = unknown> {
     };
   }
 
-  async getZotkitItem(key: string): Promise<Record<string, JsonValue>> {
+  async getZotkitItem(key: string, context?: ReaderContext): Promise<Record<string, JsonValue>> {
     if (!key || key.length > 128) throw new TypeError("key must be a non-empty Zotero item key");
-    const snapshot = await this.ensureZotkitLibraryData();
+    const snapshot = await this.ensureZotkitLibraryData(false, context);
     const normalized = key.toUpperCase();
     const item = snapshot.items.find((candidate) => candidate.key.toUpperCase() === normalized);
     if (!item) throw new Error(`No Zotero item with key ${key} exists in the active library snapshot`);
@@ -1696,13 +1713,13 @@ export class ReaderContextService<TReader = unknown, TItem = unknown> {
     };
   }
 
-  async listZotkitCollections(query: string, limit: number): Promise<{
+  async listZotkitCollections(query: string, limit: number, context?: ReaderContext): Promise<{
     libraryID: number | string;
     complete: boolean;
     collections: ZotkitLibraryCollection[];
   }> {
     if (query.length > 512) throw new TypeError("query must not exceed 512 characters");
-    const snapshot = await this.ensureZotkitLibraryData();
+    const snapshot = await this.ensureZotkitLibraryData(false, context);
     const needle = query.toLocaleLowerCase();
     const collections = snapshot.collections
       .filter((collection) => !needle || [collection.key, collection.name, collection.path]
@@ -1713,13 +1730,13 @@ export class ReaderContextService<TReader = unknown, TItem = unknown> {
     return { libraryID: snapshot.libraryID, complete: snapshot.complete, collections };
   }
 
-  async listZotkitTags(query: string, limit: number): Promise<{
+  async listZotkitTags(query: string, limit: number, context?: ReaderContext): Promise<{
     libraryID: number | string;
     complete: boolean;
     tags: ZotkitLibraryTag[];
   }> {
     if (query.length > 512) throw new TypeError("query must not exceed 512 characters");
-    const snapshot = await this.ensureZotkitLibraryData();
+    const snapshot = await this.ensureZotkitLibraryData(false, context);
     const needle = query.toLocaleLowerCase();
     const tags = snapshot.tags
       .filter((tag) => !needle || tag.tag.toLocaleLowerCase().includes(needle))
@@ -1790,7 +1807,22 @@ export class ReaderContextService<TReader = unknown, TItem = unknown> {
     }
   }
 
-  private async ensureSnapshot(): Promise<Snapshot<TReader, TItem>> {
+  private async ensureSnapshot(context?: ReaderContext): Promise<Snapshot<TReader, TItem>> {
+    if (context) {
+      const key = attachmentCacheKey(context.attachment);
+      const cached = this.snapshots.get(key);
+      if (cached) {
+        // Touch insertion order so papers with active background work remain in
+        // the small session cache while older observations are evicted first.
+        this.snapshots.delete(key);
+        this.snapshots.set(key, cached);
+        return cached;
+      }
+      if (this.snapshot && attachmentCacheKey(this.snapshot.context.attachment) === key) {
+        return this.snapshot;
+      }
+      throw new Error("This conversation's Zotero Reader snapshot is no longer available; reopen that PDF once and retry");
+    }
     const activeHook = await this.zotero.getActiveReaderHook().catch(() => null);
     if (this.snapshot && activeHook) {
       if (activeHook.reader !== this.snapshot.hook.reader) {
@@ -1934,7 +1966,16 @@ export class ReaderContextService<TReader = unknown, TItem = unknown> {
     // A slower capture must never escape to a UI caller after a newer Reader
     // observation has started.
     this.assertCurrentCapture(sequence);
-    this.snapshot = { hook, attachmentHandle: attachment, context, fullText: null };
+    const snapshot = { hook, attachmentHandle: attachment, context, fullText: null };
+    this.snapshot = snapshot;
+    const key = attachmentCacheKey(context.attachment);
+    this.snapshots.delete(key);
+    this.snapshots.set(key, snapshot);
+    while (this.snapshots.size > this.options.maxWorkspaceCacheEntries) {
+      const oldest = this.snapshots.keys().next().value as string | undefined;
+      if (oldest === undefined) break;
+      this.snapshots.delete(oldest);
+    }
     return context;
   }
 
@@ -2272,8 +2313,11 @@ export class ReaderContextService<TReader = unknown, TItem = unknown> {
     return promise;
   }
 
-  private async ensureZotkitLibraryData(force = false): Promise<ZotkitLibrarySnapshot> {
-    const active = await this.ensureSnapshot();
+  private async ensureZotkitLibraryData(
+    force = false,
+    context?: ReaderContext,
+  ): Promise<ZotkitLibrarySnapshot> {
+    const active = await this.ensureSnapshot(context);
     const libraryID = active.context.attachment.libraryID;
     const key = snapshotLibraryKey(libraryID);
     if (!key || libraryID === undefined) {

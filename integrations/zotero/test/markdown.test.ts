@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { renderMarkdown } from "../src/markdown";
 
 function render(markdown: string): HTMLDivElement {
@@ -28,6 +28,51 @@ describe("safe paper Markdown renderer", () => {
       expect(link.rel).toBe("noopener noreferrer");
       expect(link.referrerPolicy).toBe("no-referrer");
     }
+  });
+
+  it("turns Chinese PDF page and range citations into host-reader navigation", () => {
+    const onPdfPageLink = vi.fn();
+    const host = document.createElement("div");
+    host.appendChild(renderMarkdown(document, [
+      "[PDF 第5页](https://arxiv.org/pdf/2306.13123#page=5)",
+      "[PDF 第6–7页](https://arxiv.org/pdf/2306.13123#page=6)",
+    ].join(" "), { onPdfPageLink }));
+    const links = [...host.querySelectorAll<HTMLAnchorElement>(".zc-pdf-page-link")];
+
+    expect(links).toHaveLength(2);
+    expect(links[0]?.dataset.pdfPage).toBe("5");
+    expect(links[1]?.dataset.pdfPage).toBe("6");
+    expect(links[1]?.dataset.pdfEndPage).toBe("7");
+    links[0]?.click();
+    links[1]?.click();
+    expect(onPdfPageLink).toHaveBeenNthCalledWith(1, {
+      page: 5,
+      sourceUrl: "https://arxiv.org/pdf/2306.13123#page=5",
+    });
+    expect(onPdfPageLink).toHaveBeenNthCalledWith(2, {
+      page: 6,
+      endPage: 7,
+      sourceUrl: "https://arxiv.org/pdf/2306.13123#page=6",
+    });
+  });
+
+  it("recognizes English PDF page citations but does not hijack ordinary paginated web links", () => {
+    const onPdfPageLink = vi.fn();
+    const host = document.createElement("div");
+    host.appendChild(renderMarkdown(document, [
+      "[PDF pages 12-14](https://example.org/article.pdf?page=12)",
+      "[results page](https://example.org/search?page=3)",
+    ].join(" "), { onPdfPageLink }));
+
+    const links = [...host.querySelectorAll<HTMLAnchorElement>("a")];
+    expect(links[0]?.classList.contains("zc-pdf-page-link")).toBe(true);
+    expect(links[1]?.classList.contains("zc-pdf-page-link")).toBe(false);
+    links[0]?.click();
+    expect(onPdfPageLink).toHaveBeenCalledWith({
+      page: 12,
+      endPage: 14,
+      sourceUrl: "https://example.org/article.pdf?page=12",
+    });
   });
 
   it("rejects executable and credential-bearing link destinations without parsing HTML", () => {

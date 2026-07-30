@@ -3,10 +3,15 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { EXTERNAL_EDITORS, type ExternalEditorApp } from "../src/external-editor";
 import type { QmdIndexEntry } from "../src/qmd-index";
-import { QmdWorkspaceView } from "../src/qmd-workspace";
+import {
+  QmdWorkspaceView,
+  qmdDiffForPath,
+} from "../src/qmd-workspace";
 
 const PAGE = "knowledge/Magic/Bell_magic.qmd";
 const DRAFT = "drafts/Dynamics/floquet.qmd";
+const CHANGE = "work/qlab-zotero/draft-changes/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/draft.qmd";
+const CHANGE_PREVIEW = "drafts/Dynamics/floquet.qlab-preview-aaaaaaaaaaaa.qmd";
 
 const CURSOR = EXTERNAL_EDITORS.find((editor) => editor.id === "cursor")!;
 const VSCODE = EXTERNAL_EDITORS.find((editor) => editor.id === "vscode")!;
@@ -21,7 +26,10 @@ function entry(relativePath: string): QmdIndexEntry {
   };
 }
 
-function mount(editors: ExternalEditorApp[] = [CURSOR, VSCODE]) {
+function mount(
+  editors: ExternalEditorApp[] = [CURSOR, VSCODE],
+  options: { pending?: boolean; indexedPending?: boolean } = {},
+) {
   const host = document.createElement("div");
   document.body.appendChild(host);
   const renderService = {
@@ -29,21 +37,73 @@ function mount(editors: ExternalEditorApp[] = [CURSOR, VSCODE]) {
       `http://127.0.0.1:44100/${relativePath.split("/").slice(1).join("/").replace(".qmd", ".html")}`),
     stop: vi.fn(),
     diagnostic: vi.fn(() => null as string | null),
+    checkDraft: vi.fn(async () => ({
+      ok: true,
+      diagnostics: [] as Array<{ code: string; message: string; line: number }>,
+    })),
+  };
+  const changeRenderService = {
+    open: vi.fn(async (_tree: unknown, _root: string, relativePath: string) =>
+      `http://127.0.0.1:44200/${relativePath.split("/").slice(1).join("/").replace(".qmd", ".html")}`),
+    stop: vi.fn(),
+    diagnostic: vi.fn(() => null as string | null),
   };
   const openExternally = vi.fn(async () => {});
   const onActiveDocument = vi.fn();
   const onEditorChosen = vi.fn();
+  const onReviewDraft = vi.fn(async () => {});
+  let pending = Boolean(options.pending);
+  let revision = pending ? "pending-revision" : "original-revision";
+  const prepareChange = vi.fn(async () => ({
+    changePath: CHANGE,
+    previewPath: CHANGE_PREVIEW,
+    changed: pending,
+    revision,
+  }));
+  const refreshChangePreview = vi.fn(async () => {});
+  const keepChange = vi.fn(async () => {
+    pending = false;
+    return {
+      changePath: CHANGE,
+      previewPath: CHANGE_PREVIEW,
+      changed: false,
+      revision: "kept-revision",
+    };
+  });
+  const draftEntry = entry(DRAFT);
+  draftEntry.pendingChange = Boolean(options.indexedPending);
   const view = new QmdWorkspaceView(host, {
     onBack: vi.fn(),
     renderService: renderService as never,
-    index: async () => [entry(PAGE), entry(DRAFT)],
+    changeRenderService: changeRenderService as never,
+    index: async () => [entry(PAGE), draftEntry],
     editors: async () => editors,
     openExternally,
     onEditorChosen,
     onActiveDocument,
+    onReviewDraft,
+    prepareChange,
+    refreshChangePreview,
+    keepChange,
   });
   view.repoRootHint = "/repo";
-  return { host, view, renderService, openExternally, onActiveDocument, onEditorChosen };
+  return {
+    host,
+    view,
+    renderService,
+    changeRenderService,
+    openExternally,
+    onActiveDocument,
+    onEditorChosen,
+    onReviewDraft,
+    prepareChange,
+    refreshChangePreview,
+    keepChange,
+    setPending(value: boolean, nextRevision = revision) {
+      pending = value;
+      revision = nextRevision;
+    },
+  };
 }
 
 async function settle(): Promise<void> {
@@ -99,6 +159,71 @@ describe("QmdWorkspaceView", () => {
 
     expect(host.querySelector(".zc-qmd-tree-badge")!.textContent).toBe("Draft");
     expect(host.querySelector(".zc-qmd-status")!.textContent).toContain("Draft");
+    expect(host.querySelector(".zc-qmd-compliance")!.getAttribute("aria-label")).toContain("checks passed");
+    expect(host.querySelector<HTMLButtonElement>(".zc-qmd-review")!.hidden).toBe(false);
+    view.destroy();
+  });
+
+  it("shows draft compliance problems without hiding the review action", async () => {
+    const { host, view, renderService } = mount();
+    renderService.checkDraft.mockResolvedValue({
+      ok: false,
+      diagnostics: [{ code: "DESCRIPTION_REQUIRED", message: "description is missing", line: 1 }],
+    });
+    view.show();
+    await view.open(DRAFT);
+
+    const compliance = host.querySelector<HTMLButtonElement>(".zc-qmd-compliance")!;
+    expect(compliance.getAttribute("aria-label")).toContain("1 issue");
+    compliance.click();
+    expect(host.querySelector(".zc-qmd-compliance-details")!.textContent)
+      .toContain("DESCRIPTION_REQUIRED · line 1 · description is missing");
+    expect(host.querySelector<HTMLButtonElement>(".zc-qmd-review")!.disabled).toBe(false);
+    view.destroy();
+  });
+
+  it("starts a review for the open draft without leaving its preview", async () => {
+    const { host, view, onReviewDraft } = mount();
+    view.show();
+    await view.open(DRAFT);
+
+    host.querySelector<HTMLButtonElement>(".zc-qmd-review")!.click();
+    await settle();
+
+    expect(onReviewDraft).toHaveBeenCalledWith(DRAFT);
+    expect(view.isVisible()).toBe(true);
+    expect(host.querySelector(".zc-qmd-path")!.textContent).toBe(DRAFT);
+    view.destroy();
+  });
+
+  it("rechecks compliance when Quarto reloads the saved Draft preview", async () => {
+    (document as unknown as { createXULElement(name: string): HTMLElement }).createXULElement =
+      vi.fn(() => document.createElement("div"));
+    const { host, view, renderService } = mount();
+    view.show();
+    await view.open(DRAFT);
+    expect(host.querySelector(".zc-qmd-compliance")!.getAttribute("aria-label")).toContain("checks passed");
+
+    renderService.checkDraft.mockResolvedValue({
+      ok: false,
+      diagnostics: [{ code: "CITATION_MISSING", message: "citation is missing", line: 12 }],
+    });
+    host.querySelector(".zc-qmd-render-browser")!.dispatchEvent(new Event("load"));
+    await settle();
+
+    expect(host.querySelector(".zc-qmd-compliance")!.getAttribute("aria-label")).toContain("1 issue");
+    expect(renderService.checkDraft).toHaveBeenLastCalledWith("/repo", DRAFT);
+    view.destroy();
+  });
+
+  it("hides draft-only review controls for trusted Knowledge", async () => {
+    const { host, view, renderService } = mount();
+    view.show();
+    await view.open(PAGE);
+
+    expect(renderService.checkDraft).not.toHaveBeenCalled();
+    expect(host.querySelector<HTMLButtonElement>(".zc-qmd-compliance")!.hidden).toBe(true);
+    expect(host.querySelector<HTMLButtonElement>(".zc-qmd-review")!.hidden).toBe(true);
     view.destroy();
   });
 
@@ -109,7 +234,8 @@ describe("QmdWorkspaceView", () => {
 
     const button = host.querySelector<HTMLButtonElement>(".zc-qmd-edit-external")!;
     expect(button.disabled).toBe(false);
-    expect(button.textContent).toBe("Edit in Cursor");
+    expect(button.textContent).toBe("✎");
+    expect(button.getAttribute("aria-label")).toBe("Edit in Cursor");
     button.click();
     await settle();
 
@@ -128,7 +254,7 @@ describe("QmdWorkspaceView", () => {
     picker.value = "vscode";
     picker.dispatchEvent(new Event("change"));
     expect(onEditorChosen).toHaveBeenCalledWith("vscode");
-    expect(host.querySelector<HTMLButtonElement>(".zc-qmd-edit-external")!.textContent)
+    expect(host.querySelector<HTMLButtonElement>(".zc-qmd-edit-external")!.getAttribute("aria-label"))
       .toBe("Edit in VS Code");
 
     host.querySelector<HTMLButtonElement>(".zc-qmd-edit-external")!.click();
@@ -152,7 +278,8 @@ describe("QmdWorkspaceView", () => {
 
     const button = host.querySelector<HTMLButtonElement>(".zc-qmd-edit-external")!;
     expect(button.disabled).toBe(true);
-    expect(button.textContent).toBe("No Editor Found");
+    expect(button.textContent).toBe("∅");
+    expect(button.getAttribute("aria-label")).toBe("No Editor Found");
     button.click();
     await settle();
     expect(openExternally).not.toHaveBeenCalled();
@@ -211,12 +338,12 @@ describe("QmdWorkspaceView", () => {
     const { view, onActiveDocument, renderService } = mount();
     view.show();
     await view.open(PAGE);
-    expect(onActiveDocument).toHaveBeenCalledWith(PAGE);
+    expect(onActiveDocument).toHaveBeenCalledWith(PAGE, null);
 
     view.hide();
     expect(onActiveDocument).toHaveBeenLastCalledWith(null);
     view.show();
-    expect(onActiveDocument).toHaveBeenLastCalledWith(PAGE);
+    expect(onActiveDocument).toHaveBeenLastCalledWith(PAGE, null);
 
     view.destroy();
     expect(onActiveDocument).toHaveBeenLastCalledWith(null);
@@ -267,5 +394,202 @@ describe("QmdWorkspaceView", () => {
     expect(renderService.open).toHaveBeenCalledTimes(2);
     expect(reload).toHaveBeenCalledOnce();
     view.destroy();
+  });
+
+  it("uses compact icon controls with hover and accessible labels", async () => {
+    const { host, view } = mount();
+    view.show();
+    await view.open(DRAFT);
+
+    const expected = new Map([
+      [".zc-qmd-back", "Back to AI"],
+      [".zc-qmd-quickopen-button", "Open a QMD"],
+      [".zc-qmd-compliance", "Draft checks passed"],
+      [".zc-qmd-review", "Add to Knowledge"],
+      [".zc-qmd-compare", "No AI version to compare"],
+      [".zc-qmd-change-keep", "No AI changes to keep"],
+      [".zc-qmd-edit-external", "Edit in Cursor"],
+      [".zc-qmd-refresh", "Refresh Preview"],
+    ]);
+    for (const [selector, label] of expected) {
+      const button = host.querySelector<HTMLButtonElement>(selector)!;
+      expect(button.textContent!.length).toBeLessThanOrEqual(2);
+      expect(button.getAttribute("aria-label")).toContain(label);
+      expect(button.title).toContain(label);
+    }
+    view.destroy();
+  });
+
+  it("switches the compiled preview between the original and the one latest AI version", async () => {
+    (document as unknown as { createXULElement(name: string): HTMLElement }).createXULElement =
+      vi.fn(() => document.createElement("div"));
+    const { host, view, changeRenderService, refreshChangePreview, setPending } = mount();
+    view.show();
+    await view.open(DRAFT);
+    view.syncAgentChanges({ activeTurnId: "turn-1", diffs: [] });
+    await settle();
+
+    setPending(true, "first-edit");
+    view.syncAgentChanges({
+      activeTurnId: "turn-1",
+      diffs: [{
+        turnId: "turn-1",
+        diff: `diff --git a/${CHANGE} b/${CHANGE}\n--- a/${CHANGE}\n+++ b/${CHANGE}\n@@ -7 +7 @@\n-Old paragraph.\n+New paragraph.`,
+      }],
+    });
+    await settle();
+
+    const eye = host.querySelector<HTMLButtonElement>(".zc-qmd-compare")!;
+    const browser = host.querySelector<HTMLElement>(".zc-qmd-render-browser")!;
+    expect(eye.disabled).toBe(false);
+    expect(refreshChangePreview).toHaveBeenCalledWith(DRAFT, CHANGE, CHANGE_PREVIEW);
+    expect(changeRenderService.open).toHaveBeenCalledWith(
+      expect.objectContaining({ id: "drafts" }),
+      "/repo",
+      CHANGE_PREVIEW,
+    );
+    expect(browser.getAttribute("src")).toContain("127.0.0.1:44100");
+
+    eye.click();
+    await settle();
+    expect(browser.getAttribute("src")).toContain("127.0.0.1:44200");
+    expect(eye.getAttribute("aria-pressed")).toBe("true");
+    eye.click();
+    await settle();
+    expect(browser.getAttribute("src")).toContain("127.0.0.1:44100");
+    expect(eye.getAttribute("aria-pressed")).toBe("false");
+    view.destroy();
+  });
+
+  it("Keep promotes only the latest cumulative AI version and clears review state", async () => {
+    (document as unknown as { createXULElement(name: string): HTMLElement }).createXULElement =
+      vi.fn(() => document.createElement("div"));
+    const { host, view, keepChange, refreshChangePreview, setPending } = mount();
+    view.show();
+    await view.open(DRAFT);
+    view.syncAgentChanges({ activeTurnId: "turn-2", diffs: [] });
+    await settle();
+    setPending(true, "first-edit");
+    view.syncAgentChanges({
+      activeTurnId: "turn-2",
+      diffs: [{
+        turnId: "turn-2",
+        diff: `diff --git a/${CHANGE} b/${CHANGE}\n--- a/${CHANGE}\n+++ b/${CHANGE}\n@@\n-Old paragraph.\n+First edit.`,
+      }],
+    });
+    await settle();
+    setPending(true, "latest-edit");
+    view.syncAgentChanges({
+      activeTurnId: "turn-2",
+      diffs: [{
+        turnId: "turn-2",
+        diff: `diff --git a/${CHANGE} b/${CHANGE}\n--- a/${CHANGE}\n+++ b/${CHANGE}\n@@\n-Old paragraph.\n+Latest edit.`,
+      }],
+    });
+    await settle();
+
+    expect(refreshChangePreview.mock.calls.length).toBeGreaterThanOrEqual(2);
+    host.querySelector<HTMLButtonElement>(".zc-qmd-change-keep")!.click();
+    await settle();
+    expect(keepChange).toHaveBeenCalledOnce();
+    expect(keepChange).toHaveBeenCalledWith(DRAFT, CHANGE);
+    expect(host.querySelector<HTMLButtonElement>(".zc-qmd-compare")!.disabled).toBe(true);
+    expect(host.querySelector<HTMLButtonElement>(".zc-qmd-change-keep")!.disabled).toBe(true);
+    expect(host.querySelector(`[data-path="${DRAFT}"] .zc-qmd-pending-dot`)).toBeNull();
+    view.destroy();
+  });
+
+  it("restores a persisted pending version and marks its Draft tree with green dots", async () => {
+    (document as unknown as { createXULElement(name: string): HTMLElement }).createXULElement =
+      vi.fn(() => document.createElement("div"));
+    const { host, view, changeRenderService } = mount(
+      [CURSOR, VSCODE],
+      { pending: true, indexedPending: true },
+    );
+    view.show();
+    await view.open(DRAFT);
+    await settle();
+
+    expect(host.querySelector<HTMLButtonElement>(".zc-qmd-compare")!.disabled).toBe(false);
+    expect(changeRenderService.open).toHaveBeenCalledWith(
+      expect.objectContaining({ id: "drafts" }),
+      "/repo",
+      CHANGE_PREVIEW,
+    );
+    expect(host.querySelector(`[data-path="drafts"] .zc-qmd-pending-dot`)).not.toBeNull();
+    expect(host.querySelector(`[data-path="drafts/Dynamics"] .zc-qmd-pending-dot`)).not.toBeNull();
+    view.destroy();
+  });
+
+  it("does nothing when the eye is clicked without a pending AI version", async () => {
+    (document as unknown as { createXULElement(name: string): HTMLElement }).createXULElement =
+      vi.fn(() => document.createElement("div"));
+    const { host, view, changeRenderService } = mount();
+    view.show();
+    await view.open(DRAFT);
+    const eye = host.querySelector<HTMLButtonElement>(".zc-qmd-compare")!;
+    expect(eye.disabled).toBe(true);
+    eye.click();
+    await settle();
+    expect(changeRenderService.open).not.toHaveBeenCalled();
+    view.destroy();
+  });
+
+  it("detects a saved Git-ignored working copy from its content fingerprint", async () => {
+    (document as unknown as { createXULElement(name: string): HTMLElement }).createXULElement =
+      vi.fn(() => document.createElement("div"));
+    const { host, view, setPending, refreshChangePreview } = mount();
+    view.show();
+    await view.open(DRAFT);
+    view.syncAgentChanges({ activeTurnId: "turn-hidden", diffs: [] });
+    await settle();
+
+    setPending(true, "changed-without-git-diff");
+    view.syncAgentChanges({ activeTurnId: "turn-hidden", diffs: [] });
+    await settle();
+
+    expect(host.querySelector<HTMLButtonElement>(".zc-qmd-compare")!.disabled).toBe(false);
+    expect(refreshChangePreview).toHaveBeenCalledWith(DRAFT, CHANGE, CHANGE_PREVIEW);
+    expect(host.querySelector(`[data-path="drafts"] .zc-qmd-pending-dot`)).not.toBeNull();
+    view.destroy();
+  });
+
+  it("does not attach another paper or Draft's Agent diff to the visible Draft", async () => {
+    const { host, view, changeRenderService } = mount();
+    view.show();
+    await view.open(DRAFT);
+    view.syncAgentChanges({ activeTurnId: "turn-other", diffs: [] });
+    await settle();
+    view.syncAgentChanges({
+      activeTurnId: "turn-other",
+      diffs: [{
+        turnId: "turn-other",
+        diff: "diff --git a/drafts/other.qmd b/drafts/other.qmd\n--- a/drafts/other.qmd\n+++ b/drafts/other.qmd\n-old\n+new",
+      }],
+    });
+    await settle();
+    expect(host.querySelector<HTMLButtonElement>(".zc-qmd-compare")!.disabled).toBe(true);
+    expect(changeRenderService.open).not.toHaveBeenCalled();
+    view.destroy();
+  });
+});
+
+describe("QMD Agent diff helpers", () => {
+  it("extracts only the active Draft from a multi-file turn diff", () => {
+    const diff = [
+      "diff --git a/drafts/other.qmd b/drafts/other.qmd",
+      "--- a/drafts/other.qmd",
+      "+++ b/drafts/other.qmd",
+      "-other old",
+      "+other new",
+      `diff --git a/${DRAFT} b/${DRAFT}`,
+      `--- a/${DRAFT}`,
+      `+++ b/${DRAFT}`,
+      "-Old paragraph.",
+      "+New paragraph.",
+    ].join("\n");
+    const selected = qmdDiffForPath(diff, DRAFT)!;
+    expect(selected).toContain("New paragraph.");
+    expect(selected).not.toContain("other new");
   });
 });

@@ -6,6 +6,8 @@ import type {
   ModelListResponse,
   ThreadForkParams,
   ThreadForkResponse,
+  ThreadListParams,
+  ThreadListResponse,
   ThreadReadResponse,
   ThreadResumeParams,
   ThreadResumeResponse,
@@ -52,6 +54,7 @@ export interface AgentClient {
   accountLogout?(): Promise<Record<string, never>>;
   threadFork?(params: ThreadForkParams): Promise<ThreadForkResponse>;
   threadRollback?(params: ThreadRollbackParams): Promise<ThreadRollbackResponse>;
+  threadList?(params?: ThreadListParams): Promise<ThreadListResponse>;
 }
 
 export const CODEX_CAPABILITIES: AgentCapabilities = Object.freeze({

@@ -41,6 +41,7 @@ function fakeRuntime(): QmdRenderRuntime & {
       };
     },
     async validate() { return { ok: true, output: "knowledge: the trusted tree is valid" }; },
+    async checkDraft() { return { ok: true, diagnostics: [] }; },
     async diff() { return "--- a\n+++ b\n"; },
   };
 }
@@ -106,6 +107,7 @@ describe("QmdRenderService", () => {
         return new Promise<QmdRenderProcess>((resolve) => { resolveStartB = resolve; });
       }),
       async validate() { return { ok: true, output: "ok" }; },
+      async checkDraft() { return { ok: true, diagnostics: [] }; },
       async diff() { return ""; },
     };
     const service = new QmdRenderService(runtime, () => 44_301);
@@ -142,6 +144,7 @@ describe("QmdRenderService", () => {
       start: vi.fn(async (_tree, _root, relativePath) =>
         new Promise<QmdRenderProcess>((resolve) => resolvers.set(relativePath, resolve))),
       async validate() { return { ok: true, output: "ok" }; },
+      async checkDraft() { return { ok: true, diagnostics: [] }; },
       async diff() { return ""; },
     };
     const processFor = (name: string): QmdRenderProcess => ({
@@ -195,6 +198,22 @@ describe("QmdRenderService", () => {
 
     expect(await service.validate(DRAFTS, "/repo")).toBeNull();
     expect(validate).toHaveBeenCalledOnce();
+  });
+
+  it("checks one draft without coupling the check to the preview process", async () => {
+    const runtime = fakeRuntime();
+    const checkDraft = vi.spyOn(runtime, "checkDraft").mockResolvedValue({
+      ok: false,
+      diagnostics: [{ code: "CATEGORY_REQUIRED", message: "category is missing", line: 1 }],
+    });
+    const service = new QmdRenderService(runtime, () => 44_700);
+
+    await expect(service.checkDraft("/repo", "drafts/a.qmd")).resolves.toEqual({
+      ok: false,
+      diagnostics: [{ code: "CATEGORY_REQUIRED", message: "category is missing", line: 1 }],
+    });
+    expect(checkDraft).toHaveBeenCalledWith("/repo", "drafts/a.qmd");
+    expect(service.running()).toBe(false);
   });
 });
 

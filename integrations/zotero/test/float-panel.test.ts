@@ -171,7 +171,7 @@ describe("latestExchange", () => {
 });
 
 describe("full workbench surface", () => {
-  it("shows repository controls, six commands, and chat capture only in tab mode", () => {
+  it("shows repository controls and six commands without a redundant chat-capture button", () => {
     const handlers = callbacks();
     const host = document.createElement("div");
     document.body.appendChild(host);
@@ -188,8 +188,8 @@ describe("full workbench surface", () => {
     expect(handlers.onQLabCommand).toHaveBeenCalledWith("qlab_preview");
     host.querySelector<HTMLButtonElement>(".zc-workbench-root")!.click();
     expect(handlers.onChooseQLabRoot).toHaveBeenCalled();
-    host.querySelector<HTMLButtonElement>(".zc-workbench-capture")!.click();
-    expect(handlers.onCaptureChatDraft).toHaveBeenCalled();
+    expect(host.querySelector(".zc-workbench-capture")).toBeNull();
+    expect(handlers.onCaptureChatDraft).not.toHaveBeenCalled();
     view.destroy();
   });
 });
@@ -231,6 +231,25 @@ describe("FloatPanelView selection chip and transcript", () => {
     transcript.querySelector<HTMLButtonElement>(".zc-turn-summary")?.click();
     expect(transcript.textContent).toContain("zotero_get_current_selection");
     expect(transcript.querySelector("strong")?.textContent).toBe("核心");
+  });
+
+  it("forwards assistant PDF citations to Zotero page navigation", () => {
+    const handlers = { ...callbacks(), onOpenPdfPage: vi.fn() };
+    const { host, view } = mount(handlers);
+    view.setState({
+      phase: "ready",
+      entries: [{
+        id: "a1",
+        kind: "assistant",
+        text: "See [PDF page 9](https://example.org/paper.pdf#page=9)",
+      }],
+    });
+
+    host.querySelector<HTMLAnchorElement>(".zc-pdf-page-link")!.click();
+    expect(handlers.onOpenPdfPage).toHaveBeenCalledWith({
+      page: 9,
+      sourceUrl: "https://example.org/paper.pdf#page=9",
+    });
   });
 
   it("copies the raw answer text via the privileged clipboard helper and shows a transient confirmation", () => {

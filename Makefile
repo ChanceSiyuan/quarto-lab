@@ -12,7 +12,7 @@
 
 .PHONY: help dev build test pages-build \
 	knowledge-check knowledge-resolve knowledge-preview \
-	draft-preview drafts-preview \
+	draft-check draft-preview drafts-preview \
 	literature-index literature-fetch literature-sync \
 	migration-verify \
 	problem-import-autoqec-css-distance problem-import-verify \
@@ -34,6 +34,7 @@ help:
 	@echo '  make knowledge-preview                          serve the trusted knowledge site locally'
 	@echo
 	@echo '  make draft-preview FILE=drafts/path.md          render one untrusted draft note locally'
+	@echo '  make draft-check FILE=drafts/path.qmd           check one Draft for promotion readiness'
 	@echo '  make drafts-preview                             preview the untrusted drafts workspace locally'
 	@echo
 	@echo '  make literature-index                           regenerate every literature/<method>/INDEX.md'
@@ -83,6 +84,13 @@ knowledge-resolve: node_modules/.package-lock.json
 
 knowledge-preview: node_modules/.package-lock.json
 	npm run knowledge:preview
+
+draft-check: node_modules/.package-lock.json
+	@if [ -z "$(FILE)" ]; then \
+		echo 'usage: make draft-check FILE=drafts/<note>.qmd' >&2; \
+		exit 2; \
+	fi
+	npm run draft:check -- --file "$(FILE)"
 
 draft-preview: node_modules/.package-lock.json
 	@if [ -z "$(FILE)" ]; then \

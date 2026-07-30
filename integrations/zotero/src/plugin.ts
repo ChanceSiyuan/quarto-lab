@@ -18,12 +18,20 @@ import {
   type CheckpointOption,
   type ChatEntry,
   type DiffReview,
+  type HistoryConversationOption,
   type PendingApproval,
   type ResearchContextChip,
   type ResearchContextSuggestion,
   type ResearchPlan,
   type SidebarPhase,
+  type ThreadOption,
 } from "./sidebar";
+import {
+  importedChatOptions,
+  parseChatGPTExport,
+  parseStoredChatGPTArchive,
+  type StoredChatGPTArchive,
+} from "./chatgpt-history";
 import { FloatPanelView, latestExchange } from "./float-panel";
 import {
   QLAB_WORKBENCH_TAB_TYPE,
@@ -50,13 +58,14 @@ import { loadSettings, saveQLabRoot, type ZoteroChatSettings } from "./settings"
 import {
   buildQLabCommandPrompt,
   buildCaptureChatDraftPrompt,
+  buildReviewDraftPrompt,
   commandDefinition,
   type QLabCommandID,
 } from "./qlab-commands";
 import {
   createGeckoQLabPathHost,
-  isQLabRepositoryShape,
   normalizeQLabRoot,
+  qlabRepositoryState,
 } from "./qlab-workspace";
 import { QLabLiteratureService } from "./qlab-library";
 import {
@@ -87,10 +96,11 @@ import {
   type NotingSnapshot,
 } from "./noting";
 import { buildQaFromEntries } from "./exchanges";
-import { sha256File } from "./hashing";
+import { sha256Bytes, sha256File } from "./hashing";
 import {
   debug,
   logError,
+  launchURL,
   PANE_ID,
   PLUGIN_ID,
   prefString,
@@ -112,6 +122,32 @@ interface TurnMeta {
   model: string;
 }
 
+interface DraftChangeManifest {
+  version: 1;
+  repositoryRoot: string;
+  originalPath: string;
+  changePath: string;
+  previewPath: string;
+  baseSha256: string;
+}
+
+export type DraftChangeRebaseAction =
+  | "already-current"
+  | "refresh-working-copy"
+  | "preserve-ai-version";
+
+/** Classifies a direct editor save without conflating it with an AI edit. */
+export function draftChangeRebaseAction(
+  baseSha256: string,
+  originalSha256: string,
+  changeSha256: string,
+): DraftChangeRebaseAction {
+  if (baseSha256 === originalSha256) return "already-current";
+  return changeSha256 === baseSha256
+    ? "refresh-working-copy"
+    : "preserve-ai-version";
+}
+
 export const MAX_SELECTION_PROMPT_CHARACTERS = 32_000;
 
 /** Keep the historical class name as a source-level compatibility shim. */
@@ -121,6 +157,7 @@ export class ZoteroChatPlugin {
   private bridge!: NativeBridge;
   private mainSite!: ResearchLoopSiteService;
   private qmdRender!: QmdRenderService;
+  private qmdChangeRender!: QmdRenderService;
   private terminal!: TerminalPanel;
   private codex!: CodexService;
   private literature!: QLabLiteratureService;
@@ -152,6 +189,11 @@ export class ZoteroChatPlugin {
   private selectedEffort = "medium";
   private floatOpacity = 100;
   private addedContextIDs = new Set<string>();
+  /** Default Reader chips the user explicitly turned off for this paper. */
+  private excludedContextIDs = new Set<string>();
+  private chatGPTArchive: StoredChatGPTArchive | null = null;
+  private selectedImportedChatID: string | null = null;
+  private openImportedChatIDs: string[] = [];
   private mutationCheckpoints: CheckpointOption[] = [];
   private contextRequestSequence = 0;
   private destroyed = false;
@@ -176,6 +218,7 @@ export class ZoteroChatPlugin {
       ignoreExisting: true,
       permissions: 0o700,
     });
+    await this.loadChatGPTHistory();
 
     const readAdapter = createZotero9ReadAdapter(Zotero, {
       readUtf8: (path) => IOUtils.readUTF8(path),
@@ -198,8 +241,16 @@ export class ZoteroChatPlugin {
       onMoveError: (error) => this.reportError(error),
     });
     this.bridge = new NativeBridge(data.rootURI, data.version);
-    this.mainSite = new ResearchLoopSiteService(createResearchLoopSiteRuntime(this.bridge));
+    this.mainSite = new ResearchLoopSiteService(
+      createResearchLoopSiteRuntime(this.bridge, data.rootURI, data.version),
+    );
     this.qmdRender = new QmdRenderService(createQmdRenderRuntime(this.bridge));
+    // Original and AI-version previews use disjoint port ranges, so two
+    // documents can never collide merely because their hashes line up.
+    this.qmdChangeRender = new QmdRenderService(
+      createQmdRenderRuntime(this.bridge),
+      (seed) => 44_500 + (Math.abs(seed) % 1_500),
+    );
     this.literature = new QLabLiteratureService();
     this.zoteroSync = new QLabZoteroSyncService(createQLabZoteroSyncRuntime(this.bridge));
     this.terminal = new TerminalPanel(this.bridge, this.settings.terminalHeight, {
@@ -730,11 +781,32 @@ export class ZoteroChatPlugin {
       onStop: () => void this.codex.interrupt().catch((error) => this.reportError(error)),
       onNewThread: () => void this.newChat(view!).catch((error) => this.reportError(error)),
       onSelectThread: (threadID) => void this.selectThread(view!, threadID),
-      onDeleteThread: (threadID) => void this.codex.deleteThread(threadID).catch((error) => this.reportError(error)),
+      onCloseThread: (threadID) => void this.closeConversationTab(threadID).catch((error) => this.reportError(error)),
+      onHistorySearch: (query) => {
+        void this.codex.refreshGlobalHistory(query).catch(() => {});
+      },
+      onHistoryLoadMore: () => {
+        void this.codex.loadMoreGlobalHistory().catch(() => {});
+      },
+      onSelectHistoryConversation: (conversation) => {
+        void this.selectHistoryConversation(conversation).catch((error) => this.reportError(error));
+      },
+      onToggleHistoryPin: (threadID, pinned) => {
+        void this.codex.setGlobalThreadPinned(threadID, pinned).catch((error) => this.reportError(error));
+      },
+      onOpenChatGPT: () => launchURL("https://chatgpt.com/"),
+      onImportChatGPTHistory: () => {
+        void this.importChatGPTHistory(body.ownerDocument.defaultView || undefined)
+          .catch((error) => this.reportError(error));
+      },
+      onReturnToLiveConversation: () => this.returnToLiveConversation(),
       onLogin: () => void this.codex.login().catch((error) => this.reportError(error)),
       onLogout: () => void this.codex.logout().catch((error) => this.reportError(error)),
       onOpenTerminal: () => void this.openTerminal().then(() => this.terminal.focus()).catch((error) => this.reportError(error)),
       onOpenWorkbench: () => void this.openWorkbenchTab().catch((error) => this.reportError(error)),
+      onOpenPdfPage: (reference) => {
+        void this.openConversationPDFPage(reference.page).catch((error) => this.reportError(error));
+      },
       onRefreshContext: () => void this.retryResearchChat(body).catch((error) => this.reportError(error)),
       onInsertSelection: () => void this.attachSelection(false),
       onModelChange: (model) => { void this.handleModelSelection(model); },
@@ -854,12 +926,15 @@ export class ZoteroChatPlugin {
   }
 
   private async sendChat(text: string): Promise<void> {
+    if (this.selectedImportedChatID) {
+      throw new Error("Imported ChatGPT history is read-only; return to the live Codex conversation first");
+    }
     if (!this.codex.state.connected) await this.ensureChatSession();
     if (!this.codex.isSignedIn()) {
       throw new Error("Sign in to the local Codex with ChatGPT first");
     }
     this.chatPhase = "ready";
-    const context = this.context;
+    const context = this.codex.getActiveReaderContext?.() || this.context;
     await this.codex.send(text, this.selectedModel, this.selectedEffort);
     const threadId = this.codex.state.activeThreadId;
     if (threadId && context?.selection?.text && this.addedContextIDs.has("current-selection")) {
@@ -868,17 +943,31 @@ export class ZoteroChatPlugin {
   }
 
   private async newChat(preferredView?: SidebarView): Promise<void> {
+    this.selectedImportedChatID = null;
     await this.openResearchChat(undefined, false);
     if (!this.codex.isSignedIn()) {
       throw new Error("Sign in to the local Codex with ChatGPT first");
     }
+    this.excludedContextIDs.clear();
+    this.addedContextIDs.delete("current-selection");
     await this.codex.newThread();
+    this.updateInteractionContext();
     (preferredView || this.activeWorkbenchEntry()?.view)?.focusComposer();
   }
 
   private async selectThread(view: SidebarView, threadID: string): Promise<void> {
     try {
+      const imported = this.chatGPTArchive?.conversations.find((conversation) => conversation.id === threadID);
+      if (imported) {
+        this.selectedImportedChatID = threadID;
+        if (!this.openImportedChatIDs.includes(threadID)) this.openImportedChatIDs.push(threadID);
+        this.chatError = "";
+        this.renderChatViews();
+        return;
+      }
+      this.selectedImportedChatID = null;
       await this.codex.switchThread(threadID);
+      this.updateInteractionContext();
       this.chatError = "";
       this.renderChatViews();
       view.focusComposer();
@@ -886,6 +975,46 @@ export class ZoteroChatPlugin {
     catch (error) {
       this.reportError(error);
     }
+  }
+
+  private async selectHistoryConversation(conversation: HistoryConversationOption): Promise<void> {
+    if (conversation.source === "chatgpt") {
+      this.selectedImportedChatID = conversation.id;
+      if (!this.openImportedChatIDs.includes(conversation.id)) {
+        this.openImportedChatIDs.push(conversation.id);
+      }
+      this.chatError = "";
+      this.renderChatViews();
+      return;
+    }
+    this.selectedImportedChatID = null;
+    await this.codex.openGlobalThread(conversation.id);
+    this.updateInteractionContext();
+    this.chatError = "";
+    this.renderChatViews();
+    this.activeWorkbenchEntry()?.view.focusComposer();
+  }
+
+  private returnToLiveConversation(): void {
+    this.selectedImportedChatID = null;
+    this.chatError = "";
+    this.renderChatViews();
+    this.activeWorkbenchEntry()?.view.focusComposer();
+  }
+
+  private async closeConversationTab(threadID: string): Promise<void> {
+    const importedIndex = this.openImportedChatIDs.indexOf(threadID);
+    if (importedIndex >= 0) {
+      this.openImportedChatIDs.splice(importedIndex, 1);
+      if (this.selectedImportedChatID === threadID) this.selectedImportedChatID = null;
+    }
+    else {
+      await this.codex.closeThread(threadID);
+      this.updateInteractionContext();
+    }
+    this.chatError = "";
+    this.renderChatViews();
+    this.activeWorkbenchEntry()?.view.focusComposer();
   }
 
   private async openChatWithSelection(newThread: boolean): Promise<void> {
@@ -952,6 +1081,9 @@ export class ZoteroChatPlugin {
       onOpenWorkbench: () => {
         void this.openWorkbenchTab(win).catch((error) => this.reportError(error));
       },
+      onOpenPdfPage: (reference) => {
+        void this.openConversationPDFPage(reference.page).catch((error) => this.reportError(error));
+      },
     });
     const storedSize = /^(\d+)x(\d+)$/.exec(prefString("floatSize", ""));
     if (storedSize) {
@@ -971,7 +1103,24 @@ export class ZoteroChatPlugin {
       onStop: () => void this.codex.interrupt().catch((error) => this.reportError(error)),
       onNewThread: () => void this.newChat(view).catch((error) => this.reportError(error)),
       onSelectThread: (threadID) => void this.selectThread(view, threadID),
-      onDeleteThread: (threadID) => void this.codex.deleteThread(threadID).catch((error) => this.reportError(error)),
+      onCloseThread: (threadID) => void this.closeConversationTab(threadID).catch((error) => this.reportError(error)),
+      onHistorySearch: (query) => {
+        void this.codex.refreshGlobalHistory(query).catch(() => {});
+      },
+      onHistoryLoadMore: () => {
+        void this.codex.loadMoreGlobalHistory().catch(() => {});
+      },
+      onSelectHistoryConversation: (conversation) => {
+        void this.selectHistoryConversation(conversation).catch((error) => this.reportError(error));
+      },
+      onToggleHistoryPin: (threadID, pinned) => {
+        void this.codex.setGlobalThreadPinned(threadID, pinned).catch((error) => this.reportError(error));
+      },
+      onOpenChatGPT: () => launchURL("https://chatgpt.com/"),
+      onImportChatGPTHistory: () => {
+        void this.importChatGPTHistory(win).catch((error) => this.reportError(error));
+      },
+      onReturnToLiveConversation: () => this.returnToLiveConversation(),
       onLogin: () => void this.codex.login().catch((error) => this.reportError(error)),
       onLogout: () => void this.codex.logout().catch((error) => this.reportError(error)),
       onOpenTerminal: () => {
@@ -1007,8 +1156,14 @@ export class ZoteroChatPlugin {
       onNotingDecision: (decision) => { void this.noting.decide(decision); },
       onNotingApply: (mode) => { void this.noting.apply(mode).catch(() => {}); },
       onNotingCancel: () => { this.noting.cancel(); },
-      onChooseQLabRoot: () => {
-        void this.chooseQLabRoot(win).catch((error) => this.reportError(error));
+      onChooseQLabRoot: async () => {
+        try {
+          await this.chooseQLabRoot(win);
+          await view.refreshMainSiteStatus();
+        }
+        catch (error) {
+          this.reportError(error);
+        }
       },
       onCaptureChatDraft: () => {
         void this.captureChatDraft().catch((error) => this.reportError(error));
@@ -1019,7 +1174,11 @@ export class ZoteroChatPlugin {
       onOpenPaper: () => {
         void this.openContextPDF().catch((error) => this.reportError(error));
       },
+      onOpenPdfPage: (reference) => {
+        void this.openConversationPDFPage(reference.page).catch((error) => this.reportError(error));
+      },
       onCheckMainSite: () => this.mainSite.isAvailable(),
+      onCheckMainSiteRepository: () => this.mainSite.repositoryState(this.settings?.qlabRoot || ""),
       onDeployMainSite: async (onProgress) => {
         let root = this.settings?.qlabRoot || "";
         if (!root) root = await this.chooseQLabRoot(win) || "";
@@ -1048,7 +1207,15 @@ export class ZoteroChatPlugin {
     const workspace = sidebar.attachWorkspace((host: HTMLElement) => new QmdWorkspaceView(host, {
       onBack: () => sidebar.setWorkspaceOpen(false),
       renderService: this.qmdRender,
-      index: () => buildQmdIndex(geckoScanner, this.settings?.qlabRoot || ""),
+      changeRenderService: this.qmdChangeRender,
+      index: async () => {
+        const entries = await buildQmdIndex(geckoScanner, this.settings?.qlabRoot || "");
+        const pending = await this.pendingQmdChanges();
+        return entries.map((entry) => ({
+          ...entry,
+          pendingChange: pending.has(entry.relativePath),
+        }));
+      },
       editors: () => this.availableEditors(),
       openExternally: (editor, path) => openInExternalEditor(
         this.externalEditorRuntime(),
@@ -1057,12 +1224,372 @@ export class ZoteroChatPlugin {
         path,
       ),
       onEditorChosen: (editorId) => setPrefString("externalEditor", editorId),
-      onActiveDocument: (path) => this.codex.setActiveDocument(path ? { relativePath: path } : null),
+      onActiveDocument: (path, changePath) => this.codex.setActiveDocument(
+        path ? { relativePath: path, editablePath: changePath || null } : null,
+      ),
+      onReviewDraft: (path) => this.reviewDraftForKnowledge(path),
+      prepareChange: (path) => this.prepareQmdChange(path),
+      refreshChangePreview: (path, changePath, previewPath) =>
+        this.refreshQmdChangePreview(path, changePath, previewPath),
+      keepChange: (path, changePath) => this.keepQmdChange(path, changePath),
     }));
     if (!workspace) return;
     workspace.repoRootHint = root;
     sidebar.setWorkspaceOpen(true);
     await workspace.open(relativePath);
+    workspace.syncAgentChanges({
+      activeTurnId: this.codex.state.activeTurnId,
+      diffs: this.codex.getActiveDiffs(),
+    });
+  }
+
+  private safeRepositoryPath(relativePath: string, allowMissingFinal = false): string {
+    const root = (this.settings?.qlabRoot || "").replace(/[\\/]+$/, "");
+    const parts = relativePath.split("/");
+    if (!root
+        || parts.some((part) => !part || part === "." || part === ".." || part.startsWith("-"))
+        || (!relativePath.startsWith("drafts/")
+          && !relativePath.startsWith("work/qlab-zotero/draft-changes/"))) {
+      throw new Error("The Draft working-copy path is outside the selected Research Loop repository");
+    }
+    const absolutePath = PathUtils.join(root, ...parts);
+    const localFile = (path: string): any => {
+      const file = Components.classes["@mozilla.org/file/local;1"]
+        .createInstance(Components.interfaces.nsIFile);
+      file.initWithPath(path);
+      return file;
+    };
+    const rootFile = localFile(root);
+    if (!rootFile.exists() || rootFile.isSymlink() || !rootFile.isDirectory()) {
+      throw new Error("The Research Loop repository path is unavailable or unsafe");
+    }
+    rootFile.normalize();
+    const canonicalRoot = String(rootFile.path).replace(/[\\/]+$/, "");
+    let current = root;
+    for (const [index, component] of parts.entries()) {
+      current = PathUtils.join(current, component);
+      const file = localFile(current);
+      if (!file.exists()) {
+        if (allowMissingFinal && index === parts.length - 1) return absolutePath;
+        throw new Error(`The Draft working-copy path does not exist: ${relativePath}`);
+      }
+      if (file.isSymlink()) {
+        throw new Error("Refusing to follow a symbolic-link Draft path");
+      }
+      file.normalize();
+      const canonical = String(file.path);
+      if (canonical !== canonicalRoot && !canonical.startsWith(`${canonicalRoot}/`)) {
+        throw new Error("The Draft path escaped the selected Research Loop repository");
+      }
+      if (index < parts.length - 1 && !file.isDirectory()) {
+        throw new Error("A Draft working-copy parent is not a directory");
+      }
+    }
+    return absolutePath;
+  }
+
+  private qmdChangeIdentity(relativePath: string): string {
+    const root = (this.settings?.qlabRoot || "").replace(/[\\/]+$/, "");
+    return sha256Bytes(new TextEncoder().encode(`${root}\u0000${relativePath}`));
+  }
+
+  private qmdChangePaths(relativePath: string): {
+    changePath: string;
+    previewPath: string;
+    manifestPath: string;
+  } {
+    const identity = this.qmdChangeIdentity(relativePath);
+    const parts = relativePath.split("/");
+    const filename = parts.pop()!;
+    const basename = filename.slice(0, -".qmd".length);
+    return {
+      changePath: `work/qlab-zotero/draft-changes/${identity}/draft.qmd`,
+      previewPath: [...parts, `${basename}.qlab-preview-${identity.slice(0, 12)}.qmd`].join("/"),
+      manifestPath: profilePath("draft-changes", `${identity}.json`),
+    };
+  }
+
+  private async ensureSafeChangeDirectory(relativeDirectory: string): Promise<void> {
+    const root = (this.settings?.qlabRoot || "").replace(/[\\/]+$/, "");
+    const parts = relativeDirectory.split("/");
+    if (!relativeDirectory.startsWith("work/qlab-zotero/draft-changes/")
+        || parts.some((part) => !part || part === "." || part === ".." || part.startsWith("-"))) {
+      throw new Error("Invalid Draft working-copy directory");
+    }
+    const localFile = (path: string): any => {
+      const file = Components.classes["@mozilla.org/file/local;1"]
+        .createInstance(Components.interfaces.nsIFile);
+      file.initWithPath(path);
+      return file;
+    };
+    const rootFile = localFile(root);
+    if (!rootFile.exists() || rootFile.isSymlink() || !rootFile.isDirectory()) {
+      throw new Error("The Research Loop repository path is unavailable or unsafe");
+    }
+    rootFile.normalize();
+    const canonicalRoot = String(rootFile.path).replace(/[\\/]+$/, "");
+    let current = root;
+    for (const component of parts) {
+      current = PathUtils.join(current, component);
+      if (!await IOUtils.exists(current)) {
+        await IOUtils.makeDirectory(current, {
+          createAncestors: false,
+          ignoreExisting: true,
+          permissions: 0o700,
+        });
+      }
+      const directory = localFile(current);
+      if (!directory.exists() || directory.isSymlink() || !directory.isDirectory()) {
+        throw new Error("Refusing an unsafe Draft working-copy directory");
+      }
+      directory.normalize();
+      const canonical = String(directory.path);
+      if (canonical !== canonicalRoot && !canonical.startsWith(`${canonicalRoot}/`)) {
+        throw new Error("The Draft working-copy directory escaped the selected repository");
+      }
+    }
+  }
+
+  /**
+   * Restores review badges after Zotero restarts. A conflict with a manually
+   * edited original is still pending: trace is more important than silently
+   * dropping an AI version from the queue.
+   */
+  private async pendingQmdChanges(): Promise<Set<string>> {
+    const pending = new Set<string>();
+    const root = (this.settings?.qlabRoot || "").replace(/[\\/]+$/, "");
+    const manifestDirectory = profilePath("draft-changes");
+    if (!root || !await IOUtils.exists(manifestDirectory)) return pending;
+
+    const children = await IOUtils.getChildren(manifestDirectory).catch(() => [] as string[]);
+    for (const manifestPath of children) {
+      if (!manifestPath.endsWith(".json")) continue;
+      let manifest: DraftChangeManifest | null = null;
+      try {
+        manifest = JSON.parse(await IOUtils.readUTF8(manifestPath)) as DraftChangeManifest;
+        if (manifest.version !== 1
+            || manifest.repositoryRoot !== root
+            || !manifest.originalPath.startsWith("drafts/")
+            || !manifest.originalPath.endsWith(".qmd")) continue;
+        const expected = this.qmdChangePaths(manifest.originalPath);
+        if (expected.manifestPath !== manifestPath
+            || expected.changePath !== manifest.changePath
+            || expected.previewPath !== manifest.previewPath) continue;
+        const original = await IOUtils.readUTF8(this.safeRepositoryPath(manifest.originalPath));
+        const changed = await IOUtils.readUTF8(this.safeRepositoryPath(manifest.changePath));
+        const originalSha256 = this.hashQmdSource(original);
+        const changedSha256 = this.hashQmdSource(changed);
+        const rebaseAction = draftChangeRebaseAction(
+          manifest.baseSha256,
+          originalSha256,
+          changedSha256,
+        );
+        if (rebaseAction !== "refresh-working-copy" && changed !== original) {
+          pending.add(manifest.originalPath);
+        }
+      }
+      catch {
+        if (manifest?.repositoryRoot === root
+            && manifest.originalPath?.startsWith("drafts/")
+            && manifest.originalPath.endsWith(".qmd")) {
+          pending.add(manifest.originalPath);
+        }
+      }
+    }
+    return pending;
+  }
+
+  private hashQmdSource(source: string): string {
+    return sha256Bytes(new TextEncoder().encode(source));
+  }
+
+  /**
+   * Cursor owns the original Draft and may save it at any time. Advance the
+   * baseline automatically. If the private copy still equals the old baseline
+   * it follows the Cursor save; otherwise the real AI version is preserved.
+   */
+  private async rebaseQmdChange(
+    manifestPath: string,
+    manifest: DraftChangeManifest,
+    original: string,
+    changeAbsolute: string,
+    changedSource: string,
+  ): Promise<{ manifest: DraftChangeManifest; changedSource: string }> {
+    const originalSha256 = this.hashQmdSource(original);
+    const action = draftChangeRebaseAction(
+      manifest.baseSha256,
+      originalSha256,
+      this.hashQmdSource(changedSource),
+    );
+    if (action === "already-current") return { manifest, changedSource };
+
+    let rebasedSource = changedSource;
+    if (action === "refresh-working-copy") {
+      rebasedSource = original;
+      await IOUtils.writeUTF8(changeAbsolute, original, {
+        tmpPath: `${changeAbsolute}.tmp-${Date.now()}`,
+      });
+    }
+    const rebasedManifest: DraftChangeManifest = {
+      ...manifest,
+      baseSha256: originalSha256,
+    };
+    await IOUtils.writeUTF8(manifestPath, `${JSON.stringify(rebasedManifest, null, 2)}\n`, {
+      tmpPath: `${manifestPath}.tmp`,
+    });
+    return { manifest: rebasedManifest, changedSource: rebasedSource };
+  }
+
+  private async prepareQmdChange(relativePath: string): Promise<{
+    changePath: string;
+    previewPath: string;
+    changed: boolean;
+    revision: string;
+  }> {
+    if (!relativePath.startsWith("drafts/") || !relativePath.endsWith(".qmd")) {
+      throw new Error("AI working copies are available only for Draft QMD files");
+    }
+    const root = (this.settings?.qlabRoot || "").replace(/[\\/]+$/, "");
+    const originalPath = this.safeRepositoryPath(relativePath);
+    const original = await IOUtils.readUTF8(originalPath);
+    const paths = this.qmdChangePaths(relativePath);
+    const changeDirectory = paths.changePath.split("/").slice(0, -1).join("/");
+    await this.ensureSafeChangeDirectory(changeDirectory);
+    await IOUtils.makeDirectory(profilePath("draft-changes"), {
+      createAncestors: true,
+      ignoreExisting: true,
+      permissions: 0o700,
+    });
+    const changeAbsolute = this.safeRepositoryPath(paths.changePath, true);
+    const changeExists = await IOUtils.exists(changeAbsolute);
+    const manifestExists = await IOUtils.exists(paths.manifestPath);
+    if (changeExists !== manifestExists) {
+      throw new Error("The saved AI Draft version is incomplete; no original file was changed");
+    }
+    if (changeExists && manifestExists) {
+      const manifest = JSON.parse(await IOUtils.readUTF8(paths.manifestPath)) as DraftChangeManifest;
+      if (manifest.version !== 1
+          || manifest.repositoryRoot !== root
+          || manifest.originalPath !== relativePath
+          || manifest.changePath !== paths.changePath
+          || manifest.previewPath !== paths.previewPath) {
+        throw new Error("The saved AI Draft version does not belong to this Draft");
+      }
+      const savedSource = await IOUtils.readUTF8(changeAbsolute);
+      const rebased = await this.rebaseQmdChange(
+        paths.manifestPath,
+        manifest,
+        original,
+        changeAbsolute,
+        savedSource,
+      );
+      const changedSource = rebased.changedSource;
+      return {
+        ...paths,
+        changed: changedSource !== original,
+        revision: this.hashQmdSource(changedSource),
+      };
+    }
+
+    const previewAbsolute = this.safeRepositoryPath(paths.previewPath, true);
+    if (!manifestExists && await IOUtils.exists(previewAbsolute)) {
+      throw new Error("A file already occupies Zotkit's private Draft preview path; it was not overwritten");
+    }
+
+    const manifest: DraftChangeManifest = {
+      version: 1,
+      repositoryRoot: root,
+      originalPath: relativePath,
+      changePath: paths.changePath,
+      previewPath: paths.previewPath,
+      baseSha256: this.hashQmdSource(original),
+    };
+    await IOUtils.writeUTF8(changeAbsolute, original, {
+      tmpPath: `${changeAbsolute}.tmp-${Date.now()}`,
+    });
+    try {
+      await IOUtils.writeUTF8(paths.manifestPath, `${JSON.stringify(manifest, null, 2)}\n`, {
+        tmpPath: `${paths.manifestPath}.tmp`,
+      });
+    }
+    catch (error) {
+      await IOUtils.remove(changeAbsolute, { ignoreAbsent: true }).catch(() => {});
+      throw error;
+    }
+    return { ...paths, changed: false, revision: this.hashQmdSource(original) };
+  }
+
+  private async refreshQmdChangePreview(
+    relativePath: string,
+    changePath: string,
+    previewPath: string,
+  ): Promise<void> {
+    const expected = this.qmdChangePaths(relativePath);
+    if (changePath !== expected.changePath || previewPath !== expected.previewPath) {
+      throw new Error("The AI Draft preview paths no longer match the selected Draft");
+    }
+    const source = await IOUtils.readUTF8(this.safeRepositoryPath(changePath));
+    const previewAbsolute = this.safeRepositoryPath(previewPath, true);
+    await IOUtils.writeUTF8(previewAbsolute, source, {
+      tmpPath: `${previewAbsolute}.tmp-${Date.now()}`,
+    });
+  }
+
+  private async keepQmdChange(relativePath: string, changePath: string): Promise<{
+    changePath: string;
+    previewPath: string;
+    changed: boolean;
+    revision: string;
+  }> {
+    const root = (this.settings?.qlabRoot || "").replace(/[\\/]+$/, "");
+    const paths = this.qmdChangePaths(relativePath);
+    if (changePath !== paths.changePath) throw new Error("The AI version does not belong to this Draft");
+    const manifest = JSON.parse(await IOUtils.readUTF8(paths.manifestPath)) as DraftChangeManifest;
+    if (manifest.version !== 1
+        || manifest.repositoryRoot !== root
+        || manifest.originalPath !== relativePath
+        || manifest.changePath !== paths.changePath
+        || manifest.previewPath !== paths.previewPath) {
+      throw new Error("The saved AI Draft version does not belong to this Draft");
+    }
+    const originalAbsolute = this.safeRepositoryPath(relativePath);
+    const original = await IOUtils.readUTF8(originalAbsolute);
+    const changeAbsolute = this.safeRepositoryPath(changePath);
+    const savedSource = await IOUtils.readUTF8(changeAbsolute);
+    const rebased = await this.rebaseQmdChange(
+      paths.manifestPath,
+      manifest,
+      original,
+      changeAbsolute,
+      savedSource,
+    );
+    const changedSource = rebased.changedSource;
+    if (changedSource === original) {
+      const previewAbsolute = this.safeRepositoryPath(paths.previewPath, true);
+      await IOUtils.remove(previewAbsolute, { ignoreAbsent: true }).catch(() => {});
+      return { ...paths, changed: false, revision: this.hashQmdSource(original) };
+    }
+    const nextManifest: DraftChangeManifest = {
+      ...rebased.manifest,
+      baseSha256: this.hashQmdSource(changedSource),
+    };
+    await IOUtils.writeUTF8(paths.manifestPath, `${JSON.stringify(nextManifest, null, 2)}\n`, {
+      tmpPath: `${paths.manifestPath}.tmp`,
+    });
+    try {
+      await IOUtils.writeUTF8(originalAbsolute, changedSource, {
+        tmpPath: `${originalAbsolute}.qlab-keep-${Date.now()}.tmp`,
+      });
+    }
+    catch (error) {
+      await IOUtils.writeUTF8(paths.manifestPath, `${JSON.stringify(rebased.manifest, null, 2)}\n`, {
+        tmpPath: `${paths.manifestPath}.tmp`,
+      }).catch(() => {});
+      throw error;
+    }
+    const previewAbsolute = this.safeRepositoryPath(paths.previewPath, true);
+    await IOUtils.remove(previewAbsolute, { ignoreAbsent: true }).catch(() => {});
+    return { ...paths, changed: false, revision: this.hashQmdSource(changedSource) };
   }
 
   /** Spawns a launcher through the native bridge, with no shell in between. */
@@ -1298,7 +1825,7 @@ export class ZoteroChatPlugin {
   }
 
   private renderFloatPanels(): void {
-    const context = this.context;
+    const context = this.codex.getActiveReaderContext?.() || this.context;
     for (const [win, entry] of this.floatPanels) {
       if (win.closed || !entry.host.isConnected) {
         entry.view.destroy();
@@ -1338,17 +1865,29 @@ export class ZoteroChatPlugin {
   }
 
   private renderWorkbenchTabs(): void {
-    const context = this.context;
+    const context = this.codex.getActiveReaderContext?.() || this.context;
+    const importedChat = this.selectedImportedChatID
+      ? this.chatGPTArchive?.conversations.find((conversation) => conversation.id === this.selectedImportedChatID) || null
+      : null;
+    const historyState = this.codex.getGlobalHistoryState?.() || {
+      loading: false,
+      hasMore: false,
+      error: "",
+      query: "",
+    };
     const plan = normalizePlan(this.codex.getActivePlan());
     const mutationReviews = this.mutations?.getReviews() || [];
-    const workspaceDiffs: DiffReview[] = this.codex.getActiveDiffs().map((diff) => ({
+    const activeDiffs = this.codex.getActiveDiffs();
+    const workspaceDiffs: DiffReview[] = activeDiffs.map((diff) => ({
       id: `workspace:${diff.turnId}`,
-      title: "Agent workspace diff",
-      summary: "Applied only inside Zotkit's private staging workspace. Zotero and the original PDF are unchanged until a separate reviewed Apply.",
+      title: "Agent workspace changes",
+      summary: "Applied in the selected Research Loop working directory. Review the visible Draft on the right with Keep or Undo; Zotero and the original PDF remain unchanged.",
       diff: diff.diff,
-      state: "accepted",
+      state: "applied",
     }));
-    const pending = this.codex.getPendingApprovals()[0];
+    const pending = this.codex.getPendingApprovals().find(
+      (approval) => approval.threadId === this.codex.state.activeThreadId,
+    );
     const pendingApproval: PendingApproval | null = pending ? {
       id: pending.id,
       title: pending.title,
@@ -1368,6 +1907,10 @@ export class ZoteroChatPlugin {
       ...conversationCheckpoints,
     ].sort((a, b) => String(b.createdAt || "").localeCompare(String(a.createdAt || "")));
     for (const entry of this.workbenchTabs?.entries() || []) {
+      entry.view.workspace?.()?.syncAgentChanges({
+        activeTurnId: this.codex.state.activeTurnId,
+        diffs: activeDiffs,
+      });
       entry.view.setState({
         phase: this.chatPhase,
         accountLabel: this.codex.state.connected ? this.codex.accountLabel() : undefined,
@@ -1387,29 +1930,29 @@ export class ZoteroChatPlugin {
           selectionText: context.selection?.text,
           pdfPath: context.pdfPath || undefined,
         } : null,
-        entries: this.codex.getChatEntries(),
+        entries: importedChat?.entries || this.codex.getChatEntries(),
         models: this.codex.state.models,
-        threads: this.codex.getThreadOptions().map((thread) => ({
-          ...thread,
-          status: thread.id === this.codex.state.switchingThreadId ? "switching"
-            : thread.active && this.codex.state.running ? "running"
-            : pendingApproval && thread.active ? "attention" : "idle",
-        })),
+        threads: this.conversationTabs(),
+        historyConversations: this.historyConversations(),
+        historyLoading: historyState.loading,
+        historyHasMore: historyState.hasMore,
+        historyError: historyState.error || undefined,
+        readOnlyConversation: Boolean(importedChat),
         selectedModel: this.selectedModel,
         effort: this.selectedEffort,
-        running: this.codex.state.running,
+        running: importedChat ? false : this.codex.state.running,
         creatingThread: this.codex.state.creatingThread,
-        threadTitle: context
+        threadTitle: importedChat?.title || (context
           ? paperTitle(context)
-          : entry.data.title.replace(/^QLab\s*·\s*/, "") || "Paper Assistant",
+          : entry.data.title.replace(/^QLab\s*·\s*/, "") || "Paper Assistant"),
         mode: this.codex.state.mode,
         contextChips: this.contextChips(),
         contextSuggestions: this.contextSuggestions(),
-        plan,
-        reviews: [...mutationReviews, ...workspaceDiffs],
-        pendingApproval,
-        checkpoints,
-        turnStartedAt: this.codex.state.running
+        plan: importedChat ? null : plan,
+        reviews: importedChat ? [] : [...mutationReviews, ...workspaceDiffs],
+        pendingApproval: importedChat ? null : pendingApproval,
+        checkpoints: importedChat ? [] : checkpoints,
+        turnStartedAt: !importedChat && this.codex.state.running
           ? this.turnStartedAt.get(this.codex.state.activeThreadId ?? "") ?? null
           : null,
         turnDurations: this.turnDurationsForActiveThread(),
@@ -1420,7 +1963,8 @@ export class ZoteroChatPlugin {
   }
 
   private attachSelection(focus: boolean): void {
-    if (!this.context?.selection?.text) {
+    const context = this.codex.getActiveReaderContext?.() || this.context;
+    if (!context?.selection?.text) {
       this.chatError = "Select text in the PDF first";
       this.renderChatViews();
       if (focus) this.activeChatView()?.focusComposer();
@@ -1434,19 +1978,28 @@ export class ZoteroChatPlugin {
   }
 
   private addInteractionContext(suggestion: ResearchContextSuggestion): void {
-    this.addedContextIDs.add(suggestion.id);
+    this.excludedContextIDs.delete(suggestion.id);
+    if (suggestion.id === "active-paper" || suggestion.id === "current-page") {
+      this.addedContextIDs.delete(suggestion.id);
+    }
+    else {
+      this.addedContextIDs.add(suggestion.id);
+    }
     this.updateInteractionContext();
     this.renderChatViews();
   }
 
   private removeInteractionContext(contextID: string): void {
     this.addedContextIDs.delete(contextID);
+    if (contextID === "active-paper" || contextID === "current-page") {
+      this.excludedContextIDs.add(contextID);
+    }
     this.updateInteractionContext();
     this.renderChatViews();
   }
 
   private updateInteractionContext(): void {
-    const context = this.context;
+    const context = this.codex?.getActiveReaderContext?.() || this.context;
     const interaction: Record<string, CodexInteractionContextEntry> = {};
     if (this.settings?.qlabRoot) {
       interaction["QLab repository"] = {
@@ -1477,7 +2030,12 @@ export class ZoteroChatPlugin {
         value: context.selection.text.slice(0, 12_000),
       };
     }
-    this.codex?.setInteractionContext(interaction);
+    this.codex?.setReaderContextSelection?.({
+      paper: !this.excludedContextIDs.has("active-paper"),
+      page: !this.excludedContextIDs.has("current-page"),
+      selection: this.addedContextIDs.has("current-selection"),
+    });
+    this.codex?.setInteractionContext?.(interaction);
   }
 
   turnDurationsForActiveThread(): Record<string, number> {
@@ -1523,20 +2081,18 @@ export class ZoteroChatPlugin {
           }
         }
       }
-      // `running` is service-wide: once nothing is running, every remaining start
-      // timestamp (for threads other than the active one, or left over from an
-      // interrupted switch) is stale by definition. Drop them all so reopening an
-      // idle thread later can't fabricate a completed turn from a stale timer.
-      this.turnStartedAt.clear();
+      // Timers belong to conversation tabs. A background tab may still be
+      // running while the selected tab is idle, so only finish this tab's clock.
+      this.turnStartedAt.delete(threadId);
     }
   }
 
   /** Resolves the current reader attachment to a live Zotero item. */
-  private readerContextItem(): any {
-    const attachment = this.context?.attachment;
-    if (!attachment?.id) return null;
-    return Zotero.Items?.get?.(attachment.id)
-      ?? Zotero.Items?.getByLibraryAndKey?.(attachment.libraryID, attachment.key)
+  private readerContextItem(context = this.context): any {
+    const attachment = context?.attachment;
+    if (!attachment) return null;
+    return Zotero.Items?.getByLibraryAndKey?.(attachment.libraryID, attachment.key)
+      ?? (attachment.id ? Zotero.Items?.get?.(attachment.id) : null)
       ?? null;
   }
 
@@ -1544,17 +2100,29 @@ export class ZoteroChatPlugin {
     this.trackTurnTiming();
     if (!this.codex) return;
     this.updateTurnTracking();
-    const context = this.context;
+    const context = this.codex.getActiveReaderContext?.() || this.context;
+    const importedChat = this.selectedImportedChatID
+      ? this.chatGPTArchive?.conversations.find((conversation) => conversation.id === this.selectedImportedChatID) || null
+      : null;
+    const historyState = this.codex.getGlobalHistoryState?.() || {
+      loading: false,
+      hasMore: false,
+      error: "",
+      query: "",
+    };
     const plan = normalizePlan(this.codex.getActivePlan());
     const mutationReviews = this.mutations?.getReviews() || [];
-    const workspaceDiffs: DiffReview[] = this.codex.getActiveDiffs().map((diff) => ({
+    const activeDiffs = this.codex.getActiveDiffs();
+    const workspaceDiffs: DiffReview[] = activeDiffs.map((diff) => ({
       id: `workspace:${diff.turnId}`,
-      title: "Agent workspace diff",
-      summary: "Applied only inside Zotkit's private staging workspace. Zotero and the original PDF are unchanged until a separate reviewed Apply.",
+      title: "Agent workspace changes",
+      summary: "Applied in the selected Research Loop working directory. Review the visible Draft on the right with Keep or Undo; Zotero and the original PDF remain unchanged.",
       diff: diff.diff,
-      state: "accepted",
+      state: "applied",
     }));
-    const pending = this.codex.getPendingApprovals()[0];
+    const pending = this.codex.getPendingApprovals().find(
+      (approval) => approval.threadId === this.codex.state.activeThreadId,
+    );
     const pendingApproval: PendingApproval | null = pending ? {
       id: pending.id,
       title: pending.title,
@@ -1579,6 +2147,10 @@ export class ZoteroChatPlugin {
         this.chatViews.delete(body);
         continue;
       }
+      view.workspace()?.syncAgentChanges({
+        activeTurnId: this.codex.state.activeTurnId,
+        diffs: activeDiffs,
+      });
       view.setState({
         phase: this.chatPhase,
         accountLabel: this.codex.state.connected ? this.codex.accountLabel() : undefined,
@@ -1598,27 +2170,27 @@ export class ZoteroChatPlugin {
           selectionText: context.selection?.text,
           pdfPath: context.pdfPath || undefined,
         } : null,
-        entries: this.codex.getChatEntries(),
+        entries: importedChat?.entries || this.codex.getChatEntries(),
         models: this.codex.state.models,
-        threads: this.codex.getThreadOptions().map((thread) => ({
-          ...thread,
-          status: thread.id === this.codex.state.switchingThreadId ? "switching"
-            : thread.active && this.codex.state.running ? "running"
-            : pendingApproval && thread.active ? "attention" : "idle",
-        })),
+        threads: this.conversationTabs(),
+        historyConversations: this.historyConversations(),
+        historyLoading: historyState.loading,
+        historyHasMore: historyState.hasMore,
+        historyError: historyState.error || undefined,
+        readOnlyConversation: Boolean(importedChat),
         selectedModel: this.selectedModel,
         effort: this.selectedEffort,
-        running: this.codex.state.running,
+        running: importedChat ? false : this.codex.state.running,
         creatingThread: this.codex.state.creatingThread,
-        threadTitle: context ? paperTitle(context) : "Paper Assistant",
+        threadTitle: importedChat?.title || (context ? paperTitle(context) : "Paper Assistant"),
         mode: this.codex.state.mode,
         contextChips: this.contextChips(),
         contextSuggestions: this.contextSuggestions(),
-        plan,
-        reviews: [...mutationReviews, ...workspaceDiffs],
-        pendingApproval,
-        checkpoints,
-        turnStartedAt: this.codex.state.running
+        plan: importedChat ? null : plan,
+        reviews: importedChat ? [] : [...mutationReviews, ...workspaceDiffs],
+        pendingApproval: importedChat ? null : pendingApproval,
+        checkpoints: importedChat ? [] : checkpoints,
+        turnStartedAt: !importedChat && this.codex.state.running
           ? this.turnStartedAt.get(this.codex.state.activeThreadId ?? "") ?? null
           : null,
         turnDurations: this.turnDurationsForActiveThread(),
@@ -1826,6 +2398,7 @@ export class ZoteroChatPlugin {
       : undefined;
     if (anchor && anchor.threadId !== this.codex.state.activeThreadId) {
       await this.codex.switchThread(anchor.threadId);
+      this.updateInteractionContext();
     }
     await this.ensureFloatPanelOpen();
   }
@@ -1851,27 +2424,29 @@ export class ZoteroChatPlugin {
   }
 
   private contextChips(): ResearchContextChip[] {
-    const context = this.context;
+    const context = this.codex?.getActiveReaderContext?.() || this.context;
     if (!context) return [];
-    const chips: ResearchContextChip[] = [{
+    const chips: ResearchContextChip[] = [];
+    if (!this.excludedContextIDs.has("active-paper")) chips.push({
       id: "active-paper",
       kind: "paper",
       label: "Current Paper",
       detail: paperTitle(context),
-      removable: false,
-    }, {
+      removable: true,
+    });
+    if (!this.excludedContextIDs.has("current-page")) chips.push({
       id: "current-page",
       kind: "page",
       label: `Page ${context.page.pageLabel || context.page.pageNumber}`,
-      detail: "Updates automatically with Reader",
-      removable: false,
-    }];
-    if (context.selection?.text) chips.push({
+      detail: "Pinned to this conversation",
+      removable: true,
+    });
+    if (this.addedContextIDs.has("current-selection") && context.selection?.text) chips.push({
       id: "current-selection",
       kind: "selection",
       label: `Selection · ${context.selection.text.length} characters`,
       detail: "Updates automatically with the Reader selection",
-      removable: false,
+      removable: true,
     });
     if (this.addedContextIDs.has("active-annotations")) chips.push({
       id: "active-annotations",
@@ -1889,25 +2464,25 @@ export class ZoteroChatPlugin {
   }
 
   private contextSuggestions(): ResearchContextSuggestion[] {
-    const context = this.context;
+    const context = this.codex?.getActiveReaderContext?.() || this.context;
     return [{
       id: "active-paper",
       kind: "paper",
       label: "Current Paper",
       detail: context ? paperTitle(context) : "Open a PDF first",
-      disabled: !context,
+      disabled: !context || !this.excludedContextIDs.has("active-paper"),
     }, {
       id: "current-page",
       kind: "page",
       label: "Current Page",
       detail: context ? `PDF page ${context.page.pageNumber}` : "Open a PDF first",
-      disabled: !context,
+      disabled: !context || !this.excludedContextIDs.has("current-page"),
     }, {
       id: "current-selection",
       kind: "selection",
       label: "Current Selection",
       detail: context?.selection?.text ? `${context.selection.text.length} characters` : "Select PDF text first",
-      disabled: !context?.selection?.text,
+      disabled: !context?.selection?.text || this.addedContextIDs.has("current-selection"),
     }, {
       id: "active-annotations",
       kind: "annotation",
@@ -2167,9 +2742,28 @@ export class ZoteroChatPlugin {
   }
 
   private async openContextPDF(): Promise<void> {
-    const attachment = this.readerContextItem();
+    const context = this.codex?.getActiveReaderContext?.() || this.context;
+    const attachment = this.readerContextItem(context);
     if (!attachment?.id) throw new Error("Choose a paper in the QLab tab first");
     await Zotero.Reader.open(attachment.id, null, {
+      allowDuplicate: false,
+      openInBackground: false,
+      preventJumpback: false,
+    });
+  }
+
+  /**
+   * Opens a citation against the PDF pinned to the selected AI conversation.
+   * Reader focus is deliberately independent from chat/task selection.
+   */
+  private async openConversationPDFPage(pageNumber: number): Promise<void> {
+    if (!Number.isSafeInteger(pageNumber) || pageNumber < 1) {
+      throw new Error("The PDF citation has an invalid page number");
+    }
+    const context = this.codex?.getActiveReaderContext?.() || this.context;
+    const attachment = this.readerContextItem(context);
+    if (!attachment?.id) throw new Error("The PDF pinned to this conversation is unavailable");
+    await Zotero.Reader.open(attachment.id, { pageIndex: pageNumber - 1 }, {
       allowDuplicate: false,
       openInBackground: false,
       preventJumpback: false,
@@ -2266,14 +2860,98 @@ export class ZoteroChatPlugin {
     if (result !== picker.returnOK || !picker.file?.path) return null;
     const host = createGeckoQLabPathHost();
     const root = await normalizeQLabRoot(String(picker.file.path), host);
-    if (!await isQLabRepositoryShape(root, host)) {
-      throw new Error("The selected folder is not a QLab repository: AGENTS.md, qlab, literature/, drafts/, and knowledge/ are required");
+    const state = await qlabRepositoryState(root, host);
+    if (state === "incompatible") {
+      throw new Error("This folder contains unrelated files. Choose an empty folder, an existing Research Loop repository, or a folder containing only knowledge/, drafts/, and literature/.");
     }
     saveQLabRoot(root);
     this.settings = { ...this.settings, qlabRoot: root };
     this.updateInteractionContext();
     this.renderChatViews();
     return root;
+  }
+
+  private async loadChatGPTHistory(): Promise<void> {
+    const path = profilePath("chatgpt-history.json");
+    try {
+      if (!await IOUtils.exists(path)) return;
+      this.chatGPTArchive = parseStoredChatGPTArchive(await IOUtils.readUTF8(path));
+    }
+    catch (error) {
+      logError(error);
+      this.chatGPTArchive = null;
+    }
+  }
+
+  private async importChatGPTHistory(preferredWindow?: Window): Promise<void> {
+    const { FilePicker } = ChromeUtils.importESModule(
+      "chrome://zotero/content/modules/filePicker.mjs",
+    );
+    const picker = new FilePicker();
+    picker.init(
+      preferredWindow || Zotero.getMainWindow(),
+      "Import ChatGPT conversations.json",
+      picker.modeOpen,
+    );
+    picker.appendFilter("ChatGPT conversations.json", "*.json");
+    const result = await picker.show();
+    if (result !== picker.returnOK || !picker.file?.path) return;
+    const archive = parseChatGPTExport(await IOUtils.readUTF8(String(picker.file.path)));
+    const path = profilePath("chatgpt-history.json");
+    await IOUtils.writeUTF8(path, JSON.stringify(archive, null, 2) + "\n", {
+      tmpPath: path + ".tmp",
+    });
+    if (IOUtils.setPermissions) await IOUtils.setPermissions(path, 0o600, false);
+    this.chatGPTArchive = archive;
+    this.selectedImportedChatID = archive.conversations[0]?.id || null;
+    if (this.selectedImportedChatID && !this.openImportedChatIDs.includes(this.selectedImportedChatID)) {
+      this.openImportedChatIDs.push(this.selectedImportedChatID);
+    }
+    this.chatError = "";
+    this.renderChatViews();
+  }
+
+  private importedChatEntries(): ChatEntry[] | null {
+    if (!this.selectedImportedChatID) return null;
+    return this.chatGPTArchive?.conversations.find(
+      (conversation) => conversation.id === this.selectedImportedChatID,
+    )?.entries || null;
+  }
+
+  private historyConversations(): HistoryConversationOption[] {
+    return [
+      ...(this.codex.getGlobalHistory?.() || []),
+      ...importedChatOptions(this.chatGPTArchive, this.selectedImportedChatID),
+    ];
+  }
+
+  private conversationTabs(): ThreadOption[] {
+    const importedActive = Boolean(this.selectedImportedChatID);
+    const attentionThreads = new Set(
+      this.codex.getPendingApprovals().map((approval) => approval.threadId),
+    );
+    const live = this.codex.getThreadOptions().map((thread) => ({
+      ...thread,
+      active: !importedActive && thread.active,
+      status: thread.id === this.codex.state.switchingThreadId ? "switching" as const
+        : attentionThreads.has(thread.id) ? "attention" as const
+        : thread.status === "running" ? "running" as const
+        : "idle" as const,
+    }));
+    const imported = this.openImportedChatIDs.flatMap((id): ThreadOption[] => {
+      const conversation = this.chatGPTArchive?.conversations.find((candidate) => candidate.id === id);
+      if (!conversation) return [];
+      return [{
+        id,
+        title: conversation.title,
+        updatedAt: conversation.updatedAt,
+        active: this.selectedImportedChatID === id,
+        source: "chatgpt",
+        readOnly: true,
+        status: "idle",
+      }];
+    });
+    return [...live, ...imported];
   }
 
   private async insertQLabCommand(
@@ -2305,6 +2983,18 @@ export class ZoteroChatPlugin {
       qlabRoot: root,
       zoteroItemKey: itemKey,
     }));
+  }
+
+  private async reviewDraftForKnowledge(relativePath: string): Promise<void> {
+    let root = this.settings?.qlabRoot || "";
+    if (!root) root = await this.chooseQLabRoot() || "";
+    if (!root) return;
+    const reader = this.codex.getActiveReaderContext?.() || this.context;
+    const itemKey = reader?.parent?.key || reader?.attachment.key || null;
+    await this.sendChat(buildReviewDraftPrompt({
+      qlabRoot: root,
+      zoteroItemKey: itemKey,
+    }, relativePath));
   }
 
   private reportError(error: unknown): void {

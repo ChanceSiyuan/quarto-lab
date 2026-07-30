@@ -38,7 +38,25 @@ interface MarkdownLink {
   end: number;
 }
 
-export function renderMarkdown(doc: Document, markdown: string): DocumentFragment {
+export interface PdfPageReference {
+  /** One-based PDF page number shown to the user. */
+  page: number;
+  /** One-based inclusive range end, when the citation covers several pages. */
+  endPage?: number;
+  /** Original, already-sanitized citation URL retained as provenance. */
+  sourceUrl: string;
+}
+
+export interface MarkdownRenderOptions {
+  /** Opens a PDF citation in the host reader instead of the web browser. */
+  onPdfPageLink?: (reference: PdfPageReference) => void;
+}
+
+export function renderMarkdown(
+  doc: Document,
+  markdown: string,
+  options: MarkdownRenderOptions = {},
+): DocumentFragment {
   const fragment = doc.createDocumentFragment();
   const lines = markdown.replace(/\r\n?/g, "\n").split("\n");
   let index = 0;
@@ -59,7 +77,7 @@ export function renderMarkdown(doc: Document, markdown: string): DocumentFragmen
 
     const table = readTable(lines, index);
     if (table) {
-      fragment.appendChild(renderTable(doc, table.header, table.alignments, table.rows));
+      fragment.appendChild(renderTable(doc, table.header, table.alignments, table.rows, options));
       index = table.nextIndex;
       continue;
     }
@@ -73,7 +91,7 @@ export function renderMarkdown(doc: Document, markdown: string): DocumentFragmen
     if (heading) {
       const level = Math.min(4, heading[1]?.length || 2);
       const element = doc.createElement(`h${level}`);
-      appendInline(doc, element, heading[2] || "");
+      appendInline(doc, element, heading[2] || "", true, options);
       fragment.appendChild(element);
       index++;
       continue;
@@ -83,7 +101,7 @@ export function renderMarkdown(doc: Document, markdown: string): DocumentFragmen
       const list = doc.createElement("ul");
       while (index < lines.length && /^[-*]\s+/.test(lines[index] || "")) {
         const item = doc.createElement("li");
-        appendInline(doc, item, (lines[index] || "").replace(/^[-*]\s+/, ""));
+        appendInline(doc, item, (lines[index] || "").replace(/^[-*]\s+/, ""), true, options);
         list.appendChild(item);
         index++;
       }
@@ -95,7 +113,7 @@ export function renderMarkdown(doc: Document, markdown: string): DocumentFragmen
       const list = doc.createElement("ol");
       while (index < lines.length && /^\d+\.\s+/.test(lines[index] || "")) {
         const item = doc.createElement("li");
-        appendInline(doc, item, (lines[index] || "").replace(/^\d+\.\s+/, ""));
+        appendInline(doc, item, (lines[index] || "").replace(/^\d+\.\s+/, ""), true, options);
         list.appendChild(item);
         index++;
       }
@@ -110,7 +128,7 @@ export function renderMarkdown(doc: Document, markdown: string): DocumentFragmen
         quoteLines.push((lines[index] || "").slice(2));
         index++;
       }
-      appendInline(doc, quote, quoteLines.join("\n"));
+      appendInline(doc, quote, quoteLines.join("\n"), true, options);
       fragment.appendChild(quote);
       continue;
     }
@@ -122,7 +140,7 @@ export function renderMarkdown(doc: Document, markdown: string): DocumentFragmen
       paragraphLines.push(lines[index] || "");
       index++;
     }
-    appendInline(doc, paragraph, paragraphLines.join("\n"));
+    appendInline(doc, paragraph, paragraphLines.join("\n"), true, options);
     fragment.appendChild(paragraph);
   }
   return fragment;
@@ -254,7 +272,13 @@ export function hardenKatexOutput(root: Element): void {
   }
 }
 
-function appendInline(doc: Document, parent: Node, text: string, allowLinks = true): void {
+function appendInline(
+  doc: Document,
+  parent: Node,
+  text: string,
+  allowLinks = true,
+  options: MarkdownRenderOptions = {},
+): void {
   let index = 0;
   let plain = "";
   const flushPlain = () => {
@@ -292,8 +316,13 @@ function appendInline(doc: Document, parent: Node, text: string, allowLinks = tr
         const href = safeHttpUrl(markdownLink.destination);
         if (href) {
           flushPlain();
-          const link = createExternalLink(doc, href);
-          appendInline(doc, link, markdownLink.label, false);
+          const reference = options.onPdfPageLink
+            ? parsePdfPageReference(markdownLink.label, href)
+            : null;
+          const link = reference
+            ? createPdfPageLink(doc, href, reference, options.onPdfPageLink!)
+            : createExternalLink(doc, href);
+          appendInline(doc, link, markdownLink.label, false, options);
           parent.appendChild(link);
         }
         else {
@@ -309,7 +338,7 @@ function appendInline(doc: Document, parent: Node, text: string, allowLinks = tr
       if (end !== -1) {
         flushPlain();
         const strong = doc.createElement("strong");
-        appendInline(doc, strong, text.slice(index + 2, end), allowLinks);
+        appendInline(doc, strong, text.slice(index + 2, end), allowLinks, options);
         parent.appendChild(strong);
         index = end + 2;
         continue;
@@ -450,6 +479,73 @@ function createExternalLink(doc: Document, href: string): HTMLAnchorElement {
   return link;
 }
 
+/**
+ * Recognizes page citations emitted by the agent without trusting the remote
+ * URL to identify the Zotero attachment. The host resolves the attachment from
+ * the conversation; this parser only supplies its one-based page location.
+ */
+export function parsePdfPageReference(label: string, href: string): PdfPageReference | null {
+  let url: URL;
+  try {
+    url = new URL(href);
+  }
+  catch {
+    return null;
+  }
+
+  const normalizedLabel = label.replace(/\s+/g, " ").trim();
+  const chinese = new RegExp(
+    "\\u7b2c\\s*(\\d+)\\s*(?:[-\\u2013\\u2014~\\uff5e\\u81f3\\u5230]\\s*(\\d+))?\\s*\\u9875",
+    "u",
+  ).exec(normalizedLabel);
+  const english = /(?:\bpdf\b\s*[:\uff1a-]?\s*)?(?:p(?:age)?s?\.?\s*)(\d+)\s*(?:[-\u2013\u2014~\uff5e]|\bto\b)\s*(\d+)/iu.exec(normalizedLabel)
+    ?? /(?:\bpdf\b\s*[:\uff1a-]?\s*)?(?:p(?:age)?s?\.?\s*)(\d+)/iu.exec(normalizedLabel);
+  const labelStart = positivePage(chinese?.[1] ?? english?.[1]);
+  const labelEnd = positivePage(chinese?.[2] ?? english?.[2]);
+
+  const fragmentParams = new URLSearchParams(url.hash.replace(/^#/, ""));
+  const urlPage = positivePage(url.searchParams.get("page") ?? fragmentParams.get("page"));
+  const pdfLike = /\bpdf\b/iu.test(normalizedLabel)
+    || Boolean(chinese)
+    || /\.pdf$/iu.test(url.pathname)
+    || /\/pdf(?:\/|$)/iu.test(url.pathname);
+  const page = urlPage ?? labelStart;
+  if (!pdfLike || !page) return null;
+
+  return {
+    page,
+    ...(labelEnd && labelEnd >= page ? { endPage: labelEnd } : {}),
+    sourceUrl: url.href,
+  };
+}
+
+function positivePage(value: string | null | undefined): number | null {
+  if (!value || !/^\d+$/.test(value)) return null;
+  const page = Number(value);
+  return Number.isSafeInteger(page) && page > 0 ? page : null;
+}
+
+function createPdfPageLink(
+  doc: Document,
+  href: string,
+  reference: PdfPageReference,
+  onOpen: (reference: PdfPageReference) => void,
+): HTMLAnchorElement {
+  const link = createExternalLink(doc, href);
+  link.classList.add("zc-pdf-page-link");
+  link.dataset.pdfPage = String(reference.page);
+  if (reference.endPage) link.dataset.pdfEndPage = String(reference.endPage);
+  link.title = reference.endPage
+    ? `Open PDF pages ${reference.page}–${reference.endPage} in Zotero`
+    : `Open PDF page ${reference.page} in Zotero`;
+  link.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    onOpen(reference);
+  });
+  return link;
+}
+
 function isEscapableMarkdownCharacter(value: string | undefined): boolean {
   return Boolean(value && /[\\`*_$[\]()|]/.test(value));
 }
@@ -496,6 +592,7 @@ function renderTable(
   header: readonly string[],
   alignments: ReadonlyArray<"left" | "center" | "right" | null>,
   rows: readonly string[][],
+  options: MarkdownRenderOptions,
 ): HTMLElement {
   const wrapper = doc.createElement("div");
   wrapper.className = "zc-table-wrap";
@@ -505,7 +602,7 @@ function renderTable(
   header.forEach((value, index) => {
     const cell = doc.createElement("th");
     applyTableAlignment(cell, alignments[index] || null);
-    appendInline(doc, cell, value);
+    appendInline(doc, cell, value, true, options);
     headerRow.appendChild(cell);
   });
   head.appendChild(headerRow);
@@ -518,7 +615,7 @@ function renderTable(
       values.forEach((value, index) => {
         const cell = doc.createElement("td");
         applyTableAlignment(cell, alignments[index] || null);
-        appendInline(doc, cell, value);
+        appendInline(doc, cell, value, true, options);
         row.appendChild(cell);
       });
       body.appendChild(row);
