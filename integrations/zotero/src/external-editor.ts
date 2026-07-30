@@ -22,6 +22,14 @@ export interface ExternalEditorApp {
   application: string;
   /** Where the bundle lives, relative to an applications directory. */
   bundle: string;
+  /** Resolved installed bundle path, present after discovery. */
+  path?: string;
+}
+
+/** Uses macOS's own application icon without redistributing editor artwork. */
+export function externalEditorIconUrl(editor: ExternalEditorApp): string | null {
+  if (!editor.path?.startsWith("/")) return null;
+  return `moz-icon://${encodeURI(`file://${editor.path}`)}?size=32`;
 }
 
 /**
@@ -70,8 +78,9 @@ export async function installedEditors(
   const found: ExternalEditorApp[] = [];
   for (const editor of EXTERNAL_EDITORS) {
     for (const directory of directories) {
-      if (await runtime.exists(`${directory}/${editor.bundle}`)) {
-        found.push(editor);
+      const path = `${directory}/${editor.bundle}`;
+      if (await runtime.exists(path)) {
+        found.push({ ...editor, path });
         break;
       }
     }

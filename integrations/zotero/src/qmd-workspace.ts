@@ -1,5 +1,5 @@
 import { EDITOR_TREES, treeForPath, type EditorTree } from "./editor-tree";
-import type { ExternalEditorApp } from "./external-editor";
+import { externalEditorIconUrl, type ExternalEditorApp } from "./external-editor";
 import {
   QMD_INLINE_CONFIGURE_TOPIC,
   QMD_INLINE_CONFIGURED_TOPIC,
@@ -776,7 +776,20 @@ export class QmdWorkspaceView {
       this.editButton.title = "No Editor Found — install Cursor, VS Code, Zed, or Sublime Text";
       return;
     }
-    this.presentIcon(this.editButton, "✎", `Edit in ${editor.label}`);
+    const label = `Edit in ${editor.label}`;
+    const iconUrl = externalEditorIconUrl(editor);
+    if (!iconUrl) {
+      this.presentIcon(this.editButton, "✎", label);
+      return;
+    }
+    const icon = this.doc.createElement("img");
+    icon.className = "zc-qmd-editor-icon";
+    icon.src = iconUrl;
+    icon.alt = "";
+    icon.setAttribute("aria-hidden", "true");
+    this.editButton.replaceChildren(icon);
+    this.editButton.title = label;
+    this.editButton.setAttribute("aria-label", label);
   }
 
   private async openExternally(): Promise<void> {

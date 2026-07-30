@@ -468,6 +468,21 @@ describe("QmdWorkspaceView", () => {
     view.destroy();
   });
 
+  it("shows Cursor's native application icon when its bundle path is known", async () => {
+    const cursor = { ...CURSOR, path: "/Applications/Cursor.app" };
+    const { host, view } = mount([cursor]);
+    view.show();
+    await view.open(PAGE);
+
+    const button = host.querySelector<HTMLButtonElement>(".zc-qmd-edit-external")!;
+    const icon = button.querySelector<HTMLImageElement>(".zc-qmd-editor-icon")!;
+    expect(icon).not.toBeNull();
+    expect(icon.getAttribute("src")).toBe("moz-icon://file:///Applications/Cursor.app?size=32");
+    expect(icon.alt).toBe("");
+    expect(button.getAttribute("aria-label")).toBe("Edit in Cursor");
+    view.destroy();
+  });
+
   it("uses the editor picked from the list and remembers the choice", async () => {
     const { host, view, openExternally, onEditorChosen } = mount();
     view.show();
