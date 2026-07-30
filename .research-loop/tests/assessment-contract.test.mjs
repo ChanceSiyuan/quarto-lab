@@ -75,11 +75,213 @@ function validEnvelope(overrides = {}) {
   };
 }
 
+function quantitativeEvidence(overrides = {}) {
+  return {
+    domain: "quantum-computing",
+    quantumArea: "algorithms-and-applications",
+    snapshot: {
+      snapshotId: "20260729T010203Z-0123456789ab",
+      contentHash: "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+      createdAt: "2026-07-29T01:02:03.000Z",
+      freshness: "fresh",
+      visibility: "public",
+    },
+    scientificAttention: {
+      value: { state: "known", interval: { low: 80, base: 80, high: 80 }, unit: "percent", visibility: "public", evidenceState: "reported", evidenceTier: "primary", sourceIds: ["citation-source"], sources: [{ id: "citation-source", url: "https://example.test/citations", locator: "table 1", kind: "citation-index" }] },
+      momentum: { state: "known", interval: { low: 0.1, base: 0.1, high: 0.1 }, unit: "fraction", visibility: "public", evidenceState: "reported", evidenceTier: "primary", sourceIds: ["citation-source"], sources: [{ id: "citation-source", url: "https://example.test/citations", locator: "table 1", kind: "citation-index" }] },
+      coverage: 0.9,
+      concentration: 0.2,
+      warnings: [],
+    },
+    technicalFeasibility: { state: "unknown", reason: "No confirmed feasibility model." },
+    socialValue: { state: "unknown", reason: "No confirmed social value model." },
+    capturableValue: { state: "unknown", reason: "No confirmed capturable value model." },
+    informationValue: { state: "unknown", reason: "No confirmed information value model." },
+    scoreAnchors: [{
+      dimensionId: "importance",
+      recommended: { min: 4, estimate: 4, max: 4 },
+      evidenceIds: ["scientific-attention"],
+      override: null,
+    }],
+    sensitivity: [{ id: "success", label: "Technical success", swing: 10 }],
+    assumptions: [],
+    warnings: [],
+    ...overrides,
+  };
+}
+
+function validQuantumEnvelopeV2(overrides = {}) {
+  const envelope = validEnvelope();
+  envelope.assessment = {
+    ...envelope.assessment,
+    schemaVersion: 2,
+    visibility: "public",
+    quantitativeEvidence: quantitativeEvidence(),
+  };
+  return { ...envelope, ...overrides };
+}
+
 test("accepts a valid assessment and recomputes scores", () => {
   const result = validateAssessmentEnvelope(validEnvelope());
   assert.equal(result.ok, true);
   assert.deepEqual(result.computed.scores.combined, { min: 80, estimate: 80, max: 80 });
   assert.equal(result.computed.verdict.label, "DO_NOW");
+});
+
+test("accepts v1 unchanged and a snapshot-bound v2 quantum assessment", () => {
+  assert.equal(validateAssessmentEnvelope(validEnvelope()).ok, true);
+  const result = validateAssessmentEnvelope(validQuantumEnvelopeV2());
+  assert.equal(result.ok, true);
+  assert.equal(result.value.assessment.quantitativeEvidence.snapshot.contentHash.length, 64);
+  assert.deepEqual(result.computed.scores.combined, { min: 80, estimate: 80, max: 80 });
+});
+
+test("rejects v2 quantitative evidence without a frozen snapshot hash", () => {
+  const envelope = validQuantumEnvelopeV2();
+  delete envelope.assessment.quantitativeEvidence.snapshot.contentHash;
+  const result = validateAssessmentEnvelope(envelope);
+  assert.equal(result.ok, false);
+  assert.match(result.errors.join("\n"), /snapshot/i);
+});
+
+test("rejects unknown-as-zero quantitative evidence", () => {
+  const envelope = validQuantumEnvelopeV2();
+  envelope.assessment.quantitativeEvidence.technicalFeasibility = { state: "unknown", reason: "No model.", interval: { low: 0, base: 0, high: 0 } };
+  const result = validateAssessmentEnvelope(envelope);
+  assert.equal(result.ok, false);
+  assert.match(result.errors.join("\n"), /quantitative/i);
+});
+
+test("rejects private quantitative evidence without private assessment visibility", () => {
+  const envelope = validQuantumEnvelopeV2();
+  envelope.assessment.quantitativeEvidence.snapshot.visibility = "private";
+  const result = validateAssessmentEnvelope(envelope);
+  assert.equal(result.ok, false);
+  assert.match(result.errors.join("\n"), /private assessment visibility/i);
+});
+
+test("rejects raw citation addition to aggregate scoring", () => {
+  const envelope = validQuantumEnvelopeV2();
+  envelope.assessment.quantitativeEvidence.scientificAttention.rawCitationTotal = 100000;
+  const result = validateAssessmentEnvelope(envelope);
+  assert.equal(result.ok, false);
+  assert.match(result.errors.join("\n"), /quantitativeEvidence/i);
+});
+
+test("accepts versioned Scientific Demand Score audit metadata", () => {
+  const envelope = validQuantumEnvelopeV2();
+  envelope.assessment.quantitativeEvidence.scientificAttention = {
+    ...envelope.assessment.quantitativeEvidence.scientificAttention,
+    formulaId: "qec-scientific-demand-v1",
+    evidenceConfidence: "high",
+    paperCount: 5,
+    components: {
+      influence: { availability: "known", value: 0.72, weight: 0.45, unit: "fraction" },
+      momentum: { availability: "known", value: 0.61, weight: 0.30, unit: "fraction" },
+      breadth: { availability: "known", value: 0.45, weight: 0.15, unit: "fraction" },
+      network: { availability: "reserved", weight: 0.10 },
+    },
+  };
+
+  const result = validateAssessmentEnvelope(envelope);
+  assert.equal(result.ok, true, result.errors?.join("\n"));
+});
+
+test("accepts frozen derivation references for an inferred Scientific Demand Score", () => {
+  const envelope = validQuantumEnvelopeV2();
+  const sources = [
+    {
+      id: "citation-W4220854529",
+      url: "https://doi.org/10.21105/joss.04120",
+      locator: "OpenAlex work W4220854529",
+      kind: "citation-index",
+    },
+    {
+      id: "citation-W4403007328",
+      url: "https://doi.org/10.1145/3795877",
+      locator: "OpenAlex work W4403007328",
+      kind: "citation-index",
+    },
+  ];
+  envelope.assessment.quantitativeEvidence.scientificAttention.value = {
+    id: "scientific-attention",
+    state: "known",
+    interval: { low: 33.4, base: 33.4, high: 33.4 },
+    unit: "score-100",
+    visibility: "public",
+    evidenceState: "inferred",
+    evidenceTier: "authoritative-secondary",
+    sourceIds: sources.map((source) => source.id),
+    sources,
+    derivation: {
+      formulaId: "qec-scientific-demand-v1",
+      inputIds: sources.map((source) => source.id),
+    },
+    kind: "scientific-demand-model",
+  };
+
+  const result = validateAssessmentEnvelope(envelope);
+
+  assert.equal(result.ok, true, result.errors?.join("\n"));
+});
+
+test("rejects coverage as a score bonus", () => {
+  const envelope = validQuantumEnvelopeV2();
+  envelope.assessment.quantitativeEvidence.scoreAnchors[0].evidenceIds = ["coverage"];
+  const result = validateAssessmentEnvelope(envelope);
+  assert.equal(result.ok, false);
+  assert.match(result.errors.join("\n"), /coverage is confidence-only/i);
+});
+
+test("rejects a score outside its anchor without an override", () => {
+  const envelope = validQuantumEnvelopeV2();
+  envelope.assessment.dimensions.researchValue[0].score = { min: 3, estimate: 3, max: 3 };
+  envelope.assessment.scores.researchValue = { min: 76, estimate: 76, max: 76 };
+  envelope.assessment.scores.combined = { min: 77.84, estimate: 77.84, max: 77.84 };
+  const result = validateAssessmentEnvelope(envelope);
+  assert.equal(result.ok, false);
+  assert.match(result.errors.join("\n"), /anchor/i);
+});
+
+test("rejects momentum or citation evidence anchored to novelty", () => {
+  const envelope = validQuantumEnvelopeV2();
+  envelope.assessment.quantitativeEvidence.scoreAnchors[0].dimensionId = "gap_and_novelty";
+  const result = validateAssessmentEnvelope(envelope);
+  assert.equal(result.ok, false);
+  assert.match(result.errors.join("\n"), /novelty/i);
+});
+
+test("rejects opaque quantitative evidence IDs used to bypass anchor restrictions", () => {
+  const envelope = validQuantumEnvelopeV2();
+  envelope.assessment.quantitativeEvidence.scoreAnchors[0].dimensionId = "gap_and_novelty";
+  envelope.assessment.quantitativeEvidence.scoreAnchors[0].evidenceIds = ["opaque-1"];
+  const result = validateAssessmentEnvelope(envelope);
+  assert.equal(result.ok, false);
+  assert.match(result.errors.join("\n"), /known quantitative outputs|novelty/i);
+});
+
+test("rejects a momentum movement greater than a quarter point", () => {
+  const envelope = validQuantumEnvelopeV2();
+  envelope.assessment.quantitativeEvidence.scoreAnchors[0].momentumAdjustment = 0.26;
+  const result = validateAssessmentEnvelope(envelope);
+  assert.equal(result.ok, false);
+  assert.match(result.errors.join("\n"), /momentum/i);
+});
+
+test("rejects quantitative evidence with unresolved source provenance", () => {
+  const envelope = validQuantumEnvelopeV2();
+  envelope.assessment.quantitativeEvidence.scientificAttention.value.sourceIds = ["missing-source"];
+  const result = validateAssessmentEnvelope(envelope);
+  assert.equal(result.ok, false);
+  assert.match(result.errors.join("\n"), /source/i);
+});
+
+test("rejects non-ISO quantitative snapshot timestamps", () => {
+  const envelope = validQuantumEnvelopeV2();
+  envelope.assessment.quantitativeEvidence.snapshot.createdAt = "July 29, 2026";
+  const result = validateAssessmentEnvelope(envelope);
+  assert.equal(result.ok, false);
+  assert.match(result.errors.join("\n"), /snapshot/i);
 });
 
 test("rejects envelopes that contain both assessment and clarification", () => {
@@ -186,4 +388,64 @@ test("summary exposes advisory verdict fields without lifecycle mutation", () =>
   assert.equal(summary.verdict, "DO_NOW");
   assert.equal(summary.recommendation, "proceed");
   assert.equal(summary.lifecycleMutation, false);
+  assert.equal("quantitative" in summary, false);
+});
+
+test("v2 summary exposes headline quantitative metrics and private visibility", () => {
+  const envelope = validQuantumEnvelopeV2();
+  envelope.assessment.quantitativeEvidence.snapshot.visibility = "private";
+  envelope.assessment.visibility = "private";
+  const validation = validateAssessmentEnvelope(envelope);
+  assert.equal(validation.ok, true);
+  const summary = summarizeCompletedAssessment({
+    run: { runId: "20260729T010203Z-a1b2c3", problemId: "Prob-001", createdAt: "2026-07-29T01:02:03.000Z" },
+    envelope: validation.value,
+    computed: validation.computed,
+  });
+  assert.equal(summary.visibility, "private");
+  assert.deepEqual(summary.quantitative, {
+    scientificAttention: envelope.assessment.quantitativeEvidence.scientificAttention.value,
+    technicalSuccess: envelope.assessment.quantitativeEvidence.technicalFeasibility,
+    socialValue: envelope.assessment.quantitativeEvidence.socialValue,
+    capturableValue: envelope.assessment.quantitativeEvidence.capturableValue,
+    largestSensitivity: envelope.assessment.quantitativeEvidence.sensitivity[0],
+    snapshotId: "20260729T010203Z-0123456789ab",
+    freshness: "fresh",
+  });
+});
+
+test("v2 public summary completes scientific-demand and modeled technical point estimates", () => {
+  const validation = validateAssessmentEnvelope(validQuantumEnvelopeV2());
+  assert.equal(validation.ok, true);
+
+  const summary = summarizeCompletedAssessment({
+    run: { runId: "20260729T010203Z-a1b2c3", problemId: "Prob-001", createdAt: "2026-07-29T01:02:03.000Z" },
+    envelope: validation.value,
+    computed: validation.computed,
+    input: {
+      valuation: {
+        recalculationInputs: {
+          manifest: {
+            createdAt: "2026-07-29T01:02:03.000Z",
+            citation: {
+              formulaId: "qec-scientific-demand-v1",
+              scientificDemand: { state: "known", interval: { low: 68.4, base: 68.4, high: 68.4 }, unit: "score-100", visibility: "public" },
+              components: {},
+              evidenceConfidence: "medium",
+              coverage: 0.75,
+              paperCount: 3,
+            },
+          },
+          papers: [{ id: "W1", citedByCount: 9, citationNormalizedPercentile: 0.8, relevance: 1 }],
+        },
+      },
+    },
+  });
+
+  assert.equal(summary.quantitative.scientificAttention.interval.base, 68.4);
+  assert.equal(summary.quantitative.scientificAttention.estimateKind, "scientific-demand-model");
+  assert.equal(summary.quantitative.scientificAttention.formulaId, "qec-scientific-demand-v1");
+  assert.equal(summary.quantitative.technicalSuccess.interval.base, 80);
+  assert.equal(summary.quantitative.technicalSuccess.estimateKind, "model");
+  assert.equal(summary.quantitative.technicalSuccessMethod.formulaId, "qec-technical-success-v1");
 });

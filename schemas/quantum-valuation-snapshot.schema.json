@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://research-loop.local/schemas/quantum-valuation-snapshot.schema.json",
+  "title": "Immutable quantum valuation snapshot",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["manifest", "papers", "marketEvidence"],
+  "properties": {
+    "manifest": {
+      "type": "object",
+      "required": ["schemaVersion", "snapshotId", "contentHash"],
+      "properties": {
+        "schemaVersion": { "const": 1 },
+        "snapshotId": { "type": "string", "pattern": "^\\d{8}T\\d{6}Z-[a-f0-9]{12}$" },
+        "contentHash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "visibility": { "enum": ["public", "private"] }
+      },
+      "additionalProperties": true
+    },
+    "papers": { "type": "array" },
+    "marketEvidence": { "type": "array" }
+  }
+}

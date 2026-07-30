@@ -46,6 +46,7 @@ test("pages showcase writes static route files", async () => {
     "knowledge/research-loop.css",
     "knowledge/search.json",
     "problems/Prob-000/index.html",
+    "problems/Prob-000/autoresearch/index.html",
     "problems/Prob-000/attempts/ATT-001/index.html",
     "problems/Prob-000/attempts/ATT-002/index.html",
     "problems/Prob-000/attempts/ATT-003/index.html",
@@ -59,13 +60,19 @@ test("pages showcase writes static route files", async () => {
 
 test("pages showcase rewrites links for the repository base path", async () => {
   const html = await readFile(join(out, "problems/Prob-000/index.html"), "utf8");
-  assert.match(html, /Example data - synthetic results for interface demonstration only\./);
-  assert.match(html, /href="\/research-loop\/problems\/Prob-000\/attempts\/ATT-001\/"/);
-  assert.match(html, /href="\/research-loop\/problems\/Prob-000\/attempts\/ATT-005\/"/);
+  assert.doesNotMatch(html, /Example data - synthetic results for interface demonstration only\./);
+  assert.match(html, /href="\/research-loop\/problems\/Prob-000\/autoresearch\/"/);
   assert.match(html, /href="\/research-loop\/assets\//);
-  assert.doesNotMatch(html, /href="\/research-loop\/problems\/Prob-000\/attempts\/ATT-\d{3}"/);
-  assert.doesNotMatch(html, /href="\/problems\/Prob-000\/attempts\//);
+  assert.doesNotMatch(html, /href="\/problems\/Prob-000\/autoresearch"/);
   assert.doesNotMatch(html, /<script\b/i);
+
+  const autoresearch = await readFile(join(out, "problems/Prob-000/autoresearch/index.html"), "utf8");
+  assert.match(autoresearch, /Example data - synthetic results for interface demonstration only\./);
+  assert.match(autoresearch, /href="\/research-loop\/problems\/Prob-000\/attempts\/ATT-001\/"/);
+  assert.match(autoresearch, /href="\/research-loop\/problems\/Prob-000\/attempts\/ATT-005\/"/);
+  assert.doesNotMatch(autoresearch, /href="\/research-loop\/problems\/Prob-000\/attempts\/ATT-\d{3}"/);
+  assert.doesNotMatch(autoresearch, /href="\/problems\/Prob-000\/attempts\//);
+  assert.doesNotMatch(autoresearch, /<script\b/i);
 });
 
 test("pages showcase links to the bundled knowledge site under the repository base path", async () => {
@@ -154,9 +161,28 @@ test("pages showcase contains only the noninteractive local-mode preparation not
   }
 
   const problem = await readFile(join(out, "problems", "Prob-000", "index.html"), "utf8");
-  assert.match(problem, /Available in local mode/);
+  assert.doesNotMatch(problem, /Available in local mode/);
+  assert.doesNotMatch(problem, /Example data - synthetic results for interface demonstration only\./);
+  assert.doesNotMatch(problem, /Assessment methodology demo/);
+  assert.match(problem, /Scientific Demand Score/);
+  assert.match(problem, /Industry \/ social proxy/);
+  assert.match(problem, /Autoresearch Fit/);
+  assert.match(problem, /Methodology documentation/);
+  assert.doesNotMatch(problem, /Research Value \(V\)/);
+  assert.doesNotMatch(problem, /Technical Success Estimate/);
+  assert.doesNotMatch(problem, /href="codex:/);
+  assert.doesNotMatch(problem, /Local assessment unavailable/);
+  assert.doesNotMatch(problem, /\/__local\/assessments/);
   assert.doesNotMatch(problem, /Autoresearch preparation is available only for qualifying or accepted local problems\./);
   assert.doesNotMatch(problem, /Prepare autoresearch/);
+
+  const autoresearch = await readFile(join(out, "problems", "Prob-000", "autoresearch", "index.html"), "utf8");
+  assert.match(autoresearch, /Autoresearch results/);
+  assert.match(autoresearch, /ATT-001/);
+  assert.match(autoresearch, /ATT-005/);
+  assert.match(autoresearch, /Best speedup/);
+  assert.match(autoresearch, /Example data - synthetic results for interface demonstration only\./);
+  assert.doesNotMatch(autoresearch, /\/__local\/assessments/);
 });
 
 test("pages showcase copies only the Prob-000 problem source", async () => {

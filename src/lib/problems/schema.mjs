@@ -33,6 +33,15 @@ export const ACTIVE_WITH_GATE_STATUSES = [
 export const SOLVED_OR_LATER_STATUSES = ["solved", "publishing", "published"];
 export const PUBLISHED_STATUSES = ["published"];
 export const REJECTION_KINDS = ["automatic", "human"];
+export const QUANTUM_DOMAIN = "quantum-computing";
+export const QUANTUM_AREAS = Object.freeze([
+  "algorithms-and-applications",
+  "error-correction-and-fault-tolerance",
+  "compilation-and-architecture",
+  "hardware-and-control",
+  "resource-estimation-and-benchmarks",
+  "classical-simulation-and-verification",
+]);
 
 export const REQUIRED_PROBLEM_MD_HEADINGS = [
   "Background and Gap",
@@ -59,7 +68,12 @@ const REQUIRED_FIELDS = [
   "updatedAt",
 ];
 
-const ALLOWED_FIELDS = new Set([...REQUIRED_FIELDS, "rejection"]);
+const ALLOWED_FIELDS = new Set([
+  ...REQUIRED_FIELDS,
+  "rejection",
+  "domain",
+  "quantumArea",
+]);
 
 function isObject(value) {
   return value !== null && typeof value === "object" && !Array.isArray(value);
@@ -107,6 +121,20 @@ export function isAcceptedOrLater(status) {
   return ACTIVE_WITH_GATE_STATUSES.includes(status);
 }
 
+export function classifyQuantumScope(problem, { legacyArea = null } = {}) {
+  if (!Object.hasOwn(problem ?? {}, "domain")) {
+    return legacyArea && QUANTUM_AREAS.includes(legacyArea)
+      ? { status: "supported", domain: QUANTUM_DOMAIN, quantumArea: legacyArea, source: "legacy" }
+      : { status: "needs_input", domain: null, quantumArea: null, source: "legacy" };
+  }
+  if (problem.domain !== QUANTUM_DOMAIN) {
+    return { status: "unsupported", domain: problem.domain, quantumArea: null, source: "manifest" };
+  }
+  return QUANTUM_AREAS.includes(problem.quantumArea)
+    ? { status: "supported", domain: QUANTUM_DOMAIN, quantumArea: problem.quantumArea, source: "manifest" }
+    : { status: "needs_input", domain: QUANTUM_DOMAIN, quantumArea: null, source: "manifest" };
+}
+
 export function validateProblemManifest(manifest, context = {}) {
   const errors = [];
   const relativePath = context.relativePath ?? "problem.json";
@@ -142,6 +170,17 @@ export function validateProblemManifest(manifest, context = {}) {
   }
   if (!PROBLEM_STATUSES.includes(manifest.status)) {
     addError("status", "status must be a known lifecycle status.");
+  }
+
+  if ("domain" in manifest && !isNonEmptyString(manifest.domain)) {
+    addError("domain", "domain must be a non-empty string when supplied.");
+  }
+  if (manifest.domain === QUANTUM_DOMAIN) {
+    if (!QUANTUM_AREAS.includes(manifest.quantumArea)) {
+      addError("quantumArea", "quantumArea must be a known quantum area for quantum-computing problems.");
+    }
+  } else if ("quantumArea" in manifest) {
+    addError("quantumArea", "quantumArea is allowed only when domain is quantum-computing.");
   }
 
   if (!isObject(manifest.gate)) {

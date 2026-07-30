@@ -1,0 +1,200 @@
+.panel {
+  margin: 2rem auto 4rem;
+  max-width: 1500px;
+  color: #17211d;
+}
+
+.notice {
+  margin: 2rem auto;
+  max-width: 760px;
+  border: 1px solid #d9d7ce;
+  border-radius: 14px;
+  background: #fbfaf6;
+  color: #4e5c54;
+  padding: 1rem 1.15rem;
+}
+
+.toolbar {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid #d9d7ce;
+  padding: 0 0 1rem;
+}
+
+.eyebrow,
+.count {
+  margin: 0;
+}
+
+.eyebrow {
+  color: #52675a;
+  font-size: 0.77rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.count {
+  color: #65716c;
+  font-size: 0.9rem;
+  margin-top: 0.35rem;
+}
+
+.sortLabel {
+  display: grid;
+  gap: 0.35rem;
+  color: #52675a;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.sortLabel select {
+  border: 1px solid #b8c1ba;
+  border-radius: 8px;
+  background: #fffefa;
+  color: #17211d;
+  font: inherit;
+  padding: 0.55rem 0.65rem;
+}
+
+.sortLabel select:focus-visible,
+.links a:focus-visible,
+table a:focus-visible,
+.card header a:focus-visible {
+  outline: 3px solid #2d7451;
+  outline-offset: 3px;
+}
+
+.tableWrap {
+  overflow-x: auto;
+  border: 1px solid #d9d7ce;
+  border-radius: 12px;
+  margin-top: 1rem;
+}
+
+.tableWrap table {
+  border-collapse: collapse;
+  min-width: 1320px;
+  width: 100%;
+}
+
+.tableWrap th,
+.tableWrap td {
+  border-bottom: 1px solid #e5e2d9;
+  padding: 0.8rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.tableWrap thead th {
+  background: #f1f3ed;
+  color: #44564b;
+  font-size: 0.76rem;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.tableWrap tbody tr:last-child th,
+.tableWrap tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.tableWrap tbody tr:hover {
+  background: #f9fbf7;
+}
+
+.tableWrap tbody th {
+  min-width: 170px;
+}
+
+.tableWrap tbody th a,
+.card header a,
+.links a {
+  color: #1e6040;
+  font-weight: 700;
+}
+
+.tableWrap tbody th span,
+.tableWrap td small {
+  display: block;
+  color: #65716c;
+  font-size: 0.78rem;
+  font-weight: 400;
+  margin-top: 0.25rem;
+}
+
+.links {
+  display: grid;
+  gap: 0.45rem;
+  font-size: 0.85rem;
+  min-width: 125px;
+}
+
+.links span {
+  color: #65716c;
+}
+
+.cards {
+  display: none;
+}
+
+.card {
+  border: 1px solid #d9d7ce;
+  border-radius: 12px;
+  background: #fffefa;
+  padding: 1rem;
+}
+
+.card header a {
+  font-size: 0.83rem;
+}
+
+.card h2 {
+  font-size: 1.05rem;
+  line-height: 1.3;
+  margin: 0.35rem 0 0;
+}
+
+.card dl {
+  display: grid;
+  gap: 0.7rem;
+  margin: 1rem 0;
+}
+
+.metric {
+  border-top: 1px solid #e5e2d9;
+  padding-top: 0.65rem;
+}
+
+.metric dt {
+  color: #65716c;
+  font-size: 0.76rem;
+}
+
+.metric dd {
+  margin: 0.2rem 0 0;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 760px) {
+  .toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .sortLabel select {
+    width: 100%;
+  }
+
+  .tableWrap {
+    display: none;
+  }
+
+  .cards {
+    display: grid;
+    gap: 0.85rem;
+    margin-top: 1rem;
+  }
+}

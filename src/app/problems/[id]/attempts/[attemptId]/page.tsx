@@ -4,6 +4,7 @@ import { buildAttemptDossier } from "@/lib/problems/example-presentation.mjs";
 import {
   getStaticResearchAttempt,
   getStaticResearchExample,
+  getStaticResearchExampleProblem,
   isStaticResearchExampleProblem,
 } from "@/lib/problems/example-research.mjs";
 import { createProblemRepository } from "@/lib/problems/repository.mjs";
@@ -19,7 +20,7 @@ export default async function AttemptDetailPage({
 }) {
   const { id, attemptId } = await params;
   const repository = createProblemRepository(generatedIndex);
-  const problem = repository.getProblem(id);
+  const problem = repository.getProblem(id) ?? getStaticResearchExampleProblem(id);
 
   if (!problem) {
     notFound();

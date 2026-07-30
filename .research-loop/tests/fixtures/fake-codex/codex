@@ -17,7 +17,7 @@ if (args[0] === "login" && args[1] === "status") {
   process.exit(0);
 }
 
-function dimension(id, label, weight, estimate = 4) {
+function dimension(id, label, weight, estimate = 4, evidenceRefs = ["p1", "k1"]) {
   return {
     id,
     label,
@@ -25,7 +25,7 @@ function dimension(id, label, weight, estimate = 4) {
     score: { min: estimate, estimate, max: estimate },
     evidenceState: "supported",
     rationale: `Fake Codex scored ${label} from the browser fixture.`,
-    evidenceRefs: ["p1", "k1"],
+    evidenceRefs,
   };
 }
 
@@ -52,6 +52,7 @@ async function resolveKnowledge(query, selectedPage = null) {
 
 function completedEnvelope(problemId, resolution) {
   const knowledgePath = resolution.orderedFiles.at(-1);
+  const evidenceRefs = knowledgePath ? ["p1", "k1"] : ["p1"];
   return {
     outcome: "assessment",
     language: "en",
@@ -72,21 +73,21 @@ function completedEnvelope(problemId, resolution) {
       },
       dimensions: {
         researchValue: [
-          dimension("importance", "Importance", 20),
-          dimension("gap_and_novelty", "Gap and novelty", 20),
-          dimension("plausibility", "Plausibility", 15),
-          dimension("learning_from_failure", "Learning from failure", 15),
-          dimension("generality_and_publication", "Generality and publication potential", 15),
-          dimension("expected_value_relative_to_cost", "Expected value relative to cost", 15),
+          dimension("importance", "Importance", 20, 4, evidenceRefs),
+          dimension("gap_and_novelty", "Gap and novelty", 20, 4, evidenceRefs),
+          dimension("plausibility", "Plausibility", 15, 4, evidenceRefs),
+          dimension("learning_from_failure", "Learning from failure", 15, 4, evidenceRefs),
+          dimension("generality_and_publication", "Generality and publication potential", 15, 4, evidenceRefs),
+          dimension("expected_value_relative_to_cost", "Expected value relative to cost", 15, 4, evidenceRefs),
         ],
         autoresearchSuitability: [
-          dimension("modifiable_search_object", "Modifiable search object", 20),
-          dimension("executable_objective", "Executable objective", 20),
-          dimension("correctness_and_anti_gaming", "Correctness and anti-gaming", 15),
-          dimension("incremental_feedback", "Incremental feedback", 15),
-          dimension("fresh_evaluation", "Fresh evaluation", 10),
-          dimension("reproducibility_and_auditability", "Reproducibility and auditability", 10),
-          dimension("attempt_runtime", "Attempt runtime", 10),
+          dimension("modifiable_search_object", "Modifiable search object", 20, 4, evidenceRefs),
+          dimension("executable_objective", "Executable objective", 20, 4, evidenceRefs),
+          dimension("correctness_and_anti_gaming", "Correctness and anti-gaming", 15, 4, evidenceRefs),
+          dimension("incremental_feedback", "Incremental feedback", 15, 4, evidenceRefs),
+          dimension("fresh_evaluation", "Fresh evaluation", 10, 4, evidenceRefs),
+          dimension("reproducibility_and_auditability", "Reproducibility and auditability", 10, 4, evidenceRefs),
+          dimension("attempt_runtime", "Attempt runtime", 10, 4, evidenceRefs),
         ],
       },
       largestBottleneck: "The fake run has no real scientific bottleneck.",
@@ -100,17 +101,82 @@ function completedEnvelope(problemId, resolution) {
           locator: "fixture problem.md",
           summary: "Problem text supplied by the local assessment browser fixture.",
         },
-        {
+        ...(knowledgePath ? [{
           id: "k1",
           kind: "knowledge",
           path: knowledgePath,
           locator: "Trusted resolver bundle",
           summary: "Trusted knowledge selected by the repository resolver.",
-        },
+        }] : []),
       ],
     },
     clarification: null,
   };
+}
+
+function source(id, kind = "citation-index") {
+  return { id, url: `https://example.test/${id}`, locator: "fixture", kind };
+}
+
+function knownValue({ low, base, high, unit, sourceId, kind = "citation-index", visibility = "public", currency = null }) {
+  return {
+    state: "known",
+    interval: { low, base, high },
+    unit,
+    visibility,
+    evidenceState: "reported",
+    evidenceTier: "primary",
+    sourceIds: [sourceId],
+    sources: [source(sourceId, kind)],
+    ...(currency ? { currency, priceBaseYear: 2026, conversionSourceId: sourceId } : {}),
+  };
+}
+
+function valuationPacket(prompt) {
+  return {
+    snapshotId: prompt.match(/"snapshotId":\s*"([^"]+)"/)?.[1] ?? "20260729T000000Z-000000000000",
+    contentHash: prompt.match(/"contentHash":\s*"([a-f0-9]{64})"/)?.[1] ?? "0".repeat(64),
+  };
+}
+
+function completedQuantumEnvelope(problemId, resolution, prompt) {
+  const envelope = completedEnvelope(problemId, resolution);
+  const packet = valuationPacket(prompt);
+  envelope.assessment.schemaVersion = 2;
+  envelope.assessment.visibility = "private";
+  envelope.assessment.normalizedProblem = `Fake Codex completed quantum valuation assessment for ${problemId}.`;
+  envelope.assessment.quantitativeEvidence = {
+    domain: "quantum-computing",
+    quantumArea: "resource-estimation-and-benchmarks",
+    snapshot: {
+      snapshotId: packet.snapshotId,
+      contentHash: packet.contentHash,
+      createdAt: "2026-07-29T01:02:03Z",
+      freshness: "fresh",
+      visibility: "private",
+    },
+    scientificAttention: {
+      value: knownValue({ low: 72, base: 80, high: 91, unit: "percent", sourceId: "citation-source" }),
+      momentum: knownValue({ low: 0.1, base: 0.2, high: 0.3, unit: "fraction", sourceId: "citation-source" }),
+      coverage: 0.8,
+      concentration: 0.2,
+      warnings: [],
+    },
+    technicalFeasibility: knownValue({ low: 0.2, base: 0.35, high: 0.5, unit: "fraction", sourceId: "feasibility-source", kind: "contract" }),
+    socialValue: knownValue({ low: 4_000_000, base: 8_000_000, high: 12_000_000, unit: "USD_2026", sourceId: "social-source", kind: "business-model", currency: "USD" }),
+    capturableValue: knownValue({ low: 4_242_424_242, base: 4_242_424_242, high: 4_242_424_242, unit: "USD_2026", sourceId: "private-capture-source", kind: "business-model", visibility: "private", currency: "USD" }),
+    informationValue: { state: "unknown", reason: "No sample-information model in the deterministic fixture." },
+    scoreAnchors: [{
+      dimensionId: "importance",
+      recommended: { min: 4, estimate: 4, max: 4 },
+      evidenceIds: ["scientific-attention"],
+      override: null,
+    }],
+    sensitivity: [{ id: "technical-success", label: "Technical success", swing: 12 }],
+    assumptions: ["Browser fixture uses deterministic valuation adapters."],
+    warnings: ["Fixture valuation evidence is deterministic."],
+  };
+  return envelope;
 }
 
 function ambiguousEnvelope(result) {
@@ -145,13 +211,23 @@ if (!outputPath) {
 }
 
 const prompt = args.at(-1) ?? "";
-const problemId = prompt.includes("Problem ID: Prob-902") ? "Prob-902" : "Prob-901";
-const query = problemId === "Prob-902" ? "oracle" : "AKLT";
+const problemId = prompt.includes("Problem ID: Prob-903") ? "Prob-903" : prompt.includes("Problem ID: Prob-902") ? "Prob-902" : "Prob-901";
+const query = problemId === "Prob-902" ? "exact oracle" : "AKLT";
 const selectedPage = prompt.match(/^Page: (knowledge\/[^\n]+)$/m)?.[1] ?? null;
-const resolved = await resolveKnowledge(query, selectedPage);
+const externalValuationOnly = prompt.includes("Page: __external__/valuation-snapshot");
+const resolved = externalValuationOnly
+  ? {
+      query: prompt.match(/^Problem title: ([^\n]+)$/m)?.[1] ?? query,
+      status: "no-match",
+      bundle: null,
+      alternatives: [],
+    }
+  : await resolveKnowledge(query, selectedPage);
 await writeFile(outputPath, `${JSON.stringify(
   resolved.status === "ambiguous"
     ? ambiguousEnvelope(resolved)
-    : completedEnvelope(problemId, normalizedResolution(resolved)),
+    : problemId === "Prob-903"
+      ? completedQuantumEnvelope(problemId, normalizedResolution(resolved), prompt)
+      : completedEnvelope(problemId, normalizedResolution(resolved)),
 )}\n`);
 process.stdout.write(`${JSON.stringify({ type: "stage", stage: "fake-complete" })}\n`);
