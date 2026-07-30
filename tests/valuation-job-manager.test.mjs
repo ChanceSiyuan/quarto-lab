@@ -262,11 +262,12 @@ test("freezes citation metrics as atomic evidence with provenance", async () => 
   const started = await manager.start("Prob-007");
 
   await confirmed(manager, started);
-  await waitFor(() => manager.getJob(started.runId).status === "ready");
+  await waitFor(() => !["queued", "researching", "needs_confirmation", "confirming"].includes(manager.getJob(started.runId).status));
+  assert.equal(manager.getJob(started.runId).status, "ready", JSON.stringify(manager.getJob(started.runId)));
   const snapshot = await store.read("Prob-007", manager.getJob(started.runId).snapshotId);
 
   assert.equal(snapshot.manifest.scientificAttention.id, "scientific-attention");
-  assert.equal(snapshot.manifest.scientificAttention.unit, "percent");
+  assert.equal(snapshot.manifest.scientificAttention.unit, "score-100");
   assert.equal(snapshot.manifest.scientificAttention.evidenceTier, "authoritative-secondary");
   assert.deepEqual(snapshot.manifest.scientificAttention.sourceIds, ["citation-W1", "citation-W2"]);
   assert.equal(snapshot.manifest.citation.momentum.id, "citation-momentum");
