@@ -216,6 +216,26 @@ test("pages showcase contains only the noninteractive local-mode preparation not
   assert.doesNotMatch(autoresearch, /\/__local\/assessments/);
 });
 
+test("pages showcase publishes the agreed evaluation cards on official problem details", async () => {
+  const expected = {
+    "Prob-124": ["79 / 100", "$0.3M USD 2026", "71 / 100"],
+    "Prob-125": ["85 / 100", "$0.0M USD 2026", "85 / 100"],
+    "Prob-126": ["70 / 100", "$0.8M USD 2026", "65 / 100"],
+    "Prob-127": ["81 / 100", "$3.0M USD 2026", "98 / 100"],
+    "Prob-128": ["79 / 100", "$1.4M USD 2026", "92 / 100"],
+  };
+
+  for (const [id, values] of Object.entries(expected)) {
+    const html = await readFile(join(out, "problems", id, "index.html"), "utf8");
+    assert.match(html, /Scientific Demand Score/);
+    assert.match(html, /Expected Attributable Net Social Value \(EANSV\)/);
+    assert.match(html, /Autoresearch Fit/);
+    assert.match(html, /P\(useful outcome with this research\) - P\(useful outcome without this research\)/);
+    assert.doesNotMatch(html, /Industry \/ social proxy/);
+    for (const value of values) assert.equal(html.includes(value), true, `${id} should contain ${value}`);
+  }
+});
+
 test("pages showcase exposes exactly the approved public problem routes", async () => {
   assert.deepEqual(generatedIndex.problems.map((problem) => problem.id).sort(), PUBLIC_PROBLEM_IDS);
   const problemEntries = await readdir(join(out, "problems"), { withFileTypes: true });
