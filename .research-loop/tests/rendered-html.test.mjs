@@ -393,6 +393,10 @@ test("server-renders the static assessment methodology demo for the static examp
   assert.doesNotMatch(html, /Industry \/ social proxy/);
   assert.doesNotMatch(html, /\$57\.0B USD 2035/);
   assert.match(html, /Autoresearch Fit/);
+  assert.match(html, /88\.5 \/ 100/);
+  assert.match(html, /weighted sum = 442\.5 \/ 100 = 4\.425/);
+  assert.doesNotMatch(html, /38\.5 \/ 100/);
+  assert.doesNotMatch(html, /S = 2 x V x A/);
   assert.match(html, /Methodology documentation/);
   assert.doesNotMatch(html, /Technical Success Estimate/);
   assert.doesNotMatch(html, /Local assessment unavailable/);

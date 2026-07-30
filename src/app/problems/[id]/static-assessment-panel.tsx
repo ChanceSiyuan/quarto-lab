@@ -36,24 +36,23 @@ const SCIENTIFIC_DEMAND_CARD: MetricCard = {
 
 const AUTORESEARCH_FIT_CARD: MetricCard = {
   label: "Autoresearch Fit",
-  value: "38.5 / 100",
+  value: "88.5 / 100",
   formula: [
     "A = 100 x weighted_average(0-5 dimension estimates) / 5",
     "",
-    "modifiable search object       20 x 1.5 =  30.0",
-    "executable objective           20 x 1.5 =  30.0",
-    "correctness and anti-gaming    15 x 2.0 =  30.0",
-    "incremental feedback           15 x 1.5 =  22.5",
-    "fresh evaluation               10 x 2.0 =  20.0",
-    "reproducibility, auditability  10 x 3.0 =  30.0",
-    "attempt runtime                10 x 3.0 =  30.0",
-    "                              weighted sum = 192.5 / 100 = 1.925",
+    "modifiable search object       20 x 5.0 = 100.0",
+    "executable objective           20 x 4.5 =  90.0",
+    "correctness and anti-gaming    15 x 4.5 =  67.5",
+    "incremental feedback           15 x 5.0 =  75.0",
+    "fresh evaluation               10 x 2.5 =  25.0",
+    "reproducibility, auditability  10 x 3.5 =  35.0",
+    "attempt runtime                10 x 5.0 =  50.0",
+    "                              weighted sum = 442.5 / 100 = 4.425",
     "",
-    "A = 100 x 1.925 / 5 = 38.5",
-    "S = 2 x V x A / (V + A) = 2 x 71.0 x 38.5 / 109.5 = 49.9",
+    "A = 100 x 4.425 / 5 = 88.5",
   ],
   reason:
-    "The 1.5 / 5 scores on modifiable object, executable objective, and incremental feedback reflect the unfrozen benchmark and primary metric — that is why the verdict is REFRAME.",
+    "The explicit algorithm search object, executable benchmark, verified witnesses, directional attempt metrics, and five-minute loop make this a strong autoresearch fit. Fresh evaluation and reproducibility remain lower because the current results are synthetic and a real frozen holdout and executable environment are not yet present.",
 };
 
 export function StaticAssessmentPanel({ eansvCard }: { eansvCard: MetricCard }) {
