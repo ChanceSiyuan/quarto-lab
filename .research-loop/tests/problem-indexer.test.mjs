@@ -110,6 +110,17 @@ test("reserves IDs from damaged problem directories without indexing them", asyn
   assert.match(index.diagnostics[0].message, /Invalid JSON/);
 });
 
+test("ignores manifest-less local artifact directories", async () => {
+  const root = await makeRoot();
+  await mkdir(join(root, "problems", "Prob-903", "assessments", "20260730T093530Z-4a0d58"), { recursive: true });
+
+  const index = await buildProblemIndex({ rootDir: root });
+
+  assert.deepEqual(index.problems, []);
+  assert.equal(index.nextProblemId, "Prob-001");
+  assert.deepEqual(index.diagnostics, []);
+});
+
 test("reserves IDs from non-directory problem entries without indexing them", async () => {
   const root = await makeRoot();
   await writeFile(join(root, "problems", "Prob-001"), "occupied by a damaged local problem artifact");
