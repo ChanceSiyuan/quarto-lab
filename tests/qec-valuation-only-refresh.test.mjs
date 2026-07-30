@@ -491,6 +491,35 @@ test("refreshes a supplied portfolio ID list from verified current-formula snaps
   assert.equal(result.problems[0].snapshotId, "20260730T010203Z-222222222222");
 });
 
+test("portfolio refresh with ensureSnapshots reuses existing snapshots without requiring an API key", async () => {
+  const rootDir = await mkdtemp(join(tmpdir(), "qec-valuation-only-existing-"));
+  await writeProblem(rootDir);
+  await writeSourceRun(rootDir);
+  const store = createArtifactStore({
+    rootDir,
+    now: () => new Date("2026-07-30T02:03:04.000Z"),
+    randomBytes: () => Buffer.from("123abc", "hex"),
+  });
+  const valuationStore = {
+    list: async () => ["20260730T010203Z-222222222222"],
+    verify: async () => valuationSnapshot(),
+  };
+
+  const result = await refreshQecValuationOnlyPortfolio({
+    rootDir,
+    repository: repository(),
+    store,
+    valuationStore,
+    problemIds: ["Prob-001"],
+    ensureSnapshots: true,
+    apiKey: "",
+  });
+
+  assert.equal(result.status, "complete");
+  assert.equal(result.problems[0].status, "completed");
+  assert.equal(result.problems[0].snapshotId, "20260730T010203Z-222222222222");
+});
+
 test("ensures a missing current-formula snapshot without invoking qualitative assessment", async () => {
   const calls = { start: [], confirm: [] };
   const statuses = new Map([["valuation-Prob-001", "needs_confirmation"]]);

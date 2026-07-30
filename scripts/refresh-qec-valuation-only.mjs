@@ -142,22 +142,28 @@ export async function refreshQecValuationOnlyPortfolio({
   try {
     for (const problemId of problemIds) {
       try {
-        if ((ensureSnapshots || snapshotsOnly || forceSnapshotRefresh) && !activeValuationManager) {
-          activeValuationManager = createOpenAlexValuationManager({
-            rootDir: workspaceRoot,
-            repository: activeRepository,
-            valuationStore: activeValuationStore,
-            apiKey,
-          });
-        }
-        const ensured = ensureSnapshots || snapshotsOnly || forceSnapshotRefresh
-          ? await ensureQecScientificDemandSnapshot({
+        const existingSnapshot = forceSnapshotRefresh
+          ? null
+          : await latestCurrentFormulaSnapshot(activeValuationStore, problemId);
+        let ensured = existingSnapshot
+          ? { status: "verified-existing", problemId, snapshot: existingSnapshot }
+          : { snapshot: null };
+        if (!existingSnapshot && (ensureSnapshots || snapshotsOnly || forceSnapshotRefresh)) {
+          if (!activeValuationManager) {
+            activeValuationManager = createOpenAlexValuationManager({
+              rootDir: workspaceRoot,
+              repository: activeRepository,
+              valuationStore: activeValuationStore,
+              apiKey,
+            });
+          }
+          ensured = await ensureQecScientificDemandSnapshot({
               valuationManager: activeValuationManager,
               valuationStore: activeValuationStore,
               problemId,
               force: forceSnapshotRefresh,
-            })
-          : { snapshot: await latestCurrentFormulaSnapshot(activeValuationStore, problemId) };
+            });
+        }
         const snapshot = assertCurrentFormulaSnapshot(ensured.snapshot, problemId);
         if (snapshotsOnly) {
           problems.push({
