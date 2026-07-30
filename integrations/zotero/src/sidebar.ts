@@ -215,7 +215,7 @@ export interface SidebarViewOptions {
   surface?: "sidebar" | "workbench";
 }
 
-export type SidebarIcon = "history" | "new" | "terminal" | "more" | "refresh" | "send" | "stop" | "context" | "close" | "copy" | "note";
+export type SidebarIcon = "history" | "new" | "terminal" | "site" | "more" | "refresh" | "send" | "stop" | "context" | "close" | "copy" | "note";
 
 const LONG_USER_MESSAGE_CHARACTERS = 420;
 const LONG_USER_MESSAGE_LINES = 8;
@@ -525,14 +525,14 @@ export class SidebarView {
     workbenchButton.hidden = this.surface === "workbench";
     workbenchButton.addEventListener("click", () => this.callbacks.onOpenWorkbench());
     if (this.surface === "workbench") {
-      this.mainSiteButton = this.doc.createElement("button");
-      this.mainSiteButton.type = "button";
-      this.mainSiteButton.className = "zc-main-site-button is-checking";
-      this.mainSiteButton.textContent = "Checking main site…";
-      this.mainSiteButton.title = "Check Research Loop main site";
+      this.mainSiteButton = this.iconButton(
+        "site",
+        "Check Research Loop main site",
+        () => void this.activateMainSite(),
+      );
+      this.mainSiteButton.classList.add("zc-main-site-button", "is-checking");
       this.mainSiteButton.disabled = true;
       this.mainSiteButton.setAttribute("aria-pressed", "false");
-      this.mainSiteButton.addEventListener("click", () => void this.activateMainSite());
     }
     this.topActions = actions;
     const historyButton = this.iconButton("history", "Conversation History", () => {
@@ -547,7 +547,6 @@ export class SidebarView {
       "terminal",
       "Open Terminal",
       () => this.callbacks.onOpenTerminal(),
-      "Terminal",
     );
     this.terminalButton.classList.add("zc-terminal-button");
     this.terminalButton.setAttribute("aria-pressed", "false");
@@ -749,9 +748,8 @@ export class SidebarView {
     const button = this.mainSiteButton;
     if (!button) return false;
     button.disabled = true;
-    button.className = "zc-main-site-button is-checking";
-    button.textContent = "Checking main site…";
-    button.title = "Check Research Loop main site";
+    button.className = "zc-icon-button zc-main-site-button is-checking";
+    this.presentMainSiteButton(button, "Check Research Loop main site");
     let available = false;
     let repositoryState: QLabRepositoryState = "ready";
     try {
@@ -767,28 +765,25 @@ export class SidebarView {
     button.dataset.repositoryState = repositoryState;
     button.disabled = false;
     if (repositoryState === "missing" || repositoryState === "incompatible") {
-      button.className = "zc-main-site-button is-invalid";
-      button.textContent = repositoryState === "missing" ? "Choose Repository" : "Choose Empty Folder";
-      button.title = repositoryState === "missing"
+      button.className = "zc-icon-button zc-main-site-button is-invalid";
+      this.presentMainSiteButton(button, repositoryState === "missing"
         ? "Choose an empty folder or an existing Research Loop repository"
-        : "This folder contains unrelated files; choose an empty folder instead";
+        : "This folder contains unrelated files; choose an empty folder instead");
       return false;
     }
     if (repositoryState === "empty" || repositoryState === "partial") {
-      button.className = "zc-main-site-button is-initialize";
-      button.textContent = "Initialize";
-      button.title = repositoryState === "empty"
+      button.className = "zc-icon-button zc-main-site-button is-initialize";
+      this.presentMainSiteButton(button, repositoryState === "empty"
         ? "Initialize Research Loop in this empty folder"
-        : "Complete the Research Loop structure without overwriting existing Knowledge, Drafts, or Literature";
+        : "Complete the Research Loop structure without overwriting existing Knowledge, Drafts, or Literature");
       return false;
     }
     button.className = available
-      ? "zc-main-site-button is-available"
-      : "zc-main-site-button is-offline";
-    button.textContent = available ? "Main Site" : "Start Main Site";
-    button.title = available
+      ? "zc-icon-button zc-main-site-button is-available"
+      : "zc-icon-button zc-main-site-button is-offline";
+    this.presentMainSiteButton(button, available
       ? "Open the Research Loop main site in Zotero"
-      : "The main site is not running; click to build and start it";
+      : "The main site is not running; click to build and start it");
     return available;
   }
 
@@ -807,32 +802,29 @@ export class SidebarView {
     const available = this.mainSiteButton.classList.contains("is-available");
     if (!available) {
       this.mainSiteButton.disabled = true;
-      this.mainSiteButton.className = "zc-main-site-button is-deploying";
-      this.mainSiteButton.textContent = repositoryState === "empty" || repositoryState === "partial"
-        ? "Initializing…"
-        : "Starting…";
-      this.mainSiteButton.title = "Building and starting the Research Loop main site";
+      this.mainSiteButton.className = "zc-icon-button zc-main-site-button is-deploying";
+      this.presentMainSiteButton(this.mainSiteButton, "Building and starting the Research Loop main site");
       try {
         if (!this.callbacks.onDeployMainSite) throw new Error("Main-site deployment is unavailable");
         await this.callbacks.onDeployMainSite((message) => {
           if (!this.mainSiteButton?.isConnected) return;
-          this.mainSiteButton.textContent = message;
-          this.mainSiteButton.title = message;
+          this.presentMainSiteButton(this.mainSiteButton, message);
         });
       }
       catch (error) {
         if (!this.mainSiteButton.isConnected) return;
         this.mainSiteButton.disabled = false;
-        this.mainSiteButton.className = "zc-main-site-button is-error";
-        this.mainSiteButton.textContent = "Retry Main Site";
-        this.mainSiteButton.title = error instanceof Error ? error.message : String(error);
+        this.mainSiteButton.className = "zc-icon-button zc-main-site-button is-error";
+        this.presentMainSiteButton(
+          this.mainSiteButton,
+          `Retry Main Site: ${error instanceof Error ? error.message : String(error)}`,
+        );
         return;
       }
       if (!this.mainSiteButton.isConnected) return;
       this.mainSiteButton.disabled = false;
-      this.mainSiteButton.className = "zc-main-site-button is-available";
-      this.mainSiteButton.textContent = "Main Site";
-      this.mainSiteButton.title = "Open the Research Loop main site in Zotero";
+      this.mainSiteButton.className = "zc-icon-button zc-main-site-button is-available";
+      this.presentMainSiteButton(this.mainSiteButton, "Open the Research Loop main site in Zotero");
     }
     this.setMainSiteOpen(true);
   }
@@ -1488,6 +1480,7 @@ export class SidebarView {
     }
 
     for (const review of this.state.reviews) {
+      if (review.state === "applied") continue;
       const id = `diff-review:${review.id}`;
       const fingerprint = JSON.stringify(review);
       activeIDs.add(id);
@@ -2243,6 +2236,12 @@ export class SidebarView {
     return button;
   }
 
+  private presentMainSiteButton(button: HTMLButtonElement, title: string): void {
+    this.setButtonIcon(button, "site");
+    button.title = title;
+    button.setAttribute("aria-label", title);
+  }
+
   private setButtonIcon(button: HTMLButtonElement, icon: SidebarIcon): void {
     button.replaceChildren(createSidebarIcon(this.doc, icon));
   }
@@ -2252,6 +2251,7 @@ const SIDEBAR_ICON_PATHS: Record<SidebarIcon, string[]> = {
   history: ["M5 6h14", "M5 12h14", "M5 18h14"],
   new: ["M12 5v14", "M5 12h14"],
   terminal: ["M4 5h16v14H4z", "m7 9 3 3-3 3", "M13 15h4"],
+  site: ["M4 10.5 12 4l8 6.5", "M6.5 9.5V20h11V9.5", "M9.5 20v-6h5v6"],
   more: ["M5 12h.01", "M12 12h.01", "M19 12h.01"],
   refresh: ["M20 6v5h-5", "M4 18v-5h5", "M18.2 9a7 7 0 0 0-11.7-2.5L4 11", "M5.8 15a7 7 0 0 0 11.7 2.5L20 13"],
   send: ["M12 19V5", "M6 11l6-6 6 6"],

@@ -114,8 +114,13 @@
 .zc-workbench-open { min-height: 28px; padding: 0 9px; border: 1px solid color-mix(in srgb, var(--zc-accent) 35%, var(--zc-border)); border-radius: 8px; color: var(--zc-accent); background: var(--zc-accent-soft); font: inherit; font-size: 10px; font-weight: 650; cursor: pointer; }
 .zc-workbench-open:hover { border-color: var(--zc-accent); }
 .zc-main-site-button {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  min-width: 28px;
+  height: 28px;
   min-height: 28px;
-  padding: 0 9px;
+  padding: 0;
   border: 1px solid color-mix(in srgb, var(--zc-accent) 35%, var(--zc-border));
   border-radius: 8px;
   color: var(--zc-accent);
@@ -192,8 +197,8 @@
 }
 .zc-workbench-chat.is-history-open > .zc-history-rail { padding-bottom: 58px; }
 .zc-workbench-chat.is-history-open > .zc-workbench-dock {
-  width: 204px;
-  justify-content: space-between;
+  width: auto;
+  justify-content: flex-start;
 }
 .zc-workbench-chat > .zc-login-layer { inset: 35px 0 0; }
 

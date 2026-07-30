@@ -109,7 +109,7 @@ describe("SidebarView", () => {
     body.querySelector<HTMLButtonElement>(".zc-turn-summary")?.click();
     expect(body.textContent).toContain("zotero_get_current_page");
     expect(body.querySelector("strong")?.textContent).toBe("Result:");
-    expect(body.querySelector<HTMLButtonElement>('button[title="Open Terminal"]')?.textContent).toContain("Terminal");
+    expect(body.querySelector<HTMLButtonElement>('button[title="Open Terminal"]')?.textContent).toBe("");
     expect(body.textContent).toContain("Research Loop · Local Codex");
     for (const title of ["Conversation History", "New Conversation", "Open Terminal", "Account", "Refresh Reader Context", "Send"]) {
       expect(body.querySelector(`button[title="${title}"] svg.zc-button-icon`)).not.toBeNull();
@@ -480,7 +480,7 @@ describe("SidebarView", () => {
     expect([...body.querySelectorAll("button")].some((button) => button.textContent === "Restore")).toBe(false);
   });
 
-  it("does not show stale approval actions for Agent changes that were already applied", () => {
+  it("removes redundant Agent change reminders after the working copy was applied", () => {
     const body = document.createElement("div");
     document.body.appendChild(body);
     const handlers = callbacks();
@@ -497,7 +497,8 @@ describe("SidebarView", () => {
       }],
     });
 
-    expect(body.textContent).toContain("Applied");
+    expect(body.textContent).not.toContain("Agent workspace changes");
+    expect(body.textContent).not.toContain("Applied");
     expect(body.textContent).not.toContain("Accept Suggestion");
     expect(body.textContent).not.toContain("Dismiss");
     expect(handlers.onReviewDecision).not.toHaveBeenCalled();
@@ -902,6 +903,14 @@ describe("SidebarView", () => {
     expect((body.querySelector(".zc-composer-input") as HTMLTextAreaElement).placeholder).toBe("Message QLab…");
     expect(root.querySelector<HTMLButtonElement>(".zc-open-paper")!.hidden).toBe(true);
     const terminal = root.querySelector<HTMLButtonElement>(".zc-terminal-button")!;
+    const mainSite = root.querySelector<HTMLButtonElement>(".zc-main-site-button")!;
+    const account = root.querySelector<HTMLButtonElement>('button[title="Account"]')!;
+    for (const button of [mainSite, terminal, account]) {
+      expect(button.querySelector("svg.zc-button-icon")).not.toBeNull();
+      expect(button.querySelector(".zc-button-label")).toBeNull();
+      expect(button.textContent).toBe("");
+      expect(button.title.length).toBeGreaterThan(0);
+    }
     terminal.click();
     expect(handlers.onOpenTerminal).toHaveBeenCalledOnce();
     view.setTerminalOpen(true);
@@ -933,7 +942,8 @@ describe("SidebarView", () => {
     };
     const view = new SidebarView(body, handlers, { surface: "workbench" });
     await vi.waitFor(() => {
-      expect(body.querySelector<HTMLButtonElement>(".zc-main-site-button")!.textContent).toBe("Main Site");
+      expect(body.querySelector<HTMLButtonElement>(".zc-main-site-button")!.title)
+        .toBe("Open the Research Loop main site in Zotero");
     });
 
     const button = body.querySelector<HTMLButtonElement>(".zc-main-site-button")!;
@@ -978,13 +988,13 @@ describe("SidebarView", () => {
     };
     new SidebarView(body, handlers, { surface: "workbench" });
     const button = body.querySelector<HTMLButtonElement>(".zc-main-site-button")!;
-    await vi.waitFor(() => expect(button.textContent).toBe("Start Main Site"));
+    await vi.waitFor(() => expect(button.title).toBe("The main site is not running; click to build and start it"));
     expect(button.classList.contains("is-offline")).toBe(true);
 
     button.click();
-    expect(button.textContent).toBe("Starting…");
+    expect(button.title).toBe("Building and starting the Research Loop main site");
     await vi.waitFor(() => expect(handlers.onDeployMainSite).toHaveBeenCalledOnce());
-    await vi.waitFor(() => expect(button.textContent).toBe("Main Site"));
+    await vi.waitFor(() => expect(button.title).toBe("Open the Research Loop main site in Zotero"));
     expect(body.querySelector(".zc-workbench-chat")!.classList.contains("is-main-site-open")).toBe(true);
   });
 
@@ -1006,12 +1016,12 @@ describe("SidebarView", () => {
       new SidebarView(body, handlers, { surface: "workbench" });
       const button = body.querySelector<HTMLButtonElement>(".zc-main-site-button")!;
 
-      await vi.waitFor(() => expect(button.textContent).toBe("Initialize"));
+      await vi.waitFor(() => expect(button.title).toContain("Research Loop"));
       expect(button.classList.contains("is-initialize")).toBe(true);
       expect(handlers.onCheckMainSite).not.toHaveBeenCalled();
       button.click();
       await vi.waitFor(() => expect(handlers.onDeployMainSite).toHaveBeenCalledOnce());
-      await vi.waitFor(() => expect(button.textContent).toBe("Main Site"));
+      await vi.waitFor(() => expect(button.title).toBe("Open the Research Loop main site in Zotero"));
     },
   );
 
@@ -1029,10 +1039,10 @@ describe("SidebarView", () => {
     new SidebarView(body, handlers, { surface: "workbench" });
     const button = body.querySelector<HTMLButtonElement>(".zc-main-site-button")!;
 
-    await vi.waitFor(() => expect(button.textContent).toBe("Choose Empty Folder"));
+    await vi.waitFor(() => expect(button.title).toBe("This folder contains unrelated files; choose an empty folder instead"));
     button.click();
     await vi.waitFor(() => expect(handlers.onChooseQLabRoot).toHaveBeenCalledOnce());
-    await vi.waitFor(() => expect(button.textContent).toBe("Initialize"));
+    await vi.waitFor(() => expect(button.classList.contains("is-initialize")).toBe(true));
     expect(handlers.onDeployMainSite).not.toHaveBeenCalled();
   });
 

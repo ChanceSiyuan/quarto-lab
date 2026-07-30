@@ -183,7 +183,7 @@ export class QmdWorkspaceView {
     this.compareButton.setAttribute("aria-pressed", "false");
     this.keepChangesButton = this.iconButton(
       "zc-qmd-change-keep",
-      "✓",
+      "⤓",
       "No AI changes to keep",
       () => void this.keepAgentChanges(),
     );
@@ -531,7 +531,7 @@ export class QmdWorkspaceView {
     );
     this.presentIcon(
       this.keepChangesButton,
-      "✓",
+      "⤓",
       this.hasAgentChange ? "Keep AI version as the original Draft" : "No AI changes to keep",
     );
   }

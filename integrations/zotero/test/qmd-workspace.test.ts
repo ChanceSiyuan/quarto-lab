@@ -417,6 +417,8 @@ describe("QmdWorkspaceView", () => {
       expect(button.getAttribute("aria-label")).toContain(label);
       expect(button.title).toContain(label);
     }
+    expect(host.querySelector<HTMLButtonElement>(".zc-qmd-compliance")!.textContent)
+      .not.toBe(host.querySelector<HTMLButtonElement>(".zc-qmd-change-keep")!.textContent);
     view.destroy();
   });
 

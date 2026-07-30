@@ -17,7 +17,6 @@ import {
   SidebarView,
   type CheckpointOption,
   type ChatEntry,
-  type DiffReview,
   type HistoryConversationOption,
   type PendingApproval,
   type ResearchContextChip,
@@ -1878,13 +1877,6 @@ export class ZoteroChatPlugin {
     const plan = normalizePlan(this.codex.getActivePlan());
     const mutationReviews = this.mutations?.getReviews() || [];
     const activeDiffs = this.codex.getActiveDiffs();
-    const workspaceDiffs: DiffReview[] = activeDiffs.map((diff) => ({
-      id: `workspace:${diff.turnId}`,
-      title: "Agent workspace changes",
-      summary: "Applied in the selected Research Loop working directory. Review the visible Draft on the right with Keep or Undo; Zotero and the original PDF remain unchanged.",
-      diff: diff.diff,
-      state: "applied",
-    }));
     const pending = this.codex.getPendingApprovals().find(
       (approval) => approval.threadId === this.codex.state.activeThreadId,
     );
@@ -1949,7 +1941,7 @@ export class ZoteroChatPlugin {
         contextChips: this.contextChips(),
         contextSuggestions: this.contextSuggestions(),
         plan: importedChat ? null : plan,
-        reviews: importedChat ? [] : [...mutationReviews, ...workspaceDiffs],
+        reviews: importedChat ? [] : mutationReviews,
         pendingApproval: importedChat ? null : pendingApproval,
         checkpoints: importedChat ? [] : checkpoints,
         turnStartedAt: !importedChat && this.codex.state.running
@@ -2113,13 +2105,6 @@ export class ZoteroChatPlugin {
     const plan = normalizePlan(this.codex.getActivePlan());
     const mutationReviews = this.mutations?.getReviews() || [];
     const activeDiffs = this.codex.getActiveDiffs();
-    const workspaceDiffs: DiffReview[] = activeDiffs.map((diff) => ({
-      id: `workspace:${diff.turnId}`,
-      title: "Agent workspace changes",
-      summary: "Applied in the selected Research Loop working directory. Review the visible Draft on the right with Keep or Undo; Zotero and the original PDF remain unchanged.",
-      diff: diff.diff,
-      state: "applied",
-    }));
     const pending = this.codex.getPendingApprovals().find(
       (approval) => approval.threadId === this.codex.state.activeThreadId,
     );
@@ -2187,7 +2172,7 @@ export class ZoteroChatPlugin {
         contextChips: this.contextChips(),
         contextSuggestions: this.contextSuggestions(),
         plan: importedChat ? null : plan,
-        reviews: importedChat ? [] : [...mutationReviews, ...workspaceDiffs],
+        reviews: importedChat ? [] : mutationReviews,
         pendingApproval: importedChat ? null : pendingApproval,
         checkpoints: importedChat ? [] : checkpoints,
         turnStartedAt: !importedChat && this.codex.state.running
