@@ -259,7 +259,10 @@ test("ordinary local build serves the static demo route and rejects unknown demo
   const problemHtml = await problemResponse.text();
   assert.doesNotMatch(problemHtml, /Assessment methodology demo/);
   assert.match(problemHtml, /Scientific Demand Score/);
-  assert.match(problemHtml, /Industry \/ social proxy/);
+  assert.match(problemHtml, /Expected Attributable Net Social Value/);
+  assert.match(problemHtml, /\+\$180K USD 2026/);
+  assert.doesNotMatch(problemHtml, /Industry \/ social proxy/);
+  assert.doesNotMatch(problemHtml, /\$57\.0B USD 2035/);
   assert.match(problemHtml, /Autoresearch Fit/);
   assert.match(problemHtml, /Discuss in Codex/);
   assert.match(problemHtml, /href="\/problems\/Prob-000\/autoresearch"/);
@@ -353,7 +356,10 @@ test("server-renders the static assessment methodology demo for the static examp
   assert.match(html, /<section class="assessment-panel [^"]+" aria-label="Assessment">/);
   assert.doesNotMatch(html, /Assessment methodology demo/);
   assert.match(html, /Scientific Demand Score/);
-  assert.match(html, /Industry \/ social proxy/);
+  assert.match(html, /Expected Attributable Net Social Value/);
+  assert.match(html, /\+\$180K USD 2026/);
+  assert.doesNotMatch(html, /Industry \/ social proxy/);
+  assert.doesNotMatch(html, /\$57\.0B USD 2035/);
   assert.match(html, /Autoresearch Fit/);
   assert.match(html, /Methodology documentation/);
   assert.doesNotMatch(html, /Technical Success Estimate/);
