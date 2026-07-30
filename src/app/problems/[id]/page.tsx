@@ -55,7 +55,7 @@ export default async function ProblemDetailPage({
     });
 
     return (
-      <main className="detail-shell research-shell">
+      <main className={`detail-shell research-shell ${detailStyles.shellZoom}`}>
         <Link className="back-link" href="/">← Back to problems</Link>
         <header className="research-header">
           <div>

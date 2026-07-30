@@ -30,7 +30,7 @@ export default async function ProblemAutoresearchPage({
   const ledger = buildExampleResearchLedger(example);
 
   return (
-    <main className="detail-shell research-shell">
+    <main className={`detail-shell research-shell ${detailStyles.shellZoom}`}>
       <div className="breadcrumb-row">
         <Link className="back-link" href={`/problems/${problem.id}`}>← Back to problem</Link>
         <Link className="back-link muted-back-link" href="/">Problem library</Link>
