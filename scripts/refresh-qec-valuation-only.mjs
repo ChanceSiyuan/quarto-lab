@@ -23,9 +23,16 @@ function selectedProblemIds(defaultIds = QEC_PORTFOLIO_BATCH_IDS) {
   return [process.argv[index + 1]].filter(Boolean);
 }
 
-async function createRepository(rootDir) {
+export async function createQecValuationOnlyRepository(rootDir) {
   const index = JSON.parse(await readFile(join(rootDir, ".generated", "problem-index.json"), "utf8"));
-  return createProblemRepository(index);
+  const repository = createProblemRepository(index);
+  return {
+    ...repository,
+    async readProblemMarkdown(problemId) {
+      if (!repository.getProblem(problemId)) return null;
+      return readFile(join(rootDir, "problems", problemId, "problem.md"), "utf8");
+    },
+  };
 }
 
 async function latestCurrentFormulaSnapshot(valuationStore, problemId) {
@@ -132,7 +139,7 @@ export async function refreshQecValuationOnlyPortfolio({
   apiKey = process.env.OPENALEX_API_KEY?.trim(),
 } = {}) {
   const workspaceRoot = resolve(rootDir ?? process.cwd());
-  const activeRepository = repository ?? await createRepository(workspaceRoot);
+  const activeRepository = repository ?? await createQecValuationOnlyRepository(workspaceRoot);
   const activeStore = store ?? createArtifactStore({ rootDir: workspaceRoot });
   const activeValuationStore = valuationStore ?? createValuationSnapshotStore({ rootDir: workspaceRoot });
   let activeValuationManager = valuationManager;

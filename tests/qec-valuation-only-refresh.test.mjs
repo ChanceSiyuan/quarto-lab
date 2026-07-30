@@ -6,6 +6,7 @@ import test from "node:test";
 
 import { createArtifactStore } from "../lib/assessments/artifact-store.mjs";
 import {
+  createQecValuationOnlyRepository,
   ensureQecScientificDemandSnapshot,
   refreshQecValuationOnlyPortfolio,
 } from "../scripts/refresh-qec-valuation-only.mjs";
@@ -592,4 +593,25 @@ test("snapshot ensure reuses an existing current-formula snapshot", async () => 
 
   assert.equal(result.status, "verified-existing");
   assert.equal(result.snapshot.manifest.snapshotId, "20260730T010203Z-222222222222");
+});
+
+test("default valuation-only repository reads problem markdown for valuation research", async () => {
+  const rootDir = await mkdtemp(join(tmpdir(), "qec-valuation-only-repository-"));
+  await writeProblem(rootDir);
+  await mkdir(join(rootDir, ".generated"), { recursive: true });
+  await writeJson(join(rootDir, ".generated", "problem-index.json"), {
+    problems: [{
+      id: "Prob-001",
+      title: "QEC fixture",
+      summary: "A bounded QEC fixture.",
+      status: "active",
+      domain: "quantum-computing",
+      quantumArea: "error-correction-and-fault-tolerance",
+    }],
+  });
+
+  const repo = await createQecValuationOnlyRepository(rootDir);
+
+  assert.equal(repo.getProblem("Prob-001").title, "QEC fixture");
+  assert.match(await repo.readProblemMarkdown("Prob-001"), /A bounded QEC fixture/);
 });
