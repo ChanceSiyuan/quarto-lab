@@ -1,4 +1,5 @@
 import { buildProblemHref } from "./view-state.mjs";
+import { getStaticEvaluationPoints } from "../pages-showcase/evaluation-scenarios.mjs";
 
 export function formatProblemTimestamp(value) {
   return String(value).replace("T", " ").replace(/(?:\.\d{3})?Z$/, " UTC");
@@ -14,14 +15,23 @@ export function buildTierMetrics(summary) {
   ];
 }
 
-export function judgmentStatusCopy(status) {
+export function judgmentStatusCopy(status, problemId) {
+  if (problemId === "Prob-000") {
+    return "Done";
+  }
+  if (getStaticEvaluationPoints(problemId)) {
+    return "Judged";
+  }
+
   switch (status) {
     case "accepted":
     case "solving":
+      return "Solving";
     case "solved":
     case "publishing":
+      return "Judged";
     case "published":
-      return "Solving judged done";
+      return "Done";
     case "rejected":
       return "Rejected";
     case "archived":
@@ -31,16 +41,31 @@ export function judgmentStatusCopy(status) {
   }
 }
 
-// Demo-score values shown while assessments are synthetic; they mirror the
-// static assessment cards on the problem detail page.
-const DEMO_SCORES = Object.freeze({
-  scientificDemand: "33.4 / 100",
-  eansv: "$1.1B USD 2035",
-  autoresearchFit: "38.5 / 100",
-});
+export function judgmentStatusTone(status, problemId) {
+  switch (judgmentStatusCopy(status, problemId)) {
+    case "Solving":
+      return "solving";
+    case "Judged":
+      return "solved";
+    case "Done":
+      return "published";
+    default:
+      return status;
+  }
+}
+
+// Problems without a recorded evaluation scenario are unjudged, so their
+// score cells stay empty instead of showing invented numbers.
+const UNSCORED = "—";
+
+function formatEansvPoint(value) {
+  const sign = value < 0 ? "-" : "";
+  return `${sign}$${(Math.abs(value) / 1_000_000).toFixed(1)}M USD 2026`;
+}
 
 export function buildProblemPresentation(problem) {
   const href = buildProblemHref(problem.id);
+  const points = getStaticEvaluationPoints(problem.id);
   const problemField = {
     key: "problem",
     label: "Problem",
@@ -58,17 +83,17 @@ export function buildProblemPresentation(problem) {
   const scientificDemandField = {
     key: "scientificDemand",
     label: "Scientific Demand Score",
-    value: DEMO_SCORES.scientificDemand,
+    value: points ? `${points.scientificDemand} / 100` : UNSCORED,
   };
   const eansvField = {
     key: "eansv",
     label: "Expected Attributable Net Social Value (EANSV)",
-    value: DEMO_SCORES.eansv,
+    value: points ? points.eansvDisplay ?? formatEansvPoint(points.eansv) : UNSCORED,
   };
   const autoresearchFitField = {
     key: "autoresearchFit",
     label: "Autoresearch Fit",
-    value: DEMO_SCORES.autoresearchFit,
+    value: points ? `${points.autoresearchFit} / 100` : UNSCORED,
   };
   const openField = { key: "open", label: "Open", value: "Open problem", href };
 
