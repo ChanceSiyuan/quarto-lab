@@ -292,14 +292,18 @@ export function ProblemConsole({
                     </a>
                   </th>
                   <td><ProblemStatus status={row.status.value} /></td>
-                  <td className="cell-stack">
-                    <strong>{row.gate.primary}</strong>
-                    <small>{row.gate.secondary}</small>
+                  <td>
+                    <div className="cell-stack">
+                      <strong>{row.gate.primary}</strong>
+                      <small>{row.gate.secondary}</small>
+                    </div>
                   </td>
                   <td>{row.provenance.value}</td>
-                  <td className="cell-stack">
-                    <strong>{row.activity.primary}</strong>
-                    <small>{row.activity.secondary}</small>
+                  <td>
+                    <div className="cell-stack">
+                      <strong>{row.activity.primary}</strong>
+                      <small>{row.activity.secondary}</small>
+                    </div>
                   </td>
                   <td>{row.updated.value}</td>
                   <td>
