@@ -143,3 +143,76 @@ the Pauli algebra, where relations including $(\sigma_i^a)^2=1$ identify words
 of different lengths.
 
 :::
+
+Restricted $\{x_1,\cdots,x_n\}$ to the Pauli operators, i.e., $\sigma_{i}^{I,x/y/z}$ for each site.
+A similar Lemma also satisfied, stated as below:
+
+:::{#lem-PauliSOS .callout-important icon="false"}
+## Gram-matrix characterization of SOHS
+Define the $n$-qubit Pauli string $P_j \in \mathcal{P}_n$ with $4^n$ elements.
+A $2^n \times 2^n$ Hermitian matrix $H$ is positive semi-definite iff there exists a $d \in \mathbb{N}$ and correspondingly a vector with $n$-qubit Pauli component $\mathbf{v}:= (P_1,\cdots,P_d)^\dagger$ such that
+$$
+\begin{align}
+H = \mathbf{v}^\dagger G\mathbf{v}, G \succeq 0
+\end{align}
+$$
+:::
+
+:::{.callout-note collapse="true"}
+## Proof
+
+We prove the two directions separately.
+
+**PSD $\Longrightarrow$ Gram representation.** Suppose that $H\succeq0$. Since
+$H$ is a finite-dimensional Hermitian PSD matrix, there exists a matrix $A$
+such that
+
+$$
+H=A^\dagger A.
+$$
+
+The $4^n$ $n$-qubit Pauli strings form a basis of
+$\mathbb{C}^{2^n\times2^n}$. Hence, after fixing an ordering of the Pauli
+strings, we may write
+
+$$
+A=\sum_{j=1}^{d}c_jP_j=\mathbf{c}\mathbf{v},
+$$
+
+where one may always take $d=4^n$, and omit zero coefficients if desired.
+Therefore,
+
+$$
+H
+=(\mathbf{c}\mathbf{v})^\dagger(\mathbf{c}\mathbf{v})
+=\mathbf{v}^\dagger\mathbf{c}^\dagger\mathbf{c}\mathbf{v}.
+$$
+
+Setting $G:=\mathbf{c}^\dagger\mathbf{c}$ gives $G\succeq0$ and
+$H=\mathbf{v}^\dagger G\mathbf{v}$.
+
+**Gram representation $\Longrightarrow$ PSD.** Conversely, suppose that
+
+$$
+H=\mathbf{v}^\dagger G\mathbf{v},
+\qquad
+G\succeq0.
+$$
+
+Factor $G=C^\dagger C$, and denote the rows of $C$ by
+$\mathbf{c}_1,\ldots,\mathbf{c}_r$. Define
+$A_k:=\mathbf{c}_k\mathbf{v}$. Then
+
+$$
+\begin{aligned}
+H
+&=\mathbf{v}^\dagger C^\dagger C\mathbf{v} \\
+&=(C\mathbf{v})^\dagger(C\mathbf{v}) \\
+&=\sum_{k=1}^{r}A_k^\dagger A_k
+\succeq0.
+\end{aligned}
+$$
+
+Thus $H$ is positive semidefinite if and only if it admits the stated PSD
+Gram-matrix representation.
+:::
