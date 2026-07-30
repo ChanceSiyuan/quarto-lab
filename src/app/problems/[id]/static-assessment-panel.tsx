@@ -65,16 +65,7 @@ const METRIC_CARDS = [
 
 export function StaticAssessmentPanel() {
   return (
-    <section className={`assessment-panel ${styles.panel}`} aria-labelledby="assessment-heading">
-      <div className="assessment-panel-head">
-        <div>
-          <p className="eyebrow">QUALIFICATION</p>
-          <h2 id="assessment-heading">Assessment methodology demo</h2>
-          <p>Expand any card to see the formula worked through with the actual input data.</p>
-        </div>
-        <span className={styles.pill}>Static example</span>
-      </div>
-
+    <section className={`assessment-panel ${styles.panel}`} aria-label="Assessment">
       <div className={styles.metrics}>
         {METRIC_CARDS.map((card) => (
           <details className={styles.metric} key={card.label}>

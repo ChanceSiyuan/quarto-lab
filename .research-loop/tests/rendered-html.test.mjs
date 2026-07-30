@@ -237,7 +237,7 @@ test("ordinary local build serves the static demo route and rejects unknown demo
   const problemResponse = await render("/problems/Prob-000");
   assert.equal(problemResponse.status, 200);
   const problemHtml = await problemResponse.text();
-  assert.match(problemHtml, /Assessment methodology demo/);
+  assert.doesNotMatch(problemHtml, /Assessment methodology demo/);
   assert.match(problemHtml, /Scientific Demand Score/);
   assert.match(problemHtml, /Industry \/ social proxy/);
   assert.match(problemHtml, /Autoresearch Fit/);
@@ -308,8 +308,8 @@ test("server-renders the static assessment methodology demo for the static examp
   const html = await response.text();
   assert.doesNotMatch(html, /Example data - synthetic results for interface demonstration only\./);
   assert.doesNotMatch(html, /Available in local mode/);
-  assert.match(html, /<section class="assessment-panel [^"]+" aria-labelledby="assessment-heading">/);
-  assert.match(html, /Assessment methodology demo/);
+  assert.match(html, /<section class="assessment-panel [^"]+" aria-label="Assessment">/);
+  assert.doesNotMatch(html, /Assessment methodology demo/);
   assert.match(html, /Scientific Demand Score/);
   assert.match(html, /Industry \/ social proxy/);
   assert.match(html, /Autoresearch Fit/);
