@@ -9,6 +9,14 @@ const out = join(root, "out");
 const generatedIndex = JSON.parse(
   await readFile(join(root, ".generated/problem-index.json"), "utf8"),
 );
+const PUBLIC_PROBLEM_IDS = [
+  "Prob-000",
+  "Prob-124",
+  "Prob-125",
+  "Prob-126",
+  "Prob-127",
+  "Prob-128",
+];
 
 async function fileExists(path) {
   try {
@@ -33,10 +41,9 @@ async function collectFiles(dir) {
   return files;
 }
 
-test("pages build indexes only the public showcase root", () => {
-  assert.deepEqual(generatedIndex.problems.map((problem) => problem.id), ["Prob-000"]);
-  assert.equal(generatedIndex.summary.total, 1);
-  assert.equal(generatedIndex.problems[0].title, "CSS code-distance algorithm search");
+test("pages build indexes only the approved public problem records", () => {
+  assert.deepEqual(generatedIndex.problems.map((problem) => problem.id).sort(), PUBLIC_PROBLEM_IDS);
+  assert.equal(generatedIndex.summary.total, 6);
 });
 
 test("pages showcase writes static route files", async () => {
@@ -46,6 +53,11 @@ test("pages showcase writes static route files", async () => {
     "knowledge/research-loop.css",
     "knowledge/search.json",
     "problems/Prob-000/index.html",
+    "problems/Prob-124/index.html",
+    "problems/Prob-125/index.html",
+    "problems/Prob-126/index.html",
+    "problems/Prob-127/index.html",
+    "problems/Prob-128/index.html",
     "problems/Prob-000/autoresearch/index.html",
     "problems/Prob-000/attempts/ATT-001/index.html",
     "problems/Prob-000/attempts/ATT-002/index.html",
@@ -73,6 +85,20 @@ test("pages showcase rewrites links for the repository base path", async () => {
   assert.doesNotMatch(autoresearch, /href="\/research-loop\/problems\/Prob-000\/attempts\/ATT-\d{3}"/);
   assert.doesNotMatch(autoresearch, /href="\/problems\/Prob-000\/attempts\//);
   assert.doesNotMatch(autoresearch, /<script\b/i);
+});
+
+test("pages showcase renders the five official public problem details", async () => {
+  for (const id of PUBLIC_PROBLEM_IDS.slice(1)) {
+    const html = await readFile(join(out, "problems", id, "index.html"), "utf8");
+    assert.match(html, new RegExp(`<p class="eyebrow">${id}</p>`));
+    assert.match(html, /href="\/research-loop\/"/);
+    assert.doesNotMatch(html, /<script\b/i);
+    assert.doesNotMatch(html, /codex:\/\//i);
+    assert.doesNotMatch(html, /\/__local\//);
+    assert.doesNotMatch(html, /Available in local mode/);
+    assert.doesNotMatch(html, /Prepare autoresearch/);
+    assert.doesNotMatch(html, /Local assessment unavailable/);
+  }
 });
 
 test("pages showcase links to the bundled knowledge site under the repository base path", async () => {
@@ -187,12 +213,12 @@ test("pages showcase contains only the noninteractive local-mode preparation not
   assert.doesNotMatch(autoresearch, /\/__local\/assessments/);
 });
 
-test("pages showcase copies only the Prob-000 problem source", async () => {
-  assert.deepEqual(generatedIndex.problems.map((problem) => problem.id), ["Prob-000"]);
+test("pages showcase exposes exactly the approved public problem routes", async () => {
+  assert.deepEqual(generatedIndex.problems.map((problem) => problem.id).sort(), PUBLIC_PROBLEM_IDS);
   const problemEntries = await readdir(join(out, "problems"), { withFileTypes: true });
   assert.deepEqual(
     problemEntries.filter((entry) => entry.isDirectory()).map((entry) => entry.name).sort(),
-    ["Prob-000"],
+    PUBLIC_PROBLEM_IDS,
   );
 });
 

@@ -64,6 +64,9 @@ type ProblemConsoleProps = {
   generatedAt: string;
   workspacePath: string;
   launch: Launch;
+  // Kept for the locked page.tsx contract; filtering was removed, so the
+  // listing always shows every indexed problem regardless of this flag.
+  initialShowArchived?: boolean;
 };
 
 function ProblemStatus({ status }: { status: string }) {
