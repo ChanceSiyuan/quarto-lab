@@ -4,6 +4,7 @@ import {
   buildProblemPresentation,
   buildTierMetrics,
   judgmentStatusCopy,
+  judgmentStatusTone,
 } from "../../src/lib/problems/presentation.mjs";
 
 test("formats tier metrics as raw counts without a target cap", () => {
@@ -108,4 +109,12 @@ test("renders solving, judged, and done as distinct judgment labels", () => {
   assert.equal(judgmentStatusCopy("published", "Prob-002"), "Done");
   assert.equal(judgmentStatusCopy("solving", "Prob-000"), "Done");
   assert.equal(judgmentStatusCopy("archived", "Prob-124"), "Judged");
+});
+
+test("uses one color tone for each displayed judgment label", () => {
+  assert.equal(judgmentStatusTone("accepted", "Prob-017"), "solving");
+  assert.equal(judgmentStatusTone("solved", "Prob-001"), "solved");
+  assert.equal(judgmentStatusTone("archived", "Prob-124"), "solved");
+  assert.equal(judgmentStatusTone("published", "Prob-002"), "published");
+  assert.equal(judgmentStatusTone("solving", "Prob-000"), "published");
 });

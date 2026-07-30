@@ -5,6 +5,7 @@ import {
   buildProblemPresentation,
   formatProblemTimestamp,
   judgmentStatusCopy,
+  judgmentStatusTone,
 } from "@/lib/problems/presentation.mjs";
 
 type Problem = {
@@ -57,7 +58,7 @@ type ProblemConsoleProps = {
 
 function ProblemStatus({ problemId, status }: { problemId: string; status: string }) {
   return (
-    <span className={`status-badge status-${status}`}>
+    <span className={`status-badge status-${judgmentStatusTone(status, problemId)}`}>
       {judgmentStatusCopy(status, problemId)}
     </span>
   );

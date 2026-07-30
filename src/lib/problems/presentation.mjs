@@ -41,6 +41,19 @@ export function judgmentStatusCopy(status, problemId) {
   }
 }
 
+export function judgmentStatusTone(status, problemId) {
+  switch (judgmentStatusCopy(status, problemId)) {
+    case "Solving":
+      return "solving";
+    case "Judged":
+      return "solved";
+    case "Done":
+      return "published";
+    default:
+      return status;
+  }
+}
+
 // Problems without a recorded evaluation scenario are unjudged, so their
 // score cells stay empty instead of showing invented numbers.
 const UNSCORED = "—";
