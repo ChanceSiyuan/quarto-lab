@@ -1,7 +1,7 @@
 # QEC Scientific Demand Score Design
 
 Date: 2026-07-30
-Status: Proposed for written review
+Status: Approved; implementation in progress
 
 ## Goal
 
