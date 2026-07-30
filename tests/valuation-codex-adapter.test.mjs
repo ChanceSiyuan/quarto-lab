@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { EventEmitter } from "node:events";
 import { readFile } from "node:fs/promises";
+import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import test from "node:test";
 
@@ -11,6 +12,7 @@ import {
 
 const schemaPath = new URL("../schemas/quantum-valuation-research.schema.json", import.meta.url);
 const localSchemaPath = fileURLToPath(schemaPath);
+const repoRoot = fileURLToPath(new URL("..", import.meta.url));
 
 function knownEvidence(id) {
   return {
@@ -23,6 +25,45 @@ function knownEvidence(id) {
     evidenceTier: "primary",
     sourceIds: [`${id}-source`],
     sources: [{ id: `${id}-source`, url: "https://example.test/source", locator: "section 1", kind: "contract" }],
+  };
+}
+
+function strictAtomicEvidence(value) {
+  if (value.state === "unknown") {
+    return {
+      id: value.id ?? null,
+      state: "unknown",
+      reason: value.reason,
+      interval: null,
+      unit: null,
+      visibility: null,
+      evidenceState: null,
+      evidenceTier: null,
+      sourceIds: [],
+      sources: [],
+      currency: null,
+      priceBaseYear: null,
+      conversionSourceId: null,
+      derivation: null,
+      kind: null,
+    };
+  }
+  return {
+    id: value.id,
+    state: "known",
+    reason: null,
+    interval: value.interval,
+    unit: value.unit,
+    visibility: value.visibility,
+    evidenceState: value.evidenceState,
+    evidenceTier: value.evidenceTier,
+    sourceIds: value.sourceIds,
+    sources: value.sources,
+    currency: value.currency ?? null,
+    priceBaseYear: value.priceBaseYear ?? null,
+    conversionSourceId: value.conversionSourceId ?? null,
+    derivation: value.derivation ?? null,
+    kind: value.kind ?? null,
   };
 }
 
@@ -58,6 +99,18 @@ function validResearchCandidate() {
   };
 }
 
+function strictResearchCandidate(candidate = validResearchCandidate()) {
+  return {
+    ...candidate,
+    marketEvidence: candidate.marketEvidence.map(strictAtomicEvidence),
+    atomicInputs: candidate.atomicInputs.map(strictAtomicEvidence),
+    materialAssumptions: candidate.materialAssumptions.map((assumption) => ({
+      ...assumption,
+      proposedValue: strictAtomicEvidence(assumption.proposedValue),
+    })),
+  };
+}
+
 function fakeSuccessfulCodex(calls, candidate, { stderr = "", eventType = "item.completed" } = {}) {
   return (command, args, options) => {
     calls.push({ command, args, options });
@@ -87,6 +140,10 @@ function walkSchema(node, visit) {
   }
 }
 
+function schemaHasType(node, type) {
+  return node.type === type || (Array.isArray(node.type) && node.type.includes(type));
+}
+
 test("valuation candidate schema is strict and Codex-compatible", async () => {
   const schema = JSON.parse(await readFile(schemaPath, "utf8"));
   assert.equal(schema.additionalProperties, false);
@@ -105,7 +162,15 @@ test("valuation candidate schema is strict and Codex-compatible", async () => {
   ]);
   walkSchema(schema, (node) => {
     if (Object.hasOwn(node, "enum") || Object.hasOwn(node, "const")) {
-      assert.equal(typeof node.type, "string", "every enum and const has an explicit type");
+      assert.ok(typeof node.type === "string" || Array.isArray(node.type), "every enum and const has an explicit type");
+    }
+    if (schemaHasType(node, "object") && Object.hasOwn(node, "properties")) {
+      assert.equal(node.additionalProperties, false, "object schemas must forbid additional properties");
+      assert.deepEqual(
+        new Set(node.required ?? []),
+        new Set(Object.keys(node.properties)),
+        "Codex strict object schemas must require every declared property",
+      );
     }
     for (const unsupported of ["$ref", "allOf", "anyOf", "oneOf", "not", "if", "then", "else", "patternProperties", "dependentSchemas", "uniqueItems"]) {
       assert.equal(Object.hasOwn(node, unsupported), false, `${unsupported} is unsupported by Codex output schemas`);
@@ -139,7 +204,7 @@ test("valuation research runs Codex read-only with a strict schema", async () =>
     currentInputs: { note: "Existing public input." },
     priorSnapshotSummary: { snapshotId: "20260729T000000Z-abcdef123456" },
     schemaPath: localSchemaPath,
-    spawnFn: fakeSuccessfulCodex(calls, validResearchCandidate(), { stderr: "public-source warning\n" }),
+    spawnFn: fakeSuccessfulCodex(calls, strictResearchCandidate(), { stderr: "public-source warning\n" }),
   });
   assert.equal(result.ok, true, result.message);
   assert.deepEqual(result.candidate, validResearchCandidate());
@@ -154,6 +219,20 @@ test("valuation research runs Codex read-only with a strict schema", async () =>
   assert.match(result.eventsText, /item\.completed/);
 });
 
+test("valuation research defaults to the repository output schema path", async () => {
+  const calls = [];
+  const result = await runValuationResearch({
+    rootDir: repoRoot,
+    problem: { id: "Prob-007", title: "Fixture", summary: "Summary" },
+    problemMarkdown: "Candidate question.",
+    quantumScope: { status: "supported", domain: "quantum-computing", quantumArea: "hardware-and-control" },
+    spawnFn: fakeSuccessfulCodex(calls, strictResearchCandidate()),
+  });
+  const schemaIndex = calls[0].args.indexOf("--output-schema");
+  assert.equal(calls[0].args[schemaIndex + 1], join(repoRoot, "schemas", "quantum-valuation-research.schema.json"));
+  assert.equal(result.ok, true, result.message);
+});
+
 test("valuation research rejects a JSONL candidate that violates the schema contract", async () => {
   const result = await runValuationResearch({
     rootDir: "/repo",
@@ -161,7 +240,7 @@ test("valuation research rejects a JSONL candidate that violates the schema cont
     problemMarkdown: "Candidate question.",
     quantumScope: { status: "supported", domain: "quantum-computing", quantumArea: "hardware-and-control" },
     schemaPath: localSchemaPath,
-    spawnFn: fakeSuccessfulCodex([], { ...validResearchCandidate(), unexpected: true }),
+    spawnFn: fakeSuccessfulCodex([], strictResearchCandidate({ ...validResearchCandidate(), unexpected: true })),
   });
   assert.equal(result.ok, false);
   assert.equal(result.code, "INVALID_FINAL");
@@ -176,10 +255,10 @@ test("valuation research rejects nested fields forbidden by its output schema", 
     problemMarkdown: "Candidate question.",
     quantumScope: { status: "supported", domain: "quantum-computing", quantumArea: "hardware-and-control" },
     schemaPath: localSchemaPath,
-    spawnFn: fakeSuccessfulCodex([], {
+    spawnFn: fakeSuccessfulCodex([], strictResearchCandidate({
       ...validResearchCandidate(),
       scope: { ...validResearchCandidate().scope, extra: true },
-    }),
+    })),
   });
   assert.equal(result.ok, false);
   assert.equal(result.code, "INVALID_FINAL");
@@ -193,7 +272,7 @@ test("valuation research ignores an agent message until its JSONL item is comple
     problemMarkdown: "Candidate question.",
     quantumScope: { status: "supported", domain: "quantum-computing", quantumArea: "hardware-and-control" },
     schemaPath: localSchemaPath,
-    spawnFn: fakeSuccessfulCodex([], validResearchCandidate(), { eventType: "item.updated" }),
+    spawnFn: fakeSuccessfulCodex([], strictResearchCandidate(), { eventType: "item.updated" }),
   });
   assert.equal(result.ok, false);
   assert.equal(result.code, "INVALID_FINAL");

@@ -128,6 +128,28 @@ test("skips only an exact previously published five-file draft on restart", asyn
   assert.deepEqual(summary, { published: [], skipped: ["Prob-002"], failed: [] });
 });
 
+test("skips an exact published draft with allowed local runtime artifacts on restart", async () => {
+  const { rootDir } = await createRegistrationFixture();
+  const record = QEC_PORTFOLIO_PROBLEMS[0];
+  const staged = await stageQecProblem({ rootDir, runId: "first-run", record });
+  const target = join(rootDir, "problems", record.id);
+  await cp(staged.stageDir, target, { recursive: true });
+  await mkdir(join(target, "valuation", "snapshots", "20260729T010203Z-0123456789ab"), { recursive: true });
+  await writeFile(join(target, "valuation", "snapshots", "20260729T010203Z-0123456789ab", "manifest.json"), "{}\n");
+  await mkdir(join(target, "assessments", "20260729T010204Z-b1c2d3"), { recursive: true });
+  await writeFile(join(target, "assessments", "20260729T010204Z-b1c2d3", "run.json"), "{}\n");
+
+  assert.equal(await verifyPublishedProblem({ rootDir, record, digest: staged.digest }), true);
+  const calls = [];
+  const summary = await registerQecPortfolio({ rootDir, records: [record], publish: async ({ id }) => {
+    calls.push(id);
+    return { status: "published", id };
+  }});
+
+  assert.deepEqual(calls, []);
+  assert.deepEqual(summary, { published: [], skipped: ["Prob-002"], failed: [] });
+});
+
 test("rejects a restart target with an extra file before publishing later IDs", async () => {
   const { rootDir } = await createRegistrationFixture();
   const record = QEC_PORTFOLIO_PROBLEMS[0];

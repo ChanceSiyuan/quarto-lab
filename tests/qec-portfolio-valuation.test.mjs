@@ -16,6 +16,13 @@ const SCOPE = {
   quantumArea: "error-correction-and-fault-tolerance",
 };
 
+const EXPECTED_VALUATION_PERSISTENT_IDS = new Map([
+  ["Prob-004", ["doi:10.1038/s41467-026-73331-6"]],
+  ["Prob-007", ["doi:10.1103/PhysRevLett.132.100603"]],
+  ["Prob-008", ["doi:10.1103/PhysRevX.14.011051"]],
+  ["Prob-014", ["doi:10.1103/PhysRevLett.132.100603"]],
+]);
+
 async function waitFor(check) {
   for (let attempt = 0; attempt < 100; attempt += 1) {
     if (check()) return;
@@ -41,7 +48,10 @@ test("builds one strict approved-evidence candidate for every portfolio problem"
       "technicalStages", "classicalBaseline", "marketEvidence", "atomicInputs",
       "materialAssumptions", "warnings",
     ]);
-    assert.deepEqual(result.candidate.anchorCandidates.map((item) => item.persistentId), record.technicalAnchors.map((item) => item.persistentId));
+    assert.deepEqual(
+      result.candidate.anchorCandidates.map((item) => item.persistentId),
+      EXPECTED_VALUATION_PERSISTENT_IDS.get(record.id) ?? record.technicalAnchors.map((item) => item.persistentId),
+    );
     assert.deepEqual(result.candidate.marketEvidence.map((item) => item.id), ["mckinsey-qc-internal-market-2035", "ibm-quantum-investment-floor-2026"]);
     assert.equal(result.candidate.materialAssumptions.find((item) => item.id === "capturable-value")?.proposedValue.state, "unknown");
     assert.equal(result.candidate.materialAssumptions.find((item) => item.id === "capturable-value")?.proposedValue.reason, "No problem-specific pricing, licensing, contract, product-margin, or willingness-to-pay source has been identified.");
@@ -53,6 +63,25 @@ test("builds one strict approved-evidence candidate for every portfolio problem"
       assert.equal(validateAtomicEvidence(value).ok, true);
     }
     assert.doesNotMatch(JSON.stringify(result.candidate), /\p{Script=Han}/u);
+  }
+});
+
+test("uses stable publication DOI anchors for valuation without changing the approved draft catalog", () => {
+  const expected = [
+    ["Prob-004", "doi:10.48550/arXiv.2410.05202", "doi:10.1038/s41467-026-73331-6"],
+    ["Prob-007", "doi:10.48550/arXiv.2308.02079", "doi:10.1103/PhysRevLett.132.100603"],
+    ["Prob-008", "doi:10.48550/arXiv.2307.08737", "doi:10.1103/PhysRevX.14.011051"],
+    ["Prob-014", "doi:10.48550/arXiv.2308.02079", "doi:10.1103/PhysRevLett.132.100603"],
+  ];
+  for (const [problemId, approvedPersistentId, valuationPersistentId] of expected) {
+    const record = QEC_PORTFOLIO_PROBLEMS.find((item) => item.id === problemId);
+    assert.equal(record.technicalAnchor.persistentId, approvedPersistentId);
+    const candidate = buildApprovedValuationCandidate({
+      problem: { id: record.id, title: record.title, summary: record.summary },
+      quantumScope: SCOPE,
+    });
+    assert.equal(candidate.anchorCandidates[0].persistentId, valuationPersistentId);
+    assert.equal(candidate.anchorCandidates[0].id, record.technicalAnchor.id);
   }
 });
 

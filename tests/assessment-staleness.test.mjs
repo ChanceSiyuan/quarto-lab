@@ -207,6 +207,38 @@ test("rechecks a user-selected report with the same selected resolver page", asy
   assert.deepEqual(result, { stale: false, reasons: [] });
 });
 
+test("does not re-run the trusted resolver for external valuation selections", async () => {
+  const input = {
+    problemId: "Prob-001",
+    problemJsonHash: "same",
+    problemMdHash: "same",
+    skillHash: "same",
+    schemaHash: "same",
+    resolver: {
+      query: "Fixture",
+      status: "no-match",
+      topic: null,
+      orderedFiles: [],
+      selectedPage: "__external__/valuation-snapshot",
+    },
+    bundle: [],
+  };
+  const result = await evaluateAssessmentStaleness({
+    rootDir: "/tmp/not-read",
+    input,
+    currentHashes: {
+      problemJsonHash: "same",
+      problemMdHash: "same",
+      skillHash: "same",
+      schemaHash: "same",
+      bundle: [],
+    },
+    resolveKnowledge: async () => assert.fail("external-only reports must not select a trusted resolver page."),
+  });
+
+  assert.deepEqual(result, { stale: false, reasons: [] });
+});
+
 test("reports a newer valuation snapshot as advisory without invalidating the old assessment", async () => {
   const input = {
     problemId: "Prob-001",

@@ -17,7 +17,7 @@ if (args[0] === "login" && args[1] === "status") {
   process.exit(0);
 }
 
-function dimension(id, label, weight, estimate = 4) {
+function dimension(id, label, weight, estimate = 4, evidenceRefs = ["p1", "k1"]) {
   return {
     id,
     label,
@@ -25,7 +25,7 @@ function dimension(id, label, weight, estimate = 4) {
     score: { min: estimate, estimate, max: estimate },
     evidenceState: "supported",
     rationale: `Fake Codex scored ${label} from the browser fixture.`,
-    evidenceRefs: ["p1", "k1"],
+    evidenceRefs,
   };
 }
 
@@ -52,6 +52,7 @@ async function resolveKnowledge(query, selectedPage = null) {
 
 function completedEnvelope(problemId, resolution) {
   const knowledgePath = resolution.orderedFiles.at(-1);
+  const evidenceRefs = knowledgePath ? ["p1", "k1"] : ["p1"];
   return {
     outcome: "assessment",
     language: "en",
@@ -72,21 +73,21 @@ function completedEnvelope(problemId, resolution) {
       },
       dimensions: {
         researchValue: [
-          dimension("importance", "Importance", 20),
-          dimension("gap_and_novelty", "Gap and novelty", 20),
-          dimension("plausibility", "Plausibility", 15),
-          dimension("learning_from_failure", "Learning from failure", 15),
-          dimension("generality_and_publication", "Generality and publication potential", 15),
-          dimension("expected_value_relative_to_cost", "Expected value relative to cost", 15),
+          dimension("importance", "Importance", 20, 4, evidenceRefs),
+          dimension("gap_and_novelty", "Gap and novelty", 20, 4, evidenceRefs),
+          dimension("plausibility", "Plausibility", 15, 4, evidenceRefs),
+          dimension("learning_from_failure", "Learning from failure", 15, 4, evidenceRefs),
+          dimension("generality_and_publication", "Generality and publication potential", 15, 4, evidenceRefs),
+          dimension("expected_value_relative_to_cost", "Expected value relative to cost", 15, 4, evidenceRefs),
         ],
         autoresearchSuitability: [
-          dimension("modifiable_search_object", "Modifiable search object", 20),
-          dimension("executable_objective", "Executable objective", 20),
-          dimension("correctness_and_anti_gaming", "Correctness and anti-gaming", 15),
-          dimension("incremental_feedback", "Incremental feedback", 15),
-          dimension("fresh_evaluation", "Fresh evaluation", 10),
-          dimension("reproducibility_and_auditability", "Reproducibility and auditability", 10),
-          dimension("attempt_runtime", "Attempt runtime", 10),
+          dimension("modifiable_search_object", "Modifiable search object", 20, 4, evidenceRefs),
+          dimension("executable_objective", "Executable objective", 20, 4, evidenceRefs),
+          dimension("correctness_and_anti_gaming", "Correctness and anti-gaming", 15, 4, evidenceRefs),
+          dimension("incremental_feedback", "Incremental feedback", 15, 4, evidenceRefs),
+          dimension("fresh_evaluation", "Fresh evaluation", 10, 4, evidenceRefs),
+          dimension("reproducibility_and_auditability", "Reproducibility and auditability", 10, 4, evidenceRefs),
+          dimension("attempt_runtime", "Attempt runtime", 10, 4, evidenceRefs),
         ],
       },
       largestBottleneck: "The fake run has no real scientific bottleneck.",
@@ -100,13 +101,13 @@ function completedEnvelope(problemId, resolution) {
           locator: "fixture problem.md",
           summary: "Problem text supplied by the local assessment browser fixture.",
         },
-        {
+        ...(knowledgePath ? [{
           id: "k1",
           kind: "knowledge",
           path: knowledgePath,
           locator: "Trusted resolver bundle",
           summary: "Trusted knowledge selected by the repository resolver.",
-        },
+        }] : []),
       ],
     },
     clarification: null,
@@ -213,7 +214,15 @@ const prompt = args.at(-1) ?? "";
 const problemId = prompt.includes("Problem ID: Prob-903") ? "Prob-903" : prompt.includes("Problem ID: Prob-902") ? "Prob-902" : "Prob-901";
 const query = problemId === "Prob-902" ? "exact oracle" : "AKLT";
 const selectedPage = prompt.match(/^Page: (knowledge\/[^\n]+)$/m)?.[1] ?? null;
-const resolved = await resolveKnowledge(query, selectedPage);
+const externalValuationOnly = prompt.includes("Page: __external__/valuation-snapshot");
+const resolved = externalValuationOnly
+  ? {
+      query: prompt.match(/^Problem title: ([^\n]+)$/m)?.[1] ?? query,
+      status: "no-match",
+      bundle: null,
+      alternatives: [],
+    }
+  : await resolveKnowledge(query, selectedPage);
 await writeFile(outputPath, `${JSON.stringify(
   resolved.status === "ambiguous"
     ? ambiguousEnvelope(resolved)

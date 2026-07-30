@@ -163,12 +163,15 @@ test("server-renders the problem console shell", async () => {
   assert.doesNotMatch(html, /localStorage/);
 });
 
-test("ordinary local build indexes the tracked campaign and reserves the next problem ID", () => {
-  assert.deepEqual(generatedIndex.problems.map((problem) => problem.id), ["Prob-001"]);
-  assert.equal(generatedIndex.nextProblemId, "Prob-002");
+test("ordinary local build indexes all tracked QEC problems and reserves the next problem ID", () => {
+  assert.deepEqual(
+    generatedIndex.problems.map((problem) => problem.id).sort(),
+    Array.from({ length: 21 }, (_, index) => `Prob-${String(index + 1).padStart(3, "0")}`),
+  );
+  assert.equal(generatedIndex.nextProblemId, "Prob-022");
   assert.deepEqual(generatedIndex.diagnostics, []);
   assert.deepEqual(generatedIndex.summary, {
-    total: 1,
+    total: 21,
     accepted: 1,
     solved: 1,
     published: 0,
