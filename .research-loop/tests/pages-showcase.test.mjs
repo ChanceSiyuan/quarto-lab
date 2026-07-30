@@ -163,7 +163,7 @@ test("pages showcase contains only the noninteractive local-mode preparation not
   const problem = await readFile(join(out, "problems", "Prob-000", "index.html"), "utf8");
   assert.doesNotMatch(problem, /Available in local mode/);
   assert.doesNotMatch(problem, /Example data - synthetic results for interface demonstration only\./);
-  assert.match(problem, /Assessment methodology demo/);
+  assert.doesNotMatch(problem, /Assessment methodology demo/);
   assert.match(problem, /Scientific Demand Score/);
   assert.match(problem, /Industry \/ social proxy/);
   assert.match(problem, /Autoresearch Fit/);
