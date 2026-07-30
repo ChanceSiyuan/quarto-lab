@@ -233,16 +233,28 @@ test("returns a stable detail route response for unknown problem IDs", async () 
   assert.equal(response.status, 404);
 });
 
-test("ordinary local build returns 404 for every showcase route", async () => {
+test("ordinary local build serves the static demo route and rejects unknown demo attempts", async () => {
+  const problemResponse = await render("/problems/Prob-000");
+  assert.equal(problemResponse.status, 200);
+  const problemHtml = await problemResponse.text();
+  assert.match(problemHtml, /Assessment methodology demo/);
+  assert.match(problemHtml, /Research Value \(V\)/);
+  assert.match(problemHtml, /Scientific Demand Score/);
+  assert.doesNotMatch(problemHtml, /Local assessment unavailable/);
+  assert.doesNotMatch(problemHtml, /\/__local\/assessments/);
+
   for (const pathname of [
-    "/problems/Prob-000",
     "/problems/Prob-000/attempts/ATT-001",
     "/problems/Prob-000/attempts/ATT-005",
-    "/problems/Prob-000/attempts/ATT-999",
   ]) {
     const response = await render(pathname);
-    assert.equal(response.status, 404, pathname);
+    assert.equal(response.status, 200, pathname);
+    const html = await response.text();
+    assert.match(html, /Example data - synthetic results for interface demonstration only\./);
   }
+
+  const unknownAttempt = await render("/problems/Prob-000/attempts/ATT-999");
+  assert.equal(unknownAttempt.status, 404);
 });
 
 test("returns 404 for attempt routes on non-example problems", async () => {

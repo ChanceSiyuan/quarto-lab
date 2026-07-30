@@ -2,6 +2,7 @@ import generatedIndex from "../../../.generated/problem-index.json";
 import generatedResearchIndex from "../../../.generated/research-index.json";
 import {
   getStaticResearchExample,
+  getStaticResearchExampleProblem,
   isStaticResearchExampleProblem,
 } from "@/lib/problems/example-research.mjs";
 import { buildExampleResearchLedger } from "@/lib/problems/example-presentation.mjs";
@@ -23,7 +24,7 @@ export default async function ProblemDetailPage({
 }) {
   const { id } = await params;
   const repository = createProblemRepository(generatedIndex);
-  const problem = repository.getProblem(id);
+  const problem = repository.getProblem(id) ?? getStaticResearchExampleProblem(id);
 
   if (!problem) {
     notFound();

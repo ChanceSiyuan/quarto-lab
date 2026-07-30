@@ -5,6 +5,7 @@ import {
   getStaticResearchArtifactPath,
   getStaticResearchAttempt,
   getStaticResearchExample,
+  getStaticResearchExampleProblem,
   isStaticResearchExampleProblem,
   listStaticResearchAttempts,
   validateStaticResearchFixture,
@@ -22,6 +23,11 @@ test("static example exposes five ordered immutable attempts", () => {
   assert.equal(EXAMPLE_RESEARCH_PROBLEM_ID, "Prob-000");
   assert.equal(isStaticResearchExampleProblem("Prob-000"), true);
   assert.equal(isStaticResearchExampleProblem("Prob-999"), false);
+
+  const problem = getStaticResearchExampleProblem("Prob-000");
+  assert.equal(problem.id, "Prob-000");
+  assert.equal(problem.title, "CSS code-distance algorithm search");
+  assert.equal(getStaticResearchExampleProblem("Prob-999"), null);
 
   const example = getStaticResearchExample("Prob-000");
   assert.ok(example);
