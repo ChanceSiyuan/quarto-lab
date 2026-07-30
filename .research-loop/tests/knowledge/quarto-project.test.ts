@@ -357,7 +357,11 @@ test("the generated configuration re-asserts every fixed safety setting", async 
   assert.equal(website.title, "Research Loop Knowledge");
   assert.equal(website["site-path"], "/knowledge/");
   assert.equal(website.search, true);
-  assert.deepEqual(config.project, { type: "website", "output-dir": "_site" });
+  assert.deepEqual(config.project, {
+    type: "website",
+    "output-dir": "_site",
+    render: ["**/*.qmd"],
+  });
   assert.deepEqual(config.format, { html: { toc: true, css: "research-loop.css" } });
   assert.deepEqual(config.crossref, {
     custom: [

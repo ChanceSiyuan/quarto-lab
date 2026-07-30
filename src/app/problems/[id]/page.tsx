@@ -5,6 +5,8 @@ import {
   getStaticResearchExampleProblem,
   isStaticResearchExampleProblem,
 } from "@/lib/problems/example-research.mjs";
+import { getStaticExampleValuation } from "@/lib/problems/example-valuation.mjs";
+import { buildStaticExampleEansvCard } from "@/lib/problems/example-valuation-presentation.mjs";
 import { buildProblemDiscussLaunch } from "@/lib/problems/codex-launch.mjs";
 import { buildExampleResearchLedger } from "@/lib/problems/example-presentation.mjs";
 import { createProblemRepository } from "@/lib/problems/repository.mjs";
@@ -45,10 +47,12 @@ export default async function ProblemDetailPage({
 
   if (isStaticResearchExampleProblem(problem.id)) {
     const example = getStaticResearchExample(problem.id);
-    if (!example) {
+    const valuationExample = getStaticExampleValuation(problem.id);
+    if (!example || !valuationExample) {
       notFound();
     }
     const ledger = buildExampleResearchLedger(example);
+    const eansvCard = buildStaticExampleEansvCard(valuationExample);
     const discussLaunch = buildProblemDiscussLaunch({
       workspacePath: generatedIndex.workspacePath,
       problem,
@@ -78,7 +82,7 @@ export default async function ProblemDetailPage({
           </div>
         </header>
 
-        <StaticAssessmentPanel />
+        <StaticAssessmentPanel eansvCard={eansvCard} />
 
         <section className={detailStyles.linkPanel} aria-labelledby="autoresearch-link-heading">
           <div>

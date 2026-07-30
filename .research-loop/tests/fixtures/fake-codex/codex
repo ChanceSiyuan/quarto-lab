@@ -212,7 +212,7 @@ if (!outputPath) {
 
 const prompt = args.at(-1) ?? "";
 const problemId = prompt.includes("Problem ID: Prob-903") ? "Prob-903" : prompt.includes("Problem ID: Prob-902") ? "Prob-902" : "Prob-901";
-const query = problemId === "Prob-902" ? "exact oracle" : "AKLT";
+const query = problemId === "Prob-902" ? "magic simulation" : "AKLT";
 const selectedPage = prompt.match(/^Page: (knowledge\/[^\n]+)$/m)?.[1] ?? null;
 const externalValuationOnly = prompt.includes("Page: __external__/valuation-snapshot");
 const resolved = externalValuationOnly

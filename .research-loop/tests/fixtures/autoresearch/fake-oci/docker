@@ -1,0 +1,35 @@
+#!/usr/bin/env node
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+
+const args = process.argv.slice(2);
+
+if (args[0] === "version" || args[0] === "rm") {
+  process.exit(0);
+}
+
+if (args[0] !== "run") {
+  process.stderr.write(`fake docker: unsupported command ${args[0] ?? ""}\n`);
+  process.exit(2);
+}
+
+const check = args.at(-1);
+const manifest = JSON.parse(readFileSync(join(process.cwd(), "infrastructure.json"), "utf8"));
+const datasets = Object.fromEntries(
+  Object.entries(manifest.datasets).map(([name, dataset]) => [name, dataset.digest]),
+);
+const baseline = {
+  id: "fixture-baseline",
+  digest: "e".repeat(64),
+  score: 7,
+  components: [3, 4],
+};
+
+let result = { ok: true, score: 7, components: [3, 4], diagnostics: "fixture passed" };
+if (check === "hard-code-negative") result = { ok: false, diagnostics: "fixture rejected hard-coded candidate" };
+if (check === "score-arithmetic") result = { ok: true, score: 7, components: [3, 4] };
+if (check === "baseline-reproduction" || check === "reproducibility") {
+  result = { ok: true, score: 7, components: [3, 4], baseline, datasets };
+}
+
+process.stdout.write(`${JSON.stringify(result)}\n`);

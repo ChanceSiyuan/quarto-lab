@@ -193,7 +193,10 @@ test("pages showcase contains only the noninteractive local-mode preparation not
   assert.doesNotMatch(problem, /Example data - synthetic results for interface demonstration only\./);
   assert.doesNotMatch(problem, /Assessment methodology demo/);
   assert.match(problem, /Scientific Demand Score/);
-  assert.match(problem, /Industry \/ social proxy/);
+  assert.match(problem, /Expected Attributable Net Social Value/);
+  assert.match(problem, /\+\$180K USD 2026/);
+  assert.doesNotMatch(problem, /Industry \/ social proxy/);
+  assert.doesNotMatch(problem, /\$57\.0B USD 2035/);
   assert.match(problem, /Autoresearch Fit/);
   assert.match(problem, /Methodology documentation/);
   assert.doesNotMatch(problem, /Research Value \(V\)/);
