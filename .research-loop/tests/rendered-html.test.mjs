@@ -158,17 +158,24 @@ test("server-renders the problem console shell", async () => {
 test("ordinary local build indexes all tracked QEC problems and reserves the next problem ID", () => {
   assert.deepEqual(
     generatedIndex.problems.map((problem) => problem.id).sort(),
-    Array.from({ length: 21 }, (_, index) => `Prob-${String(index + 1).padStart(3, "0")}`),
+    [
+      ...Array.from({ length: 21 }, (_, index) => `Prob-${String(index + 1).padStart(3, "0")}`),
+      "Prob-124",
+      "Prob-125",
+      "Prob-126",
+      "Prob-127",
+      "Prob-128",
+    ].sort(),
   );
-  assert.equal(generatedIndex.nextProblemId, "Prob-022");
+  assert.equal(generatedIndex.nextProblemId, "Prob-129");
   assert.deepEqual(generatedIndex.diagnostics, []);
   assert.deepEqual(generatedIndex.summary, {
-    total: 21,
-    accepted: 1,
+    total: 26,
+    accepted: 4,
     solved: 1,
     published: 0,
     rejected: 0,
-    archived: 0,
+    archived: 2,
   });
 });
 
