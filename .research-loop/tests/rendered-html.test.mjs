@@ -184,8 +184,8 @@ test("server-renders the problem console shell", async () => {
   assert.doesNotMatch(html, />\+ Add first problem<\/a>/);
   assert.match(html, /Cannot open Codex\?/);
   assert.match(html, /codex:\/\/threads\/new/);
-  assert.match(html, /<span class="status-badge status-draft">Draft<\/span>/);
-  assert.match(html, /<span class="status-badge status-solved">Solved<\/span>/);
+  assert.match(html, /<span class="status-badge status-draft">Awaiting judgment<\/span>/);
+  assert.match(html, /<span class="status-badge status-solved">Solving judged done<\/span>/);
   assert.doesNotMatch(html, /metric-strip/);
   assert.doesNotMatch(html, /console-toolbar/);
   assert.doesNotMatch(html, /Index diagnostics/);
@@ -194,7 +194,7 @@ test("server-renders the problem console shell", async () => {
   assert.doesNotMatch(html, /[\u3400-\u9FFF]/u);
   assert.match(
     html,
-    /<th scope="col">Problem<\/th><th scope="col">Status<\/th><th scope="col">Executable gate<\/th><th scope="col">Provenance<\/th><th scope="col">Recent activity<\/th><th scope="col">Updated<\/th><th scope="col">Open<\/th>/,
+    /<th scope="col">Problem<\/th><th scope="col">Status<\/th><th scope="col">Executable gate<\/th><th scope="col">Scientific Demand Score<\/th><th scope="col">Expected Attributable Net Social Value \(EANSV\)<\/th><th scope="col">Autoresearch Fit<\/th>/,
   );
   assert.doesNotMatch(html, /Turn open literature into/);
   assert.doesNotMatch(html, /Reset demo/);
@@ -227,14 +227,14 @@ test("server-renders populated desktop and narrow problem rows", async () => {
 
   const html = await response.text();
   assert.match(html, /<tr class="problem-table-row"><th scope="row"><a class="problem-row-link" href="\/problems\/Prob-017">/);
-  assert.match(html, /<td><a class="open-affordance" href="\/problems\/Prob-017">Open <span aria-hidden="true">→<\/span><\/a><\/td>/);
   assert.match(html, /<a class="problem-list-item" href="\/problems\/Prob-017" aria-label="Open Prob-017: Fresh Hamiltonian gate">/);
   assert.match(html, /Fresh Hamiltonian gate/);
   assert.match(html, /Interval arithmetic on held-out instances\./);
   assert.match(html, /interval-arithmetic/);
-  assert.match(html, /12 sources/);
-  assert.match(html, /Accepted after novelty review/);
-  assert.match(html, /2026-07-27 11:45:00 UTC/);
+  assert.match(html, /<span class="status-badge status-accepted">Solving judged done<\/span>/);
+  assert.match(html, /33\.4 \/ 100/);
+  assert.match(html, /\$1\.1B USD 2035/);
+  assert.match(html, /38\.5 \/ 100/);
   assert.match(html, /1 index errors/);
   assert.match(html, /problems\/Prob-018\/problem\.json/);
   assert.match(html, /Invalid JSON/);

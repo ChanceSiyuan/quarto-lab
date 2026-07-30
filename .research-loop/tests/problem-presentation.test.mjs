@@ -54,19 +54,12 @@ test("builds every populated problem field in console order", () => {
       primary: "interval-arithmetic",
       secondary: "executable",
     },
-    { key: "provenance", label: "Provenance", value: "12 sources" },
+    { key: "scientificDemand", label: "Scientific Demand Score", value: "33.4 / 100" },
     {
-      key: "activity",
-      label: "Recent activity",
-      primary: "Accepted after novelty review",
-      secondary: "2026-07-27 10:30:00 UTC",
+      key: "eansv",
+      label: "Expected Attributable Net Social Value (EANSV)",
+      value: "$1.1B USD 2035",
     },
-    { key: "updated", label: "Updated", value: "2026-07-27 11:45:00 UTC" },
-    {
-      key: "open",
-      label: "Open",
-      value: "Open problem",
-      href: "/problems/Prob-017",
-    },
+    { key: "autoresearchFit", label: "Autoresearch Fit", value: "38.5 / 100" },
   ]);
 });
