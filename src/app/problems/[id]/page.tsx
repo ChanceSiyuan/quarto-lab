@@ -13,7 +13,6 @@ import { buildProblemDetailResearchState } from "@/lib/problems/research-route-d
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AssessmentPanel } from "./assessment-panel";
-import { StaticAutoresearchPanel } from "./static-autoresearch-panel";
 import { StaticAssessmentPanel } from "./static-assessment-panel";
 import detailStyles from "./research-detail.module.css";
 
@@ -77,19 +76,7 @@ export default async function ProblemDetailPage({
           </div>
         </header>
 
-        <StaticAutoresearchPanel />
-
-        <p className="example-disclaimer">{example.manifest.disclaimer}</p>
         <StaticAssessmentPanel />
-
-        <dl className="research-metric-strip" aria-label="Research metrics">
-          {ledger.cards.map((card) => (
-            <div key={card.label}>
-              <dt>{card.label}</dt>
-              <dd>{card.value}</dd>
-            </div>
-          ))}
-        </dl>
 
         <section className={detailStyles.linkPanel} aria-labelledby="autoresearch-link-heading">
           <div>

@@ -60,13 +60,14 @@ test("pages showcase writes static route files", async () => {
 
 test("pages showcase rewrites links for the repository base path", async () => {
   const html = await readFile(join(out, "problems/Prob-000/index.html"), "utf8");
-  assert.match(html, /Example data - synthetic results for interface demonstration only\./);
+  assert.doesNotMatch(html, /Example data - synthetic results for interface demonstration only\./);
   assert.match(html, /href="\/research-loop\/problems\/Prob-000\/autoresearch\/"/);
   assert.match(html, /href="\/research-loop\/assets\//);
   assert.doesNotMatch(html, /href="\/problems\/Prob-000\/autoresearch"/);
   assert.doesNotMatch(html, /<script\b/i);
 
   const autoresearch = await readFile(join(out, "problems/Prob-000/autoresearch/index.html"), "utf8");
+  assert.match(autoresearch, /Example data - synthetic results for interface demonstration only\./);
   assert.match(autoresearch, /href="\/research-loop\/problems\/Prob-000\/attempts\/ATT-001\/"/);
   assert.match(autoresearch, /href="\/research-loop\/problems\/Prob-000\/attempts\/ATT-005\/"/);
   assert.doesNotMatch(autoresearch, /href="\/research-loop\/problems\/Prob-000\/attempts\/ATT-\d{3}"/);
@@ -160,11 +161,13 @@ test("pages showcase contains only the noninteractive local-mode preparation not
   }
 
   const problem = await readFile(join(out, "problems", "Prob-000", "index.html"), "utf8");
-  assert.match(problem, /Available in local mode/);
+  assert.doesNotMatch(problem, /Available in local mode/);
+  assert.doesNotMatch(problem, /Example data - synthetic results for interface demonstration only\./);
   assert.match(problem, /Assessment methodology demo/);
   assert.match(problem, /Scientific Demand Score/);
   assert.match(problem, /Industry \/ social proxy/);
   assert.match(problem, /Autoresearch Fit/);
+  assert.match(problem, /Methodology documentation/);
   assert.doesNotMatch(problem, /Research Value \(V\)/);
   assert.doesNotMatch(problem, /Technical Success Estimate/);
   assert.doesNotMatch(problem, /href="codex:/);
@@ -177,6 +180,8 @@ test("pages showcase contains only the noninteractive local-mode preparation not
   assert.match(autoresearch, /Autoresearch results/);
   assert.match(autoresearch, /ATT-001/);
   assert.match(autoresearch, /ATT-005/);
+  assert.match(autoresearch, /Best speedup/);
+  assert.match(autoresearch, /Example data - synthetic results for interface demonstration only\./);
   assert.doesNotMatch(autoresearch, /\/__local\/assessments/);
 });
 

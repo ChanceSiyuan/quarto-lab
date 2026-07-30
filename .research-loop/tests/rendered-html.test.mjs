@@ -251,6 +251,8 @@ test("ordinary local build serves the static demo route and rejects unknown demo
   const autoresearchHtml = await autoresearchResponse.text();
   assert.match(autoresearchHtml, /Autoresearch results/);
   assert.match(autoresearchHtml, /ATT-001/);
+  assert.match(autoresearchHtml, /Best speedup/);
+  assert.match(autoresearchHtml, /Example data - synthetic results for interface demonstration only\./);
   assert.doesNotMatch(autoresearchHtml, /Local assessment unavailable/);
 
   for (const pathname of [
@@ -304,12 +306,14 @@ test("server-renders the static assessment methodology demo for the static examp
   assert.equal(response.status, 200);
 
   const html = await response.text();
-  assert.match(html, /Example data - synthetic results for interface demonstration only\./);
+  assert.doesNotMatch(html, /Example data - synthetic results for interface demonstration only\./);
+  assert.doesNotMatch(html, /Available in local mode/);
   assert.match(html, /<section class="assessment-panel [^"]+" aria-labelledby="assessment-heading">/);
   assert.match(html, /Assessment methodology demo/);
   assert.match(html, /Scientific Demand Score/);
   assert.match(html, /Industry \/ social proxy/);
   assert.match(html, /Autoresearch Fit/);
+  assert.match(html, /Methodology documentation/);
   assert.doesNotMatch(html, /Technical Success Estimate/);
   assert.doesNotMatch(html, /Local assessment unavailable/);
 });
