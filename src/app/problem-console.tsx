@@ -4,19 +4,8 @@ import { useMemo } from "react";
 import {
   buildProblemPresentation,
   formatProblemTimestamp,
+  judgmentStatusCopy,
 } from "@/lib/problems/presentation.mjs";
-
-const statusLabels: Record<string, string> = {
-  draft: "Draft",
-  qualifying: "Qualifying",
-  accepted: "Accepted",
-  solving: "Solving",
-  solved: "Solved",
-  publishing: "Publishing",
-  published: "Published",
-  rejected: "Rejected",
-  archived: "Archived",
-};
 
 type Problem = {
   id: string;
@@ -69,7 +58,7 @@ type ProblemConsoleProps = {
 function ProblemStatus({ status }: { status: string }) {
   return (
     <span className={`status-badge status-${status}`}>
-      {statusLabels[status] ?? status}
+      {judgmentStatusCopy(status)}
     </span>
   );
 }
@@ -132,16 +121,15 @@ export function ProblemConsole({
                 <th scope="col">Problem</th>
                 <th scope="col">Status</th>
                 <th scope="col">Executable gate</th>
-                <th scope="col">Provenance</th>
-                <th scope="col">Recent activity</th>
-                <th scope="col">Updated</th>
-                <th scope="col">Open</th>
+                <th scope="col">Scientific Demand Score</th>
+                <th scope="col">Expected Attributable Net Social Value (EANSV)</th>
+                <th scope="col">Autoresearch Fit</th>
               </tr>
             </thead>
             <tbody>
               {initialProblems.length === 0 ? (
                 <tr className="result-state-row">
-                  <td colSpan={7}>
+                  <td colSpan={6}>
                     <section className="empty-state">
                       <span aria-hidden="true">Prob—</span>
                       <div>
@@ -168,19 +156,9 @@ export function ProblemConsole({
                       <small>{row.gate.secondary}</small>
                     </div>
                   </td>
-                  <td>{row.provenance.value}</td>
-                  <td>
-                    <div className="cell-stack">
-                      <strong>{row.activity.primary}</strong>
-                      <small>{row.activity.secondary}</small>
-                    </div>
-                  </td>
-                  <td>{row.updated.value}</td>
-                  <td>
-                    <a className="open-affordance" href={row.open.href}>
-                      Open <span aria-hidden="true">→</span>
-                    </a>
-                  </td>
+                  <td>{row.scientificDemand.value}</td>
+                  <td>{row.eansv.value}</td>
+                  <td>{row.autoresearchFit.value}</td>
                 </tr>
               ))}
             </tbody>
@@ -212,13 +190,9 @@ export function ProblemConsole({
                 <dl>
                   <div><dt>{row.status.label}</dt><dd><ProblemStatus status={row.status.value} /></dd></div>
                   <div><dt>{row.gate.label}</dt><dd>{row.gate.primary} · {row.gate.secondary}</dd></div>
-                  <div><dt>{row.provenance.label}</dt><dd>{row.provenance.value}</dd></div>
-                  <div><dt>{row.activity.label}</dt><dd>{row.activity.primary} · {row.activity.secondary}</dd></div>
-                  <div><dt>{row.updated.label}</dt><dd>{row.updated.value}</dd></div>
-                  <div>
-                    <dt>{row.open.label}</dt>
-                    <dd><span className="open-affordance">{row.open.value} <span aria-hidden="true">→</span></span></dd>
-                  </div>
+                  <div><dt>{row.scientificDemand.label}</dt><dd>{row.scientificDemand.value}</dd></div>
+                  <div><dt>{row.eansv.label}</dt><dd>{row.eansv.value}</dd></div>
+                  <div><dt>{row.autoresearchFit.label}</dt><dd>{row.autoresearchFit.value}</dd></div>
                 </dl>
               </a>
             ))}
