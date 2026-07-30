@@ -54,12 +54,32 @@ test("builds every populated problem field in console order", () => {
       primary: "interval-arithmetic",
       secondary: "executable",
     },
-    { key: "scientificDemand", label: "Scientific Demand Score", value: "33.4 / 100" },
+    { key: "scientificDemand", label: "Scientific Demand Score", value: "—" },
     {
       key: "eansv",
       label: "Expected Attributable Net Social Value (EANSV)",
-      value: "$1.1B USD 2035",
+      value: "—",
     },
-    { key: "autoresearchFit", label: "Autoresearch Fit", value: "38.5 / 100" },
+    { key: "autoresearchFit", label: "Autoresearch Fit", value: "—" },
   ]);
+});
+
+test("renders recorded evaluation points for scenario-backed problems", () => {
+  const row = buildProblemPresentation({
+    id: "Prob-127",
+    title: "Contraction-order optimization",
+    summary: "Exact contraction-cost improvements.",
+    status: "solving",
+    gate: { type: "tensor-contraction", readiness: "executable" },
+    provenance: { sourceCount: 1 },
+    lastActivity: {
+      summary: "Exported as a public solver/finalization follow-up candidate.",
+      at: "2026-07-30T00:00:00.000Z",
+    },
+    updatedAt: "2026-07-30T00:00:00.000Z",
+  });
+
+  assert.equal(row.scientificDemand.value, "81 / 100");
+  assert.equal(row.eansv.value, "$3.0M USD 2026");
+  assert.equal(row.autoresearchFit.value, "98 / 100");
 });
