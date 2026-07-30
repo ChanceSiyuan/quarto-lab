@@ -1,9 +1,15 @@
 import assert from "node:assert/strict";
+import { mkdtemp, mkdir, readFile, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import test from "node:test";
 
+import { createArtifactStore } from "../lib/assessments/artifact-store.mjs";
+import { refreshQecValuationOnlyPortfolio } from "../scripts/refresh-qec-valuation-only.mjs";
 import {
   createValuationOnlyDerivation,
   createValuationOnlyEnvelope,
+  refreshValuationOnlyProblem,
   sourceAssessmentQualifies,
   VALUATION_ONLY_NOTICE,
 } from "../lib/qec-portfolio/valuation-only-refresh.mjs";
@@ -191,6 +197,109 @@ function valuationSnapshot(overrides = {}) {
   };
 }
 
+function sourceInput() {
+  return {
+    schemaVersion: 2,
+    policyVersion: 2,
+    problemId: "Prob-001",
+    problemTitle: "QEC fixture",
+    problemSummary: "A bounded QEC fixture.",
+    problemJsonHash: "a".repeat(64),
+    problemMdHash: "b".repeat(64),
+    skillPath: "skills/assess-research-problem/SKILL.md",
+    skillHash: "c".repeat(64),
+    schemaPath: "schemas/research-problem-assessment.schema.json",
+    schemaHash: "d".repeat(64),
+    resolver: {
+      query: "QEC fixture",
+      status: "no-match",
+      topic: null,
+      orderedFiles: [],
+    },
+    bundle: [],
+    valuation: {
+      snapshotId: "20260729T010203Z-111111111111",
+      contentHash: "1".repeat(64),
+      snapshotHash: "e".repeat(64),
+      visibility: "public",
+      freshness: { advisory: false, staleClasses: [], details: {} },
+      recalculationInputs: {
+        manifest: valuationSnapshot({
+          snapshotId: "20260729T010203Z-111111111111",
+          contentHash: "1".repeat(64),
+        }).manifest,
+        papers: [],
+        marketEvidence: [],
+      },
+    },
+  };
+}
+
+async function writeJson(path, value) {
+  await writeFile(path, `${JSON.stringify(value, null, 2)}\n`);
+}
+
+async function writeSourceRun(rootDir, { runId = "20260729T010203Z-abcdef" } = {}) {
+  const runDir = join(rootDir, "problems", "Prob-001", "assessments", runId);
+  await mkdir(runDir, { recursive: true });
+  const run = {
+    schemaVersion: 1,
+    runId,
+    problemId: "Prob-001",
+    parentRunId: null,
+    status: "completed",
+    createdAt: "2026-07-29T01:02:03.000Z",
+    updatedAt: "2026-07-29T01:05:00.000Z",
+    error: null,
+    summary: { runId, problemId: "Prob-001", verdict: "DO_NOW" },
+  };
+  await writeJson(join(runDir, "run.json"), run);
+  await writeJson(join(runDir, "input.json"), sourceInput());
+  await writeJson(join(runDir, "assessment.json"), {
+    envelope: sourceEnvelope(),
+    computed: {
+      scores: {
+        researchValue: pointScore(80),
+        autoresearchSuitability: pointScore(80),
+        combined: pointScore(80),
+      },
+      verdict: { label: "DO_NOW" },
+    },
+  });
+  await writeFile(join(runDir, "report.html"), "<!doctype html><html lang=\"en\"><body>Completed English source report</body></html>");
+  return runDir;
+}
+
+async function writeProblem(rootDir) {
+  const problemDir = join(rootDir, "problems", "Prob-001");
+  await mkdir(problemDir, { recursive: true });
+  await writeJson(join(problemDir, "problem.json"), {
+    id: "Prob-001",
+    title: "QEC fixture",
+    summary: "A bounded QEC fixture.",
+    status: "active",
+    domain: "quantum-computing",
+    quantumArea: "error-correction-and-fault-tolerance",
+  });
+  await writeFile(join(problemDir, "problem.md"), "# QEC fixture\n\nA bounded QEC fixture.\n");
+}
+
+function repository() {
+  const problem = {
+    id: "Prob-001",
+    title: "QEC fixture",
+    summary: "A bounded QEC fixture.",
+    status: "active",
+    domain: "quantum-computing",
+    quantumArea: "error-correction-and-fault-tolerance",
+  };
+  return {
+    getProblem(id) {
+      return id === problem.id ? problem : null;
+    },
+  };
+}
+
 test("derives a valid envelope that retains qualitative fields and replaces quantitative evidence", () => {
   const source = sourceEnvelope();
   assert.equal(validateAssessmentEnvelope(source).ok, true);
@@ -271,4 +380,110 @@ test("creates provenance for a valuation-only derived run", () => {
     notice: VALUATION_ONLY_NOTICE,
     createdAt: "2026-07-30T02:03:04.000Z",
   });
+});
+
+test("publishes a valuation-only run while preserving the source artifacts", async () => {
+  const rootDir = await mkdtemp(join(tmpdir(), "qec-valuation-only-"));
+  await writeProblem(rootDir);
+  const sourceRunDir = await writeSourceRun(rootDir);
+  const before = await Promise.all(["run.json", "input.json", "assessment.json", "report.html"]
+    .map((name) => readFile(join(sourceRunDir, name), "utf8")));
+  const store = createArtifactStore({
+    rootDir,
+    now: () => new Date("2026-07-30T02:03:04.000Z"),
+    randomBytes: () => Buffer.from("123abc", "hex"),
+  });
+
+  const result = await refreshValuationOnlyProblem({
+    rootDir,
+    repository: repository(),
+    store,
+    problemId: "Prob-001",
+    snapshot: valuationSnapshot(),
+  });
+
+  assert.equal(result.status, "completed");
+  assert.equal(result.sourceRunId, "20260729T010203Z-abcdef");
+  const finalDir = join(rootDir, "problems", "Prob-001", "assessments", result.runId);
+  const derivation = JSON.parse(await readFile(join(finalDir, "derivation.json"), "utf8"));
+  assert.equal(derivation.sourceRunId, "20260729T010203Z-abcdef");
+  assert.equal(derivation.refreshedSnapshotId, "20260730T010203Z-222222222222");
+  const run = JSON.parse(await readFile(join(finalDir, "run.json"), "utf8"));
+  assert.equal(run.status, "completed");
+  assert.equal(run.summary.quantitative.snapshotId, "20260730T010203Z-222222222222");
+  assert.equal(run.summary.quantitative.scientificAttention.interval.base, 73.2);
+  assert.equal(run.summary.quantitative.technicalSuccess.interval.low, run.summary.quantitative.technicalSuccess.interval.base);
+  assert.equal(run.summary.quantitative.technicalSuccess.interval.high, run.summary.quantitative.technicalSuccess.interval.base);
+  assert.match(await readFile(join(finalDir, "report.html"), "utf8"), /Qualitative assessment retained/);
+  assert.deepEqual(
+    await Promise.all(["run.json", "input.json", "assessment.json", "report.html"]
+      .map((name) => readFile(join(sourceRunDir, name), "utf8"))),
+    before,
+  );
+});
+
+test("reuses an existing valuation-only run for the same source run and snapshot", async () => {
+  const rootDir = await mkdtemp(join(tmpdir(), "qec-valuation-only-idempotent-"));
+  await writeProblem(rootDir);
+  await writeSourceRun(rootDir);
+  const store = createArtifactStore({
+    rootDir,
+    now: () => new Date("2026-07-30T02:03:04.000Z"),
+    randomBytes: () => Buffer.from("123abc", "hex"),
+  });
+  const first = await refreshValuationOnlyProblem({
+    rootDir,
+    repository: repository(),
+    store,
+    problemId: "Prob-001",
+    snapshot: valuationSnapshot(),
+  });
+
+  const second = await refreshValuationOnlyProblem({
+    rootDir,
+    repository: repository(),
+    store,
+    problemId: "Prob-001",
+    snapshot: valuationSnapshot(),
+  });
+
+  assert.deepEqual(second, {
+    status: "verified-existing",
+    problemId: "Prob-001",
+    runId: first.runId,
+    sourceRunId: "20260729T010203Z-abcdef",
+    snapshotId: "20260730T010203Z-222222222222",
+  });
+});
+
+test("refreshes a supplied portfolio ID list from verified current-formula snapshots", async () => {
+  const rootDir = await mkdtemp(join(tmpdir(), "qec-valuation-only-portfolio-"));
+  await writeProblem(rootDir);
+  await writeSourceRun(rootDir);
+  const store = createArtifactStore({
+    rootDir,
+    now: () => new Date("2026-07-30T02:03:04.000Z"),
+    randomBytes: () => Buffer.from("123abc", "hex"),
+  });
+  const valuationStore = {
+    list: async (id) => id === "Prob-001" ? ["20260730T010203Z-222222222222"] : [],
+    verify: async (id, snapshotId) => {
+      assert.equal(id, "Prob-001");
+      assert.equal(snapshotId, "20260730T010203Z-222222222222");
+      return valuationSnapshot();
+    },
+  };
+
+  const result = await refreshQecValuationOnlyPortfolio({
+    rootDir,
+    repository: repository(),
+    store,
+    valuationStore,
+    problemIds: ["Prob-001"],
+  });
+
+  assert.equal(result.status, "complete");
+  assert.deepEqual(result.errors, []);
+  assert.equal(result.problems[0].status, "completed");
+  assert.equal(result.problems[0].snapshotId, "20260730T010203Z-222222222222");
 });
