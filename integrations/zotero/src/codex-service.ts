@@ -171,7 +171,7 @@ const AGENT_DEVELOPER_INSTRUCTIONS = `${SHARED_DEVELOPER_INSTRUCTIONS}
 This is Agent mode. You may make the changes the user explicitly requests to files and through writable Zotero tools.
 Keep mutations scoped to the current request and surface a concrete summary. Commands inside the provided sandbox are approved automatically; never ask the user to approve a command card.
 When a QLab Draft is active, its original path is read-only. Apply every requested Draft edit only to the host-provided working-copy path under work/qlab-zotero/draft-changes/. Multiple turns overwrite that one latest cumulative working copy; never create a version history.
-Do not write directly to literature/, drafts/, or knowledge/. Treat literature as evidence and Draft working copies as untrusted work.
+Do not write directly to knowledge/. Treat literature as evidence and Draft working copies as untrusted work. Direct writes to literature/ or drafts/ are allowed only when the user invokes a QLab command whose prompt explicitly authorizes that destination; ordinary edits to the active Draft must use its working copy.
 Never write to knowledge/ during a proposal turn. A knowledge promotion requires a final diff reviewed by the user, explicit approval in a later turn, and make knowledge-check after applying.
 The user previews knowledge and drafts in Zotero and edits them in their own editor; you never promote a draft or publish anything yourself.
 The original PDF directory is context, not a writable workspace.
@@ -1485,10 +1485,10 @@ export class CodexService {
       return Promise.resolve(approvalResponse(request, "reject"));
     }
     const qlabRoot = configuredQLabRoot();
-    const approvalRoot = qlabRoot
-      ? qlabWritableRoots(qlabRoot)[0] || null
-      : context.workspace?.root || null;
-    if (!approvalWriteScopeIsSafe(request, approvalRoot)) {
+    const approvalRoots = qlabRoot
+      ? qlabWritableRoots(qlabRoot)
+      : context.workspace?.root ? [context.workspace.root] : [];
+    if (!approvalWriteScopeIsSafe(request, approvalRoots)) {
       const error = new Error(
         "Zotkit blocked a request to write outside its private staging workspace. Use zotero_propose_changes so the change receives a Diff and filesystem checkpoint.",
       );
@@ -1763,10 +1763,10 @@ function turnKey(threadId: string, turnId: string): string {
   return `${threadId}\u0000${turnId}`;
 }
 
-function approvalWriteScopeIsSafe(request: ApprovalRequest, workspaceRoot: string | null): boolean {
-  if (!workspaceRoot) return false;
+function approvalWriteScopeIsSafe(request: ApprovalRequest, workspaceRoots: readonly string[]): boolean {
+  if (!workspaceRoots.length) return false;
   if (request.kind === "fileChange") {
-    return !request.params.grantRoot || pathIsWithin(request.params.grantRoot, workspaceRoot);
+    return !request.params.grantRoot || pathIsWithinAny(request.params.grantRoot, workspaceRoots);
   }
   const permissions = request.kind === "permissions"
     ? request.params.permissions
@@ -1778,14 +1778,14 @@ function approvalWriteScopeIsSafe(request: ApprovalRequest, workspaceRoot: strin
   const writes = record.write;
   if (writes !== undefined && writes !== null) {
     if (!Array.isArray(writes)) return false;
-    if (!writes.every((path) => typeof path === "string" && pathIsWithin(path, workspaceRoot))) {
+    if (!writes.every((path) => typeof path === "string" && pathIsWithinAny(path, workspaceRoots))) {
       return false;
     }
   }
   const entries = record.entries;
   if (entries === undefined || entries === null) return true;
   if (!Array.isArray(entries)) return false;
-  return entries.every((entry) => fileSystemEntryWriteScopeIsSafe(entry, workspaceRoot));
+  return entries.every((entry) => fileSystemEntryWriteScopeIsSafe(entry, workspaceRoots));
 }
 
 function approvalRequestsNetwork(request: ApprovalRequest): boolean {
@@ -1805,7 +1805,11 @@ function pathIsWithin(path: string, root: string): boolean {
   return normalizedPath === normalizedRoot || normalizedPath.startsWith(`${normalizedRoot}/`);
 }
 
-function fileSystemEntryWriteScopeIsSafe(entry: unknown, workspaceRoot: string): boolean {
+function pathIsWithinAny(path: string, roots: readonly string[]): boolean {
+  return roots.some((root) => pathIsWithin(path, root));
+}
+
+function fileSystemEntryWriteScopeIsSafe(entry: unknown, workspaceRoots: readonly string[]): boolean {
   if (!entry || typeof entry !== "object" || Array.isArray(entry)) return false;
   const record = entry as Record<string, unknown>;
   if (record.access === "read" || record.access === "deny") return true;
@@ -1817,7 +1821,7 @@ function fileSystemEntryWriteScopeIsSafe(entry: unknown, workspaceRoot: string):
   // paper workspace, so fail closed instead of forwarding them to app-server.
   return pathRecord.type === "path"
     && typeof pathRecord.path === "string"
-    && pathIsWithin(pathRecord.path, workspaceRoot);
+    && pathIsWithinAny(pathRecord.path, workspaceRoots);
 }
 
 function normalizeAbsoluteApprovalPath(value: string): string | null {

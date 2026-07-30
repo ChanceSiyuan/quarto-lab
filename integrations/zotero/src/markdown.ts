@@ -50,6 +50,8 @@ export interface PdfPageReference {
 export interface MarkdownRenderOptions {
   /** Opens a PDF citation in the host reader instead of the web browser. */
   onPdfPageLink?: (reference: PdfPageReference) => void;
+  /** Confirms that the citation URL identifies the PDF bound to the host reader. */
+  canOpenPdfPageLink?: (reference: PdfPageReference) => boolean;
 }
 
 export function renderMarkdown(
@@ -316,8 +318,11 @@ function appendInline(
         const href = safeHttpUrl(markdownLink.destination);
         if (href) {
           flushPlain();
-          const reference = options.onPdfPageLink
+          const parsedReference = options.onPdfPageLink
             ? parsePdfPageReference(markdownLink.label, href)
+            : null;
+          const reference = parsedReference && options.canOpenPdfPageLink?.(parsedReference)
+            ? parsedReference
             : null;
           const link = reference
             ? createPdfPageLink(doc, href, reference, options.onPdfPageLink!)

@@ -234,7 +234,11 @@ describe("FloatPanelView selection chip and transcript", () => {
   });
 
   it("forwards assistant PDF citations to Zotero page navigation", () => {
-    const handlers = { ...callbacks(), onOpenPdfPage: vi.fn() };
+    const handlers = {
+      ...callbacks(),
+      canOpenPdfPage: vi.fn(() => true),
+      onOpenPdfPage: vi.fn(),
+    };
     const { host, view } = mount(handlers);
     view.setState({
       phase: "ready",

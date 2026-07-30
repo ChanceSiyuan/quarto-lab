@@ -49,6 +49,26 @@ test("a promotion-ready draft passes its single-file review gate", async (t) => 
   });
 });
 
+test("a promotion-ready draft may include aliases after the required fields", async (t) => {
+  const { repoRoot, draft } = await fixture(t, [
+    "---",
+    "title: A useful result",
+    "description: A concise explanation of the result.",
+    "categories: [theory]",
+    "aliases: [useful theorem, alternate result]",
+    "---",
+    "",
+    "The evidence is discussed in @paper.",
+    "",
+  ].join("\n"));
+
+  assert.deepEqual(await checkDraft({ repoRoot, requestedFile: draft }), {
+    ok: true,
+    relativePath: draft,
+    diagnostics: [],
+  });
+});
+
 test("the gate reports frontmatter, category, and citation problems together", async (t) => {
   const { repoRoot, draft } = await fixture(t, [
     "---",

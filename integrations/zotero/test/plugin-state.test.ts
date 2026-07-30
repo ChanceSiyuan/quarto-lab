@@ -13,10 +13,27 @@ import {
   draftChangeRebaseAction,
   formatPendingApprovalDescription,
   pdfDirectory,
+  pdfSourceMatchesReaderContext,
 } from "../src/plugin";
 import type { ReaderContext } from "../src/reader-context";
 
 describe("Zotkit Reader terminal state", () => {
+  it("matches only PDF links that identify the conversation paper", () => {
+    const context = {
+      parent: { url: "https://arxiv.org/abs/2306.13123v2" },
+      attachment: {},
+    } as ReaderContext;
+
+    expect(pdfSourceMatchesReaderContext(
+      "https://arxiv.org/pdf/2306.13123v2.pdf#page=6",
+      context,
+    )).toBe(true);
+    expect(pdfSourceMatchesReaderContext(
+      "https://example.org/another-paper.pdf#page=6",
+      context,
+    )).toBe(false);
+  });
+
   it("treats a Cursor save as the new Draft baseline without discarding a real AI version", () => {
     expect(draftChangeRebaseAction("old-original", "cursor-save", "ai-version"))
       .toBe("preserve-ai-version");

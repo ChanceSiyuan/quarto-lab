@@ -569,6 +569,28 @@ describe("CodexService model capabilities", () => {
 });
 
 describe("CodexService Cursor-style modes and approvals", () => {
+  it("uses only untrusted QLab content and generated work as writable roots", async () => {
+    vi.stubGlobal("Services", {
+      uuid: { generateUUID: () => "{checkpoint-test}" },
+      prefs: {
+        getStringPref: (name: string, fallback: string) =>
+          name.endsWith("qlabRoot") ? "/repo" : fallback,
+      },
+    });
+    const client = {
+      turnStart: vi.fn().mockResolvedValueOnce({ turn: { id: "turn-agent" } }),
+    };
+    const { service } = serviceWithClient(client);
+
+    await service.send("Edit the untrusted Draft.", "gpt-5.6-sol", "high");
+
+    expect(client.turnStart).toHaveBeenCalledWith(expect.objectContaining({
+      sandboxPolicy: expect.objectContaining({
+        writableRoots: ["/repo/drafts", "/repo/literature", "/repo/work"],
+      }),
+    }));
+  });
+
   it("uses an auto-reviewed sandboxed Agent turn and rejects Ask mode", async () => {
     vi.stubGlobal("Services", {
       uuid: { generateUUID: () => "{checkpoint-test}" },

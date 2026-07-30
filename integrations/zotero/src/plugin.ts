@@ -96,6 +96,7 @@ import {
   type NotingSnapshot,
 } from "./noting";
 import { buildQaFromEntries } from "./exchanges";
+import type { PdfPageReference } from "./markdown";
 import { sha256Bytes, sha256File } from "./hashing";
 import {
   debug,
@@ -804,6 +805,7 @@ export class ZoteroChatPlugin {
       onLogout: () => void this.codex.logout().catch((error) => this.reportError(error)),
       onOpenTerminal: () => void this.openTerminal().then(() => this.terminal.focus()).catch((error) => this.reportError(error)),
       onOpenWorkbench: () => void this.openWorkbenchTab().catch((error) => this.reportError(error)),
+      canOpenPdfPage: (reference) => this.canOpenConversationPdfPage(reference),
       onOpenPdfPage: (reference) => {
         void this.openConversationPDFPage(reference.page).catch((error) => this.reportError(error));
       },
@@ -1081,6 +1083,7 @@ export class ZoteroChatPlugin {
       onOpenWorkbench: () => {
         void this.openWorkbenchTab(win).catch((error) => this.reportError(error));
       },
+      canOpenPdfPage: (reference) => this.canOpenConversationPdfPage(reference),
       onOpenPdfPage: (reference) => {
         void this.openConversationPDFPage(reference.page).catch((error) => this.reportError(error));
       },
@@ -1174,6 +1177,7 @@ export class ZoteroChatPlugin {
       onOpenPaper: () => {
         void this.openContextPDF().catch((error) => this.reportError(error));
       },
+      canOpenPdfPage: (reference) => this.canOpenConversationPdfPage(reference),
       onOpenPdfPage: (reference) => {
         void this.openConversationPDFPage(reference.page).catch((error) => this.reportError(error));
       },
@@ -2770,6 +2774,11 @@ export class ZoteroChatPlugin {
     });
   }
 
+  private canOpenConversationPdfPage(reference: PdfPageReference): boolean {
+    const context = this.codex?.getActiveReaderContext?.() || this.context;
+    return pdfSourceMatchesReaderContext(reference.sourceUrl, context);
+  }
+
   private async pasteSelectionToTerminal(): Promise<void> {
     try {
       this.openSidebar();
@@ -3177,6 +3186,60 @@ export function pdfDirectory(pdfPath: string | null | undefined): string | null 
   const slash = path.lastIndexOf("/");
   if (slash < 0) return null;
   return slash === 0 ? "/" : path.slice(0, slash);
+}
+
+function canonicalDoi(value: string | null | undefined): string | null {
+  const doi = value?.trim()
+    .replace(/^doi:\s*/iu, "")
+    .replace(/^https?:\/\/(?:dx\.)?doi\.org\//iu, "")
+    .toLowerCase();
+  return doi || null;
+}
+
+function pdfDocumentIdentity(value: string | null | undefined): string | null {
+  if (!value) return null;
+  let url: URL;
+  try {
+    url = new URL(value);
+  }
+  catch {
+    return null;
+  }
+  if (url.protocol !== "https:" && url.protocol !== "http:") return null;
+  const hostname = url.hostname.toLowerCase().replace(/^www\./u, "");
+  if (hostname === "doi.org" || hostname === "dx.doi.org") {
+    const doi = canonicalDoi(decodeURIComponent(url.pathname).replace(/^\/+/, ""));
+    return doi ? `doi:${doi}` : null;
+  }
+  if (hostname === "arxiv.org" || hostname === "export.arxiv.org") {
+    const match = /^\/(?:abs|pdf)\/([^/?#]+?)(?:\.pdf)?\/?$/iu.exec(url.pathname);
+    return match?.[1] ? `arxiv:${match[1].toLowerCase()}` : null;
+  }
+  const pathname = decodeURIComponent(url.pathname)
+    .replace(/\.pdf$/iu, "")
+    .replace(/\/+$/u, "") || "/";
+  return `url:${hostname}${pathname}`;
+}
+
+/** True only when an external citation identifies the PDF pinned to the selected conversation. */
+export function pdfSourceMatchesReaderContext(
+  sourceUrl: string,
+  context: ReaderContext | null | undefined,
+): boolean {
+  if (!context) return false;
+  const sourceIdentity = pdfDocumentIdentity(sourceUrl);
+  if (!sourceIdentity) return false;
+
+  const identities = new Set<string>();
+  for (const value of [context.parent?.url, context.attachment.url]) {
+    const identity = pdfDocumentIdentity(value);
+    if (identity) identities.add(identity);
+  }
+  for (const value of [context.parent?.doi, context.attachment.doi]) {
+    const doi = canonicalDoi(value);
+    if (doi) identities.add(`doi:${doi}`);
+  }
+  return identities.has(sourceIdentity);
 }
 
 export async function resolveReaderWorkingDirectory(context: ReaderContext): Promise<string> {

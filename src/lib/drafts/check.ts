@@ -18,6 +18,7 @@ import { loadBibliography } from "../literature/bibliography.js";
 import { DRAFTS_DIRECTORY, resolveDraftFile } from "./preview.js";
 
 const REQUIRED_FIELDS = ["title", "description", "categories"] as const;
+const OPTIONAL_FIELD = "aliases" as const;
 
 export interface DraftComplianceDiagnostic {
   code: string;
@@ -44,12 +45,15 @@ function exactFrontmatterFields(source: string): DraftComplianceDiagnostic[] {
   if (document.errors.length || !isMap(document.contents)) return [];
   const fields = document.contents.items.map((pair) =>
     isScalar(pair.key) ? String(pair.key.value) : String(pair.key));
-  if (fields.length === REQUIRED_FIELDS.length
-      && fields.every((field, index) => field === REQUIRED_FIELDS[index])) return [];
+  const requiredFieldsMatch = REQUIRED_FIELDS.every((field, index) => fields[index] === field);
+  const hasOnlyRequiredFields = fields.length === REQUIRED_FIELDS.length;
+  const hasOptionalAliases = fields.length === REQUIRED_FIELDS.length + 1
+    && fields[REQUIRED_FIELDS.length] === OPTIONAL_FIELD;
+  if (requiredFieldsMatch && (hasOnlyRequiredFields || hasOptionalAliases)) return [];
 
   return [{
     code: "DRAFT_FRONTMATTER_FIELDS",
-    message: "a promotion-ready Draft must contain exactly `title`, `description`, and `categories`, in that order",
+    message: "a promotion-ready Draft must contain `title`, `description`, and `categories`, in that order, with optional `aliases` last",
     line: 1,
   }];
 }
