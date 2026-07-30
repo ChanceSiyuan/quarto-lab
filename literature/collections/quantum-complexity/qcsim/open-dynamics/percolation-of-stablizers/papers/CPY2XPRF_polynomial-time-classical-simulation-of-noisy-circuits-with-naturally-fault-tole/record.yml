@@ -1,0 +1,57 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: CPY2XPRF
+  item_version: 98720
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: PBGR25EN
+      name: percolation of stablizers
+      path: Quantum Complexity/QCsim/Open-dynamics/percolation of stablizers
+qlab:
+  primary_collection: PBGR25EN
+  indexed_collections:
+    - PBGR25EN
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: preprint
+title: Polynomial-Time Classical Simulation of Noisy Circuits with Naturally
+  Fault-Tolerant Gates
+authors:
+  - first: Jon
+    last: Nelson
+  - first: Joel
+    last: Rajakumar
+  - first: Dominik
+    last: Hangleiter
+  - first: Michael J.
+    last: Gullans
+year: 2024
+abstract: We construct a polynomial-time classical algorithm that samples from
+  the output distribution of low-depth noisy Clifford circuits with any
+  product-state inputs and final single-qubit measurements in any basis. This
+  class of circuits includes Clifford-magic circuits and Conjugated-Clifford
+  circuits, which are important candidates for demonstrating quantum advantage
+  using non-universal gates. Additionally, our results generalize a simulation
+  algorithm for IQP circuits [Rajakumar et. al, SODA'25] to the case of IQP
+  circuits augmented with CNOT gates, which is another class of non-universal
+  circuits that are relevant to current experiments. Importantly, our results do
+  not require randomness assumptions over the circuit families considered (such
+  as anticoncentration properties) and instead hold for \textit{every} circuit
+  in each class. This allows us to place tight limitations on the robustness of
+  these circuits to noise. In particular, we show that there is no quantum
+  advantage at large depths with realistically noisy Clifford circuits, even
+  with perfect magic state inputs, or IQP circuits with CNOT gates, even with
+  arbitrary diagonal non-Clifford gates. The key insight behind the algorithm is
+  that interspersed noise causes a decay of long-range entanglement, and at
+  depths beyond a critical threshold, the noise builds up to an extent that most
+  correlations can be classically simulated. To prove our results, we merge
+  techniques from percolation theory with tools from Pauli path analysis.
+tags:
+  - Computer Science - Computational Complexity
+  - Quantum Physics
+identifiers:
+  arxiv: "2411.02535"

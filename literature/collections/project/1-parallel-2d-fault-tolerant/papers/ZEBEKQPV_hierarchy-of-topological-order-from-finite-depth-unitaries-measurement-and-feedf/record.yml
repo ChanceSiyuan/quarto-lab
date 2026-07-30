@@ -1,0 +1,62 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: ZEBEKQPV
+  item_version: 96133
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: DKHMIC8C
+      name: 1-Parallel 2D fault-tolerant
+      path: Project/1-Parallel 2D fault-tolerant
+qlab:
+  primary_collection: DKHMIC8C
+  indexed_collections:
+    - DKHMIC8C
+  primary_topic: project
+  indexed_topics:
+    - project
+item_type: preprint
+title: Hierarchy of topological order from finite-depth unitaries, measurement
+  and feedforward
+authors:
+  - first: Nathanan
+    last: Tantivasadakarn
+  - first: Ashvin
+    last: Vishwanath
+  - first: Ruben
+    last: Verresen
+year: 2023
+abstract: Long-range entanglement--the backbone of topologically ordered
+  states--cannot be created in finite time using local unitary circuits, or
+  equivalently, adiabatic state preparation. Recently it has come to light that
+  single-site measurements provide a loophole, allowing for finite-time state
+  preparation in certain cases. Here we show how this observation imposes a
+  complexity hierarchy on long-range entangled states based on the minimal
+  number of measurement layers required to create the state, which we call
+  "shots". First, similar to Abelian stabilizer states, we construct single-shot
+  protocols for creating any non-Abelian quantum double of a group with
+  nilpotency class two (such as $D_4$ or $Q_8$). We show that after the
+  measurement, the wavefunction always collapses into the desired non-Abelian
+  topological order, conditional on recording the measurement outcome. Moreover,
+  the clean quantum double ground state can be deterministically prepared via
+  feedforward--gates which depend on the measurement outcomes. Second, we
+  provide the first constructive proof that a finite number of shots can
+  implement the Kramers-Wannier duality transformation (i.e., the gauging map)
+  for any solvable symmetry group. As a special case, this gives an explicit
+  protocol to prepare twisted quantum double for all solvable groups. Third, we
+  argue that certain topological orders, such as non-solvable quantum doubles or
+  Fibonacci anyons, define non-trivial phases of matter under the equivalence
+  class of finite-depth unitaries and measurement, which cannot be prepared by
+  any finite number of shots. Moreover, we explore the consequences of allowing
+  gates to have exponentially small tails, which enables, for example, the
+  preparation of any Abelian anyon theory, including chiral ones. This hierarchy
+  paints a new picture of the landscape of long-range entangled states, with
+  practical implications for quantum simulators.
+tags:
+  - Condensed Matter - Strongly Correlated Electrons
+  - Quantum Physics
+identifiers:
+  doi: 10.1103/prxquantum.4.020339
+  arxiv: "2209.06202"

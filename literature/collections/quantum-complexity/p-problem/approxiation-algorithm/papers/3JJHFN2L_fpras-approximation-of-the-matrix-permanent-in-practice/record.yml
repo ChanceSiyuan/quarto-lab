@@ -1,0 +1,42 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 3JJHFN2L
+  item_version: 96028
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 2WSI7X4R
+      name: Approxiation algorithm
+      path: Quantum Complexity/#P-problem/Approxiation algorithm
+qlab:
+  primary_collection: 2WSI7X4R
+  indexed_collections:
+    - 2WSI7X4R
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: preprint
+title: FPRAS Approximation of the Matrix Permanent in Practice
+authors:
+  - first: James E.
+    last: Newman
+  - first: Moshe Y.
+    last: Vardi
+year: 2020
+abstract: "The matrix permanent belongs to the complexity class #P-Complete. It
+  is generally believed to be computationally infeasible for large problem
+  sizes, and significant research has been done on approximation algorithms for
+  the matrix permanent. We present an implementation and detailed runtime
+  analysis of one such Markov Chain Monte Carlo (MCMC) based Fully Polynomial
+  Randomized Approximation Scheme (FPRAS) for the matrix permanent, which has
+  previously only been described theoretically and with big-Oh runtime analysis.
+  We demonstrate by analysis and experiment that the constant factors hidden by
+  previous big-Oh analyses result in computational infeasibility."
+tags:
+  - Computer Science - Computational Complexity
+  - Computer Science - Data Structures and Algorithms
+identifiers:
+  doi: 10.48550/arxiv.2012.03367
+  arxiv: "2012.03367"

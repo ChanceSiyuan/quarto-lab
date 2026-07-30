@@ -1,0 +1,385 @@
+---
+title: Symmetric Strategies
+description: "tbc"
+categories:
+  - theory
+---
+
+# Begin from SWAP's eigenbasis
+
+In many tasks of non-linear property estimation tasks, we need to realize the projection on the eigenbasis of the $k$-cycle SWAP operator. Note that $\mathrm{SWAP}_{(1\cdots k)}$ is a non-hermitian operator, with eigenvalues $\{e^{i2r\cdot \pi/k}\}_{r=0}^{k-1}$ and degenerate eigenspaces.
+
+:::{#lem-degenerate-eigenspace-swap .callout-important icon="false"}
+## (Degenerate eigenspace of SWAP)
+The SWAP operator $\mathrm{SWAP}_{(1\cdots k)}$ on $(\mathbb{C}^2)^{\otimes k}$
+satisfies $\mathrm{SWAP}_{(1\cdots k)}^k = \mathbb{I}$, so its eigenvalues
+are the $k$-th roots of unity
+$\{\lambda_r = e^{i2\pi r/k}\}_{r=0}^{k-1}$.
+The projector onto the $r$-th eigenspace is
+$$
+\Pi_r = \frac{1}{k}\sum_{m=0}^{k-1}
+        e^{-i2\pi rm/k}\,\mathrm{SWAP}_{(1\cdots k)^m},
+$$
+with dimension
+$$
+d_r = \mathrm{tr}(\Pi_r)
+    = \frac{1}{k}\sum_{m=0}^{k-1}
+      e^{-i2\pi rm/k}\,d^{\gcd(m,k)},
+$$
+where the identity $\mathrm{tr}(\mathrm{SWAP}_\pi) = d^{c(\pi)}$ is used,
+with $c(\pi)$ the number of cycles of $\pi \in S_k$, and
+$c\!\left((1\cdots k)^m\right) = \gcd(m,k)$.
+:::
+
+How to realize the projector $\Pi_r$?
+Consider the case $k = 2$. The subspace is split to $\{00,11,01+10\}$ for $+1$ and $01-10$ for $-1$.
+To adaptively implement this projector, we notice that the partity of the string is a conservative quantity and use $CNOT_{12}$ to check the parity of the first qubit and then adaptively apply $R_y(\pm \pi/2)$ to the second qubit. That is, we implement the following measurement:
+$$
+\begin{align*}
+\left\{\begin{aligned}
+&\{\ket{00},\ket{11},\ket{01}+\ket{10}\} \xrightarrow{\text{CNOT}_{12}} \{\ket{00},\ket{10},(\ket{0}+\ket{1})\ket{1}\} \\
+&\{\ket{01}-\ket{10}\} \xrightarrow{\text{CNOT}_{12}} \{(\ket{0}-\ket{1})\ket{1}\}
+\end{aligned}\right.
+\end{align*}
+$$
+Consider the case $k = 3$. The subspace is split to:
+
+- $\{000,111,001+010+100,011+101+110\}$ for $+1$
+- $\ket{001}+e^{i2\pi/3}\ket{010}+e^{i4\pi/3}\ket{100},(\ket{011}+e^{i2\pi/3}\ket{101}+e^{i4\pi/3}\ket{110})$ for $e^{i2\pi/3}$,
+- $\ket{001}+e^{i4\pi/3}\ket{010}+e^{i8\pi/3}\ket{100},(\ket{011}+e^{i4\pi/3}\ket{101}+e^{i8\pi/3}\ket{110})$ for $e^{i4\pi/3}$.
+
+To adaptively implement this projector, we first implement $\mathrm{CNOT}_{13}\mathrm{CNOT}_{23}$ check the last qubit:
+$$
+\begin{align*}
+&\{111\},\{\ket{001}+e^{i\omega}\ket{011}+e^{i2\omega}\ket{101}|\omega \in \{0,2\pi/3,4\pi/3\}\}\\
+&\{000\},\{\ket{010}+e^{i\omega}\ket{100}+e^{i2\omega}\ket{110}|\omega \in \{0,2\pi/3,4\pi/3\}\}
+\end{align*}
+$$
+This reduce the problem to the discrmination tasks of the following two sets:
+$$
+\begin{align*}
+&\{11\},\{\ket{00}+e^{i\omega}\ket{01}+e^{i2\omega}\ket{10}|\omega \in \{0,2\pi/3,4\pi/3\}\}\\
+&\{00\},\{\ket{01}+e^{i\omega}\ket{10}+e^{i2\omega}\ket{11}|\omega \in \{0,2\pi/3,4\pi/3\}\}
+\end{align*}
+$$
+For the first set, we can use the same strategy. That is, we first implement a $CPHASE_{12}(\theta)$ such that (t.b.c.)
+
+# Symmetric Strategies {#subsec:sym_strate}
+
+If there is no restriction on the memory-number and the replica number,
+we can lower-bound the strategy through the symmetric of the property.
+We first define general testing strategy rigorously.
+
+::: {.callout-note icon="false"}
+## Definition
+
+A property $\mathcal{P} \subset \mathcal{S}(\mathcal{H})$ is a set of
+quantum states. A two-outcome POVM $\{E,\mathbb{I} - E\}$ on k-copies of
+n-qubit states tests the property $\mathcal{P}$ iff for certain
+$1>\varepsilon_B \geq \varepsilon_A >0$ and $\delta = \Theta(1)$,
+$$\begin{align}
+         d_{\text{tr}}(\rho, \mathcal{P})  \leq \varepsilon_A \Rightarrow \text{tr}(E \rho^{\otimes k}) \geq 1/2 +\delta,\\
+       d_{\text{tr}}(\rho, \mathcal{P})  \geq \varepsilon_B \Rightarrow \text{tr}(E \rho^{\otimes k}) \leq 1/2 - \delta.
+\end{align}$$
+:::
+
+Now suppose the testing property $\mathcal{P}$, which is a set of state
+within $n$-qubit space, is invariant under unitary operation $U(G)$ ,
+which is a subgroup of $U(2)^{\otimes n}$. Namely, $$\begin{align}
+    \forall \sigma \in \mathcal{P},\forall V \in U(G), V\sigma V^\dagger \in \mathcal{P}.
+\end{align}$$ Then we are prepared to show that it is enough to consider
+the symmetric version of the strategy rather than an arbitrary POVM
+within $n$-qubit space, as stated by
+Lemma below
+
+::: {.callout-important icon="false"}
+## Lemma
+
+[]{#lemma:symmtric_M label="lemma:symmtric_M"} Given a $k$-replica
+strategy $\{E, \mathbb{I } - E\}$ for the $U(G)$-symmetric property
+$\mathcal{P}$ on $n$-qubits, the symmetric strategy
+$\{\Phi(E), \mathbb{I } - \Phi(E)\}$ with
+$\Phi(E) := |U(G)|^{-1}\sum_{V \in U(G)} V^{\dagger,\otimes k}EV^{\otimes k}$
+and
+$\Phi_k(E) := |S_k|^{-1}\sum_{\pi\in S_k} \text{SWAP}_\pi E\cdot\text{SWAP}_\pi$
+has non-decreasing efficiency.
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+
+*Proof.* Because the unitary invariant property of $\mathcal{P}$ and the
+non-decreasing property of trace distance under unitary transformation
+$d_{\text{tr}}(\cdot,\cdot) = d_{\text{tr}}(U\cdot U^\dagger,U\cdot U^\dagger)$,
+we conclude that $$\begin{align}
+       d_{\text{tr}}(\rho, \mathcal{P})  \leq  \varepsilon_A &\Rightarrow \forall U \in U(G),  d_{\text{tr}}(U\rho U^\dagger, \mathcal{P}) \leq  \varepsilon_A \\
+       &\Rightarrow  \forall U \in U(G),\text{tr}( EU^{\otimes k}\rho^{\otimes k} U^{\dagger,\otimes k}) \geq 1/2 + \Theta(1),\\
+       &\Leftrightarrow  \forall U \in U(G),|U(G)|^{-1}\sum_{V \in U(G)}\text{tr}(U^{\dagger,\otimes k} EU^{\otimes k}\rho^{\otimes k} ) \geq 1/2 + \Theta(1),\\
+       &\Leftrightarrow  \forall U \in U(G),\text{tr}(\bar E\rho^{\otimes k} ) \geq 1/2 + \Theta(1)
+\end{align}$$ Similarly, we can prove that
+$d_{\text{tr}}(\rho, \mathcal{P})  \geq \varepsilon_B \Rightarrow \text{tr}(\bar E \rho^{\otimes k}) \leq 1/2 - \Theta(1).$
+The same procedure is applied for
+$\bar{E} := |S_k|^{-1}\sum_{\pi\in S_k} \text{SWAP}_\pi E\cdot\text{SWAP}_\pi$.
+Thus, we prove that the symmetric strategy
+$\{\bar{E}, \mathbb{I } - \bar{E}\}$ will have at least the same testing
+efficiency. ◻
+:::
+
+Then we discuss the symmetry for the estimation problem.
+
+::: {.callout-note icon="false"}
+## Definition
+
+A quantitative property of states is a map $f: \rho \to \mathbb{R}$ with
+$\rho \in \mathcal{S}(\mathcal{H})$ . Given a POVM $\{M_m\}_{m \in R}$
+on $k$-replica space, an $k$-replica estimator of $f$ is an observable
+$O \in \text{End}(\mathcal{H}^{\otimes k})$ such that
+$\text{tr}(O \rho^{\otimes k}) = f(\rho)$. An estimator $O$ is efficient
+$k$-replica strategy iff
+$\text{Var}_{\rho^{\otimes k}}(O)\leq \text{Var}_{\rho^{\otimes k}}(O')$
+for all $O \in \text{End}(\mathcal{H}^{\otimes k})$.
+:::
+
+We say a quantitative property $f$ is invariant under unitary operation
+$U(G)$ iff $f(U\cdot U^\dagger) = f(\cdot), \forall U \in U(G)$. The we
+gives the symmetric strategy for estimate problem.
+
+::: {.callout-important icon="false"}
+## Lemma
+
+[]{#lemma:symmetric_O label="lemma:symmetric_O"} If $O$ is a $k$-replica
+estimator for property $f$. Then the symmetrized estimators
+$$\begin{align}
+        \Phi(O):=  |U(G)|^{-1}\sum_{V \in U(G)} V^{\dagger,\otimes k}OV^{\otimes k},\Phi_{k}(O):= |S_k|^{-1}\sum_{\pi\in S_k} \mathbb{P}_\pi^{d,\dagger} \cdot O\cdot \mathbb{P}_\pi^{d},
+\end{align}$$ always satisfied
+$\text{Var}_{\rho^{\otimes k}}(\Phi(O))\leq \text{Var}_{\rho^{\otimes k}}(O),\text{Var}_{\rho^{\otimes k}}(\Phi_k(O))\leq \text{Var}_{\rho^{\otimes k}}(O)$.
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+
+*Proof.* We will show a more general statement for arbitrary channel
+that is unital ($\Phi(\mathbb{I}) = \mathbb{I}$), positive
+($\forall \rho \succeq 0, \Phi(\rho) \succeq 0$), and satisfied
+$\forall O \in \text{Herm}(\mathcal{H}), \text{tr}(\rho \Phi(O)) = \text{tr}(\rho O)$.
+By definition,
+$\text{Var}_{\rho}(\Phi(O)) = \text{tr}(\rho \Phi(O)^2) - \text{tr}^2(\rho \Phi(O))  = [\text{tr}(\rho \Phi(O)^2) - \text{tr}(\rho O^2)]+ \text{Var}_{\rho}(O)$.
+According to
+Theorem, $\Phi(O^2)-\Phi(O)^2\succeq 0$, which shows
+that
+$\text{tr}(\rho \Phi(O)^2)<\text{tr}(\rho \Phi(O^2)) = \text{tr}(\rho O^2)$.
+This directly gives the result
+$\text{Var}_{\rho}(\Phi(O)) \leq \text{Var}_{\rho}(O)$. ◻
+:::
+
+Thanks to the
+Lemma and
+Lemma , if we find the lower bound of the
+sample complexity of all the symmetric POVM and operators, any
+strategy's sample complexity is lower bounded by this value.
+
+## The unitary case $U(G) = U(2^n)$
+
+The simplest case are properties that is invariant under a unitary
+transformation. The
+lemma is useful because any spectrum testing
+strategy $\{M,\mathbb{I} - M\}$ now can be restated as weak Schur
+sampling followed by classical post-processing [@montanaro2013survey],
+as stated by the theorem below.
+
+::: {.callout-important icon="false"}
+## Lemma
+
+[]{#lemma:symmtric_M_unitary label="lemma:symmtric_M_unitary"} Given a
+testing strategy $\{M, \mathbb{I } - M\}$ for unitary invariant property
+$\mathcal{P}$ such that: $$\begin{align}
+        \tr(M \rho^{\otimes k}) &\geq 1 - \delta,\forall \rho \in \mathcal{P};\\
+         \tr(M \rho^{\otimes k}) &\leq 1 - f(\varepsilon),\forall \rho ~\varepsilon \text{-far from~} \mathcal{P}.
+\end{align}$$ Another strategy $\bar{M}$ such that
+$[\bar M,U^{\otimes k}] =0$ and $[\bar M,\text{SWAP}_\pi]=0$ can be
+constructed with non-decreasing efficiency.
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+
+*Proof.*
+$M_s =|S_k|^{-1} \sum_{\pi \in S^k}\mathbb{P}_{\pi}^{2^n}\cdot  M \cdot\mathbb{P}_{\pi}^{2^n}$
+have unchanged efficiency because
+$\mathbb{P}_{\pi}^{2^n}\cdot  \rho^{\otimes k} \cdot\mathbb{P}_{\pi}^{2^n} = \rho^{\otimes k}$.
+Combined with
+lemma proves the result. ◻
+:::
+
+This construction simplified the analysis because we can reduce
+arbitrary strategy to a canonical one-*weak Shur sampling*. To see this,
+we first cite the lemma in [@childs2007weak], according to the famous
+Schur-Weyl duality.
+
+::: {.callout-important icon="false"}
+## Lemma
+
+[]{#lemma:SW_dual label="lemma:SW_dual"} Given the symmetry group $S_k$
+, use $\kappa \vdash k$ labels the conjugate classes $K(\kappa)$ and
+$\lambda \vdash k$ label the irreducible representation with the
+character function $\chi_{\lambda}(\cdot)$ and dimension
+$\text{dim}~\lambda$. Define the projective measurements $P_\lambda$ and
+the conjugate-class observables $O_{\kappa}$ as $$\begin{align}
+         P_{\lambda} := (\text{dim}\lambda)({k!})^{-1} \sum_{\pi \in S_k} \chi_{\lambda}(\pi) \mathbb{P}_\pi^d,\quad O_{\kappa} := |K(\kappa)|^{-1} \sum_{\pi \in K(\kappa)}  \mathbb{P}_\pi^d.
+\end{align}$$ If $\forall U \in \mathbb{C}^{k}$ and
+$\forall \pi \in S_k$, the operator $M$ on the space
+$(\mathbb{C}^d)^{\otimes k}$ satisfies $[M,U^{\otimes k}] =0$ and
+$[M,\mathbb{P}_\pi^d]=0$, then $M$ can be decomposed as $$\begin{align}
+         M &= \sum_{\lambda \vdash k} \alpha_{\lambda} P_\lambda,\quad M = \sum_{\kappa \vdash k} \beta_{\kappa} O_\kappa, \label{eq:M_decomp} \\
+&\text{where~}O_{\kappa} = \sum_{\lambda}{(\text{dim}\lambda)^{-1}}\chi_{\lambda}(\kappa) P_{\lambda}. \label{eq:relation_PM}
+\end{align}$$
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+
+*Proof.* The proof of this theorem is separated into three steps. First,
+by Schur-Weyl duality, we know that $[M,U^{\otimes k}]=0$ iff $M$ is a
+linear superposition of SWAP gates: $$\begin{align}
+\label{eq:M_decomp_mid}
+        M &= \sum_{g \in S_k} f(g) \cdot \text{SWAP}_g.
+\end{align}$$
+
+Then we show that linear combination of SWAP gates commute with all the
+SWAP gates iff the superposition coefficient is a class function.
+According to
+Eq.~(eq:M_decomp_mid), $M$ is the image of group algebra
+$m = \sum_{g \in S_k} f(g) g$ under representation
+$\rho(g) = \text{SWAP}_g$. Then $m$ must commute with arbitray element
+in $S_k$. $\forall~ h \in S_k$, notice that: $$\begin{align}
+        hmh^{-1} &= \sum_{g \in S_k} f(g) \cdot{hgh^{-1}} =\sum_{t \in S_k} f(h^{-1} t h) \cdot{t} =\sum_{g \in S_k} f(g) \cdot g = m
+\end{align}$$ This then imply $f(g) = f(h^{-1} t h)$ for all $h \in S_k$
+and $f$ is a class function. Last, given that character functions forms
+a orthonormal basis for class function, we obtain
+$f(g) = \sum_{\lambda}c_{\lambda} \chi_{\lambda}(g)$. Plug into
+Eq.~(eq:M_decomp_mid) gives: $$\begin{align}
+             M &=  \sum_{\lambda}c_{\lambda}  \sum_{g \in S_k}\chi_{\lambda}(g)\cdot \text{SWAP}_g =\sum_{\lambda} \alpha_{\lambda} \frac{\text{dim}(V_\lambda)}{k!} \sum_{\pi \in S_k} \chi_{\lambda}(\pi) \text{SWAP}_\pi = \sum_{\lambda} \alpha_{\lambda} P_\lambda
+\end{align}$$ This is indeed a projector based on
+Lemma proved before. To prove the
+conclusion (ii), we first noted that $$\begin{align}
+     \sum_{\lambda}\frac{1}{\text{dim~}\lambda}\chi_{\lambda}(\kappa) P_{\lambda} &=  \sum_{\pi \in S_k} ({k!})^{-1}\sum_{\lambda}\chi_{\lambda}(\kappa)  \chi_{\lambda}(\pi) \mathbb{P}^d_\pi\\
+     &=|K(\kappa)|^{-1}\sum_{\pi \in K(\kappa)}  \mathbb{P}^d_\pi = O_{\kappa}
+\end{align}$$ Here in the second line we use the second orthogonal
+identity
+$|G|^{-1}\sum_{p}\chi_{p}(\kappa_j)\chi_{p}(\kappa_k) = |K(\kappa_k)|^{-1}\delta_{jk}$.
+Then plug in Eq.~(eq:M_decomp) we get $$\begin{align}
+    \sum_{\kappa \vdash k} \beta_{\kappa} O_\kappa =\sum_{\lambda\vdash k}\frac{1}{\text{dim}~\lambda}\left[ \sum_{\kappa \vdash k} \beta_{\kappa} \chi_{\lambda}(\kappa)\right] P_{\lambda}= \sum_{\lambda \vdash k} \alpha_{\lambda} P_\lambda.
+\end{align}$$ This implys the transformation
+$(\text{dim}\lambda)\cdot \alpha_{\lambda} =  \sum_{\kappa \vdash k} \beta_{\kappa} \chi_{\lambda}(\kappa)$. ◻
+:::
+
+## Examples.
+
+When $k = 2$, the group $S_2$ only has two conjugate class $(2,0)$ and
+$(1,1)$. The corresponding projectors are
+$P_{(2,0)} = 2^{-1}{(\mathbb{I} + \text{SWAP}_{(1,2)})},P_{(1,1)} = 2^{-1}{(\mathbb{I} - \text{SWAP}_{(1,2)})}$.
+This is just the SWAP test of two identical states, which is widely used
+for purity test. For larger $t$, the computation of those exact
+projector is proved to be #P-hard [@hepler1996complexity]. Fortunately,
+the realization of projective measurement $\{P_\lambda\}$ can be
+implemented in time $\text{Poly}(k,\ln d)$ with generalized phase
+estimation circuit [@bacon2006efficient], which is efficient for
+$n$-qubits property testing with $d = 2^n$. This is called the *weak
+Schur sampling* (**WSS**). Now we characterize the result of **WSS** by
+polynomials of density matrix's spectrum.
+
+::: {.callout-note icon="false"}
+## Definition
+
+[]{#def:poly label="def:poly"} Let $\mu,\lambda\vdash k$ be a partition
+of the replica number $k$. Let $\mathcal{T}$ be the set of all
+semi-standard Young tableaus with shape $\lambda$ and alphabet
+$\{1,\cdots,d\}$. Let $\#(T,i)$ be the number of times that the
+character $i$ occurs in the semi-standard Young tableau $T$. Two
+rank-$k$ symmetric polynomials of $d$ variables
+$\mathbf{x}=(x_1,\cdots,x_d)$ can be defined below.
+
+- *Schur polynomial* (**SP**) is a rank-$k$ symmetric polynomial that
+  $s_{\lambda}(\mathbf x):= \sum_{T}\prod_{i=1}^d x_i^{\#(T,i)}$
+
+- *Power sum polynomial* (**PSP**) is a rank-$k$ symmetric polynomial
+  that
+  $M_{\mu}(\mathbf{x}):=\prod_{i=1}^{l(\mu)} \sum_{j=1}^d x_j^{\mu_i}$
+:::
+
+## Examples.
+
+If we take $\lambda = (k,0,\cdots)$, we get the $\sum_{j = 1}^d x_j^k$.
+**SP** and **PSP** can decompose each other, as shown in
+Lemma below.
+
+::: {.callout-important icon="false"}
+## Lemma
+
+[]{#lemma:sym_poly_decomp label="lemma:sym_poly_decomp"} Any rank-$k$
+power sum polynomial can be decomposed with the rank-$k$ symmetric Schur
+polynomial through
+$M_{\mu}(\mathbf{x}) = \sum_{\lambda \vdash k}\chi_{\lambda}(\mu)s_{\lambda}(\mathbf{x})$.
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+
+*Proof.* ◻
+:::
+
+Refer to [@o2015quantum], the distribution of
+$\text{tr}(P_{\lambda} \rho^{\otimes k})$ only relates to the spectrum
+$\eta$ of $\rho$, as proved in
+Lemma below. Thus, we use
+$\text{SW}_{\rho}^k(\lambda)$ to denote the weak Schur sampling
+probability $\text{tr}(P_\lambda \rho^{\otimes k})$ where $\lambda$ is
+the eigenvalue of the density matrix $\rho$.
+
+::: {.callout-important icon="false"}
+## Lemma
+
+[]{#lemma:WSS_res label="lemma:WSS_res"} Defined $\text{dim}(\lambda)$
+as the number of standard Young tableaus of shape $\lambda \vdash k$ and
+alphabet $[k]$. Then
+$\text{SW}_{\rho}^k(\lambda)= \text{dim}(\lambda) \cdot s_\lambda (\eta_1,\cdots,\eta_d)$
+with $\eta$ the spectrum of $\rho$. Specifically, we have
+$\text{SW}_{d^{-1}\mathbb{I}}^k(\lambda) = {(\text{dim} (\lambda))^2}{(k!)^{-1}} {d^{\uparrow \lambda}}({d^k})^{-1}$,
+where denots
+$d^{\uparrow \lambda}: = \prod_{(i,j) \in [\lambda]} (d + j - i)$ with
+$i,j$ labeling the position of all the lattices in Young tableaus of
+shape $\lambda \vdash n$,
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+
+$$
+\begin{align}
+        \text{tr}(P_\lambda \rho^{\otimes k}) = (\text{dim}\lambda)({k!})^{-1}\sum_{\pi \in S_k} \chi_{\lambda}(\pi) \text{tr}( \text{SWAP}_\pi \rho^{\otimes k}).
+\end{align}
+$$
+If $\pi$ has $l$ cycles with cycle length
+$\kappa_1\cdots\kappa_l$ and $\rho$ has eigenvalues
+$\eta_1,\cdots,\eta_{d}$, we noted that 
+$$
+\begin{align}
+        \text{tr}( \text{SWAP}_\pi \rho^{\otimes k}) = \text{tr}(\rho^{\kappa_1})\times \cdots\times\text{tr}(\rho^{\kappa_l}) = M_{\kappa}(\eta).
+\end{align}
+$$
+Plug into the equation above gives 
+$$
+\begin{align}
+        \text{tr}(P_\lambda \rho^{\otimes k}) &= (\text{dim}\lambda)({k!})^{-1}\sum_{\pi \in S_k} \chi_{\lambda}(\pi) M_{\kappa}(\eta)\\
+        &=(\text{dim}\lambda)({k!})^{-1}\sum_{\pi \in S_k} \chi_{\lambda}(\pi) \sum_{\omega \vdash k}\chi_{\omega}(\pi)s_{\omega}(\eta)\\
+        &=(\text{dim}\lambda) \cdot s_{\lambda}(\eta).
+\end{align}
+$$
+Here in the second equality, we use
+By [Lemma (SW dual)](#lemma:SW_dual). In the third equality, we use the
+orthorgonal equation of group characters
+$|G|^{-1} \sum_{g \in G} \chi_{p}^*(g)\chi_{q}(g) = \delta_{pq}$. ◻
+:::
+
+## The Clifford case $U(G) = \text{Clifford}(n)$
+

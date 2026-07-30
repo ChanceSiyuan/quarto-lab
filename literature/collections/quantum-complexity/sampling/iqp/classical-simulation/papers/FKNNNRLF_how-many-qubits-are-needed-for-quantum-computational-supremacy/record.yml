@@ -1,0 +1,61 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: FKNNNRLF
+  item_version: 96145
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: BLR38PUL
+      name: classical simulation
+      path: Quantum Complexity/Sampling/IQP/classical simulation
+qlab:
+  primary_collection: BLR38PUL
+  indexed_collections:
+    - BLR38PUL
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: journalArticle
+title: How many qubits are needed for quantum computational supremacy?
+authors:
+  - first: Alexander M.
+    last: Dalzell
+  - first: Aram W.
+    last: Harrow
+  - first: Dax Enshan
+    last: Koh
+  - first: Rolando L. La
+    last: Placa
+year: 2020
+abstract: Quantum computational supremacy arguments, which describe a way for a
+  quantum computer to perform a task that cannot also be done by a classical
+  computer, typically require some sort of computational assumption related to
+  the limitations of classical computation. One common assumption is that the
+  polynomial hierarchy (PH) does not collapse, a stronger version of the
+  statement that P $\neq$ NP, which leads to the conclusion that any classical
+  simulation of certain families of quantum circuits requires time scaling worse
+  than any polynomial in the size of the circuits. However, the asymptotic
+  nature of this conclusion prevents us from calculating exactly how many qubits
+  these quantum circuits must have for their classical simulation to be
+  intractable on modern classical supercomputers. We refine these quantum
+  computational supremacy arguments and perform such a calculation by imposing
+  fine-grained versions of the non-collapse assumption. Each version is
+  parameterized by a constant $a$ and asserts that certain specific
+  computational problems with input size $n$ require $2^{an}$ time steps to be
+  solved by a non-deterministic algorithm. Then, we choose a specific value of
+  $a$ for each version that we argue makes the assumption plausible, and based
+  on these conjectures we conclude that Instantaneous Quantum Polynomial-Time
+  (IQP) circuits with 208 qubits, Quantum Approximate Optimization Algorithm
+  (QAOA) circuits with 420 qubits and boson sampling circuits (i.e. linear
+  optical networks) with 98 photons are large enough for the task of producing
+  samples from their output distributions up to constant multiplicative error to
+  be intractable on current technology. In the first two cases, we extend this
+  to constant additive error by introducing an average-case fine-grained
+  conjecture.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.22331/q-2020-05-11-264
+  arxiv: "1805.05224"

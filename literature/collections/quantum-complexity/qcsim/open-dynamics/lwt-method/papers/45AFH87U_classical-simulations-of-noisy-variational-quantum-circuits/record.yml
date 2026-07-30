@@ -1,0 +1,50 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 45AFH87U
+  item_version: 96030
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: SHZ4SM7W
+      name: LWT method
+      path: Quantum Complexity/QCsim/Open-dynamics/LWT method
+qlab:
+  primary_collection: SHZ4SM7W
+  indexed_collections:
+    - SHZ4SM7W
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: preprint
+title: Classical simulations of noisy variational quantum circuits
+authors:
+  - first: Enrico
+    last: Fontana
+  - first: Manuel S.
+    last: Rudolph
+  - first: Ross
+    last: Duncan
+  - first: Ivan
+    last: Rungger
+  - first: Cristina
+    last: Cîrstoiu
+year: 2023
+abstract: Noise detrimentally affects quantum computations so that they not only
+  become less accurate but also easier to simulate classically as systems scale
+  up. We construct a classical simulation algorithm, LOWESA (low weight
+  efficient simulation algorithm), for estimating expectation values of noisy
+  parameterised quantum circuits. It combines previous results on spectral
+  analysis of parameterised circuits with Pauli back-propagation and recent
+  ideas for simulations of noisy random circuits. We show, under some conditions
+  on the circuits and mild assumptions on the noise, that LOWESA gives an
+  efficient, polynomial algorithm in the number of qubits (and depth), with
+  approximation error that vanishes exponentially in the physical error rate and
+  a controllable cut-off parameter. We also discuss the practical limitations of
+  the method for circuit classes with correlated parameters and its scaling with
+  decreasing error rates.
+tags:
+  - Quantum Physics
+identifiers:
+  arxiv: "2306.05400"

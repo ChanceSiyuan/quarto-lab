@@ -1,0 +1,49 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: ABHX2PBM
+  item_version: 96159
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 9ISUJVXK
+      name: shadow tomo
+      path: Quantum Learning/Learning on states/Tomography/shadow tomo
+qlab:
+  primary_collection: 9ISUJVXK
+  indexed_collections:
+    - 9ISUJVXK
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: journalArticle
+title: Quantum Advantage via Efficient Post-processing on Qudit Classical Shadow
+  tomography
+authors:
+  - first: Yu
+    last: Wang
+year: 2025
+abstract: The computation of \(\operatorname{tr}(AB)\) is essential in quantum
+  science and artificial intelligence, yet classical methods for \( d
+  \)-dimensional matrices \( A \) and \( B \) require \( O(d^2) \) complexity,
+  which becomes infeasible for exponentially large systems. We introduce a
+  quantum approach based on qudit shadow tomography that reduces both
+  computational and storage complexities to \( O(\text{poly}(\log d)) \) in
+  specific cases. The proposed method applies to quantum density matrices \( A
+  \) and Hermitian matrices \( B \) with given \(\operatorname{tr}(B)\) and
+  \(\operatorname{tr}(B^2)\) bounded by a constant (referred to as
+  BN-observables). It guarantees at least a quadratic speedup (\(O(d^2) \to
+  O(d)\)) in the worst case and achieves exponential speedup for approximately
+  average cases. For any \( n \)-qubit stabilizer state \(ρ\) and arbitrary
+  BN-observable \( O \), we show that \(\operatorname{tr}(ρO)\) can be
+  efficiently estimated with \(\text{poly}(n)\) computations. Moreover, our
+  approach significantly reduces the post-processing complexity in shadow
+  tomography using random Clifford measurements, and it is applicable to
+  arbitrary dimensions \( d \). These advances open new avenues for efficient
+  high-dimensional data analysis and modeling.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.1103/92ky-ln8f
+  arxiv: "2408.16244"

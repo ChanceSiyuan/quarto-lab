@@ -1,0 +1,68 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: XRFBMP3Y
+  item_version: 110290
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: TLM3AYYZ
+      name: gapless
+      path: Quantum N-Atom/App-Analog simulation/MWIS/gapless
+qlab:
+  primary_collection: TLM3AYYZ
+  indexed_collections:
+    - TLM3AYYZ
+  primary_topic: quantum-n-atom
+  indexed_topics:
+    - quantum-n-atom
+item_type: preprint
+title: Quantum quench dynamics as a shortcut to adiabaticity
+authors:
+  - first: Alexander
+    last: Lukin
+  - first: Benjamin F.
+    last: Schiffer
+  - first: Boris
+    last: Braverman
+  - first: Sergio H.
+    last: Cantu
+  - first: Florian
+    last: Huber
+  - first: Alexei
+    last: Bylinskii
+  - first: Jesse
+    last: Amato-Grill
+  - first: Nishad
+    last: Maskara
+  - first: Madelyn
+    last: Cain
+  - first: Dominik S.
+    last: Wild
+  - first: Rhine
+    last: Samajdar
+  - first: Mikhail D.
+    last: Lukin
+year: 2024
+abstract: The ability to efficiently prepare ground states of quantum
+  Hamiltonians via adiabatic protocols is typically limited by the smallest
+  energy gap encountered during the quantum evolution. This presents a key
+  obstacle for quantum simulation and realizations of adiabatic quantum
+  algorithms in large systems, particularly when the adiabatic gap vanishes
+  exponentially with system size. Using QuEra's Aquila programmable quantum
+  simulator based on Rydberg atom arrays, we experimentally demonstrate a method
+  to circumvent such limitations. Specifically, we develop and test a
+  "sweep-quench-sweep" quantum algorithm in which the incorporation of a quench
+  step serves as a remedy to the diverging adiabatic timescale. These quenches
+  introduce a macroscopic reconfiguration between states separated by an
+  extensively large Hamming distance, akin to quantum many-body scars. Our
+  experiments show that this approach significantly outperforms the adiabatic
+  algorithm, illustrating that such quantum quench algorithms can provide a
+  shortcut to adiabaticity for large-scale many-body quantum systems.
+tags:
+  - Physics - Atomic Physics
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2405.21019
+  arxiv: "2405.21019"

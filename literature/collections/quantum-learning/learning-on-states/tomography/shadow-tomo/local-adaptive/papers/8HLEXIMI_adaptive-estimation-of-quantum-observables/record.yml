@@ -1,0 +1,59 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 8HLEXIMI
+  item_version: 96159
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: CT88KZFU
+      name: local/adaptive
+      path: Quantum Learning/Learning on states/Tomography/shadow tomo/local/adaptive
+qlab:
+  primary_collection: CT88KZFU
+  indexed_collections:
+    - CT88KZFU
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: journalArticle
+title: Adaptive estimation of quantum observables
+authors:
+  - first: Ariel
+    last: Shlosberg
+  - first: Andrew J.
+    last: Jena
+  - first: Priyanka
+    last: Mukhopadhyay
+  - first: Jan F.
+    last: Haase
+  - first: Felix
+    last: Leditzky
+  - first: Luca
+    last: Dellantonio
+year: 2023
+abstract: "The accurate estimation of quantum observables is a critical task in
+  science. With progress on the hardware, measuring a quantum system will become
+  increasingly demanding, particularly for variational protocols that require
+  extensive sampling. Here, we introduce a measurement scheme that adaptively
+  modifies the estimator based on previously obtained data. Our algorithm, which
+  we call AEQuO, continuously monitors both the estimated average and the
+  associated error of the considered observable, and determines the next
+  measurement step based on this information. We allow both for overlap and
+  non-bitwise commutation relations in the subsets of Pauli operators that are
+  simultaneously probed, thereby maximizing the amount of gathered information.
+  AEQuO comes in two variants: a greedy bucket-filling algorithm with good
+  performance for small problem instances, and a machine learning-based
+  algorithm with more favorable scaling for larger instances. The measurement
+  configuration determined by these subroutines is further post-processed in
+  order to lower the error on the estimator. We test our protocol on chemistry
+  Hamiltonians, for which AEQuO provides error estimates that improve on all
+  state-of-the-art methods based on various grouping techniques or randomized
+  measurements, thus greatly lowering the toll of measurements in current and
+  future quantum applications."
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.22331/q-2023-01-26-906
+  arxiv: "2110.15339"

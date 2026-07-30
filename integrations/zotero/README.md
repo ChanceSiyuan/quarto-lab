@@ -12,6 +12,8 @@ there are no API-provider, Claude, or remote-SSH controls in the product UI.
 - Opens the full **QLab Workbench** as a native Zotero tab beside PDF tabs. It
   occupies the normal document area and supports Zotero tab selection,
   reordering, closing, duplication, reopening, and moving to a new window.
+  Window migration waits for Zotero's native tab deck and restores an open
+  Main Site split view in the destination window.
 - Keeps QLab out of Zotero's item and Reader sidebars. Reader toolbar actions,
   text-selection actions, and shortcuts go directly to the native QLab tab.
 - Allows an empty Workbench to be opened before choosing a paper. The paper
@@ -33,7 +35,7 @@ there are no API-provider, Claude, or remote-SSH controls in the product UI.
   buttons. Selecting one inserts a complete, editable instruction for Codex:
   `qlab_get_paper`, `qlab_search_literature`, `qlab_propose_patch`,
   `qlab_propose_promotion`, `qlab_validate`, and `qlab_preview`.
-- Turns **整理当前聊天到 Draft** into a skill-backed capture: Codex separates
+- Turns **Organize this chat into a Draft** into a skill-backed capture: Codex separates
   paper-backed claims, user hypotheses, and open questions, then writes a
   reviewable note under `drafts/reading-notes/`.
 - Keeps ordinary Agent writes inside `literature/`, `drafts/`, and generated
@@ -43,7 +45,10 @@ there are no API-provider, Claude, or remote-SSH controls in the product UI.
   Literature**. The importer preserves nested collections and links only the
   primary PDF and LaTeX entrypoint.
 - Opens Drafts and Knowledge previews through the repository's existing local
-  preview commands. It does not publish or embed another renderer in Zotero.
+  preview commands. The Workbench also has a **Main Site** button that checks
+  the local Research Loop deployment, builds and starts it when needed, then
+  loads it beside the chat in Zotero's native browser without publishing
+  Drafts or Literature.
 
 ## Build and test
 

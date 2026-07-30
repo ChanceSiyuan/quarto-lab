@@ -1,0 +1,59 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: PTIUQWBK
+  item_version: 96023
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 3HWH7QT8
+      name: adaptive
+      path: Quantum Algorithm/QVA/adaptive
+qlab:
+  primary_collection: 3HWH7QT8
+  indexed_collections:
+    - 3HWH7QT8
+  primary_topic: quantum-algorithm
+  indexed_topics:
+    - quantum-algorithm
+item_type: preprint
+title: Warm Start Adaptive-Bias Quantum Approximate Optimization Algorithm
+authors:
+  - first: Yunlong
+    last: Yu
+  - first: Xiang-Bin
+    last: Wang
+  - first: Nic
+    last: Shannon
+  - first: Robert
+    last: Joynt
+year: 2025
+abstract: In the search for quantum advantage in real--world problems, one
+  promising avenue is to use a quantum algorithm to improve on the solution
+  found using an efficient classical algorithm. The quantum approximate
+  optimization algorithm (QAOA) is particularly well adapted for such a "warm
+  start" approach, and can be combined with the powerful classical
+  Goemans-Williamson (GW) algorithms based on semi-definite programming.
+  Nonetheless, the best way to leverage the power of the QAOA remains an open
+  question. Here we propose a general model that describes a class of QAOA
+  variants, and use it to explore routes to quantum advantages in a canonical
+  optimization problem, MaxCut. For these algorithms we derive analytic
+  expectation values of the cost Hamiltonian for the MaxCut problem in the
+  level-1 case. Using these analytic results we obtain reliable averages over
+  many instances for fairly large numbers of qubits. We find that the warm start
+  adaptive-bias QAOA (WS-ab-QAOA) initialized by the GW algorithm outperforms
+  previously proposed warm start variants on problems with $40$ to $180$ qubits.
+  To assess whether a quantum advantage exists with this algorithm, we did
+  numerical simulations with up to $1000$ qubits to see whether the level-1
+  WS-ab-QAOA can improve the GW solution for 3-regular graphs. In fact the
+  improvement in the $1000$-qubit case even in level 1 can only be matched by
+  the GW algorithm after about $10^{5.5}$ random projections performed after the
+  semi-definite program stage. This work gives evidence that the final stage of
+  optimization after an efficient classical algorithm has produced an
+  approximate solution may be a place where quantum advantages can be realized.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2503.20048
+  arxiv: "2503.20048"

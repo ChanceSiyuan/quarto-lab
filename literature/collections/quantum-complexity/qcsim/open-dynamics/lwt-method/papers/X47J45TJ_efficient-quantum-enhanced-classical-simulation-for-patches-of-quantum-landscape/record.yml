@@ -1,0 +1,61 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: X47J45TJ
+  item_version: 96030
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: SHZ4SM7W
+      name: LWT method
+      path: Quantum Complexity/QCsim/Open-dynamics/LWT method
+qlab:
+  primary_collection: SHZ4SM7W
+  indexed_collections:
+    - SHZ4SM7W
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: preprint
+title: Efficient quantum-enhanced classical simulation for patches of quantum
+  landscapes
+authors:
+  - first: Sacha
+    last: Lerch
+  - first: Ricard
+    last: Puig
+  - first: Manuel S.
+    last: Rudolph
+  - first: Armando
+    last: Angrisani
+  - first: Tyson
+    last: Jones
+  - first: M.
+    last: Cerezo
+  - first: Supanut
+    last: Thanasilp
+  - first: Zoë
+    last: Holmes
+year: 2024
+abstract: Understanding the capabilities of classical simulation methods is key
+  to identifying where quantum computers are advantageous. Not only does this
+  ensure that quantum computers are used only where necessary, but also one can
+  potentially identify subroutines that can be offloaded onto a classical
+  device. In this work, we show that it is always possible to generate a
+  classical surrogate of a sub-region (dubbed a "patch") of an expectation
+  landscape produced by a parameterized quantum circuit. That is, we provide a
+  quantum-enhanced classical algorithm which, after simple measurements on a
+  quantum device, allows one to classically simulate approximate expectation
+  values of a subregion of a landscape. We provide time and sample complexity
+  guarantees for a range of families of circuits of interest, and further
+  numerically demonstrate our simulation algorithms on an exactly verifiable
+  simulation of a Hamiltonian variational ansatz and long-time dynamics
+  simulation on a 127-qubit heavy-hex topology.
+tags:
+  - Computer Science - Machine Learning
+  - Quantum Physics
+  - Statistics - Machine Learning
+identifiers:
+  doi: 10.48550/arxiv.2411.19896
+  arxiv: "2411.19896"

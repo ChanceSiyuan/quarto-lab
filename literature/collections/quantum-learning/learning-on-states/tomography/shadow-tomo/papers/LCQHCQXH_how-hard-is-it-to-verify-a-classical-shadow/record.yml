@@ -1,0 +1,57 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: LCQHCQXH
+  item_version: 96160
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 9ISUJVXK
+      name: shadow tomo
+      path: Quantum Learning/Learning on states/Tomography/shadow tomo
+qlab:
+  primary_collection: 9ISUJVXK
+  indexed_collections:
+    - 9ISUJVXK
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: preprint
+title: How hard is it to verify a classical shadow?
+authors:
+  - first: Georgios
+    last: Karaiskos
+  - first: Dorian
+    last: Rudolph
+  - first: Johannes Jakob
+    last: Meyer
+  - first: Jens
+    last: Eisert
+  - first: Sevag
+    last: Gharibian
+year: 2025
+abstract: 'Classical shadows are succinct classical representations of quantum
+  states which allow one to encode a set of properties P of a quantum state rho,
+  while only requiring measurements on logarithmically many copies of rho in the
+  size of P. In this work, we initiate the study of verification of classical
+  shadows, denoted classical shadow validity (CSV), from the perspective of
+  computational complexity, which asks: Given a classical shadow S, how hard is
+  it to verify that S predicts the measurement statistics of a quantum state? We
+  first show that even for the elegantly simple classical shadow protocol of
+  [Huang, Kueng, Preskill, Nature Physics 2020] utilizing local Clifford
+  measurements, CSV is QMA-complete. This hardness continues to hold for the
+  high-dimensional extension of said protocol due to [Mao, Yi, and Zhu, PRL
+  2025]. In contrast, we show that for the HKP and MYZ protocols utilizing
+  global Clifford measurements, CSV can be "dequantized" for low-rank
+  observables, i.e., solved in randomized poly-time with standard sampling
+  assumptions. Among other results, we also show that CSV for exponentially many
+  observables is complete for a quantum generalization of the second level of
+  the polynomial hierarchy, yielding the first natural complete problem for such
+  a class.'
+tags:
+  - Computer Science - Computational Complexity
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2510.08515
+  arxiv: "2510.08515"

@@ -1,0 +1,76 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: ZZBRTWVH
+  item_version: 96164
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: PGRB63E4
+      name: holographic
+      path: Quantum Algorithm/Digital Simulation/holographic
+qlab:
+  primary_collection: PGRB63E4
+  indexed_collections:
+    - PGRB63E4
+  primary_topic: quantum-algorithm
+  indexed_topics:
+    - quantum-algorithm
+item_type: journalArticle
+title: Holographic dynamics simulations with a trapped ion quantum computer
+authors:
+  - first: Eli
+    last: Chertkov
+  - first: Justin
+    last: Bohnet
+  - first: David
+    last: Francois
+  - first: John
+    last: Gaebler
+  - first: Dan
+    last: Gresh
+  - first: Aaron
+    last: Hankin
+  - first: Kenny
+    last: Lee
+  - first: Ra'anan
+    last: Tobey
+  - first: David
+    last: Hayes
+  - first: Brian
+    last: Neyenhuis
+  - first: Russell
+    last: Stutz
+  - first: Andrew C.
+    last: Potter
+  - first: Michael
+    last: Foss-Feig
+year: 2022
+abstract: Quantum computers have the potential to efficiently simulate the
+  dynamics of many interacting quantum particles, a classically intractable task
+  of central importance to fields ranging from chemistry to high-energy physics.
+  However, precision and memory limitations of existing hardware severely limit
+  the size and complexity of models that can be simulated with conventional
+  methods. Here, we demonstrate and benchmark a new scalable quantum simulation
+  paradigm--holographic quantum dynamics simulation--which uses efficient
+  quantum data compression afforded by quantum tensor networks along with
+  opportunistic mid-circuit measurement and qubit reuse to simulate physical
+  systems that have far more quantum degrees of freedom than can be captured by
+  the available number of qubits. Using a Honeywell trapped ion quantum
+  processor, we simulate the non-integrable (chaotic) dynamics of the self-dual
+  kicked Ising model starting from an entangled state of $32$ spins using at
+  most $9$ trapped ion qubits, obtaining excellent quantitative agreement when
+  benchmarking against dynamics computed directly in the thermodynamic limit via
+  recently developed exact analytical techniques. These results suggest that
+  quantum tensor network methods, together with state-of-the-art quantum
+  processor capabilities, enable a viable path to practical quantum advantage in
+  the near term.
+tags:
+  - Condensed Matter - Quantum Gases
+  - Condensed Matter - Statistical Mechanics
+  - Condensed Matter - Strongly Correlated Electrons
+  - Quantum Physics
+identifiers:
+  doi: 10.1038/s41567-022-01689-7
+  arxiv: "2105.09324"

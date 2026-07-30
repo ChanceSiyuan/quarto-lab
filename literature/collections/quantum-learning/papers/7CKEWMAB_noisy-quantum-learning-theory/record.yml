@@ -1,0 +1,58 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 7CKEWMAB
+  item_version: 96157
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: ISN46ZEU
+      name: Quantum Learning
+      path: Quantum Learning
+qlab:
+  primary_collection: ISN46ZEU
+  indexed_collections:
+    - ISN46ZEU
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: preprint
+title: Noisy Quantum Learning Theory
+authors:
+  - first: Jordan
+    last: Cotler
+  - first: Weiyuan
+    last: Gong
+  - first: Ishaan
+    last: Kannan
+year: 2025
+abstract: We develop a framework for learning from noisy quantum experiments,
+  focusing on fault-tolerant devices accessing uncharacterized systems through
+  noisy couplings. Our starting point is the complexity class $\textsf{NBQP}$
+  ("noisy BQP"), modeling noisy fault-tolerant quantum computers that cannot, in
+  general, error-correct the oracle systems they query. Using this class, we
+  show that for natural oracle problems, noise can eliminate exponential quantum
+  learning advantages of ideal noiseless learners while preserving a
+  superpolynomial gap between NISQ and fault-tolerant devices. Beyond oracle
+  separations, we study concrete noisy learning tasks. For purity testing, the
+  exponential two-copy advantage collapses under a single application of local
+  depolarizing noise. Nevertheless, we identify a setting motivated by AdS/CFT
+  in which noise-resilient structure restores a quantum learning advantage in a
+  noisy regime. We then analyze noisy Pauli shadow tomography, deriving lower
+  bounds that characterize how instance size, quantum memory, and noise control
+  sample complexity, and design algorithms with parametrically similar scalings.
+  Together, our results show that the Bell-basis and SWAP-test primitives
+  underlying most exponential quantum learning advantages are fundamentally
+  fragile to noise unless the experimental system has latent noise-robust
+  structure. Thus, realizing meaningful quantum advantages in future experiments
+  will require understanding how noise-robust physical properties interface with
+  available algorithmic techniques.
+tags:
+  - Computer Science - Computational Complexity
+  - Computer Science - Information Theory
+  - Computer Science - Machine Learning
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2512.10929
+  arxiv: "2512.10929"

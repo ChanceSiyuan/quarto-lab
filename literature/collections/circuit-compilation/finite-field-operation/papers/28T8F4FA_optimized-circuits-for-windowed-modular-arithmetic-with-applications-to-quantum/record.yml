@@ -1,0 +1,54 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 28T8F4FA
+  item_version: 96128
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: LESICR3C
+      name: Finite field operation
+      path: Circuit Compilation/Finite field operation
+qlab:
+  primary_collection: LESICR3C
+  indexed_collections:
+    - LESICR3C
+  primary_topic: circuit-compilation
+  indexed_topics:
+    - circuit-compilation
+item_type: preprint
+title: Optimized circuits for windowed modular arithmetic with applications to
+  quantum attacks against RSA
+authors:
+  - first: Alessandro
+    last: Luongo
+  - first: Varun
+    last: Narasimhachar
+  - first: Adithya
+    last: Sireesh
+year: 2025
+abstract: "Windowed arithmetic [Gidney, 2019] is a technique for reducing the
+  cost of quantum arithmetic circuits with space--time tradeoffs using memory
+  queries to precomputed tables. It can reduce the asymptotic cost of modular
+  exponentiation from $O\\left(n^3\\right)$ to $O\\left(n^3/\\log^2 n\\right)$
+  operations, resulting in the current state-of-the-art compilations of quantum
+  attacks against modern cryptography. In this work we introduce four
+  optimizations to windowed modular exponentiation. We (1) show how the cost of
+  unlookups can be reduced by $66\\%$ asymptotically in the number of bits, (2)
+  illustrate how certain addresses can be bypassed, reducing both circuit depth
+  and the overall lookup cost, (3) demonstrate that multiple lookup--addition
+  operations can be merged into a single, larger lookup at the start of the
+  modular exponentiation circuit, and (4) reduce the depth of the unary
+  conversion for unlookups. On a logical level, this leads to a $3\\%$
+  improvement in Toffoli count and Toffoli depth for modular exponentiation
+  circuits relevant to cryptographic applications. This translates to some
+  improvements on [Gidney and Eker\\r{a}, 2021]'s factoring algorithm: for a
+  given number of physical qubits, our improvements show a reduction in the
+  expected runtime from $2\\%$ to $6\\%$ for factoring $\\mathsf{RSA}$-$2048$
+  integers."
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2502.17325
+  arxiv: "2502.17325"

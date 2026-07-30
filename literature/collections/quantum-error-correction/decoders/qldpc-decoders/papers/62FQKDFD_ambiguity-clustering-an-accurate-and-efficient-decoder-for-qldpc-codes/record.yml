@@ -1,0 +1,49 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 62FQKDFD
+  item_version: 96125
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: TCC7U77K
+      name: qLDPC-decoders
+      path: Quantum Error correction/Decoders/qLDPC-decoders
+qlab:
+  primary_collection: TCC7U77K
+  indexed_collections:
+    - TCC7U77K
+  primary_topic: quantum-error-correction
+  indexed_topics:
+    - quantum-error-correction
+item_type: preprint
+title: "Ambiguity Clustering: an accurate and efficient decoder for qLDPC codes"
+authors:
+  - first: Stasiu
+    last: Wolanski
+  - first: Ben
+    last: Barber
+year: 2024
+abstract: Error correction allows a quantum computer to preserve a state long
+  beyond the decoherence time of its physical qubits by encoding logical qubits
+  in a larger number of physical qubits. The leading proposal for a scheme of
+  quantum error correction is based on the surface code, but several recently
+  proposed quantum low-density parity check (qLDPC) codes allow more logical
+  information to be encoded in significantly fewer physical qubits. Key to any
+  scheme of quantum error correction is the decoder, an algorithm that estimates
+  the error state of the qubits from the results of syndrome measurements
+  performed on them. The surface code has a variety of fast and accurate
+  decoders, but the state-of-the-art decoder for general qLDPC codes, BP-OSD,
+  has a high computational complexity. Here we introduce Ambiguity Clustering
+  (AC), an algorithm which seeks to divide the measurement data into clusters
+  which are decoded independently. We benchmark AC on the recently proposed
+  bivariate bicycle codes and find that, at physically realistic error rates, AC
+  is between one and three orders of magnitude faster than BP-OSD with no
+  reduction in logical fidelity. Our CPU implementation of AC is already fast
+  enough to decode the 144-qubit Gross code in real time for neutral atom and
+  trapped ion systems.
+tags:
+  - Quantum Physics
+identifiers:
+  arxiv: "2406.14527"

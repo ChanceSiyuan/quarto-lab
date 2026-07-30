@@ -1,0 +1,43 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: G3LX3MK2
+  item_version: 96101
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: NIDB9VPA
+      name: Subsystem codes
+      path: Quantum Error correction/2-Code categories/Subsystem codes
+qlab:
+  primary_collection: NIDB9VPA
+  indexed_collections:
+    - NIDB9VPA
+  primary_topic: quantum-error-correction
+  indexed_topics:
+    - quantum-error-correction
+item_type: journalArticle
+title: Stabilizer Formalism for Operator Quantum Error Correction
+authors:
+  - first: David
+    last: Poulin
+year: 2005
+abstract: Operator quantum error correction is a recently developed theory that
+  provides a generalized framework for active error correction and passive error
+  avoiding schemes. In this paper, we describe these codes in the stabilizer
+  formalism of standard quantum error correction theory. This is achieved by
+  adding a "gauge" group to the standard stabilizer definition of a code that
+  defines an equivalence class between encoded states. Gauge transformations
+  leave the encoded information unchanged; their effect is absorbed by virtual
+  gauge qubits that do not carry useful information. We illustrate the
+  construction by identifying a gauge symmetry in Shor's 9-qubit code that
+  allows us to remove 4 of its 8 stabilizer generators, leading to a simpler
+  decoding procedure and a wider class of logical operations without affecting
+  its essential properties. This opens the path to possible improvements of the
+  error threshold of fault-tolerant quantum computing.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.1103/physrevlett.95.230504
+  arxiv: quant-ph/0508131

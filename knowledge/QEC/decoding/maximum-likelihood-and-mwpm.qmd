@@ -1,0 +1,136 @@
+---
+title: Maximum-Likelihood Decoding and MWPM
+description: Maximum-likelihood syndrome decoding, its reduction to minimum-weight T-joins and perfect matching, and the role of blossom algorithms.
+categories:
+  - theory
+---
+
+# Likelihood as a weighted syndrome problem
+
+Let $H\in\mathbb{F}_2^{m\times n}$ be a binary syndrome matrix, $e\in\mathbb{F}_2^n$ an error vector, and $s=He$ the measured syndrome. If the coordinates fail independently with probabilities $p_i<1/2$, then
+
+$$
+\Pr(e)=\prod_{i=1}^n p_i^{e_i}(1-p_i)^{1-e_i}.
+$$
+
+Discarding an additive constant from $-\log\Pr(e)$ gives the weight
+
+$$
+w_i=\log\frac{1-p_i}{p_i},
+\qquad
+W(e)=\sum_{i=1}^n w_ie_i.
+$$
+
+::: {#def-mwpm-error-ml .callout-note icon="false"}
+## Definition: error maximum-likelihood decoding
+
+The error-ML problem is
+
+$$
+\min_{e\in\mathbb{F}_2^n}
+\sum_iw_ie_i
+\quad\text{subject to}\quad
+He=s.
+$$
+:::
+
+For identical $p_i=p<1/2$, all $w_i$ are equal and the objective reduces to minimum Hamming weight. This optimization is the natural target of minimum-weight perfect matching (MWPM). It is not, in general, degenerate quantum maximum-likelihood decoding, which sums probabilities over stabilizer-equivalent representatives.
+
+# From a syndrome matrix to a detector graph
+
+Assume each column of $H$ has weight at most two. Introduce a boundary vertex $b$ and construct a weighted multigraph $G=(V\cup\{b\},E)$:
+
+- a weight-two column supported on checks $u$ and $v$ becomes an edge $(u,v)$;
+- a weight-one column supported on $u$ becomes an edge $(u,b)$; and
+- the edge receives the corresponding likelihood weight $w_i$.
+
+Selecting an error vector is now equivalent to selecting an edge set $F\subseteq E$. The syndrome is its boundary: a detector vertex lies in $\partial F$ when it has odd degree in $F$. Let
+
+$$
+T=\{v\in V:s_v=1\}.
+$$
+
+If $|T|$ is odd, include the boundary vertex in the terminal set. The decoding problem is a minimum-weight $T$-join.
+
+::: {#def-mwpm-t-join .callout-note icon="false"}
+## Definition: $T$-join
+
+For an even-cardinality set $T\subseteq V(G)$, a $T$-join is an edge set $F$ whose odd-degree vertices are exactly $T$:
+
+$$
+\partial F=T.
+$$
+:::
+
+## Metric closure
+
+For every pair $u,v\in T$, compute a shortest-path distance $d_G(u,v)$. Form the complete graph $K_T$ with edge weights $d_G$. A perfect matching of $K_T$ pairs all detection events; expanding each matched edge back to a shortest path in $G$ produces a $T$-join.
+
+::: {#thm-mwpm-t-join-reduction .callout-important icon="false"}
+## Theorem: reduction of minimum $T$-join to MWPM
+
+If all relevant path weights are nonnegative and $|T|$ is even, the union of shortest paths associated with a minimum-weight perfect matching on the metric closure of $T$ is a minimum-weight $T$-join.
+:::
+
+::: {.callout-note collapse="true"}
+## Proof
+
+Take any $T$-join $F$. Each connected component of $(V,F)$ contains an even number of odd-degree vertices. By decomposing its edges into trails and cycles, pair the terminals using trails contained in $F$; cycles may be discarded when weights are nonnegative. Replacing each trail by a shortest path cannot increase the weight, so the optimal matching on the metric closure is no heavier than $F$.
+
+Conversely, the symmetric difference of the shortest paths obtained from any perfect matching has odd boundary exactly at the matched terminals. It is therefore a $T$-join in the detector graph. The two inequalities prove equality of the optima.
+:::
+
+This reduction is the mathematical core of matching decoders for graph-like syndrome models. For surface-code noise with space-time syndrome extraction, vertices represent detection events in a three-dimensional decoding graph and edges represent elementary fault mechanisms [@dennis2002topological]. Correlated faults that create more than two detection events are hyperedges and do not fit this reduction without approximation or graph expansion.
+
+# The perfect-matching polytope
+
+Let $G=(V,E)$ now denote a graph with an even number of vertices, and let $x_e$ indicate whether edge $e$ belongs to a perfect matching. For $U\subseteq V$, let $\delta(U)$ be the cut consisting of edges with exactly one endpoint in $U$.
+
+::: {#thm-mwpm-edmonds-polytope .callout-important icon="false"}
+## Theorem: Edmonds' perfect-matching polytope
+
+The convex hull of incidence vectors of perfect matchings is exactly the set of $x\in\mathbb{R}^E$ satisfying
+
+$$
+\begin{aligned}
+x_e&\ge 0 &&(e\in E),\\
+\sum_{e\in\delta(v)}x_e&=1 &&(v\in V),\\
+\sum_{e\in\delta(U)}x_e&\ge 1
+&&(|U|\ge3\text{ odd}).
+\end{aligned}
+$$
+
+The odd-set inequalities eliminate fractional solutions supported on odd cycles [@edmonds1965paths].
+:::
+
+The dual variables associated with tight odd sets organize into a laminar family. Algorithmically, a tight odd alternating cycle is contracted into a **blossom**. Search continues on the contracted graph; when an augmenting path is found, blossoms are expanded and the matching is lifted back to the original graph.
+
+# Alternating paths and blossoms
+
+::: {#def-mwpm-alternating-objects .callout-note icon="false"}
+## Definition: alternating objects
+
+Given a matching $M$:
+
+- an alternating path alternates between edges outside and inside $M$;
+- an augmenting path begins and ends at unmatched vertices; and
+- a blossom is an odd alternating cycle together with a distinguished base vertex.
+:::
+
+Taking the symmetric difference of $M$ with an augmenting path increases $|M|$ by one. An odd alternating cycle obstructs the ordinary bipartite augmenting-path search because two even-level branches can meet. Blossom contraction preserves the existence of an augmenting path and allows the search to proceed. Weighted algorithms combine this combinatorial search with primal--dual updates that expose new tight edges. Modern implementations, such as Blossom V, refine the data structures and dual-update strategy while solving the same optimization problem [@kolmogorov2009blossom].
+
+# Boundaries and repeated measurements
+
+A surface-code patch has several boundary components, and a detection event may be paired either with another event or with a compatible boundary. One can represent this by explicit boundary vertices, duplicated boundary nodes in the metric closure, or a matching formulation that leaves designated boundary vertices unconstrained. The construction must ensure that boundary copies do not impose an artificial capacity-one constraint on a physical boundary.
+
+With noisy measurement, matching is performed in a space-time graph. The decoder weight should be the negative log-likelihood of a path or fault mechanism, rather than its geometric length. Equal Manhattan weights are justified only for an idealized homogeneous noise model.
+
+# What MWPM does and does not guarantee
+
+MWPM returns a minimum-weight compatible chain for a graph-like model. It is polynomial-time and extremely effective for topological codes, but three qualifications matter:
+
+1. It chooses a physical representative, not the most probable logical coset.
+2. A weight-two detector graph omits higher-order correlations unless they are approximated.
+3. A correction with the right boundary can still differ from the actual error by a logical cycle.
+
+Tensor-network methods can approximately or exactly sum stabilizer-coset probabilities for some surface-code models [@bravyi2014efficient]. For general stabilizer codes, even optimal decoding is computationally hard [@iyer2015hardness], which motivates approximate decoders such as [belief propagation](belief-propagation.qmd) and [BP+OSD](bp-osd-decoding.qmd).

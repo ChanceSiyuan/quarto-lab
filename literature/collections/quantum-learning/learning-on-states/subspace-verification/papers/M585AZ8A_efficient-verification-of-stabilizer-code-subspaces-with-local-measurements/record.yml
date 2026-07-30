@@ -1,0 +1,58 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: M585AZ8A
+  item_version: 96130
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: LL67X64S
+      name: Subspace verification
+      path: Quantum Learning/Learning on states/Subspace verification
+qlab:
+  primary_collection: LL67X64S
+  indexed_collections:
+    - LL67X64S
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: preprint
+title: Efficient Verification of Stabilizer Code Subspaces with Local Measurements
+authors:
+  - first: Congcong
+    last: Zheng
+  - first: Xutao
+    last: Yu
+  - first: Zaichen
+    last: Zhang
+  - first: Ping
+    last: Xu
+  - first: Kun
+    last: Wang
+year: 2024
+abstract: We address the task of verifying whether a quantum computer, designed
+  to be protected by a specific stabilizer code, correctly encodes the
+  corresponding logical qubits. To achieve this, we develop a general framework
+  for subspace verification and explore several stabilizer code subspaces of
+  practical significance. First, we present two efficient verification
+  strategies for general stabilizer code subspaces, utilizing measurements of
+  their stabilizer generators and stabilizer groups, respectively. Then,
+  building on the observation that certain tests can be conducted in parallel
+  when the subspace exhibits specific structural properties, we propose a
+  coloring strategy tailored to graph code subspaces and an XZ strategy tailored
+  to Calderbank-Shor-Steane (CSS) code subspaces. Compared to stabilizer-based
+  strategies, these new strategies require significantly fewer measurement
+  settings and consume fewer state copies, approaching near-global optimality.
+  Notably, all the strategies employ a limited number of Pauli measurements, are
+  non-adaptive, and work on mixed states, enabling efficient experimental
+  certification of both logical qubits and logical operations in noisy quantum
+  computers. This work contributes to the first systematic study of efficient
+  verification of stabilizer code subspaces with local measurements.
+tags:
+  - Mathematical Physics
+  - Mathematics - Mathematical Physics
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2409.19699
+  arxiv: "2409.19699"

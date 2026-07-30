@@ -1,0 +1,46 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: E774PY4F
+  item_version: 96145
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: BLR38PUL
+      name: classical simulation
+      path: Quantum Complexity/Sampling/IQP/classical simulation
+qlab:
+  primary_collection: BLR38PUL
+  indexed_collections:
+    - BLR38PUL
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: preprint
+title: Leveraging Secondary Storage to Simulate Deep 54-qubit Sycamore Circuits
+authors:
+  - first: Edwin
+    last: Pednault
+  - first: John A.
+    last: Gunnels
+  - first: Giacomo
+    last: Nannicini
+  - first: Lior
+    last: Horesh
+  - first: Robert
+    last: Wisnieff
+year: 2019
+abstract: In a recent paper, we showed that secondary storage can extend the
+  range of quantum circuits that can be practically simulated with classical
+  algorithms. Here we refine those techniques and apply them to the simulation
+  of Sycamore circuits with 53 and 54 qubits, with the entanglement pattern
+  ABCDCDAB that has proven difficult to classically simulate with other
+  approaches. Our analysis shows that on the Summit supercomputer at Oak Ridge
+  National Laboratories, such circuits can be simulated with high fidelity to
+  arbitrary depth in a matter of days, outputting all the amplitudes.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.1910.09534
+  arxiv: "1910.09534"

@@ -7,8 +7,8 @@ const REPO_ROOT = path.dirname(fileURLToPath(import.meta.url));
 const PORT = 4174;
 const BASE_URL = `http://localhost:${PORT}`;
 const FIXTURE_ROOT = path.join(REPO_ROOT, ".generated", "autoresearch-e2e", "root");
-const PRIVATE_ROOT = path.join(REPO_ROOT, "tests", "fixtures", "autoresearch", "fake-private");
-const FAKE_CODEX = path.join(REPO_ROOT, "tests", "fixtures", "autoresearch", "fake-codex.mjs");
+const PRIVATE_ROOT = path.join(REPO_ROOT, ".research-loop", "tests", "fixtures", "autoresearch", "fake-private");
+const FAKE_CODEX = path.join(REPO_ROOT, ".research-loop", "tests", "fixtures", "autoresearch", "fake-codex.mjs");
 const FIXED_TIME = "2026-07-28T08:00:00.000Z";
 
 function cleanEnvironment() {
@@ -68,7 +68,7 @@ function writeAutoresearchFixture() {
 writeAutoresearchFixture();
 
 export default defineConfig({
-  testDir: "tests/e2e",
+  testDir: ".research-loop/tests/e2e",
   testMatch: /local-autoresearch-preparation\.spec\.ts/,
   timeout: 90_000,
   fullyParallel: false,

@@ -1,0 +1,52 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: EZFKLRGK
+  item_version: 96675
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: EMMNM8U8
+      name: Quantum Chemistry
+      path: Quantum Algorithm/Digital Simulation/Quantum Chemistry
+qlab:
+  primary_collection: EMMNM8U8
+  indexed_collections:
+    - EMMNM8U8
+  primary_topic: quantum-algorithm
+  indexed_topics:
+    - quantum-algorithm
+item_type: journalArticle
+title: Grid-based methods for chemistry simulations on a quantum computer
+authors:
+  - first: Hans Hon Sang
+    last: Chan
+  - first: Richard
+    last: Meister
+  - first: Tyson
+    last: Jones
+  - first: David P.
+    last: Tew
+  - first: Simon C.
+    last: Benjamin
+year: 2023
+abstract: First quantized, grid-based methods for chemistry modelling are a
+  natural and elegant fit for quantum computers. However, it is infeasible to
+  use today's quantum prototypes to explore the power of this approach, because
+  it requires a significant number of near-perfect qubits. Here we employ
+  exactly-emulated quantum computers with up to 36 qubits, to execute deep yet
+  resource-frugal algorithms that model 2D and 3D atoms with single and paired
+  particles. A range of tasks is explored, from ground state preparation and
+  energy estimation to the dynamics of scattering and ionisation; we evaluate
+  various methods within the split-operator QFT (SO-QFT) Hamiltonian simulation
+  paradigm, including protocols previously-described in theoretical papers as
+  well as our own novel techniques. While we identify certain restrictions and
+  caveats, generally the grid-based method is found to perform very well; our
+  results are consistent with the view that first quantized paradigms will be
+  dominant from the early fault-tolerant quantum computing era onward.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.1126/sciadv.abo7484
+  arxiv: "2202.05864"

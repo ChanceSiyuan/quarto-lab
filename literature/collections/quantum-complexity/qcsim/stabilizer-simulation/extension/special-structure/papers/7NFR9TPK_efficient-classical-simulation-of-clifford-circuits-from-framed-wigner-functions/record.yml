@@ -1,0 +1,54 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 7NFR9TPK
+  item_version: 96045
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: B6GUBCDK
+      name: Special structure
+      path: Quantum Complexity/QCsim/stabilizer simulation/Extension/Special structure
+qlab:
+  primary_collection: B6GUBCDK
+  indexed_collections:
+    - B6GUBCDK
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: preprint
+title: Efficient Classical Simulation of Clifford Circuits from Framed Wigner
+  Functions
+authors:
+  - first: Guedong
+    last: Park
+  - first: Hyukjoon
+    last: Kwon
+  - first: Hyunseok
+    last: Jeong
+year: 2023
+abstract: The Wigner function formalism serves as a crucial tool for simulating
+  continuous-variable and odd-prime dimensional quantum circuits, as well as
+  assessing their classical hardness. However, applying such a formalism to
+  qubit systems is limited due to the negativity in the Wigner function induced
+  by Clifford operations. In this work, we introduce a novel classical
+  simulation method for non-adaptive Clifford circuits based on the framed
+  Wigner function, an extended form of the qubit Wigner function characterized
+  by a binary-valued frame function. Our approach allows for updating phase
+  space points under Clifford circuits without inducing negativity in the Wigner
+  function by switching to a suitable frame when applying each Clifford gate. By
+  leveraging this technique, we establish a sufficient condition for efficient
+  classical simulation of Clifford circuits even with non-stabilizer inputs,
+  where direct application of the Gottesmann-Knill tableau method is not
+  feasible. We further develop a graph-theoretical approach to identify
+  classically simulatable marginal outcomes of Clifford circuits and explore the
+  number of simulatable qubits of log-depth circuits. We also present the Born
+  probability estimation scheme using the framed Wigner function and discuss its
+  precision. Our approach opens new avenues for quasi-probability simulation of
+  quantum circuits, thereby expanding the boundary of classically simulatable
+  circuits.
+tags:
+  - Quantum Physics
+identifiers:
+  arxiv: "2307.16688"

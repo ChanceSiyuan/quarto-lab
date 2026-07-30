@@ -1,0 +1,43 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: QG8PKYGN
+  item_version: 96017
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: K4RPDDJ8
+      name: Color code Decoders
+      path: Quantum Error correction/Decoders/Color code Decoders
+qlab:
+  primary_collection: K4RPDDJ8
+  indexed_collections:
+    - K4RPDDJ8
+  primary_topic: quantum-error-correction
+  indexed_topics:
+    - quantum-error-correction
+item_type: preprint
+title: New circuits and an open source decoder for the color code
+authors:
+  - first: Craig
+    last: Gidney
+  - first: Cody
+    last: Jones
+year: 2023
+abstract: "We present two new color code circuits: one inspired by superdense
+  coding and the other based on a middle-out strategy where the color code state
+  appears halfway between measurements. We also present ``Chromobius'', an open
+  source implementation of the m\\\"obius color code decoder. Using Chromobius,
+  we show our new circuits reduce the performance gap between color codes and
+  surface codes. Under uniform depolarizing noise with a noise strength of
+  $0.1\\%$, the middle-out color code circuit achieves a teraquop footprint of
+  1250 qubits (vs 650 for surface codes decoded by correlated matching).
+  Finally, we highlight that Chromobius decodes toric color codes better when
+  given *less* information, suggesting there's substantial room for improvement
+  in color code decoders."
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2312.08813
+  arxiv: "2312.08813"

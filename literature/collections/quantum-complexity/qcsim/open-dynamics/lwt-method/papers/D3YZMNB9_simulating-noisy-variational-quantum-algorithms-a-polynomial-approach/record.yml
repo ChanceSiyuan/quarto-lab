@@ -1,0 +1,60 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: D3YZMNB9
+  item_version: 96123
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: SHZ4SM7W
+      name: LWT method
+      path: Quantum Complexity/QCsim/Open-dynamics/LWT method
+qlab:
+  primary_collection: SHZ4SM7W
+  indexed_collections:
+    - SHZ4SM7W
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: journalArticle
+title: "Simulating Noisy Variational Quantum Algorithms: A Polynomial Approach"
+authors:
+  - first: Yuguo
+    last: Shao
+  - first: Fuchuan
+    last: Wei
+  - first: Song
+    last: Cheng
+  - first: Zhengwei
+    last: Liu
+year: 2024
+abstract: "Large-scale variational quantum algorithms are widely recognized as a
+  potential pathway to achieve practical quantum advantages. However, the
+  presence of quantum noise might suppress and undermine these advantages, which
+  blurs the boundaries of classical simulability. To gain further clarity on
+  this matter, we present a novel polynomial-scale method based on the path
+  integral of observable's back-propagation on Pauli paths (OBPPP). This method
+  efficiently approximates expectation values of operators in variational
+  quantum algorithms with bounded truncation error in the presence of
+  single-qubit Pauli noise. Theoretically, we rigorously prove: 1) For a
+  constant minimal non-zero noise rate $\\gamma$, OBPPP's time and space
+  complexity exhibit a polynomial relationship with the number of qubits $n$,
+  the circuit depth $L$. 2) For variable $\\gamma$, in scenarios where more than
+  two non-zero noise factors exist, the complexity remains
+  $\\mathrm{Poly}\\left(n,L\\right)$ if $\\gamma$ exceeds $1/\\log{L}$, but
+  grows exponential with $L$ when $\\gamma$ falls below $1/L$. Numerically, we
+  conduct classical simulations of IBM's zero-noise extrapolated experimental
+  results on the 127-qubit Eagle processor [Nature \\textbf{618}, 500 (2023)].
+  Our method attains higher accuracy and faster runtime compared to the quantum
+  device. Furthermore, our approach allows us to simulate noisy outcomes,
+  enabling accurate reproduction of IBM's unmitigated results that directly
+  correspond to raw experimental observations. Our research reveals the vital
+  role of noise in classical simulations and the derived method is general in
+  computing the expected value for a broad class of quantum circuits and can be
+  applied in the verification of quantum computers."
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.1103/physrevlett.133.120603
+  arxiv: "2306.05804"

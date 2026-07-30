@@ -1,0 +1,56 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: E6XXXS6F
+  item_version: 96151
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: JYMD9ALE
+      name: TSP
+      path: Quantum Algorithm/Optimization/TSP
+qlab:
+  primary_collection: JYMD9ALE
+  indexed_collections:
+    - JYMD9ALE
+  primary_topic: quantum-algorithm
+  indexed_topics:
+    - quantum-algorithm
+item_type: conferencePaper
+title: Efficient Encodings of the Travelling Salesperson Problem for Variational
+  Quantum Algorithms
+authors:
+  - first: Manuel
+    last: Schnaus
+  - first: Lilly
+    last: Palackal
+  - first: Benedikt
+    last: Poggel
+  - first: Xiomara
+    last: Runge
+  - first: Hans
+    last: Ehm
+  - first: Jeanette Miriam
+    last: Lorenz
+  - first: Christian B.
+    last: Mendl
+year: 2024
+abstract: Routing problems are a common optimization problem in industrial
+  applications, which occur on a large scale in supply chain planning. Due to
+  classical limitations for solving NP-hard problems, quantum computing hopes to
+  improve upon speed or solution quality. Several suggestions have been made for
+  encodings of routing problems to solve them with variational quantum
+  algorithms. However, for an end user it is hard to decide a priori which
+  encoding will give the best solutions according to their needs. In this work,
+  we investigate different encodings for the Travelling Salesperson Problem. We
+  compare their scaling and performance when using the Quantum Approximate
+  Optimization Algorithm and the Variational Quantum Eigensolver and provide a
+  clear guide for users when to choose which encoding. For small instances, we
+  find evidence that the permutation encoding can yield good results since it
+  does not suffer from feasibility issues.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.1109/qsw62656.2024.00022
+  arxiv: "2404.05448"

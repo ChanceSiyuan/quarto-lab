@@ -1,0 +1,44 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: CQ4UPMP9
+  item_version: 96111
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: MSCEQ3D9
+      name: Learning
+      path: Quantum Resource/Magic/Quantification/Learning
+qlab:
+  primary_collection: MSCEQ3D9
+  indexed_collections:
+    - MSCEQ3D9
+  primary_topic: quantum-resource
+  indexed_topics:
+    - quantum-resource
+item_type: journalArticle
+title: Learning t-doped stabilizer states
+authors:
+  - first: Lorenzo
+    last: Leone
+  - first: Salvatore F. E.
+    last: Oliviero
+  - first: Alioscia
+    last: Hamma
+year: 2024
+abstract: In this paper, we present a learning algorithm aimed at learning
+  states obtained from computational basis states by Clifford circuits doped
+  with a finite number $t$ of $T$-gates. The algorithm learns an exact
+  tomographic description of $t$-doped stabilizer states in terms of Pauli
+  observables. This is possible because such states are countable and form a
+  discrete set. To tackle the problem, we introduce a novel algebraic framework
+  for $t$-doped stabilizer states, which extends beyond $T$-gates and includes
+  doping with any kind of local non-Clifford gate. The algorithm requires
+  resources of complexity $\text{poly}(n,2^t)$ and exhibits an exponentially
+  small probability of failure.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.22331/q-2024-05-27-1361
+  arxiv: "2305.15398"

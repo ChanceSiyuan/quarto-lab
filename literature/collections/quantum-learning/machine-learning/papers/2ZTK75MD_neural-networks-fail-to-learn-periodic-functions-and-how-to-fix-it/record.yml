@@ -1,0 +1,46 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 2ZTK75MD
+  item_version: 96161
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: NFDUTLVP
+      name: Machine learning
+      path: Quantum Learning/Machine learning
+qlab:
+  primary_collection: NFDUTLVP
+  indexed_collections:
+    - NFDUTLVP
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: preprint
+title: Neural Networks Fail to Learn Periodic Functions and How to Fix It
+authors:
+  - first: Liu
+    last: Ziyin
+  - first: Tilman
+    last: Hartwig
+  - first: Masahito
+    last: Ueda
+year: 2020
+abstract: Previous literature offers limited clues on how to learn a periodic
+  function using modern neural networks. We start with a study of the
+  extrapolation properties of neural networks; we prove and demonstrate
+  experimentally that the standard activations functions, such as ReLU, tanh,
+  sigmoid, along with their variants, all fail to learn to extrapolate simple
+  periodic functions. We hypothesize that this is due to their lack of a
+  "periodic" inductive bias. As a fix of this problem, we propose a new
+  activation, namely, $x + \sin^2(x)$, which achieves the desired periodic
+  inductive bias to learn a periodic function while maintaining a favorable
+  optimization property of the ReLU-based activations. Experimentally, we apply
+  the proposed method to temperature and financial data prediction.
+tags:
+  - Computer Science - Machine Learning
+  - Statistics - Machine Learning
+identifiers:
+  doi: 10.48550/arxiv.2006.08195
+  arxiv: "2006.08195"

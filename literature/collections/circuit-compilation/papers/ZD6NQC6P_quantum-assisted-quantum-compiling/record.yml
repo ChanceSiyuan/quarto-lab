@@ -1,0 +1,63 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: ZD6NQC6P
+  item_version: 96135
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 2DQJ4S34
+      name: Circuit Compilation
+      path: Circuit Compilation
+qlab:
+  primary_collection: 2DQJ4S34
+  indexed_collections:
+    - 2DQJ4S34
+  primary_topic: circuit-compilation
+  indexed_topics:
+    - circuit-compilation
+item_type: journalArticle
+title: Quantum-assisted quantum compiling
+authors:
+  - first: Sumeet
+    last: Khatri
+  - first: Ryan
+    last: LaRose
+  - first: Alexander
+    last: Poremba
+  - first: Lukasz
+    last: Cincio
+  - first: Andrew T.
+    last: Sornborger
+  - first: Patrick J.
+    last: Coles
+year: 2019
+abstract: Compiling quantum algorithms for near-term quantum computers
+  (accounting for connectivity and native gate alphabets) is a major challenge
+  that has received significant attention both by industry and academia.
+  Avoiding the exponential overhead of classical simulation of quantum dynamics
+  will allow compilation of larger algorithms, and a strategy for this is to
+  evaluate an algorithm's cost on a quantum computer. To this end, we propose a
+  variational hybrid quantum-classical algorithm called quantum-assisted quantum
+  compiling (QAQC). In QAQC, we use the overlap between a target unitary $U$ and
+  a trainable unitary $V$ as the cost function to be evaluated on the quantum
+  computer. More precisely, to ensure that QAQC scales well with problem size,
+  our cost involves not only the global overlap ${\rm Tr} (V^\dagger U)$ but
+  also the local overlaps with respect to individual qubits. We introduce novel
+  short-depth quantum circuits to quantify the terms in our cost function, and
+  we prove that our cost cannot be efficiently approximated with a classical
+  algorithm under reasonable complexity assumptions. We present both
+  gradient-free and gradient-based approaches to minimizing this cost. As a
+  demonstration of QAQC, we compile various one-qubit gates on IBM's and
+  Rigetti's quantum computers into their respective native gate alphabets.
+  Furthermore, we successfully simulate QAQC up to a problem size of 9 qubits,
+  and these simulations highlight both the scalability of our cost function as
+  well as the noise resilience of QAQC. Future applications of QAQC include
+  algorithm depth compression, black-box compiling, noise mitigation, and
+  benchmarking.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.22331/q-2019-05-13-140
+  arxiv: "1807.00800"

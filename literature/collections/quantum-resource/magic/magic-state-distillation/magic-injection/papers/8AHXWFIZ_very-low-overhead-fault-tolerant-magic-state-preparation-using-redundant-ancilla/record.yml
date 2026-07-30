@@ -1,0 +1,34 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 8AHXWFIZ
+  item_version: 96044
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: F28II9EE
+      name: magic injection
+      path: Quantum Resource/Magic/Magic state distillation/magic injection
+qlab:
+  primary_collection: F28II9EE
+  indexed_collections:
+    - F28II9EE
+  primary_topic: quantum-resource
+  indexed_topics:
+    - quantum-resource
+item_type: journalArticle
+title: Very low overhead fault-tolerant magic state preparation using redundant
+  ancilla encoding and flag qubits
+authors:
+  - first: Christopher
+    last: Chamberland
+  - first: Kyungjoo
+    last: Noh
+year: 2020
+abstract: >-
+  Abstract
+              Fault-tolerant quantum computing promises significant computational speedup over classical computing for a variety of important problems. One of the biggest challenges for realizing fault-tolerant quantum computing is preparing magic states with sufficiently low error rates. Magic state distillation is one of the most efficient schemes for preparing high-quality magic states. However, since magic state distillation circuits are not fault-tolerant, all the operations in the distillation circuits must be encoded in a large distance error-correcting code, resulting in a significant resource overhead. Here, we propose a fault-tolerant scheme for directly preparing high-quality magic states, which makes magic state distillation unnecessary. In particular, we introduce a concept that we call redundant ancilla encoding. The latter combined with flag qubits allows for circuits to both measure stabilizer generators of some code, while also being able to measure global operators to fault-tolerantly prepare magic states, all using nearest neighbor interactions. We apply such schemes to a planar architecture of the triangular color code family and demonstrate that our scheme requires at least an order of magnitude fewer qubits and space–time overhead compared to the most competitive magic state distillation schemes. Since our scheme requires only nearest-neighbor interactions in a planar architecture, it is suitable for various quantum computing platforms currently under development.
+tags: []
+identifiers:
+  doi: 10.1038/s41534-020-00319-5

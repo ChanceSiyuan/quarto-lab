@@ -1,0 +1,62 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: YUFIJM59
+  item_version: 96041
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: A3L6E8EJ
+      name: supermacy verification
+      path: Quantum Complexity/Sampling/supermacy verification
+    - key: H5F9PKZR
+      name: verification
+      path: Quantum Complexity/Sampling/supermacy verification/verification
+    - key: NYS8AXTD
+      name: Verifiable quantum simulation
+      path: Condensed matter/Verifiable quantum simulation
+qlab:
+  primary_collection: A3L6E8EJ
+  indexed_collections:
+    - A3L6E8EJ
+    - H5F9PKZR
+    - NYS8AXTD
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - condensed-matter
+    - quantum-complexity
+item_type: preprint
+title: Efficiently verifiable quantum advantage on near-term analog quantum simulators
+authors:
+  - first: Zhenning
+    last: Liu
+  - first: Dhruv
+    last: Devulapalli
+  - first: Dominik
+    last: Hangleiter
+  - first: Yi-Kai
+    last: Liu
+  - first: Alicia J.
+    last: Kollár
+  - first: Alexey V.
+    last: Gorshkov
+  - first: Andrew M.
+    last: Childs
+year: 2024
+abstract: Existing schemes for demonstrating quantum computational advantage are
+  subject to various practical restrictions, including the hardness of
+  verification and challenges in experimental implementation. Meanwhile, analog
+  quantum simulators have been realized in many experiments to study novel
+  physics. In this work, we propose a quantum advantage protocol based on
+  single-step Feynman-Kitaev verification of an analog quantum simulation, in
+  which the verifier need only run an $O(\lambda^2)$-time classical computation,
+  and the prover need only prepare $O(1)$ samples of a history state and perform
+  $O(\lambda^2)$ single-qubit measurements, for a security parameter $\lambda$.
+  We also propose a near-term feasible strategy for honest provers and discuss
+  potential experimental realizations.
+tags:
+  - Computer Science - Computational Complexity
+  - Quantum Physics
+identifiers:
+  arxiv: "2403.08195"

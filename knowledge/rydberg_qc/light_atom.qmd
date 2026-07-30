@@ -1,0 +1,194 @@
+---
+title: Light-Atom Interaction and Optical Bloch Equations
+description: This page derives the semi-classical framework governing the interaction between a laser field and a two-level atom.
+categories:
+  - theory
+---
+
+[← Back to Index](index.qmd)
+
+# Overview
+
+This page derives the semi-classical framework governing the interaction between a laser field and a two-level atom. The results — Rabi oscillations, the full Optical Bloch Equations (OBEs), and the steady-state saturation formula — underpin every aspect of Rydberg atom control, from single-qubit gates to fluorescence imaging.
+
+---
+
+# Two-Level Atom in a Classical Field
+
+## Hamiltonian and Dipole Approximation
+
+In the dipole approximation ($k \to 0$, i.e., the field is spatially uniform over the atom), a two-level atom $\{|g\rangle, |e\rangle\}$ interacting with a monochromatic field $E = E_0 \cos(\omega t)$ polarized along $z$ has Hamiltonian
+
+$$
+H = \begin{pmatrix} E_g & \hbar\Omega\cos\omega t \\ \hbar\Omega\cos\omega t & E_e \end{pmatrix},
+$$ {#eq-H-full}
+
+where the **Rabi frequency** $\Omega = \langle g|eE_0 z|e\rangle / \hbar$ is real (absorbed into a phase of $|e\rangle$). The Rabi frequency for a Gaussian beam of power $P$ and waist $w_0$ driving the transition $(n,l,j,m_j) \to (n',l',j',m_j')$ is
+
+$$
+\Omega = \sqrt{\frac{4P}{\varepsilon_0 c \pi w_0^2}}\,\frac{\langle nljm_j | r_q | n'l'j'm_j'\rangle}{\hbar}.
+$$ {#eq-rabi-gaussian}
+
+## Rotating-Wave Approximation
+
+The Schrödinger equation for @eq-H-full is
+
+$$
+i\hbar\begin{pmatrix}\dot c_1 \\ \dot c_2\end{pmatrix} = \begin{pmatrix} E_g & \hbar\Omega\cos\omega t \\ \hbar\Omega\cos\omega t & E_e\end{pmatrix}\begin{pmatrix} c_1 \\ c_2 \end{pmatrix}.
+$$
+
+Define rotating-frame amplitudes $c_1 = \tilde c_1$, $c_2 = \tilde c_2 e^{-i\omega t}$. Substituting and using $\dot c_2 = (\dot{\tilde c}_2 - i\omega\tilde c_2)e^{-i\omega t}$:
+
+$$
+i\hbar\begin{pmatrix}\dot{\tilde c}_1 \\ \dot{\tilde c}_2\end{pmatrix} = \begin{pmatrix} 0 & \hbar\Omega\cos\omega t\;e^{-i\omega t} \\ \hbar\Omega\cos\omega t\;e^{i\omega t} & E_e - \hbar\omega\end{pmatrix}\begin{pmatrix}\tilde c_1 \\ \tilde c_2 \end{pmatrix}.
+$$ {#eq-rotating-frame}
+
+Expanding $\cos\omega t\;e^{\pm i\omega t} = \frac{1}{2}(1 + e^{\pm 2i\omega t})$, we identify the rapidly oscillating $e^{\pm 2i\omega t}$ terms. Discarding them (the **rotating-wave approximation**) gives the time-independent Hamiltonian in the rotating frame:
+
+$$
+H_S/\hbar = \frac{\Omega}{2}(\sigma_- + \sigma_+) + \frac{\delta}{2}(\mathbb{I} + \sigma_z),
+$$ {#eq-H-RWA}
+
+where $\delta = (E_e - E_g)/\hbar - \omega$ is the laser detuning (atom minus laser; $\delta > 0$ for red-detuned light). The neglected counter-rotating terms produce the **Bloch–Siegert shift** $\sim \Omega^2/(4\omega)$, negligible for optical transitions.
+
+## Rabi Oscillations
+
+Integrating @eq-H-RWA from $|g\rangle$ at $t = 0$ yields the excited-state population:
+
+$$
+P_e(t) = \frac{\Omega^2}{\Omega^2 + \delta^2}\,\sin^2\!\left(\frac{t}{2}\sqrt{\Omega^2 + \delta^2}\right).
+$$ {#eq-rabi-prob}
+
+The **generalized Rabi frequency** $\tilde\Omega = \sqrt{\Omega^2 + \delta^2}$ sets the oscillation rate. The amplitude is reduced by $\Omega^2/\tilde\Omega^2$ for non-zero detuning; on resonance ($\delta = 0$), the atom oscillates between $|g\rangle$ and $|e\rangle$ with unit contrast.
+
+**AC Stark shift.** The dressed-state eigenvalues are $E_\pm = (\delta \pm \tilde\Omega)/2$. In the far-detuned limit $\Omega \ll |\delta|$,
+
+$$
+E_+ - E_- \approx |\delta| + \frac{\Omega^2}{2|\delta|},
+$$
+
+so the ground state is shifted by $-\Omega^2/(4\delta)$ (downward for red-detuned light, $\delta > 0$), which is the attractive light shift exploited in optical tweezers trapping.
+
+---
+
+# Density Matrix Formalism Without Decay
+
+For a mixed-state or open-system treatment, work with the density matrix $\rho$. Setting $E_g = 0$, $E_e = \hbar\omega_e$, the von Neumann equation $i\hbar\dot\rho = [H, \rho]$ gives
+
+$$
+i\begin{pmatrix}\dot\rho_{gg} & \dot\rho_{ge} \\ \dot\rho_{eg} & \dot\rho_{ee}\end{pmatrix} = \begin{pmatrix}
+(\rho_{eg} - \rho_{ge})\Omega\cos\omega t & (\rho_{ee} - \rho_{gg})\Omega\cos\omega t - \rho_{ge}\omega_e \\
+(\rho_{gg} - \rho_{ee})\Omega\cos\omega t + \rho_{eg}\omega_e & (\rho_{ge} - \rho_{eg})\Omega\cos\omega t
+\end{pmatrix}.
+$$ {#eq-vonNeumann-explicit}
+
+Applying the rotating-frame substitution $\tilde\rho_{gg} = \rho_{gg}$, $\tilde\rho_{ee} = \rho_{ee}$, $\tilde\rho_{ge} = \rho_{ge}e^{-i\omega t}$, $\tilde\rho_{eg} = \rho_{eg}e^{i\omega t}$, and eliminating $e^{\pm 2i\omega t}$ terms, the equation becomes the **undamped Bloch equations**:
+
+$$
+\begin{pmatrix} \dot{\tilde\rho}_{gg} & \dot{\tilde\rho}_{ge} \\ \dot{\tilde\rho}_{eg} & \dot{\tilde\rho}_{ee} \end{pmatrix}
+= -i\begin{pmatrix}
+(\tilde\rho_{eg} - \tilde\rho_{ge})\frac{\Omega}{2} & (\tilde\rho_{ee} - \tilde\rho_{gg})\frac{\Omega}{2} - \tilde\rho_{ge}\delta \\
+(\tilde\rho_{gg} - \tilde\rho_{ee})\frac{\Omega}{2} + \tilde\rho_{eg}\delta & (\tilde\rho_{ge} - \tilde\rho_{eg})\frac{\Omega}{2}
+\end{pmatrix}.
+$$ {#eq-bloch-nodamp}
+
+---
+
+# Spontaneous Emission
+
+## Master Equation for Decay
+
+Coupling to the radiation bath (vacuum or thermal) in free space drives the atom according to the Lindblad master equation. For the relevant Rydberg transitions, the decay rate is [@steck_optic_atoms]
+
+$$
+\Gamma = \frac{1}{4\pi\varepsilon_0}\frac{4\omega_0^3 \,|\langle g|e\vec r|e\rangle|^2}{3\hbar c^3}.
+$$ {#eq-decay-rate}
+
+At temperature $T$, the thermal photon occupation at frequency $\omega_0$ is $\bar n_{k_0} = (e^{\hbar\omega_0/k_BT} - 1)^{-1}$. The full master equation reads [@Quantumoptics]:
+
+$$
+\dot\rho_a = \Gamma(\bar n + 1)\!\left(\sigma_-\rho_a\sigma_+ - \tfrac{1}{2}\bigl\{\sigma_+\sigma_-,\,\rho_a\bigr\}\right) + \Gamma\bar n\!\left(\sigma_+\rho_a\sigma_- - \tfrac{1}{2}\bigl\{\sigma_-\sigma_+,\,\rho_a\bigr\}\right).
+$$ {#eq-master-decay}
+
+## Coherent-State Equivalence
+
+To combine decay with coherent driving, one must justify replacing the quantized field by a classical time-dependent term. The rigorous Hamiltonian for a fixed atom in an electromagnetic field is
+
+$$
+H = \frac{(p - eA(r))^2}{2M} + V_c + H_R,
+$$
+
+where $H_R$ is the free-field Hamiltonian. We treat the laser as a coherent state evolving under $H_R$:
+
+$$
+|\alpha(t)\rangle = T(t)|0\rangle = \prod_i e^{\alpha a_i^\dagger(t) - \alpha^* a_i(t)}|0\rangle.
+$$
+
+Moving to the displaced frame $\psi' = T(t)\psi$ transforms the Schrödinger equation:
+
+$$
+\frac{d\psi'}{dt} = \left(\frac{dT}{dt}T^\dagger + THT^\dagger\right)\psi' = H'\psi'.
+$$
+
+A direct calculation shows that the displaced Hamiltonian is
+
+$$
+H' = \frac{(p - eA(r) - eA_e(\alpha_i, r, t))^2}{2M} + V_c + H_R,
+$$
+
+which corresponds to the substitution $A \to A + A_e$. Under the dipole approximation, this gives
+
+$$
+H_{SR} = H_S + H_R + eE(0,0)\cdot r + eE_e(0,\alpha,t)\cdot r,
+$$
+
+where the additional classical term $eE_e$ acts as the coherent drive. In this displaced frame, the photon field remains in the vacuum state, so the spontaneous emission rate $\Gamma$ is identical to the free-space rate [@Quantumoptics]. Therefore, one may simply superpose the classical Rabi drive and the Lindblad decay terms.
+
+---
+
+# Full Optical Bloch Equations
+
+Combining the coherent Rabi drive (@eq-bloch-nodamp) with the spontaneous emission term from @eq-master-decay, with $\gamma = \Gamma/2$:
+
+$$
+\begin{aligned}
+\dot{\tilde\rho}_{gg} &= -i(\tilde\rho_{eg} - \tilde\rho_{ge})\frac{\Omega}{2} + 2\gamma\tilde\rho_{ee}, \\
+\dot{\tilde\rho}_{ee} &= -i(\tilde\rho_{ge} - \tilde\rho_{eg})\frac{\Omega}{2} - 2\gamma\tilde\rho_{ee}, \\
+\dot{\tilde\rho}_{ge} &= -i(\tilde\rho_{ee} - \tilde\rho_{gg})\frac{\Omega}{2} + i\tilde\rho_{ge}\delta - \gamma\tilde\rho_{ge}, \\
+\dot{\tilde\rho}_{eg} &= -i(\tilde\rho_{gg} - \tilde\rho_{ee})\frac{\Omega}{2} - i\tilde\rho_{eg}\delta - \gamma\tilde\rho_{eg}.
+\end{aligned}
+$$ {#eq-OBE-full}
+
+## Steady State
+
+Setting all time derivatives to zero in @eq-OBE-full and solving:
+
+$$
+\rho_{ee}^{\rm ss} = \frac{s_0/2}{1 + s_0 + (2\delta/\Gamma)^2}, \qquad s_0 = \frac{I}{I_{\rm sat}} = \frac{2\Omega^2}{\Gamma^2}.
+$$ {#eq-ss-pop}
+
+:::{.callout-note icon="false"}
+## Definition: Saturation parameter
+
+The **saturation parameter** $s_0 = 2\Omega^2/\Gamma^2 = I/I_{\rm sat}$ measures the ratio of coherent driving to spontaneous emission. Above saturation ($s_0 \gg 1$), the population saturates at $\rho_{ee} \to 1/2$ regardless of $\delta$; the photon scattering rate saturates at $\Gamma/2$. The saturation intensity is $I_{\rm sat} = \hbar\omega_0^3\Gamma/(12\pi c^2)$.
+:::
+
+The on-resonance scattering rate $R_{\rm sc} = \Gamma\rho_{ee}^{\rm ss}|_{\delta=0} = \Gamma s_0/(2 + 2s_0)$ controls the fluorescence signal in imaging (see [Trapping and Cooling](trapping_cooling.qmd)) and the Doppler cooling force.
+
+---
+
+# Quantized Field and Jaynes-Cummings Picture
+
+For the connection to Rydberg excitation physics, it is useful to state the fully quantized version. The interaction-picture Hamiltonian for a two-level atom coupled to a single mode of frequency $\omega$ near resonance is
+
+$$
+H_{SR,I} = \hbar g\bigl[a^\dagger\sigma_- e^{-i\delta t} + a\sigma_+ e^{i\delta t}\bigr],
+$$ {#eq-JC}
+
+where $g$ is the single-photon coupling strength. For a coherent state with large mean photon number $\bar n \gg 1$, tracing over the field recovers the classical Rabi result with $\Omega = 2\sqrt{\bar n}\,g$ [@steck_optic_atoms]. The interaction-picture atom Hamiltonian becomes
+
+$$
+H_{S,I}/\hbar = \frac{\Omega}{2}\bigl(\sigma_- e^{-i\delta t} + \sigma_+ e^{i\delta t}\bigr).
+$$ {#eq-H-interaction}
+
+This is the starting point for the two-qubit gate analysis in [Two-Qubit Gates](two_qubit_gates.qmd).

@@ -1,0 +1,47 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 9QM2XKZA
+  item_version: 96161
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 2CJWFJFQ
+      name: pseudorandom
+      path: Quantum Resource/Schur-Weyl duality/pseudorandom
+qlab:
+  primary_collection: 2CJWFJFQ
+  indexed_collections:
+    - 2CJWFJFQ
+  primary_topic: quantum-resource
+  indexed_topics:
+    - quantum-resource
+item_type: preprint
+title: How to Construct Random Unitaries
+authors:
+  - first: Fermi
+    last: Ma
+  - first: Hsin-Yuan
+    last: Huang
+year: 2025
+abstract: The existence of pseudorandom unitaries (PRUs)—efficient quantum
+  circuits that are computationally indistinguishable from Haar-random
+  unitaries—has been a central open question, with significant implications for
+  cryptography, complexity theory, and fundamental physics. In this work, we
+  close this question by proving that PRUs exist, assuming that any
+  quantum-secure one-way function exists. We establish this result for both (1)
+  the standard notion of PRUs, which are secure against any efficient adversary
+  that makes queries to the unitary 𝑈 , and (2) a stronger notion of PRUs,
+  which are secure even against adversaries that can query both the unitary 𝑈
+  and its inverse 𝑈 †. In the process, we prove that any algorithm that makes
+  queries to a Haar-random unitary can be efficiently simulated on a quantum
+  computer, up to inverse-exponential trace distance.
+tags:
+  - Computer Science - Computation and Language
+  - Computer Science - Computational Complexity
+  - Mathematical Physics
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2410.10116
+  arxiv: "2410.10116"

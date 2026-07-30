@@ -1,0 +1,49 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: WCHLM76Z
+  item_version: 96120
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: L3MFPBGH
+      name: noisy stabilizers
+      path: Quantum Complexity/QCsim/stabilizer simulation/Extension/noisy stabilizers
+qlab:
+  primary_collection: L3MFPBGH
+  indexed_collections:
+    - L3MFPBGH
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: preprint
+title: Simulation of noisy Clifford circuits without fault propagation
+authors:
+  - first: Nicolas
+    last: Delfosse
+  - first: Adam
+    last: Paetznick
+year: 2023
+abstract: The design and optimization of a large-scale fault-tolerant quantum
+  computer architecture relies extensively on numerical simulations to assess
+  the performance of each component of the architecture. The simulation of
+  fault-tolerant gadgets, which are typically implemented by Clifford circuits,
+  is done by sampling circuit faults and propagating them through the circuit to
+  check that they do not corrupt the logical data. One may have to repeat this
+  fault propagation trillions of times to extract an accurate estimate of the
+  performance of a fault-tolerant gadget. For some specific circuits, such as
+  the standard syndrome extraction circuit for surface codes, we can exploit the
+  natural graph structure of the set of faults to perform a simulation without
+  fault propagation. We propose a simulation algorithm for all Clifford circuits
+  that does not require fault propagation and instead exploits the mathematical
+  structure of the spacetime code of the circuit. Our algorithm, which we name
+  adjoint-based code (ABC) simulation, relies on the fact that propagation
+  forward is the adjoint of propagation backward in the sense of Proposition 3
+  from [14]. We use this result to replace the propagation of trillions of
+  fault-configurations by the backward propagation of a small number of Pauli
+  operators which can be precomputed once and for all.
+tags:
+  - Quantum Physics
+identifiers:
+  arxiv: "2309.15345"

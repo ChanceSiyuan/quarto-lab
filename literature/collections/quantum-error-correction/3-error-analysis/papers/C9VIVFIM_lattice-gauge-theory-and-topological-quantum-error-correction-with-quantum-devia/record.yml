@@ -1,0 +1,57 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: C9VIVFIM
+  item_version: 96118
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: REAFIHW6
+      name: 3-Error analysis
+      path: Quantum Error correction/3-Error analysis
+    - key: MX6PXB3X
+      name: WYSS2024
+      path: Conference/WYSS2024
+qlab:
+  primary_collection: REAFIHW6
+  indexed_collections:
+    - MX6PXB3X
+    - REAFIHW6
+  primary_topic: quantum-error-correction
+  indexed_topics:
+    - conference
+    - quantum-error-correction
+item_type: preprint
+title: Lattice gauge theory and topological quantum error correction with
+  quantum deviations in the state preparation and error detection
+authors:
+  - first: Yuanchen
+    last: Zhao
+  - first: Dong E.
+    last: Liu
+year: 2023
+abstract: Quantum deviations or coherent noise are a typical type of noise when
+  implementing gate operations in quantum computers, and their impact on the
+  performance of quantum error correction (QEC) is still elusive. Here, we
+  consider the topological surface code, with both stochastic noise and coherent
+  noise on the multi-qubit entanglement gates during stabilizer measurements in
+  both initial state preparation and error detection. We map a multi-round error
+  detection protocol to a three-dimensional statistical mechanical model
+  consisting of Z_2 gauge interactions and related the error threshold to its
+  phase transition point. Specifically, two error thresholds are identified
+  distinguishing different error correction performances. Below a finite error
+  threshold, in stark contrast to the case with only stochastic errors,
+  unidentifiable measurement errors can cause the failure of QEC in the large
+  code distance limit. This problem can only be fixed at the perfect initial
+  state preparation point. For a finite or small code with distance d, we find
+  that if the preparation error rate is below a crossover scale ~1/\log(d), the
+  logical errors can still be suppressed. We conclude that this type of
+  unavoidable coherent noise has a significant impact on QEC performance, and
+  becomes increasingly detrimental as the code distance increases.
+tags:
+  - Condensed Matter - Statistical Mechanics
+  - Condensed Matter - Strongly Correlated Electrons
+  - Quantum Physics
+identifiers:
+  arxiv: "2301.12859"

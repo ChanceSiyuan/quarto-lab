@@ -1,0 +1,135 @@
+---
+title: Intorduce of continous gauge theory and its Hamiltonian
+description: "tbc"
+categories:
+  - theory
+---
+
+# Introduction to Gauge field
+
+:::{#def-gauge-field .callout-note icon="false"}
+## Abelian Gauge Field
+An Abelian gauge field is a field that is used to describe the force of the gauge boson. For example:
+The continous 1d Schwinger model is given by:
+$$
+L=-\frac{1}{4}F_{\mu\nu}F^{\mu\nu}+\bar{\psi}(i\gamma_\mu D^\mu - m)\psi
+$$
+
+The Abelian-Higgs / scalar QED takes the form:
+$$
+\mathcal{L} = -\frac{1}{4}F_{\mu\nu}F^{\mu\nu} + |D_\mu \phi|^2 - V(\phi)
+$$
+
+- $D_{\mu} = \partial_\mu - i g A_\mu$ is covariant derivative.
+- $A_\mu$ is the gauge field.
+- $F_{\mu\nu} = \partial_\mu A_\nu - \partial_\nu A_\mu$ is the field strength tensor.
+- $V(\phi)$ is the potential of the scalar field.
+
+:::
+
+:::{#def-QCD .callout-note icon="false"}
+## QCD Lagrangian
+The QCD Lagrangian writes:
+$$
+\mathcal{L}_{\text{QCD}} = \bar{\psi} (i \Gamma^\mu \mathbf{D}_\mu - m (I_s \otimes I_c)) \psi - \frac{1}{8} \text{Tr} \left( \mathbf{G}_{\mu\nu} \mathbf{G}^{\mu\nu} \right)
+$$
+where:
+
+- $\psi \in \mathbb{C}^4 \otimes \mathbb{C}^3$ 
+- $\bar{\psi} = \psi^\dagger (\gamma^0 \otimes I_c)$
+- $\Gamma^\mu = \gamma^\mu \otimes I_c$ with $\gamma$ $4\times4$ Dirac matrices, 
+- $D_{\mu}$ is covariant derivative $\mathbf{D}_\mu = (I_s \otimes I_c)\partial_\mu - i g_s \mathbf{A}_\mu$ such that:
+  - $\mathbf{A}_\mu$ is $\mathbf{A}_\mu = \sum_{a=0}^{7} A^{a}_\mu (I_s \otimes T^a), \forall \mu \in [0,3]$,
+  - $\mathbf{T}^a = I_s \otimes T^a$ with $T^a$ the $3\times3$ Gell-Mann matrices,
+- $\mathbf{G}_{\mu\nu} = \frac{i}{g_s} [\mathbf{D}_\mu, \mathbf{D}_\nu] = I_s \otimes G_{\mu\nu}$ for $G_{\mu\nu} = \partial_\mu A_\nu - \partial_\nu A_\mu - ig_s [A_\mu, A_\nu]$.
+:::
+
+:::{#def-nodirac-gauge-field .callout-note icon="false"}
+## Non-Abelian Gauge Field 
+Under the gluon-only limits, we consider the Yang-Mills Lagrangian without Dirac fermions, 
+while extend the gauge group to a general Lie group $G$.
+$$
+\mathcal{L} = - \frac{1}{2g^2} \tr(F_{\mu \nu}F^{\mu \nu})
+$$
+
+- $F_{\mu \nu} = \partial_\mu A_\nu - \partial_\nu A_\mu - i g [A_\mu, A_\nu]$.
+- $A_\mu = A_\mu^a T^a$ is a elements of Lie group $G$ with $T^a$ the Lie algebra generators of $G$.
+:::
+
+The definition above ensures that given $U(x) \in SU(3)$ and $\mathbf{U} = (I_s \otimes U(x))$, the transforamtion:
+$$
+\begin{align}
+&\psi \to \psi' = \mathbf{U} \psi,\\
+&\mathbf{A}_\mu \to \mathbf{A}'_\mu = \mathbf{U} \mathbf{A}_\mu \mathbf{U}^\dagger + \frac{i}{g_s} (\partial_\mu \mathbf{U}) \mathbf{U}^\dagger
+\end{align}
+$$
+keeps the Lagrangian invariant.
+
+In above gauge theories, the Lagrangian is singular.
+Thus, the ordinary Legendre transformation $L(q,\dot q) \to H(q,p) := p\dot q - L(q,\dot q), p = \partial L/\partial\dot q$
+ between Lagrangian and Hamiltonian is not applicable.
+Actually, their equivalent Hamiltonian system shall be described by $(H_c, \Phi_A)$ where $\Phi_A$ is constraint.
+
+Given $L(q,\dot q) = \tfrac{1}{2}\dot q^{T} M(q)\dot q - V(q)$ whose kinetic Hessian $M_{ij}(q) = \partial^{2}L/\partial\dot q^{i}\partial\dot q^{j}$ 
+might be degenerate, i.e., $\ker M(q) = \mathrm{span}\{v_{a}(q)\}_{a=1}^{r} \neq \{\mathbf{0}\}$.
+Then the momentum replacement gives $p =\partial L/\partial\dot q = M(q)\dot q \Rightarrow \dot q = M^{+}(q)p + v_{a}(q)u_a$.
+This naturally gives the constraint in terms of $q$ and $p$: 
+$$
+\Lambda := \{(p,q)|\phi_a(q,p) := v_{a}(q)^{T} p = 0, a=1,\dots,r\}.
+$$
+The Hamiltonian then becomes:
+$$
+\begin{align}
+H_T(q,p) &= p^T\dot q - L(q,\dot q) = \tfrac{1}{2}p^{T} M^{+}(q)p + V(q) +p^{T}v_{a}(q)u_a\\
+&= \tfrac{1}{2}p^{T} M^{+}(q)p + V(q) + \sum_{a=1}^{r}\phi_a(q,p)u_a(q,p)
+\end{align}
+$$
+We also implied the secondary constraints $\forall a=1,\dots,r$:
+$$
+\{\phi_a, H_T\} = \frac{\partial H_T}{\partial q}\frac{\partial \phi_a}{\partial p} - \frac{\partial H_T}{\partial p}\frac{\partial \phi_a}{\partial q} = 0, .
+$$
+This might introduce new constraints and shall be add to $\Lambda$.
+We repeat the process until no new constraints are introduced. This increase the restrains number from $r$ to $R$.
+This algorithm fully recovers the canonical Hamiltonian $H_c(q,p)$ along with the constraint surface $\Lambda = \{\phi_a(q,p) = 0, a=1,\dots,R\}$.
+Then we check whether $\{\phi_a, \phi_b\} = 0$ for all $a, b=1,\dots,r$. There are two cases:
+
+- $\exists a$ such that $\{\phi_a, \phi_b\} = 0, \forall b$, then the system is first-class.
+- $\mathrm{det}(\{\phi_a, \phi_b\}) \neq 0$, then the system is second-class.
+
+For the first class system, we need to add a gauge-fixing restriction.
+That is, add new restrictions $F_{I}(q,p) = 0, I=1,\dots,N$ to the constraint surface $\Lambda$ such that the new constraint surface $\Lambda' = \{\phi_a(q,p) = 0, a=1,\dots,I\}$ becames the second class system.
+
+
+:::{#lem-Ham-Lag-equiv .callout-note icon="false"}
+## Hamiltonian and Lagrangian Equivalence
+Given $L(q,\dot q) = \tfrac{1}{2}\dot q^{T} M(q)\dot q - V(q)$ and its equivalent constrained Hamiltonian $H_c(q,p) = \tfrac{1}{2}p^{T} M^{+}(q)p + V(q)$ with restrictions $\phi_a(q,p) = 0, a=1,\dots,I$ satisfying $\mathrm{det}\{\phi_a, \phi_b\} \neq 0$.
+Then the Lagrangian path integral is equivalent in terms of:
+$$
+\int \mathcal D q\; e^{\,i S_{L}[q]}
+\;\propto\;
+\int \mathcal D q\,\mathcal D p\;
+\Bigl(\prod_{a}\delta[\phi_{a}]\Bigr)\sqrt{\mathrm{det}\{\phi_a, \phi_b\}}\;
+e^{\,i\int dt\,(p^{T}\dot q - H_c)}.
+$$
+:::
+
+:::{.callout-note collapse="true"}
+[todo: Add proof here]
+:::
+
+In the quantum case, it is the pair $(H_c, \mathcal{H}_{\mathrm{phy}})$ where $\mathcal{H}_{\mathrm{phy}} := \{\ket{\psi} \in \mathcal{H} | \Phi_A \ket{\psi} = 0\}$ is the physical Hilbert space.
+After specifying two famous LGT, the following task is to construct the discrete lattice model that reflects the dynamics of these LGT.
+A core observation is that the covariance derivative can be discretized to the nearest-neighbor hopping term.
+
+:::{#lem-covariant-derivative-discretization .callout-note icon="false"}
+## Covariant Derivative Discretization
+Given $U_n = 1 + ia g A_\mu(x_n)$ with $a$ the lattice spacing,
+the covariant derivative $D_\mu = \partial_\mu + igA_\mu$ in the continuum can be discretized through:
+$$
+ \frac{(U_n \psi(x_{n+1}) - U_{n-1}^\dagger \psi(x_{n-1}))}{2a}  = D_\mu \psi(x_n)  + O(a^2) .
+$$
+:::
+:::{.callout-note collapse="true"}
+## Proof (Click to expand)
+[todo: Add proof here]
+:::

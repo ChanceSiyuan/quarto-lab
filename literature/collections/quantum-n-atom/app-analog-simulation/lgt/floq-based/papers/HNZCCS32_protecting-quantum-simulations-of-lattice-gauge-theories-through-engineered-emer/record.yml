@@ -1,0 +1,64 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: HNZCCS32
+  item_version: 102374
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: JICMG9G4
+      name: floq_based
+      path: Quantum N-Atom/App-Analog simulation/LGT/floq_based
+qlab:
+  primary_collection: JICMG9G4
+  indexed_collections:
+    - JICMG9G4
+  primary_topic: quantum-n-atom
+  indexed_topics:
+    - quantum-n-atom
+item_type: preprint
+title: Protecting Quantum Simulations of Lattice Gauge Theories through
+  Engineered Emergent Hierarchical Symmetries
+authors:
+  - first: Zhanpeng
+    last: Fu
+  - first: Wei
+    last: Zheng
+  - first: Roderich
+    last: Moessner
+  - first: Marin
+    last: Bukov
+  - first: Hongzheng
+    last: Zhao
+year: 2026
+abstract: "We present a strategy for the quantum simulation of many-body lattice
+  models with constrained Hilbert spaces. We focus on lattice gauge theories
+  (LGTs), which underlie a wide range of phenomena in particle physics,
+  condensed matter, and quantum information. In present-day quantum computing
+  platforms, perfect restrictions of the Hilbert space to the desired gauge
+  sectors are beyond reach: for LGTs, violations of the local constraint are
+  unavoidable, posing a formidable challenge for the emulation of the underlying
+  physics. Here, we develop a Floquet-engineering framework that restructures
+  departures from a target sector such that a series of emergent local
+  symmetries occurs hierarchically in time and in a controllable way. This leads
+  to a set of approximate dynamical selection rules that strongly restrict
+  inter-sector couplings, resulting in a pronounced, symmetry-controlled
+  hierarchy of lifetimes for the state population to spread among sectors.
+  Concretely, this protects $U(1)$ LGTs against violations of the {defining}
+  local symmetry. While some sectors remain very long-lived, others are
+  destabilized on shorter timescales. We numerically verify our theory for the
+  one-dimensional $U(1)$ quantum link model. In addition, we reveal that
+  `defects', whose movement accounts for violations of the gauge constraint, are
+  kinetically constrained, becoming mobile only through the assistance of
+  intra-sector dynamics, which we describe using an effective quantum marble
+  model. Our results can thus be used to extend the lifetime, in the spirit of
+  passive error correction, of quantum simulations of complex many-body problems
+  when emergent or desired local symmetries are only implemented approximately."
+tags:
+  - "FOS: Physical sciences"
+  - Quantum Gases (cond-mat.quant-gas)
+  - Quantum Physics (quant-ph)
+  - Statistical Mechanics (cond-mat.stat-mech)
+identifiers:
+  doi: 10.48550/arxiv.2604.11085

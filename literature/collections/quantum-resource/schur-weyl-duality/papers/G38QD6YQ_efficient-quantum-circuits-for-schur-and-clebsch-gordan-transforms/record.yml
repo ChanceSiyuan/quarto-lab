@@ -1,0 +1,45 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: G38QD6YQ
+  item_version: 96048
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 4YJDR2TB
+      name: Schur-Weyl duality
+      path: Quantum Resource/Schur-Weyl duality
+qlab:
+  primary_collection: 4YJDR2TB
+  indexed_collections:
+    - 4YJDR2TB
+  primary_topic: quantum-resource
+  indexed_topics:
+    - quantum-resource
+item_type: preprint
+title: Efficient Quantum Circuits for Schur and Clebsch-Gordan Transforms
+authors:
+  - first: Dave
+    last: Bacon
+  - first: Isaac
+    last: Chuang
+  - first: Aram
+    last: Harrow
+year: 2004
+abstract: The Schur basis on n d-dimensional quantum systems is a generalization
+  of the total angular momentum basis that is useful for exploiting symmetry
+  under permutations or collective unitary rotations. We present efficient (size
+  poly(n,d,log(1/\epsilon)) for accuracy \epsilon) quantum circuits for the
+  Schur transform, which is the change of basis between the computational and
+  the Schur bases. These circuits are based on efficient circuits for the
+  Clebsch-Gordan transformation. We also present an efficient circuit for a
+  limited version of the Schur transform in which one needs only to project onto
+  different Schur subspaces. This second circuit is based on a generalization of
+  phase estimation to any nonabelian finite group for which there exists a fast
+  quantum Fourier transform.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.1103/physrevlett.97.170502
+  arxiv: quant-ph/0407082

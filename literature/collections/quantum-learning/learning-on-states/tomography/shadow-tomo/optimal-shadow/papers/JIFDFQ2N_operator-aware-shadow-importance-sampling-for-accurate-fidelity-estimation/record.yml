@@ -1,0 +1,50 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: JIFDFQ2N
+  item_version: 101587
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 6BXXRXDA
+      name: Optimal_shadow
+      path: Quantum Learning/Learning on states/Tomography/shadow tomo/Optimal_shadow
+qlab:
+  primary_collection: 6BXXRXDA
+  indexed_collections:
+    - 6BXXRXDA
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: preprint
+title: Operator-aware shadow importance sampling for accurate fidelity estimation
+authors:
+  - first: Hyunho
+    last: Cha
+  - first: Sangwoo
+    last: Hong
+  - first: Jungwoo
+    last: Lee
+year: 2025
+abstract: Estimating the fidelity between an unknown quantum state and a fixed
+  target is a fundamental task in quantum information science. Direct fidelity
+  estimation (DFE) enables this without full tomography by sampling observables
+  according to a target-dependent distribution. However, existing approaches
+  face notable trade-offs. Grouping-based DFE achieves strong accuracy for small
+  systems but suffers from exponential scaling, and its applicability is
+  restricted to Pauli measurements. In contrast, classical-shadow-based DFE
+  offers scalability but yields lower accuracy on structured states. In this
+  work, we address these limitations by developing two classes of operator-aware
+  shadow importance sampling algorithms using informationally overcomplete
+  positive operator-valued measures. Instantiated with local Pauli measurements,
+  our algorithm improves upon the grouping-based algorithms for Haar-random
+  states. For structured states such as the GHZ and W states, our algorithm also
+  eliminates the exponential memory requirements of previous grouping-based
+  methods. Numerical experiments confirm that our methods achieve
+  state-of-the-art performance across Haar-random, GHZ, and W targets.
+tags:
+  - "FOS: Physical sciences"
+  - Quantum Physics (quant-ph)
+identifiers:
+  doi: 10.48550/arxiv.2511.01608

@@ -1,0 +1,71 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: R95C9JCW
+  item_version: 96107
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: Y7SRTN8J
+      name: experiment
+      path: Quantum Error correction/2-Code categories/q-LDPC/experiment
+    - key: DKHMIC8C
+      name: 1-Parallel 2D fault-tolerant
+      path: Project/1-Parallel 2D fault-tolerant
+qlab:
+  primary_collection: Y7SRTN8J
+  indexed_collections:
+    - DKHMIC8C
+    - Y7SRTN8J
+  primary_topic: quantum-error-correction
+  indexed_topics:
+    - project
+    - quantum-error-correction
+item_type: preprint
+title: Fast and Parallelizable Logical Computation with Homological Product Codes
+authors:
+  - first: Qian
+    last: Xu
+  - first: Hengyun
+    last: Zhou
+  - first: Guo
+    last: Zheng
+  - first: Dolev
+    last: Bluvstein
+  - first: J. Pablo Bonilla
+    last: Ataides
+  - first: Mikhail D.
+    last: Lukin
+  - first: Liang
+    last: Jiang
+year: 2024
+abstract: Quantum error correction is necessary to perform large-scale quantum
+  computation, but requires extremely large overheads in both space and time.
+  High-rate quantum low-density-parity-check (qLDPC) codes promise a route to
+  reduce qubit numbers, but performing computation while maintaining low space
+  cost has required serialization of operations and extra time costs. In this
+  work, we design fast and parallelizable logical gates for qLDPC codes, and
+  demonstrate their utility for key algorithmic subroutines such as the quantum
+  adder. Our gate gadgets utilize transversal logical CNOTs between a data qLDPC
+  code and a suitably constructed ancilla code to perform parallel Pauli product
+  measurements (PPMs) on the data logical qubits. For hypergraph product codes,
+  we show that the ancilla can be constructed by simply modifying the base
+  classical codes of the data code, achieving parallel PPMs on a subgrid of the
+  logical qubits with a lower space-time cost than existing schemes for an
+  important class of circuits. Generalizations to 3D and 4D homological product
+  codes further feature fast PPMs in constant depth. While prior work on qLDPC
+  codes has focused on individual logical gates, we initiate the study of
+  fault-tolerant compilation with our expanded set of native qLDPC code
+  operations, constructing algorithmic primitives for preparing $k$-qubit GHZ
+  states and distilling/teleporting $k$ magic states with $O(1)$ space overhead
+  in $O(1)$ and $O(\sqrt{k} \log k)$ logical cycles, respectively. We further
+  generalize this to key algorithmic subroutines, demonstrating the efficient
+  implementation of quantum adders using parallel operations. Our constructions
+  are naturally compatible with reconfigurable architectures such as neutral
+  atom arrays, paving the way to large-scale quantum computation with low space
+  and time overheads.
+tags:
+  - Quantum Physics
+identifiers:
+  arxiv: "2407.18490"

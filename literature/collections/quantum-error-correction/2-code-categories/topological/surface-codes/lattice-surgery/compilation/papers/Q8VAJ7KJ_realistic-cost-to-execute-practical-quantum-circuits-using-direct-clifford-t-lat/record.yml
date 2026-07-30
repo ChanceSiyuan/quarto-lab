@@ -1,0 +1,56 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: Q8VAJ7KJ
+  item_version: 96110
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: PXRQMBZS
+      name: Compilation
+      path: Quantum Error correction/2-Code categories/Topological/surface
+        codes/Lattice Surgery/Compilation
+qlab:
+  primary_collection: PXRQMBZS
+  indexed_collections:
+    - PXRQMBZS
+  primary_topic: quantum-error-correction
+  indexed_topics:
+    - quantum-error-correction
+item_type: preprint
+title: Realistic Cost to Execute Practical Quantum Circuits using Direct
+  Clifford+T Lattice Surgery Compilation
+authors:
+  - first: Tyler
+    last: LeBlond
+  - first: Christopher
+    last: Dean
+  - first: George
+    last: Watkins
+  - first: Ryan S.
+    last: Bennink
+year: 2024
+abstract: "We report a resource estimation pipeline that explicitly compiles
+  quantum circuits expressed using the Clifford+T gate set into a surface code
+  lattice surgery instruction set. The cadence of magic state requests from the
+  compiled circuit enables the optimization of magic state distillation and
+  storage requirements in a post-hoc analysis. To compile logical circuits into
+  lattice surgery operations, we build upon the open-source Lattice Surgery
+  Compiler. The revised compiler operates in two stages: the first translates
+  logical gates into an abstract, layout-independent instruction set; the second
+  compiles these into local lattice surgery instructions that are allocated to
+  hardware tiles according to a specified resource layout. The second stage
+  retains logical parallelism while avoiding resource contention in the
+  fault-tolerant layer, aiding realism. Additionally, users can specify
+  dedicated tiles at which magic states are replenished, enabling resource costs
+  from the logical computation to be considered independently from magic state
+  distillation and storage. We demonstrate the applicability of our pipeline to
+  large, practical quantum circuits by providing resource estimates for the
+  ground state estimation of molecules. We find that variable magic state
+  consumption rates in real circuits can cause the resource costs of magic state
+  storage to dominate unless production is varied to suit."
+tags:
+  - Quantum Physics
+identifiers:
+  arxiv: "2311.10686"

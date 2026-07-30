@@ -1,0 +1,48 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: XZQFJJ7S
+  item_version: 96118
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: PPA3CWGW
+      name: matchgate
+      path: Quantum Complexity/QCsim/Fermion-based simulation/matchgate
+qlab:
+  primary_collection: PPA3CWGW
+  indexed_collections:
+    - PPA3CWGW
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: preprint
+title: Extending Matchgate Simulation Methods to Universal Quantum Circuits
+authors:
+  - first: Avinash
+    last: Mocherla
+  - first: Lingling
+    last: Lao
+  - first: Dan E.
+    last: Browne
+year: 2024
+abstract: Matchgates are a family of parity-preserving two-qubit gates,
+  nearest-neighbour circuits of which are known to be classically simulable in
+  polynomial time. In this work, we present a simulation method to classically
+  simulate an $\boldsymbol{n}$-qubit circuit containing $\boldsymbol{N}$ gates,
+  $\boldsymbol{m}$ of which are universality-enabling gates and
+  $\boldsymbol{N-m}$ of which are matchgates, in the setting of single-qubit
+  Pauli measurements and product state inputs. The universality-enabling gates
+  we consider include the SWAP, CZ, and CPhase gates. For fixed $\boldsymbol{m}$
+  as $\boldsymbol{n} \rightarrow \boldsymbol{\infty}$, the resource cost,
+  $\boldsymbol{T}$, scales as
+  $\boldsymbol{\mathcal{O}\left(\left(\frac{en}{m+1}\right)^{2m+2}\right)}$. For
+  $\boldsymbol{m}$ scaling as a linear function of $\boldsymbol{n}$, however,
+  $\boldsymbol{T}$ scale as
+  $\boldsymbol{\mathcal{O}\left(2^{2nH\left(\frac{m+1}{n}\right)}\right)}$,
+  where $\boldsymbol{H}(\lambda)$ is the binary entropy function.
+tags:
+  - Quantum Physics
+identifiers:
+  arxiv: "2302.02654"

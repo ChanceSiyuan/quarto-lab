@@ -1,0 +1,60 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: TI9PLMBE
+  item_version: 96030
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: VQWX7XGH
+      name: Open-dynamics
+      path: Quantum Complexity/QCsim/Open-dynamics
+qlab:
+  primary_collection: VQWX7XGH
+  indexed_collections:
+    - VQWX7XGH
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: preprint
+title: Foundations for learning from noisy quantum experiments
+authors:
+  - first: Hsin-Yuan
+    last: Huang
+  - first: Steven T.
+    last: Flammia
+  - first: John
+    last: Preskill
+year: 2022
+abstract: Understanding what can be learned from experiments is central to
+  scientific progress. In this work, we use a learning-theoretic perspective to
+  study the task of learning physical operations in a quantum machine when all
+  operations (state preparation, dynamics, and measurement) are a priori
+  unknown. We prove that, without any prior knowledge, if one can explore the
+  full quantum state space by composing the operations, then every operation can
+  be learned. When one cannot explore the full state space but all operations
+  are approximately known and noise in Clifford gates is gate-independent, we
+  find an efficient algorithm for learning all operations up to a single
+  unlearnable parameter characterizing the fidelity of the initial state. For
+  learning a noise channel on Clifford gates to a fixed accuracy, our algorithm
+  uses quadratically fewer experiments than previously known protocols. Under
+  more general conditions, the true description of the noise can be unlearnable;
+  for example, we prove that no benchmarking protocol can learn gate-dependent
+  Pauli noise on Clifford+T gates even under perfect state preparation and
+  measurement. Despite not being able to learn the noise, we show that a noisy
+  quantum computer that performs entangled measurements on multiple copies of an
+  unknown state can yield a large advantage in learning properties of the state
+  compared to a noiseless device that measures individual copies and then
+  processes the measurement data using a classical computer. Concretely, we
+  prove that noisy quantum computers with two-qubit gate error rate $\epsilon$
+  can achieve a learning task using $N$ copies of the state, while
+  $N^{\Omega(1/\epsilon)}$ copies are required classically.
+tags:
+  - Computer Science - Information Theory
+  - Computer Science - Machine Learning
+  - Mathematics - Information Theory
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2204.13691
+  arxiv: "2204.13691"

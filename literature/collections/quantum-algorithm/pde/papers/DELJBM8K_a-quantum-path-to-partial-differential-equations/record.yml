@@ -1,0 +1,50 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: DELJBM8K
+  item_version: 112242
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: ARQ6RMWC
+      name: PDE
+      path: Quantum Algorithm/PDE
+qlab:
+  primary_collection: ARQ6RMWC
+  indexed_collections:
+    - ARQ6RMWC
+  primary_topic: quantum-algorithm
+  indexed_topics:
+    - quantum-algorithm
+item_type: preprint
+title: A Quantum Path to Partial Differential Equations
+authors:
+  - first: Xiantao
+    last: Li
+year: 2026
+abstract: "Partial differential equations are a promising application area for
+  fault-tolerant quantum algorithms, but the subject lies between two
+  communities with different languages: numerical analysis and quantum
+  computation. These lecture notes provide a numerically grounded introduction
+  for readers entering from either field. Block encoding is the organizing
+  principle: once a discretized differential operator is embedded in a unitary,
+  primitives such as quantum singular value transformation, Hamiltonian
+  simulation, linear combinations of unitaries, amplitude amplification, and
+  measurement can be assembled into algorithms for elliptic, hyperbolic, and
+  parabolic PDEs. Each chapter begins with a standard finite difference or
+  finite element discretization and follows the full pipeline from the
+  continuous PDE to quantum encoding, transformation, and extraction of a
+  quantity of interest. Particular attention is paid to the factors governing
+  end-to-end performance, including discretization error, state preparation,
+  normalization, postselection, and measurement cost. A final chapter introduces
+  nonlinear problems through Carleman and Koopman-von Neumann linearizations.
+  The aim is not a comprehensive survey or a claim of universal quantum
+  advantage, but a mathematically transparent entry point and a shared
+  vocabulary for researchers in both communities."
+tags:
+  - Mathematics - Numerical Analysis
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2607.09639
+  arxiv: "2607.09639"

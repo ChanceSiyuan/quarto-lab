@@ -1,0 +1,123 @@
+---
+title: DNA Fingerprint
+description: "tbc"
+categories:
+  - theory
+---
+
+# Summary and questions
+
+<!-- 这个文章关心的实际问题是：
+
+任意给定一个长度为N的DNA序列（reference）和某个长度为n的DNA片段（query），找出reference中和query最相似的片段的位置。
+这里的字符串的“相似”指的是能否在最少的删除，插入，替换等操作下相互转换，数学上定义为Levenshtein distance。
+
+上述问题经典算法中叫：pattern matching with edits，复杂度大概在O(N)量级。
+面向DNA匹配到最好的经典算法minimap2 [1] 的复杂度也已经大体达到这个量级。
+
+------
+在理论方面：这篇文章的亮点是提出了一个RoPE向量检索思路，让DNA匹配算法非常的适配GPU并行。
+
+大体上，文中将DNA的信息load进一个量子态后，对量子态做量子傅立叶变换，他把得到的态向量叫做DNA的RoPE编码。
+文中经验性地验证了，RoPE编码态的内积可以反映两个DNA片段的Levenshtein distance。
+如果进一步不考虑数据loading到难度，这将一个原本是 $O(N)$ 经典复杂度的问题，转化为了一个可以用log N比特数和log log N量子门数的问题。
+
+但是注意，上述理论部分存在如下漏洞：
+
+1. 作者没有证明RoPE编码态的内积真的可以反映Levenshtein-distance的差异。如果可以证明，这其实是在黑箱意义下，用QFT可以给出了一个计算Levenshtein-distance的量子算法。先前这个问题的量子算法复杂度大体被普遍认为在O(sqrt{N})的量级[2]。个人认为是比较强的结论，也是很有意思的一个点，后续可以继续调研。
+2. 作者没有考虑data loading的难度。普通的数据loading的难度是O(N)，这会直接导致算法实际上没有加速。最直接的思路，是考虑Huang之前随机加载的方案能不能套用上来做时间上的改进。
+
+------
+在实验部分：我个人认为目前的实验演示很难说是一个有结构/有加速的量子算法。
+
+他们在Quantinuum的 56 qubits (H2, Yb-171) 和 98 qubits (Helios, Ba-137) 的量子计算机上进行了实验。
+由于无法实施大规模数据的data loading，他们没有制备RoPE 态，而是经典算出RoPE向量，
+然后把向量的每个term填入一个专门设计的量子线路中，作为单比特门/两比特门的角度。
+主要实验结果是，这些线路生成的态的相似程度确实可以反映两个DNA片段的Levenshtein distance的差异。
+
+------
+
+此外，文中还提到DNA fingerprint和通信复杂度的指数加速。我个人认为overclaimed。
+
+fingerprint起源于这篇2000年的文章[3]。原论文的通信复杂度的指数加速是solid的，其使用场景如下：
+在Alice和Bob无法通信，且他们也不允许有共享密钥的前提下，Eve想要比较他们的手里两个长度为N的字符串是否相同。
+经典通信限制下，最聪明的办法二者也至少需要要向Eve发送 $O(\sqrt{N})$ 个信息。
+如果允许量子编码，只需要向Eve发送 $O(log N)$ 个量子态。
+
+在这篇文章中，作者指数加速的逻辑漏洞有：
+1. Levenshtein distance不一定和 Hamming distance有一样的经典下界O(\sqrt{N})，但是作者直接套用了先前的结论。
+2. 还是之前的，作者没有证明RoPE 态和Levenshtein distance的相关性。
+3. 有些脱离实用意义：真实的DNA比对无须限制Alice&Bob的通信能力；而真实的AUTHENTICATION场景又无需使用DNA作为identity。
+
+
+[1]. https://github.com/lh3/minimap2
+[2]. https://arxiv.org/abs/2410.06808
+[3]. https://arxiv.org/abs/quant-ph/0102001 -->
+
+
+# DNA Fingerprint and classical Heristic algorithm
+
+:::{#def-Levenshtein-distance .callout-note icon="false"}
+The Levenshtein distance $\mathrm{Lev}(x, y)$ between two strings $x$ and $y$ is the minimum number of single-character edits (insertions, deletions, substitutions) required to transform $x$ into $y$.
+:::
+
+Given two length $L$ strings $x$ and $y$, it is cost $O(N)$ time to compute their Manhatten distance.
+But the Levenshtein distance is much harder to compute. Compare strings term by term will not work due to cancle and shift operations.
+Typically the Levenshtein distance is computed using dynamic programming, which has $O(L^2)$ time complexity.
+
+A DNA is a string over the alphabet $\mathrm{dna}^{N} := \{A, T, C, G\}^{N}$ with $N$ being the length of the DNA.
+
+:::{#def-DNA-matching .callout-note icon="false"}
+Given a reference DNA string $r \in \mathrm{dna}^{N}$, and a query DNA string $q \in \mathrm{dna}^{n}$ with $n \leq N$, the task is to find the position $i$ such that $\mathrm{Lev}([r_i,\cdots,r_{i+n-1}],[q_1,\cdots,q_n]) \leq \varepsilon$, where $\varepsilon \in \mathbb{Z}^*$ is the error tolerance.
+:::
+
+The modern DNA fingerprinting algorithms typically follow the following steps:
+
+- **Seeding:** Set up window size $w < n$ and select $m$ number of distinct $w$-length parts from the query DNA string $x$: $S \subset\{[q_p, q_{p+1}, \cdots, q_{p+w-1}]\}_{p=1}^{m}$. We call them the $w$-mer. 
+- **Matching** Build up an index LUT for reference: $I(s) = \{i \in [1, N-w+1] \mid [r_i, \cdots, r_{i+w-1}] = s\}$. Then for each seed $s \in S$, find all positions $i$ in the reference that match $s$ via $I(s)$. This gives pairs $(p, i)$ for each seed in $S$.
+-[todo: complete the next step]
+
+# Quantum encoding
+
+In a recent work [@yakymenko2026rotormap], the authors proposed a quantum encoding scheme for DNA sequences using rotary position embeddings.
+Supposed for each $s \in \mathrm{dna}^{w}$, it appears at position $I(s)$, where $I(s)$ is the set of positions in the reference $r\in \mathrm{dna}^{N}$ that match $s$.
+This can also be viewed as an indicator function $I(r,s,j) = 1$ if $j \in I(s)$ and $0$ otherwise.
+$I(r,s,j)$ ask for whether the $j$ position of reference DNA $r$ match with the subDNA $s$.
+Then we constuct $c(r, s, k)$ as the fourier transform of the indicator function $I(r,s,j)$ with respect to the position $j$.
+$$
+\begin{align*}
+c(r, s, k) = \sum_{j\in I(s)} e^{\frac{2\pi k i \cdot j}{N}} = \sum_{j}I(r,s,j) e^{\frac{2\pi k i \cdot j}{N}}, \forall s \in \mathrm{dna}^{w}, r\in \mathrm{dna}^{N}
+\end{align*}
+$$
+For all $r\in \mathrm{dna}^{N}$, consider a vector in the complex plane with $m \cdot 4^w$ dimensions:
+$$
+\begin{align*}
+\ket{\mathrm{ROPE}_{w,m}(r)} &=\sum_{s \in \mathrm{dna}^{w}, k\in [1,m]} c(r,s,k)\ket{s,k}.
+\end{align*}
+$$
+This vector contains the information of the appearance of the $w$-length DNA sequence in the reference $r\in \mathrm{dna}^{N}$ and actually can be prepared through a $N$-dimensionalquantum Fourier transform on the state $\ket{\Psi_{\text{spatial}}}= \sum_{s \in \mathrm{dna}^{w}} \sum_{j=0}^{N-1} I(r,s,j) \ket{s,j}$ with respect to the position $j$:
+$$
+\begin{align*}
+&(I \otimes QFT)\ket{\Psi_{\text{spatial}}} \\
+&= \sum_{s \in \mathrm{dna}^{w}} \ket{s} \otimes \left( \sum_{j=0}^{N-1} I(r,s,j) \frac{1}{\sqrt{N}} \sum_{k=0}^{N-1} e^{\frac{2\pi i j k}{N}} \ket{k} \right)\\
+&= \frac{1}{\sqrt{N}} \sum_{s \in \mathrm{dna}^{w}} \sum_{k=0}^{N-1} \left( \sum_{j=0}^{N-1} I(r,s,j) e^{\frac{2\pi i j k}{N}} \right) \ket{s, k}\\
+&\propto \sum_{s \in \mathrm{dna}^{w}, k\in [0,N-1]} c(r,s,k)\ket{s,k} \xrightarrow{\mathrm{cutoff~} k \in [0,m]} \ket{\mathrm{ROPE}_{w,m}(r)}
+\end{align*}
+$$
+Noted that such a cut-off is also used in approximate Shor algorithm for factoring.[todo: add concrete comparision]
+
+Noted that $\ket{\Psi_{\text{spatial}}}$ can be encoded into a $2w \cdot \log N$ qubit state, and the quantum Fourier transform has $O(\log N \cdot \log \log N)$ complexity.
+However, the hardness happens on the data loading stage: it requires $O(N)$ time to prepare the state $\ket{\Psi_{\text{spatial}}}$.
+[Todo: Checkout whether random loading would helps]
+
+# A Fidelity based DNA matching algorithm
+
+The algorithm is as follows:
+
+- Fix the hyperparameters $L, w, m$.
+- Sliding window scan: on the extremely large reference sequence $r \in \mathrm{dna}^{N}$, use a window of length-$L$ and slide it with a fixed step size.
+- Batch encoding: for each sliding window, extract a DNA fragment $r \in \mathrm{dna}^{L}$ and immediately calculate its $\ket{\mathrm{ROPE}_{w,m}(r)}$. Stack these thousands of RoPE vectors as a huge reference index matrix $M_r$.
+- For each query sequence $q \in \mathrm{dna}^{n}$, take its initial segment with length $L$ and calculate its $\ket{\mathrm{ROPE}_{w,m}(q)}$. Also stack these RoPE vectors as a query index matrix $M_q$.
+- Compute $M_r M_q^\dagger$, which is the fidelity between the query and the reference.
+
+We choose length-$L$ windows after $0.1 n$ steps.

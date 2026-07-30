@@ -1,0 +1,585 @@
+---
+title: Basics of Shadow Tomography
+description: While we do not care about the computational complexity in the most case, the computation of can be reconstructed as , thus might be processed efficiently if the randomized unitaries is classical tractable and the target
+categories:
+  - theory
+---
+
+# Shadow tomography
+
+## General framework of shadow tomography
+
+Single-copy shadow tomography restores single copy of $\rho$, repeats
+randomized measurements, and try to use these measurement results to
+estimate **MANY** properties of $\rho$, which includes linear property
+$\text{tr}(O_i\rho)$, non-linear properties $\text{tr}(O_i \rho^{t_i})$,
+and even their products $\prod_{i}\text{tr}(O_i \rho^{t_i})$. The
+procedure of shadow tomography firstly includes the sampling of
+classical shadow, as shown in
+Algorithm [\[alg:classical_shadow\]](#alg:classical_shadow){reference-type="ref"
+reference="alg:classical_shadow"}. Note that in
+Algorithm [\[alg:classical_shadow\]](#alg:classical_shadow){reference-type="ref"
+reference="alg:classical_shadow"}, *virtually* means restore the
+classical description of circuit $U$ and length-n bit string
+$\mathbf b$. As shown in
+Lemma [\[lemma:single_shadow_unbiased\]](#lemma:single_shadow_unbiased){reference-type="ref"
+reference="lemma:single_shadow_unbiased"}, to estimate many properties
+includes $\text{tr}(O \hat \rho^k)$, ones compute based only those
+sampled classical shadow.
+
+:::: algorithm
+::: algorithmic
+Sample $U \sim \mathcal{U}$ with certain unitary ensemble $\mathcal{U}$.
+Measure the state $U\rho U^\dagger$ on the computational basis with
+result $\ket{\mathbf{b}}\!\bra{\mathbf{b}}$. *Virtually* computes the
+shadow matrix
+$\hat \rho:= \mathcal{M}^{-1}(U^\dagger \ket{\mathbf{b}}\!\bra{\mathbf{b}} U)$,
+where $\mathcal{M}$ is the entanglement-breaking linear map
+$\rho \to \mathbb{E}_{U \sim \mathcal{U}} \sum_{\mathbf b}\bra{\mathbf b}U \rho U^\dagger \ket{\mathbf{b}} \cdot  U^\dagger\ket{\mathbf b}\!\bra{\mathbf b} U$.
+:::
+::::
+
+::: {#lem-single_shadow_unbiased .callout-important icon="false"}
+## (single shadow unbiased)
+The estimator
+$\hat{o}^{(k)} := \text{tr}(O \hat \rho_1\cdots \hat \rho_k)$ is an
+unbiased estimator for the expectation $\text{tr}(O \rho^k)$, where
+$\hat{\rho}_i$ is sampled according to the
+Algorithm [\[alg:classical_shadow\]](#alg:classical_shadow){reference-type="ref"
+reference="alg:classical_shadow"}.
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+
+$$\begin{align}
+        \mathbb{E}_{\hat \rho} \text{tr}(O \hat \rho_1\cdots \hat \rho_k) &= \mathbb{E}_{U_i \sim \mathcal{U}}\mathbb{E}_{\mathbf{b}_i \sim U_i \rho U_i^\dagger} \text{tr}\left[O \prod_{i =1}^{k}\mathcal{M}^{-1}(U_i^\dagger \ket{\mathbf{b}_i}\!\bra{\mathbf{b}_i} U_i)\right]\\
+        &=  \text{tr}\left[O \prod_{i =1}^{k}\mathcal{M}^{-1}(\mathbb{E}_{U_i \sim \mathcal{U}}\mathbb{E}_{\mathbf{b}_i \sim U_i \rho U_i^\dagger}U_i^\dagger \ket{\mathbf{b}_i}\!\bra{\mathbf{b}_i} U_i)\right]=\text{tr}(O \rho^k).
+\end{align}$$ 
+:::
+
+While we do not care about the computational complexity in the most
+case, the computation of $\text{tr}(O \hat \rho^k)$ can be reconstructed
+as
+$\bra{\mathbf b}(U\mathcal{M}^{-1, \dagger}(O)U^\dagger) \ket{\mathbf b}$,
+thus might be processed efficiently if the randomized unitaries $U$ is
+classical tractable and the target operator $O$ can be decomposed into
+poly(n) numbers of simple operators.
+
+The sampling complexity of any classical shadows scheme depends on both
+the choice of unitary distribution $\mathcal{U}$ and the particular set
+of properties $O$ of interest.
+
+### The inverse channel $\mathcal{M}$
+
+The explicit form of channel $\mathcal{M}$ rely on the choice of unitary
+ensembles. Results of $\mathcal{M}$ are known for global and on site
+2-design unitary ensembles, 2-design unitary ensemble, fermionic
+Gaussian unitary ensemble, manybody Gaussian unitary ensemble, and
+locally scrambled unitaries ensemble. In this subsection we summarized
+these results.
+
+::: {#lem-onsite_2design .callout-important icon="false"}
+## (onsite 2design)
+A $k$-site
+2-design unitary ensembles $\mathbf{D}_{2}(d^k)^{\otimes n}$ separates
+$n\cdot k$ numbers of qudits in to $n$ parts, and independently
+implements $k$-qudit 2-design unitary, as defined in
+Definition [\[def:t_design\]](#def:t_design){reference-type="ref"
+reference="def:t_design"}, within each part. In other words,
+$\mathbf{D}_{2}(d^k)^{\otimes n}:=\{\bigotimes_{i  =1}^n U_i| U_i \sim \mathbf{D}_{2}(d^k)\}$.
+This ensemble induces the channel $$\begin{align}
+        \mathcal{M}(\rho) = (\mathcal{D}_{1/(2^k + 1)})^{\otimes n}(\rho), \text{with~} \mathcal{D}_{1/(2^k + 1)}(\cdot) = \frac{1}{2^k +1}(\cdot) + \frac{\text{tr}(\cdot)}{2^k + 1}{\mathbb{I}(d^k)}.
+\end{align}$$ Specifically, the global 2-design unitary ensemble takes
+the case $n = 1$, $U \sim \mathbf{D}_{2}(d^k)$,and the channel
+$\mathcal{M}(\rho) ={(d^k + 1)^{-1}} \rho + {d^k{(d^k + 1)^{-1}}  \text{tr}\rho \cdot }({\mathbb{I}(d^k)}/{d^k})$.
+The local 2-design unitary ensemble takes the case $k = 1$,
+$U \sim \mathbf{D}_{2}(d)^{\otimes n}$,and the channel
+$\mathcal{M}(\rho) = {(d + 1)}^{-1} \rho + {d({d + 1})^{-1} \text{tr}\rho} \cdot ({\mathbb{I}(d)}/{d})$.
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+For tensor product inputs
+$\otimes_{i = 1}^n \rho_i, \rho_i \in \mathcal{D}(\mathcal{H}(d^k))$,
+the channel $\mathcal{M}$ in this case became 
+$$\begin{align}
+    \mathcal{M}(\otimes_{i = 1}^n \rho_i) 
+    &=\mathbb{E}_{\substack{U = \bigotimes_{i=1}^n\text{U}_i \\ \text{U}_i \sim \mathbf{D}_{2}(d^k)}} \sum_{\mathbf{r} \in \mathbb{F}_d^{kn}} \bra{{\mathbf r}} \text{U} (\otimes_{i = 1}^n \rho_i) \text{U}^{\dagger} \ket{{\mathbf r}} \cdot \text{U}^{\dagger} \ket{{\mathbf r}}\!\bra{{\mathbf r}} \text{U} \notag\\
+    &=\mathbb{E}_{\substack{U = \bigotimes_{i=1}^n\text{U}_i \\ \text{U}_i \sim \mathbf{D}_{2}(d^k)}} \sum_{\mathbf{r} \in \mathbb{F}_d^{kn}} \text{tr}_{\bar A} \left( \left(\otimes_{i = 1}^n \rho_i^{(\bar A)} \otimes \mathbb{I}^{(A)}(d^{kn})\right)\cdot  (\text{U}^{\dagger} \ket{{\mathbf r}}\! \bra{{\mathbf r}} \text{U})^{(\bar A)} \otimes (\text{U}^{\dagger} \ket{{\mathbf r}}\!\bra{{\mathbf r}} \text{U})^{(A)} \right)\notag\\
+    &= \text{tr}_{\bar A}\left( \left(\otimes_{i = 1}^n \rho_i^{(\bar A)}\otimes \mathbb{I}^{(A)}(d^{kn})\right) \cdot \bigotimes_{i = 1}^n \sum_{\mathbf{r}_i \in \mathbb{F}_d^k} \mathbb{E}_{\substack{\text{U}_i \sim \mathbf{D}_{2}(d^k)}}  (\text{U}_i^{\dagger} \ket{\mathbf{r}_{i}}\bra{\mathbf{r}_{i}} \text{U}_i)^{(\bar A)} \otimes (\text{U}_i^{\dagger} \ket{\mathbf{r}_{i}}\!\bra{\mathbf{r}_{i}} \text{U}_i)^{(A)} \right)\notag\\
+    &=  \text{tr}_{\bar A}\left( \left(\otimes_{i = 1}^n \rho_i^{(\bar A)}\otimes \mathbb{I}^{(A)}(d^{kn})\right) \cdot \bigotimes_{i = 1}^n \sum_{\mathbf{r}_{i}\in \mathbb{F}_d^{k}} \Phi_2(\ket{\mathbf{r}_{i}}\!\bra{\mathbf{r}_{i}}^{\otimes 2})^{(\bar A A)} \right)\notag \\
+    &= \text{tr}_{\bar A}\left( \left(\otimes_{i = 1}^n \rho_i^{(\bar A)}\otimes \mathbb{I}^{(A)}(d^{kn})\right) \cdot \bigotimes_{i = 1}^n d^{k} \frac{\mathbb{I}^{(\bar A)}(d^k)\otimes \mathbb{I}^{(A)}(d^k)+ \mathbb{P}_{(12)}^{d,(\bar A A)}}{(d^k+1) \cdot d^k}\right).\label{eq:k_copy_shadow_channel}
+\end{align}$$
+Here in the second line, we use the fact that
+$\ket{{r}_x {r}_z} =H_z \text{CNOT}_{zx} \ket{\Phi_{r_xr_z}}$, with
+$H_z \text{CNOT}_{zx} \in \mathbf{D}_{2}(d^k)$. If we expand $\rho$ on
+separable basis $\rho = \bigotimes_{i =1}^n \rho_{i}$, plug in
+Eq. [\[eq:k_copy_shadow_channel\]](#eq:k_copy_shadow_channel){reference-type="ref"
+reference="eq:k_copy_shadow_channel"}, and use the fact that
+$\text{tr}_{\bar A}(\mathbb{P}_{(12)}^{d,(\bar A A)}\cdot \rho^{(\bar A)}\otimes \mathbb{I}^{(A)}) = \rho^{(A)}$,
+we get the channel output $$\begin{align}
+    \mathcal{M}(\otimes_{i = 1}^n \rho_i) 
+    &= \bigotimes_{i = 1}^n \text{tr}(\rho_i) \frac{\mathbb{I}(d^k)}{d^k + 1} + \frac{1}{d^k +1}\rho_i = \mathcal{D}^{\otimes n}_{{1}/{(d^k +1)}}(\otimes_{i = 1}^n \rho_i).
+\end{align}$$ By the linearity of $\mathcal{M}$, we conclude that its
+inverse
+$\mathcal{D}_{{1}/{(d^k +1)}}^{-1}(\rho) = (d^k + 1)\rho - \text{tr}\rho \cdot \mathbb{I}(d^k)$
+constitute an unbiased estimator of
+$\rho \in \mathcal{D}(\mathcal{H}(d^{nk}))$ through the transformation
+$$\begin{align}
+     \hat \rho_{U,\mathbf b} =\mathcal{M}^{-1}(\text{U}^\dagger \ket{\mathbf b}\!\bra{\mathbf b} \text{U})=\bigotimes_{i =1}^n\left((d^k +1)\text{U}_i^{\dagger} \ket{\mathbf{b}_i}\!\bra{\mathbf{b}_i} \text{U}_i - \mathbb{I}(d^k)\right).
+\end{align}$$ ◻
+:::
+
+This 2-design unitary ensemble includes the Clifford randomized
+measurement and the randomized Pauli basis measurement, as proposed
+in [@huang2020predicting]. Consider the unitary ensemble $\mathcal{E}$
+that Following the previous research, we review the estimation variance
+in the case with (i)the Clifford
+ensemble [@huang2020predicting; @mele2024introduction], (ii)the local
+Clifford ensemble [@huang2020predicting], and (iii). the Matchgate
+ensemble.
+
+## Global shadow and shallow shadows
+
+The first case is the Clifford shadow. It turns out that this ensemble
+is suitable for low-rank operators $O$ whose trace norm $\text{tr}(O^2)$
+is small. This condition is satisfied for entangled pure-state
+projectors but not for Pauli observables.
+
+::: {.callout-important icon="false"}
+## Lemma
+
+[]{#lemma:Clifford_shadow label="lemma:Clifford_shadow"} In the case of
+${U} \sim \text{Cliff}(2^n)$ and $\hat{o}:= \text{tr}(O\hat \rho)$, we
+have: $$\begin{align}
+        \text{Var}(\hat o)= \frac{(2^n +1)}{(2^n+2)}\left[\text{tr}(O_0^2) +2\text{tr}(\rho O_0^2)\right] - \text{tr}^2(O_0\rho) \leq 3\text{tr}(O_0^2)
+\end{align}$$
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+
+*Proof.* To calculate the variance of this estimator, we note that
+$\text{Var}(\hat o):= \mathbb{E}_{\hat \rho} \hat{o}_0^2 - [\text{tr}(O_0\rho)]^2$,
+where $O_0$ is the traceless version of $O$. Then we give the value of
+$\mathbb{E}_{\hat \rho} \hat{o}^2$ as $$\begin{align}
+        \mathbb{E}_{\hat \rho} \hat{o}^2 &= \mathbb{E}_{U \sim \mathcal{M}}\mathbb{E}_{\mathbf{b} \sim U \rho U^\dagger} \text{tr}^2\left[O\mathcal{M}^{-1}(U^\dagger \ket{\mathbf{b}}\!\bra{\mathbf{b}} U)\right]
+        =\mathbb{E}_{U \sim \mathcal{M}}\mathbb{E}_{\mathbf{b} \sim U \rho U^\dagger} \text{tr}^2\left[\mathcal{M}^{-1}(O)U^\dagger \ket{\mathbf{b}}\!\bra{\mathbf{b}} U\right]
+\end{align}$$ This average can also be reduced to the Weingarten
+calculus through: $$\begin{align}
+        \mathbb{E}_{\hat \rho} \hat{o}^2 &=  \mathbb{E}_{U \sim \text{Cl}(n)}\mathbb{E}_{\mathbf{b} \sim U\sigma U^\dagger}\bra{\mathbf b}U\mathcal{M}^{-1}(O) U^\dagger\ket{\mathbf b}^2\\
+        &=\mathbb{E}_{U \sim \text{Cliff}_2}\sum_{\mathbf b}\bra{\mathbf b}U \rho U^\dagger \ket{\mathbf{b}} \bra{\mathbf b}U\mathcal{M}^{-1}(O) U^\dagger\ket{\mathbf b} \bra{\mathbf b}U\mathcal{M}^{-1}(O) U^\dagger\ket{\mathbf b}\\
+        &= \text{tr}\left[(\rho \otimes \mathcal{M}^{-1}(O)\otimes \mathcal{M}^{-1}(O))\cdot \sum_{\mathbf b}  \Phi_{3}(\ket{\mathbf{bbb}}\!\bra{\mathbf{bbb}})\right],
+\end{align}$$ where the last step use the fact that the Clifford group
+forms a 3-design. Cite the
+Lemma [\[lemma:state_trajectory\]](#lemma:state_trajectory){reference-type="ref"
+reference="lemma:state_trajectory"} again gives $$\begin{align}
+    &\Phi_3(\ket{\mathbf{bbb}}\!\bra{\mathbf{bbb}}) = \frac{\sum_{\pi \in S_3} \mathbb{P}_{\pi}^{2^n}}{(2^n+2)(2^n+1)},\\
+    \mathbb{E}_{\hat \rho} \hat{o}^2 &=\frac{\mathrm{tr}(\rho) \mathrm{tr}^2(\mathcal{M}^{-1}) + \mathrm{tr}(\rho) \mathrm{tr}((\mathcal{M}^{-1})^2) +2\mathrm{tr}(\rho \mathcal{M}^{-1}) \mathrm{tr}(\mathcal{M}^{-1}) + 2\mathrm{tr}(\rho(\mathcal{M}^{-1})^2)}{(2^n+2)(2^n+1)}.
+\end{align}$$ Use the fact that $O_0$ is traceless,
+$\mathcal{M}^{-1}(O_0)= (2^n +1)O_0$, we give the final result
+$$\begin{align}
+    \mathbb{E}_{\hat \rho} \hat{o}^2 &= \frac{(2^n +1)^2\left[\text{tr}(\rho)\text{tr}(O_0^2) +2\text{tr}(\rho O_0^2)\right]}{(2^n+2)(2^n+1)},\\
+    \text{Var}(\hat o) &=\frac{(2^n +1)}{(2^n+2)}\left[\text{tr}(\rho)\text{tr}(O_0^2) +2\text{tr}(\rho O_0^2)\right] - \text{tr}^2(O_0\rho).
+\end{align}$$ ◻
+:::
+
+## Local shadows
+
+### The 3-design local shadow.
+
+The second case is the local Clifford shadow, which chooses uniform
+ensemble on ${U} \sim \text{Cliff}_2^{\otimes n}$. It turns out that
+this ensemble is suitable for operators $O$ that only supports on
+constant sized qubits. This condition, in contrast with the Clifford
+shadow, is satisfied for Pauli observables but not for entangled
+pure-state projectors. Given an operator $O = \sum_{P} \alpha_{P} P$
+decomposed on the Pauli basis, we have
+$\hat o (\{U,\mathbf{b}\}) =  \mathrm{tr}\left(O\hat{\rho}_{U,\mathbf{b}} \right) = \bra{\mathbf b}U\tilde{\mathcal{M}}^{-1}({O}) U^\dagger\ket{\mathbf b}$
+since $\mathcal{M}^{-1} = \mathcal{M}^{-1,\dagger}$. Use the fact that
+$\tilde {\mathcal{M}}= (\mathcal{D}_{1/3})^{\otimes k}$ and the identity
+$\mathcal{D}_{1/3}^{-1}(P) = 3P - \text{tr}(P)\mathbb{I} =f(P) P := \begin{cases}3P& \text{if~} P = X,Y,Z \\ \mathbb{I} &\text{if~} P = \mathbb{I}\end{cases}$,
+we extend this definition to $n$-qubit case through
+$f(P,Q) = \prod_{i=1}^n f(P_i, Q_i)$, with
+$f(P_i, Q_i) = \begin{cases}3 \delta_{P_i,Q_i}& \text{if~} P_i,Q_i \in \{X,Y,Z\} \\ 1 &\text{if else}\end{cases}$.
+Noted that $U\ket{\mathbf{b}}$ is an eigenvector of Pauli operator
+$P_{U}$ with eigenvalue $s(U,\mathbf{b})$. We conclude that
+$\hat o (\{U,\mathbf{b}\})= \sum_{P}\alpha_P f(P,P_{U})s(\mathbf{b})$.
+Then the variance of the estimator $\hat{o}$ can be calculated below.
+
+::: {#lem-LC_shadow .callout-important icon="false"}
+## (Variance of k-local shadow)
+
+Given a the k-local
+operator with Pauli decomposition
+$O =\mathbb{I}_{n-k}\otimes  \sum_{P \in \mathcal{P}(k)} \alpha_{P} P$,
+the unbiased estimator $\hat{o}$ above has variance 
+$$\begin{align}
+        \mathbb{E}_{U,\mathbf{b}}(\hat{o}^2) =\text{tr} \left(\tilde{\rho} \cdot \sum_{P,Q}\alpha_P \alpha_Q f(P,Q)P\cdot Q \right) \leq 4^k\|O\|_{\infty}^2.
+\end{align}
+$$
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+Similarly, we first noted that given an observable
+$O = \tilde{O} \otimes \mathbb{I}_{n-k}$ that supports on $k$-qubits, we
+have 
+$$
+\begin{align*}
+        \langle \hat{o}^2 \rangle_{\rho} =\mathbb{E}_{U \sim \text{Cliff}(2)^{\otimes k}}\sum_{\mathbf b}\bra{\mathbf b}U \tilde{\rho} U^\dagger \ket{\mathbf{b}} \bra{\mathbf b}U\tilde{\mathcal{M}}^{-1}(\tilde{O}) U^\dagger\ket{\mathbf b}^2,
+\end{align*}
+$$ {#eq-ave_of_square_LCshadow}
+ where $\tilde{\rho}$ is the reduced state of $\rho$ that
+supports on $k$-qubits. After this, we expand the k-qubit non-identity
+part within $\tilde{O}$ into the linear combination of Pauli operators
+as
+$\tilde{O} = \sum_{P \in \{\mathbb{I},X,Y,Z\}^{\otimes k}} \alpha_{P} P$
+as well as the reduced state
+$\tilde{\rho} = \sum_{s} \beta_s \bigotimes_{i =1}^n\tilde{\rho}^{(s)}_i$.
+It is thus sufficient to calculate @eq-ave_of_square_LCshadow pointwise as 
+$$
+\begin{align*}
+        \langle \hat{o}^2 \rangle_{\rho} &= \sum_{P,Q,s}\beta_s\alpha_{P}\alpha_Q\prod_{i = 1}^n \mathbb{E}_{U \sim \text{Cliff}(2)} \!\!\!\sum_{b_i \in \{0,1\}}\!\!\! \bra{b_i}U \tilde{\rho}_j^{(s)} U^\dagger \ket{b_i} \bra{b_i}U\tilde{\mathcal{M}}^{-1}(P_i) U^\dagger\ket{b_i}\bra{b_i}U\tilde{\mathcal{M}}^{-1}(Q_i) U^\dagger\ket{b_i}\\
+        &=\sum_{P,Q,s}\beta_s\alpha_{P}\alpha_Q\prod_{i = 1}^n f(P_i)f(Q_i)\sum_{b_i \in \{0,1\}} \left[(\tilde{\rho}^{(s)}_i \otimes P_i \otimes Q_i)\cdot \mathbb{E}_{U \sim \text{Cliff}(2)} U^{\otimes 3}\ket{b_i}\!\bra{b_i}^{\otimes 3}U^{\otimes 3,\dagger}\right].
+\end{align*}
+$$
+
+Again from
+Lemma [\[lemma:state_trajectory\]](#lemma:state_trajectory){reference-type="ref"
+reference="lemma:state_trajectory"},
+$\mathbb{E}_{U \sim \text{Cliff}(2)} U^{\otimes 3}\ket{b_i}\!\bra{b_i}^{\otimes 3}U^{\otimes 3,\dagger} = (4 \times 3 \times 2)^{-1}\sum_{\pi \in S_3} \mathbb{P}_{\pi}^{d =2}$,
+which gives $$\begin{align}
+     \langle \hat{o}^2 \rangle_{\rho} = (\frac{1}{12})^n\sum_{P,Q}\alpha_{P}\alpha_Q\sum_s \beta_s\prod_{i = 1}^n f(P_i)f(Q_i)&\left[ \text{tr}(P_i)\text{tr}(Q_i)\text{tr}(\tilde{\rho}^{(s)}_i)+\text{tr}(\tilde{\rho}^{(s)}_i P_i)\text{tr}(Q_i) + \text{tr}(P_i)\text{tr}(\tilde{\rho}^{(s)}_i Q_i)\right.\notag\\
+    & \left.+\text{tr}(\tilde{\rho}^{(s)}_i)\text{tr}(P_iQ_i) + \text{tr}(P_i \tilde{\rho}^{(s)}_i Q_i)+\text{tr}(Q_i \tilde{\rho}^{(s)}_i P_i)\right]\label{eq:mid_sqr_ave}.
+\end{align}$$ Depending on three cases, we calculate the RHS after the
+$\sum_{s} \beta_{s}\prod_i$ signal as $$\begin{align}
+    \sum_{s} \beta_{s}\prod_{i = 1}^n[\cdots] = 
+    \begin{cases}
+        \prod_{i = 1}^n1\cdot 1\cdot [4+2+2+2+1+1] &\text{if~} P_i=Q_i = \mathbb I,\\
+        \sum_{s} \beta_{s}\prod_{i = 1}^n1 \cdot 3 \cdot[2 + 1 + 1]\cdot \text{tr}(\tilde{\rho}^{(s)}_i Q_i)]&\text{if~} P_i = \mathbb I\neq Q_i,\\
+        \sum_{s} \beta_{s}\prod_{i = 1}^n3 \cdot 1 \cdot[2 + 1 + 1]\cdot \text{tr}(\tilde{\rho}^{(s)}_i P_i)]&\text{if~} Q_i = \mathbb I\neq P_i,\\
+        \sum_{s} \beta_{s}\prod_{i = 1}^n3 \cdot 3 \cdot[2 +1+1] \text{tr}(\tilde{\rho}^{(s)}_i)\delta_{P_i,Q_i}&\text{if~} Q_i, P_i \neq \mathbb I.
+    \end{cases}
+\end{align}$$ Here in the last equality, we use the fact that
+$\mathcal{C}(P_i) = \{P_i, \mathbb{I}\}$ and $$\begin{align}
+    \forall Q_i, P_i \neq \mathbb I, \text{tr}(\tilde{\rho}^{(s)}_i \{Q_i,P_i\}) = \begin{cases}0 &\text{if~} Q_i \notin \mathcal{C}(P_i)\backslash \mathbb{I}\\2\text{tr}(\tilde{\rho}^{(s)}_i Q_iP_i)  &\text{if~} Q_i \in \mathcal{C}(P_i)\backslash \mathbb{I} \end{cases} = 2\text{tr}(\tilde{\rho}^{(s)}_i)\delta_{P_i,Q_i}.
+\end{align}$$ Plug this equation into
+Eq.[\[eq:mid_sqr_ave\]](#eq:mid_sqr_ave){reference-type="eqref"
+reference="eq:mid_sqr_ave"} gives us the final results $$\begin{align}
+    \langle \hat{o}^2 \rangle_{\rho} &= \left\{\begin{aligned}
+        &\sum_{P,Q}\alpha_{P}\alpha_Q \text{~if~} P_i=Q_i = \mathbb I,\\
+        &\sum_{P,Q,s}\beta_s\alpha_{P}\alpha_Q\prod_i\text{tr}(\tilde{\rho}^{(s)}_i  \mathbb{I} \cdot Q_i)\text{~if~} P_i = \mathbb I\neq Q_i,\\
+        &\sum_{P,Q,s}\beta_s\alpha_{P}\alpha_Q\prod_i\text{tr}(\tilde{\rho}^{(s)}_i  P_i\cdot \mathbb{I})\text{~if~} Q_i = \mathbb I\neq P_i,\\
+        &\sum_{P,Q,s}\beta_s\alpha_{P}\alpha_Q\prod_i3\delta_{P_i,Q_i}\text{~if~} Q_i,P_i \neq \mathbb I
+    \end{aligned}\right.:= \sum_{P,Q,s}\beta_s \alpha_P \alpha_Q\prod_i f(P_i,Q_i) \text{tr}(\tilde{\rho}^{(s)}_i P_iQ_i)\\
+   &=\text{tr} \left(\tilde{\rho} \cdot \sum_{P,Q}\alpha_P \alpha_Q \left(\prod_{i = 1}^n f(P_i,Q_i)\right)P\cdot Q \right):=\text{tr} \left(\tilde{\rho} \cdot \sum_{P,Q}\alpha_P \alpha_Q f(P,Q)P\cdot Q \right) .
+\end{align}$$ To show the upper bounds, we noted that (i). If $P,Q$ can
+both be obtained from replacing certain parts of $S \in \{X,Y,Z\}^{k}$
+with idendity $\mathbb I$, which we denoted as $P,Q\subset S$, then
+$f(P,Q) \neq 0$, and (ii). If $f(P,Q) \neq 0$, we count the number of
+position at which $P_i = Q_i = \mathbb{I}$ as ${k-|P\cup Q|}$. Then this
+implies there are $3^{k-|P\cup Q|}$ numbers of $S \in \{X,Y,Z\}^k$ s.t.
+$P,Q\subset S$. Such a non-zero value $f(P,Q)$ is decided by the length
+of the overlap parts between $P,Q\subset S$, which satisfied
+$f(P,Q) =3^{|P| +|Q| -|P \cup Q|}$. This gives $$\begin{align}
+    \sum_{P,Q}\alpha_P \alpha_Q f(P,Q)P\cdot Q &= \sum_{S\in \{X,Y,Z\}^{k}}\sum_{P,Q \subset S} 3^{|P\cup Q| - k}\alpha_P \alpha_Q f(P,Q) P\cdot Q \\
+    &=\sum_{S\in \{X,Y,Z\}^{k}}\sum_{P,Q \subset S} 3^{|P|+ |Q| - k} \alpha_P P \cdot \alpha_Q Q  = 3^{-k}\sum_{S\in \{X,Y,Z\}^{k}}\!\!\left(\sum_{P\subset S} 3^{|P|} \alpha_P P \right)^2.
+\end{align}$$ Then we can upper bound the variance based on the fact
+that $\sum_{P\subset S} 3^{|P|} = (3+1)^{|S|} = 4^k$, $$\begin{align}
+    \langle \hat{o}^2 \rangle_{\rho} &\leq 3^{-k}\left\|\sum_{S\in \{X,Y,Z\}^{k}}\left(\sum_{P\subset S} 3^{|P|}\alpha_P P \right)^2\right\|_{\infty} \leq 3^{-k} \sum_{S\in \{X,Y,Z\}^{k}}\left(\sum_{P\subset S} 3^{|P|}\alpha_P \right)^2\\
+    &\leq 3^{-k} \sum_{S\in \{X,Y,Z\}^{k}}\left(\sum_{P\subset S} 3^{|P|}\right) \left(\sum_{P\subset S}3^{|P|}\alpha_P^2 \right) = 4^k \sum_{S\in \{X,Y,Z\}^{k}} \left(\sum_{P\subset S}3^{|P| - k}\alpha_P^2 \right).
+\end{align}$$ Notice that
+$\forall P \in \{I,X,Y,Z\}^{k}, \exists 3^{|P| - k}$ numbers of
+$S \in \{X,Y,Z\}$ s.t. $P \subset S$ (S that generated from replacing
+$\mathbb{I}$ within $P$ by $\{I,X,Y\}$). This means that $$\begin{align}
+    \sum_{S\in \{X,Y,Z\}^{k}} \left(\sum_{P\subset S}3^{|P| - k}\alpha_P^2 \right) = 4^k\sum_{P \in \{I,X,Y,Z\}^{k}} \alpha_P^2 = 2^k \text{tr}(\tilde{O}^2) \leq 4^k \|\tilde{O}\|_{\infty}.
+\end{align}$$ ◻
+:::
+
+The Local shadow above can be reframed into biased one and introduce
+adaptive strategy.
+
+::: {.callout-important icon="false"}
+## Lemma
+
+:::
+
+### Application of single-copy shadows
+
+### Estimates linear properties. {#estimates-linear-properties. .unnumbered}
+
+Then we discuss the power of classical shadow in estimating
+exponentially many linear properties
+$\text{tr}(O_i\hat \rho), \forall i \in \{1,\cdots,M\}$, as shown in
+Problem [\[prob:linear_shadow\]](#prob:linear_shadow){reference-type="ref"
+reference="prob:linear_shadow"} and
+Lemma [\[lemma:linear_sing_shadow\]](#lemma:linear_sing_shadow){reference-type="ref"
+reference="lemma:linear_sing_shadow"} below.
+
+::: problem
+[]{#prob:linear_shadow label="prob:linear_shadow"} Given output state
+$\rho$ and any collection of operators $\mathcal{O}:=\{O_1,\cdots,O_M\}$
+with $\|O_i\|_{\infty} \leq 1$, to get enough classical descriptions
+that estimates $\text{tr}(O_x \rho), \forall O_x \in \mathcal{O}$ within
+$\varepsilon$ additive error and $1 - \delta$ success probability.
+:::
+
+::: {.callout-important icon="false"}
+## Lemma
+
+[]{#lemma:linear_sing_shadow label="lemma:linear_sing_shadow"} To solve
+Problem [\[prob:linear_shadow\]](#prob:linear_shadow){reference-type="ref"
+reference="prob:linear_shadow"}, We can either (i).measure on the
+eigenbasis of $O_1,\cdots ,O_M$ separately, each one for
+$\varepsilon^{-2}\ln(M/\delta)$ times, or (ii).use global Clifford
+shadow tomography and generate
+$N = 2^{\text{rank}(\mathcal{O})}\varepsilon^{-2}\log(M/\delta)$ numbers
+of classical shadows.
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+
+*Proof.* ◻
+:::
+
+Unfortunately,
+Lemma [\[lemma:linear_sing_shadow\]](#lemma:linear_sing_shadow){reference-type="ref"
+reference="lemma:linear_sing_shadow"} implies the inefficiency of global
+Clifford classical shadow in estimating linear properties $\mathcal{O}$,
+if $\text{tr}(O_i^2)$ is exponentially large. A practical example
+involves $\mathcal{O}:=\{\mathbb{I},X,Y,Z\}^{\otimes n}$, which we
+called the *Pauli shadow tomography* and requires sampling complexity
+$N \sim 4^n \cdot n$ for case(i) and $N \sim 2^n\cdot n$ for case(ii).
+Both of them are exponentially hard. Interestedly, there exists simple
+**local two-copy** strategy that solve the Pauli shadow tomography, as
+described in
+Algorithm [\[alg:est_Pauli_const\]](#alg:est_Pauli_const){reference-type="ref"
+reference="alg:est_Pauli_const"} below. Combining the lower bound proof
+in section [\[sec:lb_shadow\]](#sec:lb_shadow){reference-type="ref"
+reference="sec:lb_shadow"}, this manifests a sharp transition of
+sampling complexity between the single copy strategy and the two-copy
+strategy for Pauli shadow tomography.
+
+Consuming only $\mathcal{O}(n)$ numbers of $\rho$,
+Algorithm [\[alg:est_Pauli_const\]](#alg:est_Pauli_const){reference-type="ref"
+reference="alg:est_Pauli_const"} collects enough **classical Bell
+shadow** that are able to estimate $|\text{tr}(\rho P)|^2$ within
+constant error for each Pauli operator. The power of
+Algorithm [\[alg:est_Pauli_const\]](#alg:est_Pauli_const){reference-type="ref"
+reference="alg:est_Pauli_const"} derived from the common unbiased
+estimator for
+$\text{tr}(\rho \otimes \rho \cdot \sigma_{\mathbf r} \otimes \sigma_{\mathbf r})$
+
+:::: algorithm
+::: algorithmic
+$n$-qubit density matrix $\rho$ and a set of target Pauli operator
+$\{\sigma_{\mathbf{y}^{(1)}},\cdots,\sigma_{\mathbf{y}^{(M)}}\}$.
+Collect enough classical information such that
+$\forall i, |\text{tr}(\rho \sigma_{\mathbf{y}^{(i)}})|^2$ can be
+estimated within $\varepsilon$ additive error and $1 - \delta$ success
+rate. Implements $N \sim 4 \ln(2M/\delta)/\varepsilon^2$ times Bell
+measurement and restore the result $\mathbf{r}_1, \cdots, \mathbf{r}_N$
+with $\mathbf{r}_i \in \mathbb{F}_2^{2n}$. To estimate
+$|\text{tr}(\rho \sigma_{\mathbf{y}})|^2$, take the xz decomposition of
+$\mathbf y = (\mathbf{y}_x, \mathbf{y}_z)$ Calculate the average and
+return
+$R =({1}/{N})\cdot\sum_{i = 1}^N(-1)^{[\mathbf r_i, \mathbf y]+\mathbf y_{x} \cdot \mathbf y_z}$.
+:::
+::::
+
+After that, we show
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+
+*Proof of
+Algorithm [\[alg:est_Pauli_const\]](#alg:est_Pauli_const){reference-type="ref"
+reference="alg:est_Pauli_const"}.* We first show the unbiasedness. Use
+the property of Bell sampling in
+Theorem [\[theo: Bell_prob\]](#theo: Bell_prob){reference-type="ref"
+reference="theo: Bell_prob"}, we conclude that for
+$\rho = \sum_{\mathbf{u}}c_{\mathbf{u}} \sigma_{\mathbf{u}}$,
+$$\begin{align}
+        \mathbb{E}_{\mathbf{r} \sim P(\mathbf r)}(-1)^{[\mathbf r, \mathbf y]+\mathbf y_{x} \cdot \mathbf y_z} &= \sum_{\mathbf{r} \in \mathbb{F}_2^{2n}} \text{tr}(\rho \sigma_{\mathbf{r}} \rho^* \sigma_{\mathbf{r}})(-1)^{[\mathbf r, \mathbf y]+\mathbf y_{x} \cdot \mathbf y_z}=\sum_{\mathbf{r},\mathbf{u},\mathbf{v} \in \mathbb{F}_2^{2n}} c_{\mathbf{u}}c_{\mathbf{v}}^*\text{tr}(\sigma_{\mathbf{u}} \sigma_{\mathbf{r}} (-1)^{\mathbf{v}_x \cdot \mathbf{v}_y}\sigma_{\mathbf{v}} \sigma_{\mathbf{r}})(-1)^{[\mathbf r, \mathbf y]+\mathbf y_{x} \cdot \mathbf y_z} \notag \\
+        &=\sum_{\mathbf{r},\mathbf{u},\mathbf{v} \in \mathbb{F}_2^{2n}} c_{\mathbf{u}}c_{\mathbf{v}}^*2^n\delta_{\mathbf u, \mathbf v}(-1)^{[\mathbf r, \mathbf y + \mathbf v]+\mathbf y_{x} \cdot \mathbf y_z +\mathbf{v}_x \cdot \mathbf{v}_y} = 4^n |c_{\mathbf{y}}|^2= |\text{tr}(\rho \sigma_{\mathbf y})|^2.
+\end{align}$$ ◻
+:::
+
+Discussion above can be generalized to $c$-copy strategy for the $d = c$
+Weyl-Heisenberg shadow tomography, as defined below
+
+::: problem
+Given a $n$-qudit state $\rho$, design a sampling method to estimate the
+value $|\text{tr}(W_{\mathbf{a}}\rho)|$ with a constant additive error
+$\varepsilon$ for all $n$-qudit Weyl-Heisenberg operator
+$\{W_{\mathbf{a}}\}_{\mathbf{a} \in \mathbb{F}_d^{n}}$.
+:::
+
+Unlike the qubit-Pauli operator, in this case
+$\{W_{\mathbf{a}}^{\otimes d}\}$ are mutually commutant because
+$W_{\mathbf{a}}^{\otimes d} W_{\mathbf{b}}^{\otimes d} =\omega^{d[\mathbf{b},\mathbf{a}]} (W_{\mathbf{b}}W_{\mathbf{a}})^{\otimes d}$
+according to
+lemma [\[lemma:properties_WHop\]](#lemma:properties_WHop){reference-type="ref"
+reference="lemma:properties_WHop"} and $\omega^{d} = 1$. We thus find
+the common eigenbasis for operators
+$\{W_{\mathbf{a}}^{\otimes d}\}_{\mathbf{a} \in \mathbb{F}_{d}^n}$. In
+the case with $n = 1$, it turns out that those eigenvectors can be
+specified by labels $I \in \mathbb{F}_{d}^{d - 1}$ and
+$q \in \mathbb{F}_{d}$ as
+$\ket{\phi_{I,q}} = \frac{1}{\sqrt{d}} \sum_{k = 0}^{d - 1} \omega^{kq} \ket{(0,I) + k \mathbf{1}},$
+with $X^{\otimes d}\ket{\phi_{I,q}} = \omega^{-q} \ket{\phi_{I,q}}$ and
+$Z^{\otimes d}\ket{\phi_{I,q}} = \omega^{|I|} \ket{\phi_{I,q}}$.
+
+::: {.callout-important icon="false"}
+## Lemma
+
+Define a coarse-grained projector
+$\Pi_{s_x, s_z} = \sum_{I \in \mathbb{F}_{d}^{d-1}, |I| = s_x} \ket{\phi_{I,s_z}}\!\bra{\phi_{I,s_z}}$
+and its tensor product operator
+$\Pi_{\mathbf{s}} = \Pi_{\mathbf{s}_x, \mathbf{s}_z}:= \bigotimes_{i = 1}^n \Pi_{s_{x,i}, s_{z,i}}$.
+Then we have: $$\begin{align}
+        (X^{\mathbf{r}_x}Z^{\mathbf{r}_z})^{\otimes d} = \sum_{\mathbf{s}\in \mathbb{F}_d^{2n}} \omega^{[\mathbf{s}, \mathbf{r}]} \Pi_{\mathbf{s}}, \quad \Pi_{\mathbf{s}} =d^{-2n} \sum_{\mathbf{r} \in \mathbb{F}_d^{2n}}\omega^{-[\mathbf{s}, \mathbf{r}]}(X^{\mathbf{r}_x}Z^{\mathbf{r}_z})^{\otimes d}.
+\end{align}$$ The average of operator $X^{\mathbf{r}_x}Z^{\mathbf{r}_z}$
+can be estimated by post-processing the $d$-copy generalized Bell
+measurement result
+$\mathbf{s}\sim \text{tr}\left(\Pi_{\mathbf{s}}\rho^{\otimes d}\right)$
+on d-copy state $\rho^{\otimes d}$ as
+$\left|\text{tr}\left(\left(X^{\mathbf{r}_x}Z^{\mathbf{r}_z}\right) \rho\right)\right| = \left|\mathbb{E}_{\mathbf{s}}~\omega^{[\mathbf{s}, \mathbf{r}]}\right|^{1/d}.$
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+
+*Proof.* We note the relation that $$\begin{align}
+        &X^{\otimes d} = \sum_{{s}_x, {s}_z} \omega^{-s_z}\sum_{I \in \mathbb{F}_{d}^{d-1}, |I| = s_x}\ket{\phi_{I,s_z}}\!\bra{\phi_{I,s_z}} = \sum_{{s}_x, {s}_z} \omega^{-s_z} \Pi_{s_x,s_z},\\
+        &Z^{\otimes d} = \sum_{{s}_x, {s}_z} \omega^{s_x}\sum_{I \in \mathbb{F}_{d}^{d-1}, |I| = s_x}\ket{\phi_{I,s_z}}\!\bra{\phi_{I,s_z}} = \sum_{{s}_x, {s}_z} \omega^{s_x} \Pi_{s_x,s_z}
+\end{align}$$ For a $d$-copies of n-qudit state $\rho^{\otimes d}$, we
+get a generalized relation by defining the tensor product operator
+$\Pi_{\mathbf{s}} = \Pi_{\mathbf{s}_x, \mathbf{s}_z}:= \bigotimes_{i = 1}^n \Pi_{s_{x,i}, s_{z,i}}$
+with $\mathbf{s}\in \mathbb{F}^{2n}_{d}$ and symplectic product in
+finite field $\mathbb{F}_d^{2n}$ as
+$[\mathbf{s}, \mathbf{r}] = \mathbf{s}_x \cdot \mathbf{r}_z - \mathbf{s}_z \cdot \mathbf{r}_x$,
+which write
+$(X^{\mathbf{r}_x})^{\otimes d} = \sum_{\mathbf{s}} \omega^{-\mathbf{r}_x\cdot \mathbf{s}_z} \Pi_{\mathbf{s}}$
+and
+$(Z^{\mathbf{r}_z})^{\otimes d} = \sum_{\mathbf{s}} \omega^{\mathbf{r}_z \cdot \mathbf{s}_x} \Pi_{\mathbf{s}}$.
+Product those two terms and use the fact that
+$\Pi_{\mathbf{s}}\Pi_{\mathbf{s}'} = \Pi_{\mathbf{s}} \delta_{\mathbf{s}, \mathbf{s}'}$
+gives $$\begin{align}
+        (X^{\mathbf{r}_x}Z^{\mathbf{r}_z})^{\otimes d} = \sum_{\mathbf{s}, \mathbf{s}'} \omega^{-\mathbf{r}_x \cdot \mathbf{s}_z} \Pi_{\mathbf{s}} \cdot  \omega^{\mathbf{r}_z \cdot \mathbf{s}_x'} \Pi_{\mathbf{s}'} = \sum_{\mathbf{s}} \omega^{[\mathbf{s}, \mathbf{r}]} \Pi_{\mathbf{s}}.
+\end{align}$$ Use the identity
+$\sum_{\mathbf{s} \in \mathbb{F}_d^{2n}}\omega^{[\mathbf{s}, \mathbf{r} - \mathbf{r}']} = d^{2n} \delta_{\mathbf{r},\mathbf{r}'}$,
+we get the inverse transition
+$\Pi_{\mathbf{s}} =d^{-2n} \sum_{\mathbf{r} \in \mathbb{F}_d^{2n}}\omega^{-[\mathbf{s}, \mathbf{r}]}(X^{\mathbf{r}_x}Z^{\mathbf{r}_z})^{\otimes d}$.
+This then gives
+$\left[\text{tr}\left(\left(X^{\mathbf{r}_x}Z^{\mathbf{r}_z}\right) \rho\right)\right]^{d} = \text{tr}\left(\left(X^{\mathbf{r}_x}Z^{\mathbf{r}_z}\right)^{\otimes d} \rho^{\otimes d}\right) = \sum_{\mathbf{s}\in \mathbb{F}_d^{2n}} \omega^{[\mathbf{s}, \mathbf{r}]}\text{tr}\left(\Pi_{\mathbf{s}}\rho^{\otimes d}\right)$
+and proved the result. ◻
+:::
+
+### Non-linear property. {#non-linear-property. .unnumbered}
+
+Then we discuss the power of classical shadow in estimating the
+non-linear property $\text{tr}(O\rho^k)$. Notice that
+$\text{tr}(O\rho^k) = \text{tr}(O' \cdot \text{SWAP}_{k}^{\otimes n}\rho^{\otimes k})$
+with $O' = O\otimes \mathbb{I}_n^{\otimes (k-1)}$. To estimate the
+non-linear property $\text{tr}(O\rho^k)$ for $k>1$, directly applied the
+Clifford shadow and the local Clifford shadow to operator
+$O'\text{SWAP}_{k}^{\otimes n}$ on a $k$-copies system gives
+exponentially large sampling complexity. According to the lower bound
+shown in
+Lemma [\[lemma:Clifford_shadow\]](#lemma:Clifford_shadow){reference-type="ref"
+reference="lemma:Clifford_shadow"} and
+Lemma [\[lemma:LC_shadow\]](#lemma:LC_shadow){reference-type="ref"
+reference="lemma:LC_shadow"}. 
+This is because 
+$$
+\begin{align}
+    &\mathrm{tr}(O' \cdot \text{SWAP}_{k}^{\otimes n}\cdot O' \cdot \text{SWAP}_{k}^{\otimes n}) = 2^{n(k-2)} \text{tr}^2(O) ,\\
+    &4^{\text{supp}(O'\cdot \text{SWAP}_{k}^{\otimes n})} = 4^{k\cdot n}
+\end{align}
+$$
+ are both exponentially large in the qubit number $n$.
+
+## Lower bounds[]{#sec:lb_shadow label="sec:lb_shadow"}
+
+In this section, we try to present the exponential sampling complexity
+upper bound for the single-copy shadow methods in estimating (i). A
+bunch of high-weight Pauli average
+$O \in \{X,Y,Z\}^{\otimes n},\text{tr}(O \rho)$ and (ii) A bunch of
+second-order value $O \in \mathcal{O}, \text{tr}(O\rho^2)$.
+
+### Reduction of problems
+
+### Linear shadows
+
+We first reduced the linear-shadow task in
+Problem [\[prob:linear_shadow\]](#prob:linear_shadow){reference-type="ref"
+reference="prob:linear_shadow"} into a new version of discrimination
+problem.
+
+::: {.callout-important icon="false"}
+## Lemma
+
+[]{#lemma:red_shad2distin label="lemma:red_shad2distin"} Given a set of
+operators $\{O_x\}_{x = 1}^M$ such that
+$\text{tr}(O_x) = 0, \text{tr}(O_x^2) = 2^n$, if an algorithm
+$\mathcal{A}$ estimates $\text{tr}(O_x \rho), \forall x= 1 ,\cdots,M$
+within additive error $\varepsilon$ and success rate $1 - \delta$, then
+this algorithm can distinguish two cases with success rate $1 - \delta$:
+(i). the maximum mixed state, (ii) one of the states within
+$\{2^{-n}(\mathbb{I} + 3\varepsilon O_x)\}$.
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+
+*Proof.* In the case (i), we have $\text{tr}(O_x \rho) = 0, \forall x$
+because $O_x$ is traceless by definition. This means that
+$M^{-1}\mathrm{tr}(\sum_{x \in M}O_x \rho) = 0$. While in the case (ii),
+we know $\exists x \in \{1,\cdots,M\}$ s.t.
+$\text{tr}(O_x \rho) = 3\varepsilon$. Based on these observations, we
+design the algorithms below: (a). $\forall x \in \{1,\cdots,M\}$, use
+algorithm that solves
+problem [\[prob:linear_shadow\]](#prob:linear_shadow){reference-type="ref"
+reference="prob:linear_shadow"}, we get result $r_x$ such that
+$\mathrm{tr}(O_x \rho) - \varepsilon< r_x < \mathrm{tr}(O_x \rho) + \varepsilon$.
+(b). If $\forall x, r_x <2 \varepsilon$, accept case (i), If
+$\exists x, r_x \geq 2 \varepsilon$, accept case (ii). Note that
+$\exists x, r_x \geq 2 \varepsilon \Rightarrow \exists x, \mathrm{tr}(O_x \rho) > \varepsilon$,
+this means case (i) is impossible. Similarly,
+$\forall x, r_x < 2 \varepsilon \Rightarrow \forall x, \mathrm{tr}(O_x \rho) < 3\varepsilon$,
+which means case (ii) is impossible. Then we prove the correctness of
+the reduction. ◻
+:::
+
+The reduction presented in
+Lemma [\[lemma:red_shad2distin\]](#lemma:red_shad2distin){reference-type="ref"
+reference="lemma:red_shad2distin"} required computing
+$\mathrm{tr}(\rho O_x)$ for all $x \in \{1,\cdots,M\}$, which is
+computationally hard if $M \sim \text{exp}(n)$. To fill this gap, one
+can reframe the distinguishing problem into an adversarial scenario.
+
+- Alice (the adversary) first choose $\mathbf{x}_0 \in \{1,\cdots,M\}$
+  according to arbitrary distribution $\mathcal{D}$.
+
+- Then Alice chooses to send $N$-copies of state
+  $\rho = \rho_{\mathbf{x}_0}:= 2^{-n}(\mathbb{I} + 3\varepsilon O_x)$
+  or $\rho = \mathbb{I}/d$ to Bob.
+
+- Bob repeatedly receives $\rho$ and measures with restricted POVMs.
+
+- After measurements ends, Alice tells Bob $\mathbf{x}_0$ and Bob
+  decides whether Alice choose $\rho = \rho_{\mathbf{x}_0}$ or
+  $\rho = \mathbb{I}/d$ through classical post-processing.
+
+We say Bob wins this game if his decision is coincident to Alice's
+choice. If there exists a shadow algorithm $\mathcal{A}$ for
+$\text{tr}(O_x \rho), \forall x= 1 ,\cdots,M$ within additive error
+$\varepsilon$ and success rate $1 - \delta$ using $N$ copies, then no
+matter how Alice changes the distribution $\mathcal{D}$, Bob can win the
+game with probability $1 - \delta$ by first run the shadow algorithm
+$\mathcal{A}$ and then check the value of
+$\mathrm{tr}(O_{\mathbf{x}_0} \rho)$.

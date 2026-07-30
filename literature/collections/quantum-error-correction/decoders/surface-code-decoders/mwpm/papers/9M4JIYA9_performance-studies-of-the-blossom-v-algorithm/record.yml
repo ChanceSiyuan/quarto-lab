@@ -1,0 +1,54 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 9M4JIYA9
+  item_version: 96077
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 6F89T2MP
+      name: MWPM
+      path: Quantum Error correction/Decoders/Surface code Decoders/MWPM
+    - key: YMQPXEL8
+      name: Matching
+      path: Quantum Algorithm/Optimization/Matching
+qlab:
+  primary_collection: 6F89T2MP
+  indexed_collections:
+    - 6F89T2MP
+    - YMQPXEL8
+  primary_topic: quantum-error-correction
+  indexed_topics:
+    - quantum-algorithm
+    - quantum-error-correction
+item_type: journalArticle
+title: Performance Studies of the Blossom V Algorithm
+authors:
+  - first: Changling
+    last: Huang
+  - first: Christopher C
+    last: Lowman
+  - first: Brandon E
+    last: Osborne
+  - first: Gabrielle M
+    last: Salib
+year: null
+abstract: The Blossom V algorithm is used in graph theory to compute a perfect
+  matching of minimum cost. We conducted performance studies on the algorithm
+  using the maya cluster in the UMBC High Performance Computing Facility to
+  better understand the performance capabilities and emphasize potential
+  approaches for improvement. In the performance studies, we varied the number
+  of nodes, graph density, and weight range for numerous graphs. For each graph,
+  we recorded execution times and memory usage. For all graphs used in the
+  performance studies, we found that the majority of time is spent in
+  initialization. We also found that as graph density increases, both execution
+  time and memory usage increase. While we anticipated these conclusions, we
+  reached other conclusions that were more surprising. We determined that as the
+  weight range of a graph increases, initialization time and total execution
+  time increase. We also found that scaling down integer weight ranges to
+  real-valued weight ranges has a limited eﬀect on initialization time and total
+  execution time. Future studies should focus on speeding up the initialization
+  process of the algorithm.
+tags: []
+identifiers: {}

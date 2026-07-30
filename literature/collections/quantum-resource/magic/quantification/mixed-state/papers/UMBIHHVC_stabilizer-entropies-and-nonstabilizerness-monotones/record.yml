@@ -1,0 +1,49 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: UMBIHHVC
+  item_version: 96107
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 7KDCZFZ5
+      name: mixed state
+      path: Quantum Resource/Magic/Quantification/mixed state
+qlab:
+  primary_collection: 7KDCZFZ5
+  indexed_collections:
+    - 7KDCZFZ5
+  primary_topic: quantum-resource
+  indexed_topics:
+    - quantum-resource
+item_type: journalArticle
+title: Stabilizer entropies and nonstabilizerness monotones
+authors:
+  - first: Tobias
+    last: Haug
+  - first: Lorenzo
+    last: Piroli
+year: 2023
+abstract: We study different aspects of the stabilizer entropies (SEs) and
+  compare them against known nonstabilizerness monotones such as the
+  min-relative entropy and the robustness of magic. First, by means of explicit
+  examples, we show that, for R\'enyi index $0\leq n<2$, the SEs are not
+  monotones with respect to stabilizer protocols which include
+  computational-basis measurements, not even when restricting to pure states
+  (while the question remains open for $n\geq 2$). Next, we show that, for any
+  R\'enyi index, the SEs do not satisfy a strong monotonicity condition with
+  respect to computational-basis measurements. We further study SEs in different
+  classes of many-body states. We compare the SEs with other measures, either
+  proving or providing numerical evidence for inequalities between them.
+  Finally, we discuss exact or efficient tensor-network numerical methods to
+  compute SEs of matrix-product states (MPSs) for large numbers of qubits. In
+  addition to previously developed exact methods to compute the R\'enyi SEs, we
+  also put forward a scheme based on perfect MPS sampling, allowing us to
+  compute efficiently the von Neumann SE for large bond dimensions.
+tags:
+  - Condensed Matter - Statistical Mechanics
+  - Quantum Physics
+identifiers:
+  doi: 10.22331/q-2023-08-28-1092
+  arxiv: "2303.10152"

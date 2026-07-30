@@ -1,0 +1,56 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 582PPBAT
+  item_version: 96091
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: R3FI46V4
+      name: Clifford Hierarchy
+      path: Quantum Resource/Magic/Clifford Hierarchy
+    - key: V4GRVJ89
+      name: one-bit teleportation
+      path: Quantum Resource/Magic/Clifford Hierarchy/one-bit teleportation
+qlab:
+  primary_collection: R3FI46V4
+  indexed_collections:
+    - R3FI46V4
+    - V4GRVJ89
+  primary_topic: quantum-resource
+  indexed_topics:
+    - quantum-resource
+item_type: journalArticle
+title: Efficient quantum gate teleportation in higher dimensions
+authors:
+  - first: Nadish
+    last: de Silva
+year: 2021
+abstract: "The Clifford hierarchy is a nested sequence of sets of quantum gates
+  critical to achieving fault-tolerant quantum computation. Diagonal gates of
+  the Clifford hierarchy and 'nearly diagonal' semi-Clifford gates are
+  particularly important: they admit efficient gate teleportation protocols that
+  implement these gates with fewer ancillary quantum resources such as magic
+  states. Despite the practical importance of these sets of gates, many
+  questions about their structure remain open; this is especially true in the
+  higher-dimensional qudit setting. Our contribution is to leverage the discrete
+  Stone-von Neumann theorem and the symplectic formalism of qudit stabiliser
+  mechanics towards extending results of Zeng-Cheng-Chuang (2008) and Beigi-Shor
+  (2010) to higher dimensions in a uniform manner. We further give a simple
+  algorithm for recursively enumerating all gates of the Clifford hierarchy, a
+  simple algorithm for recognising and diagonalising semi-Clifford gates, and a
+  concise proof of the classification of the diagonal Clifford hierarchy gates
+  due to Cui-Gottesman-Krishna (2016) for the single-qudit case. We generalise
+  the efficient gate teleportation protocols of semi-Clifford gates to the qudit
+  setting and prove that every third level gate of one qudit (of any prime
+  dimension) and of two qutrits can be implemented efficiently. Numerical
+  evidence gathered via the aforementioned algorithms support the conjecture
+  that higher-level gates can be implemented efficiently."
+tags:
+  - Mathematical Physics
+  - Mathematics - Representation Theory
+  - Quantum Physics
+identifiers:
+  doi: 10.1098/rspa.2020.0865
+  arxiv: "2011.00127"

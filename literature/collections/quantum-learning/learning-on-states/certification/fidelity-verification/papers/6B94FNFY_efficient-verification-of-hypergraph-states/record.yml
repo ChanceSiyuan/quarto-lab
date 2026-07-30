@@ -1,0 +1,58 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 6B94FNFY
+  item_version: 96042
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: ZTMJV3G4
+      name: Fidelity verification
+      path: Quantum Learning/Learning on states/certification/Fidelity verification
+    - key: KQ3GVUL9
+      name: Hypergraph
+      path: Quantum Resource/Entanglement/Entanglement structure/Graph
+        state/Hypergraph
+    - key: H5F9PKZR
+      name: verification
+      path: Quantum Complexity/Sampling/supermacy verification/verification
+qlab:
+  primary_collection: ZTMJV3G4
+  indexed_collections:
+    - H5F9PKZR
+    - KQ3GVUL9
+    - ZTMJV3G4
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-complexity
+    - quantum-learning
+    - quantum-resource
+item_type: journalArticle
+title: Efficient Verification of Hypergraph States
+authors:
+  - first: Huangjun
+    last: Zhu
+  - first: Masahito
+    last: Hayashi
+year: 2019
+abstract: Graph states and hypergraph states are of wide interest in quantum
+  information processing and foundational studies. Efficient verification of
+  these states is a key to various applications. Here we propose a simple method
+  for verifying hypergraph states which requires only two distinct Pauli
+  measurements for each party, yet its efficiency is comparable to the best
+  strategy based on entangling measurements. For a given state, the overhead is
+  bounded by the chromatic number and degree of the underlying hypergraph. Our
+  protocol is dramatically more efficient than all previous protocols based on
+  local measurements, including tomography and direct fidelity estimation. It
+  enables the verification of hypergraph states and genuine multipartite
+  entanglement of thousands of qubits. The protocol can also be generalized to
+  the adversarial scenario, while achieving almost the same efficiency. This
+  merit is particularly appealing to demonstrating blind measurement-based
+  quantum computation and quantum supremacy.
+tags:
+  - Mathematical Physics
+  - Quantum Physics
+identifiers:
+  doi: 10.1103/physrevapplied.12.054047
+  arxiv: "1806.05565"

@@ -1,0 +1,355 @@
+---
+title: Operator Mixed Ensembles
+description: Before diving into the technical proof of distinguishability lower bounds, we first build intuition about when two ensembles are hard to distinguish.
+categories:
+  - theory
+---
+
+[← Back to Index](index.qmd)
+
+
+Before diving into the technical proof of distinguishability lower bounds, we first build intuition about **when two ensembles are hard to distinguish**.
+
+**Key Insight:** If the $k$-copy averaged states $\mu^{(k)}_i := \mathbb{E}_{\rho \sim \mathcal{E}_i}[\rho^{\otimes k}]$ are distinguishable (i.e., have large trace distance), then the ensembles themselves can be efficiently distinguished using $k$-replica measurements.
+
+::: {#lem-hard_necess1 .callout-important icon="false"}
+## (Necessary Condition for Hardness)
+Given two state ensembles $\mathcal{E}_1, \mathcal{E}_2$, define their $k$-copy moments as $\mu^{(k)}_i := \mathbb{E}_{\rho \sim \mathcal{E}_i}[\rho^{\otimes k}]$. If these moments are $\varepsilon$-distinguishable:
+$$
+\|\mu^{(k)}_1 - \mu^{(k)}_2\|_{1} \geq \varepsilon,
+$$
+then there exists a $k$-replica measurement strategy that distinguishes $\mathcal{E}_1$ from $\mathcal{E}_2$ using only $O(1/\varepsilon^2)$ samples.
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+
+The trace norm has a variational characterization: $\|A\|_{1} = \max_{\|O\|_{\infty} \leq 1}\mathrm{tr}(O \cdot A)$.
+Thus, $\|\mu^{(k)}_1 - \mu^{(k)}_2\|_{1} \geq \varepsilon$ implies the existence of an observable $O$ with $\|O\|_{\infty} \leq 1$ such that:
+$$
+\mathrm{tr}(O \mu^{(k)}_1) - \mathrm{tr}(O \mu^{(k)}_2) \geq \varepsilon.
+$$
+
+- (Strategy) Measure $O$ on $k$-replica states $\rho^{\otimes k}$ and construct an estimator $\hat{o}$ for $\mathrm{tr}(O \mu^{(k)})$.
+- (Bounded range) Since $\|O\|_{\infty} \leq 1$, we have $|\mathrm{tr}(O \rho^{\otimes k})| \leq 1$.
+- (Sample complexity) By Hoeffding's inequality, $N = O(\varepsilon^{-2})$ samples suffice to estimate $\mathrm{tr}(O \mu^{(k)})$ with additive error $\varepsilon/2$, which solves the discrimination problem. ◻
+:::
+
+**Remark (Necessary but not sufficient):** The above lemma provides only a *necessary* condition for hardness. Even when two ensembles have **identical** $k$-copy moments, adaptive $k$-copy strategies (i.e., the power of classical correlation) may still distinguish them efficiently.
+
+- (Counterexample) Consider the following two ensembles on a single qubit:
+  - $\mathcal{E}_1 = \{\ket{0}\!\bra{0}, \ket{1}\!\bra{1}\}$ with probability $1/2$ each (Z-basis states)
+  - $\mathcal{E}_2 = \{\ket{+}\!\bra{+}, \ket{-}\!\bra{-}\}$ with probability $1/2$ each (X-basis states)
+- (Same 1-copy moments) Both ensembles have identical 1-copy moments: $\mu_1^{(1)} = \mu_2^{(1)} = \mathbb{I}/2$.
+- (Different 2-copy moments) However, their 2-copy moments differ:
+  - $\mu_1^{(2)} = (\ket{00}\!\bra{00} + \ket{11}\!\bra{11})/2$ (classically correlated)
+  - $\mu_2^{(2)} = (\ket{++}\!\bra{++} + \ket{--}\!\bra{--})/2$ (different correlation structure)
+- (Adaptive 1-copy distinguishes) An adaptive strategy with $T=2$ rounds of 1-copy Z-measurements can distinguish them:
+  - For $\mathcal{E}_1$: outcomes are always correlated — either $(0,0)$ or $(1,1)$
+  - For $\mathcal{E}_2$: outcomes are independent random bits — all four outcomes $(0,0), (0,1), (1,0), (1,1)$ equally likely
+
+The key insight is that $T$ rounds of adaptive $k$-copy measurements can probe the $kT$-copy moments, not just the $k$-copy moments.
+
+With this intuition in mind, now we reviewed the information lower bound
+to distinguish Haar random state ensembles. Perhaps the most simple one
+are the maximum mixed state $\mathbb{I}(d)/d$ with operator mixed
+ensemble.
+# Operator Mixed Ensembles {#sec-operator-mixed}
+
+::: {#def-shadow-problem .callout-note icon="false"}
+## Problem (Shadow Tomography Lower Bound)
+Given access to either (i) a set of states ${S}_{\mathcal{O}}:=\{(\mathbb{I}+ 3\varepsilon O_x)/d\}_{x},x \in \{1,\cdots,M\}$ or (ii) $\rho = \mathbb{I}/2^n$, try to distinguish between these two cases with an error of at most $1/2-\varepsilon$.
+:::
+
+This problem determines the sample complexity lower bound for classical shadow tomography of observable set $\{O_x\}_{x \in \{1,\cdots,M\}}$. A special case is the discrimination between $\mathbb{I}/d$ and Pauli-mixed states $\rho_P = (\mathbb{I}+ 3\varepsilon P)/2^n$ with $P \in \mathcal{P}_n$.
+
+---
+
+**Intuition from @lem-hard_necess1:** The difficulty of distinguishing two ensembles depends on their $k$-copy moment difference $\|\mu_1^{(k)} - \mu_2^{(k)}\|_1$. Different choices of the operator distribution $\mathcal{D}$ on $\mathcal{O}$ lead to vastly different hardness:
+
+- (Easy case) If $\mathcal{D}$ is supported on a single operator, e.g., $\mathrm{Pr}(O) = \delta(O - Z_1)$, then:
+$$
+\|\mu_{\mathcal{D}}^{(1)} - \mu_{\mathbb{I}/d}^{(1)}\|_1 = \|3\varepsilon Z_1/2^n\|_1 = 3\varepsilon = \Theta(1).
+$$
+This is easily distinguishable with $O(1/\varepsilon^2)$ single-copy measurements.
+
+- (Hard case) If $\mathcal{D}$ is uniform over all $n$-qubit Paulis, i.e., $\mathrm{Pr}(P) = 4^{-n}$, then the averaged state becomes:
+$$
+\mu_{\mathcal{D}}^{(1)} = \mathbb{E}_{P \sim \mathcal{P}_n}\left[\frac{\mathbb{I} + 3\varepsilon P}{2^n}\right] = \frac{\mathbb{I}}{2^n} + \frac{3\varepsilon}{4^n} \sum_{P \in \mathcal{P}_n} \frac{P}{2^n}.
+$$
+The trace norm of the difference scales as:
+$$
+\|\mu_{\mathcal{D}}^{(1)} - \mathbb{I}/d\|_1 = 3\varepsilon \cdot \left(\frac{\sqrt{3}}{2}\right)^n = O(2^{-0.21n}),
+$$
+where we used the fact that $\|A^{\otimes n}\|_1 = \|A\|_1^n$ for $A = \frac{I+X+Y+Z}{4}$ with eigenvalues $\lambda(A) = \frac{1 \pm \sqrt{3}}{4}$ and $\|A\|_1 = \frac{\sqrt{3}}{2}$.
+
+---
+
+**Key insight:** The trace distance between the averaged states vanishes exponentially when the operator distribution is spread uniformly. This motivates the construction of **hard instances** using signed operator ensembles.
+
+**Hard distribution construction:** To make the 1-copy moments *identical* (not just close), we use a signed ensemble $\{+1,-1\} \times \mathcal{O}$ with uniform distribution. Since $\mathbb{E}_{s \in \{\pm 1\}}[s \cdot O] = 0$ for any $O$, this ensures:
+$$
+\mu_{\text{signed}}^{(1)} = \mathbb{E}_{s,O}\left[\frac{\mathbb{I} + 3\varepsilon \cdot s \cdot O}{d}\right] = \frac{\mathbb{I}}{d} = \mu_{\mathbb{I}/d}^{(1)}.
+$$
+By @lem-hard_necess1, any single-copy strategy cannot distinguish these ensembles using 1-copy moment information alone.
+
+## General Operators {#sec-general-ops}
+
+### Single-Copy Strategy {#sec-single-copy}
+
+For shadow tomography of general operator set $\{O_1,\cdots,O_M\}$ where
+$O_j$ is an arbitrary $n$-qubits operator, we build hard distribution by
+rotating Pauli $Z$ operators with independent Haar random unitary:
+$$\begin{align}
+    O_{1},\cdots,O_{M/2} &= U_1Z_1U_1^{\dagger}, \cdots, U_{M/2}Z_{M/2}U_{M/2}^{\dagger},\\
+    O_{M/2+1},\cdots,O_{M} &= -U_1Z_1U_1^{\dagger}, \cdots, -U_{M/2}Z_{M/2}U_{M/2}^{\dagger},
+\end{align}$$ where $U_1,\cdots,U_{M/2}$ are independent Haar random
+unitaries. The signature is to ensure its average is $\mathbb{I}/d$ such
+that
+Lemma cannot give effective single copy
+strategy. According to
+Lemma, to distinguish (i) and (ii) with $2/3$
+correction rate, which is $\delta= 1/6$ better that $1/2$, we must have
+$1/3=2\delta \leq \|\mathbb{E}_{x} p_{\rho_x} - p_{2^{-n}\mathbb I}\|_{\mathrm{TV}}$,
+where $x$ is an arbitrary distribution on $1,\cdots,M$. It is sufficient
+to take the uniform distribution of $x$. Based on
+Lemma,
+$1/3\leq \|\mathbb{E}_{x} p_{\rho_x} - p_{2^{-n}\mathbb I}\|_{\mathrm{TV}} \leq 1 - \min_{l} \mathbb{E}_{x} L_{x}(l)$.
+According to the rank-1 reduction in
+Lemma, we calculate the leaves'
+likelihood $\forall l$ as $$\begin{align}
+\mathbb{E}_{x} L_{x}(l) &= \frac{\mathbb{E}_{x} p_{\rho_x}(l)}{p_{2^{-n}\mathbb I}(l)} = \mathbb{E}_{x} \prod_{t = 1}^T \frac{w_{s_t}^{u_t}\bra{\psi_{s_t}^{u_t}}\rho_x \ket{\psi_{s_t}^{u_t}}}{2^{-n}w_{s_t}^{u_t}}=\mathbb{E}_{x} \prod_{t = 1}^T \left(1+ 3\varepsilon\cdot \bra{\psi_{s_t}^{u_t}} O_x \ket{\psi_{s_t}^{u_t}}\right)\notag\\
+&=\mathbb{E}_{x} \text{exp}\left[\sum_{t = 1}^T \ln\left(1+ 3\varepsilon\cdot \bra{\psi_{s_t}^{u_t}} O_x \ket{\psi_{s_t}^{u_t}}\right)\right]\geq \text{exp}\left[\sum_{t = 1}^T \mathbb{E}_{x} \ln\left(1+ 3\varepsilon\cdot \bra{\psi_{s_t}^{u_t}} O_x \ket{\psi_{s_t}^{u_t}}\right)\right]\notag\\
+&=\text{exp}\left[\sum_{t = 1}^T M^{-1} \ln \left(\prod_{x = 1}^{M/2}\left(1+ 3\varepsilon\cdot \bra{\psi_{s_t}^{u_t}} O_x \ket{\psi_{s_t}^{u_t}}\right)\left(1- 3\varepsilon\cdot \bra{\psi_{s_t}^{u_t}} O_x \ket{\psi_{s_t}^{u_t}}\right)\right)\right]\notag\\
+&=\text{exp}\left[\sum_{t = 1}^T M^{-1} \sum_{x = 1}^{M/2}\ln \left(1- 9\varepsilon^2\cdot \bra{\psi_{s_t}^{u_t}} O_x \ket{\psi_{s_t}^{u_t}}^2\right)\right] \notag\\
+&\geq \text{exp}\left[-9\varepsilon^2\sum_{t = 1}^T \frac{2}{M}\sum_{x = 1}^{M/2} \bra{\psi_{s_t}^{u_t}} O_x \ket{\psi_{s_t}^{u_t}}^2\right] \geq \text{exp}\left[-9\varepsilon^2 T \sup_{\ket{\phi}}\frac{2}{M}\sum_{x = 1}^{M/2} \bra{\phi} O_x \ket{\phi}^2\right] \label{eq:sig_canc_TVlb}
+\end{align}$$ Here we use $\ln(1 - x)\geq -2x, \forall x \in [0,0.796]$.
+This condition is satisfied if and only if
+$9\varepsilon^2<0.796, \varepsilon <0.29$. Thus for
+$\beta =\text{exp}\left[-9\varepsilon^2 T \delta(O_1,\cdots,O_M)\right]$,
+we have $\text{Pr}_{l \sim p^{(0)}}[L(l) \leq \beta] = 0$, which gives
+the inequality use the fact that
+$1 - x \leq e^{-x},\forall x \in \mathbb{R}$. $$\begin{align}
+&1/3\leq 0 +(1 - \beta) = 1 - e^{-9\varepsilon^2 T \delta(O_1,\cdots,O_M)}  \leq 9\varepsilon^2 T \delta(O_1,\cdots,O_M) \notag\\
+&\Rightarrow T \geq \Omega(\frac{1}{\varepsilon^2 \delta(O_1,\cdots,O_M)}), \text{~where~} \delta(O_1,\cdots,O_M):= \sup_{\ket{\phi}} \frac{2}{M}\sum_{i =1}^{M/2}\bra{\phi} O_i \ket{\phi}^2. \label{eq:LB_shadow_eq}
+\end{align}$$ Now we calculate the value $\delta(O_1,\cdots,O_M)$. Noted
+that the random variable
+$\bra{\phi} O_i \ket{\phi},\{O_i\}_i \sim \mathcal{O}$ and
+$\bra{\psi_i} Z_n \ket{\psi_i}, \ket{\psi_i} \sim \text{Haar}$ has the
+same distribution. Thus, it is sufficient to discuss the property of
+function $f(\ket{\psi}):= \bra{\psi} Z_n \ket{\psi}$ with Haar random
+inputs.
+
+::: {#lem-expon-cent-ineq .callout-important icon="false"}
+## (Exponential Concentration Inequality)
+Given function $f(\ket{\psi}):= \bra{\psi} Z_n \ket{\psi}$ with independent Haar random inputs, we have:
+$$
+\begin{align}
+&\text{Pr}\left[\left|\frac{1}{R}\sum_{i =1}^{R} f(\ket{\psi_i})^2 - \mathbb{E}_{\ket{\psi} \sim \text{Haar}}\left[ f(\ket{\psi})^2\right]\right| \geq t\right] \leq 2 e^{-R \min(t^2/\lambda^2, t/\lambda)},\\
+& \text{where~} \lambda = 288\pi^3/2^n,\quad \mathbb{E}_{\ket{\psi} \sim \text{Haar}} [f(\ket{\psi_i})^2] = \frac{1}{2^n + 1}
+\end{align}
+$$
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+
+*Proof.* ◻
+:::
+
+Now given one state $\ket{\phi}$, we proved that with high probability
+$\sum_{O \in \mathcal{O}} |\mathcal{O}|^{-1}\bra{\phi} O \ket{\phi}^2$
+will not deviate from its expectation too much, according to the
+Lemma. Nevertheless, we hope to prove this
+property for all states $\phi$, that is, to bound the deviation of
+$\sup_{\ket{\phi}}\sum_{O \in \mathcal{O}} |\mathcal{O}|^{-1}\bra{\phi} O \ket{\phi}^2$.
+To do this, to first defined an $\eta$-covering set $\mathcal{N}_{\eta}$
+on the n-qubit pure states, as illustrated in
+Lemma.
+
+::: {#lem-covering .callout-important icon="false"}
+## (Covering Net on n-Qubit States)
+An $\eta$-covering set $\mathcal{N}_{\eta}$ on the n-qubit pure states is a finite set of n-qubit pure states such that
+$$
+\forall \ket{\phi} \in \mathcal{H}_n, \exists \ket{\psi} \in \mathcal{N}_{\eta}, \quad \text{s.t.~} \|\ket{\phi} - \ket{\psi}\|_2 \leq \eta.
+$$
+The cardinality of $\mathcal{N}_{\eta}$ is upper bounded by $|\mathcal{N}_{\eta}| \leq (1 + 2/\eta)^{2^{n+1}}$.
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+
+*Proof.* The set of n-qubit pure states corresponds to the unit sphere
+in the Hilbert space $\mathcal{H}(n) \cong \mathbb{C}^{2^n}$. This
+complex space of dimension $2^n$ is equivalent to a real space of
+dimension $D = 2 \cdot 2^n = 2^{n+1}$. The states are thus points on the
+unit sphere $S^{D-1}$ in $\mathbb{R}^D$. Let
+$\mathcal{N}_{\eta} = \{\ket{\psi_1}, \ket{\psi_2}, \dots, \ket{\psi_M}\}$
+be a maximal set of n-qubit pure states such that the Euclidean distance
+between any two distinct states in the set is greater than $\eta$. This
+is known as an $\eta$-packing. We first argue that this set
+$\mathcal{N}_{\eta}$ is also an $\eta$-covering net. If it were not,
+then $\exists \ket{\phi} \in \mathcal{H}_n$ such that
+$\forall \ket{\psi_i} \in \mathcal{N}_{\eta} ,\|\ket{\phi} - \ket{\psi_i}\|_2 > \eta$,
+which contradicts the assumption that $\mathcal{N}_{\eta}$ is a maximal
+set. Therefore, any maximal $\eta$-packing is an $\eta$-covering net.
+The problem is now reduced to finding an upper bound on the size
+$M = |\mathcal{N}_{\eta}|$ of such a packing. Consider a set of open
+balls $\{B(\ket{\psi_i}, \eta/2)\}_{i=1}^M$ of radius $\eta/2$ centered
+at each point of our set $\mathcal{N}_{\eta}$. Since for any $i \neq j$,
+we have $\|\ket{\psi_i} - \ket{\psi_j}\|_2 > \eta$, the triangle
+inequality implies that these balls are disjoint. All these disjoint
+balls are contained within a larger ball of radius $1 + \eta/2$ centered
+at the origin. This is because each $\ket{\psi_i}$ is on the unit sphere
+(norm 1), and any point in the ball $B(\ket{\psi_i}, \eta/2)$ has a norm
+of at most $\|\ket{\psi_i}\|_2 + \eta/2 = 1 + \eta/2$. The total volume
+of these $M$ disjoint balls cannot exceed the volume of the larger
+containing ball. Let $V_D(r)$ be the volume of a $D$-dimensional ball of
+radius $r$. We have $\sum_{i=1}^M V_D(\eta/2) \le V_D(1 + \eta/2)$.
+Since all the small balls have the same volume, this simplifies to
+$M \cdot V_D(\eta/2) \le V_D(1 + \eta/2)$. The volume of a
+$D$-dimensional ball of radius $r$ is given by $C_D r^D$ for some
+constant $C_D$ that depends only on the dimension $D$. Thus, we can
+write $M \cdot C_D (\eta/2)^D \le C_D (1 + \eta/2)^D$. Canceling the
+constant $C_D$ and substituting back the dimension $D = 2^{n+1}$, we get
+the upper bound on $M$ $$\begin{align}
+    |\mathcal{N}_{\eta}| = M \le \frac{(1 + \eta/2)^D}{(\eta/2)^D} = \left(\frac{1 + \eta/2}{\eta/2}\right)^D = \left(1 + \frac{2}{\eta}\right)^D.
+\end{align}$$ ◻
+:::
+
+Then the low-deviation condition that satisfied for arbitrary
+$\ket{\phi} \in \mathcal{H}(n)$ also satisfied on set
+$\mathcal{N}_{\eta}$, only with a $|\mathcal{N}_\eta|$ larger error
+probability. After this, we show that the function
+$g(\ket{\phi}):=\sum_{O \in \mathcal{O}} |\mathcal{O}|^{-1}\bra{\phi} O \ket{\phi}^2$
+is Lipschitz continuous, which means that the difference of function
+value is upper bounded by the variables difference. Combining the
+Lipschitz continuity and the property of the $\eta$-covering, we show
+upper bounds for the value
+$\sup_{\ket{\phi}}\sum_{O \in \mathcal{O}} |\mathcal{O}|^{-1}\bra{\phi} O \ket{\phi}^2$,
+as rigrously illustrated in
+Lemma.
+
+::: {#lem-lipschitz-covering .callout-important icon="false"}
+## (Lipschitz Extension via Covering)
+Given an L-Lipschitz continuous function $f:V \to \mathbb{R}$ on metric space $V$ and an $\eta$-covering set $\mathcal{N}_{\eta}$ of $V$, if $\forall x \in \mathcal{N}_{\eta}, |f(x) - c| < t$, then $\forall x \in V, |f(x) - c| < t + L \eta$.
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+
+*Proof.* By definition, we know that
+$\forall x \in V, \exists r_x \in \mathcal{N}_{\eta} \text{~s.t.~} |r_x - x| \leq \eta$.
+Then we conclude $$\begin{align}
+        \forall x \in V, |f(x) - c| &\leq |f(x) - f(r_x)| + |f(r_x) - c|\leq L\|x - r_x\| + t \leq L\eta + t.
+\end{align}$$ ◻
+:::
+
+If we further
+
+::: {#thm-single-copy-shadow .callout-important icon="false"}
+## (Single-Copy Shadow Lower Bound)
+Given a uniform distribution on $M$ Pauli observables $\mathcal{A}:=\{P_1,\cdots,P_M\}$, any single-copy learning algorithm that predicts $\{\text{tr}(\rho P)\}_{P \sim \mathcal{A}}$ with $\varepsilon$-additive error and $2/3$ success probability must use $T \geq \Omega \left(\varepsilon^{-2} \min\{M/\log M, 2^n\}\right)$ samples.
+:::
+
+## Pauli mixed states
+
+::: {#def-pauli-mixed-test .callout-note icon="false"}
+## Problem (Pauli Mixed State Discrimination)
+Given a subset $\mathcal{O} \subset \mathcal{P}(n)$, try to discriminate (i) a set of states ${S}_{\mathcal{O}}:=\{\sigma_{P}:=(\mathbb{I}+ 3\varepsilon P)/d\}_{P \in \mathcal{O}}$ and (ii) $\rho = \mathbb{I}/2^n$ with confidence $1 - \delta$.
+:::
+
+## Single replica.
+
+Similarly, we set up hard distributions as uniform distribution on
+signed Pauli operators $\{+1,-1\}\times \mathcal{O}$, where
+$\mathcal{O} \subset \{\mathbb{I},X,Y,Z\}$. Follow the same procedure of
+Eq.~(eq:sig_canc_TVlb), we then calculate its rank-1 POVM leaves
+likelihood as: $$\begin{align}
+    \mathbb{E}_{s,P} L_{s,P}(l)  \geq \exp\left[-18\varepsilon^2T \sup_{\ket{\phi}} \mathbb{E}_{P\in \mathrm{Uniform}(\mathcal{O})} \bra{\phi} P \ket{\phi}^2\right].
+\end{align}$$ In the case of $\mathcal{O} = \mathcal{P}_n$, we use the
+identity
+$$
+\mathbb{E}_{P\in \mathrm{Uniform}(\mathcal{P}_n)} \bra{\phi} P \ket{\phi}^2 \\
+=\bra{\phi}\bra{\phi} 4^{-n}\sum_{P\in \mathcal{P}_n}P \otimes P\ket{\phi}\ket{\phi}
+$$
+and
+$\sum_{P\in \mathcal{P}_n}P \otimes P = 2^{n}\mathrm{SWAP}^{\otimes n}$.
+We conclude that
+$\mathbb{E}_{s,P} L_{s,P}(l) \geq e^{-18\varepsilon^2 T 2^{-n}},\forall l$.
+Use Lemma, we conclude that for all choice of
+single-copy POVM,
+$\|p_{\mathbb{I}/d} - \mathbb{E}_{s,P}p_{\rho_{s,P}}\|_{\mathrm{tvd}} \leq 1 - e^{-18\varepsilon^2 T 2^{-n}}$.
+This means that to reach confidence $1/2 + \delta/2$, we have to set
+$1 - e^{-18\varepsilon^2 T 2^{-n}} \geq \delta \Rightarrow T \geq 18^{-1}\times 2^n \varepsilon^{-2}\ln(1 - \delta)$.
+
+According to
+Theorem, we can also calculate its
+$\chi$-squared divergence given ensemble $\mathcal{D}_\mathcal{O}$ on
+the subset of Pauli operators $\mathcal{O}$: $$\begin{align}
+    \delta_{\mathcal{D}_\mathcal{O}} &:= \max_{\{F_s\}_s \in \mathcal{M}}\mathbb{E}_{s \sim \mathrm{tr}(\rho F_{s})} \mathbb{E}_{P \sim \mathcal{D}_\mathcal{O}} \left[\frac{\mathrm{tr}(\sigma_P F_{s})}{\mathrm{tr}(\rho F_{s})} - 1\right]^2= \max_{F_s \succ 0 }\sum_{s}  \frac{\mathrm{tr}(F_{s})}{d}\mathbb{E}_{P \sim \mathcal{D}_\mathcal{O}} \left[\frac{\mathrm{tr}(\frac{\mathbb{I} + 3\varepsilon P}{d}F_{s})}{\mathrm{tr}(F_{s})/d} - 1\right]^2 \notag\\
+    &= 9\varepsilon^2 \max_{F_s \succ 0 }\sum_{s}  \frac{\mathrm{tr}(F_{s})}{d}\mathbb{E}_{P \sim \mathcal{D}_\mathcal{O}} \left[\frac{\mathrm{tr}({P}F_{s})}{\mathrm{tr}(F_{s})}\right]^2 = {9\varepsilon^2} \max_{F_s \succ 0 }\mathbb{E}_{P \sim \mathcal{D}_\mathcal{O}} \sum_{s} \frac{\left[\mathrm{tr}({P}F_{s})\right]^2}{{d}\cdot \mathrm{tr}(F_{s})}.
+\end{align}$$ Since $F_s$ includes all the rank-1 POVMs and each POVMs
+with rank greater than 1 can be equivalently realized using rank-1 POVMs
+with undecreasing discrimination efficiency, as shown in
+Lemma. We can plug in
+$F_s = 2^{n}w_s \ket{\psi_s}\!\bra{\psi_s}$ with $\{w_s\}$ a valid
+distribution and conclude the same result: $$\begin{align}
+    \max_{F_s \succ 0 }\mathbb{E}_{P \sim \mathcal{D}_\mathcal{O}} \sum_{s} \frac{\left[\mathrm{tr}({P}F_{s})\right]^2}{{d}\cdot \mathrm{tr}(F_{s})} &= \max_{\ket{\psi_s}}\mathbb{E}_{P \sim \mathcal{D}_\mathcal{O}} \sum_{s}w_s{\left[\bra{\psi_s}{P}\ket{\psi_s}\right]^2} = \max_{\ket{\phi}}\mathbb{E}_{P \sim \mathcal{D}_\mathcal{O}} {\bra{\phi}{P}\ket{\phi}^2}
+    \\
+    &\sim \Omega(2^{-n}) \text{~if~} \mathcal{O} = \mathcal{P}_n, \mathcal{D}_{\mathcal{O}} = \mathrm{Uniform}(\mathcal{O}).
+\end{align}$$ Then based on
+Lemma, $T\geq 2^n$. Note that such a
+martingale analysis do not directly applied to purity-identity test,
+which has a constant $\chi$-squared divergence, as calculated below:
+$$\begin{align}
+    \delta_{\mathrm{Haar}} &= \max_{F_s \succ 0 }\sum_{s}  \frac{\mathrm{tr}(F_{s})}{d}\mathbb{E}_{\ket{\psi}\sim \mathrm{Haar}} \left[\frac{\mathrm{tr}(\ket{\psi}\!\bra{\psi}F_{s})}{\mathrm{tr}(F_{s})/d} - 1\right]^2=\max_{F_s \succ 0 }\sum_{s}  \mathbb{E}_{\ket{\psi}} \left[\frac{\mathrm{tr}(\ket{\psi}\!\bra{\psi}^{\otimes 2}F_{s}\otimes F_{s})}{\mathrm{tr}(F_{s})/d}\right]- 1\\
+    &=\max_{\ket{\psi_s} }\sum_{s}   d^2w_s\mathbb{E}_{\ket{\psi}} \left[{\mathrm{tr}({\psi}^{\otimes 2} \psi_s^{\otimes 2})}\right]- 1 = \frac{2d^2}{d(d+1)} - 1 = \frac{d-1}{d+1} \sim \Omega(1).
+\end{align}$$ This great difference between ensemble supports on
+$\{(\mathbb{I}+ 3\varepsilon O)/2^n\}_{O \in \mathcal{O}}$ and Haar
+random state supports on $\{\psi\}$ is because the probability of the
+latter one is more concentrated. $$\begin{align*}
+    p_{\mathrm{Haar}}(\psi_s) =\frac{\mathrm{tr}(\ket{\psi}\!\bra{\psi}\psi_{s})}{\mathrm{tr}(\mathbb{I}/d\cdot \psi_{s})}= d |\langle {\psi}|{\psi_s}\rangle|^2 \in[0,d], \, p_{\mathcal{P}}(\psi_s) =\frac{\mathrm{tr}(\frac{\mathbb{I} + 3\varepsilon P}{d}\psi_{s})}{\mathrm{tr}(\mathbb{I}/d\psi_{s})}=1 + 3\varepsilon\langle{\psi_s}|P|{\psi_s}\rangle \in [1- 3\varepsilon, 1+ 3\varepsilon].
+\end{align*}$$
+
+## Single Replica with Clifford Restriction {#sec-single-clifford}
+
+When restricted to single-copy ($c=1$) measurements within the Clifford group, the discrimination power is severely limited. This setting corresponds to classical shadows with Clifford measurements.
+
+For the Pauli-mixed ensemble $\{(\mathbb{I} + 3\varepsilon P)/d\}_{P \in \mathcal{P}_n}$, single-copy Clifford measurements achieve:
+$$\begin{align}
+    \max_{\ket{\psi} \in \mathrm{Stab}_n} \mathbb{E}_{P \sim \mathcal{P}_n} \bra{\psi}P\ket{\psi}^2 = \frac{1}{2^n}
+\end{align}$$
+since stabilizer states have flat Pauli spectrum (each non-identity Pauli has expectation $\pm 1$ or $0$, and the average over the Pauli group vanishes for stabilizer states).
+
+::: {#lem-clifford-consequence .callout-important icon="false"}
+## (Clifford Measurement Lower Bound)
+Single-copy Clifford measurements require $T = \Omega(2^n/\varepsilon^2)$ samples to distinguish $(\mathbb{I} + 3\varepsilon P)/d$ from $\mathbb{I}/d$, matching the information-theoretic lower bound up to constants.
+:::
+
+## Multi-Replica with Bounded Memory {#sec-multi-replica-memory}
+
+When multiple copies are available but quantum memory is bounded, there is a tradeoff between the number of copies processed jointly and the total sample complexity.
+
+Consider strategies that process at most $c$ copies jointly with $k$ qubits of quantum memory between rounds. The key constraint is:
+$$\begin{align}
+    \mathcal{M}^{k}_{c,n} := \left\{\{F_s\}_s : F_s \in \mathcal{L}(\mathcal{H}^{\otimes c}), \, \mathrm{rank}(\sum_s F_s \otimes \ket{s}\bra{s}) \leq 2^k \right\}
+\end{align}$$
+
+This captures the scenario where the post-measurement classical description is bounded, limiting the information that can be carried forward to subsequent rounds.
+
+::: {#lem-memory-tradeoff .callout-important icon="false"}
+## (Memory-Sample Tradeoff)
+For distinguishing states from the Pauli-mixed ensemble with bounded memory $k$ and $c$-copy measurements:
+$$
+\begin{align}
+    T \geq \frac{2^n}{2^{k + c \cdot n/(c+1)}}
+\end{align}
+$$
+:::
+
+This interpolates between the single-copy bound ($c=1$: $T \geq 2^{n/2 - k}$) and the multi-copy regime where entangled measurements can achieve polynomial scaling.
+
+---
+
+[← Previous: Adaptive Strategies](adaptive_strategies.qmd) | [Back to Index](index.qmd) | [Next: Haar-Assembled Ensembles →](haar_ensembles.qmd)

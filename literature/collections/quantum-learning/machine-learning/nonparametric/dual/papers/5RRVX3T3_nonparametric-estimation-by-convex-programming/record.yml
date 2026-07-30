@@ -1,0 +1,42 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 5RRVX3T3
+  item_version: 101400
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: H9LJJCUJ
+      name: dual
+      path: Quantum Learning/Machine learning/Nonparametric/dual
+qlab:
+  primary_collection: H9LJJCUJ
+  indexed_collections:
+    - H9LJJCUJ
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: journalArticle
+title: Nonparametric estimation by convex programming
+authors:
+  - first: Anatoli B.
+    last: Juditsky
+  - first: Arkadi S.
+    last: Nemirovski
+year: 2009
+abstract: "The problem we concentrate on is as follows: given (1) a convex
+  compact set $X$ in ${\\mathbb{R}}^n$, an affine mapping $x\\mapsto A(x)$, a
+  parametric family $\\{p_μ(\\cdot)\\}$ of probability densities and (2) $N$
+  i.i.d. observations of the random variable $ω$, distributed with the density
+  $p_{A(x)}(\\cdot)$ for some (unknown) $x\\in X$, estimate the value $g^Tx$ of
+  a given linear form at $x$. For several families $\\{p_μ(\\cdot)\\}$ with no
+  additional assumptions on $X$ and $A$, we develop computationally efficient
+  estimation routines which are minimax optimal, within an absolute constant
+  factor. We then apply these routines to recovering $x$ itself in the Euclidean
+  norm."
+tags:
+  - Mathematics - Statistics Theory
+identifiers:
+  doi: 10.1214/08-aos654
+  arxiv: "0908.3108"

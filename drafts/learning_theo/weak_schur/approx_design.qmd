@@ -1,0 +1,25 @@
+---
+title: Approximate Design of Quantum Circuits
+description: "Approximate Design of Quantum Circuits"
+categories:
+  - theory
+---
+
+## Applications
+::: {.callout-note icon="false"}
+## Lemma (Multi-layer Haar average)
+
+:::
+Let $U_{AB}$ and $U_{BC}$ be two unitary operators supported on different systems, consider the unitary ensemble $\{V_{ABC}= U_{AB}U_{BC}\}_{U \sim \mathrm{Haar}}$.
+We have:
+$$
+\begin{aligned}
+\Phi_{\mathcal{E}^*}(X) &= \mathbb{E}_{U_{AB}} \left[ U_{AB}^{\otimes k} \left( \mathbb{E}_{U_{BC}} \left[ U_{BC}^{\otimes k} X U_{BC}^{\dagger \otimes k} \right] \right) U_{AB}^{\dagger \otimes k} \right]\\
+&= \mathbb{E}_{U_{AB}} \left[ U_{AB}^{\otimes k} \left(\sum_{\sigma, \tau} \text{Wg}_{BC}(\sigma\tau^{-1}) \cdot \text{Tr}_{BC}\left( X (I_A \otimes \sigma_{BC}^{-1}) \right) \otimes \tau_{B} \otimes \tau_{C}\right) U_{AB}^{\dagger \otimes k} \right]\\
+&= \sum_{\sigma, \tau} \text{Wg}_{BC}(\sigma\tau^{-1}) \cdot \mathbb{E}_{U_{AB}} \left[ U_{AB}^{\otimes k} \left(\text{Tr}_{BC}\left( X (I_A \otimes \sigma_{BC}^{-1}) \right) \otimes \tau_{B} \right) U_{AB}^{\dagger \otimes k} \right]\otimes \tau_{C}\\
+&\hspace{-3em}\mathbb{E}_{U_{AB}} \left[ U_{AB}^{\otimes k} \left(\text{Tr}_{BC}\left( X (I_A \otimes \sigma_{BC}^{-1}) \right) \otimes \tau_{B} \right) U_{AB}^{\dagger \otimes k} \right]\\
+&= \sum_{\tilde{\sigma}, \tilde{\tau}} \text{Wg}_{AB}(\tilde{\sigma}\tilde{\tau}^{-1}) \cdot \text{Tr}_{AB}\left[ \left(\text{Tr}_{BC}\left( X (I_A \otimes \sigma_{BC}^{-1}) \right) \otimes \tau_{B} \right)  \tilde{\sigma}_{AB}^{-1} \right] \cdot \tilde{\tau}_{AB}\\
+&\hspace{-3em}\text{Tr}_{AB}\left[ \left(\text{Tr}_{BC}\left( X (I_A \otimes \sigma_{BC}^{-1}) \right) \otimes \tau_{B} \right)  \tilde{\sigma}_{AB}^{-1} \right]\\
+&=
+\end{aligned}
+$$

@@ -1,0 +1,56 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 4LDI9QL2
+  item_version: 102665
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: J83CW6YG
+      name: whatif_nosign
+      path: Quantum Learning/Learning on states/non-linear/Application/whatif_nosign
+qlab:
+  primary_collection: J83CW6YG
+  indexed_collections:
+    - J83CW6YG
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: journalArticle
+title: Accelerated variational quantum eigensolver with joint Bell measurement
+authors:
+  - first: Chenfeng
+    last: Cao
+  - first: Hiroshi
+    last: Yano
+  - first: Yuya O.
+    last: Nakagawa
+year: 2024
+abstract: The variational quantum eigensolver (VQE) stands as a prominent
+  quantum-classical hybrid algorithm for near-term quantum computers to obtain
+  the ground states of molecular Hamiltonians in quantum chemistry. However, due
+  to the non-commutativity of the Pauli operators in the Hamiltonian, the number
+  of measurements required on quantum computers increases significantly as the
+  system size grows, which may hinder practical applications of VQE. In this
+  work, we present a protocol termed joint Bell measurement VQE (JBM-VQE) to
+  reduce the number of measurements and speed up the VQE algorithm. Our method
+  employs joint Bell measurements, enabling the simultaneous measurement of the
+  absolute values of all expectation values of Pauli operators present in the
+  Hamiltonian. In the course of the optimization, JBM-VQE estimates the absolute
+  values of the expectation values of the Pauli operators for each iteration by
+  the joint Bell measurement, while the signs of them are measured less
+  frequently by the conventional method to measure the expectation values. Our
+  approach is based on the empirical observation that the signs do not often
+  change during optimization. We illustrate the speed-up of JBM-VQE compared to
+  conventional VQE by numerical simulations for finding the ground states of
+  molecular Hamiltonians of small molecules, and the speed-up of JBM-VQE at the
+  early stage of the optimization becomes increasingly pronounced in larger
+  systems. Our approach based on the joint Bell measurement is not limited to
+  VQE and can be utilized in various quantum algorithms whose cost functions are
+  expectation values of many Pauli operators.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.1103/physrevresearch.6.013205
+  arxiv: "2307.00766"

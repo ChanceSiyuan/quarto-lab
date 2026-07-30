@@ -1,0 +1,46 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: UIF4JGJA
+  item_version: 96114
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: GEDTE9HD
+      name: UF-Decoder
+      path: Quantum Error correction/Decoders/Surface code Decoders/UF-Decoder
+qlab:
+  primary_collection: GEDTE9HD
+  indexed_collections:
+    - GEDTE9HD
+  primary_topic: quantum-error-correction
+  indexed_topics:
+    - quantum-error-correction
+item_type: journalArticle
+title: Fault-Tolerant Weighted Union-Find Decoding on the Toric Code
+authors:
+  - first: Shilin
+    last: Huang
+  - first: Michael
+    last: Newman
+  - first: Kenneth R.
+    last: Brown
+year: 2020
+abstract: Quantum error correction requires decoders that are both accurate and
+  efficient. To this end, union-find decoding has emerged as a promising
+  candidate for error correction on the surface code. In this work, we benchmark
+  a weighted variant of the union-find decoder on the toric code under
+  circuit-level depolarizing noise. This variant preserves the almost-linear
+  time complexity of the original while significantly increasing the performance
+  in the fault-tolerance setting. In this noise model, weighting the union-find
+  decoder increases the threshold from 0.38% to 0.62%, compared to an increase
+  from 0.65% to 0.72% when weighting a matching decoder. Further assuming
+  quantum non-demolition measurements, weighted union-find decoding achieves a
+  threshold of 0.76% compared to the 0.90% threshold when matching. We
+  additionally provide comparisons of timing as well as low error rate behavior.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.1103/physreva.102.012419
+  arxiv: "2004.04693"

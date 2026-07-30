@@ -1,0 +1,69 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: WV8MYKKU
+  item_version: 96106
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: Y87T7GAE
+      name: Channel tomo
+      path: Quantum Learning/Learning on operations/Channel tomo
+qlab:
+  primary_collection: Y87T7GAE
+  indexed_collections:
+    - Y87T7GAE
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: journalArticle
+title: Efficient Estimation of Pauli Channels
+authors:
+  - first: Steven T.
+    last: Flammia
+  - first: Joel J.
+    last: Wallman
+year: 2020
+abstract: >-
+  Pauli channels are ubiquitous in quantum information, both as a dominant noise
+  source in many computing architectures and as a practical model for analyzing
+  error correction and fault tolerance. Here, we prove several results on
+  efficiently learning Pauli channels and more generally the Pauli projection of
+  a quantum channel. We first derive a procedure for learning a Pauli channel on
+                n
+                qubits with high probability to a
+                relative
+                precision ϵ using
+                O
+                (ϵ
+                -2
+                n2
+                n
+                ) measurements, which is efficient in the Hilbert space dimension. The estimate is robust to state preparation and measurement errors, which, together with the relative precision, makes it especially appropriate for applications involving characterization of high-accuracy quantum gates. Next, we show that the error rates for an arbitrary set of
+                s
+                Pauli errors can be estimated to a relative precision ϵ using
+                O
+                (ϵ
+                -4
+                log
+                s
+                log s/ϵ) measurements. Finally, we show that when the Pauli channel is given by a Markov field with at most
+                k
+                -local correlations, we can learn an entire
+                n
+                -qubit Pauli channel to relative precision ϵ with only
+                
+                  O
+                  k
+                
+                (ϵ
+                -2
+                n
+                2
+                log
+                n
+                ) measurements, which is efficient in the number of qubits. These results enable a host of applications beyond just characterizing noise in a large-scale quantum system: they pave the way to tailoring quantum codes, optimizing decoders, and customizing fault tolerance procedures to suit a particular device.
+tags: []
+identifiers:
+  doi: 10.1145/3408039

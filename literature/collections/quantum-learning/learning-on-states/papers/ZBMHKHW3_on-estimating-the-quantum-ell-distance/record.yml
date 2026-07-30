@@ -1,0 +1,61 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: ZBMHKHW3
+  item_version: 96146
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: X35L7LFT
+      name: Learning on states
+      path: Quantum Learning/Learning on states
+qlab:
+  primary_collection: X35L7LFT
+  indexed_collections:
+    - X35L7LFT
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: preprint
+title: On estimating the quantum $\ell_α$ distance
+authors:
+  - first: Yupan
+    last: Liu
+  - first: Qisheng
+    last: Wang
+year: 2025
+abstract: "We study the computational complexity of estimating the quantum
+  $\\ell_{\\alpha}$ distance ${\\mathrm{T}_\\alpha}(\\rho_0,\\rho_1)$, defined
+  via the Schatten $\\alpha$-norm $\\|A\\|_{\\alpha} =
+  \\mathrm{tr}(|A|^{\\alpha})^{1/\\alpha}$, given $\\operatorname{poly}(n)$-size
+  state-preparation circuits of $n$-qubit quantum states $\\rho_0$ and
+  $\\rho_1$. This quantity serves as a lower bound on the trace distance for
+  $\\alpha > 1$. For any constant $\\alpha > 1$, we develop an efficient
+  rank-independent quantum estimator for
+  ${\\mathrm{T}_\\alpha}(\\rho_0,\\rho_1)$ with time complexity
+  $\\operatorname{poly}(n)$, achieving an exponential speedup over the prior
+  best results of $\\exp(n)$ due to Wang, Guan, Liu, Zhang, and Ying (TIT 2024).
+  Our improvement leverages efficiently computable uniform polynomial
+  approximations of signed positive power functions within quantum singular
+  value transformation, thereby eliminating the dependence on the rank of the
+  quantum states. Our quantum algorithm reveals a dichotomy in the computational
+  complexity of the Quantum State Distinguishability Problem with Schatten
+  $\\alpha$-norm (QSD$_{\\alpha}$), which involves deciding whether
+  ${\\mathrm{T}_\\alpha}(\\rho_0,\\rho_1)$ is at least $2/5$ or at most $1/5$.
+  This dichotomy arises between the cases of constant $\\alpha > 1$ and
+  $\\alpha=1$: - For any $1+\\Omega(1) \\leq \\alpha \\leq O(1)$,
+  QSD$_{\\alpha}$ is $\\mathsf{BQP}$-complete. - For any $1 \\leq \\alpha \\leq
+  1+\\frac{1}{n}$, QSD$_{\\alpha}$ is $\\mathsf{QSZK}$-complete, implying that
+  no efficient quantum estimator for $\\mathrm{T}_\\alpha(\\rho_0,\\rho_1)$
+  exists unless $\\mathsf{BQP} = \\mathsf{QSZK}$. The hardness results follow
+  from reductions based on new rank-dependent inequalities for the quantum
+  $\\ell_{\\alpha}$ distance with $1\\leq \\alpha \\leq \\infty$, which are of
+  independent interest."
+tags:
+  - Computer Science - Computational Complexity
+  - Computer Science - Data Structures and Algorithms
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2505.00457
+  arxiv: "2505.00457"

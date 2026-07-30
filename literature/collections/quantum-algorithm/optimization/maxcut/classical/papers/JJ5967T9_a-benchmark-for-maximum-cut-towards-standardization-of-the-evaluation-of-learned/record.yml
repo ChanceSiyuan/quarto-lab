@@ -1,0 +1,57 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: JJ5967T9
+  item_version: 96154
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 7DTZK7TI
+      name: Classical
+      path: Quantum Algorithm/Optimization/Maxcut/Classical
+qlab:
+  primary_collection: 7DTZK7TI
+  indexed_collections:
+    - 7DTZK7TI
+  primary_topic: quantum-algorithm
+  indexed_topics:
+    - quantum-algorithm
+item_type: preprint
+title: "A Benchmark for Maximum Cut: Towards Standardization of the Evaluation
+  of Learned Heuristics for Combinatorial Optimization"
+authors:
+  - first: Ankur
+    last: Nath
+  - first: Alan
+    last: Kuhnle
+year: 2024
+abstract: "Recently, there has been much work on the design of general
+  heuristics for graph-based, combinatorial optimization problems via the
+  incorporation of Graph Neural Networks (GNNs) to learn distribution-specific
+  solution structures.However, there is a lack of consistency in the evaluation
+  of these heuristics, in terms of the baselines and instances chosen, which
+  makes it difficult to assess the relative performance of the algorithms. In
+  this paper, we propose an open-source benchmark suite MaxCut-Bench dedicated
+  to the NP-hard Maximum Cut problem in both its weighted and unweighted
+  variants, based on a careful selection of instances curated from diverse graph
+  datasets. The suite offers a unified interface to various heuristics, both
+  traditional and machine learning-based. Next, we use the benchmark in an
+  attempt to systematically corroborate or reproduce the results of several,
+  popular learning-based approaches, including S2V-DQN [31], ECO-DQN [4], among
+  others, in terms of three dimensions: objective value, generalization, and
+  scalability. Our empirical results show that several of the learned heuristics
+  fail to outperform a naive greedy algorithm, and that only one of them
+  consistently outperforms Tabu Search, a simple, general heuristic based upon
+  local search. Furthermore, we find that the performance of ECO-DQN remains the
+  same or is improved if the GNN is replaced by a simple linear regression on a
+  subset of the features that are related to Tabu Search. Code, data, and
+  pretrained models are available at:
+  \\url{https://github.com/ankurnath/MaxCut-Bench}."
+tags:
+  - Computer Science - Artificial Intelligence
+  - Computer Science - Machine Learning
+  - Mathematics - Optimization and Control
+identifiers:
+  doi: 10.48550/arxiv.2406.11897
+  arxiv: "2406.11897"

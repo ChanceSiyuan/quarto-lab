@@ -1,0 +1,68 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: IFHS7QXM
+  item_version: 96016
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: IYPP5A8R
+      name: Quantum Algorithm
+      path: Quantum Algorithm
+qlab:
+  primary_collection: IYPP5A8R
+  indexed_collections:
+    - IYPP5A8R
+  primary_topic: quantum-algorithm
+  indexed_topics:
+    - quantum-algorithm
+item_type: preprint
+title: Quantum automated learning with provable and explainable trainability
+authors:
+  - first: Qi
+    last: Ye
+  - first: Shuangyue
+    last: Geng
+  - first: Zizhao
+    last: Han
+  - first: Weikang
+    last: Li
+  - first: L.-M.
+    last: Duan
+  - first: Dong-Ling
+    last: Deng
+year: 2025
+abstract: Machine learning is widely believed to be one of the most promising
+  practical applications of quantum computing. Existing quantum machine learning
+  schemes typically employ a quantum-classical hybrid approach that relies
+  crucially on gradients of model parameters. Such an approach lacks provable
+  convergence to global minima and will become infeasible as quantum learning
+  models scale up. Here, we introduce quantum automated learning, where no
+  variational parameter is involved and the training process is converted to
+  quantum state preparation. In particular, we encode training data into unitary
+  operations and iteratively evolve a random initial state under these unitaries
+  and their inverses, with a target-oriented perturbation towards higher
+  prediction accuracy sandwiched in between. Under reasonable assumptions, we
+  rigorously prove that the evolution converges exponentially to the desired
+  state corresponding to the global minimum of the loss function. We show that
+  such a training process can be understood from the perspective of preparing
+  quantum states by imaginary time evolution, where the data-encoded unitaries
+  together with target-oriented perturbations would train the quantum learning
+  model in an automated fashion. We further prove that the quantum automated
+  learning paradigm features good generalization ability with the generalization
+  error upper bounded by the ratio between a logarithmic function of the Hilbert
+  space dimension and the number of training samples. In addition, we carry out
+  extensive numerical simulations on real-life images and quantum data to
+  demonstrate the effectiveness of our approach and validate the assumptions.
+  Our results establish an unconventional quantum learning strategy that is
+  gradient-free with provable and explainable trainability, which would be
+  crucial for large-scale practical applications of quantum computing in machine
+  learning scenarios.
+tags:
+  - Computer Science - Artificial Intelligence
+  - Computer Science - Machine Learning
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2502.05264
+  arxiv: "2502.05264"

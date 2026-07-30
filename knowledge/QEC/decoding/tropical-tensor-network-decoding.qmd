@@ -1,0 +1,177 @@
+---
+title: Tropical Tensor-Network Decoding
+description: Max-plus tensor contraction for exact MAP configurations, backpointer recovery, treewidth complexity, and the limitation imposed by quantum degeneracy.
+categories:
+  - theory
+---
+
+# Max-product inference in logarithmic form
+
+Consider a factorized nonnegative function
+
+$$
+F(x_1,\ldots,x_n)=\prod_{a=1}^M\phi_a(x_{N(a)}).
+$$
+
+The most probable explanation is
+
+$$
+x^*\in\arg\max_x F(x).
+$$
+
+Writing $T_a=\log\phi_a$ turns products into sums:
+
+$$
+x^*\in\arg\max_x\sum_aT_a(x_{N(a)}).
+$$
+
+This is a tensor contraction over the max-plus, or tropical, semiring.
+
+::: {#def-tropical-semiring .callout-note icon="false"}
+## Definition: max-plus semiring
+
+The max-plus semiring is
+
+$$
+\mathbb T=\mathbb R\cup\{-\infty\},
+\qquad
+a\oplus b=\max(a,b),
+\qquad
+a\otimes b=a+b.
+$$
+
+Its additive identity is $-\infty$ and its multiplicative identity is $0$.
+:::
+
+Hard constraints are represented by tensors with value $0$ on allowed assignments and $-\infty$ on forbidden assignments. For syndrome decoding, a check factor is
+
+$$
+T_a(e_{N(a)})=
+\begin{cases}
+0,&\bigoplus_{i\in N(a)}e_i=s_a,\\
+-\infty,&\text{otherwise}.
+\end{cases}
+$$
+
+# Tensor contraction
+
+In ordinary arithmetic, eliminating a variable sums over its values. In max-plus arithmetic, elimination maximizes:
+
+$$
+B(y)=\bigoplus_x A(x,y)=\max_xA(x,y).
+$$
+
+Combining factors uses tropical multiplication, which is ordinary addition. A complete contraction therefore returns the maximum log weight of any configuration. This is the same algebraic principle used to compute exact ground states of discrete spin models [@liu2021tropical].
+
+::: {#thm-tropical-map .callout-important icon="false"}
+## Theorem: tropical contraction computes MAP value
+
+If every configuration weight factorizes as $F(x)=\prod_a\phi_a(x_{N(a)})$, then contracting the log-factor network over $(\max,+)$ returns
+
+$$
+\max_x\log F(x)=\log\max_xF(x).
+$$
+:::
+
+::: {.callout-note collapse="true"}
+## Proof
+
+Distributivity of addition over maximum permits variables to be eliminated in any valid contraction order:
+
+$$
+\max_x\sum_a\log\phi_a(x_{N(a)})
+=\log\max_x\prod_a\phi_a(x_{N(a)}).
+$$
+
+Tensor contraction is repeated application of these two semiring operations.
+:::
+
+# Recovering an optimizing configuration
+
+A scalar contraction gives only the optimal value. To recover $x^*$, store an argmax table whenever a variable or group of variables is eliminated.
+
+::: {#def-tropical-backpointer .callout-note icon="false"}
+## Definition: backpointer
+
+For a reduction
+
+$$
+B(y)=\max_xA(x,y),
+$$
+
+a backpointer is a choice
+
+$$
+b(y)\in\arg\max_xA(x,y).
+$$
+:::
+
+After the forward contraction, traverse the contraction tree in reverse. Values already assigned to the surviving indices select a row of each backpointer table, which recovers the eliminated indices. Ties require a deterministic convention if one optimizer is desired. To count optimizers as well, augment each tropical value with a multiplicity and add multiplicities on ties [@liu2021tropical].
+
+# Complexity and contraction width
+
+The dominant cost is the largest intermediate tensor. For variables of domain size $q$, an elimination order of induced width $w$ requires time and memory exponential in $w$ (up to polynomial factors):
+
+$$
+\operatorname{cost}\sim\operatorname{poly}(n)q^{w+1}.
+$$
+
+The minimum possible induced width is characterized by the treewidth of the primal interaction graph. Bounded degree does not imply bounded treewidth: a sparse expander has linear treewidth, while an $L\times L$ grid has treewidth $\Theta(L)$. Thus a two-dimensional code with $n\asymp L^2$ typically leads to a subexponential but still superpolynomial exact contraction, roughly $\exp[O(\sqrt n)]$.
+
+Heuristic contraction-order optimizers can greatly improve constants but do not change this worst-case dependence. Approximate boundary-MPS contraction replaces exact intermediate tensors by controlled low-rank approximations; this underlies tensor-network decoders for surface codes [@bravyi2014efficient].
+
+# Physical MAP is not degenerate quantum ML
+
+For a syndrome $s$, tropical contraction of physical-error factors computes
+
+$$
+\max_{E:s(E)=s}\Pr(E),
+$$
+
+the probability of the most likely representative. A degenerate quantum decoder instead needs
+
+$$
+\max_L\sum_{S\in\mathcal S}\Pr(E_sLS).
+$$
+
+The inner operation here is a **sum**, not a maximum. Replacing it by max-plus discards the entropy of each stabilizer coset.
+
+::: {#lem-tropical-degeneracy-limit .callout-important icon="false"}
+## Lemma: max-plus cannot perform the coset sum
+
+In general,
+
+$$
+\max_{S\in\mathcal S}\Pr(E_sLS)
+\ne
+\sum_{S\in\mathcal S}\Pr(E_sLS),
+$$
+
+and the logical coset maximizing the left-hand quantity need not maximize the right-hand quantity.
+:::
+
+For example, one coset containing a representative of probability $0.4$ beats another whose largest representative has probability $0.3$ under max-product. But if the second coset has two representatives of probability $0.3$, its total probability is $0.6$ and it is preferred by degenerate ML.
+
+Coset-aware decoding therefore requires ordinary sum-product contraction, log-sum-exp arithmetic, or an augmented algebra that retains the necessary partition sums. Tropical contraction remains exact and useful when the target is a MAP configuration, a minimum-energy representative, or a zero-temperature limit.
+
+# Comparison
+
+| Method | Primary output | Exact objective | Dominant cost |
+|---|---|---|---|
+| BP | approximate marginals | exact on trees | iterations $\times$ graph edges |
+| BP+OSD | short list of valid representatives | heuristic list search | elimination plus list size |
+| Tropical TN | MAP value and representative | max-product objective | exponential in contraction width |
+| Sum-product TN | partition or coset probability | marginal/coset sum | exponential in contraction width |
+
+: Decoder objectives should be compared before runtime or threshold numbers.
+
+# Implementation invariants
+
+A correct implementation should preserve
+
+- $-\infty$ for forbidden configurations;
+- a stable tie policy for backpointers;
+- an explicit map from tensor indices to error variables;
+- enough backpointer metadata to invert every reduction;
+- a separately verified syndrome for the recovered assignment; and
+- a distinction between representative MAP and logical-coset ML in all reported results.

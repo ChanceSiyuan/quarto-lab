@@ -1,0 +1,52 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: CW5GXTJ8
+  item_version: 96084
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: LIVJUSB2
+      name: Shor
+      path: Circuit Compilation/ECC compilation/Shor
+qlab:
+  primary_collection: LIVJUSB2
+  indexed_collections:
+    - LIVJUSB2
+  primary_topic: circuit-compilation
+  indexed_topics:
+    - circuit-compilation
+item_type: journalArticle
+title: How to factor 2048 bit RSA integers in 8 hours using 20 million noisy qubits
+authors:
+  - first: Craig
+    last: Gidney
+  - first: Martin
+    last: Ekerå
+year: 2021
+abstract: "We significantly reduce the cost of factoring integers and computing
+  discrete logarithms in finite fields on a quantum computer by combining
+  techniques from Shor 1994, Griffiths-Niu 1996, Zalka 2006, Fowler 2012,
+  Eker{\\aa}-H{\\aa}stad 2017, Eker{\\aa} 2017, Eker{\\aa} 2018, Gidney-Fowler
+  2019, Gidney 2019. We estimate the approximate cost of our construction using
+  plausible physical assumptions for large-scale superconducting qubit
+  platforms: a planar grid of qubits with nearest-neighbor connectivity, a
+  characteristic physical gate error rate of $10^{-3}$, a surface code cycle
+  time of 1 microsecond, and a reaction time of 10 microseconds. We account for
+  factors that are normally ignored such as noise, the need to make repeated
+  attempts, and the spacetime layout of the computation. When factoring 2048 bit
+  RSA integers, our construction's spacetime volume is a hundredfold less than
+  comparable estimates from earlier works (Van Meter et al. 2009, Jones et al.
+  2010, Fowler et al. 2012, Gheorghiu et al. 2019). In the abstract circuit
+  model (which ignores overheads from distillation, routing, and error
+  correction) our construction uses $3 n + 0.002 n \\lg n$ logical qubits, $0.3
+  n^3 + 0.0005 n^3 \\lg n$ Toffolis, and $500 n^2 + n^2 \\lg n$ measurement
+  depth to factor $n$-bit RSA integers. We quantify the cryptographic
+  implications of our work, both for RSA and for schemes based on the DLP in
+  finite fields."
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.22331/q-2021-04-15-433
+  arxiv: "1905.09749"

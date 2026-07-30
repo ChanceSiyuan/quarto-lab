@@ -1,0 +1,51 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: KSRFQ2ZN
+  item_version: 96110
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: VQWX7XGH
+      name: Open-dynamics
+      path: Quantum Complexity/QCsim/Open-dynamics
+qlab:
+  primary_collection: VQWX7XGH
+  indexed_collections:
+    - VQWX7XGH
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: preprint
+title: Interactive quantum advantage with noisy, shallow Clifford circuits
+authors:
+  - first: Daniel
+    last: Grier
+  - first: Nathan
+    last: Ju
+  - first: Luke
+    last: Schaeffer
+year: 2021
+abstract: Recent work by Bravyi et al. constructs a relation problem that a
+  noisy constant-depth quantum circuit (QNC$^0$) can solve with near certainty
+  (probability $1 - o(1)$), but that any bounded fan-in constant-depth classical
+  circuit (NC$^0$) fails with some constant probability. We show that this
+  robustness to noise can be achieved in the other low-depth quantum/classical
+  circuit separations in this area. In particular, we show a general strategy
+  for adding noise tolerance to the interactive protocols of Grier and
+  Schaeffer. As a consequence, we obtain an unconditional separation between
+  noisy QNC$^0$ circuits and AC$^0[p]$ circuits for all primes $p \geq 2$, and a
+  conditional separation between noisy QNC$^0$ circuits and log-space classical
+  machines under a plausible complexity-theoretic conjecture. A key component of
+  this reduction is showing average-case hardness for the classical simulation
+  tasks -- that is, showing that a classical simulation of the quantum
+  interactive task is still powerful even if it is allowed to err with constant
+  probability over a uniformly random input. We show that is true even for
+  quantum tasks which are $\oplus$L-hard to simulate. To do this, we borrow
+  techniques from randomized encodings used in cryptography.
+tags:
+  - Computer Science - Computational Complexity
+  - Quantum Physics
+identifiers:
+  arxiv: "2102.06833"

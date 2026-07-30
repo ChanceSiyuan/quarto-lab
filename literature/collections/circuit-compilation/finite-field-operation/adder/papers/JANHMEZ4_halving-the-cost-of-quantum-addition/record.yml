@@ -1,0 +1,46 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: JANHMEZ4
+  item_version: 96024
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 9BSNNHUE
+      name: adder
+      path: Circuit Compilation/Finite field operation/adder
+qlab:
+  primary_collection: 9BSNNHUE
+  indexed_collections:
+    - 9BSNNHUE
+  primary_topic: circuit-compilation
+  indexed_topics:
+    - circuit-compilation
+item_type: journalArticle
+title: Halving the cost of quantum addition
+authors:
+  - first: Craig
+    last: Gidney
+year: 2018
+abstract: We improve the number of T gates needed to perform an n-bit adder from
+  8n + O(1) to 4n + O(1). We do so via a "temporary logical-AND" construction
+  which uses four T gates to store the logical-AND of two qubits into an ancilla
+  and zero T gates to later erase the ancilla. This construction is equivalent
+  to one by Jones, except that our framing makes it clear that the technique is
+  far more widely applicable than previously realized. Temporary logical-ANDs
+  can be applied to integer arithmetic, modular arithmetic, rotation synthesis,
+  the quantum Fourier transform, Shor's algorithm, Grover oracles, and many
+  other circuits. Because T gates dominate the cost of quantum computation based
+  on the surface code, and temporary logical-ANDs are widely applicable, this
+  represents a significant reduction in projected costs of quantum computation.
+  In addition to our n-bit adder, we present an n-bit controlled adder circuit
+  with T-count of 8n + O(1), a temporary adder that can be computed for the same
+  cost as the normal adder but whose result can be kept until it is later
+  uncomputed without using T gates, and discuss some other constructions whose
+  T-count is improved by the temporary logical-AND.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.22331/q-2018-06-18-74
+  arxiv: "1709.06648"

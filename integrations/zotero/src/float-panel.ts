@@ -3,6 +3,7 @@ import { renderModelOptions } from "./model-menu";
 import { copyToClipboard } from "./platform";
 import { QLAB_COMMANDS, type QLabCommandID } from "./qlab-commands";
 import {
+  appendUserMessage,
   createSidebarIcon,
   compactPath,
   type ChatEntry,
@@ -103,7 +104,7 @@ export class FloatPanelView {
     phase: "connecting",
     running: false,
     entries: [],
-    paperTitle: "论文助手",
+    paperTitle: "Paper Assistant",
     selection: null,
     models: [],
     selectedModel: "",
@@ -117,6 +118,7 @@ export class FloatPanelView {
   };
   private position: { left: number; top: number } | null = null;
   private readonly expandedTurns = new Set<string>();
+  private readonly expandedUserMessages = new Set<string>();
   private activityTimer: number | null = null;
   private activityNode: HTMLElement | null = null;
   private activityLabelEl: HTMLElement | null = null;
@@ -180,7 +182,7 @@ export class FloatPanelView {
       : "zc-float zc-chat-float";
     this.root.hidden = true;
     this.root.setAttribute("role", this.surface === "workbench" ? "main" : "dialog");
-    this.root.setAttribute("aria-label", this.surface === "workbench" ? "QLab 工作台" : "QLab 轻量聊天");
+    this.root.setAttribute("aria-label", this.surface === "workbench" ? "QLab Workbench" : "QLab Compact Chat");
     host.replaceChildren(this.root);
     this.build();
     this.render();
@@ -295,7 +297,7 @@ export class FloatPanelView {
     this.alphaSlider.min = "60";
     this.alphaSlider.max = "100";
     this.alphaSlider.step = "5";
-    this.alphaSlider.title = "背景透明度";
+    this.alphaSlider.title = "Background Opacity";
     this.alphaSlider.setAttribute("aria-label", this.alphaSlider.title);
     this.alphaSlider.hidden = this.surface !== "float";
     // `input` fires continuously while dragging: only preview it locally (no
@@ -312,7 +314,7 @@ export class FloatPanelView {
     const close = this.doc.createElement("button");
     close.type = "button";
     close.className = "zc-float-close";
-    close.title = "关闭（Esc）";
+    close.title = "Close (Esc)";
     close.setAttribute("aria-label", close.title);
     close.replaceChildren(createSidebarIcon(this.doc, "close"));
     close.addEventListener("click", () => this.callbacks.onClose());
@@ -320,8 +322,8 @@ export class FloatPanelView {
     const openWorkbench = this.doc.createElement("button");
     openWorkbench.type = "button";
     openWorkbench.className = "zc-float-open-workbench";
-    openWorkbench.textContent = "在标签页打开";
-    openWorkbench.title = "在 Zotero 标签页打开完整 QLab 工作台";
+    openWorkbench.textContent = "Open in Tab";
+    openWorkbench.title = "Open the full QLab Workbench in a Zotero tab";
     openWorkbench.hidden = this.surface !== "float";
     openWorkbench.addEventListener("click", () => this.callbacks.onOpenWorkbench());
     this.bar.append(grip, this.title);
@@ -335,16 +337,16 @@ export class FloatPanelView {
     const repository = this.doc.createElement("button");
     repository.type = "button";
     repository.className = "zc-workbench-root";
-    repository.title = "选择 QLab 仓库";
+    repository.title = "Choose QLab Repository";
     const repositoryMark = this.doc.createElement("strong");
-    repositoryMark.textContent = "QLab 仓库";
+    repositoryMark.textContent = "QLab Repository";
     this.qlabRootLabel = this.doc.createElement("span");
     repository.append(repositoryMark, this.qlabRootLabel);
     repository.addEventListener("click", () => this.callbacks.onChooseQLabRoot());
     const capture = this.doc.createElement("button");
     capture.type = "button";
     capture.className = "zc-workbench-capture";
-    capture.textContent = "整理当前聊天到 Draft";
+    capture.textContent = "Organize this chat into a Draft";
     capture.addEventListener("click", () => this.callbacks.onCaptureChatDraft());
     toolsHeader.append(repository, capture);
     const commandGrid = this.doc.createElement("div");
@@ -377,7 +379,7 @@ export class FloatPanelView {
     const remove = this.doc.createElement("button");
     remove.type = "button";
     remove.className = "zc-float-chip-remove";
-    remove.title = "移除选区上下文";
+    remove.title = "Remove selection context";
     remove.setAttribute("aria-label", remove.title);
     remove.replaceChildren(createSidebarIcon(this.doc, "close"));
     remove.addEventListener("click", () => this.callbacks.onRemoveSelection());
@@ -395,8 +397,8 @@ export class FloatPanelView {
     const undo = this.doc.createElement("button");
     undo.type = "button";
     undo.className = "zc-float-chip-undo";
-    undo.textContent = "撤销";
-    undo.title = "撤销高亮批注";
+    undo.textContent = "Undo";
+    undo.title = "Undo Highlight Annotation";
     undo.setAttribute("aria-label", undo.title);
     undo.addEventListener("click", () => {
       const anchorId = this.state.anchorConfirmation?.anchorId;
@@ -407,7 +409,7 @@ export class FloatPanelView {
     this.understoodButton = this.doc.createElement("button");
     this.understoodButton.type = "button";
     this.understoodButton.className = "zc-float-understood";
-    this.understoodButton.textContent = "已理解 ✓";
+    this.understoodButton.textContent = "Understood ✓";
     this.understoodButton.hidden = true;
     this.understoodButton.addEventListener("click", () => this.callbacks.onMarkUnderstood());
 
@@ -421,12 +423,12 @@ export class FloatPanelView {
     const consentDecline = this.doc.createElement("button");
     consentDecline.type = "button";
     consentDecline.className = "zc-float-consent-decline";
-    consentDecline.textContent = "不写批注";
+    consentDecline.textContent = "Do Not Annotate";
     consentDecline.addEventListener("click", () => this.callbacks.onPaperTrailConsent("decline"));
     const consentAccept = this.doc.createElement("button");
     consentAccept.type = "button";
     consentAccept.className = "zc-float-consent-accept";
-    consentAccept.textContent = "允许";
+    consentAccept.textContent = "Allow";
     consentAccept.addEventListener("click", () => this.callbacks.onPaperTrailConsent("accept"));
     consentActions.append(consentDecline, consentAccept);
     this.consentBlock.append(this.consentText, consentActions);
@@ -436,7 +438,7 @@ export class FloatPanelView {
     this.textarea = this.doc.createElement("textarea");
     this.textarea.className = "zc-float-input";
     this.textarea.rows = 1;
-    this.textarea.placeholder = "问点关于这篇论文的问题…";
+    this.textarea.placeholder = "Ask about this paper…";
     this.textarea.addEventListener("input", () => this.autoSize());
     this.textarea.addEventListener("keydown", (event) => {
       if (event.key === "Enter" && !event.shiftKey && !event.isComposing) {
@@ -447,20 +449,20 @@ export class FloatPanelView {
     this.sendButton = this.doc.createElement("button");
     this.sendButton.type = "button";
     this.sendButton.className = "zc-float-send";
-    this.sendButton.title = "发送";
+    this.sendButton.title = "Send";
     this.sendButton.setAttribute("aria-label", this.sendButton.title);
     this.sendButton.replaceChildren(createSidebarIcon(this.doc, "send"));
     this.sendButton.addEventListener("click", () => this.submit());
     this.stopButton = this.doc.createElement("button");
     this.stopButton.type = "button";
     this.stopButton.className = "zc-float-stop";
-    this.stopButton.title = "停止生成";
+    this.stopButton.title = "Stop Generating";
     this.stopButton.setAttribute("aria-label", this.stopButton.title);
     this.stopButton.replaceChildren(createSidebarIcon(this.doc, "stop"));
     this.stopButton.addEventListener("click", () => this.callbacks.onStop());
     this.modelSelect = this.doc.createElement("select");
     this.modelSelect.className = "zc-float-model";
-    this.modelSelect.title = "模型";
+    this.modelSelect.title = "Model";
     this.modelSelect.hidden = true;
     this.modelSelect.addEventListener("change", () => {
       this.callbacks.onModelChange(this.modelSelect.value);
@@ -516,8 +518,8 @@ export class FloatPanelView {
 
   private render(): void {
     this.title.textContent = this.surface === "workbench"
-      ? `QLab 工作台 · ${this.state.paperTitle || "论文助手"}`
-      : `QLab · ${this.state.paperTitle || "论文助手"}`;
+      ? `QLab Workbench · ${this.state.paperTitle || "Paper Assistant"}`
+      : `QLab · ${this.state.paperTitle || "Paper Assistant"}`;
     if (this.surface === "workbench") this.renderQLabTools();
     this.renderChip();
     this.renderAnchorChip();
@@ -538,8 +540,8 @@ export class FloatPanelView {
   private renderQLabTools(): void {
     this.qlabRootLabel.textContent = this.state.qlabRoot
       ? compactPath(this.state.qlabRoot)
-      : "选择仓库…";
-    this.qlabRootLabel.title = this.state.qlabRoot || "尚未配置 QLab 仓库";
+      : "Choose repository…";
+    this.qlabRootLabel.title = this.state.qlabRoot || "QLab repository is not configured";
     for (const button of this.qlabCommandButtons) {
       button.disabled = !this.state.qlabRoot || this.state.phase !== "ready";
     }
@@ -597,8 +599,8 @@ export class FloatPanelView {
     this.chip.hidden = !selection;
     if (!selection) return;
     this.chipLabel.textContent = selection.pageNumber
-      ? `已选 ${selection.text.length} 字 · 第 ${selection.pageNumber} 页`
-      : `已选 ${selection.text.length} 字`;
+      ? `Selected ${selection.text.length} characters · page ${selection.pageNumber}`
+      : `Selected ${selection.text.length} characters`;
   }
 
   private renderAnchorChip(): void {
@@ -606,8 +608,8 @@ export class FloatPanelView {
     this.anchorChip.hidden = !confirmation;
     if (!confirmation) return;
     this.anchorChipLabel.textContent = confirmation.pageNumber
-      ? `已留痕 · 第 ${confirmation.pageNumber} 页`
-      : "已留痕";
+      ? `Trail saved · page ${confirmation.pageNumber}`
+      : "Trail saved";
   }
 
   private renderUnderstoodButton(): void {
@@ -618,7 +620,7 @@ export class FloatPanelView {
     const consent = this.state.paperTrailConsent;
     this.consentBlock.hidden = !consent;
     if (!consent) return;
-    this.consentText.textContent = "QLab 将在你提问的位置自动创建高亮批注";
+    this.consentText.textContent = "QLab will create a highlight annotation at the question location";
   }
 
   private renderNote(): void {
@@ -626,18 +628,18 @@ export class FloatPanelView {
     this.note.hidden = false;
     this.note.classList.toggle("is-error", Boolean(this.state.error));
     if (this.state.phase === "connecting") {
-      this.note.textContent = "正在连接 Codex…";
+      this.note.textContent = "Connecting to Codex…";
       return;
     }
     if (this.state.phase === "signed-out") {
       const text = this.doc.createElement("span");
-      text.textContent = "使用 ChatGPT 登录后即可提问。";
+      text.textContent = "Sign in with ChatGPT to ask questions.";
       this.note.appendChild(text);
       if (this.state.capabilities?.supportsLogin !== false) {
         const login = this.doc.createElement("button");
         login.type = "button";
         login.className = "zc-float-login";
-        login.textContent = "使用 ChatGPT 登录";
+        login.textContent = "Sign In with ChatGPT";
         login.addEventListener("click", () => this.callbacks.onLogin());
         this.note.appendChild(login);
       }
@@ -647,7 +649,7 @@ export class FloatPanelView {
       this.note.textContent = this.state.error;
       return;
     }
-    this.note.textContent = this.state.running ? "Agent 正在工作 · Enter 可发送补充" : "";
+    this.note.textContent = this.state.running ? "Agent is working · Enter sends a follow-up" : "";
     this.note.hidden = !this.note.textContent;
   }
 
@@ -693,7 +695,7 @@ export class FloatPanelView {
     button.className = "zc-turn-summary";
     const parts: string[] = [];
     if (elapsed !== undefined) parts.push(`⏱ ${formatElapsed(elapsed)}`);
-    if (steps > 0) parts.push(`${steps} 个步骤`);
+    if (steps > 0) parts.push(`${steps} steps`);
     button.textContent = parts.join(" · ");
     button.addEventListener("click", () => {
       if (this.expandedTurns.has(group.id)) this.expandedTurns.delete(group.id);
@@ -778,17 +780,14 @@ export class FloatPanelView {
     article.className = `zc-float-entry zc-entry-${entry.kind}`;
     article.dataset.entryId = entry.id;
     if (entry.kind === "user") {
-      const bubble = this.doc.createElement("div");
-      bubble.className = "zc-user-bubble";
-      bubble.textContent = entry.text;
-      article.appendChild(bubble);
+      appendUserMessage(this.doc, article, entry, this.expandedUserMessages);
       return article;
     }
     if (entry.kind === "tool" || entry.kind === "command" || entry.kind === "reasoning") {
       const details = this.doc.createElement("details");
       details.className = "zc-tool-card";
       const summary = this.doc.createElement("summary");
-      summary.textContent = entry.title || (entry.kind === "reasoning" ? "思考过程" : "工具");
+      summary.textContent = entry.title || (entry.kind === "reasoning" ? "Reasoning" : "Tool");
       const content = this.doc.createElement("div");
       content.className = "zc-tool-content";
       content.appendChild(renderMarkdown(this.doc, entry.text));
@@ -817,15 +816,15 @@ export class FloatPanelView {
     const button = this.doc.createElement("button");
     button.type = "button";
     button.className = "zc-copy-answer";
-    button.title = "复制回答";
+    button.title = "Copy Answer";
     button.replaceChildren(createSidebarIcon(this.doc, "copy"));
     button.addEventListener("click", () => {
       if (!copyToClipboard(text)) return;
       button.classList.add("is-copied");
-      button.title = "已复制";
+      button.title = "Copied";
       this.doc.defaultView?.setTimeout(() => {
         button.classList.remove("is-copied");
-        button.title = "复制回答";
+        button.title = "Copy Answer";
       }, 1500);
     });
     return button;

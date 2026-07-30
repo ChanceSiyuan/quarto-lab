@@ -1,0 +1,61 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: XG5MU7BC
+  item_version: 105345
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 2CJWFJFQ
+      name: pseudorandom
+      path: Quantum Resource/Schur-Weyl duality/pseudorandom
+qlab:
+  primary_collection: 2CJWFJFQ
+  indexed_collections:
+    - 2CJWFJFQ
+  primary_topic: quantum-resource
+  indexed_topics:
+    - quantum-resource
+item_type: preprint
+title: Efficient Quantum Pseudorandomness from Hamiltonian Phase States
+authors:
+  - first: John
+    last: Bostanci
+  - first: Jonas
+    last: Haferkamp
+  - first: Dominik
+    last: Hangleiter
+  - first: Alexander
+    last: Poremba
+year: 2025
+abstract: Quantum pseudorandomness has found applications in many areas of
+  quantum information, ranging from entanglement theory, to models of scrambling
+  phenomena in chaotic quantum systems, and, more recently, in the foundations
+  of quantum cryptography. Kretschmer (TQC '21) showed that both pseudorandom
+  states and pseudorandom unitaries exist even in a world without classical
+  one-way functions. To this day, however, all known constructions require
+  classical cryptographic building blocks which are themselves synonymous with
+  the existence of one-way functions, and which are also challenging to realize
+  on realistic quantum hardware. In this work, we seek to make progress on both
+  of these fronts simultaneously -- by decoupling quantum pseudorandomness from
+  classical cryptography altogether. We introduce a quantum hardness assumption
+  called the Hamiltonian Phase State (HPS) problem, which is the task of
+  decoding output states of a random instantaneous quantum polynomial-time (IQP)
+  circuit. Hamiltonian phase states can be generated very efficiently using only
+  Hadamard gates, single-qubit Z-rotations and CNOT circuits. We show that the
+  hardness of our problem reduces to a worst-case version of the problem, and we
+  provide evidence that our assumption is plausibly fully quantum; meaning, it
+  cannot be used to construct one-way functions. We also show
+  information-theoretic hardness when only few copies of HPS are available by
+  proving an approximate $t$-design property of our ensemble. Finally, we show
+  that our HPS assumption and its variants allow us to efficiently construct
+  many pseudorandom quantum primitives, ranging from pseudorandom states, to
+  quantum pseudoentanglement, to pseudorandom unitaries, and even primitives
+  such as public-key encryption with quantum keys.
+tags:
+  - Computer Science - Cryptography and Security
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2410.08073
+  arxiv: "2410.08073"

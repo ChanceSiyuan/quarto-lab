@@ -1,0 +1,49 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: F4S54QNV
+  item_version: 96049
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: FMTRVYEI
+      name: Membership Complexity
+      path: Quantum Resource/Entanglement/seperability verification/Membership
+        Complexity
+qlab:
+  primary_collection: FMTRVYEI
+  indexed_collections:
+    - FMTRVYEI
+  primary_topic: quantum-resource
+  indexed_topics:
+    - quantum-resource
+item_type: preprint
+title: Dvoretzky's Theorem and the Complexity of Entanglement Detection
+authors:
+  - first: Guillaume
+    last: Aubrun
+  - first: Stanislaw
+    last: Szarek
+year: 2017
+abstract: "The well-known Horodecki criterion asserts that a state $\\rho$ on
+  $\\mathbf{C}^d \\otimes \\mathbf{C}^d$ is entangled if and only if there
+  exists a positive map $\\Phi : \\mathsf{M}_d \\to \\mathsf{M}_d$ such that the
+  operator $(\\Phi \\otimes \\mathrm{Id})(\\rho)$ is not positive semi-definite.
+  We show that the number of such maps needed to detect all the robustly
+  entangled states (i.e., states $\\rho$ which remain entangled even in the
+  presence of substantial randomizing noise) exceeds $\\exp(c d^3 / \\log d)$.
+  The proof is based on the 1977 inequality of Figiel--Lindenstrauss--Milman,
+  which ultimately relies on Dvoretzky's theorem about almost spherical sections
+  of convex bodies. We interpret that inequality as a statement about
+  approximability of convex bodies by polytopes with few vertices or with few
+  faces and apply it to the study of fine properties of the set of quantum
+  states and that of separable states. Our results can be thought of as
+  geometrical manifestations of the complexity of entanglement detection."
+tags:
+  - 81P40, 46B07
+  - Mathematics - Functional Analysis
+  - Quantum Physics
+identifiers:
+  doi: 10.19086/da.1242
+  arxiv: "1510.00578"

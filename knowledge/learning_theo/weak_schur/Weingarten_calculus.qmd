@@ -1,0 +1,255 @@
+---
+title: Weingarten calculus
+description: The Weingarten calculus is a tool for calculating the average of a function over the unitary group.
+categories:
+  - theory
+---
+
+# Definitions and analytic expressions
+
+Due to the fact that any operator $A$ can be decomposed into a linear combination of $k$-point SWAP operators, it can be decomposed on the basis $\{\mathbb{P}^{d}_{\pi}\}_{\pi \in S_k}$. However, this is not an orthonormal basis, so the decomposition coefficients involve a more complex calculation based on the coefficients $\mathrm{tr}(\mathbb{P}_{\pi}^{d}\cdot A)$.
+
+::: {#lem-Weingarten_calculus .callout-note icon="false"}
+## (Weingarten calculus) 
+
+For $U \in U(d)$ and $X \in (\mathbb{C}^d)^{\otimes t} \times (\mathbb{C}^d)^{\otimes t}$, the following identity holds:
+$$
+\Phi_t(X) := \int_{\text{Haar}} U^{\otimes t} X U^{\dagger \otimes t} \, dU =\sum_{\tau,\sigma \in S_t} \text{tr}(X\mathbb{P}^{d,\dagger}_{\tau}) \mathrm{Wg}(\tau\sigma^{-1} , d) \mathbb{P}^d_\sigma,
+$$
+The coefficients $\mathrm{Wg}(\tau \sigma^{-1}, d)$ are determined by the following relation:
+$$
+\sum_{\tau\in S_t} \mathrm{Wg}(\tau \sigma^{-1}, d) \text{Tr}(\mathbb{P}^{d,\dagger}_{\tau} \mathbb{P}^{d}_{\rho})= \delta_{\sigma,\rho}.
+$$
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+
+By definition, $\Phi_t(X)$ is the Haar average of $U^{\otimes t} X (U^\dagger)^{\otimes t}$ on the unitary group.
+By variable substitution $U \to VU$, we can prove that for all $V \in U(d)$, we have $V^{\otimes t} \Phi_t(X) (V^\dagger)^{\otimes t} = \Phi_t(X)$.
+
+By Schur-Weyl duality, any operator that commutes with all $V^{\otimes t}$ must lie in the space spanned by the permutation operators $\mathbb{P}^d_\rho$ ($\rho \in S_t$).
+Therefore, we can write $\Phi_t(X) = \sum_{\rho \in S_t} c_\rho \, \mathbb{P}^d_\rho$.
+On both sides, we multiply by $\mathbb{P}^{d,\dagger}_\tau$ and take the trace, we get $\text{RHS} = \sum_{\rho \in S_t} c_\rho \, \text{Tr}( \mathbb{P}^d_\rho \mathbb{P}^{d,\dagger}_{\tau})$.
+
+Now calculate the LHS:
+$$
+\begin{aligned}
+\text{LHS} = \text{Tr}(\mathbb{P}^{d,\dagger}_{\tau} \Phi_t(X)) 
+&= \text{Tr} \left( \mathbb{P}^{d,\dagger}_{\tau} \int_{\text{Haar}} U^{\otimes t} X (U^\dagger)^{\otimes t} \, dU \right) \\
+&= \int_{\text{Haar}} \text{Tr} \left( \mathbb{P}^{d,\dagger}_{\tau} U^{\otimes t} X (U^\dagger)^{\otimes t} \right) dU \\
+&= \int_{\text{Haar}} \text{Tr}(\mathbb{P}^d_{\tau} X) \, dU = \text{Tr}(\mathbb{P}^{d,\dagger}_{\tau} X),
+\end{aligned}
+$$
+Because the trace is invariant under unitary conjugation and Haar measure integration. Therefore, we get the linear equation $\sum_{\rho \in S_t} c_\rho \, \text{Tr}( \mathbb{P}^d_\rho \mathbb{P}^{d,\dagger}_{\tau})= \text{Tr}(\mathbb{P}^{d,\dagger}_{\tau} X)$.
+On both sides, we multiply by $\mathrm{Wg}(\sigma^{-1} \tau, d)$ and sum over $\tau \in S_t$, we get:
+$$
+\sum_{\rho \in S_t} c_\rho \sum_{\tau\in S_t}  \mathrm{Wg}(\sigma^{-1} \tau, d)\text{Tr}(\mathbb{P}^{d,\dagger}_{\tau} \mathbb{P}^d_\rho ) =  \sum_{\tau\in S_t}\mathrm{Wg}(\sigma^{-1} \tau, d)\text{Tr}(\mathbb{P}^{d,\dagger}_{\tau} X) = \sum_{\rho \in S_t} c_\rho \delta_{\sigma,\rho} = c_{\sigma}.
+$$
+Here we use the fact that $G_{\rho \tau}(d) \mathrm{Wg}_{\tau ,\sigma}(d) := \text{Tr}( \mathbb{P}^d_\rho \mathbb{P}^{d,\dagger}_{\tau}) \mathrm{Wg}(\tau\sigma^{-1}, d) = \delta_{\rho,\sigma}$.
+:::
+
+Now we show the properties of Weingarten coefficients. 
+For simplicity, we define the matrix elements for the Weingarten function as $\mathrm{Wg}_{\tau,\sigma}(d) := \mathrm{Wg}(\tau \sigma^{-1}, d)$ and the Gram matrix as $G_{\rho,\tau} := \text{Tr}(\mathbb{P}^d_{\rho} \mathbb{P}^{d,\dagger}_{\tau})$. 
+Using the cyclic property of the trace, we have $\text{Tr}(\mathbb{P}^{d,\dagger}_{\tau} \mathbb{P}^{d}_{\rho}) = \text{Tr}(\mathbb{P}^d_{\rho} \mathbb{P}^{d,\dagger}_{\tau}) = G_{\rho,\tau}$. Therefore, the relation in @lem-Weingarten_calculus can be naturally rewritten as a standard matrix multiplication $G \cdot \mathrm{Wg} = I$:
+$$
+\sum_{\tau\in S_t} G_{\rho,\tau} \mathrm{Wg}_{\tau,\sigma}(d) = \delta_{\rho,\sigma}.
+$$
+
+::: {.callout-note icon="false"}
+## Lemma (G is invertible) {#lemma:inver_cond_G}
+The Gram matrix $G_{\tau,\sigma}:= \text{tr}(\mathbb{P}^d_{\tau\sigma^{-1}})=d^{c(\tau \sigma^{-1})}$ is invertible if and only if $t \leq d$. Here $c(\tau \sigma^{-1})$ counts the number of cycles in $\tau\cdot \sigma^{-1}$.
+:::
+
+In this case, the linear equation $\sum_{\pi \in S_t} G_{\pi,\rho} \, c_\pi = \text{Tr}(\mathbb{P}^{d,\dagger}_{\rho} X)$ has multiple solutions.
+We define $\mathrm{Wg}_{\rho,\sigma}(d)$ as the **pseudo-inverse (pseudo-inverse)** of $G_{\pi,\rho}$, which still satisfies $\sum_{\rho} G_{\pi,\rho}\mathrm{Wg}_{\rho\sigma}(d) = \delta_{\pi,\sigma}$. This shows that it gives one solution for $c_{\sigma} =\sum_{\rho} \mathrm{Wg}_{\rho\sigma}(d) \text{Tr}(\mathbb{P}^{d,\dagger}_{\rho} X)$, but not the unique solution.
+
+Next we give the analytic expression of $\mathrm{Wg}_{\sigma,\pi}$.
+
+::: {.callout-note icon="false"}
+## Lemma (Analytic expression of Weingarten coefficients)
+
+Given $\pi,\sigma \in S_t$, the **Weingarten coefficients** have the following expression:
+$$
+\mathrm{Wg}(\sigma\pi^{-1},d):= \frac{1}{(t!)^2}\sum_{\substack{\lambda \vdash t, \ell_m(\lambda)\leq d}}\frac{\chi^{\lambda}(1)^2\chi^\lambda(\sigma\pi^{-1})}{\text{dim}_U(\lambda)},
+$$
+where $\dim_U(\lambda) = \prod_{\square \in \lambda} \frac{d + c(\square)}{h(\square)}$ with $c(\square) = j-i$ is the dimension of the irreducible representation (irrep) $\lambda$ of $U(d)$.
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+
+For simplicity, we denote the dimension of the irreducible representation (irrep) $\lambda$ of $S_t$ as $\dim(\lambda)$, and the dimension of the corresponding $U(d)$ irrep as $\dim_U(\lambda)$.
+By definition, the Weingarten matrix $\mathrm{Wg}_{\sigma,\pi}(d)$ is the right pseudo-inverse of the symmetric Gram matrix $G_{\tau,\sigma} = \text{Tr}(\mathbb{P}^d_{\tau} \mathbb{P}^{d,\dagger}_{\sigma}) = d^{c(\tau \sigma^{-1})}$.
+
+Consider the group algebra $\mathbb{C}[S_t]$ spanned by elements of the form $v = \sum_{\pi \in S_t} v_{\pi} \pi$. We define a specific element $A_G = \sum_{\pi \in S_t} d^{c(\pi)} \pi$. The left multiplication by $A_G$ induces a linear transformation on $\mathbb{C}[S_t]$, whose matrix representation exactly matches the Gram matrix, $(A_G)_{\tau,\sigma} = d^{c(\tau \sigma^{-1})}$. This is because:
+$$
+\begin{align*}
+A_G \cdot \sigma &= \sum_{\pi \in S_t} d^{c(\pi)} \pi \cdot \sigma = \sum_{\tau \in S_t} d^{c(\tau \sigma^{-1})} \tau \\
+&\implies A_G \cdot v = \sum_{\sigma \in S_t} v_{\sigma} (A_G \cdot \sigma) = \sum_{\tau \in S_t}\left(\sum_{\sigma}(A_G)_{\tau,\sigma} v_\sigma\right) \tau.
+\end{align*}
+$$
+
+Therefore, finding the pseudo-inverse of the matrix $G$ is equivalent to finding the pseudo-inverse element in the group algebra, denoted as $A_{G^{-1}} = \sum_{\pi\in S_t} f(\pi) \pi$, whose matrix representation will be $(A_{G^{-1}})_{\tau,\sigma} = f(\tau\sigma^{-1})$.
+By the definition of the pseudo-inverse $A_G A_{G^{-1}} = e$ (where $e$ is the identity element), we have:
+$$
+A_G A_{G^{-1}} = \sum_{\pi,\sigma \in S_t} d^{c(\pi)} f(\sigma) \pi \sigma = \sum_{r \in S_t} \left( \sum_{\sigma \in S_t} d^{c(r\sigma^{-1})} f(\sigma) \right) r = e.
+$$
+Comparing the coefficients of $r$ on both sides yields $\sum_{\sigma} G_{r, \sigma} f(\sigma) = \delta_{r,e}$. 
+This precisely matches the defining relation of the Weingarten coefficients, implying that $f(\sigma) = \mathrm{Wg}_{\sigma,e}(d)$ and generally $\mathrm{Wg}(\sigma \pi^{-1},d) = f(\sigma \pi^{-1})$.
+
+Note that the cyclic structure is invariant under group conjugation, i.e., $c(g \pi g^{-1}) = c(\pi)$. Thus, $g A_G g^{-1} = A_G$, meaning $[A_G,g] = 0$ for all $g \in S_t$. By Schur's Lemma, $A_G$ belongs to the center of the group algebra, and its image in any irrep $\lambda$ must be proportional to the identity matrix:
+$$
+\hat{A}_G(\lambda) = \sum_{\pi \in S_t} d^{c(\pi)} \hat{R}_{\lambda}(\pi) =  \eta_{\lambda} \cdot \mathbb{I}_{\dim(\lambda)}.
+$$
+Taking the trace on both sides gives $\eta_{\lambda} = \frac{1}{\dim(\lambda)} \sum_{\pi \in S_t} d^{c(\pi)} \chi_{\lambda}(\pi)$.
+Recall that the projector onto the $\lambda$-isotypic component is $P_{\lambda} = \frac{\dim(\lambda)}{t!} \sum_{\pi \in S_t} \chi_{\lambda}(\pi) \mathbb{P}^d_{\pi}$. Its trace in $(\mathbb{C}^d)^{\otimes t}$ evaluates to the total dimension of the $\lambda$ subspace, $\text{tr}(P_{\lambda}) = \dim(\lambda) \cdot \dim_U(\lambda)$. Simultaneously, expanding the trace yields:
+$$
+\text{tr}(P_{\lambda}) = \frac{\dim(\lambda)}{t!} \sum_{\pi \in S_t} \chi_{\lambda}(\pi) \text{tr}(\mathbb{P}^d_\pi) = \frac{\dim(\lambda)}{t!} \sum_{\pi \in S_t} \chi_{\lambda}(\pi) d^{c(\pi)}.
+$$
+Equating these gives the identity $\eta_{\lambda} = \frac{t! \cdot \dim_U(\lambda)}{\dim(\lambda)}$.
+
+According to the hook-length formula, $\dim_U(\lambda) = \prod_{(i,j) \in \lambda} \frac{d+j-i}{h(i,j)}$ (where $i$ is the row index). If the number of rows of the Young diagram $\lambda$ exceeds $d$ (denoted as $\ell(\lambda) > d$), then $d+j-i \le 0$ for some boxes in the first column, making the value zero. 
+This explains the non-invertibility of $\hat{A}_{G}$. We can construct its right pseudo-inverse $\hat A_{G^{-1}}$ by inverting $\eta_{\lambda}$ only when it is non-zero:
+$$
+\hat{A}_{G^{-1}}(\lambda) = 
+\begin{cases}
+\frac{\dim(\lambda)}{t! \cdot \dim_U(\lambda)} \mathbb{I}_{\dim(\lambda)} &\text{if } \ell(\lambda) \leq d \\ 
+0 &\text{if } \ell(\lambda) > d
+\end{cases}
+$$
+
+Knowing the irreducible representations of $A_{G^{-1}}$, we can apply the inverse group Fourier transform to determine the coefficients $f(\pi)$. Since the characters of the symmetric group are real, $\chi^\lambda(\pi^{-1}) = \chi^\lambda(\pi)$, which gives:
+$$
+\begin{aligned}
+    f(\pi) &= \frac{1}{t!} \sum_{\lambda \vdash t} \dim(\lambda) \text{tr}\left( \hat{A}_{G^{-1}}(\lambda) \hat R_\lambda(\pi) \right) \\
+    &= \frac{1}{t!} \sum_{\substack{\lambda \vdash t \\ \ell(\lambda)\leq d}} \dim(\lambda) \text{tr}\left( \frac{\dim(\lambda)}{t! \cdot \dim_U(\lambda)} \hat{R}_\lambda(\pi) \right) \\
+    &= \frac{1}{(t!)^2} \sum_{\substack{\lambda \vdash t \\ \ell(\lambda)\leq d}} \frac{(\dim(\lambda))^2 \chi^\lambda(\pi)}{\dim_U(\lambda)}.
+\end{aligned}
+$$
+:::
+
+
+### Examples
+
+In the case of $t = 2, d\geq 2$, we get two types of permutations $e, (12)$, where $\text{dim}_U([1^2]) ={d(d-1)}/{2}, \text{dim}_U([2]) = {d(d+1)}/{2}$ and $\text{dim}([1^2]) = 1 =\text{dim}([2])$. Based on the character table of $S_2$, we list the Weingarten coefficients as follows:
+
+
+**The character table of $S_2$**
+
+| C.C. | $[1^2]$ | $[2]$ |
+| :---: | :---: | :---: |
+| **Size** | 1 | 1 |
+| $\chi_{[2]}$ | 1 | 1 |
+| $\chi_{[1^2]}$ | 1 | -1 |
+
+
+
+$$
+\begin{aligned}
+\mathrm{Wg}(e, d) &= \frac{1}{(2!)^2} \left[ \frac{(\chi_{[2]}(e))^2 \chi_{[2]}(e)}{\text{dim}_U([2])} + \frac{(\chi_{[1,1]}(e))^2 \chi_{[1,1]}(e)}{\text{dim}_U([1,1])} \right] \\
+&= \frac{1}{d^2-1}, \\
+\mathrm{Wg}((12), d) &= \frac{1}{(2!)^2} \left[ \frac{(\chi_{[2]}(e))^2 \chi_{[2]}((12))}{\text{dim}_U([2])} + \frac{(\chi_{[1,1]}(e))^2 \chi_{[1,1]}((12))}{\text{dim}_U([1,1])} \right] \\
+&=(-\frac{1}{d})\cdot \frac{1}{d^2-1}.
+\end{aligned}
+$$
+
+
+In the case of $t = 3, d\geq 3$, there are three conjugacy classes corresponding to the cyclic types $[1^3], [2,1]$ and $[3]$. The dimensions of the required irreducible representations (irreps) are:
+$$
+\begin{aligned}
+    \dim_U([3]) &= \frac{d(d-1)(d-2)}{6}, \dim_S([3]) = 1 \\
+    \dim_U([2,1]) &= \frac{d(d^2-1)}{3},  \dim_S([2,1]) = 2 \\
+    \dim_U([1^3]) &= \frac{d(d+1)(d+2)}{6} , \dim_S([1^3]) = 1
+\end{aligned}
+$$
+
+Based on the character table of $S_3$, we list the Weingarten coefficients as follows:
+
+**The character table of $S_3$**
+
+| C.C. | $[1^3]$ | $[2,1]$ | $[3]$ |
+| :---: | :---: | :---: | :---: |
+| **Size** | 1 | 3 | 2 |
+| $\chi_{[1^3]}$ | 1 | 1 | 1 |
+| $\chi_{[2,1]}$ | 2 | 0 | -1 |
+| $\chi_{[3]}$ | 1 | -1 | 1 |
+
+
+$$
+\begin{aligned}
+\mathrm{Wg}(e, d) &= \frac{1}{(3!)^2} \left[ \frac{1^2 \cdot 1}{\dim_U([3])} + \frac{2^2 \cdot 2}{\dim_U([2,1])} + \frac{1^2 \cdot 1}{\dim_U([1^3])} \right] \\
+&= \frac{d^2-2}{d(d^2-1)(d^2-4)}, \\[1em]
+\mathrm{Wg}((12), d) &= \frac{1}{(3!)^2} \left[ \frac{1^2 \cdot (-1)}{\dim_U([3])} + \frac{2^2 \cdot 0}{\dim_U([2,1])} + \frac{1^2 \cdot 1}{\dim_U([1^3])} \right] \\
+&= \frac{-1}{(d^2-1)(d^2-4)}, \\[1em]
+\mathrm{Wg}((123), d) &= \frac{1}{(3!)^2} \left[ \frac{1^2 \cdot 1}{\dim_U([3])} + \frac{2^2 \cdot (-1)}{\dim_U([2,1])} + \frac{1^2 \cdot 1}{\dim_U([1^3])} \right] \\
+&= \frac{2}{d(d^2-1)(d^2-4)}.
+\end{aligned}
+$$
+
+In the case of $t = 3, d=2$, since $\dim_U([3])=0$, we need to find the pseudo-inverse. This eliminates the Young tableaux $\lambda = [3]$ and gives the following results:
+$$
+\mathrm{Wg}(e, d) = \frac{17}{144},\quad \mathrm{Wg}((12), d) =\frac{1}{144},\quad \mathrm{Wg}((123), d)=-\frac{7}{144}
+$$
+
+In the case of $X = \ket{\psi}\!\bra{\psi}^{\otimes t}$, we choose the result that can unify the cases of $k>d$ and $k<d$.
+
+::: {.callout-note icon="false"}
+## Lemma (Unitary orbit of $\ket{\psi}$) {#lemma:state_trajectory}
+
+$$
+\mathbb{E}_{\psi \sim \mathrm{Haar}(d)} \ket{\psi}\!\bra{\psi}^{\otimes t} =  \frac{\sum_{\pi \in S_t} S_t(d)}{(t+d-1)(t+d-2)\cdots(d-1) d},
+$$
+where $S_t(d) = \sum_{\pi \in S_t} \mathbb{P}^d_\pi$. If $t \leq d$, then this decomposition is unique.
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+
+
+According to Lemma \ref{lemma:Haar_ave}, we conclude that $\forall \rho \in S_t$:
+$$
+\sum_{\pi \in S_t}\text{Tr}(\mathbb{P}_{\rho^{-1}}^d \mathbb{P}_\pi^d) \, c_\pi = \text{Tr}(\mathbb{P}^d_{\rho^{-1}} X) =1
+$$
+We first assume that the operator $c_{\pi}$ is independent of $\pi$, which gives the solution for $c_\pi$ as follows:
+$$
+\text{Tr}\left(\sum_{\pi \in S_t} \mathbb{P}^d_{\rho^{-1}\pi} \right)c =  \text{Tr}\left(\sum_{\pi \in S_t} \mathbb{P}^d_{\pi} \right)c=1.
+$$
+$c_\pi = c$ is one of the solutions to the linear equation.
+To prove that this solution is unique, we use the fact that $G_{\pi, \sigma} := \text{Tr}(\mathbb{P}_{\pi^{-1}}^d \mathbb{P}_\sigma^d)$ is an invertible matrix.
+Noted that $(t!)^{-1}\sum_{\pi \in S_t} \mathbb{P}^d_{\pi}$ is the projector to the $t$-fold symmetric space, whose dimension is $C_{t+d-1}^t$ (i.e., the number of ways to put $t$ objects into $d$ bins). This gives the result:
+$$
+\text{Tr}\left(\sum_{\pi \in S_t} \mathbb{P}^d_{\pi} \right) = (t!)C_{t+d-1}^t = (t+d-1)(t+d-2)\cdots(d-1) d.
+$$
+:::
+
+::: {.callout-note icon="false"}
+## Lemma (n-fold Weingarten calculus) {#lemma:2-foldWein}
+
+Given independent and identically distributed (i.i.d.) $V_i \sim \text{Haar}(d), i = 1,\cdots,n$, $X \in \text{Lin}(\mathcal{H}(d^{kn}))$, and define $B_{\mathbf{v}}:= \bigotimes_{i =1}^{n} \left(\mathbb{P}_{v_i}^{d}\right)$ where $\mathbf{v} = (v_1,\cdots,v_n) \in S_k^n$, the following identity holds:
+$$
+\Phi_k^{\otimes n}(X):= \mathbb{E}_{V_i \sim \text{Haar}(d)} \left(\bigotimes_{i=1}^n V_i^{\otimes k}\right) X \left(\bigotimes_{i=1}^n V_i^{\dagger\,\otimes k}\right) = \sum_{\mathbf u, \mathbf{v} \in \mathbb{F}_2^n} \text{Wg}^{n}(\mathbf{v}\mathbf{u}^{-1}, d)  \text{tr}\left( B_{\mathbf{u}} X\right)\cdot  B_{\mathbf{v}},
+$$
+The product Weingarten coefficients are determined by $\sum_{\mathbf{v}} \text{Wg}^{n}(\mathbf{v}\mathbf{u}^{-1}, d) \text{tr}\left(B_{\mathbf{u}}B_{\mathbf{r}}^\dagger\right) = \delta_{\mathbf{v},\mathbf{r}}$ and their analytic expression is $\mathrm{Wg}^{n}(\mathbf{v}\mathbf{u}^{-1}, d) = \prod_{i=1}^n\mathrm{Wg}({v}_i{u}_i^{-1}, d)$. Specifically:
+
+For all $\mathbf u,\mathbf v \in S_2^n$:
+$$
+\mathrm{Wg}^{n}(\mathbf{v}\mathbf{u}^{-1}, d) = \left(\frac{1}{d^2 -1}\right)^n \cdot \left(-\frac{1}{d}\right)^{|\mathbf{v}\mathbf{u}^{-1}|},\text{~其中~}|\mathbf{v}\mathbf{u}^{-1}| = \#\{i|v_i \neq u_i\}
+$$
+
+For all $\mathbf u,\mathbf v \in S_3^n$:
+$$
+\mathrm{Wg}^{n}(\mathbf{v}\mathbf{u}^{-1}, d) = \left(\frac{d^2-2}{d(d^2 -1)(d^2-4)}\right)^n \cdot \left(\frac{-d}{d^2-2}\right)^{\#\{i|v_i u_i^{-1} \in [21]\}}\left( \frac{2}{d^2-2}\right)^{\#\{i|v_i u_i^{-1} \in [3]\}}
+$$
+:::
+
+# Asymptotic behavior
+
+:::{#thm-asymptotic_behavior .callout-important icon="false"}
+## (Asymptotic behavior)
+For any $\sigma \in S_k$ and $d > 6k^{7/2}$ and $\sigma \in S_k$ has cycle type $(\ell_1, \ell_2, \cdots)$, we have:
+$$
+\frac{1}{1 - \frac{k-1}{d^2}} \leq \frac{(-1)^{k-\#(\sigma)} d^{2k-\#(\sigma)} \mathrm{Wg}(\sigma, d)}{\prod_{i} \frac{(2\ell_i-2)!}{(\ell_i-1)! \ell_i!}} \leq \frac{1}{1 - \frac{6k^{7/2}}{d^2}}
+$$
+where the left-hand side inequality is valid for any $d \geq k$.
+:::

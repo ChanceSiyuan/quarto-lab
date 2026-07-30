@@ -1,0 +1,50 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: F84EJA3J
+  item_version: 96139
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 2S4MCSXP
+      name: Limitations
+      path: Quantum Algorithm/Optimization/Maxcut/Limitations
+qlab:
+  primary_collection: 2S4MCSXP
+  indexed_collections:
+    - 2S4MCSXP
+  primary_topic: quantum-algorithm
+  indexed_topics:
+    - quantum-algorithm
+item_type: preprint
+title: "The Quantum Approximate Optimization Algorithm Needs to See the Whole
+  Graph: A Typical Case"
+authors:
+  - first: Edward
+    last: Farhi
+  - first: David
+    last: Gamarnik
+  - first: Sam
+    last: Gutmann
+year: 2020
+abstract: The Quantum Approximate Optimization Algorithm can naturally be
+  applied to combinatorial search problems on graphs. The quantum circuit has p
+  applications of a unitary operator that respects the locality of the graph. On
+  a graph with bounded degree, with p small enough, measurements of distant
+  qubits in the state output by the QAOA give uncorrelated results. We focus on
+  finding big independent sets in random graphs with dn/2 edges keeping d fixed
+  and n large. Using the Overlap Gap Property of almost optimal independent sets
+  in random graphs, and the locality of the QAOA, we are able to show that if p
+  is less than a d-dependent constant times log n, the QAOA cannot do better
+  than finding an independent set of size .854 times the optimal for d large.
+  Because the logarithm is slowly growing, even at one million qubits we can
+  only show that the algorithm is blocked if p is in single digits. At higher p
+  the algorithm "sees" the whole graph and we have no indication that
+  performance is limited.
+tags:
+  - Computer Science - Computational Complexity
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2004.09002
+  arxiv: "2004.09002"

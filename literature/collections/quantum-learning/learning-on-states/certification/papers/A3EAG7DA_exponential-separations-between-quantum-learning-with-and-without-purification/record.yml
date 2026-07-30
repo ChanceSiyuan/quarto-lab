@@ -1,0 +1,52 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: A3EAG7DA
+  item_version: 96146
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: TJMTPHKH
+      name: certification
+      path: Quantum Learning/Learning on states/certification
+qlab:
+  primary_collection: TJMTPHKH
+  indexed_collections:
+    - TJMTPHKH
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: preprint
+title: Exponential Separations between Quantum Learning with and without Purification
+authors:
+  - first: Zhenhuan
+    last: Liu
+  - first: Weiyuan
+    last: Gong
+  - first: Zhenyu
+    last: Du
+  - first: Zhenyu
+    last: Cai
+year: 2025
+abstract: In quantum learning tasks, quantum memory can offer exponential
+  reductions in statistical complexity compared to any single-copy strategies,
+  but this typically necessitates at least doubling the system size. We show
+  that such exponential reductions can also be achieved by having access to the
+  purification of the target mixed state. Specifically, for a low-rank mixed
+  state, only a constant number of ancilla qubits is needed for estimating
+  properties related to its purity, cooled form, principal component and quantum
+  Fisher information with constant sample complexity, which utilizes single-copy
+  measurements on the purification. Without access to the purification, we prove
+  that these tasks require exponentially many copies of the target mixed state
+  for any strategies utilizing a bounded number of ancilla qubits, even with the
+  knowledge of the target state's rank. Our findings also lead to practical
+  applications in areas such as quantum cryptography. With further discussions
+  about the source and extent of the advantages brought by purification, our
+  work uncovers a new resource with significant potential for quantum learning
+  and other applications.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2410.17718
+  arxiv: "2410.17718"

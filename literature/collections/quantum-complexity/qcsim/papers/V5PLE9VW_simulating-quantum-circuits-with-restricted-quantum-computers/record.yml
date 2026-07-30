@@ -1,0 +1,56 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: V5PLE9VW
+  item_version: 96137
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 7FQ3ZRPG
+      name: QCsim
+      path: Quantum Complexity/QCsim
+qlab:
+  primary_collection: 7FQ3ZRPG
+  indexed_collections:
+    - 7FQ3ZRPG
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: thesis
+title: Simulating quantum circuits with restricted quantum computers
+authors:
+  - first: Christophe
+    last: Piveteau
+year: 2025
+abstract: It is one of the most fundamental objectives in quantum information
+  science to understand the boundary between the computational power of
+  classical and quantum computers. One possible avenue to explore this boundary
+  is to identify classes of quantum circuits that can be efficiently simulated
+  on a classical computer. Instead of simulating a general quantum circuit with
+  a classical device, new schemes have recently emerged to simulate them on a
+  quantum device that is restricted in some manner. As such, these techniques
+  allow us to study how the restrictions impact the computational power of the
+  device. One such technique is called quasiprobability simulation (QPS) and it
+  estimates the result of a quantum circuit with a Monte Carlo procedure that
+  randomly replaces circuit elements with ones that can be executed on the
+  restricted quantum device. The main focus of this thesis is dedicated to the
+  QPS-based simulation of nonlocal quantum computation using local quantum
+  operations. On the practical side, this enables the simulation of large
+  quantum circuits using multiple smaller quantum devices - a procedure that is
+  sometimes called circuit knitting. We uncover a rich mathematical formalism
+  with many connections to the resource theory of entanglement. We characterize
+  the optimal simulation overhead for a broad range of practically relevant
+  nonlocal states and channels and we explicitly provide achieving protocols.
+  Moreover, we also investigate the utility of classical communication between
+  the local parties. Our results address both the single-shot and asymptotic
+  regime. We frame QPS in a quantum resource theoretic framework, which
+  highlights similarities that arise in the different instantiations of the
+  technique. Furthermore, we study the importance of classical side information
+  in the QPS procedure and how it impacts the overhead and expressibility of
+  QPS.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.3929/ethz-b-000727956
+  arxiv: "2503.21773"

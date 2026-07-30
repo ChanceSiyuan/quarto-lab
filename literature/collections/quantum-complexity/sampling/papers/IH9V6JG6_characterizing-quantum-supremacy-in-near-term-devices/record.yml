@@ -1,0 +1,72 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: IH9V6JG6
+  item_version: 96042
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: YHB9EFGP
+      name: Sampling
+      path: Quantum Complexity/Sampling
+    - key: H5F9PKZR
+      name: verification
+      path: Quantum Complexity/Sampling/supermacy verification/verification
+qlab:
+  primary_collection: YHB9EFGP
+  indexed_collections:
+    - H5F9PKZR
+    - YHB9EFGP
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: journalArticle
+title: Characterizing Quantum Supremacy in Near-Term Devices
+authors:
+  - first: Sergio
+    last: Boixo
+  - first: Sergei V.
+    last: Isakov
+  - first: Vadim N.
+    last: Smelyanskiy
+  - first: Ryan
+    last: Babbush
+  - first: Nan
+    last: Ding
+  - first: Zhang
+    last: Jiang
+  - first: Michael J.
+    last: Bremner
+  - first: John M.
+    last: Martinis
+  - first: Hartmut
+    last: Neven
+year: 2018
+abstract: A critical question for the field of quantum computing in the near
+  future is whether quantum devices without error correction can perform a
+  well-defined computational task beyond the capabilities of state-of-the-art
+  classical computers, achieving so-called quantum supremacy. We study the task
+  of sampling from the output distributions of (pseudo-)random quantum circuits,
+  a natural task for benchmarking quantum computers. Crucially, sampling this
+  distribution classically requires a direct numerical simulation of the
+  circuit, with computational cost exponential in the number of qubits. This
+  requirement is typical of chaotic systems. We extend previous results in
+  computational complexity to argue more formally that this sampling task must
+  take exponential time in a classical computer. We study the convergence to the
+  chaotic regime using extensive supercomputer simulations, modeling circuits
+  with up to 42 qubits - the largest quantum circuits simulated to date for a
+  computational task that approaches quantum supremacy. We argue that while
+  chaotic states are extremely sensitive to errors, quantum supremacy can be
+  achieved in the near-term with approximately fifty superconducting qubits. We
+  introduce cross entropy as a useful benchmark of quantum circuits which
+  approximates the circuit fidelity. We show that the cross entropy can be
+  efficiently measured when circuit simulations are available. Beyond the
+  classically tractable regime, the cross entropy can be extrapolated and
+  compared with theoretical estimates of circuit fidelity to define a practical
+  quantum supremacy test.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.1038/s41567-018-0124-x
+  arxiv: "1608.00263"

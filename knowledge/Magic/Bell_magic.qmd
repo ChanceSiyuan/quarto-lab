@@ -1,0 +1,143 @@
+---
+title: Bell Magic
+description: This note is based on Haug, Lee, and Kim and covers Bell magic as an experimentally scalable magic measure.
+categories:
+  - theory
+---
+
+# Summary and questions
+
+This note is based on Haug, Lee, and Kim [@haug2023scalable] and covers Bell magic as an experimentally scalable magic measure. The main topics are:
+
+- the definition of Bell magic and its additive variant, with their basic resource-theoretic properties;
+- a polynomial-sample estimation algorithm and variance analysis;
+- an error-mitigation procedure for depolarizing noise;
+- experimental demonstrations on a trapped-ion and a neutral-atom platform.
+
+# Definition and properties
+
+:::{#def-bell-magic-measure .callout-note icon="false"}
+## Definition (Bell magic)
+
+Let $\Pr_\psi(\mathbf{r})$ denote the Bell-sampling outcome distribution for two copies of a pure state $\ket{\psi}$. Bell magic and additive Bell magic are defined by [@haug2023scalable]
+$$
+\begin{align}
+\mathcal{B}(\psi) &= \sum_{\mathbf{r},\mathbf{r}',\mathbf{q},\mathbf{q}'}
+\Pr_\psi(\mathbf{r})\,\Pr_\psi(\mathbf{r}')\,\Pr_\psi(\mathbf{q})\,\Pr_\psi(\mathbf{q}')\,
+\bigl\|[\sigma_{\mathbf{r}\oplus\mathbf{r}'},\,\sigma_{\mathbf{q}\oplus\mathbf{q}'}]\bigr\|_\infty, \\
+\mathcal{B}_a(\psi) &:= -\log_2\!\bigl(1-\mathcal{B}(\psi)\bigr).
+\end{align}
+$$
+:::
+
+The Bell magic measure satisfies the following resource-theoretic properties.
+
+:::{#lem-bell-magic-props .callout-important icon="false"}
+## Lemma (Properties of Bell magic [@haug2023scalable])
+
+For pure states:
+
+1. **Soundness on stabilizer states:** $\mathcal{B}(\psi_{\mathrm{STAB}}) = 0$ for every stabilizer state $\ket{\psi_{\mathrm{STAB}}}$.
+2. **Clifford invariance:** $\mathcal{B}(\psi) = \mathcal{B}(U_C\psi)$ for every unitary Clifford $U_C$.
+:::
+
+Based on numerical evidence, the following conjecture is proposed.
+
+:::{#conj-bell-magic-monotone .callout-note icon="false"}
+## Conjecture (Measurement monotonicity)
+
+Bell magic $\mathcal{B}(\cdot)$ does not increase on average under computational-basis measurements, i.e.,
+$$
+\mathcal{B}(\psi) \geq \sum_{m} q_m\,\mathcal{B}\!\left(\Pi_m\ket{\psi}/\|\Pi_m\ket{\psi}\|_2\right),
+$$
+where $\Pi_m$ are the measurement projectors and $q_m = \|\Pi_m\ket{\psi}\|^2$.
+:::
+
+The additive Bell magic $\mathcal{B}_a(\cdot)$ inherits the above properties and is additionally additive under tensor product.
+
+:::{#lem-bell-magic-add .callout-important icon="false"}
+## Lemma (Additivity of $\mathcal{B}_a$ [@haug2023scalable])
+$$
+\mathcal{B}_a(\ket{\psi} \otimes \ket{\phi}) = \mathcal{B}_a(\ket{\psi}) + \mathcal{B}_a(\ket{\phi}).
+$$
+:::
+
+From additivity, the additive Bell magic of any single-qubit product state admits a closed-form expression.
+
+:::{#lem-bell-magic-product .callout-important icon="false"}
+## Lemma (Analytic ABM for product states [@haug2023scalable])
+
+For the product state $\bigotimes_{n=1}^{N}\!\bigl(\cos(\theta_n/2)\ket{0} + e^{-i\varphi_n}\sin(\theta_n/2)\ket{1}\bigr)$ parametrized by $(\boldsymbol{\theta},\boldsymbol{\varphi})$,
+$$
+\mathcal{B}_a(\boldsymbol{\theta},\boldsymbol{\varphi})
+= -\sum_{n=1}^N \log_2\!\left[1
+- \frac{\sin^2(\theta_n)}{32}
+\Bigl(35 + 28\cos(2\theta_n) + \cos(4\theta_n)
+- 8\cos(4\varphi_n)\sin^4(\theta_n)\Bigr)\right].
+$$
+:::
+
+# Efficient estimation
+
+Bell magic is a pure-state measure. Compared to other pure-state magic measures, it admits a polynomial-sample estimation procedure with classical post-processing linear in the qubit number [@haug2023scalable].
+
+:::{#def-bell-magic-alg .callout-note icon="false"}
+## Algorithm (Estimate Bell magic)
+
+**Input:** $2N_Q$ copies of $\ket{\psi}$, repetition count $N_R$.
+
+1. Initialize $\hat{\mathcal{B}} \leftarrow 0$.
+2. Perform $N_Q$ Bell measurements on $2N_Q$ copies of $\ket{\psi}$, obtaining pairs $(\mathbf{r}_1,\mathbf{r}_1'),\ldots,(\mathbf{r}_{N_Q},\mathbf{r}_{N_Q}')$.
+3. Repeat $N_R$ times: sample four outcomes $\mathbf{r},\mathbf{r}',\mathbf{q},\mathbf{q}'$ uniformly at random with replacement from the collected data. If $[\sigma_{\mathbf{r}\oplus\mathbf{r}'},\sigma_{\mathbf{q}\oplus\mathbf{q}'}]\neq 0$, set $\hat{\mathcal{B}} \leftarrow \hat{\mathcal{B}} + 2$.
+4. Normalize: $\hat{\mathcal{B}} \leftarrow \hat{\mathcal{B}}/N_R$.
+
+**Output:** estimate $\hat{\mathcal{B}} \approx \mathcal{B}(\psi)$.
+:::
+
+:::{#lem-bell-magic-sample .callout-important icon="false"}
+## Lemma (Sample complexity [@haug2023scalable])
+
+With $N_R = N_Q/4$, the estimator variance satisfies
+$$
+\operatorname{Var}(\hat{\mathcal{B}}) = \frac{8\mathcal{B}}{N_Q}\!\left(1 - \frac{\mathcal{B}}{2}\right).
+$$
+Consequently, $N_Q \geq \frac{8}{\varepsilon^2}\ln(1/\delta)$ copies suffice to estimate $\mathcal{B}(\psi)$ to additive precision $\varepsilon$ with confidence $1-\delta$.
+:::
+
+# Error mitigation
+
+Although the estimation procedure assumes a pure input state, experimental imperfections can be handled via error mitigation.
+
+:::{#lem-bell-magic-noise .callout-important icon="false"}
+## Lemma (Depolarizing noise correction [@haug2023scalable])
+
+Suppose the experimentally prepared state has the depolarizing form $\rho = (1-p)\ket{\psi}\!\bra{\psi} + p\rho_m$. Running the estimation algorithm on $\rho$ yields a raw estimate $\mathcal{B}^{\mathrm{dp}}$ together with the purity $P = \operatorname{tr}(\rho^2)$. For sufficiently many qubits, the Bell magic of the target pure state $\ket{\psi}$ satisfies
+$$
+\mathcal{B} = \frac{\mathcal{B}^{\mathrm{dp}} - p_c(2 - p_c)}{(1 - p_c)^2},
+\qquad
+p_c = 1 - \left(\frac{2^N P - 1}{2^N - 1}\right)^{\!1/2}.
+$$
+:::
+
+# Experimental demonstrations
+
+Experimental demonstrations have been carried out on a trapped-ion platform and a neutral-atom platform.
+
+## IonQ 11-qubit platform
+
+On the IonQ 11-qubit platform, Haug et al. [@haug2023scalable] implemented a variational circuit consisting of $d$ layers, each built from $N$ tunable single-qubit gates and fixed CNOT gates. Three parameter regimes were studied:
+
+- When the parameters $\theta$ are drawn randomly and the depth $d$ is sufficiently large, the circuit approximates a Haar-random state.
+- Setting $N - N_T$ parameters to $n\pi/2$ and $N_T$ parameters to $n\pi/2 + \pi/4$ yields a state with $N_T$ magic-doped qubits.
+- Setting all parameters to $n\pi/2$ while initializing $N_T$ qubits in $\ket{T}$ produces a classically simulable reference state.
+
+The experimental findings were as follows:
+
+- A sequence of states with increasing magic was prepared; the estimated ABM increased monotonically.
+- Injecting $T$ gates one by one into a depth-$d=4$ variational circuit caused the ABM to increase monotonically, converging toward the Haar-random-state value.
+- A binary classification task was performed: given an unknown state, classify whether (1) $\mathcal{B}_a < \mathcal{B}^*$ or (2) $\mathcal{B}_a \geq \mathcal{B}^*$. Concretely, $N_Q + N_{\mathrm{test}}$ labeled states were prepared; $N_Q$ copies were used to estimate the threshold $\mathcal{B}^*$, and the remaining $N_{\mathrm{test}}$ copies were used to assess classification accuracy.
+- A variational algorithm was used to prepare the state maximizing Bell magic.
+
+## Neutral-atom platform
+
+Bluvstein et al. performed an analogous set of experiments on 12 logical qubits.

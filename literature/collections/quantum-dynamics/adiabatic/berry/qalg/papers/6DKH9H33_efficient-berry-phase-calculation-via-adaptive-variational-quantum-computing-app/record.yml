@@ -1,0 +1,50 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 6DKH9H33
+  item_version: 107180
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: F8JXZ7FS
+      name: Qalg
+      path: Quantum Dynamics/Adiabatic/Berry/Qalg
+qlab:
+  primary_collection: F8JXZ7FS
+  indexed_collections:
+    - F8JXZ7FS
+  primary_topic: quantum-dynamics
+  indexed_topics:
+    - quantum-dynamics
+item_type: journalArticle
+title: Efficient Berry Phase Calculation via Adaptive Variational Quantum
+  Computing Approach
+authors:
+  - first: Martin
+    last: Mootz
+  - first: Yong-Xin
+    last: Yao
+year: 2026
+abstract: We present an adaptive variational quantum algorithm to estimate the
+  Berry phase accumulated by a nondegenerate ground state under cyclic,
+  adiabatic evolution of a time-dependent Hamiltonian. Our method leverages
+  cyclic adiabatic evolution of the Hamiltonian and employs adaptive variational
+  quantum algorithms for state preparation and evolution, optimizing circuit
+  efficiency while maintaining high accuracy. We benchmark our approach on
+  dimerized Fermi-Hubbard chains with four sites, demonstrating precise Berry
+  phase simulations in both noninteracting and interacting regimes. Our results
+  show that circuit depths reach up to 106 layers for noninteracting systems and
+  increase to 279 layers for interacting systems due to added complexity.
+  Additionally, we demonstrate the robustness of our scheme across a wide range
+  of parameters governing adiabatic evolution and variational algorithm. These
+  findings highlight the potential of adaptive variational quantum algorithms
+  for advancing quantum simulations of topological materials and computing
+  geometric phases in strongly correlated systems.
+tags:
+  - Condensed Matter - Strongly Correlated Electrons
+  - Physics - Computational Physics
+  - Quantum Physics
+identifiers:
+  doi: 10.1063/5.0294540
+  arxiv: "2506.19150"

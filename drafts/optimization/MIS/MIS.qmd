@@ -1,0 +1,259 @@
+---
+title: Maximum Independent Set
+description: "Maximum independent set"
+categories:
+  - theory
+---
+
+# Questions and summary
+
+# Definitons and Basics
+
+Given an undircted graph $G=(V,E)$, a subset of vertices $S \subseteq V$ is called an independent set if no two vertices in $S$ are adjacent. The maximum independent set (MIS) problem is to find the largest independent set in a given graph.
+It has the Hamiltonian formulation as follows:
+
+:::{#lem-mis-hamiltonian .callout-important icon="false"}
+Given a weighted graph $G=(V,E)$ with vertex weights $\delta_v>0$, the smallest value of the Hamiltonian
+$$
+H_{\rm MWIS}
+=-\sum_{v\in V}\delta_v n_v+\sum_{(u,v)\in E}U_{uv}n_un_v,
+\qquad n_v\in\{0,1\},
+$$
+gives the maximum-weight independent set through the relation
+$S=\{v\in V:n_v=1\}$,
+provided that the edge penalties satisfy $U_{uv}>\max_{w\in V}\delta_w$
+for every $(u,v)\in E$.
+:::
+
+:::{.callout-note collapse="true"}
+## Proof (Click to expand)
+(t.b.c.)
+:::
+
+
+Based on this equivalence, many experiments have been conducted to find the maximum-weight independent set in a given graph using quantum adiabatic computing. 
+
+- The first implementation of MIS problem @ebadi2022quantum
+- Solved the a large amount of MIS problem of up to 141 atoms randomly arranged on the king lattice @kim2024quantum
+- Unfortunately, MIS instances on UDGs with King’s connectivity can be optimally solved for up to thousands of nodes within minutes by classical approaches @andrist2023hardness
+
+One cirtcal problem is that Rydberg atoms only encodes a special class of geometric graphs,
+called unit-disk graphs (UDGs), which has Polynomial time approximation scheme (PTAS) @das2020efficient, i.e., approximate to $\geq (1- - \varepsilon) H(S^\aster)$ using $n^{O(1/\varepsilon^c)}$ time.
+
+
+1. 
+
+Note theat even if PTAS exists, this don't prevent the reduction of NP-chrd problem (even on the approximation sence) to MWIS.
+This is because encoding only ensures that $f(n^*) = y^*$ is the optimal solution, while don't ensures the approximation properties:
+$$
+H_{\rm UDG}(n)\ge (1-\epsilon)H_{\rm UDG}(n^\star) \quad\Rightarrow\quad W[f(n)]\ge (1-c\eta)W(f(n^\star)).
+$$
+for certian constant $c$. 
+
+
+# Reduction to MWIS
+Given a Boolean constraint $C(n_1,\dots,n_k)$, 
+we try to find weighted UDG with index $[k] \subset V_C$ and Hamiltonian
+$$
+H_C = -\sum_{v\in V_C} w_v n_v + \sum_{(u,v)\in E_C}U_{uv}n_un_v,
+$$
+whose MWIS manifold restricted to $[k]$ indexes gives all elements statisfied constraint $C(n_1,\dots,n_k)$.
+
+Basic gadget includes AND, NOR, Copy，Crossing，Crossing-with-edge, which we list the Hamiltonian and configuration below:
+
+:::{#lem-andnor .callout-note icon="false"}
+The AND and NOR restriction can be realized by the following configuration of Rydberg atoms:
+$$
+\begin{align}
+H_{\rm AND0} = -\delta(n_1+n_2+n_a)+U(n_1n_2+n_2n_a+n_an_1) \Rightarrow n_1n_2 = 0,\\
+H_{\rm NOR} = -\delta(n_1+n_2+n_3+n_a+n_b)+U(n_1n_2+n_2n_a+n_an_b+n_bn_3+n_3n_1)  \Rightarrow n_1=\overline{n_2\vee n_3}
+\end{align}
+$$
+:::
+
+:::{.callout-note collapse="true"}
+## Proof Sketch (Click to expand)
+
+:::
+
+$$
+H_{\rm copy}^{(L)}=-\delta(n_1+n_L)-2\delta\sum_{m=2}^{L-1}n_m+U\sum_{m=1}^{L-1}n_m n_{m+1}.
+$$
+
+The Hamiltonian 
+$$
+\begin{align}
+H_{\times}=& -\delta\sum_{i=1}^4 n_i-4\delta\sum_{x,y\in\{0,1\}} a_{xy} \\&+U\sum_{\substack{(x,y)<(x',y')}}
+a_{xy}a_{x'y'} + U\sum_{x,y}a_{xy}\sum_{i\notin M_{xy}}n_i.
+\end{align}
+$$
+with four internal ancilla atoms $a_{00},a_{01},a_{10},a_{11}$ admits the restriction $(n_1=\bar n_3)\wedge(n_2=\bar n_4)$.
+
+The Hamiltonian 
+$$
+\begin{align}
+H_{\times{\rm e}}
+=&
+-\delta\sum_{i=1}^4 n_i
+-2\delta\sum_{(x,y)\in A} b_{xy}
+\\&+U n_1n_2+U\sum_{\substack{p<q\\p,q\in A}}b_pb_q+U\sum_{(x,y)\in A}b_{xy}\sum_{i\notin M_{xy}} n_i .
+\end{align}
+$$
+with three internal ancilla atoms $a_{00},a_{01},a_{10}$ admits the restriction $((n_1=\bar n_3)\wedge(n_2=\bar n_4))\wedge(n_1n_2=0)$.
+
+
+The weighted term $\delta_v n_v$ can be realized by a copy gadget 
+If the pair $(u,v)$ has interaction term $U_{u,v} n_u n_v$ can be constructed through two intersect chains with Crossing-with-edge Gadget.
+Similarly, no interaction pair $(u,v)$ use Crossing Gadget.
+
+
+
+## Parity method
+Besides encoding the logical bits as intersecting Rydberg chains, a parity encoding method exists.
+The QUBO problem is equivalent to the minimization of function 
+$$
+H_{\rm QUBO} = \sum_i q_is_i+\sum_{\langle i,j \rangle}Q_{ij}s_is_j, \quad s_i \in \{+1,-1\}
+$$
+Setting the parameter
+$$
+p_i=\frac{1+s_i}{2} = n_i, \quad p_{ij}=\frac{1+s_is_j}{2}, \quad p_{m}=\frac{1+\prod_{i \in m} s_i}{2},
+$$
+Under this replacement, note that $p_i, p_{ij}$ is not independent, but constrained by $C_{ij}: p_i\oplus p_j\oplus p_{ij}=1$ for each interaction pair $ij$.
+The minimized Hamiltonian became 
+$$
+\begin{align}
+&H_{\mathrm{parity}}= -E_0 + 2\sum_{\alpha=i,ij}h_\alpha p_\alpha+\sum_l C_l, \quad E_0= \sum_i q_i + \sum_{\langle i,j \rangle} Q_{ij}
+\end{align}
+$$
+for $h_i= q_i, h_{ij}={Q_{ij}}$. The $C_l$ is an added punishment for restriction space 
+$$
+\mathcal{C}:=
+\left\{\mathbf p\in\{0,1\}^{V\cup E}\;\middle|\;p_i\oplus p_j\oplus p_{ij}=1,\ \forall (i,j)\in E\right\}.
+$$
+
+The constraint set $\mathcal{C}$ can be expressed using many different, but
+equivalent, generating sets. In particular, the direct constraints
+associated with the interaction pairs may be replaced by a basis of
+generalized closed-cycle constraints.
+
+:::{#lem-restriction_eq .callout-note icon="false"}
+## Equivalent generators of the parity constraints
+
+For each interaction edge $e=(i,j)\in E$, define the binary
+constraint-violation variable
+
+$$
+d_{ij}(\mathbf p)
+:=
+p_i\oplus p_j\oplus p_{ij}\oplus 1.
+$$
+
+Then the valid parity-code space is
+
+$$
+\mathcal C
+=
+\left\{
+\mathbf p\in\{0,1\}^{V\cup E}
+\;\middle|\;
+d_{ij}(\mathbf p)=0,\quad \forall (i,j)\in E
+\right\}.
+$$
+
+Let $R\in GL(|E|,\mathbb F_2)$ be any invertible binary matrix, and
+define a new set of checks
+
+$$
+d'_l(\mathbf p)
+:=
+\bigoplus_{(i,j)\in E}
+R_{l,(i,j)}\,d_{ij}(\mathbf p),
+\qquad l=1,\ldots,|E|.
+$$
+
+Then
+
+$$
+\boxed{
+\mathcal C
+=
+\left\{
+\mathbf p
+\;\middle|\;
+d'_l(\mathbf p)=0,\quad \forall l
+\right\}.
+}
+$$
+
+Each transformed check can be written in the form
+
+$$
+d'_l(\mathbf p)
+=
+\bigoplus_{\alpha\in S_l}p_\alpha
+\oplus
+\bigl(|S_l|\bmod2\bigr),
+$$
+
+for some support $S_l\subseteq V\cup E$. Equivalently,
+
+$$
+\boxed{
+\bigoplus_{\alpha\in S_l}p_\alpha
+=
+|S_l|\bmod2.
+}
+$$
+:::
+
+:::{.callout-note collapse="true"}
+## Proof (Click to expand)
+
+Let
+
+$$
+\mathbf d(\mathbf p)
+=
+\bigl(d_{ij}(\mathbf p)\bigr)_{(i,j)\in E}.
+$$
+
+The transformed checks satisfy
+
+$$
+\mathbf d'(\mathbf p)=R\mathbf d(\mathbf p).
+$$
+
+Since $R$ is invertible over $\mathbb F_2$,
+
+$$
+\mathbf d'(\mathbf p)=0
+\quad\Longleftrightarrow\quad
+\mathbf d(\mathbf p)=0.
+$$
+
+Hence the two sets of checks define exactly the same parity-code space.
+
+For a fixed row $l$, let $S_l$ be the symmetric difference of the
+supports $\{i,j,ij\}$ selected by that row of $R$,
+
+$$
+S_l
+=
+\mathop{\triangle}_{(i,j):R_{l,(i,j)}=1}
+\{i,j,ij\}.
+$$
+
+Variables occurring an even number of times cancel in the XOR.
+Moreover, every original support $\{i,j,ij\}$ has odd cardinality
+three. Therefore the parity of $|S_l|$ equals the parity of the number
+of direct checks combined in row $l$, which is also the accumulated
+constant term. Thus
+
+$$
+d'_l(\mathbf p)
+=
+\bigoplus_{\alpha\in S_l}p_\alpha
+\oplus
+\bigl(|S_l|\bmod2\bigr).
+$$
+:::

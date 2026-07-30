@@ -1,0 +1,72 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 8XHV5KIT
+  item_version: 96141
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 5HV9YSRT
+      name: Experiment
+      path: Quantum Algorithm/Experiment
+qlab:
+  primary_collection: 5HV9YSRT
+  indexed_collections:
+    - 5HV9YSRT
+  primary_topic: quantum-algorithm
+  indexed_topics:
+    - quantum-algorithm
+item_type: journalArticle
+title: Quantum Feature Maps for Graph Machine Learning on a Neutral Atom Quantum
+  Processor
+authors:
+  - first: Boris
+    last: Albrecht
+  - first: Constantin
+    last: Dalyac
+  - first: Lucas
+    last: Leclerc
+  - first: Luis
+    last: Ortiz-Gutiérrez
+  - first: Slimane
+    last: Thabet
+  - first: Mauro
+    last: D'Arcangelo
+  - first: Vincent E.
+    last: Elfving
+  - first: Lucas
+    last: Lassablière
+  - first: Henrique
+    last: Silvério
+  - first: Bruno
+    last: Ximenez
+  - first: Louis-Paul
+    last: Henry
+  - first: Adrien
+    last: Signoles
+  - first: Loïc
+    last: Henriet
+year: 2023
+abstract: Using a quantum processor to embed and process classical data enables
+  the generation of correlations between variables that are inefficient to
+  represent through classical computation. A fundamental question is whether
+  these correlations could be harnessed to enhance learning performances on real
+  datasets. Here, we report the use of a neutral atom quantum processor
+  comprising up to $32$ qubits to implement machine learning tasks on
+  graph-structured data. To that end, we introduce a quantum feature map to
+  encode the information about graphs in the parameters of a tunable Hamiltonian
+  acting on an array of qubits. Using this tool, we first show that interactions
+  in the quantum system can be used to distinguish non-isomorphic graphs that
+  are locally equivalent. We then realize a toxicity screening experiment,
+  consisting of a binary classification protocol on a biochemistry dataset
+  comprising $286$ molecules of sizes ranging from $2$ to $32$ nodes, and obtain
+  results which are comparable to those using the best classical kernels. Using
+  techniques to compare the geometry of the feature spaces associated with
+  kernel methods, we then show evidence that the quantum feature map perceives
+  data in an original way, which is hard to replicate using classical kernels.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.1103/physreva.107.042615
+  arxiv: "2211.16337"

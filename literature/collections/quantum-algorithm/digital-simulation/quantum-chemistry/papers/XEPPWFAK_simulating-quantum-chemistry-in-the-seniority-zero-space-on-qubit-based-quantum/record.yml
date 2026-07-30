@@ -1,0 +1,54 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: XEPPWFAK
+  item_version: 96788
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: EMMNM8U8
+      name: Quantum Chemistry
+      path: Quantum Algorithm/Digital Simulation/Quantum Chemistry
+qlab:
+  primary_collection: EMMNM8U8
+  indexed_collections:
+    - EMMNM8U8
+  primary_topic: quantum-algorithm
+  indexed_topics:
+    - quantum-algorithm
+item_type: journalArticle
+title: Simulating quantum chemistry in the seniority-zero space on qubit-based
+  quantum computers
+authors:
+  - first: Vincent E.
+    last: Elfving
+  - first: Marta
+    last: Millaruelo
+  - first: José A.
+    last: Gámez
+  - first: Christian
+    last: Gogolin
+year: 2021
+abstract: Accurate quantum chemistry simulations remain challenging on classical
+  computers for problems of industrially relevant sizes and there is reason for
+  hope that quantum computing may help push the boundaries of what is
+  technically feasible. While variational quantum eigensolver (VQE) algorithms
+  may already turn noisy intermediate scale quantum (NISQ) devices into useful
+  machines, one has to make all efforts to use the scarce quantum resources as
+  efficiently as possible. We combine the so-called seniority-zero, or
+  paired-electron, approximation of computational quantum chemistry with
+  techniques for simulating molecular chemistry on gate-based quantum computers
+  and obtain a very resource efficient quantum simulation algorithm. While some
+  accuracy is lost through the paired-electron approximation, we show that using
+  the freed-up quantum resources for increasing the basis set can lead to more
+  accurate results and reductions in the necessary number of quantum computing
+  runs by several orders of magnitude, already for a simple system like lithium
+  hydride. We also discuss an error mitigation scheme based on post-selection
+  which shows an attractive scaling when the given Hamiltonian format is
+  considered, increasing the viability of its NISQ implementation.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.1103/physreva.103.032605
+  arxiv: "2002.00035"

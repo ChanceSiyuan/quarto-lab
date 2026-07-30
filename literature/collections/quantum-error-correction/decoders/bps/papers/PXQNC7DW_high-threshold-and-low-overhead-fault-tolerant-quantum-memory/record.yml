@@ -1,0 +1,60 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: PXQNC7DW
+  item_version: 96163
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: P4HQDZ8G
+      name: BPs
+      path: Quantum Error correction/Decoders/BPs
+qlab:
+  primary_collection: P4HQDZ8G
+  indexed_collections:
+    - P4HQDZ8G
+  primary_topic: quantum-error-correction
+  indexed_topics:
+    - quantum-error-correction
+item_type: journalArticle
+title: High-threshold and low-overhead fault-tolerant quantum memory
+authors:
+  - first: Sergey
+    last: Bravyi
+  - first: Andrew W.
+    last: Cross
+  - first: Jay M.
+    last: Gambetta
+  - first: Dmitri
+    last: Maslov
+  - first: Patrick
+    last: Rall
+  - first: Theodore J.
+    last: Yoder
+year: 2024
+abstract: Quantum error correction becomes a practical possibility only if the
+  physical error rate is below a threshold value that depends on a particular
+  quantum code, syndrome measurement circuit, and decoding algorithm. Here we
+  present an end-to-end quantum error correction protocol that implements
+  fault-tolerant memory based on a family of LDPC codes with a high encoding
+  rate that achieves an error threshold of $0.8\%$ for the standard
+  circuit-based noise model. This is on par with the surface code which has
+  remained an uncontested leader in terms of its high error threshold for nearly
+  20 years. The full syndrome measurement cycle for a length-$n$ code in our
+  family requires $n$ ancillary qubits and a depth-7 circuit composed of
+  nearest-neighbor CNOT gates. The required qubit connectivity is a degree-6
+  graph that consists of two edge-disjoint planar subgraphs. As a concrete
+  example, we show that 12 logical qubits can be preserved for nearly one
+  million syndrome cycles using 288 physical qubits in total, assuming the
+  physical error rate of $0.1\%$. We argue that achieving the same level of
+  error suppression on 12 logical qubits with the surface code would require
+  nearly 3000 physical qubits. Our findings bring demonstrations of a
+  low-overhead fault-tolerant quantum memory within the reach of near-term
+  quantum processors.
+tags:
+  - Computer Science - Emerging Technologies
+  - Quantum Physics
+identifiers:
+  doi: 10.1038/s41586-024-07107-7
+  arxiv: "2308.07915"

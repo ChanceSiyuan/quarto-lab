@@ -1,0 +1,57 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 6MB6KLLC
+  item_version: 96015
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: YCBHDN7M
+      name: Application
+      path: Quantum Learning/Learning on states/non-linear/Application
+qlab:
+  primary_collection: YCBHDN7M
+  indexed_collections:
+    - YCBHDN7M
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: preprint
+title: Quantum majority vote
+authors:
+  - first: Harry
+    last: Buhrman
+  - first: Noah
+    last: Linden
+  - first: Laura
+    last: Mančinska
+  - first: Ashley
+    last: Montanaro
+  - first: Maris
+    last: Ozols
+year: 2022
+abstract: "Majority vote is a basic method for amplifying correct outcomes that
+  is widely used in computer science and beyond. While it can amplify the
+  correctness of a quantum device with classical output, the analogous procedure
+  for quantum output is not known. We introduce quantum majority vote as the
+  following task: given a product state $|\\psi_1\\rangle \\otimes \\dots
+  \\otimes |\\psi_n\\rangle$ where each qubit is in one of two orthogonal states
+  $|\\psi\\rangle$ or $|\\psi^\\perp\\rangle$, output the majority state. We
+  show that an optimal algorithm for this problem achieves worst-case fidelity
+  of $1/2 + \\Theta(1/\\sqrt{n})$. Under the promise that at least $2/3$ of the
+  input qubits are in the majority state, the fidelity increases to $1 -
+  \\Theta(1/n)$ and approaches $1$ as $n$ increases. We also consider the more
+  general problem of computing any symmetric and equivariant Boolean function
+  $f: \\{0,1\\}^n \\to \\{0,1\\}$ in an unknown quantum basis, and show that a
+  generalization of our quantum majority vote algorithm is optimal for this
+  task. The optimal parameters for the generalized algorithm and its worst-case
+  fidelity can be determined by a simple linear program of size $O(n)$. The time
+  complexity of the algorithm is $O(n^4 \\log n)$ where $n$ is the number of
+  input qubits."
+tags:
+  - Mathematics - Representation Theory
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2211.11729
+  arxiv: "2211.11729"

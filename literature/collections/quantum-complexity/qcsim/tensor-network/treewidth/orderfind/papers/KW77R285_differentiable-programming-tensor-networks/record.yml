@@ -1,0 +1,56 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: KW77R285
+  item_version: 106740
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: RTPIB7Q6
+      name: orderfind
+      path: Quantum Complexity/QCsim/tensor network/treewidth/orderfind
+qlab:
+  primary_collection: RTPIB7Q6
+  indexed_collections:
+    - RTPIB7Q6
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: journalArticle
+title: Differentiable Programming Tensor Networks
+authors:
+  - first: Hai-Jun
+    last: Liao
+  - first: Jin-Guo
+    last: Liu
+  - first: Lei
+    last: Wang
+  - first: Tao
+    last: Xiang
+year: 2019
+abstract: Differentiable programming is a fresh programming paradigm which
+  composes parameterized algorithmic components and trains them using automatic
+  differentiation (AD). The concept emerges from deep learning but is not only
+  limited to training neural networks. We present theory and practice of
+  programming tensor network algorithms in a fully differentiable way. By
+  formulating the tensor network algorithm as a computation graph, one can
+  compute higher order derivatives of the program accurately and efficiently
+  using AD. We present essential techniques to differentiate through the tensor
+  networks contractions, including stable AD for tensor decomposition and
+  efficient backpropagation through fixed point iterations. As a demonstration,
+  we compute the specific heat of the Ising model directly by taking the second
+  order derivative of the free energy obtained in the tensor renormalization
+  group calculation. Next, we perform gradient based variational optimization of
+  infinite projected entangled pair states for quantum antiferromagnetic
+  Heisenberg model and obtain start-of-the-art variational energy and
+  magnetization with moderate efforts. Differentiable programming removes
+  laborious human efforts in deriving and implementing analytical gradients for
+  tensor network programs, which opens the door to more innovations in tensor
+  network algorithms and applications.
+tags:
+  - Condensed Matter - Strongly Correlated Electrons
+  - Quantum Physics
+identifiers:
+  doi: 10.1103/physrevx.9.031041
+  arxiv: "1903.09650"

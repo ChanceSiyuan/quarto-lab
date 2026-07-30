@@ -1,0 +1,48 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 972ZB8BS
+  item_version: 109129
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: JJ7S67BH
+      name: Learning on operations
+      path: Quantum Learning/Learning on operations
+qlab:
+  primary_collection: JJ7S67BH
+  indexed_collections:
+    - JJ7S67BH
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: journalArticle
+title: Efficient Characterization of Coherent and Correlated Low-Degree Noise in
+  Layers of Gates
+authors:
+  - first: Marianna
+    last: Crupi
+  - first: J. Ignacio
+    last: Cirac
+  - first: Flavio
+    last: Baccari
+year: 2025
+abstract: We present a quantum process-tomography protocol based on a low-degree
+  ansatz for the quantum channel, i.e. when it can be expressed as a
+  fixed-degree polynomial in terms of Pauli operators. We demonstrate how to
+  perform tomography of such channels with a logarithmic amount of effort
+  relative to the size of the system, by employing random state preparation and
+  measurements in the Pauli basis. We extend the applicability of the protocol
+  to channels consisting of a layer of quantum gates with a polylogarithmic
+  number of non-Clifford gates, followed by a low-degree noise channel. Rather
+  than inverting the layer of quantum gates on the hardware-which would
+  introduce additional errors-we instead carry out the inversion in classical
+  postprocessing, while adding to the sample complexity a factor at most
+  polynomial in system size. Numerical simulations support our theoretical
+  findings and demonstrate the feasibility of our method.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.1103/8ng1-4c1k
+  arxiv: "2507.02030"

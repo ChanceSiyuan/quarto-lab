@@ -1,0 +1,49 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 5IL4PF5R
+  item_version: 96106
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: AENR6HI9
+      name: channel learning
+      path: Quantum Learning/Learning on operations/channel learning
+qlab:
+  primary_collection: AENR6HI9
+  indexed_collections:
+    - AENR6HI9
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: journalArticle
+title: Pauli error estimation via Population Recovery
+authors:
+  - first: Steven T.
+    last: Flammia
+  - first: Ryan
+    last: O'Donnell
+year: 2021
+abstract: Motivated by estimation of quantum noise models, we study the problem
+  of learning a Pauli channel, or more generally the Pauli error rates of an
+  arbitrary channel. By employing a novel reduction to the "Population Recovery"
+  problem, we give an extremely simple algorithm that learns the Pauli error
+  rates of an $n$-qubit channel to precision $\epsilon$ in $\ell_\infty$ using
+  just $O(1/\epsilon^2) \log(n/\epsilon)$ applications of the channel. This is
+  optimal up to the logarithmic factors. Our algorithm uses only unentangled
+  state preparation and measurements, and the post-measurement classical runtime
+  is just an $O(1/\epsilon)$ factor larger than the measurement data size. It is
+  also impervious to a limited model of measurement noise where heralded
+  measurement failures occur independently with probability $\le 1/4$. We then
+  consider the case where the noise channel is close to the identity, meaning
+  that the no-error outcome occurs with probability $1-\eta$. In the regime of
+  small $\eta$ we extend our algorithm to achieve multiplicative precision $1
+  \pm \epsilon$ (i.e., additive precision $\epsilon \eta$) using just
+  $O\bigl(\frac{1}{\epsilon^2 \eta}\bigr) \log(n/\epsilon)$ applications of the
+  channel.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.22331/q-2021-09-23-549
+  arxiv: "2105.02885"

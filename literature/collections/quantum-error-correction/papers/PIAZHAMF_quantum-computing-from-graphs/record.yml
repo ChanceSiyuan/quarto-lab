@@ -1,0 +1,60 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: PIAZHAMF
+  item_version: 96141
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: XAWT9GEF
+      name: Quantum Error correction
+      path: Quantum Error correction
+    - key: IZUU7M3Q
+      name: Graphical operation
+      path: Quantum Complexity/QCsim/stabilizer simulation/Graphical operation
+qlab:
+  primary_collection: XAWT9GEF
+  indexed_collections:
+    - IZUU7M3Q
+    - XAWT9GEF
+  primary_topic: quantum-error-correction
+  indexed_topics:
+    - quantum-complexity
+    - quantum-error-correction
+item_type: thesis
+title: Quantum Computing from Graphs
+authors:
+  - first: Andrey Boris
+    last: Khesin
+year: 2025
+abstract: While stabilizer tableaus have proven exceptionally useful as a
+  descriptive tool for additive quantum codes, they offer little guidance for
+  concrete constructions or coding algorithm analysis. We introduce a
+  representation of stabilizer codes as graphs with certain structures.
+  Specifically, the graphs take a semi-bipartite form where input nodes map to
+  output nodes, such that output nodes may connect to each other but input nodes
+  may not. Intuitively, the graph's input-output edges represent information
+  propagation of the encoder, while output-output edges represent the code's
+  entanglement. We prove that this graph representation is in bijection with
+  tableaus and give an efficient compilation algorithm that transforms tableaus
+  into graphs. We show that this map is efficiently invertible, which gives a
+  universal recipe for code construction by finding graphs with nice properties.
+  The graph representation gives insight into both code construction and
+  algorithms. To the former, we argue that graphs provide a flexible platform
+  for building codes. We construct several constant-size codes and several
+  infinite code families. We also use graphs to extend the quantum
+  Gilbert-Varshamov bound to a three-way distance-rate-weight trade-off. To the
+  latter, we show that key coding algorithms, distance approximation, weight
+  reduction, and decoding, are unified as instances of a single optimization
+  game on a graph. Moreover, key code properties such as distance, weight, and
+  encoding circuit depth, are all controlled by the graph degree. We give
+  efficient algorithms for producing encoding circuits whose depths scale with
+  the degree and for implementing certain logical diagonal and Clifford gates
+  with reduced depth. Finally, we find an efficient decoding algorithm for
+  certain classes of graphs. These results give evidence that graphs are useful
+  for the study of quantum computing and its implementations.
+tags:
+  - Quantum Physics
+identifiers:
+  arxiv: "2501.17959"

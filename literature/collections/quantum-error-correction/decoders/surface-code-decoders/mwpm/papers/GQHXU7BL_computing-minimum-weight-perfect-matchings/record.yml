@@ -1,0 +1,43 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: GQHXU7BL
+  item_version: 96132
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 6F89T2MP
+      name: MWPM
+      path: Quantum Error correction/Decoders/Surface code Decoders/MWPM
+    - key: YMQPXEL8
+      name: Matching
+      path: Quantum Algorithm/Optimization/Matching
+qlab:
+  primary_collection: 6F89T2MP
+  indexed_collections:
+    - 6F89T2MP
+    - YMQPXEL8
+  primary_topic: quantum-error-correction
+  indexed_topics:
+    - quantum-algorithm
+    - quantum-error-correction
+item_type: journalArticle
+title: Computing Minimum-Weight Perfect Matchings
+authors:
+  - first: William
+    last: Cook
+  - first: André
+    last: Rohe
+year: 1999
+abstract: We make several observations on the implementation of Edmonds' blossom
+  algorithm for solving minimum-weight perfect-matching problems and we present
+  computational results for geometric problem instances ranging in size from
+  1,000 nodes up to 5,000,000 nodes. A key feature in our implementation is the
+  use of multiple search trees with an individual dual-change ε for each tree.
+  As a benchmark of the algorithm's performance, solving a 100,000-node
+  geometric instance on a 200 Mhz Pentium-Pro computer takes approximately 3
+  minutes.
+tags: []
+identifiers:
+  doi: 10.1287/ijoc.11.2.138

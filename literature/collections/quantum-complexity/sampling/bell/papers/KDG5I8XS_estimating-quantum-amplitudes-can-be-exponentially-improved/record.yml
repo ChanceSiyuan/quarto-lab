@@ -1,0 +1,48 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: KDG5I8XS
+  item_version: 103824
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: RFRU75AI
+      name: Bell
+      path: Quantum Complexity/Sampling/Bell
+qlab:
+  primary_collection: RFRU75AI
+  indexed_collections:
+    - RFRU75AI
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: preprint
+title: Estimating quantum amplitudes can be exponentially improved
+authors:
+  - first: Zhong-Xia
+    last: Shang
+  - first: Qi
+    last: Zhao
+year: 2024
+abstract: Estimating quantum amplitudes is a fundamental task in quantum
+  computing and serves as a core subroutine in numerous quantum algorithms. In
+  this work, we present a novel algorithmic framework for estimating quantum
+  amplitudes by transforming pure states into their matrix forms and encoding
+  them into density matrices and unitary operators. Our framework presents two
+  specific estimation protocols, achieving the standard quantum limit
+  $\epsilon^{-2}$ and the Heisenberg limit $\epsilon^{-1}$, respectively. Our
+  approach significantly reduces the complexity of estimation when states
+  exhibit specific entanglement properties. We also introduce a new technique
+  called channel block encoding for preparing density matrices, providing
+  optimal constructions for gate-based quantum circuits and Hamiltonian
+  simulations. The framework yields considerable advancements contingent on
+  circuit depth or simulation time. A minimum of superpolynomial improvement can
+  be achieved when the depth or the time is within the range of
+  $\mathcal{O}(\text{poly}\log(n))$. Moreover, in certain extreme cases, an
+  exponential improvement can be realized. Based on our results, various
+  complexity-theoretic implications are discussed.
+tags:
+  - Quantum Physics
+identifiers:
+  arxiv: "2408.13721"

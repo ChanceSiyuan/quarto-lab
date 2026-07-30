@@ -105,7 +105,7 @@ describe("safe paper Markdown renderer", () => {
     display.appendChild(fragment);
     const block = display.querySelector(".zc-math-display.zc-math-copy")!;
     expect(block.getAttribute("data-latex")).toBe("E = mc^2");
-    expect(block.getAttribute("title")).toBe("点击复制 LaTeX");
+    expect(block.getAttribute("title")).toBe("Click to copy LaTeX");
     const inline = display.querySelector(".zc-math-inline.zc-math-copy")!;
     expect(inline.getAttribute("data-latex")).toBe("a+b");
   });
@@ -115,6 +115,6 @@ describe("safe paper Markdown renderer", () => {
     const fallback = host.querySelector(".zc-math-error.zc-math-copy")!;
 
     expect(fallback.getAttribute("data-latex")).toBe("\\notARealCommand{");
-    expect(fallback.getAttribute("title")).toBe("点击复制 LaTeX");
+    expect(fallback.getAttribute("title")).toBe("Click to copy LaTeX");
   });
 });

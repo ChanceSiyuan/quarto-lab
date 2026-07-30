@@ -1,0 +1,59 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: QHGQ42PE
+  item_version: 96094
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: AGQ9C27P
+      name: Magic state distillation
+      path: Quantum Resource/Magic/Magic state distillation
+qlab:
+  primary_collection: AGQ9C27P
+  indexed_collections:
+    - AGQ9C27P
+  primary_topic: quantum-resource
+  indexed_topics:
+    - quantum-resource
+item_type: journalArticle
+title: Efficiently computable bounds for magic state distillation
+authors:
+  - first: Xin
+    last: Wang
+  - first: Mark M.
+    last: Wilde
+  - first: Yuan
+    last: Su
+year: 2020
+abstract: Magic-state distillation (or non-stabilizer state manipulation) is a
+  crucial component in the leading approaches to realizing scalable,
+  fault-tolerant, and universal quantum computation. Related to non-stabilizer
+  state manipulation is the resource theory of non-stabilizer states, for which
+  one of the goals is to characterize and quantify non-stabilizerness of a
+  quantum state. In this paper, we introduce the family of thauma measures to
+  quantify the amount of non-stabilizerness in a quantum state, and we exploit
+  this family of measures to address several open questions in the resource
+  theory of non-stabilizer states. As a first application, we establish the
+  hypothesis testing thauma as an efficiently computable benchmark for the
+  one-shot distillable non-stabilizerness, which in turn leads to a variety of
+  bounds on the rate at which non-stabilizerness can be distilled, as well as on
+  the overhead of magic-state distillation. We then prove that the max-thauma
+  can be used as an efficiently computable tool in benchmarking the efficiency
+  of magic-state distillation and that it can outperform pervious approaches
+  based on mana. Finally, we use the min-thauma to bound a quantity known in the
+  literature as the "regularized relative entropy of magic." As a consequence of
+  this bound, we find that two classes of states with maximal mana, a previously
+  established non-stabilizerness measure, cannot be interconverted in the
+  asymptotic regime at a rate equal to one. This result resolves a basic
+  question in the resource theory of non-stabilizer states and reveals a
+  difference between the resource theory of non-stabilizer states and other
+  resource theories such as entanglement and coherence.
+tags:
+  - Computer Science - Information Theory
+  - Mathematical Physics
+  - Quantum Physics
+identifiers:
+  doi: 10.1103/physrevlett.124.090505
+  arxiv: "1812.10145"

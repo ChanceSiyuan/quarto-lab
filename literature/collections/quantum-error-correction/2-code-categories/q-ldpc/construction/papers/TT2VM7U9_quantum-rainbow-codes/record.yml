@@ -1,0 +1,52 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: TT2VM7U9
+  item_version: 96134
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: JW5GICED
+      name: Construction
+      path: Quantum Error correction/2-Code categories/q-LDPC/Construction
+qlab:
+  primary_collection: JW5GICED
+  indexed_collections:
+    - JW5GICED
+  primary_topic: quantum-error-correction
+  indexed_topics:
+    - quantum-error-correction
+item_type: preprint
+title: Quantum Rainbow Codes
+authors:
+  - first: Thomas R.
+    last: Scruby
+  - first: Arthur
+    last: Pesah
+  - first: Mark
+    last: Webster
+year: 2024
+abstract: We introduce rainbow codes, a novel class of quantum error correcting
+  codes generalising colour codes and pin codes. Rainbow codes can be defined on
+  any $D$-dimensional simplicial complex that admits a valid $(D+1)$-colouring
+  of its $0$-simplices. We study in detail the case where these simplicial
+  complexes are derived from chain complexes obtained via the hypergraph product
+  and, by reinterpreting these codes as collections of colour codes joined at
+  domain walls, show that we can obtain code families with growing distance and
+  number of encoded qubits as well as logical non-Clifford gates implemented by
+  transversal application of $T$ and $T^\dag$. By combining these techniques
+  with the quasi-hyperbolic colour codes of Zhu et al. (arXiv:2310.16982) we
+  obtain families of codes with transversal non-Clifford gates and parameters
+  $[\![n,O(n),O(log(n))]\!]$ which allow the magic-state yield parameter $\gamma
+  = \log_d(n/k)$ to be made arbitrarily small. In contrast to other recent
+  constructions that achieve $\gamma \rightarrow 0$ our codes are natively
+  defined on qubits, are LDPC, and have logical non-Clifford gates implementable
+  by single-qubit (rather than entangling) physical operations, but are not
+  asymptotically good.
+tags:
+  - Mathematics - Combinatorics
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2408.13130
+  arxiv: "2408.13130"

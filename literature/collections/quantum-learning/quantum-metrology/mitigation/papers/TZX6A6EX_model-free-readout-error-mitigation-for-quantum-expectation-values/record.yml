@@ -1,0 +1,43 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: TZX6A6EX
+  item_version: 96080
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: ZTIKI838
+      name: Mitigation
+      path: Quantum Learning/Quantum Metrology/Mitigation
+qlab:
+  primary_collection: ZTIKI838
+  indexed_collections:
+    - ZTIKI838
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: journalArticle
+title: Model-free readout-error mitigation for quantum expectation values
+authors:
+  - first: Ewout van den
+    last: Berg
+  - first: Zlatko K.
+    last: Minev
+  - first: Kristan
+    last: Temme
+year: 2022
+abstract: Measurements on current quantum processors are subject to hardware
+  imperfections that lead to readout errors. These errors manifest themselves as
+  a bias in quantum expectation values. Here, we propose a very simple method
+  that forces the bias in the expectation value to appear as a multiplicative
+  factor that can be measured directly and removed at the cost of an increase in
+  the sampling complexity for the observable. The method assumes no specific
+  form of the noise, but only requires that the noise is `weak' to avoid
+  excessive sampling overhead. We provide bounds relating the error in the
+  expectation value to the sample complexity.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.1103/physreva.105.032620
+  arxiv: "2012.09738"

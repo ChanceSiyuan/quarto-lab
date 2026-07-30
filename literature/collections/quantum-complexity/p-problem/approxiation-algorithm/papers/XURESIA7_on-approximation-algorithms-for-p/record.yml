@@ -1,0 +1,43 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: XURESIA7
+  item_version: 96113
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 2WSI7X4R
+      name: Approxiation algorithm
+      path: Quantum Complexity/#P-problem/Approxiation algorithm
+qlab:
+  primary_collection: 2WSI7X4R
+  indexed_collections:
+    - 2WSI7X4R
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: journalArticle
+title: "On Approximation Algorithms for # P"
+authors:
+  - first: Larry
+    last: Stockmeyer
+year: 1985
+abstract: The theme of this paper is to investigate to what extent
+  approximation, possibly together with randomization, can reduce the complexity
+  of problems in Valiant’s class 6 P. In general, any function in P can be
+  approximated to within any constant factor by a function in the class A’ of
+  the polynomial-time hierarchy. Relative to a particular oracle, A cannot be
+  replaced by A in this result. Another part of the paper introduces a model of
+  random sampling where the size of a set X is estimated by checking, for
+  various "sample sets" S, whether or not S intersects X. For various classes of
+  sample sets, upper and lower bounds on the number of samples required to
+  estimate the size of X are discussed. This type of sampling is motivated by
+  particular problems in 6 P such as computing the size of a backtrack search
+  tree. In the case of backtrack search trees, a sample amounts to checking
+  whether a certain path exists in the tree. One of the lower bounds suggests
+  that such tests alone are not sufficient to give a polynomial-time
+  approximation algorithm for this problem, even if the algorithm can randomize.
+tags: []
+identifiers:
+  doi: 10.1137/0214060

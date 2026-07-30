@@ -1,0 +1,48 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: PDPN2F5V
+  item_version: 96150
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: KIMTUQTJ
+      name: photon_realization
+      path: Quantum Algorithm/Experiment/photon_realization
+qlab:
+  primary_collection: KIMTUQTJ
+  indexed_collections:
+    - KIMTUQTJ
+  primary_topic: quantum-algorithm
+  indexed_topics:
+    - quantum-algorithm
+item_type: journalArticle
+title: Training Gaussian Boson Sampling Distributions
+authors:
+  - first: Leonardo
+    last: Banchi
+  - first: Nicolás
+    last: Quesada
+  - first: Juan Miguel
+    last: Arrazola
+year: 2020
+abstract: Gaussian Boson Sampling (GBS) is a near-term platform for photonic
+  quantum computing. Applications have been developed which rely on directly
+  programming GBS devices, but the ability to train and optimize circuits has
+  been a key missing ingredient for developing new algorithms. In this work, we
+  derive analytical gradient formulas for the GBS distribution, which can be
+  used to train devices using standard methods based on gradient descent. We
+  introduce a parametrization of the distribution that allows the gradient to be
+  estimated by sampling from the same device that is being optimized. In the
+  case of training using a Kullback-Leibler divergence or log-likelihood cost
+  function, we show that gradients can be computed classically, leading to fast
+  training. We illustrate these results with numerical experiments in stochastic
+  optimization and unsupervised learning. As a particular example, we introduce
+  the variational Ising solver, a hybrid algorithm for training GBS devices to
+  sample ground states of a classical Ising model with high probability.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.1103/physreva.102.012417
+  arxiv: "2004.04770"

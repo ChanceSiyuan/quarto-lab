@@ -1,0 +1,54 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 74B8QTKB
+  item_version: 96131
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: Y8GNXK9L
+      name: Bell sampling based
+      path: Quantum Learning/Experiments/Bell sampling based
+    - key: MSCEQ3D9
+      name: Learning
+      path: Quantum Resource/Magic/Quantification/Learning
+qlab:
+  primary_collection: Y8GNXK9L
+  indexed_collections:
+    - MSCEQ3D9
+    - Y8GNXK9L
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+    - quantum-resource
+item_type: preprint
+title: Efficient Learning of Quantum States Prepared With Few Non-Clifford Gates
+authors:
+  - first: Sabee
+    last: Grewal
+  - first: Vishnu
+    last: Iyer
+  - first: William
+    last: Kretschmer
+  - first: Daniel
+    last: Liang
+year: 2024
+abstract: We give a pair of algorithms that efficiently learn a quantum state
+  prepared by Clifford gates and $O(\log n)$ non-Clifford gates. Specifically,
+  for an $n$-qubit state $|\psi\rangle$ prepared with at most $t$ non-Clifford
+  gates, our algorithms use $\mathsf{poly}(n,2^t,1/\varepsilon)$ time and copies
+  of $|\psi\rangle$ to learn $|\psi\rangle$ to trace distance at most
+  $\varepsilon$. The first algorithm for this task is more efficient, but
+  requires entangled measurements across two copies of $|\psi\rangle$. The
+  second algorithm uses only single-copy measurements at the cost of polynomial
+  factors in runtime and sample complexity. Our algorithms more generally learn
+  any state with sufficiently large stabilizer dimension, where a quantum state
+  has stabilizer dimension $k$ if it is stabilized by an abelian group of $2^k$
+  Pauli operators. We also develop an efficient property testing algorithm for
+  stabilizer dimension, which may be of independent interest.
+tags:
+  - Computer Science - Machine Learning
+  - Quantum Physics
+identifiers:
+  arxiv: "2305.13409"

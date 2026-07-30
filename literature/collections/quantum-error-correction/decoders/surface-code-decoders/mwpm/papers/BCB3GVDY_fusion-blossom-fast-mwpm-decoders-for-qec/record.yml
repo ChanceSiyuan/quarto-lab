@@ -1,0 +1,46 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: BCB3GVDY
+  item_version: 96078
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 6F89T2MP
+      name: MWPM
+      path: Quantum Error correction/Decoders/Surface code Decoders/MWPM
+qlab:
+  primary_collection: 6F89T2MP
+  indexed_collections:
+    - 6F89T2MP
+  primary_topic: quantum-error-correction
+  indexed_topics:
+    - quantum-error-correction
+item_type: preprint
+title: "Fusion Blossom: Fast MWPM Decoders for QEC"
+authors:
+  - first: Yue
+    last: Wu
+  - first: Lin
+    last: Zhong
+year: 2023
+abstract: The Minimum-Weight Perfect Matching (MWPM) decoder is widely used in
+  Quantum Error Correction (QEC) decoding. Despite its high accuracy, existing
+  implementations of the MWPM decoder cannot catch up with quantum hardware,
+  e.g., 1 million measurements per second for superconducting qubits. They
+  suffer from a backlog of measurements that grows exponentially and as a
+  result, cannot realize the power of quantum computation. We design and
+  implement a fast MWPM decoder, called Parity Blossom, which reaches a time
+  complexity almost proportional to the number of defect measurements. We
+  further design and implement a parallel version of Parity Blossom called
+  Fusion Blossom. Given a practical circuit-level noise of 0.1%, Fusion Blossom
+  can decode a million measurement rounds per second up to a code distance of
+  33. Fusion Blossom also supports stream decoding mode that reaches a 0.7 ms
+  decoding latency at code distance 21 regardless of the measurement rounds.
+tags:
+  - Computer Science - Data Structures and Algorithms
+  - Computer Science - Distributed, Parallel, and Cluster Computing
+  - Quantum Physics
+identifiers:
+  arxiv: "2305.08307"

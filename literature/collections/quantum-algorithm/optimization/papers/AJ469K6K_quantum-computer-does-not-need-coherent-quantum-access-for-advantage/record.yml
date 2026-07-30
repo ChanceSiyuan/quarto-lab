@@ -1,0 +1,55 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: AJ469K6K
+  item_version: 96144
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: TZ42IFP4
+      name: Optimization
+      path: Quantum Algorithm/Optimization
+qlab:
+  primary_collection: TZ42IFP4
+  indexed_collections:
+    - TZ42IFP4
+  primary_topic: quantum-algorithm
+  indexed_topics:
+    - quantum-algorithm
+item_type: preprint
+title: Quantum Computer Does Not Need Coherent Quantum Access for Advantage
+authors:
+  - first: Nhat A.
+    last: Nghiem
+year: 2025
+abstract: Demonstrating quantum advantage has been a pressing challenge in the
+  field. A majority of claimed quantum speedups rely on a subroutine in which
+  classical information can be accessed in a coherent quantum manner, which
+  imposes a crucial constraint on the practicability of these quantum
+  algorithms. It has even been shown that without such an access, the quantum
+  computer cannot be (exponentially) stronger than the classical counterpart for
+  many problems. Thus, whether or not a quantum computer can be useful for
+  practical applications has been central to investigation. In this work, we
+  develop a quantum gradient descent algorithm for polynomial optimization,
+  which is a fundamental technique that enjoys a wide range of applications. The
+  algorithm's running time is logarithmical relative to the number of variables
+  and consumes logarithmic numbers of qubits. Our method can work with many
+  classes of polynomials and, most importantly, it removes the requirement for
+  such a coherent quantum access. Thus, it implies great potential for near-term
+  realization and particularly surpasses the belief that quantum speedup is only
+  possible with strong input assumptions. As immediate applications, we show how
+  to translate the capability of performing gradient descent into solving a
+  linear system, performing least-square fitting, building a support vector
+  machine, performing supervised cluster assignment, training neural network,
+  and solving for ground-state/excited-state energy, performing principle
+  component analysis, with end-to-end applications of quantum algorithms. Thus,
+  our result adds another prominent example to some existing literature,
+  provably demonstrating the quantum advantage toward highly practical problems,
+  suggesting a new and promising prospect for the real-world application of a
+  quantum computer.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2503.02515
+  arxiv: "2503.02515"

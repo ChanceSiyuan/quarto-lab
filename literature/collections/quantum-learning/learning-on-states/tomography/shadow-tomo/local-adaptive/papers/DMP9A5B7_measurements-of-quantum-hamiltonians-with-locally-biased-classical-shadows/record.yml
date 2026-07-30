@@ -1,0 +1,45 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: DMP9A5B7
+  item_version: 96158
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: CT88KZFU
+      name: local/adaptive
+      path: Quantum Learning/Learning on states/Tomography/shadow tomo/local/adaptive
+qlab:
+  primary_collection: CT88KZFU
+  indexed_collections:
+    - CT88KZFU
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: journalArticle
+title: Measurements of Quantum Hamiltonians with Locally-Biased Classical Shadows
+authors:
+  - first: Charles
+    last: Hadfield
+  - first: Sergey
+    last: Bravyi
+  - first: Rudy
+    last: Raymond
+  - first: Antonio
+    last: Mezzacapo
+year: 2022
+abstract: Obtaining precise estimates of quantum observables is a crucial step
+  of variational quantum algorithms. We consider the problem of estimating
+  expectation values of quantum Hamiltonians, obtained on states prepared on a
+  quantum computer. We propose a novel estimator for this task, which is locally
+  optimised with knowledge of the Hamiltonian and a classical approximation to
+  the underlying quantum state. Our estimator is based on the concept of
+  classical shadows of a quantum state, and has the important property of not
+  adding to the circuit depth for the state preparation. We test its performance
+  numerically for molecular Hamiltonians of increasing size, ﬁnding a sizable
+  reduction in variance with respect to current measurement protocols that do
+  not increase circuit depths.
+tags: []
+identifiers:
+  doi: 10.1007/s00220-022-04343-8

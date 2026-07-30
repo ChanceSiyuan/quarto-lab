@@ -1,0 +1,49 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: ECQAKSCL
+  item_version: 96125
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: WFIYMWN6
+      name: MBQC+IQP
+      path: Quantum Complexity/Sampling/IQP/MBQC+IQP
+qlab:
+  primary_collection: WFIYMWN6
+  indexed_collections:
+    - WFIYMWN6
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: journalArticle
+title: Universal Blind Quantum Computation
+authors:
+  - first: Anne
+    last: Broadbent
+  - first: Joseph
+    last: Fitzsimons
+  - first: Elham
+    last: Kasheﬁ
+year: null
+abstract: "We present a protocol which allows a client to have a server carry
+  out a quantum computation for her such that the client’s inputs, outputs and
+  computation remain perfectly private, and where she does not require any
+  quantum computational power or memory. The client only needs to be able to
+  prepare single qubits randomly chosen from a ﬁnite set and send them to the
+  server, who has the balance of the required quantum computational resources.
+  Our protocol is interactive: after the initial preparation of quantum states,
+  the client and server use two-way classical communication which enables the
+  client to drive the computation, giving single-qubit measurement instructions
+  to the server, depending on previous measurement outcomes. Our protocol works
+  for inputs and outputs that are either classical or quantum. We give an
+  authentication protocol that allows the client to detect an interfering
+  server; our scheme can also be made fault-tolerant. We also generalize our
+  result to the setting of a purely classical client who communicates
+  classically with two noncommunicating entangled servers, in order to perform a
+  blind quantum computation. By incorporating the authentication protocol, we
+  show that any problem in BQP has an entangled two-prover interactive proof
+  with a purely classical veriﬁer."
+tags: []
+identifiers: {}

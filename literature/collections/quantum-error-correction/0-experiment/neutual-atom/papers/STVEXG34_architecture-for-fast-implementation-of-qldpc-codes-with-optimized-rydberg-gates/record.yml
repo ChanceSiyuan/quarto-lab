@@ -1,0 +1,48 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: STVEXG34
+  item_version: 96118
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: DX9Q6GWR
+      name: Neutual atom
+      path: Quantum Error correction/0-Experiment/Neutual atom
+qlab:
+  primary_collection: DX9Q6GWR
+  indexed_collections:
+    - DX9Q6GWR
+  primary_topic: quantum-error-correction
+  indexed_topics:
+    - quantum-error-correction
+item_type: preprint
+title: Architecture for fast implementation of qLDPC codes with optimized
+  Rydberg gates
+authors:
+  - first: C.
+    last: Poole
+  - first: T. M.
+    last: Graham
+  - first: M. A.
+    last: Perlin
+  - first: M.
+    last: Otten
+  - first: M.
+    last: Saffman
+year: 2024
+abstract: We propose an implementation of bivariate bicycle codes (Nature {\bf
+  627}, 778 (2024)) based on long-range Rydberg gates between stationary neutral
+  atom qubits. An optimized layout of data and ancilla qubits reduces the
+  maximum Euclidean communication distance needed for non-local parity check
+  operators. An optimized Rydberg gate pulse design enables $\sf CZ$ entangling
+  operations with fidelity ${\mathcal F}>0.999$ at a distance greater than
+  $12~\mu\rm m$. The combination of optimized layout and gate design leads to a
+  quantum error correction cycle time of $\sim 1.2~\rm ms$ for a $[[144,12,12]]$
+  code, an order of magnitude improvement over previous designs.
+tags:
+  - Physics - Atomic Physics
+  - Quantum Physics
+identifiers:
+  arxiv: "2404.18809"

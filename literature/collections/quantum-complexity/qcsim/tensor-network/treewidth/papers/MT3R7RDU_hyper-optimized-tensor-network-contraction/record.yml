@@ -1,0 +1,53 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: MT3R7RDU
+  item_version: 106162
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: RLFPX37S
+      name: treewidth
+      path: Quantum Complexity/QCsim/tensor network/treewidth
+qlab:
+  primary_collection: RLFPX37S
+  indexed_collections:
+    - RLFPX37S
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: journalArticle
+title: Hyper-optimized tensor network contraction
+authors:
+  - first: Johnnie
+    last: Gray
+  - first: Stefanos
+    last: Kourtis
+year: 2021
+abstract: Tensor networks represent the state-of-the-art in computational
+  methods across many disciplines, including the classical simulation of quantum
+  many-body systems and quantum circuits. Several applications of current
+  interest give rise to tensor networks with irregular geometries. Finding the
+  best possible contraction path for such networks is a central problem, with an
+  exponential effect on computation time and memory footprint. In this work, we
+  implement new randomized protocols that find very high quality contraction
+  paths for arbitrary and large tensor networks. We test our methods on a
+  variety of benchmarks, including the random quantum circuit instances recently
+  implemented on Google quantum chips. We find that the paths obtained can be
+  very close to optimal, and often many orders or magnitude better than the most
+  established approaches. As different underlying geometries suit different
+  methods, we also introduce a hyper-optimization approach, where both the
+  method applied and its algorithmic parameters are tuned during the path
+  finding. The increase in quality of contraction schemes found has significant
+  practical implications for the simulation of quantum many-body systems and
+  particularly for the benchmarking of new quantum chips. Concretely, we
+  estimate a speed-up of over 10,000$\times$ compared to the original
+  expectation for the classical simulation of the Sycamore `supremacy' circuits.
+tags:
+  - Condensed Matter - Disordered Systems and Neural Networks
+  - Physics - Computational Physics
+  - Quantum Physics
+identifiers:
+  doi: 10.22331/q-2021-03-15-410
+  arxiv: "2002.01935"

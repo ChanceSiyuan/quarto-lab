@@ -1,0 +1,58 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: KL59Z4BG
+  item_version: 96127
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: ECQYUGZZ
+      name: pseudoentanglement
+      path: Quantum Resource/Entanglement/pseudoentanglement
+qlab:
+  primary_collection: ECQYUGZZ
+  indexed_collections:
+    - ECQYUGZZ
+  primary_topic: quantum-resource
+  indexed_topics:
+    - quantum-resource
+item_type: preprint
+title: Efficient unitary designs and pseudorandom unitaries from permutations
+authors:
+  - first: Chi-Fang
+    last: Chen
+  - first: Adam
+    last: Bouland
+  - first: Fernando G. S. L.
+    last: Brandão
+  - first: Jordan
+    last: Docter
+  - first: Patrick
+    last: Hayden
+  - first: Michelle
+    last: Xu
+year: 2024
+abstract: In this work we give an efficient construction of unitary $k$-designs
+  using $\tilde{O}(k\cdot poly(n))$ quantum gates, as well as an efficient
+  construction of a parallel-secure pseudorandom unitary (PRU). Both results are
+  obtained by giving an efficient quantum algorithm that lifts random
+  permutations over $S(N)$ to random unitaries over $U(N)$ for $N=2^n$. In
+  particular, we show that products of exponentiated sums of $S(N)$ permutations
+  with random phases approximately match the first $2^{\Omega(n)}$ moments of
+  the Haar measure. By substituting either $\tilde{O}(k)$-wise independent
+  permutations, or quantum-secure pseudorandom permutations (PRPs) in place of
+  the random permutations, we obtain the above results. The heart of our proof
+  is a conceptual connection between the large dimension (large-$N$) expansion
+  in random matrix theory and the polynomial method, which allows us to prove
+  query lower bounds at finite-$N$ by interpolating from the much simpler
+  large-$N$ limit. The key technical step is to exhibit an orthonormal basis for
+  irreducible representations of the partition algebra that has a low-degree
+  large-$N$ expansion. This allows us to show that the distinguishing
+  probability is a low-degree rational polynomial of the dimension $N$.
+tags:
+  - Computer Science - Cryptography and Security
+  - Mathematical Physics
+  - Quantum Physics
+identifiers:
+  arxiv: "2404.16751"

@@ -1,0 +1,58 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: MDHSBR7A
+  item_version: 96016
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: Y8GNXK9L
+      name: Bell sampling based
+      path: Quantum Learning/Experiments/Bell sampling based
+qlab:
+  primary_collection: Y8GNXK9L
+  indexed_collections:
+    - Y8GNXK9L
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: preprint
+title: "Beyond Bell sampling: stabilizer state learning and quantum
+  pseudorandomness lower bounds on qudits"
+authors:
+  - first: Jonathan
+    last: Allcock
+  - first: Joao F.
+    last: Doriguello
+  - first: Gábor
+    last: Ivanyos
+  - first: Miklos
+    last: Santha
+year: 2024
+abstract: "Bell sampling is a simple yet powerful measurement primitive that has
+  recently attracted a lot of attention, and has proven to be a valuable tool in
+  studying stabiliser states. Unfortunately, however, it is known that Bell
+  sampling fails when used on qu\\emph{d}its of dimension $d>2$. In this paper,
+  we explore and quantify the limitations of Bell sampling on qudits, and
+  propose new quantum algorithms to circumvent the use of Bell sampling in
+  solving two important problems: learning stabiliser states and providing
+  pseudorandomness lower bounds on qudits. More specifically, as our first
+  result, we characterise the output distribution corresponding to Bell sampling
+  on copies of a stabiliser state and show that the output can be uniformly
+  random, and hence reveal no information. As our second result, for $d=p$ prime
+  we devise a quantum algorithm to identify an unknown stabiliser state in
+  $(\\mathbb{C}^p)^{\\otimes n}$ that uses $O(n)$ copies of the input state and
+  runs in time $O(n^4)$. As our third result, we provide a quantum algorithm
+  that efficiently distinguishes a Haar-random state from a state with
+  non-negligible stabiliser fidelity. As a corollary, any Clifford circuit on
+  qudits of dimension $d$ using $O(\\log{n}/\\log{d})$ auxiliary non-Clifford
+  single-qudit gates cannot prepare computationally pseudorandom quantum
+  states."
+tags:
+  - Computer Science - Computational Complexity
+  - Computer Science - Data Structures and Algorithms
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2405.06357
+  arxiv: "2405.06357"

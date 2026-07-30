@@ -1,0 +1,52 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: TNPDETJW
+  item_version: 96043
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: ZKNJ5925
+      name: Magic
+      path: Quantum Resource/Magic
+    - key: F28II9EE
+      name: magic injection
+      path: Quantum Resource/Magic/Magic state distillation/magic injection
+qlab:
+  primary_collection: ZKNJ5925
+  indexed_collections:
+    - F28II9EE
+    - ZKNJ5925
+  primary_topic: quantum-resource
+  indexed_topics:
+    - quantum-resource
+item_type: preprint
+title: "Magic state cultivation: growing T states as cheap as CNOT gates"
+authors:
+  - first: Craig
+    last: Gidney
+  - first: Noah
+    last: Shutty
+  - first: Cody
+    last: Jones
+year: 2024
+abstract: We refine ideas from Knill 1996, Jones 2016, Chamberland 2020, Gidney
+  2023+2024, Bombin 2024, and Hirano 2024 to efficiently prepare good
+  $|T\rangle$ states. We call our construction "magic state cultivation" because
+  it gradually grows the size and reliability of one state. Cultivation fits
+  inside a surface code patch and uses roughly the same number of physical gates
+  as a lattice surgery CNOT gate of equivalent reliability. We estimate the
+  infidelity of cultivation (from injection to idling at distance 15) using a
+  mix of state vector simulation, stabilizer simulation, error enumeration, and
+  Monte Carlo sampling. Compared to prior work, cultivation uses an order of
+  magnitude fewer qubit-rounds to reach logical error rates as low as $2 \cdot
+  10^{-9}$ when subjected to $10^{-3}$ uniform depolarizing circuit noise.
+  Halving the circuit noise to $5 \cdot 10^{-4}$ improves the achievable logical
+  error rate to $4 \cdot 10^{-11}$. Cultivation's efficiency and strong response
+  to improvements in physical noise suggest that further magic state
+  distillation may never be needed in practice.
+tags:
+  - Quantum Physics
+identifiers:
+  arxiv: "2409.17595"

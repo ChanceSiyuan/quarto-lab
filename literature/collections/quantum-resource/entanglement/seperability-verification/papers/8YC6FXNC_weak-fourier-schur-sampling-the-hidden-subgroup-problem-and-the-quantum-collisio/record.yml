@@ -1,0 +1,55 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 8YC6FXNC
+  item_version: 96049
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: GB35ZQY9
+      name: seperability verification
+      path: Quantum Resource/Entanglement/seperability verification
+    - key: 4YJDR2TB
+      name: Schur-Weyl duality
+      path: Quantum Resource/Schur-Weyl duality
+    - key: C3CSREHF
+      name: Fourier transform
+      path: Quantum Algorithm/Fourier transform
+qlab:
+  primary_collection: GB35ZQY9
+  indexed_collections:
+    - 4YJDR2TB
+    - C3CSREHF
+    - GB35ZQY9
+  primary_topic: quantum-resource
+  indexed_topics:
+    - quantum-algorithm
+    - quantum-resource
+item_type: bookSection
+title: Weak Fourier-Schur sampling, the hidden subgroup problem, and the quantum
+  collision problem
+authors:
+  - first: Andrew M.
+    last: Childs
+  - first: Aram W.
+    last: Harrow
+  - first: Pawel
+    last: Wocjan
+year: 2007
+abstract: Schur duality decomposes many copies of a quantum state into subspaces
+  labeled by partitions, a decomposition with applications throughout quantum
+  information theory. Here we consider applying Schur duality to the problem of
+  distinguishing coset states in the standard approach to the hidden subgroup
+  problem. We observe that simply measuring the partition (a procedure we call
+  weak Schur sampling) provides very little information about the hidden
+  subgroup. Furthermore, we show that under quite general assumptions, even a
+  combination of weak Fourier sampling and weak Schur sampling fails to identify
+  the hidden subgroup. We also prove tight bounds on how many coset states are
+  required to solve the hidden subgroup problem by weak Schur sampling, and we
+  relate this question to a quantum version of the collision problem.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.1007/978-3-540-70918-3_51
+  arxiv: quant-ph/0609110

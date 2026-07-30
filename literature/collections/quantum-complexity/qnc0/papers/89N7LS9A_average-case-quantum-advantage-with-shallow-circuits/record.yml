@@ -1,0 +1,45 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 89N7LS9A
+  item_version: 112982
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: B2HQNY6V
+      name: QNC0
+      path: Quantum Complexity/QNC0
+qlab:
+  primary_collection: B2HQNY6V
+  indexed_collections:
+    - B2HQNY6V
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: journalArticle
+title: Average-Case Quantum Advantage with Shallow Circuits
+authors:
+  - first: François Le
+    last: Gall
+year: 2019
+abstract: 'Recently Bravyi, Gosset and König (Science 2018) proved an
+  unconditional separation between the computational powers of small-depth
+  quantum and classical circuits for a relation. In this paper we show a similar
+  separation in the average-case setting that gives stronger evidence of the
+  superiority of small-depth quantum computation: we construct a computational
+  task that can be solved on all inputs by a quantum circuit of constant depth
+  with bounded-fanin gates (a "shallow" quantum circuit) and show that any
+  classical circuit with bounded-fanin gates solving this problem on a
+  non-negligible fraction of the inputs must have logarithmic depth. Our results
+  are obtained by introducing a technique to create quantum states exhibiting
+  global quantum correlations from any graph, via a construction that we call
+  the \emph{extended graph}. Similar results have been very recently (and
+  independently) obtained by Coudron, Stark and Vidick (arXiv:1810.04233), and
+  Bene Watts, Kothari, Schaeffer and Tal (STOC 2019).'
+tags:
+  - Computer Science - Computational Complexity
+  - Quantum Physics
+identifiers:
+  doi: 10.4230/lipics.ccc.2019.21
+  arxiv: "1810.12792"

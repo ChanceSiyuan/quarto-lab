@@ -1,0 +1,56 @@
+---
+title: CFT on Lattice
+description: "Conformal field theory on lattice"
+categories:
+  - theory
+---
+
+# Summary and conclusion
+
+真正的长期价值是把中性原子模拟器变成一种“universality-class spectrometer”：理论上可应用于 Potts、Ashkin–Teller、chiral transitions，甚至不知道低能场论是什么的系统。
+
+针对CFT在实验的演示，此前已经有很多重要成果，所以不能把本文概括成“首次观察 CFT”或“首次研究临界激发”。
+
+- [Keesling 等的 Rydberg KZ 实验](https://www.nature.com/articles/s41586-019-1070-1)、
+- [Fang 等的临界态与边界普适性实验](https://arxiv.org/abs/2402.15376)、
+- [Joshi 等的纠缠 Hamiltonian 实验](https://www.nature.com/articles/s41586-023-06768-0)，
+- [CoNb\(_2\)O\(_6\) 中的 \(E_8\) 质量谱](https://arxiv.org/abs/1103.3694)。
+
+
+# A adiabatic process for CFT
+
+Consider the 1D hard-core Boson Hamiltonian with length $L$:
+$$
+\begin{align}
+\hat H=\sum_i
+\left[\frac{\Omega}{2} P_{i-1}X_iP_{i+1}
+-\Delta n_i\right]
++\sum_{j-i\geq 2}V_{ij}n_in_j.
+\end{align}
+$$
+This hamiltonian are known to satisfied the following properties:
+
+- There exists a $\Delta_c$ such that the ground state gap satisfied $\Delta_{\mathrm{gap}}(L,\Delta_c)\sim L^{-1}$
+- Denoting the spectrum at $\Delta_c$ as $E_n(L,\Delta_c)$, then it satisfies
+$$
+\lim_{L\to\infty} \frac{L}{\pi\hbar v} \bigl[E_n(L,\Delta_c)-E_0(L,\Delta_c)\bigr] = x_n.
+$$
+
+
+Then we can design a protocol to "see" this spectrum.
+Change $\Delta$ by a time-dependent detuning $\delta\Delta_i(t):=A\cos(2\pi ft+\phi)e^{-t^2/w^2}$, we get a pertubation Hamitonian
+$$
+\delta\hat H_{\mathrm{global}}(t) =A\cos(2\pi ft+\phi)e^{-t^2/w^2}\left(\sum_i\hat n_i \right).
+$$
+This brings up a transition probability
+$$
+\begin{align}
+c_e\propto A\langle e|\hat K|g\rangle \int_{0}^{T} dt\,e^{-t^2/w^2} \cos(2\pi ft+\phi) e^{i(E_e-E_g)t/\hbar},
+\end{align}
+$$
+which will peak at point $f = |E_e - E_g|$. 
+This means that sweep $f$ would give the information of the spectrum information of the Hamiltonian.
+Based on this technic, 
+
+# Appendix: Introduction of CFT
+

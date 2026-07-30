@@ -1,0 +1,46 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: K5XRPHRM
+  item_version: 96141
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: A3CH6HMR
+      name: Maxcut
+      path: Quantum Algorithm/Optimization/Maxcut
+qlab:
+  primary_collection: A3CH6HMR
+  indexed_collections:
+    - A3CH6HMR
+  primary_topic: quantum-algorithm
+  indexed_topics:
+    - quantum-algorithm
+item_type: preprint
+title: The fixed angle conjecture for QAOA on regular MaxCut graphs
+authors:
+  - first: Jonathan
+    last: Wurtz
+  - first: Danylo
+    last: Lykov
+year: 2021
+abstract: The quantum approximate optimization algorithm (QAOA) is a near-term
+  combinatorial optimization algorithm suitable for noisy quantum devices.
+  However, little is known about performance guarantees for $p>2$. A recent work
+  \cite{Wurtz_guarantee} computing MaxCut performance guarantees for 3-regular
+  graphs conjectures that any $d$-regular graph evaluated at particular fixed
+  angles has an approximation ratio greater than some worst-case guarantee. In
+  this work, we provide numerical evidence for this fixed angle conjecture for
+  $p<12$. We compute and provide these angles via numerical optimization and
+  tensor networks. These fixed angles serve for an optimization-free version of
+  QAOA, and have universally good performance on any 3 regular graph. Heuristic
+  evidence is presented for the fixed angle conjecture on graph ensembles, which
+  suggests that these fixed angles are ``close" to global optimum. Under the
+  fixed angle conjecture, QAOA has a larger performance guarantee than the
+  Goemans Williamson algorithm on 3-regular graphs for $p\geq 11$.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2107.00677
+  arxiv: "2107.00677"

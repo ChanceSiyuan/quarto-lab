@@ -1,0 +1,70 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 7BTFB5MV
+  item_version: 96150
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 2DQJ4S34
+      name: Circuit Compilation
+      path: Circuit Compilation
+    - key: QC6SLUXJ
+      name: DQI
+      path: Quantum Algorithm/Optimization/DQI
+qlab:
+  primary_collection: 2DQJ4S34
+  indexed_collections:
+    - 2DQJ4S34
+    - QC6SLUXJ
+  primary_topic: circuit-compilation
+  indexed_topics:
+    - circuit-compilation
+    - quantum-algorithm
+item_type: preprint
+title: Verifiable Quantum Advantage via Optimized DQI Circuits
+authors:
+  - first: Tanuj
+    last: Khattar
+  - first: Noah
+    last: Shutty
+  - first: Craig
+    last: Gidney
+  - first: Adam
+    last: Zalcman
+  - first: Noureldin
+    last: Yosri
+  - first: Dmitri
+    last: Maslov
+  - first: Ryan
+    last: Babbush
+  - first: Stephen P.
+    last: Jordan
+year: 2025
+abstract: "Decoded Quantum Interferometry (DQI) provides a framework for
+  superpolynomial quantum speedups by reducing certain optimization problems to
+  reversible decoding tasks. We apply DQI to the Optimal Polynomial Intersection
+  (OPI) problem, whose dual code is Reed-Solomon (RS). We establish that DQI for
+  OPI is the first known candidate for verifiable quantum advantage with optimal
+  asymptotic speedup: solving instances with classical hardness $O(2^N)$
+  requires only $\\widetilde{O}(N)$ quantum gates, matching the theoretical
+  lower bound. Realizing this speedup requires highly efficient reversible RS
+  decoders. We introduce novel quantum circuits for the Extended Euclidean
+  Algorithm, the decoder's bottleneck. Our techniques, including a new
+  representation for implicit B\\'ezout coefficient access, and optimized
+  in-place architectures, reduce the leading-order space complexity to the
+  theoretical minimum of $2nb$ qubits while significantly lowering gate counts.
+  These improvements are broadly applicable, including to Shor's algorithm for
+  the discrete logarithm. We analyze OPI over binary extension fields $GF(2^b)$,
+  assess hardness against new classical attacks, and identify resilient
+  instances. Our resource estimates show that classically intractable OPI
+  instances (requiring $>10^{23}$ classical trials) can be solved with
+  approximately 5.72 million Toffoli gates. This is substantially less than the
+  count required for breaking RSA-2048, positioning DQI as a compelling
+  candidate for practical, verifiable quantum advantage."
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2510.10967
+  arxiv: "2510.10967"

@@ -1,0 +1,60 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 5UGWWCDE
+  item_version: 96088
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 9HSDA5Q3
+      name: IQP
+      path: Quantum Complexity/Sampling/IQP
+    - key: VQWX7XGH
+      name: Open-dynamics
+      path: Quantum Complexity/QCsim/Open-dynamics
+    - key: BLR38PUL
+      name: classical simulation
+      path: Quantum Complexity/Sampling/IQP/classical simulation
+qlab:
+  primary_collection: 9HSDA5Q3
+  indexed_collections:
+    - 9HSDA5Q3
+    - BLR38PUL
+    - VQWX7XGH
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: journalArticle
+title: Achieving quantum supremacy with sparse and noisy commuting quantum
+  computations
+authors:
+  - first: Michael J.
+    last: Bremner
+  - first: Ashley
+    last: Montanaro
+  - first: Dan J.
+    last: Shepherd
+year: 2017
+abstract: The class of commuting quantum circuits known as IQP (instantaneous
+  quantum polynomial-time) has been shown to be hard to simulate classically,
+  assuming certain complexity-theoretic conjectures. Here we study the power of
+  IQP circuits in the presence of physically motivated constraints. First, we
+  show that there is a family of sparse IQP circuits that can be implemented on
+  a square lattice of n qubits in depth O(sqrt(n) log n), and which is likely
+  hard to simulate classically. Next, we show that, if an arbitrarily small
+  constant amount of noise is applied to each qubit at the end of any IQP
+  circuit whose output probability distribution is sufficiently
+  anticoncentrated, there is a polynomial-time classical algorithm that
+  simulates sampling from the resulting distribution, up to constant accuracy in
+  total variation distance. However, we show that purely classical
+  error-correction techniques can be used to design IQP circuits which remain
+  hard to simulate classically, even in the presence of arbitrary amounts of
+  noise of this form. These results demonstrate the challenges faced by
+  experiments designed to demonstrate quantum supremacy over classical
+  computation, and how these challenges can be overcome.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.22331/q-2017-04-25-8
+  arxiv: "1610.01808"

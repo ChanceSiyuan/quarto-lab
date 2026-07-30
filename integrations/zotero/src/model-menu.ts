@@ -14,7 +14,7 @@ export function renderModelOptions(
   select.replaceChildren();
   if (models.length) {
     const optgroup = doc.createElement("optgroup");
-    optgroup.label = "本地 Codex";
+    optgroup.label = "Local Codex";
     for (const model of models) {
       const option = doc.createElement("option");
       option.value = model.id;

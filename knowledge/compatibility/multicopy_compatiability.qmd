@@ -1,0 +1,487 @@
+---
+title: compatibility in the multi-copy case
+description: "Given observables on outcome sets , we ask the following: given copies of a quantum state , can we design a single POVM with outcomes on such that, for each , the marginal statistics of on reproduce the measurement statistics of on ?"
+categories:
+  - theory
+---
+
+# Summary and question
+
+
+::: {.callout-important icon="false"}
+## Question 
+Can we regards the map:
+$l_1,\cdots,l_n \mapsto f_1(l_1,\cdots,l_n),\cdots,f_n(l_1,\cdots,l_n)$ as a channel that operates on the state $\rho^{\otimes k}$, as the GPT equivalence did?
+:::
+
+# Introduction
+
+Given $K$ observables $\{A_1,\ldots,A_K\}$ on outcome sets $\{\Omega_1,\ldots,\Omega_K\}$, we ask the following: given $N$ copies of a quantum state $\rho^{\otimes N}$, can we design a single POVM $G$ with outcomes $(x_1,\ldots,x_K) \in \Omega_1\times\cdots\times\Omega_K$ on $\rho^{\otimes N}$ such that, for each $i$, the marginal statistics of $G$ on $\Omega_i$ reproduce the measurement statistics of $A_i$ on $\rho$?
+
+In the case $N \geq K$, this is always achievable: implementing $A_1\otimes \cdots \otimes A_K \otimes \mathbb{I}^{\otimes (N-K)}$ on $\rho^{\otimes N}$ measures each $A_i$ on a separate copy, and the marginals correctly reproduce the individual statistics.
+In the case $N < K$, the problem becomes non-trivial.
+
+::: {#def-multicopy-compatibility .callout-important icon="false"}
+## (Multicopy Compatibility)
+$\mathcal{L}(\mathcal{H})$-valued observables $\{A_{i}\}_{i=1}^K$ on outcome sets $\{\Omega_i\}_{i=1}^K$, respectively, are **$k$-compatible** if there exists an $\mathcal{L}(\mathcal{H}^{\otimes k})$-valued observable $G$ on the product set $\Omega_1 \times \cdots \times \Omega_K$, such that
+
+$$\operatorname{tr}\!\left[\rho^{\otimes k}\, G_i(x)\right] = \operatorname{tr}\!\left[\rho\, A_i(x)\right]$$
+
+for all $i = 1, \ldots, K$, $x \in \Omega_i$, and all states $\rho$, where $G_i$ denotes the $i$-th marginal of $G$. The observable $G$ is called a **$k$-copy joint observable** of $\{A_{i}\}_{i=1}^K$.
+:::
+
+::: {#thm-structure .callout-important icon="false"}
+## (Structure Theorem)
+$\{A_i\}_{i=1}^n$ are $k$-compatible if and only if there exists a symmetric $\mathcal{L}(\mathcal{H}^{\otimes k})$-valued observable $\tilde{G}$ on $\Omega_1\times\cdots\times\Omega_n$ satisfying
+$$\tilde{G}^{[i]}(x) = \mathbb{I}^{\otimes(k-1)}\odot A_i(x) \qquad \forall\, i,x.$$
+Here *symmetric* means $\tilde{G}(x_1,\ldots,x_n) \in \operatorname{Sym}(k,\mathcal{L}(\mathcal{H}))$, i.e., invariant under all permutations of the $k$ tensor factors.
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+
+Let $\Sigma_k$ denote the symmetrization map on $\mathcal{L}(\mathcal{H}^{\otimes k})$:
+$$\Sigma_k(B) = \frac{1}{k!}\sum_{\pi \in S_k} \pi(B),$$
+where $\pi(B)$ permutes the $k$ tensor factors of $B$. The map $\Sigma_k$ is self-adjoint with respect to the Hilbert–Schmidt inner product $\langle A,B\rangle_{HS} = \operatorname{tr}[A^\dagger B]$, and since $\rho^{\otimes k}$ is already permutation-symmetric, $\Sigma_k(\rho^{\otimes k}) = \rho^{\otimes k}$.
+
+**(⟸)** Suppose $\tilde{G}$ is symmetric with $\tilde{G}^{[i]}(x) = \mathbb{I}^{\otimes(k-1)}\odot A_i(x) = \Sigma_k(\mathbb{I}^{\otimes(k-1)}\otimes A_i(x))$. Then
+$$\operatorname{tr}[\rho^{\otimes k}\,\tilde{G}^{[i]}(x)]
+= \langle\rho^{\otimes k},\,\Sigma_k(\mathbb{I}^{\otimes(k-1)}\otimes A_i(x))\rangle_{HS}
+= \langle\Sigma_k(\rho^{\otimes k}),\,\mathbb{I}^{\otimes(k-1)}\otimes A_i(x)\rangle_{HS}$$
+$$= \langle\rho^{\otimes k},\,\mathbb{I}^{\otimes(k-1)}\otimes A_i(x)\rangle_{HS}
+= \operatorname{tr}[\rho]^{k-1}\operatorname{tr}[\rho\,A_i(x)] = \operatorname{tr}[\rho\,A_i(x)].$$
+Hence $\tilde{G}$ is a $k$-copy joint observable, so $\{A_i\}$ are $k$-compatible.
+
+**(⟹)** Given a $k$-copy joint observable $G$, set $\tilde{G} = \Sigma_k \circ G$. Since $\Sigma_k$ preserves positivity and normalization, $\tilde{G}$ is a valid POVM with values in $\operatorname{Sym}(k,\mathcal{L}(\mathcal{H}))$. Using $\Sigma_k(\rho^{\otimes k}) = \rho^{\otimes k}$, one verifies
+$$\operatorname{tr}[\rho^{\otimes k}\,\tilde{G}^{[i]}(x)] = \operatorname{tr}[\rho^{\otimes k}\,G^{[i]}(x)] = \operatorname{tr}[\rho\,A_i(x)],$$
+so $\tilde{G}$ is also a $k$-copy joint observable. It remains to show the symmetric constraint forces $\tilde{G}^{[i]}(x) = \mathbb{I}^{\otimes(k-1)}\odot A_i(x)$.
+
+**Polynomial identification.** Write $\rho = \mathbb{I}/d + t\Delta$ for traceless self-adjoint $\Delta$ and small $t \in \mathbb{R}$. Expand both sides of $\operatorname{tr}[\rho^{\otimes k}\,\tilde{G}^{[i]}(x)] = \operatorname{tr}[\rho\,A_i(x)]$ as polynomials in $t$ and match coefficients:
+
+- For $t^0$ term: $d^{-k}\operatorname{tr}[\tilde{G}^{[i]}(x)] = d^{-1}\operatorname{tr}[A_i(x)]$.
+- For $t^1$ term: $k\,d^{-(k-1)}\langle\mathbb{I}^{\otimes(k-1)}\odot\Delta,\,\tilde{G}^{[i]}(x)\rangle_{HS} = \langle\Delta,\,A_i(x)\rangle_{HS}$.
+- For $t^j$ term with $j \geq 2$: $\langle\mathbb{I}^{\otimes(k-j)}\odot\Delta^{\otimes j},\,\tilde{G}^{[i]}(x)\rangle_{HS} = 0$.
+
+Let $\{T_r\}$ be a traceless orthonormal basis of $\mathcal{L}(\mathcal{H})$. The operators $\{\mathbb{I}^{\otimes(k-j)}\odot T_{r_1}\otimes\cdots\otimes T_{r_j}\}$ form an orthogonal basis of the degree-$j$ part of $\operatorname{Sym}(k,\mathcal{L}(\mathcal{H}))$. The $j \geq 2$ vanishing conditions force the projections of $\tilde{G}^{[i]}(x)$ onto all such subspaces to be zero, leaving
+$$
+\tilde{G}^{[i]}(x) = a\,\mathbb{I}^{\otimes k} + \mathbb{I}^{\otimes(k-1)}\odot T,
+$$
+where $a \in \mathbb{R}$ and $T$ is certain traceless self-adjoint matrix.
+We then notice that the $t^0$ term gives 
+$$
+a = d^{-k}\operatorname{tr}[\tilde{G}^{[i]}(x)] =\operatorname{tr}[A_i(x)]/d.
+$$
+The $t^1$ equation gives:
+$$
+\langle\mathbb{I}^{\otimes(k-1)}\odot\Delta,\,\tilde{G}^{[i]}(x)\rangle_{HS} = \langle\mathbb{I}^{\otimes(k-1)}\odot\Delta,\,\mathbb{I}^{\otimes(k-1)}\odot T\rangle_{HS} = d^{k-1}k^{-1}\langle\Delta,T\rangle_{HS},
+$$
+(The first equality drops the $a\mathbb{I}^{\otimes k}$ term because $\langle\mathbb{I}^{\otimes(k-1)}\odot\Delta,\,\mathbb{I}^{\otimes k}\rangle_{HS} = d^{k-1}\operatorname{tr}[\Delta]=0$ since $\Delta$ is traceless. For the second equality, expand $\mathbb{I}^{\otimes(k-1)}\odot A = \frac{1}{k}\sum_{j=1}^k \mathbb{I}^{\otimes(j-1)}\otimes A\otimes\mathbb{I}^{\otimes(k-j)}$ and compute the double sum: diagonal terms ($j=j'$) each contribute $\operatorname{tr}[\mathbb{I}]^{k-1}\operatorname{tr}[\Delta T] = d^{k-1}\langle\Delta,T\rangle_{HS}$; off-diagonal terms ($j\neq j'$) factorise as $\operatorname{tr}[\Delta]\,\operatorname{tr}[T]\cdot d^{k-2}=0$ by tracelessness of both $\Delta$ and $T$. Summing the $k$ diagonal contributions and dividing by $k^2$ gives $\frac{k\cdot d^{k-1}}{k^2}\langle\Delta,T\rangle_{HS} = d^{k-1}k^{-1}\langle\Delta,T\rangle_{HS}$.),
+which gives $\langle\Delta,T\rangle_{HS} = \langle\Delta,A_i(x)\rangle_{HS}, \forall \Delta$. Thus $T = A_i(x) - d^{-1}\operatorname{tr}[A_i(x)]\mathbb{I}$ to satisfed the traceless condition. Substituting them back gives the final result:
+$$
+\tilde{G}^{[i]}(x) = d^{-1}\operatorname{tr}[A_i(x)]\,\mathbb{I}^{\otimes k} + \mathbb{I}^{\otimes(k-1)}\odot A_i(x) - d^{-1}\operatorname{tr}[A_i(x)]\,\mathbb{I}^{\otimes k} = \mathbb{I}^{\otimes(k-1)}\odot A_i(x). 
+$$
+:::
+
+Based on @thm-structure, we have the following corollary:
+
+::: {#lem-multicopy-compatibility .callout-important icon="false"}
+## (Multicopy Compatibility Corollary)
+The $\mathcal{L}(\mathcal{H})$-valued observables $\{A_{i}\}_{i=1}^K$ are $k$-compatible if and only if the $\mathcal{L}(\mathcal{H}^{\otimes k})$-valued observables $\tilde{A}_{i}(x) = \mathbb{I}^{\otimes (k-1)} \odot A_i(x)$ are (1-copy) compatible, where $\odot$ is the symmetrized tensor product: $\mathbb{I}^{\otimes(k-1)}\odot A = \frac{1}{k}\sum_{j=1}^{k} \mathbb{I}^{\otimes(j-1)}\otimes A \otimes \mathbb{I}^{\otimes(k-j)}$.
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+
+**(⟸)** Suppose $\{\tilde{A}_i\}$ are compatible with joint observable $\tilde{G}$, i.e., $\tilde{G}^{[i]}(x) = \tilde{A}_i(x) = \mathbb{I}^{\otimes(k-1)} \odot A_i(x)$ for all $i, x$. Then, using the definition of $\odot$ and the fact that $\operatorname{tr}[\rho]=1$:
+$$\operatorname{tr}\!\left[\rho^{\otimes k}\,\tilde{G}^{[i]}(x)\right] = \operatorname{tr}\!\left[\rho^{\otimes k}\,\mathbb{I}^{\otimes(k-1)}\odot A_i(x)\right] = \frac{1}{k}\sum_{j=1}^k \operatorname{tr}[\rho]^{k-1}\operatorname{tr}[\rho\,A_i(x)] = \operatorname{tr}[\rho\,A_i(x)].$$
+Hence $\tilde{G}$ is a $k$-copy joint observable of $\{A_i\}$, so $\{A_i\}$ are $k$-compatible.
+
+**(⟹)** Suppose $\{A_i\}$ are $k$-compatible. By @thm-structure, there exists a symmetric observable $\tilde{G}$ on $\mathcal{H}^{\otimes k}$ satisfying $\tilde{G}^{[i]}(x) = \mathbb{I}^{\otimes(k-1)} \odot A_i(x) = \tilde{A}_i(x)$ for all $i, x$. This $\tilde{G}$ is precisely a joint observable for $\{\tilde{A}_i\}$, so they are compatible. $\square$
+:::
+
+# Examples: $\{X,Y,Z\}$ with unified sharpness parameter $a$
+
+Based on this, we study the 2-copy compatibility of three single qubit Pauli observables with unified sharpness parameter $0 \leq a \leq 1$.
+Define the unsharp Pauli observables $A_P(a)(\pm 1) := \frac{\mathbb{I} \pm aP}{2}$ for $P \in \{\sigma_x, \sigma_y, \sigma_z\}$.
+By @lem-multicopy-compatibility (with $k=2$), $\{A_X(a), A_Y(a), A_Z(a)\}$ are 2-compatible if and only if the lifted observables $\{\tilde{A}_X(a), \tilde{A}_Y(a), \tilde{A}_Z(a)\}$ are jointly measurable on $\mathcal{H}^{\otimes 2}$, where
+$$
+\begin{align*}
+\tilde{A}_P(a)(\pm 1) &:= \mathbb{I}\odot A_P(a)(\pm 1) \\
+&= \frac{1}{4}\bigl(2\mathbb{I}\otimes\mathbb{I} \pm a(P\otimes\mathbb{I} + \mathbb{I}\otimes P)\bigr), \quad P \in \{\sigma_x,\sigma_y,\sigma_z\}.
+\end{align*}
+$$
+
+We then exploit the symmetry of this set under the local Clifford group $U(g)$ with in total 24 elements that composed by $U((0,0,0)) = \mathbb{I}$ and
+$$
+\begin{align*}
+& \{ X, Y, Z \} \to \mathbf{e} \in \{ (1,0,0), (0,1,0), (0,0,1) \}, \quad \theta = \pi \\
+& \{ S, S^\dagger, \sqrt{X}, \sqrt{X}^\dagger, \sqrt{Y}, \sqrt{Y}^\dagger \} \to \mathbf{e} \in \{ (1,0,0), (0,1,0), (0,0,1) \}, \quad \theta = \pm\frac{\pi}{2} \\
+& \{ H, HZ, H_{xy}, H_{xy}Z, H_{yz}, H_{yz}Z \} \to \mathbf{e} \in \left\{ \frac{(\pm 1, 1, 0)}{\sqrt{2}}, \frac{(\pm 1, 0, 1)}{\sqrt{2}}, \frac{(0, \pm 1, 1)}{\sqrt{2}} \right\}, \quad \theta = \pi \\
+& \{ SH, S^\dagger H, HS^\dagger, HS, \dots \} \to \mathbf{e} \in \left\{ \frac{(\pm 1, \pm 1, 1)}{\sqrt{3}} \right\}, \quad \theta = \pm\frac{2\pi}{3}
+\end{align*}
+$$
+
+
+:::{#lem-octahedron-covariance .callout-important icon="false"}
+## (Octahedron Covariance)
+ If $G(\vec{u})$ is any joint observable for $\{\tilde{A}_X(a),\tilde{A}_Y(a),\tilde{A}_Z(a)\}$, then for every $g \in \text{Cl}$, the map $\vec{u} \mapsto U(g)\,G(\vec{u})\,U(g)^\dagger$ is also a valid joint observable with the same marginals.
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+
+The octahedron group $O$ acts on $\Omega = \{+1,-1\}^3$ by signed permutations of coordinates: each $g \in O$ sends the $i$-th axis $\hat{e}_i$ to $\pm\hat{e}_j$ for some $j$ and sign. Consequently, $U(g)\tilde{A}_i(a)(x)U(g)^\dagger = \tilde{A}_{g(i)}(a)(x)$, where $g(i)$ denotes the axis that $g$ maps $i$ to — since $\tilde{A}_P(a)(x) = \frac{1}{4}(2\mathbb{I}\otimes\mathbb{I} + xa(P\otimes\mathbb{I}+\mathbb{I}\otimes P))$ and $U(g)P U(g)^\dagger = g(P)$.
+
+The $i$-th marginal of the map $\vec{u} \mapsto U(g)G(\vec{u})U(g)^\dagger$ is therefore
+$$
+\sum_{\text{other outcomes}} U(g)G(\vec{u})\,U(g)^\dagger = U(g)\,G^{[i]}(x_i)\,U(g)^\dagger = U(g)\,\tilde{A}_i(a)(x_i)\,U(g)^\dagger = \tilde{A}_{g(i)}(a)(x_i).
+$$
+Since $g$ permutes $\{X,Y,Z\}$, $\tilde{A}_{g(i)}$ belongs to the same set. Hence $U(g)G(\cdot)U(g)^\dagger$ is a joint observable for $\{\tilde{A}_X(a),\tilde{A}_Y(a),\tilde{A}_Z(a)\}$ with permuted marginal assignments. $\square$
+:::
+
+Thus any symmetric joint observable can be covariantized without changing its marginals, and we need only classify the symmetric $U$-covariant ones.
+
+:::{#lem-gsym_form .callout-important icon="false"}
+## (Exact form of $G_{\text{sym}}$)
+A map $G:\Omega \to \mathcal{L}(\mathcal{H}^{\otimes 2})$ is a symmetric and $U$-covariant observable if and only if there exist real numbers $\alpha, \beta$ with $\alpha \geq 0$, $\beta \geq 0$, and $\alpha + \beta \leq 3/8$ such that
+
+$$
+G_{\text{sym}}(\vec{u}) = \frac{4(\alpha+\beta)-1}{16} \Bigl[\vec{u}\cdot\vec{\sigma}\otimes\vec{u}\cdot\vec{\sigma}
+- (\sigma_x\otimes\sigma_x + \sigma_y\otimes\sigma_y + \sigma_z\otimes\sigma_z)\Bigr]
++ \frac{\alpha-\beta}{4\sqrt{3}} \bigl(\vec{u}\cdot\vec{\sigma}\otimes\mathbb{I} + \mathbb{I}\otimes\vec{u}\cdot\vec{\sigma}\bigr)
++ \frac{1}{8}\, \mathbb{I}\otimes\mathbb{I}
+$$
+
+for all $\vec{u} \in \Omega = \{+1,-1\}^3$.
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+
+**(I) Transitivity and stabilizer commutant.** Since $O$ acts transitively on $\Omega$, a $U$-covariant observable $G$ is completely determined by its value at $\mathbf{u}_0 = (+1,+1,+1)$ via
+$$G(g \cdot \mathbf{u}_0) = U(g)\, G(\mathbf{u}_0)\, U(g)^\dagger \qquad \forall g \in O.$$
+For this to be consistent, $G(\mathbf{u}_0)$ must commute with $U(g)$ for all $g$ in the stabilizer $O_{\mathbf{u}_0}$, which is generated by the $120°$ rotation around $\mathbf{n} = (1,1,1)/\sqrt{3}$, represented as $e^{i(\pi/3)\mathbf{n}\cdot\vec{\sigma}} \otimes e^{i(\pi/3)\mathbf{n}\cdot\vec{\sigma}}$. This operator has eigenvalues $e^{\pm 2\pi i/3}$ (each with multiplicity 1) and $1$ (multiplicity 2), so its commutant is 6-dimensional, spanned by the self-adjoint operators
+$$
+M_0 = \mathbb{I}\otimes\mathbb{I}, \quad M_1 = \mathbf{n}\cdot\vec{\sigma}\otimes\mathbf{n}\cdot\vec{\sigma}, \quad M_2 = \tfrac{1}{3}(\sigma_x\otimes\sigma_x+\sigma_y\otimes\sigma_y+\sigma_z\otimes\sigma_z),
+$$
+$$
+M_3 = \mathbf{n}\cdot\vec{\sigma}\otimes\mathbb{I}+\mathbb{I}\otimes\mathbf{n}\cdot\vec{\sigma}, \quad M_4 = \mathbf{n}\cdot\vec{\sigma}\otimes\mathbb{I}-\mathbb{I}\otimes\mathbf{n}\cdot\vec{\sigma}, \quad M_5 = \sigma_x\otimes\sigma_y - \sigma_y\otimes\sigma_x + \cdots
+$$
+Here "symmetric" means invariant under the SWAP operator $S(a\otimes b) = b\otimes a$: $S\,G(\vec{u})\,S = G(\vec{u})$. One checks that $S M_i S = M_i$ for $i=0,1,2,3$ (symmetric operators) and $S M_4 S = -M_4$, $S M_5 S = -M_5$ (antisymmetric). Hence the symmetry requirement forces $G(\mathbf{u}_0) \in \text{span}\{M_0, M_1, M_2, M_3\}$.
+
+**(II) Positivity and eigenprojections.** The four operators $M_0, M_1, M_2, M_3$ commute among themselves. Using their multiplication table, one verifies that
+$$
+P_{\pm} = \tfrac{1}{4}(M_0 + M_1 \pm M_3), \qquad Q_+ = \tfrac{1}{4}(M_0 - 3M_2), \qquad Q_- = \tfrac{1}{4}(M_0 - 2M_1 + 3M_2)
+$$
+are mutually orthogonal rank-1 projections summing to $\mathbb{I}\otimes\mathbb{I}$. Writing
+$$G(\mathbf{u}_0) = \alpha P_+ + \beta P_- + \gamma Q_+ + \delta Q_-,$$
+the positivity condition $G(\mathbf{u}_0) \geq 0$ is equivalent to $\alpha \geq 0$, $\beta \geq 0$, $\gamma \geq 0$, $\delta \geq 0$.
+
+**(III) Normalization fixes $\gamma$ and $\delta$.** The normalization $\sum_{\vec{u} \in \Omega} G(\vec{u}) = \mathbb{I}\otimes\mathbb{I}$ is equivalent (via transitivity) to
+$$\sum_{gO_{\mathbf{u}_0} \in O/O_{\mathbf{u}_0}} U(g)\,G(\mathbf{u}_0)\,U(g)^\dagger = \mathbb{I}\otimes\mathbb{I}.$$
+Taking the trace of both sides and using $|\Omega| = 8$ gives $\operatorname{tr}[G(\mathbf{u}_0)] = 1/2$, hence $\alpha + \beta + \gamma + \delta = 1/2$. Since $Q_+$ commutes with all $U(g)$ (as $3M_2 = \sigma_x\otimes\sigma_x+\sigma_y\otimes\sigma_y+\sigma_z\otimes\sigma_z$ is $O$-invariant), multiplying the normalization by $Q_+$ and tracing gives $\operatorname{tr}[Q_+ G(\mathbf{u}_0)] = 1/8$, hence $\gamma = 1/8$. Substituting back: $\delta = 3/8 - \alpha - \beta$, so positivity of $\delta$ gives $\alpha + \beta \leq 3/8$.
+
+Substituting into $G(\mathbf{u}_0)$ and applying $G(\vec{u}) = U(g) G(\mathbf{u}_0) U(g)^\dagger$ (using that $3M_2$ commutes with all $U(g)$) yields the stated formula. $\square$
+:::
+
+
+:::{#lem-gsym-joint .callout-important icon="false"}
+## (Symmetry Reduction to $G_{\text{sym}}$)
+$\{\tilde{A}_X(a),\tilde{A}_Y(a),\tilde{A}_Z(a)\}$ are jointly measurable if and only if there exist $\alpha, \beta \geq 0$ with $\alpha + \beta \leq 3/8$ such that $G_{\text{sym}}(\alpha,\beta)$ (as in @lem-gsym_form) satisfies $G_{\text{sym}}^{[i]}(\pm 1) = \tilde{A}_{P_i}(a)(\pm 1)$ for $i=1,2,3$. This marginal-matching condition holds if and only if
+
+$$\alpha - \beta = \frac{\sqrt{3}}{4}\, a.$$
+
+In particular, the maximal sharpness parameter for which 2-copy compatibility holds is $a_{\max} = \dfrac{\sqrt{3}}{2}$.
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+
+**Step 1: Reduction to $G_{\text{sym}}$.** Suppose $\{\tilde{A}_X(a),\tilde{A}_Y(a),\tilde{A}_Z(a)\}$ have a joint observable $G$. Let $\mathcal{F} = \{\pi_i^{-1}(x) \mid i=1,2,3,\, x \in \{+1,-1\}\}$ be the collection of marginal pre-image subsets. Any joint observable $G$ satisfies $G(g \cdot X) = U(g)G(X)U(g)^\dagger$ for all $X \in \mathcal{F}$ and $g \in O$ — this follows from the same marginal computation as in @lem-octahedron-covariance: $G(g\cdot\pi_i^{-1}(x)) = G^{[g(i)]}(x) = \tilde{A}_{g(i)}(x) = U(g)\tilde{A}_i(x)U(g)^\dagger = U(g)G(\pi_i^{-1}(x))U(g)^\dagger$.
+
+By the Covariantization Proposition (@lem-octahedron-covariance), the $U$-covariant version
+$$\hat{G}(\vec{u}) = \frac{1}{|O|}\sum_{g \in O} U(g)^\dagger G(g \cdot \vec{u})\,U(g)$$
+is again a valid joint observable with the same marginals as $G$, and is $U$-covariant. Since the representations $U$ (of $O$) and $\sigma$ (of $S_2$, the swap) commute, $\hat{G}$ is also symmetric. Therefore $\hat{G}$ is a symmetric $U$-covariant joint observable.
+
+By @lem-gsym_form, every such observable has the form $G_{\text{sym}}(\alpha,\beta)$ for some $\alpha,\beta \geq 0$ with $\alpha+\beta \leq 3/8$. Hence, without loss of generality, we may assume the joint observable is of this form.
+
+The converse is immediate: any $G_{\text{sym}}(\alpha,\beta)$ satisfying the marginal conditions below is by construction a valid joint observable.
+
+**Step 2: Marginal computation.** By the $U$-covariance of $G_{\text{sym}}$ under $O$, all three marginals are determined by the first one. We compute
+$$
+G_{\text{sym}}^{[1]}(x) = \sum_{y,z \in \{+1,-1\}} G_{\text{sym}}(x,y,z).
+$$
+The key summation identities are:
+$$
+\sum_{y,z\in\{+1,-1\}} (x\sigma_x+y\sigma_y+z\sigma_z)\otimes(x\sigma_x+y\sigma_y+z\sigma_z) = 4(\sigma_x\otimes\sigma_x + \sigma_y\otimes\sigma_y + \sigma_z\otimes\sigma_z),
+$$
+$$
+\sum_{y,z\in\{+1,-1\}} \bigl[(x\sigma_x+y\sigma_y+z\sigma_z)\otimes\mathbb{I} + \mathbb{I}\otimes(x\sigma_x+y\sigma_y+z\sigma_z)\bigr] = 4x(\sigma_x\otimes\mathbb{I}+\mathbb{I}\otimes\sigma_x).
+$$
+The first identity follows because cross terms $\sigma_P \otimes \sigma_Q$ with $P \neq Q$ cancel over the four sign combinations; the $\sigma_x\otimes\sigma_x$ term survives with coefficient 4 since $x^2 = 1$. The second follows because $y$ and $z$ sum to zero, leaving only the $x\sigma_x$ term. Substituting into the formula for $G_{\text{sym}}$ and summing over the $\mathbb{I}\otimes\mathbb{I}$ term (4 terms each contributing $1/8$):
+
+$$
+G_{\text{sym}}^{[1]}(x) = \frac{(\alpha-\beta)\,x}{\sqrt{3}}\,(\sigma_x\otimes\mathbb{I} + \mathbb{I}\otimes\sigma_x) + \frac{1}{2}\,\mathbb{I}\otimes\mathbb{I}.
+$$
+
+**Step 3: Matching marginals.** By definition of the lifted observables (@lem-multicopy-compatibility and the equation preceding @lem-octahedron-covariance):
+$$
+\tilde{A}_X(a)(\pm 1) = \frac{1}{4}\bigl(2\,\mathbb{I}\otimes\mathbb{I} \pm a(\sigma_x\otimes\mathbb{I}+\mathbb{I}\otimes\sigma_x)\bigr).
+$$
+Setting $G_{\text{sym}}^{[1]}(x) = \tilde{A}_X(a)(x)$ requires the coefficients of $x(\sigma_x\otimes\mathbb{I}+\mathbb{I}\otimes\sigma_x)$ to match:
+$$
+\frac{\alpha-\beta}{\sqrt{3}} = \frac{a}{4} \qquad \Longrightarrow \qquad \alpha - \beta = \frac{\sqrt{3}}{4}\,a.
+$$
+The $\mathbb{I}\otimes\mathbb{I}$ terms match automatically ($1/2 = 2/4$). By covariance, the conditions for $\tilde{A}_Y$ and $\tilde{A}_Z$ give the same constraint.
+
+**Step 4: Maximizing $a$.** We need $\alpha,\beta \geq 0$, $\alpha+\beta \leq 3/8$, and $\alpha - \beta = \frac{\sqrt{3}}{4}a \geq 0$ (i.e., $\alpha \geq \beta$). The feasibility region is a triangle in the $(\alpha,\beta)$-plane. The maximum of $\alpha - \beta$ over this region is achieved at the vertex $\beta = 0$, $\alpha = 3/8$, giving
+$$
+(\alpha-\beta)_{\max} = \frac{3}{8} \qquad \Longrightarrow \qquad a_{\max} = \frac{4}{\sqrt{3}} \cdot \frac{3}{8} = \frac{\sqrt{3}}{2}. \quad \square
+$$
+:::
+
+#### Realization of $G_{\mathrm{sym}}$.
+
+The proof of @lem-gsym_form identifies four rank-1 eigenprojectors of $G_{\text{sym}}(\vec{u})$ forming the **triplet–singlet ONB** along $\hat{n} = \vec{u}/\sqrt{3}$. At the vertex $\vec{u}_0 = (+1,+1,+1)$ these are:
+
+$$
+G_{\text{sym}}(\vec{u}) = \alpha\,|T_{+1;\hat{n}}\rangle\langle T_{+1;\hat{n}}|
++ \Bigl(\tfrac{3}{8}-\alpha-\beta\Bigr)|T_{0;\hat{n}}\rangle\langle T_{0;\hat{n}}|
++ \beta\,|T_{-1;\hat{n}}\rangle\langle T_{-1;\hat{n}}|
++ \tfrac{1}{8}|\psi^-\rangle\langle\psi^-|,
+$$
+
+with $\hat{n} = \vec{u}/\sqrt{3}$ and parameters $\alpha,\beta\geq 0$, $\alpha+\beta\leq 3/8$. The four projectors are:
+
+- $P_+ = |T_{+1;\hat{n}}\rangle\langle T_{+1;\hat{n}}| = |{+_{\hat{n}}}\rangle\langle{+_{\hat{n}}}|^{\otimes 2}$ — product state aligned with $\hat{n}$
+- $P_- = |T_{-1;\hat{n}}\rangle\langle T_{-1;\hat{n}}| = |{-_{\hat{n}}}\rangle\langle{-_{\hat{n}}}|^{\otimes 2}$ — product state anti-aligned with $\hat{n}$
+- $Q_- = |T_{0;\hat{n}}\rangle\langle T_{0;\hat{n}}|$, where $|T_{0;\hat{n}}\rangle = \tfrac{1}{\sqrt{2}}\bigl(|{+_{\hat{n}}}{-_{\hat{n}}}\rangle + |{-_{\hat{n}}}{+_{\hat{n}}}\rangle\bigr)$ — symmetric entangled state
+- $Q_+ = |\psi^-\rangle\langle\psi^-| = \tfrac{1}{2}(\mathbb{I}-S)$ — the singlet projector $\Pi_-$, which is **independent of $\hat{n}$** by $SU(2)$ invariance
+
+A key consequence is that $Q_+ = \tfrac{1}{4}(M_0 - 3M_2)$, which follows from $3M_2 = \vec\sigma\otimes\vec\sigma = 2S - \mathbb{I}$. The singlet contribution $\tfrac{1}{8}|\psi^-\rangle\langle\psi^-|$ is the same for all 8 cube-vertex directions simultaneously. At the optimal point $\alpha = 3/8$, $\beta = 0$, the $T_0$ and $T_{-1}$ components vanish:
+
+$$
+G_{\text{sym}}^*(\vec{u}) = \frac{3}{8}\Bigl(\frac{\mathbb{I}+\hat{n}\cdot\vec{\sigma}}{2}\Bigr)^{\!\otimes 2}
++ \frac{1}{8}|\psi^-\rangle\langle\psi^-|. \qquad (\alpha = 3/8,\ \beta = 0)
+$$
+
+**Randomized scheme.** A natural realization chooses $\vec{u}\in\{+1,-1\}^3$ uniformly at random and performs the triplet–singlet PVM $\mathcal{M}_{\hat{n}_{\vec{u}}} = \{P_+,Q_-,P_-,Q_+\}$ along $\hat{n}_{\vec{u}}$. Post-processing maps the outcome pair $(m,\vec{u})$ as follows: report $\vec{u}$ if $m=T_{+1}$, report $-\vec{u}$ if $m=T_{-1}$, and report a uniformly random $\vec{u}'' \in \{+1,-1\}^3$ for $m = T_0$ or the singlet. This scheme realizes $G_{\text{sym}}$ with $(\alpha,\beta)=(7/24,1/24)$, corresponding to sharpness parameter $a = 1/\sqrt{3}$ — the single-copy threshold. Reaching the optimal $a_{\max} = \sqrt{3}/2$ requires an entangling circuit (see below). For reference, the CHRST mixing scheme (selecting one of $X,Y,Z$ with probability $1/3$ and measuring jointly on two qubits) achieves $a = (1+\sqrt{2})/3 \approx 0.805 < \sqrt{3}/2 \approx 0.866$.
+
+::: {.callout-note icon="false"}
+## Circuit for the triplet–singlet PVM along $\hat{n}$
+
+Given $\hat{n} = \vec{u}/\sqrt{3}$ parameterized as $(\theta,\phi)$ (polar, azimuthal), the following four-step circuit measures in the triplet–singlet basis $\{|T_{+1;\hat{n}}\rangle, |T_{0;\hat{n}}\rangle, |T_{-1;\hat{n}}\rangle, |\psi^-\rangle\}$:
+
+```
+q₁: ──[R_n†]──●─────────[CH tgt]──[M_Z]── b₁
+               │               ↑
+q₂: ──[R_n†]──⊕─────────[CH ctrl]─[M_Z]── b₂
+```
+
+**Step 1 — Rotate to $z$-basis:** Apply $R_{\hat{n}}^\dagger = R_z(-\phi)\,R_y(-\theta)$ to both qubits. This maps $|{+_{\hat{n}}}\rangle\to|0\rangle$ and $|{-_{\hat{n}}}\rangle\to|1\rangle$ on each qubit. Since $|\psi^-\rangle$ is $SU(2)$-invariant, $R_{\hat{n}}^{\dagger\otimes 2}|\psi^-\rangle = |\psi^-\rangle$ (up to global phase). After this step: $|T_{+1;\hat{n}}\rangle\to|00\rangle$, $|T_{-1;\hat{n}}\rangle\to|11\rangle$, $|T_{0;\hat{n}}\rangle\to|\Psi^+\rangle$, $|\psi^-\rangle\to|\Psi^-\rangle$.
+
+**Step 2 — CNOT** (q1 control, q2 target): $|m_1,m_2\rangle\to|m_1,m_1\oplus m_2\rangle$. After this step: $|00\rangle\to|00\rangle$, $|11\rangle\to|10\rangle$, $|\Psi^+\rangle\to|{+}\rangle_1|1\rangle_2$, $|\Psi^-\rangle\to|{-}\rangle_1|1\rangle_2$. Qubit 2 now encodes parity: $b_2=0$ (same parity, triplet-extremal) vs $b_2=1$ (different parity, $T_0$ or singlet).
+
+**Step 3 — CH** (q2 control, q1 target): applies Hadamard to q1 only when $q2=1$, i.e. $|{+}\rangle_1|1\rangle_2\to|0\rangle_1|1\rangle_2$ and $|{-}\rangle_1|1\rangle_2\to|1\rangle_1|1\rangle_2$. States with $q2=0$ are unaffected.
+
+**Step 4 — Measure** both qubits in $Z$. Outcome $(b_1,b_2)$ identifies the projector:
+
+| $(b_1,b_2)$ | Projector |
+|:-----------:|:----------|
+| $(0,0)$ | $P_+ = \|{+_{\hat{n}}}\rangle\langle{+_{\hat{n}}}\|^{\otimes 2}$ |
+| $(1,0)$ | $P_- = \|{-_{\hat{n}}}\rangle\langle{-_{\hat{n}}}\|^{\otimes 2}$ |
+| $(0,1)$ | $Q_- = \|T_{0;\hat{n}}\rangle\langle T_{0;\hat{n}}\|$ |
+| $(1,1)$ | $Q_+ = \Pi_- = \|\psi^-\rangle\langle\psi^-\|$ |
+
+The $R_{\hat{n}}^\dagger$ gate decomposes as $R_z(-\phi)R_y(-\theta)$ for the 8 cube-vertex directions, and the CH gate acts as $|0\rangle\langle 0|_2\otimes I_1 + |1\rangle\langle 1|_2\otimes H_1$.
+:::
+
+# Generalized multi-copy compatibility
+
+In the previous section we studied the 2-copy parallel ($\rho^{\otimes 2}$) setting, where the maximal achievable sharpness for $\{X,Y,Z\}$ is $a_{\max} = \sqrt{3}/2 < 1$. In particular, the three sharp ($a=1$) Pauli observables are **not** 2-compatible on $\rho^{\otimes 2}$. We now ask whether replacing the second copy by a transformed state $F(\rho)$ — the spin-flipped state $\rho_{-\mathbf{m}}$ — can overcome this limitation.
+
+::: {#def-F-assisted .callout-important icon="false"}
+## (F-Assisted 2-Compatibility)
+A set of $\mathcal{L}(\mathcal{H})$-valued observables $\{A_i\}_{i=1}^K$ is **$F$-assisted $2$-compatible** if there exists a POVM $G$ on $\mathcal{H}^{\otimes 2}$ with outcome set $\Omega_1\times\cdots\times\Omega_K$ such that
+$$\operatorname{tr}\!\bigl[\rho\otimes F(\rho)\;G_i(x)\bigr] = \operatorname{tr}\!\bigl[\rho\;A_i(x)\bigr]$$
+for all $i$, $x\in\Omega_i$, and all states $\rho$, where $G_i$ denotes the $i$-th marginal of $G$.
+:::
+
+Analogously to @lem-multicopy-compatibility, the following structural lemma reduces $F$-assisted 2-compatibility to ordinary (1-copy) joint measurability of lifted observables on $\mathcal{H}^{\otimes 2}$.
+
+::: {#lem-invmulticopy-compatibility .callout-important icon="false"}
+## (Inversed Multicopy Compatibility Corollary)
+The $\mathcal{L}(\mathcal{H})$-valued observables $\{A_{i}\}_{i=1}^K$ are $F$-assisted $2$-compatible if and only if the $\mathcal{L}(\mathcal{H}^{\otimes 2})$-valued observables $\tilde{A}_{i}(x) = \mathbb{I} \odot_F A_i(x)$ are (1-copy) compatible, where $\odot_F$ denotes the **$F$-twisted symmetrized embedding** (distinct from the standard permutation-symmetric $\odot$ of @lem-multicopy-compatibility): $\mathbb{I}\odot_F A = \frac{1}{2}(A\otimes\mathbb{I} + \mathbb{I}\otimes F(A))$.
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+
+The proof follows the structure of Theorem 1 in [@Carmeli2016].
+
+**Key identity (spin-flip self-duality).** Since $F = T \circ \sigma_y$ (transpose composed with $Y$-conjugation), both of which preserve the Hilbert–Schmidt inner product, one has
+$$\operatorname{tr}[A^\dagger B] = \operatorname{tr}[F(A)^\dagger F(B)], \qquad \forall\, A,B \in \mathcal{L}(\mathcal{H}). \tag{flip}$$
+
+**(⟸) Sufficiency.** Suppose $\{\tilde{A}_i\}$ are jointly measurable with POVM $G$, i.e.\ $G^{[i]}(x) = \tilde{A}_i(x) = \tfrac{1}{2}\bigl(A_i(x)\otimes\mathbb{I} + \mathbb{I}\otimes F(A_i(x))\bigr)$ for all $i,x$. Then, using $\operatorname{tr}[\rho]=1$ and the self-duality of $F$ via (flip):
+$$
+\operatorname{tr}\!\bigl[\rho\otimes F(\rho)\;G^{[i]}(x)\bigr]
+= \tfrac{1}{2}\operatorname{tr}[\rho\,A_i(x)]\operatorname{tr}[F(\rho)]
+  + \tfrac{1}{2}\operatorname{tr}[\rho]\operatorname{tr}[F(\rho)\,F(A_i(x))].
+$$
+Since $F$ is trace-preserving ($\operatorname{tr}[F(\rho)]=1$) and $\operatorname{tr}[F(\rho)F(A_i(x))]=\operatorname{tr}[\rho\,A_i(x)]$ by (flip), this gives
+$$
+\operatorname{tr}\!\bigl[\rho\otimes F(\rho)\;G^{[i]}(x)\bigr] = \tfrac{1}{2}\operatorname{tr}[\rho\,A_i(x)] + \tfrac{1}{2}\operatorname{tr}[\rho\,A_i(x)] = \operatorname{tr}[\rho\,A_i(x)].
+$$
+Hence $G$ is an $F$-assisted 2-copy joint observable.
+
+**(⟹) Necessity.** Suppose $G' = \{\pi'_{\mathbf{r}}\}$ is a POVM on $\mathcal{H}^{\otimes 2}$ ensuring $F$-assisted 2-compatibility:
+$$
+\operatorname{tr}\!\Bigl[\rho\otimes F(\rho)\;\sum_{\mathbf{r}\setminus r_i}\pi'_{\mathbf{r}}\Bigr] = \operatorname{tr}[\rho\,A_i^{r_i}], \qquad \forall\,i,r_i,\rho. \tag{$*$}
+$$
+
+**Step 1: Covariantization.** Since $F$ is completely co-positive, the tensor product $F\otimes F$ is a positive (but not CP) map [@Muller2015]. Composition with the Swap gives the PTP map $(F\otimes F)\circ\text{Swap}$. (Positivity suffices here: it ensures each $\pi''_\mathbf{r} \geq 0$; unitality of $F$ gives normalization $\sum_\mathbf{r}\pi''_\mathbf{r}=\mathbb{I}^{\otimes 2}$.) Define the new POVM
+$$G'' = \bigl\{\pi''_{\mathbf{r}} := (F\otimes F)\circ\operatorname{Swap}(\pi'_{\mathbf{r}})\bigr\}.$$
+Then for each marginal:
+$$
+\operatorname{tr}\!\Bigl[\rho\otimes F(\rho)\;\sum_{\mathbf{r}\setminus r_i}\pi''_{\mathbf{r}}\Bigr]
+= \operatorname{tr}\!\Bigl[F(\rho)\otimes\rho\;\operatorname{Swap}\Bigl(\sum_{\mathbf{r}\setminus r_i}\pi'_{\mathbf{r}}\Bigr)\Bigr]
+= \operatorname{tr}\!\Bigl[\rho\otimes F(\rho)\;\sum_{\mathbf{r}\setminus r_i}\pi'_{\mathbf{r}}\Bigr]
+= \operatorname{tr}[\rho\,A_i^{r_i}],
+$$
+where we used $\operatorname{tr}[A\otimes B\;\operatorname{Swap}(C)] = \operatorname{tr}[B\otimes A\;C]$ and then applied $F\circ F = \mathrm{id}$.
+
+Set $G = \tfrac{1}{2}(G' + G'')$. This is a valid POVM satisfying $(*)$, and by construction it satisfies
+$$\pi_{\mathbf{r}} = (F\otimes F)\circ\operatorname{Swap}(\pi_{\mathbf{r}}), \qquad \forall\,\mathbf{r}.$$
+
+**Step 2: Polynomial identification.** Denote $\mathbb{A}^{r_i}_i := \sum_{\mathbf{r}\setminus r_i}\pi_{\mathbf{r}}$ (the $i$-th marginal of $G$). Write $\rho = \tfrac{1}{2}(\mathbb{I} + t\,\Delta)$ for traceless self-adjoint $\Delta$ and $t\in\mathbb{R}$ small. Using $F(\Delta) = -\Delta$, expand $(*)$ in powers of $t$:
+$$
+\operatorname{tr}\!\bigl[(\mathbb{I}^{\otimes 2} + t(\Delta\otimes\mathbb{I} - \mathbb{I}\otimes\Delta) - t^2\Delta^{\otimes 2})\,\mathbb{A}^{r_i}_i\bigr]
+= 2\bigl[\operatorname{tr}[A_i^{r_i}] + t\operatorname{tr}[\Delta\,A_i^{r_i}]\bigr].
+$$
+
+Matching coefficients of each power:
+- **$t^0$:** $\operatorname{tr}[\mathbb{A}^{r_i}_i] = 2\operatorname{tr}[A_i^{r_i}]$.
+- **$t^1$:** $\operatorname{tr}[(\Delta\otimes\mathbb{I}-\mathbb{I}\otimes\Delta)\,\mathbb{A}^{r_i}_i] = 2\operatorname{tr}[\Delta\,A_i^{r_i}]$ for all traceless $\Delta$.
+- **$t^2$:** $\operatorname{tr}[\Delta^{\otimes 2}\,\mathbb{A}^{r_i}_i] = 0$ for all traceless $\Delta$.
+
+**Step 3: Hilbert–Schmidt decomposition.** Write
+$$\mathbb{A}^{r_i}_i = b\,\mathbb{I}^{\otimes 2} + \sum_j c_j\,\sigma_j\otimes\mathbb{I} + \sum_j d_j\,\mathbb{I}\otimes\sigma_j + \sum_{j,k}e_{jk}\,\sigma_j\otimes\sigma_k.$$
+The symmetry $\pi_{\mathbf{r}} = (F\otimes F)\circ\operatorname{Swap}(\pi_{\mathbf{r}})$ implies $c_j = -d_j$ for all $j$ (since $F(\sigma_j) = -\sigma_j$ and Swap exchanges the factors). From the $t^2$ equation with $\Delta = \sum_j a_j\sigma_j$, comparing coefficients of $a_ja_k$ gives $e_{jk} = 0$ for all $j,k$. From the $t^0$ equation: $b = \tfrac{1}{2}\operatorname{tr}[A_i^{r_i}]$. From the $t^1$ equation with $\Delta = \sigma_j$: $c_j = \tfrac{1}{4}\operatorname{tr}[\sigma_j\,A_i^{r_i}]$.
+
+Substituting back:
+$$
+\mathbb{A}^{r_i}_i
+= \tfrac{1}{2}\operatorname{tr}[A_i^{r_i}]\,\mathbb{I}^{\otimes 2}
+  + \sum_j \tfrac{1}{4}\operatorname{tr}[\sigma_j A_i^{r_i}](\sigma_j\otimes\mathbb{I} - \mathbb{I}\otimes\sigma_j)
+= \tfrac{1}{2}\!\left(A_i^{r_i}\otimes\mathbb{I} + \mathbb{I}\otimes F(A_i^{r_i})\right)
+= \tilde{A}_i(r_i). \quad\square
+$$
+:::
+
+
+The spin-flip map considered here is $F(\rho) = (\sigma_y\,\rho\,\sigma_y^\dagger)^T$, i.e.\ transpose in the computational basis followed by conjugation by $Y$. On Bloch-sphere states it acts as
+$$
+F\!\left(\frac{\mathbb{I} + \mathbf{m}\cdot\boldsymbol{\sigma}}{2}\right) = \frac{\mathbb{I} - \mathbf{m}\cdot\boldsymbol{\sigma}}{2},
+$$
+mapping $\rho_{\mathbf{m}}\mapsto\rho_{-\mathbf{m}}$. The map $F$ is positive and trace-preserving (PTP) but **not** completely positive (CPTP) — i.e.\ it is PnCP [@Buzek1999; @DeMartini2002; @Ricci2004]. It is also self-dual ($F = F^\star$, where the dual is defined by $\operatorname{tr}[A\,F(B)] = \operatorname{tr}[F^\star(A)\,B]$) and involutive ($F\circ F = \mathrm{id}$).
+
+The key observation is that any advantage over the parallel ($\rho^{\otimes 2}$) configuration arises precisely because $F$ is PnCP. The following lemma makes this precise.
+
+::: {#lem-powerof_F .callout-important icon="false"}
+## (CPTP Maps Yield No Advantage)
+For any set of $\mathcal{L}(\mathcal{H})$-valued observables $\{A_i\}$, the joint measurability relation on the bipartite configuration $\rho\otimes\Lambda(\rho)$ coincides with that on the parallel configuration $\rho^{\otimes 2}$ whenever $\Lambda$ is a CPTP map. Consequently, any advantage in joint measurability over the parallel case arises only if $\Lambda$ is PnCP.
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+
+Suppose $\{A_i\}$ are jointly measurable on $\rho\otimes\Lambda(\rho)$ via POVM $G = \{\pi_{\mathbf{a}}\}$, so that
+$$
+\operatorname{tr}\!\bigl[\rho\otimes\Lambda(\rho)\;\pi_{\mathbf{a}}\bigr], \qquad \sum_{\mathbf{a}}\pi_{\mathbf{a}} = \mathbb{I}^{\otimes 2},
+$$
+correctly reproduces the marginals of each $A_i$. Use the identity
+$$
+\operatorname{tr}\!\bigl[\rho\otimes\Lambda(\rho)\;\pi_{\mathbf{a}}\bigr]
+= \operatorname{tr}\!\bigl[\rho\otimes\rho\;\bigl(\mathrm{id}\otimes\Lambda^\star(\pi_{\mathbf{a}})\bigr)\bigr],
+$$
+where $\Lambda^\star$ denotes the dual map, defined by $\operatorname{tr}[A\,\Lambda(B)] = \operatorname{tr}[\Lambda^\star(A)\,B]$ for all $A,B$. Define the new collection
+$$
+G' := \bigl\{\mathrm{id}\otimes\Lambda^\star(\pi_{\mathbf{a}})\bigr\}_{\mathbf{a}}.
+$$
+Since $\Lambda$ is CPTP, its dual $\Lambda^\star$ is completely positive and **unital** ($\Lambda^\star(\mathbb{I}) = \mathbb{I}$). Hence each element $\mathrm{id}\otimes\Lambda^\star(\pi_{\mathbf{a}})\geq 0$ and $\sum_{\mathbf{a}}\mathrm{id}\otimes\Lambda^\star(\pi_{\mathbf{a}}) = \mathbb{I}^{\otimes 2}$, so $G'$ is a valid POVM on $\mathcal{H}^{\otimes 2}$. By construction, $G'$ achieves the same marginals of $\{A_i\}$ on the parallel configuration $\rho^{\otimes 2}$. Hence $\{A_i\}$ are jointly measurable on $\rho^{\otimes 2}$. $\square$
+:::
+
+By @lem-powerof_F, any advantage must come from the PnCP character of $F$. We now demonstrate that the sharp Pauli observables $\{X,Y,Z\}$ (i.e.\ $a=1$) are indeed $F$-assisted 2-compatible. The explicit POVM is
+$$
+\Pi^{_{\uparrow\downarrow}}_{[a,b,c]}
+:= \tfrac{1}{16}\Bigl(2\,\mathbb{I}^{\otimes 2}
+  + a[X\otimes\mathbb{I}-\mathbb{I}\otimes X]
+  + b[Y\otimes\mathbb{I}-\mathbb{I}\otimes Y]
+  + c[Z\otimes\mathbb{I}-\mathbb{I}\otimes Z]
+  - ab\{X,Y\}_\otimes
+  - bc\{Y,Z\}_\otimes
+  - ca\{Z,X\}_\otimes\Bigr),
+$$
+where $\{P,Q\}_\otimes := P\otimes Q + Q\otimes P$. One verifies that this POVM is positive for all $a,b,c\in\{+1,-1\}$, sums to $\mathbb{I}^{\otimes 2}$, and has marginals
+$$
+\sum_{b,c}\Pi^{_{\uparrow\downarrow}}_{[a,b,c]}
+= \tfrac{1}{4}\bigl(2\,\mathbb{I}^{\otimes 2} + a(X\otimes\mathbb{I}-\mathbb{I}\otimes X)\bigr)
+= \tilde{A}_X(1)(a),
+$$
+and analogously for $Y$ and $Z$ marginals — exactly satisfying the $F$-twisted lifting condition of @lem-invmulticopy-compatibility at $a=1$.
+
+::: {.callout-note collapse="true"}
+## Positivity sketch for $\Pi^{\uparrow\downarrow}_{[a,b,c]}$ (Click to expand)
+
+Write $\vec{n}=(a,b,c)$, so $|\vec{n}|^2=3$ and $\vec{n}\cdot\vec{\sigma}$ has eigenvalues $\pm\sqrt{3}$.
+Use the identity $X{\otimes}X+Y{\otimes}Y+Z{\otimes}Z = 2\,\mathrm{Swap}-\mathbb{I}^{\otimes 2}$ (which follows from $\mathrm{Swap}=\frac{1}{2}(\mathbb{I}^{\otimes 2}+\sum_P P{\otimes}P)$) to obtain the factoring
+$$
+16\,\Pi^{\uparrow\downarrow}_{[a,b,c]}
+= \bigl(\mathbb{I}+\vec{n}{\cdot}\vec{\sigma}\bigr)\otimes\bigl(\mathbb{I}-\vec{n}{\cdot}\vec{\sigma}\bigr)
+  + 2\,\mathrm{Swap}.
+$$
+Let $|\pm\rangle$ denote the $\pm\sqrt{3}$ eigenstates of $\vec{n}\cdot\vec{\sigma}$.
+In the ordered basis $\{|{+}{+}\rangle,\,|{-}{-}\rangle,\,|{+}{-}\rangle,\,|{-}{+}\rangle\}$
+the matrix is block-diagonal.
+The first block consists of the two product states $|{+}{+}\rangle$ and $|{-}{-}\rangle$,
+which are Swap eigenstates with eigenvalue $+1$.
+The first tensor factor contributes $(1+\sqrt{3})(1-\sqrt{3})=1-3=-2$ and $(1-\sqrt{3})(1+\sqrt{3})=-2$;
+adding $2\!\cdot\!(+1)$ from Swap gives eigenvalue $0$ for both.
+
+The second block, spanned by $\{|{+}{-}\rangle,\,|{-}{+}\rangle\}$, receives diagonal contributions
+$(1+\sqrt{3})^2=4+2\sqrt{3}$ and $(1-\sqrt{3})^2=4-2\sqrt{3}$ from the first factor,
+while $2\,\mathrm{Swap}$ contributes the off-diagonal $2$ (swapping $|{+}{-}\rangle\leftrightarrow|{-}{+}\rangle$):
+$$
+16\,\Pi\big|_{2\times 2}
+= \begin{pmatrix}4+2\sqrt{3}&2\\2&4-2\sqrt{3}\end{pmatrix}.
+$$
+This matrix has $\det=(4+2\sqrt{3})(4-2\sqrt{3})-4=16-12-4=0$ and trace $8$,
+so its eigenvalues are $\{0,8\}$.
+
+Hence the full spectrum of $16\,\Pi^{\uparrow\downarrow}_{[a,b,c]}$ is $\{0,0,0,8\}$,
+confirming $\Pi^{\uparrow\downarrow}_{[a,b,c]}\geq 0$ for all $a,b,c\in\{+1,-1\}$. $\square$
+:::
+
+#### A GPT perspective from $F^\dagger$
+
+The availability of the antiparallel state $\rho_{\mathbf{m}}\otimes F(\rho_{\mathbf{m}})$ can be viewed as the implementation of the non-CPTP map $\mathcal{I}\otimes F^\dagger(\cdot)$ applied to any measurement strategy on the parallel state $\rho^{\otimes 2}$.
+
+Although $F^\dagger$ is not CPTP, it is PTP, i.e., always maps positive to postive if only applied on a single qubit system.
+this extends the effective set of admissible bipartite effects beyond those realizable in standard quantum composition, providing the resource that enables full joint measurability of $\{X,Y,Z\}$.
+
+::: {#def-multicopy-gpt-compatibility .callout-important icon="false"}
+## (Multicopy GPT Compatibility)
+$\mathcal{L}(\mathcal{H})$-valued observables $\{A_{i}\}_{i=1}^K$ on outcome sets $\{\Omega_i\}_{i=1}^K$, respectively, are **$k$-compatible in the minimal tensor product GPT** if there exists a collection of operators $G = \{G(\mathbf{x})\}_{\mathbf{x} \in \Omega_1 \times \cdots \times \Omega_K}$ satisfying
+
+1. **Normalization:** $\displaystyle\sum_{\mathbf{x}} G(\mathbf{x}) = \mathbf{I}^{\otimes k}$,
+
+2. **Minimal-GPT validity:** for all $\mathbf{x}$ and all $k$-partite separable states $\sigma \in \Omega_{\min}^{(k)} := \mathrm{Conv}\{\rho_1 \otimes \cdots \otimes \rho_k \mid \rho_j \in \mathcal{D}(\mathcal{H})\}$,
+$$0 \;\leq\; \operatorname{tr}\!\left[\sigma\, G(\mathbf{x})\right] \;\leq\; 1,$$
+
+3. **Marginal reproduction:** for all $i = 1, \ldots, K$, $x \in \Omega_i$, and all states $\rho$,
+$$\operatorname{tr}\!\left[\rho^{\otimes k}\, G_i(x)\right] = \operatorname{tr}\!\left[\rho\, A_i(x)\right],$$
+
+where $G_i(x) := \sum_{\mathbf{x} \setminus x_i} G(\mathbf{x})$ denotes the $i$-th marginal of $G$.
+
+The collection $G$ is called a **$k$-copy minimal-GPT joint observable** of $\{A_{i}\}_{i=1}^K$.
+:::

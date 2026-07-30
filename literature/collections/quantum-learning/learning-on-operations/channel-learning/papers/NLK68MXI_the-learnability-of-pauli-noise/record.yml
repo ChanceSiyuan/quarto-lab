@@ -1,0 +1,57 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: NLK68MXI
+  item_version: 96155
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: AENR6HI9
+      name: channel learning
+      path: Quantum Learning/Learning on operations/channel learning
+qlab:
+  primary_collection: AENR6HI9
+  indexed_collections:
+    - AENR6HI9
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: journalArticle
+title: The learnability of Pauli noise
+authors:
+  - first: Senrui
+    last: Chen
+  - first: Yunchao
+    last: Liu
+  - first: Matthew
+    last: Otten
+  - first: Alireza
+    last: Seif
+  - first: Bill
+    last: Fefferman
+  - first: Liang
+    last: Jiang
+year: 2023
+abstract: Recently, several quantum benchmarking algorithms have been developed
+  to characterize noisy quantum gates on today's quantum devices. A well-known
+  issue in benchmarking is that not everything about quantum noise is learnable
+  due to the existence of gauge freedom, leaving open the question of what
+  information about noise is learnable and what is not, which has been unclear
+  even for a single CNOT gate. Here we give a precise characterization of the
+  learnability of Pauli noise channels attached to Clifford gates, showing that
+  learnable information corresponds to the cycle space of the pattern transfer
+  graph of the gate set, while unlearnable information corresponds to the cut
+  space. This implies the optimality of cycle benchmarking, in the sense that it
+  can learn all learnable information about Pauli noise. We experimentally
+  demonstrate noise characterization of IBM's CNOT gate up to 2 unlearnable
+  degrees of freedom, for which we obtain bounds using physical constraints. In
+  addition, we give an attempt to characterize the unlearnable information by
+  assuming perfect initial state preparation. However, based on the experimental
+  data, we conclude that this assumption is inaccurate as it yields unphysical
+  estimates, and we obtain a lower bound on state preparation noise.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.1038/s41467-022-35759-4
+  arxiv: "2206.06362"

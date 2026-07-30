@@ -1,0 +1,48 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: JBIDW5XG
+  item_version: 96106
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: IN7AKYAS
+      name: Analysis
+      path: Quantum Error correction/Decoders/Surface code Decoders/Analysis
+qlab:
+  primary_collection: IN7AKYAS
+  indexed_collections:
+    - IN7AKYAS
+  primary_topic: quantum-error-correction
+  indexed_topics:
+    - quantum-error-correction
+item_type: journalArticle
+title: Logical Error Rates of XZZX and Rotated Quantum Surface Codes
+authors:
+  - first: Diego
+    last: Forlivesi
+  - first: Lorenzo
+    last: Valentini
+  - first: Marco
+    last: Chiani
+year: 2024
+abstract: Surface codes are versatile quantum errorcorrecting codes known for
+  their planar geometry, making them ideal for practical implementations. While
+  the original proposal used Pauli X or Pauli Z operators in a square structure,
+  these codes can be improved by rotating the lattice or incorporating a mix of
+  generators in the XZZX variant. However, a comprehensive theoretical analysis
+  of the logical error rate for these variants has been lacking. To address this
+  gap, we present theoretical formulas based on recent advancements in
+  understanding the weight distribution of stabilizer codes. For example, over
+  an asymmetric channel with asymmetry A = 10 and a physical error rate p → 0,
+  we observe that the logical error rate asymptotically approaches pL → 10p2 for
+  the rotated [[9, 1, 3]] XZZX code and pL → 18.3p2 for the [[13, 1, 3]] surface
+  code. Additionally, we observe a particular behavior regarding rectangular
+  lattices in the presence of asymmetric channels. Our findings demonstrate that
+  implementing both rotation and XZZX modifications simultaneously can lead to
+  suboptimal performance. Thus, in scenarios involving a rectangular lattice, it
+  is advisable to avoid using both modifications simultaneously.
+tags: []
+identifiers:
+  doi: 10.1109/jsac.2024.3380088

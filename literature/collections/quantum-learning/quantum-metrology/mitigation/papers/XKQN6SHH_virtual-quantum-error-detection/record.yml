@@ -1,0 +1,56 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: XKQN6SHH
+  item_version: 96080
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: ZTIKI838
+      name: Mitigation
+      path: Quantum Learning/Quantum Metrology/Mitigation
+qlab:
+  primary_collection: ZTIKI838
+  indexed_collections:
+    - ZTIKI838
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: journalArticle
+title: Virtual quantum error detection
+authors:
+  - first: Kento
+    last: Tsubouchi
+  - first: Yasunari
+    last: Suzuki
+  - first: Yuuki
+    last: Tokunaga
+  - first: Nobuyuki
+    last: Yoshioka
+  - first: Suguru
+    last: Endo
+year: 2023
+abstract: Quantum error correction and quantum error detection necessitate
+  syndrome measurements to detect errors. Performing syndrome measurements for
+  each stabilizer generator can be a significant overhead, considering the fact
+  that the readout fidelity in the current quantum hardware is generally lower
+  than gate fidelity. Here, by generalizing a quantum error mitigation method
+  known as symmetry expansion, we propose a protocol called virtual quantum
+  error detection (VQED). This method virtually allows for evaluating
+  computation results corresponding to post-selected quantum states obtained
+  through quantum error detection during circuit execution, without implementing
+  syndrome measurements. Unlike conventional quantum error detection, which
+  requires the implementation of Hadamard test circuits for each stabilizer
+  generator, our VQED protocol can be performed with a constant depth shallow
+  quantum circuit with an ancilla qubit, irrespective of the number of
+  stabilizer generators. Furthermore, for some simple error models, the
+  computation results obtained using VQED are robust against the noise that
+  occurred during the operation of VQED, and our method is fully compatible with
+  other error mitigation schemes, enabling further improvements in computation
+  accuracy and facilitating high-fidelity quantum computing.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.1103/physreva.108.042426
+  arxiv: "2302.02626"

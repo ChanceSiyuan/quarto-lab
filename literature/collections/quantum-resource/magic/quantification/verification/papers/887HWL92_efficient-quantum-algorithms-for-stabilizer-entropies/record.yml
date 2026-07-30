@@ -1,0 +1,82 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 887HWL92
+  item_version: 96051
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: UJ7EZN4C
+      name: Verification
+      path: Quantum Resource/Magic/Quantification/Verification
+qlab:
+  primary_collection: UJ7EZN4C
+  indexed_collections:
+    - UJ7EZN4C
+  primary_topic: quantum-resource
+  indexed_topics:
+    - quantum-resource
+item_type: journalArticle
+title: Efficient Quantum Algorithms for Stabilizer Entropies
+authors:
+  - first: Tobias
+    last: Haug
+  - first: Soovin
+    last: Lee
+  - first: M. S.
+    last: Kim
+year: 2024
+abstract: >-
+  Stabilizer entropies (SEs) are measures of nonstabilizerness or “magic” that
+  quantify the degree to which a state is described by stabilizers. SEs are
+  especially interesting due to their connections to scrambling, localization
+  and property testing. However, applications have been limited so far as
+  previously known measurement protocols for SEs scale exponentially with the
+  number of qubits. Here, we efficiently measure SEs for integer Rényi index
+                
+                  
+                    n
+                    >
+                    1
+                  
+                
+                via Bell measurements. The SE of
+                
+                  N
+                
+                -qubit quantum states can be measured with
+                
+                  O
+                  (
+                  n
+                  )
+                
+                copies and
+                
+                  O
+                  (
+                  n
+                  N
+                  )
+                
+                classical computational time, where for even
+                
+                  n
+                
+                we additionally require the complex conjugate of the state. We provide efficient bounds of various nonstabilizerness monotones that are intractable to compute beyond a few qubits. Using the IonQ quantum computer, we measure SEs of random Clifford circuits doped with non-Clifford gates and give bounds for the stabilizer fidelity, stabilizer extent, and robustness of magic. We provide efficient algorithms to measure Clifford-averaged
+                
+                  4
+                  n
+                
+                -point out-of-time-order correlators and multifractal flatness. With these measures we study the scrambling time of doped Clifford circuits and random Hamiltonian evolution depending on nonstabilizerness. Counterintuitively, random Hamiltonian evolution becomes less scrambled at long times, which we reveal with the multifractal flatness. Our results open up the exploration of nonstabilizerness with quantum computers.
+              
+              
+                
+                
+                  
+                    Published by the American Physical Society
+                    2024
+tags: []
+identifiers:
+  doi: 10.1103/physrevlett.132.240602

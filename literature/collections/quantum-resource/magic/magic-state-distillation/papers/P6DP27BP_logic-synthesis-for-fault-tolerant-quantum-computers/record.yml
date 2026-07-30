@@ -1,0 +1,49 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: P6DP27BP
+  item_version: 96094
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: AGQ9C27P
+      name: Magic state distillation
+      path: Quantum Resource/Magic/Magic state distillation
+qlab:
+  primary_collection: AGQ9C27P
+  indexed_collections:
+    - AGQ9C27P
+  primary_topic: quantum-resource
+  indexed_topics:
+    - quantum-resource
+item_type: thesis
+title: Logic Synthesis for Fault-Tolerant Quantum Computers
+authors:
+  - first: N. Cody
+    last: Jones
+year: 2013
+abstract: Efficient constructions for quantum logic are essential since quantum
+  computation is experimentally challenging. This thesis develops quantum logic
+  synthesis as a paradigm for reducing the resource overhead in fault-tolerant
+  quantum computing. The model for error correction considered here is the
+  surface code. After developing the theory behind general logic synthesis, the
+  resource costs of magic-state distillation for the $T = \exp(i \pi (I-Z)/8)$
+  gate are quantitatively analyzed. The resource costs for a relatively new
+  protocol distilling multi-qubit Fourier states are calculated for the first
+  time. Four different constructions of the fault-tolerant Toffoli gate,
+  including two which incorporate error detection, are analyzed and compared.
+  The techniques of logic synthesis reduce the cost of fault-tolerant quantum
+  computation by one to two orders of magnitude, depending on which benchmark is
+  used. Using resource analysis for $T$ gates and Toffoli gates, several
+  proposals for constructing arbitrary quantum gates are compared, including
+  "Clifford+$T$" sequences, $V$-basis sequences, phase kickback, and
+  programmable ancilla rotations. The application of arbitrary gates to quantum
+  algorithms for simulating chemistry is discussed as well. Finally, the thesis
+  examines the techniques which lead to efficient constructions of quantum
+  logic, and these observations point to even broader applications of logic
+  synthesis.
+tags:
+  - Quantum Physics
+identifiers:
+  arxiv: "1310.7290"

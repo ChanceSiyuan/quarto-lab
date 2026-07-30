@@ -1,0 +1,370 @@
+---
+title: Percolation Methods for Noisy Circuits
+description: Graph state reduction under incoherent noise, CZ-commuting channel characterization, Z-projection decomposition, percolation threshold criteria, and MBQC-based simulation via rank-width.
+categories:
+  - theory
+---
+
+# Summary and Key Questions
+
+Percolation methods provide a graph-theoretic framework for simulating noisy quantum circuits by reducing the amplitude sampling problem to computing overlaps of percolated graph states with product magic states. After the [diagonalization procedure](gadget_simulation.qmd#sec-diagonalization) reduces the circuit to a noisy IQP form (CZ gates interleaved with local incoherent noise), two structural ingredients come into play: (1) the characterization of which single-qubit noise channels commute with CZ gates, and (2) the decomposition of arbitrary Pauli noise into a CZ-commuting part plus a Z-projection channel that acts as vertex deletion in the graph picture.
+
+The resulting simulation is a Monte Carlo method: one samples random subgraphs by independently deleting vertices according to the Z-projection probabilities, then computes the overlap between the remaining graph state and a product of magic states. Efficiency hinges on the **component size distribution** of the percolated graph --- if the maximum connected component has an exponentially decaying tail, each overlap is computable in polynomial time via tree tensor network methods. This connects classical simulability to the **rank-width** of graph states [@van2007classical] and the **percolation threshold** of the interaction graph.
+
+The approach was developed for noisy IQP circuits by Rajakumar *et al.* [@rajakumar2024polynomial; @rajakumar2025polynomial] and Nelson *et al.* [@nelson2024polynomial], and extended to universal Clifford+T circuits through the gadget-based diagonalization described in [Gadget-Based Simulation](gadget_simulation.qmd). This extension yields the first percolation-based simulation algorithm for universal circuits with arbitrary incoherent noise, providing a noise threshold criterion for fixed NISQ circuits.
+
+- Under what conditions can a noisy circuit be reduced to a non-adaptive measurement on a graph state?
+- Which noise channels commute with CZ gates, and what structural constraints does this impose?
+- How does the Z-projection decomposition of Pauli channels translate to vertex deletion in the graph picture?
+- What is the percolation threshold, and how does it govern simulation complexity?
+- How does the rank-width of the percolated graph determine tractability of the inner product computation?
+- What is the relationship between the percolation approach and the [Pauli path](pauli_path.qmd) branching process criterion?
+
+# From Circuits to Graph States
+
+The starting point for the percolation approach is the diagonalized circuit obtained from the [gadget-based reduction](gadget_simulation.qmd#sec-diagonalization). After replacing all $T$ gates with T-gadgets and applying the diagonalization theorem, the circuit is reduced to CZ gates interleaved with local incoherent noise, acting on the state $|+\rangle^{\otimes (n+t)}$ where $t$ is the total number of T gates and $n$ is the number of original qubits.
+
+## Graph State Construction
+
+The CZ gates generate a **graph state**:
+$$
+|G\rangle = \prod_{(i,j) \in E} \text{CZ}_{ij} \, |+\rangle^{\otimes |V|},
+$$
+where $G = (V, E)$ is the interaction graph. Vertices correspond to qubits (both original and gadget ancillas) and edges encode CZ entangling operations accumulated across all circuit layers. The structure of $G$ is fully determined by the original circuit's Clifford gates and T-gate placement.
+
+::: {#thm-noisy-reduction-perc .callout-important icon="false"}
+## Theorem: Noisy Reduction to Graph States
+Let $\text{Cl}$ be a Clifford gate and $\mathcal{N}$ a Pauli noise channel. In the noiseless case, $\text{Cl}$ acting on a stabilizer state $|S\rangle$ can be decomposed as $\text{Cl}\,|S\rangle = L \cdot G\,|S\rangle$, where $G$ is a product of CZ gates and $L$ consists of local Clifford gates. This decomposition remains valid under noise:
+$$
+\text{Cl} \circ \mathcal{N}[|S\rangle\langle S|] = L \cdot G \circ \mathcal{N}[|S\rangle\langle S|].
+$$
+:::
+
+::: {.callout-note collapse="true"}
+## Proof sketch (Click to expand)
+Write $\text{Cl} = LAG$ where $G$ is the CZ part and $A$ satisfies $AG|S\rangle = G|S\rangle$, so $G^\dagger A G$ is a stabilizer of $|S\rangle$ and hence a Pauli operator. Then:
+$$
+\text{Cl} \circ \mathcal{N}[|S\rangle\langle S|] = LG \circ (G^\dagger AG)\mathcal{N}(G^\dagger A^\dagger G)[|S\rangle\langle S|] = LG \circ \mathcal{N}[|S\rangle\langle S|],
+$$
+using the fact that conjugation by a Pauli operator leaves any Pauli noise channel invariant. $\square$
+
+*Note:* The full proof, including the existence of the $LG$ decomposition via control-Pauli to CZ reduction rules [@van2004graphical; @mor2023noisy], is given in [Gadget-Based Simulation](gadget_simulation.qmd#sec-diagonalization).
+:::
+
+**Key consequence.** By iterating this reduction across all circuit layers, the Heisenberg-picture observable $\hat{O}$ can be expressed as a graph state (in the noiseless case) or a noisy mixture of graph states (in the noisy case), with the noise channels sandwiched between CZ layers but otherwise unchanged by the Clifford simplification.
+
+## Pauli Measurements on Graph States
+
+Once the circuit is compiled into a graph state, Pauli measurements implement the computational steps. The graph transformation rules are:
+
+::: {#lem-graph-measurement .callout-important icon="false"}
+## Lemma: Pauli Measurements on Graph States
+The graph state $|G\rangle$ undergoing a Pauli measurement at vertex $a$ yields a new graph state $|G'\rangle$ (up to local Clifford equivalence):
+
+1. **$Z$-measurement:** Delete all edges incident to vertex $a$ (and remove $a$).
+2. **$Y$-measurement:** Complement the neighborhood of $a$ (flip all edges among neighbors of $a$), then delete all edges incident to $a$.
+3. **$X$-measurement:** Choose a neighbor $b$ of $a$. Complement the neighborhood of $b$, then complement the neighborhood of $a$, delete all edges incident to $a$, then complement the neighborhood of $b$ again.
+4. **CNOT (as a graph operation):** Add the edges of the source qubit's neighborhood to the target qubit's neighborhood.
+:::
+
+These rules, established by Van den Nest *et al.* [@van2004graphical], are essential for converting control-Pauli operations into CZ gates during the diagonalization. The $Z$-measurement rule is particularly important: it corresponds to **vertex deletion** in the graph, which is precisely the effect of the Z-projection channel.
+
+# CZ-Commuting Noise Channels
+
+After diagonalization, the noise channels are interleaved between CZ gate layers. To propagate noise through the graph state and analyze its effect as a graph operation, we need to characterize which noise channels commute with CZ gates.
+
+::: {#lem-commute-channel .callout-important icon="false"}
+## Lemma: CZ-Commuting Incoherent Channels
+An incoherent channel $\Lambda$ that commutes with CZ gates, in the sense that $(\mathbb{I} \otimes \Lambda) \circ \text{CZ} = \text{CZ} \circ (\mathbb{I} \otimes \Lambda)$ for all two-qubit states, must satisfy:
+
+1. **Unitality:** The translation vector vanishes, $\mathbf{t} = (0,0,0)$.
+2. **$XY$-isotropy with $Z$-preservation:** The contraction matrix takes the form $\Gamma = \text{diag}(\Gamma_0, \Gamma_0, 1)$.
+
+That is, the channel acts on the Bloch sphere as
+$$
+\Lambda_{\Gamma_0}\!\left(\frac{1}{2}[\mathbb{I} + \mathbf{w} \cdot \vec{\sigma}]\right) = \frac{1}{2}[\mathbb{I} + \Gamma_0(w_x \sigma_x + w_y \sigma_y) + w_z \sigma_z].
+$$
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+The CZ gate acts on Pauli operators as $\text{CZ} \cdot (\sigma_i \otimes \sigma_j) \cdot \text{CZ} = (\sigma_i \sigma_3^{\tau(j)}) \otimes (\sigma_3^{\tau(i)} \sigma_j)$, where $\tau(1) = \tau(2) = 1$ and $\tau(0) = \tau(3) = 0$. Requiring $(\mathbb{I} \otimes \Lambda)(\text{CZ} \cdot \rho \cdot \text{CZ}) = \text{CZ} \cdot (\mathbb{I} \otimes \Lambda)(\rho) \cdot \text{CZ}$ for all $\rho$ and expanding in the Pauli basis, we obtain the consistency condition:
+$$
+\text{tr}[\Lambda(\sigma_3^{\tau(i)} \sigma_j) \, \sigma_k] = \text{tr}[\sigma_3^{\tau(i)} \Lambda(\sigma_j) \, \sigma_k], \quad \forall\, i, j, k \in \{0,1,2,3\}.
+$$
+This forces $\Lambda(\sigma_3 \sigma_j) = \sigma_3 \Lambda(\sigma_j)$ for all $j$. Combined with the incoherent channel structure ($\Gamma$ diagonal), this requires: (i) $\Lambda(\sigma_1), \Lambda(\sigma_2)$ have no $\sigma_0, \sigma_3$ components, (ii) $\Lambda(\sigma_0), \Lambda(\sigma_3)$ have no $\sigma_1, \sigma_2$ components, and (iii) $\mathbf{t} = 0$. The diagonal form of $\Gamma$ and constraint (i) force $\Gamma_{11} = \Gamma_{22} = \Gamma_0$, while constraint (ii) forces $\Gamma_{33} = 1$. $\square$
+:::
+
+## Physical Interpretation
+
+The CZ-commuting channel $\Lambda_{\Gamma_0}$ acts on the $|+\rangle$ state as:
+$$
+\Lambda_{\Gamma_0}(|+\rangle\langle+|) = \Gamma_0 \, |+\rangle\langle+| + \frac{1-\Gamma_0}{2}(|0\rangle\langle 0| + |1\rangle\langle 1|).
+$$
+It decoheres $|+\rangle$ into the computational basis $\{|0\rangle, |1\rangle\}$ with probability $p = (1 - \Gamma_0)/2$ per qubit. Crucially, qubits projected onto $|0\rangle$ or $|1\rangle$ are **not entangled by subsequent CZ gates**: $\text{CZ}(|b\rangle \otimes |\psi\rangle) = (-1)^b |b\rangle \otimes Z^b |\psi\rangle$ merely applies a phase. In the graph picture, the decohered qubit effectively **disconnects** from its neighbors.
+
+The extreme case $\Gamma_0 = 0$ gives the **Z-projection channel**:
+$$
+\Lambda_z(\rho) = \frac{1}{2}\rho + \frac{1}{2}Z\rho Z = |0\rangle\langle 0|\rho|0\rangle\langle 0| + |1\rangle\langle 1|\rho|1\rangle\langle 1|,
+$$
+which fully decoheres in the computational basis and is equivalent to **removing the vertex** from the graph state.
+
+# Z-Projection Decomposition {#sec-z-projection}
+
+The central technical ingredient connecting noise channels to percolation is the decomposition of arbitrary Pauli noise into a **graph-preserving** part plus a Z-projection part (deleting the vertex). The graph-preserving component $\mathcal{N}^{(1)}$ is *not* CZ-commuting in the strict sense of @lem-commute-channel, but its single-Pauli errors propagate through CZ gates as local Clifford corrections that preserve graph connectivity (see details in @lem-z-projection below).
+
+::: {#lem-z-projection .callout-important icon="false"}
+## Lemma: Z-Projection Decomposition of Pauli Channels
+Any Pauli channel $\mathcal{N}(\rho) = p_0 \rho + p_x X\rho X + p_y Y\rho Y + p_z Z\rho Z$ (with $p_0 + p_x + p_y + p_z = 1$) can be decomposed as
+$$
+\mathcal{N}(\rho) = (1 - 2p)\,\mathcal{N}^{(1)}(\rho) + 2p\,\mathcal{N}^{(2)} \circ \Lambda_z(\rho),
+$$
+where $p = p_z + \min(p_x, p_y)$ and:
+
+- $\mathcal{N}^{(1)}$ is a Pauli channel with error probabilities $(p_x', p_y', p_z') = \left(\frac{|p_x - p_y|}{1-2p}, 0, 0\right)$ if $p_x \geq p_y$ (or $(p_x', p_y', p_z') = (0, \frac{|p_x - p_y|}{1-2p}, 0)$ otherwise), where the triple denotes $\mathcal{N}^{(1)}(\rho) = (1-p_x'-p_y'-p_z')\rho + p_x' X\rho X + p_y' Y\rho Y + p_z' Z\rho Z$. Note: $\mathcal{N}^{(1)}$ is *not* CZ-commuting in the sense of @lem-commute-channel (a pure-$X$ channel has $\Gamma = \text{diag}(1, 1{-}2q, 1{-}2q)$, violating $\Gamma_{33} = 1$). However, $X$-errors propagate through CZ gates as correlated Pauli errors — $\text{CZ}_{12}(X_2 \otimes I_1) = (Z_1 \otimes X_2)\text{CZ}_{12}$ — producing only local Clifford corrections ($Z$ on neighbors) that preserve graph connectivity. The residual $\mathcal{N}^{(1)}$ therefore does not disconnect vertices and can be absorbed into the local Clifford frame $\mathcal{L}$ of @thm-noisy-clifford-graph.
+- $\mathcal{N}^{(2)}$ is a Pauli channel with error probabilities $(p_x', p_y', p_z') = (0, \min(p_x, p_y)/p, 0)$ (same convention as $\mathcal{N}^{(1)}$).
+- $\Lambda_z(\rho) = \frac{1}{2}\rho + \frac{1}{2}Z\rho Z$ is the Z-projection channel.
+
+The parameter $p$ determines the vertex deletion probability in the graph picture.
+:::
+
+::: {.callout-note collapse="true"}
+## Proof sketch (Click to expand)
+The decomposition follows from expressing the Pauli channel in terms of its action on the Bloch sphere. The key observation is that the $Z$-dephasing component ($p_z$ term) and the lesser of the $X/Y$ components combine to produce a channel that, when restricted to the $|+\rangle$ state, acts as Z-projection. Algebraically, write:
+$$
+p_x X\rho X + p_y Y\rho Y = \min(p_x, p_y)(X\rho X + Y\rho Y) + |p_x - p_y| \cdot \sigma_{\max}\rho \sigma_{\max},
+$$
+where $\sigma_{\max}$ is $X$ if $p_x > p_y$ and $Y$ otherwise. Note that $X\rho X + Y\rho Y + Z\rho Z + \rho = 2(\Lambda_z(\rho) + \Lambda_x(\rho))$ allows extraction of $\Lambda_z$. The residual channel $\mathcal{N}^{(1)}$ has only one non-trivial Pauli component ($X$ or $Y$, with $p_z = 0$). While this is not CZ-commuting in the sense of @lem-commute-channel, single-Pauli errors propagate through CZ gates as correlated Pauli errors (e.g., $\text{CZ}(X \otimes I) = (Z \otimes X)\text{CZ}$), producing only local Clifford corrections that preserve the graph structure. See [@rajakumar2024polynomial] for the full derivation. $\square$
+:::
+
+## Graph Interpretation {#sec-graph-interpretation}
+
+The Z-projection decomposition translates the noisy circuit into a **site percolation** problem on the interaction graph:
+
+- **With probability $1 - 2p$:** The noise channel $\mathcal{N}^{(1)}$ acts. Although $\mathcal{N}^{(1)}$ is *not* CZ-commuting (@lem-commute-channel), it consists of a single-Pauli channel ($X$- or $Y$-only) whose errors propagate through CZ gates as correlated Pauli corrections (e.g., $\text{CZ}(X \otimes I) = (Z \otimes X)\text{CZ}$). These corrections are local Cliffords that preserve graph connectivity and are absorbed into the local frame $\mathcal{L}$ of @thm-noisy-clifford-graph. The vertex remains in the graph.
+- **With probability $2p$:** The Z-projection $\Lambda_z$ acts, which decoheres the qubit into the computational basis. The vertex is effectively **deleted** from the graph, along with all incident edges.
+
+For a circuit with $d$ layers of noise acting on $n + t$ qubits, the decomposition produces a random subgraph: each vertex $v$ is independently deleted with probability $2p_v$ (where $p_v$ depends on the local noise parameters after Clifford conjugation). The resulting graph state, restricted to surviving vertices, determines the simulation difficulty.
+
+::: {#thm-noisy-clifford-graph .callout-important icon="false"}
+## Theorem: Noisy Clifford Circuit as Graph State Manipulation
+A noisy Clifford circuit with $|+\rangle^{\otimes n}$ input state, Clifford gates $\text{Cl}_k$, and Pauli noise $\mathcal{N}_k$ can be equivalently written as manipulation of a graph state:
+$$
+\left(\prod_{k=1}^d \mathcal{N}_k \circ \text{Cl}_k\right) \circ \mathcal{N}_0\left[|+\rangle\langle+|^{\otimes n}\right] = \mathcal{L} \circ \mathcal{G} \circ \left(\prod_{i=1}^d \widetilde{\mathcal{N}}_i\right)\left[|+\rangle\langle+|^{\otimes n}\right],
+$$
+where $\mathcal{G}$ consists of phase (CZ) gates producing the graph state, $\mathcal{L}$ consists of local Clifford corrections, and $\widetilde{\mathcal{N}}_i$ is the Pauli noise with Z-projection decomposition
+$$
+\prod_{i=1}^d \widetilde{\mathcal{N}}_i = \sum_{\vec{s} \in \mathbb{F}_2^n} p(\vec{s}) \, Z^{\vec{s}} \rho \, Z^{\vec{s}} = \sum_{\vec{s} \in \mathbb{F}_2^n} q(\vec{s}) \, \Lambda_z^{\otimes \vec{s}}(\rho),
+$$
+with $p(\vec{s}) = \sum_{\vec{u}: \vec{s} \subseteq \vec{u}} q(\vec{u})/2^{|\vec{u}|}$ and $q(\vec{s}) = \sum_{\vec{u}: \vec{s} \subseteq \vec{u}} p(\vec{u})(-1)^{|\vec{s}| + |\vec{u}|} 2^{|\vec{s}|}$.
+
+Here $\vec{s} \subseteq \vec{u}$ means $\text{supp}(\vec{s}) \subseteq \text{supp}(\vec{u})$, i.e., $u_i = 1$ whenever $s_i = 1$ (equivalently, $\vec{u} \cdot \vec{s} = |\vec{s}|$ where $|\vec{s}| = \sum_i s_i$).
+:::
+
+**Derivation of the $p \leftrightarrow q$ conversion.** The two representations correspond to expanding the composite noise channel in either the **Z-flip basis** ($Z^{\vec{s}} \rho \, Z^{\vec{s}}$) or the **Z-projection basis** ($\Lambda_z^{\otimes \vec{s}}(\rho)$). The conversion follows from the single-qubit identity $\Lambda_z(\rho) = \frac{1}{2}(\rho + Z\rho Z)$, which gives
+$$
+\Lambda_z^{\otimes \vec{s}}(\rho) = \frac{1}{2^{|\vec{s}|}} \sum_{\vec{v}: \vec{v} \subseteq \vec{s}} Z^{\vec{v}} \rho \, Z^{\vec{v}}.
+$$
+Substituting into $\sum_{\vec{s}} q(\vec{s}) \Lambda_z^{\otimes \vec{s}}(\rho) = \sum_{\vec{s}} p(\vec{s}) Z^{\vec{s}} \rho \, Z^{\vec{s}}$ and matching coefficients of $Z^{\vec{s}} \rho \, Z^{\vec{s}}$ yields $p(\vec{s}) = \sum_{\vec{u} \supseteq \vec{s}} q(\vec{u}) / 2^{|\vec{u}|}$. The inverse formula for $q(\vec{s})$ is the **Möbius inversion** on the Boolean lattice $(\mathbb{F}_2^n, \subseteq)$, with Möbius function $\mu(\vec{s}, \vec{u}) = (-1)^{|\vec{u}| - |\vec{s}|}$, giving the stated expression.
+
+The percolation behavior is governed by the distribution $q(\vec{s})$: as long as $p(\vec{0}) > 1/2$ and $p(\vec{s}_1) > p(\vec{s}_2)$ whenever $|\vec{s}_1| < |\vec{s}_2|$, the distribution $q(\vec{s})$ is always non-negative and can be classically sampled. In this regime, given a Z-projection pattern $\vec{s}$, the resulting stabilizer state entangles at most $n - |\vec{s}|$ qubits.
+
+# Random Graph Generation Algorithm {#sec-algorithm}
+
+The percolation-based simulation proceeds through a randomized algorithm that generates graph state samples:
+
+::: {#def-percolation-algorithm .callout-note icon="false"}
+## Algorithm: Percolation Sampling for Amplitude Estimation
+**Input:** Diagonalized noisy Clifford+T circuit with $n$ original qubits and $t$ T-gadget ancillas.
+
+1. Initialize a graph $G$ with $n$ original vertices (in the $|+\rangle$ state).
+2. For each circuit layer $k = 1, \ldots, d$:
+    a. **Clifford gates:** Update the graph connectivity according to the CZ decomposition of $\text{Cl}_k$ (using the control-Pauli to CZ rules of @lem-graph-measurement).
+    b. **T-gadgets:** For each T gate on qubit $i$, add a new ancilla vertex and connect it to vertex $i$ (or its graph-theoretic neighbors, depending on the Clifford context).
+    c. **Noise channels:** For each local Pauli noise on qubit $i$, sample: with probability $2p_i$, **delete** vertex $i$ and all incident edges (Z-projection); otherwise, apply the CZ-commuting residual.
+3. For the measurement on $\langle 0|^{\otimes n}$: randomly **remove** or **retain** each original vertex (corresponding to the computational basis measurement, which is a $Z$-measurement that deletes edges).
+4. Obtain a graph $G'$ on the remaining $\leq t$ ancilla vertices.
+5. Compute $\langle G' | L \, |A\rangle^{\otimes t'} \rangle$ --- the inner product between the percolated graph state and the product magic state --- using MBQC simulation methods.
+:::
+
+::: {#thm-variance-bound .callout-important icon="false"}
+## Theorem: Variance Bound for Percolation Sampling
+The algorithm samples from graph states with local Clifford corrections $\{|G_i\rangle, L_i\}_i$, where each sample satisfies
+$$
+|\langle G_i | L_i \, |A\rangle^{\otimes t}|^2 \leq 2^{-t'_i},
+$$
+where $t'_i$ is the number of surviving ancilla vertices in the $i$-th sample. The variance of the estimator is bounded by $\text{Var} \leq 1$.
+:::
+
+The computational bottleneck is step 5: computing the graph-state overlap. This is where the component size distribution and rank-width become critical.
+
+# Percolation Threshold and Simulation Complexity
+
+## Component Size Criterion
+
+The efficiency of the percolation-based simulation is determined by the component size distribution of the percolated graph.
+
+::: {#thm-percolation-criterion .callout-important icon="false"}
+## Theorem: Percolation Criterion for Efficient Simulation
+If the randomized graph generated by the percolation sampling algorithm can be decomposed into connected components $V_1, \ldots, V_m$ satisfying the exponential tail bound
+$$
+\text{Prob}\!\left(\max_i |V_i| > x\right) \leq e^{-\alpha x},
+$$
+then there exists a Monte Carlo method that samples from a distribution $Q_C$ with
+$$
+\|Q_C - P_C\|_{\text{TVD}} \leq \varepsilon
+$$
+in time $T \leq O(n^{c\alpha^{-1} + c'})$, where $c, c'$ are universal constants.
+:::
+
+::: {.callout-note collapse="true"}
+## Proof sketch (Click to expand)
+Each connected component $V_i$ of the percolated graph state can be simulated independently. For a component of size $|V_i|$, the inner product $\langle G_{V_i} | \psi_{V_i}\rangle$ can be computed in time $O(2^{|V_i|})$ by brute force, or more efficiently if the component has bounded rank-width (@thm-rankwidth-simulation below). The exponential tail bound ensures:
+
+- The expected maximum component size is $O(\alpha^{-1} \log n)$.
+- With high probability, all components have size $O(\alpha^{-1} \log n)$.
+- The total simulation time for all components is $O(n \cdot 2^{O(\alpha^{-1} \log n)}) = O(n^{c\alpha^{-1} + 1})$.
+
+The Monte Carlo estimation combines samples from the random graph ensemble, with variance bounded by @thm-variance-bound. $\square$
+:::
+
+## Subcritical vs Supercritical Regimes
+
+The percolation threshold separates two qualitatively different regimes:
+
+**Subcritical regime** ($1 - 2p < q_c$, strong noise). The graph fragments into small connected components of size $O(\log n)$. Each component involves a bounded number of magic state overlaps, computable in $\text{poly}(n)$ time. This is the classically simulable regime.
+
+**Supercritical regime** ($1 - 2p > q_c$, weak noise). A **giant connected component** of size $\Theta(n)$ emerges, requiring exponential resources to compute the corresponding overlap. The circuit retains quantum computational advantage.
+
+Here $q_c$ is the critical **site occupation** probability: in the Z-projection decomposition each vertex is retained with probability $1 - 2p$ and deleted with probability $2p$, so the relevant percolation model is **site percolation** on the interaction graph.
+
+The critical occupation probability $q_c$ depends on the graph structure:
+
+- For random $\Delta$-regular graphs: $q_c \approx 1/(\Delta - 1)$, since these graphs are locally tree-like with high probability and on trees the critical threshold is exactly $1/(\Delta - 1)$ [@bollobas2001random]. (Note: site and bond percolation thresholds coincide on trees but can differ on general locally tree-like graphs with non-uniform degree distributions.)
+- For 2D lattice graphs (relevant to geometrically local circuits): $q_c \approx 0.593$ for site percolation on the square lattice; the bond percolation threshold is exactly $1/2$ [@grimmett1999percolation].
+- For the specific interaction graphs arising from circuit diagonalization, $q_c$ depends on the circuit architecture and must generally be determined numerically.
+
+## Application to Noisy IQP Circuits
+
+The percolation approach was first applied to noisy IQP (instantaneous quantum polynomial-time) circuits, which are naturally in the "CZ + local operations" form:
+
+::: {#thm-noisy-iqp .callout-important icon="false"}
+## Theorem: Simulation of Noisy IQP Circuits [@rajakumar2024polynomial; @rajakumar2025polynomial]
+Given a $k$-local NISQ-IQP circuit of depth $d$ on $n$ qubits with Pauli noise $\mathcal{N}_{p_x, p_y, p_z}$, let $p = p_z + \min(p_x, p_y)$. If $d > O(p^{-1}\log(kp^{-1}))$, there exists a randomized classical algorithm that samples from $Q$ with $\|Q - P\|_{\text{TVD}} \leq \varepsilon$ in time $T \leq O(d \cdot \text{poly}(n/\varepsilon))$.
+:::
+
+The depth condition $d > O(p^{-1}\log(kp^{-1}))$ ensures that enough noise has accumulated to push the system below the percolation threshold, fragmenting the interaction graph. The key advance of the gadget-based extension is that *universal* Clifford+T circuits can also be brought into this form via diagonalization, giving:
+
+::: {#thm-sparse-t-percolation .callout-important icon="false"}
+## Theorem: Noise Threshold for Sparse-T Circuits
+*(Restated from [Pauli Path Methods](pauli_path.qmd#thm-sparse-CT) for the percolation perspective.)*
+
+Given a 2-dimensional, $(Q, k)$-sparse, localized Clifford+T circuit $C$ with depolarizing noise layers $\Lambda(\rho) = (1-p)\rho + (p/2)\mathbb{I}$ (mixing convention; per-Pauli suppression $1-p$), if $2^Q(1-p) < 1$, then the variance of the gate sampling algorithm satisfies $\text{Var} \leq \text{poly}(n)$. Furthermore, adding amplitude damping noise to this circuit will never increase the simulation complexity.
+:::
+
+This theorem connects the percolation threshold to the **operator stabilizer entropy** $Q$ of the T-gadget operators: when noise is strong enough to suppress the magic resource below the percolation threshold, the circuit becomes classically simulable.
+
+# MBQC Simulation via Rank-Width {#sec-mbqc}
+
+Once the percolated graph state is obtained, the remaining task is to compute its overlap with a product of magic states. This is a measurement-based quantum computation (MBQC) problem, whose complexity is governed by the entanglement structure of the graph state.
+
+## Entanglement Width
+
+::: {#def-entanglement-width .callout-note icon="false"}
+## Definition: Entanglement Width
+Given an $n$-qubit state $|\psi\rangle$ and a tree decomposition $T$ of its qubits, the **entanglement width** is
+$$
+E_{\text{wd}}(|\psi\rangle) := \min_T \max_{e \in T} E_{A_T^e, B_T^e}(|\psi\rangle),
+$$
+where $E_{A_T^e, B_T^e}(|\psi\rangle)$ is the entanglement entropy across the bipartition $(A_T^e, B_T^e)$ induced by removing edge $e$ from tree $T$.
+:::
+
+::: {#thm-ttn-representation .callout-important icon="false"}
+## Theorem: Tree Tensor Network Representation [@van2007classical]
+Given an $n$-qubit state $|\psi\rangle$ and a tensor tree graph $T$, there exists a tree tensor network (TTN) representation with maximum bond dimension $D$ satisfying
+$$
+\log_2 D = \max_{e \in T} \chi_{A_T^e, B_T^e}(|\psi\rangle),
+$$
+where $\chi_{A_T^e, B_T^e}$ is the Schmidt rank across bipartition $(A_T^e, B_T^e)$.
+:::
+
+## Rank-Width and Classical Simulation
+
+For graph states, the relevant structural parameter is the **rank-width** of the underlying graph, which upper bounds the entanglement width:
+
+::: {#thm-rankwidth-simulation .callout-important icon="false"}
+## Theorem: Rank-Width Criterion for Efficient MBQC Simulation
+For graph states, the following hold:
+
+1. **Decidability:** Determining whether the rank-width satisfies $\text{rwd}(G) \leq k$ can be done in $O(n^3)$ time. The algorithm either certifies $\text{rwd}(G) > k$ or outputs a subcubic tree $T^*$ satisfying
+$$
+\text{rwd}(G) \leq \max_{e \in T^*} \text{rank}_{\mathbb{F}_2} \Gamma(A_{T^*}^e, B_{T^*}^e) = 3k - 1.
+$$
+
+2. **Efficient simulation:** If $\text{rwd}(G) = O(\log n)$, then the graph state $|G\rangle$ admits a tree tensor network representation with bond dimension $D = \text{poly}(n)$, and any non-adaptive measurement pattern on $|G\rangle$ (including MBQC) can be classically simulated in $\text{poly}(n)$ time.
+:::
+
+The rank-width bound closes the loop: the percolation criterion (@thm-percolation-criterion) ensures small components, and the rank-width criterion ensures each component's graph-state overlap is efficiently computable. For subcritical percolation on bounded-degree graphs, the components are trees or tree-like, with rank-width $O(1)$.
+
+## Planarity as an Alternative Criterion
+
+For certain graph families, **planarity** provides an alternative route to efficient simulation. Planar graph states have rank-width at most $O(\sqrt{n})$, and for planar graphs with bounded tree-width, the MBQC simulation can be done in polynomial time. This is relevant for 2D circuit architectures where the interaction graph is planar or near-planar.
+
+Quantitatively, planar graphs satisfy $\text{rwd}(G) \leq \lfloor (3\,\text{bwd}(G) - 1)/2 \rfloor$ where $\text{bwd}$ is the branch-width, and planar graphs on $n$ vertices have branch-width $O(\sqrt{n})$ [@van2007classical]. For 2D local circuits, the interaction graph is planar with bounded degree, giving $\text{rwd}(G) = O(\sqrt{n})$ and hence bond dimension $D = 2^{O(\sqrt{n})}$ — sub-exponential but not polynomial. Polynomial-time MBQC simulation via planarity therefore requires additional structure (e.g., bounded tree-width or sufficient noise-induced fragmentation reducing the effective graph size).
+
+# Connection to Simulation Complexity
+
+## Comparison with Pauli Path Methods
+
+The percolation approach provides a complementary perspective to the [Pauli path methods](pauli_path.qmd):
+
+| Aspect | Percolation | Pauli Path |
+|--------|-------------|------------|
+| **Task** | Amplitude sampling | Pauli average estimation |
+| **Picture** | Schrödinger (state evolution) | Heisenberg (observable evolution) |
+| **Criterion** | Component size distribution | Spectral decay $c_i^2 \lesssim i^{-(1+\delta)}$ |
+| **Efficiency source** | Graph fragmentation by noise | Pauli coefficient suppression |
+| **Resource measure** | Rank-width / percolation threshold | Operator stabilizer entropy |
+
+For the Pauli average estimation task, the analogous criterion involves a **branching process**: efficiency holds when the expected number of descendants per generation decays, governed by the operator stabilizer entropy of the gadget operators. The percolation of graph states (for amplitude sampling) and the branching of Pauli paths (for mean value estimation) are two facets of the same underlying phenomenon: noise-induced suppression of quantum resources.
+
+From the research diary (Round 7, 12.14): given a fixed noisy Clifford+T circuit, the method provides a criterion to test whether the T-gate distribution is sparse enough that noise obscures the magic. For amplitude sampling, the criterion is whether percolation occurs on the associated random graph; for Pauli expectation values, the criterion is whether a branching process produces exponentially many descendants. Both criteria can be evaluated in polynomial time and are related to the operator stabilizer entropy of the gadget operators.
+
+## Advantages of the Percolation Approach
+
+The percolation framework offers several advantages over pure Pauli path methods:
+
+1. **Fixed circuit applicability:** Unlike ensemble-averaged Pauli path results, the percolation criterion applies to *individual* fixed circuits by running the random graph generation algorithm and checking component sizes.
+
+2. **Non-unital noise compatibility:** The approach works for any noise channel whose incoherent part does not introduce magic [@turkeshi2024coherent], including certain non-unital channels. The key requirement is that coherent noise components are Clifford (so they can be absorbed into the circuit structure).
+
+3. **Resource connection:** The simulation complexity is directly linked to entanglement measures (rank-width, tree-width) of the percolated graph, providing a clear resource-theoretic interpretation.
+
+## Open Questions from the Percolation Perspective
+
+Several questions remain (see also [Open Problems](open_problems.qmd)):
+
+- **Random circuit threshold recovery:** For random circuits with noise, does the percolation threshold recover the transition point predicted by Pauli path truncation methods? The percolation picture connects to entanglement, while Pauli path connects to magic; understanding their relationship for random ensembles is an open problem.
+
+- **Strong vs weak simulation:** The percolation approach naturally targets amplitude sampling (weak simulation). Can it be extended to *strong simulation* (computing individual amplitudes to exponential precision)? The amplitude sampling variance bound @thm-variance-bound only guarantees constant additive error.
+
+- **Connection to tensor network truncation:** Can the percolation process be recast as a truncation of a Pauli tensor network? This would unify the graph-theoretic and spectral perspectives (Round 8, 12.13: using tensor network modes to represent high-index Pauli operators, and viewing weight truncation as tensor network truncation).
+
+- **Tightness of the threshold:** For fixed circuits, is the percolation threshold tight, or is there a gap between the noise level needed for percolation and the actual threshold for classical simulability?
+
+# Limitations: Non-Unital Noise {#sec-limitations}
+
+The Z-projection decomposition (@lem-z-projection) is specific to **Pauli noise** (unital channels that are diagonal in the Pauli basis). For non-unital noise such as amplitude damping, the decomposition into CZ-commuting plus Z-projection parts is provably impossible:
+
+::: {#thm-no-go-percolation .callout-important icon="false"}
+## No-Go Theorem (Percolation for Non-Unital Noise)
+The amplitude damping channel $\mathcal{E}_\gamma(\rho) = K_0 \rho K_0^\dagger + K_1 \rho K_1^\dagger$ (with $K_0 = \text{diag}(1, \sqrt{1-\gamma})$, $K_1 = \sqrt{\gamma}|0\rangle\langle 1|$) cannot be decomposed as a classical mixture of a CZ-commuting channel and a Z-projection channel. Consequently, the percolation-based simulation framework does not apply to circuits with amplitude damping noise.
+:::
+
+The proof and implications are discussed in detail in [Non-Unital Noise Barriers](non_unital.qmd). The failure stems from the asymmetric action of amplitude damping: it shrinks the Bloch sphere toward $|0\rangle$ rather than toward the center, violating the unitality condition ($\mathbf{t} = 0$) required for CZ-commutation.
+
+This does not mean non-unital noise is intractable --- the [Pauli path approach](pauli_path.qmd) with its scaling-shifting decomposition can handle amplitude damping for certain circuits, and the [quantum refrigerator](non_unital.qmd) result [@ben2013quantum] shows that non-unital noise can actually *sustain* computation. The percolation barrier is specific to the graph-state reduction framework.
+
+---
+
+[← Gadget-Based Simulation](gadget_simulation.qmd) | [Back to Index](index.qmd) | [Next: Non-Unital Noise Barriers →](non_unital.qmd)

@@ -1,0 +1,52 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 96PHMLI5
+  item_version: 106135
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 2I3KSGTV
+      name: Low entanglment
+      path: Quantum Complexity/QCsim/tensor network/Low entanglment
+    - key: ZGWAW6QG
+      name: TN based
+      path: Quantum Complexity/QCsim/MBQC simulation/TN based
+    - key: RLFPX37S
+      name: treewidth
+      path: Quantum Complexity/QCsim/tensor network/treewidth
+qlab:
+  primary_collection: 2I3KSGTV
+  indexed_collections:
+    - 2I3KSGTV
+    - RLFPX37S
+    - ZGWAW6QG
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: journalArticle
+title: Simulating quantum computation by contracting tensor networks
+authors:
+  - first: Igor L.
+    last: Markov
+  - first: Yaoyun
+    last: Shi
+year: 2008
+abstract: The treewidth of a graph is a useful combinatorial measure of how
+  close the graph is to a tree. We prove that a quantum circuit with $T$ gates
+  whose underlying graph has treewidth $d$ can be simulated deterministically in
+  $T^{O(1)}\exp[O(d)]$ time, which, in particular, is polynomial in $T$ if
+  $d=O(\log T)$. Among many implications, we show efficient simulations for
+  log-depth circuits whose gates apply to nearby qubits only, a natural
+  constraint satisfied by most physical implementations. We also show that
+  one-way quantum computation of Raussendorf and Briegel (Physical Review
+  Letters, 86:5188--5191, 2001), a universal quantum computation scheme with
+  promising physical implementations, can be efficiently simulated by a
+  randomized algorithm if its quantum resource is derived from a small-treewidth
+  graph.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.1137/050644756
+  arxiv: quant-ph/0511069

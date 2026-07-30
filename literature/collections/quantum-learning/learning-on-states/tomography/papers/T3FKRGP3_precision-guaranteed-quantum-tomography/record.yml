@@ -1,0 +1,50 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: T3FKRGP3
+  item_version: 96079
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: EIP4ZQQD
+      name: Tomography
+      path: Quantum Learning/Learning on states/Tomography
+qlab:
+  primary_collection: EIP4ZQQD
+  indexed_collections:
+    - EIP4ZQQD
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: journalArticle
+title: Precision-guaranteed quantum tomography
+authors:
+  - first: Takanori
+    last: Sugiyama
+  - first: Peter S.
+    last: Turner
+  - first: Mio
+    last: Murao
+year: 2013
+abstract: Quantum state tomography is the standard tool in current experiments
+  for verifying that a state prepared in the lab is close to an ideal target
+  state, but up to now there were no rigorous methods for evaluating the
+  precision of the state preparation in tomographic experiments. We propose a
+  new estimator for quantum state tomography, and prove that the (always
+  physical) estimates will be close to the true prepared state with high
+  probability. We derive an explicit formula for evaluating how high the
+  probability is for an arbitrary finite-dimensional system and explicitly give
+  the one- and two-qubit cases as examples. This formula applies for any
+  informationally complete sets of measurements, arbitrary finite number of data
+  sets, and general loss functions including the infidelity, the
+  Hilbert-Schmidt, and the trace distances. Using the formula, we can evaluate
+  not only the difference between the estimated and prepared states, but also
+  the difference between the prepared and target states. This is the first
+  result directly applicable to the problem of evaluating the precision of
+  estimation and preparation in quantum tomographic experiments.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.1103/physrevlett.111.160406
+  arxiv: "1306.4191"

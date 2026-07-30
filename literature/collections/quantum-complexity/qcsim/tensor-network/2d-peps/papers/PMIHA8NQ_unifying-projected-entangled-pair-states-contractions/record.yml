@@ -1,0 +1,52 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: PMIHA8NQ
+  item_version: 107975
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: XM8QHEMQ
+      name: 2D-PEPS
+      path: Quantum Complexity/QCsim/tensor network/2D-PEPS
+qlab:
+  primary_collection: XM8QHEMQ
+  indexed_collections:
+    - XM8QHEMQ
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: journalArticle
+title: Unifying Projected Entangled Pair States contractions
+authors:
+  - first: Michael
+    last: Lubasch
+  - first: J. Ignacio
+    last: Cirac
+  - first: Mari-Carmen
+    last: Bañuls
+year: 2014
+abstract: The approximate contraction of a Projected Entangled Pair States
+  (PEPS) tensor network is a fundamental ingredient of any PEPS algorithm,
+  required for the optimization of the tensors in ground state search or time
+  evolution, as well as for the evaluation of expectation values. An exact
+  contraction is in general impossible, and the choice of the approximating
+  procedure determines the efficiency and accuracy of the algorithm. We analyze
+  different previous proposals for this approximation, and show that they can be
+  understood via the form of their environment, i.e. the operator that results
+  from contracting part of the network. This provides physical insight into the
+  limitation of various approaches, and allows us to introduce a new strategy,
+  based on the idea of clusters, that unifies previous methods. The resulting
+  contraction algorithm interpolates naturally between the cheapest and most
+  imprecise and the most costly and most precise method. We benchmark the
+  different algorithms with finite PEPS, and show how the cluster strategy can
+  be used for both the tensor optimization and the calculation of expectation
+  values. Additionally, we discuss its applicability to the parallelization of
+  PEPS and to infinite systems (iPEPS).
+tags:
+  - Condensed Matter - Strongly Correlated Electrons
+  - Quantum Physics
+identifiers:
+  doi: 10.1088/1367-2630/16/3/033014
+  arxiv: "1311.6696"

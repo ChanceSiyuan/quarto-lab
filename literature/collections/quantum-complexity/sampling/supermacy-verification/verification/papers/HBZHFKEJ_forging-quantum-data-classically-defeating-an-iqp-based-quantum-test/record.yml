@@ -1,0 +1,57 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: HBZHFKEJ
+  item_version: 96095
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: H5F9PKZR
+      name: verification
+      path: Quantum Complexity/Sampling/supermacy verification/verification
+    - key: BLR38PUL
+      name: classical simulation
+      path: Quantum Complexity/Sampling/IQP/classical simulation
+qlab:
+  primary_collection: H5F9PKZR
+  indexed_collections:
+    - BLR38PUL
+    - H5F9PKZR
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: journalArticle
+title: "Forging quantum data: classically defeating an IQP-based quantum test"
+authors:
+  - first: Gregory D.
+    last: Kahanamoku-Meyer
+year: 2023
+abstract: Recently, quantum computing experiments have for the first time
+  exceeded the capability of classical computers to perform certain computations
+  -- a milestone termed "quantum computational advantage." However, verifying
+  the output of the quantum device in these experiments required extremely large
+  classical computations. An exciting next step for demonstrating quantum
+  capability would be to implement tests of quantum computational advantage with
+  efficient classical verification, such that larger system sizes can be tested
+  and verified. One of the first proposals for an efficiently-verifiable test of
+  quantumness consists of hiding a secret classical bitstring inside a circuit
+  of the class IQP, in such a way that samples from the circuit's output
+  distribution are correlated with the secret (arXiv:0809.0847). The classical
+  hardness of this protocol has been supported by evidence that directly
+  simulating IQP circuits is hard, but the security of the protocol against
+  other (non-simulating) classical attacks has remained an open question. In
+  this work we demonstrate that the protocol is not secure against classical
+  forgery. We describe a classical algorithm that can not only convince the
+  verifier that the (classical) prover is quantum, but can in fact can extract
+  the secret key underlying a given protocol instance. Furthermore, we show that
+  the key extraction algorithm is efficient in practice for problem sizes of
+  hundreds of qubits. Finally, we provide an implementation of the algorithm,
+  and give the secret vector underlying the "$25 challenge" posted online by the
+  authors of the original paper.
+tags:
+  - Computer Science - Cryptography and Security
+  - Quantum Physics
+identifiers:
+  doi: 10.22331/q-2023-09-11-1107
+  arxiv: "1912.05547"

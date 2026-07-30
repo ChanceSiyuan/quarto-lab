@@ -1,0 +1,65 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: PXVAKKQU
+  item_version: 96035
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: ZKNJ5925
+      name: Magic
+      path: Quantum Resource/Magic
+    - key: KQ8WNR34
+      name: operations
+      path: Quantum Resource/Magic/Quantification/operations
+    - key: XAMFDVE4
+      name: TN&magic
+      path: Quantum Complexity/QCsim/tensor network/TN&magic
+qlab:
+  primary_collection: ZKNJ5925
+  indexed_collections:
+    - KQ8WNR34
+    - XAMFDVE4
+    - ZKNJ5925
+  primary_topic: quantum-resource
+  indexed_topics:
+    - quantum-complexity
+    - quantum-resource
+item_type: preprint
+title: Magic of the Heisenberg Picture
+authors:
+  - first: Neil
+    last: Dowling
+  - first: Pavel
+    last: Kos
+  - first: Xhek
+    last: Turkeshi
+year: 2024
+abstract: Magic quantifies the non-Clifford operations required for preparing a
+  state on quantum processors and sets bounds on the classical computational
+  complexity of simulating quantum dynamics. We study a non-stabilizerness
+  resource theory for operators, which is dual to that describing states. We
+  identify that the stabilizer R\'enyi entropy analog in operator space is a
+  good magic monotone satisfying the usual conditions, while inheriting
+  efficient computability properties and providing a tight lower-bound to the
+  minimum number of non-Clifford gates in a circuit. It is operationally
+  well-defined as quantifying how well one can approximate an operator with one
+  that has only few Pauli strings; analogous to the relation between
+  entanglement entropy and tensor-network truncation. An immediate advantage is
+  that the operator stabilizer entropies exhibit inherent locality through a
+  Lieb-Robinson bound, making them particularly suited for studying local
+  dynamical magic generation in many-body systems. We compute this quantity
+  analytically in two distinct regimes. First, we show that random evolution
+  typically has approximately maximal magic in the Heisenberg picture for all
+  R\'enyi indices, and evaluate the Page correction. Second, harnessing both
+  dual unitarity and ZX graphical calculus, we compute the operator stabilizer
+  entropy evolution for an interacting integrable XXZ circuit. In this case,
+  magic quickly saturates to a constant. This monotone reveals structural
+  properties of many-body magic generation, and can inspire Clifford-assisted
+  tensor network methods.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2408.16047
+  arxiv: "2408.16047"

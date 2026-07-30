@@ -1,0 +1,60 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: P3MSMLVY
+  item_version: 101255
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: KS8H3U7A
+      name: Nonparametric
+      path: Quantum Learning/Machine learning/Nonparametric
+qlab:
+  primary_collection: KS8H3U7A
+  indexed_collections:
+    - KS8H3U7A
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: preprint
+title: A Bernstein polynomial approach for the estimation of cumulative
+  distribution functions in the presence of missing data
+authors:
+  - first: Rihab
+    last: Gharbi
+  - first: Wissem
+    last: Jedidi
+  - first: Salah
+    last: Khardani
+  - first: Frédéric
+    last: Ouimet
+year: 2025
+abstract: "We study nonparametric estimation of univariate cumulative
+  distribution functions (CDFs) pertaining to data missing at random. The
+  proposed estimators smooth the inverse probability weighted (IPW) empirical
+  CDF with the Bernstein operator, yielding monotone, [0, 1]-valued curves that
+  automatically adapt to bounded supports. We analyze two versions: a pseudo
+  estimator that uses known propensities and a feasible estimator that uses
+  propensities estimated nonparametrically from discrete auxiliary variables,
+  the latter scenario being much more common in practice. For both, we derive
+  pointwise bias and variance expansions, establish the optimal polynomial
+  degree m with respect to the mean integrated squared error, and prove the
+  asymptotic normality. A key finding is that the feasible estimator has a
+  smaller variance than the pseudo estimator by an explicit nonnegative
+  correction term. We also develop an efficient degree selection procedure via
+  least-squares cross-validation. Monte Carlo experiments demonstrate that, for
+  moderate to large sample sizes, the Bernstein-smoothed feasible estimator
+  outperforms both its unsmoothed counterpart and an integrated version of the
+  IPW kernel density estimator proposed by Dubnicka (2009) in the same context.
+  A real-data application to fasting plasma glucose from the 2017–2018 NHANES
+  survey illustrates the method in a practical setting. All code needed to
+  reproduce our analyses is readily accessible on GitHub."
+tags:
+  - 62G05, 62E20, 62G08, 62G20
+  - "FOS: Computer and information sciences"
+  - "FOS: Mathematics"
+  - Methodology (stat.ME)
+  - Statistics Theory (math.ST)
+identifiers:
+  doi: 10.48550/arxiv.2510.07235

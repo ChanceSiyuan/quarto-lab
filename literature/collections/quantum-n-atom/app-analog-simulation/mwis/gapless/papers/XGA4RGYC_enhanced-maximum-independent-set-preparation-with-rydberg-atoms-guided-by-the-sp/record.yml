@@ -1,0 +1,52 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: XGA4RGYC
+  item_version: 110284
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: TLM3AYYZ
+      name: gapless
+      path: Quantum N-Atom/App-Analog simulation/MWIS/gapless
+qlab:
+  primary_collection: TLM3AYYZ
+  indexed_collections:
+    - TLM3AYYZ
+  primary_topic: quantum-n-atom
+  indexed_topics:
+    - quantum-n-atom
+item_type: preprint
+title: Enhanced Maximum Independent Set Preparation with Rydberg Atoms Guided by
+  the Spectral Gap
+authors:
+  - first: Seokho
+    last: Jeong
+  - first: Minhyuk
+    last: Kim
+year: 2026
+abstract: Adiabatic quantum computation with Rydberg atoms provides a natural
+  route for solving combinatorial optimization problems such as the maximum
+  independent set (MIS). However, its performance is fundamentally limited by
+  the reduction of the spectral gap with increasing system size and
+  connectivity, which induces population leakage from the ground state during
+  finite-time evolution. Here we introduce the Adjusted Detuning for
+  Ground-Energy Leakage Blockade (ADGLB), a spectral-gap-guided schedule
+  engineering method that modifies the laser detuning profile to suppress
+  leakage without introducing additional Hamiltonian terms or iterative
+  optimization loops. We experimentally benchmark ADGLB on a
+  quasi-one-dimensional chain of $N=10$ atoms, and the MIS preparation
+  probability increases substantially compared with the standard adiabatic
+  schedule. Furthermore, we show that the schedule optimized for smaller
+  instances can be directly applied to larger two-dimensional triangular
+  lattices with $N=25$ and $N=37$. With a small heuristic offset, the method
+  also remains effective for instances with higher hardness parameters. These
+  findings demonstrate that spectral-gap-guided schedule engineering offers a
+  scalable and hardware-efficient strategy for enhancing adiabatic quantum
+  optimization on neutral-atom platforms.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2602.17991
+  arxiv: "2602.17991"

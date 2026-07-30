@@ -1,0 +1,146 @@
+---
+title: Noise and Classical Simulation
+description: If circuits are noisy, they become easier to simulate classically.
+categories:
+  - theory
+---
+
+[← Back to Index](index.qmd)
+
+# Noise Effects on IQP Simulability
+
+If circuits are noisy, they become easier to simulate classically. There are many ways to exploit noise to design classical simulation algorithms for fixed and random circuits, which in recent years have developed into the Pauli path simulation framework.
+
+How can the noise model be generalized beyond depolarization? Is classical simulation under other noise models different from depolarization? What noise properties determine the ability to destroy quantum advantage? There are many theoretically interesting directions here!
+
+The Clifford+T IQP classical simulation method of @bravyi2019simulation was the first to use Fourier transform and high-weight Pauli truncation ideas; the approach of @bremner2016sparse is its generalization.
+
+## Pauli Path Simulation
+
+### Basic Idea
+
+Consider a noisy circuit with depolarizing channels $\mathcal{D}_i$ interleaved with unitaries $U_i$:
+
+$$
+C(\rho_0) = \mathcal{D}_d\{U_d \cdots \mathcal{D}_1\{U_1 \mathcal{D}_0\{\rho_0\} U_1^\dagger\} \cdots U_d^\dagger\},
+$$
+
+where the adjoint depolarizing channel acts as $\mathcal{D}^\dagger(P) = (1-\gamma)^{\text{wt}(P)} P$.
+
+Expanding in the Pauli basis gives a path integral:
+
+$$
+\begin{aligned}
+\text{Avg}(C, O, \gamma) &= \text{tr}[C^\dagger(O)\rho_0] = 2^{-n(d+1)} \sum_{\vec{P} = (P_0, \ldots, P_d)} (1-\gamma)^{\text{wt}(\vec{P})} f(\vec{P}, O), \\
+\text{where } f(C, \vec{P}, O) &= \langle\!\langle O|P_d\rangle\!\rangle \langle\!\langle P_d|U_d|P_{d-1}\rangle\!\rangle \cdots \langle\!\langle P_1|U_1|P_0\rangle\!\rangle \langle\!\langle P_0|\rho_0\rangle\!\rangle.
+\end{aligned}
+$$
+
+## Clifford+T IQP Simulation
+
+First note that for $\text{IQP}_{1,2}(\pi/8)$ circuits, computing $\langle Z^a \rangle$ is straightforward. This is because:
+
+$$
+\langle Z^a \rangle = \langle 0|^n H^n C^\dagger H^n Z^a H^n C H^n |0\rangle^n = \langle 0|^n H^n C^\dagger X^a C H^n |0\rangle^n.
+$$
+
+Since $C$ is in the third level of the Clifford hierarchy, $C^\dagger X^a C$ is a Clifford gate, so efficient classical computation is possible via Clifford simulation.
+
+Using this property, noisy IQP circuits can be efficiently approximately strongly simulated:
+
+::: {#lem-clifford-t-simulation .callout-important icon="false"}
+## Noisy Clifford+T IQP Simulation
+
+For anti-concentrating IQP circuits $H^{\otimes n} D H^{\otimes n}$ with diagonal $D$ from the gate set $\{CZ, Z, S, T\}$ ($\text{IQP}_{1,2}(\pi/8)$), if depolarizing noise acts on each input state, i.e., the input state is $((1-\varepsilon)|0\rangle\!\langle 0| + \frac{\varepsilon}{2}I)^{\otimes n}$, there exists an efficient classical algorithm that in time $n^{O(\log(\sqrt{\alpha}/\delta)/\varepsilon)}$ approximates the output probability of at least a $1 - 2/\alpha$ fraction of $\text{IQP}_{1,2}(\pi/8)$ circuits to additive error $\delta$ (in $\ell_1$ norm) [@bravyi2019simulation, Theorem 1].
+:::
+
+::: {.callout-note collapse="true"}
+## Proof (Click to expand)
+
+*Proof.* The first step is a Fourier-transform-like operation that isolates individual terms in $\rho = \sum_s \rho_s Z^s$. Note that:
+
+$$
+\frac{1}{2} \sum_{a=0,1} X^a \rho\, X^a (-1)^{as} = \rho_s Z^s.
+$$
+
+Therefore we construct:
+
+$$
+q_{\vec{a}}(\vec{y}) = \langle 0|^n H^n C^\dagger H^n X^a |0\rangle\!\langle 0|^n X^a H^n C H^n |0\rangle^n,
+$$
+
+and consider its Fourier transform with respect to $\vec{a}$: $\hat{q}_{\vec{s}}(\vec{y}) = \frac{1}{2^n} \sum_{\vec{a}} (-1)^{\vec{a} \cdot \vec{s}} q_{\vec{a}}(\vec{y})$. We can recover $q_{\vec{a}}(\vec{y})$ via the inverse transform:
+
+$$
+\frac{1}{2^n} \sum_{\vec{s}} \hat{q}_{\vec{s}}(\vec{y}) (-1)^{\vec{t} \cdot \vec{s}} = \frac{1}{2^{2n}} \sum_{\vec{s}} (-1)^{\vec{t} \cdot \vec{s}} \sum_{\vec{a}} (-1)^{\vec{a} \cdot \vec{s}} q_{\vec{a}}(\vec{y}) = \frac{1}{2^n} q_{\vec{t}}(\vec{y}).
+$$
+
+Therefore, we only need to compute $q_{\vec{0}}(\vec{y}) = 2^n \sum_{\vec{s}} \hat{q}_{\vec{s}}(\vec{y})$ to obtain the desired distribution, and each $\hat{q}_{\vec{s}}(\vec{y})$ can be computed in polynomial time:
+
+$$
+\begin{aligned}
+\hat{q}_{\vec{s}}(\vec{y}) &= \sum_{\vec{a}} (-1)^{\vec{a} \cdot \vec{s}} q_{\vec{a}}(\vec{y}) \\
+&= \langle 0|^n H^n C^\dagger H^n \left[\frac{1}{2^n} \sum_{\vec{a}} (-1)^{\vec{a} \cdot \vec{s}} X^a |0\rangle\!\langle 0|^n X^a\right] H^n C H^n |0\rangle^n \\
+&= \langle 0|^n H^n C^\dagger H^n \frac{1}{2^n} Z^{\vec{s}} H^n C H^n |0\rangle^n \\
+&= \frac{1}{2^n} \langle 0|^n H^n C^\dagger X^{\vec{s}} C H^n |0\rangle^n.
+\end{aligned}
+$$
+
+If the input state changes from $|0\rangle\!\langle 0|^n = \frac{1}{2^n}(I + Z)^n$ to $((1-\varepsilon)|0\rangle\!\langle 0| + \frac{\varepsilon}{2}I)^{\otimes n} = \frac{1}{2^n}(I + (1-\varepsilon)Z)^n$, then:
+
+$$
+\hat{q}_{\vec{s}}(\vec{y}, \varepsilon) = \frac{1}{2^n} \langle 0|^n H^n C^\dagger X^{\vec{s}} C H^n |0\rangle^n (1-\varepsilon)^{\text{wt}(\vec{s})}.
+$$
+
+Without noise, each $\hat{q}_{\vec{s}}(\vec{y})$ has comparable weight and cannot be discarded, requiring exponential computational resources. With noise, the factor $(1-\varepsilon)^{\text{wt}(\vec{s})}$ exponentially suppresses terms depending on the weight of $\vec{s}$. Therefore, we consider a truncation: only compute $\hat{q}_{\vec{s}}(\vec{y}, \varepsilon)$ for $\text{wt}(\vec{s}) < l$, and use these values for the inverse Fourier transform. This requires $\sum_{i=0}^l \binom{n}{i} \times \mathcal{O}(n^3) \sim \mathcal{O}(n^3 n^l)$ computational resources.
+
+Establishing a uniform distribution over all possible IQP circuits, the average error from truncation satisfies:
+
+$$
+\mathbb{E}_D \|q'_{\vec{0}} - q_{\vec{0}}\|_1^2 \leq 2^n(1-\varepsilon)^{2l} \cdot \mathbb{E}_D \sum_{\vec{y} \in \mathbb{F}_2^n} p_{\vec{0}}^2(\vec{y}) \leq 2^n(1-\varepsilon)^{2l} \cdot 2^{-(n-1)} = 2\, e^{\ln(1-\varepsilon) \cdot 2l} \leq 2\, e^{-2\varepsilon l}.
+$$
+
+$$
+\begin{aligned}
+\Pr(\|q'_{\vec{0}} - q_{\vec{0}}\|_1^2 \geq \alpha\, e^{-2\varepsilon l}) &\leq 2/\alpha, \\
+\Pr(\|q'_{\vec{0}} - q_{\vec{0}}\|_1 < \sqrt{\alpha}\, e^{-\varepsilon l}) &> 1 - 2/\alpha.
+\end{aligned}
+$$
+
+Since circuits are equiprobable, at least a $1 - 2/\alpha$ fraction have additive error less than $\delta = \sqrt{\alpha}\, e^{-\varepsilon l}$. Solving for $l$ gives the truncation level $l = \ln(\sqrt{\alpha}/\delta)/\varepsilon$. $\square$
+:::
+
+## General IQP Simulation
+
+The above result relies on the only non-Clifford gate being $T$, which is in the third level of the Clifford hierarchy. In fact, this can be generalized to any anti-concentrating IQP circuit. Let the diagonal matrix satisfy $D|x\rangle = f(x)|x\rangle$ where $f: \{0,1\}^n \to U(1)$. The algorithm is summarized as follows:
+
+**Algorithm 1** ($\ell_1$ approximation of IQP circuit with depolarization noise) [@bremner2016sparse, Theorem 4]:
+
+Set target additive error $\delta$. The circuit to be simulated satisfies (in the noiseless case) $\mathbb{E}_C[\sum_x p_x^2] \leq \beta\, 2^{-n}$. Set the algorithm success probability $r$. Choose $\alpha > \beta(1-r)^{-1}$, $l = \lceil \ln(2\alpha/\delta^2)/(2\varepsilon) \rceil + 1$, $\zeta = 1 - r/(1 - \beta/\alpha)$.
+
+1. **Estimate Fourier coefficients.** For each $s \in S := \{s \in \{0,1\}^n : |s| \leq l\}$ (at most $n^l + 1$ elements), estimate $\hat{p}(s)$ to $\ell_1$ error $\eta = 2^{-n}(\delta/\sqrt{2})(n^l + 1)^{-1/2}$ with failure probability $\zeta$:
+    a. Set $\eta_0 = \eta \cdot 2^n$ and $\zeta_0 = \zeta/(n^l + 1)$.
+    b. Uniformly randomly sample $x \in \{0,1\}^n$, compute $f(x)^* f(x+s)$, repeat $\eta_0^{-2}$ times, and compute the average.
+    c. Repeat step (b) $\zeta_0^{-1}$ times and take the median to obtain $A(s)$. Set $\hat{p}(s) = 2^{-n} A(s)$.
+2. **Compute marginals.** Using the computed $\hat{p}(s)$, for a given $y$, compute the marginal distribution $S_y = \sum_{x:\, x_{1,\ldots,k} = y} p(x)$:
+    a. Compute $2^{n-k} \sum_{s \in S,\, s_{k+1} \cdots s_n = 0} \hat{q}(s)(-1)^{y \cdot s}$, requiring at most $n^l + 1$ time.
+    b. The computed distribution has $\ell_1$ distance $< \delta$ from the true noisy distribution with success probability $r$.
+3. **Sample** using the computed marginal distributions.
+
+::: {.callout-note collapse="true"}
+## Proof sketch (Click to expand)
+
+From $\mathbb{E}_C[\sum_x p_x^2] \leq \beta\, 2^{-n}$, by Markov's inequality: $\Pr[\sum_x p_x^2 > \alpha\, 2^{-n}] \leq \beta/\alpha$.
+
+The overall complexity of the algorithm is $\delta^{-2} \zeta^{-1} n^{3l}$. For concrete parameters $\alpha = 5$, $\delta = 1/192$, $r = 1 - 10^{-4}$, $\alpha = (10^4 + 100)\beta$, with noise rate $\varepsilon = 0.5\%$, the final classical simulation complexity gives $l = 2043$. While polynomial, this is still practically infeasible for classical computers.
+:::
+
+In actual experiments, more gates imply a larger effective $\varepsilon$, so the above algorithm becomes effective when circuits have many gates!
+
+## Graph-Based Simulation
+
+::: {#thm-graph-simulation .callout-important icon="false"}
+## Graph-Based Classical Simulation
+
+An IQP circuit on $n$ qubits with depth $d$ and $k$-local diagonal gates, subject to identical Pauli noise $(p_X, p_Y, p_Z)$ per layer per qubit, with $p = p_Z + \min(p_X, p_Y)$: there exists a depth threshold $d_c \leq \mathcal{O}(p^{-1} \log(kp^{-1}))$ such that for $d \geq d_c$, a randomized classical algorithm can sample from the exact distribution with expected runtime $\mathbb{E}[T] \leq \mathcal{O}(dn^5)$.
+:::

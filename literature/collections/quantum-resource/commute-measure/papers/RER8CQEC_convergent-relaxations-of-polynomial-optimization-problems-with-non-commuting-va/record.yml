@@ -1,0 +1,52 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: RER8CQEC
+  item_version: 101550
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 5SFGQYSS
+      name: commute_measure
+      path: Quantum Resource/commute_measure
+    - key: TTLDCUVL
+      name: quantum
+      path: Quantum Learning/Machine learning/Nonparametric/quantum
+qlab:
+  primary_collection: 5SFGQYSS
+  indexed_collections:
+    - 5SFGQYSS
+    - TTLDCUVL
+  primary_topic: quantum-resource
+  indexed_topics:
+    - quantum-learning
+    - quantum-resource
+item_type: journalArticle
+title: Convergent relaxations of polynomial optimization problems with
+  non-commuting variables
+authors:
+  - first: Stefano
+    last: Pironio
+  - first: Miguel
+    last: Navascues
+  - first: Antonio
+    last: Acin
+year: 2010
+abstract: We consider optimization problems with polynomial inequality
+  constraints in non-commuting variables. These non-commuting variables are
+  viewed as bounded operators on a Hilbert space whose dimension is not fixed
+  and the associated polynomial inequalities as semidefinite positivity
+  constraints. Such problems arise naturally in quantum theory and quantum
+  information science. To solve them, we introduce a hierarchy of semidefinite
+  programming relaxations which generates a monotone sequence of lower bounds
+  that converges to the optimal solution. We also introduce a criterion to
+  detect whether the global optimum is reached at a given relaxation step and
+  show how to extract a global optimizer from the solution of the corresponding
+  semidefinite programming problem.
+tags:
+  - Mathematics - Optimization and Control
+  - Quantum Physics
+identifiers:
+  doi: 10.1137/090760155
+  arxiv: "0903.4368"

@@ -1,0 +1,50 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: XUWNUR3R
+  item_version: 96087
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: VEV8YB6T
+      name: biased presering operations
+      path: Quantum Error correction/3-Error analysis/Biased Noise/biased presering
+        operations
+qlab:
+  primary_collection: VEV8YB6T
+  indexed_collections:
+    - VEV8YB6T
+  primary_topic: quantum-error-correction
+  indexed_topics:
+    - quantum-error-correction
+item_type: preprint
+title: Logical Noise Bias in Magic State Injection
+authors:
+  - first: Nicholas
+    last: Fazio
+  - first: Robin
+    last: Harper
+  - first: Stephen
+    last: Bartlett
+year: 2024
+abstract: Fault-tolerant architectures aim to reduce the noise of a quantum
+  computation. Despite such architectures being well studied a detailed
+  understanding of how noise is transformed in a fault-tolerant primitive such
+  as magic state injection is currently lacking. We use numerical simulations of
+  logical process tomography on a fault-tolerant gadget that implements a
+  logical T = $Z({\pi}/8)$ gate using magic state injection, to understand how
+  noise characteristics at the physical level are transformed into noise
+  characteristics at the logical level. We show how, in this gadget, a
+  significant phase ($Z$) bias can arise in the logical noise, even with
+  unbiased noise at the physical level. While the magic state injection gadget
+  intrinsically induces biased noise, with extant phase bias being further
+  amplified at the logical level, we identify noisy error correction circuits as
+  a key limiting factor on the magnitude of this logical noise bias. Our
+  approach provides a framework for assessing the detailed noise
+  characteristics, as well as the overall performance, of fault-tolerant logical
+  primitives.
+tags:
+  - Quantum Physics
+identifiers:
+  arxiv: "2401.10982"

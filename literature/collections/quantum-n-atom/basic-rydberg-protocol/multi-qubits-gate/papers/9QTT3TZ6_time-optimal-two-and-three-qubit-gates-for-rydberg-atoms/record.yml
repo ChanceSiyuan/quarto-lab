@@ -1,0 +1,45 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 9QTT3TZ6
+  item_version: 96085
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: VDHYWCI2
+      name: Multi-qubits gate
+      path: Quantum N-Atom/Basic-Rydberg protocol/Multi-qubits gate
+qlab:
+  primary_collection: VDHYWCI2
+  indexed_collections:
+    - VDHYWCI2
+  primary_topic: quantum-n-atom
+  indexed_topics:
+    - quantum-n-atom
+item_type: journalArticle
+title: Time-Optimal Two- and Three-Qubit Gates for Rydberg Atoms
+authors:
+  - first: Sven
+    last: Jandura
+  - first: Guido
+    last: Pupillo
+year: 2022
+abstract: We identify time-optimal laser pulses to implement the controlled-Z
+  gate and its three qubit generalization, the C$_2$Z gate, for Rydberg atoms in
+  the blockade regime. Pulses are optimized using a combination of numerical and
+  semi-analytical quantum optimal control techniques that result in smooth
+  Ans\"atze with just a few variational parameters. For the CZ gate, the
+  time-optimal implementation corresponds to a global laser pulse that does not
+  require single site addressability of the atoms, simplifying experimental
+  implementation of the gate. We employ quantum optimal control techniques to
+  mitigate errors arising due to the finite lifetime of Rydberg states and
+  finite blockade strengths, while several other types of errors affecting the
+  gates are directly mitigated by the short gate duration. For the considered
+  error sources, we achieve theoretical gate fidelities compatible with error
+  correction using reasonable experimental parameters for CZ and C$_2$Z gates.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.22331/q-2022-05-13-712
+  arxiv: "2202.00903"

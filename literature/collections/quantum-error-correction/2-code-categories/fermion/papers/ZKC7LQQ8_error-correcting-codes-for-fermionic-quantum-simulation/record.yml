@@ -1,0 +1,51 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: ZKC7LQQ8
+  item_version: 96109
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: U8IYMEW5
+      name: Fermion
+      path: Quantum Error correction/2-Code categories/Fermion
+qlab:
+  primary_collection: U8IYMEW5
+  indexed_collections:
+    - U8IYMEW5
+  primary_topic: quantum-error-correction
+  indexed_topics:
+    - quantum-error-correction
+item_type: journalArticle
+title: Error-correcting codes for fermionic quantum simulation
+authors:
+  - first: Yu-An
+    last: Chen
+  - first: Alexey V.
+    last: Gorshkov
+  - first: Yijia
+    last: Xu
+year: 2024
+abstract: Utilizing the framework of $\mathbb{Z}_2$ lattice gauge theories in
+  the context of Pauli stabilizer codes, we present methodologies for simulating
+  fermions via qubit systems on a two-dimensional square lattice. We investigate
+  the symplectic automorphisms of the Pauli module over the Laurent polynomial
+  ring. This enables us to systematically increase the code distances of
+  stabilizer codes while fixing the rate between encoded logical fermions and
+  physical qubits. We identify a family of stabilizer codes suitable for fermion
+  simulation, achieving code distances of $d=2,3,4,5,6,7$, allowing correction
+  of any $\lfloor \frac{d-1}{2} \rfloor$-qubit error. In contrast to the
+  traditional code concatenation approach, our method can increase the code
+  distances without decreasing the (fermionic) code rate. In particular, we
+  explicitly show all stabilizers and logical operators for codes with code
+  distances of $d=3,4,5$. We provide syndromes for all Pauli errors and invent a
+  syndrome-matching algorithm to compute code distances numerically.
+tags:
+  - Condensed Matter - Strongly Correlated Electrons
+  - Mathematical Physics
+  - Mathematics - Quantum Algebra
+  - Quantum Physics
+identifiers:
+  doi: 10.21468/scipostphys.16.1.033
+  arxiv: "2210.08411"

@@ -1,0 +1,50 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: FXSQKICC
+  item_version: 96125
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: TCC7U77K
+      name: qLDPC-decoders
+      path: Quantum Error correction/Decoders/qLDPC-decoders
+qlab:
+  primary_collection: TCC7U77K
+  indexed_collections:
+    - TCC7U77K
+  primary_topic: quantum-error-correction
+  indexed_topics:
+    - quantum-error-correction
+item_type: preprint
+title: Decoding Quantum LDPC Codes Using Graph Neural Networks
+authors:
+  - first: Vukan
+    last: Ninkovic
+  - first: Ognjen
+    last: Kundacina
+  - first: Dejan
+    last: Vukobratovic
+  - first: Christian
+    last: Häger
+  - first: Alexandre Graell i
+    last: Amat
+year: 2024
+abstract: In this paper, we propose a novel decoding method for Quantum
+  Low-Density Parity-Check (QLDPC) codes based on Graph Neural Networks (GNNs).
+  Similar to the Belief Propagation (BP)-based QLDPC decoders, the proposed
+  GNN-based QLDPC decoder exploits the sparse graph structure of QLDPC codes and
+  can be implemented as a message-passing decoding algorithm. We compare the
+  proposed GNN-based decoding algorithm against selected classes of both
+  conventional and neural-enhanced QLDPC decoding algorithms across several
+  QLDPC code designs. The simulation results demonstrate excellent performance
+  of GNN-based decoders along with their low complexity compared to competing
+  methods.
+tags:
+  - Computer Science - Information Theory
+  - Computer Science - Machine Learning
+  - Mathematics - Information Theory
+  - Quantum Physics
+identifiers:
+  arxiv: "2408.05170"

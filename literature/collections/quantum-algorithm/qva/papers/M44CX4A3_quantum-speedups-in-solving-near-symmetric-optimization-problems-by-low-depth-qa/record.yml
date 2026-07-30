@@ -1,0 +1,51 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: M44CX4A3
+  item_version: 96021
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: U3LSFM3D
+      name: QVA
+      path: Quantum Algorithm/QVA
+qlab:
+  primary_collection: U3LSFM3D
+  indexed_collections:
+    - U3LSFM3D
+  primary_topic: quantum-algorithm
+  indexed_topics:
+    - quantum-algorithm
+item_type: preprint
+title: Quantum speedups in solving near-symmetric optimization problems by
+  low-depth QAOA
+authors:
+  - first: Ashley
+    last: Montanaro
+  - first: Leo
+    last: Zhou
+year: 2025
+abstract: We present new advances towards achieving exponential quantum speedups
+  for solving optimization problems by low-depth quantum algorithms.
+  Specifically, we focus on families of combinatorial optimization problems that
+  exhibit symmetry and contain planted solutions. We rigorously prove that the
+  1-step Quantum Approximate Optimization Algorithm (QAOA) can achieve a success
+  probability of $\Omega(1/\sqrt{n})$, and sometimes $\Omega(1)$, for finding
+  the exact solution in many cases. This allows us to prove a separation of
+  $O(1)$ quantum queries and $\Omega(n/\log n)$ classical queries required to
+  find the planted solution in the latter setting. Furthermore, we construct
+  near-symmetric optimization problems by randomly sampling the individual
+  clauses of symmetric problems, and prove that the QAOA maintains a strong
+  success probability in this setting even when the symmetry is broken. Finally,
+  we construct various families of near-symmetric Max-SAT problems and benchmark
+  state-of-the-art classical solvers, discovering instances where all known
+  general-purpose classical algorithms require exponential time. Therefore, our
+  results indicate that low-depth QAOA may achieve an exponential quantum
+  speedup for optimization problems.
+tags:
+  - Computer Science - Data Structures and Algorithms
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2411.04979
+  arxiv: "2411.04979"

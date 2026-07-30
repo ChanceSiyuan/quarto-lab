@@ -1,0 +1,57 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: PPN6I5DB
+  item_version: 96088
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 9HSDA5Q3
+      name: IQP
+      path: Quantum Complexity/Sampling/IQP
+qlab:
+  primary_collection: 9HSDA5Q3
+  indexed_collections:
+    - 9HSDA5Q3
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: journalArticle
+title: Robust sparse IQP sampling in constant depth
+authors:
+  - first: Louis
+    last: Paletta
+  - first: Anthony
+    last: Leverrier
+  - first: Alain
+    last: Sarlette
+  - first: Mazyar
+    last: Mirrahimi
+  - first: Christophe
+    last: Vuillot
+year: 2024
+abstract: "Between NISQ (noisy intermediate scale quantum) approaches without
+  any proof of robust quantum advantage and fully fault-tolerant quantum
+  computation, we propose a scheme to achieve a provable superpolynomial quantum
+  advantage (under some widely accepted complexity conjectures) that is robust
+  to noise with minimal error correction requirements. We choose a class of
+  sampling problems with commuting gates known as sparse IQP (Instantaneous
+  Quantum Polynomial-time) circuits and we ensure its fault-tolerant
+  implementation by introducing the tetrahelix code. This new code is obtained
+  by merging several tetrahedral codes (3D color codes) and has the following
+  properties: each sparse IQP gate admits a transversal implementation, and the
+  depth of the logical circuit can be traded for its width. Combining those, we
+  obtain a depth-1 implementation of any sparse IQP circuit up to the
+  preparation of encoded states. This comes at the cost of a space overhead
+  which is only polylogarithmic in the width of the original circuit. We
+  furthermore show that the state preparation can also be performed in constant
+  depth with a single step of feed-forward from classical computation. Our
+  construction thus exhibits a robust superpolynomial quantum advantage for a
+  sampling problem implemented on a constant depth circuit with a single round
+  of measurement and feed-forward."
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.22331/q-2024-05-06-1337
+  arxiv: "2307.10729"

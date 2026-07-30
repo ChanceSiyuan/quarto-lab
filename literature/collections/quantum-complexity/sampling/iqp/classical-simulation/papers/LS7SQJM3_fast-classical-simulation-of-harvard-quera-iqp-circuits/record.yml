@@ -1,0 +1,63 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: LS7SQJM3
+  item_version: 96145
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: BLR38PUL
+      name: classical simulation
+      path: Quantum Complexity/Sampling/IQP/classical simulation
+    - key: L8VVG2ZC
+      name: spoofing sampling
+      path: Quantum Complexity/QCsim/spoofing sampling
+qlab:
+  primary_collection: BLR38PUL
+  indexed_collections:
+    - BLR38PUL
+    - L8VVG2ZC
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: preprint
+title: Fast classical simulation of Harvard/QuEra IQP circuits
+authors:
+  - first: Dmitri
+    last: Maslov
+  - first: Sergey
+    last: Bravyi
+  - first: Felix
+    last: Tripier
+  - first: Andrii
+    last: Maksymov
+  - first: Joe
+    last: Latone
+year: 2024
+abstract: Establishing an advantage for (white-box) computations by a quantum
+  computer against its classical counterpart is currently a key goal for the
+  quantum computation community. A quantum advantage is achieved once a certain
+  computational capability of a quantum computer is so complex that it can no
+  longer be reproduced by classical means, and as such, the quantum advantage
+  can be seen as a continued negotiation between classical simulations and
+  quantum computational experiments. A recent publication (Bluvstein et al.,
+  Nature 626:58-65, 2024) introduces a type of Instantaneous Quantum
+  Polynomial-Time (IQP) computation complemented by a $48$-qubit (logical)
+  experimental demonstration using quantum hardware. The authors state that the
+  ``simulation of such logical circuits is challenging'' and project the
+  simulation time to grow rapidly with the number of CNOT layers added, see
+  Figure 5d/bottom therein. However, we report a classical simulation algorithm
+  that takes only $0.00257947$ seconds to compute an amplitude for the
+  $48$-qubit computation, which is roughly $10^3$ times faster than that
+  reported by the original authors. Our algorithm is furthermore not subject to
+  a significant decline in performance due to the additional CNOT layers. We
+  simulated these types of IQP computations for up to $96$ qubits, taking an
+  average of $4.16629$ seconds to compute a single amplitude, and estimated that
+  a $192$-qubit simulation should be tractable for computations relying on
+  Tensor Processing Units.
+tags:
+  - Computer Science - Emerging Technologies
+  - Quantum Physics
+identifiers:
+  arxiv: "2402.03211"

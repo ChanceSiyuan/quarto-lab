@@ -1,0 +1,65 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: H3WYZ4CL
+  item_version: 110965
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: SP3ZCRVA
+      name: extended_analog
+      path: Quantum Learning/Learning on states/non-linear/extended_analog
+    - key: BLVCXCAT
+      name: new
+      path: Quantum N-Atom/App-Analog simulation/new
+qlab:
+  primary_collection: SP3ZCRVA
+  indexed_collections:
+    - BLVCXCAT
+    - SP3ZCRVA
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+    - quantum-n-atom
+item_type: journalArticle
+title: Digital-analog quantum learning on Rydberg atom arrays
+authors:
+  - first: Jonathan Z.
+    last: Lu
+  - first: Lucy
+    last: Jiao
+  - first: Kristina
+    last: Wolinski
+  - first: Milan
+    last: Kornjača
+  - first: Hong-Ye
+    last: Hu
+  - first: Sergio
+    last: Cantu
+  - first: Fangli
+    last: Liu
+  - first: Susanne F.
+    last: Yelin
+  - first: Sheng-Tao
+    last: Wang
+year: 2025
+abstract: We propose hybrid digital-analog learning algorithms on Rydberg atom
+  arrays, combining the potentially practical utility and near-term
+  realizability of quantum learning with the rapidly scaling architectures of
+  neutral atoms. Our construction requires only single-qubit operations in the
+  digital setting and global driving according to the Rydberg Hamiltonian in the
+  analog setting. We perform a comprehensive numerical study of our algorithm on
+  both classical and quantum data, given respectively by handwritten digit
+  classification and unsupervised quantum phase boundary learning. We show in
+  the two representative problems that digital-analog learning is not only
+  feasible in the near term, but also requires shorter circuit depths and is
+  more robust to realistic error models as compared to digital learning schemes.
+  Our results suggest that digital-analog learning opens a promising path
+  towards improved variational quantum learning experiments in the near term.
+tags:
+  - Computer Science - Machine Learning
+  - Quantum Physics
+identifiers:
+  doi: 10.1088/2058-9565/ad9177
+  arxiv: "2401.02940"

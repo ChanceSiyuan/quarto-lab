@@ -5,6 +5,7 @@ export interface WorkbenchTabData {
   itemID?: number | string;
   icon?: string;
   title: string;
+  mainSiteOpen?: boolean;
 }
 
 export interface WorkbenchTabView {
@@ -12,6 +13,8 @@ export interface WorkbenchTabView {
   destroy(): void;
   focusComposer(text?: string): void;
   setState(next: any): void;
+  isMainSiteOpen?(): boolean;
+  setMainSiteOpen?(open: boolean): void;
 }
 
 export interface WorkbenchTabEntry {
@@ -30,6 +33,7 @@ interface WorkbenchTabOptions {
 interface WorkbenchTabManagerCallbacks {
   createView(host: HTMLElement, win: Window, tabID: string): WorkbenchTabView;
   openNewWindow(source: Window): Promise<Window>;
+  onMoveError?(error: Error, source: Window): void;
 }
 
 const HOOK_ACTIONS = [
@@ -85,11 +89,24 @@ export class WorkbenchTabManager {
       },
       getTitle: (tab: any) => this.dataFromTab(tab).title,
       moveToNewWindow: async (tab: any) => {
-        const data = this.dataFromTab(tab);
-        const target = await this.callbacks.openNewWindow(win);
-        this.install(target);
-        this.open(target, data, { forceNew: true, select: true });
-        win.Zotero_Tabs?.close?.(tab.id);
+        try {
+          const sourceEntry = this.entry(win, String(tab.id));
+          const tabData = this.dataFromTab(tab);
+          const data = {
+            ...tabData,
+            mainSiteOpen: sourceEntry?.view.isMainSiteOpen?.() ?? tabData.mainSiteOpen ?? false,
+          };
+          const target = await this.callbacks.openNewWindow(win);
+          this.install(target);
+          this.open(target, data, { forceNew: true, select: true });
+          win.Zotero_Tabs?.close?.(tab.id);
+        }
+        catch (error) {
+          this.callbacks.onMoveError?.(
+            error instanceof Error ? error : new Error(String(error)),
+            win,
+          );
+        }
       },
     };
 
@@ -136,6 +153,9 @@ export class WorkbenchTabManager {
       tabs.rename?.(current.id, data.title);
       tabs.select?.(current.id);
       current.view.focusComposer();
+      if (data.mainSiteOpen !== undefined) {
+        current.view.setMainSiteOpen?.(data.mainSiteOpen);
+      }
       return current;
     }
 
@@ -163,6 +183,7 @@ export class WorkbenchTabManager {
       if (selected) view.focusComposer();
     };
     view.show();
+    if (data.mainSiteOpen) view.setMainSiteOpen?.(true);
     return entry;
   }
 
@@ -200,6 +221,7 @@ export class WorkbenchTabManager {
       ...(data.itemID === undefined ? {} : { itemID: data.itemID }),
       icon: QLAB_WORKBENCH_TAB_ICON,
       qlabWorkbenchTitle: data.title,
+      ...(data.mainSiteOpen === undefined ? {} : { qlabMainSiteOpen: data.mainSiteOpen }),
     };
   }
 
@@ -208,7 +230,8 @@ export class WorkbenchTabManager {
     return {
       itemID: raw.itemID,
       icon: QLAB_WORKBENCH_TAB_ICON,
-      title: String(raw.qlabWorkbenchTitle || tab?.title || "QLab 工作台"),
+      title: String(raw.qlabWorkbenchTitle || tab?.title || "QLab Workbench"),
+      mainSiteOpen: Boolean(raw.qlabMainSiteOpen),
     };
   }
 }

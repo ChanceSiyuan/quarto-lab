@@ -1,0 +1,56 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 8XI3JF5E
+  item_version: 96034
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: AC5RCSNL
+      name: transversal CCZ/T
+      path: Quantum Error correction/Fault-tolerant/transversal gate/transversal CCZ/T
+qlab:
+  primary_collection: AC5RCSNL
+  indexed_collections:
+    - AC5RCSNL
+  primary_topic: quantum-error-correction
+  indexed_topics:
+    - quantum-error-correction
+item_type: preprint
+title: Quantum LDPC Codes with Transversal Non-Clifford Gates via Products of
+  Algebraic Codes
+authors:
+  - first: Louis
+    last: Golowich
+  - first: Ting-Chun
+    last: Lin
+year: 2024
+abstract: For every integer $r\geq 2$ and every $\epsilon>0$, we construct an
+  explicit infinite family of quantum LDPC codes supporting a transversal
+  $C^{r-1}Z$ gate with length $N$, dimension $K\geq N^{1-\epsilon}$, distance
+  $D\geq N^{1/r}/\operatorname{poly}(\log N)$, and stabilizer weight
+  $w\leq\operatorname{poly}(\log N)$. The previous state of the art construction
+  (in most parameter regimes) was the $r$-dimensional color code, which has only
+  constant dimension $K=O(1)$, and otherwise has the same parameters up to
+  polylogarithmic factors. Our construction provides the first known codes with
+  low-weight stabilizers that are capable of magic state distillation with
+  arbitrarily small yield parameter $\gamma=\log(N/K)/\log(D)>0$. A classical
+  analogue of transversal $C^{r-1}Z$ gates is given by the multiplication
+  property, which requires component-wise products of classical codewords to
+  belong to another similar code. As a byproduct of our techniques, we also
+  obtain a new construction of classical locally testable codes with such a
+  multiplication property. We construct our codes as products of chain complexes
+  associated to classical LDPC codes, which in turn we obtain by imposing local
+  Reed-Solomon codes on a specific spectral expander that we construct. We prove
+  that our codes support the desired transversal $C^{r-1}Z$ gates by using the
+  multiplication property to combine local circuits based on the topological
+  structure.
+tags:
+  - Computer Science - Computational Complexity
+  - Computer Science - Information Theory
+  - Mathematics - Information Theory
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2410.14662
+  arxiv: "2410.14662"

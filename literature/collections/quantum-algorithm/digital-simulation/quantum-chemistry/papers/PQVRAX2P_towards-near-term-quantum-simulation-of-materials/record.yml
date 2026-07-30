@@ -1,0 +1,50 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: PQVRAX2P
+  item_version: 96019
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: EMMNM8U8
+      name: Quantum Chemistry
+      path: Quantum Algorithm/Digital Simulation/Quantum Chemistry
+qlab:
+  primary_collection: EMMNM8U8
+  indexed_collections:
+    - EMMNM8U8
+  primary_topic: quantum-algorithm
+  indexed_topics:
+    - quantum-algorithm
+item_type: journalArticle
+title: Towards near-term quantum simulation of materials
+authors:
+  - first: Laura
+    last: Clinton
+  - first: Toby
+    last: Cubitt
+  - first: Brian
+    last: Flynn
+  - first: Filippo Maria
+    last: Gambetta
+  - first: Joel
+    last: Klassen
+  - first: Ashley
+    last: Montanaro
+  - first: Stephen
+    last: Piddock
+  - first: Raul A.
+    last: Santos
+  - first: Evan
+    last: Sheridan
+year: 2024
+abstract: >-
+  Abstract
+              
+                Determining the ground and excited state properties of materials is considered one of the most promising applications of quantum computers. On near-term hardware, the limiting constraint on such simulations is the requisite circuit depths and qubit numbers, which currently lie well beyond near-term capabilities. Here we develop a quantum algorithm which reduces the estimated cost of material simulations. For example, we obtain a circuit depth improvement by up to 6 orders of magnitude for a Trotter layer of time-dynamics simulation in the transition-metal oxide SrVO
+                3
+                compared with the best previous quantum algorithms. We achieve this by introducing a collection of connected techniques, including highly localised and physically compact representations of materials Hamiltonians in the Wannier basis, a hybrid fermion-to-qubit mapping, and an efficient circuit compiler. Combined together, these methods leverage locality of materials Hamiltonians and result in a design that generates quantum circuits with depth independent of the system’s size. Although the requisite resources for the quantum simulation of materials are still beyond current hardware, our results show that realistic simulation of specific properties may be feasible without necessarily requiring fully scalable, fault-tolerant quantum computers, providing quantum algorithm design incorporates deeper understanding of the target materials and applications.
+tags: []
+identifiers:
+  doi: 10.1038/s41467-023-43479-6

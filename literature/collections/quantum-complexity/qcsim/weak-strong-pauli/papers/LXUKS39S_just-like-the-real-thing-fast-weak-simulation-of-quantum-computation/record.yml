@@ -1,0 +1,49 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: LXUKS39S
+  item_version: 96110
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: XTNBJHDY
+      name: Weak&Strong&Pauli
+      path: Quantum Complexity/QCsim/Weak&Strong&Pauli
+qlab:
+  primary_collection: XTNBJHDY
+  indexed_collections:
+    - XTNBJHDY
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: conferencePaper
+title: "Just Like the Real Thing: Fast Weak Simulation of Quantum Computation"
+authors:
+  - first: Stefan
+    last: Hillmich
+  - first: Igor L.
+    last: Markov
+  - first: Robert
+    last: Wille
+year: 2020
+abstract: Quantum computers promise significant speedups in solving problems
+  intractable for conventional computers but, despite recent progress, remain
+  limited in scaling and availability. Therefore, quantum software and hardware
+  development heavily rely on simulation that runs on conventional computers.
+  Most such approaches perform strong simulation in that they explicitly compute
+  amplitudes of quantum states. However, such information is not directly
+  observable from a physical quantum computer because quantum measurements
+  produce random samples from probability distributions defined by those
+  amplitudes. In this work, we focus on weak simulation that aims to produce
+  outputs which are statistically indistinguishable from those of error-free
+  quantum computers. We develop algorithms for weak simulation based on quantum
+  state representation in terms of decision diagrams. We compare them to using
+  state-vector arrays and binary search on prefix sums to perform sampling.
+  Empirical validation shows, for the first time, that this enables mimicking of
+  physical quantum computers of significant scale.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.1109/dac18072.2020.9218555
+  arxiv: "2007.15285"

@@ -1,0 +1,209 @@
+---
+title: "Scalable Quantum Non-Locality: Architectures, Noise Resilience, and Experimental Frontiers"
+description: Survey notes on scalable quantum nonlocality beyond CHSH and GHZ, covering stabilizer-testing games, phase-based constructions, quantum graph coloring, noise robustness, and experimental architectures.
+---
+
+**Abstract**: This survey examines the contemporary frontier of non-local game research beyond the standard GHZ and CHSH paradigms. We organize recent results into three threads: (1) scalable game constructions—stabilizer-testing games with transfer-matrix bounds, topological phase resources, and quantum graph coloring; (2) noise robustness frameworks—partition-function mappings, high-noise self-testing, convincingness metrics, and cryptographic compilation; (3) experimental state-of-the-art across superconducting, trapped-ion, and photonic platforms. Throughout, we emphasize the techniques and open problems rather than foundational definitions.
+
+---
+
+## Reading map
+
+- [Magic Square Game: Multi-Copy Assisted Strategies](Basics.qmd)
+- [Phase and Nonlocal Game](phase_and_nonlocal_game.qmd)
+- [Stabilizer-testing Nonlocal Game](Stabilizer-non-local_game.qmd)
+
+## Introduction
+
+The study of non-local games has matured from verifying Bell inequality violations on qubit pairs to engineering scalable quantum resources that maintain advantage in the thermodynamic limit. 
+Inside which,Pseudo-telepathy is a specific, stronger application of quantum nonlocality where the quantum advantage is absolute (perfect performance) rather than just statistical.
+While the GHZ state provides the starkest theoretical contrast through pseudo-telepathy [@youtube_pseudotelepathy; @wiki_pseudotelepathy]—quantum players win with certainty where classical players cannot—its structural instability (tracing out one qubit collapses the remainder to a separable state [@laskowski2014noise]) makes it unsuitable as a scalable resource. In networks with non-zero particle loss, the effective utility of GHZ-based strategies vanishes exponentially with system size.
+
+This has driven the field toward three interrelated questions: 
+
+::: {.callout-note icon="false"}
+## Questions
+- What game constructions preserve quantum advantage as $n \to \infty$? 
+- Does this advantage survive realistic noise? 
+- And what has been experimentally demonstrated? 
+:::
+
+## Scalable Game Architectures
+
+
+### Stabilizer-Testing Games and Classical Bounds
+
+Every $n$-qubit stabilizer state $\ket{S}$ defines a *stabilizer-testing nonlocal game*.
+ The referee samples a stabilizer generator $g_i = X_{v} \prod_{u \in N(v)} Z_u$ (or a product thereof) and distributes the local Pauli observables to the players. Since $\ket{S}$ is a $\pm 1$ eigenstate of every stabilizer, the quantum strategy wins with certainty—the product of local outcomes deterministically yields the correct eigenvalue.
+
+The central question is: how well can classical players approximate this? Zhao et al. [@zhao2024scalable] establish that for a wide class of these games, if the classical value $\omega_c < 1$, then
+$$
+\omega_c \leq 1 - \frac{1}{2^{f(n)}}
+$$
+for an explicit function $f(n)$, ensuring a persistent quantum-classical gap regardless of system size.
+
+#### Transfer-Matrix Method for Cyclic Cluster States
+
+For the *cyclic cluster state* (defined on a ring graph $C_n$), the classical value computation—generically a hard combinatorial optimization—reduces to finding the spectral radius of a transfer matrix. This technique yields *asymptotically tight* upper bounds: the quantum-classical gap remains constant as $n \to \infty$ [@zhao2024scalable].
+
+This is in sharp contrast to GHZ-based games, where noise tolerance scales as $O(1/n)$. The key insight is that the cyclic cluster state's entanglement is *localized*: losing a single qubit breaks the ring into a line segment but preserves entanglement within the remaining segments. Consequently, measuring an *exponentially small* fidelity to the cyclic cluster state suffices to witness its contextuality—a feature entirely absent in GHZ-based protocols.
+
+The transfer-matrix results also apply to GHZ and toric-code states, confirming that classical strategies cannot match quantum performance even asymptotically for these resources [@zhao2024scalable].
+
+### Topological Phases as Game Resources
+
+Bulchandani, Burnell, and Sondhi [@bulchandani2022playing] established a deep connection between non-local games and quantum phases of matter. Their framework constructs games whose quantum advantage is tied to the *phase* of the underlying Hamiltonian rather than to any specific state preparation.
+
+#### The Toric Code Game
+
+The Toric Code ground state—a stabilizer state defined by star ($A_s = \prod_{j \in \text{star}(s)} X_j$) and plaquette ($B_p = \prod_{j \in \partial p} Z_j$) operators on a lattice with periodic boundary conditions—serves as the resource for a multiplayer parity game. The topological order of the Toric Code provides a qualitatively different type of robustness: the quantum advantage persists under arbitrary local perturbations of the Hamiltonian, so long as the system remains within the topological phase [@bulchandani2022playing; @williamson_talk].
+
+This contrasts with the GHZ state, which is the ground state of the ferromagnetic Ising model. The GHZ game's "all-or-nothing" advantage is destroyed by any weak local perturbation (e.g., a transverse field) in the thermodynamic limit. The Toric Code game, by contrast, is robust because the logical information is encoded non-locally: error chains must form non-trivial loops around the torus to corrupt the winning strategy.
+
+#### Phase Transition Correspondence
+
+The quantum advantage in the parity game exhibits a sharp transition at the critical point between the ferromagnetic and paramagnetic phases of the transverse-field Ising model [@bulchandani2022playing]. More precisely, the modified parity game shows quantum advantage throughout the ferromagnetic phase and at the critical point, but vanishes in the paramagnetic phase. For the Toric Code, the robustness of the game mirrors the robustness of topological quantum memory—this explicitly links non-local game theory to the classification of quantum phases.
+
+### Quantum Chromatic Number and Graph Coloring
+
+A distinct class of scalable games arises from *graph coloring*. In these games, players must convince a referee that a graph $G$ admits a $k$-coloring: given adjacent vertices as inputs, players must output different colors.
+
+The **quantum chromatic number** $\chi_q(G)$—the minimum $k$ for which quantum players can win with certainty—can be exponentially smaller than the classical chromatic number $\chi(G)$. McNamara [@mcnamara2024chromatic] computes the exact quantum chromatic number for Hadamard graphs of order $2^N$ (where $4 \mid N$), combining upper bounds from known quantum protocols [@aravind2004coloring] with a Hoffman-like lower bound technique applied via Ito's conjugacy class graph results.
+
+The mechanism is fundamentally different from stabilizer games: players share a maximally entangled state of dimension $d$ and perform projective measurements whose orthogonality relations are encoded by the graph structure. The separation $\chi_q \ll \chi$ grows with graph size, providing a scalable metric for quantum advantage rooted in combinatorial complexity rather than correlation strength [@quantumzeitgeist_domination].
+
+## Noise Robustness Framework
+
+### Connectivity and Phase Transitions in Graph States
+
+The robustness of a graph state under depolarizing noise is intrinsically linked to its *connectivity*. Numajiri et al. [@numajiri2025phase] establish a powerful mapping: the fidelity of a noisy graph state to the ideal state can be expressed as a *classical spin system partition function*. This mapping allows the tools of classical statistical mechanics—including transfer matrices and mean-field approximations—to be applied to the quantum noise problem.
+
+Their key findings reveal critical connectivity thresholds:
+
+- **2D lattices**: Phase transitions in fidelity occur for vertex degree $\geq 6$
+- **3D lattices**: Phase transitions occur for vertex degree $\geq 5$
+- **Extreme connectivity**: Suppresses critical behavior entirely
+
+The physical implication is that *lower-degree graph states exhibit superior noise resistance*. High-connectivity states (like the GHZ state, locally equivalent to a star/complete graph) suffer catastrophic failure: a depolarizing noise rate of $O(1/n)$ suffices to destroy genuine multipartite correlations [@laskowski2014noise]. Low-connectivity states (1D cluster chains, 2D lattices with small degree) instead exhibit a *smooth crossover* rather than a sharp transition, maintaining non-local correlations deeper into the noisy regime.
+
+### Self-Testing in the High-Noise Regime
+
+Self-testing—certifying the structure of a quantum state based solely on game statistics—has traditionally required near-perfect scores. Fu et al. [@fu2025selftest] break this barrier with the first self-testing protocols robust in the *high-noise regime*.
+
+#### The "2-out-of-$n$ CHSH" Game
+
+The core construction considers players sharing $n$ copies of a (potentially noisy) bipartite state. The referee selects a random pair of copies and asks the players to play a CHSH game on that pair. By averaging correlations over $\binom{n}{2}$ random subsets, the protocol extracts a non-local signal even when individual copies are highly noisy [@fu2025selftest; @quantumzeitgeist_selftest].
+
+The technical innovation combines two tools:
+
+1. **Sum-of-Squares (SOS) decompositions**: Provide certified lower bounds on quantum values, enabling robust analysis even with imperfect correlations.
+2. **Pauli analysis**: Decomposes the players' observables in the Pauli basis to identify and certify anticommuting operator pairs—the signature of genuine quantum behavior.
+
+This challenges the long-standing assumption that self-testing is inherently fragile, and has direct implications for device-independent quantum key distribution (DI-QKD) in realistic settings.
+
+### Convincingness as a Robustness Metric
+
+Beyond binary noise thresholds (above/below which quantum advantage exists), Lifshitz [@lifshitz2025convincingness] introduces **convincingness**: the statistical evidence—measured in standard deviations or $p$-values—required to reject the hypothesis of classicality given a noise level and trial count.
+
+Three metrics are compared systematically:
+
+1. **Noise-tolerance**: Maximum depolarizing rate $p$ for which quantum $>$ classical
+2. **Convincingness**: Standard deviations of violation per round of play
+3. **Gapped score**: An analytic approximation that provides a nuanced scaling picture
+
+The analysis reveals a trade-off: while the CHSH game has the highest absolute noise tolerance among bipartite games, *multipartite games yield higher convincingness per round* due to the larger gap between quantum and classical values. The gapped score metric provides the most nuanced comparison, accounting for both gap size and statistical fluctuations.
+
+### Cryptographic Compilation via KLVY
+
+Enforcing spacelike separation between $n$ players becomes impractical for large $n$. The **KLVY compiler** (Kalai--Leung--Vidick--Yuen) addresses this by replacing spatial separation with *cryptographic hardness*: using quantum homomorphic encryption to prevent a single prover's internal registers from communicating [@baroni2025quantitative].
+
+Baroni et al. [@baroni2025quantitative] prove **quantitative quantum soundness** for all multipartite compiled nonlocal games. The key contributions are:
+
+- **Concrete security bounds**: The robustness of the multi-prover game transfers quantitatively to the compiled single-device setting.
+- **NPA-like hierarchy for quantum instruments**: A novel mathematical tool that extends the Navascués--Pironio--Acín hierarchy to handle the compiled setting.
+- **Practical implication**: Large graph states (e.g., 50+ qubits) can be tested for non-locality on a single chip, without the engineering feat of separating qubits by light-travel distances.
+
+This effectively bridges the gap between theoretical non-local game results and single-device quantum certification.
+
+## Experimental State-of-the-Art
+
+### Superconducting Qubits: The 73-Qubit Bell Test
+
+The most significant recent milestone is the **73-qubit Bell test** by a collaboration involving Zhejiang University, Leiden University, and Tsinghua University [@sciencedaily_73qubit; @leiden_73qubit; @mappingignorance_73qubit].
+
+#### Energy Witness Approach
+
+Rather than implementing a standard interactive game with 73 parties (prohibitive due to I/O complexity and locality loophole constraints on a single chip), the team reformulated the Bell inequality as an *energy bound*:
+
+- A Hamiltonian $H$ is engineered whose ground state is a 2D honeycomb graph state, constructed from sums of stabilizer operators.
+- Under Local Hidden Variables, the energy $E_{\text{LHV}}$ is bounded below by a classical minimum $E_c$. Quantum mechanics permits a lower energy $E_q < E_c$.
+- A variational quantum circuit (VQC) prepares the ground state on the processor.
+
+The measured energy violated the classical bound by **48 standard deviations** [@scitechdaily_73qubit], certifying genuine multipartite Bell correlations across the full 73-qubit array. This demonstrates that solid-state devices can sustain coherent quantum correlations across large systems—the "correlation length" of non-locality is not fundamentally limited by decoherence on current hardware.
+
+### Superconducting Qubits: Non-Local Magic
+
+Ahmad et al. [@ahmad2025magic] provide the first experimental demonstration of **non-local magic** (non-stabilizerness) on a superconducting quantum processor. Magic is the resource required for universal quantum computing—operations beyond the Clifford group.
+
+The experiment measures the fraction of magic that *cannot be generated by local operations*, confirming that:
+
+- **Both magic and entanglement are necessary** for quantum advantage—neither alone suffices.
+- The experimental results show strong agreement with theoretical predictions, requiring **no adjustable parameters** in the noise model.
+
+This establishes non-local magic as an experimentally accessible witness for computational resources beyond Clifford simulation.
+
+### Trapped Ions: Mermin Violations and Interactive Games
+
+#### 14-Ion GHZ and Exponential Violation Scaling
+
+Lanyon et al. [@lanyon2014trapped] generated GHZ states of up to **14 trapped ions** and verified violations of Mermin--Klyshko inequalities. The Mermin inequality is designed so the quantum-to-classical ratio grows exponentially: $S_n^Q / S_n^C = 2^{(n-1)/2}$. The successful observation of this exponential scaling with 14 ions—while closing the detection loophole—demonstrates that trapped-ion chains maintain sufficient coherence even as GHZ state fragility increases with system size.
+
+#### 6-Qubit Interactive Game
+
+Researchers at the University of Maryland performed a direct **6-player interactive non-local game** [@cquic_6qubit], designed to separate depth-1 quantum circuits from depth-1 classical circuits. The experimental winning probability of $\sim$80% strictly violated the classical bound, demonstrating quantum advantage in a communication complexity task through an actual input-output game protocol rather than a passive witness measurement.
+
+#### Scaling Architectures
+
+Current commercial trapped-ion systems (Quantinuum H1 [@quantinuum_h1], IonQ) achieve quantum volumes exceeding $10^5$ and entangle 30+ ions with all-to-all connectivity [@wiki_trappedion]. Future designs such as the "Enchilada" trap at Sandia aim to scale to 200 ions via junction-based architectures [@qsa_trappedions], enabling complex graph topologies beyond linear chains.
+
+### Photonics: Pseudo-Telepathy and High-Dimensional Non-Locality
+
+#### Magic Square Implementation
+
+Xu et al. [@xu2022pseudotelepathy] demonstrated quantum pseudo-telepathy through the **Mermin--Peres Magic Square game** using hyperentangled photons (polarization $\otimes$ orbital angular momentum). The Magic Square game requires filling a $3 \times 3$ grid with $\pm 1$ values such that rows multiply to $+1$ and columns to $-1$—classically impossible but achievable with a shared 4-qubit entangled state.
+
+The experiment achieved a winning probability of **93.84%**, far exceeding the classical limit of 50% (and the classical optimal of $\sim$88.9% for the relaxed version). While detector inefficiencies and state preparation errors prevent reaching the theoretical 100%, this stands as one of the most convincing demonstrations of pseudo-telepathy.
+
+The Magic Square game is also notably robust to noise: recent analysis shows it tolerates depolarizing noise up to approximately **23%** per qubit register [@fu2025selftest]—well within the capabilities of modern hardware.
+
+#### High-Dimensional GHZ States
+
+Photonic systems have further demonstrated 3-dimensional (qutrit) GHZ states with 4 particles [@wang2025highdim], violating generalized Bell inequalities for $(2,3,3)$-dimensional configurations. This extends non-locality into higher-dimensional Hilbert spaces, where the information capacity per particle is increased and new classes of non-local games become accessible.
+
+## Platform Comparison
+
+| Feature | Superconducting | Trapped Ions | Photonic |
+|:---|:---|:---|:---|
+| **Primary advantage** | Massive qubit count | All-to-all connectivity, high fidelity | Hyperentanglement, coherence |
+| **SOTA experiment** | 73-qubit energy witness | 14-ion Mermin / 6-qubit interactive | Magic Square pseudo-telepathy |
+| **Test type** | Thermodynamic witness | Interactive game / inequality | Pseudo-telepathy |
+| **Graph topology** | Planar (2D lattice) | Arbitrary (all-to-all) | Reconfigurable / high-dimensional |
+| **Loophole status** | Detection loophole closed | Detection loophole closed | Locality loophole closed (flight) |
+| **Noise resilience** | Moderate (error mitigation) | High (long coherence) | High (low transmission noise) |
+
+## Future Directions
+
+Three axes of development emerge from this survey:
+
+1. **Interactive scalability**: Moving from passive energy witnesses (as in the 73-qubit experiment) to true interactive games with inputs and outputs at large $n$. This requires solving the I/O bottleneck and implementing faster mid-circuit readout.
+
+2. **Topological gaming on hardware**: Explicitly testing the robustness of Toric Code games on quantum processors would connect non-local game theory to quantum error correction, using games as diagnostic tools for topological memory.
+
+3. **Device-independent protocols**: The robustness of the 2-out-of-$n$ CHSH protocol [@fu2025selftest] and the KLVY compiler [@baroni2025quantitative] suggest that DI-QKD may be feasible on NISQ devices sooner than expected. Graph states with low connectivity offer the best noise-advantage trade-off for such applications.
+
+The field has successfully identified graph states and topological phases as scalable successors to the GHZ paradigm. Supported by robust theoretical frameworks and experimental demonstrations across three hardware platforms, non-local games have evolved from foundational tests into practical tools for benchmarking and utilizing quantum computational resources.
+
+## References
+
+::: {#refs}
+:::

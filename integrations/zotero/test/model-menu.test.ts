@@ -10,7 +10,7 @@ describe("renderModelOptions", () => {
       { id: "gpt-5", label: "GPT-5" },
     ], "gpt-5");
     const groups = [...select.querySelectorAll("optgroup")].map((group) => group.label);
-    expect(groups).toEqual(["本地 Codex"]);
+    expect(groups).toEqual(["Local Codex"]);
     expect(select.value).toBe("gpt-5");
   });
 
@@ -24,7 +24,7 @@ describe("renderModelOptions", () => {
 describe("defaultSelectableModel", () => {
   it("accepts a model literally named codex when the local CLI reports it", () => {
     expect(defaultSelectableModel([
-      { id: "codex", label: "Codex（订阅）" },
+      { id: "codex", label: "Codex(订阅)" },
       { id: "gpt-5", label: "GPT-5" },
     ])).toBe("codex");
   });

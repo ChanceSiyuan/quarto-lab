@@ -1,0 +1,45 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: YMDH5IMU
+  item_version: 96143
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: WE3HPMT6
+      name: ECC compilation
+      path: Circuit Compilation/ECC compilation
+qlab:
+  primary_collection: WE3HPMT6
+  indexed_collections:
+    - WE3HPMT6
+  primary_topic: circuit-compilation
+  indexed_topics:
+    - circuit-compilation
+item_type: journalArticle
+title: New Quantum Cryptanalysis of Binary Elliptic Curves
+authors:
+  - first: Kyungbae
+    last: Jang
+  - first: Vikas
+    last: Srivastava
+  - first: Anubhab
+    last: Baksi
+  - first: Santanu
+    last: Sarkar
+  - first: Hwajeong
+    last: Seo
+year: 2025
+abstract: This paper improves upon the quantum circuits required for the Shor’s
+  attack on binary elliptic curves. We present two types of quantum point
+  addition, taking both qubit count and circuit depth into consideration. In
+  summary, we propose an in-place point addition that improves upon the work of
+  Banegas et al. from CHES’21, reducing the qubit count – depth product by more
+  than 73% – 81% depending on the variant. Furthermore, we develop an
+  out-of-place point addition by using additional qubits. This method achieves
+  the lowest circuit depth and offers an improvement of over 92% in the qubit
+  count – quantum depth product (for a single step).
+tags: []
+identifiers:
+  doi: 10.46586/tches.v2025.i2.781-804

@@ -1,0 +1,67 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 98GE2PAZ
+  item_version: 96158
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: IGCYLEHL
+      name: derandomization
+      path: Quantum Learning/Learning on states/Tomography/shadow
+        tomo/Optimal_shadow/derandomization
+qlab:
+  primary_collection: IGCYLEHL
+  indexed_collections:
+    - IGCYLEHL
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: preprint
+title: "Derandomized shallow shadows: Efficient Pauli learning with
+  bounded-depth circuits"
+authors:
+  - first: Katherine Van
+    last: Kirk
+  - first: Christian
+    last: Kokail
+  - first: Jonathan
+    last: Kunjummen
+  - first: Hong-Ye
+    last: Hu
+  - first: Yanting
+    last: Teng
+  - first: Madelyn
+    last: Cain
+  - first: Jacob
+    last: Taylor
+  - first: Susanne F.
+    last: Yelin
+  - first: Hannes
+    last: Pichler
+  - first: Mikhail
+    last: Lukin
+year: 2024
+abstract: Efficiently estimating large numbers of non-commuting observables is
+  an important subroutine of many quantum science tasks. We present the
+  derandomized shallow shadows (DSS) algorithm for efficiently learning a large
+  set of non-commuting observables, using shallow circuits to rotate into
+  measurement bases. Exploiting tensor network techniques to ensure polynomial
+  scaling of classical resources, our algorithm outputs a set of shallow
+  measurement circuits that approximately minimizes the sample complexity of
+  estimating a given set of Pauli strings. We numerically demonstrate systematic
+  improvement, in comparison with state-of-the-art techniques, for energy
+  estimation of quantum chemistry benchmarks and verification of quantum
+  many-body systems, and we observe DSS's performance consistently improves as
+  one allows deeper measurement circuits. These results indicate that in
+  addition to being an efficient, low-depth, stand-alone algorithm, DSS can also
+  benefit many larger quantum algorithms requiring estimation of multiple
+  non-commuting observables.
+tags:
+  - Computer Science - Machine Learning
+  - Condensed Matter - Strongly Correlated Electrons
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2412.18973
+  arxiv: "2412.18973"

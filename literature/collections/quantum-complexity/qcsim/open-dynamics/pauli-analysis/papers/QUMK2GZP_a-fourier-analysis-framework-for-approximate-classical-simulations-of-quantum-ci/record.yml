@@ -1,0 +1,47 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: QUMK2GZP
+  item_version: 96124
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: S7N46ZH8
+      name: Pauli analysis
+      path: Quantum Complexity/QCsim/Open-dynamics/Pauli analysis
+qlab:
+  primary_collection: S7N46ZH8
+  indexed_collections:
+    - S7N46ZH8
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: preprint
+title: A Fourier analysis framework for approximate classical simulations of
+  quantum circuits
+authors:
+  - first: Cristina
+    last: Cirstoiu
+year: 2024
+abstract: What makes a class of quantum circuits efficiently classically
+  simulable on average? I present a framework that applies harmonic analysis of
+  groups to circuits with a structure encoded by group parameters. Expanding the
+  circuits in a suitable truncated multi-path operator basis gives algorithms to
+  evaluate the Fourier coefficients of output distributions or expectation
+  values that are viewed as functions on the group. Under certain conditions, a
+  truncated Fourier series can be efficiently estimated with guaranteed
+  mean-square convergence. For classes of noisy circuits, it leads to algorithms
+  for sampling and mean value estimation under error models with a spectral gap,
+  where the complexity increases exponentially with the gap's inverse and
+  polynomially with the circuit's size. This approach unifies and extends
+  existing algorithms for noisy parametrised or random circuits using Pauli
+  basis paths. For classes of noiseless circuits, mean values satisfying
+  Lipschitz continuity can be on average approximated using efficient sparse
+  Fourier decompositions. I also discuss generalisations to homogeneous spaces,
+  qudit systems and a way to analyse random circuits via matrix coefficients of
+  irreducible representations.
+tags:
+  - Quantum Physics
+identifiers:
+  arxiv: "2410.13856"

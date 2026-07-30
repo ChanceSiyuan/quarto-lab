@@ -1,0 +1,54 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: H23XB23D
+  item_version: 102969
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: QUFU6Q56
+      name: Entropy
+      path: Quantum Learning/Learning on states/non-linear/Entropy
+qlab:
+  primary_collection: QUFU6Q56
+  indexed_collections:
+    - QUFU6Q56
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: journalArticle
+title: New Quantum Algorithms for Computing Quantum Entropies and Distances
+authors:
+  - first: Qisheng
+    last: Wang
+  - first: Ji
+    last: Guan
+  - first: Junyi
+    last: Liu
+  - first: Zhicheng
+    last: Zhang
+  - first: Mingsheng
+    last: Ying
+year: 2024
+abstract: We propose a series of quantum algorithms for computing a wide range
+  of quantum entropies and distances, including the von Neumann entropy, quantum
+  Rényi entropy, trace distance, and fidelity. The proposed algorithms
+  significantly outperform the prior best (and even quantum) ones in the
+  low-rank case, some of which achieve exponential speedups. In particular, for
+  N -dimensional quantum states of rank r, our proposed quantum algorithms for
+  computing the von Neumann entropy, trace distance and fidelity within additive
+  error ε have time complexity of O˜(r/ε2), O˜(r5/ε6) and O˜(r6.5/ε7.5),
+  respectively. By contrast, prior quantum algorithms for the von Neumann
+  entropy and trace distance usually have time complexity Ω(N ), and the prior
+  best one for fidelity has time complexity O˜(r12.5/ε13.5). The key idea of our
+  quantum algorithms is to extend block-encoding from unitary operators in
+  previous work to quantum states (i.e., density operators). It is realized by
+  developing several convenient techniques to manipulate quantum states and
+  extract information from them. The advantage of our techniques over the
+  existing methods is that no restrictions on density operators are required; in
+  sharp contrast, the previous methods usually require a lower bound on the
+  minimal non-zero eigenvalue of density operators.
+tags: []
+identifiers:
+  doi: 10.1109/tit.2024.3399014

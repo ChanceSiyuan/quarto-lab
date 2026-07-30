@@ -1,0 +1,55 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 2M8SY57S
+  item_version: 96086
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: PLKWCPKI
+      name: Fault-tolerant
+      path: Quantum Error correction/Fault-tolerant
+qlab:
+  primary_collection: PLKWCPKI
+  indexed_collections:
+    - PLKWCPKI
+  primary_topic: quantum-error-correction
+  indexed_topics:
+    - quantum-error-correction
+item_type: preprint
+title: Fault-tolerant Coding for Quantum Communication
+authors:
+  - first: Matthias
+    last: Christandl
+  - first: Alexander
+    last: Müller-Hermes
+year: 2022
+abstract: "Designing encoding and decoding circuits to reliably send messages
+  over many uses of a noisy channel is a central problem in communication
+  theory. When studying the optimal transmission rates achievable with
+  asymptotically vanishing error it is usually assumed that these circuits can
+  be implemented using noise-free gates. While this assumption is satisfied for
+  classical machines in many scenarios, it is not expected to be satisfied in
+  the near term future for quantum machines where decoherence leads to faults in
+  the quantum gates. As a result, fundamental questions regarding the practical
+  relevance of quantum channel coding remain open. By combining techniques from
+  fault-tolerant quantum computation with techniques from quantum communication,
+  we initiate the study of these questions. We introduce fault-tolerant versions
+  of quantum capacities quantifying the optimal communication rates achievable
+  with asymptotically vanishing total error when the encoding and decoding
+  circuits are affected by gate errors with small probability. Our main results
+  are threshold theorems for the classical and quantum capacity: For every
+  quantum channel $T$ and every $\\epsilon>0$ there exists a threshold
+  $p(\\epsilon,T)$ for the gate error probability below which rates larger than
+  $C-\\epsilon$ are fault-tolerantly achievable with vanishing overall
+  communication error, where $C$ denotes the usual capacity. Our results are not
+  only relevant in communication over large distances, but also on-chip, where
+  distant parts of a quantum computer might need to communicate under higher
+  levels of noise than affecting the local gates."
+tags:
+  - Computer Science - Information Theory
+  - Mathematical Physics
+  - Quantum Physics
+identifiers:
+  arxiv: "2009.07161"

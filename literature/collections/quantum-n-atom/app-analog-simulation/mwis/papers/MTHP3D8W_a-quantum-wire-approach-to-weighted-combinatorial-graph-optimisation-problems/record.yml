@@ -1,0 +1,60 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: MTHP3D8W
+  item_version: 109736
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 3TT6GSQZ
+      name: MWIS
+      path: Quantum N-Atom/App-Analog simulation/MWIS
+qlab:
+  primary_collection: 3TT6GSQZ
+  indexed_collections:
+    - 3TT6GSQZ
+  primary_topic: quantum-n-atom
+  indexed_topics:
+    - quantum-n-atom
+item_type: preprint
+title: A quantum wire approach to weighted combinatorial graph optimisation problems
+authors:
+  - first: André G. de
+    last: Oliveira
+  - first: Johannes
+    last: Kombe
+  - first: Gerard
+    last: Pelegrí
+  - first: Paul
+    last: Schroff
+  - first: Maximillian T.
+    last: Wells-Pestell
+  - first: Daniel M.
+    last: Walker
+  - first: Andrew J.
+    last: Daley
+  - first: Jonathan D.
+    last: Pritchard
+year: 2026
+abstract: Neutral atom arrays provide a versatile platform to implement coherent
+  quantum annealing as an approach to solving hard combinatorial optimization
+  problems. Here we present and experimentally demonstrate an efficient encoding
+  scheme based on chains of Rydberg-blockaded atoms, which we call quantum
+  wires, to natively embed maximum weighted independent set (MWIS) and quadratic
+  unconstrained binary optimization (QUBO) problems on a neutral atom
+  architecture. For graphs with quasi-unit-disk connectivity, in which only a
+  few long-range edges are required, our approach requires a significantly lower
+  overhead in the number of ancilla qubits than previous proposals, facilitating
+  the implementation on currently available hardware. To demonstrate the
+  approach, we perform annealing of weighted graphs on a programmable atom array
+  using local light-shifts to encode problem-specific weights across graphs of
+  varying sizes. This approach successfully identifies the solutions to the
+  original MWIS and QUBO graph instances. Our work expands the operational
+  toolkit of near-term neutral atom arrays, enhancing their potential for
+  scalable quantum optimization.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2503.17115
+  arxiv: "2503.17115"

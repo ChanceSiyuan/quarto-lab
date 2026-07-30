@@ -1,0 +1,64 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: MYTFLSHA
+  item_version: 96661
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: BJ4JTXLM
+      name: Virtual_distillation
+      path: Quantum Learning/Learning on states/non-linear/Virtual_distillation
+qlab:
+  primary_collection: BJ4JTXLM
+  indexed_collections:
+    - BJ4JTXLM
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: journalArticle
+title: Virtual Distillation for Quantum Error Mitigation
+authors:
+  - first: William J.
+    last: Huggins
+  - first: Sam
+    last: McArdle
+  - first: Thomas E.
+    last: O'Brien
+  - first: Joonho
+    last: Lee
+  - first: Nicholas C.
+    last: Rubin
+  - first: Sergio
+    last: Boixo
+  - first: K. Birgitta
+    last: Whaley
+  - first: Ryan
+    last: Babbush
+  - first: Jarrod R.
+    last: McClean
+year: 2021
+abstract: Contemporary quantum computers have relatively high levels of noise,
+  making it difficult to use them to perform useful calculations, even with a
+  large number of qubits. Quantum error correction is expected to eventually
+  enable fault-tolerant quantum computation at large scales, but until then it
+  will be necessary to use alternative strategies to mitigate the impact of
+  errors. We propose a near-term friendly strategy to mitigate errors by
+  entangling and measuring $M$ copies of a noisy state $ρ$. This enables us to
+  estimate expectation values with respect to a state with dramatically reduced
+  error, $ρ^M/ \mathrm{Tr}(ρ^M)$, without explicitly preparing it, hence the
+  name "virtual distillation". As $M$ increases, this state approaches the
+  closest pure state to $ρ$, exponentially quickly. We analyze the effectiveness
+  of virtual distillation and find that it is governed in many regimes by the
+  behavior of this pure state (corresponding to the dominant eigenvector of
+  $ρ$). We numerically demonstrate that virtual distillation is capable of
+  suppressing errors by multiple orders of magnitude and explain how this effect
+  is enhanced as the system size grows. Finally, we show that this technique can
+  improve the convergence of randomized quantum algorithms, even in the absence
+  of device noise.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.1103/physrevx.11.041036
+  arxiv: "2011.07064"

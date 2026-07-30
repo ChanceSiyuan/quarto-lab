@@ -1,0 +1,48 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: NGQ8AIWY
+  item_version: 96115
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 64N9RMR8
+      name: exact threshold
+      path: Quantum Error correction/Fault-tolerant/exact threshold
+qlab:
+  primary_collection: 64N9RMR8
+  indexed_collections:
+    - 64N9RMR8
+  primary_topic: quantum-error-correction
+  indexed_topics:
+    - quantum-error-correction
+item_type: journalArticle
+title: Overhead analysis of universal concatenated quantum codes
+authors:
+  - first: Christopher
+    last: Chamberland
+  - first: Tomas
+    last: Jochym-O'Connor
+  - first: Raymond
+    last: Laflamme
+year: 2017
+abstract: We analyze the resource overhead of recently proposed methods for
+  universal fault-tolerant quantum computation using concatenated codes. Namely,
+  we examine the concatenation of the 7-qubit Steane code with the 15-qubit
+  Reed-Muller code, which allows for the construction of the 49 and 105-qubit
+  codes that do not require the need for magic state distillation for
+  universality. We compute a lower bound for the adversarial noise threshold of
+  the 105-qubit code and find it to be $8.33\times 10^{-6}.$ We obtain a
+  depolarizing noise threshold for the 49-qubit code of $9.69\times 10^{-4}$
+  which is competitive with the 105-qubit threshold result of $1.28\times
+  10^{-3}$. We then provide lower bounds on the resource requirements of the 49
+  and 105-qubit codes and compare them with the surface code implementation of a
+  logical $T$ gate using magic state distillation. For the sampled input error
+  rates and noise model, we find that the surface code achieves a smaller
+  overhead compared to our concatenated schemes.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.1103/physreva.95.022313
+  arxiv: "1609.07497"

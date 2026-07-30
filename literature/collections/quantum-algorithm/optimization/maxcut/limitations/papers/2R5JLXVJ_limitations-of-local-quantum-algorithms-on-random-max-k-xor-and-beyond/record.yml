@@ -1,0 +1,58 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 2R5JLXVJ
+  item_version: 96136
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 2S4MCSXP
+      name: Limitations
+      path: Quantum Algorithm/Optimization/Maxcut/Limitations
+qlab:
+  primary_collection: 2S4MCSXP
+  indexed_collections:
+    - 2S4MCSXP
+  primary_topic: quantum-algorithm
+  indexed_topics:
+    - quantum-algorithm
+item_type: preprint
+title: Limitations of Local Quantum Algorithms on Random Max-k-XOR and Beyond
+authors:
+  - first: Chi-Ning
+    last: Chou
+  - first: Peter J.
+    last: Love
+  - first: Juspreet Singh
+    last: Sandhu
+  - first: Jonathan
+    last: Shi
+year: 2022
+abstract: We introduce a notion of \emph{generic local algorithm} which strictly
+  generalizes existing frameworks of local algorithms such as \emph{factors of
+  i.i.d.} by capturing local \emph{quantum} algorithms such as the Quantum
+  Approximate Optimization Algorithm (QAOA). Motivated by a question of Farhi et
+  al. [arXiv:1910.08187, 2019] we then show limitations of generic local
+  algorithms including QAOA on random instances of constraint satisfaction
+  problems (CSPs). Specifically, we show that any generic local algorithm whose
+  assignment to a vertex depends only on a local neighborhood with $o(n)$ other
+  vertices (such as the QAOA at depth less than $\epsilon\log(n)$) cannot
+  arbitrarily-well approximate boolean CSPs if the problem satisfies a geometric
+  property from statistical physics called the coupled overlap-gap property
+  (OGP) [Chen et al., Annals of Probability, 47(3), 2019]. We show that the
+  random MAX-k-XOR problem has this property when $k\geq4$ is even by extending
+  the corresponding result for diluted $k$-spin glasses. Our concentration
+  lemmas confirm a conjecture of Brandao et al. [arXiv:1812.04170, 2018]
+  asserting that the landscape independence of QAOA extends to logarithmic depth
+  -- in other words, for every fixed choice of QAOA angle parameters, the
+  algorithm at logarithmic depth performs almost equally well on almost all
+  instances. One of these concentration lemmas is a strengthening of McDiarmid's
+  inequality, applicable when the random variables have a highly biased
+  distribution, and may be of independent interest.
+tags:
+  - Computer Science - Computational Complexity
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2108.06049
+  arxiv: "2108.06049"

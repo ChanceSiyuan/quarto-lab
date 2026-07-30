@@ -1,0 +1,49 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 9KFZS2I9
+  item_version: 96015
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: ISN46ZEU
+      name: Quantum Learning
+      path: Quantum Learning
+qlab:
+  primary_collection: ISN46ZEU
+  indexed_collections:
+    - ISN46ZEU
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: journalArticle
+title: On the Hardness of PAC-learning Stabilizer States with Noise
+authors:
+  - first: Aravind
+    last: Gollakota
+  - first: Daniel
+    last: Liang
+year: 2022
+abstract: "We consider the problem of learning stabilizer states with noise in
+  the Probably Approximately Correct (PAC) framework of Aaronson (2007) for
+  learning quantum states. In the noiseless setting, an algorithm for this
+  problem was recently given by Rocchetto (2018), but the noisy case was left
+  open. Motivated by approaches to noise tolerance from classical learning
+  theory, we introduce the Statistical Query (SQ) model for PAC-learning quantum
+  states, and prove that algorithms in this model are indeed resilient to common
+  forms of noise, including classification and depolarizing noise. We prove an
+  exponential lower bound on learning stabilizer states in the SQ model. Even
+  outside the SQ model, we prove that learning stabilizer states with noise is
+  in general as hard as Learning Parity with Noise (LPN) using classical
+  examples. Our results position the problem of learning stabilizer states as a
+  natural quantum analogue of the classical problem of learning parities: easy
+  in the noiseless setting, but seemingly intractable even with simple forms of
+  noise."
+tags:
+  - Computer Science - Data Structures and Algorithms
+  - Computer Science - Machine Learning
+  - Quantum Physics
+identifiers:
+  doi: 10.22331/q-2022-02-02-640
+  arxiv: "2102.05174"

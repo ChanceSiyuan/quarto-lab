@@ -1,0 +1,105 @@
+---
+title: Advantage of QNC
+description: "Advantage of QNC"
+categories:
+  - theory
+---
+
+# Summary and conclusion
+
+
+展示$\mathrm{QNC}^k\not\subseteq \mathrm{NC}^k/\mathrm{AC}^k$，意味着:
+
+**存在一个任务，可以由多项式规模的量子线路在常数时间步内解决。但任意在常数时间能解决这个问题的经典线路都要求至少有 $\exp\!\left(n^{1/(10d)}\right)$ 规模。**
+
+- Bravyi et. al. 构造了 2D-HLF @bravyi2018quantum , 证明了2D-HLF 能由二维 $N\times N$ 网格、常数深度量子线路确定性求解。若一个 fan-in 至多为 K 的随机经典线路在所有输入上都以大于 7/8 的概率成功，则其深度至少为 $D_{\mathrm{cl}}\geq \frac18\frac{\log N}{\log K}$。
+
+- Watts et. al. 构造了PHP/RPHP @watts2019exponential ，说明了无限fan-in，常数 $d$ 深度的随机经典线路想要以高于 $\exp(-n^\alpha)$ 的概率求解RPHP，就必须有 $\exp\!\left(n^{1/(10d)}\right)$ 的规模。但是这个问题可以由二维 $N\times N$ 网格、常数深度量子线路确定性求解。
+
+## Obstacle:
+
+- 现有的理论只有渐进保证：对于 $n = 400$ 规模的问题，如果允许经典有 $d=4$ 的深度，那么经典线路的规模至少要 $e^{400^{1/40}} \approx 3.19$。如果想要达到 $10^6$ 的规模下界，至少要考虑 $n\sim(\ln10^6)^{40}\approx 4.1\times10^{45}$ 规模的问题。需要更tight的算法构造
+
+# Worst-case hardness
+
+:::{#def-HLF .callout-note icon="false"}
+## (2d-HLF)
+Given a 2d-lattice graph $G = (V,E)$ with adjacent matrix $A_{u,v} \in {1,0}$ and equals to $1$ iff $(u,v) \in E$ and binary vector $b_v \in \{0,1\}$. Write the function
+$$
+\begin{align}
+q(x) = 2 \sum_{(v,w) \in E} A_{u,w} x_v x_w + \sum_{v \in V} b_v x_v \in \mathbb{Z}_4
+\end{align}
+$$
+Find a binary vector $z \in \{0,1\}^{|V|}$ such that $q(x) = 2z^Tx$ for $x$ on the subspace
+$$
+\mathcal{L}_q := \{x \in \mathbb{F}_2^n : q(x \oplus y) = q(x) + q(y), \forall y \in \mathbb{F}_2^n\}.
+$$
+:::
+
+In the seminar work @bravyi2018quantum , it is proved that any classical randomized circuit with fan-in at most $K$ and size-$N$ that solve all the 2d-HLF problem with probabilty greater than $7/8$ must have depth greater that $[\log(N)/8\log(K)]$. The core construction use non-locality of triangle graph state and lightcone of Boolean functions.
+
+:::{#def-boolean-lightcone .callout-note icon="false"}
+## (lightcone of Boolean functions)
+Given classical circuit with input and output site $u,q$ and distance $\mathrm{dis}(i,o)$ decided by the circuit topology.
+We say a Boolean function $z_q=F_q(b_u,r)$ satisfied $z_q \in \mathrm{LC}(b_u)$ iff 
+$$
+\exists b,r \quad F_q(b,r) + F_q(b \oplus b_u,r) \neq 0 .
+$$
+:::
+
+
+:::{#lem-triangle-cycle-nonlocality .callout-important icon="false"}
+## (Triangle cycle non-locality)
+Given a triangle cycle graph state $\ket{\Phi}$, then the measurement induced a set of strings
+$$
+\mathcal{T}(b) := \{z \in \{0,1\}^M |\mathrm{Pr}(z) = \bra{z} H^{\otimes M} S_u^{b_u}S_v^{b_v}S_w^{b_w}\ket{\Phi} \neq 0\}.
+$$
+We conclude that any classical circuit $z_q=F_q(b,r)$ generates $z \in \mathcal{T}(b)$ with probability greater than $7/8$ must satisfied 
+$$
+\begin{align}
+\exists i \in \{u,v,w\}, \exists q, \quad z_q \in \mathrm{LC}(b_i),\\
+ \mathrm{dis}(i,q)> \max_{a,b \in \{u,v,w\}} \mathrm{dis}(a,b).
+\end{align}
+$$
+:::
+
+:::{.callout-note collapse="true"}
+## Proof (Click to expand)
+(t.b.c.)
+:::
+
+
+On the other hand, such a problem can bw solved by a constant depth, localized IQP circuit ($QNC_0$), as concretely described below 
+
+1. Prepare $|\Phi_A\rangle=\prod_{(i,j)\in E}CZ_{ij}|+\rangle^{\otimes n}$ based on the given certain unit disk graph $G$.
+2. Based on $\mathrm{b}$, measured on $X$ or $Y$ for $b_v = 0$ or $b_v = 1$, and denote the outputs as $\mathbf{z} \in \{0,1\}^{|V|}$.
+
+:::{#lem-BValg .callout-important icon="false"}
+## (Non-oracol Bernstein-Vazirani)
+$p(\mathbf{z}) > 0$ iff $\mathbf{z}$ is a solution of the 2d-HLF. Furthermore, $p(\mathbf{z})$ is the uniform distribution on the set of all solutions $\mathbf{z}$.
+:::
+
+
+# Average-case hardness
+
+Just like the ordinary quantum complexity, it worth to generalized the worst-case hardness above to the average-case
+
+# Generalized to $\mathrm{AC}_0$
+
+
+:::{#def-PHP .callout-note icon="false"}
+## (Parity Halving problem)
+Given $x \in \{0,1\}^n$ promised $|x| \eqiv 0 \mod 2$, outputs a string $y \in \{0,1\}^m$ such that $|y| = |x|/2$, which we called the $\mathrm{PHP}_{n,m}$
+:::
+
+Then in the @watts2019exponential , it has been shown that
+
+:::{#def-PHPnotinAC0 .callout-note icon="false"}
+## (Lower bounding AC0)
+ Let $n ≤ m ≤ n^2$. Any $\mathrm{AC}_0$ circuit $F$ of depth $d$ and size $s \leq e^{n^{1/2d}}$ solves $\mathrm{PHP}_{n,m}$ on the uniform distribution over even-weighted $x$ with probability at most $1/2 + e^{−\frac{n^2}{m^{1+o(1)} \cdot O[(\log s)^{2(d−1)}]}}$.
+:::
+
+On the other hand, there exists a $\mathrm{QNC}_0$ algorithm that solve (a relax version of) this problem, whose quantum circuit is described below.
+
+
+# Experiment demonstration

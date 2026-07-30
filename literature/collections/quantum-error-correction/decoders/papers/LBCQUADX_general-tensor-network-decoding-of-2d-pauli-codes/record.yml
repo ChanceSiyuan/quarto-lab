@@ -1,0 +1,45 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: LBCQUADX
+  item_version: 96163
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: B3RQWHII
+      name: Decoders
+      path: Quantum Error correction/Decoders
+qlab:
+  primary_collection: B3RQWHII
+  indexed_collections:
+    - B3RQWHII
+  primary_topic: quantum-error-correction
+  indexed_topics:
+    - quantum-error-correction
+item_type: preprint
+title: General tensor network decoding of 2D Pauli codes
+authors:
+  - first: Christopher T.
+    last: Chubb
+year: 2021
+abstract: "In this work we develop a general tensor network decoder for 2D
+  codes. Specifically, we propose a decoder that approximates maximally
+  likelihood decoding for 2D stabiliser and subsystem codes subject to Pauli
+  noise. For a code consisting of $n$ qubits our decoder has a runtime of
+  $O(n\\log n+nχ^3)$, where $χ$ is an approximation parameter. We numerically
+  demonstrate the power of this decoder by studying four classes of codes under
+  three noise models, namely regular surface codes, irregular surface codes,
+  subsystem surface codes and colour codes, under bit-flip, phase-flip and
+  depolarising noise. We show that the thresholds yielded by our decoder are
+  state-of-the-art, and numerically consistent with optimal thresholds where
+  available, suggesting that the tensor network decoder well approximates
+  optimal decoding in all these cases. Novel to our decoder is an efficient and
+  effective approximate contraction scheme for arbitrary 2D tensor networks,
+  which may be of independent interest. We have also released an implementation
+  of this algorithm as a stand-alone Julia package: SweepContractor.jl."
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2101.04125
+  arxiv: "2101.04125"

@@ -1,0 +1,62 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: AGDH9ZXD
+  item_version: 99689
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: KS8H3U7A
+      name: Nonparametric
+      path: Quantum Learning/Machine learning/Nonparametric
+qlab:
+  primary_collection: KS8H3U7A
+  indexed_collections:
+    - KS8H3U7A
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: preprint
+title: Minimax Estimation of Functionals of Discrete Distributions
+authors:
+  - first: Jiantao
+    last: Jiao
+  - first: Kartik
+    last: Venkat
+  - first: Yanjun
+    last: Han
+  - first: Tsachy
+    last: Weissman
+year: 2015
+abstract: 'We propose a general methodology for the construction and analysis of
+  minimax estimators for a wide class of functionals of finite dimensional
+  parameters, and elaborate on the case of discrete distributions, where the
+  alphabet size $S$ is unknown and may be comparable with the number of
+  observations $n$. We treat the respective regions where the functional is
+  "nonsmooth" and "smooth" separately. In the "nonsmooth" regime, we apply an
+  unbiased estimator for the best polynomial approximation of the functional
+  whereas, in the "smooth" regime, we apply a bias-corrected Maximum Likelihood
+  Estimator (MLE). We illustrate the merit of this approach by thoroughly
+  analyzing two important cases: the entropy $H(P) = \sum_{i = 1}^S -p_i \ln
+  p_i$ and $F_α(P) = \sum_{i = 1}^S p_i^α,α>0$. We obtain the minimax $L_2$
+  rates for estimating these functionals. In particular, we demonstrate that our
+  estimator achieves the optimal sample complexity $n \asymp S/\ln S$ for
+  entropy estimation. We also show that the sample complexity for estimating
+  $F_α(P),0<α<1$ is $n\asymp S^{1/α}/ \ln S$, which can be achieved by our
+  estimator but not the MLE. For $1<α<3/2$, we show the minimax $L_2$ rate for
+  estimating $F_α(P)$ is $(n\ln n)^{-2(α-1)}$ regardless of the alphabet size,
+  while the $L_2$ rate for the MLE is $n^{-2(α-1)}$. For all the above cases,
+  the behavior of the minimax rate-optimal estimators with $n$ samples is
+  essentially that of the MLE with $n\ln n$ samples. We highlight the practical
+  advantages of our schemes for entropy and mutual information estimation. We
+  demonstrate that our approach reduces running time and boosts the accuracy
+  compared to existing various approaches. Moreover, we show that the mutual
+  information estimator induced by our methodology leads to significant
+  performance boosts over the Chow--Liu algorithm in learning graphical models.'
+tags:
+  - Computer Science - Information Theory
+  - Mathematics - Statistics Theory
+identifiers:
+  doi: 10.48550/arxiv.1406.6956
+  arxiv: "1406.6956"

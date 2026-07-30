@@ -1,0 +1,61 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: DKHRP47X
+  item_version: 96131
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: WE3HPMT6
+      name: ECC compilation
+      path: Circuit Compilation/ECC compilation
+    - key: LESICR3C
+      name: Finite field operation
+      path: Circuit Compilation/Finite field operation
+qlab:
+  primary_collection: WE3HPMT6
+  indexed_collections:
+    - LESICR3C
+    - WE3HPMT6
+  primary_topic: circuit-compilation
+  indexed_topics:
+    - circuit-compilation
+item_type: journalArticle
+title: "Performance Analysis of a Repetition Cat Code Architecture: Computing
+  256-bit Elliptic Curve Logarithm in 9 Hours with 126133 Cat Qubits"
+authors:
+  - first: Élie
+    last: Gouzien
+  - first: Diego
+    last: Ruiz
+  - first: Francois-Marie Le
+    last: Régent
+  - first: Jérémie
+    last: Guillaud
+  - first: Nicolas
+    last: Sangouard
+year: 2023
+abstract: Cat qubits provide appealing building blocks for quantum computing.
+  They exhibit a tunable noise bias yielding an exponential suppression of bit
+  flips with the average photon number and a protection against the remaining
+  phase errors can be ensured by a simple repetition code. We here quantify the
+  cost of a repetition code and provide valuable guidance for the choice of a
+  large scale architecture using cat qubits by realizing a performance analysis
+  based on the computation of discrete logarithms on an elliptic curve with
+  Shor's algorithm. By focusing on a 2D grid of cat qubits with neighboring
+  connectivity, we propose to implement 2-qubit gates via lattice surgery and
+  Toffoli gates with off-line fault-tolerant preparation of magic states through
+  projective measurements and subsequent gate teleportations. All-to-all
+  connectivity between logical qubits is ensured by routing qubits. Assuming a
+  ratio between single- and two-photon losses of 1e-5 and a cycle time of 500
+  ns, we show concretely that such an architecture can compute a 256-bit
+  elliptic curve logarithm in 9 h with 126133 cat qubits and on average 19
+  photons by cat state. We give the details of the realization of Shor's
+  algorithm so that the proposed performance analysis can be easily reused to
+  guide the choice of architecture for others platforms.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.1103/physrevlett.131.040602
+  arxiv: "2302.06639"

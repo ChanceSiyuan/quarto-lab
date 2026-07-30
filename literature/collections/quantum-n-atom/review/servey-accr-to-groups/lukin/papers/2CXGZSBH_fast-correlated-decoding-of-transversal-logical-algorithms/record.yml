@@ -1,0 +1,72 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 2CXGZSBH
+  item_version: 96017
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: L2LCLEDL
+      name: Lukin
+      path: Quantum N-Atom/_Review/servey accr. to Groups/Lukin
+    - key: IR2NG99V
+      name: correlated decoding
+      path: Quantum Error correction/Decoders/Surface code Decoders/correlated
+        decoding
+qlab:
+  primary_collection: L2LCLEDL
+  indexed_collections:
+    - IR2NG99V
+    - L2LCLEDL
+  primary_topic: quantum-n-atom
+  indexed_topics:
+    - quantum-error-correction
+    - quantum-n-atom
+item_type: preprint
+title: Fast correlated decoding of transversal logical algorithms
+authors:
+  - first: Madelyn
+    last: Cain
+  - first: Dolev
+    last: Bluvstein
+  - first: Chen
+    last: Zhao
+  - first: Shouzhen
+    last: Gu
+  - first: Nishad
+    last: Maskara
+  - first: Marcin
+    last: Kalinowski
+  - first: Alexandra A.
+    last: Geim
+  - first: Aleksander
+    last: Kubica
+  - first: Mikhail D.
+    last: Lukin
+  - first: Hengyun
+    last: Zhou
+year: 2025
+abstract: Quantum error correction (QEC) is required for large-scale
+  computation, but incurs a significant resource overhead. Recent advances have
+  shown that by jointly decoding logical qubits in algorithms composed of
+  transversal gates, the number of syndrome extraction rounds can be reduced by
+  a factor of the code distance $d$, at the cost of increased classical decoding
+  complexity. Here, we reformulate the problem of decoding transversal circuits
+  by directly decoding relevant logical operator products as they propagate
+  through the circuit. This procedure transforms the decoding task into one
+  closely resembling that of a single-qubit memory propagating through time. The
+  resulting approach leads to fast decoding and reduced problem size while
+  maintaining high performance. Focusing on the surface code, we prove that this
+  method enables fault-tolerant decoding with minimum-weight perfect matching,
+  and benchmark its performance on example circuits including magic state
+  distillation. We find that the threshold is comparable to that of a
+  single-qubit memory, and that the total decoding run time can be, in fact,
+  less than that of conventional lattice surgery. Our approach enables fast
+  correlated decoding, providing a pathway to directly extend single-qubit QEC
+  techniques to transversal algorithms.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2505.13587
+  arxiv: "2505.13587"

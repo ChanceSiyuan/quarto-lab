@@ -1,0 +1,50 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: F34CE99Y
+  item_version: 96026
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: HN3SWD95
+      name: Realization
+      path: Quantum Complexity/QCsim/Open-dynamics/LWT method/Realization
+qlab:
+  primary_collection: HN3SWD95
+  indexed_collections:
+    - HN3SWD95
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: journalArticle
+title: Fast and converged classical simulations of evidence for the utility of
+  quantum computing before fault tolerance
+authors:
+  - first: Tomislav
+    last: Begušić
+  - first: Johnnie
+    last: Gray
+  - first: Garnet Kin-Lic
+    last: Chan
+year: 2024
+abstract: >-
+  A recent quantum simulation of observables of the kicked Ising model on 127
+  qubits implemented circuits that exceed the capabilities of exact classical
+  simulation. We show that several approximate classical methods, based on
+  sparse Pauli dynamics and tensor network algorithms, can simulate these
+  observables orders of magnitude faster than the quantum experiment and can
+  also be systematically converged beyond the experimental accuracy. Our most
+  accurate technique combines a mixed Schrödinger and Heisenberg tensor network
+  representation with the Bethe free entropy relation of belief propagation to
+  compute expectation values with an effective wave function–operator sandwich
+  bond dimension >16,000,000, achieving an absolute accuracy, without
+  extrapolation, in the observables of <0.01, which is converged for many
+  practical purposes. We thereby identify inaccuracies in the experimental
+  extrapolations and suggest how future experiments can be implemented to
+  increase the classical hardness.
+            , 
+              Classical algorithms outperform quantum simulation of 127-qubit kicked Ising model expectation values.
+tags: []
+identifiers:
+  doi: 10.1126/sciadv.adk4321

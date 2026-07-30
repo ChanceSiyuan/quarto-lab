@@ -1,0 +1,55 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: HGYSVK6J
+  item_version: 96151
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: NJTHAXWQ
+      name: RB
+      path: Quantum Learning/Learning on operations/RB
+    - key: TPFCHX2W
+      name: Benchmark
+      path: Quantum N-Atom/Basic-Rydberg protocol/Multi-qubits gate/Benchmark
+qlab:
+  primary_collection: NJTHAXWQ
+  indexed_collections:
+    - NJTHAXWQ
+    - TPFCHX2W
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+    - quantum-n-atom
+item_type: journalArticle
+title: Subspace benchmarking high-fidelity entangling operations with trapped ions
+authors:
+  - first: C. H.
+    last: Baldwin
+  - first: B. J.
+    last: Bjork
+  - first: J. P.
+    last: Gaebler
+  - first: D.
+    last: Hayes
+  - first: D.
+    last: Stack
+year: 2020
+abstract: We present a new and simplified two-qubit randomized benchmarking
+  procedure that operates only in the symmetric subspace of a pair of qubits and
+  is well suited for benchmarking trapped-ion systems. By performing
+  benchmarking only in the symmetric subspace, we drastically reduce the
+  experimental complexity, number of gates required, and run time. The protocol
+  is demonstrated on trapped ions using collective single-qubit rotations and
+  the Molmer-Sorenson (MS) interaction to estimate an entangling gate error of
+  $2(1) \times 10^{-3}$. We analyze the expected errors in the MS gate and find
+  that population remains mostly in the symmetric subspace. The errors that mix
+  symmetric and anti-symmetric subspaces appear as leakage and we characterize
+  them by combining our protocol with recently proposed leakage benchmarking.
+  Generalizations and limitations of the protocol are also discussed.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.1103/physrevresearch.2.013317
+  arxiv: "1911.00085"

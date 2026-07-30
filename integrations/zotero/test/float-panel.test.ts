@@ -116,7 +116,7 @@ describe("FloatPanelView shell", () => {
     view.setState({ phase: "connecting" });
     const input = host.querySelector<HTMLTextAreaElement>(".zc-float-input")!;
     expect(input.disabled).toBe(true);
-    expect(host.textContent).toContain("正在连接 Codex");
+    expect(host.textContent).toContain("Connecting to Codex");
     view.setState({ phase: "signed-out" });
     const login = host.querySelector<HTMLButtonElement>(".zc-float-login")!;
     login.click();
@@ -133,7 +133,7 @@ describe("FloatPanelView shell", () => {
     const { host, view } = mount();
     view.setState({ phase: "signed-out", capabilities: { supportsAgentMode: true, supportsLogin: false } });
     expect(host.querySelector(".zc-float-login")).toBeNull();
-    expect(host.textContent).toContain("使用 ChatGPT 登录后即可提问。");
+    expect(host.textContent).toContain("Sign in with ChatGPT to ask questions.");
   });
 
   it("renders a compact paper title in the drag bar and removes everything on destroy", () => {
@@ -204,8 +204,8 @@ describe("FloatPanelView selection chip and transcript", () => {
     view.setState({ selection: { text: "a".repeat(128), pageNumber: 3 } });
     const chip = host.querySelector<HTMLElement>(".zc-float-chip")!;
     expect(chip.hidden).toBe(false);
-    expect(chip.textContent).toContain("已选 128 字");
-    expect(chip.textContent).toContain("第 3 页");
+    expect(chip.textContent).toContain("Selected 128 characters");
+    expect(chip.textContent).toContain("page 3");
     chip.querySelector<HTMLButtonElement>(".zc-float-chip-remove")!.click();
     expect(handlers.onRemoveSelection).toHaveBeenCalledOnce();
     view.setState({ selection: null });
@@ -245,18 +245,34 @@ describe("FloatPanelView selection chip and transcript", () => {
 
     const button = host.querySelector<HTMLButtonElement>(".zc-copy-answer")!;
     expect(button).not.toBeNull();
-    expect(button.title).toBe("复制回答");
+    expect(button.title).toBe("Copy Answer");
 
     button.click();
 
     expect(copyToClipboard).toHaveBeenCalledWith("**核心** 是注意力");
     expect(button.classList.contains("is-copied")).toBe(true);
-    expect(button.title).toBe("已复制");
+    expect(button.title).toBe("Copied");
 
     vi.advanceTimersByTime(1500);
     expect(button.classList.contains("is-copied")).toBe(false);
-    expect(button.title).toBe("复制回答");
+    expect(button.title).toBe("Copy Answer");
     vi.useRealTimers();
+  });
+
+  it("keeps a long user message collapsed across streaming re-renders", () => {
+    const { host, view } = mount();
+    const entry = { id: "long-user", kind: "user" as const, text: "long question ".repeat(80) };
+    view.setState({ phase: "ready", entries: [entry] });
+
+    let toggle = host.querySelector<HTMLButtonElement>(".zc-user-message-toggle")!;
+    expect(host.querySelector(".zc-user-bubble")?.classList.contains("is-collapsed")).toBe(true);
+    toggle.click();
+    expect(toggle.textContent).toBe("Collapse");
+
+    view.setState({ running: true, entries: [entry, { id: "r1", kind: "reasoning", text: "…", state: "running" }] });
+    toggle = host.querySelector<HTMLButtonElement>(".zc-user-message-toggle")!;
+    expect(toggle.textContent).toBe("Collapse");
+    expect(host.querySelector(".zc-user-bubble")?.classList.contains("is-collapsed")).toBe(false);
   });
 
   it("does not add the copied state when the clipboard helper reports failure", () => {
@@ -272,7 +288,7 @@ describe("FloatPanelView selection chip and transcript", () => {
     button.click();
 
     expect(button.classList.contains("is-copied")).toBe(false);
-    expect(button.title).toBe("复制回答");
+    expect(button.title).toBe("Copy Answer");
   });
 
   it("does not render a copy button on error entries", () => {
@@ -327,7 +343,7 @@ describe("FloatPanelView selection chip and transcript", () => {
     const handlers = { ...callbacks(), onUndoAnchor: vi.fn(), onMarkUnderstood: vi.fn() };
     const { host, view } = mount(handlers);
     view.setState({ anchorConfirmation: { anchorId: "a1", pageNumber: 7 }, canResolveAnchor: true });
-    expect(host.textContent).toContain("已留痕 · 第 7 页");
+    expect(host.textContent).toContain("Trail saved · page 7");
     (host.querySelector(".zc-float-anchor-chip button") as HTMLButtonElement).click();
     expect(handlers.onUndoAnchor).toHaveBeenCalledWith("a1");
     (host.querySelector(".zc-float-understood") as HTMLButtonElement).click();
@@ -343,13 +359,13 @@ describe("FloatPanelView selection chip and transcript", () => {
     const block = host.querySelector<HTMLElement>(".zc-float-consent");
     expect(block).not.toBeNull();
     expect(block!.hidden).toBe(false);
-    expect(host.textContent).toContain("QLab 将在你提问的位置自动创建高亮批注");
-    expect(host.textContent).toContain("允许");
-    expect(host.textContent).toContain("不写批注");
+    expect(host.textContent).toContain("QLab will create a highlight annotation at the question location");
+    expect(host.textContent).toContain("Allow");
+    expect(host.textContent).toContain("Do Not Annotate");
 
     const buttons = Array.from(block!.querySelectorAll("button"));
-    const declineButton = buttons.find((b) => b.textContent === "不写批注")!;
-    const acceptButton = buttons.find((b) => b.textContent === "允许")!;
+    const declineButton = buttons.find((b) => b.textContent === "Do Not Annotate")!;
+    const acceptButton = buttons.find((b) => b.textContent === "Allow")!;
 
     declineButton.click();
     expect(handlers.onPaperTrailConsent).toHaveBeenCalledWith("decline");
@@ -410,14 +426,14 @@ describe("FloatPanelView activity line", () => {
       running: true, turnStartedAt: Date.now(),
       entries: [
         { id: "u1", kind: "user", text: "问" },
-        { id: "r1", kind: "reasoning", title: "思考过程", text: "…", state: "complete" },
+        { id: "r1", kind: "reasoning", title: "Reasoning", text: "…", state: "complete" },
         { id: "t1", kind: "tool", title: "zotero_read_pdf_pages", text: "", state: "running" },
       ],
     });
     expect(host.querySelectorAll(".zc-float-entry.zc-entry-tool").length).toBe(0);
     expect(host.querySelectorAll(".zc-float-entry.zc-entry-reasoning").length).toBe(0);
     const label = host.querySelector(".zc-activity-label")!;
-    expect(label.textContent).toBe("正在调用 读取论文页面");
+    expect(label.textContent).toBe("Calling Read Paper Pages");
   });
 
   it("renders an expandable summary line after completion", () => {
@@ -434,7 +450,7 @@ describe("FloatPanelView activity line", () => {
     expect(host.querySelector(".zc-activity")).toBeNull();
     const summary = host.querySelector(".zc-turn-summary")!;
     expect(summary.textContent).toContain("28s");
-    expect(summary.textContent).toContain("1 个步骤");
+    expect(summary.textContent).toContain("1 steps");
     expect(host.querySelector(".zc-turn-detail")).toBeNull();
     (summary as HTMLElement).click();
     expect(host.querySelectorAll(".zc-turn-detail .zc-tool-card").length).toBe(1);
@@ -467,7 +483,7 @@ describe("FloatPanelView activity line", () => {
     });
     const node = host.querySelector(".zc-activity");
     expect(node).not.toBeNull();
-    expect(host.querySelector(".zc-activity-label")?.textContent).toBe("思考中…");
+    expect(host.querySelector(".zc-activity-label")?.textContent).toBe("Thinking…");
 
     // The float panel rebuilds its whole transcript on every render; the
     // spinner/shimmer node identity must still be stable so the CSS
@@ -480,7 +496,7 @@ describe("FloatPanelView activity line", () => {
     });
 
     expect(host.querySelector(".zc-activity")).toBe(node);
-    expect(host.querySelector(".zc-activity-label")?.textContent).toBe("正在调用 读取论文页面");
+    expect(host.querySelector(".zc-activity-label")?.textContent).toBe("Calling Read Paper Pages");
   });
 
   describe("pinned autoscroll", () => {
@@ -587,7 +603,7 @@ describe("FloatPanelView activity line", () => {
       view.setState({
         entries: [
           { id: "u1", kind: "user", text: "问" },
-          { id: "r1", kind: "reasoning", text: "思考中…", state: "running" },
+          { id: "r1", kind: "reasoning", text: "Thinking…", state: "running" },
         ],
       });
 
@@ -673,7 +689,7 @@ describe("FloatPanelView background opacity slider", () => {
     expect(slider.min).toBe("60");
     expect(slider.max).toBe("100");
     expect(slider.step).toBe("5");
-    expect(slider.title).toBe("背景透明度");
+    expect(slider.title).toBe("Background Opacity");
     const bar = host.querySelector<HTMLElement>(".zc-float-bar")!;
     const children = [...bar.children];
     const titleIndex = children.indexOf(host.querySelector(".zc-float-title")!);

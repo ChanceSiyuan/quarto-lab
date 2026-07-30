@@ -1,0 +1,48 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: I2PHTWFF
+  item_version: 96141
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: A3CH6HMR
+      name: Maxcut
+      path: Quantum Algorithm/Optimization/Maxcut
+qlab:
+  primary_collection: A3CH6HMR
+  indexed_collections:
+    - A3CH6HMR
+  primary_topic: quantum-algorithm
+  indexed_topics:
+    - quantum-algorithm
+item_type: preprint
+title: Lower bounding the MaxCut of high girth 3-regular graphs using the QAOA
+authors:
+  - first: Edward
+    last: Farhi
+  - first: Sam
+    last: Gutmann
+  - first: Daniel
+    last: Ranard
+  - first: Benjamin
+    last: Villalonga
+year: 2025
+abstract: We study MaxCut on 3-regular graphs of minimum girth $g$ for various
+  $g$'s. We obtain new lower bounds on the maximum cut achievable in such graphs
+  by analyzing the Quantum Approximate Optimization Algorithm (QAOA). For $g
+  \geq 16$, at depth $p \geq 7$, the QAOA improves on previously known lower
+  bounds. Our bounds are established through classical numerical analysis of the
+  QAOA's expected performance. This analysis does not produce the actual cuts
+  but establishes their existence. When implemented on a quantum computer, the
+  QAOA provides an efficient algorithm for finding such cuts, using a
+  constant-depth quantum circuit. To our knowledge, this gives an exponential
+  speedup over the best known classical algorithm guaranteed to achieve cuts of
+  this size on graphs of this girth. We also apply the QAOA to the Maximum
+  Independent Set problem on the same class of graphs.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2503.12789
+  arxiv: "2503.12789"

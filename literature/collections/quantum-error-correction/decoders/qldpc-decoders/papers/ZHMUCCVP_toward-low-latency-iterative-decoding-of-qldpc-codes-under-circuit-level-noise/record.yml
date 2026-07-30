@@ -1,0 +1,49 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: ZHMUCCVP
+  item_version: 96125
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: TCC7U77K
+      name: qLDPC-decoders
+      path: Quantum Error correction/Decoders/qLDPC-decoders
+qlab:
+  primary_collection: TCC7U77K
+  indexed_collections:
+    - TCC7U77K
+  primary_topic: quantum-error-correction
+  indexed_topics:
+    - quantum-error-correction
+item_type: preprint
+title: Toward Low-latency Iterative Decoding of QLDPC Codes Under Circuit-Level Noise
+authors:
+  - first: Anqi
+    last: Gong
+  - first: Sebastian
+    last: Cammerer
+  - first: Joseph M.
+    last: Renes
+year: 2024
+abstract: We introduce a sliding window decoder based on belief propagation (BP)
+  with guided decimation for the purposes of decoding quantum low-density
+  parity-check codes in the presence of circuit-level noise. Windowed decoding
+  keeps the decoding complexity reasonable when, as is typically the case,
+  repeated rounds of syndrome extraction are required to decode. Within each
+  window, we employ several rounds of BP with decimation of the variable node
+  that we expect to be the most likely to flip in each round, Furthermore, we
+  employ ensemble decoding to keep both decimation options (guesses) open in a
+  small number of chosen rounds. We term the resulting decoder BP with guided
+  decimation guessing (GDG). Applied to bivariate bicycle codes, GDG achieves a
+  similar logical error rate as BP with an additional OSD post-processing stage
+  (BP+OSD) and combination-sweep of order 10. For a window size of three
+  syndrome cycles, a multi-threaded CPU implementation of GDG achieves a
+  worst-case decoding latency of 3ms per window for the [[144,12,12]] code.
+tags:
+  - Computer Science - Information Theory
+  - Mathematics - Information Theory
+  - Quantum Physics
+identifiers:
+  arxiv: "2403.18901"

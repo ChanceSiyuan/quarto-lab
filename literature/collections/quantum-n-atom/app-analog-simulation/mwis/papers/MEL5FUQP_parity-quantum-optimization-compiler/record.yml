@@ -1,0 +1,49 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: MEL5FUQP
+  item_version: 110116
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 3TT6GSQZ
+      name: MWIS
+      path: Quantum N-Atom/App-Analog simulation/MWIS
+qlab:
+  primary_collection: 3TT6GSQZ
+  indexed_collections:
+    - 3TT6GSQZ
+  primary_topic: quantum-n-atom
+  indexed_topics:
+    - quantum-n-atom
+item_type: journalArticle
+title: "Parity Quantum Optimization: Compiler"
+authors:
+  - first: Kilian
+    last: Ender
+  - first: Roeland ter
+    last: Hoeven
+  - first: Benjamin E.
+    last: Niehoff
+  - first: Maike
+    last: Drieb-Schön
+  - first: Wolfgang
+    last: Lechner
+year: 2023
+abstract: We introduce parity quantum optimization with the aim of solving
+  optimization problems consisting of arbitrary $k$-body interactions and side
+  conditions using planar quantum chip architectures. The method introduces a
+  decomposition of the problem graph with arbitrary $k$-body terms using
+  generalized closed cycles of a hypergraph. Side conditions of the optimization
+  problem in form of hard constraints can be included as open cycles containing
+  the terms involved in the side conditions. The generalized parity mapping thus
+  circumvents the need to translate optimization problems to a quadratic
+  unconstrained binary optimization problem (QUBO) and allows for the direct
+  encoding of higher-order constrained binary optimization problems (HCBO) on a
+  square lattice and full parallelizability of gates.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.22331/q-2023-03-17-950
+  arxiv: "2105.06233"

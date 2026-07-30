@@ -1,0 +1,56 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 9L3F3DPH
+  item_version: 96106
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 39U3RNEW
+      name: Master equation
+      path: Quantum Dynamics/Master equation
+qlab:
+  primary_collection: 39U3RNEW
+  indexed_collections:
+    - 39U3RNEW
+  primary_topic: quantum-dynamics
+  indexed_topics:
+    - quantum-dynamics
+item_type: journalArticle
+title: Tractable Simulation of Error Correction with Honest Approximations to
+  Realistic Fault Models
+authors:
+  - first: Daniel
+    last: Puzzuoli
+  - first: Christopher
+    last: Granade
+  - first: Holger
+    last: Haas
+  - first: Ben
+    last: Criger
+  - first: Easwar
+    last: Magesan
+  - first: D. G.
+    last: Cory
+year: 2014
+abstract: In previous work, we proposed a method for leveraging efﬁcient
+  classical simulation algorithms to aid in the analysis of large-scale fault
+  tolerant circuits implemented on hypothetical quantum information processors.
+  Here, we extend those results by numerically studying the efﬁcacy of this
+  proposal as a tool for understanding the performance of an error-correction
+  gadget implemented with fault models derived from physical simulations. Our
+  approach is to approximate the arbitrary error maps that arise from realistic
+  physical models with errors that are amenable to a particular classical
+  simulation algorithm in an “honest” way; that is, such that we do not
+  underestimate the faults introduced by our physical models. In all cases, our
+  approximations provide an “honest representation” of the performance of the
+  circuit composed of the original errors. This numerical evidence supports the
+  use of our method as a way to understand the feasibility of an implementation
+  of quantum information processing given a characterization of the underlying
+  physical processes in experimentally accessible examples.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.1103/physreva.89.022306
+  arxiv: "1309.4717"

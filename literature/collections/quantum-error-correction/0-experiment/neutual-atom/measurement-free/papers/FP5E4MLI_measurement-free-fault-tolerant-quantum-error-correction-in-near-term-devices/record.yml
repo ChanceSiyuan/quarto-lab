@@ -1,0 +1,59 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: FP5E4MLI
+  item_version: 96097
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: Q8N9PMKT
+      name: measurement free
+      path: Quantum Error correction/0-Experiment/Neutual atom/measurement free
+qlab:
+  primary_collection: Q8N9PMKT
+  indexed_collections:
+    - Q8N9PMKT
+  primary_topic: quantum-error-correction
+  indexed_topics:
+    - quantum-error-correction
+item_type: preprint
+title: Measurement-free fault-tolerant quantum error correction in near-term devices
+authors:
+  - first: Sascha
+    last: Heußen
+  - first: David F.
+    last: Locher
+  - first: Markus
+    last: Müller
+year: 2023
+abstract: Logical qubits can be protected from decoherence by performing QEC
+  cycles repeatedly. Algorithms for fault-tolerant QEC must be compiled to the
+  specific hardware platform under consideration in order to practically realize
+  a quantum memory that operates for in principle arbitrary long times. All
+  circuit components must be assumed as noisy unless specific assumptions about
+  the form of the noise are made. Modern QEC schemes are challenging to
+  implement experimentally in physical architectures where in-sequence
+  measurements and feed-forward of classical information cannot be reliably
+  executed fast enough or even at all. Here we provide a novel scheme to perform
+  QEC cycles without the need of measuring qubits that is fully fault-tolerant
+  with respect to all components used in the circuit. Our scheme can be used for
+  any low-distance CSS code since its only requirement towards the underlying
+  code is a transversal CNOT gate. Similarly to Steane-type EC, we coherently
+  copy errors to a logical auxiliary qubit but then apply a coherent feedback
+  operation from the auxiliary system to the logical data qubit. The logical
+  auxiliary qubit is prepared fault-tolerantly without measurements, too. We
+  benchmark logical failure rates of the scheme in comparison to a flag-qubit
+  based EC cycle. We map out a parameter region where our scheme is feasible and
+  estimate physical error rates necessary to achieve the break-even point of
+  beneficial QEC with our scheme. We outline how our scheme could be implemented
+  in ion traps and with neutral atoms in a tweezer array. For recently
+  demonstrated capabilities of atom shuttling and native multi-atom Rydberg
+  gates, we achieve moderate circuit depths and beneficial performance of our
+  scheme while not breaking fault tolerance. These results thereby enable
+  practical fault-tolerant QEC in hardware architectures that do not support
+  mid-circuit measurements.
+tags:
+  - Quantum Physics
+identifiers:
+  arxiv: "2307.13296"

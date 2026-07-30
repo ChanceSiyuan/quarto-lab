@@ -1,0 +1,55 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 8BMMRRQ6
+  item_version: 96044
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: ZKNJ5925
+      name: Magic
+      path: Quantum Resource/Magic
+    - key: 6HPND435
+      name: Quantification
+      path: Quantum Resource/Magic/Quantification
+qlab:
+  primary_collection: ZKNJ5925
+  indexed_collections:
+    - 6HPND435
+    - ZKNJ5925
+  primary_topic: quantum-resource
+  indexed_topics:
+    - quantum-resource
+item_type: preprint
+title: Bridging magic and non-Gaussian resources via Gottesman-Kitaev-Preskill
+  encoding
+authors:
+  - first: Oliver
+    last: Hahn
+  - first: Giulia
+    last: Ferrini
+  - first: Ryuji
+    last: Takagi
+year: 2024
+abstract: Although the similarity between non-stabilizer states -- also known as
+  magic states -- in discrete-variable systems and non-Gaussian states in
+  continuous-variable systems has widely been recognized, the precise
+  connections between these two notions have still been unclear. We establish a
+  fundamental link between these two quantum resources via the
+  Gottesman-Kitaev-Preskill (GKP) encoding. We show that the negativity of the
+  continuous-variable Wigner function for an encoded GKP state coincides with a
+  magic measure we introduce, which matches the negativity of the discrete
+  Wigner function for odd dimensions. We also provide a continuous-variable
+  representation of the stabilizer R\'enyi entropy -- a recent proposal for a
+  magic measure for multi-qubit states. With this in hand, we give a classical
+  simulation algorithm with runtime scaling with the resource contents,
+  quantified by our magic measures. We also employ our results to prove that
+  implementing a multi-qubit logical non-Clifford operation in the GKP code
+  subspace requires a non-Gaussian operation even at the limit of perfect
+  encoding, despite the fact that the ideal GKP states already come with a large
+  amount of non-Gaussianity.
+tags:
+  - Quantum Physics
+identifiers:
+  arxiv: "2406.06418"

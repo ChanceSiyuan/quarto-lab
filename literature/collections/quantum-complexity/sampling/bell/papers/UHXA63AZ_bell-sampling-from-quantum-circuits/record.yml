@@ -1,0 +1,49 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: UHXA63AZ
+  item_version: 103823
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: RFRU75AI
+      name: Bell
+      path: Quantum Complexity/Sampling/Bell
+qlab:
+  primary_collection: RFRU75AI
+  indexed_collections:
+    - RFRU75AI
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: preprint
+title: Bell sampling from quantum circuits
+authors:
+  - first: Dominik
+    last: Hangleiter
+  - first: Michael J.
+    last: Gullans
+year: 2024
+abstract: "A central challenge in the verification of quantum computers is
+  benchmarking their performance as a whole and demonstrating their
+  computational capabilities. In this work, we find a universal model of quantum
+  computation, Bell sampling, that can be used for both of those tasks and thus
+  provides an ideal stepping stone towards fault-tolerance. In Bell sampling, we
+  measure two copies of a state prepared by a quantum circuit in the transversal
+  Bell basis. We show that the Bell samples are classically intractable to
+  produce and at the same time constitute what we call a circuit shadow: from
+  the Bell samples we can efficiently extract information about the quantum
+  circuit preparing the state, as well as diagnose circuit errors. In addition
+  to known properties that can be efficiently extracted from Bell samples, we
+  give several new and efficient protocols: an estimator of state fidelity, a
+  test for the depth of the circuit and an algorithm to estimate a lower bound
+  to the number of T gates in the circuit. With some additional measurements,
+  our algorithm learns a full description of states prepared by circuits with
+  low T-count."
+tags:
+  - Computer Science - Computational Complexity
+  - Condensed Matter - Quantum Gases
+  - Quantum Physics
+identifiers:
+  arxiv: "2306.00083"

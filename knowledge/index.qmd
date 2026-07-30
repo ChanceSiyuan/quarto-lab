@@ -1,22 +1,33 @@
 ---
-title: "Problem Factory Calibration Knowledge"
-description: "Focused trusted notes for the five calibration problems used by challenge #133."
+title: Research Knowledge
+description: This tree contains only notes the user currently accepts as learned knowledge.
 ---
 
-This knowledge site is intentionally limited to the five calibration problems named by [challenge #133: The problem factory](https://github.com/QuantumBFS/quantum.harness/issues/133). It contains only the models, methods, physics concepts, software, and exact oracles needed to generate and validate those demonstrations.
+# Research Knowledge
 
-## Calibration problems
-
-- [#124 — Close the certified energy bracket for the kagome Heisenberg antiferromagnet](https://github.com/QuantumBFS/quantum.harness/issues/124): Heisenberg and frustrated-spin physics, with SDP lower bounds and DMRG, PEPS, NQS, and ED upper-bound or validation paths.
-- [#125 — Beat variational SOTA for square-lattice J1–J2 at J2/J1 = 0.5](https://github.com/QuantumBFS/quantum.harness/issues/125): the J1–J2 model, frustration, VMC/NQS and PEPS, with ED checks.
-- [#126 — Computer-assisted spectral-gap theorem for an open AKLT-type lattice](https://github.com/QuantumBFS/quantum.harness/issues/126): AKLT model and exact oracles, DMRG and ED, plus the gapless Heisenberg XXX chain as a negative control.
-- [#127 — Beat tensor-network contraction costs](https://github.com/QuantumBFS/quantum.harness/issues/127): tensor-network circuit simulation, contraction ordering, and the quimb/cotengra implementation surface.
-- [#128 — Tighter rigorous Trotter error bounds for a concrete 2D Hamiltonian](https://github.com/QuantumBFS/quantum.harness/issues/128): circuit simulation, TEBD/product formulas, Heisenberg Hamiltonians, and ED cross-checks.
+This tree contains only notes the user currently accepts as learned knowledge.
+The ordered links below are the shared navigation authority for human readers
+and agents.
 
 ## Reading map
 
-- [Models](models/index.qmd) — AKLT, Heisenberg, and square-lattice J1–J2.
-- [Physics](physics/index.qmd) — Frustration and spin-liquid context.
-- [Methods](methods/index.qmd) — Numerical, variational, certified-bound, contraction, and time-evolution tools.
-- [Software](software/index.qmd) — The quimb tensor-network API used by the contraction demo.
-- [Exact oracles](solvable/index.qmd) — AKLT positive cases and the Heisenberg XXX negative control.
+- [Classical Simulation of Noisy Quantum Circuits](Noisy_complexity/index.qmd)
+- [Condensed Matter](Condensed_matter/index.qmd)
+- [Czsim](CZsim/index.qmd)
+- [Digital Analog](Digital-analog/index.qmd)
+- [Entanglement](Entanglement/index.qmd)
+- [Factoring and Hidden Subgroup Problems](Factoring/index.qmd)
+- [Generalized Stabilizer Formalism](OSF/index.qmd)
+- [Learning Theory and Quantum Learning](learning_theo/index.qmd)
+- [Magic and Stabilizer Resources](Magic/index.qmd)
+- [Optimization](optimization/index.qmd)
+- [Perturbation and Floquet Theory](Dynamics/index.qmd)
+- [Quantum Complexity](quantum_complexity/index.qmd)
+- [Quantum Error Correction](QEC/index.qmd)
+- [Quantum Fingerprinting](Fingerprint/index.qmd)
+- [Quantum Resource](compatibility/index.qmd)
+- [Rydberg Atoms for Fault-Tolerant Quantum Computation](rydberg_qc/index.qmd)
+- [Scalable Quantum Non-Locality: Architectures, Noise Resilience, and Experimental Frontiers](Nonlocal_Games_Survey/index.qmd)
+- [SLM Engineer](SLM_engineer/index.qmd)
+- [Stabilizer Simulation](stab_simulation/index.qmd)
+- [Tensor Network Simulation](TN_sim/index.qmd)

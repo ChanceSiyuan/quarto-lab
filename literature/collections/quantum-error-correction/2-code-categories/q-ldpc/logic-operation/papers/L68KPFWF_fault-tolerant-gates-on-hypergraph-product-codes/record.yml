@@ -1,0 +1,44 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: L68KPFWF
+  item_version: 96107
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: DUIGCVWH
+      name: Logic operation
+      path: Quantum Error correction/2-Code categories/q-LDPC/Logic operation
+qlab:
+  primary_collection: DUIGCVWH
+  indexed_collections:
+    - DUIGCVWH
+  primary_topic: quantum-error-correction
+  indexed_topics:
+    - quantum-error-correction
+item_type: journalArticle
+title: Fault-tolerant gates on hypergraph product codes
+authors:
+  - first: Anirudh
+    last: Krishna
+  - first: David
+    last: Poulin
+year: 2021
+abstract: Hypergraph product codes are a class of quantum low density parity
+  check (LDPC) codes discovered by Tillich and Z\'emor. These codes have a
+  constant encoding rate and were recently shown to have a constant
+  fault-tolerant error threshold. With these features, they asymptotically offer
+  a smaller overhead compared to topological codes. However, existing techniques
+  to perform logical gates in hypergraph product codes require many separate
+  code blocks, so only becomes effective with a very large number of logical
+  qubits. Here, we demonstrate how to perform Clifford gates on this class of
+  codes using code deformation. To this end, we generalize punctures and
+  wormhole defects, the latter introduced in a companion paper. Together with
+  state injection, we can perform a universal set of gates within a single block
+  of the class of hypergraph product codes.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.1103/physrevx.11.011023
+  arxiv: "1909.07424"

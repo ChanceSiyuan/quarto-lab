@@ -1,0 +1,49 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: CCTDZCRB
+  item_version: 96057
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: PB79WWE8
+      name: Injection
+      path: Quantum Error correction/2-Code categories/Topological/surface
+        codes/Lattice Surgery/Injection
+    - key: F28II9EE
+      name: magic injection
+      path: Quantum Resource/Magic/Magic state distillation/magic injection
+qlab:
+  primary_collection: PB79WWE8
+  indexed_collections:
+    - F28II9EE
+    - PB79WWE8
+  primary_topic: quantum-error-correction
+  indexed_topics:
+    - quantum-error-correction
+    - quantum-resource
+item_type: journalArticle
+title: A magic state's fidelity can be superior to the operations that created it
+authors:
+  - first: Ying
+    last: Li
+year: 2015
+abstract: The leading approach to fault tolerant quantum computing requires a
+  continual supply of magic states. When a new magic state is first encoded, its
+  initial fidelity will be too poor for use in the computation. This
+  necessitates a resource-intensive distillation process that occupies the
+  majority of the computer's hardware; creating magic states with a high initial
+  fidelity minimises this cost and is therefore crucial for practical quantum
+  computing. Here we present the surprising and encouraging result that raw
+  magic states can have a fidelity significantly better than that of the
+  two-qubit gate operations used to construct them. Our protocol exploits
+  post-selection without significantly slowing the rate of generation and
+  tolerates finite error rates in initialisations, measurements and single-qubit
+  gates. This approach may dramatically reduce the size of the hardware needed
+  for a given quantum computing task.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.1088/1367-2630/17/2/023037
+  arxiv: "1410.7808"

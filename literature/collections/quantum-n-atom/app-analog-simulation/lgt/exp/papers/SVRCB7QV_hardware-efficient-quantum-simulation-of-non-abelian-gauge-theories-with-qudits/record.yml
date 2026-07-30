@@ -1,0 +1,54 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: SVRCB7QV
+  item_version: 114108
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: ISSIUBUZ
+      name: exp
+      path: Quantum N-Atom/App-Analog simulation/LGT/exp
+qlab:
+  primary_collection: ISSIUBUZ
+  indexed_collections:
+    - ISSIUBUZ
+  primary_topic: quantum-n-atom
+  indexed_topics:
+    - quantum-n-atom
+item_type: journalArticle
+title: Hardware efficient quantum simulation of non-abelian gauge theories with
+  qudits on Rydberg platforms
+authors:
+  - first: Daniel
+    last: González-Cuadra
+  - first: Torsten V.
+    last: Zache
+  - first: Jose
+    last: Carrasco
+  - first: Barbara
+    last: Kraus
+  - first: Peter
+    last: Zoller
+year: 2022
+abstract: Non-abelian gauge theories underlie our understanding of fundamental
+  forces in nature, and developing tailored quantum hardware and algorithms to
+  simulate them is an outstanding challenge in the rapidly evolving field of
+  quantum simulation. Here we take an approach where gauge fields, discretized
+  in spacetime, are represented by qudits and are time-evolved in Trotter steps
+  with multiqudit quantum gates. This maps naturally and hardware-efficiently to
+  an architecture based on Rydberg tweezer arrays, where long-lived internal
+  atomic states represent qudits, and the required quantum gates are performed
+  as holonomic operations supported by a Rydberg blockade mechanism. We
+  illustrate our proposal for a minimal digitization of SU(2) gauge fields,
+  demonstrating a significant reduction in circuit depth and gate errors in
+  comparison to a traditional qubit-based approach, which puts simulations of
+  non-abelian gauge theories within reach of NISQ devices.
+tags:
+  - Condensed Matter - Quantum Gases
+  - High Energy Physics - Lattice
+  - Quantum Physics
+identifiers:
+  doi: 10.1103/physrevlett.129.160501
+  arxiv: "2203.15541"

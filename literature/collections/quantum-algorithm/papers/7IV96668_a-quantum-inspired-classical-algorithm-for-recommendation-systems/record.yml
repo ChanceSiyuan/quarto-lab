@@ -1,0 +1,50 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 7IV96668
+  item_version: 96137
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: IYPP5A8R
+      name: Quantum Algorithm
+      path: Quantum Algorithm
+qlab:
+  primary_collection: IYPP5A8R
+  indexed_collections:
+    - IYPP5A8R
+  primary_topic: quantum-algorithm
+  indexed_topics:
+    - quantum-algorithm
+item_type: conferencePaper
+title: A quantum-inspired classical algorithm for recommendation systems
+authors:
+  - first: Ewin
+    last: Tang
+year: 2019
+abstract: We give a classical analogue to Kerenidis and Prakash's quantum
+  recommendation system, previously believed to be one of the strongest
+  candidates for provably exponential speedups in quantum machine learning. Our
+  main result is an algorithm that, given an $m \times n$ matrix in a data
+  structure supporting certain $\ell^2$-norm sampling operations, outputs an
+  $\ell^2$-norm sample from a rank-$k$ approximation of that matrix in time
+  $O(\text{poly}(k)\log(mn))$, only polynomially slower than the quantum
+  algorithm. As a consequence, Kerenidis and Prakash's algorithm does not in
+  fact give an exponential speedup over classical algorithms. Further, under
+  strong input assumptions, the classical recommendation system resulting from
+  our algorithm produces recommendations exponentially faster than previous
+  classical systems, which run in time linear in $m$ and $n$. The main insight
+  of this work is the use of simple routines to manipulate $\ell^2$-norm
+  sampling distributions, which play the role of quantum superpositions in the
+  classical setting. This correspondence indicates a potentially fruitful
+  framework for formally comparing quantum machine learning algorithms to
+  classical machine learning algorithms.
+tags:
+  - Computer Science - Data Structures and Algorithms
+  - Computer Science - Information Retrieval
+  - Computer Science - Machine Learning
+  - Quantum Physics
+identifiers:
+  doi: 10.1145/3313276.3316310
+  arxiv: "1807.04271"

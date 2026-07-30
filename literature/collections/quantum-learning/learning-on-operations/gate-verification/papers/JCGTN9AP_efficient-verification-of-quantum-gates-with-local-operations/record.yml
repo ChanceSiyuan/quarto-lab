@@ -1,0 +1,47 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: JCGTN9AP
+  item_version: 96075
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: 52R5TUWG
+      name: Gate verification
+      path: Quantum Learning/Learning on operations/Gate verification
+qlab:
+  primary_collection: 52R5TUWG
+  indexed_collections:
+    - 52R5TUWG
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: journalArticle
+title: Efficient verification of quantum gates with local operations
+authors:
+  - first: Huangjun
+    last: Zhu
+  - first: Haoyu
+    last: Zhang
+year: 2020
+abstract: Efficient verification of the functioning of quantum devices is a key
+  to the development of quantum technologies, but is a daunting task as the
+  system size increases. Here we propose a simple and general framework for
+  verifying unitary transformations that can be applied to both individual
+  quantum gates and gate sets, including quantum circuits. This framework
+  enables efficient verification of many important unitary transformations,
+  including but not limited to all bipartite unitaries, Clifford unitaries,
+  generalized controlled-$Z$ gates, generalized controlled-NOT gates, the
+  controlled-SWAP gate, and permutation transformations. For all these
+  unitaries, the sample complexity increases at most linearly with the system
+  size and is often independent of the system size. Moreover, little overhead is
+  incurred even if one can only prepare Pauli eigenstates and perform local
+  measurements. Our approach is applicable in many scenarios in which randomized
+  benchmarking (RB) does not apply and is thus instrumental to quantum
+  computation and many other applications in quantum information processing.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.1103/physreva.101.042316
+  arxiv: "1910.14032"

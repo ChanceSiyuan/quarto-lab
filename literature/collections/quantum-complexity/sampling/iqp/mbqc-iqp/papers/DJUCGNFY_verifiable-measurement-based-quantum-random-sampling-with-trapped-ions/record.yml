@@ -1,0 +1,83 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: DJUCGNFY
+  item_version: 96040
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: WFIYMWN6
+      name: MBQC+IQP
+      path: Quantum Complexity/Sampling/IQP/MBQC+IQP
+    - key: NYS8AXTD
+      name: Verifiable quantum simulation
+      path: Condensed matter/Verifiable quantum simulation
+qlab:
+  primary_collection: WFIYMWN6
+  indexed_collections:
+    - NYS8AXTD
+    - WFIYMWN6
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - condensed-matter
+    - quantum-complexity
+item_type: preprint
+title: Verifiable measurement-based quantum random sampling with trapped ions
+authors:
+  - first: Martin
+    last: Ringbauer
+  - first: Marcel
+    last: Hinsche
+  - first: Thomas
+    last: Feldker
+  - first: Paul K.
+    last: Faehrmann
+  - first: Juani
+    last: Bermejo-Vega
+  - first: Claire
+    last: Edmunds
+  - first: Lukas
+    last: Postler
+  - first: Roman
+    last: Stricker
+  - first: Christian D.
+    last: Marciniak
+  - first: Michael
+    last: Meth
+  - first: Ivan
+    last: Pogorelov
+  - first: Rainer
+    last: Blatt
+  - first: Philipp
+    last: Schindler
+  - first: Jens
+    last: Eisert
+  - first: Thomas
+    last: Monz
+  - first: Dominik
+    last: Hangleiter
+year: 2024
+abstract: Quantum computers are now on the brink of outperforming their
+  classical counterparts. One way to demonstrate the advantage of quantum
+  computation is through quantum random sampling performed on quantum computing
+  devices. However, existing tools for verifying that a quantum device indeed
+  performed the classically intractable sampling task are either impractical or
+  not scalable to the quantum advantage regime. The verification problem thus
+  remains an outstanding challenge. Here, we experimentally demonstrate
+  efficiently verifiable quantum random sampling in the measurement-based model
+  of quantum computation on a trapped-ion quantum processor. We create and
+  sample from random cluster states, which are at the heart of measurement-based
+  computing, up to a size of 4 x 4 qubits. By exploiting the structure of these
+  states, we are able to recycle qubits during the computation to sample from
+  entangled cluster states that are larger than the qubit register. We then
+  efficiently estimate the fidelity to verify the prepared states -- in single
+  instances and on average -- and compare our results to cross-entropy
+  benchmarking. Finally, we study the effect of experimental noise on the
+  certificates. Our results and techniques provide a feasible path toward a
+  verified demonstration of a quantum advantage.
+tags:
+  - Computer Science - Computational Complexity
+  - Quantum Physics
+identifiers:
+  arxiv: "2307.14424"

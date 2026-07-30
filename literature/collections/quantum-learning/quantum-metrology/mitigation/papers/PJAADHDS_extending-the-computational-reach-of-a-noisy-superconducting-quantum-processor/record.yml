@@ -1,0 +1,60 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: PJAADHDS
+  item_version: 96080
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: ZTIKI838
+      name: Mitigation
+      path: Quantum Learning/Quantum Metrology/Mitigation
+qlab:
+  primary_collection: ZTIKI838
+  indexed_collections:
+    - ZTIKI838
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: journalArticle
+title: Extending the computational reach of a noisy superconducting quantum processor
+authors:
+  - first: Abhinav
+    last: Kandala
+  - first: Kristan
+    last: Temme
+  - first: Antonio D.
+    last: Corcoles
+  - first: Antonio
+    last: Mezzacapo
+  - first: Jerry M.
+    last: Chow
+  - first: Jay M.
+    last: Gambetta
+year: 2019
+abstract: Quantum computation, a completely different paradigm of computing,
+  benefits from theoretically proven speed-ups for certain problems and opens up
+  the possibility of exactly studying the properties of quantum systems. Yet,
+  because of the inherent fragile nature of the physical computing elements,
+  qubits, achieving quantum advantages over classical computation requires
+  extremely low error rates for qubit operations as well as a significant
+  overhead of physical qubits, in order to realize fault-tolerance via quantum
+  error correction. However, recent theoretical work has shown that the accuracy
+  of computation based off expectation values of quantum observables can be
+  enhanced through an extrapolation of results from a collection of varying
+  noisy experiments. Here, we demonstrate this error mitigation protocol on a
+  superconducting quantum processor, enhancing its computational capability,
+  with no additional hardware modifications. We apply the protocol to mitigate
+  errors on canonical single- and two-qubit experiments and then extend its
+  application to the variational optimization of Hamiltonians for quantum
+  chemistry and magnetism. We effectively demonstrate that the suppression of
+  incoherent errors helps unearth otherwise inaccessible accuracies to the
+  variational solutions using our noisy processor. These results demonstrate
+  that error mitigation techniques will be critical to significantly enhance the
+  capabilities of near-term quantum computing hardware.
+tags:
+  - Quantum Physics
+identifiers:
+  doi: 10.1038/s41586-019-1040-7
+  arxiv: "1805.04492"

@@ -1,0 +1,60 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: LA7WA7Q8
+  item_version: 96128
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: M64D4UA3
+      name: Hypergraph matching
+      path: Quantum Error correction/Decoders/Surface code Decoders/MWPM/Hypergraph
+        matching
+qlab:
+  primary_collection: M64D4UA3
+  indexed_collections:
+    - M64D4UA3
+  primary_topic: quantum-error-correction
+  indexed_topics:
+    - quantum-error-correction
+item_type: preprint
+title: Stable Hypergraph Matching in Unimodular Hypergraphs
+authors:
+  - first: Péter
+    last: Biró
+  - first: Gergely
+    last: Csáji
+  - first: Ildikó
+    last: Schlotter
+year: 2025
+abstract: We study the NP-hard Stable Hypergraph Matching (SHM) problem and its
+  generalization allowing capacities, the Stable Hypergraph $b$-Matching
+  (SH$b$M) problem, and investigate their computational properties under various
+  structural constraints. Our study is motivated by the fact that Scarf's Lemma
+  (Scarf, 1967) together with a result of Lov\'asz (1972) guarantees the
+  existence of a stable matching whenever the underlying hypergraph is normal.
+  Furthermore, if the hypergraph is unimodular (i.e., its incidence matrix is
+  totally unimodular), then even a stable $b$-matching is guaranteed to exist.
+  However, no polynomial-time algorithm is known for finding a stable matching
+  or $b$-matching in unimodular hypergraphs. We identify subclasses of
+  unimodular hypergraphs where SHM and SH$b$M are tractable such as laminar
+  hypergraphs or so-called subpath hypergraphs with bounded-size hyperedges; for
+  the latter case, even a maximum-weight stable $b$-matching can be found
+  efficiently. We complement our algorithms by showing that optimizing over
+  stable matchings is NP-hard even in laminar hypergraphs. As a practically
+  important special case of SH$b$M for unimodular hypergraphs, we investigate a
+  tripartite stable matching problem with students, schools, and companies as
+  agents, called the University Dual Admission problem, which models real-world
+  scenarios in higher education admissions. Finally, we examine a superclass of
+  subpath hypergraphs that are normal but necessarily not unimodular, namely
+  subtree hypergraphs where hyperedges correspond to subtrees of a tree. We
+  establish that for such hypergraphs, stable matchings can be found in
+  polynomial time but, in the setting with capacities, finding a stable
+  $b$-matching is NP-hard.
+tags:
+  - Computer Science - Computer Science and Game Theory
+  - Computer Science - Data Structures and Algorithms
+identifiers:
+  doi: 10.48550/arxiv.2502.08827
+  arxiv: "2502.08827"

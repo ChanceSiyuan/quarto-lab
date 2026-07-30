@@ -1,0 +1,57 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: UM77LF33
+  item_version: 96154
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: YW9TBWJI
+      name: lowerbounds
+      path: Quantum Learning/Learning on operations/lowerbounds
+qlab:
+  primary_collection: YW9TBWJI
+  indexed_collections:
+    - YW9TBWJI
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: preprint
+title: Efficient Pauli channel estimation with logarithmic quantum memory
+authors:
+  - first: Sitan
+    last: Chen
+  - first: Weiyuan
+    last: Gong
+year: 2025
+abstract: "Here we revisit one of the prototypical tasks for characterizing the
+  structure of noise in quantum devices: estimating every eigenvalue of an
+  $n$-qubit Pauli noise channel to error $ε$. Prior work [14] proved no-go
+  theorems for this task in the practical regime where one has a limited amount
+  of quantum memory, e.g. any protocol with $\\le 0.99n$ ancilla qubits of
+  quantum memory must make exponentially many measurements, provided it is
+  non-concatenating. Such protocols can only interact with the channel by
+  repeatedly preparing a state, passing it through the channel, and measuring
+  immediately afterward. This left open a natural question: does the lower bound
+  hold even for general protocols, i.e. ones which chain together many queries
+  to the channel, interleaved with arbitrary data-processing channels, before
+  measuring? Surprisingly, in this work we show the opposite: there is a
+  protocol that can estimate the eigenvalues of a Pauli channel to error $ε$
+  using only $O(\\log n/ε^2)$ ancilla and $\\tilde{O}(n^2/ε^2)$ measurements. In
+  contrast, we show that any protocol with zero ancilla, even a concatenating
+  one, must make $Ω(2^n/ε^2)$ measurements, which is tight. Our results imply,
+  to our knowledge, the first quantum learning task where logarithmically many
+  qubits of quantum memory suffice for an exponential statistical advantage. Our
+  protocol can be naturally extended to a protocol that learns the eigenvalues
+  of Pauli terms within any subset $A$ of a Pauli channel with
+  $O(\\log\\log(|A|)/ε^2)$ ancilla and $\\tilde{O}(n^2/ε^2)$ measurements."
+tags:
+  - Computer Science - Computational Complexity
+  - Computer Science - Information Theory
+  - Computer Science - Machine Learning
+  - Mathematics - Statistics Theory
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2309.14326
+  arxiv: "2309.14326"

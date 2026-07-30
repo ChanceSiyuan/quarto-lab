@@ -1,0 +1,53 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: E92ZKG4J
+  item_version: 96045
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: AC5RCSNL
+      name: transversal CCZ/T
+      path: Quantum Error correction/Fault-tolerant/transversal gate/transversal CCZ/T
+qlab:
+  primary_collection: AC5RCSNL
+  indexed_collections:
+    - AC5RCSNL
+  primary_topic: quantum-error-correction
+  indexed_topics:
+    - quantum-error-correction
+item_type: preprint
+title: Asymptotically Good Quantum Codes with Transversal Non-Clifford Gates
+authors:
+  - first: Louis
+    last: Golowich
+  - first: Venkatesan
+    last: Guruswami
+year: 2024
+abstract: We construct quantum codes that support transversal $CCZ$ gates over
+  qudits of arbitrary prime power dimension $q$ (including $q=2$) such that the
+  code dimension and distance grow linearly in the block length. The only
+  previously known construction with such linear dimension and distance required
+  a growing alphabet size $q$ (Krishna & Tillich, 2019). Our codes imply
+  protocols for magic state distillation with overhead exponent
+  $\gamma=\log(n/k)/\log(d)\rightarrow 0$ as the block length
+  $n\rightarrow\infty$, where $k$ and $d$ denote the code dimension and distance
+  respectively. It was previously an open question to obtain such a protocol
+  with a contant alphabet size $q$. We construct our codes by combining two
+  modular components, namely, (i) a transformation from classical codes
+  satisfying certain properties to quantum codes supporting transversal $CCZ$
+  gates, and (ii) a concatenation scheme for reducing the alphabet size of codes
+  supporting transversal $CCZ$ gates. For this scheme we introduce a quantum
+  analogue of multiplication-friendly codes, which provide a way to express
+  multiplication over a field in terms of a subfield. We obtain our
+  asymptotically good construction by instantiating (i) with algebraic-geometric
+  codes, and applying a constant number of iterations of (ii). We also give an
+  alternative construction with nearly asymptotically good parameters
+  ($k,d=n/2^{O(\log^*n)}$) by instantiating (i) with Reed-Solomon codes and then
+  performing a superconstant number of iterations of (ii).
+tags:
+  - Computer Science - Information Theory
+  - Quantum Physics
+identifiers:
+  arxiv: "2408.09254"

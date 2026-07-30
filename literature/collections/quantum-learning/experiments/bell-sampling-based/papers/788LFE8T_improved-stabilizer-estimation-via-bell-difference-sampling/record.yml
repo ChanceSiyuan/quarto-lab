@@ -1,0 +1,65 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 788LFE8T
+  item_version: 96111
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: Y8GNXK9L
+      name: Bell sampling based
+      path: Quantum Learning/Experiments/Bell sampling based
+    - key: MSCEQ3D9
+      name: Learning
+      path: Quantum Resource/Magic/Quantification/Learning
+    - key: UJ7EZN4C
+      name: Verification
+      path: Quantum Resource/Magic/Quantification/Verification
+qlab:
+  primary_collection: Y8GNXK9L
+  indexed_collections:
+    - MSCEQ3D9
+    - UJ7EZN4C
+    - Y8GNXK9L
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+    - quantum-resource
+item_type: preprint
+title: Improved Stabilizer Estimation via Bell Difference Sampling
+authors:
+  - first: Sabee
+    last: Grewal
+  - first: Vishnu
+    last: Iyer
+  - first: William
+    last: Kretschmer
+  - first: Daniel
+    last: Liang
+year: 2024
+abstract: 'We study the complexity of learning quantum states in various models
+  with respect to the stabilizer formalism and obtain the following results: -
+  We prove that $\Omega(n)$ $T$-gates are necessary for any Clifford+$T$ circuit
+  to prepare computationally pseudorandom quantum states, an exponential
+  improvement over the previously known bound. This bound is asymptotically
+  tight if linear-time quantum-secure pseudorandom functions exist. - Given an
+  $n$-qubit pure quantum state $|\psi\rangle$ that has fidelity at least $\tau$
+  with some stabilizer state, we give an algorithm that outputs a succinct
+  description of a stabilizer state that witnesses fidelity at least $\tau -
+  \varepsilon$. The algorithm uses $O(n/(\varepsilon^2\tau^4))$ samples and
+  $\exp\left(O(n/\tau^4)\right) / \varepsilon^2$ time. In the regime of $\tau$
+  constant, this algorithm estimates stabilizer fidelity substantially faster
+  than the na\"ive $\exp(O(n^2))$-time brute-force algorithm over all stabilizer
+  states. - In the special case of $\tau > \cos^2(\pi/8)$, we show that a
+  modification of the above algorithm runs in polynomial time. - We exhibit a
+  tolerant property testing algorithm for stabilizer states. The underlying
+  algorithmic primitive in all of our results is Bell difference sampling. To
+  prove our results, we establish and/or strengthen connections between Bell
+  difference sampling, symplectic Fourier analysis, and graph theory.'
+tags:
+  - Computer Science - Computational Complexity
+  - Computer Science - Data Structures and Algorithms
+  - Quantum Physics
+identifiers:
+  arxiv: "2304.13915"

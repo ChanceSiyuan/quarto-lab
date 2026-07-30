@@ -1,0 +1,64 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: BIBACCT4
+  item_version: 96037
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: SHZ4SM7W
+      name: LWT method
+      path: Quantum Complexity/QCsim/Open-dynamics/LWT method
+    - key: S7N46ZH8
+      name: Pauli analysis
+      path: Quantum Complexity/QCsim/Open-dynamics/Pauli analysis
+qlab:
+  primary_collection: SHZ4SM7W
+  indexed_collections:
+    - S7N46ZH8
+    - SHZ4SM7W
+  primary_topic: quantum-complexity
+  indexed_topics:
+    - quantum-complexity
+item_type: preprint
+title: Classically estimating observables of noiseless quantum circuits
+authors:
+  - first: Armando
+    last: Angrisani
+  - first: Alexander
+    last: Schmidhuber
+  - first: Manuel S.
+    last: Rudolph
+  - first: M.
+    last: Cerezo
+  - first: Zoë
+    last: Holmes
+  - first: Hsin-Yuan
+    last: Huang
+year: 2024
+abstract: We present a classical algorithm for estimating expectation values of
+  arbitrary observables on most quantum circuits across all circuit
+  architectures and depths, including those with all-to-all connectivity. We
+  prove that for any architecture where each circuit layer is equipped with a
+  measure invariant under single-qubit rotations, our algorithm achieves a small
+  error $\varepsilon$ on all circuits except for a small fraction $\delta$. The
+  computational time is polynomial in qubit count and circuit depth for any
+  small constant $\varepsilon, \delta$, and quasi-polynomial for
+  inverse-polynomially small $\varepsilon, \delta$. For
+  non-classically-simulable input states or observables, the expectation values
+  can be estimated by augmenting our algorithm with classical shadows of the
+  relevant state or observable. Our approach leverages a Pauli-path method under
+  Heisenberg evolution. While prior works are limited to noisy quantum circuits,
+  we establish classical simulability in noiseless regimes. Given that most
+  quantum circuits in an architecture exhibit chaotic and locally scrambling
+  behavior, our work demonstrates that estimating observables of such quantum
+  dynamics is classically tractable across all geometries.
+tags:
+  - Computer Science - Computational Complexity
+  - Mathematical Physics
+  - Mathematics - Mathematical Physics
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2409.01706
+  arxiv: "2409.01706"

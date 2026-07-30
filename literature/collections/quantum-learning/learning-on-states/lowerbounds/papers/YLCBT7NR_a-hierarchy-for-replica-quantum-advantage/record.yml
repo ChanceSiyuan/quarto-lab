@@ -1,0 +1,50 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: YLCBT7NR
+  item_version: 96153
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: ITLT2FDY
+      name: lowerbounds
+      path: Quantum Learning/Learning on states/lowerbounds
+qlab:
+  primary_collection: ITLT2FDY
+  indexed_collections:
+    - ITLT2FDY
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: preprint
+title: A Hierarchy for Replica Quantum Advantage
+authors:
+  - first: Sitan
+    last: Chen
+  - first: Jordan
+    last: Cotler
+  - first: Hsin-Yuan
+    last: Huang
+  - first: Jerry
+    last: Li
+year: 2021
+abstract: We prove that given the ability to make entangled measurements on at
+  most $k$ replicas of an $n$-qubit state $\rho$ simultaneously, there is a
+  property of $\rho$ which requires at least order $2^n$ measurements to learn.
+  However, the same property only requires one measurement to learn if we can
+  make an entangled measurement over a number of replicas polynomial in $k, n$.
+  Because the above holds for each positive integer $k$, we obtain a hierarchy
+  of tasks necessitating progressively more replicas to be performed
+  efficiently. We introduce a powerful proof technique to establish our results,
+  and also use this to provide new bounds for testing the mixedness of a quantum
+  state.
+tags:
+  - Computer Science - Computational Complexity
+  - Computer Science - Information Theory
+  - Computer Science - Machine Learning
+  - Mathematics - Information Theory
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2111.05874
+  arxiv: "2111.05874"

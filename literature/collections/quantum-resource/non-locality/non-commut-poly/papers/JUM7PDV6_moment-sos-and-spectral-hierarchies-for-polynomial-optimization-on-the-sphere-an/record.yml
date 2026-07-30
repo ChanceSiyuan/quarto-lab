@@ -1,0 +1,56 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: JUM7PDV6
+  item_version: 96164
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: KHTC4YPI
+      name: non-commut_poly
+      path: Quantum Resource/Non-locality/non-commut_poly
+    - key: 2BCU6HFL
+      name: NPA
+      path: Quantum Complexity/k-local Hamiltonian/NPA
+qlab:
+  primary_collection: KHTC4YPI
+  indexed_collections:
+    - 2BCU6HFL
+    - KHTC4YPI
+  primary_topic: quantum-resource
+  indexed_topics:
+    - quantum-complexity
+    - quantum-resource
+item_type: preprint
+title: Moment-sos and spectral hierarchies for polynomial optimization on the
+  sphere and quantum de Finetti theorems
+authors:
+  - first: Alexander Taveira
+    last: Blomenhofer
+  - first: Monique
+    last: Laurent
+year: 2025
+abstract: We revisit the convergence analysis of two approximation hierarchies
+  for polynomial optimization on the unit sphere. The first one is based on the
+  moment-sos approach and gives semidefinite bounds for which Fang and Fawzi
+  (2021) showed an analysis in $O(1/r^2)$ for the r-th level bound, using the
+  polynomial kernel method. The second hierarchy was recently proposed by Lovitz
+  and Johnston (2023) and gives spectral bounds for which they show a
+  convergence rate in $O(1/r)$, using a quantum de Finetti theorem of Christandl
+  et al. (2007) that applies to complex Hermitian matrices with a "double"
+  symmetry. We investigate links between these approaches, in particular, via
+  duality of moments and sums of squares. Our main results include showing that
+  the spectral bounds cannot have a convergence rate better than $O(1/r^2)$ and
+  that they do not enjoy generic finite convergence. In addition, we propose
+  alternative performance analyses that involve explicit constants depending on
+  intrinsic parameters of the optimization problem. For this we develop a novel
+  "banded" real de Finetti theorem that applies to real matrices with "double"
+  symmetry. We also show how to use the polynomial kernel method to obtain a de
+  Finetti type result in $O(1/r^2)$ for real maximally symmetric matrices,
+  improving an earlier result in $O(1/r)$ of Doherty and Wehner (2012).
+tags:
+  - Mathematics - Optimization and Control
+identifiers:
+  doi: 10.48550/arxiv.2412.13191
+  arxiv: "2412.13191"

@@ -1,0 +1,75 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: T9ACCTL6
+  item_version: 96044
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: DX9Q6GWR
+      name: Neutual atom
+      path: Quantum Error correction/0-Experiment/Neutual atom
+    - key: D4U5RH44
+      name: Surface code Decoders
+      path: Quantum Error correction/Decoders/Surface code Decoders
+    - key: L2LCLEDL
+      name: Lukin
+      path: Quantum N-Atom/_Review/servey accr. to Groups/Lukin
+    - key: IR2NG99V
+      name: correlated decoding
+      path: Quantum Error correction/Decoders/Surface code Decoders/correlated
+        decoding
+qlab:
+  primary_collection: DX9Q6GWR
+  indexed_collections:
+    - D4U5RH44
+    - DX9Q6GWR
+    - IR2NG99V
+    - L2LCLEDL
+  primary_topic: quantum-error-correction
+  indexed_topics:
+    - quantum-error-correction
+    - quantum-n-atom
+item_type: preprint
+title: Correlated decoding of logical algorithms with transversal gates
+authors:
+  - first: Madelyn
+    last: Cain
+  - first: Chen
+    last: Zhao
+  - first: Hengyun
+    last: Zhou
+  - first: Nadine
+    last: Meister
+  - first: J. Pablo Bonilla
+    last: Ataides
+  - first: Arthur
+    last: Jaffe
+  - first: Dolev
+    last: Bluvstein
+  - first: Mikhail D.
+    last: Lukin
+year: 2024
+abstract: Quantum error correction is believed to be essential for scalable
+  quantum computation, but its implementation is challenging due to its
+  considerable space-time overhead. Motivated by recent experiments
+  demonstrating efficient manipulation of logical qubits using transversal gates
+  (Bluvstein et al., Nature 626, 58-65 (2024)), we show that the performance of
+  logical algorithms can be substantially improved by decoding the qubits
+  jointly to account for physical error propagation during transversal
+  entangling gates. We find that such correlated decoding improves the
+  performance of both Clifford and non-Clifford transversal entangling gates,
+  and explore two decoders offering different computational runtimes and
+  accuracies. By considering deep logical Clifford circuits, we find that
+  correlated decoding can significantly improve the space-time cost by reducing
+  the number of rounds of noisy syndrome extraction per gate. These results
+  demonstrate that correlated decoding provides a major advantage in early
+  fault-tolerant computation, and indicate it has considerable potential to
+  reduce the space-time cost in large-scale logical algorithms.
+tags:
+  - Condensed Matter - Disordered Systems and Neural Networks
+  - Condensed Matter - Statistical Mechanics
+  - Quantum Physics
+identifiers:
+  arxiv: "2403.03272"

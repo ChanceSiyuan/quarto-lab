@@ -1,0 +1,54 @@
+schema_version: 2
+origin: zotero-import
+materialization: metadata-only
+zotero_import:
+  library: users/0
+  item_key: 2KV8PZD8
+  item_version: 102848
+  imported_at: 2026-07-28T14:06:59Z
+  collections:
+    - key: YCBHDN7M
+      name: Application
+      path: Quantum Learning/Learning on states/non-linear/Application
+    - key: BJ4JTXLM
+      name: Virtual_distillation
+      path: Quantum Learning/Learning on states/non-linear/Virtual_distillation
+qlab:
+  primary_collection: YCBHDN7M
+  indexed_collections:
+    - BJ4JTXLM
+    - YCBHDN7M
+  primary_topic: quantum-learning
+  indexed_topics:
+    - quantum-learning
+item_type: preprint
+title: Principal eigenstate classical shadows
+authors:
+  - first: Daniel
+    last: Grier
+  - first: Hakop
+    last: Pashayan
+  - first: Luke
+    last: Schaeffer
+year: 2024
+abstract: Given many copies of an unknown quantum state $ρ$, we consider the
+  task of learning a classical description of its principal eigenstate. Namely,
+  assuming that $ρ$ has an eigenstate $|φ\rangle$ with (unknown) eigenvalue $λ>
+  1/2$, the goal is to learn a (classical shadows style) classical description
+  of $|φ\rangle$ which can later be used to estimate expectation values $\langle
+  φ|O| φ\rangle$ for any $O$ in some class of observables. We consider the
+  sample-complexity setting in which generating a copy of $ρ$ is expensive, but
+  joint measurements on many copies of the state are possible. We present a
+  protocol for this task scaling with the principal eigenvalue $λ$ and show that
+  it is optimal within a space of natural approaches, e.g., applying quantum
+  state purification followed by a single-copy classical shadows scheme.
+  Furthermore, when $λ$ is sufficiently close to $1$, the performance of our
+  algorithm is optimal--matching the sample complexity for pure state classical
+  shadows.
+tags:
+  - Computer Science - Information Theory
+  - Computer Science - Machine Learning
+  - Quantum Physics
+identifiers:
+  doi: 10.48550/arxiv.2405.13939
+  arxiv: "2405.13939"
