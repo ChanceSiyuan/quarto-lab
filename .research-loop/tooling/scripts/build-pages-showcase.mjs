@@ -179,7 +179,7 @@ async function buildShowcaseApp() {
   );
   await execFileAsync(vinextBin, ["build"], {
     cwd: root,
-    env: { ...process.env, WRANGLER_LOG_PATH: ".wrangler/wrangler.log" },
+    env: { ...process.env, WRANGLER_LOG_PATH: ".wrangler/wrangler.log", PAGES_STATIC_SHOWCASE: "1" },
     maxBuffer: 10 * 1024 * 1024,
   });
 }

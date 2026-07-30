@@ -95,6 +95,9 @@ test("pages showcase renders the five official public problem details", async ()
     assert.doesNotMatch(html, /<script\b/i);
     assert.doesNotMatch(html, /codex:\/\//i);
     assert.doesNotMatch(html, /\/__local\//);
+    assert.doesNotMatch(html, /Available in local mode/);
+    assert.doesNotMatch(html, /Prepare autoresearch/);
+    assert.doesNotMatch(html, /Local assessment unavailable/);
   }
 });
 

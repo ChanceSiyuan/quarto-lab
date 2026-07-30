@@ -46,13 +46,13 @@ async function render(pathname = "/") {
   );
 }
 
-async function buildCurrentIndex() {
+async function buildCurrentIndex(env = {}) {
   await execFileAsync(
     fileURLToPath(new URL("../../node_modules/.bin/vinext", import.meta.url)),
     ["build"],
     {
       cwd: workspaceRoot,
-      env: { ...process.env, WRANGLER_LOG_PATH: ".wrangler/wrangler.log" },
+      env: { ...process.env, ...env, WRANGLER_LOG_PATH: ".wrangler/wrangler.log" },
       maxBuffer: 10 * 1024 * 1024,
     },
   );
@@ -68,7 +68,7 @@ async function writeFixtureProblem(root, manifest) {
   await writeFile(join(problemDir, "generation", "decision.md"), "Fixture decision.");
 }
 
-async function renderFilesystemFixture({ manifests, damagedIds = [] }, pathname = "/?fixture=filesystem") {
+async function renderFilesystemFixture({ manifests, damagedIds = [], buildEnv = {} }, pathname = "/?fixture=filesystem") {
   const originalIndexText = await readFile(generatedIndexUrl, "utf8");
   const fixtureRoot = await mkdtemp(join(tmpdir(), "research-loop-render-"));
   await mkdir(join(fixtureRoot, "problems"), { recursive: true });
@@ -96,7 +96,7 @@ async function renderFilesystemFixture({ manifests, damagedIds = [] }, pathname 
         maxBuffer: 10 * 1024 * 1024,
       },
     );
-    await buildCurrentIndex();
+    await buildCurrentIndex(buildEnv);
     const response = await render(pathname);
     const html = await response.text();
     return new Response(html, { status: response.status, headers: response.headers });
@@ -296,6 +296,28 @@ test("server-renders the generic problem detail shell for non-example problems",
   assert.match(html, /The detailed problem workspace will be designed next; this page currently locks the route, identity, and return path\./);
   assert.doesNotMatch(html, /[\u3400-\u9FFF]/u);
   assert.match(html, /<a href="\/" class="back-link">← Back to problems<\/a>/);
+});
+
+test("pages static showcase renders public problem details without local controls", async () => {
+  const response = await renderFilesystemFixture(
+    {
+      manifests: [acceptedFixture],
+      buildEnv: { PAGES_STATIC_SHOWCASE: "1" },
+    },
+    "/problems/Prob-017?fixture=filesystem",
+  );
+  assert.equal(response.status, 200);
+
+  const html = await response.text();
+  assert.match(html, /<p class="eyebrow">Prob-017<\/p>/);
+  assert.match(html, /<h1>Fresh Hamiltonian gate<\/h1>/);
+  assert.match(html, /<p class="detail-summary">Interval arithmetic on held-out instances\.<\/p>/);
+  assert.match(html, /The detailed problem workspace will be designed next; this page currently locks the route, identity, and return path\./);
+  assert.doesNotMatch(html, /Available in local mode/);
+  assert.doesNotMatch(html, /Prepare autoresearch/);
+  assert.doesNotMatch(html, /Local assessment unavailable/);
+  assert.doesNotMatch(html, /\/__local\/assessments/);
+  assert.doesNotMatch(html, /\/__local\/autoresearch/);
 });
 
 test("server-renders the static assessment methodology demo for the static example detail shell", async () => {
