@@ -1,3 +1,4 @@
+import { getStaticEvaluation } from "@/lib/pages-showcase/evaluation-scenarios.mjs";
 import styles from "./static-assessment-panel.module.css";
 
 const METHODOLOGY_HREF =
@@ -55,10 +56,22 @@ const AUTORESEARCH_FIT_CARD: MetricCard = {
     "The explicit algorithm search object, executable benchmark, verified witnesses, directional attempt metrics, and five-minute loop make this a strong autoresearch fit. Fresh evaluation and reproducibility remain lower because the current results are synthetic and a real frozen holdout and executable environment are not yet present.",
 };
 
-export function StaticAssessmentPanel({ eansvCard }: { eansvCard: MetricCard }) {
-  const metricCards = [SCIENTIFIC_DEMAND_CARD, eansvCard, AUTORESEARCH_FIT_CARD];
+export function StaticAssessmentPanel({
+  problemId,
+  eansvCard,
+}: {
+  problemId?: string;
+  eansvCard?: MetricCard;
+}) {
+  const evaluation = problemId ? getStaticEvaluation(problemId) : null;
+  const metricCards = eansvCard
+    ? [SCIENTIFIC_DEMAND_CARD, eansvCard, AUTORESEARCH_FIT_CARD]
+    : evaluation?.cards;
+  if (!metricCards) return null;
+
   return (
     <section className={`assessment-panel ${styles.panel}`} aria-label="Assessment">
+      {evaluation ? <p className={styles.disclosure}>{evaluation.disclosure}</p> : null}
       <div className={styles.metrics}>
         {metricCards.map((card) => (
           <details className={styles.metric} key={card.label}>

@@ -104,6 +104,7 @@ export default async function ProblemDetailPage({
         <p className="eyebrow">{problem.id}</p>
         <h1>{problem.title}</h1>
         <p className="detail-summary">{problem.summary}</p>
+        <StaticAssessmentPanel problemId={problem.id} />
         <section className="detail-panel" aria-labelledby="detail-status-heading">
           <h2 id="detail-status-heading">Problem detail</h2>
           <p>The detailed problem workspace will be designed next; this page currently locks the route, identity, and return path.</p>
