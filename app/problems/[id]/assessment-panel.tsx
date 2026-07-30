@@ -2,12 +2,15 @@
 
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import {
+  assessmentScoreMetrics,
   assessmentStatusCopy,
   assessmentServiceFailure,
   assessmentStateFromProblemResponse,
-  formatKnownInterval,
-  formatMoneyInterval,
+  formatCommercialInvestmentProxy,
+  formatIndustrySocialProxy,
+  formatScientificAttention,
   formatScoreInterval,
+  formatTechnicalSuccessEstimate,
   isLocalAssessmentUnavailable,
   latestAssessmentSummary,
   valuationStatusCopy,
@@ -58,6 +61,8 @@ type QuantitativeValue = {
   currency?: string;
   priceBaseYear?: number;
   reason?: string;
+  estimateKind?: string;
+  evidenceConfidence?: string;
 };
 
 type AssessmentRun = {
@@ -329,10 +334,10 @@ export function AssessmentPanel({ problemId }: Props) {
   const valuationCopy = valuationStatusCopy({ kind: valuationKind, error: valuation?.activeJob?.error ?? latestValuationJob?.error });
   const valuationAction = valuationKind === "ready" ? start : startValuation;
   const metricCards = latest?.quantitative ? [
-    ["Scientific attention", formatKnownInterval(latest.quantitative.scientificAttention)],
-    ["Technical success", formatKnownInterval(latest.quantitative.technicalSuccess)],
-    ["Industry / social", formatMoneyInterval(latest.quantitative.socialValue)],
-    ["Capturable value", formatMoneyInterval(latest.quantitative.capturableValue)],
+    ["Scientific Demand Score", formatScientificAttention(latest.quantitative.scientificAttention)],
+    ["Technical Success Estimate", formatTechnicalSuccessEstimate(latest.quantitative.technicalSuccess)],
+    ["Industry / social proxy", formatIndustrySocialProxy(latest.quantitative.socialValue)],
+    ["Commercial investment proxy", formatCommercialInvestmentProxy(latest.quantitative.capturableValue)],
     ["Largest sensitivity", latest.quantitative.largestSensitivity?.label
       ? `${latest.quantitative.largestSensitivity.label} (${latest.quantitative.largestSensitivity.swing ?? "—"})`
       : "—"],
@@ -372,7 +377,7 @@ export function AssessmentPanel({ problemId }: Props) {
         <form className={styles.confirmation} onSubmit={confirmValuation}>
           <h3>Confirm valuation snapshot</h3>
           <fieldset>
-            <legend>Anchor papers</legend>
+            <legend>Selected Reference Papers</legend>
             {(candidate.anchorCandidates ?? []).map((anchor) => (
               <label key={anchor.id} className={styles.choice}>
                 <input
@@ -381,7 +386,7 @@ export function AssessmentPanel({ problemId }: Props) {
                   onChange={(event) => setAnchorChecked(anchor.id, event.target.checked)}
                 />
                 <span>
-                  <strong>Anchor paper: {anchor.title ?? anchor.id}</strong>
+                  <strong>Selected reference paper: {anchor.title ?? anchor.id}</strong>
                   <small>{anchor.persistentId ?? anchor.sourceUrl ?? anchor.id}</small>
                 </span>
               </label>
@@ -453,9 +458,12 @@ export function AssessmentPanel({ problemId }: Props) {
           <div><dt>Verdict</dt><dd>{latest.verdict}</dd></div>
           <div><dt>Recommendation</dt><dd>{latest.recommendation}</dd></div>
           <div><dt>Confidence</dt><dd>{latest.confidence}</dd></div>
-          <div><dt>V</dt><dd>{formatScoreInterval(latest.scores?.researchValue)}</dd></div>
-          <div><dt>A</dt><dd>{formatScoreInterval(latest.scores?.autoresearchSuitability)}</dd></div>
-          <div><dt>S</dt><dd>{formatScoreInterval(latest.scores?.combined)}</dd></div>
+          {assessmentScoreMetrics.map((metric) => (
+            <div key={metric.key}>
+              <dt title={`${metric.shortLabel}: ${metric.description}`}>{metric.label}</dt>
+              <dd>{formatScoreInterval(latest.scores?.[metric.key as keyof NonNullable<AssessmentSummary["scores"]>])}</dd>
+            </div>
+          ))}
         </dl>
       )}
       {metricCards.length > 0 && (

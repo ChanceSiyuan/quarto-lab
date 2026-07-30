@@ -11,7 +11,14 @@ test("QEC portfolio page spells out V, A, and S and contains no visible Chinese"
   assert.match(source, /Research Value \(V\)/);
   assert.match(source, /Autoresearch Fit \(A\)/);
   assert.match(source, /Combined Priority \(S\)/);
+  assert.match(source, /Commercial Investment Proxy/);
+  assert.match(source, /Technical Success Estimate/);
+  assert.match(source, /Scientific Demand Score/);
+  assert.match(source, /Model estimate/);
   assert.match(source, /External-evidence-backed advisory comparison/);
+  assert.doesNotMatch(source, /Pending sealed evaluation|Pending measurement/);
+  assert.doesNotMatch(source, /Scientific Attention|0 citations|Anchor papers/);
+  assert.doesNotMatch(source, /score\.min|score\.max|interval\.low|interval\.high/);
   assert.doesNotMatch(source, /\p{Script=Han}/u);
 });
 
@@ -27,11 +34,12 @@ test("QEC portfolio route owns its styles without importing preserved global sur
   assert.doesNotMatch(`${page}\n${panel}`, /app\/globals\.css|app\/page\.tsx|app\/layout\.tsx/);
 });
 
-test("portfolio panel fetches only the read-only endpoint and renders unknown reasons", async () => {
+test("portfolio panel fetches only the read-only endpoint and renders evidence-gap reasons", async () => {
   const source = await readFile(panelPath, "utf8");
   assert.match(source, /\/__local\/assessments\/portfolio/);
   assert.match(source, /cache: "no-store"/);
-  assert.match(source, /Unknown —/);
+  assert.match(source, /Evidence gap —/);
+  assert.doesNotMatch(source, /Unknown —/);
   assert.match(source, /Open problem/);
   assert.match(source, /Open detailed report/);
   assert.doesNotMatch(source, /\/valuation\/jobs|\/assessment\/jobs/);
