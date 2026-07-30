@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "problemId": "Prob-127",
+  "id": "attempt-005",
+  "sequence": 5,
+  "stage": "candidate-search",
+  "decision": "rejected",
+  "promoted": false,
+  "strategy": {
+    "profileId": "qh127-discrete-contraction",
+    "profileVersion": "3.0",
+    "policyVersion": "adaptive-capability-v1",
+    "selectionReason": "fallback:no-usable-public-evidence",
+    "slots": [
+      {
+        "slot": "control",
+        "capability": "control",
+        "executor": "qh127-cotengra-v21",
+        "method": "greedy",
+        "seconds": 160
+      },
+      {
+        "slot": "explore",
+        "capability": "explore-random-greedy",
+        "executor": "qh127-cotengra-v21",
+        "method": "random-greedy",
+        "seconds": 160
+      },
+      {
+        "slot": "repair",
+        "capability": "repair-reconfiguration",
+        "executor": "qh127-cotengra-v21",
+        "method": "greedy",
+        "seconds": 160
+      }
+    ]
+  },
+  "hypothesis": {
+    "mechanism": "Execute the profile-declared public capability allocation.",
+    "predictedEffect": "Emit a valid public candidate within the declared budget.",
+    "falsifier": "The independent public validator rejects the candidate."
+  },
+  "outcome": {
+    "verdict": "failed",
+    "exactCost": "347221933845007286642482872320",
+    "baselineCost": "258740108409287437870694400",
+    "nextActionClass": "non-improving"
+  },
+  "learnedFrom": "attempt-004",
+  "planFingerprint": "5741f591e307e2df"
+}

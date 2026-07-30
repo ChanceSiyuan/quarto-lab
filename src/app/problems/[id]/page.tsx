@@ -10,6 +10,7 @@ import { buildStaticExampleEansvCard } from "@/lib/problems/example-valuation-pr
 import { getPagesChallenge } from "@/lib/pages-showcase/challenge-catalog.mjs";
 import { buildProblemDiscussLaunch } from "@/lib/problems/codex-launch.mjs";
 import { buildExampleResearchLedger } from "@/lib/problems/example-presentation.mjs";
+import { isQh127ResearchProblem } from "@/lib/problems/qh127-research.mjs";
 import { createProblemRepository } from "@/lib/problems/repository.mjs";
 import { createResearchRepository } from "@/lib/problems/research-repository.mjs";
 import { buildProblemDetailResearchState } from "@/lib/problems/research-route-data.mjs";
@@ -116,12 +117,24 @@ export default async function ProblemDetailPage({
           ) : null}
         </header>
         <StaticAssessmentPanel problemId={problem.id} />
-        <section className={detailStyles.linkPanel} aria-labelledby="autoresearch-status-heading">
-          <div>
-            <h2 id="autoresearch-status-heading">Autoresearch status</h2>
-            <p>Not started.</p>
-          </div>
-        </section>
+        {isQh127ResearchProblem(problem.id) ? (
+          <section className={detailStyles.linkPanel} aria-labelledby="autoresearch-link-heading">
+            <div>
+              <h2 id="autoresearch-link-heading">Autoresearch results</h2>
+              <p>9 real attempts with public cost metrics plus the one-shot sealed finalization outcome.</p>
+            </div>
+            <Link className="open-affordance" href={`/problems/${problem.id}/autoresearch`}>
+              Open autoresearch results <span aria-hidden="true">→</span>
+            </Link>
+          </section>
+        ) : (
+          <section className={detailStyles.linkPanel} aria-labelledby="autoresearch-status-heading">
+            <div>
+              <h2 id="autoresearch-status-heading">Autoresearch status</h2>
+              <p>Not started.</p>
+            </div>
+          </section>
+        )}
       </main>
     );
   }
