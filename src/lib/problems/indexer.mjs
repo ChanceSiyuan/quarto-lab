@@ -141,10 +141,7 @@ export async function buildProblemIndex({
     problems.push(manifest);
   }
 
-  problems.sort((left, right) => (
-    Date.parse(right.updatedAt) - Date.parse(left.updatedAt)
-    || left.id.localeCompare(right.id)
-  ));
+  problems.sort((left, right) => left.id.localeCompare(right.id));
 
   return {
     schemaVersion: 1,
