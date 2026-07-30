@@ -1,17 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import {
   buildProblemPresentation,
-  buildTierMetrics,
   formatProblemTimestamp,
 } from "@/lib/problems/presentation.mjs";
-import {
-  ACTIVE_PROBLEM_STATUSES,
-  clearProblemFilters,
-  createDefaultProblemFilters,
-  filterProblems,
-} from "@/lib/problems/view-state.mjs";
 
 const statusLabels: Record<string, string> = {
   draft: "Draft",
@@ -83,47 +76,15 @@ function ProblemStatus({ status }: { status: string }) {
 
 export function ProblemConsole({
   initialProblems,
-  summary,
   diagnostics,
   generatedAt,
   workspacePath,
   launch,
 }: ProblemConsoleProps) {
-  const defaults = createDefaultProblemFilters();
-  const [query, setQuery] = useState(defaults.query);
-  const [selectedStatuses, setSelectedStatuses] = useState<string[]>(defaults.selectedStatuses);
-  const [showRejected, setShowRejected] = useState(defaults.showRejected);
-  const [showArchived, setShowArchived] = useState(defaults.showArchived);
-
-  const visibleProblems = useMemo(() => filterProblems(initialProblems, {
-    query,
-    selectedStatuses,
-    showRejected,
-    showArchived,
-  }), [initialProblems, query, selectedStatuses, showArchived, showRejected]);
-
   const visiblePresentations = useMemo(
-    () => visibleProblems.map(buildProblemPresentation),
-    [visibleProblems],
+    () => initialProblems.map(buildProblemPresentation),
+    [initialProblems],
   );
-
-  function toggleStatus(status: string) {
-    setSelectedStatuses((current) =>
-      current.includes(status)
-        ? current.filter((item) => item !== status)
-        : [...current, status],
-    );
-  }
-
-  function clearFilters() {
-    const cleared = clearProblemFilters();
-    setQuery(cleared.query);
-    setSelectedStatuses(cleared.selectedStatuses);
-    setShowRejected(cleared.showRejected);
-    setShowArchived(cleared.showArchived);
-  }
-
-  const metrics = buildTierMetrics(summary);
 
   return (
     <main className="console-shell">
@@ -160,91 +121,12 @@ export function ProblemConsole({
           <p>
             Read-only lifecycle view · local repository index
           </p>
-        </div>
-
-        <dl className="metric-strip" aria-label="Problem metrics">
-          {metrics.map(([label, value]) => (
-            <div key={label}>
-              <dt>{label}</dt>
-              <dd>{value}</dd>
-            </div>
-          ))}
-        </dl>
-
-        <section className="console-toolbar" aria-label="Problem filters">
-          <label className="search-field">
-            <span>Search problems</span>
-            <input
-              type="search"
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="ID, title, or summary"
-            />
-          </label>
-
-          <fieldset className="status-filters">
-            <legend>Lifecycle status</legend>
-            <div className="filter-chips">
-              {ACTIVE_PROBLEM_STATUSES.map((status) => (
-                <label className="filter-chip" key={status}>
-                  <input
-                    type="checkbox"
-                    checked={selectedStatuses.includes(status)}
-                    onChange={() => toggleStatus(status)}
-                  />
-                  <span>{statusLabels[status]}</span>
-                </label>
-              ))}
-              <label className="filter-chip filter-chip-muted">
-                <input
-                  type="checkbox"
-                  checked={showRejected}
-                  onChange={(event) => setShowRejected(event.target.checked)}
-                />
-                <span>{statusLabels.rejected}</span>
-              </label>
-              <label className="filter-chip filter-chip-muted">
-                <input
-                  type="checkbox"
-                  checked={showArchived}
-                  onChange={(event) => setShowArchived(event.target.checked)}
-                />
-                <span>{statusLabels.archived}</span>
-              </label>
-            </div>
-          </fieldset>
-
           <a className="primary-action" href={launch.href}>+ Add problem</a>
-        </section>
-
-        <section
-          className={`diagnostics ${diagnostics.length ? "has-errors" : ""}`}
-          aria-labelledby="diagnostics-heading"
-        >
-          <div>
-            <h2 id="diagnostics-heading">Index diagnostics</h2>
-            <p>
-              {diagnostics.length
-                ? "Invalid manifests are excluded until these errors are fixed."
-                : "No manifest errors detected in the generated index."}
-            </p>
-          </div>
-          {diagnostics.length > 0 && (
-            <ul>
-              {diagnostics.map((item, index) => (
-                <li key={`${item.relativePath}-${item.field}-${index}`}>
-                  <code>{item.relativePath}</code>
-                  <strong>{item.field}</strong>
-                  <span>{item.message}</span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
+        </div>
 
         <div className="problem-results">
           <table className="problem-table">
-            <caption>{visibleProblems.length} visible problems</caption>
+            <caption>{initialProblems.length} indexed problems</caption>
             <thead>
               <tr>
                 <th scope="col">Problem</th>
@@ -267,16 +149,6 @@ export function ProblemConsole({
                         <p>Create a candidate in Codex, confirm its files, then rebuild the local index.</p>
                         <a className="state-action" href={launch.href}>+ Add first problem</a>
                       </div>
-                    </section>
-                  </td>
-                </tr>
-              ) : visibleProblems.length === 0 ? (
-                <tr className="result-state-row">
-                  <td colSpan={7}>
-                    <section className="no-results">
-                      <h2>No matching problems</h2>
-                      <p>Adjust the search text or lifecycle filters.</p>
-                      <button className="state-action" type="button" onClick={clearFilters}>Clear all filters</button>
                     </section>
                   </td>
                 </tr>
@@ -323,12 +195,6 @@ export function ProblemConsole({
                   <p>Create a candidate in Codex, confirm its files, then rebuild the local index.</p>
                   <a className="state-action" href={launch.href}>+ Add first problem</a>
                 </div>
-              </section>
-            ) : visibleProblems.length === 0 ? (
-              <section className="no-results">
-                <h2>No matching problems</h2>
-                <p>Adjust the search text or lifecycle filters.</p>
-                <button className="state-action" type="button" onClick={clearFilters}>Clear all filters</button>
               </section>
             ) : visiblePresentations.map((row) => (
               <a
