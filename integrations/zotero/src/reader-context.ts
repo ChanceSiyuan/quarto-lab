@@ -1004,6 +1004,7 @@ export class ReaderContextService<TReader = unknown, TItem = unknown> {
     string,
     Promise<ZotkitLibrarySnapshotReference | null>
   >();
+  private readonly librarySnapshotGenerations = new Map<string, number>();
   private lastWorkspacePruneAt: number | null = null;
 
   constructor(
@@ -1238,6 +1239,18 @@ export class ReaderContextService<TReader = unknown, TItem = unknown> {
     const libraryID = this.snapshot?.context.attachment.libraryID;
     const key = snapshotLibraryKey(libraryID);
     return key ? this.librarySnapshots.get(key)?.reference ?? null : null;
+  }
+
+  /** Invalidate the bounded discovery cache for exactly one Zotero library. */
+  invalidateZotkitLibrarySnapshot(libraryID: number | string): void {
+    const key = snapshotLibraryKey(libraryID);
+    if (!key) return;
+    this.librarySnapshots.delete(key);
+    this.librarySnapshotBuilds.delete(key);
+    this.librarySnapshotGenerations.set(
+      key,
+      (this.librarySnapshotGenerations.get(key) ?? 0) + 1,
+    );
   }
 
   /**
@@ -2631,8 +2644,10 @@ export class ReaderContextService<TReader = unknown, TItem = unknown> {
     if (!force && cached && nowMs < cached.expiresAt) return cached.reference;
     const pending = this.librarySnapshotBuilds.get(key);
     if (pending) return pending;
+    const generation = this.librarySnapshotGenerations.get(key) ?? 0;
 
-    const promise = (async (): Promise<ZotkitLibrarySnapshotReference | null> => {
+    let promise!: Promise<ZotkitLibrarySnapshotReference | null>;
+    promise = (async (): Promise<ZotkitLibrarySnapshotReference | null> => {
       try {
         const snapshot = await build.call(this.zotero, libraryID, {
           maxItems: this.options.maxLibrarySnapshotItems,
@@ -2657,6 +2672,7 @@ export class ReaderContextService<TReader = unknown, TItem = unknown> {
           tagCount: rendered.tagCount,
           complete: rendered.complete,
         };
+        if ((this.librarySnapshotGenerations.get(key) ?? 0) !== generation) return null;
         this.librarySnapshots.set(key, {
           reference,
           snapshot,
@@ -2679,7 +2695,9 @@ export class ReaderContextService<TReader = unknown, TItem = unknown> {
         return cached?.reference ?? null;
       }
       finally {
-        this.librarySnapshotBuilds.delete(key);
+        if (this.librarySnapshotBuilds.get(key) === promise) {
+          this.librarySnapshotBuilds.delete(key);
+        }
       }
     })();
     this.librarySnapshotBuilds.set(key, promise);
