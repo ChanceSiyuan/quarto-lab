@@ -528,7 +528,46 @@ describe("ReviewedLibraryImportService read-only tools", () => {
     expect(host.compensate).not.toHaveBeenCalled();
   });
 
-  it("serializes different reviews through one service-wide Apply queue", async () => {
+  it("keeps a successful review resolving until invalidation settles before advancing the queue", async () => {
+    const firstInvalidation = deferred<void>();
+    const results = [resolution("first"), resolution("second")];
+    const { service, host } = importServiceHarness(results);
+    vi.mocked(host.apply)
+      .mockResolvedValueOnce(applyReceipt())
+      .mockResolvedValueOnce(applyReceipt({
+        createdCollectionKey: "COLLECTION-SECOND",
+        createdItemKeys: ["ITEM-SECOND"],
+        addedMemberships: [{ itemKey: "ITEM-SECOND", collectionKey: "COLLECTION-SECOND" }],
+      }));
+    const [firstCapability] = await lookupCapabilities(service, [{ client_ref: "first", title: "First" }]);
+    await propose(service, [firstCapability!]);
+    const [secondCapability] = await lookupCapabilities(service, [{ client_ref: "second", title: "Second" }]);
+    await propose(service, [secondCapability!], scope(), { collection_name: "Second target" });
+    const [firstReview, secondReview] = service.getReviews(scope());
+    vi.mocked(host.preflight).mockClear();
+    vi.mocked(host.invalidateLibrary)
+      .mockImplementationOnce(async () => firstInvalidation.promise)
+      .mockResolvedValueOnce();
+
+    const first = service.resolveReview(firstReview!.id, "accept");
+    const second = service.resolveReview(secondReview!.id, "accept");
+
+    await vi.waitFor(() => expect(host.invalidateLibrary).toHaveBeenCalledOnce());
+    expect(service.getReviews(scope()).map((review) => review.state)).toEqual(["resolving", "resolving"]);
+    expect(vi.mocked(host.preflight).mock.calls.map(([plan]) => plan.rows[0]?.rowId)).toEqual(["first"]);
+    expect(vi.mocked(host.apply).mock.calls.map(([plan]) => plan.rows[0]?.rowId)).toEqual(["first"]);
+
+    firstInvalidation.resolve();
+    await expect(first).resolves.toMatchObject({ decision: "accepted", reviewId: firstReview!.id });
+    await expect(second).resolves.toMatchObject({ decision: "accepted", reviewId: secondReview!.id });
+
+    expect(vi.mocked(host.preflight).mock.calls.map(([plan]) => plan.rows[0]?.rowId)).toEqual(["first", "second"]);
+    expect(vi.mocked(host.apply).mock.calls.map(([plan]) => plan.rows[0]?.rowId)).toEqual(["first", "second"]);
+    expect(service.getReviews(scope()).map((review) => review.state)).toEqual(["accepted", "accepted"]);
+    expect(service.getReviews(scope())[0]?.statusMessage).toBe("The library import was applied successfully.");
+  });
+
+  it("keeps a rejected invalidation inside the Apply queue before publishing accepted with a warning", async () => {
     const firstInvalidation = deferred<void>();
     const events: string[] = [];
     const results = [resolution("first"), resolution("second")];
@@ -575,10 +614,14 @@ describe("ReviewedLibraryImportService read-only tools", () => {
       "invalidate:first",
     ]));
     expect(host.preflight).toHaveBeenCalledTimes(3);
-    expect(service.getReviews(scope()).map((review) => review.state)).toEqual(["accepted", "resolving"]);
+    expect(service.getReviews(scope()).map((review) => review.state)).toEqual(["resolving", "resolving"]);
 
     firstInvalidation.reject(new Error("first invalidation failed"));
     await expect(first).resolves.toMatchObject({ decision: "accepted", reviewId: firstReview!.id });
+    expect(service.getReviews(scope())[0]).toMatchObject({
+      state: "accepted",
+      statusMessage: expect.stringMatching(/snapshot.*reload/i),
+    });
     await expect(second).resolves.toMatchObject({ decision: "accepted", reviewId: secondReview!.id });
     expect(events).toEqual([
       "preflight:first",
