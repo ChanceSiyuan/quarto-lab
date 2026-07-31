@@ -1,4 +1,3 @@
-import { sha256Bytes } from "./hashing";
 import type { QLabRepositoryState } from "./qlab-workspace";
 
 export type LocalRepositoryTarget = Readonly<{ kind: "local"; root: string }>;
@@ -78,10 +77,6 @@ const EMPTY_PREFERENCES: StoredTargetPreferences = {
   legacyUnassigned: [],
   migratedLegacy: false,
 };
-
-/** The production digest stays at the Gecko boundary; tests inject their own. */
-const geckoTargetDigest: TargetDigest = (bytes) => sha256Bytes(bytes);
-void geckoTargetDigest;
 
 export function deriveRepositoryId(endpointId: string, repositoryUuid: string, digest: TargetDigest): string {
   return digestIdentity(new TextEncoder().encode(`${endpointId}\0${repositoryUuid}`), digest);

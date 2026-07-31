@@ -3,8 +3,14 @@ import { sha256Bytes } from "./hashing";
 import { profilePath, sleep } from "./platform";
 import { knowledgeUrlToQmdPath } from "./editor-tree";
 import {
+  geckoTargetDigest,
+  type LocalRepositoryTargetRuntime,
+} from "./local-repository-target-resolver";
+import {
+  createGeckoQLabPrivateFileHost,
   createGeckoQLabPathHost,
   isQLabRepositoryShape,
+  normalizeQLabRoot,
   qlabRepositoryState,
   QLAB_STARTER_MARKER,
   type QLabRepositoryState,
@@ -13,6 +19,7 @@ import {
 export const RESEARCH_LOOP_SITE_URL = "http://127.0.0.1:4180/";
 const SITE_SESSION_ID = "research-loop-site";
 const INITIALIZE_SESSION_ID = "research-loop-initialize";
+let repositoryIdentitySession = 0;
 const START_SCRIPT = [
   'cd -- "$1"',
   'command -v npm >/dev/null 2>&1 || { echo "Research Loop requires Node.js and npm. Install Node.js 22 or newer, then try again." >&2; exit 127; }',
@@ -42,7 +49,7 @@ export function researchLoopBuildProgress(output: string): string | null {
   return null;
 }
 
-export interface ResearchLoopSiteRuntime {
+export interface ResearchLoopSiteRuntime extends LocalRepositoryTargetRuntime {
   check(url: string): Promise<boolean>;
   repositoryState(repositoryRoot: string): Promise<QLabRepositoryState>;
   initialize(repositoryRoot: string): Promise<void>;
@@ -64,6 +71,7 @@ export function createResearchLoopSiteRuntime(
   version: string,
 ): ResearchLoopSiteRuntime {
   const pathHost = createGeckoQLabPathHost();
+  const privateFileHost = createGeckoQLabPrivateFileHost();
   return {
     async check(url) {
       const controller = new AbortController();
@@ -82,6 +90,8 @@ export function createResearchLoopSiteRuntime(
         clearTimeout(timer);
       }
     },
+    canonicalize: (repositoryRoot) => normalizeQLabRoot(repositoryRoot, pathHost),
+    state: (repositoryRoot) => qlabRepositoryState(repositoryRoot, pathHost),
     repositoryState: (repositoryRoot) => qlabRepositoryState(repositoryRoot, pathHost),
     initialize: async (repositoryRoot) => {
       const markerDirectory = PathUtils.join(repositoryRoot, ".research-loop");
@@ -127,6 +137,21 @@ export function createResearchLoopSiteRuntime(
         pluginVersion: version,
       }, null, 2)}\n`, { tmpPath: `${markerPath}.tmp` });
     },
+    async gitPrivatePath(repositoryRoot) {
+      await bridge.start();
+      repositoryIdentitySession += 1;
+      return runGitPrivatePathProcess(
+        bridge,
+        `repository-identity-${repositoryIdentitySession}`,
+        repositoryRoot,
+      );
+    },
+    readPrivate: (path) => privateFileHost.readPrivate(path),
+    createPrivateIfAbsent: (path, value, mode) =>
+      privateFileHost.createPrivateIfAbsent(path, value, mode),
+    resolvePath: (root, path) => privateFileHost.resolvePath(root, path),
+    isPathInside: (root, candidate) => privateFileHost.isPathInside(root, candidate),
+    digest: geckoTargetDigest,
     hasBuild: (repositoryRoot) =>
       IOUtils.exists(PathUtils.join(repositoryRoot, "dist", "server", "index.js")),
     startBridge: () => bridge.start(),
@@ -146,6 +171,46 @@ export function createResearchLoopSiteRuntime(
     },
     sleep,
   };
+}
+
+async function runGitPrivatePathProcess(
+  bridge: ResearchLoopSiteBridge,
+  sessionId: string,
+  repositoryRoot: string,
+): Promise<string> {
+  let output = "";
+  let settle: ((event: { exitCode: number | null }) => void) | null = null;
+  const exited = new Promise<{ exitCode: number | null }>((resolve) => { settle = resolve; });
+  const unsubscribe = bridge.onEvent((event: BridgeEvent) => {
+    if (!("sessionId" in event) || event.sessionId !== sessionId) return;
+    if (event.type === "output") {
+      output = `${output}${bridge.decodeOutput(event.sessionId, event.data)}`.slice(-4_096);
+    }
+    else if (event.type === "exit") {
+      output = `${output}${bridge.flushOutput(event.sessionId)}`.slice(-4_096);
+      settle?.({ exitCode: event.exitCode });
+    }
+  });
+  try {
+    await bridge.spawnPipe(sessionId, {
+      argv: [
+        "/usr/bin/git",
+        "-C",
+        repositoryRoot,
+        "rev-parse",
+        "--git-path",
+        "qlab/repository-id",
+      ],
+      cwd: repositoryRoot,
+      env: { PATH: "/usr/bin:/bin:/usr/sbin:/sbin" },
+    });
+    const { exitCode } = await exited;
+    if (exitCode !== 0) throw new Error("Git-private repository identity is unavailable");
+    return output;
+  }
+  finally {
+    unsubscribe();
+  }
 }
 
 async function readBundledAsset(uri: string): Promise<Uint8Array> {
