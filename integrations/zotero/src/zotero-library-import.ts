@@ -42,15 +42,22 @@ const SAFE_ITEM_FIELDS = [
   "archive",
   "archiveLocation",
 ] as const;
+const NATIVE_READ_FIELDS = [...SAFE_ITEM_FIELDS, "extra"] as const;
 const MAX_ERROR_CODE_POINTS = 240;
+const ZOTERO_TRANSLATE_NO_RESULTS = "No items returned from any translator";
 
 export interface ZoteroLibraryImportRuntime {
+  DB?: {
+    executeTransaction?: (callback: () => Promise<void>) => Promise<void>;
+  };
   Libraries?: {
     userLibraryID?: LibraryID;
     get?: (libraryID: LibraryID) => unknown;
     getAsync?: (libraryID: LibraryID) => Promise<unknown>;
   };
   Items?: {
+    get?: (id: number | string) => unknown;
+    getAsync?: (id: number | string) => Promise<unknown>;
     getAll?: (
       libraryID: LibraryID,
       onlyTopLevel?: boolean,
@@ -62,6 +69,8 @@ export interface ZoteroLibraryImportRuntime {
     getByLibraryAndKeyAsync?: (libraryID: LibraryID, key: string) => Promise<unknown>;
   };
   Collections?: {
+    get?: (id: number | string) => unknown;
+    getAsync?: (id: number | string) => Promise<unknown>;
     getByLibrary?: (
       libraryID: LibraryID,
       recursive?: boolean,
@@ -106,8 +115,18 @@ interface RuntimeCandidateState {
 interface NativeInspection {
   preflight: LibraryImportPreflight;
   itemsByKey: Map<string, unknown>;
+  itemIDs: Set<number | string>;
+  collectionKeys: Set<string>;
+  collectionIDs: Set<number | string>;
   sibling: unknown | null;
   parent: unknown | null;
+}
+
+class ManualInspectionRequiredError extends Error {
+  constructor(message: string) {
+    super(`Manual inspection required: ${message}`);
+    this.name = "ManualInspectionRequiredError";
+  }
 }
 
 const runtimeCandidateStates = new WeakMap<object, RuntimeCandidateState>();
@@ -120,6 +139,15 @@ function candidateState(zotero: ZoteroLibraryImportRuntime): RuntimeCandidateSta
     runtimeCandidateStates.set(key, state);
   }
   return state;
+}
+
+async function executeZoteroTransaction(
+  zotero: ZoteroLibraryImportRuntime,
+  callback: () => Promise<void>,
+): Promise<void> {
+  const db = zotero.DB;
+  if (!db?.executeTransaction) throw new Error("Zotero database transaction writer is unavailable");
+  await db.executeTransaction(callback);
 }
 
 /**
@@ -199,7 +227,15 @@ export function createZoteroCitationResolver(
     const translators = await search.getTranslators();
     if (!Array.isArray(translators) || translators.length === 0) return null;
     search.setTranslator(translators);
-    const rawResult = await search.translate({ libraryID: false, saveAttachments: false });
+    let rawResult: unknown;
+    try {
+      rawResult = await search.translate({ libraryID: false, saveAttachments: false });
+    }
+    catch (error) {
+      const message = error instanceof Error ? error.message : error;
+      if (message === ZOTERO_TRANSLATE_NO_RESULTS) return null;
+      throw new Error(boundedError(error));
+    }
     const translatedItems = Array.isArray(rawResult) ? rawResult : search.getItems?.();
     const rawItems = Array.isArray(rawResult)
       ? rawResult
@@ -318,6 +354,8 @@ export function createZoteroLibraryMutationHost(
     ]);
     const itemsByKey = uniqueNativeObjectsByKey(items, libraryID, "item");
     const collectionsByKey = uniqueNativeObjectsByKey(collections, libraryID, "collection");
+    const itemIDs = uniqueNativeIDs(items, "item");
+    const collectionIDs = uniqueNativeIDs(collections, "collection");
     const parentKey = plan.target.parentCollectionKey;
     const parent = parentKey === null ? null : collectionsByKey.get(parentKey) ?? null;
     const parentValid = parentKey === null || Boolean(parent && !nativeDeleted(parent));
@@ -398,6 +436,9 @@ export function createZoteroLibraryMutationHost(
         dispositions,
       },
       itemsByKey,
+      itemIDs,
+      collectionKeys: new Set(collectionsByKey.keys()),
+      collectionIDs,
       sibling,
       parent,
     };
@@ -447,14 +488,26 @@ export function createZoteroLibraryMutationHost(
             "parentID",
             inspection.parent ? nativeID(inspection.parent, "Parent collection") : null,
           );
-          await nativeMethod(collection, "saveTx", "Zotero collection save")();
-          const createdCollectionKey = nativeKey(collection, "Created collection");
-          if (!sameLibrary(collection, plan.scope.libraryID)) {
-            throw new Error("Created collection does not belong to the reviewed library");
-          }
+          const savedCollectionID = await nativeMethod(
+            collection,
+            "saveTx",
+            "Zotero collection save",
+          )();
+          const createdCollection = await validateSavedNativeObject(
+            zotero,
+            "collection",
+            collection,
+            savedCollectionID,
+            plan.scope.libraryID,
+            inspection.collectionIDs,
+            inspection.collectionKeys,
+          );
+          const createdCollectionKey = createdCollection.key;
           receipt.createdCollectionKey = createdCollectionKey;
         }
         const collectionKey = nativeKey(collection, "Target collection");
+        const addItem = nativeMethod(collection, "addItem", "Zotero collection membership writer");
+        const hasItem = nativeMethod(collection, "hasItem", "Zotero collection membership reader");
         const recordedMemberships = new Set<string>();
         const recordedCreatedItems = new Set<string>();
         for (const row of plan.rows) {
@@ -466,6 +519,7 @@ export function createZoteroLibraryMutationHost(
             throw new Error("Validated Apply row lost its bound Zotero candidate");
           }
           let item: unknown;
+          let itemID: number | string;
           let created = false;
           if (disposition.effect === "create") {
             writePhase = true;
@@ -481,14 +535,18 @@ export function createZoteroLibraryMutationHost(
             nativeMethod(item, "setCreators", "Zotero item creator writer")(
               candidate.metadata.creators.map((creator) => ({ ...creator })),
             );
-            await nativeMethod(item, "saveTx", "Zotero item save")();
-            const createdItemKey = nativeKey(item, "Created Zotero item");
-            if (!sameLibrary(item, plan.scope.libraryID)) {
-              throw new Error("Created item does not belong to the reviewed library");
-            }
-            if (recordedCreatedItems.has(createdItemKey) || inspection.itemsByKey.has(createdItemKey)) {
-              throw new Error("Zotero returned a duplicate created item key");
-            }
+            const savedItemID = await nativeMethod(item, "saveTx", "Zotero item save")();
+            const createdItem = await validateSavedNativeObject(
+              zotero,
+              "item",
+              item,
+              savedItemID,
+              plan.scope.libraryID,
+              inspection.itemIDs,
+              new Set([...inspection.itemsByKey.keys(), ...recordedCreatedItems]),
+            );
+            const createdItemKey = createdItem.key;
+            itemID = createdItem.id;
             recordedCreatedItems.add(createdItemKey);
             (receipt.createdItemKeys as string[]).push(createdItemKey);
             created = true;
@@ -496,6 +554,7 @@ export function createZoteroLibraryMutationHost(
           else if (disposition.effect === "reuse" && disposition.itemKey !== null) {
             item = inspection.itemsByKey.get(disposition.itemKey);
             if (!item) throw new Error("Reused Zotero item disappeared after native preflight");
+            itemID = nativeID(item, "Reused Zotero item");
           }
           else {
             throw new Error("Validated Apply contains a non-applicable native disposition");
@@ -507,18 +566,40 @@ export function createZoteroLibraryMutationHost(
             continue;
           }
           writePhase = true;
-          await nativeMethod(collection, "addItem", "Zotero collection membership writer")(
-            nativeID(item, "Zotero item"),
-          );
-          recordedMemberships.add(membershipIdentity);
-          (receipt.addedMemberships as Array<{ itemKey: string; collectionKey: string }>).push({
-            itemKey,
-            collectionKey,
-          });
+          const recordMembership = () => {
+            recordedMemberships.add(membershipIdentity);
+            (receipt.addedMemberships as Array<{ itemKey: string; collectionKey: string }>).push({
+              itemKey,
+              collectionKey,
+            });
+          };
+          try {
+            await executeZoteroTransaction(zotero, async () => {
+              await addItem(itemID);
+              if (!nativeMembershipState(hasItem, itemID)) {
+                throw new Error("Zotero collection membership write did not apply");
+              }
+            });
+          }
+          catch (error) {
+            let applied: boolean;
+            try {
+              applied = nativeMembershipState(hasItem, itemID);
+            }
+            catch (verificationError) {
+              throw new ManualInspectionRequiredError(
+                `could not verify membership ${itemKey} in ${collectionKey}: ${boundedError(verificationError)}`,
+              );
+            }
+            if (applied) recordMembership();
+            throw error;
+          }
+          recordMembership();
         }
         return cloneReceipt(receipt);
       }
       catch (error) {
+        if (error instanceof ManualInspectionRequiredError) throw error;
         if (!writePhase) throw error;
         throw new LibraryApplyFailure(boundedError(error), cloneReceipt(receipt));
       }
@@ -526,9 +607,12 @@ export function createZoteroLibraryMutationHost(
 
     async compensate(rawReceipt: LibraryApplyReceipt): Promise<LibraryRollbackResult> {
       const receipt = normalizeCompensationReceipt(rawReceipt);
-      const survivors: LibraryMutationSurvivor[] = [];
       const createdItems = new Set(receipt.createdItemKeys);
-      let createdCollectionRemoved = false;
+      const membershipErrors = new Map<string, string>();
+      const itemErrors = new Map<string, string>();
+      let collectionError: string | null = null;
+      const membershipIdentity = (itemKey: string, collectionKey: string) =>
+        `${itemKey}\u0000${collectionKey}`;
 
       for (const membership of receipt.addedMemberships) {
         if (createdItems.has(membership.itemKey)) continue;
@@ -537,12 +621,92 @@ export function createZoteroLibraryMutationHost(
             getNativeCollection(zotero, receipt.libraryID, membership.collectionKey),
             getNativeItem(zotero, receipt.libraryID, membership.itemKey),
           ]);
-          if (!collection || !item || nativeDeleted(collection) || nativeDeleted(item)) continue;
+          if (!collection || !item) continue;
           assertNativeIdentity(collection, receipt.libraryID, membership.collectionKey, "Compensation collection");
           assertNativeIdentity(item, receipt.libraryID, membership.itemKey, "Compensation item");
-          await nativeMethod(collection, "removeItem", "Zotero collection membership remover")(
-            nativeID(item, "Compensation item"),
+          await executeZoteroTransaction(zotero, async () => {
+            await nativeMethod(collection, "removeItem", "Zotero collection membership remover")(
+              nativeID(item, "Compensation item"),
+            );
+          });
+        }
+        catch (error) {
+          membershipErrors.set(
+            membershipIdentity(membership.itemKey, membership.collectionKey),
+            boundedError(error),
           );
+        }
+      }
+
+      for (const itemKey of receipt.createdItemKeys) {
+        try {
+          const item = await getNativeItem(zotero, receipt.libraryID, itemKey);
+          if (!item) continue;
+          assertNativeIdentity(item, receipt.libraryID, itemKey, "Created compensation item");
+          await nativeMethod(item, "eraseTx", "Zotero item eraser")();
+        }
+        catch (error) {
+          itemErrors.set(itemKey, boundedError(error));
+        }
+      }
+
+      if (receipt.createdCollectionKey !== null) {
+        try {
+          const collection = await getNativeCollection(
+            zotero,
+            receipt.libraryID,
+            receipt.createdCollectionKey,
+          );
+          if (collection) {
+            assertNativeIdentity(
+              collection,
+              receipt.libraryID,
+              receipt.createdCollectionKey,
+              "Created compensation collection",
+            );
+            await nativeMethod(collection, "eraseTx", "Zotero collection eraser")();
+          }
+        }
+        catch (error) {
+          collectionError = boundedError(error);
+        }
+      }
+
+      const survivors: LibraryMutationSurvivor[] = [];
+      for (const membership of receipt.addedMemberships) {
+        const identity = membershipIdentity(membership.itemKey, membership.collectionKey);
+        try {
+          const collection = await getNativeCollection(
+            zotero,
+            receipt.libraryID,
+            membership.collectionKey,
+          );
+          if (!collection) continue;
+          assertNativeIdentity(
+            collection,
+            receipt.libraryID,
+            membership.collectionKey,
+            "Compensation verification collection",
+          );
+          const item = await getNativeItem(zotero, receipt.libraryID, membership.itemKey);
+          if (!item) continue;
+          assertNativeIdentity(
+            item,
+            receipt.libraryID,
+            membership.itemKey,
+            "Compensation verification item",
+          );
+          const stillExists = nativeMembershipState(
+            nativeMethod(collection, "hasItem", "Zotero collection membership verifier"),
+            nativeID(item, "Compensation verification item"),
+          );
+          if (!stillExists) continue;
+          survivors.push({
+            kind: "membership",
+            itemKey: membership.itemKey,
+            collectionKey: membership.collectionKey,
+            error: membershipErrors.get(identity) ?? "Membership still exists after compensation",
+          });
         }
         catch (error) {
           survivors.push({
@@ -557,9 +721,13 @@ export function createZoteroLibraryMutationHost(
       for (const itemKey of receipt.createdItemKeys) {
         try {
           const item = await getNativeItem(zotero, receipt.libraryID, itemKey);
-          if (!item || nativeDeleted(item)) continue;
-          assertNativeIdentity(item, receipt.libraryID, itemKey, "Created compensation item");
-          await nativeMethod(item, "eraseTx", "Zotero item eraser")();
+          if (!item) continue;
+          assertNativeIdentity(item, receipt.libraryID, itemKey, "Created item verification");
+          survivors.push({
+            kind: "created-item",
+            itemKey,
+            error: itemErrors.get(itemKey) ?? "Created item still exists after compensation",
+          });
         }
         catch (error) {
           survivors.push({ kind: "created-item", itemKey, error: boundedError(error) });
@@ -573,18 +741,18 @@ export function createZoteroLibraryMutationHost(
             receipt.libraryID,
             receipt.createdCollectionKey,
           );
-          if (!collection || nativeDeleted(collection)) {
-            createdCollectionRemoved = true;
-          }
-          else {
+          if (collection) {
             assertNativeIdentity(
               collection,
               receipt.libraryID,
               receipt.createdCollectionKey,
-              "Created compensation collection",
+              "Created collection verification",
             );
-            await nativeMethod(collection, "eraseTx", "Zotero collection eraser")();
-            createdCollectionRemoved = true;
+            survivors.push({
+              kind: "collection",
+              collectionKey: receipt.createdCollectionKey,
+              error: collectionError ?? "Created collection still exists after compensation",
+            });
           }
         }
         catch (error) {
@@ -595,11 +763,7 @@ export function createZoteroLibraryMutationHost(
           });
         }
       }
-      const exactSurvivors = createdCollectionRemoved && receipt.createdCollectionKey !== null
-        ? survivors.filter((survivor) => survivor.kind !== "membership"
-          || survivor.collectionKey !== receipt.createdCollectionKey)
-        : survivors;
-      return { complete: exactSurvivors.length === 0, survivors: exactSurvivors };
+      return { complete: survivors.length === 0, survivors };
     },
 
     async invalidateLibrary(libraryID: LibraryID): Promise<void> {
@@ -622,6 +786,7 @@ async function loadCompleteNativeItems(
   if (!isDenseArray(raw)) throw new Error("Complete Zotero item enumeration returned an invalid result");
   const items = [...raw];
   await loadDataTypes(items, [...ITEM_DATA_TYPES]);
+  const regularItems: unknown[] = [];
   for (const item of items) {
     if (!isObject(item)) throw new Error("Complete Zotero item enumeration returned a non-object");
     if (!sameLibrary(item, libraryID)) {
@@ -632,13 +797,27 @@ async function loadCompleteNativeItems(
     if (isTopLevel && !isTopLevel()) {
       throw new Error("Complete top-level Zotero enumeration returned a child item");
     }
+    const isRegularItem = nativeMethod(
+      item,
+      "isRegularItem",
+      "Regular Zotero item classifier",
+    );
+    if (isRegularItem() !== true) continue;
+    const itemType = nativeStringProperty(item, "itemType");
+    if (!SUPPORTED_ITEM_TYPES.has(itemType as SupportedBibliographicItemType)) continue;
     nativeKey(item, "Enumerated Zotero item");
     nativeVersion(item, "Enumerated Zotero item");
-    nativeMethod(item, "getField", "Loaded Zotero item field reader");
+    const getField = nativeMethod(item, "getField", "Loaded Zotero item field reader");
+    for (const field of NATIVE_READ_FIELDS) {
+      if (getField(field) === undefined) {
+        throw new Error(`Loaded Zotero item field ${field} is unavailable`);
+      }
+    }
     nativeMethod(item, "getCreators", "Loaded Zotero item creator reader")();
     nativeMethod(item, "getCollections", "Loaded Zotero item membership reader")();
+    regularItems.push(item);
   }
-  return items.filter((item) => !nativeDeleted(item));
+  return regularItems;
 }
 
 async function loadCompleteNativeCollections(
@@ -693,6 +872,19 @@ function uniqueNativeObjectsByKey(
     const key = nativeKey(object, `Native Zotero ${label}`);
     if (result.has(key)) throw new Error(`Native Zotero ${label} enumeration returned duplicate keys`);
     result.set(key, object);
+  }
+  return result;
+}
+
+function uniqueNativeIDs(
+  objects: readonly unknown[],
+  label: "item" | "collection",
+): Set<number | string> {
+  const result = new Set<number | string>();
+  for (const object of objects) {
+    const id = nativeID(object, `Native Zotero ${label}`);
+    if (result.has(id)) throw new Error(`Native Zotero ${label} enumeration returned duplicate IDs`);
+    result.add(id);
   }
   return result;
 }
@@ -794,7 +986,9 @@ function nativeCreators(item: unknown): BibliographicMetadata["creators"] {
 
 function nativeArxivID(item: unknown): string | null {
   for (const value of [
-    nativeField(item, "archiveLocation"),
+    normalizedText(nativeField(item, "archive")) === "arxiv"
+      ? nativeField(item, "archiveLocation")
+      : "",
     nativeField(item, "url"),
     arxivFromExtra(nativeField(item, "extra")),
   ]) {
@@ -805,7 +999,10 @@ function nativeArxivID(item: unknown): string | null {
 }
 
 function metadataArxivID(metadata: BibliographicMetadata): string | null {
-  return canonicalArxivID(metadata.archiveLocation) ?? canonicalArxivID(metadata.url);
+  const archiveLocation = normalizedText(metadata.archive) === "arxiv"
+    ? canonicalArxivID(metadata.archiveLocation)
+    : null;
+  return archiveLocation ?? canonicalArxivID(metadata.url);
 }
 
 function arxivFromExtra(extra: string): string {
@@ -856,6 +1053,17 @@ function nativeMembershipExists(collection: unknown, item: unknown): boolean {
   const memberships = nativeMethod(item, "getCollections", "Loaded Zotero item membership reader")();
   if (!Array.isArray(memberships)) throw new Error("Loaded Zotero item memberships are incomplete");
   return memberships.some((id) => id === collectionID);
+}
+
+function nativeMembershipState(
+  hasItem: (...args: unknown[]) => unknown,
+  itemID: number | string,
+): boolean {
+  const value = hasItem(itemID);
+  if (typeof value !== "boolean") {
+    throw new Error("Zotero collection membership state is unavailable or non-boolean");
+  }
+  return value;
 }
 
 function emptyDisposition(
@@ -929,16 +1137,119 @@ function normalizeCompensationReceipt(receipt: LibraryApplyReceipt): LibraryAppl
   return { libraryID, createdCollectionKey, createdItemKeys, addedMemberships };
 }
 
+async function validateSavedNativeObject(
+  zotero: ZoteroLibraryImportRuntime,
+  kind: "item" | "collection",
+  object: unknown,
+  saveResult: unknown,
+  libraryID: LibraryID,
+  existingIDs: Set<number | string>,
+  existingKeys: ReadonlySet<string>,
+): Promise<{ id: number | string; key: string }> {
+  const label = kind === "item" ? "Created Zotero item" : "Created Zotero collection";
+  let id: number | string;
+  if (validNativeID(saveResult)) {
+    id = saveResult;
+  }
+  else {
+    try {
+      id = nativeID(object, label);
+    }
+    catch (error) {
+      throw new ManualInspectionRequiredError(
+        `could not recover ${label} native ID after save: ${boundedError(error)}`,
+      );
+    }
+  }
+  if (existingIDs.has(id)) {
+    throw new ManualInspectionRequiredError(
+      `${label} reused pre-existing native ID ${String(id)}; automatic cleanup is unsafe`,
+    );
+  }
+  try {
+    const key = nativeKey(object, label);
+    if (!sameLibrary(object, libraryID)) {
+      throw new Error(`${label} does not belong to the reviewed library`);
+    }
+    if (existingKeys.has(key)) throw new Error(`Zotero returned a duplicate created ${kind} key`);
+    existingIDs.add(id);
+    return { id, key };
+  }
+  catch (validationError) {
+    await cleanupInvalidSavedNativeObject(zotero, kind, object, id, validationError);
+    throw validationError;
+  }
+}
+
+async function cleanupInvalidSavedNativeObject(
+  zotero: ZoteroLibraryImportRuntime,
+  kind: "item" | "collection",
+  object: unknown,
+  id: number | string,
+  validationError: unknown,
+): Promise<void> {
+  const label = kind === "item" ? "created item" : "created collection";
+  let before: unknown;
+  try {
+    before = await getNativeObjectByID(zotero, kind, id);
+  }
+  catch (error) {
+    throw new ManualInspectionRequiredError(
+      `could not prove exact ${label} identity before cleanup: ${boundedError(error)}`,
+    );
+  }
+  if (before !== object) {
+    throw new ManualInspectionRequiredError(
+      `native ID ${String(id)} did not resolve to the exact invalid ${label}; no erase was attempted`,
+    );
+  }
+
+  let eraseError: unknown = null;
+  try {
+    await nativeMethod(object, "eraseTx", `Invalid Zotero ${label} eraser`)();
+  }
+  catch (error) {
+    eraseError = error;
+  }
+
+  let after: unknown;
+  try {
+    after = await getNativeObjectByID(zotero, kind, id);
+  }
+  catch (error) {
+    throw new ManualInspectionRequiredError(
+      `could not verify invalid ${label} cleanup: ${boundedError(error)}`,
+    );
+  }
+  if (after !== null && after !== undefined) {
+    throw new ManualInspectionRequiredError(
+      `invalid ${label} still exists after cleanup (${boundedError(eraseError ?? validationError)})`,
+    );
+  }
+}
+
+async function getNativeObjectByID(
+  zotero: ZoteroLibraryImportRuntime,
+  kind: "item" | "collection",
+  id: number | string,
+): Promise<unknown | null> {
+  const store = kind === "item" ? zotero.Items : zotero.Collections;
+  if (store?.getAsync) return (await store.getAsync.call(store, id)) ?? null;
+  if (store?.get) return store.get.call(store, id) ?? null;
+  throw new Error(`Zotero ${kind} numeric identity lookup is unavailable`);
+}
+
 async function getNativeItem(
   zotero: ZoteroLibraryImportRuntime,
   libraryID: LibraryID,
   key: string,
 ): Promise<unknown | null> {
-  if (zotero.Items?.getByLibraryAndKeyAsync) {
-    return (await zotero.Items.getByLibraryAndKeyAsync(libraryID, key)) ?? null;
+  const items = zotero.Items;
+  if (items?.getByLibraryAndKeyAsync) {
+    return (await items.getByLibraryAndKeyAsync.call(items, libraryID, key)) ?? null;
   }
-  if (zotero.Items?.getByLibraryAndKey) {
-    return zotero.Items.getByLibraryAndKey(libraryID, key) ?? null;
+  if (items?.getByLibraryAndKey) {
+    return items.getByLibraryAndKey.call(items, libraryID, key) ?? null;
   }
   throw new Error("Zotero item lookup is unavailable for compensation");
 }
@@ -948,11 +1259,12 @@ async function getNativeCollection(
   libraryID: LibraryID,
   key: string,
 ): Promise<unknown | null> {
-  if (zotero.Collections?.getByLibraryAndKeyAsync) {
-    return (await zotero.Collections.getByLibraryAndKeyAsync(libraryID, key)) ?? null;
+  const collections = zotero.Collections;
+  if (collections?.getByLibraryAndKeyAsync) {
+    return (await collections.getByLibraryAndKeyAsync.call(collections, libraryID, key)) ?? null;
   }
-  if (zotero.Collections?.getByLibraryAndKey) {
-    return zotero.Collections.getByLibraryAndKey(libraryID, key) ?? null;
+  if (collections?.getByLibraryAndKey) {
+    return collections.getByLibraryAndKey.call(collections, libraryID, key) ?? null;
   }
   throw new Error("Zotero collection lookup is unavailable for compensation");
 }
@@ -989,10 +1301,15 @@ function nativeVersion(object: unknown, label: string): number {
 function nativeID(object: unknown, label: string): number | string {
   const id = safeProperty(object, "id") ?? safeProperty(object, "itemID")
     ?? safeProperty(object, "collectionID");
-  if ((typeof id !== "number" || !Number.isSafeInteger(id)) && (typeof id !== "string" || !id)) {
+  if (!validNativeID(id)) {
     throw new Error(`${label} native ID is unavailable`);
   }
   return id;
+}
+
+function validNativeID(value: unknown): value is number | string {
+  return (typeof value === "number" && Number.isSafeInteger(value))
+    || (typeof value === "string" && Boolean(value));
 }
 
 function nativeDeleted(object: unknown): boolean {
@@ -1075,7 +1392,7 @@ function cleanText(value: unknown): string {
 }
 
 function normalizedText(value: string): string {
-  return value.normalize("NFKC").trim().replace(/\s+/gu, " ").toLocaleLowerCase();
+  return value.normalize("NFKC").trim().replace(/\s+/gu, " ").toLowerCase();
 }
 
 function normalizedName(value: string): string {
