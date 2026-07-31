@@ -9,7 +9,7 @@ import type {
   ResolvedLocalRepositoryTarget,
 } from "../src/repository-target";
 
-type StagedTarget = Readonly<{ snapshot: RepositoryTargetSnapshot }>;
+type StagedTarget = Readonly<{ snapshot: RepositoryTargetSnapshot }> | undefined;
 
 type Deferred<T> = Readonly<{
   promise: Promise<T>;
@@ -24,9 +24,15 @@ type HarnessOptions = Readonly<{
   deferredBlockerChecks?: readonly number[];
   deferredBlockerResolution?: boolean;
   deferredStageRoots?: readonly string[];
+  deferredStageCalls?: readonly number[];
+  undefinedStageRoots?: readonly string[];
+  deferredPersistRoots?: readonly string[];
   deferredDisposeOldRoots?: readonly string[];
+  reentrantPersistTargets?: Readonly<Record<string, string>>;
+  reentrantDisposeOldTargets?: Readonly<Record<string, string>>;
   persistErrors?: Readonly<Record<string, Error>>;
   publishErrors?: Readonly<Record<string, Error>>;
+  publishResults?: Readonly<Record<string, unknown>>;
   disposeStagedErrors?: Readonly<Record<string, Error>>;
   disposeOldErrors?: Readonly<Record<string, Error>>;
   markDegradedError?: Error;
@@ -51,8 +57,9 @@ type Harness = Readonly<{
   releaseBlockerCheck(callNumber: number): void;
   releaseBlockerResolution(): void;
   resolveStage(root: string): void;
+  resolveStageCall(callNumber: number): void;
+  resolvePersist(root: string): void;
   resolveDisposeOld(root: string): void;
-  setPersistHook(hook: (snapshot: RepositoryTargetSnapshot) => void): void;
 }>;
 
 function deferred<T>(): Deferred<T> {
@@ -61,6 +68,19 @@ function deferred<T>(): Deferred<T> {
     resolve = resolvePromise;
   });
   return { promise, resolve };
+}
+
+async function settlesWithin<T>(promise: Promise<T>, milliseconds = 250): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<never>((_resolve, reject) => {
+    timer = setTimeout(() => reject(new Error("switch did not settle")), milliseconds);
+  });
+  try {
+    return await Promise.race([promise, timeout]);
+  }
+  finally {
+    if (timer !== undefined) clearTimeout(timer);
+  }
 }
 
 function resolved(canonicalRoot: string): ResolvedLocalRepositoryTarget {
@@ -88,10 +108,12 @@ function harness(options: HarnessOptions = {}): Harness {
   const blockerChecks = options.blockerChecks ?? [];
   const deferredChecks = new Map<number, Deferred<void>>();
   const deferredStages = new Map<string, Deferred<void>>();
+  const deferredStageCalls = new Map<number, Deferred<void>>();
+  const deferredPersists = new Map<string, Deferred<void>>();
   const deferredOldDisposals = new Map<string, Deferred<void>>();
   const blockerResolution = deferred<void>();
   let blockerCheckCount = 0;
-  let persistHook: ((next: RepositoryTargetSnapshot) => void) | undefined;
+  let stageCallCount = 0;
   let controller!: RepositoryTargetController<StagedTarget>;
 
   for (const callNumber of options.deferredBlockerChecks ?? []) {
@@ -99,6 +121,12 @@ function harness(options: HarnessOptions = {}): Harness {
   }
   for (const root of options.deferredStageRoots ?? []) {
     deferredStages.set(root, deferred<void>());
+  }
+  for (const callNumber of options.deferredStageCalls ?? []) {
+    deferredStageCalls.set(callNumber, deferred<void>());
+  }
+  for (const root of options.deferredPersistRoots ?? []) {
+    deferredPersists.set(root, deferred<void>());
   }
   for (const root of options.deferredDisposeOldRoots ?? []) {
     deferredOldDisposals.set(root, deferred<void>());
@@ -115,16 +143,21 @@ function harness(options: HarnessOptions = {}): Harness {
       return options.blockerResolution ?? "continue";
     }),
     stage: vi.fn(async (next: RepositoryTargetSnapshot, signal: AbortSignal) => {
+      stageCallCount += 1;
       const root = next.target.canonicalRoot;
       events.push(`stage:${root}`);
       stageSignals.set(root, signal);
+      await deferredStageCalls.get(stageCallCount)?.promise;
       await deferredStages.get(root)?.promise;
+      if (options.undefinedStageRoots?.includes(root)) return undefined;
       return { snapshot: next };
     }),
     persist: vi.fn(async (next: RepositoryTargetSnapshot) => {
       const root = next.target.canonicalRoot;
       events.push(`persist:${root}`);
-      persistHook?.(next);
+      const reentrantTarget = options.reentrantPersistTargets?.[root];
+      if (reentrantTarget) await controller.switchTo(resolved(reentrantTarget));
+      await deferredPersists.get(root)?.promise;
       const error = options.persistErrors?.[root];
       if (error) throw error;
     }),
@@ -133,10 +166,13 @@ function harness(options: HarnessOptions = {}): Harness {
       events.push(`publish:${next.target.canonicalRoot}`);
       const error = options.publishErrors?.[next.target.canonicalRoot];
       if (error) throw error;
+      const result = options.publishResults?.[next.target.canonicalRoot];
+      if (result !== undefined) return result as unknown as undefined;
       published.push(next);
+      return undefined;
     }),
     disposeStaged: vi.fn(async (staged: StagedTarget) => {
-      const root = staged.snapshot.target.canonicalRoot;
+      const root = staged?.snapshot.target.canonicalRoot ?? "undefined";
       events.push(`dispose-staged:${root}`);
       const error = options.disposeStagedErrors?.[root];
       if (error) throw error;
@@ -144,12 +180,15 @@ function harness(options: HarnessOptions = {}): Harness {
     disposeOld: vi.fn(async (previous: RepositoryTargetSnapshot | null) => {
       const root = previous?.target.canonicalRoot ?? "none";
       events.push(`dispose-old:${root}`);
+      const reentrantTarget = options.reentrantDisposeOldTargets?.[root];
+      if (reentrantTarget) await controller.switchTo(resolved(reentrantTarget));
       await deferredOldDisposals.get(root)?.promise;
       const error = options.disposeOldErrors?.[root];
       if (error) throw error;
     }),
     markDegraded: vi.fn(() => {
       if (options.markDegradedError) throw options.markDegradedError;
+      return undefined;
     }),
   };
 
@@ -170,11 +209,14 @@ function harness(options: HarnessOptions = {}): Harness {
     resolveStage(root) {
       deferredStages.get(root)?.resolve();
     },
+    resolveStageCall(callNumber) {
+      deferredStageCalls.get(callNumber)?.resolve();
+    },
+    resolvePersist(root) {
+      deferredPersists.get(root)?.resolve();
+    },
     resolveDisposeOld(root) {
       deferredOldDisposals.get(root)?.resolve();
-    },
-    setPersistHook(hook) {
-      persistHook = hook;
     },
   };
 }
@@ -225,7 +267,7 @@ describe("RepositoryTargetController", () => {
 
     expect(h.events).toEqual(["stage:/B", "persist:/B", "publish:/B", "dispose-old:/A"]);
     expect(h.controller.activeSnapshot()?.target.canonicalRoot).toBe("/B");
-    expect(h.activeAtPublish[0]?.target.canonicalRoot).toBe("/B");
+    expect(h.activeAtPublish[0]?.target.canonicalRoot).toBe("/A");
   });
 
   it("keeps B published and records degradation when post-commit disposal fails", async () => {
@@ -242,21 +284,40 @@ describe("RepositoryTargetController", () => {
     );
   });
 
-  it("keeps B active and degraded when synchronous publication throws after persistence", async () => {
+  it("retains A and cleans staged B when publication throws before external publication", async () => {
     const publishError = new Error("surface bind failed");
     const h = harness({ publishErrors: { "/B": publishError } });
 
     await expect(h.controller.switchTo(resolved("/B")))
-      .resolves.toMatchObject({ target: { canonicalRoot: "/B" }, targetEpoch: 2 });
+      .rejects.toBe(publishError);
 
-    expect(h.controller.activeSnapshot()?.target.canonicalRoot).toBe("/B");
+    expect(h.controller.activeSnapshot()?.target.canonicalRoot).toBe("/A");
     expect(h.runtime.publish).toHaveBeenCalledOnce();
     expect(h.runtime.markDegraded).toHaveBeenCalledWith(
       expect.objectContaining({ target: expect.objectContaining({ canonicalRoot: "/B" }) }),
       publishError,
     );
-    expect(h.events).toEqual(["stage:/B", "persist:/B", "publish:/B", "dispose-old:/A"]);
-    expect(h.runtime.disposeStaged).not.toHaveBeenCalled();
+    expect(h.events).toEqual(["stage:/B", "persist:/B", "publish:/B", "dispose-staged:/B"]);
+    expect(h.runtime.disposeOld).not.toHaveBeenCalled();
+    expect(h.runtime.disposeStaged).toHaveBeenCalledOnce();
+    expect(h.published.map((item) => item.target.canonicalRoot)).toEqual(["/A"]);
+  });
+
+  it("rejects a non-undefined publication result without disposing A", async () => {
+    const invalidThenable = {
+      then(_resolve: (value: unknown) => void, reject: (error: unknown) => void) {
+        reject(new Error("invalid async publication"));
+      },
+    };
+    const h = harness({ publishResults: { "/B": invalidThenable } });
+
+    await expect(h.controller.switchTo(resolved("/B")))
+      .rejects.toThrow("publish must return undefined synchronously");
+
+    expect(h.controller.activeSnapshot()?.target.canonicalRoot).toBe("/A");
+    expect(h.runtime.disposeOld).not.toHaveBeenCalled();
+    expect(h.runtime.disposeStaged).toHaveBeenCalledOnce();
+    expect(h.runtime.markDegraded).toHaveBeenCalledOnce();
   });
 
   it("aborts stale staging even when the runtime ignores abort and allows only C to commit", async () => {
@@ -285,6 +346,22 @@ describe("RepositoryTargetController", () => {
     expect(next.targetEpoch).toBeGreaterThan(old.targetEpoch);
     expect(h.controller.isCurrent(old.target.targetId, old.targetEpoch)).toBe(false);
     expect(h.controller.isCurrent(next.target.targetId, next.targetEpoch)).toBe(true);
+  });
+
+  it("reserves a new epoch when a second B supersedes a staged B with the same target identity", async () => {
+    const h = harness({ deferredStageCalls: [1] });
+    const staleSwitch = h.controller.switchTo(resolved("/B"));
+    await vi.waitFor(() => expect(h.runtime.stage).toHaveBeenCalledOnce());
+    const staleSnapshot = h.runtime.stage.mock.calls[0]?.[0] as RepositoryTargetSnapshot;
+
+    const currentSwitch = h.controller.switchTo(resolved("/B"));
+
+    await expect(staleSwitch).rejects.toThrow("superseded");
+    const current = await currentSwitch;
+    expect(current.targetEpoch).not.toBe(staleSnapshot.targetEpoch);
+    expect(h.controller.isCurrent(staleSnapshot.target.targetId, staleSnapshot.targetEpoch)).toBe(false);
+    h.resolveStageCall(1);
+    await vi.waitFor(() => expect(h.runtime.disposeStaged).toHaveBeenCalledOnce());
   });
 
   it("cancels after blocker resolution without staging or persisting", async () => {
@@ -354,16 +431,15 @@ describe("RepositoryTargetController", () => {
     expect(h.published.map((item) => item.target.canonicalRoot)).toEqual(["/A", "/B", "/D"]);
   });
 
-  it("queues a reentrant update from persist so preference and active publication cannot diverge", async () => {
-    const h = harness();
-    let switchingToC: Promise<RepositoryTargetSnapshot> | undefined;
-    h.setPersistHook((next) => {
-      if (next.target.canonicalRoot === "/B") {
-        switchingToC = h.controller.switchTo(resolved("/C"));
-      }
-    });
+  it("queues an external update while persist is pending and runs it after B commits", async () => {
+    const h = harness({ deferredPersistRoots: ["/B"] });
+    const switchingToB = h.controller.switchTo(resolved("/B"));
+    await vi.waitFor(() => expect(h.events).toContain("persist:/B"));
 
-    await h.controller.switchTo(resolved("/B"));
+    const switchingToC = h.controller.switchTo(resolved("/C"));
+    expect(h.events).not.toContain("stage:/C");
+    h.resolvePersist("/B");
+    await switchingToB;
     await switchingToC;
 
     expect(h.events).toEqual([
@@ -371,6 +447,43 @@ describe("RepositoryTargetController", () => {
       "stage:/C", "persist:/C", "publish:/C", "dispose-old:/B",
     ]);
     expect(h.published.map((item) => item.target.canonicalRoot)).toEqual(["/A", "/B", "/C"]);
+  });
+
+  it("rejects an awaited switch called directly from persist without deadlocking", async () => {
+    const h = harness({ reentrantPersistTargets: { "/B": "/C" } });
+
+    await expect(settlesWithin(h.controller.switchTo(resolved("/B"))))
+      .rejects.toThrow("cannot be requested synchronously from a runtime hook");
+
+    expect(h.controller.activeSnapshot()?.target.canonicalRoot).toBe("/A");
+    expect(h.runtime.disposeStaged).toHaveBeenCalledOnce();
+    expect(h.runtime.disposeOld).not.toHaveBeenCalled();
+    expect(h.runtime.stage).toHaveBeenCalledOnce();
+  });
+
+  it("rejects an awaited same-target switch called directly from persist", async () => {
+    const h = harness({ reentrantPersistTargets: { "/B": "/A" } });
+
+    await expect(settlesWithin(h.controller.switchTo(resolved("/B"))))
+      .rejects.toThrow("cannot be requested synchronously from a runtime hook");
+
+    expect(h.controller.activeSnapshot()?.target.canonicalRoot).toBe("/A");
+    expect(h.runtime.disposeStaged).toHaveBeenCalledOnce();
+    expect(h.runtime.stage).toHaveBeenCalledOnce();
+  });
+
+  it("degrades B instead of deadlocking when disposeOld awaits a direct switch", async () => {
+    const h = harness({ reentrantDisposeOldTargets: { "/A": "/C" } });
+
+    await expect(settlesWithin(h.controller.switchTo(resolved("/B"))))
+      .resolves.toMatchObject({ target: { canonicalRoot: "/B" } });
+
+    expect(h.controller.activeSnapshot()?.target.canonicalRoot).toBe("/B");
+    expect(h.runtime.markDegraded).toHaveBeenCalledWith(
+      expect.objectContaining({ target: expect.objectContaining({ canonicalRoot: "/B" }) }),
+      expect.objectContaining({ message: expect.stringContaining("cannot be requested synchronously") }),
+    );
+    expect(h.runtime.stage).toHaveBeenCalledOnce();
   });
 
   it("preserves the primary pre-publication failure when staged cleanup also fails", async () => {
@@ -383,6 +496,33 @@ describe("RepositoryTargetController", () => {
 
     expect(h.runtime.disposeStaged).toHaveBeenCalledOnce();
     expect(h.controller.activeSnapshot()?.target.canonicalRoot).toBe("/A");
+  });
+
+  it("disposes a completed undefined staged value when persistence fails", async () => {
+    const h = harness({
+      undefinedStageRoots: ["/B"],
+      persistErrors: { "/B": new Error("disk full") },
+    });
+
+    await expect(h.controller.switchTo(resolved("/B"))).rejects.toThrow("disk full");
+
+    expect(h.runtime.disposeStaged).toHaveBeenCalledWith(undefined);
+    expect(h.runtime.disposeOld).not.toHaveBeenCalled();
+    expect(h.controller.activeSnapshot()?.target.canonicalRoot).toBe("/A");
+    expect(h.events).toEqual(["stage:/B", "persist:/B", "dispose-staged:undefined"]);
+  });
+
+  it("disposes a late undefined staged value after its attempt was superseded", async () => {
+    const h = harness({ deferredStageRoots: ["/B"], undefinedStageRoots: ["/B"] });
+    const staleSwitch = h.controller.switchTo(resolved("/B"));
+    await vi.waitFor(() => expect(h.runtime.stage).toHaveBeenCalledOnce());
+
+    await h.controller.switchTo(resolved("/C"));
+    await expect(staleSwitch).rejects.toThrow("superseded");
+    h.resolveStage("/B");
+
+    await vi.waitFor(() => expect(h.runtime.disposeStaged).toHaveBeenCalledWith(undefined));
+    expect(h.controller.activeSnapshot()?.target.canonicalRoot).toBe("/C");
   });
 
   it("does not roll back B when degradation reporting itself throws", async () => {
@@ -408,6 +548,33 @@ describe("RepositoryTargetController", () => {
     expect(h.runtime.checkBlockers).not.toHaveBeenCalled();
     expect(h.runtime.stage).not.toHaveBeenCalled();
     expect(h.runtime.publish).not.toHaveBeenCalled();
+  });
+
+  it.each([Number.NaN, Number.POSITIVE_INFINITY, -1, 1.5])(
+    "rejects an invalid initial target epoch %s",
+    (targetEpoch) => {
+      expect(() => harness({ activeEpoch: targetEpoch }))
+        .toThrow("non-negative safe integer");
+    },
+  );
+
+  it("rejects epoch exhaustion before staging or persisting", async () => {
+    const h = harness({ activeEpoch: Number.MAX_SAFE_INTEGER });
+
+    await expect(h.controller.switchTo(resolved("/B"))).rejects.toThrow("epoch exhausted");
+
+    expect(h.controller.activeSnapshot()?.targetEpoch).toBe(Number.MAX_SAFE_INTEGER);
+    expect(h.runtime.stage).not.toHaveBeenCalled();
+    expect(h.runtime.persist).not.toHaveBeenCalled();
+  });
+
+  it("starts at epoch one when there is no initial target", async () => {
+    const h = harness({ activeRoot: null });
+
+    const first = await h.controller.switchTo(resolved("/B"));
+
+    expect(first.targetEpoch).toBe(1);
+    expect(h.runtime.disposeOld).toHaveBeenCalledWith(null);
   });
 
   it("does not ask the user to resolve blockers when the first check is empty", async () => {
