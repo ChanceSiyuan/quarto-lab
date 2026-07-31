@@ -38,6 +38,24 @@ export interface LibraryConversationState {
   error: string | null;
 }
 
+export function snapshotLibraryMessageContext(
+  context: LibraryMessageContext,
+): Readonly<LibraryMessageContext> {
+  const collection = context.collection
+    ? Object.freeze({ ...context.collection })
+    : null;
+  const selectedItems = Object.freeze(
+    context.selectedItems.map((item) => Object.freeze({ ...item })),
+  );
+  return Object.freeze({
+    libraryID: context.libraryID,
+    libraryName: context.libraryName,
+    collection,
+    selectedItems,
+    omittedItemCount: context.omittedItemCount,
+  });
+}
+
 export function librarySubjectKey(subject: Pick<LibraryConversationSubjectInput, "libraryID">): LibrarySubjectKey {
   return `library:${String(subject.libraryID)}`;
 }

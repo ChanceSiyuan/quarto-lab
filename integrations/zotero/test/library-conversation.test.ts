@@ -5,7 +5,9 @@ import {
   CodexRpcError,
 } from "../src/codex-app-server";
 import { CodexService } from "../src/codex-service";
+import type { LibraryMessageContext } from "../src/library-conversation";
 import type { NativeBridge } from "../src/native-bridge";
+import { READER_CONTEXT_TOOLS } from "../src/reader-context";
 import type { ReaderContextService } from "../src/reader-context";
 
 beforeEach(() => {
@@ -19,18 +21,46 @@ function libraryServiceHarness(options: {
   activePaperThread?: string;
   storedLibraryThread?: string;
 } = {}) {
+  const callbacks = { onState: vi.fn(), onError: vi.fn() };
+  const paperTools = {
+    tools: [{
+      name: "zotero_propose_changes",
+      description: "Paper-only proposal",
+      inputSchema: { type: "object", properties: {}, additionalProperties: false },
+    }],
+    invokeTool: vi.fn().mockResolvedValue({ proposed: true }),
+  };
+  const libraryTools = {
+    tools: [{
+      name: "zotero_lookup_citations",
+      description: "Resolve bounded citation requests",
+      inputSchema: { type: "object", properties: {}, additionalProperties: false },
+    }],
+    invokeTool: vi.fn().mockResolvedValue({ candidates: ["candidate-1"] }),
+  };
+  const readerContext = {
+    tools: [
+      READER_CONTEXT_TOOLS.find((tool) => tool.name === "zotero_get_current_page")!,
+      READER_CONTEXT_TOOLS.find((tool) => tool.name === "zotero_search_library_items")!,
+    ],
+    invokeTool: vi.fn().mockResolvedValue({ matches: [] }),
+  } as unknown as ReaderContextService;
   const client = {
     threadStart: vi.fn().mockResolvedValue({ thread: { id: "library-thread" } }),
     threadResume: vi.fn(async ({ threadId }: { threadId: string }) => ({ thread: { id: threadId, turns: [] } })),
     threadRead: vi.fn(async (threadId: string) => ({ thread: { id: threadId, turns: [] } })),
     threadSetName: vi.fn(async () => ({})),
+    turnStart: vi.fn().mockResolvedValue({ turn: { id: "library-turn" } }),
+    turnInterrupt: vi.fn().mockResolvedValue({}),
   };
   const service = new CodexService(
     {} as NativeBridge,
-    { tools: [] } as unknown as ReaderContextService,
+    readerContext,
     "test",
-    { onState: vi.fn(), onError: vi.fn() },
+    callbacks,
+    paperTools,
   );
+  service.setLibraryToolProvider(libraryTools);
   const internal = service as any;
   const saved: any[] = [];
   internal.client = client;
@@ -62,10 +92,232 @@ function libraryServiceHarness(options: {
   internal.saveSessions = vi.fn(async (next: unknown) => { saved.push(next); });
   service.state.connected = true;
   service.state.activeThreadId = options.activePaperThread || null;
-  return { service, client, saved };
+  return { service, client, saved, callbacks, libraryTools, paperTools, readerContext };
+}
+
+function libraryMessageContext(selectedCount = 2): LibraryMessageContext {
+  return {
+    libraryID: 1,
+    libraryName: "My Library",
+    collection: { key: "COLL1", path: "Research / Quantum" },
+    selectedItems: Array.from({ length: selectedCount }, (_, index) => ({
+      key: `ITEM${index + 1}`,
+      itemType: "journalArticle",
+      title: `Paper ${index + 1}`,
+      creators: "Ada Lovelace",
+      year: "2026",
+      doi: `10.1000/example-${index + 1}`,
+    })),
+    omittedItemCount: 0,
+  };
 }
 
 describe("library conversations", () => {
+  it("reports library opening state only to that library subject", async () => {
+    const { service, callbacks } = libraryServiceHarness();
+
+    await service.openLibraryConversation({ libraryID: 1, libraryName: "My Library" });
+
+    expect(callbacks.onState).toHaveBeenCalledWith({ kind: "library", key: "library:1" });
+    expect(callbacks.onState).not.toHaveBeenCalledWith();
+  });
+
+  it("starts a read-only library turn without changing the running paper", async () => {
+    const { service, client } = libraryServiceHarness({ activePaperThread: "paper-thread" });
+
+    await service.sendLibraryMessage(
+      { libraryID: 1, libraryName: "My Library" },
+      { text: "Find these citations", model: "gpt-5.6-codex", effort: "medium" },
+      libraryMessageContext(),
+    );
+
+    expect(client.turnStart).toHaveBeenCalledWith(expect.objectContaining({
+      threadId: "library-thread",
+      cwd: "/profile/zotkit",
+      runtimeWorkspaceRoots: [],
+      approvalPolicy: "never",
+      sandboxPolicy: { type: "readOnly", networkAccess: false },
+    }));
+    expect(service.state.activeThreadId).toBe("paper-thread");
+    expect(service.state.running).toBe(false);
+    expect(service.getLibraryConversationState({ libraryID: 1, libraryName: "My Library" }))
+      .toMatchObject({ running: true, activeTurnId: "library-turn" });
+  });
+
+  it("resumes a stored library conversation before sending its first turn", async () => {
+    const { service, client } = libraryServiceHarness({ storedLibraryThread: "stored-library" });
+
+    await service.sendLibraryMessage(
+      { libraryID: 1, libraryName: "My Library" },
+      { text: "Continue", model: "gpt-5.6-codex", effort: "medium" },
+      libraryMessageContext(),
+    );
+
+    expect(client.threadResume).toHaveBeenCalledWith(expect.objectContaining({
+      threadId: "stored-library",
+    }));
+    expect(client.turnStart).toHaveBeenCalledWith(expect.objectContaining({
+      threadId: "stored-library",
+    }));
+  });
+
+  it("copies and freezes a turn context before routing its exact dynamic tool call", async () => {
+    const { service, libraryTools, paperTools } = libraryServiceHarness();
+    const context = libraryMessageContext(1);
+
+    await service.sendLibraryMessage(
+      { libraryID: 1, libraryName: "My Library" },
+      { text: "Resolve it", model: "gpt-5.6-codex", effort: "medium" },
+      context,
+    );
+    (context.selectedItems as unknown as Array<{ title: string }>)[0]!.title = "Changed after send";
+    context.collection!.path = "Changed / Collection";
+
+    const result = await (service as any).handleDynamicTool({
+      threadId: "library-thread",
+      turnId: "library-turn",
+      callId: "call-1",
+      namespace: null,
+      tool: "zotero_lookup_citations",
+      arguments: { requests: [{ client_ref: "r1", doi: "10.1000/example" }] },
+    });
+
+    expect(result.success).toBe(true);
+    expect(libraryTools.invokeTool).toHaveBeenCalledWith(
+      "zotero_lookup_citations",
+      { requests: [{ client_ref: "r1", doi: "10.1000/example" }] },
+      expect.objectContaining({
+        collection: { key: "COLL1", path: "Research / Quantum" },
+        selectedItems: [expect.objectContaining({ title: "Paper 1" })],
+      }),
+      { threadId: "library-thread", turnId: "library-turn" },
+    );
+    const routedContext = libraryTools.invokeTool.mock.calls[0]![2];
+    expect(Object.isFrozen(routedContext)).toBe(true);
+    expect(Object.isFrozen(routedContext.collection)).toBe(true);
+    expect(Object.isFrozen(routedContext.selectedItems)).toBe(true);
+    expect(Object.isFrozen(routedContext.selectedItems[0])).toBe(true);
+    expect(paperTools.invokeTool).not.toHaveBeenCalled();
+  });
+
+  it("rejects a library tool call whose turn id does not own the captured context", async () => {
+    const { service, libraryTools, paperTools } = libraryServiceHarness();
+    await service.sendLibraryMessage(
+      { libraryID: 1, libraryName: "My Library" },
+      { text: "Resolve it", model: "gpt-5.6-codex", effort: "medium" },
+      libraryMessageContext(1),
+    );
+
+    const result = await (service as any).handleDynamicTool({
+      threadId: "library-thread",
+      turnId: "other-turn",
+      callId: "call-stale",
+      namespace: null,
+      tool: "zotero_lookup_citations",
+      arguments: {},
+    });
+
+    expect(result).toMatchObject({
+      success: false,
+      contentItems: [{ text: expect.stringContaining("context is unavailable") }],
+    });
+    expect(libraryTools.invokeTool).not.toHaveBeenCalled();
+    expect(paperTools.invokeTool).not.toHaveBeenCalled();
+  });
+
+  it("exposes only library-safe reader tools and library provider tools on library threads", async () => {
+    const { service, client } = libraryServiceHarness();
+
+    await service.openLibraryConversation({ libraryID: 1, libraryName: "My Library" });
+
+    const dynamicTools = client.threadStart.mock.calls[0]![0].dynamicTools;
+    expect(dynamicTools.map((tool: { name: string }) => tool.name)).toEqual([
+      "zotero_search_library_items",
+      "zotero_lookup_citations",
+    ]);
+  });
+
+  it("allows only one running turn for a library subject across concurrent senders", async () => {
+    const { service, client } = libraryServiceHarness();
+    const subject = { libraryID: 1, libraryName: "My Library" };
+
+    const results = await Promise.allSettled([
+      service.sendLibraryMessage(subject, { text: "First", model: "gpt-5.6-codex", effort: "medium" }, libraryMessageContext()),
+      service.sendLibraryMessage(subject, { text: "Second", model: "gpt-5.6-codex", effort: "medium" }, libraryMessageContext()),
+    ]);
+
+    expect(results.map((result) => result.status)).toEqual(["fulfilled", "rejected"]);
+    expect((results[1] as PromiseRejectedResult).reason).toMatchObject({
+      message: expect.stringContaining("already running"),
+    });
+    expect(client.threadStart).toHaveBeenCalledOnce();
+    expect(client.turnStart).toHaveBeenCalledOnce();
+  });
+
+  it("stops only the requested library turn and preserves a running paper", async () => {
+    const { service, client } = libraryServiceHarness({ activePaperThread: "paper-thread" });
+    const internal = service as any;
+    internal.runningTurns.set("paper-thread", "paper-turn");
+    internal.syncActiveTurnState();
+    await service.sendLibraryMessage(
+      { libraryID: 1, libraryName: "My Library" },
+      { text: "Resolve it", model: "gpt-5.6-codex", effort: "medium" },
+      libraryMessageContext(),
+    );
+
+    await service.stopLibraryTurn({ libraryID: 1, libraryName: "My Library" });
+
+    expect(client.turnInterrupt).toHaveBeenCalledWith({
+      threadId: "library-thread",
+      turnId: "library-turn",
+    });
+    expect(service.getLibraryConversationState({ libraryID: 1, libraryName: "My Library" }))
+      .toMatchObject({ running: false, activeTurnId: null });
+    expect(service.state).toMatchObject({
+      activeThreadId: "paper-thread",
+      running: true,
+      activeTurnId: "paper-turn",
+    });
+  });
+
+  it.each(["turn/completed", "turn/failed"])(
+    "routes %s to the owning library subject without changing paper state",
+    async (method) => {
+      const { service, callbacks } = libraryServiceHarness({ activePaperThread: "paper-thread" });
+      const internal = service as any;
+      internal.runningTurns.set("paper-thread", "paper-turn");
+      internal.syncActiveTurnState();
+      await service.sendLibraryMessage(
+        { libraryID: 1, libraryName: "My Library" },
+        { text: "Resolve it", model: "gpt-5.6-codex", effort: "medium" },
+        libraryMessageContext(),
+      );
+      callbacks.onState.mockClear();
+
+      internal.handleNotification({
+        method,
+        params: {
+          threadId: "library-thread",
+          turn: { id: "library-turn", ...(method === "turn/failed" ? { error: "resolver failed" } : {}) },
+        },
+      });
+
+      expect(service.getLibraryConversationState({ libraryID: 1, libraryName: "My Library" }))
+        .toMatchObject({
+          running: false,
+          activeTurnId: null,
+          ...(method === "turn/failed" ? { error: "resolver failed" } : {}),
+        });
+      expect(service.state).toMatchObject({
+        activeThreadId: "paper-thread",
+        running: true,
+        activeTurnId: "paper-turn",
+      });
+      expect(callbacks.onState).toHaveBeenCalledWith({ kind: "library", key: "library:1" });
+      expect(callbacks.onState).not.toHaveBeenCalledWith();
+    },
+  );
+
   it("uses one stable subject per library without selecting it in Workbench", async () => {
     const { service, client, saved } = libraryServiceHarness({ activePaperThread: "paper-thread" });
     const subject = { libraryID: 1, libraryName: "My Library" };
