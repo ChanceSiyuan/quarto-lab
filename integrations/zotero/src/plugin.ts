@@ -33,6 +33,7 @@ import {
   type StoredChatGPTArchive,
 } from "./chatgpt-history";
 import { FloatPanelView, latestExchange } from "./float-panel";
+import { startRegionSelection, type RegionSelection } from "./region-capture";
 import {
   QLAB_WORKBENCH_WINDOW_ATTRIBUTE,
   QLAB_WORKBENCH_TAB_TYPE,
@@ -223,7 +224,7 @@ export class ZoteroChatPlugin {
   private researchScope: ResearchScope = "paper";
   private floatOpacity = 100;
   private addedContextIDs = new Set<string>();
-  private pendingScreenshots: string[] = [];
+  private pendingScreenshots: Array<{ image: string; kind: "page" | "region" }> = [];
   /** Default Reader chips the user explicitly turned off for this paper. */
   private excludedContextIDs = new Set<string>();
   private chatGPTArchive: StoredChatGPTArchive | null = null;
@@ -663,6 +664,19 @@ export class ZoteroChatPlugin {
         }).catch((error) => this.reportError(error));
       });
       append(button);
+
+      const regionButton = doc.createElement("button");
+      regionButton.type = "button";
+      regionButton.title = "Capture Region Screenshot (QLab)";
+      regionButton.setAttribute("aria-label", regionButton.title);
+      regionButton.style.cssText = "display:grid;place-items:center;width:32px;height:32px;border:0;border-radius:8px;background:transparent;cursor:pointer;padding:5px;font-size:15px;line-height:1";
+      regionButton.textContent = "⬚";
+      regionButton.addEventListener("click", () => {
+        void this.acceptReaderHook(event).then(async () => {
+          await this.startRegionScreenshot();
+        }).catch((error) => this.reportError(error));
+      });
+      append(regionButton);
     }, PLUGIN_ID);
 
     Zotero.Reader.registerEventListener("renderTextSelectionPopup", (event: any) => {
@@ -1053,7 +1067,7 @@ export class ZoteroChatPlugin {
     }
     this.chatPhase = "ready";
     const context = this.codex.getActiveReaderContext?.() || this.context;
-    const screenshots = [...this.pendingScreenshots];
+    const screenshots = this.pendingScreenshots.map((shot) => shot.image);
     await this.codex.send(text, this.selectedModel, this.selectedEffort, screenshots, options);
     if (screenshots.length) this.pendingScreenshots = [];
     const threadId = this.codex.state.activeThreadId;
@@ -2311,8 +2325,46 @@ export class ZoteroChatPlugin {
     if (!context) throw new Error("Open a PDF before capturing a page screenshot");
     const image = await this.readerContext.captureCurrentPageImage(context);
     if (!image) throw new Error("Zotero could not render the current PDF page as an image");
-    this.pendingScreenshots.push(image);
+    this.pendingScreenshots.push({ image, kind: "page" });
     this.chatError = "";
+    this.renderChatViews();
+    this.activeChatView()?.focusComposer();
+  }
+
+  /**
+   * Design 3: overlay the current PDF.js page view with a crosshair and
+   * attach the dragged region as a cropped screenshot. Reached from the
+   * reader toolbar button and the "Screenshot Region" Add-Context entry.
+   */
+  private async startRegionScreenshot(): Promise<void> {
+    if (this.pendingScreenshots.length >= 10) {
+      throw new Error("A message can contain at most 10 PDF screenshots");
+    }
+    const context = this.codex.getActiveReaderContext?.() || this.context;
+    if (!context) throw new Error("Open a PDF before capturing a region screenshot");
+    const pageElement = await this.readerContext.getCurrentPageViewElement(context);
+    if (!pageElement) throw new Error("Zotero could not locate the current PDF page view");
+    startRegionSelection(pageElement, {
+      onCancel: () => {},
+      onComplete: (selection) => {
+        void this.captureRegionScreenshot(selection, context)
+          .catch((error) => this.reportError(error));
+      },
+    });
+  }
+
+  private async captureRegionScreenshot(
+    selection: RegionSelection,
+    context: ReaderContext,
+  ): Promise<void> {
+    if (this.pendingScreenshots.length >= 10) {
+      throw new Error("A message can contain at most 10 PDF screenshots");
+    }
+    const image = await this.readerContext.captureCurrentPageRegionImage(selection, context);
+    if (!image) throw new Error("Zotero could not render the selected PDF region as an image");
+    this.pendingScreenshots.push({ image, kind: "region" });
+    this.chatError = "";
+    if (!this.activeChatView()) await this.openResearchChat(undefined, false);
     this.renderChatViews();
     this.activeChatView()?.focusComposer();
   }
@@ -2329,6 +2381,10 @@ export class ZoteroChatPlugin {
     }
     if (suggestion.id === "capture-page") {
       void this.captureCurrentPageScreenshot().catch((error) => this.reportError(error));
+      return;
+    }
+    if (suggestion.id === "capture-region") {
+      void this.startRegionScreenshot().catch((error) => this.reportError(error));
       return;
     }
     if (suggestion.id.startsWith("toggle-paper:")) {
@@ -2999,10 +3055,14 @@ export class ZoteroChatPlugin {
         removable: true,
       });
     }
-    this.pendingScreenshots.forEach((_image, index) => chips.push({
+    let pageShots = 0;
+    let regionShots = 0;
+    this.pendingScreenshots.forEach((shot, index) => chips.push({
       id: `screenshot:${index}`,
       kind: "selection",
-      label: `PDF Screenshot ${index + 1}`,
+      label: shot.kind === "region"
+        ? `Region Screenshot ${++regionShots}`
+        : `PDF Screenshot ${++pageShots}`,
       detail: "Sent with the next message",
       removable: true,
     }));
@@ -3054,6 +3114,12 @@ export class ZoteroChatPlugin {
       kind: "selection",
       label: "Screenshot Current Page",
       detail: "Attach the rendered PDF page for figures, equations, or layout",
+      disabled: !context || this.pendingScreenshots.length >= 10,
+    }, {
+      id: "capture-region",
+      kind: "selection",
+      label: "Screenshot Region",
+      detail: "Drag a rectangle on the current PDF page to attach just that region",
       disabled: !context || this.pendingScreenshots.length >= 10,
     }, ...papers.map((paper): ResearchContextSuggestion => ({
       id: `toggle-paper:${paper.id}`,

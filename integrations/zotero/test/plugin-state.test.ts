@@ -1347,3 +1347,165 @@ describe("clampFloatSize", () => {
     expect(clampFloatSize(10_000, 10)).toEqual({ width: 760, height: 220 });
   });
 });
+
+describe("Region screenshots (Design 3)", () => {
+  const paperContext = () => ({
+    attachment: { key: "ATTACH", libraryID: 1, title: "Paper", creators: [] },
+    parent: { title: "Paper", creators: [], tags: [] },
+    page: { pageNumber: 5, pageLabel: "5" },
+  });
+
+  it("offers Screenshot Region in the Add-Context menu only while a reader is active", () => {
+    const plugin = new ZoteroChatPlugin() as any;
+
+    const withoutReader = plugin.contextSuggestions()
+      .find((item: { id: string }) => item.id === "capture-region");
+    expect(withoutReader).toMatchObject({
+      label: "Screenshot Region",
+      kind: "selection",
+      disabled: true,
+    });
+
+    plugin.context = paperContext();
+    const withReader = plugin.contextSuggestions()
+      .find((item: { id: string }) => item.id === "capture-region");
+    expect(withReader?.disabled).toBe(false);
+
+    plugin.pendingScreenshots = Array.from({ length: 10 }, (_, index) => ({
+      image: `data:image/png;base64,${index}`,
+      kind: "page" as const,
+    }));
+    expect(plugin.contextSuggestions()
+      .find((item: { id: string }) => item.id === "capture-region")?.disabled).toBe(true);
+  });
+
+  it("starts the region flow from the Add-Context menu entry", () => {
+    const plugin = new ZoteroChatPlugin() as any;
+    plugin.startRegionScreenshot = vi.fn(async () => {});
+    plugin.updateInteractionContext = vi.fn();
+    plugin.renderChatViews = vi.fn();
+
+    plugin.addInteractionContext({ id: "capture-region", kind: "selection", label: "Screenshot Region" });
+
+    expect(plugin.startRegionScreenshot).toHaveBeenCalledOnce();
+    expect(plugin.updateInteractionContext).not.toHaveBeenCalled();
+  });
+
+  it("labels pending page and region screenshots independently", () => {
+    const plugin = new ZoteroChatPlugin() as any;
+    plugin.context = paperContext();
+    plugin.pendingScreenshots = [
+      { image: "data:image/png;base64,a", kind: "page" },
+      { image: "data:image/png;base64,b", kind: "region" },
+      { image: "data:image/png;base64,c", kind: "page" },
+    ];
+
+    const labels = plugin.contextChips().map((chip: { label: string }) => chip.label);
+
+    expect(labels).toContain("PDF Screenshot 1");
+    expect(labels).toContain("Region Screenshot 1");
+    expect(labels).toContain("PDF Screenshot 2");
+    expect(plugin.contextChips().map((chip: { id: string }) => chip.id))
+      .toEqual(expect.arrayContaining(["screenshot:0", "screenshot:1", "screenshot:2"]));
+  });
+
+  it("sends pending screenshots as bare data URIs and clears them after the send", async () => {
+    const plugin = new ZoteroChatPlugin() as any;
+    const send = vi.fn(async () => {});
+    plugin.codex = {
+      state: { connected: true, activeThreadId: null },
+      isSignedIn: () => true,
+      send,
+      getActiveReaderContext: () => null,
+    };
+    plugin.pendingScreenshots = [
+      { image: "data:image/png;base64,a", kind: "page" },
+      { image: "data:image/png;base64,b", kind: "region" },
+    ];
+
+    await plugin.sendChat("what is in this figure?");
+
+    expect(send).toHaveBeenCalledWith(
+      "what is in this figure?",
+      "",
+      "medium",
+      ["data:image/png;base64,a", "data:image/png;base64,b"],
+      {},
+    );
+    expect(plugin.pendingScreenshots).toEqual([]);
+  });
+
+  it("injects a region-capture button beside the workbench button in the reader toolbar", async () => {
+    const previousZotero = (globalThis as any).Zotero;
+    const listeners = new Map<string, (event: any) => void>();
+    (globalThis as any).Zotero = {
+      Reader: {
+        registerEventListener: vi.fn((type: string, handler: (event: any) => void) => {
+          listeners.set(type, handler);
+        }),
+      },
+    };
+    try {
+      const plugin = new ZoteroChatPlugin() as any;
+      plugin.installShortcutHandler = vi.fn();
+      plugin.acceptReaderHook = vi.fn(async () => {});
+      plugin.startRegionScreenshot = vi.fn(async () => {});
+      plugin.registerReaderHooks();
+
+      const appended: HTMLElement[] = [];
+      listeners.get("renderToolbar")!({
+        doc: document,
+        append: (element: HTMLElement) => appended.push(element),
+        reader: { id: "reader-1" },
+      });
+
+      expect(appended).toHaveLength(2);
+      const regionButton = appended[1] as HTMLButtonElement;
+      expect(regionButton.title).toBe("Capture Region Screenshot (QLab)");
+      regionButton.click();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      expect(plugin.acceptReaderHook).toHaveBeenCalledOnce();
+      expect(plugin.startRegionScreenshot).toHaveBeenCalledOnce();
+    }
+    finally {
+      (globalThis as any).Zotero = previousZotero;
+    }
+  });
+
+  it("attaches a Region Screenshot chip after a completed overlay drag", async () => {
+    const plugin = new ZoteroChatPlugin() as any;
+    const pageElement = document.createElement("div");
+    document.body.appendChild(pageElement);
+    pageElement.getBoundingClientRect = () => ({
+      left: 0, top: 0, width: 400, height: 600,
+      right: 400, bottom: 600, x: 0, y: 0,
+      toJSON: () => ({}),
+    }) as DOMRect;
+    plugin.context = paperContext();
+    plugin.codex = { getActiveReaderContext: () => plugin.context };
+    plugin.readerContext = {
+      getCurrentPageViewElement: vi.fn(async () => pageElement),
+      captureCurrentPageRegionImage: vi.fn(async () => "data:image/png;base64,region"),
+    };
+    plugin.activeChatView = vi.fn(() => null);
+    plugin.openResearchChat = vi.fn(async () => {});
+    plugin.renderChatViews = vi.fn();
+
+    await plugin.startRegionScreenshot();
+    const overlay = pageElement.querySelector<HTMLElement>(".zc-region-overlay")!;
+    expect(overlay).not.toBeNull();
+    overlay.dispatchEvent(new MouseEvent("mousedown", { button: 0, clientX: 40, clientY: 60, bubbles: true }));
+    document.dispatchEvent(new MouseEvent("mouseup", { clientX: 140, clientY: 160, bubbles: true }));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(plugin.readerContext.captureCurrentPageRegionImage).toHaveBeenCalledWith(
+      { rect: { x: 40, y: 60, width: 100, height: 100 }, view: { width: 400, height: 600 } },
+      plugin.context,
+    );
+    expect(plugin.pendingScreenshots).toEqual([
+      { image: "data:image/png;base64,region", kind: "region" },
+    ]);
+    expect(plugin.openResearchChat).toHaveBeenCalledWith(undefined, false);
+    pageElement.remove();
+  });
+});
