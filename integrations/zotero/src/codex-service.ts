@@ -678,7 +678,10 @@ export class CodexService {
     this.callbacks.onState();
     try {
       const stored = this.sessions.libraries?.[subject.key];
-      if (stored && (stored.backend ?? "codex") === this.state.backend) {
+      if (stored) {
+        if ((stored.backend ?? "codex") !== this.state.backend) {
+          throw new Error("The stored library conversation belongs to a different backend");
+        }
         const result = await resumeStoredThread(this.requireClient(), {
           threadId: stored.threadId,
           ...this.libraryThreadModeSettings(),
@@ -746,6 +749,7 @@ export class CodexService {
     runtime.threadId = resumedThreadId;
     runtime.error = null;
     this.threadLibrarySubjects.set(resumedThreadId, subject.key);
+    this.globalHistory = this.globalHistory.filter((thread) => thread.id !== resumedThreadId);
   }
 
   private librarySubject(input: LibraryConversationSubjectInput): LibraryConversationSubject {
@@ -893,9 +897,9 @@ export class CodexService {
         pinned: pinned.has(thread.id),
       }));
       const combined = cursor ? [...this.globalHistory, ...incoming] : incoming;
-      this.globalHistory = combined.filter(
-        (thread, index, threads) => threads.findIndex((candidate) => candidate.id === thread.id) === index,
-      );
+      this.globalHistory = combined
+        .filter((thread) => !libraryThreadIds.has(thread.id))
+        .filter((thread, index, threads) => threads.findIndex((candidate) => candidate.id === thread.id) === index);
       this.globalHistoryCursor = response.nextCursor;
       this.globalHistoryQuery = normalizedQuery;
     }
