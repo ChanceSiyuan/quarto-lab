@@ -232,15 +232,19 @@ function aiContextPluginHarness(input: {
     activeThreadId: input.activeThreadId ?? "thread-1",
     running: false,
     connected: input.connected ?? true,
+    models: [],
+    mode: "agent" as const,
   };
   plugin.codex = {
     state,
     getChatEntries: vi.fn(() => input.entries ?? []),
+    getActiveDiffs: vi.fn(() => []),
     getActiveReaderContext: vi.fn(() => activeReader),
     openWorkspaceObjectConversation: vi.fn(async (object: { key: string }) => {
       state.activeThreadId = "dedicated-" + object.key.slice("ai-context:".length);
     }),
     setInteractionContext: vi.fn(),
+    setActiveDocument: vi.fn(),
     setReaderContextSelection: vi.fn(),
     send: vi.fn(async () => undefined),
     isSignedIn: vi.fn(() => true),
@@ -271,7 +275,7 @@ function aiContextPluginHarness(input: {
   };
   plugin.openWorkbenchTab = vi.fn(async () => undefined);
   plugin.selectedWorkbenchEntry = vi.fn(() => ({ view: {} }));
-  plugin.openQmdDocument = vi.fn(async () => undefined);
+  plugin.openQmdDocument = vi.fn(async () => true);
   plugin.renderChatViews = vi.fn();
   plugin.chooseQLabRoot = vi.fn(async () => null);
   if (input.stubActivation !== false) {
@@ -547,6 +551,79 @@ describe("AI Context plugin integration", () => {
     })).toBe(false);
   });
 
+  it("renders Save and Update in registered workbench and standalone views, but hides them for imported or running chats", () => {
+    const { plugin } = aiContextPluginHarness({
+      entries: [userEntry("u1", "question"), assistantEntry("a1", "answer")],
+    });
+    const workbenchHost = document.createElement("div");
+    const standaloneHost = document.createElement("div");
+    document.body.append(workbenchHost, standaloneHost);
+    const workbench = plugin.createWorkbenchView(workbenchHost, window, "workbench-1");
+    const standalone = plugin.createWorkbenchView(standaloneHost, window, "__qlab_standalone_workbench__");
+    plugin.workbenchTabs = {
+      entries: vi.fn(() => [{
+        id: "workbench-1",
+        host: workbenchHost,
+        view: workbench,
+        data: { title: "QLab · Paper Assistant" },
+      }]),
+    };
+    plugin.standaloneWorkbench = {
+      currentView: vi.fn(() => standalone),
+      window: vi.fn(() => window),
+    };
+    plugin.chatPhase = "ready";
+    plugin.codex.getGlobalHistoryState = vi.fn(() => ({ loading: false, hasMore: false, error: "", query: "" }));
+    plugin.codex.getActivePlan = vi.fn(() => null);
+    plugin.codex.getPendingApprovals = vi.fn(() => []);
+    plugin.codex.getCheckpoints = vi.fn(() => []);
+    plugin.codex.accountLabel = vi.fn(() => "ChatGPT");
+    plugin.researchActionViewState = vi.fn(() => ({ researchObject: null, researchActions: [] }));
+    plugin.contextChips = vi.fn(() => []);
+    plugin.contextSuggestions = vi.fn(() => []);
+    plugin.conversationTabs = vi.fn(() => []);
+    plugin.turnDurationsForActiveThread = vi.fn(() => ({}));
+    plugin.mutationCheckpoints = [];
+    plugin.noting = { view: vi.fn(() => null) };
+
+    plugin.renderWorkbenchTabs();
+    for (const host of [workbenchHost, standaloneHost]) {
+      const save = host.querySelector<HTMLButtonElement>(".zc-save-ai-context")!;
+      expect(save.hidden).toBe(false);
+      expect(save.textContent).toBe("Save AI Context");
+    }
+
+    const active = documentFixture("render-active");
+    plugin.activeAIContextPath = active.relativePath;
+    plugin.activeAIContext = active;
+    plugin.activeAIContextThreadId = "thread-1";
+    plugin.activeAIContextRoot = "/repo";
+    plugin.codex.getChatEntries.mockReturnValue([]);
+    plugin.renderWorkbenchTabs();
+    expect(workbenchHost.querySelector<HTMLButtonElement>(".zc-save-ai-context")!.textContent)
+      .toBe("Update AI Context");
+    expect(standaloneHost.querySelector<HTMLButtonElement>(".zc-save-ai-context")!.textContent)
+      .toBe("Update AI Context");
+
+    plugin.selectedImportedChatID = "missing-import";
+    plugin.chatGPTArchive = { conversations: [] };
+    plugin.codex.getChatEntries.mockReturnValue([assistantEntry("a2", "stale live answer")]);
+    plugin.renderWorkbenchTabs();
+    expect(workbenchHost.querySelector<HTMLButtonElement>(".zc-save-ai-context")!.hidden).toBe(true);
+    expect(standaloneHost.querySelector<HTMLButtonElement>(".zc-save-ai-context")!.hidden).toBe(true);
+
+    plugin.selectedImportedChatID = null;
+    plugin.codex.state.running = true;
+    plugin.renderWorkbenchTabs();
+    expect(workbenchHost.querySelector<HTMLButtonElement>(".zc-save-ai-context")!.hidden).toBe(true);
+    expect(standaloneHost.querySelector<HTMLButtonElement>(".zc-save-ai-context")!.hidden).toBe(true);
+
+    workbench.destroy();
+    standalone.destroy();
+    workbenchHost.remove();
+    standaloneHost.remove();
+  });
+
   it("publishes active fields atomically after QMD open and binds the dedicated thread", async () => {
     const contextDocument = documentFixture("atomic-1");
     const { plugin } = aiContextPluginHarness({ stubActivation: false });
@@ -554,6 +631,7 @@ describe("AI Context plugin integration", () => {
       expect(plugin.activeAIContextPath).toBeNull();
       expect(plugin.activeAIContextThreadId).toBeNull();
       expect(plugin.activeAIContextRoot).toBeNull();
+      return true;
     });
 
     await plugin.activateAIContext(contextDocument, window);
@@ -584,6 +662,56 @@ describe("AI Context plugin integration", () => {
     await expect(plugin.saveAIContext(window)).rejects.toThrow(/assistant response/i);
     expect(plugin.aiContexts.open).not.toHaveBeenCalled();
     expect(plugin.aiContexts.save).not.toHaveBeenCalled();
+  });
+
+  it("does not bind a new thread when the real QMD workspace cannot render the requested record", async () => {
+    const first = documentFixture("workspace-a");
+    const second = documentFixture("workspace-b");
+    const { plugin } = aiContextPluginHarness({ stubActivation: false });
+    const host = document.createElement("div");
+    document.body.appendChild(host);
+    let workspace: any;
+    const sidebar = {
+      attachWorkspace: (create: (target: HTMLElement) => any) => {
+        workspace ??= create(host);
+        return workspace;
+      },
+      setWorkspaceOpen: (open: boolean) => {
+        if (open) workspace.show();
+        else workspace.hide();
+      },
+    };
+    plugin.selectedWorkbenchEntry.mockReturnValue({ view: sidebar });
+    delete plugin.openQmdDocument;
+    plugin.qmdRender = {
+      open: vi.fn(async () => { throw new Error("render failed"); }),
+      stop: vi.fn(),
+      diagnostic: vi.fn(() => null),
+      checkDraft: vi.fn(async () => ({ ok: true, diagnostics: [] })),
+    };
+    plugin.qmdChangeRender = { stop: vi.fn() };
+    plugin.availableEditors = vi.fn(async () => []);
+    plugin.prepareQmdChange = vi.fn(async () => ({
+      changePath: "work/qlab-zotero/draft-changes/b.qmd",
+      previewPath: "drafts/ai-contexts/workspace-b.preview.qmd",
+      changed: false,
+      revision: "r1",
+    }));
+    plugin.activeAIContextPath = first.relativePath;
+    plugin.activeAIContext = first;
+    plugin.activeAIContextThreadId = "thread-1";
+    plugin.activeAIContextRoot = "/repo";
+
+    await expect(plugin.activateAIContext(second, window)).rejects.toThrow(/QMD.*open/i);
+
+    expect(plugin.codex.openWorkspaceObjectConversation).not.toHaveBeenCalled();
+    expect(plugin.codex.setActiveDocument).toHaveBeenCalledWith(null);
+    expect(plugin.activeAIContextPath).toBeNull();
+    expect(plugin.activeAIContext).toBeNull();
+    expect(plugin.activeAIContextThreadId).toBeNull();
+    expect(plugin.activeAIContextRoot).toBeNull();
+    workspace?.destroy();
+    host.remove();
   });
 
   it("clears active update authority after switching to an ordinary paper thread", async () => {

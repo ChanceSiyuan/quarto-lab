@@ -312,12 +312,12 @@ export class QmdWorkspaceView {
   }
 
   /** Previews one QMD, starting or reusing its render process. */
-  async open(relativePath: string): Promise<void> {
+  async open(relativePath: string): Promise<boolean> {
     const generation = ++this.openGeneration;
     const tree = treeForPath(relativePath);
     if (!tree) {
       this.setStatus("Only QMD files in knowledge/ or drafts/ can be previewed", "error");
-      return;
+      return false;
     }
     if (this.current?.relativePath !== relativePath) this.resetAgentChange();
     this.current = { relativePath, tree };
@@ -331,7 +331,7 @@ export class QmdWorkspaceView {
     if (!tree.published && this.options.prepareChange) {
       try {
         const prepared = await this.options.prepareChange(relativePath);
-        if (generation !== this.openGeneration || this.destroyed) return;
+        if (generation !== this.openGeneration || this.destroyed) return false;
         this.changePath = prepared.changePath;
         this.changePreviewPath = prepared.previewPath;
         this.hasAgentChange = prepared.changed;
@@ -365,11 +365,11 @@ export class QmdWorkspaceView {
       url = await this.options.renderService.open(tree, this.repoRootHint, relativePath);
     }
     catch (error) {
-      if (generation !== this.openGeneration || this.destroyed) return;
+      if (generation !== this.openGeneration || this.destroyed) return false;
       this.setStatus(error instanceof Error ? error.message : String(error), "error");
-      return;
+      return false;
     }
-    if (this.destroyed || generation !== this.openGeneration) return;
+    if (this.destroyed || generation !== this.openGeneration) return false;
     if (!this.root.hidden) this.options.onActiveDocument?.(relativePath, this.changePath);
 
     this.ensureRenderBrowser();
@@ -390,6 +390,7 @@ export class QmdWorkspaceView {
     );
     await draftCheck;
     if (this.visualMode && !tree.published) await this.loadVisualEditor(generation);
+    return true;
   }
 
   destroy(): void {

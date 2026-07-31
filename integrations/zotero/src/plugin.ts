@@ -1375,7 +1375,9 @@ export class ZoteroChatPlugin {
       await this.openWorkbenchTab(win);
       const view = this.selectedWorkbenchEntry(win)?.view as SidebarView | undefined;
       if (!view) throw new Error("QLab Workbench was not opened");
-      await this.openQmdDocument(view, document.relativePath, win);
+      if (!await this.openQmdDocument(view, document.relativePath, win)) {
+        throw new Error("The AI Context QMD could not be opened");
+      }
       await this.codex.openWorkspaceObjectConversation({
         kind: "draft",
         key: `ai-context:${document.manifest.id}`,
@@ -1390,6 +1392,11 @@ export class ZoteroChatPlugin {
       this.activeAIContext = document;
       this.activeAIContextThreadId = dedicatedThreadId;
       this.activeAIContextRoot = root;
+    }
+    catch (error) {
+      this.clearActiveAIContext();
+      this.codex.setActiveDocument(null);
+      throw error;
     }
     finally {
       this.activatingAIContext = false;
@@ -1768,10 +1775,10 @@ export class ZoteroChatPlugin {
     sidebar: SidebarView,
     relativePath: string,
     win = Zotero.getMainWindow(),
-  ): Promise<void> {
+  ): Promise<boolean> {
     let root = this.settings?.qlabRoot || "";
     if (!root) root = await this.chooseQLabRoot(win) || "";
-    if (!root) return;
+    if (!root) return false;
 
     const workspace = sidebar.attachWorkspace((host: HTMLElement) => new QmdWorkspaceView(host, {
       onBack: () => sidebar.setWorkspaceOpen(false),
@@ -1809,14 +1816,15 @@ export class ZoteroChatPlugin {
       readSource: (path) => this.readQmdSource(path),
       saveSource: (path, revision, source) => this.saveQmdSource(path, revision, source),
     }));
-    if (!workspace) return;
+    if (!workspace) return false;
     workspace.repoRootHint = root;
     sidebar.setWorkspaceOpen(true);
-    await workspace.open(relativePath);
+    if (!await workspace.open(relativePath)) return false;
     workspace.syncAgentChanges({
       activeTurnId: this.codex.state.activeTurnId,
       diffs: this.codex.getActiveDiffs(),
     });
+    return true;
   }
 
   private safeRepositoryPath(relativePath: string, allowMissingFinal = false): string {
@@ -2633,9 +2641,17 @@ export class ZoteroChatPlugin {
 
   private renderWorkbenchTabs(): void {
     const context = this.codex.getActiveReaderContext?.() || this.context;
-    const importedChat = this.selectedImportedChatID
+    const imported = this.selectedImportedChatID !== null;
+    const importedChat = imported
       ? this.chatGPTArchive?.conversations.find((conversation) => conversation.id === this.selectedImportedChatID) || null
       : null;
+    const liveEntries = imported ? [] : this.codex.getChatEntries();
+    const canSaveAIContext = canSaveAIContextState({
+      imported,
+      running: this.codex.state.running,
+      activeRelativePath: this.activeAIContextPath,
+      entries: liveEntries,
+    });
     const historyState = this.codex.getGlobalHistoryState?.() || {
       loading: false,
       hasMore: false,
@@ -2700,17 +2716,19 @@ export class ZoteroChatPlugin {
           selectionText: context.selection?.text,
           pdfPath: context.pdfPath || undefined,
         } : null,
-        entries: importedChat?.entries || this.codex.getChatEntries(),
+        entries: importedChat?.entries || liveEntries,
         models: this.codex.state.models,
         threads: this.conversationTabs(),
         historyConversations: this.historyConversations(),
         historyLoading: historyState.loading,
         historyHasMore: historyState.hasMore,
         historyError: historyState.error || undefined,
-        readOnlyConversation: Boolean(importedChat),
+        readOnlyConversation: imported,
         selectedModel: this.selectedModel,
         effort: this.selectedEffort,
-        running: importedChat ? false : this.codex.state.running,
+        running: imported ? false : this.codex.state.running,
+        canSaveAIContext,
+        activeAIContext: Boolean(this.activeAIContextPath),
         creatingThread: this.codex.state.creatingThread,
         threadTitle: importedChat?.title || (context
           ? paperTitle(context)
@@ -2719,11 +2737,11 @@ export class ZoteroChatPlugin {
         scope: this.researchScope,
         contextChips: this.contextChips(),
         contextSuggestions: this.contextSuggestions(),
-        plan: importedChat ? null : plan,
-        reviews: importedChat ? [] : mutationReviews,
-        pendingApproval: importedChat ? null : pendingApproval,
-        checkpoints: importedChat ? [] : checkpoints,
-        turnStartedAt: !importedChat && this.codex.state.running
+        plan: imported ? null : plan,
+        reviews: imported ? [] : mutationReviews,
+        pendingApproval: imported ? null : pendingApproval,
+        checkpoints: imported ? [] : checkpoints,
+        turnStartedAt: !imported && this.codex.state.running
           ? this.turnStartedAt.get(this.codex.state.activeThreadId ?? "") ?? null
           : null,
         turnDurations: this.turnDurationsForActiveThread(),
@@ -3220,13 +3238,14 @@ export class ZoteroChatPlugin {
     if (!this.codex) return;
     this.updateTurnTracking();
     const context = this.codex.getActiveReaderContext?.() || this.context;
-    const importedChat = this.selectedImportedChatID
+    const imported = this.selectedImportedChatID !== null;
+    const importedChat = imported
       ? this.chatGPTArchive?.conversations.find((conversation) => conversation.id === this.selectedImportedChatID) || null
       : null;
     this.reconcileActiveAIContextThread();
-    const liveEntries = importedChat ? [] : this.codex.getChatEntries();
+    const liveEntries = imported ? [] : this.codex.getChatEntries();
     const canSaveAIContext = canSaveAIContextState({
-      imported: Boolean(importedChat),
+      imported,
       running: this.codex.state.running,
       activeRelativePath: this.activeAIContextPath,
       entries: liveEntries,
@@ -3305,10 +3324,10 @@ export class ZoteroChatPlugin {
         historyLoading: historyState.loading,
         historyHasMore: historyState.hasMore,
         historyError: historyState.error || undefined,
-        readOnlyConversation: Boolean(importedChat),
+        readOnlyConversation: imported,
         selectedModel: this.selectedModel,
         effort: this.selectedEffort,
-        running: importedChat ? false : this.codex.state.running,
+        running: imported ? false : this.codex.state.running,
         canSaveAIContext,
         activeAIContext: Boolean(this.activeAIContextPath),
         creatingThread: this.codex.state.creatingThread,
@@ -3317,11 +3336,11 @@ export class ZoteroChatPlugin {
         scope: this.researchScope,
         contextChips: this.contextChips(),
         contextSuggestions: this.contextSuggestions(),
-        plan: importedChat ? null : plan,
-        reviews: importedChat ? [] : mutationReviews,
-        pendingApproval: importedChat ? null : pendingApproval,
-        checkpoints: importedChat ? [] : checkpoints,
-        turnStartedAt: !importedChat && this.codex.state.running
+        plan: imported ? null : plan,
+        reviews: imported ? [] : mutationReviews,
+        pendingApproval: imported ? null : pendingApproval,
+        checkpoints: imported ? [] : checkpoints,
+        turnStartedAt: !imported && this.codex.state.running
           ? this.turnStartedAt.get(this.codex.state.activeThreadId ?? "") ?? null
           : null,
         turnDurations: this.turnDurationsForActiveThread(),

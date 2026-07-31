@@ -154,6 +154,15 @@ describe("QmdWorkspaceView", () => {
     view.destroy();
   });
 
+  it("reports an unsuccessful open when preview rendering fails without changing the active document", async () => {
+    const { view, renderService, onActiveDocument } = mount();
+    renderService.open.mockRejectedValueOnce(new Error("preview failed"));
+    view.show();
+
+    await expect(view.open(DRAFT)).resolves.toBe(false);
+    expect(onActiveDocument).not.toHaveBeenCalled();
+  });
+
   it("collapses the file tree toward the left and restores it from the edge handle", async () => {
     const { host, view } = mount();
     view.show();
