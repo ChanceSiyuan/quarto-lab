@@ -230,7 +230,6 @@ export interface RepositoryTargetStartupDependencies {
     records: readonly PersistedSessionRecord[],
   ): Promise<void>;
   saveRepositoryTargets(preferences: StoredTargetPreferences): void | Promise<void>;
-  hydrate(preferences: StoredTargetPreferences): RepositoryTargetSnapshot | null;
   publish(snapshot: RepositoryTargetSnapshot): undefined;
 }
 
@@ -238,6 +237,19 @@ export interface PreparedRepositoryTargetStartup {
   readonly settings: ZoteroChatSettings;
   readonly sessionRecords: SessionRecordsSnapshot;
   readonly activeSnapshot: RepositoryTargetSnapshot | null;
+}
+
+export interface RepositoryTargetBoundServiceFactory<TMainSite, TTerminal, TCodex> {
+  createMainSite(snapshot: RepositoryTargetSnapshot | null): TMainSite;
+  createTerminal(snapshot: RepositoryTargetSnapshot | null): TTerminal;
+  createCodex(snapshot: RepositoryTargetSnapshot | null): TCodex;
+}
+
+export interface StartedRepositoryTargetBoundServices<TMainSite, TTerminal, TCodex> {
+  readonly prepared: PreparedRepositoryTargetStartup;
+  readonly mainSite: TMainSite;
+  readonly terminal: TTerminal;
+  readonly codex: TCodex;
 }
 
 export async function persistRepositoryTargetMigration(
@@ -264,6 +276,11 @@ export async function prepareRepositoryTargetStartup(
   const persistedSessions = await dependencies.readSessionRecords();
   let settings = await dependencies.loadSettings(raw);
   let records = persistedSessions.records;
+  let resolver: LegacyMigrationResolver | null = null;
+  const startupResolver = () => {
+    resolver ||= dependencies.createResolver();
+    return resolver;
+  };
 
   if (raw.legacyQLabRoot && !settings.repositoryTargets.migratedLegacy) {
     const outcome = await migrateLegacy(
@@ -273,7 +290,7 @@ export async function prepareRepositoryTargetStartup(
         sessions: records,
         activeThreadId: persistedSessions.activeThreadId,
       },
-      dependencies.createResolver(),
+      startupResolver(),
     );
     await persistRepositoryTargetMigration(persistedSessions, outcome, dependencies);
     records = outcome.sessions;
@@ -284,8 +301,10 @@ export async function prepareRepositoryTargetStartup(
     };
   }
 
-  const activeSnapshot = dependencies.hydrate(settings.repositoryTargets);
-  validateHydratedTarget(settings.repositoryTargets, activeSnapshot);
+  const activeSnapshot = await resolveInitialRepositoryTarget(
+    settings.repositoryTargets,
+    startupResolver,
+  );
   if (activeSnapshot) dependencies.publish(activeSnapshot);
   return {
     settings,
@@ -294,28 +313,46 @@ export async function prepareRepositoryTargetStartup(
   };
 }
 
-function validateHydratedTarget(
+async function resolveInitialRepositoryTarget(
   preferences: StoredTargetPreferences,
-  snapshot: RepositoryTargetSnapshot | null,
-): void {
-  if (!preferences.active) {
-    if (snapshot !== null) throw new Error("Target hydration invented an active repository");
-    return;
+  resolver: () => LegacyMigrationResolver,
+): Promise<RepositoryTargetSnapshot | null> {
+  const stored = preferences.active;
+  if (!stored) return null;
+  const inspected = await resolver().inspect(stored.canonicalRoot);
+  if (inspected.kind !== "local"
+      || inspected.kind !== stored.kind
+      || inspected.root !== stored.root
+      || inspected.canonicalRoot !== stored.canonicalRoot
+      || inspected.repositoryId !== stored.repositoryId
+      || inspected.targetId !== stored.targetId) {
+    throw new Error("Stored active repository no longer matches its persisted identity");
   }
-  if (!snapshot
-      || snapshot.targetEpoch !== 1
-      || snapshot.target.targetId !== preferences.active.targetId
-      || snapshot.target.canonicalRoot !== preferences.active.canonicalRoot) {
-    throw new Error("Target hydration did not preserve the stored active repository");
-  }
+  return Object.freeze({
+    target: Object.freeze({ ...inspected }),
+    targetEpoch: 1,
+  });
 }
 
-function hydrateInitialRepositoryTarget(
-  preferences: StoredTargetPreferences,
-): RepositoryTargetSnapshot | null {
-  return preferences.active
-    ? Object.freeze({ target: preferences.active, targetEpoch: 1 })
-    : null;
+/**
+ * The production construction gate for every service that can restore or
+ * create repository-bound state. Keeping these constructors behind the same
+ * prepared snapshot makes it impossible to construct one before validation.
+ */
+export async function startRepositoryTargetBoundServices<TMainSite, TTerminal, TCodex>(
+  dependencies: RepositoryTargetStartupDependencies,
+  prepareFactory: (
+    prepared: PreparedRepositoryTargetStartup,
+  ) => RepositoryTargetBoundServiceFactory<TMainSite, TTerminal, TCodex>
+    | Promise<RepositoryTargetBoundServiceFactory<TMainSite, TTerminal, TCodex>>,
+): Promise<StartedRepositoryTargetBoundServices<TMainSite, TTerminal, TCodex>> {
+  const prepared = await prepareRepositoryTargetStartup(dependencies);
+  const factory = await prepareFactory(prepared);
+  const snapshot = prepared.activeSnapshot;
+  const mainSite = factory.createMainSite(snapshot);
+  const terminal = factory.createTerminal(snapshot);
+  const codex = factory.createCodex(snapshot);
+  return { prepared, mainSite, terminal, codex };
 }
 
 /** Keep the historical class name as a source-level compatibility shim. */
@@ -405,7 +442,7 @@ export class ZoteroChatPlugin {
       );
       return startupSiteRuntime;
     };
-    const preparedTarget = await prepareRepositoryTargetStartup({
+    const startupDependencies: RepositoryTargetStartupDependencies = {
       readRawTargetMigrationInput,
       readSessionRecords,
       loadSettings,
@@ -419,15 +456,17 @@ export class ZoteroChatPlugin {
       },
       saveSessionRecords,
       saveRepositoryTargets,
-      hydrate: hydrateInitialRepositoryTarget,
       publish: (snapshot) => {
         this.activeRepositoryTarget = snapshot;
         return undefined;
       },
-    });
-    this.settings = preparedTarget.settings;
-    this.bridge = ensureBridge();
-    const siteRuntime = ensureSiteRuntime();
+    };
+    const prepareTargetServiceFactory = async (
+      preparedTarget: PreparedRepositoryTargetStartup,
+    ) => {
+      this.settings = preparedTarget.settings;
+      this.bridge = ensureBridge();
+      const siteRuntime = ensureSiteRuntime();
     await IOUtils.makeDirectory(profilePath(), {
       createAncestors: true,
       ignoreExisting: true,
@@ -466,7 +505,6 @@ export class ZoteroChatPlugin {
         if (win) void this.openWorkbenchTab(win).catch((error) => this.reportError(error));
       },
     });
-    this.mainSite = new ResearchLoopSiteService(siteRuntime);
     this.qmdRender = new QmdRenderService(createQmdRenderRuntime(this.bridge));
     // Original and AI-version previews use disjoint port ranges, so two
     // documents can never collide merely because their hashes line up.
@@ -476,11 +514,6 @@ export class ZoteroChatPlugin {
     );
     this.literature = new QLabLiteratureService();
     this.zoteroSync = new QLabZoteroSyncService(createQLabZoteroSyncRuntime(this.bridge));
-    this.terminal = new TerminalPanel(this.bridge, this.settings.terminalHeight, {
-      onPasteSelection: () => void this.pasteSelectionToTerminal(),
-      onRefreshContext: () => void this.refreshAndSwitch().catch((error) => this.reportError(error)),
-      onOpenChat: () => this.closeWorkbenchTerminal(),
-    });
     this.selectedModel = this.settings.defaultModel;
     this.selectedEffort = this.settings.reasoningEffort;
     this.floatOpacity = clampFloatOpacity(prefString("floatOpacity", "100"));
@@ -534,7 +567,19 @@ export class ZoteroChatPlugin {
       this.createNoteDraftBridgeHost(),
       { onState: () => this.renderChatViews() },
     );
-    this.codex = new CodexService(
+    return {
+      createMainSite: () => new ResearchLoopSiteService(siteRuntime),
+      createTerminal: () => new TerminalPanel(
+        this.bridge,
+        this.settings.terminalHeight,
+        {
+          onPasteSelection: () => void this.pasteSelectionToTerminal(),
+          onRefreshContext: () => void this.refreshAndSwitch()
+            .catch((error) => this.reportError(error)),
+          onOpenChat: () => this.closeWorkbenchTerminal(),
+        },
+      ),
+      createCodex: (activeSnapshot: RepositoryTargetSnapshot | null) => new CodexService(
       this.bridge,
       this.readerContext,
       data.version,
@@ -571,8 +616,17 @@ export class ZoteroChatPlugin {
           throw new Error(`Unknown reviewed Research Loop tool: ${name}`);
         },
       },
-      preparedTarget.activeSnapshot,
+      activeSnapshot,
+      ),
+    };
+    };
+    const startedTargetServices = await startRepositoryTargetBoundServices(
+      startupDependencies,
+      prepareTargetServiceFactory,
     );
+    this.mainSite = startedTargetServices.mainSite;
+    this.terminal = startedTargetServices.terminal;
+    this.codex = startedTargetServices.codex;
     this.paperTrail = new PaperTrailService(
       this.anchorHost,
       {

@@ -63,6 +63,9 @@ export interface CodexCheckpoint {
   label: string;
   createdAt: string;
   turnDiff: string | null;
+  /** Runtime generation that owns this checkpoint. Legacy records omit both fields. */
+  targetId?: string;
+  targetEpoch?: number;
 }
 
 export interface CodexCheckpointRestoreResult {
@@ -139,6 +142,37 @@ export interface StagedCodexBinding {
   readonly activeDocument: null;
 }
 
+type CodexTurnKind = "foreground" | "background" | "utility";
+
+interface LiveThreadOwner extends CodexRepositoryBinding {
+  readonly threadId: string;
+  readonly paperKey: string | null;
+  readonly kind: CodexTurnKind;
+}
+
+interface TerminalTurnOutcome {
+  readonly status: "completed" | "failed";
+  readonly error?: Error;
+}
+
+interface OwnedTurn extends LiveThreadOwner {
+  readonly turnId: string;
+  readonly terminal: Promise<TerminalTurnOutcome>;
+  readonly settle: (outcome: TerminalTurnOutcome) => void;
+}
+
+interface CodexTargetAdmission {
+  readonly binding: CodexRepositoryBinding | null;
+  open: boolean;
+  readonly inFlight: Set<Promise<unknown>>;
+  readonly setupInFlight: Set<Promise<unknown>>;
+}
+
+interface StagedAdmission {
+  readonly source: CodexTargetAdmission;
+  consumed: boolean;
+}
+
 export interface CodexServiceState {
   connected: boolean;
   backend: "codex" | "engine";
@@ -197,14 +231,24 @@ export interface EvidenceRecord {
   createdAt: string;
 }
 
+export interface OpenThreadRef {
+  targetId: string;
+  paperKey: string;
+  threadId: string;
+}
+
 export interface SessionFile {
   version: 1;
   papers: Record<string, SessionRecord>;
   history?: Record<string, SessionRecord[]>;
   /** Conversation tabs currently open in the Workbench, across all papers. */
   openThreads?: string[];
+  /** Canonical tab identity; legacy openThreads is retained for compatibility. */
+  openThreadRefs?: OpenThreadRef[];
   /** Zotero-local pins; Codex CLI 0.145 does not expose isPinned metadata. */
   pinnedThreads?: string[];
+  /** Canonical pin identity by repository target; pinnedThreads remains legacy-compatible. */
+  pinnedThreadsByTarget?: Record<string, string[]>;
   checkpoints?: Record<string, CodexCheckpoint[]>;
   anchors?: Record<string, AnchorRecord[]>;
   /** Compact, source-page-aware retrieval history used after context compaction. */
@@ -230,7 +274,7 @@ interface ConversationSelectionSnapshot {
   activeContext: ReaderContext | null;
   activePaperKey: string | null;
   activeThreadId: string | null;
-  threadPaperKeys: Map<string, string>;
+  threadOwners: Map<string, LiveThreadOwner>;
 }
 
 function cloneConversationSessions(source: SessionFile): SessionFile {
@@ -241,6 +285,26 @@ function cloneConversationSessions(source: SessionFile): SessionFile {
       ? Object.fromEntries(Object.entries(source.history).map(([key, records]) => [key, records.map((record) => ({ ...record }))]))
       : undefined,
     openThreads: source.openThreads ? [...source.openThreads] : undefined,
+    openThreadRefs: source.openThreadRefs?.map((entry) => ({ ...entry })),
+    pinnedThreads: source.pinnedThreads ? [...source.pinnedThreads] : undefined,
+    pinnedThreadsByTarget: source.pinnedThreadsByTarget
+      ? Object.fromEntries(Object.entries(source.pinnedThreadsByTarget).map(([key, values]) => [key, [...values]]))
+      : undefined,
+    checkpoints: source.checkpoints
+      ? Object.fromEntries(Object.entries(source.checkpoints).map(([key, values]) => [
+          key, values.map((value) => ({ ...value })),
+        ]))
+      : undefined,
+    anchors: source.anchors
+      ? Object.fromEntries(Object.entries(source.anchors).map(([key, values]) => [
+          key, values.map((value) => ({ ...value, turnRange: [...value.turnRange] as [number, number] })),
+        ]))
+      : undefined,
+    evidence: source.evidence
+      ? Object.fromEntries(Object.entries(source.evidence).map(([key, values]) => [
+          key, values.map((value) => ({ ...value, pages: [...value.pages], snippets: [...value.snippets] })),
+        ]))
+      : undefined,
   };
 }
 
@@ -255,17 +319,99 @@ function normalizeSessionRecord(record: SessionRecord): PersistedSessionRecord {
   return { ...record, recordedCwd };
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value && typeof value === "object" && !Array.isArray(value));
+}
+
+function isTargetId(value: unknown): value is string {
+  return typeof value === "string" && /^[a-f0-9]{64}$/.test(value);
+}
+
+function isStringArray(value: unknown): value is string[] {
+  return Array.isArray(value) && value.every((entry) => typeof entry === "string");
+}
+
 function isPersistedSessionRecord(value: unknown): value is SessionRecord {
-  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
-  const record = value as Record<string, unknown>;
+  if (!isRecord(value)) return false;
+  const record = value;
   return typeof record.threadId === "string"
     && typeof record.title === "string"
     && typeof record.workspace === "string"
     && typeof record.updatedAt === "string"
+    && (record.paperTitle === undefined || typeof record.paperTitle === "string")
+    && (record.backend === undefined || record.backend === "codex" || record.backend === "engine")
     && (record.recordedCwd === undefined
       || record.recordedCwd === null
       || typeof record.recordedCwd === "string")
-    && (record.targetId === undefined || typeof record.targetId === "string");
+    && (record.targetId === undefined || isTargetId(record.targetId));
+}
+
+function isCodexCheckpoint(value: unknown): value is CodexCheckpoint {
+  if (!isRecord(value)) return false;
+  const targetId = value.targetId;
+  const targetEpoch = value.targetEpoch;
+  const targetFieldsValid = targetId === undefined && targetEpoch === undefined
+    || isTargetId(targetId)
+      && Number.isSafeInteger(targetEpoch)
+      && (targetEpoch as number) >= 0;
+  return typeof value.id === "string"
+    && typeof value.sourceThreadId === "string"
+    && typeof value.beforeTurnId === "string"
+    && typeof value.label === "string"
+    && typeof value.createdAt === "string"
+    && (value.turnDiff === null || typeof value.turnDiff === "string")
+    && targetFieldsValid;
+}
+
+function isAnchorRecord(value: unknown): value is AnchorRecord {
+  if (!isRecord(value)) return false;
+  const turnRange = value.turnRange;
+  return typeof value.anchorId === "string"
+    && (typeof value.libraryID === "number" || typeof value.libraryID === "string")
+    && (value.itemKey === null || typeof value.itemKey === "string")
+    && typeof value.attachmentKey === "string"
+    && (value.pdfSha256 === null || isTargetId(value.pdfSha256))
+    && (value.annotationKey === undefined || typeof value.annotationKey === "string")
+    && (value.pageNumber === undefined || typeof value.pageNumber === "number")
+    && typeof value.selectedText === "string"
+    && typeof value.question === "string"
+    && (value.answerSummary === undefined || typeof value.answerSummary === "string")
+    && typeof value.threadId === "string"
+    && Array.isArray(turnRange)
+    && turnRange.length === 2
+    && turnRange.every((entry) => Number.isSafeInteger(entry) && entry >= 0)
+    && (value.status === "open" || value.status === "resolved")
+    && typeof value.createdAt === "string"
+    && (value.resolvedAt === undefined || typeof value.resolvedAt === "string");
+}
+
+function isEvidenceRecord(value: unknown): value is EvidenceRecord {
+  return isRecord(value)
+    && typeof value.id === "string"
+    && typeof value.tool === "string"
+    && typeof value.paperKey === "string"
+    && (value.query === undefined || typeof value.query === "string")
+    && Array.isArray(value.pages)
+    && value.pages.every((page) => typeof page === "number" && Number.isFinite(page))
+    && isStringArray(value.snippets)
+    && typeof value.createdAt === "string";
+}
+
+function isOpenThreadRef(value: unknown): value is OpenThreadRef {
+  return isRecord(value)
+    && isTargetId(value.targetId)
+    && typeof value.paperKey === "string"
+    && typeof value.threadId === "string";
+}
+
+function isKeyedArrayCollection(
+  value: unknown,
+  predicate: (entry: unknown) => boolean,
+): boolean {
+  return isRecord(value)
+    && Object.values(value).every((entries) => (
+      Array.isArray(entries) && entries.every(predicate)
+    ));
 }
 
 function normalizeSessionFile(value: unknown): SessionFile {
@@ -300,6 +446,41 @@ function normalizeSessionFile(value: unknown): SessionFile {
       paperKey,
       (records as SessionRecord[]).map(normalizeSessionRecord),
     ]));
+  }
+  if (source.activeThreadId !== undefined
+      && source.activeThreadId !== null
+      && typeof source.activeThreadId !== "string") {
+    throw new Error("Codex session store has an invalid activeThreadId shape");
+  }
+  if (source.openThreads !== undefined && !isStringArray(source.openThreads)) {
+    throw new Error("Codex session store has an invalid openThreads shape");
+  }
+  if (source.openThreadRefs !== undefined
+      && (!Array.isArray(source.openThreadRefs) || !source.openThreadRefs.every(isOpenThreadRef))) {
+    throw new Error("Codex session store has an invalid openThreadRefs shape");
+  }
+  if (source.pinnedThreads !== undefined && !isStringArray(source.pinnedThreads)) {
+    throw new Error("Codex session store has an invalid pinnedThreads shape");
+  }
+  if (source.pinnedThreadsByTarget !== undefined && (
+    !isRecord(source.pinnedThreadsByTarget)
+    || Object.entries(source.pinnedThreadsByTarget).some(([targetId, values]) => (
+      !isTargetId(targetId) || !isStringArray(values)
+    ))
+  )) {
+    throw new Error("Codex session store has an invalid pinnedThreadsByTarget shape");
+  }
+  if (source.checkpoints !== undefined
+      && !isKeyedArrayCollection(source.checkpoints, isCodexCheckpoint)) {
+    throw new Error("Codex session store has an invalid checkpoints shape");
+  }
+  if (source.anchors !== undefined
+      && !isKeyedArrayCollection(source.anchors, isAnchorRecord)) {
+    throw new Error("Codex session store has an invalid anchors shape");
+  }
+  if (source.evidence !== undefined
+      && !isKeyedArrayCollection(source.evidence, isEvidenceRecord)) {
+    throw new Error("Codex session store has an invalid evidence shape");
   }
   return {
     ...file,
@@ -471,9 +652,12 @@ export class CodexService {
   private switchingPaper = false;
   private paperTransition: Promise<void> = Promise.resolve();
   private newThreadPromise: Promise<void> | null = null;
-  private readonly threadPaperKeys = new Map<string, string>();
-  /** Running turns are owned by their conversation, never by the current UI focus. */
+  /** The sole live thread authority: every callback must match this stamped owner. */
+  private readonly threadOwners = new Map<string, LiveThreadOwner>();
+  /** Non-authoritative UI index; ownedTurns is the terminal/switch authority. */
   private readonly runningTurns = new Map<string, string>();
+  /** Composite thread+turn entries stamped with target ID and epoch. */
+  private readonly ownedTurns = new Map<string, OwnedTurn>();
   private readonly pendingApprovalResolvers = new Map<string, PendingApprovalResolver>();
   private readonly latestTurnDiffs = new Map<string, string>();
   private interactionContext: Record<string, CodexInteractionContextEntry> = {};
@@ -494,12 +678,14 @@ export class CodexService {
     tree: EditorTree;
   } | null = null;
   private repositoryTarget: CodexRepositoryBinding | null = null;
-  /** Hidden utility threads awaiting turn/completed (or turn/failed), keyed by threadId. */
-  private readonly utilityWaiters = new Map<string, {
-    resolve: () => void;
-    reject: (error: Error) => void;
-    timer: ReturnType<typeof setTimeout>;
-  }>();
+  /**
+   * One generation owns one admission gate. stageRepositoryTarget closes it
+   * synchronously, drains work admitted while it was open, and authenticates
+   * the returned staged object in stagedAdmissions. Only commit consumes the
+   * gate into a new generation; dispose reopens the exact old gate.
+   */
+  private targetAdmission: CodexTargetAdmission = this.createTargetAdmission(null);
+  private readonly stagedAdmissions = new WeakMap<StagedCodexBinding, StagedAdmission>();
 
   constructor(
     private readonly bridge: NativeBridge,
@@ -532,19 +718,64 @@ export class CodexService {
 
   async stageRepositoryTarget(
     snapshot: RepositoryTargetSnapshot | null,
+    signal?: AbortSignal,
   ): Promise<StagedCodexBinding> {
-    await this.drainPaperTransitions();
-    const binding = snapshot ? Object.freeze({
-      targetId: snapshot.target.targetId,
-      targetEpoch: snapshot.targetEpoch,
-      root: snapshot.target.canonicalRoot,
-    }) : null;
-    return Object.freeze({ snapshot, binding, activeDocument: null });
+    const admission = this.targetAdmission;
+    if (!admission.open) throw new Error("A repository target switch is already being persisted");
+    admission.open = false;
+    try {
+      await this.drainPaperTransitions();
+      await this.drainAdmissionSet(admission.setupInFlight, signal);
+      this.assertAdmissionCurrent(admission);
+      if (this.ownedTurns.size) {
+        throw new Error("Cannot stage a repository target while a Codex turn is running");
+      }
+      await this.drainAdmissionSet(admission.inFlight, signal);
+      this.assertAdmissionCurrent(admission);
+      if (this.ownedTurns.size) {
+        throw new Error("Cannot stage a repository target while a Codex turn is running");
+      }
+      const binding = snapshot ? Object.freeze({
+        targetId: snapshot.target.targetId,
+        targetEpoch: snapshot.targetEpoch,
+        root: snapshot.target.canonicalRoot,
+      }) : null;
+      const staged = Object.freeze({ snapshot, binding, activeDocument: null });
+      this.stagedAdmissions.set(staged, { source: admission, consumed: false });
+      return staged;
+    }
+    catch (error) {
+      if (this.targetAdmission === admission) admission.open = true;
+      throw error;
+    }
+  }
+
+  async disposeStagedRepositoryTarget(staged: StagedCodexBinding): Promise<void> {
+    const stagedAdmission = this.stagedAdmissions.get(staged);
+    if (!stagedAdmission || stagedAdmission.consumed) return;
+    stagedAdmission.consumed = true;
+    if (this.targetAdmission === stagedAdmission.source) {
+      stagedAdmission.source.open = true;
+    }
   }
 
   /** Synchronous owner publication for RepositoryTargetController.publish(). */
   commitRepositoryTarget(staged: StagedCodexBinding): undefined {
     const next = this.validateStagedRepositoryTarget(staged);
+    const stagedAdmission = this.stagedAdmissions.get(staged);
+    const initialPublication = this.repositoryTarget === null
+      && this.targetAdmission.binding === null
+      && this.targetAdmission.open;
+    if (!stagedAdmission && !initialPublication) {
+      throw new Error("Invalid staged repository target publication");
+    }
+    if (stagedAdmission && (
+      stagedAdmission.consumed
+      || stagedAdmission.source !== this.targetAdmission
+      || stagedAdmission.source.open
+    )) {
+      throw new Error("Invalid staged repository target publication");
+    }
     const changed = this.repositoryTarget?.targetId !== next?.targetId
       || this.repositoryTarget?.targetEpoch !== next?.targetEpoch
       || this.repositoryTarget?.root !== next?.root;
@@ -562,7 +793,8 @@ export class CodexService {
       this.focusedContext = null;
       this.focusedPaperKey = null;
       this.paperContexts.clear();
-      this.threadPaperKeys.clear();
+      this.threadOwners.clear();
+      this.runningTurns.clear();
       this.state.activeThreadId = null;
       this.state.switchingThreadId = null;
       this.state.creatingThread = false;
@@ -577,6 +809,10 @@ export class CodexService {
       this.globalHistoryRequest += 1;
       this.sessions.activeThreadId = null;
     }
+    if (stagedAdmission) {
+      stagedAdmission.consumed = true;
+    }
+    this.targetAdmission = this.createTargetAdmission(next);
     return undefined;
   }
 
@@ -585,31 +821,37 @@ export class CodexService {
   }
 
   repositoryTargetBlockers(): readonly TargetSwitchBlocker[] {
-    return this.state.running || this.runningTurns.size > 0
+    return this.ownedTurns.size > 0
       ? [{ kind: "running-turn" }]
       : [];
   }
 
   async stopForRepositoryTargetSwitch(): Promise<void> {
-    await this.enqueuePaperTransition(async () => {
-      const running = new Map(this.runningTurns);
-      if (this.state.activeThreadId && this.state.activeTurnId) {
-        running.set(this.state.activeThreadId, this.state.activeTurnId);
-      }
-      for (const [threadId, turnId] of running) {
-        this.cancelPendingApprovalsForThread(threadId, "cancel");
-        await this.requireClient().turnInterrupt({ threadId, turnId });
-        if (this.runningTurns.get(threadId) === turnId) {
-          this.runningTurns.delete(threadId);
-        }
-      }
-      this.syncActiveTurnState();
-      this.callbacks.onState();
-    });
     await this.drainPaperTransitions();
-    if (this.repositoryTargetBlockers().length) {
-      throw new Error("The active Codex turn did not reach a terminal state");
+    await this.drainAdmissionSet(this.targetAdmission.setupInFlight);
+    const turns = [...this.ownedTurns.values()];
+    if (!turns.length) return;
+    for (const turn of turns) this.cancelPendingApprovalsForThread(turn.threadId, "cancel");
+    await Promise.all(turns.map((turn) => this.requireClient().turnInterrupt({
+      threadId: turn.threadId,
+      turnId: turn.turnId,
+    })));
+    let timeout: ReturnType<typeof setTimeout> | undefined;
+    try {
+      await Promise.race([
+        Promise.all(turns.map((turn) => turn.terminal)),
+        new Promise<never>((_resolve, reject) => {
+          timeout = setTimeout(() => reject(new Error(
+            "The active Codex turn did not reach a terminal state",
+          )), 10_000);
+        }),
+      ]);
     }
+    finally {
+      if (timeout) clearTimeout(timeout);
+    }
+    this.syncActiveTurnState();
+    this.callbacks.onState();
   }
 
   private validateStagedRepositoryTarget(staged: StagedCodexBinding): CodexRepositoryBinding | null {
@@ -633,6 +875,168 @@ export class CodexService {
       throw new Error("Invalid staged repository target publication");
     }
     return Object.freeze({ ...binding });
+  }
+
+  private createTargetAdmission(binding: CodexRepositoryBinding | null): CodexTargetAdmission {
+    return {
+      binding: binding ? Object.freeze({ ...binding }) : null,
+      open: true,
+      inFlight: new Set(),
+      setupInFlight: new Set(),
+    };
+  }
+
+  private captureTargetAdmission(): CodexTargetAdmission {
+    const admission = this.targetAdmission;
+    if (!admission.open) {
+      throw new Error("A repository target switch is being persisted; wait for it to finish");
+    }
+    this.assertAdmissionCurrent(admission);
+    return admission;
+  }
+
+  private assertAdmissionCurrent(admission: CodexTargetAdmission): void {
+    if (admission !== this.targetAdmission
+        || admission.binding?.targetId !== this.repositoryTarget?.targetId
+        || admission.binding?.targetEpoch !== this.repositoryTarget?.targetEpoch
+        || admission.binding?.root !== this.repositoryTarget?.root) {
+      throw new Error("The repository target changed while Codex work was in progress");
+    }
+  }
+
+  private trackAdmission<T>(
+    admission: CodexTargetAdmission,
+    promise: Promise<T>,
+    setup = false,
+  ): Promise<T> {
+    const collection = setup ? admission.setupInFlight : admission.inFlight;
+    collection.add(promise);
+    void promise.then(
+      () => collection.delete(promise),
+      () => collection.delete(promise),
+    );
+    return promise;
+  }
+
+  private async drainAdmissionSet(
+    collection: Set<Promise<unknown>>,
+    signal?: AbortSignal,
+  ): Promise<void> {
+    while (collection.size) {
+      if (signal?.aborted) throw new Error("Repository target staging was aborted");
+      if (!signal) {
+        await Promise.allSettled([...collection]);
+        continue;
+      }
+      let onAbort!: () => void;
+      const aborted = new Promise<never>((_resolve, reject) => {
+        onAbort = () => reject(new Error("Repository target staging was aborted"));
+        signal.addEventListener("abort", onAbort, { once: true });
+      });
+      try {
+        await Promise.race([Promise.allSettled([...collection]), aborted]);
+      }
+      finally {
+        signal.removeEventListener("abort", onAbort);
+      }
+    }
+    if (signal?.aborted) throw new Error("Repository target staging was aborted");
+  }
+
+  private ownedTurnsForAdmission(admission: CodexTargetAdmission): OwnedTurn[] {
+    const binding = admission.binding;
+    if (!binding) return [];
+    return [...this.ownedTurns.values()].filter((turn) => (
+      turn.targetId === binding.targetId && turn.targetEpoch === binding.targetEpoch
+    ));
+  }
+
+  private rememberThreadOwner(
+    threadId: string,
+    paperKey: string | null,
+    kind: CodexTurnKind = "foreground",
+    binding: CodexRepositoryBinding = this.requireRepositoryBinding(),
+  ): LiveThreadOwner {
+    const owner = Object.freeze({ ...binding, threadId, paperKey, kind });
+    this.threadOwners.set(threadId, owner);
+    return owner;
+  }
+
+  private forgetThreadOwner(threadId: string, expected?: LiveThreadOwner): void {
+    if (!expected || this.threadOwners.get(threadId) === expected) {
+      this.threadOwners.delete(threadId);
+    }
+  }
+
+  private registerOwnedTurn(owner: LiveThreadOwner, turnId: string): OwnedTurn {
+    const key = turnKey(owner.threadId, turnId);
+    const existing = this.ownedTurns.get(key);
+    if (existing) {
+      if (existing.targetId !== owner.targetId || existing.targetEpoch !== owner.targetEpoch) {
+        throw new Error("Ambiguous Codex turn identity across repository targets");
+      }
+      return existing;
+    }
+    let settlePromise!: (outcome: TerminalTurnOutcome) => void;
+    const terminal = new Promise<TerminalTurnOutcome>((resolve) => {
+      settlePromise = resolve;
+    });
+    let settled = false;
+    const turn: OwnedTurn = Object.freeze({
+      ...owner,
+      turnId,
+      terminal,
+      settle: (outcome: TerminalTurnOutcome) => {
+        if (settled) return;
+        settled = true;
+        settlePromise(outcome);
+      },
+    });
+    this.ownedTurns.set(key, turn);
+    if (owner.kind !== "utility") this.runningTurns.set(owner.threadId, turnId);
+    return turn;
+  }
+
+  private settleOwnedTurn(
+    threadId: string,
+    turnId: string,
+    outcome: TerminalTurnOutcome,
+  ): OwnedTurn | null {
+    const key = turnKey(threadId, turnId);
+    const turn = this.ownedTurns.get(key);
+    if (!turn) return null;
+    this.ownedTurns.delete(key);
+    if (this.runningTurns.get(threadId) === turnId) this.runningTurns.delete(threadId);
+    if (turn.kind === "utility") {
+      this.forgetThreadOwner(threadId, this.threadOwners.get(threadId));
+    }
+    turn.settle(outcome);
+    return turn;
+  }
+
+  private failAllOwnedTurns(error: Error): void {
+    for (const turn of this.ownedTurns.values()) {
+      turn.settle({ status: "failed", error });
+    }
+    this.ownedTurns.clear();
+    this.runningTurns.clear();
+  }
+
+  private async awaitOwnedTurnTerminal(turn: OwnedTurn): Promise<TerminalTurnOutcome> {
+    let timeout: ReturnType<typeof setTimeout> | undefined;
+    try {
+      return await Promise.race([
+        turn.terminal,
+        new Promise<never>((_resolve, reject) => {
+          timeout = setTimeout(() => reject(new Error(
+            "The active Codex turn did not reach a terminal state",
+          )), 10_000);
+        }),
+      ]);
+    }
+    finally {
+      if (timeout) clearTimeout(timeout);
+    }
   }
 
   /**
@@ -766,7 +1170,7 @@ export class CodexService {
 
   stop(): void {
     this.cancelAllPendingApprovals("cancel");
-    this.runningTurns.clear();
+    this.failAllOwnedTurns(new Error("Codex stopped before the turn completed"));
     this.unsubscribeStore?.();
     this.unsubscribeStore = null;
     this.client?.close(1000, "Zotkit shutdown");
@@ -853,23 +1257,28 @@ export class CodexService {
    * stealing that conversation from its paper.
    */
   setWorkspaceObject(object: CodexWorkspaceObject): Promise<void> {
-    let binding: CodexRepositoryBinding;
+    let admission: CodexTargetAdmission;
     try {
-      binding = this.requireRepositoryBinding();
+      admission = this.captureTargetAdmission();
     }
     catch (error) {
       return Promise.reject(error);
     }
-    const context = workspaceObjectContext(object, binding.root);
-    const key = paperIdentity(context);
-    this.paperContexts.set(key, context);
-    this.focusedContext = context;
-    this.focusedPaperKey = key;
-    if (this.state.activeThreadId) {
-      this.callbacks.onState();
-      return Promise.resolve();
-    }
-    return this.enqueuePaperTransition(() => this.setPaperInternal(context));
+    const binding = admission.binding;
+    if (!binding) return Promise.reject(new Error("Choose an active repository target before using Codex"));
+    return this.enqueuePaperTransition(() => {
+      this.assertAdmissionCurrent(admission);
+      const context = workspaceObjectContext(object, binding.root);
+      const key = paperIdentity(context);
+      this.paperContexts.set(key, context);
+      this.focusedContext = context;
+      this.focusedPaperKey = key;
+      if (this.state.activeThreadId) {
+        this.callbacks.onState();
+        return Promise.resolve();
+      }
+      return this.setPaperInternal(context);
+    }, admission);
   }
 
   private async setPaperInternal(context: ReaderContext): Promise<void> {
@@ -897,7 +1306,7 @@ export class CodexService {
     this.switchingPaper = true;
     this.callbacks.onState();
     try {
-      const existing = this.sessions.papers[paperKey];
+      const existing = this.defaultSessionForPaper(paperKey);
       if (existing && (existing.backend ?? "codex") === this.state.backend) {
         await this.openStoredConversation(paperKey, context, existing);
         return;
@@ -914,9 +1323,16 @@ export class CodexService {
 
   newThread(): Promise<void> {
     if (this.newThreadPromise) return this.newThreadPromise;
+    let admission: CodexTargetAdmission;
+    try {
+      admission = this.captureTargetAdmission();
+    }
+    catch (error) {
+      return Promise.reject(error);
+    }
     this.state.creatingThread = true;
     this.callbacks.onState();
-    const pending = this.enqueuePaperTransition(() => this.newThreadForActivePaper());
+    const pending = this.enqueuePaperTransition(() => this.newThreadForActivePaper(), admission);
     this.newThreadPromise = pending;
     const clear = () => {
       if (this.newThreadPromise !== pending) return;
@@ -942,22 +1358,20 @@ export class CodexService {
     const response = await this.requireClient().threadStart({
       ...this.threadModeSettings(context),
     });
+    if (binding.targetId !== this.repositoryTarget?.targetId
+        || binding.targetEpoch !== this.repositoryTarget?.targetEpoch) {
+      throw new Error("The repository target changed while starting a conversation");
+    }
     const title = context.parent?.title || context.attachment.title || context.attachment.filename || "Paper Conversation";
     this.activeContext = context;
     this.activePaperKey = paperKey;
     this.state.activeThreadId = response.thread.id;
-    this.threadPaperKeys.set(response.thread.id, paperKey);
+    this.rememberThreadOwner(response.thread.id, paperKey, "foreground", binding);
     this.syncActiveTurnState();
     this.openThread(response.thread.id);
     if (paperKey) {
       const previous = this.sessions.papers[paperKey];
-      if (previous && previous.threadId !== response.thread.id) {
-        this.sessions.history ||= {};
-        const history = this.sessions.history[paperKey] ||= [];
-        if (!history.some((record) => record.threadId === previous.threadId)) history.unshift(previous);
-        this.sessions.history[paperKey] = history.slice(0, 30);
-      }
-      this.sessions.papers[paperKey] = {
+      const nextRecord: SessionRecord = {
         threadId: response.thread.id,
         title,
         paperTitle: title,
@@ -965,8 +1379,15 @@ export class CodexService {
         recordedCwd: binding.root,
         targetId: binding.targetId,
         updatedAt: new Date().toISOString(),
-        backend: this.state.backend
+        backend: this.state.backend,
       };
+      if (previous && !sameSessionIdentity(previous, nextRecord)) {
+        this.sessions.history ||= {};
+        const history = this.sessions.history[paperKey] ||= [];
+        if (!history.some((record) => sameSessionIdentity(record, previous))) history.unshift(previous);
+        this.sessions.history[paperKey] = history.slice(0, 30);
+      }
+      this.sessions.papers[paperKey] = nextRecord;
       await this.saveSessions();
     }
     void this.requireClient().threadSetName(response.thread.id, title.slice(0, 80)).catch(() => {});
@@ -975,12 +1396,18 @@ export class CodexService {
 
   getThreadOptions(): ThreadOption[] {
     const activeID = this.state.activeThreadId;
-    const ids = [...(this.sessions.openThreads || [])];
-    if (activeID && !ids.includes(activeID)) ids.push(activeID);
-    return ids.flatMap((threadId) => {
-      const located = this.findSessionThread(threadId);
+    const binding = this.repositoryTarget;
+    if (!binding) return [];
+    const refs = this.projectOpenThreadRefs(this.sessions)
+      .filter((entry) => entry.targetId === binding.targetId);
+    if (activeID && this.activePaperKey && !refs.some((entry) => (
+      entry.threadId === activeID && entry.paperKey === this.activePaperKey
+    ))) {
+      refs.push({ targetId: binding.targetId, paperKey: this.activePaperKey, threadId: activeID });
+    }
+    return refs.flatMap((ref) => {
+      const located = this.findSessionThreadForTarget(ref.threadId, binding.targetId, ref.paperKey);
       if (!located
-          || !this.sessionBelongsToActiveTarget(located.record)
           || (located.record.backend ?? "codex") !== this.state.backend) return [];
       return [{
         id: located.record.threadId,
@@ -989,8 +1416,11 @@ export class CodexService {
         updatedAt: located.record.updatedAt,
         active: located.record.threadId === activeID,
         source: "codex" as const,
-        status: this.runningTurns.has(located.record.threadId)
-          || (located.record.threadId === activeID && this.state.running)
+        status: [...this.ownedTurns.values()].some((turn) => (
+          turn.targetId === binding.targetId
+          && turn.targetEpoch === binding.targetEpoch
+          && turn.threadId === located.record.threadId
+        ))
           ? "running" as const
           : "idle" as const,
       }];
@@ -1023,7 +1453,25 @@ export class CodexService {
     };
   }
 
-  async refreshGlobalHistory(searchTerm = "", append = false): Promise<void> {
+  refreshGlobalHistory(searchTerm = "", append = false): Promise<void> {
+    let admission: CodexTargetAdmission;
+    try {
+      admission = this.captureTargetAdmission();
+    }
+    catch (error) {
+      return Promise.reject(error);
+    }
+    return this.trackAdmission(
+      admission,
+      this.refreshGlobalHistoryForAdmission(admission, searchTerm, append),
+    );
+  }
+
+  private async refreshGlobalHistoryForAdmission(
+    admission: CodexTargetAdmission,
+    searchTerm: string,
+    append: boolean,
+  ): Promise<void> {
     const client = this.requireClient();
     if (!client.threadList) {
       this.globalHistoryError = "This Codex version cannot list conversation history";
@@ -1048,9 +1496,15 @@ export class CodexService {
         sourceKinds: ["cli", "vscode", "appServer"],
         archived: false,
         searchTerm: normalizedQuery || null,
+        cwd: admission.binding?.root || null,
       });
+      this.assertAdmissionCurrent(admission);
+      if (!admission.open) throw new Error("The repository target changed while loading conversation history");
       if (request !== this.globalHistoryRequest) return;
-      const pinned = new Set(this.sessions.pinnedThreads || []);
+      const pinned = new Set(this.pinnedThreadsForTarget(
+        this.sessions,
+        admission.binding?.targetId || "",
+      ));
       const incoming = response.data.map((thread) => ({
         ...historyOption(thread),
         pinned: pinned.has(thread.id),
@@ -1063,12 +1517,15 @@ export class CodexService {
       this.globalHistoryQuery = normalizedQuery;
     }
     catch (error) {
+      if (admission !== this.targetAdmission || !admission.open) throw error;
       if (request !== this.globalHistoryRequest) return;
       this.globalHistoryError = error instanceof Error ? error.message : String(error);
       throw error;
     }
     finally {
-      if (request === this.globalHistoryRequest) {
+      if (admission === this.targetAdmission
+          && admission.open
+          && request === this.globalHistoryRequest) {
         this.globalHistoryLoading = false;
         this.callbacks.onState();
       }
@@ -1080,24 +1537,43 @@ export class CodexService {
   }
 
   setGlobalThreadPinned(threadId: string, pinned: boolean): Promise<void> {
+    let admission: CodexTargetAdmission;
+    try {
+      admission = this.captureTargetAdmission();
+    }
+    catch (error) {
+      return Promise.reject(error);
+    }
     this.globalHistory = this.globalHistory.map((thread) => (
       thread.id === threadId ? { ...thread, pinned } : thread
     ));
     this.callbacks.onState();
     return this.enqueuePaperTransition(async () => {
-      const pins = new Set(this.sessions.pinnedThreads || []);
+      const targetId = this.requireRepositoryBinding().targetId;
+      const pins = new Set(this.pinnedThreadsForTarget(this.sessions, targetId));
       if (pinned) pins.add(threadId);
       else pins.delete(threadId);
-      this.sessions.pinnedThreads = [...pins];
+      this.sessions.pinnedThreadsByTarget ||= {};
+      this.sessions.pinnedThreadsByTarget[targetId] = [...pins];
+      this.sessions.pinnedThreads = [...new Set(
+        Object.values(this.sessions.pinnedThreadsByTarget).flat(),
+      )];
       await this.saveSessions();
-    });
+    }, admission);
   }
 
   openGlobalThread(threadId: string): Promise<void> {
     if (threadId === this.state.activeThreadId && !this.state.switchingThreadId) return Promise.resolve();
+    let admission: CodexTargetAdmission;
+    try {
+      admission = this.captureTargetAdmission();
+    }
+    catch (error) {
+      return Promise.reject(error);
+    }
     this.state.switchingThreadId = threadId;
     this.callbacks.onState();
-    const pending = this.enqueuePaperTransition(() => this.openGlobalThreadInternal(threadId));
+    const pending = this.enqueuePaperTransition(() => this.openGlobalThreadInternal(threadId), admission);
     const clear = () => {
       if (this.state.switchingThreadId !== threadId) return;
       this.state.switchingThreadId = null;
@@ -1108,8 +1584,13 @@ export class CodexService {
   }
 
   private async openGlobalThreadInternal(threadId: string): Promise<void> {
-    const known = this.findSessionThread(threadId);
-    const knownForTarget = known && this.sessionBelongsToActiveTarget(known.record) ? known : null;
+    const targetId = this.requireRepositoryBinding().targetId;
+    const refs = this.projectOpenThreadRefs(this.sessions).filter((ref) => (
+      ref.targetId === targetId && ref.threadId === threadId
+    ));
+    const knownForTarget = refs.length === 1
+      ? this.findSessionThreadForTarget(threadId, targetId, refs[0]!.paperKey)
+      : this.findSessionThreadForTarget(threadId, targetId);
     let knownContext = knownForTarget ? this.paperContexts.get(knownForTarget.paperKey) ?? null : null;
     if (knownForTarget && knownForTarget.paperKey !== this.activePaperKey && !knownContext) {
       knownContext = await this.seedPaperContextFromHost(
@@ -1138,9 +1619,16 @@ export class CodexService {
     if (threadId === this.state.activeThreadId && !this.state.switchingThreadId) {
       return Promise.resolve();
     }
+    let admission: CodexTargetAdmission;
+    try {
+      admission = this.captureTargetAdmission();
+    }
+    catch (error) {
+      return Promise.reject(error);
+    }
     this.state.switchingThreadId = threadId;
     this.callbacks.onState();
-    const pending = this.enqueuePaperTransition(() => this.switchThreadInternal(threadId));
+    const pending = this.enqueuePaperTransition(() => this.switchThreadInternal(threadId), admission);
     const clear = () => {
       if (this.state.switchingThreadId !== threadId) return;
       this.state.switchingThreadId = null;
@@ -1169,7 +1657,7 @@ export class CodexService {
         "Open this conversation's Zotero paper once, then try again",
       );
     }
-    const stored = this.sessions.papers[paperKey];
+    const stored = this.defaultSessionForPaper(paperKey);
     if (stored && (stored.backend ?? "codex") === this.state.backend) {
       if (stored.threadId === this.state.activeThreadId && !this.state.switchingThreadId) {
         this.callbacks.onState();
@@ -1182,7 +1670,13 @@ export class CodexService {
   }
 
   private async switchThreadInternal(threadId: string): Promise<void> {
-    const located = this.findSessionThread(threadId);
+    const targetId = this.requireRepositoryBinding().targetId;
+    const refs = this.projectOpenThreadRefs(this.sessions).filter((ref) => (
+      ref.targetId === targetId && ref.threadId === threadId
+    ));
+    const located = refs.length === 1
+      ? this.findSessionThreadForTarget(threadId, targetId, refs[0]!.paperKey)
+      : this.findSessionThreadForTarget(threadId, targetId);
     if (!located) throw new Error("This conversation could not be found in the local Workbench history");
     const paperKey = located.paperKey;
     let context = this.paperContexts.get(paperKey)
@@ -1235,11 +1729,17 @@ export class CodexService {
     const next = cloneConversationSessions(this.sessions);
     const previous = next.papers[paperKey];
     const priorHistory = next.history?.[paperKey] || [];
+    const selectedTargetId = selected.targetId;
     const history = [
-      ...(previous && previous.threadId !== selected.threadId && previous.threadId !== resumedThreadId ? [previous] : []),
+      ...(previous && !sameSessionIdentity(previous, selected) ? [previous] : []),
       ...priorHistory,
-    ].filter((record) => record.threadId !== selected.threadId && record.threadId !== resumedThreadId)
-      .filter((record, index, records) => records.findIndex((candidate) => candidate.threadId === record.threadId) === index)
+    ].filter((record) => !(
+      record.targetId === selectedTargetId
+      && (record.threadId === selected.threadId || record.threadId === resumedThreadId)
+    ))
+      .filter((record, index, records) => records.findIndex((candidate) => (
+        sameSessionIdentity(candidate, record)
+      )) === index)
       .slice(0, 30);
     if (history.length || next.history?.[paperKey]) {
       next.history ||= {};
@@ -1250,19 +1750,34 @@ export class CodexService {
       threadId: resumedThreadId,
       updatedAt: new Date().toISOString(),
     };
+    const refs = this.ensureOpenThreadRefs(next);
     if (selected.threadId !== resumedThreadId) {
-      next.openThreads = (next.openThreads || []).filter((threadId) => threadId !== selected.threadId);
+      for (const ref of refs) {
+        if (ref.targetId === selectedTargetId
+            && ref.paperKey === paperKey
+            && ref.threadId === selected.threadId) {
+          ref.threadId = resumedThreadId;
+        }
+      }
     }
-    const open = next.openThreads ||= [];
     if (
       options.keepPreviouslyActiveOpen
       && this.state.activeThreadId
       && this.state.activeThreadId !== selected.threadId
-      && !open.includes(this.state.activeThreadId)
     ) {
-      open.push(this.state.activeThreadId);
+      const previousOwner = this.threadOwners.get(this.state.activeThreadId);
+      if (previousOwner?.paperKey) {
+        const previousRef = {
+          targetId: previousOwner.targetId,
+          paperKey: previousOwner.paperKey,
+          threadId: previousOwner.threadId,
+        };
+        if (!refs.some((ref) => sameOpenThreadRef(ref, previousRef))) refs.push(previousRef);
+      }
     }
-    if (!open.includes(resumedThreadId)) open.push(resumedThreadId);
+    const resumedRef = { targetId: selectedTargetId!, paperKey, threadId: resumedThreadId };
+    if (selectedTargetId && !refs.some((ref) => sameOpenThreadRef(ref, resumedRef))) refs.push(resumedRef);
+    this.syncLegacyOpenThreads(next);
     next.activeThreadId = resumedThreadId;
     await this.saveSessions(next, resumedThreadId);
     this.sessions = next;
@@ -1270,9 +1785,9 @@ export class CodexService {
     this.activePaperKey = paperKey;
     this.state.activeThreadId = resumedThreadId;
     if (selected.threadId !== resumedThreadId) {
-      this.threadPaperKeys.delete(selected.threadId);
+      this.forgetThreadOwner(selected.threadId);
     }
-    this.threadPaperKeys.set(resumedThreadId, paperKey);
+    this.rememberThreadOwner(resumedThreadId, paperKey);
     this.syncActiveTurnState();
     this.callbacks.onState();
   }
@@ -1309,15 +1824,22 @@ export class CodexService {
     const previous = next.papers[paperKey];
     const history = [
       selected,
-      ...(previous && previous.threadId !== selected.threadId ? [previous] : []),
+      ...(previous && !sameSessionIdentity(previous, selected) ? [previous] : []),
       ...(next.history?.[paperKey] || []),
-    ].filter((record, index, records) => records.findIndex((candidate) => candidate.threadId === record.threadId) === index)
+    ].filter((record, index, records) => records.findIndex((candidate) => (
+      sameSessionIdentity(candidate, record)
+    )) === index)
       .slice(0, 30);
     next.history ||= {};
     next.history[paperKey] = history;
-    const archivedIds = new Set([selected.threadId, previous?.threadId]);
-    next.openThreads = next.openThreads?.filter((threadId) => !archivedIds.has(threadId));
-    delete next.papers[paperKey];
+    const refs = this.ensureOpenThreadRefs(next);
+    next.openThreadRefs = refs.filter((ref) => !(
+      ref.targetId === selected.targetId
+      && ref.paperKey === paperKey
+      && ref.threadId === selected.threadId
+    ));
+    this.syncLegacyOpenThreads(next);
+    if (previous && sameSessionIdentity(previous, selected)) delete next.papers[paperKey];
   }
 
   private snapshotConversationSelection(): ConversationSelectionSnapshot {
@@ -1326,7 +1848,7 @@ export class CodexService {
       activeContext: this.activeContext,
       activePaperKey: this.activePaperKey,
       activeThreadId: this.state.activeThreadId,
-      threadPaperKeys: new Map(this.threadPaperKeys),
+      threadOwners: new Map(this.threadOwners),
     };
   }
 
@@ -1335,9 +1857,9 @@ export class CodexService {
     this.activeContext = snapshot.activeContext;
     this.activePaperKey = snapshot.activePaperKey;
     this.state.activeThreadId = snapshot.activeThreadId;
-    this.threadPaperKeys.clear();
-    for (const [threadId, paperKey] of snapshot.threadPaperKeys) {
-      this.threadPaperKeys.set(threadId, paperKey);
+    this.threadOwners.clear();
+    for (const [threadId, owner] of snapshot.threadOwners) {
+      this.threadOwners.set(threadId, owner);
     }
     this.syncActiveTurnState();
   }
@@ -1361,24 +1883,33 @@ export class CodexService {
   /** Closes a Workbench tab while leaving the conversation available in History. */
   closeThread(threadId: string): Promise<void> {
     return this.enqueuePaperTransition(async () => {
-      const open = [...(this.sessions.openThreads || [])];
-      const index = open.indexOf(threadId);
+      const binding = this.requireRepositoryBinding();
+      const refs = this.ensureOpenThreadRefs(this.sessions);
+      const activeRefs = refs.filter((ref) => ref.targetId === binding.targetId);
+      const index = activeRefs.findIndex((ref) => (
+        ref.threadId === threadId
+        && (!this.activePaperKey || ref.paperKey === this.activePaperKey || threadId !== this.state.activeThreadId)
+      ));
       if (index < 0) return;
-      open.splice(index, 1);
-      this.sessions.openThreads = open;
+      const closing = activeRefs[index]!;
+      this.sessions.openThreadRefs = refs.filter((ref) => !sameOpenThreadRef(ref, closing));
+      this.syncLegacyOpenThreads(this.sessions);
       if (threadId === this.state.activeThreadId) {
-        const candidates = [open[index], open[index - 1], ...open].filter(
-          (id, candidateIndex, ids): id is string => Boolean(id) && ids.indexOf(id) === candidateIndex,
-        );
-        const next = candidates.find((id) => {
-          const located = this.findSessionThread(id);
+        const remaining = (this.sessions.openThreadRefs || [])
+          .filter((ref) => ref.targetId === binding.targetId);
+        const candidates = [remaining[index], remaining[index - 1], ...remaining]
+          .filter((ref): ref is OpenThreadRef => Boolean(ref))
+          .filter((ref, candidateIndex, entries) => (
+            entries.findIndex((candidate) => sameOpenThreadRef(candidate, ref)) === candidateIndex
+          ));
+        const next = candidates.find((ref) => {
+          const located = this.findSessionThreadForTarget(ref.threadId, binding.targetId, ref.paperKey);
           return Boolean(
             located
-            && this.sessionBelongsToActiveTarget(located.record)
             && this.paperContexts.has(located.paperKey),
           );
         });
-        if (next) await this.switchThreadInternal(next);
+        if (next) await this.switchThreadInternal(next.threadId);
         else {
           this.state.activeThreadId = null;
           this.activeContext = null;
@@ -1425,7 +1956,13 @@ export class CodexService {
     const threadId = this.state.activeThreadId!;
     const context = this.activeContext;
     const paperKey = this.activePaperKey;
-    if (!context || !paperKey || this.threadPaperKeys.get(threadId) !== paperKey) {
+    const binding = this.requireRepositoryBinding();
+    const threadOwner = this.threadOwners.get(threadId);
+    if (!context || !paperKey
+        || !threadOwner
+        || threadOwner.paperKey !== paperKey
+        || threadOwner.targetId !== binding.targetId
+        || threadOwner.targetEpoch !== binding.targetEpoch) {
       throw new Error("The paper conversation is not ready; try again shortly");
     }
     const editorContext: Record<string, CodexInteractionContextEntry> = this.activeDocument
@@ -1498,8 +2035,13 @@ export class CodexService {
           input,
           additionalContext
         });
+        if (binding.targetId !== this.repositoryTarget?.targetId
+            || binding.targetEpoch !== this.repositoryTarget?.targetEpoch) {
+          throw new Error("The repository target changed while steering the response");
+        }
         if (this.runningTurns.get(threadId) === expectedTurnId || this.state.activeTurnId === expectedTurnId) {
           this.runningTurns.set(threadId, response.turnId);
+          this.registerOwnedTurn(threadOwner, response.turnId);
           this.syncActiveTurnState();
         }
       }
@@ -1520,18 +2062,27 @@ export class CodexService {
         ...this.turnModeSettings(context, options.readOnly === true),
         additionalContext,
       });
-      this.runningTurns.set(threadId, response.turn.id);
+      if (binding.targetId !== this.repositoryTarget?.targetId
+          || binding.targetEpoch !== this.repositoryTarget?.targetEpoch) {
+        throw new Error("The repository target changed while starting the response");
+      }
+      this.registerOwnedTurn(threadOwner, response.turn.id);
       this.syncActiveTurnState();
-      void this.recordCheckpoint(paperKey, {
-        id: randomID("checkpoint"),
-        sourceThreadId: threadId,
-        beforeTurnId: response.turn.id,
-        label: checkpointLabel(text),
-        createdAt: new Date().toISOString(),
-        turnDiff: null,
-      }).catch((error) => {
+      try {
+        await this.recordCheckpoint(paperKey, {
+          id: randomID("checkpoint"),
+          sourceThreadId: threadId,
+          beforeTurnId: response.turn.id,
+          label: checkpointLabel(text),
+          createdAt: new Date().toISOString(),
+          turnDiff: null,
+          targetId: binding.targetId,
+          targetEpoch: binding.targetEpoch,
+        });
+      }
+      catch (error) {
         this.callbacks.onError(error instanceof Error ? error : new Error(String(error)));
-      });
+      }
     }
     catch (error) {
       this.runningTurns.delete(threadId);
@@ -1550,31 +2101,73 @@ export class CodexService {
    * not the visible paper conversation.
    */
   async runUtilityTurn(prompt: string, options: { timeoutMs: number; model?: string }): Promise<string> {
-    const client = this.requireClient();
-    const started = await client.threadStart({});
-    const threadId = started.thread.id;
-    let waiterTimer: ReturnType<typeof setTimeout>;
-    const completed = new Promise<void>((resolve, reject) => {
-      waiterTimer = setTimeout(() => {
-        this.utilityWaiters.delete(threadId);
-        reject(new Error("The tool turn timed out"));
-      }, options.timeoutMs);
-      this.utilityWaiters.set(threadId, { resolve, reject, timer: waiterTimer });
-    });
+    let admission: CodexTargetAdmission;
     try {
-      await client.turnStart({
-        threadId,
-        input: [{ type: "text" as const, text: prompt, text_elements: [] }],
-        model: options.model || null,
-        effort: "low",
-      });
+      admission = this.captureTargetAdmission();
     }
     catch (error) {
-      clearTimeout(waiterTimer!);
-      this.utilityWaiters.delete(threadId);
-      throw error;
+      return Promise.reject(error);
     }
-    await completed;
+    const operation = this.runUtilityTurnForAdmission(admission, prompt, options);
+    return this.trackAdmission(admission, operation);
+  }
+
+  private async runUtilityTurnForAdmission(
+    admission: CodexTargetAdmission,
+    prompt: string,
+    options: { timeoutMs: number; model?: string },
+  ): Promise<string> {
+    const binding = admission.binding;
+    if (!binding) throw new Error("Choose an active repository target before using Codex");
+    const client = this.requireClient();
+    const setup = (async () => {
+      const started = await client.threadStart({
+        cwd: binding.root,
+        runtimeWorkspaceRoots: [binding.root],
+        approvalPolicy: "never",
+        approvalsReviewer: "auto_review",
+        sandbox: "read-only",
+        dynamicTools: [],
+      });
+      this.assertAdmissionCurrent(admission);
+      const threadId = started.thread.id;
+      const owner = this.rememberThreadOwner(threadId, null, "utility", binding);
+      try {
+        const response = await client.turnStart({
+          threadId,
+          input: [{ type: "text" as const, text: prompt, text_elements: [] }],
+          model: options.model || null,
+          effort: "low",
+          cwd: binding.root,
+          runtimeWorkspaceRoots: [binding.root],
+          approvalPolicy: "never",
+          approvalsReviewer: "auto_review",
+          sandboxPolicy: { type: "readOnly", networkAccess: false },
+        });
+        this.assertAdmissionCurrent(admission);
+        const turn = this.registerOwnedTurn(owner, response.turn.id);
+        return { threadId, turn };
+      }
+      catch (error) {
+        this.forgetThreadOwner(threadId, owner);
+        throw error;
+      }
+    })();
+    const { threadId, turn } = await this.trackAdmission(admission, setup, true);
+    let waiterTimer!: ReturnType<typeof setTimeout>;
+    const outcome = await Promise.race([
+      turn.terminal,
+      new Promise<never>((_resolve, reject) => {
+        waiterTimer = setTimeout(() => reject(new Error("The tool turn timed out")), options.timeoutMs);
+      }),
+    ]).finally(() => clearTimeout(waiterTimer));
+    if (outcome.status === "failed") {
+      throw outcome.error || new Error("The tool turn failed");
+    }
+    this.assertAdmissionCurrent(admission);
+    if (!admission.open) {
+      throw new Error("The repository target changed before the utility result was published");
+    }
     const thread = this.store.getThread(threadId);
     for (let t = (thread?.turns.length ?? 0) - 1; t >= 0; t -= 1) {
       const items = thread!.turns[t]?.items ?? [];
@@ -1600,28 +2193,68 @@ export class CodexService {
   }
 
   interrupt(): Promise<void> {
-    return this.enqueuePaperTransition(async () => {
-      await this.interruptActiveTurn();
+    let admission: CodexTargetAdmission;
+    try {
+      admission = this.captureTargetAdmission();
+    }
+    catch (error) {
+      return Promise.reject(error);
+    }
+    const operation = (async () => {
+      const interrupted = await this.enqueuePaperTransition(
+        () => this.requestActiveTurnInterrupt(),
+        admission,
+      );
+      // Do not hold paperTransition while waiting: a dynamic proposal tool
+      // may need that queue to persist its reviewed anchor before app-server
+      // can emit this turn's terminal notification.
+      if (interrupted) await this.awaitOwnedTurnTerminal(interrupted);
+      this.assertAdmissionCurrent(admission);
+      this.syncActiveTurnState();
       this.callbacks.onState();
-    });
+    })();
+    return this.trackAdmission(admission, operation);
   }
 
-  private async interruptActiveTurn(): Promise<void> {
+  private async requestActiveTurnInterrupt(): Promise<OwnedTurn | null> {
     const threadId = this.state.activeThreadId;
     const turnId = threadId
       ? this.runningTurns.get(threadId) || this.state.activeTurnId
       : null;
     if (!threadId || !turnId) {
       this.syncActiveTurnState();
-      return;
+      return null;
     }
+    const owned = this.ownedTurns.get(turnKey(threadId, turnId));
+    if (!owned) throw new Error("The active Codex turn has no target-stamped terminal owner");
     this.cancelPendingApprovalsForThread(threadId, "cancel");
     await this.requireClient().turnInterrupt({
       threadId,
       turnId,
     });
-    this.runningTurns.delete(threadId);
-    this.syncActiveTurnState();
+    return owned;
+  }
+
+  private enqueueAfterActiveTurnTerminal<T>(operation: () => Promise<T>): Promise<T> {
+    let admission: CodexTargetAdmission;
+    try {
+      admission = this.captureTargetAdmission();
+    }
+    catch (error) {
+      return Promise.reject(error);
+    }
+    const sequence = (async () => {
+      const interrupted = await this.enqueuePaperTransition(
+        () => this.requestActiveTurnInterrupt(),
+        admission,
+      );
+      // Keep the paper queue available while app-server finishes the turn:
+      // a reviewed dynamic tool may need that queue before terminal arrives.
+      if (interrupted) await this.awaitOwnedTurnTerminal(interrupted);
+      this.assertAdmissionCurrent(admission);
+      return this.enqueuePaperTransition(operation, admission);
+    })();
+    return this.trackAdmission(admission, sequence);
   }
 
   private syncActiveTurnState(): void {
@@ -1727,7 +2360,12 @@ export class CodexService {
 
   getCheckpoints(): readonly CodexCheckpoint[] {
     if (!this.activePaperKey) return [];
-    return this.sessions.checkpoints?.[this.activePaperKey] || [];
+    const binding = this.repositoryTarget;
+    if (!binding) return [];
+    return (this.sessions.checkpoints?.[this.activePaperKey] || []).filter((checkpoint) => (
+      checkpoint.targetId === binding.targetId
+      && checkpoint.targetEpoch === binding.targetEpoch
+    ));
   }
 
   getAnchors(context: ReaderContext): AnchorRecord[] {
@@ -1761,11 +2399,16 @@ export class CodexService {
    * follow-up turns). Bucketing by the live context would strand the anchor
    * under the wrong (or a since-abandoned) paper's list.
    */
-  async recordAnchor(context: ReaderContext, anchor: AnchorRecord): Promise<void> {
-    this.sessions.anchors ||= {};
-    const key = anchorIdentity(anchor);
-    this.sessions.anchors[key] = [...(this.sessions.anchors[key] ?? []), anchor];
-    await this.saveSessions();
+  recordAnchor(context: ReaderContext, anchor: AnchorRecord): Promise<void> {
+    void context;
+    return this.enqueuePaperTransition(async () => {
+      const next = cloneConversationSessions(this.sessions);
+      next.anchors ||= {};
+      const key = anchorIdentity(anchor);
+      next.anchors[key] = [...(next.anchors[key] ?? []), anchor];
+      await this.saveSessions(next);
+      this.sessions = next;
+    });
   }
 
   /**
@@ -1774,37 +2417,45 @@ export class CodexService {
    * the caller's *live* Reader context, which -- per the recordAnchor note
    * above -- need not match the bucket the anchor actually lives in.
    */
-  async updateAnchor(context: ReaderContext, anchorId: string, patch: Partial<AnchorRecord>): Promise<void> {
+  updateAnchor(context: ReaderContext, anchorId: string, patch: Partial<AnchorRecord>): Promise<void> {
     void context;
-    await this.updateAnchorById(anchorId, patch);
+    return this.updateAnchorById(anchorId, patch);
   }
 
   /** Bucket-agnostic update used by the reviewed batch-annotation bridge. */
-  async updateAnchorById(anchorId: string, patch: Partial<AnchorRecord>): Promise<void> {
-    const anchors = this.sessions.anchors;
-    if (!anchors) return;
-    for (const key of Object.keys(anchors)) {
-      const list = anchors[key]!;
-      const index = list.findIndex((entry) => entry.anchorId === anchorId);
-      if (index === -1) continue;
-      anchors[key] = list.map((entry, i) => (i === index ? { ...entry, ...patch } : entry));
-      await this.saveSessions();
-      return;
-    }
+  updateAnchorById(anchorId: string, patch: Partial<AnchorRecord>): Promise<void> {
+    return this.enqueuePaperTransition(async () => {
+      const next = cloneConversationSessions(this.sessions);
+      const anchors = next.anchors;
+      if (!anchors) return;
+      for (const key of Object.keys(anchors)) {
+        const list = anchors[key]!;
+        const index = list.findIndex((entry) => entry.anchorId === anchorId);
+        if (index === -1) continue;
+        anchors[key] = list.map((entry, i) => (i === index ? { ...entry, ...patch } : entry));
+        await this.saveSessions(next);
+        this.sessions = next;
+        return;
+      }
+    });
   }
 
   /** Bucket-agnostic for the same reason as updateAnchor above. */
-  async removeAnchor(context: ReaderContext, anchorId: string): Promise<void> {
+  removeAnchor(context: ReaderContext, anchorId: string): Promise<void> {
     void context;
-    const anchors = this.sessions.anchors;
-    if (!anchors) return;
-    for (const key of Object.keys(anchors)) {
-      const list = anchors[key]!;
-      if (!list.some((entry) => entry.anchorId === anchorId)) continue;
-      anchors[key] = list.filter((entry) => entry.anchorId !== anchorId);
-      await this.saveSessions();
-      return;
-    }
+    return this.enqueuePaperTransition(async () => {
+      const next = cloneConversationSessions(this.sessions);
+      const anchors = next.anchors;
+      if (!anchors) return;
+      for (const key of Object.keys(anchors)) {
+        const list = anchors[key]!;
+        if (!list.some((entry) => entry.anchorId === anchorId)) continue;
+        anchors[key] = list.filter((entry) => entry.anchorId !== anchorId);
+        await this.saveSessions(next);
+        this.sessions = next;
+        return;
+      }
+    });
   }
 
   activeThreadTurnCount(): number {
@@ -1819,25 +2470,35 @@ export class CodexService {
    * returned diff to drive a separate reviewed revert.
    */
   restoreCheckpoint(checkpointId: string): Promise<CodexCheckpointRestoreResult> {
-    return this.enqueuePaperTransition(async () => {
+    return this.enqueueAfterActiveTurnTerminal(async () => {
       const paperKey = this.activePaperKey;
       const context = this.activeContext;
       if (!paperKey || !context?.workspace) throw new Error("Open a PDF first");
+      const binding = { ...this.requireRepositoryBinding() };
       const checkpoint = (this.sessions.checkpoints?.[paperKey] || [])
+        .filter((candidate) => candidate.targetId === binding.targetId
+          && candidate.targetEpoch === binding.targetEpoch)
         .find((candidate) => candidate.id === checkpointId);
       if (!checkpoint) throw new Error("This checkpoint could not be found");
-      await this.interruptActiveTurn();
+      const source = this.findSessionThreadForTarget(
+        checkpoint.sourceThreadId,
+        binding.targetId,
+        paperKey,
+      );
+      if (!source) throw new Error("This checkpoint's source conversation is unavailable for the active target");
+      this.assertRepositoryBinding(binding);
       if (!this.state.capabilities.supportsCheckpoints || !this.requireClient().threadFork) {
         throw new Error("The current backend does not support checkpoints");
       }
       const result = await this.requireClient().threadFork!({
-        threadId: checkpoint.sourceThreadId,
+        threadId: source.record.threadId,
         beforeTurnId: checkpoint.beforeTurnId,
         ...this.threadModeSettings(context),
       });
-      const binding = this.requireRepositoryBinding();
+      this.assertRepositoryBinding(binding);
       const title = `${context.parent?.title || context.attachment.title || "Paper Conversation"} · Checkpoint`;
-      this.rememberActiveThread(paperKey, {
+      const next = cloneConversationSessions(this.sessions);
+      this.rememberActiveThreadIn(next, paperKey, {
         threadId: result.thread.id,
         title,
         workspace: context.workspace.root,
@@ -1846,11 +2507,15 @@ export class CodexService {
         updatedAt: new Date().toISOString(),
         backend: this.state.backend,
       });
+      next.activeThreadId = result.thread.id;
+      await this.saveSessions(next, result.thread.id);
+      this.assertRepositoryBinding(binding);
+      this.sessions = next;
       this.state.activeThreadId = result.thread.id;
       this.state.activeTurnId = null;
       this.state.running = false;
-      this.threadPaperKeys.set(result.thread.id, paperKey);
-      await this.saveSessions();
+      this.forgetThreadOwner(source.record.threadId);
+      this.rememberThreadOwner(result.thread.id, paperKey, "foreground", binding);
       this.callbacks.onState();
       return {
         threadId: result.thread.id,
@@ -1861,20 +2526,46 @@ export class CodexService {
   }
 
   /** Deprecated protocol fallback for conversation history only. */
-  async rollbackConversation(numTurns: number): Promise<void> {
-    if (!this.state.activeThreadId) throw new Error("There is no conversation to restore");
-    await this.interruptActiveTurn();
-    if (!this.state.capabilities.supportsCheckpoints || !this.requireClient().threadRollback) {
-      throw new Error("The current backend does not support checkpoints");
-    }
-    const result = await this.requireClient().threadRollback!({
-      threadId: this.state.activeThreadId,
-      numTurns,
+  rollbackConversation(numTurns: number): Promise<void> {
+    return this.enqueueAfterActiveTurnTerminal(async () => {
+      const threadId = this.state.activeThreadId;
+      const paperKey = this.activePaperKey;
+      if (!threadId || !paperKey) throw new Error("There is no conversation to restore");
+      const binding = { ...this.requireRepositoryBinding() };
+      const source = this.findSessionThreadForTarget(threadId, binding.targetId, paperKey);
+      if (!source) throw new Error("The active conversation does not belong to this repository target");
+      this.assertRepositoryBinding(binding);
+      if (!this.state.capabilities.supportsCheckpoints || !this.requireClient().threadRollback) {
+        throw new Error("The current backend does not support checkpoints");
+      }
+      const result = await this.requireClient().threadRollback!({
+        threadId,
+        numTurns,
+      });
+      this.assertRepositoryBinding(binding);
+      const next = cloneConversationSessions(this.sessions);
+      const replacement = {
+        ...source.record,
+        threadId: result.thread.id,
+        recordedCwd: binding.root,
+        targetId: binding.targetId,
+        updatedAt: new Date().toISOString(),
+      };
+      this.replaceSessionRecordAt(next, source.location, replacement);
+      if (source.location.kind === "history") {
+        this.rememberActiveThreadIn(next, paperKey, replacement);
+      }
+      next.activeThreadId = result.thread.id;
+      await this.saveSessions(next, result.thread.id);
+      this.assertRepositoryBinding(binding);
+      this.sessions = next;
+      this.state.activeThreadId = result.thread.id;
+      this.state.activeTurnId = null;
+      this.state.running = false;
+      this.forgetThreadOwner(threadId);
+      this.rememberThreadOwner(result.thread.id, paperKey, "foreground", binding);
+      this.callbacks.onState();
     });
-    this.state.activeThreadId = result.thread.id;
-    this.state.activeTurnId = null;
-    this.state.running = false;
-    this.callbacks.onState();
   }
 
   private handleNotification(notification: { method: string; params?: unknown }): void {
@@ -1885,53 +2576,20 @@ export class CodexService {
     const eventThreadId = typeof params.threadId === "string"
       ? params.threadId
       : typeof turn?.threadId === "string" ? turn.threadId : null;
-    const liveTargetThread = eventThreadId
-      ? this.threadPaperKeys.has(eventThreadId)
-      : false;
-    if (notification.method === "turn/completed") {
-      const waiter = eventThreadId ? this.utilityWaiters.get(eventThreadId) : undefined;
-      if (waiter) {
-        clearTimeout(waiter.timer);
-        this.utilityWaiters.delete(eventThreadId!);
-        waiter.resolve();
-      }
-    }
-    else if (notification.method === "turn/failed") {
-      const waiter = eventThreadId ? this.utilityWaiters.get(eventThreadId) : undefined;
-      if (waiter) {
-        clearTimeout(waiter.timer);
-        this.utilityWaiters.delete(eventThreadId!);
-        // A failed turn must reject, not resolve — resolving here would let
-        // runUtilityTurn scan the store and hand back a partial/streamed
-        // agentMessage from the failed turn as if it were a real result.
+    const eventTurnId = typeof turn?.id === "string"
+      ? turn.id
+      : typeof params.turnId === "string" ? params.turnId : null;
+    if (notification.method === "turn/completed" || notification.method === "turn/failed") {
+      if (eventThreadId && eventTurnId) {
         const reason = turn?.error ?? params.error;
-        waiter.reject(new Error(reason !== undefined && reason !== null ? errorText(reason) : "The tool turn failed"));
-      }
-    }
-    if (notification.method === "turn/started") {
-      if (
-        eventThreadId
-        && liveTargetThread
-        && typeof turn?.id === "string"
-        && !this.utilityWaiters.has(eventThreadId)
-      ) {
-        this.runningTurns.set(eventThreadId, turn.id);
-      }
-      this.syncActiveTurnState();
-    }
-    else if (notification.method === "turn/completed") {
-      if (eventThreadId) {
-        const runningTurnId = this.runningTurns.get(eventThreadId);
-        if (!runningTurnId || turn?.id === runningTurnId) this.runningTurns.delete(eventThreadId);
-      }
-      this.syncActiveTurnState();
-    }
-    else if (notification.method === "turn/failed") {
-      if (eventThreadId) {
-        const runningTurnId = this.runningTurns.get(eventThreadId);
-        if (!runningTurnId || params.turnId === runningTurnId || turn?.id === runningTurnId) {
-          this.runningTurns.delete(eventThreadId);
-        }
+        this.settleOwnedTurn(eventThreadId, eventTurnId, notification.method === "turn/completed"
+          ? { status: "completed" }
+          : {
+              status: "failed",
+              error: new Error(reason !== undefined && reason !== null
+                ? errorText(reason)
+                : "The tool turn failed"),
+            });
       }
       this.syncActiveTurnState();
     }
@@ -1941,11 +2599,12 @@ export class CodexService {
     else if (
       notification.method === "turn/diff/updated"
       && typeof params.threadId === "string"
-      && this.threadPaperKeys.has(params.threadId)
       && typeof params.turnId === "string"
+      && this.ownedTurns.has(turnKey(params.threadId, params.turnId))
       && typeof params.diff === "string"
     ) {
-      this.updateCheckpointDiff(params.threadId, params.turnId, params.diff);
+      const owner = this.ownedTurns.get(turnKey(params.threadId, params.turnId));
+      if (owner) this.updateCheckpointDiff(owner, params.diff);
     }
     this.callbacks.onState();
   }
@@ -1977,9 +2636,41 @@ export class CodexService {
     }));
   }
 
-  private async handleDynamicTool(params: DynamicToolCallParams): Promise<DynamicToolCallResponse> {
+  private handleDynamicTool(params: DynamicToolCallParams): Promise<DynamicToolCallResponse> {
+    let admission: CodexTargetAdmission;
+    let ownedTurn: OwnedTurn;
     try {
-      const paperKey = this.threadPaperKeys.get(params.threadId) || null;
+      admission = this.captureTargetAdmission();
+      const binding = admission.binding;
+      const owner = this.threadOwners.get(params.threadId);
+      const candidate = this.ownedTurns.get(turnKey(params.threadId, params.turnId));
+      if (!binding
+          || !owner
+          || !candidate
+          || candidate.targetId !== binding.targetId
+          || candidate.targetEpoch !== binding.targetEpoch
+          || owner.targetId !== candidate.targetId
+          || owner.targetEpoch !== candidate.targetEpoch) {
+        throw new Error("This tool call no longer belongs to the active repository target");
+      }
+      ownedTurn = candidate;
+    }
+    catch (error) {
+      return Promise.resolve(dynamicToolFailure(error));
+    }
+    return this.trackAdmission(
+      admission,
+      this.handleDynamicToolForAdmission(params, admission, ownedTurn),
+    );
+  }
+
+  private async handleDynamicToolForAdmission(
+    params: DynamicToolCallParams,
+    admission: CodexTargetAdmission,
+    ownedTurn: OwnedTurn,
+  ): Promise<DynamicToolCallResponse> {
+    try {
+      const paperKey = ownedTurn.paperKey;
       const context = paperKey
         ? this.paperContexts.get(paperKey)
           || (this.activePaperKey === paperKey ? this.activeContext : null)
@@ -2018,6 +2709,11 @@ export class CodexService {
       else {
         throw new Error(`Tool is unavailable in ${this.state.mode} mode: ${params.tool}`);
       }
+      this.assertAdmissionCurrent(admission);
+      if (!admission.open
+          || this.ownedTurns.get(turnKey(params.threadId, params.turnId)) !== ownedTurn) {
+        throw new Error("The repository target changed before the tool result was published");
+      }
       const evidence = evidenceRecordFromToolResult(
         params.tool,
         argumentsValue,
@@ -2025,12 +2721,22 @@ export class CodexService {
         paperKey,
       );
       if (evidence) {
-        this.sessions.evidence ||= {};
-        const records = this.sessions.evidence[params.threadId] || [];
-        this.sessions.evidence[params.threadId] = [...records, evidence].slice(-50);
-        void this.saveSessions().catch((error) => this.callbacks.onError(
-          error instanceof Error ? error : new Error(String(error)),
-        ));
+        const next = cloneConversationSessions(this.sessions);
+        next.evidence = this.sessions.evidence
+          ? Object.fromEntries(Object.entries(this.sessions.evidence).map(([key, records]) => [
+              key, records.map((record) => ({ ...record, pages: [...record.pages], snippets: [...record.snippets] })),
+            ]))
+          : {};
+        const key = targetThreadKey(ownedTurn.targetId, params.threadId);
+        const records = next.evidence[key] || [];
+        next.evidence[key] = [...records, evidence].slice(-50);
+        await this.saveSessions(next);
+        this.assertAdmissionCurrent(admission);
+        if (!admission.open
+            || this.ownedTurns.get(turnKey(params.threadId, params.turnId)) !== ownedTurn) {
+          throw new Error("The repository target changed before tool evidence was published");
+        }
+        this.sessions = next;
       }
       return {
         success: true,
@@ -2038,18 +2744,17 @@ export class CodexService {
       };
     }
     catch (error) {
-      return {
-        success: false,
-        contentItems: [{
-          type: "inputText",
-          text: error instanceof Error ? error.message : String(error)
-        }]
-      };
+      return dynamicToolFailure(error);
     }
   }
 
   private evidenceContext(threadID: string): Record<string, CodexInteractionContextEntry> {
-    const records = this.sessions.evidence?.[threadID]?.slice(-12) || [];
+    const targetId = this.repositoryTarget?.targetId;
+    const records = (targetId
+      ? this.sessions.evidence?.[targetThreadKey(targetId, threadID)]
+      : undefined)?.slice(-12)
+      || this.sessions.evidence?.[threadID]?.slice(-12)
+      || [];
     if (!records.length) return {};
     return {
       "Evidence ledger": {
@@ -2175,17 +2880,25 @@ export class CodexService {
 
   private requestUserApproval(request: ApprovalRequest): Promise<ApprovalResponse> {
     const threadId = request.params.threadId;
-    const paperKey = this.threadPaperKeys.get(threadId) || null;
+    const turnId = request.params.turnId;
+    const binding = this.repositoryTarget;
+    const owner = this.threadOwners.get(threadId);
+    const ownedTurn = this.ownedTurns.get(turnKey(threadId, turnId));
+    const paperKey = owner?.paperKey || null;
     const context = paperKey
       ? this.paperContexts.get(paperKey)
         || (this.activePaperKey === paperKey ? this.activeContext : null)
       : null;
-    const runningTurnId = this.runningTurns.get(threadId)
-      || (threadId === this.state.activeThreadId ? this.state.activeTurnId : null);
     if (
       this.state.mode !== "agent"
       || !context
-      || (runningTurnId && request.params.turnId !== runningTurnId)
+      || !binding
+      || !owner
+      || !ownedTurn
+      || owner.targetId !== binding.targetId
+      || owner.targetEpoch !== binding.targetEpoch
+      || ownedTurn.targetId !== binding.targetId
+      || ownedTurn.targetEpoch !== binding.targetEpoch
     ) {
       return Promise.resolve(approvalResponse(request, "reject"));
     }
@@ -2231,73 +2944,183 @@ export class CodexService {
   }
 
   private async recordCheckpoint(paperKey: string, checkpoint: CodexCheckpoint): Promise<void> {
-    this.sessions.checkpoints ||= {};
-    checkpoint.turnDiff ||= this.latestTurnDiffs.get(turnKey(
+    const next = cloneConversationSessions(this.sessions);
+    next.checkpoints ||= {};
+    checkpoint.turnDiff ||= this.latestTurnDiffs.get(targetTurnKey(
+      checkpoint.targetId || "legacy",
       checkpoint.sourceThreadId,
       checkpoint.beforeTurnId,
     )) || null;
-    const checkpoints = this.sessions.checkpoints[paperKey] ||= [];
+    const checkpoints = next.checkpoints[paperKey] ||= [];
     checkpoints.unshift(checkpoint);
-    this.sessions.checkpoints[paperKey] = checkpoints.slice(0, 50);
-    await this.saveSessions();
+    next.checkpoints[paperKey] = checkpoints.slice(0, 50);
+    await this.saveSessions(next);
+    this.sessions = next;
     this.callbacks.onState();
   }
 
-  private updateCheckpointDiff(threadId: string, turnId: string, diff: string): void {
-    this.latestTurnDiffs.set(turnKey(threadId, turnId), diff);
+  private updateCheckpointDiff(owner: OwnedTurn, diff: string): void {
+    const key = targetTurnKey(owner.targetId, owner.threadId, owner.turnId);
+    this.latestTurnDiffs.set(key, diff);
     if (this.latestTurnDiffs.size > 100) {
       const oldest = this.latestTurnDiffs.keys().next().value as string | undefined;
       if (oldest) this.latestTurnDiffs.delete(oldest);
     }
+    const admission = this.targetAdmission;
+    if (!admission.open
+        || admission.binding?.targetId !== owner.targetId
+        || admission.binding.targetEpoch !== owner.targetEpoch) return;
+    const next = cloneConversationSessions(this.sessions);
     let changed = false;
-    for (const checkpoints of Object.values(this.sessions.checkpoints || {})) {
+    for (const checkpoints of Object.values(next.checkpoints || {})) {
       const checkpoint = checkpoints.find((candidate) => (
-        candidate.sourceThreadId === threadId && candidate.beforeTurnId === turnId
+        candidate.targetId === owner.targetId
+        && candidate.targetEpoch === owner.targetEpoch
+        && candidate.sourceThreadId === owner.threadId
+        && candidate.beforeTurnId === owner.turnId
       ));
       if (!checkpoint) continue;
       checkpoint.turnDiff = diff;
       changed = true;
     }
     if (changed) {
-      void this.saveSessions().catch((error) => {
+      const saving = this.saveSessions(next).then(() => {
+        this.assertAdmissionCurrent(admission);
+        if (!admission.open) throw new Error("The repository target changed before checkpoint diff persistence");
+        this.sessions = next;
+      });
+      void this.trackAdmission(admission, saving).catch((error) => {
         this.callbacks.onError(error instanceof Error ? error : new Error(String(error)));
       });
     }
   }
 
   private rememberActiveThread(paperKey: string, next: SessionRecord): void {
-    const previous = this.sessions.papers[paperKey];
-    this.sessions.history ||= {};
-    const history = this.sessions.history[paperKey] ||= [];
-    if (previous && previous.threadId !== next.threadId) {
-      history.unshift(previous);
-    }
-    this.sessions.history[paperKey] = history
-      .filter((record, index, records) => (
-        record.threadId !== next.threadId
-        && records.findIndex((candidate) => candidate.threadId === record.threadId) === index
-      ))
+    this.rememberActiveThreadIn(this.sessions, paperKey, next);
+  }
+
+  private rememberActiveThreadIn(file: SessionFile, paperKey: string, next: SessionRecord): void {
+    const previous = file.papers[paperKey];
+    file.history ||= {};
+    const history = file.history[paperKey] ||= [];
+    if (previous && !sameSessionIdentity(previous, next)) history.unshift(previous);
+    file.history[paperKey] = history
+      .filter((record) => !sameSessionIdentity(record, next))
+      .filter((record, index, records) => records.findIndex((candidate) => (
+        sameSessionIdentity(candidate, record)
+      )) === index)
       .slice(0, 30);
-    this.sessions.papers[paperKey] = next;
+    file.papers[paperKey] = next;
+  }
+
+  private defaultSessionForPaper(paperKey: string): SessionRecord | null {
+    const targetId = this.repositoryTarget?.targetId;
+    if (!targetId) return null;
+    const records = [
+      this.sessions.papers[paperKey],
+      ...(this.sessions.history?.[paperKey] || []),
+    ].filter((record): record is SessionRecord => Boolean(record));
+    return records.find((record) => record.targetId === targetId) || null;
+  }
+
+  private findSessionThreadForTarget(
+    threadId: string,
+    targetId: string,
+    paperKey?: string,
+  ): { paperKey: string; record: SessionRecord; location: SessionRecordLocation } | null {
+    const paperKeys = paperKey ? [paperKey] : Object.keys(this.sessions.papers);
+    const matches: Array<{
+      paperKey: string;
+      record: SessionRecord;
+      location: SessionRecordLocation;
+    }> = [];
+    for (const key of paperKeys) {
+      const current = this.sessions.papers[key];
+      if (current?.threadId === threadId && current.targetId === targetId) {
+        matches.push({ paperKey: key, record: current, location: { kind: "paper", paperKey: key } });
+      }
+      (this.sessions.history?.[key] || []).forEach((record, index) => {
+        if (record.threadId === threadId && record.targetId === targetId) {
+          matches.push({
+            paperKey: key,
+            record,
+            location: { kind: "history", paperKey: key, index },
+          });
+        }
+      });
+    }
+    if (matches.length > 1) {
+      throw new Error("This conversation id is ambiguous within the active repository target");
+    }
+    return matches[0] || null;
+  }
+
+  private replaceSessionRecordAt(
+    file: SessionFile,
+    location: SessionRecordLocation,
+    replacement: SessionRecord,
+  ): void {
+    if (location.kind === "paper") {
+      if (!file.papers[location.paperKey]) throw new Error("The active conversation location is stale");
+      file.papers[location.paperKey] = replacement;
+      return;
+    }
+    const history = file.history?.[location.paperKey];
+    if (!history?.[location.index]) throw new Error("The active conversation location is stale");
+    history[location.index] = replacement;
+  }
+
+  private assertRepositoryBinding(expected: CodexRepositoryBinding): void {
+    if (expected.targetId !== this.repositoryTarget?.targetId
+        || expected.targetEpoch !== this.repositoryTarget?.targetEpoch
+        || expected.root !== this.repositoryTarget?.root) {
+      throw new Error("The repository target changed while Codex work was in progress");
+    }
   }
 
   private openThread(threadId: string): void {
-    const open = this.sessions.openThreads ||= [];
-    if (!open.includes(threadId)) open.push(threadId);
+    const binding = this.requireRepositoryBinding();
+    const paperKey = this.activePaperKey;
+    if (!paperKey) return;
+    const refs = this.ensureOpenThreadRefs(this.sessions);
+    const entry = { targetId: binding.targetId, paperKey, threadId };
+    if (!refs.some((candidate) => sameOpenThreadRef(candidate, entry))) refs.push(entry);
+    this.syncLegacyOpenThreads(this.sessions);
   }
 
-  private findSessionThread(threadId: string): { paperKey: string; record: SessionRecord } | null {
-    for (const [paperKey, current] of Object.entries(this.sessions.papers)) {
-      if (current?.threadId === threadId) return { paperKey, record: current };
-      const historical = this.sessions.history?.[paperKey]?.find((record) => record.threadId === threadId);
-      if (historical) return { paperKey, record: historical };
+  private projectOpenThreadRefs(file: SessionFile): OpenThreadRef[] {
+    if (file.openThreadRefs) return file.openThreadRefs.map((entry) => ({ ...entry }));
+    const refs: OpenThreadRef[] = [];
+    for (const threadId of file.openThreads || []) {
+      for (const [paperKey, current] of Object.entries(file.papers)) {
+        const records = [current, ...(file.history?.[paperKey] || [])];
+        for (const record of records) {
+          if (record.threadId !== threadId || !record.targetId) continue;
+          const entry = { targetId: record.targetId, paperKey, threadId };
+          if (!refs.some((candidate) => sameOpenThreadRef(candidate, entry))) refs.push(entry);
+        }
+      }
     }
-    return null;
+    return refs;
+  }
+
+  private ensureOpenThreadRefs(file: SessionFile): OpenThreadRef[] {
+    file.openThreadRefs ||= this.projectOpenThreadRefs(file);
+    return file.openThreadRefs;
+  }
+
+  private syncLegacyOpenThreads(file: SessionFile): void {
+    file.openThreads = [...new Set((file.openThreadRefs || []).map((entry) => entry.threadId))];
+  }
+
+  private pinnedThreadsForTarget(file: SessionFile, targetId: string): string[] {
+    if (file.pinnedThreadsByTarget) return [...(file.pinnedThreadsByTarget[targetId] || [])];
+    return [...(file.pinnedThreads || [])];
   }
 
   private markDisconnected(): void {
     this.cancelAllPendingApprovals("cancel");
-    this.runningTurns.clear();
+    this.failAllOwnedTurns(new Error("Codex disconnected before the turn completed"));
     this.state.connected = false;
     this.state.running = false;
     this.state.activeThreadId = null;
@@ -2318,11 +3141,26 @@ export class CodexService {
     await writeSessionFile({ ...next, activeThreadId });
   }
 
-  private enqueuePaperTransition<T>(operation: () => Promise<T>): Promise<T> {
-    const next = this.paperTransition.then(operation, operation);
+  private enqueuePaperTransition<T>(
+    operation: () => Promise<T>,
+    capturedAdmission?: CodexTargetAdmission,
+  ): Promise<T> {
+    let admission: CodexTargetAdmission;
+    try {
+      admission = capturedAdmission || this.captureTargetAdmission();
+    }
+    catch (error) {
+      return Promise.reject(error);
+    }
+    const admittedOperation = () => {
+      this.assertAdmissionCurrent(admission);
+      return operation();
+    };
+    const next = this.paperTransition.then(admittedOperation, admittedOperation);
     this.paperTransition = next.then(() => undefined, () => undefined);
-    return next;
+    return this.trackAdmission(admission, next);
   }
+
 }
 
 function historyOption(thread: ProtocolThread): HistoryConversationOption {
@@ -2564,6 +3402,34 @@ function checkpointLabel(text: string): string {
 
 function turnKey(threadId: string, turnId: string): string {
   return `${threadId}\u0000${turnId}`;
+}
+
+function targetThreadKey(targetId: string, threadId: string): string {
+  return `${targetId}\u0000${threadId}`;
+}
+
+function targetTurnKey(targetId: string, threadId: string, turnId: string): string {
+  return `${targetId}\u0000${threadId}\u0000${turnId}`;
+}
+
+function sameSessionIdentity(left: SessionRecord, right: SessionRecord): boolean {
+  return left.threadId === right.threadId && left.targetId === right.targetId;
+}
+
+function sameOpenThreadRef(left: OpenThreadRef, right: OpenThreadRef): boolean {
+  return left.targetId === right.targetId
+    && left.paperKey === right.paperKey
+    && left.threadId === right.threadId;
+}
+
+function dynamicToolFailure(error: unknown): DynamicToolCallResponse {
+  return {
+    success: false,
+    contentItems: [{
+      type: "inputText",
+      text: error instanceof Error ? error.message : String(error),
+    }],
+  };
 }
 
 function approvalWriteScopeIsSafe(request: ApprovalRequest, workspaceRoots: readonly string[]): boolean {

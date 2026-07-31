@@ -3,6 +3,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
+import * as pluginModule from "../src/plugin";
 
 import {
   MAX_SELECTION_PROMPT_CHARACTERS,
@@ -18,7 +19,12 @@ import {
   prepareRepositoryTargetStartup,
 } from "../src/plugin";
 import type { ReaderContext } from "../src/reader-context";
-import type { StoredTargetPreferences } from "../src/repository-target";
+import type {
+  LocalRepositoryInspection,
+  RepositoryTargetSnapshot,
+  ResolvedLocalRepositoryTarget,
+  StoredTargetPreferences,
+} from "../src/repository-target";
 
 const EMPTY_TARGET_PREFERENCES: StoredTargetPreferences = {
   version: 1,
@@ -28,13 +34,28 @@ const EMPTY_TARGET_PREFERENCES: StoredTargetPreferences = {
   migratedLegacy: false,
 };
 
-function startupTarget(root = "/legacy") {
+function startupTarget(
+  root = "/legacy",
+  overrides: Partial<ResolvedLocalRepositoryTarget> = {},
+): ResolvedLocalRepositoryTarget {
   return {
     kind: "local" as const,
     root,
     canonicalRoot: root,
     repositoryId: "a".repeat(64),
     targetId: "b".repeat(64),
+    ...overrides,
+  };
+}
+
+function startupPreferences(
+  active: ResolvedLocalRepositoryTarget | null,
+  migratedLegacy = true,
+): StoredTargetPreferences {
+  return {
+    ...EMPTY_TARGET_PREFERENCES,
+    active,
+    migratedLegacy,
   };
 }
 
@@ -53,11 +74,14 @@ function startupSettings(repositoryTargets: StoredTargetPreferences) {
 }
 
 function targetStartupHarness(options: {
-  state?: "ready" | "missing";
+  preferences?: StoredTargetPreferences;
+  rawLegacyRoot?: string;
+  inspect?: (root: string, callIndex: number) => LocalRepositoryInspection | Promise<LocalRepositoryInspection>;
+  sessionFailure?: Error | null;
   preferenceFailure?: Error | null;
 } = {}) {
   const calls: string[] = [];
-  let preferences: StoredTargetPreferences = EMPTY_TARGET_PREFERENCES;
+  let preferences: StoredTargetPreferences = options.preferences ?? EMPTY_TARGET_PREFERENCES;
   let records = [{
     threadId: "legacy-thread",
     title: "Legacy",
@@ -66,20 +90,26 @@ function targetStartupHarness(options: {
     updatedAt: "2026-07-31",
     extensionField: { keep: true },
   }];
+  let inspectCallIndex = 0;
   let preferenceFailure = options.preferenceFailure ?? null;
-  const inspect = vi.fn(async () => {
-    calls.push("migrate");
-    return options.state === "missing"
-      ? { kind: "unavailable" as const, reason: "missing" as const }
-      : startupTarget();
+  const inspect = vi.fn(async (root: string) => {
+    calls.push(`inspect:${root}`);
+    const callIndex = inspectCallIndex++;
+    return options.inspect
+      ? options.inspect(root, callIndex)
+      : startupTarget(root);
   });
   const deps = {
     readRawTargetMigrationInput: () => {
       calls.push("raw");
-      return { legacyQLabRoot: "/legacy", repositoryTargetsRaw: JSON.stringify(preferences) };
+      return {
+        legacyQLabRoot: options.rawLegacyRoot ?? "/legacy",
+        repositoryTargetsRaw: JSON.stringify(preferences),
+      };
     },
     readSessionRecords: async () => {
       calls.push("sessions");
+      if (options.sessionFailure) throw options.sessionFailure;
       return {
         file: { version: 1 as const, papers: {} },
         locations: records.map((_record, index) => ({ kind: "history" as const, paperKey: "paper", index })),
@@ -91,10 +121,13 @@ function targetStartupHarness(options: {
       calls.push("settings");
       return startupSettings(preferences);
     },
-    createResolver: () => ({
-      inspect,
-      canonicalize: vi.fn(async (path: string) => path),
-    }),
+    createResolver: () => {
+      calls.push("resolver");
+      return {
+        inspect,
+        canonicalize: vi.fn(async (path: string) => path),
+      };
+    },
     saveSessionRecords: async (_snapshot: unknown, next: readonly (typeof records)[number][]) => {
       calls.push("saveSessionRecords");
       records = structuredClone([...next]);
@@ -104,19 +137,48 @@ function targetStartupHarness(options: {
       if (preferenceFailure) throw preferenceFailure;
       preferences = structuredClone(next);
     },
-    hydrate: (next: StoredTargetPreferences) => {
-      calls.push("hydrate");
-      return next.active ? { target: next.active, targetEpoch: 1 } : null;
-    },
-    publish: (_snapshot: unknown) => {
+    publish: (snapshot: RepositoryTargetSnapshot) => {
       calls.push("publish");
+      published.push(snapshot);
       return undefined;
     },
+  };
+  const published: RepositoryTargetSnapshot[] = [];
+  const factorySnapshots: Array<RepositoryTargetSnapshot | null> = [];
+  const construct = async () => {
+    const start = (pluginModule as Record<string, unknown>)
+      .startRepositoryTargetBoundServices;
+    if (typeof start !== "function") {
+      throw new Error("Production repository-target startup factory is missing");
+    }
+    return (start as Function)(deps, async () => {
+      calls.push("factory");
+      return {
+        createMainSite: (snapshot: RepositoryTargetSnapshot | null) => {
+          calls.push("mainSite");
+          factorySnapshots.push(snapshot);
+          return { kind: "mainSite" };
+        },
+        createTerminal: (snapshot: RepositoryTargetSnapshot | null) => {
+          calls.push("terminal");
+          factorySnapshots.push(snapshot);
+          return { kind: "terminal" };
+        },
+        createCodex: (snapshot: RepositoryTargetSnapshot | null) => {
+          calls.push("codex");
+          factorySnapshots.push(snapshot);
+          return { kind: "codex", snapshot };
+        },
+      };
+    });
   };
   return {
     calls,
     deps,
     inspect,
+    published,
+    factorySnapshots,
+    construct,
     records: () => structuredClone(records),
     preferences: () => structuredClone(preferences),
     clearCalls: () => { calls.length = 0; },
@@ -125,7 +187,7 @@ function targetStartupHarness(options: {
 }
 
 describe("repository target startup", () => {
-  it("migrates, persists, hydrates, and publishes before returning construction state", async () => {
+  it("freshly resolves a migrated target before publishing it", async () => {
     const h = targetStartupHarness();
 
     const prepared = await prepareRepositoryTargetStartup(h.deps);
@@ -134,10 +196,11 @@ describe("repository target startup", () => {
       "raw",
       "sessions",
       "settings",
-      "migrate",
+      "resolver",
+      "inspect:/legacy",
       "saveSessionRecords",
       "saveRepositoryTargets",
-      "hydrate",
+      "inspect:/legacy",
       "publish",
     ]);
     expect(prepared.activeSnapshot).toEqual({ target: startupTarget(), targetEpoch: 1 });
@@ -151,8 +214,10 @@ describe("repository target startup", () => {
     h.clearCalls();
     const persisted = { preferences: h.preferences(), records: h.records() };
     await prepareRepositoryTargetStartup(h.deps);
-    expect(h.calls).toEqual(["raw", "sessions", "settings", "hydrate", "publish"]);
-    expect(h.inspect).toHaveBeenCalledOnce();
+    expect(h.calls).toEqual([
+      "raw", "sessions", "settings", "resolver", "inspect:/legacy", "publish",
+    ]);
+    expect(h.inspect).toHaveBeenCalledTimes(3);
     expect({ preferences: h.preferences(), records: h.records() }).toEqual(persisted);
   });
 
@@ -162,7 +227,8 @@ describe("repository target startup", () => {
 
     await expect(prepareRepositoryTargetStartup(h.deps)).rejects.toBe(diskFull);
     expect(h.calls).toEqual([
-      "raw", "sessions", "settings", "migrate", "saveSessionRecords", "saveRepositoryTargets",
+      "raw", "sessions", "settings", "resolver", "inspect:/legacy",
+      "saveSessionRecords", "saveRepositoryTargets",
     ]);
     expect(h.preferences().migratedLegacy).toBe(false);
     const firstSavedRecords = h.records();
@@ -175,14 +241,17 @@ describe("repository target startup", () => {
     h.setPreferenceFailure(null);
     await prepareRepositoryTargetStartup(h.deps);
     expect(h.calls).toEqual([
-      "raw", "sessions", "settings", "migrate", "saveSessionRecords", "saveRepositoryTargets", "hydrate", "publish",
+      "raw", "sessions", "settings", "resolver", "inspect:/legacy", "saveSessionRecords",
+      "saveRepositoryTargets", "inspect:/legacy", "publish",
     ]);
     expect(h.records()).toEqual(firstSavedRecords);
     expect(h.preferences().migratedLegacy).toBe(true);
   });
 
   it("uses a raw missing root even though display-safe settings contain no qlab root", async () => {
-    const h = targetStartupHarness({ state: "missing" });
+    const h = targetStartupHarness({
+      inspect: () => ({ kind: "unavailable", reason: "missing" }),
+    });
 
     const prepared = await prepareRepositoryTargetStartup(h.deps);
 
@@ -194,8 +263,117 @@ describe("repository target startup", () => {
       legacyUnassigned: [{ threadId: "legacy-thread", reason: "missing" }],
       migratedLegacy: true,
     });
-    expect(h.calls.at(-1)).toBe("hydrate");
+    expect(h.calls.at(-1)).toBe("saveRepositoryTargets");
     expect(h.calls).not.toContain("publish");
+  });
+
+  it("freshly resolves an already-migrated active target before publishing", async () => {
+    const active = startupTarget();
+    const h = targetStartupHarness({ preferences: startupPreferences(active) });
+
+    const started = await h.construct();
+
+    expect(h.calls).toEqual([
+      "raw", "sessions", "settings", "resolver", "inspect:/legacy", "publish",
+      "factory", "mainSite", "terminal", "codex",
+    ]);
+    expect(started.prepared.activeSnapshot).toEqual({ target: active, targetEpoch: 1 });
+    expect(started.codex.snapshot).toBe(h.published[0]);
+    expect(h.published).toEqual([{ target: active, targetEpoch: 1 }]);
+  });
+
+  it("keeps targetless startup targetless without consulting a resolver", async () => {
+    const h = targetStartupHarness({
+      preferences: startupPreferences(null),
+      rawLegacyRoot: "",
+    });
+
+    const prepared = await prepareRepositoryTargetStartup(h.deps);
+
+    expect(prepared.activeSnapshot).toBeNull();
+    expect(h.calls).toEqual(["raw", "sessions", "settings"]);
+    expect(h.inspect).not.toHaveBeenCalled();
+    expect(h.published).toEqual([]);
+  });
+
+  it.each([
+    ["non-local inspection", { kind: "candidate", canonicalRoot: "/legacy", state: "partial" }],
+    ["unavailable inspection", { kind: "unavailable", reason: "missing" }],
+    ["root mismatch", startupTarget("/legacy", { root: "/different-spelling" })],
+    ["canonical-root mismatch", startupTarget("/legacy", { canonicalRoot: "/replacement" })],
+    ["repository identity mismatch", startupTarget("/legacy", { repositoryId: "c".repeat(64) })],
+    ["target identity mismatch", startupTarget("/legacy", { targetId: "d".repeat(64) })],
+  ] as const)("rejects a stored active target on %s before publication", async (_name, inspection) => {
+    const h = targetStartupHarness({
+      preferences: startupPreferences(startupTarget()),
+      inspect: () => inspection as LocalRepositoryInspection,
+    });
+
+    await expect(prepareRepositoryTargetStartup(h.deps))
+      .rejects.toThrow("Stored active repository no longer matches its persisted identity");
+    expect(h.published).toEqual([]);
+  });
+
+  it("rejects a repository replacement at the same path before constructing target services", async () => {
+    const replacement = startupTarget("/legacy", {
+      repositoryId: "c".repeat(64),
+      targetId: "d".repeat(64),
+    });
+    const h = targetStartupHarness({
+      preferences: startupPreferences(startupTarget()),
+      inspect: () => replacement,
+    });
+
+    await expect(h.construct())
+      .rejects.toThrow("Stored active repository no longer matches its persisted identity");
+    expect(h.calls).not.toContain("publish");
+    expect(h.calls).not.toContain("factory");
+    expect(h.calls).not.toContain("codex");
+  });
+
+  it("uses the production gate for ordered target-service construction and exact Codex binding", async () => {
+    const h = targetStartupHarness();
+
+    const started = await h.construct();
+
+    const snapshot = { target: startupTarget(), targetEpoch: 1 };
+    expect(h.calls).toEqual([
+      "raw", "sessions", "settings", "resolver", "inspect:/legacy", "saveSessionRecords",
+      "saveRepositoryTargets", "inspect:/legacy", "publish", "factory", "mainSite", "terminal", "codex",
+    ]);
+    expect(h.factorySnapshots).toEqual([snapshot, snapshot, snapshot]);
+    expect(started.codex).toEqual({ kind: "codex", snapshot });
+    expect(h.factorySnapshots.every((value) => value === h.published[0])).toBe(true);
+    expect(started.codex.snapshot).toBe(h.published[0]);
+  });
+
+  it("constructs target-bound services with null only after a targetless startup is prepared", async () => {
+    const h = targetStartupHarness({
+      preferences: startupPreferences(null),
+      rawLegacyRoot: "",
+    });
+
+    await h.construct();
+
+    expect(h.calls).toEqual([
+      "raw", "sessions", "settings", "factory", "mainSite", "terminal", "codex",
+    ]);
+    expect(h.factorySnapshots).toEqual([null, null, null]);
+  });
+
+  it.each([
+    ["malformed sessions", { sessionFailure: new Error("malformed sessions") }],
+    ["failed preference save", { preferenceFailure: new Error("disk full") }],
+  ] as Array<[string, { sessionFailure?: Error; preferenceFailure?: Error }]>)
+  ("does not construct services after %s", async (_name, options) => {
+    const h = targetStartupHarness(options);
+
+    await expect(h.construct()).rejects.toThrow(options.sessionFailure?.message ?? options.preferenceFailure?.message);
+    expect(h.calls).not.toContain("publish");
+    expect(h.calls).not.toContain("factory");
+    expect(h.calls).not.toContain("mainSite");
+    expect(h.calls).not.toContain("terminal");
+    expect(h.calls).not.toContain("codex");
   });
 });
 
