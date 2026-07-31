@@ -1130,6 +1130,41 @@ describe("Zotkit Reader terminal state", () => {
       else (globalThis as any).Zotero = originalZotero;
     }
   });
+
+  it("routes every persistent save callback through the AI Context workflow", async () => {
+    const plugin = new ZoteroChatPlugin() as any;
+    plugin.terminal = { unmount: vi.fn() };
+    plugin.renderChatViews = vi.fn();
+    plugin.saveAIContext = vi.fn(async () => undefined);
+    plugin.captureChatDraft = vi.fn(async () => undefined);
+    plugin.reportError = vi.fn();
+
+    const readerHost = document.createElement("div");
+    const workbenchHost = document.createElement("div");
+    const floatHost = document.createElement("div");
+    document.body.append(readerHost, workbenchHost, floatHost);
+
+    const reader = plugin.mountChat(readerHost);
+    reader.setState({ phase: "ready", canSaveAIContext: true, running: false });
+    readerHost.querySelector<HTMLButtonElement>(".zc-save-ai-context")!.click();
+
+    const workbench = plugin.createWorkbenchView(workbenchHost, window, "workbench-1");
+    workbench.setState({ phase: "ready", canSaveAIContext: true, running: false });
+    workbenchHost.querySelector<HTMLButtonElement>(".zc-save-ai-context")!.click();
+
+    const floating = plugin.mountFloatPanel(window);
+    (floating.view as any).callbacks.onCaptureChatDraft();
+
+    await vi.waitFor(() => expect(plugin.saveAIContext).toHaveBeenCalledTimes(3));
+    expect(plugin.captureChatDraft).not.toHaveBeenCalled();
+
+    reader.destroy();
+    workbench.destroy();
+    floating.view.destroy();
+    readerHost.remove();
+    workbenchHost.remove();
+    floatHost.remove();
+  });
 });
 
 describe("Reader context copied into the terminal", () => {
