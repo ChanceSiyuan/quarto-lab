@@ -18,6 +18,7 @@ import {
   type LibrarySearchFilters,
 } from "./library-search";
 import { noteHtmlToQmdBody, qmdAuthorityMarker } from "./note-draft-bridge";
+import { cssRegionToCanvasRegion, type RegionSelection } from "./region-capture";
 
 export type MaybePromise<T> = T | Promise<T>;
 
@@ -281,6 +282,18 @@ export interface ZoteroReadAdapter<TReader = unknown, TItem = unknown> {
   extractPdfJsPage(reader: TReader, pageIndex: number): Promise<string | null>;
   /** Render one zero-based page as a bounded PNG data URL for multimodal context. */
   capturePdfPage?(reader: TReader, pageIndex: number): Promise<string | null>;
+  /**
+   * Render one zero-based page cropped to a CSS-pixel selection as a bounded
+   * PNG data URL. The selection's coordinates are relative to the page view
+   * element returned by getPdfPageElement.
+   */
+  capturePdfPageRegion?(
+    reader: TReader,
+    pageIndex: number,
+    region: RegionSelection,
+  ): Promise<string | null>;
+  /** The PDF.js page view element for one zero-based page, used to host the region-capture overlay. */
+  getPdfPageElement?(reader: TReader, pageIndex: number): HTMLElement | null;
   /**
    * Flatten the PDF's embedded outline/bookmarks through the already-open
    * PDF.js document, with 1-based pages and nesting depth. Returns null when
@@ -1419,6 +1432,25 @@ export class ReaderContextService<TReader = unknown, TItem = unknown> {
     const snapshot = await this.ensureSnapshot(context);
     if (!this.zotero.capturePdfPage) return null;
     return this.zotero.capturePdfPage(snapshot.hook.reader, snapshot.context.page.pageIndex);
+  }
+
+  async captureCurrentPageRegionImage(
+    region: RegionSelection,
+    context?: ReaderContext,
+  ): Promise<string | null> {
+    const snapshot = await this.ensureSnapshot(context);
+    if (!this.zotero.capturePdfPageRegion) return null;
+    return this.zotero.capturePdfPageRegion(
+      snapshot.hook.reader,
+      snapshot.context.page.pageIndex,
+      region,
+    );
+  }
+
+  async getCurrentPageViewElement(context?: ReaderContext): Promise<HTMLElement | null> {
+    const snapshot = await this.ensureSnapshot(context);
+    if (!this.zotero.getPdfPageElement) return null;
+    return this.zotero.getPdfPageElement(snapshot.hook.reader, snapshot.context.page.pageIndex);
   }
 
   async getPdfOutline(context?: ReaderContext): Promise<{
@@ -3735,6 +3767,71 @@ export function createZotero9ReadAdapter(
       catch {
         return null;
       }
+    },
+
+    async capturePdfPageRegion(reader, pageIndex, region) {
+      if (!Number.isInteger(pageIndex) || pageIndex < 0) return null;
+      try {
+        const win = readerPdfWindow(reader);
+        const application = asRecord(win.PDFViewerApplication);
+        const document = asRecord(application.pdfDocument ?? property(application.pdfViewer, "pdfDocument"));
+        const getPage = method(document, "getPage");
+        if (!getPage) return null;
+        const page = await getPage(pageIndex + 1);
+        const getViewport = method(page, "getViewport");
+        const render = method(page, "render");
+        if (!getViewport || !render) return null;
+        const viewport = getViewport({ scale: 1.5 }) as { width?: number; height?: number };
+        const width = Math.max(1, Math.min(2400, Math.round(Number(viewport.width) || 0)));
+        const height = Math.max(1, Math.min(3200, Math.round(Number(viewport.height) || 0)));
+        if (!width || !height) return null;
+        const crop = cssRegionToCanvasRegion(region, { width, height });
+        if (!crop) return null;
+        const ownerDocument = property(win, "document") as Document | undefined;
+        if (!ownerDocument?.createElement) return null;
+        const canvas = ownerDocument.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const context2d = canvas.getContext("2d", { alpha: false });
+        if (!context2d) return null;
+        const task = render({ canvasContext: context2d, viewport }) as any;
+        await (task?.promise || task);
+        const cropCanvas = ownerDocument.createElement("canvas");
+        cropCanvas.width = crop.width;
+        cropCanvas.height = crop.height;
+        const cropContext = cropCanvas.getContext("2d", { alpha: false });
+        if (!cropContext) return null;
+        cropContext.drawImage(
+          canvas,
+          crop.x,
+          crop.y,
+          crop.width,
+          crop.height,
+          0,
+          0,
+          crop.width,
+          crop.height,
+        );
+        const data = cropCanvas.toDataURL("image/png");
+        canvas.width = 0;
+        canvas.height = 0;
+        cropCanvas.width = 0;
+        cropCanvas.height = 0;
+        return data.startsWith("data:image/png;base64,") ? data : null;
+      }
+      catch {
+        return null;
+      }
+    },
+
+    getPdfPageElement(reader, pageIndex) {
+      if (!Number.isInteger(pageIndex) || pageIndex < 0) return null;
+      const win = readerPdfWindow(reader);
+      const ownerDocument = property(win, "document") as Document | undefined;
+      if (!ownerDocument?.querySelector) return null;
+      return ownerDocument.querySelector(
+        `.page[data-page-number="${pageIndex + 1}"]`,
+      ) as HTMLElement | null;
     },
 
     async extractPdfOutline(reader) {

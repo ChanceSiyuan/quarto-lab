@@ -1141,6 +1141,33 @@ describe("ReaderContextService", () => {
     expect(adapter.readIndexedFullText).not.toHaveBeenCalled();
   });
 
+  it("captures a cropped region image and locates the page view through the adapter", async () => {
+    const pageElement = {} as HTMLElement;
+    const capturePdfPageRegion = vi.fn(async () => "data:image/png;base64,region");
+    const getPdfPageElement = vi.fn(() => pageElement);
+    const { adapter, reader, attachment } = makeAdapter({ capturePdfPageRegion, getPdfPageElement });
+    const service = new ReaderContextService(adapter, host);
+    const context = await service.acceptReaderHook({ reader, item: attachment });
+
+    const region = { rect: { x: 5, y: 6, width: 40, height: 30 }, view: { width: 300, height: 400 } };
+    await expect(service.captureCurrentPageRegionImage(region, context))
+      .resolves.toBe("data:image/png;base64,region");
+    expect(capturePdfPageRegion).toHaveBeenCalledWith(reader, 1, region);
+
+    await expect(service.getCurrentPageViewElement(context)).resolves.toBe(pageElement);
+    expect(getPdfPageElement).toHaveBeenCalledWith(reader, 1);
+  });
+
+  it("returns null for region capture when the runtime adapter lacks the capability", async () => {
+    const { adapter, reader, attachment } = makeAdapter();
+    const service = new ReaderContextService(adapter, host);
+    const context = await service.acceptReaderHook({ reader, item: attachment });
+
+    const region = { rect: { x: 0, y: 0, width: 10, height: 10 }, view: { width: 100, height: 100 } };
+    await expect(service.captureCurrentPageRegionImage(region, context)).resolves.toBeNull();
+    await expect(service.getCurrentPageViewElement(context)).resolves.toBeNull();
+  });
+
   it("deduplicates repeated page-change notifications without re-extracting or rewriting context", async () => {
     let pageIndex = 0;
     const pageStats = vi.fn(async () => ({
@@ -2322,6 +2349,87 @@ describe("createZotero9ReadAdapter", () => {
     expect(addCondition).toHaveBeenCalledWith("fulltextContent", "contains", "needle");
     expect(search).toHaveBeenCalledTimes(1);
     expect(pdfWorker).not.toHaveBeenCalled();
+  });
+
+  it("crops the rendered page to the selection in device pixels", async () => {
+    const getViewport = vi.fn(() => ({ width: 600, height: 800 }));
+    const render = vi.fn(() => ({ promise: Promise.resolve() }));
+    const makeCanvas = (dataUrl: string) => {
+      const context2d = { drawImage: vi.fn() };
+      return {
+        width: 0,
+        height: 0,
+        getContext: vi.fn(() => context2d),
+        toDataURL: vi.fn(() => dataUrl),
+        context2d,
+      };
+    };
+    const fullCanvas = makeCanvas("data:image/png;base64,full");
+    const cropCanvas = makeCanvas("data:image/png;base64,cropped");
+    const canvases = [fullCanvas, cropCanvas];
+    const reader = {
+      _internalReader: {
+        _primaryView: {
+          _iframeWindow: {
+            PDFViewerApplication: {
+              pdfDocument: { getPage: vi.fn(async () => ({ getViewport, render })) },
+            },
+            document: { createElement: vi.fn(() => canvases.shift()) },
+          },
+        },
+      },
+    };
+    const adapter = createZotero9ReadAdapter({});
+
+    const region = { rect: { x: 30, y: 40, width: 120, height: 60 }, view: { width: 300, height: 400 } };
+    await expect(adapter.capturePdfPageRegion!(reader, 0, region))
+      .resolves.toBe("data:image/png;base64,cropped");
+
+    expect(getViewport).toHaveBeenCalledWith({ scale: 1.5 });
+    expect(fullCanvas.getContext).toHaveBeenCalledWith("2d", { alpha: false });
+    // CSS 300x400 -> device 600x800 doubles every coordinate; drawImage crops
+    // the full render into the small canvas at origin.
+    expect(cropCanvas.context2d.drawImage)
+      .toHaveBeenCalledWith(fullCanvas, 60, 80, 240, 120, 0, 0, 240, 120);
+  });
+
+  it("rejects a region outside the page without rendering anything", async () => {
+    const createElement = vi.fn();
+    const reader = {
+      _internalReader: {
+        _primaryView: {
+          _iframeWindow: {
+            PDFViewerApplication: {
+              pdfDocument: {
+                getPage: vi.fn(async () => ({
+                  getViewport: vi.fn(() => ({ width: 600, height: 800 })),
+                  render: vi.fn(() => ({ promise: Promise.resolve() })),
+                })),
+              },
+            },
+            document: { createElement },
+          },
+        },
+      },
+    };
+    const adapter = createZotero9ReadAdapter({});
+
+    const region = { rect: { x: 400, y: 500, width: 50, height: 50 }, view: { width: 300, height: 400 } };
+    await expect(adapter.capturePdfPageRegion!(reader, 0, region)).resolves.toBeNull();
+    expect(createElement).not.toHaveBeenCalled();
+  });
+
+  it("locates the current PDF.js page view element for the overlay", () => {
+    const pageElement = { className: "page" };
+    const querySelector = vi.fn(() => pageElement);
+    const reader = {
+      _internalReader: { _primaryView: { _iframeWindow: { document: { querySelector } } } },
+    };
+    const adapter = createZotero9ReadAdapter({});
+
+    expect(adapter.getPdfPageElement!(reader, 4)).toBe(pageElement);
+    expect(querySelector).toHaveBeenCalledWith('.page[data-page-number="5"]');
+    expect(adapter.getPdfPageElement!(reader, -1)).toBeNull();
   });
 
   function makeOutlineReader(pdfDocument: unknown): unknown {
