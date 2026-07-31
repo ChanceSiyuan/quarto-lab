@@ -156,4 +156,40 @@ describe("browser style bundle", () => {
     expect(withoutScoped).not.toContain(".zc-math-inline .katex");
     expect(withoutScoped).not.toContain(".zc-math-display .katex");
   });
+
+  it("pins Visual Edit typography to the compiled draft preview theme", async () => {
+    const result = await build({
+      entryPoints: [join(process.cwd(), "src/index.ts")],
+      bundle: true,
+      platform: "browser",
+      format: "iife",
+      target: ["firefox140"],
+      write: false,
+      outdir: "out",
+      assetNames: "fonts/[name]-[hash]",
+      loader: {
+        ".svg": "dataurl",
+        ".woff2": "file",
+        ".woff": "file",
+        ".ttf": "file",
+      },
+    });
+
+    const css = result.outputFiles.find((file) => file.path.endsWith(".css"))?.text || "";
+    // Body: 17px/1.5 weight-400 #212529, 799px reading measure — measured from
+    // drafts/.preview/…/bootstrap-e00a8cfd035d61cbe5d8da7afa12324c.min.css.
+    expect(css).toMatch(
+      /\.zc-qmd-visual-editor\s*\{[^}]*width:\s*min\(850px,\s*calc\(100%\s*-\s*44px\)\);[^}]*\}/,
+    );
+    expect(css).toMatch(
+      /\.zc-qmd-visual-editor\s*\{[^}]*font:\s*400\s+17px\/1\.5\s+system-ui,[^}]*\}/,
+    );
+    expect(css).toMatch(/\.zc-qmd-visual-editor\s*\{[^}]*color:\s*#212529;[^}]*\}/);
+    // Heading scale: h1 2rem / h2 1.65rem / h3 1.45rem / h4 1.25rem at the
+    // 17px base (rem ≡ em because body size equals the root size).
+    expect(css).toMatch(/\.zc-qmd-visual-block h1\s*\{[^}]*font-size:\s*2em;[^}]*\}/);
+    expect(css).toMatch(/\.zc-qmd-visual-block h2\s*\{[^}]*font-size:\s*1\.65em;[^}]*\}/);
+    expect(css).toMatch(/\.zc-qmd-visual-block h3\s*\{[^}]*font-size:\s*1\.45em;[^}]*\}/);
+    expect(css).toMatch(/\.zc-qmd-visual-block h4\s*\{[^}]*font-size:\s*1\.25em;[^}]*\}/);
+  });
 });
