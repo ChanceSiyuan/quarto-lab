@@ -3900,6 +3900,22 @@ export class ZoteroChatPlugin {
       void this.importQLabLiterature(win).catch((error) => this.reportError(error));
     });
     popup.append(separator, workbench, standalone, choose, importItem);
+
+    const itemPopup = doc.getElementById("zotero-itemmenu");
+    if (itemPopup && !doc.getElementById("qlab-zotero-open-paper-chat")) {
+      const paperChat = doc.createXULElement("menuitem");
+      paperChat.id = "qlab-zotero-open-paper-chat";
+      paperChat.setAttribute("label", "Open QLab Chat for This Paper");
+      paperChat.addEventListener("command", () => {
+        const item = (win as any).ZoteroPane?.getSelectedItems?.()?.[0];
+        if (!item) {
+          this.reportError(new Error("Select a Zotero library item first"));
+          return;
+        }
+        void this.openConversationForItem(win, item).catch((error) => this.reportError(error));
+      });
+      itemPopup.append(paperChat);
+    }
   }
 
   private removeQLabMenu(win: Window): void {
@@ -3909,9 +3925,23 @@ export class ZoteroChatPlugin {
       "qlab-zotero-open-standalone",
       "qlab-zotero-choose-root",
       "qlab-zotero-import-literature",
+      "qlab-zotero-open-paper-chat",
     ]) {
       win.document.getElementById(id)?.remove();
     }
+  }
+
+  /** Opens the right-clicked library item's stored QLab conversation (or a fresh thread when none is stored). */
+  private async openConversationForItem(win: Window, item: any): Promise<void> {
+    const attachment = await this.resolvePaperAttachment(item);
+    const paperKey = `${attachment.libraryID ?? "0"}-${attachment.key}`;
+    await this.openWorkbenchTab(win);
+    this.selectedImportedChatID = null;
+    await this.codex.openConversationForPaper(paperKey);
+    this.updateInteractionContext();
+    this.chatError = "";
+    this.renderChatViews();
+    this.activeWorkbenchEntry(win)?.view.focusComposer();
   }
 
   private async importQLabLiterature(win: Window): Promise<void> {

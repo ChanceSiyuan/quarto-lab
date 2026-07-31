@@ -1576,4 +1576,55 @@ describe("QLab paper conversation reopening", () => {
     );
     expect(startup).toContain("seedPaperContext: (paperKey) => this.seedPaperContextForKey(paperKey)");
   });
+
+  it("injects Open QLab Chat for This Paper into the library item context menu", () => {
+    const plugin = new ZoteroChatPlugin() as any;
+    const doc = document.implementation.createHTMLDocument("Main");
+    (doc as any).createXULElement = (name: string) => doc.createElement(name);
+    const toolsPopup = doc.createElement("menupopup");
+    toolsPopup.id = "menu_ToolsPopup";
+    const itemPopup = doc.createElement("menupopup");
+    itemPopup.id = "zotero-itemmenu";
+    doc.body.append(toolsPopup, itemPopup);
+    const item = { id: 6, isPDFAttachment: () => false, isRegularItem: () => true };
+    const win = {
+      document: doc,
+      ZoteroPane: { getSelectedItems: () => [item] },
+    } as unknown as Window;
+    plugin.openConversationForItem = vi.fn(async () => {});
+
+    plugin.installQLabMenu(win);
+
+    const menuItem = doc.getElementById("qlab-zotero-open-paper-chat");
+    expect(menuItem).not.toBeNull();
+    expect(menuItem?.getAttribute("label")).toBe("Open QLab Chat for This Paper");
+    menuItem?.dispatchEvent(new Event("command"));
+    expect(plugin.openConversationForItem).toHaveBeenCalledWith(win, item);
+
+    plugin.removeQLabMenu(win);
+    expect(doc.getElementById("qlab-zotero-open-paper-chat")).toBeNull();
+  });
+
+  it("opens the stored conversation for a right-clicked library item through the codex service", async () => {
+    const plugin = new ZoteroChatPlugin() as any;
+    const attachment = { id: 7, key: "ATTACH", libraryID: 1, isPDFAttachment: () => true };
+    const item = {
+      isPDFAttachment: () => false,
+      isRegularItem: () => true,
+      getBestAttachment: async () => attachment,
+    };
+    const openConversationForPaper = vi.fn(async () => {});
+    plugin.codex = { openConversationForPaper };
+    plugin.openWorkbenchTab = vi.fn(async () => {});
+    plugin.updateInteractionContext = vi.fn();
+    plugin.renderChatViews = vi.fn();
+    plugin.activeWorkbenchEntry = vi.fn(() => null);
+    const win = {} as Window;
+
+    await plugin.openConversationForItem(win, item);
+
+    expect(plugin.openWorkbenchTab).toHaveBeenCalledWith(win);
+    expect(openConversationForPaper).toHaveBeenCalledWith("1-ATTACH");
+    expect(plugin.renderChatViews).toHaveBeenCalled();
+  });
 });
