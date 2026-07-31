@@ -36,6 +36,13 @@ import { qlabWritableRoots } from "./qlab-commands";
 import { resumeStoredThread } from "./stored-conversation-resume";
 import type { RepositoryTargetSnapshot } from "./repository-target";
 import type { TargetSwitchBlocker } from "./repository-target-controller";
+import {
+  librarySubjectKey,
+  type LibraryConversationState,
+  type LibraryConversationSubject,
+  type LibraryConversationSubjectInput,
+  type LibrarySubjectKey,
+} from "./library-conversation";
 
 export type CodexApprovalDecision = "approve-once" | "approve-session" | "reject" | "cancel";
 
@@ -220,6 +227,7 @@ export interface SessionRecord {
 export interface PersistedSessionRecord extends SessionRecord {
   recordedCwd: string | null;
 }
+interface LibrarySessionRecord extends SessionRecord {}
 
 export interface EvidenceRecord {
   id: string;
@@ -240,6 +248,7 @@ export interface OpenThreadRef {
 export interface SessionFile {
   version: 1;
   papers: Record<string, SessionRecord>;
+  libraries?: Record<LibrarySubjectKey, LibrarySessionRecord>;
   history?: Record<string, SessionRecord[]>;
   /** Conversation tabs currently open in the Workbench, across all papers. */
   openThreads?: string[];
@@ -281,6 +290,9 @@ function cloneConversationSessions(source: SessionFile): SessionFile {
   return {
     ...source,
     papers: Object.fromEntries(Object.entries(source.papers).map(([key, value]) => [key, { ...value }])),
+    libraries: source.libraries
+      ? Object.fromEntries(Object.entries(source.libraries).map(([key, value]) => [key, { ...value }])) as Record<LibrarySubjectKey, LibrarySessionRecord>
+      : undefined,
     history: source.history
       ? Object.fromEntries(Object.entries(source.history).map(([key, records]) => [key, records.map((record) => ({ ...record }))]))
       : undefined,
@@ -566,6 +578,15 @@ export async function saveSessionRecords(
   await writeSessionFile(next);
 }
 
+interface LibraryConversationRuntime {
+  subject: LibraryConversationSubject;
+  threadId: string | null;
+  opening: boolean;
+  running: boolean;
+  activeTurnId: string | null;
+  error: string | null;
+}
+
 const SHARED_DEVELOPER_INSTRUCTIONS = `You are the research assistant embedded in Zotero's PDF Reader.
 Treat the active Reader context and the dynamic Zotero tools as the authoritative paper context.
 When the user refers to "this", "here", "the selection", or "this page", call the relevant live Zotero tool before answering.
@@ -655,6 +676,10 @@ export class CodexService {
   /** The sole live thread authority: every callback must match this stamped owner. */
   private readonly threadOwners = new Map<string, LiveThreadOwner>();
   /** Non-authoritative UI index; ownedTurns is the terminal/switch authority. */
+  private readonly threadPaperKeys = new Map<string, string>();
+  private readonly libraryRuntimes = new Map<LibrarySubjectKey, LibraryConversationRuntime>();
+  private readonly threadLibrarySubjects = new Map<string, LibrarySubjectKey>();
+  /** Running turns are owned by their conversation, never by the current UI focus. */
   private readonly runningTurns = new Map<string, string>();
   /** Composite thread+turn entries stamped with target ID and epoch. */
   private readonly ownedTurns = new Map<string, OwnedTurn>();
@@ -1344,6 +1369,126 @@ export class CodexService {
     return pending;
   }
 
+  openLibraryConversation(input: LibraryConversationSubjectInput): Promise<LibraryConversationState> {
+    const subject = this.librarySubject(input);
+    return this.enqueueConversationTransition(() => this.openLibraryConversationInternal(subject));
+  }
+
+  getLibraryConversationState(input: LibraryConversationSubjectInput): LibraryConversationState {
+    const subject = this.librarySubject(input);
+    const runtime = this.libraryRuntime(subject);
+    return {
+      subject: runtime.subject,
+      threadId: runtime.threadId,
+      entries: runtime.threadId ? this.entriesForThread(runtime.threadId) : [],
+      opening: runtime.opening,
+      running: runtime.running,
+      activeTurnId: runtime.activeTurnId,
+      error: runtime.error,
+    };
+  }
+
+  private async openLibraryConversationInternal(
+    subject: LibraryConversationSubject,
+  ): Promise<LibraryConversationState> {
+    const runtime = this.libraryRuntime(subject);
+    runtime.subject = subject;
+    runtime.opening = true;
+    runtime.error = null;
+    this.callbacks.onState();
+    try {
+      const stored = this.sessions.libraries?.[subject.key];
+      if (stored && (stored.backend ?? "codex") === this.state.backend) {
+        const result = await resumeStoredThread(this.requireClient(), {
+          threadId: stored.threadId,
+          ...this.libraryThreadModeSettings(),
+        });
+        if (result.kind === "resumed") {
+          await this.commitLibraryConversation(subject, stored, result.threadId);
+        }
+        else {
+          await this.startLibraryConversation(subject);
+        }
+      }
+      else {
+        await this.startLibraryConversation(subject);
+      }
+      return this.getLibraryConversationState(subject);
+    }
+    catch (error) {
+      runtime.error = error instanceof Error ? error.message : String(error);
+      throw error;
+    }
+    finally {
+      runtime.opening = false;
+      this.callbacks.onState();
+    }
+  }
+
+  private async startLibraryConversation(subject: LibraryConversationSubject): Promise<void> {
+    const response = await this.requireClient().threadStart(this.libraryThreadModeSettings());
+    const stored = this.sessions.libraries?.[subject.key];
+    await this.commitLibraryConversation(subject, {
+      threadId: response.thread.id,
+      title: stored?.title || subject.libraryName || "Library Conversation",
+      workspace: profilePath(),
+      updatedAt: new Date().toISOString(),
+      backend: this.state.backend,
+    }, response.thread.id);
+    void this.requireClient().threadSetName(response.thread.id, subject.libraryName.slice(0, 80)).catch(() => {});
+  }
+
+  private async commitLibraryConversation(
+    subject: LibraryConversationSubject,
+    stored: LibrarySessionRecord,
+    resumedThreadId: string,
+  ): Promise<void> {
+    const next = cloneConversationSessions(this.sessions);
+    next.libraries ||= {};
+    next.libraries[subject.key] = {
+      ...stored,
+      threadId: resumedThreadId,
+      title: subject.libraryName || stored.title,
+      workspace: profilePath(),
+      updatedAt: new Date().toISOString(),
+      backend: this.state.backend,
+    };
+    await this.saveSessions(next);
+    this.sessions = next;
+    const runtime = this.libraryRuntime(subject);
+    if (runtime.threadId && runtime.threadId !== resumedThreadId) {
+      this.threadLibrarySubjects.delete(runtime.threadId);
+    }
+    if (stored.threadId !== resumedThreadId) {
+      this.threadLibrarySubjects.delete(stored.threadId);
+    }
+    runtime.subject = subject;
+    runtime.threadId = resumedThreadId;
+    runtime.error = null;
+    this.threadLibrarySubjects.set(resumedThreadId, subject.key);
+  }
+
+  private librarySubject(input: LibraryConversationSubjectInput): LibraryConversationSubject {
+    return { ...input, key: librarySubjectKey(input) };
+  }
+
+  private libraryRuntime(subject: LibraryConversationSubject): LibraryConversationRuntime {
+    const existing = this.libraryRuntimes.get(subject.key);
+    if (existing) return existing;
+    const stored = this.sessions.libraries?.[subject.key];
+    const runtime: LibraryConversationRuntime = {
+      subject,
+      threadId: stored?.threadId || null,
+      opening: false,
+      running: false,
+      activeTurnId: null,
+      error: null,
+    };
+    this.libraryRuntimes.set(subject.key, runtime);
+    if (stored) this.threadLibrarySubjects.set(stored.threadId, subject.key);
+    return runtime;
+  }
+
   private async newThreadForActivePaper(): Promise<void> {
     const context = this.focusedContext || this.activeContext;
     const paperKey = this.focusedPaperKey || this.activePaperKey;
@@ -1505,7 +1650,8 @@ export class CodexService {
         this.sessions,
         admission.binding?.targetId || "",
       ));
-      const incoming = response.data.map((thread) => ({
+      const libraryThreadIds = new Set(Object.values(this.sessions.libraries || {}).map((record) => record.threadId));
+      const incoming = response.data.filter((thread) => !libraryThreadIds.has(thread.id)).map((thread) => ({
         ...historyOption(thread),
         pinned: pinned.has(thread.id),
       }));
@@ -1584,6 +1730,9 @@ export class CodexService {
   }
 
   private async openGlobalThreadInternal(threadId: string): Promise<void> {
+    if (this.isLibraryThread(threadId)) {
+      throw new Error("Library conversations can only be opened from the Library Palette");
+    }
     const targetId = this.requireRepositoryBinding().targetId;
     const refs = this.projectOpenThreadRefs(this.sessions).filter((ref) => (
       ref.targetId === targetId && ref.threadId === threadId
@@ -2271,7 +2420,11 @@ export class CodexService {
   }
 
   getChatEntries(): ChatEntry[] {
-    const thread = this.getActiveThread();
+    return this.state.activeThreadId ? this.entriesForThread(this.state.activeThreadId) : [];
+  }
+
+  private entriesForThread(threadId: string): ChatEntry[] {
+    const thread = this.store.getThread(threadId);
     if (!thread) return [];
     const entries: ChatEntry[] = [];
     for (const turn of thread.turns) entries.push(...this.entriesForTurn(turn));
@@ -2824,6 +2977,23 @@ export class CodexService {
       && record.targetId === this.repositoryTarget?.targetId;
   }
 
+  private libraryThreadModeSettings(): Pick<
+    ThreadStartParams,
+    | "cwd"
+    | "runtimeWorkspaceRoots"
+    | "approvalPolicy"
+    | "approvalsReviewer"
+    | "sandbox"
+  > {
+    return {
+      cwd: profilePath(),
+      runtimeWorkspaceRoots: [],
+      approvalPolicy: "never",
+      approvalsReviewer: "auto_review",
+      sandbox: "read-only",
+    };
+  }
+
   private threadModeSettings(context: ReaderContext): Pick<
     ThreadStartParams,
     | "cwd"
@@ -3118,6 +3288,11 @@ export class CodexService {
     return [...(file.pinnedThreads || [])];
   }
 
+  private isLibraryThread(threadId: string): boolean {
+    return this.threadLibrarySubjects.has(threadId)
+      || Object.values(this.sessions.libraries || {}).some((record) => record.threadId === threadId);
+  }
+
   private markDisconnected(): void {
     this.cancelAllPendingApprovals("cancel");
     this.failAllOwnedTurns(new Error("Codex disconnected before the turn completed"));
@@ -3159,6 +3334,12 @@ export class CodexService {
     const next = this.paperTransition.then(admittedOperation, admittedOperation);
     this.paperTransition = next.then(() => undefined, () => undefined);
     return this.trackAdmission(admission, next);
+  }
+
+  private enqueueConversationTransition<T>(operation: () => Promise<T>): Promise<T> {
+    const next = this.paperTransition.then(operation, operation);
+    this.paperTransition = next.then(() => undefined, () => undefined);
+    return next;
   }
 
 }
