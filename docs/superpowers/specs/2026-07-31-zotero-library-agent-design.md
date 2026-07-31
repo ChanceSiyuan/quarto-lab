@@ -110,7 +110,9 @@ not steal focus.
 The expanded palette has four vertical regions:
 
 1. **Header:** icon, `Library Agent`, current library/collection label, context
-   pills, review count, history, and collapse control.
+   pills, connection/review status, and collapse control. There is no separate
+   history menu in v1 because the transcript is the one durable conversation
+   for that library.
 2. **Transcript:** the durable library conversation. Messages are readable but
    compact enough to keep the library visible.
 3. **Review layer:** a structured mutation card, when pending, showing the
