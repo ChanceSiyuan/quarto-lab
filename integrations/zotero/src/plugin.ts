@@ -3,8 +3,12 @@ import readerToolbarIcon from "../assets/icon.svg";
 import regionCaptureIcon from "../assets/region-capture.svg";
 import {
   CodexService,
+  readSessionRecords,
+  saveSessionRecords,
   type CodexInteractionContextEntry,
   type CodexPendingApproval,
+  type PersistedSessionRecord,
+  type SessionRecordsSnapshot,
 } from "./codex-service";
 import {
   ReaderContextService,
@@ -64,7 +68,14 @@ import {
   type ExternalEditorApp,
 } from "./external-editor";
 import { TerminalPanel, type TerminalPaperOptions } from "./terminal-panel";
-import { loadSettings, saveQLabRoot, type ZoteroChatSettings } from "./settings";
+import {
+  loadSettings,
+  readRawTargetMigrationInput,
+  saveQLabRoot,
+  saveRepositoryTargets,
+  type RawTargetMigrationInput,
+  type ZoteroChatSettings,
+} from "./settings";
 import {
   buildQLabCommandPrompt,
   buildCaptureChatDraftPrompt,
@@ -84,6 +95,14 @@ import {
   normalizeQLabRoot,
   qlabRepositoryState,
 } from "./qlab-workspace";
+import { LocalRepositoryTargetResolver } from "./local-repository-target-resolver";
+import {
+  migrateLegacy,
+  type LegacyMigrationOutcome,
+  type LegacyMigrationResolver,
+  type RepositoryTargetSnapshot,
+  type StoredTargetPreferences,
+} from "./repository-target";
 import { QLabLiteratureService } from "./qlab-library";
 import {
   createQLabZoteroSyncRuntime,
@@ -201,9 +220,108 @@ export function draftChangeRebaseAction(
 export const MAX_SELECTION_PROMPT_CHARACTERS = 32_000;
 const STANDALONE_WORKBENCH_ID = "__qlab_standalone_workbench__";
 
+export interface RepositoryTargetStartupDependencies {
+  readRawTargetMigrationInput(): RawTargetMigrationInput;
+  readSessionRecords(): Promise<SessionRecordsSnapshot>;
+  loadSettings(raw: RawTargetMigrationInput): Promise<ZoteroChatSettings>;
+  createResolver(): LegacyMigrationResolver;
+  saveSessionRecords(
+    snapshot: SessionRecordsSnapshot,
+    records: readonly PersistedSessionRecord[],
+  ): Promise<void>;
+  saveRepositoryTargets(preferences: StoredTargetPreferences): void | Promise<void>;
+  hydrate(preferences: StoredTargetPreferences): RepositoryTargetSnapshot | null;
+  publish(snapshot: RepositoryTargetSnapshot): undefined;
+}
+
+export interface PreparedRepositoryTargetStartup {
+  readonly settings: ZoteroChatSettings;
+  readonly sessionRecords: SessionRecordsSnapshot;
+  readonly activeSnapshot: RepositoryTargetSnapshot | null;
+}
+
+export async function persistRepositoryTargetMigration(
+  snapshot: SessionRecordsSnapshot,
+  outcome: LegacyMigrationOutcome<PersistedSessionRecord>,
+  persistence: Pick<
+    RepositoryTargetStartupDependencies,
+    "saveSessionRecords" | "saveRepositoryTargets"
+  >,
+): Promise<void> {
+  await persistence.saveSessionRecords(snapshot, outcome.sessions);
+  await persistence.saveRepositoryTargets(outcome.preferences);
+}
+
+/**
+ * The sole startup gate before target-bound services are constructed. It
+ * reads raw migration authorities first, commits session assignments before
+ * preferences, then hydrates and synchronously publishes an initial snapshot.
+ */
+export async function prepareRepositoryTargetStartup(
+  dependencies: RepositoryTargetStartupDependencies,
+): Promise<PreparedRepositoryTargetStartup> {
+  const raw = dependencies.readRawTargetMigrationInput();
+  const persistedSessions = await dependencies.readSessionRecords();
+  let settings = await dependencies.loadSettings(raw);
+  let records = persistedSessions.records;
+
+  if (raw.legacyQLabRoot && !settings.repositoryTargets.migratedLegacy) {
+    const outcome = await migrateLegacy(
+      settings.repositoryTargets,
+      {
+        legacyRoot: raw.legacyQLabRoot,
+        sessions: records,
+        activeThreadId: persistedSessions.activeThreadId,
+      },
+      dependencies.createResolver(),
+    );
+    await persistRepositoryTargetMigration(persistedSessions, outcome, dependencies);
+    records = outcome.sessions;
+    settings = {
+      ...settings,
+      repositoryTargets: outcome.preferences,
+      qlabRoot: outcome.preferences.active?.canonicalRoot || "",
+    };
+  }
+
+  const activeSnapshot = dependencies.hydrate(settings.repositoryTargets);
+  validateHydratedTarget(settings.repositoryTargets, activeSnapshot);
+  if (activeSnapshot) dependencies.publish(activeSnapshot);
+  return {
+    settings,
+    sessionRecords: { ...persistedSessions, records },
+    activeSnapshot,
+  };
+}
+
+function validateHydratedTarget(
+  preferences: StoredTargetPreferences,
+  snapshot: RepositoryTargetSnapshot | null,
+): void {
+  if (!preferences.active) {
+    if (snapshot !== null) throw new Error("Target hydration invented an active repository");
+    return;
+  }
+  if (!snapshot
+      || snapshot.targetEpoch !== 1
+      || snapshot.target.targetId !== preferences.active.targetId
+      || snapshot.target.canonicalRoot !== preferences.active.canonicalRoot) {
+    throw new Error("Target hydration did not preserve the stored active repository");
+  }
+}
+
+function hydrateInitialRepositoryTarget(
+  preferences: StoredTargetPreferences,
+): RepositoryTargetSnapshot | null {
+  return preferences.active
+    ? Object.freeze({ target: preferences.active, targetEpoch: 1 })
+    : null;
+}
+
 /** Keep the historical class name as a source-level compatibility shim. */
 export class ZoteroChatPlugin {
   private settings!: ZoteroChatSettings;
+  private activeRepositoryTarget: RepositoryTargetSnapshot | null = null;
   private readerContext!: ReaderContextService;
   private bridge!: NativeBridge;
   private mainSite!: ResearchLoopSiteService;
@@ -273,7 +391,43 @@ export class ZoteroChatPlugin {
   private floatDismissedTurnId: string | null = null;
 
   async startup(data: PluginStartupData): Promise<void> {
-    this.settings = await loadSettings();
+    let startupBridge: NativeBridge | null = null;
+    let startupSiteRuntime: ReturnType<typeof createResearchLoopSiteRuntime> | null = null;
+    const ensureBridge = () => {
+      startupBridge ||= new NativeBridge(data.rootURI, data.version);
+      return startupBridge;
+    };
+    const ensureSiteRuntime = () => {
+      startupSiteRuntime ||= createResearchLoopSiteRuntime(
+        ensureBridge(),
+        data.rootURI,
+        data.version,
+      );
+      return startupSiteRuntime;
+    };
+    const preparedTarget = await prepareRepositoryTargetStartup({
+      readRawTargetMigrationInput,
+      readSessionRecords,
+      loadSettings,
+      createResolver: () => {
+        const runtime = ensureSiteRuntime();
+        const resolver = new LocalRepositoryTargetResolver(runtime);
+        return {
+          inspect: (root) => resolver.inspect(root),
+          canonicalize: (path) => runtime.canonicalize(path).catch(() => null),
+        };
+      },
+      saveSessionRecords,
+      saveRepositoryTargets,
+      hydrate: hydrateInitialRepositoryTarget,
+      publish: (snapshot) => {
+        this.activeRepositoryTarget = snapshot;
+        return undefined;
+      },
+    });
+    this.settings = preparedTarget.settings;
+    this.bridge = ensureBridge();
+    const siteRuntime = ensureSiteRuntime();
     await IOUtils.makeDirectory(profilePath(), {
       createAncestors: true,
       ignoreExisting: true,
@@ -312,10 +466,7 @@ export class ZoteroChatPlugin {
         if (win) void this.openWorkbenchTab(win).catch((error) => this.reportError(error));
       },
     });
-    this.bridge = new NativeBridge(data.rootURI, data.version);
-    this.mainSite = new ResearchLoopSiteService(
-      createResearchLoopSiteRuntime(this.bridge, data.rootURI, data.version),
-    );
+    this.mainSite = new ResearchLoopSiteService(siteRuntime);
     this.qmdRender = new QmdRenderService(createQmdRenderRuntime(this.bridge));
     // Original and AI-version previews use disjoint port ranges, so two
     // documents can never collide merely because their hashes line up.
@@ -420,6 +571,7 @@ export class ZoteroChatPlugin {
           throw new Error(`Unknown reviewed Research Loop tool: ${name}`);
         },
       },
+      preparedTarget.activeSnapshot,
     );
     this.paperTrail = new PaperTrailService(
       this.anchorHost,
@@ -4017,7 +4169,6 @@ export class ZoteroChatPlugin {
         kind: object.kind,
         key: String(objectKey || object.title),
         title: object.title,
-        workspaceRoot: root,
         ...(object.libraryID === undefined ? {} : { libraryID: object.libraryID }),
       });
       this.researchScope = object.kind === "draft" ? "paper" : "library";

@@ -15,8 +15,189 @@ import {
   pdfDirectory,
   pdfSourceMatchesConversationPaper,
   pdfSourceMatchesReaderContext,
+  prepareRepositoryTargetStartup,
 } from "../src/plugin";
 import type { ReaderContext } from "../src/reader-context";
+import type { StoredTargetPreferences } from "../src/repository-target";
+
+const EMPTY_TARGET_PREFERENCES: StoredTargetPreferences = {
+  version: 1,
+  active: null,
+  pendingCandidate: null,
+  legacyUnassigned: [],
+  migratedLegacy: false,
+};
+
+function startupTarget(root = "/legacy") {
+  return {
+    kind: "local" as const,
+    root,
+    canonicalRoot: root,
+    repositoryId: "a".repeat(64),
+    targetId: "b".repeat(64),
+  };
+}
+
+function startupSettings(repositoryTargets: StoredTargetPreferences) {
+  return {
+    libraryRoot: "/library",
+    qlabRoot: "",
+    repositoryTargets,
+    defaultModel: "",
+    reasoningEffort: "medium" as const,
+    approvalPolicy: "never",
+    terminalHeight: 420,
+    showReasoning: false,
+    storageRoot: "/profile",
+  };
+}
+
+function targetStartupHarness(options: {
+  state?: "ready" | "missing";
+  preferenceFailure?: Error | null;
+} = {}) {
+  const calls: string[] = [];
+  let preferences: StoredTargetPreferences = EMPTY_TARGET_PREFERENCES;
+  let records = [{
+    threadId: "legacy-thread",
+    title: "Legacy",
+    workspace: "/legacy/drafts",
+    recordedCwd: "/legacy/drafts",
+    updatedAt: "2026-07-31",
+    extensionField: { keep: true },
+  }];
+  let preferenceFailure = options.preferenceFailure ?? null;
+  const inspect = vi.fn(async () => {
+    calls.push("migrate");
+    return options.state === "missing"
+      ? { kind: "unavailable" as const, reason: "missing" as const }
+      : startupTarget();
+  });
+  const deps = {
+    readRawTargetMigrationInput: () => {
+      calls.push("raw");
+      return { legacyQLabRoot: "/legacy", repositoryTargetsRaw: JSON.stringify(preferences) };
+    },
+    readSessionRecords: async () => {
+      calls.push("sessions");
+      return {
+        file: { version: 1 as const, papers: {} },
+        locations: records.map((_record, index) => ({ kind: "history" as const, paperKey: "paper", index })),
+        records: structuredClone(records),
+        activeThreadId: null,
+      };
+    },
+    loadSettings: async () => {
+      calls.push("settings");
+      return startupSettings(preferences);
+    },
+    createResolver: () => ({
+      inspect,
+      canonicalize: vi.fn(async (path: string) => path),
+    }),
+    saveSessionRecords: async (_snapshot: unknown, next: readonly (typeof records)[number][]) => {
+      calls.push("saveSessionRecords");
+      records = structuredClone([...next]);
+    },
+    saveRepositoryTargets: (next: StoredTargetPreferences) => {
+      calls.push("saveRepositoryTargets");
+      if (preferenceFailure) throw preferenceFailure;
+      preferences = structuredClone(next);
+    },
+    hydrate: (next: StoredTargetPreferences) => {
+      calls.push("hydrate");
+      return next.active ? { target: next.active, targetEpoch: 1 } : null;
+    },
+    publish: (_snapshot: unknown) => {
+      calls.push("publish");
+      return undefined;
+    },
+  };
+  return {
+    calls,
+    deps,
+    inspect,
+    records: () => structuredClone(records),
+    preferences: () => structuredClone(preferences),
+    clearCalls: () => { calls.length = 0; },
+    setPreferenceFailure: (error: Error | null) => { preferenceFailure = error; },
+  };
+}
+
+describe("repository target startup", () => {
+  it("migrates, persists, hydrates, and publishes before returning construction state", async () => {
+    const h = targetStartupHarness();
+
+    const prepared = await prepareRepositoryTargetStartup(h.deps);
+
+    expect(h.calls).toEqual([
+      "raw",
+      "sessions",
+      "settings",
+      "migrate",
+      "saveSessionRecords",
+      "saveRepositoryTargets",
+      "hydrate",
+      "publish",
+    ]);
+    expect(prepared.activeSnapshot).toEqual({ target: startupTarget(), targetEpoch: 1 });
+    expect(prepared.settings.repositoryTargets.migratedLegacy).toBe(true);
+    expect(h.records()[0]).toMatchObject({
+      threadId: "legacy-thread",
+      targetId: "b".repeat(64),
+      extensionField: { keep: true },
+    });
+
+    h.clearCalls();
+    const persisted = { preferences: h.preferences(), records: h.records() };
+    await prepareRepositoryTargetStartup(h.deps);
+    expect(h.calls).toEqual(["raw", "sessions", "settings", "hydrate", "publish"]);
+    expect(h.inspect).toHaveBeenCalledOnce();
+    expect({ preferences: h.preferences(), records: h.records() }).toEqual(persisted);
+  });
+
+  it("retries a failed preference save with byte-stable migrated record fields", async () => {
+    const diskFull = new Error("disk full");
+    const h = targetStartupHarness({ preferenceFailure: diskFull });
+
+    await expect(prepareRepositoryTargetStartup(h.deps)).rejects.toBe(diskFull);
+    expect(h.calls).toEqual([
+      "raw", "sessions", "settings", "migrate", "saveSessionRecords", "saveRepositoryTargets",
+    ]);
+    expect(h.preferences().migratedLegacy).toBe(false);
+    const firstSavedRecords = h.records();
+    expect(firstSavedRecords[0]).toMatchObject({
+      targetId: "b".repeat(64),
+      extensionField: { keep: true },
+    });
+
+    h.clearCalls();
+    h.setPreferenceFailure(null);
+    await prepareRepositoryTargetStartup(h.deps);
+    expect(h.calls).toEqual([
+      "raw", "sessions", "settings", "migrate", "saveSessionRecords", "saveRepositoryTargets", "hydrate", "publish",
+    ]);
+    expect(h.records()).toEqual(firstSavedRecords);
+    expect(h.preferences().migratedLegacy).toBe(true);
+  });
+
+  it("uses a raw missing root even though display-safe settings contain no qlab root", async () => {
+    const h = targetStartupHarness({ state: "missing" });
+
+    const prepared = await prepareRepositoryTargetStartup(h.deps);
+
+    expect(h.inspect).toHaveBeenCalledWith("/legacy");
+    expect(prepared.settings.qlabRoot).toBe("");
+    expect(prepared.settings.repositoryTargets).toMatchObject({
+      active: null,
+      pendingCandidate: null,
+      legacyUnassigned: [{ threadId: "legacy-thread", reason: "missing" }],
+      migratedLegacy: true,
+    });
+    expect(h.calls.at(-1)).toBe("hydrate");
+    expect(h.calls).not.toContain("publish");
+  });
+});
 
 describe("Zotkit Reader terminal state", () => {
   it("matches only PDF links that identify the conversation paper", () => {

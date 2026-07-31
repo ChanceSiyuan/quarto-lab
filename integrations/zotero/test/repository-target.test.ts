@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   bindPendingLegacyThreads,
   classifyLegacyRoot,
@@ -11,6 +11,12 @@ import {
   type ResolvedLocalRepositoryTarget,
   type StoredTargetPreferences,
 } from "../src/repository-target";
+import {
+  loadSettings,
+  readRawTargetMigrationInput,
+} from "../src/settings";
+
+afterEach(() => vi.unstubAllGlobals());
 
 const EMPTY_PREFERENCES: StoredTargetPreferences = {
   version: 1,
@@ -47,6 +53,41 @@ function fakeMigrationResolver(state: "ready" | "empty" | "partial" | "missing" 
 }
 
 describe("repository target identity", () => {
+  it("reads raw legacy and malformed target preferences before path normalization", async () => {
+    const preferenceReads: string[] = [];
+    vi.stubGlobal("Services", {
+      prefs: {
+        getStringPref: (name: string, fallback: string) => {
+          preferenceReads.push(name);
+          if (name.endsWith("qlabRoot")) return "/missing-legacy";
+          if (name.endsWith("repositoryTargets")) return "{malformed";
+          if (name.endsWith("libraryRoot")) return "/library";
+          return fallback;
+        },
+        getIntPref: (_name: string, fallback: number) => fallback,
+        getBoolPref: (_name: string, fallback: boolean) => fallback,
+      },
+    });
+    vi.stubGlobal("IOUtils", {
+      exists: vi.fn(async (path: string) => path === "/library"),
+    });
+    vi.stubGlobal("Zotero", { Profile: { dir: "/profile" } });
+    vi.stubGlobal("PathUtils", { join: (...parts: string[]) => parts.join("/") });
+
+    const raw = readRawTargetMigrationInput();
+    expect(raw).toEqual({
+      legacyQLabRoot: "/missing-legacy",
+      repositoryTargetsRaw: "{malformed",
+    });
+    expect((globalThis as any).IOUtils.exists).not.toHaveBeenCalled();
+
+    const settings = await loadSettings(raw);
+    expect(settings.repositoryTargets).toEqual(emptyPreferences());
+    expect(settings.qlabRoot).toBe("");
+    expect(preferenceReads.filter((name) => name.endsWith("qlabRoot"))).toHaveLength(1);
+    expect(preferenceReads.filter((name) => name.endsWith("repositoryTargets"))).toHaveLength(1);
+  });
+
   it("derives IDs from exact NUL-delimited UTF-8 bytes through an injected digest", () => {
     const seen: Uint8Array[] = [];
     const digest = (bytes: Uint8Array) => { seen.push(bytes); return `d${seen.length}`.padEnd(64, "0"); };

@@ -1,5 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { CodexService } from "../src/codex-service";
+import {
+  CodexService,
+  readSessionRecords,
+  saveSessionRecords,
+} from "../src/codex-service";
 import {
   CodexDisconnectedError,
   CodexRequestTimeoutError,
@@ -17,6 +21,46 @@ import {
   NOTE_FROM_QMD_TOOL,
   NoteDraftBridgeService,
 } from "../src/note-draft-bridge";
+import type { RepositoryTargetSnapshot } from "../src/repository-target";
+
+const TEST_TARGET_ID = "b".repeat(64);
+
+function repositorySnapshot(
+  root = "/repo",
+  targetEpoch = 1,
+  targetId = TEST_TARGET_ID,
+): RepositoryTargetSnapshot {
+  return {
+    target: {
+      kind: "local",
+      root,
+      canonicalRoot: root,
+      repositoryId: "a".repeat(64),
+      targetId,
+    },
+    targetEpoch,
+  };
+}
+
+function bindRepository(
+  service: CodexService,
+  root = "/repo",
+  targetEpoch = 1,
+  targetId = TEST_TARGET_ID,
+): void {
+  const snapshot = repositorySnapshot(root, targetEpoch, targetId);
+  service.commitRepositoryTarget({
+    snapshot,
+    binding: { targetId, targetEpoch, root },
+    activeDocument: null,
+  });
+}
+
+function currentTargetRecord<T extends Record<string, unknown>>(
+  record: T,
+): T & { recordedCwd: string; targetId: string } {
+  return { ...record, recordedCwd: "/repo", targetId: TEST_TARGET_ID };
+}
 
 beforeEach(() => {
   vi.stubGlobal("Services", {
@@ -84,6 +128,7 @@ function serviceWithClient(client: Record<string, unknown>) {
     callbacks
   );
   const internal = service as any;
+  bindRepository(service);
   internal.client = client;
   internal.activeContext = paperContext();
   internal.activePaperKey = "1-ATTACH";
@@ -103,6 +148,388 @@ function deferred<T>() {
   return { promise, resolve, reject };
 }
 
+describe("CodexService repository target binding", () => {
+  it("stages a new target only after the queued paper transition drains", async () => {
+    const resumed = deferred<{ thread: { id: string; turns: never[] } }>();
+    const client = {
+      threadResume: vi.fn(() => resumed.promise),
+      threadRead: vi.fn(async () => ({ thread: { id: "thread-b", turns: [] } })),
+    };
+    const { service } = serviceWithClient(client);
+    const internal = service as any;
+    internal.saveSessions = vi.fn(async () => undefined);
+    internal.sessions = {
+      version: 1,
+      papers: {
+        "1-ATTACH": {
+          threadId: "thread-a",
+          title: "A",
+          workspace: "/profile/papers/1-ATTACH",
+          recordedCwd: "/repo",
+          targetId: TEST_TARGET_ID,
+          updatedAt: "2026-07-31",
+        },
+      },
+      history: {
+        "1-ATTACH": [{
+          threadId: "thread-b",
+          title: "B",
+          workspace: "/profile/papers/1-ATTACH",
+          recordedCwd: "/repo",
+          targetId: TEST_TARGET_ID,
+          updatedAt: "2026-07-30",
+        }],
+      },
+    };
+
+    const opening = service.switchThread("thread-b");
+    await vi.waitFor(() => expect(client.threadResume).toHaveBeenCalledOnce());
+    let staged = false;
+    const staging = service.stageRepositoryTarget(repositorySnapshot("/B", 2, "c".repeat(64)))
+      .then((value) => { staged = true; return value; });
+    await Promise.resolve();
+    expect(staged).toBe(false);
+    expect(service.repositoryBinding()).toEqual({
+      targetId: TEST_TARGET_ID,
+      targetEpoch: 1,
+      root: "/repo",
+    });
+
+    resumed.resolve({ thread: { id: "thread-b", turns: [] } });
+    await opening;
+    const stage = await staging;
+    expect(stage.binding).toEqual({ targetId: "c".repeat(64), targetEpoch: 2, root: "/B" });
+    expect(service.repositoryBinding()?.root).toBe("/repo");
+  });
+
+  it("commits synchronously with exact undefined and validates before any mutation", () => {
+    const { service } = serviceWithClient({});
+    service.setActiveDocument({ relativePath: "drafts/a.qmd" });
+    const before = service.repositoryBinding();
+    const next = repositorySnapshot("/B", 2, "c".repeat(64));
+
+    expect(() => service.commitRepositoryTarget({
+      snapshot: next,
+      binding: { targetId: "c".repeat(64), targetEpoch: 2, root: "/wrong" },
+      activeDocument: null,
+    })).toThrow("staged repository target");
+    expect(service.repositoryBinding()).toEqual(before);
+    expect((service as any).activeDocument).not.toBeNull();
+
+    const stage = {
+      snapshot: next,
+      binding: { targetId: "c".repeat(64), targetEpoch: 2, root: "/B" },
+      activeDocument: null as null,
+    };
+    expect(service.commitRepositoryTarget(stage)).toBeUndefined();
+    expect(service.repositoryBinding()).toEqual(stage.binding);
+    expect((service as any).activeDocument).toBeNull();
+
+    service.state.activeThreadId = "thread-old-root";
+    (service as any).activeContext = paperContext();
+    const rootOnlyChange = repositorySnapshot("/C", 2, "c".repeat(64));
+    expect(service.commitRepositoryTarget({
+      snapshot: rootOnlyChange,
+      binding: { targetId: "c".repeat(64), targetEpoch: 2, root: "/C" },
+      activeDocument: null,
+    })).toBeUndefined();
+    expect(service.state.activeThreadId).toBeNull();
+    expect((service as any).activeContext).toBeNull();
+  });
+
+  it("starts a new target thread instead of reusing an old workspace object", async () => {
+    const client = {
+      threadStart: vi.fn(async () => ({ thread: { id: `thread-${client.threadStart.mock.calls.length}` } })),
+      threadSetName: vi.fn(async () => ({})),
+      turnStart: vi.fn(async () => ({ turn: { id: "turn-b" } })),
+      turnSteer: vi.fn(),
+    };
+    const service = new CodexService(
+      {} as NativeBridge,
+      { tools: [] } as unknown as ReaderContextService,
+      "test",
+      { onState: vi.fn(), onError: vi.fn() },
+    );
+    (service as any).client = client;
+    (service as any).saveSessions = vi.fn(async () => undefined);
+    service.state.connected = true;
+    bindRepository(service, "/A", 1, TEST_TARGET_ID);
+    await service.setWorkspaceObject({ kind: "draft", key: "drafts/a.qmd", title: "A" });
+
+    const next = repositorySnapshot("/B", 2, "c".repeat(64));
+    service.commitRepositoryTarget({
+      snapshot: next,
+      binding: { targetId: "c".repeat(64), targetEpoch: 2, root: "/B" },
+      activeDocument: null,
+    });
+    await service.setWorkspaceObject({
+      kind: "draft",
+      key: "drafts/b.qmd",
+      title: "B",
+      workspaceRoot: "/legacy-injected-root",
+    } as any);
+    await service.send("write a draft", "gpt-5.6-sol", "high");
+
+    expect(client.turnSteer).not.toHaveBeenCalled();
+    expect(client.threadStart).toHaveBeenLastCalledWith(expect.objectContaining({
+      cwd: "/B",
+      runtimeWorkspaceRoots: ["/B"],
+    }));
+    expect((service as any).activeContext.researchObject).not.toHaveProperty("workspaceRoot");
+    expect((service as any).activeContext.workspace.root).toBe("/B");
+  });
+
+  it.each([
+    ["different target", "d".repeat(64)],
+    ["no target", undefined],
+  ])("never resumes a stored record with %s", async (_label, targetId) => {
+    const client = {
+      threadResume: vi.fn(),
+      threadStart: vi.fn(async () => ({ thread: { id: "thread-new" } })),
+      threadSetName: vi.fn(async () => ({})),
+    };
+    const { service } = serviceWithClient(client);
+    const internal = service as any;
+    internal.saveSessions = vi.fn(async () => undefined);
+    const second = {
+      ...paperContext(),
+      attachment: { ...paperContext().attachment, id: 8, key: "SECOND" },
+      workspace: { ...paperContext().workspace!, root: "/profile/papers/1-SECOND" },
+    };
+    internal.paperContexts.set("1-SECOND", second);
+    internal.sessions.papers["1-SECOND"] = {
+      threadId: "stored-thread",
+      title: "Stored",
+      workspace: "/legacy",
+      recordedCwd: "/legacy",
+      ...(targetId ? { targetId } : {}),
+      updatedAt: "2026-07-31",
+    };
+
+    await service.openConversationForPaper("1-SECOND");
+
+    expect(client.threadResume).not.toHaveBeenCalled();
+    expect(client.threadStart).toHaveBeenCalledWith(expect.objectContaining({ cwd: "/repo" }));
+    expect(internal.sessions.papers["1-SECOND"]).toMatchObject({
+      threadId: "thread-new",
+      targetId: TEST_TARGET_ID,
+      recordedCwd: "/repo",
+    });
+  });
+
+  it("rejects writable turns when no repository target is active", async () => {
+    const client = { turnStart: vi.fn() };
+    const service = new CodexService(
+      {} as NativeBridge,
+      { tools: [] } as unknown as ReaderContextService,
+      "test",
+      { onState: vi.fn(), onError: vi.fn() },
+    );
+    const internal = service as any;
+    internal.client = client;
+    internal.activeContext = paperContext();
+    internal.activePaperKey = "1-ATTACH";
+    internal.threadPaperKeys.set("thread-a", "1-ATTACH");
+    service.state.connected = true;
+    service.state.activeThreadId = "thread-a";
+
+    await expect(service.send("write", "gpt-5.6-sol", "high"))
+      .rejects.toThrow("active repository target");
+    expect(client.turnStart).not.toHaveBeenCalled();
+  });
+
+  it("reports and stops a running-turn switch blocker through the existing interrupt queue", async () => {
+    const client = { turnInterrupt: vi.fn(async () => ({})) };
+    const { service } = serviceWithClient(client);
+    const internal = service as any;
+    internal.runningTurns.set("thread-a", "turn-a");
+    internal.runningTurns.set("thread-background", "turn-background");
+    internal.syncActiveTurnState();
+
+    expect(service.repositoryTargetBlockers()).toEqual([{ kind: "running-turn" }]);
+    await service.stopForRepositoryTargetSwitch();
+    expect(client.turnInterrupt).toHaveBeenCalledWith({ threadId: "thread-a", turnId: "turn-a" });
+    expect(client.turnInterrupt).toHaveBeenCalledWith({
+      threadId: "thread-background",
+      turnId: "turn-background",
+    });
+    expect(service.repositoryTargetBlockers()).toEqual([]);
+  });
+
+  it("invalidates old-target history requests and ignores late old-target turn notifications", async () => {
+    const listed = deferred<{ data: Array<{ id: string; name: string }>; nextCursor: null }>();
+    const client = { threadList: vi.fn(() => listed.promise) };
+    const { service } = serviceWithClient(client);
+
+    const refreshing = service.refreshGlobalHistory();
+    await vi.waitFor(() => expect(client.threadList).toHaveBeenCalledOnce());
+    const next = repositorySnapshot("/B", 2, "c".repeat(64));
+    service.commitRepositoryTarget({
+      snapshot: next,
+      binding: { targetId: "c".repeat(64), targetEpoch: 2, root: "/B" },
+      activeDocument: null,
+    });
+    listed.resolve({ data: [{ id: "old-global", name: "Old target" }], nextCursor: null });
+    await refreshing;
+    (service as any).handleNotification({
+      method: "turn/started",
+      params: { threadId: "thread-a", turn: { id: "late-old-turn" } },
+    });
+
+    expect(service.getGlobalHistory()).toEqual([]);
+    expect(service.repositoryTargetBlockers()).toEqual([]);
+  });
+
+  it("rejects late old-target tools and approvals even after the same paper opens on B", async () => {
+    const invokeTool = vi.fn(async () => ({ text: "must not run" }));
+    const readerContext = {
+      tools: [{ name: "get_current_page", description: "Read", inputSchema: { type: "object" } }],
+      invokeTool,
+    } as unknown as ReaderContextService;
+    const service = new CodexService(
+      {} as NativeBridge,
+      readerContext,
+      "test",
+      { onState: vi.fn(), onError: vi.fn() },
+    );
+    const internal = service as any;
+    internal.client = {};
+    service.state.connected = true;
+    bindRepository(service, "/A");
+    internal.sessions.papers["1-ATTACH"] = currentTargetRecord({
+      threadId: "thread-a",
+      title: "A",
+      workspace: "/profile/papers/1-ATTACH",
+      updatedAt: "2026-07-31",
+    });
+
+    const next = repositorySnapshot("/B", 2, "c".repeat(64));
+    service.commitRepositoryTarget({
+      snapshot: next,
+      binding: { targetId: "c".repeat(64), targetEpoch: 2, root: "/B" },
+      activeDocument: null,
+    });
+    internal.paperContexts.set("1-ATTACH", paperContext());
+
+    await expect(internal.handleDynamicTool({
+      threadId: "thread-a",
+      turnId: "old-turn",
+      tool: "get_current_page",
+      arguments: {},
+    })).resolves.toMatchObject({ success: false });
+    expect(invokeTool).not.toHaveBeenCalled();
+
+    const approval = await internal.requestUserApproval({
+      kind: "commandExecution",
+      method: "item/commandExecution/requestApproval",
+      requestId: "old-approval",
+      params: {
+        threadId: "thread-a",
+        turnId: "old-turn",
+        itemId: "old-item",
+        startedAtMs: 1,
+        command: "pwd",
+        cwd: "/B",
+        availableDecisions: ["accept", "decline"],
+      },
+    });
+    expect(approval).toEqual({ decision: "decline" });
+  });
+});
+
+describe("Codex session target persistence", () => {
+  it("updates duplicate thread ids by stable paper/history location while preserving unknown fields", async () => {
+    const source = {
+      version: 1,
+      papers: {
+        paper: {
+          threadId: "duplicate",
+          title: "Current",
+          workspace: "/legacy/current",
+          updatedAt: "2026-07-31",
+          unknownRecordField: { current: true },
+        },
+      },
+      history: {
+        paper: [{
+          threadId: "duplicate",
+          title: "History",
+          workspace: "/legacy/history",
+          updatedAt: "2026-07-30",
+          unknownRecordField: { history: true },
+        }],
+      },
+      activeThreadId: "duplicate",
+      unknownTopLevelField: { preserve: true },
+    };
+    let written = "";
+    vi.stubGlobal("PathUtils", { join: (...parts: string[]) => parts.join("/") });
+    vi.stubGlobal("Zotero", { Profile: { dir: "/profile" } });
+    vi.stubGlobal("IOUtils", {
+      exists: vi.fn(async () => true),
+      readUTF8: vi.fn(async () => JSON.stringify(source)),
+      makeDirectory: vi.fn(async () => undefined),
+      writeUTF8: vi.fn(async (_path: string, value: string) => { written = value; }),
+    });
+
+    const snapshot = await readSessionRecords();
+    expect(snapshot.activeThreadId).toBe("duplicate");
+    expect(snapshot.records).toEqual([
+      expect.objectContaining({ recordedCwd: null, unknownRecordField: { current: true } }),
+      expect.objectContaining({ recordedCwd: null, unknownRecordField: { history: true } }),
+    ]);
+
+    await saveSessionRecords(snapshot, [
+      { ...snapshot.records[0]!, targetId: "c".repeat(64) },
+      { ...snapshot.records[1]!, targetId: "d".repeat(64) },
+    ]);
+
+    const persisted = JSON.parse(written);
+    expect(persisted.unknownTopLevelField).toEqual({ preserve: true });
+    expect(persisted.papers.paper).toMatchObject({
+      threadId: "duplicate",
+      recordedCwd: null,
+      targetId: "c".repeat(64),
+      unknownRecordField: { current: true },
+    });
+    expect(persisted.history.paper[0]).toMatchObject({
+      threadId: "duplicate",
+      recordedCwd: null,
+      targetId: "d".repeat(64),
+      unknownRecordField: { history: true },
+    });
+  });
+
+  it("treats only an absent session file as empty and rejects unreadable or invalid stores", async () => {
+    vi.stubGlobal("PathUtils", { join: (...parts: string[]) => parts.join("/") });
+    vi.stubGlobal("Zotero", { Profile: { dir: "/profile" } });
+    const readUTF8 = vi.fn();
+    const exists = vi.fn(async () => false);
+    vi.stubGlobal("IOUtils", { exists, readUTF8 });
+
+    await expect(readSessionRecords()).resolves.toMatchObject({
+      file: { version: 1, papers: {} },
+      records: [],
+      activeThreadId: null,
+    });
+    expect(readUTF8).not.toHaveBeenCalled();
+
+    exists.mockResolvedValue(true);
+    const unreadable = new Error("profile temporarily unavailable");
+    readUTF8.mockRejectedValueOnce(unreadable);
+    await expect(readSessionRecords()).rejects.toBe(unreadable);
+
+    readUTF8.mockResolvedValueOnce("{malformed");
+    await expect(readSessionRecords()).rejects.toBeInstanceOf(SyntaxError);
+
+    readUTF8.mockResolvedValueOnce(JSON.stringify({
+      version: 1,
+      papers: { paper: { threadId: "thread", workspace: "/paper" } },
+    }));
+    await expect(readSessionRecords()).rejects.toThrow("invalid persisted record");
+  });
+});
+
 describe("CodexService follow-up turns", () => {
   it("starts a repository-scoped object conversation without requiring an open PDF", async () => {
     const client = {
@@ -121,12 +548,12 @@ describe("CodexService follow-up turns", () => {
     internal.client = client;
     internal.saveSessions = vi.fn(async () => undefined);
     service.state.connected = true;
+    bindRepository(service, "/Users/test/research-loop");
 
     await service.setWorkspaceObject({
       kind: "collection",
       key: "collection:ABC123",
       title: "Quantum Algorithms",
-      workspaceRoot: "/Users/test/research-loop",
       libraryID: 1,
     });
     await service.send("Summarize this collection.", "gpt-5.6-sol", "high");
@@ -155,8 +582,8 @@ describe("CodexService follow-up turns", () => {
     internal.saveSessions = vi.fn(async () => undefined);
     internal.sessions = {
       version: 1,
-      papers: { "1-ATTACH": { threadId: "thread-a", title: "A", workspace: "/profile/papers/1-ATTACH", updatedAt: "2026-07-28" } },
-      history: { "1-ATTACH": [{ threadId: "thread-b", title: "B", workspace: "/profile/papers/1-ATTACH", updatedAt: "2026-07-27" }] },
+      papers: { "1-ATTACH": currentTargetRecord({ threadId: "thread-a", title: "A", workspace: "/profile/papers/1-ATTACH", updatedAt: "2026-07-28" }) },
+      history: { "1-ATTACH": [currentTargetRecord({ threadId: "thread-b", title: "B", workspace: "/profile/papers/1-ATTACH", updatedAt: "2026-07-27" })] },
     };
 
     const switching = service.switchThread("thread-b");
@@ -452,26 +879,27 @@ describe("CodexService follow-up turns", () => {
     expect(service.getGlobalHistoryState().hasMore).toBe(false);
   });
 
-  it("pins a global Codex conversation and resumes it into the current paper safely", async () => {
+  it("pins a targetless global Codex conversation but starts a target-bound paper thread", async () => {
     const client = {
       threadList: vi.fn(async () => ({
         data: [{ id: "global-a", name: "Global task", source: "vscode", updatedAt: 200 }],
         nextCursor: null,
       })),
-      threadResume: vi.fn(async () => ({ thread: { id: "global-a", turns: [] } })),
-      threadRead: vi.fn(async () => ({ thread: { id: "global-a", turns: [] } })),
+      threadResume: vi.fn(),
+      threadStart: vi.fn(async () => ({ thread: { id: "target-thread" } })),
+      threadSetName: vi.fn(async () => ({})),
       turnInterrupt: vi.fn(async () => ({})),
     };
     const { service } = serviceWithClient(client);
     const internal = service as any;
     internal.saveSessions = vi.fn(async () => {});
-    internal.sessions.papers["1-ATTACH"] = {
+    internal.sessions.papers["1-ATTACH"] = currentTargetRecord({
       threadId: "thread-a",
       title: "Paper thread",
       workspace: "/profile/papers/1-ATTACH",
       updatedAt: "2026-07-22T00:00:00.000Z",
       backend: "codex",
-    };
+    });
     await service.refreshGlobalHistory();
 
     await service.setGlobalThreadPinned("global-a", true);
@@ -479,18 +907,14 @@ describe("CodexService follow-up turns", () => {
     expect(internal.sessions.pinnedThreads).toEqual(["global-a"]);
 
     await service.openGlobalThread("global-a");
-    expect(client.threadResume).toHaveBeenCalledWith(expect.objectContaining({
-      threadId: "global-a",
-      approvalPolicy: "never",
-      approvalsReviewer: "auto_review",
-      sandbox: "workspace-write",
-    }));
-    expect(client.threadRead).toHaveBeenCalledWith("global-a", true);
-    expect(service.state.activeThreadId).toBe("global-a");
-    expect(service.getThreadOptions()).toEqual(expect.arrayContaining([
-      expect.objectContaining({ id: "global-a", active: true }),
-      expect.objectContaining({ id: "thread-a", active: false }),
-    ]));
+    expect(client.threadResume).not.toHaveBeenCalled();
+    expect(client.threadStart).toHaveBeenCalledWith(expect.objectContaining({ cwd: "/repo" }));
+    expect(service.state.activeThreadId).toBe("target-thread");
+    expect(internal.sessions.papers["1-ATTACH"]).toMatchObject({
+      threadId: "target-thread",
+      recordedCwd: "/repo",
+      targetId: TEST_TARGET_ID,
+    });
   });
 
   it("keeps open conversation tabs across papers and restores the matching Reader context", async () => {
@@ -516,8 +940,8 @@ describe("CodexService follow-up turns", () => {
     internal.sessions = {
       version: 1,
       papers: {
-        "1-ATTACH": { threadId: "thread-a", title: "A Paper", paperTitle: "A Paper", workspace: first.workspace!.root, updatedAt: "2026-07-30" },
-        "1-SECOND": { threadId: "thread-b", title: "Different proof", paperTitle: "A Different Paper", workspace: second.workspace!.root, updatedAt: "2026-07-30" },
+        "1-ATTACH": currentTargetRecord({ threadId: "thread-a", title: "A Paper", paperTitle: "A Paper", workspace: first.workspace!.root, updatedAt: "2026-07-30" }),
+        "1-SECOND": currentTargetRecord({ threadId: "thread-b", title: "Different proof", paperTitle: "A Different Paper", workspace: second.workspace!.root, updatedAt: "2026-07-30" }),
       },
       openThreads: ["thread-a", "thread-b"],
     };
@@ -553,8 +977,8 @@ describe("CodexService follow-up turns", () => {
     internal.sessions = {
       version: 1,
       papers: {
-        "1-ATTACH": { threadId: "thread-a", title: "A", workspace: first.workspace!.root, updatedAt: "2026-07-30" },
-        "1-SECOND": { threadId: "thread-b", title: "B", workspace: second.workspace!.root, updatedAt: "2026-07-30" },
+        "1-ATTACH": currentTargetRecord({ threadId: "thread-a", title: "A", workspace: first.workspace!.root, updatedAt: "2026-07-30" }),
+        "1-SECOND": currentTargetRecord({ threadId: "thread-b", title: "B", workspace: second.workspace!.root, updatedAt: "2026-07-30" }),
       },
       openThreads: ["thread-a", "thread-b"],
     };
@@ -609,10 +1033,10 @@ describe("CodexService follow-up turns", () => {
     internal.sessions = {
       version: 1,
       papers: {
-        "1-ATTACH": { threadId: "thread-a", title: "A", workspace: "/profile/papers/1-ATTACH", updatedAt: "2026-07-30" },
+        "1-ATTACH": currentTargetRecord({ threadId: "thread-a", title: "A", workspace: "/profile/papers/1-ATTACH", updatedAt: "2026-07-30" }),
       },
       history: {
-        "1-ATTACH": [{ threadId: "thread-b", title: "B", workspace: "/profile/papers/1-ATTACH", updatedAt: "2026-07-29" }],
+        "1-ATTACH": [currentTargetRecord({ threadId: "thread-b", title: "B", workspace: "/profile/papers/1-ATTACH", updatedAt: "2026-07-29" })],
       },
       openThreads: ["thread-a", "thread-b"],
     };
@@ -623,6 +1047,43 @@ describe("CodexService follow-up turns", () => {
     expect(internal.sessions.history["1-ATTACH"]).toEqual([
       expect.objectContaining({ threadId: "thread-b" }),
     ]);
+  });
+
+  it("does not select an open tab assigned to another repository target", async () => {
+    const { service } = serviceWithClient({ turnInterrupt: vi.fn(async () => ({})) });
+    const internal = service as any;
+    internal.saveSessions = vi.fn(async () => {});
+    const second = {
+      ...paperContext(),
+      attachment: { ...paperContext().attachment, key: "SECOND" },
+      workspace: { ...paperContext().workspace!, root: "/profile/papers/1-SECOND" },
+    };
+    internal.paperContexts.set("1-SECOND", second);
+    internal.sessions = {
+      version: 1,
+      papers: {
+        "1-ATTACH": currentTargetRecord({
+          threadId: "thread-a",
+          title: "Current target",
+          workspace: "/profile/papers/1-ATTACH",
+          updatedAt: "2026-07-30",
+        }),
+        "1-SECOND": {
+          threadId: "thread-old-target",
+          title: "Old target",
+          workspace: "/profile/papers/1-SECOND",
+          recordedCwd: "/old",
+          targetId: "d".repeat(64),
+          updatedAt: "2026-07-29",
+        },
+      },
+      openThreads: ["thread-a", "thread-old-target"],
+    };
+
+    await expect(service.closeThread("thread-a")).resolves.toBeUndefined();
+
+    expect(service.state.activeThreadId).toBeNull();
+    expect(service.getThreadOptions()).toEqual([]);
   });
 
   it("steers the exact active thread and turn while a response is running", async () => {
@@ -775,7 +1236,7 @@ describe("CodexService Cursor-style modes and approvals", () => {
       approvalsReviewer: "auto_review",
       sandboxPolicy: expect.objectContaining({
         type: "workspaceWrite",
-        writableRoots: ["/profile/papers/1-ATTACH"],
+        writableRoots: ["/repo/drafts", "/repo/literature", "/repo/work"],
         networkAccess: false,
       }),
     }));
@@ -826,7 +1287,7 @@ describe("CodexService Cursor-style modes and approvals", () => {
           network: null,
           fileSystem: {
             read: ["/papers"],
-            write: ["/profile/papers/1-ATTACH"],
+            write: ["/repo/drafts"],
           },
         },
       },
@@ -835,7 +1296,7 @@ describe("CodexService Cursor-style modes and approvals", () => {
       permissions: {
         fileSystem: {
           read: ["/papers"],
-          write: ["/profile/papers/1-ATTACH"],
+          write: ["/repo/drafts"],
         },
       },
       scope: "session",
@@ -927,7 +1388,7 @@ describe("CodexService Cursor-style modes and approvals", () => {
         write: null,
         entries: [{
           access: "write",
-          path: { type: "path", path: "/profile/papers/1-ATTACH/staging" },
+          path: { type: "path", path: "/repo/drafts/staging" },
         }],
       },
     };
@@ -1109,11 +1570,11 @@ describe("CodexService Cursor-style modes and approvals", () => {
     internal.client = client;
     internal.saveSessions = vi.fn(async () => undefined);
     service.state.connected = true;
+    bindRepository(service, "/Users/test/research-loop");
     await service.setWorkspaceObject({
       kind: "collection",
       key: "COLLECTION",
       title: "Quantum Algorithms",
-      workspaceRoot: "/Users/test/research-loop",
       libraryID: 1,
     });
 
@@ -1555,19 +2016,20 @@ describe("CodexService conversation reopening", () => {
       callbacks,
     );
     const internal = service as any;
+    bindRepository(service);
     internal.client = client;
     internal.saveSessions = vi.fn(async () => {});
     service.state.connected = true;
     internal.sessions = {
       version: 1,
       papers: {
-        "1-SECOND": {
+        "1-SECOND": currentTargetRecord({
           threadId: "thread-b",
           title: "Stored conversation",
           paperTitle: "A Different Paper",
           workspace: "/profile/papers/1-SECOND",
           updatedAt: "2026-07-30",
-        },
+        }),
       },
       openThreads: ["thread-b"],
     };
@@ -1874,6 +2336,13 @@ describe("CodexService conversation reopening", () => {
       threadRead: vi.fn(async () => ({ thread: { id: "thread-b-canonical", turns: [] } })),
     };
     const { service, internal } = serviceWithSeeder(client, async () => reopeningContext());
+    let persistedActiveThreadId: string | null | undefined;
+    internal.saveSessions = vi.fn(async (
+      _next: unknown,
+      activeThreadId = service.state.activeThreadId,
+    ) => {
+      persistedActiveThreadId = activeThreadId;
+    });
     internal.threadPaperKeys.set("thread-b", "1-OTHER");
 
     await service.openConversationForPaper("1-SECOND");
@@ -1883,7 +2352,9 @@ describe("CodexService conversation reopening", () => {
     expect(internal.threadPaperKeys.get("thread-b-canonical")).toBe("1-SECOND");
     expect(internal.threadPaperKeys.has("thread-b")).toBe(false);
     expect(internal.sessions.openThreads).toEqual(["thread-b-canonical"]);
+    expect(internal.sessions.activeThreadId).toBe("thread-b-canonical");
     expect(service.state.activeThreadId).toBe("thread-b-canonical");
+    expect(persistedActiveThreadId).toBe("thread-b-canonical");
   });
 
   it("does not retain a requested alias when a queued global open canonicalizes the active thread", async () => {
@@ -1986,19 +2457,19 @@ describe("CodexService conversation reopening", () => {
       threadSetName: vi.fn(async () => ({})),
     };
     const { service, internal } = serviceWithSeeder(client, async () => reopeningContext());
-    internal.sessions.papers["1-SECOND"] = {
+    internal.sessions.papers["1-SECOND"] = currentTargetRecord({
       threadId: "thread-a",
       title: "Current default",
       workspace: "/profile/papers/1-SECOND",
       updatedAt: "2026-07-30",
-    };
+    });
     internal.sessions.history = {
-      "1-SECOND": [{
+      "1-SECOND": [currentTargetRecord({
         threadId: "thread-b",
         title: "Historical conversation",
         workspace: "/profile/papers/1-SECOND",
         updatedAt: "2026-07-29",
-      }],
+      })],
     };
     internal.globalHistory = [{
       id: "thread-b",
