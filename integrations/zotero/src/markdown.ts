@@ -52,6 +52,12 @@ export interface MarkdownRenderOptions {
   onPdfPageLink?: (reference: PdfPageReference) => void;
   /** Confirms that the citation URL identifies the PDF bound to the host reader. */
   canOpenPdfPageLink?: (reference: PdfPageReference) => boolean;
+  /**
+   * Renders a single source newline as a hard `<br>` (chat transcripts).
+   * Pass `false` for Pandoc soft-break semantics — the newline becomes one
+   * space — as the Visual Edit surface requires. Defaults to `true`.
+   */
+  newlineAsBreak?: boolean;
 }
 
 export function renderMarkdown(
@@ -374,8 +380,13 @@ function appendInline(
     }
 
     if (text[index] === "\n") {
-      flushPlain();
-      parent.appendChild(doc.createElement("br"));
+      if (options.newlineAsBreak === false) {
+        plain += " ";
+      }
+      else {
+        flushPlain();
+        parent.appendChild(doc.createElement("br"));
+      }
       index++;
       continue;
     }

@@ -180,3 +180,34 @@ describe("safe paper Markdown renderer", () => {
     expect(fallback.getAttribute("title")).toBe("Click to copy LaTeX");
   });
 });
+
+describe("newlineAsBreak", () => {
+  beforeEach(() => {
+    document.body.replaceChildren();
+  });
+
+  it("renders single newlines inside paragraphs as hard breaks by default", () => {
+    const host = render("first line\nsecond line");
+    const paragraph = host.querySelector("p")!;
+    expect(paragraph.querySelectorAll("br")).toHaveLength(1);
+    expect(paragraph.textContent).toBe("first linesecond line");
+  });
+
+  it("renders single newlines as spaces when newlineAsBreak is false", () => {
+    const host = document.createElement("div");
+    host.appendChild(renderMarkdown(document, "first line\nsecond line", { newlineAsBreak: false }));
+    const paragraph = host.querySelector("p")!;
+    expect(paragraph.querySelector("br")).toBeNull();
+    expect(paragraph.textContent).toBe("first line second line");
+  });
+
+  it("applies the same soft-break semantics inside blockquotes", () => {
+    const hard = render("> quoted line one\n> quoted line two");
+    expect(hard.querySelector("blockquote br")).not.toBeNull();
+
+    const soft = document.createElement("div");
+    soft.appendChild(renderMarkdown(document, "> quoted line one\n> quoted line two", { newlineAsBreak: false }));
+    expect(soft.querySelector("blockquote br")).toBeNull();
+    expect(soft.querySelector("blockquote")!.textContent).toBe("quoted line one quoted line two");
+  });
+});
