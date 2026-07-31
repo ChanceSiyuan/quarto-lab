@@ -302,11 +302,11 @@ overlay; Zotero's native area-annotation tool is **not** bridged.
 
 ## Cross-cutting
 
-- **Test-first commits, one commit per section.** Per
+- **Test-first commits, sections never mixed.** Per
   `/home/chance/quarto-lab/AGENTS.md`: use test-first commits and do not
   combine unrelated tasks. Each of the four design sections above lands as
-  its own commit with its tests written first; no commit mixes two
-  sections.
+  its own commit or short series of test-first commits; no commit mixes
+  two sections.
 - **Release chores land last.** After the four section commits: update
   `CHANGELOG.md` with one entry per item, update `README.md` (including the
   new screenshot section from Design 3), and bump the version in the
