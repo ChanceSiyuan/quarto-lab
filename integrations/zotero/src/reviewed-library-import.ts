@@ -96,10 +96,24 @@ export interface LibraryMutationHost {
   invalidateLibrary(libraryID: number | string): Promise<void>;
 }
 
+const trustedApplyFailureReceipts = new WeakMap<object, LibraryApplyReceipt>();
+
+/**
+ * A partial receipt is trusted only for this module's exact constructed
+ * object (including subclasses that call super). Cross-module copies,
+ * prototype spoofs, and Proxy wrappers deliberately fail closed because
+ * compensation is destructive. The public receipt is informational only;
+ * compensation reads the private normalized snapshot above.
+ */
 export class LibraryApplyFailure extends Error {
-  constructor(message: string, readonly receipt: LibraryApplyReceipt) {
+  readonly receipt: LibraryApplyReceipt;
+
+  constructor(message: string, receipt: LibraryApplyReceipt) {
     super(message);
     this.name = "LibraryApplyFailure";
+    const normalizedReceipt = normalizeApplyReceipt(receipt);
+    this.receipt = cloneReceipt(normalizedReceipt);
+    trustedApplyFailureReceipts.set(this, normalizedReceipt);
   }
 }
 
@@ -475,12 +489,21 @@ export class ReviewedLibraryImportService {
       ...clonePlan(plan),
       preflight: clonePreflight(freshPreflight),
     };
-    let receipt: LibraryApplyReceipt;
+    let rawReceipt: LibraryApplyReceipt;
     try {
-      receipt = cloneReceipt(await this.host.apply(cloneValidatedPlan(validatedPlan)));
+      rawReceipt = await this.host.apply(cloneValidatedPlan(validatedPlan));
     }
     catch (error) {
-      return this.failApply(pending, plan.scope.libraryID, error);
+      return this.failApply(pending, validatedPlan, error, "apply-rejected");
+    }
+
+    let receipt: LibraryApplyReceipt;
+    try {
+      receipt = normalizeApplyReceipt(rawReceipt);
+      validateSuccessfulReceipt(receipt, validatedPlan);
+    }
+    catch (error) {
+      return this.failApply(pending, validatedPlan, error, "untrusted-receipt");
     }
 
     pending.receipt = cloneReceipt(receipt);
@@ -509,17 +532,38 @@ export class ReviewedLibraryImportService {
 
   private async failApply(
     pending: PendingLibraryImportReview,
-    libraryID: number | string,
+    plan: ValidatedLibraryImportPlan,
     error: unknown,
+    failureStage: "apply-rejected" | "untrusted-receipt",
   ): Promise<never> {
-    if (error instanceof LibraryApplyFailure) {
-      return this.compensateApplyFailure(pending, libraryID, error);
+    const partialReceipt = failureStage === "apply-rejected"
+      ? trustedApplyFailureReceipt(error)
+      : null;
+    let partialReceiptIsIncoherent = false;
+    if (partialReceipt !== null) {
+      try {
+        validatePartialReceipt(partialReceipt, plan);
+        return this.compensateApplyFailure(pending, plan.scope.libraryID, error, partialReceipt);
+      }
+      catch {
+        // A branded receipt that does not describe a subset of this exact
+        // validated plan is not safe authority for destructive rollback.
+        partialReceiptIsIncoherent = true;
+      }
     }
 
-    const invalidationError = await this.tryInvalidateLibrary(libraryID);
-    let message = boundedStatusMessage(
-      `Library import failed without a partial receipt: ${boundedErrorMessage(error)}`,
-    );
+    const invalidationError = await this.tryInvalidateLibrary(plan.scope.libraryID);
+    let message = failureStage === "untrusted-receipt"
+      ? boundedStatusMessage(
+        `Library import failed after Apply returned an untrusted receipt; manual inspection is required: ${boundedErrorMessage(error)}`,
+      )
+      : partialReceiptIsIncoherent
+        ? boundedStatusMessage(
+          `Library import failed with a partial receipt that did not match the validated plan; manual inspection is required: ${boundedErrorMessage(error)}`,
+        )
+      : boundedStatusMessage(
+        `Library import failed without a partial receipt: ${boundedErrorMessage(error)}`,
+      );
     if (invalidationError !== null) message = appendSnapshotWarning(message);
     this.publishTerminalReview(pending, "failed", message);
     throw new Error(message);
@@ -528,17 +572,17 @@ export class ReviewedLibraryImportService {
   private async compensateApplyFailure(
     pending: PendingLibraryImportReview,
     libraryID: number | string,
-    failure: LibraryApplyFailure,
+    failure: unknown,
+    receipt: LibraryApplyReceipt,
   ): Promise<never> {
     let rollback: LibraryRollbackResult;
     try {
-      const receipt = cloneReceipt(failure.receipt);
-      rollback = cloneRollbackResult(await this.host.compensate(cloneReceipt(receipt)));
+      rollback = normalizeRollbackResult(await this.host.compensate(cloneReceipt(receipt)), receipt);
     }
     catch (error) {
       const invalidationError = await this.tryInvalidateLibrary(libraryID);
       let message = boundedStatusMessage(
-        `Library import failed and rollback failed: ${boundedErrorMessage(error)}`,
+        `Library import failed and rollback failed; manual inspection is required: ${boundedErrorMessage(error)}`,
       );
       if (invalidationError !== null) message = appendSnapshotWarning(message);
       this.publishTerminalReview(pending, "failed", message);
@@ -1069,19 +1113,305 @@ function cloneValidatedPlan(plan: ValidatedLibraryImportPlan): ValidatedLibraryI
   };
 }
 
+function trustedApplyFailureReceipt(error: unknown): LibraryApplyReceipt | null {
+  if ((typeof error !== "object" || error === null) && typeof error !== "function") return null;
+  try {
+    const receipt = trustedApplyFailureReceipts.get(error as object);
+    return receipt === undefined ? null : cloneReceipt(receipt);
+  }
+  catch {
+    return null;
+  }
+}
+
+function normalizeApplyReceipt(raw: unknown): LibraryApplyReceipt {
+  const fields = snapshotExactRecord(
+    raw,
+    ["libraryID", "createdCollectionKey", "createdItemKeys", "addedMemberships"],
+    "Library Apply receipt",
+  );
+  const libraryID = normalizeExactLibraryID(fields.libraryID, "Library Apply receipt libraryID");
+  const createdCollectionKey = fields.createdCollectionKey === null
+    ? null
+    : readExactOpaqueText(fields.createdCollectionKey, "Library Apply receipt collection key");
+  const createdItemKeys = snapshotExactArray(
+    fields.createdItemKeys,
+    MAX_CAPABILITIES,
+    "Library Apply receipt created item keys",
+  ).map((key, index) => readExactOpaqueText(key, `Library Apply receipt created item key ${index}`));
+  if (new Set(createdItemKeys).size !== createdItemKeys.length) {
+    throw new Error("Library Apply receipt contains duplicate created item keys");
+  }
+  const addedMemberships = snapshotExactArray(
+    fields.addedMemberships,
+    MAX_CAPABILITIES,
+    "Library Apply receipt memberships",
+  ).map((membership, index) => {
+    const entry = snapshotExactRecord(
+      membership,
+      ["itemKey", "collectionKey"],
+      `Library Apply receipt membership ${index}`,
+    );
+    return {
+      itemKey: readExactOpaqueText(entry.itemKey, `Library Apply receipt membership ${index} item key`),
+      collectionKey: readExactOpaqueText(
+        entry.collectionKey,
+        `Library Apply receipt membership ${index} collection key`,
+      ),
+    };
+  });
+  const membershipPairs = addedMemberships.map(({ itemKey, collectionKey }) => `${itemKey}\u0000${collectionKey}`);
+  if (new Set(membershipPairs).size !== membershipPairs.length) {
+    throw new Error("Library Apply receipt contains duplicate memberships");
+  }
+  if (createdCollectionKey !== null
+    && addedMemberships.some(({ collectionKey }) => collectionKey !== createdCollectionKey)) {
+    throw new Error("Library Apply receipt memberships do not target its created collection");
+  }
+  return { libraryID, createdCollectionKey, createdItemKeys, addedMemberships };
+}
+
+function validateSuccessfulReceipt(
+  receipt: LibraryApplyReceipt,
+  plan: ValidatedLibraryImportPlan,
+): void {
+  if (receipt.libraryID !== plan.scope.libraryID) {
+    throw new Error("Library Apply receipt does not match the validated library");
+  }
+  validateCreatedReceiptIdentities(receipt, plan, "Library Apply receipt");
+  const existingCollectionKey = plan.preflight.siblingCollectionKey;
+  if ((existingCollectionKey === null) !== (receipt.createdCollectionKey !== null)) {
+    throw new Error("Library Apply receipt does not match the validated collection effect");
+  }
+  const targetCollectionKey = receipt.createdCollectionKey ?? existingCollectionKey;
+  if (targetCollectionKey === null) {
+    throw new Error("Library Apply receipt lacks the validated target collection key");
+  }
+  const expectedCreateCount = plan.preflight.dispositions.filter(({ effect }) => effect === "create").length;
+  if (receipt.createdItemKeys.length !== expectedCreateCount) {
+    throw new Error("Library Apply receipt does not contain the exact created item effects");
+  }
+  const expectedMembershipItemKeys = [...new Set([
+    ...receipt.createdItemKeys,
+    ...plan.preflight.dispositions.flatMap((disposition) => (
+      disposition.effect === "reuse" && !disposition.membershipExists && disposition.itemKey !== null
+        ? [disposition.itemKey]
+        : []
+    )),
+  ])];
+  const actualMembershipItemKeys = receipt.addedMemberships.map(({ itemKey, collectionKey }) => {
+    if (collectionKey !== targetCollectionKey) {
+      throw new Error("Library Apply receipt membership targets an unexpected collection");
+    }
+    return itemKey;
+  });
+  if (actualMembershipItemKeys.length !== expectedMembershipItemKeys.length
+    || expectedMembershipItemKeys.some((itemKey) => !actualMembershipItemKeys.includes(itemKey))) {
+    throw new Error("Library Apply receipt does not contain the exact membership effects");
+  }
+}
+
+function validatePartialReceipt(
+  receipt: LibraryApplyReceipt,
+  plan: ValidatedLibraryImportPlan,
+): void {
+  if (receipt.libraryID !== plan.scope.libraryID) {
+    throw new Error("Partial Library Apply receipt does not match the validated library");
+  }
+  validateCreatedReceiptIdentities(receipt, plan, "Partial Library Apply receipt");
+  const existingCollectionKey = plan.preflight.siblingCollectionKey;
+  if (existingCollectionKey !== null && receipt.createdCollectionKey !== null) {
+    throw new Error("Partial Library Apply receipt claims an unexpected collection creation");
+  }
+  const expectedCreateCount = plan.preflight.dispositions.filter(({ effect }) => effect === "create").length;
+  if (receipt.createdItemKeys.length > expectedCreateCount) {
+    throw new Error("Partial Library Apply receipt contains too many created items");
+  }
+  const targetCollectionKey = receipt.createdCollectionKey ?? existingCollectionKey;
+  if (targetCollectionKey === null
+    && (receipt.createdItemKeys.length > 0 || receipt.addedMemberships.length > 0)) {
+    throw new Error("Partial Library Apply receipt contains writes without a target collection");
+  }
+  const allowedMembershipItems = new Set([
+    ...receipt.createdItemKeys,
+    ...plan.preflight.dispositions.flatMap((disposition) => (
+      disposition.effect === "reuse" && !disposition.membershipExists && disposition.itemKey !== null
+        ? [disposition.itemKey]
+        : []
+    )),
+  ]);
+  for (const membership of receipt.addedMemberships) {
+    if (membership.collectionKey !== targetCollectionKey || !allowedMembershipItems.has(membership.itemKey)) {
+      throw new Error("Partial Library Apply receipt contains an unowned membership");
+    }
+  }
+}
+
+function validateCreatedReceiptIdentities(
+  receipt: LibraryApplyReceipt,
+  plan: ValidatedLibraryImportPlan,
+  label: string,
+): void {
+  const knownExistingItemKeys = new Set(plan.preflight.dispositions.flatMap((disposition) => (
+    disposition.itemKey === null ? [] : [disposition.itemKey]
+  )));
+  if (receipt.createdItemKeys.some((itemKey) => knownExistingItemKeys.has(itemKey))) {
+    throw new Error(`${label} claims a known existing item as newly created`);
+  }
+
+  const knownExistingCollectionKeys = new Set([
+    plan.target.parentCollectionKey,
+    plan.preflight.siblingCollectionKey,
+  ]);
+  if (receipt.createdCollectionKey !== null
+    && knownExistingCollectionKeys.has(receipt.createdCollectionKey)) {
+    throw new Error(`${label} claims a known existing collection as newly created`);
+  }
+}
+
+function normalizeRollbackResult(raw: unknown, receipt: LibraryApplyReceipt): LibraryRollbackResult {
+  const fields = snapshotExactRecord(raw, ["complete", "survivors"], "Library rollback result");
+  if (typeof fields.complete !== "boolean") {
+    throw new TypeError("Library rollback result complete must be boolean");
+  }
+  const survivorValues = snapshotExactArray(
+    fields.survivors,
+    MAX_CAPABILITIES * 2 + 1,
+    "Library rollback survivors",
+  );
+  const survivors = survivorValues.map((survivor, index) => normalizeRollbackSurvivor(survivor, index));
+  if (fields.complete && survivors.length !== 0) {
+    throw new Error("A complete Library rollback cannot report survivors");
+  }
+  if (!fields.complete && survivors.length === 0) {
+    throw new Error("An incomplete Library rollback must report its survivors");
+  }
+  const survivorIdentities = survivors.map(mutationSurvivorIdentity);
+  if (new Set(survivorIdentities).size !== survivorIdentities.length) {
+    throw new Error("Library rollback survivors must be unique");
+  }
+  const receiptMemberships = new Set(receipt.addedMemberships.map(
+    ({ itemKey, collectionKey }) => `membership\u0000${itemKey}\u0000${collectionKey}`,
+  ));
+  const receiptItems = new Set(receipt.createdItemKeys.map((itemKey) => `created-item\u0000${itemKey}`));
+  const receiptCollection = receipt.createdCollectionKey === null
+    ? null
+    : `collection\u0000${receipt.createdCollectionKey}`;
+  for (const identity of survivorIdentities) {
+    if (!receiptMemberships.has(identity) && !receiptItems.has(identity) && receiptCollection !== identity) {
+      throw new Error("Library rollback reported a survivor absent from its exact receipt");
+    }
+  }
+  return { complete: fields.complete, survivors };
+}
+
+function normalizeRollbackSurvivor(raw: unknown, index: number): LibraryMutationSurvivor {
+  const label = `Library rollback survivor ${index}`;
+  const snapshot = snapshotRecord(raw, label);
+  const kind = snapshot.kind;
+  if (kind === "membership") {
+    requireSnapshotKeys(snapshot, ["kind", "itemKey", "collectionKey", "error"], label);
+    return {
+      kind,
+      itemKey: readExactOpaqueText(snapshot.itemKey, `${label} item key`),
+      collectionKey: readExactOpaqueText(snapshot.collectionKey, `${label} collection key`),
+      error: normalizeRollbackError(snapshot.error, label),
+    };
+  }
+  if (kind === "created-item") {
+    requireSnapshotKeys(snapshot, ["kind", "itemKey", "error"], label);
+    return {
+      kind,
+      itemKey: readExactOpaqueText(snapshot.itemKey, `${label} item key`),
+      error: normalizeRollbackError(snapshot.error, label),
+    };
+  }
+  if (kind === "collection") {
+    requireSnapshotKeys(snapshot, ["kind", "collectionKey", "error"], label);
+    return {
+      kind,
+      collectionKey: readExactOpaqueText(snapshot.collectionKey, `${label} collection key`),
+      error: normalizeRollbackError(snapshot.error, label),
+    };
+  }
+  throw new TypeError(`${label} has an unsupported kind`);
+}
+
+function normalizeRollbackError(raw: unknown, label: string): string {
+  if (typeof raw !== "string") throw new TypeError(`${label} error must be a string`);
+  return boundedErrorMessage(raw);
+}
+
+function mutationSurvivorIdentity(survivor: LibraryMutationSurvivor): string {
+  if (survivor.kind === "membership") {
+    return `membership\u0000${survivor.itemKey}\u0000${survivor.collectionKey}`;
+  }
+  return survivor.kind === "created-item"
+    ? `created-item\u0000${survivor.itemKey}`
+    : `collection\u0000${survivor.collectionKey}`;
+}
+
+function normalizeExactLibraryID(raw: unknown, label: string): number | string {
+  if (typeof raw === "string") return readExactOpaqueText(raw, label);
+  if (typeof raw !== "number" || !Number.isSafeInteger(raw)) {
+    throw new TypeError(`${label} must be a string or safe integer`);
+  }
+  return raw;
+}
+
+function snapshotExactRecord(
+  raw: unknown,
+  exactKeys: readonly string[],
+  label: string,
+): UnknownRecord {
+  const snapshot = snapshotRecord(raw, label);
+  requireSnapshotKeys(snapshot, exactKeys, label);
+  return snapshot;
+}
+
+function snapshotRecord(raw: unknown, label: string): UnknownRecord {
+  if (!isPlainRecord(raw)) throw new TypeError(`${label} must be a plain object`);
+  const keys = Reflect.ownKeys(raw);
+  if (keys.some((key) => typeof key !== "string")) {
+    throw new TypeError(`${label} must not contain symbol fields`);
+  }
+  const snapshot: UnknownRecord = Object.create(null) as UnknownRecord;
+  for (const key of keys as string[]) snapshot[key] = raw[key];
+  return snapshot;
+}
+
+function requireSnapshotKeys(snapshot: UnknownRecord, exactKeys: readonly string[], label: string): void {
+  const keys = Object.keys(snapshot);
+  if (keys.length !== exactKeys.length
+    || keys.some((key) => !exactKeys.includes(key))
+    || exactKeys.some((key) => !keys.includes(key))) {
+    throw new TypeError(`${label} must contain exactly ${exactKeys.join(", ")}`);
+  }
+}
+
+function snapshotExactArray(raw: unknown, maximum: number, label: string): unknown[] {
+  if (!Array.isArray(raw)) throw new TypeError(`${label} must be an array`);
+  const length = raw.length;
+  if (!Number.isSafeInteger(length) || length < 0 || length > maximum) {
+    throw new RangeError(`${label} exceeds its bounded length`);
+  }
+  const expectedKeys = Array.from({ length }, (_, index) => String(index));
+  const keys = Reflect.ownKeys(raw).filter((key) => key !== "length");
+  if (keys.length !== expectedKeys.length
+    || keys.some((key) => typeof key !== "string" || !expectedKeys.includes(key))) {
+    throw new TypeError(`${label} must be dense and contain no extra properties`);
+  }
+  const snapshot: unknown[] = [];
+  for (let index = 0; index < length; index += 1) snapshot.push(raw[index]);
+  return snapshot;
+}
+
 function cloneReceipt(receipt: LibraryApplyReceipt): LibraryApplyReceipt {
   return {
     libraryID: receipt.libraryID,
     createdCollectionKey: receipt.createdCollectionKey,
     createdItemKeys: receipt.createdItemKeys.map((key) => key),
     addedMemberships: receipt.addedMemberships.map((membership) => ({ ...membership })),
-  };
-}
-
-function cloneRollbackResult(result: LibraryRollbackResult): LibraryRollbackResult {
-  return {
-    complete: result.complete,
-    survivors: result.survivors.map((survivor) => ({ ...survivor })),
   };
 }
 
