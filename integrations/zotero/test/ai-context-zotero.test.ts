@@ -538,6 +538,60 @@ it("treats a new link whose title save fails as missing and repairs the same rec
   expect(runtime.attachments[0]!.title).toBe(document.title);
 });
 
+it("rolls back a Gecko attachment's cached title when saveTx rejects", async () => {
+  const { files, runtime, Zotero } = geckoCASHarness("none");
+  const document = attachedDocument("P1");
+  const absolutePath = `/repo/${document.relativePath}`;
+  files.set(absolutePath, document.source);
+
+  const attachmentIDs: number[] = [];
+  const parent = { ...regular("P1", 1, 11), getAttachments: () => attachmentIDs };
+  let cachedTitle = "";
+  const attachment = {
+    id: 101,
+    key: "LINK1",
+    libraryID: 1,
+    parentID: parent.id,
+    isAttachment: () => true,
+    getFilePath: () => absolutePath,
+    getField: (name: string) => name === "title" ? cachedTitle : "",
+    setField: (name: string, value: string) => {
+      if (name === "title") cachedTitle = value;
+    },
+    saveTx: vi.fn()
+      .mockRejectedValueOnce(new Error("title save failed"))
+      .mockResolvedValueOnce(undefined),
+  };
+  Zotero.Items.getByLibraryAndKeyAsync = vi.fn(async () => parent);
+  Zotero.Items.getAsync = vi.fn(async (ids: number[]) => ids.map((id) => {
+    if (id !== attachment.id) throw new Error(`unexpected attachment ID: ${id}`);
+    return attachment;
+  }));
+  Zotero.Attachments.linkFromFile = vi.fn(async ({ file, parentItemID }: {
+    file: string;
+    parentItemID?: number;
+  }) => {
+    expect({ file, parentItemID }).toEqual({ file: absolutePath, parentItemID: parent.id });
+    attachmentIDs.push(attachment.id);
+    return attachment;
+  });
+
+  const host = createZoteroAIContextHost(runtime);
+  expect((await host.project(document)).missing).toEqual([
+    { mode: "attached", libraryID: "1", itemKey: "P1" },
+  ]);
+  expect((await host.projectionStatus(document)).missing).toEqual([
+    { mode: "attached", libraryID: "1", itemKey: "P1" },
+  ]);
+
+  expect((await host.project(document)).reused).toEqual([
+    { mode: "attached", libraryID: "1", itemKey: "P1" },
+  ]);
+  expect(cachedTitle).toBe(document.title);
+  expect(Zotero.Attachments.linkFromFile).toHaveBeenCalledOnce();
+  expect(attachment.saveTx).toHaveBeenCalledTimes(2);
+});
+
 it("treats a wrong-title existing link and a retitle failure as missing", async () => {
   const parent = regular("P1", 1, 11);
   const runtime = zoteroRuntime({ userLibraryID: 1, items: [parent] });

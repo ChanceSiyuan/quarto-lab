@@ -537,8 +537,13 @@ export function createGeckoZoteroAIContextRuntime(
     linkFromFile: (options) => Zotero.Attachments.linkFromFile(options),
     saveAttachmentTitle: async (attachment, title) => {
       const candidate = attachment as any;
+      const previousTitle = candidate.getField("title");
       candidate.setField("title", title);
-      await candidate.saveTx();
+      try { await candidate.saveTx(); }
+      catch (error) {
+        try { candidate.setField("title", previousTitle); }
+        finally { throw error; }
+      }
     },
   };
 }
