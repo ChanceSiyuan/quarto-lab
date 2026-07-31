@@ -708,6 +708,102 @@ describe("ReaderContextService", () => {
     expect(service.getCachedZotkitLibrarySnapshotReference()).toBeNull();
   });
 
+  it("keeps a newer generation's file intact when an invalidated older build settles later", async () => {
+    const finishes: Array<(snapshot: ZotkitLibrarySnapshot) => void> = [];
+    const buildZotkitLibrarySnapshot = vi.fn(() => new Promise<ZotkitLibrarySnapshot>((resolve) => {
+      finishes.push(resolve);
+    }));
+    const { adapter, reader, attachment } = makeAdapter({ buildZotkitLibrarySnapshot });
+    const service = new ReaderContextService(adapter, host);
+    await service.acceptReaderHook({ reader, item: attachment });
+    const makeSnapshot = (title: string, generatedAt: string): ZotkitLibrarySnapshot => ({
+      schemaVersion: 1,
+      libraryID: 1,
+      generatedAt,
+      complete: true,
+      collections: [],
+      tags: [],
+      items: [{
+        _topLevel: true,
+        key: `ITEM-${title}`,
+        itemType: "journalArticle",
+        title,
+        creators: [],
+        date: "2026",
+        publicationTitle: "Journal",
+        DOI: "",
+        url: "",
+        abstractNote: "",
+        language: "en",
+        tags: [],
+        collections: [],
+        collectionKeys: [],
+        version: 1,
+      }],
+    });
+
+    const oldBuild = service.ensureZotkitLibrarySnapshot();
+    await vi.waitFor(() => expect(finishes).toHaveLength(1));
+    service.invalidateZotkitLibrarySnapshot(1);
+    const newBuild = service.ensureZotkitLibrarySnapshot();
+    await vi.waitFor(() => expect(finishes).toHaveLength(2));
+    finishes[1]!(makeSnapshot("new generation", "2026-07-22T10:01:00.000Z"));
+    const newReference = await newBuild;
+    expect(newReference).not.toBeNull();
+    const newFileBefore = host.files.get(newReference!.path);
+    expect(newFileBefore).toContain("new generation");
+
+    finishes[0]!(makeSnapshot("old generation", "2026-07-22T10:00:00.000Z"));
+
+    await expect(oldBuild).resolves.toBeNull();
+    expect(service.getCachedZotkitLibrarySnapshotReference()).toEqual(newReference);
+    expect(host.files.get(newReference!.path)).toBe(newFileBefore);
+    expect(host.files.get(newReference!.path)).not.toContain("old generation");
+    expect(newReference!.path).not.toBe(
+      "/profile/zoterochat/reader-context/library-snapshots/1.jsonl",
+    );
+  });
+
+  it("does not return a stale cached reference or warning when an invalidated build fails late", async () => {
+    let rejectOldRefresh!: (error: Error) => void;
+    let finishNewBuild!: (snapshot: ZotkitLibrarySnapshot) => void;
+    const emptySnapshot = (generatedAt: string): ZotkitLibrarySnapshot => ({
+      schemaVersion: 1,
+      libraryID: 1,
+      generatedAt,
+      complete: true,
+      collections: [],
+      tags: [],
+      items: [],
+    });
+    const buildZotkitLibrarySnapshot = vi.fn()
+      .mockResolvedValueOnce(emptySnapshot("2026-07-22T09:00:00.000Z"))
+      .mockImplementationOnce(() => new Promise<ZotkitLibrarySnapshot>((_resolve, reject) => {
+        rejectOldRefresh = reject;
+      }))
+      .mockImplementationOnce(() => new Promise<ZotkitLibrarySnapshot>((resolve) => {
+        finishNewBuild = resolve;
+      }));
+    const { adapter, reader, attachment } = makeAdapter({ buildZotkitLibrarySnapshot });
+    const service = new ReaderContextService(adapter, host);
+    const context = await service.acceptReaderHook({ reader, item: attachment });
+    const seed = await service.ensureZotkitLibrarySnapshot();
+    expect(seed).not.toBeNull();
+
+    const oldRefresh = service.ensureZotkitLibrarySnapshot(true);
+    await vi.waitFor(() => expect(buildZotkitLibrarySnapshot).toHaveBeenCalledTimes(2));
+    service.invalidateZotkitLibrarySnapshot(1);
+    const newBuild = service.ensureZotkitLibrarySnapshot();
+    await vi.waitFor(() => expect(buildZotkitLibrarySnapshot).toHaveBeenCalledTimes(3));
+    finishNewBuild(emptySnapshot("2026-07-22T10:00:00.000Z"));
+    const newReference = await newBuild;
+    rejectOldRefresh(new Error("invalidated old refresh failed"));
+
+    await expect(oldRefresh).resolves.toBeNull();
+    expect(service.getCachedZotkitLibrarySnapshotReference()).toEqual(newReference);
+    expect(context.warnings).not.toContainEqual(expect.stringContaining("invalidated old refresh failed"));
+  });
+
   it("exposes bundled Zotkit metadata discovery tools through the shared bounded snapshot", async () => {
     const buildZotkitLibrarySnapshot = vi.fn(async (libraryID): Promise<ZotkitLibrarySnapshot> => ({
       schemaVersion: 1,

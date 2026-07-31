@@ -2655,7 +2655,11 @@ export class ReaderContextService<TReader = unknown, TItem = unknown> {
         });
         const profileRoot = await this.host.getProfileWorkspaceRoot();
         const directory = this.host.joinPath(profileRoot, "library-snapshots");
-        const path = this.host.joinPath(directory, `${safeSegment(key)}.jsonl`);
+        const generationSuffix = generation === 0 ? "" : `-g${generation}`;
+        const path = this.host.joinPath(
+          directory,
+          `${safeSegment(key)}${generationSuffix}.jsonl`,
+        );
         await this.host.ensureProfileDirectory(directory);
         const rendered = renderZotkitLibrarySnapshot(
           snapshot,
@@ -2687,6 +2691,7 @@ export class ReaderContextService<TReader = unknown, TItem = unknown> {
         return reference;
       }
       catch (error) {
+        if ((this.librarySnapshotGenerations.get(key) ?? 0) !== generation) return null;
         const active = this.snapshot?.context;
         if (active && snapshotLibraryKey(active.attachment.libraryID) === key) {
           const warning = `${ZOTKIT_SNAPSHOT_WARNING_PREFIX} ${boundedErrorMessage(error)}`;
