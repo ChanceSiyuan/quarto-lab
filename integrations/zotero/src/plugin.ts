@@ -1239,6 +1239,8 @@ export class ZoteroChatPlugin {
       refreshChangePreview: (path, changePath, previewPath) =>
         this.refreshQmdChangePreview(path, changePath, previewPath),
       keepChange: (path, changePath) => this.keepQmdChange(path, changePath),
+      readSource: (path) => this.readQmdSource(path),
+      saveSource: (path, revision, source) => this.saveQmdSource(path, revision, source),
     }));
     if (!workspace) return;
     workspace.repoRootHint = root;
@@ -1408,6 +1410,37 @@ export class ZoteroChatPlugin {
 
   private hashQmdSource(source: string): string {
     return sha256Bytes(new TextEncoder().encode(source));
+  }
+
+  private async readQmdSource(relativePath: string): Promise<{ source: string; revision: string }> {
+    const source = await IOUtils.readUTF8(this.safeRepositoryPath(relativePath));
+    return { source, revision: this.hashQmdSource(source) };
+  }
+
+  /** Optimistic, atomic Visual Edit save constrained to Draft authorities. */
+  private async saveQmdSource(
+    relativePath: string,
+    expectedRevision: string,
+    source: string,
+  ): Promise<{ source: string; revision: string }> {
+    const isDraft = relativePath.startsWith("drafts/") && relativePath.endsWith(".qmd");
+    const isWorkingCopy = /^work\/qlab-zotero\/draft-changes\/[a-f0-9]{64}\/draft\.qmd$/.test(relativePath);
+    if (!isDraft && !isWorkingCopy) throw new Error("Visual Edit may write only the active Draft or its AI version");
+    if (source.includes("\u0000")) throw new Error("The QMD source contains an invalid null byte");
+    if (new TextEncoder().encode(source).byteLength > 16 * 1024 * 1024) {
+      throw new Error("The QMD source is too large for Visual Edit");
+    }
+    const absolute = this.safeRepositoryPath(relativePath);
+    const current = await IOUtils.readUTF8(absolute);
+    if (this.hashQmdSource(current) !== expectedRevision) {
+      throw new Error("The QMD revision changed in Cursor or by the Agent before this edit could be saved");
+    }
+    if (source !== current) {
+      await IOUtils.writeUTF8(absolute, source, {
+        tmpPath: `${absolute}.qlab-visual-${Date.now()}.tmp`,
+      });
+    }
+    return { source, revision: this.hashQmdSource(source) };
   }
 
   /**

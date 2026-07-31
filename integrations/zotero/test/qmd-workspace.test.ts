@@ -74,6 +74,13 @@ function mount(
       revision: "kept-revision",
     };
   });
+  let sourceRevision = "source-r1";
+  let draftSource = `---\ntitle: Draft\ndescription: "Editable"\ncategories: theory\n---\n\n# Draft\n\n::: {#lem-test}\n## Visual lemma\n\n$x > 0$\n:::\n`;
+  const readSource = vi.fn(async (_path: string) => ({ source: draftSource, revision: sourceRevision }));
+  const saveSource = vi.fn(async (_path: string, _expected: string, source: string) => {
+    sourceRevision = `${sourceRevision}-saved`;
+    return { source, revision: sourceRevision };
+  });
   const draftEntry = entry(DRAFT);
   draftEntry.pendingChange = Boolean(options.indexedPending);
   const index = options.index ?? vi.fn(async () => [entry(PAGE), draftEntry]);
@@ -90,6 +97,8 @@ function mount(
     prepareChange,
     refreshChangePreview,
     keepChange,
+    readSource,
+    saveSource,
   });
   view.repoRootHint = "/repo";
   return {
@@ -104,6 +113,12 @@ function mount(
     prepareChange,
     refreshChangePreview,
     keepChange,
+    readSource,
+    saveSource,
+    setExternalSource(source: string) {
+      draftSource = source;
+      sourceRevision = `${sourceRevision}-external`;
+    },
     setPending(value: boolean, nextRevision = revision) {
       pending = value;
       revision = nextRevision;
@@ -125,7 +140,7 @@ describe("QmdWorkspaceView", () => {
     vi.useRealTimers();
   });
 
-  it("previews a page and never mounts an editor of its own", async () => {
+  it("defaults to the compiled preview and mounts Visual Edit only when requested", async () => {
     const { host, view, renderService } = mount();
     view.show();
     await view.open(PAGE);
@@ -133,7 +148,7 @@ describe("QmdWorkspaceView", () => {
     expect(renderService.open).toHaveBeenCalledOnce();
     expect(host.querySelector(".zc-qmd-path")!.textContent).toBe(PAGE);
     expect(host.querySelector(".zc-qmd-tree-badge")!.textContent).toBe("Trusted Knowledge");
-    // Writing belongs to a real editor; nothing here takes keystrokes.
+    // Trusted Knowledge is read-only and the visual editor is lazy.
     expect(host.querySelector(".cm-content")).toBeNull();
     expect(host.querySelector("[data-editor-mode]")).toBeNull();
     view.destroy();
@@ -200,6 +215,55 @@ describe("QmdWorkspaceView", () => {
     expect(host.querySelector(".zc-qmd-compliance")!.getAttribute("aria-label")).toContain("checks passed");
     expect(host.querySelector<HTMLButtonElement>(".zc-qmd-review")!.hidden).toBe(false);
     view.destroy();
+  });
+
+  it("switches a Draft between authoritative Quarto preview and source-driven Visual Edit", async () => {
+    const { host, view, readSource } = mount();
+    view.show();
+    await view.open(DRAFT);
+
+    const mode = host.querySelector<HTMLButtonElement>(".zc-qmd-mode")!;
+    expect(mode.hidden).toBe(false);
+    expect(mode.getAttribute("aria-label")).toContain("Visual Edit");
+    mode.click();
+    await settle();
+
+    expect(readSource).toHaveBeenCalledWith(DRAFT);
+    expect(host.querySelector(".zc-qmd-visual-editor")).not.toBeNull();
+    expect(host.querySelector(".zc-qmd-visual-card.is-lem")!.textContent).toContain("Lemma 1: Visual lemma");
+    expect(mode.getAttribute("aria-label")).toContain("Website Preview");
+    mode.click();
+    expect(host.querySelector<HTMLElement>(".zc-qmd-render")!.hidden).toBe(false);
+    view.destroy();
+  });
+
+  it("edits the visible AI version when comparison is active", async () => {
+    const { host, view, readSource } = mount([CURSOR, VSCODE], { pending: true });
+    view.show();
+    await view.open(DRAFT);
+    host.querySelector<HTMLButtonElement>(".zc-qmd-compare")!.click();
+    await settle();
+    host.querySelector<HTMLButtonElement>(".zc-qmd-mode")!.click();
+    await settle();
+
+    expect(readSource).toHaveBeenLastCalledWith(CHANGE);
+    view.destroy();
+  });
+
+  it("reloads Visual Edit when Cursor changes the QMD outside Zotero", async () => {
+    vi.useFakeTimers();
+    const mounted = mount();
+    mounted.view.show();
+    await mounted.view.open(DRAFT);
+    mounted.host.querySelector<HTMLButtonElement>(".zc-qmd-mode")!.click();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(mounted.host.querySelector(".zc-qmd-visual-editor")!.textContent).toContain("Visual lemma");
+
+    mounted.setExternalSource(`---\ntitle: Draft\ndescription: "Editable"\ncategories: theory\n---\n\n# Updated in Cursor\n`);
+    await vi.advanceTimersByTimeAsync(2_100);
+
+    expect(mounted.host.querySelector(".zc-qmd-visual-editor")!.textContent).toContain("Updated in Cursor");
+    mounted.view.destroy();
   });
 
   it("shows draft compliance problems without hiding the review action", async () => {

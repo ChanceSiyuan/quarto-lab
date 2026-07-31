@@ -1190,10 +1190,89 @@
 /* Both panes keep a layout frame. `display: none` destroys it, and CodeMirror
    then holds a height map measured against nothing until a click forces a
    fresh measurement — which is what made regions of the document blank. */
-.zc-qmd-render { grid-column: 3; grid-row: 1; min-width: 0; min-height: 0; overflow: hidden; }
-.zc-qmd-workspace.is-files-collapsed .zc-qmd-render { grid-column: 2; }
+.zc-qmd-render,
+.zc-qmd-visual-pane { grid-column: 3; grid-row: 1; min-width: 0; min-height: 0; overflow: hidden; }
+.zc-qmd-workspace.is-files-collapsed .zc-qmd-render,
+.zc-qmd-workspace.is-files-collapsed .zc-qmd-visual-pane { grid-column: 2; }
+.zc-qmd-render[hidden],
+.zc-qmd-visual-pane[hidden] { display: none; }
 .zc-qmd-render-browser { width: 100%; height: 100%; min-width: 0; min-height: 0; border: 0; }
 .zc-qmd-render-unavailable { display: grid; height: 100%; place-items: center; color: var(--zc-muted); font-size: 12px; }
+.zc-qmd-visual-pane { overflow: auto; background: #fff; scrollbar-width: thin; }
+.zc-qmd-visual-editor {
+  box-sizing: border-box;
+  width: min(900px, calc(100% - 44px));
+  min-height: 100%;
+  margin: 0 auto;
+  padding: 34px 20px 72px;
+  color: #202124;
+  background: #fff;
+  font: 16px/1.65 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+.zc-qmd-visual-block {
+  position: relative;
+  margin: 0 0 16px;
+  border-radius: 6px;
+  transition: box-shadow .14s ease, background-color .14s ease;
+}
+.zc-qmd-visual-block[tabindex]:hover {
+  background: color-mix(in srgb, #0a84ff 4%, #fff);
+  box-shadow: 0 0 0 4px color-mix(in srgb, #0a84ff 7%, transparent);
+  cursor: text;
+}
+.zc-qmd-visual-block[tabindex]:focus { outline: 2px solid color-mix(in srgb, #0a84ff 60%, transparent); outline-offset: 3px; }
+.zc-qmd-visual-block h1 { margin: 0 0 22px; font-size: 2.05em; line-height: 1.15; }
+.zc-qmd-visual-block h2 { margin: 30px 0 14px; font-size: 1.55em; line-height: 1.2; }
+.zc-qmd-visual-block h3 { margin: 24px 0 12px; font-size: 1.25em; }
+.zc-qmd-visual-block p { margin: 0; }
+.zc-qmd-visual-block ul,
+.zc-qmd-visual-block ol { margin: 0; padding-left: 1.6em; }
+.zc-qmd-visual-block blockquote { margin: 0; padding: 3px 15px; border-left: 3px solid #9aa0a6; color: #5f6368; }
+.zc-qmd-visual-block .zc-math-display { margin: 14px 0; overflow-x: auto; text-align: center; }
+.zc-qmd-visual-frontmatter {
+  display: grid;
+  gap: 2px;
+  padding: 10px 12px;
+  border: 1px solid #e2e5e9;
+  color: #5f6368;
+  background: #f8f9fa;
+  font-size: 12px;
+}
+.zc-qmd-visual-frontmatter strong { color: #202124; font-size: 13px; }
+.zc-qmd-visual-card { overflow: hidden; border: 1px solid #d8e2f2; background: #fff; }
+.zc-qmd-visual-card > header {
+  padding: 7px 12px;
+  border-left: 5px solid #1473e6;
+  color: #30343b;
+  background: #eaf3ff;
+  font-weight: 700;
+  line-height: 1.3;
+}
+.zc-qmd-visual-card-body { padding: 10px 14px 12px 18px; border-left: 5px solid #1473e6; }
+.zc-qmd-visual-card.is-thm { border-color: #ecd2d7; }
+.zc-qmd-visual-card.is-thm > header { border-left-color: #dc3545; background: #fbecef; }
+.zc-qmd-visual-card.is-thm .zc-qmd-visual-card-body { border-left-color: #dc3545; }
+.zc-qmd-visual-card.is-def > header,
+.zc-qmd-visual-card.is-lem > header { background: #eaf3ff; }
+.zc-qmd-visual-card.is-proof > header { border-left-color: #2878d0; background: #e8f2ff; }
+.zc-qmd-visual-card.is-proof .zc-qmd-visual-card-body { border-left-color: #2878d0; }
+.zc-qmd-visual-source-editor,
+.zc-qmd-visual-math-editor {
+  box-sizing: border-box;
+  width: 100%;
+  border: 1px solid #0a84ff;
+  border-radius: 6px;
+  color: #17212b;
+  background: #f7fbff;
+  font: 13px/1.55 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  tab-size: 2;
+}
+.zc-qmd-visual-source-editor { min-height: 5.5em; padding: 10px 12px; resize: vertical; }
+.zc-qmd-visual-math-editor { min-width: 8em; padding: 4px 7px; }
+textarea.zc-qmd-visual-math-editor { min-height: 5em; resize: vertical; }
+.zc-qmd-visual-card > .zc-qmd-visual-source-editor { min-height: 15em; border: 0; border-radius: 0; padding: 14px; }
+.zc-qmd-visual-block.is-code pre,
+.zc-qmd-visual-block.is-raw pre { margin: 0; padding: 11px 13px; overflow: auto; border: 1px solid #e0e3e7; border-radius: 6px; background: #f7f8fa; font-size: 12px; }
 .zc-qmd-quickopen {
   position: absolute;
   z-index: 30;

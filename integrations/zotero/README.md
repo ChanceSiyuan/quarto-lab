@@ -59,12 +59,20 @@ there are no API-provider, Claude, or remote-SSH controls in the product UI.
   loads it beside the chat in Zotero's native browser without publishing
   Drafts or Literature.
 - Keeps the Draft Preview toolbar compact: icon controls expose compliance,
-  **Add to Knowledge**, external editing, and refresh through hover labels.
+  **Add to Knowledge**, **Visual Edit**, external editing, and refresh through
+  hover labels. Visual Edit is source-driven: it renders QMD blocks locally,
+  saves the authoritative QMD with revision checks, and leaves the compiled
+  Quarto website as a separate, unchanged preview mode. Paragraphs and
+  headings edit in place; formulas open as LaTeX; theorem, lemma, definition,
+  proof, and callout cards keep their rendered appearance until the user opens
+  their complete fenced QMD source. Unknown syntax falls back to raw QMD rather
+  than being rewritten heuristically.
   Add to Knowledge starts a non-mutating Agent review before any promotion.
-  When an Agent changes the visible Draft, a right-side overlay shows
-  reader-facing red/green changes or the exact read-only QMD diff. **Keep**
-  performs no extra compile; **Undo** restores only if the file still matches
-  the reviewed version, so newer user edits are never overwritten.
+  Agent changes remain in one persistent private working copy. The eye switches
+  both preview modes between the original and AI version, and **Keep** is the
+  only action that promotes the AI version back to the original Draft. Manual
+  Visual Edit or Cursor saves use atomic writes and never silently overwrite a
+  newer external revision.
 
 ## Build and test
 

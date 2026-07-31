@@ -2,6 +2,7 @@ import { EDITOR_TREES, treeForPath, type EditorTree } from "./editor-tree";
 import type { ExternalEditorApp } from "./external-editor";
 import { filterQmdIndex, groupIntoTree, type QmdIndexEntry, type QmdTreeNode } from "./qmd-index";
 import type { QmdRenderService } from "./qmd-render";
+import { QmdVisualEditor, type QmdSourceSnapshot } from "./qmd-visual-editor";
 
 const QMD_INDEX_REFRESH_INTERVAL_MS = 2_000;
 
@@ -35,6 +36,10 @@ export interface QmdWorkspaceOptions {
   refreshChangePreview?(relativePath: string, changePath: string, previewPath: string): Promise<void>;
   /** Replaces the Draft with its reviewed copy after adopting direct editor saves as the new baseline. */
   keepChange?(relativePath: string, changePath: string): Promise<QmdPreparedChange>;
+  /** Reads a Draft or its private AI working copy for source-driven Visual Edit. */
+  readSource?(relativePath: string): Promise<QmdSourceSnapshot>;
+  /** Saves QMD atomically when the expected source revision still matches. */
+  saveSource?(relativePath: string, expectedRevision: string, source: string): Promise<QmdSourceSnapshot>;
 }
 
 export interface QmdAgentDiff {
@@ -83,13 +88,13 @@ export function qmdDiffForPath(diff: string, relativePath: string): string | nul
 /**
  * The QMD preview workspace.
  *
- * It previews and it does not grow a source editor of its own. A pane sharing
- * width with the chat column is a poor place to write in, and a researcher's
- * own editor is better at writing than anything that would fit there — so this
- * shows the rendered page and hands the source to Cursor or VS Code. Agent
- * edits accumulate in a private QMD working copy; the eye switches between
- * the compiled original and working copy, and Keep is the only promotion from
- * that copy back to the user's Draft.
+ * It keeps two deliberately separate surfaces: the authoritative Quarto
+ * website preview and a source-driven Visual Edit view. Visual Edit maps every
+ * interaction back to QMD with optimistic revision checks; it never mutates
+ * compiled HTML. Cursor/VS Code remain available for unrestricted source
+ * work. Agent edits accumulate in a private QMD working copy; the eye switches
+ * both surfaces between the original and working copy, and Keep is the only
+ * promotion from that copy back to the user's Draft.
  *
  * Both trees are previewable. `drafts/` is rendered as a single file and stays
  * out of the published site, which is the whole reason it has no URL to reach
@@ -107,11 +112,13 @@ export class QmdWorkspaceView {
   private readonly reviewButton: HTMLButtonElement;
   private readonly complianceDetails: HTMLElement;
   private readonly editButton: HTMLButtonElement;
+  private readonly modeButton: HTMLButtonElement;
   private readonly editorPicker: HTMLSelectElement;
   private readonly status: HTMLElement;
   private readonly fileColumn: HTMLElement;
   private readonly fileToggle: HTMLButtonElement;
   private readonly renderPane: HTMLElement;
+  private readonly visualPane: HTMLElement;
   private readonly compareButton: HTMLButtonElement;
   private readonly keepChangesButton: HTMLButtonElement;
   private readonly quickOpen: HTMLElement;
@@ -119,6 +126,9 @@ export class QmdWorkspaceView {
   private readonly quickOpenList: HTMLElement;
 
   private renderBrowser: HTMLElement | null = null;
+  private visualEditor: QmdVisualEditor | null = null;
+  private visualMode = false;
+  private visualTargetPath: string | null = null;
   private renderedUrl = "";
   private changedUrl = "";
   private changePath: string | null = null;
@@ -213,11 +223,18 @@ export class QmdWorkspaceView {
       () => void this.openExternally(),
     );
     this.editButton.disabled = true;
+    this.modeButton = this.iconButton(
+      "zc-qmd-mode",
+      "✦",
+      "Visual Edit",
+      () => void this.toggleVisualMode(),
+    );
+    this.modeButton.hidden = true;
 
     const refresh = this.iconButton("zc-qmd-refresh", "↻", "Refresh Preview", () => void this.reloadRender());
     toolbar.append(back, quickOpenButton, this.pathLabel, this.treeBadge,
       this.complianceButton, this.reviewButton, this.compareButton, this.keepChangesButton,
-      this.editorPicker, this.editButton, refresh);
+      this.modeButton, this.editorPicker, this.editButton, refresh);
 
     this.status = make("div", "zc-qmd-status");
     this.status.textContent = "Choose a QMD page to preview";
@@ -232,7 +249,9 @@ export class QmdWorkspaceView {
     this.fileToggle.setAttribute("aria-label", "Collapse File List");
     this.fileToggle.setAttribute("aria-expanded", "true");
     this.renderPane = make("div", "zc-qmd-render");
-    body.append(this.fileColumn, this.fileToggle, this.renderPane);
+    this.visualPane = make("div", "zc-qmd-visual-pane");
+    this.visualPane.hidden = true;
+    body.append(this.fileColumn, this.fileToggle, this.renderPane, this.visualPane);
 
     this.quickOpen = make("div", "zc-qmd-quickopen");
     this.quickOpen.hidden = true;
@@ -370,6 +389,7 @@ export class QmdWorkspaceView {
       prepareError || diagnostic ? "error" : "valid",
     );
     await draftCheck;
+    if (this.visualMode && !tree.published) await this.loadVisualEditor(generation);
   }
 
   destroy(): void {
@@ -380,6 +400,7 @@ export class QmdWorkspaceView {
     this.doc.defaultView?.removeEventListener("focus", this.onWindowFocus);
     this.options.renderService.stop();
     this.options.changeRenderService.stop();
+    this.visualEditor?.destroy();
     this.options.onActiveDocument?.(null);
     this.root.remove();
   }
@@ -433,6 +454,7 @@ export class QmdWorkspaceView {
     this.renderFileColumn();
     this.updateChangeControls();
     await this.ensureChangedPreview(generation);
+    if (this.visualMode) await this.refreshVisualSource();
   }
 
   private async ensureChangedPreview(generation = this.openGeneration): Promise<string | null> {
@@ -483,6 +505,117 @@ export class QmdWorkspaceView {
       this.setStatus("Original Draft preview · the AI version remains unchanged", "valid");
     }
     this.updateChangeControls();
+    if (this.visualMode) await this.loadVisualEditor();
+  }
+
+  private async toggleVisualMode(): Promise<void> {
+    if (!this.current || this.current.tree.published || !this.options.readSource || !this.options.saveSource) return;
+    this.visualMode = !this.visualMode;
+    this.updateModeControls();
+    if (!this.visualMode) {
+      this.setStatus(
+        this.showingAgentChange ? "AI-modified Quarto website preview" : "Quarto website preview · refreshes automatically after save",
+        "valid",
+      );
+      return;
+    }
+    await this.loadVisualEditor();
+  }
+
+  private updateModeControls(): void {
+    const isDraft = Boolean(this.current && !this.current.tree.published);
+    this.modeButton.hidden = !isDraft;
+    this.modeButton.disabled = !isDraft || !this.options.readSource || !this.options.saveSource;
+    this.modeButton.setAttribute("aria-pressed", String(this.visualMode));
+    this.presentIcon(
+      this.modeButton,
+      this.visualMode ? "◎" : "✦",
+      this.visualMode ? "Website Preview" : "Visual Edit",
+    );
+    this.renderPane.hidden = this.visualMode;
+    this.visualPane.hidden = !this.visualMode;
+  }
+
+  private ensureVisualEditor(): QmdVisualEditor {
+    if (this.visualEditor) return this.visualEditor;
+    this.visualEditor = new QmdVisualEditor(this.doc, {
+      save: (source, revision) => this.saveVisualSource(source, revision),
+      onStatus: (message, state) => this.setStatus(message, state),
+    });
+    this.visualPane.appendChild(this.visualEditor.root);
+    return this.visualEditor;
+  }
+
+  private async loadVisualEditor(generation = this.openGeneration): Promise<void> {
+    const current = this.current;
+    if (!this.visualMode || !current || current.tree.published || !this.options.readSource) return;
+    const target = this.showingAgentChange && this.changePath ? this.changePath : current.relativePath;
+    this.visualTargetPath = target;
+    this.setStatus(
+      this.showingAgentChange ? "Loading the AI version for Visual Edit…" : "Loading Draft source for Visual Edit…",
+      "checking",
+    );
+    try {
+      const snapshot = await this.options.readSource(target);
+      if (generation !== this.openGeneration || this.destroyed || !this.visualMode || this.visualTargetPath !== target) return;
+      this.ensureVisualEditor().setDocument(snapshot, true);
+      this.setStatus(
+        this.showingAgentChange
+          ? "Visual Edit · changes save to the private AI version until Keep"
+          : "Visual Edit · QMD source saves automatically; Quarto preview rebuilds in the background",
+        "valid",
+      );
+    }
+    catch (error) {
+      if (generation === this.openGeneration && !this.destroyed) {
+        this.setStatus(error instanceof Error ? error.message : String(error), "error");
+      }
+    }
+  }
+
+  private async saveVisualSource(source: string, expectedRevision: string): Promise<QmdSourceSnapshot> {
+    const current = this.current;
+    const target = this.visualTargetPath;
+    if (!current || current.tree.published || !target || !this.options.saveSource) {
+      throw new Error("Visual Edit is not attached to a Draft source");
+    }
+    if (target !== current.relativePath && target !== this.changePath) {
+      throw new Error("Visual Edit refused a source outside the active Draft");
+    }
+    const snapshot = await this.options.saveSource(target, expectedRevision, source);
+    const prepared = await this.options.prepareChange?.(current.relativePath);
+    if (prepared) {
+      this.changePath = prepared.changePath;
+      this.changePreviewPath = prepared.previewPath;
+      this.changeRevision = prepared.revision;
+      this.hasAgentChange = prepared.changed;
+      this.changedUrl = "";
+      this.setPendingEntry(current.relativePath, prepared.changed);
+      this.renderFileColumn();
+      this.updateChangeControls();
+      this.options.onActiveDocument?.(current.relativePath, this.changePath);
+    }
+    return snapshot;
+  }
+
+  private async refreshVisualSource(): Promise<void> {
+    const target = this.visualTargetPath;
+    const editor = this.visualEditor;
+    if (!this.visualMode || !target || !editor || !this.options.readSource) return;
+    try {
+      const snapshot = await this.options.readSource(target);
+      if (!this.visualMode || this.visualTargetPath !== target || this.destroyed) return;
+      if (snapshot.revision === editor.snapshot().revision) return;
+      if (editor.isEditing()) {
+        this.setStatus("The QMD changed outside Visual Edit. Finish or cancel the active block before reloading.", "conflict");
+        return;
+      }
+      editor.setDocument(snapshot, true);
+      this.setStatus("Visual Edit reloaded the latest QMD source", "external");
+    }
+    catch (error) {
+      this.setStatus(error instanceof Error ? error.message : String(error), "error");
+    }
   }
 
   private async keepAgentChanges(): Promise<void> {
@@ -505,6 +638,7 @@ export class QmdWorkspaceView {
       this.options.onActiveDocument?.(current.relativePath, this.changePath);
       this.showBrowserUrl(`${this.renderedUrl}${this.renderedUrl.includes("?") ? "&" : "?"}qlab=${Date.now()}`, false);
       this.setStatus("AI version kept as the original Draft · waiting for the preview to refresh", "valid");
+      if (this.visualMode) await this.loadVisualEditor();
       void this.updateDraftCompliance(current.relativePath, this.openGeneration);
     }
     catch (error) {
@@ -533,6 +667,7 @@ export class QmdWorkspaceView {
     const isDraft = Boolean(this.current && !this.current.tree.published);
     this.compareButton.hidden = !isDraft;
     this.keepChangesButton.hidden = !isDraft;
+    if (!isDraft) this.visualMode = false;
     this.compareButton.disabled = !this.hasAgentChange;
     this.keepChangesButton.disabled = !this.hasAgentChange;
     this.compareButton.setAttribute("aria-pressed", String(this.showingAgentChange));
@@ -598,6 +733,7 @@ export class QmdWorkspaceView {
       this.complianceButton.disabled = true;
     }
     this.updateChangeControls();
+    this.updateModeControls();
   }
 
   private async updateDraftCompliance(relativePath: string, generation: number): Promise<void> {
@@ -802,9 +938,12 @@ export class QmdWorkspaceView {
 
   private async refreshVisibleIndex(): Promise<void> {
     const changed = await this.refreshIndex();
-    if (!changed || this.destroyed || this.root.hidden) return;
-    this.renderFileColumn();
-    if (!this.quickOpen.hidden) this.renderQuickOpen();
+    if (this.destroyed || this.root.hidden) return;
+    if (changed) {
+      this.renderFileColumn();
+      if (!this.quickOpen.hidden) this.renderQuickOpen();
+    }
+    if (this.visualMode) await this.refreshVisualSource();
   }
 
   private scheduleIndexRefresh(): void {
