@@ -569,6 +569,39 @@ export class CodexService {
     return this.enqueuePaperTransition(() => this.setPaperInternal(context));
   }
 
+  /**
+   * Selects the dedicated conversation for a repository-scoped object even
+   * when another paper conversation is currently active.
+   */
+  openWorkspaceObjectConversation(object: CodexWorkspaceObject): Promise<void> {
+    if (!object.workspaceRoot.trim()) {
+      return Promise.reject(new Error("Choose a QLab repository before opening this AI Context"));
+    }
+    return this.enqueuePaperTransition(async () => {
+      const context = workspaceObjectContext(object);
+      const paperKey = paperIdentity(context);
+      this.paperContexts.set(paperKey, context);
+      this.focusedContext = context;
+      this.focusedPaperKey = paperKey;
+      const stored = this.sessions.papers[paperKey];
+      if (stored && (stored.backend ?? "codex") === this.state.backend) {
+        if (
+          paperKey === this.activePaperKey
+          && stored.threadId === this.state.activeThreadId
+          && !this.state.switchingThreadId
+        ) {
+          this.activeContext = context;
+          this.activePaperKey = paperKey;
+          this.callbacks.onState();
+          return;
+        }
+        await this.openStoredConversation(paperKey, context, stored);
+        return;
+      }
+      await this.newThreadInternal(context, paperKey);
+    });
+  }
+
   private async setPaperInternal(context: ReaderContext): Promise<void> {
     const paperKey = paperIdentity(context);
     this.paperContexts.set(paperKey, context);

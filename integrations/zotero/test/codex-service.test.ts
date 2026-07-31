@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { CodexService } from "../src/codex-service";
+import type { CodexWorkspaceObject } from "../src/codex-service";
 import {
   CodexDisconnectedError,
   CodexRequestTimeoutError,
@@ -93,6 +94,14 @@ function serviceWithClient(client: Record<string, unknown>) {
   return { service, callbacks };
 }
 
+const aiContextObject = (): CodexWorkspaceObject => ({
+  kind: "draft",
+  key: "ai-context:ctx-01",
+  title: "AI Context · Decoding",
+  workspaceRoot: "/repo",
+});
+const aiContextPaperKey = "1-QLAB-draft-ai-context-ctx-01";
+
 function deferred<T>() {
   let resolve!: (value: T) => void;
   let reject!: (reason?: unknown) => void;
@@ -104,6 +113,100 @@ function deferred<T>() {
 }
 
 describe("CodexService follow-up turns", () => {
+  describe("AI Context workspace object conversations", () => {
+  it("creates and selects a dedicated context thread from an unrelated active thread", async () => {
+    const client = {
+      threadStart: vi.fn(async () => ({ thread: { id: "context-thread" } })),
+      threadSetName: vi.fn(async () => undefined),
+    };
+    const { service } = serviceWithClient(client);
+    const internal = service as any;
+    internal.saveSessions = vi.fn(async () => undefined);
+
+    await service.openWorkspaceObjectConversation(aiContextObject());
+
+    expect(client.threadStart).toHaveBeenCalledOnce();
+    expect(service.state.activeThreadId).toBe("context-thread");
+    expect(internal.sessions.papers[aiContextPaperKey]).toMatchObject({
+      threadId: "context-thread", title: "AI Context · Decoding", workspace: "/repo",
+    });
+  });
+
+  it("resumes the persisted context thread after another conversation is selected", async () => {
+    const client = {
+      threadResume: vi.fn(async () => ({ thread: { id: "stored-context-thread", turns: [] } })),
+      threadRead: vi.fn(async () => ({ thread: { id: "stored-context-thread", turns: [] } })),
+    };
+    const { service } = serviceWithClient(client);
+    const internal = service as any;
+    internal.saveSessions = vi.fn(async () => undefined);
+    internal.sessions.papers[aiContextPaperKey] = {
+      threadId: "stored-context-thread", title: "AI Context · Decoding",
+      workspace: "/repo", updatedAt: "2026-07-31T00:00:00.000Z",
+    };
+
+    await service.openWorkspaceObjectConversation(aiContextObject());
+
+    expect(client.threadResume).toHaveBeenCalledWith(expect.objectContaining({ threadId: "stored-context-thread" }));
+    expect(service.state.activeThreadId).toBe("stored-context-thread");
+  });
+
+  it("does not resume, start, or rewrite sessions when that exact context is already active", async () => {
+    const { service } = serviceWithClient({});
+    const internal = service as any;
+    internal.activePaperKey = aiContextPaperKey;
+    internal.activeContext = {
+      libraryID: "1", itemKey: "QLAB-draft-ai-context-ctx-01", title: "AI Context · Decoding", workspace: "/repo",
+    };
+    internal.state.activeThreadId = "thread-a";
+    internal.sessions.papers[aiContextPaperKey] = {
+      threadId: "thread-a", title: "AI Context · Decoding", workspace: "/repo", updatedAt: "2026-07-31T00:00:00.000Z",
+    };
+    internal.saveSessions = vi.fn(async () => undefined);
+    internal.client.threadResume = vi.fn();
+    internal.client.threadStart = vi.fn();
+
+    await service.openWorkspaceObjectConversation(aiContextObject());
+
+    expect(internal.client.threadResume).not.toHaveBeenCalled();
+    expect(internal.client.threadStart).not.toHaveBeenCalled();
+    expect(internal.saveSessions).not.toHaveBeenCalled();
+    expect(service.state.activeThreadId).toBe("thread-a");
+  });
+
+  it("replaces a stored thread only after the backend reports that it is missing", async () => {
+    const client = {
+      threadResume: vi.fn(async () => { throw new Error("thread not found"); }),
+      threadStart: vi.fn(async () => ({ thread: { id: "replacement-thread" } })),
+      threadSetName: vi.fn(async () => undefined),
+    };
+    const { service } = serviceWithClient(client);
+    const internal = service as any;
+    internal.saveSessions = vi.fn(async () => undefined);
+    internal.sessions.papers[aiContextPaperKey] = {
+      threadId: "gone-thread", title: "AI Context · Decoding", workspace: "/repo", updatedAt: "2026-07-31T00:00:00.000Z",
+    };
+
+    await service.openWorkspaceObjectConversation(aiContextObject());
+
+    expect(client.threadResume).toHaveBeenCalledWith(expect.objectContaining({ threadId: "gone-thread" }));
+    expect(client.threadStart).toHaveBeenCalledOnce();
+    expect(internal.sessions.papers[aiContextPaperKey].threadId).toBe("replacement-thread");
+  });
+
+  it("uses one stable sanitized identity and leaves setWorkspaceObject non-stealing", async () => {
+    const { service } = serviceWithClient({});
+    const internal = service as any;
+    internal.setWorkspaceObject(aiContextObject());
+    expect(internal.focusedPaperKey).toBe(aiContextPaperKey);
+    expect(service.state.activeThreadId).toBe("thread-a");
+
+    internal.setWorkspaceObject({ ...aiContextObject(), key: "ai-context:ctx/01" });
+    expect(internal.focusedPaperKey).toBe("1-QLAB-draft-ai-context-ctx-01");
+    expect(service.state.activeThreadId).toBe("thread-a");
+  });
+  });
+
   it("starts a repository-scoped object conversation without requiring an open PDF", async () => {
     const client = {
       threadStart: vi.fn().mockResolvedValue({ thread: { id: "thread-object" } }),
