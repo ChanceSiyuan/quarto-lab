@@ -3,6 +3,8 @@ import type { ExternalEditorApp } from "./external-editor";
 import { filterQmdIndex, groupIntoTree, type QmdIndexEntry, type QmdTreeNode } from "./qmd-index";
 import type { QmdRenderService } from "./qmd-render";
 
+const QMD_INDEX_REFRESH_INTERVAL_MS = 2_000;
+
 export interface QmdPreparedChange {
   changePath: string;
   previewPath: string;
@@ -131,7 +133,13 @@ export class QmdWorkspaceView {
   private destroyed = false;
   private openGeneration = 0;
   private complianceGeneration = 0;
+  private indexSignature = "";
+  private indexRefreshTimer: ReturnType<typeof setTimeout> | null = null;
+  private indexRefreshTask: Promise<boolean> | null = null;
   private readonly knownDiffs = new Map<string, string>();
+  private readonly onWindowFocus = (): void => {
+    if (!this.root.hidden) void this.refreshVisibleIndex();
+  };
 
   constructor(host: HTMLElement, private readonly options: QmdWorkspaceOptions) {
     this.doc = host.ownerDocument;
@@ -244,6 +252,7 @@ export class QmdWorkspaceView {
         void this.openQuickOpen();
       }
     });
+    this.doc.defaultView?.addEventListener("focus", this.onWindowFocus);
     host.appendChild(this.root);
   }
 
@@ -254,10 +263,13 @@ export class QmdWorkspaceView {
   show(): void {
     this.root.hidden = false;
     if (this.current) this.options.onActiveDocument?.(this.current.relativePath, this.changePath);
+    this.stopIndexRefresh();
+    void this.refreshVisibleIndex().finally(() => this.scheduleIndexRefresh());
   }
 
   hide(): void {
     this.root.hidden = true;
+    this.stopIndexRefresh();
     this.options.onActiveDocument?.(null);
   }
 
@@ -364,6 +376,8 @@ export class QmdWorkspaceView {
     if (this.destroyed) return;
     this.destroyed = true;
     this.openGeneration += 1;
+    this.stopIndexRefresh();
+    this.doc.defaultView?.removeEventListener("focus", this.onWindowFocus);
     this.options.renderService.stop();
     this.options.changeRenderService.stop();
     this.options.onActiveDocument?.(null);
@@ -760,13 +774,51 @@ export class QmdWorkspaceView {
     this.fileToggle.setAttribute("aria-expanded", String(!collapsed));
   }
 
-  private async refreshIndex(): Promise<void> {
-    try {
-      this.entries = await this.options.index();
-    }
-    catch {
-      this.entries = [];
-    }
+  private refreshIndex(): Promise<boolean> {
+    if (this.indexRefreshTask) return this.indexRefreshTask;
+    let task!: Promise<boolean>;
+    task = (async () => {
+      try {
+        const entries = await this.options.index();
+        if (this.destroyed) return false;
+        const signature = entries
+          .map((entry) => `${entry.relativePath}\t${entry.pendingChange ? "1" : "0"}`)
+          .join("\n");
+        const changed = signature !== this.indexSignature;
+        this.entries = entries;
+        this.indexSignature = signature;
+        return changed;
+      }
+      catch {
+        // A transient filesystem error must not erase a useful existing list.
+        return false;
+      }
+    })().finally(() => {
+      if (this.indexRefreshTask === task) this.indexRefreshTask = null;
+    });
+    this.indexRefreshTask = task;
+    return task;
+  }
+
+  private async refreshVisibleIndex(): Promise<void> {
+    const changed = await this.refreshIndex();
+    if (!changed || this.destroyed || this.root.hidden) return;
+    this.renderFileColumn();
+    if (!this.quickOpen.hidden) this.renderQuickOpen();
+  }
+
+  private scheduleIndexRefresh(): void {
+    if (this.destroyed || this.root.hidden || this.indexRefreshTimer) return;
+    this.indexRefreshTimer = setTimeout(() => {
+      this.indexRefreshTimer = null;
+      void this.refreshVisibleIndex().finally(() => this.scheduleIndexRefresh());
+    }, QMD_INDEX_REFRESH_INTERVAL_MS);
+  }
+
+  private stopIndexRefresh(): void {
+    if (!this.indexRefreshTimer) return;
+    clearTimeout(this.indexRefreshTimer);
+    this.indexRefreshTimer = null;
   }
 
   private renderFileColumn(): void {

@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { EXTERNAL_EDITORS, type ExternalEditorApp } from "../src/external-editor";
 import type { QmdIndexEntry } from "../src/qmd-index";
 import {
@@ -28,7 +28,11 @@ function entry(relativePath: string): QmdIndexEntry {
 
 function mount(
   editors: ExternalEditorApp[] = [CURSOR, VSCODE],
-  options: { pending?: boolean; indexedPending?: boolean } = {},
+  options: {
+    pending?: boolean;
+    indexedPending?: boolean;
+    index?: () => Promise<QmdIndexEntry[]>;
+  } = {},
 ) {
   const host = document.createElement("div");
   document.body.appendChild(host);
@@ -72,11 +76,12 @@ function mount(
   });
   const draftEntry = entry(DRAFT);
   draftEntry.pendingChange = Boolean(options.indexedPending);
+  const index = options.index ?? vi.fn(async () => [entry(PAGE), draftEntry]);
   const view = new QmdWorkspaceView(host, {
     onBack: vi.fn(),
     renderService: renderService as never,
     changeRenderService: changeRenderService as never,
-    index: async () => [entry(PAGE), draftEntry],
+    index,
     editors: async () => editors,
     openExternally,
     onEditorChosen,
@@ -116,6 +121,10 @@ describe("QmdWorkspaceView", () => {
     delete (document as unknown as { createXULElement?: unknown }).createXULElement;
   });
 
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it("previews a page and never mounts an editor of its own", async () => {
     const { host, view, renderService } = mount();
     view.show();
@@ -149,6 +158,35 @@ describe("QmdWorkspaceView", () => {
     expect(root.classList.contains("is-files-collapsed")).toBe(false);
     expect(toggle.textContent).toBe("‹");
     expect(toggle.getAttribute("aria-expanded")).toBe("true");
+    view.destroy();
+  });
+
+  it("refreshes the visible file list after external repository changes", async () => {
+    vi.useFakeTimers();
+    let files = [entry(PAGE), entry(DRAFT)];
+    const index = vi.fn(async () => files.map((candidate) => ({
+      ...candidate,
+      segments: [...candidate.segments],
+    })));
+    const { host, view } = mount([CURSOR, VSCODE], { index });
+    view.show();
+    await view.open(PAGE);
+
+    expect(host.querySelector('[data-path="drafts/new-note.qmd"]')).toBeNull();
+    files = [...files, entry("drafts/new-note.qmd")];
+    await vi.advanceTimersByTimeAsync(2_100);
+    expect(host.querySelector('[data-path="drafts/new-note.qmd"]')).not.toBeNull();
+
+    const callsWhileVisible = index.mock.calls.length;
+    view.hide();
+    files = files.filter((candidate) => candidate.relativePath !== "drafts/new-note.qmd");
+    await vi.advanceTimersByTimeAsync(4_100);
+    expect(index).toHaveBeenCalledTimes(callsWhileVisible);
+    expect(host.querySelector('[data-path="drafts/new-note.qmd"]')).not.toBeNull();
+
+    view.show();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(host.querySelector('[data-path="drafts/new-note.qmd"]')).toBeNull();
     view.destroy();
   });
 
