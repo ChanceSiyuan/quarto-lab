@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.10.0
+
+- Fix Research Action chips (Summarize, Evidence QA, Compare Papers) on Workbench surfaces: clicks now dispatch the action, and chips are no longer rebuilt mid-click during streaming re-renders.
+- Align Visual Edit with the compiled draft preview: KaTeX on both sides (draft previews now compile with `html-math-method: katex`), Pandoc-style soft line breaks, matched typography, and full list-grammar support.
+- Add region screenshots: a reader toolbar capture button with a crosshair drag overlay, plus a "Screenshot Region" Add-Context entry; cropped regions attach as "Region Screenshot" chips.
+- Reopen a paper's stored conversation without its PDF open: conversation tabs and History seed the paper in a background reader tab, and library items gain "Open QLab Chat for This Paper".
+
 ## 0.9.0
 
 - Add object-aware Research Actions for PDFs, Notes, Collections, and QMD Drafts, routed through the repository's canonical skills.
