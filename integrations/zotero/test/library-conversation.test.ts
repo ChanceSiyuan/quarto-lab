@@ -112,6 +112,16 @@ function libraryMessageContext(selectedCount = 2): LibraryMessageContext {
   };
 }
 
+function deferred<T>() {
+  let resolve!: (value: T) => void;
+  let reject!: (reason?: unknown) => void;
+  const promise = new Promise<T>((resolvePromise, rejectPromise) => {
+    resolve = resolvePromise;
+    reject = rejectPromise;
+  });
+  return { promise, resolve, reject };
+}
+
 describe("library conversations", () => {
   it("reports library opening state only to that library subject", async () => {
     const { service, callbacks } = libraryServiceHarness();
@@ -142,6 +152,20 @@ describe("library conversations", () => {
     expect(service.state.running).toBe(false);
     expect(service.getLibraryConversationState({ libraryID: 1, libraryName: "My Library" }))
       .toMatchObject({ running: true, activeTurnId: "library-turn" });
+  });
+
+  it("rejects a message whose context belongs to another normalized library id", async () => {
+    const { service, client } = libraryServiceHarness();
+    const context = { ...libraryMessageContext(), libraryID: "2" };
+
+    await expect(service.sendLibraryMessage(
+      { libraryID: 1, libraryName: "My Library" },
+      { text: "Do not cross libraries", model: "gpt-5.6-codex", effort: "medium" },
+      context,
+    )).rejects.toThrow("does not match");
+
+    expect(client.threadStart).not.toHaveBeenCalled();
+    expect(client.turnStart).not.toHaveBeenCalled();
   });
 
   it("resumes a stored library conversation before sending its first turn", async () => {
@@ -277,6 +301,94 @@ describe("library conversations", () => {
       activeThreadId: "paper-thread",
       running: true,
       activeTurnId: "paper-turn",
+    });
+  });
+
+  it("ignores late retired events while a replacement turn is starting", async () => {
+    const { service, client, libraryTools } = libraryServiceHarness();
+    const replacement = deferred<{ turn: { id: string } }>();
+    client.turnStart
+      .mockResolvedValueOnce({ turn: { id: "old-turn" } })
+      .mockImplementationOnce(() => replacement.promise);
+    const subject = { libraryID: 1, libraryName: "My Library" };
+
+    await service.sendLibraryMessage(
+      subject,
+      { text: "Old request", model: "gpt-5.6-codex", effort: "medium" },
+      libraryMessageContext(1),
+    );
+    await service.stopLibraryTurn(subject);
+    const replacementSend = service.sendLibraryMessage(
+      subject,
+      { text: "Replacement request", model: "gpt-5.6-codex", effort: "medium" },
+      { ...libraryMessageContext(1), selectedItems: [{
+        ...libraryMessageContext(1).selectedItems[0]!,
+        title: "Replacement paper",
+      }] },
+    );
+    await vi.waitFor(() => expect(client.turnStart).toHaveBeenCalledTimes(2));
+
+    (service as any).handleNotification({
+      method: "turn/started",
+      params: { threadId: "library-thread", turn: { id: "old-turn" } },
+    });
+    (service as any).handleNotification({
+      method: "turn/completed",
+      params: { threadId: "library-thread", turn: { id: "old-turn" } },
+    });
+    replacement.resolve({ turn: { id: "replacement-turn" } });
+    await replacementSend;
+
+    expect(service.getLibraryConversationState(subject)).toMatchObject({
+      running: true,
+      activeTurnId: "replacement-turn",
+    });
+    await expect((service as any).handleDynamicTool({
+      threadId: "library-thread",
+      turnId: "replacement-turn",
+      callId: "call-replacement",
+      namespace: null,
+      tool: "zotero_lookup_citations",
+      arguments: {},
+    })).resolves.toMatchObject({ success: true });
+    expect(libraryTools.invokeTool).toHaveBeenCalledWith(
+      "zotero_lookup_citations",
+      {},
+      expect.objectContaining({
+        selectedItems: [expect.objectContaining({ title: "Replacement paper" })],
+      }),
+      { threadId: "library-thread", turnId: "replacement-turn" },
+    );
+    await expect(service.sendLibraryMessage(
+      subject,
+      { text: "Third request", model: "gpt-5.6-codex", effort: "medium" },
+      libraryMessageContext(),
+    )).rejects.toThrow("already running");
+  });
+
+  it("buffers an early terminal event until turnStart identifies the pending turn", async () => {
+    const { service, client } = libraryServiceHarness();
+    const started = deferred<{ turn: { id: string } }>();
+    client.turnStart.mockImplementationOnce(() => started.promise);
+    const subject = { libraryID: 1, libraryName: "My Library" };
+    const sending = service.sendLibraryMessage(
+      subject,
+      { text: "Quick request", model: "gpt-5.6-codex", effort: "medium" },
+      libraryMessageContext(),
+    );
+    await vi.waitFor(() => expect(client.turnStart).toHaveBeenCalledOnce());
+
+    (service as any).handleNotification({
+      method: "turn/completed",
+      params: { threadId: "library-thread", turn: { id: "quick-turn" } },
+    });
+    expect(service.getLibraryConversationState(subject).running).toBe(true);
+    started.resolve({ turn: { id: "quick-turn" } });
+    await sending;
+
+    expect(service.getLibraryConversationState(subject)).toMatchObject({
+      running: false,
+      activeTurnId: null,
     });
   });
 

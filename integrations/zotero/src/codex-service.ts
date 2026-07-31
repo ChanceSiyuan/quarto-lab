@@ -246,6 +246,12 @@ interface LibraryConversationRuntime {
   error: string | null;
 }
 
+interface PendingLibraryTurn {
+  context: Readonly<LibraryMessageContext>;
+  candidateTurnIds: Set<string>;
+  terminalEvents: Map<string, { method: "turn/completed" | "turn/failed"; error: unknown }>;
+}
+
 const SHARED_DEVELOPER_INSTRUCTIONS = `You are the research assistant embedded in Zotero's PDF Reader.
 Treat the active Reader context and the dynamic Zotero tools as the authoritative paper context.
 When the user refers to "this", "here", "the selection", or "this page", call the relevant live Zotero tool before answering.
@@ -343,7 +349,9 @@ export class CodexService {
   private readonly libraryRuntimes = new Map<LibrarySubjectKey, LibraryConversationRuntime>();
   private readonly threadLibrarySubjects = new Map<string, LibrarySubjectKey>();
   private readonly libraryMessageContexts = new Map<string, Map<string, Readonly<LibraryMessageContext>>>();
-  private readonly pendingLibraryMessageContexts = new Map<string, Readonly<LibraryMessageContext>>();
+  private readonly pendingLibraryTurns = new Map<string, PendingLibraryTurn>();
+  private readonly retiredLibraryTurnIds = new Map<string, Set<string>>();
+  private openingLibrarySubjectKey: LibrarySubjectKey | null = null;
   /** Running turns are owned by their conversation, never by the current UI focus. */
   private readonly runningTurns = new Map<string, string>();
   private readonly pendingApprovalResolvers = new Map<string, PendingApprovalResolver>();
@@ -502,7 +510,9 @@ export class CodexService {
       this.state.connected = true;
       this.state.appServerAvailable = true;
       this.state.fallbackReason = null;
-      this.unsubscribeStore = this.store.subscribe(() => this.callbacks.onState());
+      this.unsubscribeStore = this.store.subscribe((snapshot, notification, affectedThreadIds) => {
+        this.handleStoreMutation(snapshot, notification, affectedThreadIds);
+      });
       this.state.account = await client.accountRead({ refreshToken: false });
       if (this.isSignedIn()) await this.refreshModels();
       this.state.mode = "agent";
@@ -526,7 +536,8 @@ export class CodexService {
       runtime.activeTurnId = null;
     }
     this.libraryMessageContexts.clear();
-    this.pendingLibraryMessageContexts.clear();
+    this.pendingLibraryTurns.clear();
+    this.retiredLibraryTurnIds.clear();
     this.unsubscribeStore?.();
     this.unsubscribeStore = null;
     this.client?.close(1000, "Zotkit shutdown");
@@ -709,6 +720,9 @@ export class CodexService {
     context: LibraryMessageContext,
   ): Promise<void> {
     const subject = this.librarySubject(input);
+    if (librarySubjectKey(context) !== subject.key) {
+      return Promise.reject(new Error("The message context library does not match the conversation subject"));
+    }
     const snapshot = snapshotLibraryMessageContext(context);
     return this.enqueueConversationTransition(() => (
       this.sendLibraryMessageInternal(subject, message, snapshot)
@@ -740,7 +754,12 @@ export class CodexService {
     runtime.running = true;
     runtime.activeTurnId = null;
     runtime.error = null;
-    this.pendingLibraryMessageContexts.set(threadId, context);
+    const pending: PendingLibraryTurn = {
+      context,
+      candidateTurnIds: new Set(),
+      terminalEvents: new Map(),
+    };
+    this.pendingLibraryTurns.set(threadId, pending);
     this.notifyLibraryState(subject.key);
     try {
       const response = await this.requireClient().turnStart({
@@ -751,10 +770,21 @@ export class CodexService {
         ...this.libraryTurnModeSettings(),
         additionalContext: libraryAdditionalContext(context),
       });
-      if (runtime.running) {
+      if (this.pendingLibraryTurns.get(threadId) === pending) {
+        this.pendingLibraryTurns.delete(threadId);
+        for (const candidateTurnId of pending.candidateTurnIds) {
+          if (candidateTurnId === response.turn.id) continue;
+          this.removeLibraryMessageContext(threadId, candidateTurnId);
+          this.retireLibraryTurn(threadId, candidateTurnId);
+        }
+        runtime.running = true;
         runtime.activeTurnId = response.turn.id;
         this.runningTurns.set(threadId, response.turn.id);
         this.bindLibraryMessageContext(threadId, response.turn.id, context);
+        const terminal = pending.terminalEvents.get(response.turn.id);
+        if (terminal) {
+          this.completeLibraryTurn(runtime, threadId, response.turn.id, terminal.method, terminal.error);
+        }
       }
     }
     catch (error) {
@@ -763,7 +793,7 @@ export class CodexService {
       throw error;
     }
     finally {
-      this.pendingLibraryMessageContexts.delete(threadId);
+      this.discardPendingLibraryTurn(threadId, pending);
       this.notifyLibraryState(subject.key);
     }
   }
@@ -823,7 +853,14 @@ export class CodexService {
   }
 
   private async startLibraryConversation(subject: LibraryConversationSubject): Promise<void> {
-    const response = await this.requireClient().threadStart(this.libraryThreadModeSettings());
+    this.openingLibrarySubjectKey = subject.key;
+    let response: Awaited<ReturnType<AgentClient["threadStart"]>>;
+    try {
+      response = await this.requireClient().threadStart(this.libraryThreadModeSettings());
+    }
+    finally {
+      this.openingLibrarySubjectKey = null;
+    }
     const stored = this.sessions.libraries?.[subject.key];
     await this.commitLibraryConversation(subject, {
       threadId: response.thread.id,
@@ -907,18 +944,60 @@ export class CodexService {
     return this.libraryMessageContexts.get(threadId)?.get(turnId) || null;
   }
 
+  private removeLibraryMessageContext(threadId: string, turnId: string): void {
+    const turns = this.libraryMessageContexts.get(threadId);
+    turns?.delete(turnId);
+    if (turns?.size === 0) this.libraryMessageContexts.delete(threadId);
+  }
+
+  private discardPendingLibraryTurn(threadId: string, expected?: PendingLibraryTurn): void {
+    const pending = this.pendingLibraryTurns.get(threadId);
+    if (!pending || (expected && pending !== expected)) return;
+    this.pendingLibraryTurns.delete(threadId);
+    for (const candidateTurnId of pending.candidateTurnIds) {
+      this.removeLibraryMessageContext(threadId, candidateTurnId);
+      this.retireLibraryTurn(threadId, candidateTurnId);
+    }
+  }
+
+  private retireLibraryTurn(threadId: string, turnId: string): void {
+    const retired = this.retiredLibraryTurnIds.get(threadId) || new Set<string>();
+    retired.delete(turnId);
+    retired.add(turnId);
+    while (retired.size > 64) retired.delete(retired.values().next().value!);
+    this.retiredLibraryTurnIds.set(threadId, retired);
+  }
+
+  private isRetiredLibraryTurn(threadId: string, turnId: string): boolean {
+    return this.retiredLibraryTurnIds.get(threadId)?.has(turnId) === true;
+  }
+
+  private completeLibraryTurn(
+    runtime: LibraryConversationRuntime,
+    threadId: string,
+    turnId: string,
+    method: "turn/completed" | "turn/failed",
+    error: unknown,
+  ): void {
+    this.clearLibraryTurn(runtime, threadId, turnId);
+    if (method === "turn/failed") {
+      runtime.error = error !== undefined && error !== null
+        ? errorText(error)
+        : "The library turn failed";
+    }
+  }
+
   private clearLibraryTurn(
     runtime: LibraryConversationRuntime,
     threadId: string | null,
     turnId: string | null = runtime.activeTurnId,
   ): void {
     if (threadId) {
-      this.pendingLibraryMessageContexts.delete(threadId);
+      this.discardPendingLibraryTurn(threadId);
       this.runningTurns.delete(threadId);
       if (turnId) {
-        const turns = this.libraryMessageContexts.get(threadId);
-        turns?.delete(turnId);
-        if (turns?.size === 0) this.libraryMessageContexts.delete(threadId);
+        this.removeLibraryMessageContext(threadId, turnId);
+        this.retireLibraryTurn(threadId, turnId);
       }
     }
     runtime.running = false;
@@ -1872,16 +1951,17 @@ export class CodexService {
       ? params.threadId
       : typeof turn?.threadId === "string" ? turn.threadId : null;
     const libraryKey = eventThreadId ? this.threadLibrarySubjects.get(eventThreadId) : undefined;
-    if (
-      eventThreadId
-      && libraryKey
-      && (
+    if (eventThreadId && libraryKey) {
+      if (
         notification.method === "turn/started"
         || notification.method === "turn/completed"
         || notification.method === "turn/failed"
-      )
-    ) {
-      this.handleLibraryTurnNotification(notification.method, params, turn, eventThreadId, libraryKey);
+      ) {
+        this.handleLibraryTurnNotification(notification.method, params, turn, eventThreadId, libraryKey);
+      }
+      else {
+        this.notifyLibraryState(libraryKey);
+      }
       return;
     }
     if (notification.method === "turn/completed") {
@@ -1940,6 +2020,36 @@ export class CodexService {
     this.callbacks.onState();
   }
 
+  private handleStoreMutation(
+    _snapshot: unknown,
+    notification?: { method: string; params?: unknown },
+    affectedThreadIds: readonly string[] = [],
+  ): void {
+    const params = notification?.params && typeof notification.params === "object"
+      ? notification.params as Record<string, unknown>
+      : {};
+    const notificationThreadId = typeof params.threadId === "string"
+      ? params.threadId
+      : null;
+    const threadIds = affectedThreadIds.length
+      ? affectedThreadIds
+      : notificationThreadId ? [notificationThreadId] : [];
+    const libraryKeys = threadIds.map((threadId) => {
+      const key = this.threadLibrarySubjects.get(threadId)
+        || (!notification && !this.threadPaperKeys.has(threadId) ? this.openingLibrarySubjectKey : null);
+      if (key && !this.threadLibrarySubjects.has(threadId)) {
+        this.threadLibrarySubjects.set(threadId, key);
+      }
+      return key;
+    });
+    const firstKey = libraryKeys[0];
+    if (firstKey && libraryKeys.every((key) => key === firstKey)) {
+      this.notifyLibraryState(firstKey);
+      return;
+    }
+    this.callbacks.onState();
+  }
+
   private handleLibraryTurnNotification(
     method: "turn/started" | "turn/completed" | "turn/failed",
     params: Record<string, unknown>,
@@ -1952,23 +2062,28 @@ export class CodexService {
     const turnId = typeof turn?.id === "string"
       ? turn.id
       : typeof params.turnId === "string" ? params.turnId : null;
-    if (method === "turn/started" && turnId) {
-      runtime.running = true;
-      runtime.activeTurnId = turnId;
-      this.runningTurns.set(threadId, turnId);
-      const pendingContext = this.pendingLibraryMessageContexts.get(threadId);
-      if (pendingContext) this.bindLibraryMessageContext(threadId, turnId, pendingContext);
+    if (turnId && this.isRetiredLibraryTurn(threadId, turnId)) {
+      this.notifyLibraryState(key);
+      return;
     }
-    else if (
-      method !== "turn/started"
-      && (!runtime.activeTurnId || !turnId || turnId === runtime.activeTurnId)
-    ) {
-      this.clearLibraryTurn(runtime, threadId, turnId);
-      if (method === "turn/failed") {
-        const reason = turn?.error ?? params.error;
-        runtime.error = reason !== undefined && reason !== null
-          ? errorText(reason)
-          : "The library turn failed";
+    const pending = this.pendingLibraryTurns.get(threadId);
+    if (method === "turn/started" && turnId) {
+      if (runtime.activeTurnId === turnId) {
+        runtime.running = true;
+        this.runningTurns.set(threadId, turnId);
+      }
+      else if (!runtime.activeTurnId && pending) {
+        pending.candidateTurnIds.add(turnId);
+        this.bindLibraryMessageContext(threadId, turnId, pending.context);
+      }
+    }
+    else if (method !== "turn/started" && turnId) {
+      const reason = turn?.error ?? params.error;
+      if (runtime.activeTurnId === turnId) {
+        this.completeLibraryTurn(runtime, threadId, turnId, method, reason);
+      }
+      else if (!runtime.activeTurnId && pending) {
+        pending.terminalEvents.set(turnId, { method, error: reason });
       }
     }
     this.notifyLibraryState(key);
@@ -2422,7 +2537,8 @@ export class CodexService {
       runtime.activeTurnId = null;
     }
     this.libraryMessageContexts.clear();
-    this.pendingLibraryMessageContexts.clear();
+    this.pendingLibraryTurns.clear();
+    this.retiredLibraryTurnIds.clear();
     this.state.connected = false;
     this.state.running = false;
     this.state.activeThreadId = null;
