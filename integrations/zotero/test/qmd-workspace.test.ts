@@ -161,6 +161,9 @@ describe("QmdWorkspaceView", () => {
 
     await expect(view.open(DRAFT)).resolves.toBe(false);
     expect(onActiveDocument).not.toHaveBeenCalled();
+    view.hide();
+    view.show();
+    expect(onActiveDocument.mock.calls.some(([path]) => path === DRAFT)).toBe(false);
   });
 
   it("collapses the file tree toward the left and restores it from the edge handle", async () => {

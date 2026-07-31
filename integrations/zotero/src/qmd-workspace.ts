@@ -366,6 +366,7 @@ export class QmdWorkspaceView {
     }
     catch (error) {
       if (generation !== this.openGeneration || this.destroyed) return false;
+      this.discardFailedOpen(relativePath, generation);
       this.setStatus(error instanceof Error ? error.message : String(error), "error");
       return false;
     }
@@ -420,6 +421,23 @@ export class QmdWorkspaceView {
     this.hasAgentChange = false;
     this.showingAgentChange = false;
     this.updateChangeControls();
+  }
+
+  private discardFailedOpen(relativePath: string, generation: number): void {
+    if (generation !== this.openGeneration
+        || this.destroyed
+        || this.current?.relativePath !== relativePath) return;
+    this.current = null;
+    this.resetAgentChange();
+    this.pathLabel.textContent = "No file open";
+    this.pathLabel.title = "";
+    this.treeBadge.textContent = "";
+    delete this.treeBadge.dataset.tree;
+    this.complianceButton.hidden = true;
+    this.reviewButton.hidden = true;
+    this.complianceDetails.hidden = true;
+    this.complianceDetails.replaceChildren();
+    this.updateModeControls();
   }
 
   private async applyAgentState(state: QmdAgentState, generation: number): Promise<void> {
