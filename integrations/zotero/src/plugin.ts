@@ -1315,6 +1315,10 @@ export class ZoteroChatPlugin {
       onCaptureChatDraft: () => {
         void this.captureChatDraft().catch((error) => this.reportError(error));
       },
+      onResearchAction: (actionID) => {
+        void this.runResearchAction(view, actionID, win)
+          .catch((error) => this.reportError(error));
+      },
       onChoosePaper: () => {
         void this.chooseWorkbenchPaper(
           win,
