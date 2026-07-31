@@ -118,6 +118,7 @@ interface PendingLibraryImportReview {
   boundPlan: BoundLibraryImportPlan;
   proposalPreflight: LibraryImportPreflight;
   candidateBindings: BoundCandidateIndex;
+  receipt: LibraryApplyReceipt | null;
   revision: number;
 }
 
@@ -206,6 +207,7 @@ export class ReviewedLibraryImportService {
 
   private readonly pending = new Map<string, PendingLibraryImportReview>();
   private readonly createId: () => string;
+  private applyQueue: Promise<void> = Promise.resolve();
 
   constructor(
     private readonly registry: CitationCandidateRegistry,
@@ -304,7 +306,7 @@ export class ReviewedLibraryImportService {
         statusMessage: "The library import was rejected. Zotero was not changed.",
       };
       this.safeNotify(pending.publicReview.scope);
-      return { decision: "rejected", reviewId, receipt: null };
+      return this.runResolveReview(pending, decision);
     }
 
     if (!pending.publicReview.canApply) {
@@ -319,7 +321,7 @@ export class ReviewedLibraryImportService {
       statusMessage: "The library import is reserved for Apply.",
     };
     this.safeNotify(pending.publicReview.scope);
-    throw new Error("Library import Apply is not available until Task 5; this read-only review performed no writes");
+    return this.runExclusive(() => this.runResolveReview(pending, decision));
   }
 
   private async lookupCitations(
@@ -392,6 +394,7 @@ export class ReviewedLibraryImportService {
       boundPlan: clonePlan(boundPlan),
       proposalPreflight: clonePreflight(proposalPreflight),
       candidateBindings,
+      receipt: null,
       revision: 0,
     });
     this.safeNotify(publicReview.scope);
@@ -426,6 +429,161 @@ export class ReviewedLibraryImportService {
     catch {
       // State is authoritative. A UI notification failure must not affect it.
     }
+  }
+
+  private runExclusive<T>(operation: () => Promise<T>): Promise<T> {
+    const result = this.applyQueue.then(operation);
+    this.applyQueue = result.then(
+      () => undefined,
+      () => undefined,
+    );
+    return result;
+  }
+
+  private async runResolveReview(
+    pending: PendingLibraryImportReview,
+    decision: "accept" | "reject",
+  ): Promise<LibraryImportResolution> {
+    if (decision === "reject") {
+      return { decision: "rejected", reviewId: pending.publicReview.id, receipt: null };
+    }
+
+    const plan = clonePlan(pending.boundPlan);
+    let freshPreflight: LibraryImportPreflight;
+    try {
+      freshPreflight = normalizePreflight(
+        await this.host.preflight(clonePlan(plan)),
+        plan,
+        pending.candidateBindings,
+      );
+    }
+    catch (error) {
+      const message = boundedStatusMessage(
+        `Library import is stale and was not applied: ${boundedErrorMessage(error)}`,
+      );
+      this.publishTerminalReview(pending, "stale", message);
+      throw new Error(message);
+    }
+
+    if (!samePreflight(pending.proposalPreflight, freshPreflight)) {
+      const message = "Library import is stale because Zotero preflight changed; no writes were attempted.";
+      this.publishTerminalReview(pending, "stale", message);
+      throw new Error(message);
+    }
+
+    const validatedPlan: ValidatedLibraryImportPlan = {
+      ...clonePlan(plan),
+      preflight: clonePreflight(freshPreflight),
+    };
+    let receipt: LibraryApplyReceipt;
+    try {
+      receipt = cloneReceipt(await this.host.apply(cloneValidatedPlan(validatedPlan)));
+    }
+    catch (error) {
+      return this.failApply(pending, plan.scope.libraryID, error);
+    }
+
+    pending.receipt = cloneReceipt(receipt);
+    pending.publicReview = {
+      ...cloneReview(pending.publicReview),
+      canApply: false,
+      state: "accepted",
+      statusMessage: "The library import was applied successfully.",
+    };
+    const invalidationError = await this.tryInvalidateLibrary(plan.scope.libraryID);
+    if (invalidationError !== null) {
+      pending.publicReview = {
+        ...cloneReview(pending.publicReview),
+        statusMessage: boundedStatusMessage(
+          "The library import was applied successfully, but the local library snapshot could not be refreshed; reload before continuing.",
+        ),
+      };
+    }
+    this.safeNotify(pending.publicReview.scope);
+    return {
+      decision: "accepted",
+      reviewId: pending.publicReview.id,
+      receipt: cloneReceipt(receipt),
+    };
+  }
+
+  private async failApply(
+    pending: PendingLibraryImportReview,
+    libraryID: number | string,
+    error: unknown,
+  ): Promise<never> {
+    if (error instanceof LibraryApplyFailure) {
+      return this.compensateApplyFailure(pending, libraryID, error);
+    }
+
+    const invalidationError = await this.tryInvalidateLibrary(libraryID);
+    let message = boundedStatusMessage(
+      `Library import failed without a partial receipt: ${boundedErrorMessage(error)}`,
+    );
+    if (invalidationError !== null) message = appendSnapshotWarning(message);
+    this.publishTerminalReview(pending, "failed", message);
+    throw new Error(message);
+  }
+
+  private async compensateApplyFailure(
+    pending: PendingLibraryImportReview,
+    libraryID: number | string,
+    failure: LibraryApplyFailure,
+  ): Promise<never> {
+    let rollback: LibraryRollbackResult;
+    try {
+      const receipt = cloneReceipt(failure.receipt);
+      rollback = cloneRollbackResult(await this.host.compensate(cloneReceipt(receipt)));
+    }
+    catch (error) {
+      const invalidationError = await this.tryInvalidateLibrary(libraryID);
+      let message = boundedStatusMessage(
+        `Library import failed and rollback failed: ${boundedErrorMessage(error)}`,
+      );
+      if (invalidationError !== null) message = appendSnapshotWarning(message);
+      this.publishTerminalReview(pending, "failed", message);
+      throw new Error(message);
+    }
+
+    const invalidationError = await this.tryInvalidateLibrary(libraryID);
+    let message: string;
+    if (rollback.complete && rollback.survivors.length === 0) {
+      message = boundedStatusMessage(
+        `Library import failed, but its partial changes were rolled back: ${boundedErrorMessage(failure)}`,
+      );
+    }
+    else {
+      message = incompleteRollbackStatus(rollback.survivors, invalidationError !== null);
+    }
+    if (invalidationError !== null && rollback.complete && rollback.survivors.length === 0) {
+      message = appendSnapshotWarning(message);
+    }
+    this.publishTerminalReview(pending, "failed", message);
+    throw new Error(message);
+  }
+
+  private async tryInvalidateLibrary(libraryID: number | string): Promise<unknown | null> {
+    try {
+      await this.host.invalidateLibrary(libraryID);
+      return null;
+    }
+    catch (error) {
+      return error;
+    }
+  }
+
+  private publishTerminalReview(
+    pending: PendingLibraryImportReview,
+    state: "failed" | "stale",
+    statusMessage: string,
+  ): void {
+    pending.publicReview = {
+      ...cloneReview(pending.publicReview),
+      canApply: false,
+      state,
+      statusMessage: boundedStatusMessage(statusMessage),
+    };
+    this.safeNotify(pending.publicReview.scope);
   }
 
   private async refreshPreflight(
@@ -902,6 +1060,104 @@ function clonePreflight(preflight: LibraryImportPreflight): LibraryImportPreflig
     ...preflight,
     dispositions: preflight.dispositions.map((entry) => ({ ...entry })),
   };
+}
+
+function cloneValidatedPlan(plan: ValidatedLibraryImportPlan): ValidatedLibraryImportPlan {
+  return {
+    ...clonePlan(plan),
+    preflight: clonePreflight(plan.preflight),
+  };
+}
+
+function cloneReceipt(receipt: LibraryApplyReceipt): LibraryApplyReceipt {
+  return {
+    libraryID: receipt.libraryID,
+    createdCollectionKey: receipt.createdCollectionKey,
+    createdItemKeys: receipt.createdItemKeys.map((key) => key),
+    addedMemberships: receipt.addedMemberships.map((membership) => ({ ...membership })),
+  };
+}
+
+function cloneRollbackResult(result: LibraryRollbackResult): LibraryRollbackResult {
+  return {
+    complete: result.complete,
+    survivors: result.survivors.map((survivor) => ({ ...survivor })),
+  };
+}
+
+function samePreflight(left: LibraryImportPreflight, right: LibraryImportPreflight): boolean {
+  if (left.digest !== right.digest
+    || left.editable !== right.editable
+    || left.parentVersion !== right.parentVersion
+    || left.siblingCollectionKey !== right.siblingCollectionKey
+    || left.dispositions.length !== right.dispositions.length) {
+    return false;
+  }
+  return left.dispositions.every((expected, index) => {
+    const actual = right.dispositions[index];
+    return actual !== undefined
+      && expected.rowId === actual.rowId
+      && expected.effect === actual.effect
+      && expected.itemKey === actual.itemKey
+      && expected.itemVersion === actual.itemVersion
+      && expected.membershipExists === actual.membershipExists;
+  });
+}
+
+function incompleteRollbackStatus(
+  survivors: readonly LibraryMutationSurvivor[],
+  snapshotRefreshFailed: boolean,
+): string {
+  const prefix = "Library import failed and rollback is incomplete. Survivor keys: ";
+  const warning = snapshotRefreshFailed ? SNAPSHOT_WARNING : "";
+  const keys = formatSurvivorKeys(survivors, 280 - [...prefix].length - [...warning].length);
+  return boundedStatusMessage(`${prefix}${keys}${warning}`);
+}
+
+function formatSurvivorKeys(
+  survivors: readonly LibraryMutationSurvivor[],
+  capacity: number,
+): string {
+  if (survivors.length === 0) return "not reported by the host";
+  const shown: string[] = [];
+  const render = (labels: readonly string[]): string => {
+    const omitted = survivors.length - labels.length;
+    const suffix = omitted > 0
+      ? `${labels.length > 0 ? "; " : ""}${omitted} ${omitted === 1 ? "survivor" : "survivors"} omitted`
+      : "";
+    return `${labels.join(", ")}${suffix}`;
+  };
+  for (let index = 0; index < survivors.length; index += 1) {
+    const survivor = survivors[index]!;
+    const label = survivor.kind === "membership"
+      ? `${survivor.itemKey} in ${survivor.collectionKey}`
+      : survivor.kind === "created-item" ? survivor.itemKey : survivor.collectionKey;
+    const candidate = [...shown, label];
+    if ([...render(candidate)].length > capacity) break;
+    shown.push(label);
+  }
+  while (shown.length > 0 && [...render(shown)].length > capacity) shown.pop();
+  return render(shown);
+}
+
+function appendSnapshotWarning(message: string): string {
+  const available = 280 - [...SNAPSHOT_WARNING].length;
+  return `${[...boundedStatusMessage(message)].slice(0, available).join("")}${SNAPSHOT_WARNING}`;
+}
+
+const SNAPSHOT_WARNING = " Snapshot refresh also failed; reload before continuing.";
+
+function boundedStatusMessage(message: unknown): string {
+  try {
+    const safe = safelyCoerceErrorText(message)
+      .replace(UNSAFE_TEXT_GLOBAL, "�")
+      .normalize("NFC")
+      .trim();
+    return [...safe].slice(0, 280).join("");
+  }
+  catch {
+    return "The Zotero library import ended with an unreadable host status.";
+  }
 }
 
 function cloneReviewRow(row: LibraryImportReviewRow): LibraryImportReviewRow {
