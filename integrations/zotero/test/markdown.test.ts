@@ -211,3 +211,45 @@ describe("newlineAsBreak", () => {
     expect(soft.querySelector("blockquote")!.textContent).toBe("quoted line one quoted line two");
   });
 });
+
+describe("list grammar parity with the visual block splitter", () => {
+  beforeEach(() => {
+    document.body.replaceChildren();
+  });
+
+  it("renders + bullets as unordered list items", () => {
+    const host = render("+ alpha\n+ beta");
+    const items = [...host.querySelectorAll("ul > li")];
+    expect(items.map((item) => item.textContent)).toEqual(["alpha", "beta"]);
+    expect(host.querySelector("p")).toBeNull();
+  });
+
+  it("renders 1) numbering as ordered list items", () => {
+    const host = render("1) first\n2) second");
+    const items = [...host.querySelectorAll("ol > li")];
+    expect(items.map((item) => item.textContent)).toEqual(["first", "second"]);
+    expect(host.querySelector("p")).toBeNull();
+  });
+
+  it("keeps indented continuation lines inside the previous list item", () => {
+    const host = render("- head line\n  continuation line\n- second item");
+    const items = [...host.querySelectorAll("ul > li")];
+    expect(items).toHaveLength(2);
+    expect(items[0]?.textContent).toContain("head line");
+    expect(items[0]?.textContent).toContain("continuation line");
+    expect(items[1]?.textContent).toBe("second item");
+    expect(host.querySelector("p")).toBeNull();
+  });
+
+  it("breaks a paragraph when a + bullet or 1) item follows it", () => {
+    const host = render("intro text\n+ bullet item");
+    expect(host.querySelector("p")?.textContent).toBe("intro text");
+    expect(host.querySelector("ul > li")?.textContent).toBe("bullet item");
+  });
+
+  it("ends the list at a blank line like the block splitter does", () => {
+    const host = render("- item\n\nparagraph after");
+    expect(host.querySelectorAll("ul > li")).toHaveLength(1);
+    expect(host.querySelector("p")?.textContent).toBe("paragraph after");
+  });
+});

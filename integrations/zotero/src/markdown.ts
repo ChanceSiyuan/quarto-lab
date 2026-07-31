@@ -105,26 +105,36 @@ export function renderMarkdown(
       continue;
     }
 
-    if (/^[-*]\s+/.test(line)) {
-      const list = doc.createElement("ul");
-      while (index < lines.length && /^[-*]\s+/.test(lines[index] || "")) {
+    // Mirrors the visual block splitter's list grammar
+    // (src/qmd-source-model.ts:586-593): `[-+*]` and `\d+[.)]` markers with
+    // optional indentation, plus 2-space-indented continuation lines.
+    const listStart = /^\s*(?:([-+*])|\d+[.)])\s+/.exec(line);
+    if (listStart) {
+      const list = doc.createElement(listStart[1] ? "ul" : "ol");
+      let itemText: string | null = null;
+      const flushItem = () => {
+        if (itemText === null) return;
         const item = doc.createElement("li");
-        appendInline(doc, item, (lines[index] || "").replace(/^[-*]\s+/, ""), true, options);
+        appendInline(doc, item, itemText, true, options);
         list.appendChild(item);
+        itemText = null;
+      };
+      while (index < lines.length) {
+        const current = lines[index] || "";
+        const marker = /^\s*(?:[-+*]|\d+[.)])\s+/.exec(current);
+        if (marker) {
+          flushItem();
+          itemText = current.slice(marker[0].length);
+        }
+        else if (itemText !== null && /^\s{2,}\S/.test(current)) {
+          itemText += `\n${current.trim()}`;
+        }
+        else {
+          break;
+        }
         index++;
       }
-      fragment.appendChild(list);
-      continue;
-    }
-
-    if (/^\d+\.\s+/.test(line)) {
-      const list = doc.createElement("ol");
-      while (index < lines.length && /^\d+\.\s+/.test(lines[index] || "")) {
-        const item = doc.createElement("li");
-        appendInline(doc, item, (lines[index] || "").replace(/^\d+\.\s+/, ""), true, options);
-        list.appendChild(item);
-        index++;
-      }
+      flushItem();
       fragment.appendChild(list);
       continue;
     }
@@ -196,7 +206,7 @@ function appendCodeBlock(
 function startsBlock(lines: readonly string[], index: number): boolean {
   const line = lines[index] || "";
   if (!line.trim()) return true;
-  if (/^(#{1,4})\s+|^```|^[-*]\s+|^\d+\.\s+|^>\s+/.test(line)) return true;
+  if (/^(#{1,4})\s+|^```|^\s*(?:[-+*]|\d+[.)])\s+|^>\s+/.test(line)) return true;
   if (readMathBlock(lines, index)) return true;
   return Boolean(readTable(lines, index));
 }
