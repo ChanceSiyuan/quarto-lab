@@ -124,4 +124,36 @@ describe("browser style bundle", () => {
       /\.zc-float-transcript \.zc-math-copy,\s*\.zc-float-transcript \.zc-copy-answer,\s*\.zc-float-transcript \.zc-turn-summary\s*\{[^}]*cursor:\s*pointer;[^}]*\}/,
     );
   });
+
+  it("scopes the 1.04em chat KaTeX override away from the visual editor", async () => {
+    const result = await build({
+      entryPoints: [join(process.cwd(), "src/index.ts")],
+      bundle: true,
+      platform: "browser",
+      format: "iife",
+      target: ["firefox140"],
+      write: false,
+      outdir: "out",
+      assetNames: "fonts/[name]-[hash]",
+      loader: {
+        ".svg": "dataurl",
+        ".woff2": "file",
+        ".woff": "file",
+        ".ttf": "file",
+      },
+    });
+
+    const css = result.outputFiles.find((file) => file.path.endsWith(".css"))?.text || "";
+    // Chat entries keep the 1.04em tuning (12.5px chat font)…
+    expect(css).toMatch(
+      /\.zc-entry-content \.zc-math-inline \.katex,\s*\.zc-entry-content \.zc-math-display \.katex\s*\{\s*font-size:\s*1\.04em;\s*\}/,
+    );
+    // …and no unscoped rule reaches the 17px visual editor, whose math must
+    // fall back to KaTeX's stock 1.21em like Quarto's own KaTeX output.
+    const withoutScoped = css
+      .replaceAll(".zc-entry-content .zc-math-inline .katex", "")
+      .replaceAll(".zc-entry-content .zc-math-display .katex", "");
+    expect(withoutScoped).not.toContain(".zc-math-inline .katex");
+    expect(withoutScoped).not.toContain(".zc-math-display .katex");
+  });
 });
