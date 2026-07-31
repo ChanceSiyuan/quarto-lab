@@ -23,7 +23,7 @@ const START_SCRIPT = [
 ].join(" && ");
 const INITIALIZE_SCRIPT = [
   "set -eu",
-  '/usr/bin/unzip -n -q "$2" -d "$1"',
+  'unzip -n -q "$2" -d "$1"',
   '/bin/chmod 0700 "$1/qlab"',
   'if [ ! -d "$1/.git" ]; then /usr/bin/git -C "$1" init -q -b main; fi',
 ].join("\n");
@@ -53,8 +53,13 @@ export interface ResearchLoopSiteRuntime {
   sleep(milliseconds: number): Promise<void>;
 }
 
+type ResearchLoopSiteBridge = Pick<
+  NativeBridge,
+  "start" | "spawnPipe" | "onEvent" | "decodeOutput" | "flushOutput"
+>;
+
 export function createResearchLoopSiteRuntime(
-  bridge: NativeBridge,
+  bridge: ResearchLoopSiteBridge,
   bundledRootURI: string,
   version: string,
 ): ResearchLoopSiteRuntime {
@@ -179,7 +184,7 @@ async function readBundledAsset(uri: string): Promise<Uint8Array> {
 }
 
 async function runInitializationProcess(
-  bridge: NativeBridge,
+  bridge: ResearchLoopSiteBridge,
   repositoryRoot: string,
   archivePath: string,
 ): Promise<void> {
