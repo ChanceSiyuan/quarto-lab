@@ -252,6 +252,10 @@ interface PendingLibraryTurn {
   terminalEvents: Map<string, { method: "turn/completed" | "turn/failed"; error: unknown }>;
 }
 
+interface PendingLibraryOpen {
+  affectedThreadIds: Set<string>;
+}
+
 const SHARED_DEVELOPER_INSTRUCTIONS = `You are the research assistant embedded in Zotero's PDF Reader.
 Treat the active Reader context and the dynamic Zotero tools as the authoritative paper context.
 When the user refers to "this", "here", "the selection", or "this page", call the relevant live Zotero tool before answering.
@@ -351,7 +355,7 @@ export class CodexService {
   private readonly libraryMessageContexts = new Map<string, Map<string, Readonly<LibraryMessageContext>>>();
   private readonly pendingLibraryTurns = new Map<string, PendingLibraryTurn>();
   private readonly retiredLibraryTurnIds = new Map<string, Set<string>>();
-  private openingLibrarySubjectKey: LibrarySubjectKey | null = null;
+  private pendingLibraryOpen: PendingLibraryOpen | null = null;
   /** Running turns are owned by their conversation, never by the current UI focus. */
   private readonly runningTurns = new Map<string, string>();
   private readonly pendingApprovalResolvers = new Map<string, PendingApprovalResolver>();
@@ -538,6 +542,7 @@ export class CodexService {
     this.libraryMessageContexts.clear();
     this.pendingLibraryTurns.clear();
     this.retiredLibraryTurnIds.clear();
+    this.pendingLibraryOpen = null;
     this.unsubscribeStore?.();
     this.unsubscribeStore = null;
     this.client?.close(1000, "Zotkit shutdown");
@@ -853,23 +858,27 @@ export class CodexService {
   }
 
   private async startLibraryConversation(subject: LibraryConversationSubject): Promise<void> {
-    this.openingLibrarySubjectKey = subject.key;
-    let response: Awaited<ReturnType<AgentClient["threadStart"]>>;
+    const pendingOpen: PendingLibraryOpen = {
+      affectedThreadIds: new Set(),
+    };
+    this.pendingLibraryOpen = pendingOpen;
     try {
-      response = await this.requireClient().threadStart(this.libraryThreadModeSettings());
+      const response = await this.requireClient().threadStart(this.libraryThreadModeSettings());
+      const stored = this.sessions.libraries?.[subject.key];
+      await this.commitLibraryConversation(subject, {
+        threadId: response.thread.id,
+        title: stored?.title || subject.libraryName || "Library Conversation",
+        workspace: profilePath(),
+        updatedAt: new Date().toISOString(),
+        backend: this.state.backend,
+      }, response.thread.id);
+      this.flushPendingLibraryOpen(pendingOpen);
+      void this.requireClient().threadSetName(response.thread.id, subject.libraryName.slice(0, 80)).catch(() => {});
     }
-    finally {
-      this.openingLibrarySubjectKey = null;
+    catch (error) {
+      this.flushPendingLibraryOpen(pendingOpen);
+      throw error;
     }
-    const stored = this.sessions.libraries?.[subject.key];
-    await this.commitLibraryConversation(subject, {
-      threadId: response.thread.id,
-      title: stored?.title || subject.libraryName || "Library Conversation",
-      workspace: profilePath(),
-      updatedAt: new Date().toISOString(),
-      backend: this.state.backend,
-    }, response.thread.id);
-    void this.requireClient().threadSetName(response.thread.id, subject.libraryName.slice(0, 80)).catch(() => {});
   }
 
   private async commitLibraryConversation(
@@ -2034,20 +2043,35 @@ export class CodexService {
     const threadIds = affectedThreadIds.length
       ? affectedThreadIds
       : notificationThreadId ? [notificationThreadId] : [];
-    const libraryKeys = threadIds.map((threadId) => {
-      const key = this.threadLibrarySubjects.get(threadId)
-        || (!notification && !this.threadPaperKeys.has(threadId) ? this.openingLibrarySubjectKey : null);
-      if (key && !this.threadLibrarySubjects.has(threadId)) {
-        this.threadLibrarySubjects.set(threadId, key);
-      }
-      return key;
-    });
-    const firstKey = libraryKeys[0];
-    if (firstKey && libraryKeys.every((key) => key === firstKey)) {
-      this.notifyLibraryState(firstKey);
+    if (!threadIds.length) {
+      this.callbacks.onState();
       return;
     }
-    this.callbacks.onState();
+    if (!notification && this.pendingLibraryOpen) {
+      for (const threadId of threadIds) this.pendingLibraryOpen.affectedThreadIds.add(threadId);
+      return;
+    }
+    this.emitStoreMutationScopes(threadIds);
+  }
+
+  private flushPendingLibraryOpen(expected: PendingLibraryOpen): void {
+    if (this.pendingLibraryOpen !== expected) return;
+    this.pendingLibraryOpen = null;
+    if (expected.affectedThreadIds.size) {
+      this.emitStoreMutationScopes([...expected.affectedThreadIds]);
+    }
+  }
+
+  private emitStoreMutationScopes(threadIds: readonly string[]): void {
+    const libraryKeys = new Set<LibrarySubjectKey>();
+    let includesNonLibrary = false;
+    for (const threadId of threadIds) {
+      const key = this.threadLibrarySubjects.get(threadId);
+      if (key) libraryKeys.add(key);
+      else includesNonLibrary = true;
+    }
+    for (const key of libraryKeys) this.notifyLibraryState(key);
+    if (includesNonLibrary) this.callbacks.onState();
   }
 
   private handleLibraryTurnNotification(
@@ -2539,6 +2563,7 @@ export class CodexService {
     this.libraryMessageContexts.clear();
     this.pendingLibraryTurns.clear();
     this.retiredLibraryTurnIds.clear();
+    this.pendingLibraryOpen = null;
     this.state.connected = false;
     this.state.running = false;
     this.state.activeThreadId = null;

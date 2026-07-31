@@ -123,6 +123,44 @@ function deferred<T>() {
 }
 
 describe("library conversations", () => {
+  it("emits one scoped store callback for each affected library in a batch", async () => {
+    const { service, callbacks } = libraryServiceHarness();
+    const internal = service as any;
+    await service.openLibraryConversation({ libraryID: 1, libraryName: "My Library" });
+    internal.threadLibrarySubjects.set("second-library-thread", "library:2");
+    callbacks.onState.mockClear();
+
+    internal.handleStoreMutation(
+      service.store.getSnapshot(),
+      undefined,
+      ["library-thread", "second-library-thread"],
+    );
+
+    expect(callbacks.onState.mock.calls).toEqual([
+      [{ kind: "library", key: "library:1" }],
+      [{ kind: "library", key: "library:2" }],
+    ]);
+  });
+
+  it("emits scoped library and one unscoped Workbench callback for a mixed store batch", async () => {
+    const { service, callbacks } = libraryServiceHarness({ activePaperThread: "paper-thread" });
+    const internal = service as any;
+    internal.threadPaperKeys.set("paper-thread", "1-ATTACH");
+    await service.openLibraryConversation({ libraryID: 1, libraryName: "My Library" });
+    callbacks.onState.mockClear();
+
+    internal.handleStoreMutation(
+      service.store.getSnapshot(),
+      undefined,
+      ["library-thread", "paper-thread"],
+    );
+
+    expect(callbacks.onState.mock.calls).toEqual([
+      [{ kind: "library", key: "library:1" }],
+      [],
+    ]);
+  });
+
   it("reports library opening state only to that library subject", async () => {
     const { service, callbacks } = libraryServiceHarness();
 
