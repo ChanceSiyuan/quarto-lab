@@ -13,7 +13,9 @@ export const PROPOSE_LIBRARY_IMPORT_TOOL = "zotero_propose_library_import" as co
 const MAX_CAPABILITIES = 50;
 const MAX_OPAQUE_ID_CODE_POINTS = 1_000;
 const MAX_COLLECTION_NAME_CODE_POINTS = 200;
+const MAX_RAW_COLLECTION_NAME_CODE_POINTS = 1_600;
 const UNSAFE_TEXT = /[\p{Cc}\p{Cf}\u2028\u2029]/u;
+const UNSAFE_TEXT_GLOBAL = /[\p{Cc}\p{Cf}\u2028\u2029]/gu;
 
 type UnknownRecord = Record<string, unknown>;
 
@@ -115,7 +117,17 @@ interface PendingLibraryImportReview {
   publicReview: LibraryImportReview;
   boundPlan: BoundLibraryImportPlan;
   proposalPreflight: LibraryImportPreflight;
+  candidateBindings: BoundCandidateIndex;
+  revision: number;
 }
+
+interface BoundCandidateEffect {
+  effect: "create" | "reuse";
+  itemKey: string | null;
+  itemVersion: number | null;
+}
+
+type BoundCandidateIndex = ReadonlyMap<string, ReadonlyMap<string, BoundCandidateEffect>>;
 
 const LOOKUP_CITATIONS_TOOL_SPEC: CodexDynamicToolSpec = {
   name: LOOKUP_CITATIONS_TOOL,
@@ -166,7 +178,7 @@ const PROPOSE_LIBRARY_IMPORT_TOOL_SPEC: CodexDynamicToolSpec = {
     additionalProperties: false,
     required: ["collection_name", "capability_ids"],
     properties: {
-      collection_name: { type: "string", minLength: 1, maxLength: MAX_COLLECTION_NAME_CODE_POINTS },
+      collection_name: { type: "string", minLength: 1, maxLength: MAX_RAW_COLLECTION_NAME_CODE_POINTS },
       parent_collection_key: { type: "string", minLength: 1, maxLength: MAX_OPAQUE_ID_CODE_POINTS },
       capability_ids: {
         type: "array",
@@ -250,14 +262,22 @@ export class ReviewedLibraryImportService {
     const boundRows = pending.boundPlan.rows.map((entry) => entry.rowId === rowId
       ? { ...entry, choiceId: parsed.candidateId, omit: parsed.omit }
       : { ...entry });
+    const revision = pending.revision + 1;
+    pending.revision = revision;
     pending.boundPlan = { ...clonePlan(pending.boundPlan), rows: boundRows };
     pending.publicReview = {
       ...cloneReview(pending.publicReview),
-      rows,
-      canApply: canApplyRows(rows, pending.proposalPreflight),
-      statusMessage: statusMessage(rows, pending.proposalPreflight),
+      rows: rows.map((entry) => ({
+        ...cloneReviewRow(entry),
+        effectLabel: "Checking the latest Zotero effect…",
+      })),
+      effectCount: 0,
+      canApply: false,
+      statusMessage: "Refreshing Zotero preflight for the latest row choices…",
     };
     this.notify(pending.publicReview.scope);
+    const plan = clonePlan(pending.boundPlan);
+    void this.refreshPreflight(pending, revision, plan);
   }
 
   async resolveReview(
@@ -328,6 +348,7 @@ export class ReviewedLibraryImportService {
     const target = parseProposalArguments(rawArguments);
     const capabilities = this.registry.resolveCompleteBatch(scope, target.capabilityIds);
     const rows = bindCapabilityRows(capabilities);
+    const candidateBindings = buildCandidateBindings(capabilities);
     const boundPlan: BoundLibraryImportPlan = {
       scope: normalizeScope(scope),
       target: {
@@ -338,7 +359,8 @@ export class ReviewedLibraryImportService {
     };
     const proposalPreflight = normalizePreflight(
       await this.host.preflight(clonePlan(boundPlan)),
-      boundPlan.rows.map((row) => row.rowId),
+      boundPlan,
+      candidateBindings,
     );
     const reviewId = this.nextReviewId();
     const publicRows = capabilities.map((capability) => buildReviewRow(
@@ -365,6 +387,8 @@ export class ReviewedLibraryImportService {
       publicReview: cloneReview(publicReview),
       boundPlan: clonePlan(boundPlan),
       proposalPreflight: clonePreflight(proposalPreflight),
+      candidateBindings,
+      revision: 0,
     });
     this.notify(publicReview.scope);
     return {
@@ -393,6 +417,54 @@ export class ReviewedLibraryImportService {
 
   private notify(scope: CitationCapabilityScope): void {
     this.callbacks.onState(cloneScope(scope));
+  }
+
+  private async refreshPreflight(
+    pending: PendingLibraryImportReview,
+    revision: number,
+    plan: BoundLibraryImportPlan,
+  ): Promise<void> {
+    try {
+      const refreshed = normalizePreflight(
+        await this.host.preflight(clonePlan(plan)),
+        plan,
+        pending.candidateBindings,
+      );
+      if (!this.isCurrentRefresh(pending, revision)) return;
+      const rows = pending.publicReview.rows.map((row) => ({
+        ...cloneReviewRow(row),
+        effectLabel: effectLabel(refreshed.dispositions.find((entry) => entry.rowId === row.id)!),
+      }));
+      pending.proposalPreflight = clonePreflight(refreshed);
+      pending.publicReview = {
+        ...cloneReview(pending.publicReview),
+        rows,
+        effectCount: countEffects(refreshed),
+        canApply: canApplyRows(rows, refreshed),
+        statusMessage: statusMessage(rows, refreshed),
+      };
+      this.notify(pending.publicReview.scope);
+    }
+    catch (error) {
+      if (!this.isCurrentRefresh(pending, revision)) return;
+      pending.publicReview = {
+        ...cloneReview(pending.publicReview),
+        rows: pending.publicReview.rows.map((row) => ({
+          ...cloneReviewRow(row),
+          effectLabel: "Zotero preflight refresh failed",
+        })),
+        effectCount: 0,
+        canApply: false,
+        statusMessage: `Zotero preflight refresh failed: ${boundedErrorMessage(error)}`,
+      };
+      this.notify(pending.publicReview.scope);
+    }
+  }
+
+  private isCurrentRefresh(pending: PendingLibraryImportReview, revision: number): boolean {
+    return pending.publicReview.state === "pending"
+      && pending.revision === revision
+      && this.pending.get(pending.publicReview.id) === pending;
   }
 }
 
@@ -480,6 +552,29 @@ function bindCapabilityRows(capabilities: readonly BoundCitationCapability[]): B
   });
 }
 
+function buildCandidateBindings(capabilities: readonly BoundCitationCapability[]): BoundCandidateIndex {
+  return new Map(capabilities.map((capability) => [
+    capability.resolution.clientRef,
+    new Map<string, BoundCandidateEffect>(capability.resolution.candidates.map((candidate) => {
+      if (candidate.localItemKey !== null) {
+        return [candidate.choiceId, {
+          effect: "reuse" as const,
+          itemKey: candidate.localItemKey,
+          itemVersion: candidate.localItemVersion,
+        }];
+      }
+      if (candidate.metadata !== null) {
+        return [candidate.choiceId, {
+          effect: "create" as const,
+          itemKey: null,
+          itemVersion: null,
+        }];
+      }
+      throw new Error(`Citation row ${capability.resolution.clientRef} has an unusable bound candidate`);
+    })),
+  ]));
+}
+
 function buildReviewRow(
   capability: BoundCitationCapability,
   disposition: LibraryImportPreflight["dispositions"][number],
@@ -502,7 +597,11 @@ function buildReviewRow(
   };
 }
 
-function normalizePreflight(raw: unknown, expectedRowIds: readonly string[]): LibraryImportPreflight {
+function normalizePreflight(
+  raw: unknown,
+  plan: BoundLibraryImportPlan,
+  candidateBindings: BoundCandidateIndex,
+): LibraryImportPreflight {
   if (!isPlainRecord(raw)) throw new TypeError("Library import preflight must be an object");
   requireExactKeys(
     raw,
@@ -514,19 +613,27 @@ function normalizePreflight(raw: unknown, expectedRowIds: readonly string[]): Li
     ["digest", "editable", "parentVersion", "siblingCollectionKey", "dispositions"],
     "Library import preflight",
   );
-  const digest = normalizeOpaqueText(raw.digest, "library import preflight digest");
+  const digest = readExactOpaqueText(raw.digest, "library import preflight digest");
   if (typeof raw.editable !== "boolean") throw new TypeError("Library import preflight editable must be boolean");
   const parentVersion = normalizeVersion(raw.parentVersion, "library import parent version");
   const siblingCollectionKey = raw.siblingCollectionKey === null
     ? null
-    : normalizeOpaqueText(raw.siblingCollectionKey, "sibling collection key");
+    : readExactOpaqueText(raw.siblingCollectionKey, "sibling collection key");
   if (!Array.isArray(raw.dispositions)) throw new TypeError("Library import preflight dispositions must be an array");
   const dispositions = raw.dispositions.map((value, index) => normalizePreflightDisposition(value, index));
   const actualRowIds = dispositions.map((entry) => entry.rowId);
+  const expectedRowIds = plan.rows.map((row) => row.rowId);
   if (new Set(actualRowIds).size !== actualRowIds.length
     || actualRowIds.length !== expectedRowIds.length
     || expectedRowIds.some((rowId) => !actualRowIds.includes(rowId))) {
     throw new Error("Library import preflight must cover the exact complete set of review rows");
+  }
+  for (const row of plan.rows) {
+    validatePreflightCoherence(
+      row,
+      dispositions.find((entry) => entry.rowId === row.rowId)!,
+      candidateBindings.get(row.rowId),
+    );
   }
   return { digest, editable: raw.editable, parentVersion, siblingCollectionKey, dispositions };
 }
@@ -542,16 +649,61 @@ function normalizePreflightDisposition(
   if (raw.effect !== "create" && raw.effect !== "reuse" && raw.effect !== "omit" && raw.effect !== "conflict") {
     throw new TypeError(`${label} has an unsupported effect`);
   }
-  const itemKey = raw.itemKey === null ? null : normalizeOpaqueText(raw.itemKey, `${label} item key`);
+  const itemKey = raw.itemKey === null ? null : readExactOpaqueText(raw.itemKey, `${label} item key`);
   const itemVersion = normalizeVersion(raw.itemVersion, `${label} item version`);
   if (typeof raw.membershipExists !== "boolean") throw new TypeError(`${label} membershipExists must be boolean`);
   return {
-    rowId: normalizeOpaqueText(raw.rowId, `${label} row ID`),
+    rowId: readExactOpaqueText(raw.rowId, `${label} row ID`),
     effect: raw.effect,
     itemKey,
     itemVersion,
     membershipExists: raw.membershipExists,
   };
+}
+
+function validatePreflightCoherence(
+  row: BoundLibraryImportPlan["rows"][number],
+  disposition: LibraryImportPreflight["dispositions"][number],
+  candidates: ReadonlyMap<string, BoundCandidateEffect> | undefined,
+): void {
+  if (disposition.effect === "conflict") {
+    requireNoHostItemEffect(disposition, "conflict");
+    return;
+  }
+  if (row.omit) {
+    if (disposition.effect !== "omit") {
+      throw new Error(`Preflight row ${row.rowId} must have an omit effect for the final bound plan`);
+    }
+    requireNoHostItemEffect(disposition, "omit");
+    return;
+  }
+  if (row.choiceId === null) {
+    throw new Error(`Preflight row ${row.rowId} must have a conflict effect until a candidate or omission is bound`);
+  }
+  const candidate = candidates?.get(row.choiceId);
+  if (!candidate) throw new Error(`Preflight row ${row.rowId} references an unbound candidate`);
+  if (disposition.effect !== candidate.effect) {
+    throw new Error(`Preflight row ${row.rowId} must have a ${candidate.effect} effect for the final bound plan`);
+  }
+  if (candidate.effect === "create") {
+    requireNoHostItemEffect(disposition, "create");
+    return;
+  }
+  if (candidate.itemKey === null || candidate.itemVersion === null) {
+    throw new Error(`Preflight reuse row ${row.rowId} lacks a valid bound item identity and version`);
+  }
+  if (disposition.itemKey !== candidate.itemKey || disposition.itemVersion !== candidate.itemVersion) {
+    throw new Error(`Preflight reuse row ${row.rowId} does not match the bound item identity and version`);
+  }
+}
+
+function requireNoHostItemEffect(
+  disposition: LibraryImportPreflight["dispositions"][number],
+  effect: "create" | "omit" | "conflict",
+): void {
+  if (disposition.itemKey !== null || disposition.itemVersion !== null || disposition.membershipExists) {
+    throw new Error(`Preflight ${effect} effect must not contain item identity, version, or membership data`);
+  }
 }
 
 function parseRowResolution(raw: unknown): { candidateId: string | null; omit: boolean } {
@@ -573,6 +725,9 @@ function normalizeCollectionName(raw: unknown): string {
   if (typeof raw !== "string") throw new TypeError("collection_name must be a string");
   if (UNSAFE_TEXT.test(raw)) {
     throw new TypeError("collection_name contains unsafe control, directional, zero-width, or newline text");
+  }
+  if ([...raw].length > MAX_RAW_COLLECTION_NAME_CODE_POINTS) {
+    throw new RangeError("collection_name exceeds the defensive raw input limit");
   }
   const normalized = raw.normalize("NFC").trim();
   const length = [...normalized].length;
@@ -631,6 +786,7 @@ function canApplyRows(
   preflight: LibraryImportPreflight,
 ): boolean {
   if (!preflight.editable) return false;
+  if (preflight.dispositions.some((entry) => entry.effect === "conflict")) return false;
   return rows.every((row) => {
     if (row.disposition === "create" || row.disposition === "reuse") {
       const hostDisposition = preflight.dispositions.find((entry) => entry.rowId === row.id);
@@ -645,8 +801,20 @@ function statusMessage(
   preflight: LibraryImportPreflight,
 ): string {
   if (!preflight.editable) return "The target Zotero library or collection is not editable.";
+  if (preflight.dispositions.some((entry) => entry.effect === "conflict")
+    && rows.every((row) => row.disposition === "create" || row.disposition === "reuse"
+      || row.selectedCandidateId !== null || row.omissionAcknowledged)) {
+    return "Zotero preflight reported a conflict. Apply remains disabled.";
+  }
   if (canApplyRows(rows, preflight)) return "All citation rows are resolved and ready for user approval.";
   return "Choose a bound candidate or explicitly omit every ambiguous or unresolved citation.";
+}
+
+function boundedErrorMessage(error: unknown): string {
+  const raw = error instanceof Error ? error.message : String(error);
+  const safe = raw.replace(UNSAFE_TEXT_GLOBAL, "�").normalize("NFC").trim();
+  const bounded = [...safe].slice(0, 240).join("");
+  return bounded || "The host did not provide a safe error message";
 }
 
 function countEffects(preflight: LibraryImportPreflight): number {

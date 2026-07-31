@@ -293,7 +293,8 @@ export class CitationCandidateRegistry {
   private nextOpaqueId(reservedIds: ReadonlySet<string> = new Set()): string {
     for (let attempts = 0; attempts < 100; attempts += 1) {
       const id = this.createId();
-      if (typeof id !== "string" || !id || UNSAFE_TEXT.test(id) || id.length > MAX_SHORT_TEXT_CODE_POINTS) {
+      if (typeof id !== "string" || !id.trim() || UNSAFE_TEXT.test(id)
+        || [...id].length > MAX_SHORT_TEXT_CODE_POINTS) {
         throw new Error("Citation capability ID factory returned an invalid opaque ID");
       }
       if (!reservedIds.has(id) && !this.capabilities.has(id) && !this.batches.has(id)) return id;

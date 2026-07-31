@@ -62,14 +62,28 @@ function defaultPreflight(plan: BoundLibraryImportPlan): LibraryImportPreflight 
     editable: true,
     parentVersion: plan.target.parentCollectionKey ? 7 : null,
     siblingCollectionKey: null,
-    dispositions: plan.rows.map((row) => ({
-      rowId: row.rowId,
-      effect: row.omit ? "omit" : row.choiceId ? (row.rowId.startsWith("reuse") ? "reuse" : "create") : "conflict",
-      itemKey: row.rowId.startsWith("reuse") ? "LOCAL-1" : null,
-      itemVersion: row.rowId.startsWith("reuse") ? 3 : null,
-      membershipExists: false,
-    })),
+    dispositions: plan.rows.map((row) => {
+      const localChoice = /^bound-local-(\d+)$/u.exec(row.choiceId ?? "");
+      const reuse = row.rowId.startsWith("reuse") || localChoice !== null;
+      return {
+        rowId: row.rowId,
+        effect: row.omit ? "omit" : row.choiceId ? (reuse ? "reuse" : "create") : "conflict",
+        itemKey: row.rowId.startsWith("reuse") ? "LOCAL-1" : localChoice ? `LOCAL-${localChoice[1]}` : null,
+        itemVersion: row.rowId.startsWith("reuse") ? 3 : localChoice ? Number(localChoice[1]) : null,
+        membershipExists: false,
+      };
+    }),
   };
+}
+
+function deferred<T>() {
+  let resolve!: (value: T) => void;
+  let reject!: (error: unknown) => void;
+  const promise = new Promise<T>((resolvePromise, rejectPromise) => {
+    resolve = resolvePromise;
+    reject = rejectPromise;
+  });
+  return { promise, resolve, reject };
 }
 
 function importServiceHarness(
@@ -179,6 +193,7 @@ describe("ReviewedLibraryImportService read-only tools", () => {
     expect(review.rows.map((row) => row.disposition)).toEqual(["create", "ambiguous", "unresolved"]);
     service.setRowResolution(review.id, "ambiguous-1", { candidateId: "bound-local-1" });
     service.setRowResolution(review.id, "unresolved-1", { omit: true });
+    await vi.waitFor(() => expect(service.getReviews(scope())[0]?.canApply).toBe(true));
 
     const resolved = service.getReviews(scope())[0]!;
     expect(resolved.canApply).toBe(true);
@@ -209,7 +224,7 @@ describe("ReviewedLibraryImportService read-only tools", () => {
       additionalProperties: false,
       required: ["collection_name", "capability_ids"],
       properties: {
-        collection_name: { type: "string", minLength: 1, maxLength: 200 },
+        collection_name: { type: "string", minLength: 1, maxLength: 1_600 },
         parent_collection_key: { type: "string", minLength: 1, maxLength: 1000 },
         capability_ids: {
           type: "array",
@@ -310,6 +325,14 @@ describe("ReviewedLibraryImportService read-only tools", () => {
 
     await propose(service, [capabilityId!], scope(), { collection_name: "  Cafe\u0301 papers  " });
     expect(vi.mocked(host.preflight).mock.calls[0]?.[0].target.collectionName).toBe("Café papers");
+
+    const paddedDecomposed = `${" ".repeat(500)}${"e\u0301".repeat(200)}${" ".repeat(500)}`;
+    await propose(service, [capabilityId!], scope(), { collection_name: paddedDecomposed });
+    expect(vi.mocked(host.preflight).mock.calls[1]?.[0].target.collectionName).toBe("é".repeat(200));
+
+    await expect(propose(service, [capabilityId!], scope(), {
+      collection_name: `${" ".repeat(1_600)}x`,
+    })).rejects.toThrow(/collection.*raw|defensive|long/i);
   });
 
   it("keeps ready, ambiguous, and unresolved rows in one host-bound structured review", async () => {
@@ -482,5 +505,355 @@ describe("ReviewedLibraryImportService read-only tools", () => {
     ]);
     await expect(propose(incomplete.service, [incompleteId!])).rejects.toThrow(/preflight.*rows|complete/i);
     expect(incomplete.service.getReviews(scope())).toEqual([]);
+  });
+
+  it("preserves an exact padded preflight digest for later stale comparison", async () => {
+    const { service } = importServiceHarness([resolution("shor")], async (plan) => ({
+      ...defaultPreflight(plan),
+      digest: " digest-v1 ",
+    }));
+    const [capabilityId] = await lookupCapabilities(service, [
+      { client_ref: "shor", doi: "10.1103/physreva.52.r2493" },
+    ]);
+    await propose(service, [capabilityId!]);
+    const reviewId = service.getReviews(scope())[0]!.id;
+    const internal = service as unknown as {
+      pending: Map<string, { proposalPreflight: LibraryImportPreflight }>;
+    };
+
+    expect(internal.pending.get(reviewId)?.proposalPreflight.digest).toBe(" digest-v1 ");
+  });
+
+  it("rejects a padded host row ID instead of normalizing it onto a bound row", async () => {
+    const { service } = importServiceHarness([resolution("shor")], async (plan) => {
+      const preflight = defaultPreflight(plan);
+      return {
+        ...preflight,
+        dispositions: preflight.dispositions.map((entry) => ({ ...entry, rowId: ` ${entry.rowId} ` })),
+      };
+    });
+    const [capabilityId] = await lookupCapabilities(service, [
+      { client_ref: "shor", doi: "10.1103/physreva.52.r2493" },
+    ]);
+
+    await expect(propose(service, [capabilityId!])).rejects.toThrow(/exact.*rows|complete.*rows/i);
+    expect(service.getReviews(scope())).toEqual([]);
+  });
+
+  it("rejects preflight effects that do not match the host-bound final plan", async () => {
+    const createAsReuse = importServiceHarness([resolution("create-1")], async (plan) => {
+      const preflight = defaultPreflight(plan);
+      return {
+        ...preflight,
+        dispositions: preflight.dispositions.map((entry) => ({
+          ...entry,
+          effect: "reuse" as const,
+          itemKey: "LOCAL-1",
+          itemVersion: 3,
+        })),
+      };
+    });
+    const [createId] = await lookupCapabilities(createAsReuse.service, [
+      { client_ref: "create-1", title: "Create" },
+    ]);
+    await expect(propose(createAsReuse.service, [createId!])).rejects.toThrow(/create.*effect|coherent/i);
+
+    const reuseResult = resolution("reuse-1", {
+      status: "reuse",
+      candidates: [candidate("bound-reuse-1", "Existing", {
+        localItemKey: "LOCAL-1",
+        localItemVersion: 3,
+      })],
+    });
+    const reuseAsCreate = importServiceHarness([reuseResult], async (plan) => {
+      const preflight = defaultPreflight(plan);
+      return {
+        ...preflight,
+        dispositions: preflight.dispositions.map((entry) => ({
+          ...entry,
+          effect: "create" as const,
+          itemKey: null,
+          itemVersion: null,
+        })),
+      };
+    });
+    const [reuseId] = await lookupCapabilities(reuseAsCreate.service, [
+      { client_ref: "reuse-1", title: "Reuse" },
+    ]);
+    await expect(propose(reuseAsCreate.service, [reuseId!])).rejects.toThrow(/reuse.*effect|coherent/i);
+
+    const unresolvedAsOmit = importServiceHarness([
+      resolution("unresolved-1", { status: "unresolved", candidates: [], reason: "No match" }),
+    ], async (plan) => {
+      const preflight = defaultPreflight(plan);
+      return {
+        ...preflight,
+        dispositions: preflight.dispositions.map((entry) => ({ ...entry, effect: "omit" as const })),
+      };
+    });
+    const [unresolvedId] = await lookupCapabilities(unresolvedAsOmit.service, [
+      { client_ref: "unresolved-1", title: "Unknown" },
+    ]);
+    await expect(propose(unresolvedAsOmit.service, [unresolvedId!])).rejects.toThrow(/conflict.*effect|coherent/i);
+  });
+
+  it("requires exact local identity and version for reuse preflight effects", async () => {
+    const reuseResult = resolution("reuse-1", {
+      status: "reuse",
+      candidates: [candidate("bound-reuse-1", "Existing", {
+        localItemKey: "LOCAL-1",
+        localItemVersion: 3,
+      })],
+    });
+    for (const fields of [
+      { itemKey: null, itemVersion: 3 },
+      { itemKey: "LOCAL-1", itemVersion: null },
+      { itemKey: "OTHER", itemVersion: 3 },
+      { itemKey: "LOCAL-1", itemVersion: 4 },
+    ]) {
+      const instance = importServiceHarness([reuseResult], async (plan) => {
+        const preflight = defaultPreflight(plan);
+        return {
+          ...preflight,
+          dispositions: preflight.dispositions.map((entry) => ({ ...entry, ...fields })),
+        };
+      });
+      const [capabilityId] = await lookupCapabilities(instance.service, [
+        { client_ref: "reuse-1", title: "Reuse" },
+      ]);
+      await expect(propose(instance.service, [capabilityId!]))
+        .rejects.toThrow(/reuse.*item|identity|version|coherent/i);
+      expect(instance.service.getReviews(scope())).toEqual([]);
+    }
+  });
+
+  it("keeps a coherent host conflict review disabled", async () => {
+    const { service } = importServiceHarness([resolution("create-1")], async (plan) => {
+      const preflight = defaultPreflight(plan);
+      return {
+        ...preflight,
+        dispositions: preflight.dispositions.map((entry) => ({
+          ...entry,
+          effect: "conflict" as const,
+          itemKey: null,
+          itemVersion: null,
+          membershipExists: false,
+        })),
+      };
+    });
+    const [capabilityId] = await lookupCapabilities(service, [
+      { client_ref: "create-1", title: "Create" },
+    ]);
+    await propose(service, [capabilityId!]);
+
+    expect(service.getReviews(scope())[0]).toMatchObject({
+      canApply: false,
+      rows: [{ effectLabel: "Choose a candidate or acknowledge omission" }],
+    });
+  });
+
+  it("disables Apply while refreshing a row choice and atomically publishes the final-plan effects", async () => {
+    const refresh = deferred<LibraryImportPreflight>();
+    let calls = 0;
+    const ambiguous = resolution("ambiguous-1", {
+      status: "ambiguous",
+      candidates: [candidate("bound-local-1", "Existing match", {
+        localItemKey: "LOCAL-1",
+        localItemVersion: 1,
+      })],
+      reason: "One user-selectable exact match",
+    });
+    const { service, host } = importServiceHarness([ambiguous], async (plan) => {
+      calls += 1;
+      if (calls === 1) return defaultPreflight(plan);
+      return refresh.promise;
+    });
+    const [capabilityId] = await lookupCapabilities(service, [
+      { client_ref: "ambiguous-1", title: "Existing match" },
+    ]);
+    await propose(service, [capabilityId!]);
+    const reviewId = service.getReviews(scope())[0]!.id;
+
+    service.setRowResolution(reviewId, "ambiguous-1", { candidateId: "bound-local-1" });
+
+    expect(service.getReviews(scope())[0]).toMatchObject({
+      canApply: false,
+      effectCount: 0,
+      statusMessage: expect.stringMatching(/refresh|checking/i),
+      rows: [{
+        selectedCandidateId: "bound-local-1",
+        effectLabel: expect.stringMatching(/refresh|checking/i),
+      }],
+    });
+    const refreshPlan = vi.mocked(host.preflight).mock.calls[1]?.[0];
+    expect(refreshPlan?.rows).toMatchObject([{ rowId: "ambiguous-1", choiceId: "bound-local-1", omit: false }]);
+
+    refresh.resolve({
+      digest: "refresh-digest-1",
+      editable: true,
+      parentVersion: 7,
+      siblingCollectionKey: null,
+      dispositions: [{
+        rowId: "ambiguous-1",
+        effect: "reuse",
+        itemKey: "LOCAL-1",
+        itemVersion: 1,
+        membershipExists: false,
+      }],
+    });
+    await vi.waitFor(() => expect(service.getReviews(scope())[0]?.canApply).toBe(true));
+
+    expect(service.getReviews(scope())[0]).toMatchObject({
+      canApply: true,
+      effectCount: 1,
+      statusMessage: expect.stringMatching(/ready/i),
+      rows: [{ effectLabel: "Reuse an existing item and add it to the target collection" }],
+    });
+    expect(host.apply).not.toHaveBeenCalled();
+    expect(host.compensate).not.toHaveBeenCalled();
+    expect(host.invalidateLibrary).not.toHaveBeenCalled();
+  });
+
+  it("ignores stale out-of-order preflight refreshes for earlier row choices", async () => {
+    const first = deferred<LibraryImportPreflight>();
+    const second = deferred<LibraryImportPreflight>();
+    let calls = 0;
+    const ambiguous = resolution("ambiguous-1", {
+      status: "ambiguous",
+      candidates: [
+        candidate("bound-local-1", "First", { localItemKey: "LOCAL-1", localItemVersion: 1 }),
+        candidate("bound-local-2", "Second", { localItemKey: "LOCAL-2", localItemVersion: 2 }),
+      ],
+      reason: "Two exact matches",
+    });
+    const { service, host } = importServiceHarness([ambiguous], async (plan) => {
+      calls += 1;
+      if (calls === 1) return defaultPreflight(plan);
+      return calls === 2 ? first.promise : second.promise;
+    });
+    const [capabilityId] = await lookupCapabilities(service, [
+      { client_ref: "ambiguous-1", title: "Two exact matches" },
+    ]);
+    await propose(service, [capabilityId!]);
+    const reviewId = service.getReviews(scope())[0]!.id;
+
+    service.setRowResolution(reviewId, "ambiguous-1", { candidateId: "bound-local-1" });
+    service.setRowResolution(reviewId, "ambiguous-1", { candidateId: "bound-local-2" });
+    second.resolve({
+      digest: "second-digest",
+      editable: true,
+      parentVersion: 7,
+      siblingCollectionKey: null,
+      dispositions: [{
+        rowId: "ambiguous-1",
+        effect: "reuse",
+        itemKey: "LOCAL-2",
+        itemVersion: 2,
+        membershipExists: true,
+      }],
+    });
+    await vi.waitFor(() => expect(service.getReviews(scope())[0]?.canApply).toBe(true));
+
+    first.resolve({
+      digest: "first-stale-digest",
+      editable: true,
+      parentVersion: 7,
+      siblingCollectionKey: null,
+      dispositions: [{
+        rowId: "ambiguous-1",
+        effect: "reuse",
+        itemKey: "LOCAL-1",
+        itemVersion: 1,
+        membershipExists: false,
+      }],
+    });
+    await Promise.resolve();
+    await Promise.resolve();
+
+    const review = service.getReviews(scope())[0]!;
+    expect(review).toMatchObject({
+      canApply: true,
+      effectCount: 0,
+      rows: [{
+        selectedCandidateId: "bound-local-2",
+        effectLabel: "Reuse an item already in the target collection",
+      }],
+    });
+    const internal = service as unknown as {
+      pending: Map<string, { proposalPreflight: LibraryImportPreflight }>;
+    };
+    expect(internal.pending.get(reviewId)?.proposalPreflight.digest).toBe("second-digest");
+    expect(host.apply).not.toHaveBeenCalled();
+    expect(host.compensate).not.toHaveBeenCalled();
+    expect(host.invalidateLibrary).not.toHaveBeenCalled();
+  });
+
+  it("catches refresh failure, bounds its status, and leaves Apply disabled with zero writes", async () => {
+    const refresh = deferred<LibraryImportPreflight>();
+    let calls = 0;
+    const unresolved = resolution("unresolved-1", {
+      status: "unresolved",
+      candidates: [],
+      reason: "No exact match",
+    });
+    const { service, host } = importServiceHarness([unresolved], async (plan) => {
+      calls += 1;
+      if (calls === 1) return defaultPreflight(plan);
+      return refresh.promise;
+    });
+    const [capabilityId] = await lookupCapabilities(service, [
+      { client_ref: "unresolved-1", title: "Unknown" },
+    ]);
+    await propose(service, [capabilityId!]);
+    const reviewId = service.getReviews(scope())[0]!.id;
+
+    service.setRowResolution(reviewId, "unresolved-1", { omit: true });
+    expect(service.getReviews(scope())[0]?.canApply).toBe(false);
+    refresh.reject(new Error(`${"host failure ".repeat(100)}\u202E`));
+    await vi.waitFor(() => expect(service.getReviews(scope())[0]?.statusMessage).toMatch(/refresh failed/i));
+
+    const review = service.getReviews(scope())[0]!;
+    expect(review.canApply).toBe(false);
+    expect(review.state).toBe("pending");
+    expect([...review.statusMessage].length).toBeLessThanOrEqual(280);
+    expect(review.statusMessage).not.toContain("\u202E");
+    expect(host.apply).not.toHaveBeenCalled();
+    expect(host.compensate).not.toHaveBeenCalled();
+    expect(host.invalidateLibrary).not.toHaveBeenCalled();
+  });
+
+  it("refuses an incoherent refresh for an explicitly omitted row", async () => {
+    let calls = 0;
+    const unresolved = resolution("unresolved-1", {
+      status: "unresolved",
+      candidates: [],
+      reason: "No exact match",
+    });
+    const { service } = importServiceHarness([unresolved], async (plan) => {
+      calls += 1;
+      if (calls === 1) return defaultPreflight(plan);
+      return {
+        digest: "bad-omit-refresh",
+        editable: true,
+        parentVersion: 7,
+        siblingCollectionKey: null,
+        dispositions: [{
+          rowId: "unresolved-1",
+          effect: "create",
+          itemKey: null,
+          itemVersion: null,
+          membershipExists: false,
+        }],
+      };
+    });
+    const [capabilityId] = await lookupCapabilities(service, [
+      { client_ref: "unresolved-1", title: "Unknown" },
+    ]);
+    await propose(service, [capabilityId!]);
+    const reviewId = service.getReviews(scope())[0]!.id;
+
+    service.setRowResolution(reviewId, "unresolved-1", { omit: true });
+    await vi.waitFor(() => expect(service.getReviews(scope())[0]?.statusMessage).toMatch(/refresh failed/i));
+    expect(service.getReviews(scope())[0]?.canApply).toBe(false);
   });
 });

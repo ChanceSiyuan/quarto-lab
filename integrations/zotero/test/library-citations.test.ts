@@ -141,6 +141,23 @@ describe("CitationCandidateRegistry", () => {
     expect(() => registry.resolveCapability(scope(), "first-capability")).toThrow(/unknown/i);
   });
 
+  it("rejects blank, unsafe, and overlong opaque IDs without retaining staged capabilities", async () => {
+    for (const invalidId of ["   ", "unsafe\u200B-id", "x".repeat(1_001)]) {
+      const ids = ["batch", "first-capability", invalidId];
+      const registry = new CitationCandidateRegistry({
+        resolve: async (_scope, requests) => requests.map((request) => resolution(request.clientRef)),
+      }, {
+        createId: () => ids.shift() ?? "unexpected",
+      });
+
+      await expect(registry.lookup(scope(), [
+        { clientRef: "r1", doi: "10.1000/a" },
+        { clientRef: "r2", doi: "10.1000/b" },
+      ])).rejects.toThrow(/invalid opaque ID/i);
+      expect(() => registry.resolveCapability(scope(), "first-capability")).toThrow(/unknown/i);
+    }
+  });
+
   it("starts capability expiry from resolver completion time", async () => {
     const startedAt = Date.parse("2026-07-31T10:00:00Z");
     const completedAt = Date.parse("2026-07-31T10:31:00Z");
