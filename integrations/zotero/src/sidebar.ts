@@ -284,6 +284,36 @@ function clampSplitRatio(percent: number): number {
   return Math.round(Math.min(68, Math.max(25, percent)));
 }
 
+/**
+ * Rebuilding the Action chips between mousedown and mouseup (frequent while
+ * a turn streams re-renders) destroys the button before its click event
+ * fires. Equal-by-value chip state therefore keeps the existing buttons.
+ * Every field that affects the rendered strip participates: per-action
+ * id/label/description/icon plus the object kind/label, from which the
+ * strip's hidden state is derived. ResearchActionView carries no disabled
+ * flag today; add any future field to this comparison.
+ */
+function sameResearchActionState(
+  previous: { object: ResearchObjectView | null; actions: ResearchActionView[] } | null,
+  object: ResearchObjectView | null,
+  actions: ResearchActionView[],
+): boolean {
+  if (!previous) return false;
+  if ((previous.object === null) !== (object === null)) return false;
+  if (previous.object && object
+    && (previous.object.kind !== object.kind || previous.object.label !== object.label)) {
+    return false;
+  }
+  if (previous.actions.length !== actions.length) return false;
+  return previous.actions.every((prev, index) => {
+    const next = actions[index]!;
+    return prev.id === next.id
+      && prev.label === next.label
+      && prev.description === next.description
+      && prev.icon === next.icon;
+  });
+}
+
 export class SidebarView {
   private readonly doc: Document;
   private readonly root: HTMLElement;
@@ -297,6 +327,10 @@ export class SidebarView {
   private composerControls!: HTMLElement;
   private qlabRootLabel!: HTMLElement;
   private actionStrip!: HTMLElement;
+  private renderedResearchActions: {
+    object: ResearchObjectView | null;
+    actions: ResearchActionView[];
+  } | null = null;
   private contextTitle!: HTMLElement;
   private contextMeta!: HTMLElement;
   private choosePaperButton!: HTMLButtonElement;
@@ -1027,9 +1061,14 @@ export class SidebarView {
 
   private renderResearchActions(): void {
     if (!this.actionStrip) return;
-    this.actionStrip.replaceChildren();
-    const object = this.state.researchObject;
+    const object = this.state.researchObject ?? null;
     const actions = this.state.researchActions || [];
+    if (sameResearchActionState(this.renderedResearchActions, object, actions)) return;
+    this.renderedResearchActions = {
+      object: object ? { ...object } : null,
+      actions: actions.map((action) => ({ ...action })),
+    };
+    this.actionStrip.replaceChildren();
     this.actionStrip.hidden = !object || actions.length === 0;
     if (!object || !actions.length) return;
 
