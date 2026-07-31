@@ -266,29 +266,26 @@ describe("local repository Gecko adapters", () => {
       read: vi.fn(async () => readBytes),
       close: vi.fn(async () => undefined),
     };
-    const open = vi.fn(async (path: string, mode: Record<string, boolean>) => {
-      if (!path.endsWith("/repository-id")) return directoryHandle;
-      return mode.create ? writeHandle : readHandle;
-    });
-    const os = {
-      Constants: {
-        libc: {
-          O_RDONLY: 0,
-          O_WRONLY: 1,
-          O_CREAT: 0x0200,
-          O_EXCL: 0x0800,
-          O_NOFOLLOW: 0x0100,
-          O_DIRECTORY: 0x200000,
-          O_CLOEXEC: 0x1000000,
-        },
-      },
-      File: {
-        makeDir: vi.fn(async () => undefined),
-        open,
-      },
-      Path: { dirname: parentPath },
+    const flags = {
+      O_RDONLY: 0,
+      O_WRONLY: 1,
+      O_CREAT: 0x0200,
+      O_EXCL: 0x0800,
+      O_NOFOLLOW: 0x0100,
+      O_DIRECTORY: 0x200000,
+      O_CLOEXEC: 0x1000000,
     };
-    const host = createGeckoQLabPrivateFileHost(os);
+    const openAt = vi.fn(async (_parent, name: string, openFlags: number) => {
+      if (name !== "repository-id") return directoryHandle;
+      return openFlags & flags.O_CREAT ? writeHandle : readHandle;
+    });
+    const runtime = {
+      flags,
+      open: vi.fn(async () => directoryHandle),
+      openAt,
+      makeDirAt: vi.fn(async () => "created" as const),
+    };
+    const host = createGeckoQLabPrivateFileHost(runtime);
 
     await expect(host.createPrivateIfAbsent(
       "/repo/.git/qlab/repository-id",
@@ -298,57 +295,55 @@ describe("local repository Gecko adapters", () => {
     await expect(host.readPrivate("/repo/.git/qlab/repository-id"))
       .resolves.toBe(`${WINNING_UUID}\n`);
 
-    const createCall = open.mock.calls.find((call) =>
-      call[0].endsWith("/repository-id") && call[1].create);
-    const readCall = open.mock.calls.find((call) =>
-      call[0].endsWith("/repository-id") && call[1].read);
+    const createCall = openAt.mock.calls.find((call) =>
+      call[1] === "repository-id" && (call[2] & flags.O_CREAT));
+    const readCall = openAt.mock.calls.find((call) =>
+      call[1] === "repository-id" && !(call[2] & flags.O_CREAT));
     expect(createCall).toEqual([
-      "/repo/.git/qlab/repository-id",
-      { write: true, create: true, append: false },
-      { unixFlags: 0x0200 | 0x0800 | 0x0100 | 0x1000000 | 1, unixMode: 0o600 },
+      directoryHandle,
+      "repository-id",
+      0x0200 | 0x0800 | 0x0100 | 0x1000000 | 1,
+      0o600,
     ]);
     expect(readCall).toEqual([
-      "/repo/.git/qlab/repository-id",
-      { read: true, existing: true },
-      { unixFlags: 0x0100 | 0x1000000 },
+      directoryHandle,
+      "repository-id",
+      0x0100 | 0x1000000,
     ]);
     expect(writeHandle.write).toHaveBeenCalledWith(
       new TextEncoder().encode(`${GENERATED_UUID}\n`),
     );
     expect(writeHandle.close).toHaveBeenCalledOnce();
     expect(readHandle.close).toHaveBeenCalledOnce();
-    expect(open).toHaveBeenCalledWith(
-      "/repo/.git/qlab",
-      { read: true, existing: true },
-      { unixFlags: 0x200000 | 0x0100 | 0x1000000 },
+    expect(openAt).toHaveBeenCalledWith(
+      directoryHandle,
+      "qlab",
+      0x200000 | 0x0100 | 0x1000000,
     );
   });
 
   it("reports an exclusive-create winner and a missing descriptor without overwriting", async () => {
     const directoryHandle = { close: vi.fn(async () => undefined) };
-    const open = vi.fn(async (path: string, mode: Record<string, boolean>) => {
-      if (!path.endsWith("/repository-id")) return directoryHandle;
-      if (mode.create) throw { becauseExists: true };
-      throw { becauseNoSuchFile: true };
-    });
-    const os = {
-      Constants: {
-        libc: {
-          O_RDONLY: 0,
-          O_WRONLY: 1,
-          O_CREAT: 0x0200,
-          O_EXCL: 0x0800,
-          O_NOFOLLOW: 0x0100,
-          O_DIRECTORY: 0x200000,
-        },
-      },
-      File: {
-        makeDir: vi.fn(async () => undefined),
-        open,
-      },
-      Path: { dirname: parentPath },
+    const flags = {
+      O_RDONLY: 0,
+      O_WRONLY: 1,
+      O_CREAT: 0x0200,
+      O_EXCL: 0x0800,
+      O_NOFOLLOW: 0x0100,
+      O_DIRECTORY: 0x200000,
+      O_CLOEXEC: 0,
     };
-    const host = createGeckoQLabPrivateFileHost(os);
+    const runtime = {
+      flags,
+      open: vi.fn(async () => directoryHandle),
+      openAt: vi.fn(async (_parent, name: string, openFlags: number) => {
+        if (name !== "repository-id") return directoryHandle;
+        if (openFlags & flags.O_CREAT) throw { becauseExists: true };
+        throw { becauseNoSuchFile: true };
+      }),
+      makeDirAt: vi.fn(async () => "created" as const),
+    };
+    const host = createGeckoQLabPrivateFileHost(runtime);
 
     await expect(host.createPrivateIfAbsent("/repo/.git/qlab/repository-id", "value", 0o600))
       .resolves.toBe("exists");
@@ -358,44 +353,122 @@ describe("local repository Gecko adapters", () => {
 
   it("rejects a symlinked Git-private ancestor before opening the identity file", async () => {
     const directoryHandle = { close: vi.fn(async () => undefined) };
-    const open = vi.fn(async (path: string) => {
-      if (path === "/repo/.git/qlab") throw new Error("symbolic link refused");
+    const openAt = vi.fn(async (_parent, name: string) => {
+      if (name === "qlab") throw new Error("symbolic link refused");
       return directoryHandle;
     });
-    const os = {
-      Constants: {
-        libc: {
-          O_RDONLY: 0,
-          O_WRONLY: 1,
-          O_CREAT: 0x0200,
-          O_EXCL: 0x0800,
-          O_NOFOLLOW: 0x0100,
-          O_DIRECTORY: 0x200000,
-        },
+    const runtime = {
+      flags: {
+        O_RDONLY: 0,
+        O_WRONLY: 1,
+        O_CREAT: 0x0200,
+        O_EXCL: 0x0800,
+        O_NOFOLLOW: 0x0100,
+        O_DIRECTORY: 0x200000,
+        O_CLOEXEC: 0,
       },
-      File: {
-        makeDir: vi.fn(async () => undefined),
-        open,
-      },
-      Path: { dirname: parentPath },
+      open: vi.fn(async () => directoryHandle),
+      openAt,
+      makeDirAt: vi.fn(async () => "created" as const),
     };
-    const host = createGeckoQLabPrivateFileHost(os);
+    const host = createGeckoQLabPrivateFileHost(runtime);
 
     await expect(host.createPrivateIfAbsent(
       "/repo/.git/qlab/repository-id",
       `${GENERATED_UUID}\n`,
       0o600,
     )).rejects.toThrow("symbolic link refused");
-    expect(open).not.toHaveBeenCalledWith(
-      "/repo/.git/qlab/repository-id",
+    expect(openAt).not.toHaveBeenCalledWith(
+      expect.anything(),
+      "repository-id",
       expect.anything(),
       expect.anything(),
     );
   });
-});
 
-function parentPath(path: string): string {
-  if (path === "/") return "/";
-  const parent = path.slice(0, path.lastIndexOf("/"));
-  return parent || "/";
-}
+  it("retains the verified parent descriptor when its path is retargeted before leaf creation", async () => {
+    type Node = {
+      children?: Map<string, Node>;
+      value?: string;
+    };
+    type Descriptor = {
+      node: Node;
+      read?(): Promise<Uint8Array>;
+      write?(bytes: Uint8Array): Promise<number>;
+      flush?(): Promise<void>;
+      close(): Promise<void>;
+    };
+    const originalIdentity: Node = {};
+    const outsideIdentity: Node = { value: "outside-sentinel" };
+    const originalPrivate: Node = { children: new Map() };
+    const outsidePrivate: Node = {
+      children: new Map([["repository-id", outsideIdentity]]),
+    };
+    const git: Node = { children: new Map([["qlab", originalPrivate]]) };
+    const repo: Node = { children: new Map([[".git", git]]) };
+    const root: Node = { children: new Map([["repo", repo]]) };
+    let retargeted = false;
+
+    const retarget = () => {
+      if (retargeted) return;
+      retargeted = true;
+      git.children!.set("qlab", outsidePrivate);
+    };
+    const descriptor = (node: Node): Descriptor => ({
+      node,
+      ...(node.children ? {} : {
+        read: async () => new TextEncoder().encode(node.value || ""),
+        write: async (bytes: Uint8Array) => {
+          node.value = new TextDecoder().decode(bytes);
+          return bytes.length;
+        },
+        flush: async () => undefined,
+      }),
+      close: async () => undefined,
+    });
+    const resolveAbsolute = (path: string): Node => {
+      let current = root;
+      for (const component of path.split("/").filter(Boolean)) {
+        const next = current.children?.get(component);
+        if (!next) throw { becauseNoSuchFile: true };
+        current = next;
+      }
+      return current;
+    };
+    const flags = {
+      O_RDONLY: 0,
+      O_WRONLY: 1,
+      O_CREAT: 0x40,
+      O_EXCL: 0x80,
+      O_NOFOLLOW: 0x20000,
+      O_DIRECTORY: 0x10000,
+      O_CLOEXEC: 0x80000,
+    };
+    const runtime = {
+      flags,
+      open: async (path: string) => descriptor(resolveAbsolute(path)),
+      openAt: async (parent: Descriptor, name: string, openFlags: number) => {
+        let child = parent.node.children?.get(name);
+        if (!child && (openFlags & flags.O_CREAT)) {
+          child = originalIdentity;
+          parent.node.children!.set(name, child);
+        }
+        if (!child) throw { becauseNoSuchFile: true };
+        const childDescriptor = descriptor(child);
+        if (parent.node === git && name === "qlab") retarget();
+        return childDescriptor;
+      },
+      makeDirAt: async () => "created" as const,
+    };
+    const host = createGeckoQLabPrivateFileHost(runtime);
+
+    await expect(host.createPrivateIfAbsent(
+      "/repo/.git/qlab/repository-id",
+      `${GENERATED_UUID}\n`,
+      0o600,
+    )).resolves.toBe("created");
+
+    expect(originalIdentity.value).toBe(`${GENERATED_UUID}\n`);
+    expect(outsideIdentity.value).toBe("outside-sentinel");
+  });
+});
