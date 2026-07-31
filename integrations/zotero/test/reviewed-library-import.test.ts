@@ -7,10 +7,12 @@ import {
   type ResolvedCitation,
 } from "../src/library-citations";
 import {
+  LibraryApplyFailure,
   LOOKUP_CITATIONS_TOOL,
   PROPOSE_LIBRARY_IMPORT_TOOL,
   ReviewedLibraryImportService,
   type BoundLibraryImportPlan,
+  type LibraryApplyReceipt,
   type LibraryImportPreflight,
   type LibraryMutationHost,
 } from "../src/reviewed-library-import";
@@ -44,6 +46,16 @@ const candidate = (
   localItemKey: null,
   localItemVersion: null,
   provenance: "identifier translation",
+  ...overrides,
+});
+
+const applyReceipt = (
+  overrides: Partial<LibraryApplyReceipt> = {},
+): LibraryApplyReceipt => ({
+  libraryID: 1,
+  createdCollectionKey: "COLLECTION-NEW",
+  createdItemKeys: ["ITEM-NEW"],
+  addedMemberships: [{ itemKey: "ITEM-NEW", collectionKey: "COLLECTION-NEW" }],
   ...overrides,
 });
 
@@ -106,7 +118,7 @@ function importServiceHarness(
   });
   const host: LibraryMutationHost = {
     preflight: vi.fn(preflight),
-    apply: vi.fn(async () => { throw new Error("apply must not run in Task 4"); }),
+    apply: vi.fn(async () => applyReceipt()),
     compensate: vi.fn(async () => ({ complete: true, survivors: [] })),
     invalidateLibrary: vi.fn(async () => {}),
   };
@@ -473,7 +485,7 @@ describe("ReviewedLibraryImportService read-only tools", () => {
     expect(onState).toHaveBeenLastCalledWith(scope());
   });
 
-  it("claims an eligible acceptance synchronously but leaves Task 5 writes unavailable", async () => {
+  it("claims Apply synchronously, validates the exact final plan, and writes exactly once", async () => {
     const { service, host } = importServiceHarness();
     const [capabilityId] = await lookupCapabilities(service, [
       { client_ref: "shor", doi: "10.1103/physreva.52.r2493" },
@@ -484,10 +496,325 @@ describe("ReviewedLibraryImportService read-only tools", () => {
     const accepting = service.resolveReview(reviewId, "accept");
     expect(service.getReviews(scope())[0]?.state).toBe("resolving");
     await expect(service.resolveReview(reviewId, "accept")).rejects.toThrow(/already resolved|being applied/i);
-    await expect(accepting).rejects.toThrow(/Task 5|not available|read-only/i);
+    await expect(accepting).resolves.toEqual({
+      decision: "accepted",
+      reviewId,
+      receipt: applyReceipt(),
+    });
+    expect(host.preflight).toHaveBeenCalledTimes(2);
+    expect(vi.mocked(host.preflight).mock.calls[1]?.[0]).toEqual(
+      vi.mocked(host.preflight).mock.calls[0]?.[0],
+    );
+    expect(vi.mocked(host.preflight).mock.calls[1]?.[0]).not.toBe(
+      vi.mocked(host.preflight).mock.calls[0]?.[0],
+    );
+    expect(host.apply).toHaveBeenCalledOnce();
+    expect(vi.mocked(host.apply).mock.calls[0]?.[0]).toEqual({
+      ...vi.mocked(host.preflight).mock.calls[1]?.[0],
+      preflight: defaultPreflight(vi.mocked(host.preflight).mock.calls[1]![0]),
+    });
+    expect(host.invalidateLibrary).toHaveBeenCalledOnce();
+    expect(host.invalidateLibrary).toHaveBeenCalledWith(1);
+    expect(service.getReviews(scope())[0]).toMatchObject({ state: "accepted", canApply: false });
+    expect(host.compensate).not.toHaveBeenCalled();
+  });
+
+  it("serializes different reviews through one service-wide Apply queue", async () => {
+    const firstApply = deferred<LibraryApplyReceipt>();
+    const results = [resolution("first"), resolution("second")];
+    const { service, host } = importServiceHarness(results);
+    vi.mocked(host.apply)
+      .mockImplementationOnce(async () => firstApply.promise)
+      .mockResolvedValueOnce(applyReceipt({
+        createdCollectionKey: "COLLECTION-SECOND",
+        createdItemKeys: ["ITEM-SECOND"],
+        addedMemberships: [{ itemKey: "ITEM-SECOND", collectionKey: "COLLECTION-SECOND" }],
+      }));
+    const [firstCapability] = await lookupCapabilities(service, [{ client_ref: "first", title: "First" }]);
+    await propose(service, [firstCapability!]);
+    const [secondCapability] = await lookupCapabilities(service, [{ client_ref: "second", title: "Second" }]);
+    await propose(service, [secondCapability!], scope(), { collection_name: "Second target" });
+    const [firstReview, secondReview] = service.getReviews(scope());
+
+    const first = service.resolveReview(firstReview!.id, "accept");
+    const second = service.resolveReview(secondReview!.id, "accept");
+    await expect(service.resolveReview(secondReview!.id, "reject"))
+      .rejects.toThrow(/already resolved|being applied/i);
+
+    await vi.waitFor(() => expect(host.apply).toHaveBeenCalledOnce());
+    expect(host.preflight).toHaveBeenCalledTimes(3);
+    expect(service.getReviews(scope()).map((review) => review.state)).toEqual(["resolving", "resolving"]);
+
+    firstApply.resolve(applyReceipt());
+    await expect(first).resolves.toMatchObject({ decision: "accepted", reviewId: firstReview!.id });
+    await expect(second).resolves.toMatchObject({ decision: "accepted", reviewId: secondReview!.id });
+    expect(host.apply).toHaveBeenCalledTimes(2);
+    expect(vi.mocked(host.apply).mock.calls.map(([plan]) => plan.rows[0]?.rowId)).toEqual(["first", "second"]);
+  });
+
+  it.each([
+    ["editable", (preflight: LibraryImportPreflight) => ({ ...preflight, editable: false })],
+    ["parent version", (preflight: LibraryImportPreflight) => ({ ...preflight, parentVersion: 8 })],
+    ["sibling collection key", (preflight: LibraryImportPreflight) => ({ ...preflight, siblingCollectionKey: "COLLECTION-OTHER" })],
+    ["digest", (preflight: LibraryImportPreflight) => ({ ...preflight, digest: `${preflight.digest}-changed` })],
+    ["disposition row ID", (preflight: LibraryImportPreflight) => ({
+      ...preflight,
+      dispositions: preflight.dispositions.map((entry) => ({ ...entry, rowId: ` ${entry.rowId} ` })),
+    })],
+    ["disposition effect", (preflight: LibraryImportPreflight) => ({
+      ...preflight,
+      dispositions: preflight.dispositions.map((entry) => ({
+        ...entry,
+        effect: "conflict" as const,
+        itemKey: null,
+        itemVersion: null,
+        membershipExists: false,
+      })),
+    })],
+    ["item key", (preflight: LibraryImportPreflight) => ({
+      ...preflight,
+      dispositions: preflight.dispositions.map((entry) => ({ ...entry, itemKey: "LOCAL-OTHER" })),
+    })],
+    ["item version", (preflight: LibraryImportPreflight) => ({
+      ...preflight,
+      dispositions: preflight.dispositions.map((entry) => ({ ...entry, itemVersion: 4 })),
+    })],
+    ["membership", (preflight: LibraryImportPreflight) => ({
+      ...preflight,
+      dispositions: preflight.dispositions.map((entry) => ({ ...entry, membershipExists: true })),
+    })],
+  ])("marks a changed %s stale before the first write", async (_field, change) => {
+    const reuse = resolution("reuse-1", {
+      status: "reuse",
+      candidates: [candidate("bound-reuse-1", "Existing", {
+        localItemKey: "LOCAL-1",
+        localItemVersion: 3,
+      })],
+    });
+    const { service, host } = importServiceHarness([reuse], async (plan) => ({
+      ...defaultPreflight(plan),
+      siblingCollectionKey: "COLLECTION-TARGET",
+    }));
+    const [capabilityId] = await lookupCapabilities(service, [{ client_ref: "reuse-1", title: "Existing" }]);
+    await propose(service, [capabilityId!]);
+    const review = service.getReviews(scope())[0]!;
+    const proposalPreflight = {
+      ...defaultPreflight(vi.mocked(host.preflight).mock.calls[0]![0]),
+      siblingCollectionKey: "COLLECTION-TARGET",
+    };
+    vi.mocked(host.preflight).mockResolvedValueOnce(change(proposalPreflight));
+
+    await expect(service.resolveReview(review.id, "accept")).rejects.toThrow(/stale/i);
+
+    expect(service.getReviews(scope())[0]).toMatchObject({ state: "stale", canApply: false });
     expect(host.apply).not.toHaveBeenCalled();
     expect(host.compensate).not.toHaveBeenCalled();
     expect(host.invalidateLibrary).not.toHaveBeenCalled();
+  });
+
+  it("accepts with a retained receipt clone and isolates state callback failures", async () => {
+    let notificationsFail = false;
+    const { service, host } = importServiceHarness(
+      [resolution("shor")],
+      async (plan) => defaultPreflight(plan),
+      () => {
+        if (notificationsFail) throw new Error("UI callback failed");
+      },
+    );
+    const receipt = applyReceipt();
+    vi.mocked(host.apply).mockResolvedValueOnce(receipt);
+    const [capabilityId] = await lookupCapabilities(service, [{ client_ref: "shor", title: "Shor" }]);
+    await propose(service, [capabilityId!]);
+    const review = service.getReviews(scope())[0]!;
+    notificationsFail = true;
+
+    const accepted = await service.resolveReview(review.id, "accept");
+    (accepted.receipt!.createdItemKeys as string[])[0] = "MUTATED-RETURN";
+    (receipt.createdItemKeys as string[])[0] = "MUTATED-HOST";
+    const internal = service as unknown as {
+      pending: Map<string, { receipt: LibraryApplyReceipt | null }>;
+    };
+
+    expect(internal.pending.get(review.id)?.receipt).toEqual(applyReceipt());
+    expect(service.getReviews(scope())[0]).toMatchObject({ state: "accepted" });
+  });
+
+  it("keeps a successful Apply accepted when snapshot invalidation fails", async () => {
+    const { service, host } = importServiceHarness();
+    vi.mocked(host.invalidateLibrary).mockRejectedValueOnce(new Error("snapshot cache unavailable"));
+    const [capabilityId] = await lookupCapabilities(service, [{ client_ref: "shor", title: "Shor" }]);
+    await propose(service, [capabilityId!]);
+    const review = service.getReviews(scope())[0]!;
+
+    await expect(service.resolveReview(review.id, "accept")).resolves.toEqual({
+      decision: "accepted",
+      reviewId: review.id,
+      receipt: applyReceipt(),
+    });
+
+    expect(service.getReviews(scope())[0]).toMatchObject({
+      state: "accepted",
+      statusMessage: expect.stringMatching(/applied.*snapshot|reload/i),
+    });
+    expect(host.compensate).not.toHaveBeenCalled();
+    await expect(service.resolveReview(review.id, "accept")).rejects.toThrow(/already resolved/i);
+  });
+
+  it("fails terminally without compensation for a generic Apply error", async () => {
+    const { service, host } = importServiceHarness();
+    vi.mocked(host.apply).mockRejectedValueOnce(new Error("save failed without receipt"));
+    const [capabilityId] = await lookupCapabilities(service, [{ client_ref: "shor", title: "Shor" }]);
+    await propose(service, [capabilityId!]);
+    const review = service.getReviews(scope())[0]!;
+
+    await expect(service.resolveReview(review.id, "accept")).rejects.toThrow(/failed.*save failed without receipt/i);
+
+    expect(service.getReviews(scope())[0]).toMatchObject({ state: "failed", canApply: false });
+    expect(host.compensate).not.toHaveBeenCalled();
+    expect(host.invalidateLibrary).toHaveBeenCalledWith(1);
+    await expect(service.resolveReview(review.id, "accept")).rejects.toThrow(/already resolved/i);
+    expect(host.apply).toHaveBeenCalledOnce();
+  });
+
+  it("compensates a partial Apply receipt and reports complete rollback", async () => {
+    const { service, host } = importServiceHarness();
+    const receipt = applyReceipt();
+    vi.mocked(host.apply).mockRejectedValueOnce(new LibraryApplyFailure("item save failed", receipt));
+    const [capabilityId] = await lookupCapabilities(service, [{ client_ref: "shor", title: "Shor" }]);
+    await propose(service, [capabilityId!]);
+    const review = service.getReviews(scope())[0]!;
+
+    await expect(service.resolveReview(review.id, "accept")).rejects.toThrow(/rolled back/i);
+
+    expect(host.compensate).toHaveBeenCalledOnce();
+    expect(host.compensate).toHaveBeenCalledWith(receipt);
+    expect(host.invalidateLibrary).toHaveBeenCalledWith(1);
+    expect(service.getReviews(scope())[0]).toMatchObject({
+      state: "failed",
+      statusMessage: expect.stringMatching(/rolled back/i),
+    });
+  });
+
+  it("reports exact bounded survivor keys after incomplete rollback", async () => {
+    const { service, host } = importServiceHarness();
+    const receipt = applyReceipt();
+    vi.mocked(host.apply).mockRejectedValueOnce(new LibraryApplyFailure("item save failed", receipt));
+    vi.mocked(host.compensate).mockResolvedValueOnce({
+      complete: false,
+      survivors: [
+        { kind: "membership", itemKey: "ITEM-EXACT", collectionKey: "COLLECTION-EXACT", error: "remove failed" },
+        { kind: "created-item", itemKey: "ITEM-SURVIVOR", error: "erase failed" },
+        { kind: "collection", collectionKey: "COLLECTION-SURVIVOR", error: "erase failed" },
+      ],
+    });
+    const [capabilityId] = await lookupCapabilities(service, [{ client_ref: "shor", title: "Shor" }]);
+    await propose(service, [capabilityId!]);
+    const review = service.getReviews(scope())[0]!;
+
+    await expect(service.resolveReview(review.id, "accept")).rejects.toThrow(/rollback.*incomplete/i);
+
+    const failed = service.getReviews(scope())[0]!;
+    expect(failed.state).toBe("failed");
+    expect(failed.statusMessage).toContain("ITEM-EXACT");
+    expect(failed.statusMessage).toContain("COLLECTION-EXACT");
+    expect(failed.statusMessage).toContain("ITEM-SURVIVOR");
+    expect(failed.statusMessage).toContain("COLLECTION-SURVIVOR");
+    expect([...failed.statusMessage].length).toBeLessThanOrEqual(280);
+    expect(host.invalidateLibrary).toHaveBeenCalledWith(1);
+    await expect(service.resolveReview(review.id, "accept")).rejects.toThrow(/already resolved/i);
+    expect(host.apply).toHaveBeenCalledOnce();
+  });
+
+  it("never truncates a displayed survivor key and reports the bounded omission count", async () => {
+    const { service, host } = importServiceHarness();
+    vi.mocked(host.apply).mockRejectedValueOnce(
+      new LibraryApplyFailure("item save failed", applyReceipt()),
+    );
+    vi.mocked(host.compensate).mockResolvedValueOnce({
+      complete: false,
+      survivors: Array.from({ length: 60 }, (_, index) => ({
+        kind: "created-item" as const,
+        itemKey: `ITEM-${index.toString().padStart(3, "0")}`,
+        error: "erase failed",
+      })),
+    });
+    vi.mocked(host.invalidateLibrary).mockRejectedValueOnce(new Error("cache unavailable"));
+    const [capabilityId] = await lookupCapabilities(service, [{ client_ref: "shor", title: "Shor" }]);
+    await propose(service, [capabilityId!]);
+    const review = service.getReviews(scope())[0]!;
+
+    await expect(service.resolveReview(review.id, "accept")).rejects.toThrow(/rollback.*incomplete/i);
+
+    const status = service.getReviews(scope())[0]!.statusMessage;
+    expect([...status].length).toBeLessThanOrEqual(280);
+    expect(status).toMatch(/\d+ survivors omitted/i);
+    expect(status).toMatch(/snapshot.*reload/i);
+    expect(status.match(/ITEM-\d+/gu)?.every((key) => /^ITEM-\d{3}$/u.test(key))).toBe(true);
+    expect(status).not.toMatch(/ITEM-\d{0,2} Snapshot/u);
+  });
+
+  it("preserves the primary partial-failure result when compensation or invalidation fails", async () => {
+    const compensationFailure = importServiceHarness();
+    vi.mocked(compensationFailure.host.apply).mockRejectedValueOnce(
+      new LibraryApplyFailure("item save failed", applyReceipt()),
+    );
+    vi.mocked(compensationFailure.host.compensate).mockRejectedValueOnce(new Error("rollback host unavailable"));
+    const [compensationCapability] = await lookupCapabilities(
+      compensationFailure.service,
+      [{ client_ref: "shor", title: "Shor" }],
+    );
+    await propose(compensationFailure.service, [compensationCapability!]);
+    const compensationReview = compensationFailure.service.getReviews(scope())[0]!;
+
+    await expect(compensationFailure.service.resolveReview(compensationReview.id, "accept"))
+      .rejects.toThrow(/rollback failed.*rollback host unavailable/i);
+    expect(compensationFailure.service.getReviews(scope())[0]).toMatchObject({ state: "failed" });
+    expect(compensationFailure.host.invalidateLibrary).toHaveBeenCalledWith(1);
+
+    const invalidationFailure = importServiceHarness();
+    vi.mocked(invalidationFailure.host.apply).mockRejectedValueOnce(
+      new LibraryApplyFailure("item save failed", applyReceipt()),
+    );
+    vi.mocked(invalidationFailure.host.invalidateLibrary).mockRejectedValueOnce(new Error("cache unavailable"));
+    const [invalidationCapability] = await lookupCapabilities(
+      invalidationFailure.service,
+      [{ client_ref: "shor", title: "Shor" }],
+    );
+    await propose(invalidationFailure.service, [invalidationCapability!]);
+    const invalidationReview = invalidationFailure.service.getReviews(scope())[0]!;
+
+    await expect(invalidationFailure.service.resolveReview(invalidationReview.id, "accept"))
+      .rejects.toThrow(/rolled back/i);
+    expect(invalidationFailure.service.getReviews(scope())[0]).toMatchObject({
+      state: "failed",
+      statusMessage: expect.stringMatching(/rolled back.*snapshot|rolled back.*reload/i),
+    });
+  });
+
+  it("recovers the exclusive queue after failure without retrying the failed review", async () => {
+    const results = [resolution("first"), resolution("second")];
+    const { service, host } = importServiceHarness(results);
+    vi.mocked(host.apply)
+      .mockRejectedValueOnce(new Error("first apply failed"))
+      .mockResolvedValueOnce(applyReceipt({
+        createdCollectionKey: "COLLECTION-SECOND",
+        createdItemKeys: ["ITEM-SECOND"],
+        addedMemberships: [{ itemKey: "ITEM-SECOND", collectionKey: "COLLECTION-SECOND" }],
+      }));
+    const [firstCapability] = await lookupCapabilities(service, [{ client_ref: "first", title: "First" }]);
+    await propose(service, [firstCapability!]);
+    const [secondCapability] = await lookupCapabilities(service, [{ client_ref: "second", title: "Second" }]);
+    await propose(service, [secondCapability!]);
+    const [firstReview, secondReview] = service.getReviews(scope());
+
+    const first = service.resolveReview(firstReview!.id, "accept");
+    const second = service.resolveReview(secondReview!.id, "accept");
+
+    await expect(first).rejects.toThrow(/first apply failed/i);
+    await expect(second).resolves.toMatchObject({ decision: "accepted", reviewId: secondReview!.id });
+    await expect(service.resolveReview(firstReview!.id, "accept")).rejects.toThrow(/already resolved/i);
+    expect(host.apply).toHaveBeenCalledTimes(2);
+    expect(service.getReviews(scope()).map((review) => review.state)).toEqual(["failed", "accepted"]);
   });
 
   it("does not retain a review when host preflight fails or returns incomplete row coverage", async () => {
