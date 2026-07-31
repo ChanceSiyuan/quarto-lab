@@ -172,6 +172,17 @@ export interface ReaderContext {
   warnings: string[];
 }
 
+/**
+ * The exact Reader/page pair selected when a region-capture command began.
+ * Region capture must use this target directly so a later page or tab change
+ * cannot retarget the crop to a cached attachment snapshot.
+ */
+export type ReaderCaptureTarget<TReader = unknown> = Readonly<{
+  reader: TReader;
+  pageIndex: number;
+  context: ReaderContext;
+}>;
+
 export interface PdfWorkerTextResult {
   text: string;
   extractedPages?: number;
@@ -1267,6 +1278,23 @@ export class ReaderContextService<TReader = unknown, TItem = unknown> {
     return this.capture(hook, true);
   }
 
+  async captureTargetFromHook(
+    hook: ReaderHook<TReader, TItem>,
+  ): Promise<ReaderCaptureTarget<TReader>> {
+    const context = await this.acceptReaderHook(hook);
+    return Object.freeze({
+      reader: hook.reader,
+      pageIndex: context.page.pageIndex,
+      context,
+    });
+  }
+
+  async getActiveCaptureTarget(): Promise<ReaderCaptureTarget<TReader> | null> {
+    const hook = await this.zotero.getActiveReaderHook();
+    if (!hook) return null;
+    return this.captureTargetFromHook(hook);
+  }
+
   /** Refresh from the active reader when no explicit event hook is supplied. */
   async refresh(hook?: ReaderHook<TReader, TItem>): Promise<ReaderContext> {
     const activeHook = hook ?? (await this.zotero.getActiveReaderHook());
@@ -1451,6 +1479,21 @@ export class ReaderContextService<TReader = unknown, TItem = unknown> {
     const snapshot = await this.ensureSnapshot(context);
     if (!this.zotero.getPdfPageElement) return null;
     return this.zotero.getPdfPageElement(snapshot.hook.reader, snapshot.context.page.pageIndex);
+  }
+
+  async getCaptureTargetPageViewElement(
+    target: ReaderCaptureTarget<TReader>,
+  ): Promise<HTMLElement | null> {
+    if (!this.zotero.getPdfPageElement) return null;
+    return this.zotero.getPdfPageElement(target.reader, target.pageIndex);
+  }
+
+  async captureTargetRegionImage(
+    target: ReaderCaptureTarget<TReader>,
+    region: RegionSelection,
+  ): Promise<string | null> {
+    if (!this.zotero.capturePdfPageRegion) return null;
+    return this.zotero.capturePdfPageRegion(target.reader, target.pageIndex, region);
   }
 
   async getPdfOutline(context?: ReaderContext): Promise<{

@@ -310,6 +310,26 @@ describe("SidebarView", () => {
     expect(menu.hidden).toBe(true);
   });
 
+  it("keeps removable screenshot provenance available beyond the truncated chip label", () => {
+    const body = document.createElement("div");
+    document.body.appendChild(body);
+    const view = new SidebarView(body, callbacks());
+    view.setState({
+      phase: "ready",
+      contextChips: [{
+        id: "screenshot:0",
+        kind: "selection",
+        label: "Region · Paper B · p. 9",
+        detail: "Captured from Paper B, PDF page 9",
+        removable: true,
+      }],
+    });
+
+    const chip = body.querySelector<HTMLButtonElement>('[data-context-id="screenshot:0"]')!;
+    expect(chip.getAttribute("aria-label")).toBe("Remove context: Region · Paper B · p. 9");
+    expect(chip.title).toContain("Captured from Paper B, PDF page 9");
+  });
+
   it("keeps an explicitly empty chip list empty after every selected context is removed", () => {
     const body = document.createElement("div");
     document.body.appendChild(body);

@@ -7,8 +7,8 @@
 export interface AutoOpenFloatState {
   /** A codex turn is currently streaming/running. */
   running: boolean;
-  /** At least one sidebar chat view is mounted and connected to the DOM. */
-  hasConnectedViews: boolean;
+  /** A visible Workbench, standalone, or selected expanded Reader sidebar exists. */
+  hasVisibleNonFloatSurface: boolean;
   /** The float panel (on the main window) is already visible. */
   floatVisible: boolean;
   /** The turn id (opaque, caller-defined) the auto-open already fired for, if any. */
@@ -20,9 +20,9 @@ export interface AutoOpenFloatState {
 }
 
 /**
- * Bug-triage #2: a running turn has zero visible surface once every sidebar
- * body disconnects (section collapsed/closed) -- the answer keeps streaming
- * into the store, but the user reads "nothing is happening" as "AI stopped".
+ * Bug-triage #2: a running turn can outlive every visible non-float chat
+ * surface -- the answer keeps streaming into the store, but the user reads
+ * "nothing is happening" as "AI stopped".
  *
  * Decides whether the float panel should be force-opened (never closed --
  * callers must use an ensure-open path, not a toggle) so a running turn
@@ -32,7 +32,7 @@ export interface AutoOpenFloatState {
  */
 export function shouldAutoOpenFloat(state: AutoOpenFloatState): boolean {
   if (!state.running) return false;
-  if (state.hasConnectedViews) return false;
+  if (state.hasVisibleNonFloatSurface) return false;
   if (state.floatVisible) return false;
   if (state.activeTurnId !== null && state.activeTurnId === state.autoOpenedTurnId) return false;
   if (state.activeTurnId !== null && state.activeTurnId === state.dismissedTurnId) return false;

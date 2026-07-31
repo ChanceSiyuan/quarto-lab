@@ -115,7 +115,10 @@ describe("Zotero 9 runtime compatibility", () => {
     expect(plugin).toContain('closest("item-details")?.getAttribute("data-tab-id")');
     expect(plugin).toContain("this.terminal.hasLiveSessions");
     expect(plugin).toContain('body.closest("collapsible-section")?.hasAttribute("open")');
-    expect(plugin).toContain("!this.hasOpenSidebar()");
+    expect(plugin).toContain("const visible = this.visibleChatSurface(win)");
+    expect(plugin).toContain(
+      'hasVisibleNonFloatSurface: Boolean(visible && visible.kind !== "float")',
+    );
     expect(terminal).not.toContain("mcpConfigPath");
     expect(terminal).toContain('"--sandbox", "read-only"');
     expect(terminal).toContain('"--ask-for-approval", "untrusted"');

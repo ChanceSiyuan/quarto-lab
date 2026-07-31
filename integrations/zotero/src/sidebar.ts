@@ -1293,7 +1293,10 @@ export class SidebarView {
       wrapper.className = `zc-context-chip is-${chip.kind}`;
       wrapper.dataset.contextId = chip.id;
       wrapper.title = chip.removable
-        ? `Remove context: ${chip.label}`
+        ? [
+          `Remove context: ${chip.label}`,
+          chip.detail,
+        ].filter(Boolean).join(" · ")
         : chip.detail || chip.label;
       const icon = this.doc.createElement("span");
       icon.className = "zc-context-chip-icon";

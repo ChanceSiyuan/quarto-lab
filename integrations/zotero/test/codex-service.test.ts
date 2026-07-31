@@ -1,5 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { CodexService } from "../src/codex-service";
+import {
+  CodexDisconnectedError,
+  CodexRequestTimeoutError,
+  CodexRpcError,
+} from "../src/codex-app-server";
 import { READER_CONTEXT_TOOLS, READER_TOOL_NAMES } from "../src/reader-context";
 import type { ReaderContext, ReaderContextService } from "../src/reader-context";
 import type { NativeBridge } from "../src/native-bridge";
@@ -1624,6 +1629,90 @@ describe("CodexService conversation reopening", () => {
     expect(service.getActiveReaderContext()?.attachment.key).toBe("SECOND");
   });
 
+  it("preserves a stored conversation on operational resume failures", async () => {
+    const cases = [
+      ["timeout", new CodexRequestTimeoutError("thread/resume", 30_000, 7)],
+      ["disconnect", new CodexDisconnectedError()],
+      ["authentication RPC", new CodexRpcError({ code: -32603, message: "authentication required" }, "thread/resume", 8)],
+      ["generic error", new Error("thread resume failed")],
+      ["thread read", new Error("thread read failed")],
+      ["session save", new Error("profile is read-only")],
+    ] as const;
+
+    for (const [name, failure] of cases) {
+      const client = {
+        threadResume: vi.fn(async ({ threadId }: { threadId: string }) => ({ thread: { id: threadId, turns: [] } })),
+        threadRead: vi.fn(async (threadId: string) => ({ thread: { id: threadId, turns: [] } })),
+        threadStart: vi.fn(async () => ({ thread: { id: "thread-new" } })),
+        threadSetName: vi.fn(async () => ({})),
+      };
+      if (name !== "thread read" && name !== "session save") {
+        client.threadResume.mockRejectedValueOnce(failure);
+      }
+      if (name === "thread read") client.threadRead.mockRejectedValueOnce(failure);
+      const seedPaperContext = vi.fn(async () => reopeningContext());
+      const { service, internal } = serviceWithSeeder(client, seedPaperContext);
+      internal.threadPaperKeys.set("thread-b", "1-SECOND");
+      if (name === "session save") {
+        internal.saveSessions = vi.fn(async () => { throw failure; });
+      }
+      const before = structuredClone(internal.sessions);
+      const mapBefore = [...internal.threadPaperKeys.entries()];
+
+      await expect(service.openConversationForPaper("1-SECOND"), name).rejects.toBe(failure);
+
+      expect(client.threadStart, name).not.toHaveBeenCalled();
+      expect(internal.sessions, name).toEqual(before);
+      expect([...internal.threadPaperKeys.entries()], name).toEqual(mapBefore);
+      expect(service.state.activeThreadId, name).toBeNull();
+    }
+  });
+
+  it("preserves stored state on timeout through every stored-conversation entry point", async () => {
+    const entries = [
+      ["setPaper", (service: CodexService) => service.setPaper(reopeningContext())],
+      ["switchThread", (service: CodexService) => service.switchThread("thread-b")],
+      ["openGlobalThread", (service: CodexService) => service.openGlobalThread("thread-b")],
+      ["openConversationForPaper", (service: CodexService) => service.openConversationForPaper("1-SECOND")],
+    ] as const;
+
+    for (const [name, open] of entries) {
+      const timeout = new CodexRequestTimeoutError("thread/resume", 30_000, 11);
+      const client = {
+        threadResume: vi.fn(async () => { throw timeout; }),
+        threadRead: vi.fn(),
+        threadStart: vi.fn(async () => ({ thread: { id: "thread-new" } })),
+        threadSetName: vi.fn(async () => ({})),
+      };
+      const { service, internal } = serviceWithSeeder(client, async () => reopeningContext());
+      internal.threadPaperKeys.set("thread-b", "1-SECOND");
+      internal.globalHistory = [{
+        id: "thread-b",
+        title: "Stored conversation",
+        updatedAt: "2026-07-30T00:00:00.000Z",
+        source: "codex",
+        sourceLabel: "Codex CLI",
+        pinned: false,
+      }];
+      if (name === "openGlobalThread") {
+        internal.activeContext = paperContext();
+        internal.activePaperKey = "1-ATTACH";
+        internal.threadPaperKeys.set("thread-a", "1-ATTACH");
+        service.state.activeThreadId = "thread-a";
+      }
+      const before = structuredClone(internal.sessions);
+      const activeBefore = service.state.activeThreadId;
+      const mapBefore = [...internal.threadPaperKeys.entries()];
+
+      await expect(open(service), name).rejects.toBe(timeout);
+
+      expect(client.threadStart, name).not.toHaveBeenCalled();
+      expect(internal.sessions, name).toEqual(before);
+      expect([...internal.threadPaperKeys.entries()], name).toEqual(mapBefore);
+      expect(service.state.activeThreadId, name).toBe(activeBefore);
+    }
+  });
+
   it("starts a fresh thread when the paper has no stored conversation", async () => {
     const client = {
       threadStart: vi.fn(async () => ({ thread: { id: "thread-new" } })),
@@ -1643,9 +1732,11 @@ describe("CodexService conversation reopening", () => {
     expect(internal.sessions.papers["1-SECOND"]).toMatchObject({ threadId: "thread-new" });
   });
 
-  it("falls back to a fresh thread when the stored thread no longer exists on the backend", async () => {
+  it("archives an explicitly missing default once before starting one fresh thread", async () => {
     const client = {
-      threadResume: vi.fn(async () => { throw new Error("thread not found"); }),
+      threadResume: vi.fn(async () => {
+        throw new CodexRpcError({ code: -32602, message: "thread not found" }, "thread/resume", 12);
+      }),
       threadStart: vi.fn(async () => ({ thread: { id: "thread-new" } })),
       threadSetName: vi.fn(async () => ({})),
     };
@@ -1656,28 +1747,350 @@ describe("CodexService conversation reopening", () => {
 
     expect(service.state.activeThreadId).toBe("thread-new");
     expect(internal.sessions.papers["1-SECOND"]).toMatchObject({ threadId: "thread-new" });
-    expect(internal.sessions.history["1-SECOND"]).toEqual([
-      expect.objectContaining({ threadId: "thread-b" }),
-    ]);
+    expect(client.threadStart).toHaveBeenCalledTimes(1);
+    expect(internal.sessions.history["1-SECOND"].filter((record: { threadId: string }) => record.threadId === "thread-b")).toHaveLength(1);
+    expect(internal.sessions.openThreads).toEqual(["thread-new"]);
   });
 
-  it("surfaces a seeding failure without touching conversation state", async () => {
+  it("rolls back selected conversation state when fresh replacement persistence fails", async () => {
+    const saveFailure = new Error("profile is read-only");
     const client = {
-      threadResume: vi.fn(),
-      threadStart: vi.fn(),
+      threadResume: vi.fn(async () => {
+        throw new CodexRpcError({ code: -32602, message: "thread not found" }, "thread/resume", 14);
+      }),
+      threadStart: vi.fn(async () => ({ thread: { id: "thread-new" } })),
+      threadSetName: vi.fn(async () => ({})),
     };
-    const seedPaperContext = vi.fn(async () => {
-      throw new Error("This Zotero item has no readable PDF attachment");
+    const { service, internal } = serviceWithSeeder(client, async () => reopeningContext());
+    internal.saveSessions = vi.fn(async () => { throw saveFailure; });
+    const before = structuredClone(internal.sessions);
+
+    await expect(service.openConversationForPaper("1-SECOND")).rejects.toBe(saveFailure);
+
+    expect(client.threadStart).toHaveBeenCalledTimes(1);
+    expect(internal.sessions).toEqual(before);
+    expect(internal.threadPaperKeys.has("thread-new")).toBe(false);
+    expect(service.state).toMatchObject({ activeThreadId: null, activeTurnId: null, running: false });
+  });
+
+  it("preserves a concurrent global pin after a stored conversation resume commits", async () => {
+    const client = {
+      threadResume: vi.fn(async ({ threadId }: { threadId: string }) => ({ thread: { id: threadId, turns: [] } })),
+      threadRead: vi.fn(async (threadId: string) => ({ thread: { id: threadId, turns: [] } })),
+    };
+    const { service, internal } = serviceWithSeeder(client, async () => reopeningContext());
+    internal.globalHistory = [{
+      id: "global-a",
+      title: "Pinned task",
+      updatedAt: "2026-07-30T00:00:00.000Z",
+      source: "codex",
+      sourceLabel: "Codex CLI",
+      pinned: false,
+    }];
+    const resumeSaveEntered = deferred<void>();
+    const releaseResumeSave = deferred<void>();
+    let saveCalls = 0;
+    let persisted: Record<string, unknown> | null = null;
+    internal.saveSessions = vi.fn(async (next = internal.sessions) => {
+      const candidate = structuredClone(next) as Record<string, unknown>;
+      saveCalls += 1;
+      if (saveCalls === 1) {
+        resumeSaveEntered.resolve();
+        await releaseResumeSave.promise;
+      }
+      persisted = candidate;
     });
-    const { service, internal } = serviceWithSeeder(client, seedPaperContext);
 
-    await expect(service.openConversationForPaper("1-SECOND"))
-      .rejects.toThrow("This Zotero item has no readable PDF attachment");
+    const opening = service.openConversationForPaper("1-SECOND");
+    await resumeSaveEntered.promise;
+    const pinning = service.setGlobalThreadPinned("global-a", true);
 
-    expect(service.state.activeThreadId).toBeNull();
-    expect(client.threadResume).not.toHaveBeenCalled();
-    expect(client.threadStart).not.toHaveBeenCalled();
-    expect(internal.paperContexts.has("1-SECOND")).toBe(false);
-    expect(internal.sessions.papers["1-SECOND"]).toMatchObject({ threadId: "thread-b" });
+    expect(service.getGlobalHistory()[0]?.pinned).toBe(true);
+    releaseResumeSave.resolve();
+    await Promise.all([opening, pinning]);
+
+    expect(internal.sessions.pinnedThreads).toEqual(["global-a"]);
+    expect(persisted).toMatchObject({
+      pinnedThreads: ["global-a"],
+      papers: { "1-SECOND": { threadId: "thread-b" } },
+    });
+  });
+
+  it("preserves a queued global pin after missing-thread replacement rolls back", async () => {
+    const saveFailure = new Error("profile is read-only");
+    const client = {
+      threadResume: vi.fn(async () => {
+        throw new CodexRpcError({ code: -32602, message: "thread not found" }, "thread/resume", 16);
+      }),
+      threadStart: vi.fn(async () => ({ thread: { id: "thread-new" } })),
+      threadSetName: vi.fn(async () => ({})),
+    };
+    const { service, internal } = serviceWithSeeder(client, async () => reopeningContext());
+    internal.globalHistory = [{
+      id: "global-a",
+      title: "Pinned task",
+      updatedAt: "2026-07-30T00:00:00.000Z",
+      source: "codex",
+      sourceLabel: "Codex CLI",
+      pinned: false,
+    }];
+    const replacementSaveEntered = deferred<void>();
+    const rejectReplacementSave = deferred<void>();
+    let saveCalls = 0;
+    let persisted: Record<string, unknown> | null = null;
+    internal.saveSessions = vi.fn(async (next = internal.sessions) => {
+      const candidate = structuredClone(next) as Record<string, unknown>;
+      saveCalls += 1;
+      if (saveCalls === 1) {
+        replacementSaveEntered.resolve();
+        await rejectReplacementSave.promise;
+        throw saveFailure;
+      }
+      persisted = candidate;
+    });
+
+    const opening = service.openConversationForPaper("1-SECOND");
+    await replacementSaveEntered.promise;
+    const pinning = service.setGlobalThreadPinned("global-a", true);
+
+    expect(service.getGlobalHistory()[0]?.pinned).toBe(true);
+    rejectReplacementSave.resolve();
+    await expect(opening).rejects.toBe(saveFailure);
+    await pinning;
+
+    expect(internal.sessions).toMatchObject({
+      pinnedThreads: ["global-a"],
+      papers: { "1-SECOND": { threadId: "thread-b" } },
+    });
+    expect(persisted).toMatchObject({
+      pinnedThreads: ["global-a"],
+      papers: { "1-SECOND": { threadId: "thread-b" } },
+    });
+  });
+
+  it("persists the authoritative read id as the selected stored conversation", async () => {
+    const client = {
+      threadResume: vi.fn(async () => ({ thread: { id: "thread-b-resume", turns: [] } })),
+      threadRead: vi.fn(async () => ({ thread: { id: "thread-b-canonical", turns: [] } })),
+    };
+    const { service, internal } = serviceWithSeeder(client, async () => reopeningContext());
+    internal.threadPaperKeys.set("thread-b", "1-OTHER");
+
+    await service.openConversationForPaper("1-SECOND");
+
+    expect(client.threadRead).toHaveBeenCalledWith("thread-b-resume", true);
+    expect(internal.sessions.papers["1-SECOND"].threadId).toBe("thread-b-canonical");
+    expect(internal.threadPaperKeys.get("thread-b-canonical")).toBe("1-SECOND");
+    expect(internal.threadPaperKeys.has("thread-b")).toBe(false);
+    expect(internal.sessions.openThreads).toEqual(["thread-b-canonical"]);
+    expect(service.state.activeThreadId).toBe("thread-b-canonical");
+  });
+
+  it("does not retain a requested alias when a queued global open canonicalizes the active thread", async () => {
+    let service!: CodexService;
+    let resumeCalls = 0;
+    let readCalls = 0;
+    let activeAtQueuedResume: string | null = null;
+    const client = {
+      threadResume: vi.fn(async ({ threadId }: { threadId: string }) => {
+        resumeCalls += 1;
+        if (resumeCalls === 2) {
+          activeAtQueuedResume = service.state.activeThreadId;
+          return { thread: { id: "thread-b-resume", turns: [] } };
+        }
+        return { thread: { id: threadId, turns: [] } };
+      }),
+      threadRead: vi.fn(async () => {
+        readCalls += 1;
+        return { thread: { id: readCalls === 1 ? "thread-b" : "thread-b-canonical", turns: [] } };
+      }),
+    };
+    const fixture = serviceWithSeeder(client, async () => reopeningContext());
+    service = fixture.service;
+    const { internal } = fixture;
+    const persisted: Array<{ openThreads?: string[] }> = [];
+    internal.saveSessions = vi.fn(async (next = internal.sessions) => {
+      persisted.push(structuredClone(next));
+    });
+    internal.globalHistory = [{
+      id: "thread-b",
+      title: "Stored conversation",
+      updatedAt: "2026-07-30T00:00:00.000Z",
+      source: "codex",
+      sourceLabel: "Codex CLI",
+      pinned: false,
+    }];
+
+    const selecting = service.switchThread("thread-b");
+    const opening = service.openGlobalThread("thread-b");
+    await Promise.all([selecting, opening]);
+
+    expect(activeAtQueuedResume).toBe("thread-b");
+    expect(persisted.at(-1)?.openThreads).toEqual(["thread-b-canonical"]);
+    expect(internal.sessions.openThreads).toEqual(["thread-b-canonical"]);
+    expect(service.state.activeThreadId).toBe("thread-b-canonical");
+  });
+
+  it("does not retain a missing requested id when a queued global open replaces the active thread", async () => {
+    let service!: CodexService;
+    let resumeCalls = 0;
+    let activeAtQueuedResume: string | null = null;
+    const client = {
+      threadResume: vi.fn(async ({ threadId }: { threadId: string }) => {
+        resumeCalls += 1;
+        if (resumeCalls === 2) {
+          activeAtQueuedResume = service.state.activeThreadId;
+          throw new CodexRpcError({ code: -32602, message: "thread not found" }, "thread/resume", 15);
+        }
+        return { thread: { id: threadId, turns: [] } };
+      }),
+      threadRead: vi.fn(async () => ({ thread: { id: "thread-b", turns: [] } })),
+      threadStart: vi.fn(async () => ({ thread: { id: "thread-new" } })),
+      threadSetName: vi.fn(async () => ({})),
+    };
+    const fixture = serviceWithSeeder(client, async () => reopeningContext());
+    service = fixture.service;
+    const { internal } = fixture;
+    const persisted: Array<{ openThreads?: string[] }> = [];
+    internal.saveSessions = vi.fn(async (next = internal.sessions) => {
+      persisted.push(structuredClone(next));
+    });
+    internal.globalHistory = [{
+      id: "thread-b",
+      title: "Stored conversation",
+      updatedAt: "2026-07-30T00:00:00.000Z",
+      source: "codex",
+      sourceLabel: "Codex CLI",
+      pinned: false,
+    }];
+
+    const selecting = service.switchThread("thread-b");
+    const opening = service.openGlobalThread("thread-b");
+    await Promise.all([selecting, opening]);
+
+    expect(activeAtQueuedResume).toBe("thread-b");
+    expect(persisted.at(-1)?.openThreads).toEqual(["thread-new"]);
+    expect(internal.sessions.openThreads).toEqual(["thread-new"]);
+    expect(service.state.activeThreadId).toBe("thread-new");
+  });
+
+  it.each([
+    ["local History", (service: CodexService) => service.switchThread("thread-b")],
+    ["global History", (service: CodexService) => service.openGlobalThread("thread-b")],
+  ])("archives a missing %s record and a different default before creating a fresh sole default", async (_source, open) => {
+    const client = {
+      threadResume: vi.fn(async () => {
+        throw new CodexRpcError({ code: -32602, message: "thread not found" }, "thread/resume", 13);
+      }),
+      threadStart: vi.fn(async () => ({ thread: { id: "thread-new" } })),
+      threadSetName: vi.fn(async () => ({})),
+    };
+    const { service, internal } = serviceWithSeeder(client, async () => reopeningContext());
+    internal.sessions.papers["1-SECOND"] = {
+      threadId: "thread-a",
+      title: "Current default",
+      workspace: "/profile/papers/1-SECOND",
+      updatedAt: "2026-07-30",
+    };
+    internal.sessions.history = {
+      "1-SECOND": [{
+        threadId: "thread-b",
+        title: "Historical conversation",
+        workspace: "/profile/papers/1-SECOND",
+        updatedAt: "2026-07-29",
+      }],
+    };
+    internal.globalHistory = [{
+      id: "thread-b",
+      title: "Historical conversation",
+      updatedAt: "2026-07-29T00:00:00.000Z",
+      source: "codex",
+      sourceLabel: "Codex CLI",
+      pinned: false,
+    }];
+
+    await open(service);
+
+    expect(client.threadStart).toHaveBeenCalledTimes(1);
+    expect(internal.sessions.papers["1-SECOND"].threadId).toBe("thread-new");
+    expect(internal.sessions.history["1-SECOND"].filter((record: { threadId: string }) => record.threadId === "thread-b")).toHaveLength(1);
+    expect(internal.sessions.history["1-SECOND"].filter((record: { threadId: string }) => record.threadId === "thread-a")).toHaveLength(1);
+  });
+
+  it("preserves conversation state when no-PDF seeding fails through every public reopen entry", async () => {
+    const entries = [
+      {
+        name: "local conversation tab",
+        prepare: (_internal: any) => {},
+        open: (service: CodexService) => service.switchThread("thread-b"),
+      },
+      {
+        name: "local History",
+        prepare: (internal: any) => {
+          const historical = internal.sessions.papers["1-SECOND"];
+          internal.sessions.papers["1-SECOND"] = {
+            ...historical,
+            threadId: "thread-default",
+            title: "Current default",
+          };
+          internal.sessions.history = { "1-SECOND": [historical] };
+          internal.sessions.openThreads = ["thread-default", "thread-b"];
+        },
+        open: (service: CodexService) => service.switchThread("thread-b"),
+      },
+      {
+        name: "global History",
+        prepare: (internal: any) => {
+          internal.globalHistory = [{
+            id: "thread-b",
+            title: "Stored conversation",
+            updatedAt: "2026-07-30T00:00:00.000Z",
+            source: "codex",
+            sourceLabel: "Codex CLI",
+            pinned: false,
+          }];
+        },
+        open: (service: CodexService) => service.openGlobalThread("thread-b"),
+      },
+      {
+        name: "library item command",
+        prepare: (_internal: any) => {},
+        open: (service: CodexService) => service.openConversationForPaper("1-SECOND"),
+      },
+    ];
+
+    for (const entry of entries) {
+      const client = {
+        threadResume: vi.fn(),
+        threadStart: vi.fn(),
+      };
+      const seedPaperContext = vi.fn(async () => {
+        throw new Error("This Zotero item has no readable PDF attachment");
+      });
+      const { service, internal } = serviceWithSeeder(client, seedPaperContext);
+      entry.prepare(internal);
+      const before = {
+        sessions: structuredClone(internal.sessions),
+        activeThreadId: service.state.activeThreadId,
+        activePaperKey: internal.activePaperKey,
+        activeContext: internal.activeContext,
+        paperContexts: [...internal.paperContexts.entries()],
+        threadPaperKeys: [...internal.threadPaperKeys.entries()],
+      };
+
+      await expect(entry.open(service), entry.name)
+        .rejects.toThrow("This Zotero item has no readable PDF attachment");
+
+      expect(seedPaperContext, entry.name).toHaveBeenCalledWith("1-SECOND");
+      expect(client.threadResume, entry.name).not.toHaveBeenCalled();
+      expect(client.threadStart, entry.name).not.toHaveBeenCalled();
+      expect(internal.sessions, entry.name).toEqual(before.sessions);
+      expect(service.state.activeThreadId, entry.name).toBe(before.activeThreadId);
+      expect(service.state.switchingThreadId, entry.name).toBeNull();
+      expect(internal.activePaperKey, entry.name).toBe(before.activePaperKey);
+      expect(internal.activeContext, entry.name).toBe(before.activeContext);
+      expect([...internal.paperContexts.entries()], entry.name).toEqual(before.paperContexts);
+      expect([...internal.threadPaperKeys.entries()], entry.name).toEqual(before.threadPaperKeys);
+    }
   });
 });

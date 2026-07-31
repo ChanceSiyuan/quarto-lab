@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.10.1
+
+- Bind region capture to the exact invoking Reader and page, retain source-paper/page provenance on the pending chip, and use a dashed selection-rectangle toolbar icon.
+- Treat only actually visible chat surfaces as visible, selecting a hidden Workbench after capture success or render error so the result remains in view.
+- Narrow stored-conversation fallback to explicit missing-thread responses and make resume/read/session updates transactional, preserving the existing conversation on operational failures.
+- Add browser-measured Visual Edit parity coverage for typography, formula scale, soft breaks, and natural wrapping against the compiled HTML Preview.
+
+Research Actions and no-open-PDF conversation reopening are existing features;
+v0.10.1 regression-locks their original entry points rather than introducing
+them as new features.
+
 ## 0.10.0
 
 - Fix Research Action chips (Summarize, Evidence QA, Compare Papers) on Workbench surfaces: clicks now dispatch the action, and chips are no longer rebuilt mid-click during streaming re-renders.

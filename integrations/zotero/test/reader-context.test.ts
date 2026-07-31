@@ -1158,6 +1158,40 @@ describe("ReaderContextService", () => {
     expect(getPdfPageElement).toHaveBeenCalledWith(reader, 1);
   });
 
+  it("freezes the exact Reader and page for region capture", async () => {
+    const readerB = { id: "reader-b" };
+    let pageIndex = 8;
+    let activeHook: ReaderHook<MockReader, MockItem> | null = null;
+    const pageElement = {} as HTMLElement;
+    const capturePdfPageRegion = vi.fn(async () => "data:image/png;base64,reader-b-page-8");
+    const getPdfPageElement = vi.fn(() => pageElement);
+    const { adapter, attachment } = makeAdapter({
+      getActiveReaderHook: vi.fn(async () => activeHook),
+      getPageStats: vi.fn(async () => ({
+        pageIndex,
+        pageNumber: pageIndex + 1,
+        pageCount: 12,
+      })),
+      capturePdfPageRegion,
+      getPdfPageElement,
+    });
+    const service = new ReaderContextService(adapter, host);
+    const target = await service.captureTargetFromHook({ reader: readerB, item: attachment });
+    const region = { rect: { x: 5, y: 6, width: 40, height: 30 }, view: { width: 300, height: 400 } };
+
+    pageIndex = 9;
+    await service.acceptReaderHook({ reader: readerB, item: attachment });
+
+    await expect(service.getCaptureTargetPageViewElement(target)).resolves.toBe(pageElement);
+    await expect(service.captureTargetRegionImage(target, region))
+      .resolves.toBe("data:image/png;base64,reader-b-page-8");
+    expect(getPdfPageElement).toHaveBeenLastCalledWith(readerB, 8);
+    expect(capturePdfPageRegion).toHaveBeenLastCalledWith(readerB, 8, region);
+    expect(Object.isFrozen(target)).toBe(true);
+
+    await expect(service.getActiveCaptureTarget()).resolves.toBeNull();
+  });
+
   it("returns null for region capture when the runtime adapter lacks the capability", async () => {
     const { adapter, reader, attachment } = makeAdapter();
     const service = new ReaderContextService(adapter, host);

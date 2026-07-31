@@ -102,13 +102,15 @@ button in the chips row, or type `@` in the input) and choose **Screenshot
 Current Page**. The currently visible PDF page is rendered and attached as a
 "PDF Screenshot N" chip.
 
-**Region.** Click the region-capture button in the Reader toolbar (the dotted
-square next to the QLab button), or choose **Screenshot Region** from the same
-Add-Context menu. The current page view gets a crosshair overlay: drag a
-rectangle around the figure, equation, or table you need and release to attach
-it as a "Region Screenshot N" chip. Press Escape to cancel; drags smaller than
-8 pixels on a side are discarded. If no chat surface is open, a completed
-region capture opens the Workbench and focuses the composer.
+**Region.** Click the region-capture button in the Reader toolbar (the dashed
+selection rectangle next to the QLab button), or choose **Screenshot Region**
+from the same Add-Context menu. The current page view gets a crosshair overlay:
+drag a rectangle around the figure, equation, or table you need and release to
+attach it as a chip identifying the source paper and PDF page. Press Escape to
+cancel; drags smaller than 8 pixels on a side are discarded. When no chat
+surface is visible after a successful capture or render error, a hidden
+Workbench is selected and its composer is focused so the captured chip or
+error is visible.
 
 Both entries require an open PDF. Click any screenshot chip to remove it
 before sending; screenshots ride along with the next message only and are

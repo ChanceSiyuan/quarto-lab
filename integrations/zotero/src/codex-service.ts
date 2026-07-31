@@ -33,6 +33,7 @@ import type {
 } from "./sidebar";
 import type { AnchorRecord } from "./paper-trail";
 import { qlabWritableRoots } from "./qlab-commands";
+import { resumeStoredThread } from "./stored-conversation-resume";
 
 export type CodexApprovalDecision = "approve-once" | "approve-session" | "reject" | "cancel";
 
@@ -187,6 +188,25 @@ interface SessionFile {
   anchors?: Record<string, AnchorRecord[]>;
   /** Compact, source-page-aware retrieval history used after context compaction. */
   evidence?: Record<string, EvidenceRecord[]>;
+}
+
+interface ConversationSelectionSnapshot {
+  sessions: SessionFile;
+  activeContext: ReaderContext | null;
+  activePaperKey: string | null;
+  activeThreadId: string | null;
+  threadPaperKeys: Map<string, string>;
+}
+
+function cloneConversationSessions(source: SessionFile): SessionFile {
+  return {
+    ...source,
+    papers: Object.fromEntries(Object.entries(source.papers).map(([key, value]) => [key, { ...value }])),
+    history: source.history
+      ? Object.fromEntries(Object.entries(source.history).map(([key, records]) => [key, records.map((record) => ({ ...record }))]))
+      : undefined,
+    openThreads: source.openThreads ? [...source.openThreads] : undefined,
+  };
 }
 
 const SHARED_DEVELOPER_INSTRUCTIONS = `You are the research assistant embedded in Zotero's PDF Reader.
@@ -576,33 +596,8 @@ export class CodexService {
     try {
       const existing = this.sessions.papers[paperKey];
       if (existing && (existing.backend ?? "codex") === this.state.backend) {
-        try {
-          const response = await this.requireClient().threadResume({
-            threadId: existing.threadId,
-            ...this.threadModeSettings(context),
-          });
-          this.activeContext = context;
-          this.activePaperKey = paperKey;
-          this.state.activeThreadId = response.thread.id;
-          this.threadPaperKeys.set(response.thread.id, paperKey);
-          this.openThread(response.thread.id);
-          await this.requireClient().threadRead(response.thread.id, true);
-          this.syncActiveTurnState();
-          await this.saveSessions();
-          return;
-        }
-        catch {
-          // Resume failure is routine when switching codex targets
-          // (local<->remote) — archive the stale pointer instead of losing
-          // it outright, mirroring rememberActiveThread's dedupe/cap.
-          this.sessions.history ||= {};
-          const history = this.sessions.history[paperKey] ||= [];
-          if (!history.some((record) => record.threadId === existing.threadId)) {
-            history.unshift(existing);
-          }
-          this.sessions.history[paperKey] = history.slice(0, 30);
-          delete this.sessions.papers[paperKey];
-        }
+        await this.openStoredConversation(paperKey, context, existing);
+        return;
       }
       this.activeContext = context;
       this.activePaperKey = paperKey;
@@ -776,21 +771,35 @@ export class CodexService {
     return this.refreshGlobalHistory(this.globalHistoryQuery, true);
   }
 
-  async setGlobalThreadPinned(threadId: string, pinned: boolean): Promise<void> {
-    const pins = new Set(this.sessions.pinnedThreads || []);
-    if (pinned) pins.add(threadId);
-    else pins.delete(threadId);
-    this.sessions.pinnedThreads = [...pins];
+  setGlobalThreadPinned(threadId: string, pinned: boolean): Promise<void> {
     this.globalHistory = this.globalHistory.map((thread) => (
       thread.id === threadId ? { ...thread, pinned } : thread
     ));
     this.callbacks.onState();
-    await this.saveSessions();
+    return this.enqueuePaperTransition(async () => {
+      const pins = new Set(this.sessions.pinnedThreads || []);
+      if (pinned) pins.add(threadId);
+      else pins.delete(threadId);
+      this.sessions.pinnedThreads = [...pins];
+      await this.saveSessions();
+    });
   }
 
-  async openGlobalThread(threadId: string): Promise<void> {
-    if (threadId === this.state.activeThreadId && !this.state.switchingThreadId) return;
-    if (this.state.activeThreadId) this.openThread(this.state.activeThreadId);
+  openGlobalThread(threadId: string): Promise<void> {
+    if (threadId === this.state.activeThreadId && !this.state.switchingThreadId) return Promise.resolve();
+    this.state.switchingThreadId = threadId;
+    this.callbacks.onState();
+    const pending = this.enqueuePaperTransition(() => this.openGlobalThreadInternal(threadId));
+    const clear = () => {
+      if (this.state.switchingThreadId !== threadId) return;
+      this.state.switchingThreadId = null;
+      this.callbacks.onState();
+    };
+    void pending.then(clear, clear);
+    return pending;
+  }
+
+  private async openGlobalThreadInternal(threadId: string): Promise<void> {
     const known = this.findSessionThread(threadId);
     let knownContext = known ? this.paperContexts.get(known.paperKey) ?? null : null;
     if (known && known.paperKey !== this.activePaperKey && !knownContext) {
@@ -806,43 +815,14 @@ export class CodexService {
     }
     const selected = this.globalHistory.find((thread) => thread.id === threadId);
     if (!selected) throw new Error("This Codex conversation is no longer available");
-    this.state.switchingThreadId = threadId;
-    this.callbacks.onState();
-    try {
-      const response = await this.requireClient().threadResume({
-        threadId,
-        ...this.threadModeSettings(context),
-      });
-      const previous = this.sessions.papers[paperKey];
-      this.sessions.history ||= {};
-      const history = this.sessions.history[paperKey] ||= [];
-      if (previous && previous.threadId !== threadId && !history.some((item) => item.threadId === previous.threadId)) {
-        history.unshift(previous);
-      }
-      this.sessions.history[paperKey] = history
-        .filter((item) => item.threadId !== threadId)
-        .slice(0, 30);
-      this.sessions.papers[paperKey] = {
-        threadId,
-        title: selected.title,
-        paperTitle: context.parent?.title || context.attachment.title || context.attachment.filename || selected.title,
-        workspace: context.workspace.root,
-        updatedAt: new Date().toISOString(),
-        backend: this.state.backend,
-      };
-      this.state.activeThreadId = response.thread.id;
-      this.activeContext = context;
-      this.activePaperKey = paperKey;
-      this.threadPaperKeys.set(response.thread.id, paperKey);
-      this.openThread(response.thread.id);
-      await this.requireClient().threadRead(response.thread.id, true);
-      this.syncActiveTurnState();
-      await this.saveSessions();
-    }
-    finally {
-      if (this.state.switchingThreadId === threadId) this.state.switchingThreadId = null;
-      this.callbacks.onState();
-    }
+    await this.openStoredConversation(paperKey, context, {
+      threadId: selected.id,
+      title: selected.title,
+      paperTitle: context.parent?.title || context.attachment.title || context.attachment.filename || selected.title,
+      workspace: context.workspace.root,
+      updatedAt: selected.updatedAt,
+      backend: this.state.backend,
+    }, { keepPreviouslyActiveOpen: true });
   }
 
   switchThread(threadId: string): Promise<void> {
@@ -886,22 +866,8 @@ export class CodexService {
         this.callbacks.onState();
         return;
       }
-      try {
-        await this.switchThreadInternal(stored.threadId);
-        return;
-      }
-      catch {
-        // The stored thread no longer exists on this backend; archive the
-        // stale pointer instead of losing it, mirroring setPaperInternal's
-        // resume-failure branch, then fall through to a fresh thread.
-        this.sessions.history ||= {};
-        const history = this.sessions.history[paperKey] ||= [];
-        if (!history.some((record) => record.threadId === stored.threadId)) {
-          history.unshift(stored);
-        }
-        this.sessions.history[paperKey] = history.slice(0, 30);
-        delete this.sessions.papers[paperKey];
-      }
+      await this.openStoredConversation(paperKey, context, stored);
+      return;
     }
     await this.newThreadInternal(context, paperKey);
   }
@@ -925,27 +891,140 @@ export class CodexService {
       .filter((record) => (record.backend ?? "codex") === this.state.backend);
     const selected = records.find((record) => record.threadId === threadId);
     if (!selected) throw new Error("This paper conversation could not be found");
-    const response = await this.requireClient().threadResume({
-      threadId,
+    await this.openStoredConversation(paperKey, context, selected);
+  }
+
+  private async openStoredConversation(
+    paperKey: string,
+    context: ReaderContext,
+    selected: SessionRecord,
+    options: { keepPreviouslyActiveOpen?: boolean } = {},
+  ): Promise<void> {
+    const result = await resumeStoredThread(this.requireClient(), {
+      threadId: selected.threadId,
       ...this.threadModeSettings(context),
     });
-    const previous = this.sessions.papers[paperKey];
-    this.sessions.history ||= {};
-    const history = this.sessions.history[paperKey] ||= [];
-    if (previous && previous.threadId !== selected.threadId && !history.some((record) => record.threadId === previous.threadId)) {
-      history.unshift(previous);
+    if (result.kind === "missing") {
+      await this.replaceMissingStoredThread(paperKey, context, selected, options);
+      return;
     }
-    this.sessions.history[paperKey] = history.filter((record) => record.threadId !== selected.threadId).slice(0, 30);
-    this.sessions.papers[paperKey] = { ...selected, updatedAt: new Date().toISOString() };
-    this.activePaperKey = paperKey;
+    await this.commitResumedConversation(paperKey, context, selected, result.threadId, options);
+  }
+
+  private async commitResumedConversation(
+    paperKey: string,
+    context: ReaderContext,
+    selected: SessionRecord,
+    resumedThreadId: string,
+    options: { keepPreviouslyActiveOpen?: boolean },
+  ): Promise<void> {
+    const next = cloneConversationSessions(this.sessions);
+    const previous = next.papers[paperKey];
+    const priorHistory = next.history?.[paperKey] || [];
+    const history = [
+      ...(previous && previous.threadId !== selected.threadId && previous.threadId !== resumedThreadId ? [previous] : []),
+      ...priorHistory,
+    ].filter((record) => record.threadId !== selected.threadId && record.threadId !== resumedThreadId)
+      .filter((record, index, records) => records.findIndex((candidate) => candidate.threadId === record.threadId) === index)
+      .slice(0, 30);
+    if (history.length || next.history?.[paperKey]) {
+      next.history ||= {};
+      next.history[paperKey] = history;
+    }
+    next.papers[paperKey] = {
+      ...selected,
+      threadId: resumedThreadId,
+      updatedAt: new Date().toISOString(),
+    };
+    if (selected.threadId !== resumedThreadId) {
+      next.openThreads = (next.openThreads || []).filter((threadId) => threadId !== selected.threadId);
+    }
+    const open = next.openThreads ||= [];
+    if (
+      options.keepPreviouslyActiveOpen
+      && this.state.activeThreadId
+      && this.state.activeThreadId !== selected.threadId
+      && !open.includes(this.state.activeThreadId)
+    ) {
+      open.push(this.state.activeThreadId);
+    }
+    if (!open.includes(resumedThreadId)) open.push(resumedThreadId);
+    await this.saveSessions(next);
+    this.sessions = next;
     this.activeContext = context;
-    this.state.activeThreadId = response.thread.id;
-    this.threadPaperKeys.set(response.thread.id, paperKey);
-    this.openThread(response.thread.id);
-    await this.requireClient().threadRead(response.thread.id, true);
+    this.activePaperKey = paperKey;
+    this.state.activeThreadId = resumedThreadId;
+    if (selected.threadId !== resumedThreadId) {
+      this.threadPaperKeys.delete(selected.threadId);
+    }
+    this.threadPaperKeys.set(resumedThreadId, paperKey);
     this.syncActiveTurnState();
-    await this.saveSessions();
     this.callbacks.onState();
+  }
+
+  private async replaceMissingStoredThread(
+    paperKey: string,
+    context: ReaderContext,
+    selected: SessionRecord,
+    options: { keepPreviouslyActiveOpen?: boolean },
+  ): Promise<void> {
+    const snapshot = this.snapshotConversationSelection();
+    const next = cloneConversationSessions(this.sessions);
+    this.archiveMissingStoredThread(next, paperKey, selected);
+    const open = next.openThreads ||= [];
+    if (
+      options.keepPreviouslyActiveOpen
+      && this.state.activeThreadId
+      && this.state.activeThreadId !== selected.threadId
+      && !open.includes(this.state.activeThreadId)
+    ) {
+      open.push(this.state.activeThreadId);
+    }
+    this.sessions = next;
+    try {
+      await this.newThreadInternal(context, paperKey);
+    }
+    catch (error) {
+      this.restoreConversationSelection(snapshot);
+      throw error;
+    }
+  }
+
+  private archiveMissingStoredThread(next: SessionFile, paperKey: string, selected: SessionRecord): void {
+    const previous = next.papers[paperKey];
+    const history = [
+      selected,
+      ...(previous && previous.threadId !== selected.threadId ? [previous] : []),
+      ...(next.history?.[paperKey] || []),
+    ].filter((record, index, records) => records.findIndex((candidate) => candidate.threadId === record.threadId) === index)
+      .slice(0, 30);
+    next.history ||= {};
+    next.history[paperKey] = history;
+    const archivedIds = new Set([selected.threadId, previous?.threadId]);
+    next.openThreads = next.openThreads?.filter((threadId) => !archivedIds.has(threadId));
+    delete next.papers[paperKey];
+  }
+
+  private snapshotConversationSelection(): ConversationSelectionSnapshot {
+    return {
+      sessions: cloneConversationSessions(this.sessions),
+      activeContext: this.activeContext,
+      activePaperKey: this.activePaperKey,
+      activeThreadId: this.state.activeThreadId,
+      threadPaperKeys: new Map(this.threadPaperKeys),
+    };
+  }
+
+  private restoreConversationSelection(snapshot: ConversationSelectionSnapshot): void {
+    this.sessions = snapshot.sessions;
+    this.activeContext = snapshot.activeContext;
+    this.activePaperKey = snapshot.activePaperKey;
+    this.state.activeThreadId = snapshot.activeThreadId;
+    this.threadPaperKeys.clear();
+    for (const [threadId, paperKey] of snapshot.threadPaperKeys) {
+      this.threadPaperKeys.set(threadId, paperKey);
+    }
+    this.syncActiveTurnState();
   }
 
   /**
@@ -1905,14 +1984,14 @@ export class CodexService {
     catch { /* first run */ }
   }
 
-  private async saveSessions(): Promise<void> {
+  private async saveSessions(next: SessionFile = this.sessions): Promise<void> {
     const path = profilePath("sessions.json");
     await IOUtils.makeDirectory(profilePath(), {
       createAncestors: true,
       ignoreExisting: true,
       permissions: 0o700
     });
-    await IOUtils.writeUTF8(path, JSON.stringify(this.sessions, null, 2) + "\n", {
+    await IOUtils.writeUTF8(path, JSON.stringify(next, null, 2) + "\n", {
       tmpPath: path + ".tmp"
     });
   }
