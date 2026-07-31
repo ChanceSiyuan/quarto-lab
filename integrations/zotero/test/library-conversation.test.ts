@@ -1,5 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { CodexDisconnectedError } from "../src/codex-app-server";
+import {
+  CodexDisconnectedError,
+  CodexRequestTimeoutError,
+  CodexRpcError,
+} from "../src/codex-app-server";
 import { CodexService } from "../src/codex-service";
 import type { NativeBridge } from "../src/native-bridge";
 import type { ReaderContextService } from "../src/reader-context";
@@ -85,5 +89,119 @@ describe("library conversations", () => {
     expect(client.threadStart).not.toHaveBeenCalled();
     expect(service.getLibraryConversationState({ libraryID: 1, libraryName: "My Library" }).error)
       .toContain("offline");
+  });
+
+  it("replaces only an explicitly missing library thread", async () => {
+    const { service, client, saved } = libraryServiceHarness({ storedLibraryThread: "missing-library" });
+    client.threadResume.mockRejectedValueOnce(new CodexRpcError(
+      { code: -32602, message: "thread not found" },
+      "thread/resume",
+      1,
+    ));
+
+    await expect(service.openLibraryConversation({ libraryID: 1, libraryName: "My Library" }))
+      .resolves.toMatchObject({ threadId: "library-thread" });
+
+    expect(client.threadStart).toHaveBeenCalledOnce();
+    expect(saved.at(-1)?.libraries?.["library:1"]?.threadId).toBe("library-thread");
+  });
+
+  it("persists the canonical id returned after a library resume", async () => {
+    const { service, client, saved } = libraryServiceHarness({ storedLibraryThread: "resume-alias" });
+    client.threadResume.mockResolvedValueOnce({ thread: { id: "resume-alias", turns: [] } });
+    client.threadRead.mockResolvedValueOnce({ thread: { id: "canonical-library", turns: [] } });
+
+    await expect(service.openLibraryConversation({ libraryID: 1, libraryName: "My Library" }))
+      .resolves.toMatchObject({ threadId: "canonical-library" });
+
+    expect(client.threadStart).not.toHaveBeenCalled();
+    expect(saved.at(-1)?.libraries?.["library:1"]?.threadId).toBe("canonical-library");
+  });
+
+  it.each([
+    ["disconnect", new CodexDisconnectedError("offline")],
+    ["timeout", new CodexRequestTimeoutError("thread/resume", 30_000, 2)],
+  ])("preserves the stored library record after a %s", async (_kind, error) => {
+    const { service, client, saved } = libraryServiceHarness({ storedLibraryThread: "stored-library" });
+    const internal = service as any;
+    const original = structuredClone(internal.sessions.libraries["library:1"]);
+    client.threadResume.mockRejectedValueOnce(error);
+
+    await expect(service.openLibraryConversation({ libraryID: 1, libraryName: "My Library" }))
+      .rejects.toBe(error);
+
+    expect(client.threadStart).not.toHaveBeenCalled();
+    expect(saved).toEqual([]);
+    expect(internal.sessions.libraries["library:1"]).toEqual(original);
+  });
+
+  it("preserves the stored library record when the resumed thread cannot be read", async () => {
+    const { service, client, saved } = libraryServiceHarness({ storedLibraryThread: "stored-library" });
+    const internal = service as any;
+    const original = structuredClone(internal.sessions.libraries["library:1"]);
+    const readFailure = new Error("read failed");
+    client.threadRead.mockRejectedValueOnce(readFailure);
+
+    await expect(service.openLibraryConversation({ libraryID: 1, libraryName: "My Library" }))
+      .rejects.toBe(readFailure);
+
+    expect(client.threadStart).not.toHaveBeenCalled();
+    expect(saved).toEqual([]);
+    expect(internal.sessions.libraries["library:1"]).toEqual(original);
+  });
+
+  it("rejects an incompatible stored backend without replacing its library thread", async () => {
+    const { service, client, saved } = libraryServiceHarness({ storedLibraryThread: "engine-library" });
+    const internal = service as any;
+    internal.sessions.libraries["library:1"].backend = "engine";
+    const original = structuredClone(internal.sessions.libraries["library:1"]);
+
+    await expect(service.openLibraryConversation({ libraryID: 1, libraryName: "My Library" }))
+      .rejects.toThrow("different backend");
+
+    expect(client.threadResume).not.toHaveBeenCalled();
+    expect(client.threadStart).not.toHaveBeenCalled();
+    expect(saved).toEqual([]);
+    expect(internal.sessions.libraries["library:1"]).toEqual(original);
+  });
+
+  it("keeps library threads out of appended global history after canonicalization", async () => {
+    const { service, client } = libraryServiceHarness({ storedLibraryThread: "resume-alias" });
+    const internal = service as any;
+    client.threadResume.mockResolvedValueOnce({ thread: { id: "resume-alias", turns: [] } });
+    client.threadRead.mockResolvedValueOnce({ thread: { id: "canonical-library", turns: [] } });
+    (client as any).threadList = vi.fn(async () => ({
+      data: [{ id: "ordinary-thread", name: "Ordinary", source: "cli", updatedAt: 2 }],
+      nextCursor: null,
+    }));
+    internal.globalHistory = [{
+      id: "canonical-library",
+      title: "Library transcript",
+      updatedAt: "2026-07-31T00:00:00.000Z",
+      source: "codex",
+      sourceLabel: "Codex CLI",
+    }];
+    internal.globalHistoryCursor = "next-page";
+    internal.globalHistoryQuery = "";
+
+    await service.openLibraryConversation({ libraryID: 1, libraryName: "My Library" });
+    await service.refreshGlobalHistory("", true);
+
+    expect(service.getGlobalHistory().map((thread) => thread.id)).toEqual(["ordinary-thread"]);
+  });
+
+  it("rejects attempts to open a library thread from global Workbench history", async () => {
+    const { service } = libraryServiceHarness({ storedLibraryThread: "stored-library" });
+    const internal = service as any;
+    internal.globalHistory = [{
+      id: "stored-library",
+      title: "Library transcript",
+      updatedAt: "2026-07-31T00:00:00.000Z",
+      source: "codex",
+      sourceLabel: "Codex CLI",
+    }];
+
+    await expect(service.openGlobalThread("stored-library"))
+      .rejects.toThrow("Library Palette");
   });
 });
