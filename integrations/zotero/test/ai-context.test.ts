@@ -79,6 +79,30 @@ describe("AI Context QMD codec", () => {
       .toEqual([{ id: "u-markers", role: "user", text }]);
   });
 
+  it("rejects colon-delimited projection identities that do not match the selected papers", () => {
+    const mismatchedColonIdentity = {
+      ...manifest,
+      papers: [{ libraryID: "a:b", itemKey: "c", title: "Paper" }],
+      projection: { mode: "attached" as const, targets: [{ libraryID: "a", itemKey: "b:c" }] },
+    };
+    expect(() => renderNewAIContextDocument({
+      manifest: mismatchedColonIdentity,
+      synthesis: { ...validSynthesis(), readingPlan: [{ itemKey: "c", rationale: "Read", guidance: "Read" }] },
+      messages: [],
+    })).toThrow(/manifest: attached targets must match/);
+  });
+
+  it("round-trips a transcript with many short backtick runs", () => {
+    const text = "`x".repeat(150_000);
+    const source = renderNewAIContextDocument({
+      manifest: { ...manifest, capturedEntryIds: ["u-many-fences"] },
+      synthesis: validSynthesis(),
+      messages: [{ id: "u-many-fences", role: "user", text }],
+    });
+    expect(parseAIContextDocument("drafts/ai-contexts/ctx-01-many-fences.qmd", source).messages)
+      .toEqual([{ id: "u-many-fences", role: "user", text }]);
+  });
+
   it("fails closed on duplicate, reversed, and unknown-version managed structure after valid frontmatter", () => {
     const valid = renderNewAIContextDocument({ manifest, synthesis: validSynthesis(), messages: [] });
     const malformed = [

@@ -115,6 +115,10 @@ function validatedRecordId(value: unknown): string {
   return value;
 }
 
+function identityKey(libraryID: string, itemKey: string): string {
+  return JSON.stringify([libraryID, itemKey]);
+}
+
 function encode(value: unknown): string {
   let binary = "";
   for (const byte of encoder.encode(JSON.stringify(value))) binary += String.fromCharCode(byte);
@@ -181,8 +185,8 @@ function validateManifest(value: unknown): AIContextManifest {
   if (projection.mode === "standalone" && targets.length) fail("manifest", "standalone has parent targets");
   const capturedEntryIds = input.capturedEntryIds.map((entry) => id(entry, "captured entry ID"));
   if (new Set(capturedEntryIds).size !== capturedEntryIds.length) fail("manifest", "duplicate captured entry ID");
-  const paperKeys = papers.map((paper) => `${paper.libraryID}:${paper.itemKey}`);
-  const targetKeys = targets.map((target) => `${target.libraryID}:${target.itemKey}`);
+  const paperKeys = papers.map((paper) => identityKey(paper.libraryID, paper.itemKey));
+  const targetKeys = targets.map((target) => identityKey(target.libraryID, target.itemKey));
   if (new Set(paperKeys).size !== paperKeys.length) fail("manifest", "duplicate paper identity");
   if (new Set(targetKeys).size !== targetKeys.length) fail("manifest", "duplicate projection target");
   const parsedRecordId = validatedRecordId(input.id);
@@ -271,7 +275,16 @@ function safeMarkdown(value: string): string {
 }
 
 function fenceFor(text: string): string {
-  const longest = Math.max(0, ...[...text.matchAll(/`+/gu)].map(([run]) => run.length));
+  let longest = 0;
+  let run = 0;
+  for (const character of text) {
+    if (character === "`") run += 1;
+    else {
+      longest = Math.max(longest, run);
+      run = 0;
+    }
+  }
+  longest = Math.max(longest, run);
   return "`".repeat(Math.max(3, longest + 1));
 }
 
