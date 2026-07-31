@@ -203,6 +203,7 @@ interface PendingRequest {
 export type ThreadStoreListener = (
   snapshot: ThreadStoreSnapshot,
   notification?: RpcNotification,
+  affectedThreadIds?: readonly string[],
 ) => void;
 
 function normalizeItem(
@@ -276,12 +277,12 @@ export class ThreadStore {
     return () => this.listeners.delete(listener);
   }
 
-  ingestThread(thread: ProtocolThread): void {
-    this.ingestThreads([thread]);
+  ingestThread(thread: ProtocolThread, notification?: RpcNotification): void {
+    this.ingestThreads([thread], notification);
   }
 
-  ingestThreads(threads: ProtocolThread[]): void {
-    let changed = false;
+  ingestThreads(threads: ProtocolThread[], notification?: RpcNotification): void {
+    const affectedThreadIds: string[] = [];
     for (const thread of threads) {
       if (!thread || typeof thread.id !== "string") continue;
       const current = this.threads.get(thread.id);
@@ -301,9 +302,9 @@ export class ThreadStore {
         turns,
       } as StoredThread;
       this.threads.set(thread.id, next);
-      changed = true;
+      affectedThreadIds.push(thread.id);
     }
-    if (changed) this.emit();
+    if (affectedThreadIds.length) this.emit(notification, affectedThreadIds);
   }
 
   /** Replace an authoritative thread snapshot, including removal of turns. */
@@ -316,10 +317,10 @@ export class ThreadStore {
         .filter((turn): turn is ProtocolTurn => Boolean(turn && typeof turn.id === "string"))
         .map(normalizeTurn),
     } as StoredThread);
-    this.emit();
+    this.emit(undefined, [thread.id]);
   }
 
-  ingestTurn(threadId: string, turn: ProtocolTurn): void {
+  ingestTurn(threadId: string, turn: ProtocolTurn, notification?: RpcNotification): void {
     if (!threadId || !turn || typeof turn.id !== "string") return;
     const thread = this.ensureThread(threadId);
     const turns = [...thread.turns];
@@ -328,13 +329,13 @@ export class ThreadStore {
     if (index < 0) turns.push(incoming);
     else turns[index] = mergeTurn(turns[index], incoming);
     this.threads.set(threadId, { ...thread, turns });
-    this.emit();
+    this.emit(notification, [threadId]);
   }
 
-  setThreadName(threadId: string, name: string | null): void {
+  setThreadName(threadId: string, name: string | null, notification?: RpcNotification): void {
     const thread = this.ensureThread(threadId);
     this.threads.set(threadId, { ...thread, name });
-    this.emit();
+    this.emit(notification, [threadId]);
   }
 
   /** Returns true when the notification was incorporated into the store. */
@@ -346,20 +347,20 @@ export class ThreadStore {
     switch (notification.method) {
       case "thread/started": {
         if (!isRecord(params.thread) || typeof params.thread.id !== "string") return false;
-        this.ingestThread(params.thread as ProtocolThread);
+        this.ingestThread(params.thread as ProtocolThread, notification);
         return true;
       }
       case "thread/name/updated": {
         if (!threadId) return false;
         const name = optionalString(params.threadName) ?? null;
-        this.setThreadName(threadId, name);
+        this.setThreadName(threadId, name, notification);
         return true;
       }
       case "thread/status/changed": {
         if (!threadId) return false;
         const thread = this.ensureThread(threadId);
         this.threads.set(threadId, { ...thread, status: params.status });
-        this.emit(notification);
+        this.emit(notification, [threadId]);
         return true;
       }
       case "thread/tokenUsage/updated": {
@@ -377,7 +378,7 @@ export class ThreadStore {
         if (!threadId || !isRecord(params.turn) || typeof params.turn.id !== "string") {
           return false;
         }
-        this.ingestTurn(threadId, params.turn as ProtocolTurn);
+        this.ingestTurn(threadId, params.turn as ProtocolTurn, notification);
         return true;
       }
       case "turn/plan/updated": {
@@ -583,7 +584,7 @@ export class ThreadStore {
     items[itemIndex] = update(items[itemIndex]!);
     turns[turnIndex] = { ...turn, items };
     this.threads.set(threadId, { ...thread, turns });
-    this.emit(notification);
+    this.emit(notification, [threadId]);
   }
 
   private upsertItem(
@@ -617,7 +618,7 @@ export class ThreadStore {
     }
     turns[index] = update(turns[index]!);
     this.threads.set(threadId, { ...thread, turns });
-    this.emit(notification);
+    this.emit(notification, [threadId]);
   }
 
   private ensureThread(threadId: string): StoredThread {
@@ -628,7 +629,7 @@ export class ThreadStore {
     return thread;
   }
 
-  private emit(notification?: RpcNotification): void {
+  private emit(notification?: RpcNotification, affectedThreadIds: readonly string[] = []): void {
     this.version += 1;
     this.snapshot = Object.freeze({
       version: this.version,
@@ -636,7 +637,7 @@ export class ThreadStore {
     });
     for (const listener of [...this.listeners]) {
       try {
-        listener(this.snapshot, notification);
+        listener(this.snapshot, notification, affectedThreadIds);
       } catch {
         // A rendering subscriber must not prevent later stream events or
         // other subscribers from receiving updates.
