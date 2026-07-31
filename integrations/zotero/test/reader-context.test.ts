@@ -662,6 +662,52 @@ describe("ReaderContextService", () => {
     expect(buildZotkitLibrarySnapshot).toHaveBeenCalledTimes(2);
   });
 
+  it("invalidates only the requested Zotkit library snapshot", async () => {
+    const { adapter, reader, attachment } = makeAdapter();
+    const service = new ReaderContextService(adapter, host);
+    await service.acceptReaderHook({ reader, item: attachment });
+    const internal = service as unknown as {
+      librarySnapshots: Map<string, unknown>;
+      librarySnapshotBuilds: Map<string, Promise<unknown>>;
+    };
+    internal.librarySnapshots.set("1", { reference: { libraryID: 1 } });
+    internal.librarySnapshots.set("2", { reference: { libraryID: 2 } });
+    internal.librarySnapshotBuilds.set("1", Promise.resolve(null));
+    internal.librarySnapshotBuilds.set("2", Promise.resolve(null));
+
+    service.invalidateZotkitLibrarySnapshot(1);
+
+    expect([...internal.librarySnapshots.keys()]).toEqual(["2"]);
+    expect([...internal.librarySnapshotBuilds.keys()]).toEqual(["2"]);
+    expect(service.getCachedZotkitLibrarySnapshotReference()).toBeNull();
+  });
+
+  it("does not recache an invalidated snapshot when an older build settles", async () => {
+    let finishBuild!: (snapshot: ZotkitLibrarySnapshot) => void;
+    const buildZotkitLibrarySnapshot = vi.fn(() => new Promise<ZotkitLibrarySnapshot>((resolve) => {
+      finishBuild = resolve;
+    }));
+    const { adapter, reader, attachment } = makeAdapter({ buildZotkitLibrarySnapshot });
+    const service = new ReaderContextService(adapter, host);
+    await service.acceptReaderHook({ reader, item: attachment });
+    const pending = service.ensureZotkitLibrarySnapshot();
+    await vi.waitFor(() => expect(buildZotkitLibrarySnapshot).toHaveBeenCalledOnce());
+
+    service.invalidateZotkitLibrarySnapshot(1);
+    finishBuild({
+      schemaVersion: 1,
+      libraryID: 1,
+      generatedAt: "2026-07-22T10:00:00.000Z",
+      complete: true,
+      collections: [],
+      tags: [],
+      items: [],
+    });
+
+    await expect(pending).resolves.toBeNull();
+    expect(service.getCachedZotkitLibrarySnapshotReference()).toBeNull();
+  });
+
   it("exposes bundled Zotkit metadata discovery tools through the shared bounded snapshot", async () => {
     const buildZotkitLibrarySnapshot = vi.fn(async (libraryID): Promise<ZotkitLibrarySnapshot> => ({
       schemaVersion: 1,
