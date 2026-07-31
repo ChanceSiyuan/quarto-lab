@@ -82,8 +82,25 @@ describe("CitationCandidateRegistry", () => {
 
     expect(() => registry.resolveCapability(scope("thread-b", 1), capabilityId)).toThrow(/thread/i);
     expect(() => registry.resolveCapability(scope("thread-a", 2), capabilityId)).toThrow(/library/i);
-    setNow("2026-07-31T10:31:00Z");
+    setNow("2026-07-31T10:30:00Z");
     expect(() => registry.resolveCapability(scope("thread-a", 1), capabilityId)).toThrow(/expired/i);
+  });
+
+  it("sweeps an expired batch and its capabilities before opaque IDs are reused", async () => {
+    let nowMs = Date.parse("2026-07-31T10:00:00Z");
+    const ids = ["batch", "capability", "batch", "capability"];
+    const registry = new CitationCandidateRegistry({
+      resolve: async (_scope, requests) => requests.map((request) => resolution(request.clientRef)),
+    }, {
+      nowMs: () => nowMs,
+      createId: () => ids.shift() ?? "unexpected",
+    });
+    const first = await registry.lookup(scope(), [{ clientRef: "r1", doi: "10.1000/a" }]);
+
+    nowMs += 30 * 60 * 1_000;
+    expect(() => registry.resolveCapability(scope(), first.results[0]!.capabilityId)).toThrow(/expired/i);
+    await expect(registry.lookup(scope(), [{ clientRef: "r2", doi: "10.1000/b" }]))
+      .resolves.toMatchObject({ batchId: "batch" });
   });
 
   it("makes capability IDs opaque and rejects forged IDs", async () => {
@@ -114,11 +131,59 @@ describe("CitationCandidateRegistry", () => {
       .toEqual([0, 1]);
   });
 
+  it("does not combine capability IDs from different batches", async () => {
+    const registry = new CitationCandidateRegistry({
+      resolve: async (_scope, requests) => requests.map((request) => resolution(request.clientRef)),
+    }, {
+      createId: (() => {
+        let sequence = 0;
+        return () => `opaque-${++sequence}`;
+      })(),
+    });
+    const first = await registry.lookup(scope(), [{ clientRef: "r1", doi: "10.1000/a" }]);
+    const second = await registry.lookup(scope(), [{ clientRef: "r2", doi: "10.1000/b" }]);
+
+    expect(() => registry.resolveCompleteBatch(scope(), [
+      first.results[0]!.capabilityId,
+      second.results[0]!.capabilityId,
+    ])).toThrow(/one batch/i);
+  });
+
+  it("preserves ambiguous results in their own bound capabilities", async () => {
+    const { registry } = harness([resolution("r1", {
+      status: "ambiguous",
+      candidates: [
+        resolution("r1").candidates[0]!,
+        { ...resolution("r1").candidates[0]!, choiceId: "choice-r1-alternative" },
+      ],
+      reason: "Two exact local matches",
+    })]);
+    const batch = await registry.lookup(scope(), [{ clientRef: "r1", title: "A resolved paper" }]);
+
+    expect(registry.resolveCapability(scope(), batch.results[0]!.capabilityId).resolution)
+      .toMatchObject({ status: "ambiguous", candidates: [{ choiceId: "choice-r1" }, { choiceId: "choice-r1-alternative" }] });
+  });
+
   it("returns deep copies rather than registry-owned records", async () => {
     const { registry } = harness();
     const batch = await registry.lookup(scope(), [{ clientRef: "r1", doi: "10.1000/abc" }]);
     const returned = batch.results[0]!.resolution;
     (returned.candidates[0]!.metadata as BibliographicMetadata).title = "Mutated by caller";
+
+    expect(registry.resolveCapability(scope(), batch.results[0]!.capabilityId)
+      .resolution.candidates[0]!.metadata?.title).toBe("A resolved paper");
+
+    const capability = registry.resolveCapability(scope(), batch.results[0]!.capabilityId);
+    (capability.resolution.candidates[0]!.metadata as BibliographicMetadata).title = "Mutated twice";
+    expect(registry.resolveCapability(scope(), batch.results[0]!.capabilityId)
+      .resolution.candidates[0]!.metadata?.title).toBe("A resolved paper");
+  });
+
+  it("copies resolver output before a resolver-owned object can change", async () => {
+    const resolverOutput = resolution("r1");
+    const { registry } = harness([resolverOutput]);
+    const batch = await registry.lookup(scope(), [{ clientRef: "r1", doi: "10.1000/abc" }]);
+    (resolverOutput.candidates[0]!.metadata as BibliographicMetadata).title = "Resolver mutation";
 
     expect(registry.resolveCapability(scope(), batch.results[0]!.capabilityId)
       .resolution.candidates[0]!.metadata?.title).toBe("A resolved paper");
@@ -137,6 +202,19 @@ describe("CitationCandidateRegistry", () => {
       clientRef: `r${index}`,
       title: "A title",
     })))).rejects.toThrow(/50/);
+    expect(calls).toBe(0);
+  });
+
+  it("rejects an empty batch before calling the resolver", async () => {
+    let calls = 0;
+    const registry = new CitationCandidateRegistry({
+      resolve: async () => {
+        calls += 1;
+        return [];
+      },
+    }, { createId: () => "opaque" });
+
+    await expect(registry.lookup(scope(), [])).rejects.toThrow(/at least 1/i);
     expect(calls).toBe(0);
   });
 
@@ -179,6 +257,31 @@ describe("CitationCandidateRegistry", () => {
       })]);
       await expect(registry.lookup(scope(), [{ clientRef: "r1", doi: "10.1000/abc" }]))
         .rejects.toThrow(/metadata|item type|title|unsafe|creator|unknown/i);
+    }
+  });
+
+  it("rejects unsafe and overlong optional metadata before blank normalization", () => {
+    expect(() => bibliographicDigest(metadata({ date: " \n " }))).toThrow(/unsafe/i);
+    expect(() => bibliographicDigest(metadata({ url: " ".repeat(20_001) }))).toThrow(/too long/i);
+    expect(() => bibliographicDigest(metadata({ archive: "\u00AD" }))).toThrow(/unsafe/i);
+    expect(() => bibliographicDigest(metadata({ publicationTitle: "\u2060" }))).toThrow(/unsafe/i);
+  });
+
+  it("fails closed if a default registry cannot obtain cryptographic entropy", async () => {
+    const descriptor = Object.getOwnPropertyDescriptor(globalThis, "crypto");
+    Object.defineProperty(globalThis, "crypto", { configurable: true, value: undefined });
+    try {
+      const registry = new CitationCandidateRegistry({
+        resolve: async () => [resolution("r1")],
+      });
+
+      await expect(registry.lookup(scope(), [{ clientRef: "r1", doi: "10.1000/abc" }]))
+        .rejects.toThrow(/secure random/i);
+      expect(() => registry.resolveCapability(scope(), "uncreated-capability")).toThrow(/unknown/i);
+    }
+    finally {
+      if (descriptor) Object.defineProperty(globalThis, "crypto", descriptor);
+      else delete (globalThis as { crypto?: Crypto }).crypto;
     }
   });
 
