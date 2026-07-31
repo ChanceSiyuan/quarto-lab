@@ -275,9 +275,13 @@ export class ReviewedLibraryImportService {
       canApply: false,
       statusMessage: "Refreshing Zotero preflight for the latest row choices…",
     };
-    this.notify(pending.publicReview.scope);
+    this.safeNotify(pending.publicReview.scope);
     const plan = clonePlan(pending.boundPlan);
-    void this.refreshPreflight(pending, revision, plan);
+    void this.refreshPreflight(pending, revision, plan).catch(() => {
+      // Detached refreshes are a read-only UI enhancement. Their own handler
+      // should be total, but this final boundary prevents any future defect
+      // from surfacing as an unhandled promise rejection.
+    });
   }
 
   async resolveReview(
@@ -299,7 +303,7 @@ export class ReviewedLibraryImportService {
         state: "rejected",
         statusMessage: "The library import was rejected. Zotero was not changed.",
       };
-      this.notify(pending.publicReview.scope);
+      this.safeNotify(pending.publicReview.scope);
       return { decision: "rejected", reviewId, receipt: null };
     }
 
@@ -314,7 +318,7 @@ export class ReviewedLibraryImportService {
       state: "resolving",
       statusMessage: "The library import is reserved for Apply.",
     };
-    this.notify(pending.publicReview.scope);
+    this.safeNotify(pending.publicReview.scope);
     throw new Error("Library import Apply is not available until Task 5; this read-only review performed no writes");
   }
 
@@ -390,7 +394,7 @@ export class ReviewedLibraryImportService {
       candidateBindings,
       revision: 0,
     });
-    this.notify(publicReview.scope);
+    this.safeNotify(publicReview.scope);
     return {
       status: "awaiting_user_review",
       review_id: reviewId,
@@ -415,8 +419,13 @@ export class ReviewedLibraryImportService {
     throw new Error("Library import review ID factory produced duplicate IDs");
   }
 
-  private notify(scope: CitationCapabilityScope): void {
-    this.callbacks.onState(cloneScope(scope));
+  private safeNotify(scope: CitationCapabilityScope): void {
+    try {
+      this.callbacks.onState(cloneScope(scope));
+    }
+    catch {
+      // State is authoritative. A UI notification failure must not affect it.
+    }
   }
 
   private async refreshPreflight(
@@ -443,7 +452,7 @@ export class ReviewedLibraryImportService {
         canApply: canApplyRows(rows, refreshed),
         statusMessage: statusMessage(rows, refreshed),
       };
-      this.notify(pending.publicReview.scope);
+      this.safeNotify(pending.publicReview.scope);
     }
     catch (error) {
       if (!this.isCurrentRefresh(pending, revision)) return;
@@ -457,7 +466,7 @@ export class ReviewedLibraryImportService {
         canApply: false,
         statusMessage: `Zotero preflight refresh failed: ${boundedErrorMessage(error)}`,
       };
-      this.notify(pending.publicReview.scope);
+      this.safeNotify(pending.publicReview.scope);
     }
   }
 
@@ -627,6 +636,9 @@ function normalizePreflight(
     || actualRowIds.length !== expectedRowIds.length
     || expectedRowIds.some((rowId) => !actualRowIds.includes(rowId))) {
     throw new Error("Library import preflight must cover the exact complete set of review rows");
+  }
+  if (siblingCollectionKey === null && dispositions.some((entry) => entry.membershipExists)) {
+    throw new Error("Library import preflight cannot claim target membership when the collection does not exist");
   }
   for (const row of plan.rows) {
     validatePreflightCoherence(
@@ -811,16 +823,45 @@ function statusMessage(
 }
 
 function boundedErrorMessage(error: unknown): string {
-  const raw = error instanceof Error ? error.message : String(error);
-  const safe = raw.replace(UNSAFE_TEXT_GLOBAL, "�").normalize("NFC").trim();
-  const bounded = [...safe].slice(0, 240).join("");
-  return bounded || "The host did not provide a safe error message";
+  const fallback = "The host did not provide a readable error message";
+  let raw = "";
+  if ((typeof error === "object" && error !== null) || typeof error === "function") {
+    try {
+      const message = (error as { message?: unknown }).message;
+      if (message !== undefined) raw = safelyCoerceErrorText(message);
+    }
+    catch {
+      // A host object may expose a throwing message getter.
+    }
+  }
+  if (!raw) raw = safelyCoerceErrorText(error);
+  if (!raw) return fallback;
+  try {
+    const safe = raw.replace(UNSAFE_TEXT_GLOBAL, "�").normalize("NFC").trim();
+    const bounded = [...safe].slice(0, 240).join("");
+    return bounded || fallback;
+  }
+  catch {
+    return fallback;
+  }
+}
+
+function safelyCoerceErrorText(value: unknown): string {
+  if (typeof value === "string") return value;
+  try {
+    return String(value);
+  }
+  catch {
+    return "";
+  }
 }
 
 function countEffects(preflight: LibraryImportPreflight): number {
-  return preflight.dispositions.filter((entry) => (
+  const collectionCreation = preflight.siblingCollectionKey === null ? 1 : 0;
+  const rowEffects = preflight.dispositions.filter((entry) => (
     entry.effect === "create" || (entry.effect === "reuse" && !entry.membershipExists)
   )).length;
+  return collectionCreation + rowEffects;
 }
 
 function citationLabel(resolution: ResolvedCitation): string {
