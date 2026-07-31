@@ -121,69 +121,64 @@ export function createGeckoQLabPrivateFileHost(
   return {
     async readPrivate(path) {
       const runtime = loadRuntime();
-      let parent: GeckoPrivateFileHandle;
-      let leaf: string;
+      let opened: { parent: GeckoPrivateFileHandle; leaf: string };
       try {
-        ({ parent, leaf } = await openPrivateParent(runtime, path, false));
+        opened = await openPrivateParent(runtime, path, false);
       }
       catch (error) {
         if (isGeckoFileError(error, "becauseNoSuchFile")) return null;
         throw error;
       }
-      let file: GeckoPrivateFileHandle;
-      try {
-        file = await runtime.openAt(parent, leaf, readNoFollowFlags(runtime));
-      }
-      catch (error) {
-        if (isGeckoFileError(error, "becauseNoSuchFile")) return null;
-        throw error;
-      }
-      finally {
-        await parent.close();
-      }
-      try {
-        if (!file.read) throw new Error("Gecko private file is not readable");
-        const bytes = await file.read(MAX_PRIVATE_FILE_BYTES + 1);
-        if (bytes.length > MAX_PRIVATE_FILE_BYTES) {
-          throw new Error("Repository identity file is too large");
+      return runWithPrivateCleanup(async () => {
+        let file: GeckoPrivateFileHandle;
+        try {
+          file = await runtime.openAt(
+            opened.parent,
+            opened.leaf,
+            readNoFollowFlags(runtime),
+          );
         }
-        return new TextDecoder("utf-8", { fatal: true }).decode(bytes);
-      }
-      finally {
-        await file.close();
-      }
+        catch (error) {
+          if (isGeckoFileError(error, "becauseNoSuchFile")) return null;
+          throw error;
+        }
+        return runWithPrivateCleanup(async () => {
+          if (!file.read) throw new Error("Gecko private file is not readable");
+          const bytes = await file.read(MAX_PRIVATE_FILE_BYTES + 1);
+          if (bytes.length > MAX_PRIVATE_FILE_BYTES) {
+            throw new Error("Repository identity file is too large");
+          }
+          return new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+        }, [file]);
+      }, [opened.parent]);
     },
     async createPrivateIfAbsent(path, value, mode) {
       const runtime = loadRuntime();
       const { parent, leaf } = await openPrivateParent(runtime, path, true);
-      let file: GeckoPrivateFileHandle;
-      try {
-        file = await runtime.openAt(parent, leaf, createNoFollowFlags(runtime), mode);
-      }
-      catch (error) {
-        if (isGeckoFileError(error, "becauseExists")) return "exists";
-        throw error;
-      }
-      finally {
-        await parent.close();
-      }
-      try {
-        if (!file.write) throw new Error("Gecko private file is not writable");
-        const bytes = new TextEncoder().encode(value);
-        let offset = 0;
-        while (offset < bytes.length) {
-          const written = await file.write(bytes.subarray(offset));
-          if (!Number.isInteger(written) || written <= 0) {
-            throw new Error("Could not write the complete repository identity");
-          }
-          offset += written;
+      return runWithPrivateCleanup(async () => {
+        let file: GeckoPrivateFileHandle;
+        try {
+          file = await runtime.openAt(parent, leaf, createNoFollowFlags(runtime), mode);
         }
-        await file.flush?.();
-        return "created";
-      }
-      finally {
-        await file.close();
-      }
+        catch (error) {
+          if (isGeckoFileError(error, "becauseExists")) return "exists" as const;
+          throw error;
+        }
+        return runWithPrivateCleanup(async () => {
+          if (!file.write) throw new Error("Gecko private file is not writable");
+          const bytes = new TextEncoder().encode(value);
+          let offset = 0;
+          while (offset < bytes.length) {
+            const written = await file.write(bytes.subarray(offset));
+            if (!Number.isInteger(written) || written <= 0) {
+              throw new Error("Could not write the complete repository identity");
+            }
+            offset += written;
+          }
+          await file.flush?.();
+          return "created" as const;
+        }, [file]);
+      }, [parent]);
     },
     resolvePath(root, path) {
       const value = pathIsAbsolute(path) ? path : PathUtils.join(root, path);
@@ -294,7 +289,7 @@ function createGeckoPrivateFileRuntime(): GeckoPrivateFileRuntime {
     ctypes.int,
     ctypes.char.ptr,
     ctypes.int,
-    ctypes.int,
+    "...",
   );
   const openAt = library.declare(
     "openat",
@@ -303,15 +298,18 @@ function createGeckoPrivateFileRuntime(): GeckoPrivateFileRuntime {
     ctypes.int,
     ctypes.char.ptr,
     ctypes.int,
-    ctypes.int,
+    "...",
   );
+  const modeType = platform === "Darwin" ? ctypes.uint16_t : ctypes.unsigned_int;
+  // Variadic mode_t is promoted on Darwin; glibc's unsigned int mode_t is not.
+  const promoteMode = platform === "Darwin" ? ctypes.int : ctypes.unsigned_int;
   const makeDirAt = library.declare(
     "mkdirat",
     ctypes.default_abi,
     ctypes.int,
     ctypes.int,
     ctypes.char.ptr,
-    ctypes.int,
+    modeType,
   );
   const read = library.declare(
     "read",
@@ -394,17 +392,22 @@ function createGeckoPrivateFileRuntime(): GeckoPrivateFileRuntime {
   };
   return {
     flags: constants.flags,
-    async open(path, flags, mode = 0) {
-      return requireDescriptor("open", Number(open(path, flags, mode)));
+    async open(path, flags, mode) {
+      const fd = mode === undefined
+        ? open(path, flags)
+        : open(path, flags, promoteMode(mode));
+      return requireDescriptor("open", Number(fd));
     },
-    async openAt(parent, name, flags, mode = 0) {
-      return requireDescriptor(
-        "openat",
-        Number(openAt(descriptorFd(parent), name, flags, mode)),
-      );
+    async openAt(parent, name, flags, mode) {
+      const fd = mode === undefined
+        ? openAt(descriptorFd(parent), name, flags)
+        : openAt(descriptorFd(parent), name, flags, promoteMode(mode));
+      return requireDescriptor("openat", Number(fd));
     },
     async makeDirAt(parent, name, mode) {
-      if (Number(makeDirAt(descriptorFd(parent), name, mode)) === 0) return "created";
+      if (Number(makeDirAt(descriptorFd(parent), name, modeType(mode))) === 0) {
+        return "created";
+      }
       const errno = Number(ctypes.errno);
       if (errno === constants.EEXIST) return "exists";
       throw geckoPosixError("mkdirat", errno, constants);
@@ -460,6 +463,35 @@ function geckoPosixError(
   if (errno === constants.ENOENT) error.becauseNoSuchFile = true;
   if (errno === constants.EEXIST) error.becauseExists = true;
   return error;
+}
+
+async function runWithPrivateCleanup<T>(
+  operation: () => Promise<T>,
+  handles: GeckoPrivateFileHandle[],
+): Promise<T> {
+  let result!: T;
+  let failed = false;
+  let failure: unknown;
+  try {
+    result = await operation();
+  }
+  catch (error) {
+    failed = true;
+    failure = error;
+  }
+  for (const handle of handles) {
+    try {
+      await handle.close();
+    }
+    catch (error) {
+      if (!failed) {
+        failed = true;
+        failure = error;
+      }
+    }
+  }
+  if (failed) throw failure;
+  return result;
 }
 
 function pathIsAbsolute(path: string): boolean {

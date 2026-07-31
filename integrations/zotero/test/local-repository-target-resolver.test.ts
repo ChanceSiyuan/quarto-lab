@@ -254,6 +254,139 @@ describe("local repository Gecko adapters", () => {
     );
   });
 
+  it.each([
+    {
+      os: "Darwin",
+      abi: "x86_64-gcc3",
+      modeType: "int",
+      fixedModeType: "uint16_t",
+      createFlags: 0x0001 | 0x0200 | 0x0800 | 0x0100 | 0x01000000,
+      readFlags: 0x0100 | 0x01000000,
+    },
+    {
+      os: "Darwin",
+      abi: "aarch64-gcc3",
+      modeType: "int",
+      fixedModeType: "uint16_t",
+      createFlags: 0x0001 | 0x0200 | 0x0800 | 0x0100 | 0x01000000,
+      readFlags: 0x0100 | 0x01000000,
+    },
+    {
+      os: "Linux",
+      abi: "x86_64-gcc3",
+      modeType: "unsigned_int",
+      fixedModeType: "unsigned_int",
+      createFlags: 0x0001 | 0x0040 | 0x0080 | 0x20000 | 0x80000,
+      readFlags: 0x20000 | 0x80000,
+    },
+    {
+      os: "Linux",
+      abi: "aarch64-gcc3",
+      modeType: "unsigned_int",
+      fixedModeType: "unsigned_int",
+      createFlags: 0x0001 | 0x0040 | 0x0080 | 0x20000 | 0x80000,
+      readFlags: 0x20000 | 0x80000,
+    },
+  ])("uses true variadic mode CData on $os/$abi", async ({
+    os,
+    abi,
+    modeType,
+    fixedModeType,
+    createFlags,
+    readFlags,
+  }) => {
+    const globals = globalThis as any;
+    const originalServices = globals.Services;
+    const originalChromeUtils = globals.ChromeUtils;
+    const defaultAbi = Symbol("default_abi");
+    const charPointer = Symbol("char.ptr");
+    const intType = vi.fn((value: number) => ({ type: "int", value }));
+    const unsignedIntType = vi.fn((value: number) => ({ type: "unsigned_int", value }));
+    const uint16Type = vi.fn((value: number) => ({ type: "uint16_t", value }));
+    const openNative = vi.fn(() => 10);
+    const openAtNative = vi.fn(() => 11);
+    const nativeFunctions: Record<string, ReturnType<typeof vi.fn>> = {
+      open: openNative,
+      openat: openAtNative,
+      mkdirat: vi.fn(() => 0),
+      read: vi.fn(() => 0),
+      write: vi.fn((_fd: number, _buffer: unknown, length: number) => length),
+      fsync: vi.fn(() => 0),
+      close: vi.fn(() => 0),
+    };
+    const declare = vi.fn((name: string) => nativeFunctions[name]);
+    const ctypes = {
+      default_abi: defaultAbi,
+      int: intType,
+      unsigned_int: unsignedIntType,
+      uint16_t: uint16Type,
+      char: { ptr: charPointer },
+      ssize_t: Symbol("ssize_t"),
+      void_t: { ptr: Symbol("void.ptr") },
+      size_t: Symbol("size_t"),
+      uint8_t: {
+        array: (length: number) => () => Array.from({ length }, () => 0),
+      },
+      errno: 0,
+      open: vi.fn(() => ({ declare })),
+    };
+    globals.Services = { appinfo: { OS: os, XPCOMABI: abi } };
+    globals.ChromeUtils = {
+      importESModule: vi.fn(() => ({ ctypes })),
+    };
+
+    try {
+      const host = createGeckoQLabPrivateFileHost();
+
+      await expect(host.createPrivateIfAbsent(
+        "/repository-id",
+        `${GENERATED_UUID}\n`,
+        0o600,
+      )).resolves.toBe("created");
+      await expect(host.readPrivate("/repository-id")).resolves.toBe("");
+
+      expect(declare).toHaveBeenCalledWith(
+        "open",
+        defaultAbi,
+        intType,
+        charPointer,
+        intType,
+        "...",
+      );
+      expect(declare).toHaveBeenCalledWith(
+        "openat",
+        defaultAbi,
+        intType,
+        intType,
+        charPointer,
+        intType,
+        "...",
+      );
+      expect(declare).toHaveBeenCalledWith(
+        "mkdirat",
+        defaultAbi,
+        intType,
+        intType,
+        charPointer,
+        fixedModeType === "uint16_t" ? uint16Type : unsignedIntType,
+      );
+      expect(openNative.mock.calls).toEqual([
+        ["/", expect.any(Number)],
+        ["/", expect.any(Number)],
+      ]);
+      expect(openAtNative.mock.calls).toEqual([
+        [10, "repository-id", createFlags, { type: modeType, value: 0o600 }],
+        [10, "repository-id", readFlags],
+      ]);
+    }
+    finally {
+      if (originalServices === undefined) delete globals.Services;
+      else globals.Services = originalServices;
+      if (originalChromeUtils === undefined) delete globals.ChromeUtils;
+      else globals.ChromeUtils = originalChromeUtils;
+    }
+  });
+
   it("reads and exclusively creates private identity files through no-follow descriptors", async () => {
     const directoryHandle = { close: vi.fn(async () => undefined) };
     const writeHandle = {
@@ -470,5 +603,91 @@ describe("local repository Gecko adapters", () => {
 
     expect(originalIdentity.value).toBe(`${GENERATED_UUID}\n`);
     expect(outsideIdentity.value).toBe("outside-sentinel");
+  });
+
+  it("closes a read leaf and preserves its error when the retained parent close also fails", async () => {
+    const leafError = new Error("leaf read failed");
+    const parentError = new Error("parent close failed");
+    const leaf = {
+      read: vi.fn(async () => { throw leafError; }),
+      close: vi.fn(async () => undefined),
+    };
+    const ordinaryDirectory = () => ({ close: vi.fn(async () => undefined) });
+    const retainedParent = { close: vi.fn(async () => { throw parentError; }) };
+    const flags = {
+      O_RDONLY: 0,
+      O_WRONLY: 1,
+      O_CREAT: 0x40,
+      O_EXCL: 0x80,
+      O_NOFOLLOW: 0x20000,
+      O_DIRECTORY: 0x10000,
+      O_CLOEXEC: 0x80000,
+    };
+    const runtime = {
+      flags,
+      open: vi.fn(async () => ordinaryDirectory()),
+      openAt: vi.fn(async (_parent, name: string) => {
+        if (name === "repository-id") return leaf;
+        if (name === "qlab") return retainedParent;
+        return ordinaryDirectory();
+      }),
+      makeDirAt: vi.fn(async () => "created" as const),
+    };
+    const host = createGeckoQLabPrivateFileHost(runtime);
+
+    await expect(host.readPrivate("/repo/.git/qlab/repository-id"))
+      .rejects.toBe(leafError);
+    expect(leaf.read).toHaveBeenCalledOnce();
+    expect(leaf.close).toHaveBeenCalledOnce();
+    expect(retainedParent.close).toHaveBeenCalledOnce();
+    expect(leaf.close.mock.invocationCallOrder[0]!)
+      .toBeLessThan(retainedParent.close.mock.invocationCallOrder[0]!);
+  });
+
+  it("writes and closes a created leaf before reporting retained parent close failure", async () => {
+    const parentError = new Error("parent close failed");
+    let stored = "";
+    const leaf = {
+      write: vi.fn(async (bytes: Uint8Array) => {
+        stored += new TextDecoder().decode(bytes);
+        return bytes.length;
+      }),
+      flush: vi.fn(async () => undefined),
+      close: vi.fn(async () => undefined),
+    };
+    const ordinaryDirectory = () => ({ close: vi.fn(async () => undefined) });
+    const retainedParent = { close: vi.fn(async () => { throw parentError; }) };
+    const flags = {
+      O_RDONLY: 0,
+      O_WRONLY: 1,
+      O_CREAT: 0x40,
+      O_EXCL: 0x80,
+      O_NOFOLLOW: 0x20000,
+      O_DIRECTORY: 0x10000,
+      O_CLOEXEC: 0x80000,
+    };
+    const runtime = {
+      flags,
+      open: vi.fn(async () => ordinaryDirectory()),
+      openAt: vi.fn(async (_parent, name: string) => {
+        if (name === "repository-id") return leaf;
+        if (name === "qlab") return retainedParent;
+        return ordinaryDirectory();
+      }),
+      makeDirAt: vi.fn(async () => "created" as const),
+    };
+    const host = createGeckoQLabPrivateFileHost(runtime);
+
+    await expect(host.createPrivateIfAbsent(
+      "/repo/.git/qlab/repository-id",
+      `${GENERATED_UUID}\n`,
+      0o600,
+    )).rejects.toBe(parentError);
+    expect(stored).toBe(`${GENERATED_UUID}\n`);
+    expect(leaf.flush).toHaveBeenCalledOnce();
+    expect(leaf.close).toHaveBeenCalledOnce();
+    expect(retainedParent.close).toHaveBeenCalledOnce();
+    expect(leaf.close.mock.invocationCallOrder[0]!)
+      .toBeLessThan(retainedParent.close.mock.invocationCallOrder[0]!);
   });
 });
