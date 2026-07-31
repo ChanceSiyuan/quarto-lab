@@ -1,0 +1,168 @@
+---
+title: 'Semeghini 2021: Topological Spin Liquid on Kagome'
+description: 'Reading notes on Semeghini et al. 2021 — first experimental evidence for a topological Z2 spin liquid on a programmable quantum simulator'
+categories: [experiment]
+---
+
+# Summary and Questions
+
+**Paper:** Semeghini et al., "Probing topological spin liquids on a programmable quantum simulator," *Science* **374**, 1242–1247 (2021) [@semeghiniProbingTopologicalSpin2021]
+
+**Architecture:** 1-zone analog (Harvard lab), using the Ebadi 2021 SLM+AOD apparatus
+
+## What was done
+
+219 atoms on the links of a kagome lattice to probe signatures of a $\mathbb{Z}_2$ topological quantum spin liquid — a phase of matter with long-range entanglement but no local order parameter. Platform: Rydberg state $70S_{1/2}$, two-photon excitation via 420 nm + 1013 nm, atom spacing $a = 3.9\,\mu$m, Rabi frequency $\Omega = 2\pi \times 1.4$ MHz.
+
+:::{.callout-tip title="Experimental Protocol"}
+1. **Kagome lattice preparation:** Atoms placed on the links of a kagome lattice using the SLM+AOD platform ($a = 3.9\,\mu$m); blockade ratio $R_b/a = 2.4$ ensures nearest-neighbor pairs on kagome links are within blockade radius, enforcing the dimer constraint.
+2. **Adiabatic state preparation:** Detuning sweep from disordered phase ($\Delta < 0$) into the dimer-liquid regime; sweep parameter $\Omega_0 T \approx 18$ experimentally (near-perfect adiabaticity would require $\Omega_0 T = 120$ per numerical simulations in supplementary §4.2). A 200 ns ramp-down of $\Omega$ is appended at the end of the sweep to optimize QSL preparation (without this, string signals are worse). QSL signatures are robust across $3.3 \lesssim \Delta/\Omega \lesssim 4.5$.
+3. **$Z$-basis string measurement:** Measure $Z$-type parity operators — products of $Z_i$ around closed loops. Area-law decay outside the QSL phase crosses over to perimeter-law scaling inside it, diagnosing the condensation of $\mathbb{Z}_2$ charges.
+4. **$X$-basis string measurement:** Apply a global $\pi/2$ pulse (blockade ratio switched to $R_b/a = 1.53$, $\Omega = 2\pi \times 20$ MHz quench, $\tau \approx 30$ ns). The optimal quench time is $\tau = 4\pi/(3\Omega\sqrt{3}) = 19$ ns, but the AOM rise time of $\sim 10$ ns limits the experimentally achievable pulse to $\sim 30$ ns. The high-power 420 nm beam ($\Omega_{420} = 2\pi \times 360$ MHz single-photon) produces a $2\pi \times 36$ MHz light shift on the Rydberg transition, requiring separate calibration of resonance conditions at high vs. low power. Measure $X$-type loop parities on loops up to 28 atoms. Non-trivial $X$-parity with perimeter-law scaling inside the same $\Delta/\Omega$ window simultaneously with non-trivial $Z$-parity is the two-basis signature of $\mathbb{Z}_2$ topological order.
+:::
+
+At the target point $\Delta/\Omega \approx 4$, approximately 80% of vertices are consistent with a valid dimer covering (the low-energy constraint of the QSL).
+
+## Key observations
+
+- **$Z$-type string parities (area → perimeter crossover):** In the disordered phase, $Z$-type loop parities decay with the area of the enclosed region (trivial). Inside the QSL window ($3.3 \lesssim \Delta/\Omega \lesssim 4.5$), decay crosses over to perimeter-law, signaling condensation of $\mathbb{Z}_2$ electric charges.
+- **$X$-type string parities (non-trivial perimeter-law):** $X$-type loop parities on loops up to 28 atoms show non-trivial (finite) values with perimeter-law scaling inside the same $\Delta/\Omega$ window — diagnosing the $\mathbb{Z}_2$ magnetic sector. Having *both* $Z$ and $X$ parities simultaneously non-trivial is the joint necessary condition for $\mathbb{Z}_2$ topological order.
+- **Topological entanglement entropy:** TEE $\gamma = \ln 2$ is consistent with $\mathbb{Z}_2$ order and is found in **DMRG numerics** (supplemental figures), but is **not extracted as an experimental measurement**. The experimental QSL diagnosis rests entirely on the string parities above.
+- **Absence of local order:** No Bragg peaks or broken spatial symmetries — confirming the state has no local order parameter.
+- **Lattice topology dependence:** On lattices with trivial topology (open boundary conditions), the topological string signals vanish — confirming their topological (non-local) origin.
+
+## Scientific significance
+
+| Aspect | Assessment |
+|--------|-----------|
+| **Novelty** | First experimental evidence for a topological quantum spin liquid in a programmable platform. Spin liquids had been theoretically predicted for decades but never directly observed with topological diagnostics. |
+| **Practical value** | Demonstrates that Rydberg arrays can prepare and probe topologically ordered states — a first step toward topological quantum memory and error correction using intrinsic topological protection. |
+| **Verification value** | Validates theoretical predictions (Sachdev, Vishwanath) that the kagome Rydberg blockade model hosts a $\mathbb{Z}_2$ spin liquid ground state at specific $R_b/a$ ratios. |
+
+
+## Architecture comparison: relative to 1-zone/3-zone/4-zone review benchmarks
+
+| Parameter | Semeghini 2021 | SOTA 1-zone (Manovitz 2025) | 3-zone (Bluvstein 2024) | Notes |
+|-----------|---------------|---------------------------|------------------------|-------|
+| Atom count | 219 (2D kagome) | 256 (16×16, Manovitz 2025) | 280 | Comparable scale |
+| Lattice | Kagome (links) | Various | Reconfigurable | Geometry flexibility via SLM |
+| Readout fidelity | 99% claimed; $|r\rangle$ likely 92–96% | $|g\rangle$ ~99%, $|r\rangle$ ~92–96% | 99.8% (spin-to-position) | Bottleneck 3 in review; 3-zone readout would dramatically improve string operator signals |
+| Rydberg lifetime | $\sim 80\,\mu$s | — | — | Sweep duration ($\sim 2\,\mu$s) $\ll$ lifetime; not the bottleneck |
+| Coherence limit | Ground-state scattering $\sim 150\,\mu$s (420 nm) | — | — | Also not limiting given $\sim 2\,\mu$s sweep |
+| Measurement bases | $Z$ and $X$ (global rotation) | $Z$ only (typical) | Mid-circuit readout | Required global $\pi/2$ pulse for $X$-basis |
+
+**Bottleneck 1 relevance:** The review identifies thermal position fluctuation ($\sigma_{x,y} \approx 0.2\,\mu$m) as producing ~30% nearest-neighbor interaction energy spread at $R \approx 4\,\mu$m. This experiment operates at $a = 3.9\,\mu$m — *below* the review's nominal minimum, so $\delta V/V \approx 6 \times 0.2/3.9 \approx 31\%$. This interaction spread contributes to the finite density of monomer/double-dimer defects (~20% of vertices) and limits the fidelity of the quasi-adiabatic sweep. Improved atom cooling or larger lattice spacing would reduce defect density but also weaken the blockade constraint.
+
+**Bottleneck 5 relevance (defect-free yield):** At 219 atoms with ~98.4% single-atom filling after rearrangement ([@ebadi2021quantum]), the probability of a fully defect-free array is $(0.984)^{219} \approx 3\%$. The vast majority of experimental shots therefore contain at least one missing atom, which directly contributes to the ~20% of vertices violating the dimer constraint at $\Delta/\Omega \approx 4$. Missing atoms break the blockade constraint locally and create monomer defects indistinguishable from dynamical excitations. This preparation-defect floor cannot be reduced by improved adiabaticity — it requires higher single-atom loading or rearrangement fidelity (e.g., the 3-zone architecture achieves 99.5% filling).
+
+No new hardware was introduced — this experiment runs on exactly the Ebadi 2021 apparatus. The innovation is entirely in the *protocol* (what to measure and how to interpret it).
+
+
+## Critical technique analysis
+
+**Most important technique needing optimization: Non-local observable measurement fidelity.**
+
+Topological string operators are products of many single-site operators along a path. For a string of length $L$:
+
+$$
+\langle W \rangle_{\text{measured}} = \langle W \rangle_{\text{true}} \times (1 - \epsilon)^L
+$$
+
+where $\epsilon$ is the per-site measurement error. The paper claims **99% state detection fidelity** for both $|g\rangle$ and $|r\rangle$ (supplementary §1, citing [@ebadi2021quantum]). However, the Lukin group architecture review identifies a significant discrepancy: ground-state detection is ~99%, but **Rydberg-state detection is only ~92–96%** due to anti-trapping by imaging light and fluorescence crosstalk in dense arrays. Since $Z$-basis string operators measure Rydberg occupation, the effective per-site error for $Z$-strings may be $\epsilon \approx 4\text{–}8\%$ rather than 1%.
+
+The signal suppression ranges are:
+
+| String length $L$ | $(1 - 0.01)^L$ (paper's 99%) | $(1 - 0.05)^L$ (review's ~95%) |
+|---|---|---|
+| 15 | 0.86 (14% loss) | 0.46 (54% loss) |
+| 28 | 0.75 (25% loss) | 0.24 (76% loss) |
+
+If the review's lower Rydberg fidelity is correct, the signal decay is **nearly 2× worse** for 15-atom strings and **3× worse** for 28-atom loops. This may explain why measured $Z$-parity values are as small as $\approx 0.02$ for 15-vertex loops (Fig. 2C) — the "true" signal could be substantially larger but is suppressed by Rydberg readout error. The $X$-basis measurements, which involve a quench rotation before fluorescence, may have a different (potentially better) error profile since the quench maps the observable onto ground-state populations.
+
+This is the fundamental bottleneck: non-local string operators accumulate multiplicative readout error that suppresses long-loop signals and makes it difficult to distinguish genuine topological signals from noise.
+
+**Paths to improvement:**
+
+1. **3-zone spin-to-position readout** (99.8% fidelity [@bluvstein2024logical]): Would give $(0.998)^{15} \approx 0.97$ — essentially no signal loss.
+2. **Error mitigation:** Symmetry-based post-selection (discarding shots with wrong total atom number) partially compensates but costs statistics.
+3. **Entanglement witnesses:** Alternative observables that are less sensitive to single-site errors but still detect topological order.
+
+## Key parameters at a glance
+
+| Parameter | Value |
+|-----------|-------|
+| Atom count | 219 |
+| Lattice | Kagome (atoms on links) |
+| Rydberg state | $70S_{1/2}$, two-photon (420 nm + 1013 nm) |
+| Atom spacing (state prep) | $a = 3.9\,\mu$m |
+| Blockade ratio (state prep) | $R_b/a = 2.4$ |
+| Rabi frequency (state prep) | $\Omega = 2\pi \times 1.4$ MHz |
+| Blockade ratio ($X$-quench) | $R_b/a = 1.53$ |
+| Rabi frequency ($X$-quench) | $\Omega = 2\pi \times 20$ MHz |
+| QSL phase window | $3.3 \lesssim \Delta/\Omega \lesssim 4.5$ |
+| Sweep parameter | $\Omega_0 T \approx 18$ (adiabaticity limit: 120) |
+| Dimer-sector population | ~80% at $\Delta/\Omega \approx 4$ |
+| Max $X$-parity loop size | 28 atoms |
+| State detection fidelity | 99% claimed (both states); review estimates $|r\rangle$ at 92–96% |
+| Sweep duration | $\sim 2\,\mu$s (cubic frequency sweep) |
+| Rydberg state ($70S_{1/2}$) lifetime | $\sim 80\,\mu$s |
+| Ground-state scattering lifetime (420 nm) | $\sim 150\,\mu$s |
+| $X$-basis quench time $\tau$ | $\sim 30$ ns |
+| Intermediate state detuning $\delta$ | $2\pi \times (-450)$ MHz from $6P_{3/2}$ |
+| Single-photon $\Omega_{1013}$ | $2\pi \times 50$ MHz |
+| Single-photon $\Omega_{420}$ (low power) | $2\pi \times 25$ MHz |
+| Single-photon $\Omega_{420}$ (high power, $X$-quench) | $2\pi \times 360$ MHz |
+| 420 nm laser power (state prep / $X$-quench) | $\sim 0.5$ mW / $\sim 100$ mW |
+| AOM rise time (420 nm, high power) | $\sim 10$ ns |
+| Optimal quench time (theory) | $\tau = 4\pi/(3\Omega\sqrt{3}) = 19$ ns |
+| Light shift on Rydberg transition (high power) | $2\pi \times 36$ MHz |
+| $\Omega$ ramp-down at sweep end | 200 ns |
+
+## String operator definitions
+
+The two families of string operators probed are:
+
+- **$Z$-type parity** $\hat{W}_Z(\mathcal{C}) = \prod_{i \in \mathcal{C}} Z_i$: product of Pauli $Z$ along a closed loop $\mathcal{C}$. Inside the QSL, $\hat{W}_Z$ obeys **perimeter-law** scaling $\langle \hat{W}_Z \rangle \sim e^{-\alpha |\mathcal{C}|}$; outside (trivial phase), it obeys area law.
+- **$X$-type parity** $\hat{W}_X(\mathcal{C}) = \prod_{i \in \mathcal{C}} X_i$: product of Pauli $X$ along a closed loop. Measured after a global $\pi/2$ rotation. Non-trivial $\langle \hat{W}_X \rangle \neq 0$ inside the QSL with perimeter-law scaling on loops up to 28 atoms.
+
+The joint observation — both $\langle \hat{W}_Z \rangle \neq 0$ and $\langle \hat{W}_X \rangle \neq 0$ simultaneously — is the experimental signature of $\mathbb{Z}_2$ topological order. Neither alone is sufficient (a $Z_2$ paramagnet has trivial $\langle \hat{W}_X \rangle$; a VBS has trivial $\langle \hat{W}_Z \rangle$).
+
+### Measured string operator values (from Figs. 2–4)
+
+| Observable | Loop size | Value at $\Delta/\Omega \approx 3.5$–$4$ | Source |
+|-----------|-----------|--------------------------------------|--------|
+| $\langle \hat{W}_Z \rangle$ (closed) | 6 enclosed vertices (12 atoms) | $\approx 0.12$ | Fig. 2C |
+| $\langle \hat{W}_Z \rangle$ (closed) | 15 enclosed vertices (20 atoms) | $\approx 0.02$ | Fig. 2C |
+| $\langle \hat{W}_Z \rangle$ (closed) | 19 enclosed vertices (22 atoms) | $\lesssim 0.01$ | Fig. 2E |
+| $\langle \hat{W}_X \rangle$ (closed) | smallest hexagonal loop (12 atoms) | $\approx 0.15$ | Fig. 3F |
+| $\langle \hat{W}_X \rangle$ (closed) | largest loop (28 atoms) | $\approx 0.05$ | Fig. 3F inset |
+| $\langle Z \rangle_\text{FM}$ (open, FM-normalized) | longest strings | $\approx 0$ (consistent with zero) | Fig. 4F |
+| $\langle X \rangle_\text{FM}$ (open, FM-normalized) | longest strings | $\to 0$ for $\Delta/\Omega \gtrsim 3.3$ | Fig. 4G |
+| $\langle Z \rangle^{1/\text{perim}}$ | 12–22 atom loops, $\Delta/\Omega = 3.6$ | $\approx 0.75$–$0.80$ | Fig. 4H |
+| $\langle X \rangle^{1/\text{perim}}$ | 12–28 atom loops, $\Delta/\Omega = 3.5$ | $\approx 0.80$–$0.90$ | Fig. 4I |
+
+The post-selection fraction for $X$-basis shots and the number of experimental shots per data point are not reported in the paper (the text states only "averaging over many experimental repetitions").
+
+## Towards a topological qubit (Fig. 5)
+
+The paper's most forward-looking result creates a lattice with **nontrivial topology** by removing three atoms on a central triangle, opening a hole that acts as an inner boundary. This note does not assign a total atom count to the punctured lattice because the paper and supplement do not state one clearly. Dimer coverings on this punctured lattice split into two topological sectors (labeled 0 and 1), distinguished by the parity of dimers crossing a cut from the hole to the outer boundary.
+
+Two logical operators are defined:
+
+- **$Z_L$**: a $Z$-type string operator connecting the hole to the boundary. It takes opposite signs in the two topological sectors ($+1$ in sector 0, $-1$ in sector 1), so $\langle Z_L \rangle = 0$ indicates an equal superposition of sectors.
+- **$X_L$**: an $X$-type string operator around the hole. $\langle X_L \rangle > 0$ indicates coherence *between* the two sectors — the state has overlap with $|+\rangle_L = (|0\rangle_L + |1\rangle_L)/\sqrt{2}$.
+
+**Measured results** (Fig. 5B): In the QSL window ($\Delta/\Omega \approx 3.5$–$4.5$), $\langle Z_L \rangle \approx 0$ and $\langle X_L \rangle \approx 0.04$–$0.05$, consistent with the system being initialized near the $|+\rangle_L$ logical state. The $\langle X_L \rangle$ signal is small but finite and clearly distinguishable from zero in the QSL window. Inter-string correlations $\langle Z_1 Z_2 \rangle$ between hole-to-boundary strings reach $\approx 0.10$ for nearest pairs, decreasing with string separation (Fig. 5C). This is expected because the adiabatic sweep preserves the $\mathbb{Z}_2$ symmetry that exchanges sectors.
+
+**Inter-string correlations** (Fig. 5C): Correlations $\langle Z_1 Z_2 \rangle$ between two $Z$-strings connecting the hole to the boundary are finite and identical in both sectors, confirming the topological (non-local) nature of the encoding.
+
+This constitutes the **first experimental demonstration of logical-qubit-like degrees of freedom** in a topologically ordered state — a first step towards topological quantum memory using intrinsic $\mathbb{Z}_2$ topological protection, though without active error correction or gate operations.
+
+## Theoretical debate
+
+The key open question is whether the observed signals are consistent with a **true $\mathbb{Z}_2$ spin liquid** vs. a **valence bond solid (VBS) with long correlation length**. The argument:
+
+- The sweep is not perfectly adiabatic ($\Omega_0 T \approx 18 \ll 120$), so the prepared state is a mixed superposition of the ground state and excited states.
+- A VBS with correlation length $\xi \gg$ system size would show similar string operator behavior: perimeter-law $Z$ and $X$ parities that look topological but are actually short-range entangled.
+- The paper argues that (a) the signals persist over a wide $\Delta/\Omega$ window, (b) the topology-dependence check (trivial vs. non-trivial boundary conditions) is consistent with topological origin, and (c) DMRG numerics confirm the QSL ground state in this parameter regime.
+- The debate is not fully resolved experimentally — finite-size scaling with larger systems and improved adiabaticity would be needed to conclusively distinguish QSL from VBS.

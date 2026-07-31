@@ -1,0 +1,378 @@
+---
+title: 'DAMOP 2026: Rb87 Rydberg 光镊平台可近期实施的 oral 实验方案'
+description: 'DAMOP 2026 中与 Rb87 Rydberg 光镊实验相关的 oral 摘要筛选'
+categories: [experiment]
+---
+
+# Summary and questions
+
+审阅口径：我把 DAMOP 2026 会议归档中 1307 个 presentation 页面全部抓取下来，并以页面自身标记为 `ORAL` 的 759 个 oral presentation 为全集逐条阅读。进入下面 block 的标准是：abstract 所述核心实验、控制协议或工程动作，能够在 Rb87 Rydberg 光镊阵列上以近期硬件实现，或只需要非常直接的双物种/腔/低温扩展。纯 vapor cell/MOT 传感、光晶格、分子显微镜、离子、固态体系，以及强依赖 Yb/Sr 特有 clock/nuclear-spin 结构而不能直接迁移到 Rb87 的项目不列入。二次复核后，保留下来的 37 个 block 均按“做什么、观测什么、为什么重要”的顺序写成中文短段，适合先快速判断是否值得精读。
+
+我对 Rb87 tweezer array 近期研究重点的判断如下。
+
+1. 硬件寿命、读出与 trap-on Rydberg 控制。大家最关心的是：阵列能不能更大、更久、更少损失，并且在不搬运/不关 trap 的情况下完成 Rydberg 操作和中途测量。优先读 [F06/8](#f068-低温-87rb-rydberg-阵列)：它直接是 87Rb 低温光镊硬件，关系到寿命、rearrangement loss 和 Rydberg-dressing avalanche loss；[P03/6](#p036-腔内-rb-阵列与中途读出) 或 [X06/9](#x069-快速腔读出与-feed-forward)：这两项代表 QEC 所需的快速低串扰 mid-circuit readout；[G09/5](#g095-rb-rydberg-magic-trap)：它针对 trap-off Rydberg gate 的运动退相干瓶颈。
+
+2. 两比特门保真度、串扰和 QEC primitive。这里的核心问题是：单个 CZ 够不够好，并行门和 syndrome extraction 会不会把错误重新放大。优先读 [X06/6](#x066-高保真中性原子纠缠门)：它给出近期门保真度和误差预算的目标线；[C06/1](#c061-动态抑制-population-的-rydberg-phase-gate)：它是 Rb87 两光子门减少中间态散射和 detuning 误差的直接控制方案；[P04/2](#p042-三比特-rydberg-门降低-qec-深度)：它把 Rydberg 多体门直接接到 surface-code stabilizer readout 上。
+
+3. Rydberg 阵列从 PXP/Ising 扩展到更丰富的量子模拟。近期趋势不是只做 blockade Ising，而是用 microwave dressing、synthetic dimension、echo protocol 和谱学去读出更难的多体结构。优先读 [F06/5](#f065-rb87-rydberg-合成维度中的冻结态)：这是明确的 Rb87 光镊实验，物理新意强；[N11/6](#n116-microwave-dressed-87rb-长程量子磁体)：它把同一平台扩展到 XY/XXZ/Ising/Potts/t-J-like 模型；[B10/9](#b109-rydberg-chain-直接读出-cft-谱)：它展示了如何从 Rydberg 链中直接读 universality class。
+
+4. 非理想硬件上的可验证动力学与误差诊断。规模变大后，关键不只是“能做”，而是能否知道 disorder、运动、串扰、开放系统噪声怎样改写物理。优先读 [R07/1](#r071-大阵列-rydberg-串扰测量)：它是并行门前必须做的长程串扰标定；[W11/5](#w115-非完美光镊导致的无限随机临界)：它把位置误差从 nuisance 变成可量化临界物理；[X06/5](#x065-rydberg-blockade-门的速度-鲁棒性折中)：它帮助决定 Rb87 门到底应该追求快脉冲还是慢而鲁棒的 ramp。
+
+5. 优化、编译和双物种架构。Rydberg array 正在从“物理模拟器”变成“可编程处理器”，所以图嵌入、全局驱动、dual-species ancilla 都很重要。优先读 [W04/8](#w048-quantum-wire-图优化编码)：它直接处理真实优化问题图和 unit-disk 几何不匹配；[W04/6](#w046-hard-mis-的-adjusted-detuning)：它只改 pulse schedule，近期最容易在现有 Rb87/QuEra 类平台验证；[G04/4](#g044-rb-cs-双物种计算测试床)：它说明为什么 Rb-Cs 的 data/ancilla 分工可能是低串扰 QEC 的实用路线。
+
+通用背景：
+
+- [DAMOP 2026 archive](https://meetings-archive.aps.org/damop/2026/)
+- [Quantum information with Rydberg atoms, Rev. Mod. Phys. 82, 2313 (2010)](https://link.aps.org/doi/10.1103/RevModPhys.82.2313)
+- [Many-body physics with individually controlled Rydberg atoms, Nature Physics 16, 132-142 (2020)](https://arxiv.org/abs/2002.07413)
+- [Quantum simulation and computing with Rydberg-interacting qubits, AVS Quantum Science 3, 023501 (2021)](https://pubs.aip.org/avs/aqs/article/3/2/023501/997323/Quantum-simulation-and-computing-with-Rydberg)
+
+# 核心摘要
+
+## B07/5: Rydberg 阵列中的模拟 Grover 传感
+
+利用 Rb87 Rydberg 光镊阵列中的可编程两体相互作用和参数调制，做一个全模拟的宽带 AC 信号搜索实验：把未知 AC 场当成 oracle potential，让阵列在旋转框架中执行 Grover-like 放大动力学。要观测的是目标频率对应的集体激发概率、信号响应谱和搜索时间随带宽的缩放。这个实验解决的是量子增强传感中“连续模拟信号怎样不经过深量子线路而直接接入量子搜索算法”的问题；如果在 Rb87 上成立，它会把 Rydberg array 从静态电磁场传感推进到面向宽带弱信号的算法化传感。
+
+参考链接：
+
+- [APS oral B07/5](https://meetings-archive.aps.org/damop/2026/b07/5/)
+- [Quantum Computing Enhanced Sensing, arXiv:2501.07625](https://arxiv.org/html/2501.07625v1)
+
+## [B10/4: 用 time reversal 测量 spin-liquid 相干性]{style="color: red;"}
+
+利用 Rb87 Rydberg 光镊阵列制备一个可反演哈密顿量符号的偶极相互作用自旋系统，做 forward evolution、局域扰动、多量子相干谱测量和 time reversal。要观测的是 multiple quantum coherences 的阶数分布、回波保真度以及随演化时间增长的 OTOC-like 信号。这个方案针对的问题是量子 spin liquid 没有局域序参量，普通 snapshot 很难证明 loop configuration 之间保持相干；在 Rb87 阵列中做 MQC/time-reversal 可以把“拓扑相干性”变成可测量的动力学谱。
+
+参考链接：
+
+- [APS oral B10/4](https://meetings-archive.aps.org/damop/2026/b10/4/)
+- [Engineering and probing non-Abelian chiral spin liquids using Rydberg atoms, PRX Quantum 4, 020329 (2023)](https://link.aps.org/doi/10.1103/PRXQuantum.4.020329)
+
+## [B10/9: Rydberg chain 直接读出 CFT 谱]{style="color: red;"}
+
+利用一维 Rb87 Rydberg chain 的全局 detuning/Rabi 调制和局域边界控制，做有限尺寸能谱的 modulation spectroscopy。要观测的是 Ising 和 tricritical Ising 临界点附近的激发频率比、反射宇称分辨谱线以及 dynamical structure factor。这个实验解决的是临界体系中 CFT 能谱和 universality class 在实验中难以直接读出的问题；Rb87 光镊链可以通过同一套几何、边界和调制控制，把抽象的 CFT 数据变成可校准的频谱峰。
+
+参考链接：
+
+- [APS oral B10/9](https://meetings-archive.aps.org/damop/2026/b10/9/)
+- [Experimental observation of conformal field theory spectra, arXiv:2601.16275](https://arxiv.org/abs/2601.16275)
+
+## C06/1: 动态抑制 population 的 Rydberg phase gate
+
+利用两光子 Rydberg 激发中的 zero-area 脉冲调制和相位相反的驱动场，在 Rb87 两原子光镊门实验中压低中间态 population，同时保留 Rydberg-Rydberg 相互作用相位。要观测的是中间态散射率、有限 blockade 条件下的 Bell-state fidelity 或 CZ/phase-gate process fidelity 随单光子 detuning 的四阶误差缩放。它解决的是 Rb87 两光子 Rydberg 门常见的中间态散射、detuning 漂移和有限 blockade 误差问题，是为高保真 Rydberg gate 准备的控制工程。
+
+参考链接：
+
+- [APS oral C06/1](https://meetings-archive.aps.org/damop/2026/c06/1/)
+- [Single-Operation Rydberg Phase Gates via Dynamic Population Suppression, arXiv:2512.07656](https://arxiv.org/abs/2512.07656)
+- [Dynamically Enhanced Two-Photon Spectroscopy, Phys. Rev. Lett. 134, 163601 (2025)](https://link.aps.org/doi/10.1103/PhysRevLett.134.163601)
+
+## C06/3: 腔耦合 Rydberg 阵列
+
+利用高 finesse 光学腔与光镊阵列的共址设计，在单原子位置同时实现强腔耦合和可控 Rydberg 激发。具体实验是在 Rb87 光镊阵列中把原子送入腔模腰斑，测量腔共振的 dispersive shift，再打开 Rydberg 激发并测量 blockade 或集体增强 Rydberg 耦合。这个平台解决的是中性原子量子计算中“本地 Rydberg 门”和“远程光子接口”长期分离的问题；一旦移植到 Rb87，它可服务于远程逻辑 qubit 纠缠、cavity readout 和开放长程相互作用模拟。
+
+参考链接：
+
+- [APS oral C06/3](https://meetings-archive.aps.org/damop/2026/c06/3/)
+- [Realization of a cavity-coupled Rydberg array, arXiv:2602.12152](https://arxiv.org/abs/2602.12152)
+
+## [C07/8: adiabatic echo 提高多体态制备鲁棒性]{style="color: red;"}
+
+利用 Rb87 Rydberg 阵列中可反向或可重排的 detuning/Rabi ramp，做 adiabatic preparation 后接 echo-like 反演段，使静态失谐、位置偏差和光强不均匀导致的相位误差发生 destructive interference。要观测的是 GHZ 态、二维 Rydberg array 纠缠态或 frustrated lattice spin-liquid proxy 的制备保真度相对普通 adiabatic ramp 的提升。这个实验解决的是模拟型 Rydberg 制备强依赖慢 ramp 和静态校准的问题，是为了让大阵列多体态制备对硬件缺陷更鲁棒。
+
+参考链接：
+
+- [APS oral C07/8](https://meetings-archive.aps.org/damop/2026/c07/8/)
+- [Adiabatic echo protocols for robust quantum many-body state preparation, arXiv:2506.12138](https://arxiv.org/abs/2506.12138)
+
+## C10/9 and G11/10: 近临界 Kibble-Zurek 标度
+
+利用可重构 Rb87 Rydberg 光镊阵列，在 Z2 symmetry-breaking transition 附近同步缩放系统尺寸、zigzag 几何给出的有效 symmetry-breaking field 和 detuning ramp 速度。要观测的是 Rydberg density correlation length、defect density 以及不同 ramp speed 下的数据 collapse。这个实验解决的是真实有限尺寸量子模拟器中临界点被 finite-size 和弱显式对称破缺抹平以后，Kibble-Zurek 标度还能否被可靠抽取的问题；它给 Rb87 阵列提供了在非理想硬件上测量临界指数的实用协议。
+
+参考链接：
+
+- [APS oral C10/9](https://meetings-archive.aps.org/damop/2026/c10/9/)
+- [APS oral G11/10](https://meetings-archive.aps.org/damop/2026/g11/10/)
+- [Observation of near-critical Kibble-Zurek scaling in Rydberg atom arrays, Phys. Rev. Lett. 135, 093403 (2025)](https://link.aps.org/doi/10.1103/2gwz-65w1)
+
+## E03/2: 云端中性原子模拟实验的本地复现价值
+
+利用 QuEra Aquila 类的 Rb Rydberg analog array，做可公开复现实验的 lattice gauge dynamics、prethermal quench 和逻辑魔态蒸馏前的可编程阵列 benchmark。对本地 Rb87 平台最直接的复现实验是把原子排成 kagome/链/二维几何，扫描全局 Rabi 和 detuning，观测 string breaking 的局域 Rydberg density、prethermal plateau 寿命和 quench 后的 correlation dynamics。这个方向解决的是高能/凝聚态动力学难以经典模拟且难以跨平台复核的问题；云端实验给本地 Rb87 平台提供了可对照的 pulse schedule 和 observable。
+
+参考链接：
+
+- [APS oral E03/2](https://meetings-archive.aps.org/damop/2026/e03/2/)
+- [Aquila: QuEra's 256-qubit neutral-atom quantum computer, arXiv:2306.11727](https://arxiv.org/abs/2306.11727)
+- [Observation of string breaking on a (2+1)D Rydberg quantum simulator, arXiv:2410.16558](https://arxiv.org/abs/2410.16558)
+- [Experimental demonstration of logical magic state distillation, arXiv:2412.15165](https://arxiv.org/abs/2412.15165)
+
+## E10/8: 用偶极 Rydberg 相互作用实现 native iSWAP
+
+利用 Rb87 两个强偶极耦合的 Rydberg levels 作为中间态，做全局驱动的 resonant dipole-exchange gate，而不是只使用传统 van der Waals blockade CZ。要观测的是 iSWAP 或 arbitrary-angle exchange 的 process fidelity、Rydberg population leakage、运动温度和 laser phase/intensity noise 下的误差预算。这个实验解决的是中性原子 gate set 过度依赖对角 CZ、导致某些 QEC 和模拟线路深度过大的问题；在 Rb87 中找到合适 Förster pair 后，exchange gate 可以直接缩短需要粒子交换动力学的线路。
+
+参考链接：
+
+- [APS oral E10/8](https://meetings-archive.aps.org/damop/2026/e10/8/)
+- [Expanding the Neutral Atom Gate Set: Native iSWAP and Exchange Gates from Dipolar Rydberg Interactions, arXiv:2512.05037](https://arxiv.org/abs/2512.05037)
+
+## E10/9: 超出 blockade 半径的远距门
+
+利用 Rb87 Rydberg pair 的 resonant spin-exchange interaction，或在两个远距 data atoms 之间插入 ancillary atom chain，做相距超过 20 um 的两比特门。要观测的是远距 Bell-state fidelity、gate time 与距离的缩放、ancilla-mediated path 上的 leakage 和串扰。这个实验解决的是 Rydberg blockade 半径限制高连通度的问题；如果在 Rb87 阵列中成立，它可以在不频繁搬运原子的情况下实现跨 plaquette 或跨 logical block 的快速 entanglement。
+
+参考链接：
+
+- [APS oral E10/9](https://meetings-archive.aps.org/damop/2026/e10/9/)
+- [Fast Quantum Gates for Neutral Atoms Separated by a Few Tens of Micrometers, arXiv:2511.20437](https://arxiv.org/abs/2511.20437)
+
+## F06/3: 开放 Rydberg 阵列中的局域信息恢复
+
+利用 Rb87 Rydberg 光镊链或二维阵列，先在单点写入局域扰动，再让系统在 Rydberg-mediated Ising/XY 哈密顿量和可控噪声下演化。要观测的是局域 memory retrieval、扰动 light cone、scrambling proxy 和 relaxation curve 随有效环境耦合强度的变化。这个实验解决的是开放多体系统中“局部量子信息是否真的丢失、何时还能被局域测量恢复”的问题；它能把 Rb87 阵列作为可调开放系统而不只是封闭哈密顿量模拟器。
+
+参考链接：
+
+- [APS oral F06/3](https://meetings-archive.aps.org/damop/2026/f06/3/)
+- [Quantum simulation and computing with Rydberg-interacting qubits, AVS Quantum Science 3, 023501 (2021)](https://pubs.aip.org/avs/aqs/article/3/2/023501/997323/Quantum-simulation-and-computing-with-Rydberg)
+
+## F06/5: Rb87 Rydberg 合成维度中的冻结态
+
+利用一台 Rb87 光镊阵列，把多个 Rydberg levels 用 microwave 耦合成 synthetic dimension，并让不同原子之间的 resonant dipole-dipole exchange 提供相互作用。具体实验是把每个原子初始化到 synthetic lattice 中央能级，调节 microwave tunneling 和 dipolar interaction，观测 Rydberg level population 分布、few-body dimer/trimer bound state 和 many-body membrane freezing。它解决的是合成维度长期偏单粒子/弱相互作用的问题；Rb87 平台可直接研究强相互作用下的冻结、热化和混沌 crossover。
+
+参考链接：
+
+- [APS oral F06/5](https://meetings-archive.aps.org/damop/2026/f06/5/)
+- [Strongly interacting Rydberg atoms in synthetic dimensions with a magnetic flux, Nature Communications 15, 2671 (2024)](https://www.nature.com/articles/s41467-024-46823-6)
+- [arXiv:2306.00883](https://arxiv.org/abs/2306.00883)
+
+## F06/6: 相互作用诱导的合成维度冻结
+
+利用 Rb87 Rydberg 光镊阵列，把 Rydberg levels 当成 synthetic sites，做从弱相互作用 quantum walk 到强相互作用 string/membrane freezing 的动力学扫描。要观测的是 synthetic dimension 上的 population width、冻结时间、string/membrane formation threshold 和中间相互作用区的热化迹象。这个实验为 F06/5 提供理论和 ongoing experimental protocol：它解决的是强相互作用合成维度中“局域化/冻结结构怎样从 few-body 扩展到 many-body”的问题。
+
+参考链接：
+
+- [APS oral F06/6](https://meetings-archive.aps.org/damop/2026/f06/6/)
+- [Strongly interacting Rydberg atoms in synthetic dimensions with a magnetic flux, arXiv:2306.00883](https://arxiv.org/abs/2306.00883)
+
+## F06/8: 低温 87Rb Rydberg 阵列
+
+利用 4 K cryopumping surface、低于 50 K cold box、室温高 NA 物镜和集成电极，把 87Rb 光镊阵列放进低黑体辐射环境中。具体实验是测量 3000 s trap lifetime、10^-4 量级 imaging/cooling loss、二维阵列的两光子 Rydberg Rabi oscillation，以及 Rydberg-dressed array 中 avalanche loss 是否被抑制。这个工程解决的是大规模 Rb87 阵列 defect-free rearrangement、Rydberg gate T1 和 dressing loss 共同受限的问题，是建设高保真 Rb87 Rydberg 量子模拟器的直接硬件路线。
+
+参考链接：
+
+- [APS oral F06/8](https://meetings-archive.aps.org/damop/2026/f06/8/)
+- [High optical access cryogenic system for Rydberg atom arrays with a 3000-second trap lifetime, PRX Quantum 6, 020337 (2025)](https://link.aps.org/doi/10.1103/PRXQuantum.6.020337)
+- [arXiv:2412.09780](https://arxiv.org/abs/2412.09780)
+
+## [F06/9: Rb-Cs Rydberg 阵列上的 quantum cellular automata]{style="color: red;"}
+
+利用一维 interleaved Rb/Cs 光镊阵列，通过物种选择性全局脉冲和 Rydberg blockade 实现 quantum cellular automata。可在 Rb87 平台上先做单物种 Floquet-PXP automaton，再扩展到 Rb-Cs：观测 domain-wall quasiparticle dynamics、GHZ 态制备保真度、Bell/cluster-state stabilizer 和 Pauli string glider。这个实验解决的是大阵列逐点控制难以扩展的问题；QCA 用全局控制替代大量局域门，适合作为 Rb87 阵列上近期数字量子模拟和纠缠生成方案。
+
+参考链接：
+
+- [APS oral F06/9](https://meetings-archive.aps.org/damop/2026/f06/9/)
+- [Quantum Cellular Automata on a Dual-Species Rydberg Processor, arXiv:2601.16257](https://arxiv.org/html/2601.16257v1)
+
+## F07/9: 54 个 Rydberg 原子的 time-reversal 计量
+
+利用 Rb87 Rydberg 阵列中的 dipolar XY model 先产生 nonlinear collective spin evolution，再加入弱 perturbation，最后反转相互作用哈密顿量来放大信号。要观测的是不同 forward/backward 时间和 measurement axis 下的 spin squeezing parameter、phase sensitivity 和相对 standard quantum limit 的增益。这个实验解决的是 Rydberg 阵列中纠缠态虽容易生成但读出噪声会吞掉计量增益的问题；time reversal 把微小相位转化为更大的集体可测信号。
+
+参考链接：
+
+- [APS oral F07/9](https://meetings-archive.aps.org/damop/2026/f07/9/)
+- [Entanglement-enhanced quantum metrology with neutral atom arrays](https://pmc.ncbi.nlm.nih.gov/articles/PMC12236344/)
+- [Time-reversal-based quantum metrology with many-body entangled states, Nature Physics 18, 287-291 (2022)](https://eapg.mit.edu/wp-content/uploads/2022/10/Time-Reversal-Q-Metrology-Nature-Physics.pdf)
+
+## G04/3: 原位 Rydberg 门加 mid-circuit 重排
+
+利用 Rb87/Cs 类中性原子 QPU 中的 site-resolved Rydberg entangling gates 和 mid-circuit qubit rearrangement，做逻辑态制备、syndrome/flag readout 和 logical circuit benchmark。对 Rb87 光镊平台而言，关键实验是比较“全部搬运到 entangling zone”与“原位近邻 Rydberg 门 + 少量重排”的 logical error、latency 和 atom-loss budget。这个工程解决的是 fault-tolerant neutral atom 架构中过多搬运导致的运行时间和运动误差问题。
+
+参考链接：
+
+- [APS oral G04/3](https://meetings-archive.aps.org/damop/2026/g04/3/)
+- [Demonstration of a logical architecture uniting motion and in-place entanglement, arXiv:2509.13247](https://arxiv.org/abs/2509.13247)
+
+## G04/4: Rb-Cs 双物种计算测试床
+
+利用 Rb 和 Cs 两套独立光学/微波频率，在 5.5 um 间距的二维光镊 checkerboard 中做双物种 Rydberg blockade gate。要观测的是 Rb-Cs Förster/Rydberg blockade 计算与光谱、interspecies CZ gate fidelity、global mid-circuit measurement 的 crosstalk，以及一个 dual-species plaquette 的 syndrome readout。这个实验解决的是 Rb87 单物种平台中 data/ancilla 读出串扰和隐藏操作复杂的问题；如果允许加入 Cs，Rb87 平台可获得天然频率隔离的 ancilla layer。
+
+参考链接：
+
+- [APS oral G04/4](https://meetings-archive.aps.org/damop/2026/g04/4/)
+- [Qubit syndrome measurements with a high-fidelity Rb-Cs Rydberg gate](https://inspirehep.net/literature/3129608)
+
+## G04/7: 低温 Rb/Cs 双物种阵列
+
+利用 7 K cryogenic optical tweezer platform，同时装载单个 Rb 和 Cs 原子，并通过主动 cryopumping 提高寿命。近期实验动作是完成 D-state Rydberg excitation，测量 Rb-Rb、Cs-Cs 和 Rb-Cs Förster resonance，然后把这些 resonance 用于高保真多比特门和双物种 QEC code。这个工程解决的是双物种架构中 mid-circuit readout 低串扰和 Rydberg interaction 可调性同时实现的问题；对 Rb87 平台来说，它是“低温寿命 + 物种隔离 ancilla”的组合路线。
+
+参考链接：
+
+- [APS oral G04/7](https://meetings-archive.aps.org/damop/2026/g04/7/)
+- [P. M. Ireland, D. M. Walker, and J. D. Pritchard, Phys. Rev. Research 6, 013293 (2024)](https://link.aps.org/doi/10.1103/PhysRevResearch.6.013293)
+
+## [G09/5: Rb Rydberg magic trap]{style="color: red;"}
+
+利用接近 Rb 40S-6P transition 的 trapping-field detuning，构造 ground state 和 Rydberg state 看到相同势阱的光镊阵列。实验上比较光镊中所需 magic detuning 与光晶格测量值，观测 Rydberg state polarizability 在空间变化偏振场中的修正、ground-Rydberg Ramsey coherence 和 trap-on gate 操作次数。这个工程解决的是 Rb87 Rydberg 门通常需要关掉光镊、导致原子 ballistic expansion 和运动退相干的问题；state-insensitive tweezer 会让 trap-on Rydberg gates 成为可能。
+
+参考链接：
+
+- [APS oral G09/5](https://meetings-archive.aps.org/damop/2026/g09/5/)
+- [Magic-wavelength trapping of alkali-metal Rydberg atoms: The role of landscape polarization modulation](https://meetings-archive.aps.org/damop/2026/g09/5/)
+- [Trapping alkaline earth Rydberg atoms in optical tweezer arrays, Phys. Rev. Lett. 128, 033201 (2022)](https://link.aps.org/doi/10.1103/PhysRevLett.128.033201)
+
+## [N11/6: microwave-dressed 87Rb 长程量子磁体]{style="color: red;"}
+
+利用 87Rb Rydberg 光镊阵列中的多能级 Rydberg manifold 和强 microwave driving，工程化 tunable dressed states，从而实现 XY、XXZ、Ising 以及多态 Potts/t-J-like 模型。要观测的是 equilibrium response、quench 后的 spin correlation、domain dynamics 和不同 microwave dressing 参数下的有效耦合张量。这个实验解决的是 Rydberg 阵列常见 PXP/Ising 模型谱系较窄的问题；microwave dressing 让同一台 Rb87 设备可以探索更丰富的长程量子磁体。
+
+参考链接：
+
+- [APS oral N11/6](https://meetings-archive.aps.org/damop/2026/n11/6/)
+- [Trapping potentials and quantum gates for microwave-dressed Rydberg atoms](https://link.aps.org/doi/10.1103/d8w4-wbrj)
+- [Strongly interacting Rydberg atoms in synthetic dimensions with a magnetic flux, arXiv:2306.00883](https://arxiv.org/abs/2306.00883)
+
+## P03/6: 腔内 Rb 阵列与中途读出
+
+利用 Rb 光镊阵列和高 finesse macroscopic optical cavity，先做腔内电场补偿以允许 coherent Rydberg excitation，再用 cavity fluorescence 做 hyperfine qubit 的 fast sequential mid-circuit measurement。要观测的是 Rydberg Rabi coherence、cavity readout fidelity、单点测量对旁观 qubit Ramsey contrast 的影响，以及 feed-forward correction 后的残余退相干。这个工程解决的是 Rb87 阵列 QEC 所需的快速、非破坏、低串扰读出问题，并把 Rydberg gate 与 cavity readout 放在同一平台内。
+
+参考链接：
+
+- [APS oral P03/6](https://meetings-archive.aps.org/damop/2026/p03/6/)
+- [Mid-circuit cavity measurement in a neutral atom array, Phys. Rev. Lett. 129, 203602 (2022)](https://link.aps.org/doi/10.1103/PhysRevLett.129.203602)
+- [arXiv:2205.14138](https://arxiv.org/abs/2205.14138)
+
+## P04/2: 三比特 Rydberg 门降低 QEC 深度
+
+利用 Rb87 Rydberg blockade 的多体可控相位，直接实现 singly controlled two-target CZ2 gate，用两个 CZ2 代替 surface-code stabilizer readout 中的四个 CZ。要观测的是 stabilizer measurement fidelity、correlated error rate、Rydberg decay 导致的 logical error scaling 和 circuit depth reduction。这个实验解决的是中性原子 QEC 中 syndrome extraction 线路深、时间长的问题；如果 CZ2 pulse 能在 Rb87 上稳定运行，surface code 和 LDPC code 的 readout overhead 都会下降。
+
+参考链接：
+
+- [APS oral P04/2](https://meetings-archive.aps.org/damop/2026/p04/2/)
+- [Low-depth quantum error correction via three-qubit gates in Rydberg atom arrays, arXiv:2507.06096](https://arxiv.org/abs/2507.06096)
+- [Phys. Rev. Lett. 135, 240602 (2025)](https://link.aps.org/doi/10.1103/yj1m-wj7f)
+
+## [P04/3: Rydberg gadget embedding 的纠错]{style="color: red;"}
+
+利用 Rb87 Rydberg 阵列的 blockade constraint 把 auxiliary atoms 组织成 superatoms，做 maximum weighted independent set 的 gadget embedding 后再做 cluster-based decoding。要观测的是每个 superatom 的 excitation count syndrome、局部 error cluster 尺寸分布和成功解码阈值。这个方案解决的是 Rydberg AQC/optimization 中为了嵌入非 unit-disk graph 需要 O(N^2) 辅助原子而导致错误累积的问题；它把硬件嵌入和纠错解码联动起来，适合近期小到中等规模 Rb87 优化实验。
+
+参考链接：
+
+- [APS oral P04/3](https://meetings-archive.aps.org/damop/2026/p04/3/)
+- [Quantum optimization with arbitrary connectivity using Rydberg atom arrays, PRX Quantum 4, 010316 (2023)](https://link.aps.org/doi/10.1103/PRXQuantum.4.010316)
+
+## P04/4: Yb-Rb 混合阵列的 stabilizer 测量
+
+利用 Yb data qubits 和 Rb atomic ensemble ancillas 的双类型阵列，通过 Yb-Rb Rydberg pair interaction 做快速 stabilizer measurement。对 Rb87 平台的可实施部分是先表征 Rb 与另一物种/ancilla ensemble 的 Förster resonance，测量 interspecies Rydberg interaction strength，再做 tens-of-microseconds 量级的非破坏 syndrome readout。这个实验解决的是 Rb87 单物种读出会扰动 data atoms 的问题；它是向 fault-tolerant neutral atom 架构扩展的工程路线。
+
+参考链接：
+
+- [APS oral P04/4](https://meetings-archive.aps.org/damop/2026/p04/4/)
+- [Hybrid Atom Arrays for Fast Stabilizer Measurements and Interspecies Rydberg Interaction Engineering, arXiv:2503.16896](https://arxiv.org/abs/2503.16896)
+
+## R07/1: 大阵列 Rydberg 串扰测量
+
+利用大阵列中被动旁观原子的 Ramsey/echo circuit，精密测量远距离 Rydberg interaction 对目标 CZ gate 的 anisotropic crosstalk。虽然 oral 原实验是 171Yb，高磁场下的测量协议可直接迁移到 Rb87：在不同角度、不同距离、不同 Rydberg state 下拟合 interaction strength，再把结果放进两比特门误差模型。这个实验解决的是大规模 Rydberg QPU 中“孤立门 fidelity 高但并行门串扰未知”的问题，是 Rb87 扩展到多并行门前必须完成的表征工程。
+
+参考链接：
+
+- [APS oral R07/1](https://meetings-archive.aps.org/damop/2026/r07/1/)
+- [High-fidelity parallel entangling gates on a neutral-atom quantum computer](https://pmc.ncbi.nlm.nih.gov/articles/PMC10567572/)
+
+## W03/4: 双物种 Rydberg 阵列模拟强关联费米子
+
+利用双物种可重构 Rydberg atom arrays，把 fermionic hopping gate 编译成全局优化的 analog multi-qubit gate，并用 dissipative protocol 准备强关联电子态。对 Rb87 平台而言，近期版本可以先在 Rb-Cs 或两个 internal-species encoding 上实现小尺寸 Fermi-Hubbard quench，观测 hopping correlator、pairing correlator 和 adiabatic preparation fidelity。这个实验解决的是用通用数字线路模拟 fermions 时 Jordan-Wigner/交换门开销过大的问题；native Rydberg interaction 可以直接服务于强关联费米模型。
+
+参考链接：
+
+- [APS oral W03/4](https://meetings-archive.aps.org/damop/2026/w03/4/)
+- [Analog universality for neutral atom arrays, arXiv:2508.19075](https://arxiv.org/abs/2508.19075)
+
+## [W04/2: 全局驱动的中性原子优化]{style="color: red;"}
+
+利用 Rb Rydberg quantum annealer 的全局 Rabi/detuning sweep 和 weakly interacting anchor atoms，把一般 QUBO/Parity architecture 编译到 unit-disk MWIS layout，而不依赖每个原子的局域 detuning。要观测的是 gadget-level success probability、larger-layout approximation ratio、annealing sweep 参数依赖和位置噪声鲁棒性。这个实验解决的是 Rb87 优化平台中局域光移位硬件复杂、全局驱动表达能力不足的问题；它可直接在 Pasqal/Fresnel 类 Rb 阵列或本地 Rb87 光镊上复现。
+
+参考链接：
+
+- [APS oral W04/2](https://meetings-archive.aps.org/damop/2026/w04/2/)
+- [Pasqal cloud services documentation](https://docs.pasqal.com/)
+- [Quantum Approximate Optimization with Neutral Atoms, Quantum 4, 327 (2020)](https://quantum-journal.org/papers/q-2020-09-21-327/)
+
+## [W04/6: hard MIS 的 adjusted detuning]{style="color: red;"}
+
+利用 Rb87/QuEra Aquila 型 Rydberg array 的 adiabatic MIS mapping，在最小能隙附近按照能隙信息重新设计 detuning sweep，抑制 ground-state population leakage。要观测的是 k-PXP chain 中 MIS probability、与普通线性/经验 ramp 的准确率提升、以及硬度参数 HP 和最小能隙 gmin 对成功率的影响。这个实验解决的是 Rydberg AQC 处理高简并 hard instance 时 coherence time 内来不及绝热的问题；ADGLB 是只改 pulse schedule、不改硬件的近期可测优化。
+
+参考链接：
+
+- [APS oral W04/6](https://meetings-archive.aps.org/damop/2026/w04/6/)
+- [Circumventing superexponential runtimes for hard instances of quantum adiabatic optimization, Phys. Rev. Research 6, 013271 (2024)](https://link.aps.org/doi/10.1103/PhysRevResearch.6.013271)
+- [Aquila: QuEra's 256-qubit neutral-atom quantum computer, arXiv:2306.11727](https://arxiv.org/abs/2306.11727)
+
+## [W04/8: quantum wire 图优化编码]{style="color: red;"}
+
+利用 Rb87 Rydberg-blockaded atom chains 作为 quantum wires，把 non-native long-range edge 编码进 quasi-unit-disk graph 上的可实现几何。实验动作是在可编程光镊阵列中用 local light shifts 设置 vertex weights，做 weighted-graph annealing，并读出原始 MWIS/QUBO instance 的解。这个方案解决的是 Rydberg 阵列天然几何图与真实优化问题图结构不匹配的问题；quantum wire 用少量 ancilla 降低嵌入 overhead，适合近期中等规模 Rb87 优化演示。
+
+参考链接：
+
+- [APS oral W04/8](https://meetings-archive.aps.org/damop/2026/w04/8/)
+- [A quantum wire approach to weighted combinatorial graph optimisation problems, arXiv:2503.17115](https://arxiv.org/abs/2503.17115)
+- [Demonstration of weighted-graph optimization on a Rydberg-atom array using local light shifts, PRX Quantum 6, 010301 (2025)](https://link.aps.org/doi/10.1103/PRXQuantum.6.010301)
+
+## W11/3: coherent Rydberg facilitation 中的 spin-phonon 耦合
+
+利用 Rb87 光镊链设置 facilitation/anti-blockade 条件，让一个 Rydberg excitation 把邻居移入共振，同时保留光镊中的 motional phonons。要观测的是 excitation domain spreading、Bloch oscillation of spin-excitation chains、phonon-induced Anderson localization 和 trap frequency/temperature 对 spreading 的影响。这个实验解决的是 Rydberg facilitation 常被当成纯 spin 模型处理，但实际光镊中 Rydberg 力会耦合运动自由度的问题；它能量化 Rb87 阵列中 spin model 失效的边界。
+
+参考链接：
+
+- [APS oral W11/3](https://meetings-archive.aps.org/damop/2026/w11/3/)
+- [Effects of spin-phonon coupling on coherent Rydberg facilitation in a lattice, arXiv:2504.19679](https://arxiv.org/abs/2504.19679)
+
+## [W11/4: 拓扑 Rydberg 链上的 quantum contact process]{style="color: red;"}
+
+利用一维 Rb87 光镊阵列的拓扑 dimerized geometry 和 coherent Rydberg facilitation，实现 QXP quantum contact process。具体实验是用 detuning/Rabi pulse 控制 excitation spreading，在 topological pump 周期中观测 excitation domain 是否按量子化步长移动，并比较 edge-mode protected subspace 与 bulk spreading。这个实验解决的是经典接触过程的量子相干版本怎样受拓扑结构保护和控制的问题；在 Rb87 阵列中它只需要几何、局域初始化和 Rydberg facilitation，近期可实施。
+
+参考链接：
+
+- [APS oral W11/4](https://meetings-archive.aps.org/damop/2026/w11/4/)
+- [Quantum Contact Processes on a Topological Lattice, arXiv:2604.03184](https://arxiv.org/abs/2604.03184)
+
+## [W11/5: 非完美光镊导致的无限随机临界]{style="color: red;"}
+
+利用 Rb87 一维 Rydberg 光镊链，有意加入或标定由有限 waist、位置抖动和 interatomic distance variation 带来的 interaction disorder，重复 crystalline transition 和 floating phase 的 Kibble-Zurek ramp。要观测的是 defect density scaling、domain correlation、incommensurate wave vector 和 disorder strength 下从 clean Ising 到 infinite-randomness fixed point 的 crossover。这个实验解决的是 Rydberg critical phenomena 是否被真实光镊缺陷系统性改写的问题；它把“硬件误差”变成可测的低维临界物理。
+
+参考链接：
+
+- [APS oral W11/5](https://meetings-archive.aps.org/damop/2026/w11/5/)
+- [Ising versus infinite randomness criticality in arrays of Rydberg atoms trapped with non-perfect tweezers, arXiv:2506.11985](https://arxiv.org/abs/2506.11985)
+
+## X06/5: Rydberg blockade 门的速度-鲁棒性折中
+
+利用 Rb87 单光子或两光子 Rydberg excitation，把同一对原子的 entangling operation 从 diabatic fast pulse 连续扫到 adiabatic Rydberg dressing-like ramp。要观测的是 Bell fidelity、atom loss、UV/Rydberg laser intensity noise 和 phase noise 下的鲁棒性，以及 gate time 对误差预算的影响。这个实验解决的是 Rydberg 门设计中“越快越好”与“越慢越稳”之间缺少同一平台定量比较的问题；在 Rb87 上测出 crossover 可直接指导门脉冲选择。
+
+参考链接：
+
+- [APS oral X06/5](https://meetings-archive.aps.org/damop/2026/x06/5/)
+- [High-fidelity and robust controlled-Z gates implemented with Rydberg atoms via echoing rapid adiabatic passage, Phys. Rev. A 110, 032619 (2024)](https://link.aps.org/doi/10.1103/PhysRevA.110.032619)
+
+## X06/6: 高保真中性原子纠缠门
+
+利用更高 Rydberg 激光强度、30 Hz 量级快速校准、spin-selective readout 以及 beam intensity/pointing stabilization，在中性原子阵列中实现 raw 99.84% 和 loss-postselected 99.95% 的 CZ 操作。Rb87 平台可复现实验的核心观测量是 repeated-gate benchmarking、loss-conditioned fidelity、Rydberg beam power perturbation sensitivity 和 calibration drift。这个工程解决的是数字量子模拟和 fault-tolerant architecture 中两比特门仍是主导误差源的问题；它给 Rb87 Rydberg 门误差预算提供了直接目标。
+
+参考链接：
+
+- [APS oral X06/6](https://meetings-archive.aps.org/damop/2026/x06/6/)
+- [High-fidelity entangling gates and nonlocal circuits with neutral atoms, arXiv:2604.25987](https://arxiv.org/html/2604.25987v1)
+- [High-fidelity parallel entangling gates on a neutral-atom quantum computer](https://pmc.ncbi.nlm.nih.gov/articles/PMC10567572/)
+
+## X06/7: ancilla 工具箱与 algorithmic cooling
+
+利用 Rydberg entangling gates 把 data atoms 与 ancilla atoms 连接，在光镊阵列中重复做 atom-loss detection、coherence-preserving loss check 和 motional entropy extraction。虽然 oral 的 motional transduction 使用 Sr 的量子化运动态，Rb87 平台可先实现 ancilla-based loss detection 和基于 sideband/拉曼读出的 algorithmic cooling。要观测的是 loss detection fidelity、data atom Ramsey contrast、温度下降和多轮检测后的累积扰动。这个工程解决的是深线路中 atom loss 和 trap-light heating 累积的问题。
+
+参考链接：
+
+- [APS oral X06/7](https://meetings-archive.aps.org/damop/2026/x06/7/)
+- [Fast, continuous and coherent atom replacement in a neutral atom qubit array, arXiv:2506.15633](https://arxiv.org/abs/2506.15633)
+
+## X06/9: 快速腔读出与 feed-forward
+
+利用高 finesse optical cavity 中的单点选择性发光，在光镊阵列中以约 30 us detection window 和约 20 us switching interval 逐个读取 qubit，并用 FPGA feed-forward 修正旁观 qubit 的 z-rotation。Rb87 平台可以直接以 cavity-coupled Rb array 复现：观测 measurement infidelity、旁观 Ramsey contrast、feed-forward 后 residual decoherence 和连续测量的速度上限。这个工程解决的是中性原子 QEC 中 mid-circuit readout 太慢、必须搬运到 readout zone 的问题。
+
+参考链接：
+
+- [APS oral X06/9](https://meetings-archive.aps.org/damop/2026/x06/9/)
+- [Mid-circuit cavity measurement in a neutral atom array, Phys. Rev. Lett. 129, 203602 (2022)](https://link.aps.org/doi/10.1103/PhysRevLett.129.203602)

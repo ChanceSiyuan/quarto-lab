@@ -216,3 +216,133 @@ $$
 Thus $H$ is positive semidefinite if and only if it admits the stated PSD
 Gram-matrix representation.
 :::
+
+# Moment dual of the Pauli SOHS relaxation
+
+We now derive the moment problem dual to the paper's SOHS relaxation
+(Eqs. (3.3) and (3.6), PDF pp. 5--6). Let $W_d$ be the ordered
+column of normal-form Pauli strings supported on at most $d$ sites, and let
+$[\mathcal P_n]_{2d}:=\operatorname{span} W_{2d}$. Fix $d$ such that
+$H\in[\mathcal P_n]_{2d}^{\mathrm{sa}}$, and define
+
+$$
+\Phi_d(G):=W_d^\star GW_d.
+$$
+
+The degree-$d$ SOHS problem is
+
+$$
+\begin{aligned}
+\lambda_d:=\max_{\lambda\in\mathbb R,\,G}\quad &\lambda\\
+\text{subject to}\quad
+&H-\lambda 1\equiv\Phi_d(G),\\
+&G\succeq0.
+\end{aligned}
+$$
+
+## The dual and its relaxation
+
+:::{#thm-PauliMomentDual .callout-important icon="false"}
+## Moment dual
+
+For a linear functional $\ell:[\mathcal P_n]_{2d}\to\mathbb C$, set
+$[M_d(\ell)]_{v,w}:=\ell(v^\star w)$ for $v,w\in W_d$. The variables
+are the moments $\{\ell(u):u\in W_{2d}\}$.
+The Lagrange dual of the degree-$d$ SOHS problem is
+
+$$
+\begin{aligned}
+\lambda_d^\star:=\min_{\ell}\quad &\ell(H)\\
+\text{subject to}\quad
+&M_d(\ell)\succeq0,\\
+&\ell(f^\star)=\overline{\ell(f)},\\
+&\ell(1)=1.
+\end{aligned}
+$$
+:::
+
+Every density matrix $\rho$ yields a feasible functional
+$\ell_\rho(f):=\operatorname{Tr}(\rho\pi(f))$: its moment matrix is the Gram
+matrix of $\{\pi(v)\sqrt\rho:v\in W_d\}$. A truncated feasible
+functional need not extend to a density matrix, so the feasible set is larger
+than the set of physical states. Therefore,
+
+$$
+\lambda_d^\star
+\leq\min_{\rho\succeq0,\,\operatorname{Tr}\rho=1}
+\operatorname{Tr}(\rho\pi(H))
+=E_{\mathrm{GS}}.
+$$
+
+:::{.callout-note collapse="true"}
+## Proof
+
+First, for $q=\sum_{v\in W_d}c_vv$,
+
+$$
+\ell(q^\star q)=c^*M_d(\ell)c.
+$$
+
+Consequently, $M_d(\ell)\succeq0$ is exactly the requirement
+$\ell(q^\star q)\geq0$ for every polynomial visible at level $d$.
+
+For weak duality, let $(\lambda,G)$ and $\ell$ be feasible for $(P_d)$ and
+$(D_d)$, respectively. Directly from the definitions,
+
+$$
+\ell(\Phi_d(G))
+=\sum_{v,w}G_{v,w}\ell(v^\star w)
+=\operatorname{Tr}\!\left(GM_d(\ell)^{\mathsf T}\right).
+\tag{2}
+$$
+
+Star compatibility makes $M_d(\ell)$ Hermitian. Its transpose is therefore
+PSD exactly when $M_d(\ell)$ is PSD. Applying $\ell$ to the primal equality
+and using $\ell(1)=1$ gives
+
+$$
+\ell(H)-\lambda
+=\operatorname{Tr}\!\left(GM_d(\ell)^{\mathsf T}\right)
+\geq0,
+$$
+
+because the trace pairing of two PSD matrices is nonnegative. Thus
+$\lambda_d\leq\lambda_d^\star$.
+
+It remains to show that these constraints arise from the Lagrangian. Use
+$\ell$ as the multiplier for the equality in $(P_d)$:
+
+$$
+\begin{aligned}
+\mathcal L(\lambda,G;\ell)
+&:=\lambda+\ell\!\left(H-\lambda1-\Phi_d(G)\right)\\
+&=\ell(H)+\lambda\bigl(1-\ell(1)\bigr)
+-\operatorname{Tr}\!\left(GM_d(\ell)^{\mathsf T}\right).
+\end{aligned}
+$$
+
+The supremum over the free scalar $\lambda$ is finite only if
+$\ell(1)=1$. The supremum over $G\succeq0$ is finite only if
+$M_d(\ell)^{\mathsf T}\succeq0$; otherwise a negative eigenvector $z$ and
+$G=tzz^*$ make the Lagrangian diverge as $t\to\infty$. Under these two
+conditions the supremum equals $\ell(H)$, which yields $(D_d)$.
+
+Finally, the equality in $(P_d)$ lives in the Pauli quotient algebra, so its
+multiplier annihilates the Pauli ideal. In coordinates, this identifies entries
+that reduce to the same canonical Pauli string, including their phases. Since
+canonical Pauli strings are Hermitian, star compatibility makes their moments
+real.
+:::
+
+The normalized trace
+$\ell_{\mathrm{mix}}(f)=2^{-n}\operatorname{Tr}(\pi(f))$ gives
+$M_d(\ell_{\mathrm{mix}})=I\succ0$. Slater's condition therefore removes the
+duality gap, so
+
+$$
+\lambda_d=\lambda_d^\star\leq E_{\mathrm{GS}}.
+$$
+
+At an attained optimum, equation (2) also gives complementary slackness:
+$\operatorname{Tr}(G_{\mathrm{opt}}
+M_d(\ell_{\mathrm{opt}})^{\mathsf T})=0$.

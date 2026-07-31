@@ -1,0 +1,53 @@
+---
+title: 'Ebadi 2021: 256-Atom 2D Programmable Simulator'
+description: '256-atom 2D programmable quantum simulator for TFIM'
+categories: [experiment]
+---
+
+# Summary and Questions
+
+# Experiment protocol
+
+A 2D Rydberg array is driven across the (2+1)D Ising quantum phase transition to study collective dynamics of the ordered phase. The phase diagram of the square lattice is a square with the following regions:
+
+![The phase diagram of the square lattice](/knowledge/Condensed_matter/TFIM/square-lattice_diag.png)
+
+The experiment implement the time-depending Hamiltonian:
+$$
+H/\hbar = \Omega(t)/2 \sum_i \sigma_i^x - \sum_i n_i \Delta(t)  + \sum_{i<j} V_{ij} n_i n_j
+$$
+
+We can strictly define the local AF1 and AF2 phases: assume the lattice coordinates are $(x, y)$, and the atom state $n_{x,y} \in \{0, 1\}$ ($0$ represents the ground state $|g\rangle$, $1$ represents the excited state $|r\rangle$). 
+
+- Perfect local AF1 phase: in the neighborhood of a site, the condition $n_{x,y} = 1$ is satisfied if and only if $x+y$ is even (i.e., all even sublattices are in $|r\rangle$, all odd sublattices are in $|g\rangle$). 
+- Perfect local AF2 phase: in the neighborhood of a site, the condition $n_{x,y} = 1$ is satisfied if and only if $x+y$ is odd (i.e., all odd sublattices are in $|r\rangle$, all even sublattices are in $|g\rangle$).
+
+![A global view of AF1 and AF2 phases](AF_phase.png)
+
+:::{#lem-local-phase-order1 .callout-important icon="false"}
+### (Local phase order post-processing)
+The local phase order is calculated by the following formula:
+$$
+m_i = \frac{(-1)^{a+b}}{N_i} \sum_{\langle j, i \rangle} (n_i - n_j),
+$$
+where $i$ is a site index with $(x_i,y_i)$ coordinates, $N_i = 4$ is the number of nearest neighbors of site $i$, and $n_i$ is the Rydberg occupation number at site $i$.  Point $i$ is in AF1(AF2) phase iff $m_i = 1$ ($m_i = -1$).
+:::
+
+:::{.callout-note collapse="true"}
+## Proof
+[todo: add a proof here]
+:::
+
+:::{.callout-note collapse="false"}
+## An adiabatic preparation of AF1/AF2 phase
+
+- Set up $R_b/a = 1.15$ ($a = 6.7~\mu\text{m}$ and  $\Omega = 2\pi \times 4.3~\text{MHz}$)
+- Ramping on $\Omega$ while keeping $\Delta$ as a large negative fixed value. 
+- While keeping $\Omega$ constant, ramping on $\Delta$ from a large negative value to a large positive value. 
+  - The $\Delta(t)$ was obtained by optimizing the parameters $at^3 + bt^2 + ct + d$ to connecting 5 fixed points: initial detuning, final detuning, an inflection point where the slope reaches a minimum, and two additional points that define the duration of the slow part of the sweep.
+- Ramping on $\Omega$ from a large value to a small value. Then measure the local phase order $m_i$ at each site $i$.
+:::
+
+![An adiabatic preparation of AF1/AF2 phase](Adiab.png)
+
+Besides adiabtic preparision, they also tried the fast ramping protocol and analysis the KZM effect. A brief theoretical review of the KZM is given in [the trusted Knowledge note](/knowledge/Dynamics/KZM.html).

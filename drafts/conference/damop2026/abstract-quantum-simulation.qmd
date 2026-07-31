@@ -1,0 +1,592 @@
+---
+title: 'DAMOP 2026: Lattice gauge theory、Quantum simulation、Floquet 与 Adiabatic evolution oral 推荐'
+description: 'DAMOP 2026 中与 lattice gauge theory、quantum simulation、Floquet engineering 和 adiabatic evolution 相关的 oral 摘要筛选'
+categories: [experiment]
+---
+
+# Summary and questions
+
+审阅口径：我仍以 APS DAMOP 2026 会议归档中页面自身标记为 `ORAL` 的 759 个 oral presentation 为全集逐条筛选。这次的入选标准不再限制为 Rb87 tweezer array，而是看 abstract 是否能帮助判断最近大家在 lattice gauge theory、quantum simulation、Floquet engineering 和 adiabatic evolution 这些方向上关心什么。入选 block 覆盖 79 个 oral page；相关但未写入的页面另列在 [quantum_simulation_review.tsv](quantum_simulation_review.tsv) 和 [quantum_simulation_review_summary.txt](quantum_simulation_review_summary.txt) 中。正文保留的 block 不是“所有相关标题”的堆叠，而是优先选择能代表新问题、新平台能力或清楚实验路线的报告。
+
+我对这几个方向近期关注点的判断如下。
+
+1. Lattice gauge theory 正从 1D toy model 走向更大维度、更真实的动力学。优先读 [B03/4](#b034-大规模-21d-u1-lattice-gauge-theory)、[E03/2](#e032-云端-neutral-atom-平台上的-string-breaking-和-prethermal-dynamics) 和 [G08/2](#g082-超导线路中的-z2-string-dynamics-和-u1-electrodynamics)：它们分别代表冷原子光晶格、Rydberg analog array 和 superconducting circuits 三条路线。若只想抓住 LGT 物理问题，先读 [G08/1](#g081-z2-lgt-中的-repulsively-bound-hadrons)：它把 confinement、meson、hadron bound state 说得最直接。
+
+2. Synthetic gauge fields 和 topological quantum matter 的重点在“可测拓扑响应”，不只是造 band structure。优先读 [G12/3](#g123-光晶格中的-bosonic-pfaffian-quantum-hall-state)、[G12/4](#g124-合成二维系统中的-parity-anomaly) 和 [G12/1](#g121-光学-kagome-lattice-中的-non-abelian-topological-charge)：这三项分别对应 FQH/Pfaffian、half-quantized Hall response 和 non-Abelian band-node charge。它们共同说明冷原子拓扑模拟正在从“看能带”转向“读拓扑响应和关联函数”。
+
+3. Rydberg/atom-array quantum simulation 的主线是超越普通 PXP/Ising。优先读 [B10/9](#b109-rydberg-chain-直接读出-cft-谱)、[F06/5 and F06/6](#f065-and-f066-rydberg-synthetic-dimension-中的冻结膜和混沌) 和 [N11/6](#n116-microwave-dressed-rydberg-array-中的长程量子磁体)：它们分别展示谱学读 CFT、synthetic dimension 中强相互作用冻结，以及 microwave dressing 生成 XY/XXZ/Ising/Potts/t-J-like 模型。若关心非理想硬件如何改写物理，读 [W11/5](#w115-非完美-tweezer-导致的-infinite-randomness-criticality)。
+
+4. Floquet engineering 的新焦点是受控地制造非平衡相，而不是单纯“周期驱动一下”。优先读 [C11/3](#c113-driven-quantum-matter-中的定位控制和反馈)、[R11/2](#r112-shaken-lattice-中的空间非均匀隧穿) 和 [W11/2](#w112-floquet-engineered-mgf-分子的-spin-1-量子磁体)：它们分别代表 driven quantum matter 总览、光晶格中 spatially inhomogeneous tunneling，以及分子平台中的 Floquet spin model。若想看 time crystal 和 driven-dissipative 方向，读 [C10/10](#c1010-dissipative-time-crystal-的集体激发) 和 [F07/10](#f0710-rf-driven-rydberg-dissipative-time-crystal)。
+
+5. Adiabatic evolution 现在更多服务于“可靠制备”和“优化编译”。优先读 [C07/8](#c078-adiabatic-echo-让多体态制备抗静态误差)、[C10/9 and G11/10](#c109-and-g1110-near-critical-kibble-zurek-scaling) 和 [W04/8](#w048-quantum-wire-编码加权图优化)：前两项关心如何在临界和缺陷中仍抽出可用物理，后一项关心如何把真实图问题编进 Rydberg annealer。若做 Rydberg optimization，顺手读 [W04/6](#w046-adjusted-detuning-抑制-mis-adiabatic-leakage)。
+
+6. Hubbard、dipolar molecule 和 strongly correlated matter 的关键词是低熵、可观测谱函数和更复杂内部自由度。优先读 [E11/1](#e111-从-fqh-pfaffian-到-hubbard-pseudogap-的量子模拟总览)、[X11/1](#x111-高重复率-fermi-hubbard-quantum-gas-microscope) 和 [X11/7](#x117-bilayer-fermi-hubbard-中的有效吸引相互作用)：它们分别给出总览、实验通量和与 nickelate/superconductivity 相关的 bilayer route。分子方向优先读 [X09/4](#x094-polar-molecule-阵列中的动态几何退相干抑制)。
+
+通用背景：
+- [DAMOP 2026 archive](https://meetings-archive.aps.org/damop/2026/)
+- [Many-body physics with ultracold gases, Rev. Mod. Phys. 80, 885 (2008)](https://link.aps.org/doi/10.1103/RevModPhys.80.885)
+- [Quantum simulations with ultracold quantum gases, Nature Physics 8, 267-276 (2012)](https://doi.org/10.1038/nphys2259)
+- [Quantum simulation and computing with Rydberg-interacting qubits, AVS Quantum Science 3, 023501 (2021)](https://pubs.aip.org/avs/aqs/article/3/2/023501/997323/Quantum-simulation-and-computing-with-Rydberg)
+- [Tailoring quantum gases by Floquet engineering, Nature Physics 17, 1342-1348 (2021)](https://arxiv.org/abs/2102.07009)
+- [Quantum Kibble-Zurek mechanism and critical dynamics on a programmable Rydberg simulator, Nature 568, 207-211 (2019)](https://arxiv.org/abs/1809.05540)
+
+# 核心摘要
+
+## B03/4: 大规模 (2+1)D U(1) lattice gauge theory
+
+这个报告关注用 optical-lattice neutral atoms 做二维 U(1) lattice gauge theory，并把系统推到几百到上千原子的尺度。核心实验不是只证明 Gauss law，而是研究 out-of-equilibrium gauge dynamics，并加入数字控制元件来改善 state preparation 和 readout。它重要在于 cold-atom LGT 正从一维 Abelian 演示走向二维、强关联、可读出动力学的阶段；如果你关心 LGT，应该优先读它。
+
+参考链接：
+- [APS oral B03/4](https://meetings-archive.aps.org/damop/2026/b03/4/)
+
+## B10/1: subensemble control 的 robust Hamiltonian engineering
+
+这个工作提出用全局脉冲同时控制多个 sub-ensemble，把原生 spin Hamiltonian 改造成目标的 intra-species 和 inter-species 相互作用。它强调这个合成问题在一般情形下计算困难，但仍可找到可行条件和鲁棒数值设计。重要性在于它面向 NV、多物种原子 ensemble、cavity 和 tweezer 平台，试图用较少控制资源实现更复杂的 quantum simulation Hamiltonian。
+
+参考链接：
+- [APS oral B10/1](https://meetings-archive.aps.org/damop/2026/b10/1/)
+
+## B10/3: 用结构化耗散稳定多体关联态
+
+这个理论方案用两类可控辅助原子产生非互易、能量选择性的耗散通道，把偶极多体系统推向指定 many-body state。它不是传统冷却到基态，而是在 Hilbert space 中做有方向性的随机游走，目标态可以在谱的不同位置。它对应的科学问题是：量子模拟器能否把耗散从噪声变成制备强关联态的工具。
+
+参考链接：
+- [APS oral B10/3](https://meetings-archive.aps.org/damop/2026/b10/3/)
+
+## B10/4: 用 time reversal 测 quantum spin liquid 相干性
+
+这个方案用 multiple quantum coherences 和 time-reversal protocol 来读出 quantum spin liquid 中 loop configuration 之间的相干性。它把 MQC 看成一种 OTOC-like observable，并在 extended toric code 的 snapshot 上测试可行性。重要性在于 spin liquid 没有普通局域序参量，报告给出了一种适合 Rydberg array 和 trapped ion 的实验判据。
+
+参考链接：
+- [APS oral B10/4](https://meetings-archive.aps.org/damop/2026/b10/4/)
+- [Engineering and probing non-Abelian chiral spin liquids using Rydberg atoms, PRX Quantum 4, 020329 (2023)](https://link.aps.org/doi/10.1103/PRXQuantum.4.020329)
+
+## B10/9: Rydberg chain 直接读出 CFT 谱
+
+这个实验用 Rydberg chain 的 modulation spectroscopy 直接分辨有限尺寸激发谱，提取 Ising 和 tricritical Ising CFT 的 universal energy ratio。局域控制还被用来分辨反射宇称和切换边界条件。它重要在于 quantum simulator 不只是看 order parameter，而是开始直接测 emergent field theory 的谱数据，是判断未知 universality class 的有力工具。
+
+参考链接：
+- [APS oral B10/9](https://meetings-archive.aps.org/damop/2026/b10/9/)
+- [Experimental observation of conformal field theory spectra, arXiv:2601.16275](https://arxiv.org/abs/2601.16275)
+
+## B11/2: disorder-assisted adiabaticity
+
+这个报告研究相互作用从零 ramp 到最大值再 ramp 回零时，disorder 怎样影响多体系统的绝热性。结论是更长 pulse 和更强 disorder 都会系统性压低能量变化，三角 pulse 在比较条件下最接近绝热。它提示 adiabatic evolution 的限制不只来自 gap，也可能被 disorder 和 pulse shape 重新塑形，适合关注真实非均匀平台上的 ramp protocol。
+
+参考链接：
+- [APS oral B11/2](https://meetings-archive.aps.org/damop/2026/b11/2/)
+
+## B11/4 and B11/9: shaken BEC 中的 strong-field stabilization
+
+这一组报告把被强激光场驱动的电子问题映射到 shaken optical dipole trap 中的 Sr BEC。实验看到随 shaking amplitude 增大，原子损失先增强、后饱和并下降，同时波包分裂成两个 lobe；理论用 time-dependent Gross-Pitaevskii simulation 解释 cycle-averaged trap 和 double-well bifurcation。它重要在于 Floquet/strong-drive quantum simulation 可以访问真实激光强场难以达到的 regime。
+
+参考链接：
+- [APS oral B11/4](https://meetings-archive.aps.org/damop/2026/b11/4/)
+- [APS oral B11/9](https://meetings-archive.aps.org/damop/2026/b11/9/)
+
+## C07/8: adiabatic echo 让多体态制备抗静态误差
+
+这个方案在 ordinary adiabatic preparation 后加入 echo-like 段，通过动态构造 destructive interference 来抵消静态 detuning、位置误差或光强不均匀。它覆盖 Ising chain 的 GHZ state、二维 Rydberg array 和 frustrated Rydberg lattice spin-liquid state。重要性在于很多 analog simulator 的瓶颈不是“哈密顿量不会写”，而是 ramp 过程中静态误差积累；adiabatic echo 是一个近期可试的修补方法。
+
+参考链接：
+- [APS oral C07/8](https://meetings-archive.aps.org/damop/2026/c07/8/)
+- [Adiabatic echo protocols for robust quantum many-body state preparation, arXiv:2506.12138](https://arxiv.org/abs/2506.12138)
+
+## C10/8: modulated cavity 中的 vacuum amplification
+
+这个报告用 matter-wave Fabry-Perot cavity 模拟高速调制光学腔的物理，包括 semiclassical Floquet map、horizon-like worldline、dynamical Casimir effect 和 Unruh-like radiation。实验优势是不用真正相对论速度移动镜面，而用可编程 matter-wave cavity 进入 ultrastrong driving regime。它适合关注 quantum simulation 如何模拟 curved-spacetime 和 driven vacuum physics 的读者。
+
+参考链接：
+- [APS oral C10/8](https://meetings-archive.aps.org/damop/2026/c10/8/)
+
+## C10/9 and G11/10: near-critical Kibble-Zurek scaling
+
+这两个报告围绕 Rydberg atom array 中 Z2 symmetry-breaking transition 的 finite-size dynamical scaling。实验通过 zigzag 几何调有效 symmetry-breaking field，并同步缩放系统尺寸、ramp speed 和 field，证明即使临界点被 finite-size 和显式对称破缺抹成 crossover，Kibble-Zurek scaling 仍能保留。重要性在于它给真实有限量子模拟器提供了抽取临界动力学的实用 protocol。
+
+参考链接：
+- [APS oral C10/9](https://meetings-archive.aps.org/damop/2026/c10/9/)
+- [APS oral G11/10](https://meetings-archive.aps.org/damop/2026/g11/10/)
+- [Observation of near-critical Kibble-Zurek scaling in Rydberg atom arrays, Phys. Rev. Lett. 135, 093403 (2025)](https://link.aps.org/doi/10.1103/PhysRevLett.135.093403)
+
+## C10/10: dissipative time crystal 的集体激发
+
+这个理论报告用 Floquet theory 研究 dissipative time crystal 穿越相变时的 excitation spectrum。连续转变对应 complex gap closing，不连续转变对应两个 excitation branch 共存；冷原子强耦合 cavity 模型提供可测方案。它的重要性在于 time crystal 讨论正在从“是否有周期倍化”转向“非平衡相变的谱和普适性怎么测”。
+
+参考链接：
+- [APS oral C10/10](https://meetings-archive.aps.org/damop/2026/c10/10/)
+
+## C11/2: shaken lithium gas 中的 BEC-BCS crossover 非平衡相
+
+这个实验从 tightly bound molecular BEC 出发，在周期驱动光晶格中制造 double-well momentum dispersion，让 condensate 从零动量局域极大点分裂到两个动量极小点。随后再 ramp magnetic field 接近 Feshbach resonance，尝试进入与 FFLO 类似的配对动量结构。重要性在于 Floquet dispersion engineering 正被用来探索 BEC-BCS crossover 中静态制备很难到达的非平衡相。
+
+参考链接：
+- [APS oral C11/2](https://meetings-archive.aps.org/damop/2026/c11/2/)
+- [Instability and momentum bifurcation of a molecular Bose-Einstein condensate in a shaken lattice with exotic dispersion, Phys. Rev. A 108, L051302 (2023)](https://link.aps.org/doi/10.1103/PhysRevA.108.L051302)
+
+## C11/3: driven quantum matter 中的定位、控制和反馈
+
+这个报告是 Weld 组 driven quantum matter 的近期总览，覆盖 modulated quasicrystal 中的 light-induced critical phases、ultra-strong driving stabilization，以及把 weak measurement 和 feedback 接进 unitary dynamics 的 interactive quantum matter。它重要在于 Floquet engineering 不再只是做 effective band，而是在和 localization、feedback、measurement-induced dynamics 合流。若想快速知道 Floquet gas 方向的“问题清单”，这篇应优先读。
+
+参考链接：
+- [APS oral C11/3](https://meetings-archive.aps.org/damop/2026/c11/3/)
+- [Exploring light-induced phases of 2D materials in a modulated 1D quasicrystal, arXiv:2506.11984](https://arxiv.org/abs/2506.11984)
+- [Continuously trapped matter-wave interferometry in magic Floquet-Bloch band structures, arXiv:2506.11881](https://arxiv.org/abs/2506.11881)
+
+## E03/2: 云端 neutral-atom 平台上的 string breaking 和 prethermal dynamics
+
+这个报告总结 QuEra Aquila 上的 cloud-accessible analog neutral-atom quantum simulation。重点包括 Kagome/Rydberg 体系中的 (2+1)D string breaking、1D/2D quench 后的 emergent prethermal dynamics 和 dynamical phase transition。它重要在于 neutral-atom simulator 已经变成可复现、可共享的高能和凝聚态动力学实验仪器。
+
+参考链接：
+- [APS oral E03/2](https://meetings-archive.aps.org/damop/2026/e03/2/)
+- [Aquila: QuEra's 256-qubit neutral-atom quantum computer, arXiv:2306.11727](https://arxiv.org/abs/2306.11727)
+- [Observation of string breaking on a (2+1)D Rydberg quantum simulator, Nature 642, 321-326 (2025)](https://www.nature.com/articles/s41586-025-09051-6)
+- [Probing emergent prethermal dynamics and resonant melting on a programmable quantum simulator, arXiv:2510.11706](https://arxiv.org/abs/2510.11706)
+
+## E03/4: optical lattice 中 atoms 和 molecules 的 quantum simulation 总览
+
+这个 invited-style 报告回顾 optical lattice 从 Feynman quantum simulation 概念到今天的 site-resolved correlated matter 平台。重点包括 hidden order、entanglement、full counting statistics、topological features、polar molecule p-wave superfluid，以及 Fermi-Hubbard pseudogap 中 universal correlation 的测量。它适合作为大图景入口：冷原子量子模拟正在从“造模型”进入“测不可见 order 和准粒子”的阶段。
+
+参考链接：
+- [APS oral E03/4](https://meetings-archive.aps.org/damop/2026/e03/4/)
+- [Quantum simulations with ultracold atoms in optical lattices, Science 357, 995-1001 (2017)](https://www.science.org/doi/10.1126/science.aal3837)
+
+## E04/4: driven-dissipative 系统中的 limit-cycle bifurcation
+
+这个理论报告研究非互易相互作用和 correlated decay 如何把 driven-dissipative bosonic system 推入 quantum limit-cycle，并在 limit-cycle 自身产生 bifurcation。它的物理核心是 steady state 不再是静态相，而是时间依赖的非平衡相。重要性在于 Floquet 和 open-system quantum simulation 正在共同处理“稳定周期运动”和“量子噪声如何改写经典 bifurcation”的问题。
+
+参考链接：
+- [APS oral E04/4](https://meetings-archive.aps.org/damop/2026/e04/4/)
+
+## E04/5: two-mode cavity 中的 Z2 和 U(1) superradiance
+
+这个实验把 10 到 34 个 atomic spins 放进支持两个近简并偏振模式的高 finesse cavity，观测 normal phase、U(1) superradiant limit cycle 和 Z2 superradiant locked phase。核心可测量量是 atom-number-dependent phase diagram、Kerr rotation dynamics 和 telegraphic pitchfork bifurcation。它重要在于 cavity QED 正在成为 mesoscopic driven-dissipative phase transition 的显微实验平台。
+
+参考链接：
+- [APS oral E04/5](https://meetings-archive.aps.org/damop/2026/e04/5/)
+
+## E04/7: ion trap processor 上的 structured dissipation steady states
+
+这个实验用 Yb+ trapped ions 实现可控 coherent drive 与 structured dissipation，并通过 site-selective reset 调节 non-equilibrium steady state。它不是普通随机耗散，而是把耗散机制本身做成有空间结构和相关性的控制参数。它重要在于 open quantum simulation 正在从“加入噪声”转向“工程化 reservoir”，与 dissipative state preparation 和 non-equilibrium phase 都有关。
+
+参考链接：
+- [APS oral E04/7](https://meetings-archive.aps.org/damop/2026/e04/7/)
+
+## E07/3: Lie algebra shortcuts to adiabaticity
+
+这个报告提出一种基于 Lie algebra 的可扩展 shortcuts to adiabaticity 设计方法，用线性微分方程约束 invariant，再通过 tensor-network contraction 和 row reduction 求控制 Hamiltonian。示例是具有可调 hopping 和 interaction 的 Bose-Hubbard model。重要性在于很多 AMO 量子模拟依赖慢 ramp，而 STA 给出在有限相干时间内保留绝热 population 的系统化工具。
+
+参考链接：
+- [APS oral E07/3](https://meetings-archive.aps.org/damop/2026/e07/3/)
+- [Shortcuts to adiabaticity, Adv. At. Mol. Opt. Phys. 62, 117-169 (2013)](https://arxiv.org/abs/1212.6343)
+
+## E11/1: 从 FQH/Pfaffian 到 Hubbard pseudogap 的量子模拟总览
+
+这个报告把两个近期热点放在一起：用 Floquet engineering 产生 artificial gauge fields 和强关联拓扑态，以及在 Fermi-Hubbard quantum simulator 中降低温度、直接测 pseudogap regime 的 magnon excitations。它重要在于 quantum simulation 的目标正在靠近凝聚态里最难的两类问题：分数量子霍尔拓扑序和 doped Hubbard 模型的低能激发。建议作为 synthetic gauge field 和 Hubbard 两条线的总览入口。
+
+参考链接：
+- [APS oral E11/1](https://meetings-archive.aps.org/damop/2026/e11/1/)
+
+## E11/3 and G06/2: cavity QED 模拟竞争拓扑超导序
+
+这一组报告用二维 optical lattice inside cavity 中的 photon-mediated interactions，工程化 momentum-dependent pairing channel，从 s-wave 扩展到 chiral p+ip 和 d+id order。关键实验目标是连续测量 superconducting order parameter，并观察 equilibrium 和 sudden-quench 下的 competing orders。重要性在于 cavity QED 提供了一条模拟非常规和拓扑超导的新路线，尤其适合直接读序参量动力学。
+
+参考链接：
+- [APS oral E11/3](https://meetings-archive.aps.org/damop/2026/e11/3/)
+- [APS oral G06/2](https://meetings-archive.aps.org/damop/2026/g06/2/)
+- [Simulation of topological superconductors and their competing orders using photon-mediated interactions, arXiv:2512.17889](https://arxiv.org/abs/2512.17889)
+- [Observing dynamical phases of BCS superconductors in a cavity QED simulator, Nature 625, 679-684 (2024)](https://www.nature.com/articles/s41586-023-06975-9)
+
+## E11/4: synthetic tensor gauge fields
+
+这个理论报告把 synthetic gauge field 从常见 vector potential 推到 tensor gauge field，并讨论可实验实现的路线。它还强调 tensor gauge fields 可以做成 complex，从而进入 non-Hermitian phenomena。重要性在于 synthetic gauge field 的问题空间正在扩大：不只是模拟磁场和 Chern band，还想模拟更高阶、非厄米、与 exotic quantum phase 耦合的新规范结构。
+
+参考链接：
+- [APS oral E11/4](https://meetings-archive.aps.org/damop/2026/e11/4/)
+
+## F06/4: 单原子 optical tweezer 中的 synthetic-dimension quantum walk
+
+这个实验把单个 trapped atom 的 motional Fock states 当作 synthetic lattice sites，通过 shaking 和 intensity modulation 独立编程 on-site disorder、complex nearest-neighbor 和 next-nearest-neighbor hopping。它的价值在于用一个光镊就能实现可编程 tight-binding model 和非 Gaussian motional states。对 Floquet/Hamiltonian engineering 来说，这是最小系统中可高度校准的 synthetic dimension 测试床。
+
+参考链接：
+- [APS oral F06/4](https://meetings-archive.aps.org/damop/2026/f06/4/)
+
+## F06/5 and F06/6: Rydberg synthetic dimension 中的冻结膜和混沌
+
+这两个报告围绕 Rb87 Rydberg tweezer array 中的 synthetic dimension：多个 Rydberg levels 用 microwave 耦合成 synthetic lattice，不同原子之间的 resonant dipole-dipole exchange 提供强相互作用。实验和理论都关注弱相互作用 quantum walk、强相互作用 string/membrane freezing、以及中间相互作用区的热化和混沌。它重要在于 synthetic dimension 正从单粒子 band engineering 进入强相互作用 many-body regime。
+
+参考链接：
+- [APS oral F06/5](https://meetings-archive.aps.org/damop/2026/f06/5/)
+- [APS oral F06/6](https://meetings-archive.aps.org/damop/2026/f06/6/)
+- [Strongly interacting Rydberg atoms in synthetic dimensions with a magnetic flux, Nature Communications 15, 2671 (2024)](https://www.nature.com/articles/s41467-024-46823-6)
+
+## F06/7: Yb dipolar Rydberg array 的 many-body quantum simulation
+
+这个报告建设 Yb Rydberg tweezer array，用两个相反宇称 Rydberg states 编码有效自旋并产生 long-range dipolar interactions。它重点解决 dipolar magnet 在 frustrated geometry 中对位置 disorder、Rydberg anti-trapping 和 local light shift 控制的敏感性。重要性在于 Rydberg array 的下一步不是只做 blockade Ising，而是做更真实的 dipolar quantum magnet。
+
+参考链接：
+- [APS oral F06/7](https://meetings-archive.aps.org/damop/2026/f06/7/)
+
+## F06/9: Rydberg atom-array 上的 quantum cellular automata
+
+这个实验用 interleaved Rb/Cs chain 和全局控制实现 quantum cellular automata。报告包括 Floquet-PXP automaton 中的 domain-wall quasiparticle dynamics、GHZ state 制备、Rb-mediated Cs graph-state automaton、17-qubit cluster state 和 Pauli string glider。它重要在于大规模 atom array 难以逐点控制，而 QCA 用全局规则和局域约束提供数字量子模拟的新范式。
+
+参考链接：
+- [APS oral F06/9](https://meetings-archive.aps.org/damop/2026/f06/9/)
+- [Quantum Cellular Automata on a Dual-Species Rydberg Processor, arXiv:2601.16257](https://arxiv.org/abs/2601.16257)
+
+## F07/10: RF-driven Rydberg dissipative time crystal
+
+这个实验在 Cs Rydberg vapor 中研究强驱动、长程相互作用和耗散共同产生的 bistability、自发振荡和 RF heterodyne nonlinear response。加入外部 RF 后，系统出现 frequency pulling、partial synchronization、intermodulation products 和 comb-like spectra。它重要在于 Rydberg media 正被用来研究 driven-dissipative time crystal 和非线性同步，而不只是做电磁场传感。
+
+参考链接：
+- [APS oral F07/10](https://meetings-archive.aps.org/damop/2026/f07/10/)
+
+## G08/1: Z2 LGT 中的 repulsively bound hadrons
+
+这个理论报告研究 Z2 lattice gauge theory 中 meson 之间如何形成稳定 hadron bound state。特别有意思的是 repulsively bound hadron：它是高能 bound state，被能量间隙和 gauge-field fluctuation 稳定，而不是普通吸引势束缚。它重要在于把 confinement、meson dynamics 和 hadron formation 变成可在 superconducting qubits、trapped ions 或 Rydberg arrays 上观察的动力学问题。
+
+参考链接：
+- [APS oral G08/1](https://meetings-archive.aps.org/damop/2026/g08/1/)
+- [Meson dynamics from locally exciting a particle-conserving Z2 lattice gauge theory, Quantum 9, 1872 (2025)](https://quantum-journal.org/papers/q-2025-09-22-1872/)
+- [Repulsively Bound Hadrons in a Z2 Lattice Gauge Theory, arXiv:2510.23618](https://arxiv.org/abs/2510.23618)
+
+## G08/2: 超导线路中的 Z2 string dynamics 和 U(1) electrodynamics
+
+这个报告展示 superconducting circuits 做 LGT 的两条路线：一个是 144-qubit、192 two-qubit layers 的 digital Z2-Higgs model，用来观测 electric flux tube 的 string modes；另一个是 analog compact U(1) LGT architecture，用 phase 和 charge 的无限维 Hilbert space 让 Gauss law 从局域电荷守恒中自然出现。它重要在于 LGT 量子模拟开始正面处理二维、深线路、误差缓解和连续规范场的硬件实现。
+
+参考链接：
+- [APS oral G08/2](https://meetings-archive.aps.org/damop/2026/g08/2/)
+- [arXiv:2507.08088](https://arxiv.org/abs/2507.08088)
+- [arXiv:2601.23150](https://arxiv.org/abs/2601.23150)
+
+## G08/3: hybrid spin-phonon quantum computer 上的 Yukawa model
+
+这个实验用 trapped-ion hybrid spin-phonon processor 模拟 1+1D Yukawa model，把 fermionic nucleons 编码到 qubits，把 bosonic pions 编码到离子 collective motion。三离子系统已经解析出多个 phonon modes 中至少十个 pionic excitations。重要性在于它避免把 bosonic field 硬截断成大量 qubit，为 lattice gauge theory 和 quantum field simulation 提供了更自然的混合编码。
+
+参考链接：
+- [APS oral G08/3](https://meetings-archive.aps.org/damop/2026/g08/3/)
+- [Experimental Quantum Simulation of the Yukawa Model on a Hybrid Spin-Phonon Quantum Computer, arXiv:2509.11477](https://arxiv.org/abs/2509.11477)
+
+## G12/1: 光学 kagome lattice 中的 non-Abelian topological charge
+
+这个实验用 ultracold bosons in optical kagome lattice 测量 real Bloch Hamiltonian 中 band degeneracy 的 non-Abelian frame charges。方法是让单个 wave packet 沿不同路径依次探测两个 band nodes，并从 band population 中提取相对 charge；改变路径会改变结果，体现 non-Abelian 性质。它重要在于 topological band simulation 开始直接测“charge 的代数结构”，而不只是测 Chern number。
+
+参考链接：
+- [APS oral G12/1](https://meetings-archive.aps.org/damop/2026/g12/1/)
+
+## G12/2 and P11/6: spin-orbit-coupled BEC 中的 dynamical phase transition 和 Kibble-Zurek
+
+这两个报告都用 spin-orbit-coupled BEC 和 momentum-space dynamics 研究非平衡相变。G12/2 强调 Raman coupling、detuning quench、weak optical lattice 和 spin/momentum resolved imaging；P11/6 进一步测 delay time 的 power-law scaling，并区分动量主导和空间结构参与的两个动力学 regime。它重要在于 Kibble-Zurek 不只属于 Rydberg arrays，也可在 momentum-space condensate 中作为临界动力学探针。
+
+参考链接：
+- [APS oral G12/2](https://meetings-archive.aps.org/damop/2026/g12/2/)
+- [APS oral P11/6](https://meetings-archive.aps.org/damop/2026/p11/6/)
+- [Macroscopic self-trapping and dynamical phase transition in momentum space BEC, arXiv:2510.13056](https://arxiv.org/abs/2510.13056)
+
+## G12/3: 光晶格中的 bosonic Pfaffian quantum Hall state
+
+这个实验在 5 by 5 optical lattice 中用 87Rb 和 artificial magnetic field 制备三粒子的 bosonic Pfaffian quasi-hole state。制备使用 machine-learning 优化的 adiabatic ramps，读出包括中心密度 depletion、三体关联 g3 抑制，以及弱力下的 Hall-drift response。它重要在于 fractional quantum Hall 模拟开始具备 site-resolved correlation readout 和 transport-style probe，而不只是验证能制备目标态。
+
+参考链接：
+- [APS oral G12/3](https://meetings-archive.aps.org/damop/2026/g12/3/)
+- [Realization of a fractional quantum Hall state with ultracold atoms, Nature 619, 495-499 (2023)](https://www.nature.com/articles/s41586-023-06122-4)
+
+## G12/4: 合成二维系统中的 parity anomaly
+
+这个实验用 ultracold Dy atoms 的一个空间维度加 spin synthetic dimension 构造有效二维 Dirac 系统，在 quantum Hall topological transition 的临界点测到 half-quantized Hall conductance。该响应在保持 emergent parity symmetry 的扰动下稳定，但会被 generic parity-breaking terms 破坏。它重要在于 quantum anomaly 这种高能/拓扑场论概念被转化成冷原子中的可测 Hall response。
+
+参考链接：
+- [APS oral G12/4](https://meetings-archive.aps.org/damop/2026/g12/4/)
+
+## G12/6: 1D anyon Hubbard model 和 non-Abelian holonomy
+
+这个 quantum gas microscope 实验用 quasi-periodic driving 工程化 87Rb bosons 在一维光晶格中的 exchange statistics，实现可调统计相位的 1D anyon Hubbard model。新的目标是把两个 bosons 三个 sites ramp 到 chirally protected degenerate zero-energy subspace，再把统计相位绕一圈，测 Wilczek-Zee non-Abelian holonomy。它重要在于 anyon simulation 从 ground-state property 走向几何相和 holonomic manipulation。
+
+参考链接：
+- [APS oral G12/6](https://meetings-archive.aps.org/damop/2026/g12/6/)
+- [Chirally Protected State Manipulation by Tuning One-Dimensional Statistics, Phys. Rev. Lett. 135, 063401 (2025)](https://link.aps.org/doi/10.1103/PhysRevLett.135.063401)
+
+## G12/8: spin-1 BEC 中的 synthetic monopole gauge field
+
+这个实验用 87Rb spin-1 ensemble 的三个 internal states 构造 synthetic U(1) monopole source，通过 Berry curvature 和 first Chern number 量化 monopole charge。进一步引入 spin-tensor-momentum coupling 后，可以进入更丰富的拓扑相，并用 spin texture 和 Majorana-star trajectories 做验证。它重要在于 synthetic gauge field 的“源”本身成为可制备、可测量的拓扑对象。
+
+参考链接：
+- [APS oral G12/8](https://meetings-archive.aps.org/damop/2026/g12/8/)
+
+## G06/1: twisted optical cavity 中的 Rydberg polariton topological fluid
+
+这个实验用 twisted four-mirror optical cavity 为光子制造 artificial gauge field，再把冷 Rb87 atoms 通过 EIT 变成 Rydberg polaritons。Rydberg blockade 把每个 cavity mode 限制到单 polariton，有望生成 Laughlin-like many-body states。报告重点是模式简并调控、残余 disorder potential 的提取，以及利用 lowest-Landau-level edge states 诊断 disorder。它重要在于把 topological photonics、Rydberg interaction 和 many-body quantum fluid 接在一起。
+
+参考链接：
+- [APS oral G06/1](https://meetings-archive.aps.org/damop/2026/g06/1/)
+
+## G06/3: Dicke-Ising model 中 collective 和 short-range interaction 的临界竞争
+
+这个理论报告研究 Dicke-Ising model 中 collective cavity-mediated coupling 和局域 Ising interaction 如何共同决定一维 critical phenomena。核心问题是 universality class 如何从 Ising 类逐渐演化到 Dicke 类。它重要在于 cavity QED 提供了一种非局域相互作用旋钮，能系统研究 locality、collective coupling 和 criticality 的交叉。
+
+参考链接：
+- [APS oral G06/3](https://meetings-archive.aps.org/damop/2026/g06/3/)
+
+## G06/4: Sr cavity QED synthetic dimension 中的 correlated hopping
+
+这个实验把 87Sr 的 F=9/2 ground-state sublevels 当作十级 synthetic ladder，通过 cavity-mediated photon exchange 产生 pairwise correlated hopping。报告强调抑制 uncorrelated Raman process，并用 nondestructive state-dependent cavity readout 读出十个 sublevel population 的关联。它重要在于 synthetic dimension 中的 hopping 不再只是单粒子 tunneling，而是可由 cavity 直接生成 correlated hopping。
+
+参考链接：
+- [APS oral G06/4](https://meetings-archive.aps.org/damop/2026/g06/4/)
+- [Pair creation in an atom-cavity system, Phys. Rev. Lett. 122, 010405 (2019)](https://link.aps.org/doi/10.1103/PhysRevLett.122.010405)
+
+## G11/2: periodically driven 3D quantum gas 的 critical behavior
+
+这个实验研究三维相互作用量子气体在周期驱动下的 characterization 和 critical behavior。它适合关注 Floquet thermalization、parametric instability 和 driven many-body gas 的读者，因为三维系统的加热、同步和临界响应比低维模型更接近真实实验限制。它的意义在于 Floquet engineering 需要同时面对可控 effective Hamiltonian 和不可避免的能量吸收。
+
+参考链接：
+- [APS oral G11/2](https://meetings-archive.aps.org/damop/2026/g11/2/)
+
+## G11/6: measurement-based feedback 中的 many-body dynamics
+
+这个报告关注把 measurement-based feedback 接入 many-body dynamics。它的方向不是纯 unitary quantum simulation，而是让测量结果实时改变后续演化，从而生成普通封闭系统没有的动力学相和稳态。重要性在于反馈正在成为 quantum gas 和 atom-array 平台的新控制维度，和 Floquet/open-system simulation 一起构成 interactive quantum matter。
+
+参考链接：
+- [APS oral G11/6](https://meetings-archive.aps.org/damop/2026/g11/6/)
+
+## G11/7: quantum kicked rotor 穿过 BEC-BCS crossover
+
+这个实验把 quantum kicked rotor 带入 BEC-BCS crossover，用周期 kick 探测 pairing 和 spectrum 如何改写 kicked dynamics。它重要在于 kicked rotor 是 Floquet localization 的标准模型，而 pairing 会引入新的多体通道和谱结构。若你关心 Floquet dynamics 与强关联费米气的交叉，这个报告值得读。
+
+参考链接：
+- [APS oral G11/7](https://meetings-archive.aps.org/damop/2026/g11/7/)
+
+## N11/3 and N11/4: Fermi-Hubbard pseudogap 和 nematicity
+
+这两个报告都指向 Hubbard quantum simulator 中 pseudogap regime 的可观测结构。N11/3 强调 Fermi-Hubbard quantum simulator 中 pseudogap 的实验信号；N11/4 关注 pseudogap regime 中 enhanced nematicity。它们重要在于 cold-atom Hubbard 方向正在从“降温到反铁磁关联”转向直接研究 doped Hubbard、pseudogap 和可能的电子向列性，这些都与高温超导问题直接相连。
+
+参考链接：
+- [APS oral N11/3](https://meetings-archive.aps.org/damop/2026/n11/3/)
+- [APS oral N11/4](https://meetings-archive.aps.org/damop/2026/n11/4/)
+- [arXiv:2509.18075](https://arxiv.org/abs/2509.18075)
+
+## N11/5: dipolar molecules 的 strongly interacting quantum phases
+
+这个报告关注 microwave-shielded ultracold molecules 中强偶极相互作用、loss suppression、自束缚 droplet 和可调相互作用。它重要在于 dipolar molecules 正在从“单分子控制和装载”进入真正多体量子相的实验窗口。对 quantum simulation 来说，分子平台的长寿命 rotational qubit 和强 dipolar interaction 是 Rydberg array 之外最值得跟踪的方向之一。
+
+参考链接：
+- [APS oral N11/5](https://meetings-archive.aps.org/damop/2026/n11/5/)
+- [Extreme Loss Suppression and Wide Tunability of Dipolar Interactions in an Ultracold Molecular Gas, arXiv:2505.08773](https://arxiv.org/abs/2505.08773)
+- [Observation of self-bound droplets of ultracold dipolar molecules, arXiv:2507.15208](https://arxiv.org/abs/2507.15208)
+
+## N11/6: microwave-dressed Rydberg array 中的长程量子磁体
+
+这个报告用 microwave-dressed Rydberg states 在 atom array 中实现可调长程量子磁体。目标包括 XY、XXZ、Ising、few-state Potts 和 hard-core bosonic t-J-like models，并通过 equilibrium response 和 nonequilibrium dynamics 区分它们。重要性在于 Rydberg array 正在摆脱单一 PXP/Ising 模型，转向多能级、可设计耦合张量的 quantum magnetism。
+
+参考链接：
+- [APS oral N11/6](https://meetings-archive.aps.org/damop/2026/n11/6/)
+- [Trapping potentials and quantum gates for microwave-dressed Rydberg atoms](https://link.aps.org/doi/10.1103/d8w4-wbrj)
+
+## P08/6: RbCs molecular microscope 中的 synthetic dimensions
+
+这个实验用 ultracold RbCs molecules 和 molecular microscope 构造 synthetic dimensions。分子 rotational states 给出丰富内部自由度，dipolar interactions 又提供长程相互作用。它重要在于 synthetic dimension 不再局限于原子 internal states；极性分子可以把 synthetic lattice、强偶极相互作用和 site-resolved readout 结合起来，适合研究更复杂的 long-range many-body dynamics。
+
+参考链接：
+- [APS oral P08/6](https://meetings-archive.aps.org/damop/2026/p08/6/)
+
+## P12/4: 二维 massive relativistic field 的 analog simulator
+
+这个实验用 39K 的均匀二维 box trap 和两组分 coherent spin mixture，在 Josephson regime 中让 spin dynamics 编码 sine-Gordon model。通过调 coherent coupling strength，可以改变有效 mass，并测量零动量和有限动量的 perturbative excitations。它重要在于 quantum gas 可以直接模拟二维 massive relativistic field，而不是只模拟 condensed-matter lattice model。
+
+参考链接：
+- [APS oral P12/4](https://meetings-archive.aps.org/damop/2026/p12/4/)
+
+## P12/5 and P12/6: dipolar lattice gas 中的 itinerant magnetism
+
+这两个报告研究 chromium dipolar gas 在三维 optical lattice 中从 superfluid 到 Mott insulator 过渡时的 transverse magnetization dynamics。浅晶格中 ferromagnetic character 保持，深晶格中 spin currents 被抑制并出现 dynamical instability；绝缘区可用含 dipolar 和 contact superexchange 的有效 spin model 描述。它重要在于 itinerant magnetism 把 tunneling、contact interaction 和 long-range dipolar interaction 同时放进可控 optical lattice。
+
+参考链接：
+- [APS oral P12/5](https://meetings-archive.aps.org/damop/2026/p12/5/)
+- [APS oral P12/6](https://meetings-archive.aps.org/damop/2026/p12/6/)
+- [Itinerant magnetism in a dipolar lattice gas, arXiv:2501.11402](https://arxiv.org/abs/2501.11402)
+
+## P12/9: 可调对称性的 anisotropic spin-1 chain dynamics
+
+这个理论报告用 TEBD 研究 anisotropic spin-1 Heisenberg chain 中 SU(2) 到 SU(3) 对称性可调时的非平衡动力学。它观察 local magnetization、entanglement entropy、fidelity 和 spin correlations 如何随 quadrupolar interaction 改变热化速度。重要性在于 quantum simulator 里对称性本身可以成为控制 thermalization、fragmentation 和 scar-like dynamics 的旋钮。
+
+参考链接：
+- [APS oral P12/9](https://meetings-archive.aps.org/damop/2026/p12/9/)
+
+## R11/2: shaken lattice 中的空间非均匀隧穿
+
+这个实验用 Floquet engineering 在一维 bichromatic optical lattice 中产生位置依赖 tunneling。准周期情形下，这种非均匀隧穿产生 multifractal phase 和 subdiffusive transport；周期情形下，tunneling sign change 的位置可形成 effective event horizons。它重要在于 Floquet engineering 可以用全局周期调制制造复杂空间结构，而不必逐点写入势阱。
+
+参考链接：
+- [APS oral R11/2](https://meetings-archive.aps.org/damop/2026/r11/2/)
+- [Floquet-engineered optical lattices with tunable tunneling landscapes, PRX accepted](https://journals.aps.org/prx/accepted/10.1103/37vk-qz71)
+- [Phys. Rev. B 111, 115163 (2025)](https://link.aps.org/doi/10.1103/PhysRevB.111.115163)
+
+## R11/3: tweezer-trapped atoms 中的 programmable quantum walks
+
+这个实验在一维 Sr tweezer arrays 中实现单原子的 quantum random walks，并通过中间 modulated tweezer 增强相邻 sites 的 coherent tunneling。这个 hybrid tweezer system 可以动态控制时间和空间上的 tunneling。重要性在于 optical tweezer array 正在获得 Hubbard-style motional dynamics 的能力，适合做有限尺寸、任意几何和可控 disorder 的量子行走与 Hubbard 模拟。
+
+参考链接：
+- [APS oral R11/3](https://meetings-archive.aps.org/damop/2026/r11/3/)
+
+## R11/4: Fermi-Hubbard systems 中 arbitrary interaction 的 ARPES
+
+这个报告提出 cold-atom Hubbard 系统中的新 ARPES 方法，把原子 eject 到 final-state interaction 可忽略的空 Hubbard miniband，从而适用于 repulsive interaction 和 doped Mott insulator。它重要在于 pseudogap、quasiparticle dispersion 和 Hubbard spectrum 需要 momentum-resolved spectroscopy，而这正是量子气体显微镜长期欠缺的读出维度。
+
+参考链接：
+- [APS oral R11/4](https://meetings-archive.aps.org/damop/2026/r11/4/)
+- [Doublon-hole correlations and fluctuation thermometry in a Fermi-Hubbard gas, Phys. Rev. Lett. 125, 113601 (2020)](https://link.aps.org/doi/10.1103/PhysRevLett.125.113601)
+
+## W03/2: interacting quantum field simulator 中的 area law
+
+这个实验用 data-driven、model-agnostic 方法，从 bitstrings 中测量 strongly correlated quantum fields 的 mutual information area law。它还量化 non-Gaussian correlations 对信息结构的贡献。重要性在于 interacting continuous quantum field 的 entanglement/information measure 很难完整重构，而这个方法可以移植到其他平台和 observable。
+
+参考链接：
+- [APS oral W03/2](https://meetings-archive.aps.org/damop/2026/w03/2/)
+- [arXiv:2510.13783](https://arxiv.org/abs/2510.13783)
+
+## W03/3: disordered dipolar Rydberg gas 中的信息 scrambling
+
+这个实验用 dipolar Rydberg gas 的 time-reversal protocol 测 OTOC，研究 disorder 如何影响 information scrambling。微波控制用于反转 dipolar Hamiltonian 的符号，并通过 dynamical decoupling 选择性压制高阶 residual interaction。它重要在于 analog quantum simulator 的 OTOC 测量同时也是误差诊断：能告诉你哪些高阶项正在破坏理想 Hamiltonian。
+
+参考链接：
+- [APS oral W03/3](https://meetings-archive.aps.org/damop/2026/w03/3/)
+- [Phys. Rev. Research 6, 033197 (2024)](https://link.aps.org/doi/10.1103/PhysRevResearch.6.033197)
+
+## W03/4: dual-species Rydberg arrays 高效模拟 strongly correlated fermions
+
+这个理论方案用 dual-species reconfigurable Rydberg atom arrays 和 analog universality，设计针对 Fermi-Hubbard 的 hybrid digital-analog algorithm。核心是用 optimal control 实现无需进一步编译、可并行应用的 fermionic hopping gates，并配合 noise model 优化 adiabatic state preparation 和 dissipative superconducting-state preparation。它重要在于 fermion simulation 的瓶颈从 mapping overhead 转向 native gate design。
+
+参考链接：
+- [APS oral W03/4](https://meetings-archive.aps.org/damop/2026/w03/4/)
+- [Hu et al., arXiv:2508.19075](https://arxiv.org/abs/2508.19075)
+
+## W04/2: globally driven neutral atom arrays 上的实验量子优化
+
+这个实验在 Pasqal Fresnel neutral-atom quantum annealer 上实现 parity compilation 和 globally addressed driving sweeps，用 anchor atoms 编码 fields 和 long-range interaction compensation。它测试 atomic gadgets、较大 layouts、annealing sweep parameters、positional noise 和 compilation 参数。重要性在于 Rydberg optimization 正在从“直接解 unit-disk MIS”走向更一般组合优化问题的可实验编译。
+
+参考链接：
+- [APS oral W04/2](https://meetings-archive.aps.org/damop/2026/w04/2/)
+
+## W04/6: adjusted detuning 抑制 MIS adiabatic leakage
+
+这个报告关注 Rydberg adiabatic quantum computation 解 MIS 时，hard instances 的 minimum gap 太小导致 ground-state leakage。ADGLB 方法按能隙优化 detuning sweep，在固定演化时间内压低 leakage；QuEra Aquila 上的 k-PXP chain 实验显示 MIS accuracy 提升约 40%。它重要在于 adiabatic optimization 的关键不只是延长时间，而是按 gap 结构设计 pulse。
+
+参考链接：
+- [APS oral W04/6](https://meetings-archive.aps.org/damop/2026/w04/6/)
+- [Circumventing superexponential runtimes for hard instances of quantum adiabatic optimization, Phys. Rev. Research 6, 013271 (2024)](https://link.aps.org/doi/10.1103/PhysRevResearch.6.013271)
+- [Aquila: QuEra's 256-qubit neutral-atom quantum computer, arXiv:2306.11727](https://arxiv.org/abs/2306.11727)
+
+## W04/8: quantum wire 编码加权图优化
+
+这个实验用 Rydberg-blockaded atom chains 作为 quantum wires，把 MWIS 和 QUBO 问题原生嵌入 neutral atom architecture。对 quasi-unit-disk connectivity 的图，它比许多方案需要更少 ancilla，并用 local light shifts 在不同规模 weighted graphs 上演示 annealing。重要性在于它解决真实优化图和 atom-array 几何不匹配的问题，是近期期望最高的中性原子优化读物之一。
+
+参考链接：
+- [APS oral W04/8](https://meetings-archive.aps.org/damop/2026/w04/8/)
+- [PRX Quantum 6, 010301 (2025)](https://link.aps.org/doi/10.1103/PRXQuantum.6.010301)
+- [arXiv:2503.17115](https://arxiv.org/abs/2503.17115)
+
+## W11/1: kagome Hubbard 中 flatband 到 Nagaoka ferromagnetism
+
+这个理论工作用 QMC 和 numerical linked-cluster expansion 研究 kagome lattice Hubbard model 的 finite-temperature ferromagnetic correlations。它关注 flatband ferromagnetism 和极强排斥下的 Nagaoka ferromagnetism 在真实温度下是否还能出现。重要性在于 cold-atom kagome optical lattice 实验需要知道哪些温度和 interaction 区间最值得追，才能避免只看到短程反铁磁背景。
+
+参考链接：
+- [APS oral W11/1](https://meetings-archive.aps.org/damop/2026/w11/1/)
+
+## W11/2: Floquet-engineered MgF 分子的 spin-1 量子磁体
+
+这个理论方案用 dc magnetic field 和圆偏振 microwave drive dressing MgF rotational states，隔离出三个 dressed levels 作为 pseudospin-1。有效模型是带 transverse Zeeman term 的 spin-1 XXZ Heisenberg model，并显示一维中可访问 Haldane phase。它重要在于 polar molecule 的 Floquet engineering 能把 GHz dressing 和 kHz dipolar interaction 分离，形成可实验调参的高自旋量子磁体。
+
+参考链接：
+- [APS oral W11/2](https://meetings-archive.aps.org/damop/2026/w11/2/)
+
+## W11/4: topological lattice 上的 quantum contact process
+
+这个方案把 coherent Rydberg facilitation 映射成 QXP quantum contact process，并放在拓扑非平庸的一维 lattice 中。拓扑 edge-mode subspace 可以限制 spreading，topological pumps 还能让 excitation spreading 按量子化步长发生。它重要在于 Rydberg dynamics、non-equilibrium spreading 和 topological protection 被放进同一模型，是近期 Rydberg quantum simulation 很有新意的方向。
+
+参考链接：
+- [APS oral W11/4](https://meetings-archive.aps.org/damop/2026/w11/4/)
+- [Quantum Contact Processes on a Topological Lattice, arXiv:2604.03184](https://arxiv.org/abs/2604.03184)
+
+## W11/5: 非完美 tweezer 导致的 infinite-randomness criticality
+
+这个工作研究 Rydberg atom chain 中 finite tweezer width 引入的距离随机性如何改变临界物理。结论是 Kibble-Zurek dynamics 可从 clean Ising transition crossover 到 infinite-randomness fixed point，floating phase 也会被 disorder localization。它重要在于它把实验中常被当成 nuisance 的位置误差，变成理解真实 Rydberg simulator 临界动力学的核心变量。
+
+参考链接：
+- [APS oral W11/5](https://meetings-archive.aps.org/damop/2026/w11/5/)
+- [arXiv:2506.11985](https://arxiv.org/abs/2506.11985)
+
+## W11/6: quantum-optical spin glass 的实验动力学
+
+这个实验在 multimode degenerate cavity 中用 optical tweezer trapped ultracold clouds 作为有效 spins，工程化随机符号 all-to-all photon-mediated Ising interaction。通过 cavity light holographic imaging 和高速相机，直接测 replica overlap distribution、ordering dynamics 和 associative-memory pattern completion。它重要在于 spin glass 量子模拟开始具备 microscopic, time-resolved observability。
+
+参考链接：
+- [APS oral W11/6](https://meetings-archive.aps.org/damop/2026/w11/6/)
+
+## X09/3: 超长程相互作用系统的 thermalization timescale
+
+这个理论报告研究 power-law long-range spin chains 中 interaction range 如何控制 relaxation 和 prethermalization timescales。即使很小的 power-law exponent 足以诱导 quantum chaos 和 ETH，系统仍可因 quasi-conserved quantities 出现长寿命 prethermal plateau。它重要在于“满足 ETH”不等于“很快热化”，这对 Rydberg、cavity 和分子长程相互作用平台都很关键。
+
+参考链接：
+- [APS oral X09/3](https://meetings-archive.aps.org/damop/2026/x09/3/)
+- [Fragmented eigenstate thermalization versus robust integrability in long-range models, arXiv:2508.00077](https://arxiv.org/abs/2508.00077)
+
+## X09/4: polar molecule 阵列中的动态几何退相干抑制
+
+这个实验在 polar molecule optical tweezer arrays 中用三维几何控制降低 dipolar interaction 对热运动和位置噪声的敏感性。结合 magic geometries 和部分 Raman sideband cooling，实验显著提升 dipolar spin dynamics coherence。它重要在于分子量子模拟的瓶颈常是 motional dephasing，而几何工程提供了不要求完全 motional ground state 的实用办法。
+
+参考链接：
+- [APS oral X09/4](https://meetings-archive.aps.org/damop/2026/x09/4/)
+- [Phys. Rev. Lett. 135, 253002 (2025)](https://link.aps.org/doi/10.1103/PhysRevLett.135.253002)
+
+## X11/1: 高重复率 Fermi-Hubbard quantum gas microscope
+
+这个实验建设高重复率 fermionic quantum gas microscope，通过深 optical lattice 中的快速 on-site evaporation 提升数据采集效率。报告还强调 reservoir engineering、热隔离 region of interest、bilayer strongly correlated system 和可编程 next-nearest-neighbor hopping。它重要在于 Hubbard 量子模拟的瓶颈不只是温度，还有实验通量和可调几何；高重复率会直接改变可测相图范围。
+
+参考链接：
+- [APS oral X11/1](https://meetings-archive.aps.org/damop/2026/x11/1/)
+
+## X11/3: three-flavor Hubbard quantum gas microscopy
+
+这个实验用 site- and flavor-resolved detection 研究三组分 fermionic Hubbard system。三 flavor 打破 SU(2) 对称性，和 quantum chromodynamics 的三 flavor 类比直接相关；实验已看到 flavor-selective localization 和 selective pairing 的迹象。它重要在于 Hubbard simulator 正在从双自旋电子模型走向多 flavor 强关联物理，并可能进入 color superfluidity。
+
+参考链接：
+- [APS oral X11/3](https://meetings-archive.aps.org/damop/2026/x11/3/)
+- [arXiv:2503.05687](https://arxiv.org/abs/2503.05687)
+
+## X11/7: bilayer Fermi-Hubbard 中的有效吸引相互作用
+
+这个实验把 2D Fermi-Hubbard quantum gas microscope 升级到 bilayer Hubbard system，并在 onsite repulsion 存在时观察到层间 fermions 的有效吸引相互作用。它系统扫描 interlayer tunneling、detuning 和 onsite interaction。重要性在于 bilayer t-J/Hubbard model 与高压 nickelate superconductivity 直接相关，可能提供 repulsive Hubbard system 中诱导 pairing 的冷原子路径。
+
+参考链接：
+- [APS oral X11/7](https://meetings-archive.aps.org/damop/2026/x11/7/)
+- [Signatures of superconductivity near 80 K in a nickelate under high pressure, Nature 621, 493-498 (2023)](https://www.nature.com/articles/s41586-023-06408-7)
+- [Bilayer t-J-Jperp model and magnetically mediated pairing in pressurized La3Ni2O7, Phys. Rev. Lett. 132, 036502 (2024)](https://link.aps.org/doi/10.1103/PhysRevLett.132.036502)
+
+## X12/1: 按需制备高激发 many-body states
+
+这个理论方案用 Bragg pulse 把一维 bosons 从基态直接 quench 到渐近 stationary excited state。hard-core limit 下 rapidity distribution 不再演化，远离 hard-core limit 时可通过同步调 trap depth 接近同类状态。它重要在于 many-body scar-like 或非热高激发态可能不需要复杂制备，只需设计合适的 quench。
+
+参考链接：
+- [APS oral X12/1](https://meetings-archive.aps.org/damop/2026/x12/1/)
+
+## X12/2: dispersion engineering 实现一维 statistical anyons
+
+这个理论工作说明单粒子 dispersion 可以成为调控 exclusion statistics 的旋钮。对 dispersion epsilon(k) proportional to k^m 的一维 hard-core bosons，系统表现出 m-dependent fractional exclusion statistics 和类似 Laughlin state 的多体波函数。它重要在于 shaken optical lattices 或可调 hopping atom arrays 可能不靠真实二维磁场，也能模拟 anyonic statistics。
+
+参考链接：
+- [APS oral X12/2](https://meetings-archive.aps.org/damop/2026/x12/2/)
+
+## X12/3: 一维 superfluid interface 上的 prethermal ripplons
+
+这个实验测量相分离二维 BEC 中一维 interface 的 ripplon mode 如何热化。高动量 ripplon 已和 bulk 平衡，而低动量 ripplon 保持更高有效温度，形成长寿命 prethermal state。它重要在于 prethermalization 不只出现在 spin chains 和 Floquet systems，也会出现在连续量子流体的界面集体模中。
+
+参考链接：
+- [APS oral X12/3](https://meetings-archive.aps.org/damop/2026/x12/3/)
+
+## X12/8: Bose-Hubbard thermalization 和 ergodicity 路径
+
+这个理论报告用 minimal Bose-Hubbard model 研究耦合 chaotic subsystems 时如何走向 ergodicity。它指出存在一个 regime：谱统计看起来已经 chaotic，但 ergodicity measure 仍显示 lack of eigenstate thermalization。重要性在于 quantum thermalization 不能只靠 level statistics 判定，实验 quantum simulator 需要同时测谱、局域 observable 和信息量。
+
+参考链接：
+- [APS oral X12/8](https://meetings-archive.aps.org/damop/2026/x12/8/)
+- [Phys. Rev. Research 7, 043293 (2025)](https://link.aps.org/doi/10.1103/PhysRevResearch.7.043293)
