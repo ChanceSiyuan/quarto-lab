@@ -507,21 +507,17 @@ export class ReviewedLibraryImportService {
     }
 
     pending.receipt = cloneReceipt(receipt);
+    const invalidationError = await this.tryInvalidateLibrary(plan.scope.libraryID);
     pending.publicReview = {
       ...cloneReview(pending.publicReview),
       canApply: false,
       state: "accepted",
-      statusMessage: "The library import was applied successfully.",
-    };
-    const invalidationError = await this.tryInvalidateLibrary(plan.scope.libraryID);
-    if (invalidationError !== null) {
-      pending.publicReview = {
-        ...cloneReview(pending.publicReview),
-        statusMessage: boundedStatusMessage(
+      statusMessage: invalidationError === null
+        ? "The library import was applied successfully."
+        : boundedStatusMessage(
           "The library import was applied successfully, but the local library snapshot could not be refreshed; reload before continuing.",
         ),
-      };
-    }
+    };
     this.safeNotify(pending.publicReview.scope);
     return {
       decision: "accepted",
