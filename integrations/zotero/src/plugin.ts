@@ -372,6 +372,7 @@ export class ZoteroChatPlugin {
           this.chatError = `${error.message}. You can still open the Advanced Terminal from the top bar.`;
           this.renderChatViews();
         },
+        seedPaperContext: (paperKey) => this.seedPaperContextForKey(paperKey),
       },
       {
         tools: [
@@ -1886,16 +1887,41 @@ export class ZoteroChatPlugin {
 
     const selected = await Zotero.Items.getAsync(selectedID);
     if (!selected) throw new Error("The selected Zotero item does not exist");
-    let attachment = selected;
-    if (!selected.isPDFAttachment?.()) {
-      attachment = selected.isRegularItem?.() ? await selected.getBestAttachment?.() : null;
+    const attachment = await this.resolvePaperAttachment(selected);
+    const accepted = await this.seedReaderContextInBackground(attachment, win);
+
+    this.addedContextIDs.delete("current-selection");
+    const requestSequence = ++this.contextRequestSequence;
+    await this.applyContext(accepted, requestSequence);
+    if (tabID) {
+      this.workbenchTabs.update(win, tabID, {
+        itemID: attachment.id,
+        icon: QLAB_WORKBENCH_TAB_ICON,
+        title: `QLab · ${paperTitle(accepted)}`,
+      });
+      Zotero.Session?.debounceSave?.();
+    }
+    this.renderChatViews();
+    if (tabID) this.workbenchTabs.entries(win).find((entry) => entry.id === tabID)?.view.focusComposer();
+    else preferredView?.focusComposer();
+  }
+
+  /** Resolves a Zotero item (regular item or attachment) to its readable PDF attachment. */
+  private async resolvePaperAttachment(item: any): Promise<any> {
+    let attachment = item;
+    if (!item?.isPDFAttachment?.()) {
+      attachment = item?.isRegularItem?.() ? await item.getBestAttachment?.() : null;
     }
     const isPDF = Boolean(attachment?.isPDFAttachment?.())
       || attachment?.attachmentContentType === "application/pdf";
     if (!attachment?.id || !isPDF) {
       throw new Error("This Zotero item has no readable PDF attachment");
     }
+    return attachment;
+  }
 
+  /** Opens the attachment in a background Reader tab and captures its context without disturbing the user's view. */
+  private async seedReaderContextInBackground(attachment: any, win: Window): Promise<ReaderContext> {
     const opened = await Zotero.Reader.open(attachment.id, null, {
       allowDuplicate: false,
       openInBackground: true,
@@ -1927,21 +1953,24 @@ export class ZoteroChatPlugin {
         ? lastError
         : new Error("Zotero Reader has not prepared this paper yet; try again shortly");
     }
+    return accepted;
+  }
 
-    this.addedContextIDs.delete("current-selection");
-    const requestSequence = ++this.contextRequestSequence;
-    await this.applyContext(accepted, requestSequence);
-    if (tabID) {
-      this.workbenchTabs.update(win, tabID, {
-        itemID: attachment.id,
-        icon: QLAB_WORKBENCH_TAB_ICON,
-        title: `QLab · ${paperTitle(accepted)}`,
-      });
-      Zotero.Session?.debounceSave?.();
+  /** Host hook for CodexService: rebuilds a `${libraryID}-${attachmentKey}` paper context via a background Reader tab. */
+  private async seedPaperContextForKey(paperKey: string): Promise<ReaderContext> {
+    const separator = paperKey.indexOf("-");
+    const attachmentKey = paperKey.slice(separator + 1);
+    if (separator <= 0 || !attachmentKey) {
+      throw new Error("This conversation's Zotero paper could not be identified");
     }
-    this.renderChatViews();
-    if (tabID) this.workbenchTabs.entries(win).find((entry) => entry.id === tabID)?.view.focusComposer();
-    else preferredView?.focusComposer();
+    const libraryID = Number(paperKey.slice(0, separator));
+    const item = await Zotero.Items?.getByLibraryAndKeyAsync?.(libraryID, attachmentKey)
+      ?? Zotero.Items?.getByLibraryAndKey?.(libraryID, attachmentKey);
+    if (!item) throw new Error("This conversation's Zotero paper is no longer in the library");
+    const attachment = await this.resolvePaperAttachment(item);
+    const win = Zotero.getMainWindow?.() || Zotero.getMainWindows?.()[0];
+    if (!win) throw new Error("The Zotero main window is unavailable");
+    return this.seedReaderContextInBackground(attachment, win);
   }
 
   private async chooseAdditionalPaper(win: Window): Promise<void> {

@@ -1509,3 +1509,71 @@ describe("Region screenshots (Design 3)", () => {
     pageElement.remove();
   });
 });
+
+describe("QLab paper conversation reopening", () => {
+  it("seeds a paper context by opening its PDF in a background Reader tab", async () => {
+    const originalZotero = (globalThis as any).Zotero;
+    const context = { attachment: { key: "ATTACH", libraryID: 1 }, workspace: { root: "/w" } };
+    const attachment = { id: 7, key: "ATTACH", libraryID: 1, isPDFAttachment: () => true };
+    const open = vi.fn(async () => ({ itemID: 7 }));
+    const win = { setTimeout: (fn: () => void) => setTimeout(fn, 0) } as unknown as Window;
+    (globalThis as any).Zotero = {
+      Items: { getByLibraryAndKeyAsync: vi.fn(async () => attachment) },
+      Reader: { open },
+      getMainWindow: () => win,
+    };
+    const plugin = new ZoteroChatPlugin() as any;
+    plugin.readerContext = { acceptReaderHook: vi.fn(async () => context) };
+
+    try {
+      await expect(plugin.seedPaperContextForKey("1-ATTACH")).resolves.toBe(context);
+      expect((globalThis as any).Zotero.Items.getByLibraryAndKeyAsync).toHaveBeenCalledWith(1, "ATTACH");
+      expect(open).toHaveBeenCalledWith(7, null, expect.objectContaining({
+        allowDuplicate: false,
+        openInBackground: true,
+        preventJumpback: true,
+      }));
+      expect(plugin.readerContext.acceptReaderHook).toHaveBeenCalledWith({
+        reader: { itemID: 7 },
+        item: attachment,
+        params: {},
+      });
+    }
+    finally {
+      (globalThis as any).Zotero = originalZotero;
+    }
+  });
+
+  it("rejects seeding for an item with no readable PDF attachment", async () => {
+    const originalZotero = (globalThis as any).Zotero;
+    const item = {
+      isPDFAttachment: () => false,
+      isRegularItem: () => true,
+      getBestAttachment: async () => null,
+    };
+    (globalThis as any).Zotero = {
+      Items: { getByLibraryAndKeyAsync: vi.fn(async () => item) },
+      Reader: { open: vi.fn() },
+      getMainWindow: () => ({}) as Window,
+    };
+    const plugin = new ZoteroChatPlugin() as any;
+
+    try {
+      await expect(plugin.seedPaperContextForKey("1-NOPDF"))
+        .rejects.toThrow("This Zotero item has no readable PDF attachment");
+      expect((globalThis as any).Zotero.Reader.open).not.toHaveBeenCalled();
+    }
+    finally {
+      (globalThis as any).Zotero = originalZotero;
+    }
+  });
+
+  it("supplies the background seeding hook to the codex service at startup", () => {
+    const plugin = readFileSync(join(process.cwd(), "src/plugin.ts"), "utf8");
+    const startup = plugin.slice(
+      plugin.indexOf("async startup("),
+      plugin.indexOf("async shutdown("),
+    );
+    expect(startup).toContain("seedPaperContext: (paperKey) => this.seedPaperContextForKey(paperKey)");
+  });
+});
