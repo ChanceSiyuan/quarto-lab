@@ -792,6 +792,16 @@
 .zc-composer-controls { display: flex; align-items: center; min-width: 0; flex: 1 1 auto; gap: 4px; overflow: hidden; }
 .zc-compact-select { min-width: 0; max-width: 108px; height: 24px; flex: 1 1 64px; padding: 0 6px; overflow: hidden; border: 0; border-radius: 999px; color: var(--zc-muted); background: var(--zc-bg-subtle); font: inherit; font-size: 9.25px; text-overflow: ellipsis; }
 .zc-compact-select:hover { background: var(--zc-bg-hover); }
+.zc-save-ai-context {
+  min-height: 26px;
+  padding: 0 8px;
+  border: 1px solid var(--zc-border);
+  border-radius: 5px;
+  background: var(--zc-bg-raised);
+  color: var(--zc-text);
+  font: inherit;
+}
+.zc-save-ai-context:disabled { opacity: 0.55; cursor: default; }
 .zc-send-button { display: grid; place-items: center; width: 28px; height: 28px; flex: none; border: 0; border-radius: 50%; color: #fff; background: var(--zc-accent); font: inherit; cursor: pointer; }
 .zc-send-button:hover { background: var(--zc-accent-strong); }
 .zc-send-button.is-running { border-radius: 50%; font-size: 9px; }
