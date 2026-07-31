@@ -1,6 +1,3 @@
-import { sha256Bytes } from "./hashing";
-import { randomID } from "./platform";
-
 const DEFAULT_TTL_MS = 30 * 60 * 1_000;
 const MAX_REQUESTS = 50;
 const MAX_QUERY_TEXT_CODE_POINTS = 20_000;
@@ -9,7 +6,7 @@ const MAX_TITLE_CODE_POINTS = 10_000;
 const MAX_CREATORS = 50;
 const MAX_CANDIDATES = 50;
 
-const UNSAFE_TEXT = /[\u0000-\u001F\u007F-\u009F\u061C\u200B-\u200F\u202A-\u202E\u2060\u2066-\u2069\uFEFF]/u;
+const UNSAFE_TEXT = /[\p{Cc}\p{Cf}\u2028\u2029]/u;
 const DOI = /^10\.\d{4,9}\/[\-._;()/:a-z0-9]+$/iu;
 const ARXIV = /^(\d{4}\.\d{4,5}|[a-z][a-z.-]*\/[0-9]{7})(?:v[0-9]+)?$/iu;
 
@@ -172,9 +169,12 @@ export class CitationCandidateRegistry {
   ): Promise<CitationLookupBatch> {
     const normalizedScope = normalizeScope(scope);
     if (!Array.isArray(requests)) throw new TypeError("Citation requests must be an array");
+    if (requests.length === 0) throw new RangeError("A citation lookup requires at least 1 request");
     if (requests.length > this.maxRequests) {
       throw new RangeError(`A citation lookup accepts at most ${this.maxRequests} requests`);
     }
+    const now = this.currentTime();
+    this.sweepExpired(now);
     const normalizedRequests = requests.map((request, index) => normalizeQuery(request, index));
     const rawResolutions = await this.resolver.resolve(
       { libraryID: normalizedScope.libraryID },
@@ -188,7 +188,7 @@ export class CitationCandidateRegistry {
     ));
 
     const batchId = this.nextOpaqueId();
-    const expiresAtMs = this.currentTime() + this.ttlMs;
+    const expiresAtMs = now + this.ttlMs;
     const capabilityIds: string[] = [];
     const results = resolutions.map((resolution, requestIndex) => {
       const capabilityId = this.nextOpaqueId();
@@ -230,9 +230,16 @@ export class CitationCandidateRegistry {
     if (typeof capabilityId !== "string" || !capabilityId) {
       throw new TypeError("Citation capability ID must be a non-empty string");
     }
+    const now = this.currentTime();
+    const directCapability = this.capabilities.get(capabilityId);
+    if (directCapability && now >= directCapability.expiresAtMs) {
+      this.deleteBatch(directCapability.batchId);
+      this.capabilities.delete(capabilityId);
+      throw new Error("Citation capability has expired");
+    }
+    this.sweepExpired(now);
     const capability = this.capabilities.get(capabilityId);
     if (!capability) throw new Error("Unknown citation capability");
-    if (this.currentTime() >= capability.expiresAtMs) throw new Error("Citation capability has expired");
     if (capability.threadId !== normalizedScope.threadId) {
       throw new Error("Citation capability belongs to a different thread");
     }
@@ -288,6 +295,22 @@ export class CitationCandidateRegistry {
     const now = this.nowMs();
     if (!Number.isFinite(now)) throw new Error("Citation registry clock returned an invalid time");
     return now;
+  }
+
+  private sweepExpired(now: number): void {
+    for (const batch of this.batches.values()) {
+      if (now >= batch.expiresAtMs) this.deleteBatch(batch.id);
+    }
+    for (const [capabilityId, capability] of this.capabilities) {
+      if (now >= capability.expiresAtMs) this.capabilities.delete(capabilityId);
+    }
+  }
+
+  private deleteBatch(batchId: string): void {
+    const batch = this.batches.get(batchId);
+    this.batches.delete(batchId);
+    if (!batch) return;
+    for (const capabilityId of batch.capabilityIds) this.capabilities.delete(capabilityId);
   }
 }
 
@@ -525,9 +548,9 @@ function cloneCapability(capability: BoundCitationCapability): BoundCitationCapa
 function normalizeText(value: unknown, label: string, maxCodePoints: number): string {
   if (typeof value !== "string") throw new TypeError(`${label} must be a string`);
   if (UNSAFE_TEXT.test(value)) throw new TypeError(`${label} contains unsafe control or directional text`);
+  if ([...value].length > maxCodePoints) throw new RangeError(`${label} is too long`);
   const normalized = value.normalize("NFC").trim();
   if (!normalized) throw new TypeError(`${label} must not be blank`);
-  if ([...normalized].length > maxCodePoints) throw new RangeError(`${label} is too long`);
   return normalized;
 }
 
@@ -537,7 +560,9 @@ function optionalText(value: unknown, label: string, maxCodePoints: number): str
 
 function normalizeOptionalMetadataText(value: unknown, label: string, maxCodePoints: number): string {
   if (typeof value !== "string") throw new TypeError(`${label} must be a string`);
-  if (!value.trim()) return "";
+  if (UNSAFE_TEXT.test(value)) throw new TypeError(`${label} contains unsafe control or directional text`);
+  if ([...value].length > maxCodePoints) throw new RangeError(`${label} is too long`);
+  if (!value.normalize("NFC").trim()) return "";
   return normalizeText(value, label, maxCodePoints);
 }
 
@@ -571,29 +596,19 @@ function boundedPositiveInteger(value: number | undefined, fallback: number, max
 }
 
 function defaultOpaqueId(): string {
+  const crypto = globalThis.crypto;
+  if (!crypto?.getRandomValues) throw new Error("Secure random capability is unavailable");
   try {
-    return randomID("citation");
+    const bytes = crypto.getRandomValues(new Uint8Array(16));
+    return `citation-${[...bytes].map((byte) => byte.toString(16).padStart(2, "0")).join("")}`;
   }
   catch {
-    const crypto = globalThis.crypto;
-    if (crypto?.getRandomValues) {
-      const bytes = crypto.getRandomValues(new Uint8Array(16));
-      return `citation-${[...bytes].map((byte) => byte.toString(16).padStart(2, "0")).join("")}`;
-    }
-    return `citation-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+    throw new Error("Secure random capability is unavailable");
   }
 }
 
 function digestText(value: string): string {
-  const bytes = new TextEncoder().encode(value);
-  try {
-    return sha256Bytes(bytes);
-  }
-  catch {
-    // Vitest has no Gecko XPCOM hash component. Zotero uses sha256Bytes above;
-    // this equivalent fallback keeps this pure contract testable outside Gecko.
-    return sha256Fallback(bytes);
-  }
+  return sha256Fallback(new TextEncoder().encode(value));
 }
 
 function sha256Fallback(bytes: Uint8Array): string {
