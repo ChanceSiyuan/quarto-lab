@@ -9,6 +9,16 @@
  * never mutation targets.
  */
 
+import {
+  buildLibraryMetadataIndex,
+  matchesLibrarySearchFilters,
+  searchLibraryMetadata,
+  type LibraryMetadataIndex,
+  type LibraryMetadataSearchHit,
+  type LibrarySearchFilters,
+} from "./library-search";
+import { noteHtmlToQmdBody, qmdAuthorityMarker } from "./note-draft-bridge";
+
 export type MaybePromise<T> = T | Promise<T>;
 
 export type JsonPrimitive = string | number | boolean | null;
@@ -229,6 +239,27 @@ export interface ZotkitLibrarySnapshotReference {
   complete: boolean;
 }
 
+export interface ZotkitLibraryFullTextCandidate {
+  /** Matching Zotero item/attachment key. */
+  key: string;
+  /** Parent bibliographic item key when `key` identifies an attachment. */
+  parentItem?: string;
+}
+
+export interface ZotkitLibraryFullTextSearchResult {
+  matches: ZotkitLibraryFullTextCandidate[];
+  /** False when the adapter had to truncate Zotero's candidate IDs. */
+  complete: boolean;
+}
+
+export interface ZoteroNoteReadResult {
+  key: string;
+  title: string;
+  qmdBody: string;
+  version: number;
+  parentItemKey: string | null;
+}
+
 /**
  * The complete Zotero-facing surface used by ReaderContextService.
  *
@@ -248,6 +279,8 @@ export interface ZoteroReadAdapter<TReader = unknown, TItem = unknown> {
   getSelection(reader: TReader, eventAnnotation?: unknown): Promise<ReaderSelection | null>;
   /** Extract one zero-based page through the already-open PDF.js document. */
   extractPdfJsPage(reader: TReader, pageIndex: number): Promise<string | null>;
+  /** Render one zero-based page as a bounded PNG data URL for multimodal context. */
+  capturePdfPage?(reader: TReader, pageIndex: number): Promise<string | null>;
   /**
    * Flatten the PDF's embedded outline/bookmarks through the already-open
    * PDF.js document, with 1-based pages and nesting depth. Returns null when
@@ -292,6 +325,22 @@ export interface ZoteroReadAdapter<TReader = unknown, TItem = unknown> {
     libraryID: number | string,
     options: { maxItems: number; maxCollections: number },
   ): Promise<ZotkitLibrarySnapshot>;
+  /** Default local library for Library Chat when no Reader is attached. */
+  defaultLibraryID?(): MaybePromise<number | string | null>;
+  /**
+   * Query Zotero's existing full-text index only. Implementations must not
+   * start indexing, invoke PDFWorker, or inspect arbitrary filesystem paths.
+   */
+  searchZotkitLibraryFullText?(
+    libraryID: number | string,
+    query: string,
+    limit: number,
+  ): Promise<ZotkitLibraryFullTextSearchResult>;
+  /** Read one native Note through Zotero's public item API and return inert QMD source. */
+  readZoteroNote?(
+    libraryID: number | string,
+    noteKey: string,
+  ): Promise<ZoteroNoteReadResult>;
 }
 
 export interface LibraryFileEntry {
@@ -383,6 +432,8 @@ export const READER_TOOL_NAMES = [
   "zotero_search_current_pdf",
   "zotero_read_pdf_pages",
   "zotero_search_library",
+  "zotero_search_library_items",
+  "zotero_read_note",
   "zotero_read_library_pdf_pages",
   "zotero_search_library_pdf",
   "zotero_list_annotations",
@@ -458,6 +509,51 @@ export const READER_CONTEXT_TOOLS: readonly ToolDefinition[] = [
         limit: { type: "integer", minimum: 1, maximum: 100 },
       },
       required: ["query"],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: "zotero_search_library_items",
+    description:
+      "Rank Zotero library items with metadata BM25F and, when requested, merge candidates from Zotero's existing full-text index. Does not start indexing or invoke PDFWorker.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        query: { type: "string", minLength: 1, maxLength: 512 },
+        mode: { type: "string", enum: ["metadata", "fulltext", "all"] },
+        library_id: {
+          anyOf: [
+            { type: "integer", minimum: 1 },
+            { type: "string", minLength: 1, maxLength: 128 },
+          ],
+        },
+        tags: { type: "array", items: { type: "string", minLength: 1, maxLength: 256 }, maxItems: 32 },
+        collection_keys: { type: "array", items: { type: "string", minLength: 1, maxLength: 128 }, maxItems: 32 },
+        item_types: { type: "array", items: { type: "string", minLength: 1, maxLength: 128 }, maxItems: 32 },
+        year_from: { type: "integer", minimum: 1, maximum: 9999 },
+        year_to: { type: "integer", minimum: 1, maximum: 9999 },
+        limit: { type: "integer", minimum: 1, maximum: 100 },
+      },
+      required: ["query"],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: "zotero_read_note",
+    description:
+      "Read one native Zotero Note as inert QMD body text. Requires an exact Note key and never writes Zotero or the Research Loop repository.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        note_key: { type: "string", minLength: 1, maxLength: 128 },
+        library_id: {
+          anyOf: [
+            { type: "integer", minimum: 1 },
+            { type: "string", minLength: 1, maxLength: 128 },
+          ],
+        },
+      },
+      required: ["note_key"],
       additionalProperties: false,
     },
   },
@@ -562,6 +658,10 @@ export interface SearchMatch {
   snippet: string;
   matchStart: number;
   matchLength: number;
+  /** Exact phrases are preferred; term results are a ranked lexical fallback. */
+  searchMode?: "exact" | "terms";
+  score?: number;
+  matchedTerms?: string[];
 }
 
 export interface LibrarySearchMatch extends LibraryFileEntry {
@@ -595,6 +695,7 @@ interface CachedLibrarySnapshot {
   reference: ZotkitLibrarySnapshotReference;
   snapshot: ZotkitLibrarySnapshot;
   expiresAt: number;
+  metadataIndex?: LibraryMetadataIndex;
 }
 
 /**
@@ -1236,6 +1337,32 @@ export class ReaderContextService<TReader = unknown, TItem = unknown> {
           this.requireQuery(args.query),
           this.parseLimit(args.limit),
         );
+      case "zotero_search_library_items":
+        return this.searchZotkitLibraryItems({
+          query: this.requireQuery(args.query),
+          mode: this.parseLibrarySearchMode(args.mode),
+          libraryID: this.parseOptionalLibraryID(args.library_id),
+          filters: {
+            tags: this.parseStringArray(args.tags, "tags", 32, 256),
+            collectionKeys: this.parseStringArray(
+              args.collection_keys,
+              "collection_keys",
+              32,
+              128,
+            ),
+            itemTypes: this.parseStringArray(args.item_types, "item_types", 32, 128),
+            yearFrom: this.parseOptionalYear(args.year_from, "year_from"),
+            yearTo: this.parseOptionalYear(args.year_to, "year_to"),
+          },
+          limit: this.parseLimit(args.limit),
+          context,
+        });
+      case "zotero_read_note":
+        return this.readZoteroNote(
+          cleanText(args.note_key),
+          this.parseOptionalLibraryID(args.library_id),
+          context,
+        );
       case "zotero_read_library_pdf_pages":
         return this.readLibraryPdfPages(
           normalizeLibraryRelativePdfPath(args.path),
@@ -1286,6 +1413,12 @@ export class ReaderContextService<TReader = unknown, TItem = unknown> {
 
   async getCurrentSelection(context?: ReaderContext): Promise<ReaderSelection | null> {
     return (await this.ensureSnapshot(context)).context.selection;
+  }
+
+  async captureCurrentPageImage(context?: ReaderContext): Promise<string | null> {
+    const snapshot = await this.ensureSnapshot(context);
+    if (!this.zotero.capturePdfPage) return null;
+    return this.zotero.capturePdfPage(snapshot.hook.reader, snapshot.context.page.pageIndex);
   }
 
   async getPdfOutline(context?: ReaderContext): Promise<{
@@ -1631,49 +1764,214 @@ export class ReaderContextService<TReader = unknown, TItem = unknown> {
     matches: Array<Record<string, JsonValue>>;
   }> {
     const snapshot = await this.ensureZotkitLibraryData(false, context);
-    const needle = query.toLocaleLowerCase();
-    const collections = new Map(snapshot.collections.map((collection) => [collection.key, collection]));
-    const matches: Array<Record<string, JsonValue>> = [];
-    for (const item of snapshot.items) {
-      if (matches.length >= limit) break;
-      const creators = item.creators
-        .map((creator) => creator.name || [creator.firstName, creator.lastName].filter(Boolean).join(" "))
-        .filter(Boolean);
-      const collectionPaths = item.collectionKeys
-        .map((key) => collections.get(key)?.path || "")
-        .filter(Boolean);
-      const haystack = [
-        item.key,
-        item.title,
-        item.DOI,
-        item.publicationTitle,
-        item.abstractNote,
-        item.filename || "",
-        ...creators,
-        ...item.tags,
-        ...item.collections,
-        ...collectionPaths,
-      ].join("\n").toLocaleLowerCase();
-      if (!haystack.includes(needle)) continue;
-      matches.push({
-        key: item.key,
-        itemType: item.itemType,
-        title: truncateMiddle(item.title, 1_000),
-        creators: creators.slice(0, 20),
-        date: truncateMiddle(item.date, 128),
-        DOI: truncateMiddle(item.DOI, 256),
-        tags: item.tags.slice(0, 50),
-        collectionKeys: item.collectionKeys.slice(0, 100),
-        collectionPaths: collectionPaths.slice(0, 100),
-        parentItem: item.parentItem || null,
-        filename: item.filename ? truncateMiddle(item.filename, 1_000) : null,
-      });
-    }
+    const matches = searchLibraryMetadata(
+      this.metadataIndexForSnapshot(snapshot),
+      query,
+      { limit },
+    ).map((hit) => this.metadataHitRecord(hit));
     return {
       query,
       libraryID: snapshot.libraryID,
       complete: snapshot.complete,
       matches,
+    };
+  }
+
+  async readZoteroNote(
+    noteKey: string,
+    requestedLibraryID?: number | string,
+    context?: ReaderContext,
+  ): Promise<Record<string, JsonValue>> {
+    if (!noteKey || noteKey.length > 128) {
+      throw new TypeError("note_key must be a non-empty Zotero Note key");
+    }
+    if (!this.zotero.readZoteroNote) {
+      throw new Error("Native Zotero Note reading is unavailable in this runtime");
+    }
+    const libraryID = requestedLibraryID
+      ?? context?.attachment.libraryID
+      ?? await this.zotero.defaultLibraryID?.()
+      ?? null;
+    if (libraryID === null || libraryID === "") {
+      throw new Error("A Zotero library ID is required to read this Note");
+    }
+    const note = await this.zotero.readZoteroNote(libraryID, noteKey);
+    return {
+      libraryID,
+      noteKey: note.key,
+      parentItemKey: note.parentItemKey,
+      title: note.title,
+      version: note.version,
+      qmdBody: truncateTextEnd(note.qmdBody, this.options.maxToolTextCharacters).text,
+      qmdAuthorityMarker: note.parentItemKey
+        ? qmdAuthorityMarker({
+            authority: "qmd",
+            libraryID,
+            noteKey: note.key,
+            parentItemKey: note.parentItemKey,
+          })
+        : null,
+    };
+  }
+
+  async searchZotkitLibraryItems(options: {
+    query: string;
+    mode: "metadata" | "fulltext" | "all";
+    libraryID?: number | string;
+    filters?: LibrarySearchFilters;
+    limit: number;
+    context?: ReaderContext;
+  }): Promise<{
+    query: string;
+    mode: "metadata" | "fulltext" | "all";
+    libraryID: number | string;
+    complete: boolean;
+    fullTextAvailable: boolean;
+    fullTextComplete: boolean | null;
+    warnings: string[];
+    matches: Array<Record<string, JsonValue>>;
+  }> {
+    if (
+      options.filters?.yearFrom !== undefined
+      && options.filters?.yearTo !== undefined
+      && options.filters.yearFrom > options.filters.yearTo
+    ) {
+      throw new RangeError("year_from must be less than or equal to year_to");
+    }
+    const snapshot = await this.ensureZotkitLibraryData(
+      false,
+      options.context,
+      options.libraryID,
+    );
+    const index = this.metadataIndexForSnapshot(snapshot);
+    const metadataHits = options.mode === "fulltext"
+      ? []
+      : searchLibraryMetadata(index, options.query, {
+        ...options.filters,
+        // Build a wider metadata candidate set before cross-channel ranking.
+        limit: Math.min(100, Math.max(options.limit, options.limit * 3)),
+      });
+    const metadataRanks = new Map(metadataHits.map((hit, rank) => [hit.itemKey, { hit, rank }]));
+    const warnings: string[] = [];
+    let fullTextComplete: boolean | null = null;
+    const fullTextRanks = new Map<string, { rank: number; attachmentKey: string }>();
+    const fullTextAvailable = Boolean(this.zotero.searchZotkitLibraryFullText);
+    if (options.mode !== "metadata") {
+      if (!this.zotero.searchZotkitLibraryFullText) {
+        warnings.push("Zotero full-text library search is unavailable in this runtime");
+      }
+      else {
+        try {
+          const result = await this.zotero.searchZotkitLibraryFullText(
+            snapshot.libraryID,
+            options.query,
+            100,
+          );
+          fullTextComplete = result.complete;
+          const itemByKey = new Map(snapshot.items.map((item) => [item.key, item]));
+          for (const [rank, match] of result.matches.entries()) {
+            const snapshotItem = itemByKey.get(match.key);
+            const parentKey = match.parentItem || snapshotItem?.parentItem || match.key;
+            if (fullTextRanks.has(parentKey)) continue;
+            fullTextRanks.set(parentKey, { rank, attachmentKey: match.key });
+          }
+        }
+        catch (error) {
+          warnings.push(`Zotero full-text library search failed: ${boundedErrorMessage(error)}`);
+          fullTextComplete = false;
+        }
+      }
+    }
+
+    const documents = new Map(index.sourceDocuments.map((document) => [document.itemKey, document]));
+    const keys = new Set<string>([
+      ...metadataRanks.keys(),
+      ...fullTextRanks.keys(),
+    ]);
+    const combined = [...keys].flatMap((key): Array<{
+      key: string;
+      score: number;
+      record: Record<string, JsonValue>;
+    }> => {
+      const metadata = metadataRanks.get(key);
+      const fullText = fullTextRanks.get(key);
+      const document = documents.get(key);
+      if (!document || !matchesLibrarySearchFilters(document, options.filters || {})) return [];
+      const metadataRankScore = metadata ? 1 / (60 + metadata.rank + 1) : 0;
+      const fullTextRankScore = fullText ? 1 / (60 + fullText.rank + 1) : 0;
+      const score = metadataRankScore + fullTextRankScore;
+      const record = metadata
+        ? this.metadataHitRecord(metadata.hit)
+        : {
+          key: document.itemKey,
+          itemType: document.itemType,
+          title: truncateMiddle(document.title, 1_000),
+          creators: document.creators.slice(0, 20),
+          date: truncateMiddle(document.date, 128),
+          DOI: truncateMiddle(document.doi, 256),
+          tags: document.tags.slice(0, 50),
+          collectionKeys: document.collectionKeys.slice(0, 100),
+          collectionPaths: document.collectionPaths.slice(0, 100),
+          attachmentKeys: document.attachmentKeys.slice(0, 100),
+          filenames: document.filenames.slice(0, 100),
+          score: 0,
+          matchedFields: [],
+        };
+      const existingFields = Array.isArray(record.matchedFields)
+        ? record.matchedFields as JsonValue[]
+        : [];
+      return [{
+        key,
+        score,
+        record: {
+          ...record,
+          score: Number(score.toFixed(8)),
+          metadataScore: metadata?.hit.score ?? 0,
+          fullTextMatch: Boolean(fullText),
+          fullTextAttachmentKey: fullText?.attachmentKey ?? null,
+          matchedFields: fullText ? [...existingFields, "fulltext"] : existingFields,
+        },
+      }];
+    });
+    combined.sort((left, right) => right.score - left.score || left.key.localeCompare(right.key));
+    return {
+      query: options.query,
+      mode: options.mode,
+      libraryID: snapshot.libraryID,
+      complete: snapshot.complete,
+      fullTextAvailable,
+      fullTextComplete,
+      warnings,
+      matches: combined.slice(0, options.limit).map((entry) => entry.record),
+    };
+  }
+
+  private metadataIndexForSnapshot(snapshot: ZotkitLibrarySnapshot): LibraryMetadataIndex {
+    const key = snapshotLibraryKey(snapshot.libraryID);
+    const cached = key ? this.librarySnapshots.get(key) : undefined;
+    if (cached?.snapshot === snapshot && cached.metadataIndex) return cached.metadataIndex;
+    const index = buildLibraryMetadataIndex(snapshot.items, snapshot.collections);
+    if (cached?.snapshot === snapshot) cached.metadataIndex = index;
+    return index;
+  }
+
+  private metadataHitRecord(hit: LibraryMetadataSearchHit): Record<string, JsonValue> {
+    return {
+      key: hit.itemKey,
+      itemType: hit.itemType,
+      title: truncateMiddle(hit.title, 1_000),
+      creators: hit.creators.slice(0, 20),
+      date: truncateMiddle(hit.date, 128),
+      DOI: truncateMiddle(hit.doi, 256),
+      tags: hit.tags.slice(0, 50),
+      collectionKeys: hit.collectionKeys.slice(0, 100),
+      collectionPaths: hit.collectionPaths.slice(0, 100),
+      attachmentKeys: hit.attachmentKeys.slice(0, 100),
+      filenames: hit.filenames.slice(0, 100),
+      filename: hit.filenames[0] ? truncateMiddle(hit.filenames[0], 1_000) : null,
+      parentItem: null,
+      score: hit.score,
+      matchedFields: [...hit.matchedFields],
     };
   }
 
@@ -2316,9 +2614,18 @@ export class ReaderContextService<TReader = unknown, TItem = unknown> {
   private async ensureZotkitLibraryData(
     force = false,
     context?: ReaderContext,
+    requestedLibraryID?: number | string,
   ): Promise<ZotkitLibrarySnapshot> {
-    const active = await this.ensureSnapshot(context);
-    const libraryID = active.context.attachment.libraryID;
+    let libraryID = requestedLibraryID
+      ?? context?.attachment.libraryID
+      ?? this.snapshot?.context.attachment.libraryID;
+    if (libraryID === undefined || libraryID === null || libraryID === "") {
+      libraryID = await this.zotero.defaultLibraryID?.() ?? undefined;
+    }
+    if (libraryID === undefined || libraryID === null || libraryID === "") {
+      const active = await this.ensureSnapshot(context);
+      libraryID = active.context.attachment.libraryID;
+    }
     const key = snapshotLibraryKey(libraryID);
     if (!key || libraryID === undefined) {
       throw new Error("The active Zotero attachment does not identify a library");
@@ -2375,6 +2682,48 @@ export class ReaderContextService<TReader = unknown, TItem = unknown> {
     return query;
   }
 
+  private parseLibrarySearchMode(value: unknown): "metadata" | "fulltext" | "all" {
+    if (value === undefined) return "all";
+    if (value === "metadata" || value === "fulltext" || value === "all") return value;
+    throw new TypeError("mode must be metadata, fulltext, or all");
+  }
+
+  private parseOptionalLibraryID(value: unknown): number | string | undefined {
+    if (value === undefined) return undefined;
+    if (typeof value === "number" && Number.isSafeInteger(value) && value > 0) return value;
+    if (typeof value === "string" && value.trim() && value.trim().length <= 128) {
+      return value.trim();
+    }
+    throw new TypeError("library_id must be a positive integer or non-empty string");
+  }
+
+  private parseStringArray(
+    value: unknown,
+    name: string,
+    maximumItems: number,
+    maximumCharacters: number,
+  ): string[] | undefined {
+    if (value === undefined) return undefined;
+    if (!Array.isArray(value) || value.length > maximumItems) {
+      throw new TypeError(`${name} must be an array with at most ${maximumItems} entries`);
+    }
+    return value.map((entry) => {
+      const text = cleanText(entry);
+      if (!text || text.length > maximumCharacters) {
+        throw new TypeError(`${name} entries must contain 1-${maximumCharacters} characters`);
+      }
+      return text;
+    });
+  }
+
+  private parseOptionalYear(value: unknown, name: string): number | undefined {
+    if (value === undefined) return undefined;
+    if (typeof value !== "number" || !Number.isSafeInteger(value) || value < 1 || value > 9999) {
+      throw new TypeError(`${name} must be an integer between 1 and 9999`);
+    }
+    return value;
+  }
+
   private parseLimit(value: unknown): number {
     if (value === undefined) return this.options.maxSearchResults;
     return clamp(positiveInteger(value), 1, 100);
@@ -2416,11 +2765,54 @@ export function searchPageText(text: string, query: string, limit = 20): SearchM
         snippet: `${prefix}${page.slice(start, end).replace(/\s+/g, " ").trim()}${suffix}`,
         matchStart: index,
         matchLength: needle.length,
+        searchMode: "exact",
+        score: 1,
       });
       cursor = index + Math.max(needle.length, 1);
     }
   }
-  return matches;
+  if (matches.length) return matches;
+
+  const terms = [...new Set(
+    lowerNeedle
+      .normalize("NFKC")
+      .split(/[^\p{L}\p{N}]+/u)
+      .map((term) => term.trim())
+      .filter((term) => term.length >= 3),
+  )];
+  if (terms.length < 2) return [];
+  const minimumMatches = Math.max(2, Math.ceil(terms.length * 0.5));
+  const ranked: SearchMatch[] = [];
+  for (let pageIndex = 0; pageIndex < pages.length; pageIndex += 1) {
+    const page = pages[pageIndex]!;
+    const lowerPage = page.toLocaleLowerCase();
+    const positions = terms
+      .map((term) => ({ term, index: lowerPage.indexOf(term) }))
+      .filter((match) => match.index >= 0);
+    if (positions.length < minimumMatches) continue;
+    const indexes = positions.map((match) => match.index);
+    const first = Math.min(...indexes);
+    const last = Math.max(...indexes);
+    const span = Math.max(1, last - first);
+    const coverage = positions.length / terms.length;
+    const proximity = 1 / (1 + span / 400);
+    const start = Math.max(0, first - 160);
+    const end = Math.min(page.length, last + positions.at(-1)!.term.length + 220);
+    ranked.push({
+      pageIndex,
+      pageNumber: pageIndex + 1,
+      snippet: `${start > 0 ? "…" : ""}${page.slice(start, end).replace(/\s+/g, " ").trim()}${end < page.length ? "…" : ""}`,
+      matchStart: first,
+      matchLength: Math.max(1, last - first + positions.at(-1)!.term.length),
+      searchMode: "terms",
+      score: Number((coverage * 0.8 + proximity * 0.2).toFixed(4)),
+      matchedTerms: positions.map((match) => match.term),
+    });
+  }
+  return ranked
+    .sort((left, right) => (right.score ?? 0) - (left.score ?? 0)
+      || (left.pageNumber ?? 0) - (right.pageNumber ?? 0))
+    .slice(0, limit);
 }
 
 function renderWorkspaceContext(
@@ -2808,6 +3200,8 @@ export interface Zotero9Runtime {
   Items?: {
     get?: (id: unknown) => unknown;
     getAsync?: (id: unknown) => Promise<unknown>;
+    getByLibraryAndKey?: (libraryID: number | string, key: string) => unknown;
+    getByLibraryAndKeyAsync?: (libraryID: number | string, key: string) => Promise<unknown>;
     /** Zotero.DataObjects#getLoaded; reads only the in-memory object cache. */
     getLoaded?: () => unknown[];
     /** Public read-only item enumeration; never saves or mutates an item. */
@@ -2834,6 +3228,11 @@ export interface Zotero9Runtime {
       recursive?: boolean,
       includeTrashed?: boolean,
     ) => unknown[] | Promise<unknown[]>;
+  };
+  Search?: new () => {
+    libraryID?: number | string;
+    addCondition(condition: string, operator: string, value?: string | boolean): void;
+    search(): Promise<Array<number | string>>;
   };
   Attachments?: {
     BASE_PATH_PLACEHOLDER?: string;
@@ -3062,6 +3461,16 @@ export function createZotero9ReadAdapter(
     return items?.get?.(id) ?? null;
   };
 
+  const resolveItemByLibraryAndKey = async (
+    libraryID: number | string,
+    key: string,
+  ): Promise<unknown | null> => {
+    if (items?.getByLibraryAndKeyAsync) {
+      return (await items.getByLibraryAndKeyAsync(libraryID, key)) ?? null;
+    }
+    return items?.getByLibraryAndKey?.(libraryID, key) ?? null;
+  };
+
   const loadedAttachmentPath = (item: unknown): string | null => {
     const rawPath = stringProperty(item, "attachmentPath");
     if (!rawPath) return null;
@@ -3128,6 +3537,73 @@ export function createZotero9ReadAdapter(
       const tabID = property(property(mainWindow, "Zotero_Tabs"), "selectedID");
       const reader = zotero.Reader?.getByTabID?.(tabID);
       return reader ? { reader } : null;
+    },
+
+    async defaultLibraryID() {
+      return zotero.Libraries?.userLibraryID ?? null;
+    },
+
+    async readZoteroNote(libraryID, noteKey) {
+      const item = await resolveItemByLibraryAndKey(libraryID, noteKey);
+      if (!item) throw new Error(`Zotero Note ${noteKey} is unavailable`);
+      const isNote = method(item, "isNote")?.() === true
+        || stringProperty(item, "itemType") === "note";
+      if (!isNote) throw new Error(`Zotero item ${noteKey} is not a Note`);
+      const htmlValue = method(item, "getNote")?.();
+      const html = typeof htmlValue === "string" ? htmlValue : "";
+      const parentKey = stringProperty(item, "parentKey")
+        || (() => {
+          const parentID = property(item, "parentItemID", "parentID");
+          const parent = parentID === undefined ? null : items?.get?.(parentID);
+          return parent ? stringProperty(parent, "key") : undefined;
+        })()
+        || null;
+      const displayTitle = method(item, "getDisplayTitle")?.();
+      return {
+        key: stringProperty(item, "key") || noteKey,
+        title: typeof displayTitle === "string" && cleanText(displayTitle)
+          ? cleanText(displayTitle)
+          : "Zotero Note",
+        qmdBody: noteHtmlToQmdBody(html),
+        version: numberProperty(item, "version") ?? 0,
+        parentItemKey: parentKey,
+      };
+    },
+
+    async searchZotkitLibraryFullText(libraryID, query, limit) {
+      if (!zotero.Search) throw new Error("Zotero.Search is unavailable");
+      const search = new zotero.Search();
+      search.libraryID = libraryID;
+      search.addCondition("fulltextContent", "contains", query);
+      const rawIDs = await search.search();
+      const ids = Array.isArray(rawIDs) ? rawIDs : [];
+      const matches: ZotkitLibraryFullTextCandidate[] = [];
+      for (const id of ids.slice(0, limit)) {
+        const item = await resolveItemByID(id);
+        if (!item) continue;
+        let key: string;
+        try {
+          key = itemIdentity(item).key;
+        }
+        catch {
+          continue;
+        }
+        let parentItem = safeStringProperty(item, "parentKey");
+        if (!parentItem) {
+          const parentID = safeProperty(item, "parentItemID", "parentID");
+          const parent = await resolveItemByID(parentID);
+          if (parent) {
+            try {
+              parentItem = itemIdentity(parent).key;
+            }
+            catch {
+              parentItem = undefined;
+            }
+          }
+        }
+        matches.push({ key, parentItem });
+      }
+      return { matches, complete: ids.length <= limit };
     },
 
     async resolveAttachment(reader, hookItem) {
@@ -3224,6 +3700,41 @@ export function createZotero9ReadAdapter(
       const getTextContent = method(page, "getTextContent");
       if (!getTextContent) return null;
       return normalizePdfTextContent(await getTextContent({ includeMarkedContent: false }));
+    },
+
+    async capturePdfPage(reader, pageIndex) {
+      if (!Number.isInteger(pageIndex) || pageIndex < 0) return null;
+      try {
+        const win = readerPdfWindow(reader);
+        const application = asRecord(win.PDFViewerApplication);
+        const document = asRecord(application.pdfDocument ?? property(application.pdfViewer, "pdfDocument"));
+        const getPage = method(document, "getPage");
+        if (!getPage) return null;
+        const page = await getPage(pageIndex + 1);
+        const getViewport = method(page, "getViewport");
+        const render = method(page, "render");
+        if (!getViewport || !render) return null;
+        const viewport = getViewport({ scale: 1.5 }) as { width?: number; height?: number };
+        const width = Math.max(1, Math.min(2400, Math.round(Number(viewport.width) || 0)));
+        const height = Math.max(1, Math.min(3200, Math.round(Number(viewport.height) || 0)));
+        if (!width || !height) return null;
+        const ownerDocument = property(win, "document") as Document | undefined;
+        if (!ownerDocument?.createElement) return null;
+        const canvas = ownerDocument.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const context2d = canvas.getContext("2d", { alpha: false });
+        if (!context2d) return null;
+        const task = render({ canvasContext: context2d, viewport }) as any;
+        await (task?.promise || task);
+        const data = canvas.toDataURL("image/png");
+        canvas.width = 0;
+        canvas.height = 0;
+        return data.startsWith("data:image/png;base64,") ? data : null;
+      }
+      catch {
+        return null;
+      }
     },
 
     async extractPdfOutline(reader) {

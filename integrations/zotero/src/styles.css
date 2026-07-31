@@ -67,6 +67,39 @@
   box-shadow: var(--zc-shadow);
 }
 
+.zc-detached-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 120;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 24px;
+  text-align: center;
+  color: var(--zc-text);
+  background: color-mix(in srgb, var(--zc-bg) 96%, transparent);
+  backdrop-filter: blur(12px);
+}
+.zc-detached-layer strong { font-size: 14px; }
+.zc-detached-layer p { max-width: 280px; margin: 0 0 6px; color: var(--zc-muted); font-size: 11px; line-height: 1.45; }
+.zc-detached-layer button {
+  min-width: 180px;
+  min-height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--zc-border);
+  border-radius: 8px;
+  color: var(--zc-text);
+  background: var(--zc-bg-raised);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 620;
+  cursor: pointer;
+}
+.zc-detached-layer button.is-primary { color: #fff; border-color: var(--zc-accent); background: var(--zc-accent); }
+.zc-detached-layer button:hover { border-color: var(--zc-accent); }
+
 .zc-pane-host {
   position: relative;
   container-name: zotkit-pane;
@@ -276,6 +309,33 @@
   border: 1px solid var(--zc-border);
   border-radius: 9px;
   background: color-mix(in srgb, var(--zc-bg-subtle) 88%, transparent);
+}
+.zc-scope-switch {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  width: 148px;
+  padding: 2px;
+  flex: none;
+  border: 1px solid var(--zc-border);
+  border-radius: 8px;
+  background: var(--zc-bg-subtle);
+}
+.zc-scope-switch button {
+  min-height: 25px;
+  padding: 0 7px;
+  border: 0;
+  border-radius: 6px;
+  color: var(--zc-muted);
+  background: transparent;
+  font: inherit;
+  font-size: 9.5px;
+  font-weight: 650;
+  cursor: pointer;
+}
+.zc-scope-switch button[aria-pressed="true"] {
+  color: var(--zc-text);
+  background: var(--zc-bg-raised);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, .08);
 }
 .zc-pdf-icon {
   display: grid;
@@ -623,6 +683,48 @@
 .zc-qlab-root-button strong { color: var(--zc-accent); font-size: 10px; }
 .zc-qlab-root-label { min-width: 0; max-width: 220px; overflow: hidden; color: var(--zc-muted); text-overflow: ellipsis; white-space: nowrap; }
 .zc-qlab-root-button:hover { border-color: color-mix(in srgb, var(--zc-accent) 40%, var(--zc-border)); background: var(--zc-accent-soft); }
+.zc-action-strip {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  padding: 1px;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+.zc-action-strip[hidden] { display: none; }
+.zc-action-object {
+  max-width: 140px;
+  flex: 0 1 auto;
+  overflow: hidden;
+  color: var(--zc-muted);
+  font-size: 9px;
+  font-weight: 620;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.zc-action-object::before { content: "PDF"; margin-right: 4px; color: var(--zc-accent); font-size: 7px; letter-spacing: .04em; }
+.zc-action-object.is-note::before { content: "NOTE"; }
+.zc-action-object.is-collection::before { content: "COLLECTION"; }
+.zc-action-object.is-draft::before { content: "DRAFT"; }
+.zc-research-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 24px;
+  flex: none;
+  padding: 0 7px;
+  border: 1px solid var(--zc-border);
+  border-radius: 999px;
+  color: var(--zc-text);
+  background: var(--zc-bg-raised);
+  font: inherit;
+  font-size: 9px;
+  cursor: pointer;
+}
+.zc-research-action:hover,
+.zc-research-action:focus-visible { border-color: color-mix(in srgb, var(--zc-accent) 45%, var(--zc-border)); color: var(--zc-accent); background: var(--zc-accent-soft); outline: none; }
+.zc-research-action-icon { color: var(--zc-accent); font-size: 10px; }
 .zc-composer { position: relative; border: 1px solid var(--zc-border); border-radius: 14px; background: var(--zc-bg-raised); box-shadow: var(--zc-shadow); transition: border-color .15s, box-shadow .15s; }
 .zc-composer:focus-within { border-color: color-mix(in srgb, var(--zc-accent) 52%, var(--zc-border)); box-shadow: 0 0 0 3px var(--zc-accent-soft), var(--zc-shadow); }
 /* The cap is a whole number of rows. A raw pixel maximum left the last row

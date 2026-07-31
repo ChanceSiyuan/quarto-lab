@@ -13,6 +13,7 @@ import {
   draftChangeRebaseAction,
   formatPendingApprovalDescription,
   pdfDirectory,
+  pdfSourceMatchesConversationPaper,
   pdfSourceMatchesReaderContext,
 } from "../src/plugin";
 import type { ReaderContext } from "../src/reader-context";
@@ -31,6 +32,17 @@ describe("Zotkit Reader terminal state", () => {
     expect(pdfSourceMatchesReaderContext(
       "https://example.org/another-paper.pdf#page=6",
       context,
+    )).toBe(false);
+  });
+
+  it("matches page links to an explicitly attached secondary paper", () => {
+    expect(pdfSourceMatchesConversationPaper(
+      "https://arxiv.org/pdf/2401.01234.pdf#page=9",
+      { sourceUrls: ["https://arxiv.org/abs/2401.01234"], dois: [] },
+    )).toBe(true);
+    expect(pdfSourceMatchesConversationPaper(
+      "https://example.org/unrelated.pdf#page=9",
+      { sourceUrls: ["https://arxiv.org/abs/2401.01234"], dois: [] },
     )).toBe(false);
   });
 

@@ -74,6 +74,7 @@ await Promise.all([
   copy(path.join(repo, "bootstrap.js"), path.join(root, "bootstrap.js")),
   copy(path.join(repo, "prefs.js"), path.join(root, "prefs.js")),
   copy(path.join(repo, "assets"), path.join(content, "icons")),
+  copy(path.join(repo, "standalone-workbench.xhtml"), path.join(content, "standalone-workbench.xhtml")),
   copy(path.join(repo, "locale"), path.join(root, "locale")),
   copy(helper, path.join(root, "native", "zoterochat-helper")),
   copy(starterArchive, path.join(root, "starter", "research-loop-starter.zip")),

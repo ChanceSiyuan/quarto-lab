@@ -13,6 +13,7 @@ Turn source material into concise, self-contained `.qmd` notes at advanced-gradu
 - Choose either one coherent article or a deliberate multi-page split. Do not fragment a topic only to shorten files.
 - Never copy a paper's full text into `knowledge/`; papers and extracted source material remain external evidence under `literature/`.
 - Do not edit a trusted page or its reading map until the user confirms the proposed destination.
+- When the host supplies a native Zotero Note key, call `zotero_read_note` first. Treat its inert `qmdBody` as rough source material, then write the result under `drafts/`; never copy active Note HTML or create a parallel prompt workflow. If the result contains a non-null `qmdAuthorityMarker`, preserve that marker verbatim immediately after the Draft frontmatter. After writing the Draft, call `zotero_propose_note_from_qmd` with its safe relative path so one review can bind it to the existing source Note without duplicating or overwriting that Note.
 
 ## Knowledge page shape
 
@@ -39,3 +40,5 @@ make knowledge-check
 ```
 
 Present the resulting diff. Only the user's merge makes the note trusted.
+
+When the user requests a native Zotero Note mirror of an existing QMD Draft, keep the QMD as authority and call `zotero_propose_note_from_qmd`. The reviewed proposal, not this skill, owns the Zotero write.

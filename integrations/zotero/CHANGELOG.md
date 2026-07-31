@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.9.0
+
+- Add object-aware Research Actions for PDFs, Notes, Collections, and QMD Drafts, routed through the repository's canonical skills.
+- Add one-review batch annotation proposals bound to exact Reader selections, with Apply-time PDF fingerprint checks.
+- Add safe Zotero Note ↔ QMD Draft exchange with QMD authority, source-Note binding, content conflict checks, and compensating rollback.
+- Enforce a read-only filesystem sandbox for analysis Actions.
+- Add structured metadata BM25F and Zotero-indexed full-text Library search, without forcing PDF extraction.
+
+## 0.8.1
+
+- Add a lightweight standalone QLab Workbench window with focus/return controls.
+- Add conversation-scoped multi-paper context, Paper/Library chat, and current-page screenshots.
+- Add ranked PDF text retrieval, persistent evidence traces, and cross-paper citation navigation.
+
 ## 0.8.0
 
 - Changed Terminal from a replacement view into a ChatGPT-style bottom drawer

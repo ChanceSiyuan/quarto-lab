@@ -116,6 +116,30 @@ describe("SidebarView", () => {
     }
   });
 
+  it("renders only the Actions supplied for the current research object", () => {
+    const body = document.createElement("div");
+    document.body.appendChild(body);
+    const handlers = { ...callbacks(), onResearchAction: vi.fn() };
+    const view = new SidebarView(body, handlers);
+    view.setState({
+      phase: "ready",
+      researchObject: { kind: "pdf", label: "A Test Paper" },
+      researchActions: [
+        { id: "summarize", label: "Summarize", description: "Summarize with evidence", icon: "≡" },
+        { id: "analyze-figure", label: "Analyze Figure", description: "Analyze the current page image", icon: "▧" },
+      ],
+    });
+
+    const actions = [...body.querySelectorAll<HTMLButtonElement>(".zc-research-action")];
+    expect(actions.map((button) => button.title)).toEqual([
+      "Summarize with evidence",
+      "Analyze the current page image",
+    ]);
+    expect(body.querySelector(".zc-action-object")?.textContent).toContain("A Test Paper");
+    actions[1]!.click();
+    expect(handlers.onResearchAction).toHaveBeenCalledWith("analyze-figure");
+  });
+
   it("forwards assistant PDF citations to Zotero page navigation", () => {
     const body = document.createElement("div");
     document.body.appendChild(body);

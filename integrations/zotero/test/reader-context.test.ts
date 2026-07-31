@@ -741,6 +741,165 @@ describe("ReaderContextService", () => {
     expect(buildZotkitLibrarySnapshot).toHaveBeenCalledTimes(1);
   });
 
+  it("ranks Zotkit metadata with BM25F and reports the fields that matched", async () => {
+    const buildZotkitLibrarySnapshot = vi.fn(async (libraryID): Promise<ZotkitLibrarySnapshot> => ({
+      schemaVersion: 1,
+      libraryID,
+      generatedAt: "2026-07-22T10:00:00.000Z",
+      complete: true,
+      collections: [],
+      tags: [],
+      items: [{
+        _topLevel: true,
+        key: "TITLE001",
+        itemType: "journalArticle",
+        title: "Topological quantum decoder",
+        creators: [],
+        date: "2025",
+        publicationTitle: "",
+        DOI: "",
+        url: "",
+        abstractNote: "",
+        language: "en",
+        tags: [],
+        collections: [],
+        collectionKeys: [],
+        version: 1,
+      }, {
+        _topLevel: true,
+        key: "ABSTRACT",
+        itemType: "journalArticle",
+        title: "A generic method",
+        creators: [],
+        date: "2025",
+        publicationTitle: "",
+        DOI: "",
+        url: "",
+        abstractNote: "A topological quantum decoder is analyzed here.",
+        language: "en",
+        tags: [],
+        collections: [],
+        collectionKeys: [],
+        version: 1,
+      }],
+    }));
+    const { adapter } = makeAdapter({ buildZotkitLibrarySnapshot });
+    const service = new ReaderContextService(adapter, host);
+
+    const result = await service.invokeTool("zotkit_find_items", {
+      query: "topological quantum decoder",
+    }) as { matches: Array<Record<string, unknown>> };
+    expect(result.matches.map((match) => match.key)).toEqual(["TITLE001", "ABSTRACT"]);
+    expect(result.matches[0]).toMatchObject({ matchedFields: ["title"] });
+    expect(Number(result.matches[0]?.score)).toBeGreaterThan(Number(result.matches[1]?.score));
+  });
+
+  it("reads a native Zotero Note as inert QMD source without requiring a PDF Reader", async () => {
+    const readZoteroNote = vi.fn(async () => ({
+      key: "NOTE01",
+      title: "A useful note",
+      qmdBody: "Safe **evidence**.",
+      version: 7,
+      parentItemKey: "PARENT01",
+    }));
+    const { adapter } = makeAdapter({
+      defaultLibraryID: vi.fn(async () => 1),
+      readZoteroNote,
+    });
+    const service = new ReaderContextService(adapter, host);
+
+    await expect(service.invokeTool("zotero_read_note", {
+      note_key: "NOTE01",
+      library_id: 1,
+    })).resolves.toEqual({
+      libraryID: 1,
+      noteKey: "NOTE01",
+      parentItemKey: "PARENT01",
+      title: "A useful note",
+      version: 7,
+      qmdBody: "Safe **evidence**.",
+      qmdAuthorityMarker: "<!-- qlab-zotero-note: {\"authority\":\"qmd\",\"libraryID\":1,\"noteKey\":\"NOTE01\",\"parentItemKey\":\"PARENT01\"} -->",
+    });
+    expect(readZoteroNote).toHaveBeenCalledWith(1, "NOTE01");
+  });
+
+  it("searches library metadata and Zotero full-text candidates without a Reader or PDFWorker", async () => {
+    const buildZotkitLibrarySnapshot = vi.fn(async (libraryID): Promise<ZotkitLibrarySnapshot> => ({
+      schemaVersion: 1,
+      libraryID,
+      generatedAt: "2026-07-22T10:00:00.000Z",
+      complete: true,
+      collections: [],
+      tags: [],
+      items: [{
+        _topLevel: true,
+        key: "META0001",
+        itemType: "journalArticle",
+        title: "Needle metadata result",
+        creators: [], date: "2025", publicationTitle: "", DOI: "", url: "",
+        abstractNote: "", language: "en", tags: [], collections: [],
+        collectionKeys: [], version: 1,
+      }, {
+        _topLevel: true,
+        key: "FULL0002",
+        itemType: "journalArticle",
+        title: "Opaque article",
+        creators: [], date: "2024", publicationTitle: "", DOI: "", url: "",
+        abstractNote: "", language: "en", tags: [], collections: [],
+        collectionKeys: [], version: 1,
+      }, {
+        _topLevel: false,
+        key: "PDF00002",
+        parentItem: "FULL0002",
+        itemType: "attachment",
+        title: "",
+        creators: [], date: "", publicationTitle: "", DOI: "", url: "",
+        abstractNote: "", language: "", tags: [], collections: [],
+        collectionKeys: [], version: 1,
+        filename: "opaque.pdf",
+        contentType: "application/pdf",
+      }],
+    }));
+    const searchZotkitLibraryFullText = vi.fn(async () => ({
+      matches: [{ key: "PDF00002", parentItem: "FULL0002" }],
+      complete: true,
+    }));
+    const { adapter: base } = makeAdapter();
+    const adapter: ZoteroReadAdapter<MockReader, MockItem> = {
+      ...base,
+      getActiveReaderHook: vi.fn(async () => null),
+      defaultLibraryID: vi.fn(async () => 7),
+      buildZotkitLibrarySnapshot,
+      searchZotkitLibraryFullText,
+    };
+    const service = new ReaderContextService(adapter, host);
+
+    const result = await service.invokeTool("zotero_search_library_items", {
+      query: "needle",
+      mode: "all",
+      library_id: 7,
+    }) as { matches: Array<Record<string, unknown>>; fullTextAvailable: boolean };
+    expect(result.fullTextAvailable).toBe(true);
+    expect(result.matches.map((match) => match.key)).toEqual(expect.arrayContaining([
+      "META0001",
+      "FULL0002",
+    ]));
+    expect(result.matches.find((match) => match.key === "FULL0002")).toMatchObject({
+      fullTextMatch: true,
+      attachmentKeys: ["PDF00002"],
+      matchedFields: ["fulltext"],
+    });
+    expect(searchZotkitLibraryFullText).toHaveBeenCalledWith(7, "needle", 100);
+    expect(adapter.readPdfWorkerText).not.toHaveBeenCalled();
+
+    await service.invokeTool("zotero_search_library_items", {
+      query: "needle",
+      mode: "metadata",
+      library_id: 7,
+    });
+    expect(searchZotkitLibraryFullText).toHaveBeenCalledTimes(1);
+  });
+
   it("persists a failed built-in Zotkit snapshot warning in the active workspace", async () => {
     let shouldFail = true;
     const buildZotkitLibrarySnapshot = vi.fn(async (libraryID): Promise<ZotkitLibrarySnapshot> => {
@@ -1832,6 +1991,23 @@ describe("pure helpers", () => {
     }
   });
 
+  it("falls back to ranked token retrieval when the exact phrase is absent", () => {
+    const pages = [
+      "Persistent randomness helps stochastic optimization escape a narrow basin.",
+      "A stochastic baseline is described here without the other concepts.",
+      "Stochastic gradient estimates with persistent noise improve optimization stability.",
+    ];
+    const matches = searchPageText(
+      pages.join("\f"),
+      "persistent stochastic gradient optimization",
+      10,
+    );
+
+    expect(matches.map((match) => match.pageNumber)).toEqual([3, 1]);
+    expect(matches[0]).toMatchObject({ searchMode: "terms" });
+    expect(matches[0]?.matchedTerms).toEqual(expect.arrayContaining(["persistent", "gradient", "optimization"]));
+  });
+
   it("renders explicit read-only agent policy", () => {
     const metadata = makeMetadata();
     const instructions = renderAgentInstructions({
@@ -2115,6 +2291,37 @@ describe("createZotero9ReadAdapter", () => {
     await expect(adapter.listAnnotations(attachment)).resolves.toEqual([
       expect.objectContaining({ key: "ANN1", pageNumber: 2, text: "important" }),
     ]);
+  });
+
+  it("queries Zotero's existing full-text index without running PDFWorker", async () => {
+    const addCondition = vi.fn();
+    const search = vi.fn(async () => [17]);
+    class Search {
+      libraryID?: number | string;
+      addCondition = addCondition;
+      search = search;
+    }
+    const attachment = {
+      id: 17,
+      key: "PDF00002",
+      parentKey: "FULL0002",
+    };
+    const pdfWorker = vi.fn();
+    const adapter = createZotero9ReadAdapter({
+      Libraries: { userLibraryID: 7 },
+      Items: { getAsync: vi.fn(async () => attachment) },
+      Search,
+      PDFWorker: { getFullText: pdfWorker },
+    });
+
+    await expect(adapter.defaultLibraryID?.()).resolves.toBe(7);
+    await expect(adapter.searchZotkitLibraryFullText?.(7, "needle", 20)).resolves.toEqual({
+      matches: [{ key: "PDF00002", parentItem: "FULL0002" }],
+      complete: true,
+    });
+    expect(addCondition).toHaveBeenCalledWith("fulltextContent", "contains", "needle");
+    expect(search).toHaveBeenCalledTimes(1);
+    expect(pdfWorker).not.toHaveBeenCalled();
   });
 
   function makeOutlineReader(pdfDocument: unknown): unknown {

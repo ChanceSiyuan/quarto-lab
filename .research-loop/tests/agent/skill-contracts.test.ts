@@ -47,6 +47,7 @@ const SKILL_NAMES = [
   "complete-gaps",
   "conference-survey",
   "download-ref",
+  "evidence-review",
   "expand-notes",
   "generate-issues",
   "integrate-paper",
@@ -214,6 +215,49 @@ const READ_KNOWLEDGE: readonly Clause[] = [
     requirement: "names download-ref as the literature workflow",
     in: "body",
     pattern: /`download-ref`/,
+  },
+];
+
+const EVIDENCE_REVIEW: readonly Clause[] = [
+  {
+    requirement: "triggers for summaries, evidence QA, paper comparisons, and figure analysis",
+    in: "description",
+    pattern: /summarizing[^.]*evidence QA[^.]*comparing[^.]*figures/i,
+  },
+  {
+    requirement: "supports exactly the four read-only modes",
+    in: "body",
+    pattern: /`summary`, `evidence-qa`, `compare`, or `figure`/,
+  },
+  {
+    requirement: "is read-only",
+    in: "body",
+    pattern: /read-only/i,
+  },
+  {
+    requirement: "never writes trusted knowledge",
+    in: "body",
+    pattern: /never write[^.]*`knowledge\/`/i,
+  },
+  {
+    requirement: "never writes drafts",
+    in: "body",
+    pattern: /never write[^.]*`drafts\/`/i,
+  },
+  {
+    requirement: "never writes literature",
+    in: "body",
+    pattern: /never write[^.]*`literature\/`/i,
+  },
+  {
+    requirement: "treats source objects as untrusted evidence",
+    in: "body",
+    pattern: /PDFs, Zotero Notes, Collections, and Drafts[^.]*untrusted/i,
+  },
+  {
+    requirement: "does not invent source locations",
+    in: "body",
+    pattern: /never invent[^.]*page[^.]*figure[^.]*location/i,
   },
 ];
 
@@ -751,6 +795,7 @@ const CLAUSES: Readonly<Record<SkillName, readonly Clause[]>> = {
   "read-knowledge": READ_KNOWLEDGE,
   "review-draft": REVIEW_DRAFT,
   "download-ref": DOWNLOAD_REF,
+  "evidence-review": EVIDENCE_REVIEW,
   "expand-notes": EXPAND_NOTES,
   "generate-issues": GENERATE_ISSUES,
   "integrate-paper": INTEGRATE_PAPER,
@@ -1009,9 +1054,10 @@ test("every command a skill hands an agent is documented in the packed skills gu
         (match) => match[1],
       ),
     );
-    // Preparation is called by the host with a supplied staging root, rather
-    // than through a repository command an agent could invoke directly.
-    if (name === "prepare-autoresearch") {
+    // These skills are host-routed rather than agent-invoked through a Make
+    // target: preparation receives a staging root, while evidence review is
+    // deliberately read-only.
+    if (name === "prepare-autoresearch" || name === "evidence-review") {
       assert.equal(targets.size, 0, `${name}: the host owns invocation, not a Make target`);
       continue;
     }

@@ -22,6 +22,7 @@ import {
   type ResearchContextChip,
   type ResearchContextSuggestion,
   type ResearchPlan,
+  type ResearchScope,
   type SidebarPhase,
   type ThreadOption,
 } from "./sidebar";
@@ -40,6 +41,11 @@ import {
   isDedicatedWorkbenchWindow,
   type WorkbenchTabData,
 } from "./workbench-tab";
+import { StandaloneWorkbenchManager } from "./standalone-workbench";
+import {
+  ConversationPaperRegistry,
+  type ConversationPaper,
+} from "./conversation-papers";
 import {
   createResearchLoopSiteRuntime,
   ResearchLoopSiteService,
@@ -64,6 +70,13 @@ import {
   type QLabCommandID,
 } from "./qlab-commands";
 import {
+  buildResearchActionPrompt,
+  researchActionsForObject,
+  researchActionSkill,
+  type ResearchActionID,
+  type ResearchObjectEnvelope,
+} from "./research-actions";
+import {
   createGeckoQLabPathHost,
   normalizeQLabRoot,
   qlabRepositoryState,
@@ -76,6 +89,7 @@ import {
 import { defaultSelectableModel } from "./model-menu";
 import { shouldAutoOpenFloat } from "./plugin-helpers";
 import {
+  ZOTERO_MUTATION_TOOL,
   ZoteroMutationApplyError,
   ZoteroMutationService,
   createZoteroMutationHost,
@@ -85,10 +99,22 @@ import {
   PaperTrailService,
   createZoteroAnchorHost,
   ANCHOR_TAG,
+  ANCHOR_COLOR,
+  computeSortIndex,
   type AnchorHost,
   type AnchorRecord,
   type PaperTrailConsent,
 } from "./paper-trail";
+import {
+  ANNOTATION_PROPOSAL_TOOL,
+  AnnotationProposalService,
+} from "./annotation-proposals";
+import {
+  NOTE_FROM_QMD_TOOL,
+  NoteDraftBridgeService,
+  type NoteDraftBridgeHost,
+  type NoteDraftLink,
+} from "./note-draft-bridge";
 import {
   NotingService,
   createZoteroNotingHost,
@@ -151,6 +177,7 @@ export function draftChangeRebaseAction(
 }
 
 export const MAX_SELECTION_PROMPT_CHARACTERS = 32_000;
+const STANDALONE_WORKBENCH_ID = "__qlab_standalone_workbench__";
 
 /** Keep the historical class name as a source-level compatibility shim. */
 export class ZoteroChatPlugin {
@@ -165,9 +192,13 @@ export class ZoteroChatPlugin {
   private literature!: QLabLiteratureService;
   private zoteroSync!: QLabZoteroSyncService;
   private mutations!: ZoteroMutationService;
+  private annotationProposals!: AnnotationProposalService;
+  private noteDraftBridge!: NoteDraftBridgeService;
   private paperTrail!: PaperTrailService;
   private noting!: NotingService;
   private workbenchTabs!: WorkbenchTabManager;
+  private standaloneWorkbench!: StandaloneWorkbenchManager;
+  private readonly conversationPapers = new ConversationPaperRegistry();
   private anchorHost!: AnchorHost;
   private views = new Set<HTMLElement>();
   private chatViews = new Map<HTMLElement, SidebarView>();
@@ -189,13 +220,17 @@ export class ZoteroChatPlugin {
   private chatError = "";
   private selectedModel = "";
   private selectedEffort = "medium";
+  private researchScope: ResearchScope = "paper";
   private floatOpacity = 100;
   private addedContextIDs = new Set<string>();
+  private pendingScreenshots: string[] = [];
   /** Default Reader chips the user explicitly turned off for this paper. */
   private excludedContextIDs = new Set<string>();
   private chatGPTArchive: StoredChatGPTArchive | null = null;
   private selectedImportedChatID: string | null = null;
   private openImportedChatIDs: string[] = [];
+  /** Draft currently visible in a QMD workspace; null as soon as that workspace closes. */
+  private activeDraftPath: string | null = null;
   private mutationCheckpoints: CheckpointOption[] = [];
   private contextRequestSequence = 0;
   private destroyed = false;
@@ -221,6 +256,7 @@ export class ZoteroChatPlugin {
       permissions: 0o700,
     });
     await this.loadChatGPTHistory();
+    await this.loadConversationPapers();
 
     const readAdapter = createZotero9ReadAdapter(Zotero, {
       readUtf8: (path) => IOUtils.readUTF8(path),
@@ -242,6 +278,15 @@ export class ZoteroChatPlugin {
       openNewWindow: (source) => this.openWorkbenchWindow(source),
       onMoveComplete: () => this.renderChatViews(),
       onMoveError: (error) => this.reportError(error),
+    });
+    this.standaloneWorkbench = new StandaloneWorkbenchManager({
+      openWindow: (source) => this.openStandaloneWorkbenchWindow(source),
+      createView: (host, win) => this.createWorkbenchView(host, win, STANDALONE_WORKBENCH_ID),
+      onActiveChange: () => this.renderChatViews(),
+      onReturn: () => {
+        const win = Zotero.getMainWindow?.();
+        if (win) void this.openWorkbenchTab(win).catch((error) => this.reportError(error));
+      },
     });
     this.bridge = new NativeBridge(data.rootURI, data.version);
     this.mainSite = new ResearchLoopSiteService(
@@ -274,6 +319,46 @@ export class ZoteroChatPlugin {
         },
       },
     );
+    this.anchorHost = createZoteroAnchorHost(Zotero);
+    this.annotationProposals = new AnnotationProposalService(
+      {
+        readAttachmentPdfSha256: async (libraryID, attachmentKey) => {
+          const file = await this.anchorHost.attachmentFile(libraryID, attachmentKey);
+          if (!file) return null;
+          try {
+            return sha256File(file.path, file.size);
+          }
+          catch {
+            return null;
+          }
+        },
+        createHighlight: (target) => this.anchorHost.createHighlight({
+          libraryID: target.libraryID,
+          attachmentKey: target.attachmentKey,
+          selectedText: target.selectedText,
+          comment: target.comment,
+          color: ANCHOR_COLOR,
+          pageLabel: target.pageNumber === undefined ? "" : String(target.pageNumber),
+          position: target.position,
+          sortIndex: computeSortIndex(target.position),
+          tags: [ANCHOR_TAG, ...target.tags],
+        }),
+        deleteAnnotation: (libraryID, annotationKey) => (
+          this.anchorHost.deleteAnnotation(libraryID, annotationKey)
+        ),
+      },
+      {
+        getAnchors: () => this.codex?.getAllAnchors() || [],
+        setAnnotationKey: (anchorID, annotationKey) => (
+          this.codex.updateAnchorById(anchorID, { annotationKey })
+        ),
+        onState: () => this.renderChatViews(),
+      },
+    );
+    this.noteDraftBridge = new NoteDraftBridgeService(
+      this.createNoteDraftBridgeHost(),
+      { onState: () => this.renderChatViews() },
+    );
     this.codex = new CodexService(
       this.bridge,
       this.readerContext,
@@ -288,11 +373,29 @@ export class ZoteroChatPlugin {
         },
       },
       {
-        tools: this.mutations.tools,
-        invokeTool: (name, argumentsValue) => this.mutations.invokeTool(name, argumentsValue),
+        tools: [
+          ...this.mutations.tools,
+          ...this.annotationProposals.tools,
+          ...this.noteDraftBridge.tools,
+        ],
+        invokeTool: async (name, argumentsValue, context, call) => {
+          if (name === ZOTERO_MUTATION_TOOL) {
+            return this.mutations.invokeTool(name, argumentsValue, context);
+          }
+          if (name === ANNOTATION_PROPOSAL_TOOL) {
+            return this.annotationProposals.invokeTool(
+              name,
+              argumentsValue,
+              this.codex.getThreadAnchors(call?.threadId || null),
+            );
+          }
+          if (name === NOTE_FROM_QMD_TOOL) {
+            return this.noteDraftBridge.invokeTool(name, argumentsValue);
+          }
+          throw new Error(`Unknown reviewed Research Loop tool: ${name}`);
+        },
       },
     );
-    this.anchorHost = createZoteroAnchorHost(Zotero);
     this.paperTrail = new PaperTrailService(
       this.anchorHost,
       {
@@ -344,6 +447,7 @@ export class ZoteroChatPlugin {
     }
     for (const view of this.chatViews.values()) view.destroy();
     this.chatViews.clear();
+    this.standaloneWorkbench?.destroy();
     for (const entry of this.floatPanels.values()) {
       entry.view.destroy();
       entry.host.remove();
@@ -489,8 +593,10 @@ export class ZoteroChatPlugin {
         const isReader = tabType === "reader";
         const isPdf = Boolean(item?.isPDFAttachment?.())
           || item?.attachmentContentType === "application/pdf";
-        setEnabled(isReader || isPdf);
+        const isNote = Boolean(item?.isNote?.()) || item?.itemType === "note";
+        setEnabled(isReader || isPdf || isNote);
         if (isReader || isPdf) this.signalReaderBodyReady(body);
+        if (isNote) this.renderChatViews();
       },
       onRender: ({ body }: { body: HTMLElement }) => {
         this.views.add(body);
@@ -809,7 +915,7 @@ export class ZoteroChatPlugin {
       onOpenWorkbench: () => void this.openWorkbenchTab().catch((error) => this.reportError(error)),
       canOpenPdfPage: (reference) => this.canOpenConversationPdfPage(reference),
       onOpenPdfPage: (reference) => {
-        void this.openConversationPDFPage(reference.page).catch((error) => this.reportError(error));
+        void this.openConversationPDFPage(reference).catch((error) => this.reportError(error));
       },
       onRefreshContext: () => void this.retryResearchChat(body).catch((error) => this.reportError(error)),
       onInsertSelection: () => void this.attachSelection(false),
@@ -821,12 +927,20 @@ export class ZoteroChatPlugin {
       onCaptureChatDraft: () => {
         void this.captureChatDraft().catch((error) => this.reportError(error));
       },
+      onResearchAction: (actionID) => {
+        void this.runResearchAction(view!, actionID, body.ownerDocument.defaultView || undefined)
+          .catch((error) => this.reportError(error));
+      },
       onEffortChange: (effort) => {
         this.selectedEffort = effort;
         setPrefString("reasoningEffort", effort);
         this.renderChatViews();
       },
-      onAddContext: (suggestion) => this.addInteractionContext(suggestion),
+      onScopeChange: (scope) => this.setResearchScope(scope),
+      onAddContext: (suggestion) => this.addInteractionContext(
+        suggestion,
+        body.ownerDocument.defaultView || undefined,
+      ),
       onRemoveContext: (contextID) => this.removeInteractionContext(contextID),
       onReviewDecision: (reviewID, decision) => {
         void this.resolveMutationReview(reviewID, decision);
@@ -929,7 +1043,7 @@ export class ZoteroChatPlugin {
     await this.openResearchChat(body, true);
   }
 
-  private async sendChat(text: string): Promise<void> {
+  private async sendChat(text: string, options: { readOnly?: boolean } = {}): Promise<void> {
     if (this.selectedImportedChatID) {
       throw new Error("Imported ChatGPT history is read-only; return to the live Codex conversation first");
     }
@@ -939,7 +1053,9 @@ export class ZoteroChatPlugin {
     }
     this.chatPhase = "ready";
     const context = this.codex.getActiveReaderContext?.() || this.context;
-    await this.codex.send(text, this.selectedModel, this.selectedEffort);
+    const screenshots = [...this.pendingScreenshots];
+    await this.codex.send(text, this.selectedModel, this.selectedEffort, screenshots, options);
+    if (screenshots.length) this.pendingScreenshots = [];
     const threadId = this.codex.state.activeThreadId;
     if (threadId && context?.selection?.text && this.addedContextIDs.has("current-selection")) {
       this.paperTrail.beginPendingAnchor(context, text, threadId);
@@ -953,10 +1069,28 @@ export class ZoteroChatPlugin {
       throw new Error("Sign in to the local Codex with ChatGPT first");
     }
     this.excludedContextIDs.clear();
+    this.researchScope = "paper";
     this.addedContextIDs.delete("current-selection");
     await this.codex.newThread();
     this.updateInteractionContext();
     (preferredView || this.activeWorkbenchEntry()?.view)?.focusComposer();
+  }
+
+  private setResearchScope(scope: ResearchScope): void {
+    this.researchScope = scope;
+    if (scope === "library") {
+      this.addedContextIDs.add("zotero-library");
+      this.excludedContextIDs.add("active-paper");
+      this.excludedContextIDs.add("current-page");
+    }
+    else {
+      this.addedContextIDs.delete("zotero-library");
+      this.excludedContextIDs.delete("active-paper");
+      this.excludedContextIDs.delete("current-page");
+    }
+    this.updateInteractionContext();
+    this.renderChatViews();
+    this.activeChatView()?.focusComposer();
   }
 
   private async selectThread(view: SidebarView, threadID: string): Promise<void> {
@@ -1087,7 +1221,7 @@ export class ZoteroChatPlugin {
       },
       canOpenPdfPage: (reference) => this.canOpenConversationPdfPage(reference),
       onOpenPdfPage: (reference) => {
-        void this.openConversationPDFPage(reference.page).catch((error) => this.reportError(error));
+        void this.openConversationPDFPage(reference).catch((error) => this.reportError(error));
       },
     });
     const storedSize = /^(\d+)x(\d+)$/.exec(prefString("floatSize", ""));
@@ -1131,7 +1265,14 @@ export class ZoteroChatPlugin {
       onOpenTerminal: () => {
         void this.toggleWorkbenchTerminal(view, win).catch((error) => this.reportError(error));
       },
-      onOpenWorkbench: () => win.Zotero_Tabs?.select?.(tabID),
+      onOpenWorkbench: () => {
+        if (tabID === STANDALONE_WORKBENCH_ID) this.standaloneWorkbench.focus();
+        else win.Zotero_Tabs?.select?.(tabID);
+      },
+      onOpenStandalone: () => {
+        if (tabID === STANDALONE_WORKBENCH_ID) this.standaloneWorkbench.focus();
+        else void this.standaloneWorkbench.open(win).catch((error) => this.reportError(error));
+      },
       onRefreshContext: () => void this.refreshContext().catch((error) => this.reportError(error)),
       onInsertSelection: () => void this.attachSelection(false),
       onModelChange: (model) => { void this.handleModelSelection(model); },
@@ -1140,7 +1281,8 @@ export class ZoteroChatPlugin {
         setPrefString("reasoningEffort", effort);
         this.renderChatViews();
       },
-      onAddContext: (suggestion) => this.addInteractionContext(suggestion),
+      onScopeChange: (scope) => this.setResearchScope(scope),
+      onAddContext: (suggestion) => this.addInteractionContext(suggestion, win),
       onRemoveContext: (contextID) => this.removeInteractionContext(contextID),
       onReviewDecision: (reviewID, decision) => {
         void this.resolveMutationReview(reviewID, decision);
@@ -1174,14 +1316,18 @@ export class ZoteroChatPlugin {
         void this.captureChatDraft().catch((error) => this.reportError(error));
       },
       onChoosePaper: () => {
-        void this.chooseWorkbenchPaper(win, tabID).catch((error) => this.reportError(error));
+        void this.chooseWorkbenchPaper(
+          win,
+          tabID === STANDALONE_WORKBENCH_ID ? null : tabID,
+          view,
+        ).catch((error) => this.reportError(error));
       },
       onOpenPaper: () => {
         void this.openContextPDF(isDedicatedWorkbenchWindow(win)).catch((error) => this.reportError(error));
       },
       canOpenPdfPage: (reference) => this.canOpenConversationPdfPage(reference),
       onOpenPdfPage: (reference) => {
-        void this.openConversationPDFPage(reference.page, isDedicatedWorkbenchWindow(win))
+        void this.openConversationPDFPage(reference, isDedicatedWorkbenchWindow(win))
           .catch((error) => this.reportError(error));
       },
       onCheckMainSite: () => this.mainSite.isAvailable(),
@@ -1231,9 +1377,13 @@ export class ZoteroChatPlugin {
         path,
       ),
       onEditorChosen: (editorId) => setPrefString("externalEditor", editorId),
-      onActiveDocument: (path, changePath) => this.codex.setActiveDocument(
-        path ? { relativePath: path, editablePath: changePath || null } : null,
-      ),
+      onActiveDocument: (path, changePath) => {
+        this.activeDraftPath = path?.startsWith("drafts/") ? path : null;
+        this.codex.setActiveDocument(
+          path ? { relativePath: path, editablePath: changePath || null } : null,
+        );
+        this.renderChatViews();
+      },
       onReviewDraft: (path) => this.reviewDraftForKnowledge(path),
       prepareChange: (path) => this.prepareQmdChange(path),
       refreshChangePreview: (path, changePath, previewPath) =>
@@ -1692,7 +1842,11 @@ export class ZoteroChatPlugin {
     }
   }
 
-  private async chooseWorkbenchPaper(win: Window, tabID: string): Promise<void> {
+  private async chooseWorkbenchPaper(
+    win: Window,
+    tabID: string | null,
+    preferredView?: SidebarView,
+  ): Promise<void> {
     const deferred = Zotero.Promise.defer();
     const io: any = {
       dataIn: null,
@@ -1759,14 +1913,115 @@ export class ZoteroChatPlugin {
     this.addedContextIDs.delete("current-selection");
     const requestSequence = ++this.contextRequestSequence;
     await this.applyContext(accepted, requestSequence);
-    this.workbenchTabs.update(win, tabID, {
-      itemID: attachment.id,
-      icon: QLAB_WORKBENCH_TAB_ICON,
-      title: `QLab · ${paperTitle(accepted)}`,
-    });
-    Zotero.Session?.debounceSave?.();
+    if (tabID) {
+      this.workbenchTabs.update(win, tabID, {
+        itemID: attachment.id,
+        icon: QLAB_WORKBENCH_TAB_ICON,
+        title: `QLab · ${paperTitle(accepted)}`,
+      });
+      Zotero.Session?.debounceSave?.();
+    }
     this.renderChatViews();
-    this.workbenchTabs.entries(win).find((entry) => entry.id === tabID)?.view.focusComposer();
+    if (tabID) this.workbenchTabs.entries(win).find((entry) => entry.id === tabID)?.view.focusComposer();
+    else preferredView?.focusComposer();
+  }
+
+  private async chooseAdditionalPaper(win: Window): Promise<void> {
+    const threadID = this.codex.state.activeThreadId;
+    if (!threadID) throw new Error("Start a conversation before attaching another paper");
+    const deferred = Zotero.Promise.defer();
+    const io: any = {
+      dataIn: null,
+      dataOut: null,
+      deferred,
+      itemTreeID: "qlab-context-select-paper",
+      singleSelection: true,
+      hideCollections: ["duplicates", "trash", "feeds"],
+    };
+    (win as any).openDialog(
+      "chrome://zotero/content/selectItemsDialog.xhtml",
+      "",
+      "chrome,dialog=no,centerscreen,resizable=yes",
+      io,
+    );
+    await deferred.promise;
+    const selectedID = Array.isArray(io.dataOut) ? io.dataOut[0] : null;
+    if (!selectedID) return;
+    const selected = await Zotero.Items.getAsync(selectedID);
+    let attachment = selected;
+    if (selected && !selected.isPDFAttachment?.()) {
+      attachment = selected.isRegularItem?.() ? await selected.getBestAttachment?.() : null;
+    }
+    const isPDF = Boolean(attachment?.isPDFAttachment?.())
+      || attachment?.attachmentContentType === "application/pdf";
+    if (!attachment?.id || !isPDF) throw new Error("This Zotero item has no readable PDF attachment");
+
+    const opened = await Zotero.Reader.open(attachment.id, null, {
+      allowDuplicate: false,
+      openInBackground: true,
+      preventJumpback: true,
+    });
+    let captured: ReaderContext | null = null;
+    let lastError: unknown = null;
+    for (let attempt = 0; attempt < 80 && !captured; attempt++) {
+      const reader = opened || Zotero.Reader?._readers?.find(
+        (candidate: any) => String(candidate?.itemID) === String(attachment.id),
+      );
+      if (reader) {
+        try {
+          captured = await this.readerContext.acceptReaderHook({ reader, item: attachment, params: {} });
+        }
+        catch (error) { lastError = error; }
+      }
+      if (!captured) await new Promise<void>((resolve) => win.setTimeout(resolve, 75));
+    }
+    if (!captured) {
+      throw lastError instanceof Error
+        ? lastError
+        : new Error("Zotero Reader has not prepared this paper yet; try again shortly");
+    }
+    const paper: ConversationPaper = {
+      id: `${captured.attachment.libraryID ?? "0"}-${captured.attachment.key}`,
+      libraryID: String(captured.attachment.libraryID ?? "0"),
+      attachmentKey: captured.attachment.key,
+      attachmentID: String(attachment.id),
+      ...(captured.parent?.key ? { itemKey: captured.parent.key } : {}),
+      title: paperTitle(captured),
+      ...(captured.pdfPath ? { pdfPath: captured.pdfPath } : {}),
+      ...(captured.pdfText?.path || captured.workspace?.pdfText
+        ? { textPath: captured.pdfText?.path || captured.workspace!.pdfText }
+        : {}),
+      sourceUrls: [captured.parent?.url, captured.attachment.url].filter((value): value is string => Boolean(value)),
+      dois: [captured.parent?.doi, captured.attachment.doi].filter((value): value is string => Boolean(value)),
+      mode: "retrieval",
+    };
+    this.conversationPapers.add(threadID, paper);
+    await this.saveConversationPapers();
+    this.updateInteractionContext();
+    this.renderChatViews();
+    this.activeChatView()?.focusComposer();
+  }
+
+  private async openStandaloneWorkbenchWindow(source: Window): Promise<Window> {
+    const popup = (source as any).openDialog?.(
+      "chrome://zotkit/content/standalone-workbench.xhtml",
+      "qlab-standalone-workbench",
+      "chrome,extrachrome,menubar,resizable,scrollbars,status,centerscreen,dialog=no,dependent=no",
+    ) as Window | null;
+    if (!popup) throw new Error("Zotero could not create the standalone QLab window");
+    for (let attempt = 0; attempt < 160; attempt++) {
+      if (popup.closed) throw new Error("The standalone QLab window closed before it was ready");
+      const host = popup.document?.getElementById("qlab-standalone-workbench-host");
+      if (host) {
+        this.injectWindowAssets(popup);
+        try { Zotero.UIProperties?.registerRoot?.(host); }
+        catch { /* optional Zotero styling hook */ }
+        return popup;
+      }
+      await new Promise<void>((resolve) => source.setTimeout(resolve, 25));
+    }
+    popup.close?.();
+    throw new Error("The standalone QLab window did not finish loading");
   }
 
   private async openWorkbenchWindow(source: Window): Promise<Window> {
@@ -1928,7 +2183,11 @@ export class ZoteroChatPlugin {
       query: "",
     };
     const plan = normalizePlan(this.codex.getActivePlan());
-    const mutationReviews = this.mutations?.getReviews() || [];
+    const mutationReviews = [
+      ...(this.mutations?.getReviews() || []),
+      ...(this.annotationProposals?.getReviews() || []),
+      ...(this.noteDraftBridge?.getReviews() || []),
+    ];
     const activeDiffs = this.codex.getActiveDiffs();
     const pending = this.codex.getPendingApprovals().find(
       (approval) => approval.threadId === this.codex.state.activeThreadId,
@@ -1951,12 +2210,17 @@ export class ZoteroChatPlugin {
       ...this.mutationCheckpoints.map((checkpoint) => ({ ...checkpoint, id: `zotero:${checkpoint.id}` })),
       ...conversationCheckpoints,
     ].sort((a, b) => String(b.createdAt || "").localeCompare(String(a.createdAt || "")));
-    for (const entry of this.workbenchTabs?.entries() || []) {
-      entry.view.workspace?.()?.syncAgentChanges({
+    const renderView = (
+      view: { workspace?(): { syncAgentChanges(input: unknown): void } | null; setState(next: unknown): void },
+      fallbackTitle: string,
+      win?: Window,
+    ) => {
+      const researchActionState = this.researchActionViewState(win);
+      view.workspace?.()?.syncAgentChanges({
         activeTurnId: this.codex.state.activeTurnId,
         diffs: activeDiffs,
       });
-      entry.view.setState({
+      view.setState({
         phase: this.chatPhase,
         accountLabel: this.codex.state.connected ? this.codex.accountLabel() : undefined,
         error: this.chatError || this.codex.state.fallbackReason || undefined,
@@ -1965,6 +2229,7 @@ export class ZoteroChatPlugin {
           supportsLogin: this.codex.state.capabilities?.supportsLogin !== false,
         },
         qlabRoot: this.settings?.qlabRoot || "",
+        ...researchActionState,
         context: context ? {
           key: `${context.attachment.libraryID ?? "0"}-${context.attachment.key}`,
           title: paperTitle(context),
@@ -1989,8 +2254,9 @@ export class ZoteroChatPlugin {
         creatingThread: this.codex.state.creatingThread,
         threadTitle: importedChat?.title || (context
           ? paperTitle(context)
-          : entry.data.title.replace(/^QLab\s*·\s*/, "") || "Paper Assistant"),
+          : fallbackTitle || "Paper Assistant"),
         mode: this.codex.state.mode,
+        scope: this.researchScope,
         contextChips: this.contextChips(),
         contextSuggestions: this.contextSuggestions(),
         plan: importedChat ? null : plan,
@@ -2004,6 +2270,17 @@ export class ZoteroChatPlugin {
         paperTrailConsent: this.paperTrail?.consentRequest() ?? null,
         noting: this.noting?.view() ?? null,
       });
+    };
+    for (const entry of this.workbenchTabs?.entries() || []) {
+      renderView(
+        entry.view,
+        entry.data.title.replace(/^QLab\s*·\s*/, ""),
+        entry.host.ownerDocument.defaultView || undefined,
+      );
+    }
+    const standalone = this.standaloneWorkbench?.currentView() as SidebarView | null;
+    if (standalone) {
+      renderView(standalone, "Paper Assistant", this.standaloneWorkbench.window() || undefined);
     }
   }
 
@@ -2022,7 +2299,44 @@ export class ZoteroChatPlugin {
     if (focus) this.activeChatView()?.focusComposer();
   }
 
-  private addInteractionContext(suggestion: ResearchContextSuggestion): void {
+  private async captureCurrentPageScreenshot(): Promise<void> {
+    if (this.pendingScreenshots.length >= 10) {
+      throw new Error("A message can contain at most 10 PDF screenshots");
+    }
+    const context = this.codex.getActiveReaderContext?.() || this.context;
+    if (!context) throw new Error("Open a PDF before capturing a page screenshot");
+    const image = await this.readerContext.captureCurrentPageImage(context);
+    if (!image) throw new Error("Zotero could not render the current PDF page as an image");
+    this.pendingScreenshots.push(image);
+    this.chatError = "";
+    this.renderChatViews();
+    this.activeChatView()?.focusComposer();
+  }
+
+  private addInteractionContext(suggestion: ResearchContextSuggestion, win?: Window): void {
+    if (suggestion.id === "other-paper") {
+      const source = win || Zotero.getMainWindow?.();
+      if (!source) {
+        this.reportError(new Error("The Zotero window is unavailable"));
+        return;
+      }
+      void this.chooseAdditionalPaper(source).catch((error) => this.reportError(error));
+      return;
+    }
+    if (suggestion.id === "capture-page") {
+      void this.captureCurrentPageScreenshot().catch((error) => this.reportError(error));
+      return;
+    }
+    if (suggestion.id.startsWith("toggle-paper:")) {
+      const threadID = this.codex.state.activeThreadId;
+      if (threadID) {
+        this.conversationPapers.toggleMode(threadID, suggestion.id.slice("toggle-paper:".length));
+        void this.saveConversationPapers();
+        this.updateInteractionContext();
+        this.renderChatViews();
+      }
+      return;
+    }
     this.excludedContextIDs.delete(suggestion.id);
     if (suggestion.id === "active-paper" || suggestion.id === "current-page") {
       this.addedContextIDs.delete(suggestion.id);
@@ -2035,6 +2349,22 @@ export class ZoteroChatPlugin {
   }
 
   private removeInteractionContext(contextID: string): void {
+    if (contextID.startsWith("paper:")) {
+      const threadID = this.codex.state.activeThreadId;
+      if (threadID) {
+        this.conversationPapers.remove(threadID, contextID.slice("paper:".length));
+        void this.saveConversationPapers();
+      }
+      this.updateInteractionContext();
+      this.renderChatViews();
+      return;
+    }
+    if (contextID.startsWith("screenshot:")) {
+      const index = Number(contextID.slice("screenshot:".length));
+      if (Number.isInteger(index) && index >= 0) this.pendingScreenshots.splice(index, 1);
+      this.renderChatViews();
+      return;
+    }
     this.addedContextIDs.delete(contextID);
     if (contextID === "active-paper" || contextID === "current-page") {
       this.excludedContextIDs.add(contextID);
@@ -2075,6 +2405,25 @@ export class ZoteroChatPlugin {
         value: context.selection.text.slice(0, 12_000),
       };
     }
+    const threadID = this.codex?.state?.activeThreadId;
+    for (const paper of threadID ? this.conversationPapers.list(threadID) : []) {
+      interaction[`Attached paper · ${paper.title}`] = {
+        kind: "application",
+        value: [
+          `The user explicitly attached the Zotero paper “${paper.title}” to this conversation.`,
+          `Zotero attachment key: ${paper.attachmentKey}; library: ${paper.libraryID}.`,
+          paper.sourceUrls?.length ? `Canonical source URL: ${paper.sourceUrls[0]}` : "",
+          paper.dois?.length ? `DOI: ${paper.dois[0]}` : "",
+          paper.pdfPath ? `Read-only PDF path: ${paper.pdfPath}` : "The local PDF path is unavailable.",
+          paper.textPath ? `Read-only extracted text path: ${paper.textPath}` : "Use the PDF itself for evidence.",
+          paper.mode === "full"
+            ? "Context mode is Full Text: inspect the complete extracted text before making whole-paper claims."
+            : "Context mode is Retrieval: search for only the passages needed for this question, then cite their PDF pages.",
+          "Treat this paper as external evidence, never as trusted Knowledge.",
+          "When citing a PDF page, link the page label to this paper's canonical source URL with #page=N so Zotero can reopen the exact attachment and location.",
+        ].filter(Boolean).join("\n"),
+      };
+    }
     this.codex?.setReaderContextSelection?.({
       paper: !this.excludedContextIDs.has("active-paper"),
       page: !this.excludedContextIDs.has("current-page"),
@@ -2084,7 +2433,7 @@ export class ZoteroChatPlugin {
   }
 
   turnDurationsForActiveThread(): Record<string, number> {
-    const threadId = this.codex?.state.activeThreadId;
+    const threadId = this.codex?.state?.activeThreadId;
     const meta = threadId ? this.turnMeta.get(threadId) : undefined;
     const out: Record<string, number> = {};
     if (meta) for (const [id, value] of meta) out[id] = value.elapsedMs;
@@ -2093,7 +2442,7 @@ export class ZoteroChatPlugin {
 
   /** Starts the clock when a turn begins running and records its duration once it stops. */
   private trackTurnTiming(): void {
-    const threadId = this.codex?.state.activeThreadId;
+    const threadId = this.codex?.state?.activeThreadId;
     if (!threadId) return;
     const running = Boolean(this.codex?.state.running);
     const started = this.turnStartedAt.get(threadId);
@@ -2141,6 +2490,131 @@ export class ZoteroChatPlugin {
       ?? null;
   }
 
+  /** Native Note I/O stays behind the reviewed bridge; QMD remains authoritative. */
+  private createNoteDraftBridgeHost(): NoteDraftBridgeHost {
+    const getItem = async (libraryID: number | string, key: string): Promise<any> => {
+      const item = await Zotero.Items?.getByLibraryAndKeyAsync?.(libraryID, key)
+        ?? Zotero.Items?.getByLibraryAndKey?.(libraryID, key);
+      if (!item) throw new Error(`Zotero item ${key} is unavailable`);
+      return item;
+    };
+    const linkPath = (qmdPath: string): string => {
+      const identity = this.qmdChangeIdentity(`note-link/${qmdPath}`);
+      return profilePath("note-draft-links", `${identity}.json`);
+    };
+    const renderNote = (title: string, html: string): string => {
+      const safeTitle = title.replace(/[&<>"']/gu, (character) => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+      }[character]!));
+      return `<h1>${safeTitle}</h1>\n${html}`;
+    };
+    const noteVersion = (item: any): number => {
+      const value = Number(item?.version ?? 0);
+      return Number.isSafeInteger(value) && value >= 0 ? value : 0;
+    };
+    const assertParent = async (
+      libraryID: number | string,
+      parentItemKey: string,
+    ): Promise<any> => {
+      const parent = await getItem(libraryID, parentItemKey);
+      if (String(parent.libraryID) !== String(libraryID)) {
+        throw new Error("The Zotero Note parent belongs to a different library");
+      }
+      return parent;
+    };
+    return {
+      readQmd: async (qmdPath) => {
+        const source = await IOUtils.readUTF8(this.safeRepositoryPath(qmdPath));
+        return { source, sha256: sha256Bytes(new TextEncoder().encode(source)) };
+      },
+      readNote: async (libraryID, noteKey) => {
+        const note = await getItem(libraryID, noteKey);
+        if (!(note.isNote?.() || note.itemType === "note")) {
+          throw new Error(`Zotero item ${noteKey} is not a Note`);
+        }
+        const html = String(note.getNote?.() || "");
+        const parent = note.parentID ? Zotero.Items?.get?.(note.parentID) : null;
+        const parentItemKey = String(parent?.key || "");
+        if (!parentItemKey) {
+          throw new Error("Only Zotero Notes attached to a bibliographic item can be linked to a QMD Draft");
+        }
+        const title = String(note.getDisplayTitle?.() || noteKey).trim() || noteKey;
+        return {
+          html,
+          title,
+          parentItemKey,
+          version: noteVersion(note),
+          contentSha256: sha256Bytes(new TextEncoder().encode(html)),
+        };
+      },
+      readLink: async (qmdPath) => {
+        const path = linkPath(qmdPath);
+        if (!await IOUtils.exists(path)) return null;
+        return JSON.parse(await IOUtils.readUTF8(path)) as NoteDraftLink;
+      },
+      writeLink: async (link) => {
+        const directory = profilePath("note-draft-links");
+        await IOUtils.makeDirectory(directory, {
+          createAncestors: true,
+          ignoreExisting: true,
+          permissions: 0o700,
+        });
+        const path = linkPath(link.qmdPath);
+        await IOUtils.writeUTF8(path, `${JSON.stringify(link, null, 2)}\n`, {
+          tmpPath: `${path}.tmp`,
+        });
+      },
+      createNote: async ({ libraryID, parentItemKey, title, html }) => {
+        const parent = await assertParent(libraryID, parentItemKey);
+        const note = new Zotero.Item("note");
+        note.libraryID = parent.libraryID;
+        note.parentID = parent.id;
+        note.setNote(renderNote(title, html));
+        await note.saveTx();
+        if (!note.key) throw new Error("Zotero did not return a Note key");
+        return { noteKey: String(note.key), version: noteVersion(note) };
+      },
+      updateNote: async ({
+        libraryID, noteKey, parentItemKey, expectedVersion, title, html,
+      }) => {
+        const parent = await assertParent(libraryID, parentItemKey);
+        const note = await getItem(libraryID, noteKey);
+        if (!(note.isNote?.() || note.itemType === "note")) {
+          throw new Error(`Zotero item ${noteKey} is not a Note`);
+        }
+        if (noteVersion(note) !== expectedVersion) {
+          throw new Error("The Zotero Note changed before Apply");
+        }
+        if (note.parentID !== parent.id) {
+          throw new Error("The Zotero Note parent changed before Apply");
+        }
+        note.setNote(renderNote(title, html));
+        await note.saveTx();
+        return { noteKey, version: noteVersion(note) };
+      },
+      restoreNote: async ({
+        libraryID, noteKey, parentItemKey, expectedVersion, html,
+      }) => {
+        const parent = await assertParent(libraryID, parentItemKey);
+        const note = await getItem(libraryID, noteKey);
+        if (!(note.isNote?.() || note.itemType === "note")) {
+          throw new Error(`Zotero item ${noteKey} is not a Note`);
+        }
+        if (noteVersion(note) !== expectedVersion) {
+          throw new Error("The Zotero Note changed before it could be restored");
+        }
+        note.parentID = parent.id;
+        note.setNote(html);
+        await note.saveTx();
+        return { noteKey, version: noteVersion(note) };
+      },
+      deleteNote: async (libraryID, noteKey) => {
+        const note = await getItem(libraryID, noteKey);
+        await note.eraseTx?.();
+      },
+    };
+  }
+
   private renderChatViews(): void {
     this.trackTurnTiming();
     if (!this.codex) return;
@@ -2156,7 +2630,11 @@ export class ZoteroChatPlugin {
       query: "",
     };
     const plan = normalizePlan(this.codex.getActivePlan());
-    const mutationReviews = this.mutations?.getReviews() || [];
+    const mutationReviews = [
+      ...(this.mutations?.getReviews() || []),
+      ...(this.annotationProposals?.getReviews() || []),
+      ...(this.noteDraftBridge?.getReviews() || []),
+    ];
     const activeDiffs = this.codex.getActiveDiffs();
     const pending = this.codex.getPendingApprovals().find(
       (approval) => approval.threadId === this.codex.state.activeThreadId,
@@ -2189,6 +2667,9 @@ export class ZoteroChatPlugin {
         activeTurnId: this.codex.state.activeTurnId,
         diffs: activeDiffs,
       });
+      const researchActionState = this.researchActionViewState(
+        body.ownerDocument.defaultView || undefined,
+      );
       view.setState({
         phase: this.chatPhase,
         accountLabel: this.codex.state.connected ? this.codex.accountLabel() : undefined,
@@ -2198,6 +2679,7 @@ export class ZoteroChatPlugin {
           supportsLogin: this.codex.state.capabilities?.supportsLogin !== false,
         },
         qlabRoot: this.settings?.qlabRoot || "",
+        ...researchActionState,
         context: context ? {
           key: `${context.attachment.libraryID ?? "0"}-${context.attachment.key}`,
           title: paperTitle(context),
@@ -2222,6 +2704,7 @@ export class ZoteroChatPlugin {
         creatingThread: this.codex.state.creatingThread,
         threadTitle: importedChat?.title || (context ? paperTitle(context) : "Paper Assistant"),
         mode: this.codex.state.mode,
+        scope: this.researchScope,
         contextChips: this.contextChips(),
         contextSuggestions: this.contextSuggestions(),
         plan: importedChat ? null : plan,
@@ -2234,6 +2717,10 @@ export class ZoteroChatPlugin {
         turnDurations: this.turnDurationsForActiveThread(),
         paperTrailConsent: this.paperTrail?.consentRequest() ?? null,
         noting: this.noting?.view() ?? null,
+      });
+      view.setDetached(this.standaloneWorkbench?.isActive() ?? false, {
+        onFocus: () => this.standaloneWorkbench.focus(),
+        onReturn: () => this.standaloneWorkbench.returnToEmbedded(),
       });
     }
     // `this.chatViews` is now pruned to connected bodies only -- this is the
@@ -2498,11 +2985,30 @@ export class ZoteroChatPlugin {
       label: "Zotero Library",
       removable: true,
     });
+    const threadID = this.codex?.state?.activeThreadId;
+    for (const paper of threadID ? this.conversationPapers.list(threadID) : []) {
+      chips.push({
+        id: `paper:${paper.id}`,
+        kind: "external-paper",
+        label: paper.title,
+        detail: paper.mode === "full" ? "Full text" : "Retrieval",
+        removable: true,
+      });
+    }
+    this.pendingScreenshots.forEach((_image, index) => chips.push({
+      id: `screenshot:${index}`,
+      kind: "selection",
+      label: `PDF Screenshot ${index + 1}`,
+      detail: "Sent with the next message",
+      removable: true,
+    }));
     return chips;
   }
 
   private contextSuggestions(): ResearchContextSuggestion[] {
     const context = this.codex?.getActiveReaderContext?.() || this.context;
+    const threadID = this.codex?.state?.activeThreadId;
+    const papers = threadID ? this.conversationPapers.list(threadID) : [];
     return [{
       id: "active-paper",
       kind: "paper",
@@ -2533,7 +3039,26 @@ export class ZoteroChatPlugin {
       label: "Zotero Library",
       detail: "Search other papers, collections, and tags",
       disabled: this.addedContextIDs.has("zotero-library"),
-    }];
+    }, {
+      id: "other-paper",
+      kind: "external-paper",
+      label: "Other Paper…",
+      detail: "Attach another Zotero PDF without switching the current Reader",
+      disabled: !threadID,
+    }, {
+      id: "capture-page",
+      kind: "selection",
+      label: "Screenshot Current Page",
+      detail: "Attach the rendered PDF page for figures, equations, or layout",
+      disabled: !context || this.pendingScreenshots.length >= 10,
+    }, ...papers.map((paper): ResearchContextSuggestion => ({
+      id: `toggle-paper:${paper.id}`,
+      kind: "external-paper",
+      label: `${paper.mode === "retrieval" ? "Use full text" : "Use retrieval"} · ${paper.title}`,
+      detail: paper.mode === "retrieval"
+        ? "Read the complete paper for whole-paper questions"
+        : "Search passages on demand to keep context compact",
+    }))];
   }
 
   private async refreshMutationCheckpoints(): Promise<void> {
@@ -2561,6 +3086,16 @@ export class ZoteroChatPlugin {
     decision: "accept" | "reject",
   ): Promise<void> {
     try {
+      if (this.annotationProposals.getReviews().some((review) => review.id === reviewID)) {
+        await this.annotationProposals.resolveReview(reviewID, decision);
+        this.renderChatViews();
+        return;
+      }
+      if (this.noteDraftBridge.getReviews().some((review) => review.id === reviewID)) {
+        await this.noteDraftBridge.resolveReview(reviewID, decision);
+        this.renderChatViews();
+        return;
+      }
       const result = await this.mutations.resolveReview(reviewID, decision);
       if (result.decision === "accepted") await this.refreshAfterMutation(result);
     }
@@ -2622,6 +3157,8 @@ export class ZoteroChatPlugin {
   }
 
   private activeChatView(): SidebarView | null {
+    const standalone = this.standaloneWorkbench?.currentView();
+    if (standalone instanceof SidebarView) return standalone;
     const workbench = this.activeWorkbenchEntry()?.view;
     if (workbench instanceof SidebarView) return workbench;
     const body = this.activeSidebarBody();
@@ -2795,12 +3332,28 @@ export class ZoteroChatPlugin {
    * Opens a citation against the PDF pinned to the selected AI conversation.
    * Reader focus is deliberately independent from chat/task selection.
    */
-  private async openConversationPDFPage(pageNumber: number, openInWindow = false): Promise<void> {
+  private async openConversationPDFPage(
+    target: number | PdfPageReference,
+    openInWindow = false,
+  ): Promise<void> {
+    const pageNumber = typeof target === "number" ? target : target.page;
     if (!Number.isSafeInteger(pageNumber) || pageNumber < 1) {
       throw new Error("The PDF citation has an invalid page number");
     }
+    const threadID = this.codex?.state?.activeThreadId;
+    const secondary = typeof target === "number" || !threadID
+      ? null
+      : this.conversationPapers.list(threadID).find(
+        (paper) => pdfSourceMatchesConversationPaper(target.sourceUrl, paper),
+      ) || null;
     const context = this.codex?.getActiveReaderContext?.() || this.context;
-    const attachment = this.readerContextItem(context);
+    const libraryID = secondary && /^\d+$/.test(secondary.libraryID)
+      ? Number(secondary.libraryID)
+      : secondary?.libraryID;
+    const attachment = secondary
+      ? Zotero.Items?.getByLibraryAndKey?.(libraryID, secondary.attachmentKey)
+        ?? (secondary.attachmentID ? Zotero.Items?.get?.(Number(secondary.attachmentID) || secondary.attachmentID) : null)
+      : this.readerContextItem(context);
     if (!attachment?.id) throw new Error("The PDF pinned to this conversation is unavailable");
     await Zotero.Reader.open(attachment.id, { pageIndex: pageNumber - 1 }, {
       allowDuplicate: false,
@@ -2812,7 +3365,11 @@ export class ZoteroChatPlugin {
 
   private canOpenConversationPdfPage(reference: PdfPageReference): boolean {
     const context = this.codex?.getActiveReaderContext?.() || this.context;
-    return pdfSourceMatchesReaderContext(reference.sourceUrl, context);
+    if (pdfSourceMatchesReaderContext(reference.sourceUrl, context)) return true;
+    const threadID = this.codex?.state?.activeThreadId;
+    return Boolean(threadID && this.conversationPapers.list(threadID).some(
+      (paper) => pdfSourceMatchesConversationPaper(reference.sourceUrl, paper),
+    ));
   }
 
   private async pasteSelectionToTerminal(): Promise<void> {
@@ -2928,6 +3485,31 @@ export class ZoteroChatPlugin {
     }
   }
 
+  private async loadConversationPapers(): Promise<void> {
+    const path = profilePath("conversation-papers.json");
+    try {
+      if (!await IOUtils.exists(path)) return;
+      this.conversationPapers.restore(JSON.parse(await IOUtils.readUTF8(path)));
+    }
+    catch (error) {
+      logError(error);
+      this.conversationPapers.restore(null);
+    }
+  }
+
+  private async saveConversationPapers(): Promise<void> {
+    const path = profilePath("conversation-papers.json");
+    await IOUtils.makeDirectory(profilePath(), {
+      createAncestors: true,
+      ignoreExisting: true,
+      permissions: 0o700,
+    });
+    await IOUtils.writeUTF8(path, this.conversationPapers.serialize(), {
+      tmpPath: path + ".tmp",
+    });
+    if (IOUtils.setPermissions) await IOUtils.setPermissions(path, 0o600, false);
+  }
+
   private async importChatGPTHistory(preferredWindow?: Window): Promise<void> {
     const { FilePicker } = ChromeUtils.importESModule(
       "chrome://zotero/content/modules/filePicker.mjs",
@@ -3014,6 +3596,140 @@ export class ZoteroChatPlugin {
     }));
   }
 
+  /** Resolve the object the user is visibly working with, without letting PDF focus override a Draft. */
+  private currentResearchObject(win?: Window): ResearchObjectEnvelope | null {
+    const targetWin = win ?? (
+      typeof Zotero !== "undefined" ? Zotero.getMainWindow?.() : undefined
+    );
+    const selectedType = String(targetWin?.Zotero_Tabs?.selectedType || "");
+    const standalone = targetWin?.document?.documentElement?.getAttribute("windowtype")
+      === "qlab:standalone-workbench";
+    const draftVisible = !targetWin
+      || selectedType === QLAB_WORKBENCH_TAB_TYPE
+      || standalone
+      || isDedicatedWorkbenchWindow(targetWin);
+    if (this.activeDraftPath && draftVisible) {
+      const name = this.activeDraftPath.split("/").pop()?.replace(/\.qmd$/u, "") || "Current Draft";
+      return { kind: "draft", title: name, relativePath: this.activeDraftPath };
+    }
+
+    if (targetWin && !this.isReaderTabType(selectedType) && selectedType !== QLAB_WORKBENCH_TAB_TYPE) {
+      try {
+        const pane = (targetWin as any).ZoteroPane || Zotero.getActiveZoteroPane?.();
+        const selected = pane?.getSelectedItems?.() || [];
+        const note = selected.find((item: any) => Boolean(item?.isNote?.()) || item?.itemType === "note");
+        if (note) {
+          const title = String(
+            note.getDisplayTitle?.()
+            || note.getField?.("title")
+            || note.key
+            || "Zotero Note",
+          ).trim();
+          return {
+            kind: "note",
+            title: title || "Zotero Note",
+            libraryID: note.libraryID,
+            itemKey: String(note.key || ""),
+          };
+        }
+        const collection = pane?.getSelectedCollection?.();
+        if (collection && !collection.isLibrary?.()) {
+          return {
+            kind: "collection",
+            title: String(collection.name || collection.key || "Zotero Collection"),
+            libraryID: collection.libraryID,
+            collectionKey: String(collection.key || ""),
+          };
+        }
+      }
+      catch { /* Zotero's item pane can be between selections while rendering. */ }
+    }
+
+    const context = this.codex?.getActiveReaderContext?.() || this.context;
+    if (!context) return null;
+    return {
+      kind: "pdf",
+      title: paperTitle(context),
+      libraryID: context.attachment.libraryID,
+      itemKey: context.parent?.key || null,
+      attachmentKey: context.attachment.key,
+    };
+  }
+
+  private researchActionViewState(win?: Window): {
+    researchObject: { kind: ResearchObjectEnvelope["kind"]; label: string } | null;
+    researchActions: Array<{ id: ResearchActionID; label: string; description: string; icon: string }>;
+  } {
+    const object = this.currentResearchObject(win);
+    if (!object) return { researchObject: null, researchActions: [] };
+    const icons: Record<ResearchActionID, string> = {
+      summarize: "≡",
+      "evidence-qa": "✓",
+      "compare-papers": "⇄",
+      "analyze-figure": "▧",
+      "write-draft": "✎",
+    };
+    return {
+      researchObject: { kind: object.kind, label: object.title },
+      researchActions: researchActionsForObject(object.kind).map((action) => ({
+        id: action.id,
+        label: action.label,
+        description: action.description,
+        icon: icons[action.id],
+      })),
+    };
+  }
+
+  private async runResearchAction(
+    view: Pick<SidebarView, "focusComposer">,
+    rawActionID: string,
+    win?: Window,
+  ): Promise<void> {
+    const targetWin = win ?? (
+      typeof Zotero !== "undefined" ? Zotero.getMainWindow?.() : undefined
+    );
+    const object = this.currentResearchObject(targetWin);
+    if (!object) throw new Error("Select a PDF, Zotero Note, Collection, or QMD Draft first");
+    const definition = researchActionsForObject(object.kind)
+      .find((candidate) => candidate.id === rawActionID);
+    if (!definition) throw new Error(`This Action is not available for the current ${object.kind}`);
+
+    let root = this.settings?.qlabRoot || "";
+    if (!root) root = await this.chooseQLabRoot(targetWin) || "";
+    if (!root) return;
+
+    if (definition.id === "compare-papers" && object.kind === "pdf") {
+      const threadID = this.codex.state.activeThreadId;
+      const attached = threadID ? this.conversationPapers.list(threadID).length : 0;
+      if (attached < 1 && targetWin) {
+        await this.chooseAdditionalPaper(targetWin);
+        const nextThreadID = this.codex.state.activeThreadId;
+        if (!nextThreadID || this.conversationPapers.list(nextThreadID).length < 1) {
+          throw new Error("Compare Papers needs at least one additional paper");
+        }
+      }
+    }
+    if (definition.id === "analyze-figure") await this.captureCurrentPageScreenshot();
+
+    if (object.kind !== "pdf") {
+      const objectKey = object.kind === "draft" ? object.relativePath
+        : object.kind === "collection" ? object.collectionKey : object.itemKey;
+      await this.codex.setWorkspaceObject({
+        kind: object.kind,
+        key: String(objectKey || object.title),
+        title: object.title,
+        workspaceRoot: root,
+        ...(object.libraryID === undefined ? {} : { libraryID: object.libraryID }),
+      });
+      this.researchScope = object.kind === "draft" ? "paper" : "library";
+    }
+
+    const prompt = buildResearchActionPrompt(definition.id, { qlabRoot: root, object });
+    const binding = researchActionSkill(definition.id, object.kind);
+    await this.sendChat(prompt, { readOnly: binding.name === "evidence-review" });
+    view.focusComposer();
+  }
+
   private async captureChatDraft(): Promise<void> {
     let root = this.settings?.qlabRoot || "";
     if (!root) root = await this.chooseQLabRoot() || "";
@@ -3066,6 +3782,12 @@ export class ZoteroChatPlugin {
     workbench.addEventListener("command", () => {
       void this.openWorkbenchTab(win).catch((error) => this.reportError(error));
     });
+    const standalone = doc.createXULElement("menuitem");
+    standalone.id = "qlab-zotero-open-standalone";
+    standalone.setAttribute("label", "Open QLab in Separate Window");
+    standalone.addEventListener("command", () => {
+      void this.standaloneWorkbench.open(win).catch((error) => this.reportError(error));
+    });
     const choose = doc.createXULElement("menuitem");
     choose.id = "qlab-zotero-choose-root";
     choose.setAttribute("label", "Choose QLab Repository…");
@@ -3078,13 +3800,14 @@ export class ZoteroChatPlugin {
     importItem.addEventListener("command", () => {
       void this.importQLabLiterature(win).catch((error) => this.reportError(error));
     });
-    popup.append(separator, workbench, choose, importItem);
+    popup.append(separator, workbench, standalone, choose, importItem);
   }
 
   private removeQLabMenu(win: Window): void {
     for (const id of [
       "qlab-zotero-separator",
       "qlab-zotero-open-workbench",
+      "qlab-zotero-open-standalone",
       "qlab-zotero-choose-root",
       "qlab-zotero-import-literature",
     ]) {
@@ -3272,6 +3995,25 @@ export function pdfSourceMatchesReaderContext(
     if (identity) identities.add(identity);
   }
   for (const value of [context.parent?.doi, context.attachment.doi]) {
+    const doi = canonicalDoi(value);
+    if (doi) identities.add(`doi:${doi}`);
+  }
+  return identities.has(sourceIdentity);
+}
+
+/** Matches a citation to one explicitly attached secondary conversation paper. */
+export function pdfSourceMatchesConversationPaper(
+  sourceUrl: string,
+  paper: Pick<ConversationPaper, "sourceUrls" | "dois">,
+): boolean {
+  const sourceIdentity = pdfDocumentIdentity(sourceUrl);
+  if (!sourceIdentity) return false;
+  const identities = new Set<string>();
+  for (const value of paper.sourceUrls || []) {
+    const identity = pdfDocumentIdentity(value);
+    if (identity) identities.add(identity);
+  }
+  for (const value of paper.dois || []) {
     const doi = canonicalDoi(value);
     if (doi) identities.add(`doi:${doi}`);
   }

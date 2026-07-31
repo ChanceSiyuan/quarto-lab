@@ -38,6 +38,9 @@ describe("activityLabel", () => {
 describe("friendlyToolName / formatElapsed", () => {
   it("maps known tools and passes through unknown ones", () => {
     expect(friendlyToolName("zotero_search_current_pdf")).toBe("Search Current PDF");
+    expect(friendlyToolName("zotero_search_library_items")).toBe("Search Zotero Library");
+    expect(friendlyToolName("zotero_read_note")).toBe("Read Zotero Note");
+    expect(friendlyToolName("zotero_propose_annotations")).toBe("Prepare Annotation Review");
     expect(friendlyToolName("unknown_tool")).toBe("unknown_tool");
   });
   it("formats seconds and minutes", () => {

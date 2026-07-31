@@ -11,10 +11,14 @@ const FRIENDLY_TOOL_NAMES: Record<string, string> = {
   zotero_search_current_pdf: "Search Current PDF",
   zotero_read_pdf_pages: "Read Paper Pages",
   zotero_search_library: "Search Library",
+  zotero_search_library_items: "Search Zotero Library",
+  zotero_read_note: "Read Zotero Note",
   zotero_read_library_pdf_pages: "Read Library Paper Pages",
   zotero_search_library_pdf: "Search Library PDF",
   zotero_list_annotations: "View Annotations",
   zotero_get_pdf_outline: "Read Paper Outline",
+  zotero_propose_annotations: "Prepare Annotation Review",
+  zotero_propose_note_from_qmd: "Prepare Zotero Note Review",
 };
 
 export function isProcessKind(kind: ChatEntry["kind"]): boolean {

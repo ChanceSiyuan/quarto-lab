@@ -196,9 +196,10 @@ export class ZoteroMutationService {
   async invokeTool(
     tool: string,
     rawArguments: Record<string, unknown>,
+    contextOverride?: ReaderContext,
   ): Promise<Record<string, unknown>> {
     if (tool !== ZOTERO_MUTATION_TOOL) throw new Error(`Unknown Zotkit Agent tool: ${tool}`);
-    const context = this.requireContext();
+    const context = contextOverride ?? this.requireContext();
     const operations = parseOperations(rawArguments.operations);
     const snapshot = await this.host.snapshot(context);
     assertSnapshotMatchesContext(snapshot, context);

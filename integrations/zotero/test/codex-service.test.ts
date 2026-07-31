@@ -4,6 +4,14 @@ import { READER_CONTEXT_TOOLS, READER_TOOL_NAMES } from "../src/reader-context";
 import type { ReaderContext, ReaderContextService } from "../src/reader-context";
 import type { NativeBridge } from "../src/native-bridge";
 import { ZOTERO_MUTATION_TOOL, ZoteroMutationService } from "../src/zotero-mutations";
+import {
+  ANNOTATION_PROPOSAL_TOOL,
+  AnnotationProposalService,
+} from "../src/annotation-proposals";
+import {
+  NOTE_FROM_QMD_TOOL,
+  NoteDraftBridgeService,
+} from "../src/note-draft-bridge";
 
 beforeEach(() => {
   vi.stubGlobal("Services", {
@@ -91,6 +99,45 @@ function deferred<T>() {
 }
 
 describe("CodexService follow-up turns", () => {
+  it("starts a repository-scoped object conversation without requiring an open PDF", async () => {
+    const client = {
+      threadStart: vi.fn().mockResolvedValue({ thread: { id: "thread-object" } }),
+      threadSetName: vi.fn(async () => ({})),
+      turnStart: vi.fn().mockResolvedValue({ turn: { id: "turn-object" } }),
+    };
+    const callbacks = { onState: vi.fn(), onError: vi.fn() };
+    const service = new CodexService(
+      {} as NativeBridge,
+      { tools: [] } as unknown as ReaderContextService,
+      "test",
+      callbacks,
+    );
+    const internal = service as any;
+    internal.client = client;
+    internal.saveSessions = vi.fn(async () => undefined);
+    service.state.connected = true;
+
+    await service.setWorkspaceObject({
+      kind: "collection",
+      key: "collection:ABC123",
+      title: "Quantum Algorithms",
+      workspaceRoot: "/Users/test/research-loop",
+      libraryID: 1,
+    });
+    await service.send("Summarize this collection.", "gpt-5.6-sol", "high");
+
+    expect(client.threadStart).toHaveBeenCalledWith(expect.objectContaining({
+      cwd: "/Users/test/research-loop",
+      runtimeWorkspaceRoots: ["/Users/test/research-loop"],
+    }));
+    const turn = client.turnStart.mock.calls[0]![0];
+    expect(turn.additionalContext["Research object"]).toMatchObject({
+      kind: "application",
+      value: expect.stringContaining("Quantum Algorithms"),
+    });
+    expect(turn.additionalContext["Zotero Reader"]).toBeUndefined();
+  });
+
   it("publishes an immediate switching state and clears it after the selected conversation is ready", async () => {
     const resumed = deferred<{ thread: { id: string; turns: never[] } }>();
     const client = {
@@ -172,6 +219,79 @@ describe("CodexService follow-up turns", () => {
     )).toBe(true);
   });
 
+  it("exposes only the active conversation's reviewable Reader anchor IDs to the model", async () => {
+    const client = {
+      turnStart: vi.fn().mockResolvedValue({ turn: { id: "turn-a" } }),
+    };
+    const { service } = serviceWithClient(client);
+    const internal = service as any;
+    internal.saveSessions = vi.fn(async () => undefined);
+    internal.sessions.anchors = {
+      "1-ATTACH": [
+        {
+          anchorId: "anchor-reviewable",
+          libraryID: 1,
+          itemKey: "PARENT",
+          attachmentKey: "ATTACH",
+          pdfSha256: "a".repeat(64),
+          pageNumber: 3,
+          position: { pageIndex: 2, rects: [[1, 2, 3, 4]] },
+          selectedText: "Selected theorem",
+          question: "Why is this bound tight?",
+          threadId: "thread-a",
+          turnRange: [0, 1],
+          status: "open",
+          createdAt: "2026-07-25T00:00:00.000Z",
+        },
+        {
+          anchorId: "anchor-other-thread",
+          libraryID: 1,
+          itemKey: "PARENT",
+          attachmentKey: "ATTACH",
+          pdfSha256: "a".repeat(64),
+          pageNumber: 4,
+          position: { pageIndex: 3, rects: [[1, 2, 3, 4]] },
+          selectedText: "Do not leak this anchor",
+          question: "Other conversation",
+          threadId: "thread-b",
+          turnRange: [0, 0],
+          status: "open",
+          createdAt: "2026-07-25T00:00:01.000Z",
+        },
+        {
+          anchorId: "anchor-without-pdf-fingerprint",
+          libraryID: 1,
+          itemKey: "PARENT",
+          attachmentKey: "ATTACH",
+          pdfSha256: null,
+          pageNumber: 5,
+          position: { pageIndex: 4, rects: [[1, 2, 3, 4]] },
+          selectedText: "Legacy selection",
+          question: "Can this be highlighted?",
+          threadId: "thread-a",
+          turnRange: [2, 2],
+          status: "open",
+          createdAt: "2026-07-25T00:00:02.000Z",
+        },
+      ],
+    };
+
+    await service.send("Propose a highlight.", "gpt-5.6-sol", "medium");
+
+    const additionalContext = client.turnStart.mock.calls[0]![0].additionalContext;
+    expect(additionalContext["Annotation proposal bridge"]).toMatchObject({
+      kind: "application",
+      value: expect.stringContaining("zotero_propose_annotations"),
+    });
+    expect(additionalContext["Reviewable Reader anchors"]).toMatchObject({
+      kind: "untrusted",
+      value: expect.stringContaining("anchor-reviewable"),
+    });
+    expect(additionalContext["Reviewable Reader anchors"].value).toContain("Selected theorem");
+    expect(additionalContext["Reviewable Reader anchors"].value).not.toContain("anchor-other-thread");
+    expect(additionalContext["Reviewable Reader anchors"].value).not.toContain("anchor-without-pdf-fingerprint");
+  });
+
   it("sends the active Draft and Zotero PDF context together", async () => {
     const client = {
       turnStart: vi.fn().mockResolvedValue({ turn: { id: "turn-a" } }),
@@ -232,6 +352,47 @@ describe("CodexService follow-up turns", () => {
       kind: "application",
       value: "/research-loop",
     });
+  });
+
+  it("enforces a read-only sandbox for canonical read-only Research Actions", async () => {
+    const client = {
+      turnStart: vi.fn().mockResolvedValue({ turn: { id: "turn-read-only" } }),
+    };
+    const { service } = serviceWithClient(client);
+
+    await service.send(
+      "Follow $evidence-review in summary mode.",
+      "gpt-5.6-sol",
+      "medium",
+      [],
+      { readOnly: true },
+    );
+
+    expect(client.turnStart).toHaveBeenCalledWith(expect.objectContaining({
+      sandboxPolicy: { type: "readOnly", networkAccess: false },
+    }));
+  });
+
+  it("does not steer a read-only Action into an already-running writable turn", async () => {
+    const client = {
+      turnSteer: vi.fn(),
+    };
+    const { service } = serviceWithClient(client);
+    const internal = service as any;
+    internal.runningTurns.set("thread-a", "turn-running");
+    service.state.capabilities = {
+      ...service.state.capabilities,
+      supportsSteering: true,
+    };
+
+    await expect(service.send(
+      "Follow $evidence-review in evidence-qa mode.",
+      "gpt-5.6-sol",
+      "medium",
+      [],
+      { readOnly: true },
+    )).rejects.toThrow(/read-only Action.*current response/i);
+    expect(client.turnSteer).not.toHaveBeenCalled();
   });
 
   it("lists all user-facing Codex sources with pagination and stable history metadata", async () => {
@@ -876,6 +1037,7 @@ describe("CodexService Cursor-style modes and approvals", () => {
       "preview_zotero_change",
       { title: "New title" },
       expect.objectContaining({ pdfPath: "/papers/paper.pdf" }),
+      { threadId: "thread-a", turnId: "turn-a" },
     );
   });
 
@@ -920,7 +1082,65 @@ describe("CodexService Cursor-style modes and approvals", () => {
     );
   });
 
-  it("statically composes only the real read-only reader tools + zotero_propose_changes for Agent-mode turns -- no annotation/attachment/write tool ever reaches app-server (ADR-0002, MUST 3)", () => {
+  it("allows library tools but blocks active-PDF tools for Note, Collection, and Draft conversations", async () => {
+    const readerContext = {
+      tools: [
+        READER_CONTEXT_TOOLS.find((tool) => tool.name === "zotero_get_current_page")!,
+        READER_CONTEXT_TOOLS.find((tool) => tool.name === "zotero_search_library_items")!,
+      ],
+      invokeTool: vi.fn().mockResolvedValue({ matches: [] }),
+    } as unknown as ReaderContextService;
+    const client = {
+      threadStart: vi.fn().mockResolvedValue({ thread: { id: "thread-object" } }),
+      threadSetName: vi.fn(async () => ({})),
+    };
+    const service = new CodexService(
+      {} as NativeBridge,
+      readerContext,
+      "test",
+      { onState: vi.fn(), onError: vi.fn() },
+    );
+    const internal = service as any;
+    internal.client = client;
+    internal.saveSessions = vi.fn(async () => undefined);
+    service.state.connected = true;
+    await service.setWorkspaceObject({
+      kind: "collection",
+      key: "COLLECTION",
+      title: "Quantum Algorithms",
+      workspaceRoot: "/Users/test/research-loop",
+      libraryID: 1,
+    });
+
+    await expect(internal.handleDynamicTool({
+      threadId: "thread-object",
+      turnId: "turn-object",
+      callId: "call-pdf",
+      namespace: null,
+      tool: "zotero_get_current_page",
+      arguments: {},
+    })).resolves.toMatchObject({
+      success: false,
+      contentItems: [{ text: expect.stringContaining("Open or attach a PDF") }],
+    });
+    expect(readerContext.invokeTool).not.toHaveBeenCalled();
+
+    await expect(internal.handleDynamicTool({
+      threadId: "thread-object",
+      turnId: "turn-object",
+      callId: "call-search",
+      namespace: null,
+      tool: "zotero_search_library_items",
+      arguments: { query: "quantum algorithms" },
+    })).resolves.toMatchObject({ success: true });
+    expect(readerContext.invokeTool).toHaveBeenCalledWith(
+      "zotero_search_library_items",
+      { query: "quantum algorithms" },
+      expect.objectContaining({ attachment: expect.objectContaining({ itemType: "collection" }) }),
+    );
+  });
+
+  it("statically composes read tools plus only the three reviewed Zotero proposal boundaries", () => {
     // Uses the REAL tool registries (not a hand-rolled fake list), so this
     // locks the actual composition site (dynamicToolSpecs(), around
     // codex-service.ts:readerContext.tools + agentToolProvider.tools).
@@ -929,7 +1149,15 @@ describe("CodexService Cursor-style modes and approvals", () => {
       {} as any,
       { onState: () => {}, getContext: () => null },
     );
-    const provider = { tools: mutations.tools, invokeTool: async () => undefined };
+    const annotations = new AnnotationProposalService(
+      {} as any,
+      { onState: () => {}, getAnchors: () => [], setAnnotationKey: async () => {} },
+    );
+    const notes = new NoteDraftBridgeService({} as any, { onState: () => {} });
+    const provider = {
+      tools: [...mutations.tools, ...annotations.tools, ...notes.tools],
+      invokeTool: async () => undefined,
+    };
     const service = new CodexService(
       {} as NativeBridge,
       readerContext,
@@ -942,17 +1170,22 @@ describe("CodexService Cursor-style modes and approvals", () => {
 
     const names: string[] = internal.dynamicToolSpecs().map((tool: { name: string }) => tool.name);
 
-    // The full composed set is exactly the known read-only reader tools plus
-    // the single reviewed-mutation tool -- nothing more, nothing renamed.
-    expect(names).toEqual([...READER_TOOL_NAMES, ZOTERO_MUTATION_TOOL]);
+    expect(names).toEqual([
+      ...READER_TOOL_NAMES,
+      ZOTERO_MUTATION_TOOL,
+      ANNOTATION_PROPOSAL_TOOL,
+      NOTE_FROM_QMD_TOOL,
+    ]);
 
-    // Defense in depth: no composed name reads as an annotation/attachment/
-    // write tool. zotero_propose_changes is the one legitimate write-shaped
-    // name (a reviewed proposal, not a direct mutation); zotero_list_annotations
-    // is a legitimate read tool that happens to contain the substring "annot"
-    // (it *lists* existing annotations, it does not create/delete them).
+    // Defense in depth: write-shaped names are either read-only list/read
+    // tools or explicit proposal tools. No direct create/delete tool exists.
     const writeLike = /annot|attach|write|create|delete|erase/i;
-    const knownSafeSubstringHits = new Set([ZOTERO_MUTATION_TOOL, "zotero_list_annotations"]);
+    const knownSafeSubstringHits = new Set([
+      ZOTERO_MUTATION_TOOL,
+      ANNOTATION_PROPOSAL_TOOL,
+      NOTE_FROM_QMD_TOOL,
+      "zotero_list_annotations",
+    ]);
     for (const name of names) {
       if (knownSafeSubstringHits.has(name)) continue;
       expect(name).not.toMatch(writeLike);
@@ -1076,6 +1309,19 @@ describe("CodexService anchors", () => {
 
     await service.removeAnchor(otherLiveContext, "a1");
     expect(service.getAnchors(recordContext)).toEqual([]);
+  });
+
+  it("exposes only anchors belonging to the active conversation and updates them by id", async () => {
+    const { service } = serviceWithClient({});
+    (service as any).saveSessions = vi.fn(async () => {});
+    const first = anchor("a1");
+    const second = { ...anchor("a2"), threadId: "thread-b", attachmentKey: "SECOND" };
+    await service.recordAnchor(paperContext(), first);
+    await service.recordAnchor(paperContext(), second);
+
+    expect(service.getActiveThreadAnchors().map((entry) => entry.anchorId)).toEqual(["a1"]);
+    await service.updateAnchorById("a1", { annotationKey: "ANN1" });
+    expect(service.getActiveThreadAnchors()[0]).toMatchObject({ annotationKey: "ANN1" });
   });
 });
 

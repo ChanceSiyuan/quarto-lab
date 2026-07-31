@@ -73,6 +73,7 @@ export interface HistoryConversationOption {
 }
 
 export type ResearchMode = "ask" | "agent";
+export type ResearchScope = "paper" | "library";
 
 export type ResearchContextKind =
   | "paper"
@@ -131,6 +132,18 @@ export interface CheckpointOption {
   createdAt?: string;
 }
 
+export interface ResearchObjectView {
+  kind: "pdf" | "note" | "collection" | "draft";
+  label: string;
+}
+
+export interface ResearchActionView {
+  id: string;
+  label: string;
+  description: string;
+  icon: string;
+}
+
 export interface SidebarState {
   phase: SidebarPhase;
   accountLabel?: string;
@@ -150,6 +163,7 @@ export interface SidebarState {
   creatingThread?: boolean;
   threadTitle?: string;
   mode: ResearchMode;
+  scope: ResearchScope;
   contextChips: ResearchContextChip[];
   contextSuggestions: ResearchContextSuggestion[];
   plan: ResearchPlan | null;
@@ -164,6 +178,10 @@ export interface SidebarState {
   capabilities?: { supportsAgentMode: boolean; supportsLogin: boolean };
   /** Canonical path of the QLab repository selected by the user. */
   qlabRoot?: string;
+  /** The object that contextual Actions will operate on. */
+  researchObject?: ResearchObjectView | null;
+  /** Actions already filtered for `researchObject` by the host registry. */
+  researchActions?: ResearchActionView[];
 }
 
 export interface SidebarCallbacks {
@@ -186,10 +204,12 @@ export interface SidebarCallbacks {
   onLogout(): void;
   onOpenTerminal(): void;
   onOpenWorkbench(): void;
+  onOpenStandalone?(): void;
   onRefreshContext(): void;
   onInsertSelection(): void;
   onModelChange(model: string): void;
   onEffortChange(effort: string): void;
+  onScopeChange?(scope: ResearchScope): void;
   onAddContext?(context: ResearchContextSuggestion): void;
   onRemoveContext?(contextId: string): void;
   onReviewDecision?(reviewId: string, decision: "accept" | "reject"): void;
@@ -202,6 +222,7 @@ export interface SidebarCallbacks {
   onNotingCancel?(): void;
   onChooseQLabRoot?(): void | Promise<void>;
   onCaptureChatDraft?(): void;
+  onResearchAction?(actionId: string): void;
   onChoosePaper?(): void;
   onOpenPaper?(): void;
   canOpenPdfPage?(reference: PdfPageReference): boolean;
@@ -216,7 +237,7 @@ export interface SidebarViewOptions {
   surface?: "sidebar" | "workbench";
 }
 
-export type SidebarIcon = "history" | "new" | "terminal" | "site" | "more" | "refresh" | "send" | "stop" | "context" | "close" | "copy" | "note";
+export type SidebarIcon = "history" | "new" | "terminal" | "site" | "popout" | "more" | "refresh" | "send" | "stop" | "context" | "close" | "copy" | "note";
 
 const LONG_USER_MESSAGE_CHARACTERS = 420;
 const LONG_USER_MESSAGE_LINES = 8;
@@ -275,9 +296,12 @@ export class SidebarView {
   private effortSelect!: HTMLSelectElement;
   private composerControls!: HTMLElement;
   private qlabRootLabel!: HTMLElement;
+  private actionStrip!: HTMLElement;
   private contextTitle!: HTMLElement;
   private contextMeta!: HTMLElement;
   private choosePaperButton!: HTMLButtonElement;
+  private paperScopeButton: HTMLButtonElement | null = null;
+  private libraryScopeButton: HTMLButtonElement | null = null;
   private openPaperButton!: HTMLButtonElement;
   private terminalButton!: HTMLButtonElement;
   private terminalDrawer!: HTMLElement;
@@ -321,6 +345,7 @@ export class SidebarView {
   private historyOpen = true;
   private historyQuery = "";
   private historySearchTimer: number | null = null;
+  private detachedLayer: HTMLElement | null = null;
 
   constructor(
     body: HTMLElement,
@@ -349,6 +374,7 @@ export class SidebarView {
       selectedModel: "",
       effort: "medium",
       mode: "agent",
+      scope: "paper",
       running: false,
       context: null,
       contextChips: [],
@@ -361,6 +387,8 @@ export class SidebarView {
       turnDurations: {},
       paperTrailConsent: null,
       noting: null,
+      researchObject: null,
+      researchActions: [],
     };
     this.build();
     this.render();
@@ -390,6 +418,38 @@ export class SidebarView {
     }
     this.state = { ...this.state, ...next };
     this.render();
+  }
+
+  /** Replaces an embedded Reader surface while the shared chat lives in its standalone window. */
+  setDetached(
+    detached: boolean,
+    callbacks: { onFocus(): void; onReturn(): void },
+  ): void {
+    if (!detached) {
+      this.detachedLayer?.remove();
+      this.detachedLayer = null;
+      return;
+    }
+    if (!this.detachedLayer) {
+      const layer = this.doc.createElement("div");
+      layer.className = "zc-detached-layer";
+      const title = this.doc.createElement("strong");
+      title.textContent = "Chat is open in a separate window";
+      const detail = this.doc.createElement("p");
+      detail.textContent = "The conversation and its paper context continue running there.";
+      const focus = this.doc.createElement("button");
+      focus.type = "button";
+      focus.className = "is-primary";
+      focus.textContent = "Focus Window";
+      focus.addEventListener("click", () => callbacks.onFocus());
+      const restore = this.doc.createElement("button");
+      restore.type = "button";
+      restore.textContent = "Close Window & Return Here";
+      restore.addEventListener("click", () => callbacks.onReturn());
+      layer.append(title, detail, focus, restore);
+      this.root.appendChild(layer);
+      this.detachedLayer = layer;
+    }
   }
 
   private setHistoryOpen(open: boolean): void {
@@ -535,6 +595,9 @@ export class SidebarView {
       this.mainSiteButton.disabled = true;
       this.mainSiteButton.setAttribute("aria-pressed", "false");
     }
+    const standaloneButton = this.surface === "workbench" && this.callbacks.onOpenStandalone
+      ? this.iconButton("popout", "Open QLab in a separate window", () => this.callbacks.onOpenStandalone?.())
+      : null;
     this.topActions = actions;
     const historyButton = this.iconButton("history", "Conversation History", () => {
       if (this.surface === "workbench") this.setHistoryOpen(!this.historyOpen);
@@ -555,6 +618,7 @@ export class SidebarView {
     actions.append(
       workbenchButton,
       ...(this.mainSiteButton ? [this.mainSiteButton] : []),
+      ...(standaloneButton ? [standaloneButton] : []),
       ...(this.surface === "workbench" ? [] : [this.newThreadButton]),
       this.terminalButton,
       this.accountButton,
@@ -590,6 +654,20 @@ export class SidebarView {
     this.openPaperButton.textContent = "Open PDF";
     this.openPaperButton.title = "Open the current paper in a new Zotero PDF tab";
     this.openPaperButton.addEventListener("click", () => this.callbacks.onOpenPaper?.());
+    if (this.surface === "workbench") {
+      const scope = this.doc.createElement("div");
+      scope.className = "zc-scope-switch";
+      this.paperScopeButton = this.doc.createElement("button");
+      this.paperScopeButton.type = "button";
+      this.paperScopeButton.textContent = "Paper Chat";
+      this.paperScopeButton.addEventListener("click", () => this.callbacks.onScopeChange?.("paper"));
+      this.libraryScopeButton = this.doc.createElement("button");
+      this.libraryScopeButton.type = "button";
+      this.libraryScopeButton.textContent = "Library Chat";
+      this.libraryScopeButton.addEventListener("click", () => this.callbacks.onScopeChange?.("library"));
+      scope.append(this.paperScopeButton, this.libraryScopeButton);
+      contextCard.append(scope);
+    }
     contextCard.append(contextIcon, contextCopy, this.openPaperButton, this.choosePaperButton, refresh);
 
     this.transcript = this.doc.createElement("main");
@@ -625,6 +703,10 @@ export class SidebarView {
     this.qlabRootLabel.className = "zc-qlab-root-label";
     qlabIdentity.append(qlabMark, this.qlabRootLabel);
     qlabBar.appendChild(qlabIdentity);
+    this.actionStrip = this.doc.createElement("div");
+    this.actionStrip.className = "zc-action-strip";
+    this.actionStrip.setAttribute("aria-label", "Research Actions");
+    qlabBar.appendChild(this.actionStrip);
     const composer = this.doc.createElement("div");
     composer.className = "zc-composer";
     this.contextChips = this.doc.createElement("div");
@@ -920,6 +1002,7 @@ export class SidebarView {
     this.renderContext();
     this.renderContextChips();
     this.renderContextMenu();
+    this.renderResearchActions();
     this.renderModels();
     this.renderEfforts();
     this.renderTranscript();
@@ -940,6 +1023,38 @@ export class SidebarView {
       ? "Enter sends a follow-up · Esc stops generation"
       : "Codex can make mistakes; verify the paper text and page numbers.");
     this.statusArea.classList.toggle("is-error", Boolean(this.state.error));
+  }
+
+  private renderResearchActions(): void {
+    if (!this.actionStrip) return;
+    this.actionStrip.replaceChildren();
+    const object = this.state.researchObject;
+    const actions = this.state.researchActions || [];
+    this.actionStrip.hidden = !object || actions.length === 0;
+    if (!object || !actions.length) return;
+
+    const objectLabel = this.doc.createElement("span");
+    objectLabel.className = `zc-action-object is-${object.kind}`;
+    objectLabel.textContent = object.label;
+    objectLabel.title = `${object.kind[0]!.toUpperCase()}${object.kind.slice(1)} · ${object.label}`;
+    this.actionStrip.appendChild(objectLabel);
+    for (const action of actions) {
+      const button = this.doc.createElement("button");
+      button.type = "button";
+      button.className = "zc-research-action";
+      button.dataset.actionId = action.id;
+      button.title = action.description;
+      button.setAttribute("aria-label", action.label);
+      const icon = this.doc.createElement("span");
+      icon.className = "zc-research-action-icon";
+      icon.textContent = action.icon;
+      icon.setAttribute("aria-hidden", "true");
+      const label = this.doc.createElement("span");
+      label.textContent = action.label;
+      button.append(icon, label);
+      button.addEventListener("click", () => this.callbacks.onResearchAction?.(action.id));
+      this.actionStrip.appendChild(button);
+    }
   }
 
   private renderHistoryRail(): void {
@@ -1038,6 +1153,20 @@ export class SidebarView {
 
   private renderContext(): void {
     const context = this.state.context;
+    this.paperScopeButton?.setAttribute("aria-pressed", String(this.state.scope === "paper"));
+    this.libraryScopeButton?.setAttribute("aria-pressed", String(this.state.scope === "library"));
+    if (this.state.scope === "library") {
+      this.textarea.placeholder = "Ask across your Zotero library…";
+      this.contextTitle.textContent = "Zotero Library";
+      this.contextMeta.textContent = context
+        ? `Paper context available · ${this.state.contextChips.filter((chip) => chip.kind === "external-paper").length} additional papers attached`
+        : "Search metadata and attach papers for evidence-backed synthesis";
+      this.choosePaperButton.textContent = "Attach Paper";
+      this.choosePaperButton.title = "Attach a paper as the primary reading context";
+      this.openPaperButton.hidden = !context;
+      this.openPaperButton.disabled = !context;
+      return;
+    }
     this.choosePaperButton.textContent = context ? "Change Paper" : "Choose Paper";
     this.choosePaperButton.title = context ? "Choose another paper for this QLab tab" : "Choose a paper to read from the Zotero library";
     this.openPaperButton.hidden = !context;
@@ -2259,6 +2388,7 @@ const SIDEBAR_ICON_PATHS: Record<SidebarIcon, string[]> = {
   new: ["M12 5v14", "M5 12h14"],
   terminal: ["M4 5h16v14H4z", "m7 9 3 3-3 3", "M13 15h4"],
   site: ["M4 10.5 12 4l8 6.5", "M6.5 9.5V20h11V9.5", "M9.5 20v-6h5v6"],
+  popout: ["M14 4h6v6", "M20 4l-9 9", "M18 13v6a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h6"],
   more: ["M5 12h.01", "M12 12h.01", "M19 12h.01"],
   refresh: ["M20 6v5h-5", "M4 18v-5h5", "M18.2 9a7 7 0 0 0-11.7-2.5L4 11", "M5.8 15a7 7 0 0 0 11.7 2.5L20 13"],
   send: ["M12 19V5", "M6 11l6-6 6 6"],

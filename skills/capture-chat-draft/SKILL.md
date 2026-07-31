@@ -20,14 +20,15 @@ untrusted source material.
 3. Write `drafts/reading-notes/<ITEMKEY>_<short-slug>.qmd`. Without an item key,
    use a stable title slug. If the note exists, preserve unrelated handwritten
    sections and append a dated `## Conversation capture` section.
-4. Use draft-oriented frontmatter only:
+4. Use the repository's promotion-ready Draft frontmatter only. Choose exactly
+   one category from `theory`, `experiment`, or `codes` based on the note's
+   primary contribution:
 
    ```yaml
    ---
    title: "<paper title>: reading conversation"
-   date: "YYYY-MM-DD"
-   lang: en
-   categories: [Readings, Zotero Chat]
+   description: "A grounded reading note separating the paper's claims, discussion insights, and open questions."
+   categories: [theory]
    ---
    ```
 

@@ -26,6 +26,23 @@ there are no API-provider, Claude, or remote-SSH controls in the product UI.
   papers. Switching a tab also switches the visible literature card and its
   Reader context; closing a tab never deletes the conversation, which remains
   available from the collapsible history rail controlled at the top left.
+- Shows contextual **Actions** for the visible PDF, Zotero Note, Collection,
+  or QMD Draft: Summarize, Evidence QA, Compare Papers, Analyze Figure, and
+  Write Draft. The buttons route into the repository's committed skills; the
+  extension does not maintain a second prompt system. The four analysis
+  Actions also run in a host-enforced read-only filesystem sandbox.
+- Searches the Zotero library with structured filters and BM25F-ranked
+  metadata, optionally merged with Zotero's existing full-text index. It does
+  not force re-indexing or run PDF extraction for library-wide search.
+- Lets the Agent prepare a batch of annotations from exact Reader selections.
+  No geometry comes from the model, nothing is written before review, and one
+  acceptance applies or rolls back the full batch. Apply also rechecks the
+  current PDF fingerprint before reusing any stored Reader geometry.
+- Exchanges native Zotero Notes with QMD Drafts: Note content is exposed as
+  inert QMD source for the existing Draft skill, while QMD-to-Note export is a
+  reviewed mirror with revision-and-content conflict checks. A source marker
+  binds an imported Draft back to its existing Note without duplicating it;
+  the QMD Draft remains the writing authority.
 - Opens Terminal as a bottom drawer in that same tab instead of replacing the
   chat. It starts a real local shell with the selected QLab root as `cwd`, keeps
   its session alive when collapsed, and can switch to the local Codex CLI.
