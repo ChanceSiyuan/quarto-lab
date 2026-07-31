@@ -147,6 +147,12 @@ export interface CodexServiceCallbacks {
   onError(error: Error): void;
   /** Lets the host reveal the real terminal without coupling service to UI. */
   onFallbackRequested?(error: Error): void;
+  /**
+   * Rebuilds a `${libraryID}-${attachmentKey}` paper's Reader context by
+   * opening its PDF in a background Reader tab. Reader access is a
+   * plugin-layer capability, so the service only consumes this hook.
+   */
+  seedPaperContext?(paperKey: string): Promise<ReaderContext>;
 }
 
 interface SessionRecord {
@@ -786,9 +792,12 @@ export class CodexService {
     if (threadId === this.state.activeThreadId && !this.state.switchingThreadId) return;
     if (this.state.activeThreadId) this.openThread(this.state.activeThreadId);
     const known = this.findSessionThread(threadId);
-    const knownContext = known ? this.paperContexts.get(known.paperKey) : null;
+    let knownContext = known ? this.paperContexts.get(known.paperKey) ?? null : null;
     if (known && known.paperKey !== this.activePaperKey && !knownContext) {
-      throw new Error("Open this conversation's Zotero paper once, then select it from History again");
+      knownContext = await this.seedPaperContextFromHost(
+        known.paperKey,
+        "Open this conversation's Zotero paper once, then select it from History again",
+      );
     }
     const context = knownContext || this.activeContext;
     const paperKey = knownContext && known ? known.paperKey : this.activePaperKey;
@@ -856,10 +865,13 @@ export class CodexService {
     const located = this.findSessionThread(threadId);
     if (!located) throw new Error("This conversation could not be found in the local Workbench history");
     const paperKey = located.paperKey;
-    const context = this.paperContexts.get(paperKey)
+    let context = this.paperContexts.get(paperKey)
       || (this.activePaperKey === paperKey ? this.activeContext : null);
     if (!context?.workspace) {
-      throw new Error("Open this conversation's Zotero paper once, then select the conversation tab again");
+      context = await this.seedPaperContextFromHost(
+        paperKey,
+        "Open this conversation's Zotero paper once, then select the conversation tab again",
+      );
     }
     const records = [
       this.sessions.papers[paperKey],
@@ -889,6 +901,22 @@ export class CodexService {
     this.syncActiveTurnState();
     await this.saveSessions();
     this.callbacks.onState();
+  }
+
+  /**
+   * Seeds paperContexts for a paper that has not been opened in this Zotero
+   * run, via the host's background-Reader pipeline. Falls back to the legacy
+   * "open the paper once" error when no host hook is installed.
+   */
+  private async seedPaperContextFromHost(paperKey: string, missingHookMessage: string): Promise<ReaderContext> {
+    const seed = this.callbacks.seedPaperContext;
+    if (!seed) throw new Error(missingHookMessage);
+    const context = await seed(paperKey);
+    if (!context?.workspace) {
+      throw new Error("Zotero Reader has not prepared this paper yet; try again shortly");
+    }
+    this.paperContexts.set(paperKey, context);
+    return context;
   }
 
   /** Closes a Workbench tab while leaving the conversation available in History. */

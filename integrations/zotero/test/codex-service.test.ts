@@ -1527,3 +1527,84 @@ describe("CodexService entriesForTurn duplicate-user defense (bug-triage #1)", (
     expect(userEntries.map((entry) => entry.text)).toEqual(["重复问题", "重复问题"]);
   });
 });
+
+describe("CodexService conversation reopening", () => {
+  function reopeningContext(): ReaderContext {
+    return {
+      ...paperContext(),
+      attachment: { ...paperContext().attachment, id: 17, key: "SECOND", title: "Second PDF" },
+      parent: { ...paperContext().parent!, id: 16, key: "SECOND-PARENT", title: "A Different Paper" },
+      workspace: { ...paperContext().workspace!, root: "/profile/papers/1-SECOND" },
+    };
+  }
+
+  function serviceWithSeeder(
+    client: Record<string, unknown>,
+    seedPaperContext: (paperKey: string) => Promise<ReaderContext>,
+  ) {
+    const callbacks = { onState: vi.fn(), onError: vi.fn(), seedPaperContext };
+    const service = new CodexService(
+      {} as NativeBridge,
+      { tools: [] } as unknown as ReaderContextService,
+      "test",
+      callbacks,
+    );
+    const internal = service as any;
+    internal.client = client;
+    internal.saveSessions = vi.fn(async () => {});
+    service.state.connected = true;
+    internal.sessions = {
+      version: 1,
+      papers: {
+        "1-SECOND": {
+          threadId: "thread-b",
+          title: "Stored conversation",
+          paperTitle: "A Different Paper",
+          workspace: "/profile/papers/1-SECOND",
+          updatedAt: "2026-07-30",
+        },
+      },
+      openThreads: ["thread-b"],
+    };
+    return { service, internal, callbacks };
+  }
+
+  it("reopens a stored conversation tab by seeding its paper context through the host hook", async () => {
+    const client = {
+      threadResume: vi.fn(async ({ threadId }: { threadId: string }) => ({ thread: { id: threadId, turns: [] } })),
+      threadRead: vi.fn(async (threadId: string) => ({ thread: { id: threadId, turns: [] } })),
+    };
+    const seedPaperContext = vi.fn(async () => reopeningContext());
+    const { service } = serviceWithSeeder(client, seedPaperContext);
+
+    await service.switchThread("thread-b");
+
+    expect(seedPaperContext).toHaveBeenCalledWith("1-SECOND");
+    expect(client.threadResume).toHaveBeenCalledWith(expect.objectContaining({ threadId: "thread-b" }));
+    expect(service.state.activeThreadId).toBe("thread-b");
+    expect(service.getActiveReaderContext()?.attachment.key).toBe("SECOND");
+  });
+
+  it("reopens a known History conversation by seeding its paper context through the host hook", async () => {
+    const client = {
+      threadResume: vi.fn(async ({ threadId }: { threadId: string }) => ({ thread: { id: threadId, turns: [] } })),
+      threadRead: vi.fn(async (threadId: string) => ({ thread: { id: threadId, turns: [] } })),
+    };
+    const seedPaperContext = vi.fn(async () => reopeningContext());
+    const { service, internal } = serviceWithSeeder(client, seedPaperContext);
+    internal.globalHistory = [{
+      id: "thread-b",
+      title: "Stored conversation",
+      updatedAt: "2026-07-30T00:00:00.000Z",
+      source: "codex",
+      sourceLabel: "Codex CLI",
+      pinned: false,
+    }];
+
+    await service.openGlobalThread("thread-b");
+
+    expect(seedPaperContext).toHaveBeenCalledWith("1-SECOND");
+    expect(service.state.activeThreadId).toBe("thread-b");
+    expect(internal.sessions.papers["1-SECOND"]).toMatchObject({ threadId: "thread-b" });
+  });
+});
