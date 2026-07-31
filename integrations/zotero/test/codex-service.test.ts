@@ -1607,4 +1607,77 @@ describe("CodexService conversation reopening", () => {
     expect(service.state.activeThreadId).toBe("thread-b");
     expect(internal.sessions.papers["1-SECOND"]).toMatchObject({ threadId: "thread-b" });
   });
+
+  it("opens a paper's stored conversation after seeding the context through the host hook", async () => {
+    const client = {
+      threadResume: vi.fn(async ({ threadId }: { threadId: string }) => ({ thread: { id: threadId, turns: [] } })),
+      threadRead: vi.fn(async (threadId: string) => ({ thread: { id: threadId, turns: [] } })),
+    };
+    const seedPaperContext = vi.fn(async () => reopeningContext());
+    const { service } = serviceWithSeeder(client, seedPaperContext);
+
+    await service.openConversationForPaper("1-SECOND");
+
+    expect(seedPaperContext).toHaveBeenCalledWith("1-SECOND");
+    expect(client.threadResume).toHaveBeenCalledWith(expect.objectContaining({ threadId: "thread-b" }));
+    expect(service.state.activeThreadId).toBe("thread-b");
+    expect(service.getActiveReaderContext()?.attachment.key).toBe("SECOND");
+  });
+
+  it("starts a fresh thread when the paper has no stored conversation", async () => {
+    const client = {
+      threadStart: vi.fn(async () => ({ thread: { id: "thread-new" } })),
+      threadSetName: vi.fn(async () => ({})),
+      threadResume: vi.fn(),
+    };
+    const seedPaperContext = vi.fn(async () => reopeningContext());
+    const { service, internal } = serviceWithSeeder(client, seedPaperContext);
+    internal.sessions = { version: 1, papers: {} };
+
+    await service.openConversationForPaper("1-SECOND");
+
+    expect(seedPaperContext).toHaveBeenCalledWith("1-SECOND");
+    expect(client.threadResume).not.toHaveBeenCalled();
+    expect(client.threadStart).toHaveBeenCalled();
+    expect(service.state.activeThreadId).toBe("thread-new");
+    expect(internal.sessions.papers["1-SECOND"]).toMatchObject({ threadId: "thread-new" });
+  });
+
+  it("falls back to a fresh thread when the stored thread no longer exists on the backend", async () => {
+    const client = {
+      threadResume: vi.fn(async () => { throw new Error("thread not found"); }),
+      threadStart: vi.fn(async () => ({ thread: { id: "thread-new" } })),
+      threadSetName: vi.fn(async () => ({})),
+    };
+    const seedPaperContext = vi.fn(async () => reopeningContext());
+    const { service, internal } = serviceWithSeeder(client, seedPaperContext);
+
+    await service.openConversationForPaper("1-SECOND");
+
+    expect(service.state.activeThreadId).toBe("thread-new");
+    expect(internal.sessions.papers["1-SECOND"]).toMatchObject({ threadId: "thread-new" });
+    expect(internal.sessions.history["1-SECOND"]).toEqual([
+      expect.objectContaining({ threadId: "thread-b" }),
+    ]);
+  });
+
+  it("surfaces a seeding failure without touching conversation state", async () => {
+    const client = {
+      threadResume: vi.fn(),
+      threadStart: vi.fn(),
+    };
+    const seedPaperContext = vi.fn(async () => {
+      throw new Error("This Zotero item has no readable PDF attachment");
+    });
+    const { service, internal } = serviceWithSeeder(client, seedPaperContext);
+
+    await expect(service.openConversationForPaper("1-SECOND"))
+      .rejects.toThrow("This Zotero item has no readable PDF attachment");
+
+    expect(service.state.activeThreadId).toBeNull();
+    expect(client.threadResume).not.toHaveBeenCalled();
+    expect(client.threadStart).not.toHaveBeenCalled();
+    expect(internal.paperContexts.has("1-SECOND")).toBe(false);
+    expect(internal.sessions.papers["1-SECOND"]).toMatchObject({ threadId: "thread-b" });
+  });
 });

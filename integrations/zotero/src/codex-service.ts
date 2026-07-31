@@ -861,6 +861,51 @@ export class CodexService {
     return pending;
   }
 
+  /**
+   * Opens a paper's stored conversation even when the paper has not been
+   * opened in this Zotero run: seeds the Reader context through the host
+   * hook when needed, resumes sessions.papers[paperKey].threadId, and falls
+   * back to a fresh thread when nothing is stored or the stored thread no
+   * longer exists on the backend.
+   */
+  openConversationForPaper(paperKey: string): Promise<void> {
+    return this.enqueuePaperTransition(() => this.openConversationForPaperInternal(paperKey));
+  }
+
+  private async openConversationForPaperInternal(paperKey: string): Promise<void> {
+    let context = this.paperContexts.get(paperKey) ?? null;
+    if (!context?.workspace) {
+      context = await this.seedPaperContextFromHost(
+        paperKey,
+        "Open this conversation's Zotero paper once, then try again",
+      );
+    }
+    const stored = this.sessions.papers[paperKey];
+    if (stored && (stored.backend ?? "codex") === this.state.backend) {
+      if (stored.threadId === this.state.activeThreadId && !this.state.switchingThreadId) {
+        this.callbacks.onState();
+        return;
+      }
+      try {
+        await this.switchThreadInternal(stored.threadId);
+        return;
+      }
+      catch {
+        // The stored thread no longer exists on this backend; archive the
+        // stale pointer instead of losing it, mirroring setPaperInternal's
+        // resume-failure branch, then fall through to a fresh thread.
+        this.sessions.history ||= {};
+        const history = this.sessions.history[paperKey] ||= [];
+        if (!history.some((record) => record.threadId === stored.threadId)) {
+          history.unshift(stored);
+        }
+        this.sessions.history[paperKey] = history.slice(0, 30);
+        delete this.sessions.papers[paperKey];
+      }
+    }
+    await this.newThreadInternal(context, paperKey);
+  }
+
   private async switchThreadInternal(threadId: string): Promise<void> {
     const located = this.findSessionThread(threadId);
     if (!located) throw new Error("This conversation could not be found in the local Workbench history");
