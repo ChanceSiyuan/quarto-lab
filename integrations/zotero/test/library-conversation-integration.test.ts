@@ -124,4 +124,85 @@ describe("library notification integration order", () => {
       [{ kind: "library", key: "library:1" }],
     ]);
   });
+
+  it("defers unrelated notification-free ingestion until an opening library returns its exact id", async () => {
+    const callbacks = { onState: vi.fn(), onError: vi.fn() };
+    const service = new CodexService(
+      {} as NativeBridge,
+      { tools: [] } as unknown as ReaderContextService,
+      "test",
+      callbacks,
+    );
+    const internal = service as any;
+    internal.saveSessions = vi.fn().mockResolvedValue(undefined);
+    internal.threadPaperKeys.set("paper-thread", "1-ATTACH");
+    internal.unsubscribeStore = service.store.subscribe((snapshot, notification, affectedThreadIds) => {
+      internal.handleStoreMutation(snapshot, notification, affectedThreadIds);
+    });
+    const socket = new MockWebSocket();
+    const client = new CodexAppServerClient({
+      url: "ws://library-open-test",
+      webSocketFactory: () => socket,
+      store: service.store,
+      onNotification: (notification) => internal.handleNotification(notification),
+    });
+    const connecting = client.connect();
+    socket.open();
+    await Promise.resolve();
+    const initialize = socket.last();
+    socket.receive({
+      id: initialize.id,
+      result: {
+        userAgent: "codex-test",
+        codexHome: "/tmp/codex-home",
+        platformFamily: "unix",
+        platformOs: "linux",
+      },
+    });
+    await connecting;
+    internal.client = client;
+    service.state.connected = true;
+
+    const opening = service.openLibraryConversation({ libraryID: 1, libraryName: "My Library" });
+    await vi.waitFor(() => {
+      expect(socket.sent.map((frame) => JSON.parse(frame)).some((frame) => frame.method === "thread/start"))
+        .toBe(true);
+    });
+    callbacks.onState.mockClear();
+    service.store.ingestThreads([
+      { id: "history-thread", turns: [] },
+      { id: "paper-thread", turns: [] },
+    ]);
+
+    expect(callbacks.onState).not.toHaveBeenCalled();
+    expect(internal.threadLibrarySubjects.has("history-thread")).toBe(false);
+    expect(internal.threadLibrarySubjects.has("paper-thread")).toBe(false);
+
+    const threadStart = socket.sent
+      .map((frame) => JSON.parse(frame) as Record<string, unknown>)
+      .find((frame) => frame.method === "thread/start")!;
+    socket.receive({
+      id: threadStart.id,
+      result: { thread: { id: "exact-library-thread", turns: [] } },
+    });
+    await opening;
+    const setName = socket.sent
+      .map((frame) => JSON.parse(frame) as Record<string, unknown>)
+      .find((frame) => frame.method === "thread/name/set");
+    if (setName) socket.receive({ id: setName.id, result: {} });
+    await vi.waitFor(() => expect(service.store.getThread("exact-library-thread")?.name).toBe("My Library"));
+
+    expect(internal.threadLibrarySubjects.get("exact-library-thread")).toBe("library:1");
+    expect(internal.threadLibrarySubjects.has("history-thread")).toBe(false);
+    expect(internal.threadLibrarySubjects.has("paper-thread")).toBe(false);
+    const scoped = callbacks.onState.mock.calls.filter((call) => call.length > 0);
+    const unscoped = callbacks.onState.mock.calls.filter((call) => call.length === 0);
+    expect(scoped).toEqual([
+      [{ kind: "library", key: "library:1" }],
+      [{ kind: "library", key: "library:1" }],
+      [{ kind: "library", key: "library:1" }],
+    ]);
+    expect(unscoped).toEqual([[]]);
+    client.close();
+  });
 });
