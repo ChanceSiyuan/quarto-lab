@@ -45,7 +45,8 @@ async function qmdFiles(directory: string, prefix = ""): Promise<string[]> {
 
 test("trusted knowledge is the adapted quarto-lab corpus, not the retired issue #133 subset", async () => {
   const files = await qmdFiles(KNOWLEDGE_ROOT);
-  assert.equal(files.length, 136);
+  // Five QEC construction notes are intentionally under review in drafts/.
+  assert.equal(files.length, 131);
   assert.deepEqual(
     [...new Set(files.filter((file) => file !== "index.qmd").map((file) => file.split("/")[0]))].sort(),
     [...EXPECTED_TOPICS].sort(),
