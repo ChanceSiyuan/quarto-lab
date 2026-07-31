@@ -173,8 +173,8 @@ export class CitationCandidateRegistry {
     if (requests.length > this.maxRequests) {
       throw new RangeError(`A citation lookup accepts at most ${this.maxRequests} requests`);
     }
-    const now = this.currentTime();
-    this.sweepExpired(now);
+    const initialNow = this.currentTime();
+    this.sweepExpired(initialNow);
     const normalizedRequests = requests.map((request, index) => normalizeQuery(request, index));
     const rawResolutions = await this.resolver.resolve(
       { libraryID: normalizedScope.libraryID },
@@ -187,11 +187,16 @@ export class CitationCandidateRegistry {
       normalizeResolution(resolution, normalizedRequests[index]!.clientRef, index)
     ));
 
-    const batchId = this.nextOpaqueId();
-    const expiresAtMs = now + this.ttlMs;
+    const completionNow = this.currentTime();
+    this.sweepExpired(completionNow);
+    const reservedIds = new Set<string>();
+    const batchId = this.nextOpaqueId(reservedIds);
+    reservedIds.add(batchId);
+    const expiresAtMs = completionNow + this.ttlMs;
     const capabilityIds: string[] = [];
-    const results = resolutions.map((resolution, requestIndex) => {
-      const capabilityId = this.nextOpaqueId();
+    const stagedCapabilities = resolutions.map((resolution, requestIndex) => {
+      const capabilityId = this.nextOpaqueId(reservedIds);
+      reservedIds.add(capabilityId);
       const bound: BoundCitationCapability = {
         capabilityId,
         batchId,
@@ -202,20 +207,25 @@ export class CitationCandidateRegistry {
         expiresAtMs,
         resolution,
       };
-      this.capabilities.set(capabilityId, bound);
       capabilityIds.push(capabilityId);
-      return {
-        clientRef: resolution.clientRef,
-        capabilityId,
-        resolution: cloneResolution(resolution),
-      };
+      return bound;
     });
-    this.batches.set(batchId, {
+    const stagedBatch: StoredBatch = {
       id: batchId,
       scope: cloneScope(normalizedScope),
       capabilityIds,
       expiresAtMs,
-    });
+    };
+    const results = stagedCapabilities.map((capability) => ({
+      clientRef: capability.resolution.clientRef,
+      capabilityId: capability.capabilityId,
+      resolution: cloneResolution(capability.resolution),
+    }));
+
+    for (const capability of stagedCapabilities) {
+      this.capabilities.set(capability.capabilityId, capability);
+    }
+    this.batches.set(batchId, stagedBatch);
 
     return {
       batchId,
@@ -280,13 +290,13 @@ export class CitationCandidateRegistry {
       .map(cloneCapability);
   }
 
-  private nextOpaqueId(): string {
+  private nextOpaqueId(reservedIds: ReadonlySet<string> = new Set()): string {
     for (let attempts = 0; attempts < 100; attempts += 1) {
       const id = this.createId();
       if (typeof id !== "string" || !id || UNSAFE_TEXT.test(id) || id.length > MAX_SHORT_TEXT_CODE_POINTS) {
         throw new Error("Citation capability ID factory returned an invalid opaque ID");
       }
-      if (!this.capabilities.has(id) && !this.batches.has(id)) return id;
+      if (!reservedIds.has(id) && !this.capabilities.has(id) && !this.batches.has(id)) return id;
     }
     throw new Error("Citation capability ID factory produced duplicate opaque IDs");
   }
