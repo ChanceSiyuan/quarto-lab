@@ -103,6 +103,64 @@ describe("CitationCandidateRegistry", () => {
       .resolves.toMatchObject({ batchId: "batch" });
   });
 
+  it("does not retain a partial capability when opaque ID generation throws", async () => {
+    let idCalls = 0;
+    const registry = new CitationCandidateRegistry({
+      resolve: async (_scope, requests) => requests.map((request) => resolution(request.clientRef)),
+    }, {
+      createId: () => {
+        idCalls += 1;
+        if (idCalls === 1) return "batch";
+        if (idCalls === 2) return "first-capability";
+        throw new Error("secure entropy failed");
+      },
+    });
+
+    await expect(registry.lookup(scope(), [
+      { clientRef: "r1", doi: "10.1000/a" },
+      { clientRef: "r2", doi: "10.1000/b" },
+    ])).rejects.toThrow(/entropy failed/i);
+    expect(() => registry.resolveCapability(scope(), "first-capability")).toThrow(/unknown/i);
+  });
+
+  it("does not retain a partial capability when generated IDs repeat", async () => {
+    let idCalls = 0;
+    const registry = new CitationCandidateRegistry({
+      resolve: async (_scope, requests) => requests.map((request) => resolution(request.clientRef)),
+    }, {
+      createId: () => {
+        idCalls += 1;
+        return idCalls === 1 ? "batch" : "first-capability";
+      },
+    });
+
+    await expect(registry.lookup(scope(), [
+      { clientRef: "r1", doi: "10.1000/a" },
+      { clientRef: "r2", doi: "10.1000/b" },
+    ])).rejects.toThrow(/duplicate/i);
+    expect(() => registry.resolveCapability(scope(), "first-capability")).toThrow(/unknown/i);
+  });
+
+  it("starts capability expiry from resolver completion time", async () => {
+    const startedAt = Date.parse("2026-07-31T10:00:00Z");
+    const completedAt = Date.parse("2026-07-31T10:31:00Z");
+    let nowMs = startedAt;
+    let idCalls = 0;
+    const registry = new CitationCandidateRegistry({
+      resolve: async () => {
+        nowMs = completedAt;
+        return [resolution("r1")];
+      },
+    }, {
+      nowMs: () => nowMs,
+      createId: () => `opaque-${++idCalls}`,
+    });
+
+    const batch = await registry.lookup(scope(), [{ clientRef: "r1", doi: "10.1000/a" }]);
+    expect(batch.expiresAtMs).toBe(completedAt + 30 * 60 * 1_000);
+    expect(registry.resolveCapability(scope(), batch.results[0]!.capabilityId).resolution.clientRef).toBe("r1");
+  });
+
   it("makes capability IDs opaque and rejects forged IDs", async () => {
     const { registry } = harness();
     const batch = await registry.lookup(scope(), [{ clientRef: "r1", doi: "10.1000/secret-paper" }]);
