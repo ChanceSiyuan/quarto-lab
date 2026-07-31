@@ -91,6 +91,29 @@ there are no API-provider, Claude, or remote-SSH controls in the product UI.
   Visual Edit or Cursor saves use atomic writes and never silently overwrite a
   newer external revision.
 
+## Screenshots to the AI chat
+
+Two capture flows attach rendered PDF images to the next chat message. Both
+produce PNG images sent inline with the message, appear as removable chips
+above the composer, and share one limit of 10 screenshots per message.
+
+**Full page.** In the chat composer, open the Add-Context menu (click the `@`
+button in the chips row, or type `@` in the input) and choose **Screenshot
+Current Page**. The currently visible PDF page is rendered and attached as a
+"PDF Screenshot N" chip.
+
+**Region.** Click the region-capture button in the Reader toolbar (the dotted
+square next to the QLab button), or choose **Screenshot Region** from the same
+Add-Context menu. The current page view gets a crosshair overlay: drag a
+rectangle around the figure, equation, or table you need and release to attach
+it as a "Region Screenshot N" chip. Press Escape to cancel; drags smaller than
+8 pixels on a side are discarded. If no chat surface is open, a completed
+region capture opens the Workbench and focuses the composer.
+
+Both entries require an open PDF. Click any screenshot chip to remove it
+before sending; screenshots ride along with the next message only and are
+never stored in Zotero.
+
 ## Build and test
 
 Building the add-on requires Node.js 20+, Xcode command-line tools on macOS,
