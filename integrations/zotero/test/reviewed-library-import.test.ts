@@ -15,6 +15,8 @@ import {
   type LibraryMutationHost,
 } from "../src/reviewed-library-import";
 
+const UNSAFE_TEST_TEXT = /[\p{Cc}\p{Cf}\u2028\u2029]/u;
+
 const scope = (threadId = "library-thread", libraryID: number | string = 1): CitationCapabilityScope => ({
   threadId,
   libraryID,
@@ -89,6 +91,7 @@ function deferred<T>() {
 function importServiceHarness(
   results: readonly ResolvedCitation[] = [resolution("shor")],
   preflight: (plan: BoundLibraryImportPlan) => Promise<LibraryImportPreflight> = async (plan) => defaultPreflight(plan),
+  onStateCallback: (scope: CitationCapabilityScope) => void = () => {},
 ) {
   let registrySequence = 0;
   let reviewSequence = 0;
@@ -107,7 +110,7 @@ function importServiceHarness(
     compensate: vi.fn(async () => ({ complete: true, survivors: [] })),
     invalidateLibrary: vi.fn(async () => {}),
   };
-  const onState = vi.fn();
+  const onState = vi.fn(onStateCallback);
   const service = new ReviewedLibraryImportService(registry, host, { onState }, {
     createId: () => `library-review-${++reviewSequence}`,
   });
@@ -652,6 +655,121 @@ describe("ReviewedLibraryImportService read-only tools", () => {
     });
   });
 
+  it("rejects an already-member claim when the target collection does not exist", async () => {
+    const reuseResult = resolution("reuse-1", {
+      status: "reuse",
+      candidates: [candidate("bound-reuse-1", "Existing", {
+        localItemKey: "LOCAL-1",
+        localItemVersion: 3,
+      })],
+    });
+    const { service } = importServiceHarness([reuseResult], async (plan) => {
+      const preflight = defaultPreflight(plan);
+      return {
+        ...preflight,
+        siblingCollectionKey: null,
+        dispositions: preflight.dispositions.map((entry) => ({ ...entry, membershipExists: true })),
+      };
+    });
+    const [capabilityId] = await lookupCapabilities(service, [
+      { client_ref: "reuse-1", title: "Existing" },
+    ]);
+
+    await expect(propose(service, [capabilityId!]))
+      .rejects.toThrow(/membership.*target|collection.*exist|absent.*collection/i);
+    expect(service.getReviews(scope())).toEqual([]);
+  });
+
+  it("counts collection creation and coherent row effects from the exact final plan", async () => {
+    const reuseResult = resolution("reuse-1", {
+      status: "reuse",
+      candidates: [candidate("bound-reuse-1", "Existing", {
+        localItemKey: "LOCAL-1",
+        localItemVersion: 3,
+      })],
+    });
+    const absentReuse = importServiceHarness([reuseResult]);
+    const [absentReuseId] = await lookupCapabilities(absentReuse.service, [
+      { client_ref: "reuse-1", title: "Existing" },
+    ]);
+    await propose(absentReuse.service, [absentReuseId!]);
+    expect(absentReuse.service.getReviews(scope())[0]).toMatchObject({
+      effectCount: 2,
+      canApply: true,
+      rows: [{ effectLabel: "Reuse an existing item and add it to the target collection" }],
+    });
+
+    const existingMember = importServiceHarness([reuseResult], async (plan) => {
+      const preflight = defaultPreflight(plan);
+      return {
+        ...preflight,
+        siblingCollectionKey: "TARGET-COLLECTION",
+        dispositions: preflight.dispositions.map((entry) => ({ ...entry, membershipExists: true })),
+      };
+    });
+    const [existingMemberId] = await lookupCapabilities(existingMember.service, [
+      { client_ref: "reuse-1", title: "Existing" },
+    ]);
+    await propose(existingMember.service, [existingMemberId!]);
+    expect(existingMember.service.getReviews(scope())[0]).toMatchObject({
+      effectCount: 0,
+      canApply: true,
+      rows: [{ effectLabel: "Reuse an item already in the target collection" }],
+    });
+
+    const absentCreate = importServiceHarness([resolution("create-1")]);
+    const [absentCreateId] = await lookupCapabilities(absentCreate.service, [
+      { client_ref: "create-1", title: "Create" },
+    ]);
+    await propose(absentCreate.service, [absentCreateId!]);
+    expect(absentCreate.service.getReviews(scope())[0]).toMatchObject({
+      effectCount: 2,
+      rows: [{ effectLabel: "Create a new Zotero item" }],
+    });
+
+    const existingCreate = importServiceHarness([resolution("create-1")], async (plan) => ({
+      ...defaultPreflight(plan),
+      siblingCollectionKey: "TARGET-COLLECTION",
+    }));
+    const [existingCreateId] = await lookupCapabilities(existingCreate.service, [
+      { client_ref: "create-1", title: "Create" },
+    ]);
+    await propose(existingCreate.service, [existingCreateId!]);
+    expect(existingCreate.service.getReviews(scope())[0]).toMatchObject({
+      effectCount: 1,
+      rows: [{ effectLabel: "Create a new Zotero item" }],
+    });
+  });
+
+  it("adds no row effect for omission or conflict while retaining collection creation", async () => {
+    const unresolved = resolution("unresolved-1", {
+      status: "unresolved",
+      candidates: [],
+      reason: "No exact match",
+    });
+    const { service, host } = importServiceHarness([unresolved]);
+    const [capabilityId] = await lookupCapabilities(service, [
+      { client_ref: "unresolved-1", title: "Unknown" },
+    ]);
+    await propose(service, [capabilityId!]);
+    const reviewId = service.getReviews(scope())[0]!.id;
+
+    expect(service.getReviews(scope())[0]).toMatchObject({
+      effectCount: 1,
+      canApply: false,
+      rows: [{ effectLabel: "Choose a candidate or acknowledge omission" }],
+    });
+    service.setRowResolution(reviewId, "unresolved-1", { omit: true });
+    await vi.waitFor(() => expect(service.getReviews(scope())[0]?.canApply).toBe(true));
+    expect(service.getReviews(scope())[0]).toMatchObject({
+      effectCount: 1,
+      rows: [{ effectLabel: "Omit this citation" }],
+    });
+    expect(host.apply).not.toHaveBeenCalled();
+    expect(host.compensate).not.toHaveBeenCalled();
+    expect(host.invalidateLibrary).not.toHaveBeenCalled();
+  });
+
   it("disables Apply while refreshing a row choice and atomically publishes the final-plan effects", async () => {
     const refresh = deferred<LibraryImportPreflight>();
     let calls = 0;
@@ -705,7 +823,7 @@ describe("ReviewedLibraryImportService read-only tools", () => {
 
     expect(service.getReviews(scope())[0]).toMatchObject({
       canApply: true,
-      effectCount: 1,
+      effectCount: 2,
       statusMessage: expect.stringMatching(/ready/i),
       rows: [{ effectLabel: "Reuse an existing item and add it to the target collection" }],
     });
@@ -743,7 +861,7 @@ describe("ReviewedLibraryImportService read-only tools", () => {
       digest: "second-digest",
       editable: true,
       parentVersion: 7,
-      siblingCollectionKey: null,
+      siblingCollectionKey: "TARGET-COLLECTION",
       dispositions: [{
         rowId: "ambiguous-1",
         effect: "reuse",
@@ -855,5 +973,104 @@ describe("ReviewedLibraryImportService read-only tools", () => {
     service.setRowResolution(reviewId, "unresolved-1", { omit: true });
     await vi.waitFor(() => expect(service.getReviews(scope())[0]?.statusMessage).toMatch(/refresh failed/i));
     expect(service.getReviews(scope())[0]?.canApply).toBe(false);
+  });
+
+  it("publishes a validated refresh even when immediate and completion notifications throw", async () => {
+    const refresh = deferred<LibraryImportPreflight>();
+    let calls = 0;
+    let throwNotifications = false;
+    const ambiguous = resolution("ambiguous-1", {
+      status: "ambiguous",
+      candidates: [candidate("bound-local-1", "Existing match", {
+        localItemKey: "LOCAL-1",
+        localItemVersion: 1,
+      })],
+      reason: "One exact match",
+    });
+    const { service, host } = importServiceHarness([ambiguous], async (plan) => {
+      calls += 1;
+      if (calls === 1) return defaultPreflight(plan);
+      return refresh.promise;
+    }, () => {
+      if (throwNotifications) throw new Error("UI callback failed");
+    });
+    const [capabilityId] = await lookupCapabilities(service, [
+      { client_ref: "ambiguous-1", title: "Existing match" },
+    ]);
+    await propose(service, [capabilityId!]);
+    const reviewId = service.getReviews(scope())[0]!.id;
+    throwNotifications = true;
+
+    expect(() => service.setRowResolution(reviewId, "ambiguous-1", {
+      candidateId: "bound-local-1",
+    })).not.toThrow();
+    expect(service.getReviews(scope())[0]?.canApply).toBe(false);
+
+    refresh.resolve({
+      digest: "validated-despite-callbacks",
+      editable: true,
+      parentVersion: 7,
+      siblingCollectionKey: null,
+      dispositions: [{
+        rowId: "ambiguous-1",
+        effect: "reuse",
+        itemKey: "LOCAL-1",
+        itemVersion: 1,
+        membershipExists: false,
+      }],
+    });
+    await vi.waitFor(() => expect(service.getReviews(scope())[0]?.canApply).toBe(true));
+
+    const internal = service as unknown as {
+      pending: Map<string, { proposalPreflight: LibraryImportPreflight }>;
+    };
+    expect(internal.pending.get(reviewId)?.proposalPreflight.digest).toBe("validated-despite-callbacks");
+    expect(service.getReviews(scope())[0]?.statusMessage).toMatch(/ready/i);
+    expect(host.apply).not.toHaveBeenCalled();
+    expect(host.compensate).not.toHaveBeenCalled();
+    expect(host.invalidateLibrary).not.toHaveBeenCalled();
+  });
+
+  it("totally bounds hostile refresh rejections when failure notification also throws", async () => {
+    const hostileCoercion = new Proxy(Object.create(null) as object, {
+      get() { throw new Error("hostile get trap"); },
+      getPrototypeOf() { throw new Error("hostile prototype trap"); },
+    });
+    const hostileValues: unknown[] = [Object.create(null), hostileCoercion, Symbol("host failure")];
+
+    for (const hostile of hostileValues) {
+      let preflightCalls = 0;
+      let notificationCalls = 0;
+      const unresolved = resolution("unresolved-1", {
+        status: "unresolved",
+        candidates: [],
+        reason: "No exact match",
+      });
+      const { service, host } = importServiceHarness([unresolved], async (plan) => {
+        preflightCalls += 1;
+        if (preflightCalls === 1) return defaultPreflight(plan);
+        throw hostile;
+      }, () => {
+        notificationCalls += 1;
+        if (notificationCalls >= 3) throw new Error("failure publication callback failed");
+      });
+      const [capabilityId] = await lookupCapabilities(service, [
+        { client_ref: "unresolved-1", title: "Unknown" },
+      ]);
+      await propose(service, [capabilityId!]);
+      const reviewId = service.getReviews(scope())[0]!.id;
+
+      expect(() => service.setRowResolution(reviewId, "unresolved-1", { omit: true })).not.toThrow();
+      await vi.waitFor(() => expect(service.getReviews(scope())[0]?.statusMessage).toMatch(/refresh failed/i));
+
+      const review = service.getReviews(scope())[0]!;
+      expect(review.canApply).toBe(false);
+      expect(review.state).toBe("pending");
+      expect([...review.statusMessage].length).toBeLessThanOrEqual(280);
+      expect(UNSAFE_TEST_TEXT.test(review.statusMessage)).toBe(false);
+      expect(host.apply).not.toHaveBeenCalled();
+      expect(host.compensate).not.toHaveBeenCalled();
+      expect(host.invalidateLibrary).not.toHaveBeenCalled();
+    }
   });
 });
