@@ -8,6 +8,23 @@ export const COMPANION_CAPSULE_BOUNDS = Object.freeze({
   selection: 8_000,
   pageExcerpt: 12_000,
   draftExcerpt: 20_000,
+  contextItems: 64,
+  capsuleId: 128,
+  chipId: 128,
+  sourceIdentity: 512,
+  paperKey: 128,
+  draftPath: 1_024,
+  contextMode: 32,
+  citationTitle: 1_024,
+  citationCreators: 2_048,
+  citationYear: 32,
+  citationDoi: 512,
+  citationUrl: 2_048,
+  pageLabel: 128,
+  pageSource: 32,
+  screenshotTitle: 1_024,
+  timestamp: 32,
+  contentHash: 512,
   secondaryPapers: 20,
   screenshotProvenance: 8,
   prompt: 48_000,
@@ -145,6 +162,7 @@ export interface ChatGPTCompanionCapsule {
     truncated: boolean;
   } | null;
   screenshotProvenance: Array<{
+    authority: "external_evidence";
     kind: "page" | "region";
     paperTitle: string;
     pageNumber: number | null;
@@ -157,8 +175,10 @@ export interface ChatGPTCompanionCapsule {
 const CONTEXT_KINDS = new Set<CompanionContextKind>([
   "paper", "page", "selection", "annotation", "library", "external-paper", "screenshot", "draft",
 ]);
-const OPAQUE_ID = /^[A-Za-z0-9_-]{16,128}$/;
+const PAGE_SOURCES = new Set(["pdfjs", "indexed-fulltext", "pdf-worker", "none"]);
+const OPAQUE_ID = /^[A-Za-z0-9_-]+$/;
 const CONTROL = /[\u0000-\u001F\u007F-\u009F]/gu;
+const CONTROL_TEST = /[\u0000-\u001F\u007F-\u009F]/u;
 
 function codePoints(value: string): string[] {
   return Array.from(value);
@@ -168,31 +188,109 @@ function normalizeMetadata(value: unknown): string {
   return typeof value === "string" ? value.normalize("NFKC").replace(CONTROL, "�") : "";
 }
 
-function boundedMetadata(value: unknown, maximum: number): { value: string; truncated: boolean } {
+function boundedMetadata(
+  value: unknown,
+  maximum: number,
+  label: string,
+  warnings: string[],
+): { value: string; truncated: boolean } {
   const normalized = normalizeMetadata(value);
   const points = codePoints(normalized);
-  return points.length > maximum
-    ? { value: points.slice(0, maximum).join(""), truncated: true }
-    : { value: normalized, truncated: false };
+  if (points.length <= maximum) return { value: normalized, truncated: false };
+  warnings.push(`${label} was truncated to ${maximum.toLocaleString("en-US")} Unicode code points.`);
+  return { value: points.slice(0, maximum).join(""), truncated: true };
 }
 
-function safeRelativePath(value: unknown): string | null {
-  const path = normalizeMetadata(value);
-  if (!path || path.startsWith("/") || /^[A-Za-z]:[\\/]/.test(path)) return null;
+function boundedOmissibleMetadata(
+  value: unknown,
+  maximum: number,
+  label: string,
+  warnings: string[],
+): string {
+  const normalized = normalizeMetadata(value);
+  if (codePoints(normalized).length <= maximum) return normalized;
+  warnings.push(`${label} exceeded ${maximum.toLocaleString("en-US")} Unicode code points and was omitted.`);
+  return "";
+}
+
+function unsafeLocator(value: string): boolean {
+  return value.startsWith("/")
+    || value.startsWith("\\")
+    || value.includes("\\")
+    || /^[A-Za-z]:[\\/]/u.test(value)
+    || /^(?:data|file):/iu.test(value)
+    || /^(?:\.{1,2}|drafts|knowledge|literature|work|public)(?:\/|$)/iu.test(value);
+}
+
+function exactIdentifier(value: unknown, maximum: number, label: string): string {
+  if (typeof value !== "string" || !value.trim()) throw new Error(`${label} must be a non-blank identifier`);
+  if (CONTROL_TEST.test(value)) throw new Error(`${label} contains a disallowed control character`);
+  if (codePoints(value).length > maximum) {
+    throw new Error(`${label} exceeds ${maximum.toLocaleString("en-US")} Unicode code points`);
+  }
+  if (unsafeLocator(value)) throw new Error(`${label} must not contain a filesystem path or data URL`);
+  return value;
+}
+
+function safeDraftPath(value: unknown): string | null {
+  if (typeof value !== "string" || !value || codePoints(value).length > COMPANION_CAPSULE_BOUNDS.draftPath) {
+    return null;
+  }
+  if (CONTROL_TEST.test(value) || value.includes("\\") || !value.startsWith("drafts/")) return null;
+  if (value.startsWith("/") || /^[A-Za-z]:[\\/]/u.test(value) || /^(?:data|file):/iu.test(value)) return null;
+  const path = value;
   const parts = path.split("/");
-  return parts.every((part) => part && part !== "." && part !== "..") ? path : null;
+  return parts.length > 1 && parts.every((part) => part && part !== "." && part !== "..") ? path : null;
 }
 
-function safeExternalUrl(value: unknown): string {
-  const url = normalizeMetadata(value);
-  return /^https?:\/\//iu.test(url) ? url : "";
+function safeExternalUrl(value: unknown, label: string, warnings: string[]): string {
+  const url = boundedOmissibleMetadata(value, COMPANION_CAPSULE_BOUNDS.citationUrl, label, warnings);
+  if (!url || /^https?:\/\//iu.test(url)) return url;
+  warnings.push(`${label} was not an HTTP(S) URL and was omitted.`);
+  return "";
 }
 
-function safePageSource(value: unknown): string {
-  const source = normalizeMetadata(value);
-  return source.startsWith("/") || /^[A-Za-z]:[\\/]/.test(source) || /^file:/iu.test(source)
-    ? ""
-    : source;
+function safeDoi(value: unknown, label: string, warnings: string[]): string {
+  const doi = boundedOmissibleMetadata(value, COMPANION_CAPSULE_BOUNDS.citationDoi, label, warnings);
+  if (!doi || !unsafeLocator(doi)) return doi;
+  warnings.push(`${label} was path- or data-shaped and was omitted.`);
+  return "";
+}
+
+function safePageSource(value: unknown, warnings: string[]): string {
+  if (value === undefined || value === null || value === "") return "";
+  if (typeof value !== "string"
+    || CONTROL_TEST.test(value)
+    || codePoints(value).length > COMPANION_CAPSULE_BOUNDS.pageSource
+    || unsafeLocator(value)
+    || !PAGE_SOURCES.has(value)) {
+    warnings.push("Page source was unsafe or unsupported and was omitted.");
+    return "";
+  }
+  return value;
+}
+
+function canonicalTimestamp(value: Date | string): string {
+  let raw: string;
+  try {
+    raw = value instanceof Date ? value.toISOString() : value;
+  }
+  catch {
+    throw new Error("The capsule timestamp is invalid");
+  }
+  if (typeof raw !== "string"
+    || codePoints(raw).length > COMPANION_CAPSULE_BOUNDS.timestamp
+    || CONTROL_TEST.test(raw)) {
+    throw new Error("The capsule timestamp is invalid or exceeds its bound");
+  }
+  const instant = new Date(raw);
+  if (Number.isNaN(instant.getTime())) throw new Error("The capsule timestamp is invalid");
+  return instant.toISOString();
+}
+
+function assertArrayBound(value: unknown, maximum: number, label: string): void {
+  if (!Array.isArray(value)) throw new Error(`${label} must be an array`);
+  if (value.length > maximum) throw new Error(`${label} exceed the maximum of ${maximum}`);
 }
 
 function safePageNumber(value: unknown): number | null {
@@ -235,7 +333,7 @@ function freeze<T>(value: T): T {
   return value;
 }
 
-function normalizedChip(input: CompanionContextItemInput): {
+function validatedChip(input: CompanionContextItemInput, warnings: string[]): {
   id: string;
   kind: CompanionContextKind;
   sourceIdentity: string;
@@ -244,11 +342,23 @@ function normalizedChip(input: CompanionContextItemInput): {
   if (!CONTEXT_KINDS.has(input.kind as CompanionContextKind)) {
     throw new Error("The context snapshot contains an unsupported chip kind");
   }
+  const mode = input.mode === undefined || input.mode === null
+    ? null
+    : boundedMetadata(
+      input.mode,
+      COMPANION_CAPSULE_BOUNDS.contextMode,
+      "Context mode",
+      warnings,
+    ).value;
   return {
-    id: normalizeMetadata(input.id),
+    id: exactIdentifier(input.id, COMPANION_CAPSULE_BOUNDS.chipId, "Context chip ID"),
     kind: input.kind as CompanionContextKind,
-    sourceIdentity: normalizeMetadata(input.sourceIdentity),
-    mode: input.mode === undefined || input.mode === null ? null : normalizeMetadata(input.mode),
+    sourceIdentity: exactIdentifier(
+      input.sourceIdentity,
+      COMPANION_CAPSULE_BOUNDS.sourceIdentity,
+      "Context source identity",
+    ),
+    mode,
   };
 }
 
@@ -262,13 +372,44 @@ export function buildCompanionCapsule(
   dependencies: CompanionCapsuleDependencies,
 ): ChatGPTCompanionCapsule {
   requireQuestion(input.question);
-  const id = dependencies.id();
-  if (!OPAQUE_ID.test(id)) throw new Error("The capsule ID must be an opaque identifier");
-  const created = dependencies.now();
-  const createdAt = created instanceof Date ? created.toISOString() : created;
-  if (typeof createdAt !== "string" || Number.isNaN(Date.parse(createdAt))) {
-    throw new Error("The capsule timestamp is invalid");
+  assertArrayBound(input.contextItems, COMPANION_CAPSULE_BOUNDS.contextItems, "Context items");
+  const secondaryInputs = input.secondaryPapers || [];
+  const screenshotInputs = input.screenshotProvenance || [];
+  assertArrayBound(secondaryInputs, COMPANION_CAPSULE_BOUNDS.secondaryPapers, "Secondary papers");
+  assertArrayBound(
+    screenshotInputs,
+    COMPANION_CAPSULE_BOUNDS.screenshotProvenance,
+    "Screenshot provenance entries",
+  );
+
+  const secondaryByIdentity = new Map<string, CompanionSecondaryPaperInput>();
+  for (const candidate of secondaryInputs) {
+    const identity = exactIdentifier(
+      candidate.id,
+      COMPANION_CAPSULE_BOUNDS.sourceIdentity,
+      "Secondary paper source identity",
+    );
+    if (secondaryByIdentity.has(identity)) throw new Error("Secondary paper source identities must be unique");
+    secondaryByIdentity.set(identity, candidate);
   }
+  const screenshotByIdentity = new Map<string, CompanionScreenshotProvenanceInput>();
+  for (const candidate of screenshotInputs) {
+    const identity = exactIdentifier(
+      candidate.id,
+      COMPANION_CAPSULE_BOUNDS.sourceIdentity,
+      "Screenshot source identity",
+    );
+    if (screenshotByIdentity.has(identity)) throw new Error("Screenshot source identities must be unique");
+    screenshotByIdentity.set(identity, candidate);
+  }
+
+  const id = dependencies.id();
+  if (!OPAQUE_ID.test(id)
+    || codePoints(id).length < 16
+    || codePoints(id).length > COMPANION_CAPSULE_BOUNDS.capsuleId) {
+    throw new Error("The capsule ID must be an opaque identifier");
+  }
+  const createdAt = canonicalTimestamp(dependencies.now());
 
   const warnings: string[] = [];
   const contextItems: ChatGPTCompanionCapsule["contextItems"] = [];
@@ -280,10 +421,10 @@ export function buildCompanionCapsule(
   const screenshotProvenance: ChatGPTCompanionCapsule["screenshotProvenance"] = [];
 
   for (const rawChip of input.contextItems) {
-    const chip = normalizedChip(rawChip);
+    const chip = validatedChip(rawChip, warnings);
     let included = false;
     let supported = true;
-    let authority: CompanionAuthority = "external_evidence";
+    let authority: CompanionAuthority = chip.kind === "draft" ? "unreviewed_draft" : "external_evidence";
     let warning: string | null = null;
 
     if (chip.kind === "annotation" || chip.kind === "library") {
@@ -299,29 +440,61 @@ export function buildCompanionCapsule(
     else if (chip.kind === "paper" && input.paper) {
       paper = {
         authority: "external_evidence",
-        title: normalizeMetadata(input.paper.title),
-        creators: normalizeMetadata(input.paper.creators),
-        year: normalizeMetadata(input.paper.year),
-        doi: normalizeMetadata(input.paper.doi),
-        url: safeExternalUrl(input.paper.url),
+        title: boundedMetadata(
+          input.paper.title,
+          COMPANION_CAPSULE_BOUNDS.citationTitle,
+          "Paper title",
+          warnings,
+        ).value,
+        creators: boundedMetadata(
+          input.paper.creators,
+          COMPANION_CAPSULE_BOUNDS.citationCreators,
+          "Paper creators",
+          warnings,
+        ).value,
+        year: boundedMetadata(
+          input.paper.year,
+          COMPANION_CAPSULE_BOUNDS.citationYear,
+          "Paper year",
+          warnings,
+        ).value,
+        doi: safeDoi(input.paper.doi, "Paper DOI", warnings),
+        url: safeExternalUrl(input.paper.url, "Paper URL", warnings),
       };
       included = true;
     }
     else if (chip.kind === "page" && input.page) {
-      const excerpt = boundedMetadata(input.page.excerpt, COMPANION_CAPSULE_BOUNDS.pageExcerpt);
-      if (excerpt.truncated) warning = chipWarning("Current page excerpt was truncated to 12,000 Unicode code points.", warnings);
+      const warningCount = warnings.length;
+      const excerpt = boundedMetadata(
+        input.page.excerpt,
+        COMPANION_CAPSULE_BOUNDS.pageExcerpt,
+        "Current page excerpt",
+        warnings,
+      );
+      if (warnings.length > warningCount) warning = warnings[warnings.length - 1] || null;
       page = {
         authority: "external_evidence",
         pageNumber: safePageNumber(input.page.pageNumber) || 1,
-        pageLabel: normalizeMetadata(input.page.pageLabel),
+        pageLabel: boundedMetadata(
+          input.page.pageLabel,
+          COMPANION_CAPSULE_BOUNDS.pageLabel,
+          "Page label",
+          warnings,
+        ).value,
         excerpt: excerpt.value,
-        source: safePageSource(input.page.source),
+        source: safePageSource(input.page.source, warnings),
       };
       included = true;
     }
     else if (chip.kind === "selection" && input.selection) {
-      const text = boundedMetadata(input.selection.text, COMPANION_CAPSULE_BOUNDS.selection);
-      if (text.truncated) warning = chipWarning("Selection was truncated to 8,000 Unicode code points.", warnings);
+      const warningCount = warnings.length;
+      const text = boundedMetadata(
+        input.selection.text,
+        COMPANION_CAPSULE_BOUNDS.selection,
+        "Selection",
+        warnings,
+      );
+      if (warnings.length > warningCount) warning = warnings[warnings.length - 1] || null;
       selection = {
         authority: "external_evidence",
         text: text.value,
@@ -334,7 +507,7 @@ export function buildCompanionCapsule(
         warning = chipWarning("Secondary paper was omitted because the maximum of 20 was reached.", warnings);
       }
       else {
-        const candidate = (input.secondaryPapers || []).find((paperInput) => paperInput.id === rawChip.sourceIdentity);
+        const candidate = secondaryByIdentity.get(chip.sourceIdentity);
         if (!candidate) warning = chipWarning("Secondary paper citation identity was unavailable and was omitted.", warnings);
         else {
           const mode = chip.mode === "full" || chip.mode === "retrieval" ? chip.mode : candidate.mode;
@@ -342,11 +515,26 @@ export function buildCompanionCapsule(
           else {
             secondaryPapers.push({
               authority: "external_evidence",
-              title: normalizeMetadata(candidate.title),
-              creators: normalizeMetadata(candidate.creators),
-              year: normalizeMetadata(candidate.year),
-              doi: normalizeMetadata(candidate.doi),
-              url: safeExternalUrl(candidate.url),
+              title: boundedMetadata(
+                candidate.title,
+                COMPANION_CAPSULE_BOUNDS.citationTitle,
+                "Secondary paper title",
+                warnings,
+              ).value,
+              creators: boundedMetadata(
+                candidate.creators,
+                COMPANION_CAPSULE_BOUNDS.citationCreators,
+                "Secondary paper creators",
+                warnings,
+              ).value,
+              year: boundedMetadata(
+                candidate.year,
+                COMPANION_CAPSULE_BOUNDS.citationYear,
+                "Secondary paper year",
+                warnings,
+              ).value,
+              doi: safeDoi(candidate.doi, "Secondary paper DOI", warnings),
+              url: safeExternalUrl(candidate.url, "Secondary paper URL", warnings),
               mode,
             });
             warning = chipWarning("Secondary paper local PDF and full text were not transferred.", warnings);
@@ -356,11 +544,17 @@ export function buildCompanionCapsule(
       }
     }
     else if (chip.kind === "draft" && input.draft) {
-      const relativePath = safeRelativePath(input.draft.relativePath);
-      if (!relativePath) warning = chipWarning("Draft was omitted because its path was not repository-relative.", warnings);
+      const relativePath = safeDraftPath(input.draft.relativePath);
+      if (!relativePath) warning = chipWarning("Draft was omitted because its path was not below drafts/.", warnings);
       else {
-        const excerpt = boundedMetadata(input.draft.excerpt, COMPANION_CAPSULE_BOUNDS.draftExcerpt);
-        if (excerpt.truncated) warning = chipWarning("Draft excerpt was truncated to 20,000 Unicode code points.", warnings);
+        const warningCount = warnings.length;
+        const excerpt = boundedMetadata(
+          input.draft.excerpt,
+          COMPANION_CAPSULE_BOUNDS.draftExcerpt,
+          "Draft excerpt",
+          warnings,
+        );
+        if (warnings.length > warningCount) warning = warnings[warnings.length - 1] || null;
         draft = { relativePath, authority: "unreviewed_draft", excerpt: excerpt.value, truncated: excerpt.truncated };
         authority = "unreviewed_draft";
         included = true;
@@ -371,12 +565,18 @@ export function buildCompanionCapsule(
         warning = chipWarning("Screenshot provenance was omitted because the maximum of 8 was reached.", warnings);
       }
       else {
-        const candidate = (input.screenshotProvenance || []).find((shot) => shot.id === rawChip.sourceIdentity);
+        const candidate = screenshotByIdentity.get(chip.sourceIdentity);
         if (!candidate) warning = chipWarning("Screenshot provenance was unavailable and pixels were not transferred.", warnings);
         else {
           screenshotProvenance.push({
+            authority: "external_evidence",
             kind: candidate.kind,
-            paperTitle: normalizeMetadata(candidate.paperTitle),
+            paperTitle: boundedMetadata(
+              candidate.paperTitle,
+              COMPANION_CAPSULE_BOUNDS.screenshotTitle,
+              "Screenshot title",
+              warnings,
+            ).value,
             pageNumber: safePageNumber(candidate.pageNumber),
           });
           warning = chipWarning("Screenshot pixels were not transferred; only provenance was included.", warnings);
@@ -391,16 +591,19 @@ export function buildCompanionCapsule(
     contextItems.push({ ...chip, included, supported, authority, warning });
   }
 
-  const subjectDraftPath = safeRelativePath(input.subject?.draftPath);
-  if (input.subject?.draftPath && !subjectDraftPath) warnings.push("Subject Draft path was omitted because it is not repository-relative.");
+  const subjectDraftPath = safeDraftPath(input.subject?.draftPath);
+  if (input.subject?.draftPath && !subjectDraftPath) {
+    warnings.push("Subject Draft path was omitted because it was not below drafts/.");
+  }
+  const subjectPaperKey = input.subject?.paperKey === null || input.subject?.paperKey === undefined
+    ? null
+    : exactIdentifier(input.subject.paperKey, COMPANION_CAPSULE_BOUNDS.paperKey, "Subject paper key");
   const unsigned: Omit<ChatGPTCompanionCapsule, "contentHash"> = {
     schemaVersion: 1,
     id,
     createdAt,
     subject: {
-      paperKey: input.subject?.paperKey === null || input.subject?.paperKey === undefined
-        ? null
-        : normalizeMetadata(input.subject.paperKey),
+      paperKey: subjectPaperKey,
       draftPath: subjectDraftPath,
     },
     question: input.question,
@@ -415,7 +618,12 @@ export function buildCompanionCapsule(
     bounds: { ...COMPANION_CAPSULE_BOUNDS },
   };
   const contentHash = dependencies.hash(canonicalCompanionCapsuleJson(unsigned));
-  if (!contentHash) throw new Error("The capsule checksum is invalid");
+  if (typeof contentHash !== "string"
+    || !contentHash
+    || CONTROL_TEST.test(contentHash)
+    || codePoints(contentHash).length > COMPANION_CAPSULE_BOUNDS.contentHash) {
+    throw new Error("The capsule checksum is invalid or exceeds its bound");
+  }
   return freeze({ ...unsigned, contentHash });
 }
 
@@ -423,7 +631,11 @@ export function verifyCompanionCapsule(
   capsule: ChatGPTCompanionCapsule,
   hash: CompanionCapsuleDependencies["hash"],
 ): boolean {
-  if (capsule.schemaVersion !== 1 || !OPAQUE_ID.test(capsule.id) || !capsule.contentHash) return false;
+  if (capsule.schemaVersion !== 1
+    || !OPAQUE_ID.test(capsule.id)
+    || codePoints(capsule.id).length < 16
+    || codePoints(capsule.id).length > COMPANION_CAPSULE_BOUNDS.capsuleId
+    || !capsule.contentHash) return false;
   const { contentHash, ...unsigned } = capsule;
   try {
     return hash(canonicalCompanionCapsuleJson(unsigned)) === contentHash;

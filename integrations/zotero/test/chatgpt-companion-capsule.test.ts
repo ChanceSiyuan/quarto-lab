@@ -23,7 +23,7 @@ function input() {
       { id: "annotations", kind: "annotation", sourceIdentity: "zotero:ABCD1234" },
       { id: "library", kind: "library", sourceIdentity: "zotero:library" },
       { id: "secondary", kind: "external-paper", sourceIdentity: "secondary-1", mode: "full" },
-      { id: "draft", kind: "draft", sourceIdentity: "drafts/notes/visible.qmd" },
+      { id: "draft", kind: "draft", sourceIdentity: "draft:visible-note" },
       { id: "screenshot", kind: "screenshot", sourceIdentity: "shot-1" },
     ],
     paper: {
@@ -96,7 +96,12 @@ describe("ChatGPT companion capsule", () => {
       title: "Secondary paper",
     })]);
     expect(capsule.draft).toMatchObject({ authority: "unreviewed_draft", relativePath: "drafts/notes/visible.qmd" });
-    expect(capsule.screenshotProvenance).toEqual([{ kind: "region", paperTitle: "Primary Paper", pageNumber: 7 }]);
+    expect(capsule.screenshotProvenance).toEqual([{
+      authority: "external_evidence",
+      kind: "region",
+      paperTitle: "Primary Paper",
+      pageNumber: 7,
+    }]);
 
     source.paper.title = "Changed";
     source.page.excerpt = "Changed";
@@ -172,5 +177,160 @@ describe("ChatGPT companion capsule", () => {
 
     const serialized = JSON.stringify(buildCompanionCapsule(source, dependencies));
     expect(serialized).not.toMatch(/file:|workspace|private-(paper|page|secondary)/);
+  });
+
+  it("rejects unsafe exact identifiers without normalizing accepted identifiers", () => {
+    const exactIdentity = "secondary-e\u0301";
+    const source = input();
+    source.contextItems[5]!.id = "chip-e\u0301";
+    source.contextItems[5]!.sourceIdentity = exactIdentity;
+    source.secondaryPapers[0]!.id = exactIdentity;
+    const capsule = buildCompanionCapsule(source, dependencies);
+
+    expect(capsule.contextItems[5]).toMatchObject({
+      id: "chip-e\u0301",
+      sourceIdentity: exactIdentity,
+      included: true,
+    });
+
+    for (const invalid of [
+      "\\\\server\\share\\paper.pdf",
+      "/workspace/paper.pdf",
+      "C:\\workspace\\paper.pdf",
+      "data:image/png;base64,secret",
+      "file:///workspace/paper.pdf",
+    ]) {
+      const unsafe = input();
+      unsafe.contextItems[0]!.sourceIdentity = invalid;
+      expect(() => buildCompanionCapsule(unsafe, dependencies)).toThrow(/source identity/i);
+    }
+
+    const overlong = input();
+    overlong.contextItems[0]!.id = "i".repeat(129);
+    expect(() => buildCompanionCapsule(overlong, dependencies)).toThrow(/chip id/i);
+    overlong.contextItems[0]!.id = "paper";
+    overlong.contextItems[0]!.sourceIdentity = "s".repeat(513);
+    expect(() => buildCompanionCapsule(overlong, dependencies)).toThrow(/source identity/i);
+  });
+
+  it("accepts Draft paths only below the untrusted drafts tree", () => {
+    for (const invalid of [
+      "knowledge/reviewed.qmd",
+      "literature/paper.qmd",
+      "drafts\\note.qmd",
+      "\\\\server\\share\\drafts\\note.qmd",
+      "/drafts/note.qmd",
+      "C:\\drafts\\note.qmd",
+      "drafts/../knowledge/reviewed.qmd",
+      "data:text/plain,draft",
+    ]) {
+      const source = input();
+      source.subject.draftPath = invalid;
+      source.draft.relativePath = invalid;
+      const capsule = buildCompanionCapsule(source, dependencies);
+      expect(capsule.subject.draftPath, invalid).toBeNull();
+      expect(capsule.draft, invalid).toBeNull();
+    }
+  });
+
+  it("omits unsafe page sources including UNC paths and data URLs", () => {
+    for (const unsafeSource of [
+      "\\\\server\\share\\page.txt",
+      "data:image/png;base64,secret",
+      "file:///workspace/page.txt",
+    ]) {
+      const source = input();
+      source.page.source = unsafeSource;
+      const capsule = buildCompanionCapsule(source, dependencies);
+      expect(capsule.page?.source, unsafeSource).toBe("");
+      expect(capsule.warnings.join("\n"), unsafeSource).toMatch(/page source.*omitted/i);
+    }
+  });
+
+  it("bounds all input arrays before searching them", () => {
+    const tooManyChips = input();
+    tooManyChips.contextItems = Array.from({ length: 65 }, (_, index) => ({
+      id: `chip-${index}`,
+      kind: "paper",
+      sourceIdentity: `paper-${index}`,
+    }));
+    expect(() => buildCompanionCapsule(tooManyChips, dependencies)).toThrow(/context items/i);
+
+    const tooManyPapers = input();
+    tooManyPapers.secondaryPapers = Array.from({ length: 21 }, (_, index) => ({
+      ...tooManyPapers.secondaryPapers[0]!,
+      id: `secondary-${index}`,
+    }));
+    expect(() => buildCompanionCapsule(tooManyPapers, dependencies)).toThrow(/secondary papers/i);
+
+    const tooManyScreenshots = input();
+    tooManyScreenshots.screenshotProvenance = Array.from({ length: 9 }, (_, index) => ({
+      ...tooManyScreenshots.screenshotProvenance[0]!,
+      id: `shot-${index}`,
+    }));
+    expect(() => buildCompanionCapsule(tooManyScreenshots, dependencies)).toThrow(/screenshot provenance/i);
+  });
+
+  it("exports and applies deterministic bounds to every accepted metadata class", () => {
+    const source = input();
+    source.paper.title = "🧪".repeat(1_025);
+    source.paper.creators = "c".repeat(2_049);
+    source.paper.year = "y".repeat(33);
+    source.paper.doi = "d".repeat(513);
+    source.paper.url = `https://example.test/${"u".repeat(2_049)}`;
+    source.page.pageLabel = "p".repeat(129);
+    source.screenshotProvenance[0]!.paperTitle = "s".repeat(1_025);
+    source.subject.paperKey = "k".repeat(129);
+
+    expect(() => buildCompanionCapsule(source, dependencies)).toThrow(/paper key/i);
+    source.subject.paperKey = "ABCD1234";
+    const capsule = buildCompanionCapsule(source, dependencies);
+
+    expect(COMPANION_CAPSULE_BOUNDS).toMatchObject({
+      contextItems: 64,
+      capsuleId: 128,
+      chipId: 128,
+      sourceIdentity: 512,
+      paperKey: 128,
+      draftPath: 1_024,
+      contextMode: 32,
+      citationTitle: 1_024,
+      citationCreators: 2_048,
+      citationYear: 32,
+      citationDoi: 512,
+      citationUrl: 2_048,
+      pageLabel: 128,
+      pageSource: 32,
+      screenshotTitle: 1_024,
+      timestamp: 32,
+      contentHash: 512,
+    });
+    expect([...capsule.paper!.title]).toHaveLength(1_024);
+    expect([...capsule.paper!.creators]).toHaveLength(2_048);
+    expect([...capsule.paper!.year]).toHaveLength(32);
+    expect(capsule.paper!.doi).toBe("");
+    expect(capsule.paper!.url).toBe("");
+    expect([...capsule.page!.pageLabel]).toHaveLength(128);
+    expect([...capsule.screenshotProvenance[0]!.paperTitle]).toHaveLength(1_024);
+    expect(capsule.warnings.join("\n")).toMatch(/title.*truncated/i);
+    expect(capsule.warnings.join("\n")).toMatch(/creators.*truncated/i);
+    expect(capsule.warnings.join("\n")).toMatch(/year.*truncated/i);
+    expect(capsule.warnings.join("\n")).toMatch(/doi.*omitted/i);
+    expect(capsule.warnings.join("\n")).toMatch(/url.*omitted/i);
+    expect(capsule.warnings.join("\n")).toMatch(/page label.*truncated/i);
+    expect(capsule.warnings.join("\n")).toMatch(/screenshot title.*truncated/i);
+  });
+
+  it("canonicalizes the injected timestamp to a bounded ISO instant", () => {
+    const capsule = buildCompanionCapsule(input(), {
+      ...dependencies,
+      now: () => "2026-08-01T12:34:56Z",
+    });
+    expect(capsule.createdAt).toBe("2026-08-01T12:34:56.000Z");
+
+    expect(() => buildCompanionCapsule(input(), {
+      ...dependencies,
+      now: () => `${"2".repeat(33)}Z`,
+    })).toThrow(/timestamp/i);
   });
 });
