@@ -157,6 +157,29 @@ export function copyToClipboard(text: string): boolean {
   return false;
 }
 
+/** Reads the Unicode clipboard only when an explicit user action calls this function. */
+export function readTextFromClipboard(): string | null {
+  try {
+    const components = (globalThis as Record<string, unknown>).Components as any;
+    const clipboard = components?.classes?.["@mozilla.org/widget/clipboard;1"]
+      ?.getService(components.interfaces.nsIClipboard);
+    const transferable = components?.classes?.["@mozilla.org/widget/transferable;1"]
+      ?.createInstance(components.interfaces.nsITransferable);
+    if (!clipboard?.getData || !transferable?.addDataFlavor || !transferable?.getTransferData) return null;
+    transferable.init?.(null);
+    transferable.addDataFlavor("text/unicode");
+    clipboard.getData(transferable, clipboard.kGlobalClipboard);
+    const data: { value?: unknown } = {};
+    const length: { value?: number } = {};
+    transferable.getTransferData("text/unicode", data, length);
+    const supportsString = (data.value as any)?.QueryInterface?.(components.interfaces.nsISupportsString);
+    return typeof supportsString?.data === "string" ? supportsString.data : null;
+  }
+  catch {
+    return null;
+  }
+}
+
 export function launchURL(url: string): void {
   if (!/^https:\/\//i.test(url)) throw new Error("Only HTTPS login URLs may be opened");
   Zotero.launchURL(url);
