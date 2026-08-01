@@ -449,6 +449,18 @@ export class QmdWorkspaceView {
     this.updateChangeControls();
   }
 
+  private isCurrentAgentCopy(
+    generation: number,
+    relativePath: string,
+    expectedChangePath?: string | null,
+  ): boolean {
+    return this.agentCopyMode === "enabled"
+      && generation === this.openGeneration
+      && !this.destroyed
+      && this.current?.relativePath === relativePath
+      && (expectedChangePath === undefined || this.changePath === expectedChangePath);
+  }
+
   private discardFailedOpen(relativePath: string, generation: number): void {
     if (generation !== this.openGeneration
         || this.destroyed
@@ -503,29 +515,33 @@ export class QmdWorkspaceView {
   }
 
   private async ensureChangedPreview(generation = this.openGeneration): Promise<string | null> {
-    if (this.agentCopyMode === "disabled" || !this.current || this.current.tree.published || !this.changePath
-        || !this.changePreviewPath || !this.hasAgentChange) return null;
+    const current = this.current;
+    const changePath = this.changePath;
+    const changePreviewPath = this.changePreviewPath;
+    if (this.agentCopyMode === "disabled" || !current || current.tree.published || !changePath
+        || !changePreviewPath || !this.hasAgentChange) return null;
     try {
       await this.options.refreshChangePreview?.(
-        this.current.relativePath,
-        this.changePath,
-        this.changePreviewPath,
+        current.relativePath,
+        changePath,
+        changePreviewPath,
       );
+      if (!this.isCurrentAgentCopy(generation, current.relativePath, changePath)) return null;
       if (this.changedUrl) return this.changedUrl;
       const drafts = EDITOR_TREES.find((tree) => tree.id === "drafts")!;
       const url = await this.options.changeRenderService.open(
         drafts,
         this.repoRootHint,
-        this.changePreviewPath,
+        changePreviewPath,
       );
-      if (generation !== this.openGeneration || this.destroyed) return null;
+      if (!this.isCurrentAgentCopy(generation, current.relativePath, changePath)) return null;
       this.changedUrl = url;
       this.updateChangeControls();
       if (this.showingAgentChange) this.showBrowserUrl(url, false);
       return url;
     }
     catch (error) {
-      if (generation === this.openGeneration && !this.destroyed) {
+      if (this.isCurrentAgentCopy(generation, current.relativePath, changePath)) {
         this.setStatus(
           `The AI version could not be rendered: ${error instanceof Error ? error.message : String(error)}`,
           "error",
@@ -638,7 +654,15 @@ export class QmdWorkspaceView {
       this.options.onActiveDocument?.(current.relativePath, null);
       return snapshot;
     }
-    const prepared = await this.options.prepareChange?.(current.relativePath);
+    let prepared: QmdPreparedChange | undefined;
+    try {
+      prepared = await this.options.prepareChange?.(current.relativePath);
+    }
+    catch (error) {
+      if (!this.isCurrentAgentCopy(generation, current.relativePath)) return snapshot;
+      throw error;
+    }
+    if (!this.isCurrentAgentCopy(generation, current.relativePath)) return snapshot;
     if (prepared) {
       this.changePath = prepared.changePath;
       this.changePreviewPath = prepared.previewPath;
@@ -676,6 +700,7 @@ export class QmdWorkspaceView {
   private async keepAgentChanges(): Promise<void> {
     const current = this.current;
     const changePath = this.changePath;
+    const generation = this.openGeneration;
     if (this.agentCopyMode === "disabled"
         || !current
         || current.tree.published
@@ -685,6 +710,7 @@ export class QmdWorkspaceView {
     this.keepChangesButton.disabled = true;
     try {
       const prepared = await this.options.keepChange(current.relativePath, changePath);
+      if (!this.isCurrentAgentCopy(generation, current.relativePath, changePath)) return;
       this.options.changeRenderService.stop();
       this.changePath = prepared.changePath;
       this.changePreviewPath = prepared.previewPath;
@@ -702,6 +728,7 @@ export class QmdWorkspaceView {
       void this.updateDraftCompliance(current.relativePath, this.openGeneration);
     }
     catch (error) {
+      if (!this.isCurrentAgentCopy(generation, current.relativePath, changePath)) return;
       this.keepChangesButton.disabled = false;
       this.setStatus(
         `${error instanceof Error ? error.message : String(error)} No file was overwritten.`,

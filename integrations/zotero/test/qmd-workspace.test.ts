@@ -130,6 +130,12 @@ async function settle(): Promise<void> {
   for (let index = 0; index < 4; index++) await new Promise((resolve) => setTimeout(resolve, 0));
 }
 
+function deferred<T>() {
+  let resolve!: (value: T) => void;
+  const promise = new Promise<T>((next) => { resolve = next; });
+  return { promise, resolve };
+}
+
 describe("QmdWorkspaceView", () => {
   beforeEach(() => {
     document.body.replaceChildren();
@@ -296,6 +302,95 @@ describe("QmdWorkspaceView", () => {
     await settle();
     expect(prepareChange).toHaveBeenCalledTimes(2);
     expect(onActiveDocument).toHaveBeenLastCalledWith(DRAFT, CHANGE);
+    view.destroy();
+  });
+
+  it("does not restart an in-flight change preview after a disabled reopen", async () => {
+    const refresh = deferred<void>();
+    const { host, view, changeRenderService, refreshChangePreview } = mount(
+      [CURSOR, VSCODE],
+      { pending: true },
+    );
+    refreshChangePreview.mockImplementationOnce(() => refresh.promise);
+    view.show();
+
+    await view.open(DRAFT);
+    expect(refreshChangePreview).toHaveBeenCalledOnce();
+    expect(changeRenderService.open).not.toHaveBeenCalled();
+
+    await view.open(DRAFT, { agentCopy: "disabled" });
+    refresh.resolve(undefined);
+    await settle();
+
+    expect(changeRenderService.open).not.toHaveBeenCalled();
+    expect(host.querySelector<HTMLButtonElement>(".zc-qmd-compare")!.hidden).toBe(true);
+    expect(host.querySelector<HTMLButtonElement>(".zc-qmd-change-keep")!.hidden).toBe(true);
+    view.destroy();
+  });
+
+  it("does not restore an in-flight Visual Edit Agent copy after a disabled reopen", async () => {
+    const prepared = {
+      changePath: CHANGE,
+      previewPath: CHANGE_PREVIEW,
+      changed: true,
+      revision: "late-visual-copy",
+    };
+    const preparation = deferred<typeof prepared>();
+    const { host, view, onActiveDocument, prepareChange } = mount();
+    view.show();
+    await view.open(DRAFT);
+    host.querySelector<HTMLButtonElement>(".zc-qmd-mode")!.click();
+    await settle();
+    prepareChange.mockClear();
+    prepareChange.mockImplementationOnce(() => preparation.promise);
+
+    const saving = (view as unknown as {
+      saveVisualSource(source: string, revision: string): Promise<unknown>;
+    }).saveVisualSource("# Human original edit\n", "source-r1");
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(prepareChange).toHaveBeenCalledOnce();
+
+    await view.open(DRAFT, { agentCopy: "disabled" });
+    preparation.resolve(prepared);
+    await saving;
+
+    expect(onActiveDocument).toHaveBeenLastCalledWith(DRAFT, null);
+    expect((view as unknown as { changePath: string | null }).changePath).toBeNull();
+    expect(host.querySelector<HTMLButtonElement>(".zc-qmd-compare")!.hidden).toBe(true);
+    view.destroy();
+  });
+
+  it("does not republish an in-flight Keep completion after a disabled reopen", async () => {
+    const prepared = {
+      changePath: CHANGE,
+      previewPath: CHANGE_PREVIEW,
+      changed: false,
+      revision: "late-keep",
+    };
+    const keeping = deferred<typeof prepared>();
+    const { host, view, onActiveDocument, keepChange } = mount(
+      [CURSOR, VSCODE],
+      { pending: true },
+    );
+    view.show();
+    await view.open(DRAFT);
+    await settle();
+    keepChange.mockImplementationOnce(() => keeping.promise);
+
+    host.querySelector<HTMLButtonElement>(".zc-qmd-change-keep")!.click();
+    await Promise.resolve();
+    expect(keepChange).toHaveBeenCalledOnce();
+
+    await view.open(DRAFT, { agentCopy: "disabled" });
+    const status = host.querySelector<HTMLElement>(".zc-qmd-status")!.textContent;
+    keeping.resolve(prepared);
+    await settle();
+
+    expect(onActiveDocument).toHaveBeenLastCalledWith(DRAFT, null);
+    expect((view as unknown as { changePath: string | null }).changePath).toBeNull();
+    expect(host.querySelector<HTMLElement>(".zc-qmd-status")!.textContent).toBe(status);
+    expect(host.querySelector<HTMLButtonElement>(".zc-qmd-change-keep")!.hidden).toBe(true);
     view.destroy();
   });
 
