@@ -306,31 +306,31 @@ describe("ChatGPT companion capsule", () => {
     const capsule = buildCompanionCapsule(source, dependencies);
 
     expect(COMPANION_CAPSULE_BOUNDS).toMatchObject({
-      contextItems: 64,
-      capsuleId: 128,
-      chipId: 128,
-      sourceIdentity: 512,
-      paperKey: 128,
-      draftPath: 1_024,
+      contextItems: 34,
+      capsuleId: 64,
+      chipId: 64,
+      sourceIdentity: 64,
+      paperKey: 64,
+      draftPath: 256,
       contextMode: 32,
-      citationTitle: 1_024,
-      citationCreators: 2_048,
+      citationTitle: 256,
+      citationCreators: 256,
       citationYear: 32,
-      citationDoi: 512,
-      citationUrl: 2_048,
+      citationDoi: 128,
+      citationUrl: 256,
       pageLabel: 128,
       pageSource: 32,
-      screenshotTitle: 1_024,
+      screenshotTitle: 128,
       timestamp: 32,
-      contentHash: 512,
+      contentHash: 64,
     });
-    expect([...capsule.paper!.title]).toHaveLength(1_024);
-    expect([...capsule.paper!.creators]).toHaveLength(2_048);
+    expect([...capsule.paper!.title]).toHaveLength(256);
+    expect([...capsule.paper!.creators]).toHaveLength(256);
     expect([...capsule.paper!.year]).toHaveLength(32);
     expect(capsule.paper!.doi).toBe("");
     expect(capsule.paper!.url).toBe("");
     expect([...capsule.page!.pageLabel]).toHaveLength(128);
-    expect([...capsule.screenshotProvenance[0]!.paperTitle]).toHaveLength(1_024);
+    expect([...capsule.screenshotProvenance[0]!.paperTitle]).toHaveLength(128);
     expect(capsule.warnings.join("\n")).toMatch(/title.*truncated/i);
     expect(capsule.warnings.join("\n")).toMatch(/creators.*truncated/i);
     expect(capsule.warnings.join("\n")).toMatch(/year.*truncated/i);
@@ -412,7 +412,7 @@ describe("ChatGPT companion capsule", () => {
     const capsule = buildCompanionCapsule(source, dependencies);
 
     expect(capsule.warnings).toHaveLength(5);
-    expect(COMPANION_CAPSULE_WARNING_BOUND).toBe(256);
+    expect(COMPANION_CAPSULE_WARNING_BOUND).toBe(32);
     expect(capsule.bounds).not.toHaveProperty("warnings");
     expect(verifyCompanionCapsule(capsule, dependencies.hash)).toBe(true);
   });

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { buildCompanionCapsule } from "../src/chatgpt-companion-capsule";
+import { buildCompanionCapsule, COMPANION_CAPSULE_BOUNDS } from "../src/chatgpt-companion-capsule";
 import {
   buildChatGPTCompanionPrompt,
   importCompanionAnswer,
@@ -34,6 +34,74 @@ function points(value: string): number {
   return Array.from(value).length;
 }
 
+function full(value: string, bound: number): string {
+  return `${value}${"\"".repeat(bound - Array.from(value).length)}`;
+}
+
+function worstCaseCapsule() {
+  const bounds = COMPANION_CAPSULE_BOUNDS;
+  const secondaryPapers = Array.from({ length: bounds.secondaryPapers }, (_, index) => ({
+    id: full(`secondary-${index}-`, bounds.sourceIdentity),
+    title: full("title-", bounds.citationTitle),
+    creators: full("creators-", bounds.citationCreators),
+    year: full("year-", bounds.citationYear),
+    doi: full("doi-", bounds.citationDoi),
+    url: full("https://example.test/", bounds.citationUrl),
+    mode: "full" as const,
+  }));
+  const contextItems = [
+    "paper", "page", "selection", "annotation", "library",
+  ].map((kind, index) => ({
+    id: full(`chip-${index}-`, bounds.chipId),
+    kind,
+    sourceIdentity: full(`source-${index}-`, bounds.sourceIdentity),
+  }));
+  contextItems.push(...secondaryPapers.map((paper, index) => ({
+    id: full(`secondary-chip-${index}-`, bounds.chipId),
+    kind: "external-paper",
+    sourceIdentity: paper.id,
+    mode: "full",
+  })));
+  contextItems.push(...Array.from({ length: bounds.screenshotProvenance }, (_, index) => ({
+    id: full(`screenshot-chip-${index}-`, bounds.chipId),
+    kind: "screenshot",
+    sourceIdentity: full(`screenshot-${index}-`, bounds.sourceIdentity),
+  })));
+  contextItems.push({
+    id: full("draft-chip-", bounds.chipId),
+    kind: "draft",
+    sourceIdentity: `drafts/${"\"".repeat(bounds.sourceIdentity - 11)}.qmd`,
+  });
+  return buildCompanionCapsule({
+    question: "\"".repeat(bounds.question),
+    contextItems,
+    paper: {
+      title: full("title-", bounds.citationTitle),
+      creators: full("creators-", bounds.citationCreators),
+      year: full("year-", bounds.citationYear),
+      doi: full("doi-", bounds.citationDoi),
+      url: full("https://example.test/", bounds.citationUrl),
+    },
+    page: { pageNumber: 1, pageLabel: "1", excerpt: "optional", source: "pdfjs" },
+    selection: { text: "optional", pageNumber: 1 },
+    secondaryPapers,
+    draft: {
+      relativePath: `drafts/${"\"".repeat(bounds.draftPath - 11)}.qmd`,
+      excerpt: "optional",
+    },
+    screenshotProvenance: Array.from({ length: bounds.screenshotProvenance }, (_, index) => ({
+      id: full(`screenshot-${index}-`, bounds.sourceIdentity),
+      kind: "page" as const,
+      paperTitle: full("screenshot-", bounds.screenshotTitle),
+      pageNumber: index + 1,
+    })),
+  }, {
+    id: () => "c".repeat(bounds.capsuleId),
+    now: () => "2026-08-01T12:34:56.000Z",
+    hash: () => "\"".repeat(bounds.contentHash),
+  });
+}
+
 describe("ChatGPT companion handoff", () => {
   it("places fixed safety instructions before JSON-enveloped untrusted data", () => {
     const value = structuredClone(capsule());
@@ -53,8 +121,8 @@ describe("ChatGPT companion handoff", () => {
 
     expect(prompt).toContain("capsule_0123456789abcdef");
     expect(prompt).toContain("checksum:");
-    expect(prompt).toContain('"chipId":{"value":"paper"');
-    expect(prompt).toContain('"chipId":{"value":"citation"');
+    expect(prompt).toContain('"id":"paper"');
+    expect(prompt).toContain('"id":"citation"');
     expect(prompt).toMatch(/Current Zotero paper context.*external evidence/is);
     expect(prompt).toMatch(/Literature.*external evidence/is);
     expect(prompt).toMatch(/Knowledge.*live reviewed retrieval/is);
@@ -76,30 +144,19 @@ describe("ChatGPT companion handoff", () => {
     expect(() => buildChatGPTCompanionPrompt(oversized)).toThrow(/valid/i);
   });
 
-  it("keeps mandatory provenance and warnings inside the 48,000-code-point prompt cap", () => {
-    const maximum = structuredClone(capsule());
-    const originalContext = maximum.contextItems;
-    maximum.contextItems = Array.from({ length: 64 }, (_, index) => {
-      const item = index < originalContext.length ? originalContext[index]! : originalContext[0]!;
-      return {
-        ...item,
-        id: `chip-${index}-${"i".repeat(120)}`,
-        sourceIdentity: item.kind === "draft"
-          ? `drafts/${"s".repeat(480)}.qmd`
-          : `source-${index}-${"s".repeat(480)}`,
-      };
-    });
-    maximum.warnings = Array.from({ length: 256 }, (_, index) => `${index}:${"warning ".repeat(250)}`);
-    maximum.question = "\"".repeat(8_000);
-    maximum.selection!.text = "s".repeat(8_000);
-    maximum.page!.excerpt = "p".repeat(12_000);
-    maximum.draft!.excerpt = "d".repeat(20_000);
+  it("fits every full mandatory value for a worst-case runtime-valid capsule", () => {
+    const maximum = worstCaseCapsule();
     const prompt = buildChatGPTCompanionPrompt(maximum);
 
     expect(points(prompt)).toBeLessThanOrEqual(48_000);
-    expect(prompt).toContain('"chipId":{"prefix":"chip-63-');
-    expect(prompt).toContain('"warningIndex":256');
-    expect(prompt).toMatch(/"(?:selection|currentPage|draft)":\{"status":"omitted","warning":"Body omitted/i);
+    expect(prompt.split(JSON.stringify(maximum.question))).toHaveLength(2);
+    expect(prompt).toContain(JSON.stringify(maximum.contentHash));
+    expect(prompt).toContain(JSON.stringify(maximum.paper!.title));
+    for (const item of maximum.contextItems) {
+      expect(prompt).toContain(JSON.stringify(item.id));
+      expect(prompt).toContain(JSON.stringify(item.sourceIdentity));
+    }
+    for (const warning of maximum.warnings) expect(prompt).toContain(JSON.stringify(warning));
   });
 });
 
@@ -132,5 +189,16 @@ describe("ChatGPT companion answer import", () => {
     const value = capsule();
     expect(() => importCompanionAnswer(" \n\t ", value)).toThrow(/blank/i);
     expect(() => importCompanionAnswer("🧪".repeat(64_001), value)).toThrow(/64,000/i);
+  });
+
+  it("uses distinct SHA-256 import identities for the reviewed FNV32 collision pair", () => {
+    const value = capsule();
+    const first = importCompanionAnswer("reviewer-collision-u3o-1gp3n6s", value);
+    const second = importCompanionAnswer("reviewer-collision-ub6-17ekjiq", value);
+
+    expect(first.entries[1].provenance.importIdentity).toMatch(/^[a-f0-9]{64}$/u);
+    expect(second.entries[1].provenance.importIdentity).toMatch(/^[a-f0-9]{64}$/u);
+    expect(first.entries[1].provenance.importIdentity).not.toBe(second.entries[1].provenance.importIdentity);
+    expect(first.entries[1].id).not.toBe(second.entries[1].id);
   });
 });

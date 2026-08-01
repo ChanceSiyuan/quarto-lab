@@ -8,23 +8,23 @@ export const COMPANION_CAPSULE_BOUNDS = Object.freeze({
   selection: 8_000,
   pageExcerpt: 12_000,
   draftExcerpt: 20_000,
-  contextItems: 64,
-  capsuleId: 128,
-  chipId: 128,
-  sourceIdentity: 512,
-  paperKey: 128,
-  draftPath: 1_024,
+  contextItems: 34,
+  capsuleId: 64,
+  chipId: 64,
+  sourceIdentity: 64,
+  paperKey: 64,
+  draftPath: 256,
   contextMode: 32,
-  citationTitle: 1_024,
-  citationCreators: 2_048,
+  citationTitle: 256,
+  citationCreators: 256,
   citationYear: 32,
-  citationDoi: 512,
-  citationUrl: 2_048,
+  citationDoi: 128,
+  citationUrl: 256,
   pageLabel: 128,
   pageSource: 32,
-  screenshotTitle: 1_024,
+  screenshotTitle: 128,
   timestamp: 32,
-  contentHash: 512,
+  contentHash: 64,
   secondaryPapers: 20,
   screenshotProvenance: 8,
   prompt: 48_000,
@@ -32,7 +32,7 @@ export const COMPANION_CAPSULE_BOUNDS = Object.freeze({
 });
 
 /** Maximum distinct global warnings in a persisted handoff capsule. */
-export const COMPANION_CAPSULE_WARNING_BOUND = 256;
+export const COMPANION_CAPSULE_WARNING_BOUND = 32;
 
 export const CHATGPT_COMPANION_CAPSULE_BOUNDS = COMPANION_CAPSULE_BOUNDS;
 
@@ -654,7 +654,8 @@ export function buildCompanionCapsule(
   return freeze({ ...unsigned, contentHash });
 }
 
-const MAX_WARNING_LENGTH = 2_048;
+const MAX_WARNING_LENGTH = 128;
+const SAFE_WARNING = /^[A-Za-z0-9 .,;:()'’/-]+$/u;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
@@ -670,6 +671,11 @@ function exactMetadata(value: unknown, maximum: number): value is string {
   if (typeof value !== "string") return false;
   const warnings: string[] = [];
   return boundedMetadata(value, maximum, "Stored capsule metadata", warnings).value === value && warnings.length === 0;
+}
+
+function exactWarning(value: unknown): value is string {
+  return typeof value === "string" && Boolean(value) && codePoints(value).length <= MAX_WARNING_LENGTH
+    && SAFE_WARNING.test(value);
 }
 
 function exactChecksum(value: unknown): value is string {
@@ -754,7 +760,7 @@ function exactContextItem(value: unknown): boolean {
       : !exactIdentifierValue(value.sourceIdentity, COMPANION_CAPSULE_BOUNDS.sourceIdentity, "Context source identity"))
     || typeof value.included !== "boolean" || typeof value.supported !== "boolean"
     || (value.mode !== null && value.mode !== "retrieval" && value.mode !== "full")
-    || (value.warning !== null && !exactMetadata(value.warning, MAX_WARNING_LENGTH))) return false;
+    || (value.warning !== null && !exactWarning(value.warning))) return false;
 
   if (value.kind === "annotation" || value.kind === "library") {
     return value.authority === "unsupported" && value.supported === false && value.included === false;
@@ -806,7 +812,7 @@ export function validateCompanionCapsule(value: unknown): value is ChatGPTCompan
     || !Array.isArray(value.screenshotProvenance)
     || value.screenshotProvenance.length > COMPANION_CAPSULE_BOUNDS.screenshotProvenance
     || !Array.isArray(value.warnings) || value.warnings.length > COMPANION_CAPSULE_WARNING_BOUND
-    || !value.warnings.every((warning) => exactMetadata(warning, MAX_WARNING_LENGTH))) return false;
+    || !value.warnings.every(exactWarning)) return false;
 
   if (!payloadsMatchIncludedContext(value)) return false;
 

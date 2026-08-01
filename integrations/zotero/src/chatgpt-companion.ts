@@ -4,6 +4,7 @@ import {
   validateCompanionCapsule,
   verifyCompanionCapsule,
 } from "./chatgpt-companion-capsule";
+import { sha256Text } from "./text-sha256";
 
 const MAX_PROMPT_CODE_POINTS = COMPANION_CAPSULE_BOUNDS.prompt;
 const COMPACT_ID_CODE_POINTS = 24;
@@ -84,30 +85,6 @@ function assertUsableCapsule(
 }
 
 function mandatoryHandoff(capsule: ChatGPTCompanionCapsule): Record<string, unknown> {
-  const warnings = [...new Set(capsule.warnings)].map((warning, index) => {
-    const summary = compact(warning, COMPACT_WARNING_CODE_POINTS);
-    return {
-      warningIndex: index + 1,
-      prefix: summary.value,
-      compacted: summary.compacted,
-    };
-  });
-  const contextProvenance = capsule.contextItems.map((item, index) => ({
-    contextIndex: index + 1,
-    chipId: quotedCompact(item.id, COMPACT_ID_CODE_POINTS),
-    kind: item.kind,
-    authority: item.authority,
-    included: item.included,
-    sourceIdentity: quotedCompact(item.sourceIdentity, COMPACT_SOURCE_CODE_POINTS),
-  }));
-  const primaryPaper = capsule.paper && {
-    authority: "external_evidence",
-    title: quotedCompact(capsule.paper.title, COMPACT_PRIMARY_CODE_POINTS),
-    creators: quotedCompact(capsule.paper.creators, COMPACT_PRIMARY_CODE_POINTS),
-    year: quotedCompact(capsule.paper.year, COMPACT_PRIMARY_CODE_POINTS),
-    doi: quotedCompact(capsule.paper.doi, COMPACT_PRIMARY_CODE_POINTS),
-    url: quotedCompact(capsule.paper.url, COMPACT_PRIMARY_CODE_POINTS),
-  };
   return {
     capsule: {
       id: capsule.id,
@@ -116,9 +93,9 @@ function mandatoryHandoff(capsule: ChatGPTCompanionCapsule): Record<string, unkn
       schemaVersion: capsule.schemaVersion,
     },
     acceptedQuestion: capsule.question,
-    primaryPaper,
-    contextProvenance,
-    warnings,
+    primaryPaper: capsule.paper,
+    contextProvenance: capsule.contextItems,
+    warnings: capsule.warnings,
   };
 }
 
@@ -206,16 +183,7 @@ export function buildChatGPTCompanionPrompt(
   return prompt;
 }
 
-function importFingerprint(text: string, capsule: ChatGPTCompanionCapsule): string {
-  let hash = 0x811c9dc5;
-  for (const point of codePoints(`${capsule.id}\u0000${capsule.contentHash}\u0000${text}`)) {
-    for (let index = 0; index < point.length; index += 1) {
-      hash ^= point.charCodeAt(index);
-      hash = Math.imul(hash, 0x01000193) >>> 0;
-    }
-  }
-  return hash.toString(16).padStart(8, "0");
-}
+function importFingerprint(text: string, capsule: ChatGPTCompanionCapsule): string { return sha256Text(`${capsule.id}\u0000${capsule.contentHash}\u0000${text}`); }
 
 /** Converts user-copied ChatGPT text to non-persistent local conversation entries. */
 export function importCompanionAnswer(text: string, capsule: unknown): CompanionAnswerImport {

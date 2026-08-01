@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { buildCompanionCapsule, canonicalCompanionCapsuleJson } from "../src/chatgpt-companion-capsule";
+import { buildCompanionCapsule, canonicalCompanionCapsuleJson, COMPANION_CAPSULE_BOUNDS } from "../src/chatgpt-companion-capsule";
 import {
   createCompanionCapsuleStorage,
   createGeckoCompanionCapsuleFilesystem,
@@ -152,7 +152,7 @@ describe("Companion capsule storage", () => {
     const store = createCompanionCapsuleStorage({ filesystem, hash, now });
     const stored = buildCompanionCapsule({
       question: "Explain the repeated metadata warnings.",
-      contextItems: Array.from({ length: 64 }, (_, index) => ({
+      contextItems: Array.from({ length: COMPANION_CAPSULE_BOUNDS.contextItems }, (_, index) => ({
         id: `paper-${index}`,
         kind: "paper",
         sourceIdentity: `zotero:paper-${index}`,
