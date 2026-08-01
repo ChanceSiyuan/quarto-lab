@@ -295,6 +295,12 @@ function expectNoPublishedAIContext(plugin: any): void {
   expect(interaction).not.toHaveProperty("AI Context memory and plan");
 }
 
+async function settleWorkspace(): Promise<void> {
+  for (let index = 0; index < 4; index += 1) {
+    await new Promise((resolve) => setTimeout(resolve, 0));
+  }
+}
+
 describe("AI Context plugin integration", () => {
   it("derives captured IDs from fixture messages", () => {
     const document = documentFixture("captured", "conversation", {
@@ -357,7 +363,10 @@ describe("AI Context plugin integration", () => {
     expect(plugin.activeAIContextPath).toBe(contextDocument.relativePath);
     expect(plugin.activeAIContextThreadId).toBe("dedicated-partial-1");
     expect(plugin.openQmdDocument).toHaveBeenCalledWith(
-      expect.anything(), contextDocument.relativePath, window,
+      expect.anything(),
+      contextDocument.relativePath,
+      window,
+      { agentCopy: "disabled" },
     );
     expect(plugin.codex.openWorkspaceObjectConversation).toHaveBeenCalledWith({
       kind: "draft",
@@ -710,6 +719,96 @@ describe("AI Context plugin integration", () => {
     expect(plugin.activeAIContext).toBeNull();
     expect(plugin.activeAIContextThreadId).toBeNull();
     expect(plugin.activeAIContextRoot).toBeNull();
+    workspace?.destroy();
+    host.remove();
+  });
+
+  it("reopens a valid AI Context through a cached real QMD workspace without creating an Agent copy", async () => {
+    const contextDocument = documentFixture("readonly-reopen", "conversation", {
+      messages: [
+        { id: "u1", role: "user", text: "What changed?" },
+        { id: "a1", role: "assistant", text: "The model was updated." },
+      ],
+    });
+    const { plugin } = aiContextPluginHarness({
+      resolvedDocument: contextDocument,
+      stubActivation: false,
+    });
+    const host = document.createElement("div");
+    document.body.appendChild(host);
+    let workspace: any;
+    let workspaceBuilds = 0;
+    const sidebar = {
+      attachWorkspace: (build: (target: HTMLElement) => any) => {
+        if (!workspace) {
+          workspaceBuilds += 1;
+          workspace = build(host);
+        }
+        return workspace;
+      },
+      setWorkspaceOpen: (open: boolean) => {
+        if (open) workspace.show();
+        else workspace.hide();
+      },
+    };
+    const writeUTF8 = vi.fn(async () => undefined);
+    const makeDirectory = vi.fn(async () => undefined);
+    vi.stubGlobal("IOUtils", {
+      getChildren: vi.fn(async () => []),
+      stat: vi.fn(),
+      writeUTF8,
+      makeDirectory,
+    });
+    const prepareQmdChange = vi.fn(async () => ({
+      changePath: "work/qlab-zotero/draft-changes/readonly/draft.qmd",
+      previewPath: "drafts/ai-contexts/readonly-reopen.preview.qmd",
+      changed: true,
+      revision: "agent-copy-r1",
+    }));
+    const changeRender = {
+      open: vi.fn(async () => "http://127.0.0.1:44200/readonly.html"),
+      stop: vi.fn(),
+      diagnostic: vi.fn(() => null),
+    };
+    plugin.selectedWorkbenchEntry.mockReturnValue({ view: sidebar });
+    delete plugin.openQmdDocument;
+    plugin.qmdRender = {
+      open: vi.fn(async () => "http://127.0.0.1:44100/readonly.html"),
+      stop: vi.fn(),
+      diagnostic: vi.fn(() => null),
+      checkDraft: vi.fn(async () => ({ ok: true, diagnostics: [] })),
+    };
+    plugin.qmdChangeRender = changeRender;
+    plugin.availableEditors = vi.fn(async () => []);
+    plugin.pendingQmdChanges = vi.fn(async () => new Set());
+    plugin.prepareQmdChange = prepareQmdChange;
+    plugin.refreshQmdChangePreview = vi.fn(async () => {});
+    plugin.codex.getActiveDiffs.mockReturnValue([{
+      turnId: "dedicated-readonly-turn",
+      diff: "diff --git a/work/qlab-zotero/draft-changes/readonly/draft.qmd b/work/qlab-zotero/draft-changes/readonly/draft.qmd\n-old\n+new",
+    }]);
+
+    await plugin.openAIContextAttachment({ key: "A1" }, window);
+    await settleWorkspace();
+    await plugin.openAIContextAttachment({ key: "A1" }, window);
+    await settleWorkspace();
+
+    expect(workspaceBuilds).toBe(1);
+    expect(plugin.qmdRender.open).toHaveBeenCalledTimes(2);
+    expect(plugin.codex.getActiveDiffs).toHaveBeenCalledTimes(2);
+    expect(prepareQmdChange).not.toHaveBeenCalled();
+    expect(changeRender.open).not.toHaveBeenCalled();
+    expect(writeUTF8).not.toHaveBeenCalled();
+    expect(makeDirectory).not.toHaveBeenCalled();
+    expect(plugin.codex.setActiveDocument).toHaveBeenLastCalledWith({
+      relativePath: contextDocument.relativePath,
+      editablePath: null,
+    });
+    expect(plugin.codex.openWorkspaceObjectConversation).toHaveBeenCalledTimes(2);
+    expect(plugin.aiContexts.save).not.toHaveBeenCalled();
+    expect(plugin.generator.generate).not.toHaveBeenCalled();
+    expect(plugin.aiContextHost.compareAndSwap).not.toHaveBeenCalled();
+    expect(plugin.aiContextHost.project).not.toHaveBeenCalled();
     workspace?.destroy();
     host.remove();
   });

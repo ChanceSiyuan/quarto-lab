@@ -229,6 +229,76 @@ describe("QmdWorkspaceView", () => {
     view.destroy();
   });
 
+  it("changes Agent working-copy behavior on every same-path open", async () => {
+    (document as unknown as { createXULElement(name: string): HTMLElement }).createXULElement =
+      vi.fn(() => document.createElement("div"));
+    const {
+      host,
+      view,
+      prepareChange,
+      changeRenderService,
+      onActiveDocument,
+      readSource,
+      saveSource,
+    } = mount([CURSOR, VSCODE], { pending: true });
+    view.show();
+
+    // Ordinary Draft opens retain the existing Agent-copy contract.
+    await view.open(DRAFT);
+    await settle();
+    expect(prepareChange).toHaveBeenCalledTimes(1);
+    expect(changeRenderService.open).toHaveBeenCalledOnce();
+
+    prepareChange.mockClear();
+    changeRenderService.open.mockClear();
+    changeRenderService.stop.mockClear();
+
+    // AI Context reopens reuse this view but must expose only the original,
+    // including when an enabled-mode sync was already queued.
+    view.syncAgentChanges({ activeTurnId: "queued-before-context", diffs: [] });
+    await view.open(DRAFT, { agentCopy: "disabled" });
+    await settle();
+    expect(prepareChange).not.toHaveBeenCalled();
+    expect(changeRenderService.open).not.toHaveBeenCalled();
+    expect(changeRenderService.stop).toHaveBeenCalled();
+    expect(onActiveDocument).toHaveBeenLastCalledWith(DRAFT, null);
+    expect(host.querySelector<HTMLButtonElement>(".zc-qmd-compare")!.disabled).toBe(true);
+    expect(host.querySelector<HTMLButtonElement>(".zc-qmd-change-keep")!.disabled).toBe(true);
+
+    // A plugin render after the reopen must not re-create the removed copy.
+    view.syncAgentChanges({
+      activeTurnId: "ai-context-turn",
+      diffs: [{
+        turnId: "ai-context-turn",
+        diff: `diff --git a/${CHANGE} b/${CHANGE}\n--- a/${CHANGE}\n+++ b/${CHANGE}\n-old\n+new`,
+      }],
+    });
+    await settle();
+    expect(prepareChange).not.toHaveBeenCalled();
+    expect(changeRenderService.open).not.toHaveBeenCalled();
+
+    // A human Visual Edit of the original remains possible without preparing
+    // a generic Agent copy after saving.
+    host.querySelector<HTMLButtonElement>(".zc-qmd-mode")!.click();
+    await settle();
+    expect(readSource).toHaveBeenLastCalledWith(DRAFT);
+    await (view as unknown as {
+      saveVisualSource(source: string, revision: string): Promise<unknown>;
+    }).saveVisualSource("# Human original edit\n", "source-r1");
+    expect(saveSource).toHaveBeenCalledWith(DRAFT, "source-r1", "# Human original edit\n");
+    expect(prepareChange).not.toHaveBeenCalled();
+    expect(onActiveDocument).toHaveBeenLastCalledWith(DRAFT, null);
+
+    // An explicit ordinary reopen restores the established Agent-copy flow.
+    await view.open(DRAFT, { agentCopy: "enabled" });
+    expect(prepareChange).toHaveBeenCalledOnce();
+    view.syncAgentChanges({ activeTurnId: "ordinary-turn", diffs: [] });
+    await settle();
+    expect(prepareChange).toHaveBeenCalledTimes(2);
+    expect(onActiveDocument).toHaveBeenLastCalledWith(DRAFT, CHANGE);
+    view.destroy();
+  });
+
   it("switches a Draft between authoritative Quarto preview and source-driven Visual Edit", async () => {
     const { host, view, readSource } = mount();
     view.show();

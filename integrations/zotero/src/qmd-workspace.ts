@@ -52,6 +52,11 @@ export interface QmdAgentState {
   diffs: readonly QmdAgentDiff[];
 }
 
+export interface QmdWorkspaceOpenOptions {
+  /** Whether this open may create and synchronize a private Agent working copy. */
+  agentCopy?: "enabled" | "disabled";
+}
+
 function normalizedDiffPath(value: string): string {
   return value.trim().replace(/^['"]|['"]$/g, "").replace(/^[ab]\//, "");
 }
@@ -129,6 +134,7 @@ export class QmdWorkspaceView {
   private visualEditor: QmdVisualEditor | null = null;
   private visualMode = false;
   private visualTargetPath: string | null = null;
+  private agentCopyMode: NonNullable<QmdWorkspaceOpenOptions["agentCopy"]> = "enabled";
   private renderedUrl = "";
   private changedUrl = "";
   private changePath: string | null = null;
@@ -281,7 +287,12 @@ export class QmdWorkspaceView {
 
   show(): void {
     this.root.hidden = false;
-    if (this.current) this.options.onActiveDocument?.(this.current.relativePath, this.changePath);
+    if (this.current) {
+      this.options.onActiveDocument?.(
+        this.current.relativePath,
+        this.agentCopyMode === "enabled" ? this.changePath : null,
+      );
+    }
     this.stopIndexRefresh();
     void this.refreshVisibleIndex().finally(() => this.scheduleIndexRefresh());
   }
@@ -298,6 +309,7 @@ export class QmdWorkspaceView {
    * the later diff notification, even when filesystem reads are asynchronous.
    */
   syncAgentChanges(state: QmdAgentState): void {
+    if (this.agentCopyMode === "disabled") return;
     const generation = this.openGeneration;
     const snapshot: QmdAgentState = {
       activeTurnId: state.activeTurnId,
@@ -312,14 +324,21 @@ export class QmdWorkspaceView {
   }
 
   /** Previews one QMD, starting or reusing its render process. */
-  async open(relativePath: string): Promise<boolean> {
+  async open(relativePath: string, options: QmdWorkspaceOpenOptions = {}): Promise<boolean> {
     const generation = ++this.openGeneration;
     const tree = treeForPath(relativePath);
     if (!tree) {
       this.setStatus("Only QMD files in knowledge/ or drafts/ can be previewed", "error");
       return false;
     }
-    if (this.current?.relativePath !== relativePath) this.resetAgentChange();
+    const agentCopyMode = options.agentCopy ?? "enabled";
+    const agentCopyModeChanged = this.agentCopyMode !== agentCopyMode;
+    this.agentCopyMode = agentCopyMode;
+    if (this.current?.relativePath !== relativePath
+        || agentCopyModeChanged
+        || agentCopyMode === "disabled") {
+      this.resetAgentChange();
+    }
     this.current = { relativePath, tree };
     this.pathLabel.textContent = relativePath;
     this.pathLabel.title = relativePath;
@@ -328,7 +347,7 @@ export class QmdWorkspaceView {
     this.configureReviewControls(tree);
 
     let prepareError = "";
-    if (!tree.published && this.options.prepareChange) {
+    if (!tree.published && this.agentCopyMode === "enabled" && this.options.prepareChange) {
       try {
         const prepared = await this.options.prepareChange(relativePath);
         if (generation !== this.openGeneration || this.destroyed) return false;
@@ -371,7 +390,12 @@ export class QmdWorkspaceView {
       return false;
     }
     if (this.destroyed || generation !== this.openGeneration) return false;
-    if (!this.root.hidden) this.options.onActiveDocument?.(relativePath, this.changePath);
+    if (!this.root.hidden) {
+      this.options.onActiveDocument?.(
+        relativePath,
+        this.agentCopyMode === "enabled" ? this.changePath : null,
+      );
+    }
 
     this.ensureRenderBrowser();
     this.renderedUrl = url;
@@ -385,8 +409,10 @@ export class QmdWorkspaceView {
         : diagnostic
         ? `Preview is showing the last successful result: ${diagnostic}`
         : tree.published ? "Preview ready · refreshes automatically after save"
-          : this.hasAgentChange ? "Original Draft preview · an AI version is available"
-            : "Original Draft preview · AI edits are kept in a separate working copy",
+          : this.agentCopyMode === "disabled"
+            ? "Original Draft preview · Agent working copy disabled for this context"
+            : this.hasAgentChange ? "Original Draft preview · an AI version is available"
+              : "Original Draft preview · AI edits are kept in a separate working copy",
       prepareError || diagnostic ? "error" : "valid",
     );
     await draftCheck;
@@ -443,7 +469,7 @@ export class QmdWorkspaceView {
   private async applyAgentState(state: QmdAgentState, generation: number): Promise<void> {
     const current = this.current;
     const changePath = this.changePath;
-    if (!current || current.tree.published || !changePath
+    if (this.agentCopyMode === "disabled" || !current || current.tree.published || !changePath
         || generation !== this.openGeneration || this.destroyed) return;
 
     let diffChanged = false;
@@ -477,7 +503,7 @@ export class QmdWorkspaceView {
   }
 
   private async ensureChangedPreview(generation = this.openGeneration): Promise<string | null> {
-    if (!this.current || this.current.tree.published || !this.changePath
+    if (this.agentCopyMode === "disabled" || !this.current || this.current.tree.published || !this.changePath
         || !this.changePreviewPath || !this.hasAgentChange) return null;
     try {
       await this.options.refreshChangePreview?.(
@@ -510,7 +536,10 @@ export class QmdWorkspaceView {
   }
 
   private async toggleAgentPreview(): Promise<void> {
-    if (!this.hasAgentChange || !this.current || this.current.tree.published) return;
+    if (this.agentCopyMode === "disabled"
+        || !this.hasAgentChange
+        || !this.current
+        || this.current.tree.published) return;
     if (!this.showingAgentChange) {
       const url = await this.ensureChangedPreview();
       if (!url) return;
@@ -595,6 +624,8 @@ export class QmdWorkspaceView {
   private async saveVisualSource(source: string, expectedRevision: string): Promise<QmdSourceSnapshot> {
     const current = this.current;
     const target = this.visualTargetPath;
+    const generation = this.openGeneration;
+    const agentCopyMode = this.agentCopyMode;
     if (!current || current.tree.published || !target || !this.options.saveSource) {
       throw new Error("Visual Edit is not attached to a Draft source");
     }
@@ -602,6 +633,11 @@ export class QmdWorkspaceView {
       throw new Error("Visual Edit refused a source outside the active Draft");
     }
     const snapshot = await this.options.saveSource(target, expectedRevision, source);
+    if (generation !== this.openGeneration || this.destroyed) return snapshot;
+    if (agentCopyMode === "disabled") {
+      this.options.onActiveDocument?.(current.relativePath, null);
+      return snapshot;
+    }
     const prepared = await this.options.prepareChange?.(current.relativePath);
     if (prepared) {
       this.changePath = prepared.changePath;
@@ -640,7 +676,12 @@ export class QmdWorkspaceView {
   private async keepAgentChanges(): Promise<void> {
     const current = this.current;
     const changePath = this.changePath;
-    if (!current || current.tree.published || !changePath || !this.hasAgentChange || !this.options.keepChange) return;
+    if (this.agentCopyMode === "disabled"
+        || !current
+        || current.tree.published
+        || !changePath
+        || !this.hasAgentChange
+        || !this.options.keepChange) return;
     this.keepChangesButton.disabled = true;
     try {
       const prepared = await this.options.keepChange(current.relativePath, changePath);
@@ -684,11 +725,12 @@ export class QmdWorkspaceView {
 
   private updateChangeControls(): void {
     const isDraft = Boolean(this.current && !this.current.tree.published);
-    this.compareButton.hidden = !isDraft;
-    this.keepChangesButton.hidden = !isDraft;
+    const allowsAgentCopy = isDraft && this.agentCopyMode === "enabled";
+    this.compareButton.hidden = !allowsAgentCopy;
+    this.keepChangesButton.hidden = !allowsAgentCopy;
     if (!isDraft) this.visualMode = false;
-    this.compareButton.disabled = !this.hasAgentChange;
-    this.keepChangesButton.disabled = !this.hasAgentChange;
+    this.compareButton.disabled = !allowsAgentCopy || !this.hasAgentChange;
+    this.keepChangesButton.disabled = !allowsAgentCopy || !this.hasAgentChange;
     this.compareButton.setAttribute("aria-pressed", String(this.showingAgentChange));
     this.presentIcon(
       this.compareButton,

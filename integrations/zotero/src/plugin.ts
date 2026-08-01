@@ -54,7 +54,7 @@ import {
   ResearchLoopSiteService,
 } from "./research-loop-site";
 import { createQmdRenderRuntime, QmdRenderService } from "./qmd-render";
-import { QmdWorkspaceView } from "./qmd-workspace";
+import { QmdWorkspaceView, type QmdWorkspaceOpenOptions } from "./qmd-workspace";
 import { buildQmdIndex, geckoScanner } from "./qmd-index";
 import {
   createExternalEditorRuntime,
@@ -1375,7 +1375,7 @@ export class ZoteroChatPlugin {
       await this.openWorkbenchTab(win);
       const view = this.selectedWorkbenchEntry(win)?.view as SidebarView | undefined;
       if (!view) throw new Error("QLab Workbench was not opened");
-      if (!await this.openQmdDocument(view, document.relativePath, win)) {
+      if (!await this.openQmdDocument(view, document.relativePath, win, { agentCopy: "disabled" })) {
         throw new Error("The AI Context QMD could not be opened");
       }
       await this.codex.openWorkspaceObjectConversation({
@@ -1775,6 +1775,7 @@ export class ZoteroChatPlugin {
     sidebar: SidebarView,
     relativePath: string,
     win = Zotero.getMainWindow(),
+    options: QmdWorkspaceOpenOptions = {},
   ): Promise<boolean> {
     let root = this.settings?.qlabRoot || "";
     if (!root) root = await this.chooseQLabRoot(win) || "";
@@ -1819,7 +1820,7 @@ export class ZoteroChatPlugin {
     if (!workspace) return false;
     workspace.repoRootHint = root;
     sidebar.setWorkspaceOpen(true);
-    if (!await workspace.open(relativePath)) return false;
+    if (!await workspace.open(relativePath, options)) return false;
     workspace.syncAgentChanges({
       activeTurnId: this.codex.state.activeTurnId,
       diffs: this.codex.getActiveDiffs(),
