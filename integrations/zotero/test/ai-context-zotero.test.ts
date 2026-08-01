@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { expect, it, vi } from "vitest";
 import {
+  AIContextProjectionError,
   AIContextService,
   parseAIContextDocument,
   renderNewAIContextDocument,
@@ -659,6 +660,59 @@ it("finds reading and standalone repairs after restart and preserves ambiguity",
   ).pendingRepairs();
   expect(pending.map(({ document }) => document.manifest.id))
     .toEqual(["ctx-shared", "standalone-restart"]);
+});
+
+it("keeps a committed QMD repairable when a preflighted parent disappears after CAS", async () => {
+  const runtime = zoteroRuntime({ userLibraryID: 1, items: [regular("P1", 1)] });
+  const host = createZoteroAIContextHost(runtime);
+  const writeAtomic = runtime.writeAtomic.getMockImplementation()!;
+  runtime.writeAtomic = vi.fn<ZoteroAIContextRuntime["writeAtomic"]>(async (path, source, expectedRevision) => {
+    const committed = await writeAtomic(path, source, expectedRevision);
+    if (committed) runtime.itemByLibraryAndKey.mockResolvedValue(undefined);
+    return committed;
+  });
+  const generator: AIContextGenerator = {
+    generate: vi.fn(async () => JSON.stringify(validReadingSynthesis(["P1"]))),
+  };
+  const service = new AIContextService(host, generator, fixedEnvironment());
+
+  const error = await service.save({
+    kind: "reading",
+    sourceThreadId: null,
+    papers: papers("P1"),
+    projection: { mode: "attached", targets: [{ libraryID: "1", itemKey: "P1" }] },
+    messages: [],
+  }).then(() => null, (value) => value as AIContextProjectionError);
+
+  expect(error).toBeInstanceOf(AIContextProjectionError);
+  if (!(error instanceof AIContextProjectionError)) throw new Error("expected projection error");
+  expect(runtime.files.get(`/repo/${error.document.relativePath}`)).toBe(error.document.source);
+  expect(error.result.missing).toEqual([{ mode: "attached", libraryID: "1", itemKey: "P1" }]);
+  expect(error.cause).toBeInstanceOf(Error);
+  await expect(service.pendingRepairs()).resolves.toEqual([
+    expect.objectContaining({
+      document: expect.objectContaining({ relativePath: error.document.relativePath }),
+      status: { created: [], reused: [], missing: [{ mode: "attached", libraryID: "1", itemKey: "P1" }] },
+    }),
+  ]);
+});
+
+it("reports an unavailable status target as missing without discarding another parent’s valid projection", async () => {
+  const runtime = zoteroRuntime({ userLibraryID: 1, items: [regular("P1", 1)] });
+  const document = attachedDocument("P1", "P2");
+  runtime.attachments.push({
+    id: 100,
+    key: "LINK0",
+    libraryID: 1,
+    parentID: 11,
+    path: `/repo/${document.relativePath}`,
+    title: document.title,
+  });
+
+  const status = await createZoteroAIContextHost(runtime).projectionStatus(document);
+
+  expect(status.reused).toEqual([{ mode: "attached", libraryID: "1", itemKey: "P1" }]);
+  expect(status.missing).toEqual([{ mode: "attached", libraryID: "1", itemKey: "P2" }]);
 });
 
 it.each([

@@ -244,30 +244,42 @@ async function completeProjectionHandle(
 
 export function createZoteroAIContextHost(runtime: ZoteroAIContextRuntime): AIContextHost {
   async function project(document: AIContextDocument, create: boolean): Promise<AIContextProjectionResult> {
-    await host.preflight(document.manifest.projection, document.manifest.papers);
+    if (create) await host.preflight(document.manifest.projection, document.manifest.papers);
     const path = absoluteAIContextPath(runtime, document.relativePath);
     const result = blankProjection();
     if (document.manifest.projection.mode === "standalone") {
       const handle = { mode: "standalone" as const, libraryID: String(runtime.userLibraryID()) };
-      const matching = await canonicalMatch(
-        runtime, await runtime.topLevelAttachments(runtime.userLibraryID()), path, document.title,
-      );
-      await completeProjectionHandle(
-        runtime, document, result, handle, matching, create,
-        () => runtime.linkFromFile({ file: path }),
-      );
+      try {
+        const matching = await canonicalMatch(
+          runtime, await runtime.topLevelAttachments(runtime.userLibraryID()), path, document.title,
+        );
+        await completeProjectionHandle(
+          runtime, document, result, handle, matching, create,
+          () => runtime.linkFromFile({ file: path }),
+        );
+      }
+      catch (cause) {
+        if (create) throw cause;
+        result.missing.push(handle);
+      }
       return result;
     }
     for (const target of document.manifest.projection.targets) {
       const handle = { mode: "attached" as const, ...target };
-      const parent = await localRegularParent(
-        runtime, await runtime.itemByLibraryAndKey(target.libraryID, target.itemKey),
-      );
-      const matching = await canonicalMatch(runtime, await runtime.attachmentsFor(parent), path, document.title);
-      await completeProjectionHandle(
-        runtime, document, result, handle, matching, create,
-        () => runtime.linkFromFile({ file: path, parentItemID: parent.id }),
-      );
+      try {
+        const parent = await localRegularParent(
+          runtime, await runtime.itemByLibraryAndKey(target.libraryID, target.itemKey),
+        );
+        const matching = await canonicalMatch(runtime, await runtime.attachmentsFor(parent), path, document.title);
+        await completeProjectionHandle(
+          runtime, document, result, handle, matching, create,
+          () => runtime.linkFromFile({ file: path, parentItemID: parent.id }),
+        );
+      }
+      catch (cause) {
+        if (create) throw cause;
+        result.missing.push(handle);
+      }
     }
     return result;
   }

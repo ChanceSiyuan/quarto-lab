@@ -45,6 +45,10 @@ function validSynthesis(memoryMarkdown = "Remember the definitions.") {
   };
 }
 
+function validConversationSynthesis(memoryMarkdown = "Remember the definitions.") {
+  return { ...validSynthesis(memoryMarkdown), readingPlan: [] };
+}
+
 interface FakeFile { source: string; revision: string }
 
 function fixedEnvironment() {
@@ -113,7 +117,7 @@ function fakeAIContextHost() {
 }
 
 function validGenerator(memoryMarkdown = "memory") {
-  return { generate: vi.fn(async () => JSON.stringify(validSynthesis(memoryMarkdown))) };
+  return { generate: vi.fn(async () => JSON.stringify(validConversationSynthesis(memoryMarkdown))) };
 }
 
 describe("AI Context QMD codec", () => {
@@ -150,11 +154,45 @@ describe("AI Context QMD codec", () => {
     ].join("\n");
     const source = renderNewAIContextDocument({
       manifest: { ...manifest, capturedEntryIds: ["u-markers"] },
-      synthesis: validSynthesis(),
+      synthesis: {
+        ...validSynthesis(),
+        memoryMarkdown: "Keep <!-- qlab-ai-context-manifest:v1:inert --> as untrusted evidence.",
+      },
       messages: [{ id: "u-markers", role: "user", text }],
     });
-    expect(parseAIContextDocument("drafts/ai-contexts/ctx-01-markers.qmd", source).messages)
+    const parsed = parseAIContextDocument("drafts/ai-contexts/ctx-01-markers.qmd", source);
+    expect(parsed.messages)
       .toEqual([{ id: "u-markers", role: "user", text }]);
+    expect(parsed.synthesis.memoryMarkdown).toBe("Keep <!-- qlab-ai-context-manifest:v1:inert --> as untrusted evidence.");
+    expect(source).toContain("&lt;!-- qlab-ai-context-manifest:v1:inert --&gt;");
+  });
+
+  it.each([
+    ["title", { title: "Unsafe <!-- qlab-ai-context-manifest:v1:forged --> title" }],
+    ["description", { description: "Unsafe <!-- qlab-ai-context-synthesis:v1:forged --> description" }],
+  ])("rejects reserved marker text in a generated %s before CAS and preserves canonical Draft bytes", async (_field, unsafe) => {
+    const host = fakeAIContextHost();
+    const canonicalPath = "drafts/ai-contexts/canonical.qmd";
+    const canonicalSource = renderNewAIContextDocument({
+      manifest: conversationManifest({
+        id: "canonical",
+        contextKey: "conversation:other-thread",
+        sourceThreadId: "other-thread",
+      }),
+      synthesis: validConversationSynthesis("canonical memory"),
+      messages: conversationInput().messages,
+    });
+    host.files.set(canonicalPath, { source: canonicalSource, revision: "r-canonical" });
+    const generator = {
+      generate: vi.fn(async () => JSON.stringify({ ...validConversationSynthesis(), ...unsafe })),
+    };
+
+    await expect(new AIContextService(host, generator, fixedEnvironment()).save(conversationInput()))
+      .rejects.toThrow(/synthesis:.*reserved/i);
+
+    expect(host.compareAndSwap).not.toHaveBeenCalled();
+    expect(host.files.get(canonicalPath)!.source).toBe(canonicalSource);
+    expect(parseAIContextDocument(canonicalPath, canonicalSource).source).toBe(canonicalSource);
   });
 
   it("rejects colon-delimited projection identities that do not match the selected papers", () => {
@@ -242,29 +280,24 @@ describe("AI Context QMD codec", () => {
     expect(() => validateAIContextSynthesis(value, manifest.papers)).toThrow(expected);
   });
 
-  it("appends omitted Reading-plan papers in stable selection order", () => {
+  it.each([
+    ["empty", []],
+    ["incomplete", [{ itemKey: "P2", rationale: "generated", guidance: "generated" }]],
+  ])("rejects a persisted %s Reading plan that omits selected papers", (_label, readingPlan) => {
     const papers = [
       { libraryID: "1", itemKey: "P1", title: "one" },
       { libraryID: "1", itemKey: "P2", title: "two" },
       { libraryID: "1", itemKey: "P3", title: "three" },
     ];
-    const synthesis = validateAIContextSynthesis({
-      ...validSynthesis(),
-      readingPlan: [{ itemKey: "P2", rationale: "generated", guidance: "generated" }],
-    }, papers);
-    expect(synthesis.readingPlan).toEqual([
-      { itemKey: "P2", rationale: "generated", guidance: "generated" },
-      {
-        itemKey: "P1",
-        rationale: "No generated transition rationale was available; preserve the stable selection order.",
-        guidance: "No generated guidance was available; inspect this paper directly and record evidence limits.",
+    expect(() => renderNewAIContextDocument({
+      manifest: {
+        ...manifest,
+        papers,
+        projection: { mode: "attached", targets: papers.map(({ libraryID, itemKey }) => ({ libraryID, itemKey })) },
       },
-      {
-        itemKey: "P3",
-        rationale: "No generated transition rationale was available; preserve the stable selection order.",
-        guidance: "No generated guidance was available; inspect this paper directly and record evidence limits.",
-      },
-    ]);
+      synthesis: { ...validSynthesis(), readingPlan },
+      messages: [],
+    })).toThrow(/synthesis:.*Reading plan/i);
   });
 
   it("rejects manifest extra keys, duplicate IDs, and unsafe IDs before rendering", () => {
@@ -340,8 +373,8 @@ describe("AI Context QMD codec", () => {
         return true;
       });
     const generator = { generate: vi.fn()
-      .mockResolvedValueOnce(JSON.stringify(validSynthesis("first")))
-      .mockResolvedValueOnce(JSON.stringify(validSynthesis("latest"))) };
+      .mockResolvedValueOnce(JSON.stringify(validConversationSynthesis("first")))
+      .mockResolvedValueOnce(JSON.stringify(validConversationSynthesis("latest"))) };
     const service = new AIContextService(host, generator, fixedEnvironment());
 
     const result = await service.save(conversationInput());
@@ -371,7 +404,7 @@ describe("AI Context QMD codec", () => {
       inputs,
       generate: vi.fn(async (prompt: string) => {
         inputs.push(prompt);
-        return JSON.stringify(validSynthesis(`fold-${inputs.length}`));
+        return JSON.stringify(validConversationSynthesis(`fold-${inputs.length}`));
       }),
     };
     const result = await new AIContextService(host, generator, fixedEnvironment()).save(input);
@@ -388,7 +421,7 @@ describe("AI Context QMD codec", () => {
     const relativePath = "drafts/ai-contexts/ctx-01.qmd";
     const source = renderNewAIContextDocument({
       manifest: conversationManifest({ capturedEntryIds: ["old"] }),
-      synthesis: validSynthesis("original memory"),
+      synthesis: validConversationSynthesis("original memory"),
       messages: [{ id: "old", role: "user", text: "original transcript" }],
     }) + "\n## Personal notes\n\nkeep me\n";
     host.files.set(relativePath, { source, revision: "r1" });
@@ -417,7 +450,7 @@ describe("AI Context QMD codec", () => {
     const relativePath = "drafts/ai-contexts/ctx-01.qmd";
     const source = renderNewAIContextDocument({
       manifest: conversationManifest(),
-      synthesis: validSynthesis("stored memory"),
+      synthesis: validConversationSynthesis("stored memory"),
       messages: conversationInput().messages,
     }) + "\n## Personal notes\n\nunchanged\n";
     host.files.set(relativePath, { source, revision: "r1" });
@@ -444,7 +477,7 @@ describe("AI Context QMD codec", () => {
     const relativePath = "drafts/ai-contexts/ctx-01.qmd";
     const source = renderNewAIContextDocument({
       manifest: conversationManifest(),
-      synthesis: validSynthesis("stored memory"),
+      synthesis: validConversationSynthesis("stored memory"),
       messages: conversationInput().messages,
     });
     host.files.set(relativePath, { source, revision: "r1" });
@@ -469,7 +502,7 @@ describe("AI Context QMD codec", () => {
     const oldMessage = { id: "old", role: "user" as const, text: "first capture" };
     const source = renderNewAIContextDocument({
       manifest: conversationManifest({ capturedEntryIds: ["old"] }),
-      synthesis: validSynthesis("old memory"),
+      synthesis: validConversationSynthesis("old memory"),
       messages: [oldMessage],
     });
     host.files.set(relativePath, { source, revision: "r1" });
@@ -491,7 +524,7 @@ describe("AI Context QMD codec", () => {
     const relativePath = "drafts/ai-contexts/ctx-01.qmd";
     const source = renderNewAIContextDocument({
       manifest: conversationManifest({ capturedEntryIds: ["same"] }),
-      synthesis: validSynthesis(),
+      synthesis: validConversationSynthesis(),
       messages: [{ id: "same", role: "user", text: "original" }],
     });
     host.files.set(relativePath, { source, revision: "r1" });
@@ -512,7 +545,7 @@ describe("AI Context QMD codec", () => {
         contextKey: "conversation:someone-else",
         sourceThreadId: "someone-else",
       }),
-      synthesis: validSynthesis("collision memory"),
+      synthesis: validConversationSynthesis("collision memory"),
       messages: conversationInput().messages,
     });
     host.compareAndSwap = vi.fn<AIContextHost["compareAndSwap"]>(async (relativePath, expectedRevision, source) => {
@@ -533,7 +566,7 @@ describe("AI Context QMD codec", () => {
     const relativePath = "drafts/ai-contexts/ctx-01.qmd";
     const initial = renderNewAIContextDocument({
       manifest: conversationManifest({ capturedEntryIds: ["old"] }),
-      synthesis: validSynthesis("initial memory"),
+      synthesis: validConversationSynthesis("initial memory"),
       messages: [{ id: "old", role: "user", text: "old turn" }],
     }) + "\n## Personal notes\n\ninitial note\n";
     host.files.set(relativePath, { source: initial, revision: "r1" });
@@ -541,7 +574,7 @@ describe("AI Context QMD codec", () => {
     const generator = {
       generate: vi.fn(async (prompt: string) => {
         prompts.push(prompt);
-        return JSON.stringify(validSynthesis(prompts.length === 1 ? "first attempt" : "retry memory"));
+        return JSON.stringify(validConversationSynthesis(prompts.length === 1 ? "first attempt" : "retry memory"));
       }),
     };
     const realCAS = host.compareAndSwap.getMockImplementation()!;
@@ -549,7 +582,7 @@ describe("AI Context QMD codec", () => {
       .mockImplementationOnce(async () => {
         const externallyEdited = replaceAIContextManagedRegion(initial, {
           manifest: conversationManifest({ capturedEntryIds: ["old"] }),
-          synthesis: validSynthesis("external latest memory"),
+          synthesis: validConversationSynthesis("external latest memory"),
           messages: [{ id: "old", role: "user", text: "old turn" }],
         }).replace("initial note", "external note");
         host.files.set(relativePath, { source: externallyEdited, revision: "r2" });
@@ -576,7 +609,7 @@ describe("AI Context QMD codec", () => {
     const relativePath = "drafts/ai-contexts/existing-logical.qmd";
     const original = renderNewAIContextDocument({
       manifest: conversationManifest(),
-      synthesis: validSynthesis("original"),
+      synthesis: validConversationSynthesis("original"),
       messages: conversationInput().messages,
     });
     host.files.set(relativePath, { source: original, revision: "r1" });
@@ -602,10 +635,10 @@ describe("AI Context QMD codec", () => {
     const host = fakeAIContextHost();
     const relativePath = "drafts/ai-contexts/discovered.qmd";
     const stale = renderNewAIContextDocument({
-      manifest: conversationManifest(), synthesis: validSynthesis("stale"), messages: conversationInput().messages,
+      manifest: conversationManifest(), synthesis: validConversationSynthesis("stale"), messages: conversationInput().messages,
     });
     const latest = replaceAIContextManagedRegion(stale, {
-      manifest: conversationManifest(), synthesis: validSynthesis("latest"), messages: conversationInput().messages,
+      manifest: conversationManifest(), synthesis: validConversationSynthesis("latest"), messages: conversationInput().messages,
     }) + "\n## Personal notes\n\nlatest note\n";
     host.files.set(relativePath, { source: latest, revision: "r2" });
     host.list.mockResolvedValue([{ relativePath, source: stale, revision: "r1" }]);
@@ -622,7 +655,7 @@ describe("AI Context QMD codec", () => {
     const relativePath = "drafts/ai-contexts/ctx-01.qmd";
     const source = renderNewAIContextDocument({
       manifest: conversationManifest({ capturedEntryIds: ["old"] }),
-      synthesis: validSynthesis(),
+      synthesis: validConversationSynthesis(),
       messages: [{ id: "old", role: "user", text: "old" }],
     });
     host.files.set(relativePath, { source, revision: "r1" });
@@ -645,7 +678,7 @@ describe("AI Context QMD codec", () => {
       host.files.set(relativePath, {
         source: renderNewAIContextDocument({
           manifest: conversationManifest({ id: `ctx-${suffix}` }),
-          synthesis: validSynthesis(),
+          synthesis: validConversationSynthesis(),
           messages: conversationInput().messages,
         }),
         revision: `r-${suffix}`,
@@ -666,7 +699,7 @@ describe("AI Context QMD codec", () => {
 
   it("reserves room for ordered units when the prior output is near 64,000 characters", async () => {
     const host = fakeAIContextHost();
-    const oversizedAccumulator = validSynthesis("\\".repeat(30_000));
+    const oversizedAccumulator = validConversationSynthesis("\\".repeat(30_000));
     const prompts: string[] = [];
     const generator = {
       generate: vi.fn(async (prompt: string) => {
@@ -718,48 +751,108 @@ describe("AI Context QMD codec", () => {
   });
 
   it.each([
+    ["empty", []],
+    ["incomplete", [
+      { itemKey: "P1", rationale: "r1", guidance: "g1" },
+      { itemKey: "P3", rationale: "r3", guidance: "g3" },
+    ]],
     ["duplicate", [
       { itemKey: "P1", rationale: "r1", guidance: "g1" },
       { itemKey: "P1", rationale: "r2", guidance: "g2" },
     ]],
     ["unknown", [
       { itemKey: "P1", rationale: "r1", guidance: "g1" },
-      { itemKey: "P3", rationale: "r3", guidance: "g3" },
+      { itemKey: "UNKNOWN", rationale: "r3", guidance: "g3" },
     ]],
-  ])("rejects %s generated Reading-plan entries before CAS", async (_label, readingPlan) => {
+  ])("rejects %s generated final Reading-plan entries before CAS", async (_label, readingPlan) => {
     const host = fakeAIContextHost();
     const synthesis = { ...validSynthesis(), readingPlan };
     const generator = { generate: vi.fn(async () => JSON.stringify(synthesis)) };
     await expect(new AIContextService(host, generator, fixedEnvironment()).save({
       kind: "reading",
       sourceThreadId: null,
-      papers: servicePapers("P1", "P2"),
+      papers: servicePapers("P1", "P2", "P3"),
       projection: {
         mode: "attached",
-        targets: servicePapers("P1", "P2").map(({ libraryID, itemKey }) => ({ libraryID, itemKey })),
+        targets: servicePapers("P1", "P2", "P3").map(({ libraryID, itemKey }) => ({ libraryID, itemKey })),
       },
       messages: [],
     })).rejects.toThrow(/synthesis/);
     expect(host.compareAndSwap).not.toHaveBeenCalled();
   });
 
-  it("appends an omitted Reading paper in stable selection order", async () => {
+  it("requires a complete three-paper Reading plan and sends explicit ordering guidance to the utility", async () => {
     const host = fakeAIContextHost();
-    const generator = { generate: vi.fn(async () => JSON.stringify({
-      ...validSynthesis(),
-      readingPlan: [{ itemKey: "P1", rationale: "r1", guidance: "g1" }],
-    })) };
+    const prompts: Array<Record<string, any>> = [];
+    const selected = servicePapers("P1", "P2", "P3");
+    const generator = { generate: vi.fn(async (rawPrompt: string) => {
+      prompts.push(JSON.parse(rawPrompt));
+      return JSON.stringify({
+        ...validSynthesis(),
+        readingPlan: [
+          { itemKey: "P2", rationale: "foundation", guidance: "read definitions" },
+          { itemKey: "P1", rationale: "builds on P2", guidance: "compare assumptions" },
+          { itemKey: "P3", rationale: "extends P1", guidance: "test the boundary" },
+        ],
+      });
+    }) };
     const result = await new AIContextService(host, generator, fixedEnvironment()).save({
       kind: "reading",
       sourceThreadId: null,
-      papers: servicePapers("P1", "P2"),
+      papers: selected,
       projection: {
         mode: "attached",
-        targets: servicePapers("P1", "P2").map(({ libraryID, itemKey }) => ({ libraryID, itemKey })),
+        targets: selected.map(({ libraryID, itemKey }) => ({ libraryID, itemKey })),
       },
       messages: [],
     });
-    expect(result.document.synthesis.readingPlan.map(({ itemKey }) => itemKey)).toEqual(["P1", "P2"]);
+    expect(result.document.synthesis.readingPlan.map(({ itemKey }) => itemKey)).toEqual(["P2", "P1", "P3"]);
+    expect(prompts.at(-1)!.contract.readingPlanRequirements).toEqual([
+      "Choose the best evidence-backed order for every selected paper.",
+      "Explain why the first paper is the foundation for the sequence.",
+      "For each later paper, explain its transition from the immediately previous paper.",
+      "Give concrete reading guidance for every selected paper.",
+    ]);
+  });
+
+  it("rejects a conversation synthesis that includes a Reading plan before CAS", async () => {
+    const host = fakeAIContextHost();
+    const generator = { generate: vi.fn(async () => JSON.stringify(validSynthesis())) };
+
+    await expect(new AIContextService(host, generator, fixedEnvironment()).save(conversationInput()))
+      .rejects.toThrow(/synthesis:.*conversation.*Reading plan/i);
+
+    expect(host.compareAndSwap).not.toHaveBeenCalled();
+  });
+
+  it("allows a partial intermediate Reading batch but rejects an incomplete final batch before CAS", async () => {
+    const host = fakeAIContextHost();
+    const selected = servicePapers("P1", "P2", "P3");
+    selected[0]!.abstract = "x".repeat(100_000);
+    const batches: boolean[] = [];
+    const generator = { generate: vi.fn(async (rawPrompt: string) => {
+      const prompt = JSON.parse(rawPrompt) as { contract: { finalBatch: boolean } };
+      batches.push(prompt.contract.finalBatch);
+      return JSON.stringify({
+        ...validSynthesis(),
+        readingPlan: [{ itemKey: "P1", rationale: "partial", guidance: "partial" }],
+      });
+    }) };
+
+    await expect(new AIContextService(host, generator, fixedEnvironment()).save({
+      kind: "reading",
+      sourceThreadId: null,
+      papers: selected,
+      projection: {
+        mode: "attached",
+        targets: selected.map(({ libraryID, itemKey }) => ({ libraryID, itemKey })),
+      },
+      messages: [],
+    })).rejects.toThrow(/synthesis:.*Reading plan/i);
+
+    expect(batches).toContain(false);
+    expect(batches.at(-1)).toBe(true);
+    expect(host.compareAndSwap).not.toHaveBeenCalled();
   });
 
   it("lists both pending repairs and repairs only the exact requested path", async () => {
@@ -769,7 +862,7 @@ describe("AI Context QMD codec", () => {
     host.files.set(attachedPath, {
       source: renderNewAIContextDocument({
         manifest: conversationManifest({ id: "attached" }),
-        synthesis: validSynthesis(),
+        synthesis: validConversationSynthesis(),
         messages: conversationInput().messages,
       }),
       revision: "ra",
@@ -820,11 +913,31 @@ describe("AI Context QMD codec", () => {
     expect(host.files.get(error.document.relativePath)!.source).toBe(error.document.source);
   });
 
+  it("keeps a committed Draft recoverable when projection and status discovery both throw after CAS", async () => {
+    const host = fakeAIContextHost();
+    const projectionCause = new Error("target vanished after CAS");
+    const statusCause = new Error("target lookup unavailable");
+    const missing = [{ mode: "attached" as const, libraryID: "1", itemKey: "P1" }];
+    host.project.mockRejectedValue(projectionCause);
+    host.projectionStatus.mockRejectedValue(statusCause);
+
+    const error = await new AIContextService(host, validGenerator(), fixedEnvironment()).save(conversationInput())
+      .then(() => null, (value) => value as AIContextProjectionError);
+
+    expect(error).toBeInstanceOf(AIContextProjectionError);
+    if (!(error instanceof AIContextProjectionError)) throw new Error("expected projection error");
+    expect(error.document.relativePath).toMatch(/^drafts\/ai-contexts\//u);
+    expect(error.result.missing).toEqual(missing);
+    expect(error.cause).toBe(projectionCause);
+    expect((error as AIContextProjectionError & { statusCause?: unknown }).statusCause).toBe(statusCause);
+    expect(host.files.get(error.document.relativePath)!.source).toBe(error.document.source);
+  });
+
   it("wraps a repair projection throw without synthesis or CAS", async () => {
     const host = fakeAIContextHost();
     const relativePath = "drafts/ai-contexts/repair-error.qmd";
     const source = renderNewAIContextDocument({
-      manifest: conversationManifest(), synthesis: validSynthesis(), messages: conversationInput().messages,
+      manifest: conversationManifest(), synthesis: validConversationSynthesis(), messages: conversationInput().messages,
     });
     host.files.set(relativePath, { source, revision: "r1" });
     const missing = [{ mode: "attached" as const, libraryID: "1", itemKey: "P1" }];

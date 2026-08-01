@@ -80,6 +80,7 @@ const MANIFEST_PREFIX = "<!-- qlab-ai-context-manifest:v1:";
 const SYNTHESIS_PREFIX = "<!-- qlab-ai-context-synthesis:v1:";
 const MESSAGE_PREFIX = "<!-- qlab-ai-context-message:v1:";
 const READING_PREFIX = "<!-- qlab-ai-context-reading:v1:";
+const RESERVED_MANAGED_PREFIX = /<!--\s*qlab-ai-context-/iu;
 
 function fail(category: "manifest" | "frontmatter" | "path" | "synthesis", detail: string): never {
   throw new Error(`${category}: ${detail}`);
@@ -103,6 +104,12 @@ function bounded(value: unknown, minimum: number, maximum: number, category: "ma
     fail(category, `${name} must contain ${minimum}..${maximum} characters`);
   }
   return value;
+}
+
+function markerFreeSynthesisText(value: unknown, minimum: number, maximum: number, name: "title" | "description"): string {
+  const text = bounded(value, minimum, maximum, "synthesis", name);
+  if (RESERVED_MANAGED_PREFIX.test(text)) fail("synthesis", `${name} contains reserved AI Context marker text`);
+  return text;
 }
 
 function id(value: unknown, name: string): string {
@@ -228,16 +235,22 @@ function validateManifest(value: unknown): AIContextManifest {
   };
 }
 
-const OMITTED_RATIONALE = "No generated transition rationale was available; preserve the stable selection order.";
-const OMITTED_GUIDANCE = "No generated guidance was available; inspect this paper directly and record evidence limits.";
+export interface AIContextSynthesisValidationOptions {
+  kind?: AIContextKind;
+  requireCompleteReadingPlan?: boolean;
+}
 
-export function validateAIContextSynthesis(value: unknown, papers: readonly AIContextPaper[]): AIContextSynthesis {
+export function validateAIContextSynthesis(
+  value: unknown,
+  papers: readonly AIContextPaper[],
+  options: AIContextSynthesisValidationOptions = {},
+): AIContextSynthesis {
   const input = object(value, "synthesis");
   exactKeys(input, [
     "title", "description", "category", "status", "memoryMarkdown", "progressMarkdown",
     "nextStepMarkdown", "readingPlan",
   ], "synthesis");
-  const title = bounded(input.title, 1, 120, "synthesis", "title");
+  const title = markerFreeSynthesisText(input.title, 1, 120, "title");
   if (/^(AI Context|Reading Context)\s*·/u.test(title)) fail("synthesis", "title includes product prefix");
   if (input.category !== "theory" && input.category !== "experiment" && input.category !== "codes") fail("synthesis", "invalid category");
   if (input.status !== "active" && input.status !== "complete") fail("synthesis", "invalid status");
@@ -255,12 +268,17 @@ export function validateAIContextSynthesis(value: unknown, papers: readonly AICo
   const generated = readingPlan.map(({ itemKey }) => itemKey);
   if (new Set(generated).size !== generated.length) fail("synthesis", "duplicate reading paper");
   if (generated.some((itemKey) => !selected.includes(itemKey))) fail("synthesis", "unknown reading paper");
-  for (const itemKey of selected) {
-    if (!generated.includes(itemKey)) readingPlan.push({ itemKey, rationale: OMITTED_RATIONALE, guidance: OMITTED_GUIDANCE });
+  const kind = options.kind ?? "reading";
+  if (kind === "conversation" && readingPlan.length) {
+    fail("synthesis", "conversation Context must not contain a Reading plan");
+  }
+  if (kind === "reading" && (options.requireCompleteReadingPlan ?? true)
+    && (readingPlan.length !== selected.length || selected.some((itemKey) => !generated.includes(itemKey)))) {
+    fail("synthesis", "Reading plan must contain every selected paper exactly once");
   }
   return {
     title,
-    description: bounded(input.description, 1, 500, "synthesis", "description"),
+    description: markerFreeSynthesisText(input.description, 1, 500, "description"),
     category: input.category,
     status: input.status,
     memoryMarkdown: bounded(input.memoryMarkdown, 1, 48_000, "synthesis", "memory"),
@@ -301,7 +319,7 @@ function validateMessages(messages: readonly AIContextMessage[]): AIContextMessa
 
 function renderManaged(content: AIContextManagedContent): string {
   const manifest = validateManifest(content.manifest);
-  const synthesis = validateAIContextSynthesis(content.synthesis, manifest.papers);
+  const synthesis = validateAIContextSynthesis(content.synthesis, manifest.papers, { kind: manifest.kind });
   if (manifest.status !== synthesis.status) fail("synthesis", "status disagrees with manifest");
   const messages = validateMessages(content.messages);
   if (manifest.capturedEntryIds.join("\0") !== messages.map(({ id: messageId }) => messageId).join("\0")) {
@@ -364,7 +382,7 @@ function enforceSourceBudget(source: string): void {
 
 export function renderNewAIContextDocument(content: AIContextManagedContent): string {
   const manifest = validateManifest(content.manifest);
-  const synthesis = validateAIContextSynthesis(content.synthesis, manifest.papers);
+  const synthesis = validateAIContextSynthesis(content.synthesis, manifest.papers, { kind: manifest.kind });
   const source = `${frontmatter(manifest, synthesis)}\n\n${renderManaged({ ...content, manifest, synthesis })}\n`;
   enforceSourceBudget(source);
   return source;
@@ -443,6 +461,7 @@ export function parseAIContextDocument(relativePath: string, source: string): AI
   const synthesis = validateAIContextSynthesis(
     decode(singleLine(parsedMessages.structural, SYNTHESIS_PREFIX, "synthesis"), "synthesis"),
     manifest.papers,
+    { kind: manifest.kind },
   );
   if (manifest.status !== synthesis.status) fail("synthesis", "status disagrees with manifest");
   const messages = parsedMessages.messages;
@@ -533,10 +552,21 @@ export class AIContextProjectionError extends Error {
     readonly document: AIContextDocument,
     readonly result: AIContextProjectionResult,
     readonly cause?: unknown,
+    readonly statusCause?: unknown,
   ) {
     super(message);
     this.name = "AIContextProjectionError";
   }
+}
+
+function conservativeProjectionStatus(document: AIContextDocument): AIContextProjectionResult {
+  return {
+    created: [],
+    reused: [],
+    missing: document.manifest.projection.mode === "standalone"
+      ? [{ mode: "standalone", libraryID: "unknown" }]
+      : document.manifest.projection.targets.map((target) => ({ mode: "attached" as const, ...target })),
+  };
 }
 
 export interface AIContextCommit {
@@ -596,6 +626,13 @@ const AI_CONTEXT_OUTPUT_SCHEMA = {
   nextStepMarkdown: "string, 1..8000 characters",
   readingPlan: "array of exact {itemKey,rationale,guidance}; itemKey from allowedPaperKeys; no duplicates; rationale/guidance each 1..2000 characters",
 } as const;
+
+const READING_PLAN_REQUIREMENTS = [
+  "Choose the best evidence-backed order for every selected paper.",
+  "Explain why the first paper is the foundation for the sequence.",
+  "For each later paper, explain its transition from the immediately previous paper.",
+  "Give concrete reading guidance for every selected paper.",
+] as const;
 
 interface AIContextUtilityUnit {
   kind: "prior" | "paper" | "message" | "seed";
@@ -659,7 +696,14 @@ function utilityPrompt(
       contextKind: kind,
       allowedPaperKeys,
       finalBatch,
-      omittedPaperRule: "append evidence-limited fallback entries in stable allowedPaperKeys order",
+      readingPlanRequirements: kind === "reading"
+        ? READING_PLAN_REQUIREMENTS
+        : ["Return an empty readingPlan; a conversation Context does not have a Reading plan."],
+      finalReadingPlanRule: kind === "reading"
+        ? finalBatch
+          ? "This is the final batch: include every allowedPaperKey exactly once."
+          : "This is an intermediate batch: a partial Reading plan is allowed, but duplicate and unknown keys are not."
+        : "Conversation contexts must return an empty readingPlan.",
     },
     data: { accumulatedSynthesis, orderedUnits: units },
   });
@@ -669,14 +713,22 @@ function promptLength(prompt: string): number {
   return [...prompt].length;
 }
 
-function validatedUtilityOutput(output: string, papers: readonly AIContextPaper[]): AIContextSynthesis {
+function validatedUtilityOutput(
+  output: string,
+  papers: readonly AIContextPaper[],
+  kind: AIContextKind,
+  finalBatch: boolean,
+): AIContextSynthesis {
   if ([...output].length > AI_CONTEXT_MAX_UTILITY_OUTPUT_CHARS) {
     throw new Error("synthesis: utility output exceeds 64,000 characters");
   }
   let value: unknown;
   try { value = JSON.parse(output); }
   catch { throw new Error("synthesis: utility output must be exactly one JSON object"); }
-  return validateAIContextSynthesis(value, papers);
+  return validateAIContextSynthesis(value, papers, {
+    kind,
+    requireCompleteReadingPlan: kind === "reading" && finalBatch,
+  });
 }
 
 async function runSynthesisBatches(
@@ -713,7 +765,12 @@ async function runSynthesisBatches(
     if (promptLength(prompt) > AI_CONTEXT_MAX_UTILITY_INPUT_CHARS) {
       throw new Error("synthesis: complete utility prompt exceeds 80,000 characters");
     }
-    synthesis = validatedUtilityOutput(await generator.generate(prompt), papers);
+    synthesis = validatedUtilityOutput(
+      await generator.generate(prompt),
+      papers,
+      kind,
+      pending.length === 0,
+    );
   }
   return synthesis!;
 }
@@ -773,7 +830,19 @@ export class AIContextService {
     let result: AIContextProjectionResult;
     try { result = await this.host.project(document); }
     catch (cause) {
-      const status = await this.host.projectionStatus(document);
+      let status: AIContextProjectionResult;
+      try {
+        status = await this.host.projectionStatus(document);
+      }
+      catch (statusCause) {
+        throw new AIContextProjectionError(
+          "AI Context committed but projection status is unavailable",
+          document,
+          conservativeProjectionStatus(document),
+          cause,
+          statusCause,
+        );
+      }
       throw new AIContextProjectionError("AI Context committed but projection failed", document, status, cause);
     }
     if (result.missing.length) {
@@ -835,7 +904,15 @@ export class AIContextService {
       if (existing) {
         existingStatus = await this.host.projectionStatus(existing);
         if (existingStatus.missing.length) {
-          await this.host.preflight(existing.manifest.projection, existing.manifest.papers);
+          try { await this.host.preflight(existing.manifest.projection, existing.manifest.papers); }
+          catch (cause) {
+            throw new AIContextProjectionError(
+              "AI Context committed but projection cannot be repaired",
+              existing,
+              existingStatus,
+              cause,
+            );
+          }
           return { document: existing, projection: await this.projectDocument(existing) };
         }
       }
