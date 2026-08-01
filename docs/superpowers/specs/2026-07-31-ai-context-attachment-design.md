@@ -12,7 +12,8 @@ Add an AI Context as a first-class Research Loop record: one untrusted Quarto
 Draft under `drafts/ai-contexts/`, projected into Zotero as one or more linked
 file attachments. A user can save or update a paper conversation, share one
 context across several papers, create a planned multi-paper Reading Context,
-and reopen the Draft with a dedicated resumable chat.
+reopen the Draft with a dedicated resumable chat, and ask Codex to revise a
+private version for explicit human review.
 
 The Draft is the authority. Zotero attachments are handles that point to it;
 they never become a second copy of the context.
@@ -45,8 +46,29 @@ they never become a second copy of the context.
   `untrusted` context. Application context states only the selected repository,
   safe relative path, record identity, and write rules. Raw transcript content
   is not injected automatically.
-- Reopening never writes. A later explicit `Save / Update AI Context` action is
-  required to persist new learning progress.
+- Reopening never creates or resumes an Agent working copy. The original Draft
+  is visible, Codex has no editable path, and Compare/Keep are unavailable.
+- Every reopen starts in that AI-read-only state. Human Visual Edit and
+  external-editor actions retain their existing direct-Draft semantics; the
+  restriction is on autonomous Codex edits.
+
+### Explicit AI edit and review
+
+- The QMD toolbar shows one explicit **Edit with AI** button for an opened AI
+  Context. No modal or second prompt field is introduced.
+- Clicking it creates or resumes the private Agent working copy, exposes that
+  copy to Codex only after preparation succeeds, and starts one normal Codex
+  turn with a fixed instruction to revise the active QMD.
+- That turn uses the current dedicated conversation together with the complete
+  active AI Context QMD. Codex may edit only the private copy.
+- AI edits accumulate in the private copy. Once a change exists, the existing
+  eye control switches between the original and AI version; **Keep** is the
+  only action that accepts the reviewed AI version as the original Draft.
+- The button does not call `Save / Update AI Context`; that action retains its
+  managed-block synthesis and compare-and-swap contract.
+- Preparation, turn failure, or no QMD diff leaves the original untouched and
+  permits retry. Reopening revokes the edit authorization and requires another
+  explicit click.
 
 ### Reading Context
 
@@ -88,6 +110,11 @@ Three implementation shapes were considered:
 
 Approach 2 is selected. It matches the issue literally while keeping the
 Research Loop trust boundary physical and testable.
+
+For AI editing, the selected interaction is one explicit button that both
+authorizes and starts the existing Codex edit turn. Silently preparing a copy
+on open would violate zero-write reopen; unlocking and then requiring another
+message or dialog would add an unnecessary step.
 
 ## Components
 
@@ -253,6 +280,24 @@ The existing unused `onCaptureChatDraft` callback becomes the visible
 `Save / Update AI Context` action rather than adding another parallel action
 system. Item-menu commands cover create, open, and standalone flows.
 
+### `qmd-workspace.ts` and `qmd-visual-editor.ts`
+
+`QmdWorkspaceView` owns the per-open Agent-copy policy. Ordinary Drafts keep
+automatic working-copy behavior. AI Contexts open on demand: **Edit with AI**
+is visible, but `prepareChange`, Agent-diff sync, and editable-path publication
+do not happen until the click.
+
+Preparation success is the linearization point. Before it, Compare/Keep stay
+hidden and `editablePath` stays `null`; after it, the existing private-copy,
+preview, eye, and Keep machinery is reused and the plugin starts the fixed edit
+instruction in the selected dedicated conversation. No parallel editor,
+dialog, merge engine, or conversation registry is added.
+
+Visual Edit status is associated with the exact document/save operation. A
+completion from an older open may not overwrite current state, while a real
+conflict from the current save remains visible after switching to Website
+Preview.
+
 ## Draft format
 
 Every file is a promotion-ready Draft with exactly the existing allowlisted
@@ -390,6 +435,11 @@ Zotero untouched.
 - Partial attachment projection: retain the Draft and completed projections;
   activate the retained record and report missing parents so Save/Update or the
   explicit repair command can finish the idempotent projection.
+- Edit with AI preparation failure: retain the AI-read-only original, expose no
+  editable path or comparison controls, report that no original was changed,
+  and allow retry.
+- Edit with AI turn failure or no QMD diff: retain the original and re-enable
+  the explicit action; never synthesize or Keep implicitly.
 - Unsupported Zotero file-handler seam: retain the explicit Open menu action
   and report the compatibility limitation in diagnostics, without breaking
   other attachment types.
@@ -409,19 +459,22 @@ Test-first tasks cover four seams:
 3. Open-handler and Codex tests: candidate interception, exact delegation,
    missing API degradation, identity-safe restore, inactive delegation under a
    later plugin wrapper, reload behavior, dedicated workspace thread
-   creation/resume/switch, and untrusted context boundaries.
+   creation/resume/switch, fixed-instruction editing from the current context,
+   and untrusted context boundaries.
 4. Plugin/sidebar tests: visible Save/Update control, single/multi capture,
    selected-item Reading Context, exact phrase routing, standalone creation,
    item-menu Open fallback, QMD workspace opening, zero-link/partial-link active
    recovery, restart repair for reading and standalone records, ambiguous repair
-   selection, and bounded untrusted memory injection.
+   selection, bounded untrusted memory injection, zero-write on-demand opens,
+   Edit with AI single-flight/failure/retry, Compare/Keep activation, cached
+   reopen revocation, and stale Visual Edit operation isolation.
 
 Focused tests run during each red-green cycle. The final Linux gates are
 TypeScript, the full Zotero Vitest suite, the build, and the repository suite.
 A real Zotero 9 smoke test must cover double-click, View File, menu fallback,
-shared attachments, and restart/resume; when the Linux worker cannot launch
-native Zotero, that manual gate is reported as outstanding rather than called a
-pass.
+shared attachments, restart/resume, Edit with AI, eye review, and Keep; when
+the Linux worker cannot launch native Zotero, that manual gate is reported as
+outstanding rather than called a pass.
 
 ## Release and delivery
 
