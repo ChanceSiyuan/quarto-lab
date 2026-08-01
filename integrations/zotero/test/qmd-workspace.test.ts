@@ -56,6 +56,7 @@ function mount(
   const onActiveDocument = vi.fn();
   const onEditorChosen = vi.fn();
   const onReviewDraft = vi.fn(async () => {});
+  const onEditWithAI = vi.fn(async () => {});
   let pending = Boolean(options.pending);
   let revision = pending ? "pending-revision" : "original-revision";
   const prepareChange = vi.fn(async () => ({
@@ -94,6 +95,7 @@ function mount(
     onEditorChosen,
     onActiveDocument,
     onReviewDraft,
+    onEditWithAI,
     prepareChange,
     refreshChangePreview,
     keepChange,
@@ -110,6 +112,7 @@ function mount(
     onActiveDocument,
     onEditorChosen,
     onReviewDraft,
+    onEditWithAI,
     prepareChange,
     refreshChangePreview,
     keepChange,
@@ -128,6 +131,13 @@ function mount(
 
 async function settle(): Promise<void> {
   for (let index = 0; index < 4; index++) await new Promise((resolve) => setTimeout(resolve, 0));
+}
+
+function deferred<T>() {
+  let resolve!: (value: T) => void;
+  let reject!: (reason?: unknown) => void;
+  const promise = new Promise<T>((next, fail) => { resolve = next; reject = fail; });
+  return { promise, resolve, reject };
 }
 
 describe("QmdWorkspaceView", () => {
@@ -152,6 +162,18 @@ describe("QmdWorkspaceView", () => {
     expect(host.querySelector(".cm-content")).toBeNull();
     expect(host.querySelector("[data-editor-mode]")).toBeNull();
     view.destroy();
+  });
+
+  it("reports an unsuccessful open when preview rendering fails without changing the active document", async () => {
+    const { view, renderService, onActiveDocument } = mount();
+    renderService.open.mockRejectedValueOnce(new Error("preview failed"));
+    view.show();
+
+    await expect(view.open(DRAFT)).resolves.toBe(false);
+    expect(onActiveDocument).not.toHaveBeenCalled();
+    view.hide();
+    view.show();
+    expect(onActiveDocument.mock.calls.some(([path]) => path === DRAFT)).toBe(false);
   });
 
   it("collapses the file tree toward the left and restores it from the edge handle", async () => {
@@ -217,6 +239,558 @@ describe("QmdWorkspaceView", () => {
     view.destroy();
   });
 
+  it("opens an on-demand Draft without authorizing an Agent working copy", async () => {
+    const { host, view, prepareChange, onEditWithAI, onActiveDocument } = mount();
+    view.show();
+
+    await view.open(DRAFT, { agentCopy: "on-demand" });
+
+    const button = host.querySelector<HTMLButtonElement>(".zc-qmd-enable-ai-editing")!;
+    expect(button.hidden).toBe(false);
+    expect(button.textContent).toBe("Edit with AI");
+    expect(button.getAttribute("aria-label")).toBe("Edit with AI");
+    expect(button.disabled).toBe(false);
+    expect(prepareChange).not.toHaveBeenCalled();
+    expect(onEditWithAI).not.toHaveBeenCalled();
+    expect(onActiveDocument).toHaveBeenLastCalledWith(DRAFT, null);
+    expect(host.querySelector<HTMLButtonElement>(".zc-qmd-compare")!.hidden).toBe(true);
+    expect(host.querySelector<HTMLButtonElement>(".zc-qmd-change-keep")!.hidden).toBe(true);
+    view.destroy();
+  });
+
+  it("single-flights on-demand activation until the real Agent turn finishes", async () => {
+    const prepared = {
+      changePath: CHANGE,
+      previewPath: CHANGE_PREVIEW,
+      changed: false,
+      revision: "activation-baseline",
+    };
+    const preparation = deferred<typeof prepared>();
+    const turn = deferred<void>();
+    const {
+      host,
+      view,
+      prepareChange,
+      onEditWithAI,
+      onActiveDocument,
+      setPending,
+    } = mount();
+    prepareChange.mockImplementationOnce(() => preparation.promise);
+    onEditWithAI.mockImplementationOnce(() => turn.promise);
+    view.show();
+    await view.open(DRAFT, { agentCopy: "on-demand" });
+
+    const button = host.querySelector<HTMLButtonElement>(".zc-qmd-enable-ai-editing")!;
+    button.click();
+    button.click();
+    expect(prepareChange).toHaveBeenCalledOnce();
+    expect(button.disabled).toBe(true);
+    expect(button.getAttribute("aria-busy")).toBe("true");
+
+    preparation.resolve(prepared);
+    await settle();
+    expect(onActiveDocument).toHaveBeenLastCalledWith(DRAFT, CHANGE);
+    expect(onEditWithAI).toHaveBeenCalledOnce();
+    expect(onEditWithAI).toHaveBeenCalledWith(DRAFT, CHANGE);
+    expect(host.querySelector<HTMLButtonElement>(".zc-qmd-compare")!.hidden).toBe(false);
+    expect(host.querySelector<HTMLButtonElement>(".zc-qmd-compare")!.disabled).toBe(true);
+    expect(host.querySelector<HTMLButtonElement>(".zc-qmd-change-keep")!.disabled).toBe(true);
+    button.click();
+    expect(prepareChange).toHaveBeenCalledOnce();
+
+    turn.resolve(undefined);
+    await settle();
+    expect(button.disabled).toBe(true);
+    expect(button.getAttribute("aria-busy")).toBe("true");
+
+    view.syncAgentChanges({ activeTurnId: "turn-ai", running: true, diffs: [] });
+    await settle();
+    expect(prepareChange).toHaveBeenCalledOnce();
+    expect(button.disabled).toBe(true);
+
+    setPending(true, "authoritative-turn-result");
+    view.syncAgentChanges({ activeTurnId: null, running: false, diffs: [] });
+    await settle();
+    expect(prepareChange).toHaveBeenCalledTimes(2);
+    expect(button.disabled).toBe(false);
+    expect(button.getAttribute("aria-busy")).toBe("false");
+    expect(host.querySelector<HTMLButtonElement>(".zc-qmd-compare")!.hidden).toBe(false);
+    expect(host.querySelector<HTMLButtonElement>(".zc-qmd-compare")!.disabled).toBe(false);
+    expect(host.querySelector<HTMLButtonElement>(".zc-qmd-change-keep")!.disabled).toBe(false);
+    view.destroy();
+  });
+
+  it("blocks a pre-existing changed copy until the requested turn is authoritatively refreshed", async () => {
+    const prepared = {
+      changePath: CHANGE,
+      previewPath: CHANGE_PREVIEW,
+      changed: true,
+      revision: "pre-existing-change",
+    };
+    const preparation = deferred<typeof prepared>();
+    const turn = deferred<void>();
+    const {
+      host,
+      view,
+      prepareChange,
+      onEditWithAI,
+      changeRenderService,
+      keepChange,
+      setPending,
+    } = mount([CURSOR, VSCODE], { pending: true });
+    prepareChange.mockImplementationOnce(() => preparation.promise);
+    onEditWithAI.mockImplementationOnce(() => turn.promise);
+    view.show();
+    await view.open(DRAFT, { agentCopy: "on-demand" });
+
+    const action = host.querySelector<HTMLButtonElement>(".zc-qmd-enable-ai-editing")!;
+    const compare = host.querySelector<HTMLButtonElement>(".zc-qmd-compare")!;
+    const keep = host.querySelector<HTMLButtonElement>(".zc-qmd-change-keep")!;
+    action.click();
+    expect(compare.hidden).toBe(true);
+    expect(keep.hidden).toBe(true);
+    await (view as unknown as { keepAgentChanges(): Promise<void> }).keepAgentChanges();
+    expect(keepChange).not.toHaveBeenCalled();
+
+    preparation.resolve(prepared);
+    await settle();
+
+    expect(prepareChange).toHaveBeenCalledOnce();
+    expect(onEditWithAI).toHaveBeenCalledOnce();
+    expect(compare.hidden).toBe(false);
+    expect(compare.disabled).toBe(true);
+    expect(keep.disabled).toBe(true);
+    expect(changeRenderService.open).not.toHaveBeenCalled();
+    await (view as unknown as { toggleAgentPreview(): Promise<void> }).toggleAgentPreview();
+    await (view as unknown as { keepAgentChanges(): Promise<void> }).keepAgentChanges();
+    expect(changeRenderService.open).not.toHaveBeenCalled();
+    expect(keepChange).not.toHaveBeenCalled();
+
+    turn.resolve(undefined);
+    await settle();
+    view.syncAgentChanges({ activeTurnId: "requested", running: true, diffs: [] });
+    await settle();
+    expect(compare.disabled).toBe(true);
+    expect(keep.disabled).toBe(true);
+    await (view as unknown as { keepAgentChanges(): Promise<void> }).keepAgentChanges();
+    expect(keepChange).not.toHaveBeenCalled();
+
+    setPending(true, "authoritative-requested-change");
+    view.syncAgentChanges({ activeTurnId: null, running: false, diffs: [] });
+    await settle();
+    expect(prepareChange).toHaveBeenCalledTimes(2);
+    expect(changeRenderService.open).toHaveBeenCalledOnce();
+    expect(compare.disabled).toBe(false);
+    expect(keep.disabled).toBe(false);
+    view.destroy();
+  });
+
+  it("ignores unrelated running edges before invoking the requested turn", async () => {
+    const prepared = {
+      changePath: CHANGE,
+      previewPath: CHANGE_PREVIEW,
+      changed: false,
+      revision: "requested-baseline",
+    };
+    const preparation = deferred<typeof prepared>();
+    const turn = deferred<void>();
+    const { host, view, prepareChange, onEditWithAI, setPending } = mount();
+    prepareChange.mockImplementationOnce(() => preparation.promise);
+    onEditWithAI.mockImplementationOnce(() => turn.promise);
+    view.show();
+    await view.open(DRAFT, { agentCopy: "on-demand" });
+
+    const action = host.querySelector<HTMLButtonElement>(".zc-qmd-enable-ai-editing")!;
+    action.click();
+    view.syncAgentChanges({ activeTurnId: "unrelated", running: true, diffs: [] });
+    view.syncAgentChanges({ activeTurnId: null, running: false, diffs: [] });
+    await settle();
+    expect(prepareChange).toHaveBeenCalledOnce();
+    expect(onEditWithAI).not.toHaveBeenCalled();
+
+    preparation.resolve(prepared);
+    await settle();
+    expect(onEditWithAI).toHaveBeenCalledOnce();
+    expect(action.disabled).toBe(true);
+    expect(action.getAttribute("aria-busy")).toBe("true");
+
+    view.syncAgentChanges({ activeTurnId: "requested", running: true, diffs: [] });
+    await settle();
+    expect(prepareChange).toHaveBeenCalledOnce();
+    expect(action.disabled).toBe(true);
+
+    turn.resolve(undefined);
+    await settle();
+    expect(prepareChange).toHaveBeenCalledOnce();
+    expect(action.disabled).toBe(true);
+
+    setPending(true, "requested-result");
+    view.syncAgentChanges({ activeTurnId: null, running: false, diffs: [] });
+    await settle();
+    expect(prepareChange).toHaveBeenCalledTimes(2);
+    expect(action.disabled).toBe(false);
+    expect(action.getAttribute("aria-busy")).toBe("false");
+    expect(host.querySelector<HTMLButtonElement>(".zc-qmd-change-keep")!.disabled).toBe(false);
+    view.destroy();
+  });
+
+  it("keeps failed on-demand activation retryable without overwriting the Draft", async () => {
+    const {
+      host,
+      view,
+      prepareChange,
+      onEditWithAI,
+      onActiveDocument,
+      saveSource,
+    } = mount();
+    prepareChange.mockRejectedValueOnce(new Error("copy unavailable"));
+    view.show();
+    await view.open(DRAFT, { agentCopy: "on-demand" });
+
+    const button = host.querySelector<HTMLButtonElement>(".zc-qmd-enable-ai-editing")!;
+    button.click();
+    await settle();
+    expect(host.querySelector(".zc-qmd-status")!.textContent).toContain("copy unavailable");
+    expect(button.disabled).toBe(false);
+    expect(button.getAttribute("aria-busy")).toBe("false");
+    expect(onEditWithAI).not.toHaveBeenCalled();
+    expect(onActiveDocument).toHaveBeenLastCalledWith(DRAFT, null);
+
+    onEditWithAI.mockRejectedValueOnce(new Error("turn rejected"));
+    button.click();
+    await settle();
+    expect(prepareChange).toHaveBeenCalledTimes(2);
+    expect(onEditWithAI).toHaveBeenCalledWith(DRAFT, CHANGE);
+    expect(host.querySelector(".zc-qmd-status")!.textContent).toContain("turn rejected");
+    expect(button.disabled).toBe(false);
+    expect(button.getAttribute("aria-busy")).toBe("false");
+    expect(onActiveDocument).toHaveBeenLastCalledWith(DRAFT, CHANGE);
+    expect(saveSource).not.toHaveBeenCalled();
+    view.destroy();
+  });
+
+  it("ignores a late on-demand preparation after reopening the same Draft", async () => {
+    const prepared = {
+      changePath: CHANGE,
+      previewPath: CHANGE_PREVIEW,
+      changed: true,
+      revision: "stale-reopen",
+    };
+    const preparation = deferred<typeof prepared>();
+    const { host, view, prepareChange, onEditWithAI, onActiveDocument, changeRenderService } = mount();
+    prepareChange.mockImplementationOnce(() => preparation.promise);
+    view.show();
+    await view.open(DRAFT, { agentCopy: "on-demand" });
+    host.querySelector<HTMLButtonElement>(".zc-qmd-enable-ai-editing")!.click();
+    expect(prepareChange).toHaveBeenCalledOnce();
+
+    await view.open(DRAFT, { agentCopy: "on-demand" });
+    const status = host.querySelector(".zc-qmd-status")!.textContent;
+    preparation.resolve(prepared);
+    await settle();
+
+    expect(onEditWithAI).not.toHaveBeenCalled();
+    expect(onActiveDocument).toHaveBeenLastCalledWith(DRAFT, null);
+    expect(changeRenderService.open).not.toHaveBeenCalled();
+    expect(host.querySelector(".zc-qmd-status")!.textContent).toBe(status);
+    expect(host.querySelector<HTMLButtonElement>(".zc-qmd-compare")!.hidden).toBe(true);
+    view.destroy();
+  });
+
+  it("ignores a late accepted turn after opening a different Draft", async () => {
+    const otherDraft = "drafts/Dynamics/other.qmd";
+    const turn = deferred<void>();
+    const { host, view, onEditWithAI, onActiveDocument, changeRenderService } = mount();
+    onEditWithAI.mockImplementationOnce(() => turn.promise);
+    view.show();
+    await view.open(DRAFT, { agentCopy: "on-demand" });
+    host.querySelector<HTMLButtonElement>(".zc-qmd-enable-ai-editing")!.click();
+    await settle();
+    expect(onEditWithAI).toHaveBeenCalledOnce();
+
+    await view.open(otherDraft, { agentCopy: "on-demand" });
+    const status = host.querySelector(".zc-qmd-status")!.textContent;
+    turn.resolve(undefined);
+    await settle();
+
+    expect(onActiveDocument).toHaveBeenLastCalledWith(otherDraft, null);
+    expect(changeRenderService.open).not.toHaveBeenCalled();
+    expect(host.querySelector(".zc-qmd-status")!.textContent).toBe(status);
+    expect(host.querySelector<HTMLButtonElement>(".zc-qmd-enable-ai-editing")!.disabled).toBe(false);
+    view.destroy();
+  });
+
+  it("ignores a late accepted turn after the workspace is destroyed", async () => {
+    const turn = deferred<void>();
+    const { host, view, onEditWithAI, onActiveDocument, changeRenderService } = mount();
+    onEditWithAI.mockImplementationOnce(() => turn.promise);
+    view.show();
+    await view.open(DRAFT, { agentCopy: "on-demand" });
+    host.querySelector<HTMLButtonElement>(".zc-qmd-enable-ai-editing")!.click();
+    await settle();
+    expect(onEditWithAI).toHaveBeenCalledOnce();
+
+    view.destroy();
+    const activeCalls = onActiveDocument.mock.calls.length;
+    turn.resolve(undefined);
+    await settle();
+
+    expect(onActiveDocument).toHaveBeenCalledTimes(activeCalls);
+    expect(onActiveDocument).toHaveBeenLastCalledWith(null);
+    expect(changeRenderService.open).not.toHaveBeenCalled();
+    expect(host.querySelector(".zc-qmd-workspace")).toBeNull();
+  });
+
+  it("saves Visual Edit to the original before on-demand activation", async () => {
+    const { host, view, prepareChange, onEditWithAI, onActiveDocument, saveSource } = mount();
+    view.show();
+    await view.open(DRAFT, { agentCopy: "on-demand" });
+    host.querySelector<HTMLButtonElement>(".zc-qmd-mode")!.click();
+    await settle();
+
+    await (view as unknown as {
+      saveVisualSource(source: string, revision: string): Promise<unknown>;
+    }).saveVisualSource("# Human original edit\n", "source-r1");
+
+    expect(saveSource).toHaveBeenCalledWith(DRAFT, "source-r1", "# Human original edit\n");
+    expect(prepareChange).not.toHaveBeenCalled();
+    expect(onEditWithAI).not.toHaveBeenCalled();
+    expect(onActiveDocument).toHaveBeenLastCalledWith(DRAFT, null);
+    expect(host.querySelector<HTMLButtonElement>(".zc-qmd-compare")!.hidden).toBe(true);
+    view.destroy();
+  });
+
+  it("does not steer a pre-existing unrelated Agent turn", async () => {
+    const { host, view, prepareChange, onEditWithAI } = mount();
+    view.show();
+    await view.open(DRAFT, { agentCopy: "on-demand" });
+    const button = host.querySelector<HTMLButtonElement>(".zc-qmd-enable-ai-editing")!;
+
+    view.syncAgentChanges({ activeTurnId: "unrelated", running: true, diffs: [] });
+    await settle();
+    expect(button.disabled).toBe(true);
+    expect(button.getAttribute("aria-busy")).toBe("false");
+    button.click();
+    expect(prepareChange).not.toHaveBeenCalled();
+    expect(onEditWithAI).not.toHaveBeenCalled();
+
+    view.syncAgentChanges({ activeTurnId: null, running: false, diffs: [] });
+    await settle();
+    expect(button.disabled).toBe(false);
+    expect(prepareChange).not.toHaveBeenCalled();
+    view.destroy();
+  });
+
+  it("keeps ordinary Draft opens eager and hides the on-demand action", async () => {
+    const { host, view, prepareChange, onActiveDocument } = mount();
+    view.show();
+
+    await view.open(DRAFT);
+
+    expect(prepareChange).toHaveBeenCalledOnce();
+    expect(onActiveDocument).toHaveBeenLastCalledWith(DRAFT, CHANGE);
+    expect(host.querySelector<HTMLButtonElement>(".zc-qmd-enable-ai-editing")!.hidden).toBe(true);
+    view.destroy();
+  });
+
+  it("changes Agent working-copy behavior on every same-path open", async () => {
+    (document as unknown as { createXULElement(name: string): HTMLElement }).createXULElement =
+      vi.fn(() => document.createElement("div"));
+    const {
+      host,
+      view,
+      prepareChange,
+      changeRenderService,
+      onActiveDocument,
+      readSource,
+      saveSource,
+    } = mount([CURSOR, VSCODE], { pending: true });
+    view.show();
+
+    // Ordinary Draft opens retain the existing Agent-copy contract.
+    await view.open(DRAFT);
+    await settle();
+    expect(prepareChange).toHaveBeenCalledTimes(1);
+    expect(changeRenderService.open).toHaveBeenCalledOnce();
+
+    prepareChange.mockClear();
+    changeRenderService.open.mockClear();
+    changeRenderService.stop.mockClear();
+
+    // AI Context reopens reuse this view but must expose only the original,
+    // including when an enabled-mode sync was already queued.
+    view.syncAgentChanges({ activeTurnId: "queued-before-context", diffs: [] });
+    await view.open(DRAFT, { agentCopy: "disabled" });
+    await settle();
+    expect(prepareChange).not.toHaveBeenCalled();
+    expect(changeRenderService.open).not.toHaveBeenCalled();
+    expect(changeRenderService.stop).toHaveBeenCalled();
+    expect(onActiveDocument).toHaveBeenLastCalledWith(DRAFT, null);
+    expect(host.querySelector<HTMLButtonElement>(".zc-qmd-compare")!.disabled).toBe(true);
+    expect(host.querySelector<HTMLButtonElement>(".zc-qmd-change-keep")!.disabled).toBe(true);
+
+    // A plugin render after the reopen must not re-create the removed copy.
+    view.syncAgentChanges({
+      activeTurnId: "ai-context-turn",
+      diffs: [{
+        turnId: "ai-context-turn",
+        diff: `diff --git a/${CHANGE} b/${CHANGE}\n--- a/${CHANGE}\n+++ b/${CHANGE}\n-old\n+new`,
+      }],
+    });
+    await settle();
+    expect(prepareChange).not.toHaveBeenCalled();
+    expect(changeRenderService.open).not.toHaveBeenCalled();
+
+    // A human Visual Edit of the original remains possible without preparing
+    // a generic Agent copy after saving.
+    host.querySelector<HTMLButtonElement>(".zc-qmd-mode")!.click();
+    await settle();
+    expect(readSource).toHaveBeenLastCalledWith(DRAFT);
+    await (view as unknown as {
+      saveVisualSource(source: string, revision: string): Promise<unknown>;
+    }).saveVisualSource("# Human original edit\n", "source-r1");
+    expect(saveSource).toHaveBeenCalledWith(DRAFT, "source-r1", "# Human original edit\n");
+    expect(prepareChange).not.toHaveBeenCalled();
+    expect(onActiveDocument).toHaveBeenLastCalledWith(DRAFT, null);
+
+    // An explicit ordinary reopen restores the established Agent-copy flow.
+    await view.open(DRAFT, { agentCopy: "enabled" });
+    expect(prepareChange).toHaveBeenCalledOnce();
+    view.syncAgentChanges({ activeTurnId: "ordinary-turn", diffs: [] });
+    await settle();
+    expect(prepareChange).toHaveBeenCalledTimes(2);
+    expect(onActiveDocument).toHaveBeenLastCalledWith(DRAFT, CHANGE);
+    view.destroy();
+  });
+
+  it("does not restart an in-flight change preview after a disabled reopen", async () => {
+    const refresh = deferred<void>();
+    const { host, view, changeRenderService, refreshChangePreview } = mount(
+      [CURSOR, VSCODE],
+      { pending: true },
+    );
+    refreshChangePreview.mockImplementationOnce(() => refresh.promise);
+    view.show();
+
+    await view.open(DRAFT);
+    expect(refreshChangePreview).toHaveBeenCalledOnce();
+    expect(changeRenderService.open).not.toHaveBeenCalled();
+
+    await view.open(DRAFT, { agentCopy: "disabled" });
+    refresh.resolve(undefined);
+    await settle();
+
+    expect(changeRenderService.open).not.toHaveBeenCalled();
+    expect(host.querySelector<HTMLButtonElement>(".zc-qmd-compare")!.hidden).toBe(true);
+    expect(host.querySelector<HTMLButtonElement>(".zc-qmd-change-keep")!.hidden).toBe(true);
+    view.destroy();
+  });
+
+  it("does not restore an in-flight Visual Edit Agent copy after a disabled reopen", async () => {
+    const prepared = {
+      changePath: CHANGE,
+      previewPath: CHANGE_PREVIEW,
+      changed: true,
+      revision: "late-visual-copy",
+    };
+    const preparation = deferred<typeof prepared>();
+    const { host, view, onActiveDocument, prepareChange } = mount();
+    view.show();
+    await view.open(DRAFT);
+    host.querySelector<HTMLButtonElement>(".zc-qmd-mode")!.click();
+    await settle();
+    prepareChange.mockClear();
+    prepareChange.mockImplementationOnce(() => preparation.promise);
+
+    const saving = (view as unknown as {
+      saveVisualSource(source: string, revision: string): Promise<unknown>;
+    }).saveVisualSource("# Human original edit\n", "source-r1");
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(prepareChange).toHaveBeenCalledOnce();
+
+    await view.open(DRAFT, { agentCopy: "disabled" });
+    preparation.resolve(prepared);
+    await saving;
+
+    expect(onActiveDocument).toHaveBeenLastCalledWith(DRAFT, null);
+    expect((view as unknown as { changePath: string | null }).changePath).toBeNull();
+    expect(host.querySelector<HTMLButtonElement>(".zc-qmd-compare")!.hidden).toBe(true);
+    view.destroy();
+  });
+
+  it("does not publish a real Visual Editor completion after a disabled reopen", async () => {
+    const prepared = {
+      changePath: CHANGE,
+      previewPath: CHANGE_PREVIEW,
+      changed: true,
+      revision: "late-real-visual-copy",
+    };
+    const preparation = deferred<typeof prepared>();
+    const { host, view, prepareChange } = mount();
+    view.show();
+    await view.open(DRAFT);
+
+    const mode = host.querySelector<HTMLButtonElement>(".zc-qmd-mode")!;
+    mode.click();
+    await settle();
+    prepareChange.mockClear();
+    prepareChange.mockImplementationOnce(() => preparation.promise);
+
+    const card = host.querySelector<HTMLElement>(".zc-qmd-visual-card.is-lem")!;
+    card.querySelector<HTMLElement>("header")!.click();
+    const textarea = card.querySelector<HTMLTextAreaElement>("textarea")!;
+    textarea.value = textarea.value.replace("Visual lemma", "Human visual edit");
+    textarea.dispatchEvent(new Event("input"));
+    textarea.blur();
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(prepareChange).toHaveBeenCalledOnce();
+
+    mode.click();
+    await view.open(DRAFT, { agentCopy: "disabled" });
+    const status = host.querySelector<HTMLElement>(".zc-qmd-status")!.textContent;
+    preparation.resolve(prepared);
+    await settle();
+
+    expect(host.querySelector<HTMLElement>(".zc-qmd-status")!.textContent).toBe(status);
+    expect(host.querySelector<HTMLButtonElement>(".zc-qmd-compare")!.hidden).toBe(true);
+    view.destroy();
+  });
+
+  it("does not republish an in-flight Keep completion after a disabled reopen", async () => {
+    const prepared = {
+      changePath: CHANGE,
+      previewPath: CHANGE_PREVIEW,
+      changed: false,
+      revision: "late-keep",
+    };
+    const keeping = deferred<typeof prepared>();
+    const { host, view, onActiveDocument, keepChange } = mount(
+      [CURSOR, VSCODE],
+      { pending: true },
+    );
+    view.show();
+    await view.open(DRAFT);
+    await settle();
+    keepChange.mockImplementationOnce(() => keeping.promise);
+
+    host.querySelector<HTMLButtonElement>(".zc-qmd-change-keep")!.click();
+    await Promise.resolve();
+    expect(keepChange).toHaveBeenCalledOnce();
+
+    await view.open(DRAFT, { agentCopy: "disabled" });
+    const status = host.querySelector<HTMLElement>(".zc-qmd-status")!.textContent;
+    keeping.resolve(prepared);
+    await settle();
+
+    expect(onActiveDocument).toHaveBeenLastCalledWith(DRAFT, null);
+    expect((view as unknown as { changePath: string | null }).changePath).toBeNull();
+    expect(host.querySelector<HTMLElement>(".zc-qmd-status")!.textContent).toBe(status);
+    expect(host.querySelector<HTMLButtonElement>(".zc-qmd-change-keep")!.hidden).toBe(true);
+    view.destroy();
+  });
+
   it("switches a Draft between authoritative Quarto preview and source-driven Visual Edit", async () => {
     const { host, view, readSource } = mount();
     view.show();
@@ -234,6 +808,59 @@ describe("QmdWorkspaceView", () => {
     expect(mode.getAttribute("aria-label")).toContain("Website Preview");
     mode.click();
     expect(host.querySelector<HTMLElement>(".zc-qmd-render")!.hidden).toBe(false);
+    view.destroy();
+  });
+
+  it("reports a current Visual Edit conflict after switching to Website Preview", async () => {
+    const conflict = deferred<{ source: string; revision: string }>();
+    const { host, view, saveSource } = mount();
+    saveSource.mockImplementationOnce(() => conflict.promise);
+    view.show();
+    await view.open(DRAFT);
+
+    const mode = host.querySelector<HTMLButtonElement>(".zc-qmd-mode")!;
+    mode.click();
+    await settle();
+    const card = host.querySelector<HTMLElement>(".zc-qmd-visual-card.is-lem")!;
+    card.querySelector<HTMLElement>("header")!.click();
+    const textarea = card.querySelector<HTMLTextAreaElement>("textarea")!;
+    textarea.value = textarea.value.replace("Visual lemma", "Current visual edit");
+    textarea.dispatchEvent(new Event("input"));
+    textarea.blur();
+    await Promise.resolve();
+    expect(saveSource).toHaveBeenCalledOnce();
+
+    mode.click();
+    conflict.reject(new Error("current conflict"));
+    await settle();
+
+    const status = host.querySelector<HTMLElement>(".zc-qmd-status")!;
+    expect(status.textContent).toBe("current conflict");
+    expect(status.dataset.state).toBe("conflict");
+    view.destroy();
+  });
+
+  it("does not report a failed Visual Edit refresh from a superseded open generation", async () => {
+    const staleRead = deferred<{ source: string; revision: string }>();
+    const { host, view, readSource } = mount();
+    view.show();
+    await view.open(DRAFT);
+    host.querySelector<HTMLButtonElement>(".zc-qmd-mode")!.click();
+    await settle();
+
+    readSource.mockImplementationOnce(() => staleRead.promise);
+    const refresh = (view as unknown as { refreshVisualSource(): Promise<void> }).refreshVisualSource();
+    await Promise.resolve();
+    await view.open(DRAFT);
+    const status = host.querySelector<HTMLElement>(".zc-qmd-status")!;
+    const currentMessage = status.textContent;
+    const currentState = status.dataset.state;
+
+    staleRead.reject(new Error("stale refresh failed"));
+    await refresh;
+
+    expect(status.textContent).toBe(currentMessage);
+    expect(status.dataset.state).toBe(currentState);
     view.destroy();
   });
 

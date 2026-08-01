@@ -813,6 +813,16 @@
 }
 .zc-companion-open:hover { border-color: var(--zc-accent); background: color-mix(in srgb, var(--zc-accent) 18%, var(--zc-bg-raised)); }
 .zc-companion-open:disabled { cursor: default; opacity: .45; }
+.zc-save-ai-context {
+  min-height: 26px;
+  padding: 0 8px;
+  border: 1px solid var(--zc-border);
+  border-radius: 5px;
+  background: var(--zc-bg-raised);
+  color: var(--zc-text);
+  font: inherit;
+}
+.zc-save-ai-context:disabled { opacity: 0.55; cursor: default; }
 .zc-send-button { display: grid; place-items: center; width: 28px; height: 28px; flex: none; border: 0; border-radius: 50%; color: #fff; background: var(--zc-accent); font: inherit; cursor: pointer; }
 .zc-send-button:hover { background: var(--zc-accent-strong); }
 .zc-send-button.is-running { border-radius: 50%; font-size: 9px; }
@@ -1202,6 +1212,12 @@
   font-size: 14px;
   white-space: nowrap;
   cursor: pointer;
+}
+.zc-qmd-toolbar .zc-qmd-enable-ai-editing {
+  flex-basis: auto;
+  width: auto;
+  padding: 0 8px;
+  font-size: 11px;
 }
 .zc-qmd-toolbar .zc-qmd-editor-picker { max-width: 84px; }
 .zc-qmd-editor-icon {

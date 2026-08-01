@@ -3,8 +3,13 @@ import readerToolbarIcon from "../assets/icon.svg";
 import regionCaptureIcon from "../assets/region-capture.svg";
 import {
   CodexService,
+  readSessionRecords,
+  saveSessionRecords,
   type CodexInteractionContextEntry,
   type CodexPendingApproval,
+  type PersistedSessionRecord,
+  type SessionRecordsSnapshot,
+  type StagedCodexBinding,
 } from "./codex-service";
 import {
   ReaderContextService,
@@ -55,7 +60,7 @@ import {
   ResearchLoopSiteService,
 } from "./research-loop-site";
 import { createQmdRenderRuntime, QmdRenderService } from "./qmd-render";
-import { QmdWorkspaceView } from "./qmd-workspace";
+import { QmdWorkspaceView, type QmdWorkspaceOpenOptions } from "./qmd-workspace";
 import { buildQmdIndex, geckoScanner } from "./qmd-index";
 import {
   createExternalEditorRuntime,
@@ -65,10 +70,16 @@ import {
   type ExternalEditorApp,
 } from "./external-editor";
 import { TerminalPanel, type TerminalPaperOptions } from "./terminal-panel";
-import { loadSettings, saveQLabRoot, type ZoteroChatSettings } from "./settings";
+import {
+  loadSettings,
+  readRawTargetMigrationInput,
+  saveQLabRoot,
+  saveRepositoryTargets,
+  type RawTargetMigrationInput,
+  type ZoteroChatSettings,
+} from "./settings";
 import {
   buildQLabCommandPrompt,
-  buildCaptureChatDraftPrompt,
   buildReviewDraftPrompt,
   commandDefinition,
   type QLabCommandID,
@@ -85,6 +96,16 @@ import {
   normalizeQLabRoot,
   qlabRepositoryState,
 } from "./qlab-workspace";
+import { LocalRepositoryTargetResolver } from "./local-repository-target-resolver";
+import { RepositoryTargetController } from "./repository-target-controller";
+import {
+  migrateLegacy,
+  type LocalRepositoryCandidate,
+  type LegacyMigrationOutcome,
+  type LegacyMigrationResolver,
+  type RepositoryTargetSnapshot,
+  type StoredTargetPreferences,
+} from "./repository-target";
 import { QLabLiteratureService } from "./qlab-library";
 import {
   createQLabZoteroSyncRuntime,
@@ -141,6 +162,29 @@ import {
   type NotingAnchorInput,
   type NotingSnapshot,
 } from "./noting";
+import {
+  AIContextProjectionError,
+  AIContextService,
+  aiContextReopenContext,
+  type AIContextDocument,
+  type AIContextHost,
+  type AIContextMessage,
+  type AIContextPaper,
+  type AIContextProjectionResult,
+  type SaveAIContextInput,
+} from "./ai-context";
+import {
+  createGeckoZoteroAIContextRuntime,
+  createZoteroAIContextHost,
+  isQuickAIContextAttachmentCandidate,
+  normalizeAIContextTargets,
+  resolveAIContextAttachment,
+  type ZoteroAIContextRuntime,
+} from "./ai-context-zotero";
+import {
+  installAIContextOpenHandler,
+  type AIContextOpenHandler,
+} from "./ai-context-open-handler";
 import { buildQaFromEntries } from "./exchanges";
 import type { PdfPageReference } from "./markdown";
 import { sha256Bytes, sha256File } from "./hashing";
@@ -248,10 +292,210 @@ export interface ChatGPTCompanionPluginDependencies {
   revalidateDraft?: (relativePath: string) => Promise<{ source: string; revision: string }>;
 }
 
+export interface RepositoryTargetStartupDependencies {
+  readRawTargetMigrationInput(): RawTargetMigrationInput;
+  readSessionRecords(): Promise<SessionRecordsSnapshot>;
+  loadSettings(raw: RawTargetMigrationInput): Promise<ZoteroChatSettings>;
+  createResolver(): LegacyMigrationResolver;
+  saveSessionRecords(
+    snapshot: SessionRecordsSnapshot,
+    records: readonly PersistedSessionRecord[],
+  ): Promise<void>;
+  saveRepositoryTargets(preferences: StoredTargetPreferences): void | Promise<void>;
+  publish(snapshot: RepositoryTargetSnapshot): undefined;
+}
+
+export interface PreparedRepositoryTargetStartup {
+  readonly settings: ZoteroChatSettings;
+  readonly sessionRecords: SessionRecordsSnapshot;
+  readonly activeSnapshot: RepositoryTargetSnapshot | null;
+}
+
+export interface RepositoryTargetBoundServiceFactory<TMainSite, TTerminal, TCodex> {
+  createMainSite(snapshot: RepositoryTargetSnapshot | null): TMainSite;
+  createTerminal(snapshot: RepositoryTargetSnapshot | null): TTerminal;
+  createCodex(snapshot: RepositoryTargetSnapshot | null): TCodex;
+}
+
+export interface StartedRepositoryTargetBoundServices<TMainSite, TTerminal, TCodex> {
+  readonly prepared: PreparedRepositoryTargetStartup;
+  readonly mainSite: TMainSite;
+  readonly terminal: TTerminal;
+  readonly codex: TCodex;
+}
+
+export async function persistRepositoryTargetMigration(
+  snapshot: SessionRecordsSnapshot,
+  outcome: LegacyMigrationOutcome<PersistedSessionRecord>,
+  persistence: Pick<
+    RepositoryTargetStartupDependencies,
+    "saveSessionRecords" | "saveRepositoryTargets"
+  >,
+): Promise<void> {
+  await persistence.saveSessionRecords(snapshot, outcome.sessions);
+  await persistence.saveRepositoryTargets(outcome.preferences);
+}
+
+/**
+ * The sole startup gate before target-bound services are constructed. It
+ * reads raw migration authorities first, commits session assignments before
+ * preferences, then hydrates and synchronously publishes an initial snapshot.
+ */
+export async function prepareRepositoryTargetStartup(
+  dependencies: RepositoryTargetStartupDependencies,
+): Promise<PreparedRepositoryTargetStartup> {
+  const raw = dependencies.readRawTargetMigrationInput();
+  const persistedSessions = await dependencies.readSessionRecords();
+  let settings = await dependencies.loadSettings(raw);
+  let records = persistedSessions.records;
+  let migratedThisRun = false;
+  let resolver: LegacyMigrationResolver | null = null;
+  const startupResolver = () => {
+    resolver ||= dependencies.createResolver();
+    return resolver;
+  };
+
+  if (raw.legacyQLabRoot && !settings.repositoryTargets.migratedLegacy) {
+    const outcome = await migrateLegacy(
+      settings.repositoryTargets,
+      {
+        legacyRoot: raw.legacyQLabRoot,
+        sessions: records,
+        activeThreadId: persistedSessions.activeThreadId,
+      },
+      startupResolver(),
+    );
+    await persistRepositoryTargetMigration(persistedSessions, outcome, dependencies);
+    records = outcome.sessions;
+    settings = {
+      ...settings,
+      repositoryTargets: outcome.preferences,
+      qlabRoot: outcome.preferences.active?.canonicalRoot || "",
+    };
+    migratedThisRun = true;
+  }
+
+  // `qlabRoot` predates repository targets and is deliberately not the
+  // authority once migration has completed. It is still useful as a recovery
+  // hint, though: older builds could persist the chosen folder and then fail
+  // while creating its Git-private identity, leaving `active: null` forever.
+  // Re-inspect that exact user-selected folder after upgrades and promote it
+  // only when it is now a fully resolved repository. This does not initialize
+  // folders, overwrite user content, or reassign any legacy conversations.
+  if (raw.legacyQLabRoot
+      && !migratedThisRun
+      && settings.repositoryTargets.migratedLegacy
+      && !settings.repositoryTargets.active
+      && !settings.repositoryTargets.pendingCandidate) {
+    const recovered = await startupResolver().inspect(raw.legacyQLabRoot);
+    if (recovered.kind === "local") {
+      const repositoryTargets: StoredTargetPreferences = {
+        ...settings.repositoryTargets,
+        active: recovered,
+        pendingCandidate: null,
+      };
+      await dependencies.saveRepositoryTargets(repositoryTargets);
+      settings = {
+        ...settings,
+        qlabRoot: recovered.canonicalRoot,
+        repositoryTargets,
+      };
+    }
+  }
+
+  const activeSnapshot = await resolveInitialRepositoryTarget(
+    settings.repositoryTargets,
+    startupResolver,
+  );
+  if (activeSnapshot) dependencies.publish(activeSnapshot);
+  return {
+    settings,
+    sessionRecords: { ...persistedSessions, records },
+    activeSnapshot,
+  };
+}
+
+async function resolveInitialRepositoryTarget(
+  preferences: StoredTargetPreferences,
+  resolver: () => LegacyMigrationResolver,
+): Promise<RepositoryTargetSnapshot | null> {
+  const stored = preferences.active;
+  if (!stored) return null;
+  const inspected = await resolver().inspect(stored.canonicalRoot);
+  if (inspected.kind !== "local"
+      || inspected.kind !== stored.kind
+      || inspected.root !== stored.root
+      || inspected.canonicalRoot !== stored.canonicalRoot
+      || inspected.repositoryId !== stored.repositoryId
+      || inspected.targetId !== stored.targetId) {
+    throw new Error("Stored active repository no longer matches its persisted identity");
+  }
+  return Object.freeze({
+    target: Object.freeze({ ...inspected }),
+    targetEpoch: 1,
+  });
+}
+
+/**
+ * The production construction gate for every service that can restore or
+ * create repository-bound state. Keeping these constructors behind the same
+ * prepared snapshot makes it impossible to construct one before validation.
+ */
+export async function startRepositoryTargetBoundServices<TMainSite, TTerminal, TCodex>(
+  dependencies: RepositoryTargetStartupDependencies,
+  prepareFactory: (
+    prepared: PreparedRepositoryTargetStartup,
+  ) => RepositoryTargetBoundServiceFactory<TMainSite, TTerminal, TCodex>
+    | Promise<RepositoryTargetBoundServiceFactory<TMainSite, TTerminal, TCodex>>,
+): Promise<StartedRepositoryTargetBoundServices<TMainSite, TTerminal, TCodex>> {
+  const prepared = await prepareRepositoryTargetStartup(dependencies);
+  const factory = await prepareFactory(prepared);
+  const snapshot = prepared.activeSnapshot;
+  const mainSite = factory.createMainSite(snapshot);
+  const terminal = factory.createTerminal(snapshot);
+  const codex = factory.createCodex(snapshot);
+  return { prepared, mainSite, terminal, codex };
+}
+
+export const AI_CONTEXT_MENU_IDS = [
+  "qlab-zotero-create-reading-context",
+  "qlab-zotero-create-standalone-ai-context",
+  "qlab-zotero-open-ai-context",
+  "qlab-zotero-repair-ai-context",
+] as const;
+
+const EDIT_ACTIVE_AI_CONTEXT_INSTRUCTION = [
+  "Use the full current dedicated conversation.",
+  "Revise the complete active AI Context QMD.",
+  "Write only the private working-copy path supplied in QMD Editor context.",
+  "Preserve valid frontmatter and managed-marker structure.",
+  "Do not edit the original Draft or trusted knowledge.",
+  "Leave the result for eye/Keep review.",
+].join("\n");
+
+export function isCreateReadingContextCommand(text: string): boolean {
+  return text === "create a reading context";
+}
+
+export function canSaveAIContextState(input: {
+  imported: boolean;
+  running: boolean;
+  activeRelativePath: string | null;
+  entries: Array<{ kind: string }>;
+}): boolean {
+  return !input.imported && !input.running && (
+    input.activeRelativePath !== null
+    || input.entries.some((entry) => entry.kind === "assistant")
+  );
+}
+
 /** Keep the historical class name as a source-level compatibility shim. */
 export class ZoteroChatPlugin {
   private readonly companionRuntime: ChatGPTCompanionPluginDependencies;
   private settings!: ZoteroChatSettings;
+  private activeRepositoryTarget: RepositoryTargetSnapshot | null = null;
+  private repositoryTargetResolver: LocalRepositoryTargetResolver | null = null;
+  private repositoryTargetController!: RepositoryTargetController<StagedCodexBinding>;
   private readerContext!: ReaderContextService;
   private bridge!: NativeBridge;
   private mainSite!: ResearchLoopSiteService;
@@ -266,6 +510,15 @@ export class ZoteroChatPlugin {
   private noteDraftBridge!: NoteDraftBridgeService;
   private paperTrail!: PaperTrailService;
   private noting!: NotingService;
+  private aiContexts!: AIContextService;
+  private aiContextRuntime!: ZoteroAIContextRuntime;
+  private aiContextHost!: AIContextHost;
+  private aiContextOpenHandler: AIContextOpenHandler | null = null;
+  private activeAIContextPath: string | null = null;
+  private activeAIContext: AIContextDocument | null = null;
+  private activeAIContextThreadId: string | null = null;
+  private activeAIContextRoot: string | null = null;
+  private activatingAIContext = false;
   private workbenchTabs!: WorkbenchTabManager;
   private standaloneWorkbench!: StandaloneWorkbenchManager;
   private readonly conversationPapers = new ConversationPaperRegistry();
@@ -309,6 +562,7 @@ export class ZoteroChatPlugin {
   private readonly companionStatuses = new Map<CompanionSubjectKey, { kind: "idle" | "success" | "error"; message: string }>();
   private readonly companionBusySubjects = new Set<CompanionSubjectKey>();
   private readonly companionOverlays = new Map<CompanionSubjectKey, ChatEntry[]>();
+  private companionRepositoryEpoch = 0;
   private mutationCheckpoints: CheckpointOption[] = [];
   private contextRequestSequence = 0;
   private destroyed = false;
@@ -331,7 +585,48 @@ export class ZoteroChatPlugin {
   }
 
   async startup(data: PluginStartupData): Promise<void> {
-    this.settings = await loadSettings();
+    let startupBridge: NativeBridge | null = null;
+    let startupSiteRuntime: ReturnType<typeof createResearchLoopSiteRuntime> | null = null;
+    const ensureBridge = () => {
+      startupBridge ||= new NativeBridge(data.rootURI, data.version);
+      return startupBridge;
+    };
+    const ensureSiteRuntime = () => {
+      startupSiteRuntime ||= createResearchLoopSiteRuntime(
+        ensureBridge(),
+        data.rootURI,
+        data.version,
+      );
+      return startupSiteRuntime;
+    };
+    const startupDependencies: RepositoryTargetStartupDependencies = {
+      readRawTargetMigrationInput,
+      readSessionRecords,
+      loadSettings,
+      createResolver: () => {
+        const runtime = ensureSiteRuntime();
+        const resolver = this.repositoryTargetResolver
+          ||= new LocalRepositoryTargetResolver(runtime);
+        return {
+          inspect: (root) => resolver.inspect(root),
+          canonicalize: (path) => runtime.canonicalize(path).catch(() => null),
+        };
+      },
+      saveSessionRecords,
+      saveRepositoryTargets,
+      publish: (snapshot) => {
+        this.activeRepositoryTarget = snapshot;
+        return undefined;
+      },
+    };
+    const prepareTargetServiceFactory = async (
+      preparedTarget: PreparedRepositoryTargetStartup,
+    ) => {
+      this.settings = preparedTarget.settings;
+      this.bridge = ensureBridge();
+      const siteRuntime = ensureSiteRuntime();
+      this.repositoryTargetResolver
+        ||= new LocalRepositoryTargetResolver(siteRuntime);
     await IOUtils.makeDirectory(profilePath(), {
       createAncestors: true,
       ignoreExisting: true,
@@ -387,10 +682,6 @@ export class ZoteroChatPlugin {
         if (win) void this.openWorkbenchTab(win).catch((error) => this.reportError(error));
       },
     });
-    this.bridge = new NativeBridge(data.rootURI, data.version);
-    this.mainSite = new ResearchLoopSiteService(
-      createResearchLoopSiteRuntime(this.bridge, data.rootURI, data.version),
-    );
     this.qmdRender = new QmdRenderService(createQmdRenderRuntime(this.bridge));
     // Original and AI-version previews use disjoint port ranges, so two
     // documents can never collide merely because their hashes line up.
@@ -400,11 +691,6 @@ export class ZoteroChatPlugin {
     );
     this.literature = new QLabLiteratureService();
     this.zoteroSync = new QLabZoteroSyncService(createQLabZoteroSyncRuntime(this.bridge));
-    this.terminal = new TerminalPanel(this.bridge, this.settings.terminalHeight, {
-      onPasteSelection: () => void this.pasteSelectionToTerminal(),
-      onRefreshContext: () => void this.refreshAndSwitch().catch((error) => this.reportError(error)),
-      onOpenChat: () => this.closeWorkbenchTerminal(),
-    });
     this.selectedModel = this.settings.defaultModel;
     this.selectedEffort = this.settings.reasoningEffort;
     this.floatOpacity = clampFloatOpacity(prefString("floatOpacity", "100"));
@@ -458,7 +744,19 @@ export class ZoteroChatPlugin {
       this.createNoteDraftBridgeHost(),
       { onState: () => this.renderChatViews() },
     );
-    this.codex = new CodexService(
+    return {
+      createMainSite: () => new ResearchLoopSiteService(siteRuntime),
+      createTerminal: () => new TerminalPanel(
+        this.bridge,
+        this.settings.terminalHeight,
+        {
+          onPasteSelection: () => void this.pasteSelectionToTerminal(),
+          onRefreshContext: () => void this.refreshAndSwitch()
+            .catch((error) => this.reportError(error)),
+          onOpenChat: () => this.closeWorkbenchTerminal(),
+        },
+      ),
+      createCodex: (activeSnapshot: RepositoryTargetSnapshot | null) => new CodexService(
       this.bridge,
       this.readerContext,
       data.version,
@@ -495,7 +793,40 @@ export class ZoteroChatPlugin {
           throw new Error(`Unknown reviewed Research Loop tool: ${name}`);
         },
       },
+      activeSnapshot,
+      ),
+    };
+    };
+    const startedTargetServices = await startRepositoryTargetBoundServices(
+      startupDependencies,
+      prepareTargetServiceFactory,
     );
+    this.mainSite = startedTargetServices.mainSite;
+    this.terminal = startedTargetServices.terminal;
+    this.codex = startedTargetServices.codex;
+    this.repositoryTargetController = this.createRepositoryTargetController(
+      startedTargetServices.prepared.activeSnapshot,
+    );
+    this.aiContextRuntime = createGeckoZoteroAIContextRuntime({
+      Zotero,
+      IOUtils,
+      PathUtils,
+      Components,
+      root: () => this.settings?.qlabRoot || "",
+      hashBytes: sha256Bytes,
+    });
+    this.aiContextHost = createZoteroAIContextHost(this.aiContextRuntime);
+    this.aiContexts = new AIContextService(
+      this.aiContextHost,
+      {
+        generate: (prompt) => this.codex.runUtilityTurn(prompt, {
+          timeoutMs: 300_000,
+          model: this.selectedModel,
+        }),
+      },
+      { now: () => new Date().toISOString(), id: () => randomID() },
+    );
+    this.installAIContextOpener();
     this.paperTrail = new PaperTrailService(
       this.anchorHost,
       {
@@ -533,6 +864,9 @@ export class ZoteroChatPlugin {
   }
 
   async shutdown(): Promise<void> {
+    this.aiContextOpenHandler?.dispose();
+    this.aiContextOpenHandler = null;
+    for (const win of Zotero.getMainWindows()) this.removeQLabMenu(win);
     this.destroyed = true;
     this.contextRequestSequence += 1;
     this.regionCaptureGeneration += 1;
@@ -1058,7 +1392,7 @@ export class ZoteroChatPlugin {
           .catch((error) => this.reportError(error));
       },
       onCaptureChatDraft: () => {
-        void this.captureChatDraft().catch((error) => this.reportError(error));
+        void this.saveAIContext().catch((error) => this.reportError(error));
       },
       onResearchAction: (actionID) => {
         void this.runResearchAction(view!, actionID, body.ownerDocument.defaultView || undefined)
@@ -1178,7 +1512,328 @@ export class ZoteroChatPlugin {
     await this.openResearchChat(body, true);
   }
 
+  private visibleAIContextMessages(): AIContextMessage[] {
+    const unique = new Map<string, AIContextMessage>();
+    const conflicts: AIContextMessage[] = [];
+    for (const entry of this.codex.getChatEntries()) {
+      if (entry.kind !== "user" && entry.kind !== "assistant") continue;
+      const message: AIContextMessage = {
+        id: entry.id,
+        role: entry.kind,
+        text: entry.text,
+      };
+      const previous = unique.get(message.id);
+      if (!previous) unique.set(message.id, message);
+      else if (previous.role !== message.role || previous.text !== message.text) {
+        conflicts.push(message);
+      }
+    }
+    // Exact replay duplicates are removed; conflicting duplicate IDs remain so
+    // AIContextService, the transcript authority, can reject them explicitly.
+    return [...unique.values(), ...conflicts];
+  }
+
+  private clearActiveAIContext(render = false): void {
+    this.activeAIContextPath = null;
+    this.activeAIContext = null;
+    this.activeAIContextThreadId = null;
+    this.activeAIContextRoot = null;
+    this.updateInteractionContext();
+    if (render) this.renderChatViews();
+  }
+
+  private async requireAIContextRoot(win: Window): Promise<string | null> {
+    let root = this.settings?.qlabRoot || "";
+    if (!root) root = await this.chooseQLabRoot(win) || "";
+    if (!root) return null;
+    const canonicalRoot = this.aiContextRuntime.canonical(root);
+    if (this.settings) this.settings.qlabRoot = canonicalRoot;
+    if (this.activeAIContextRoot !== null && this.activeAIContextRoot !== canonicalRoot) {
+      this.clearActiveAIContext(true);
+    }
+    return canonicalRoot;
+  }
+
+  private async commitAIContext(input: SaveAIContextInput, win: Window): Promise<void> {
+    try {
+      const commit = await this.aiContexts.save(input);
+      await this.activateAIContext(commit.document, win);
+    }
+    catch (error) {
+      if (error instanceof AIContextProjectionError) {
+        await this.activateAIContext(error.document, win);
+      }
+      throw error;
+    }
+  }
+
+  private reconcileActiveAIContextThread(): void {
+    const hasAuthority = this.activeAIContextPath !== null
+      || this.activeAIContext !== null
+      || this.activeAIContextThreadId !== null
+      || this.activeAIContextRoot !== null;
+    if (!hasAuthority) return;
+    const currentRoot = this.settings?.qlabRoot
+      ? this.aiContextRuntime.canonical(this.settings.qlabRoot)
+      : null;
+    if (this.activeAIContextPath !== null
+        && this.activeAIContext?.relativePath === this.activeAIContextPath
+        && this.activeAIContextThreadId === this.codex.state.activeThreadId
+        && this.activeAIContextRoot !== null
+        && this.activeAIContextRoot === currentRoot) return;
+    this.clearActiveAIContext();
+  }
+
+  private handleAIContextDocumentChange(path: string | null): void {
+    if (!this.activatingAIContext
+        && this.activeAIContextPath !== null
+        && path !== this.activeAIContextPath) {
+      this.clearActiveAIContext();
+    }
+  }
+
+  private async saveAIContext(win = Zotero.getMainWindow()): Promise<void> {
+    if (!await this.requireAIContextRoot(win)) return;
+    if (this.selectedImportedChatID) {
+      throw new Error("Imported ChatGPT history is read-only; return to the live Codex conversation first");
+    }
+    if (this.codex.state.running) {
+      throw new Error("Wait for the current response before saving an AI Context");
+    }
+    this.reconcileActiveAIContextThread();
+    const active = this.activeAIContextPath
+      ? await this.aiContexts.open(this.activeAIContextPath)
+      : null;
+    const messages = this.visibleAIContextMessages();
+    if (!active && !messages.some((message) => message.role === "assistant")) {
+      throw new Error("An AI Context requires a completed assistant response");
+    }
+    const primary = this.codex.getActiveReaderContext?.()?.parent ?? null;
+    const secondary = this.conversationPapers.list(this.codex.state.activeThreadId || "");
+    const papers = active?.manifest.papers ?? [
+      ...(primary ? [{
+        libraryID: String(primary.libraryID),
+        itemKey: String(primary.key),
+        title: String(primary.title),
+      }] : []),
+      ...secondary.map(({ libraryID, itemKey, title }) => ({
+        libraryID: String(libraryID),
+        itemKey: String(itemKey),
+        title: String(title),
+      })),
+    ].filter((paper, index, all) => all.findIndex((candidate) =>
+      candidate.libraryID === paper.libraryID && candidate.itemKey === paper.itemKey) === index);
+    if (!active && !this.codex.state.activeThreadId) {
+      throw new Error("Open a live Codex conversation before saving an AI Context");
+    }
+    await this.commitAIContext({
+      kind: active?.manifest.kind ?? "conversation",
+      contextKey: active?.manifest.contextKey ?? `conversation:${this.codex.state.activeThreadId}`,
+      sourceThreadId: active?.manifest.sourceThreadId ?? this.codex.state.activeThreadId,
+      papers,
+      projection: active?.manifest.projection ?? {
+        mode: "attached",
+        targets: papers.map(({ libraryID, itemKey }) => ({ libraryID, itemKey })),
+      },
+      messages,
+      activeRelativePath: active?.relativePath ?? null,
+    }, win);
+  }
+
+  private async createReadingContext(win: Window): Promise<void> {
+    if (!await this.requireAIContextRoot(win)) return;
+    const papers = await this.selectedAIContextPapers(this.selectedZoteroItems(win));
+    const projection = {
+      mode: "attached" as const,
+      targets: papers.map(({ libraryID, itemKey }) => ({ libraryID, itemKey })),
+    };
+    await this.aiContextHost.preflight(projection, papers);
+    if (!this.codex.state.connected) await this.ensureChatSession();
+    if (!this.codex.isSignedIn()) {
+      throw new Error("Sign in to the local Codex with ChatGPT first");
+    }
+    await this.commitAIContext({
+      kind: "reading",
+      contextKey: null,
+      sourceThreadId: null,
+      papers,
+      projection,
+      messages: [],
+      activeRelativePath: null,
+    }, win);
+  }
+
+  private async createStandaloneAIContext(win: Window): Promise<void> {
+    if (!await this.requireAIContextRoot(win)) return;
+    if (this.selectedImportedChatID) {
+      throw new Error("Imported ChatGPT history is read-only; return to the live Codex conversation first");
+    }
+    if (this.codex.state.running) {
+      throw new Error("Wait for the current response before saving an AI Context");
+    }
+    const sourceThreadId = this.codex.state.activeThreadId;
+    if (!sourceThreadId) {
+      throw new Error("Open a live Codex conversation before creating a standalone AI Context");
+    }
+    const messages = this.visibleAIContextMessages();
+    if (!messages.some((message) => message.role === "assistant")) {
+      throw new Error("An AI Context requires a completed assistant response");
+    }
+    await this.commitAIContext({
+      kind: "conversation",
+      contextKey: null,
+      sourceThreadId,
+      papers: [],
+      projection: { mode: "standalone", targets: [] },
+      messages,
+      activeRelativePath: null,
+    }, win);
+  }
+
+  private async openAIContextAttachment(item: unknown, win: Window): Promise<void> {
+    if (!await this.requireAIContextRoot(win)) return;
+    const descriptor = await resolveAIContextAttachment(this.aiContextRuntime, item);
+    await this.activateAIContext(descriptor.document, win);
+  }
+
+  private async activateAIContext(document: AIContextDocument, win: Window): Promise<void> {
+    const root = this.settings?.qlabRoot
+      ? this.aiContextRuntime.canonical(this.settings.qlabRoot)
+      : null;
+    if (!root) throw new Error("Choose a QLab repository before opening this AI Context");
+    this.clearActiveAIContext(true);
+    this.activatingAIContext = true;
+    try {
+      await this.openWorkbenchTab(win);
+      const view = this.selectedWorkbenchEntry(win)?.view as SidebarView | undefined;
+      if (!view) throw new Error("QLab Workbench was not opened");
+      if (!await this.openQmdDocument(view, document.relativePath, win, { agentCopy: "on-demand" })) {
+        throw new Error("The AI Context QMD could not be opened");
+      }
+      await this.codex.openWorkspaceObjectConversation({
+        kind: "draft",
+        key: `ai-context:${document.manifest.id}`,
+        title: document.title,
+      });
+      const dedicatedThreadId = this.codex.state.activeThreadId;
+      if (!dedicatedThreadId) {
+        throw new Error("The AI Context conversation did not become active");
+      }
+      this.activeAIContextPath = document.relativePath;
+      this.activeAIContext = document;
+      this.activeAIContextThreadId = dedicatedThreadId;
+      this.activeAIContextRoot = root;
+    }
+    catch (error) {
+      this.clearActiveAIContext();
+      this.codex.setActiveDocument(null);
+      throw error;
+    }
+    finally {
+      this.activatingAIContext = false;
+    }
+    this.updateInteractionContext();
+    this.renderChatViews();
+  }
+
+  private async editActiveAIContextWithAI(relativePath: string, changePath: string): Promise<void> {
+    if (!this.codex.state.connected) {
+      throw new Error("Connect to the local Codex before editing the active AI Context");
+    }
+    if (!this.codex.isSignedIn()) {
+      throw new Error("Sign in to the local Codex with ChatGPT before editing the active AI Context");
+    }
+    if (this.codex.state.running) {
+      throw new Error("Wait for the current response before editing the active AI Context");
+    }
+    const root = this.settings?.qlabRoot
+      ? this.aiContextRuntime.canonical(this.settings.qlabRoot)
+      : null;
+    if (!root || this.activeAIContextRoot !== root) {
+      throw new Error("The active AI Context repository no longer matches the opened QMD");
+    }
+    if (this.activeAIContextPath !== relativePath
+        || this.activeAIContext?.relativePath !== relativePath) {
+      throw new Error("The active AI Context no longer matches the opened QMD");
+    }
+    const expectedThreadId = this.activeAIContextThreadId;
+    if (!expectedThreadId || this.codex.state.activeThreadId !== expectedThreadId) {
+      throw new Error("The dedicated AI Context conversation is no longer active");
+    }
+    const expectedChangePath = this.qmdChangePaths(relativePath).changePath;
+    if (changePath !== expectedChangePath) {
+      throw new Error("The private AI Context working copy no longer matches the opened QMD");
+    }
+    this.safeRepositoryPath(changePath);
+    const changeDirectory = changePath.split("/").slice(0, -1).join("/");
+    const writableRoot = this.safeRepositoryPath(changeDirectory);
+    await this.codex.send(
+      EDIT_ACTIVE_AI_CONTEXT_INSTRUCTION,
+      this.selectedModel,
+      this.selectedEffort,
+      [],
+      { expectedThreadId, writableRoots: [writableRoot] },
+    );
+  }
+
+  private selectedZoteroItems(win: Window): unknown[] {
+    return Array.from((win as any).ZoteroPane?.getSelectedItems?.() || []);
+  }
+
+  private async selectedAIContextPapers(items: unknown[]): Promise<AIContextPaper[]> {
+    const papers = await normalizeAIContextTargets(this.aiContextRuntime, items);
+    if (papers.length < 1 || papers.length > 50) {
+      throw new Error("Select 1 to 50 local-library regular items");
+    }
+    return papers;
+  }
+
+  private choosePendingAIContext(
+    win: Window,
+    candidates: Array<{ document: AIContextDocument; status: AIContextProjectionResult }>,
+  ): string | null {
+    const selected = { value: 0 };
+    const accepted = Services.prompt.select(
+      win,
+      "Repair AI Context Attachments",
+      "Choose the record to repair",
+      candidates.length,
+      candidates.map(({ document }) => document.title),
+      selected,
+    );
+    return accepted ? candidates[selected.value]!.document.relativePath : null;
+  }
+
+  private async repairAIContextAttachments(win: Window): Promise<void> {
+    if (!await this.requireAIContextRoot(win)) return;
+    const candidates = await this.aiContexts.pendingRepairs();
+    const path = candidates.length === 0
+      ? null
+      : candidates.length === 1
+        ? candidates[0]!.document.relativePath
+        : this.choosePendingAIContext(win, candidates);
+    if (path === null) return;
+    await this.aiContexts.repair(path);
+    await this.activateAIContext(await this.aiContexts.open(path), win);
+  }
+
+  private installAIContextOpener(): void {
+    this.aiContextOpenHandler = installAIContextOpenHandler(Zotero.FileHandlers, {
+      isCandidate: (item) => isQuickAIContextAttachmentCandidate(item),
+      openAIContext: (item) => this.openAIContextAttachment(item, Zotero.getMainWindow()),
+    });
+    if (!this.aiContextOpenHandler.supported) {
+      Zotero.debug(
+        "QLab AI Context: Zotero.FileHandlers.open is unsupported; use Open AI Context in QLab.",
+      );
+    }
+  }
+
   private async sendChat(text: string, options: { readOnly?: boolean } = {}): Promise<void> {
+    if (isCreateReadingContextCommand(text)) {
+      await this.createReadingContext(Zotero.getMainWindow());
+      return;
+    }
     if (this.selectedImportedChatID) {
       throw new Error("Imported ChatGPT history is read-only; return to the live Codex conversation first");
     }
@@ -1349,7 +2004,7 @@ export class ZoteroChatPlugin {
         void this.insertQLabCommand(view, command).catch((error) => this.reportError(error));
       },
       onCaptureChatDraft: () => {
-        void this.captureChatDraft().catch((error) => this.reportError(error));
+        void this.saveAIContext().catch((error) => this.reportError(error));
       },
       onOpenWorkbench: () => {
         void this.openWorkbenchTab(win).catch((error) => this.reportError(error));
@@ -1458,7 +2113,7 @@ export class ZoteroChatPlugin {
         }
       },
       onCaptureChatDraft: () => {
-        void this.captureChatDraft().catch((error) => this.reportError(error));
+        void this.saveAIContext().catch((error) => this.reportError(error));
       },
       onResearchAction: (actionID) => {
         void this.runResearchAction(view, actionID, win)
@@ -1485,6 +2140,7 @@ export class ZoteroChatPlugin {
         let root = this.settings?.qlabRoot || "";
         if (!root) root = await this.chooseQLabRoot(win) || "";
         await this.mainSite.deploy(root, onProgress);
+        await this.activateRepositoryTarget(root);
       },
       onOpenDocument: (relativePath) => void this.openQmdDocument(view, relativePath, win),
     }, { surface: "workbench" });
@@ -1603,6 +2259,9 @@ export class ZoteroChatPlugin {
   private async openChatGPTCompanion(question: string, preferredView?: SidebarView): Promise<void> {
     const frozen = this.snapshotChatGPTCompanion(question);
     const { subjectKey } = frozen;
+    const repositoryEpoch = frozen.draftSnapshot ? this.companionRepositoryEpoch : null;
+    const repositoryContextIsCurrent = () => repositoryEpoch === null
+      || repositoryEpoch === this.companionRepositoryEpoch;
     this.companionBusySubjects.add(subjectKey);
     this.companionStatuses.set(subjectKey, { kind: "idle", message: "Preparing ChatGPT context…" });
     this.refreshCompanionViews(preferredView);
@@ -1624,6 +2283,7 @@ export class ZoteroChatPlugin {
           // Fail closed. The retained Draft chip makes the capsule builder add
           // its explicit unavailable warning without exposing the local path.
         }
+        if (!repositoryContextIsCurrent()) return;
       }
 
       const hash = this.companionHash();
@@ -1635,10 +2295,12 @@ export class ZoteroChatPlugin {
       const store = this.companionRuntime.store;
       if (!store) throw new Error("Companion storage is unavailable");
       await store.save(capsule);
+      if (!repositoryContextIsCurrent()) return;
       const prompt = buildChatGPTCompanionPrompt(capsule, { hash });
       const copied = this.companionRuntime.copy
         ? await this.companionRuntime.copy(prompt)
         : copyToClipboard(prompt);
+      if (!repositoryContextIsCurrent()) return;
       if (!copied) {
         this.companionStatuses.set(subjectKey, {
           kind: "error",
@@ -1650,12 +2312,14 @@ export class ZoteroChatPlugin {
       try {
         if (this.companionRuntime.launch) await this.companionRuntime.launch(CHATGPT_URL);
         else launchURL(CHATGPT_URL);
+        if (!repositoryContextIsCurrent()) return;
         this.companionStatuses.set(subjectKey, {
           kind: "success",
           message: "Context copied · paste in a ChatGPT chat with the QLab app enabled",
         });
       }
       catch {
+        if (!repositoryContextIsCurrent()) return;
         this.companionStatuses.set(subjectKey, {
           kind: "success",
           message: "Context copied · ChatGPT could not be opened, so open it and paste the prompt manually",
@@ -1663,10 +2327,12 @@ export class ZoteroChatPlugin {
       }
     }
     catch {
-      this.companionStatuses.set(subjectKey, {
-        kind: "error",
-        message: "ChatGPT context could not be prepared or copied.",
-      });
+      if (repositoryContextIsCurrent()) {
+        this.companionStatuses.set(subjectKey, {
+          kind: "error",
+          message: "ChatGPT context could not be prepared or copied.",
+        });
+      }
     }
     finally {
       this.companionBusySubjects.delete(subjectKey);
@@ -1803,6 +2469,24 @@ export class ZoteroChatPlugin {
     return overlay?.length ? [...entries, ...overlay] : entries;
   }
 
+  private resetRepositoryScopedCompanionState(): void {
+    this.companionRepositoryEpoch += 1;
+    this.activeDraftPath = null;
+    this.activeDraftSnapshot = null;
+    const clearDraftKeys = <T>(collection: Map<CompanionSubjectKey, T>) => {
+      for (const key of collection.keys()) {
+        if (key.startsWith("draft:")) collection.delete(key);
+      }
+    };
+    clearDraftKeys(this.pendingCompanionHandoffs);
+    clearDraftKeys(this.selectedCompanionHandoff);
+    clearDraftKeys(this.companionStatuses);
+    clearDraftKeys(this.companionOverlays);
+    for (const key of this.companionBusySubjects) {
+      if (key.startsWith("draft:")) this.companionBusySubjects.delete(key);
+    }
+  }
+
   private refreshCompanionViews(preferredView?: SidebarView): void {
     const subjectKey = this.currentCompanionSubjectKey();
     const partial: Partial<SidebarState> = {
@@ -1836,10 +2520,11 @@ export class ZoteroChatPlugin {
     sidebar: SidebarView,
     relativePath: string,
     win = Zotero.getMainWindow(),
-  ): Promise<void> {
+    options: QmdWorkspaceOpenOptions = {},
+  ): Promise<boolean> {
     let root = this.settings?.qlabRoot || "";
     if (!root) root = await this.chooseQLabRoot(win) || "";
-    if (!root) return;
+    if (!root) return false;
 
     const workspace = sidebar.attachWorkspace((host: HTMLElement) => new QmdWorkspaceView(host, {
       onBack: () => sidebar.setWorkspaceOpen(false),
@@ -1862,6 +2547,7 @@ export class ZoteroChatPlugin {
       ),
       onEditorChosen: (editorId) => setPrefString("externalEditor", editorId),
       onActiveDocument: (path, changePath) => {
+        this.handleAIContextDocumentChange(path);
         this.activeDraftPath = path?.startsWith("drafts/") ? path : null;
         if (!this.activeDraftPath) this.activeDraftSnapshot = null;
         else if (this.activeDraftSnapshot?.relativePath !== this.activeDraftPath) {
@@ -1873,6 +2559,7 @@ export class ZoteroChatPlugin {
         this.renderChatViews();
       },
       onReviewDraft: (path) => this.reviewDraftForKnowledge(path),
+      onEditWithAI: (path, changePath) => this.editActiveAIContextWithAI(path, changePath),
       prepareChange: (path) => this.prepareQmdChange(path),
       refreshChangePreview: (path, changePath, previewPath) =>
         this.refreshQmdChangePreview(path, changePath, previewPath),
@@ -1880,17 +2567,19 @@ export class ZoteroChatPlugin {
       readSource: (path) => this.readQmdSource(path),
       saveSource: (path, revision, source) => this.saveQmdSource(path, revision, source),
     }));
-    if (!workspace) return;
+    if (!workspace) return false;
     workspace.repoRootHint = root;
     sidebar.setWorkspaceOpen(true);
     if (relativePath.startsWith("drafts/") && relativePath.endsWith(".qmd")) {
       await this.prefetchActiveDraftSnapshot(relativePath);
     }
-    await workspace.open(relativePath);
+    if (!await workspace.open(relativePath, options)) return false;
     workspace.syncAgentChanges({
       activeTurnId: this.codex.state.activeTurnId,
+      running: this.codex.state.running,
       diffs: this.codex.getActiveDiffs(),
     });
+    return true;
   }
 
   private safeRepositoryPath(relativePath: string, allowMissingFinal = false): string {
@@ -2557,13 +3246,39 @@ export class ZoteroChatPlugin {
   }
 
   private async openStandaloneWorkbenchWindow(source: Window): Promise<Window> {
-    const popup = (source as any).openDialog?.(
-      "chrome://zotkit/content/standalone-workbench.xhtml",
-      "qlab-standalone-workbench",
-      "chrome,extrachrome,menubar,resizable,scrollbars,status,centerscreen,dialog=no,dependent=no",
-    ) as Window | null;
-    if (!popup) throw new Error("Zotero could not create the standalone QLab window");
-    for (let attempt = 0; attempt < 160; attempt++) {
+    const url = "chrome://zotkit/content/standalone-workbench.xhtml";
+    const name = "qlab-standalone-workbench";
+    const features = "chrome,extrachrome,menubar,resizable,scrollbars,status,centerscreen,dialog=no,dependent=no";
+    let popup: Window | null = null;
+    let openError: unknown;
+
+    // A Workbench can live in Zotero's native tab deck, a moved tab, or a
+    // restored chrome document. Some of those windows expose `openDialog`
+    // only after their own load has finished (and some do not expose it at
+    // all). The window-watcher is the stable Gecko API for creating an
+    // independent chrome window, so use it as the fallback instead of making
+    // the button depend on the current surface's incidental window methods.
+    try {
+      popup = (source as any).openDialog?.(url, name, features) as Window | null;
+    }
+    catch (error) {
+      openError = error;
+    }
+    if (!popup) {
+      try {
+        popup = Services.ww?.openWindow?.(source, url, name, features, null) as Window | null;
+      }
+      catch (error) {
+        openError ||= error;
+      }
+    }
+    if (!popup) {
+      const detail = openError instanceof Error && openError.message
+        ? `: ${openError.message}`
+        : "";
+      throw new Error(`Zotero could not create the standalone QLab window${detail}`);
+    }
+    for (let attempt = 0; attempt < 400; attempt++) {
       if (popup.closed) throw new Error("The standalone QLab window closed before it was ready");
       const host = popup.document?.getElementById("qlab-standalone-workbench-host");
       if (host) {
@@ -2572,7 +3287,7 @@ export class ZoteroChatPlugin {
         catch { /* optional Zotero styling hook */ }
         return popup;
       }
-      await new Promise<void>((resolve) => source.setTimeout(resolve, 25));
+      await new Promise<void>((resolve) => setTimeout(resolve, 25));
     }
     popup.close?.();
     throw new Error("The standalone QLab window did not finish loading");
@@ -2732,9 +3447,17 @@ export class ZoteroChatPlugin {
 
   private renderWorkbenchTabs(): void {
     const context = this.codex.getActiveReaderContext?.() || this.context;
-    const importedChat = this.selectedImportedChatID
+    const imported = this.selectedImportedChatID !== null;
+    const importedChat = imported
       ? this.chatGPTArchive?.conversations.find((conversation) => conversation.id === this.selectedImportedChatID) || null
       : null;
+    const liveEntries = imported ? [] : this.codex.getChatEntries();
+    const canSaveAIContext = canSaveAIContextState({
+      imported,
+      running: this.codex.state.running,
+      activeRelativePath: this.activeAIContextPath,
+      entries: liveEntries,
+    });
     const historyState = this.codex.getGlobalHistoryState?.() || {
       loading: false,
       hasMore: false,
@@ -2776,9 +3499,10 @@ export class ZoteroChatPlugin {
     ) => {
       const researchActionState = this.researchActionViewState(win);
       const companionSubject = this.currentCompanionSubjectKey();
-      const baseEntries = importedChat?.entries || this.codex.getChatEntries();
+      const baseEntries = importedChat?.entries || liveEntries;
       view.workspace?.()?.syncAgentChanges({
         activeTurnId: this.codex.state.activeTurnId,
+        running: this.codex.state.running,
         diffs: activeDiffs,
       });
       view.setState({
@@ -2801,20 +3525,22 @@ export class ZoteroChatPlugin {
           selectionText: context.selection?.text,
           pdfPath: context.pdfPath || undefined,
         } : null,
-        entries: this.entriesWithCompanionOverlay(baseEntries, companionSubject, Boolean(importedChat)),
+        entries: this.entriesWithCompanionOverlay(baseEntries, companionSubject, imported),
         models: this.codex.state.models,
         threads: this.conversationTabs(),
         historyConversations: this.historyConversations(),
         historyLoading: historyState.loading,
         historyHasMore: historyState.hasMore,
         historyError: historyState.error || undefined,
-        readOnlyConversation: Boolean(importedChat),
+        readOnlyConversation: imported,
         selectedModel: this.selectedModel,
         effort: this.selectedEffort,
-        running: importedChat ? false : this.codex.state.running,
+        running: imported ? false : this.codex.state.running,
         companionBusy: this.companionBusySubjects.has(companionSubject),
         companionStatus: this.companionStatusForSubject(companionSubject),
         pendingCompanionHandoffs: this.pendingCompanionForSubject(companionSubject),
+        canSaveAIContext,
+        activeAIContext: Boolean(this.activeAIContextPath),
         creatingThread: this.codex.state.creatingThread,
         threadTitle: importedChat?.title || (context
           ? paperTitle(context)
@@ -2823,11 +3549,11 @@ export class ZoteroChatPlugin {
         scope: this.researchScope,
         contextChips: this.contextChips(),
         contextSuggestions: this.contextSuggestions(),
-        plan: importedChat ? null : plan,
-        reviews: importedChat ? [] : mutationReviews,
-        pendingApproval: importedChat ? null : pendingApproval,
-        checkpoints: importedChat ? [] : checkpoints,
-        turnStartedAt: !importedChat && this.codex.state.running
+        plan: imported ? null : plan,
+        reviews: imported ? [] : mutationReviews,
+        pendingApproval: imported ? null : pendingApproval,
+        checkpoints: imported ? [] : checkpoints,
+        turnStartedAt: !imported && this.codex.state.running
           ? this.turnStartedAt.get(this.codex.state.activeThreadId ?? "") ?? null
           : null,
         turnDurations: this.turnDurationsForActiveThread(),
@@ -3069,6 +3795,28 @@ export class ZoteroChatPlugin {
         ].join("\n"),
       };
     }
+    const interactionRoot = this.settings?.qlabRoot
+      ? this.aiContextRuntime.canonical(this.settings.qlabRoot)
+      : null;
+    if (this.activeAIContext
+        && this.activeAIContextPath === this.activeAIContext.relativePath
+        && this.activeAIContextThreadId === this.codex.state.activeThreadId
+        && this.activeAIContextRoot === interactionRoot) {
+      const document = this.activeAIContext;
+      interaction["AI Context record"] = {
+        kind: "application",
+        value: [
+          `Repository root: ${this.settings?.qlabRoot || ""}`,
+          `Draft path: ${document.relativePath}`,
+          `Record ID: ${document.manifest.id}`,
+          "Write rules: explicit Save/Update only; drafts is untrusted; never write knowledge",
+        ].join("\n"),
+      };
+      interaction["AI Context memory and plan"] = {
+        kind: "untrusted",
+        value: aiContextReopenContext(document),
+      };
+    }
     if (this.addedContextIDs.has("active-annotations")) {
       interaction["Requested Zotero annotations"] = {
         kind: "application",
@@ -3302,9 +4050,18 @@ export class ZoteroChatPlugin {
     if (!this.codex) return;
     this.updateTurnTracking();
     const context = this.codex.getActiveReaderContext?.() || this.context;
-    const importedChat = this.selectedImportedChatID
+    const imported = this.selectedImportedChatID !== null;
+    const importedChat = imported
       ? this.chatGPTArchive?.conversations.find((conversation) => conversation.id === this.selectedImportedChatID) || null
       : null;
+    this.reconcileActiveAIContextThread();
+    const liveEntries = imported ? [] : this.codex.getChatEntries();
+    const canSaveAIContext = canSaveAIContextState({
+      imported,
+      running: this.codex.state.running,
+      activeRelativePath: this.activeAIContextPath,
+      entries: liveEntries,
+    });
     const historyState = this.codex.getGlobalHistoryState?.() || {
       loading: false,
       hasMore: false,
@@ -3347,6 +4104,7 @@ export class ZoteroChatPlugin {
       }
       view.workspace()?.syncAgentChanges({
         activeTurnId: this.codex.state.activeTurnId,
+        running: this.codex.state.running,
         diffs: activeDiffs,
       });
       const researchActionState = this.researchActionViewState(
@@ -3372,28 +4130,30 @@ export class ZoteroChatPlugin {
           selectionText: context.selection?.text,
           pdfPath: context.pdfPath || undefined,
         } : null,
-        entries: importedChat?.entries || this.codex.getChatEntries(),
+        entries: importedChat?.entries || liveEntries,
         models: this.codex.state.models,
         threads: this.conversationTabs(),
         historyConversations: this.historyConversations(),
         historyLoading: historyState.loading,
         historyHasMore: historyState.hasMore,
         historyError: historyState.error || undefined,
-        readOnlyConversation: Boolean(importedChat),
+        readOnlyConversation: imported,
         selectedModel: this.selectedModel,
         effort: this.selectedEffort,
-        running: importedChat ? false : this.codex.state.running,
+        running: imported ? false : this.codex.state.running,
+        canSaveAIContext,
+        activeAIContext: Boolean(this.activeAIContextPath),
         creatingThread: this.codex.state.creatingThread,
         threadTitle: importedChat?.title || (context ? paperTitle(context) : "Paper Assistant"),
         mode: this.codex.state.mode,
         scope: this.researchScope,
         contextChips: this.contextChips(),
         contextSuggestions: this.contextSuggestions(),
-        plan: importedChat ? null : plan,
-        reviews: importedChat ? [] : mutationReviews,
-        pendingApproval: importedChat ? null : pendingApproval,
-        checkpoints: importedChat ? [] : checkpoints,
-        turnStartedAt: !importedChat && this.codex.state.running
+        plan: imported ? null : plan,
+        reviews: imported ? [] : mutationReviews,
+        pendingApproval: imported ? null : pendingApproval,
+        checkpoints: imported ? [] : checkpoints,
+        turnStartedAt: !imported && this.codex.state.running
           ? this.turnStartedAt.get(this.codex.state.activeThreadId ?? "") ?? null
           : null,
         turnDurations: this.turnDurationsForActiveThread(),
@@ -4216,6 +4976,96 @@ export class ZoteroChatPlugin {
     return open || matching[0] || null;
   }
 
+  private createRepositoryTargetController(
+    initialSnapshot: RepositoryTargetSnapshot | null,
+  ): RepositoryTargetController<StagedCodexBinding> {
+    return new RepositoryTargetController<StagedCodexBinding>({
+      checkBlockers: async () => this.codex.repositoryTargetBlockers(),
+      // Repository switches never interrupt a running turn implicitly. The
+      // current turn remains owned by its original target and the user can
+      // retry the switch after it reaches a terminal state.
+      resolveBlockers: async () => "cancel",
+      stage: (snapshot, signal) => this.codex.stageRepositoryTarget(snapshot, signal),
+      persist: async (snapshot) => {
+        const preferences = this.preferencesForActiveRepository(snapshot);
+        saveQLabRoot(snapshot.target.canonicalRoot);
+        saveRepositoryTargets(preferences);
+      },
+      publish: (snapshot, staged) => {
+        this.codex.commitRepositoryTarget(staged);
+        this.resetRepositoryScopedCompanionState();
+        const preferences = this.preferencesForActiveRepository(snapshot);
+        this.activeRepositoryTarget = snapshot;
+        this.settings = {
+          ...this.settings,
+          qlabRoot: snapshot.target.canonicalRoot,
+          repositoryTargets: preferences,
+        };
+        this.updateInteractionContext();
+        this.renderChatViews();
+        return undefined;
+      },
+      disposeStaged: (staged) => this.codex.disposeStagedRepositoryTarget(staged),
+      disposeOld: async () => {},
+      markDegraded: (_snapshot, error) => {
+        this.reportError(error);
+        return undefined;
+      },
+    }, initialSnapshot);
+  }
+
+  private preferencesForActiveRepository(
+    snapshot: RepositoryTargetSnapshot,
+  ): StoredTargetPreferences {
+    return {
+      ...this.settings.repositoryTargets,
+      active: snapshot.target,
+      pendingCandidate: null,
+      migratedLegacy: true,
+    };
+  }
+
+  private async activateRepositoryTarget(root: string): Promise<string> {
+    const resolver = this.repositoryTargetResolver;
+    if (!resolver) throw new Error("The repository target resolver is not ready");
+    const inspected = await resolver.inspect(root);
+    if (inspected.kind === "candidate") {
+      throw new Error("Initialize this Research Loop repository before activating it");
+    }
+    if (inspected.kind === "unavailable") {
+      const reason = inspected.reason === "identity-unavailable"
+        ? "Its private Git identity could not be created or read"
+        : "The selected folder is no longer an available Research Loop repository";
+      throw new Error(reason);
+    }
+    await this.repositoryTargetController.switchTo(inspected);
+    return inspected.canonicalRoot;
+  }
+
+  private rememberRepositoryCandidate(candidate: LocalRepositoryCandidate): void {
+    if (this.activeRepositoryTarget) {
+      throw new Error(
+        "Finish initializing the new folder before switching away from the active Research Loop repository",
+      );
+    }
+    const pendingCandidate = { ...candidate, eligibleLegacyThreads: [] };
+    const repositoryTargets: StoredTargetPreferences = {
+      ...this.settings.repositoryTargets,
+      active: null,
+      pendingCandidate,
+      migratedLegacy: true,
+    };
+    saveQLabRoot(candidate.canonicalRoot);
+    saveRepositoryTargets(repositoryTargets);
+    this.settings = {
+      ...this.settings,
+      qlabRoot: candidate.canonicalRoot,
+      repositoryTargets,
+    };
+    this.updateInteractionContext();
+    this.renderChatViews();
+  }
+
   private async chooseQLabRoot(preferredWindow?: Window): Promise<string | null> {
     const { FilePicker } = ChromeUtils.importESModule(
       "chrome://zotero/content/modules/filePicker.mjs",
@@ -4231,11 +5081,12 @@ export class ZoteroChatPlugin {
     if (state === "incompatible") {
       throw new Error("This folder contains unrelated files. Choose an empty folder, an existing Research Loop repository, or a folder containing only knowledge/, drafts/, and literature/.");
     }
-    saveQLabRoot(root);
-    this.settings = { ...this.settings, qlabRoot: root };
-    this.updateInteractionContext();
-    this.renderChatViews();
-    return root;
+    if (state === "missing") throw new Error("The selected Research Loop folder is unavailable");
+    if (state === "empty" || state === "partial") {
+      this.rememberRepositoryCandidate({ kind: "candidate", canonicalRoot: root, state });
+      return root;
+    }
+    return this.activateRepositoryTarget(root);
   }
 
   private async loadChatGPTHistory(): Promise<void> {
@@ -4483,7 +5334,6 @@ export class ZoteroChatPlugin {
         kind: object.kind,
         key: String(objectKey || object.title),
         title: object.title,
-        workspaceRoot: root,
         ...(object.libraryID === undefined ? {} : { libraryID: object.libraryID }),
       });
       this.researchScope = object.kind === "draft" ? "paper" : "library";
@@ -4493,22 +5343,6 @@ export class ZoteroChatPlugin {
     const binding = researchActionSkill(definition.id, object.kind);
     await this.sendChat(prompt, { readOnly: binding.name === "evidence-review" });
     view.focusComposer();
-  }
-
-  private async captureChatDraft(): Promise<void> {
-    let root = this.settings?.qlabRoot || "";
-    if (!root) root = await this.chooseQLabRoot() || "";
-    if (!root) return;
-    const entries = this.codex.getChatEntries();
-    if (!entries.some((entry) => entry.kind === "assistant")) {
-      throw new Error("Complete at least one paper conversation before organizing it into a Draft");
-    }
-    const itemKey = this.context?.parent?.key || this.context?.attachment.key || null;
-    await this.openWorkbenchTab();
-    await this.sendChat(buildCaptureChatDraftPrompt({
-      qlabRoot: root,
-      zoteroItemKey: itemKey,
-    }));
   }
 
   private async reviewDraftForKnowledge(relativePath: string): Promise<void> {
@@ -4593,6 +5427,52 @@ export class ZoteroChatPlugin {
       });
       itemPopup.append(paperChat);
     }
+    if (itemPopup) {
+      this.appendAIContextMenuItem(
+        itemPopup,
+        "qlab-zotero-create-reading-context",
+        "Create Shared Reading Context",
+        () => this.createReadingContext(Zotero.getMainWindow()),
+      );
+      this.appendAIContextMenuItem(
+        itemPopup,
+        "qlab-zotero-open-ai-context",
+        "Open AI Context in QLab",
+        async () => {
+          const source = Zotero.getMainWindow();
+          const item = this.selectedZoteroItems(source)[0];
+          if (!item) throw new Error("Select an AI Context attachment to open");
+          await this.openAIContextAttachment(item, source);
+        },
+      );
+    }
+    this.appendAIContextMenuItem(
+      popup,
+      "qlab-zotero-create-standalone-ai-context",
+      "Create Standalone AI Context",
+      () => this.createStandaloneAIContext(Zotero.getMainWindow()),
+    );
+    this.appendAIContextMenuItem(
+      popup,
+      "qlab-zotero-repair-ai-context",
+      "Repair AI Context Attachments",
+      () => this.repairAIContextAttachments(Zotero.getMainWindow()),
+    );
+  }
+
+  private appendAIContextMenuItem(
+    popup: any,
+    id: typeof AI_CONTEXT_MENU_IDS[number],
+    label: string,
+    run: () => Promise<void>,
+  ): void {
+    const item = (popup.ownerDocument as any).createXULElement("menuitem");
+    item.id = id;
+    item.setAttribute("label", label);
+    item.addEventListener("command", () => {
+      void run().catch((error) => this.reportError(error));
+    });
+    popup.append(item);
   }
 
   private removeQLabMenu(win: Window): void {
@@ -4603,6 +5483,7 @@ export class ZoteroChatPlugin {
       "qlab-zotero-choose-root",
       "qlab-zotero-import-literature",
       "qlab-zotero-open-paper-chat",
+      ...AI_CONTEXT_MENU_IDS,
     ]) {
       win.document.getElementById(id)?.remove();
     }

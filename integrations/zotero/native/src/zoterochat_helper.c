@@ -1,4 +1,8 @@
+#if defined(__APPLE__)
 #define _DARWIN_C_SOURCE 1
+#elif defined(__linux__)
+#define _GNU_SOURCE 1
+#endif
 
 #include <arpa/inet.h>
 #include <ctype.h>
@@ -25,7 +29,13 @@
 #include <termios.h>
 #include <time.h>
 #include <unistd.h>
+#if defined(__APPLE__)
 #include <util.h>
+#elif defined(__linux__)
+#include <pty.h>
+#else
+#error "The local Zotero helper supports only macOS and Linux test builds"
+#endif
 
 #define ZC_VERSION "0.3.0"
 #define MCP_PROTOCOL_VERSION "2025-06-18"
@@ -54,6 +64,31 @@
 #define SESSION_TERM_GRACE_MS 250
 #define SESSION_KILL_GRACE_MS 500
 #define HTTP_HANDSHAKE_TIMEOUT_MS 2000
+
+#if defined(__linux__)
+static size_t qlab_strlcpy(char *destination, const char *source, size_t size) {
+  size_t source_length = strlen(source);
+  if (size) {
+    size_t copied = source_length < size - 1 ? source_length : size - 1;
+    memcpy(destination, source, copied);
+    destination[copied] = 0;
+  }
+  return source_length;
+}
+
+static size_t qlab_strlcat(char *destination, const char *source, size_t size) {
+  size_t destination_length = 0;
+  while (destination_length < size && destination[destination_length])
+    destination_length++;
+  if (destination_length == size)
+    return size + strlen(source);
+  return destination_length + qlab_strlcpy(
+      destination + destination_length, source, size - destination_length);
+}
+
+#define strlcpy qlab_strlcpy
+#define strlcat qlab_strlcat
+#endif
 
 typedef struct {
   char *data;
@@ -853,10 +888,27 @@ static bool secure_eq(const char *a, size_t an, const char *b) {
   return diff == 0;
 }
 
+static ssize_t socket_send(int fd, const void *data, size_t length) {
+#if defined(__linux__)
+  return send(fd, data, length, MSG_NOSIGNAL);
+#else
+  return send(fd, data, length, 0);
+#endif
+}
+
+static void configure_socket_no_sigpipe(int fd) {
+#if defined(__APPLE__)
+  int yes = 1;
+  (void)setsockopt(fd, SOL_SOCKET, SO_NOSIGPIPE, &yes, sizeof(yes));
+#else
+  (void)fd;
+#endif
+}
+
 static bool send_all(int fd, const void *data, size_t n) {
   const unsigned char *p = data;
   while (n) {
-    ssize_t w = send(fd, p, n, 0);
+    ssize_t w = socket_send(fd, p, n);
     if (w < 0) {
       if (errno == EINTR)
         continue;
@@ -2002,8 +2054,7 @@ static int make_listener(const char *socket_path, struct stat *bound) {
     errno = saved;
     return -1;
   }
-  int yes = 1;
-  setsockopt(fd, SOL_SOCKET, SO_NOSIGPIPE, &yes, sizeof(yes));
+  configure_socket_no_sigpipe(fd);
   struct sockaddr_un address = {0};
   address.sun_family = AF_UNIX;
   strlcpy(address.sun_path, socket_path, sizeof(address.sun_path));
@@ -2034,6 +2085,25 @@ static void unlink_bound_socket(const char *socket_path,
       current.st_uid == geteuid() && current.st_dev == bound->st_dev &&
       current.st_ino == bound->st_ino)
     (void)unlink(socket_path);
+}
+
+static bool peer_is_current_user(int fd) {
+#if defined(__APPLE__)
+  uid_t peer_uid = (uid_t)-1;
+  gid_t peer_gid = (gid_t)-1;
+  if (getpeereid(fd, &peer_uid, &peer_gid) < 0 ||
+      peer_uid != geteuid())
+    return false;
+  return true;
+#elif defined(__linux__)
+  struct ucred credentials;
+  socklen_t length = sizeof(credentials);
+  return getsockopt(fd, SOL_SOCKET, SO_PEERCRED, &credentials, &length) == 0 &&
+         length == sizeof(credentials) && credentials.uid == geteuid();
+#else
+  (void)fd;
+  return false;
+#endif
 }
 
 static int run_daemon(const char *socket_path, const char *token) {
@@ -2106,15 +2176,11 @@ static int run_daemon(const char *socket_path, const char *token) {
               close(fd);
               continue;
             }
-            uid_t peer_uid = (uid_t)-1;
-            gid_t peer_gid = (gid_t)-1;
-            if (getpeereid(fd, &peer_uid, &peer_gid) < 0 ||
-                peer_uid != geteuid()) {
+            if (!peer_is_current_user(fd)) {
               close(fd);
               continue;
             }
-            int yes = 1;
-            setsockopt(fd, SOL_SOCKET, SO_NOSIGPIPE, &yes, sizeof(yes));
+            configure_socket_no_sigpipe(fd);
             int slot = -1;
             for (int i = 0; i < MAX_CLIENTS; i++)
               if (clients[i].state == CLIENT_UNUSED) {

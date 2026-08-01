@@ -14,9 +14,11 @@ export interface QmdSourceSnapshot {
   revision: string;
 }
 
+export type QmdVisualStatus = "editing" | "saving" | "saved" | "conflict" | "error";
+
 export interface QmdVisualEditorOptions {
-  save(source: string, expectedRevision: string): Promise<QmdSourceSnapshot>;
-  onStatus?(message: string, state: "editing" | "saving" | "saved" | "conflict" | "error"): void;
+  save(source: string, expectedRevision: string, generation: number): Promise<QmdSourceSnapshot>;
+  onStatus?(message: string, state: QmdVisualStatus, generation: number): void;
 }
 
 interface ActiveEdit {
@@ -28,6 +30,7 @@ interface ActiveEdit {
   timer: ReturnType<typeof setTimeout> | null;
   saving: Promise<void> | null;
   closeAfterSave: boolean;
+  generation: number;
 }
 
 const SEMANTIC_LABELS: Record<string, string> = {
@@ -74,6 +77,7 @@ export class QmdVisualEditor {
 
   private source = "";
   private revision = "";
+  private generation = 0;
   private editable = false;
   private active: ActiveEdit | null = null;
   private destroyed = false;
@@ -84,10 +88,11 @@ export class QmdVisualEditor {
     this.root.setAttribute("aria-label", "Visual QMD editor");
   }
 
-  setDocument(snapshot: QmdSourceSnapshot, editable: boolean): void {
+  setDocument(snapshot: QmdSourceSnapshot, editable: boolean, generation = 0): void {
     this.cancelActive();
     this.source = snapshot.source;
     this.revision = snapshot.revision;
+    this.generation = generation;
     this.editable = editable;
     this.render();
   }
@@ -230,12 +235,12 @@ export class QmdVisualEditor {
     const initial = replacement(element.value);
     this.active = {
       block, element, text: initial, savedText: block.source,
-      replacement, timer: null, saving: null, closeAfterSave: false,
+      replacement, timer: null, saving: null, closeAfterSave: false, generation: this.generation,
     };
     element.addEventListener("input", () => {
       if (!this.active || this.active.element !== element) return;
       this.active.text = this.active.replacement(element.value);
-      this.options.onStatus?.("Editing Draft…", "editing");
+      this.reportStatus(this.active, "Editing Draft…", "editing");
       this.scheduleSave();
     });
     element.addEventListener("keydown", (event) => {
@@ -284,11 +289,12 @@ export class QmdVisualEditor {
       return;
     }
     const textAtStart = active.text;
+    let failed = false;
     const task = (async () => {
-      this.options.onStatus?.("Saving Draft…", "saving");
+      this.reportStatus(active, "Saving Draft…", "saving");
       const result = applyQmdVisualBlock(this.source, active.block, textAtStart);
       if (!result.changed) { active.savedText = textAtStart; return; }
-      const snapshot = await this.options.save(result.source, this.revision);
+      const snapshot = await this.options.save(result.source, this.revision, active.generation);
       if (this.destroyed || this.active !== active) return;
       this.source = snapshot.source;
       this.revision = snapshot.revision;
@@ -296,9 +302,10 @@ export class QmdVisualEditor {
       const next = visualQmdBlocks(this.source).find((candidate) => candidate.start === active.block.start)
         || visualQmdBlocks(this.source).find((candidate) => candidate.source === textAtStart);
       if (next) active.block = next;
-      this.options.onStatus?.("Draft saved · website preview is rebuilding", "saved");
+      this.reportStatus(active, "Draft saved · website preview is rebuilding", "saved");
     })().catch((error) => {
-      this.options.onStatus?.(
+      failed = true;
+      this.reportStatus(active,
         error instanceof Error ? error.message : String(error),
         /changed|conflict|revision/i.test(String(error)) ? "conflict" : "error",
       );
@@ -309,6 +316,7 @@ export class QmdVisualEditor {
     active.saving = task;
     await task;
     if (this.active !== active) return;
+    if (failed) return;
     if (active.text !== active.savedText) return this.flushActive();
     if (active.closeAfterSave) { this.active = null; this.render(); }
   }
@@ -317,5 +325,10 @@ export class QmdVisualEditor {
     if (!this.active) return;
     if (this.active.timer) clearTimeout(this.active.timer);
     this.active = null;
+  }
+
+  private reportStatus(active: ActiveEdit, message: string, state: QmdVisualStatus): void {
+    if (this.destroyed || this.active !== active) return;
+    this.options.onStatus?.(message, state, active.generation);
   }
 }

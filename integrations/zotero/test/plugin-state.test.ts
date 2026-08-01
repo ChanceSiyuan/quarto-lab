@@ -3,6 +3,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
+import * as pluginModule from "../src/plugin";
 
 import {
   MAX_SELECTION_PROMPT_CHARACTERS,
@@ -15,8 +16,547 @@ import {
   pdfDirectory,
   pdfSourceMatchesConversationPaper,
   pdfSourceMatchesReaderContext,
+  prepareRepositoryTargetStartup,
 } from "../src/plugin";
 import type { ReaderContext } from "../src/reader-context";
+import type {
+  LocalRepositoryInspection,
+  RepositoryTargetSnapshot,
+  ResolvedLocalRepositoryTarget,
+  StoredTargetPreferences,
+} from "../src/repository-target";
+
+const EMPTY_TARGET_PREFERENCES: StoredTargetPreferences = {
+  version: 1,
+  active: null,
+  pendingCandidate: null,
+  legacyUnassigned: [],
+  migratedLegacy: false,
+};
+
+function startupTarget(
+  root = "/legacy",
+  overrides: Partial<ResolvedLocalRepositoryTarget> = {},
+): ResolvedLocalRepositoryTarget {
+  return {
+    kind: "local" as const,
+    root,
+    canonicalRoot: root,
+    repositoryId: "a".repeat(64),
+    targetId: "b".repeat(64),
+    ...overrides,
+  };
+}
+
+function startupPreferences(
+  active: ResolvedLocalRepositoryTarget | null,
+  migratedLegacy = true,
+): StoredTargetPreferences {
+  return {
+    ...EMPTY_TARGET_PREFERENCES,
+    active,
+    migratedLegacy,
+  };
+}
+
+function startupSettings(repositoryTargets: StoredTargetPreferences) {
+  return {
+    libraryRoot: "/library",
+    qlabRoot: "",
+    repositoryTargets,
+    defaultModel: "",
+    reasoningEffort: "medium" as const,
+    approvalPolicy: "never",
+    terminalHeight: 420,
+    showReasoning: false,
+    storageRoot: "/profile",
+  };
+}
+
+function targetStartupHarness(options: {
+  preferences?: StoredTargetPreferences;
+  rawLegacyRoot?: string;
+  inspect?: (root: string, callIndex: number) => LocalRepositoryInspection | Promise<LocalRepositoryInspection>;
+  sessionFailure?: Error | null;
+  preferenceFailure?: Error | null;
+} = {}) {
+  const calls: string[] = [];
+  let preferences: StoredTargetPreferences = options.preferences ?? EMPTY_TARGET_PREFERENCES;
+  let records = [{
+    threadId: "legacy-thread",
+    title: "Legacy",
+    workspace: "/legacy/drafts",
+    recordedCwd: "/legacy/drafts",
+    updatedAt: "2026-07-31",
+    extensionField: { keep: true },
+  }];
+  let inspectCallIndex = 0;
+  let preferenceFailure = options.preferenceFailure ?? null;
+  const inspect = vi.fn(async (root: string) => {
+    calls.push(`inspect:${root}`);
+    const callIndex = inspectCallIndex++;
+    return options.inspect
+      ? options.inspect(root, callIndex)
+      : startupTarget(root);
+  });
+  const deps = {
+    readRawTargetMigrationInput: () => {
+      calls.push("raw");
+      return {
+        legacyQLabRoot: options.rawLegacyRoot ?? "/legacy",
+        repositoryTargetsRaw: JSON.stringify(preferences),
+      };
+    },
+    readSessionRecords: async () => {
+      calls.push("sessions");
+      if (options.sessionFailure) throw options.sessionFailure;
+      return {
+        file: { version: 1 as const, papers: {} },
+        locations: records.map((_record, index) => ({ kind: "history" as const, paperKey: "paper", index })),
+        records: structuredClone(records),
+        activeThreadId: null,
+      };
+    },
+    loadSettings: async () => {
+      calls.push("settings");
+      return startupSettings(preferences);
+    },
+    createResolver: () => {
+      calls.push("resolver");
+      return {
+        inspect,
+        canonicalize: vi.fn(async (path: string) => path),
+      };
+    },
+    saveSessionRecords: async (_snapshot: unknown, next: readonly (typeof records)[number][]) => {
+      calls.push("saveSessionRecords");
+      records = structuredClone([...next]);
+    },
+    saveRepositoryTargets: (next: StoredTargetPreferences) => {
+      calls.push("saveRepositoryTargets");
+      if (preferenceFailure) throw preferenceFailure;
+      preferences = structuredClone(next);
+    },
+    publish: (snapshot: RepositoryTargetSnapshot) => {
+      calls.push("publish");
+      published.push(snapshot);
+      return undefined;
+    },
+  };
+  const published: RepositoryTargetSnapshot[] = [];
+  const factorySnapshots: Array<RepositoryTargetSnapshot | null> = [];
+  const construct = async () => {
+    const start = (pluginModule as Record<string, unknown>)
+      .startRepositoryTargetBoundServices;
+    if (typeof start !== "function") {
+      throw new Error("Production repository-target startup factory is missing");
+    }
+    return (start as Function)(deps, async () => {
+      calls.push("factory");
+      return {
+        createMainSite: (snapshot: RepositoryTargetSnapshot | null) => {
+          calls.push("mainSite");
+          factorySnapshots.push(snapshot);
+          return { kind: "mainSite" };
+        },
+        createTerminal: (snapshot: RepositoryTargetSnapshot | null) => {
+          calls.push("terminal");
+          factorySnapshots.push(snapshot);
+          return { kind: "terminal" };
+        },
+        createCodex: (snapshot: RepositoryTargetSnapshot | null) => {
+          calls.push("codex");
+          factorySnapshots.push(snapshot);
+          return { kind: "codex", snapshot };
+        },
+      };
+    });
+  };
+  return {
+    calls,
+    deps,
+    inspect,
+    published,
+    factorySnapshots,
+    construct,
+    records: () => structuredClone(records),
+    preferences: () => structuredClone(preferences),
+    clearCalls: () => { calls.length = 0; },
+    setPreferenceFailure: (error: Error | null) => { preferenceFailure = error; },
+  };
+}
+
+describe("repository target startup", () => {
+  it("freshly resolves a migrated target before publishing it", async () => {
+    const h = targetStartupHarness();
+
+    const prepared = await prepareRepositoryTargetStartup(h.deps);
+
+    expect(h.calls).toEqual([
+      "raw",
+      "sessions",
+      "settings",
+      "resolver",
+      "inspect:/legacy",
+      "saveSessionRecords",
+      "saveRepositoryTargets",
+      "inspect:/legacy",
+      "publish",
+    ]);
+    expect(prepared.activeSnapshot).toEqual({ target: startupTarget(), targetEpoch: 1 });
+    expect(prepared.settings.repositoryTargets.migratedLegacy).toBe(true);
+    expect(h.records()[0]).toMatchObject({
+      threadId: "legacy-thread",
+      targetId: "b".repeat(64),
+      extensionField: { keep: true },
+    });
+
+    h.clearCalls();
+    const persisted = { preferences: h.preferences(), records: h.records() };
+    await prepareRepositoryTargetStartup(h.deps);
+    expect(h.calls).toEqual([
+      "raw", "sessions", "settings", "resolver", "inspect:/legacy", "publish",
+    ]);
+    expect(h.inspect).toHaveBeenCalledTimes(3);
+    expect({ preferences: h.preferences(), records: h.records() }).toEqual(persisted);
+  });
+
+  it("publishes a newly chosen ready repository into Codex and persisted settings", async () => {
+    const originalServices = (globalThis as any).Services;
+    const setStringPref = vi.fn();
+    (globalThis as any).Services = { prefs: { setStringPref } };
+    const plugin = new ZoteroChatPlugin() as any;
+    const target = startupTarget("/chosen");
+    const staged = { snapshot: null, binding: null, activeDocument: null };
+    plugin.settings = startupSettings(EMPTY_TARGET_PREFERENCES);
+    plugin.codex = {
+      repositoryTargetBlockers: vi.fn(() => []),
+      stageRepositoryTarget: vi.fn(async () => staged),
+      commitRepositoryTarget: vi.fn(),
+      disposeStagedRepositoryTarget: vi.fn(async () => {}),
+    };
+    plugin.repositoryTargetResolver = { inspect: vi.fn(async () => target) };
+    plugin.updateInteractionContext = vi.fn();
+    plugin.renderChatViews = vi.fn();
+    plugin.repositoryTargetController = plugin.createRepositoryTargetController(null);
+
+    try {
+      await expect(plugin.activateRepositoryTarget("/chosen")).resolves.toBe("/chosen");
+      expect(plugin.codex.stageRepositoryTarget).toHaveBeenCalledWith(
+        { target, targetEpoch: 1 },
+        expect.any(AbortSignal),
+      );
+      expect(plugin.codex.commitRepositoryTarget).toHaveBeenCalledWith(staged);
+      expect(plugin.settings.qlabRoot).toBe("/chosen");
+      expect(plugin.settings.repositoryTargets.active).toEqual(target);
+      expect(plugin.activeRepositoryTarget).toEqual({ target, targetEpoch: 1 });
+      expect(setStringPref).toHaveBeenCalledWith(
+        "extensions.zotkit.qlabRoot",
+        "/chosen",
+      );
+      expect(setStringPref).toHaveBeenCalledWith(
+        "extensions.zotkit.repositoryTargets",
+        expect.stringContaining(`\"targetId\":\"${target.targetId}\"`),
+      );
+    }
+    finally {
+      (globalThis as any).Services = originalServices;
+    }
+  });
+
+  it("invalidates repository-scoped Companion Draft state when publishing a new target", async () => {
+    const originalServices = (globalThis as any).Services;
+    (globalThis as any).Services = { prefs: { setStringPref: vi.fn() } };
+    const reread = {} as {
+      promise: Promise<{ source: string; revision: string }>;
+      resolve(value: { source: string; revision: string }): void;
+    };
+    reread.promise = new Promise((resolve) => { reread.resolve = resolve; });
+    const runtime = {
+      store: {
+        save: vi.fn(async () => undefined),
+        load: vi.fn(),
+        delete: vi.fn(),
+        pruneExpired: vi.fn(),
+      },
+      copy: vi.fn(() => true),
+      launch: vi.fn(),
+      revalidateDraft: vi.fn(() => reread.promise),
+      now: () => new Date("2026-08-01T10:00:00.000Z"),
+      id: () => "capsule-switch-12345678",
+      hash: () => "f".repeat(64),
+    };
+    const plugin = new ZoteroChatPlugin(runtime) as any;
+    const target = startupTarget("/next");
+    const staged = { snapshot: null, binding: null, activeDocument: null };
+    plugin.settings = startupSettings(EMPTY_TARGET_PREFERENCES);
+    plugin.codex = {
+      state: { activeThreadId: null },
+      getActiveReaderContext: () => null,
+      getChatEntries: () => [],
+      repositoryTargetBlockers: vi.fn(() => []),
+      stageRepositoryTarget: vi.fn(async () => staged),
+      commitRepositoryTarget: vi.fn(),
+      disposeStagedRepositoryTarget: vi.fn(async () => {}),
+    };
+    plugin.repositoryTargetResolver = { inspect: vi.fn(async () => target) };
+    plugin.updateInteractionContext = vi.fn();
+    plugin.renderChatViews = vi.fn();
+    plugin.activeDraftPath = "drafts/shared.qmd";
+    plugin.activeDraftSnapshot = {
+      relativePath: "drafts/shared.qmd",
+      revision: "old-revision",
+      source: "Old repository Draft",
+    };
+    const draftSubject = "draft:drafts/shared.qmd";
+    plugin.pendingCompanionHandoffs.set(draftSubject, [{
+      capsuleId: "old",
+      subjectKey: draftSubject,
+      question: "Old question",
+      createdAt: "2026-08-01T09:00:00.000Z",
+    }]);
+    plugin.selectedCompanionHandoff.set(draftSubject, "old");
+    plugin.companionStatuses.set(draftSubject, { kind: "success", message: "old" });
+    plugin.companionOverlays.set(draftSubject, [{ id: "old", kind: "assistant", text: "old" }]);
+    plugin.companionStatuses.set("question-only", { kind: "success", message: "keep" });
+    plugin.repositoryTargetController = plugin.createRepositoryTargetController(null);
+
+    try {
+      const handoff = plugin.openChatGPTCompanion("Which repository?");
+      expect(runtime.revalidateDraft).toHaveBeenCalledOnce();
+
+      await plugin.activateRepositoryTarget("/next");
+      reread.resolve({ source: "Old repository Draft", revision: "old-revision" });
+      await handoff;
+
+      expect(plugin.activeDraftPath).toBeNull();
+      expect(plugin.activeDraftSnapshot).toBeNull();
+      expect(plugin.pendingCompanionHandoffs.has(draftSubject)).toBe(false);
+      expect(plugin.selectedCompanionHandoff.has(draftSubject)).toBe(false);
+      expect(plugin.companionStatuses.has(draftSubject)).toBe(false);
+      expect(plugin.companionOverlays.has(draftSubject)).toBe(false);
+      expect(plugin.companionStatuses.get("question-only")).toEqual({ kind: "success", message: "keep" });
+      expect(runtime.store.save).not.toHaveBeenCalled();
+      expect(runtime.copy).not.toHaveBeenCalled();
+      expect(runtime.launch).not.toHaveBeenCalled();
+    }
+    finally {
+      (globalThis as any).Services = originalServices;
+    }
+  });
+
+  it("retries a failed preference save with byte-stable migrated record fields", async () => {
+    const diskFull = new Error("disk full");
+    const h = targetStartupHarness({ preferenceFailure: diskFull });
+
+    await expect(prepareRepositoryTargetStartup(h.deps)).rejects.toBe(diskFull);
+    expect(h.calls).toEqual([
+      "raw", "sessions", "settings", "resolver", "inspect:/legacy",
+      "saveSessionRecords", "saveRepositoryTargets",
+    ]);
+    expect(h.preferences().migratedLegacy).toBe(false);
+    const firstSavedRecords = h.records();
+    expect(firstSavedRecords[0]).toMatchObject({
+      targetId: "b".repeat(64),
+      extensionField: { keep: true },
+    });
+
+    h.clearCalls();
+    h.setPreferenceFailure(null);
+    await prepareRepositoryTargetStartup(h.deps);
+    expect(h.calls).toEqual([
+      "raw", "sessions", "settings", "resolver", "inspect:/legacy", "saveSessionRecords",
+      "saveRepositoryTargets", "inspect:/legacy", "publish",
+    ]);
+    expect(h.records()).toEqual(firstSavedRecords);
+    expect(h.preferences().migratedLegacy).toBe(true);
+  });
+
+  it("uses a raw missing root even though display-safe settings contain no qlab root", async () => {
+    const h = targetStartupHarness({
+      inspect: () => ({ kind: "unavailable", reason: "missing" }),
+    });
+
+    const prepared = await prepareRepositoryTargetStartup(h.deps);
+
+    expect(h.inspect).toHaveBeenCalledWith("/legacy");
+    expect(prepared.settings.qlabRoot).toBe("");
+    expect(prepared.settings.repositoryTargets).toMatchObject({
+      active: null,
+      pendingCandidate: null,
+      legacyUnassigned: [{ threadId: "legacy-thread", reason: "missing" }],
+      migratedLegacy: true,
+    });
+    expect(h.calls.at(-1)).toBe("saveRepositoryTargets");
+    expect(h.calls).not.toContain("publish");
+  });
+
+  it("freshly resolves an already-migrated active target before publishing", async () => {
+    const active = startupTarget();
+    const h = targetStartupHarness({ preferences: startupPreferences(active) });
+
+    const started = await h.construct();
+
+    expect(h.calls).toEqual([
+      "raw", "sessions", "settings", "resolver", "inspect:/legacy", "publish",
+      "factory", "mainSite", "terminal", "codex",
+    ]);
+    expect(started.prepared.activeSnapshot).toEqual({ target: active, targetEpoch: 1 });
+    expect(started.codex.snapshot).toBe(h.published[0]);
+    expect(h.published).toEqual([{ target: active, targetEpoch: 1 }]);
+  });
+
+  it("keeps targetless startup targetless without consulting a resolver", async () => {
+    const h = targetStartupHarness({
+      preferences: startupPreferences(null),
+      rawLegacyRoot: "",
+    });
+
+    const prepared = await prepareRepositoryTargetStartup(h.deps);
+
+    expect(prepared.activeSnapshot).toBeNull();
+    expect(h.calls).toEqual(["raw", "sessions", "settings"]);
+    expect(h.inspect).not.toHaveBeenCalled();
+    expect(h.published).toEqual([]);
+  });
+
+  it("recovers a previously selected repository after transient identity failure", async () => {
+    const legacyUnassigned = [{
+      threadId: "legacy-thread",
+      recordedCwd: null,
+      reason: "identity-unavailable" as const,
+    }];
+    const h = targetStartupHarness({
+      preferences: {
+        ...startupPreferences(null),
+        legacyUnassigned,
+      },
+      rawLegacyRoot: "/chosen",
+      inspect: (root) => startupTarget(root),
+    });
+
+    const prepared = await prepareRepositoryTargetStartup(h.deps);
+
+    expect(h.calls).toEqual([
+      "raw", "sessions", "settings", "resolver", "inspect:/chosen",
+      "saveRepositoryTargets", "inspect:/chosen", "publish",
+    ]);
+    expect(prepared.activeSnapshot).toEqual({
+      target: startupTarget("/chosen"),
+      targetEpoch: 1,
+    });
+    expect(prepared.settings.qlabRoot).toBe("/chosen");
+    expect(prepared.settings.repositoryTargets).toMatchObject({
+      active: startupTarget("/chosen"),
+      pendingCandidate: null,
+      legacyUnassigned,
+      migratedLegacy: true,
+    });
+    expect(h.calls).not.toContain("saveSessionRecords");
+  });
+
+  it("does not replace an explicit pending repository candidate during recovery", async () => {
+    const h = targetStartupHarness({
+      preferences: {
+        ...startupPreferences(null),
+        pendingCandidate: {
+          kind: "candidate",
+          canonicalRoot: "/empty",
+          state: "empty",
+          eligibleLegacyThreads: [],
+        },
+      },
+      rawLegacyRoot: "/empty",
+    });
+
+    const prepared = await prepareRepositoryTargetStartup(h.deps);
+
+    expect(prepared.activeSnapshot).toBeNull();
+    expect(prepared.settings.repositoryTargets.pendingCandidate?.canonicalRoot).toBe("/empty");
+    expect(h.calls).toEqual(["raw", "sessions", "settings"]);
+    expect(h.inspect).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ["non-local inspection", { kind: "candidate", canonicalRoot: "/legacy", state: "partial" }],
+    ["unavailable inspection", { kind: "unavailable", reason: "missing" }],
+    ["root mismatch", startupTarget("/legacy", { root: "/different-spelling" })],
+    ["canonical-root mismatch", startupTarget("/legacy", { canonicalRoot: "/replacement" })],
+    ["repository identity mismatch", startupTarget("/legacy", { repositoryId: "c".repeat(64) })],
+    ["target identity mismatch", startupTarget("/legacy", { targetId: "d".repeat(64) })],
+  ] as const)("rejects a stored active target on %s before publication", async (_name, inspection) => {
+    const h = targetStartupHarness({
+      preferences: startupPreferences(startupTarget()),
+      inspect: () => inspection as LocalRepositoryInspection,
+    });
+
+    await expect(prepareRepositoryTargetStartup(h.deps))
+      .rejects.toThrow("Stored active repository no longer matches its persisted identity");
+    expect(h.published).toEqual([]);
+  });
+
+  it("rejects a repository replacement at the same path before constructing target services", async () => {
+    const replacement = startupTarget("/legacy", {
+      repositoryId: "c".repeat(64),
+      targetId: "d".repeat(64),
+    });
+    const h = targetStartupHarness({
+      preferences: startupPreferences(startupTarget()),
+      inspect: () => replacement,
+    });
+
+    await expect(h.construct())
+      .rejects.toThrow("Stored active repository no longer matches its persisted identity");
+    expect(h.calls).not.toContain("publish");
+    expect(h.calls).not.toContain("factory");
+    expect(h.calls).not.toContain("codex");
+  });
+
+  it("uses the production gate for ordered target-service construction and exact Codex binding", async () => {
+    const h = targetStartupHarness();
+
+    const started = await h.construct();
+
+    const snapshot = { target: startupTarget(), targetEpoch: 1 };
+    expect(h.calls).toEqual([
+      "raw", "sessions", "settings", "resolver", "inspect:/legacy", "saveSessionRecords",
+      "saveRepositoryTargets", "inspect:/legacy", "publish", "factory", "mainSite", "terminal", "codex",
+    ]);
+    expect(h.factorySnapshots).toEqual([snapshot, snapshot, snapshot]);
+    expect(started.codex).toEqual({ kind: "codex", snapshot });
+    expect(h.factorySnapshots.every((value) => value === h.published[0])).toBe(true);
+    expect(started.codex.snapshot).toBe(h.published[0]);
+  });
+
+  it("constructs target-bound services with null only after a targetless startup is prepared", async () => {
+    const h = targetStartupHarness({
+      preferences: startupPreferences(null),
+      rawLegacyRoot: "",
+    });
+
+    await h.construct();
+
+    expect(h.calls).toEqual([
+      "raw", "sessions", "settings", "factory", "mainSite", "terminal", "codex",
+    ]);
+    expect(h.factorySnapshots).toEqual([null, null, null]);
+  });
+
+  it.each([
+    ["malformed sessions", { sessionFailure: new Error("malformed sessions") }],
+    ["failed preference save", { preferenceFailure: new Error("disk full") }],
+  ] as Array<[string, { sessionFailure?: Error; preferenceFailure?: Error }]>)
+  ("does not construct services after %s", async (_name, options) => {
+    const h = targetStartupHarness(options);
+
+    await expect(h.construct()).rejects.toThrow(options.sessionFailure?.message ?? options.preferenceFailure?.message);
+    expect(h.calls).not.toContain("publish");
+    expect(h.calls).not.toContain("factory");
+    expect(h.calls).not.toContain("mainSite");
+    expect(h.calls).not.toContain("terminal");
+    expect(h.calls).not.toContain("codex");
+  });
+});
 
 describe("Zotkit Reader terminal state", () => {
   it("matches only PDF links that identify the conversation paper", () => {
@@ -188,6 +728,46 @@ describe("Zotkit Reader terminal state", () => {
       expect(target.Zotero_Tabs.close).toHaveBeenCalledWith(["restored-reader"]);
     }
     finally {
+      (globalThis as any).Zotero = previousZotero;
+    }
+  });
+
+  it("opens the standalone Workbench through Gecko when the current surface cannot open dialogs", async () => {
+    const previousServices = (globalThis as any).Services;
+    const previousZotero = (globalThis as any).Zotero;
+    const popupDocument = document.implementation.createHTMLDocument("Standalone QLab");
+    const host = popupDocument.createElement("div");
+    host.id = "qlab-standalone-workbench-host";
+    popupDocument.body.appendChild(host);
+    const popup = {
+      document: popupDocument,
+      closed: false,
+      close: vi.fn(),
+    } as unknown as Window;
+    const openWindow = vi.fn(() => popup);
+    const source = {
+      openDialog: vi.fn(() => { throw new Error("openDialog is unavailable"); }),
+    } as unknown as Window;
+    const plugin = new ZoteroChatPlugin() as any;
+    plugin.injectWindowAssets = vi.fn();
+    (globalThis as any).Services = { ww: { openWindow } };
+    (globalThis as any).Zotero = {
+      UIProperties: { registerRoot: vi.fn() },
+    };
+
+    try {
+      await expect(plugin.openStandaloneWorkbenchWindow(source)).resolves.toBe(popup);
+      expect(openWindow).toHaveBeenCalledWith(
+        source,
+        "chrome://zotkit/content/standalone-workbench.xhtml",
+        "qlab-standalone-workbench",
+        expect.stringContaining("dependent=no"),
+        null,
+      );
+      expect(plugin.injectWindowAssets).toHaveBeenCalledWith(popup);
+    }
+    finally {
+      (globalThis as any).Services = previousServices;
       (globalThis as any).Zotero = previousZotero;
     }
   });
@@ -1129,6 +1709,41 @@ describe("Zotkit Reader terminal state", () => {
       if (originalZotero === undefined) delete (globalThis as any).Zotero;
       else (globalThis as any).Zotero = originalZotero;
     }
+  });
+
+  it("routes every persistent save callback through the AI Context workflow", async () => {
+    const plugin = new ZoteroChatPlugin() as any;
+    plugin.terminal = { unmount: vi.fn() };
+    plugin.renderChatViews = vi.fn();
+    plugin.saveAIContext = vi.fn(async () => undefined);
+    plugin.captureChatDraft = vi.fn(async () => undefined);
+    plugin.reportError = vi.fn();
+
+    const readerHost = document.createElement("div");
+    const workbenchHost = document.createElement("div");
+    const floatHost = document.createElement("div");
+    document.body.append(readerHost, workbenchHost, floatHost);
+
+    const reader = plugin.mountChat(readerHost);
+    reader.setState({ phase: "ready", canSaveAIContext: true, running: false });
+    readerHost.querySelector<HTMLButtonElement>(".zc-save-ai-context")!.click();
+
+    const workbench = plugin.createWorkbenchView(workbenchHost, window, "workbench-1");
+    workbench.setState({ phase: "ready", canSaveAIContext: true, running: false });
+    workbenchHost.querySelector<HTMLButtonElement>(".zc-save-ai-context")!.click();
+
+    const floating = plugin.mountFloatPanel(window);
+    (floating.view as any).callbacks.onCaptureChatDraft();
+
+    await vi.waitFor(() => expect(plugin.saveAIContext).toHaveBeenCalledTimes(3));
+    expect(plugin.captureChatDraft).not.toHaveBeenCalled();
+
+    reader.destroy();
+    workbench.destroy();
+    floating.view.destroy();
+    readerHost.remove();
+    workbenchHost.remove();
+    floatHost.remove();
   });
 });
 

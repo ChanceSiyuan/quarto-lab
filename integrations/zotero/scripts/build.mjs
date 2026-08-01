@@ -6,6 +6,7 @@ import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
 import { stageStarterTemplate } from "./starter-template.mjs";
+import { createZipArchive } from "./archive-tools.mjs";
 
 const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const buildDir = path.join(repo, "build");
@@ -39,10 +40,7 @@ const starterArchive = path.join(buildDir, "research-loop-starter.zip");
 await rm(starterRoot, { recursive: true, force: true });
 await rm(starterArchive, { force: true });
 await stageStarterTemplate(researchLoopRoot, starterRoot);
-execFileSync("/usr/bin/zip", ["-X", "-q", "-r", starterArchive, "."], {
-  cwd: starterRoot,
-  stdio: "inherit"
-});
+createZipArchive(starterRoot, starterArchive);
 const starterBytes = await readFile(starterArchive);
 const starterDigest = createHash("sha256").update(starterBytes).digest("hex");
 await mkdir(path.join(root, "starter"), { recursive: true });
@@ -95,10 +93,7 @@ const manifest = JSON.parse(await readFile(path.join(repo, "manifest.json"), "ut
 const xpiName = `Research-Loop-Zotero-${manifest.version}.xpi`;
 const xpiPath = path.join(dist, xpiName);
 await rm(xpiPath, { force: true });
-execFileSync("/usr/bin/zip", ["-X", "-q", "-r", xpiPath, "."], {
-  cwd: root,
-  stdio: "inherit"
-});
+createZipArchive(root, xpiPath);
 
 const xpiBytes = await readFile(xpiPath);
 const sha256 = createHash("sha256").update(xpiBytes).digest("hex");

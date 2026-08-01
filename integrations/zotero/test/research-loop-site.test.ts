@@ -1,12 +1,15 @@
 // @vitest-environment happy-dom
 
+import { createHash } from "node:crypto";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  createResearchLoopSiteRuntime,
   RESEARCH_LOOP_SITE_URL,
   ResearchLoopSiteService,
   ResearchLoopSiteView,
   researchLoopBuildProgress,
 } from "../src/research-loop-site";
+import type { BridgeEvent, NativeBridge, SpawnOptions } from "../src/native-bridge";
 
 describe("ResearchLoopSiteView", () => {
   beforeEach(() => {
@@ -121,6 +124,118 @@ describe("ResearchLoopSiteView", () => {
 });
 
 describe("ResearchLoopSiteService", () => {
+  it("resolves a standard repository identity without spawning Git", async () => {
+    const originalIOUtils = (globalThis as any).IOUtils;
+    const originalPathUtils = (globalThis as any).PathUtils;
+    const bridge = {
+      start: vi.fn(async () => undefined),
+      spawnPipe: vi.fn(async () => undefined),
+      onEvent: vi.fn(() => () => {}),
+      decodeOutput: vi.fn(() => ""),
+      flushOutput: vi.fn(() => ""),
+    } satisfies Pick<NativeBridge, "start" | "spawnPipe" | "onEvent" | "decodeOutput" | "flushOutput">;
+    try {
+      (globalThis as any).PathUtils = {
+        join: (...parts: string[]) => parts.join("/").replace(/\/{2,}/g, "/"),
+        filename: (file: string) => file.split("/").at(-1),
+      };
+      (globalThis as any).IOUtils = {
+        exists: vi.fn(async (path: string) => path === "/repo/.git/HEAD"),
+      };
+
+      const runtime = createResearchLoopSiteRuntime(bridge, "resource://qlab/", "1.2.3");
+      await expect(runtime.gitPrivatePath("/repo"))
+        .resolves.toBe("/repo/.git/qlab/repository-id");
+      expect(bridge.start).not.toHaveBeenCalled();
+      expect(bridge.spawnPipe).not.toHaveBeenCalled();
+    }
+    finally {
+      (globalThis as any).IOUtils = originalIOUtils;
+      (globalThis as any).PathUtils = originalPathUtils;
+    }
+  });
+
+  it("initializes through PATH unzip with fixed archive and destination argv positions", async () => {
+    const originalComponents = (globalThis as any).Components;
+    const originalFetch = globalThis.fetch;
+    const originalIOUtils = (globalThis as any).IOUtils;
+    const originalPathUtils = (globalThis as any).PathUtils;
+    const originalZotero = (globalThis as any).Zotero;
+    const archive = new TextEncoder().encode("bundled starter archive");
+    const digest = createHash("sha256").update(archive).digest("hex");
+    const listeners = new Set<(event: BridgeEvent) => void>();
+    const spawnPipe = vi.fn(async (sessionId: string, options: SpawnOptions) => {
+      for (const listener of listeners) {
+        listener({ type: "exit", sessionId, exitCode: 0, signal: null });
+      }
+    });
+    const bridge = {
+      start: vi.fn(async () => undefined),
+      spawnPipe,
+      onEvent: vi.fn((listener: (event: BridgeEvent) => void) => {
+        listeners.add(listener);
+        return () => listeners.delete(listener);
+      }),
+      decodeOutput: vi.fn(() => ""),
+      flushOutput: vi.fn(() => ""),
+    } satisfies Pick<NativeBridge, "start" | "spawnPipe" | "onEvent" | "decodeOutput" | "flushOutput">;
+    try {
+      (globalThis as any).Components = {
+        interfaces: { nsICryptoHash: {} },
+        classes: {
+          "@mozilla.org/security/hash;1": {
+            createInstance: () => ({
+              SHA256: 1,
+              init: () => undefined,
+              update: () => undefined,
+              finish: () => Buffer.from(digest, "hex").toString("binary"),
+            }),
+          },
+        },
+      };
+      (globalThis as any).PathUtils = {
+        join: (...parts: string[]) => parts.join("/").replace(/\/{2,}/g, "/"),
+        filename: (file: string) => file.split("/").at(-1),
+      };
+      (globalThis as any).IOUtils = {
+        exists: async () => true,
+        makeDirectory: async () => undefined,
+        write: async () => undefined,
+        writeUTF8: async () => undefined,
+      };
+      (globalThis as any).Zotero = { Profile: { dir: "/profile" } };
+      globalThis.fetch = vi.fn(async (uri: string) => ({
+        ok: true,
+        status: 200,
+        arrayBuffer: async () => uri.endsWith(".sha256")
+          ? new TextEncoder().encode(digest).buffer
+          : archive.buffer,
+      })) as any;
+
+      const runtime = createResearchLoopSiteRuntime(bridge, "resource://qlab/", "1.2.3");
+      await runtime.initialize("/research-loop");
+
+      expect(spawnPipe).toHaveBeenCalledWith("research-loop-initialize", expect.objectContaining({
+        argv: [
+          "/bin/zsh",
+          "-lc",
+          expect.stringContaining('unzip -n -q "$2" -d "$1"'),
+          "research-loop-initialize",
+          "/research-loop",
+          "/profile/zotkit/starter/1.2.3/research-loop-starter.zip",
+        ],
+      }));
+      expect(spawnPipe.mock.calls[0]![1].argv[2]).not.toContain("/usr/bin/unzip");
+    }
+    finally {
+      (globalThis as any).Components = originalComponents;
+      globalThis.fetch = originalFetch;
+      (globalThis as any).IOUtils = originalIOUtils;
+      (globalThis as any).PathUtils = originalPathUtils;
+      (globalThis as any).Zotero = originalZotero;
+    }
+  });
+
   it("reuses an already-running site without spawning another process", async () => {
     const runtime = {
       check: vi.fn(async () => true),
