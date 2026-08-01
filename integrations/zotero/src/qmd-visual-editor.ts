@@ -289,6 +289,7 @@ export class QmdVisualEditor {
       return;
     }
     const textAtStart = active.text;
+    let failed = false;
     const task = (async () => {
       this.reportStatus(active, "Saving Draft…", "saving");
       const result = applyQmdVisualBlock(this.source, active.block, textAtStart);
@@ -303,6 +304,7 @@ export class QmdVisualEditor {
       if (next) active.block = next;
       this.reportStatus(active, "Draft saved · website preview is rebuilding", "saved");
     })().catch((error) => {
+      failed = true;
       this.reportStatus(active,
         error instanceof Error ? error.message : String(error),
         /changed|conflict|revision/i.test(String(error)) ? "conflict" : "error",
@@ -314,6 +316,7 @@ export class QmdVisualEditor {
     active.saving = task;
     await task;
     if (this.active !== active) return;
+    if (failed) return;
     if (active.text !== active.savedText) return this.flushActive();
     if (active.closeAfterSave) { this.active = null; this.render(); }
   }

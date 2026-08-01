@@ -115,7 +115,7 @@ describe("QmdVisualEditor", () => {
     expect(source()).toContain("The gap remains positive.");
   });
 
-  it("does not report a conflict from a save superseded by a newer document generation", async () => {
+  it("does not report an error from a save superseded by a newer document generation", async () => {
     const oldSave = deferred<{ source: string; revision: string }>();
     const save = vi.fn((_source: string, _revision: string, generation: number) =>
       generation === 1 ? oldSave.promise : Promise.resolve({ source: SOURCE, revision: "r3" }));
@@ -137,7 +137,31 @@ describe("QmdVisualEditor", () => {
     oldSave.reject(new Error("old conflict"));
     await settle();
 
-    expect(onStatus).not.toHaveBeenCalledWith("old conflict", "conflict", 1);
+    expect(onStatus.mock.calls.some(([message]) => message === "old conflict")).toBe(false);
+  });
+
+  it("keeps the newer document snapshot when a superseded save succeeds", async () => {
+    const oldSave = deferred<{ source: string; revision: string }>();
+    const save = vi.fn((_source: string, _revision: string, generation: number) =>
+      generation === 1 ? oldSave.promise : Promise.resolve({ source: SOURCE, revision: "r3" }));
+    const editor = new QmdVisualEditor(document, { save });
+    document.body.appendChild(editor.root);
+    editor.setDocument({ source: SOURCE, revision: "r1" }, true, 1);
+
+    const paragraph = editor.root.querySelector<HTMLElement>('[data-block-kind="paragraph"]')!;
+    paragraph.click();
+    const textarea = paragraph.querySelector<HTMLTextAreaElement>("textarea")!;
+    textarea.value = "The gap remains positive.";
+    textarea.dispatchEvent(new Event("input"));
+    textarea.blur();
+    await Promise.resolve();
+
+    const newerSource = `${SOURCE}\nGeneration two\n`;
+    editor.setDocument({ source: newerSource, revision: "r2" }, true, 2);
+    oldSave.resolve({ source: "stale generation one", revision: "r1-saved" });
+    await settle();
+
+    expect(editor.snapshot()).toEqual({ source: newerSource, revision: "r2" });
   });
 
   it("flows hard-wrapped source prose as one paragraph like the compiled preview", () => {

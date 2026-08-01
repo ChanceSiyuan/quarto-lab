@@ -700,6 +700,7 @@ export class QmdWorkspaceView {
       this.setStatus("Visual Edit reloaded the latest QMD source", "external");
     }
     catch (error) {
+      if (generation !== this.openGeneration || !this.visualMode || this.visualTargetPath !== target || this.destroyed) return;
       this.setStatus(error instanceof Error ? error.message : String(error), "error");
     }
   }

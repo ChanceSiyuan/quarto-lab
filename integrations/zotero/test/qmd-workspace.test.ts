@@ -457,9 +457,6 @@ describe("QmdWorkspaceView", () => {
   it("reports a current Visual Edit conflict after switching to Website Preview", async () => {
     const conflict = deferred<{ source: string; revision: string }>();
     const { host, view, saveSource } = mount();
-    const setStatus = vi.spyOn(view as unknown as {
-      setStatus(message: string, state: string): void;
-    }, "setStatus");
     saveSource.mockImplementationOnce(() => conflict.promise);
     view.show();
     await view.open(DRAFT);
@@ -480,7 +477,33 @@ describe("QmdWorkspaceView", () => {
     conflict.reject(new Error("current conflict"));
     await settle();
 
-    expect(setStatus).toHaveBeenCalledWith("current conflict", "conflict");
+    const status = host.querySelector<HTMLElement>(".zc-qmd-status")!;
+    expect(status.textContent).toBe("current conflict");
+    expect(status.dataset.state).toBe("conflict");
+    view.destroy();
+  });
+
+  it("does not report a failed Visual Edit refresh from a superseded open generation", async () => {
+    const staleRead = deferred<{ source: string; revision: string }>();
+    const { host, view, readSource } = mount();
+    view.show();
+    await view.open(DRAFT);
+    host.querySelector<HTMLButtonElement>(".zc-qmd-mode")!.click();
+    await settle();
+
+    readSource.mockImplementationOnce(() => staleRead.promise);
+    const refresh = (view as unknown as { refreshVisualSource(): Promise<void> }).refreshVisualSource();
+    await Promise.resolve();
+    await view.open(DRAFT);
+    const status = host.querySelector<HTMLElement>(".zc-qmd-status")!;
+    const currentMessage = status.textContent;
+    const currentState = status.dataset.state;
+
+    staleRead.reject(new Error("stale refresh failed"));
+    await refresh;
+
+    expect(status.textContent).toBe(currentMessage);
+    expect(status.dataset.state).toBe(currentState);
     view.destroy();
   });
 
