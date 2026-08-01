@@ -647,15 +647,189 @@ export function buildCompanionCapsule(
   return freeze({ ...unsigned, contentHash });
 }
 
+const MAX_CAPSULE_WARNINGS = 256;
+const MAX_WARNING_LENGTH = 2_048;
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
+function hasExactKeys(value: unknown, keys: readonly string[]): value is Record<string, unknown> {
+  return isRecord(value)
+    && Object.keys(value).length === keys.length
+    && keys.every((key) => Object.hasOwn(value, key));
+}
+
+function exactMetadata(value: unknown, maximum: number): value is string {
+  if (typeof value !== "string") return false;
+  const warnings: string[] = [];
+  return boundedMetadata(value, maximum, "Stored capsule metadata", warnings).value === value && warnings.length === 0;
+}
+
+function exactChecksum(value: unknown): value is string {
+  return typeof value === "string" && Boolean(value) && !CONTROL_TEST.test(value)
+    && codePoints(value).length <= COMPANION_CAPSULE_BOUNDS.contentHash;
+}
+
+function exactIdentifierValue(value: unknown, maximum: number, label: string): value is string {
+  try {
+    return exactIdentifier(value, maximum, label) === value;
+  }
+  catch {
+    return false;
+  }
+}
+
+function exactDraftPath(value: unknown): value is string {
+  return typeof value === "string" && safeDraftPath(value) === value;
+}
+
+function exactTimestamp(value: unknown): value is string {
+  try {
+    return canonicalTimestamp(value as string) === value;
+  }
+  catch {
+    return false;
+  }
+}
+
+function exactQuestion(value: unknown): value is string {
+  try {
+    if (typeof value !== "string") return false;
+    requireQuestion(value);
+    return true;
+  }
+  catch {
+    return false;
+  }
+}
+
+function exactUrl(value: unknown): value is string {
+  return typeof value === "string" && safeExternalUrl(value, "Stored capsule URL", []) === value;
+}
+
+function exactDoi(value: unknown): value is string {
+  return typeof value === "string" && safeDoi(value, "Stored capsule DOI", []) === value;
+}
+
+function exactPageSource(value: unknown): value is string {
+  return typeof value === "string" && safePageSource(value, []) === value;
+}
+
+function positiveInteger(value: unknown): value is number {
+  return typeof value === "number" && Number.isInteger(value) && value > 0;
+}
+
+function exactBounds(value: unknown): boolean {
+  return hasExactKeys(value, Object.keys(COMPANION_CAPSULE_BOUNDS))
+    && Object.entries(COMPANION_CAPSULE_BOUNDS).every(([key, bound]) => value[key] === bound);
+}
+
+function exactCitation(value: unknown, secondary = false): boolean {
+  const keys = secondary
+    ? ["authority", "title", "creators", "year", "doi", "url", "mode"]
+    : ["authority", "title", "creators", "year", "doi", "url"];
+  return hasExactKeys(value, keys)
+    && value.authority === "external_evidence"
+    && exactMetadata(value.title, COMPANION_CAPSULE_BOUNDS.citationTitle)
+    && exactMetadata(value.creators, COMPANION_CAPSULE_BOUNDS.citationCreators)
+    && exactMetadata(value.year, COMPANION_CAPSULE_BOUNDS.citationYear)
+    && exactDoi(value.doi)
+    && exactUrl(value.url)
+    && (!secondary || value.mode === "retrieval" || value.mode === "full");
+}
+
+function exactContextItem(value: unknown): boolean {
+  if (!hasExactKeys(value, ["id", "kind", "included", "supported", "sourceIdentity", "mode", "authority", "warning"])
+    || !CONTEXT_KINDS.has(value.kind as CompanionContextKind)
+    || !exactIdentifierValue(value.id, COMPANION_CAPSULE_BOUNDS.chipId, "Context chip ID")
+    || (value.kind === "draft"
+      ? !exactDraftPath(value.sourceIdentity)
+      : !exactIdentifierValue(value.sourceIdentity, COMPANION_CAPSULE_BOUNDS.sourceIdentity, "Context source identity"))
+    || typeof value.included !== "boolean" || typeof value.supported !== "boolean"
+    || (value.mode !== null && value.mode !== "retrieval" && value.mode !== "full")
+    || (value.warning !== null && !exactMetadata(value.warning, MAX_WARNING_LENGTH))) return false;
+
+  if (value.kind === "annotation" || value.kind === "library") {
+    return value.authority === "unsupported" && value.supported === false && value.included === false;
+  }
+  return value.authority === (value.kind === "draft" ? "unreviewed_draft" : "external_evidence")
+    && value.supported === true;
+}
+
+function payloadsMatchIncludedContext(value: Record<string, unknown>): boolean {
+  const contextItems = value.contextItems as Array<Record<string, unknown>>;
+  const secondaryPapers = value.secondaryPapers as Array<Record<string, unknown>>;
+  const included = (kind: CompanionContextKind): number => contextItems.filter(
+    (item) => item.kind === kind && item.included === true,
+  ).length;
+  const secondaryModesMatch = contextItems
+    .filter((item) => item.kind === "external-paper" && item.included === true)
+    .every((item, index) => item.mode === null || item.mode === secondaryPapers[index]?.mode);
+  return (included("paper") > 0) === (value.paper !== null)
+    && (included("page") > 0) === (value.page !== null)
+    && (included("selection") > 0) === (value.selection !== null)
+    && (included("draft") > 0) === (value.draft !== null)
+    && included("external-paper") === secondaryPapers.length
+    && secondaryModesMatch
+    && included("screenshot") === (value.screenshotProvenance as unknown[]).length;
+}
+
+/**
+ * Validates the full, persisted capsule shape and all builder safety invariants.
+ * The checksum is intentionally checked separately by verifyCompanionCapsule.
+ */
+export function validateCompanionCapsule(value: unknown): value is ChatGPTCompanionCapsule {
+  if (!hasExactKeys(value, [
+    "schemaVersion", "id", "createdAt", "subject", "question", "contextItems", "paper", "page", "selection",
+    "secondaryPapers", "draft", "screenshotProvenance", "warnings", "bounds", "contentHash",
+  ]) || value.schemaVersion !== 1
+    || !exactIdentifierValue(value.id, COMPANION_CAPSULE_BOUNDS.capsuleId, "Capsule ID")
+    || !OPAQUE_ID.test(value.id) || Array.from(value.id).length < 16
+    || !exactTimestamp(value.createdAt) || !exactQuestion(value.question)
+    || !exactChecksum(value.contentHash)
+    || !hasExactKeys(value.subject, ["paperKey", "draftPath"])
+    || (value.subject.paperKey !== null
+      && !exactIdentifierValue(value.subject.paperKey, COMPANION_CAPSULE_BOUNDS.paperKey, "Subject paper key"))
+    || (value.subject.draftPath !== null && !exactDraftPath(value.subject.draftPath))
+    || !exactBounds(value.bounds)
+    || !Array.isArray(value.contextItems) || value.contextItems.length > COMPANION_CAPSULE_BOUNDS.contextItems
+    || !value.contextItems.every(exactContextItem)
+    || !Array.isArray(value.secondaryPapers) || value.secondaryPapers.length > COMPANION_CAPSULE_BOUNDS.secondaryPapers
+    || !value.secondaryPapers.every((paper) => exactCitation(paper, true))
+    || !Array.isArray(value.screenshotProvenance)
+    || value.screenshotProvenance.length > COMPANION_CAPSULE_BOUNDS.screenshotProvenance
+    || !Array.isArray(value.warnings) || value.warnings.length > MAX_CAPSULE_WARNINGS
+    || !value.warnings.every((warning) => exactMetadata(warning, MAX_WARNING_LENGTH))) return false;
+
+  if (!payloadsMatchIncludedContext(value)) return false;
+
+  if (value.paper !== null && !exactCitation(value.paper)) return false;
+  if (value.page !== null && (!hasExactKeys(value.page, ["authority", "pageNumber", "pageLabel", "excerpt", "source"])
+    || value.page.authority !== "external_evidence" || !positiveInteger(value.page.pageNumber)
+    || !exactMetadata(value.page.pageLabel, COMPANION_CAPSULE_BOUNDS.pageLabel)
+    || !exactMetadata(value.page.excerpt, COMPANION_CAPSULE_BOUNDS.pageExcerpt)
+    || !exactPageSource(value.page.source))) return false;
+  if (value.selection !== null && (!hasExactKeys(value.selection, ["authority", "text", "pageNumber"])
+    || value.selection.authority !== "external_evidence"
+    || !exactMetadata(value.selection.text, COMPANION_CAPSULE_BOUNDS.selection)
+    || (value.selection.pageNumber !== null && !positiveInteger(value.selection.pageNumber)))) return false;
+  if (value.draft !== null && (!hasExactKeys(value.draft, ["relativePath", "authority", "excerpt", "truncated"])
+    || !exactDraftPath(value.draft.relativePath) || value.draft.authority !== "unreviewed_draft"
+    || !exactMetadata(value.draft.excerpt, COMPANION_CAPSULE_BOUNDS.draftExcerpt)
+    || typeof value.draft.truncated !== "boolean"
+    || (value.draft.truncated && codePoints(value.draft.excerpt).length !== COMPANION_CAPSULE_BOUNDS.draftExcerpt))) return false;
+  return value.screenshotProvenance.every((entry) => hasExactKeys(entry, ["authority", "kind", "paperTitle", "pageNumber"])
+    && entry.authority === "external_evidence" && (entry.kind === "page" || entry.kind === "region")
+    && exactMetadata(entry.paperTitle, COMPANION_CAPSULE_BOUNDS.screenshotTitle)
+    && (entry.pageNumber === null || positiveInteger(entry.pageNumber)));
+}
+
 export function verifyCompanionCapsule(
-  capsule: ChatGPTCompanionCapsule,
+  capsule: unknown,
   hash: CompanionCapsuleDependencies["hash"],
-): boolean {
-  if (capsule.schemaVersion !== 1
-    || !OPAQUE_ID.test(capsule.id)
-    || codePoints(capsule.id).length < 16
-    || codePoints(capsule.id).length > COMPANION_CAPSULE_BOUNDS.capsuleId
-    || !capsule.contentHash) return false;
+): capsule is ChatGPTCompanionCapsule {
+  if (!validateCompanionCapsule(capsule)) return false;
   const { contentHash, ...unsigned } = capsule;
   try {
     return hash(canonicalCompanionCapsuleJson(unsigned)) === contentHash;

@@ -113,6 +113,39 @@ describe("Companion capsule storage", () => {
     await store.save(stored);
     await expect(store.load(stored.id)).resolves.toEqual(stored);
   });
+
+  it("does not load checksum-valid capsules that violate Task 1 trust boundaries", async () => {
+    const filesystem = memoryFilesystem();
+    const store = createCompanionCapsuleStorage({ filesystem, hash, now });
+    const valid = buildCompanionCapsule({
+      subject: { draftPath: "drafts/notes/visible.qmd" },
+      question: "Explain this result.",
+      contextItems: [
+        { id: "paper", kind: "paper", sourceIdentity: "zotero:ABCD1234" },
+        { id: "draft", kind: "draft", sourceIdentity: "drafts/notes/visible.qmd" },
+      ],
+      paper: { title: "A paper", url: "https://example.test/paper" },
+      draft: { relativePath: "drafts/notes/visible.qmd", excerpt: "Unreviewed" },
+    }, { id: () => "capsule_0123456789abcdef", now: () => "2026-08-01T11:00:00.000Z", hash });
+    const signed = (change: (value: any) => void) => {
+      const candidate = structuredClone(valid) as any;
+      change(candidate);
+      const { contentHash: _previous, ...unsigned } = candidate;
+      return { ...unsigned, contentHash: hash(canonicalCompanionCapsuleJson(unsigned)) };
+    };
+
+    for (const candidate of [
+      signed((value) => { value.question = " "; }),
+      signed((value) => { value.draft.relativePath = "knowledge/reviewed.qmd"; }),
+      signed((value) => { value.subject.draftPath = "literature/paper.qmd"; }),
+      signed((value) => { value.paper.url = "data:text/plain,private"; }),
+      signed((value) => { value.contextItems[0].sourceIdentity = "file:///private/item"; }),
+      signed((value) => { value.contextItems[0].authority = "unreviewed_draft"; }),
+    ]) {
+      filesystem.files.set(valid.id, candidate);
+      await expect(store.load(valid.id)).resolves.toBeNull();
+    }
+  });
 });
 
 describe("Gecko companion capsule filesystem", () => {

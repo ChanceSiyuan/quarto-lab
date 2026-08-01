@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   COMPANION_CAPSULE_BOUNDS,
   buildCompanionCapsule,
+  canonicalCompanionCapsuleJson,
   verifyCompanionCapsule,
 } from "../src/chatgpt-companion-capsule";
 
@@ -361,5 +362,32 @@ describe("ChatGPT companion capsule", () => {
       ...dependencies,
       now: () => `${"2".repeat(33)}Z`,
     })).toThrow(/timestamp/i);
+  });
+
+  it("rejects checksum-valid records that violate handoff trust and path invariants", () => {
+    const valid = buildCompanionCapsule(input(), dependencies);
+    const signed = (change: (value: any) => void) => {
+      const candidate = structuredClone(valid) as any;
+      change(candidate);
+      const { contentHash: _previous, ...unsigned } = candidate;
+      return { ...unsigned, contentHash: dependencies.hash(canonicalCompanionCapsuleJson(unsigned)) };
+    };
+
+    for (const candidate of [
+      signed((value) => { value.question = " \t "; }),
+      signed((value) => { value.question = "question\u0000"; }),
+      signed((value) => { value.draft.relativePath = "knowledge/reviewed.qmd"; }),
+      signed((value) => { value.subject.draftPath = "literature/paper.qmd"; }),
+      signed((value) => { value.paper.url = "file:///private/paper.pdf"; }),
+      signed((value) => { value.paper.url = "data:text/plain,private"; }),
+      signed((value) => { value.contextItems[0].sourceIdentity = "file:///private/item"; }),
+      signed((value) => { value.page.source = "file:///private/page.txt"; }),
+      signed((value) => { value.contextItems[0].authority = "unreviewed_draft"; }),
+      signed((value) => { value.contextItems[0].included = false; }),
+      signed((value) => { value.draft.truncated = true; }),
+      signed((value) => { value.contextItems[5].mode = "full"; value.secondaryPapers[0].mode = "retrieval"; }),
+    ]) {
+      expect(verifyCompanionCapsule(candidate, dependencies.hash)).toBe(false);
+    }
   });
 });

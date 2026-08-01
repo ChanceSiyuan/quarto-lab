@@ -1,15 +1,9 @@
-import {
-  COMPANION_CAPSULE_BOUNDS,
-  type ChatGPTCompanionCapsule,
-  verifyCompanionCapsule,
-} from "./chatgpt-companion-capsule";
+import { type ChatGPTCompanionCapsule, verifyCompanionCapsule } from "./chatgpt-companion-capsule";
 import { profilePath } from "./platform";
 
 const OPAQUE_ID = /^[A-Za-z0-9_-]{16,128}$/;
 const DAY_MS = 24 * 60 * 60 * 1000;
 const MAX_SERIALIZED_BYTES = 256 * 1024;
-const CONTEXT_KINDS = new Set(["paper", "page", "selection", "annotation", "library", "external-paper", "screenshot", "draft"]);
-const AUTHORITIES = new Set(["external_evidence", "unreviewed_draft", "unsupported"]);
 
 export interface CompanionCapsuleFilesystem {
   write(id: string, value: unknown): Promise<void>;
@@ -53,102 +47,6 @@ function requireId(value: unknown): asserts value is string {
   if (!validId(value)) throw new Error("Companion capsule IDs must be opaque identifiers");
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
-}
-
-function exactRecord(value: unknown, keys: readonly string[]): value is Record<string, unknown> {
-  return isRecord(value)
-    && Object.keys(value).length === keys.length
-    && keys.every((key) => Object.hasOwn(value, key));
-}
-
-function stringAtMost(value: unknown, maximum: number): value is string {
-  return typeof value === "string" && Array.from(value).length <= maximum;
-}
-
-function optionalString(value: unknown, maximum: number): boolean {
-  return value === null || stringAtMost(value, maximum);
-}
-
-function positiveInteger(value: unknown): boolean {
-  return typeof value === "number" && Number.isInteger(value) && value > 0;
-}
-
-function sameBounds(value: unknown): boolean {
-  const keys = Object.keys(COMPANION_CAPSULE_BOUNDS);
-  return exactRecord(value, keys)
-    && keys.every((key) => value[key] === COMPANION_CAPSULE_BOUNDS[key as keyof typeof COMPANION_CAPSULE_BOUNDS]);
-}
-
-function canonicalDate(value: unknown): value is string {
-  if (!stringAtMost(value, COMPANION_CAPSULE_BOUNDS.timestamp)) return false;
-  const date = new Date(value);
-  return !Number.isNaN(date.getTime()) && value.endsWith("Z") && date.toISOString() === value;
-}
-
-function externalCitationFields(value: unknown): value is Record<string, unknown> {
-  return isRecord(value)
-    && value.authority === "external_evidence"
-    && stringAtMost(value.title, COMPANION_CAPSULE_BOUNDS.citationTitle)
-    && stringAtMost(value.creators, COMPANION_CAPSULE_BOUNDS.citationCreators)
-    && stringAtMost(value.year, COMPANION_CAPSULE_BOUNDS.citationYear)
-    && stringAtMost(value.doi, COMPANION_CAPSULE_BOUNDS.citationDoi)
-    && stringAtMost(value.url, COMPANION_CAPSULE_BOUNDS.citationUrl);
-}
-
-function externalCitation(value: unknown): boolean {
-  return exactRecord(value, ["authority", "title", "creators", "year", "doi", "url"])
-    && externalCitationFields(value);
-}
-
-function exactCapsule(value: unknown): value is ChatGPTCompanionCapsule {
-  if (!exactRecord(value, [
-    "schemaVersion", "id", "createdAt", "subject", "question", "contextItems", "paper", "page", "selection",
-    "secondaryPapers", "draft", "screenshotProvenance", "warnings", "bounds", "contentHash",
-  ]) || value.schemaVersion !== 1 || !validId(value.id) || !canonicalDate(value.createdAt)
-    || !stringAtMost(value.question, COMPANION_CAPSULE_BOUNDS.question)
-    || !stringAtMost(value.contentHash, COMPANION_CAPSULE_BOUNDS.contentHash)
-    || !exactRecord(value.subject, ["paperKey", "draftPath"])
-    || !optionalString(value.subject.paperKey, COMPANION_CAPSULE_BOUNDS.paperKey)
-    || !optionalString(value.subject.draftPath, COMPANION_CAPSULE_BOUNDS.draftPath)
-    || !sameBounds(value.bounds)
-    || !Array.isArray(value.contextItems) || value.contextItems.length > COMPANION_CAPSULE_BOUNDS.contextItems
-    || !Array.isArray(value.secondaryPapers) || value.secondaryPapers.length > COMPANION_CAPSULE_BOUNDS.secondaryPapers
-    || !Array.isArray(value.screenshotProvenance) || value.screenshotProvenance.length > COMPANION_CAPSULE_BOUNDS.screenshotProvenance
-    || !Array.isArray(value.warnings) || value.warnings.some((warning) => !stringAtMost(warning, 2_048))) return false;
-
-  if (!value.contextItems.every((item) => exactRecord(item, ["id", "kind", "included", "supported", "sourceIdentity", "mode", "authority", "warning"])
-    && stringAtMost(item.id, COMPANION_CAPSULE_BOUNDS.chipId)
-    && typeof item.kind === "string" && CONTEXT_KINDS.has(item.kind)
-    && typeof item.included === "boolean" && typeof item.supported === "boolean"
-    && stringAtMost(item.sourceIdentity, COMPANION_CAPSULE_BOUNDS.sourceIdentity)
-    && (item.mode === null || item.mode === "retrieval" || item.mode === "full")
-    && typeof item.authority === "string" && AUTHORITIES.has(item.authority)
-    && (item.warning === null || stringAtMost(item.warning, 2_048)))) return false;
-
-  if (value.paper !== null && !externalCitation(value.paper)) return false;
-  if (value.page !== null && (!exactRecord(value.page, ["authority", "pageNumber", "pageLabel", "excerpt", "source"])
-    || value.page.authority !== "external_evidence" || !positiveInteger(value.page.pageNumber)
-    || !stringAtMost(value.page.pageLabel, COMPANION_CAPSULE_BOUNDS.pageLabel)
-    || !stringAtMost(value.page.excerpt, COMPANION_CAPSULE_BOUNDS.pageExcerpt)
-    || !stringAtMost(value.page.source, COMPANION_CAPSULE_BOUNDS.pageSource))) return false;
-  if (value.selection !== null && (!exactRecord(value.selection, ["authority", "text", "pageNumber"])
-    || value.selection.authority !== "external_evidence" || !stringAtMost(value.selection.text, COMPANION_CAPSULE_BOUNDS.selection)
-    || (value.selection.pageNumber !== null && !positiveInteger(value.selection.pageNumber)))) return false;
-  if (!value.secondaryPapers.every((paper) => exactRecord(paper, ["authority", "title", "creators", "year", "doi", "url", "mode"])
-    && externalCitationFields(paper)
-    && (paper.mode === "retrieval" || paper.mode === "full"))) return false;
-  if (value.draft !== null && (!exactRecord(value.draft, ["relativePath", "authority", "excerpt", "truncated"])
-    || !stringAtMost(value.draft.relativePath, COMPANION_CAPSULE_BOUNDS.draftPath)
-    || value.draft.authority !== "unreviewed_draft" || !stringAtMost(value.draft.excerpt, COMPANION_CAPSULE_BOUNDS.draftExcerpt)
-    || typeof value.draft.truncated !== "boolean")) return false;
-  return value.screenshotProvenance.every((entry) => exactRecord(entry, ["authority", "kind", "paperTitle", "pageNumber"])
-    && entry.authority === "external_evidence" && (entry.kind === "page" || entry.kind === "region")
-    && stringAtMost(entry.paperTitle, COMPANION_CAPSULE_BOUNDS.screenshotTitle)
-    && (entry.pageNumber === null || positiveInteger(entry.pageNumber)));
-}
-
 function cloneAndFreeze(capsule: ChatGPTCompanionCapsule): ChatGPTCompanionCapsule {
   const clone = JSON.parse(JSON.stringify(capsule)) as ChatGPTCompanionCapsule;
   const freeze = (value: unknown): void => {
@@ -174,7 +72,7 @@ function expired(capsule: ChatGPTCompanionCapsule, now: Date): boolean {
 }
 
 function usableCapsule(value: unknown, hash: CompanionCapsuleStoreDependencies["hash"]): value is ChatGPTCompanionCapsule {
-  return serializedWithinBound(value) && exactCapsule(value) && verifyCompanionCapsule(value, hash);
+  return serializedWithinBound(value) && verifyCompanionCapsule(value, hash);
 }
 
 /** Pure persistence policy; its filesystem has no caller-controlled paths. */
