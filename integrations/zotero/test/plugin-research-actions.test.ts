@@ -118,4 +118,51 @@ describe("Workbench Research Action wiring", () => {
 
     view.destroy();
   });
+
+  it("routes signed-out Companion handoff through Workbench without invoking any Codex conversation action", async () => {
+    const store = {
+      save: vi.fn(async () => undefined),
+      load: vi.fn(), delete: vi.fn(), pruneExpired: vi.fn(),
+    };
+    const plugin = new ZoteroChatPlugin({
+      store,
+      copy: () => true,
+      readClipboard: () => null,
+      launch: () => undefined,
+      now: () => new Date("2026-08-01T10:00:00.000Z"),
+      id: () => "capsule-workbench-123456",
+      hash: () => "d".repeat(64),
+    }) as any;
+    const login = vi.fn();
+    const start = vi.fn();
+    const send = vi.fn();
+    const newThread = vi.fn();
+    const switchThread = vi.fn();
+    plugin.codex = {
+      state: { connected: false, activeThreadId: null },
+      getActiveReaderContext: () => null,
+      login,
+      start,
+      send,
+      newThread,
+      switchThread,
+    };
+    const host = document.body.appendChild(document.createElement("div"));
+    const workbenchWindow = { document, Zotero_Tabs: { selectedType: "qlab" } } as unknown as Window;
+    const view = plugin.createWorkbenchView(host, workbenchWindow, "qlab-tab");
+    view.setState({ phase: "signed-out" });
+    const input = host.querySelector<HTMLTextAreaElement>(".zc-composer-input")!;
+    input.value = "Question-only handoff";
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    host.querySelector<HTMLButtonElement>(".zc-companion-open")!.click();
+
+    await vi.waitFor(() => expect(store.save).toHaveBeenCalledOnce());
+    expect(login).not.toHaveBeenCalled();
+    expect(start).not.toHaveBeenCalled();
+    expect(send).not.toHaveBeenCalled();
+    expect(newThread).not.toHaveBeenCalled();
+    expect(switchThread).not.toHaveBeenCalled();
+    expect(input.value).toBe("Question-only handoff");
+    view.destroy();
+  });
 });

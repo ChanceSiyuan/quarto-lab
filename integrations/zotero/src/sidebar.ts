@@ -85,7 +85,9 @@ export type ResearchContextKind =
   | "annotation"
   | "library"
   | "collection"
-  | "external-paper";
+  | "external-paper"
+  | "screenshot"
+  | "draft";
 
 export interface ResearchContextChip {
   id: string;
@@ -2668,6 +2670,8 @@ function contextGlyph(kind: ResearchContextKind): string {
     library: "⌘",
     collection: "#",
     "external-paper": "P",
+    screenshot: "▣",
+    draft: "D",
   };
   return glyphs[kind];
 }
@@ -2681,6 +2685,8 @@ function contextKindLabel(kind: ResearchContextKind): string {
     library: "Library",
     collection: "Collection",
     "external-paper": "Other Paper",
+    screenshot: "Screenshot",
+    draft: "Draft",
   };
   return labels[kind];
 }
