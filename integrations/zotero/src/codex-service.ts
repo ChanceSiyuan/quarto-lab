@@ -111,6 +111,8 @@ export interface CodexSendOptions {
   readOnly?: boolean;
   /** Turn-local write authority; omitted turns retain the ordinary Agent defaults. */
   writableRoots?: readonly string[];
+  /** Refuses the queued send if another conversation becomes active first. */
+  expectedThreadId?: string;
 }
 
 export interface ReaderContextSelection {
@@ -1122,8 +1124,14 @@ export class CodexService {
     imageUrls: readonly string[] = [],
     options: CodexSendOptions = {},
   ): Promise<void> {
+    const queuedOptions: CodexSendOptions = {
+      ...options,
+      ...(options.writableRoots === undefined
+        ? {}
+        : { writableRoots: [...options.writableRoots] }),
+    };
     return this.enqueuePaperTransition(() => (
-      this.sendToActiveTurn(text, model, effort, imageUrls, options)
+      this.sendToActiveTurn(text, model, effort, imageUrls, queuedOptions)
     ));
   }
 
@@ -1139,6 +1147,10 @@ export class CodexService {
       : [...options.writableRoots];
     if (options.readOnly && writableRoots !== undefined) {
       throw new Error("A read-only turn cannot request writable roots");
+    }
+    if (options.expectedThreadId !== undefined
+        && this.state.activeThreadId !== options.expectedThreadId) {
+      throw new Error("The expected dedicated conversation is no longer active; no turn was started");
     }
     if (this.switchingPaper) throw new Error("Switching papers; please wait");
     if (!this.state.activeThreadId) {

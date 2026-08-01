@@ -756,6 +756,7 @@ describe("AI Context plugin integration", () => {
     expect(effort).toBe("medium");
     expect(screenshots).toEqual([]);
     expect(options).toEqual({
+      expectedThreadId: "dedicated-edit-turn",
       writableRoots: [`/repo/${changePath.split("/").slice(0, -1).join("/")}`],
     });
     const normalizedInstruction = String(instruction).replace(/\s+/gu, " ").toLowerCase();

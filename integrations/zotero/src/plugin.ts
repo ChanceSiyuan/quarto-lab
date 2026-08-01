@@ -1434,8 +1434,8 @@ export class ZoteroChatPlugin {
         || this.activeAIContext?.relativePath !== relativePath) {
       throw new Error("The active AI Context no longer matches the opened QMD");
     }
-    if (!this.activeAIContextThreadId
-        || this.codex.state.activeThreadId !== this.activeAIContextThreadId) {
+    const expectedThreadId = this.activeAIContextThreadId;
+    if (!expectedThreadId || this.codex.state.activeThreadId !== expectedThreadId) {
       throw new Error("The dedicated AI Context conversation is no longer active");
     }
     const expectedChangePath = this.qmdChangePaths(relativePath).changePath;
@@ -1450,7 +1450,7 @@ export class ZoteroChatPlugin {
       this.selectedModel,
       this.selectedEffort,
       [],
-      { writableRoots: [writableRoot] },
+      { expectedThreadId, writableRoots: [writableRoot] },
     );
   }
 

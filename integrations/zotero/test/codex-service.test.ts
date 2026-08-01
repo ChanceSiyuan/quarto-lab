@@ -514,6 +514,58 @@ describe("CodexService follow-up turns", () => {
       .toEqual([privateRoot]);
   });
 
+  it("rejects a pinned AI Context send when a queued transition selects another thread first", async () => {
+    const resumed = deferred<{ thread: { id: string; turns: never[] } }>();
+    const client = {
+      threadResume: vi.fn(() => resumed.promise),
+      threadRead: vi.fn(async () => ({ thread: { id: "thread-b", turns: [] } })),
+      turnStart: vi.fn().mockResolvedValue({ turn: { id: "wrong-turn" } }),
+    };
+    const { service } = serviceWithClient(client);
+    const internal = service as any;
+    internal.saveSessions = vi.fn(async () => undefined);
+    internal.sessions = {
+      version: 1,
+      papers: {
+        "1-ATTACH": {
+          threadId: "thread-a",
+          title: "Dedicated AI Context",
+          workspace: "/profile/papers/1-ATTACH",
+          updatedAt: "2026-08-01",
+        },
+      },
+      history: {
+        "1-ATTACH": [{
+          threadId: "thread-b",
+          title: "Another conversation",
+          workspace: "/profile/papers/1-ATTACH",
+          updatedAt: "2026-07-31",
+        }],
+      },
+      openThreads: ["thread-a", "thread-b"],
+    };
+
+    const switching = service.switchThread("thread-b");
+    const fixedSend = service.send(
+      "Revise the complete active AI Context QMD.",
+      "gpt-5.6-sol",
+      "high",
+      [],
+      {
+        expectedThreadId: "thread-a",
+        writableRoots: ["/repo/work/qlab-zotero/draft-changes/private"],
+      },
+    );
+    const rejected = expect(fixedSend).rejects.toThrow(/dedicated conversation.*no longer active/i);
+    await vi.waitFor(() => expect(client.threadResume).toHaveBeenCalledOnce());
+    resumed.resolve({ thread: { id: "thread-b", turns: [] } });
+
+    await switching;
+    await rejected;
+    expect(service.state.activeThreadId).toBe("thread-b");
+    expect(client.turnStart).not.toHaveBeenCalled();
+  });
+
   it("rejects writable-root overrides for read-only and steered turns", async () => {
     const client = {
       turnStart: vi.fn().mockResolvedValue({ turn: { id: "turn-read-only" } }),
