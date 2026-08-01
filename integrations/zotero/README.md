@@ -2,8 +2,10 @@
 
 This Zotero 9 add-on carries the unchanged QLab literature workflow into
 Research Loop and combines it with the Reader chat
-interface derived from Zotkit Reader. It talks only to the local `codex` CLI;
-there are no API-provider, Claude, or remote-SSH controls in the product UI.
+interface derived from Zotkit Reader. Repository-writing work talks only to
+the local `codex` CLI; there are no API-provider, Claude, or remote-SSH
+controls in the product UI. The separate ChatGPT Companion is a user-driven,
+read-only handoff described below.
 
 ## What it does
 
@@ -90,6 +92,27 @@ there are no API-provider, Claude, or remote-SSH controls in the product UI.
   only action that promotes the AI version back to the original Draft. Manual
   Visual Edit or Cursor saves use atomic writes and never silently overwrite a
   newer external revision.
+
+## ChatGPT Companion
+
+The Workbench composer includes **Ask in ChatGPT ↗**. It freezes the exact
+visible paper, page, selection, secondary-paper, screenshot-provenance, and
+eligible Draft context, stores a bounded private capsule in the Zotero profile,
+copies a labelled prompt, and opens the ordinary ChatGPT website. In the
+destination chat, enable the read-only **QLab app**, paste the prompt, and send
+it. The add-on does not reuse cookies, automate the ChatGPT DOM, or scrape the
+answer stream.
+
+After ChatGPT answers, an optional explicit clipboard import can add
+user-copied text as a labelled current-session overlay for the matching
+handoff. It never becomes Codex history and never makes a Codex request or
+turn. Companion therefore remains available when Codex is signed out or
+unavailable.
+
+The QLab app is a separately operated read-only MCP service; ChatGPT cannot
+connect directly to localhost. Product availability and account controls may
+change. See the complete [ChatGPT Companion setup and security
+guide](../../docs/chatgpt-companion.md) before connecting it.
 
 ## Screenshots to the AI chat
 

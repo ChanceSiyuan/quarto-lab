@@ -16,7 +16,7 @@ interface ZoteroManifest {
 }
 
 describe("Zotero add-on manifest", () => {
-  it("ships AI Context attachments as Zotero integration 0.11.0", () => {
+  it("ships AI Context and ChatGPT Companion as Zotero integration 0.12.0", () => {
     const manifest = JSON.parse(
       readFileSync(join(process.cwd(), "manifest.json"), "utf8"),
     ) as ZoteroManifest;
@@ -27,10 +27,10 @@ describe("Zotero add-on manifest", () => {
       readFileSync(join(process.cwd(), "package-lock.json"), "utf8"),
     ) as { version?: string; packages?: { ""?: { version?: string } } };
 
-    expect(manifest.version).toBe("0.11.0");
-    expect(packageJson.version).toBe("0.11.0");
-    expect(packageLock.version).toBe("0.11.0");
-    expect(packageLock.packages?.[""]?.version).toBe("0.11.0");
+    expect(manifest.version).toBe("0.12.0");
+    expect(packageJson.version).toBe("0.12.0");
+    expect(packageLock.version).toBe("0.12.0");
+    expect(packageLock.packages?.[""]?.version).toBe("0.12.0");
   });
 
   it("declares the Zotero 9 install contract, including an update URL", () => {
@@ -39,7 +39,7 @@ describe("Zotero add-on manifest", () => {
     ) as ZoteroManifest;
     const zotero = manifest.applications?.zotero;
 
-    expect(manifest.version).toBe("0.11.0");
+    expect(manifest.version).toBe("0.12.0");
     expect(zotero?.id).toBe("qlab-zotero@quarto-lab.local");
     expect(zotero?.update_url).toBe("https://qlab.invalid/updates.json");
     expect(zotero?.strict_min_version).toBe("9.0");

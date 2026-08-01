@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.12.0
+
+- Add **Ask in ChatGPT ↗** as an explicit, bounded handoff from the Workbench
+  to an ordinary ChatGPT chat with the read-only QLab app enabled.
+- Freeze paper, selection, secondary-paper, screenshot provenance, and eligible
+  Draft context before asynchronous work; persist private, checksummed capsules
+  with owner-only profile permissions.
+- Allow an explicit user-copied ChatGPT answer to appear as a labelled
+  current-session overlay without adding it to Codex history or spending a
+  Codex turn.
+- Add a trust-aware, authenticated, loopback-only MCP `search`/`fetch` service
+  that never exposes Drafts and returns live Knowledge revision/file hashes.
+- Document the tunnel, read-only mount, token, logging, and current ChatGPT
+  product boundaries. Linux verification is complete; native macOS validation
+  remains deferred.
+
 ## 0.11.0
 
 - Add AI Context attachments with strict Draft authority: every context remains
