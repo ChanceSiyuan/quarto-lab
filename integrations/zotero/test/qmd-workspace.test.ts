@@ -6,6 +6,7 @@ import type { QmdIndexEntry } from "../src/qmd-index";
 import {
   QmdWorkspaceView,
   qmdDiffForPath,
+  validateTodoOnlyChange,
 } from "../src/qmd-workspace";
 
 const PAGE = "knowledge/Magic/Bell_magic.qmd";
@@ -57,6 +58,7 @@ function mount(
   const onEditorChosen = vi.fn();
   const onReviewDraft = vi.fn(async () => {});
   const onEditWithAI = vi.fn(async () => {});
+  const onTodoGuardRejected = vi.fn(async () => {});
   let pending = Boolean(options.pending);
   let revision = pending ? "pending-revision" : "original-revision";
   const prepareChange = vi.fn(async () => ({
@@ -78,7 +80,9 @@ function mount(
   let sourceRevision = "source-r1";
   let draftSource = `---\ntitle: Draft\ndescription: "Editable"\ncategories: theory\n---\n\n# Draft\n\n::: {#lem-test}\n## Visual lemma\n\n$x > 0$\n:::\n`;
   const readSource = vi.fn(async (_path: string) => ({ source: draftSource, revision: sourceRevision }));
-  const saveSource = vi.fn(async (_path: string, _expected: string, source: string) => {
+  const saveSource = vi.fn(async (path: string, _expected: string, source: string) => {
+    draftSource = source;
+    if (path === CHANGE) pending = false;
     sourceRevision = `${sourceRevision}-saved`;
     return { source, revision: sourceRevision };
   });
@@ -96,6 +100,7 @@ function mount(
     onActiveDocument,
     onReviewDraft,
     onEditWithAI,
+    onTodoGuardRejected,
     prepareChange,
     refreshChangePreview,
     keepChange,
@@ -113,6 +118,7 @@ function mount(
     onEditorChosen,
     onReviewDraft,
     onEditWithAI,
+    onTodoGuardRejected,
     prepareChange,
     refreshChangePreview,
     keepChange,
@@ -139,6 +145,55 @@ function deferred<T>() {
   const promise = new Promise<T>((next, fail) => { resolve = next; reject = fail; });
   return { promise, resolve, reject };
 }
+
+describe("TODO-only Draft guard", () => {
+  const before = [
+    "# Note",
+    "",
+    "Keep this exactly. [todo: define the symbol]",
+    "",
+    "Middle $x > 0$ stays. [todo: add one implication]",
+    "",
+    "Final sentence.",
+  ].join("\n");
+
+  it("accepts complete replacements while preserving every fixed source segment", () => {
+    const after = before
+      .replace("[todo: define the symbol]", "Let $x$ denote the normalized weight.")
+      .replace("[todo: add one implication]", "Therefore $x^2 > 0$.");
+
+    expect(validateTodoOnlyChange(before, after)).toEqual({
+      ok: true,
+      todoCount: 2,
+      message: "2 TODOs completed",
+    });
+  });
+
+  it("rejects any edit outside a TODO span", () => {
+    const after = before
+      .replace("Keep this exactly.", "This was rewritten.")
+      .replace("[todo: define the symbol]", "Let $x$ denote the normalized weight.")
+      .replace("[todo: add one implication]", "Therefore $x^2 > 0$.");
+
+    expect(validateTodoOnlyChange(before, after)).toMatchObject({
+      ok: false,
+      todoCount: 2,
+    });
+  });
+
+  it("rejects unresolved or empty TODO replacements", () => {
+    expect(validateTodoOnlyChange(
+      before,
+      before.replace("[todo: define the symbol]", "Definition supplied."),
+    ).message).toContain("remains unresolved");
+    expect(validateTodoOnlyChange(
+      before,
+      before
+        .replace("[todo: define the symbol]", "")
+        .replace("[todo: add one implication]", "Implication supplied."),
+    ).message).toContain("removed without a completion");
+  });
+});
 
 describe("QmdWorkspaceView", () => {
   beforeEach(() => {
@@ -247,8 +302,9 @@ describe("QmdWorkspaceView", () => {
 
     const button = host.querySelector<HTMLButtonElement>(".zc-qmd-enable-ai-editing")!;
     expect(button.hidden).toBe(false);
-    expect(button.textContent).toBe("Edit with AI");
-    expect(button.getAttribute("aria-label")).toBe("Edit with AI");
+    expect(button.textContent).toBe("☑");
+    expect(button.getAttribute("aria-label")).toBe("Complete TODOs with AI");
+    expect(button.title).toBe("Complete TODOs with AI");
     expect(button.disabled).toBe(false);
     expect(prepareChange).not.toHaveBeenCalled();
     expect(onEditWithAI).not.toHaveBeenCalled();
@@ -317,6 +373,43 @@ describe("QmdWorkspaceView", () => {
     expect(host.querySelector<HTMLButtonElement>(".zc-qmd-compare")!.hidden).toBe(false);
     expect(host.querySelector<HTMLButtonElement>(".zc-qmd-compare")!.disabled).toBe(false);
     expect(host.querySelector<HTMLButtonElement>(".zc-qmd-change-keep")!.disabled).toBe(false);
+    view.destroy();
+  });
+
+  it("restores the private copy when the Agent changes any non-TODO source", async () => {
+    const baseline = "# Exact heading\n\nKeep this sentence. [todo: define x]\n";
+    const invalid = "# Rewritten heading\n\nKeep this sentence. Let $x$ be the weight.\n";
+    const {
+      host,
+      view,
+      setExternalSource,
+      setPending,
+      saveSource,
+      onTodoGuardRejected,
+    } = mount();
+    setExternalSource(baseline);
+    view.show();
+    await view.open(DRAFT, { agentCopy: "on-demand" });
+
+    host.querySelector<HTMLButtonElement>(".zc-qmd-enable-ai-editing")!.click();
+    await settle();
+    view.syncAgentChanges({ activeTurnId: "todo-turn", running: true, diffs: [] });
+    await settle();
+    setExternalSource(invalid);
+    setPending(true, "invalid-todo-result");
+    view.syncAgentChanges({ activeTurnId: null, running: false, diffs: [] });
+    await settle();
+
+    expect(saveSource).toHaveBeenCalledWith(CHANGE, expect.any(String), baseline);
+    expect(onTodoGuardRejected).toHaveBeenCalledWith(
+      DRAFT,
+      CHANGE,
+      expect.stringContaining("placeholder changed"),
+    );
+    expect(host.querySelector(".zc-qmd-status")!.textContent)
+      .toBe("Retrying TODO completion with the restored private copy…");
+    expect(host.querySelector(".zc-qmd-status")!.textContent).not.toContain("guard");
+    expect(host.querySelector<HTMLButtonElement>(".zc-qmd-change-keep")!.disabled).toBe(true);
     view.destroy();
   });
 
@@ -818,10 +911,13 @@ describe("QmdWorkspaceView", () => {
 
     const insert = host.querySelector<HTMLButtonElement>(".zc-qmd-formal-block")!;
     expect(insert.hidden).toBe(true);
+    expect(host.querySelector<HTMLElement>(".zc-qmd-visual-tools")!.hidden).toBe(true);
     host.querySelector<HTMLButtonElement>(".zc-qmd-mode")!.click();
     await settle();
 
     expect(insert.hidden).toBe(false);
+    expect(host.querySelector<HTMLElement>(".zc-qmd-visual-tools")!.hidden).toBe(false);
+    expect(insert.parentElement?.classList.contains("zc-qmd-visual-tools")).toBe(true);
     expect(insert.getAttribute("aria-label")).toContain("Definition");
     insert.click();
     const menu = host.querySelector<HTMLElement>(".zc-qmd-formal-menu")!;

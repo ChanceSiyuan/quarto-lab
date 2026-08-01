@@ -102,7 +102,6 @@ Run `make help` for the complete command list.
 - [Assessment methodology](.research-loop/docs/project/assessment-methodology.md)
 - [Running local assessments](.research-loop/docs/project/local-assessments.md)
 - [Agent workflow boundaries](.research-loop/docs/project/skills.md)
-- [ChatGPT Companion setup and safety boundary](docs/chatgpt-companion.md)
 - [Repository rules](AGENTS.md)
 
 Generated output under `public/knowledge/` is build-owned. Do not edit or commit

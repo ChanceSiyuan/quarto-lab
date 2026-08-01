@@ -28,7 +28,6 @@ function callbacks(): FloatPanelCallbacks {
     onPaperTrailConsent: vi.fn(),
     onChooseQLabRoot: vi.fn(),
     onQLabCommand: vi.fn(),
-    onCaptureChatDraft: vi.fn(),
     onOpenWorkbench: vi.fn(),
   };
 }
@@ -189,7 +188,6 @@ describe("full workbench surface", () => {
     host.querySelector<HTMLButtonElement>(".zc-workbench-root")!.click();
     expect(handlers.onChooseQLabRoot).toHaveBeenCalled();
     expect(host.querySelector(".zc-workbench-capture")).toBeNull();
-    expect(handlers.onCaptureChatDraft).not.toHaveBeenCalled();
     view.destroy();
   });
 });

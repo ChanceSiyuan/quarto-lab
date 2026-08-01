@@ -60,13 +60,15 @@ export function workspaceToolbar() {
         <button class="zc-qmd-back" title="Back to AI">←</button>
         <button class="zc-qmd-quickopen-button" title="Open a QMD">⌕</button>
         <strong class="zc-qmd-path">drafts/learning_theo/Virtual_Distillation/majorityvote.qmd</strong>
+        <div class="zc-qmd-visual-tools" role="toolbar" aria-label="Visual Edit tools">
+          <button class="zc-qmd-formal-block" title="Insert Definition, Lemma, Theorem, or Proof">▣</button>
+        </div>
         <span class="zc-qmd-tree-badge" data-tree="drafts">Draft</span>
         <button class="zc-qmd-compliance" title="Draft checks passed">✓</button>
         <button class="zc-qmd-review" title="Add to Knowledge">↑</button>
-        <button class="zc-qmd-enable-ai-editing" title="Edit with AI" aria-label="Edit with AI">Edit with AI</button>
+        <button class="zc-qmd-enable-ai-editing" title="Complete TODOs with AI" aria-label="Complete TODOs with AI">☑</button>
         <button class="zc-qmd-compare" title="Show AI-modified Draft preview">◉</button>
         <button class="zc-qmd-change-keep" title="Keep AI version">✓</button>
-        <button class="zc-qmd-formal-block" title="Insert Definition, Lemma, Theorem, or Proof">▣</button>
         <select class="zc-qmd-editor-picker"><option>Cursor</option><option>VS Code</option></select>
         <button class="zc-qmd-edit-external" title="Edit in Cursor">✎</button>
         <button class="zc-qmd-refresh" title="Refresh Preview">↻</button>

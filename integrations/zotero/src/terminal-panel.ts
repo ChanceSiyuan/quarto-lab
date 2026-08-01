@@ -29,6 +29,7 @@ export const CODEX_READER_DEVELOPER_INSTRUCTIONS = [
   "Treat the original PDF and its containing directory as read-only. Never create, edit, rename, move, or delete files there.",
   "Never alter Zotero items, collections, tags, attachment links, annotations, notes, indexes, or storage. The bundled Zotkit and Reader tools are query-only.",
   "For references such as this, here, or the selected passage, consult zotero_reader before answering and cite the one-based PDF page.",
+  "For every answer containing mathematics, follow the Renderable math contract in skills/expand-notes/SKILL.md: use $...$ for inline math and standalone $$...$$ blocks for display math; never use bare bracket lines, code formatting, or document-only LaTeX environments as formula delimiters.",
 ].join(" ");
 
 export interface TerminalPaperOptions {

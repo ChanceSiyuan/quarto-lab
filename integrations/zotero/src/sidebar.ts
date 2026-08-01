@@ -33,9 +33,6 @@ export interface ChatEntry {
   text: string;
   title?: string;
   state?: "running" | "complete" | "failed";
-  origin?: "codex" | "chatgpt-companion";
-  originLabel?: string;
-  companionProvenance?: { capsuleId: string; capsuleChecksum: string };
 }
 
 export interface ModelOption {
@@ -57,7 +54,7 @@ export interface ThreadOption {
   paperTitle?: string;
   updatedAt: string;
   active: boolean;
-  source?: "codex" | "chatgpt";
+  source?: "codex";
   readOnly?: boolean;
   status?: "idle" | "running" | "attention" | "switching";
 }
@@ -67,7 +64,7 @@ export interface HistoryConversationOption {
   title: string;
   preview?: string;
   updatedAt: string;
-  source: "codex" | "chatgpt";
+  source: "codex";
   sourceLabel: string;
   cwd?: string;
   pinned?: boolean;
@@ -161,21 +158,9 @@ export interface SidebarState {
   historyLoading: boolean;
   historyHasMore: boolean;
   historyError?: string;
-  readOnlyConversation?: boolean;
-  canSaveAIContext?: boolean;
-  activeAIContext?: boolean;
   selectedModel: string;
   effort: string;
   running: boolean;
-  /** A ChatGPT handoff is in progress; it is independent of Codex streaming. */
-  companionBusy?: boolean;
-  companionStatus?: { kind: "idle" | "success" | "error"; message: string };
-  pendingCompanionHandoffs?: Array<{
-    capsuleId: string;
-    questionPreview: string;
-    createdAt: string;
-    selected: boolean;
-  }>;
   creatingThread?: boolean;
   threadTitle?: string;
   mode: ResearchMode;
@@ -213,12 +198,6 @@ export interface SidebarCallbacks {
   onHistoryLoadMore?(): void;
   onSelectHistoryConversation?(conversation: HistoryConversationOption): void;
   onToggleHistoryPin?(threadId: string, pinned: boolean): void;
-  onOpenChatGPT?(): void;
-  onImportChatGPTHistory?(): void;
-  onOpenChatGPTCompanion?(question: string): void;
-  onImportChatGPTCompanionAnswer?(): void;
-  onSelectChatGPTCompanionHandoff?(capsuleId: string): void;
-  onReturnToLiveConversation?(): void;
   onLogin(): void;
   onLogout(): void;
   onOpenTerminal(): void;
@@ -240,7 +219,6 @@ export interface SidebarCallbacks {
   onNotingApply?(mode: { kind: "new" } | { kind: "replace"; key: string }): void;
   onNotingCancel?(): void;
   onChooseQLabRoot?(): void | Promise<void>;
-  onCaptureChatDraft?(): void;
   onResearchAction?(actionId: string): void;
   onChoosePaper?(): void;
   onOpenPaper?(): void;
@@ -260,10 +238,6 @@ export type SidebarIcon = "history" | "new" | "terminal" | "site" | "popout" | "
 
 const LONG_USER_MESSAGE_CHARACTERS = 420;
 const LONG_USER_MESSAGE_LINES = 8;
-
-function shortCapsuleId(capsuleId: string): string {
-  return capsuleId.length <= 14 ? capsuleId : `${capsuleId.slice(0, 9)}…${capsuleId.slice(-4)}`;
-}
 
 /** Renders long user prompts compactly without discarding any of their text. */
 export function appendUserMessage(
@@ -347,11 +321,7 @@ export class SidebarView {
   private stopButton!: HTMLButtonElement;
   private modelSelect!: HTMLSelectElement;
   private effortSelect!: HTMLSelectElement;
-  private saveAIContextButton!: HTMLButtonElement;
   private composerControls!: HTMLElement;
-  private companionButton: HTMLButtonElement | null = null;
-  private companionHandoffs: HTMLElement | null = null;
-  private companionStatusArea!: HTMLElement;
   private qlabRootLabel!: HTMLElement;
   private actionStrip!: HTMLElement;
   private renderedResearchActions: {
@@ -526,7 +496,7 @@ export class SidebarView {
   private buildHistoryRail(): void {
     const rail = this.doc.createElement("aside");
     rail.className = "zc-history-rail";
-    rail.setAttribute("aria-label", "All Codex and imported ChatGPT conversations");
+    rail.setAttribute("aria-label", "All Codex conversations");
     rail.hidden = !this.historyOpen;
 
     const header = this.doc.createElement("header");
@@ -553,20 +523,6 @@ export class SidebarView {
     });
     this.historySearch = search;
 
-    const actions = this.doc.createElement("div");
-    actions.className = "zc-history-actions";
-    const openChatGPT = this.doc.createElement("button");
-    openChatGPT.type = "button";
-    openChatGPT.textContent = "Open ChatGPT";
-    openChatGPT.title = "Open your live ChatGPT account history";
-    openChatGPT.addEventListener("click", () => this.callbacks.onOpenChatGPT?.());
-    const importChatGPT = this.doc.createElement("button");
-    importChatGPT.type = "button";
-    importChatGPT.textContent = "Import Export";
-    importChatGPT.title = "Import conversations.json from a ChatGPT data export (read-only)";
-    importChatGPT.addEventListener("click", () => this.callbacks.onImportChatGPTHistory?.());
-    actions.append(openChatGPT, importChatGPT);
-
     const list = this.doc.createElement("div");
     list.className = "zc-history-list";
     this.historyList = list;
@@ -580,8 +536,8 @@ export class SidebarView {
 
     const privacy = this.doc.createElement("small");
     privacy.className = "zc-history-privacy";
-    privacy.textContent = "Codex history stays local. Imported ChatGPT exports are read-only.";
-    rail.append(header, search, actions, list, loadMore, privacy);
+    privacy.textContent = "Codex history stays local.";
+    rail.append(header, search, list, loadMore, privacy);
     this.historyRail = rail;
   }
 
@@ -802,7 +758,6 @@ export class SidebarView {
     this.textarea.addEventListener("input", () => {
       this.autoSizeComposer();
       this.updateContextMenuFromComposer();
-      this.renderCompanionControls();
     });
     this.textarea.addEventListener("keydown", (event) => {
       if (this.handleContextMenuKeydown(event)) return;
@@ -832,28 +787,7 @@ export class SidebarView {
     this.effortSelect.className = "zc-compact-select";
     this.effortSelect.title = "Reasoning Effort";
     this.effortSelect.addEventListener("change", () => this.callbacks.onEffortChange(this.effortSelect.value));
-    this.saveAIContextButton = this.doc.createElement("button");
-    this.saveAIContextButton.type = "button";
-    this.saveAIContextButton.className = "zc-save-ai-context";
-    this.saveAIContextButton.addEventListener("click", () => this.callbacks.onCaptureChatDraft?.());
-    controls.append(this.modelSelect, this.effortSelect, this.saveAIContextButton);
-    if (this.surface === "workbench") {
-      this.companionButton = this.doc.createElement("button");
-      this.companionButton.type = "button";
-      this.companionButton.className = "zc-companion-open";
-      this.companionButton.title = "Ask in ChatGPT";
-      this.companionButton.setAttribute("aria-label", "Ask in ChatGPT");
-      const label = this.doc.createElement("span");
-      label.className = "zc-companion-open-label";
-      label.textContent = "Ask in ChatGPT ↗";
-      this.companionButton.appendChild(label);
-      this.companionButton.addEventListener("click", () => {
-        const question = this.textarea.value;
-        if (!question.trim() || this.state.companionBusy || this.state.readOnlyConversation) return;
-        this.callbacks.onOpenChatGPTCompanion?.(question);
-      });
-      controls.appendChild(this.companionButton);
-    }
+    controls.append(this.modelSelect, this.effortSelect);
     this.sendButton = this.doc.createElement("button");
     this.sendButton.type = "button";
     this.sendButton.className = "zc-send-button";
@@ -872,11 +806,7 @@ export class SidebarView {
     composer.append(this.contextChips, this.contextMenu, this.textarea, composerFooter);
     this.statusArea = this.doc.createElement("div");
     this.statusArea.className = "zc-status-area";
-    this.companionStatusArea = this.doc.createElement("div");
-    this.companionStatusArea.className = "zc-companion-status";
-    this.companionStatusArea.setAttribute("role", "status");
-    this.companionStatusArea.setAttribute("aria-live", "polite");
-    composerWrap.append(qlabBar, composer, this.companionStatusArea, this.statusArea);
+    composerWrap.append(qlabBar, composer, this.statusArea);
 
     this.loginLayer = this.doc.createElement("div");
     this.loginLayer.className = "zc-login-layer";
@@ -1094,30 +1024,17 @@ export class SidebarView {
     this.renderEfforts();
     this.renderTranscript();
     this.renderLoginLayer();
-    const canSave = this.state.canSaveAIContext === true && !this.state.readOnlyConversation;
-    this.saveAIContextButton.hidden = !canSave;
-    this.saveAIContextButton.disabled = !canSave || this.state.running || this.state.phase !== "ready";
-    const saveLabel = this.state.activeAIContext ? "Update AI Context" : "Save AI Context";
-    this.saveAIContextButton.textContent = saveLabel;
-    this.saveAIContextButton.title = saveLabel;
-    this.saveAIContextButton.setAttribute("aria-label", saveLabel);
     this.setButtonIcon(this.sendButton, "send");
     this.sendButton.title = this.state.running ? "Send Follow-up" : "Send";
     this.sendButton.setAttribute("aria-label", this.sendButton.title);
     this.stopButton.hidden = !this.state.running;
     this.stopButton.style.display = this.state.running ? "grid" : "none";
     const canSendCodex = this.canSendCodex();
-    this.textarea.disabled = Boolean(this.state.readOnlyConversation);
+    this.textarea.disabled = false;
     this.sendButton.disabled = !canSendCodex;
     this.modelSelect.disabled = !canSendCodex || this.state.running;
     this.effortSelect.disabled = !canSendCodex || this.state.running;
-    this.renderCompanionControls();
-    if (this.state.readOnlyConversation) {
-      this.textarea.placeholder = "Imported ChatGPT history is read-only";
-    }
-    this.statusArea.textContent = this.state.error || (this.state.readOnlyConversation
-      ? "Imported ChatGPT history is read-only and stored only in this Zotero profile."
-      : this.state.running
+    this.statusArea.textContent = this.state.error || (this.state.running
       ? "Enter sends a follow-up · Esc stops generation"
       : "Codex can make mistakes; verify the paper text and page numbers.");
     this.statusArea.classList.toggle("is-error", Boolean(this.state.error));
@@ -1127,80 +1044,7 @@ export class SidebarView {
     // A fresh host can represent its initial active thread with an empty tab
     // list. Once it supplies tabs, an explicit active tab is required.
     const hasActiveThread = this.state.threads.length === 0 || this.state.threads.some((thread) => thread.active);
-    return this.state.phase === "ready" && hasActiveThread && !this.state.readOnlyConversation;
-  }
-
-  private renderCompanionControls(): void {
-    if (!this.companionButton) return;
-    const unavailable = Boolean(this.state.companionBusy || this.state.readOnlyConversation);
-    this.companionButton.disabled = unavailable || !this.textarea.value.trim();
-
-    const hasCompanionState = this.state.pendingCompanionHandoffs !== undefined;
-    const handoffs = this.state.pendingCompanionHandoffs || [];
-    if (!hasCompanionState) {
-      this.companionHandoffs?.remove();
-      this.companionHandoffs = null;
-    }
-    if (hasCompanionState) {
-      if (!this.companionHandoffs) {
-        this.companionHandoffs = this.doc.createElement("section");
-        this.companionHandoffs.className = "zc-companion-handoffs";
-        this.companionHandoffs.setAttribute("aria-label", "ChatGPT Companion handoffs");
-        this.companionStatusArea.before(this.companionHandoffs);
-      }
-      this.companionHandoffs.replaceChildren();
-      const explicitlySelected = handoffs.filter((handoff) => handoff.selected);
-      const newest = handoffs.length
-        ? handoffs.reduce((latest, handoff) => handoff.createdAt > latest.createdAt ? handoff : latest)
-        : null;
-      const selectedIds = explicitlySelected.length
-        ? new Set(explicitlySelected.map((handoff) => handoff.capsuleId))
-        : newest ? new Set([newest.capsuleId]) : new Set<string>();
-
-      const heading = this.doc.createElement("strong");
-      heading.textContent = handoffs.length
-        ? "ChatGPT handoffs ready to import"
-        : "No copied ChatGPT answer is ready to import";
-      const list = this.doc.createElement("div");
-      list.className = "zc-companion-handoff-list";
-      const importButton = this.doc.createElement("button");
-      importButton.type = "button";
-      importButton.className = "zc-companion-import";
-      importButton.textContent = "Import copied answer";
-      const syncImportDisabled = () => {
-        const selectedCount = list.querySelectorAll<HTMLInputElement>(".zc-companion-handoff-choice:checked").length;
-        importButton.disabled = unavailable || selectedCount !== 1;
-      };
-      for (const handoff of handoffs) {
-        const option = this.doc.createElement("label");
-        option.className = "zc-companion-handoff";
-        const choice = this.doc.createElement("input");
-        choice.type = "checkbox";
-        choice.className = "zc-companion-handoff-choice";
-        choice.checked = selectedIds.has(handoff.capsuleId);
-        choice.addEventListener("change", () => {
-          syncImportDisabled();
-          this.callbacks.onSelectChatGPTCompanionHandoff?.(handoff.capsuleId);
-        });
-        const copy = this.doc.createElement("span");
-        const question = this.doc.createElement("span");
-        question.className = "zc-companion-handoff-question";
-        question.textContent = handoff.questionPreview;
-        const detail = this.doc.createElement("small");
-        detail.textContent = `${handoff.createdAt} · ${shortCapsuleId(handoff.capsuleId)}`;
-        copy.append(question, detail);
-        option.append(choice, copy);
-        list.appendChild(option);
-      }
-      syncImportDisabled();
-      importButton.addEventListener("click", () => this.callbacks.onImportChatGPTCompanionAnswer?.());
-      this.companionHandoffs.append(heading, ...(handoffs.length ? [list] : []), importButton);
-    }
-
-    const status = this.state.companionStatus;
-    this.companionStatusArea.hidden = !status || status.kind === "idle";
-    this.companionStatusArea.textContent = status?.kind === "idle" ? "" : status?.message || "";
-    this.companionStatusArea.classList.toggle("is-error", status?.kind === "error");
+    return this.state.phase === "ready" && hasActiveThread;
   }
 
   private renderResearchActions(): void {
@@ -1254,15 +1098,6 @@ export class SidebarView {
         .some((value) => value?.toLocaleLowerCase().includes(query));
     });
 
-    if (this.state.readOnlyConversation) {
-      const live = this.doc.createElement("button");
-      live.type = "button";
-      live.className = "zc-history-return-live";
-      live.textContent = "← Return to Live Codex";
-      live.addEventListener("click", () => this.callbacks.onReturnToLiveConversation?.());
-      this.historyList.appendChild(live);
-    }
-
     const addGroup = (label: string, items: HistoryConversationOption[]): void => {
       if (!items.length) return;
       const heading = this.doc.createElement("div");
@@ -1292,25 +1127,22 @@ export class SidebarView {
         open.append(title, meta);
         open.addEventListener("click", () => this.callbacks.onSelectHistoryConversation?.(conversation));
         row.appendChild(open);
-        if (conversation.source === "codex") {
-          const pin = this.doc.createElement("button");
-          pin.type = "button";
-          pin.className = "zc-history-pin";
-          pin.textContent = conversation.pinned ? "★" : "☆";
-          pin.title = conversation.pinned ? "Unpin Conversation" : "Pin Conversation";
-          pin.setAttribute("aria-label", pin.title);
-          pin.addEventListener("click", () => {
-            this.callbacks.onToggleHistoryPin?.(conversation.id, !conversation.pinned);
-          });
-          row.appendChild(pin);
-        }
+        const pin = this.doc.createElement("button");
+        pin.type = "button";
+        pin.className = "zc-history-pin";
+        pin.textContent = conversation.pinned ? "★" : "☆";
+        pin.title = conversation.pinned ? "Unpin Conversation" : "Pin Conversation";
+        pin.setAttribute("aria-label", pin.title);
+        pin.addEventListener("click", () => {
+          this.callbacks.onToggleHistoryPin?.(conversation.id, !conversation.pinned);
+        });
+        row.appendChild(pin);
         this.historyList!.appendChild(row);
       }
     };
 
-    addGroup("Pinned", conversations.filter((conversation) => conversation.source === "codex" && conversation.pinned));
-    addGroup("Codex", conversations.filter((conversation) => conversation.source === "codex" && !conversation.pinned));
-    addGroup("Imported ChatGPT", conversations.filter((conversation) => conversation.source === "chatgpt"));
+    addGroup("Pinned", conversations.filter((conversation) => conversation.pinned));
+    addGroup("Codex", conversations.filter((conversation) => !conversation.pinned));
 
     if (!conversations.length && !this.state.historyLoading) {
       const empty = this.doc.createElement("div");
@@ -1401,7 +1233,7 @@ export class SidebarView {
       button.append(state, label);
       button.addEventListener("click", () => this.callbacks.onSelectThread(thread.id));
       item.appendChild(button);
-      // Closing a tab never deletes its Codex/ChatGPT history. The history
+      // Closing a tab never deletes its Codex history. The history
       // rail can reopen it later. stopPropagation prevents an accidental
       // switch immediately before the close callback.
       const remove = this.doc.createElement("button");
@@ -1755,9 +1587,6 @@ export class SidebarView {
           entry.text,
           entry.title || "",
           entry.state || "",
-          entry.origin || "",
-          entry.originLabel || "",
-          entry.companionProvenance || null,
         ]);
         desired.push(this.cachedEntryNode(entry.id, fingerprint, () => this.renderEntry(entry)));
       }
@@ -2278,7 +2107,7 @@ export class SidebarView {
 
   private renderEntry(entry: ChatEntry): HTMLElement {
     const article = this.doc.createElement("article");
-    article.className = `zc-entry zc-entry-${entry.kind}${entry.origin === "chatgpt-companion" ? " zc-entry-companion" : ""}`;
+    article.className = `zc-entry zc-entry-${entry.kind}`;
     article.dataset.entryId = entry.id;
     if (entry.kind === "user") {
       appendUserMessage(this.doc, article, entry, this.expandedUserMessages);
@@ -2306,28 +2135,12 @@ export class SidebarView {
       article.textContent = entry.text;
       return article;
     }
-    const avatar = entry.origin === "chatgpt-companion"
-      ? this.createCompanionAvatar()
-      : this.createCodexAvatar();
+    const avatar = this.createCodexAvatar();
     const content = this.doc.createElement("div");
     content.className = "zc-entry-content";
     const markdownBody = this.doc.createElement("div");
     markdownBody.className = "zc-markdown";
     markdownBody.appendChild(renderMarkdown(this.doc, entry.text, this.markdownOptions()));
-    if (entry.origin === "chatgpt-companion") {
-      const origin = this.doc.createElement("div");
-      origin.className = "zc-companion-origin";
-      const label = this.doc.createElement("span");
-      label.textContent = entry.originLabel || "Imported from ChatGPT · user copied";
-      origin.appendChild(label);
-      if (entry.companionProvenance) {
-        const capsule = this.doc.createElement("small");
-        capsule.textContent = `Capsule ${shortCapsuleId(entry.companionProvenance.capsuleId)}`;
-        capsule.title = `Capsule checksum: ${entry.companionProvenance.capsuleChecksum}`;
-        origin.appendChild(capsule);
-      }
-      content.appendChild(origin);
-    }
     content.appendChild(markdownBody);
     if (entry.kind === "assistant") {
       content.appendChild(this.createCopyAnswerButton(entry.text));
@@ -2341,15 +2154,6 @@ export class SidebarView {
     avatar.className = "zc-entry-avatar";
     avatar.src = "chrome://zotkit/content/icons/icon.svg";
     avatar.alt = "Codex";
-    return avatar;
-  }
-
-  private createCompanionAvatar(): HTMLElement {
-    const avatar = this.doc.createElement("span");
-    avatar.className = "zc-entry-avatar zc-companion-avatar";
-    avatar.setAttribute("role", "img");
-    avatar.setAttribute("aria-label", "ChatGPT Companion");
-    avatar.textContent = "◎";
     return avatar;
   }
 

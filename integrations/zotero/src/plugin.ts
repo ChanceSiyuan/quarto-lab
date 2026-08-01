@@ -34,12 +34,6 @@ import {
   type SidebarState,
   type ThreadOption,
 } from "./sidebar";
-import {
-  importedChatOptions,
-  parseChatGPTExport,
-  parseStoredChatGPTArchive,
-  type StoredChatGPTArchive,
-} from "./chatgpt-history";
 import { FloatPanelView, latestExchange } from "./float-panel";
 import { startRegionSelection, type RegionSelection } from "./region-capture";
 import {
@@ -114,21 +108,6 @@ import {
 import { defaultSelectableModel } from "./model-menu";
 import { shouldAutoOpenFloat } from "./plugin-helpers";
 import {
-  buildCompanionCapsule,
-  COMPANION_CAPSULE_BOUNDS,
-  type CompanionCapsuleInput,
-  type ChatGPTCompanionCapsule,
-} from "./chatgpt-companion-capsule";
-import {
-  createCompanionCapsuleStorage,
-  createGeckoCompanionCapsuleFilesystem,
-  type CompanionCapsuleStorage,
-} from "./chatgpt-companion-store";
-import {
-  buildChatGPTCompanionPrompt,
-  importCompanionAnswer,
-} from "./chatgpt-companion";
-import {
   ZOTERO_MUTATION_TOOL,
   ZoteroMutationApplyError,
   ZoteroMutationService,
@@ -190,15 +169,12 @@ import type { PdfPageReference } from "./markdown";
 import { sha256Bytes, sha256File } from "./hashing";
 import {
   debug,
-  copyToClipboard,
   logError,
-  launchURL,
   PANE_ID,
   PLUGIN_ID,
   prefString,
   profilePath,
   randomID,
-  readTextFromClipboard,
   setPrefString,
 } from "./platform";
 
@@ -262,36 +238,6 @@ export function draftChangeRebaseAction(
 
 export const MAX_SELECTION_PROMPT_CHARACTERS = 32_000;
 const STANDALONE_WORKBENCH_ID = "__qlab_standalone_workbench__";
-const CHATGPT_URL = "https://chatgpt.com/";
-const MAX_PENDING_COMPANION_HANDOFFS = 8;
-
-type CompanionSubjectKey = `paper:${string}` | `draft:${string}` | "question-only";
-
-interface ActiveDraftSnapshot {
-  relativePath: string;
-  revision: string;
-  source: string;
-}
-
-interface PendingCompanionHandoff {
-  capsuleId: string;
-  subjectKey: CompanionSubjectKey;
-  question: string;
-  createdAt: string;
-}
-
-export interface ChatGPTCompanionPluginDependencies {
-  /** Mutable DI surface: integration tests may replace a dependency without touching globals. */
-  store?: CompanionCapsuleStorage;
-  copy?: (text: string) => boolean | Promise<boolean>;
-  readClipboard?: () => string | null | Promise<string | null>;
-  launch?: (url: string) => void | Promise<void>;
-  now?: () => Date;
-  id?: () => string;
-  hash?: (canonicalJson: string) => string;
-  revalidateDraft?: (relativePath: string) => Promise<{ source: string; revision: string }>;
-}
-
 export interface RepositoryTargetStartupDependencies {
   readRawTargetMigrationInput(): RawTargetMigrationInput;
   readSessionRecords(): Promise<SessionRecordsSnapshot>;
@@ -464,34 +410,34 @@ export const AI_CONTEXT_MENU_IDS = [
   "qlab-zotero-repair-ai-context",
 ] as const;
 
+const COMPLETE_TODOS_VISIBLE_INSTRUCTION =
+  "Complete all [todo: ...] placeholders in the current Draft.";
+
 const EDIT_ACTIVE_AI_CONTEXT_INSTRUCTION = [
-  "Use the full current dedicated conversation.",
-  "Revise the complete active AI Context QMD.",
+  "Action: complete-todos",
+  "Mode: todo-only",
+  "Use skills/complete-gaps/SKILL.md as the authoritative workflow.",
+  "Read the complete active private working-copy QMD and find every literal [todo: ...] placeholder.",
+  "Process the placeholders in source order and replace only each exact placeholder span.",
+  "Preserve every byte outside the placeholder spans; do not revise, reformat, move, or clean up any other content.",
+  "Write completions in English and use the full current dedicated conversation as evidence context.",
   "Write only the private working-copy path supplied in QMD Editor context.",
-  "Preserve valid frontmatter and managed-marker structure.",
-  "Do not edit the original Draft or trusted knowledge.",
-  "Leave the result for eye/Keep review.",
+  "Do not edit the original Draft, trusted Knowledge, Literature, or any other file.",
+  "If a TODO cannot be completed without guessing, leave that exact placeholder unchanged and report it in chat.",
+  "Publish concise commentary progress: report the TODO count, then 'Completing TODO i/n: <brief topic>' for each placeholder.",
+  "Show actions and outcomes only; never expose hidden chain-of-thought or private reasoning.",
+  "Do not ask for another approval; save once and leave the result for eye/Keep review.",
 ].join("\n");
+
+const RETRY_TODO_COMPLETION_INSTRUCTION =
+  "Continue completing TODOs from the restored private working copy.";
 
 export function isCreateReadingContextCommand(text: string): boolean {
   return text === "create a reading context";
 }
 
-export function canSaveAIContextState(input: {
-  imported: boolean;
-  running: boolean;
-  activeRelativePath: string | null;
-  entries: Array<{ kind: string }>;
-}): boolean {
-  return !input.imported && !input.running && (
-    input.activeRelativePath !== null
-    || input.entries.some((entry) => entry.kind === "assistant")
-  );
-}
-
 /** Keep the historical class name as a source-level compatibility shim. */
 export class ZoteroChatPlugin {
-  private readonly companionRuntime: ChatGPTCompanionPluginDependencies;
   private settings!: ZoteroChatSettings;
   private activeRepositoryTarget: RepositoryTargetSnapshot | null = null;
   private repositoryTargetResolver: LocalRepositoryTargetResolver | null = null;
@@ -551,18 +497,8 @@ export class ZoteroChatPlugin {
   private regionCaptureGeneration = 0;
   /** Default Reader chips the user explicitly turned off for this paper. */
   private excludedContextIDs = new Set<string>();
-  private chatGPTArchive: StoredChatGPTArchive | null = null;
-  private selectedImportedChatID: string | null = null;
-  private openImportedChatIDs: string[] = [];
   /** Draft currently visible in a QMD workspace; null as soon as that workspace closes. */
   private activeDraftPath: string | null = null;
-  private activeDraftSnapshot: ActiveDraftSnapshot | null = null;
-  private readonly pendingCompanionHandoffs = new Map<CompanionSubjectKey, PendingCompanionHandoff[]>();
-  private readonly selectedCompanionHandoff = new Map<CompanionSubjectKey, string>();
-  private readonly companionStatuses = new Map<CompanionSubjectKey, { kind: "idle" | "success" | "error"; message: string }>();
-  private readonly companionBusySubjects = new Set<CompanionSubjectKey>();
-  private readonly companionOverlays = new Map<CompanionSubjectKey, ChatEntry[]>();
-  private companionRepositoryEpoch = 0;
   private mutationCheckpoints: CheckpointOption[] = [];
   private contextRequestSequence = 0;
   private destroyed = false;
@@ -579,10 +515,6 @@ export class ZoteroChatPlugin {
   private wasCodexRunning = false;
   private autoOpenedFloatTurnId: string | null = null;
   private floatDismissedTurnId: string | null = null;
-
-  constructor(companionRuntime: ChatGPTCompanionPluginDependencies = {}) {
-    this.companionRuntime = companionRuntime;
-  }
 
   async startup(data: PluginStartupData): Promise<void> {
     let startupBridge: NativeBridge | null = null;
@@ -632,24 +564,6 @@ export class ZoteroChatPlugin {
       ignoreExisting: true,
       permissions: 0o700,
     });
-    if (!this.companionRuntime.store) {
-      const hash = this.companionHash();
-      this.companionRuntime.store = createCompanionCapsuleStorage({
-        filesystem: createGeckoCompanionCapsuleFilesystem({
-          makeDirectory: (path, options) => IOUtils.makeDirectory(path, options),
-          writeJSON: (path, value) => IOUtils.writeJSON(path, value),
-          readJSON: (path) => IOUtils.readJSON(path),
-          move: (source, destination, options) => IOUtils.move(source, destination, options),
-          remove: (path, options) => IOUtils.remove(path, options),
-          getChildren: (path) => IOUtils.getChildren(path),
-          setPermissions: (path, permissions, honorUmask) => IOUtils.setPermissions(path, permissions, honorUmask),
-        }),
-        hash,
-        now: () => this.companionNow(),
-      });
-    }
-    await this.companionRuntime.store.pruneExpired().catch((error) => logError(error));
-    await this.loadChatGPTHistory();
     await this.loadConversationPapers();
 
     const readAdapter = createZotero9ReadAdapter(Zotero, {
@@ -1370,12 +1284,6 @@ export class ZoteroChatPlugin {
       onToggleHistoryPin: (threadID, pinned) => {
         void this.codex.setGlobalThreadPinned(threadID, pinned).catch((error) => this.reportError(error));
       },
-      onOpenChatGPT: () => launchURL("https://chatgpt.com/"),
-      onImportChatGPTHistory: () => {
-        void this.importChatGPTHistory(body.ownerDocument.defaultView || undefined)
-          .catch((error) => this.reportError(error));
-      },
-      onReturnToLiveConversation: () => this.returnToLiveConversation(),
       onLogin: () => void this.codex.login().catch((error) => this.reportError(error)),
       onLogout: () => void this.codex.logout().catch((error) => this.reportError(error)),
       onOpenTerminal: () => void this.openTerminal().then(() => this.terminal.focus()).catch((error) => this.reportError(error)),
@@ -1390,9 +1298,6 @@ export class ZoteroChatPlugin {
       onChooseQLabRoot: () => {
         void this.chooseQLabRoot(body.ownerDocument.defaultView || undefined)
           .catch((error) => this.reportError(error));
-      },
-      onCaptureChatDraft: () => {
-        void this.saveAIContext().catch((error) => this.reportError(error));
       },
       onResearchAction: (actionID) => {
         void this.runResearchAction(view!, actionID, body.ownerDocument.defaultView || undefined)
@@ -1592,54 +1497,6 @@ export class ZoteroChatPlugin {
     }
   }
 
-  private async saveAIContext(win = Zotero.getMainWindow()): Promise<void> {
-    if (!await this.requireAIContextRoot(win)) return;
-    if (this.selectedImportedChatID) {
-      throw new Error("Imported ChatGPT history is read-only; return to the live Codex conversation first");
-    }
-    if (this.codex.state.running) {
-      throw new Error("Wait for the current response before saving an AI Context");
-    }
-    this.reconcileActiveAIContextThread();
-    const active = this.activeAIContextPath
-      ? await this.aiContexts.open(this.activeAIContextPath)
-      : null;
-    const messages = this.visibleAIContextMessages();
-    if (!active && !messages.some((message) => message.role === "assistant")) {
-      throw new Error("An AI Context requires a completed assistant response");
-    }
-    const primary = this.codex.getActiveReaderContext?.()?.parent ?? null;
-    const secondary = this.conversationPapers.list(this.codex.state.activeThreadId || "");
-    const papers = active?.manifest.papers ?? [
-      ...(primary ? [{
-        libraryID: String(primary.libraryID),
-        itemKey: String(primary.key),
-        title: String(primary.title),
-      }] : []),
-      ...secondary.map(({ libraryID, itemKey, title }) => ({
-        libraryID: String(libraryID),
-        itemKey: String(itemKey),
-        title: String(title),
-      })),
-    ].filter((paper, index, all) => all.findIndex((candidate) =>
-      candidate.libraryID === paper.libraryID && candidate.itemKey === paper.itemKey) === index);
-    if (!active && !this.codex.state.activeThreadId) {
-      throw new Error("Open a live Codex conversation before saving an AI Context");
-    }
-    await this.commitAIContext({
-      kind: active?.manifest.kind ?? "conversation",
-      contextKey: active?.manifest.contextKey ?? `conversation:${this.codex.state.activeThreadId}`,
-      sourceThreadId: active?.manifest.sourceThreadId ?? this.codex.state.activeThreadId,
-      papers,
-      projection: active?.manifest.projection ?? {
-        mode: "attached",
-        targets: papers.map(({ libraryID, itemKey }) => ({ libraryID, itemKey })),
-      },
-      messages,
-      activeRelativePath: active?.relativePath ?? null,
-    }, win);
-  }
-
   private async createReadingContext(win: Window): Promise<void> {
     if (!await this.requireAIContextRoot(win)) return;
     const papers = await this.selectedAIContextPapers(this.selectedZoteroItems(win));
@@ -1665,9 +1522,6 @@ export class ZoteroChatPlugin {
 
   private async createStandaloneAIContext(win: Window): Promise<void> {
     if (!await this.requireAIContextRoot(win)) return;
-    if (this.selectedImportedChatID) {
-      throw new Error("Imported ChatGPT history is read-only; return to the live Codex conversation first");
-    }
     if (this.codex.state.running) {
       throw new Error("Wait for the current response before saving an AI Context");
     }
@@ -1736,7 +1590,11 @@ export class ZoteroChatPlugin {
     this.renderChatViews();
   }
 
-  private async editActiveAIContextWithAI(relativePath: string, changePath: string): Promise<void> {
+  private async editActiveAIContextWithAI(
+    relativePath: string,
+    changePath: string,
+    guardReason?: string,
+  ): Promise<void> {
     if (!this.codex.state.connected) {
       throw new Error("Connect to the local Codex before editing the active AI Context");
     }
@@ -1767,12 +1625,30 @@ export class ZoteroChatPlugin {
     this.safeRepositoryPath(changePath);
     const changeDirectory = changePath.split("/").slice(0, -1).join("/");
     const writableRoot = this.safeRepositoryPath(changeDirectory);
+    const actionContext = guardReason
+      ? [
+          EDIT_ACTIVE_AI_CONTEXT_INSTRUCTION,
+          "",
+          "The previous private working-copy result was rejected and restored before this retry.",
+          `Guard reason: ${guardReason}`,
+          "Retry from the restored source and preserve every byte outside literal [todo: ...] spans.",
+        ].join("\n")
+      : EDIT_ACTIVE_AI_CONTEXT_INSTRUCTION;
     await this.codex.send(
-      EDIT_ACTIVE_AI_CONTEXT_INSTRUCTION,
+      guardReason ? RETRY_TODO_COMPLETION_INSTRUCTION : COMPLETE_TODOS_VISIBLE_INSTRUCTION,
       this.selectedModel,
       this.selectedEffort,
       [],
-      { expectedThreadId, writableRoots: [writableRoot] },
+      {
+        expectedThreadId,
+        writableRoots: [writableRoot],
+        transientContext: {
+          [guardReason ? "TODO-only host guard" : "Complete TODOs Action"]: {
+            kind: "application",
+            value: actionContext,
+          },
+        },
+      },
     );
   }
 
@@ -1834,9 +1710,6 @@ export class ZoteroChatPlugin {
       await this.createReadingContext(Zotero.getMainWindow());
       return;
     }
-    if (this.selectedImportedChatID) {
-      throw new Error("Imported ChatGPT history is read-only; return to the live Codex conversation first");
-    }
     if (!this.codex.state.connected) await this.ensureChatSession();
     if (!this.codex.isSignedIn()) {
       throw new Error("Sign in to the local Codex with ChatGPT first");
@@ -1853,7 +1726,6 @@ export class ZoteroChatPlugin {
   }
 
   private async newChat(preferredView?: SidebarView): Promise<void> {
-    this.selectedImportedChatID = null;
     await this.openResearchChat(undefined, false);
     if (!this.codex.isSignedIn()) {
       throw new Error("Sign in to the local Codex with ChatGPT first");
@@ -1885,15 +1757,6 @@ export class ZoteroChatPlugin {
 
   private async selectThread(view: SidebarView, threadID: string): Promise<void> {
     try {
-      const imported = this.chatGPTArchive?.conversations.find((conversation) => conversation.id === threadID);
-      if (imported) {
-        this.selectedImportedChatID = threadID;
-        if (!this.openImportedChatIDs.includes(threadID)) this.openImportedChatIDs.push(threadID);
-        this.chatError = "";
-        this.renderChatViews();
-        return;
-      }
-      this.selectedImportedChatID = null;
       await this.codex.switchThread(threadID);
       this.updateInteractionContext();
       this.chatError = "";
@@ -1906,16 +1769,6 @@ export class ZoteroChatPlugin {
   }
 
   private async selectHistoryConversation(conversation: HistoryConversationOption): Promise<void> {
-    if (conversation.source === "chatgpt") {
-      this.selectedImportedChatID = conversation.id;
-      if (!this.openImportedChatIDs.includes(conversation.id)) {
-        this.openImportedChatIDs.push(conversation.id);
-      }
-      this.chatError = "";
-      this.renderChatViews();
-      return;
-    }
-    this.selectedImportedChatID = null;
     await this.codex.openGlobalThread(conversation.id);
     this.updateInteractionContext();
     this.chatError = "";
@@ -1923,23 +1776,9 @@ export class ZoteroChatPlugin {
     this.visibleChatSurface()?.focusComposer();
   }
 
-  private returnToLiveConversation(): void {
-    this.selectedImportedChatID = null;
-    this.chatError = "";
-    this.renderChatViews();
-    this.visibleChatSurface()?.focusComposer();
-  }
-
   private async closeConversationTab(threadID: string): Promise<void> {
-    const importedIndex = this.openImportedChatIDs.indexOf(threadID);
-    if (importedIndex >= 0) {
-      this.openImportedChatIDs.splice(importedIndex, 1);
-      if (this.selectedImportedChatID === threadID) this.selectedImportedChatID = null;
-    }
-    else {
-      await this.codex.closeThread(threadID);
-      this.updateInteractionContext();
-    }
+    await this.codex.closeThread(threadID);
+    this.updateInteractionContext();
     this.chatError = "";
     this.renderChatViews();
     this.visibleChatSurface()?.focusComposer();
@@ -2003,9 +1842,6 @@ export class ZoteroChatPlugin {
       onQLabCommand: (command) => {
         void this.insertQLabCommand(view, command).catch((error) => this.reportError(error));
       },
-      onCaptureChatDraft: () => {
-        void this.saveAIContext().catch((error) => this.reportError(error));
-      },
       onOpenWorkbench: () => {
         void this.openWorkbenchTab(win).catch((error) => this.reportError(error));
       },
@@ -2045,21 +1881,6 @@ export class ZoteroChatPlugin {
       onToggleHistoryPin: (threadID, pinned) => {
         void this.codex.setGlobalThreadPinned(threadID, pinned).catch((error) => this.reportError(error));
       },
-      onOpenChatGPT: () => launchURL("https://chatgpt.com/"),
-      onImportChatGPTHistory: () => {
-        void this.importChatGPTHistory(win).catch((error) => this.reportError(error));
-      },
-      onOpenChatGPTCompanion: (question) => {
-        void this.openChatGPTCompanion(question, view);
-      },
-      onImportChatGPTCompanionAnswer: () => {
-        void this.importChatGPTCompanionAnswer(view);
-      },
-      onSelectChatGPTCompanionHandoff: (capsuleId) => {
-        this.selectChatGPTCompanionHandoff(capsuleId);
-        this.refreshCompanionViews(view);
-      },
-      onReturnToLiveConversation: () => this.returnToLiveConversation(),
       onLogin: () => void this.codex.login().catch((error) => this.reportError(error)),
       onLogout: () => void this.codex.logout().catch((error) => this.reportError(error)),
       onOpenTerminal: () => {
@@ -2112,9 +1933,6 @@ export class ZoteroChatPlugin {
           this.reportError(error);
         }
       },
-      onCaptureChatDraft: () => {
-        void this.saveAIContext().catch((error) => this.reportError(error));
-      },
       onResearchAction: (actionID) => {
         void this.runResearchAction(view, actionID, win)
           .catch((error) => this.reportError(error));
@@ -2145,369 +1963,6 @@ export class ZoteroChatPlugin {
       onOpenDocument: (relativePath) => void this.openQmdDocument(view, relativePath, win),
     }, { surface: "workbench" });
     return view;
-  }
-
-  /**
-   * Freezes all user-visible handoff state synchronously. No dependency called
-   * here may yield: later Reader, chip, screenshot, or Draft changes must not
-   * retarget the capsule accepted by the click.
-   */
-  private snapshotChatGPTCompanion(question: string): {
-    subjectKey: CompanionSubjectKey;
-    input: CompanionCapsuleInput;
-    draftSnapshot: ActiveDraftSnapshot | null;
-  } {
-    const context = this.codex?.getActiveReaderContext?.() || this.context;
-    const chips = this.contextChips();
-    const threadID = this.codex?.state?.activeThreadId;
-    const secondaryPapers = threadID ? this.conversationPapers.list(threadID) : [];
-    const draftPath = this.activeDraftPath?.startsWith("drafts/") ? this.activeDraftPath : null;
-    const draftSnapshot = draftPath && this.activeDraftSnapshot?.relativePath === draftPath
-      ? this.activeDraftSnapshot
-      : null;
-    const paperKey = context ? String(context.parent?.key || context.attachment.key || "") : "";
-    const subjectKey: CompanionSubjectKey = draftPath
-      ? `draft:${draftPath}`
-      : paperKey ? `paper:${paperKey}` : "question-only";
-    const secondaryByID = new Map(secondaryPapers.map((paper) => [paper.id, paper]));
-
-    const contextItems = chips.map((chip) => {
-      const secondaryID = chip.kind === "external-paper" && chip.id.startsWith("paper:")
-        ? chip.id.slice("paper:".length)
-        : "";
-      const secondary = secondaryID ? secondaryByID.get(secondaryID) : undefined;
-      let sourceIdentity = chip.id;
-      if (chip.kind === "paper") sourceIdentity = `zotero:${paperKey || context?.attachment.key || "paper"}`;
-      else if (chip.kind === "page") {
-        sourceIdentity = `zotero:${context?.attachment.key || "paper"}:page:${context?.page.pageNumber || 1}`;
-      }
-      else if (chip.kind === "selection") {
-        sourceIdentity = `zotero:${context?.attachment.key || "paper"}:selection:${context?.selection?.pageNumber || context?.page.pageNumber || 1}`;
-      }
-      else if (chip.kind === "annotation") sourceIdentity = `zotero:${paperKey || context?.attachment.key || "paper"}:annotations`;
-      else if (chip.kind === "library") sourceIdentity = `zotero-library:${context?.attachment.libraryID ?? "current"}`;
-      else if (chip.kind === "external-paper") sourceIdentity = secondaryID;
-      else if (chip.kind === "draft") sourceIdentity = draftPath || "drafts/unavailable.qmd";
-      return {
-        id: chip.id,
-        kind: chip.kind,
-        sourceIdentity,
-        mode: secondary?.mode || null,
-      };
-    });
-
-    const parent = context?.parent || context?.attachment;
-    const screenshotProvenance = chips
-      .filter((chip) => chip.kind === "screenshot")
-      .map((chip) => {
-        const index = Number(chip.id.slice("screenshot:".length));
-        const screenshot = Number.isInteger(index) ? this.pendingScreenshots[index] : undefined;
-        const source = screenshot?.source;
-        return {
-          id: chip.id,
-          kind: screenshot?.kind === "region" ? "region" as const : "page" as const,
-          paperTitle: source?.paperTitle || (context ? paperTitle(context) : ""),
-          pageNumber: source?.pageNumber ?? context?.page.pageNumber ?? null,
-        };
-      });
-    const includedSecondaryIDs = new Set(
-      contextItems.filter((item) => item.kind === "external-paper").map((item) => item.sourceIdentity),
-    );
-    const input: CompanionCapsuleInput = {
-      subject: { paperKey: paperKey || null, draftPath },
-      question,
-      contextItems,
-      paper: context ? {
-        title: paperTitle(context),
-        creators: contextCreators(context),
-        year: String(parent?.year || parent?.date || "").slice(0, 32),
-        doi: parent?.doi || "",
-        url: parent?.url || "",
-      } : null,
-      page: context ? {
-        pageNumber: context.page.pageNumber,
-        pageLabel: context.page.pageLabel || String(context.page.pageNumber),
-        excerpt: context.page.text,
-        source: context.page.source,
-      } : null,
-      selection: this.addedContextIDs.has("current-selection") && context?.selection?.text ? {
-        text: context.selection.text,
-        pageNumber: context.selection.pageNumber ?? context.page.pageNumber,
-      } : null,
-      secondaryPapers: secondaryPapers
-        .filter((paper) => includedSecondaryIDs.has(paper.id))
-        .map((paper) => ({
-          id: paper.id,
-          title: paper.title,
-          doi: paper.dois?.[0] || "",
-          url: paper.sourceUrls?.[0] || "",
-          mode: paper.mode,
-        })),
-      draft: null,
-      screenshotProvenance,
-    };
-
-    // JSON data only. Cloning here, before the caller's first await, also
-    // severs references to ConversationPaper arrays and Reader subobjects.
-    return JSON.parse(JSON.stringify({ subjectKey, input, draftSnapshot })) as {
-      subjectKey: CompanionSubjectKey;
-      input: CompanionCapsuleInput;
-      draftSnapshot: ActiveDraftSnapshot | null;
-    };
-  }
-
-  private async openChatGPTCompanion(question: string, preferredView?: SidebarView): Promise<void> {
-    const frozen = this.snapshotChatGPTCompanion(question);
-    const { subjectKey } = frozen;
-    const repositoryEpoch = frozen.draftSnapshot ? this.companionRepositoryEpoch : null;
-    const repositoryContextIsCurrent = () => repositoryEpoch === null
-      || repositoryEpoch === this.companionRepositoryEpoch;
-    this.companionBusySubjects.add(subjectKey);
-    this.companionStatuses.set(subjectKey, { kind: "idle", message: "Preparing ChatGPT context…" });
-    this.refreshCompanionViews(preferredView);
-    try {
-      if (frozen.draftSnapshot) {
-        try {
-          const reread = await (this.companionRuntime.revalidateDraft
-            ? this.companionRuntime.revalidateDraft(frozen.draftSnapshot.relativePath)
-            : this.readQmdSource(frozen.draftSnapshot.relativePath));
-          if (this.activeDraftPath === frozen.draftSnapshot.relativePath
-              && reread.revision === frozen.draftSnapshot.revision) {
-            frozen.input.draft = {
-              relativePath: frozen.draftSnapshot.relativePath,
-              excerpt: frozen.draftSnapshot.source,
-            };
-          }
-        }
-        catch {
-          // Fail closed. The retained Draft chip makes the capsule builder add
-          // its explicit unavailable warning without exposing the local path.
-        }
-        if (!repositoryContextIsCurrent()) return;
-      }
-
-      const hash = this.companionHash();
-      const capsule = buildCompanionCapsule(frozen.input, {
-        id: () => this.companionRuntime.id?.() || randomID("companion"),
-        now: () => this.companionNow(),
-        hash,
-      });
-      const store = this.companionRuntime.store;
-      if (!store) throw new Error("Companion storage is unavailable");
-      await store.save(capsule);
-      if (!repositoryContextIsCurrent()) return;
-      const prompt = buildChatGPTCompanionPrompt(capsule, { hash });
-      const copied = this.companionRuntime.copy
-        ? await this.companionRuntime.copy(prompt)
-        : copyToClipboard(prompt);
-      if (!repositoryContextIsCurrent()) return;
-      if (!copied) {
-        this.companionStatuses.set(subjectKey, {
-          kind: "error",
-          message: "ChatGPT context could not be copied. Nothing was opened.",
-        });
-        return;
-      }
-      this.appendPendingCompanionHandoff(subjectKey, capsule);
-      try {
-        if (this.companionRuntime.launch) await this.companionRuntime.launch(CHATGPT_URL);
-        else launchURL(CHATGPT_URL);
-        if (!repositoryContextIsCurrent()) return;
-        this.companionStatuses.set(subjectKey, {
-          kind: "success",
-          message: "Context copied · paste in a ChatGPT chat with the QLab app enabled",
-        });
-      }
-      catch {
-        if (!repositoryContextIsCurrent()) return;
-        this.companionStatuses.set(subjectKey, {
-          kind: "success",
-          message: "Context copied · ChatGPT could not be opened, so open it and paste the prompt manually",
-        });
-      }
-    }
-    catch {
-      if (repositoryContextIsCurrent()) {
-        this.companionStatuses.set(subjectKey, {
-          kind: "error",
-          message: "ChatGPT context could not be prepared or copied.",
-        });
-      }
-    }
-    finally {
-      this.companionBusySubjects.delete(subjectKey);
-      this.refreshCompanionViews(preferredView);
-    }
-  }
-
-  private appendPendingCompanionHandoff(
-    subjectKey: CompanionSubjectKey,
-    capsule: ChatGPTCompanionCapsule,
-  ): void {
-    const current = this.pendingCompanionHandoffs.get(subjectKey) || [];
-    const next = [...current, {
-      capsuleId: capsule.id,
-      subjectKey,
-      question: capsule.question,
-      createdAt: capsule.createdAt,
-    }].slice(-MAX_PENDING_COMPANION_HANDOFFS);
-    this.pendingCompanionHandoffs.set(subjectKey, next);
-    this.selectedCompanionHandoff.set(subjectKey, capsule.id);
-  }
-
-  private companionNow(): Date {
-    return this.companionRuntime.now?.() || new Date();
-  }
-
-  private companionHash(): (canonicalJson: string) => string {
-    return this.companionRuntime.hash
-      || ((canonicalJson) => sha256Bytes(new TextEncoder().encode(canonicalJson)));
-  }
-
-  private currentCompanionSubjectKey(): CompanionSubjectKey {
-    const draftPath = this.activeDraftPath?.startsWith("drafts/") ? this.activeDraftPath : null;
-    if (draftPath) return `draft:${draftPath}`;
-    const context = this.codex?.getActiveReaderContext?.() || this.context;
-    const paperKey = context ? String(context.parent?.key || context.attachment.key || "") : "";
-    return paperKey ? `paper:${paperKey}` : "question-only";
-  }
-
-  private companionStatusForSubject(subjectKey: CompanionSubjectKey): { kind: "idle" | "success" | "error"; message: string } {
-    return this.companionStatuses.get(subjectKey) || { kind: "idle", message: "" };
-  }
-
-  private pendingCompanionForSubject(subjectKey: CompanionSubjectKey): Array<{
-    capsuleId: string;
-    questionPreview: string;
-    createdAt: string;
-    selected: boolean;
-  }> {
-    const pending = this.pendingCompanionHandoffs.get(subjectKey) || [];
-    const selected = this.selectedCompanionHandoff.get(subjectKey) || pending.at(-1)?.capsuleId;
-    return pending.map((handoff) => ({
-      capsuleId: handoff.capsuleId,
-      questionPreview: Array.from(handoff.question).slice(0, 160).join(""),
-      createdAt: handoff.createdAt,
-      selected: handoff.capsuleId === selected,
-    }));
-  }
-
-  private selectChatGPTCompanionHandoff(capsuleId: string): void {
-    const subjectKey = this.currentCompanionSubjectKey();
-    if ((this.pendingCompanionHandoffs.get(subjectKey) || []).some((item) => item.capsuleId === capsuleId)) {
-      this.selectedCompanionHandoff.set(subjectKey, capsuleId);
-    }
-  }
-
-  private async importChatGPTCompanionAnswer(preferredView?: SidebarView): Promise<void> {
-    const subjectKey = this.currentCompanionSubjectKey();
-    const pending = this.pendingCompanionHandoffs.get(subjectKey) || [];
-    const selectedID = this.selectedCompanionHandoff.get(subjectKey) || pending.at(-1)?.capsuleId;
-    const selected = pending.find((handoff) => handoff.capsuleId === selectedID);
-    if (!selected) {
-      this.companionStatuses.set(subjectKey, { kind: "error", message: "Select a pending ChatGPT handoff first." });
-      this.refreshCompanionViews(preferredView);
-      return;
-    }
-    this.companionBusySubjects.add(subjectKey);
-    this.refreshCompanionViews(preferredView);
-    try {
-      const text = this.companionRuntime.readClipboard
-        ? await this.companionRuntime.readClipboard()
-        : readTextFromClipboard();
-      if (typeof text !== "string") throw new Error("The clipboard has no text");
-      const capsule = await this.companionRuntime.store?.load(selected.capsuleId);
-      if (!capsule) throw new Error("The selected capsule is unavailable");
-      const imported = importCompanionAnswer(text, capsule);
-      const overlay = this.companionOverlays.get(subjectKey) || [];
-      const entries: ChatEntry[] = imported.entries.map((entry) => ({
-        id: entry.id,
-        kind: entry.kind,
-        text: entry.text,
-        state: entry.state,
-        origin: "chatgpt-companion",
-        originLabel: "Imported from ChatGPT · user copied",
-        companionProvenance: {
-          capsuleId: entry.provenance.capsuleId,
-          capsuleChecksum: entry.provenance.capsuleChecksum,
-        },
-      }));
-      this.companionOverlays.set(subjectKey, [...overlay, ...entries]);
-      const remaining = pending.filter((handoff) => handoff.capsuleId !== selected.capsuleId);
-      if (remaining.length) {
-        this.pendingCompanionHandoffs.set(subjectKey, remaining);
-        this.selectedCompanionHandoff.set(subjectKey, remaining.at(-1)!.capsuleId);
-      }
-      else {
-        this.pendingCompanionHandoffs.delete(subjectKey);
-        this.selectedCompanionHandoff.delete(subjectKey);
-      }
-      this.companionStatuses.set(subjectKey, {
-        kind: "success",
-        message: "Copied ChatGPT answer imported for this context only",
-      });
-    }
-    catch {
-      this.companionStatuses.set(subjectKey, {
-        kind: "error",
-        message: "A copied ChatGPT answer could not be imported for the selected handoff.",
-      });
-    }
-    finally {
-      this.companionBusySubjects.delete(subjectKey);
-      this.refreshCompanionViews(preferredView);
-    }
-  }
-
-  private entriesWithCompanionOverlay(
-    entries: ChatEntry[],
-    subjectKey: CompanionSubjectKey,
-    importedArchive: boolean,
-  ): ChatEntry[] {
-    if (importedArchive) return entries;
-    const overlay = this.companionOverlays.get(subjectKey);
-    return overlay?.length ? [...entries, ...overlay] : entries;
-  }
-
-  private resetRepositoryScopedCompanionState(): void {
-    this.companionRepositoryEpoch += 1;
-    this.activeDraftPath = null;
-    this.activeDraftSnapshot = null;
-    const clearDraftKeys = <T>(collection: Map<CompanionSubjectKey, T>) => {
-      for (const key of collection.keys()) {
-        if (key.startsWith("draft:")) collection.delete(key);
-      }
-    };
-    clearDraftKeys(this.pendingCompanionHandoffs);
-    clearDraftKeys(this.selectedCompanionHandoff);
-    clearDraftKeys(this.companionStatuses);
-    clearDraftKeys(this.companionOverlays);
-    for (const key of this.companionBusySubjects) {
-      if (key.startsWith("draft:")) this.companionBusySubjects.delete(key);
-    }
-  }
-
-  private refreshCompanionViews(preferredView?: SidebarView): void {
-    const subjectKey = this.currentCompanionSubjectKey();
-    const partial: Partial<SidebarState> = {
-      companionBusy: this.companionBusySubjects.has(subjectKey),
-      companionStatus: this.companionStatusForSubject(subjectKey),
-      pendingCompanionHandoffs: this.pendingCompanionForSubject(subjectKey),
-    };
-    if (!this.selectedImportedChatID && this.codex?.getChatEntries) {
-      partial.entries = this.entriesWithCompanionOverlay(this.codex.getChatEntries(), subjectKey, false);
-    }
-    const updated = new Set<unknown>();
-    if (preferredView) {
-      preferredView.setState(partial);
-      updated.add(preferredView);
-    }
-    for (const entry of this.workbenchTabs?.entries() || []) {
-      if (!updated.has(entry.view)) entry.view.setState(partial);
-      updated.add(entry.view);
-    }
-    const standalone = this.standaloneWorkbench?.currentView() as SidebarView | null;
-    if (standalone && !updated.has(standalone)) standalone.setState(partial);
   }
 
   /**
@@ -2549,10 +2004,6 @@ export class ZoteroChatPlugin {
       onActiveDocument: (path, changePath) => {
         this.handleAIContextDocumentChange(path);
         this.activeDraftPath = path?.startsWith("drafts/") ? path : null;
-        if (!this.activeDraftPath) this.activeDraftSnapshot = null;
-        else if (this.activeDraftSnapshot?.relativePath !== this.activeDraftPath) {
-          void this.prefetchActiveDraftSnapshot(this.activeDraftPath).then(() => this.renderChatViews());
-        }
         this.codex.setActiveDocument(
           path ? { relativePath: path, editablePath: changePath || null } : null,
         );
@@ -2560,6 +2011,8 @@ export class ZoteroChatPlugin {
       },
       onReviewDraft: (path) => this.reviewDraftForKnowledge(path),
       onEditWithAI: (path, changePath) => this.editActiveAIContextWithAI(path, changePath),
+      onTodoGuardRejected: (path, changePath, reason) =>
+        this.editActiveAIContextWithAI(path, changePath, reason),
       prepareChange: (path) => this.prepareQmdChange(path),
       refreshChangePreview: (path, changePath, previewPath) =>
         this.refreshQmdChangePreview(path, changePath, previewPath),
@@ -2570,9 +2023,6 @@ export class ZoteroChatPlugin {
     if (!workspace) return false;
     workspace.repoRootHint = root;
     sidebar.setWorkspaceOpen(true);
-    if (relativePath.startsWith("drafts/") && relativePath.endsWith(".qmd")) {
-      await this.prefetchActiveDraftSnapshot(relativePath);
-    }
     if (!await workspace.open(relativePath, options)) return false;
     workspace.syncAgentChanges({
       activeTurnId: this.codex.state.activeTurnId,
@@ -2742,32 +2192,9 @@ export class ZoteroChatPlugin {
     return sha256Bytes(new TextEncoder().encode(source));
   }
 
-  private rememberActiveDraftSnapshot(
-    relativePath: string,
-    snapshot: { source: string; revision: string },
-  ): void {
-    if (!relativePath.startsWith("drafts/") || !relativePath.endsWith(".qmd")) return;
-    this.activeDraftSnapshot = {
-      relativePath,
-      revision: snapshot.revision,
-      source: Array.from(snapshot.source).slice(0, COMPANION_CAPSULE_BOUNDS.draftExcerpt).join(""),
-    };
-  }
-
-  private async prefetchActiveDraftSnapshot(relativePath: string): Promise<void> {
-    try {
-      await this.readQmdSource(relativePath);
-    }
-    catch {
-      if (this.activeDraftSnapshot?.relativePath === relativePath) this.activeDraftSnapshot = null;
-    }
-  }
-
   private async readQmdSource(relativePath: string): Promise<{ source: string; revision: string }> {
     const source = await IOUtils.readUTF8(this.safeRepositoryPath(relativePath));
-    const snapshot = { source, revision: this.hashQmdSource(source) };
-    this.rememberActiveDraftSnapshot(relativePath, snapshot);
-    return snapshot;
+    return { source, revision: this.hashQmdSource(source) };
   }
 
   /** Optimistic, atomic Visual Edit save constrained to Draft authorities. */
@@ -2793,9 +2220,7 @@ export class ZoteroChatPlugin {
         tmpPath: `${absolute}.qlab-visual-${Date.now()}.tmp`,
       });
     }
-    const snapshot = { source, revision: this.hashQmdSource(source) };
-    this.rememberActiveDraftSnapshot(relativePath, snapshot);
-    return snapshot;
+    return { source, revision: this.hashQmdSource(source) };
   }
 
   /**
@@ -3447,17 +2872,7 @@ export class ZoteroChatPlugin {
 
   private renderWorkbenchTabs(): void {
     const context = this.codex.getActiveReaderContext?.() || this.context;
-    const imported = this.selectedImportedChatID !== null;
-    const importedChat = imported
-      ? this.chatGPTArchive?.conversations.find((conversation) => conversation.id === this.selectedImportedChatID) || null
-      : null;
-    const liveEntries = imported ? [] : this.codex.getChatEntries();
-    const canSaveAIContext = canSaveAIContextState({
-      imported,
-      running: this.codex.state.running,
-      activeRelativePath: this.activeAIContextPath,
-      entries: liveEntries,
-    });
+    const liveEntries = this.codex.getChatEntries();
     const historyState = this.codex.getGlobalHistoryState?.() || {
       loading: false,
       hasMore: false,
@@ -3498,8 +2913,6 @@ export class ZoteroChatPlugin {
       win?: Window,
     ) => {
       const researchActionState = this.researchActionViewState(win);
-      const companionSubject = this.currentCompanionSubjectKey();
-      const baseEntries = importedChat?.entries || liveEntries;
       view.workspace?.()?.syncAgentChanges({
         activeTurnId: this.codex.state.activeTurnId,
         running: this.codex.state.running,
@@ -3525,35 +2938,29 @@ export class ZoteroChatPlugin {
           selectionText: context.selection?.text,
           pdfPath: context.pdfPath || undefined,
         } : null,
-        entries: this.entriesWithCompanionOverlay(baseEntries, companionSubject, imported),
+        entries: liveEntries,
         models: this.codex.state.models,
         threads: this.conversationTabs(),
         historyConversations: this.historyConversations(),
         historyLoading: historyState.loading,
         historyHasMore: historyState.hasMore,
         historyError: historyState.error || undefined,
-        readOnlyConversation: imported,
         selectedModel: this.selectedModel,
         effort: this.selectedEffort,
-        running: imported ? false : this.codex.state.running,
-        companionBusy: this.companionBusySubjects.has(companionSubject),
-        companionStatus: this.companionStatusForSubject(companionSubject),
-        pendingCompanionHandoffs: this.pendingCompanionForSubject(companionSubject),
-        canSaveAIContext,
-        activeAIContext: Boolean(this.activeAIContextPath),
+        running: this.codex.state.running,
         creatingThread: this.codex.state.creatingThread,
-        threadTitle: importedChat?.title || (context
+        threadTitle: context
           ? paperTitle(context)
-          : fallbackTitle || "Paper Assistant"),
+          : fallbackTitle || "Paper Assistant",
         mode: this.codex.state.mode,
         scope: this.researchScope,
         contextChips: this.contextChips(),
         contextSuggestions: this.contextSuggestions(),
-        plan: imported ? null : plan,
-        reviews: imported ? [] : mutationReviews,
-        pendingApproval: imported ? null : pendingApproval,
-        checkpoints: imported ? [] : checkpoints,
-        turnStartedAt: !imported && this.codex.state.running
+        plan,
+        reviews: mutationReviews,
+        pendingApproval,
+        checkpoints,
+        turnStartedAt: this.codex.state.running
           ? this.turnStartedAt.get(this.codex.state.activeThreadId ?? "") ?? null
           : null,
         turnDurations: this.turnDurationsForActiveThread(),
@@ -4050,18 +3457,8 @@ export class ZoteroChatPlugin {
     if (!this.codex) return;
     this.updateTurnTracking();
     const context = this.codex.getActiveReaderContext?.() || this.context;
-    const imported = this.selectedImportedChatID !== null;
-    const importedChat = imported
-      ? this.chatGPTArchive?.conversations.find((conversation) => conversation.id === this.selectedImportedChatID) || null
-      : null;
     this.reconcileActiveAIContextThread();
-    const liveEntries = imported ? [] : this.codex.getChatEntries();
-    const canSaveAIContext = canSaveAIContextState({
-      imported,
-      running: this.codex.state.running,
-      activeRelativePath: this.activeAIContextPath,
-      entries: liveEntries,
-    });
+    const liveEntries = this.codex.getChatEntries();
     const historyState = this.codex.getGlobalHistoryState?.() || {
       loading: false,
       hasMore: false,
@@ -4130,30 +3527,27 @@ export class ZoteroChatPlugin {
           selectionText: context.selection?.text,
           pdfPath: context.pdfPath || undefined,
         } : null,
-        entries: importedChat?.entries || liveEntries,
+        entries: liveEntries,
         models: this.codex.state.models,
         threads: this.conversationTabs(),
         historyConversations: this.historyConversations(),
         historyLoading: historyState.loading,
         historyHasMore: historyState.hasMore,
         historyError: historyState.error || undefined,
-        readOnlyConversation: imported,
         selectedModel: this.selectedModel,
         effort: this.selectedEffort,
-        running: imported ? false : this.codex.state.running,
-        canSaveAIContext,
-        activeAIContext: Boolean(this.activeAIContextPath),
+        running: this.codex.state.running,
         creatingThread: this.codex.state.creatingThread,
-        threadTitle: importedChat?.title || (context ? paperTitle(context) : "Paper Assistant"),
+        threadTitle: context ? paperTitle(context) : "Paper Assistant",
         mode: this.codex.state.mode,
         scope: this.researchScope,
         contextChips: this.contextChips(),
         contextSuggestions: this.contextSuggestions(),
-        plan: imported ? null : plan,
-        reviews: imported ? [] : mutationReviews,
-        pendingApproval: imported ? null : pendingApproval,
-        checkpoints: imported ? [] : checkpoints,
-        turnStartedAt: !imported && this.codex.state.running
+        plan,
+        reviews: mutationReviews,
+        pendingApproval,
+        checkpoints,
+        turnStartedAt: this.codex.state.running
           ? this.turnStartedAt.get(this.codex.state.activeThreadId ?? "") ?? null
           : null,
         turnDurations: this.turnDurationsForActiveThread(),
@@ -4993,7 +4387,7 @@ export class ZoteroChatPlugin {
       },
       publish: (snapshot, staged) => {
         this.codex.commitRepositoryTarget(staged);
-        this.resetRepositoryScopedCompanionState();
+        this.activeDraftPath = null;
         const preferences = this.preferencesForActiveRepository(snapshot);
         this.activeRepositoryTarget = snapshot;
         this.settings = {
@@ -5089,18 +4483,6 @@ export class ZoteroChatPlugin {
     return this.activateRepositoryTarget(root);
   }
 
-  private async loadChatGPTHistory(): Promise<void> {
-    const path = profilePath("chatgpt-history.json");
-    try {
-      if (!await IOUtils.exists(path)) return;
-      this.chatGPTArchive = parseStoredChatGPTArchive(await IOUtils.readUTF8(path));
-    }
-    catch (error) {
-      logError(error);
-      this.chatGPTArchive = null;
-    }
-  }
-
   private async loadConversationPapers(): Promise<void> {
     const path = profilePath("conversation-papers.json");
     try {
@@ -5126,75 +4508,21 @@ export class ZoteroChatPlugin {
     if (IOUtils.setPermissions) await IOUtils.setPermissions(path, 0o600, false);
   }
 
-  private async importChatGPTHistory(preferredWindow?: Window): Promise<void> {
-    const { FilePicker } = ChromeUtils.importESModule(
-      "chrome://zotero/content/modules/filePicker.mjs",
-    );
-    const picker = new FilePicker();
-    picker.init(
-      preferredWindow || Zotero.getMainWindow(),
-      "Import ChatGPT conversations.json",
-      picker.modeOpen,
-    );
-    picker.appendFilter("ChatGPT conversations.json", "*.json");
-    const result = await picker.show();
-    if (result !== picker.returnOK || !picker.file?.path) return;
-    const archive = parseChatGPTExport(await IOUtils.readUTF8(String(picker.file.path)));
-    const path = profilePath("chatgpt-history.json");
-    await IOUtils.writeUTF8(path, JSON.stringify(archive, null, 2) + "\n", {
-      tmpPath: path + ".tmp",
-    });
-    if (IOUtils.setPermissions) await IOUtils.setPermissions(path, 0o600, false);
-    this.chatGPTArchive = archive;
-    this.selectedImportedChatID = archive.conversations[0]?.id || null;
-    if (this.selectedImportedChatID && !this.openImportedChatIDs.includes(this.selectedImportedChatID)) {
-      this.openImportedChatIDs.push(this.selectedImportedChatID);
-    }
-    this.chatError = "";
-    this.renderChatViews();
-  }
-
-  private importedChatEntries(): ChatEntry[] | null {
-    if (!this.selectedImportedChatID) return null;
-    return this.chatGPTArchive?.conversations.find(
-      (conversation) => conversation.id === this.selectedImportedChatID,
-    )?.entries || null;
-  }
-
   private historyConversations(): HistoryConversationOption[] {
-    return [
-      ...(this.codex.getGlobalHistory?.() || []),
-      ...importedChatOptions(this.chatGPTArchive, this.selectedImportedChatID),
-    ];
+    return this.codex.getGlobalHistory?.() || [];
   }
 
   private conversationTabs(): ThreadOption[] {
-    const importedActive = Boolean(this.selectedImportedChatID);
     const attentionThreads = new Set(
       this.codex.getPendingApprovals().map((approval) => approval.threadId),
     );
-    const live = this.codex.getThreadOptions().map((thread) => ({
+    return this.codex.getThreadOptions().map((thread) => ({
       ...thread,
-      active: !importedActive && thread.active,
       status: thread.id === this.codex.state.switchingThreadId ? "switching" as const
         : attentionThreads.has(thread.id) ? "attention" as const
         : thread.status === "running" ? "running" as const
         : "idle" as const,
     }));
-    const imported = this.openImportedChatIDs.flatMap((id): ThreadOption[] => {
-      const conversation = this.chatGPTArchive?.conversations.find((candidate) => candidate.id === id);
-      if (!conversation) return [];
-      return [{
-        id,
-        title: conversation.title,
-        updatedAt: conversation.updatedAt,
-        active: this.selectedImportedChatID === id,
-        source: "chatgpt",
-        readOnly: true,
-        status: "idle",
-      }];
-    });
-    return [...live, ...imported];
   }
 
   private async insertQLabCommand(
@@ -5494,7 +4822,6 @@ export class ZoteroChatPlugin {
     const attachment = await this.resolvePaperAttachment(item);
     const paperKey = `${attachment.libraryID ?? "0"}-${attachment.key}`;
     await this.openWorkbenchTab(win);
-    this.selectedImportedChatID = null;
     await this.codex.openConversationForPaper(paperKey);
     this.updateInteractionContext();
     this.chatError = "";

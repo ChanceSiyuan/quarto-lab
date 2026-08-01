@@ -16,7 +16,7 @@ interface ZoteroManifest {
 }
 
 describe("Zotero add-on manifest", () => {
-  it("ships AI Context and ChatGPT Companion as Zotero integration 0.12.0", () => {
+  it("ships AI Context as Zotero integration 0.12.0", () => {
     const manifest = JSON.parse(
       readFileSync(join(process.cwd(), "manifest.json"), "utf8"),
     ) as ZoteroManifest;

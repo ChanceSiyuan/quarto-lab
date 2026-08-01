@@ -58,7 +58,6 @@ export interface FloatPanelCallbacks {
   onPaperTrailConsent(decision: "accept" | "decline"): void;
   onChooseQLabRoot(): void;
   onQLabCommand(command: QLabCommandID): void;
-  onCaptureChatDraft(): void;
   onOpenWorkbench(): void;
   canOpenPdfPage?(reference: PdfPageReference): boolean;
   onOpenPdfPage?(reference: PdfPageReference): void;

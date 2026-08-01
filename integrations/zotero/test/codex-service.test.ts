@@ -1222,6 +1222,29 @@ describe("CodexService follow-up turns", () => {
     });
   });
 
+  it("passes private guard feedback as model-only transient context", async () => {
+    const client = {
+      turnStart: vi.fn().mockResolvedValue({ turn: { id: "turn-a" } }),
+    };
+    const { service } = serviceWithClient(client);
+    const visibleInstruction = "Continue the Complete TODOs action.";
+    const privateReason = "A heading changed outside the TODO span";
+
+    await service.send(visibleInstruction, "gpt-5.6-sol", "medium", [], {
+      transientContext: {
+        "TODO-only host guard": { kind: "application", value: privateReason },
+      },
+    });
+
+    const turn = client.turnStart.mock.calls[0]![0];
+    expect(turn.input[0].text).toBe(visibleInstruction);
+    expect(turn.input[0].text).not.toContain(privateReason);
+    expect(turn.additionalContext["TODO-only host guard"]).toEqual({
+      kind: "application",
+      value: privateReason,
+    });
+  });
+
   it("omits Reader context chips that the user deselected", async () => {
     const client = {
       turnStart: vi.fn().mockResolvedValue({ turn: { id: "turn-a" } }),

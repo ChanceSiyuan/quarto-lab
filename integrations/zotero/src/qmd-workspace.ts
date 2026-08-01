@@ -36,6 +36,8 @@ export interface QmdWorkspaceOptions {
   onReviewDraft?(relativePath: string): Promise<void> | void;
   /** Starts an Agent turn scoped to the already-prepared private working copy. */
   onEditWithAI?(relativePath: string, changePath: string): Promise<void> | void;
+  /** Privately gives the same Agent a TODO-only guard failure and starts one retry. */
+  onTodoGuardRejected?(relativePath: string, changePath: string, reason: string): Promise<void> | void;
   /** Creates or resumes the private Agent working copy without touching the Draft. */
   prepareChange?(relativePath: string): Promise<QmdPreparedChange>;
   /** Mirrors the private working copy into a renderer-only file beside the Draft. */
@@ -67,11 +69,122 @@ export interface QmdWorkspaceOpenOptions {
 interface QmdEditWithAIAction {
   generation: number;
   relativePath: string;
+  baselineSource: string;
+  attempts: number;
   requestInvoked: boolean;
   accepted: boolean;
   started: boolean;
   completionState: QmdAgentState | null;
   completing: boolean;
+}
+
+const TODO_PLACEHOLDER_PATTERN = /\[todo\s*:[^\]\r\n]*\]/giu;
+
+export interface TodoOnlyChangeValidation {
+  ok: boolean;
+  todoCount: number;
+  message: string;
+}
+
+/**
+ * Proves that `after` differs from `before` only inside literal
+ * `[todo: ...]` spans and that every span received a non-empty completion.
+ */
+export function validateTodoOnlyChange(
+  before: string,
+  after: string,
+): TodoOnlyChangeValidation {
+  TODO_PLACEHOLDER_PATTERN.lastIndex = 0;
+  const matches = [...before.matchAll(TODO_PLACEHOLDER_PATTERN)];
+  if (!matches.length) {
+    return before === after
+      ? { ok: true, todoCount: 0, message: "No TODO placeholders were present" }
+      : {
+          ok: false,
+          todoCount: 0,
+          message: "The Draft had no [todo: ...] placeholders, but other content changed",
+        };
+  }
+
+  const fixed: string[] = [];
+  let cursor = 0;
+  for (const match of matches) {
+    const start = match.index!;
+    fixed.push(before.slice(cursor, start));
+    cursor = start + match[0].length;
+  }
+  fixed.push(before.slice(cursor));
+  if (!after.startsWith(fixed[0]!)) {
+    return {
+      ok: false,
+      todoCount: matches.length,
+      message: "Content before the first [todo: ...] placeholder changed",
+    };
+  }
+  if (fixed.slice(1, -1).some((segment) => segment.length === 0)) {
+    return {
+      ok: false,
+      todoCount: matches.length,
+      message: "Adjacent TODO placeholders must be separated before automatic completion",
+    };
+  }
+
+  const memo = new Map<string, string[] | null>();
+  const locate = (segmentIndex: number, afterCursor: number): string[] | null => {
+    const key = `${segmentIndex}:${afterCursor}`;
+    if (memo.has(key)) return memo.get(key)!;
+    const segment = fixed[segmentIndex]!;
+    if (segmentIndex === fixed.length - 1) {
+      const start = after.length - segment.length;
+      const result = start >= afterCursor && after.startsWith(segment, start)
+        ? [after.slice(afterCursor, start)]
+        : null;
+      memo.set(key, result);
+      return result;
+    }
+    let foundAt = after.indexOf(segment, afterCursor);
+    while (foundAt >= 0) {
+      const tail = locate(segmentIndex + 1, foundAt + segment.length);
+      if (tail) {
+        const result = [after.slice(afterCursor, foundAt), ...tail];
+        memo.set(key, result);
+        return result;
+      }
+      foundAt = after.indexOf(segment, foundAt + Math.max(1, segment.length));
+    }
+    memo.set(key, null);
+    return null;
+  };
+
+  const replacements = locate(1, fixed[0]!.length);
+  if (!replacements) {
+    return {
+      ok: false,
+      todoCount: matches.length,
+      message: "Content outside a [todo: ...] placeholder changed",
+    };
+  }
+  if (replacements.some((replacement) => !replacement.trim())) {
+    return {
+      ok: false,
+      todoCount: matches.length,
+      message: "At least one TODO was removed without a completion",
+    };
+  }
+  if (TODO_PLACEHOLDER_PATTERN.test(after)) {
+    TODO_PLACEHOLDER_PATTERN.lastIndex = 0;
+    return {
+      ok: false,
+      todoCount: matches.length,
+      message: "At least one [todo: ...] placeholder remains unresolved",
+    };
+  }
+  TODO_PLACEHOLDER_PATTERN.lastIndex = 0;
+  return {
+    ok: true,
+    todoCount: matches.length,
+    message: `${matches.length} TODO${matches.length === 1 ? "" : "s"} completed`,
+  };
 }
 
 function normalizedDiffPath(value: string): string {
@@ -136,6 +249,7 @@ export class QmdWorkspaceView {
   private readonly enableAIEditingButton: HTMLButtonElement;
   private readonly editButton: HTMLButtonElement;
   private readonly modeButton: HTMLButtonElement;
+  private readonly visualTools: HTMLElement;
   private readonly formalBlockButton: HTMLButtonElement;
   private readonly formalBlockMenu: HTMLElement;
   private readonly editorPicker: HTMLSelectElement;
@@ -219,15 +333,14 @@ export class QmdWorkspaceView {
       () => void this.reviewCurrentDraft(),
     );
     this.reviewButton.hidden = true;
-    this.enableAIEditingButton = this.button(
+    this.enableAIEditingButton = this.iconButton(
       "zc-qmd-enable-ai-editing",
-      "Edit with AI",
-      () => void this.editWithAI(),
+      "☑",
+      "Complete TODOs with AI",
+      () => void this.completeTodosWithAI(),
     );
     this.enableAIEditingButton.hidden = true;
     this.enableAIEditingButton.disabled = true;
-    this.enableAIEditingButton.title = "Edit with AI";
-    this.enableAIEditingButton.setAttribute("aria-label", "Edit with AI");
     this.enableAIEditingButton.setAttribute("aria-busy", "false");
     this.compareButton = this.iconButton(
       "zc-qmd-compare",
@@ -269,6 +382,10 @@ export class QmdWorkspaceView {
       () => void this.toggleVisualMode(),
     );
     this.modeButton.hidden = true;
+    this.visualTools = make("div", "zc-qmd-visual-tools");
+    this.visualTools.hidden = true;
+    this.visualTools.setAttribute("role", "toolbar");
+    this.visualTools.setAttribute("aria-label", "Visual Edit tools");
     this.formalBlockButton = this.iconButton(
       "zc-qmd-formal-block",
       "▣",
@@ -302,12 +419,13 @@ export class QmdWorkspaceView {
       action.addEventListener("click", () => void this.insertFormalBlock(kind));
       this.formalBlockMenu.appendChild(action);
     }
+    this.visualTools.append(this.formalBlockButton, this.formalBlockMenu);
 
     const refresh = this.iconButton("zc-qmd-refresh", "↻", "Refresh Preview", () => void this.reloadRender());
-    toolbar.append(back, quickOpenButton, this.pathLabel, this.treeBadge,
+    toolbar.append(back, quickOpenButton, this.pathLabel, this.visualTools, this.treeBadge,
       this.complianceButton, this.reviewButton, this.enableAIEditingButton,
       this.compareButton, this.keepChangesButton,
-      this.modeButton, this.formalBlockButton, this.editorPicker, this.editButton, refresh);
+      this.modeButton, this.editorPicker, this.editButton, refresh);
 
     this.status = make("div", "zc-qmd-status");
     this.status.textContent = "Choose a QMD page to preview";
@@ -337,7 +455,7 @@ export class QmdWorkspaceView {
     this.quickOpenList = make("div", "zc-qmd-quickopen-list");
     this.quickOpen.append(this.quickOpenInput, this.quickOpenList);
 
-    this.root.append(toolbar, this.status, this.complianceDetails, body, this.formalBlockMenu, this.quickOpen);
+    this.root.append(toolbar, this.status, this.complianceDetails, body, this.quickOpen);
     this.root.addEventListener("keydown", (event) => {
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "p") {
         event.preventDefault();
@@ -506,7 +624,7 @@ export class QmdWorkspaceView {
           : this.agentCopyMode === "disabled"
             ? "Original Draft preview · Agent working copy disabled for this context"
             : this.agentCopyMode === "on-demand" && !this.agentCopyActivated
-              ? "Original Draft preview · choose Edit with AI to create a private working copy"
+              ? "Original Draft preview · choose Complete TODOs with AI to fill [todo: ...] placeholders"
               : this.hasAgentChange ? "Original Draft preview · an AI version is available"
                 : "Original Draft preview · AI edits are kept in a separate working copy",
       prepareError || diagnostic ? "error" : "valid",
@@ -588,7 +706,7 @@ export class QmdWorkspaceView {
     this.updateModeControls();
   }
 
-  private async editWithAI(): Promise<void> {
+  private async completeTodosWithAI(): Promise<void> {
     const current = this.current;
     if (this.agentCopyMode !== "on-demand"
         || !current
@@ -600,6 +718,8 @@ export class QmdWorkspaceView {
     const action: QmdEditWithAIAction = {
       generation: this.openGeneration,
       relativePath: current.relativePath,
+      baselineSource: "",
+      attempts: 1,
       requestInvoked: false,
       accepted: false,
       started: false,
@@ -608,7 +728,7 @@ export class QmdWorkspaceView {
     };
     this.editWithAIAction = action;
     this.updateChangeControls();
-    this.setStatus("Preparing a private copy for AI editing…", "checking");
+    this.setStatus("Preparing a private copy for TODO completion…", "checking");
     try {
       const prepared = await this.options.prepareChange(current.relativePath);
       if (!this.isCurrentEditWithAIAction(action)) return;
@@ -621,15 +741,20 @@ export class QmdWorkspaceView {
       this.setPendingEntry(current.relativePath, prepared.changed);
       this.renderFileColumn();
       this.updateChangeControls();
+      if (!this.options.readSource || !this.options.saveSource) {
+        throw new Error("TODO completion requires guarded source access");
+      }
+      action.baselineSource = (await this.options.readSource(prepared.changePath)).source;
+      if (!this.isCurrentEditWithAIAction(action)) return;
       if (!this.root.hidden) {
         this.options.onActiveDocument?.(current.relativePath, prepared.changePath);
       }
-      this.setStatus("Private AI copy ready · starting Agent turn…", "checking");
+      this.setStatus("Private copy ready · completing every [todo: ...] placeholder…", "checking");
       action.requestInvoked = true;
       await this.options.onEditWithAI(current.relativePath, prepared.changePath);
       if (!this.isCurrentEditWithAIAction(action)) return;
       action.accepted = true;
-      this.setStatus("AI editing turn accepted…", "checking");
+      this.setStatus("TODO completion turn accepted…", "checking");
       this.finishEditWithAIWhenReady(action);
     }
     catch (error) {
@@ -660,18 +785,77 @@ export class QmdWorkspaceView {
         if (!this.isCurrentEditWithAIAction(action)) return;
         await this.applyAgentState(completion, action.generation, true);
         if (!this.isCurrentEditWithAIAction(action)) return;
+        const guard = await this.enforceTodoOnlyChange(action);
+        if (!this.isCurrentEditWithAIAction(action)) return;
+        if (!guard.ok) {
+          if (action.attempts < 2 && this.options.onTodoGuardRejected) {
+            action.attempts += 1;
+            action.accepted = false;
+            action.started = false;
+            action.completionState = null;
+            action.completing = false;
+            this.setStatus("Retrying TODO completion with the restored private copy…", "checking");
+            await this.options.onTodoGuardRejected(
+              action.relativePath,
+              this.changePath!,
+              guard.message,
+            );
+            if (!this.isCurrentEditWithAIAction(action)) return;
+            action.accepted = true;
+            this.finishEditWithAIWhenReady(action);
+            return;
+          }
+          this.editWithAIAction = null;
+          this.updateChangeControls();
+          this.setStatus(
+            "TODO completion stopped safely · no reviewable version was produced",
+            "valid",
+          );
+          return;
+        }
         this.editWithAIAction = null;
         this.updateChangeControls();
         this.setStatus(
           this.hasAgentChange
-            ? "AI editing finished · review the AI version before Keep"
-            : "AI editing finished · no changes were detected",
+            ? "TODO completion finished · review the AI version before Keep"
+            : "TODO completion finished · no changes were detected",
           "valid",
         );
       })
       .catch((error) => {
         this.failEditWithAI(action, error);
       });
+  }
+
+  private async enforceTodoOnlyChange(
+    action: QmdEditWithAIAction,
+  ): Promise<TodoOnlyChangeValidation> {
+    const stale = { ok: true, todoCount: 0, message: "TODO action is no longer current" };
+    const current = this.current;
+    const changePath = this.changePath;
+    if (!current || !changePath || !this.options.readSource || !this.options.saveSource) {
+      throw new Error("TODO-only validation could not access the private working copy");
+    }
+    const after = await this.options.readSource(changePath);
+    if (!this.isCurrentEditWithAIAction(action)) return stale;
+    const validation = validateTodoOnlyChange(action.baselineSource, after.source);
+    if (validation.ok) return validation;
+
+    await this.options.saveSource(changePath, after.revision, action.baselineSource);
+    if (!this.isCurrentEditWithAIAction(action)) return stale;
+    const prepared = await this.options.prepareChange?.(current.relativePath);
+    if (!this.isCurrentEditWithAIAction(action)) return stale;
+    if (prepared) {
+      this.changePath = prepared.changePath;
+      this.changePreviewPath = prepared.previewPath;
+      this.changeRevision = prepared.revision;
+      this.changedUrl = "";
+      this.hasAgentChange = prepared.changed;
+      this.setPendingEntry(current.relativePath, prepared.changed);
+      this.renderFileColumn();
+      this.updateChangeControls();
+    }
+    return validation;
   }
 
   private async applyAgentState(
@@ -798,6 +982,7 @@ export class QmdWorkspaceView {
       this.visualMode ? "◎" : "✦",
       this.visualMode ? "Website Preview" : "Visual Edit",
     );
+    this.visualTools.hidden = !isDraft || !this.visualMode;
     this.formalBlockButton.hidden = !isDraft || !this.visualMode;
     this.formalBlockButton.disabled = !isDraft || !this.visualMode || !this.options.saveSource;
     if (this.formalBlockButton.hidden || this.formalBlockButton.disabled) this.closeFormalBlockMenu();
@@ -1007,7 +1192,9 @@ export class QmdWorkspaceView {
       || this.agentRunning
       || this.editWithAIAction !== null
       || !this.options.prepareChange
-      || !this.options.onEditWithAI;
+      || !this.options.onEditWithAI
+      || !this.options.readSource
+      || !this.options.saveSource;
     this.enableAIEditingButton.setAttribute(
       "aria-busy",
       String(offersOnDemand && this.editWithAIAction !== null),

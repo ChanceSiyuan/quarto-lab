@@ -348,7 +348,7 @@ describe("SidebarView", () => {
     expect(body.querySelector(".zc-add-context-button")).not.toBeNull();
   });
 
-  it("renders a collapsible searchable Workbench history rail for Codex and imported ChatGPT", () => {
+  it("renders a collapsible searchable Workbench history rail for local Codex conversations", () => {
     vi.useFakeTimers();
     try {
       const body = document.createElement("div");
@@ -359,9 +359,6 @@ describe("SidebarView", () => {
         onHistoryLoadMore: vi.fn(),
         onSelectHistoryConversation: vi.fn(),
         onToggleHistoryPin: vi.fn(),
-        onOpenChatGPT: vi.fn(),
-        onImportChatGPTHistory: vi.fn(),
-        onReturnToLiveConversation: vi.fn(),
       };
       const view = new SidebarView(body, handlers, { surface: "workbench" });
       view.setState({
@@ -374,40 +371,33 @@ describe("SidebarView", () => {
           sourceLabel: "Codex App",
           pinned: true,
         }, {
-          id: "chatgpt-a",
-          title: "Imported physics chat",
+          id: "codex-b",
+          title: "Physics task",
           updatedAt: "2026-07-29T00:00:00.000Z",
-          source: "chatgpt",
-          sourceLabel: "Imported ChatGPT",
-          readOnly: true,
-          active: true,
+          source: "codex",
+          sourceLabel: "Codex App",
         }],
         historyHasMore: true,
-        readOnlyConversation: true,
       });
 
       const rail = body.querySelector<HTMLElement>(".zc-history-rail")!;
       const dock = body.querySelector<HTMLElement>(".zc-workbench-dock")!;
       const historyButton = body.querySelector<HTMLButtonElement>('[title="Conversation History"]')!;
-      expect(body.querySelector(".zc-topbar")).toBeNull();
-      expect(body.querySelector(".zc-thread-tabs")?.firstElementChild).toBe(historyButton);
-      expect(historyButton.textContent).toBe("");
-      expect(dock.parentElement).toBe(body.querySelector(".zc-workbench-chat"));
-      expect(dock.querySelector('[title="Summarize this chat into a Draft"]')).toBeNull();
       expect(rail.hidden).toBe(false);
       expect(rail.textContent).toContain("Pinned Codex task");
-      expect(rail.textContent).toContain("Imported physics chat");
-      expect(body.querySelector<HTMLTextAreaElement>(".zc-composer-input")!.disabled).toBe(true);
+      expect(rail.textContent).toContain("Physics task");
+      expect(rail.textContent).not.toContain("ChatGPT");
+      expect(body.querySelector(".zc-history-actions")).toBeNull();
+      expect(body.querySelector(".zc-companion-open")).toBeNull();
+      expect(body.querySelector<HTMLTextAreaElement>(".zc-composer-input")!.disabled).toBe(false);
 
       body.querySelector<HTMLButtonElement>('.zc-history-pin[title="Unpin Conversation"]')!.click();
       expect(handlers.onToggleHistoryPin).toHaveBeenCalledWith("codex-a", false);
       [...body.querySelectorAll<HTMLButtonElement>(".zc-history-open")]
-        .find((button) => button.textContent?.includes("Imported physics chat"))!.click();
+        .find((button) => button.textContent?.includes("Physics task"))!.click();
       expect(handlers.onSelectHistoryConversation).toHaveBeenCalledWith(
-        expect.objectContaining({ id: "chatgpt-a", source: "chatgpt" }),
+        expect.objectContaining({ id: "codex-b", source: "codex" }),
       );
-      body.querySelector<HTMLButtonElement>(".zc-history-return-live")!.click();
-      expect(handlers.onReturnToLiveConversation).toHaveBeenCalledOnce();
       body.querySelector<HTMLButtonElement>(".zc-history-load-more")!.click();
       expect(handlers.onHistoryLoadMore).toHaveBeenCalledOnce();
 
@@ -415,25 +405,19 @@ describe("SidebarView", () => {
       search.value = "physics";
       search.dispatchEvent(new Event("input", { bubbles: true }));
       expect(rail.textContent).not.toContain("Pinned Codex task");
-      expect(rail.textContent).toContain("Imported physics chat");
+      expect(rail.textContent).toContain("Physics task");
       vi.advanceTimersByTime(250);
       expect(handlers.onHistorySearch).toHaveBeenCalledWith("physics");
 
-      body.querySelector<HTMLButtonElement>('[title="Open your live ChatGPT account history"]')!.click();
-      body.querySelector<HTMLButtonElement>('[title*="Import conversations.json"]')!.click();
-      expect(handlers.onOpenChatGPT).toHaveBeenCalledOnce();
-      expect(handlers.onImportChatGPTHistory).toHaveBeenCalledOnce();
-
-      body.querySelector<HTMLButtonElement>('[title="Conversation History"]')!.click();
+      historyButton.click();
       expect(rail.hidden).toBe(true);
       expect(dock.isConnected).toBe(true);
-      dock.querySelector<HTMLButtonElement>('[title="Account"]')!.click();
-      expect(dock.querySelector(".zc-account-menu")).not.toBeNull();
     }
     finally {
       vi.useRealTimers();
     }
   });
+
 
   it("gives every open conversation tab a close button without switching to it", () => {
     const body = document.createElement("div");
@@ -969,72 +953,13 @@ describe("SidebarView", () => {
     const handlers = {
       ...callbacks(),
       onOpenWorkbench: vi.fn(),
-      onCaptureChatDraft: vi.fn(),
     };
     const view = new SidebarView(body, handlers as any);
     view.setState(baseState() as any);
     (body.querySelector('[title="Open the QLab Workbench in a Zotero tab"]') as HTMLButtonElement).click();
     expect(handlers.onOpenWorkbench).toHaveBeenCalled();
     expect(body.querySelector('[title="Summarize this chat into a Draft"]')).toBeNull();
-    expect(handlers.onCaptureChatDraft).not.toHaveBeenCalled();
-  });
-
-  it("shows one Save AI Context action only for a completed live conversation", () => {
-    const body = document.createElement("div");
-    document.body.appendChild(body);
-    const handlers = { ...callbacks(), onCaptureChatDraft: vi.fn() };
-    const view = new SidebarView(body, handlers);
-    view.setState({
-      phase: "ready",
-      entries: [{ id: "a1", kind: "assistant", text: "answer" }],
-      running: false,
-      canSaveAIContext: true,
-      activeAIContext: false,
-    });
-    const button = body.querySelector<HTMLButtonElement>(".zc-save-ai-context")!;
-    expect(button.textContent).toBe("Save AI Context");
-    button.click();
-    expect(handlers.onCaptureChatDraft).toHaveBeenCalledOnce();
-
-    view.setState({ running: true });
-    expect(button.disabled).toBe(true);
-    view.setState({ running: false, activeAIContext: true });
-    expect(button.textContent).toBe("Update AI Context");
-  });
-
-  it("hides the persistent action for imported history and for live history without an assistant response", () => {
-    const body = document.createElement("div");
-    document.body.appendChild(body);
-    const handlers = { ...callbacks(), onCaptureChatDraft: vi.fn() };
-    const view = new SidebarView(body, handlers);
-    view.setState({ ...baseState(), entries: [{ id: "u1", kind: "user", text: "question" }],
-      canSaveAIContext: false, activeAIContext: false, running: false });
-    const button = body.querySelector<HTMLButtonElement>(".zc-save-ai-context")!;
-    expect(button.hidden).toBe(true);
-    view.setState({ ...baseState(), readOnlyConversation: true,
-      entries: [{ id: "a1", kind: "assistant", text: "imported answer" }],
-      canSaveAIContext: true, activeAIContext: false, running: false });
-    expect(button.hidden).toBe(true);
-    expect(handlers.onCaptureChatDraft).not.toHaveBeenCalled();
-  });
-
-  it("keeps the same control node while streaming state changes and disables it until completion", () => {
-    const body = document.createElement("div");
-    document.body.appendChild(body);
-    const handlers = { ...callbacks(), onCaptureChatDraft: vi.fn() };
-    const view = new SidebarView(body, handlers);
-    view.setState({ ...baseState(), entries: [{ id: "a1", kind: "assistant", text: "answer" }],
-      running: false, canSaveAIContext: true, activeAIContext: false });
-    const original = body.querySelector<HTMLButtonElement>(".zc-save-ai-context")!;
-    view.setState({ running: true, canSaveAIContext: true });
-    expect(body.querySelector(".zc-save-ai-context")).toBe(original);
-    expect(original.disabled).toBe(true);
-    view.setState({ phase: "connecting", running: false, canSaveAIContext: true, activeAIContext: true });
-    expect(original.disabled).toBe(true);
-    view.setState({ phase: "ready", running: false, canSaveAIContext: true, activeAIContext: true });
-    expect(body.querySelector(".zc-save-ai-context")).toBe(original);
-    expect(original.disabled).toBe(false);
-    expect(original.textContent).toBe("Update AI Context");
+    expect(body.querySelector(".zc-save-ai-context")).toBeNull();
   });
 
   it("uses the complete chat UI once in workbench mode and lets an empty tab choose a paper", () => {
@@ -1080,130 +1005,6 @@ describe("SidebarView", () => {
     openPaper.click();
     expect(handlers.onOpenPaper).toHaveBeenCalledOnce();
     expect((body.querySelector(".zc-composer-input") as HTMLTextAreaElement).placeholder).toBe("Ask about this paper…");
-  });
-
-  it("keeps a Workbench-only ChatGPT Companion reachable while Codex is unavailable", () => {
-    const body = document.createElement("div");
-    document.body.appendChild(body);
-    const handlers = {
-      ...callbacks(),
-      onOpenChatGPTCompanion: vi.fn(),
-    } as SidebarCallbacks & { onOpenChatGPTCompanion: ReturnType<typeof vi.fn> };
-    const view = new SidebarView(body, handlers, { surface: "workbench" });
-    view.setState({
-      phase: "signed-out",
-      threads: [{ id: "inactive", title: "Old chat", updatedAt: "2026-08-01", active: false }],
-    });
-
-    const input = body.querySelector<HTMLTextAreaElement>(".zc-composer-input")!;
-    const companion = body.querySelector<HTMLButtonElement>(".zc-companion-open")!;
-    const send = body.querySelector<HTMLButtonElement>('button[title="Send"]')!;
-    expect(companion.textContent).toContain("Ask in ChatGPT");
-    expect(companion.getAttribute("aria-label")).toBe("Ask in ChatGPT");
-    expect(input.disabled).toBe(false);
-    expect(body.querySelector<HTMLSelectElement>('select[title="Model"]')!.disabled).toBe(true);
-    expect(body.querySelector<HTMLSelectElement>('select[title="Reasoning Effort"]')!.disabled).toBe(true);
-    expect(send.disabled).toBe(true);
-    expect(companion.disabled).toBe(true);
-
-    input.value = "  keep this exact question  ";
-    input.dispatchEvent(new Event("input", { bubbles: true }));
-    expect(companion.disabled).toBe(false);
-    input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
-    expect(handlers.onSend).not.toHaveBeenCalled();
-    companion.click();
-    expect(handlers.onOpenChatGPTCompanion).toHaveBeenCalledWith("  keep this exact question  ");
-    expect(input.value).toBe("  keep this exact question  ");
-    expect(handlers.onLogin).not.toHaveBeenCalled();
-    expect(handlers.onNewThread).not.toHaveBeenCalled();
-    expect(handlers.onSelectThread).not.toHaveBeenCalled();
-
-    view.setState({ companionBusy: true } as any);
-    expect(companion.disabled).toBe(true);
-    view.setState({ companionBusy: false, readOnlyConversation: true } as any);
-    expect(companion.disabled).toBe(true);
-
-    const readerHost = document.body.appendChild(document.createElement("div"));
-    const reader = new SidebarView(readerHost, handlers);
-    reader.setState({ phase: "ready" });
-    expect(readerHost.querySelector(".zc-companion-open")).toBeNull();
-  });
-
-  it("renders current pending Companion handoffs and emits only their explicit callbacks", () => {
-    const body = document.createElement("div");
-    document.body.appendChild(body);
-    const handlers = {
-      ...callbacks(),
-      onImportChatGPTCompanionAnswer: vi.fn(),
-      onSelectChatGPTCompanionHandoff: vi.fn(),
-    } as SidebarCallbacks & {
-      onImportChatGPTCompanionAnswer: ReturnType<typeof vi.fn>;
-      onSelectChatGPTCompanionHandoff: ReturnType<typeof vi.fn>;
-    };
-    const view = new SidebarView(body, handlers, { surface: "workbench" });
-    view.setState({
-      phase: "ready",
-      pendingCompanionHandoffs: [{
-        capsuleId: "capsule-old-12345678",
-        questionPreview: "What was the original result?",
-        createdAt: "2026-08-01T09:30:00.000Z",
-        selected: false,
-      }, {
-        capsuleId: "capsule-new-abcdefgh",
-        questionPreview: "What changed in the new result?",
-        createdAt: "2026-08-01T10:30:00.000Z",
-        selected: false,
-      }],
-    } as any);
-
-    const choices = [...body.querySelectorAll<HTMLInputElement>(".zc-companion-handoff-choice")];
-    const importButton = body.querySelector<HTMLButtonElement>(".zc-companion-import")!;
-    expect(choices).toHaveLength(2);
-    expect(choices[1]!.checked).toBe(true);
-    expect(body.textContent).toContain("What changed in the new result?");
-    expect(body.textContent).toContain("2026-08-01");
-    expect(body.textContent).toContain("capsule-");
-    expect(importButton.disabled).toBe(false);
-
-    choices[0]!.click();
-    expect(handlers.onSelectChatGPTCompanionHandoff).toHaveBeenCalledWith("capsule-old-12345678");
-    expect(handlers.onSend).not.toHaveBeenCalled();
-    expect(handlers.onNewThread).not.toHaveBeenCalled();
-    expect(importButton.disabled).toBe(true);
-    choices[1]!.click();
-    expect(importButton.disabled).toBe(false);
-    importButton.click();
-    expect(handlers.onImportChatGPTCompanionAnswer).toHaveBeenCalledOnce();
-
-    view.setState({ pendingCompanionHandoffs: [] } as any);
-    expect(body.querySelector<HTMLButtonElement>(".zc-companion-import")!.disabled).toBe(true);
-  });
-
-  it("labels imported Companion answers and reports Companion feedback separately from Codex status", () => {
-    const body = document.createElement("div");
-    document.body.appendChild(body);
-    const view = new SidebarView(body, callbacks(), { surface: "workbench" });
-    view.setState({
-      phase: "ready",
-      error: "Codex is disconnected",
-      companionStatus: { kind: "success", message: "Copied handoff opened in ChatGPT" },
-      entries: [{
-        id: "imported-answer",
-        kind: "assistant",
-        text: "Imported answer",
-        origin: "chatgpt-companion",
-        originLabel: "Imported from ChatGPT · user copied",
-        companionProvenance: { capsuleId: "capsule-12345678", capsuleChecksum: "abc123" },
-      }],
-    } as any);
-
-    const row = body.querySelector<HTMLElement>('[data-entry-id="imported-answer"]')!;
-    expect(row.textContent).toContain("Imported from ChatGPT · user copied");
-    expect(row.querySelector('[alt="Codex"]')).toBeNull();
-    expect(row.querySelector(".zc-companion-avatar")?.getAttribute("aria-label")).toBe("ChatGPT Companion");
-    expect(body.querySelector<HTMLElement>(".zc-companion-status")?.getAttribute("role")).toBe("status");
-    expect(body.querySelector(".zc-companion-status")?.textContent).toContain("Copied handoff opened in ChatGPT");
-    expect(body.querySelector(".zc-status-area")?.textContent).toContain("Codex is disconnected");
   });
 
   it("checks the main site and opens it from one workbench button", async () => {

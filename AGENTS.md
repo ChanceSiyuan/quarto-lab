@@ -64,6 +64,9 @@ See `.research-loop/docs/project/skills.md` for what each skill owns, reads, and
   central results as theorem blocks; put substantial proofs in collapsed proof
   callouts. Keep ordinary exposition as prose rather than forcing every
   paragraph into a formal block.
+- Use the same skill's Renderable math contract in both chat and QMD: inline
+  math is `$...$`, display math is a standalone `$$...$$` block, and bare
+  bracket delimiters or document-only LaTeX environments are forbidden.
 
 ## Building and validating
 

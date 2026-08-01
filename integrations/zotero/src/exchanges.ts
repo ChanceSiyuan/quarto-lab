@@ -54,7 +54,13 @@ export function activityLabel(entries: ChatEntry[]): string {
   for (let index = entries.length - 1; index >= 0; index--) {
     const entry = entries[index]!;
     if (entry.state !== "running") continue;
-    if (entry.kind === "reasoning") return "Thinking…";
+    if (entry.kind === "reasoning") {
+      if (entry.title === "Progress") {
+        const progress = entry.text.replace(/\s+/gu, " ").trim();
+        if (progress) return progress.length > 120 ? `${progress.slice(0, 117)}…` : progress;
+      }
+      return "Thinking…";
+    }
     if (entry.kind === "tool") return `Calling ${friendlyToolName(entry.title || "tool")}`;
     if (entry.kind === "command") return "Running command…";
     if (entry.kind === "assistant") return "Writing response…";

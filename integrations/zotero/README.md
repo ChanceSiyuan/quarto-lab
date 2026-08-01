@@ -3,9 +3,8 @@
 This Zotero 9 add-on carries the unchanged QLab literature workflow into
 Research Loop and combines it with the Reader chat
 interface derived from Zotkit Reader. Repository-writing work talks only to
-the local `codex` CLI; there are no API-provider, Claude, or remote-SSH
-controls in the product UI. The separate ChatGPT Companion is a user-driven,
-read-only handoff described below.
+the local `codex` CLI; there are no API-provider, Claude, remote-SSH, web
+ChatGPT handoff, or clipboard-import controls in the product UI.
 
 ## What it does
 
@@ -93,27 +92,6 @@ read-only handoff described below.
   Visual Edit or Cursor saves use atomic writes and never silently overwrite a
   newer external revision.
 
-## ChatGPT Companion
-
-The Workbench composer includes **Ask in ChatGPT ↗**. It freezes the exact
-visible paper, page, selection, secondary-paper, screenshot-provenance, and
-eligible Draft context, stores a bounded private capsule in the Zotero profile,
-copies a labelled prompt, and opens the ordinary ChatGPT website. In the
-destination chat, enable the read-only **QLab app**, paste the prompt, and send
-it. The add-on does not reuse cookies, automate the ChatGPT DOM, or scrape the
-answer stream.
-
-After ChatGPT answers, an optional explicit clipboard import can add
-user-copied text as a labelled current-session overlay for the matching
-handoff. It never becomes Codex history and never makes a Codex request or
-turn. Companion therefore remains available when Codex is signed out or
-unavailable.
-
-The QLab app is a separately operated read-only MCP service; ChatGPT cannot
-connect directly to localhost. Product availability and account controls may
-change. See the complete [ChatGPT Companion setup and security
-guide](../../docs/chatgpt-companion.md) before connecting it.
-
 ## Screenshots to the AI chat
 
 Two capture flows attach rendered PDF images to the next chat message. Both
@@ -141,13 +119,6 @@ never stored in Zotero.
 
 ## AI Context attachments
 
-After a completed live conversation, choose **Save AI Context**. QLab creates
-one untrusted QMD Draft under `drafts/ai-contexts/` and links that same file
-beneath every paper in the conversation. The Draft is the strict authority;
-the Zotero attachments are linked projections, never a second copy. **Update
-AI Context** refreshes only the managed block; personal notes outside it stay
-byte-for-byte unchanged.
-
 Select 1–50 local-library papers and choose **Create Shared Reading Context**
 to generate one ordered, resumable reading plan. **Create Standalone AI
 Context** makes a top-level linked attachment. Opening a valid attachment (or
@@ -169,8 +140,8 @@ version. If Zotero creates only some attachment handles, the Draft remains
 intact. Choose **Repair AI Context Attachments** to recreate only missing
 handles; when several records need repair, QLab asks which record to repair.
 
-Native Zotero 9 smoke testing remains required and outstanding for the save and
-update flow, shared Reading Context and standalone creation, attachment
+Native Zotero 9 smoke testing remains required and outstanding for shared
+Reading Context and standalone creation, attachment
 double-click/open-menu fallback, dedicated resume, conflict handling, and
 partial-projection repair.
 
@@ -200,14 +171,10 @@ the native chat tab. Start without a paper or choose one from the paper card.
 Sign in through the local Codex CLI when prompted. Commands typed directly in
 the Terminal drawer are explicit user actions and are not Agent-sandboxed.
 
-The Workbench's top-left history control opens a left-hand rail listing user-facing conversations stored by the local
-Codex app-server (Codex App, CLI, and IDE), with search, pagination, Zotero-local pinning,
-and reopen-as-tab support. Ordinary ChatGPT web conversations
-are not exposed by the Codex protocol. Use **Open ChatGPT** for the live account
-history, or export ChatGPT data and import its extracted `conversations.json`.
-Imported ChatGPT conversations are normalized into the Zotero profile with
-owner-only permissions and remain read-only; they are never copied into the
-QLab repository or sent to Codex merely by opening them.
+The Workbench's top-left history control opens a left-hand rail listing
+user-facing conversations stored by the local Codex app-server (Codex App,
+CLI, and IDE), with search, pagination, Zotero-local pinning, and reopen-as-tab
+support. Ordinary ChatGPT web conversations are not exposed or imported.
 
 ## Trust boundary
 

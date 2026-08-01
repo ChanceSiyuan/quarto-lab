@@ -20,7 +20,6 @@ vi.mock("../src/ai-context-open-handler", async () => {
 });
 
 import {
-  AIContextProjectionError,
   parseAIContextDocument,
   renderNewAIContextDocument,
   type AIContextDocument,
@@ -39,7 +38,6 @@ import {
 import {
   AI_CONTEXT_MENU_IDS,
   ZoteroChatPlugin,
-  canSaveAIContextState,
   isCreateReadingContextCommand,
 } from "../src/plugin";
 
@@ -362,7 +360,14 @@ async function mountAIContextEditWorkspace(id: string) {
   plugin.pendingQmdChanges = vi.fn(async () => new Set());
   plugin.reviewDraftForKnowledge = vi.fn(async () => undefined);
   plugin.keepQmdChange = vi.fn(async () => undefined);
-  plugin.saveQmdSource = vi.fn(async () => undefined);
+  plugin.readQmdSource = vi.fn(async () => ({
+    source: "# Draft\n\n[todo: complete this passage]\n",
+    revision: "private-copy-r1",
+  }));
+  plugin.saveQmdSource = vi.fn(async (_path: string, _revision: string, source: string) => ({
+    source,
+    revision: "private-copy-restored",
+  }));
   const changePath = `work/qlab-zotero/draft-changes/${"a".repeat(64)}/draft.qmd`;
   plugin.qmdChangePaths = vi.fn(() => ({
     changePath,
@@ -400,99 +405,6 @@ describe("AI Context plugin integration", () => {
       ],
     });
     expect(document.manifest.capturedEntryIds).toEqual(["u1", "a1"]);
-  });
-
-  it("uses the active Codex Reader parent instead of stale UI context", async () => {
-    const { plugin } = aiContextPluginHarness({
-      activePrimary: paperItem("P2"),
-      uiPrimary: paperItem("P1"),
-      secondary: [secondaryPaper("P3")],
-      entries: [userEntry("u1", "question"), assistantEntry("a1", "answer")],
-    });
-    await plugin.saveAIContext(window);
-    expect(plugin.conversationPapers.list).toHaveBeenCalledWith("thread-1");
-    expect(plugin.aiContexts.save).toHaveBeenCalledWith(expect.objectContaining({
-      papers: [
-        { libraryID: "1", itemKey: "P2", title: "Title P2" },
-        { libraryID: "1", itemKey: "P3", title: "Title P3" },
-      ],
-      projection: {
-        mode: "attached",
-        targets: [
-          { libraryID: "1", itemKey: "P2" },
-          { libraryID: "1", itemKey: "P3" },
-        ],
-      },
-    }));
-  });
-
-  it("activates a partial projection then updates it from an empty dedicated chat", async () => {
-    const contextDocument = documentFixture("partial-1", "conversation", {
-      messages: [
-        { id: "u1", role: "user", text: "question" },
-        { id: "a1", role: "assistant", text: "answer" },
-      ],
-      papers: [
-        { libraryID: "1", itemKey: "P1", title: "Title P1" },
-        { libraryID: "1", itemKey: "P2", title: "Title P2" },
-      ],
-    });
-    const error = new AIContextProjectionError("partial projection", contextDocument, {
-      created: [{ mode: "attached", libraryID: "1", itemKey: "P1" }],
-      reused: [],
-      missing: [{ mode: "attached", libraryID: "1", itemKey: "P2" }],
-    });
-    const { plugin } = aiContextPluginHarness({
-      saveError: error,
-      stubActivation: false,
-      activePrimary: paperItem("P1"),
-      entries: [userEntry("u1", "question"), assistantEntry("a1", "answer")],
-    });
-
-    await expect(plugin.saveAIContext(window)).rejects.toBe(error);
-    expect(plugin.activeAIContextPath).toBe(contextDocument.relativePath);
-    expect(plugin.activeAIContextThreadId).toBe("dedicated-partial-1");
-    expect(plugin.openQmdDocument).toHaveBeenCalledWith(
-      expect.anything(),
-      contextDocument.relativePath,
-      window,
-      { agentCopy: "on-demand" },
-    );
-    expect(plugin.codex.openWorkspaceObjectConversation).toHaveBeenCalledWith({
-      kind: "draft",
-      key: "ai-context:partial-1",
-      title: contextDocument.title,
-    });
-
-    plugin.codex.getChatEntries.mockReturnValue([]);
-    plugin.aiContexts.open.mockResolvedValue(contextDocument);
-    plugin.aiContexts.save = vi.fn(async () => ({
-      document: contextDocument,
-      projection: emptyProjection(),
-    }));
-    await plugin.saveAIContext(window);
-
-    expect(plugin.aiContexts.open).toHaveBeenCalledWith(contextDocument.relativePath);
-    expect(plugin.aiContexts.save).toHaveBeenCalledWith(expect.objectContaining({
-      activeRelativePath: contextDocument.relativePath,
-      contextKey: contextDocument.manifest.contextKey,
-      sourceThreadId: contextDocument.manifest.sourceThreadId,
-      papers: contextDocument.manifest.papers,
-      projection: contextDocument.manifest.projection,
-      messages: [],
-    }));
-    expect(plugin.generator.generate).not.toHaveBeenCalled();
-    expect(plugin.aiContextHost.compareAndSwap).not.toHaveBeenCalled();
-    expect(plugin.aiContextHost.project).not.toHaveBeenCalled();
-  });
-
-  it("still requires an assistant response for a new capture", async () => {
-    const { plugin } = aiContextPluginHarness({
-      activePrimary: paperItem("P1"),
-      entries: [userEntry("u1", "question")],
-    });
-    await expect(plugin.saveAIContext(window)).rejects.toThrow(/assistant response/i);
-    expect(plugin.aiContexts.save).not.toHaveBeenCalled();
   });
 
   it("orders reading normalization and preflight before connection, login, and save", async () => {
@@ -565,7 +477,6 @@ describe("AI Context plugin integration", () => {
   });
 
   it.each([
-    ["save", (plugin: any) => plugin.saveAIContext(window)],
     ["reading", (plugin: any) => plugin.createReadingContext(window)],
     ["standalone", (plugin: any) => plugin.createStandaloneAIContext(window)],
     ["open", (plugin: any) => plugin.openAIContextAttachment({ key: "A1" }, window)],
@@ -633,95 +544,6 @@ describe("AI Context plugin integration", () => {
     expect(plugin.generator.generate).not.toHaveBeenCalled();
   });
 
-  it("rejects imported history and exposes Update for an active empty live chat", async () => {
-    const imported = aiContextPluginHarness().plugin;
-    imported.selectedImportedChatID = "imported-1";
-    await expect(imported.saveAIContext(window)).rejects.toThrow(/read-only/i);
-    expect(imported.aiContexts.save).not.toHaveBeenCalled();
-
-    expect(canSaveAIContextState({
-      imported: false, running: false,
-      activeRelativePath: "drafts/ai-contexts/ctx-1.qmd", entries: [],
-    })).toBe(true);
-    expect(canSaveAIContextState({
-      imported: true, running: false,
-      activeRelativePath: "drafts/ai-contexts/ctx-1.qmd", entries: [],
-    })).toBe(false);
-  });
-
-  it("renders Save and Update in registered workbench and standalone views, but hides them for imported or running chats", () => {
-    const { plugin } = aiContextPluginHarness({
-      entries: [userEntry("u1", "question"), assistantEntry("a1", "answer")],
-    });
-    const workbenchHost = document.createElement("div");
-    const standaloneHost = document.createElement("div");
-    document.body.append(workbenchHost, standaloneHost);
-    const workbench = plugin.createWorkbenchView(workbenchHost, window, "workbench-1");
-    const standalone = plugin.createWorkbenchView(standaloneHost, window, "__qlab_standalone_workbench__");
-    plugin.workbenchTabs = {
-      entries: vi.fn(() => [{
-        id: "workbench-1",
-        host: workbenchHost,
-        view: workbench,
-        data: { title: "QLab · Paper Assistant" },
-      }]),
-    };
-    plugin.standaloneWorkbench = {
-      currentView: vi.fn(() => standalone),
-      window: vi.fn(() => window),
-    };
-    plugin.chatPhase = "ready";
-    plugin.codex.getGlobalHistoryState = vi.fn(() => ({ loading: false, hasMore: false, error: "", query: "" }));
-    plugin.codex.getActivePlan = vi.fn(() => null);
-    plugin.codex.getPendingApprovals = vi.fn(() => []);
-    plugin.codex.getCheckpoints = vi.fn(() => []);
-    plugin.codex.accountLabel = vi.fn(() => "ChatGPT");
-    plugin.researchActionViewState = vi.fn(() => ({ researchObject: null, researchActions: [] }));
-    plugin.contextChips = vi.fn(() => []);
-    plugin.contextSuggestions = vi.fn(() => []);
-    plugin.conversationTabs = vi.fn(() => []);
-    plugin.turnDurationsForActiveThread = vi.fn(() => ({}));
-    plugin.mutationCheckpoints = [];
-    plugin.noting = { view: vi.fn(() => null) };
-
-    plugin.renderWorkbenchTabs();
-    for (const host of [workbenchHost, standaloneHost]) {
-      const save = host.querySelector<HTMLButtonElement>(".zc-save-ai-context")!;
-      expect(save.hidden).toBe(false);
-      expect(save.textContent).toBe("Save AI Context");
-    }
-
-    const active = documentFixture("render-active");
-    plugin.activeAIContextPath = active.relativePath;
-    plugin.activeAIContext = active;
-    plugin.activeAIContextThreadId = "thread-1";
-    plugin.activeAIContextRoot = "/repo";
-    plugin.codex.getChatEntries.mockReturnValue([]);
-    plugin.renderWorkbenchTabs();
-    expect(workbenchHost.querySelector<HTMLButtonElement>(".zc-save-ai-context")!.textContent)
-      .toBe("Update AI Context");
-    expect(standaloneHost.querySelector<HTMLButtonElement>(".zc-save-ai-context")!.textContent)
-      .toBe("Update AI Context");
-
-    plugin.selectedImportedChatID = "missing-import";
-    plugin.chatGPTArchive = { conversations: [] };
-    plugin.codex.getChatEntries.mockReturnValue([assistantEntry("a2", "stale live answer")]);
-    plugin.renderWorkbenchTabs();
-    expect(workbenchHost.querySelector<HTMLButtonElement>(".zc-save-ai-context")!.hidden).toBe(true);
-    expect(standaloneHost.querySelector<HTMLButtonElement>(".zc-save-ai-context")!.hidden).toBe(true);
-
-    plugin.selectedImportedChatID = null;
-    plugin.codex.state.running = true;
-    plugin.renderWorkbenchTabs();
-    expect(workbenchHost.querySelector<HTMLButtonElement>(".zc-save-ai-context")!.hidden).toBe(true);
-    expect(standaloneHost.querySelector<HTMLButtonElement>(".zc-save-ai-context")!.hidden).toBe(true);
-
-    workbench.destroy();
-    standalone.destroy();
-    workbenchHost.remove();
-    standaloneHost.remove();
-  });
-
   it("publishes active fields atomically after QMD open and binds the dedicated thread", async () => {
     const contextDocument = documentFixture("atomic-1");
     const { plugin } = aiContextPluginHarness({ stubActivation: false });
@@ -757,15 +579,30 @@ describe("AI Context plugin integration", () => {
     expect(options).toEqual({
       expectedThreadId: "dedicated-edit-turn",
       writableRoots: [`/repo/${changePath.split("/").slice(0, -1).join("/")}`],
+      transientContext: {
+        "Complete TODOs Action": {
+          kind: "application",
+          value: expect.any(String),
+        },
+      },
     });
-    const normalizedInstruction = String(instruction).replace(/\s+/gu, " ").toLowerCase();
+    expect(instruction).toBe("Complete all [todo: ...] placeholders in the current Draft.");
+    const actionContext = options.transientContext["Complete TODOs Action"].value;
+    const normalizedInstruction = String(actionContext).replace(/\s+/gu, " ").toLowerCase();
     for (const rule of [
+      "action: complete-todos",
+      "mode: todo-only",
+      "use skills/complete-gaps/skill.md as the authoritative workflow",
+      "find every literal [todo: ...] placeholder",
+      "replace only each exact placeholder span",
+      "preserve every byte outside the placeholder spans",
       "use the full current dedicated conversation",
-      "revise the complete active ai context qmd",
       "write only the private working-copy path supplied in qmd editor context",
-      "preserve valid frontmatter and managed-marker structure",
-      "do not edit the original draft or trusted knowledge",
-      "leave the result for eye/keep review",
+      "do not edit the original draft, trusted knowledge, literature, or any other file",
+      "leave that exact placeholder unchanged",
+      "do not ask for another approval",
+      "publish concise commentary progress",
+      "never expose hidden chain-of-thought",
     ]) {
       expect(normalizedInstruction).toContain(rule);
     }
@@ -782,6 +619,36 @@ describe("AI Context plugin integration", () => {
     expect(plugin.reviewDraftForKnowledge).not.toHaveBeenCalled();
     expect(plugin.keepQmdChange).not.toHaveBeenCalled();
     expect(plugin.saveQmdSource).not.toHaveBeenCalled();
+
+    workspace.destroy();
+    host.remove();
+  });
+
+  it("feeds a TODO guard failure back to the Agent as hidden turn context", async () => {
+    const { plugin, contextDocument, changePath, workspace, host } =
+      await mountAIContextEditWorkspace("guard-retry");
+    const reason = "Content outside a [todo: ...] placeholder changed";
+
+    await (workspace as any).options.onTodoGuardRejected(
+      contextDocument.relativePath,
+      changePath,
+      reason,
+    );
+
+    expect(plugin.codex.send).toHaveBeenCalledOnce();
+    const [instruction, _model, _effort, _screenshots, options] = plugin.codex.send.mock.calls[0]!;
+    expect(instruction).toBe("Continue completing TODOs from the restored private working copy.");
+    expect(String(instruction)).not.toContain(reason);
+    expect(options).toEqual({
+      expectedThreadId: "dedicated-guard-retry",
+      writableRoots: [`/repo/${changePath.split("/").slice(0, -1).join("/")}`],
+      transientContext: {
+        "TODO-only host guard": {
+          kind: "application",
+          value: expect.stringContaining(reason),
+        },
+      },
+    });
 
     workspace.destroy();
     host.remove();
@@ -860,7 +727,7 @@ describe("AI Context plugin integration", () => {
     host.remove();
   });
 
-  it("clears A authority before a failed A-to-B activation and cannot save A afterward", async () => {
+  it("clears A authority before a failed A-to-B activation", async () => {
     const first = documentFixture("context-a");
     const second = documentFixture("context-b");
     const { plugin } = aiContextPluginHarness({ stubActivation: false });
@@ -876,8 +743,6 @@ describe("AI Context plugin integration", () => {
     expect(plugin.activeAIContextRoot).toBeNull();
     expect(plugin.activatingAIContext).toBe(false);
     expectNoPublishedAIContext(plugin);
-    plugin.codex.getChatEntries.mockReturnValue([]);
-    await expect(plugin.saveAIContext(window)).rejects.toThrow(/assistant response/i);
     expect(plugin.aiContexts.open).not.toHaveBeenCalled();
     expect(plugin.aiContexts.save).not.toHaveBeenCalled();
   });
@@ -1035,10 +900,6 @@ describe("AI Context plugin integration", () => {
     expect(plugin.activeAIContextThreadId).toBeNull();
     expect(plugin.activeAIContextRoot).toBeNull();
     expectNoPublishedAIContext(plugin);
-    expect(canSaveAIContextState({
-      imported: false, running: false,
-      activeRelativePath: plugin.activeAIContextPath, entries: [],
-    })).toBe(false);
   });
 
   it("clears and republishes interaction context when the visible QMD switches", async () => {
@@ -1055,7 +916,7 @@ describe("AI Context plugin integration", () => {
     expectNoPublishedAIContext(plugin);
   });
 
-  it("does not open or save an old same-relative-path record after choosing another root", async () => {
+  it("clears an old same-relative-path authority after choosing another root", async () => {
     const old = documentFixture("same-relative-path");
     const { plugin } = aiContextPluginHarness({ entries: [] });
     plugin.activeAIContextPath = old.relativePath;
@@ -1065,13 +926,12 @@ describe("AI Context plugin integration", () => {
     plugin.settings.qlabRoot = "";
     plugin.chooseQLabRoot.mockResolvedValue("/repo-b");
 
-    await expect(plugin.saveAIContext(window)).rejects.toThrow(/assistant response/i);
+    await plugin.requireAIContextRoot(window);
 
     expect(plugin.settings.qlabRoot).toBe("/repo-b");
     expect(plugin.activeAIContextPath).toBeNull();
     expect(plugin.activeAIContextRoot).toBeNull();
     expect(plugin.aiContexts.open).not.toHaveBeenCalled();
-    expect(plugin.aiContexts.save).not.toHaveBeenCalled();
     expectNoPublishedAIContext(plugin);
     expect(plugin.codex.setInteractionContext.mock.calls.at(-1)![0]["QLab repository"].value)
       .toContain("/repo-b");
@@ -1112,28 +972,18 @@ describe("AI Context plugin integration", () => {
     expect(AI_CONTEXT_MENU_IDS).toContain("qlab-zotero-open-ai-context");
   });
 
-  it("deduplicates exact visible entries but preserves conflicting IDs for service resolution", async () => {
-    const active = documentFixture("merge-1");
+  it("deduplicates exact visible entries but preserves conflicting IDs for service resolution", () => {
     const { plugin } = aiContextPluginHarness({
       entries: [
         userEntry("u2", "same"), userEntry("u2", "same"),
         assistantEntry("a2", "one"), assistantEntry("a2", "two"),
       ],
     });
-    plugin.activeAIContextPath = active.relativePath;
-    plugin.activeAIContext = active;
-    plugin.activeAIContextThreadId = "thread-1";
-    plugin.activeAIContextRoot = "/repo";
-    plugin.aiContexts.open.mockResolvedValue(active);
-    await plugin.saveAIContext(window);
-    expect(plugin.aiContexts.save).toHaveBeenCalledWith(expect.objectContaining({
-      contextKey: active.manifest.contextKey,
-      messages: [
-        { id: "u2", role: "user", text: "same" },
-        { id: "a2", role: "assistant", text: "one" },
-        { id: "a2", role: "assistant", text: "two" },
-      ],
-    }));
+    expect(plugin.visibleAIContextMessages()).toEqual([
+      { id: "u2", role: "user", text: "same" },
+      { id: "a2", role: "assistant", text: "one" },
+      { id: "a2", role: "assistant", text: "two" },
+    ]);
   });
 
   it("injects bounded untrusted memory without raw transcript", async () => {
@@ -1146,9 +996,7 @@ describe("AI Context plugin integration", () => {
     plugin.activeAIContext = active;
     plugin.activeAIContextThreadId = "thread-1";
     plugin.activeAIContextRoot = "/repo";
-    plugin.aiContexts.open.mockResolvedValue(active);
-    plugin.aiContexts.save.mockResolvedValue({ document: active, projection: emptyProjection() });
-    await plugin.saveAIContext(window);
+    plugin.updateInteractionContext();
     const interaction = plugin.codex.setInteractionContext.mock.calls.at(-1)![0];
     expect(interaction["AI Context record"]).toEqual({
       kind: "application",

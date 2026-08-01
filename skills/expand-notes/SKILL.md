@@ -1,6 +1,6 @@
 ---
 name: expand-notes
-description: Use when expanding rough academic notes into polished Quarto knowledge drafts, including LaTeX, lecture material, and research conversations.
+description: Use when expanding rough academic notes into polished Quarto knowledge drafts, including LaTeX, lecture material, and research conversations, or when a Research Loop response must contain renderable mathematical Markdown.
 ---
 
 # Expand notes into knowledge drafts
@@ -41,6 +41,13 @@ content warrants them:
 
 Begin a formal block with `## (<descriptive name>)`; the anchor already carries the type, so do not repeat “Definition”, “Lemma”, or “Theorem” in the visible heading. Keep anchors unique.
 Do not wrap ordinary exposition in a formal block merely for decoration.
+
+## Renderable math contract
+
+Use `$...$` inline and standalone `$$...$$` display blocks in chat and QMD.
+Never use bare bracket lines, `\(...\)`, `\[...\]`, code formatting, custom
+macros, or top-level math environments. Use KaTeX-supported commands and
+balance every delimiter before finishing.
 
 ## Draft-body boundary
 

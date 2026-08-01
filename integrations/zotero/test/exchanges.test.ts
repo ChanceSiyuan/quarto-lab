@@ -25,6 +25,11 @@ describe("groupEntries", () => {
 describe("activityLabel", () => {
   it("labels the latest running entry by kind", () => {
     expect(activityLabel([e("r", "reasoning", { state: "running" })])).toBe("Thinking…");
+    expect(activityLabel([e("p", "reasoning", {
+      title: "Progress",
+      text: "Completing TODO 1/2: define the random graph",
+      state: "running",
+    })])).toBe("Completing TODO 1/2: define the random graph");
     expect(activityLabel([
       e("r", "reasoning", { state: "complete" }),
       e("t", "tool", { state: "running", title: "zotero_read_pdf_pages" }),
