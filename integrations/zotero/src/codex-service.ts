@@ -109,6 +109,8 @@ export interface CodexInteractionContextEntry {
 export interface CodexSendOptions {
   /** Enforced by the app-server sandbox, not merely by prompt instructions. */
   readOnly?: boolean;
+  /** Turn-local write authority; omitted turns retain the ordinary Agent defaults. */
+  writableRoots?: readonly string[];
 }
 
 export interface ReaderContextSelection {
@@ -298,6 +300,8 @@ export class CodexService {
   private readonly threadPaperKeys = new Map<string, string>();
   /** Running turns are owned by their conversation, never by the current UI focus. */
   private readonly runningTurns = new Map<string, string>();
+  /** Narrow turn-local write scopes, keyed by the exact thread/turn identity returned by turnStart. */
+  private readonly turnWritableRoots = new Map<string, readonly string[]>();
   private readonly pendingApprovalResolvers = new Map<string, PendingApprovalResolver>();
   private readonly latestTurnDiffs = new Map<string, string>();
   private interactionContext: Record<string, CodexInteractionContextEntry> = {};
@@ -468,6 +472,7 @@ export class CodexService {
   stop(): void {
     this.cancelAllPendingApprovals("cancel");
     this.runningTurns.clear();
+    this.turnWritableRoots.clear();
     this.unsubscribeStore?.();
     this.unsubscribeStore = null;
     this.client?.close(1000, "Zotkit shutdown");
@@ -1129,6 +1134,12 @@ export class CodexService {
     imageUrls: readonly string[] = [],
     options: CodexSendOptions = {},
   ): Promise<void> {
+    const writableRoots = options.writableRoots === undefined
+      ? undefined
+      : [...options.writableRoots];
+    if (options.readOnly && writableRoots !== undefined) {
+      throw new Error("A read-only turn cannot request writable roots");
+    }
     if (this.switchingPaper) throw new Error("Switching papers; please wait");
     if (!this.state.activeThreadId) {
       const context = this.focusedContext || this.activeContext;
@@ -1194,6 +1205,11 @@ export class CodexService {
     const runningTurnId = this.runningTurns.get(threadId)
       || (this.state.running ? this.state.activeTurnId : null);
     if (runningTurnId) {
+      if (writableRoots !== undefined) {
+        throw new Error(
+          "Writable roots cannot replace the sandbox for the current response. Wait for it to finish or stop it first.",
+        );
+      }
       if (options.readOnly) {
         throw new Error(
           "A read-only Action cannot join the current response. Wait for it to finish or stop it, then run the Action again.",
@@ -1231,9 +1247,18 @@ export class CodexService {
         input,
         model: model || null,
         effort: effort || "medium",
-        ...this.turnModeSettings(context, options.readOnly === true),
+        ...this.turnModeSettings(context, {
+          readOnly: options.readOnly === true,
+          writableRoots,
+        }),
         additionalContext,
       });
+      if (writableRoots !== undefined) {
+        this.turnWritableRoots.set(
+          turnKey(threadId, response.turn.id),
+          Object.freeze([...writableRoots]),
+        );
+      }
       this.runningTurns.set(threadId, response.turn.id);
       this.syncActiveTurnState();
       void this.recordCheckpoint(paperKey, {
@@ -1249,6 +1274,7 @@ export class CodexService {
     }
     catch (error) {
       this.runningTurns.delete(threadId);
+      this.clearTurnWritableRoots(threadId);
       this.syncActiveTurnState();
       throw error;
     }
@@ -1335,6 +1361,7 @@ export class CodexService {
       turnId,
     });
     this.runningTurns.delete(threadId);
+    this.clearTurnWritableRoots(threadId);
     this.syncActiveTurnState();
   }
 
@@ -1596,6 +1623,9 @@ export class CodexService {
     const eventThreadId = typeof params.threadId === "string"
       ? params.threadId
       : typeof turn?.threadId === "string" ? turn.threadId : null;
+    const eventTurnId = typeof params.turnId === "string"
+      ? params.turnId
+      : typeof turn?.id === "string" ? turn.id : null;
     if (notification.method === "turn/completed") {
       const waiter = eventThreadId ? this.utilityWaiters.get(eventThreadId) : undefined;
       if (waiter) {
@@ -1625,15 +1655,19 @@ export class CodexService {
     else if (notification.method === "turn/completed") {
       if (eventThreadId) {
         const runningTurnId = this.runningTurns.get(eventThreadId);
-        if (!runningTurnId || turn?.id === runningTurnId) this.runningTurns.delete(eventThreadId);
+        if (!runningTurnId || eventTurnId === runningTurnId) {
+          this.runningTurns.delete(eventThreadId);
+          this.clearTurnWritableRoots(eventThreadId);
+        }
       }
       this.syncActiveTurnState();
     }
     else if (notification.method === "turn/failed") {
       if (eventThreadId) {
         const runningTurnId = this.runningTurns.get(eventThreadId);
-        if (!runningTurnId || params.turnId === runningTurnId || turn?.id === runningTurnId) {
+        if (!runningTurnId || eventTurnId === runningTurnId) {
           this.runningTurns.delete(eventThreadId);
+          this.clearTurnWritableRoots(eventThreadId);
         }
       }
       this.syncActiveTurnState();
@@ -1835,7 +1869,10 @@ export class CodexService {
     };
   }
 
-  private turnModeSettings(context: ReaderContext, readOnly = false): Pick<
+  private turnModeSettings(
+    context: ReaderContext,
+    options: { readOnly: boolean; writableRoots?: readonly string[] },
+  ): Pick<
     TurnStartParams,
     "cwd" | "runtimeWorkspaceRoots" | "approvalPolicy" | "approvalsReviewer" | "sandboxPolicy"
   > {
@@ -1846,11 +1883,13 @@ export class CodexService {
     // with its own diff and apply step; there is no such session now, and the
     // repository's rule is that knowledge/ is not written during a proposal
     // turn. The user edits in their own editor and reviews the Git diff.
-    const sandboxPolicy: SandboxPolicy = readOnly
+    const sandboxPolicy: SandboxPolicy = options.readOnly
       ? { type: "readOnly", networkAccess: false }
       : {
           type: "workspaceWrite",
-          writableRoots: qlabRoot ? qlabWritableRoots(qlabRoot) : roots,
+          writableRoots: options.writableRoots === undefined
+            ? qlabRoot ? qlabWritableRoots(qlabRoot) : roots
+            : [...options.writableRoots],
           networkAccess: false,
           excludeTmpdirEnvVar: true,
           excludeSlashTmp: true,
@@ -1868,6 +1907,18 @@ export class CodexService {
     return contextRoots(context);
   }
 
+  private clearTurnWritableRoots(threadId: string): void {
+    const prefix = `${threadId}\u0000`;
+    for (const key of this.turnWritableRoots.keys()) {
+      if (key.startsWith(prefix)) this.turnWritableRoots.delete(key);
+    }
+  }
+
+  private hasTurnWritableRoots(threadId: string): boolean {
+    const prefix = `${threadId}\u0000`;
+    return [...this.turnWritableRoots.keys()].some((key) => key.startsWith(prefix));
+  }
+
   private requestUserApproval(request: ApprovalRequest): Promise<ApprovalResponse> {
     const threadId = request.params.threadId;
     const paperKey = this.threadPaperKeys.get(threadId)
@@ -1882,14 +1933,23 @@ export class CodexService {
     if (
       this.state.mode !== "agent"
       || !context
-      || (runningTurnId && request.params.turnId !== runningTurnId)
+      || !runningTurnId
+      || request.params.turnId !== runningTurnId
     ) {
       return Promise.resolve(approvalResponse(request, "reject"));
     }
+    const scopedApprovalRoots = this.turnWritableRoots.get(turnKey(
+      request.params.threadId,
+      request.params.turnId,
+    ));
+    if (!scopedApprovalRoots && this.hasTurnWritableRoots(threadId)) {
+      return Promise.resolve(approvalResponse(request, "reject"));
+    }
     const qlabRoot = configuredQLabRoot();
-    const approvalRoots = qlabRoot
-      ? qlabWritableRoots(qlabRoot)
-      : context.workspace?.root ? [context.workspace.root] : [];
+    const approvalRoots = scopedApprovalRoots
+      ? [...scopedApprovalRoots]
+      : qlabRoot ? qlabWritableRoots(qlabRoot)
+        : context.workspace?.root ? [context.workspace.root] : [];
     if (!approvalWriteScopeIsSafe(request, approvalRoots)) {
       const error = new Error(
         "Zotkit blocked a request to write outside its private staging workspace. Use zotero_propose_changes so the change receives a Diff and filesystem checkpoint.",
@@ -1901,7 +1961,10 @@ export class CodexService {
       this.callbacks.onError(new Error("Zotkit blocked an Agent request for network access"));
       return Promise.resolve(approvalResponse(request, "reject"));
     }
-    return Promise.resolve(approvalResponse(request, "approve-session"));
+    return Promise.resolve(approvalResponse(
+      request,
+      scopedApprovalRoots ? "approve-once" : "approve-session",
+    ));
   }
 
   private syncPendingApprovals(): void {
@@ -1996,6 +2059,7 @@ export class CodexService {
   private markDisconnected(): void {
     this.cancelAllPendingApprovals("cancel");
     this.runningTurns.clear();
+    this.turnWritableRoots.clear();
     this.state.connected = false;
     this.state.running = false;
     this.state.activeThreadId = null;

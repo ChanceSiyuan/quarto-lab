@@ -481,6 +481,69 @@ describe("CodexService follow-up turns", () => {
     }));
   });
 
+  it("accepts a private-copy turn while it remains running and uses only the requested writable root", async () => {
+    const client = {
+      turnStart: vi.fn().mockResolvedValue({ turn: { id: "turn-private-copy" } }),
+    };
+    const { service } = serviceWithClient(client);
+    const privateRoot = `/repo/work/qlab-zotero/draft-changes/${"a".repeat(64)}`;
+
+    await expect(service.send(
+      "Revise the complete active AI Context.",
+      "gpt-5.6-sol",
+      "high",
+      [],
+      { writableRoots: [privateRoot] },
+    )).resolves.toBeUndefined();
+
+    expect(service.state).toMatchObject({
+      activeThreadId: "thread-a",
+      activeTurnId: "turn-private-copy",
+      running: true,
+    });
+    expect(client.turnStart).toHaveBeenCalledWith(expect.objectContaining({
+      sandboxPolicy: {
+        type: "workspaceWrite",
+        writableRoots: [privateRoot],
+        networkAccess: false,
+        excludeTmpdirEnvVar: true,
+        excludeSlashTmp: true,
+      },
+    }));
+    expect((service as any).turnWritableRoots.get("thread-a\u0000turn-private-copy"))
+      .toEqual([privateRoot]);
+  });
+
+  it("rejects writable-root overrides for read-only and steered turns", async () => {
+    const client = {
+      turnStart: vi.fn().mockResolvedValue({ turn: { id: "turn-read-only" } }),
+      turnSteer: vi.fn(),
+    };
+    const { service } = serviceWithClient(client);
+    const privateRoot = "/repo/work/qlab-zotero/draft-changes/private";
+
+    await expect(service.send(
+      "Read only.",
+      "gpt-5.6-sol",
+      "medium",
+      [],
+      { readOnly: true, writableRoots: [privateRoot] },
+    )).rejects.toThrow(/read-only.*writable roots/i);
+    expect(client.turnStart).not.toHaveBeenCalled();
+
+    (service as any).runningTurns.set("thread-a", "turn-running");
+    service.state.activeTurnId = "turn-running";
+    service.state.running = true;
+    await expect(service.send(
+      "Replace the sandbox while steering.",
+      "gpt-5.6-sol",
+      "medium",
+      [],
+      { writableRoots: [privateRoot] },
+    )).rejects.toThrow(/writable roots.*current response/i);
+    expect(client.turnSteer).not.toHaveBeenCalled();
+  });
+
   it("does not steer a read-only Action into an already-running writable turn", async () => {
     const client = {
       turnSteer: vi.fn(),
@@ -1015,6 +1078,125 @@ describe("CodexService Cursor-style modes and approvals", () => {
       },
     })).resolves.toEqual({ decision: "decline" });
     expect(service.getPendingApprovals()).toEqual([]);
+  });
+
+  it("uses the exact private-copy turn scope for permission escalation", async () => {
+    vi.stubGlobal("Services", {
+      uuid: { generateUUID: () => "{private-scope-test}" },
+      prefs: {
+        getStringPref: (name: string, fallback: string) =>
+          name.endsWith("qlabRoot") ? "/repo" : fallback,
+      },
+    });
+    const client = {
+      turnStart: vi.fn().mockResolvedValue({ turn: { id: "turn-private" } }),
+    };
+    const { service, callbacks } = serviceWithClient(client);
+    const privateRoot = `/repo/work/qlab-zotero/draft-changes/${"b".repeat(64)}`;
+    await service.send("Edit the private copy.", "gpt-5.6-sol", "high", [], {
+      writableRoots: [privateRoot],
+    });
+    const requestApproval = (service as any).requestUserApproval.bind(service);
+    const fileRequest = (requestId: string, grantRoot: string) => ({
+      kind: "fileChange" as const,
+      method: "item/fileChange/requestApproval" as const,
+      requestId,
+      params: {
+        threadId: "thread-a",
+        turnId: "turn-private",
+        itemId: `item-${requestId}`,
+        startedAtMs: 2,
+        grantRoot,
+      },
+    });
+
+    await expect(requestApproval(fileRequest(
+      "inside-private-copy",
+      `${privateRoot}/draft.qmd`,
+    ))).resolves.toEqual({ decision: "accept" });
+    await expect(requestApproval(fileRequest(
+      "original-ai-context",
+      "/repo/drafts/ai-contexts/context.qmd",
+    ))).resolves.toEqual({ decision: "decline" });
+    await expect(requestApproval(fileRequest(
+      "another-work-directory",
+      "/repo/work/another-task/output.qmd",
+    ))).resolves.toEqual({ decision: "decline" });
+    await expect(requestApproval({
+      kind: "permissions",
+      method: "item/permissions/requestApproval",
+      requestId: "network-private-copy",
+      params: {
+        threadId: "thread-a",
+        turnId: "turn-private",
+        itemId: "item-network-private-copy",
+        startedAtMs: 3,
+        environmentId: null,
+        cwd: privateRoot,
+        reason: "Download another source",
+        permissions: {
+          network: { enabled: true },
+          fileSystem: { read: null, write: [`${privateRoot}/draft.qmd`] },
+        },
+      },
+    })).resolves.toEqual({ permissions: {}, scope: "turn" });
+    expect(callbacks.onError).toHaveBeenCalledWith(expect.objectContaining({
+      message: expect.stringContaining("network access"),
+    }));
+
+    (service as any).runningTurns.set("thread-a", "turn-steered");
+    service.state.activeTurnId = "turn-steered";
+    const steeredRequest = fileRequest("steered-private-copy", `${privateRoot}/draft.qmd`);
+    steeredRequest.params.turnId = "turn-steered";
+    await expect(requestApproval(steeredRequest)).resolves.toEqual({ decision: "decline" });
+  });
+
+  it("clears private-copy approval scopes on every terminal and transport cleanup path", async () => {
+    const client = {
+      turnStart: vi.fn().mockResolvedValue({ turn: { id: "turn-private" } }),
+      turnInterrupt: vi.fn(async () => ({})),
+      close: vi.fn(),
+    };
+    const { service } = serviceWithClient(client);
+    const internal = service as any;
+    const key = "thread-a\u0000turn-private";
+    const privateRoot = "/repo/work/qlab-zotero/draft-changes/private";
+    const armScope = () => {
+      internal.turnWritableRoots ??= new Map();
+      internal.turnWritableRoots.set(key, [privateRoot]);
+      internal.runningTurns.set("thread-a", "turn-private");
+      service.state.activeThreadId = "thread-a";
+      service.state.activeTurnId = "turn-private";
+      service.state.running = true;
+    };
+
+    await service.send("Edit the private copy.", "gpt-5.6-sol", "high", [], {
+      writableRoots: [privateRoot],
+    });
+    internal.handleNotification({
+      method: "turn/completed",
+      params: { threadId: "thread-a", turn: { id: "turn-private" } },
+    });
+    expect(internal.turnWritableRoots.size).toBe(0);
+
+    armScope();
+    internal.handleNotification({
+      method: "turn/failed",
+      params: { threadId: "thread-a", turn: { id: "turn-private" } },
+    });
+    expect(internal.turnWritableRoots.size).toBe(0);
+
+    armScope();
+    await service.interrupt();
+    expect(internal.turnWritableRoots.size).toBe(0);
+
+    armScope();
+    internal.markDisconnected();
+    expect(internal.turnWritableRoots.size).toBe(0);
+
+    armScope();
+    service.stop();
+    expect(internal.turnWritableRoots.size).toBe(0);
   });
 
   it("rejects network escalation without showing an approval card", async () => {

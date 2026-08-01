@@ -301,6 +301,96 @@ async function settleWorkspace(): Promise<void> {
   }
 }
 
+async function mountAIContextEditWorkspace(id: string) {
+  const contextDocument = documentFixture(id);
+  const { plugin } = aiContextPluginHarness({
+    resolvedDocument: contextDocument,
+    stubActivation: false,
+  });
+  const host = document.createElement("div");
+  document.body.appendChild(host);
+  let workspace: any;
+  const sidebar = {
+    attachWorkspace: (build: (target: HTMLElement) => any) => {
+      workspace ??= build(host);
+      return workspace;
+    },
+    setWorkspaceOpen: (open: boolean) => {
+      if (open) workspace.show();
+      else workspace.hide();
+    },
+  };
+  vi.stubGlobal("PathUtils", {
+    join: (...parts: string[]) => parts.join("/").replace(/\/+/gu, "/"),
+  });
+  vi.stubGlobal("Components", {
+    interfaces: { nsIFile: {} },
+    classes: {
+      "@mozilla.org/file/local;1": {
+        createInstance: () => {
+          let path = "";
+          return {
+            initWithPath(value: string) { path = value; },
+            exists: () => true,
+            isSymlink: () => false,
+            isDirectory: () => !path.endsWith(".qmd"),
+            normalize: () => {},
+            get path() { return path; },
+          };
+        },
+      },
+    },
+  });
+  vi.stubGlobal("IOUtils", {
+    getChildren: vi.fn(async () => []),
+    stat: vi.fn(),
+  });
+  plugin.selectedWorkbenchEntry.mockReturnValue({ view: sidebar });
+  delete plugin.openQmdDocument;
+  plugin.qmdRender = {
+    open: vi.fn(async () => "http://127.0.0.1:44100/ai-context.html"),
+    stop: vi.fn(),
+    diagnostic: vi.fn(() => null),
+    checkDraft: vi.fn(async () => ({ ok: true, diagnostics: [] })),
+  };
+  plugin.qmdChangeRender = {
+    open: vi.fn(async () => "http://127.0.0.1:44200/ai-context.html"),
+    stop: vi.fn(),
+    diagnostic: vi.fn(() => null),
+  };
+  plugin.availableEditors = vi.fn(async () => []);
+  plugin.pendingQmdChanges = vi.fn(async () => new Set());
+  plugin.reviewDraftForKnowledge = vi.fn(async () => undefined);
+  plugin.keepQmdChange = vi.fn(async () => undefined);
+  plugin.saveQmdSource = vi.fn(async () => undefined);
+  const changePath = `work/qlab-zotero/draft-changes/${"a".repeat(64)}/draft.qmd`;
+  plugin.qmdChangePaths = vi.fn(() => ({
+    changePath,
+    previewPath: contextDocument.relativePath.replace(/\.qmd$/u, ".preview.qmd"),
+    manifestPath: "/profile/draft-changes/ai-context-edit.json",
+  }));
+  plugin.prepareQmdChange = vi.fn(async () => ({
+    changePath,
+    previewPath: contextDocument.relativePath.replace(/\.qmd$/u, ".preview.qmd"),
+    changed: false,
+    revision: "private-copy-r1",
+  }));
+  plugin.refreshQmdChangePreview = vi.fn(async () => undefined);
+
+  await plugin.activateAIContext(contextDocument, window);
+  await settleWorkspace();
+
+  return {
+    plugin,
+    contextDocument,
+    changePath,
+    host,
+    workspace,
+    editButton: host.querySelector<HTMLButtonElement>(".zc-qmd-enable-ai-editing")!,
+    status: host.querySelector<HTMLElement>(".zc-qmd-status")!,
+  };
+}
+
 describe("AI Context plugin integration", () => {
   it("derives captured IDs from fixture messages", () => {
     const document = documentFixture("captured", "conversation", {
@@ -366,7 +456,7 @@ describe("AI Context plugin integration", () => {
       expect.anything(),
       contextDocument.relativePath,
       window,
-      { agentCopy: "disabled" },
+      { agentCopy: "on-demand" },
     );
     expect(plugin.codex.openWorkspaceObjectConversation).toHaveBeenCalledWith({
       kind: "draft",
@@ -649,6 +739,125 @@ describe("AI Context plugin integration", () => {
     expect(plugin.activeAIContext).toBe(contextDocument);
     expect(plugin.activeAIContextThreadId).toBe("dedicated-atomic-1");
     expect(plugin.activeAIContextRoot).toBe("/repo");
+  });
+
+  it("starts one dedicated edit turn from the real on-demand workspace with only its private directory writable", async () => {
+    const mounted = await mountAIContextEditWorkspace("edit-turn");
+    const { plugin, contextDocument, changePath, workspace, editButton, host } = mounted;
+
+    expect((workspace as any).options.onEditWithAI).toEqual(expect.any(Function));
+    expect(editButton.hidden).toBe(false);
+    editButton.click();
+    await settleWorkspace();
+
+    expect(plugin.codex.send).toHaveBeenCalledOnce();
+    const [instruction, model, effort, screenshots, options] = plugin.codex.send.mock.calls[0]!;
+    expect(model).toBe("test-model");
+    expect(effort).toBe("medium");
+    expect(screenshots).toEqual([]);
+    expect(options).toEqual({
+      writableRoots: [`/repo/${changePath.split("/").slice(0, -1).join("/")}`],
+    });
+    const normalizedInstruction = String(instruction).replace(/\s+/gu, " ").toLowerCase();
+    for (const rule of [
+      "use the full current dedicated conversation",
+      "revise the complete active ai context qmd",
+      "write only the private working-copy path supplied in qmd editor context",
+      "preserve valid frontmatter and managed-marker structure",
+      "do not edit the original draft or trusted knowledge",
+      "leave the result for eye/keep review",
+    ]) {
+      expect(normalizedInstruction).toContain(rule);
+    }
+    expect(plugin.codex.setActiveDocument).toHaveBeenLastCalledWith({
+      relativePath: contextDocument.relativePath,
+      editablePath: changePath,
+    });
+    expect(plugin.aiContexts.save).not.toHaveBeenCalled();
+    expect(plugin.generator.generate).not.toHaveBeenCalled();
+    expect(plugin.aiContextHost.compareAndSwap).not.toHaveBeenCalled();
+    expect(plugin.aiContextHost.project).not.toHaveBeenCalled();
+    expect(plugin.aiContextHost.projectionStatus).not.toHaveBeenCalled();
+    expect(plugin.aiContexts.repair).not.toHaveBeenCalled();
+    expect(plugin.reviewDraftForKnowledge).not.toHaveBeenCalled();
+    expect(plugin.keepQmdChange).not.toHaveBeenCalled();
+    expect(plugin.saveQmdSource).not.toHaveBeenCalled();
+
+    workspace.destroy();
+    host.remove();
+  });
+
+  it.each([
+    ["active path", (plugin: any) => { plugin.activeAIContextPath = "drafts/ai-contexts/other.qmd"; }],
+    ["canonical repository root", (plugin: any) => { plugin.activeAIContextRoot = "/other-repo"; }],
+    ["dedicated thread", (plugin: any) => { plugin.codex.state.activeThreadId = "another-thread"; }],
+  ])("refuses the toolbar edit after the %s no longer matches", async (_label, drift) => {
+    const { plugin, workspace, editButton, status, host } = await mountAIContextEditWorkspace("authority-turn");
+    drift(plugin);
+
+    editButton.click();
+    await settleWorkspace();
+
+    expect(plugin.codex.send).not.toHaveBeenCalled();
+    expect(status.textContent).toMatch(/active AI Context|dedicated AI Context|repository/i);
+    expect(editButton.disabled).toBe(false);
+    workspace.destroy();
+    host.remove();
+  });
+
+  it("refuses a private working-copy path that does not belong to the opened AI Context", async () => {
+    const { plugin, workspace, editButton, status, host } = await mountAIContextEditWorkspace("copy-turn");
+    plugin.prepareQmdChange.mockResolvedValue({
+      changePath: `work/qlab-zotero/draft-changes/${"b".repeat(64)}/draft.qmd`,
+      previewPath: "drafts/ai-contexts/copy-turn.preview.qmd",
+      changed: false,
+      revision: "wrong-private-copy",
+    });
+
+    editButton.click();
+    await settleWorkspace();
+
+    expect(plugin.codex.send).not.toHaveBeenCalled();
+    expect(status.textContent).toMatch(/private AI Context working copy/i);
+    expect(editButton.disabled).toBe(false);
+    workspace.destroy();
+    host.remove();
+  });
+
+  it.each([
+    ["disconnected", (plugin: any) => { plugin.codex.state.connected = false; }],
+    ["signed out", (plugin: any) => { plugin.codex.isSignedIn.mockReturnValue(false); }],
+    ["already running", (plugin: any) => { plugin.codex.state.running = true; }],
+  ])("refuses the toolbar edit while Codex is %s", async (_label, block) => {
+    const { plugin, workspace, editButton, status, host } = await mountAIContextEditWorkspace("connection-turn");
+    block(plugin);
+
+    editButton.click();
+    await settleWorkspace();
+
+    expect(plugin.codex.send).not.toHaveBeenCalled();
+    expect(status.textContent).toMatch(/connect|sign in|current response/i);
+    expect(editButton.disabled).toBe(false);
+    workspace.destroy();
+    host.remove();
+  });
+
+  it("surfaces a rejected dedicated turn and lets the workspace button retry", async () => {
+    const { plugin, workspace, editButton, status, host } = await mountAIContextEditWorkspace("retry-turn");
+    plugin.codex.send
+      .mockRejectedValueOnce(new Error("private edit turn rejected"))
+      .mockResolvedValueOnce(undefined);
+
+    editButton.click();
+    await settleWorkspace();
+    expect(status.textContent).toContain("private edit turn rejected");
+    expect(editButton.disabled).toBe(false);
+
+    editButton.click();
+    await settleWorkspace();
+    expect(plugin.codex.send).toHaveBeenCalledTimes(2);
+    workspace.destroy();
+    host.remove();
   });
 
   it("clears A authority before a failed A-to-B activation and cannot save A afterward", async () => {

@@ -230,6 +230,15 @@ export const AI_CONTEXT_MENU_IDS = [
   "qlab-zotero-repair-ai-context",
 ] as const;
 
+const EDIT_ACTIVE_AI_CONTEXT_INSTRUCTION = [
+  "Use the full current dedicated conversation.",
+  "Revise the complete active AI Context QMD.",
+  "Write only the private working-copy path supplied in QMD Editor context.",
+  "Preserve valid frontmatter and managed-marker structure.",
+  "Do not edit the original Draft or trusted knowledge.",
+  "Leave the result for eye/Keep review.",
+].join("\n");
+
 export function isCreateReadingContextCommand(text: string): boolean {
   return text === "create a reading context";
 }
@@ -1375,7 +1384,7 @@ export class ZoteroChatPlugin {
       await this.openWorkbenchTab(win);
       const view = this.selectedWorkbenchEntry(win)?.view as SidebarView | undefined;
       if (!view) throw new Error("QLab Workbench was not opened");
-      if (!await this.openQmdDocument(view, document.relativePath, win, { agentCopy: "disabled" })) {
+      if (!await this.openQmdDocument(view, document.relativePath, win, { agentCopy: "on-demand" })) {
         throw new Error("The AI Context QMD could not be opened");
       }
       await this.codex.openWorkspaceObjectConversation({
@@ -1403,6 +1412,46 @@ export class ZoteroChatPlugin {
     }
     this.updateInteractionContext();
     this.renderChatViews();
+  }
+
+  private async editActiveAIContextWithAI(relativePath: string, changePath: string): Promise<void> {
+    if (!this.codex.state.connected) {
+      throw new Error("Connect to the local Codex before editing the active AI Context");
+    }
+    if (!this.codex.isSignedIn()) {
+      throw new Error("Sign in to the local Codex with ChatGPT before editing the active AI Context");
+    }
+    if (this.codex.state.running) {
+      throw new Error("Wait for the current response before editing the active AI Context");
+    }
+    const root = this.settings?.qlabRoot
+      ? this.aiContextRuntime.canonical(this.settings.qlabRoot)
+      : null;
+    if (!root || this.activeAIContextRoot !== root) {
+      throw new Error("The active AI Context repository no longer matches the opened QMD");
+    }
+    if (this.activeAIContextPath !== relativePath
+        || this.activeAIContext?.relativePath !== relativePath) {
+      throw new Error("The active AI Context no longer matches the opened QMD");
+    }
+    if (!this.activeAIContextThreadId
+        || this.codex.state.activeThreadId !== this.activeAIContextThreadId) {
+      throw new Error("The dedicated AI Context conversation is no longer active");
+    }
+    const expectedChangePath = this.qmdChangePaths(relativePath).changePath;
+    if (changePath !== expectedChangePath) {
+      throw new Error("The private AI Context working copy no longer matches the opened QMD");
+    }
+    this.safeRepositoryPath(changePath);
+    const changeDirectory = changePath.split("/").slice(0, -1).join("/");
+    const writableRoot = this.safeRepositoryPath(changeDirectory);
+    await this.codex.send(
+      EDIT_ACTIVE_AI_CONTEXT_INSTRUCTION,
+      this.selectedModel,
+      this.selectedEffort,
+      [],
+      { writableRoots: [writableRoot] },
+    );
   }
 
   private selectedZoteroItems(win: Window): unknown[] {
@@ -1810,6 +1859,7 @@ export class ZoteroChatPlugin {
         this.renderChatViews();
       },
       onReviewDraft: (path) => this.reviewDraftForKnowledge(path),
+      onEditWithAI: (path, changePath) => this.editActiveAIContextWithAI(path, changePath),
       prepareChange: (path) => this.prepareQmdChange(path),
       refreshChangePreview: (path, changePath, previewPath) =>
         this.refreshQmdChangePreview(path, changePath, previewPath),
@@ -1823,6 +1873,7 @@ export class ZoteroChatPlugin {
     if (!await workspace.open(relativePath, options)) return false;
     workspace.syncAgentChanges({
       activeTurnId: this.codex.state.activeTurnId,
+      running: this.codex.state.running,
       diffs: this.codex.getActiveDiffs(),
     });
     return true;
@@ -2695,6 +2746,7 @@ export class ZoteroChatPlugin {
       const researchActionState = this.researchActionViewState(win);
       view.workspace?.()?.syncAgentChanges({
         activeTurnId: this.codex.state.activeTurnId,
+        running: this.codex.state.running,
         diffs: activeDiffs,
       });
       view.setState({
@@ -3293,6 +3345,7 @@ export class ZoteroChatPlugin {
       }
       view.workspace()?.syncAgentChanges({
         activeTurnId: this.codex.state.activeTurnId,
+        running: this.codex.state.running,
         diffs: activeDiffs,
       });
       const researchActionState = this.researchActionViewState(
