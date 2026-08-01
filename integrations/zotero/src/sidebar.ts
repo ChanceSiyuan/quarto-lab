@@ -33,6 +33,9 @@ export interface ChatEntry {
   text: string;
   title?: string;
   state?: "running" | "complete" | "failed";
+  origin?: "codex" | "chatgpt-companion";
+  originLabel?: string;
+  companionProvenance?: { capsuleId: string; capsuleChecksum: string };
 }
 
 export interface ModelOption {
@@ -160,6 +163,15 @@ export interface SidebarState {
   selectedModel: string;
   effort: string;
   running: boolean;
+  /** A ChatGPT handoff is in progress; it is independent of Codex streaming. */
+  companionBusy?: boolean;
+  companionStatus?: { kind: "idle" | "success" | "error"; message: string };
+  pendingCompanionHandoffs?: Array<{
+    capsuleId: string;
+    questionPreview: string;
+    createdAt: string;
+    selected: boolean;
+  }>;
   creatingThread?: boolean;
   threadTitle?: string;
   mode: ResearchMode;
@@ -199,6 +211,9 @@ export interface SidebarCallbacks {
   onToggleHistoryPin?(threadId: string, pinned: boolean): void;
   onOpenChatGPT?(): void;
   onImportChatGPTHistory?(): void;
+  onOpenChatGPTCompanion?(question: string): void;
+  onImportChatGPTCompanionAnswer?(): void;
+  onSelectChatGPTCompanionHandoff?(capsuleId: string): void;
   onReturnToLiveConversation?(): void;
   onLogin(): void;
   onLogout(): void;
@@ -241,6 +256,10 @@ export type SidebarIcon = "history" | "new" | "terminal" | "site" | "popout" | "
 
 const LONG_USER_MESSAGE_CHARACTERS = 420;
 const LONG_USER_MESSAGE_LINES = 8;
+
+function shortCapsuleId(capsuleId: string): string {
+  return capsuleId.length <= 14 ? capsuleId : `${capsuleId.slice(0, 9)}…${capsuleId.slice(-4)}`;
+}
 
 /** Renders long user prompts compactly without discarding any of their text. */
 export function appendUserMessage(
@@ -325,6 +344,9 @@ export class SidebarView {
   private modelSelect!: HTMLSelectElement;
   private effortSelect!: HTMLSelectElement;
   private composerControls!: HTMLElement;
+  private companionButton: HTMLButtonElement | null = null;
+  private companionHandoffs: HTMLElement | null = null;
+  private companionStatusArea!: HTMLElement;
   private qlabRootLabel!: HTMLElement;
   private actionStrip!: HTMLElement;
   private renderedResearchActions: {
@@ -775,6 +797,7 @@ export class SidebarView {
     this.textarea.addEventListener("input", () => {
       this.autoSizeComposer();
       this.updateContextMenuFromComposer();
+      this.renderCompanionControls();
     });
     this.textarea.addEventListener("keydown", (event) => {
       if (this.handleContextMenuKeydown(event)) return;
@@ -805,6 +828,23 @@ export class SidebarView {
     this.effortSelect.title = "Reasoning Effort";
     this.effortSelect.addEventListener("change", () => this.callbacks.onEffortChange(this.effortSelect.value));
     controls.append(this.modelSelect, this.effortSelect);
+    if (this.surface === "workbench") {
+      this.companionButton = this.doc.createElement("button");
+      this.companionButton.type = "button";
+      this.companionButton.className = "zc-companion-open";
+      this.companionButton.title = "Ask in ChatGPT";
+      this.companionButton.setAttribute("aria-label", "Ask in ChatGPT");
+      const label = this.doc.createElement("span");
+      label.className = "zc-companion-open-label";
+      label.textContent = "Ask in ChatGPT ↗";
+      this.companionButton.appendChild(label);
+      this.companionButton.addEventListener("click", () => {
+        const question = this.textarea.value;
+        if (!question.trim() || this.state.companionBusy || this.state.readOnlyConversation) return;
+        this.callbacks.onOpenChatGPTCompanion?.(question);
+      });
+      controls.appendChild(this.companionButton);
+    }
     this.sendButton = this.doc.createElement("button");
     this.sendButton.type = "button";
     this.sendButton.className = "zc-send-button";
@@ -823,7 +863,11 @@ export class SidebarView {
     composer.append(this.contextChips, this.contextMenu, this.textarea, composerFooter);
     this.statusArea = this.doc.createElement("div");
     this.statusArea.className = "zc-status-area";
-    composerWrap.append(qlabBar, composer, this.statusArea);
+    this.companionStatusArea = this.doc.createElement("div");
+    this.companionStatusArea.className = "zc-companion-status";
+    this.companionStatusArea.setAttribute("role", "status");
+    this.companionStatusArea.setAttribute("aria-live", "polite");
+    composerWrap.append(qlabBar, composer, this.companionStatusArea, this.statusArea);
 
     this.loginLayer = this.doc.createElement("div");
     this.loginLayer.className = "zc-login-layer";
@@ -1046,8 +1090,12 @@ export class SidebarView {
     this.sendButton.setAttribute("aria-label", this.sendButton.title);
     this.stopButton.hidden = !this.state.running;
     this.stopButton.style.display = this.state.running ? "grid" : "none";
-    this.textarea.disabled = this.state.phase !== "ready" || Boolean(this.state.readOnlyConversation);
-    this.sendButton.disabled = Boolean(this.state.readOnlyConversation);
+    const canSendCodex = this.canSendCodex();
+    this.textarea.disabled = Boolean(this.state.readOnlyConversation);
+    this.sendButton.disabled = !canSendCodex;
+    this.modelSelect.disabled = !canSendCodex || this.state.running;
+    this.effortSelect.disabled = !canSendCodex || this.state.running;
+    this.renderCompanionControls();
     if (this.state.readOnlyConversation) {
       this.textarea.placeholder = "Imported ChatGPT history is read-only";
     }
@@ -1057,6 +1105,86 @@ export class SidebarView {
       ? "Enter sends a follow-up · Esc stops generation"
       : "Codex can make mistakes; verify the paper text and page numbers.");
     this.statusArea.classList.toggle("is-error", Boolean(this.state.error));
+  }
+
+  private canSendCodex(): boolean {
+    // A fresh host can represent its initial active thread with an empty tab
+    // list. Once it supplies tabs, an explicit active tab is required.
+    const hasActiveThread = this.state.threads.length === 0 || this.state.threads.some((thread) => thread.active);
+    return this.state.phase === "ready" && hasActiveThread && !this.state.readOnlyConversation;
+  }
+
+  private renderCompanionControls(): void {
+    if (!this.companionButton) return;
+    const unavailable = Boolean(this.state.companionBusy || this.state.readOnlyConversation);
+    this.companionButton.disabled = unavailable || !this.textarea.value.trim();
+
+    const hasCompanionState = this.state.pendingCompanionHandoffs !== undefined;
+    const handoffs = this.state.pendingCompanionHandoffs || [];
+    if (!hasCompanionState) {
+      this.companionHandoffs?.remove();
+      this.companionHandoffs = null;
+    }
+    if (hasCompanionState) {
+      if (!this.companionHandoffs) {
+        this.companionHandoffs = this.doc.createElement("section");
+        this.companionHandoffs.className = "zc-companion-handoffs";
+        this.companionHandoffs.setAttribute("aria-label", "ChatGPT Companion handoffs");
+        this.companionStatusArea.before(this.companionHandoffs);
+      }
+      this.companionHandoffs.replaceChildren();
+      const explicitlySelected = handoffs.filter((handoff) => handoff.selected);
+      const newest = handoffs.length
+        ? handoffs.reduce((latest, handoff) => handoff.createdAt > latest.createdAt ? handoff : latest)
+        : null;
+      const selectedIds = explicitlySelected.length
+        ? new Set(explicitlySelected.map((handoff) => handoff.capsuleId))
+        : newest ? new Set([newest.capsuleId]) : new Set<string>();
+
+      const heading = this.doc.createElement("strong");
+      heading.textContent = handoffs.length
+        ? "ChatGPT handoffs ready to import"
+        : "No copied ChatGPT answer is ready to import";
+      const list = this.doc.createElement("div");
+      list.className = "zc-companion-handoff-list";
+      const importButton = this.doc.createElement("button");
+      importButton.type = "button";
+      importButton.className = "zc-companion-import";
+      importButton.textContent = "Import copied answer";
+      const syncImportDisabled = () => {
+        const selectedCount = list.querySelectorAll<HTMLInputElement>(".zc-companion-handoff-choice:checked").length;
+        importButton.disabled = unavailable || selectedCount !== 1;
+      };
+      for (const handoff of handoffs) {
+        const option = this.doc.createElement("label");
+        option.className = "zc-companion-handoff";
+        const choice = this.doc.createElement("input");
+        choice.type = "checkbox";
+        choice.className = "zc-companion-handoff-choice";
+        choice.checked = selectedIds.has(handoff.capsuleId);
+        choice.addEventListener("change", () => {
+          syncImportDisabled();
+          this.callbacks.onSelectChatGPTCompanionHandoff?.(handoff.capsuleId);
+        });
+        const copy = this.doc.createElement("span");
+        const question = this.doc.createElement("span");
+        question.className = "zc-companion-handoff-question";
+        question.textContent = handoff.questionPreview;
+        const detail = this.doc.createElement("small");
+        detail.textContent = `${handoff.createdAt} · ${shortCapsuleId(handoff.capsuleId)}`;
+        copy.append(question, detail);
+        option.append(choice, copy);
+        list.appendChild(option);
+      }
+      syncImportDisabled();
+      importButton.addEventListener("click", () => this.callbacks.onImportChatGPTCompanionAnswer?.());
+      this.companionHandoffs.append(heading, ...(handoffs.length ? [list] : []), importButton);
+    }
+
+    const status = this.state.companionStatus;
+    this.companionStatusArea.hidden = !status || status.kind === "idle";
+    this.companionStatusArea.textContent = status?.kind === "idle" ? "" : status?.message || "";
+    this.companionStatusArea.classList.toggle("is-error", status?.kind === "error");
   }
 
   private renderResearchActions(): void {
@@ -1610,7 +1738,10 @@ export class SidebarView {
           entry.kind,
           entry.text,
           entry.title || "",
-          entry.state || ""
+          entry.state || "",
+          entry.origin || "",
+          entry.originLabel || "",
+          entry.companionProvenance || null,
         ]);
         desired.push(this.cachedEntryNode(entry.id, fingerprint, () => this.renderEntry(entry)));
       }
@@ -2131,7 +2262,7 @@ export class SidebarView {
 
   private renderEntry(entry: ChatEntry): HTMLElement {
     const article = this.doc.createElement("article");
-    article.className = `zc-entry zc-entry-${entry.kind}`;
+    article.className = `zc-entry zc-entry-${entry.kind}${entry.origin === "chatgpt-companion" ? " zc-entry-companion" : ""}`;
     article.dataset.entryId = entry.id;
     if (entry.kind === "user") {
       appendUserMessage(this.doc, article, entry, this.expandedUserMessages);
@@ -2159,21 +2290,51 @@ export class SidebarView {
       article.textContent = entry.text;
       return article;
     }
-    const avatar = this.doc.createElement("img");
-    avatar.className = "zc-entry-avatar";
-    avatar.src = "chrome://zotkit/content/icons/icon.svg";
-    avatar.alt = "Codex";
+    const avatar = entry.origin === "chatgpt-companion"
+      ? this.createCompanionAvatar()
+      : this.createCodexAvatar();
     const content = this.doc.createElement("div");
     content.className = "zc-entry-content";
     const markdownBody = this.doc.createElement("div");
     markdownBody.className = "zc-markdown";
     markdownBody.appendChild(renderMarkdown(this.doc, entry.text, this.markdownOptions()));
+    if (entry.origin === "chatgpt-companion") {
+      const origin = this.doc.createElement("div");
+      origin.className = "zc-companion-origin";
+      const label = this.doc.createElement("span");
+      label.textContent = entry.originLabel || "Imported from ChatGPT · user copied";
+      origin.appendChild(label);
+      if (entry.companionProvenance) {
+        const capsule = this.doc.createElement("small");
+        capsule.textContent = `Capsule ${shortCapsuleId(entry.companionProvenance.capsuleId)}`;
+        capsule.title = `Capsule checksum: ${entry.companionProvenance.capsuleChecksum}`;
+        origin.appendChild(capsule);
+      }
+      content.appendChild(origin);
+    }
     content.appendChild(markdownBody);
     if (entry.kind === "assistant") {
       content.appendChild(this.createCopyAnswerButton(entry.text));
     }
     article.append(avatar, content);
     return article;
+  }
+
+  private createCodexAvatar(): HTMLImageElement {
+    const avatar = this.doc.createElement("img");
+    avatar.className = "zc-entry-avatar";
+    avatar.src = "chrome://zotkit/content/icons/icon.svg";
+    avatar.alt = "Codex";
+    return avatar;
+  }
+
+  private createCompanionAvatar(): HTMLElement {
+    const avatar = this.doc.createElement("span");
+    avatar.className = "zc-entry-avatar zc-companion-avatar";
+    avatar.setAttribute("role", "img");
+    avatar.setAttribute("aria-label", "ChatGPT Companion");
+    avatar.textContent = "◎";
+    return avatar;
   }
 
   private markdownOptions(): {
@@ -2380,7 +2541,7 @@ export class SidebarView {
 
   private submit(): void {
     const text = this.textarea.value.trim();
-    if (!text || this.state.phase !== "ready") return;
+    if (!text || !this.canSendCodex()) return;
     this.closeContextMenu();
     this.textarea.value = "";
     this.autoSizeComposer();
