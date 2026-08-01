@@ -31,6 +31,9 @@ export const COMPANION_CAPSULE_BOUNDS = Object.freeze({
   importedAnswer: 64_000,
 });
 
+/** Maximum distinct global warnings in a persisted handoff capsule. */
+export const COMPANION_CAPSULE_WARNING_BOUND = 256;
+
 export const CHATGPT_COMPANION_CAPSULE_BOUNDS = COMPANION_CAPSULE_BOUNDS;
 
 export type CompanionContextKind =
@@ -618,6 +621,10 @@ export function buildCompanionCapsule(
   const subjectPaperKey = input.subject?.paperKey === null || input.subject?.paperKey === undefined
     ? null
     : exactIdentifier(input.subject.paperKey, COMPANION_CAPSULE_BOUNDS.paperKey, "Subject paper key");
+  const distinctWarnings = [...new Set(warnings)];
+  if (distinctWarnings.length > COMPANION_CAPSULE_WARNING_BOUND) {
+    throw new Error("The capsule has too many distinct warnings");
+  }
   const unsigned: Omit<ChatGPTCompanionCapsule, "contentHash"> = {
     schemaVersion: 1,
     id,
@@ -634,7 +641,7 @@ export function buildCompanionCapsule(
     secondaryPapers,
     draft,
     screenshotProvenance,
-    warnings,
+    warnings: distinctWarnings,
     bounds: { ...COMPANION_CAPSULE_BOUNDS },
   };
   const contentHash = dependencies.hash(canonicalCompanionCapsuleJson(unsigned));
@@ -647,7 +654,6 @@ export function buildCompanionCapsule(
   return freeze({ ...unsigned, contentHash });
 }
 
-const MAX_CAPSULE_WARNINGS = 256;
 const MAX_WARNING_LENGTH = 2_048;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -799,7 +805,7 @@ export function validateCompanionCapsule(value: unknown): value is ChatGPTCompan
     || !value.secondaryPapers.every((paper) => exactCitation(paper, true))
     || !Array.isArray(value.screenshotProvenance)
     || value.screenshotProvenance.length > COMPANION_CAPSULE_BOUNDS.screenshotProvenance
-    || !Array.isArray(value.warnings) || value.warnings.length > MAX_CAPSULE_WARNINGS
+    || !Array.isArray(value.warnings) || value.warnings.length > COMPANION_CAPSULE_WARNING_BOUND
     || !value.warnings.every((warning) => exactMetadata(warning, MAX_WARNING_LENGTH))) return false;
 
   if (!payloadsMatchIncludedContext(value)) return false;

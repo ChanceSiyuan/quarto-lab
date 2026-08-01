@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   COMPANION_CAPSULE_BOUNDS,
+  COMPANION_CAPSULE_WARNING_BOUND,
   buildCompanionCapsule,
   canonicalCompanionCapsuleJson,
   verifyCompanionCapsule,
@@ -389,5 +390,30 @@ describe("ChatGPT companion capsule", () => {
     ]) {
       expect(verifyCompanionCapsule(candidate, dependencies.hash)).toBe(false);
     }
+  });
+
+  it("deduplicates repeated global metadata warnings so maximum-context capsules remain verifiable", () => {
+    const source = input();
+    source.contextItems = Array.from({ length: COMPANION_CAPSULE_BOUNDS.contextItems }, (_, index) => ({
+      id: `paper-${index}`,
+      kind: "paper",
+      sourceIdentity: `zotero:paper-${index}`,
+    }));
+    source.paper = {
+      title: "t".repeat(COMPANION_CAPSULE_BOUNDS.citationTitle + 1),
+      creators: "c".repeat(COMPANION_CAPSULE_BOUNDS.citationCreators + 1),
+      year: "y".repeat(COMPANION_CAPSULE_BOUNDS.citationYear + 1),
+      doi: "d".repeat(COMPANION_CAPSULE_BOUNDS.citationDoi + 1),
+      url: `https://example.test/${"u".repeat(COMPANION_CAPSULE_BOUNDS.citationUrl + 1)}`,
+      pdfPath: "/private/paper.pdf",
+      abstract: "never copied",
+    };
+
+    const capsule = buildCompanionCapsule(source, dependencies);
+
+    expect(capsule.warnings).toHaveLength(5);
+    expect(COMPANION_CAPSULE_WARNING_BOUND).toBe(256);
+    expect(capsule.bounds).not.toHaveProperty("warnings");
+    expect(verifyCompanionCapsule(capsule, dependencies.hash)).toBe(true);
   });
 });

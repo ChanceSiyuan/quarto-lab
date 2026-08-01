@@ -146,6 +146,29 @@ describe("Companion capsule storage", () => {
       await expect(store.load(valid.id)).resolves.toBeNull();
     }
   });
+
+  it("stores a maximum-context capsule after repeated metadata warnings are deduplicated", async () => {
+    const filesystem = memoryFilesystem();
+    const store = createCompanionCapsuleStorage({ filesystem, hash, now });
+    const stored = buildCompanionCapsule({
+      question: "Explain the repeated metadata warnings.",
+      contextItems: Array.from({ length: 64 }, (_, index) => ({
+        id: `paper-${index}`,
+        kind: "paper",
+        sourceIdentity: `zotero:paper-${index}`,
+      })),
+      paper: {
+        title: "t".repeat(1_025),
+        creators: "c".repeat(2_049),
+        year: "y".repeat(33),
+        doi: "d".repeat(513),
+        url: `https://example.test/${"u".repeat(2_049)}`,
+      },
+    }, { id: () => "capsule_0123456789abcdef", now: () => "2026-08-01T11:00:00.000Z", hash });
+
+    await store.save(stored);
+    await expect(store.load(stored.id)).resolves.toEqual(stored);
+  });
 });
 
 describe("Gecko companion capsule filesystem", () => {
