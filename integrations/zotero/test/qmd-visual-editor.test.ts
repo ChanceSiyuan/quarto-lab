@@ -69,6 +69,39 @@ describe("QmdVisualEditor", () => {
     expect(card.textContent).toContain("For every size");
   });
 
+  it.each([
+    ["def", '#def-new-definition .callout-note icon="false"', "Definition 1: New definition"],
+    ["lem", '#lem-new-lemma .callout-important icon="false"', "Lemma 1: New lemma"],
+    ["thm", '#thm-new-theorem .callout-important icon="false"', "Theorem 2: New theorem"],
+    ["proof", '#proof-new-proof .callout-note collapse="true"', "Proof"],
+  ] as const)("inserts a canonical %s block without requiring hand-authored Div syntax", async (
+    kind, syntax, visibleLabel,
+  ) => {
+    const { editor, save, source } = mount();
+
+    await editor.insertFormalBlock(kind);
+
+    expect(save).toHaveBeenCalledOnce();
+    expect(source()).toContain(`::: {${syntax}}`);
+    const inserted = [...editor.root.querySelectorAll<HTMLElement>(`.zc-qmd-visual-card.is-${kind}`)].at(-1);
+    expect(inserted).not.toBeNull();
+    expect(inserted!.querySelector("header")!.textContent).toBe(visibleLabel);
+  });
+
+  it("inserts after the selected visual block and generates a unique anchor", async () => {
+    const { editor, source } = mount();
+    const theorem = editor.root.querySelector<HTMLElement>(".zc-qmd-visual-card.is-thm")!;
+    theorem.focus();
+
+    await editor.insertFormalBlock("thm");
+    await editor.insertFormalBlock("thm");
+
+    const first = source().indexOf("#thm-new-theorem ");
+    const second = source().indexOf("#thm-new-theorem-2 ");
+    expect(first).toBeGreaterThan(source().indexOf("#thm-gap"));
+    expect(second).toBeGreaterThan(first);
+  });
+
   it("edits one formula inside a theorem without flattening the rest of the card", async () => {
     const { editor, save, source } = mount();
     const card = editor.root.querySelector<HTMLElement>(".zc-qmd-visual-card.is-thm")!;

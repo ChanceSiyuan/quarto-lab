@@ -1154,6 +1154,7 @@
 .zc-main-site-browser { flex: 1; width: 100%; min-width: 0; min-height: 0; border: 0; }
 .zc-main-site-unavailable { display: grid; flex: 1; place-items: center; color: var(--zc-muted); font-size: 13px; }
 .zc-qmd-workspace {
+  position: relative;
   grid-row: 2;
   min-width: 0;
   min-height: 0;
@@ -1245,6 +1246,36 @@
   border-color: color-mix(in srgb, var(--zc-accent) 55%, var(--zc-border));
   color: var(--zc-accent);
 }
+.zc-qmd-formal-menu {
+  position: absolute;
+  z-index: 45;
+  top: 42px;
+  right: 66px;
+  display: grid;
+  width: 220px;
+  gap: 3px;
+  padding: 6px;
+  border: 1px solid var(--zc-border);
+  border-radius: 9px;
+  background: var(--zc-bg-raised);
+  box-shadow: 0 12px 30px rgba(20, 17, 31, .2);
+}
+.zc-qmd-formal-menu[hidden] { display: none; }
+.zc-qmd-formal-option {
+  display: grid;
+  gap: 1px;
+  padding: 7px 9px;
+  border: 0;
+  border-radius: 6px;
+  color: var(--zc-text);
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+.zc-qmd-formal-option:hover,
+.zc-qmd-formal-option:focus { outline: 0; background: var(--zc-bg-hover); }
+.zc-qmd-formal-option strong { font-size: 12px; }
+.zc-qmd-formal-option span { color: var(--zc-muted); font-size: 10.5px; }
 .zc-qmd-path {
   flex: 1;
   min-width: 60px;

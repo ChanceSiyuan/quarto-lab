@@ -32,13 +32,30 @@ untrusted source material.
    ---
    ```
 
+   Write every new title, description, heading, paragraph, formal-block label,
+   and caption in English. Chat responses may follow the user's language.
+   Preserve citation keys, proper names, and mathematical notation.
+
 5. Include only useful sections among `Source`, `Takeaway`, `Paper-backed
    points`, `Discussion insights`, `Open questions`, and `Next reading steps`.
    Record the Zotero item key and paper directory under `Source`.
-6. Never edit `knowledge/`, its reading maps, `literature/`, Zotero data, or the
+6. Make every body paragraph teach the paper or research topic. Never insert
+   agent, repository, review, or trust-state commentary such as “this content
+   comes from external literature,” “has not been promoted to trusted
+   knowledge,” “AI working copy,” or “the user asked.” Keep workflow status in
+   the agent response and review UI. Put provenance in the dedicated `Source`
+   section or a real Pandoc citation; if a citekey is unresolved, report that
+   outside the QMD instead of adding a placeholder disclaimer.
+7. Organize established mathematical content using the `expand-notes` writing
+   standard: reusable concepts use `#def-*` callout-note blocks, intermediate
+   results use `#lem-*` callout-important blocks, central results use `#thm-*`
+   callout-important blocks, and substantial proofs use `#proof-*`
+   callout-note blocks with `collapse="true"`.
+   Do not formalize tentative discussion or ordinary exposition.
+8. Never edit `knowledge/`, its reading maps, `literature/`, Zotero data, or the
    source PDF. A later promotion must use `review-draft` and requires the
    user's review.
-7. Preview the exact file before reporting:
+9. Preview the exact file before reporting:
 
 ```bash
 make draft-preview FILE=drafts/reading-notes/<note>.qmd

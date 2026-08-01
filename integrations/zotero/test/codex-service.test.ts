@@ -2855,7 +2855,7 @@ describe("CodexService utility turns", () => {
   });
 });
 
-describe("CodexService entriesForTurn duplicate-user defense (bug-triage #1)", () => {
+describe("CodexService entriesForTurn duplicate-message defense (bug-triage #1)", () => {
   it("renders commentary as collapsible progress, dedupes repeats, and keeps only the final answer as assistant content", () => {
     const { service } = serviceWithClient({});
     (service as any).store = {
@@ -2903,6 +2903,27 @@ describe("CodexService entriesForTurn duplicate-user defense (bug-triage #1)", (
     expect(userEntries).toHaveLength(1);
     expect(userEntries[0]!.text).toBe("浮点数怎么表示?");
     expect(chatEntries.map((entry) => entry.kind)).toEqual(["user", "assistant"]);
+  });
+
+  it("collapses an identical final answer materialized under two item ids", () => {
+    const { service } = serviceWithClient({});
+    (service as any).store = {
+      getThread: () => ({
+        turns: [{
+          id: "t1",
+          status: "completed",
+          items: [
+            { id: "u1", type: "userMessage", content: [{ type: "text", text: "写入 Draft" }] },
+            { id: "t1:item:1", type: "agentMessage", phase: "final_answer", text: "Draft 已更新。" },
+            { id: "real-item-12", type: "agentMessage", phase: "final_answer", text: "Draft 已更新。" },
+          ],
+        }],
+      }),
+    };
+
+    const assistantEntries = service.getChatEntries().filter((entry) => entry.kind === "assistant");
+    expect(assistantEntries).toHaveLength(1);
+    expect(assistantEntries[0]!.text).toBe("Draft 已更新。");
   });
 
   it("keeps both user entries when the texts genuinely differ (steering within the same turn)", () => {
@@ -2953,6 +2974,35 @@ describe("CodexService entriesForTurn duplicate-user defense (bug-triage #1)", (
     const userEntries = service.getChatEntries().filter((entry) => entry.kind === "user");
     expect(userEntries).toHaveLength(2);
     expect(userEntries.map((entry) => entry.text)).toEqual(["重复问题", "重复问题"]);
+  });
+
+  it("does not dedup identical assistant text across two different turns", () => {
+    const { service } = serviceWithClient({});
+    (service as any).store = {
+      getThread: () => ({
+        turns: [
+          {
+            id: "t1",
+            status: "completed",
+            items: [
+              { id: "u1", type: "userMessage", content: [{ type: "text", text: "问题一" }] },
+              { id: "a1", type: "agentMessage", text: "需要进一步核对。" },
+            ],
+          },
+          {
+            id: "t2",
+            status: "completed",
+            items: [
+              { id: "u2", type: "userMessage", content: [{ type: "text", text: "问题二" }] },
+              { id: "a2", type: "agentMessage", text: "需要进一步核对。" },
+            ],
+          },
+        ],
+      }),
+    };
+
+    const assistantEntries = service.getChatEntries().filter((entry) => entry.kind === "assistant");
+    expect(assistantEntries).toHaveLength(2);
   });
 });
 

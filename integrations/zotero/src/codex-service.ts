@@ -2771,19 +2771,18 @@ export class CodexService {
 
   /**
    * Shared item→entry expansion for a single turn, used by getChatEntries and
-   * readThreadTurns. Defensively collapses duplicate `userMessage` entries
-   * within THIS turn that carry identical text (bug-triage #1): the codex
-   * app-server can materialize the same user message under two different
-   * item ids -- an index-fallback id from a `turn/started` snapshot plus the
-   * real id from a later `item/completed` notification -- and neither
-   * `mergeTurn` nor `upsertItem` de-dupes across ids, so both would render as
-   * separate bubbles otherwise. Only same-turn, identical-text `user` entries
-   * are collapsed; assistant/tool/command entries and genuine two-different-
-   * texts steering turns are left untouched.
+   * readThreadTurns. Defensively collapses duplicate visible messages within
+   * THIS turn that carry identical text: the codex app-server can materialize
+   * one message under two different item ids -- an index-fallback id from a
+   * `turn/started` snapshot plus the real id from a later `item/completed`
+   * notification -- and neither `mergeTurn` nor `upsertItem` de-dupes across
+   * ids. Genuine steering messages and distinct assistant messages remain in
+   * order; identical text in different turns is intentionally preserved.
    */
   private entriesForTurn(turn: StoredTurn): ChatEntry[] {
     const entries: ChatEntry[] = [];
     const seenUserText = new Set<string>();
+    const seenAssistantText = new Set<string>();
     const seenProgressText = new Set<string>();
     for (const item of turn.items) {
       const entry = itemToEntry(item, turn);
@@ -2791,6 +2790,10 @@ export class CodexService {
       if (entry.kind === "user") {
         if (seenUserText.has(entry.text)) continue;
         seenUserText.add(entry.text);
+      }
+      if (entry.kind === "assistant") {
+        if (seenAssistantText.has(entry.text)) continue;
+        seenAssistantText.add(entry.text);
       }
       if (entry.kind === "reasoning" && entry.title === "Progress") {
         if (seenProgressText.has(entry.text)) continue;

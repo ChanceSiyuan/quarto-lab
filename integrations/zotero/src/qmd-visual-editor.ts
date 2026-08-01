@@ -15,6 +15,7 @@ export interface QmdSourceSnapshot {
 }
 
 export type QmdVisualStatus = "editing" | "saving" | "saved" | "conflict" | "error";
+export type QmdFormalBlockKind = "def" | "lem" | "thm" | "proof";
 
 export interface QmdVisualEditorOptions {
   save(source: string, expectedRevision: string, generation: number): Promise<QmdSourceSnapshot>;
@@ -42,6 +43,60 @@ const SEMANTIC_LABELS: Record<string, string> = {
   exm: "Example",
   proof: "Proof",
 };
+
+const FORMAL_BLOCKS: Readonly<Record<QmdFormalBlockKind, {
+  anchor: string;
+  title: string;
+  body: string;
+  attributes: string;
+}>> = {
+  def: {
+    anchor: "new-definition",
+    title: "New definition",
+    body: "Write the definition in English.",
+    attributes: '.callout-note icon="false"',
+  },
+  lem: {
+    anchor: "new-lemma",
+    title: "New lemma",
+    body: "State the lemma in English.",
+    attributes: '.callout-important icon="false"',
+  },
+  thm: {
+    anchor: "new-theorem",
+    title: "New theorem",
+    body: "State the theorem in English.",
+    attributes: '.callout-important icon="false"',
+  },
+  proof: {
+    anchor: "new-proof",
+    title: "",
+    body: "Write the proof in English.",
+    attributes: '.callout-note collapse="true"',
+  },
+};
+
+function formalBlockTemplate(source: string, kind: QmdFormalBlockKind): { source: string; anchor: string } {
+  const definition = FORMAL_BLOCKS[kind];
+  let suffix = 1;
+  let anchor = `${kind}-${definition.anchor}`;
+  while (source.includes(`#${anchor}`)) {
+    suffix += 1;
+    anchor = `${kind}-${definition.anchor}-${suffix}`;
+  }
+  return {
+    anchor,
+    source: `::: {#${anchor} ${definition.attributes}}\n\n${definition.title ? `## ${definition.title}\n\n` : ""}${definition.body}\n\n:::`,
+  };
+}
+
+function insertBlockAt(source: string, offset: number, block: string): string {
+  const before = source.slice(0, offset);
+  const after = source.slice(offset);
+  const leading = !before || before.endsWith("\n\n") ? "" : before.endsWith("\n") ? "\n" : "\n\n";
+  const trailing = !after ? "\n" : after.startsWith("\n\n") ? "" : after.startsWith("\n") ? "\n" : "\n\n";
+  return `${before}${leading}${block}${trailing}${after}`;
+}
 
 function theoremBody(source: string): string {
   const lines = source.replace(/\r\n?/g, "\n").split("\n").slice(1, -1);
@@ -80,6 +135,8 @@ export class QmdVisualEditor {
   private generation = 0;
   private editable = false;
   private active: ActiveEdit | null = null;
+  private selectedBlockId: string | null = null;
+  private inserting = false;
   private destroyed = false;
 
   constructor(private readonly doc: Document, private readonly options: QmdVisualEditorOptions) {
@@ -94,6 +151,7 @@ export class QmdVisualEditor {
     this.revision = snapshot.revision;
     this.generation = generation;
     this.editable = editable;
+    this.selectedBlockId = null;
     this.render();
   }
 
@@ -103,6 +161,41 @@ export class QmdVisualEditor {
 
   isEditing(): boolean {
     return this.active !== null;
+  }
+
+  /** Insert one canonical semantic Div after the last selected visual block. */
+  async insertFormalBlock(kind: QmdFormalBlockKind): Promise<void> {
+    if (!this.editable || this.destroyed) throw new Error("Visual Edit is not ready for insertion");
+    if (this.inserting) return;
+    this.inserting = true;
+    const generation = this.generation;
+    try {
+      await this.finishActiveEdit();
+      if (this.active) throw new Error("Finish the active QMD edit before inserting a formal block");
+      const blocks = visualQmdBlocks(this.source);
+      const selected = blocks.find((candidate) => candidate.id === this.selectedBlockId);
+      const offset = selected?.end ?? this.source.length;
+      const template = formalBlockTemplate(this.source, kind);
+      const nextSource = insertBlockAt(this.source, offset, template.source);
+      this.options.onStatus?.("Inserting formal block…", "saving", generation);
+      const snapshot = await this.options.save(nextSource, this.revision, generation);
+      if (this.destroyed || generation !== this.generation) return;
+      this.source = snapshot.source;
+      this.revision = snapshot.revision;
+      const inserted = visualQmdBlocks(this.source).find((candidate) =>
+        candidate.source.includes(`#${template.anchor}`));
+      this.selectedBlockId = inserted?.id ?? null;
+      this.render();
+      const element = inserted
+        ? [...this.root.querySelectorAll<HTMLElement>("[data-block-id]")]
+          .find((candidate) => candidate.dataset.blockId === inserted.id)
+        : null;
+      element?.focus();
+      this.options.onStatus?.("Formal block inserted · click the card to write", "saved", generation);
+    }
+    finally {
+      this.inserting = false;
+    }
   }
 
   destroy(): void {
@@ -126,8 +219,10 @@ export class QmdVisualEditor {
           : "Click to edit this QMD block";
         element.addEventListener("click", (event) => {
           if ((event.target as Element | null)?.closest(".zc-qmd-visual-math-editor")) return;
+          this.selectedBlockId = block.id;
           this.openBlockEditor(block, element);
         });
+        element.addEventListener("focus", () => { this.selectedBlockId = block.id; });
         element.addEventListener("keydown", (event) => {
           if (event.key === "Enter" && event.target === element) {
             event.preventDefault();
@@ -194,6 +289,7 @@ export class QmdVisualEditor {
       element.addEventListener("click", (event) => {
         event.preventDefault();
         event.stopPropagation();
+        this.selectedBlockId = block.id;
         this.openFormulaEditor(block, span, element);
       });
     });
@@ -302,6 +398,7 @@ export class QmdVisualEditor {
       const next = visualQmdBlocks(this.source).find((candidate) => candidate.start === active.block.start)
         || visualQmdBlocks(this.source).find((candidate) => candidate.source === textAtStart);
       if (next) active.block = next;
+      if (next) this.selectedBlockId = next.id;
       this.reportStatus(active, "Draft saved · website preview is rebuilding", "saved");
     })().catch((error) => {
       failed = true;
@@ -325,6 +422,14 @@ export class QmdVisualEditor {
     if (!this.active) return;
     if (this.active.timer) clearTimeout(this.active.timer);
     this.active = null;
+  }
+
+  private async finishActiveEdit(): Promise<void> {
+    const active = this.active;
+    if (!active) return;
+    active.text = active.replacement(active.element.value);
+    active.closeAfterSave = true;
+    await this.flushActive();
   }
 
   private reportStatus(active: ActiveEdit, message: string, state: QmdVisualStatus): void {

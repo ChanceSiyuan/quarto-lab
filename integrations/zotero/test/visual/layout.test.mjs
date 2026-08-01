@@ -63,6 +63,7 @@ test("the preview toolbar keeps every control inside a narrow pane", async () =>
     measure: [
       ".zc-qmd-compliance",
       ".zc-qmd-review",
+      ".zc-qmd-formal-block",
       ".zc-qmd-edit-external",
       ".zc-qmd-refresh",
       ".zc-qmd-tree-badge",
@@ -72,6 +73,7 @@ test("the preview toolbar keeps every control inside a narrow pane", async () =>
   for (const selector of [
     ".zc-qmd-compliance",
     ".zc-qmd-review",
+    ".zc-qmd-formal-block",
     ".zc-qmd-edit-external",
     ".zc-qmd-refresh",
     ".zc-qmd-tree-badge",

@@ -514,6 +514,31 @@ const EXPAND_NOTES: readonly Clause[] = [
     in: "body",
     pattern: /make knowledge-check/i,
   },
+  {
+    requirement: "keeps workflow and trust-state commentary out of note bodies",
+    in: "body",
+    pattern: /Do not write agent, repository, review, or trust-state commentary into the QMD/i,
+  },
+  {
+    requirement: "reports unresolved citations outside the QMD",
+    in: "body",
+    pattern: /citekey is unavailable[^.]*report the unresolved citation outside the QMD/i,
+  },
+  {
+    requirement: "writes all new or rewritten QMD prose in English",
+    in: "body",
+    pattern: /every new or rewritten QMD title[^.]*in English/i,
+  },
+  {
+    requirement: "uses definitions, lemmas, and theorems by semantic role",
+    in: "body",
+    pattern: /reusable object[\s\S]*definition block[\s\S]*intermediate result[\s\S]*lemma block[\s\S]*central result[\s\S]*theorem block/i,
+  },
+  {
+    requirement: "uses anchored collapsed proof blocks",
+    in: "body",
+    pattern: /`::: \{#proof-\* \.callout-note collapse="true"\}`/i,
+  },
 ];
 
 /** The adapted quarto-lab requirements for safe site rendering. */
@@ -555,6 +580,31 @@ const CAPTURE_CHAT_DRAFT: readonly Clause[] = [
   { requirement: "separates paper claims from user hypotheses and open questions", in: "body", pattern: /paper-backed[^.]*user hypotheses[^.]*open questions/i },
   { requirement: "never promotes the capture into knowledge", in: "body", pattern: /never[^.]*`knowledge\/`/i },
   { requirement: "previews the exact captured draft", in: "body", pattern: /make draft-preview FILE=/i },
+  {
+    requirement: "keeps workflow and trust-state commentary out of captured notes",
+    in: "body",
+    pattern: /Never insert agent, repository, review, or trust-state commentary/i,
+  },
+  {
+    requirement: "does not turn unresolved citations into placeholder disclaimers",
+    in: "body",
+    pattern: /citekey is unresolved[^.]*outside the QMD[^.]*placeholder disclaimer/i,
+  },
+  {
+    requirement: "writes captured QMD notes in English",
+    in: "body",
+    pattern: /every new title, description, heading[^.]*in English/i,
+  },
+  {
+    requirement: "uses semantic definition, lemma, and theorem blocks",
+    in: "body",
+    pattern: /reusable concepts use `#def-\*`[^.]*intermediate results use `#lem-\*`[^.]*central results use `#thm-\*`/i,
+  },
+  {
+    requirement: "uses anchored collapsed proof blocks",
+    in: "body",
+    pattern: /substantial proofs use `#proof-\*`[^.]*collapse="true"/i,
+  },
 ];
 
 const COMPLETE_GAPS: readonly Clause[] = [
@@ -562,6 +612,7 @@ const COMPLETE_GAPS: readonly Clause[] = [
   { requirement: "requires explicit approval before writing", in: "body", pattern: /explicit approval/i },
   { requirement: "leaves trusted knowledge unchanged", in: "body", pattern: /trusted[^.]*`knowledge\/`[^.]*unchanged/i },
   { requirement: "previews the completed draft", in: "body", pattern: /make draft-preview FILE=/i },
+  { requirement: "writes completed QMD passages in English", in: "body", pattern: /new or rewritten QMD heading[^.]*in English/i },
 ];
 
 const CONFERENCE_SURVEY: readonly Clause[] = [
@@ -569,6 +620,7 @@ const CONFERENCE_SURVEY: readonly Clause[] = [
   { requirement: "audits every oral before filtering", in: "body", pattern: /every oral/i },
   { requirement: "never writes conference output into knowledge", in: "body", pattern: /never[^.]*`knowledge\/`/i },
   { requirement: "previews the survey draft", in: "body", pattern: /make draft-preview FILE=/i },
+  { requirement: "writes conference triage in English", in: "body", pattern: /prioritized English triage/i },
 ];
 
 const GENERATE_ISSUES: readonly Clause[] = [
@@ -901,6 +953,14 @@ test("CLAUDE.md is one instruction pointing at AGENTS.md", async () => {
 
 /** What `AGENTS.md` must state for the boundary to survive an agent session. */
 const AGENTS_CLAUSES: readonly { requirement: string; pattern: RegExp }[] = [
+  {
+    requirement: "agent-authored QMD text is always English",
+    pattern: /every new or rewritten QMD title[^.]*in English/i,
+  },
+  {
+    requirement: "expand-notes is the repository QMD writing standard",
+    pattern: /`skills\/expand-notes\/SKILL\.md`[^.]*writing standard/i,
+  },
   {
     requirement: "knowledge/ is the only trusted content authority",
     pattern: /`knowledge\/\*\*\/\*\.qmd`[^.\n]*only trusted/i,

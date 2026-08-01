@@ -6,7 +6,7 @@ description: Use when surveying a conference archive's oral presentations for a 
 # Conference Survey
 
 Scout a conference frontier from an archive URL and a topic. Produce
-prioritized Chinese triage, not an exhaustive prose summary.
+prioritized English triage, not an exhaustive prose summary.
 
 ## Outputs
 
@@ -41,9 +41,9 @@ Never write a conference survey directly into `knowledge/`.
    questions, capabilities, protocols, and bottlenecks; exclude incidental
    hits, duplicates, and overly broad talks. Prefer `related_excluded` when
    uncertain.
-4. For each included talk, explain in Chinese what was done, what was measured
+4. For each included talk, explain in English what was done, what was measured
    or engineered, why it matters, and why it should be read early. Follow each
-   block with `参考链接：` containing the oral page and supporting references.
+   block with `Reference links:` containing the oral page and supporting references.
 5. Make the TSV IDs stable and human-readable. Ensure its counts agree with
    the summary and every included ID appears in the QMD.
 6. Remove placeholders and preview the article:

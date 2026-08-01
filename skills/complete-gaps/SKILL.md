@@ -10,6 +10,10 @@ Complete a Quarto draft surgically without restructuring its argument. Work in
 `knowledge/`, copy the relevant material into `drafts/` and leave the trusted
 `knowledge/` page unchanged.
 
+Write every new or rewritten QMD heading, paragraph, formal-block label, and
+caption in English. Do not silently translate untouched human-authored text.
+Chat responses may follow the user's language.
+
 ## Choose one evidence mode
 
 - **Conversation mode:** extract the user's intended argument; independently

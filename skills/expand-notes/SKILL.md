@@ -7,6 +7,11 @@ description: Use when expanding rough academic notes into polished Quarto knowle
 
 Turn source material into concise, self-contained `.qmd` notes at advanced-graduate rigor. Preserve the source's claims and mathematical detail; add missing explanation only when it can be grounded in a named source.
 
+Write every new or rewritten QMD title, description, heading, paragraph,
+formal-block label, and caption in English. Translate non-English rough notes
+when rewriting them, but do not silently translate untouched human-authored
+text. Chat responses may follow the user's language.
+
 ## Trust and scope
 
 - Write new or substantially revised material under `drafts/` first, before any promotion into the trusted tree.
@@ -21,13 +26,35 @@ Trusted frontmatter may contain only `title`, `description`, `categories`, and o
 
 Use `description` for a one-sentence account of what the page lets a reader understand or do. Keep the body synthetic: explain assumptions, derivations, limits, and cross-links rather than reproducing a source.
 
-For formal statements, retain the quarto-lab conventions:
+Use semantic formal blocks to organize mathematical narration whenever the
+content warrants them:
 
-- definition: `::: {#def-* .callout-note icon="false"}`
-- lemma or theorem: `::: {#lem-* .callout-important icon="false"}` or `#thm-*`
-- long proof: `::: {.callout-note collapse="true"}`
+- Introduce a reusable object, convention, or quantity in a definition block:
+  `::: {#def-* .callout-note icon="false"}`.
+- State an intermediate result that supports a later argument in a lemma
+  block: `::: {#lem-* .callout-important icon="false"}`.
+- State a central result in a theorem block:
+  `::: {#thm-* .callout-important icon="false"}`.
+- Put a substantial proof in
+  `::: {#proof-* .callout-note collapse="true"}` immediately after the
+  statement it proves.
 
 Begin a formal block with `## (<descriptive name>)`; the anchor already carries the type, so do not repeat “Definition”, “Lemma”, or “Theorem” in the visible heading. Keep anchors unique.
+Do not wrap ordinary exposition in a formal block merely for decoration.
+
+## Draft-body boundary
+
+Make every body paragraph teach the note's research topic. Do not write agent,
+repository, review, or trust-state commentary into the QMD, including phrases
+such as “this content comes from external literature,” “has not been promoted to
+trusted knowledge,” “AI working copy,” or “the user asked.” Keep workflow status
+in the agent response and review UI, outside the note.
+
+Express provenance with a real Pandoc citation and, when useful, a verified
+page locator. Do not add a placeholder source or trust disclaimer when a
+citekey is unavailable; report the unresolved citation outside the QMD for
+review. Author attribution, evidentiary limits, and source comparisons may
+remain when they are themselves relevant academic content.
 
 ## Citations and review
 

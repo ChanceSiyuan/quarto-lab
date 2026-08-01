@@ -811,6 +811,39 @@ describe("QmdWorkspaceView", () => {
     view.destroy();
   });
 
+  it("offers one Visual Edit menu for inserting canonical formal blocks", async () => {
+    const { host, view, saveSource } = mount();
+    view.show();
+    await view.open(DRAFT);
+
+    const insert = host.querySelector<HTMLButtonElement>(".zc-qmd-formal-block")!;
+    expect(insert.hidden).toBe(true);
+    host.querySelector<HTMLButtonElement>(".zc-qmd-mode")!.click();
+    await settle();
+
+    expect(insert.hidden).toBe(false);
+    expect(insert.getAttribute("aria-label")).toContain("Definition");
+    insert.click();
+    const menu = host.querySelector<HTMLElement>(".zc-qmd-formal-menu")!;
+    expect(menu.hidden).toBe(false);
+    expect([...menu.querySelectorAll("strong")].map((item) => item.textContent)).toEqual([
+      "Definition", "Lemma", "Theorem", "Proof",
+    ]);
+
+    menu.querySelector<HTMLButtonElement>('[data-kind="def"]')!.click();
+    await settle();
+
+    expect(saveSource).toHaveBeenCalledWith(
+      DRAFT,
+      "source-r1",
+      expect.stringContaining('::: {#def-new-definition .callout-note icon="false"}'),
+    );
+    expect(menu.hidden).toBe(true);
+    expect(host.querySelector(".zc-qmd-visual-card.is-def")!.textContent)
+      .toContain("Definition 1: New definition");
+    view.destroy();
+  });
+
   it("reports a current Visual Edit conflict after switching to Website Preview", async () => {
     const conflict = deferred<{ source: string; revision: string }>();
     const { host, view, saveSource } = mount();
@@ -1140,6 +1173,7 @@ describe("QmdWorkspaceView", () => {
       [".zc-qmd-review", "Add to Knowledge"],
       [".zc-qmd-compare", "No AI version to compare"],
       [".zc-qmd-change-keep", "No AI changes to keep"],
+      [".zc-qmd-formal-block", "Insert Definition"],
       [".zc-qmd-edit-external", "Edit in Cursor"],
       [".zc-qmd-refresh", "Refresh Preview"],
     ]);

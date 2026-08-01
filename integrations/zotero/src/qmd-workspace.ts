@@ -2,7 +2,11 @@ import { EDITOR_TREES, treeForPath, type EditorTree } from "./editor-tree";
 import type { ExternalEditorApp } from "./external-editor";
 import { filterQmdIndex, groupIntoTree, type QmdIndexEntry, type QmdTreeNode } from "./qmd-index";
 import type { QmdRenderService } from "./qmd-render";
-import { QmdVisualEditor, type QmdSourceSnapshot } from "./qmd-visual-editor";
+import {
+  QmdVisualEditor,
+  type QmdFormalBlockKind,
+  type QmdSourceSnapshot,
+} from "./qmd-visual-editor";
 
 const QMD_INDEX_REFRESH_INTERVAL_MS = 2_000;
 
@@ -132,6 +136,8 @@ export class QmdWorkspaceView {
   private readonly enableAIEditingButton: HTMLButtonElement;
   private readonly editButton: HTMLButtonElement;
   private readonly modeButton: HTMLButtonElement;
+  private readonly formalBlockButton: HTMLButtonElement;
+  private readonly formalBlockMenu: HTMLElement;
   private readonly editorPicker: HTMLSelectElement;
   private readonly status: HTMLElement;
   private readonly fileColumn: HTMLElement;
@@ -263,12 +269,45 @@ export class QmdWorkspaceView {
       () => void this.toggleVisualMode(),
     );
     this.modeButton.hidden = true;
+    this.formalBlockButton = this.iconButton(
+      "zc-qmd-formal-block",
+      "▣",
+      "Insert Definition, Lemma, Theorem, or Proof",
+      () => this.toggleFormalBlockMenu(),
+    );
+    this.formalBlockButton.hidden = true;
+    this.formalBlockButton.setAttribute("aria-haspopup", "menu");
+    this.formalBlockButton.setAttribute("aria-expanded", "false");
+
+    this.formalBlockMenu = make("div", "zc-qmd-formal-menu");
+    this.formalBlockMenu.hidden = true;
+    this.formalBlockMenu.setAttribute("role", "menu");
+    const formalBlocks: ReadonlyArray<[QmdFormalBlockKind, string, string]> = [
+      ["def", "Definition", "Introduce a reusable concept"],
+      ["lem", "Lemma", "Add a supporting result"],
+      ["thm", "Theorem", "Add a central result"],
+      ["proof", "Proof", "Add a collapsed proof"],
+    ];
+    for (const [kind, label, description] of formalBlocks) {
+      const action = this.doc.createElement("button");
+      action.type = "button";
+      action.className = "zc-qmd-formal-option";
+      action.setAttribute("role", "menuitem");
+      action.dataset.kind = kind;
+      const name = this.doc.createElement("strong");
+      name.textContent = label;
+      const hint = this.doc.createElement("span");
+      hint.textContent = description;
+      action.append(name, hint);
+      action.addEventListener("click", () => void this.insertFormalBlock(kind));
+      this.formalBlockMenu.appendChild(action);
+    }
 
     const refresh = this.iconButton("zc-qmd-refresh", "↻", "Refresh Preview", () => void this.reloadRender());
     toolbar.append(back, quickOpenButton, this.pathLabel, this.treeBadge,
       this.complianceButton, this.reviewButton, this.enableAIEditingButton,
       this.compareButton, this.keepChangesButton,
-      this.modeButton, this.editorPicker, this.editButton, refresh);
+      this.modeButton, this.formalBlockButton, this.editorPicker, this.editButton, refresh);
 
     this.status = make("div", "zc-qmd-status");
     this.status.textContent = "Choose a QMD page to preview";
@@ -298,12 +337,23 @@ export class QmdWorkspaceView {
     this.quickOpenList = make("div", "zc-qmd-quickopen-list");
     this.quickOpen.append(this.quickOpenInput, this.quickOpenList);
 
-    this.root.append(toolbar, this.status, this.complianceDetails, body, this.quickOpen);
+    this.root.append(toolbar, this.status, this.complianceDetails, body, this.formalBlockMenu, this.quickOpen);
     this.root.addEventListener("keydown", (event) => {
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "p") {
         event.preventDefault();
         void this.openQuickOpen();
       }
+      else if (event.key === "Escape" && !this.formalBlockMenu.hidden) {
+        this.closeFormalBlockMenu();
+        this.formalBlockButton.focus();
+      }
+    });
+    this.root.addEventListener("click", (event) => {
+      const target = event.target as Element | null;
+      if (this.formalBlockMenu.hidden
+          || target?.closest(".zc-qmd-formal-menu")
+          || target?.closest(".zc-qmd-formal-block")) return;
+      this.closeFormalBlockMenu();
     });
     this.doc.defaultView?.addEventListener("focus", this.onWindowFocus);
     host.appendChild(this.root);
@@ -748,8 +798,39 @@ export class QmdWorkspaceView {
       this.visualMode ? "◎" : "✦",
       this.visualMode ? "Website Preview" : "Visual Edit",
     );
+    this.formalBlockButton.hidden = !isDraft || !this.visualMode;
+    this.formalBlockButton.disabled = !isDraft || !this.visualMode || !this.options.saveSource;
+    if (this.formalBlockButton.hidden || this.formalBlockButton.disabled) this.closeFormalBlockMenu();
     this.renderPane.hidden = this.visualMode;
     this.visualPane.hidden = !this.visualMode;
+  }
+
+  private toggleFormalBlockMenu(): void {
+    if (this.formalBlockButton.hidden || this.formalBlockButton.disabled || !this.visualMode) return;
+    const open = this.formalBlockMenu.hidden;
+    this.formalBlockMenu.hidden = !open;
+    this.formalBlockButton.setAttribute("aria-expanded", String(open));
+    if (open) this.formalBlockMenu.querySelector<HTMLButtonElement>("button")?.focus();
+  }
+
+  private closeFormalBlockMenu(): void {
+    this.formalBlockMenu.hidden = true;
+    this.formalBlockButton.setAttribute("aria-expanded", "false");
+  }
+
+  private async insertFormalBlock(kind: QmdFormalBlockKind): Promise<void> {
+    this.closeFormalBlockMenu();
+    if (!this.visualMode || !this.current || this.current.tree.published) return;
+    this.formalBlockButton.disabled = true;
+    try {
+      await this.ensureVisualEditor().insertFormalBlock(kind);
+    }
+    catch (error) {
+      this.setStatus(error instanceof Error ? error.message : String(error), "error");
+    }
+    finally {
+      this.formalBlockButton.disabled = false;
+    }
   }
 
   private ensureVisualEditor(): QmdVisualEditor {

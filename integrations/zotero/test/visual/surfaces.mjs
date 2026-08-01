@@ -66,6 +66,7 @@ export function workspaceToolbar() {
         <button class="zc-qmd-enable-ai-editing" title="Edit with AI" aria-label="Edit with AI">Edit with AI</button>
         <button class="zc-qmd-compare" title="Show AI-modified Draft preview">◉</button>
         <button class="zc-qmd-change-keep" title="Keep AI version">✓</button>
+        <button class="zc-qmd-formal-block" title="Insert Definition, Lemma, Theorem, or Proof">▣</button>
         <select class="zc-qmd-editor-picker"><option>Cursor</option><option>VS Code</option></select>
         <button class="zc-qmd-edit-external" title="Edit in Cursor">✎</button>
         <button class="zc-qmd-refresh" title="Refresh Preview">↻</button>

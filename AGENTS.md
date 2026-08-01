@@ -51,6 +51,20 @@ compile downloaded LaTeX, and never mirror paper text into `knowledge/`.
 
 See `.research-loop/docs/project/skills.md` for what each skill owns, reads, and may write.
 
+## Agent-authored QMD notes
+
+- Write every new or rewritten QMD title, description, heading, paragraph,
+  formal-block label, and caption in English. Chat replies may follow the
+  user's language. Preserve citation keys, proper names, mathematical symbols,
+  and verbatim evidence that must remain in its source language.
+- Do not silently translate or rewrite untouched human-authored text. The
+  English-only rule applies to text the agent creates or changes.
+- Use `skills/expand-notes/SKILL.md` as the writing standard. Organize reusable
+  concepts as definition blocks, supporting propositions as lemma blocks, and
+  central results as theorem blocks; put substantial proofs in collapsed proof
+  callouts. Keep ordinary exposition as prose rather than forcing every
+  paragraph into a formal block.
+
 ## Building and validating
 
 - `make knowledge-check` validates the trusted tree; it is the gate a promotion has to pass.
