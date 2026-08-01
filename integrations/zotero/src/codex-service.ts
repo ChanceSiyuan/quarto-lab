@@ -133,6 +133,10 @@ export interface CodexInteractionContextEntry {
 export interface CodexSendOptions {
   /** Enforced by the app-server sandbox, not merely by prompt instructions. */
   readOnly?: boolean;
+  /** Turn-local write authority; omitted turns retain the ordinary Agent defaults. */
+  writableRoots?: readonly string[];
+  /** Refuses the queued send if another conversation becomes active first. */
+  expectedThreadId?: string;
 }
 
 export interface ReaderContextSelection {
@@ -719,6 +723,8 @@ export class CodexService {
   private readonly runningTurns = new Map<string, string>();
   /** Composite thread+turn entries stamped with target ID and epoch. */
   private readonly ownedTurns = new Map<string, OwnedTurn>();
+  /** Narrow turn-local write scopes, keyed by the exact thread/turn identity returned by turnStart. */
+  private readonly turnWritableRoots = new Map<string, readonly string[]>();
   private readonly pendingApprovalResolvers = new Map<string, PendingApprovalResolver>();
   private readonly latestTurnDiffs = new Map<string, string>();
   private interactionContext: Record<string, CodexInteractionContextEntry> = {};
@@ -1257,6 +1263,7 @@ export class CodexService {
     this.pendingLibraryTurns.clear();
     this.retiredLibraryTurnIds.clear();
     this.pendingLibraryOpen = null;
+    this.turnWritableRoots.clear();
     this.unsubscribeStore?.();
     this.unsubscribeStore = null;
     this.client?.close(1000, "Zotkit shutdown");
@@ -1364,6 +1371,46 @@ export class CodexService {
         return Promise.resolve();
       }
       return this.setPaperInternal(context);
+    }, admission);
+  }
+
+  /**
+   * Selects the dedicated conversation for a repository-scoped object even
+   * when another paper conversation is currently active.
+   */
+  openWorkspaceObjectConversation(object: CodexWorkspaceObject): Promise<void> {
+    let admission: CodexTargetAdmission;
+    try {
+      admission = this.captureTargetAdmission();
+    }
+    catch (error) {
+      return Promise.reject(error);
+    }
+    const binding = admission.binding;
+    if (!binding) return Promise.reject(new Error("Choose an active repository target before opening this AI Context"));
+    return this.enqueuePaperTransition(async () => {
+      this.assertAdmissionCurrent(admission);
+      const context = workspaceObjectContext(object, binding.root);
+      const paperKey = paperIdentity(context);
+      this.paperContexts.set(paperKey, context);
+      this.focusedContext = context;
+      this.focusedPaperKey = paperKey;
+      const stored = this.defaultSessionForPaper(paperKey);
+      if (stored && (stored.backend ?? "codex") === this.state.backend) {
+        if (
+          paperKey === this.activePaperKey
+          && stored.threadId === this.state.activeThreadId
+          && !this.state.switchingThreadId
+        ) {
+          this.activeContext = context;
+          this.activePaperKey = paperKey;
+          this.callbacks.onState();
+          return;
+        }
+        await this.openStoredConversation(paperKey, context, stored);
+        return;
+      }
+      await this.newThreadInternal(context, paperKey);
     }, admission);
   }
 
@@ -2343,8 +2390,14 @@ export class CodexService {
     imageUrls: readonly string[] = [],
     options: CodexSendOptions = {},
   ): Promise<void> {
+    const queuedOptions: CodexSendOptions = {
+      ...options,
+      ...(options.writableRoots === undefined
+        ? {}
+        : { writableRoots: [...options.writableRoots] }),
+    };
     return this.enqueuePaperTransition(() => (
-      this.sendToActiveTurn(text, model, effort, imageUrls, options)
+      this.sendToActiveTurn(text, model, effort, imageUrls, queuedOptions)
     ));
   }
 
@@ -2355,6 +2408,16 @@ export class CodexService {
     imageUrls: readonly string[] = [],
     options: CodexSendOptions = {},
   ): Promise<void> {
+    const writableRoots = options.writableRoots === undefined
+      ? undefined
+      : [...options.writableRoots];
+    if (options.readOnly && writableRoots !== undefined) {
+      throw new Error("A read-only turn cannot request writable roots");
+    }
+    if (options.expectedThreadId !== undefined
+        && this.state.activeThreadId !== options.expectedThreadId) {
+      throw new Error("The expected dedicated conversation is no longer active; no turn was started");
+    }
     if (this.switchingPaper) throw new Error("Switching papers; please wait");
     if (!this.state.activeThreadId) {
       const context = this.focusedContext || this.activeContext;
@@ -2426,6 +2489,11 @@ export class CodexService {
     const runningTurnId = this.runningTurns.get(threadId)
       || (this.state.running ? this.state.activeTurnId : null);
     if (runningTurnId) {
+      if (writableRoots !== undefined) {
+        throw new Error(
+          "Writable roots cannot replace the sandbox for the current response. Wait for it to finish or stop it first.",
+        );
+      }
       if (options.readOnly) {
         throw new Error(
           "A read-only Action cannot join the current response. Wait for it to finish or stop it, then run the Action again.",
@@ -2468,7 +2536,10 @@ export class CodexService {
         input,
         model: model || null,
         effort: effort || "medium",
-        ...this.turnModeSettings(context, options.readOnly === true),
+        ...this.turnModeSettings(context, {
+          readOnly: options.readOnly === true,
+          writableRoots,
+        }),
         additionalContext,
       });
       if (binding.targetId !== this.repositoryTarget?.targetId
@@ -2476,6 +2547,12 @@ export class CodexService {
         throw new Error("The repository target changed while starting the response");
       }
       this.registerOwnedTurn(threadOwner, response.turn.id);
+      if (writableRoots !== undefined) {
+        this.turnWritableRoots.set(
+          turnKey(threadId, response.turn.id),
+          Object.freeze([...writableRoots]),
+        );
+      }
       this.syncActiveTurnState();
       try {
         await this.recordCheckpoint(paperKey, {
@@ -2495,6 +2572,7 @@ export class CodexService {
     }
     catch (error) {
       this.runningTurns.delete(threadId);
+      this.clearTurnWritableRoots(threadId);
       this.syncActiveTurnState();
       throw error;
     }
@@ -3017,6 +3095,7 @@ export class CodexService {
                 ? errorText(reason)
                 : "The tool turn failed"),
             });
+        this.turnWritableRoots.delete(turnKey(eventThreadId, eventTurnId));
       }
       this.syncActiveTurnState();
     }
@@ -3453,7 +3532,10 @@ export class CodexService {
     };
   }
 
-  private turnModeSettings(context: ReaderContext, readOnly = false): Pick<
+  private turnModeSettings(
+    context: ReaderContext,
+    options: { readOnly: boolean; writableRoots?: readonly string[] },
+  ): Pick<
     TurnStartParams,
     "cwd" | "runtimeWorkspaceRoots" | "approvalPolicy" | "approvalsReviewer" | "sandboxPolicy"
   > {
@@ -3464,11 +3546,13 @@ export class CodexService {
     // with its own diff and apply step; there is no such session now, and the
     // repository's rule is that knowledge/ is not written during a proposal
     // turn. The user edits in their own editor and reviews the Git diff.
-    const sandboxPolicy: SandboxPolicy = readOnly
+    const sandboxPolicy: SandboxPolicy = options.readOnly
       ? { type: "readOnly", networkAccess: false }
       : {
           type: "workspaceWrite",
-          writableRoots: qlabWritableRoots(binding.root),
+          writableRoots: options.writableRoots === undefined
+            ? qlabWritableRoots(binding.root)
+            : [...options.writableRoots],
           networkAccess: false,
           excludeTmpdirEnvVar: true,
           excludeSlashTmp: true,
@@ -3482,6 +3566,17 @@ export class CodexService {
     };
   }
 
+  private clearTurnWritableRoots(threadId: string): void {
+    const prefix = `${threadId}\u0000`;
+    for (const key of this.turnWritableRoots.keys()) {
+      if (key.startsWith(prefix)) this.turnWritableRoots.delete(key);
+    }
+  }
+
+  private hasTurnWritableRoots(threadId: string): boolean {
+    const prefix = `${threadId}\u0000`;
+    return [...this.turnWritableRoots.keys()].some((key) => key.startsWith(prefix));
+  }
   private requestUserApproval(request: ApprovalRequest): Promise<ApprovalResponse> {
     const threadId = request.params.threadId;
     const turnId = request.params.turnId;
@@ -3506,9 +3601,16 @@ export class CodexService {
     ) {
       return Promise.resolve(approvalResponse(request, "reject"));
     }
-    const approvalRoots = this.repositoryTarget
-      ? qlabWritableRoots(this.repositoryTarget.root)
-      : [];
+    const scopedApprovalRoots = this.turnWritableRoots.get(turnKey(
+      request.params.threadId,
+      request.params.turnId,
+    ));
+    if (!scopedApprovalRoots && this.hasTurnWritableRoots(threadId)) {
+      return Promise.resolve(approvalResponse(request, "reject"));
+    }
+    const approvalRoots = scopedApprovalRoots
+      ? [...scopedApprovalRoots]
+      : qlabWritableRoots(binding.root);
     if (!approvalWriteScopeIsSafe(request, approvalRoots)) {
       const error = new Error(
         "Zotkit blocked a request to write outside its private staging workspace. Use zotero_propose_changes so the change receives a Diff and filesystem checkpoint.",
@@ -3520,7 +3622,10 @@ export class CodexService {
       this.callbacks.onError(new Error("Zotkit blocked an Agent request for network access"));
       return Promise.resolve(approvalResponse(request, "reject"));
     }
-    return Promise.resolve(approvalResponse(request, "approve-session"));
+    return Promise.resolve(approvalResponse(
+      request,
+      scopedApprovalRoots ? "approve-once" : "approve-session",
+    ));
   }
 
   private syncPendingApprovals(): void {
@@ -3739,6 +3844,7 @@ export class CodexService {
     this.pendingLibraryTurns.clear();
     this.retiredLibraryTurnIds.clear();
     this.pendingLibraryOpen = null;
+    this.turnWritableRoots.clear();
     this.state.connected = false;
     this.state.running = false;
     this.state.activeThreadId = null;

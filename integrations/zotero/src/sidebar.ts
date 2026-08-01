@@ -157,6 +157,8 @@ export interface SidebarState {
   historyHasMore: boolean;
   historyError?: string;
   readOnlyConversation?: boolean;
+  canSaveAIContext?: boolean;
+  activeAIContext?: boolean;
   selectedModel: string;
   effort: string;
   running: boolean;
@@ -324,6 +326,7 @@ export class SidebarView {
   private stopButton!: HTMLButtonElement;
   private modelSelect!: HTMLSelectElement;
   private effortSelect!: HTMLSelectElement;
+  private saveAIContextButton!: HTMLButtonElement;
   private composerControls!: HTMLElement;
   private qlabRootLabel!: HTMLElement;
   private actionStrip!: HTMLElement;
@@ -804,7 +807,11 @@ export class SidebarView {
     this.effortSelect.className = "zc-compact-select";
     this.effortSelect.title = "Reasoning Effort";
     this.effortSelect.addEventListener("change", () => this.callbacks.onEffortChange(this.effortSelect.value));
-    controls.append(this.modelSelect, this.effortSelect);
+    this.saveAIContextButton = this.doc.createElement("button");
+    this.saveAIContextButton.type = "button";
+    this.saveAIContextButton.className = "zc-save-ai-context";
+    this.saveAIContextButton.addEventListener("click", () => this.callbacks.onCaptureChatDraft?.());
+    controls.append(this.modelSelect, this.effortSelect, this.saveAIContextButton);
     this.sendButton = this.doc.createElement("button");
     this.sendButton.type = "button";
     this.sendButton.className = "zc-send-button";
@@ -1041,6 +1048,13 @@ export class SidebarView {
     this.renderEfforts();
     this.renderTranscript();
     this.renderLoginLayer();
+    const canSave = this.state.canSaveAIContext === true && !this.state.readOnlyConversation;
+    this.saveAIContextButton.hidden = !canSave;
+    this.saveAIContextButton.disabled = !canSave || this.state.running || this.state.phase !== "ready";
+    const saveLabel = this.state.activeAIContext ? "Update AI Context" : "Save AI Context";
+    this.saveAIContextButton.textContent = saveLabel;
+    this.saveAIContextButton.title = saveLabel;
+    this.saveAIContextButton.setAttribute("aria-label", saveLabel);
     this.setButtonIcon(this.sendButton, "send");
     this.sendButton.title = this.state.running ? "Send Follow-up" : "Send";
     this.sendButton.setAttribute("aria-label", this.sendButton.title);

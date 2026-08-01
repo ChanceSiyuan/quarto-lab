@@ -63,6 +63,7 @@ export function workspaceToolbar() {
         <span class="zc-qmd-tree-badge" data-tree="drafts">Draft</span>
         <button class="zc-qmd-compliance" title="Draft checks passed">✓</button>
         <button class="zc-qmd-review" title="Add to Knowledge">↑</button>
+        <button class="zc-qmd-enable-ai-editing" title="Edit with AI" aria-label="Edit with AI">Edit with AI</button>
         <button class="zc-qmd-compare" title="Show AI-modified Draft preview">◉</button>
         <button class="zc-qmd-change-keep" title="Keep AI version">✓</button>
         <select class="zc-qmd-editor-picker"><option>Cursor</option><option>VS Code</option></select>

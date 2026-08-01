@@ -979,6 +979,64 @@ describe("SidebarView", () => {
     expect(handlers.onCaptureChatDraft).not.toHaveBeenCalled();
   });
 
+  it("shows one Save AI Context action only for a completed live conversation", () => {
+    const body = document.createElement("div");
+    document.body.appendChild(body);
+    const handlers = { ...callbacks(), onCaptureChatDraft: vi.fn() };
+    const view = new SidebarView(body, handlers);
+    view.setState({
+      phase: "ready",
+      entries: [{ id: "a1", kind: "assistant", text: "answer" }],
+      running: false,
+      canSaveAIContext: true,
+      activeAIContext: false,
+    });
+    const button = body.querySelector<HTMLButtonElement>(".zc-save-ai-context")!;
+    expect(button.textContent).toBe("Save AI Context");
+    button.click();
+    expect(handlers.onCaptureChatDraft).toHaveBeenCalledOnce();
+
+    view.setState({ running: true });
+    expect(button.disabled).toBe(true);
+    view.setState({ running: false, activeAIContext: true });
+    expect(button.textContent).toBe("Update AI Context");
+  });
+
+  it("hides the persistent action for imported history and for live history without an assistant response", () => {
+    const body = document.createElement("div");
+    document.body.appendChild(body);
+    const handlers = { ...callbacks(), onCaptureChatDraft: vi.fn() };
+    const view = new SidebarView(body, handlers);
+    view.setState({ ...baseState(), entries: [{ id: "u1", kind: "user", text: "question" }],
+      canSaveAIContext: false, activeAIContext: false, running: false });
+    const button = body.querySelector<HTMLButtonElement>(".zc-save-ai-context")!;
+    expect(button.hidden).toBe(true);
+    view.setState({ ...baseState(), readOnlyConversation: true,
+      entries: [{ id: "a1", kind: "assistant", text: "imported answer" }],
+      canSaveAIContext: true, activeAIContext: false, running: false });
+    expect(button.hidden).toBe(true);
+    expect(handlers.onCaptureChatDraft).not.toHaveBeenCalled();
+  });
+
+  it("keeps the same control node while streaming state changes and disables it until completion", () => {
+    const body = document.createElement("div");
+    document.body.appendChild(body);
+    const handlers = { ...callbacks(), onCaptureChatDraft: vi.fn() };
+    const view = new SidebarView(body, handlers);
+    view.setState({ ...baseState(), entries: [{ id: "a1", kind: "assistant", text: "answer" }],
+      running: false, canSaveAIContext: true, activeAIContext: false });
+    const original = body.querySelector<HTMLButtonElement>(".zc-save-ai-context")!;
+    view.setState({ running: true, canSaveAIContext: true });
+    expect(body.querySelector(".zc-save-ai-context")).toBe(original);
+    expect(original.disabled).toBe(true);
+    view.setState({ phase: "connecting", running: false, canSaveAIContext: true, activeAIContext: true });
+    expect(original.disabled).toBe(true);
+    view.setState({ phase: "ready", running: false, canSaveAIContext: true, activeAIContext: true });
+    expect(body.querySelector(".zc-save-ai-context")).toBe(original);
+    expect(original.disabled).toBe(false);
+    expect(original.textContent).toBe("Update AI Context");
+  });
+
   it("uses the complete chat UI once in workbench mode and lets an empty tab choose a paper", () => {
     const body = document.createElement("div");
     document.body.appendChild(body);

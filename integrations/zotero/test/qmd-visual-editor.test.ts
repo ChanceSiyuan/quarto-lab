@@ -27,7 +27,7 @@ $$
 function mount() {
   let source = SOURCE;
   let revision = "r1";
-  const save = vi.fn(async (next: string, expected: string) => {
+  const save = vi.fn(async (next: string, expected: string, _generation: number) => {
     if (expected !== revision) throw new Error("The QMD revision changed before save");
     source = next;
     revision = `r${Number(revision.slice(1)) + 1}`;
@@ -36,12 +36,22 @@ function mount() {
   const onStatus = vi.fn();
   const editor = new QmdVisualEditor(document, { save, onStatus });
   document.body.appendChild(editor.root);
-  editor.setDocument({ source, revision }, true);
+  editor.setDocument({ source, revision }, true, 1);
   return { editor, save, onStatus, source: () => source };
 }
 
 async function settle(): Promise<void> {
   for (let index = 0; index < 5; index += 1) await new Promise((resolve) => setTimeout(resolve, 0));
+}
+
+function deferred<T>() {
+  let resolve!: (value: T) => void;
+  let reject!: (reason?: unknown) => void;
+  const promise = new Promise<T>((next, fail) => {
+    resolve = next;
+    reject = fail;
+  });
+  return { promise, resolve, reject };
 }
 
 describe("QmdVisualEditor", () => {
@@ -103,6 +113,55 @@ describe("QmdVisualEditor", () => {
 
     expect(save).toHaveBeenCalledOnce();
     expect(source()).toContain("The gap remains positive.");
+  });
+
+  it("does not report an error from a save superseded by a newer document generation", async () => {
+    const oldSave = deferred<{ source: string; revision: string }>();
+    const save = vi.fn((_source: string, _revision: string, generation: number) =>
+      generation === 1 ? oldSave.promise : Promise.resolve({ source: SOURCE, revision: "r3" }));
+    const onStatus = vi.fn();
+    const editor = new QmdVisualEditor(document, { save, onStatus });
+    document.body.appendChild(editor.root);
+    editor.setDocument({ source: SOURCE, revision: "r1" }, true, 1);
+
+    const paragraph = editor.root.querySelector<HTMLElement>('[data-block-kind="paragraph"]')!;
+    paragraph.click();
+    const textarea = paragraph.querySelector<HTMLTextAreaElement>("textarea")!;
+    textarea.value = "The gap remains positive.";
+    textarea.dispatchEvent(new Event("input"));
+    textarea.blur();
+    await Promise.resolve();
+    expect(save).toHaveBeenCalledWith(expect.any(String), "r1", 1);
+
+    editor.setDocument({ source: SOURCE, revision: "r2" }, true, 2);
+    oldSave.reject(new Error("old conflict"));
+    await settle();
+
+    expect(onStatus.mock.calls.some(([message]) => message === "old conflict")).toBe(false);
+  });
+
+  it("keeps the newer document snapshot when a superseded save succeeds", async () => {
+    const oldSave = deferred<{ source: string; revision: string }>();
+    const save = vi.fn((_source: string, _revision: string, generation: number) =>
+      generation === 1 ? oldSave.promise : Promise.resolve({ source: SOURCE, revision: "r3" }));
+    const editor = new QmdVisualEditor(document, { save });
+    document.body.appendChild(editor.root);
+    editor.setDocument({ source: SOURCE, revision: "r1" }, true, 1);
+
+    const paragraph = editor.root.querySelector<HTMLElement>('[data-block-kind="paragraph"]')!;
+    paragraph.click();
+    const textarea = paragraph.querySelector<HTMLTextAreaElement>("textarea")!;
+    textarea.value = "The gap remains positive.";
+    textarea.dispatchEvent(new Event("input"));
+    textarea.blur();
+    await Promise.resolve();
+
+    const newerSource = `${SOURCE}\nGeneration two\n`;
+    editor.setDocument({ source: newerSource, revision: "r2" }, true, 2);
+    oldSave.resolve({ source: "stale generation one", revision: "r1-saved" });
+    await settle();
+
+    expect(editor.snapshot()).toEqual({ source: newerSource, revision: "r2" });
   });
 
   it("flows hard-wrapped source prose as one paragraph like the compiled preview", () => {
