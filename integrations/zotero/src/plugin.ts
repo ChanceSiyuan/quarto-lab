@@ -1,15 +1,21 @@
 import { NativeBridge } from "./native-bridge";
 import readerToolbarIcon from "../assets/icon.svg";
+import regionCaptureIcon from "../assets/region-capture.svg";
 import {
   CodexService,
+  readSessionRecords,
+  saveSessionRecords,
   type CodexInteractionContextEntry,
   type CodexPendingApproval,
+  type PersistedSessionRecord,
+  type SessionRecordsSnapshot,
 } from "./codex-service";
 import {
   ReaderContextService,
   createGeckoProfileAdapter,
   createZotero9ReadAdapter,
   isStaleReaderCaptureError,
+  type ReaderCaptureTarget,
   type ReaderContext,
   type ReaderHook,
 } from "./reader-context";
@@ -33,6 +39,7 @@ import {
   type StoredChatGPTArchive,
 } from "./chatgpt-history";
 import { FloatPanelView, latestExchange } from "./float-panel";
+import { startRegionSelection, type RegionSelection } from "./region-capture";
 import {
   QLAB_WORKBENCH_WINDOW_ATTRIBUTE,
   QLAB_WORKBENCH_TAB_TYPE,
@@ -61,7 +68,14 @@ import {
   type ExternalEditorApp,
 } from "./external-editor";
 import { TerminalPanel, type TerminalPaperOptions } from "./terminal-panel";
-import { loadSettings, saveQLabRoot, type ZoteroChatSettings } from "./settings";
+import {
+  loadSettings,
+  readRawTargetMigrationInput,
+  saveQLabRoot,
+  saveRepositoryTargets,
+  type RawTargetMigrationInput,
+  type ZoteroChatSettings,
+} from "./settings";
 import {
   buildQLabCommandPrompt,
   buildCaptureChatDraftPrompt,
@@ -81,6 +95,14 @@ import {
   normalizeQLabRoot,
   qlabRepositoryState,
 } from "./qlab-workspace";
+import { LocalRepositoryTargetResolver } from "./local-repository-target-resolver";
+import {
+  migrateLegacy,
+  type LegacyMigrationOutcome,
+  type LegacyMigrationResolver,
+  type RepositoryTargetSnapshot,
+  type StoredTargetPreferences,
+} from "./repository-target";
 import { QLabLiteratureService } from "./qlab-library";
 import {
   createQLabZoteroSyncRuntime,
@@ -143,6 +165,25 @@ interface PluginStartupData {
   rootURI: string;
 }
 
+interface ScreenshotSource {
+  paperKey: string;
+  paperTitle: string;
+  pageIndex: number;
+  pageNumber: number;
+  pageLabel: string;
+}
+
+interface PendingScreenshot {
+  image: string;
+  kind: "page" | "region";
+  source?: ScreenshotSource;
+}
+
+type VisibleChatSurface = {
+  kind: "workbench" | "standalone" | "float" | "reader-sidebar";
+  focusComposer(text?: string): void;
+};
+
 /** Timing/model metadata recorded once a turn completes, keyed by its opening user entry. */
 interface TurnMeta {
   elapsedMs: number;
@@ -179,9 +220,145 @@ export function draftChangeRebaseAction(
 export const MAX_SELECTION_PROMPT_CHARACTERS = 32_000;
 const STANDALONE_WORKBENCH_ID = "__qlab_standalone_workbench__";
 
+export interface RepositoryTargetStartupDependencies {
+  readRawTargetMigrationInput(): RawTargetMigrationInput;
+  readSessionRecords(): Promise<SessionRecordsSnapshot>;
+  loadSettings(raw: RawTargetMigrationInput): Promise<ZoteroChatSettings>;
+  createResolver(): LegacyMigrationResolver;
+  saveSessionRecords(
+    snapshot: SessionRecordsSnapshot,
+    records: readonly PersistedSessionRecord[],
+  ): Promise<void>;
+  saveRepositoryTargets(preferences: StoredTargetPreferences): void | Promise<void>;
+  publish(snapshot: RepositoryTargetSnapshot): undefined;
+}
+
+export interface PreparedRepositoryTargetStartup {
+  readonly settings: ZoteroChatSettings;
+  readonly sessionRecords: SessionRecordsSnapshot;
+  readonly activeSnapshot: RepositoryTargetSnapshot | null;
+}
+
+export interface RepositoryTargetBoundServiceFactory<TMainSite, TTerminal, TCodex> {
+  createMainSite(snapshot: RepositoryTargetSnapshot | null): TMainSite;
+  createTerminal(snapshot: RepositoryTargetSnapshot | null): TTerminal;
+  createCodex(snapshot: RepositoryTargetSnapshot | null): TCodex;
+}
+
+export interface StartedRepositoryTargetBoundServices<TMainSite, TTerminal, TCodex> {
+  readonly prepared: PreparedRepositoryTargetStartup;
+  readonly mainSite: TMainSite;
+  readonly terminal: TTerminal;
+  readonly codex: TCodex;
+}
+
+export async function persistRepositoryTargetMigration(
+  snapshot: SessionRecordsSnapshot,
+  outcome: LegacyMigrationOutcome<PersistedSessionRecord>,
+  persistence: Pick<
+    RepositoryTargetStartupDependencies,
+    "saveSessionRecords" | "saveRepositoryTargets"
+  >,
+): Promise<void> {
+  await persistence.saveSessionRecords(snapshot, outcome.sessions);
+  await persistence.saveRepositoryTargets(outcome.preferences);
+}
+
+/**
+ * The sole startup gate before target-bound services are constructed. It
+ * reads raw migration authorities first, commits session assignments before
+ * preferences, then hydrates and synchronously publishes an initial snapshot.
+ */
+export async function prepareRepositoryTargetStartup(
+  dependencies: RepositoryTargetStartupDependencies,
+): Promise<PreparedRepositoryTargetStartup> {
+  const raw = dependencies.readRawTargetMigrationInput();
+  const persistedSessions = await dependencies.readSessionRecords();
+  let settings = await dependencies.loadSettings(raw);
+  let records = persistedSessions.records;
+  let resolver: LegacyMigrationResolver | null = null;
+  const startupResolver = () => {
+    resolver ||= dependencies.createResolver();
+    return resolver;
+  };
+
+  if (raw.legacyQLabRoot && !settings.repositoryTargets.migratedLegacy) {
+    const outcome = await migrateLegacy(
+      settings.repositoryTargets,
+      {
+        legacyRoot: raw.legacyQLabRoot,
+        sessions: records,
+        activeThreadId: persistedSessions.activeThreadId,
+      },
+      startupResolver(),
+    );
+    await persistRepositoryTargetMigration(persistedSessions, outcome, dependencies);
+    records = outcome.sessions;
+    settings = {
+      ...settings,
+      repositoryTargets: outcome.preferences,
+      qlabRoot: outcome.preferences.active?.canonicalRoot || "",
+    };
+  }
+
+  const activeSnapshot = await resolveInitialRepositoryTarget(
+    settings.repositoryTargets,
+    startupResolver,
+  );
+  if (activeSnapshot) dependencies.publish(activeSnapshot);
+  return {
+    settings,
+    sessionRecords: { ...persistedSessions, records },
+    activeSnapshot,
+  };
+}
+
+async function resolveInitialRepositoryTarget(
+  preferences: StoredTargetPreferences,
+  resolver: () => LegacyMigrationResolver,
+): Promise<RepositoryTargetSnapshot | null> {
+  const stored = preferences.active;
+  if (!stored) return null;
+  const inspected = await resolver().inspect(stored.canonicalRoot);
+  if (inspected.kind !== "local"
+      || inspected.kind !== stored.kind
+      || inspected.root !== stored.root
+      || inspected.canonicalRoot !== stored.canonicalRoot
+      || inspected.repositoryId !== stored.repositoryId
+      || inspected.targetId !== stored.targetId) {
+    throw new Error("Stored active repository no longer matches its persisted identity");
+  }
+  return Object.freeze({
+    target: Object.freeze({ ...inspected }),
+    targetEpoch: 1,
+  });
+}
+
+/**
+ * The production construction gate for every service that can restore or
+ * create repository-bound state. Keeping these constructors behind the same
+ * prepared snapshot makes it impossible to construct one before validation.
+ */
+export async function startRepositoryTargetBoundServices<TMainSite, TTerminal, TCodex>(
+  dependencies: RepositoryTargetStartupDependencies,
+  prepareFactory: (
+    prepared: PreparedRepositoryTargetStartup,
+  ) => RepositoryTargetBoundServiceFactory<TMainSite, TTerminal, TCodex>
+    | Promise<RepositoryTargetBoundServiceFactory<TMainSite, TTerminal, TCodex>>,
+): Promise<StartedRepositoryTargetBoundServices<TMainSite, TTerminal, TCodex>> {
+  const prepared = await prepareRepositoryTargetStartup(dependencies);
+  const factory = await prepareFactory(prepared);
+  const snapshot = prepared.activeSnapshot;
+  const mainSite = factory.createMainSite(snapshot);
+  const terminal = factory.createTerminal(snapshot);
+  const codex = factory.createCodex(snapshot);
+  return { prepared, mainSite, terminal, codex };
+}
+
 /** Keep the historical class name as a source-level compatibility shim. */
 export class ZoteroChatPlugin {
   private settings!: ZoteroChatSettings;
+  private activeRepositoryTarget: RepositoryTargetSnapshot | null = null;
   private readerContext!: ReaderContextService;
   private bridge!: NativeBridge;
   private mainSite!: ResearchLoopSiteService;
@@ -223,7 +400,9 @@ export class ZoteroChatPlugin {
   private researchScope: ResearchScope = "paper";
   private floatOpacity = 100;
   private addedContextIDs = new Set<string>();
-  private pendingScreenshots: string[] = [];
+  private pendingScreenshots: PendingScreenshot[] = [];
+  private regionCaptureDispose: (() => void) | null = null;
+  private regionCaptureGeneration = 0;
   /** Default Reader chips the user explicitly turned off for this paper. */
   private excludedContextIDs = new Set<string>();
   private chatGPTArchive: StoredChatGPTArchive | null = null;
@@ -249,7 +428,45 @@ export class ZoteroChatPlugin {
   private floatDismissedTurnId: string | null = null;
 
   async startup(data: PluginStartupData): Promise<void> {
-    this.settings = await loadSettings();
+    let startupBridge: NativeBridge | null = null;
+    let startupSiteRuntime: ReturnType<typeof createResearchLoopSiteRuntime> | null = null;
+    const ensureBridge = () => {
+      startupBridge ||= new NativeBridge(data.rootURI, data.version);
+      return startupBridge;
+    };
+    const ensureSiteRuntime = () => {
+      startupSiteRuntime ||= createResearchLoopSiteRuntime(
+        ensureBridge(),
+        data.rootURI,
+        data.version,
+      );
+      return startupSiteRuntime;
+    };
+    const startupDependencies: RepositoryTargetStartupDependencies = {
+      readRawTargetMigrationInput,
+      readSessionRecords,
+      loadSettings,
+      createResolver: () => {
+        const runtime = ensureSiteRuntime();
+        const resolver = new LocalRepositoryTargetResolver(runtime);
+        return {
+          inspect: (root) => resolver.inspect(root),
+          canonicalize: (path) => runtime.canonicalize(path).catch(() => null),
+        };
+      },
+      saveSessionRecords,
+      saveRepositoryTargets,
+      publish: (snapshot) => {
+        this.activeRepositoryTarget = snapshot;
+        return undefined;
+      },
+    };
+    const prepareTargetServiceFactory = async (
+      preparedTarget: PreparedRepositoryTargetStartup,
+    ) => {
+      this.settings = preparedTarget.settings;
+      this.bridge = ensureBridge();
+      const siteRuntime = ensureSiteRuntime();
     await IOUtils.makeDirectory(profilePath(), {
       createAncestors: true,
       ignoreExisting: true,
@@ -288,10 +505,6 @@ export class ZoteroChatPlugin {
         if (win) void this.openWorkbenchTab(win).catch((error) => this.reportError(error));
       },
     });
-    this.bridge = new NativeBridge(data.rootURI, data.version);
-    this.mainSite = new ResearchLoopSiteService(
-      createResearchLoopSiteRuntime(this.bridge, data.rootURI, data.version),
-    );
     this.qmdRender = new QmdRenderService(createQmdRenderRuntime(this.bridge));
     // Original and AI-version previews use disjoint port ranges, so two
     // documents can never collide merely because their hashes line up.
@@ -301,11 +514,6 @@ export class ZoteroChatPlugin {
     );
     this.literature = new QLabLiteratureService();
     this.zoteroSync = new QLabZoteroSyncService(createQLabZoteroSyncRuntime(this.bridge));
-    this.terminal = new TerminalPanel(this.bridge, this.settings.terminalHeight, {
-      onPasteSelection: () => void this.pasteSelectionToTerminal(),
-      onRefreshContext: () => void this.refreshAndSwitch().catch((error) => this.reportError(error)),
-      onOpenChat: () => this.closeWorkbenchTerminal(),
-    });
     this.selectedModel = this.settings.defaultModel;
     this.selectedEffort = this.settings.reasoningEffort;
     this.floatOpacity = clampFloatOpacity(prefString("floatOpacity", "100"));
@@ -359,7 +567,19 @@ export class ZoteroChatPlugin {
       this.createNoteDraftBridgeHost(),
       { onState: () => this.renderChatViews() },
     );
-    this.codex = new CodexService(
+    return {
+      createMainSite: () => new ResearchLoopSiteService(siteRuntime),
+      createTerminal: () => new TerminalPanel(
+        this.bridge,
+        this.settings.terminalHeight,
+        {
+          onPasteSelection: () => void this.pasteSelectionToTerminal(),
+          onRefreshContext: () => void this.refreshAndSwitch()
+            .catch((error) => this.reportError(error)),
+          onOpenChat: () => this.closeWorkbenchTerminal(),
+        },
+      ),
+      createCodex: (activeSnapshot: RepositoryTargetSnapshot | null) => new CodexService(
       this.bridge,
       this.readerContext,
       data.version,
@@ -371,6 +591,7 @@ export class ZoteroChatPlugin {
           this.chatError = `${error.message}. You can still open the Advanced Terminal from the top bar.`;
           this.renderChatViews();
         },
+        seedPaperContext: (paperKey) => this.seedPaperContextForKey(paperKey),
       },
       {
         tools: [
@@ -395,7 +616,17 @@ export class ZoteroChatPlugin {
           throw new Error(`Unknown reviewed Research Loop tool: ${name}`);
         },
       },
+      activeSnapshot,
+      ),
+    };
+    };
+    const startedTargetServices = await startRepositoryTargetBoundServices(
+      startupDependencies,
+      prepareTargetServiceFactory,
     );
+    this.mainSite = startedTargetServices.mainSite;
+    this.terminal = startedTargetServices.terminal;
+    this.codex = startedTargetServices.codex;
     this.paperTrail = new PaperTrailService(
       this.anchorHost,
       {
@@ -435,6 +666,9 @@ export class ZoteroChatPlugin {
   async shutdown(): Promise<void> {
     this.destroyed = true;
     this.contextRequestSequence += 1;
+    this.regionCaptureGeneration += 1;
+    this.regionCaptureDispose?.();
+    this.regionCaptureDispose = null;
     if (this.pageRefreshTimer) clearTimeout(this.pageRefreshTimer);
     this.pageRefreshTimer = null;
     if (this.tabRefreshTimer) clearTimeout(this.tabRefreshTimer);
@@ -502,8 +736,7 @@ export class ZoteroChatPlugin {
         && !event.isComposing && !isEditableEventTarget(event.target)
       ) {
         const main = typeof Zotero === "undefined" ? win : (Zotero.getMainWindow?.() || win);
-        const entry = main ? this.floatPanels.get(main) : undefined;
-        if (entry?.view.isVisible()) {
+        if (main && this.visibleFloatSurface(main)) {
           event.preventDefault();
           event.stopPropagation();
           this.hideFloatPanel(main!);
@@ -663,6 +896,24 @@ export class ZoteroChatPlugin {
         }).catch((error) => this.reportError(error));
       });
       append(button);
+
+      const regionButton = doc.createElement("button");
+      regionButton.type = "button";
+      regionButton.title = "Capture Region Screenshot (QLab)";
+      regionButton.setAttribute("aria-label", regionButton.title);
+      regionButton.style.cssText = "display:grid;place-items:center;width:32px;height:32px;border:0;border-radius:8px;background:transparent;cursor:pointer;padding:5px";
+      const regionIcon = doc.createElement("img");
+      regionIcon.src = regionCaptureIcon;
+      regionIcon.alt = "";
+      regionIcon.style.cssText = "width:22px;height:22px";
+      regionButton.appendChild(regionIcon);
+      regionButton.addEventListener("click", () => {
+        void this.acceptReaderCaptureTarget(event).then(async (target) => {
+          if (!target) return;
+          await this.startRegionScreenshot(target);
+        }).catch((error) => this.reportError(error));
+      });
+      append(regionButton);
     }, PLUGIN_ID);
 
     Zotero.Reader.registerEventListener("renderTextSelectionPopup", (event: any) => {
@@ -693,9 +944,7 @@ export class ZoteroChatPlugin {
         extraData?: Record<string, { type?: string }>,
       ) => {
         if (type === "file" && event === "pageChange") {
-          const hasWorkbench = (this.workbenchTabs?.entries().length || 0) > 0;
-          const hasFloat = [...this.floatPanels.values()].some((entry) => entry.view.isVisible());
-          if (!hasWorkbench && !hasFloat && !this.hasOpenSidebar()) return;
+          if (!this.visibleChatSurface()) return;
           if (this.paneMode === "terminal" && !this.terminal.isOpen) return;
           if (this.pageRefreshTimer) clearTimeout(this.pageRefreshTimer);
           this.pageRefreshTimer = setTimeout(() => {
@@ -724,11 +973,6 @@ export class ZoteroChatPlugin {
         this.scheduleTabRefresh(tabID, this.isReaderTabType(tabType), 0, 0);
       },
     }, ["file", "tab"], PLUGIN_ID, 40);
-  }
-
-  private hasOpenSidebar(): boolean {
-    const body = this.activeSidebarBody();
-    return Boolean(body?.closest("collapsible-section")?.hasAttribute("open"));
   }
 
   private signalReaderBodyReady(body: HTMLElement): void {
@@ -806,6 +1050,26 @@ export class ZoteroChatPlugin {
     }
   }
 
+  private async acceptReaderCaptureTarget(event: any): Promise<ReaderCaptureTarget | null> {
+    const requestSequence = ++this.contextRequestSequence;
+    try {
+      const target = await this.readerContext.captureTargetFromHook({
+        reader: event.reader,
+        item: event.item,
+        params: event.params,
+        selectionAnnotation: event.params?.annotation,
+      } as ReaderHook);
+      if (requestSequence !== this.contextRequestSequence || this.destroyed) return null;
+      await this.applyContext(target.context, requestSequence);
+      if (requestSequence !== this.contextRequestSequence || this.destroyed) return null;
+      return target;
+    }
+    catch (error) {
+      if (isStaleReaderCaptureError(error)) return null;
+      throw error;
+    }
+  }
+
   private async refreshContext(pageChange = false, preferredHost?: HTMLElement): Promise<void> {
     if (pageChange) {
       const requestSequence = ++this.contextRequestSequence;
@@ -867,7 +1131,7 @@ export class ZoteroChatPlugin {
     if (this.codex?.state.connected && this.codex.isSignedIn()) {
       await this.codex.setPaper(context);
     }
-    const drawer = this.activeWorkbenchEntry()?.view;
+    const drawer = this.selectedWorkbenchEntry()?.view;
     const drawerHost = drawer instanceof SidebarView && drawer.isTerminalOpen()
       ? drawer.terminalHost()
       : undefined;
@@ -969,10 +1233,11 @@ export class ZoteroChatPlugin {
   }
 
   private async openResearchChat(_body?: HTMLElement, focus = true): Promise<void> {
+    if (this.destroyed) return;
     this.paneMode = "chat";
     this.terminal.setVisible(false);
     const win = Zotero.getMainWindow();
-    const existing = win ? this.activeWorkbenchEntry(win) : null;
+    const existing = this.existingWorkbenchEntry(win);
     if (existing?.view instanceof SidebarView) {
       existing.view.setTerminalOpen(false);
     }
@@ -983,7 +1248,8 @@ export class ZoteroChatPlugin {
       this.renderChatViews();
     }
     await this.openWorkbenchTab(win);
-    if (focus) this.activeWorkbenchEntry(win!)?.view.focusComposer();
+    if (this.destroyed) return;
+    if (focus) this.selectedWorkbenchEntry(win)?.view.focusComposer();
   }
 
   private ensureChatSession(): Promise<void> {
@@ -1053,7 +1319,7 @@ export class ZoteroChatPlugin {
     }
     this.chatPhase = "ready";
     const context = this.codex.getActiveReaderContext?.() || this.context;
-    const screenshots = [...this.pendingScreenshots];
+    const screenshots = this.pendingScreenshots.map((shot) => shot.image);
     await this.codex.send(text, this.selectedModel, this.selectedEffort, screenshots, options);
     if (screenshots.length) this.pendingScreenshots = [];
     const threadId = this.codex.state.activeThreadId;
@@ -1073,7 +1339,7 @@ export class ZoteroChatPlugin {
     this.addedContextIDs.delete("current-selection");
     await this.codex.newThread();
     this.updateInteractionContext();
-    (preferredView || this.activeWorkbenchEntry()?.view)?.focusComposer();
+    (preferredView || this.selectedWorkbenchEntry()?.view)?.focusComposer();
   }
 
   private setResearchScope(scope: ResearchScope): void {
@@ -1090,7 +1356,7 @@ export class ZoteroChatPlugin {
     }
     this.updateInteractionContext();
     this.renderChatViews();
-    this.activeChatView()?.focusComposer();
+    this.visibleChatSurface()?.focusComposer();
   }
 
   private async selectThread(view: SidebarView, threadID: string): Promise<void> {
@@ -1130,14 +1396,14 @@ export class ZoteroChatPlugin {
     this.updateInteractionContext();
     this.chatError = "";
     this.renderChatViews();
-    this.activeWorkbenchEntry()?.view.focusComposer();
+    this.visibleChatSurface()?.focusComposer();
   }
 
   private returnToLiveConversation(): void {
     this.selectedImportedChatID = null;
     this.chatError = "";
     this.renderChatViews();
-    this.activeWorkbenchEntry()?.view.focusComposer();
+    this.visibleChatSurface()?.focusComposer();
   }
 
   private async closeConversationTab(threadID: string): Promise<void> {
@@ -1152,7 +1418,7 @@ export class ZoteroChatPlugin {
     }
     this.chatError = "";
     this.renderChatViews();
-    this.activeWorkbenchEntry()?.view.focusComposer();
+    this.visibleChatSurface()?.focusComposer();
   }
 
   private async openChatWithSelection(newThread: boolean): Promise<void> {
@@ -1314,6 +1580,10 @@ export class ZoteroChatPlugin {
       },
       onCaptureChatDraft: () => {
         void this.captureChatDraft().catch((error) => this.reportError(error));
+      },
+      onResearchAction: (actionID) => {
+        void this.runResearchAction(view, actionID, win)
+          .catch((error) => this.reportError(error));
       },
       onChoosePaper: () => {
         void this.chooseWorkbenchPaper(
@@ -1803,21 +2073,27 @@ export class ZoteroChatPlugin {
   }
 
   private async openWorkbenchTab(win = Zotero.getMainWindow()): Promise<void> {
+    if (this.destroyed) return;
     if (!win) throw new Error("The Zotero main window is unavailable");
     const selectedType = String(win.Zotero_Tabs?.selectedType || "");
     const selectedIsReader = this.isReaderTabType(selectedType);
-    const existing = this.workbenchTabs.entries(win)[0];
+    const existing = this.existingWorkbenchEntry(win);
     if (existing && !selectedIsReader) {
+      if (this.destroyed) return;
       win.Zotero_Tabs?.select?.(existing.id);
+      if (this.destroyed) return;
       this.renderChatViews();
+      if (this.destroyed) return;
       existing.view.focusComposer();
       if (!this.codex.state.connected) await this.ensureChatSession();
+      if (this.destroyed) return;
       return;
     }
     if (selectedIsReader) {
       await this.refreshContext().catch((error) => {
         if (!isStaleReaderCaptureError(error)) throw error;
       });
+      if (this.destroyed) return;
     }
     else if (selectedType !== QLAB_WORKBENCH_TAB_TYPE) {
       this.context = null;
@@ -1832,12 +2108,16 @@ export class ZoteroChatPlugin {
       icon: QLAB_WORKBENCH_TAB_ICON,
       title: context ? `QLab · ${paperTitle(context)}` : "QLab Workbench",
     };
+    if (this.destroyed) return;
     const entry = this.workbenchTabs.open(win, data);
     Zotero.Session?.debounceSave?.();
+    if (this.destroyed) return;
     this.renderChatViews();
+    if (this.destroyed) return;
     entry.view.focusComposer();
     if (!this.codex.state.connected) {
       await this.ensureChatSession();
+      if (this.destroyed) return;
       entry.view.focusComposer();
     }
   }
@@ -1868,16 +2148,41 @@ export class ZoteroChatPlugin {
 
     const selected = await Zotero.Items.getAsync(selectedID);
     if (!selected) throw new Error("The selected Zotero item does not exist");
-    let attachment = selected;
-    if (!selected.isPDFAttachment?.()) {
-      attachment = selected.isRegularItem?.() ? await selected.getBestAttachment?.() : null;
+    const attachment = await this.resolvePaperAttachment(selected);
+    const accepted = await this.seedReaderContextInBackground(attachment, win);
+
+    this.addedContextIDs.delete("current-selection");
+    const requestSequence = ++this.contextRequestSequence;
+    await this.applyContext(accepted, requestSequence);
+    if (tabID) {
+      this.workbenchTabs.update(win, tabID, {
+        itemID: attachment.id,
+        icon: QLAB_WORKBENCH_TAB_ICON,
+        title: `QLab · ${paperTitle(accepted)}`,
+      });
+      Zotero.Session?.debounceSave?.();
+    }
+    this.renderChatViews();
+    if (tabID) this.workbenchTabs.entries(win).find((entry) => entry.id === tabID)?.view.focusComposer();
+    else preferredView?.focusComposer();
+  }
+
+  /** Resolves a Zotero item (regular item or attachment) to its readable PDF attachment. */
+  private async resolvePaperAttachment(item: any): Promise<any> {
+    let attachment = item;
+    if (!item?.isPDFAttachment?.()) {
+      attachment = item?.isRegularItem?.() ? await item.getBestAttachment?.() : null;
     }
     const isPDF = Boolean(attachment?.isPDFAttachment?.())
       || attachment?.attachmentContentType === "application/pdf";
     if (!attachment?.id || !isPDF) {
       throw new Error("This Zotero item has no readable PDF attachment");
     }
+    return attachment;
+  }
 
+  /** Opens the attachment in a background Reader tab and captures its context without disturbing the user's view. */
+  private async seedReaderContextInBackground(attachment: any, win: Window): Promise<ReaderContext> {
     const opened = await Zotero.Reader.open(attachment.id, null, {
       allowDuplicate: false,
       openInBackground: true,
@@ -1909,21 +2214,24 @@ export class ZoteroChatPlugin {
         ? lastError
         : new Error("Zotero Reader has not prepared this paper yet; try again shortly");
     }
+    return accepted;
+  }
 
-    this.addedContextIDs.delete("current-selection");
-    const requestSequence = ++this.contextRequestSequence;
-    await this.applyContext(accepted, requestSequence);
-    if (tabID) {
-      this.workbenchTabs.update(win, tabID, {
-        itemID: attachment.id,
-        icon: QLAB_WORKBENCH_TAB_ICON,
-        title: `QLab · ${paperTitle(accepted)}`,
-      });
-      Zotero.Session?.debounceSave?.();
+  /** Host hook for CodexService: rebuilds a `${libraryID}-${attachmentKey}` paper context via a background Reader tab. */
+  private async seedPaperContextForKey(paperKey: string): Promise<ReaderContext> {
+    const separator = paperKey.indexOf("-");
+    const attachmentKey = paperKey.slice(separator + 1);
+    if (separator <= 0 || !attachmentKey) {
+      throw new Error("This conversation's Zotero paper could not be identified");
     }
-    this.renderChatViews();
-    if (tabID) this.workbenchTabs.entries(win).find((entry) => entry.id === tabID)?.view.focusComposer();
-    else preferredView?.focusComposer();
+    const libraryID = Number(paperKey.slice(0, separator));
+    const item = await Zotero.Items?.getByLibraryAndKeyAsync?.(libraryID, attachmentKey)
+      ?? Zotero.Items?.getByLibraryAndKey?.(libraryID, attachmentKey);
+    if (!item) throw new Error("This conversation's Zotero paper is no longer in the library");
+    const attachment = await this.resolvePaperAttachment(item);
+    const win = Zotero.getMainWindow?.() || Zotero.getMainWindows?.()[0];
+    if (!win) throw new Error("The Zotero main window is unavailable");
+    return this.seedReaderContextInBackground(attachment, win);
   }
 
   private async chooseAdditionalPaper(win: Window): Promise<void> {
@@ -1999,7 +2307,7 @@ export class ZoteroChatPlugin {
     await this.saveConversationPapers();
     this.updateInteractionContext();
     this.renderChatViews();
-    this.activeChatView()?.focusComposer();
+    this.visibleChatSurface()?.focusComposer();
   }
 
   private async openStandaloneWorkbenchWindow(source: Window): Promise<Window> {
@@ -2060,8 +2368,7 @@ export class ZoteroChatPlugin {
   private async toggleFloatPanel(): Promise<void> {
     const win = Zotero.getMainWindow();
     if (!win) return;
-    const existing = this.floatPanels.get(win);
-    if (existing?.view.isVisible()) {
+    if (this.visibleFloatSurface(win)) {
       this.hideFloatPanel(win);
       return;
     }
@@ -2077,7 +2384,13 @@ export class ZoteroChatPlugin {
   private async ensureFloatPanelOpen(): Promise<void> {
     const win = Zotero.getMainWindow();
     if (!win) return;
-    if (this.floatPanels.get(win)?.view.isVisible()) return;
+    const existing = this.floatPanels.get(win);
+    if (existing && (win.closed || !existing.host.isConnected)) {
+      existing.view.destroy();
+      existing.host.remove();
+      this.floatPanels.delete(win);
+    }
+    if (this.visibleFloatSurface(win)) return;
     await this.openFloatPanel(win);
   }
 
@@ -2289,14 +2602,14 @@ export class ZoteroChatPlugin {
     if (!context?.selection?.text) {
       this.chatError = "Select text in the PDF first";
       this.renderChatViews();
-      if (focus) this.activeChatView()?.focusComposer();
+      if (focus) this.visibleChatSurface()?.focusComposer();
       return;
     }
     this.addedContextIDs.add("current-selection");
     this.chatError = "";
     this.updateInteractionContext();
     this.renderChatViews();
-    if (focus) this.activeChatView()?.focusComposer();
+    if (focus) this.visibleChatSurface()?.focusComposer();
   }
 
   private async captureCurrentPageScreenshot(): Promise<void> {
@@ -2307,10 +2620,121 @@ export class ZoteroChatPlugin {
     if (!context) throw new Error("Open a PDF before capturing a page screenshot");
     const image = await this.readerContext.captureCurrentPageImage(context);
     if (!image) throw new Error("Zotero could not render the current PDF page as an image");
-    this.pendingScreenshots.push(image);
+    this.pendingScreenshots.push({ image, kind: "page" });
     this.chatError = "";
     this.renderChatViews();
-    this.activeChatView()?.focusComposer();
+    this.visibleChatSurface()?.focusComposer();
+  }
+
+  /**
+   * Design 3: overlay the current PDF.js page view with a crosshair and
+   * attach the dragged region as a cropped screenshot. Reached from the
+   * reader toolbar button and the "Screenshot Region" Add-Context entry.
+   */
+  private async startRegionScreenshot(target: ReaderCaptureTarget): Promise<void> {
+    const captureGeneration = ++this.regionCaptureGeneration;
+    if (this.destroyed) return;
+    if (this.pendingScreenshots.length >= 10) {
+      throw new Error("A message can contain at most 10 PDF screenshots");
+    }
+    this.regionCaptureDispose?.();
+    this.regionCaptureDispose = null;
+    let pageElement: HTMLElement | null;
+    try {
+      pageElement = await this.readerContext.getCaptureTargetPageViewElement(target);
+    }
+    catch (error) {
+      if (this.destroyed || captureGeneration !== this.regionCaptureGeneration) return;
+      throw error;
+    }
+    if (this.destroyed || captureGeneration !== this.regionCaptureGeneration) return;
+    if (!pageElement) throw new Error("Zotero could not locate the current PDF page view");
+    let dispose: (() => void) | null = null;
+    dispose = startRegionSelection(pageElement, {
+      onCancel: () => {
+        if (this.regionCaptureDispose === dispose) this.regionCaptureDispose = null;
+      },
+      onComplete: (selection) => {
+        if (this.regionCaptureDispose === dispose) this.regionCaptureDispose = null;
+        void this.finishRegionScreenshot(selection, target)
+          .catch((error) => {
+            if (!this.destroyed) this.reportError(error);
+          });
+      },
+    });
+    this.regionCaptureDispose = dispose;
+  }
+
+  private async captureRegionScreenshot(
+    selection: RegionSelection,
+    target: ReaderCaptureTarget,
+  ): Promise<void> {
+    if (this.pendingScreenshots.length >= 10) {
+      throw new Error("A message can contain at most 10 PDF screenshots");
+    }
+    let image: string | null;
+    try {
+      image = await this.readerContext.captureTargetRegionImage(target, selection);
+    }
+    catch (error) {
+      if (this.destroyed) return;
+      throw error;
+    }
+    if (this.destroyed) return;
+    if (!image) throw new Error("Zotero could not render the selected PDF region as an image");
+    const context = target.context;
+    this.pendingScreenshots.push({
+      image,
+      kind: "region",
+      source: {
+        paperKey: `${context.attachment.libraryID ?? "0"}-${context.attachment.key}`,
+        paperTitle: paperTitle(context),
+        pageIndex: context.page.pageIndex,
+        pageNumber: context.page.pageNumber,
+        pageLabel: context.page.pageLabel || "",
+      },
+    });
+    this.chatError = "";
+  }
+
+  private async ensureCaptureChatSurface(): Promise<VisibleChatSurface | null> {
+    if (this.destroyed) return null;
+    const visible = this.visibleChatSurface();
+    if (visible) return visible;
+    try {
+      await this.openResearchChat(undefined, false);
+    }
+    catch (error) {
+      if (this.destroyed) return null;
+      throw error;
+    }
+    if (this.destroyed) return null;
+    const opened = this.visibleChatSurface();
+    if (!opened) throw new Error("Unable to reveal the QLab Workbench");
+    return opened;
+  }
+
+  private async finishRegionScreenshot(
+    selection: RegionSelection,
+    target: ReaderCaptureTarget,
+  ): Promise<void> {
+    if (this.destroyed) return;
+    try {
+      await this.captureRegionScreenshot(selection, target);
+    }
+    catch (error) {
+      if (this.destroyed) return;
+      const surface = await this.ensureCaptureChatSurface();
+      if (this.destroyed || !surface) return;
+      this.reportChatError(error);
+      surface.focusComposer();
+      return;
+    }
+    if (this.destroyed) return;
+    const surface = await this.ensureCaptureChatSurface();
+    if (this.destroyed || !surface) return;
+    this.renderChatViews();
+    surface.focusComposer();
   }
 
   private addInteractionContext(suggestion: ResearchContextSuggestion, win?: Window): void {
@@ -2325,6 +2749,13 @@ export class ZoteroChatPlugin {
     }
     if (suggestion.id === "capture-page") {
       void this.captureCurrentPageScreenshot().catch((error) => this.reportError(error));
+      return;
+    }
+    if (suggestion.id === "capture-region") {
+      void this.readerContext.getActiveCaptureTarget().then(async (target) => {
+        if (!target) throw new Error("Open a PDF before capturing a region screenshot");
+        await this.startRegionScreenshot(target);
+      }).catch((error) => this.reportError(error));
       return;
     }
     if (suggestion.id.startsWith("toggle-paper:")) {
@@ -2764,10 +3195,11 @@ export class ZoteroChatPlugin {
     // access installShortcutHandler's Escape handler uses.
     const win = typeof Zotero === "undefined" ? null : Zotero.getMainWindow?.();
     if (!win) return;
-    const floatVisible = Boolean(this.floatPanels.get(win)?.view.isVisible());
+    const visible = this.visibleChatSurface(win);
+    const floatVisible = Boolean(this.visibleFloatSurface(win));
     const shouldOpen = shouldAutoOpenFloat({
       running: this.codex.state.running,
-      hasConnectedViews: this.chatViews.size > 0 || (this.workbenchTabs?.entries().length || 0) > 0,
+      hasVisibleNonFloatSurface: Boolean(visible && visible.kind !== "float"),
       floatVisible,
       autoOpenedTurnId: this.autoOpenedFloatTurnId,
       dismissedTurnId: this.floatDismissedTurnId,
@@ -2995,13 +3427,25 @@ export class ZoteroChatPlugin {
         removable: true,
       });
     }
-    this.pendingScreenshots.forEach((_image, index) => chips.push({
-      id: `screenshot:${index}`,
-      kind: "selection",
-      label: `PDF Screenshot ${index + 1}`,
-      detail: "Sent with the next message",
-      removable: true,
-    }));
+    let pageShots = 0;
+    let regionShots = 0;
+    this.pendingScreenshots.forEach((shot, index) => {
+      const source = shot.source;
+      const page = source?.pageLabel || source?.pageNumber;
+      chips.push({
+        id: `screenshot:${index}`,
+        kind: "selection",
+        label: shot.kind === "region" && source
+          ? `Region · ${source.paperTitle} · p. ${page}`
+          : shot.kind === "region"
+            ? `Region Screenshot ${++regionShots}`
+            : `PDF Screenshot ${++pageShots}`,
+        detail: shot.kind === "region" && source
+          ? `Captured from ${source.paperTitle}, PDF page ${page}`
+          : "Sent with the next message",
+        removable: true,
+      });
+    });
     return chips;
   }
 
@@ -3050,6 +3494,12 @@ export class ZoteroChatPlugin {
       kind: "selection",
       label: "Screenshot Current Page",
       detail: "Attach the rendered PDF page for figures, equations, or layout",
+      disabled: !context || this.pendingScreenshots.length >= 10,
+    }, {
+      id: "capture-region",
+      kind: "selection",
+      label: "Screenshot Region",
+      detail: "Drag a rectangle on the current PDF page to attach just that region",
       disabled: !context || this.pendingScreenshots.length >= 10,
     }, ...papers.map((paper): ResearchContextSuggestion => ({
       id: `toggle-paper:${paper.id}`,
@@ -3156,20 +3606,75 @@ export class ZoteroChatPlugin {
     }
   }
 
-  private activeChatView(): SidebarView | null {
-    const standalone = this.standaloneWorkbench?.currentView();
-    if (standalone instanceof SidebarView) return standalone;
-    const workbench = this.activeWorkbenchEntry()?.view;
-    if (workbench instanceof SidebarView) return workbench;
-    const body = this.activeSidebarBody();
-    return body ? this.chatViews.get(body) || null : null;
+  private selectedWorkbenchEntry(win?: Window | null): ReturnType<WorkbenchTabManager["entries"]>[number] | null {
+    const target = win ?? (typeof Zotero === "undefined" ? null : Zotero.getMainWindow?.() || null);
+    if (!target) return null;
+    const selectedID = String(target.Zotero_Tabs?.selectedID ?? "");
+    if (!selectedID) return null;
+    return this.workbenchTabs?.entries(target).find((entry) => entry.id === selectedID) || null;
   }
 
-  private activeWorkbenchEntry(win = Zotero.getMainWindow()): ReturnType<WorkbenchTabManager["entries"]>[number] | null {
-    if (!win) return null;
-    const entries = this.workbenchTabs?.entries(win) || [];
-    const selectedID = String(win.Zotero_Tabs?.selectedID || "");
-    return entries.find((entry) => entry.id === selectedID) || entries[0] || null;
+  /** A retained Workbench entry is reusable only during an explicit open. */
+  private existingWorkbenchEntry(win?: Window | null): ReturnType<WorkbenchTabManager["entries"]>[number] | null {
+    return win ? this.workbenchTabs?.entries(win)[0] || null : null;
+  }
+
+  private visibleStandaloneSurface(): VisibleChatSurface | null {
+    const manager = this.standaloneWorkbench;
+    if (!manager?.isActive()) return null;
+    try {
+      const win = manager.window();
+      const view = manager.currentView();
+      const chromeWin = win as (Window & { windowState?: number; STATE_MINIMIZED?: number }) | null;
+      const minimized = Boolean(
+        chromeWin
+        && typeof chromeWin.windowState === "number"
+        && typeof chromeWin.STATE_MINIMIZED === "number"
+        && chromeWin.windowState === chromeWin.STATE_MINIMIZED,
+      );
+      const host = win?.document.getElementById("qlab-standalone-workbench-host");
+      if (!win || win.closed || win.document.hidden === true || minimized || !host?.isConnected || !view) return null;
+      return { kind: "standalone", focusComposer: (text) => view.focusComposer(text) };
+    }
+    catch { return null; }
+  }
+
+  private visibleFloatSurface(win: Window): VisibleChatSurface | null {
+    const entry = this.floatPanels.get(win);
+    if (win.closed || !entry?.host.isConnected || !entry.view.isVisible()) return null;
+    return { kind: "float", focusComposer: (text) => entry.view.focusComposer(text) };
+  }
+
+  private selectedTabIsReader(win: Window): boolean {
+    const selectedType = String(win.Zotero_Tabs?.selectedType ?? "");
+    if (selectedType === "reader") return true;
+    try { return win.Zotero_Tabs?.parseTabType?.(selectedType)?.tabContentType === "reader"; }
+    catch { return false; }
+  }
+
+  private visibleChatSurface(win?: Window | null): VisibleChatSurface | null {
+    const target = win ?? (typeof Zotero === "undefined" ? null : Zotero.getMainWindow?.() || null);
+    const workbench = this.selectedWorkbenchEntry(target);
+    if (target?.closed !== true && workbench?.host.isConnected) {
+      return { kind: "workbench", focusComposer: (text) => workbench.view.focusComposer(text) };
+    }
+    const standalone = this.visibleStandaloneSurface();
+    if (standalone) return standalone;
+    if (!target || target.closed) return null;
+    const float = this.visibleFloatSurface(target);
+    if (float) return float;
+    // Embedded Reader views remain covered while the standalone manager owns them.
+    if (this.standaloneWorkbench?.isActive() || !this.selectedTabIsReader(target)) return null;
+    const selectedID = String(target.Zotero_Tabs?.selectedID ?? "");
+    if (!selectedID) return null;
+    for (const [body, view] of this.chatViews) {
+      if (
+        body.isConnected
+        && this.sidebarTabID(body) === selectedID
+        && body.closest("collapsible-section")?.hasAttribute("open")
+      ) return { kind: "reader-sidebar", focusComposer: (text) => view.focusComposer(text) };
+    }
+    return null;
   }
 
   private openTerminal(body?: HTMLElement): Promise<void> {
@@ -3188,7 +3693,7 @@ export class ZoteroChatPlugin {
   private async openWorkbenchTerminal(win = Zotero.getMainWindow()): Promise<void> {
     if (!win) throw new Error("The Zotero main window is unavailable");
     await this.openWorkbenchTab(win);
-    const entry = this.activeWorkbenchEntry(win);
+    const entry = this.selectedWorkbenchEntry(win);
     if (!entry) throw new Error("Unable to create the QLab Workbench");
     if (!(entry.view instanceof SidebarView)) throw new Error("The QLab Workbench is not ready");
     if (!entry.view.isTerminalOpen()) {
@@ -3227,7 +3732,7 @@ export class ZoteroChatPlugin {
   }
 
   private closeWorkbenchTerminal(win = Zotero.getMainWindow()): void {
-    const entry = win ? this.activeWorkbenchEntry(win) : null;
+    const entry = this.selectedWorkbenchEntry(win);
     if (entry?.view instanceof SidebarView) {
       entry.view.setTerminalOpen(false);
       entry.view.focusComposer();
@@ -3237,7 +3742,7 @@ export class ZoteroChatPlugin {
 
   private async openTerminalInternal(body?: HTMLElement): Promise<void> {
     const workbenchEntry = this.workbenchTabs?.entries().find((entry) => entry.host === body)
-      || (!body ? this.activeWorkbenchEntry() : null);
+      || (!body ? this.selectedWorkbenchEntry() : null);
     if (workbenchEntry?.view instanceof SidebarView) {
       const win = workbenchEntry.host.ownerDocument.defaultView;
       if (!win) throw new Error("The Zotero main window is unavailable");
@@ -3718,7 +4223,6 @@ export class ZoteroChatPlugin {
         kind: object.kind,
         key: String(objectKey || object.title),
         title: object.title,
-        workspaceRoot: root,
         ...(object.libraryID === undefined ? {} : { libraryID: object.libraryID }),
       });
       this.researchScope = object.kind === "draft" ? "paper" : "library";
@@ -3762,11 +4266,21 @@ export class ZoteroChatPlugin {
     const value = error instanceof Error ? error : new Error(String(error));
     logError(value);
     if (this.paneMode === "terminal") this.terminal?.showError(value);
-    else {
-      this.chatError = value.message;
-      if (this.chatPhase === "connecting") this.chatPhase = "error";
-      this.renderChatViews();
-    }
+    else this.reportChatError(value, false);
+  }
+
+  private reportChatError(error: unknown, log = true): void {
+    const value = error instanceof Error ? error : new Error(String(error));
+    if (log) logError(value);
+    this.chatError = value.message;
+    if (this.chatPhase === "connecting") this.chatPhase = "error";
+    this.renderChatViews();
+  }
+
+  private reportLibraryConversationError(win: Window, error: unknown): void {
+    const value = error instanceof Error ? error : new Error(String(error));
+    this.reportChatError(value);
+    Services.prompt.alert(win, "QLab Chat", value.message);
   }
 
   private installQLabMenu(win: Window): void {
@@ -3801,6 +4315,23 @@ export class ZoteroChatPlugin {
       void this.importQLabLiterature(win).catch((error) => this.reportError(error));
     });
     popup.append(separator, workbench, standalone, choose, importItem);
+
+    const itemPopup = doc.getElementById("zotero-itemmenu");
+    if (itemPopup && !doc.getElementById("qlab-zotero-open-paper-chat")) {
+      const paperChat = doc.createXULElement("menuitem");
+      paperChat.id = "qlab-zotero-open-paper-chat";
+      paperChat.setAttribute("label", "Open QLab Chat for This Paper");
+      paperChat.addEventListener("command", () => {
+        const item = (win as any).ZoteroPane?.getSelectedItems?.()?.[0];
+        if (!item) {
+          this.reportError(new Error("Select a Zotero library item first"));
+          return;
+        }
+        void this.openConversationForItem(win, item)
+          .catch((error) => this.reportLibraryConversationError(win, error));
+      });
+      itemPopup.append(paperChat);
+    }
   }
 
   private removeQLabMenu(win: Window): void {
@@ -3810,9 +4341,23 @@ export class ZoteroChatPlugin {
       "qlab-zotero-open-standalone",
       "qlab-zotero-choose-root",
       "qlab-zotero-import-literature",
+      "qlab-zotero-open-paper-chat",
     ]) {
       win.document.getElementById(id)?.remove();
     }
+  }
+
+  /** Opens the right-clicked library item's stored QLab conversation (or a fresh thread when none is stored). */
+  private async openConversationForItem(win: Window, item: any): Promise<void> {
+    const attachment = await this.resolvePaperAttachment(item);
+    const paperKey = `${attachment.libraryID ?? "0"}-${attachment.key}`;
+    await this.openWorkbenchTab(win);
+    this.selectedImportedChatID = null;
+    await this.codex.openConversationForPaper(paperKey);
+    this.updateInteractionContext();
+    this.chatError = "";
+    this.renderChatViews();
+    this.selectedWorkbenchEntry(win)?.view.focusComposer();
   }
 
   private async importQLabLiterature(win: Window): Promise<void> {

@@ -153,7 +153,7 @@ export class QmdVisualEditor {
       header.textContent = `${label}${semantic === "proof" ? "" : ` ${next}`}${block.title ? `: ${block.title}` : ""}`;
       const body = this.doc.createElement("div");
       body.className = "zc-qmd-visual-card-body";
-      body.appendChild(renderMarkdown(this.doc, theoremBody(block.source)));
+      body.appendChild(renderMarkdown(this.doc, theoremBody(block.source), { newlineAsBreak: false }));
       card.append(header, body);
       this.bindFormulaEditors(card, block);
       return card;
@@ -167,7 +167,7 @@ export class QmdVisualEditor {
       wrapper.appendChild(pre);
     }
     else {
-      wrapper.appendChild(renderMarkdown(this.doc, block.source));
+      wrapper.appendChild(renderMarkdown(this.doc, block.source, { newlineAsBreak: false }));
       this.bindFormulaEditors(wrapper, block);
     }
     return wrapper;

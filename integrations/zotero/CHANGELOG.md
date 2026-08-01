@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.10.1
+
+- Bind region capture to the exact invoking Reader and page, retain source-paper/page provenance on the pending chip, and use a dashed selection-rectangle toolbar icon.
+- Treat only actually visible chat surfaces as visible, selecting a hidden Workbench after capture success or render error so the result remains in view.
+- Narrow stored-conversation fallback to explicit missing-thread responses and make resume/read/session updates transactional, preserving the existing conversation on operational failures.
+- Add browser-measured Visual Edit parity coverage for typography, formula scale, soft breaks, and natural wrapping against the compiled HTML Preview.
+
+Research Actions and no-open-PDF conversation reopening are existing features;
+v0.10.1 regression-locks their original entry points rather than introducing
+them as new features.
+
+## 0.10.0
+
+- Fix Research Action chips (Summarize, Evidence QA, Compare Papers) on Workbench surfaces: clicks now dispatch the action, and chips are no longer rebuilt mid-click during streaming re-renders.
+- Align Visual Edit with the compiled draft preview: KaTeX on both sides (draft previews now compile with `html-math-method: katex`), Pandoc-style soft line breaks, matched typography, and full list-grammar support.
+- Add region screenshots: a reader toolbar capture button with a crosshair drag overlay, plus a "Screenshot Region" Add-Context entry; cropped regions attach as "Region Screenshot" chips.
+- Reopen a paper's stored conversation without its PDF open: conversation tabs and History seed the paper in a background reader tab, and library items gain "Open QLab Chat for This Paper".
+
 ## 0.9.0
 
 - Add object-aware Research Actions for PDFs, Notes, Collections, and QMD Drafts, routed through the repository's canonical skills.

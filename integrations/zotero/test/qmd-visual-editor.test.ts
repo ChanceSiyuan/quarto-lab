@@ -104,4 +104,35 @@ describe("QmdVisualEditor", () => {
     expect(save).toHaveBeenCalledOnce();
     expect(source()).toContain("The gap remains positive.");
   });
+
+  it("flows hard-wrapped source prose as one paragraph like the compiled preview", () => {
+    const save = vi.fn(async (next: string) => ({ source: next, revision: "r2" }));
+    const editor = new QmdVisualEditor(document, { save });
+    document.body.appendChild(editor.root);
+    editor.setDocument({
+      source: [
+        "A first sentence that was",
+        "hard-wrapped in the source",
+        "across three lines.",
+        "",
+        "::: {#lem-flow}",
+        "## Soft wrap",
+        "The lemma statement is",
+        "wrapped across lines.",
+        ":::",
+        "",
+      ].join("\n"),
+      revision: "r1",
+    }, false);
+
+    const paragraph = editor.root.querySelector<HTMLElement>('[data-block-kind="paragraph"]')!;
+    expect(paragraph.querySelector("br")).toBeNull();
+    expect(paragraph.textContent).toContain(
+      "A first sentence that was hard-wrapped in the source across three lines.",
+    );
+
+    const cardBody = editor.root.querySelector<HTMLElement>(".zc-qmd-visual-card.is-lem .zc-qmd-visual-card-body")!;
+    expect(cardBody.querySelector("br")).toBeNull();
+    expect(cardBody.textContent).toContain("The lemma statement is wrapped across lines.");
+  });
 });

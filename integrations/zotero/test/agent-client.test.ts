@@ -22,6 +22,22 @@ function engineLikeService(client: Partial<AgentClient>) {
     callbacks,
   );
   const internal = service as any;
+  const targetId = "b".repeat(64);
+  const snapshot = {
+    target: {
+      kind: "local" as const,
+      root: "/w",
+      canonicalRoot: "/w",
+      repositoryId: "a".repeat(64),
+      targetId,
+    },
+    targetEpoch: 1,
+  };
+  service.commitRepositoryTarget({
+    snapshot,
+    binding: { targetId, targetEpoch: 1, root: "/w" },
+    activeDocument: null,
+  });
   internal.client = client;
   internal.activePaperKey = "1-ATTACH";
   internal.activeContext = {
@@ -30,7 +46,11 @@ function engineLikeService(client: Partial<AgentClient>) {
     workspace: { root: "/w" },
     warnings: [],
   };
-  internal.threadPaperKeys.set("thread-a", "1-ATTACH");
+  internal.rememberThreadOwner("thread-a", "1-ATTACH", "foreground", {
+    targetId,
+    targetEpoch: 1,
+    root: "/w",
+  });
   service.state.connected = true;
   service.state.activeThreadId = "thread-a";
   service.state.capabilities = ENGINE_CAPABILITIES;

@@ -21,6 +21,18 @@ HELPER = Path(os.environ.get("HELPER", Path(__file__).parents[1] / "build" / "zo
 TOKEN = "native-helper-test-token-0123456789"
 
 
+class NativeBuildTests(unittest.TestCase):
+    @unittest.skipIf(sys.platform == "darwin", "macOS uses the universal helper build")
+    def test_builds_local_helper_with_cc_on_linux(self) -> None:
+        native = Path(__file__).parents[1]
+        subprocess.run(
+            ["make", "-C", str(native), "clean", "all"],
+            check=True,
+            env={**os.environ, "CC": "cc"},
+        )
+        self.assertTrue((native / "build" / "zoterochat-helper").is_file())
+
+
 def recv_exact(sock: socket.socket, length: int) -> bytes:
     data = bytearray()
     while len(data) < length:

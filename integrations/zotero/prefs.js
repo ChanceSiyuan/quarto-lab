@@ -1,5 +1,6 @@
 pref("extensions.zotkit.libraryRoot", "");
 pref("extensions.zotkit.qlabRoot", "");
+pref("extensions.zotkit.repositoryTargets", "");
 pref("extensions.zotkit.defaultModel", "");
 pref("extensions.zotkit.reasoningEffort", "medium");
 pref("extensions.zotkit.approvalPolicy", "untrusted");

@@ -22,7 +22,7 @@ describe("Zotero add-on manifest", () => {
     ) as ZoteroManifest;
     const zotero = manifest.applications?.zotero;
 
-    expect(manifest.version).toBe("0.9.0");
+    expect(manifest.version).toBe("0.10.1");
     expect(zotero?.id).toBe("qlab-zotero@quarto-lab.local");
     expect(zotero?.update_url).toBe("https://qlab.invalid/updates.json");
     expect(zotero?.strict_min_version).toBe("9.0");

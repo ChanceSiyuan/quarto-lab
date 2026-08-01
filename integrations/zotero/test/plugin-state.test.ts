@@ -3,6 +3,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
+import * as pluginModule from "../src/plugin";
 
 import {
   MAX_SELECTION_PROMPT_CHARACTERS,
@@ -15,8 +16,366 @@ import {
   pdfDirectory,
   pdfSourceMatchesConversationPaper,
   pdfSourceMatchesReaderContext,
+  prepareRepositoryTargetStartup,
 } from "../src/plugin";
 import type { ReaderContext } from "../src/reader-context";
+import type {
+  LocalRepositoryInspection,
+  RepositoryTargetSnapshot,
+  ResolvedLocalRepositoryTarget,
+  StoredTargetPreferences,
+} from "../src/repository-target";
+
+const EMPTY_TARGET_PREFERENCES: StoredTargetPreferences = {
+  version: 1,
+  active: null,
+  pendingCandidate: null,
+  legacyUnassigned: [],
+  migratedLegacy: false,
+};
+
+function startupTarget(
+  root = "/legacy",
+  overrides: Partial<ResolvedLocalRepositoryTarget> = {},
+): ResolvedLocalRepositoryTarget {
+  return {
+    kind: "local" as const,
+    root,
+    canonicalRoot: root,
+    repositoryId: "a".repeat(64),
+    targetId: "b".repeat(64),
+    ...overrides,
+  };
+}
+
+function startupPreferences(
+  active: ResolvedLocalRepositoryTarget | null,
+  migratedLegacy = true,
+): StoredTargetPreferences {
+  return {
+    ...EMPTY_TARGET_PREFERENCES,
+    active,
+    migratedLegacy,
+  };
+}
+
+function startupSettings(repositoryTargets: StoredTargetPreferences) {
+  return {
+    libraryRoot: "/library",
+    qlabRoot: "",
+    repositoryTargets,
+    defaultModel: "",
+    reasoningEffort: "medium" as const,
+    approvalPolicy: "never",
+    terminalHeight: 420,
+    showReasoning: false,
+    storageRoot: "/profile",
+  };
+}
+
+function targetStartupHarness(options: {
+  preferences?: StoredTargetPreferences;
+  rawLegacyRoot?: string;
+  inspect?: (root: string, callIndex: number) => LocalRepositoryInspection | Promise<LocalRepositoryInspection>;
+  sessionFailure?: Error | null;
+  preferenceFailure?: Error | null;
+} = {}) {
+  const calls: string[] = [];
+  let preferences: StoredTargetPreferences = options.preferences ?? EMPTY_TARGET_PREFERENCES;
+  let records = [{
+    threadId: "legacy-thread",
+    title: "Legacy",
+    workspace: "/legacy/drafts",
+    recordedCwd: "/legacy/drafts",
+    updatedAt: "2026-07-31",
+    extensionField: { keep: true },
+  }];
+  let inspectCallIndex = 0;
+  let preferenceFailure = options.preferenceFailure ?? null;
+  const inspect = vi.fn(async (root: string) => {
+    calls.push(`inspect:${root}`);
+    const callIndex = inspectCallIndex++;
+    return options.inspect
+      ? options.inspect(root, callIndex)
+      : startupTarget(root);
+  });
+  const deps = {
+    readRawTargetMigrationInput: () => {
+      calls.push("raw");
+      return {
+        legacyQLabRoot: options.rawLegacyRoot ?? "/legacy",
+        repositoryTargetsRaw: JSON.stringify(preferences),
+      };
+    },
+    readSessionRecords: async () => {
+      calls.push("sessions");
+      if (options.sessionFailure) throw options.sessionFailure;
+      return {
+        file: { version: 1 as const, papers: {} },
+        locations: records.map((_record, index) => ({ kind: "history" as const, paperKey: "paper", index })),
+        records: structuredClone(records),
+        activeThreadId: null,
+      };
+    },
+    loadSettings: async () => {
+      calls.push("settings");
+      return startupSettings(preferences);
+    },
+    createResolver: () => {
+      calls.push("resolver");
+      return {
+        inspect,
+        canonicalize: vi.fn(async (path: string) => path),
+      };
+    },
+    saveSessionRecords: async (_snapshot: unknown, next: readonly (typeof records)[number][]) => {
+      calls.push("saveSessionRecords");
+      records = structuredClone([...next]);
+    },
+    saveRepositoryTargets: (next: StoredTargetPreferences) => {
+      calls.push("saveRepositoryTargets");
+      if (preferenceFailure) throw preferenceFailure;
+      preferences = structuredClone(next);
+    },
+    publish: (snapshot: RepositoryTargetSnapshot) => {
+      calls.push("publish");
+      published.push(snapshot);
+      return undefined;
+    },
+  };
+  const published: RepositoryTargetSnapshot[] = [];
+  const factorySnapshots: Array<RepositoryTargetSnapshot | null> = [];
+  const construct = async () => {
+    const start = (pluginModule as Record<string, unknown>)
+      .startRepositoryTargetBoundServices;
+    if (typeof start !== "function") {
+      throw new Error("Production repository-target startup factory is missing");
+    }
+    return (start as Function)(deps, async () => {
+      calls.push("factory");
+      return {
+        createMainSite: (snapshot: RepositoryTargetSnapshot | null) => {
+          calls.push("mainSite");
+          factorySnapshots.push(snapshot);
+          return { kind: "mainSite" };
+        },
+        createTerminal: (snapshot: RepositoryTargetSnapshot | null) => {
+          calls.push("terminal");
+          factorySnapshots.push(snapshot);
+          return { kind: "terminal" };
+        },
+        createCodex: (snapshot: RepositoryTargetSnapshot | null) => {
+          calls.push("codex");
+          factorySnapshots.push(snapshot);
+          return { kind: "codex", snapshot };
+        },
+      };
+    });
+  };
+  return {
+    calls,
+    deps,
+    inspect,
+    published,
+    factorySnapshots,
+    construct,
+    records: () => structuredClone(records),
+    preferences: () => structuredClone(preferences),
+    clearCalls: () => { calls.length = 0; },
+    setPreferenceFailure: (error: Error | null) => { preferenceFailure = error; },
+  };
+}
+
+describe("repository target startup", () => {
+  it("freshly resolves a migrated target before publishing it", async () => {
+    const h = targetStartupHarness();
+
+    const prepared = await prepareRepositoryTargetStartup(h.deps);
+
+    expect(h.calls).toEqual([
+      "raw",
+      "sessions",
+      "settings",
+      "resolver",
+      "inspect:/legacy",
+      "saveSessionRecords",
+      "saveRepositoryTargets",
+      "inspect:/legacy",
+      "publish",
+    ]);
+    expect(prepared.activeSnapshot).toEqual({ target: startupTarget(), targetEpoch: 1 });
+    expect(prepared.settings.repositoryTargets.migratedLegacy).toBe(true);
+    expect(h.records()[0]).toMatchObject({
+      threadId: "legacy-thread",
+      targetId: "b".repeat(64),
+      extensionField: { keep: true },
+    });
+
+    h.clearCalls();
+    const persisted = { preferences: h.preferences(), records: h.records() };
+    await prepareRepositoryTargetStartup(h.deps);
+    expect(h.calls).toEqual([
+      "raw", "sessions", "settings", "resolver", "inspect:/legacy", "publish",
+    ]);
+    expect(h.inspect).toHaveBeenCalledTimes(3);
+    expect({ preferences: h.preferences(), records: h.records() }).toEqual(persisted);
+  });
+
+  it("retries a failed preference save with byte-stable migrated record fields", async () => {
+    const diskFull = new Error("disk full");
+    const h = targetStartupHarness({ preferenceFailure: diskFull });
+
+    await expect(prepareRepositoryTargetStartup(h.deps)).rejects.toBe(diskFull);
+    expect(h.calls).toEqual([
+      "raw", "sessions", "settings", "resolver", "inspect:/legacy",
+      "saveSessionRecords", "saveRepositoryTargets",
+    ]);
+    expect(h.preferences().migratedLegacy).toBe(false);
+    const firstSavedRecords = h.records();
+    expect(firstSavedRecords[0]).toMatchObject({
+      targetId: "b".repeat(64),
+      extensionField: { keep: true },
+    });
+
+    h.clearCalls();
+    h.setPreferenceFailure(null);
+    await prepareRepositoryTargetStartup(h.deps);
+    expect(h.calls).toEqual([
+      "raw", "sessions", "settings", "resolver", "inspect:/legacy", "saveSessionRecords",
+      "saveRepositoryTargets", "inspect:/legacy", "publish",
+    ]);
+    expect(h.records()).toEqual(firstSavedRecords);
+    expect(h.preferences().migratedLegacy).toBe(true);
+  });
+
+  it("uses a raw missing root even though display-safe settings contain no qlab root", async () => {
+    const h = targetStartupHarness({
+      inspect: () => ({ kind: "unavailable", reason: "missing" }),
+    });
+
+    const prepared = await prepareRepositoryTargetStartup(h.deps);
+
+    expect(h.inspect).toHaveBeenCalledWith("/legacy");
+    expect(prepared.settings.qlabRoot).toBe("");
+    expect(prepared.settings.repositoryTargets).toMatchObject({
+      active: null,
+      pendingCandidate: null,
+      legacyUnassigned: [{ threadId: "legacy-thread", reason: "missing" }],
+      migratedLegacy: true,
+    });
+    expect(h.calls.at(-1)).toBe("saveRepositoryTargets");
+    expect(h.calls).not.toContain("publish");
+  });
+
+  it("freshly resolves an already-migrated active target before publishing", async () => {
+    const active = startupTarget();
+    const h = targetStartupHarness({ preferences: startupPreferences(active) });
+
+    const started = await h.construct();
+
+    expect(h.calls).toEqual([
+      "raw", "sessions", "settings", "resolver", "inspect:/legacy", "publish",
+      "factory", "mainSite", "terminal", "codex",
+    ]);
+    expect(started.prepared.activeSnapshot).toEqual({ target: active, targetEpoch: 1 });
+    expect(started.codex.snapshot).toBe(h.published[0]);
+    expect(h.published).toEqual([{ target: active, targetEpoch: 1 }]);
+  });
+
+  it("keeps targetless startup targetless without consulting a resolver", async () => {
+    const h = targetStartupHarness({
+      preferences: startupPreferences(null),
+      rawLegacyRoot: "",
+    });
+
+    const prepared = await prepareRepositoryTargetStartup(h.deps);
+
+    expect(prepared.activeSnapshot).toBeNull();
+    expect(h.calls).toEqual(["raw", "sessions", "settings"]);
+    expect(h.inspect).not.toHaveBeenCalled();
+    expect(h.published).toEqual([]);
+  });
+
+  it.each([
+    ["non-local inspection", { kind: "candidate", canonicalRoot: "/legacy", state: "partial" }],
+    ["unavailable inspection", { kind: "unavailable", reason: "missing" }],
+    ["root mismatch", startupTarget("/legacy", { root: "/different-spelling" })],
+    ["canonical-root mismatch", startupTarget("/legacy", { canonicalRoot: "/replacement" })],
+    ["repository identity mismatch", startupTarget("/legacy", { repositoryId: "c".repeat(64) })],
+    ["target identity mismatch", startupTarget("/legacy", { targetId: "d".repeat(64) })],
+  ] as const)("rejects a stored active target on %s before publication", async (_name, inspection) => {
+    const h = targetStartupHarness({
+      preferences: startupPreferences(startupTarget()),
+      inspect: () => inspection as LocalRepositoryInspection,
+    });
+
+    await expect(prepareRepositoryTargetStartup(h.deps))
+      .rejects.toThrow("Stored active repository no longer matches its persisted identity");
+    expect(h.published).toEqual([]);
+  });
+
+  it("rejects a repository replacement at the same path before constructing target services", async () => {
+    const replacement = startupTarget("/legacy", {
+      repositoryId: "c".repeat(64),
+      targetId: "d".repeat(64),
+    });
+    const h = targetStartupHarness({
+      preferences: startupPreferences(startupTarget()),
+      inspect: () => replacement,
+    });
+
+    await expect(h.construct())
+      .rejects.toThrow("Stored active repository no longer matches its persisted identity");
+    expect(h.calls).not.toContain("publish");
+    expect(h.calls).not.toContain("factory");
+    expect(h.calls).not.toContain("codex");
+  });
+
+  it("uses the production gate for ordered target-service construction and exact Codex binding", async () => {
+    const h = targetStartupHarness();
+
+    const started = await h.construct();
+
+    const snapshot = { target: startupTarget(), targetEpoch: 1 };
+    expect(h.calls).toEqual([
+      "raw", "sessions", "settings", "resolver", "inspect:/legacy", "saveSessionRecords",
+      "saveRepositoryTargets", "inspect:/legacy", "publish", "factory", "mainSite", "terminal", "codex",
+    ]);
+    expect(h.factorySnapshots).toEqual([snapshot, snapshot, snapshot]);
+    expect(started.codex).toEqual({ kind: "codex", snapshot });
+    expect(h.factorySnapshots.every((value) => value === h.published[0])).toBe(true);
+    expect(started.codex.snapshot).toBe(h.published[0]);
+  });
+
+  it("constructs target-bound services with null only after a targetless startup is prepared", async () => {
+    const h = targetStartupHarness({
+      preferences: startupPreferences(null),
+      rawLegacyRoot: "",
+    });
+
+    await h.construct();
+
+    expect(h.calls).toEqual([
+      "raw", "sessions", "settings", "factory", "mainSite", "terminal", "codex",
+    ]);
+    expect(h.factorySnapshots).toEqual([null, null, null]);
+  });
+
+  it.each([
+    ["malformed sessions", { sessionFailure: new Error("malformed sessions") }],
+    ["failed preference save", { preferenceFailure: new Error("disk full") }],
+  ] as Array<[string, { sessionFailure?: Error; preferenceFailure?: Error }]>)
+  ("does not construct services after %s", async (_name, options) => {
+    const h = targetStartupHarness(options);
+
+    await expect(h.construct()).rejects.toThrow(options.sessionFailure?.message ?? options.preferenceFailure?.message);
+    expect(h.calls).not.toContain("publish");
+    expect(h.calls).not.toContain("factory");
+    expect(h.calls).not.toContain("mainSite");
+    expect(h.calls).not.toContain("terminal");
+    expect(h.calls).not.toContain("codex");
+  });
+});
 
 describe("Zotkit Reader terminal state", () => {
   it("matches only PDF links that identify the conversation paper", () => {
@@ -835,21 +1194,6 @@ describe("Zotkit Reader terminal state", () => {
     (globalThis as any).Zotero = previousZotero;
   });
 
-  it("treats only an expanded, connected custom section as active", () => {
-    const plugin = new ZoteroChatPlugin() as any;
-    const collapsed = document.createElement("collapsible-section");
-    const body = document.createElement("div");
-    collapsed.appendChild(body);
-    document.body.appendChild(collapsed);
-    plugin.views = new Set([body]);
-
-    expect(plugin.hasOpenSidebar()).toBe(false);
-    collapsed.setAttribute("open", "");
-    expect(plugin.hasOpenSidebar()).toBe(true);
-    collapsed.remove();
-    expect(plugin.hasOpenSidebar()).toBe(false);
-  });
-
   it("coalesces concurrent first expansion into one lazy terminal startup", async () => {
     let release!: () => void;
     const startup = new Promise<void>((resolve) => { release = resolve; });
@@ -1345,5 +1689,1480 @@ describe("clampFloatSize", () => {
     expect(clampFloatSize(620, 480)).toEqual({ width: 620, height: 480 });
     expect(clampFloatSize(50, 5000)).toEqual({ width: 380, height: 2000 });
     expect(clampFloatSize(10_000, 10)).toEqual({ width: 760, height: 220 });
+  });
+});
+
+describe("Region screenshots (Design 3)", () => {
+  const paperContext = () => ({
+    attachment: { key: "ATTACH", libraryID: 1, title: "Paper", creators: [] },
+    parent: { title: "Paper", creators: [], tags: [] },
+    page: { pageNumber: 5, pageLabel: "5" },
+  });
+
+  it("offers Screenshot Region in the Add-Context menu only while a reader is active", () => {
+    const plugin = new ZoteroChatPlugin() as any;
+
+    const withoutReader = plugin.contextSuggestions()
+      .find((item: { id: string }) => item.id === "capture-region");
+    expect(withoutReader).toMatchObject({
+      label: "Screenshot Region",
+      kind: "selection",
+      disabled: true,
+    });
+
+    plugin.context = paperContext();
+    const withReader = plugin.contextSuggestions()
+      .find((item: { id: string }) => item.id === "capture-region");
+    expect(withReader?.disabled).toBe(false);
+
+    plugin.pendingScreenshots = Array.from({ length: 10 }, (_, index) => ({
+      image: `data:image/png;base64,${index}`,
+      kind: "page" as const,
+    }));
+    expect(plugin.contextSuggestions()
+      .find((item: { id: string }) => item.id === "capture-region")?.disabled).toBe(true);
+  });
+
+  it("starts the region flow from the Add-Context menu entry", async () => {
+    const plugin = new ZoteroChatPlugin() as any;
+    const target = { reader: { id: "reader-b" }, pageIndex: 8, context: paperContext() };
+    plugin.readerContext = { getActiveCaptureTarget: vi.fn(async () => target) };
+    plugin.startRegionScreenshot = vi.fn(async () => {});
+    plugin.updateInteractionContext = vi.fn();
+    plugin.renderChatViews = vi.fn();
+
+    plugin.addInteractionContext({ id: "capture-region", kind: "selection", label: "Screenshot Region" });
+
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(plugin.readerContext.getActiveCaptureTarget).toHaveBeenCalledOnce();
+    expect(plugin.startRegionScreenshot).toHaveBeenCalledWith(target);
+    expect(plugin.updateInteractionContext).not.toHaveBeenCalled();
+  });
+
+  it("labels pending page and region screenshots independently", () => {
+    const plugin = new ZoteroChatPlugin() as any;
+    plugin.context = paperContext();
+    plugin.pendingScreenshots = [
+      { image: "data:image/png;base64,a", kind: "page" },
+      { image: "data:image/png;base64,b", kind: "region" },
+      { image: "data:image/png;base64,c", kind: "page" },
+    ];
+
+    const labels = plugin.contextChips().map((chip: { label: string }) => chip.label);
+
+    expect(labels).toContain("PDF Screenshot 1");
+    expect(labels).toContain("Region Screenshot 1");
+    expect(labels).toContain("PDF Screenshot 2");
+    expect(plugin.contextChips().map((chip: { id: string }) => chip.id))
+      .toEqual(expect.arrayContaining(["screenshot:0", "screenshot:1", "screenshot:2"]));
+  });
+
+  it("sends pending screenshots as bare data URIs and clears them after the send", async () => {
+    const plugin = new ZoteroChatPlugin() as any;
+    const send = vi.fn(async () => {});
+    plugin.codex = {
+      state: { connected: true, activeThreadId: null },
+      isSignedIn: () => true,
+      send,
+      getActiveReaderContext: () => null,
+    };
+    plugin.pendingScreenshots = [
+      { image: "data:image/png;base64,a", kind: "page" },
+      {
+        image: "data:image/png;base64,b",
+        kind: "region",
+        source: {
+          paperKey: "1-READER-B",
+          paperTitle: "Paper B",
+          pageIndex: 8,
+          pageNumber: 9,
+          pageLabel: "9",
+        },
+      },
+    ];
+
+    await plugin.sendChat("what is in this figure?");
+
+    expect(send).toHaveBeenCalledWith(
+      "what is in this figure?",
+      "",
+      "medium",
+      ["data:image/png;base64,a", "data:image/png;base64,b"],
+      {},
+    );
+    expect(plugin.pendingScreenshots).toEqual([]);
+  });
+
+  it("applies an accepted capture target without switching the selected conversation", async () => {
+    const previousZotero = (globalThis as any).Zotero;
+    (globalThis as any).Zotero = {
+      getMainWindows: () => [],
+      getMainWindow: () => null,
+    };
+    const context = paperContext();
+    const target = { reader: { id: "reader-b" }, pageIndex: 8, context };
+    const plugin = new ZoteroChatPlugin() as any;
+    plugin.contextRequestSequence = 40;
+    plugin.readerContext = { captureTargetFromHook: vi.fn(async () => target) };
+    plugin.codex = {
+      state: { connected: true, activeThreadId: "thread-a" },
+      isSignedIn: () => true,
+      setPaper: vi.fn(async () => {}),
+    };
+    plugin.updateInteractionContext = vi.fn();
+    plugin.renderChatViews = vi.fn();
+    const applyContext = vi.spyOn(plugin, "applyContext");
+
+    try {
+      await expect(plugin.acceptReaderCaptureTarget({
+        reader: target.reader,
+        item: { id: 17 },
+        params: {},
+      })).resolves.toBe(target);
+
+      expect(applyContext).toHaveBeenCalledWith(context, 41);
+      expect(plugin.codex.setPaper).toHaveBeenCalledWith(context);
+      expect(plugin.codex.state.activeThreadId).toBe("thread-a");
+    }
+    finally {
+      (globalThis as any).Zotero = previousZotero;
+    }
+  });
+
+  it("injects a Reader-bound region-capture button beside the workbench button", async () => {
+    const previousZotero = (globalThis as any).Zotero;
+    const listeners = new Map<string, (event: any) => void>();
+    (globalThis as any).Zotero = {
+      Reader: {
+        registerEventListener: vi.fn((type: string, handler: (event: any) => void) => {
+          listeners.set(type, handler);
+        }),
+      },
+    };
+    try {
+      const plugin = new ZoteroChatPlugin() as any;
+      const target = {
+        reader: { id: "reader-b" },
+        pageIndex: 8,
+        context: paperContext(),
+      };
+      plugin.installShortcutHandler = vi.fn();
+      plugin.acceptReaderCaptureTarget = vi.fn(async () => target);
+      plugin.startRegionScreenshot = vi.fn(async () => {});
+      plugin.registerReaderHooks();
+
+      const appended: HTMLElement[] = [];
+      listeners.get("renderToolbar")!({
+        doc: document,
+        append: (element: HTMLElement) => appended.push(element),
+        reader: { id: "reader-1" },
+      });
+
+      expect(appended).toHaveLength(2);
+      const regionButton = appended[1] as HTMLButtonElement;
+      expect(regionButton.title).toBe("Capture Region Screenshot (QLab)");
+      expect(regionButton.getAttribute("aria-label")).toBe("Capture Region Screenshot (QLab)");
+      expect(regionButton.querySelector("img")?.alt).toBe("");
+      expect(regionButton.textContent).not.toBe("⬚");
+      regionButton.click();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      expect(plugin.acceptReaderCaptureTarget).toHaveBeenCalledOnce();
+      expect(plugin.startRegionScreenshot).toHaveBeenCalledWith(target);
+    }
+    finally {
+      (globalThis as any).Zotero = previousZotero;
+    }
+  });
+
+  it("keeps only one region-selection overlay", async () => {
+    const plugin = new ZoteroChatPlugin() as any;
+    const pageElement = document.createElement("div");
+    document.body.appendChild(pageElement);
+    const target = { reader: { id: "reader-b" }, pageIndex: 8, context: paperContext() };
+    plugin.readerContext = {
+      getCaptureTargetPageViewElement: vi.fn(async () => pageElement),
+    };
+
+    await plugin.startRegionScreenshot(target);
+    const first = pageElement.querySelector<HTMLElement>(".zc-region-overlay")!;
+    await plugin.startRegionScreenshot(target);
+    const second = pageElement.querySelector<HTMLElement>(".zc-region-overlay")!;
+
+    expect(first.isConnected).toBe(false);
+    expect(second).not.toBe(first);
+    expect(pageElement.querySelectorAll(".zc-region-overlay")).toHaveLength(1);
+    pageElement.remove();
+  });
+
+  it("removes the active overlay before another capture waits for its page", async () => {
+    const plugin = new ZoteroChatPlugin() as any;
+    const pageElement = document.createElement("div");
+    document.body.appendChild(pageElement);
+    const target = { reader: { id: "reader-b" }, pageIndex: 8, context: paperContext() };
+    let resolvePage!: (page: HTMLElement) => void;
+    const delayedPage = new Promise<HTMLElement>((resolve) => { resolvePage = resolve; });
+    plugin.readerContext = {
+      getCaptureTargetPageViewElement: vi.fn()
+        .mockResolvedValueOnce(pageElement)
+        .mockReturnValueOnce(delayedPage),
+    };
+
+    await plugin.startRegionScreenshot(target);
+    const first = pageElement.querySelector<HTMLElement>(".zc-region-overlay")!;
+    const secondStart = plugin.startRegionScreenshot(target);
+    await Promise.resolve();
+
+    expect(first.isConnected).toBe(false);
+    resolvePage(pageElement);
+    await secondStart;
+    pageElement.remove();
+  });
+
+  it("keeps only the newest overlay when pending page lookups resolve out of order", async () => {
+    const plugin = new ZoteroChatPlugin() as any;
+    const olderPage = document.createElement("div");
+    const newerPage = document.createElement("div");
+    document.body.append(olderPage, newerPage);
+    const target = { reader: { id: "reader-b" }, pageIndex: 8, context: paperContext() };
+    let resolveOlder!: (page: HTMLElement) => void;
+    let resolveNewer!: (page: HTMLElement) => void;
+    const olderLookup = new Promise<HTMLElement>((resolve) => { resolveOlder = resolve; });
+    const newerLookup = new Promise<HTMLElement>((resolve) => { resolveNewer = resolve; });
+    plugin.readerContext = {
+      getCaptureTargetPageViewElement: vi.fn()
+        .mockReturnValueOnce(olderLookup)
+        .mockReturnValueOnce(newerLookup),
+    };
+
+    try {
+      const olderStart = plugin.startRegionScreenshot(target);
+      const newerStart = plugin.startRegionScreenshot(target);
+      resolveNewer(newerPage);
+      await newerStart;
+      resolveOlder(olderPage);
+      await olderStart;
+
+      expect(olderPage.querySelector(".zc-region-overlay")).toBeNull();
+      const newest = newerPage.querySelector<HTMLElement>(".zc-region-overlay")!;
+      expect(newest).not.toBeNull();
+      expect(document.querySelectorAll(".zc-region-overlay")).toHaveLength(1);
+
+      plugin.regionCaptureDispose?.();
+      expect(newest.isConnected).toBe(false);
+    }
+    finally {
+      olderPage.remove();
+      newerPage.remove();
+    }
+  });
+
+  it("ignores a stale page-lookup rejection after a newer capture takes ownership", async () => {
+    const plugin = new ZoteroChatPlugin() as any;
+    const newerPage = document.createElement("div");
+    document.body.appendChild(newerPage);
+    const target = { reader: { id: "reader-b" }, pageIndex: 8, context: paperContext() };
+    let rejectOlder!: (error: Error) => void;
+    let resolveNewer!: (page: HTMLElement) => void;
+    const olderLookup = new Promise<HTMLElement>((_resolve, reject) => { rejectOlder = reject; });
+    const newerLookup = new Promise<HTMLElement>((resolve) => { resolveNewer = resolve; });
+    plugin.readerContext = {
+      getCaptureTargetPageViewElement: vi.fn()
+        .mockReturnValueOnce(olderLookup)
+        .mockReturnValueOnce(newerLookup),
+    };
+
+    try {
+      const olderStart = plugin.startRegionScreenshot(target);
+      const newerStart = plugin.startRegionScreenshot(target);
+      resolveNewer(newerPage);
+      await newerStart;
+      rejectOlder(new Error("stale Reader lookup failed"));
+
+      await expect(olderStart).resolves.toBeUndefined();
+      expect(newerPage.querySelectorAll(".zc-region-overlay")).toHaveLength(1);
+    }
+    finally {
+      plugin.regionCaptureDispose?.();
+      newerPage.remove();
+    }
+  });
+
+  it("does not install an overlay when shutdown wins a pending page lookup", async () => {
+    const previousZotero = (globalThis as any).Zotero;
+    (globalThis as any).Zotero = {
+      debug: vi.fn(),
+      getMainWindows: () => [],
+    };
+    const plugin = new ZoteroChatPlugin() as any;
+    const pageElement = document.createElement("div");
+    document.body.appendChild(pageElement);
+    const target = { reader: { id: "reader-b" }, pageIndex: 8, context: paperContext() };
+    let resolvePage!: (page: HTMLElement) => void;
+    const pendingPage = new Promise<HTMLElement>((resolve) => { resolvePage = resolve; });
+    plugin.readerContext = {
+      getCaptureTargetPageViewElement: vi.fn(() => pendingPage),
+    };
+
+    try {
+      const start = plugin.startRegionScreenshot(target);
+      await plugin.shutdown();
+      resolvePage(pageElement);
+      await start;
+
+      expect(pageElement.querySelector(".zc-region-overlay")).toBeNull();
+      expect(plugin.regionCaptureDispose).toBeNull();
+    }
+    finally {
+      pageElement.remove();
+      (globalThis as any).Zotero = previousZotero;
+    }
+  });
+
+  it.each([
+    ["resolves", "resolve"],
+    ["rejects", "reject"],
+  ] as const)("keeps shutdown terminal when a pending region image render %s", async (_label, outcome) => {
+    const previousZotero = (globalThis as any).Zotero;
+    (globalThis as any).Zotero = {
+      debug: vi.fn(),
+      getMainWindows: () => [],
+      logError: vi.fn(),
+    };
+    const plugin = new ZoteroChatPlugin() as any;
+    const pageElement = document.createElement("div");
+    document.body.appendChild(pageElement);
+    pageElement.getBoundingClientRect = () => ({
+      left: 0, top: 0, width: 400, height: 600,
+      right: 400, bottom: 600, x: 0, y: 0,
+      toJSON: () => ({}),
+    }) as DOMRect;
+    const target = { reader: { id: "reader-b" }, pageIndex: 8, context: paperContext() };
+    let resolveImage!: (image: string) => void;
+    let rejectImage!: (error: Error) => void;
+    const pendingImage = new Promise<string>((resolve, reject) => {
+      resolveImage = resolve;
+      rejectImage = reject;
+    });
+    plugin.readerContext = {
+      getCaptureTargetPageViewElement: vi.fn(async () => pageElement),
+      captureTargetRegionImage: vi.fn(() => pendingImage),
+    };
+    const focusComposer = vi.fn();
+    plugin.visibleChatSurface = vi.fn(() => ({ kind: "workbench", focusComposer }));
+    plugin.openResearchChat = vi.fn(async () => {});
+    plugin.renderChatViews = vi.fn();
+    plugin.chatError = "existing message";
+
+    try {
+      await plugin.startRegionScreenshot(target);
+      const overlay = pageElement.querySelector<HTMLElement>(".zc-region-overlay")!;
+      overlay.dispatchEvent(new MouseEvent("mousedown", {
+        button: 0,
+        clientX: 40,
+        clientY: 60,
+        bubbles: true,
+      }));
+      document.dispatchEvent(new MouseEvent("mouseup", {
+        clientX: 140,
+        clientY: 160,
+        bubbles: true,
+      }));
+      expect(plugin.readerContext.captureTargetRegionImage).toHaveBeenCalledOnce();
+
+      await plugin.shutdown();
+      if (outcome === "resolve") resolveImage("data:image/png;base64,late-region");
+      else rejectImage(new Error("late region render failed"));
+      await new Promise((resolve) => setTimeout(resolve, 0));
+
+      expect(plugin.pendingScreenshots).toEqual([]);
+      expect(plugin.openResearchChat).not.toHaveBeenCalled();
+      expect(plugin.renderChatViews).not.toHaveBeenCalled();
+      expect(plugin.visibleChatSurface).not.toHaveBeenCalled();
+      expect(focusComposer).not.toHaveBeenCalled();
+      expect(plugin.chatError).toBe("existing message");
+      expect((globalThis as any).Zotero.logError).not.toHaveBeenCalled();
+    }
+    finally {
+      pageElement.remove();
+      (globalThis as any).Zotero = previousZotero;
+    }
+  });
+
+  it("retains Reader capture provenance on the completed region chip", async () => {
+    const previousZotero = (globalThis as any).Zotero;
+    const plugin = new ZoteroChatPlugin() as any;
+    const pageElement = document.createElement("div");
+    document.body.appendChild(pageElement);
+    pageElement.getBoundingClientRect = () => ({
+      left: 0, top: 0, width: 400, height: 600,
+      right: 400, bottom: 600, x: 0, y: 0,
+      toJSON: () => ({}),
+    }) as DOMRect;
+    const target = {
+      reader: { id: "reader-b" },
+      pageIndex: 8,
+      context: {
+        attachment: { key: "READER-B", libraryID: 1, title: "Paper B", creators: [] },
+        parent: { title: "Paper B", creators: [], tags: [] },
+        page: { pageIndex: 8, pageNumber: 9, pageLabel: "9" },
+      },
+    };
+    plugin.context = {
+      attachment: { key: "PLUGIN", libraryID: 2, title: "Plugin Paper", creators: [] },
+      parent: { title: "Plugin Paper", creators: [], tags: [] },
+      page: { pageIndex: 2, pageNumber: 3, pageLabel: "iii" },
+    };
+    plugin.codex = {
+      state: { activeThreadId: null },
+      getActiveReaderContext: () => ({
+        attachment: { key: "CODEX", libraryID: 3, title: "Codex Paper", creators: [] },
+        parent: { title: "Codex Paper", creators: [], tags: [] },
+        page: { pageIndex: 20, pageNumber: 21, pageLabel: "A-21" },
+      }),
+    };
+    plugin.readerContext = {
+      getCaptureTargetPageViewElement: vi.fn(async () => pageElement),
+      captureTargetRegionImage: vi.fn(async () => "data:image/png;base64,region"),
+    };
+    const workbenchHost = document.createElement("div");
+    document.body.appendChild(workbenchHost);
+    const main = {
+      closed: false,
+      document,
+      Zotero_Tabs: { selectedID: "reader-b", selectedType: "reader" },
+    } as unknown as Window & { Zotero_Tabs: any };
+    (globalThis as any).Zotero = { getMainWindow: () => main, logError: vi.fn() };
+    plugin.workbenchTabs = {
+      entries: vi.fn(() => [{ id: "workbench-1", host: workbenchHost, view: { focusComposer: vi.fn() } }]),
+    };
+    plugin.openResearchChat = vi.fn(async () => { main.Zotero_Tabs.selectedID = "workbench-1"; });
+    plugin.renderChatViews = vi.fn();
+
+    try {
+      await plugin.startRegionScreenshot(target);
+      const overlay = pageElement.querySelector<HTMLElement>(".zc-region-overlay")!;
+      expect(overlay).not.toBeNull();
+      overlay.dispatchEvent(new MouseEvent("mousedown", { button: 0, clientX: 40, clientY: 60, bubbles: true }));
+      document.dispatchEvent(new MouseEvent("mouseup", { clientX: 140, clientY: 160, bubbles: true }));
+      await new Promise((resolve) => setTimeout(resolve, 0));
+
+      expect(plugin.readerContext.captureTargetRegionImage).toHaveBeenCalledWith(
+        target,
+        { rect: { x: 40, y: 60, width: 100, height: 100 }, view: { width: 400, height: 600 } },
+      );
+      expect(plugin.pendingScreenshots).toEqual([
+        {
+          image: "data:image/png;base64,region",
+          kind: "region",
+          source: {
+            paperKey: "1-READER-B",
+            paperTitle: "Paper B",
+            pageIndex: 8,
+            pageNumber: 9,
+            pageLabel: "9",
+          },
+        },
+      ]);
+      expect(plugin.contextChips()).toEqual(expect.arrayContaining([
+        expect.objectContaining({
+          label: "Region · Paper B · p. 9",
+          detail: "Captured from Paper B, PDF page 9",
+        }),
+      ]));
+      expect(plugin.openResearchChat).toHaveBeenCalledWith(undefined, false);
+    }
+    finally {
+      workbenchHost.remove();
+      pageElement.remove();
+      (globalThis as any).Zotero = previousZotero;
+    }
+  });
+
+  it("opens the running-turn float when only a retained Workbench exists", () => {
+    const previousZotero = (globalThis as any).Zotero;
+    const mainDocument = document.implementation.createHTMLDocument("QLab running turn");
+    const main = {
+      closed: false,
+      document: mainDocument,
+      Zotero_Tabs: { selectedID: "reader-1", selectedType: "reader" },
+    } as unknown as Window & { Zotero_Tabs: any };
+    (globalThis as any).Zotero = { getMainWindow: () => main };
+    const plugin = new ZoteroChatPlugin() as any;
+    const retainedHost = mainDocument.createElement("div");
+    mainDocument.body.appendChild(retainedHost);
+    plugin.codex = { state: { running: true } };
+    plugin.workbenchTabs = { entries: vi.fn(() => [{ id: "workbench-1", host: retainedHost, view: {} }]) };
+    plugin.standaloneWorkbench = { isActive: vi.fn(() => false) };
+    plugin.currentTurnId = "turn-1";
+    plugin.ensureFloatPanelOpen = vi.fn(async () => {});
+
+    try {
+      plugin.maybeAutoOpenFloatForRunningTurn();
+      expect(plugin.ensureFloatPanelOpen).toHaveBeenCalledOnce();
+    }
+    finally {
+      (globalThis as any).Zotero = previousZotero;
+    }
+  });
+
+  it("opens the running-turn float for hidden standalone and non-visible sidebar hosts", () => {
+    const previousZotero = (globalThis as any).Zotero;
+    const mainDocument = document.implementation.createHTMLDocument("QLab running visibility");
+    const main = {
+      closed: false,
+      document: mainDocument,
+      Zotero_Tabs: { selectedID: "reader-1", selectedType: "reader" },
+    } as unknown as Window & { Zotero_Tabs: any };
+    (globalThis as any).Zotero = { getMainWindow: () => main };
+    const plugin = new ZoteroChatPlugin() as any;
+    const standaloneDocument = document.implementation.createHTMLDocument("QLab hidden standalone");
+    Object.defineProperty(standaloneDocument, "hidden", { configurable: true, value: true });
+    const standaloneHost = standaloneDocument.createElement("div");
+    standaloneHost.id = "qlab-standalone-workbench-host";
+    standaloneDocument.body.appendChild(standaloneHost);
+    const standalone = {
+      closed: false,
+      document: standaloneDocument,
+      windowState: 0,
+      STATE_MINIMIZED: 1,
+    } as unknown as Window & { windowState: number; STATE_MINIMIZED: number };
+    plugin.codex = { state: { running: true } };
+    plugin.workbenchTabs = { entries: vi.fn(() => []) };
+    plugin.standaloneWorkbench = {
+      isActive: vi.fn(() => true),
+      window: vi.fn(() => standalone),
+      currentView: vi.fn(() => ({ focusComposer: vi.fn() })),
+    };
+    plugin.currentTurnId = "turn-1";
+    plugin.ensureFloatPanelOpen = vi.fn(async () => {});
+    const attempt = () => {
+      plugin.autoOpenedFloatTurnId = null;
+      plugin.floatDismissedTurnId = null;
+      plugin.ensureFloatPanelOpen.mockClear();
+      plugin.maybeAutoOpenFloatForRunningTurn();
+      expect(plugin.ensureFloatPanelOpen).toHaveBeenCalledOnce();
+    };
+
+    try {
+      attempt();
+
+      Object.defineProperty(standaloneDocument, "hidden", { configurable: true, value: false });
+      standalone.windowState = standalone.STATE_MINIMIZED;
+      attempt();
+
+      plugin.standaloneWorkbench.isActive.mockReturnValue(false);
+      const details = mainDocument.createElement("item-details");
+      details.setAttribute("data-tab-id", "reader-1");
+      const section = mainDocument.createElement("collapsible-section");
+      const body = mainDocument.createElement("div");
+      section.appendChild(body);
+      details.appendChild(section);
+      mainDocument.body.appendChild(details);
+      plugin.chatViews.set(body, { focusComposer: vi.fn() });
+      attempt();
+
+      section.setAttribute("open", "");
+      main.Zotero_Tabs.selectedID = "reader-2";
+      attempt();
+    }
+    finally {
+      (globalThis as any).Zotero = previousZotero;
+    }
+  });
+
+  it("keeps cancelled region selections out of crop and chat reveal paths", async () => {
+    const plugin = new ZoteroChatPlugin() as any;
+    const pageElement = document.createElement("div");
+    document.body.appendChild(pageElement);
+    pageElement.getBoundingClientRect = () => ({
+      left: 0, top: 0, width: 400, height: 600,
+      right: 400, bottom: 600, x: 0, y: 0,
+      toJSON: () => ({}),
+    }) as DOMRect;
+    const target = {
+      reader: { id: "reader-b" }, pageIndex: 8,
+      context: {
+        attachment: { key: "ATTACH", libraryID: 1, title: "Paper", creators: [] },
+        parent: { title: "Paper", creators: [], tags: [] },
+        page: { pageIndex: 8, pageNumber: 9, pageLabel: "9" },
+      },
+    };
+    plugin.readerContext = {
+      getCaptureTargetPageViewElement: vi.fn(async () => pageElement),
+      captureTargetRegionImage: vi.fn(),
+    };
+    plugin.openResearchChat = vi.fn();
+    plugin.renderChatViews = vi.fn();
+    plugin.reportChatError = vi.fn();
+
+    try {
+      await plugin.startRegionScreenshot(target);
+      let overlay = pageElement.querySelector<HTMLElement>(".zc-region-overlay")!;
+      document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+
+      await plugin.startRegionScreenshot(target);
+      overlay = pageElement.querySelector<HTMLElement>(".zc-region-overlay")!;
+      overlay.dispatchEvent(new MouseEvent("mousedown", { button: 0, clientX: 40, clientY: 60, bubbles: true }));
+      document.dispatchEvent(new MouseEvent("mouseup", { clientX: 44, clientY: 64, bubbles: true }));
+
+      expect(plugin.readerContext.captureTargetRegionImage).not.toHaveBeenCalled();
+      expect(plugin.openResearchChat).not.toHaveBeenCalled();
+      expect(plugin.renderChatViews).not.toHaveBeenCalled();
+      expect(plugin.reportChatError).not.toHaveBeenCalled();
+    }
+    finally {
+      plugin.regionCaptureDispose?.();
+      pageElement.remove();
+    }
+  });
+
+  it("replaces a disconnected float when a running turn needs a visible surface", async () => {
+    const previousZotero = (globalThis as any).Zotero;
+    const mainDocument = document.implementation.createHTMLDocument("QLab stale float");
+    const main = {
+      closed: false,
+      document: mainDocument,
+      Zotero_Tabs: { selectedID: "reader-1", selectedType: "reader" },
+    } as unknown as Window & { Zotero_Tabs: any };
+    (globalThis as any).Zotero = { getMainWindow: () => main };
+    const plugin = new ZoteroChatPlugin() as any;
+    plugin.codex = { state: { running: true } };
+    plugin.workbenchTabs = { entries: vi.fn(() => []) };
+    plugin.standaloneWorkbench = { isActive: vi.fn(() => false) };
+    plugin.currentTurnId = "turn-1";
+    const staleHost = mainDocument.createElement("div");
+    const destroy = vi.fn();
+    plugin.floatPanels.set(main, {
+      host: staleHost,
+      view: { destroy, isVisible: vi.fn(() => true) },
+      focusReturn: null,
+    });
+    const replacementHost = mainDocument.createElement("div");
+    mainDocument.body.appendChild(replacementHost);
+    plugin.openFloatPanel = vi.fn(async () => {
+      plugin.floatPanels.set(main, {
+        host: replacementHost,
+        view: { isVisible: vi.fn(() => true) },
+        focusReturn: null,
+      });
+    });
+
+    try {
+      plugin.maybeAutoOpenFloatForRunningTurn();
+      await vi.waitFor(() => expect(plugin.openFloatPanel).toHaveBeenCalledWith(main));
+      expect(destroy).toHaveBeenCalledOnce();
+      expect(plugin.floatPanels.get(main).host).toBe(replacementHost);
+    }
+    finally {
+      (globalThis as any).Zotero = previousZotero;
+    }
+  });
+
+  it("refreshes page context only while a chat surface is visible", async () => {
+    const previousZotero = (globalThis as any).Zotero;
+    const mainDocument = document.implementation.createHTMLDocument("QLab page observer");
+    const main = {
+      closed: false,
+      document: mainDocument,
+      Zotero_Tabs: { selectedID: "reader-1", selectedType: "reader" },
+    } as unknown as Window & { Zotero_Tabs: any };
+    let observer: any;
+    (globalThis as any).Zotero = {
+      getMainWindow: () => main,
+      Notifier: {
+        registerObserver: vi.fn((next: any) => { observer = next; return "observer-1"; }),
+      },
+    };
+    const plugin = new ZoteroChatPlugin() as any;
+    const retainedHost = mainDocument.createElement("div");
+    mainDocument.body.appendChild(retainedHost);
+    plugin.workbenchTabs = {
+      entries: vi.fn(() => [{ id: "workbench-1", host: retainedHost, view: { focusComposer: vi.fn() } }]),
+    };
+    plugin.standaloneWorkbench = { isActive: vi.fn(() => false) };
+    plugin.terminal = { isOpen: false };
+    plugin.refreshContext = vi.fn(async () => {});
+
+    vi.useFakeTimers();
+    try {
+      plugin.registerPageObserver();
+      observer.notify("pageChange", "file", [1]);
+      await vi.advanceTimersByTimeAsync(800);
+      expect(plugin.refreshContext).not.toHaveBeenCalled();
+
+      main.Zotero_Tabs.selectedID = "workbench-1";
+      main.Zotero_Tabs.selectedType = "qlab";
+      observer.notify("pageChange", "file", [1]);
+      await vi.advanceTimersByTimeAsync(800);
+      expect(plugin.refreshContext).toHaveBeenCalledWith(true);
+    }
+    finally {
+      vi.useRealTimers();
+      (globalThis as any).Zotero = previousZotero;
+    }
+  });
+});
+
+describe("visible chat surfaces", () => {
+  it("does not reveal a Workbench when shutdown wins a pending capture refresh", async () => {
+    const previousZotero = (globalThis as any).Zotero;
+    const mainDocument = document.implementation.createHTMLDocument("QLab reveal race");
+    const main = {
+      closed: false,
+      document: mainDocument,
+      Zotero_Tabs: { selectedID: "reader-1", selectedType: "reader" },
+    } as unknown as Window & { Zotero_Tabs: any };
+    (globalThis as any).Zotero = {
+      debug: vi.fn(),
+      getMainWindow: () => main,
+      getMainWindows: () => [main],
+      Session: { debounceSave: vi.fn() },
+    };
+    const plugin = new ZoteroChatPlugin() as any;
+    let releaseRefresh!: () => void;
+    const refreshPending = new Promise<void>((resolve) => { releaseRefresh = resolve; });
+    const focusComposer = vi.fn();
+    plugin.readerContext = {
+      captureTargetRegionImage: vi.fn(async () => "data:image/png;base64,region"),
+    };
+    plugin.refreshContext = vi.fn(() => refreshPending);
+    plugin.workbenchTabs = {
+      entries: vi.fn(() => []),
+      open: vi.fn(() => ({
+        id: "workbench-1",
+        host: mainDocument.createElement("div"),
+        view: { focusComposer },
+      })),
+      uninstall: vi.fn(),
+    };
+    plugin.terminal = { setVisible: vi.fn(), destroy: vi.fn() };
+    plugin.codex = { state: { connected: true }, stop: vi.fn() };
+    plugin.bridge = { stop: vi.fn(async () => {}) };
+    plugin.renderChatViews = vi.fn();
+    plugin.reportError = vi.fn();
+    plugin.reportChatError = vi.fn();
+    const target = {
+      reader: { id: "reader-1" }, pageIndex: 8,
+      context: {
+        attachment: { key: "ATTACH", libraryID: 1, title: "Paper", creators: [] },
+        parent: { title: "Paper", creators: [], tags: [] },
+        page: { pageIndex: 8, pageNumber: 9, pageLabel: "9" },
+      },
+    };
+
+    try {
+      const finishing = plugin.finishRegionScreenshot(
+        { rect: { x: 40, y: 60, width: 100, height: 100 }, view: { width: 400, height: 600 } },
+        target,
+      );
+      await vi.waitFor(() => expect(plugin.refreshContext).toHaveBeenCalledOnce());
+
+      await plugin.shutdown();
+      releaseRefresh();
+      await expect(finishing).resolves.toBeUndefined();
+
+      expect(plugin.workbenchTabs.open).not.toHaveBeenCalled();
+      expect(plugin.renderChatViews).not.toHaveBeenCalled();
+      expect(focusComposer).not.toHaveBeenCalled();
+      expect(plugin.reportChatError).not.toHaveBeenCalled();
+      expect(plugin.reportError).not.toHaveBeenCalled();
+    }
+    finally {
+      (globalThis as any).Zotero = previousZotero;
+    }
+  });
+
+  it("does not report a reveal rejection after shutdown wins region capture", async () => {
+    const previousZotero = (globalThis as any).Zotero;
+    const mainDocument = document.implementation.createHTMLDocument("QLab rejected reveal race");
+    const main = {
+      closed: false,
+      document: mainDocument,
+      Zotero_Tabs: { selectedID: "reader-1", selectedType: "reader" },
+    } as unknown as Window & { Zotero_Tabs: any };
+    (globalThis as any).Zotero = {
+      debug: vi.fn(),
+      logError: vi.fn(),
+      getMainWindow: () => main,
+      getMainWindows: () => [main],
+      Session: { debounceSave: vi.fn() },
+    };
+    const plugin = new ZoteroChatPlugin() as any;
+    const pageElement = mainDocument.createElement("div");
+    mainDocument.body.appendChild(pageElement);
+    pageElement.getBoundingClientRect = () => ({
+      left: 0, top: 0, width: 400, height: 600,
+      right: 400, bottom: 600, x: 0, y: 0,
+      toJSON: () => ({}),
+    }) as DOMRect;
+    let rejectRefresh!: (error: Error) => void;
+    const refreshPending = new Promise<void>((_resolve, reject) => { rejectRefresh = reject; });
+    const focusComposer = vi.fn();
+    plugin.readerContext = {
+      getCaptureTargetPageViewElement: vi.fn(async () => pageElement),
+      captureTargetRegionImage: vi.fn(async () => "data:image/png;base64,region"),
+    };
+    plugin.refreshContext = vi.fn(() => refreshPending);
+    plugin.workbenchTabs = {
+      entries: vi.fn(() => []),
+      open: vi.fn(() => ({
+        id: "workbench-1",
+        host: mainDocument.createElement("div"),
+        view: { focusComposer },
+      })),
+      uninstall: vi.fn(),
+    };
+    plugin.terminal = { setVisible: vi.fn(), destroy: vi.fn() };
+    plugin.codex = { state: { connected: true }, stop: vi.fn() };
+    plugin.bridge = { stop: vi.fn(async () => {}) };
+    plugin.renderChatViews = vi.fn();
+    plugin.chatError = "existing message";
+    const reportError = vi.spyOn(plugin, "reportError");
+    const target = {
+      reader: { id: "reader-1" }, pageIndex: 8,
+      context: {
+        attachment: { key: "ATTACH", libraryID: 1, title: "Paper", creators: [] },
+        parent: { title: "Paper", creators: [], tags: [] },
+        page: { pageIndex: 8, pageNumber: 9, pageLabel: "9" },
+      },
+    };
+
+    try {
+      await plugin.startRegionScreenshot(target);
+      const overlay = pageElement.querySelector<HTMLElement>(".zc-region-overlay")!;
+      overlay.dispatchEvent(new MouseEvent("mousedown", {
+        button: 0,
+        clientX: 40,
+        clientY: 60,
+        bubbles: true,
+      }));
+      mainDocument.dispatchEvent(new MouseEvent("mouseup", {
+        clientX: 140,
+        clientY: 160,
+        bubbles: true,
+      }));
+      await vi.waitFor(() => expect(plugin.refreshContext).toHaveBeenCalledOnce());
+
+      await plugin.shutdown();
+      rejectRefresh(new Error("Reader refresh failed after shutdown"));
+      await new Promise((resolve) => setTimeout(resolve, 0));
+
+      expect(reportError).not.toHaveBeenCalled();
+      expect(plugin.workbenchTabs.open).not.toHaveBeenCalled();
+      expect(plugin.renderChatViews).not.toHaveBeenCalled();
+      expect(focusComposer).not.toHaveBeenCalled();
+      expect(plugin.chatError).toBe("");
+      expect((globalThis as any).Zotero.logError).not.toHaveBeenCalled();
+    }
+    finally {
+      pageElement.remove();
+      (globalThis as any).Zotero = previousZotero;
+    }
+  });
+
+  it("preserves a reveal rejection while the plugin is still live", async () => {
+    const previousZotero = (globalThis as any).Zotero;
+    const mainDocument = document.implementation.createHTMLDocument("QLab live reveal failure");
+    const main = {
+      closed: false,
+      document: mainDocument,
+      Zotero_Tabs: { selectedID: "reader-1", selectedType: "reader" },
+    } as unknown as Window & { Zotero_Tabs: any };
+    (globalThis as any).Zotero = { getMainWindow: () => main };
+    const plugin = new ZoteroChatPlugin() as any;
+    const original = new Error("live Workbench reveal failed");
+    plugin.workbenchTabs = { entries: vi.fn(() => []) };
+    plugin.standaloneWorkbench = { isActive: vi.fn(() => false) };
+    plugin.openResearchChat = vi.fn(async () => { throw original; });
+
+    try {
+      await expect(plugin.ensureCaptureChatSurface()).rejects.toBe(original);
+    }
+    finally {
+      (globalThis as any).Zotero = previousZotero;
+    }
+  });
+
+  it("classifies only visible chat surfaces", () => {
+    const previousZotero = (globalThis as any).Zotero;
+    const documentFor = () => document.implementation.createHTMLDocument("QLab surface");
+    const mainDocument = documentFor();
+    const main = {
+      closed: false,
+      document: mainDocument,
+      Zotero_Tabs: {
+        selectedID: "workbench-1",
+        selectedType: "qlab",
+        parseTabType: vi.fn((type: string) => ({ tabContentType: type })),
+      },
+    } as unknown as Window & { Zotero_Tabs: any };
+    (globalThis as any).Zotero = { getMainWindow: () => main };
+    const plugin = new ZoteroChatPlugin() as any;
+    const workbenchHost = mainDocument.createElement("div");
+    mainDocument.body.appendChild(workbenchHost);
+    const workbenchFocus = vi.fn();
+    const standaloneDocument = documentFor();
+    Object.defineProperty(standaloneDocument, "hidden", { configurable: true, value: false });
+    const standaloneHost = standaloneDocument.createElement("div");
+    standaloneHost.id = "qlab-standalone-workbench-host";
+    standaloneDocument.body.appendChild(standaloneHost);
+    const standalone = {
+      closed: false,
+      document: standaloneDocument,
+      windowState: 0,
+      STATE_MINIMIZED: 1,
+    } as unknown as Window & { windowState: number; STATE_MINIMIZED: number };
+    const standaloneFocus = vi.fn();
+    const standaloneView = { focusComposer: standaloneFocus };
+    const floatHost = mainDocument.createElement("div");
+    mainDocument.body.appendChild(floatHost);
+    const floatFocus = vi.fn();
+    const floatVisible = vi.fn(() => true);
+    const sidebarDetails = mainDocument.createElement("item-details");
+    sidebarDetails.setAttribute("data-tab-id", "reader-1");
+    const sidebarSection = mainDocument.createElement("collapsible-section");
+    sidebarSection.setAttribute("open", "");
+    const sidebarBody = mainDocument.createElement("div");
+    sidebarSection.appendChild(sidebarBody);
+    sidebarDetails.appendChild(sidebarSection);
+    mainDocument.body.appendChild(sidebarDetails);
+    const sidebarFocus = vi.fn();
+
+    plugin.workbenchTabs = {
+      entries: vi.fn(() => [{ id: "workbench-1", host: workbenchHost, view: { focusComposer: workbenchFocus } }]),
+    };
+    plugin.standaloneWorkbench = {
+      isActive: vi.fn(() => true),
+      window: vi.fn(() => standalone),
+      currentView: vi.fn(() => standaloneView),
+    };
+    plugin.floatPanels.set(main, {
+      host: floatHost,
+      view: { isVisible: floatVisible, focusComposer: floatFocus },
+      focusReturn: null,
+    });
+    plugin.chatViews.set(sidebarBody, { focusComposer: sidebarFocus });
+
+    try {
+      expect(plugin.visibleChatSurface()).toMatchObject({ kind: "workbench" });
+
+      workbenchHost.remove();
+      expect(plugin.visibleChatSurface()).toMatchObject({ kind: "standalone" });
+
+      main.Zotero_Tabs.selectedID = "reader-1";
+      main.Zotero_Tabs.selectedType = "reader";
+      expect(plugin.visibleChatSurface()).toMatchObject({ kind: "standalone" });
+
+      delete (standalone as any).windowState;
+      delete (standalone as any).STATE_MINIMIZED;
+      expect(plugin.visibleChatSurface()).toMatchObject({ kind: "standalone" });
+      standalone.windowState = 0;
+      standalone.STATE_MINIMIZED = 1;
+
+      (standalone as any).closed = true;
+      expect(plugin.visibleChatSurface()).toMatchObject({ kind: "float" });
+      (standalone as any).closed = false;
+      standaloneHost.remove();
+      expect(plugin.visibleChatSurface()).toMatchObject({ kind: "float" });
+      standaloneDocument.body.appendChild(standaloneHost);
+      plugin.standaloneWorkbench.currentView.mockReturnValue(null);
+      expect(plugin.visibleChatSurface()).toMatchObject({ kind: "float" });
+      plugin.standaloneWorkbench.currentView.mockReturnValue(standaloneView);
+
+      Object.defineProperty(standaloneDocument, "hidden", { configurable: true, value: true });
+      expect(plugin.visibleChatSurface()).toMatchObject({ kind: "float" });
+      Object.defineProperty(standaloneDocument, "hidden", { configurable: true, value: false });
+      standalone.windowState = standalone.STATE_MINIMIZED;
+      expect(plugin.visibleChatSurface()).toMatchObject({ kind: "float" });
+
+      standalone.windowState = 0;
+      Object.defineProperty(standaloneDocument, "hidden", { configurable: true, value: true });
+      floatVisible.mockReturnValue(false);
+      expect(plugin.visibleChatSurface()).toBeNull();
+      floatVisible.mockReturnValue(true);
+      floatHost.remove();
+      expect(plugin.visibleChatSurface()).toBeNull();
+
+      plugin.standaloneWorkbench.isActive.mockReturnValue(false);
+      expect(plugin.visibleChatSurface()).toMatchObject({ kind: "reader-sidebar" });
+      plugin.chatViews.delete(sidebarBody);
+      expect(plugin.visibleChatSurface()).toBeNull();
+      plugin.chatViews.set(sidebarBody, { focusComposer: sidebarFocus });
+      sidebarDetails.remove();
+      expect(plugin.visibleChatSurface()).toBeNull();
+      mainDocument.body.appendChild(sidebarDetails);
+      main.Zotero_Tabs.selectedType = "library";
+      expect(plugin.visibleChatSurface()).toBeNull();
+      main.Zotero_Tabs.selectedType = "reader";
+      sidebarSection.removeAttribute("open");
+      expect(plugin.visibleChatSurface()).toBeNull();
+      sidebarSection.setAttribute("open", "");
+      main.Zotero_Tabs.selectedID = "reader-2";
+      expect(plugin.visibleChatSurface()).toBeNull();
+      main.Zotero_Tabs.selectedID = "reader-1";
+      plugin.standaloneWorkbench.isActive.mockReturnValue(true);
+      expect(plugin.visibleChatSurface()).toBeNull();
+    }
+    finally {
+      (globalThis as any).Zotero = previousZotero;
+    }
+  });
+
+  it("reveals a retained Workbench before focusing a completed region capture", async () => {
+    const previousZotero = (globalThis as any).Zotero;
+    const mainDocument = document.implementation.createHTMLDocument("QLab capture");
+    const main = {
+      closed: false,
+      document: mainDocument,
+      Zotero_Tabs: { selectedID: "reader-1", selectedType: "reader" },
+    } as unknown as Window & { Zotero_Tabs: any };
+    (globalThis as any).Zotero = { getMainWindow: () => main };
+    const plugin = new ZoteroChatPlugin() as any;
+    const host = mainDocument.createElement("div");
+    mainDocument.body.appendChild(host);
+    const focusComposer = vi.fn();
+    plugin.workbenchTabs = {
+      entries: vi.fn(() => [{ id: "workbench-1", host, view: { focusComposer } }]),
+    };
+    plugin.readerContext = { captureTargetRegionImage: vi.fn(async () => "data:image/png;base64,region") };
+    plugin.renderChatViews = vi.fn();
+    plugin.openResearchChat = vi.fn(async () => {
+      expect(focusComposer).not.toHaveBeenCalled();
+      main.Zotero_Tabs.selectedID = "workbench-1";
+      main.Zotero_Tabs.selectedType = "qlab";
+    });
+    const target = {
+      reader: { id: "reader-b" }, pageIndex: 8,
+      context: {
+        attachment: { key: "ATTACH", libraryID: 1, title: "Paper", creators: [] },
+        parent: { title: "Paper", creators: [], tags: [] },
+        page: { pageIndex: 8, pageNumber: 9, pageLabel: "9" },
+      },
+    };
+
+    try {
+      await plugin.finishRegionScreenshot(
+        { rect: { x: 40, y: 60, width: 100, height: 100 }, view: { width: 400, height: 600 } },
+        target,
+      );
+
+      expect(plugin.openResearchChat).toHaveBeenCalledWith(undefined, false);
+      expect(plugin.workbenchTabs.entries).toHaveBeenCalledWith(main);
+      expect(plugin.pendingScreenshots).toEqual([expect.objectContaining({
+        image: "data:image/png;base64,region",
+        kind: "region",
+      })]);
+      expect(plugin.renderChatViews).toHaveBeenCalledOnce();
+      expect(focusComposer).toHaveBeenCalledOnce();
+    }
+    finally {
+      (globalThis as any).Zotero = previousZotero;
+    }
+  });
+
+  it("renders before focusing an already-visible float after region capture", async () => {
+    const previousZotero = (globalThis as any).Zotero;
+    const mainDocument = document.implementation.createHTMLDocument("QLab float capture");
+    const main = {
+      closed: false,
+      document: mainDocument,
+      Zotero_Tabs: { selectedID: "reader-1", selectedType: "reader" },
+    } as unknown as Window & { Zotero_Tabs: any };
+    (globalThis as any).Zotero = { getMainWindow: () => main };
+    const plugin = new ZoteroChatPlugin() as any;
+    const floatHost = mainDocument.createElement("div");
+    mainDocument.body.appendChild(floatHost);
+    const focusComposer = vi.fn();
+    plugin.workbenchTabs = { entries: vi.fn(() => []) };
+    plugin.standaloneWorkbench = { isActive: vi.fn(() => false) };
+    plugin.floatPanels.set(main, {
+      host: floatHost,
+      view: { isVisible: vi.fn(() => true), focusComposer },
+      focusReturn: null,
+    });
+    plugin.readerContext = {
+      captureTargetRegionImage: vi.fn(async () => "data:image/png;base64,float-region"),
+    };
+    plugin.openResearchChat = vi.fn();
+    plugin.renderChatViews = vi.fn();
+    const target = {
+      reader: { id: "reader-1" }, pageIndex: 8,
+      context: {
+        attachment: { key: "ATTACH", libraryID: 1, title: "Paper", creators: [] },
+        parent: { title: "Paper", creators: [], tags: [] },
+        page: { pageIndex: 8, pageNumber: 9, pageLabel: "9" },
+      },
+    };
+
+    try {
+      await plugin.finishRegionScreenshot(
+        { rect: { x: 40, y: 60, width: 100, height: 100 }, view: { width: 400, height: 600 } },
+        target,
+      );
+
+      expect(plugin.openResearchChat).not.toHaveBeenCalled();
+      expect(plugin.renderChatViews).toHaveBeenCalledOnce();
+      expect(focusComposer).toHaveBeenCalledOnce();
+      expect(plugin.renderChatViews.mock.invocationCallOrder[0]!)
+        .toBeLessThan(focusComposer.mock.invocationCallOrder[0]!);
+    }
+    finally {
+      (globalThis as any).Zotero = previousZotero;
+    }
+  });
+
+  it.each([
+    ["rejection", () => Promise.reject(new Error("original crop failure"))],
+    ["null image", () => Promise.resolve(null)],
+  ])("reports a region %s inside chat after reveal", async (_label, capture) => {
+    const previousZotero = (globalThis as any).Zotero;
+    const mainDocument = document.implementation.createHTMLDocument("QLab capture error");
+    const main = {
+      closed: false,
+      document: mainDocument,
+      Zotero_Tabs: { selectedID: "reader-1", selectedType: "reader" },
+    } as unknown as Window & { Zotero_Tabs: any };
+    (globalThis as any).Zotero = { getMainWindow: () => main, logError: vi.fn() };
+    const plugin = new ZoteroChatPlugin() as any;
+    const host = mainDocument.createElement("div");
+    mainDocument.body.appendChild(host);
+    const focusComposer = vi.fn();
+    plugin.workbenchTabs = { entries: vi.fn(() => [{ id: "workbench-1", host, view: { focusComposer } }]) };
+    plugin.readerContext = { captureTargetRegionImage: vi.fn(capture) };
+    plugin.renderChatViews = vi.fn();
+    plugin.paneMode = "terminal";
+    plugin.openResearchChat = vi.fn(async () => { main.Zotero_Tabs.selectedID = "workbench-1"; });
+    const target = {
+      reader: { id: "reader-b" }, pageIndex: 8,
+      context: {
+        attachment: { key: "ATTACH", libraryID: 1, title: "Paper", creators: [] },
+        parent: { title: "Paper", creators: [], tags: [] },
+        page: { pageIndex: 8, pageNumber: 9, pageLabel: "9" },
+      },
+    };
+
+    try {
+      await plugin.finishRegionScreenshot(
+        { rect: { x: 40, y: 60, width: 100, height: 100 }, view: { width: 400, height: 600 } },
+        target,
+      );
+
+      expect(plugin.pendingScreenshots).toEqual([]);
+      expect(plugin.openResearchChat).toHaveBeenCalledOnce();
+      expect(plugin.chatError).toBe(_label === "rejection"
+        ? "original crop failure"
+        : "Zotero could not render the selected PDF region as an image");
+      expect(plugin.renderChatViews).toHaveBeenCalledOnce();
+      expect(focusComposer).toHaveBeenCalledOnce();
+      expect(plugin.renderChatViews.mock.invocationCallOrder[0]!)
+        .toBeLessThan(focusComposer.mock.invocationCallOrder[0]!);
+    }
+    finally {
+      (globalThis as any).Zotero = previousZotero;
+    }
+  });
+});
+
+describe("QLab paper conversation reopening", () => {
+  it("seeds a paper context by opening its PDF in a background Reader tab", async () => {
+    const originalZotero = (globalThis as any).Zotero;
+    const context = { attachment: { key: "ATTACH", libraryID: 1 }, workspace: { root: "/w" } };
+    const attachment = { id: 7, key: "ATTACH", libraryID: 1, isPDFAttachment: () => true };
+    const open = vi.fn(async () => ({ itemID: 7 }));
+    const win = {
+      setTimeout: (fn: () => void) => setTimeout(fn, 0),
+      Zotero_Tabs: { selectedID: "zotero-pane" },
+    } as unknown as Window & { Zotero_Tabs: { selectedID: string } };
+    (globalThis as any).Zotero = {
+      Items: { getByLibraryAndKeyAsync: vi.fn(async () => attachment) },
+      Reader: { open },
+      getMainWindow: () => win,
+    };
+    const plugin = new ZoteroChatPlugin() as any;
+    plugin.readerContext = { acceptReaderHook: vi.fn(async () => context) };
+
+    try {
+      await expect(plugin.seedPaperContextForKey("1-ATTACH")).resolves.toBe(context);
+      expect((globalThis as any).Zotero.Items.getByLibraryAndKeyAsync).toHaveBeenCalledWith(1, "ATTACH");
+      expect(open).toHaveBeenCalledWith(7, null, expect.objectContaining({
+        allowDuplicate: false,
+        openInBackground: true,
+        preventJumpback: true,
+      }));
+      expect(win.Zotero_Tabs.selectedID).toBe("zotero-pane");
+      expect(plugin.readerContext.acceptReaderHook).toHaveBeenCalledWith({
+        reader: { itemID: 7 },
+        item: attachment,
+        params: {},
+      });
+    }
+    finally {
+      (globalThis as any).Zotero = originalZotero;
+    }
+  });
+
+  it("rejects seeding for an item with no readable PDF attachment", async () => {
+    const originalZotero = (globalThis as any).Zotero;
+    const item = {
+      isPDFAttachment: () => false,
+      isRegularItem: () => true,
+      getBestAttachment: async () => null,
+    };
+    (globalThis as any).Zotero = {
+      Items: { getByLibraryAndKeyAsync: vi.fn(async () => item) },
+      Reader: { open: vi.fn() },
+      getMainWindow: () => ({}) as Window,
+    };
+    const plugin = new ZoteroChatPlugin() as any;
+
+    try {
+      await expect(plugin.seedPaperContextForKey("1-NOPDF"))
+        .rejects.toThrow("This Zotero item has no readable PDF attachment");
+      expect((globalThis as any).Zotero.Reader.open).not.toHaveBeenCalled();
+    }
+    finally {
+      (globalThis as any).Zotero = originalZotero;
+    }
+  });
+
+  it("supplies the background seeding hook to the codex service at startup", () => {
+    const plugin = readFileSync(join(process.cwd(), "src/plugin.ts"), "utf8");
+    const startup = plugin.slice(
+      plugin.indexOf("async startup("),
+      plugin.indexOf("async shutdown("),
+    );
+    expect(startup).toContain("seedPaperContext: (paperKey) => this.seedPaperContextForKey(paperKey)");
+  });
+
+  it("injects Open QLab Chat for This Paper into the library item context menu", () => {
+    const plugin = new ZoteroChatPlugin() as any;
+    const doc = document.implementation.createHTMLDocument("Main");
+    (doc as any).createXULElement = (name: string) => doc.createElement(name);
+    const toolsPopup = doc.createElement("menupopup");
+    toolsPopup.id = "menu_ToolsPopup";
+    const itemPopup = doc.createElement("menupopup");
+    itemPopup.id = "zotero-itemmenu";
+    doc.body.append(toolsPopup, itemPopup);
+    const item = { id: 6, isPDFAttachment: () => false, isRegularItem: () => true };
+    const win = {
+      document: doc,
+      ZoteroPane: { getSelectedItems: () => [item] },
+    } as unknown as Window;
+    plugin.openConversationForItem = vi.fn(async () => {});
+
+    plugin.installQLabMenu(win);
+
+    const menuItem = doc.getElementById("qlab-zotero-open-paper-chat");
+    expect(menuItem).not.toBeNull();
+    expect(menuItem?.getAttribute("label")).toBe("Open QLab Chat for This Paper");
+    menuItem?.dispatchEvent(new Event("command"));
+    expect(plugin.openConversationForItem).toHaveBeenCalledWith(win, item);
+
+    plugin.removeQLabMenu(win);
+    expect(doc.getElementById("qlab-zotero-open-paper-chat")).toBeNull();
+  });
+
+  it("shows a no-PDF library-menu error without changing the foreground conversation", async () => {
+    const originalZotero = (globalThis as any).Zotero;
+    const originalServices = (globalThis as any).Services;
+    const plugin = new ZoteroChatPlugin() as any;
+    const doc = document.implementation.createHTMLDocument("Main");
+    (doc as any).createXULElement = (name: string) => doc.createElement(name);
+    const toolsPopup = doc.createElement("menupopup");
+    toolsPopup.id = "menu_ToolsPopup";
+    const itemPopup = doc.createElement("menupopup");
+    itemPopup.id = "zotero-itemmenu";
+    doc.body.append(toolsPopup, itemPopup);
+    const item = {
+      isPDFAttachment: () => false,
+      isRegularItem: () => true,
+      getBestAttachment: vi.fn(async () => null),
+    };
+    const win = {
+      document: doc,
+      ZoteroPane: { getSelectedItems: () => [item] },
+      Zotero_Tabs: { selectedID: "zotero-pane" },
+    } as unknown as Window & { Zotero_Tabs: { selectedID: string } };
+    const originalContext = {
+      attachment: { key: "CURRENT", libraryID: 1, title: "Current PDF", creators: [] },
+      parent: { title: "Current Paper", creators: [], tags: [] },
+      page: { pageIndex: 0, pageNumber: 1, pageLabel: "1" },
+    };
+    plugin.context = originalContext;
+    plugin.codex = {
+      state: { activeThreadId: "thread-current" },
+      openConversationForPaper: vi.fn(async () => {}),
+    };
+    plugin.openWorkbenchTab = vi.fn(async () => {});
+    plugin.renderChatViews = vi.fn();
+    const alert = vi.fn();
+    (globalThis as any).Zotero = { logError: vi.fn() };
+    (globalThis as any).Services = { prompt: { alert } };
+
+    try {
+      plugin.installQLabMenu(win);
+      doc.getElementById("qlab-zotero-open-paper-chat")!
+        .dispatchEvent(new Event("command"));
+
+      await vi.waitFor(() => {
+        expect(plugin.chatError).toBe("This Zotero item has no readable PDF attachment");
+      });
+
+      expect(plugin.renderChatViews).toHaveBeenCalled();
+      expect(alert).toHaveBeenCalledWith(
+        win,
+        "QLab Chat",
+        "This Zotero item has no readable PDF attachment",
+      );
+      expect(plugin.openWorkbenchTab).not.toHaveBeenCalled();
+      expect(plugin.codex.openConversationForPaper).not.toHaveBeenCalled();
+      expect(plugin.codex.state.activeThreadId).toBe("thread-current");
+      expect(plugin.context).toBe(originalContext);
+      expect(win.Zotero_Tabs.selectedID).toBe("zotero-pane");
+    }
+    finally {
+      plugin.removeQLabMenu(win);
+      (globalThis as any).Zotero = originalZotero;
+      (globalThis as any).Services = originalServices;
+    }
+  });
+
+  it("shows no-PDF failures from local tabs, local History, and global History in the mounted chat", async () => {
+    const originalZotero = (globalThis as any).Zotero;
+    const entries = ["local tab", "local History", "global History"] as const;
+
+    try {
+      for (const entry of entries) {
+        const doc = document.implementation.createHTMLDocument(entry);
+        const host = doc.createElement("div");
+        doc.body.appendChild(host);
+        const win = {
+          document: doc,
+          Zotero_Tabs: { selectedID: "reader-current", selectedType: "reader" },
+        } as unknown as Window & { Zotero_Tabs: { selectedID: string; selectedType: string } };
+        (globalThis as any).Zotero = { getMainWindow: () => win, logError: vi.fn() };
+
+        const plugin = new ZoteroChatPlugin() as any;
+        const originalContext = {
+          attachment: { key: "CURRENT", libraryID: 1, title: "Current PDF", creators: [] },
+          parent: { title: "Current Paper", creators: [], tags: [] },
+          page: { pageIndex: 0, pageNumber: 1, pageLabel: "1" },
+        };
+        const failure = new Error("This Zotero item has no readable PDF attachment");
+        const switchThread = vi.fn(async () => { throw failure; });
+        const openGlobalThread = vi.fn(async () => { throw failure; });
+        plugin.context = originalContext;
+        plugin.chatPhase = "ready";
+        plugin.terminal = { unmount: vi.fn() };
+        plugin.codex = {
+          state: {
+            activeThreadId: "thread-current",
+            activeTurnId: null,
+            switchingThreadId: null,
+            connected: true,
+            running: false,
+            creatingThread: false,
+            fallbackReason: null,
+            models: [],
+            capabilities: { supportsAgentMode: true, supportsLogin: true },
+            mode: "agent",
+          },
+          accountLabel: () => "Test account",
+          isSignedIn: () => true,
+          getActiveReaderContext: () => originalContext,
+          getActivePlan: () => null,
+          getActiveDiffs: () => [],
+          getPendingApprovals: () => [],
+          getCheckpoints: () => [],
+          getChatEntries: () => [],
+          getGlobalHistoryState: () => ({ loading: false, hasMore: false, error: "", query: "" }),
+          getGlobalHistory: () => [{
+            id: "thread-target",
+            title: "Target paper",
+            updatedAt: "2026-07-30T00:00:00.000Z",
+            source: "codex",
+            sourceLabel: "Codex CLI",
+            pinned: false,
+          }],
+          getThreadOptions: () => [
+            {
+              id: "thread-current",
+              title: "Current paper",
+              paperTitle: "Current paper",
+              updatedAt: "2026-07-31T00:00:00.000Z",
+              active: true,
+            },
+            {
+              id: "thread-target",
+              title: "Target paper",
+              paperTitle: "Target paper",
+              updatedAt: "2026-07-30T00:00:00.000Z",
+              active: false,
+            },
+          ],
+          switchThread,
+          openGlobalThread,
+        };
+
+        const view = entry === "global History"
+          ? plugin.createWorkbenchView(host, win, "workbench")
+          : plugin.mountChat(host);
+        if (entry === "global History") {
+          plugin.chatViews.set(host, view);
+          plugin.renderChatViews();
+          host.querySelector<HTMLButtonElement>(".zc-history-open")!.click();
+        }
+        else if (entry === "local History") {
+          host.querySelector<HTMLButtonElement>('button[title="Conversation History"]')!.click();
+          const target = [...host.querySelectorAll<HTMLButtonElement>(".zc-history-menu-item > button")]
+            .find((button) => button.textContent?.includes("Target paper"));
+          target!.click();
+        }
+        else {
+          host.querySelector<HTMLButtonElement>('[data-thread-id="thread-target"]')!.click();
+        }
+
+        await vi.waitFor(() => {
+          expect(host.querySelector(".zc-status-area.is-error")?.textContent, entry)
+            .toBe(failure.message);
+        });
+
+        expect(entry === "global History" ? openGlobalThread : switchThread, entry)
+          .toHaveBeenCalledWith("thread-target");
+        expect(plugin.codex.state.activeThreadId, entry).toBe("thread-current");
+        expect(plugin.context, entry).toBe(originalContext);
+        expect(win.Zotero_Tabs.selectedID, entry).toBe("reader-current");
+        view.destroy();
+        plugin.chatViews.delete(host);
+        host.remove();
+      }
+    }
+    finally {
+      (globalThis as any).Zotero = originalZotero;
+    }
+  });
+
+  it("opens the stored conversation for a right-clicked library item through the codex service", async () => {
+    const plugin = new ZoteroChatPlugin() as any;
+    const attachment = { id: 7, key: "ATTACH", libraryID: 1, isPDFAttachment: () => true };
+    const item = {
+      isPDFAttachment: () => false,
+      isRegularItem: () => true,
+      getBestAttachment: async () => attachment,
+    };
+    const openConversationForPaper = vi.fn(async () => {});
+    plugin.codex = { openConversationForPaper };
+    plugin.openWorkbenchTab = vi.fn(async () => {});
+    plugin.updateInteractionContext = vi.fn();
+    plugin.renderChatViews = vi.fn();
+    plugin.selectedWorkbenchEntry = vi.fn(() => null);
+    const win = {} as Window;
+
+    await plugin.openConversationForItem(win, item);
+
+    expect(plugin.openWorkbenchTab).toHaveBeenCalledWith(win);
+    expect(openConversationForPaper).toHaveBeenCalledWith("1-ATTACH");
+    expect(plugin.renderChatViews).toHaveBeenCalled();
   });
 });

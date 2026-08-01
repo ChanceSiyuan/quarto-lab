@@ -140,6 +140,53 @@ describe("SidebarView", () => {
     expect(handlers.onResearchAction).toHaveBeenCalledWith("analyze-figure");
   });
 
+  it("keeps chip buttons alive across re-renders with unchanged Actions and rebuilds on change", () => {
+    const body = document.createElement("div");
+    document.body.appendChild(body);
+    const handlers = { ...callbacks(), onResearchAction: vi.fn() };
+    const view = new SidebarView(body, handlers);
+    const freshActions = () => [
+      { id: "summarize", label: "Summarize", description: "Summarize the selected object with traceable evidence.", icon: "≡" },
+      { id: "evidence-qa", label: "Evidence QA", description: "Answer a question and audit each material claim against the source.", icon: "✓" },
+    ];
+    view.setState({
+      phase: "ready",
+      researchObject: { kind: "pdf", label: "A Test Paper" },
+      researchActions: freshActions(),
+    });
+    const before = [...body.querySelectorAll<HTMLButtonElement>(".zc-research-action")];
+    expect(before).toHaveLength(2);
+
+    // Streaming turns call setState with fresh-but-equal state objects; the
+    // strip must keep the same button nodes so an in-flight click (mousedown
+    // before the re-render, mouseup after) still lands on a live element.
+    view.setState({
+      running: true,
+      researchObject: { kind: "pdf", label: "A Test Paper" },
+      researchActions: freshActions(),
+    });
+    const after = [...body.querySelectorAll<HTMLButtonElement>(".zc-research-action")];
+    expect(after[0]).toBe(before[0]);
+    expect(after[1]).toBe(before[1]);
+    after[1]!.click();
+    expect(handlers.onResearchAction).toHaveBeenCalledWith("evidence-qa");
+
+    // A genuinely different action set rebuilds the chips.
+    view.setState({
+      researchActions: [
+        { id: "summarize", label: "Summarize", description: "Summarize the selected object with traceable evidence.", icon: "≡" },
+      ],
+    });
+    const changed = [...body.querySelectorAll<HTMLButtonElement>(".zc-research-action")];
+    expect(changed).toHaveLength(1);
+    expect(changed[0]).not.toBe(before[0]);
+
+    // Clearing the research object still hides the strip (the derived
+    // hidden state participates in the comparison, so this must not skip).
+    view.setState({ researchObject: null, researchActions: [] });
+    expect(body.querySelector<HTMLElement>(".zc-action-strip")!.hidden).toBe(true);
+  });
+
   it("forwards assistant PDF citations to Zotero page navigation", () => {
     const body = document.createElement("div");
     document.body.appendChild(body);
@@ -261,6 +308,26 @@ describe("SidebarView", () => {
     expect(handlers.onAddContext).toHaveBeenCalledWith(expect.objectContaining({ id: "annotations" }));
     expect(input.value).toBe("Compare ");
     expect(menu.hidden).toBe(true);
+  });
+
+  it("keeps removable screenshot provenance available beyond the truncated chip label", () => {
+    const body = document.createElement("div");
+    document.body.appendChild(body);
+    const view = new SidebarView(body, callbacks());
+    view.setState({
+      phase: "ready",
+      contextChips: [{
+        id: "screenshot:0",
+        kind: "selection",
+        label: "Region · Paper B · p. 9",
+        detail: "Captured from Paper B, PDF page 9",
+        removable: true,
+      }],
+    });
+
+    const chip = body.querySelector<HTMLButtonElement>('[data-context-id="screenshot:0"]')!;
+    expect(chip.getAttribute("aria-label")).toBe("Remove context: Region · Paper B · p. 9");
+    expect(chip.title).toContain("Captured from Paper B, PDF page 9");
   });
 
   it("keeps an explicitly empty chip list empty after every selected context is removed", () => {

@@ -4,7 +4,7 @@ import { resolveSettingsHost, shouldAutoOpenFloat, type AutoOpenFloatState } fro
 function baseState(overrides: Partial<AutoOpenFloatState> = {}): AutoOpenFloatState {
   return {
     running: true,
-    hasConnectedViews: false,
+    hasVisibleNonFloatSurface: false,
     floatVisible: false,
     autoOpenedTurnId: null,
     dismissedTurnId: null,
@@ -14,7 +14,7 @@ function baseState(overrides: Partial<AutoOpenFloatState> = {}): AutoOpenFloatSt
 }
 
 describe("shouldAutoOpenFloat (bug-triage #2)", () => {
-  it("opens when a turn is running, no sidebar body is connected, and the float isn't already visible", () => {
+  it("opens when a turn is running and no chat surface is visible", () => {
     expect(shouldAutoOpenFloat(baseState())).toBe(true);
   });
 
@@ -22,8 +22,8 @@ describe("shouldAutoOpenFloat (bug-triage #2)", () => {
     expect(shouldAutoOpenFloat(baseState({ running: false }))).toBe(false);
   });
 
-  it("does nothing when a sidebar chat view is still connected -- the turn already has visible surface", () => {
-    expect(shouldAutoOpenFloat(baseState({ hasConnectedViews: true }))).toBe(false);
+  it("does nothing when a visible non-float chat surface already shows the turn", () => {
+    expect(shouldAutoOpenFloat(baseState({ hasVisibleNonFloatSurface: true }))).toBe(false);
   });
 
   it("does nothing when the float panel is already visible", () => {
