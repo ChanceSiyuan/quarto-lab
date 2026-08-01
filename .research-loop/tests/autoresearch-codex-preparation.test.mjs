@@ -15,10 +15,15 @@ const envelope = { outcome: "prepared", summary: "Ready", manifestPath: "infrast
 
 test("preflight checks codex version and login status", async () => {
   const calls = [];
+  const expectedEnvironment = Object.fromEntries(
+    ["PATH", "HOME", "TMPDIR", "LANG", "LC_ALL", "LC_CTYPE", "TERM"]
+      .filter((key) => typeof process.env[key] === "string")
+      .map((key) => [key, process.env[key]]),
+  );
   await preflightPreparationCodex({ codexPath: "codex", skillPath: "/skill", schemaPath: "/schema", processRunner: async (options) => calls.push(options) });
   assert.deepEqual(calls.map(({ command, args, timeoutMs, env }) => ({ command, args, timeoutMs, env })), [
-    { command: "codex", args: ["--version"], timeoutMs: 15_000, env: { PATH: process.env.PATH, HOME: process.env.HOME, TMPDIR: process.env.TMPDIR, LANG: process.env.LANG, LC_ALL: process.env.LC_ALL, LC_CTYPE: process.env.LC_CTYPE, TERM: process.env.TERM } },
-    { command: "codex", args: ["login", "status"], timeoutMs: 15_000, env: { PATH: process.env.PATH, HOME: process.env.HOME, TMPDIR: process.env.TMPDIR, LANG: process.env.LANG, LC_ALL: process.env.LC_ALL, LC_CTYPE: process.env.LC_CTYPE, TERM: process.env.TERM } },
+    { command: "codex", args: ["--version"], timeoutMs: 15_000, env: expectedEnvironment },
+    { command: "codex", args: ["login", "status"], timeoutMs: 15_000, env: expectedEnvironment },
   ]);
   await assert.rejects(() => preflightPreparationCodex({ codexPath: "", skillPath: "/skill", schemaPath: "/schema", processRunner: async () => {} }), CodexPreparationError);
 });

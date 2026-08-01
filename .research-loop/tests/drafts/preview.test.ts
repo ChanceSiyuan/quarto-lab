@@ -122,7 +122,7 @@ test("the drafts project includes only QMD notes, shares the reviewed bibliograp
   // publishable site. The render allowlist excludes legacy imported Markdown.
   assert.deepEqual(config, {
     project: { type: "default", "output-dir": ".preview", render: ["**/*.qmd"] },
-    format: { html: { toc: true } },
+    format: { html: { toc: true, "html-math-method": "katex" } },
     execute: { enabled: false },
     bibliography: "../literature/ref.bib",
     crossref: {

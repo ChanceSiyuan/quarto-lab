@@ -25,7 +25,7 @@ function docker(args, cwd) {
 }
 
 function isDockerUnavailable(error) {
-  return error?.code === "ENOENT" || (error instanceof ProcessExecutionError && /cannot connect to the docker daemon|error during connect|permission denied while trying to connect to the docker api|is the docker daemon running/i.test(error.stderr));
+  return error?.code === "ENOENT" || (error instanceof ProcessExecutionError && /cannot connect to the docker daemon|error during connect|permission denied while trying to connect to the docker (?:api|daemon socket)|is the docker daemon running/i.test(error.stderr));
 }
 
 function isMissingImage(error) {
