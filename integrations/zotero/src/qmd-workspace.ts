@@ -63,6 +63,7 @@ export interface QmdWorkspaceOpenOptions {
 interface QmdEditWithAIAction {
   generation: number;
   relativePath: string;
+  requestInvoked: boolean;
   accepted: boolean;
   started: boolean;
   completionState: QmdAgentState | null;
@@ -346,8 +347,10 @@ export class QmdWorkspaceView {
     this.agentRunning = running;
     const action = this.editWithAIAction;
     if (action && this.isCurrentEditWithAIAction(action)) {
-      if (running) action.started = true;
-      else if (action.started) action.completionState = snapshot;
+      if (action.requestInvoked) {
+        if (running) action.started = true;
+        else if (action.started) action.completionState = snapshot;
+      }
       this.updateChangeControls();
       this.finishEditWithAIWhenReady(action);
       return;
@@ -547,6 +550,7 @@ export class QmdWorkspaceView {
     const action: QmdEditWithAIAction = {
       generation: this.openGeneration,
       relativePath: current.relativePath,
+      requestInvoked: false,
       accepted: false,
       started: false,
       completionState: null,
@@ -570,8 +574,8 @@ export class QmdWorkspaceView {
       if (!this.root.hidden) {
         this.options.onActiveDocument?.(current.relativePath, prepared.changePath);
       }
-      if (prepared.changed) void this.ensureChangedPreview(action.generation);
       this.setStatus("Private AI copy ready · starting Agent turn…", "checking");
+      action.requestInvoked = true;
       await this.options.onEditWithAI(current.relativePath, prepared.changePath);
       if (!this.isCurrentEditWithAIAction(action)) return;
       action.accepted = true;
@@ -699,6 +703,8 @@ export class QmdWorkspaceView {
 
   private async toggleAgentPreview(): Promise<void> {
     if (!this.agentCopyIsActive()
+        || this.editWithAIAction
+        || this.agentRunning
         || !this.hasAgentChange
         || !this.current
         || this.current.tree.published) return;
@@ -857,6 +863,8 @@ export class QmdWorkspaceView {
     const changePath = this.changePath;
     const generation = this.openGeneration;
     if (!this.agentCopyIsActive()
+        || this.editWithAIAction
+        || this.agentRunning
         || !current
         || current.tree.published
         || !changePath
@@ -908,6 +916,10 @@ export class QmdWorkspaceView {
   private updateChangeControls(): void {
     const isDraft = Boolean(this.current && !this.current.tree.published);
     const allowsAgentCopy = isDraft && this.agentCopyIsActive();
+    const canReviewAgentChange = allowsAgentCopy
+      && !this.editWithAIAction
+      && !this.agentRunning
+      && this.hasAgentChange;
     const offersOnDemand = isDraft && this.agentCopyMode === "on-demand";
     this.enableAIEditingButton.hidden = !offersOnDemand;
     this.enableAIEditingButton.disabled = !offersOnDemand
@@ -922,8 +934,8 @@ export class QmdWorkspaceView {
     this.compareButton.hidden = !allowsAgentCopy;
     this.keepChangesButton.hidden = !allowsAgentCopy;
     if (!isDraft) this.visualMode = false;
-    this.compareButton.disabled = !allowsAgentCopy || !this.hasAgentChange;
-    this.keepChangesButton.disabled = !allowsAgentCopy || !this.hasAgentChange;
+    this.compareButton.disabled = !canReviewAgentChange;
+    this.keepChangesButton.disabled = !canReviewAgentChange;
     this.compareButton.setAttribute("aria-pressed", String(this.showingAgentChange));
     this.presentIcon(
       this.compareButton,
