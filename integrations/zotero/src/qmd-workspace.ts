@@ -134,7 +134,6 @@ export class QmdWorkspaceView {
   private visualEditor: QmdVisualEditor | null = null;
   private visualMode = false;
   private visualTargetPath: string | null = null;
-  private visualSaveGeneration = -1;
   private agentCopyMode: NonNullable<QmdWorkspaceOpenOptions["agentCopy"]> = "enabled";
   private renderedUrl = "";
   private changedUrl = "";
@@ -604,14 +603,9 @@ export class QmdWorkspaceView {
   private ensureVisualEditor(): QmdVisualEditor {
     if (this.visualEditor) return this.visualEditor;
     this.visualEditor = new QmdVisualEditor(this.doc, {
-      save: (source, revision) => {
-        this.visualSaveGeneration = this.openGeneration;
-        return this.saveVisualSource(source, revision);
-      },
-      onStatus: (message, state) => {
-        if (!this.visualMode || this.destroyed) return;
-        const completed = state === "saved" || state === "conflict" || state === "error";
-        if (completed && this.visualSaveGeneration !== this.openGeneration) return;
+      save: (source, revision, generation) => this.saveVisualSource(source, revision, generation),
+      onStatus: (message, state, generation) => {
+        if (this.destroyed || generation !== this.openGeneration) return;
         this.setStatus(message, state);
       },
     });
@@ -631,7 +625,7 @@ export class QmdWorkspaceView {
     try {
       const snapshot = await this.options.readSource(target);
       if (generation !== this.openGeneration || this.destroyed || !this.visualMode || this.visualTargetPath !== target) return;
-      this.ensureVisualEditor().setDocument(snapshot, true);
+      this.ensureVisualEditor().setDocument(snapshot, true, generation);
       this.setStatus(
         this.showingAgentChange
           ? "Visual Edit · changes save to the private AI version until Keep"
@@ -646,10 +640,13 @@ export class QmdWorkspaceView {
     }
   }
 
-  private async saveVisualSource(source: string, expectedRevision: string): Promise<QmdSourceSnapshot> {
+  private async saveVisualSource(
+    source: string,
+    expectedRevision: string,
+    generation = this.openGeneration,
+  ): Promise<QmdSourceSnapshot> {
     const current = this.current;
     const target = this.visualTargetPath;
-    const generation = this.openGeneration;
     const agentCopyMode = this.agentCopyMode;
     if (!current || current.tree.published || !target || !this.options.saveSource) {
       throw new Error("Visual Edit is not attached to a Draft source");
@@ -689,16 +686,17 @@ export class QmdWorkspaceView {
   private async refreshVisualSource(): Promise<void> {
     const target = this.visualTargetPath;
     const editor = this.visualEditor;
+    const generation = this.openGeneration;
     if (!this.visualMode || !target || !editor || !this.options.readSource) return;
     try {
       const snapshot = await this.options.readSource(target);
-      if (!this.visualMode || this.visualTargetPath !== target || this.destroyed) return;
+      if (generation !== this.openGeneration || !this.visualMode || this.visualTargetPath !== target || this.destroyed) return;
       if (snapshot.revision === editor.snapshot().revision) return;
       if (editor.isEditing()) {
         this.setStatus("The QMD changed outside Visual Edit. Finish or cancel the active block before reloading.", "conflict");
         return;
       }
-      editor.setDocument(snapshot, true);
+      editor.setDocument(snapshot, true, generation);
       this.setStatus("Visual Edit reloaded the latest QMD source", "external");
     }
     catch (error) {

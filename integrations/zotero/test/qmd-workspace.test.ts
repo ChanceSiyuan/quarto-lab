@@ -132,8 +132,9 @@ async function settle(): Promise<void> {
 
 function deferred<T>() {
   let resolve!: (value: T) => void;
-  const promise = new Promise<T>((next) => { resolve = next; });
-  return { promise, resolve };
+  let reject!: (reason?: unknown) => void;
+  const promise = new Promise<T>((next, fail) => { resolve = next; reject = fail; });
+  return { promise, resolve, reject };
 }
 
 describe("QmdWorkspaceView", () => {
@@ -450,6 +451,36 @@ describe("QmdWorkspaceView", () => {
     expect(mode.getAttribute("aria-label")).toContain("Website Preview");
     mode.click();
     expect(host.querySelector<HTMLElement>(".zc-qmd-render")!.hidden).toBe(false);
+    view.destroy();
+  });
+
+  it("reports a current Visual Edit conflict after switching to Website Preview", async () => {
+    const conflict = deferred<{ source: string; revision: string }>();
+    const { host, view, saveSource } = mount();
+    const setStatus = vi.spyOn(view as unknown as {
+      setStatus(message: string, state: string): void;
+    }, "setStatus");
+    saveSource.mockImplementationOnce(() => conflict.promise);
+    view.show();
+    await view.open(DRAFT);
+
+    const mode = host.querySelector<HTMLButtonElement>(".zc-qmd-mode")!;
+    mode.click();
+    await settle();
+    const card = host.querySelector<HTMLElement>(".zc-qmd-visual-card.is-lem")!;
+    card.querySelector<HTMLElement>("header")!.click();
+    const textarea = card.querySelector<HTMLTextAreaElement>("textarea")!;
+    textarea.value = textarea.value.replace("Visual lemma", "Current visual edit");
+    textarea.dispatchEvent(new Event("input"));
+    textarea.blur();
+    await Promise.resolve();
+    expect(saveSource).toHaveBeenCalledOnce();
+
+    mode.click();
+    conflict.reject(new Error("current conflict"));
+    await settle();
+
+    expect(setStatus).toHaveBeenCalledWith("current conflict", "conflict");
     view.destroy();
   });
 
