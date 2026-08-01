@@ -16,6 +16,11 @@
 - Use Zotero 9's internal attachment opener where available, with **Open AI
   Context in QLab** as the menu fallback when that unsupported internal seam is
   unavailable.
+- Make AI Context editing explicit: opening stays read-only to Codex until
+  **Edit with AI** starts a dedicated conversation on a private copy. The eye
+  compares that copy with the original, and **Keep** alone replaces the
+  original; Visual Edit and external editors still edit the original directly.
+  Reopening requires **Edit with AI** again.
 - Native Zotero 9 smoke testing remains required and outstanding for save and
   update, shared Reading Context and standalone creation, attachment opening
   and menu fallback, dedicated resume, CAS conflict behavior, and

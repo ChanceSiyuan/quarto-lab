@@ -132,6 +132,14 @@ using **Open AI Context in QLab**) shows its QMD on the right and resumes its
 dedicated conversation on the left. The internal Zotero 9 attachment opener is
 used when available; the item-menu action remains the fallback.
 
+Opening an AI Context is read-only to Codex. To revise it, click **Edit with
+AI**: QLab starts a dedicated conversation and gives Codex a private copy to
+edit. Click the eye to compare that copy with the original, then click
+**Keep** to replace the original with the AI version. **Visual Edit** and
+external editors continue to edit the original directly. Reopening an AI
+Context is read-only again, so start another private AI edit by clicking
+**Edit with AI** again.
+
 Updates use compare-and-swap protection: a concurrent edit is retried once
 against the latest Draft, then reports a conflict without overwriting either
 version. If Zotero creates only some attachment handles, the Draft remains
