@@ -134,6 +134,7 @@ export class QmdWorkspaceView {
   private visualEditor: QmdVisualEditor | null = null;
   private visualMode = false;
   private visualTargetPath: string | null = null;
+  private visualSaveGeneration = -1;
   private agentCopyMode: NonNullable<QmdWorkspaceOpenOptions["agentCopy"]> = "enabled";
   private renderedUrl = "";
   private changedUrl = "";
@@ -603,8 +604,16 @@ export class QmdWorkspaceView {
   private ensureVisualEditor(): QmdVisualEditor {
     if (this.visualEditor) return this.visualEditor;
     this.visualEditor = new QmdVisualEditor(this.doc, {
-      save: (source, revision) => this.saveVisualSource(source, revision),
-      onStatus: (message, state) => this.setStatus(message, state),
+      save: (source, revision) => {
+        this.visualSaveGeneration = this.openGeneration;
+        return this.saveVisualSource(source, revision);
+      },
+      onStatus: (message, state) => {
+        if (!this.visualMode || this.destroyed) return;
+        const completed = state === "saved" || state === "conflict" || state === "error";
+        if (completed && this.visualSaveGeneration !== this.openGeneration) return;
+        this.setStatus(message, state);
+      },
     });
     this.visualPane.appendChild(this.visualEditor.root);
     return this.visualEditor;

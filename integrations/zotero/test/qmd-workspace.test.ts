@@ -361,6 +361,45 @@ describe("QmdWorkspaceView", () => {
     view.destroy();
   });
 
+  it("does not publish a real Visual Editor completion after a disabled reopen", async () => {
+    const prepared = {
+      changePath: CHANGE,
+      previewPath: CHANGE_PREVIEW,
+      changed: true,
+      revision: "late-real-visual-copy",
+    };
+    const preparation = deferred<typeof prepared>();
+    const { host, view, prepareChange } = mount();
+    view.show();
+    await view.open(DRAFT);
+
+    const mode = host.querySelector<HTMLButtonElement>(".zc-qmd-mode")!;
+    mode.click();
+    await settle();
+    prepareChange.mockClear();
+    prepareChange.mockImplementationOnce(() => preparation.promise);
+
+    const card = host.querySelector<HTMLElement>(".zc-qmd-visual-card.is-lem")!;
+    card.querySelector<HTMLElement>("header")!.click();
+    const textarea = card.querySelector<HTMLTextAreaElement>("textarea")!;
+    textarea.value = textarea.value.replace("Visual lemma", "Human visual edit");
+    textarea.dispatchEvent(new Event("input"));
+    textarea.blur();
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(prepareChange).toHaveBeenCalledOnce();
+
+    mode.click();
+    await view.open(DRAFT, { agentCopy: "disabled" });
+    const status = host.querySelector<HTMLElement>(".zc-qmd-status")!.textContent;
+    preparation.resolve(prepared);
+    await settle();
+
+    expect(host.querySelector<HTMLElement>(".zc-qmd-status")!.textContent).toBe(status);
+    expect(host.querySelector<HTMLButtonElement>(".zc-qmd-compare")!.hidden).toBe(true);
+    view.destroy();
+  });
+
   it("does not republish an in-flight Keep completion after a disabled reopen", async () => {
     const prepared = {
       changePath: CHANGE,
