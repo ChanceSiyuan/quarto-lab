@@ -181,7 +181,13 @@ export function createGeckoQLabPrivateFileHost(
       }, [parent]);
     },
     resolvePath(root, path) {
-      const value = pathIsAbsolute(path) ? path : PathUtils.join(root, path);
+      // Gecko's PathUtils.join() accepts path *components*, not a relative
+      // path containing separators. Git deliberately returns values such as
+      // `.git/qlab/repository-id`, so split that value before joining it to
+      // the canonical repository root.
+      const value = pathIsAbsolute(path)
+        ? path
+        : PathUtils.join(root, ...path.split(/[\\/]+/u).filter(Boolean));
       return PathUtils.normalize(value);
     },
     isPathInside(root, candidate) {

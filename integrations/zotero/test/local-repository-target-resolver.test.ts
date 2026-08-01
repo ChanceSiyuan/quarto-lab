@@ -231,6 +231,39 @@ describe("LocalRepositoryTargetResolver", () => {
 });
 
 describe("local repository Gecko adapters", () => {
+  it("joins Git's relative private path as Gecko path components", () => {
+    const globals = globalThis as any;
+    const originalPathUtils = globals.PathUtils;
+    const join = vi.fn((...parts: string[]) => {
+      if (parts.slice(1).some((part) => /[\\/]/u.test(part))) {
+        throw new Error("PathUtils.join received a path instead of a component");
+      }
+      return parts.join("/").replace(/\/{2,}/gu, "/");
+    });
+    globals.PathUtils = {
+      isAbsolute: (path: string) => path.startsWith("/"),
+      join,
+      normalize: (path: string) => path,
+    };
+
+    try {
+      const host = createGeckoQLabPrivateFileHost();
+
+      expect(host.resolvePath("/repo", ".git/qlab/repository-id"))
+        .toBe("/repo/.git/qlab/repository-id");
+      expect(join).toHaveBeenCalledWith(
+        "/repo",
+        ".git",
+        "qlab",
+        "repository-id",
+      );
+    }
+    finally {
+      if (originalPathUtils === undefined) delete globals.PathUtils;
+      else globals.PathUtils = originalPathUtils;
+    }
+  });
+
   it("discovers the Git-private path through fixed structured argv", async () => {
     const listeners = new Set<(event: BridgeEvent) => void>();
     const spawnPipe = vi.fn(async (sessionId: string, options: SpawnOptions) => {
