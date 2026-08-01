@@ -122,7 +122,7 @@ export interface ChatGPTCompanionCapsule {
     included: boolean;
     supported: boolean;
     sourceIdentity: string;
-    mode: string | null;
+    mode: "retrieval" | "full" | null;
     authority: CompanionAuthority;
     warning: string | null;
   }>;
@@ -243,6 +243,15 @@ function safeDraftPath(value: unknown): string | null {
   return parts.length > 1 && parts.every((part) => part && part !== "." && part !== "..") ? path : null;
 }
 
+function exactDraftIdentity(value: unknown): string {
+  if (typeof value !== "string"
+    || codePoints(value).length > COMPANION_CAPSULE_BOUNDS.sourceIdentity
+    || safeDraftPath(value) !== value) {
+    throw new Error("Draft source identity must be an exact POSIX path below drafts/");
+  }
+  return value;
+}
+
 function safeExternalUrl(value: unknown, label: string, warnings: string[]): string {
   const url = boundedOmissibleMetadata(value, COMPANION_CAPSULE_BOUNDS.citationUrl, label, warnings);
   if (!url || /^https?:\/\//iu.test(url)) return url;
@@ -271,13 +280,15 @@ function safePageSource(value: unknown, warnings: string[]): string {
 }
 
 function canonicalTimestamp(value: Date | string): string {
-  let raw: string;
-  try {
-    raw = value instanceof Date ? value.toISOString() : value;
+  if (value instanceof Date) {
+    try {
+      return value.toISOString();
+    }
+    catch {
+      throw new Error("The capsule timestamp is invalid");
+    }
   }
-  catch {
-    throw new Error("The capsule timestamp is invalid");
-  }
+  const raw = value;
   if (typeof raw !== "string"
     || codePoints(raw).length > COMPANION_CAPSULE_BOUNDS.timestamp
     || CONTROL_TEST.test(raw)) {
@@ -285,7 +296,11 @@ function canonicalTimestamp(value: Date | string): string {
   }
   const instant = new Date(raw);
   if (Number.isNaN(instant.getTime())) throw new Error("The capsule timestamp is invalid");
-  return instant.toISOString();
+  const canonical = instant.toISOString();
+  if (!raw.endsWith("Z") || canonical !== raw) {
+    throw new Error("The capsule timestamp must be a canonical ISO UTC instant");
+  }
+  return canonical;
 }
 
 function assertArrayBound(value: unknown, maximum: number, label: string): void {
@@ -337,27 +352,26 @@ function validatedChip(input: CompanionContextItemInput, warnings: string[]): {
   id: string;
   kind: CompanionContextKind;
   sourceIdentity: string;
-  mode: string | null;
+  mode: "retrieval" | "full" | null;
 } {
   if (!CONTEXT_KINDS.has(input.kind as CompanionContextKind)) {
     throw new Error("The context snapshot contains an unsupported chip kind");
   }
-  const mode = input.mode === undefined || input.mode === null
-    ? null
-    : boundedMetadata(
-      input.mode,
-      COMPANION_CAPSULE_BOUNDS.contextMode,
-      "Context mode",
-      warnings,
-    ).value;
+  let mode: "retrieval" | "full" | null = null;
+  if (input.mode !== undefined && input.mode !== null) {
+    if (input.mode === "retrieval" || input.mode === "full") mode = input.mode;
+    else warnings.push("Context mode was invalid and was omitted.");
+  }
   return {
     id: exactIdentifier(input.id, COMPANION_CAPSULE_BOUNDS.chipId, "Context chip ID"),
     kind: input.kind as CompanionContextKind,
-    sourceIdentity: exactIdentifier(
-      input.sourceIdentity,
-      COMPANION_CAPSULE_BOUNDS.sourceIdentity,
-      "Context source identity",
-    ),
+    sourceIdentity: input.kind === "draft"
+      ? exactDraftIdentity(input.sourceIdentity)
+      : exactIdentifier(
+        input.sourceIdentity,
+        COMPANION_CAPSULE_BOUNDS.sourceIdentity,
+        "Context source identity",
+      ),
     mode,
   };
 }
@@ -509,6 +523,9 @@ export function buildCompanionCapsule(
       else {
         const candidate = secondaryByIdentity.get(chip.sourceIdentity);
         if (!candidate) warning = chipWarning("Secondary paper citation identity was unavailable and was omitted.", warnings);
+        else if (candidate.mode !== undefined && candidate.mode !== "retrieval" && candidate.mode !== "full") {
+          warning = chipWarning("Secondary paper mode was invalid and the candidate was omitted.", warnings);
+        }
         else {
           const mode = chip.mode === "full" || chip.mode === "retrieval" ? chip.mode : candidate.mode;
           if (!mode) warning = chipWarning("Secondary paper mode was unavailable and was omitted.", warnings);
@@ -567,6 +584,9 @@ export function buildCompanionCapsule(
       else {
         const candidate = screenshotByIdentity.get(chip.sourceIdentity);
         if (!candidate) warning = chipWarning("Screenshot provenance was unavailable and pixels were not transferred.", warnings);
+        else if (candidate.kind !== "page" && candidate.kind !== "region") {
+          warning = chipWarning("Screenshot provenance kind was invalid and the candidate was omitted.", warnings);
+        }
         else {
           screenshotProvenance.push({
             authority: "external_evidence",

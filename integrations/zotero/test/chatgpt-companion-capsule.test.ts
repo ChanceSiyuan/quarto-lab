@@ -23,7 +23,7 @@ function input() {
       { id: "annotations", kind: "annotation", sourceIdentity: "zotero:ABCD1234" },
       { id: "library", kind: "library", sourceIdentity: "zotero:library" },
       { id: "secondary", kind: "external-paper", sourceIdentity: "secondary-1", mode: "full" },
-      { id: "draft", kind: "draft", sourceIdentity: "draft:visible-note" },
+      { id: "draft", kind: "draft", sourceIdentity: "drafts/notes/visible.qmd" },
       { id: "screenshot", kind: "screenshot", sourceIdentity: "shot-1" },
     ],
     paper: {
@@ -96,6 +96,7 @@ describe("ChatGPT companion capsule", () => {
       title: "Secondary paper",
     })]);
     expect(capsule.draft).toMatchObject({ authority: "unreviewed_draft", relativePath: "drafts/notes/visible.qmd" });
+    expect(capsule.contextItems[6]?.sourceIdentity).toBe("drafts/notes/visible.qmd");
     expect(capsule.screenshotProvenance).toEqual([{
       authority: "external_evidence",
       kind: "region",
@@ -128,7 +129,7 @@ describe("ChatGPT companion capsule", () => {
     const source = input();
     source.contextItems = [
       { id: "selection", kind: "selection", sourceIdentity: "selection" },
-      { id: "draft", kind: "draft", sourceIdentity: "draft" },
+      { id: "draft", kind: "draft", sourceIdentity: "drafts/notes/visible.qmd" },
     ];
     source.selection.text = "🧪".repeat(COMPANION_CAPSULE_BOUNDS.selection + 1);
     source.draft.excerpt = "é".repeat(COMPANION_CAPSULE_BOUNDS.draftExcerpt + 1);
@@ -271,6 +272,22 @@ describe("ChatGPT companion capsule", () => {
     expect(() => buildCompanionCapsule(tooManyScreenshots, dependencies)).toThrow(/screenshot provenance/i);
   });
 
+  it("omits secondary and screenshot candidates with invalid runtime union values", () => {
+    const source = input();
+    delete source.contextItems[5]!.mode;
+    (source.secondaryPapers[0] as unknown as { mode: unknown }).mode = {
+      nested: "data:image/png;base64,secret",
+    };
+    (source.screenshotProvenance[0] as unknown as { kind: unknown }).kind = "region".repeat(1_000);
+
+    const capsule = buildCompanionCapsule(source, dependencies);
+    expect(capsule.secondaryPapers).toEqual([]);
+    expect(capsule.screenshotProvenance).toEqual([]);
+    expect(capsule.contextItems[5]).toMatchObject({ included: false, warning: expect.stringMatching(/mode/i) });
+    expect(capsule.contextItems[7]).toMatchObject({ included: false, warning: expect.stringMatching(/kind/i) });
+    expect(JSON.stringify(capsule)).not.toMatch(/nested|data:image|regionregion/);
+  });
+
   it("exports and applies deterministic bounds to every accepted metadata class", () => {
     const source = input();
     source.paper.title = "🧪".repeat(1_025);
@@ -321,12 +338,24 @@ describe("ChatGPT companion capsule", () => {
     expect(capsule.warnings.join("\n")).toMatch(/screenshot title.*truncated/i);
   });
 
-  it("canonicalizes the injected timestamp to a bounded ISO instant", () => {
-    const capsule = buildCompanionCapsule(input(), {
+  it("accepts Date or canonical UTC timestamps and rejects ambient-timezone parsing", () => {
+    const fromDate = buildCompanionCapsule(input(), {
       ...dependencies,
-      now: () => "2026-08-01T12:34:56Z",
+      now: () => new Date("2026-08-01T12:34:56.000Z"),
     });
-    expect(capsule.createdAt).toBe("2026-08-01T12:34:56.000Z");
+    expect(fromDate.createdAt).toBe("2026-08-01T12:34:56.000Z");
+
+    for (const noncanonical of [
+      "2026-08-01T12:34:56",
+      "2026-08-01T12:34:56+08:00",
+      "2026-08-01T12:34:56Z",
+      "2026-08-01",
+    ]) {
+      expect(() => buildCompanionCapsule(input(), {
+        ...dependencies,
+        now: () => noncanonical,
+      }), noncanonical).toThrow(/timestamp/i);
+    }
 
     expect(() => buildCompanionCapsule(input(), {
       ...dependencies,
