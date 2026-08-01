@@ -36,8 +36,19 @@ export class LocalRepositoryTargetResolver {
   constructor(private readonly runtime: LocalRepositoryTargetRuntime) {}
 
   async inspect(root: string): Promise<LocalRepositoryInspection> {
-    const canonicalRoot = await this.runtime.canonicalize(root);
-    const state = await this.runtime.state(canonicalRoot);
+    let canonicalRoot: string;
+    let state: QLabRepositoryState;
+    try {
+      canonicalRoot = await this.runtime.canonicalize(root);
+      state = await this.runtime.state(canonicalRoot);
+    }
+    catch {
+      // A legacy preference may point at a directory that was moved or
+      // deleted. Gecko's nsIFile.normalize() throws for that path, but a stale
+      // preference must degrade to an unassigned target instead of aborting
+      // the entire Zotero plugin bootstrap.
+      return { kind: "unavailable", reason: "missing" };
+    }
     const disposition = classifyLegacyRoot(state);
     if (disposition === "candidate") {
       return {

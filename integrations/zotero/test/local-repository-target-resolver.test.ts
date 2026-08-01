@@ -182,6 +182,24 @@ describe("LocalRepositoryTargetResolver", () => {
     },
   );
 
+  it.each(["canonicalization", "state inspection"] as const)(
+    "treats a stale legacy root as missing when %s fails",
+    async (failure) => {
+      const runtime = fakeRuntime({ state: "ready" });
+      if (failure === "canonicalization") {
+        vi.mocked(runtime.canonicalize).mockRejectedValueOnce(new Error("path does not exist"));
+      }
+      else {
+        vi.mocked(runtime.state).mockRejectedValueOnce(new Error("directory disappeared"));
+      }
+
+      await expect(new LocalRepositoryTargetResolver(runtime).inspect("/stale"))
+        .resolves.toEqual({ kind: "unavailable", reason: "missing" });
+      expect(runtime.initialize).not.toHaveBeenCalled();
+      expect(runtime.createPrivateIfAbsent).not.toHaveBeenCalled();
+    },
+  );
+
   it("fails closed instead of following a Git-private path outside the canonical root", async () => {
     const runtime = fakeRuntime({ state: "ready", gitPath: "../outside/repository-id" });
 
