@@ -49,6 +49,19 @@ function validConversationSynthesis(memoryMarkdown = "Remember the definitions."
   return { ...validSynthesis(memoryMarkdown), readingPlan: [] };
 }
 
+function legacyConversationSource(): string {
+  const source = renderNewAIContextDocument({ manifest, synthesis: validSynthesis(), messages: [] });
+  const legacyManifest = conversationManifest({ capturedEntryIds: [] });
+  let binary = "";
+  for (const byte of new TextEncoder().encode(JSON.stringify(legacyManifest))) {
+    binary += String.fromCharCode(byte);
+  }
+  const token = btoa(binary).replace(/\+/gu, "-").replace(/\//gu, "_").replace(/=+$/u, "");
+  return source
+    .replace('title: "Reading Context · Fault tolerant decoding"', 'title: "AI Context · Fault tolerant decoding"')
+    .replace(/(qlab-ai-context-manifest:v1:)[A-Za-z0-9_-]+/u, `$1${token}`);
+}
+
 interface FakeFile { source: string; revision: string }
 
 function fixedEnvironment() {
@@ -257,6 +270,23 @@ describe("AI Context QMD codec", () => {
     ));
     expect([...context]).toHaveLength(32_000);
     expect(context).not.toContain("RAW TRANSCRIPT SECRET");
+  });
+
+  it("opens a legacy conversation Draft while stripping its obsolete Reading plan on the next update", async () => {
+    const host = fakeAIContextHost();
+    const relativePath = "drafts/ai-contexts/legacy-conversation.qmd";
+    host.files.set(relativePath, { source: legacyConversationSource(), revision: "legacy-r1" });
+    const service = new AIContextService(host, validGenerator("updated legacy memory"), fixedEnvironment());
+
+    const opened = await service.open(relativePath);
+    expect(opened.synthesis.readingPlan).toEqual([]);
+    expect(aiContextReopenContext(opened)).not.toContain("P1: Foundation");
+    await expect(service.pendingRepairs()).resolves.toEqual([]);
+
+    const saved = await service.save(conversationInput({ activeRelativePath: relativePath }));
+    expect(saved.document.synthesis.readingPlan).toEqual([]);
+    expect(saved.document.source).not.toContain("**Why:** Foundation");
+    expect(parseAIContextDocument(relativePath, saved.document.source).synthesis.readingPlan).toEqual([]);
   });
 
   it.each([

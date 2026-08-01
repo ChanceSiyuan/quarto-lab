@@ -238,6 +238,7 @@ function validateManifest(value: unknown): AIContextManifest {
 export interface AIContextSynthesisValidationOptions {
   kind?: AIContextKind;
   requireCompleteReadingPlan?: boolean;
+  allowLegacyConversationReadingPlan?: boolean;
 }
 
 export function validateAIContextSynthesis(
@@ -269,7 +270,7 @@ export function validateAIContextSynthesis(
   if (new Set(generated).size !== generated.length) fail("synthesis", "duplicate reading paper");
   if (generated.some((itemKey) => !selected.includes(itemKey))) fail("synthesis", "unknown reading paper");
   const kind = options.kind ?? "reading";
-  if (kind === "conversation" && readingPlan.length) {
+  if (kind === "conversation" && readingPlan.length && !options.allowLegacyConversationReadingPlan) {
     fail("synthesis", "conversation Context must not contain a Reading plan");
   }
   if (kind === "reading" && (options.requireCompleteReadingPlan ?? true)
@@ -317,9 +318,12 @@ function validateMessages(messages: readonly AIContextMessage[]): AIContextMessa
   });
 }
 
-function renderManaged(content: AIContextManagedContent): string {
+function renderManaged(
+  content: AIContextManagedContent,
+  options: AIContextSynthesisValidationOptions = {},
+): string {
   const manifest = validateManifest(content.manifest);
-  const synthesis = validateAIContextSynthesis(content.synthesis, manifest.papers, { kind: manifest.kind });
+  const synthesis = validateAIContextSynthesis(content.synthesis, manifest.papers, { ...options, kind: manifest.kind });
   if (manifest.status !== synthesis.status) fail("synthesis", "status disagrees with manifest");
   const messages = validateMessages(content.messages);
   if (manifest.capturedEntryIds.join("\0") !== messages.map(({ id: messageId }) => messageId).join("\0")) {
@@ -458,21 +462,29 @@ export function parseAIContextDocument(relativePath: string, source: string): AI
     fail("manifest", "managed metadata must occur exactly once");
   }
   const manifest = validateManifest(decode(singleLine(parsedMessages.structural, MANIFEST_PREFIX, "manifest"), "manifest"));
-  const synthesis = validateAIContextSynthesis(
+  const persistedSynthesis = validateAIContextSynthesis(
     decode(singleLine(parsedMessages.structural, SYNTHESIS_PREFIX, "synthesis"), "synthesis"),
     manifest.papers,
-    { kind: manifest.kind },
+    { kind: manifest.kind, allowLegacyConversationReadingPlan: true },
   );
-  if (manifest.status !== synthesis.status) fail("synthesis", "status disagrees with manifest");
+  if (manifest.status !== persistedSynthesis.status) fail("synthesis", "status disagrees with manifest");
   const messages = parsedMessages.messages;
   if (manifest.capturedEntryIds.join("\0") !== messages.map(({ id: messageId }) => messageId).join("\0")) {
     fail("manifest", "captured entry IDs do not match transcript");
   }
-  if (managed !== renderManaged({ manifest, synthesis, messages })) {
+  if (managed !== renderManaged({ manifest, synthesis: persistedSynthesis, messages }, {
+    allowLegacyConversationReadingPlan: true,
+  })) {
     fail("manifest", "managed region is noncanonical");
   }
   const expectedPrefix = manifest.kind === "reading" ? "Reading Context · " : "AI Context · ";
   if (!parsedFrontmatter.title.startsWith(expectedPrefix)) fail("frontmatter", "title prefix disagrees with kind");
+  // v1 conversations used the generic Reading-plan validator and therefore
+  // persisted plan entries. Keep those Drafts readable, but never expose or
+  // carry the obsolete plan into a resumed or subsequently saved conversation.
+  const synthesis = manifest.kind === "conversation"
+    ? { ...persistedSynthesis, readingPlan: [] }
+    : persistedSynthesis;
   return {
     relativePath,
     manifest,
