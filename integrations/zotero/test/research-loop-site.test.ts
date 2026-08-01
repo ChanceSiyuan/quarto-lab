@@ -124,6 +124,37 @@ describe("ResearchLoopSiteView", () => {
 });
 
 describe("ResearchLoopSiteService", () => {
+  it("resolves a standard repository identity without spawning Git", async () => {
+    const originalIOUtils = (globalThis as any).IOUtils;
+    const originalPathUtils = (globalThis as any).PathUtils;
+    const bridge = {
+      start: vi.fn(async () => undefined),
+      spawnPipe: vi.fn(async () => undefined),
+      onEvent: vi.fn(() => () => {}),
+      decodeOutput: vi.fn(() => ""),
+      flushOutput: vi.fn(() => ""),
+    } satisfies Pick<NativeBridge, "start" | "spawnPipe" | "onEvent" | "decodeOutput" | "flushOutput">;
+    try {
+      (globalThis as any).PathUtils = {
+        join: (...parts: string[]) => parts.join("/").replace(/\/{2,}/g, "/"),
+        filename: (file: string) => file.split("/").at(-1),
+      };
+      (globalThis as any).IOUtils = {
+        exists: vi.fn(async (path: string) => path === "/repo/.git/HEAD"),
+      };
+
+      const runtime = createResearchLoopSiteRuntime(bridge, "resource://qlab/", "1.2.3");
+      await expect(runtime.gitPrivatePath("/repo"))
+        .resolves.toBe("/repo/.git/qlab/repository-id");
+      expect(bridge.start).not.toHaveBeenCalled();
+      expect(bridge.spawnPipe).not.toHaveBeenCalled();
+    }
+    finally {
+      (globalThis as any).IOUtils = originalIOUtils;
+      (globalThis as any).PathUtils = originalPathUtils;
+    }
+  });
+
   it("initializes through PATH unzip with fixed archive and destination argv positions", async () => {
     const originalComponents = (globalThis as any).Components;
     const originalFetch = globalThis.fetch;

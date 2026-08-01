@@ -279,6 +279,7 @@ export async function prepareRepositoryTargetStartup(
   const persistedSessions = await dependencies.readSessionRecords();
   let settings = await dependencies.loadSettings(raw);
   let records = persistedSessions.records;
+  let migratedThisRun = false;
   let resolver: LegacyMigrationResolver | null = null;
   const startupResolver = () => {
     resolver ||= dependencies.createResolver();
@@ -302,6 +303,35 @@ export async function prepareRepositoryTargetStartup(
       repositoryTargets: outcome.preferences,
       qlabRoot: outcome.preferences.active?.canonicalRoot || "",
     };
+    migratedThisRun = true;
+  }
+
+  // `qlabRoot` predates repository targets and is deliberately not the
+  // authority once migration has completed. It is still useful as a recovery
+  // hint, though: older builds could persist the chosen folder and then fail
+  // while creating its Git-private identity, leaving `active: null` forever.
+  // Re-inspect that exact user-selected folder after upgrades and promote it
+  // only when it is now a fully resolved repository. This does not initialize
+  // folders, overwrite user content, or reassign any legacy conversations.
+  if (raw.legacyQLabRoot
+      && !migratedThisRun
+      && settings.repositoryTargets.migratedLegacy
+      && !settings.repositoryTargets.active
+      && !settings.repositoryTargets.pendingCandidate) {
+    const recovered = await startupResolver().inspect(raw.legacyQLabRoot);
+    if (recovered.kind === "local") {
+      const repositoryTargets: StoredTargetPreferences = {
+        ...settings.repositoryTargets,
+        active: recovered,
+        pendingCandidate: null,
+      };
+      await dependencies.saveRepositoryTargets(repositoryTargets);
+      settings = {
+        ...settings,
+        qlabRoot: recovered.canonicalRoot,
+        repositoryTargets,
+      };
+    }
   }
 
   const activeSnapshot = await resolveInitialRepositoryTarget(
@@ -2323,13 +2353,39 @@ export class ZoteroChatPlugin {
   }
 
   private async openStandaloneWorkbenchWindow(source: Window): Promise<Window> {
-    const popup = (source as any).openDialog?.(
-      "chrome://zotkit/content/standalone-workbench.xhtml",
-      "qlab-standalone-workbench",
-      "chrome,extrachrome,menubar,resizable,scrollbars,status,centerscreen,dialog=no,dependent=no",
-    ) as Window | null;
-    if (!popup) throw new Error("Zotero could not create the standalone QLab window");
-    for (let attempt = 0; attempt < 160; attempt++) {
+    const url = "chrome://zotkit/content/standalone-workbench.xhtml";
+    const name = "qlab-standalone-workbench";
+    const features = "chrome,extrachrome,menubar,resizable,scrollbars,status,centerscreen,dialog=no,dependent=no";
+    let popup: Window | null = null;
+    let openError: unknown;
+
+    // A Workbench can live in Zotero's native tab deck, a moved tab, or a
+    // restored chrome document. Some of those windows expose `openDialog`
+    // only after their own load has finished (and some do not expose it at
+    // all). The window-watcher is the stable Gecko API for creating an
+    // independent chrome window, so use it as the fallback instead of making
+    // the button depend on the current surface's incidental window methods.
+    try {
+      popup = (source as any).openDialog?.(url, name, features) as Window | null;
+    }
+    catch (error) {
+      openError = error;
+    }
+    if (!popup) {
+      try {
+        popup = Services.ww?.openWindow?.(source, url, name, features, null) as Window | null;
+      }
+      catch (error) {
+        openError ||= error;
+      }
+    }
+    if (!popup) {
+      const detail = openError instanceof Error && openError.message
+        ? `: ${openError.message}`
+        : "";
+      throw new Error(`Zotero could not create the standalone QLab window${detail}`);
+    }
+    for (let attempt = 0; attempt < 400; attempt++) {
       if (popup.closed) throw new Error("The standalone QLab window closed before it was ready");
       const host = popup.document?.getElementById("qlab-standalone-workbench-host");
       if (host) {
@@ -2338,7 +2394,7 @@ export class ZoteroChatPlugin {
         catch { /* optional Zotero styling hook */ }
         return popup;
       }
-      await new Promise<void>((resolve) => source.setTimeout(resolve, 25));
+      await new Promise<void>((resolve) => setTimeout(resolve, 25));
     }
     popup.close?.();
     throw new Error("The standalone QLab window did not finish loading");

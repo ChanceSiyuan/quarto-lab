@@ -1,4 +1,5 @@
 import { sha256Bytes } from "./hashing";
+import { logError } from "./platform";
 import {
   classifyLegacyRoot,
   deriveRepositoryId,
@@ -66,7 +67,13 @@ export class LocalRepositoryTargetResolver {
     try {
       return await this.resolveReady(canonicalRoot);
     }
-    catch {
+    catch (error) {
+      // Identity failures used to be collapsed into a generic inspection
+      // result, which made a successfully chosen path look as if the user had
+      // never selected it. Keep the safe public classification, but retain the
+      // actual Gecko failure in Zotero's error log for diagnosis.
+      try { logError(error); }
+      catch { /* non-Zotero test/runtime: preserve the safe public result */ }
       return { kind: "unavailable", reason: "identity-unavailable" };
     }
   }

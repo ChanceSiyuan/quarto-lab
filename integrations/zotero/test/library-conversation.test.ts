@@ -570,6 +570,22 @@ describe("library conversations", () => {
   it("keeps library threads out of appended global history after canonicalization", async () => {
     const { service, client } = libraryServiceHarness({ storedLibraryThread: "resume-alias" });
     const internal = service as any;
+    const targetId = "b".repeat(64);
+    const snapshot = {
+      target: {
+        kind: "local" as const,
+        root: "/repo",
+        canonicalRoot: "/repo",
+        repositoryId: "a".repeat(64),
+        targetId,
+      },
+      targetEpoch: 1,
+    };
+    service.commitRepositoryTarget({
+      snapshot,
+      binding: { targetId, targetEpoch: 1, root: "/repo" },
+      activeDocument: null,
+    });
     client.threadResume.mockResolvedValueOnce({ thread: { id: "resume-alias", turns: [] } });
     client.threadRead.mockResolvedValueOnce({ thread: { id: "canonical-library", turns: [] } });
     (client as any).threadList = vi.fn(async () => ({

@@ -339,6 +339,63 @@ describe("repository target startup", () => {
     expect(h.published).toEqual([]);
   });
 
+  it("recovers a previously selected repository after transient identity failure", async () => {
+    const legacyUnassigned = [{
+      threadId: "legacy-thread",
+      recordedCwd: null,
+      reason: "identity-unavailable" as const,
+    }];
+    const h = targetStartupHarness({
+      preferences: {
+        ...startupPreferences(null),
+        legacyUnassigned,
+      },
+      rawLegacyRoot: "/chosen",
+      inspect: (root) => startupTarget(root),
+    });
+
+    const prepared = await prepareRepositoryTargetStartup(h.deps);
+
+    expect(h.calls).toEqual([
+      "raw", "sessions", "settings", "resolver", "inspect:/chosen",
+      "saveRepositoryTargets", "inspect:/chosen", "publish",
+    ]);
+    expect(prepared.activeSnapshot).toEqual({
+      target: startupTarget("/chosen"),
+      targetEpoch: 1,
+    });
+    expect(prepared.settings.qlabRoot).toBe("/chosen");
+    expect(prepared.settings.repositoryTargets).toMatchObject({
+      active: startupTarget("/chosen"),
+      pendingCandidate: null,
+      legacyUnassigned,
+      migratedLegacy: true,
+    });
+    expect(h.calls).not.toContain("saveSessionRecords");
+  });
+
+  it("does not replace an explicit pending repository candidate during recovery", async () => {
+    const h = targetStartupHarness({
+      preferences: {
+        ...startupPreferences(null),
+        pendingCandidate: {
+          kind: "candidate",
+          canonicalRoot: "/empty",
+          state: "empty",
+          eligibleLegacyThreads: [],
+        },
+      },
+      rawLegacyRoot: "/empty",
+    });
+
+    const prepared = await prepareRepositoryTargetStartup(h.deps);
+
+    expect(prepared.activeSnapshot).toBeNull();
+    expect(prepared.settings.repositoryTargets.pendingCandidate?.canonicalRoot).toBe("/empty");
+    expect(h.calls).toEqual(["raw", "sessions", "settings"]);
+    expect(h.inspect).not.toHaveBeenCalled();
+  });
+
   it.each([
     ["non-local inspection", { kind: "candidate", canonicalRoot: "/legacy", state: "partial" }],
     ["unavailable inspection", { kind: "unavailable", reason: "missing" }],
@@ -590,6 +647,46 @@ describe("Zotkit Reader terminal state", () => {
       expect(target.Zotero_Tabs.close).toHaveBeenCalledWith(["restored-reader"]);
     }
     finally {
+      (globalThis as any).Zotero = previousZotero;
+    }
+  });
+
+  it("opens the standalone Workbench through Gecko when the current surface cannot open dialogs", async () => {
+    const previousServices = (globalThis as any).Services;
+    const previousZotero = (globalThis as any).Zotero;
+    const popupDocument = document.implementation.createHTMLDocument("Standalone QLab");
+    const host = popupDocument.createElement("div");
+    host.id = "qlab-standalone-workbench-host";
+    popupDocument.body.appendChild(host);
+    const popup = {
+      document: popupDocument,
+      closed: false,
+      close: vi.fn(),
+    } as unknown as Window;
+    const openWindow = vi.fn(() => popup);
+    const source = {
+      openDialog: vi.fn(() => { throw new Error("openDialog is unavailable"); }),
+    } as unknown as Window;
+    const plugin = new ZoteroChatPlugin() as any;
+    plugin.injectWindowAssets = vi.fn();
+    (globalThis as any).Services = { ww: { openWindow } };
+    (globalThis as any).Zotero = {
+      UIProperties: { registerRoot: vi.fn() },
+    };
+
+    try {
+      await expect(plugin.openStandaloneWorkbenchWindow(source)).resolves.toBe(popup);
+      expect(openWindow).toHaveBeenCalledWith(
+        source,
+        "chrome://zotkit/content/standalone-workbench.xhtml",
+        "qlab-standalone-workbench",
+        expect.stringContaining("dependent=no"),
+        null,
+      );
+      expect(plugin.injectWindowAssets).toHaveBeenCalledWith(popup);
+    }
+    finally {
+      (globalThis as any).Services = previousServices;
       (globalThis as any).Zotero = previousZotero;
     }
   });

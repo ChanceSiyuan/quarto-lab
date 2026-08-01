@@ -785,13 +785,23 @@ export class CodexService {
     if (!admission.open) throw new Error("A repository target switch is already being persisted");
     admission.open = false;
     try {
-      await this.drainPaperTransitions();
-      await this.drainAdmissionSet(admission.setupInFlight, signal);
+      const firstRepositorySelection = admission.binding === null && this.repositoryTarget === null;
+      // Before the first repository is selected, no Codex operation can own
+      // repository-scoped state. Do not let an unrelated Library Chat task or
+      // a stale unscoped startup request keep the repository chooser pending.
+      // Late target-aware work is still rejected by assertAdmissionCurrent
+      // after commit, while Library Chat is intentionally repository-neutral.
+      if (!firstRepositorySelection) {
+        await this.drainPaperTransitions();
+        await this.drainAdmissionSet(admission.setupInFlight, signal);
+      }
       this.assertAdmissionCurrent(admission);
       if (this.ownedTurns.size) {
         throw new Error("Cannot stage a repository target while a Codex turn is running");
       }
-      await this.drainAdmissionSet(admission.inFlight, signal);
+      if (!firstRepositorySelection) {
+        await this.drainAdmissionSet(admission.inFlight, signal);
+      }
       this.assertAdmissionCurrent(admission);
       if (this.ownedTurns.size) {
         throw new Error("Cannot stage a repository target while a Codex turn is running");
@@ -1843,6 +1853,12 @@ export class CodexService {
   }
 
   refreshGlobalHistory(searchTerm = "", append = false): Promise<void> {
+    // Global Codex history is repository-scoped. During first-run setup there
+    // is deliberately no target yet, so do not start an unscoped thread/list
+    // request against the whole account. Besides leaking irrelevant history
+    // into the chooser state, a slow app-server response would be admitted to
+    // the target-switch gate and make "Choose repository" wait indefinitely.
+    if (!this.repositoryTarget) return Promise.resolve();
     let admission: CodexTargetAdmission;
     try {
       admission = this.captureTargetAdmission();

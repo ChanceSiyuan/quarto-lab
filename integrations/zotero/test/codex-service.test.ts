@@ -170,6 +170,38 @@ function deferred<T>() {
 }
 
 describe("CodexService repository target binding", () => {
+  it("does not let unscoped history loading block the first repository selection", async () => {
+    const client = {
+      threadList: vi.fn(() => new Promise(() => {})),
+    };
+    const service = new CodexService(
+      {} as NativeBridge,
+      { tools: [] } as unknown as ReaderContextService,
+      "test",
+      { onState: vi.fn(), onError: vi.fn() },
+    );
+    (service as any).client = client;
+    service.state.connected = true;
+
+    await expect(service.refreshGlobalHistory()).resolves.toBeUndefined();
+    expect(client.threadList).not.toHaveBeenCalled();
+
+    // Model an already-running repository-neutral task left by startup or
+    // Library Chat. First selection must not wait for it.
+    const never = new Promise<void>(() => {});
+    (service as any).paperTransition = never;
+    (service as any).targetAdmission.inFlight.add(never);
+
+    const next = repositorySnapshot("/repo", 1, TEST_TARGET_ID);
+    const staged = await service.stageRepositoryTarget(next);
+    expect(service.commitRepositoryTarget(staged)).toBeUndefined();
+    expect(service.repositoryBinding()).toEqual({
+      targetId: TEST_TARGET_ID,
+      targetEpoch: 1,
+      root: "/repo",
+    });
+  });
+
   it("stages a new target only after the queued paper transition drains", async () => {
     const resumed = deferred<{ thread: { id: string; turns: never[] } }>();
     const client = {

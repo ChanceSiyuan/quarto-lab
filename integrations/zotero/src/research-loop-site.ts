@@ -138,6 +138,16 @@ export function createResearchLoopSiteRuntime(
       }, null, 2)}\n`, { tmpPath: `${markerPath}.tmp` });
     },
     async gitPrivatePath(repositoryRoot) {
+      const standardGitDirectory = PathUtils.join(repositoryRoot, ".git");
+      // A normal working tree keeps its private Git data directly under
+      // `<root>/.git`. Resolve that deterministic path without launching a
+      // short-lived helper process: on some Zotero/Gecko runs the process can
+      // exit before its terminal event is observed, leaving repository
+      // selection pending forever. Worktrees and other indirections still use
+      // `git rev-parse --git-path` below.
+      if (await IOUtils.exists(PathUtils.join(standardGitDirectory, "HEAD"))) {
+        return PathUtils.join(standardGitDirectory, "qlab", "repository-id");
+      }
       await bridge.start();
       repositoryIdentitySession += 1;
       return runGitPrivatePathProcess(
@@ -181,6 +191,7 @@ async function runGitPrivatePathProcess(
   let output = "";
   let settle: ((event: { exitCode: number | null }) => void) | null = null;
   const exited = new Promise<{ exitCode: number | null }>((resolve) => { settle = resolve; });
+  let timeout: ReturnType<typeof setTimeout> | undefined;
   const unsubscribe = bridge.onEvent((event: BridgeEvent) => {
     if (!("sessionId" in event) || event.sessionId !== sessionId) return;
     if (event.type === "output") {
@@ -204,11 +215,20 @@ async function runGitPrivatePathProcess(
       cwd: repositoryRoot,
       env: { PATH: "/usr/bin:/bin:/usr/sbin:/sbin" },
     });
-    const { exitCode } = await exited;
+    const { exitCode } = await Promise.race([
+      exited,
+      new Promise<never>((_resolve, reject) => {
+        timeout = setTimeout(
+          () => reject(new Error("Timed out while resolving the Git-private repository identity")),
+          10_000,
+        );
+      }),
+    ]);
     if (exitCode !== 0) throw new Error("Git-private repository identity is unavailable");
     return output;
   }
   finally {
+    if (timeout) clearTimeout(timeout);
     unsubscribe();
   }
 }

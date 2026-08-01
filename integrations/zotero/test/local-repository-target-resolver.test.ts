@@ -265,6 +265,9 @@ describe("local repository Gecko adapters", () => {
   });
 
   it("discovers the Git-private path through fixed structured argv", async () => {
+    const globals = globalThis as any;
+    const originalPathUtils = globals.PathUtils;
+    const originalIOUtils = globals.IOUtils;
     const listeners = new Set<(event: BridgeEvent) => void>();
     const spawnPipe = vi.fn(async (sessionId: string, options: SpawnOptions) => {
       const encoded = Buffer.from(".git/qlab/repository-id\n", "utf8").toString("base64");
@@ -284,25 +287,37 @@ describe("local repository Gecko adapters", () => {
         Buffer.from(data, "base64").toString("utf8")),
       flushOutput: vi.fn(() => ""),
     } satisfies Pick<NativeBridge, "start" | "spawnPipe" | "onEvent" | "decodeOutput" | "flushOutput">;
-    const runtime = createResearchLoopSiteRuntime(bridge, "resource://qlab/", "1.2.3");
+    globals.PathUtils = {
+      join: (...parts: string[]) => parts.join("/").replace(/\/{2,}/g, "/"),
+    };
+    globals.IOUtils = { exists: vi.fn(async () => false) };
+    try {
+      const runtime = createResearchLoopSiteRuntime(bridge, "resource://qlab/", "1.2.3");
 
-    await expect(runtime.gitPrivatePath("/repo with spaces"))
-      .resolves.toBe(".git/qlab/repository-id\n");
-    expect(spawnPipe).toHaveBeenCalledWith(
-      expect.stringMatching(/^repository-identity-\d+$/),
-      {
-        argv: [
-          "/usr/bin/git",
-          "-C",
-          "/repo with spaces",
-          "rev-parse",
-          "--git-path",
-          "qlab/repository-id",
-        ],
-        cwd: "/repo with spaces",
-        env: { PATH: "/usr/bin:/bin:/usr/sbin:/sbin" },
-      },
-    );
+      await expect(runtime.gitPrivatePath("/repo with spaces"))
+        .resolves.toBe(".git/qlab/repository-id\n");
+      expect(spawnPipe).toHaveBeenCalledWith(
+        expect.stringMatching(/^repository-identity-\d+$/),
+        {
+          argv: [
+            "/usr/bin/git",
+            "-C",
+            "/repo with spaces",
+            "rev-parse",
+            "--git-path",
+            "qlab/repository-id",
+          ],
+          cwd: "/repo with spaces",
+          env: { PATH: "/usr/bin:/bin:/usr/sbin:/sbin" },
+        },
+      );
+    }
+    finally {
+      if (originalPathUtils === undefined) delete globals.PathUtils;
+      else globals.PathUtils = originalPathUtils;
+      if (originalIOUtils === undefined) delete globals.IOUtils;
+      else globals.IOUtils = originalIOUtils;
+    }
   });
 
   it.each([
