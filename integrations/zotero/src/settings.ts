@@ -53,7 +53,9 @@ export async function loadSettings(
   const configured = configuredLibraryRoot();
   const repositoryTargets = parseStoredTargetPreferences(rawTargets.repositoryTargetsRaw);
   const qlabRoot = repositoryTargets.migratedLegacy
-    ? repositoryTargets.active?.canonicalRoot || ""
+    ? repositoryTargets.active?.canonicalRoot
+      || repositoryTargets.pendingCandidate?.canonicalRoot
+      || ""
     : rawTargets.legacyQLabRoot;
   return {
     libraryRoot: (await pathExists(configured)) ? configured : "",

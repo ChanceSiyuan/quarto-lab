@@ -221,6 +221,49 @@ describe("repository target startup", () => {
     expect({ preferences: h.preferences(), records: h.records() }).toEqual(persisted);
   });
 
+  it("publishes a newly chosen ready repository into Codex and persisted settings", async () => {
+    const originalServices = (globalThis as any).Services;
+    const setStringPref = vi.fn();
+    (globalThis as any).Services = { prefs: { setStringPref } };
+    const plugin = new ZoteroChatPlugin() as any;
+    const target = startupTarget("/chosen");
+    const staged = { snapshot: null, binding: null, activeDocument: null };
+    plugin.settings = startupSettings(EMPTY_TARGET_PREFERENCES);
+    plugin.codex = {
+      repositoryTargetBlockers: vi.fn(() => []),
+      stageRepositoryTarget: vi.fn(async () => staged),
+      commitRepositoryTarget: vi.fn(),
+      disposeStagedRepositoryTarget: vi.fn(async () => {}),
+    };
+    plugin.repositoryTargetResolver = { inspect: vi.fn(async () => target) };
+    plugin.updateInteractionContext = vi.fn();
+    plugin.renderChatViews = vi.fn();
+    plugin.repositoryTargetController = plugin.createRepositoryTargetController(null);
+
+    try {
+      await expect(plugin.activateRepositoryTarget("/chosen")).resolves.toBe("/chosen");
+      expect(plugin.codex.stageRepositoryTarget).toHaveBeenCalledWith(
+        { target, targetEpoch: 1 },
+        expect.any(AbortSignal),
+      );
+      expect(plugin.codex.commitRepositoryTarget).toHaveBeenCalledWith(staged);
+      expect(plugin.settings.qlabRoot).toBe("/chosen");
+      expect(plugin.settings.repositoryTargets.active).toEqual(target);
+      expect(plugin.activeRepositoryTarget).toEqual({ target, targetEpoch: 1 });
+      expect(setStringPref).toHaveBeenCalledWith(
+        "extensions.zotkit.qlabRoot",
+        "/chosen",
+      );
+      expect(setStringPref).toHaveBeenCalledWith(
+        "extensions.zotkit.repositoryTargets",
+        expect.stringContaining(`\"targetId\":\"${target.targetId}\"`),
+      );
+    }
+    finally {
+      (globalThis as any).Services = originalServices;
+    }
+  });
+
   it("retries a failed preference save with byte-stable migrated record fields", async () => {
     const diskFull = new Error("disk full");
     const h = targetStartupHarness({ preferenceFailure: diskFull });

@@ -9,6 +9,7 @@ import {
   type CodexPendingApproval,
   type PersistedSessionRecord,
   type SessionRecordsSnapshot,
+  type StagedCodexBinding,
 } from "./codex-service";
 import {
   ReaderContextService,
@@ -96,8 +97,10 @@ import {
   qlabRepositoryState,
 } from "./qlab-workspace";
 import { LocalRepositoryTargetResolver } from "./local-repository-target-resolver";
+import { RepositoryTargetController } from "./repository-target-controller";
 import {
   migrateLegacy,
+  type LocalRepositoryCandidate,
   type LegacyMigrationOutcome,
   type LegacyMigrationResolver,
   type RepositoryTargetSnapshot,
@@ -359,6 +362,8 @@ export async function startRepositoryTargetBoundServices<TMainSite, TTerminal, T
 export class ZoteroChatPlugin {
   private settings!: ZoteroChatSettings;
   private activeRepositoryTarget: RepositoryTargetSnapshot | null = null;
+  private repositoryTargetResolver: LocalRepositoryTargetResolver | null = null;
+  private repositoryTargetController!: RepositoryTargetController<StagedCodexBinding>;
   private readerContext!: ReaderContextService;
   private bridge!: NativeBridge;
   private mainSite!: ResearchLoopSiteService;
@@ -448,7 +453,8 @@ export class ZoteroChatPlugin {
       loadSettings,
       createResolver: () => {
         const runtime = ensureSiteRuntime();
-        const resolver = new LocalRepositoryTargetResolver(runtime);
+        const resolver = this.repositoryTargetResolver
+          ||= new LocalRepositoryTargetResolver(runtime);
         return {
           inspect: (root) => resolver.inspect(root),
           canonicalize: (path) => runtime.canonicalize(path).catch(() => null),
@@ -467,6 +473,8 @@ export class ZoteroChatPlugin {
       this.settings = preparedTarget.settings;
       this.bridge = ensureBridge();
       const siteRuntime = ensureSiteRuntime();
+      this.repositoryTargetResolver
+        ||= new LocalRepositoryTargetResolver(siteRuntime);
     await IOUtils.makeDirectory(profilePath(), {
       createAncestors: true,
       ignoreExisting: true,
@@ -627,6 +635,9 @@ export class ZoteroChatPlugin {
     this.mainSite = startedTargetServices.mainSite;
     this.terminal = startedTargetServices.terminal;
     this.codex = startedTargetServices.codex;
+    this.repositoryTargetController = this.createRepositoryTargetController(
+      startedTargetServices.prepared.activeSnapshot,
+    );
     this.paperTrail = new PaperTrailService(
       this.anchorHost,
       {
@@ -1606,6 +1617,7 @@ export class ZoteroChatPlugin {
         let root = this.settings?.qlabRoot || "";
         if (!root) root = await this.chooseQLabRoot(win) || "";
         await this.mainSite.deploy(root, onProgress);
+        await this.activateRepositoryTarget(root);
       },
       onOpenDocument: (relativePath) => void this.openQmdDocument(view, relativePath, win),
     }, { surface: "workbench" });
@@ -3956,6 +3968,95 @@ export class ZoteroChatPlugin {
     return open || matching[0] || null;
   }
 
+  private createRepositoryTargetController(
+    initialSnapshot: RepositoryTargetSnapshot | null,
+  ): RepositoryTargetController<StagedCodexBinding> {
+    return new RepositoryTargetController<StagedCodexBinding>({
+      checkBlockers: async () => this.codex.repositoryTargetBlockers(),
+      // Repository switches never interrupt a running turn implicitly. The
+      // current turn remains owned by its original target and the user can
+      // retry the switch after it reaches a terminal state.
+      resolveBlockers: async () => "cancel",
+      stage: (snapshot, signal) => this.codex.stageRepositoryTarget(snapshot, signal),
+      persist: async (snapshot) => {
+        const preferences = this.preferencesForActiveRepository(snapshot);
+        saveQLabRoot(snapshot.target.canonicalRoot);
+        saveRepositoryTargets(preferences);
+      },
+      publish: (snapshot, staged) => {
+        this.codex.commitRepositoryTarget(staged);
+        const preferences = this.preferencesForActiveRepository(snapshot);
+        this.activeRepositoryTarget = snapshot;
+        this.settings = {
+          ...this.settings,
+          qlabRoot: snapshot.target.canonicalRoot,
+          repositoryTargets: preferences,
+        };
+        this.updateInteractionContext();
+        this.renderChatViews();
+        return undefined;
+      },
+      disposeStaged: (staged) => this.codex.disposeStagedRepositoryTarget(staged),
+      disposeOld: async () => {},
+      markDegraded: (_snapshot, error) => {
+        this.reportError(error);
+        return undefined;
+      },
+    }, initialSnapshot);
+  }
+
+  private preferencesForActiveRepository(
+    snapshot: RepositoryTargetSnapshot,
+  ): StoredTargetPreferences {
+    return {
+      ...this.settings.repositoryTargets,
+      active: snapshot.target,
+      pendingCandidate: null,
+      migratedLegacy: true,
+    };
+  }
+
+  private async activateRepositoryTarget(root: string): Promise<string> {
+    const resolver = this.repositoryTargetResolver;
+    if (!resolver) throw new Error("The repository target resolver is not ready");
+    const inspected = await resolver.inspect(root);
+    if (inspected.kind === "candidate") {
+      throw new Error("Initialize this Research Loop repository before activating it");
+    }
+    if (inspected.kind === "unavailable") {
+      const reason = inspected.reason === "identity-unavailable"
+        ? "Its private Git identity could not be created or read"
+        : "The selected folder is no longer an available Research Loop repository";
+      throw new Error(reason);
+    }
+    await this.repositoryTargetController.switchTo(inspected);
+    return inspected.canonicalRoot;
+  }
+
+  private rememberRepositoryCandidate(candidate: LocalRepositoryCandidate): void {
+    if (this.activeRepositoryTarget) {
+      throw new Error(
+        "Finish initializing the new folder before switching away from the active Research Loop repository",
+      );
+    }
+    const pendingCandidate = { ...candidate, eligibleLegacyThreads: [] };
+    const repositoryTargets: StoredTargetPreferences = {
+      ...this.settings.repositoryTargets,
+      active: null,
+      pendingCandidate,
+      migratedLegacy: true,
+    };
+    saveQLabRoot(candidate.canonicalRoot);
+    saveRepositoryTargets(repositoryTargets);
+    this.settings = {
+      ...this.settings,
+      qlabRoot: candidate.canonicalRoot,
+      repositoryTargets,
+    };
+    this.updateInteractionContext();
+    this.renderChatViews();
+  }
+
   private async chooseQLabRoot(preferredWindow?: Window): Promise<string | null> {
     const { FilePicker } = ChromeUtils.importESModule(
       "chrome://zotero/content/modules/filePicker.mjs",
@@ -3971,11 +4072,12 @@ export class ZoteroChatPlugin {
     if (state === "incompatible") {
       throw new Error("This folder contains unrelated files. Choose an empty folder, an existing Research Loop repository, or a folder containing only knowledge/, drafts/, and literature/.");
     }
-    saveQLabRoot(root);
-    this.settings = { ...this.settings, qlabRoot: root };
-    this.updateInteractionContext();
-    this.renderChatViews();
-    return root;
+    if (state === "missing") throw new Error("The selected Research Loop folder is unavailable");
+    if (state === "empty" || state === "partial") {
+      this.rememberRepositoryCandidate({ kind: "candidate", canonicalRoot: root, state });
+      return root;
+    }
+    return this.activateRepositoryTarget(root);
   }
 
   private async loadChatGPTHistory(): Promise<void> {

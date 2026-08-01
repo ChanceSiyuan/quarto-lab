@@ -88,6 +88,40 @@ describe("repository target identity", () => {
     expect(preferenceReads.filter((name) => name.endsWith("repositoryTargets"))).toHaveLength(1);
   });
 
+  it("restores a pending initialization folder as the display-safe QLab root", async () => {
+    vi.stubGlobal("Services", {
+      prefs: {
+        getStringPref: (name: string, fallback: string) =>
+          name.endsWith("libraryRoot") ? "/library" : fallback,
+        getIntPref: (_name: string, fallback: number) => fallback,
+        getBoolPref: (_name: string, fallback: boolean) => fallback,
+      },
+    });
+    vi.stubGlobal("IOUtils", {
+      exists: vi.fn(async (path: string) => path === "/pending"),
+    });
+    vi.stubGlobal("Zotero", { Profile: { dir: "/profile" } });
+    vi.stubGlobal("PathUtils", { join: (...parts: string[]) => parts.join("/") });
+    const repositoryTargets: StoredTargetPreferences = {
+      ...EMPTY_PREFERENCES,
+      pendingCandidate: {
+        kind: "candidate",
+        canonicalRoot: "/pending",
+        state: "empty",
+        eligibleLegacyThreads: [],
+      },
+      migratedLegacy: true,
+    };
+
+    const settings = await loadSettings({
+      legacyQLabRoot: "/stale",
+      repositoryTargetsRaw: JSON.stringify(repositoryTargets),
+    });
+
+    expect(settings.qlabRoot).toBe("/pending");
+    expect(settings.repositoryTargets.pendingCandidate?.canonicalRoot).toBe("/pending");
+  });
+
   it("derives IDs from exact NUL-delimited UTF-8 bytes through an injected digest", () => {
     const seen: Uint8Array[] = [];
     const digest = (bytes: Uint8Array) => { seen.push(bytes); return `d${seen.length}`.padEnd(64, "0"); };
