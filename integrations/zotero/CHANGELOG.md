@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.11.0
+
+- Add AI Context attachments with strict Draft authority: every context remains
+  an untrusted QMD under `drafts/ai-contexts/`, while Zotero uses linked
+  projections rather than a second copy.
+- Project one same-file attachment beneath each selected parent, and resume a
+  dedicated context conversation when the QMD opens in the Workbench.
+- Add ordered shared Reading Contexts for 1–50 local-library papers and
+  top-level standalone AI Contexts.
+- Protect managed-block updates with compare-and-swap: retry one concurrent
+  edit against the latest Draft, then report a conflict without overwriting it.
+- Retain committed Drafts after partial Zotero projection failures and repair
+  only missing handles, asking the user to choose when several records qualify.
+- Use Zotero 9's internal attachment opener where available, with **Open AI
+  Context in QLab** as the menu fallback when that unsupported internal seam is
+  unavailable.
+- Native Zotero 9 smoke testing remains required and outstanding for save and
+  update, shared Reading Context and standalone creation, attachment opening
+  and menu fallback, dedicated resume, CAS conflict behavior, and
+  partial-projection repair; this release does not claim native verification.
+
 ## 0.10.1
 
 - Bind region capture to the exact invoking Reader and page, retain source-paper/page provenance on the pending chip, and use a dashed selection-rectangle toolbar icon.

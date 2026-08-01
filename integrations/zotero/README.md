@@ -116,6 +116,33 @@ Both entries require an open PDF. Click any screenshot chip to remove it
 before sending; screenshots ride along with the next message only and are
 never stored in Zotero.
 
+## AI Context attachments
+
+After a completed live conversation, choose **Save AI Context**. QLab creates
+one untrusted QMD Draft under `drafts/ai-contexts/` and links that same file
+beneath every paper in the conversation. The Draft is the strict authority;
+the Zotero attachments are linked projections, never a second copy. **Update
+AI Context** refreshes only the managed block; personal notes outside it stay
+byte-for-byte unchanged.
+
+Select 1–50 local-library papers and choose **Create Shared Reading Context**
+to generate one ordered, resumable reading plan. **Create Standalone AI
+Context** makes a top-level linked attachment. Opening a valid attachment (or
+using **Open AI Context in QLab**) shows its QMD on the right and resumes its
+dedicated conversation on the left. The internal Zotero 9 attachment opener is
+used when available; the item-menu action remains the fallback.
+
+Updates use compare-and-swap protection: a concurrent edit is retried once
+against the latest Draft, then reports a conflict without overwriting either
+version. If Zotero creates only some attachment handles, the Draft remains
+intact. Choose **Repair AI Context Attachments** to recreate only missing
+handles; when several records need repair, QLab asks which record to repair.
+
+Native Zotero 9 smoke testing remains required and outstanding for the save and
+update flow, shared Reading Context and standalone creation, attachment
+double-click/open-menu fallback, dedicated resume, conflict handling, and
+partial-projection repair.
+
 ## Build and test
 
 Building the add-on requires Node.js 20+, Xcode command-line tools on macOS,
