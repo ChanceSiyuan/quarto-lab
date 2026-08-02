@@ -120,6 +120,11 @@ export type ActivationFrameContext = Readonly<{
   capabilities: readonly string[];
 }>;
 
+export type ActivationChannelBinding = Readonly<{
+  mode: ActivationClientHello["mode"];
+  context: ActivationFrameContext;
+}>;
+
 export type ActivationRequest = {
   [M in ActivationMethod]: ActivationFrameContext & Readonly<{
     kind: "request";
@@ -268,6 +273,154 @@ function joinBytes(left: Uint8Array, right: Uint8Array): Uint8Array {
   return joined;
 }
 
+class StrictJsonPreflight {
+  private index = 0;
+
+  constructor(private readonly source: string) {}
+
+  parse(): void {
+    this.skipWhitespace();
+    this.parseValue();
+    this.skipWhitespace();
+    if (this.index !== this.source.length) this.fail();
+  }
+
+  private fail(): never {
+    throw new SyntaxError("Malformed JSON or duplicate object key");
+  }
+
+  private skipWhitespace(): void {
+    while (this.index < this.source.length
+      && (this.source[this.index] === " " || this.source[this.index] === "\t"
+        || this.source[this.index] === "\r" || this.source[this.index] === "\n")) {
+      this.index++;
+    }
+  }
+
+  private parseValue(): void {
+    const token = this.source[this.index];
+    if (token === "{") return this.parseObject();
+    if (token === "[") return this.parseArray();
+    if (token === '"') {
+      this.parseString(false);
+      return;
+    }
+    if (token === "t") return this.parseLiteral("true");
+    if (token === "f") return this.parseLiteral("false");
+    if (token === "n") return this.parseLiteral("null");
+    this.parseNumber();
+  }
+
+  private parseObject(): void {
+    this.index++;
+    this.skipWhitespace();
+    if (this.source[this.index] === "}") {
+      this.index++;
+      return;
+    }
+    const keys = new Set<string>();
+    for (;;) {
+      if (this.source[this.index] !== '"') this.fail();
+      const key = this.parseString(true);
+      if (keys.has(key)) this.fail();
+      keys.add(key);
+      this.skipWhitespace();
+      if (this.source[this.index++] !== ":") this.fail();
+      this.skipWhitespace();
+      this.parseValue();
+      this.skipWhitespace();
+      const separator = this.source[this.index++];
+      if (separator === "}") return;
+      if (separator !== ",") this.fail();
+      this.skipWhitespace();
+    }
+  }
+
+  private parseArray(): void {
+    this.index++;
+    this.skipWhitespace();
+    if (this.source[this.index] === "]") {
+      this.index++;
+      return;
+    }
+    for (;;) {
+      this.parseValue();
+      this.skipWhitespace();
+      const separator = this.source[this.index++];
+      if (separator === "]") return;
+      if (separator !== ",") this.fail();
+      this.skipWhitespace();
+    }
+  }
+
+  private parseString(capture: boolean): string {
+    this.index++;
+    const pieces: string[] = [];
+    let plainStart = this.index;
+    for (;;) {
+      if (this.index >= this.source.length) this.fail();
+      const character = this.source[this.index];
+      const code = this.source.charCodeAt(this.index);
+      if (character === '"') {
+        if (capture) pieces.push(this.source.slice(plainStart, this.index));
+        this.index++;
+        return capture ? pieces.join("") : "";
+      }
+      if (code < 0x20) this.fail();
+      if (character !== "\\") {
+        this.index++;
+        continue;
+      }
+      if (capture) pieces.push(this.source.slice(plainStart, this.index));
+      this.index++;
+      const escaped = this.source[this.index++];
+      const simple: { [key: string]: string } = {
+        '"': '"', "\\": "\\", "/": "/", b: "\b", f: "\f",
+        n: "\n", r: "\r", t: "\t",
+      };
+      if (escaped === "u") {
+        const hexadecimal = this.source.slice(this.index, this.index + 4);
+        if (!/^[0-9A-Fa-f]{4}$/u.test(hexadecimal)) this.fail();
+        if (capture) pieces.push(String.fromCharCode(Number.parseInt(hexadecimal, 16)));
+        this.index += 4;
+      }
+      else if (Object.hasOwn(simple, escaped)) {
+        if (capture) pieces.push(simple[escaped]);
+      }
+      else this.fail();
+      plainStart = this.index;
+    }
+  }
+
+  private parseLiteral(literal: string): void {
+    if (!this.source.startsWith(literal, this.index)) this.fail();
+    this.index += literal.length;
+  }
+
+  private parseNumber(): void {
+    if (this.source[this.index] === "-") this.index++;
+    if (this.source[this.index] === "0") {
+      this.index++;
+      if (/[0-9]/u.test(this.source[this.index] ?? "")) this.fail();
+    }
+    else {
+      if (!/[1-9]/u.test(this.source[this.index] ?? "")) this.fail();
+      while (/[0-9]/u.test(this.source[this.index] ?? "")) this.index++;
+    }
+    if (this.source[this.index] === ".") {
+      this.index++;
+      if (!/[0-9]/u.test(this.source[this.index] ?? "")) this.fail();
+      while (/[0-9]/u.test(this.source[this.index] ?? "")) this.index++;
+    }
+    if (this.source[this.index] === "e" || this.source[this.index] === "E") {
+      this.index++;
+      if (this.source[this.index] === "+" || this.source[this.index] === "-") this.index++;
+      if (!/[0-9]/u.test(this.source[this.index] ?? "")) this.fail();
+      while (/[0-9]/u.test(this.source[this.index] ?? "")) this.index++;
+    }
+  }
+}
+
 function parseJson(bytes: Uint8Array): unknown {
   let source: string;
   try {
@@ -277,6 +430,7 @@ function parseJson(bytes: Uint8Array): unknown {
     return protocolError("MALFORMED_FRAME", "Remote helper frame is not valid UTF-8");
   }
   try {
+    new StrictJsonPreflight(source).parse();
     return JSON.parse(source) as unknown;
   }
   catch {
@@ -284,13 +438,23 @@ function parseJson(bytes: Uint8Array): unknown {
   }
 }
 
+export type BoundedJsonlDecodeResult = Readonly<{
+  frames: readonly unknown[];
+  transitioned: boolean;
+  rawRemainder: Uint8Array | null;
+}>;
+
 /** One byte-oriented decoder for every helper JSONL phase. */
 export class BoundedJsonlDecoder {
   private pending: Uint8Array<ArrayBufferLike> = new Uint8Array();
   private decodedFrames = 0;
-  private state: "open" | "terminal" | "finished" | "failed" = "open";
+  private state: "open" | "terminal" | "transitioned" | "finished" | "failed" = "open";
 
-  push(chunk: Uint8Array): readonly unknown[] {
+  constructor(
+    private readonly transitionAfter: ((frame: unknown) => boolean) | null = null,
+  ) {}
+
+  push(chunk: Uint8Array): BoundedJsonlDecodeResult {
     if (this.state !== "open") {
       return protocolError("INVALID_FRAME", "Remote helper JSONL stream is already terminal");
     }
@@ -318,11 +482,25 @@ export class BoundedJsonlDecoder {
           this.state = "terminal";
           break;
         }
+        if (this.transitionAfter?.(frame)) {
+          const rawRemainder = chunk.subarray(chunk.length - this.pending.length);
+          this.pending = new Uint8Array();
+          this.state = "transitioned";
+          return Object.freeze({
+            frames: Object.freeze(frames),
+            transitioned: true,
+            rawRemainder,
+          });
+        }
       }
       if (this.pending.length >= REMOTE_HELPER_MAX_FRAME_BYTES) {
         return protocolError("FRAME_TOO_LARGE", "Remote helper JSONL frame exceeds 8 MiB");
       }
-      return frames;
+      return Object.freeze({
+        frames: Object.freeze(frames),
+        transitioned: false,
+        rawRemainder: null,
+      });
     }
     catch (error) {
       this.state = "failed";
@@ -331,7 +509,7 @@ export class BoundedJsonlDecoder {
   }
 
   finish(): readonly unknown[] {
-    if (this.state === "finished" || this.state === "failed") {
+    if (this.state === "finished" || this.state === "failed" || this.state === "transitioned") {
       return protocolError("INVALID_FRAME", "Remote helper JSONL stream is already closed");
     }
     if (this.state === "terminal") {
@@ -430,6 +608,20 @@ function requireCoreVersion(value: unknown, label: string): string {
     return protocolError("INVALID_FRAME", `${label} must be a numeric semantic version core`);
   }
   return value;
+}
+
+function compareCoreVersions(left: string, right: string): number {
+  const leftParts = left.split(".");
+  const rightParts = right.split(".");
+  for (let index = 0; index < 3; index++) {
+    if (leftParts[index].length !== rightParts[index].length) {
+      return leftParts[index].length < rightParts[index].length ? -1 : 1;
+    }
+    if (leftParts[index] !== rightParts[index]) {
+      return leftParts[index] < rightParts[index] ? -1 : 1;
+    }
+  }
+  return 0;
 }
 
 function requireEpoch(value: unknown): number {
@@ -763,16 +955,24 @@ function decodeActivationParams(method: ActivationMethod, value: unknown): Activ
 
 export function decodeActivationRequest(
   value: unknown,
-  expectedContext: ActivationFrameContext,
+  expectedBinding: ActivationChannelBinding,
 ): ActivationRequest {
+  if (!expectedBinding?.context) {
+    return protocolError("CONTEXT_MISMATCH", "Activation request requires its channel binding");
+  }
   const frame = record(value, "Activation request");
   exactKeys(frame, [
     "protocolVersion", "helperVersion", "activationId", "hostInstanceId", "capabilities",
     "kind", "id", "method", "params",
   ], "Activation request");
   if (frame.kind !== "request") return protocolError("INVALID_FRAME", "Expected an activation request");
-  const context = decodeActivationContext(frame, expectedContext);
+  const mode = requireActivationMode(expectedBinding.mode);
+  requireActivationCapabilities(expectedBinding.context.capabilities, mode, "channel capabilities");
+  const context = decodeActivationContext(frame, expectedBinding.context);
   const method = requireActivationMethod(frame.method);
+  if (mode !== "browse") {
+    return protocolError("METHOD_NOT_ALLOWED", `${mode} does not accept activation RPCs`);
+  }
   const params = decodeActivationParams(method, frame.params);
   return Object.freeze({
     ...context,
@@ -824,17 +1024,27 @@ function decodeCodexProbeResult(value: unknown): CodexProbeResult {
   }
   if (result.state === "incompatible") {
     exactKeys(result, ["state", "foundVersion", "minimumVersion"], "incompatible Codex probe result");
+    const foundVersion = requireCoreVersion(result.foundVersion, "foundVersion");
+    const minimumVersion = requireCoreVersion(result.minimumVersion, "minimumVersion");
+    if (minimumVersion !== MINIMUM_CODEX_VERSION
+      || compareCoreVersions(foundVersion, MINIMUM_CODEX_VERSION) >= 0) {
+      return protocolError("INVALID_FRAME", "Incompatible Codex result contradicts the version floor");
+    }
     return Object.freeze({
       state: "incompatible" as const,
-      foundVersion: requireCoreVersion(result.foundVersion, "foundVersion"),
-      minimumVersion: requireCoreVersion(result.minimumVersion, "minimumVersion"),
+      foundVersion,
+      minimumVersion,
     });
   }
   if (result.state === "unauthenticated" || result.state === "ready") {
     exactKeys(result, ["state", "version"], `${result.state} Codex probe result`);
+    const version = requireCoreVersion(result.version, "version");
+    if (compareCoreVersions(version, MINIMUM_CODEX_VERSION) < 0) {
+      return protocolError("INVALID_FRAME", `${result.state} Codex result is below the version floor`);
+    }
     return Object.freeze({
       state: result.state,
-      version: requireCoreVersion(result.version, "version"),
+      version,
     });
   }
   return protocolError("INVALID_FRAME", "Codex probe result has an unknown state");
@@ -947,7 +1157,7 @@ export function decodeBoundProtocolError(
 
 export function decodeStreamReady(
   value: unknown,
-  expectedContext: BoundFrameContext,
+  expectedHello: BoundServerHello,
 ): StreamReady {
   const frame = record(value, "Stream-ready frame");
   exactKeys(frame, [
@@ -957,10 +1167,14 @@ export function decodeStreamReady(
   if (frame.kind !== "stream-ready" || frame.stream !== "codex-jsonl") {
     return protocolError("INVALID_FRAME", "Expected a codex-jsonl stream-ready frame");
   }
+  const requestId = requireId(frame.requestId, "requestId");
+  if (requestId !== expectedHello?.requestId) {
+    return protocolError("CONTEXT_MISMATCH", "Stream-ready does not match its bound hello");
+  }
   return Object.freeze({
-    ...decodeBoundContext(frame, expectedContext),
+    ...decodeBoundContext(frame, expectedHello),
     kind: "stream-ready" as const,
-    requestId: requireId(frame.requestId, "requestId"),
+    requestId,
     stream: "codex-jsonl" as const,
   });
 }

@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import {
   BoundedJsonlDecoder,
@@ -22,6 +22,7 @@ import {
   type ActivationServerHello,
   type BoundClientHello,
   type BoundFrameContext,
+  type BoundServerHello,
 } from "../src/remote-helper-protocol";
 
 const HOST_UUID = "11111111-1111-4111-8111-111111111111";
@@ -77,6 +78,10 @@ function activationContext(
   };
 }
 
+function browseBinding(context = activationContext()) {
+  return { mode: "browse" as const, context };
+}
+
 function boundHello(overrides: Partial<BoundClientHello> = {}): BoundClientHello {
   return {
     kind: "hello",
@@ -109,6 +114,27 @@ function boundContext(overrides: Partial<BoundFrameContext> = {}): BoundFrameCon
   };
 }
 
+function boundServer(overrides: Partial<BoundServerHello> = {}): BoundServerHello {
+  const client = boundHello();
+  return {
+    kind: "hello",
+    phase: "bound",
+    requestId: client.requestId,
+    protocolVersion: 1,
+    helperVersion: client.helperVersion,
+    mode: client.mode,
+    targetId: client.targetId,
+    targetEpoch: client.targetEpoch,
+    canonicalRoot: client.canonicalRoot,
+    hostInstanceId: client.expectedHostInstanceId,
+    repositoryUuid: client.expectedRepositoryUuid,
+    repositoryId: client.expectedRepositoryId,
+    helperInstanceId: "helper-instance-1",
+    capabilities: client.requestedCapabilities,
+    ...overrides,
+  };
+}
+
 function expectProtocolError(
   action: () => unknown,
   code: RemoteHelperProtocolError["code"],
@@ -124,15 +150,46 @@ function expectProtocolError(
 }
 
 describe("bounded UTF-8 JSONL codec", () => {
+  it.each([
+    ["setup-ready", { kind: "setup-ready" }],
+    ["stream-ready", { kind: "stream-ready" }],
+  ])("transitions after a fragmented %s frame and returns untouched coalesced raw bytes", (
+    _label,
+    ready,
+  ) => {
+    // Break caught: the machine decoder consumes/copies raw bytes that share the ready chunk.
+    const encodedReady = encodeJsonlFrame(ready);
+    const split = encodedReady.length - 4;
+    const raw = Uint8Array.from([0x00, 0xff, 0x0a, 0x7b, 0x22, 0x78, 0x22]);
+    const coalesced = new Uint8Array(encodedReady.length - split + raw.length);
+    coalesced.set(encodedReady.subarray(split));
+    coalesced.set(raw, encodedReady.length - split);
+    const decoder = new BoundedJsonlDecoder(
+      (frame) => typeof frame === "object" && frame !== null
+        && "kind" in frame && frame.kind === ready.kind,
+    );
+
+    expect(decoder.push(encodedReady.subarray(0, split)).frames).toEqual([]);
+    const result = decoder.push(coalesced);
+    expect(result.frames).toEqual([ready]);
+    expect(result.transitioned).toBe(true);
+    expect(result.rawRemainder).toEqual(raw);
+    expect(result.rawRemainder?.buffer).toBe(coalesced.buffer);
+    expect(result.rawRemainder?.byteOffset).toBe(
+      coalesced.byteOffset + encodedReady.length - split,
+    );
+    expectProtocolError(() => decoder.push(encodeJsonlFrame({ ignored: true })), "INVALID_FRAME");
+  });
+
   it("preserves a multibyte path split across arbitrary byte chunks", () => {
     // Break caught: decoding chunks independently replaces a split UTF-8 code point.
     const encoded = encodeJsonlFrame({ path: "/home/alice/研究" });
     const split = encoded.findIndex((byte) => byte >= 0x80) + 1;
     const decoder = new BoundedJsonlDecoder();
 
-    expect(decoder.push(encoded.slice(0, split))).toEqual([]);
-    expect(decoder.push(encoded.slice(split, -1))).toEqual([]);
-    expect(decoder.push(encoded.slice(-1))).toEqual([{ path: "/home/alice/研究" }]);
+    expect(decoder.push(encoded.slice(0, split)).frames).toEqual([]);
+    expect(decoder.push(encoded.slice(split, -1)).frames).toEqual([]);
+    expect(decoder.push(encoded.slice(-1)).frames).toEqual([{ path: "/home/alice/研究" }]);
     expect(decoder.finish()).toEqual([]);
   });
 
@@ -144,13 +201,52 @@ describe("bounded UTF-8 JSONL codec", () => {
     const valid = new TextEncoder().encode(`{"value":"${value}"}\n`);
     const decoder = new BoundedJsonlDecoder();
     expect(valid).toHaveLength(REMOTE_HELPER_MAX_FRAME_BYTES);
-    expect(decoder.push(valid)).toHaveLength(1);
+    expect(decoder.push(valid).frames).toHaveLength(1);
 
     const overlong = new TextEncoder().encode(`{"value":"${value}x"}\n`);
     expectProtocolError(
       () => new BoundedJsonlDecoder().push(overlong),
       "FRAME_TOO_LARGE",
     );
+  });
+
+  it("rejects an oversized unfinished frame before copying its bytes", () => {
+    // Break caught: the decoder clones an already-oversized chunk before checking its bound.
+    const oversized = new Uint8Array(REMOTE_HELPER_MAX_FRAME_BYTES);
+    Object.defineProperty(oversized, "slice", {
+      value: () => { throw new Error("oversized frame was copied"); },
+    });
+    expectProtocolError(
+      () => new BoundedJsonlDecoder().push(oversized),
+      "FRAME_TOO_LARGE",
+    );
+  });
+
+  it("copies only linearly when a frame arrives as one-byte fragments", () => {
+    // Break caught: joining the entire pending frame per byte performs quadratic copying.
+    const encoded = new TextEncoder().encode(`{"value":"${"x".repeat(4096)}"}\n`);
+    const originalSet = Uint8Array.prototype.set;
+    let copiedBytes = 0;
+    const setSpy = vi.spyOn(Uint8Array.prototype, "set").mockImplementation(function (
+      this: Uint8Array,
+      source: ArrayLike<number>,
+      offset?: number,
+    ): void {
+      copiedBytes += source.length;
+      originalSet.call(this, source, offset);
+    });
+    try {
+      const decoder = new BoundedJsonlDecoder();
+      let finalFrames: readonly unknown[] = [];
+      for (let index = 0; index < encoded.length; index++) {
+        finalFrames = decoder.push(encoded.subarray(index, index + 1)).frames;
+      }
+      expect(finalFrames).toEqual([{ value: "x".repeat(4096) }]);
+      expect(copiedBytes).toBeLessThan(encoded.length * 4);
+    }
+    finally {
+      setSpy.mockRestore();
+    }
   });
 
   it("rejects invalid UTF-8, malformed JSON, and an unterminated final frame", () => {
@@ -168,6 +264,18 @@ describe("bounded UTF-8 JSONL codec", () => {
     expectProtocolError(() => decoder.finish(), "TRUNCATED_FRAME");
   });
 
+  it.each([
+    ['{"same":1,"same":2}\n'],
+    ['{"same":1,"\\u0073ame":2}\n'],
+    ['{"outer":{"nested":1,"nested":2}}\n'],
+  ])("rejects duplicate JSON object keys before value collapse", (source) => {
+    // Break caught: JSON.parse silently keeps only the final duplicate value.
+    expectProtocolError(
+      () => new BoundedJsonlDecoder().push(new TextEncoder().encode(source)),
+      "MALFORMED_FRAME",
+    );
+  });
+
   it("rejects EOF before the required first hello and remains terminal after an error", () => {
     expectProtocolError(() => new BoundedJsonlDecoder().finish(), "TRUNCATED_FRAME");
 
@@ -177,7 +285,7 @@ describe("bounded UTF-8 JSONL codec", () => {
       requestId: null,
       code: "INVALID_REQUEST",
       message: "stop",
-    }))).toHaveLength(1);
+    })).frames).toHaveLength(1);
     expectProtocolError(
       () => decoder.push(encodeJsonlFrame({ kind: "response" })),
       "INVALID_FRAME",
@@ -284,12 +392,50 @@ describe("activation hello and RPC codecs", () => {
       },
       { ...context, kind: "request", id: "probe-1", method: "codex.probe", params: {} },
     ];
-    expect(requests.map((request) => decodeActivationRequest(request, context).method))
+    expect(requests.map((request) => decodeActivationRequest(
+      request,
+      browseBinding(context),
+    ).method))
       .toEqual(["browse.home", "browse.listDirectories", "browse.canonicalize", "codex.probe"]);
     expectProtocolError(
       () => decodeActivationRequest(requests[0], undefined as never),
       "CONTEXT_MISMATCH",
     );
+  });
+
+  it("gates activation RPCs by the originating channel mode without widening wire context", () => {
+    // Break caught: a repository/setup channel can dispatch browse or probe RPCs.
+    const browseContext = activationContext();
+    const browseRequest = {
+      ...browseContext,
+      kind: "request",
+      id: "home-mode",
+      method: "browse.home",
+      params: {},
+    };
+    expect(decodeActivationRequest(browseRequest, {
+      mode: "browse",
+      context: browseContext,
+    })).toMatchObject({ method: "browse.home" });
+
+    for (const [mode, capabilities] of [
+      ["repository-handshake", []],
+      ["setup-auth", ["codex-device-auth-pty"]],
+    ] as const) {
+      const context = activationContext({ capabilities });
+      for (const [method, params] of [
+        ["browse.home", {}],
+        ["codex.probe", {}],
+      ] as const) {
+        expectProtocolError(() => decodeActivationRequest({
+          ...context,
+          kind: "request",
+          id: `${mode}-${method}`,
+          method,
+          params,
+        }, { mode, context }), "METHOD_NOT_ALLOWED");
+      }
+    }
   });
 
   it.each([
@@ -303,7 +449,7 @@ describe("activation hello and RPC codecs", () => {
     expectProtocolError(
       () => decodeActivationRequest({
         ...context, kind: "request", id: "request-1", ...fields,
-      }, context),
+      }, browseBinding(context)),
       code,
     );
   });
@@ -316,7 +462,7 @@ describe("activation hello and RPC codecs", () => {
       id: "list-1",
       method: "browse.listDirectories",
       params: { path: "/home/alice" },
-    }, context);
+    }, browseBinding(context));
     const list = decodeActivationResponse({
       ...context,
       kind: "response",
@@ -330,7 +476,7 @@ describe("activation hello and RPC codecs", () => {
 
     for (const result of [
       { state: "missing" },
-      { state: "incompatible", foundVersion: "0.0.1", minimumVersion: "1.0.0" },
+      { state: "incompatible", foundVersion: "0.0.1", minimumVersion: "0.146.0" },
       { state: "unauthenticated", version: "1.2.3" },
       { state: "ready", version: "1.2.3" },
     ]) {
@@ -340,11 +486,47 @@ describe("activation hello and RPC codecs", () => {
         id: `probe-${result.state}`,
         method: "codex.probe",
         params: {},
-      }, context);
+      }, browseBinding(context));
       expect(decodeActivationResponse({
         ...context, kind: "response", id: `probe-${result.state}`,
         method: "codex.probe", result,
       }, request)).toMatchObject({ method: "codex.probe", result });
+    }
+  });
+
+  it("enforces the exact Codex floor and state semantics at 0.146.0", () => {
+    // Break caught: syntactically valid probe states contradict the negotiated floor.
+    const context = activationContext();
+    const request = decodeActivationRequest({
+      ...context,
+      kind: "request",
+      id: "probe-floor",
+      method: "codex.probe",
+      params: {},
+    }, browseBinding(context));
+    const frame = (result: unknown) => ({
+      ...context,
+      kind: "response",
+      id: "probe-floor",
+      method: "codex.probe",
+      result,
+    });
+    for (const result of [
+      { state: "incompatible", foundVersion: "0.145.999", minimumVersion: "0.146.0" },
+      { state: "ready", version: "0.146.0" },
+      { state: "unauthenticated", version: "10.0.0" },
+    ]) {
+      expect(decodeActivationResponse(frame(result), request)).toMatchObject({ result });
+    }
+    for (const result of [
+      { state: "incompatible", foundVersion: "0.145.999", minimumVersion: "0.145.0" },
+      { state: "incompatible", foundVersion: "0.146.0", minimumVersion: "0.146.0" },
+      { state: "incompatible", foundVersion: "1.0.0", minimumVersion: "0.146.0" },
+      { state: "ready", version: "0.145.999" },
+      { state: "unauthenticated", version: "0.0.1" },
+      { state: "ready", version: "0.146.0-beta" },
+    ]) {
+      expectProtocolError(() => decodeActivationResponse(frame(result), request), "INVALID_FRAME");
     }
   });
 
@@ -356,7 +538,7 @@ describe("activation hello and RPC codecs", () => {
       id: "home-1",
       method: "browse.home",
       params: {},
-    }, context);
+    }, browseBinding(context));
     expectProtocolError(() => decodeActivationResponse({
       ...context,
       helperVersion: "2.0.0",
@@ -403,7 +585,7 @@ describe("activation hello and RPC codecs", () => {
       id: "list-1",
       method: "browse.listDirectories",
       params: { path: "/home/alice" },
-    }, context);
+    }, browseBinding(context));
     const entries = Array.from({ length: 1025 }, (_unused, index) => ({
       name: `directory-${index}`,
       path: `/home/alice/directory-${index}`,
@@ -510,25 +692,32 @@ describe("bound handshake and context", () => {
 
   it("validates stream/setup transitions against their complete contexts", () => {
     const context = boundContext();
+    const expectedBoundHello = boundServer();
     expect(decodeStreamReady({
       ...context,
       kind: "stream-ready",
       requestId: "bound-hello-1",
       stream: "codex-jsonl",
-    }, context)).toMatchObject({ stream: "codex-jsonl" });
+    }, expectedBoundHello)).toMatchObject({ stream: "codex-jsonl" });
     expectProtocolError(() => decodeStreamReady({
       ...context,
       targetEpoch: 8,
       kind: "stream-ready",
       requestId: "bound-hello-1",
       stream: "codex-jsonl",
-    }, context), "CONTEXT_MISMATCH");
+    }, expectedBoundHello), "CONTEXT_MISMATCH");
     expectProtocolError(() => decodeStreamReady({
       ...context,
       kind: "stream-ready",
       requestId: "bound-hello-1",
       stream: "codex-jsonl",
     }, undefined as never), "CONTEXT_MISMATCH");
+    expectProtocolError(() => decodeStreamReady({
+      ...context,
+      kind: "stream-ready",
+      requestId: "stale-bound-hello",
+      stream: "codex-jsonl",
+    }, boundServer()), "CONTEXT_MISMATCH");
 
     const client = activationHello({
       mode: "setup-auth",
