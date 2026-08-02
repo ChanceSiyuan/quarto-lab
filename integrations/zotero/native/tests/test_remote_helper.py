@@ -339,8 +339,10 @@ class RemoteHelperTests(unittest.TestCase):
 
     def test_a_complete_invalid_uuid_is_not_retried_as_concurrent_publication(self) -> None:
         # Break caught: retrying every invalid file lets stable corrupt state become valid mid-handshake.
+        # Seed the independent host identity first so its initial durable fsync cannot consume
+        # the replacement delay and turn this into a scheduler race on slower filesystems.
+        self.successful_repository_identity()
         qlab = self.repo / ".git" / "qlab"
-        qlab.mkdir(mode=0o700)
         identity = qlab / "repository-id"
         identity.write_text("x" * 36 + "\n")
         identity.chmod(0o600)
