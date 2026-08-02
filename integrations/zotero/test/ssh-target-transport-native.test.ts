@@ -107,7 +107,11 @@ class NodeWebSocketClient {
 
 class NodeTransportFiles implements SshTransportFiles {
   readonly removed: string[] = [];
-  constructor(private readonly root: string, private readonly auditPath: string) {}
+  constructor(
+    private readonly root: string,
+    private readonly auditPath: string,
+    private readonly lifecycle: string[],
+  ) {}
 
   async createPrivateDirectory(): Promise<string> {
     const path = await mkdtemp(join(this.root, "master-"));
@@ -139,6 +143,7 @@ class NodeTransportFiles implements SshTransportFiles {
   }
   async removeFile(path: string): Promise<void> {
     this.removed.push(path);
+    if (path.endsWith("master.log")) this.lifecycle.push("remove-master-log");
     await appendFile(this.auditPath, `${JSON.stringify({ event: "remove", path })}\n`);
     await rm(path, { force: true });
   }
@@ -182,7 +187,7 @@ if (args.includes("-MN")) {
   writeFileSync(control + ".pid", String(process.pid));
   const server = createServer(() => {});
   server.listen(control);
-  const finish = () => { record({ event: "master-exit" }); server.close(() => process.exit(0)); };
+  const finish = () => { server.close(() => process.exit(0)); };
   process.on("SIGTERM", finish);
   process.on("SIGHUP", finish);
 } else if (args.includes("-O") && args[args.indexOf("-O") + 1] === "exit") {
@@ -214,7 +219,17 @@ if (args.includes("-MN")) {
     await client.connect(socketPath);
     const bridge = new NativeBridge("file:///unused/", "test");
     client.attach(bridge);
-    const files = new NodeTransportFiles(root, auditPath);
+    const lifecycle: string[] = [];
+    let masterSessionId: string | null = null;
+    bridge.onEvent((event) => {
+      if (event.type === "spawned" && masterSessionId === null) {
+        masterSessionId = event.sessionId;
+      }
+      else if (event.type === "exit" && event.sessionId === masterSessionId) {
+        lifecycle.push("native-master-exit");
+      }
+    });
+    const files = new NodeTransportFiles(root, auditPath, lifecycle);
     const installed: InstalledHelper = Object.freeze({
       helperVersion: "1.2.3",
       tuple: "linux-x86_64-static",
@@ -268,8 +283,11 @@ if (args.includes("-MN")) {
     expect(termios).toMatch(/(?:^|\s)-icanon(?:\s|$)/);
     expect(termios).toMatch(/(?:^|\s)-echo(?:\s|$)/);
     expect(termios).toMatch(/(?:^|\s)-opost(?:\s|$)/);
-    expect(events.findIndex((event) => event.event === "master-exit"))
-      .toBeLessThan(events.findIndex((event) => event.event === "remove" && event.path.endsWith("master.log")));
+    const masterExit = lifecycle.indexOf("native-master-exit");
+    const logRemoval = lifecycle.indexOf("remove-master-log");
+    expect(masterExit).toBeGreaterThanOrEqual(0);
+    expect(logRemoval).toBeGreaterThanOrEqual(0);
+    expect(masterExit).toBeLessThan(logRemoval);
   }
   finally {
     daemon.kill("SIGKILL");

@@ -733,8 +733,11 @@ export class NativeBridge {
     if (!this.validSshSetupAction(action)) {
       throw new Error("Invalid fixed SSH setup action");
     }
+    if (action.kind === "codex-device-auth") {
+      return this.openFixedSshSetupProcess(action, cwd, rows, cols);
+    }
     return this.openProcess(
-      action.kind === "codex-device-auth" ? "spawnRawPty" : "spawn",
+      "spawn",
       { argv: action.argv, cwd, rows, cols },
       true,
     );
@@ -752,25 +755,61 @@ export class NativeBridge {
       && argv[2] === "-S" && Boolean(argv[3]?.startsWith("/")) && argv[4] === "-o"
       && argv[5] === "BatchMode=yes" && argv[6] === "--"
       && /^[^\s*?!\[\]]+$/u.test(argv[7] || "")
-      && this.validVerifiedRemoteHelperCommand(argv[8] || "");
+      && this.verifiedHelperPathFromCommand(argv[8] || "") !== null;
   }
 
-  private validVerifiedRemoteHelperCommand(command: string): boolean {
+  private verifiedHelperPathFromCommand(command: string): string | null {
     const suffix = " 'setup' 'codex-device-auth'";
-    if (!command.endsWith(suffix)) return false;
+    if (!command.endsWith(suffix)) return null;
     const quotedPath = command.slice(0, -suffix.length);
     if (quotedPath.length < 3 || quotedPath[0] !== "'" || quotedPath.at(-1) !== "'") {
-      return false;
+      return null;
     }
     const path = quotedPath.slice(1, -1).replaceAll(`'"'"'`, "'");
     const canonicalQuote = `'${path.replaceAll("'", `'"'"'`)}'`;
-    return canonicalQuote === quotedPath && path.startsWith("/")
-      && path.endsWith("/qlab-remote") && !/(?:^|\/)current(?:\/|$)/u.test(path)
-      && !/[\0\r\n]/u.test(path);
+    const versionedHelper = /^(?:\/root|\/home\/[A-Za-z0-9._-]+)\/\.qlab\/bin\/\d+\.\d+\.\d+(?:[-+][A-Za-z0-9.-]+)?\/(?:linux-x86_64-static|linux-aarch64-static)\/qlab-remote$/u;
+    return canonicalQuote === quotedPath && versionedHelper.test(path) ? path : null;
+  }
+
+  private async openFixedSshSetupProcess(
+    action: Extract<NativeSshSetupAction, { kind: "codex-device-auth" }>,
+    cwd: string,
+    rows: number,
+    cols: number,
+  ): Promise<BridgeProcessSession> {
+    const sessionId = `process-${++this.nextStructuredSession}`;
+    const session = new BridgeProcessSession(sessionId, this, true);
+    try {
+      const helperPath = this.verifiedHelperPathFromCommand(action.argv[8]);
+      if (!helperPath) throw new Error("Invalid fixed SSH setup action");
+      const pending = this.registerPendingSpawn(sessionId);
+      try {
+        this.send({
+          type: "spawnSshSetup",
+          setupAction: "codex-device-auth",
+          sessionId,
+          controlPath: action.argv[3],
+          alias: action.argv[7],
+          verifiedHelperPath: helperPath,
+          cwd,
+          rows,
+          cols,
+        });
+      }
+      catch (error) {
+        this.rejectSpawn(sessionId, error instanceof Error ? error : new Error(String(error)));
+      }
+      await pending;
+      return session;
+    }
+    catch (error) {
+      session.abandonFailedOpen();
+      throw error;
+    }
   }
 
   private async openProcess(
-    type: "spawn" | "spawnPipe" | "spawnRawPty",
+    type: "spawn" | "spawnPipe",
     options: SpawnOptions,
     pty: boolean,
   ): Promise<BridgeProcessSession> {
@@ -787,7 +826,7 @@ export class NativeBridge {
   }
 
   private async spawnWithType(
-    type: "spawn" | "spawnPipe" | "spawnRawPty",
+    type: "spawn" | "spawnPipe",
     sessionId: string,
     options: SpawnOptions
   ): Promise<void> {
@@ -798,18 +837,7 @@ export class NativeBridge {
     if (!options.argv.length || !options.argv[0]?.startsWith("/")) {
       throw new Error("Terminal command must use an absolute executable path");
     }
-    if (this.pendingSpawns.has(sessionId) || this.liveSessions.has(sessionId)) {
-      throw new Error("Terminal session id is already in use");
-    }
-    this.outputDecoders.set(sessionId, new TextDecoder());
-    const promise = new Promise<void>((resolve, reject) => {
-      const timer = setTimeout(() => {
-        this.pendingSpawns.delete(sessionId);
-        this.outputDecoders.delete(sessionId);
-        reject(new Error("Timed out while starting the local process"));
-      }, 10_000);
-      this.pendingSpawns.set(sessionId, { resolve, reject, timer });
-    });
+    const promise = this.registerPendingSpawn(sessionId);
     try {
       this.send({
         type,
@@ -819,7 +847,6 @@ export class NativeBridge {
         env: options.env || {},
         rows: options.rows || 24,
         cols: options.cols || 90,
-        ...(type === "spawnRawPty" ? { rawNoEcho: true } : {}),
       });
     }
     catch (error) {
@@ -829,6 +856,25 @@ export class NativeBridge {
       );
     }
     return promise;
+  }
+
+  private registerPendingSpawn(sessionId: string): Promise<void> {
+    this.requireSocket();
+    if (!/^[A-Za-z0-9._:-]{1,64}$/.test(sessionId)) {
+      throw new Error("Invalid terminal session id");
+    }
+    if (this.pendingSpawns.has(sessionId) || this.liveSessions.has(sessionId)) {
+      throw new Error("Terminal session id is already in use");
+    }
+    this.outputDecoders.set(sessionId, new TextDecoder());
+    return new Promise<void>((resolve, reject) => {
+      const timer = setTimeout(() => {
+        this.pendingSpawns.delete(sessionId);
+        this.outputDecoders.delete(sessionId);
+        reject(new Error("Timed out while starting the local process"));
+      }, 10_000);
+      this.pendingSpawns.set(sessionId, { resolve, reject, timer });
+    });
   }
 
   input(sessionId: string, data: string): void {

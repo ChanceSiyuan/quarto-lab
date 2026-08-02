@@ -100,18 +100,23 @@ describe("NativeBridge structured process sessions", () => {
       kind: "codex-device-auth",
       argv: [
         "/usr/bin/ssh", "-tt", "-S", "/private/master.sock", "-o", "BatchMode=yes",
-        "--", "qlab-gpu", "'/versioned/qlab-remote' 'setup' 'codex-device-auth'" as VerifiedRemoteHelperCommand,
+        "--", "qlab-gpu", "'/home/alice/.qlab/bin/1.2.3/linux-x86_64-static/qlab-remote' 'setup' 'codex-device-auth'" as VerifiedRemoteHelperCommand,
       ],
     }, "/private", 24, 90);
     bridge.onMessage(JSON.stringify({ type: "spawned", sessionId: sent[0].sessionId, pid: 43 }));
     const session = await opening;
     session.resize(31, 101);
 
-    expect(sent[0]).toMatchObject({ type: "spawnRawPty", rawNoEcho: true });
-    expect(sent[0].argv).toEqual([
-      "/usr/bin/ssh", "-tt", "-S", "/private/master.sock", "-o", "BatchMode=yes",
-      "--", "qlab-gpu", "'/versioned/qlab-remote' 'setup' 'codex-device-auth'",
-    ]);
+    expect(sent[0]).toMatchObject({
+      type: "spawnSshSetup",
+      setupAction: "codex-device-auth",
+      controlPath: "/private/master.sock",
+      alias: "qlab-gpu",
+      verifiedHelperPath: "/home/alice/.qlab/bin/1.2.3/linux-x86_64-static/qlab-remote",
+    });
+    expect(sent[0]).not.toHaveProperty("command");
+    expect(sent[0]).not.toHaveProperty("argv");
+    expect(sent[0]).not.toHaveProperty("rawNoEcho");
     expect(sent[1]).toMatchObject({ type: "resize", rows: 31, cols: 101 });
     expect("rawNoEcho" in ({ argv: ["/bin/true"], cwd: "/private" } as import("../src/native-bridge").SpawnOptions))
       .toBe(false);
