@@ -41,6 +41,10 @@ class FakeProcess implements NativePtyProcessSession {
   closeCount = 0;
   exited = false;
   exitValue: NativeProcessExit | null = null;
+  deferCloseUntilExit = false;
+  closeError: Error | null = null;
+  private closePromise: Promise<void> | null = null;
+  private resolveClose: (() => void) | null = null;
 
   constructor(readonly sessionId: string) {}
 
@@ -58,7 +62,16 @@ class FakeProcess implements NativePtyProcessSession {
     return () => this.exitListeners.delete(listener);
   }
   resize(rows: number, cols: number): void { this.resizes.push([rows, cols]); }
-  async close(): Promise<void> { if (!this.closeCount) this.closeCount = 1; }
+  close(): Promise<void> {
+    if (this.closePromise) return this.closePromise;
+    this.closeCount += 1;
+    if (this.closeError) this.closePromise = Promise.reject(this.closeError);
+    else if (this.deferCloseUntilExit) {
+      this.closePromise = new Promise<void>((resolve) => { this.resolveClose = resolve; });
+    }
+    else this.closePromise = Promise.resolve();
+    return this.closePromise;
+  }
   emitText(value: string): void {
     const bytes = new TextEncoder().encode(value);
     for (const listener of [...this.bytesListeners]) listener(bytes);
@@ -68,6 +81,7 @@ class FakeProcess implements NativePtyProcessSession {
     this.exited = true;
     this.exitValue = { exitCode, signal };
     for (const listener of [...this.exitListeners]) listener(this.exitValue);
+    this.resolveClose?.();
   }
 }
 
@@ -90,6 +104,7 @@ class FakeSshRuntime implements SshTransportRuntime {
   exitNextPipe: NativeProcessExit | null = null;
   exitMasterOnOpen: NativeProcessExit | null = null;
   installBarrier: Promise<void> | null = null;
+  pipeOpenBarrier: Promise<void> | null = null;
   installerResult: InstalledHelper = {
     helperVersion: "1.2.3",
     tuple: "linux-x86_64-static",
@@ -136,6 +151,7 @@ class FakeSshRuntime implements SshTransportRuntime {
 
   async openPipeProcess(options: { argv: readonly string[] }): Promise<NativeProcessSession> {
     const process = this.open("pipe", options.argv);
+    if (this.pipeOpenBarrier) await this.pipeOpenBarrier;
     if (this.exitNextPipe) {
       process.exit(this.exitNextPipe.exitCode, this.exitNextPipe.signal);
       this.exitNextPipe = null;
@@ -484,6 +500,97 @@ describe("SshTargetTransport master ownership", () => {
       "/private/ssh-master-1",
     ]);
     await expect(channel.write(Uint8Array.of(1))).rejects.toThrow(/closed/i);
+  });
+
+  it("shares concurrent channel close and waits for the one process exit", async () => {
+    const runtime = new FakeSshRuntime();
+    const master = await new SshTargetTransport(runtime).connect("qlab-gpu");
+    await master.installVerifiedHelper(verifiedInstall());
+    const channel = await master.openAgent();
+    const process = runtime.lastProcess();
+    process.deferCloseUntilExit = true;
+    let settled = 0;
+
+    const first = channel.close();
+    const second = channel.close();
+    expect(second).toBe(first);
+    void first.then(() => { settled += 1; });
+    void second.then(() => { settled += 1; });
+    await Promise.resolve();
+    expect(settled).toBe(0);
+    expect(process.closeCount).toBe(1);
+
+    process.exit(0);
+    await Promise.all([first, second]);
+    expect(settled).toBe(2);
+  });
+
+  it("awaits owned exits before natural-loss cleanup and contains close rejection", async () => {
+    const runtime = new FakeSshRuntime();
+    const master = await new SshTargetTransport(runtime).connect("qlab-gpu");
+    await master.installVerifiedHelper(verifiedInstall());
+    await master.openAgent();
+    await master.openBrowse();
+    const [agentProcess, browseProcess] = runtime.processes.slice(-2);
+    agentProcess!.deferCloseUntilExit = true;
+    browseProcess!.closeError = new Error("close transport failed");
+
+    runtime.killMaster(255, "connection reset");
+    for (let index = 0; index < 4; index++) await Promise.resolve();
+    expect(runtime.removed).not.toContain("/private/ssh-master-1");
+    expect(agentProcess!.closeCount).toBe(1);
+    expect(browseProcess!.closeCount).toBe(1);
+
+    agentProcess!.exit(null, 15);
+    await expect(master.close()).resolves.toBeUndefined();
+    expect(runtime.removed).toContain("/private/ssh-master-1");
+  });
+
+  it("fences and closes a platform probe on loss before private cleanup", async () => {
+    const runtime = new FakeSshRuntime();
+    const master = await new SshTargetTransport(runtime).connect("qlab-gpu");
+    const probing = master.probeRemotePlatform();
+    await Promise.resolve();
+    const process = runtime.lastProcess();
+    process.deferCloseUntilExit = true;
+    for (let index = 0; index < 10 && process.exitListeners.size === 0; index++) {
+      await Promise.resolve();
+    }
+    expect(process.exitListeners.size).toBeGreaterThan(0);
+
+    runtime.killMaster(255, "connection reset");
+    for (let index = 0; index < 4; index++) await Promise.resolve();
+    expect(process.closeCount).toBe(1);
+    expect(runtime.removed).not.toContain("/private/ssh-master-1");
+
+    process.exit(null, 15);
+    await expect(probing).rejects.toThrow(/lost|closed/i);
+    await master.close();
+    expect(runtime.removed).toContain("/private/ssh-master-1");
+  });
+
+  it("post-open fences a platform probe whose process publishes after master loss", async () => {
+    const runtime = new FakeSshRuntime();
+    const master = await new SshTargetTransport(runtime).connect("qlab-gpu");
+    let publish!: () => void;
+    runtime.pipeOpenBarrier = new Promise<void>((resolveBarrier) => { publish = resolveBarrier; });
+    const probing = master.probeRemotePlatform();
+    await Promise.resolve();
+    const process = runtime.lastProcess();
+    process.deferCloseUntilExit = true;
+
+    runtime.killMaster(255, "connection reset");
+    await Promise.resolve();
+    expect(runtime.removed).not.toContain("/private/ssh-master-1");
+    publish();
+    for (let index = 0; index < 4; index++) await Promise.resolve();
+    expect(process.closeCount).toBe(1);
+    expect(runtime.removed).not.toContain("/private/ssh-master-1");
+
+    process.exit(null, 15);
+    await expect(probing).rejects.toThrow(/lost|closed/i);
+    await master.close();
+    expect(runtime.removed).toContain("/private/ssh-master-1");
   });
 
   it("bounds the control-exit wait and terminates a master that does not exit on request", async () => {

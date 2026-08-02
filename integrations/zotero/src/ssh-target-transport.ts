@@ -5,6 +5,7 @@ import type {
   NativeSshSetupAction,
   NativeBridge,
   SpawnOptions,
+  VerifiedRemoteHelperCommand,
 } from "./native-bridge";
 import {
   NativeBridgeOpenSshProfileRuntime,
@@ -17,9 +18,7 @@ import { makeLocalFile, profilePath, sleep } from "./platform";
 export type VerifiedRemoteHelperPath = string & {
   readonly __verifiedRemoteHelperPath: unique symbol;
 };
-export type VerifiedRemoteHelperCommand = string & {
-  readonly __verifiedRemoteHelperCommand: unique symbol;
-};
+export type { VerifiedRemoteHelperCommand } from "./native-bridge";
 export type VerifiedRemoteHelperArtifact = Uint8Array & {
   readonly __verifiedRemoteHelperArtifact: unique symbol;
 };
@@ -372,6 +371,7 @@ class OwnedChannel implements SshChannel {
   private exited = false;
   private exitValue: SshChannelExit | null = null;
   private closed = false;
+  private closePromise: Promise<void> | null = null;
 
   constructor(
     readonly channelId: string,
@@ -405,17 +405,17 @@ class OwnedChannel implements SshChannel {
     return () => this.exitListeners.delete(listener);
   }
 
-  async close(): Promise<void> {
-    if (this.closed) return;
+  close(): Promise<void> {
+    if (this.closePromise) return this.closePromise;
     this.closed = true;
     this.release(this);
-    await this.process.close();
+    this.closePromise = this.process.close();
+    return this.closePromise;
   }
 
-  fail(exit: SshChannelExit): void {
-    if (this.exited) return;
-    this.finish(exit);
-    void this.process.close();
+  fail(exit: SshChannelExit): Promise<void> {
+    if (!this.exited) this.finish(exit);
+    return this.close();
   }
 
   get isExited(): boolean { return this.exited; }
@@ -434,6 +434,7 @@ class OwnedSetupSession implements RemoteSetupSession {
   private exited = false;
   private exitValue: SshChannelExit | null = null;
   private closed = false;
+  private closePromise: Promise<void> | null = null;
 
   constructor(
     readonly generation: number,
@@ -473,23 +474,53 @@ class OwnedSetupSession implements RemoteSetupSession {
     this.process.resize(rows, cols);
   }
 
-  async close(): Promise<void> {
-    if (this.closed) return;
+  close(): Promise<void> {
+    if (this.closePromise) return this.closePromise;
     this.closed = true;
     this.release();
-    await this.process.close();
+    this.closePromise = this.process.close();
+    return this.closePromise;
   }
 
-  fail(exit: SshChannelExit): void {
-    if (this.exited) return;
-    this.exited = true;
-    this.exitValue = exit;
-    this.release();
-    notify(this.exitListeners, exit);
-    void this.process.close();
+  fail(exit: SshChannelExit): Promise<void> {
+    if (!this.exited) {
+      this.exited = true;
+      this.exitValue = exit;
+      this.release();
+      notify(this.exitListeners, exit);
+    }
+    return this.close();
   }
 
   get isExited(): boolean { return this.exited; }
+}
+
+class OwnedProbe {
+  private closePromise: Promise<void> | null = null;
+  private lossError: Error | null = null;
+  private rejectLoss: ((error: Error) => void) | null = null;
+
+  constructor(private readonly process: NativeProcessSession) {}
+
+  waitForExit(exit: Promise<NativeProcessExit>): Promise<NativeProcessExit> {
+    if (this.lossError) return Promise.reject(this.lossError);
+    const loss = new Promise<never>((_resolve, reject) => { this.rejectLoss = reject; });
+    return Promise.race([exit, loss]);
+  }
+
+  fail(reason: string): Promise<void> {
+    if (!this.lossError) {
+      this.lossError = new Error(reason);
+      this.rejectLoss?.(this.lossError);
+    }
+    return this.close();
+  }
+
+  close(): Promise<void> {
+    if (this.closePromise) return this.closePromise;
+    this.closePromise = this.process.close();
+    return this.closePromise;
+  }
 }
 
 class OwnedSshMaster implements SshMaster {
@@ -497,10 +528,14 @@ class OwnedSshMaster implements SshMaster {
   private installInFlight = false;
   private readonly channels = new Set<OwnedChannel>();
   private readonly setups = new Set<OwnedSetupSession>();
+  private readonly probes = new Set<OwnedProbe>();
   private readonly lossListeners = new Set<(loss: SshMasterLoss) => void>();
   private state: "active" | "closing" | "lost" | "closed" = "active";
   private cleanupPromise: Promise<void> | null = null;
   private closePromise: Promise<void> | null = null;
+  private lossClosePromise: Promise<void> = Promise.resolve();
+  private activeOperations = 0;
+  private readonly operationWaiters = new Set<() => void>();
   private masterExited = false;
   private masterDiagnostics = "";
   private nextChannel = 0;
@@ -530,27 +565,38 @@ class OwnedSshMaster implements SshMaster {
     arch: "x86_64" | "aarch64";
     kernel: string;
   }>> {
-    this.assertActive();
-    const argv = [
-      SSH, "-T", "-S", this.controlPath, "-o", "BatchMode=yes", "--",
-      this.profile.alias, REMOTE_PLATFORM_PROBE_SCRIPT,
-    ];
-    const process = await this.runtime.openPipeProcess(processOptions(argv, this.directory));
-    const collected = collectProcess(process);
-    const exit = await collected.exited;
-    if (exit.exitCode !== 0 || exit.signal !== null || collected.overflowed()) {
-      throw new Error("Remote platform probe failed or exceeded its output bound");
+    const releaseOperation = this.beginOperation();
+    let probe: OwnedProbe | null = null;
+    try {
+      const argv = [
+        SSH, "-T", "-S", this.controlPath, "-o", "BatchMode=yes", "--",
+        this.profile.alias, REMOTE_PLATFORM_PROBE_SCRIPT,
+      ];
+      const process = await this.runtime.openPipeProcess(processOptions(argv, this.directory));
+      const collected = collectProcess(process);
+      probe = new OwnedProbe(process);
+      this.probes.add(probe);
+      await this.assertActiveOrClose(process);
+      const exit = await probe.waitForExit(collected.exited);
+      this.assertActive();
+      if (exit.exitCode !== 0 || exit.signal !== null || collected.overflowed()) {
+        throw new Error("Remote platform probe failed or exceeded its output bound");
+      }
+      const lines = new TextDecoder().decode(collected.output()).split(/\r?\n/u);
+      if (lines.at(-1) === "") lines.pop();
+      if (lines.length !== 3 || lines.some((line) => !line || line.length > 256)) {
+        throw new Error("Remote platform probe returned malformed output");
+      }
+      const [os, rawArch, kernel] = lines as [string, string, string];
+      if (os !== "Linux" || (rawArch !== "x86_64" && rawArch !== "aarch64") || /\s/u.test(kernel)) {
+        throw new Error("Remote platform probe returned an unsupported platform");
+      }
+      return Object.freeze({ os: "linux" as const, arch: rawArch, kernel });
     }
-    const lines = new TextDecoder().decode(collected.output()).split(/\r?\n/u);
-    if (lines.at(-1) === "") lines.pop();
-    if (lines.length !== 3 || lines.some((line) => !line || line.length > 256)) {
-      throw new Error("Remote platform probe returned malformed output");
+    finally {
+      if (probe) this.probes.delete(probe);
+      releaseOperation();
     }
-    const [os, rawArch, kernel] = lines as [string, string, string];
-    if (os !== "Linux" || (rawArch !== "x86_64" && rawArch !== "aarch64") || /\s/u.test(kernel)) {
-      throw new Error("Remote platform probe returned an unsupported platform");
-    }
-    return Object.freeze({ os: "linux" as const, arch: rawArch, kernel });
   }
 
   installVerifiedHelper(input: VerifiedHelperInstall): Promise<InstalledHelper> {
@@ -605,7 +651,7 @@ class OwnedSshMaster implements SshMaster {
       ),
     ] };
     const process = await this.runtime.openSshSetupProcess(action, this.directory);
-    this.assertActiveOrClose(process);
+    await this.assertActiveOrClose(process);
     let session!: OwnedSetupSession;
     session = new OwnedSetupSession(this.generation, process, () => this.setups.delete(session));
     if (!session.isExited) this.setups.add(session);
@@ -630,7 +676,7 @@ class OwnedSshMaster implements SshMaster {
       fixedChannelArgv(this.profile.alias, this.controlPath, helper.absoluteVersionedPath, mode),
       this.directory,
     ));
-    this.assertActiveOrClose(process);
+    await this.assertActiveOrClose(process);
     const channel = new OwnedChannel(
       `ssh-${this.generation}-${++this.nextChannel}`,
       this.generation,
@@ -650,11 +696,31 @@ class OwnedSshMaster implements SshMaster {
     if (this.state !== "active") throw new Error("SSH master is lost or closed");
   }
 
-  private assertActiveOrClose(process: NativeProcessSession): void {
+  private async assertActiveOrClose(process: NativeProcessSession): Promise<void> {
     if (this.state !== "active") {
-      void process.close();
+      await process.close();
       throw new Error("SSH master is lost or closed");
     }
+  }
+
+  private beginOperation(): () => void {
+    this.assertActive();
+    this.activeOperations += 1;
+    let released = false;
+    return () => {
+      if (released) return;
+      released = true;
+      this.activeOperations -= 1;
+      if (this.activeOperations === 0) {
+        for (const resolve of [...this.operationWaiters]) resolve();
+        this.operationWaiters.clear();
+      }
+    };
+  }
+
+  private waitForOperations(): Promise<void> {
+    if (this.activeOperations === 0) return Promise.resolve();
+    return new Promise<void>((resolve) => this.operationWaiters.add(resolve));
   }
 
   private masterLost(exit: NativeProcessExit): void {
@@ -663,8 +729,12 @@ class OwnedSshMaster implements SshMaster {
     if (this.state === "closing" || this.state === "closed") return;
     this.state = "lost";
     const mapped = mapExit(exit, lastDiagnostic(this.masterDiagnostics));
-    for (const channel of [...this.channels]) channel.fail(mapped);
-    for (const setup of [...this.setups]) setup.fail(mapped);
+    const closes = [
+      ...[...this.channels].map((channel) => channel.fail(mapped)),
+      ...[...this.setups].map((setup) => setup.fail(mapped)),
+      ...[...this.probes].map((probe) => probe.fail("SSH master was lost during platform probe")),
+    ];
+    this.lossClosePromise = Promise.allSettled(closes).then(() => undefined);
     const loss = { generation: this.generation, exit: mapped };
     notify(this.lossListeners, loss);
     void this.cleanup().catch(() => {});
@@ -681,6 +751,7 @@ class OwnedSshMaster implements SshMaster {
     const closeResults = await Promise.allSettled([
       ...[...this.channels].map((channel) => channel.close()),
       ...[...this.setups].map((setup) => setup.close()),
+      ...[...this.probes].map((probe) => probe.fail("SSH master was closed during platform probe")),
     ]);
     primaryError = closeResults.find((result) => result.status === "rejected")?.reason ?? null;
     let control: NativeProcessSession | null = null;
@@ -724,6 +795,8 @@ class OwnedSshMaster implements SshMaster {
     if (this.cleanupPromise) return this.cleanupPromise;
     this.cleanupPromise = (async () => {
       let error: unknown = null;
+      await this.lossClosePromise;
+      await this.waitForOperations();
       await this.runtime.removeFile(this.controlPath).catch((failure) => { error ??= failure; });
       await this.runtime.removeFile(this.logPath).catch((failure) => { error ??= failure; });
       await this.runtime.removePrivateDirectory(this.directory).catch((failure) => { error ??= failure; });

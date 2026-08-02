@@ -384,7 +384,7 @@ class DaemonTests(unittest.TestCase):
             self.assertEqual(bytes(output), b'{"wrapped":{"ok":true}}\n')
             self.assertEqual(exit_event["exitCode"], 0)
 
-    def test_fixed_raw_no_echo_pty_sets_termios_before_exec(self) -> None:
+    def test_fixed_raw_no_echo_rejects_arbitrary_argv(self) -> None:
         ws = WebSocket(self.socket_path, TOKEN)
         self.addCleanup(ws.close)
         with tempfile.TemporaryDirectory() as cwd:
@@ -397,22 +397,63 @@ class DaemonTests(unittest.TestCase):
                     "rawNoEcho": True,
                 }
             )
-            self.assertEqual(ws.recv_json()["type"], "spawned")
-            output = bytearray()
-            exit_event = None
-            deadline = time.monotonic() + 5
-            while time.monotonic() < deadline and exit_event is None:
-                message = ws.recv_json()
-                if message["type"] == "output":
-                    output.extend(base64.b64decode(message["data"]))
-                elif message["type"] == "exit":
-                    exit_event = message
+            message = ws.recv_json()
+            self.assertEqual(message["type"], "error")
+            self.assertEqual(message["sessionId"], "raw-no-echo")
+            self.assertIn("fixed SSH setup", message["message"])
 
-            flags = bytes(output).decode(errors="replace")
-            self.assertIn("-icanon", flags)
-            self.assertIn("-echo", flags)
-            self.assertIn("-opost", flags)
-            self.assertEqual(exit_event["exitCode"], 0)
+    def test_fixed_raw_no_echo_accepts_only_codex_ssh_setup_argv(self) -> None:
+        cases = [
+            [
+                "/usr/bin/ssh", "-tt", "-S", "/tmp/master.sock", "-o",
+                "BatchMode=yes", "--", "qlab-gpu", "/bin/sh -c id",
+            ],
+            [
+                "/usr/bin/ssh", "-tt", "-S", "/tmp/master.sock", "-o",
+                "BatchMode=no", "--", "qlab-gpu",
+                "'/home/alice/.qlab/bin/1.2.3/linux-x86_64-static/qlab-remote' 'setup' 'codex-device-auth'",
+            ],
+            [
+                "/usr/bin/ssh", "-tt", "-S", "/tmp/master.sock", "-o",
+                "BatchMode=yes", "--", "qlab-gpu",
+                "'/home/alice/.qlab/bin/current/qlab-remote' 'setup' 'codex-device-auth'",
+            ],
+        ]
+        ws = WebSocket(self.socket_path, TOKEN)
+        self.addCleanup(ws.close)
+        with tempfile.TemporaryDirectory() as cwd:
+            for index, argv in enumerate(cases):
+                session_id = f"invalid-ssh-setup-{index}"
+                ws.send_json(
+                    {
+                        "type": "spawnRawPty",
+                        "sessionId": session_id,
+                        "argv": argv,
+                        "cwd": cwd,
+                        "rawNoEcho": True,
+                    }
+                )
+                message = ws.recv_json()
+                self.assertEqual(message["type"], "error")
+                self.assertEqual(message["sessionId"], session_id)
+                self.assertIn("fixed SSH setup", message["message"])
+
+            ws.send_json(
+                {
+                    "type": "spawnRawPty",
+                    "sessionId": "valid-codex-ssh-setup",
+                    "argv": [
+                        "/usr/bin/ssh", "-tt", "-S", "/tmp/missing-master.sock",
+                        "-o", "BatchMode=yes", "--", "qlab-gpu",
+                        "'/home/alice/.qlab/bin/1.2.3/linux-x86_64-static/qlab-remote' 'setup' 'codex-device-auth'",
+                    ],
+                    "cwd": cwd,
+                    "rawNoEcho": True,
+                }
+            )
+            message = ws.recv_json()
+            self.assertEqual(message["type"], "spawned")
+            self.assertEqual(message["sessionId"], "valid-codex-ssh-setup")
 
     def test_spawn_error_is_scoped_and_does_not_cancel_another_spawn(self) -> None:
         ws = WebSocket(self.socket_path, TOKEN)

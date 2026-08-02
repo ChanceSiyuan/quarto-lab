@@ -10,6 +10,7 @@ import {
   encodeTerminalInputChunks,
   nativeWebSocketUpgradeRequest,
   validateNativeWebSocketUpgrade,
+  type VerifiedRemoteHelperCommand,
 } from "../src/native-bridge";
 
 function base64(bytes: Uint8Array): string {
@@ -99,7 +100,7 @@ describe("NativeBridge structured process sessions", () => {
       kind: "codex-device-auth",
       argv: [
         "/usr/bin/ssh", "-tt", "-S", "/private/master.sock", "-o", "BatchMode=yes",
-        "--", "qlab-gpu", "'/versioned/qlab-remote' 'setup' 'codex-device-auth'",
+        "--", "qlab-gpu", "'/versioned/qlab-remote' 'setup' 'codex-device-auth'" as VerifiedRemoteHelperCommand,
       ],
     }, "/private", 24, 90);
     bridge.onMessage(JSON.stringify({ type: "spawned", sessionId: sent[0].sessionId, pid: 43 }));
@@ -114,6 +115,19 @@ describe("NativeBridge structured process sessions", () => {
     expect(sent[1]).toMatchObject({ type: "resize", rows: 31, cols: 101 });
     expect("rawNoEcho" in ({ argv: ["/bin/true"], cwd: "/private" } as import("../src/native-bridge").SpawnOptions))
       .toBe(false);
+  });
+
+  it("rejects an arbitrary command from the dedicated raw/no-echo SSH setup action", async () => {
+    const bridge = new NativeBridge("file:///unused/", "test") as any;
+    bridge.socket = { readyState: 1, send() {} };
+
+    await expect(bridge.openSshSetupProcess({
+      kind: "codex-device-auth",
+      argv: [
+        "/usr/bin/ssh", "-tt", "-S", "/private/master.sock", "-o", "BatchMode=yes",
+        "--", "qlab-gpu", "/bin/sh -c id",
+      ],
+    }, "/private")).rejects.toThrow(/fixed SSH setup action/i);
   });
 
   it("rejects non-absolute executables through every structured process entry point", async () => {
@@ -148,7 +162,7 @@ describe("NativeBridge structured process sessions", () => {
     expect(exits).toEqual([{ exitCode: 0, signal: null }]);
   });
 
-  it("does not resolve structured close until the local process exits", async () => {
+  it("shares one pending structured close until the local process exits", async () => {
     const bridge = new NativeBridge("file:///unused/", "test") as any;
     const sent: any[] = [];
     bridge.socket = { readyState: 1, send(value: string) { sent.push(JSON.parse(value)); } };
@@ -159,7 +173,10 @@ describe("NativeBridge structured process sessions", () => {
     const session = await opening;
     let closed = false;
 
-    const closing = session.close().then(() => { closed = true; });
+    const first = session.close();
+    const second = session.close();
+    expect(second).toBe(first);
+    const closing = Promise.all([first, second]).then(() => { closed = true; });
     await Promise.resolve();
     expect(closed).toBe(false);
     bridge.onMessage(JSON.stringify({ type: "exit", sessionId, exitCode: null, signal: 15 }));

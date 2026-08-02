@@ -31,6 +31,10 @@ export interface NativePtyProcessSession extends NativeProcessSession {
   resize(rows: number, cols: number): void;
 }
 
+export type VerifiedRemoteHelperCommand = string & {
+  readonly __verifiedRemoteHelperCommand: unique symbol;
+};
+
 export type NativeSshSetupAction =
   | Readonly<{
     kind: "accept-host-key";
@@ -43,7 +47,7 @@ export type NativeSshSetupAction =
     kind: "codex-device-auth";
     argv: readonly [
       "/usr/bin/ssh", "-tt", "-S", string, "-o", "BatchMode=yes", "--",
-      string, string,
+      string, VerifiedRemoteHelperCommand,
     ];
   }>;
 
@@ -501,6 +505,7 @@ class BridgeProcessSession implements NativePtyProcessSession {
   private exited = false;
   private exitValue: NativeProcessExit | null = null;
   private readonly exitPromise: Promise<void>;
+  private closePromise: Promise<void> | null = null;
   private resolveExit!: () => void;
 
   constructor(
@@ -551,12 +556,13 @@ class BridgeProcessSession implements NativePtyProcessSession {
     this.bridge.resize(this.sessionId, rows, cols);
   }
 
-  async close(): Promise<void> {
-    if (this.closed) return;
+  close(): Promise<void> {
+    if (this.closePromise) return this.closePromise;
     this.closed = true;
     if (!this.exited) this.bridge.closeSession(this.sessionId);
     else this.removeBridgeListener();
-    await this.exitPromise;
+    this.closePromise = this.exitPromise;
+    return this.closePromise;
   }
 
   abandonFailedOpen(): void {
@@ -746,7 +752,21 @@ export class NativeBridge {
       && argv[2] === "-S" && Boolean(argv[3]?.startsWith("/")) && argv[4] === "-o"
       && argv[5] === "BatchMode=yes" && argv[6] === "--"
       && /^[^\s*?!\[\]]+$/u.test(argv[7] || "")
-      && Boolean(argv[8]) && !/[\0\r\n]/u.test(argv[8] || "");
+      && this.validVerifiedRemoteHelperCommand(argv[8] || "");
+  }
+
+  private validVerifiedRemoteHelperCommand(command: string): boolean {
+    const suffix = " 'setup' 'codex-device-auth'";
+    if (!command.endsWith(suffix)) return false;
+    const quotedPath = command.slice(0, -suffix.length);
+    if (quotedPath.length < 3 || quotedPath[0] !== "'" || quotedPath.at(-1) !== "'") {
+      return false;
+    }
+    const path = quotedPath.slice(1, -1).replaceAll(`'"'"'`, "'");
+    const canonicalQuote = `'${path.replaceAll("'", `'"'"'`)}'`;
+    return canonicalQuote === quotedPath && path.startsWith("/")
+      && path.endsWith("/qlab-remote") && !/(?:^|\/)current(?:\/|$)/u.test(path)
+      && !/[\0\r\n]/u.test(path);
   }
 
   private async openProcess(

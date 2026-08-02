@@ -1303,6 +1303,59 @@ static bool parse_spawn(const char *js, JTok *t, int count, SpawnSpec *sp,
   return true;
 }
 
+static bool valid_fixed_remote_helper_command(const char *command) {
+  static const char suffix[] = " 'setup' 'codex-device-auth'";
+  static const char escaped_quote[] = "'\"'\"'";
+  size_t length = strlen(command), suffix_length = sizeof(suffix) - 1;
+  if (length <= suffix_length + 2 ||
+      strcmp(command + length - suffix_length, suffix) != 0)
+    return false;
+  size_t quoted_length = length - suffix_length;
+  if (command[0] != '\'' || command[quoted_length - 1] != '\'')
+    return false;
+  char path[PATH_MAX];
+  size_t out = 0;
+  for (size_t i = 1; i + 1 < quoted_length;) {
+    if (command[i] == '\'') {
+      if (i + 5 > quoted_length - 1 ||
+          memcmp(command + i, escaped_quote, 5) != 0)
+        return false;
+      if (out + 1 >= sizeof(path))
+        return false;
+      path[out++] = '\'';
+      i += 5;
+      continue;
+    }
+    unsigned char c = (unsigned char)command[i++];
+    if (c == '\r' || c == '\n' || c == '\0' || out + 1 >= sizeof(path))
+      return false;
+    path[out++] = (char)c;
+  }
+  path[out] = '\0';
+  static const char executable_suffix[] = "/qlab-remote";
+  size_t path_length = strlen(path);
+  if (path[0] != '/' || path_length <= sizeof(executable_suffix) - 1 ||
+      strcmp(path + path_length - (sizeof(executable_suffix) - 1),
+             executable_suffix) != 0)
+    return false;
+  return strstr(path, "/current/") == NULL;
+}
+
+static bool valid_fixed_raw_ssh_setup(const SpawnSpec *sp) {
+  if (sp->argc != 9 || sp->envc != 0)
+    return false;
+  static const char *fixed[] = {
+      "/usr/bin/ssh", "-tt", "-S", NULL, "-o", "BatchMode=yes", "--",
+      NULL, NULL,
+  };
+  for (int i = 0; i < 9; i++)
+    if (fixed[i] && strcmp(sp->argv[i], fixed[i]) != 0)
+      return false;
+  if (sp->argv[3][0] != '/' || !valid_session_id(sp->argv[7]))
+    return false;
+  return valid_fixed_remote_helper_command(sp->argv[8]);
+}
+
 static Session *session_find(const char *id) {
   for (int i = 0; i < MAX_SESSIONS; i++)
     if (sessions[i].used && !strcmp(sessions[i].id, id))
@@ -1337,6 +1390,13 @@ static void configure_child(const SpawnSpec *sp, bool is_pty) {
       _exit(126);
   if (is_pty && !getenv("TERM"))
     setenv("TERM", "xterm-256color", 1);
+#ifdef ZOTEROCHAT_TEST_SSH_EXECUTABLE
+  /* Test builds redirect only the fixed production SSH executable below the
+     bridge. Release builds never define this macro. Keep argv[0] unchanged so
+     the fake observes the exact production argv contract. */
+  if (!strcmp(sp->command, "/usr/bin/ssh"))
+    execv(ZOTEROCHAT_TEST_SSH_EXECUTABLE, sp->argv);
+#endif
   execvp(sp->command, sp->argv);
   if (is_pty)
     dprintf(STDERR_FILENO, "zoterochat-helper: exec failed: %s\r\n",
@@ -1373,6 +1433,11 @@ static void handle_spawn(int owner, const char *js, JTok *t, int count,
   if (!parse_spawn(js, t, count, &sp, &err)) {
     json_session_error_to_client(owner, sid,
                                  err ? err : "invalid spawn request");
+    spawn_free(&sp);
+    return;
+  }
+  if (raw_no_echo && !valid_fixed_raw_ssh_setup(&sp)) {
+    json_session_error_to_client(owner, sid, "invalid fixed SSH setup action");
     spawn_free(&sp);
     return;
   }
