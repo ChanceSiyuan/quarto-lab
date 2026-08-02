@@ -36,6 +36,7 @@ import { qlabWritableRoots } from "./qlab-commands";
 import { resumeStoredThread } from "./stored-conversation-resume";
 import type { RepositoryTargetSnapshot } from "./repository-target";
 import type { TargetSwitchBlocker } from "./repository-target-controller";
+import type { WebSocketLike } from "./protocol";
 import {
   librarySubjectKey,
   snapshotLibraryMessageContext,
@@ -703,6 +704,8 @@ export class CodexService {
   private client: AgentClient | null = null;
   private libraryToolProvider: CodexLibraryToolProvider | null = null;
   private startPromise: Promise<void> | null = null;
+  /** Invalidates reconnect continuations superseded by a newer target switch or shutdown. */
+  private reconnectGeneration = 0;
   private appServerSessionId: string | null = null;
   private sessions: SessionFile = { version: 1, papers: {} };
   /** The paper attached to the selected AI conversation. */
@@ -753,6 +756,7 @@ export class CodexService {
     tree: EditorTree;
   } | null = null;
   private repositoryTarget: CodexRepositoryBinding | null = null;
+  private repositorySnapshot: RepositoryTargetSnapshot | null = null;
   /**
    * One generation owns one admission gate. stageRepositoryTarget closes it
    * synchronously, drains work admitted while it was open, and authenticates
@@ -769,6 +773,9 @@ export class CodexService {
     private readonly callbacks: CodexServiceCallbacks,
     private agentToolProvider: CodexAgentToolProvider | null = null,
     initialRepositoryTarget: RepositoryTargetSnapshot | null = null,
+    private readonly remoteAgentConnection?: (
+      snapshot: RepositoryTargetSnapshot,
+    ) => Promise<WebSocketLike>,
   ) {
     if (initialRepositoryTarget) {
       this.commitRepositoryTarget({
@@ -871,6 +878,7 @@ export class CodexService {
     // Every operation below is an in-memory, non-throwing assignment. All
     // validation above completes before the first mutation.
     this.repositoryTarget = next;
+    this.repositorySnapshot = staged.snapshot;
     this.activeDocument = null;
     if (changed) {
       this.activeContext = null;
@@ -909,6 +917,44 @@ export class CodexService {
     return this.ownedTurns.size > 0
       ? [{ kind: "running-turn" }]
       : [];
+  }
+
+  /** Rebind the app-server transport after a committed local/SSH target switch. */
+  reconnectForRepositoryTarget(): void {
+    const shouldReconnect = Boolean(this.startPromise || this.state.connected || this.client);
+    if (!shouldReconnect) return;
+    const pendingStart = this.startPromise;
+    const generation = ++this.reconnectGeneration;
+    this.disconnectTransport("QLab repository target changed");
+    this.callbacks.onState();
+    void (async () => {
+      // A target may be committed while the previous target's asynchronous
+      // startup is between opening its socket and publishing `client`. Let it
+      // settle, then close anything it published before starting the new
+      // generation. Calling start() immediately would only reuse startPromise.
+      if (pendingStart) {
+        try { await pendingStart; }
+        catch { /* the new target gets its own, user-visible startup result */ }
+      }
+      if (generation !== this.reconnectGeneration) return;
+      this.disconnectTransport("QLab repository target changed");
+      await this.start();
+    })().catch((error) => {
+      if (generation !== this.reconnectGeneration) return;
+      this.callbacks.onError(error instanceof Error ? error : new Error(String(error)));
+    });
+  }
+
+  private disconnectTransport(reason: string): void {
+    this.unsubscribeStore?.();
+    this.unsubscribeStore = null;
+    this.client?.close(1000, reason);
+    this.client = null;
+    if (this.appServerSessionId) this.bridge.closeSession(this.appServerSessionId);
+    this.appServerSessionId = null;
+    this.state.connected = false;
+    this.state.account = null;
+    this.state.models = [];
   }
 
   async stopForRepositoryTargetSwitch(): Promise<void> {
@@ -1182,7 +1228,6 @@ export class CodexService {
   }
 
   private async startCodexInternal(): Promise<void> {
-    await this.bridge.start();
     this.unsubscribeStore?.();
     this.unsubscribeStore = null;
     if (this.client) {
@@ -1193,14 +1238,26 @@ export class CodexService {
       this.bridge.closeSession(this.appServerSessionId);
       this.appServerSessionId = null;
     }
-    const target = "local";
-    const executable = await findExecutable("codex");
-    if (!executable) throw new Error("Codex CLI was not found. Install Codex, then retry.");
-    const argv = [executable, "app-server", "--stdio"];
-    const env = { NO_COLOR: "1" };
-    const sessionId = randomID("appserver").slice(0, 64);
-    await this.bridge.spawnPipe(sessionId, { argv, cwd: profilePath(), env });
-    const socket = new NativeSessionSocket(this.bridge, sessionId);
+    const remoteSnapshot = this.repositorySnapshot?.target.kind === "ssh"
+      ? this.repositorySnapshot : null;
+    let sessionId: string | null = null;
+    let socket: WebSocketLike;
+    if (remoteSnapshot) {
+      if (!this.remoteAgentConnection) {
+        throw new Error("Remote Codex AgentConnection is not configured");
+      }
+      socket = await this.remoteAgentConnection(remoteSnapshot);
+    }
+    else {
+      await this.bridge.start();
+      const executable = await findExecutable("codex");
+      if (!executable) throw new Error("Codex CLI was not found. Install Codex, then retry.");
+      const argv = [executable, "app-server", "--stdio"];
+      const env = { NO_COLOR: "1" };
+      sessionId = randomID("appserver").slice(0, 64);
+      await this.bridge.spawnPipe(sessionId, { argv, cwd: profilePath(), env });
+      socket = new NativeSessionSocket(this.bridge, sessionId);
+    }
     const client = new CodexAppServerClient({
       url: "zotkit://authenticated-stdio",
       webSocketFactory: () => socket,
@@ -1254,12 +1311,13 @@ export class CodexService {
     }
     catch (error) {
       client.close(1011, "Codex app-server startup failed");
-      this.bridge.closeSession(sessionId);
+      if (sessionId) this.bridge.closeSession(sessionId);
       throw error;
     }
   }
 
   stop(): void {
+    this.reconnectGeneration += 1;
     this.cancelAllPendingApprovals("cancel");
     this.failAllOwnedTurns(new Error("Codex stopped before the turn completed"));
     for (const runtime of this.libraryRuntimes.values()) {
@@ -2490,7 +2548,7 @@ export class CodexService {
           context,
           mergedContext,
           {
-            includeLocalPaths: true,
+            includeLocalPaths: this.repositorySnapshot?.target.kind !== "ssh",
             readerContextSelection: this.readerContextSelection,
           },
         );
@@ -4113,11 +4171,13 @@ export function buildAdditionalContext(
       ? `Reader warnings: ${context.warnings.join("; ")}`
       : "",
     selected.paper || selected.page || selected.selection
-      ? [
-          "This is the paper attached to this conversation, even if the user is now viewing another PDF tab.",
-          "The PDF path above is authoritative; do not search the filesystem for it.",
-          "When more paper context is needed, use the live Zotero outline/page/search tools for this conversation's paper.",
-        ].join(" ")
+       ? [
+           "This is the paper attached to this conversation, even if the user is now viewing another PDF tab.",
+           includeLocalPaths
+             ? "The PDF path above is authoritative; do not search the filesystem for it."
+             : "Local Zotero attachment paths are intentionally withheld from this remote repository target.",
+           "When more paper context is needed, use the live Zotero outline/page/search tools for this conversation's paper.",
+         ].join(" ")
       : "",
   ].filter(Boolean);
   const readerContext: Record<string, AdditionalContextEntry> = parts.length

@@ -14,6 +14,11 @@ const root = path.join(buildDir, "xpi-root");
 const content = path.join(root, "chrome", "content");
 const dist = path.join(repo, "dist");
 const researchLoopRoot = path.resolve(repo, "..", "..");
+const REMOTE_HELPER_VERSION = "1.0.0";
+const REMOTE_HELPER_TUPLES = [
+  "linux-x86_64-static",
+  "linux-aarch64-static",
+];
 
 async function copy(source, target) {
   await mkdir(path.dirname(target), { recursive: true });
@@ -29,6 +34,17 @@ function buildNativeHelper() {
     stdio: "inherit"
   });
   return source;
+}
+
+function buildRemoteHelpers() {
+  execFileSync("make", ["-C", path.join(repo, "native"), "linux-static"], {
+    stdio: "inherit"
+  });
+  return REMOTE_HELPER_TUPLES.map((tuple) => ({
+    tuple,
+    source: path.join(repo, "native", "dist", "remote", tuple, "qlab-remote"),
+    packaged: path.join(root, "remote", tuple, "qlab-remote"),
+  }));
 }
 
 await rm(root, { recursive: true, force: true });
@@ -66,6 +82,7 @@ await build({
 });
 
 const helper = buildNativeHelper();
+const remoteHelpers = buildRemoteHelpers();
 await Promise.all([
   copy(path.join(repo, "manifest.json"), path.join(root, "manifest.json")),
   copy(path.join(repo, "THIRD_PARTY_NOTICES.txt"), path.join(root, "THIRD_PARTY_NOTICES.txt")),
@@ -76,7 +93,8 @@ await Promise.all([
   copy(path.join(repo, "locale"), path.join(root, "locale")),
   copy(helper, path.join(root, "native", "zoterochat-helper")),
   copy(starterArchive, path.join(root, "starter", "research-loop-starter.zip")),
-  writeFile(path.join(root, "starter", "research-loop-starter.sha256"), `${starterDigest}\n`)
+  writeFile(path.join(root, "starter", "research-loop-starter.sha256"), `${starterDigest}\n`),
+  ...remoteHelpers.map(({ source, packaged }) => copy(source, packaged)),
 ]);
 
 const helperBytes = await readFile(helper);
@@ -87,6 +105,25 @@ const integrity = {
 await writeFile(
   path.join(root, "native", "integrity.json"),
   JSON.stringify(integrity, null, 2) + "\n"
+);
+
+const remoteManifest = {
+  schemaVersion: 1,
+  helperVersion: REMOTE_HELPER_VERSION,
+  artifacts: await Promise.all(remoteHelpers.map(async ({ tuple, source }) => {
+    const bytes = await readFile(source);
+    const digest = createHash("sha256").update(bytes).digest("hex");
+    return {
+      tuple,
+      path: `remote/${tuple}/qlab-remote`,
+      archiveSha256: digest,
+      executableSha256: digest,
+    };
+  })),
+};
+await writeFile(
+  path.join(root, "remote", "remote-helper-manifest.json"),
+  JSON.stringify(remoteManifest, null, 2) + "\n",
 );
 
 const manifest = JSON.parse(await readFile(path.join(repo, "manifest.json"), "utf8"));

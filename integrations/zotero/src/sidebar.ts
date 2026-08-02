@@ -179,6 +179,13 @@ export interface SidebarState {
   capabilities?: { supportsAgentMode: boolean; supportsLogin: boolean };
   /** Canonical path of the QLab repository selected by the user. */
   qlabRoot?: string;
+  /** Human-readable execution target; keeps SSH location explicit. */
+  qlabTargetLabel?: string;
+  /** Repository-scoped controls unavailable on the chat-only SSH target. */
+  repositoryCapabilities?: {
+    terminal: boolean;
+    mainSiteSupported: boolean;
+  };
   /** The object that contextual Actions will operate on. */
   researchObject?: ResearchObjectView | null;
   /** Actions already filtered for `researchObject` by the host registry. */
@@ -560,6 +567,7 @@ export class SidebarView {
   }
 
   setTerminalOpen(open: boolean): void {
+    if (open && this.state.repositoryCapabilities?.terminal === false) return;
     this.terminalDrawer.classList.toggle("is-open", open);
     this.terminalDrawer.setAttribute("aria-hidden", String(!open));
     this.root.classList.toggle("is-terminal-open", open);
@@ -847,6 +855,13 @@ export class SidebarView {
   async refreshMainSiteStatus(): Promise<boolean> {
     const button = this.mainSiteButton;
     if (!button) return false;
+    if (this.state.repositoryCapabilities?.mainSiteSupported === false) {
+      button.disabled = true;
+      button.className = "zc-icon-button zc-main-site-button is-unsupported";
+      button.dataset.repositoryState = "unsupported";
+      this.presentMainSiteButton(button, "Main Site is available only for repositories on this Mac");
+      return false;
+    }
     button.disabled = true;
     button.className = "zc-icon-button zc-main-site-button is-checking";
     this.presentMainSiteButton(button, "Check Research Loop main site");
@@ -861,7 +876,9 @@ export class SidebarView {
     catch {
       available = false;
     }
-    if (!button.isConnected) return available;
+    if (!button.isConnected || !this.repositorySupportsMainSite()) {
+      return available;
+    }
     button.dataset.repositoryState = repositoryState;
     button.disabled = false;
     if (repositoryState === "missing" || repositoryState === "incompatible") {
@@ -889,6 +906,7 @@ export class SidebarView {
 
   private async activateMainSite(): Promise<void> {
     if (!this.mainSiteButton || !this.mainSiteView) return;
+    if (this.state.repositoryCapabilities?.mainSiteSupported === false) return;
     if (this.mainSiteView.isVisible()) {
       this.setMainSiteOpen(false);
       return;
@@ -1008,10 +1026,14 @@ export class SidebarView {
   private render(): void {
     this.threadTitle.textContent = this.state.threadTitle || "Paper Assistant";
     this.root.dataset.mode = "agent";
-    this.qlabRootLabel.textContent = this.state.qlabRoot
+    this.qlabRootLabel.textContent = this.state.qlabTargetLabel
+      || (this.state.qlabRoot
       ? compactPath(this.state.qlabRoot)
-      : "Choose repository…";
-    this.qlabRootLabel.title = this.state.qlabRoot || "QLab repository is not configured";
+      : "Choose repository…");
+    this.qlabRootLabel.title = this.state.qlabTargetLabel
+      || this.state.qlabRoot
+      || "QLab repository is not configured";
+    this.renderRepositoryCapabilities();
     this.newThreadButton.disabled = Boolean(this.state.creatingThread);
     this.newThreadButton.title = this.state.creatingThread ? "Creating a new conversation…" : "New Conversation";
     this.renderHistoryRail();
@@ -1038,6 +1060,38 @@ export class SidebarView {
       ? "Enter sends a follow-up · Esc stops generation"
       : "Codex can make mistakes; verify the paper text and page numbers.");
     this.statusArea.classList.toggle("is-error", Boolean(this.state.error));
+  }
+
+  private renderRepositoryCapabilities(): void {
+    const terminalSupported = this.state.repositoryCapabilities?.terminal !== false;
+    this.terminalButton.disabled = !terminalSupported;
+    if (!terminalSupported) {
+      if (this.isTerminalOpen()) this.setTerminalOpen(false);
+      this.terminalButton.title = "Terminal is available only for repositories on this Mac";
+    }
+    else {
+      this.terminalButton.title = this.isTerminalOpen() ? "Collapse Terminal" : "Open Terminal";
+    }
+
+    const mainSiteSupported = this.state.repositoryCapabilities?.mainSiteSupported !== false;
+    if (!this.mainSiteButton) return;
+    if (!mainSiteSupported) {
+      this.mainSiteButton.disabled = true;
+      this.mainSiteButton.className = "zc-icon-button zc-main-site-button is-unsupported";
+      this.mainSiteButton.dataset.repositoryState = "unsupported";
+      this.presentMainSiteButton(
+        this.mainSiteButton,
+        "Main Site is available only for repositories on this Mac",
+      );
+    }
+    else if (this.mainSiteButton.dataset.repositoryState === "unsupported") {
+      delete this.mainSiteButton.dataset.repositoryState;
+      void this.refreshMainSiteStatus();
+    }
+  }
+
+  private repositorySupportsMainSite(): boolean {
+    return this.state.repositoryCapabilities?.mainSiteSupported !== false;
   }
 
   private canSendCodex(): boolean {

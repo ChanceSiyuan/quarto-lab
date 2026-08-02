@@ -21,13 +21,16 @@ describe("Zotero 9 runtime compatibility", () => {
     expect(manifest.applications.zotero.id).not.toContain("zoterochat");
   });
 
-  it("exposes only the local Codex runtime", () => {
+  it("uses Codex locally or through a bound SSH AgentConnection without alternate providers", () => {
     const service = projectFile("src/codex-service.ts");
     const settings = projectFile("src/settings.ts");
     const plugin = projectFile("src/plugin.ts");
     const prefs = projectFile("prefs.js");
 
-    expect(service).toContain('const target = "local"');
+    expect(service).toContain('this.repositorySnapshot?.target.kind === "ssh"');
+    expect(service).toContain("this.remoteAgentConnection(remoteSnapshot)");
+    expect(service).toContain('includeLocalPaths: this.repositorySnapshot?.target.kind !== "ssh"');
+    expect(service).toContain('findExecutable("codex")');
     expect(service).toContain('this.state.backend = "codex"');
     expect(settings).not.toContain("claude");
     expect(plugin).toContain('agent: "shell"');
@@ -157,6 +160,26 @@ describe("Zotero 9 runtime compatibility", () => {
     expect(packaging).toContain("const helper = buildNativeHelper();");
     expect(packaging).not.toContain("mtimeMs");
     expect(packaging).not.toMatch(/\bstat\s*\(/);
+  });
+
+  it("rebuilds and packages immutable Linux remote helpers for both supported architectures", () => {
+    const packaging = projectFile("scripts/build.mjs");
+    const makefile = projectFile("native/Makefile");
+    const crossBuild = projectFile("native/scripts/build-linux-static.sh");
+
+    expect(packaging).toContain('"linux-static"');
+    expect(packaging).toContain('"linux-x86_64-static"');
+    expect(packaging).toContain('"linux-aarch64-static"');
+    expect(packaging).toContain('remote-helper-manifest.json');
+    expect(packaging).toContain('REMOTE_HELPER_VERSION');
+    expect(makefile).toContain("linux-static:");
+    expect(makefile).toContain("remote-test:");
+    expect(makefile).toMatch(/test:.*remote-test/);
+    expect(crossBuild).toContain("x86_64-linux-musl");
+    expect(crossBuild).toContain("aarch64-linux-musl");
+    expect(projectFile("src/remote-workbench-target.ts")).toContain(
+      'probeCodex: () => client.invoke("codex.probe", {})',
+    );
   });
 
   it("ships localized section actions and context-aware fixed-size SVGs", () => {

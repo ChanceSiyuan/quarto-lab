@@ -93,6 +93,11 @@ import {
 import { LocalRepositoryTargetResolver } from "./local-repository-target-resolver";
 import { RepositoryTargetController } from "./repository-target-controller";
 import {
+  BundledRemoteHelperAssets,
+  createGeckoRemoteHelperAssetReader,
+} from "./remote-helper-assets";
+import { RemoteWorkbenchTargetService } from "./remote-workbench-target";
+import {
   capabilitiesFor,
   migrateLegacy,
   type LocalRepositoryCandidate,
@@ -447,6 +452,7 @@ export class ZoteroChatPlugin {
   private settings!: ZoteroChatSettings;
   private activeRepositoryTarget: RepositoryTargetSnapshot | null = null;
   private repositoryTargetResolver: LocalRepositoryTargetResolver | null = null;
+  private remoteTargets!: RemoteWorkbenchTargetService;
   private repositoryTargetController!: RepositoryTargetController<StagedCodexBinding>;
   private readerContext!: ReaderContextService;
   private bridge!: NativeBridge;
@@ -562,6 +568,10 @@ export class ZoteroChatPlugin {
     ) => {
       this.settings = preparedTarget.settings;
       this.bridge = ensureBridge();
+      this.remoteTargets ||= new RemoteWorkbenchTargetService(
+        this.bridge,
+        new BundledRemoteHelperAssets(createGeckoRemoteHelperAssetReader(data.rootURI)),
+      );
       const siteRuntime = ensureSiteRuntime();
       this.repositoryTargetResolver
         ||= new LocalRepositoryTargetResolver(siteRuntime);
@@ -714,6 +724,7 @@ export class ZoteroChatPlugin {
         },
       },
       activeSnapshot,
+      (snapshot) => this.remoteTargets.openAgent(snapshot),
       ),
     };
     };
@@ -777,6 +788,18 @@ export class ZoteroChatPlugin {
       model: () => this.selectedModel,
     });
 
+    const storedTarget = startedTargetServices.prepared.settings.repositoryTargets.active;
+    if (storedTarget?.kind === "ssh") {
+      try {
+        const restored = await this.remoteTargets.restore(storedTarget);
+        await this.repositoryTargetController.switchTo(restored);
+      }
+      catch (error) {
+        await this.remoteTargets.cancelPending().catch(() => {});
+        this.reportError(error instanceof Error ? error : new Error(String(error)));
+      }
+    }
+
     for (const win of Zotero.getMainWindows()) await this.onMainWindowLoad(win);
     this.registerReaderHooks();
     this.registerPageObserver();
@@ -812,6 +835,7 @@ export class ZoteroChatPlugin {
     this.floatPanels.clear();
     this.views.clear();
     this.codex?.stop();
+    await this.remoteTargets?.close();
     this.terminal?.destroy();
     await this.bridge?.stop();
     try {
@@ -2872,6 +2896,8 @@ export class ZoteroChatPlugin {
         canResolveAnchor: Boolean(this.paperTrail && this.latestOpenAnchor()),
         paperTrailConsent: this.paperTrail?.consentRequest() ?? null,
         qlabRoot: this.settings?.qlabRoot || "",
+        qlabTargetLabel: this.repositoryTargetLabel(),
+        repositoryCapabilities: this.activeRepositoryTarget?.capabilities,
       });
     }
   }
@@ -2933,6 +2959,8 @@ export class ZoteroChatPlugin {
           supportsLogin: this.codex.state.capabilities?.supportsLogin !== false,
         },
         qlabRoot: this.settings?.qlabRoot || "",
+        qlabTargetLabel: this.repositoryTargetLabel(),
+        repositoryCapabilities: this.activeRepositoryTarget?.capabilities,
         ...researchActionState,
         context: context ? {
           key: `${context.attachment.libraryID ?? "0"}-${context.attachment.key}`,
@@ -3522,6 +3550,8 @@ export class ZoteroChatPlugin {
           supportsLogin: this.codex.state.capabilities?.supportsLogin !== false,
         },
         qlabRoot: this.settings?.qlabRoot || "",
+        qlabTargetLabel: this.repositoryTargetLabel(),
+        repositoryCapabilities: this.activeRepositoryTarget?.capabilities,
         ...researchActionState,
         context: context ? {
           key: `${context.attachment.libraryID ?? "0"}-${context.attachment.key}`,
@@ -4392,7 +4422,13 @@ export class ZoteroChatPlugin {
         saveRepositoryTargets(preferences);
       },
       publish: (snapshot, staged) => {
+        if (snapshot.target.kind === "ssh") {
+          if (!this.remoteTargets) throw new Error("Remote Workbench targets are not ready");
+          this.remoteTargets.commit(snapshot.target);
+        }
+        else if (this.remoteTargets) void this.remoteTargets.activateLocal();
         this.codex.commitRepositoryTarget(staged);
+        this.codex.reconnectForRepositoryTarget();
         this.activeDraftPath = null;
         const preferences = this.preferencesForActiveRepository(snapshot);
         this.activeRepositoryTarget = snapshot;
@@ -4405,7 +4441,10 @@ export class ZoteroChatPlugin {
         this.renderChatViews();
         return undefined;
       },
-      disposeStaged: (staged) => this.codex.disposeStagedRepositoryTarget(staged),
+      disposeStaged: async (staged) => {
+        await this.codex.disposeStagedRepositoryTarget(staged);
+        await this.remoteTargets?.cancelPending();
+      },
       disposeOld: async () => {},
       markDegraded: (_snapshot, error) => {
         this.reportError(error);
@@ -4423,6 +4462,14 @@ export class ZoteroChatPlugin {
       pendingCandidate: null,
       migratedLegacy: true,
     };
+  }
+
+  private repositoryTargetLabel(): string {
+    const target = this.activeRepositoryTarget?.target;
+    if (target?.kind === "ssh") {
+      return `SSH ${target.sshProfile} · ${target.canonicalRoot}`;
+    }
+    return target?.canonicalRoot || this.settings?.qlabRoot || "";
   }
 
   private async activateRepositoryTarget(root: string): Promise<string> {
@@ -4467,11 +4514,30 @@ export class ZoteroChatPlugin {
   }
 
   private async chooseQLabRoot(preferredWindow?: Window): Promise<string | null> {
+    const owner = preferredWindow || Zotero.getMainWindow();
+    const profiles = await this.remoteTargets.listProfiles().catch(() => []);
+    if (profiles.length) {
+      const selected = { value: 0 };
+      const choices = ["On this Mac…", ...profiles.map((alias) => `SSH · ${alias}`)];
+      const accepted = Services.prompt.select(
+        owner,
+        "Choose Research Loop Workbench",
+        "Use a local repository or a configured SSH host:",
+        choices.length,
+        choices,
+        selected,
+      );
+      if (!accepted) return null;
+      if (selected.value > 0) {
+        const alias = profiles[selected.value - 1];
+        if (!alias) throw new Error("The selected SSH profile is unavailable");
+        return this.chooseRemoteQLabRoot(alias, owner);
+      }
+    }
     const { FilePicker } = ChromeUtils.importESModule(
       "chrome://zotero/content/modules/filePicker.mjs",
     );
     const picker = new FilePicker();
-    const owner = preferredWindow || Zotero.getMainWindow();
     picker.init(owner, "Choose the QLab repository", picker.modeGetFolder);
     const result = await picker.show();
     if (result !== picker.returnOK || !picker.file?.path) return null;
@@ -4487,6 +4553,47 @@ export class ZoteroChatPlugin {
       return root;
     }
     return this.activateRepositoryTarget(root);
+  }
+
+  private async chooseRemoteQLabRoot(alias: string, owner: Window): Promise<string | null> {
+    const browser = await this.remoteTargets.browse(alias);
+    try {
+      const home = await browser.home();
+      const codex = await browser.probeCodex();
+      if (codex.state === "missing") {
+        throw new Error(`Codex CLI is not installed on SSH host ${alias}`);
+      }
+      if (codex.state === "incompatible") {
+        throw new Error(
+          `Codex ${codex.foundVersion} on SSH host ${alias} is too old; install ${codex.minimumVersion} or newer`,
+        );
+      }
+      if (codex.state === "unauthenticated") {
+        throw new Error(
+          `Codex on SSH host ${alias} is not signed in; run codex login --device-auth on that host, then retry`,
+        );
+      }
+      const input = { value: home as string };
+      const accepted = Services.prompt.prompt(
+        owner,
+        `Research Loop on ${alias}`,
+        "Remote repository folder:",
+        input,
+        null,
+        { value: false },
+      );
+      if (!accepted || !input.value.trim()) return null;
+      const target = await browser.resolveRepository(input.value.trim());
+      try {
+        const snapshot = await this.repositoryTargetController.switchTo(target);
+        return snapshot.target.canonicalRoot;
+      }
+      catch (error) {
+        await this.remoteTargets.cancelPending();
+        throw error;
+      }
+    }
+    finally { await browser.close().catch(() => {}); }
   }
 
   private async loadConversationPapers(): Promise<void> {

@@ -4,6 +4,7 @@ import {
   classifyLegacyRoot,
   decodeStoredTargetPreferences,
   deriveRepositoryId,
+  deriveSshEndpointId,
   deriveTargetId,
   migrateLegacy,
   parseStoredTargetPreferences,
@@ -48,13 +49,33 @@ function resolvedSshRecord() {
     root: "/srv/research-loop",
     canonicalRoot: "/srv/research-loop",
     acceptedHostKeyFingerprint: "SHA256:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
-    endpointId: "ssh:qlab-gpu",
-    hostInstanceId: "host:qlab-gpu",
+    endpointId: "e".repeat(64),
+    hostInstanceId: "22222222-2222-4222-8222-222222222222",
     repositoryUuid: "11111111-1111-4111-8111-111111111111",
     repositoryId: "a".repeat(64),
     targetId: "b".repeat(64),
   };
 }
+
+it("derives an SSH endpoint only from the authenticated host key and helper host UUID", () => {
+  let source = "";
+  const endpointId = deriveSshEndpointId(
+    "SHA256:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+    "22222222-2222-4222-8222-222222222222",
+    (bytes) => {
+      source = new TextDecoder().decode(bytes);
+      return "e".repeat(64);
+    },
+  );
+  expect(endpointId).toBe("e".repeat(64));
+  expect(source).toBe(
+    [
+      "ssh",
+      "SHA256:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      "22222222-2222-4222-8222-222222222222",
+    ].join("\0"),
+  );
+});
 
 function validV1(overrides: Record<string, unknown> = {}): string {
   const activeOverrides = {

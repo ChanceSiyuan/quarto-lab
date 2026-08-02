@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { createHash } from "node:crypto";
 
 import type {
   NativeProcessExit, NativeProcessSession, NativePtyProcessSession, NativeSshSetupAction,
@@ -9,6 +10,7 @@ import {
   NativeBridgeSshTransportRuntime,
   SshTargetTransport,
   type InstalledHelper,
+  type RemoteHelperInstallTarget,
   type SshTransportRuntime,
   type VerifiedHelperInstall,
   type VerifiedRemoteHelperArtifact,
@@ -184,7 +186,10 @@ class FakeSshRuntime implements SshTransportRuntime {
     return process;
   }
 
-  async installVerifiedHelper(input: VerifiedHelperInstall): Promise<InstalledHelper> {
+  async installVerifiedHelper(
+    input: VerifiedHelperInstall,
+    _target?: RemoteHelperInstallTarget,
+  ): Promise<InstalledHelper> {
     this.installCalls.push(input);
     if (this.installBarrier) await this.installBarrier;
     return this.installerResult;
@@ -223,6 +228,48 @@ function verifiedInstall(): VerifiedHelperInstall {
 }
 
 describe("SshTargetTransport master ownership", () => {
+  it("streams a verified artifact through the existing master into one immutable remote path", async () => {
+    const host = new FakeSshRuntime();
+    const runtime = new NativeBridgeSshTransportRuntime({
+      profiles: { resolve: (alias) => host.resolveProfile(alias) },
+      bridge: host,
+      files: host,
+    });
+    const artifact = Uint8Array.of(7, 8, 9);
+    const digest = createHash("sha256").update(artifact).digest("hex");
+    const installing = runtime.installVerifiedHelper({
+      manifest: {
+        helperVersion: "1.0.0",
+        tuple: "linux-x86_64-static",
+        archiveSha256: digest,
+        executableSha256: digest,
+      },
+      artifact: artifact as VerifiedRemoteHelperArtifact,
+    }, {
+      alias: "qlab-gpu",
+      controlPath: "/private/master.sock",
+      cwd: "/private",
+    });
+    await Promise.resolve();
+    const process = host.lastProcess();
+    process.emitText("/home/alice/.qlab/bin/1.0.0/linux-x86_64-static/qlab-remote\n");
+    process.exit(0);
+
+    await expect(installing).resolves.toEqual({
+      helperVersion: "1.0.0",
+      tuple: "linux-x86_64-static",
+      executableSha256: digest,
+      absoluteVersionedPath: "/home/alice/.qlab/bin/1.0.0/linux-x86_64-static/qlab-remote",
+    });
+    expect(host.opens.at(-1)?.argv.slice(0, 8)).toEqual([
+      "/usr/bin/ssh", "-T", "-S", "/private/master.sock", "-o", "BatchMode=yes",
+      "--", "qlab-gpu",
+    ]);
+    expect(host.opens.at(-1)?.argv.at(-1)).toContain("sha256sum");
+    expect(host.opens.at(-1)?.argv.at(-1)).not.toContain("070809");
+    expect(process.writes).toEqual([artifact]);
+  });
+
   it("instantiates the production transport adapter over NativeBridge and secure Gecko files", async () => {
     const host = new FakeSshRuntime();
     const runtime = new NativeBridgeSshTransportRuntime({

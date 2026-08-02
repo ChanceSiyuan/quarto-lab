@@ -3,13 +3,19 @@
 This Zotero 9 add-on carries the unchanged QLab literature workflow into
 Research Loop and combines it with the Reader chat
 interface derived from Zotkit Reader. Repository-writing work talks only to
-the local `codex` CLI; there are no API-provider, Claude, remote-SSH, web
-ChatGPT handoff, or clipboard-import controls in the product UI.
+the Codex CLI running beside the selected repository: locally on this Mac or,
+for Chat, on a selected Linux host through the user's OpenSSH configuration.
+There are no API-provider, Claude, web ChatGPT handoff, or clipboard-import
+controls in the product UI.
 
 ## What it does
 
 - Chats with local Codex from the Zotero PDF Reader and supplies the current
   paper, page, selection, annotations, and bounded Zotero context.
+- Lets the Workbench repository selector choose a concrete OpenSSH alias,
+  uploads the XPI-bundled checksum-verified static helper for x86_64 or ARM64
+  Linux, validates the remote repository identity, and runs Codex Chat in that
+  repository. Local Zotero paths are withheld from remote prompts.
 - Opens the full **QLab Workbench** as a native Zotero tab beside PDF tabs. It
   occupies the normal document area and supports Zotero tab selection,
   reordering, closing, duplication, reopening, and moving to a new window.
@@ -170,6 +176,13 @@ Tools menu, and use **Tools → Open QLab Workbench** (or `⌘I` in Reader) to o
 the native chat tab. Start without a paper or choose one from the paper card.
 Sign in through the local Codex CLI when prompted. Commands typed directly in
 the Terminal drawer are explicit user actions and are not Agent-sandboxed.
+
+For a remote Chat target, first ensure `ssh <alias>` works noninteractively,
+the remote host has Codex 0.146.0 or newer and is signed in, and the selected
+folder is an initialized Research Loop repository. Choose **SSH · alias** in
+the repository selector and enter its absolute remote path. Remote Draft
+preview, Visual Edit, Terminal, Main Site, external editing, initialization,
+and promotion remain local-only in this release.
 
 The Workbench's top-left history control opens a left-hand rail listing
 user-facing conversations stored by the local Codex app-server (Codex App,

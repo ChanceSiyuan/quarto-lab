@@ -200,6 +200,9 @@ class RemoteHelperTests(unittest.TestCase):
             "if sys.argv[1:] == ['login', 'status']:\n"
             f"    raise SystemExit({login_exit})\n"
             "if sys.argv[1:] == ['app-server', '--stdio']:\n"
+            "    if os.environ.get('QLAB_CODEX_CWD_MARKER'):\n"
+            "        with open(os.environ['QLAB_CODEX_CWD_MARKER'], 'w', encoding='utf-8') as stream:\n"
+            "            stream.write(os.getcwd())\n"
             f"    os.write(1, base64.b64decode('{encoded_raw}'))\n"
             "    raise SystemExit(0)\n"
             "if sys.argv[1:] == ['login', '--device-auth']:\n"
@@ -738,6 +741,8 @@ class RemoteHelperTests(unittest.TestCase):
             version_output=b"codex-cli 99.0.0\n",
             raw_output=b'{"from":"codex"}\n',
         )
+        cwd_marker = self.root / "agent-cwd"
+        env["QLAB_CODEX_CWD_MARKER"] = str(cwd_marker)
         hello = {
             "kind": "hello",
             "phase": "bound",
@@ -761,6 +766,7 @@ class RemoteHelperTests(unittest.TestCase):
         self.assertEqual(lines[1]["kind"], "stream-ready")
         self.assertEqual(lines[2], {"from": "codex"})
         self.assertEqual(json.loads(marker.read_text().splitlines()[-1]), ["app-server", "--stdio"])
+        self.assertEqual(cwd_marker.read_text(), identity["canonicalRoot"])
 
         mutations = [
             {"canonicalRoot": str(self.root)},

@@ -1007,6 +1007,28 @@ describe("SidebarView", () => {
     expect((body.querySelector(".zc-composer-input") as HTMLTextAreaElement).placeholder).toBe("Ask about this paper…");
   });
 
+  it("disables local-only Workbench controls for an SSH Chat target", () => {
+    const body = document.createElement("div");
+    document.body.appendChild(body);
+    const handlers = callbacks();
+    const view = new SidebarView(body, handlers, { surface: "workbench" });
+    view.setState({
+      ...baseState(),
+      repositoryCapabilities: { terminal: false, mainSiteSupported: false },
+    } as any);
+
+    const terminal = body.querySelector<HTMLButtonElement>(".zc-terminal-button")!;
+    const mainSite = body.querySelector<HTMLButtonElement>(".zc-main-site-button")!;
+    expect(terminal.disabled).toBe(true);
+    expect(terminal.title).toContain("only for repositories on this Mac");
+    expect(mainSite.disabled).toBe(true);
+    expect(mainSite.title).toContain("only for repositories on this Mac");
+    terminal.click();
+    mainSite.click();
+    expect(handlers.onOpenTerminal).not.toHaveBeenCalled();
+    expect(view.isTerminalOpen()).toBe(false);
+  });
+
   it("checks the main site and opens it from one workbench button", async () => {
     const browser = document.createElement("browser");
     const createXULElement = vi.fn(() => browser);
