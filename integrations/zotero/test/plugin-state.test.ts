@@ -19,15 +19,15 @@ import {
   prepareRepositoryTargetStartup,
 } from "../src/plugin";
 import type { ReaderContext } from "../src/reader-context";
-import type {
-  LocalRepositoryInspection,
-  RepositoryTargetSnapshot,
-  ResolvedLocalRepositoryTarget,
-  StoredTargetPreferences,
+import {
+  capabilitiesFor,
+  type LocalRepositoryInspection,
+  type RepositoryTargetSnapshot,
+  type ResolvedLocalRepositoryTarget,
+  type StoredTargetPreferences,
 } from "../src/repository-target";
-
 const EMPTY_TARGET_PREFERENCES: StoredTargetPreferences = {
-  version: 1,
+  version: 2,
   active: null,
   pendingCandidate: null,
   legacyUnassigned: [],
@@ -46,6 +46,13 @@ function startupTarget(
     targetId: "b".repeat(64),
     ...overrides,
   };
+}
+
+function startupSnapshot(
+  target: ResolvedLocalRepositoryTarget = startupTarget(),
+  targetEpoch = 1,
+): RepositoryTargetSnapshot {
+  return { target, targetEpoch, capabilities: capabilitiesFor(target) };
 }
 
 function startupPreferences(
@@ -203,7 +210,7 @@ describe("repository target startup", () => {
       "inspect:/legacy",
       "publish",
     ]);
-    expect(prepared.activeSnapshot).toEqual({ target: startupTarget(), targetEpoch: 1 });
+    expect(prepared.activeSnapshot).toEqual(startupSnapshot());
     expect(prepared.settings.repositoryTargets.migratedLegacy).toBe(true);
     expect(h.records()[0]).toMatchObject({
       threadId: "legacy-thread",
@@ -243,13 +250,13 @@ describe("repository target startup", () => {
     try {
       await expect(plugin.activateRepositoryTarget("/chosen")).resolves.toBe("/chosen");
       expect(plugin.codex.stageRepositoryTarget).toHaveBeenCalledWith(
-        { target, targetEpoch: 1 },
+        startupSnapshot(target),
         expect.any(AbortSignal),
       );
       expect(plugin.codex.commitRepositoryTarget).toHaveBeenCalledWith(staged);
       expect(plugin.settings.qlabRoot).toBe("/chosen");
       expect(plugin.settings.repositoryTargets.active).toEqual(target);
-      expect(plugin.activeRepositoryTarget).toEqual({ target, targetEpoch: 1 });
+      expect(plugin.activeRepositoryTarget).toEqual(startupSnapshot(target));
       expect(setStringPref).toHaveBeenCalledWith(
         "extensions.zotkit.qlabRoot",
         "/chosen",
@@ -320,9 +327,9 @@ describe("repository target startup", () => {
       "raw", "sessions", "settings", "resolver", "inspect:/legacy", "publish",
       "factory", "mainSite", "terminal", "codex",
     ]);
-    expect(started.prepared.activeSnapshot).toEqual({ target: active, targetEpoch: 1 });
+    expect(started.prepared.activeSnapshot).toEqual(startupSnapshot(active));
     expect(started.codex.snapshot).toBe(h.published[0]);
-    expect(h.published).toEqual([{ target: active, targetEpoch: 1 }]);
+    expect(h.published).toEqual([startupSnapshot(active)]);
   });
 
   it("keeps targetless startup targetless without consulting a resolver", async () => {
@@ -360,10 +367,7 @@ describe("repository target startup", () => {
       "raw", "sessions", "settings", "resolver", "inspect:/chosen",
       "saveRepositoryTargets", "inspect:/chosen", "publish",
     ]);
-    expect(prepared.activeSnapshot).toEqual({
-      target: startupTarget("/chosen"),
-      targetEpoch: 1,
-    });
+    expect(prepared.activeSnapshot).toEqual(startupSnapshot(startupTarget("/chosen")));
     expect(prepared.settings.qlabRoot).toBe("/chosen");
     expect(prepared.settings.repositoryTargets).toMatchObject({
       active: startupTarget("/chosen"),
@@ -436,7 +440,7 @@ describe("repository target startup", () => {
 
     const started = await h.construct();
 
-    const snapshot = { target: startupTarget(), targetEpoch: 1 };
+    const snapshot = startupSnapshot();
     expect(h.calls).toEqual([
       "raw", "sessions", "settings", "resolver", "inspect:/legacy", "saveSessionRecords",
       "saveRepositoryTargets", "inspect:/legacy", "publish", "factory", "mainSite", "terminal", "codex",

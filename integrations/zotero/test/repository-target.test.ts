@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   bindPendingLegacyThreads,
   classifyLegacyRoot,
+  decodeStoredTargetPreferences,
   deriveRepositoryId,
   deriveTargetId,
   migrateLegacy,
@@ -19,7 +20,7 @@ import {
 afterEach(() => vi.unstubAllGlobals());
 
 const EMPTY_PREFERENCES: StoredTargetPreferences = {
-  version: 1,
+  version: 2,
   active: null,
   pendingCandidate: null,
   legacyUnassigned: [],
@@ -38,6 +39,111 @@ function resolved(canonicalRoot: string): ResolvedLocalRepositoryTarget {
     repositoryId: "a".repeat(64),
     targetId: "b".repeat(64),
   };
+}
+
+function resolvedSshRecord() {
+  return {
+    kind: "ssh" as const,
+    sshProfile: "qlab-gpu",
+    root: "/srv/research-loop",
+    canonicalRoot: "/srv/research-loop",
+    acceptedHostKeyFingerprint: "SHA256:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+    endpointId: "ssh:qlab-gpu",
+    hostInstanceId: "host:qlab-gpu",
+    repositoryUuid: "11111111-1111-4111-8111-111111111111",
+    repositoryId: "a".repeat(64),
+    targetId: "b".repeat(64),
+  };
+}
+
+function validV1(overrides: Record<string, unknown> = {}): string {
+  const activeOverrides = {
+    repositoryId: overrides.repositoryId,
+    targetId: overrides.targetId,
+  };
+  const { repositoryId: _repositoryId, targetId: _targetId, ...preferenceOverrides } = overrides;
+  return JSON.stringify({
+    version: 1,
+    active: {
+      kind: "local",
+      root: "/local/research-loop",
+      canonicalRoot: "/local/research-loop",
+      repositoryId: activeOverrides.repositoryId ?? "c".repeat(64),
+      targetId: activeOverrides.targetId ?? "d".repeat(64),
+    },
+    pendingCandidate: null,
+    legacyUnassigned: [],
+    migratedLegacy: false,
+    ...preferenceOverrides,
+  });
+}
+
+function candidate(canonicalRoot: string) {
+  return { kind: "candidate", canonicalRoot, state: "partial" };
+}
+
+function legacy(threadId: string) {
+  return { threadId, recordedCwd: "/gone", reason: "missing" };
+}
+
+function badSshId(): string {
+  return JSON.stringify({
+    version: 2,
+    active: { ...resolvedSshRecord(), repositoryId: "not-an-id" },
+    pendingCandidate: null,
+    legacyUnassigned: [],
+    migratedLegacy: false,
+  });
+}
+
+function badSshFingerprint(): string {
+  return JSON.stringify({
+    version: 2,
+    active: { ...resolvedSshRecord(), acceptedHostKeyFingerprint: "SHA256:padded=" },
+    pendingCandidate: null,
+    legacyUnassigned: [],
+    migratedLegacy: false,
+  });
+}
+
+function noncanonicalSshFingerprint(): string {
+  return JSON.stringify({
+    version: 2,
+    active: { ...resolvedSshRecord(), acceptedHostKeyFingerprint: `SHA256:${"A".repeat(42)}z` },
+    pendingCandidate: null,
+    legacyUnassigned: [],
+    migratedLegacy: false,
+  });
+}
+
+function badSshUuid(): string {
+  return JSON.stringify({
+    version: 2,
+    active: { ...resolvedSshRecord(), repositoryUuid: "not-a-uuid" },
+    pendingCandidate: null,
+    legacyUnassigned: [],
+    migratedLegacy: false,
+  });
+}
+
+function credentialBearingSshRecord(): string {
+  return JSON.stringify({
+    version: 2,
+    active: { ...resolvedSshRecord(), password: "secret" },
+    pendingCandidate: null,
+    legacyUnassigned: [],
+    migratedLegacy: false,
+  });
+}
+
+function badPendingCandidate(): string {
+  return JSON.stringify({
+    version: 2,
+    active: null,
+    pendingCandidate: { kind: "candidate", canonicalRoot: "/local/new", state: "unknown" },
+    legacyUnassigned: [],
+    migratedLegacy: false,
+  });
 }
 
 function fakeMigrationResolver(state: "ready" | "empty" | "partial" | "missing" | "incompatible"): LegacyMigrationResolver & { inspect: ReturnType<typeof vi.fn> } {
@@ -147,6 +253,80 @@ describe("repository target identity", () => {
   it("retains a pending candidate and Legacy/unassigned thread bindings without inventing an active target", () => {
     expect(parseStoredTargetPreferences('{"version":1,"active":null,"pendingCandidate":{"kind":"candidate","canonicalRoot":"/empty","state":"empty"},"legacyUnassigned":[{"threadId":"thread-1","recordedCwd":"/gone","reason":"missing"}],"migratedLegacy":true}'))
       .toMatchObject({ pendingCandidate: { canonicalRoot: "/empty", state: "empty" }, legacyUnassigned: [{ threadId: "thread-1", reason: "missing" }] });
+  });
+
+  it("round-trips one resolved SSH target while preserving migration fields", () => {
+    const stored = decodeStoredTargetPreferences(JSON.stringify({
+      version: 2,
+      active: resolvedSshRecord(),
+      pendingCandidate: { kind: "candidate", canonicalRoot: "/local/new", state: "partial" },
+      legacyUnassigned: [{ threadId: "t", recordedCwd: "/gone", reason: "missing" }],
+      migratedLegacy: true,
+    }));
+
+    expect(stored).toMatchObject({ rewrite: null, preferences: {
+      active: {
+        kind: "ssh",
+        sshProfile: "qlab-gpu",
+        canonicalRoot: "/srv/research-loop",
+        acceptedHostKeyFingerprint: "SHA256:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      },
+      pendingCandidate: { canonicalRoot: "/local/new", state: "partial" },
+      legacyUnassigned: [{ threadId: "t", reason: "missing" }],
+      migratedLegacy: true,
+    }});
+  });
+
+  it("migrates a valid v1 record without changing identity or legacy state", () => {
+    const decoded = decodeStoredTargetPreferences(validV1({
+      repositoryId: "a".repeat(64),
+      targetId: "b".repeat(64),
+      pendingCandidate: candidate("/empty"),
+      legacyUnassigned: [legacy("thread-1")],
+      migratedLegacy: true,
+    }));
+
+    expect(decoded.rewrite).toBe("v1-to-v2");
+    expect(decoded.preferences).toMatchObject({ version: 2, active: {
+      repositoryId: "a".repeat(64),
+      targetId: "b".repeat(64),
+    }, pendingCandidate: { canonicalRoot: "/empty" },
+    legacyUnassigned: [{ threadId: "thread-1" }], migratedLegacy: true });
+  });
+
+  it("persists a v1-to-v2 rewrite once before the next startup read", async () => {
+    const writes: Array<readonly [string, string]> = [];
+    vi.stubGlobal("Services", {
+      prefs: {
+        getStringPref: (name: string, fallback: string) => name.endsWith("libraryRoot") ? "/library" : fallback,
+        getIntPref: (_name: string, fallback: number) => fallback,
+        getBoolPref: (_name: string, fallback: boolean) => fallback,
+        setStringPref: (name: string, value: string) => writes.push([name, value]),
+      },
+    });
+    vi.stubGlobal("IOUtils", { exists: vi.fn(async (path: string) => path === "/library") });
+    vi.stubGlobal("Zotero", { Profile: { dir: "/profile" } });
+    vi.stubGlobal("PathUtils", { join: (...parts: string[]) => parts.join("/") });
+
+    const first = await loadSettings({ legacyQLabRoot: "/legacy", repositoryTargetsRaw: validV1() });
+    expect(first.repositoryTargets.version).toBe(2);
+    expect(writes).toEqual([["extensions.zotkit.repositoryTargets", expect.any(String)]]);
+    expect(JSON.parse(writes[0]![1])).toMatchObject({ version: 2, active: {
+      repositoryId: "c".repeat(64), targetId: "d".repeat(64),
+    }});
+
+    await loadSettings({ legacyQLabRoot: "/legacy", repositoryTargetsRaw: writes[0]![1] });
+    expect(writes).toHaveLength(1);
+  });
+
+  it.each([
+    "{}", '{"version":3}', badSshId(), badSshFingerprint(), noncanonicalSshFingerprint(),
+    badSshUuid(), credentialBearingSshRecord(), badPendingCandidate(),
+  ])("fails closed for %s", (raw) => {
+    expect(decodeStoredTargetPreferences(raw)).toEqual({
+      preferences: { version: 2, active: null, pendingCandidate: null, legacyUnassigned: [], migratedLegacy: false },
+      rewrite: null,
+    });
   });
 
   it("rejects malformed and future persisted values as the empty preference shape", () => {

@@ -93,6 +93,7 @@ import {
 import { LocalRepositoryTargetResolver } from "./local-repository-target-resolver";
 import { RepositoryTargetController } from "./repository-target-controller";
 import {
+  capabilitiesFor,
   migrateLegacy,
   type LocalRepositoryCandidate,
   type LegacyMigrationOutcome,
@@ -379,6 +380,7 @@ async function resolveInitialRepositoryTarget(
   return Object.freeze({
     target: Object.freeze({ ...inspected }),
     targetEpoch: 1,
+    capabilities: capabilitiesFor(inspected),
   });
 }
 

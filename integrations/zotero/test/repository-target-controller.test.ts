@@ -4,9 +4,11 @@ import {
   type TargetSwitchBlocker,
   type TargetSwitchRuntime,
 } from "../src/repository-target-controller";
-import type {
+import {
+  capabilitiesFor,
   RepositoryTargetSnapshot,
   ResolvedLocalRepositoryTarget,
+  ResolvedSshRepositoryTarget,
 } from "../src/repository-target";
 
 type StagedTarget = Readonly<{ snapshot: RepositoryTargetSnapshot }> | undefined;
@@ -94,7 +96,23 @@ function resolved(canonicalRoot: string): ResolvedLocalRepositoryTarget {
 }
 
 function snapshot(canonicalRoot: string, targetEpoch: number): RepositoryTargetSnapshot {
-  return { target: resolved(canonicalRoot), targetEpoch };
+  const target = resolved(canonicalRoot);
+  return { target, targetEpoch, capabilities: capabilitiesFor(target) };
+}
+
+function resolvedSsh(sshProfile: string, canonicalRoot: string): ResolvedSshRepositoryTarget {
+  return {
+    kind: "ssh",
+    sshProfile,
+    root: canonicalRoot,
+    canonicalRoot,
+    acceptedHostKeyFingerprint: "SHA256:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+    endpointId: `ssh:${sshProfile}`,
+    hostInstanceId: `host:${sshProfile}`,
+    repositoryUuid: "11111111-1111-4111-8111-111111111111",
+    repositoryId: "a".repeat(64),
+    targetId: "b".repeat(64),
+  };
 }
 
 function harness(options: HarnessOptions = {}): Harness {
@@ -222,6 +240,18 @@ function harness(options: HarnessOptions = {}): Harness {
 }
 
 describe("RepositoryTargetController", () => {
+  it("publishes Slice-2 SSH capabilities as one immutable snapshot", async () => {
+    const h = harness();
+
+    const snapshot = await h.controller.switchTo(resolvedSsh("qlab-gpu", "/srv/research-loop"));
+
+    expect(snapshot.capabilities).toEqual({
+      chat: true, qmdRead: false, qmdWrite: false, terminal: false, preview: false,
+      mainSiteSupported: false, externalEditor: false, promoteDraft: false,
+    });
+    expect(Object.isFrozen(snapshot.capabilities)).toBe(true);
+  });
+
   it("disposes only staged B when preference persistence fails, leaving A live", async () => {
     const h = harness({ persistErrors: { "/B": new Error("disk full") } });
 
