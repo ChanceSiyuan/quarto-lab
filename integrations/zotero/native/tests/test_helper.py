@@ -384,6 +384,36 @@ class DaemonTests(unittest.TestCase):
             self.assertEqual(bytes(output), b'{"wrapped":{"ok":true}}\n')
             self.assertEqual(exit_event["exitCode"], 0)
 
+    def test_fixed_raw_no_echo_pty_sets_termios_before_exec(self) -> None:
+        ws = WebSocket(self.socket_path, TOKEN)
+        self.addCleanup(ws.close)
+        with tempfile.TemporaryDirectory() as cwd:
+            ws.send_json(
+                {
+                    "type": "spawnRawPty",
+                    "sessionId": "raw-no-echo",
+                    "argv": ["/bin/sh", "-c", "stty -a; exit"],
+                    "cwd": cwd,
+                    "rawNoEcho": True,
+                }
+            )
+            self.assertEqual(ws.recv_json()["type"], "spawned")
+            output = bytearray()
+            exit_event = None
+            deadline = time.monotonic() + 5
+            while time.monotonic() < deadline and exit_event is None:
+                message = ws.recv_json()
+                if message["type"] == "output":
+                    output.extend(base64.b64decode(message["data"]))
+                elif message["type"] == "exit":
+                    exit_event = message
+
+            flags = bytes(output).decode(errors="replace")
+            self.assertIn("-icanon", flags)
+            self.assertIn("-echo", flags)
+            self.assertIn("-opost", flags)
+            self.assertEqual(exit_event["exitCode"], 0)
+
     def test_spawn_error_is_scoped_and_does_not_cancel_another_spawn(self) -> None:
         ws = WebSocket(self.socket_path, TOKEN)
         self.addCleanup(ws.close)

@@ -1345,7 +1345,7 @@ static void configure_child(const SpawnSpec *sp, bool is_pty) {
 }
 
 static void handle_spawn(int owner, const char *js, JTok *t, int count,
-                         const char *sid, bool use_pipe) {
+                         const char *sid, bool use_pipe, bool raw_no_echo) {
   if (session_find(sid)) {
     json_session_error_to_client(owner, sid, "sessionId already exists");
     return;
@@ -1363,6 +1363,13 @@ static void handle_spawn(int owner, const char *js, JTok *t, int count,
   }
   SpawnSpec sp = {0};
   const char *err = NULL;
+  int raw_no_echo_token = obj_get(js, t, count, 0, "rawNoEcho");
+  if ((raw_no_echo &&
+       (raw_no_echo_token < 0 || t[raw_no_echo_token].type != JT_TRUE)) ||
+      (!raw_no_echo && raw_no_echo_token >= 0)) {
+    json_session_error_to_client(owner, sid, "invalid fixed PTY mode");
+    return;
+  }
   if (!parse_spawn(js, t, count, &sp, &err)) {
     json_session_error_to_client(owner, sid,
                                  err ? err : "invalid spawn request");
@@ -1405,7 +1412,19 @@ static void handle_spawn(int owner, const char *js, JTok *t, int count,
   } else {
     struct winsize ws = {.ws_row = (unsigned short)sp.rows,
                          .ws_col = (unsigned short)sp.cols};
-    pid = forkpty(&master, NULL, NULL, &ws);
+    struct termios raw_termios = {0};
+    struct termios *termios_profile = NULL;
+    if (raw_no_echo) {
+      cfmakeraw(&raw_termios);
+      raw_termios.c_cflag |= CREAD;
+      raw_termios.c_lflag &= (tcflag_t)~ECHO;
+      raw_termios.c_cc[VMIN] = 1;
+      raw_termios.c_cc[VTIME] = 0;
+      (void)cfsetispeed(&raw_termios, B38400);
+      (void)cfsetospeed(&raw_termios, B38400);
+      termios_profile = &raw_termios;
+    }
+    pid = forkpty(&master, NULL, termios_profile, &ws);
   }
   if (pid < 0) {
     if (pair[0] >= 0)
@@ -1489,9 +1508,10 @@ static void handle_ws_json(int owner, const unsigned char *data, size_t len) {
     free(sid);
     goto done;
   }
-  if (!strcmp(type, "spawn") || !strcmp(type, "spawnPipe")) {
+  if (!strcmp(type, "spawn") || !strcmp(type, "spawnPipe") ||
+      !strcmp(type, "spawnRawPty")) {
     handle_spawn(owner, (const char *)data, t, count, sid,
-                 !strcmp(type, "spawnPipe"));
+                 !strcmp(type, "spawnPipe"), !strcmp(type, "spawnRawPty"));
     free(sid);
     goto done;
   }
