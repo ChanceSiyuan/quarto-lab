@@ -23,7 +23,9 @@ import {
   capabilitiesFor,
   type LocalRepositoryInspection,
   type RepositoryTargetSnapshot,
+  type ResolvedRepositoryTarget,
   type ResolvedLocalRepositoryTarget,
+  type ResolvedSshRepositoryTarget,
   type StoredTargetPreferences,
 } from "../src/repository-target";
 const EMPTY_TARGET_PREFERENCES: StoredTargetPreferences = {
@@ -48,6 +50,21 @@ function startupTarget(
   };
 }
 
+function startupSshTarget(): ResolvedSshRepositoryTarget {
+  return {
+    kind: "ssh",
+    sshProfile: "qlab-gpu",
+    root: "/srv/research-loop",
+    canonicalRoot: "/srv/research-loop",
+    acceptedHostKeyFingerprint: "SHA256:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+    endpointId: "ssh:qlab-gpu",
+    hostInstanceId: "host:qlab-gpu",
+    repositoryUuid: "11111111-1111-4111-8111-111111111111",
+    repositoryId: "a".repeat(64),
+    targetId: "b".repeat(64),
+  };
+}
+
 function startupSnapshot(
   target: ResolvedLocalRepositoryTarget = startupTarget(),
   targetEpoch = 1,
@@ -56,7 +73,7 @@ function startupSnapshot(
 }
 
 function startupPreferences(
-  active: ResolvedLocalRepositoryTarget | null,
+  active: ResolvedRepositoryTarget | null,
   migratedLegacy = true,
 ): StoredTargetPreferences {
   return {
@@ -194,6 +211,18 @@ function targetStartupHarness(options: {
 }
 
 describe("repository target startup", () => {
+  it("leaves a stored SSH expectation inactive without consulting the local resolver", async () => {
+    const h = targetStartupHarness({ preferences: startupPreferences(startupSshTarget()) });
+
+    const prepared = await prepareRepositoryTargetStartup(h.deps);
+
+    expect(prepared.activeSnapshot).toBeNull();
+    expect(prepared.settings.repositoryTargets.active?.kind).toBe("ssh");
+    expect(h.calls).toEqual(["raw", "sessions", "settings"]);
+    expect(h.inspect).not.toHaveBeenCalled();
+    expect(h.published).toEqual([]);
+  });
+
   it("freshly resolves a migrated target before publishing it", async () => {
     const h = targetStartupHarness();
 

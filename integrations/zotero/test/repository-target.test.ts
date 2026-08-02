@@ -319,9 +319,44 @@ describe("repository target identity", () => {
     expect(writes).toHaveLength(1);
   });
 
+  it("does not probe an SSH root through local settings path checks", async () => {
+    const checkedPaths: string[] = [];
+    vi.stubGlobal("Services", {
+      prefs: {
+        getStringPref: (name: string, fallback: string) => name.endsWith("libraryRoot") ? "/library" : fallback,
+        getIntPref: (_name: string, fallback: number) => fallback,
+        getBoolPref: (_name: string, fallback: boolean) => fallback,
+        setStringPref: vi.fn(),
+      },
+    });
+    vi.stubGlobal("IOUtils", {
+      exists: vi.fn(async (path: string) => {
+        checkedPaths.push(path);
+        return path === "/library";
+      }),
+    });
+    vi.stubGlobal("Zotero", { Profile: { dir: "/profile" } });
+    vi.stubGlobal("PathUtils", { join: (...parts: string[]) => parts.join("/") });
+
+    const settings = await loadSettings({
+      legacyQLabRoot: "/legacy",
+      repositoryTargetsRaw: JSON.stringify({
+        version: 2,
+        active: resolvedSshRecord(),
+        pendingCandidate: null,
+        legacyUnassigned: [],
+        migratedLegacy: true,
+      }),
+    });
+
+    expect(settings.repositoryTargets.active?.kind).toBe("ssh");
+    expect(settings.qlabRoot).toBe("");
+    expect(checkedPaths).toEqual(["/library"]);
+  });
+
   it.each([
     "{}", '{"version":3}', badSshId(), badSshFingerprint(), noncanonicalSshFingerprint(),
-    badSshUuid(), credentialBearingSshRecord(), badPendingCandidate(),
+    badSshUuid(), credentialBearingSshRecord(), validV1({ password: "secret" }), badPendingCandidate(),
   ])("fails closed for %s", (raw) => {
     expect(decodeStoredTargetPreferences(raw)).toEqual({
       preferences: { version: 2, active: null, pendingCandidate: null, legacyUnassigned: [], migratedLegacy: false },

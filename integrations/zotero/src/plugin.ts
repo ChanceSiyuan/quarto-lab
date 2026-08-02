@@ -368,6 +368,10 @@ async function resolveInitialRepositoryTarget(
 ): Promise<RepositoryTargetSnapshot | null> {
   const stored = preferences.active;
   if (!stored) return null;
+  // SSH persistence is only a restoration expectation. Task 5 supplies the
+  // independent SSH re-resolution that may activate it; never send its root
+  // to a local resolver in the meantime.
+  if (stored.kind === "ssh") return null;
   const inspected = await resolver().inspect(stored.canonicalRoot);
   if (inspected.kind !== "local"
       || inspected.kind !== stored.kind

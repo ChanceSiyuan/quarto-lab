@@ -181,7 +181,8 @@ function parsePreferencesObject(value: unknown): DecodedTargetPreferences | null
 }
 
 function parseV1PreferencesObject(value: Record<string, unknown>): DecodedTargetPreferences | null {
-  if (typeof value.migratedLegacy !== "boolean") return null;
+  if (!hasOnlyKeys(value, ["version", "active", "pendingCandidate", "legacyUnassigned", "migratedLegacy"])
+    || typeof value.migratedLegacy !== "boolean") return null;
   const active = value.active === null ? null : parseResolvedLocalTarget(value.active);
   const pendingCandidate = value.pendingCandidate === null ? null : parsePendingCandidate(value.pendingCandidate);
   const legacyUnassigned = parseLegacyBindings(value.legacyUnassigned);

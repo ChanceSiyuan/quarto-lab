@@ -55,7 +55,7 @@ export async function loadSettings(
   const repositoryTargets = decodedRepositoryTargets.preferences;
   if (decodedRepositoryTargets.rewrite === "v1-to-v2") saveRepositoryTargets(repositoryTargets);
   const qlabRoot = repositoryTargets.migratedLegacy
-    ? repositoryTargets.active?.canonicalRoot
+    ? (repositoryTargets.active?.kind === "local" ? repositoryTargets.active.canonicalRoot : undefined)
       || repositoryTargets.pendingCandidate?.canonicalRoot
       || ""
     : rawTargets.legacyQLabRoot;
