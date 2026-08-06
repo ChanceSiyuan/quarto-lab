@@ -2210,7 +2210,8 @@ static int run_setup_auth(const ActivationHello *hello, const char *host_uuid) {
 }
 
 static int run_agent(const BoundHello *hello, const char *host_uuid,
-                     const char *repository_uuid) {
+                     const char *repository_uuid,
+                     const char *canonical_root) {
   char helper_instance[37];
   if (!generate_uuid(helper_instance))
     return QLAB_REMOTE_IDENTITY_EXIT;
@@ -2232,6 +2233,8 @@ static int run_agent(const BoundHello *hello, const char *host_uuid,
     } while (amount < 0 && errno == EINTR);
     close(gate[0]);
     if (amount != 1)
+      _exit(126);
+    if (chdir(canonical_root) < 0)
       _exit(126);
     int null_descriptor = open("/dev/null", O_WRONLY | O_CLOEXEC);
     if (null_descriptor >= 0) {
@@ -2307,7 +2310,8 @@ static int run_channel(HelperMode mode) {
                                         canonical_root) &&
                  resolve_repository_uuid(canonical_root, repository_uuid) &&
                  !strcmp(repository_uuid, hello.expected_repository_uuid);
-    int result = valid ? run_agent(&hello, host_uuid, repository_uuid)
+    int result = valid ? run_agent(&hello, host_uuid, repository_uuid,
+                                   canonical_root)
                        : QLAB_REMOTE_IDENTITY_EXIT;
     bound_hello_free(&hello);
     return result;

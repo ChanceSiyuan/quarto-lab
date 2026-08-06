@@ -108,6 +108,18 @@ describe("SiteTabView", () => {
     expect(host.querySelector(".zc-main-site-view")).toBeNull();
   });
 
+  it("shows the SSH-unsupported card without running any status check", async () => {
+    const callbacks = makeCallbacks({ supported: () => false });
+    const { host } = mountView(callbacks);
+    await vi.waitFor(() => {
+      expect(host.querySelector(".zc-site-status-detail")!.textContent)
+        .toBe("Main Site is available only for repositories on this Mac");
+    });
+    expect((host.querySelector(".zc-site-status-action") as HTMLElement).hidden).toBe(true);
+    expect(callbacks.checkRepository).not.toHaveBeenCalled();
+    expect(callbacks.checkSite).not.toHaveBeenCalled();
+  });
+
   it("does not re-run the status flow once the site is visible", async () => {
     const callbacks = makeCallbacks();
     const { view } = mountView(callbacks);

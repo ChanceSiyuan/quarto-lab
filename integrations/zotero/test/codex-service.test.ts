@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  buildAdditionalContext,
   CodexService,
   readSessionRecords,
   saveSessionRecords,
@@ -123,6 +124,24 @@ function paperContext(): ReaderContext {
   };
 }
 
+it("withholds local Zotero paths from remote-agent context", () => {
+  const remote = JSON.stringify(buildAdditionalContext(
+    paperContext(),
+    {},
+    { includeLocalPaths: false },
+  ));
+  expect(remote).not.toContain("/papers/paper.pdf");
+  expect(remote).not.toContain("/profile/");
+  expect(remote).toContain("Local Zotero attachment paths are intentionally withheld");
+
+  const local = JSON.stringify(buildAdditionalContext(
+    paperContext(),
+    {},
+    { includeLocalPaths: true },
+  ));
+  expect(local).toContain("/papers/paper.pdf");
+});
+
 function serviceWithClient(client: Record<string, unknown>) {
   const callbacks = { onState: vi.fn(), onError: vi.fn() };
   const service = new CodexService(
@@ -180,6 +199,23 @@ function deferred<T>() {
 }
 
 describe("CodexService repository target binding", () => {
+  it("waits for an old in-flight startup before connecting the committed target", async () => {
+    const close = vi.fn();
+    const { service } = serviceWithClient({ close });
+    const oldStartup = deferred<void>();
+    const internal = service as any;
+    internal.startPromise = oldStartup.promise;
+    const start = vi.spyOn(service, "start").mockResolvedValue(undefined);
+
+    service.reconnectForRepositoryTarget();
+
+    expect(close).toHaveBeenCalledOnce();
+    expect(start).not.toHaveBeenCalled();
+    oldStartup.resolve();
+    await vi.waitFor(() => expect(start).toHaveBeenCalledOnce());
+    expect(service.state.connected).toBe(false);
+  });
+
   it("does not let unscoped history loading block the first repository selection", async () => {
     const client = {
       threadList: vi.fn(() => new Promise(() => {})),

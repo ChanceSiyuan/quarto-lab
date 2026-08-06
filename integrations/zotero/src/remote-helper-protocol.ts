@@ -264,15 +264,6 @@ function protocolError(code: RemoteHelperProtocolErrorCode, message: string): ne
   throw new RemoteHelperProtocolError(code, message);
 }
 
-function joinBytes(left: Uint8Array, right: Uint8Array): Uint8Array {
-  if (!left.length) return right.slice();
-  if (!right.length) return left;
-  const joined = new Uint8Array(left.length + right.length);
-  joined.set(left);
-  joined.set(right, left.length);
-  return joined;
-}
-
 class StrictJsonPreflight {
   private index = 0;
 
@@ -373,7 +364,8 @@ class StrictJsonPreflight {
       }
       if (capture) pieces.push(this.source.slice(plainStart, this.index));
       this.index++;
-      const escaped = this.source[this.index++] ?? "";
+      const escaped = this.source[this.index++];
+      if (escaped === undefined) this.fail();
       const simple: { [key: string]: string } = {
         '"': '"', "\\": "\\", "/": "/", b: "\b", f: "\f",
         n: "\n", r: "\r", t: "\t",
@@ -385,7 +377,9 @@ class StrictJsonPreflight {
         this.index += 4;
       }
       else if (Object.hasOwn(simple, escaped)) {
-        if (capture) pieces.push(simple[escaped] ?? "");
+        const decoded = simple[escaped];
+        if (decoded === undefined) this.fail();
+        if (capture) pieces.push(decoded);
       }
       else this.fail();
       plainStart = this.index;
@@ -446,7 +440,8 @@ export type BoundedJsonlDecodeResult = Readonly<{
 
 /** One byte-oriented decoder for every helper JSONL phase. */
 export class BoundedJsonlDecoder {
-  private pending: Uint8Array<ArrayBufferLike> = new Uint8Array();
+  private pending = new Uint8Array(0);
+  private pendingLength = 0;
   private decodedFrames = 0;
   private state: "open" | "terminal" | "transitioned" | "finished" | "failed" = "open";
 
@@ -462,29 +457,32 @@ export class BoundedJsonlDecoder {
       return protocolError("INVALID_FRAME", "Remote helper input must be bytes");
     }
     try {
-      this.pending = joinBytes(this.pending, chunk);
       const frames: unknown[] = [];
+      let chunkOffset = 0;
       for (;;) {
-        const newline = this.pending.indexOf(0x0a);
+        const newline = chunk.indexOf(0x0a, chunkOffset);
         if (newline < 0) break;
-        const physicalBytes = newline + 1;
+        const piece = chunk.subarray(chunkOffset, newline);
+        const physicalBytes = this.pendingLength + piece.length + 1;
         if (physicalBytes > REMOTE_HELPER_MAX_FRAME_BYTES) {
           return protocolError("FRAME_TOO_LARGE", "Remote helper JSONL frame exceeds 8 MiB");
         }
-        const frame = parseJson(this.pending.slice(0, newline));
+        this.append(piece);
+        const frame = parseJson(this.pending.subarray(0, this.pendingLength));
         frames.push(frame);
         this.decodedFrames++;
-        this.pending = this.pending.slice(physicalBytes);
+        this.pendingLength = 0;
+        chunkOffset = newline + 1;
         if (isRecord(frame) && frame.kind === "protocol-error") {
-          if (this.pending.length) {
+          if (chunkOffset < chunk.length) {
             return protocolError("INVALID_FRAME", "Remote helper sent bytes after a terminal error");
           }
           this.state = "terminal";
           break;
         }
         if (this.transitionAfter?.(frame)) {
-          const rawRemainder = chunk.subarray(chunk.length - this.pending.length);
-          this.pending = new Uint8Array();
+          const rawRemainder = chunk.subarray(chunkOffset);
+          this.pendingLength = 0;
           this.state = "transitioned";
           return Object.freeze({
             frames: Object.freeze(frames),
@@ -493,9 +491,11 @@ export class BoundedJsonlDecoder {
           });
         }
       }
-      if (this.pending.length >= REMOTE_HELPER_MAX_FRAME_BYTES) {
+      const remainder = chunk.subarray(chunkOffset);
+      if (this.pendingLength + remainder.length >= REMOTE_HELPER_MAX_FRAME_BYTES) {
         return protocolError("FRAME_TOO_LARGE", "Remote helper JSONL frame exceeds 8 MiB");
       }
+      this.append(remainder);
       return Object.freeze({
         frames: Object.freeze(frames),
         transitioned: false,
@@ -517,15 +517,32 @@ export class BoundedJsonlDecoder {
       return [];
     }
     this.state = "finished";
-    if (this.pending.length || this.decodedFrames === 0) {
+    if (this.pendingLength || this.decodedFrames === 0) {
       return protocolError(
         "TRUNCATED_FRAME",
-        this.pending.length
+        this.pendingLength
           ? "Remote helper stream ended inside a JSONL frame"
           : "Remote helper stream ended before its first hello",
       );
     }
     return [];
+  }
+
+  private append(source: Uint8Array): void {
+    if (!source.length) return;
+    const required = this.pendingLength + source.length;
+    if (required >= REMOTE_HELPER_MAX_FRAME_BYTES) {
+      return protocolError("FRAME_TOO_LARGE", "Remote helper JSONL frame exceeds 8 MiB");
+    }
+    if (required > this.pending.length) {
+      let capacity = Math.max(256, this.pending.length || 0);
+      while (capacity < required) capacity = Math.min(REMOTE_HELPER_MAX_FRAME_BYTES - 1, capacity * 2);
+      const grown = new Uint8Array(capacity);
+      if (this.pendingLength) grown.set(this.pending.subarray(0, this.pendingLength));
+      this.pending = grown;
+    }
+    this.pending.set(source, this.pendingLength);
+    this.pendingLength = required;
   }
 }
 
@@ -614,8 +631,11 @@ function compareCoreVersions(left: string, right: string): number {
   const leftParts = left.split(".");
   const rightParts = right.split(".");
   for (let index = 0; index < 3; index++) {
-    const leftPart = leftParts[index] ?? "";
-    const rightPart = rightParts[index] ?? "";
+    const leftPart = leftParts[index];
+    const rightPart = rightParts[index];
+    if (leftPart === undefined || rightPart === undefined) {
+      throw new TypeError("Semantic version core must contain exactly three components");
+    }
     if (leftPart.length !== rightPart.length) {
       return leftPart.length < rightPart.length ? -1 : 1;
     }

@@ -57,8 +57,8 @@ function startupSshTarget(): ResolvedSshRepositoryTarget {
     root: "/srv/research-loop",
     canonicalRoot: "/srv/research-loop",
     acceptedHostKeyFingerprint: "SHA256:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
-    endpointId: "ssh:qlab-gpu",
-    hostInstanceId: "host:qlab-gpu",
+    endpointId: "e".repeat(64),
+    hostInstanceId: "22222222-2222-4222-8222-222222222222",
     repositoryUuid: "11111111-1111-4111-8111-111111111111",
     repositoryId: "a".repeat(64),
     targetId: "b".repeat(64),
@@ -269,6 +269,7 @@ describe("repository target startup", () => {
       repositoryTargetBlockers: vi.fn(() => []),
       stageRepositoryTarget: vi.fn(async () => staged),
       commitRepositoryTarget: vi.fn(),
+      reconnectForRepositoryTarget: vi.fn(),
       disposeStagedRepositoryTarget: vi.fn(async () => {}),
     };
     plugin.repositoryTargetResolver = { inspect: vi.fn(async () => target) };
@@ -283,6 +284,7 @@ describe("repository target startup", () => {
         expect.any(AbortSignal),
       );
       expect(plugin.codex.commitRepositoryTarget).toHaveBeenCalledWith(staged);
+      expect(plugin.codex.reconnectForRepositoryTarget).toHaveBeenCalledOnce();
       expect(plugin.settings.qlabRoot).toBe("/chosen");
       expect(plugin.settings.repositoryTargets.active).toEqual(target);
       expect(plugin.activeRepositoryTarget).toEqual(startupSnapshot(target));

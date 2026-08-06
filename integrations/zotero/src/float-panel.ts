@@ -40,6 +40,9 @@ export interface FloatPanelState {
   canResolveAnchor: boolean;
   paperTrailConsent: { question: string; pageNumber?: number } | null;
   qlabRoot: string;
+  qlabTargetLabel?: string;
+  /** The compact panel keeps local QLab commands disabled for SSH Chat targets. */
+  repositoryCapabilities?: { qmdRead: boolean; qmdWrite: boolean };
   /** Feature flags for the active backend; an absent flag defaults to `true`. */
   capabilities?: { supportsAgentMode: boolean; supportsLogin: boolean };
 }
@@ -534,12 +537,20 @@ export class FloatPanelView {
   }
 
   private renderQLabTools(): void {
-    this.qlabRootLabel.textContent = this.state.qlabRoot
-      ? compactPath(this.state.qlabRoot)
-      : "Choose repository…";
-    this.qlabRootLabel.title = this.state.qlabRoot || "QLab repository is not configured";
+    this.qlabRootLabel.textContent = this.state.qlabTargetLabel
+      || (this.state.qlabRoot ? compactPath(this.state.qlabRoot) : "Choose repository…");
+    this.qlabRootLabel.title = this.state.qlabTargetLabel
+      || this.state.qlabRoot
+      || "QLab repository is not configured";
     for (const button of this.qlabCommandButtons) {
-      button.disabled = !this.state.qlabRoot || this.state.phase !== "ready";
+      const localCommandsSupported = this.state.repositoryCapabilities?.qmdRead !== false;
+      button.disabled = !this.state.qlabRoot || this.state.phase !== "ready" || !localCommandsSupported;
+      if (!localCommandsSupported) {
+        button.title = "Repository commands are not available on SSH Chat targets";
+      }
+      else {
+        button.removeAttribute("title");
+      }
     }
   }
 

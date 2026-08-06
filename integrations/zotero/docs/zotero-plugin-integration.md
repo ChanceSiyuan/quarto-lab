@@ -5,14 +5,15 @@ models:
 
 1. It imports the selected repository's `literature/` metadata and nested
    collection structure into a Zotero collection named `QLab Literature`.
-2. It creates the full QLab Workbench as a native Zotero document tab,
-   connected only to the local `codex app-server`. QLab does not register an
-   item-pane or Reader-sidebar section.
+2. It creates the full QLab Workbench as a native Zotero document tab. Chat
+   connects to `codex app-server` beside either the local repository or a
+   selected SSH repository. QLab does not register an item-pane or
+   Reader-sidebar section.
 
 ## Reader flow
 
 ```text
-Zotero PDF / Tools menu -> native QLab Workbench tab -> local Codex
+Zotero PDF / Tools menu -> native QLab Workbench tab -> Codex on target
                                  |          |
                                  |          `-> optional compact float
                                  v
@@ -26,7 +27,7 @@ Zotero PDF / Tools menu -> native QLab Workbench tab -> local Codex
                                       `- work/ (generated local state)
 ```
 
-The user first chooses a QLab root containing `AGENTS.md`, `qlab`,
+The user first chooses a local QLab root containing `AGENTS.md`, `qlab`,
 `literature/`, `drafts/`, and `knowledge/`. The path is stored in Zotero's local
 preferences and can be changed from the Workbench or Tools menu. The Workbench
 can be created empty; its paper card opens Zotero's native item selector and
@@ -72,9 +73,13 @@ Reader context are untrusted source material. Promotion into `knowledge/`
 requires a reviewed diff, a later explicit approval, and
 `make knowledge-check` after application.
 
-There is no Claude runtime, remote Codex/SSH target, model-provider form, or
-direct API-key transport. Authentication and model discovery come from the
-locally installed Codex CLI.
+There is no Claude runtime, model-provider form, or direct API-key transport.
+Authentication and model discovery come from the
+Codex CLI installed on the selected local or SSH host. SSH Chat uses a
+versioned, checksum-verified helper embedded in the XPI; it never copies
+repository content or Codex credentials. Remote preview, Terminal, Main Site,
+external editing, initialization, and promotion are deliberately unavailable
+until their target-owned implementations land.
 
 ## Build
 
@@ -86,4 +91,6 @@ make zotero-plugin
 ```
 
 The installable XPI is generated in `integrations/zotero/dist/`. The bundled
-native helper is a universal macOS binary for Intel and Apple Silicon.
+local helper is a universal macOS binary for Intel and Apple Silicon. Building
+the XPI also requires Zig (or `ZIG=/absolute/path/to/zig`) to produce the
+statically linked x86_64 and ARM64 Linux remote helpers.

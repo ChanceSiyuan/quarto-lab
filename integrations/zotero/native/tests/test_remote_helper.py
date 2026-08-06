@@ -200,6 +200,9 @@ class RemoteHelperTests(unittest.TestCase):
             "if sys.argv[1:] == ['login', 'status']:\n"
             f"    raise SystemExit({login_exit})\n"
             "if sys.argv[1:] == ['app-server', '--stdio']:\n"
+            "    if os.environ.get('QLAB_CODEX_CWD_MARKER'):\n"
+            "        with open(os.environ['QLAB_CODEX_CWD_MARKER'], 'w', encoding='utf-8') as stream:\n"
+            "            stream.write(os.getcwd())\n"
             f"    os.write(1, base64.b64decode('{encoded_raw}'))\n"
             "    raise SystemExit(0)\n"
             "if sys.argv[1:] == ['login', '--device-auth']:\n"
@@ -339,8 +342,10 @@ class RemoteHelperTests(unittest.TestCase):
 
     def test_a_complete_invalid_uuid_is_not_retried_as_concurrent_publication(self) -> None:
         # Break caught: retrying every invalid file lets stable corrupt state become valid mid-handshake.
+        # Seed the independent host identity first so its initial durable fsync cannot consume
+        # the replacement delay and turn this into a scheduler race on slower filesystems.
+        self.successful_repository_identity()
         qlab = self.repo / ".git" / "qlab"
-        qlab.mkdir(mode=0o700)
         identity = qlab / "repository-id"
         identity.write_text("x" * 36 + "\n")
         identity.chmod(0o600)
@@ -736,6 +741,8 @@ class RemoteHelperTests(unittest.TestCase):
             version_output=b"codex-cli 99.0.0\n",
             raw_output=b'{"from":"codex"}\n',
         )
+        cwd_marker = self.root / "agent-cwd"
+        env["QLAB_CODEX_CWD_MARKER"] = str(cwd_marker)
         hello = {
             "kind": "hello",
             "phase": "bound",
@@ -759,6 +766,7 @@ class RemoteHelperTests(unittest.TestCase):
         self.assertEqual(lines[1]["kind"], "stream-ready")
         self.assertEqual(lines[2], {"from": "codex"})
         self.assertEqual(json.loads(marker.read_text().splitlines()[-1]), ["app-server", "--stdio"])
+        self.assertEqual(cwd_marker.read_text(), identity["canonicalRoot"])
 
         mutations = [
             {"canonicalRoot": str(self.root)},

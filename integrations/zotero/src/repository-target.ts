@@ -148,6 +148,20 @@ export function deriveRepositoryId(endpointId: string, repositoryUuid: string, d
   return digestIdentity(new TextEncoder().encode(`${endpointId}\0${repositoryUuid}`), digest);
 }
 
+export function deriveSshEndpointId(
+  acceptedHostKeyFingerprint: string,
+  hostInstanceId: string,
+  digest: TargetDigest,
+): string {
+  if (!validAcceptedHostKeyFingerprint(acceptedHostKeyFingerprint)
+    || !validRepositoryUuid(hostInstanceId)) {
+    throw new Error("SSH endpoint identity is malformed");
+  }
+  return digestIdentity(new TextEncoder().encode(
+    `ssh\0${acceptedHostKeyFingerprint}\0${hostInstanceId}`,
+  ), digest);
+}
+
 export function deriveTargetId(endpointId: string, canonicalRoot: string, repositoryId: string, digest: TargetDigest): string {
   return digestIdentity(new TextEncoder().encode(`${endpointId}\0${canonicalRoot}\0${repositoryId}`), digest);
 }
@@ -243,8 +257,8 @@ function parseResolvedSshTarget(value: Record<string, unknown>): ResolvedSshRepo
     || !nonEmptyString(value.root)
     || !nonEmptyString(value.canonicalRoot)
     || !validAcceptedHostKeyFingerprint(value.acceptedHostKeyFingerprint)
-    || !nonEmptyString(value.endpointId)
-    || !nonEmptyString(value.hostInstanceId)
+    || !validIdentity(value.endpointId)
+    || !validRepositoryUuid(value.hostInstanceId)
     || !validRepositoryUuid(value.repositoryUuid)
     || !validIdentity(value.repositoryId)
     || !validIdentity(value.targetId)) return undefined;

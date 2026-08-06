@@ -42,6 +42,12 @@ export type VerifiedHelperInstall = Readonly<{
   artifact: VerifiedRemoteHelperArtifact;
 }>;
 
+export type RemoteHelperInstallTarget = Readonly<{
+  alias: string;
+  controlPath: string;
+  cwd: string;
+}>;
+
 export type SshChannelExit = Readonly<{
   code: number | null;
   signal: number | null;
@@ -107,7 +113,10 @@ export interface SshTransportRuntime {
   openPipeProcess(options: SpawnOptions): Promise<NativeProcessSession>;
   openPtyProcess(options: SpawnOptions): Promise<NativePtyProcessSession>;
   openSshSetupProcess(action: SetupAction, cwd: string): Promise<NativePtyProcessSession>;
-  installVerifiedHelper(input: VerifiedHelperInstall): Promise<InstalledHelper>;
+  installVerifiedHelper(
+    input: VerifiedHelperInstall,
+    target: RemoteHelperInstallTarget,
+  ): Promise<InstalledHelper>;
   removeFile(path: string): Promise<void>;
   removePrivateDirectory(path: string): Promise<void>;
 }
@@ -213,7 +222,10 @@ export class NativeBridgeSshTransportRuntime implements SshTransportRuntime {
     bridge: Pick<NativeBridge,
       "openPipeProcess" | "openPtyProcess" | "openSshSetupProcess">;
     files?: SshTransportFiles;
-    installVerifiedHelper?: (input: VerifiedHelperInstall) => Promise<InstalledHelper>;
+    installVerifiedHelper?: (
+      input: VerifiedHelperInstall,
+      target: RemoteHelperInstallTarget,
+    ) => Promise<InstalledHelper>;
   }>) {
     this.files = options.files || new GeckoSshTransportFiles();
   }
@@ -240,15 +252,71 @@ export class NativeBridgeSshTransportRuntime implements SshTransportRuntime {
   openSshSetupProcess(action: SetupAction, cwd: string): Promise<NativePtyProcessSession> {
     return this.options.bridge.openSshSetupProcess(action, cwd);
   }
-  installVerifiedHelper(input: VerifiedHelperInstall): Promise<InstalledHelper> {
-    if (!this.options.installVerifiedHelper) {
-      return Promise.reject(new Error("Verified remote helper installer is not configured"));
+  installVerifiedHelper(
+    input: VerifiedHelperInstall,
+    target: RemoteHelperInstallTarget,
+  ): Promise<InstalledHelper> {
+    if (this.options.installVerifiedHelper) {
+      return this.options.installVerifiedHelper(input, target);
     }
-    return this.options.installVerifiedHelper(input);
+    return this.installRemoteHelper(input, target);
   }
   removeFile(path: string): Promise<void> { return this.files.removeFile(path); }
   removePrivateDirectory(path: string): Promise<void> {
     return this.files.removePrivateDirectory(path);
+  }
+
+  private async installRemoteHelper(
+    input: VerifiedHelperInstall,
+    target: RemoteHelperInstallTarget,
+  ): Promise<InstalledHelper> {
+    const { manifest, artifact } = input;
+    if (!/^[A-Za-z0-9._:-]{1,128}$/u.test(target.alias)
+      || !target.controlPath.startsWith("/") || /\0|\r|\n/u.test(target.controlPath)
+      || !target.cwd.startsWith("/") || /\0|\r|\n/u.test(target.cwd)
+      || !/^\d+\.\d+\.\d+(?:[-+][A-Za-z0-9.-]+)?$/u.test(manifest.helperVersion)
+      || (manifest.tuple !== "linux-x86_64-static" && manifest.tuple !== "linux-aarch64-static")
+      || !DIGEST_PATTERN.test(manifest.archiveSha256)
+      || !DIGEST_PATTERN.test(manifest.executableSha256)
+      || manifest.archiveSha256 !== manifest.executableSha256
+      || artifact.length < 1) {
+      throw new Error("Verified remote helper install input is malformed");
+    }
+    const script = remoteInstallScript(
+      manifest.helperVersion,
+      manifest.tuple,
+      manifest.executableSha256,
+      artifact.length,
+    );
+    const process = await this.openPipeProcess(processOptions([
+      SSH, "-T", "-S", target.controlPath, "-o", "BatchMode=yes", "--",
+      target.alias, script,
+    ], target.cwd));
+    const collected = collectProcess(process, 8 * 1024);
+    try {
+      await process.write(artifact);
+      const exit = await collected.exited;
+      if (exit.exitCode !== 0 || exit.signal !== null || collected.overflowed()) {
+        throw new Error("Remote helper installation failed");
+      }
+      const output = new TextDecoder("utf-8", { fatal: true })
+        .decode(collected.output()).trim();
+      const expectedSuffix = `/${manifest.helperVersion}/${manifest.tuple}/qlab-remote`;
+      if (!/^(?:\/root|\/home\/[A-Za-z0-9._-]+)\/\.qlab\/bin\//u.test(output)
+        || !output.endsWith(expectedSuffix) || output.includes("\n") || output.includes("\r")) {
+        throw new Error("Remote helper installer returned an invalid path");
+      }
+      return Object.freeze({
+        helperVersion: manifest.helperVersion,
+        tuple: manifest.tuple,
+        executableSha256: manifest.executableSha256,
+        absoluteVersionedPath: output as VerifiedRemoteHelperPath,
+      });
+    }
+    catch (error) {
+      await process.close().catch(() => {});
+      throw error;
+    }
   }
 }
 
@@ -261,6 +329,34 @@ const MASTER_READY_DELAY_MS = 20;
 const PROCESS_EXIT_ATTEMPTS = 50;
 const FINGERPRINT_PATTERN = /^SHA256:[A-Za-z0-9+/]{42}[AEIMQUYcgkosw048]$/u;
 const DIGEST_PATTERN = /^[a-f0-9]{64}$/u;
+
+function remoteInstallScript(
+  version: string,
+  tuple: RemoteHelperTuple,
+  digest: string,
+  byteLength: number,
+): string {
+  // Every interpolated value is validated before this fixed script is made.
+  // Artifact bytes travel only over stdin and can never become shell syntax.
+  return [
+    "set -eu",
+    "umask 077",
+    'case "$HOME" in /root|/home/[A-Za-z0-9._-]*) ;; *) exit 65 ;; esac',
+    `d="$HOME/.qlab/bin/${version}/${tuple}"`,
+    'mkdir -p "$d"',
+    'dst="$d/qlab-remote"',
+    'tmp="$d/.qlab-remote.$$"',
+    'trap \'rm -f "$tmp"\' EXIT HUP INT TERM',
+    `dd iflag=fullblock bs=1 count=${byteLength} of="$tmp" 2>/dev/null`,
+    'digest_file() { if command -v sha256sum >/dev/null 2>&1; then sha256sum "$1" | cut -d " " -f 1; elif command -v shasum >/dev/null 2>&1; then shasum -a 256 "$1" | cut -d " " -f 1; else exit 69; fi; }',
+    `test "$(digest_file "$tmp")" = "${digest}"`,
+    'chmod 0700 "$tmp"',
+    'if test -e "$dst"; then test -f "$dst" && test "$(digest_file "$dst")" = "' + digest + '"; else ln "$tmp" "$dst" 2>/dev/null || { test -f "$dst" && test "$(digest_file "$dst")" = "' + digest + '"; }; fi',
+    'rm -f "$tmp"',
+    'trap - EXIT HUP INT TERM',
+    'printf "%s\\n" "$dst"',
+  ].join("; ");
+}
 
 function processOptions(argv: readonly string[], cwd: string): SpawnOptions {
   return { argv, cwd };
@@ -333,7 +429,7 @@ function notify<T>(listeners: ReadonlySet<(value: T) => void>, value: T): void {
   }
 }
 
-function collectProcess(process: NativeProcessSession): {
+function collectProcess(process: NativeProcessSession, maxBytes = MAX_MASTER_LOG_BYTES): {
   output: () => Uint8Array;
   overflowed: () => boolean;
   exited: Promise<NativeProcessExit>;
@@ -342,7 +438,7 @@ function collectProcess(process: NativeProcessSession): {
   let size = 0;
   let overflowed = false;
   process.onBytes((bytes) => {
-    if (size + bytes.length > MAX_MASTER_LOG_BYTES) {
+    if (size + bytes.length > maxBytes) {
       overflowed = true;
       return;
     }
@@ -621,7 +717,11 @@ class OwnedSshMaster implements SshMaster {
       || !/^\d+\.\d+\.\d+(?:[-+][A-Za-z0-9.-]+)?$/u.test(input.manifest.helperVersion)) {
       throw new Error("Verified helper install input is malformed");
     }
-    const installed = await this.runtime.installVerifiedHelper(input);
+    const installed = await this.runtime.installVerifiedHelper(input, {
+      alias: this.profile.alias,
+      controlPath: this.controlPath,
+      cwd: this.directory,
+    });
     const expectedSuffix = `/${input.manifest.helperVersion}/${input.manifest.tuple}/qlab-remote`;
     if (installed.helperVersion !== input.manifest.helperVersion
       || installed.tuple !== input.manifest.tuple
@@ -876,7 +976,10 @@ export class SshTargetTransport {
 
 export function createNativeSshTargetTransport(
   bridge: NativeBridge,
-  installVerifiedHelper?: (input: VerifiedHelperInstall) => Promise<InstalledHelper>,
+  installVerifiedHelper?: (
+    input: VerifiedHelperInstall,
+    target: RemoteHelperInstallTarget,
+  ) => Promise<InstalledHelper>,
 ): Readonly<{
   profiles: OpenSshProfileProvider;
   transport: SshTargetTransport;

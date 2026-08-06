@@ -18,6 +18,8 @@ export interface SiteTabCallbacks {
   deploy(onProgress: (message: string) => void): Promise<void>;
   chooseRepository(): Promise<void>;
   onOpenDocument(relativePath: string): void;
+  /** False for chat-only SSH targets: the local main site cannot serve them. */
+  supported?(): boolean;
 }
 
 type CardAction = "choose" | "deploy" | null;
@@ -72,6 +74,10 @@ export class SiteTabView implements TabContentProvider {
 
   private async refresh(): Promise<void> {
     if (this.busy || this.siteView) return;
+    if (this.callbacks.supported?.() === false) {
+      this.presentCard("Main Site is available only for repositories on this Mac", null);
+      return;
+    }
     this.presentCard("Checking the Research Loop main site…", null);
     let repositoryState: QLabRepositoryState = "ready";
     let available = false;
