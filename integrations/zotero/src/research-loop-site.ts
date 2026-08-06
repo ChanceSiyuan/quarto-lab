@@ -370,7 +370,8 @@ export class ResearchLoopSiteService {
 }
 
 export interface ResearchLoopSiteViewOptions {
-  onBack(): void;
+  /** When absent (tabbed hosts), no back button is rendered. */
+  onBack?(): void;
   /** Opens the workspace on the knowledge page the browser is showing. */
   onOpenDocument?(relativePath: string): void;
 }
@@ -409,11 +410,14 @@ export class ResearchLoopSiteView {
 
     const toolbar = doc.createElement("header");
     toolbar.className = "zc-main-site-toolbar";
-    const back = doc.createElement("button");
-    back.type = "button";
-    back.className = "zc-main-site-back";
-    back.textContent = "← Back to AI";
-    back.addEventListener("click", () => this.options.onBack());
+    let back: HTMLButtonElement | null = null;
+    if (this.options.onBack) {
+      back = doc.createElement("button");
+      back.type = "button";
+      back.className = "zc-main-site-back";
+      back.textContent = "← Back to AI";
+      back.addEventListener("click", () => this.options.onBack?.());
+    }
     this.address = doc.createElement("span");
     this.address.className = "zc-main-site-address";
     this.address.textContent = RESEARCH_LOOP_SITE_URL;
@@ -432,7 +436,7 @@ export class ResearchLoopSiteView {
     refresh.className = "zc-main-site-refresh";
     refresh.textContent = "Refresh";
     refresh.addEventListener("click", () => this.reload());
-    toolbar.append(back, this.address, this.sourceButton, refresh);
+    toolbar.append(...(back ? [back] : []), this.address, this.sourceButton, refresh);
 
     this.content = doc.createElement("div");
     this.content.className = "zc-main-site-content";
