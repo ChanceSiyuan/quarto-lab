@@ -1148,6 +1148,8 @@ test("separates local targets from external ones", () => {
       "",
       "[Escape](../../outside.qmd) and [Absolute](/etc/passwd).",
       "",
+      "[Paper](zotero://open-pdf/library/items/AB12CD34?page=7) and [Trap](javascript:alert(1)).",
+      "",
     ].join("\n"),
   );
 
@@ -1160,10 +1162,11 @@ test("separates local targets from external ones", () => {
     "figures/plot.png",
     "../../outside.qmd",
     "/etc/passwd",
+    "javascript:alert(1)",
   ]);
   assert.deepEqual(
     page.localLinks.map((link) => link.kind),
-    ["link", "link", "image", "link", "link"],
+    ["link", "link", "image", "link", "link", "link"],
   );
   assert.deepEqual(page.citations, []);
 });

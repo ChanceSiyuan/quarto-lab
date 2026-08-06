@@ -345,6 +345,23 @@ const CASES: readonly Case[] = [
     expected: ["LINK_OUTSIDE_KNOWLEDGE knowledge/ising/proof.qmd"],
   },
   {
+    name: "a zotero deep link is a sanctioned external target",
+    mutate: (repo) =>
+      append(
+        repo,
+        "ising/proof.qmd",
+        "\nSee [the pdf](zotero://open-pdf/library/items/AB12CD34?page=7)"
+        + " and [the item](zotero://select/library/items/AB12CD34).\n",
+      ),
+    expected: [],
+  },
+  {
+    name: "schemes other than zotero keep failing",
+    mutate: (repo) =>
+      append(repo, "ising/proof.qmd", "\nSee [the relic](vbscript:MsgBox).\n"),
+    expected: ["LINK_OUTSIDE_KNOWLEDGE knowledge/ising/proof.qmd"],
+  },
+  {
     name: "a link to a symlink inside the tree is rejected",
     mutate: async (repo) => {
       await symlink("diagram.svg", knowledgeFile(repo, "ising/figure.svg"));

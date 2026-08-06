@@ -64,8 +64,13 @@ const FRONTMATTER_DELIMITER = "---";
 /** The other closing delimiter Pandoc accepts. */
 const FRONTMATTER_TERMINATOR = "...";
 
-/** Link targets the knowledge tree does not own and never resolves on disk. */
-const EXTERNAL_TARGET = /^(?:https?|mailto):/i;
+/**
+ * Link targets the knowledge tree does not own and never resolves on disk.
+ * `zotero:` is a sanctioned exit into the user's Zotero library (deep links
+ * such as `zotero://open-pdf/library/items/KEY?page=N`); every other foreign
+ * scheme is left for the graph to reject.
+ */
+const EXTERNAL_TARGET = /^(?:https?|mailto|zotero):/i;
 
 /**
  * A Pandoc citation key: `@` then a letter, digit, or `_`, then alphanumerics

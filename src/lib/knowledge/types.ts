@@ -132,7 +132,8 @@ export interface ParsedKnowledgePage {
    * Every link and image on the page whose target must resolve inside the
    * knowledge tree, in document order. Reading-map and related-topic entries
    * appear here too, so link checking never has to be repeated per section.
-   * HTTP(S), `mailto:`, and pure `#fragment` targets are excluded; anything
+   * HTTP(S), `mailto:`, `zotero:` (sanctioned deep links into the user's
+   * Zotero library), and pure `#fragment` targets are excluded; anything
    * else, including a foreign scheme such as `javascript:`, is left for the
    * graph to reject.
    *
