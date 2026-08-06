@@ -19,7 +19,8 @@ export interface QmdPreparedChange {
 }
 
 export interface QmdWorkspaceOptions {
-  onBack(): void;
+  /** When absent (tabbed hosts), no back button is rendered. */
+  onBack?(): void;
   renderService: Pick<QmdRenderService, "open" | "stop" | "diagnostic" | "checkDraft">;
   changeRenderService: Pick<QmdRenderService, "open" | "stop" | "diagnostic">;
   /** Every previewable QMD in the repository. */
@@ -307,7 +308,9 @@ export class QmdWorkspaceView {
     this.root.setAttribute("aria-label", "QMD Preview");
 
     const toolbar = make("header", "zc-qmd-toolbar");
-    const back = this.iconButton("zc-qmd-back", "←", "Back to AI", () => this.options.onBack());
+    const back = this.options.onBack
+      ? this.iconButton("zc-qmd-back", "←", "Back to AI", () => this.options.onBack?.())
+      : null;
     const quickOpenButton = this.iconButton(
       "zc-qmd-quickopen-button",
       "⌕",
@@ -422,7 +425,7 @@ export class QmdWorkspaceView {
     this.visualTools.append(this.formalBlockButton, this.formalBlockMenu);
 
     const refresh = this.iconButton("zc-qmd-refresh", "↻", "Refresh Preview", () => void this.reloadRender());
-    toolbar.append(back, quickOpenButton, this.pathLabel, this.visualTools, this.treeBadge,
+    toolbar.append(...(back ? [back] : []), quickOpenButton, this.pathLabel, this.visualTools, this.treeBadge,
       this.complianceButton, this.reviewButton, this.enableAIEditingButton,
       this.compareButton, this.keepChangesButton,
       this.modeButton, this.editorPicker, this.editButton, refresh);
@@ -479,6 +482,11 @@ export class QmdWorkspaceView {
 
   isVisible(): boolean {
     return !this.root.hidden;
+  }
+
+  /** True while a visual-edit block is open — a tab close should confirm. */
+  hasActiveEdit(): boolean {
+    return Boolean(this.visualEditor?.isEditing());
   }
 
   show(): void {

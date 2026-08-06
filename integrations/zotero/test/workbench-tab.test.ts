@@ -70,8 +70,8 @@ function setup() {
       destroy: vi.fn(),
       focusComposer: vi.fn(),
       setState: vi.fn(),
-      isMainSiteOpen: vi.fn(() => false),
-      setMainSiteOpen: vi.fn(),
+      layoutData: vi.fn(() => undefined),
+      setLayoutData: vi.fn(),
     };
     views.push(view);
     return view;
@@ -159,14 +159,38 @@ describe("WorkbenchTabManager", () => {
     expect(restored).toEqual({ itemID: 42 });
     expect(source.records.some((record) => record.title === "QLab · Restored")).toBe(true);
 
-    (views[0]!.isMainSiteOpen as ReturnType<typeof vi.fn>).mockReturnValue(true);
+    const movedLayout = {
+      version: 1,
+      tabs: [{ id: "chat", kind: "chat", title: "Chat" }],
+      panes: { left: { tabIds: ["chat"], activeTabId: "chat" }, right: null },
+      focusedPane: "left",
+    };
+    (views[0]!.layoutData as ReturnType<typeof vi.fn>).mockReturnValue(movedLayout);
     await hooks.moveToNewWindow[QLAB_WORKBENCH_TAB_TYPE](source.records[0], 1);
     expect(openNewWindow).toHaveBeenCalledWith(source);
     expect(target.records).toHaveLength(1);
-    expect(target.records[0]!.data.qlabMainSiteOpen).toBe(true);
-    expect(views.at(-1)!.setMainSiteOpen).toHaveBeenCalledWith(true);
+    expect(JSON.parse(String(target.records[0]!.data.qlabLayout))).toEqual(movedLayout);
+    expect(views.at(-1)!.setLayoutData).toHaveBeenCalledWith(movedLayout);
     expect(source.Zotero_Tabs.close).toHaveBeenCalledWith(entry.id);
     expect(onMoveComplete).toHaveBeenCalledWith(source, target);
+  });
+
+  it("maps a legacy qlabMainSiteOpen session to a chat|site split layout", async () => {
+    const source = fakeWindow("source");
+    const { manager, views } = setup();
+    manager.install(source);
+
+    await source.Zotero_Tabs.tabHooks.restoreState[QLAB_WORKBENCH_TAB_TYPE]({
+      data: { itemID: 42, qlabWorkbenchTitle: "QLab · Legacy", qlabMainSiteOpen: true },
+      title: "QLab · Legacy",
+      selected: true,
+    }, 1);
+
+    expect(views.at(-1)!.setLayoutData).toHaveBeenCalledWith(expect.objectContaining({
+      panes: expect.objectContaining({
+        right: expect.objectContaining({ tabIds: ["site"] }),
+      }),
+    }));
   });
 
   it("keeps the original tab and reports migration failures", async () => {
@@ -174,7 +198,7 @@ describe("WorkbenchTabManager", () => {
     const onMoveError = vi.fn();
     const createView = vi.fn((): WorkbenchTabView => ({
       show: vi.fn(), destroy: vi.fn(), focusComposer: vi.fn(), setState: vi.fn(),
-      isMainSiteOpen: vi.fn(() => false), setMainSiteOpen: vi.fn(),
+      layoutData: vi.fn(() => undefined), setLayoutData: vi.fn(),
     }));
     const manager = new WorkbenchTabManager({
       createView,

@@ -139,6 +139,24 @@ describe("WorkbenchShell drag", () => {
     expect(shell.layout.snapshot().panes.left.tabIds).toEqual(["chat", "editor"]);
   });
 
+  it("reports the split ratio a handle drag produced", () => {
+    const host = document.createElement("div");
+    document.body.appendChild(host);
+    const onSplitRatioChange = vi.fn();
+    const shell = new WorkbenchShell(host, document, {
+      initialSplitRatio: 40,
+      onSplitRatioChange,
+      onLayoutChange: vi.fn(),
+    });
+    shell.root.getBoundingClientRect = () => domRect(0, 0, 1000, 600);
+    const handle = shell.root.querySelector(".zc-split-handle") as HTMLElement;
+    handle.dispatchEvent(new MouseEvent("mousedown", { bubbles: true, clientX: 400 }));
+    window.dispatchEvent(new MouseEvent("mousemove", { bubbles: true, clientX: 550 }));
+    window.dispatchEvent(new MouseEvent("mouseup", { bubbles: true }));
+    expect(shell.root.style.getPropertyValue("--zc-split-ratio")).toBe("55%");
+    expect(onSplitRatioChange).toHaveBeenCalledWith(55);
+  });
+
   it("aborts the drag on Escape", () => {
     const shell = makeShell();
     shell.layout.openTab({ kind: "chat" });

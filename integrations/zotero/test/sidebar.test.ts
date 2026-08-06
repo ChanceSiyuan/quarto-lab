@@ -381,7 +381,7 @@ describe("SidebarView", () => {
       });
 
       const rail = body.querySelector<HTMLElement>(".zc-history-rail")!;
-      const dock = body.querySelector<HTMLElement>(".zc-workbench-dock")!;
+      const dock = view.dockContents()!;
       const historyButton = body.querySelector<HTMLButtonElement>('[title="Conversation History"]')!;
       expect(rail.hidden).toBe(false);
       expect(rail.textContent).toContain("Pinned Codex task");
@@ -411,7 +411,7 @@ describe("SidebarView", () => {
 
       historyButton.click();
       expect(rail.hidden).toBe(true);
-      expect(dock.isConnected).toBe(true);
+      expect(dock.querySelector(".zc-terminal-button")).not.toBeNull();
     }
     finally {
       vi.useRealTimers();
@@ -973,17 +973,17 @@ describe("SidebarView", () => {
     const root = body.querySelector<HTMLElement>(".zc-sidebar.zc-workbench-chat")!;
     expect(root.getAttribute("role")).toBe("main");
     expect(root.querySelector(".zc-topbar")).toBeNull();
-    expect(root.querySelector(":scope > .zc-workbench-dock")).not.toBeNull();
-    expect(root.querySelector<HTMLButtonElement>(".zc-workbench-open")!.hidden).toBe(true);
+    const dock = view.dockContents()!;
+    expect(dock.querySelector<HTMLButtonElement>(".zc-workbench-open")!.hidden).toBe(true);
+    expect(dock.querySelector(".zc-main-site-button")).toBeNull();
     expect(root.querySelectorAll(".zc-qlab-command-button")).toHaveLength(0);
     const choose = root.querySelector<HTMLButtonElement>(".zc-choose-paper")!;
     expect(choose.textContent).toBe("Choose Paper");
     expect((body.querySelector(".zc-composer-input") as HTMLTextAreaElement).placeholder).toBe("Message QLab…");
     expect(root.querySelector<HTMLButtonElement>(".zc-open-paper")!.hidden).toBe(true);
-    const terminal = root.querySelector<HTMLButtonElement>(".zc-terminal-button")!;
-    const mainSite = root.querySelector<HTMLButtonElement>(".zc-main-site-button")!;
-    const account = root.querySelector<HTMLButtonElement>('button[title="Account"]')!;
-    for (const button of [mainSite, terminal, account]) {
+    const terminal = dock.querySelector<HTMLButtonElement>(".zc-terminal-button")!;
+    const account = dock.querySelector<HTMLButtonElement>('button[title="Account"]')!;
+    for (const button of [terminal, account]) {
       expect(button.querySelector("svg.zc-button-icon")).not.toBeNull();
       expect(button.querySelector(".zc-button-label")).toBeNull();
       expect(button.textContent).toBe("");
@@ -1005,123 +1005,6 @@ describe("SidebarView", () => {
     openPaper.click();
     expect(handlers.onOpenPaper).toHaveBeenCalledOnce();
     expect((body.querySelector(".zc-composer-input") as HTMLTextAreaElement).placeholder).toBe("Ask about this paper…");
-  });
-
-  it("checks the main site and opens it from one workbench button", async () => {
-    const browser = document.createElement("browser");
-    const createXULElement = vi.fn(() => browser);
-    (document as any).createXULElement = createXULElement;
-    const body = document.createElement("div");
-    document.body.appendChild(body);
-    const handlers = {
-      ...callbacks(),
-      onCheckMainSite: vi.fn(async () => true),
-      onDeployMainSite: vi.fn(async () => undefined),
-    };
-    const view = new SidebarView(body, handlers, { surface: "workbench" });
-    await vi.waitFor(() => {
-      expect(body.querySelector<HTMLButtonElement>(".zc-main-site-button")!.title)
-        .toBe("Open the Research Loop main site in Zotero");
-    });
-
-    const button = body.querySelector<HTMLButtonElement>(".zc-main-site-button")!;
-    button.click();
-    await vi.waitFor(() => expect(createXULElement).toHaveBeenCalledWith("browser"));
-
-    expect(handlers.onDeployMainSite).not.toHaveBeenCalled();
-    expect(browser.getAttribute("src")).toBe("http://127.0.0.1:4180/");
-    expect(body.querySelector(".zc-workbench-chat")!.classList.contains("is-main-site-open")).toBe(true);
-    expect(button.getAttribute("aria-pressed")).toBe("true");
-    expect((body.querySelector(".zc-transcript") as HTMLElement).hidden).toBe(false);
-    expect((body.querySelector(".zc-composer-wrap") as HTMLElement).hidden).toBe(false);
-
-    const styles = readFileSync(join(process.cwd(), "src", "styles.css"), "utf8");
-    // The chat column is a draggable share, not a fixed 40%, and the middle
-    // track is the handle — so the site view is column 3.
-    expect(styles).toContain(
-      "grid-template-columns: minmax(280px, var(--zc-split-ratio, 40%)) 6px minmax(300px, 1fr);",
-    );
-    expect(styles).toContain(
-      ".zc-workbench-chat.is-main-site-open > .zc-main-site-view {\n  grid-column: 3;\n  grid-row: 1 / -1;",
-    );
-    expect(styles).not.toContain(
-      ".zc-workbench-chat.is-main-site-open > .zc-transcript,\n.zc-workbench-chat.is-main-site-open > .zc-composer-wrap",
-    );
-
-    body.querySelector<HTMLButtonElement>(".zc-main-site-back")!.click();
-    expect(body.querySelector(".zc-workbench-chat")!.classList.contains("is-main-site-open")).toBe(false);
-    expect(button.getAttribute("aria-pressed")).toBe("false");
-    view.destroy();
-  });
-
-  it("offers deployment when the main site is offline and opens it after startup", async () => {
-    const browser = document.createElement("browser");
-    (document as any).createXULElement = vi.fn(() => browser);
-    const body = document.createElement("div");
-    document.body.appendChild(body);
-    const handlers = {
-      ...callbacks(),
-      onCheckMainSite: vi.fn(async () => false),
-      onDeployMainSite: vi.fn(async () => undefined),
-    };
-    new SidebarView(body, handlers, { surface: "workbench" });
-    const button = body.querySelector<HTMLButtonElement>(".zc-main-site-button")!;
-    await vi.waitFor(() => expect(button.title).toBe("The main site is not running; click to build and start it"));
-    expect(button.classList.contains("is-offline")).toBe(true);
-
-    button.click();
-    expect(button.title).toBe("Building and starting the Research Loop main site");
-    await vi.waitFor(() => expect(handlers.onDeployMainSite).toHaveBeenCalledOnce());
-    await vi.waitFor(() => expect(button.title).toBe("Open the Research Loop main site in Zotero"));
-    expect(body.querySelector(".zc-workbench-chat")!.classList.contains("is-main-site-open")).toBe(true);
-  });
-
-  it.each(["empty", "partial"] as const)(
-    "offers Initialize for a %s Research Loop directory",
-    async (repositoryState) => {
-      const browser = document.createElement("browser");
-      (document as any).createXULElement = vi.fn(() => browser);
-      const body = document.createElement("div");
-      document.body.appendChild(body);
-      const handlers = {
-        ...callbacks(),
-        onCheckMainSiteRepository: vi.fn(async () => repositoryState),
-        onCheckMainSite: vi.fn(async () => true),
-        onDeployMainSite: vi.fn(async (progress?: (message: string) => void) => {
-          progress?.("Initializing Research Loop…");
-        }),
-      };
-      new SidebarView(body, handlers, { surface: "workbench" });
-      const button = body.querySelector<HTMLButtonElement>(".zc-main-site-button")!;
-
-      await vi.waitFor(() => expect(button.title).toContain("Research Loop"));
-      expect(button.classList.contains("is-initialize")).toBe(true);
-      expect(handlers.onCheckMainSite).not.toHaveBeenCalled();
-      button.click();
-      await vi.waitFor(() => expect(handlers.onDeployMainSite).toHaveBeenCalledOnce());
-      await vi.waitFor(() => expect(button.title).toBe("Open the Research Loop main site in Zotero"));
-    },
-  );
-
-  it("sends an incompatible directory back to the folder picker without deploying", async () => {
-    const body = document.createElement("div");
-    document.body.appendChild(body);
-    let repositoryState: "incompatible" | "empty" = "incompatible";
-    const handlers = {
-      ...callbacks(),
-      onCheckMainSiteRepository: vi.fn(async () => repositoryState),
-      onCheckMainSite: vi.fn(async () => false),
-      onDeployMainSite: vi.fn(async () => undefined),
-      onChooseQLabRoot: vi.fn(async () => { repositoryState = "empty"; }),
-    };
-    new SidebarView(body, handlers, { surface: "workbench" });
-    const button = body.querySelector<HTMLButtonElement>(".zc-main-site-button")!;
-
-    await vi.waitFor(() => expect(button.title).toBe("This folder contains unrelated files; choose an empty folder instead"));
-    button.click();
-    await vi.waitFor(() => expect(handlers.onChooseQLabRoot).toHaveBeenCalledOnce());
-    await vi.waitFor(() => expect(button.classList.contains("is-initialize")).toBe(true));
-    expect(handlers.onDeployMainSite).not.toHaveBeenCalled();
   });
 
   it("does not add a main-site button to the compact sidebar", () => {
@@ -1383,9 +1266,10 @@ describe("SidebarView activity line", () => {
 describe("Reader pane layout CSS", () => {
   it("uses a bounded compact grid without a transcript minimum that can push the composer below the pane", () => {
     const styles = readFileSync(join(process.cwd(), "src/styles.css"), "utf8");
-    expect(styles).toContain("grid-template-rows: auto auto auto minmax(0, 1fr) auto");
+    expect(styles).toContain("grid-template-rows: auto minmax(0, 1fr)");
+    expect(styles).toContain("grid-template-rows: auto auto minmax(0, 1fr) auto");
     expect(styles).toContain("height: clamp(420px, 72vh, 780px)");
-    expect(styles).toContain(".zc-composer-wrap { grid-row: 5; position: sticky; bottom: 0;");
+    expect(styles).toContain(".zc-composer-wrap { grid-row: 4; position: sticky; bottom: 0;");
     expect(styles).toContain(".zc-context-menu { position: absolute;");
     expect(styles).toContain("grid-auto-rows: minmax(40px, auto)");
     expect(styles).toContain(".zc-context-option { display: grid;");
@@ -1449,30 +1333,4 @@ describe("SidebarView top-bar menus", () => {
     view.destroy();
   });
 
-  it("remembers the chat/pane ratio a drag produced", () => {
-    const body = document.createElement("div");
-    document.body.appendChild(body);
-    const view = new SidebarView(body, callbacks(), { surface: "workbench" });
-    const root = body.querySelector<HTMLElement>(".zc-workbench-chat")!;
-    const handle = root.querySelector<HTMLElement>(".zc-split-handle")!;
-
-    // happy-dom performs no layout, so the pane geometry has to be supplied.
-    root.getBoundingClientRect = () => ({
-      left: 0, right: 1000, top: 0, bottom: 800, width: 1000, height: 800, x: 0, y: 0,
-      toJSON: () => ({}),
-    }) as DOMRect;
-
-    handle.dispatchEvent(new MouseEvent("mousedown", { bubbles: true, clientX: 400 }));
-    window.dispatchEvent(new MouseEvent("mousemove", { bubbles: true, clientX: 550 }));
-    window.dispatchEvent(new MouseEvent("mouseup", { bubbles: true }));
-
-    expect(root.style.getPropertyValue("--zc-split-ratio")).toBe("55%");
-
-    const secondHost = document.body.appendChild(document.createElement("div"));
-    const second = new SidebarView(secondHost, callbacks(), { surface: "workbench" });
-    expect(secondHost.querySelector<HTMLElement>(".zc-workbench-chat")!
-      .style.getPropertyValue("--zc-split-ratio")).toBe("55%");
-    second.destroy();
-    view.destroy();
-  });
 });

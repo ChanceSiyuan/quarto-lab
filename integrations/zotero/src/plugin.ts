@@ -45,6 +45,9 @@ import {
   type WorkbenchTabData,
 } from "./workbench-tab";
 import { StandaloneWorkbenchManager } from "./standalone-workbench";
+import { WorkbenchView } from "./workbench-view";
+import type { TabDescriptor as WorkbenchTabDescriptor } from "./workbench-layout";
+import type { TabContentProvider as WorkbenchTabProvider } from "./workbench-shell";
 import {
   ConversationPaperRegistry,
   type ConversationPaper,
@@ -173,9 +176,11 @@ import {
   logError,
   PANE_ID,
   PLUGIN_ID,
+  prefInt,
   prefString,
   profilePath,
   randomID,
+  setPrefInt,
   setPrefString,
 } from "./platform";
 
@@ -1565,7 +1570,7 @@ export class ZoteroChatPlugin {
     this.activatingAIContext = true;
     try {
       await this.openWorkbenchTab(win);
-      const view = this.selectedWorkbenchEntry(win)?.view as SidebarView | undefined;
+      const view = this.selectedWorkbenchEntry(win)?.view as WorkbenchView | undefined;
       if (!view) throw new Error("QLab Workbench was not opened");
       if (!await this.openQmdDocument(view, document.relativePath, win, { agentCopy: "on-demand" })) {
         throw new Error("The AI Context QMD could not be opened");
@@ -1867,7 +1872,54 @@ export class ZoteroChatPlugin {
     return entry;
   }
 
-  private createWorkbenchView(host: HTMLElement, win: Window, tabID: string): SidebarView {
+  private createWorkbenchView(host: HTMLElement, win: Window, tabID: string): WorkbenchView {
+    let workbench: WorkbenchView | null = null;
+    workbench = new WorkbenchView(host, {
+      createChat: (chatHost) => this.createWorkbenchChat(chatHost, win, tabID, () => workbench),
+      siteCallbacks: {
+        checkSite: () => this.mainSite.isAvailable(),
+        checkRepository: () => this.mainSite.repositoryState(this.settings?.qlabRoot || ""),
+        deploy: async (onProgress) => {
+          let root = this.settings?.qlabRoot || "";
+          if (!root) root = await this.chooseQLabRoot(win) || "";
+          await this.mainSite.deploy(root, onProgress);
+          await this.activateRepositoryTarget(root);
+        },
+        chooseRepository: async () => {
+          await this.chooseQLabRoot(win);
+        },
+        onOpenDocument: (relativePath) => {
+          if (workbench) void this.openQmdDocument(workbench, relativePath, win);
+        },
+      },
+      createWorkspace: (workspaceHost) => this.createWorkspaceView(workspaceHost),
+      createPdfProvider: (tab) => this.createPdfProvider(tab, win),
+      initialSplitRatio: prefInt("splitRatio", 40),
+      onSplitRatioChange: (ratio) => setPrefInt("splitRatio", ratio),
+      onLayoutChanged: () => {
+        if (!workbench) return;
+        Zotero.Session?.debounceSave?.();
+        const entry = this.workbenchTabs?.entries(win)
+          .find((candidate) => candidate.id === tabID);
+        if (entry && entry.view === workbench) {
+          this.workbenchTabs.update(
+            win,
+            tabID,
+            { ...entry.data, layout: workbench.layoutData() },
+            false,
+          );
+        }
+      },
+    });
+    return workbench;
+  }
+
+  private createWorkbenchChat(
+    host: HTMLElement,
+    win: Window,
+    tabID: string,
+    workbench: () => WorkbenchView | null,
+  ): SidebarView {
     let view!: SidebarView;
     view = new SidebarView(host, {
       onSend: (text) => void this.sendChat(text).catch((error) => this.reportError(error)),
@@ -1890,7 +1942,8 @@ export class ZoteroChatPlugin {
       onLogin: () => void this.codex.login().catch((error) => this.reportError(error)),
       onLogout: () => void this.codex.logout().catch((error) => this.reportError(error)),
       onOpenTerminal: () => {
-        void this.toggleWorkbenchTerminal(view, win).catch((error) => this.reportError(error));
+        const target = workbench();
+        if (target) void this.toggleWorkbenchTerminal(target, win).catch((error) => this.reportError(error));
       },
       onOpenWorkbench: () => {
         if (tabID === STANDALONE_WORKBENCH_ID) this.standaloneWorkbench.focus();
@@ -1933,7 +1986,6 @@ export class ZoteroChatPlugin {
       onChooseQLabRoot: async () => {
         try {
           await this.chooseQLabRoot(win);
-          await view.refreshMainSiteStatus();
         }
         catch (error) {
           this.reportError(error);
@@ -1958,15 +2010,6 @@ export class ZoteroChatPlugin {
         void this.openConversationPDFPage(reference, isDedicatedWorkbenchWindow(win))
           .catch((error) => this.reportError(error));
       },
-      onCheckMainSite: () => this.mainSite.isAvailable(),
-      onCheckMainSiteRepository: () => this.mainSite.repositoryState(this.settings?.qlabRoot || ""),
-      onDeployMainSite: async (onProgress) => {
-        let root = this.settings?.qlabRoot || "";
-        if (!root) root = await this.chooseQLabRoot(win) || "";
-        await this.mainSite.deploy(root, onProgress);
-        await this.activateRepositoryTarget(root);
-      },
-      onOpenDocument: (relativePath) => void this.openQmdDocument(view, relativePath, win),
     }, { surface: "workbench" });
     return view;
   }
@@ -1978,7 +2021,7 @@ export class ZoteroChatPlugin {
    * because most sessions never open one.
    */
   private async openQmdDocument(
-    sidebar: SidebarView,
+    view: WorkbenchView,
     relativePath: string,
     win = Zotero.getMainWindow(),
     options: QmdWorkspaceOpenOptions = {},
@@ -1987,8 +2030,43 @@ export class ZoteroChatPlugin {
     if (!root) root = await this.chooseQLabRoot(win) || "";
     if (!root) return false;
 
-    const workspace = sidebar.attachWorkspace((host: HTMLElement) => new QmdWorkspaceView(host, {
-      onBack: () => sidebar.setWorkspaceOpen(false),
+    view.openEditorTab();
+    const workspace = view.workspace();
+    if (!workspace) return false;
+    workspace.repoRootHint = root;
+    if (!await workspace.open(relativePath, options)) return false;
+    workspace.syncAgentChanges({
+      activeTurnId: this.codex.state.activeTurnId,
+      running: this.codex.state.running,
+      diffs: this.codex.getActiveDiffs(),
+    });
+    return true;
+  }
+
+  /** Placeholder until the embedded PDF reader lands; keeps the tab kind valid. */
+  private createPdfProvider(tab: WorkbenchTabDescriptor, _win: Window): WorkbenchTabProvider {
+    let card: HTMLElement | null = null;
+    return {
+      mount: (host: HTMLElement) => {
+        card = host.ownerDocument.createElement("div");
+        card.className = "zc-site-status-card";
+        const detail = host.ownerDocument.createElement("p");
+        detail.className = "zc-site-status-detail";
+        detail.textContent = `The embedded PDF reader for “${tab.title}” is not available yet.`;
+        card.appendChild(detail);
+        host.appendChild(card);
+      },
+      show: () => {},
+      hide: () => {},
+      dispose: () => {
+        card?.remove();
+        card = null;
+      },
+    };
+  }
+
+  private createWorkspaceView(host: HTMLElement): QmdWorkspaceView {
+    return new QmdWorkspaceView(host, {
       renderService: this.qmdRender,
       changeRenderService: this.qmdChangeRender,
       index: async () => {
@@ -2025,17 +2103,7 @@ export class ZoteroChatPlugin {
       keepChange: (path, changePath) => this.keepQmdChange(path, changePath),
       readSource: (path) => this.readQmdSource(path),
       saveSource: (path, revision, source) => this.saveQmdSource(path, revision, source),
-    }));
-    if (!workspace) return false;
-    workspace.repoRootHint = root;
-    sidebar.setWorkspaceOpen(true);
-    if (!await workspace.open(relativePath, options)) return false;
-    workspace.syncAgentChanges({
-      activeTurnId: this.codex.state.activeTurnId,
-      running: this.codex.state.running,
-      diffs: this.codex.getActiveDiffs(),
     });
-    return true;
   }
 
   private safeRepositoryPath(relativePath: string, allowMissingFinal = false): string {
@@ -3505,11 +3573,6 @@ export class ZoteroChatPlugin {
         this.chatViews.delete(body);
         continue;
       }
-      view.workspace()?.syncAgentChanges({
-        activeTurnId: this.codex.state.activeTurnId,
-        running: this.codex.state.running,
-        diffs: activeDiffs,
-      });
       const researchActionState = this.researchActionViewState(
         body.ownerDocument.defaultView || undefined,
       );
@@ -4115,14 +4178,14 @@ export class ZoteroChatPlugin {
     await this.openWorkbenchTab(win);
     const entry = this.selectedWorkbenchEntry(win);
     if (!entry) throw new Error("Unable to create the QLab Workbench");
-    if (!(entry.view instanceof SidebarView)) throw new Error("The QLab Workbench is not ready");
+    if (!(entry.view instanceof WorkbenchView)) throw new Error("The QLab Workbench is not ready");
     if (!entry.view.isTerminalOpen()) {
       await this.openWorkbenchTerminalDrawer(entry.view, win);
     }
     this.terminal.focus();
   }
 
-  private async toggleWorkbenchTerminal(view: SidebarView, win: Window): Promise<void> {
+  private async toggleWorkbenchTerminal(view: WorkbenchView, win: Window): Promise<void> {
     if (view.isTerminalOpen()) {
       view.setTerminalOpen(false);
       this.terminal.setVisible(false);
@@ -4133,7 +4196,7 @@ export class ZoteroChatPlugin {
     this.terminal.focus();
   }
 
-  private async openWorkbenchTerminalDrawer(view: SidebarView, win: Window): Promise<void> {
+  private async openWorkbenchTerminalDrawer(view: WorkbenchView, win: Window): Promise<void> {
     let root = this.settings?.qlabRoot || "";
     if (!root) root = await this.chooseQLabRoot(win) || "";
     if (!root) return;
@@ -4153,7 +4216,7 @@ export class ZoteroChatPlugin {
 
   private closeWorkbenchTerminal(win = Zotero.getMainWindow()): void {
     const entry = this.selectedWorkbenchEntry(win);
-    if (entry?.view instanceof SidebarView) {
+    if (entry?.view instanceof WorkbenchView) {
       entry.view.setTerminalOpen(false);
       entry.view.focusComposer();
     }
@@ -4163,7 +4226,7 @@ export class ZoteroChatPlugin {
   private async openTerminalInternal(body?: HTMLElement): Promise<void> {
     const workbenchEntry = this.workbenchTabs?.entries().find((entry) => entry.host === body)
       || (!body ? this.selectedWorkbenchEntry() : null);
-    if (workbenchEntry?.view instanceof SidebarView) {
+    if (workbenchEntry?.view instanceof WorkbenchView) {
       const win = workbenchEntry.host.ownerDocument.defaultView;
       if (!win) throw new Error("The Zotero main window is unavailable");
       await this.openWorkbenchTerminalDrawer(workbenchEntry.view, win);
