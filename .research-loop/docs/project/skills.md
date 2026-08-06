@@ -26,6 +26,7 @@ target, where they can be tested.
 | `expand-notes` | Turn rough academic material into polished Quarto drafts that can later be promoted. | Adapted from quarto-lab's `expand-notes`; its formal-block conventions are retained, while frontmatter, bibliography, categories, and promotion rules follow Research Loop. | User-named notes, LaTeX, lecture material, or conversation content; external evidence only when cited. | `drafts/` before approval; after approval, the selected `knowledge/` page and parent reading map. | Copying paper full text into knowledge; page-local bibliographies; unsupported frontmatter; promoting without confirmation. |
 | `generate-issues` | Turn one note into three to five actionable research directions. | Adapted from quarto-lab; generated issues remain untrusted. | A user-selected note, its resolved bundle when trusted, and current primary literature. | After approval, `projects/<project>/issues/*.qmd`. | Writing into knowledge; unaudited claims; creating files before proposal approval. |
 | `integrate-paper` | Transfer verified results from QMD notes into an existing LaTeX manuscript. | Adapted from quarto-lab; source trust and write boundaries follow Research Loop. | Resolver-returned knowledge plus user-selected drafts and literature evidence. | The user-named manuscript and its bibliography, after section-map approval. | Editing knowledge; overwriting appendix content wholesale; compiling before approval. |
+| `edit-topic-tree` | Edit the topic tree block on the knowledge index: nodes, their note and Zotero links, and frozen canvas layouts. | Original to Research Loop. | The current qlab-tree block in `knowledge/index.qmd` and collection keys from `literature/zotero.yml`. | The qlab-tree block in `knowledge/index.qmd` only. | Editing generated output; using non-`zotero://` link schemes; pointing `note` at a missing page; treating the tree as a substitute for Reading-map curation; skipping `make knowledge-check` after an edit. |
 | `render-site` | Validate, build, and preview the trusted knowledge site through the safe repository seam. | Adapted from quarto-lab's `render-site` to Research Loop's paths and Make targets. | Validated `knowledge/**/*.qmd` and `literature/ref.bib`. | Generated `public/knowledge/` through the builder only. | Calling Quarto directly; editing generated output; publishing drafts or literature full text. |
 | `screen-paper` | Give a fast paper-relevance verdict against explicit criteria. | Adapted from quarto-lab; the original hardcoded lab focus was removed. | Paper abstract/full text, explicit user criteria, and resolver-returned context. | Nothing. | Modifying the repository; treating abstract-only screening as deep review; inventing a lab focus. |
 
@@ -38,6 +39,8 @@ target, where they can be tested.
 | `make knowledge-check` | `expand-notes`, `render-site` |
 | `make build` | `render-site` |
 | `make knowledge-preview` | `render-site` |
+| `make knowledge-check` | `edit-topic-tree` |
+| `make knowledge-preview` | `edit-topic-tree` |
 | `make draft-preview FILE=drafts/…` | `review-draft` |
 | `make draft-preview FILE=drafts/…` | `capture-chat-draft`, `complete-gaps`, `conference-survey` |
 | `make knowledge-resolve QUERY="…"` | `generate-issues`, `integrate-paper`, `screen-paper` |

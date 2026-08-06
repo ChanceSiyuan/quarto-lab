@@ -47,6 +47,7 @@ const SKILL_NAMES = [
   "complete-gaps",
   "conference-survey",
   "download-ref",
+  "edit-topic-tree",
   "evidence-review",
   "expand-notes",
   "generate-issues",
@@ -542,6 +543,34 @@ const EXPAND_NOTES: readonly Clause[] = [
 ];
 
 /** The adapted quarto-lab requirements for safe site rendering. */
+const EDIT_TOPIC_TREE: readonly Clause[] = [
+  {
+    requirement: "triggers on editing the topic tree",
+    in: "description",
+    pattern: /topic tree/i,
+  },
+  {
+    requirement: "documents the qlab-tree block",
+    in: "body",
+    pattern: /```qlab-tree/,
+  },
+  {
+    requirement: "shows the page-level deep-link form",
+    in: "body",
+    pattern: /zotero:\/\/open-pdf/,
+  },
+  {
+    requirement: "validates after every edit",
+    in: "body",
+    pattern: /make knowledge-check/,
+  },
+  {
+    requirement: "keeps the Reading map as the navigation authority",
+    in: "body",
+    pattern: /Reading map[^.\n]*navigation authority/i,
+  },
+];
+
 const RENDER_SITE: readonly Clause[] = [
   {
     requirement: "triggers on building or previewing the knowledge site",
@@ -847,6 +876,7 @@ const CLAUSES: Readonly<Record<SkillName, readonly Clause[]>> = {
   "read-knowledge": READ_KNOWLEDGE,
   "review-draft": REVIEW_DRAFT,
   "download-ref": DOWNLOAD_REF,
+  "edit-topic-tree": EDIT_TOPIC_TREE,
   "evidence-review": EVIDENCE_REVIEW,
   "expand-notes": EXPAND_NOTES,
   "generate-issues": GENERATE_ISSUES,
