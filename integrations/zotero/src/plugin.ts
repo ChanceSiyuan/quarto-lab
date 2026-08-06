@@ -46,6 +46,7 @@ import {
 } from "./workbench-tab";
 import { StandaloneWorkbenchManager } from "./standalone-workbench";
 import { WorkbenchView } from "./workbench-view";
+import { createPdfBrowserViewer, PdfReaderView, type PdfEmbedHandle } from "./pdf-tab";
 import type { TabDescriptor as WorkbenchTabDescriptor } from "./workbench-layout";
 import type { TabContentProvider as WorkbenchTabProvider } from "./workbench-shell";
 import {
@@ -1893,7 +1894,7 @@ export class ZoteroChatPlugin {
         },
       },
       createWorkspace: (workspaceHost) => this.createWorkspaceView(workspaceHost),
-      createPdfProvider: (tab) => this.createPdfProvider(tab, win),
+      createPdfProvider: (tab) => this.createPdfProvider(tab, win, () => workbench),
       initialSplitRatio: prefInt("splitRatio", 40),
       onSplitRatioChange: (ratio) => setPrefInt("splitRatio", ratio),
       onLayoutChanged: () => {
@@ -2043,26 +2044,90 @@ export class ZoteroChatPlugin {
     return true;
   }
 
-  /** Placeholder until the embedded PDF reader lands; keeps the tab kind valid. */
-  private createPdfProvider(tab: WorkbenchTabDescriptor, _win: Window): WorkbenchTabProvider {
-    let card: HTMLElement | null = null;
-    return {
-      mount: (host: HTMLElement) => {
-        card = host.ownerDocument.createElement("div");
-        card.className = "zc-site-status-card";
-        const detail = host.ownerDocument.createElement("p");
-        detail.className = "zc-site-status-detail";
-        detail.textContent = `The embedded PDF reader for “${tab.title}” is not available yet.`;
-        card.appendChild(detail);
-        host.appendChild(card);
+  private createPdfProvider(
+    tab: WorkbenchTabDescriptor,
+    win: Window,
+    workbench: () => WorkbenchView | null,
+  ): WorkbenchTabProvider {
+    const payload = tab.payload || { itemID: 0, attachmentKey: tab.id };
+    return new PdfReaderView(win.document, payload, {
+      resolveFileURI: async (itemID) => {
+        try {
+          const item = Zotero.Items?.get?.(itemID);
+          const path = await item?.getFilePathAsync?.();
+          return path ? Zotero.File.pathToFileURI(path) : null;
+        }
+        catch {
+          return null;
+        }
       },
-      show: () => {},
-      hide: () => {},
-      dispose: () => {
-        card?.remove();
-        card = null;
+      createNativeEmbed: (host, itemID, page) => this.createNativeReaderEmbed(host, itemID, page),
+      createBrowserViewer: (host, fileURI, page) => createPdfBrowserViewer(host, fileURI, page),
+      onRequestChoosePaper: () => {
+        void this.chooseWorkbenchPaper(win, null).catch((error) => this.reportError(error));
       },
-    };
+      onPageChange: () => {
+        const target = workbench();
+        if (!target) return;
+        const entry = this.workbenchTabs?.entries(win)
+          .find((candidate) => candidate.view === target);
+        if (entry) {
+          this.workbenchTabs.update(
+            win,
+            entry.id,
+            { ...entry.data, layout: target.layoutData() },
+            false,
+          );
+        }
+        Zotero.Session?.debounceSave?.();
+      },
+    });
+  }
+
+  /**
+   * The embedded-native-reader spike: Zotero 7's item-pane attachment preview
+   * element hosts a real reader. Every step is guarded — any missing API
+   * returns null and the caller falls back to the pdf.js browser viewer.
+   */
+  private async createNativeReaderEmbed(
+    host: HTMLElement,
+    itemID: number,
+    page?: number,
+  ): Promise<PdfEmbedHandle | null> {
+    try {
+      const doc = host.ownerDocument;
+      const item = Zotero.Items?.get?.(itemID);
+      if (!item) return null;
+      const preview = doc.createElement("attachment-preview") as HTMLElement & {
+        item?: unknown;
+        render?(): Promise<void> | void;
+        _reader?: { navigate?(location: { pageIndex: number }): void };
+      };
+      // A custom element that never registered upgrades to a plain element
+      // with no rendering behaviour; detect that before committing to it.
+      if (typeof preview.render !== "function" && !("item" in preview)) {
+        debug("pdf-embed spike: attachment-preview element is unavailable");
+        return null;
+      }
+      preview.classList.add("zc-pdf-native-preview");
+      preview.item = item;
+      host.appendChild(preview);
+      await preview.render?.();
+      if (!preview.isConnected) return null;
+      debug("pdf-embed spike: attachment-preview mounted");
+      const navigate = (target: number) => {
+        preview._reader?.navigate?.({ pageIndex: Math.max(0, target - 1) });
+      };
+      if (page) navigate(page);
+      return {
+        goToPage: navigate,
+        dispose: () => preview.remove(),
+      };
+    }
+    catch (error) {
+      debug(`pdf-embed spike: attachment-preview failed: ${String(error)}`);
+      return null;
+    }
   }
 
   private createWorkspaceView(host: HTMLElement): QmdWorkspaceView {
