@@ -373,7 +373,7 @@ class StrictJsonPreflight {
       }
       if (capture) pieces.push(this.source.slice(plainStart, this.index));
       this.index++;
-      const escaped = this.source[this.index++];
+      const escaped = this.source[this.index++] ?? "";
       const simple: { [key: string]: string } = {
         '"': '"', "\\": "\\", "/": "/", b: "\b", f: "\f",
         n: "\n", r: "\r", t: "\t",
@@ -385,7 +385,7 @@ class StrictJsonPreflight {
         this.index += 4;
       }
       else if (Object.hasOwn(simple, escaped)) {
-        if (capture) pieces.push(simple[escaped]);
+        if (capture) pieces.push(simple[escaped] ?? "");
       }
       else this.fail();
       plainStart = this.index;
@@ -614,11 +614,13 @@ function compareCoreVersions(left: string, right: string): number {
   const leftParts = left.split(".");
   const rightParts = right.split(".");
   for (let index = 0; index < 3; index++) {
-    if (leftParts[index].length !== rightParts[index].length) {
-      return leftParts[index].length < rightParts[index].length ? -1 : 1;
+    const leftPart = leftParts[index] ?? "";
+    const rightPart = rightParts[index] ?? "";
+    if (leftPart.length !== rightPart.length) {
+      return leftPart.length < rightPart.length ? -1 : 1;
     }
-    if (leftParts[index] !== rightParts[index]) {
-      return leftParts[index] < rightParts[index] ? -1 : 1;
+    if (leftPart !== rightPart) {
+      return leftPart < rightPart ? -1 : 1;
     }
   }
   return 0;
