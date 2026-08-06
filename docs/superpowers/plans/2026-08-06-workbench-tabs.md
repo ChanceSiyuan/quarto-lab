@@ -92,7 +92,7 @@ Behavioral rules (each is a test):
 
 **Steps:**
 
-- [ ] **Step 1: Write the failing tests** — `test/workbench-layout.test.ts` covering, at minimum:
+- [x] **Step 1: Write the failing tests** — `test/workbench-layout.test.ts` covering, at minimum:
 
 ```typescript
 import { describe, expect, it, vi } from "vitest";
@@ -202,10 +202,10 @@ describe("WorkbenchLayout", () => {
 });
 ```
 
-- [ ] **Step 2: Run tests, confirm they fail** — `cd integrations/zotero && npx vitest run test/workbench-layout.test.ts`. Expected: module not found.
-- [ ] **Step 3: Implement `src/workbench-layout.ts`** — the interface above. Keep it DOM-free. Internal normalization helper `normalize()` applies pane-dissolution rules after every mutation; mutations compare pre/post `JSON.stringify(serialize())` to decide whether to fire `onChange` (guarantees the exactly-once rule and makes no-op moves silent).
-- [ ] **Step 4: Run tests, confirm pass** — same command. Expected: PASS.
-- [ ] **Step 5: Commit** — `git add integrations/zotero/src/workbench-layout.ts integrations/zotero/test/workbench-layout.test.ts && git commit` message `feat(zotero): add workbench pane layout model`.
+- [x] **Step 2: Run tests, confirm they fail** — `cd integrations/zotero && npx vitest run test/workbench-layout.test.ts`. Expected: module not found.
+- [x] **Step 3: Implement `src/workbench-layout.ts`** — the interface above. Keep it DOM-free. Internal normalization helper `normalize()` applies pane-dissolution rules after every mutation; mutations compare pre/post `JSON.stringify(serialize())` to decide whether to fire `onChange` (guarantees the exactly-once rule and makes no-op moves silent).
+- [x] **Step 4: Run tests, confirm pass** — same command. Expected: PASS.
+- [x] **Step 5: Commit** — `git add integrations/zotero/src/workbench-layout.ts integrations/zotero/test/workbench-layout.test.ts && git commit` message `feat(zotero): add workbench pane layout model`.
 
 ---
 
@@ -270,7 +270,7 @@ Tab button DOM: `button.zc-shell-tab[data-tab-id]` containing `span.zc-shell-tab
 
 **Steps:**
 
-- [ ] **Step 1: Write failing tests** — `test/workbench-shell.test.ts` with `// @vitest-environment happy-dom`:
+- [x] **Step 1: Write failing tests** — `test/workbench-shell.test.ts` with `// @vitest-environment happy-dom`:
 
 ```typescript
 // @vitest-environment happy-dom
@@ -392,13 +392,13 @@ describe("WorkbenchShell", () => {
 });
 ```
 
-- [ ] **Step 2: Run tests, confirm fail** — `npx vitest run test/workbench-shell.test.ts`.
-- [ ] **Step 3: Implement `src/workbench-shell.ts`.** Key mechanics:
+- [x] **Step 2: Run tests, confirm fail** — `npx vitest run test/workbench-shell.test.ts`.
+- [x] **Step 3: Implement `src/workbench-shell.ts`.** Key mechanics:
   - Constructor builds the fixed DOM skeleton, appends to `host`, applies `--zc-split-ratio` from `initialSplitRatio`, wires split-handle drag (port `beginSplitDrag`/`applySplitRatio`/`clampSplitRatio` from `sidebar.ts:968-991`, persisting via `options.onSplitRatioChange` on mouseup).
   - `sync()` reconciles: tab bar buttons re-rendered from scratch (cheap); content hosts created once per tab id (`section.zc-tab-content`, appended once); classes `.is-active`/`.is-right`, `data-split`, right-bar `hidden`, and empty-state visibility updated in place. When a tab is gone from the layout: `retainOnClose` → `hide()` + keep host (also keep its layout-independent registry entry so reopening the same id reuses it); otherwise `provider.dispose()` + host removed (a disposed pdf tab that reopens gets a fresh host — allowed; the rule forbids *moving*, not removing).
   - Tab button click → `layout.activateTab`; close span click → optional veto → `layout.closeTab` (stopPropagation so it doesn't also activate).
   - `layout` is constructed with `onChange = () => { this.sync(); options.onLayoutChange(); }` so external `layout` calls are self-syncing; explicit `sync()` stays idempotent (tests call it defensively).
-- [ ] **Step 4: Append shell CSS to `styles.css`** (new section at the end; the old grid rules are untouched until Task 4):
+- [x] **Step 4: Append shell CSS to `styles.css`** (new section at the end; the old grid rules are untouched until Task 4):
 
 ```css
 /* ---- Workbench shell (tabbed panes) ---- */
@@ -477,8 +477,8 @@ describe("WorkbenchShell", () => {
 .zc-drop-indicator[hidden] { display: none; }
 ```
 
-- [ ] **Step 5: Run tests + typecheck** — `npx vitest run test/workbench-shell.test.ts && npm run check`. Expected: PASS (check may flag unused exports — fine to leave until wired).
-- [ ] **Step 6: Commit** — `feat(zotero): add workbench shell with tabbed panes`.
+- [x] **Step 5: Run tests + typecheck** — `npx vitest run test/workbench-shell.test.ts && npm run check`. Expected: PASS (check may flag unused exports — fine to leave until wired).
+- [x] **Step 6: Commit** — `feat(zotero): add workbench shell with tabbed panes`.
 
 ---
 
@@ -501,15 +501,15 @@ describe("WorkbenchShell", () => {
 
 **Steps:**
 
-- [ ] **Step 1: Write failing tests** — `test/workbench-shell-drag.test.ts` (happy-dom). Synthesize `PointerEvent`s (happy-dom supports constructing them; fall back to `new MouseEvent` with `pointerId` assigned if needed — mirror whatever `qmd-workspace.test.ts` does for events). Stub `getBoundingClientRect` on bars/hosts to give the shell a 1000×600 geometry. Cover:
+- [x] **Step 1: Write failing tests** — `test/workbench-shell-drag.test.ts` (happy-dom). Synthesize `PointerEvent`s (happy-dom supports constructing them; fall back to `new MouseEvent` with `pointerId` assigned if needed — mirror whatever `qmd-workspace.test.ts` does for events). Stub `getBoundingClientRect` on bars/hosts to give the shell a 1000×600 geometry. Cover:
   - drag editor tab from left bar to right 20% edge in single-pane mode → `data-split="true"`, editor in right pane;
   - drag it back onto the left bar → split collapses (last right tab left the pane);
   - a 2 px jitter press-release still activates the tab and moves nothing;
   - during drag the indicator is unhidden and positioned; after drop it is hidden.
-- [ ] **Step 2: Run, confirm fail.**
-- [ ] **Step 3: Implement drag in `workbench-shell.ts`** per the contract above. Keep geometry pure: `private dropTargetAt(x: number, y: number): { pane: PaneId; index?: number; split?: PaneId } | null` so tests can also call it directly if event synthesis proves flaky in happy-dom.
-- [ ] **Step 4: Run tests + `npm run check`. Expected: PASS.**
-- [ ] **Step 5: Commit** — `feat(zotero): drag workbench tabs between panes`.
+- [x] **Step 2: Run, confirm fail.**
+- [x] **Step 3: Implement drag in `workbench-shell.ts`** per the contract above. Keep geometry pure: `private dropTargetAt(x: number, y: number): { pane: PaneId; index?: number; split?: PaneId } | null` so tests can also call it directly if event synthesis proves flaky in happy-dom.
+- [x] **Step 4: Run tests + `npm run check`. Expected: PASS.**
+- [x] **Step 5: Commit** — `feat(zotero): drag workbench tabs between panes`.
 
 ---
 
@@ -527,7 +527,7 @@ describe("WorkbenchShell", () => {
 
 **Steps:**
 
-- [ ] **Step 1: Map every affected call site**:
+- [x] **Step 1: Map every affected call site**:
 
 ```bash
 cd integrations/zotero
@@ -535,8 +535,8 @@ grep -n "setMainSiteOpen\|isMainSiteOpen\|setWorkspaceOpen\|attachWorkspace\|ref
 ```
 
 Fix every hit as part of this task (plugin.ts references get temporary stubs only if unavoidable; prefer landing Task 6's wiring for `plugin.ts` in the same commit if the tree can't compile otherwise — in that case merge Task 4 and Task 6 commits and say so in the commit body).
-- [ ] **Step 2: Restructure `SidebarView.build()`** (`sidebar.ts:574-845`): create `const chatPane = this.doc.createElement("div"); chatPane.className = "zc-chat-pane";` and append `historyRail?`, `threadTabs`, `contextCard`, `transcript`, `composerWrap`, `loginLayer`, `terminalDrawer` into it; `root` now receives `topbar` (sidebar surface only), `chatPane`, and `topActions` (workbench surface only — until Task 6 relocates the dock to the shell). Delete `splitHandle` creation (819-823) and the `mainSiteButton` block (605-614), `mainSiteView` construction (838-844), and the methods listed above (890-1006 region). Keep `setTerminalOpen` (drawer is inside `zc-chat-pane` now).
-- [ ] **Step 3: Rewrite the CSS region** (`styles.css` 1033-1135): `.zc-chat-pane` becomes the chat grid —
+- [x] **Step 2: Restructure `SidebarView.build()`** (`sidebar.ts:574-845`): create `const chatPane = this.doc.createElement("div"); chatPane.className = "zc-chat-pane";` and append `historyRail?`, `threadTabs`, `contextCard`, `transcript`, `composerWrap`, `loginLayer`, `terminalDrawer` into it; `root` now receives `topbar` (sidebar surface only), `chatPane`, and `topActions` (workbench surface only — until Task 6 relocates the dock to the shell). Delete `splitHandle` creation (819-823) and the `mainSiteButton` block (605-614), `mainSiteView` construction (838-844), and the methods listed above (890-1006 region). Keep `setTerminalOpen` (drawer is inside `zc-chat-pane` now).
+- [x] **Step 3: Rewrite the CSS region** (`styles.css` 1033-1135): `.zc-chat-pane` becomes the chat grid —
 
 ```css
 .zc-chat-pane {
@@ -560,9 +560,9 @@ Fix every hit as part of this task (plugin.ts references get temporary stubs onl
 ```
 
 Delete every `.is-main-site-open` / `.is-workspace-open` selector (including `styles.css:1839-1849`'s handle-visibility variant — the shell rules from Task 2 replace it). `.zc-main-site-view` and `.zc-qmd-workspace` keep their internal rules but lose `grid-column: 3; grid-row: 1 / -1` placement (their tab content host handles that); give both `width: 100%; height: 100%`.
-- [ ] **Step 4: `research-loop-site.ts`** — `onBack?: () => void`; wrap back-button creation (412-416, 435) in `if (this.options.onBack)`.
-- [ ] **Step 5: Run the full plugin suite** — `npx vitest run`. Fix fallout listed in `/tmp/claude-interlock-sites.txt` (notably `workbench-tab.ts`'s `isMainSiteOpen`/`setMainSiteOpen` uses at lines 24-25, 107, 167-169, 197 — if Task 6 is not merged in, temporarily keep those interface members as optional no-ops and delete them in Task 6). `npm run check` clean.
-- [ ] **Step 6: Commit** — `refactor(zotero): extract chat pane, drop right-pane interlock`.
+- [x] **Step 4: `research-loop-site.ts`** — `onBack?: () => void`; wrap back-button creation (412-416, 435) in `if (this.options.onBack)`.
+- [x] **Step 5: Run the full plugin suite** — `npx vitest run`. Fix fallout listed in `/tmp/claude-interlock-sites.txt` (notably `workbench-tab.ts`'s `isMainSiteOpen`/`setMainSiteOpen` uses at lines 24-25, 107, 167-169, 197 — if Task 6 is not merged in, temporarily keep those interface members as optional no-ops and delete them in Task 6). `npm run check` clean.
+- [x] **Step 6: Commit** — `refactor(zotero): extract chat pane, drop right-pane interlock`.
 
 ---
 
@@ -597,11 +597,11 @@ Behavior (ported from `sidebar.ts` `refreshMainSiteStatus`/`activateMainSite`, `
 
 **Steps:**
 
-- [ ] **Step 1: Write failing tests** — happy-dom; fake callbacks with controllable promises. Cover: ready+available shows the site view and no card; site-down click runs `deploy` with progress text reaching the DOM and then reveals the site view; `missing` renders Choose Repository and re-checks after it resolves; deploy rejection renders the retry label. (`ResearchLoopSiteView.ensureBrowser` already degrades in happy-dom via its `createXULElement` guard — assert on `.zc-main-site-view` presence, not on a live browser.)
-- [ ] **Step 2: Run, confirm fail.**
-- [ ] **Step 3: Implement `src/site-tab.ts`** and add card styles to `styles.css` (`.zc-site-status-card` — reuse the muted card look of `.zc-main-site-unavailable`).
-- [ ] **Step 4: Run tests + `npm run check`. Expected: PASS.**
-- [ ] **Step 5: Commit** — `feat(zotero): move main-site status flow into a site tab`.
+- [x] **Step 1: Write failing tests** — happy-dom; fake callbacks with controllable promises. Cover: ready+available shows the site view and no card; site-down click runs `deploy` with progress text reaching the DOM and then reveals the site view; `missing` renders Choose Repository and re-checks after it resolves; deploy rejection renders the retry label. (`ResearchLoopSiteView.ensureBrowser` already degrades in happy-dom via its `createXULElement` guard — assert on `.zc-main-site-view` presence, not on a live browser.)
+- [x] **Step 2: Run, confirm fail.**
+- [x] **Step 3: Implement `src/site-tab.ts`** and add card styles to `styles.css` (`.zc-site-status-card` — reuse the muted card look of `.zc-main-site-unavailable`).
+- [x] **Step 4: Run tests + `npm run check`. Expected: PASS.**
+- [x] **Step 5: Commit** — `feat(zotero): move main-site status flow into a site tab`.
 
 ---
 
@@ -668,11 +668,11 @@ Wiring rules:
 
 **Steps:**
 
-- [ ] **Step 1: Write failing tests** — `test/workbench-view.test.ts` (happy-dom): fresh view exposes a chat tab in the left pane; `setLayoutData` with a chat+editor split creates hosts only for active tabs; `layoutData()` round-trips; `workspace()` is null before the editor tab first activates and non-null after; legacy-mainSiteOpen mapping test lives in `test/workbench-tab.test.ts`-style assertions on `dataFromTab` (add to the existing workbench-tab test file if present, else create `test/workbench-tab-data.test.ts`).
-- [ ] **Step 2: Run, confirm fail.**
-- [ ] **Step 3: Implement** `workbench-view.ts`, `workbench-tab.ts` changes, `plugin.ts` rewiring, `standalone-workbench.ts` type updates. Remove any temporary stubs left by Task 4.
-- [ ] **Step 4: Run the full suite** — `npx vitest run && npm run check`. Expected: PASS, no remaining references to `mainSiteOpen` outside the legacy-mapping code (`grep -rn "mainSiteOpen" src/ | grep -v qlabMainSiteOpen` → empty).
-- [ ] **Step 5: Commit** — `feat(zotero): compose workbench tabs behind WorkbenchView`.
+- [x] **Step 1: Write failing tests** — `test/workbench-view.test.ts` (happy-dom): fresh view exposes a chat tab in the left pane; `setLayoutData` with a chat+editor split creates hosts only for active tabs; `layoutData()` round-trips; `workspace()` is null before the editor tab first activates and non-null after; legacy-mainSiteOpen mapping test lives in `test/workbench-tab.test.ts`-style assertions on `dataFromTab` (add to the existing workbench-tab test file if present, else create `test/workbench-tab-data.test.ts`).
+- [x] **Step 2: Run, confirm fail.**
+- [x] **Step 3: Implement** `workbench-view.ts`, `workbench-tab.ts` changes, `plugin.ts` rewiring, `standalone-workbench.ts` type updates. Remove any temporary stubs left by Task 4.
+- [x] **Step 4: Run the full suite** — `npx vitest run && npm run check`. Expected: PASS, no remaining references to `mainSiteOpen` outside the legacy-mapping code (`grep -rn "mainSiteOpen" src/ | grep -v qlabMainSiteOpen` → empty).
+- [x] **Step 5: Commit** — `feat(zotero): compose workbench tabs behind WorkbenchView`.
 
 ---
 
@@ -713,13 +713,13 @@ Any embed handle failure after creation (thrown from `goToPage` etc.) is caught 
 
 **Steps:**
 
-- [ ] **Step 1: Write failing tests** — happy-dom, fake deps: native embed success short-circuits the browser fallback; native `null` → browser viewer created with `#page=`; `resolveFileURI` null → error card with Choose Paper wired; `goToPage` delegates to the active handle and reports `onPageChange`; a handle that throws flips to the error card and Reload reruns the chain.
-- [ ] **Step 2: Run, confirm fail.**
-- [ ] **Step 3: Implement `src/pdf-tab.ts`** + error-card styles (`.zc-pdf-error-card`).
-- [ ] **Step 4: Implement the plugin side of `createPdfProvider`** in `plugin.ts`: `resolveFileURI` via `Zotero.Items.get(itemID)?.getFilePathAsync()` + `Zotero.File.pathToFileURI`; `createBrowserViewer` mirroring `ResearchLoopSiteView.ensureBrowser` (`research-loop-site.ts:463-485`) but `src = fileURI#page=N` and no remote-location tracking; `createNativeEmbed` implementing the two spike attempts behind try/catch (this code is the spike — keep each attempt ≤ ~40 lines and heavily logged).
-- [ ] **Step 5: Write `docs/superpowers/2026-08-06-pdf-embed-spike.md`** — what was attempted, what compiled, and a numbered manual validation checklist for live Zotero (open paper → button A → does the PDF tab show the native reader or the pdf.js fallback; annotations; page sync), with a Findings section left for results from the live run.
-- [ ] **Step 6: Run tests + `npm run check`. Expected: PASS.**
-- [ ] **Step 7: Commit** — `feat(zotero): embed pdf reading in a workbench tab`.
+- [x] **Step 1: Write failing tests** — happy-dom, fake deps: native embed success short-circuits the browser fallback; native `null` → browser viewer created with `#page=`; `resolveFileURI` null → error card with Choose Paper wired; `goToPage` delegates to the active handle and reports `onPageChange`; a handle that throws flips to the error card and Reload reruns the chain.
+- [x] **Step 2: Run, confirm fail.**
+- [x] **Step 3: Implement `src/pdf-tab.ts`** + error-card styles (`.zc-pdf-error-card`).
+- [x] **Step 4: Implement the plugin side of `createPdfProvider`** in `plugin.ts`: `resolveFileURI` via `Zotero.Items.get(itemID)?.getFilePathAsync()` + `Zotero.File.pathToFileURI`; `createBrowserViewer` mirroring `ResearchLoopSiteView.ensureBrowser` (`research-loop-site.ts:463-485`) but `src = fileURI#page=N` and no remote-location tracking; `createNativeEmbed` implementing the two spike attempts behind try/catch (this code is the spike — keep each attempt ≤ ~40 lines and heavily logged).
+- [x] **Step 5: Write `docs/superpowers/2026-08-06-pdf-embed-spike.md`** — what was attempted, what compiled, and a numbered manual validation checklist for live Zotero (open paper → button A → does the PDF tab show the native reader or the pdf.js fallback; annotations; page sync), with a Findings section left for results from the live run.
+- [x] **Step 6: Run tests + `npm run check`. Expected: PASS.**
+- [x] **Step 7: Commit** — `feat(zotero): embed pdf reading in a workbench tab`.
 
 ---
 
@@ -742,11 +742,11 @@ Wiring:
 
 **Steps:**
 
-- [ ] **Step 1: Extend `workbench-view.test.ts`** with failing arrange cases: `arrange("pdf-chat", pdf)` from a fresh view yields left=`pdf:KEY` active / right=`chat` active; `arrange("pdf-editor", pdf)` flips right to editor while chat stays open in the right pane's tab list only if it was already there (it was: singleton stays where it lives — assert it remains in its pane, editor becomes the right-active tab); repeated arrange is stable.
-- [ ] **Step 2: Run, confirm fail.**
-- [ ] **Step 3: Implement** `WorkbenchView.arrange` (thin: translate to `layout.arrange` requests) and the `plugin.ts` wiring above.
-- [ ] **Step 4: Run full suite + `npm run check`. Expected: PASS.**
-- [ ] **Step 5: Commit** — `feat(zotero): reader buttons arrange pdf/chat and pdf/editor splits`.
+- [x] **Step 1: Extend `workbench-view.test.ts`** with failing arrange cases: `arrange("pdf-chat", pdf)` from a fresh view yields left=`pdf:KEY` active / right=`chat` active; `arrange("pdf-editor", pdf)` flips right to editor while chat stays open in the right pane's tab list only if it was already there (it was: singleton stays where it lives — assert it remains in its pane, editor becomes the right-active tab); repeated arrange is stable.
+- [x] **Step 2: Run, confirm fail.**
+- [x] **Step 3: Implement** `WorkbenchView.arrange` (thin: translate to `layout.arrange` requests) and the `plugin.ts` wiring above.
+- [x] **Step 4: Run full suite + `npm run check`. Expected: PASS.**
+- [x] **Step 5: Commit** — `feat(zotero): reader buttons arrange pdf/chat and pdf/editor splits`.
 
 ---
 
@@ -759,11 +759,11 @@ Wiring:
 
 **Steps:**
 
-- [ ] **Step 1: Terminal-with-chat-closed behavior** — in `WorkbenchView`, the dock terminal button callback first ensures the chat tab exists/is active in the focused pane (`layout.openTab({kind:"chat"}, focusedPane)`), then toggles the drawer. Add a unit test.
-- [ ] **Step 2: Full gate** — `cd integrations/zotero && npm run verify`. Expected: tsc clean, all vitest suites pass, esbuild bundle succeeds. Fix anything that surfaces.
-- [ ] **Step 3: Repo-level sanity** — `git status` shows only intended files; `grep -rn "is-main-site-open\|is-workspace-open" integrations/zotero/src` → empty.
-- [ ] **Step 4: Update CHANGELOG + spec deviations + finalize the spike QA checklist** (numbered steps for the user to run in live Zotero: install XPI, button A/C flows, drag between panes, close semantics, restart-restore, legacy-session restore).
-- [ ] **Step 5: Commit** — `docs(zotero): record workbench tabs verification and QA handoff`.
+- [x] **Step 1: Terminal-with-chat-closed behavior** — in `WorkbenchView`, the dock terminal button callback first ensures the chat tab exists/is active in the focused pane (`layout.openTab({kind:"chat"}, focusedPane)`), then toggles the drawer. Add a unit test.
+- [x] **Step 2: Full gate** — `cd integrations/zotero && npm run verify`. Expected: tsc clean, all vitest suites pass, esbuild bundle succeeds. Fix anything that surfaces.
+- [x] **Step 3: Repo-level sanity** — `git status` shows only intended files; `grep -rn "is-main-site-open\|is-workspace-open" integrations/zotero/src` → empty.
+- [x] **Step 4: Update CHANGELOG + spec deviations + finalize the spike QA checklist** (numbered steps for the user to run in live Zotero: install XPI, button A/C flows, drag between panes, close semantics, restart-restore, legacy-session restore).
+- [x] **Step 5: Commit** — `docs(zotero): record workbench tabs verification and QA handoff`.
 
 ---
 

@@ -205,6 +205,22 @@ Layout serializes to one JSON object:
 - **restore**: unknown tab kind or payload (version drift) → drop that tab,
   log, restore the rest.
 
+## Implementation deviations (recorded post-implementation)
+
+1. **Spike ships as a runtime strategy chain.** The implementing agent cannot
+   run a live Zotero, so the native-reader embed is attempted at runtime and
+   falls back to the bundled pdf.js viewer instead of blocking implementation
+   on a go/no-go spike. Findings land in
+   [`../2026-08-06-pdf-embed-spike.md`](../2026-08-06-pdf-embed-spike.md).
+2. **Terminal with the chat tab closed.** The drawer stays inside the chat
+   DOM; the dock's terminal button first reopens the chat tab in the focused
+   pane, then opens the drawer — same visible result as the spec's "overlay
+   the focused pane" wording with far less relocation machinery.
+3. **Single-pane left edge reorders instead of splitting left.** The layout
+   model dissolves an emptied left pane, so "dragged tab alone on the left,
+   everything else on the right" is not expressible; the right 20% edge
+   performs the split and the left edge reorders the tab to the front.
+
 ## Testing
 
 Gate remains `npm run verify` (tsc + vitest + build) in `integrations/zotero`.

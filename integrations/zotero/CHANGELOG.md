@@ -1,5 +1,21 @@
 # Changelog
 
+## Unreleased
+
+- Rebuild the Workbench as VS Code-style tabs: chat, the QMD editor, Zotero
+  PDFs, and the Research Loop main site are independent, closable tabs across
+  at most two side-by-side panes, dragged between panes without reloading
+  embedded browsers.
+- Remove the bottom-left main-site button; its repository/deploy state
+  machine becomes the site tab's empty state.
+- Upgrade the reader toolbar: the QLab button (and ⌘I) arranges *PDF | chat*;
+  a new split button arranges *PDF | editor*.
+- Read PDFs inside the workbench through a native-reader embed attempt with a
+  built-in pdf.js fallback; chat page links jump to an open workbench PDF tab
+  before spawning a native reader tab.
+- Persist the full tab layout across Zotero restarts, migrating saved
+  `qlabMainSiteOpen` sessions to a chat | site split.
+
 ## 0.12.0
 
 - Remove the web ChatGPT handoff, clipboard answer import, and ChatGPT export
