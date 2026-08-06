@@ -176,6 +176,19 @@ authority. A matching entry joins
 - Plugin tests — site-browser interception with a fake browser; live behavior
   joins the existing live-Zotero QA checklist.
 
+## Implementation deviations (recorded post-implementation)
+
+1. **Layout serialization regenerates the block.** The browser runtime only
+   has the compiled JSON (the authored YAML is not shipped), so "Copy layout
+   YAML" re-emits the whole block from the compiled tree
+   (`serializeTreeYaml`) instead of merging coordinates into the original
+   text. Comments inside the block therefore do not survive a freeze.
+2. **`resources` in the generated config.** Quarto copies a root-level
+   script into the site only when it is a declared resource; the *generated*
+   `_quarto.yml` names exactly `research-loop-tree.js` (the committed base
+   file still may not mention resources), and the projection safety pin now
+   asserts that single fixed entry rather than forbidding the key.
+
 ## Non-goals
 
 - No editing or write-back from the canvas itself; no server-side write path.

@@ -54,6 +54,22 @@ helper), install it, then:
 7. Delete/move the attachment file, reopen the PDF tab. Expected: the
    "Choose Paper" error card, not a broken pane.
 
+## Topic tree & deep links (phase B/C) — additional live checks
+
+8. Open the knowledge site in an **external browser** (`npm run start`, visit
+   `/knowledge/`): the index shows the draggable topic tree; hovering a node
+   shows the two links, grey where absent; clicking a `zotero://` link makes
+   the OS hand it to desktop Zotero (open-pdf lands on the page).
+9. Drag nodes, reload — the layout persists (localStorage). "Copy layout
+   YAML", paste over the block in `knowledge/index.qmd`, run
+   `make knowledge-check`, rebuild — the canvas starts from the frozen
+   layout. "Reset layout" returns to it after further drags.
+10. Inside the workbench **site tab**, click a `zotero://open-pdf` link on a
+    knowledge page: expected — no OS dialog; an open workbench PDF tab jumps
+    to the page, else the native reader opens there. If an OS protocol prompt
+    appears instead, the remote-browser cancel path is unavailable — record
+    it here; the fallback is acceptable per the spec.
+
 ## Findings (fill in after the live run)
 
 - Strategy that rendered: _(native / fallback)_

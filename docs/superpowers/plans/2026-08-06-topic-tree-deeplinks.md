@@ -33,9 +33,9 @@
 
 **Steps:**
 
-- [ ] **Step 1: Write failing tests.** In `parser.test.ts`, next to the existing external-target coverage (find it with `grep -n "mailto\|EXTERNAL" .research-loop/tests/knowledge/parser.test.ts`), add: a page containing `[p](zotero://open-pdf/library/items/AB12CD34?page=7)` yields no entry for that target in `localLinks`, while `[j](javascript:alert(1))` still does. In `graph-validation.test.ts`, add: a fixture page with a `zotero://select/library/items/KEY` link validates with zero diagnostics; a `vbscript:` link still reports `LINK_OUTSIDE_KNOWLEDGE`. Follow the file's existing fixture-building helpers verbatim.
-- [ ] **Step 2: Run to verify failure** — `node --import tsx --test .research-loop/tests/knowledge/parser.test.ts .research-loop/tests/knowledge/graph-validation.test.ts`. Expected: the new zotero assertions fail.
-- [ ] **Step 3: Implement.**
+- [x] **Step 1: Write failing tests.** In `parser.test.ts`, next to the existing external-target coverage (find it with `grep -n "mailto\|EXTERNAL" .research-loop/tests/knowledge/parser.test.ts`), add: a page containing `[p](zotero://open-pdf/library/items/AB12CD34?page=7)` yields no entry for that target in `localLinks`, while `[j](javascript:alert(1))` still does. In `graph-validation.test.ts`, add: a fixture page with a `zotero://select/library/items/KEY` link validates with zero diagnostics; a `vbscript:` link still reports `LINK_OUTSIDE_KNOWLEDGE`. Follow the file's existing fixture-building helpers verbatim.
+- [x] **Step 2: Run to verify failure** — `node --import tsx --test .research-loop/tests/knowledge/parser.test.ts .research-loop/tests/knowledge/graph-validation.test.ts`. Expected: the new zotero assertions fail.
+- [x] **Step 3: Implement.**
 
 ```ts
 // parser.ts:68 — was /^(?:https?|mailto):/i
@@ -44,8 +44,8 @@ const EXTERNAL_TARGET = /^(?:https?|mailto|zotero):/i;
 ```
 
 Update the `types.ts:132-137` comment to name `zotero:` among the excluded schemes (deep links into the user's Zotero library are a sanctioned exit).
-- [ ] **Step 4: Re-run both test files. Expected: PASS.**
-- [ ] **Step 5: Commit** — `feat(knowledge): admit zotero: links as external targets`.
+- [x] **Step 4: Re-run both test files. Expected: PASS.**
+- [x] **Step 5: Commit** — `feat(knowledge): admit zotero: links as external targets`.
 
 ---
 
@@ -87,11 +87,11 @@ Diagnostic codes (each is a test): `TREE_YAML_INVALID` (unparseable / not a mapp
 
 **Steps:**
 
-- [ ] **Step 1: Write failing tests** (node:test style — `import { test } from "node:test"; import assert from "node:assert/strict";`, matching the sibling files): extraction finds the fence and its start line; extraction returns null without one; a valid two-level block compiles with correct ids/noteUrls/nulls; each diagnostic code fires on its malformed input with the right line number; deterministic double-compile deep-equality.
-- [ ] **Step 2: Run — expected FAIL** (`node --import tsx --test .research-loop/tests/knowledge/tree.test.ts`).
-- [ ] **Step 3: Implement `tree.ts`** per the interface. Extraction: scan lines for `` ``` `` fences, matching an info string exactly `qlab-tree`; unclosed fence → treat as absent (the parser's `FENCE_UNCLOSED` already covers it).
-- [ ] **Step 4: Run — expected PASS.**
-- [ ] **Step 5: Commit** — `feat(knowledge): compile the qlab-tree topic block`.
+- [x] **Step 1: Write failing tests** (node:test style — `import { test } from "node:test"; import assert from "node:assert/strict";`, matching the sibling files): extraction finds the fence and its start line; extraction returns null without one; a valid two-level block compiles with correct ids/noteUrls/nulls; each diagnostic code fires on its malformed input with the right line number; deterministic double-compile deep-equality.
+- [x] **Step 2: Run — expected FAIL** (`node --import tsx --test .research-loop/tests/knowledge/tree.test.ts`).
+- [x] **Step 3: Implement `tree.ts`** per the interface. Extraction: scan lines for `` ``` `` fences, matching an info string exactly `qlab-tree`; unclosed fence → treat as absent (the parser's `FENCE_UNCLOSED` already covers it).
+- [x] **Step 4: Run — expected PASS.**
+- [x] **Step 5: Commit** — `feat(knowledge): compile the qlab-tree topic block`.
 
 ---
 
@@ -108,11 +108,11 @@ Diagnostic codes (each is a test): `TREE_YAML_INVALID` (unparseable / not a mapp
 
 **Steps:**
 
-- [ ] **Step 1: Write failing tests** in `graph-validation.test.ts`: a fixture tree with a `qlab-tree` block on `index.qmd` referencing a missing note page fails with `TREE_NOTE_MISSING`; a well-formed block validates clean; the same block on a topic page reports `TREE_BLOCK_MISPLACED`.
-- [ ] **Step 2: Run — expected FAIL.**
-- [ ] **Step 3: Implement.** In `validateGraph`, after the existing per-page loops: for every page, `readFile(page.absolutePath, "utf8")` (the function is already async and already reads sources for other checks — reuse the same read if one exists in scope; otherwise read here), `extractTreeBlock`; block on `id !== "index.qmd"` → `report("TREE_BLOCK_MISPLACED", …)`; block on the root index → `compileTree({...pages: new Set(graph.pages.keys()), sitePath: "/knowledge/"})` and report each diagnostic at its line.
-- [ ] **Step 4: Run graph-validation + full knowledge test dir. Expected: PASS.**
-- [ ] **Step 5: Commit** — `feat(knowledge): validate the topic tree block in knowledge-check`.
+- [x] **Step 1: Write failing tests** in `graph-validation.test.ts`: a fixture tree with a `qlab-tree` block on `index.qmd` referencing a missing note page fails with `TREE_NOTE_MISSING`; a well-formed block validates clean; the same block on a topic page reports `TREE_BLOCK_MISPLACED`.
+- [x] **Step 2: Run — expected FAIL.**
+- [x] **Step 3: Implement.** In `validateGraph`, after the existing per-page loops: for every page, `readFile(page.absolutePath, "utf8")` (the function is already async and already reads sources for other checks — reuse the same read if one exists in scope; otherwise read here), `extractTreeBlock`; block on `id !== "index.qmd"` → `report("TREE_BLOCK_MISPLACED", …)`; block on the root index → `compileTree({...pages: new Set(graph.pages.keys()), sitePath: "/knowledge/"})` and report each diagnostic at its line.
+- [x] **Step 4: Run graph-validation + full knowledge test dir. Expected: PASS.**
+- [x] **Step 5: Commit** — `feat(knowledge): validate the topic tree block in knowledge-check`.
 
 ---
 
@@ -149,11 +149,11 @@ Behavior contract (from the spec): canvas replaces the hidden `pre` whose class 
 
 **Steps:**
 
-- [ ] **Step 1: Write failing tests** for the pure functions only (node:test, plain `import` of the `.js` module): `autoLayout` places a parent left of its children and centres it on them; `effectivePositions` priority order (stored beats authored beats auto); `serializeLayoutYaml` inserts `x:`/`y:` for a node that had none and updates one that had them, round-tripping through `yaml.parse` to deep-equal the expected structure.
-- [ ] **Step 2: Run — expected FAIL** (module missing).
-- [ ] **Step 3: Implement the module** — pure functions first, then `mountTopicTree` (untested by unit tests; exercised by the rendered site and live QA). Keep DOM access exclusively inside `mountTopicTree`.
-- [ ] **Step 4: Run — expected PASS.**
-- [ ] **Step 5: Commit** — `feat(knowledge): add the topic tree canvas runtime`.
+- [x] **Step 1: Write failing tests** for the pure functions only (node:test, plain `import` of the `.js` module): `autoLayout` places a parent left of its children and centres it on them; `effectivePositions` priority order (stored beats authored beats auto); `serializeLayoutYaml` inserts `x:`/`y:` for a node that had none and updates one that had them, round-tripping through `yaml.parse` to deep-equal the expected structure.
+- [x] **Step 2: Run — expected FAIL** (module missing).
+- [x] **Step 3: Implement the module** — pure functions first, then `mountTopicTree` (untested by unit tests; exercised by the rendered site and live QA). Keep DOM access exclusively inside `mountTopicTree`.
+- [x] **Step 4: Run — expected PASS.**
+- [x] **Step 5: Commit** — `feat(knowledge): add the topic tree canvas runtime`.
 
 ---
 
@@ -171,15 +171,15 @@ Behavior contract (from the spec): canvas replaces the hidden `pre` whose class 
 
 **Steps:**
 
-- [ ] **Step 1: Write failing tests** in `quarto-project.test.ts` (follow its existing materialize-fixture helpers): projecting a graph whose index has a valid tree block writes `research-loop-tree.js` containing the compiled JSON (assert a node label appears and the placeholder string does not); the generated `_quarto.yml` contains the `header-includes` script line; a graph **without** a tree block still writes the runtime with data `null` (the runtime no-ops — simpler than conditional injection, one less branch); `assertSafeBaseConfig` accepts the updated committed file and still rejects a stray `pre-render` key.
-- [ ] **Step 2: Run — expected FAIL.**
-- [ ] **Step 3: Implement.**
+- [x] **Step 1: Write failing tests** in `quarto-project.test.ts` (follow its existing materialize-fixture helpers): projecting a graph whose index has a valid tree block writes `research-loop-tree.js` containing the compiled JSON (assert a node label appears and the placeholder string does not); the generated `_quarto.yml` contains the `header-includes` script line; a graph **without** a tree block still writes the runtime with data `null` (the runtime no-ops — simpler than conditional injection, one less branch); `assertSafeBaseConfig` accepts the updated committed file and still rejects a stray `pre-render` key.
+- [x] **Step 2: Run — expected FAIL.**
+- [x] **Step 3: Implement.**
   - `FIXED_BASE_CONFIG.format.html` gains `"header-includes": '<script type="module" src="/knowledge/research-loop-tree.js"></script>'`.
   - `knowledge/_quarto.yml` gains the same key under `format.html` (strict equality holds).
   - In `materializeQuartoProject`, after the theme CSS write: read the index page source (already read in step 1's loop — retain it), `extractTreeBlock` + `compileTree` (diagnostics were already enforced by validation; a failure here throws `QuartoProjectionError` as a belt-and-braces guard), then `writeInto(projectDir, TREE_RUNTIME_FILENAME, runtimeSource.replace("/*__QLAB_TREE_DATA__*/ null", JSON.stringify(tree)))` — `runtimeSource` read from `src/lib/knowledge/tree-runtime.js` next to the module (`new URL("./tree-runtime.js", import.meta.url)`).
   - Stylesheet: `pre.qlab-tree, pre[class*="qlab-tree"], div.sourceCode:has(> pre code.qlab-tree) { display: none; }` plus `.qlab-tree-canvas`, `.qlab-tree-card`, `.qlab-tree-tools` rules using the theme variables.
-- [ ] **Step 4: Run quarto-project tests + the whole knowledge test dir. Expected: PASS.**
-- [ ] **Step 5: Commit** — `feat(knowledge): project the topic tree runtime into the site`.
+- [x] **Step 4: Run quarto-project tests + the whole knowledge test dir. Expected: PASS.**
+- [x] **Step 5: Commit** — `feat(knowledge): project the topic tree runtime into the site`.
 
 ---
 
@@ -195,11 +195,11 @@ Behavior contract (from the spec): canvas replaces the hidden `pre` whose class 
 
 **Steps:**
 
-- [ ] **Step 1: Read `literature/zotero.yml`** and list its collection-key → topic-slug pairs.
-- [ ] **Step 2: Append the block** — one top-level node per Reading-map topic, `label` = the Reading map's link text, `note` = the topic's `index.qmd` path, `zotero` filled only for mapped topics, no coordinates (auto-layout).
-- [ ] **Step 3: Run `make knowledge-check`. Expected: ok.** Fix any diagnostic it raises (that is the feature working).
-- [ ] **Step 4: Render locally** — `make knowledge-preview` (spot-check by fetching the preview URL with curl and confirming the script tag + hidden block are present; interactive behavior is browser QA).
-- [ ] **Step 5: Commit** — `feat(knowledge): add the topic tree block to the index`.
+- [x] **Step 1: Read `literature/zotero.yml`** and list its collection-key → topic-slug pairs.
+- [x] **Step 2: Append the block** — one top-level node per Reading-map topic, `label` = the Reading map's link text, `note` = the topic's `index.qmd` path, `zotero` filled only for mapped topics, no coordinates (auto-layout).
+- [x] **Step 3: Run `make knowledge-check`. Expected: ok.** Fix any diagnostic it raises (that is the feature working).
+- [x] **Step 4: Render locally** — `make knowledge-preview` (spot-check by fetching the preview URL with curl and confirming the script tag + hidden block are present; interactive behavior is browser QA).
+- [x] **Step 5: Commit** — `feat(knowledge): add the topic tree block to the index`.
 
 ---
 
@@ -215,11 +215,11 @@ Behavior contract (from the spec): canvas replaces the hidden `pre` whose class 
 
 **Steps:**
 
-- [ ] **Step 1: Add the failing contract entry** asserting the skill file exists and mentions `` ```qlab-tree ``, `zotero://open-pdf`, `make knowledge-check`, and the rule that the Reading map remains the navigation authority.
-- [ ] **Step 2: Run the agent contract tests — expected FAIL.**
-- [ ] **Step 3: Write `SKILL.md`**: when to use (user asks to change the topic tree, node links, or layout); the full schema with the example block; both `zotero://` forms (`open-pdf/library/items/KEY?page=N`, `select/library/{items,collections}/KEY`, group variant); rules — English labels, `note` must resolve to an existing page or be omitted, run `make knowledge-check` after every edit, preview with `make knowledge-preview`, freeze canvas layouts by pasting the "Copy layout YAML" output over the block, the tree is presentation and the Reading map stays the navigation authority.
-- [ ] **Step 4: Run the contract tests — expected PASS.**
-- [ ] **Step 5: Commit** — `feat(skills): add edit-topic-tree`.
+- [x] **Step 1: Add the failing contract entry** asserting the skill file exists and mentions `` ```qlab-tree ``, `zotero://open-pdf`, `make knowledge-check`, and the rule that the Reading map remains the navigation authority.
+- [x] **Step 2: Run the agent contract tests — expected FAIL.**
+- [x] **Step 3: Write `SKILL.md`**: when to use (user asks to change the topic tree, node links, or layout); the full schema with the example block; both `zotero://` forms (`open-pdf/library/items/KEY?page=N`, `select/library/{items,collections}/KEY`, group variant); rules — English labels, `note` must resolve to an existing page or be omitted, run `make knowledge-check` after every edit, preview with `make knowledge-preview`, freeze canvas layouts by pasting the "Copy layout YAML" output over the block, the tree is presentation and the Reading map stays the navigation authority.
+- [x] **Step 4: Run the contract tests — expected PASS.**
+- [x] **Step 5: Commit** — `feat(skills): add edit-topic-tree`.
 
 ---
 
@@ -251,11 +251,11 @@ export function parseZoteroLink(spec: string): ZoteroDeepLink | null;
 
 **Steps:**
 
-- [ ] **Step 1: Write failing tests.** `zotero-links.test.ts`: parses `zotero://open-pdf/library/items/AB12CD34?page=12` (user lib, page 12), `zotero://open-pdf/groups/451/items/K?page=3` (group), `zotero://select/library/collections/C1`, rejects `zotero://weird/thing`, `https://…`, missing key, non-numeric page. `research-loop-site.test.ts`: with `onZoteroLink` provided, a synthesized `onStateChange` for `zotero://open-pdf/...` cancels the fake request (spy on `cancel`) and forwards the parsed link; an `http://` state change is untouched.
-- [ ] **Step 2: Run — expected FAIL** (`npx vitest run test/zotero-links.test.ts test/research-loop-site.test.ts`).
-- [ ] **Step 3: Implement** parser, view listener (extend the existing `trackBrowserLocation` listener object's `onStateChange` — keep the location tracking intact), plugin wiring in `createWorkbenchView`'s `siteCallbacks` construction (pass `onZoteroLink` through a new `ResearchLoopSiteView` option from `SiteTabView` — thread it via `SiteTabCallbacks.onZoteroLink?`).
-- [ ] **Step 4: Run the plugin suite — expected PASS** (`npx vitest run`).
-- [ ] **Step 5: Commit** — `feat(zotero): handle knowledge-site deep links natively`.
+- [x] **Step 1: Write failing tests.** `zotero-links.test.ts`: parses `zotero://open-pdf/library/items/AB12CD34?page=12` (user lib, page 12), `zotero://open-pdf/groups/451/items/K?page=3` (group), `zotero://select/library/collections/C1`, rejects `zotero://weird/thing`, `https://…`, missing key, non-numeric page. `research-loop-site.test.ts`: with `onZoteroLink` provided, a synthesized `onStateChange` for `zotero://open-pdf/...` cancels the fake request (spy on `cancel`) and forwards the parsed link; an `http://` state change is untouched.
+- [x] **Step 2: Run — expected FAIL** (`npx vitest run test/zotero-links.test.ts test/research-loop-site.test.ts`).
+- [x] **Step 3: Implement** parser, view listener (extend the existing `trackBrowserLocation` listener object's `onStateChange` — keep the location tracking intact), plugin wiring in `createWorkbenchView`'s `siteCallbacks` construction (pass `onZoteroLink` through a new `ResearchLoopSiteView` option from `SiteTabView` — thread it via `SiteTabCallbacks.onZoteroLink?`).
+- [x] **Step 4: Run the plugin suite — expected PASS** (`npx vitest run`).
+- [x] **Step 5: Commit** — `feat(zotero): handle knowledge-site deep links natively`.
 
 ---
 
@@ -263,11 +263,11 @@ export function parseZoteroLink(spec: string): ZoteroDeepLink | null;
 
 **Steps:**
 
-- [ ] **Step 1: Root gates** — `npm run test:unit` (all knowledge/agent/drafts/literature/migration tests), `make knowledge-check`. Expected: clean.
-- [ ] **Step 2: Plugin gate** — `cd integrations/zotero && npm run check && npx vitest run`. Expected: clean (72+ files, all passing).
-- [ ] **Step 3: Build smoke** — `npm run knowledge:build` if Quarto is installed locally (skip with a note if the binary is absent); confirm `public/knowledge/research-loop-tree.js` exists and `index.html` loads it.
-- [ ] **Step 4: Extend the live-QA checklist** in `docs/superpowers/2026-08-06-pdf-embed-spike.md` (or a sibling QA note): click a `zotero://open-pdf` link in an external browser → desktop Zotero opens the page; click it inside the workbench site tab → PDF tab/reader jumps natively (or OS fallback); drag tree nodes, copy layout YAML, paste, re-render.
-- [ ] **Step 5: Commit** — `docs(knowledge): record topic-tree verification and QA handoff`.
+- [x] **Step 1: Root gates** — `npm run test:unit` (all knowledge/agent/drafts/literature/migration tests), `make knowledge-check`. Expected: clean.
+- [x] **Step 2: Plugin gate** — `cd integrations/zotero && npm run check && npx vitest run`. Expected: clean (72+ files, all passing).
+- [x] **Step 3: Build smoke** — `npm run knowledge:build` if Quarto is installed locally (skip with a note if the binary is absent); confirm `public/knowledge/research-loop-tree.js` exists and `index.html` loads it.
+- [x] **Step 4: Extend the live-QA checklist** in `docs/superpowers/2026-08-06-pdf-embed-spike.md` (or a sibling QA note): click a `zotero://open-pdf` link in an external browser → desktop Zotero opens the page; click it inside the workbench site tab → PDF tab/reader jumps natively (or OS fallback); drag tree nodes, copy layout YAML, paste, re-render.
+- [x] **Step 5: Commit** — `docs(knowledge): record topic-tree verification and QA handoff`.
 
 ---
 
