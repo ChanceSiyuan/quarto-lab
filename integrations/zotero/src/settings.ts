@@ -8,8 +8,8 @@ import {
   setPrefString
 } from "./platform";
 import {
-  parseStoredTargetPreferences,
-  type StoredTargetPreferences,
+  decodeStoredTargetPreferences,
+  type StoredTargetPreferencesV2,
 } from "./repository-target";
 
 export type ReasoningEffort =
@@ -25,7 +25,7 @@ export interface ZoteroChatSettings {
   libraryRoot: string;
   /** Display-only compatibility root until all UI consumers move to snapshots. */
   qlabRoot: string;
-  repositoryTargets: StoredTargetPreferences;
+  repositoryTargets: StoredTargetPreferencesV2;
   defaultModel: string;
   reasoningEffort: ReasoningEffort;
   approvalPolicy: string;
@@ -51,9 +51,11 @@ export async function loadSettings(
   rawTargets: RawTargetMigrationInput = readRawTargetMigrationInput(),
 ): Promise<ZoteroChatSettings> {
   const configured = configuredLibraryRoot();
-  const repositoryTargets = parseStoredTargetPreferences(rawTargets.repositoryTargetsRaw);
+  const decodedRepositoryTargets = decodeStoredTargetPreferences(rawTargets.repositoryTargetsRaw);
+  const repositoryTargets = decodedRepositoryTargets.preferences;
+  if (decodedRepositoryTargets.rewrite === "v1-to-v2") saveRepositoryTargets(repositoryTargets);
   const qlabRoot = repositoryTargets.migratedLegacy
-    ? repositoryTargets.active?.canonicalRoot
+    ? (repositoryTargets.active?.kind === "local" ? repositoryTargets.active.canonicalRoot : undefined)
       || repositoryTargets.pendingCandidate?.canonicalRoot
       || ""
     : rawTargets.legacyQLabRoot;
@@ -78,7 +80,7 @@ export function saveQLabRoot(path: string): void {
   setPrefString("qlabRoot", path);
 }
 
-export function saveRepositoryTargets(preferences: StoredTargetPreferences): void {
+export function saveRepositoryTargets(preferences: StoredTargetPreferencesV2): void {
   setPrefString("repositoryTargets", JSON.stringify(preferences));
 }
 

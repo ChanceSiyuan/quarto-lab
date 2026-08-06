@@ -309,14 +309,12 @@ async function mountAIContextEditWorkspace(id: string) {
   document.body.appendChild(host);
   let workspace: any;
   const sidebar = {
-    attachWorkspace: (build: (target: HTMLElement) => any) => {
-      workspace ??= build(host);
+    openEditorTab: () => {
+      workspace ??= plugin.createWorkspaceView(host);
+      workspace.show();
       return workspace;
     },
-    setWorkspaceOpen: (open: boolean) => {
-      if (open) workspace.show();
-      else workspace.hide();
-    },
+    workspace: () => workspace ?? null,
   };
   vi.stubGlobal("PathUtils", {
     join: (...parts: string[]) => parts.join("/").replace(/\/+/gu, "/"),
@@ -755,14 +753,12 @@ describe("AI Context plugin integration", () => {
     document.body.appendChild(host);
     let workspace: any;
     const sidebar = {
-      attachWorkspace: (create: (target: HTMLElement) => any) => {
-        workspace ??= create(host);
+      openEditorTab: () => {
+        workspace ??= plugin.createWorkspaceView(host);
+        workspace.show();
         return workspace;
       },
-      setWorkspaceOpen: (open: boolean) => {
-        if (open) workspace.show();
-        else workspace.hide();
-      },
+      workspace: () => workspace ?? null,
     };
     plugin.selectedWorkbenchEntry.mockReturnValue({ view: sidebar });
     delete plugin.openQmdDocument;
@@ -813,17 +809,15 @@ describe("AI Context plugin integration", () => {
     let workspace: any;
     let workspaceBuilds = 0;
     const sidebar = {
-      attachWorkspace: (build: (target: HTMLElement) => any) => {
+      openEditorTab: () => {
         if (!workspace) {
           workspaceBuilds += 1;
-          workspace = build(host);
+          workspace = plugin.createWorkspaceView(host);
         }
+        workspace.show();
         return workspace;
       },
-      setWorkspaceOpen: (open: boolean) => {
-        if (open) workspace.show();
-        else workspace.hide();
-      },
+      workspace: () => workspace ?? null,
     };
     const writeUTF8 = vi.fn(async () => undefined);
     const makeDirectory = vi.fn(async () => undefined);

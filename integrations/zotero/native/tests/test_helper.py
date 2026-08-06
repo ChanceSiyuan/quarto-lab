@@ -384,6 +384,83 @@ class DaemonTests(unittest.TestCase):
             self.assertEqual(bytes(output), b'{"wrapped":{"ok":true}}\n')
             self.assertEqual(exit_event["exitCode"], 0)
 
+    def test_fixed_raw_no_echo_rejects_arbitrary_argv(self) -> None:
+        ws = WebSocket(self.socket_path, TOKEN)
+        self.addCleanup(ws.close)
+        with tempfile.TemporaryDirectory() as cwd:
+            ws.send_json(
+                {
+                    "type": "spawnRawPty",
+                    "sessionId": "raw-no-echo",
+                    "argv": ["/bin/sh", "-c", "stty -a; exit"],
+                    "cwd": cwd,
+                    "rawNoEcho": True,
+                }
+            )
+            message = ws.recv_json()
+            self.assertEqual(message["type"], "error")
+            self.assertEqual(message["sessionId"], "raw-no-echo")
+            self.assertIn("fixed SSH setup", message["message"])
+
+    def test_fixed_raw_no_echo_accepts_only_codex_ssh_setup_argv(self) -> None:
+        ws = WebSocket(self.socket_path, TOKEN)
+        self.addCleanup(ws.close)
+        with tempfile.TemporaryDirectory() as cwd:
+            invalid = [
+                {
+                    "sessionId": "command-argv-mismatch",
+                    "controlPath": "/tmp/master.sock",
+                    "alias": "qlab-gpu",
+                    "verifiedHelperPath": "/home/alice/.qlab/bin/1.2.3/linux-x86_64-static/qlab-remote",
+                    "command": "/bin/sh",
+                    "argv": [
+                        "/usr/bin/ssh", "-tt", "-S", "/tmp/master.sock", "-o",
+                        "BatchMode=yes", "--", "qlab-gpu",
+                        "'/home/alice/.qlab/bin/1.2.3/linux-x86_64-static/qlab-remote' 'setup' 'codex-device-auth'",
+                    ],
+                },
+                {
+                    "sessionId": "unverified-temp-helper",
+                    "controlPath": "/tmp/master.sock",
+                    "alias": "qlab-gpu",
+                    "verifiedHelperPath": "/tmp/qlab-remote",
+                },
+                {
+                    "sessionId": "mutable-current-helper",
+                    "controlPath": "/tmp/master.sock",
+                    "alias": "qlab-gpu",
+                    "verifiedHelperPath": "/home/alice/.qlab/bin/current/qlab-remote",
+                },
+            ]
+            for request in invalid:
+                ws.send_json(
+                    {
+                        "type": "spawnSshSetup",
+                        "setupAction": "codex-device-auth",
+                        "cwd": cwd,
+                        **request,
+                    }
+                )
+                message = ws.recv_json()
+                self.assertEqual(message["type"], "error")
+                self.assertEqual(message["sessionId"], request["sessionId"])
+                self.assertIn("fixed SSH setup", message["message"])
+
+            ws.send_json(
+                {
+                    "type": "spawnSshSetup",
+                    "setupAction": "codex-device-auth",
+                    "sessionId": "valid-codex-ssh-setup",
+                    "controlPath": "/tmp/missing-master.sock",
+                    "alias": "qlab-gpu",
+                    "verifiedHelperPath": "/home/alice/.qlab/bin/1.2.3/linux-x86_64-static/qlab-remote",
+                    "cwd": cwd,
+                }
+            )
+            message = ws.recv_json()
+            self.assertEqual(message["type"], "spawned", message)
+            self.assertEqual(message["sessionId"], "valid-codex-ssh-setup")
+
     def test_spawn_error_is_scoped_and_does_not_cancel_another_spawn(self) -> None:
         ws = WebSocket(self.socket_path, TOKEN)
         self.addCleanup(ws.close)

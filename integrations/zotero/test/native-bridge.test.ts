@@ -10,6 +10,7 @@ import {
   encodeTerminalInputChunks,
   nativeWebSocketUpgradeRequest,
   validateNativeWebSocketUpgrade,
+  type VerifiedRemoteHelperCommand,
 } from "../src/native-bridge";
 
 function base64(bytes: Uint8Array): string {
@@ -47,6 +48,145 @@ describe("NativeBridge terminal input framing", () => {
     expect(Math.max(...chunks.map((chunk) => Buffer.from(chunk, "base64").length)))
       .toBeLessThanOrEqual(NATIVE_INPUT_CHUNK_BYTES);
     expect(decoded).toEqual(Buffer.from(expected));
+  });
+});
+
+describe("NativeBridge structured process sessions", () => {
+  it("launches an absolute argv as a pipe and exposes bytes, exit, writes, and idempotent close", async () => {
+    const bridge = new NativeBridge("file:///unused/", "test") as any;
+    const sent: unknown[] = [];
+    bridge.socket = {
+      readyState: 1,
+      send(value: string) { sent.push(JSON.parse(value)); },
+    };
+
+    const opening = bridge.openPipeProcess({
+      argv: ["/usr/bin/ssh", "-G", "--", "qlab-gpu"],
+      cwd: "/private",
+    });
+    const spawn = sent[0] as any;
+    bridge.onMessage(JSON.stringify({ type: "spawned", sessionId: spawn.sessionId, pid: 42 }));
+    const session = await opening;
+    const bytes: Uint8Array[] = [];
+    const exits: unknown[] = [];
+    session.onBytes((value: Uint8Array) => bytes.push(value));
+    session.onExit((value: unknown) => exits.push(value));
+    bridge.onMessage(JSON.stringify({
+      type: "output", sessionId: spawn.sessionId, encoding: "base64", data: base64(Uint8Array.of(0, 255, 1)),
+    }));
+    await session.write(Uint8Array.of(9, 8));
+    bridge.onMessage(JSON.stringify({ type: "exit", sessionId: spawn.sessionId, exitCode: 7, signal: null }));
+    await session.close();
+    await session.close();
+
+    expect(spawn).toMatchObject({
+      type: "spawnPipe",
+      argv: ["/usr/bin/ssh", "-G", "--", "qlab-gpu"],
+      cwd: "/private",
+    });
+    expect(bytes).toEqual([Uint8Array.of(0, 255, 1)]);
+    expect(exits).toEqual([{ exitCode: 7, signal: null }]);
+    expect(sent.filter((value: any) => value.type === "input")).toEqual([{
+      type: "input", sessionId: spawn.sessionId, encoding: "base64", data: base64(Uint8Array.of(9, 8)),
+    }]);
+    expect(sent.filter((value: any) => value.type === "close")).toHaveLength(0);
+  });
+
+  it("uses a dedicated raw/no-echo PTY request and keeps that mode out of ordinary spawn options", async () => {
+    const bridge = new NativeBridge("file:///unused/", "test") as any;
+    const sent: any[] = [];
+    bridge.socket = { readyState: 1, send(value: string) { sent.push(JSON.parse(value)); } };
+    const opening = bridge.openSshSetupProcess({
+      kind: "codex-device-auth",
+      argv: [
+        "/usr/bin/ssh", "-tt", "-S", "/private/master.sock", "-o", "BatchMode=yes",
+        "--", "qlab-gpu", "'/home/alice/.qlab/bin/1.2.3/linux-x86_64-static/qlab-remote' 'setup' 'codex-device-auth'" as VerifiedRemoteHelperCommand,
+      ],
+    }, "/private", 24, 90);
+    bridge.onMessage(JSON.stringify({ type: "spawned", sessionId: sent[0].sessionId, pid: 43 }));
+    const session = await opening;
+    session.resize(31, 101);
+
+    expect(sent[0]).toMatchObject({
+      type: "spawnSshSetup",
+      setupAction: "codex-device-auth",
+      controlPath: "/private/master.sock",
+      alias: "qlab-gpu",
+      verifiedHelperPath: "/home/alice/.qlab/bin/1.2.3/linux-x86_64-static/qlab-remote",
+    });
+    expect(sent[0]).not.toHaveProperty("command");
+    expect(sent[0]).not.toHaveProperty("argv");
+    expect(sent[0]).not.toHaveProperty("rawNoEcho");
+    expect(sent[1]).toMatchObject({ type: "resize", rows: 31, cols: 101 });
+    expect("rawNoEcho" in ({ argv: ["/bin/true"], cwd: "/private" } as import("../src/native-bridge").SpawnOptions))
+      .toBe(false);
+  });
+
+  it("rejects an arbitrary command from the dedicated raw/no-echo SSH setup action", async () => {
+    const bridge = new NativeBridge("file:///unused/", "test") as any;
+    bridge.socket = { readyState: 1, send() {} };
+
+    await expect(bridge.openSshSetupProcess({
+      kind: "codex-device-auth",
+      argv: [
+        "/usr/bin/ssh", "-tt", "-S", "/private/master.sock", "-o", "BatchMode=yes",
+        "--", "qlab-gpu", "/bin/sh -c id",
+      ],
+    }, "/private")).rejects.toThrow(/fixed SSH setup action/i);
+  });
+
+  it("rejects non-absolute executables through every structured process entry point", async () => {
+    const bridge = new NativeBridge("file:///unused/", "test") as any;
+    bridge.socket = { readyState: 1, send() {} };
+
+    await expect(bridge.openPipeProcess({ argv: ["ssh", "-G", "host"], cwd: "/private" }))
+      .rejects.toThrow(/absolute executable/i);
+    await expect(bridge.openPtyProcess({ argv: ["ssh", "host"], cwd: "/private" }))
+      .rejects.toThrow(/absolute executable/i);
+    await expect(bridge.openSshSetupProcess({
+      kind: "codex-device-auth",
+      argv: ["ssh", "-tt", "-S", "/control", "-o", "BatchMode=yes", "--", "host", "command"],
+    }, "/private")).rejects.toThrow(/fixed SSH setup action/i);
+    expect(bridge.openRawNoEchoPtyProcess).toBeUndefined();
+  });
+
+  it("replays an exit that races process publication to the first structured-session listener", async () => {
+    const bridge = new NativeBridge("file:///unused/", "test") as any;
+    const sent: any[] = [];
+    bridge.socket = { readyState: 1, send(value: string) { sent.push(JSON.parse(value)); } };
+    const opening = bridge.openPipeProcess({ argv: ["/bin/true"], cwd: "/private" });
+    await Promise.resolve();
+    const sessionId = sent[0].sessionId;
+    bridge.onMessage(JSON.stringify({ type: "spawned", sessionId, pid: 44 }));
+    bridge.onMessage(JSON.stringify({ type: "exit", sessionId, exitCode: 0, signal: null }));
+    const session = await opening;
+    const exits: unknown[] = [];
+
+    session.onExit((exit: unknown) => exits.push(exit));
+
+    expect(exits).toEqual([{ exitCode: 0, signal: null }]);
+  });
+
+  it("shares one pending structured close until the local process exits", async () => {
+    const bridge = new NativeBridge("file:///unused/", "test") as any;
+    const sent: any[] = [];
+    bridge.socket = { readyState: 1, send(value: string) { sent.push(JSON.parse(value)); } };
+    const opening = bridge.openPipeProcess({ argv: ["/bin/sleep", "30"], cwd: "/private" });
+    await Promise.resolve();
+    const sessionId = sent[0].sessionId;
+    bridge.onMessage(JSON.stringify({ type: "spawned", sessionId, pid: 45 }));
+    const session = await opening;
+    let closed = false;
+
+    const first = session.close();
+    const second = session.close();
+    expect(second).toBe(first);
+    const closing = Promise.all([first, second]).then(() => { closed = true; });
+    await Promise.resolve();
+    expect(closed).toBe(false);
+    bridge.onMessage(JSON.stringify({ type: "exit", sessionId, exitCode: null, signal: 15 }));
+    await closing;
+    expect(closed).toBe(true);
   });
 });
 

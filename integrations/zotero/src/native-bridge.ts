@@ -7,12 +7,49 @@ import {
 } from "./platform";
 
 export interface SpawnOptions {
-  argv: string[];
+  argv: readonly string[];
   cwd: string;
   env?: Record<string, string>;
   rows?: number;
   cols?: number;
 }
+
+export type NativeProcessExit = Readonly<{
+  exitCode: number | null;
+  signal: number | null;
+}>;
+
+export interface NativeProcessSession {
+  readonly sessionId: string;
+  write(bytes: Uint8Array): Promise<void>;
+  onBytes(listener: (bytes: Uint8Array) => void): () => void;
+  onExit(listener: (exit: NativeProcessExit) => void): () => void;
+  close(): Promise<void>;
+}
+
+export interface NativePtyProcessSession extends NativeProcessSession {
+  resize(rows: number, cols: number): void;
+}
+
+export type VerifiedRemoteHelperCommand = string & {
+  readonly __verifiedRemoteHelperCommand: unique symbol;
+};
+
+export type NativeSshSetupAction =
+  | Readonly<{
+    kind: "accept-host-key";
+    argv: readonly [
+      "/usr/bin/ssh", "-tt", "-o", "BatchMode=no", "-o", "ControlMaster=no",
+      "--", string, "/bin/true",
+    ];
+  }>
+  | Readonly<{
+    kind: "codex-device-auth";
+    argv: readonly [
+      "/usr/bin/ssh", "-tt", "-S", string, "-o", "BatchMode=yes", "--",
+      string, VerifiedRemoteHelperCommand,
+    ];
+  }>;
 
 export type BridgeEvent =
   | { type: "spawned"; sessionId: string; pid: number }
@@ -441,7 +478,10 @@ export class UnixWebSocket {
 }
 
 export function encodeTerminalInputChunks(data: string): string[] {
-  const bytes = new TextEncoder().encode(data);
+  return encodeNativeInputChunks(new TextEncoder().encode(data));
+}
+
+function encodeNativeInputChunks(bytes: Uint8Array): string[] {
   const chunks: string[] = [];
   for (let offset = 0; offset < bytes.length; offset += NATIVE_INPUT_CHUNK_BYTES) {
     const chunk = bytes.subarray(offset, offset + NATIVE_INPUT_CHUNK_BYTES);
@@ -450,6 +490,86 @@ export function encodeTerminalInputChunks(data: string): string[] {
     chunks.push(btoa(binary));
   }
   return chunks;
+}
+
+function decodeNativeBytes(data: string): Uint8Array {
+  const binary = atob(data);
+  return Uint8Array.from(binary, (character) => character.charCodeAt(0));
+}
+
+class BridgeProcessSession implements NativePtyProcessSession {
+  private readonly bytesListeners = new Set<(bytes: Uint8Array) => void>();
+  private readonly exitListeners = new Set<(exit: NativeProcessExit) => void>();
+  private readonly removeBridgeListener: () => void;
+  private closed = false;
+  private exited = false;
+  private exitValue: NativeProcessExit | null = null;
+  private readonly exitPromise: Promise<void>;
+  private closePromise: Promise<void> | null = null;
+  private resolveExit!: () => void;
+
+  constructor(
+    readonly sessionId: string,
+    private readonly bridge: NativeBridge,
+    private readonly pty: boolean,
+  ) {
+    this.exitPromise = new Promise<void>((resolve) => { this.resolveExit = resolve; });
+    this.removeBridgeListener = bridge.onEvent((event) => {
+      if (!("sessionId" in event) || event.sessionId !== sessionId) return;
+      if (event.type === "output") {
+        const bytes = decodeNativeBytes(event.data);
+        for (const listener of [...this.bytesListeners]) listener(bytes);
+      }
+      else if (event.type === "exit") {
+        this.exited = true;
+        this.removeBridgeListener();
+        const exit = { exitCode: event.exitCode, signal: event.signal };
+        this.exitValue = exit;
+        this.resolveExit();
+        for (const listener of [...this.exitListeners]) listener(exit);
+      }
+    });
+  }
+
+  async write(bytes: Uint8Array): Promise<void> {
+    if (this.closed || this.exited) throw new Error("Local process session is closed");
+    this.bridge.inputBytes(this.sessionId, bytes);
+  }
+
+  onBytes(listener: (bytes: Uint8Array) => void): () => void {
+    this.bytesListeners.add(listener);
+    return () => this.bytesListeners.delete(listener);
+  }
+
+  onExit(listener: (exit: NativeProcessExit) => void): () => void {
+    if (this.exitValue) {
+      listener(this.exitValue);
+      return () => {};
+    }
+    this.exitListeners.add(listener);
+    return () => this.exitListeners.delete(listener);
+  }
+
+  resize(rows: number, cols: number): void {
+    if (!this.pty) throw new Error("Pipe process sessions cannot be resized");
+    if (this.closed || this.exited) throw new Error("Local process session is closed");
+    this.bridge.resize(this.sessionId, rows, cols);
+  }
+
+  close(): Promise<void> {
+    if (this.closePromise) return this.closePromise;
+    this.closed = true;
+    if (!this.exited) this.bridge.closeSession(this.sessionId);
+    else this.removeBridgeListener();
+    this.closePromise = this.exitPromise;
+    return this.closePromise;
+  }
+
+  abandonFailedOpen(): void {
+    this.closed = true;
+    this.removeBridgeListener();
+    this.resolveExit();
+  }
 }
 
 export class NativeBridge {
@@ -464,6 +584,7 @@ export class NativeBridge {
   private helperStopping = false;
   private stopping = false;
   private lifecycle = 0;
+  private nextStructuredSession = 0;
   private startPromise: Promise<void> | null = null;
   private listeners = new Set<BridgeListener>();
   /** Sessions acknowledged by the helper and not yet followed by an exit. */
@@ -595,6 +716,115 @@ export class NativeBridge {
     return this.spawnWithType("spawnPipe", sessionId, options);
   }
 
+  async openPipeProcess(options: SpawnOptions): Promise<NativeProcessSession> {
+    return this.openProcess("spawnPipe", options, false);
+  }
+
+  async openPtyProcess(options: SpawnOptions): Promise<NativePtyProcessSession> {
+    return this.openProcess("spawn", options, true);
+  }
+
+  async openSshSetupProcess(
+    action: NativeSshSetupAction,
+    cwd: string,
+    rows = 24,
+    cols = 90,
+  ): Promise<NativePtyProcessSession> {
+    if (!this.validSshSetupAction(action)) {
+      throw new Error("Invalid fixed SSH setup action");
+    }
+    if (action.kind === "codex-device-auth") {
+      return this.openFixedSshSetupProcess(action, cwd, rows, cols);
+    }
+    return this.openProcess(
+      "spawn",
+      { argv: action.argv, cwd, rows, cols },
+      true,
+    );
+  }
+
+  private validSshSetupAction(action: NativeSshSetupAction): boolean {
+    const argv: readonly string[] = action.argv;
+    if (action.kind === "accept-host-key") {
+      return argv.length === 9 && argv[0] === "/usr/bin/ssh" && argv[1] === "-tt"
+        && argv[2] === "-o" && argv[3] === "BatchMode=no" && argv[4] === "-o"
+        && argv[5] === "ControlMaster=no" && argv[6] === "--"
+        && /^[^\s*?!\[\]]+$/u.test(argv[7] || "") && argv[8] === "/bin/true";
+    }
+    return argv.length === 9 && argv[0] === "/usr/bin/ssh" && argv[1] === "-tt"
+      && argv[2] === "-S" && Boolean(argv[3]?.startsWith("/")) && argv[4] === "-o"
+      && argv[5] === "BatchMode=yes" && argv[6] === "--"
+      && /^[^\s*?!\[\]]+$/u.test(argv[7] || "")
+      && this.verifiedHelperPathFromCommand(argv[8] || "") !== null;
+  }
+
+  private verifiedHelperPathFromCommand(command: string): string | null {
+    const suffix = " 'setup' 'codex-device-auth'";
+    if (!command.endsWith(suffix)) return null;
+    const quotedPath = command.slice(0, -suffix.length);
+    if (quotedPath.length < 3 || quotedPath[0] !== "'" || quotedPath.at(-1) !== "'") {
+      return null;
+    }
+    const path = quotedPath.slice(1, -1).replaceAll(`'"'"'`, "'");
+    const canonicalQuote = `'${path.replaceAll("'", `'"'"'`)}'`;
+    const versionedHelper = /^(?:\/root|\/home\/[A-Za-z0-9._-]+)\/\.qlab\/bin\/\d+\.\d+\.\d+(?:[-+][A-Za-z0-9.-]+)?\/(?:linux-x86_64-static|linux-aarch64-static)\/qlab-remote$/u;
+    return canonicalQuote === quotedPath && versionedHelper.test(path) ? path : null;
+  }
+
+  private async openFixedSshSetupProcess(
+    action: Extract<NativeSshSetupAction, { kind: "codex-device-auth" }>,
+    cwd: string,
+    rows: number,
+    cols: number,
+  ): Promise<BridgeProcessSession> {
+    const sessionId = `process-${++this.nextStructuredSession}`;
+    const session = new BridgeProcessSession(sessionId, this, true);
+    try {
+      const helperPath = this.verifiedHelperPathFromCommand(action.argv[8]);
+      if (!helperPath) throw new Error("Invalid fixed SSH setup action");
+      const pending = this.registerPendingSpawn(sessionId);
+      try {
+        this.send({
+          type: "spawnSshSetup",
+          setupAction: "codex-device-auth",
+          sessionId,
+          controlPath: action.argv[3],
+          alias: action.argv[7],
+          verifiedHelperPath: helperPath,
+          cwd,
+          rows,
+          cols,
+        });
+      }
+      catch (error) {
+        this.rejectSpawn(sessionId, error instanceof Error ? error : new Error(String(error)));
+      }
+      await pending;
+      return session;
+    }
+    catch (error) {
+      session.abandonFailedOpen();
+      throw error;
+    }
+  }
+
+  private async openProcess(
+    type: "spawn" | "spawnPipe",
+    options: SpawnOptions,
+    pty: boolean,
+  ): Promise<BridgeProcessSession> {
+    const sessionId = `process-${++this.nextStructuredSession}`;
+    const session = new BridgeProcessSession(sessionId, this, pty);
+    try {
+      await this.spawnWithType(type, sessionId, options);
+      return session;
+    }
+    catch (error) {
+      session.abandonFailedOpen();
+      throw error;
+    }
+  }
+
   private async spawnWithType(
     type: "spawn" | "spawnPipe",
     sessionId: string,
@@ -607,18 +837,7 @@ export class NativeBridge {
     if (!options.argv.length || !options.argv[0]?.startsWith("/")) {
       throw new Error("Terminal command must use an absolute executable path");
     }
-    if (this.pendingSpawns.has(sessionId) || this.liveSessions.has(sessionId)) {
-      throw new Error("Terminal session id is already in use");
-    }
-    this.outputDecoders.set(sessionId, new TextDecoder());
-    const promise = new Promise<void>((resolve, reject) => {
-      const timer = setTimeout(() => {
-        this.pendingSpawns.delete(sessionId);
-        this.outputDecoders.delete(sessionId);
-        reject(new Error("Timed out while starting the local process"));
-      }, 10_000);
-      this.pendingSpawns.set(sessionId, { resolve, reject, timer });
-    });
+    const promise = this.registerPendingSpawn(sessionId);
     try {
       this.send({
         type,
@@ -627,7 +846,7 @@ export class NativeBridge {
         cwd: options.cwd,
         env: options.env || {},
         rows: options.rows || 24,
-        cols: options.cols || 90
+        cols: options.cols || 90,
       });
     }
     catch (error) {
@@ -639,8 +858,33 @@ export class NativeBridge {
     return promise;
   }
 
+  private registerPendingSpawn(sessionId: string): Promise<void> {
+    this.requireSocket();
+    if (!/^[A-Za-z0-9._:-]{1,64}$/.test(sessionId)) {
+      throw new Error("Invalid terminal session id");
+    }
+    if (this.pendingSpawns.has(sessionId) || this.liveSessions.has(sessionId)) {
+      throw new Error("Terminal session id is already in use");
+    }
+    this.outputDecoders.set(sessionId, new TextDecoder());
+    return new Promise<void>((resolve, reject) => {
+      const timer = setTimeout(() => {
+        this.pendingSpawns.delete(sessionId);
+        this.outputDecoders.delete(sessionId);
+        reject(new Error("Timed out while starting the local process"));
+      }, 10_000);
+      this.pendingSpawns.set(sessionId, { resolve, reject, timer });
+    });
+  }
+
   input(sessionId: string, data: string): void {
     for (const chunk of encodeTerminalInputChunks(data)) {
+      this.send({ type: "input", sessionId, encoding: "base64", data: chunk });
+    }
+  }
+
+  inputBytes(sessionId: string, bytes: Uint8Array): void {
+    for (const chunk of encodeNativeInputChunks(bytes)) {
       this.send({ type: "input", sessionId, encoding: "base64", data: chunk });
     }
   }
@@ -659,8 +903,7 @@ export class NativeBridge {
   }
 
   decodeOutput(sessionId: string, data: string): string {
-    const binary = atob(data);
-    const bytes = Uint8Array.from(binary, (character) => character.charCodeAt(0));
+    const bytes = decodeNativeBytes(data);
     let decoder = this.outputDecoders.get(sessionId);
     if (!decoder) {
       decoder = new TextDecoder();

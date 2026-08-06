@@ -19,15 +19,17 @@ import {
   prepareRepositoryTargetStartup,
 } from "../src/plugin";
 import type { ReaderContext } from "../src/reader-context";
-import type {
-  LocalRepositoryInspection,
-  RepositoryTargetSnapshot,
-  ResolvedLocalRepositoryTarget,
-  StoredTargetPreferences,
+import {
+  capabilitiesFor,
+  type LocalRepositoryInspection,
+  type RepositoryTargetSnapshot,
+  type ResolvedRepositoryTarget,
+  type ResolvedLocalRepositoryTarget,
+  type ResolvedSshRepositoryTarget,
+  type StoredTargetPreferences,
 } from "../src/repository-target";
-
 const EMPTY_TARGET_PREFERENCES: StoredTargetPreferences = {
-  version: 1,
+  version: 2,
   active: null,
   pendingCandidate: null,
   legacyUnassigned: [],
@@ -48,8 +50,30 @@ function startupTarget(
   };
 }
 
+function startupSshTarget(): ResolvedSshRepositoryTarget {
+  return {
+    kind: "ssh",
+    sshProfile: "qlab-gpu",
+    root: "/srv/research-loop",
+    canonicalRoot: "/srv/research-loop",
+    acceptedHostKeyFingerprint: "SHA256:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+    endpointId: "ssh:qlab-gpu",
+    hostInstanceId: "host:qlab-gpu",
+    repositoryUuid: "11111111-1111-4111-8111-111111111111",
+    repositoryId: "a".repeat(64),
+    targetId: "b".repeat(64),
+  };
+}
+
+function startupSnapshot(
+  target: ResolvedLocalRepositoryTarget = startupTarget(),
+  targetEpoch = 1,
+): RepositoryTargetSnapshot {
+  return { target, targetEpoch, capabilities: capabilitiesFor(target) };
+}
+
 function startupPreferences(
-  active: ResolvedLocalRepositoryTarget | null,
+  active: ResolvedRepositoryTarget | null,
   migratedLegacy = true,
 ): StoredTargetPreferences {
   return {
@@ -187,6 +211,18 @@ function targetStartupHarness(options: {
 }
 
 describe("repository target startup", () => {
+  it("leaves a stored SSH expectation inactive without consulting the local resolver", async () => {
+    const h = targetStartupHarness({ preferences: startupPreferences(startupSshTarget()) });
+
+    const prepared = await prepareRepositoryTargetStartup(h.deps);
+
+    expect(prepared.activeSnapshot).toBeNull();
+    expect(prepared.settings.repositoryTargets.active?.kind).toBe("ssh");
+    expect(h.calls).toEqual(["raw", "sessions", "settings"]);
+    expect(h.inspect).not.toHaveBeenCalled();
+    expect(h.published).toEqual([]);
+  });
+
   it("freshly resolves a migrated target before publishing it", async () => {
     const h = targetStartupHarness();
 
@@ -203,7 +239,7 @@ describe("repository target startup", () => {
       "inspect:/legacy",
       "publish",
     ]);
-    expect(prepared.activeSnapshot).toEqual({ target: startupTarget(), targetEpoch: 1 });
+    expect(prepared.activeSnapshot).toEqual(startupSnapshot());
     expect(prepared.settings.repositoryTargets.migratedLegacy).toBe(true);
     expect(h.records()[0]).toMatchObject({
       threadId: "legacy-thread",
@@ -243,13 +279,13 @@ describe("repository target startup", () => {
     try {
       await expect(plugin.activateRepositoryTarget("/chosen")).resolves.toBe("/chosen");
       expect(plugin.codex.stageRepositoryTarget).toHaveBeenCalledWith(
-        { target, targetEpoch: 1 },
+        startupSnapshot(target),
         expect.any(AbortSignal),
       );
       expect(plugin.codex.commitRepositoryTarget).toHaveBeenCalledWith(staged);
       expect(plugin.settings.qlabRoot).toBe("/chosen");
       expect(plugin.settings.repositoryTargets.active).toEqual(target);
-      expect(plugin.activeRepositoryTarget).toEqual({ target, targetEpoch: 1 });
+      expect(plugin.activeRepositoryTarget).toEqual(startupSnapshot(target));
       expect(setStringPref).toHaveBeenCalledWith(
         "extensions.zotkit.qlabRoot",
         "/chosen",
@@ -320,9 +356,9 @@ describe("repository target startup", () => {
       "raw", "sessions", "settings", "resolver", "inspect:/legacy", "publish",
       "factory", "mainSite", "terminal", "codex",
     ]);
-    expect(started.prepared.activeSnapshot).toEqual({ target: active, targetEpoch: 1 });
+    expect(started.prepared.activeSnapshot).toEqual(startupSnapshot(active));
     expect(started.codex.snapshot).toBe(h.published[0]);
-    expect(h.published).toEqual([{ target: active, targetEpoch: 1 }]);
+    expect(h.published).toEqual([startupSnapshot(active)]);
   });
 
   it("keeps targetless startup targetless without consulting a resolver", async () => {
@@ -360,10 +396,7 @@ describe("repository target startup", () => {
       "raw", "sessions", "settings", "resolver", "inspect:/chosen",
       "saveRepositoryTargets", "inspect:/chosen", "publish",
     ]);
-    expect(prepared.activeSnapshot).toEqual({
-      target: startupTarget("/chosen"),
-      targetEpoch: 1,
-    });
+    expect(prepared.activeSnapshot).toEqual(startupSnapshot(startupTarget("/chosen")));
     expect(prepared.settings.qlabRoot).toBe("/chosen");
     expect(prepared.settings.repositoryTargets).toMatchObject({
       active: startupTarget("/chosen"),
@@ -436,7 +469,7 @@ describe("repository target startup", () => {
 
     const started = await h.construct();
 
-    const snapshot = { target: startupTarget(), targetEpoch: 1 };
+    const snapshot = startupSnapshot();
     expect(h.calls).toEqual([
       "raw", "sessions", "settings", "resolver", "inspect:/legacy", "saveSessionRecords",
       "saveRepositoryTargets", "inspect:/legacy", "publish", "factory", "mainSite", "terminal", "codex",
@@ -883,7 +916,7 @@ describe("Zotkit Reader terminal state", () => {
     window.dispatchEvent(new KeyboardEvent("keydown", { key: "j", metaKey: true, shiftKey: true, bubbles: true }));
     await Promise.resolve();
 
-    expect(plugin.openWorkbenchTab).toHaveBeenCalledWith(window);
+    expect(plugin.openWorkbenchTab).toHaveBeenCalledWith(window, { arrangement: "pdf-chat" });
     expect(plugin.openChatWithSelection).toHaveBeenNthCalledWith(1, true);
     expect(plugin.openChatWithSelection).toHaveBeenNthCalledWith(2, false);
     expect(plugin.openWorkbenchTerminal).toHaveBeenCalledWith(window);
@@ -2004,8 +2037,10 @@ describe("Region screenshots (Design 3)", () => {
         reader: { id: "reader-1" },
       });
 
-      expect(appended).toHaveLength(2);
-      const regionButton = appended[1] as HTMLButtonElement;
+      expect(appended).toHaveLength(3);
+      const editorButton = appended[1] as HTMLButtonElement;
+      expect(editorButton.title).toBe("Open PDF beside the QMD editor");
+      const regionButton = appended[2] as HTMLButtonElement;
       expect(regionButton.title).toBe("Capture Region Screenshot (QLab)");
       expect(regionButton.getAttribute("aria-label")).toBe("Capture Region Screenshot (QLab)");
       expect(regionButton.querySelector("img")?.alt).toBe("");

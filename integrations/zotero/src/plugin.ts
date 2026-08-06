@@ -1,5 +1,6 @@
 import { NativeBridge } from "./native-bridge";
 import readerToolbarIcon from "../assets/icon.svg";
+import readerEditorIcon from "../assets/editor-split.svg";
 import regionCaptureIcon from "../assets/region-capture.svg";
 import {
   CodexService,
@@ -43,8 +44,13 @@ import {
   WorkbenchTabManager,
   isDedicatedWorkbenchWindow,
   type WorkbenchTabData,
+  type WorkbenchTabView,
 } from "./workbench-tab";
 import { StandaloneWorkbenchManager } from "./standalone-workbench";
+import { WorkbenchView } from "./workbench-view";
+import { createPdfBrowserViewer, PdfReaderView, type PdfEmbedHandle } from "./pdf-tab";
+import type { TabDescriptor as WorkbenchTabDescriptor } from "./workbench-layout";
+import type { TabContentProvider as WorkbenchTabProvider } from "./workbench-shell";
 import {
   ConversationPaperRegistry,
   type ConversationPaper,
@@ -93,6 +99,7 @@ import {
 import { LocalRepositoryTargetResolver } from "./local-repository-target-resolver";
 import { RepositoryTargetController } from "./repository-target-controller";
 import {
+  capabilitiesFor,
   migrateLegacy,
   type LocalRepositoryCandidate,
   type LegacyMigrationOutcome,
@@ -172,9 +179,11 @@ import {
   logError,
   PANE_ID,
   PLUGIN_ID,
+  prefInt,
   prefString,
   profilePath,
   randomID,
+  setPrefInt,
   setPrefString,
 } from "./platform";
 
@@ -367,6 +376,10 @@ async function resolveInitialRepositoryTarget(
 ): Promise<RepositoryTargetSnapshot | null> {
   const stored = preferences.active;
   if (!stored) return null;
+  // SSH persistence is only a restoration expectation. Task 5 supplies the
+  // independent SSH re-resolution that may activate it; never send its root
+  // to a local resolver in the meantime.
+  if (stored.kind === "ssh") return null;
   const inspected = await resolver().inspect(stored.canonicalRoot);
   if (inspected.kind !== "local"
       || inspected.kind !== stored.kind
@@ -379,6 +392,7 @@ async function resolveInitialRepositoryTarget(
   return Object.freeze({
     target: Object.freeze({ ...inspected }),
     targetEpoch: 1,
+    capabilities: capabilitiesFor(inspected),
   });
 }
 
@@ -866,7 +880,8 @@ export class ZoteroChatPlugin {
       if (!event.shiftKey && key === "i") {
         event.preventDefault();
         event.stopPropagation();
-        void this.openWorkbenchTab(win).catch((error) => this.reportError(error));
+        void this.openWorkbenchTab(win, { arrangement: "pdf-chat" })
+          .catch((error) => this.reportError(error));
         return;
       }
       if (!event.shiftKey && key === "l") {
@@ -1009,10 +1024,27 @@ export class ZoteroChatPlugin {
       button.appendChild(icon);
       button.addEventListener("click", () => {
         void this.acceptReaderHook(event).then(async () => {
-          await this.openWorkbenchTab();
+          await this.openWorkbenchTab(undefined, { arrangement: "pdf-chat" });
         }).catch((error) => this.reportError(error));
       });
       append(button);
+
+      const editorButton = doc.createElement("button");
+      editorButton.type = "button";
+      editorButton.title = "Open PDF beside the QMD editor";
+      editorButton.setAttribute("aria-label", editorButton.title);
+      editorButton.style.cssText = "display:grid;place-items:center;width:32px;height:32px;border:0;border-radius:8px;background:transparent;cursor:pointer;padding:5px";
+      const editorIcon = doc.createElement("img");
+      editorIcon.src = readerEditorIcon;
+      editorIcon.alt = "";
+      editorIcon.style.cssText = "width:22px;height:22px";
+      editorButton.appendChild(editorIcon);
+      editorButton.addEventListener("click", () => {
+        void this.acceptReaderHook(event).then(async () => {
+          await this.openWorkbenchTab(undefined, { arrangement: "pdf-editor" });
+        }).catch((error) => this.reportError(error));
+      });
+      append(editorButton);
 
       const regionButton = doc.createElement("button");
       regionButton.type = "button";
@@ -1559,7 +1591,7 @@ export class ZoteroChatPlugin {
     this.activatingAIContext = true;
     try {
       await this.openWorkbenchTab(win);
-      const view = this.selectedWorkbenchEntry(win)?.view as SidebarView | undefined;
+      const view = this.selectedWorkbenchEntry(win)?.view as WorkbenchView | undefined;
       if (!view) throw new Error("QLab Workbench was not opened");
       if (!await this.openQmdDocument(view, document.relativePath, win, { agentCopy: "on-demand" })) {
         throw new Error("The AI Context QMD could not be opened");
@@ -1861,7 +1893,54 @@ export class ZoteroChatPlugin {
     return entry;
   }
 
-  private createWorkbenchView(host: HTMLElement, win: Window, tabID: string): SidebarView {
+  private createWorkbenchView(host: HTMLElement, win: Window, tabID: string): WorkbenchView {
+    let workbench: WorkbenchView | null = null;
+    workbench = new WorkbenchView(host, {
+      createChat: (chatHost) => this.createWorkbenchChat(chatHost, win, tabID, () => workbench),
+      siteCallbacks: {
+        checkSite: () => this.mainSite.isAvailable(),
+        checkRepository: () => this.mainSite.repositoryState(this.settings?.qlabRoot || ""),
+        deploy: async (onProgress) => {
+          let root = this.settings?.qlabRoot || "";
+          if (!root) root = await this.chooseQLabRoot(win) || "";
+          await this.mainSite.deploy(root, onProgress);
+          await this.activateRepositoryTarget(root);
+        },
+        chooseRepository: async () => {
+          await this.chooseQLabRoot(win);
+        },
+        onOpenDocument: (relativePath) => {
+          if (workbench) void this.openQmdDocument(workbench, relativePath, win);
+        },
+      },
+      createWorkspace: (workspaceHost) => this.createWorkspaceView(workspaceHost),
+      createPdfProvider: (tab) => this.createPdfProvider(tab, win, () => workbench),
+      initialSplitRatio: prefInt("splitRatio", 40),
+      onSplitRatioChange: (ratio) => setPrefInt("splitRatio", ratio),
+      onLayoutChanged: () => {
+        if (!workbench) return;
+        Zotero.Session?.debounceSave?.();
+        const entry = this.workbenchTabs?.entries(win)
+          .find((candidate) => candidate.id === tabID);
+        if (entry && entry.view === workbench) {
+          this.workbenchTabs.update(
+            win,
+            tabID,
+            { ...entry.data, layout: workbench.layoutData() },
+            false,
+          );
+        }
+      },
+    });
+    return workbench;
+  }
+
+  private createWorkbenchChat(
+    host: HTMLElement,
+    win: Window,
+    tabID: string,
+    workbench: () => WorkbenchView | null,
+  ): SidebarView {
     let view!: SidebarView;
     view = new SidebarView(host, {
       onSend: (text) => void this.sendChat(text).catch((error) => this.reportError(error)),
@@ -1884,7 +1963,8 @@ export class ZoteroChatPlugin {
       onLogin: () => void this.codex.login().catch((error) => this.reportError(error)),
       onLogout: () => void this.codex.logout().catch((error) => this.reportError(error)),
       onOpenTerminal: () => {
-        void this.toggleWorkbenchTerminal(view, win).catch((error) => this.reportError(error));
+        const target = workbench();
+        if (target) void this.toggleWorkbenchTerminal(target, win).catch((error) => this.reportError(error));
       },
       onOpenWorkbench: () => {
         if (tabID === STANDALONE_WORKBENCH_ID) this.standaloneWorkbench.focus();
@@ -1927,7 +2007,6 @@ export class ZoteroChatPlugin {
       onChooseQLabRoot: async () => {
         try {
           await this.chooseQLabRoot(win);
-          await view.refreshMainSiteStatus();
         }
         catch (error) {
           this.reportError(error);
@@ -1952,15 +2031,6 @@ export class ZoteroChatPlugin {
         void this.openConversationPDFPage(reference, isDedicatedWorkbenchWindow(win))
           .catch((error) => this.reportError(error));
       },
-      onCheckMainSite: () => this.mainSite.isAvailable(),
-      onCheckMainSiteRepository: () => this.mainSite.repositoryState(this.settings?.qlabRoot || ""),
-      onDeployMainSite: async (onProgress) => {
-        let root = this.settings?.qlabRoot || "";
-        if (!root) root = await this.chooseQLabRoot(win) || "";
-        await this.mainSite.deploy(root, onProgress);
-        await this.activateRepositoryTarget(root);
-      },
-      onOpenDocument: (relativePath) => void this.openQmdDocument(view, relativePath, win),
     }, { surface: "workbench" });
     return view;
   }
@@ -1972,7 +2042,7 @@ export class ZoteroChatPlugin {
    * because most sessions never open one.
    */
   private async openQmdDocument(
-    sidebar: SidebarView,
+    view: WorkbenchView,
     relativePath: string,
     win = Zotero.getMainWindow(),
     options: QmdWorkspaceOpenOptions = {},
@@ -1981,8 +2051,107 @@ export class ZoteroChatPlugin {
     if (!root) root = await this.chooseQLabRoot(win) || "";
     if (!root) return false;
 
-    const workspace = sidebar.attachWorkspace((host: HTMLElement) => new QmdWorkspaceView(host, {
-      onBack: () => sidebar.setWorkspaceOpen(false),
+    view.openEditorTab();
+    const workspace = view.workspace();
+    if (!workspace) return false;
+    workspace.repoRootHint = root;
+    if (!await workspace.open(relativePath, options)) return false;
+    workspace.syncAgentChanges({
+      activeTurnId: this.codex.state.activeTurnId,
+      running: this.codex.state.running,
+      diffs: this.codex.getActiveDiffs(),
+    });
+    return true;
+  }
+
+  private createPdfProvider(
+    tab: WorkbenchTabDescriptor,
+    win: Window,
+    workbench: () => WorkbenchView | null,
+  ): WorkbenchTabProvider {
+    const payload = tab.payload || { itemID: 0, attachmentKey: tab.id };
+    return new PdfReaderView(win.document, payload, {
+      resolveFileURI: async (itemID) => {
+        try {
+          const item = Zotero.Items?.get?.(itemID);
+          const path = await item?.getFilePathAsync?.();
+          return path ? Zotero.File.pathToFileURI(path) : null;
+        }
+        catch {
+          return null;
+        }
+      },
+      createNativeEmbed: (host, itemID, page) => this.createNativeReaderEmbed(host, itemID, page),
+      createBrowserViewer: (host, fileURI, page) => createPdfBrowserViewer(host, fileURI, page),
+      onRequestChoosePaper: () => {
+        void this.chooseWorkbenchPaper(win, null).catch((error) => this.reportError(error));
+      },
+      onPageChange: () => {
+        const target = workbench();
+        if (!target) return;
+        const entry = this.workbenchTabs?.entries(win)
+          .find((candidate) => candidate.view === target);
+        if (entry) {
+          this.workbenchTabs.update(
+            win,
+            entry.id,
+            { ...entry.data, layout: target.layoutData() },
+            false,
+          );
+        }
+        Zotero.Session?.debounceSave?.();
+      },
+    });
+  }
+
+  /**
+   * The embedded-native-reader spike: Zotero 7's item-pane attachment preview
+   * element hosts a real reader. Every step is guarded — any missing API
+   * returns null and the caller falls back to the pdf.js browser viewer.
+   */
+  private async createNativeReaderEmbed(
+    host: HTMLElement,
+    itemID: number,
+    page?: number,
+  ): Promise<PdfEmbedHandle | null> {
+    try {
+      const doc = host.ownerDocument;
+      const item = Zotero.Items?.get?.(itemID);
+      if (!item) return null;
+      const preview = doc.createElement("attachment-preview") as HTMLElement & {
+        item?: unknown;
+        render?(): Promise<void> | void;
+        _reader?: { navigate?(location: { pageIndex: number }): void };
+      };
+      // A custom element that never registered upgrades to a plain element
+      // with no rendering behaviour; detect that before committing to it.
+      if (typeof preview.render !== "function" && !("item" in preview)) {
+        debug("pdf-embed spike: attachment-preview element is unavailable");
+        return null;
+      }
+      preview.classList.add("zc-pdf-native-preview");
+      preview.item = item;
+      host.appendChild(preview);
+      await preview.render?.();
+      if (!preview.isConnected) return null;
+      debug("pdf-embed spike: attachment-preview mounted");
+      const navigate = (target: number) => {
+        preview._reader?.navigate?.({ pageIndex: Math.max(0, target - 1) });
+      };
+      if (page) navigate(page);
+      return {
+        goToPage: navigate,
+        dispose: () => preview.remove(),
+      };
+    }
+    catch (error) {
+      debug(`pdf-embed spike: attachment-preview failed: ${String(error)}`);
+      return null;
+    }
+  }
+
+  private createWorkspaceView(host: HTMLElement): QmdWorkspaceView {
+    return new QmdWorkspaceView(host, {
       renderService: this.qmdRender,
       changeRenderService: this.qmdChangeRender,
       index: async () => {
@@ -2019,17 +2188,7 @@ export class ZoteroChatPlugin {
       keepChange: (path, changePath) => this.keepQmdChange(path, changePath),
       readSource: (path) => this.readQmdSource(path),
       saveSource: (path, revision, source) => this.saveQmdSource(path, revision, source),
-    }));
-    if (!workspace) return false;
-    workspace.repoRootHint = root;
-    sidebar.setWorkspaceOpen(true);
-    if (!await workspace.open(relativePath, options)) return false;
-    workspace.syncAgentChanges({
-      activeTurnId: this.codex.state.activeTurnId,
-      running: this.codex.state.running,
-      diffs: this.codex.getActiveDiffs(),
     });
-    return true;
   }
 
   private safeRepositoryPath(relativePath: string, allowMissingFinal = false): string {
@@ -2432,7 +2591,10 @@ export class ZoteroChatPlugin {
     return [remembered, ...installed.filter((editor) => editor.id !== remembered.id)];
   }
 
-  private async openWorkbenchTab(win = Zotero.getMainWindow()): Promise<void> {
+  private async openWorkbenchTab(
+    win = Zotero.getMainWindow(),
+    options: { arrangement?: "pdf-chat" | "pdf-editor" } = {},
+  ): Promise<void> {
     if (this.destroyed) return;
     if (!win) throw new Error("The Zotero main window is unavailable");
     const selectedType = String(win.Zotero_Tabs?.selectedType || "");
@@ -2444,6 +2606,13 @@ export class ZoteroChatPlugin {
       if (this.destroyed) return;
       this.renderChatViews();
       if (this.destroyed) return;
+      if (options.arrangement) {
+        this.arrangeWorkbench(
+          existing.view,
+          options.arrangement,
+          selectedType === QLAB_WORKBENCH_TAB_TYPE ? this.context : null,
+        );
+      }
       existing.view.focusComposer();
       if (!this.codex.state.connected) await this.ensureChatSession();
       if (this.destroyed) return;
@@ -2474,6 +2643,7 @@ export class ZoteroChatPlugin {
     if (this.destroyed) return;
     this.renderChatViews();
     if (this.destroyed) return;
+    if (options.arrangement) this.arrangeWorkbench(entry.view, options.arrangement, context);
     entry.view.focusComposer();
     if (!this.codex.state.connected) {
       await this.ensureChatSession();
@@ -2482,10 +2652,35 @@ export class ZoteroChatPlugin {
     }
   }
 
+  /**
+   * Applies a reader-button arrangement: PDF of the given context on the
+   * left, chat or the editor on the right. Without an attachment context the
+   * demanded right-side tab simply opens (no PDF tab is invented).
+   */
+  private arrangeWorkbench(
+    view: WorkbenchTabView,
+    arrangement: "pdf-chat" | "pdf-editor",
+    context: ReaderContext | null,
+  ): void {
+    if (!(view instanceof WorkbenchView)) return;
+    const attachment = context?.attachment;
+    const itemID = Number(attachment?.id);
+    if (!context || !attachment?.key || !Number.isFinite(itemID)) {
+      view.arrange(arrangement, null);
+      return;
+    }
+    view.arrange(arrangement, {
+      itemID,
+      attachmentKey: String(attachment.key),
+      title: paperTitle(context),
+      page: context.page?.pageNumber,
+    });
+  }
+
   private async chooseWorkbenchPaper(
     win: Window,
     tabID: string | null,
-    preferredView?: SidebarView,
+    preferredView?: Pick<SidebarView, "focusComposer">,
   ): Promise<void> {
     const deferred = Zotero.Promise.defer();
     const io: any = {
@@ -3499,11 +3694,6 @@ export class ZoteroChatPlugin {
         this.chatViews.delete(body);
         continue;
       }
-      view.workspace()?.syncAgentChanges({
-        activeTurnId: this.codex.state.activeTurnId,
-        running: this.codex.state.running,
-        diffs: activeDiffs,
-      });
       const researchActionState = this.researchActionViewState(
         body.ownerDocument.defaultView || undefined,
       );
@@ -4109,14 +4299,14 @@ export class ZoteroChatPlugin {
     await this.openWorkbenchTab(win);
     const entry = this.selectedWorkbenchEntry(win);
     if (!entry) throw new Error("Unable to create the QLab Workbench");
-    if (!(entry.view instanceof SidebarView)) throw new Error("The QLab Workbench is not ready");
+    if (!(entry.view instanceof WorkbenchView)) throw new Error("The QLab Workbench is not ready");
     if (!entry.view.isTerminalOpen()) {
       await this.openWorkbenchTerminalDrawer(entry.view, win);
     }
     this.terminal.focus();
   }
 
-  private async toggleWorkbenchTerminal(view: SidebarView, win: Window): Promise<void> {
+  private async toggleWorkbenchTerminal(view: WorkbenchView, win: Window): Promise<void> {
     if (view.isTerminalOpen()) {
       view.setTerminalOpen(false);
       this.terminal.setVisible(false);
@@ -4127,7 +4317,7 @@ export class ZoteroChatPlugin {
     this.terminal.focus();
   }
 
-  private async openWorkbenchTerminalDrawer(view: SidebarView, win: Window): Promise<void> {
+  private async openWorkbenchTerminalDrawer(view: WorkbenchView, win: Window): Promise<void> {
     let root = this.settings?.qlabRoot || "";
     if (!root) root = await this.chooseQLabRoot(win) || "";
     if (!root) return;
@@ -4147,7 +4337,7 @@ export class ZoteroChatPlugin {
 
   private closeWorkbenchTerminal(win = Zotero.getMainWindow()): void {
     const entry = this.selectedWorkbenchEntry(win);
-    if (entry?.view instanceof SidebarView) {
+    if (entry?.view instanceof WorkbenchView) {
       entry.view.setTerminalOpen(false);
       entry.view.focusComposer();
     }
@@ -4157,7 +4347,7 @@ export class ZoteroChatPlugin {
   private async openTerminalInternal(body?: HTMLElement): Promise<void> {
     const workbenchEntry = this.workbenchTabs?.entries().find((entry) => entry.host === body)
       || (!body ? this.selectedWorkbenchEntry() : null);
-    if (workbenchEntry?.view instanceof SidebarView) {
+    if (workbenchEntry?.view instanceof WorkbenchView) {
       const win = workbenchEntry.host.ownerDocument.defaultView;
       if (!win) throw new Error("The Zotero main window is unavailable");
       await this.openWorkbenchTerminalDrawer(workbenchEntry.view, win);
@@ -4274,12 +4464,36 @@ export class ZoteroChatPlugin {
         ?? (secondary.attachmentID ? Zotero.Items?.get?.(Number(secondary.attachmentID) || secondary.attachmentID) : null)
       : this.readerContextItem(context);
     if (!attachment?.id) throw new Error("The PDF pinned to this conversation is unavailable");
+    if (!openInWindow && this.focusWorkbenchPdfTab(attachment, pageNumber)) return;
     await Zotero.Reader.open(attachment.id, { pageIndex: pageNumber - 1 }, {
       allowDuplicate: false,
       openInBackground: false,
       preventJumpback: false,
       ...(openInWindow ? { openInWindow: true } : {}),
     });
+  }
+
+  /**
+   * A page link prefers an already-open workbench PDF tab over spawning a
+   * native reader tab: activate it, jump to the page, select the deck tab.
+   */
+  private focusWorkbenchPdfTab(attachment: { key?: unknown }, pageNumber: number): boolean {
+    const key = String(attachment?.key || "");
+    if (!key) return false;
+    const win = typeof Zotero === "undefined" ? null : Zotero.getMainWindow?.();
+    if (!win) return false;
+    const tabId = `pdf:${key}`;
+    for (const entry of this.workbenchTabs?.entries(win) || []) {
+      const view = entry.view;
+      if (!(view instanceof WorkbenchView)) continue;
+      if (!view.shell.layout.tab(tabId)) continue;
+      view.shell.layout.activateTab(tabId);
+      const provider = view.shell.provider(tabId);
+      if (provider instanceof PdfReaderView) provider.goToPage(pageNumber);
+      win.Zotero_Tabs?.select?.(entry.id);
+      return true;
+    }
+    return false;
   }
 
   private canOpenConversationPdfPage(reference: PdfPageReference): boolean {

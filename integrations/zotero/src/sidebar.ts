@@ -1,8 +1,6 @@
 import { renderMarkdown, type PdfPageReference } from "./markdown";
 import { renderModelOptions } from "./model-menu";
 import { copyToClipboard, prefInt, setPrefInt } from "./platform";
-import { ResearchLoopSiteView } from "./research-loop-site";
-import { QmdWorkspaceView } from "./qmd-workspace";
 import {
   activityLabel,
   contentEntries,
@@ -12,7 +10,6 @@ import {
   type Exchange,
 } from "./exchanges";
 import type { NotingPhase, NotingView } from "./noting";
-import type { QLabRepositoryState } from "./qlab-workspace";
 
 export type SidebarPhase = "connecting" | "signed-out" | "ready" | "unavailable" | "error";
 
@@ -224,10 +221,6 @@ export interface SidebarCallbacks {
   onOpenPaper?(): void;
   canOpenPdfPage?(reference: PdfPageReference): boolean;
   onOpenPdfPage?(reference: PdfPageReference): void;
-  onCheckMainSite?(): Promise<boolean>;
-  onCheckMainSiteRepository?(): Promise<QLabRepositoryState>;
-  onDeployMainSite?(onProgress?: (message: string) => void): Promise<void>;
-  onOpenDocument?(relativePath: string): void;
 }
 
 export interface SidebarViewOptions {
@@ -273,12 +266,6 @@ export function appendUserMessage(
   });
   syncExpandedState();
   article.append(bubble, toggle);
-}
-
-/** The chat column never shrinks past a quarter or grows past two thirds. */
-function clampSplitRatio(percent: number): number {
-  if (!Number.isFinite(percent)) return 40;
-  return Math.round(Math.min(68, Math.max(25, percent)));
 }
 
 /**
@@ -351,12 +338,7 @@ export class SidebarView {
   private historySearch: HTMLInputElement | null = null;
   private historyLoadMore: HTMLButtonElement | null = null;
   private topActions!: HTMLElement;
-  private splitHandle!: HTMLButtonElement;
-  private splitRatio = clampSplitRatio(prefInt("splitRatio", 40));
   private newThreadButton!: HTMLButtonElement;
-  private mainSiteButton: HTMLButtonElement | null = null;
-  private mainSiteView: ResearchLoopSiteView | null = null;
-  private workspaceView: QmdWorkspaceView | null = null;
   private state: SidebarState;
   private readonly entryNodes = new Map<string, { fingerprint: string; node: HTMLElement }>();
   private emptyState: HTMLElement | null = null;
@@ -393,7 +375,6 @@ export class SidebarView {
     this.root.setAttribute("role", this.surface === "workbench" ? "main" : "region");
     this.root.setAttribute("aria-label", this.surface === "workbench" ? "QLab Workbench" : "QLab Assistant");
     body.replaceChildren(this.root);
-    this.applySplitRatio(this.splitRatio);
     this.state = {
       phase: "connecting",
       entries: [],
@@ -434,8 +415,6 @@ export class SidebarView {
       this.doc.defaultView?.clearTimeout(this.historySearchTimer);
       this.historySearchTimer = null;
     }
-    this.mainSiteView?.destroy();
-    this.workspaceView?.destroy();
     this.root.remove();
   }
 
@@ -542,7 +521,6 @@ export class SidebarView {
   }
 
   focusComposer(text?: string): void {
-    if (this.mainSiteView?.isVisible() || this.workspaceView?.isVisible()) return;
     if (text !== undefined) {
       const prefix = this.textarea.value.trim() ? `${this.textarea.value.trim()}\n\n` : "";
       this.textarea.value = prefix + text;
@@ -591,9 +569,7 @@ export class SidebarView {
     identity.append(icon, titles);
 
     const actions = this.doc.createElement("div");
-    actions.className = this.surface === "workbench"
-      ? "zc-top-actions zc-workbench-dock"
-      : "zc-top-actions";
+    actions.className = "zc-top-actions";
     if (this.surface === "workbench") actions.setAttribute("aria-label", "Workbench tools");
     const workbenchButton = this.doc.createElement("button");
     workbenchButton.type = "button";
@@ -602,16 +578,6 @@ export class SidebarView {
     workbenchButton.textContent = "Workbench";
     workbenchButton.hidden = this.surface === "workbench";
     workbenchButton.addEventListener("click", () => this.callbacks.onOpenWorkbench());
-    if (this.surface === "workbench") {
-      this.mainSiteButton = this.iconButton(
-        "site",
-        "Check Research Loop main site",
-        () => void this.activateMainSite(),
-      );
-      this.mainSiteButton.classList.add("zc-main-site-button", "is-checking");
-      this.mainSiteButton.disabled = true;
-      this.mainSiteButton.setAttribute("aria-pressed", "false");
-    }
     const standaloneButton = this.surface === "workbench" && this.callbacks.onOpenStandalone
       ? this.iconButton("popout", "Open QLab in a separate window", () => this.callbacks.onOpenStandalone?.())
       : null;
@@ -634,7 +600,6 @@ export class SidebarView {
     this.accountButton = this.iconButton("more", "Account", () => this.toggleAccountMenu());
     actions.append(
       workbenchButton,
-      ...(this.mainSiteButton ? [this.mainSiteButton] : []),
       ...(standaloneButton ? [standaloneButton] : []),
       ...(this.surface === "workbench" ? [] : [this.newThreadButton]),
       this.terminalButton,
@@ -816,193 +781,35 @@ export class SidebarView {
     this.terminalDrawer.setAttribute("aria-label", "QLab Terminal");
     this.terminalDrawer.setAttribute("aria-hidden", "true");
 
-    this.splitHandle = this.doc.createElement("button");
-    this.splitHandle.type = "button";
-    this.splitHandle.className = "zc-split-handle";
-    this.splitHandle.setAttribute("aria-label", "Resize chat and the right pane");
-    this.splitHandle.addEventListener("mousedown", (event) => this.beginSplitDrag(event));
-
-    this.root.append(
-      ...(this.surface === "workbench" ? [] : [topbar]),
+    // The chat column lives in one wrapper so a tabbed host can place it as a
+    // unit; the login layer and terminal drawer overlay that wrapper alone.
+    const chatPane = this.doc.createElement("div");
+    chatPane.className = "zc-chat-pane";
+    chatPane.append(
       ...(this.historyRail ? [this.historyRail] : []),
-      this.splitHandle,
       this.threadTabs,
       contextCard,
       this.transcript,
       composerWrap,
-      ...(this.surface === "workbench" ? [this.topActions] : []),
       this.loginLayer,
       this.terminalDrawer,
     );
+    this.root.append(
+      ...(this.surface === "workbench" ? [] : [topbar]),
+      chatPane,
+    );
     if (this.surface === "workbench") {
       this.root.classList.toggle("is-history-open", this.historyOpen);
-      this.mainSiteView = new ResearchLoopSiteView(this.root, {
-        onBack: () => this.setMainSiteOpen(false),
-        onOpenDocument: this.callbacks.onOpenDocument,
-      });
-      void this.refreshMainSiteStatus();
     }
-  }
-
-  async refreshMainSiteStatus(): Promise<boolean> {
-    const button = this.mainSiteButton;
-    if (!button) return false;
-    button.disabled = true;
-    button.className = "zc-icon-button zc-main-site-button is-checking";
-    this.presentMainSiteButton(button, "Check Research Loop main site");
-    let available = false;
-    let repositoryState: QLabRepositoryState = "ready";
-    try {
-      repositoryState = await this.callbacks.onCheckMainSiteRepository?.() || "ready";
-      available = repositoryState === "ready"
-        ? await this.callbacks.onCheckMainSite?.() || false
-        : false;
-    }
-    catch {
-      available = false;
-    }
-    if (!button.isConnected) return available;
-    button.dataset.repositoryState = repositoryState;
-    button.disabled = false;
-    if (repositoryState === "missing" || repositoryState === "incompatible") {
-      button.className = "zc-icon-button zc-main-site-button is-invalid";
-      this.presentMainSiteButton(button, repositoryState === "missing"
-        ? "Choose an empty folder or an existing Research Loop repository"
-        : "This folder contains unrelated files; choose an empty folder instead");
-      return false;
-    }
-    if (repositoryState === "empty" || repositoryState === "partial") {
-      button.className = "zc-icon-button zc-main-site-button is-initialize";
-      this.presentMainSiteButton(button, repositoryState === "empty"
-        ? "Initialize Research Loop in this empty folder"
-        : "Complete the Research Loop structure without overwriting existing Knowledge, Drafts, or Literature");
-      return false;
-    }
-    button.className = available
-      ? "zc-icon-button zc-main-site-button is-available"
-      : "zc-icon-button zc-main-site-button is-offline";
-    this.presentMainSiteButton(button, available
-      ? "Open the Research Loop main site in Zotero"
-      : "The main site is not running; click to build and start it");
-    return available;
-  }
-
-  private async activateMainSite(): Promise<void> {
-    if (!this.mainSiteButton || !this.mainSiteView) return;
-    if (this.mainSiteView.isVisible()) {
-      this.setMainSiteOpen(false);
-      return;
-    }
-    const repositoryState = this.mainSiteButton.dataset.repositoryState as QLabRepositoryState | undefined;
-    if (repositoryState === "missing" || repositoryState === "incompatible") {
-      await this.callbacks.onChooseQLabRoot?.();
-      await this.refreshMainSiteStatus();
-      return;
-    }
-    const available = this.mainSiteButton.classList.contains("is-available");
-    if (!available) {
-      this.mainSiteButton.disabled = true;
-      this.mainSiteButton.className = "zc-icon-button zc-main-site-button is-deploying";
-      this.presentMainSiteButton(this.mainSiteButton, "Building and starting the Research Loop main site");
-      try {
-        if (!this.callbacks.onDeployMainSite) throw new Error("Main-site deployment is unavailable");
-        await this.callbacks.onDeployMainSite((message) => {
-          if (!this.mainSiteButton?.isConnected) return;
-          this.presentMainSiteButton(this.mainSiteButton, message);
-        });
-      }
-      catch (error) {
-        if (!this.mainSiteButton.isConnected) return;
-        this.mainSiteButton.disabled = false;
-        this.mainSiteButton.className = "zc-icon-button zc-main-site-button is-error";
-        this.presentMainSiteButton(
-          this.mainSiteButton,
-          `Retry Main Site: ${error instanceof Error ? error.message : String(error)}`,
-        );
-        return;
-      }
-      if (!this.mainSiteButton.isConnected) return;
-      this.mainSiteButton.disabled = false;
-      this.mainSiteButton.className = "zc-icon-button zc-main-site-button is-available";
-      this.presentMainSiteButton(this.mainSiteButton, "Open the Research Loop main site in Zotero");
-    }
-    this.setMainSiteOpen(true);
-  }
-
-  isMainSiteOpen(): boolean {
-    return Boolean(this.mainSiteView?.isVisible());
-  }
-
-  setMainSiteOpen(open: boolean): void {
-    if (!this.mainSiteButton || !this.mainSiteView) return;
-    if (open) {
-      this.setTerminalOpen(false);
-      this.setWorkspaceOpen(false);
-      this.mainSiteView.show();
-    }
-    else {
-      this.mainSiteView.hide();
-    }
-    this.root.classList.toggle("is-main-site-open", open);
-    this.mainSiteButton.setAttribute("aria-pressed", String(open));
-  }
-
-  /** Hosts the document workspace, which shares the right-hand column. */
-  attachWorkspace(build: (host: HTMLElement) => QmdWorkspaceView): QmdWorkspaceView | null {
-    if (this.surface !== "workbench") return null;
-    this.workspaceView ??= build(this.root);
-    return this.workspaceView;
-  }
-
-  workspace(): QmdWorkspaceView | null {
-    return this.workspaceView;
   }
 
   /**
-   * Drags the boundary between the chat and the right-hand pane.
-   *
-   * The ratio is a custom property rather than a fixed percentage so that the
-   * login layer and the terminal drawer, which are positioned against the same
-   * boundary, follow it without a second source of truth.
+   * The workbench dock buttons (popout, terminal, account). A tabbed host
+   * relocates this strip into its own bottom-left dock so the tools stay
+   * reachable whichever tab is active.
    */
-  private beginSplitDrag(event: MouseEvent): void {
-    event.preventDefault();
-    const view = this.doc.defaultView;
-    if (!view) return;
-    this.splitHandle.classList.add("is-dragging");
-    const onMove = (moved: MouseEvent) => {
-      const bounds = this.root.getBoundingClientRect();
-      if (bounds.width <= 0) return;
-      this.applySplitRatio(((moved.clientX - bounds.left) / bounds.width) * 100);
-    };
-    const onUp = () => {
-      this.splitHandle.classList.remove("is-dragging");
-      view.removeEventListener("mousemove", onMove, true);
-      view.removeEventListener("mouseup", onUp, true);
-      setPrefInt("splitRatio", this.splitRatio);
-    };
-    view.addEventListener("mousemove", onMove, true);
-    view.addEventListener("mouseup", onUp, true);
-  }
-
-  private applySplitRatio(percent: number): void {
-    this.splitRatio = clampSplitRatio(percent);
-    this.root.style.setProperty("--zc-split-ratio", `${this.splitRatio}%`);
-  }
-
-  setWorkspaceOpen(open: boolean): void {
-    if (!this.workspaceView) return;
-    if (open) {
-      this.setTerminalOpen(false);
-      this.mainSiteView?.hide();
-      this.root.classList.remove("is-main-site-open");
-      this.mainSiteButton?.setAttribute("aria-pressed", "false");
-      this.workspaceView.show();
-    }
-    else {
-      this.workspaceView.hide();
-    }
-    this.root.classList.toggle("is-workspace-open", open);
+  dockContents(): HTMLElement | null {
+    return this.surface === "workbench" ? this.topActions : null;
   }
 
   private render(): void {
@@ -2395,11 +2202,6 @@ export class SidebarView {
     return button;
   }
 
-  private presentMainSiteButton(button: HTMLButtonElement, title: string): void {
-    this.setButtonIcon(button, "site");
-    button.title = title;
-    button.setAttribute("aria-label", title);
-  }
 
   private setButtonIcon(button: HTMLButtonElement, icon: SidebarIcon): void {
     button.replaceChildren(createSidebarIcon(this.doc, icon));

@@ -22,7 +22,7 @@ import {
   NOTE_FROM_QMD_TOOL,
   NoteDraftBridgeService,
 } from "../src/note-draft-bridge";
-import type { RepositoryTargetSnapshot } from "../src/repository-target";
+import { capabilitiesFor, type RepositoryTargetSnapshot } from "../src/repository-target";
 import { RepositoryTargetController } from "../src/repository-target-controller";
 
 const TEST_TARGET_ID = "b".repeat(64);
@@ -32,15 +32,17 @@ function repositorySnapshot(
   targetEpoch = 1,
   targetId = TEST_TARGET_ID,
 ): RepositoryTargetSnapshot {
+  const target = {
+    kind: "local" as const,
+    root,
+    canonicalRoot: root,
+    repositoryId: "a".repeat(64),
+    targetId,
+  };
   return {
-    target: {
-      kind: "local",
-      root,
-      canonicalRoot: root,
-      repositoryId: "a".repeat(64),
-      targetId,
-    },
+    target,
     targetEpoch,
+    capabilities: capabilitiesFor(target),
   };
 }
 

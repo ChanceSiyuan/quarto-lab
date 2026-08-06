@@ -1303,6 +1303,166 @@ static bool parse_spawn(const char *js, JTok *t, int count, SpawnSpec *sp,
   return true;
 }
 
+static bool valid_version_segment(const char *value, size_t length) {
+  size_t i = 0;
+  for (int component = 0; component < 3; component++) {
+    size_t start = i;
+    while (i < length && isdigit((unsigned char)value[i]))
+      i++;
+    if (i == start)
+      return false;
+    if (component < 2) {
+      if (i >= length || value[i++] != '.')
+        return false;
+    }
+  }
+  if (i == length)
+    return true;
+  if (value[i] != '-' && value[i] != '+')
+    return false;
+  i++;
+  size_t suffix_start = i;
+  for (; i < length; i++)
+    if (!(isalnum((unsigned char)value[i]) || value[i] == '.' ||
+          value[i] == '-'))
+      return false;
+  return i > suffix_start;
+}
+
+static bool valid_verified_helper_path(const char *path) {
+  const char *version = NULL;
+  if (!strncmp(path, "/root/.qlab/bin/", 16)) {
+    version = path + 16;
+  } else if (!strncmp(path, "/home/", 6)) {
+    const char *marker = strstr(path + 6, "/.qlab/bin/");
+    if (!marker || marker == path + 6)
+      return false;
+    for (const char *p = path + 6; p < marker; p++)
+      if (!(isalnum((unsigned char)*p) || strchr("._-", *p)))
+        return false;
+    version = marker + 11;
+  } else {
+    return false;
+  }
+  const char *version_end = strchr(version, '/');
+  if (!version_end || !valid_version_segment(version,
+                                               (size_t)(version_end - version)))
+    return false;
+  const char *tuple = version_end + 1;
+  const char *tuple_end = strchr(tuple, '/');
+  if (!tuple_end)
+    return false;
+  size_t tuple_length = (size_t)(tuple_end - tuple);
+  bool valid_tuple =
+      (tuple_length == strlen("linux-x86_64-static") &&
+       !memcmp(tuple, "linux-x86_64-static", tuple_length)) ||
+      (tuple_length == strlen("linux-aarch64-static") &&
+       !memcmp(tuple, "linux-aarch64-static", tuple_length));
+  return valid_tuple && !strcmp(tuple_end, "/qlab-remote");
+}
+
+static bool parse_fixed_ssh_setup(const char *js, JTok *t, int count,
+                                  SpawnSpec *sp, const char **err) {
+  int action = obj_get(js, t, count, 0, "setupAction"),
+      control = obj_get(js, t, count, 0, "controlPath"),
+      alias = obj_get(js, t, count, 0, "alias"),
+      helper = obj_get(js, t, count, 0, "verifiedHelperPath"),
+      cwd = obj_get(js, t, count, 0, "cwd"),
+      rows = obj_get(js, t, count, 0, "rows"),
+      cols = obj_get(js, t, count, 0, "cols");
+  if (obj_get(js, t, count, 0, "command") >= 0 ||
+      obj_get(js, t, count, 0, "argv") >= 0 ||
+      obj_get(js, t, count, 0, "args") >= 0 ||
+      obj_get(js, t, count, 0, "env") >= 0 ||
+      obj_get(js, t, count, 0, "rawNoEcho") >= 0) {
+    *err = "invalid fixed SSH setup action";
+    return false;
+  }
+  char *action_value = action >= 0 ? tok_strdup(js, &t[action], 64) : NULL;
+  char *control_value = control >= 0 ? tok_strdup(js, &t[control], PATH_MAX - 1) : NULL;
+  char *alias_value = alias >= 0 ? tok_strdup(js, &t[alias], 256) : NULL;
+  char *helper_value = helper >= 0 ? tok_strdup(js, &t[helper], PATH_MAX - 1) : NULL;
+  sp->cwd = cwd >= 0 ? tok_strdup(js, &t[cwd], PATH_MAX - 1) : NULL;
+  if (!action_value || strcmp(action_value, "codex-device-auth") ||
+      !control_value || control_value[0] != '/' ||
+      strchr(control_value, '\r') || strchr(control_value, '\n') ||
+      !alias_value || !valid_session_id(alias_value) ||
+      !helper_value || !valid_verified_helper_path(helper_value) ||
+      !sp->cwd || sp->cwd[0] != '/') {
+    *err = "invalid fixed SSH setup action";
+    free(action_value);
+    free(control_value);
+    free(alias_value);
+    free(helper_value);
+    return false;
+  }
+  struct stat st;
+  if (stat(sp->cwd, &st) < 0 || !S_ISDIR(st.st_mode)) {
+    *err = "invalid fixed SSH setup working directory";
+    free(action_value);
+    free(control_value);
+    free(alias_value);
+    free(helper_value);
+    return false;
+  }
+  sp->rows = 24;
+  sp->cols = 80;
+  long value;
+  if ((rows >= 0 && !tok_int(js, &t[rows], 2, 500, &value)) ||
+      (cols >= 0 && !tok_int(js, &t[cols], 2, 500, &value))) {
+    *err = "invalid fixed SSH setup dimensions";
+    free(action_value);
+    free(control_value);
+    free(alias_value);
+    free(helper_value);
+    return false;
+  }
+  if (rows >= 0) {
+    (void)tok_int(js, &t[rows], 2, 500, &value);
+    sp->rows = (int)value;
+  }
+  if (cols >= 0) {
+    (void)tok_int(js, &t[cols], 2, 500, &value);
+    sp->cols = (int)value;
+  }
+  const char *fixed[] = {
+      "/usr/bin/ssh", "-tt", "-S", control_value, "-o", "BatchMode=yes",
+      "--", alias_value,
+  };
+  sp->command = strdup("/usr/bin/ssh");
+  for (int i = 0; i < 8; i++) {
+    sp->argv[i] = strdup(fixed[i]);
+    if (!sp->argv[i]) {
+      *err = "out of memory";
+      free(action_value);
+      free(control_value);
+      free(alias_value);
+      free(helper_value);
+      return false;
+    }
+    sp->argc++;
+  }
+  static const char remote_suffix[] = " 'setup' 'codex-device-auth'";
+  size_t remote_length = strlen(helper_value) + sizeof(remote_suffix) + 2;
+  sp->argv[8] = malloc(remote_length);
+  if (!sp->command || !sp->argv[8]) {
+    *err = "out of memory";
+    free(action_value);
+    free(control_value);
+    free(alias_value);
+    free(helper_value);
+    return false;
+  }
+  snprintf(sp->argv[8], remote_length, "'%s'%s", helper_value, remote_suffix);
+  sp->argc = 9;
+  sp->argv[9] = NULL;
+  free(action_value);
+  free(control_value);
+  free(alias_value);
+  free(helper_value);
+  return true;
+}
+
 static Session *session_find(const char *id) {
   for (int i = 0; i < MAX_SESSIONS; i++)
     if (sessions[i].used && !strcmp(sessions[i].id, id))
@@ -1337,6 +1497,13 @@ static void configure_child(const SpawnSpec *sp, bool is_pty) {
       _exit(126);
   if (is_pty && !getenv("TERM"))
     setenv("TERM", "xterm-256color", 1);
+#ifdef ZOTEROCHAT_TEST_SSH_EXECUTABLE
+  /* Test builds redirect only the fixed production SSH executable below the
+     bridge. Release builds never define this macro. Keep argv[0] unchanged so
+     the fake observes the exact production argv contract. */
+  if (!strcmp(sp->command, "/usr/bin/ssh"))
+    execv(ZOTEROCHAT_TEST_SSH_EXECUTABLE, sp->argv);
+#endif
   execvp(sp->command, sp->argv);
   if (is_pty)
     dprintf(STDERR_FILENO, "zoterochat-helper: exec failed: %s\r\n",
@@ -1345,7 +1512,8 @@ static void configure_child(const SpawnSpec *sp, bool is_pty) {
 }
 
 static void handle_spawn(int owner, const char *js, JTok *t, int count,
-                         const char *sid, bool use_pipe) {
+                         const char *sid, bool use_pipe,
+                         bool fixed_ssh_setup) {
   if (session_find(sid)) {
     json_session_error_to_client(owner, sid, "sessionId already exists");
     return;
@@ -1363,7 +1531,15 @@ static void handle_spawn(int owner, const char *js, JTok *t, int count,
   }
   SpawnSpec sp = {0};
   const char *err = NULL;
-  if (!parse_spawn(js, t, count, &sp, &err)) {
+  int raw_no_echo_token = obj_get(js, t, count, 0, "rawNoEcho");
+  if (!fixed_ssh_setup && raw_no_echo_token >= 0) {
+    json_session_error_to_client(owner, sid, "invalid fixed PTY mode");
+    return;
+  }
+  bool parsed = fixed_ssh_setup
+                    ? parse_fixed_ssh_setup(js, t, count, &sp, &err)
+                    : parse_spawn(js, t, count, &sp, &err);
+  if (!parsed) {
     json_session_error_to_client(owner, sid,
                                  err ? err : "invalid spawn request");
     spawn_free(&sp);
@@ -1405,7 +1581,19 @@ static void handle_spawn(int owner, const char *js, JTok *t, int count,
   } else {
     struct winsize ws = {.ws_row = (unsigned short)sp.rows,
                          .ws_col = (unsigned short)sp.cols};
-    pid = forkpty(&master, NULL, NULL, &ws);
+    struct termios raw_termios = {0};
+    struct termios *termios_profile = NULL;
+    if (fixed_ssh_setup) {
+      cfmakeraw(&raw_termios);
+      raw_termios.c_cflag |= CREAD;
+      raw_termios.c_lflag &= (tcflag_t)~ECHO;
+      raw_termios.c_cc[VMIN] = 1;
+      raw_termios.c_cc[VTIME] = 0;
+      (void)cfsetispeed(&raw_termios, B38400);
+      (void)cfsetospeed(&raw_termios, B38400);
+      termios_profile = &raw_termios;
+    }
+    pid = forkpty(&master, NULL, termios_profile, &ws);
   }
   if (pid < 0) {
     if (pair[0] >= 0)
@@ -1489,9 +1677,15 @@ static void handle_ws_json(int owner, const unsigned char *data, size_t len) {
     free(sid);
     goto done;
   }
-  if (!strcmp(type, "spawn") || !strcmp(type, "spawnPipe")) {
+  if (!strcmp(type, "spawn") || !strcmp(type, "spawnPipe") ||
+      !strcmp(type, "spawnSshSetup")) {
     handle_spawn(owner, (const char *)data, t, count, sid,
-                 !strcmp(type, "spawnPipe"));
+                 !strcmp(type, "spawnPipe"), !strcmp(type, "spawnSshSetup"));
+    free(sid);
+    goto done;
+  }
+  if (!strcmp(type, "spawnRawPty")) {
+    json_session_error_to_client(owner, sid, "invalid fixed SSH setup action");
     free(sid);
     goto done;
   }

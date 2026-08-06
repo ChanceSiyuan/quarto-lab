@@ -9,6 +9,7 @@ import type { LibraryMessageContext } from "../src/library-conversation";
 import type { NativeBridge } from "../src/native-bridge";
 import { READER_CONTEXT_TOOLS } from "../src/reader-context";
 import type { ReaderContextService } from "../src/reader-context";
+import { capabilitiesFor } from "../src/repository-target";
 
 beforeEach(() => {
   vi.stubGlobal("PathUtils", { join: (...parts: string[]) => parts.join("/") });
@@ -580,6 +581,13 @@ describe("library conversations", () => {
         targetId,
       },
       targetEpoch: 1,
+      capabilities: capabilitiesFor({
+        kind: "local",
+        root: "/repo",
+        canonicalRoot: "/repo",
+        repositoryId: "a".repeat(64),
+        targetId,
+      }),
     };
     service.commitRepositoryTarget({
       snapshot,

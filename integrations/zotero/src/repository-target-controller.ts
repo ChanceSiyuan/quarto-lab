@@ -1,7 +1,8 @@
 import type {
   RepositoryTargetSnapshot,
-  ResolvedLocalRepositoryTarget,
+  ResolvedRepositoryTarget,
 } from "./repository-target";
+import { capabilitiesFor } from "./repository-target";
 
 export type TargetSwitchBlocker =
   | { kind: "running-turn" }
@@ -43,7 +44,7 @@ type SwitchPhase = "preparing" | "committing";
 
 type SwitchRequest = {
   readonly attemptId: number;
-  readonly target: ResolvedLocalRepositoryTarget;
+  readonly target: ResolvedRepositoryTarget;
   readonly promise: Promise<RepositoryTargetSnapshot>;
   readonly resolve: (snapshot: RepositoryTargetSnapshot) => void;
   readonly reject: (error: unknown) => void;
@@ -87,7 +88,7 @@ export class RepositoryTargetController<Staged> {
     this.latestReservedEpoch = initialEpoch;
   }
 
-  switchTo(target: ResolvedLocalRepositoryTarget): Promise<RepositoryTargetSnapshot> {
+  switchTo(target: ResolvedRepositoryTarget): Promise<RepositoryTargetSnapshot> {
     const request = this.createRequest(target);
     if (this.runtimeHookDepth > 0) {
       request.reject(new Error(REENTRANT_SWITCH_ERROR));
@@ -121,7 +122,7 @@ export class RepositoryTargetController<Staged> {
       && this.active.targetEpoch === targetEpoch;
   }
 
-  private createRequest(target: ResolvedLocalRepositoryTarget): SwitchRequest {
+  private createRequest(target: ResolvedRepositoryTarget): SwitchRequest {
     const attemptId = ++this.nextAttemptId;
     let resolve!: (snapshot: RepositoryTargetSnapshot) => void;
     let reject!: (error: unknown) => void;
@@ -158,6 +159,7 @@ export class RepositoryTargetController<Staged> {
       const next: RepositoryTargetSnapshot = {
         target: attempt.request.target,
         targetEpoch: this.reserveEpoch(),
+        capabilities: capabilitiesFor(attempt.request.target),
       };
       const staged = await this.invokeRuntimeHook(
         () => this.runtime.stage(next, attempt.abortController.signal),

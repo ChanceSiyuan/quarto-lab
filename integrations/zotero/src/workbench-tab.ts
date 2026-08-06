@@ -13,7 +13,8 @@ export interface WorkbenchTabData {
   itemID?: number | string;
   icon?: string;
   title: string;
-  mainSiteOpen?: boolean;
+  /** Serialized pane/tab layout (see workbench-layout.ts); opaque here. */
+  layout?: unknown;
 }
 
 export interface WorkbenchTabView {
@@ -21,10 +22,24 @@ export interface WorkbenchTabView {
   destroy(): void;
   focusComposer(text?: string): void;
   setState(next: any): void;
-  isMainSiteOpen?(): boolean;
-  setMainSiteOpen?(open: boolean): void;
+  layoutData?(): unknown;
+  setLayoutData?(data: unknown): void;
   workspace?(): QmdWorkspaceView | null;
 }
+
+/** The layout equivalent of the retired `mainSiteOpen` flag: chat | site. */
+const LEGACY_MAIN_SITE_LAYOUT = {
+  version: 1,
+  tabs: [
+    { id: "chat", kind: "chat", title: "Chat" },
+    { id: "site", kind: "site", title: "Main Site" },
+  ],
+  panes: {
+    left: { tabIds: ["chat"], activeTabId: "chat" },
+    right: { tabIds: ["site"], activeTabId: "site" },
+  },
+  focusedPane: "left",
+} as const;
 
 export interface WorkbenchTabEntry {
   id: string;
@@ -104,7 +119,7 @@ export class WorkbenchTabManager {
           const tabData = this.dataFromTab(tab);
           const data = {
             ...tabData,
-            mainSiteOpen: sourceEntry?.view.isMainSiteOpen?.() ?? tabData.mainSiteOpen ?? false,
+            layout: sourceEntry?.view.layoutData?.() ?? tabData.layout,
           };
           const target = await this.callbacks.openNewWindow(win);
           this.install(target);
@@ -164,8 +179,8 @@ export class WorkbenchTabManager {
       tabs.rename?.(current.id, data.title);
       tabs.select?.(current.id);
       current.view.focusComposer();
-      if (data.mainSiteOpen !== undefined) {
-        current.view.setMainSiteOpen?.(data.mainSiteOpen);
+      if (data.layout !== undefined) {
+        current.view.setLayoutData?.(data.layout);
       }
       return current;
     }
@@ -194,7 +209,7 @@ export class WorkbenchTabManager {
       if (selected) view.focusComposer();
     };
     view.show();
-    if (data.mainSiteOpen) view.setMainSiteOpen?.(true);
+    if (data.layout !== undefined) view.setLayoutData?.(data.layout);
     return entry;
   }
 
@@ -228,21 +243,33 @@ export class WorkbenchTabManager {
   }
 
   private zoteroData(data: WorkbenchTabData): Record<string, unknown> {
+    let layout: string | undefined;
+    if (data.layout !== undefined) {
+      try { layout = JSON.stringify(data.layout); }
+      catch { layout = undefined; }
+    }
     return {
       ...(data.itemID === undefined ? {} : { itemID: data.itemID }),
       icon: QLAB_WORKBENCH_TAB_ICON,
       qlabWorkbenchTitle: data.title,
-      ...(data.mainSiteOpen === undefined ? {} : { qlabMainSiteOpen: data.mainSiteOpen }),
+      ...(layout === undefined ? {} : { qlabLayout: layout }),
     };
   }
 
   private dataFromTab(tab: any): WorkbenchTabData {
     const raw = tab?.data || {};
+    let layout: unknown;
+    if (typeof raw.qlabLayout === "string") {
+      try { layout = JSON.parse(raw.qlabLayout); }
+      catch { layout = undefined; }
+    }
+    // Sessions saved before the tabbed workbench carried a boolean instead.
+    if (layout === undefined && raw.qlabMainSiteOpen) layout = LEGACY_MAIN_SITE_LAYOUT;
     return {
       itemID: raw.itemID,
       icon: QLAB_WORKBENCH_TAB_ICON,
       title: String(raw.qlabWorkbenchTitle || tab?.title || "QLab Workbench"),
-      mainSiteOpen: Boolean(raw.qlabMainSiteOpen),
+      ...(layout === undefined ? {} : { layout }),
     };
   }
 }

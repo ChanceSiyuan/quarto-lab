@@ -6,17 +6,57 @@ export type ResolvedLocalRepositoryTarget = Readonly<LocalRepositoryTarget & {
   repositoryId: string;
   targetId: string;
 }>;
+export type SshRepositoryTarget = Readonly<{
+  kind: "ssh";
+  sshProfile: string;
+  root: string;
+}>;
+export type AcceptedHostKeyFingerprint = string;
+export type ResolvedSshRepositoryTarget = Readonly<SshRepositoryTarget & {
+  canonicalRoot: string;
+  acceptedHostKeyFingerprint: AcceptedHostKeyFingerprint;
+  endpointId: string;
+  hostInstanceId: string;
+  repositoryUuid: string;
+  repositoryId: string;
+  targetId: string;
+}>;
+export type RepositoryTarget = LocalRepositoryTarget | SshRepositoryTarget;
+export type ResolvedRepositoryTarget = ResolvedLocalRepositoryTarget | ResolvedSshRepositoryTarget;
+export type RepositoryTargetCapabilities = Readonly<{
+  chat: boolean;
+  qmdRead: boolean;
+  qmdWrite: boolean;
+  terminal: boolean;
+  preview: boolean;
+  mainSiteSupported: boolean;
+  externalEditor: boolean;
+  promoteDraft: boolean;
+}>;
 export type RepositoryTargetSnapshot = Readonly<{
-  target: ResolvedLocalRepositoryTarget;
+  target: ResolvedRepositoryTarget;
   targetEpoch: number;
+  capabilities: RepositoryTargetCapabilities;
 }>;
 export type LegacyRootDisposition = "bind" | "candidate" | "unassigned";
-export type StoredTargetPreferences = Readonly<{
+export type StoredTargetPreferencesV1 = Readonly<{
   version: 1;
   active: ResolvedLocalRepositoryTarget | null;
   pendingCandidate: PendingLocalRepositoryCandidate | null;
   legacyUnassigned: readonly LegacyThreadBinding[];
   migratedLegacy: boolean;
+}>;
+export type StoredTargetPreferencesV2 = Readonly<{
+  version: 2;
+  active: ResolvedRepositoryTarget | null;
+  pendingCandidate: PendingLocalRepositoryCandidate | null;
+  legacyUnassigned: readonly LegacyThreadBinding[];
+  migratedLegacy: boolean;
+}>;
+export type StoredTargetPreferences = StoredTargetPreferencesV2;
+export type DecodedTargetPreferences = Readonly<{
+  preferences: StoredTargetPreferencesV2;
+  rewrite: "v1-to-v2" | null;
 }>;
 
 export type LocalRepositoryCandidate = Readonly<{
@@ -70,13 +110,39 @@ export interface LegacyMigrationResolver {
 export type TargetDigest = (bytes: Uint8Array) => string;
 
 const IDENTITY_PATTERN = /^[a-f0-9]{64}$/;
+const ACCEPTED_HOST_KEY_FINGERPRINT_PATTERN = /^SHA256:[A-Za-z0-9+/]{42}[AEIMQUYcgkosw048]$/;
+const REPOSITORY_UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/u;
 const EMPTY_PREFERENCES: StoredTargetPreferences = {
-  version: 1,
+  version: 2,
   active: null,
   pendingCandidate: null,
   legacyUnassigned: [],
   migratedLegacy: false,
 };
+
+export function capabilitiesFor(target: ResolvedRepositoryTarget): RepositoryTargetCapabilities {
+  return Object.freeze(target.kind === "local"
+    ? {
+      chat: true,
+      qmdRead: true,
+      qmdWrite: true,
+      terminal: true,
+      preview: true,
+      mainSiteSupported: true,
+      externalEditor: true,
+      promoteDraft: true,
+    }
+    : {
+      chat: true,
+      qmdRead: false,
+      qmdWrite: false,
+      terminal: false,
+      preview: false,
+      mainSiteSupported: false,
+      externalEditor: false,
+      promoteDraft: false,
+    });
+}
 
 export function deriveRepositoryId(endpointId: string, repositoryUuid: string, digest: TargetDigest): string {
   return digestIdentity(new TextEncoder().encode(`${endpointId}\0${repositoryUuid}`), digest);
@@ -92,33 +158,68 @@ function digestIdentity(bytes: Uint8Array, digest: TargetDigest): string {
   return value;
 }
 
-export function parseStoredTargetPreferences(value: string): StoredTargetPreferences {
+export function decodeStoredTargetPreferences(value: string): DecodedTargetPreferences {
   try {
     const parsed: unknown = JSON.parse(value);
-    return parsePreferencesObject(parsed) ?? EMPTY_PREFERENCES;
+    return parsePreferencesObject(parsed) ?? { preferences: EMPTY_PREFERENCES, rewrite: null };
   }
   catch {
-    return EMPTY_PREFERENCES;
+    return { preferences: EMPTY_PREFERENCES, rewrite: null };
   }
 }
 
-function parsePreferencesObject(value: unknown): StoredTargetPreferences | null {
-  if (!isRecord(value) || value.version !== 1 || typeof value.migratedLegacy !== "boolean") return null;
-  const active = value.active === null ? null : parseResolvedTarget(value.active);
+/** @deprecated Use decodeStoredTargetPreferences() to learn whether persistence must be rewritten. */
+export function parseStoredTargetPreferences(value: string): StoredTargetPreferences {
+  return decodeStoredTargetPreferences(value).preferences;
+}
+
+function parsePreferencesObject(value: unknown): DecodedTargetPreferences | null {
+  if (!isRecord(value) || typeof value.migratedLegacy !== "boolean") return null;
+  if (value.version === 1) return parseV1PreferencesObject(value);
+  if (value.version === 2) return parseV2PreferencesObject(value);
+  return null;
+}
+
+function parseV1PreferencesObject(value: Record<string, unknown>): DecodedTargetPreferences | null {
+  if (!hasOnlyKeys(value, ["version", "active", "pendingCandidate", "legacyUnassigned", "migratedLegacy"])
+    || typeof value.migratedLegacy !== "boolean") return null;
+  const active = value.active === null ? null : parseResolvedLocalTarget(value.active);
   const pendingCandidate = value.pendingCandidate === null ? null : parsePendingCandidate(value.pendingCandidate);
   const legacyUnassigned = parseLegacyBindings(value.legacyUnassigned);
   if (active === undefined || pendingCandidate === undefined || legacyUnassigned === undefined) return null;
-  return {
-    version: 1,
+  return { preferences: {
+    version: 2,
     active,
     pendingCandidate,
     legacyUnassigned,
     migratedLegacy: value.migratedLegacy,
-  };
+  }, rewrite: "v1-to-v2" };
 }
 
-function parseResolvedTarget(value: unknown): ResolvedLocalRepositoryTarget | undefined {
+function parseV2PreferencesObject(value: Record<string, unknown>): DecodedTargetPreferences | null {
+  if (!hasOnlyKeys(value, ["version", "active", "pendingCandidate", "legacyUnassigned", "migratedLegacy"])
+    || typeof value.migratedLegacy !== "boolean") return null;
+  const active = value.active === null ? null : parseResolvedTarget(value.active);
+  const pendingCandidate = value.pendingCandidate === null ? null : parsePendingCandidate(value.pendingCandidate);
+  const legacyUnassigned = parseLegacyBindings(value.legacyUnassigned);
+  if (active === undefined || pendingCandidate === undefined || legacyUnassigned === undefined) return null;
+  return { preferences: {
+    version: 2,
+    active,
+    pendingCandidate,
+    legacyUnassigned,
+    migratedLegacy: value.migratedLegacy,
+  }, rewrite: null };
+}
+
+function parseResolvedTarget(value: unknown): ResolvedRepositoryTarget | undefined {
+  if (!isRecord(value)) return undefined;
+  return value.kind === "local" ? parseResolvedLocalTarget(value) : value.kind === "ssh" ? parseResolvedSshTarget(value) : undefined;
+}
+
+function parseResolvedLocalTarget(value: unknown): ResolvedLocalRepositoryTarget | undefined {
   if (!isRecord(value)
+    || !hasOnlyKeys(value, ["kind", "root", "canonicalRoot", "repositoryId", "targetId"])
     || value.kind !== "local"
     || !nonEmptyString(value.root)
     || !nonEmptyString(value.canonicalRoot)
@@ -133,8 +234,37 @@ function parseResolvedTarget(value: unknown): ResolvedLocalRepositoryTarget | un
   };
 }
 
+function parseResolvedSshTarget(value: Record<string, unknown>): ResolvedSshRepositoryTarget | undefined {
+  if (!hasOnlyKeys(value, [
+    "kind", "sshProfile", "root", "canonicalRoot", "acceptedHostKeyFingerprint",
+    "endpointId", "hostInstanceId", "repositoryUuid", "repositoryId", "targetId",
+  ])
+    || !nonEmptyString(value.sshProfile)
+    || !nonEmptyString(value.root)
+    || !nonEmptyString(value.canonicalRoot)
+    || !validAcceptedHostKeyFingerprint(value.acceptedHostKeyFingerprint)
+    || !nonEmptyString(value.endpointId)
+    || !nonEmptyString(value.hostInstanceId)
+    || !validRepositoryUuid(value.repositoryUuid)
+    || !validIdentity(value.repositoryId)
+    || !validIdentity(value.targetId)) return undefined;
+  return {
+    kind: "ssh",
+    sshProfile: value.sshProfile,
+    root: value.root,
+    canonicalRoot: value.canonicalRoot,
+    acceptedHostKeyFingerprint: value.acceptedHostKeyFingerprint,
+    endpointId: value.endpointId,
+    hostInstanceId: value.hostInstanceId,
+    repositoryUuid: value.repositoryUuid,
+    repositoryId: value.repositoryId,
+    targetId: value.targetId,
+  };
+}
+
 function parsePendingCandidate(value: unknown): PendingLocalRepositoryCandidate | undefined {
   if (!isRecord(value)
+    || !hasOnlyKeys(value, ["kind", "canonicalRoot", "state", "eligibleLegacyThreads"])
     || value.kind !== "candidate"
     || !nonEmptyString(value.canonicalRoot)
     || (value.state !== "empty" && value.state !== "partial")) return undefined;
@@ -150,6 +280,7 @@ function parseLegacyBindings(value: unknown): readonly LegacyThreadBinding[] | u
   const bindings: LegacyThreadBinding[] = [];
   for (const binding of value) {
     if (!isRecord(binding)
+      || !hasOnlyKeys(binding, ["threadId", "recordedCwd", "reason"])
       || !nonEmptyString(binding.threadId)
       || !(typeof binding.recordedCwd === "string" || binding.recordedCwd === null)
       || !isLegacyUnassignedReason(binding.reason)) return undefined;
@@ -163,6 +294,7 @@ function parsePendingBindings(value: unknown): readonly PendingLegacyThreadBindi
   const bindings: PendingLegacyThreadBinding[] = [];
   for (const binding of value) {
     if (!isRecord(binding)
+      || !hasOnlyKeys(binding, ["threadId", "recordedCwd", "activeWithoutCwd"])
       || !nonEmptyString(binding.threadId)
       || !(typeof binding.recordedCwd === "string" || binding.recordedCwd === null)
       || typeof binding.activeWithoutCwd !== "boolean") return undefined;
@@ -183,8 +315,20 @@ function nonEmptyString(value: unknown): value is string {
   return typeof value === "string" && value.length > 0;
 }
 
+function hasOnlyKeys(value: Record<string, unknown>, allowedKeys: readonly string[]): boolean {
+  return Object.keys(value).every((key) => allowedKeys.includes(key));
+}
+
 function validIdentity(value: unknown): value is string {
   return typeof value === "string" && IDENTITY_PATTERN.test(value);
+}
+
+function validAcceptedHostKeyFingerprint(value: unknown): value is AcceptedHostKeyFingerprint {
+  return typeof value === "string" && ACCEPTED_HOST_KEY_FINGERPRINT_PATTERN.test(value);
+}
+
+function validRepositoryUuid(value: unknown): value is string {
+  return typeof value === "string" && REPOSITORY_UUID_PATTERN.test(value);
 }
 
 function isLegacyUnassignedReason(value: unknown): value is LegacyUnassignedReason {
@@ -341,7 +485,7 @@ function migratedPreferences(
   pendingCandidate: PendingLocalRepositoryCandidate | null,
   legacyUnassigned: readonly LegacyThreadBinding[],
 ): StoredTargetPreferences {
-  return { version: 1, active, pendingCandidate, legacyUnassigned, migratedLegacy: true };
+  return { version: 2, active, pendingCandidate, legacyUnassigned, migratedLegacy: true };
 }
 
 function isInsideRoot(path: string, canonicalRoot: string): boolean {

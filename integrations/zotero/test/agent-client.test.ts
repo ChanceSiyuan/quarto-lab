@@ -5,6 +5,7 @@ import { CodexAppServerClient } from "../src/codex-app-server";
 import { CodexService } from "../src/codex-service";
 import type { NativeBridge } from "../src/native-bridge";
 import type { ReaderContextService } from "../src/reader-context";
+import { capabilitiesFor } from "../src/repository-target";
 
 describe("agent-client contract", () => {
   it("CodexAppServerClient conforms to AgentClient", () => {
@@ -32,6 +33,13 @@ function engineLikeService(client: Partial<AgentClient>) {
       targetId,
     },
     targetEpoch: 1,
+    capabilities: capabilitiesFor({
+      kind: "local",
+      root: "/w",
+      canonicalRoot: "/w",
+      repositoryId: "a".repeat(64),
+      targetId,
+    }),
   };
   service.commitRepositoryTarget({
     snapshot,
