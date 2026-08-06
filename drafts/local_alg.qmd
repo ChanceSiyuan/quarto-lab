@@ -1,0 +1,91 @@
+---
+title: Local algorithm lower bound for MWIS
+description: "A shallow circuit inheriently cannot solve the MWIS problem"
+categories: [theory]
+---
+
+# Definitions
+
+Given a WMIS on weighted graph $G = (V,E), w_v$.
+For each vertex $v\in V$, define random variable $X_v\overset{\mathrm{i.i.d.}}{\sim}\operatorname{Unif}[0,1]$ the adjacent subgraph
+$$
+B_G(v,r) = G\big[\{u\in V:\operatorname{dist}_G(u,v)\le r\}\big].
+$$
+Any randomized classical algorithm can be viewed as a function $f(u,G,X)$ that takes a vertex $u\in V$, a graph $G$, and a random vector $X$ as input and outputs a bit.
+The inputs has gauge freedom since an exchange of vertex labels should not change the value of the function $f$.
+We thus define the rooted labeled local view of $u$ as the isomorphism class of as
+$$
+\mathcal V_r(u,G,x)
+:=
+\left[
+B_G(u,r),\,
+u,\,
+x|_{B_G(u,r)}
+\right]_{\cong},
+$$
+where $\cong$ indicates the graph isomorphism class.
+
+::: {#def-r-local-function .callout-note icon="false"}
+## ($r$-local function)
+
+A function $f(u,G,x)$ is $r$-local iff $f(u,G,x)=F\!\left(\mathcal V_r(u,G,x)\right).$
+:::
+
+We say that a local algorithm solves this MWIS problem if there exists an
+$r$-local function $f_r(u,G,X)\in\{0,1\}$ whose output indicates whether $u$
+belongs to the independent set.
+
+## Random graph and notations
+
+Two types of randomized graph is defined:
+
+:::{#def-RG .callout-note icon = false}
+- The Erdős--Rényi random graph, denoted as $G(n,d/n)$, is graph with $n$ vertexes and edges appears with propabability $d/n$.
+- The degree-regular random graph, denoted as $G_d(n)$, is uniformly distributed random $d$-regular graph with $n$ vertexes.
+:::
+
+For those two types of random graphs, we define the following concepts:
+
+- For a given positive integer $m$, let $\mathcal I(n,d,m)$ or $\mathcal I_d(n,m)$ be the set of all independent sets of size $m$ in $G(n,d/n)$ or $G_d(n)$, respectively.
+- To describe the overlap between two independent sets, we define the $\mathcal O(n,d,m,k)$ or $\mathcal O_d(n,m,k)$ for $0\leq k\leq m$ as:
+
+$$
+\mathcal O(n,d,m,k) = \left\{(I,J):I,J\in\mathcal I(n,d,m),\ |I\cap J|=k\right\}.
+$$
+
+- For $G\sim\mathbb G(n,d/n)$, we also define the normalized maximum independent set size as:
+$$
+\alpha(G)=\frac1n\max\{|I|:I\text{ is an independent set of }G\}.
+$$
+
+
+We also use $\alpha(n,d)$ and $\alpha_d(n)$ to denote random distribtution of $\alpha(G)$ for $G\sim\mathbb G(n,d/n)$ and $G_d(n)$, respectively.
+
+## Deterministic Limit of the Independence Ratio
+
+The normalized independence number is random for every finite $n$, because it depends on the sampled graph. Nevertheless, its fluctuations vanish at the scale of $n$: the random quantity converges in probability to a deterministic limit that depends only on the degree parameter. Gamarnik and Sudan quote this result and attribute its convergence statement to Bayati, Gamarnik, and Tetali [@gamarnikLimitsLocalAlgorithms2013a]. 
+
+::: {#thm-independence-ratio-limit .callout-important icon="false"}
+## (Deterministic limit of the independence ratio)
+
+For every fixed $d>0$, there exists a deterministic constant $\alpha(d)$ and $\alpha_d$ such that, for every $\varepsilon>0$,
+
+$$
+\begin{align}
+&\lim_{n\to\infty}
+\Pr\!\left(
+\left|\alpha(n,d)-\alpha(d)\right|>\varepsilon
+\right)=0, \\
+&\lim_{n\to\infty}
+\Pr\!\left(
+\left|\alpha_d(n)-\alpha_d\right|>\varepsilon
+\right)=0.
+\end{align}
+$$
+
+:::
+
+::: {#proof-independence-ratio-limit .callout-note collapse="true"}
+## (Proof sketch via interpolation and concentration)
+(Todo: Add reference and a sketch of proof)
+:::

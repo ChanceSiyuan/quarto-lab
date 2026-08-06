@@ -1,0 +1,469 @@
+---
+title: "AI Context · 稀疏随机图中的独立集、重叠与极限"
+description: "梳理随机图模型中的独立集记号，澄清归一化最大独立集大小是依赖随机图实例的随机变量，并概述其确定性渐近极限的插值法与集中性证明思路。"
+categories: [theory]
+---
+
+<!-- qlab-ai-context-managed:start -->
+<!-- qlab-ai-context-manifest:v1:eyJzY2hlbWFWZXJzaW9uIjoxLCJpZCI6InpjLTkwYzg5NmMyZGQ4ODRlMzNhMTU4MzcwNzIyOWJmMDRjIiwiY29udGV4dEtleSI6ImNvbnZlcnNhdGlvbjowMTlmYmNhNi1mZGY5LTdkYjAtOTU3OS03ZDU4MzI5MDJkMzkiLCJraW5kIjoiY29udmVyc2F0aW9uIiwic291cmNlVGhyZWFkSWQiOiIwMTlmYmNhNi1mZGY5LTdkYjAtOTU3OS03ZDU4MzI5MDJkMzkiLCJjcmVhdGVkQXQiOiIyMDI2LTA4LTAxVDEzOjIxOjM5LjI1NVoiLCJ1cGRhdGVkQXQiOiIyMDI2LTA4LTAxVDEzOjIxOjM5LjI1NVoiLCJzdGF0dXMiOiJhY3RpdmUiLCJwYXBlcnMiOlt7ImxpYnJhcnlJRCI6IjEiLCJpdGVtS2V5IjoiOVJUSzg2QVgiLCJ0aXRsZSI6IkxpbWl0cyBvZiBsb2NhbCBhbGdvcml0aG1zIG92ZXIgc3BhcnNlIHJhbmRvbSBncmFwaHMifV0sInByb2plY3Rpb24iOnsibW9kZSI6ImF0dGFjaGVkIiwidGFyZ2V0cyI6W3sibGlicmFyeUlEIjoiMSIsIml0ZW1LZXkiOiI5UlRLODZBWCJ9XX0sImNhcHR1cmVkRW50cnlJZHMiOlsiaXRlbS0xMCIsIml0ZW0tMTMiLCJpdGVtLTEiLCJpdGVtLTMiLCJpdGVtLTQiLCJpdGVtLTYiLCJpdGVtLTciLCJpdGVtLTkiXX0 -->
+<!-- qlab-ai-context-synthesis:v1:eyJ0aXRsZSI6IueogOeWj-maj-acuuWbvuS4reeahOeLrOeri-mbhuOAgemHjeWPoOS4juaegemZkCIsImRlc2NyaXB0aW9uIjoi5qKz55CG6ZqP5py65Zu-5qih5Z6L5Lit55qE54us56uL6ZuG6K6w5Y-377yM5r6E5riF5b2S5LiA5YyW5pyA5aSn54us56uL6ZuG5aSn5bCP5piv5L6d6LWW6ZqP5py65Zu-5a6e5L6L55qE6ZqP5py65Y-Y6YeP77yM5bm25qaC6L-w5YW256Gu5a6a5oCn5riQ6L-R5p6B6ZmQ55qE5o-S5YC85rOV5LiO6ZuG5Lit5oCn6K-B5piO5oCd6Lev44CCIiwiY2F0ZWdvcnkiOiJ0aGVvcnkiLCJzdGF0dXMiOiJhY3RpdmUiLCJtZW1vcnlNYXJrZG93biI6IiMjIOeglOeptuWvueixoeS4juWfuuacrOiusOWPt1xuXG7orrrmloflkIzml7bogIPomZHkuKTnsbvnqIDnlo_pmo_mnLrlm77vvJpcblxuLSBFcmTFkXPigJNSw6lueWkg6ZqP5py65Zu-ICRHXFxzaW1cXG1hdGhiYiBHKG4sZC9uKSTvvJrmr4_mnaHlgJnpgInovrnku6UgJGQvbiQg55qE5qaC546H54us56uL5Ye6546w77yM5bmz5Z2H5bqm57qm5Li6ICRkJOOAglxuLSDpmo_mnLogJGQkLeato-WImeWbviAkR1xcc2ltXFxtYXRoYmIgR19kKG4pJO-8muS7juaJgOaciSAkbiQg5Liq6aG254K544CB5q-P5Liq6aG254K55bqm5pWw5Z2H5Li6ICRkJCDnmoTlm77kuK3lnYfljIDmir3moLfvvJvpnIDopoEgJG5kJCDkuLrlgbbmlbDjgIJcblxu5a-55LiA5qyh5oq95qC35b6X5Yiw55qE5YW35L2T5Zu-ICRHJO-8jOiusOWbuuWumuWkp-Wwj-eahOeLrOeri-mbhuaXj-S4ulxuXG4kJFxuXFxtYXRoY2FsIEkoRyxtKT1cXHtJXFxzdWJzZXRlcSBWKEcpOiB8SXw9bSxcXCBJXFx0ZXh0eyBpcyBpbmRlcGVuZGVudH1cXH0uXG4kJFxuXG7orrrmlofkvb_nlKggJFxcbWF0aGNhbCBJKG4sZCxtKSQg5ZKMICRcXG1hdGhjYWwgSV9kKG4sbSkkIOWIhuWIq-ihqOekuuS4iui_sOS4pOS4qumaj-acuuWbvuaooeWei-S4reeahOWvueW6lOmaj-acuumbhuWQiOOAglxuXG7kuLrnoJTnqbbkuKTkuKrni6znq4vpm4bkuYvpl7TnmoTlh6DkvZXlhbPns7vvvIzlrprkuYnph43lj6DkuLogJHxJXFxjYXAgSnwk44CC6K6w5Y-3ICRcXG1hdGhjYWwgTyhuLGQsbSxrKSQg6KGo56S65ruh6LazXG5cbiQkXG58SXw9fEp8PW0sXG5cXHFxdWFkXG58SVxcY2FwIEp8PWtcbiQkXG5cbueahOeLrOeri-mbhuWvuSAkKEksSikk77ybJFxcbWF0aGNhbCBPX2QobixtLGspJCDmmK_mraPliJnlm77niYjmnKzjgILmn5DkupvkuK3pl7Tph43lj6DlgLwgJGskIOS4jeWPr-WunueOsO-8jOWPr-iDveaEj-WRs-edgOino-epuumXtOWtmOWcqOiBmuexu-aIlumHjeWPoOmXtOmameOAglxuXG4jIyDmnIDlpKfni6znq4vpm4blpKflsI_nmoTpmo_mnLrmgKdcblxuJFxcbWF0aGJiIEcobixkL24pJCDmmK_lm77kuIrnmoTmpoLnjofliIbluIPvvIzkuZ_luLjooqvnroDlhpnkuLrku47or6XliIbluIPmir3liLDnmoTpmo_mnLrlm77jgILlv4XpobvljLrliIbpmo_mnLrlm77mqKHlnovkuI7kuIDmrKHmir3moLflvpfliLDnmoTlm77lrp7kvovjgIJcblxu6K6-6ZqP5py657uT5p6c5Li6ICRcXG9tZWdhJO-8jOWFt-S9k-WbvuS4ulxuXG4kJFxuR19cXG9tZWdhXFxzaW1cXG1hdGhiYiBHKG4sZC9uKS5cbiQkXG5cbuWvueWbuuWumueahCAkR19cXG9tZWdhJO-8jOacgOWkp-eLrOeri-mbhuWkp-Wwj-WumuS5ieS4ulxuXG4kJFxuSChHX1xcb21lZ2EpXG49XG5cXG1heFxce3xJfDogSVxcc3Vic2V0ZXEgVihHX1xcb21lZ2EpLFxcIElcXHRleHR7IGlzIGluZGVwZW5kZW50fVxcfS5cbiQkXG5cbuW9kuS4gOWMluWQjuW-l-WIsFxuXG4kJFxuXFxhbHBoYShuLGQ7XFxvbWVnYSk9XFxmcmFje0goR19cXG9tZWdhKX17bn0uXG4kJFxuXG7lm6DmraTvvIzorrrmlofnroDlhpnnmoQgJFxcYWxwaGEobixkKSQg5piv6ZqP5py65Y-Y6YeP77ya5pyA5aSn5YyW5Y-R55Sf5Zyo5ZCM5LiA5qyh5oq95Yiw55qE5YW35L2T5Zu-5YaF6YOo77yM6ICM5LiN5piv5Zyo5pW05peP6ZqP5py65Zu-5LmL6Ze06L-b6KGM44CC5LiA5Liq5Zu-5Y-v5Lul5pyJ5aSa5Liq5pyA5aSn54us56uL6ZuG77yM5L2G5a6D5Lus5YW35pyJ55u45ZCM55qE5Z-65pWw44CCXG5cbuabtOa4heaZsOeahOiusOazleaYr1xuXG4kJFxuR1xcc2ltXFxtYXRoYmIgRyhuLGQvbiksXG5cXHFxdWFkXG5cXGFscGhhKEcpPVxcZnJhYzFuXFxtYXhcXHt8SXw6SVxcdGV4dHsgaXMgYW4gaW5kZXBlbmRlbnQgc2V0IG9mIH1HXFx9LlxuJCRcblxuIyMg56Gu5a6a5oCn5riQ6L-R5p6B6ZmQXG5cbuaJgOiuqOiuuueahOe7k-iuuuaYr--8muWtmOWcqOWPquS-nei1luS6jiAkZCQg55qE56Gu5a6a5bi45pWwICRcXGFscGhhKGQpJO-8jOS9v-W-l-WvueS7u-aEjyAkXFx2YXJlcHNpbG9uPjAk77yMXG5cbiQkXG5cXFByXFwhXFxsZWZ0KFxufFxcYWxwaGEobixkKS1cXGFscGhhKGQpfD5cXHZhcmVwc2lsb25cblxccmlnaHQpXG5cXGxvbmdyaWdodGFycm93IDAuXG4kJFxuXG7ov5nlubbkuI3mhI_lkbPnnYDmnInpmZAgJG4kIOaXtiAkXFxhbHBoYShuLGQpJCDkuI3lho3pmo_mnLrvvIzogIzmmK_or7Tlhbbpmo_mnLrms6LliqjlnKjlvZLkuIDljJblsLrluqbkuIrpgJDmuJDmtojlpLHjgIJcblxu6K-B5piO5YyF5ZCr5Lik5Liq5Li76KaB6YOo5YiG77ya5YWI55So5o-S5YC85rOV6K-B5piO5pyf5pyb55qE5b2S5LiA5YyW5p6B6ZmQ5a2Y5Zyo77yM5YaN55So6ZuG5Lit5LiN562J5byP5oqK5pyf5pyb5pS25pWb5o-Q5Y2H5Li66auY5qaC546H5pS25pWb44CCXG5cbiMjIyDmnJ_mnJvmnoHpmZDkuI7mj5LlgLzms5Vcblxu5LukXG5cbiQkXG5hX249XFxtYXRoYmIgRVxcLEgoR19uKS5cbiQkXG5cbuebruagh-aYr-ivgeaYjiAkYV9uL24kIOaUtuaVm-OAguWPliAkbj1uXzErbl8yJO-8jOavlOi-g-S4pOS4querr-eCue-8muS4gOS4quWujOaVtOeahCAkbiQg6aG254K56ZqP5py65Zu-77yM5Lul5Y-K5Lik5Liq5rKh5pyJ6Leo5Yy66L6555qE54us56uL6ZqP5py65Zu-5LmL5LiN5Lqk5bm244CC5a-55ZCO6ICF5pyJXG5cbiQkXG5IKEdfe25fMX1cXHNxY3VwIEdfe25fMn0pXG49XG5IKEdfe25fMX0pK0goR197bl8yfSkuXG4kJFxuXG7mj5LlgLzov4fnqIvpgJDmuJDmiorlhajlsYDnlJ_miJDnmoTovrnmm7_mjaLkuLrku4XokL3lnKjkuKTkuKrliIbljLrlhoXpg6jnmoTovrnjgILnu5nlrprlvZPliY3lm74gJEdfMCTvvIzku6QgJE9eKiQg5Li65bGe5LqO5q-P5LiA5Liq5pyA5aSn54us56uL6ZuG55qE6aG254K56ZuG5ZCI44CC5Yqg5YWl6L65ICQodSx2KSQg5pe277yM5Y-q5pyJ5ZyoICR1LHZcXGluIE9eKiQg55qE5oOF5Ya15LiL5pyA5aSn54us56uL6ZuG5aSn5bCP5omN5LiL6ZmNICQxJOOAglxuXG7oi6XkuKTkuKrliIbljLrkuK3nmoQgJE9eKiQg5a-G5bqm5Li6XG5cbiQkXG54XzE9XFxmcmFje3xPXipcXGNhcCBWXzF8fXtuXzF9LFxuXFxxcXVhZFxueF8yPVxcZnJhY3t8T14qXFxjYXAgVl8yfH17bl8yfSxcbiQkXG5cbuW5tuS7pCAkXFxsYW1iZGE9bl8xL24k77yM5YiZ5YWo5bGA5Z2H5YyA5pS-6L655a-86Ie05LiL6ZmN55qE5qaC546H6L-R5Ly85Li6XG5cbiQkXG5cXGJpZ2woXFxsYW1iZGEgeF8xKygxLVxcbGFtYmRhKXhfMlxcYmlncileMixcbiQkXG5cbuiAjOmZkOWItuWcqOWIhuWMuuWGhemDqOaUvui-ueaXtu-8jOivpeamgueOh-S4ulxuXG4kJFxuXFxsYW1iZGEgeF8xXjIrKDEtXFxsYW1iZGEpeF8yXjIuXG4kJFxuXG7lubPmlrnlh73mlbDnmoTlh7jmgKfnu5nlh7pcblxuJCRcblxcbGFtYmRhIHhfMV4yKygxLVxcbGFtYmRhKXhfMl4yXG5cXGdlcVxuXFxiaWdsKFxcbGFtYmRhIHhfMSsoMS1cXGxhbWJkYSl4XzJcXGJpZ3IpXjIuXG4kJFxuXG7lm6DmraTvvIzmiorovrnpm4bkuK3liLDkuKTkuKrlrZDlm77lhoXpg6jvvIzlnKjmnJ_mnJvkuIrlr7nmnIDlpKfni6znq4vpm4bnmoTnoLTlnY_mm7TlpKfjgILntK_np6_pgJDovrnmr5TovoPlj6_lvpfov5HkvLzotoXlj6_liqDmgKdcblxuJCRcbmFfe25fMStuXzJ9XG5cXGdlcVxuIGFfe25fMX0rYV97bl8yfS1PKFxcc3FydCBuKS5cbiQkXG5cbuivr-W3ruaYryAkbyhuKSTvvIzmlYXkv67mlLnniYggRmVrZXRlIOi2heWPr-WKoOW8leeQhuWPr-aOqOWHulxuXG4kJFxuXFxsaW1fe25cXHRvXFxpbmZ0eX1cXGZyYWN7YV9ufXtufVxuJCRcblxu5a2Y5Zyo44CCXG5cbiMjIyDku47mnJ_mnJvliLDpq5jmpoLnjodcblxu5pS55Y-Y5LiA5p2h6L655pe277yMJEgoR19uKSQg6Iez5aSa5pS55Y-YICQxJO-8jOaJgOS7peWug-aYr-maj-acuui-ueWPmOmHj-eahCBMaXBzY2hpdHog5Ye95pWw44CC6Z6F5oiW5pyJ55WM5beu5YiG5Z6L6ZuG5Lit5LiN562J5byP57uZ5Ye6XG5cbiQkXG5IKEdfbiktXFxtYXRoYmIgRSBIKEdfbik9byhuKVxuXFxxcXVhZFxcdGV4dHt3aXRoIGhpZ2ggcHJvYmFiaWxpdHl9LlxuJCRcblxu6Zmk5LulICRuJCDlkI7vvIxcblxuJCRcblxcZnJhY3tIKEdfbil9blxuPVxuXFxmcmFje1xcbWF0aGJiIEUgSChHX24pfW4rbygxKVxuXFxsb25ncmlnaHRhcnJvdyBcXGFscGhhKGQpXG4kJFxuXG7ku6Xpq5jmpoLnjofmiJDnq4vjgIJcblxuIyMjIOmaj-acuuato-WImeWbvlxuXG7pmo_mnLogJGQkLeato-WImeWbvuS4jeiDvemAmui_h-eLrOeri-mAkOi-uemHh-agt-aehOmAoO-8jOWboOatpOivgeaYjuaUueeUqCBjb25maWd1cmF0aW9uIG1vZGVs77yM5bm25Zyo5Lik5Liq6aG254K55YiG5Yy65LmL6Ze06YeN5paw6YWN5a-55Y2K6L6544CC57G75Ly855qE5Ye45oCn5q-U6L6D5Lqn55SfXG5cbiQkXG5hX3tuXzErbl8yfVxuXFxnZXFcbiBhX3tuXzF9K2Ffe25fMn0tTyhuXns1LzZ9KS5cbiQkXG5cbuivr-W3ruS7jeS4uiAkbyhuKSTvvIzmiYDku6XlvZLkuIDljJbmnJ_mnJvlhbfmnInnoa7lrprmnoHpmZDvvJvlho3nu5PlkIjpm4bkuK3mgKfljbPlj6_lvpfliLDpq5jmpoLnjofmlLbmlZvjgIIiLCJwcm9ncmVzc01hcmtkb3duIjoi5bey5a6M5oiQ5Lul5LiL5qaC5b-15qKz55CG77yaXG5cbi0g5Yy65YiG5LqG6ZqP5py65Zu-5qih5Z6L44CB6ZqP5py65Zu-5a6e5L6L5Lul5Y-K5L6d6LWW5a6e5L6L55qE57uf6K6h6YeP44CCXG4tIOa-hOa4heS6huiuuuaWh-S4rSAkXFxhbHBoYShuLGQpJCDpmpDol4_kuoblr7npmo_mnLrnu5PmnpwgJFxcb21lZ2EkIOeahOS-nei1lu-8jOWboOatpOWug-WcqOaciemZkCAkbiQg5pe25piv6ZqP5py65Y-Y6YeP44CCXG4tIOaAu-e7k-S6huWbuuWumuWkp-Wwj-eLrOeri-mbhuaXj-OAgeeLrOeri-mbhuWvueeahOmHjeWPoOS7peWPiumHjeWPoOmXtOmameeahOS9nOeUqOOAglxuLSDmpoLov7Dkuobnoa7lrprmgKfmnoHpmZDor4HmmI7nmoTkuKTlsYLnu5PmnoTvvJrmj5LlgLzms5Xlu7rnq4vmnJ_mnJvnmoTov5HkvLzotoXlj6_liqDmgKfvvIzpm4bkuK3kuI3nrYnlvI_mjqfliLbpmo_mnLrms6LliqjjgIJcbi0g6K6w5b2V5LqGIEVyZMWRc-KAk1LDqW55aSDlm77kuI7pmo_mnLrmraPliJnlm77or4HmmI7lnKjnlJ_miJDmqKHlnovlkozor6_lt67pobnkuIrnmoTlt67lvILjgIJcbi0g55u45YWz5Z-656GA6K6w5Y-35pu-5YaZ5YWlIERyYWZ0IOeahCBBSSDlt6XkvZzlia_mnKzvvJvljp_lp4sgYGRyYWZ0cy9sb2NhbF9hbGcucW1kYCDmnKrooqvnm7TmjqXkv67mlLnjgIIiLCJuZXh0U3RlcE1hcmtkb3duIjoi5LiL5LiA5q2l5Y-v5rex5YWl5qC45a-55o-S5YC86K-B5piO5Lit55qE5oqA5pyv57uG6IqC77yM5bCk5YW25piv77yaXG5cbjEuIOeyvuehruWumuS5iemAkOi-ueaPkuWAvOW6j-WIl-WPiuWFtuS4pOS4querr-eCueeahOamgueOh-WIhuW4g-OAglxuMi4g5Lil5qC86K-B5piO5Yqg5YWl5LiA5p2h6L655L2_5pyA5aSn54us56uL6ZuG5aSn5bCP5LiL6ZmN77yM5b2T5LiU5LuF5b2T5Lik5Liq56uv54K56YO95bGe5LqO5omA5pyJ5pyA5aSn54us56uL6ZuG55qE5Lqk6ZuGICRPXiok44CCXG4zLiDmjqjlr7wgJE8oXFxzcXJ0IG4pJCDor6_lt67nmoTlhbfkvZPmnaXmupDvvIzlubblhpnlh7rmiYDnlKjnmoTov5HkvLzotoXlj6_liqDlvJXnkIbjgIJcbjQuIOaYjuehrumbhuS4reS4jeetieW8j-aJgOS9v-eUqOeahOeLrOeri-maj-acuuWPmOmHj-aIluaatOmcsumehe-8jOS7peWPiuebuOW6lOWwvueVjOOAglxuNS4g5a-5IGNvbmZpZ3VyYXRpb24gbW9kZWwg5Lit55qE5Y2K6L656YeN5paw6YWN5a-56L-H56iL5ZKMICRPKG5eezUvNn0pJCDor6_lt67ov5vooYzljZXni6zlsZXlvIDjgIJcblxu5Zyo5oqK6L-Z5Lqb5YaF5a655o-Q5Y2H5Li65Y-v5L-h55-l6K-G5LmL5YmN77yM6L-Y6ZyA5a-554Wn5Y6f5aeL6K-B5piO6YCQ6aG55qC46aqM77yM5bm257uP6L-H6aG555uu6KeE5a6a55qE6I2J56i_5a6h6ZiF5LiO5ZCI5bm25rWB56iL44CCIiwicmVhZGluZ1BsYW4iOltdfQ -->
+
+## Compressed memory
+
+## 研究对象与基本记号
+
+论文同时考虑两类稀疏随机图：
+
+- Erdős–Rényi 随机图 $G\sim\mathbb G(n,d/n)$：每条候选边以 $d/n$ 的概率独立出现，平均度约为 $d$。
+- 随机 $d$-正则图 $G\sim\mathbb G_d(n)$：从所有 $n$ 个顶点、每个顶点度数均为 $d$ 的图中均匀抽样；需要 $nd$ 为偶数。
+
+对一次抽样得到的具体图 $G$，记固定大小的独立集族为
+
+$$
+\mathcal I(G,m)=\{I\subseteq V(G): |I|=m,\ I\text{ is independent}\}.
+$$
+
+论文使用 $\mathcal I(n,d,m)$ 和 $\mathcal I_d(n,m)$ 分别表示上述两个随机图模型中的对应随机集合。
+
+为研究两个独立集之间的几何关系，定义重叠为 $|I\cap J|$。记号 $\mathcal O(n,d,m,k)$ 表示满足
+
+$$
+|I|=|J|=m,
+\qquad
+|I\cap J|=k
+$$
+
+的独立集对 $(I,J)$；$\mathcal O_d(n,m,k)$ 是正则图版本。某些中间重叠值 $k$ 不可实现，可能意味着解空间存在聚类或重叠间隙。
+
+## 最大独立集大小的随机性
+
+$\mathbb G(n,d/n)$ 是图上的概率分布，也常被简写为从该分布抽到的随机图。必须区分随机图模型与一次抽样得到的图实例。
+
+设随机结果为 $\omega$，具体图为
+
+$$
+G_\omega\sim\mathbb G(n,d/n).
+$$
+
+对固定的 $G_\omega$，最大独立集大小定义为
+
+$$
+H(G_\omega)
+=
+\max\{|I|: I\subseteq V(G_\omega),\ I\text{ is independent}\}.
+$$
+
+归一化后得到
+
+$$
+\alpha(n,d;\omega)=\frac{H(G_\omega)}{n}.
+$$
+
+因此，论文简写的 $\alpha(n,d)$ 是随机变量：最大化发生在同一次抽到的具体图内部，而不是在整族随机图之间进行。一个图可以有多个最大独立集，但它们具有相同的基数。
+
+更清晰的记法是
+
+$$
+G\sim\mathbb G(n,d/n),
+\qquad
+\alpha(G)=\frac1n\max\{|I|:I\text{ is an independent set of }G\}.
+$$
+
+## 确定性渐近极限
+
+所讨论的结论是：存在只依赖于 $d$ 的确定常数 $\alpha(d)$，使得对任意 $\varepsilon&gt;0$，
+
+$$
+\Pr\!\left(
+|\alpha(n,d)-\alpha(d)|&gt;\varepsilon
+\right)
+\longrightarrow 0.
+$$
+
+这并不意味着有限 $n$ 时 $\alpha(n,d)$ 不再随机，而是说其随机波动在归一化尺度上逐渐消失。
+
+证明包含两个主要部分：先用插值法证明期望的归一化极限存在，再用集中不等式把期望收敛提升为高概率收敛。
+
+### 期望极限与插值法
+
+令
+
+$$
+a_n=\mathbb E\,H(G_n).
+$$
+
+目标是证明 $a_n/n$ 收敛。取 $n=n_1+n_2$，比较两个端点：一个完整的 $n$ 顶点随机图，以及两个没有跨区边的独立随机图之不交并。对后者有
+
+$$
+H(G_{n_1}\sqcup G_{n_2})
+=
+H(G_{n_1})+H(G_{n_2}).
+$$
+
+插值过程逐渐把全局生成的边替换为仅落在两个分区内部的边。给定当前图 $G_0$，令 $O^*$ 为属于每一个最大独立集的顶点集合。加入边 $(u,v)$ 时，只有在 $u,v\in O^*$ 的情况下最大独立集大小才下降 $1$。
+
+若两个分区中的 $O^*$ 密度为
+
+$$
+x_1=\frac{|O^*\cap V_1|}{n_1},
+\qquad
+x_2=\frac{|O^*\cap V_2|}{n_2},
+$$
+
+并令 $\lambda=n_1/n$，则全局均匀放边导致下降的概率近似为
+
+$$
+\bigl(\lambda x_1+(1-\lambda)x_2\bigr)^2,
+$$
+
+而限制在分区内部放边时，该概率为
+
+$$
+\lambda x_1^2+(1-\lambda)x_2^2.
+$$
+
+平方函数的凸性给出
+
+$$
+\lambda x_1^2+(1-\lambda)x_2^2
+\geq
+\bigl(\lambda x_1+(1-\lambda)x_2\bigr)^2.
+$$
+
+因此，把边集中到两个子图内部，在期望上对最大独立集的破坏更大。累积逐边比较可得近似超可加性
+
+$$
+a_{n_1+n_2}
+\geq
+ a_{n_1}+a_{n_2}-O(\sqrt n).
+$$
+
+误差是 $o(n)$，故修改版 Fekete 超可加引理可推出
+
+$$
+\lim_{n\to\infty}\frac{a_n}{n}
+$$
+
+存在。
+
+### 从期望到高概率
+
+改变一条边时，$H(G_n)$ 至多改变 $1$，所以它是随机边变量的 Lipschitz 函数。鞅或有界差分型集中不等式给出
+
+$$
+H(G_n)-\mathbb E H(G_n)=o(n)
+\qquad\text{with high probability}.
+$$
+
+除以 $n$ 后，
+
+$$
+\frac{H(G_n)}n
+=
+\frac{\mathbb E H(G_n)}n+o(1)
+\longrightarrow \alpha(d)
+$$
+
+以高概率成立。
+
+### 随机正则图
+
+随机 $d$-正则图不能通过独立逐边采样构造，因此证明改用 configuration model，并在两个顶点分区之间重新配对半边。类似的凸性比较产生
+
+$$
+a_{n_1+n_2}
+\geq
+ a_{n_1}+a_{n_2}-O(n^{5/6}).
+$$
+
+误差仍为 $o(n)$，所以归一化期望具有确定极限；再结合集中性即可得到高概率收敛。
+
+## Reading plan
+
+
+
+## Progress
+
+已完成以下概念梳理：
+
+- 区分了随机图模型、随机图实例以及依赖实例的统计量。
+- 澄清了论文中 $\alpha(n,d)$ 隐藏了对随机结果 $\omega$ 的依赖，因此它在有限 $n$ 时是随机变量。
+- 总结了固定大小独立集族、独立集对的重叠以及重叠间隙的作用。
+- 概述了确定性极限证明的两层结构：插值法建立期望的近似超可加性，集中不等式控制随机波动。
+- 记录了 Erdős–Rényi 图与随机正则图证明在生成模型和误差项上的差异。
+- 相关基础记号曾写入 Draft 的 AI 工作副本；原始 `drafts/local_alg.qmd` 未被直接修改。
+
+## Next step
+
+下一步可深入核对插值证明中的技术细节，尤其是：
+
+1. 精确定义逐边插值序列及其两个端点的概率分布。
+2. 严格证明加入一条边使最大独立集大小下降，当且仅当两个端点都属于所有最大独立集的交集 $O^*$。
+3. 推导 $O(\sqrt n)$ 误差的具体来源，并写出所用的近似超可加引理。
+4. 明确集中不等式所使用的独立随机变量或暴露鞅，以及相应尾界。
+5. 对 configuration model 中的半边重新配对过程和 $O(n^{5/6})$ 误差进行单独展开。
+
+在把这些内容提升为可信知识之前，还需对照原始证明逐项核验，并经过项目规定的草稿审阅与合并流程。
+
+## Conversation log
+
+<!-- qlab-ai-context-message:v1:eyJpZCI6Iml0ZW0tMTAiLCJyb2xlIjoidXNlciIsInV0ZjhCeXRlcyI6MzB9 -->
+### User
+
+```text
+这个定理的思路是什么
+```
+
+<!-- qlab-ai-context-message:v1:eyJpZCI6Iml0ZW0tMTMiLCJyb2xlIjoiYXNzaXN0YW50IiwidXRmOEJ5dGVzIjozNjY1fQ -->
+### Assistant
+
+```text
+这个定理在当前论文中只是引用的已知结果；真正的证明来自 Bayati–Gamarnik–Tetali。核心是：
+
+\[
+\boxed{\text{插值法证明期望存在极限}
+\quad+\quad
+\text{集中不等式消除随机波动}}
+\]
+
+定理的准确含义是：对任意 \(\varepsilon>0\)，
+
+\[
+\Pr\!\left(
+\left|\alpha(n,d)-\alpha(d)\right|>\varepsilon
+\right)\longrightarrow 0.
+\]
+
+所以 \(\alpha(n,d)\) 仍然是随机变量，只是当 \(n\) 很大时，它几乎总落在同一个确定常数 \(\alpha(d)\) 附近。（论文 PDF 第 5 页；[Gamarnik–Sudan 原文](https://eccc.weizmann.ac.il/report/2013/055/download)）
+
+### 1. 先研究期望
+
+令 \(H(G)\) 表示图 \(G\) 的最大独立集大小，并记
+
+\[
+a_n=\mathbb E\,H(G_n).
+\]
+
+目标是证明
+
+\[
+\frac{a_n}{n}\longrightarrow \alpha(d).
+\]
+
+普通的单调性并不足以证明这个极限存在，因为不同 \(n\) 的随机图之间没有直接的嵌套关系。
+
+### 2. 把一个大图和两个小图连接起来
+
+取
+
+\[
+n=n_1+n_2.
+\]
+
+插值构造的两个端点是：
+
+- 一个完整的 \(n\) 顶点随机图；
+- 两个相互独立、没有跨区边的随机图
+  \[
+  G_{n_1}\sqcup G_{n_2}.
+  \]
+
+对于不交并，
+
+\[
+H(G_{n_1}\sqcup G_{n_2})
+=H(G_{n_1})+H(G_{n_2}).
+\]
+
+插值过程逐条改变边：一端允许边在全部 \(n\) 个顶点之间出现；另一端强制每条边完全落在第一个或第二个子图中。
+
+### 3. 为什么插值具有固定方向？
+
+给定中间图 \(G_0\)，令 \(O^*\) 是“属于每一个最大独立集”的顶点集合。
+
+加入一条边 \((u,v)\) 时：
+
+- 如果 \(u,v\in O^*\)，最大独立集大小下降 \(1\)；
+- 否则至少存在一个最大独立集不同时包含二者，最大值不变。
+
+因此，如果边在全部顶点中均匀产生，造成下降的概率约为
+
+\[
+\left(\frac{|O^*|}{n}\right)^2.
+\]
+
+设两个分区内 \(O^*\) 的密度分别是
+
+\[
+x_1=\frac{|O^*\cap V_1|}{n_1},
+\qquad
+x_2=\frac{|O^*\cap V_2|}{n_2},
+\]
+
+且 \(\lambda=n_1/n\)。当边被限制在某一个分区内部时，下降概率是
+
+\[
+\lambda x_1^2+(1-\lambda)x_2^2.
+\]
+
+利用平方函数的凸性，
+
+\[
+\lambda x_1^2+(1-\lambda)x_2^2
+\geq
+\bigl(\lambda x_1+(1-\lambda)x_2\bigr)^2
+=
+\left(\frac{|O^*|}{n}\right)^2.
+\]
+
+这说明：把边集中放进两个子图内部，对最大独立集的破坏在期望上更大。逐步累积这个比较，得到近似超可加性：
+
+\[
+a_{n_1+n_2}
+\geq
+a_{n_1}+a_{n_2}-O(\sqrt n).
+\]
+
+这里的误差来自边数的二项分布波动。修改版的 Fekete 超可加引理说明，只要误差是 \(o(n)\)，就足以推出
+
+\[
+\lim_{n\to\infty}\frac{a_n}{n}
+\]
+
+存在。[Bayati–Gamarnik–Tetali 的证明](https://web.stanford.edu/~bayati/papers/interpolation.pdf)
+
+### 4. 从期望极限升级到高概率极限
+
+改变一条边，最大独立集大小至多改变 \(1\)。因此 \(H(G_n)\) 是随机边的 Lipschitz 函数，可以用标准的鞅或集中不等式证明
+
+\[
+H(G_n)-\mathbb EH(G_n)=o(n)
+\qquad\text{w.h.p.}
+\]
+
+除以 \(n\) 后，
+
+\[
+\frac{H(G_n)}n
+=
+\frac{\mathbb EH(G_n)}n+o(1)
+\longrightarrow \alpha(d)
+\qquad\text{w.h.p.}
+\]
+
+### 正则图情形
+
+随机 \(d\)-正则图不能独立地逐边生成，所以证明改用 configuration model，在两个顶点分区之间重新配对半边。由类似的凸性比较得到
+
+\[
+a_{n_1+n_2}
+\geq a_{n_1}+a_{n_2}-O(n^{5/6}),
+\]
+
+误差仍是 \(o(n)\)，所以同样得到确定极限 \(\alpha_d\)，再利用集中性获得高概率收敛。
+
+本地可信知识库对此只返回了与主题无关的歧义候选，因此这里没有选择其中任何一项；上述解释来自当前论文及其引用的原始证明。
+```
+
+<!-- qlab-ai-context-message:v1:eyJpZCI6Iml0ZW0tMSIsInJvbGUiOiJ1c2VyIiwidXRmOEJ5dGVzIjo0NX0 -->
+### User
+
+```text
+这一段提到了什么概念，总结一下
+```
+
+<!-- qlab-ai-context-message:v1:eyJpZCI6Iml0ZW0tMyIsInJvbGUiOiJhc3Npc3RhbnQiLCJ1dGY4Qnl0ZXMiOjE0MTZ9 -->
+### Assistant
+
+```text
+这段主要是在建立论文后面分析所需的符号和概念：
+
+- **Erdős–Rényi 随机图 \(G(n,d/n)\)**：有 \(n\) 个顶点，每条可能的边都以 \(d/n\) 的概率独立出现，因此平均度大约是 \(d\)。
+- **随机 \(d\)-正则图 \(G_d(n)\)**：从所有“每个顶点度数都等于 \(d\)”的 \(n\) 顶点图中均匀随机抽取一个。要求 \(nd\) 为偶数。
+- **固定大小的独立集**：
+  - \(\mathcal I(n,d,m)\)：\(G(n,d/n)\) 中所有大小为 \(m\) 的独立集；
+  - \(\mathcal I_d(n,m)\)：随机 \(d\)-正则图中的对应集合。
+- **两个独立集的重叠**：
+  \[
+  \mathcal O(n,d,m,k)
+  \]
+  表示所有独立集对 \((I,J)\)，其中 \(|I|=|J|=m\)，并且交集大小 \(|I\cap J|=k\)。\(\mathcal O_d(n,m,k)\) 是正则图版本。
+- **归一化最大独立集大小**：
+  \[
+  \alpha(n,d)=\frac1n\max\{m:\mathcal I(n,d,m)\neq\varnothing\}.
+  \]
+  它表示最大独立集占全部顶点的比例。
+
+核心意图是：作者不仅研究独立集能有多大，还研究两个大独立集之间可能有多大重叠。通过判断某些 \(k\) 对应的 \(\mathcal O(n,d,m,k)\) 是否为空，可以揭示独立集解空间是否存在某些“禁止的中间重叠”，这正是后面讨论聚类和重叠间隙现象的基础。（论文 PDF 第 5 页）
+
+注：本地可信知识库没有匹配内容；以上总结直接来自当前论文选段。
+```
+
+<!-- qlab-ai-context-message:v1:eyJpZCI6Iml0ZW0tNCIsInJvbGUiOiJ1c2VyIiwidXRmOEJ5dGVzIjoxMX0 -->
+### User
+
+```text
+写入draft
+```
+
+<!-- qlab-ai-context-message:v1:eyJpZCI6Iml0ZW0tNiIsInJvbGUiOiJhc3Npc3RhbnQiLCJ1dGY4Qnl0ZXMiOjMxMX0 -->
+### Assistant
+
+```text
+已写入当前 Draft 的 AI 工作副本，新增“随机图与独立集的基本记号”一节，包括两类随机图、独立集集合、重叠集合及归一化最大独立集大小，并标注来源为论文第 5 页。
+
+原始 `drafts/local_alg.qmd` 未修改；可在 Zotero 中预览并选择 Keep。
+```
+
+<!-- qlab-ai-context-message:v1:eyJpZCI6Iml0ZW0tNyIsInJvbGUiOiJ1c2VyIiwidXRmOEJ5dGVzIjoxMDN9 -->
+### User
+
+```text
+\mathbb{G}(n,d/n)不是一系列随机图吗，随机图哪来的 “largest cardinality”的说法呢
+```
+
+<!-- qlab-ai-context-message:v1:eyJpZCI6Iml0ZW0tOSIsInJvbGUiOiJhc3Npc3RhbnQiLCJ1dGY4Qnl0ZXMiOjE0MTN9 -->
+### Assistant
+
+```text
+对，\(\mathbb G(n,d/n)\) 是随机图模型，也可以理解为“取值为图的随机变量”。原文在这里略微滥用了记号：同一个 \(\mathbb G(n,d/n)\) 既表示概率分布，也表示从该分布中抽到的随机图实例。
+
+更严谨地说，设随机结果为 \(\omega\)，抽到的具体图为
+
+\[
+G_\omega\sim \mathbb G(n,d/n).
+\]
+
+对于这个已经确定的图 \(G_\omega\)，可以定义其最大独立集大小：
+
+\[
+\alpha(G_\omega)
+=\max\{|I|:I\subseteq V(G_\omega),\ I\text{ 是独立集}\}.
+\]
+
+论文中的定义实际是
+
+\[
+\alpha(n,d;\omega)
+=\frac{\alpha(G_\omega)}{n}.
+\]
+
+因此：
+
+- “largest cardinality”指的是在**同一次抽到的具体图内部**，寻找最大的独立集；
+- 它不是在整族随机图之间找一个最大的图；
+- 由于抽到的图会变化，\(\alpha(n,d)\) 本身也是一个**随机变量**。
+
+这里的 “a largest independent subset” 也不是说只有一个最大独立集——最大独立集可能有多个，但它们的大小相同。
+
+所以原文更清晰的写法应当是：
+
+\[
+G\sim\mathbb G(n,d/n),\qquad
+\alpha(G)=\frac1n\max\{|I|:I\text{ is an independent set of }G\}.
+\]
+
+随后再研究 \(\alpha(G)\) 以高概率具有怎样的渐近行为。论文把它简写成 \(\alpha(n,d)\)，把对随机图实例的依赖隐藏起来了。（论文 PDF 第 5 页；本地可信知识库未提供相关说明。）
+```
+
+<!-- qlab-ai-context-managed:end -->
