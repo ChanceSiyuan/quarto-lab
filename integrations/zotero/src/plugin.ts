@@ -1,5 +1,6 @@
 import { NativeBridge } from "./native-bridge";
 import readerToolbarIcon from "../assets/icon.svg";
+import readerEditorIcon from "../assets/editor-split.svg";
 import regionCaptureIcon from "../assets/region-capture.svg";
 import {
   CodexService,
@@ -43,6 +44,7 @@ import {
   WorkbenchTabManager,
   isDedicatedWorkbenchWindow,
   type WorkbenchTabData,
+  type WorkbenchTabView,
 } from "./workbench-tab";
 import { StandaloneWorkbenchManager } from "./standalone-workbench";
 import { WorkbenchView } from "./workbench-view";
@@ -878,7 +880,8 @@ export class ZoteroChatPlugin {
       if (!event.shiftKey && key === "i") {
         event.preventDefault();
         event.stopPropagation();
-        void this.openWorkbenchTab(win).catch((error) => this.reportError(error));
+        void this.openWorkbenchTab(win, { arrangement: "pdf-chat" })
+          .catch((error) => this.reportError(error));
         return;
       }
       if (!event.shiftKey && key === "l") {
@@ -1021,10 +1024,27 @@ export class ZoteroChatPlugin {
       button.appendChild(icon);
       button.addEventListener("click", () => {
         void this.acceptReaderHook(event).then(async () => {
-          await this.openWorkbenchTab();
+          await this.openWorkbenchTab(undefined, { arrangement: "pdf-chat" });
         }).catch((error) => this.reportError(error));
       });
       append(button);
+
+      const editorButton = doc.createElement("button");
+      editorButton.type = "button";
+      editorButton.title = "Open PDF beside the QMD editor";
+      editorButton.setAttribute("aria-label", editorButton.title);
+      editorButton.style.cssText = "display:grid;place-items:center;width:32px;height:32px;border:0;border-radius:8px;background:transparent;cursor:pointer;padding:5px";
+      const editorIcon = doc.createElement("img");
+      editorIcon.src = readerEditorIcon;
+      editorIcon.alt = "";
+      editorIcon.style.cssText = "width:22px;height:22px";
+      editorButton.appendChild(editorIcon);
+      editorButton.addEventListener("click", () => {
+        void this.acceptReaderHook(event).then(async () => {
+          await this.openWorkbenchTab(undefined, { arrangement: "pdf-editor" });
+        }).catch((error) => this.reportError(error));
+      });
+      append(editorButton);
 
       const regionButton = doc.createElement("button");
       regionButton.type = "button";
@@ -2571,7 +2591,10 @@ export class ZoteroChatPlugin {
     return [remembered, ...installed.filter((editor) => editor.id !== remembered.id)];
   }
 
-  private async openWorkbenchTab(win = Zotero.getMainWindow()): Promise<void> {
+  private async openWorkbenchTab(
+    win = Zotero.getMainWindow(),
+    options: { arrangement?: "pdf-chat" | "pdf-editor" } = {},
+  ): Promise<void> {
     if (this.destroyed) return;
     if (!win) throw new Error("The Zotero main window is unavailable");
     const selectedType = String(win.Zotero_Tabs?.selectedType || "");
@@ -2583,6 +2606,13 @@ export class ZoteroChatPlugin {
       if (this.destroyed) return;
       this.renderChatViews();
       if (this.destroyed) return;
+      if (options.arrangement) {
+        this.arrangeWorkbench(
+          existing.view,
+          options.arrangement,
+          selectedType === QLAB_WORKBENCH_TAB_TYPE ? this.context : null,
+        );
+      }
       existing.view.focusComposer();
       if (!this.codex.state.connected) await this.ensureChatSession();
       if (this.destroyed) return;
@@ -2613,6 +2643,7 @@ export class ZoteroChatPlugin {
     if (this.destroyed) return;
     this.renderChatViews();
     if (this.destroyed) return;
+    if (options.arrangement) this.arrangeWorkbench(entry.view, options.arrangement, context);
     entry.view.focusComposer();
     if (!this.codex.state.connected) {
       await this.ensureChatSession();
@@ -2621,10 +2652,35 @@ export class ZoteroChatPlugin {
     }
   }
 
+  /**
+   * Applies a reader-button arrangement: PDF of the given context on the
+   * left, chat or the editor on the right. Without an attachment context the
+   * demanded right-side tab simply opens (no PDF tab is invented).
+   */
+  private arrangeWorkbench(
+    view: WorkbenchTabView,
+    arrangement: "pdf-chat" | "pdf-editor",
+    context: ReaderContext | null,
+  ): void {
+    if (!(view instanceof WorkbenchView)) return;
+    const attachment = context?.attachment;
+    const itemID = Number(attachment?.id);
+    if (!context || !attachment?.key || !Number.isFinite(itemID)) {
+      view.arrange(arrangement, null);
+      return;
+    }
+    view.arrange(arrangement, {
+      itemID,
+      attachmentKey: String(attachment.key),
+      title: paperTitle(context),
+      page: context.page?.pageNumber,
+    });
+  }
+
   private async chooseWorkbenchPaper(
     win: Window,
     tabID: string | null,
-    preferredView?: SidebarView,
+    preferredView?: Pick<SidebarView, "focusComposer">,
   ): Promise<void> {
     const deferred = Zotero.Promise.defer();
     const io: any = {
@@ -4408,12 +4464,36 @@ export class ZoteroChatPlugin {
         ?? (secondary.attachmentID ? Zotero.Items?.get?.(Number(secondary.attachmentID) || secondary.attachmentID) : null)
       : this.readerContextItem(context);
     if (!attachment?.id) throw new Error("The PDF pinned to this conversation is unavailable");
+    if (!openInWindow && this.focusWorkbenchPdfTab(attachment, pageNumber)) return;
     await Zotero.Reader.open(attachment.id, { pageIndex: pageNumber - 1 }, {
       allowDuplicate: false,
       openInBackground: false,
       preventJumpback: false,
       ...(openInWindow ? { openInWindow: true } : {}),
     });
+  }
+
+  /**
+   * A page link prefers an already-open workbench PDF tab over spawning a
+   * native reader tab: activate it, jump to the page, select the deck tab.
+   */
+  private focusWorkbenchPdfTab(attachment: { key?: unknown }, pageNumber: number): boolean {
+    const key = String(attachment?.key || "");
+    if (!key) return false;
+    const win = typeof Zotero === "undefined" ? null : Zotero.getMainWindow?.();
+    if (!win) return false;
+    const tabId = `pdf:${key}`;
+    for (const entry of this.workbenchTabs?.entries(win) || []) {
+      const view = entry.view;
+      if (!(view instanceof WorkbenchView)) continue;
+      if (!view.shell.layout.tab(tabId)) continue;
+      view.shell.layout.activateTab(tabId);
+      const provider = view.shell.provider(tabId);
+      if (provider instanceof PdfReaderView) provider.goToPage(pageNumber);
+      win.Zotero_Tabs?.select?.(entry.id);
+      return true;
+    }
+    return false;
   }
 
   private canOpenConversationPdfPage(reference: PdfPageReference): boolean {

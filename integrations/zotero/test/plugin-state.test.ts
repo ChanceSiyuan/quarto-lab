@@ -916,7 +916,7 @@ describe("Zotkit Reader terminal state", () => {
     window.dispatchEvent(new KeyboardEvent("keydown", { key: "j", metaKey: true, shiftKey: true, bubbles: true }));
     await Promise.resolve();
 
-    expect(plugin.openWorkbenchTab).toHaveBeenCalledWith(window);
+    expect(plugin.openWorkbenchTab).toHaveBeenCalledWith(window, { arrangement: "pdf-chat" });
     expect(plugin.openChatWithSelection).toHaveBeenNthCalledWith(1, true);
     expect(plugin.openChatWithSelection).toHaveBeenNthCalledWith(2, false);
     expect(plugin.openWorkbenchTerminal).toHaveBeenCalledWith(window);
@@ -2037,8 +2037,10 @@ describe("Region screenshots (Design 3)", () => {
         reader: { id: "reader-1" },
       });
 
-      expect(appended).toHaveLength(2);
-      const regionButton = appended[1] as HTMLButtonElement;
+      expect(appended).toHaveLength(3);
+      const editorButton = appended[1] as HTMLButtonElement;
+      expect(editorButton.title).toBe("Open PDF beside the QMD editor");
+      const regionButton = appended[2] as HTMLButtonElement;
       expect(regionButton.title).toBe("Capture Region Screenshot (QLab)");
       expect(regionButton.getAttribute("aria-label")).toBe("Capture Region Screenshot (QLab)");
       expect(regionButton.querySelector("img")?.alt).toBe("");
