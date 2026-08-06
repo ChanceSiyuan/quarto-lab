@@ -345,6 +345,36 @@ const CASES: readonly Case[] = [
     expected: ["LINK_OUTSIDE_KNOWLEDGE knowledge/ising/proof.qmd"],
   },
   {
+    name: "a well-formed qlab-tree block on the root index validates clean",
+    mutate: (repo) =>
+      append(
+        repo,
+        "index.qmd",
+        "\n```qlab-tree\nnodes:\n  - label: Ising\n    note: ising/index.qmd\n  - label: Planned\n```\n",
+      ),
+    expected: [],
+  },
+  {
+    name: "a qlab-tree note must be a page of the knowledge tree",
+    mutate: (repo) =>
+      append(
+        repo,
+        "index.qmd",
+        "\n```qlab-tree\nnodes:\n  - label: Ghost\n    note: missing/index.qmd\n```\n",
+      ),
+    expected: ["TREE_NOTE_MISSING knowledge/index.qmd"],
+  },
+  {
+    name: "a qlab-tree block belongs on the root index only",
+    mutate: (repo) =>
+      append(
+        repo,
+        "ising/index.qmd",
+        "\n```qlab-tree\nnodes:\n  - label: Stray\n```\n",
+      ),
+    expected: ["TREE_BLOCK_MISPLACED knowledge/ising/index.qmd"],
+  },
+  {
     name: "a zotero deep link is a sanctioned external target",
     mutate: (repo) =>
       append(

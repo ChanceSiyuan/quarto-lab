@@ -14,6 +14,8 @@
 
 export { loadKnowledge } from "./graph.js";
 export { KnowledgeValidationError, validateKnowledge } from "./validate.js";
+export { compileTree, extractTreeBlock } from "./tree.js";
+export type { CompiledTree, CompiledTreeNode, TreeDiagnostic } from "./tree.js";
 export { KnowledgeQueryError, resolveKnowledge } from "./resolve.js";
 export { KnowledgeSiteError, buildKnowledgeSite, previewKnowledgeSite } from "./site.js";
 

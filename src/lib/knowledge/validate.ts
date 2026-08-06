@@ -49,6 +49,7 @@
  * answerable, whichever way the author reads the report.
  */
 
+import { readFile } from "node:fs/promises";
 import path from "node:path";
 
 import { loadBibliography } from "../literature/bibliography.js";
@@ -68,6 +69,7 @@ import {
   type UnresolvableReason,
 } from "./graph.js";
 import { INDEX_FILENAME, READING_MAP_HEADING, RELATED_TOPICS_HEADING } from "./parser.js";
+import { compileTree, extractTreeBlock } from "./tree.js";
 import {
   isPathLikeAlias,
   type Diagnostic,
@@ -433,6 +435,40 @@ export async function validateGraph(
   }
 
   diagnostics.sort(compareDiagnostics);
+  // Topic tree block: only the root index may carry one, and its contents
+  // must compile (see tree.ts). Sources are re-read here because the parsed
+  // pages hold only the post-frontmatter body, and the block's diagnostics
+  // point at whole-file line numbers.
+  for (const page of pages) {
+    const source = await readFile(page.absolutePath, "utf8");
+    const block = extractTreeBlock(source);
+    if (!block) continue;
+    const location = (line: number): SourceLocation => ({
+      file: fileOf(page),
+      line,
+      column: 1,
+    });
+    if (page.id !== INDEX_FILENAME) {
+      report(
+        "TREE_BLOCK_MISPLACED",
+        "a qlab-tree block may only appear on the root index page",
+        location(block.startLine),
+      );
+      continue;
+    }
+    const compiled = compileTree({
+      yamlText: block.yamlText,
+      startLine: block.startLine,
+      // The site path is fixed by the projection's base config; validation
+      // only needs it to shape note URLs it then discards.
+      pages: new Set(graph.pages.keys()),
+      sitePath: "/knowledge/",
+    });
+    for (const diagnostic of compiled.diagnostics) {
+      report(diagnostic.code, diagnostic.message, location(diagnostic.line));
+    }
+  }
+
   return { ok: diagnostics.length === 0, diagnostics };
 }
 
