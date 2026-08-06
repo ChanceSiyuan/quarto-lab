@@ -26,6 +26,16 @@ export interface TabContentProvider {
 
 export type ProviderFactory = (tab: TabDescriptor) => TabContentProvider;
 
+/**
+ * Where a dragged tab would land: a bar slot (`pane` + `index`), a pane's
+ * content area (`pane` alone, appended), or a new right pane (`split`).
+ */
+export type DropTarget = { pane: PaneId; index?: number } | { split: "right" };
+
+const DRAG_THRESHOLD_PX = 4;
+/** Fraction of the single-pane content width that acts as a split edge. */
+const SPLIT_EDGE_FRACTION = 0.2;
+
 export interface WorkbenchShellOptions {
   initialSplitRatio: number;
   onSplitRatioChange(ratio: number): void;
@@ -63,6 +73,7 @@ export class WorkbenchShell {
   private readonly splitHandle: HTMLButtonElement;
   private splitRatio: number;
   private syncing = false;
+  private suppressClick = false;
 
   constructor(host: HTMLElement, doc: Document, options: WorkbenchShellOptions) {
     this.doc = doc;
@@ -271,7 +282,13 @@ export class WorkbenchShell {
         this.requestClose(id);
       });
       button.append(label, close);
-      button.addEventListener("click", () => this.layout.activateTab(id));
+      button.addEventListener("click", () => {
+        if (this.suppressClick) {
+          this.suppressClick = false;
+          return;
+        }
+        this.layout.activateTab(id);
+      });
       this.installDragHandlers(button, id);
       bar.appendChild(button);
     }
@@ -284,8 +301,140 @@ export class WorkbenchShell {
     this.layout.closeTab(id);
   }
 
-  /** Drag support arrives in the next task; the hook keeps renderBar stable. */
-  protected installDragHandlers(_button: HTMLButtonElement, _tabId: string): void {}
+  /**
+   * Resolves pointer coordinates to a drop target. Bars win over content;
+   * in single-pane mode the right 20% of the content area creates the split,
+   * the left 20% reorders to the front, and the middle appends in place.
+   */
+  dropTargetAt(x: number, y: number): DropTarget | null {
+    const rootRect = this.root.getBoundingClientRect();
+    if (x < rootRect.left || x > rootRect.right || y < rootRect.top || y > rootRect.bottom) {
+      return null;
+    }
+    const split = this.layout.snapshot().panes.right !== null;
+    for (const pane of ["left", "right"] as const) {
+      if (pane === "right" && !split) continue;
+      const rect = this.bars[pane].getBoundingClientRect();
+      if (rect.width > 0 && y >= rect.top && y <= rect.bottom
+        && x >= rect.left && x <= rect.right) {
+        return { pane, index: this.insertionIndex(this.bars[pane], x) };
+      }
+    }
+    if (split) {
+      const boundary = rootRect.left + (rootRect.width * this.splitRatio) / 100;
+      return { pane: x < boundary ? "left" : "right" };
+    }
+    if (x >= rootRect.left + rootRect.width * (1 - SPLIT_EDGE_FRACTION)) return { split: "right" };
+    if (x <= rootRect.left + rootRect.width * SPLIT_EDGE_FRACTION) return { pane: "left", index: 0 };
+    return { pane: "left" };
+  }
+
+  private insertionIndex(bar: HTMLElement, x: number): number {
+    let index = 0;
+    for (const button of bar.querySelectorAll(".zc-shell-tab")) {
+      const rect = (button as HTMLElement).getBoundingClientRect();
+      if (x > rect.left + rect.width / 2) index++;
+    }
+    return index;
+  }
+
+  private installDragHandlers(button: HTMLButtonElement, tabId: string): void {
+    button.addEventListener("pointerdown", (event) => {
+      if ((event.target as HTMLElement | null)?.closest?.(".zc-shell-tab-close")) return;
+      this.armDrag(button, tabId, event as PointerEvent);
+    });
+  }
+
+  private armDrag(button: HTMLButtonElement, tabId: string, down: PointerEvent): void {
+    const view = this.doc.defaultView;
+    if (!view) return;
+    if (typeof down.pointerId === "number" && typeof button.setPointerCapture === "function") {
+      try { button.setPointerCapture(down.pointerId); }
+      catch { /* capture is an optimization, not a requirement */ }
+    }
+    const startX = down.clientX;
+    const startY = down.clientY;
+    let dragging = false;
+    const onMove = (event: PointerEvent) => {
+      if (!dragging
+        && Math.hypot(event.clientX - startX, event.clientY - startY) <= DRAG_THRESHOLD_PX) {
+        return;
+      }
+      dragging = true;
+      button.classList.add("is-dragging");
+      this.showDropIndicator(this.dropTargetAt(event.clientX, event.clientY));
+    };
+    const cleanup = () => {
+      dragging = false;
+      button.classList.remove("is-dragging");
+      this.dropIndicator.hidden = true;
+      view.removeEventListener("pointermove", onMove as EventListener, true);
+      view.removeEventListener("pointerup", onUp as EventListener, true);
+      view.removeEventListener("pointercancel", onCancel, true);
+      view.removeEventListener("keydown", onKey as EventListener, true);
+    };
+    const onUp = (event: PointerEvent) => {
+      const completed = dragging;
+      cleanup();
+      if (!completed) return;
+      this.suppressClick = true;
+      const target = this.dropTargetAt(event.clientX, event.clientY);
+      if (!target) return;
+      if ("split" in target) this.layout.moveTab(tabId, "right");
+      else this.layout.moveTab(tabId, target.pane, target.index);
+    };
+    const onCancel = () => cleanup();
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") cleanup();
+    };
+    view.addEventListener("pointermove", onMove as EventListener, true);
+    view.addEventListener("pointerup", onUp as EventListener, true);
+    view.addEventListener("pointercancel", onCancel, true);
+    view.addEventListener("keydown", onKey as EventListener, true);
+  }
+
+  private showDropIndicator(target: DropTarget | null): void {
+    if (!target) {
+      this.dropIndicator.hidden = true;
+      return;
+    }
+    const rootRect = this.root.getBoundingClientRect();
+    const barBottom = Math.max(0, this.bars.left.getBoundingClientRect().bottom - rootRect.top);
+    let left = 0;
+    let top = barBottom;
+    let width = rootRect.width;
+    let height = Math.max(0, rootRect.height - barBottom);
+    if ("split" in target) {
+      left = rootRect.width / 2;
+      width = rootRect.width / 2;
+    }
+    else if (target.index !== undefined) {
+      // Thin insertion slot inside the bar at the insertion point.
+      const bar = this.bars[target.pane];
+      const barRect = bar.getBoundingClientRect();
+      const buttons = bar.querySelectorAll(".zc-shell-tab");
+      const at = buttons[target.index] as HTMLElement | undefined;
+      const slotX = at
+        ? at.getBoundingClientRect().left - rootRect.left
+        : (buttons.length
+          ? (buttons[buttons.length - 1] as HTMLElement).getBoundingClientRect().right - rootRect.left
+          : barRect.left - rootRect.left + 4);
+      left = Math.max(0, slotX - 1.5);
+      top = Math.max(0, barRect.top - rootRect.top);
+      width = 3;
+      height = Math.max(0, barRect.height);
+    }
+    else if (this.layout.snapshot().panes.right !== null) {
+      const boundary = (rootRect.width * this.splitRatio) / 100;
+      left = target.pane === "left" ? 0 : boundary;
+      width = target.pane === "left" ? boundary : rootRect.width - boundary;
+    }
+    this.dropIndicator.style.left = `${left}px`;
+    this.dropIndicator.style.top = `${top}px`;
+    this.dropIndicator.style.width = `${width}px`;
+    this.dropIndicator.style.height = `${height}px`;
+    this.dropIndicator.hidden = false;
+  }
 
   private beginSplitDrag(event: MouseEvent): void {
     event.preventDefault();
